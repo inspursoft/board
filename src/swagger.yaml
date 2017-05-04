@@ -37,7 +37,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/User'
+              $ref: '#/definitions/UserDetail'
         400:
           description: Invalid user ID.
         401:
@@ -56,7 +56,7 @@ paths:
           description: New created user.
           required: true
           schema:
-            $ref: '#/definitions/User'
+            $ref: '#/definitions/UserDetail'
       tags:
         - Products
       responses:
@@ -80,7 +80,7 @@ paths:
           description: Get current user information successfully.
           in: body
           schema:
-            $ref: '#/definitions/User'
+            $ref: '#/definitions/UserDetail'
         401:
           description: User need to log in first.
   /users/{user_id}:
@@ -95,12 +95,12 @@ paths:
           format: int
           required: true
           description: Registered user ID
-        - name: profile
+        - name: user_profile
           in: body
           description: Only email, realname and comment can be modified.
           required: true
           schema:
-            $ref: '#/definitions/UserProfile' 
+            $ref: '#/definitions/UserProfileUpdate' 
       tags:
         - Products
       responses:
@@ -143,7 +143,7 @@ paths:
           description: User ID does not exist.
         500:
           description: Unexpected internal errors.
-  /users/{user_id}/sysadmin:
+  /users/{user_id}/adminrole:
     put:
       summary: Update a registered user to change to be an administrator of Harbor.
       description: |
@@ -156,12 +156,12 @@ paths:
           format: int
           required: true
           description: Registered user ID
-        - name: has_admin_role
+        - name: user_admin_role
           in: body
           description:  Toggle a user to admin or not.
           required: true
           schema:
-            $ref: '#/definitions/HasAdminRole'
+            $ref: '#/definitions/UserAdminRoleUpdate'
       tags:
         - Products
       responses:
@@ -189,12 +189,12 @@ paths:
           format: int
           required: true
           description: Registered user ID.
-        - name: password
+        - name: user_password
           in: body
           description: Password to be updated.
           required: true
           schema:
-            $ref: '#/definitions/Password'          
+            $ref: '#/definitions/UserPasswordUpdate'          
       tags:
         - Products
       responses:
@@ -209,61 +209,61 @@ paths:
         500:
           description: Unexpected internal errors.
 definitions:
-  User:
+  UserDetail:
     type: object
     properties:
       user_id:
         type: integer
         format: int
         description: The ID of the user.
-      username:
+      user_name:
         type: string
-      email:
+      user_email:
         type: string
-      password:
+      user_password:
         type: string
-      realname:
+      user_realname:
         type: string
-      comment:
+      user_comment:
         type: string
-      deleted:
+      user_deleted:
         type: integer
         format: int32
-      has_admin_role:
+      user_isadmin:
         type: integer
         format: int
-      reset_uuid:
+      user_reset_uuid:
         type: string
-      Salt:
+      user_salt:
         type: string
-      creation_time:
+      user_creation_time:
         type: string
-      update_time:
+      user_update_time:
         type: string
-  Password:
+  UserPasswordUpdate:
     type: object
     properties:
-      old_password:
+      user_password_old:
         type: string
         description: The user's existing password.
-      new_password:
+      user_password_new:
         type: string
         description: New password for marking as to be updated.
-  UserProfile:
+  UserProfileUpdate:
     type: object
     properties:
-      email:
+      user_email:
         type: string
         description: The new email.
-      realname:
+      user_realname:
         type: string
         description: The new realname.
-      comment:
+      user_comment:
         type: string
         description: The new comment.
-  HasAdminRole:
+  UserAdminRoleUpdate:
     type: object
     properties:
-      has_admin_role: 
+      user_admin_role: 
         type: integer
         description: 1-has admin, 0-not.
