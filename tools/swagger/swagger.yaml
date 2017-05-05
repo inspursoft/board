@@ -1,0 +1,595 @@
+# this is an example of the Uber API
+# as a demonstration of an API spec in YAML
+swagger: '2.0'
+info:
+  title: Board API
+  description: These APIs provide services for manipulating Board project.
+  version: "0.1.0"
+# the domain of the service
+host: 10.110.18.37
+# array of all schemes that your API supports
+schemes:
+  - http
+basePath: /api
+produces:
+  - application/json
+  - text/plain
+consumes:
+  - text/plain
+  - application/json
+paths:
+  /users:
+    get:
+      summary: Get registered users of Board. (need discuss)
+      description: |
+        This endpoint is for user to search registered users, support for filtering results with username. Notice, by now this operation is only for administrator.
+      parameters:
+        - name: username
+          in: query
+          type: string
+          required: false
+          description: Username for filtering results.
+        - name: user_list_page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: user_list_page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Searched for users of Board successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserDetail'
+          headers:
+            X-Total-Count:
+              description: The total count of users
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+        400:
+          description: Invalid user ID.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        500:
+          description: Unexpected internal errors.
+    post:
+      summary: Creates a new user account.
+      description: |
+        This endpoint is to create a user if the user does not already exist.
+      parameters:
+        - name: user
+          in: body
+          description: New created user.
+          required: true
+          schema:
+            $ref: '#/definitions/UserDetail'
+      tags:
+        - Products
+      responses:
+        201:
+          description: User created successfully.
+        400:
+          description: Unsatisfied with constraints of the user creation.
+        403:
+          description: User registration can only be used by admin role user when self-registration is off.
+        500:
+          description: Unexpected internal errors.
+  /users/{user_id}:
+    get:
+      summary: Get current user info.
+      description: |
+        This endpoint is to get the current user infomation.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Get current user information successfully.
+          in: body
+          schema:
+            $ref: '#/definitions/UserDetail'
+        401:
+          description: User need to log in first.
+    put:
+      summary: Update a registered user to change his profile.
+      description: |
+       This endpoint let a registered user change his profile.
+      parameters:
+        - name: user_id
+          in: path
+          type: integer
+          format: int
+          required: true
+          description: Registered user ID
+        - name: user_profile
+          in: body
+          description: Only email, realname and comment can be modified.
+          required: true
+          schema:
+            $ref: '#/definitions/UserProfileUpdate' 
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated user's admin role successfully.
+        400:
+          description: Invalid user ID.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        404:
+          description: User ID does not exist.
+        500:
+          description: Unexpected internal errors.
+    delete:
+      summary: Mark a registered user as be removed.
+      description: |
+        This endpoint let administrator of Board mark a registered user as
+        be removed.It actually won't be deleted from DB.
+      parameters:
+        - name: user_id
+          in: path
+          type: integer
+          format: int
+          required: true
+          description: User ID for marking as to be removed.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Marked user as be removed successfully.
+        400:
+          description: Invalid user ID.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        404:
+          description: User ID does not exist.
+        500:
+          description: Unexpected internal errors.
+  /users/{user_id}/adminrole:
+    put:
+      summary: Update a registered user to change to be an administrator of Harbor.
+      description: |
+        This endpoint let a registered user change to be an administrator
+        of Harbor.
+      parameters:
+        - name: user_id
+          in: path
+          type: integer
+          format: int
+          required: true
+          description: Registered user ID
+        - name: user_admin_role
+          in: body
+          description:  Toggle a user to admin or not.
+          required: true
+          schema:
+            $ref: '#/definitions/UserAdminRoleUpdate'
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated user's admin role successfully.
+        400:
+          description: Invalid user ID.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        404:
+          description: User ID does not exist.
+        500:
+          description: Unexpected internal errors.
+  /users/{user_id}/password:
+    put:
+      summary: Change the password on a user that already exists.
+      description: |
+        This endpoint is for user to update password. Users with the admin role can change any user's password. Guest users can change only their own password.
+      parameters:
+        - name: user_id
+          in: path
+          type: integer
+          format: int
+          required: true
+          description: Registered user ID.
+        - name: user_password
+          in: body
+          description: Password to be updated.
+          required: true
+          schema:
+            $ref: '#/definitions/UserPasswordUpdate'          
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated password successfully.
+        400:
+          description: Invalid user ID; Old password is blank; New password is blank.
+        401:
+          description: Don't have authority to change password. Please check login status.
+        403:
+          description: Old password is not correct.
+        500:
+          description: Unexpected internal errors.
+  /projects:
+    get:
+      summary: Return projects created by Board.
+      description: |
+        This endpoint returns all projects created by Board, and can be filtered by project name.
+      parameters:
+        - name: project_name 
+          in: query
+          description: Project name for filtering results.
+          required: false
+          type: string
+        - name: project_public
+          in: query
+          description: Public public sign for filtering projects.
+          required: false
+          type: integer
+          format: int32
+        - name: project_list_page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: project_list_page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched projects.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ProjectDetail'
+          headers:
+            X-Total-Count:
+              description: The total count of projects
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+    post:
+      summary: Create a new project.
+      description: |
+        This endpoint is for user to create a new project.
+      parameters:
+        - name: project
+          in: body
+          description: New created project.
+          required: true
+          schema:
+            $ref: '#/definitions/ProjectDetail'
+      tags:
+        - Products
+      responses:
+        201:
+          description: Project created successfully.
+        400:
+          description: Unsatisfied with constraints of the project creation.
+        401:
+          description: User need to log in first.
+        409:
+          description: Project name already exists.
+        500:
+          description: Unexpected internal errors.
+  /projects/{project_id}:
+    get:
+      summary: Return specific project detail infomation
+      description: |
+        This endpoint returns specific project information by project ID.
+      parameters:
+        - name: project_id
+          in: path
+          description: Project ID for filtering results.
+          required: true
+          type: integer
+          format: int64
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched project information.
+          schema:
+            $ref: '#/definitions/ProjectDetail'
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+    put:
+      summary: Update properties for a selected project.
+      description: |
+       This endpoint update properties of the project.
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int
+          required: true
+          description: The project ID.
+        - name: project_properties
+          in: body
+          description: Only project name and comment can be modified.
+          required: true
+          schema:
+            $ref: '#/definitions/ProjectPropertyUpdate' 
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated user's admin role successfully.
+        400:
+          description: Invalid user ID.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        404:
+          description: User ID does not exist.
+        500:
+          description: Unexpected internal errors.      
+    delete:
+      summary: Delete project by projectID
+      description: |
+        This endpoint is aimed to delete project by project ID.
+      parameters:
+        - name: project_id
+          in: path
+          description: Project ID of project which will be deleted.
+          required: true
+          type: integer
+          format: int64
+      tags:
+        - Products
+      responses:
+        200:
+          description: Project is deleted successfully.
+        400:
+          description: Invalid project id.
+        403:
+          description: User need to log in first.
+        404:
+          description: Project does not exist.
+        412:
+          description: Project contains policies, can not be deleted.
+        500:
+          description: Internal errors.
+  /projects/{project_id}/publicity:
+    put:
+      summary: Update project publicity for a selected project.
+      description: |
+        This endpoint is aimed to toggle a project publicity status.
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Selected project ID.
+        - name: project
+          in: body
+          required: true 
+          schema:
+            $ref: '#/definitions/ProjectPublicityUpdate'
+          description: Updates of project publicity.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated project publicity status successfully.
+        400:
+          description: Illegal format of provided ID value.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission to the project.
+        404:
+          description: Project ID does not exist.
+        500:
+          description: Unexpected internal errors.
+  /projects/{project_id}/members/:
+    get:
+      summary: Return a project's relevant members.
+      description: |
+        This endpoint is for user to search a specified project's relevant members.
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Relevant project ID.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Get project's relevant role members successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserBrief'
+        400:
+          description: Illegal format of provided ID value.
+        401:
+          description: User need to log in first.
+        403:
+          description: User in session does not have permission to the project.
+        404:
+          description: Project ID does not exist.
+        500:
+          description: Unexpected internal errors.
+    post:
+      summary: Add member accompany with relevant project.
+      description: |
+        This endpoint is for user to add member accompany with relevant project.
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Relevant project ID.
+        - name: project_member
+          in: body
+          type: array
+          description: Members list for adding to relevant project.
+          schema:
+            $ref: '#/definitions/UserBrief'
+      tags:
+        - Products
+      responses:
+        200:
+          description: Members added to relevant project successfully.
+        400:
+          description: Illegal format of provided ID value.
+        401:
+          description: User need to log in first.
+        403:
+          description: User in session does not have permission to the project.
+        404:
+          description: Project ID or username does not exist.
+        500:
+          description: Unexpected internal errors.
+definitions:
+  UserDetail:
+    type: object
+    properties:
+      user_id:
+        type: integer
+        format: int
+        description: The ID of the user.
+      user_name:
+        type: string
+      user_email:
+        type: string
+      user_password:
+        type: string
+      user_realname:
+        type: string
+      user_comment:
+        type: string
+      user_deleted:
+        type: integer
+        format: int32
+      user_isadmin:
+        type: integer
+        format: int
+      user_reset_uuid:
+        type: string
+      user_salt:
+        type: string
+      user_creation_time:
+        type: string
+      user_update_time:
+        type: string
+  UserPasswordUpdate:
+    type: object
+    properties:
+      user_password_old:
+        type: string
+        description: The user's existing password.
+      user_password_new:
+        type: string
+        description: New password for marking as to be updated.
+  UserProfileUpdate:
+    type: object
+    properties:
+      user_email:
+        type: string
+        description: The new email.
+      user_realname:
+        type: string
+        description: The new realname.
+      user_comment:
+        type: string
+        description: The new comment.
+  UserAdminRoleUpdate:
+    type: object
+    properties:
+      user_admin_role: 
+        type: integer
+        description: 1-has admin, 0-not.
+  ProjectDetail:
+    type: object
+    properties:
+      project_id:
+        type: integer
+        format: int32
+        description: Project ID
+      project_name:
+        type: string
+        description: The name of the project.
+      project_comment:
+        type: string
+        description: The commnet of the project.
+      project_creation_time:
+        type: string
+        description: The creation time of the project.
+      project_update_time:
+        type: string
+        description: The update time of the project.
+      project_deleted:
+        type: integer
+        format: int32
+        description: A deletion mark of the project (1 means it's deleted, 0 is not)
+      project_owner_id:
+        type: integer
+        format: int32
+        description: The owner ID of the project always means the creator of the project.
+      project_owner_name:
+        type: string
+        description: The owner name of the project.
+      project_public:
+        type: integer
+        format: int
+        description: The public status of the project.
+      project_togglable:
+        type: boolean
+        description: Correspond to the UI about whether the project's publicity is  updatable (for UI)
+      project_current_user_role_id:
+        type: integer
+        description: The role ID of the current user who triggered the API (for UI)
+      project_service_count:
+        type: integer
+        description: The number of the services under this project.
+  ProjectPropertyUpdate:
+    type: object
+    properties:
+      project_name:
+        type: string
+        description: The new name.
+      project_comment:
+        type: string
+        description: The new comment.
+  ProjectPublicityUpdate:
+    type: object
+    properties:
+      project_public: 
+        type: integer
+        description: 1-public, 0-not.
