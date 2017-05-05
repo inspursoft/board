@@ -476,6 +476,36 @@ paths:
           description: Project ID or username does not exist.
         500:
           description: Unexpected internal errors.
+  /search:
+    get:
+      summary: Search in Board web site
+      description: |
+        The Search endpoint returns information about the projects, services,
+        images, nodes, users offered at public status or accessible to the 
+        current login user. The response includes the project, service, 
+        image, node and user list in a proper display order.
+      parameters:
+        - name: q
+          in: query
+          description: Search parameter for project/service/image/node/user name.
+          required: true
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: An array of search results
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Search'
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        500:
+          description: Unexpected internal errors.
+# The following is for structure definition          
 definitions:
   UserDetail:
     type: object
@@ -593,3 +623,201 @@ definitions:
       project_public: 
         type: integer
         description: 1-public, 0-not.
+  # The Search results include five parts, project, service, image, node and user
+  Search:
+    type: object
+    properties:
+      projects:
+        description: Search results of the projects that matched the filter keywords.
+        type: array
+        items:
+          $ref: '#/definitions/ProjectBrief'
+      services:
+        description: Search results of the services that matched the filter keywords.
+        type: array
+        items:
+          $ref: '#/definitions/ServiceBrief'
+      images:
+        description: Search results of the images that matched the filter keywords.
+        type: array
+        items:
+          $ref: '#/definitions/ImageBrief'
+      nodes:
+        description: Search results of the nodes that matched the filter keywords.
+        type: array
+        items:
+          $ref: '#/definitions/NodeBrief'
+      users:
+        description: Search results of the users that matched the filter keywords.
+        type: array
+        items:
+          $ref: '#/definitions/UserBrief'       
+  # ProjectBrief definition for a simple list of project info
+  ProjectBrief:
+    type: object
+    properties:
+      project_id: 
+        type: integer
+        format: int64
+        description: The project ID
+      project_name: 
+        type: string
+        description: The name of project
+      project_owner:
+        type: string
+        description: The onwer name of the project
+      project_creationtime:
+        type: string
+        description: The time of the project created
+      project_public:
+        type: integer 
+        format: int32
+        description: The flag to indicate the publicity of the project (1 is public, 0 is non-public)
+  ServiceBrief:
+    type: object
+    properties: 
+      service_id:
+        type: integer
+        format: int64
+        description: The service ID
+      service_name:
+        type: string
+        description: The name of service
+      project_name:
+        type: string
+        description: The name of the service
+      service_owner:
+        type: string
+        description: The onwer name of the service
+      service_creationtime:
+        type: string
+        description: The time of the service created
+      service_public:
+        type: integer 
+        format: int32
+        description: The flag to indicate the publicity of the service (1 is public, 0 is non-public)
+  ImageBrief:
+    type: object
+    properties:
+      image_id:
+        type: integer
+        format: int64
+        description: The image ID
+      image_name:
+        type: string
+        description: The name of the image
+      image_comment:
+        type: string
+        description: The description of the image info
+  NodeBrief:
+    type: object
+    properties:
+      node_id:
+        type: integer
+        format: int64
+        description: The integer ID      
+      node_name:
+        type: string
+        description: The name of the node
+      node_ip:
+        type: string
+        description: The IP address of the node
+      node_status:        
+        type: string
+        description: The running status of the node
+  UserBrief:
+    type: object
+    properties:
+      user_id:
+        type: integer
+        format: int64
+        description: The user ID         
+      user_name:
+        type: string
+        description: The user's name
+      user_email:
+        type: string
+        description: The user's email address
+      user_registertime:
+        type: string
+        description: The user's registration time
+      user_admin:
+        type: integer 
+        format: int32
+        description: The flag to indicate the role, 1 for is_admin, 0 for not_admin
+      user_projectowner:
+        type: integer 
+        format: int32
+        description: The flag to indicate the role, 1 for is_projectowner, 0 for not_projectowner
+  # NodeDetail is for the details of Node
+  NodeDetail:
+    type: object
+    properties:
+      node_id:
+        type: integer
+        format: int64
+        description: The integer ID      
+      node_name:
+        type: string
+        description: The name of the node
+      node_ip:
+        type: string
+        description: The IP address of the node
+      node_status:        
+        type: string
+        description: The running status of the node
+      node_rootpassword:
+        type: string
+        description: The node's root password
+      node_cpu:
+        tyoe: array
+        items:
+          type: object
+          properties:
+            cpu_core:
+              type: integer
+              format: int32
+              description: The core number in this cpu
+            cpu_usage:
+              type: integer
+              format: int32
+              description: The utilization percentage of this cpu
+      node_memcap:
+        type: integer
+        format: int32
+        description: The memory capability in this node
+      node_memusage:
+        type: integer
+        format: int32
+        description: The memory utilization percentage in this node
+      node_storage:
+        type: integer
+        format: int32
+        description: The storage capability in this node   
+      node_storageusage:
+        type: integer
+        format: int32
+        description: The storage utilization percentage in this node
+      node_container:
+        type: integer
+        format: int32
+        description: The number of containers in this node
+      node_description:
+        type: string
+        description: A simple descrition for this node
+  # Nodeform is the registration form submitted by admin
+  Nodeform:
+    type: object
+    properties:
+      node_name:
+        type: string
+        description: The name of the node
+      node_ip:
+        type: string
+        description: The IP address of the node      
+      node_rootpassword:
+        type: string
+        description: The node's root password
+      node_description:
+        type: string
+        description: A simple descrition for this node
