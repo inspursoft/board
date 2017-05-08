@@ -505,6 +505,157 @@ paths:
           description: Unauthorized
         500:
           description: Unexpected internal errors.
+# For the APIs of node 
+  /node:
+    get:
+      summary: Return nodes in Board added by admin.
+      description: |
+        This endpoint returns all nodes in Board, and can be filtered by node name.
+      parameters:
+        - name: node_name 
+          in: query
+          description: node name for filtering results.
+          required: false
+          type: string
+        - name: node_list_page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: node_list_page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched nodes.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/NodeDetail'
+          headers:
+            X-Total-Count:
+              description: The total count of nodes
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+        400:
+          description: Bad Request
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+    post:
+      summary: Add a new node.
+      description: |
+        This endpoint is for admin to add a new node.
+      parameters:
+        - name: node
+          in: body
+          description: New added node.
+          required: true
+          schema:
+            $ref: '#/definitions/NodePropertyUpdate'
+      tags:
+        - Products
+      responses:
+        201:
+          description: Node added successfully.
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        409:
+          description: Node name already exists.
+        500:
+          description: Internal errors.
+  /node/{node_id}:
+    get:
+      summary: Return a specific node detail infomation
+      description: |
+        This endpoint returns a specific node's information by node ID.
+      parameters:
+        - name: node_id
+          in: path
+          description: Node ID for filtering results.
+          required: true
+          type: integer
+          format: int64
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched node information.
+          schema:
+            $ref: '#/definitions/NodeDetail'
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Internal errors.
+    delete:
+      summary: Delete a node by node ID
+      description: |
+        This endpoint is aimed to remove a node by node ID.
+      parameters:
+        - name: node_id
+          in: path
+          description: Node will be removed by node_id.
+          required: true
+          type: integer
+          format: int64
+      tags:
+        - Products
+      responses:
+        200:
+          description: Node is deleted successfully.
+        400:
+          description: Invalid node id.
+        403:
+          description: User need to log in as admin.
+        404:
+          description: Node does not exist.
+        500:
+          description: Internal errors.
+  # For start/stop node, changing running status
+  /node/{node_id}/runningstatus:
+    put:
+      summary: Start or stop the node
+      description: |
+        This endpoint is for admin to start or stop the node.
+      parameters:
+        - name: node_id
+          in: path
+          type: integer
+          format: int
+          required: true
+          description: Node ID.
+        - name: node_runningstatus
+          in: body
+          description: New running status to be updated.
+          required: true
+          schema:
+            node_runningstatus:        
+              type: string
+              description: The running status of the node          
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated running status successfully.
+        400:
+          description: Invalid running status request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Unexpected internal errors.  
 # The following is for structure definition          
 definitions:
   UserDetail:
@@ -749,9 +900,9 @@ definitions:
         type: integer 
         format: int32
         description: The flag to indicate the role, 1 for is_projectowner, 0 for not_projectowner
-  # NodeDetail is for the details of Node
   NodeDetail:
     type: object
+    description: NodeDetail is for the details of Node 
     properties:
       node_id:
         type: integer
@@ -763,7 +914,7 @@ definitions:
       node_ip:
         type: string
         description: The IP address of the node
-      node_status:        
+      node_runningstatus:        
         type: string
         description: The running status of the node
       node_rootpassword:
@@ -805,8 +956,7 @@ definitions:
       node_description:
         type: string
         description: A simple descrition for this node
-  # Nodeform is the registration form submitted by admin
-  Nodeform:
+  NodePropertyUpdate:
     type: object
     properties:
       node_name:
