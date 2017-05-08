@@ -629,7 +629,7 @@ paths:
     put:
       summary: Start or stop the node
       description: |
-        This endpoint is for admin to start or stop the node.
+        This endpoint is aimed to toggle a node's running status stop/start.
       parameters:
         - name: node_id
           in: path
@@ -642,9 +642,8 @@ paths:
           description: New running status to be updated.
           required: true
           schema:
-            node_runningstatus:        
-              type: string
-              description: The running status of the node          
+            $ref: '#/definitions/NodeRunningstatusUpdate'
+          description: The new running status of the node          
       tags:
         - Products
       responses:
@@ -915,8 +914,9 @@ definitions:
         type: string
         description: The IP address of the node
       node_runningstatus:        
-        type: string
-        description: The running status of the node
+        type: integer
+        format: int32
+        description: The running status of the node, 0 poweroff, 1 running
       node_rootpassword:
         type: string
         description: The node's root password
@@ -971,3 +971,10 @@ definitions:
       node_description:
         type: string
         description: A simple descrition for this node
+  NodeRunningstatusUpdate:
+    type: object
+    properties:
+        node_runningstatus:        
+          type: integer
+          format: int32
+          description: The running status of the node, 0 poweroff, 1 running
