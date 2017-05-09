@@ -872,9 +872,10 @@ definitions:
       node_ip:
         type: string
         description: The IP address of the node
-      node_status:        
-        type: string
-        description: The running status of the node
+      node_powerswitch:        
+        type: integer
+        format: int32
+        description: The running status of the node, 0 poweroff, 1 running
   UserBrief:
     type: object
     properties:
@@ -891,11 +892,11 @@ definitions:
       user_registertime:
         type: string
         description: The user's registration time
-      user_admin:
+      user_systemadmin:
         type: integer 
         format: int32
         description: The flag to indicate the role, 1 for is_admin, 0 for not_admin
-      user_projectowner:
+      user_projectadmin:
         type: integer 
         format: int32
         description: The flag to indicate the role, 1 for is_projectowner, 0 for not_projectowner
@@ -921,7 +922,7 @@ definitions:
         type: string
         description: The node's root password
       node_cpu:
-        tyoe: array
+        type: array
         items:
           type: object
           properties:
@@ -933,7 +934,7 @@ definitions:
               type: integer
               format: int32
               description: The utilization percentage of this cpu
-      node_memcap:
+      node_memset:
         type: integer
         format: int32
         description: The memory capability in this node
@@ -974,7 +975,7 @@ definitions:
   NodeRunningstatusUpdate:
     type: object
     properties:
-        node_runningstatus:        
+        node_powerswitch:        
           type: integer
           format: int32
           description: The running status of the node, 0 poweroff, 1 running
