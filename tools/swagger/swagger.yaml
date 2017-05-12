@@ -18,7 +18,7 @@ consumes:
   - text/plain
   - application/json
 paths:
-  /search:
+  /v1/search:
     get:
       summary: Search in Board web site
       description: |
@@ -47,7 +47,7 @@ paths:
           description: Unauthorized
         500:
           description: Unexpected internal errors.
-  /users:
+  /v1/users:
     get:
       summary: Get registered users of Board. (need discuss)
       description: |
@@ -116,7 +116,7 @@ paths:
           description: User registration can only be used by admin role user when self-registration is off.
         500:
           description: Unexpected internal errors.
-  /users/{user_id}:
+  /v1/users/{user_id}:
     get:
       summary: Get current user info.
       description: |
@@ -190,7 +190,7 @@ paths:
           description: User ID does not exist.
         500:
           description: Unexpected internal errors.
-  /users/{user_id}/systemadmin:
+  /v1/users/{user_id}/systemadmin:
     put:
       summary: Update a registered user to change to be an system administrator of Board.
       description: |
@@ -224,7 +224,7 @@ paths:
           description: User ID does not exist.
         500:
           description: Unexpected internal errors.
-  /users/{user_id}/projectadmin:
+  /v1/users/{user_id}/projectadmin:
     put:
       summary: Update a registered user to change to be an project administrator of Board.
       description: |
@@ -258,7 +258,7 @@ paths:
           description: User ID does not exist.
         500:
           description: Unexpected internal errors.
-  /users/{user_id}/password:
+  /v1/users/{user_id}/password:
     put:
       summary: Change the password on a user that already exists.
       description: |
@@ -289,7 +289,7 @@ paths:
           description: Old password is not correct.
         500:
           description: Unexpected internal errors.
-  /projects:
+  /v1/projects:
     get:
       summary: Return projects created by Board.
       description: |
@@ -362,7 +362,7 @@ paths:
           description: Project name already exists.
         500:
           description: Unexpected internal errors.
-  /projects/{project_id}:
+  /v1/projects/{project_id}:
     get:
       summary: Return specific project detail infomation
       description: |
@@ -443,7 +443,7 @@ paths:
           description: Project contains policies, can not be deleted.
         500:
           description: Internal errors.
-  /projects/{project_id}/publicity:
+  /v1/projects/{project_id}/publicity:
     put:
       summary: Update project publicity for a selected project.
       description: |
@@ -476,7 +476,7 @@ paths:
           description: Project ID does not exist.
         500:
           description: Unexpected internal errors.
-  /projects/{project_id}/members/:
+  /v1/projects/{project_id}/members/:
     get:
       summary: Return a project's relevant members.
       description: |
@@ -539,7 +539,7 @@ paths:
           description: Project ID or username does not exist.
         500:
           description: Unexpected internal errors.
-  /node:
+  /v1/node:
     get:
       summary: Return nodes in Board added by admin.
       description: |
@@ -608,7 +608,7 @@ paths:
           description: Node name already exists.
         500:
           description: Internal errors.
-  /node/{node_id}:
+  /v1/node/{node_id}:
     get:
       summary: Return a specific node detail infomation
       description: |
@@ -657,7 +657,7 @@ paths:
           description: Node does not exist.
         500:
           description: Internal errors.
-  /node/{node_id}/runningstatus:
+  /v1/node/{node_id}/runningstatus:
     put:
       summary: Start or stop the node
       description: |
@@ -686,7 +686,7 @@ paths:
           description: User need to log in as admin.
         500:
           description: Unexpected internal errors.  
-  /image:
+  /v1/image:
     get:
       summary: Return images in Board system.
       description: |
@@ -729,7 +729,7 @@ paths:
           description: Bad Request
         500:
           description: Internal errors.
-  /image/{image_serialnumber}:
+  /v1/image/{image_serialnumber}:
     get:
       summary: Return all detailed info of this image
       description: |
