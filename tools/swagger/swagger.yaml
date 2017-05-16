@@ -729,15 +729,15 @@ paths:
           description: Bad Request
         500:
           description: Internal errors.
-  /v1/image/{image_serialnumber}:
+  /v1/image/{image_name}:
     get:
       summary: Return all detailed info of this image
       description: |
         This endpoint returns all detailed info of this image by the image internal serial number
       parameters:
-        - name: image_serialnumber
+        - name: image_name
           in: path
-          description: image serial number to specify an image.
+          description: image name to specify an image.
           required: true
           type: integer
           format: int32
@@ -780,9 +780,9 @@ paths:
       description: |
         This endpoint is to delete an image by the image tag
       parameters:
-        - name: image_serialnumber
+        - name: image_name
           in: path
-          description: image serial number to specify an image.
+          description: image name to specify an image.
           required: true
           type: integer
           format: int32
@@ -798,11 +798,27 @@ paths:
         200:
           description: The image of this tag is deleted successfully.
         400:
-          description: Invalid image serial number.
+          description: Invalid image name.
         401:
           description: User need to log in first.
         404:
           description: Invalid image tag number.
+        500:
+          description: Internal errors.
+  /v1/profile:
+    get:
+      summary: Return the Board system profile information
+      description: |
+        This endpoint returns the Board system profile information.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return profile information.
+          schema:
+            $ref: '#/definitions/ProfileDetail'
+        400:
+          description: Bad Request
         500:
           description: Internal errors.
 # The following is for structure definition          
@@ -1032,10 +1048,6 @@ definitions:
   ImageBrief:
     type: object
     properties:
-      image_serialnumber:
-        type: integer
-        format: int32
-        description: The image serial number
       image_name:
         type: string
         description: The name of the image
@@ -1045,10 +1057,6 @@ definitions:
   ImageDetail:
     type: object
     properties:
-      image_serialnumber:
-        type: integer
-        format: int32
-        description: The image serial number
       image_name:
         type: string
         description: The name of the image
@@ -1173,3 +1181,22 @@ definitions:
           type: integer
           format: int32
           description: The running status of the node, 0 poweroff, 1 running
+  ProfileDetail:
+    type: object
+    description: The profile for Board system 
+    properties:
+      profile_description:
+        type: string
+        description: A summary for this Board system      
+      profile_boardversion:
+        type: string
+        description: The Board version number
+      profile_kubernetes:
+        type: string
+        description: The Kubernetes version number in Board
+      profile_mail:
+        type: string
+        description: The contact mail alias for Board system
+      profile_demo:
+        type: string
+        description: The path for some Demo
