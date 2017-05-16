@@ -18,7 +18,7 @@ consumes:
   - text/plain
   - application/json
 paths:
-  /search:
+  /v1/search:
     get:
       summary: Search in Board web site
       description: |
@@ -47,7 +47,7 @@ paths:
           description: Unauthorized
         500:
           description: Unexpected internal errors.
-  /users:
+  /v1/users:
     get:
       summary: Get registered users of Board. (need discuss)
       description: |
@@ -116,7 +116,7 @@ paths:
           description: User registration can only be used by admin role user when self-registration is off.
         500:
           description: Unexpected internal errors.
-  /users/{user_id}:
+  /v1/users/{user_id}:
     get:
       summary: Get current user info.
       description: |
@@ -190,7 +190,7 @@ paths:
           description: User ID does not exist.
         500:
           description: Unexpected internal errors.
-  /users/{user_id}/systemadmin:
+  /v1/users/{user_id}/systemadmin:
     put:
       summary: Update a registered user to change to be an system administrator of Board.
       description: |
@@ -224,7 +224,7 @@ paths:
           description: User ID does not exist.
         500:
           description: Unexpected internal errors.
-  /users/{user_id}/projectadmin:
+  /v1/users/{user_id}/projectadmin:
     put:
       summary: Update a registered user to change to be an project administrator of Board.
       description: |
@@ -258,7 +258,7 @@ paths:
           description: User ID does not exist.
         500:
           description: Unexpected internal errors.
-  /users/{user_id}/password:
+  /v1/users/{user_id}/password:
     put:
       summary: Change the password on a user that already exists.
       description: |
@@ -289,7 +289,7 @@ paths:
           description: Old password is not correct.
         500:
           description: Unexpected internal errors.
-  /projects:
+  /v1/projects:
     get:
       summary: Return projects created by Board.
       description: |
@@ -362,7 +362,7 @@ paths:
           description: Project name already exists.
         500:
           description: Unexpected internal errors.
-  /projects/{project_id}:
+  /v1/projects/{project_id}:
     get:
       summary: Return specific project detail infomation
       description: |
@@ -443,7 +443,7 @@ paths:
           description: Project contains policies, can not be deleted.
         500:
           description: Internal errors.
-  /projects/{project_id}/publicity:
+  /v1/projects/{project_id}/publicity:
     put:
       summary: Update project publicity for a selected project.
       description: |
@@ -476,7 +476,7 @@ paths:
           description: Project ID does not exist.
         500:
           description: Unexpected internal errors.
-  /projects/{project_id}/members/:
+  /v1/projects/{project_id}/members/:
     get:
       summary: Return a project's relevant members.
       description: |
@@ -539,7 +539,7 @@ paths:
           description: Project ID or username does not exist.
         500:
           description: Unexpected internal errors.
-  /node:
+  /v1/node:
     get:
       summary: Return nodes in Board added by admin.
       description: |
@@ -608,7 +608,7 @@ paths:
           description: Node name already exists.
         500:
           description: Internal errors.
-  /node/{node_id}:
+  /v1/node/{node_id}:
     get:
       summary: Return a specific node detail infomation
       description: |
@@ -657,7 +657,7 @@ paths:
           description: Node does not exist.
         500:
           description: Internal errors.
-  /node/{node_id}/runningstatus:
+  /v1/node/{node_id}/runningstatus:
     put:
       summary: Start or stop the node
       description: |
@@ -671,7 +671,6 @@ paths:
           description: Node ID.
         - name: node_runningstatus
           in: body
-          description: New running status to be updated.
           required: true
           schema:
             $ref: '#/definitions/NodeRunningstatusUpdate'
@@ -687,6 +686,141 @@ paths:
           description: User need to log in as admin.
         500:
           description: Unexpected internal errors.  
+  /v1/image:
+    get:
+      summary: Return images in Board system.
+      description: |
+        This endpoint returns all images in Board, and can be filtered by image name.
+      parameters:
+        - name: image_name 
+          in: query
+          description: image name for filtering results.
+          required: false
+          type: string
+        - name: image_list_page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: image_list_page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched images.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ImageBrief'
+          headers:
+            X-Total-Count:
+              description: The total count of images
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+        400:
+          description: Bad Request
+        500:
+          description: Internal errors.
+  /v1/image/{image_name}:
+    get:
+      summary: Return all detailed info of this image
+      description: |
+        This endpoint returns all detailed info of this image by the image internal serial number
+      parameters:
+        - name: image_name
+          in: path
+          description: image name to specify an image.
+          required: true
+          type: integer
+          format: int32
+        - name: tag_list_page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: tag_list_page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.          
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all tags matched this image.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ImageDetail'
+          headers:
+            X-Total-Count:
+              description: The total count of image detail
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+        400:
+          description: Bad Request
+        404:
+          description: Image serial number does not exist.
+        500:
+          description: Internal errors.
+    delete:
+      summary: Delete an image by image tag
+      description: |
+        This endpoint is to delete an image by the image tag
+      parameters:
+        - name: image_name
+          in: path
+          description: image name to specify an image.
+          required: true
+          type: integer
+          format: int32
+        - name: image_tag
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ImageTagUpdate'
+          description: The image tag to be deleted       
+      tags:
+        - Products
+      responses:
+        200:
+          description: The image of this tag is deleted successfully.
+        400:
+          description: Invalid image name.
+        401:
+          description: User need to log in first.
+        404:
+          description: Invalid image tag number.
+        500:
+          description: Internal errors.
+  /v1/profile:
+    get:
+      summary: Return the Board system profile information
+      description: |
+        This endpoint returns the Board system profile information.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return profile information.
+          schema:
+            $ref: '#/definitions/ProfileDetail'
+        400:
+          description: Bad Request
+        500:
+          description: Internal errors.
 # The following is for structure definition          
 definitions:
   Search:
@@ -914,16 +1048,43 @@ definitions:
   ImageBrief:
     type: object
     properties:
-      image_id:
-        type: integer
-        format: int32
-        description: The image ID
       image_name:
         type: string
         description: The name of the image
       image_comment:
         type: string
         description: The description of the image info
+  ImageDetail:
+    type: object
+    properties:
+      image_name:
+        type: string
+        description: The name of the image
+      image_tag:
+        type: string
+        description: The tag of the image version
+      image_author:
+        type: string
+        description: The image author
+      image_id:
+        type: string
+        description: The image ID
+      image_createdtime:
+        type: string
+        description: The created time of the image
+      image_size:
+        type: integer
+        format: int32
+        description: The image size MB         
+      image_comment:
+        type: string
+        description: The description of the image info        
+  ImageTagUpdate:
+    type: object
+    properties:
+      image_tag:
+        type: string
+        description: The tag of the image version      
   NodeBrief:
     type: object
     properties:
@@ -1020,3 +1181,22 @@ definitions:
           type: integer
           format: int32
           description: The running status of the node, 0 poweroff, 1 running
+  ProfileDetail:
+    type: object
+    description: The profile for Board system 
+    properties:
+      profile_description:
+        type: string
+        description: A summary for this Board system      
+      profile_boardversion:
+        type: string
+        description: The Board version number
+      profile_kubernetes:
+        type: string
+        description: The Kubernetes version number in Board
+      profile_mail:
+        type: string
+        description: The contact mail alias for Board system
+      profile_demo:
+        type: string
+        description: The path for some Demo
