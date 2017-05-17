@@ -36,7 +36,7 @@ paths:
         - Products
       responses:
         200:
-          description: An array of search results
+          description: An array of search results.
           schema:
             type: array
             items:
@@ -81,10 +81,10 @@ paths:
               $ref: '#/definitions/UserDetail'
           headers:
             X-Total-Count:
-              description: The total count of users
+              description: The total count of users.
               type: integer
             Link:
-              description: Link refers to the previous page and next page
+              description: Link refers to the previous page and next page.
               type: string
         400:
           description: Invalid user ID.
@@ -329,10 +329,10 @@ paths:
               $ref: '#/definitions/ProjectDetail'
           headers:
             X-Total-Count:
-              description: The total count of projects
+              description: The total count of projects.
               type: integer
             Link:
-              description: Link refers to the previous page and next page
+              description: Link refers to the previous page and next page.
               type: string
         401:
           description: User need to log in first.
@@ -364,7 +364,7 @@ paths:
           description: Unexpected internal errors.
   /v1/projects/{project_id}:
     get:
-      summary: Return specific project detail infomation
+      summary: Return specific project detail infomation.
       description: |
         This endpoint returns specific project information by project ID.
       parameters:
@@ -539,6 +539,78 @@ paths:
           description: Project ID or username does not exist.
         500:
           description: Unexpected internal errors.
+  /v1/service:
+    get:
+      summary: Return services created by Board.
+      description: |
+        This endpoint returns all services created by Board, and can be filtered by project name.
+      parameters:
+        - name: service_name 
+          in: query
+          description: Service name for filtering results.
+          required: false
+          type: string
+        - name: service_public
+          in: query
+          description: Service public sign for filtering projects.
+          required: false
+          type: integer
+          format: int32
+        - name: service_list_page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: servie_list_page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched services.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ServiceDetail'
+          headers:
+            X-Total-Count:
+              description: The total count of services.
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page.
+              type: string
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+  /v1/service/{service_id}:
+    get:
+      summary: Return specific service_id detail infomation.
+      description: |
+        This endpoint returns specific service information by service_id ID.
+      parameters:
+        - name: service_id
+          in: path
+          description: Service ID for filtering results.
+          required: true
+          type: integer
+          format: int32
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched service information.
+          schema:
+            $ref: '#/definitions/ServiceDetail'
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.  
   /v1/node:
     get:
       summary: Return nodes in Board added by admin.
@@ -573,13 +645,13 @@ paths:
               $ref: '#/definitions/NodeDetail'
           headers:
             X-Total-Count:
-              description: The total count of nodes
+              description: The total count of nodes.
               type: integer
             Link:
-              description: Link refers to the previous page and next page
+              description: Link refers to the previous page and next page.
               type: string
         400:
-          description: Bad Request
+          description: Bad Request.
         401:
           description: User need to log in first.
         500:
@@ -610,7 +682,7 @@ paths:
           description: Internal errors.
   /v1/node/{node_id}:
     get:
-      summary: Return a specific node detail infomation
+      summary: Return a specific node detail infomation.
       description: |
         This endpoint returns a specific node's information by node ID.
       parameters:
@@ -674,7 +746,7 @@ paths:
           required: true
           schema:
             $ref: '#/definitions/NodeRunningstatusUpdate'
-          description: The new running status of the node          
+          description: The new running status of the node.         
       tags:
         - Products
       responses:
@@ -720,10 +792,10 @@ paths:
               $ref: '#/definitions/ImageBrief'
           headers:
             X-Total-Count:
-              description: The total count of images
+              description: The total count of images.
               type: integer
             Link:
-              description: Link refers to the previous page and next page
+              description: Link refers to the previous page and next page.
               type: string
         400:
           description: Bad Request
@@ -731,7 +803,7 @@ paths:
           description: Internal errors.
   /v1/image/{image_name}:
     get:
-      summary: Return all detailed info of this image
+      summary: Return all detailed info of this image.
       description: |
         This endpoint returns all detailed info of this image by the image internal serial number
       parameters:
@@ -764,21 +836,21 @@ paths:
               $ref: '#/definitions/ImageDetail'
           headers:
             X-Total-Count:
-              description: The total count of image detail
+              description: The total count of image detail.
               type: integer
             Link:
-              description: Link refers to the previous page and next page
+              description: Link refers to the previous page and next page.
               type: string
         400:
-          description: Bad Request
+          description: Bad Request.
         404:
           description: Image serial number does not exist.
         500:
           description: Internal errors.
     delete:
-      summary: Delete an image by image tag
+      summary: Delete an image by image tag.
       description: |
-        This endpoint is to delete an image by the image tag
+        This endpoint is to delete an image by the image tag.
       parameters:
         - name: image_name
           in: path
@@ -857,31 +929,31 @@ definitions:
       user_id:
         type: integer
         format: int32
-        description: The user ID         
+        description: The integer ID of this user.         
       user_name:
         type: string
-        description: The user's name
+        description: The name of this user.
       user_email:
         type: string
-        description: The user's email address
+        description: The email address of this user.
       user_registertime:
         type: string
-        description: The user's registration time
+        description: The registration time of this user.
       user_systemadmin:
         type: integer 
         format: int32
-        description: The flag to indicate the role, 1 for is_admin, 0 for not_admin
+        description: The flag to indicate the role, 1 for is_admin, 0 for not_admin.
       user_projectadmin:
         type: integer 
         format: int32
-        description: The flag to indicate the role, 1 for is_projectowner, 0 for not_projectowner
+        description: The flag to indicate the role, 1 for is_projectowner, 0 for not_projectowner.
   UserDetail:
     type: object
     properties:
       user_id:
         type: integer
         format: int32
-        description: The ID of the user.
+        description: The integer ID of this user.
       user_name:
         type: string
       user_email:
@@ -925,13 +997,13 @@ definitions:
     properties:
       user_email:
         type: string
-        description: The new email.
+        description: The new email of this user.
       user_realname:
         type: string
-        description: The new realname.
+        description: The new realname of this user.
       user_comment:
         type: string
-        description: The new comment.
+        description: The new comment of this user.
   UserSystemAdminUpdate:
     type: object
     properties:
@@ -950,16 +1022,16 @@ definitions:
       project_id: 
         type: integer
         format: int32
-        description: The project ID
+        description: The integer ID of this project.
       project_name: 
         type: string
-        description: The name of project
+        description: The name of this project.
       project_owner:
         type: string
-        description: The onwer name of the project
+        description: The owner name of this project.
       project_creationtime:
         type: string
-        description: The time of the project created
+        description: The creation time of this project.
       project_public:
         type: integer 
         format: int32
@@ -970,13 +1042,13 @@ definitions:
       project_id:
         type: integer
         format: int32
-        description: Project ID
+        description: The integer ID of this project.
       project_name:
         type: string
-        description: The name of the project.
+        description: The name of this project.
       project_comment:
         type: string
-        description: The commnet of the project.
+        description: The commnet of this project.
       project_creation_time:
         type: string
         description: The creation time of the project.
@@ -986,7 +1058,7 @@ definitions:
       project_deleted:
         type: integer
         format: int32
-        description: A deletion mark of the project (1 means it's deleted, 0 is not)
+        description: A deletion mark of the project (1 means it's deleted, 0 is not).
       project_owner_id:
         type: integer
         format: int32
@@ -1012,10 +1084,10 @@ definitions:
     properties:
       project_name:
         type: string
-        description: The new name.
+        description: The new name of this project.
       project_comment:
         type: string
-        description: The new comment.
+        description: The new comment of this project.
   ProjectPublicityUpdate:
     type: object
     properties:
@@ -1028,57 +1100,131 @@ definitions:
       service_id:
         type: integer
         format: int32
-        description: The service ID
+        description: The integer ID of this service.
       service_name:
         type: string
-        description: The name of service
+        description: The name of this service.
+      project_id:
+        type: integer
+        format: int32
+        description: The project's integer ID which include this service.
       project_name:
         type: string
-        description: The name of the service
+        description: The project's name which include this service.
       service_owner:
         type: string
-        description: The onwer name of the service
+        description: The owner name of this service.
       service_creationtime:
         type: string
-        description: The time of the service created
+        description: The creation time of this service.
       service_public:
         type: integer 
         format: int32
-        description: The flag to indicate the publicity of the service (1 is public, 0 is non-public)
+        description: The flag to indicate the publicity of the service (1 is public, 0 is non-public).
+  ServiceDetail:
+    type: object
+    properties:
+      service_id:
+        type: integer
+        format: int32
+        description: The integer ID of this service.
+      service_name:
+        type: string
+        description: The name of this service.
+      service_comment:
+        type: string
+        description: The commnet of this service.
+      service_creation_time:
+        type: string
+        description: The creation time of this service.
+      service_update_time:
+        type: string
+        description: The update time of this service.
+      service_deleted:
+        type: integer
+        format: int32
+        description: A deletion mark of the service (1 means it's deleted, 0 is not).
+      service_owner_id:
+        type: integer
+        format: int32
+        description: The owner ID of the service always means the creator of the service.
+      service_owner_name:
+        type: string
+        description: The owner name of this service.
+      service_entry_url:
+        type: string
+        description: The url of this service entry.
+      service_public:
+        type: integer
+        format: int32
+        description: The status of this service.
+      service_togglable:
+        type: boolean
+        description: Correspond to the UI about whether the service's publicity is  updatable (for UI)
+      service_current_user_role_id:
+        type: integer
+        description: The role ID of the current user who triggered the API (for UI)
+      service_pods_info:
+        description: The pods information of this service.
+        type: array
+        items:
+          $ref: '#/definitions/PodsBrief'
+      service_resource_usage:
+        description: The resources usage of this service.
+        type: array
+        items:
+          $ref: '#/definitions/ResourcesUsage'
+  PodBrief:
+    type: object
+    properties:
+      spod_id:
+        type: integer
+        format: int32
+        description: The integer ID of this pod.
+      pod_name:
+        type: string
+        description: The name of this pod.
+      pod_instance:
+        type: integer
+        format: int32
+        description: The instance number of this pod. 
   ImageBrief:
     type: object
     properties:
       image_name:
         type: string
-        description: The name of the image
+        description: The name of this image.
       image_comment:
         type: string
-        description: The description of the image info
+        description: The description of this image.
   ImageDetail:
     type: object
     properties:
       image_name:
         type: string
-        description: The name of the image
+        description: The name of this image.
       image_tag:
         type: string
-        description: The tag of the image version
+        description: The tag of this image.
       image_author:
         type: string
-        description: The image author
+        description: The author of this image.
       image_id:
         type: string
-        description: The image ID
-      image_createdtime:
+        description: The integer ID of this pod.
+      image_creationtime:
         type: string
-        description: The created time of the image
-      image_size:
+        description: The creation time of this image.
+      image_size_number:
         type: integer
         format: int32
-        description: The image size MB         
+        description: The image size number.
+      image_size_unit:
+        type: string
+        description: The image size unit.    
       image_comment:
         type: string
-        description: The description of the image info        
+        description: The description of this image.        
   ImageTagUpdate:
     type: object
     properties:
@@ -1091,112 +1237,153 @@ definitions:
       node_id:
         type: integer
         format: int32
-        description: The integer ID      
+        description: The integer ID of this node.      
       node_name:
         type: string
-        description: The name of the node
+        description: The name of this node.
       node_ip:
         type: string
-        description: The IP address of the node
+        description: The IP address of this node.
       node_powerswitch:        
         type: integer
         format: int32
-        description: The running status of the node, 0 poweroff, 1 running
+        description: The running status of the node, 0 poweroff, 1 running.
   NodeDetail:
     type: object
-    description: NodeDetail is for the details of Node 
+    description: The detail information of this node. 
     properties:
       node_id:
         type: integer
         format: int32
-        description: The integer ID      
+        description: The integer ID of this node.      
       node_name:
         type: string
-        description: The name of the node
+        description: The name of this node.
       node_ip:
         type: string
-        description: The IP address of the node
+        description: The IP address of this node.
       node_runningstatus:        
         type: integer
         format: int32
-        description: The running status of the node, 0 poweroff, 1 running
+        description: The running status of this node, 0 poweroff, 1 running.
       node_rootpassword:
         type: string
-        description: The node's root password
-      node_cpu:
+        description: The node's root password.
+      node_resource_usage:
+        description: The resources usage of this node.
         type: array
         items:
-          type: object
-          properties:
-            cpu_core:
-              type: integer
-              format: int32
-              description: The core number in this cpu
-            cpu_usage:
-              type: integer
-              format: int32
-              description: The utilization percentage of this cpu
-      node_memset:
+          $ref: '#/definitions/ResourcesUsage'
+      node_container_count:
         type: integer
         format: int32
-        description: The memory capability in this node
-      node_memusage:
-        type: integer
-        format: int32
-        description: The memory utilization percentage in this node
-      node_storage:
-        type: integer
-        format: int32
-        description: The storage capability in this node   
-      node_storageusage:
-        type: integer
-        format: int32
-        description: The storage utilization percentage in this node
-      node_container:
-        type: integer
-        format: int32
-        description: The number of containers in this node
+        description: The number of containers in this node.
       node_description:
         type: string
-        description: A simple descrition for this node
+        description: A simple descrition for this node.
   NodePropertyUpdate:
     type: object
     properties:
       node_name:
         type: string
-        description: The name of the node
+        description: The name of the node.
       node_ip:
         type: string
-        description: The IP address of the node      
+        description: The IP address of the node.      
       node_rootpassword:
         type: string
-        description: The node's root password
+        description: The node's root password.
       node_description:
         type: string
-        description: A simple descrition for this node
+        description: A simple descrition for this node.
   NodeRunningstatusUpdate:
     type: object
     properties:
-        node_powerswitch:        
-          type: integer
-          format: int32
-          description: The running status of the node, 0 poweroff, 1 running
+      node_powerswitch:        
+        type: integer
+        format: int32
+        description: The running status of the node, 0 poweroff, 1 running.
+  ResourcesUsage:
+    type: object
+    properties:
+      cpu_usageinfo:        
+        type: array
+        description: CPU usage information, division by different core.
+        items:
+          $ref: '#/definitions/CPUUsageInfo'
+      memory_initial_number:
+        type: integer
+        format: int32
+        description: The memory capability count number.
+      memory_usage_number:
+        type: integer
+        format: int32
+        description: The memory utilization count number.
+      memory_size_unit:
+        type: string
+        description: The memory unit of measurement.
+      storage_usageinfo:        
+        type: array
+        description: Storage usage information, division by different volume.
+        items:
+          $ref: '#/definitions/StorageUsageInfo'
+  CPUUsageInfo:
+    type: object
+    description: The usage information of cpu. 
+    properties:
+      cpu_id:
+        type: integer
+        format: int32
+        description: The integer ID of this cpu.
+      cpu_type:
+        type: string
+        description: The type of this cpu.
+      cpu_initial_number:
+        type: integer
+        format: int32
+        description: The cpu capability count number.
+      cpu_usage_number:
+        type: integer
+        format: int32
+        description: The cpu utilization count number.
+      cpu_size_unit:
+        type: string
+        description: The cpu unit of measurement.
+  StorageUsageInfo:
+    type: object
+    description: The usage information of storage. 
+    properties:
+      storage_id:
+        type: integer
+        format: int32
+        description: The integer ID of this storage.
+      storage_name:
+        type: string
+        description: The name of this storage.
+      storage_initial_number:
+        type: integer
+        format: int32
+        description: The storage capability count number.
+      storage_usage_number:
+        type: integer
+        format: int32
+        description: The storage utilization count number.
+      storage_size_unit:
+        type: string
+        description: The storage unit of measurement.
   ProfileDetail:
     type: object
-    description: The profile for Board system 
+    description: The profile for Board system.
     properties:
       profile_description:
         type: string
-        description: A summary for this Board system      
+        description: A summary for this Board system.     
       profile_boardversion:
         type: string
-        description: The Board version number
+        description: The Board version number.
       profile_kubernetes:
         type: string
-        description: The Kubernetes version number in Board
+        description: The Kubernetes version number in Board.
       profile_mail:
         type: string
-        description: The contact mail alias for Board system
-      profile_demo:
-        type: string
-        description: The path for some Demo
+        description: The contact mail alias for Board system.
