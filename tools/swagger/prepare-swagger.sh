@@ -26,6 +26,7 @@ then
         exit 1
 fi
 
+cp ../../docs/swagger.yaml swagger.yaml
 
 FILE="swagger.tar.gz"
 if ! [ -f $FILE ]; then
