@@ -893,6 +893,93 @@ paths:
           description: Bad Request
         500:
           description: Internal errors.
+  /v1/system:
+    get:
+      summary: Return the admin and system management info
+      description: |
+        This endpoint returns admin and system management info.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return admin and system management info.
+          schema:
+            $ref: '#/definitions/System'
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Internal errors.    
+  /v1/system/host_setting:
+    put:
+      summary: Update host info
+      description: |
+        This endpoint is to update host info.
+      parameters:
+        - name: host_setting
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/HostInfo'
+          description: The host's information to be updated.         
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated host info successfully.
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Unexpected internal errors.     
+  /v1/system/admin_setting:
+    put:
+      summary: Update admin account info
+      description: |
+        This endpoint is to update the admin account info.
+      parameters:
+        - name: admin_setting
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/AdminAccount'
+          description: The new admin account info.         
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated admin account info successfully.
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Unexpected internal errors.     
+  /v1/system/email_setting:
+    put:
+      summary: Update email server info
+      description: |
+        This endpoint is to update the email server info.
+      parameters:
+        - name: email_setting
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/EmailServer'
+          description: The new email server info.         
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated email server info successfully.
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Unexpected internal errors. 
 # The following is for structure definition          
 definitions:
   Search:
@@ -1177,7 +1264,7 @@ definitions:
   PodBrief:
     type: object
     properties:
-      spod_id:
+      pod_id:
         type: integer
         format: int32
         description: The integer ID of this pod.
@@ -1387,3 +1474,60 @@ definitions:
       profile_mail:
         type: string
         description: The contact mail alias for Board system.
+  System:
+    type: object
+    properties:
+      host_setting:
+        description: Host info for setting.
+        $ref: '#/definitions/HostInfo'
+      admin_setting:
+        description: Admin account info for settting.
+        $ref: '#/definitions/AdminAccount'
+      email_setting:
+        description: Email Server info for setting.
+        $ref: '#/definitions/EmailServer'
+  HostInfo:
+    type: object
+    properties:
+      host_name:
+        type: string
+        description: The name of this host.
+      self_registration:
+        type: integer        
+        format: int32
+        description: Self registration, 0 no, 1 yes.
+  AdminAccount:
+    type: object
+    properties:
+      admin_email:
+        type: string
+        description: The email address of admin.
+      admin_password:
+        type: string
+        description: The password of admin.
+      admin_passwordconfirm:
+        type: string
+        description: The password of admin to confirm.
+  EmailServer:
+    type: object
+    properties:
+      email_servername:
+        type: string
+        description: The email server name.
+      email_serverport:
+        type: integer
+        format: int32
+        description: The port number for email in this server.
+      email_username:
+        type: string
+        description: The email username.
+      email_password:
+        type: string
+        description: The email password.
+      email_form:
+        type: string
+        description: The email form.
+      email_ssl:
+        type: integer
+        format: int32
+        description: The email securiy mode, 0 not SSL, 1 is SSL. 
