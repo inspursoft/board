@@ -126,7 +126,6 @@ paths:
       responses:
         200:
           description: Get current user information successfully.
-          in: body
           schema:
             $ref: '#/definitions/UserDetail'
         401:
@@ -520,10 +519,12 @@ paths:
           description: Relevant project ID.
         - name: project_member
           in: body
-          type: array
-          description: Members list for adding to relevant project.
+          required: true
           schema:
-            $ref: '#/definitions/UserBrief'
+            type: array
+            items:
+              $ref: '#/definitions/UserBrief'
+          description: Members list for adding to relevant project.
       tags:
         - Products
       responses:
@@ -811,8 +812,7 @@ paths:
           in: path
           description: image name to specify an image.
           required: true
-          type: integer
-          format: int32
+          type: string
         - name: tag_list_page
           in: query
           type: integer
@@ -856,8 +856,7 @@ paths:
           in: path
           description: image name to specify an image.
           required: true
-          type: integer
-          format: int32
+          type: string
         - name: image_tag
           in: body
           required: true
@@ -980,6 +979,112 @@ paths:
           description: User need to log in as admin.
         500:
           description: Unexpected internal errors. 
+  /v1/dashboard:
+    get:
+      summary: Return the status of service, node, storage in dashboard
+      description: |
+        This endpoint returns the status of service, node, storage in dashboard.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the status of service, node, storage.
+          schema:
+            $ref: '#/definitions/Dashboard'
+        400:
+          description: Bad Request.
+        500:
+          description: Internal errors.    
+  /v1/dashboard/service/{service_name}:
+    get:
+      summary: Return the status logs of this service
+      description: |
+        This endpoint returns the status logs of this service.
+      parameters:
+        - name: service_name
+          in: path
+          description: The name for this servcie, 'total' is for the sum of all services.
+          required: true
+          type: string
+        - name: service_timeunit
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/TimeUnit'
+          description: The time unit for status logs of this servcie.       
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the status logs of this service.
+          schema:
+            $ref: '#/definitions/DashboardService'
+        400:
+          description: Bad Request.
+        401:
+          description: Invalid service name.
+        500:
+          description: Internal errors.    
+  /v1/dashboard/node/{node_name}:
+    get:
+      summary: Return the status logs of this node
+      description: |
+        This endpoint returns the status logs of this node.
+      parameters:
+        - name: node_name
+          in: path
+          description: The name for this node, 'total' is for the sum of all nodes.
+          required: true
+          type: string
+        - name: node_timeunit
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/TimeUnit'
+          description: The time unit for status logs of this node.    
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the status logs of this node.
+          schema:
+            $ref: '#/definitions/DashboardNode'
+        400:
+          description: Bad Request.
+        401:
+          description: Invalid node name.
+        500:
+          description: Internal errors.    
+  /v1/dashboard/storage/{storage_name}:
+    get:
+      summary: Return the status logs of this storage
+      description: |
+        This endpoint returns the status logs of this storage.
+      parameters:
+        - name: storage_name
+          in: path
+          description: The name for this storage, 'total' is for the sum of all storages.
+          required: true
+          type: string
+        - name: storage_timeunit
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/TimeUnit'
+          description: The time unit for status logs of this storage.    
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the status logs of this storage.
+          schema:
+            $ref: '#/definitions/DashboardStorage'
+        400:
+          description: Bad Request.
+        401:
+          description: Invalid storage name.
+        500:
+          description: Internal errors.    
 # The following is for structure definition          
 definitions:
   Search:
@@ -1097,7 +1202,7 @@ definitions:
       user_system_admin: 
         type: integer
         description: 1-has system admin, 0-not.
-  UserPtrojecAdminUpdate:
+  UserProjectAdminUpdate:
     type: object
     properties:
       user_project_admin: 
@@ -1255,7 +1360,7 @@ definitions:
         description: The pods information of this service.
         type: array
         items:
-          $ref: '#/definitions/PodsBrief'
+          $ref: '#/definitions/PodBrief'
       service_resource_usage:
         description: The resources usage of this service.
         type: array
@@ -1531,3 +1636,92 @@ definitions:
         type: integer
         format: int32
         description: The email securiy mode, 0 not SSL, 1 is SSL. 
+  Dashboard:
+    type: object
+    properties:
+      dashboard_service:
+        description: The status logs for service.
+        $ref: '#/definitions/DashboardService'
+      dashboard_node:
+        description: The status logs for node.
+        $ref: '#/definitions/DashboardNode'
+      dashboard_storage:
+        description: The status logs for storage.
+        $ref: '#/definitions/DashboardStorage'
+  DashboardService:
+    type: object
+    properties:
+      service_name:
+        type: string
+        description: The name of this service, 'total' is for the sum all services.
+      service_timeunit:
+        type: string
+        description: The time unit of service status logs, minute, hour, day, month.
+      service_count:
+        type: integer
+        format: int32
+        description: The number of the service log based on time unit.
+      service_statuslogs:
+        type: array
+        description: The service status logs based on service_timeunit, count is array length.
+        items:
+          $ref: '#/definitions/PodContainerStatus'
+          description: The pod and container number in this service.
+  PodContainerStatus:
+    type: object
+    properties:
+      pods_number:
+        type: integer
+        format: int32
+        description: The pod number in this service.
+      container_number:
+        type: integer
+        format: int32
+        description: The container number in this service.
+  DashboardNode:
+    type: object
+    properties:
+      node_name:
+        type: string
+        description: The name of this node, 'total' is for the sum all nodes.
+      node_timeunit:
+        type: string
+        description: The time unit of node status logs, minute, hour, day, month.     
+      node_count:
+        type: integer
+        format: int32
+        description: The number of the node logs based on time unit.   
+      node_statuslogs:
+        type: array
+        description: The node status logs based on node_timeunit, count is array length.
+        items:
+          $ref: '#/definitions/ResourcesUsage'
+  DashboardStorage:
+    type: object
+    properties:
+      storage_name:
+        type: string
+        description: The name of this storage, 'total' is for the sum all storages.
+      storage_timeunit:
+        type: string
+        description: The time unit of node status logs, minute, hour, day, month.        
+      stoarge_count:
+        type: integer
+        format: int32
+        description: The number of the storage logs based on time unit. 
+      storage_statuslogs:
+        type: array
+        description: The storage status logs based on storage_timeunit, count is array length.
+        items:
+          $ref: '#/definitions/StorageUsageInfo'    
+  TimeUnit:
+    type: object
+    properties:
+      time_unit:
+        type: string
+        description: The time unit for status logs, minute, hour, day, month.    
+      time_count:
+        type: integer
+        format: int32
+        description: The number of the status logs based on timeunit.
+
