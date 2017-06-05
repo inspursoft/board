@@ -730,6 +730,34 @@ paths:
           description: Node does not exist.
         500:
           description: Internal errors.
+    put:
+      summary: Update node properties.
+      description: |
+       This endpoint is to update node info.
+      parameters:
+        - name: node_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: The node ID for node info changing.
+        - name: node_profile
+          in: body
+          description: The node properties to be changed.
+          required: true
+          schema:
+            $ref: '#/definitions/NodePropertyUpdate' 
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated node properties successfully.
+        400:
+          description: Invalid node ID.
+        403:
+          description: User need to log in as admin.
+        500:
+          description: Unexpected internal errors.
   /v1/node/{node_id}/runningstatus:
     put:
       summary: Start or stop the node
