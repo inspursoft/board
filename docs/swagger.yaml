@@ -289,6 +289,59 @@ paths:
           description: Old password is not correct.
         500:
           description: Unexpected internal errors.
+  /v1/users/{user_id}/token:
+    post:
+      summary: Get JWT token from service.
+      description: |
+        The Login endpoint returns JWT token for registered user. The response is JWT format (https://jwt.io/).
+      parameters:
+        - name: user
+          in: body
+          description: New created user to apply for token.
+          required: true
+          schema:
+            $ref: '#/definitions/UserDetail'
+      tags:
+        - Products
+      responses:
+        200:
+          description: JWT Token.
+          schema:
+            $ref: '#/definitions/Token'
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        500:
+          description: Unexpected internal errors.
+    delete:
+      summary: Delete the JWT token of user.
+      description: |
+        Delete user JWT token.
+      parameters:
+        - name: user_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Registered user ID
+        - name: user_token
+          in: body
+          description: The user token to be deleled.
+          required: true
+          schema:
+            $ref: '#/definitions/Token'
+      tags:
+        - Products
+      responses:
+        200:
+          description: JWT Token was deleted successfully.
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        500:
+          description: Unexpected internal errors.
   /v1/projects:
     get:
       summary: Return projects created by Board.
@@ -1532,6 +1585,9 @@ definitions:
         description: Storage usage information, division by different volume.
         items:
           $ref: '#/definitions/StorageUsageInfo'
+      timestamp:
+        type: string
+        description: The timestamp for resource usage recording.        
   CPUUsageInfo:
     type: object
     description: The usage information of cpu. 
@@ -1576,6 +1632,9 @@ definitions:
       storage_size_unit:
         type: string
         description: The storage unit of measurement.
+      storage_timestamp:
+        type: string
+        description: The timestamp for the storage usage recording.
   ProfileDetail:
     type: object
     description: The profile for Board system.
@@ -1679,6 +1738,9 @@ definitions:
         type: integer
         format: int32
         description: The container number in this service.
+      podcontainer_timestamp:
+        type: string
+        description: The timestamp for the pod and container recording.
   DashboardNode:
     type: object
     properties:
@@ -1725,4 +1787,10 @@ definitions:
         type: integer
         format: int32
         description: The number of the status logs based on timeunit.
-
+  Token:
+    type: object
+    description: The token for Board system.
+    properties:
+      token:
+        type: string
+        description: The JWT format token.
