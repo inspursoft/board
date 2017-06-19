@@ -52,6 +52,24 @@ services:
       options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "apiserver"
+  tokenserver:
+    build:
+      context: ../../
+      dockerfile: make/dev/container/tokenserver/Dockerfile
+    env_file:
+      - container/tokenserver/env
+    restart: always
+    networks:
+      - board
+    ports:
+      - 4000:4000
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "tokenserver"
 networks:
   board:
     external: false

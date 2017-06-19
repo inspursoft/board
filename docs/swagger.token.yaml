@@ -6,7 +6,7 @@ info:
   description: These APIs provide token service for Board project.
   version: "0.1.0"
 # the domain of the service
-host: localhost
+host: localhost:4000
 # array of all schemes that your API supports
 schemes:
   - http
@@ -18,15 +18,15 @@ consumes:
   - text/plain
   - application/json
 paths:
-  /v1/login:
+  /v1/token:
     post:
       summary: Get JWT token from service.
       description: |
-        The Login endpoint returns JWT token for registered user. The response is JWT format (https://jwt.io/).
+        The Token endpoint returns JWT token for registered user. The response is JWT format (https://jwt.io/).
       parameters:
         - name: user
           in: body
-          description: New created user.
+          description: Registered user.
           required: true
           schema:
             $ref: '#/definitions/UserDetail'
@@ -43,37 +43,43 @@ paths:
           description: Unauthorized
         500:
           description: Unexpected internal errors.
-  /v1/register:
-    post:
-      summary: Creates a new user account.
-      description: |
-        This endpoint is to create a user if the user does not already exist.
-      parameters:
-        - name: user
-          in: body
-          description: New created user.
-          required: true
-          schema:
-            $ref: '#/definitions/UserDetail'
-      tags:
-        - Products
-      responses:
-        201:
-          description: User created successfully.
-        400:
-          description: Unsatisfied with constraints of the user creation.
-        403:
-          description: User registration can only be used by admin role user when self-registration is off.
-        500:
-          description: Unexpected internal errors.
 # The following is for structure definition          
 definitions:
   UserDetail:
     type: object
     properties:
+      user_id:
+        type: integer
+        format: int32
+        description: The integer ID of this user.
       user_name:
         type: string
+      user_email:
+        type: string
       user_password:
+        type: string
+      user_realname:
+        type: string
+      user_comment:
+        type: string
+      user_deleted:
+        type: integer
+        format: int32
+      user_system_admin:
+        type: integer 
+        format: int32
+        description: The flag to indicate the role, 1 for system admin, 0 for not project admin
+      user_project_admin:
+        type: integer 
+        format: int32
+        description: The flag to indicate the role, 1 for project admin, 0 for not project admin
+      user_reset_uuid:
+        type: string
+      user_salt:
+        type: string
+      user_creation_time:
+        type: string
+      user_update_time:
         type: string
   Token:
     type: object
