@@ -1,0 +1,37 @@
+<clr-main-container>
+  <header-content></header-content>
+  <div class="content-container">
+    <nav class="sidenav">
+      <section class="sidenav-content">
+        <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/dashboard">
+          {{ 'SIDE_NAV.DASHBOARD' | translate }}
+        </a>
+        <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/services">
+          {{ 'SIDE_NAV.SERVICES' | translate }}
+        </a>
+        <section class="nav-group collapsible">
+          <input id="tabprojects" type="checkbox">
+          <label for="tabprojects" [routerLinkActive]="['active']" routerLink="/projects">{{ 'SIDE_NAV.PROJECTS' | translate }}</label>
+          <ul class="nav-list">
+            <li><a class="nav-link" [routerLinkActive]="['active']" routerLink="/projects/members">{{ 'SIDE_NAV.MEMBERS' | translate }}</a></li>      
+          </ul>
+        </section>
+        <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/nodes">
+          {{ 'SIDE_NAV.NODES' | translate }}
+        </a>
+        <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/images">
+          {{ 'SIDE_NAV.IMAGES' | translate }}
+        </a>
+        <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/admin-options">
+          {{ 'SIDE_NAV.ADMIN_OPTIONS' | translate }}
+        </a>
+        <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/profiles">
+          {{ 'SIDE_NAV.PROFILES' | translate }}
+        </a>
+      </section>
+    </nav>
+    <div class="content-area">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</clr-main-container>

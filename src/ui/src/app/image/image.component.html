@@ -1,0 +1,1 @@
+<h1>Image Component</h1>
