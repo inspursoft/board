@@ -1,0 +1,84 @@
+# this is an example of the Uber API
+# as a demonstration of an API spec in YAML
+swagger: '2.0'
+info:
+  title: Board Token Service API
+  description: These APIs provide token service for Board project.
+  version: "0.1.0"
+# the domain of the service
+host: localhost
+# array of all schemes that your API supports
+schemes:
+  - http
+basePath: /api
+produces:
+  - application/json
+  - text/plain
+consumes:
+  - text/plain
+  - application/json
+paths:
+  /v1/login:
+    post:
+      summary: Get JWT token from service.
+      description: |
+        The Login endpoint returns JWT token for registered user. The response is JWT format (https://jwt.io/).
+      parameters:
+        - name: user
+          in: body
+          description: New created user.
+          required: true
+          schema:
+            $ref: '#/definitions/UserDetail'
+      tags:
+        - Products
+      responses:
+        200:
+          description: JWT Token.
+          schema:
+            $ref: '#/definitions/Token'
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        500:
+          description: Unexpected internal errors.
+  /v1/register:
+    post:
+      summary: Creates a new user account.
+      description: |
+        This endpoint is to create a user if the user does not already exist.
+      parameters:
+        - name: user
+          in: body
+          description: New created user.
+          required: true
+          schema:
+            $ref: '#/definitions/UserDetail'
+      tags:
+        - Products
+      responses:
+        201:
+          description: User created successfully.
+        400:
+          description: Unsatisfied with constraints of the user creation.
+        403:
+          description: User registration can only be used by admin role user when self-registration is off.
+        500:
+          description: Unexpected internal errors.
+# The following is for structure definition          
+definitions:
+  UserDetail:
+    type: object
+    properties:
+      user_name:
+        type: string
+      user_password:
+        type: string
+  Token:
+    type: object
+    description: The token for Board system.
+    properties:
+      token:
+        type: string
+        description: The JWT format token.

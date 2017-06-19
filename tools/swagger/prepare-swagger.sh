@@ -27,10 +27,11 @@ then
 fi
 
 cp ../../docs/swagger.yaml swagger.yaml
+cp ../../docs/swagger.token.yaml swagger.token.yaml
 
 FILE="swagger.tar.gz"
 if ! [ -f $FILE ]; then
-    mkdir yaml vendors
+    mkdir vendors
     echo "Doing some clean up..."
     rm -f *.tar.gz
     echo "Downloading Swagger UI release package..."
@@ -38,16 +39,21 @@ if ! [ -f $FILE ]; then
     echo "Untarring Swagger UI package to the static file path..."
     tar -C ./vendors -zxf swagger.tar.gz swagger-ui-2.1.4/dist
     echo "Executing some processes..."
-    sed -i.bak 's/http:\/\/petstore\.swagger\.io\/v2\/swagger\.json/'$SCHEME':\/\/'$SERVER_IP'\/yaml\/swagger\.yaml/g' \
+    sed -i.bak 's/http:\/\/petstore\.swagger\.io\/v2\/swagger\.json/'$SCHEME':\/\/'$SERVER_IP'\/swagger\.yaml/g' \
     ./vendors/swagger-ui-2.1.4/dist/index.html
     sed -i.bak '/jsonEditor: false,/a\        validatorUrl: null,' ./vendors/swagger-ui-2.1.4/dist/index.html
-    mkdir -p ./yaml
-    cp swagger.yaml ./yaml
-    sed -i.bak 's/host: localhost/host: '$SERVER_IP'/g' ./yaml/swagger.yaml
-    sed -i.bak 's/  \- http$/  \- '$SCHEME'/g' ./yaml/swagger.yaml
+    
+    cp swagger.yaml ./vendors/swagger-ui-2.1.4/dist
+    cp swagger.token.yaml ./vendors/swagger-ui-2.1.4/dist
+
+    sed -i.bak 's/host: localhost/host: '$SERVER_IP'/g' ./vendors/swagger-ui-2.1.4/dist/swagger.yaml
+    sed -i.bak 's/  \- http$/  \- '$SCHEME'/g' ./vendors/swagger-ui-2.1.4/dist/swagger.yaml
+
+    sed -i.bak 's/host: localhost/host: '$SERVER_IP:4000'/g' ./vendors/swagger-ui-2.1.4/dist/swagger.token.yaml
+    sed -i.bak 's/  \- http$/  \- '$SCHEME'/g' ./vendors/swagger-ui-2.1.4/dist/swagger.token.yaml
+
     echo "Finish preparation for the Swagger UI."
 
 fi
 
-docker run -d -p 80:80 -v "$PWD":/usr/local/apache2/htdocs/ httpd
-echo "Start docker container for Swagger, please visit http://$SERVER_IP/vendors/swagger-ui-2.1.4/dist/index.html."
+echo "Start docker container for Swagger, please visit http://$SERVER_IP/index.html."

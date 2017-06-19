@@ -24,3 +24,7 @@ _testmain.go
 *.test
 *.prof
 
+pkg
+bin
+src/apiserver/apiserver
+src/tokenserver/tokenserver
