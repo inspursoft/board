@@ -27,3 +27,4 @@ _testmain.go
 pkg
 bin
 src/apiserver/apiserver
+src/tokenserver/tokenserver
