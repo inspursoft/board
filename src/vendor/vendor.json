@@ -47,18 +47,6 @@
 			"versionExact": "v1.2"
 		},
 		{
-			"checksumSHA1": "d2mbNX3WqzcRoMGH5LdY0QDJrjM=",
-			"path": "golang.org/x/crypto/bcrypt",
-			"revision": "e7ba82683099cae71475961448ab8f903ea77c26",
-			"revisionTime": "2017-06-03T05:13:44Z"
-		},
-		{
-			"checksumSHA1": "GipPm0KSilTGSNBdJkPgsHoCD/A=",
-			"path": "golang.org/x/crypto/blowfish",
-			"revision": "e7ba82683099cae71475961448ab8f903ea77c26",
-			"revisionTime": "2017-06-03T05:13:44Z"
-		},
-		{
 			"checksumSHA1": "Thg9sicXr23/02y0VqmmJoEZIzI=",
 			"path": "github.com/gorilla/context",
 			"revision": "08b5f424b9271eedf6f9f0ce86cb9396ed337a42",
@@ -73,5 +61,5 @@
 			"versionExact": "v1.4.0"
 		}
 	],
-	"rootPath": "github.com/yhua123/gauth/src"
+	"rootPath": "git/huay/board/src"
 }
