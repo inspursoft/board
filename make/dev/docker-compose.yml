@@ -1,0 +1,57 @@
+version: '2'
+services:
+  log:
+    build:
+      context: ./container/log/
+      dockerfile: Dockerfile
+    restart: always
+    volumes:
+      - /var/log/board/:/var/log/docker/
+    networks:
+      - board
+    ports:
+      - 1514:514
+  mysql:
+    build: 
+      context: ./container/db/
+      dockerfile: Dockerfile
+    restart: always
+    volumes:
+      - /data/board/database:/var/lib/mysql
+    env_file:
+      - ./container/db/env
+    networks:
+      - board
+    ports:
+      - 3306:3306
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "mysql"
+  apiserver:
+    build:
+      context: ../../
+      dockerfile: make/dev/container/apiserver/Dockerfile
+    restart: always
+    volumes:
+      - ../../tools/swagger/vendors/swagger-ui-2.1.4/dist:/go/bin/swagger
+    networks:
+      - board
+    links:
+      - mysql
+    ports: 
+      - 8080:8080
+    depends_on:
+      - log
+      - mysql
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "apiserver"
+networks:
+  board:
+    external: false

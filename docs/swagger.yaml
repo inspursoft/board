@@ -94,6 +94,7 @@ paths:
           description: User does not have permission of admin role.
         500:
           description: Unexpected internal errors.
+  /v1/sign-up:
     post:
       summary: Creates a new user account.
       description: |

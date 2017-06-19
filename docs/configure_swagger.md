@@ -40,10 +40,10 @@ From time to time, you may need to mannually test Board REST API. You can deploy
    ./prepare-swagger.sh
 ```
 
-* Enter the URL of the Swagger page in Board as below. The ```<BOARD_SERVER>``` should be replaced by the IP address or the hostname of the Board server.
+* Enter the URL of the Swagger page in Board as below. The ```<BOARD_SERVER>``` should be replaced by the IP address or the hostname of the Board server. If you setup Swagger after ApiServer started, you should restart ApiServer after configured it.
 
 ```
-  http://<BOARD_SERVER>/vendors/swagger-ui-2.1.4/dist/index.html
+  http://<BOARD_SERVER>/index.html
 ```
 * You should see a Swagger UI page with Board API _swagger.yaml_ file loaded in the same domain, **be aware that your REST request submitted by Swagger may change the data of Board**.
 
