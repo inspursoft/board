@@ -1,0 +1,37 @@
+<clr-header>
+  <div class="branding">
+    <a href="#" class="nav-link">
+    <span class="clr-icon clr-clarity-logo"></span>
+    <img [src]="boardLogoIcon" alt="board-logo"/>
+    </a>
+  </div>
+  <form class="search">
+    <label for="search_input">
+    <input id="search_input" type="text" placeholder="{{ 'HEAD_NAV.INPUT_FOR_SEARCHING' | translate }}...">
+    </label>
+  </form>
+  <div class="header-actions">
+    <clr-dropdown [clrMenuPosition]="'bottom-right'" [clrCloseMenuOnItemClick]="true">
+      <button class="btn btn-link" clrDropdownToggle>
+        {{ currentLang | translate }}
+        <clr-icon shape="caret down"></clr-icon>
+      </button>
+      <clr-dropdown-menu>
+        <a href="javascript:void(0)" (click)="changLanguage('en-us')" clrDropdownItem>{{ 'HEAD_NAV.LANG_EN_US' | translate }}</a>
+        <a href="javascript:void(0)" (click)="changLanguage('zh-cn')" clrDropdownItem>{{ 'HEAD_NAV.LANG_ZH_CN' | translate }}</a>
+      </clr-dropdown-menu>
+    </clr-dropdown>
+    
+    <clr-dropdown [clrMenuPosition]="'bottom-right'" [clrCloseMenuOnItemClick]="true">
+      <button class="btn btn-link" clrDropdownToggle>
+        Admin
+        <clr-icon shape="caret down"></clr-icon>
+      </button>
+      <clr-dropdown-menu>
+        <a href="javascript:void(0)" clrDropdownItem>{{ 'HEAD_NAV.ACCOUNT_SETTINGS' | translate }}</a>
+        <a href="javascript:void(0)" clrDropdownItem>{{ 'HEAD_NAV.CHANGE_PASSWORD' | translate }}</a>
+        <a href="javascript:void(0)" clrDropdownItem>{{ 'HEAD_NAV.LOG_OUT' | translate }}</a>
+      </clr-dropdown-menu>
+    </clr-dropdown>
+  </div>
+</clr-header>

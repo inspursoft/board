@@ -28,3 +28,5 @@ pkg
 bin
 src/apiserver/apiserver
 src/tokenserver/tokenserver
+src/ui/node_modules
+

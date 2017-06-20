@@ -1,0 +1,56 @@
+.circle {
+    display: inline-block;
+    background-color:#fff;
+    border:3px solid #0066ff;    
+    height:120px;
+    border-radius:50%;
+    -moz-border-radius:50%;
+    -webkit-border-radius:50%;
+    width:120px;
+    position: relative;
+    float: left;
+}
+
+.image-icon {
+  position: relative;
+  top: 18px;
+  width: 95%;
+}
+
+.icon-description {
+  float: left;
+  position: relative;
+  display: inline-block;
+  top: 110px;
+  left: -85px;
+}
+
+.stat-panel {
+  float: left; 
+  position: relative; 
+  display: inline-block; 
+  margin-left: -24px;
+  margin-right: 24px;
+
+}
+
+.stat-panel-title {
+  float: right;
+  margin-bottom: 32px;
+}
+
+.stat-panel-title-font {
+  font-weight: bold;
+}
+
+.stat-panel-value-font {
+  font-size: 24pt;
+  margin-left: 10px;
+  display: inline-block;
+}
+
+.split-line {
+  border-right: 1px solid #ccc;
+  display: inline-block;
+  height: 150px;
+}
