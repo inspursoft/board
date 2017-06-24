@@ -1,0 +1,55 @@
+.custom-row {
+  width: 580px;
+  height: 175px;
+}
+
+.custom-top {
+  top: 80px;
+}
+
+.custom-left {
+  left: 120px;
+}
+
+.background {
+  background-image: url('../../../images/sign-in-background.jpg');
+  background-repeat: no-repeat;
+}
+
+.circle {
+  background-image: url('../../../images/circle-background.png');
+  background-repeat: no-repeat;
+  height: 132px;
+  width: 132px;
+}
+
+.sign-in-background {
+  background-image: url('../../../images/sign-in-pad.png');
+  background-repeat: no-repeat;
+  height: 100%;
+  width: 100%
+}
+
+.icon-description {
+  position: relative;
+  left: 42px;
+  margin-top: 0;
+  color: #ffffff;
+}
+
+.icon-pos {
+  position: relative;
+}
+
+.icon-size {
+  width: 90px;
+  height: 70px;
+}
+
+.custom-row-columns {
+  top: 90px;
+  position: relative;
+  left: 120px;
+  width: 520px;
+  height: 135px;
+}

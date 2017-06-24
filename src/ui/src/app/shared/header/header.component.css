@@ -1,0 +1,19 @@
+.clr-icon .clr-clarity-logo {
+  background-image: url(../../../images/board.png);
+}
+
+:host >>>.header {
+  background-color: #004a70;
+}
+
+.signInBackground {
+  background-color: #ffffff;
+}
+
+.signInForecolor input[type='text'] {
+  color: black;
+}
+
+.signInForecolor >>> .dropdown > .dropdown-toggle {
+  color: black;
+}

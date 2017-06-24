@@ -4,8 +4,7 @@ import { TranslateService } from '@ngx-translate/core';
 
 @Component({
     selector: 'board-app',
-    templateUrl: './app.component.html',
-    styleUrls: ['./app.component.scss']
+    templateUrl: './app.component.html'
 })
 export class AppComponent {
     constructor(private translateService: TranslateService) {

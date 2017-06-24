@@ -1,8 +1,8 @@
-<clr-header>
+<clr-header [class.signInBackground]="!hasSignedIn"  [class.signInForecolor]="!hasSignedIn">
   <div class="branding">
-    <a href="#" class="nav-link">
+    <a href="javascript:void(0)" class="nav-link">
     <span class="clr-icon clr-clarity-logo"></span>
-    <img [src]="boardLogoIcon" alt="board-logo"/>
+    <img [src]="brandLogoUrl" alt="board-logo"/>
     </a>
   </div>
   <form class="search">
@@ -10,7 +10,7 @@
     <input id="search_input" type="text" placeholder="{{ 'HEAD_NAV.INPUT_FOR_SEARCHING' | translate }}...">
     </label>
   </form>
-  <div class="header-actions">
+  <div class="header-actions" [class.signInForecolor]="!hasSignedIn">
     <clr-dropdown [clrMenuPosition]="'bottom-right'" [clrCloseMenuOnItemClick]="true">
       <button class="btn btn-link" clrDropdownToggle>
         {{ currentLang | translate }}
@@ -21,8 +21,7 @@
         <a href="javascript:void(0)" (click)="changLanguage('zh-cn')" clrDropdownItem>{{ 'HEAD_NAV.LANG_ZH_CN' | translate }}</a>
       </clr-dropdown-menu>
     </clr-dropdown>
-    
-    <clr-dropdown [clrMenuPosition]="'bottom-right'" [clrCloseMenuOnItemClick]="true">
+    <clr-dropdown [hidden]="!hasSignedIn" [clrMenuPosition]="'bottom-right'" [clrCloseMenuOnItemClick]="true">
       <button class="btn btn-link" clrDropdownToggle>
         Admin
         <clr-icon shape="caret down"></clr-icon>

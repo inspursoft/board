@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { TranslateService, LangChangeEvent } from '@ngx-translate/core';
 
 
@@ -10,9 +10,10 @@ import { TranslateService, LangChangeEvent } from '@ngx-translate/core';
 export class HeaderComponent {
 
   currentLang: string;
+  @Input() hasSignedIn: boolean;
 
-  get boardLogoIcon(): string {
-    return '../../images/board.png';
+  get brandLogoUrl(): string {
+    return this.hasSignedIn ? '../../../images/board.png': '../../images/board-blue.jpg';
   }
 
   constructor(private translateService: TranslateService) {
