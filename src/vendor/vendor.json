@@ -3,63 +3,83 @@
 	"ignore": "test",
 	"package": [
 		{
+			"path": "appengine",
+			"revision": ""
+		},
+		{
 			"path": "appengine/cloudsql",
 			"revision": ""
 		},
 		{
-			"checksumSHA1": "PQX08ofGP9Ew9/r0WBABuHXiwiU=",
+			"path": "appengine_internal",
+			"revision": ""
+		},
+		{
+			"path": "appengine_internal/base",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "ZaRth9xGaP46N4Wg72Z/9N0nH1o=",
+			"path": "github.com/astaxie/beego/orm",
+			"revision": "cab8458c1c4a5a3b4bf5192922be620e6dede15b",
+			"revisionTime": "2017-05-19T13:19:18Z"
+		},
+		{
 			"path": "github.com/dgrijalva/jwt-go",
-			"revision": "d2709f9f1f31ebcda9651b03077758c1f3a0018c",
-			"revisionTime": "2016-06-16T19:15:56Z",
-			"version": "v3.0.0",
-			"versionExact": "v3.0.0"
+			"revision": ""
 		},
 		{
-			"checksumSHA1": "+KAZo59QwjAKMjL5pVvBe5y/xuQ=",
-			"path": "github.com/dgrijalva/jwt-go/request",
-			"revision": "d2709f9f1f31ebcda9651b03077758c1f3a0018c",
-			"revisionTime": "2016-06-16T19:15:56Z",
-			"version": "v3.0.0",
-			"versionExact": "v3.0.0"
-		},
-		{
-			"checksumSHA1": "3MVpdOJeYMtVHozeas+cYniyLvA=",
-			"path": "github.com/dgrijalva/jwt-go/test",
-			"revision": "d2709f9f1f31ebcda9651b03077758c1f3a0018c",
-			"revisionTime": "2016-06-16T19:15:56Z",
-			"version": "v3.0.0",
-			"versionExact": "v3.0.0"
-		},
-		{
-			"checksumSHA1": "fTw0VmWcoz28UZuOaeidmouucEM=",
+			"checksumSHA1": "6unGicJhBKC7C7Hpsi+gJX68rzg=",
 			"path": "github.com/go-sql-driver/mysql",
-			"revision": "a732e14c62dde3285440047bba97581bc472ae18",
-			"revisionTime": "2014-06-03T19:46:42Z",
-			"version": "v1.2",
-			"versionExact": "v1.2"
+			"revision": "a825be04c652d01442384e9dcdf2cdc3f1eda67f",
+			"revisionTime": "2017-06-10T20:04:23Z"
 		},
 		{
-			"checksumSHA1": "xTcDS8vfcXH9+HZi29cpTg82CzM=",
-			"path": "github.com/go-sql-driver/mysql",
-			"revision": "a732e14c62dde3285440047bba97581bc472ae18",
-			"revisionTime": "2014-06-03T19:46:42Z",
-			"version": "v1.2",
-			"versionExact": "v1.2"
-		},
-		{
-			"checksumSHA1": "Thg9sicXr23/02y0VqmmJoEZIzI=",
 			"path": "github.com/gorilla/context",
-			"revision": "08b5f424b9271eedf6f9f0ce86cb9396ed337a42",
-			"revisionTime": "2016-08-17T18:46:32Z"
+			"revision": ""
 		},
 		{
-			"checksumSHA1": "OoZn8U8/A5Vz98f0GbowTUgTA2Y=",
+			"checksumSHA1": "6PQFibmHgsXFHoRQPmkw2V+59Lk=",
 			"path": "github.com/gorilla/mux",
-			"revision": "bcd8bc72b08df0f70df986b97f95590779502d31",
-			"revisionTime": "2017-05-21T04:50:13Z",
-			"version": "v1.4.0",
-			"versionExact": "v1.4.0"
+			"revision": "18fca31550181693b3a834a15b74b564b3605876",
+			"revisionTime": "2017-05-30T19:55:47Z"
+		},
+		{
+			"path": "golang.org/x/net/context",
+			"revision": ""
+		},
+		{
+			"path": "google.golang.org/appengine",
+			"revision": ""
+		},
+		{
+			"path": "google.golang.org/appengine/internal/app_identity",
+			"revision": ""
+		},
+		{
+			"path": "google.golang.org/appengine/internal/base",
+			"revision": ""
+		},
+		{
+			"path": "google.golang.org/appengine/internal/datastore",
+			"revision": ""
+		},
+		{
+			"path": "google.golang.org/appengine/internal/log",
+			"revision": ""
+		},
+		{
+			"path": "google.golang.org/appengine/internal/remote_api",
+			"revision": ""
+		},
+		{
+			"path": "google.golang.org/appengine/internal/urlfetch",
+			"revision": ""
+		},
+		{
+			"path": "google.golang.org/appengine/urlfetch",
+			"revision": ""
 		}
 	],
-	"rootPath": "git/huay/board/src"
+	"rootPath": "git/inspursoft/board/src"
 }

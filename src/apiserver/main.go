@@ -1,7 +1,7 @@
 package main
 
 import (
-	"apiserver/controller"
+	"git/inspursoft/board/src/apiserver/controller"
 	"net/http"
 )
 

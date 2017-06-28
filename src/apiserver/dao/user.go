@@ -1,7 +1,7 @@
 package dao
 
 import (
-	"apiserver/model"
+	"git/inspursoft/board/src/common/model"
 
 	"github.com/astaxie/beego/orm"
 )

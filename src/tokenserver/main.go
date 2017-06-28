@@ -8,9 +8,9 @@ import (
 	"os"
 	"time"
 
-	"git/inspursoft/board/src/common/models"
+	"git/inspursoft/board/src/common/model"
 
-	"github.com/dgrijalva/jwt-go"
+	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 )
 
@@ -28,7 +28,7 @@ func token(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
-	user := new(models.User)
+	user := new(model.User)
 
 	err = json.NewDecoder(r.Body).Decode(&user)
 
