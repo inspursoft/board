@@ -1,40 +1,43 @@
+:host >>> .main-container {
+  height: inherit;
+}
+
 .custom-row {
   width: 580px;
-  height: 175px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .custom-top {
   top: 80px;
 }
 
-.custom-left {
-  left: 120px;
-}
-
 .background {
-  background-image: url('../../../images/sign-in-background.jpg');
-  background-repeat: no-repeat;
+  background: url('../../../images/sign-in-background.jpg');
+  background-size: cover;
+  height: 548px;
 }
 
 .circle {
-  background-image: url('../../../images/circle-background.png');
-  background-repeat: no-repeat;
+  background: no-repeat url('../../../images/circle-background.png');
   height: 132px;
   width: 132px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .sign-in-background {
-  background-image: url('../../../images/sign-in-pad.png');
-  background-repeat: no-repeat;
-  height: 100%;
-  width: 100%
+  background: url('../../../images/sign-in-pad.png');
+  height: 356px;
+  width: 300px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .icon-description {
-  position: relative;
-  left: 42px;
   margin-top: 0;
   color: #ffffff;
+  text-align: center;
 }
 
 .icon-pos {
@@ -47,9 +50,38 @@
 }
 
 .custom-row-columns {
-  top: 90px;
+  top: 120px;
   position: relative;
-  left: 120px;
   width: 520px;
   height: 135px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.custom-sign-in-top {
+  top: 40px;
+}
+
+.custom-sign-in-title {
+  position: relative;
+  margin-left: auto;
+  width: 50px;
+  margin-right: auto;
+  top: 30px;
+  color: #007CBB;
+}
+
+.custom-sign-in-input {
+  position: relative;
+  top: 80px;
+}
+
+.custom-input-padding {
+  padding-left: 48px;
+}
+
+.custom-down-padding {
+  float: right;
+  padding-left: 0;
+  padding-right: 24px;
 }

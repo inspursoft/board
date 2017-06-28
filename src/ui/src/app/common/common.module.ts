@@ -12,22 +12,7 @@ import { ImageModule } from '../image/image.module';
 import { AdminOptionModule } from '../admin-option/admin-option.module';
 import { ProfileModule } from '../profile/profile.module';
 
-import { ClarityModule } from 'clarity-angular';
-import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
-
-import { CustomTranslateLoader } from '../i18n/custom-translate-loader';
-
-
 @NgModule({
-  imports: [
-    ClarityModule.forRoot(),
-    TranslateModule.forRoot({
-      loader: {
-        provide: TranslateLoader,
-        useClass: CustomTranslateLoader
-      }
-    })
-  ],
   exports: [
     AccountModule,
     MainContentModule,

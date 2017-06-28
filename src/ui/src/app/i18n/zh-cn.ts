@@ -1,4 +1,11 @@
 export const LANG_ZH_CN = {
+  "ACCOUNT": {
+    "SIGN_IN": "登录",
+    "USERNAME_PLACEHOLDER": "用户名／邮箱",
+    "PASSWORD_PLACEHOLDER": "密码",
+    "SIGN_UP": "立即注册",
+    "FORGOT_PASSWORD": "忘记密码"
+  },
   "HEAD_NAV": {
     "INPUT_FOR_SEARCHING": "输入搜索内容",
     "CHANGE_PASSWORD": "修改密码",

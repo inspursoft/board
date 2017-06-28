@@ -20,7 +20,7 @@ import { ProfileComponent } from './profile/profile.component';
 export const ROUTES: Routes = [
     { path: '', redirectTo: 'sign-in', pathMatch: 'full' },
     { path: 'sign-in', component: SignInComponent },
-      { path: '', component: MainContentComponent, children: [
+    { path: '', component: MainContentComponent, children: [
         { path: 'dashboard', component: DashboardComponent },
         { path: 'nodes', component: NodeComponent },
         { path: 'projects',  
