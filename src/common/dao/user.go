@@ -39,6 +39,7 @@ func GetUser(user model.User, fieldNames ...string) (*model.User, error) {
 		}
 		return nil, err
 	}
+
 	return &user, err
 }
 
