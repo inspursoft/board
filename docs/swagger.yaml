@@ -1787,6 +1787,9 @@ definitions:
         type: integer
         format: int32
         description: The number of the status logs based on timeunit.
+      timestamp_base:
+        type: string
+        description: The base timestamp for record checking.        
   Token:
     type: object
     description: The token for Board system.
