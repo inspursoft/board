@@ -1,10 +1,10 @@
 package controller
 
 import (
-	"apiserver/model"
-	"apiserver/service"
 	"encoding/json"
 	"fmt"
+	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/common/model"
 	"net/http"
 	"strconv"
 	"strings"
