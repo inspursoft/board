@@ -1,9 +1,9 @@
 package service
 
 import (
-	"apiserver/dao"
-	"apiserver/model"
 	"errors"
+	"git/inspursoft/board/src/apiserver/dao"
+	"git/inspursoft/board/src/common/model"
 	"log"
 )
 
