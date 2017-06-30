@@ -19,4 +19,4 @@ import { ProfileModule } from '../profile/profile.module';
     ProfileModule
   ]
 })
-export class CommonModule {}
+export class FeatureModule {}
