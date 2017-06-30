@@ -1,10 +1,12 @@
-import { Component, ViewChild, OnDestroy } from '@angular/core';
-
+import { Component, OnDestroy } from '@angular/core';
+import { Router } from '@angular/router';
 import { SignIn } from './sign-in';
 import { ConfirmationMessage } from '../../shared/service/confirmation-message';
 import { MessageService } from '../../shared/service/message.service';
 
 import { Subscription } from 'rxjs/Subscription';
+
+import { AccountService } from '../account.service';
 
 @Component({
   templateUrl: './sign-in.component.html',
@@ -12,25 +14,40 @@ import { Subscription } from 'rxjs/Subscription';
 })
 export class SignInComponent implements OnDestroy {
 
-  @ViewChild('signInForm') currentForm;
-
   signInUser: SignIn = new SignIn();
   
   _subscription: Subscription;
 
-  constructor(private messageService: MessageService) {
+  constructor(
+    private messageService: MessageService, 
+    private accountService: AccountService,
+    private router: Router) {
     this._subscription = this.messageService.messageConfirmed$.subscribe((message: any)=>{
       let confirm: ConfirmationMessage = <ConfirmationMessage>message;
-      alert('Received:' + JSON.stringify(confirm));
+      console.error('Received:' + JSON.stringify(confirm));
     })
   }
 
   signIn(): void {
-    let m: ConfirmationMessage = new ConfirmationMessage();
-    m.title = 'Sign In';
-    m.message = 'Sign in success.';
-    this.messageService.announceMessage(m);
-    this.currentForm.reset();
+    this.accountService
+      .signIn(this.signInUser.username, this.signInUser.password)
+      .then(res=>{
+          this.router.navigate(['/dashboard']);
+      })
+      .catch(err=>{
+        let m: ConfirmationMessage = new ConfirmationMessage();
+        m.title = 'Error';
+        if(err && err.status === 400) {
+          m.message = 'Incorrect username or password';
+        } else {
+          m.message = 'Sign in failed:' + (err && err.status);
+        }
+        this.messageService.announceMessage(m);
+      });
+  }
+
+  signUp(): void {
+    this.router.navigate(['/sign-up']);
   }
 
   ngOnDestroy(): void {

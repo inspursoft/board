@@ -5,6 +5,9 @@ import { ChartComponent } from './chart/chart.component';
 import { HeaderComponent } from './header/header.component';
 import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-dialog.component';
 
+import { CheckItemExistingDirective } from './directives/check-item-existing.directive';
+import { CheckItemIdenticalDirective } from './directives/check-item-identical.directive';
+
 import { MessageService } from './service/message.service';
 
 @NgModule({
@@ -15,13 +18,17 @@ import { MessageService } from './service/message.service';
   declarations: [
     ChartComponent,
     HeaderComponent, 
-    ConfirmationDialogComponent
+    ConfirmationDialogComponent,
+    CheckItemExistingDirective,
+    CheckItemIdenticalDirective
   ],
   exports: [
     CoreModule,
     ChartComponent,
     HeaderComponent,
-    ConfirmationDialogComponent
+    ConfirmationDialogComponent,
+    CheckItemExistingDirective,
+    CheckItemIdenticalDirective
   ],
   providers: [
     MessageService

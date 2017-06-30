@@ -1,0 +1,115 @@
+<clr-main-container>
+  <header-content [isSignIn]="false" [hasSignedIn]="false"></header-content>
+  <div class="content-container background">
+    <confirmation-dialog></confirmation-dialog>
+    <div class="content-area">
+      <form #signUpForm="ngForm" (ngSubmit)="signUp()">
+        <section class="form-block">
+          <div class="form-group">
+            <label for="txtUsername"><span class="asterisk">*</span>Username</label>
+            <label for="txtUsername"
+                aria-haspopup="true"
+                role="tooltip"
+                class="tooltip tooltip-validation tooltip-md"
+                [class.invalid]="usernameInput.invalid && (usernameInput.dirty || usernameInput.touched)">
+                <input type="text" id="txtUsername" placeholder="Input username"
+                required checkItemExisting="signUpModel.username" [targetName]="username"
+                name="username"
+                [(ngModel)]="signUpModel.username"
+                #usernameInput="ngModel">
+                <span class="tooltip-content" *ngIf="usernameInput.errors && usernameInput.errors.required">
+                Username is Required.
+                </span>
+                <span class="tooltip-content" *ngIf="usernameInput.errors && usernameInput.errors.checkItemExisting">
+                Username already exists.
+                </span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label for="txtEmail"><span class="asterisk">*</span>Email</label>
+            <label for="txtEmail"
+                aria-haspopup="true"
+                role="tooltip"
+                class="tooltip tooltip-validation tooltip-md"
+                [class.invalid]="emailInput.invalid && (emailInput.dirty || emailInput.touched)">
+                <input type="email" id="txtEmail" placeholder="Input email"
+                required
+                email
+                name="email"
+                [(ngModel)]="signUpModel.email"
+                #emailInput="ngModel">
+                <span class="tooltip-content" *ngIf="emailInput.errors && emailInput.errors.required">
+                Email is Required.
+                </span>
+                <span class="tooltip-content" *ngIf="emailInput.errors && emailInput.errors.email">
+                Email is illegal.
+                </span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label for="txtPassword"><span class="asterisk">*</span>Password</label>
+            <label for="txtPassword"
+                aria-haspopup="true"
+                role="tooltip"
+                class="tooltip tooltip-validation tooltip-md"
+                [class.invalid]="passwordInput.invalid && (passwordInput.dirty || passwordInput.touched)">
+                <input type="password" id="txtPassword" placeholder="Input password"
+                required
+                name="password"
+                [(ngModel)]="signUpModel.password"
+                #passwordInput="ngModel">
+                <span class="tooltip-content">
+                Password is Required.
+                </span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label for="txtConfirmPassword"><span class="asterisk">*</span>Confirm Password</label>
+            <label for="txtConfirmPassword"
+                aria-haspopup="true"
+                role="tooltip"
+                class="tooltip tooltip-validation tooltip-md"
+                [class.invalid]="confirmPasswordInput.invalid && (confirmPasswordInput.dirty || confirmPasswordInput.touched)">
+                <input type="password" id="txtConfirmPassword" placeholder="Input confirm password"
+                required checkItemIdentical="signUpModel.confirmPassword" [comparison]="signUpModel.password"
+                name="confirmPassword"
+                [(ngModel)]="signUpModel.confirmPassword"
+                #confirmPasswordInput="ngModel">
+                <span class="tooltip-content" *ngIf="confirmPasswordInput.errors && confirmPasswordInput.errors.checkItemIdentical">
+                Passwords are not identical.
+                </span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label for="txtComment">Comment</label>
+            <label for="txtComment"
+                aria-haspopup="true"
+                role="tooltip"
+                class="tooltip tooltip-validation tooltip-md"
+                [class.invalid]="commentInput.invalid && (commentInput.dirty || commentInput.touched)">
+                <input type="text" id="txtComment"
+                name="comment"
+                [(ngModel)]="signUpModel.comment"
+                #commentInput="ngModel">
+            </label>
+          </div>
+          <div class="form-group">
+            <label for="txtNotice"></label>
+            <label for="txtNotice"><span class="asterisk">*</span> Required item.</label>
+          </div>
+          <div class="form-group">
+            <label></label>
+            <button type="submit" class="btn btn-primary" [disabled]="signUpForm.invalid">Sign Up</button>&nbsp;&nbsp;
+            <button type="button" class="btn btn-default" (click)="goBack()">Back</button>
+          </div>
+        </section>
+        
+      </form>     
+    </div>
+    <nav class="sidenav">
+     <section class="sidenav-content">
+       <a href="javascript:void(0)" class="nav-link active">Register</a>
+     </section>
+    </nav>
+  </div>
+</clr-main-container>

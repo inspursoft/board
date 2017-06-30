@@ -7,6 +7,7 @@ import { ModuleWithProviders } from '@angular/core/src/metadata/ng_module';
 import { Routes, RouterModule } from '@angular/router';
 
 import { SignInComponent } from './account/sign-in/sign-in.component';
+import { SignUpComponent } from './account/sign-up/sign-up.component';
 import { MainContentComponent } from './main-content/main-content.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { NodeComponent } from './node/node.component';
@@ -20,6 +21,7 @@ import { ProfileComponent } from './profile/profile.component';
 export const ROUTES: Routes = [
     { path: '', redirectTo: 'sign-in', pathMatch: 'full' },
     { path: 'sign-in', component: SignInComponent },
+    { path: 'sign-up', component: SignUpComponent },
     { path: '', component: MainContentComponent, children: [
         { path: 'dashboard', component: DashboardComponent },
         { path: 'nodes', component: NodeComponent },

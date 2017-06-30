@@ -1,4 +1,6 @@
 import { Component, Input } from '@angular/core';
+import { Router } from '@angular/router';
+
 import { TranslateService, LangChangeEvent } from '@ngx-translate/core';
 
 
@@ -10,25 +12,43 @@ import { TranslateService, LangChangeEvent } from '@ngx-translate/core';
 export class HeaderComponent {
 
   currentLang: string;
+  @Input() isSignIn: boolean;
   @Input() hasSignedIn: boolean;
 
   get brandLogoUrl(): string {
-    return this.hasSignedIn ? '../../../images/board.png': '../../images/board-blue.jpg';
+    return this.isSignIn ? '../../images/board-blue.jpg': '../../../images/board.png';
   }
 
-  constructor(private translateService: TranslateService) {
-    this.currentLang = 'HEAD_NAV.LANG_EN_US';
+  constructor(
+    private router: Router,
+    private translateService: TranslateService) {
+    let lang: string = this.translateService.getBrowserCultureLang();
+    this._assertLanguage(lang);
   }
 
-  changLanguage(lang: string) {
-    this.translateService.use(lang);
+  _assertLanguage(lang: string) {
+    lang = lang.toLowerCase();
     switch(lang) {
+    case 'en':
     case 'en-us':
+      lang = 'en-us';
       this.currentLang = 'HEAD_NAV.LANG_EN_US';
       break;
+
+    case 'zh':
     case 'zh-cn': 
+      lang = 'zh-cn';
       this.currentLang = 'HEAD_NAV.LANG_ZH_CN';
       break;
     }
+    this.translateService.use(lang);
+  }
+
+  changLanguage(lang: string) {
+    this._assertLanguage(lang);
+  }
+
+  logOut() {
+    this.router.navigate(['/sign-in']);
   }
 }

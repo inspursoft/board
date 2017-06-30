@@ -77,11 +77,10 @@
 }
 
 .custom-input-padding {
-  padding-left: 48px;
+  padding-left: 36px;
 }
 
 .custom-down-padding {
   float: right;
-  padding-left: 0;
-  padding-right: 24px;
+  padding-right: 12px;
 }

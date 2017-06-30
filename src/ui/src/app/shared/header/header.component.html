@@ -1,4 +1,4 @@
-<clr-header [class.signInBackground]="!hasSignedIn"  [class.signInForecolor]="!hasSignedIn">
+<clr-header [class.signInBackground]="isSignIn"  [class.signInForecolor]="isSignIn">
   <div class="branding">
     <a href="javascript:void(0)" class="nav-link">
     <span class="clr-icon clr-clarity-logo"></span>
@@ -10,7 +10,7 @@
     <input id="search_input" type="text" placeholder="{{ 'HEAD_NAV.INPUT_FOR_SEARCHING' | translate }}...">
     </label>
   </form>
-  <div class="header-actions" [class.signInForecolor]="!hasSignedIn">
+  <div class="header-actions" [class.signInForecolor]="isSignIn">
     <clr-dropdown [clrMenuPosition]="'bottom-right'" [clrCloseMenuOnItemClick]="true">
       <button class="btn btn-link" clrDropdownToggle>
         {{ currentLang | translate }}
@@ -29,7 +29,7 @@
       <clr-dropdown-menu>
         <a href="javascript:void(0)" clrDropdownItem>{{ 'HEAD_NAV.ACCOUNT_SETTINGS' | translate }}</a>
         <a href="javascript:void(0)" clrDropdownItem>{{ 'HEAD_NAV.CHANGE_PASSWORD' | translate }}</a>
-        <a href="javascript:void(0)" clrDropdownItem>{{ 'HEAD_NAV.LOG_OUT' | translate }}</a>
+        <a href="javascript:void(0)" clrDropdownItem (click)="logOut()">{{ 'HEAD_NAV.LOG_OUT' | translate }}</a>
       </clr-dropdown-menu>
     </clr-dropdown>
   </div>
