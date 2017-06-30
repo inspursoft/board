@@ -8,7 +8,7 @@ import (
 )
 
 const root = "/"
-const apiprefix = "/api/v1/"
+const apiprefix = "/api/v1"
 
 func ConfigRouters() *mux.Router {
 	var r *mux.Router = mux.NewRouter()

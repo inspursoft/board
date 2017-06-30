@@ -2,7 +2,7 @@ package service
 
 import (
 	"errors"
-	"git/inspursoft/board/src/apiserver/dao"
+	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"log"
 )
