@@ -65,10 +65,10 @@
                     </clr-dropdown>
                 </div>
                 <div style="color: red; justify-self: flex-end">
-                    pods:--
+                    pods:{{curData[curData.length - 1][1]}}
                 </div>
                 <div style="color: blue;justify-self: flex-end">
-                    containers:--
+                    containers:{{curDataOther[curDataOther.length - 1][1]}}
                 </div>
             </div>
             <div style="flex-basis: 100%;display: flex;flex-direction: column">
@@ -117,7 +117,7 @@
                     <label><input style="margin: 10px" name="timeSpace" type="radio" value=""/>1min</label>
                 </div>
                 <div style="flex-basis: 100%;">
-                    <div echarts [options]="serviceOptions" style="height: 285px;"></div>
+                    <div echarts [options]="serviceOptionsOther" style="height: 285px;"></div>
                 </div>
             </div>
         </div>
@@ -152,7 +152,7 @@
                     <label><input style="margin: 10px" name="timeSpace" type="radio" value=""/>1min</label>
                 </div>
                 <div style="flex-basis: 100%;">
-                    <div echarts [options]="serviceOptions" style="height: 285px;"></div>
+                    <div echarts [options]="serviceOptionsOther" style="height: 285px;"></div>
                 </div>
             </div>
         </div>
