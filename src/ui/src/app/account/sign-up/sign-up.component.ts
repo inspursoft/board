@@ -36,11 +36,11 @@ export class SignUpComponent {
       .then(res=>this.router.navigate(['/sign-in']))
       .catch(err=>{
         let m: ConfirmationMessage = new ConfirmationMessage();
-        m.title = "Error";
+        m.title = "ACCOUNT.ERROR";
         if(err && err.status === 409) {
-          m.message = 'Username or password already exists.';
+          m.message = 'ACCOUNT.USERNAME_ALREADY_EXISTS';
         } else {
-          m.message = "Failed to sign up.";
+          m.message = "ACCOUNT.FAILED_TO_SIGN_UP";
         }
         this.messageService.announceMessage(m);
       });

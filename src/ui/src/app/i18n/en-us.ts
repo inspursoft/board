@@ -1,10 +1,39 @@
 export const LANG_EN_US = {
+  "BUTTON": {
+    "OK": "OK",
+    "YES": "Yes",
+    "NO": "No",
+    "CONFIRM": "Confirm",
+    "CANCEL": "Cancel"
+  },
   "ACCOUNT": {
     "SIGN_IN": "Sign In",
     "USERNAME_PLACEHOLDER": "Username/Email",
     "PASSWORD_PLACEHOLDER": "Password",
     "SIGN_UP": "Sign Up",
-    "FORGOT_PASSWORD": "Forgot Password"
+    "FORGOT_PASSWORD": "Forgot Password",
+    "USERNAME": "Username",
+    "INPUT_USERNAME": "Input username",
+    "EMAIL": "Email",
+    "INPUT_EMAIL": "Input email",
+    "PASSWORD": "Password",
+    "INPUT_PASSWORD": "Input password",
+    "CONFIRM_PASSWORD": "Confirm Password",
+    "INPUT_CONFIRM_PASSWORD": "Input confirm password",
+    "COMMENT": "Comment",
+    "REQUIRED_ITEMS": "Required items.",
+    "BACK": "Back",
+    "REGISTER": "Register",
+    "USERNAME_IS_REQUIRED": "Username is required.",
+    "USERNAME_ALREADY_EXISTS": "Username already exists.",
+    "EMAIL_IS_REQUIRED": "Email is required.",
+    "EMAIL_IS_ILLEGAL": "Email is illegal.",
+    "PASSWORD_IS_REQUIRED": "Password is required.",
+    "PASSWORDS_ARE_NOT_IDENTICAL": "Passwords are not identical.",
+    "ERROR": "Error",
+    "INCORRECT_USERNAME_OR_PASSWORD": "Incorrect username or password.",
+    "FAILED_TO_SIGN_IN": "Failed to sign in:",
+    "FAILED_TO_SIGN_UP": "Failed to sign up:"
   },
   "HEAD_NAV": {
     "INPUT_FOR_SEARCHING": "Input for searching.",

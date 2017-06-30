@@ -1,10 +1,39 @@
 export const LANG_ZH_CN = {
+  "BUTTON": {
+    "OK": "好",
+    "YES": "是",
+    "NO": "否",
+    "CONFIRM": "确定",
+    "CANCEL": "取消"
+  },
   "ACCOUNT": {
     "SIGN_IN": "登录",
     "USERNAME_PLACEHOLDER": "用户名／邮箱",
     "PASSWORD_PLACEHOLDER": "密码",
     "SIGN_UP": "立即注册",
-    "FORGOT_PASSWORD": "忘记密码"
+    "FORGOT_PASSWORD": "忘记密码",
+    "USERNAME": "用户名",
+    "INPUT_USERNAME": "输入用户名",
+    "EMAIL": "邮箱",
+    "INPUT_EMAIL": "输入邮箱",
+    "PASSWORD": "密码",
+    "INPUT_PASSWORD": "输入密码",
+    "CONFIRM_PASSWORD": "确认密码",
+    "INPUT_CONFIRM_PASSWORD": "输入确认密码",
+    "COMMENT": "备注",
+    "REQUIRED_ITEMS": "为必填项。",
+    "BACK": "返回",
+    "REGISTER": "用户注册",
+    "USERNAME_IS_REQUIRED": "用户名为必填项。",
+    "USERNAME_ALREADY_EXISTS": "用户名已存在。",
+    "EMAIL_IS_REQUIRED": "邮箱为必填项。",
+    "EMAIL_IS_ILLEGAL": "邮箱格式非法。",
+    "PASSWORD_IS_REQUIRED": "密码为必填项。",
+    "PASSWORDS_ARE_NOT_IDENTICAL": "两次密码内容不一致。",
+    "ERROR": "错误",
+    "INCORRECT_USERNAME_OR_PASSWORD": "用户名或密码错误。",
+    "FAILED_TO_SIGN_IN": "登录失败:",
+    "FAILED_TO_SIGN_UP": "注册失败:"
   },
   "HEAD_NAV": {
     "INPUT_FOR_SEARCHING": "输入搜索内容",

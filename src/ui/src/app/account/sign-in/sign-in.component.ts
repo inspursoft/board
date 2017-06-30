@@ -36,11 +36,11 @@ export class SignInComponent implements OnDestroy {
       })
       .catch(err=>{
         let m: ConfirmationMessage = new ConfirmationMessage();
-        m.title = 'Error';
+        m.title = 'ACCOUNT.ERROR';
         if(err && err.status === 400) {
-          m.message = 'Incorrect username or password';
+          m.message = 'ACCOUNT.INCORRECT_USERNAME_OR_PASSWORD';
         } else {
-          m.message = 'Sign in failed:' + (err && err.status);
+          m.message = 'ACCOUNT.FAILED_TO_SIGN_IN' + (err && err.status);
         }
         this.messageService.announceMessage(m);
       });

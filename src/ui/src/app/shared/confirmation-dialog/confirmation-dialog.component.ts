@@ -1,6 +1,9 @@
 import { Component, OnDestroy } from '@angular/core';
 
 import { Subscription } from 'rxjs/Subscription';
+
+import { TranslateService } from '@ngx-translate/core';
+
 import { MessageService } from '../service/message.service';
 import { ConfirmationMessage } from '../service/confirmation-message';
 
@@ -16,9 +19,15 @@ export class ConfirmationDialogComponent implements OnDestroy {
   
   _subscription: Subscription
 
-  constructor(private messageService: MessageService) {
+  constructor(
+    private messageService: MessageService,
+    private translateService: TranslateService) {
     this._subscription = this.messageService.messageAnnounced$.subscribe((message: any)=>{
       this.confirmationMessage = <ConfirmationMessage>message;
+      this.translateService.get(this.confirmationMessage.title)
+        .subscribe(res=>this.confirmationMessage.title = res);
+      this.translateService.get(this.confirmationMessage.message)
+        .subscribe(res=>this.confirmationMessage.message = res);
       this.opened = true;
     });
   }

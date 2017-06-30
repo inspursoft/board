@@ -76,7 +76,7 @@
                       class="tooltip tooltip-validation invalid tooltip-sm">
                       <input type="text" name="username" #username="ngModel"  style="width: 225px" required [(ngModel)]="signInUser.username" placeholder="{{ 'ACCOUNT.USERNAME_PLACEHOLDER' | translate }}" />
                       <span class="tooltip-content" *ngIf="username.errors && username.errors.required">
-                        Username is required.
+                      {{ 'ACCOUNT.USERNAME_IS_REQUIRED' | translate }}
                       </span>
                     </label>
                   </div>
@@ -86,7 +86,7 @@
                       class="tooltip tooltip-validation invalid tooltip-sm">
                       <input type="password" name="password" #password="ngModel" style="width: 225px" required [(ngModel)]="signInUser.password" placeholder="{{ 'ACCOUNT.PASSWORD_PLACEHOLDER' | translate }}" />
                       <span class="tooltip-content" *ngIf="password.errors && password.errors.required">
-                        Password is required.
+                      {{ 'ACCOUNT.PASSWORD_IS_REQUIRED' | translate }}
                       </span>
                     </label>
                   </div>
