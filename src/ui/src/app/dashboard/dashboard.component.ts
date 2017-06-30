@@ -8,13 +8,15 @@ import {DatePipe} from "@angular/common";
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
     serviceOptions = {};
-    serviceOptionsOther ={};
+    serviceOptionsOther = {};
     curData: any = [];
     curDataOther: any = [];
     baseDate: Date = new Date();
     oneStepTime: number = 10 * 1000;
+    isTotal: boolean;
 
     ngOnInit() {
+        this.isTotal = true;
         for (let i = 0; i < 11; i++) {
             let arrBuf = [this.getDate(), this.getRandomData()];
             this.curData.push(arrBuf);
@@ -23,6 +25,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
             this.curDataOther.push(arrOther)
         }
     }
+
 
     ngAfterViewInit() {
         this.serviceOptionsOther = {
@@ -114,6 +117,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
                 }
             },
             yAxis: {
+                max: 500,
                 type: 'value',
                 show: true,
                 splitLine: {
@@ -142,10 +146,8 @@ export class DashboardComponent implements OnInit, AfterViewInit {
             ]
         };
         setInterval(() => {
-            this.curData.shift();
             let arrBuf = [this.getDate(), this.getRandomData()];
             this.curData.push(arrBuf);
-            this.curDataOther.shift();
             let arrOther = Array.from(arrBuf);
             arrOther[1] = this.getRandomDataOther();
             this.curDataOther.push(arrOther);
@@ -172,15 +174,52 @@ export class DashboardComponent implements OnInit, AfterViewInit {
                     }
                 ]
             };
-        }, 2000);
+        }, 10000);
+    }
+
+    changeIsTotal(isTotal) {
+        this.isTotal = isTotal;
+        this.curData = [];
+        this.curDataOther = [];
+        for (let i = 0; i < 11; i++) {
+            let arrBuf = [this.getDate(), this.getRandomData()];
+            this.curData.push(arrBuf);
+            let arrOther = Array.from(arrBuf);
+            arrOther[1] = this.getRandomDataOther();
+            this.curDataOther.push(arrOther)
+        }
+        this.serviceOptions = {
+            series: [
+                {
+                    // id: '模拟数据',
+                    type: 'line',
+                    showSymbol: true,
+                    smooth: true,
+                    symbolSize: 10,
+                    hoverAnimation: false,
+                    data: this.curData
+                },
+                {
+                    // id: '模拟数据',
+                    type: 'line',
+                    showSymbol: true,
+                    smooth: true,
+                    symbolSize: 10,
+                    hoverAnimation: false,
+                    data: this.curDataOther
+                }
+            ]
+        };
     }
 
     getRandomData(): number {//pod
-        return 100 + Math.round(Math.random() * 50);
+        return this.isTotal ? 100 + Math.round(Math.random() * 50) :
+            50 + Math.round(Math.random() * 20);
     }
 
     getRandomDataOther(): number {
-        return 300 + Math.round(Math.random() * 100);
+        return this.isTotal ? 300 + Math.round(Math.random() * 100) :
+            100 + Math.round(Math.random() * 50);
     }
 
     getDate(): Date {

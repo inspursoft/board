@@ -53,14 +53,21 @@
                 <div style="flex-basis: 100%">
                     <clr-dropdown style="width:100%" [clrCloseMenuOnItemClick]="false">
                         <button class="btn btn-default" clrDropdownToggle>total
-                            <clr-icon shape="info" class="is-info"></clr-icon>
                             <clr-icon shape="caret down"></clr-icon>
                         </button>
                         <clr-dropdown-menu style="width: 160px">
-                            <button type="button" class="dropdown-item">total</button>
-                            <button type="button" class="dropdown-item">Service1</button>
-                            <button type="button" class="dropdown-item">Service2</button>
-                            <button type="button" class="dropdown-item">Service3</button>
+                            <button clrDropdownToggle (click)="changeIsTotal(true)" type="button" class="dropdown-item">
+                                total
+                            </button>
+                            <button clrDropdownToggle (click)="changeIsTotal(false)" type="button"
+                                    class="dropdown-item">Service1
+                            </button>
+                            <button clrDropdownToggle (click)="changeIsTotal(false)" type="button"
+                                    class="dropdown-item">Service2
+                            </button>
+                            <button clrDropdownToggle (click)="changeIsTotal(false)" type="button"
+                                    class="dropdown-item">Service3
+                            </button>
                         </clr-dropdown-menu>
                     </clr-dropdown>
                 </div>
