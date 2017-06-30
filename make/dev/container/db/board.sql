@@ -54,7 +54,6 @@ CREATE TABLE `log_collector` (
   ENGINE = InnoDB
   AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8;
-;
 
 -- --------------------------------------------------
 --  Table Structure for `model/get_resource.Pods`
@@ -72,7 +71,6 @@ CREATE TABLE `pod` (
   ENGINE = InnoDB
   AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8;
-;
 
 -- --------------------------------------------------
 --  Table Structure for `model/get_resource.Nodes`
