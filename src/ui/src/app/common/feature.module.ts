@@ -10,6 +10,7 @@ import { ProfileModule } from '../profile/profile.module';
 
 @NgModule({
   exports: [
+
     DashboardModule,
     NodeModule,
     ServiceModule,

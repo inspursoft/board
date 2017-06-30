@@ -24,6 +24,7 @@ import { MessageService } from './service/message.service';
   ],
   exports: [
     CoreModule,
+    AngularEchartsModule,
     ChartComponent,
     HeaderComponent,
     ConfirmationDialogComponent,
