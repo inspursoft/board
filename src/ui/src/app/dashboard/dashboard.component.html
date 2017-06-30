@@ -53,22 +53,29 @@
                 <div style="flex-basis: 100%">
                     <clr-dropdown style="width:100%" [clrCloseMenuOnItemClick]="false">
                         <button class="btn btn-default" clrDropdownToggle>total
-                            <clr-icon shape="info" class="is-info"></clr-icon>
                             <clr-icon shape="caret down"></clr-icon>
                         </button>
                         <clr-dropdown-menu style="width: 160px">
-                            <button type="button" class="dropdown-item">total</button>
-                            <button type="button" class="dropdown-item">Service1</button>
-                            <button type="button" class="dropdown-item">Service2</button>
-                            <button type="button" class="dropdown-item">Service3</button>
+                            <button clrDropdownToggle (click)="changeIsTotal(true)" type="button" class="dropdown-item">
+                                total
+                            </button>
+                            <button clrDropdownToggle (click)="changeIsTotal(false)" type="button"
+                                    class="dropdown-item">Service1
+                            </button>
+                            <button clrDropdownToggle (click)="changeIsTotal(false)" type="button"
+                                    class="dropdown-item">Service2
+                            </button>
+                            <button clrDropdownToggle (click)="changeIsTotal(false)" type="button"
+                                    class="dropdown-item">Service3
+                            </button>
                         </clr-dropdown-menu>
                     </clr-dropdown>
                 </div>
                 <div style="color: red; justify-self: flex-end">
-                    pods:--
+                    pods:{{curData[curData.length - 1][1]}}
                 </div>
                 <div style="color: blue;justify-self: flex-end">
-                    containers:--
+                    containers:{{curDataOther[curDataOther.length - 1][1]}}
                 </div>
             </div>
             <div style="flex-basis: 100%;display: flex;flex-direction: column">
@@ -117,7 +124,7 @@
                     <label><input style="margin: 10px" name="timeSpace" type="radio" value=""/>1min</label>
                 </div>
                 <div style="flex-basis: 100%;">
-                    <div echarts [options]="serviceOptions" style="height: 285px;"></div>
+                    <div echarts [options]="serviceOptionsOther" style="height: 285px;"></div>
                 </div>
             </div>
         </div>
@@ -152,7 +159,7 @@
                     <label><input style="margin: 10px" name="timeSpace" type="radio" value=""/>1min</label>
                 </div>
                 <div style="flex-basis: 100%;">
-                    <div echarts [options]="serviceOptions" style="height: 285px;"></div>
+                    <div echarts [options]="serviceOptionsOther" style="height: 285px;"></div>
                 </div>
             </div>
         </div>
