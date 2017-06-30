@@ -1,0 +1,86 @@
+:host >>> .main-container {
+  height: inherit;
+}
+
+.custom-row {
+  width: 580px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.custom-top {
+  top: 80px;
+}
+
+.background {
+  background: url('../../../images/sign-in-background.jpg');
+  background-size: cover;
+  height: 548px;
+}
+
+.circle {
+  background: no-repeat url('../../../images/circle-background.png');
+  height: 132px;
+  width: 132px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.sign-in-background {
+  background: url('../../../images/sign-in-pad.png');
+  height: 356px;
+  width: 300px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.icon-description {
+  margin-top: 0;
+  color: #ffffff;
+  text-align: center;
+}
+
+.icon-pos {
+  position: relative;
+}
+
+.icon-size {
+  width: 90px;
+  height: 70px;
+}
+
+.custom-row-columns {
+  top: 120px;
+  position: relative;
+  width: 520px;
+  height: 135px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.custom-sign-in-top {
+  top: 40px;
+}
+
+.custom-sign-in-title {
+  position: relative;
+  margin-left: auto;
+  width: 50px;
+  margin-right: auto;
+  top: 30px;
+  color: #007CBB;
+}
+
+.custom-sign-in-input {
+  position: relative;
+  top: 80px;
+}
+
+.custom-input-padding {
+  padding-left: 36px;
+}
+
+.custom-down-padding {
+  float: right;
+  padding-right: 12px;
+}

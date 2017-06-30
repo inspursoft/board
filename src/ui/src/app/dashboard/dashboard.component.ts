@@ -7,7 +7,7 @@ import { Component } from '@angular/core';
 })
 export class DashboardComponent {
   get serviceIcon(): string {
-    return '../../images/service_icon.png';
+    return '';
   }
 
   get nodeIcon(): string {

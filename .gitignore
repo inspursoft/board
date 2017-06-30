@@ -29,4 +29,5 @@ bin
 src/apiserver/apiserver
 src/tokenserver/tokenserver
 src/ui/node_modules
-
+src/ui/src/.vscode
+src/ui/proxy.config.json*

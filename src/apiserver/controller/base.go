@@ -19,7 +19,8 @@ func NewCustomController(resp http.ResponseWriter, req *http.Request) *controlle
 }
 
 func (c *controller) GetStringFromPath(cutset string) string {
-	return strings.Trim(c.req.URL.Path, cutset)
+	log.Printf("%s, %s", c.req.URL.Path, cutset)
+	return strings.TrimPrefix(c.req.URL.Path, cutset)
 }
 
 func (c *controller) resolveBody() []byte {

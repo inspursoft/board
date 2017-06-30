@@ -1,21 +1,37 @@
 import { NgModule } from '@angular/core';
-
+import { CoreModule } from '../core/core.module';
 import { AngularEchartsModule } from 'angular2-echarts';
-
 import { ChartComponent } from './chart/chart.component';
-import { TranslateModule } from '@ngx-translate/core';
+import { HeaderComponent } from './header/header.component';
+import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-dialog.component';
+
+import { CheckItemExistingDirective } from './directives/check-item-existing.directive';
+import { CheckItemIdenticalDirective } from './directives/check-item-identical.directive';
+
+import { MessageService } from './service/message.service';
 
 @NgModule({
   imports: [
-    AngularEchartsModule,
-    TranslateModule
+    CoreModule,
+    AngularEchartsModule
   ],
   declarations: [
-    ChartComponent  
+    ChartComponent,
+    HeaderComponent, 
+    ConfirmationDialogComponent,
+    CheckItemExistingDirective,
+    CheckItemIdenticalDirective
   ],
   exports: [
+    CoreModule,
     ChartComponent,
-    TranslateModule
+    HeaderComponent,
+    ConfirmationDialogComponent,
+    CheckItemExistingDirective,
+    CheckItemIdenticalDirective
+  ],
+  providers: [
+    MessageService
   ]
 })
 export class SharedModule {}

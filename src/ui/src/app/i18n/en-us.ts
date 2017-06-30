@@ -1,4 +1,11 @@
 export const LANG_EN_US = {
+  "ACCOUNT": {
+    "SIGN_IN": "Sign In",
+    "USERNAME_PLACEHOLDER": "Username/Email",
+    "PASSWORD_PLACEHOLDER": "Password",
+    "SIGN_UP": "Sign Up",
+    "FORGOT_PASSWORD": "Forgot Password"
+  },
   "HEAD_NAV": {
     "INPUT_FOR_SEARCHING": "Input for searching.",
     "CHANGE_PASSWORD": "Change Password",
