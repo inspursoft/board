@@ -9,9 +9,9 @@ import {CoreModule} from "../core/core.module";
 
 @NgModule({
   imports: [
-    CommonModule,
-    CoreModule,
-    AngularEchartsModule,
+    // CommonModule,
+    // CoreModule,
+    // AngularEchartsModule,
     SharedModule
   ],
   declarations:[ 
