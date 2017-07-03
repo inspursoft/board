@@ -1,0 +1,12 @@
+version: '2'
+services:
+  uibuilder:
+    build:
+      context: ../../
+      dockerfile: make/dev/container/uibuilder/Dockerfile
+      args:
+        https_proxy: http://10.165.34.222:8118
+    volumes:
+      - ../../src/ui:/board_src
+    entrypoint:
+      - /entrypoint.sh
