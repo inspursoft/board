@@ -37,7 +37,7 @@ services:
       dockerfile: make/dev/container/apiserver/Dockerfile
     restart: always
     volumes:
-      - ../../tools/swagger/vendors/swagger-ui-2.1.4/dist:/go/bin/swagger
+      - ../../tools/swagger/vendors/swagger-ui-2.1.4/dist:/go/bin/swagger:z
     networks:
       - board
     links:
@@ -70,6 +70,26 @@ services:
       options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "tokenserver"
+  proxy:
+    image: nginx:1.11.5
+    networks:
+      - board
+    restart: always
+    volumes:
+      - ../config/nginx/nginx.conf:/etc/nginx/nginx.conf:z
+      - ../../src/ui/dist:/usr/share/nginx/html:z
+    ports: 
+      - 80:80
+    links:
+      - apiserver
+    depends_on:
+      - apiserver
+      - log
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "proxy"
 networks:
   board:
     external: false
