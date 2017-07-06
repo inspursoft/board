@@ -54,6 +54,10 @@ export const LANG_ZH_CN = {
     "PROFILES": "用户中心"
   },
   "DASHBOARD": {
+    "MIN":"分",
+    "HR":"小时",
+    "DAY":"天",
+    "MTH":"月",
     "PODS": "Pods",
     "CONTAINERS": "容器",
     "SERVICE": "服务",

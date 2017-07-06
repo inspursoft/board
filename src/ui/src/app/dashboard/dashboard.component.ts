@@ -1,246 +1,73 @@
-import {AfterViewInit, OnInit, Component} from '@angular/core';
+import {AfterViewInit, OnInit, Component, OnDestroy} from '@angular/core';
 import {DatePipe} from "@angular/common";
+import {Assist} from "./dashboard-assist"
+import {scaleOption} from "app/dashboard/time-range-scale.component/time-range-scale.component";
+import {DashboardService, ServiceListModel} from "app/dashboard/dashboard.service";
 
 @Component({
-    selector: 'dashboard',
-    templateUrl: 'dashboard.component.html',
-    styleUrls: ['dashboard.component.css']
+	selector: 'dashboard',
+	templateUrl: 'dashboard.component.html',
+	styleUrls: ['dashboard.component.css']
 })
-export class DashboardComponent implements OnInit, AfterViewInit {
-    serviceOptions = {};
-    serviceOptionsOther = {};
-    curData: any = [];
-    curDataOther: any = [];
-    baseDate: Date = new Date();
-    oneStepTime: number = 10 * 1000;
-    isTotal: boolean;
+	
+export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
+	scaleOptions: Array<scaleOption> = [
+		{"id": 1, "description": "DASHBOARD.MIN"},
+		{"id": 2, "description": "DASHBOARD.HR"},
+		{"id": 3, "description": "DASHBOARD.DAY"},
+		{ "id": 4, "description": "DASHBOARD.MTH" }];
+	serviceBtnValue: string;
+	nodeBtnValue: string;
+	storageBtnValue: string;
+	serviceList: Array<ServiceListModel>;
+	serviceOptions: object = {};
+	nodeOptions: object = {};
+	storageOptions: object = {};
 
-    ngOnInit() {
-        this.isTotal = true;
-        for (let i = 0; i < 11; i++) {
-            let arrBuf = [this.getDate(), this.getRandomData()];
-            this.curData.push(arrBuf);
-            let arrOther = Array.from(arrBuf);
-            arrOther[1] = this.getRandomDataOther();
-            this.curDataOther.push(arrOther)
-        }
-    }
+	constructor(private service: DashboardService) {
+	}
 
+	ngOnInit() {
+		this.serviceList = this.service.getServiceList();
+		this.serviceBtnValue = this.serviceList[0].serviceName;
+		this.nodeBtnValue = this.serviceList[0].serviceName;
+		this.storageBtnValue = this.serviceList[0].serviceName;
 
-    ngAfterViewInit() {
-        this.serviceOptionsOther = {
-            tooltip: {
-                trigger: 'axis',
-                formatter: (params) => {
-                    let xDate: Date = new Date(params[0].value[0]);
-                    let pDate: DatePipe = new DatePipe("lt");
-                    console.log(params);
-                    return pDate.transform(xDate, "yyyy/MM/dd HH:mm:ss") +
-                        `<div style='display: flex;flex-direction: column'>
-                        <div style="display: flex;align-items: center">
-                            <div style='width: 16px;height: 16px; background-color: red;border-radius: 50%'></div>
-                            <div>pods:${params[0].value[1]}</div>
-                        </div>
-                        <div style="display: flex;align-items: center">
-                            <div style='width: 16px;height: 16px; background-color: blue;border-radius: 50%'></div>
-                            <div>containers:${params[1].value[1]}</div>
-                        </div>
-                    </div>`;
-                },
-                axisPointer: {
-                    animation: false
-                }
-            },
-            xAxis: {
-                type: 'time',
-                splitNumber: 10,
-                splitLine: {
-                    show: false
-                }
-            },
-            yAxis: {
-                type: 'value',
-                show: true,
-                splitLine: {
-                    show: true
-                }
-            },
-            series: [
-                {
-                    // id: '模拟数据',
-                    type: 'line',
-                    showSymbol: true,
-                    smooth: true,
-                    symbolSize: 10,
-                    hoverAnimation: false,
-                    data: this.curData
-                },
-                {
-                    // id: '模拟数据',
-                    type: 'line',
-                    showSymbol: true,
-                    smooth: true,
-                    symbolSize: 10,
-                    hoverAnimation: false,
-                    data: this.curDataOther
-                }
-            ]
-        };
-        this.serviceOptions = {
-            tooltip: {
-                trigger: 'axis',
-                formatter: (params) => {
-                    let xDate: Date = new Date(params[0].value[0]);
-                    let pDate: DatePipe = new DatePipe("lt");
-                    console.log(params);
-                    return pDate.transform(xDate, "yyyy/MM/dd HH:mm:ss") +
-                        `<div style='display: flex;flex-direction: column'>
-                        <div style="display: flex;align-items: center">
-                            <div style='width: 16px;height: 16px; background-color: red;border-radius: 50%'></div>
-                            <div>pods:${params[0].value[1]}</div>
-                        </div>
-                        <div style="display: flex;align-items: center">
-                            <div style='width: 16px;height: 16px; background-color: blue;border-radius: 50%'></div>
-                            <div>containers:${params[1].value[1]}</div>
-                        </div>
-                    </div>`;
-                },
-                axisPointer: {
-                    animation: false
-                }
-            },
-            xAxis: {
-                type: 'time',
-                splitNumber: 10,
-                splitLine: {
-                    show: false
-                }
-            },
-            yAxis: {
-                max: 500,
-                type: 'value',
-                show: true,
-                splitLine: {
-                    show: true
-                }
-            },
-            series: [
-                {
-                    // id: '模拟数据',
-                    type: 'line',
-                    showSymbol: true,
-                    smooth: true,
-                    symbolSize: 10,
-                    hoverAnimation: false,
-                    data: this.curData
-                },
-                {
-                    // id: '模拟数据',
-                    type: 'line',
-                    showSymbol: true,
-                    smooth: true,
-                    symbolSize: 10,
-                    hoverAnimation: false,
-                    data: this.curDataOther
-                }
-            ]
-        };
-        setInterval(() => {
-            let arrBuf = [this.getDate(), this.getRandomData()];
-            this.curData.push(arrBuf);
-            let arrOther = Array.from(arrBuf);
-            arrOther[1] = this.getRandomDataOther();
-            this.curDataOther.push(arrOther);
+		
+	}
 
-            this.serviceOptions = {
-                series: [
-                    {
-                        // id: '模拟数据',
-                        type: 'line',
-                        showSymbol: true,
-                        smooth: true,
-                        symbolSize: 10,
-                        hoverAnimation: false,
-                        data: this.curData
-                    },
-                    {
-                        // id: '模拟数据',
-                        type: 'line',
-                        showSymbol: true,
-                        smooth: true,
-                        symbolSize: 10,
-                        hoverAnimation: false,
-                        data: this.curDataOther
-                    }
-                ]
-            };
-        }, 10000);
-    }
+	ngOnDestroy() {
 
-    changeIsTotal(isTotal) {
-        this.isTotal = isTotal;
-        this.curData = [];
-        this.curDataOther = [];
-        for (let i = 0; i < 11; i++) {
-            let arrBuf = [this.getDate(), this.getRandomData()];
-            this.curData.push(arrBuf);
-            let arrOther = Array.from(arrBuf);
-            arrOther[1] = this.getRandomDataOther();
-            this.curDataOther.push(arrOther)
-        }
-        this.serviceOptions = {
-            series: [
-                {
-                    // id: '模拟数据',
-                    type: 'line',
-                    showSymbol: true,
-                    smooth: true,
-                    symbolSize: 10,
-                    hoverAnimation: false,
-                    data: this.curData
-                },
-                {
-                    // id: '模拟数据',
-                    type: 'line',
-                    showSymbol: true,
-                    smooth: true,
-                    symbolSize: 10,
-                    hoverAnimation: false,
-                    data: this.curDataOther
-                }
-            ]
-        };
-    }
+	}
 
-    getRandomData(): number {//pod
-        return this.isTotal ? 100 + Math.round(Math.random() * 50) :
-            50 + Math.round(Math.random() * 20);
-    }
+	scaleChange(data: scaleOption) {
 
-    getRandomDataOther(): number {
-        return this.isTotal ? 300 + Math.round(Math.random() * 100) :
-            100 + Math.round(Math.random() * 50);
-    }
+	}
 
-    getDate(): Date {
-        let bDate = this.curData.length > 0 ?
-            this.curData[this.curData.length - 1][0] :
-            this.baseDate;
-        return new Date(bDate.getTime() + this.oneStepTime);
-    }
+	ngAfterViewInit() {
+		this.serviceOptions = Assist.getBaseOptions();
+		this.nodeOptions = Assist.getBaseOptions();
+		this.storageOptions = Assist.getBaseOptions();
 
+		this.serviceOptions["tooltip"] = Assist.getTooltip("pods", "containers");
+		this.nodeOptions["tooltip"] = Assist.getTooltip("CPU", "Memory");
+		this.storageOptions["tooltip"] = Assist.getTooltip("", "Total");
 
-    get serviceIcon(): string {
-        return '../../images/service_icon.png';
-    }
+		this.serviceOptions["series"] = [Assist.getBaseSeries(), Assist.getBaseSeries()];
+		let serviceData = this.service.getServiceData(0, 1);
+		this.serviceOptions["series"][0]["data"] = serviceData[0];
+		this.serviceOptions["series"][1]["data"] = serviceData[1];
+	}
 
-    get nodeIcon(): string {
-        return '../../images/node_icon.png';
-    }
+	get serviceIcon(): string {
+		return '../../images/service_icon.png';
+	}
 
-    get storageIcon(): string {
-        return '../../images/storage_icon.png'
-    }
+	get nodeIcon(): string {
+		return '../../images/node_icon.png';
+	}
 
-
+	get storageIcon(): string {
+		return '../../images/storage_icon.png';
+	}
 }
