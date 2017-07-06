@@ -54,6 +54,10 @@ export const LANG_EN_US = {
     "PROFILES": "Profiles"
   },
   "DASHBOARD": {
+    "MIN":"min",
+    "HR":"hr",
+    "DAY":"day",
+    "MTH":"mth",
     "PODS": "Pods",
     "CONTAINERS": "Containers",
     "SERVICE": "Service",
@@ -62,6 +66,6 @@ export const LANG_EN_US = {
     "NODE": "Node",
     "USAGE": "Usage",
     "TOTAL": "Total",
-    "STORAGE": "Storage", 
+    "STORAGE": "Storage",
  }
 };

@@ -1,167 +1,170 @@
-<div class="row">
-    <div class="col-xs">
-        <div class="circle">
-            <img [src]="serviceIcon" class="image-icon" alt="service icon"/>
-        </div>
-        <p class="icon-description">{{ 'DASHBOARD.SERVICE' | translate }}</p>
-        <div class="stat-panel">
-            <p><span class="stat-panel-title"><span
-                    class="stat-panel-title-font">{{ 'DASHBOARD.PODS' | translate }}:</span><span
-                    class="stat-panel-value-font">12</span></span></p>
-            <p><span class="stat-panel-title"><span class="stat-panel-title-font">{{ 'DASHBOARD.CONTAINERS' | translate }}:</span><span
-                    class="stat-panel-value-font">16</span></span></p>
-        </div>
-        <span class="split-line"></span>
+<div style="display: flex;flex-wrap: nowrap">
+  <div class="section-container split-line">
+    <div class="section-image-container">
+      <div class="circle">
+        <img class="section-image" [src]="serviceIcon" alt="service icon"/>
+      </div>
+      <span class="section-text">{{ 'DASHBOARD.SERVICE' | translate }}</span>
     </div>
-    <div class="col-xs">
-        <div class="circle">
-            <img [src]="nodeIcon" class="image-icon" style="left: 6px;" alt="node icon"/>
-        </div>
-        <p class="icon-description">{{ 'DASHBOARD.NODE' | translate }}</p>
-        <div class="stat-panel">
-            <p><span class="stat-panel-title"><span
-                    class="stat-panel-title-font">{{ 'DASHBOARD.MEMORY' | translate }}:</span><span
-                    class="stat-panel-value-font">70%</span></span></p>
-            <p><span class="stat-panel-title"><span
-                    class="stat-panel-title-font">{{ 'DASHBOARD.CPU' | translate }}:</span><span
-                    class="stat-panel-value-font">40%</span></span></p>
-        </div>
-        <span class="split-line"></span>
+    <div class="section-right-container">
+			<span class="stat-panel-title stat-panel-title-font">
+				 {{ 'DASHBOARD.PODS' | translate }}:
+				 <span class="stat-panel-value-font">{{podCount}}</span></span>
+      <span class="stat-panel-title stat-panel-title-font">
+				 {{ 'DASHBOARD.CONTAINERS' | translate }}:
+				<span class="stat-panel-value-font">{{containerCount}}</span>
+			</span>
     </div>
-    <div class="col-xs">
-        <div class="circle">
-            <img [src]="storageIcon" class="image-icon" style="left: 4px;" alt="storage icon"/>
-        </div>
-        <p class="icon-description">{{ 'DASHBOARD.STORAGE' | translate }}</p>
-        <div class="stat-panel">
-            <p><span class="stat-panel-title"><span
-                    class="stat-panel-title-font">{{ 'DASHBOARD.USAGE' | translate }}:</span><span
-                    class="stat-panel-value-font">3T</span></span></p>
-            <p><span class="stat-panel-title"><span
-                    class="stat-panel-title-font">{{ 'DASHBOARD.TOTAL' | translate }}:</span><span
-                    class="stat-panel-value-font">10T</span></span></p>
-        </div>
+  </div>
+  <div class="section-container split-line">
+    <div class="section-image-container">
+      <div class="circle">
+        <img class="section-image" [src]="nodeIcon" alt="node icon"/>
+      </div>
+      <span class="section-text">{{ 'DASHBOARD.NODE' | translate }}</span>
     </div>
+    <div class="section-right-container">
+			<span class="stat-panel-title stat-panel-title-font">
+				 {{ 'DASHBOARD.MEMORY' | translate }}:
+				 <span class="stat-panel-value-font">{{memoryPercent}}</span></span>
+      <span class="stat-panel-title stat-panel-title-font">
+				 {{ 'DASHBOARD.CPU' | translate }}:
+				<span class="stat-panel-value-font">{{cpuPercent}}</span>
+			</span>
+    </div>
+  </div>
+  <div class="section-container">
+    <div class="section-image-container">
+      <div class="circle">
+        <img class="section-image" [src]="storageIcon" alt="storage icon"/>
+      </div>
+      <span class="section-text">{{ 'DASHBOARD.STORAGE' | translate }}</span>
+    </div>
+    <div class="section-right-container">
+			<span class="stat-panel-title stat-panel-title-font">
+				 {{ 'DASHBOARD.USAGE' | translate }}:
+				 <span class="stat-panel-value-font">{{usageVolume}}</span></span>
+      <span class="stat-panel-title stat-panel-title-font">
+				 {{ 'DASHBOARD.TOTAL' | translate }}:
+				<span class="stat-panel-value-font">{{totalVolume}}</span>
+			</span>
+    </div>
+
+  </div>
 </div>
 
+<div style="display: flex;flex-direction: column">
+  <div style="flex-basis: 100%" class="card">
+    <div class="card-header">{{'DASHBOARD.SERVICE' | translate }}</div>
+    <div class="card-block">
+      <div class="card-block-left-container">
+        <div style="flex-basis: 100%">
+          <clr-dropdown #serviceDropdown>
+            <button style="width: 150px" class="btn btn-outline-primary" clrDropdownToggle>
+              {{serviceBtnValue}}
+              <clr-icon shape="caret down"></clr-icon>
+            </button>
+            <clr-dropdown-menu class="card-block-dropdown" >
+              <button [ngClass]="{'active':serviceBtnValue == service.serviceName}"
+                      class="dropdown-item"
+                      (click)="serviceBtnValue = service.serviceName;serviceDropdown.toggleDropdown()"
+                      *ngFor="let service of serviceList;">
+                {{service.serviceName}}
+              </button>
+            </clr-dropdown-menu>
+          </clr-dropdown>
+        </div>
+        <div class="first-line">
+          {{ 'DASHBOARD.PODS' | translate }}:{{podCount}}
+        </div>
+        <div class="second-line">
+          {{ 'DASHBOARD.CONTAINERS' | translate }}:{{containerCount}}
+        </div>
+      </div>
+      <div class="card-block-right-container">
+        <div class="select-time-container">
+          <time-range-scale (changeScale)="scaleChange($event)" [options]="scaleOptions"></time-range-scale>
+        </div>
+        <div style="flex-basis: 100%;">
+          <div echarts [options]="serviceOptions" style="height: 285px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-<div class="row">
-    <div class="col-xs-12 card">
-        <div class="card-header">服务</div>
-        <div class="card-block">
-            <div class="card-block-left-container">
-                <div style="flex-basis: 100%">
-                    <clr-dropdown style="width:100%" [clrCloseMenuOnItemClick]="false">
-                        <button class="btn btn-default" clrDropdownToggle>total
-                            <clr-icon shape="caret down"></clr-icon>
-                        </button>
-                        <clr-dropdown-menu style="width: 160px">
-                            <button clrDropdownToggle (click)="changeIsTotal(true)" type="button" class="dropdown-item">
-                                total
-                            </button>
-                            <button clrDropdownToggle (click)="changeIsTotal(false)" type="button"
-                                    class="dropdown-item">Service1
-                            </button>
-                            <button clrDropdownToggle (click)="changeIsTotal(false)" type="button"
-                                    class="dropdown-item">Service2
-                            </button>
-                            <button clrDropdownToggle (click)="changeIsTotal(false)" type="button"
-                                    class="dropdown-item">Service3
-                            </button>
-                        </clr-dropdown-menu>
-                    </clr-dropdown>
-                </div>
-                <div style="color: red; justify-self: flex-end">
-                    pods:{{curData[curData.length - 1][1]}}
-                </div>
-                <div style="color: blue;justify-self: flex-end">
-                    containers:{{curDataOther[curDataOther.length - 1][1]}}
-                </div>
-            </div>
-            <div style="flex-basis: 100%;display: flex;flex-direction: column">
-                <div class="select-time-container">
-                    <label><input style="margin: 10px" name="timeSpace" type="radio" value=""/>1mth</label>
-                    <label><input style="margin: 10px" name="timeSpace" type="radio" value=""/>1day</label>
-                    <label><input style="margin: 10px" name="timeSpace" type="radio" value=""/>1hr </label>
-                    <label><input style="margin: 10px" name="timeSpace" type="radio" value=""/>1min</label>
-                </div>
-                <div style="flex-basis: 100%;">
-                    <div echarts [options]="serviceOptions" style="height: 285px;"></div>
-                </div>
-            </div>
+  <div style="flex-basis: 100%" class="card">
+    <div class="card-header">{{'DASHBOARD.NODE' | translate }}</div>
+    <div class="card-block">
+      <div class="card-block-left-container">
+        <div style="flex-basis: 100%">
+          <clr-dropdown #nodeDropdown>
+            <button style="width: 150px" class="btn btn-outline-primary" clrDropdownToggle>
+              {{nodeBtnValue}}
+              <clr-icon shape="caret down"></clr-icon>
+            </button>
+            <clr-dropdown-menu class="card-block-dropdown">
+              <button class="dropdown-item"
+                      [ngClass]="{'active':nodeBtnValue == service.serviceName}"
+                      (click)="nodeBtnValue = service.serviceName;nodeDropdown.toggleDropdown()"
+                      *ngFor="let service of serviceList;">
+                {{service.serviceName}}
+              </button>
+            </clr-dropdown-menu>
+          </clr-dropdown>
         </div>
-    </div>
-    <div class="col-xs-12 card">
-        <div class="card-header">节点</div>
-        <div class="card-block">
-            <div class="card-block-left-container">
-                <div style="flex-basis: 100%">
-                    <clr-dropdown style="width:100%" [clrCloseMenuOnItemClick]="false">
-                        <button class="btn btn-default" clrDropdownToggle>total
-                            <clr-icon shape="info" class="is-info"></clr-icon>
-                            <clr-icon shape="caret down"></clr-icon>
-                        </button>
-                        <clr-dropdown-menu style="width: 160px">
-                            <button type="button" class="dropdown-item">total</button>
-                            <button type="button" class="dropdown-item">Service1</button>
-                            <button type="button" class="dropdown-item">Service2</button>
-                            <button type="button" class="dropdown-item">Service3</button>
-                        </clr-dropdown-menu>
-                    </clr-dropdown>
-                </div>
-                <div style="color: red; justify-self: flex-end">
-                    CPU:8 core
-                </div>
-                <div style="color: blue;justify-self: flex-end">
-                    Memory:512G
-                </div>
-            </div>
-            <div style="flex-basis: 100%;display: flex;flex-direction: column">
-                <div class="select-time-container">
-                    <label><input style="margin: 10px" name="timeSpace" type="radio" value=""/>1mth</label>
-                    <label><input style="margin: 10px" name="timeSpace" type="radio" value=""/>1day</label>
-                    <label><input style="margin: 10px" name="timeSpace" type="radio" value=""/>1hr </label>
-                    <label><input style="margin: 10px" name="timeSpace" type="radio" value=""/>1min</label>
-                </div>
-                <div style="flex-basis: 100%;">
-                    <div echarts [options]="serviceOptionsOther" style="height: 285px;"></div>
-                </div>
-            </div>
+        <div class="first-line">
+          {{ 'DASHBOARD.CPU' | translate }}:{{cpuPercent}}
         </div>
-    </div>
-    <div class="col-xs-12 card">
-        <div class="card-header">存储</div>
-        <div class="card-block">
-            <div class="card-block-left-container">
-                <div style="flex-basis: 100%">
-                    <clr-dropdown style="width:100%" [clrCloseMenuOnItemClick]="false">
-                        <button class="btn btn-default" clrDropdownToggle>total
-                            <clr-icon shape="info" class="is-info"></clr-icon>
-                            <clr-icon shape="caret down"></clr-icon>
-                        </button>
-                        <clr-dropdown-menu style="width: 160px">
-                            <button type="button" class="dropdown-item">total</button>
-                            <button type="button" class="dropdown-item">Service1</button>
-                            <button type="button" class="dropdown-item">Service2</button>
-                            <button type="button" class="dropdown-item">Service3</button>
-                        </clr-dropdown-menu>
-                    </clr-dropdown>
-                </div>
-                <div style="color: blue;justify-self: flex-end">
-                    total:10T
-                </div>
-            </div>
-            <div style="flex-basis: 100%;display: flex;flex-direction: column">
-                <div class="select-time-container">
-                    <label><input style="margin: 10px" name="timeSpace" type="radio" value=""/>1mth</label>
-                    <label><input style="margin: 10px" name="timeSpace" type="radio" value=""/>1day</label>
-                    <label><input style="margin: 10px" name="timeSpace" type="radio" value=""/>1hr </label>
-                    <label><input style="margin: 10px" name="timeSpace" type="radio" value=""/>1min</label>
-                </div>
-                <div style="flex-basis: 100%;">
-                    <div echarts [options]="serviceOptionsOther" style="height: 285px;"></div>
-                </div>
-            </div>
+        <div class="second-line">
+          {{ 'DASHBOARD.MEMORY' | translate }}:{{memoryPercent}}
         </div>
+      </div>
+      <div class="card-block-right-container">
+        <div class="select-time-container">
+          <time-range-scale (changeScale)="scaleChange($event)" [options]="scaleOptions"></time-range-scale>
+        </div>
+        <div style="flex-basis: 100%;">
+          <div echarts [options]="serviceOptions" style="height: 285px;"></div>
+        </div>
+      </div>
     </div>
+  </div>
+
+  <div style="flex-basis: 100%" class="card">
+    <div class="card-header">{{'DASHBOARD.STORAGE' | translate }}</div>
+    <div class="card-block">
+      <div class="card-block-left-container">
+        <div style="flex-basis: 100%">
+          <clr-dropdown #storageDropdown>
+            <button style="width: 150px" class="btn btn-outline-primary" clrDropdownToggle>
+              {{storageBtnValue}}
+              <clr-icon shape="caret down"></clr-icon>
+            </button>
+            <clr-dropdown-menu class="card-block-dropdown">
+              <button class="dropdown-item"
+                      [ngClass]="{'active':storageBtnValue == service.serviceName}"
+                      (click)="storageBtnValue = service.serviceName;storageDropdown.toggleDropdown()"
+                      *ngFor="let service of serviceList;">
+                {{service.serviceName}}
+              </button>
+            </clr-dropdown-menu>
+          </clr-dropdown>
+        </div>
+        <div class="first-line">
+          {{ 'DASHBOARD.USAGE' | translate }}:{{usageVolume}}
+        </div>
+        <div class="second-line">
+          {{ 'DASHBOARD.TOTAL' | translate }}:{{totalVolume}}
+        </div>
+      </div>
+      <div class="card-block-right-container">
+        <div class="select-time-container">
+          <time-range-scale (changeScale)="scaleChange($event)" [options]="scaleOptions"></time-range-scale>
+        </div>
+        <div style="flex-basis: 100%;">
+          <div echarts [options]="serviceOptions" style="height: 285px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

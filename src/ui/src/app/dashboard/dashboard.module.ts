@@ -1,21 +1,19 @@
 import { NgModule } from '@angular/core';
-
 import { SharedModule } from '../shared/shared.module';
-
 import { DashboardComponent } from './dashboard.component';
-import {AngularEchartsModule} from "angular2-echarts";
-import {CommonModule} from "@angular/common";
-import {CoreModule} from "../core/core.module";
+import { DashboardService } from "app/dashboard/dashboard.service";
+import { TimeRangeScale } from "app/dashboard/time-range-scale.component/time-range-scale.component";
 
 @NgModule({
   imports: [
-    // CommonModule,
-    // CoreModule,
-    // AngularEchartsModule,
     SharedModule
   ],
-  declarations:[ 
-    DashboardComponent
+  declarations: [
+    DashboardComponent,
+    TimeRangeScale
+  ],
+  providers: [
+    DashboardService
   ]
 })
-export class DashboardModule {}
+export class DashboardModule { }
