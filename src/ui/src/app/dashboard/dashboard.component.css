@@ -24,7 +24,7 @@
   margin-left: 10px;
 }
 
-.session-container {
+.section-container {
   flex-basis: 100%; 
   display: flex;
   margin-right: 20px;
@@ -34,23 +34,23 @@
   border-right: 1px solid #ccc;
 }
 
-.session-image-container{
+.section-image-container{
   display: flex;
   width: 120px;
   flex-direction: column;
 }
 
-.session-image{
+.section-image{
   width: 50px;
   height: 50px;
 }
 
-.session-text{
+.section-text{
   flex-basis: 20px;
   text-align: center;
 }
 
-.session-right-container{
+.section-right-container{
    display: flex;
    flex-basis: 100%;
    margin-left: 10px;

@@ -3,15 +3,15 @@ import { DatePipe } from "@angular/common";
 
 export class Assist {
 	static datePipe: DatePipe = new DatePipe("lt");
-	static getHoverValue(first: string, second: string, firstHint: string, secondHint: string): string {
+	static getHoverValue(params:object, firstHint: string, secondHint: string): string {
 		return `<div style="display: flex;flex-direction: column">
     <div style="display: flex;align-items: center">
         <div style='width: 16px;height: 16px; background-color: #c23531;border-radius: 50%'></div>
-        <div>${firstHint}:${first}</div>
+        <div>${firstHint}:${params[0].value[1]}</div>
     </div>
     <div style="display: flex;align-items: center">
         <div style='width: 16px;height: 16px; background-color: #2f4554;border-radius: 50%'></div>
-        <div>${secondHint}:${second}</div>
+        <div>${secondHint}:${params[1].value[1]}</div>
     </div>
 </div>`
 	}
@@ -21,8 +21,8 @@ export class Assist {
 			trigger: "axis",
 			formatter: (params) => {
 				let xDate: Date = new Date(params[0].value[0]);
-				return this.datePipe.transform(xDate, "yyyy/MM/dd HH:mm:ss") +
-					this.getHoverValue(params[0].value[1], params[1].value[1], hint1, hint2);
+				let sDate = Assist.datePipe.transform(xDate, 'yyyy/MM/dd HH:mm:ss');
+				return sDate + this.getHoverValue(params, hint1, hint2);
 			},
 			axisPointer: { animation: false }
 		}

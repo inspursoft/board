@@ -16,6 +16,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 		{"id": 2, "description": "DASHBOARD.HR"},
 		{"id": 3, "description": "DASHBOARD.DAY"},
 		{ "id": 4, "description": "DASHBOARD.MTH" }];
+	
+	podCount: number = 7;
+	containerCount: number = 32;
+	memoryPercent: string = '70%';
+	cpuPercent: string = '40%';
+	usageVolume: string = '3T';
+	totalVolume: string = '10T';
+
 	serviceBtnValue: string;
 	nodeBtnValue: string;
 	storageBtnValue: string;
@@ -32,8 +40,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 		this.serviceBtnValue = this.serviceList[0].serviceName;
 		this.nodeBtnValue = this.serviceList[0].serviceName;
 		this.storageBtnValue = this.serviceList[0].serviceName;
-
-		
 	}
 
 	ngOnDestroy() {

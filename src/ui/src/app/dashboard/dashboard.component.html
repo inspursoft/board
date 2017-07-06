@@ -1,52 +1,52 @@
 <div style="display: flex;flex-wrap: nowrap">
-  <div class="session-container split-line">
-    <div class="session-image-container">
+  <div class="section-container split-line">
+    <div class="section-image-container">
       <div class="circle">
-        <img class="session-image" [src]="serviceIcon" alt="service icon"/>
+        <img class="section-image" [src]="serviceIcon" alt="service icon"/>
       </div>
-      <span class="session-text">{{ 'DASHBOARD.SERVICE' | translate }}</span>
+      <span class="section-text">{{ 'DASHBOARD.SERVICE' | translate }}</span>
     </div>
-    <div class="session-right-container">
+    <div class="section-right-container">
 			<span class="stat-panel-title stat-panel-title-font">
 				 {{ 'DASHBOARD.PODS' | translate }}:
-				 <span class="stat-panel-value-font">7</span></span>
+				 <span class="stat-panel-value-font">{{podCount}}</span></span>
       <span class="stat-panel-title stat-panel-title-font">
 				 {{ 'DASHBOARD.CONTAINERS' | translate }}:
-				<span class="stat-panel-value-font">32</span>
+				<span class="stat-panel-value-font">{{containerCount}}</span>
 			</span>
     </div>
   </div>
-  <div class="session-container split-line">
-    <div class="session-image-container">
+  <div class="section-container split-line">
+    <div class="section-image-container">
       <div class="circle">
-        <img class="session-image" [src]="nodeIcon" alt="node icon"/>
+        <img class="section-image" [src]="nodeIcon" alt="node icon"/>
       </div>
-      <span class="session-text">{{ 'DASHBOARD.NODE' | translate }}</span>
+      <span class="section-text">{{ 'DASHBOARD.NODE' | translate }}</span>
     </div>
-    <div class="session-right-container">
+    <div class="section-right-container">
 			<span class="stat-panel-title stat-panel-title-font">
 				 {{ 'DASHBOARD.MEMORY' | translate }}:
-				 <span class="stat-panel-value-font">70%</span></span>
+				 <span class="stat-panel-value-font">{{memoryPercent}}</span></span>
       <span class="stat-panel-title stat-panel-title-font">
 				 {{ 'DASHBOARD.CPU' | translate }}:
-				<span class="stat-panel-value-font">40%</span>
+				<span class="stat-panel-value-font">{{cpuPercent}}</span>
 			</span>
     </div>
   </div>
-  <div class="session-container">
-    <div class="session-image-container">
+  <div class="section-container">
+    <div class="section-image-container">
       <div class="circle">
-        <img class="session-image" [src]="storageIcon" alt="storage icon"/>
+        <img class="section-image" [src]="storageIcon" alt="storage icon"/>
       </div>
-      <span class="session-text">{{ 'DASHBOARD.STORAGE' | translate }}</span>
+      <span class="section-text">{{ 'DASHBOARD.STORAGE' | translate }}</span>
     </div>
-    <div class="session-right-container">
+    <div class="section-right-container">
 			<span class="stat-panel-title stat-panel-title-font">
 				 {{ 'DASHBOARD.USAGE' | translate }}:
-				 <span class="stat-panel-value-font">3T</span></span>
+				 <span class="stat-panel-value-font">{{usageVolume}}</span></span>
       <span class="stat-panel-title stat-panel-title-font">
 				 {{ 'DASHBOARD.TOTAL' | translate }}:
-				<span class="stat-panel-value-font">10T</span>
+				<span class="stat-panel-value-font">{{totalVolume}}</span>
 			</span>
     </div>
 
@@ -75,10 +75,10 @@
           </clr-dropdown>
         </div>
         <div class="first-line">
-          pods:7
+          {{ 'DASHBOARD.PODS' | translate }}:{{podCount}}
         </div>
         <div class="second-line">
-          containers:32
+          {{ 'DASHBOARD.CONTAINERS' | translate }}:{{containerCount}}
         </div>
       </div>
       <div class="card-block-right-container">
@@ -113,10 +113,10 @@
           </clr-dropdown>
         </div>
         <div class="first-line">
-          CPU:8 70%
+          {{ 'DASHBOARD.CPU' | translate }}:{{cpuPercent}}
         </div>
         <div class="second-line">
-          Memory:40%
+          {{ 'DASHBOARD.MEMORY' | translate }}:{{memoryPercent}}
         </div>
       </div>
       <div class="card-block-right-container">
@@ -150,8 +150,11 @@
             </clr-dropdown-menu>
           </clr-dropdown>
         </div>
+        <div class="first-line">
+          {{ 'DASHBOARD.USAGE' | translate }}:{{usageVolume}}
+        </div>
         <div class="second-line">
-          total:10T
+          {{ 'DASHBOARD.TOTAL' | translate }}:{{totalVolume}}
         </div>
       </div>
       <div class="card-block-right-container">
