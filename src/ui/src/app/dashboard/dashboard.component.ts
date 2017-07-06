@@ -33,6 +33,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 	storageOptions: object = {};
 
 	constructor(private service: DashboardService) {
+		let s: Set<object> = new Set<object>();
+		const a = { name: "123" };
+		const b = { name: "123" };
+		s.add(a).add(b).add(a);
+    s.forEach(value => console.log(value));
 	}
 
 	ngOnInit() {
