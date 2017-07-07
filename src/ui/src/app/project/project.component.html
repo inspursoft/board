@@ -1,1 +1,34 @@
-<h1>Project Component</h1>
+<div class="row flex-items-xs-right">
+  <div class="col-xs-12" style="flex: 0;">
+    <button class="btn btn-primary" (click)="createProject()">Create Project</button>
+  </div>
+</div>
+<div class="row">
+  <create-project></create-project>
+  <project-member></project-member>
+  <div class="col-xs-12">
+    <clr-datagrid>
+      <clr-dg-column>Project Name</clr-dg-column>
+      <clr-dg-column>Creator</clr-dg-column>
+      <clr-dg-column>Creation Time</clr-dg-column>
+      <clr-dg-column>Public</clr-dg-column>
+      <clr-dg-column>Comment</clr-dg-column>
+      <clr-dg-column>Actions</clr-dg-column>
+      <clr-dg-row *ngFor="let p of projects">
+        <clr-dg-cell>{{p.projectName}}</clr-dg-cell>
+        <clr-dg-cell>{{p.creator}}</clr-dg-cell>
+        <clr-dg-cell>{{p.creationTime}}</clr-dg-cell>
+        <clr-dg-cell>
+          <input type="checkbox" id="chkPublic" [checked]="p.isPublic">
+          <label for="chkPublic"></label>
+        </clr-dg-cell>
+        <clr-dg-cell>{{p.comment}}</clr-dg-cell>
+        <clr-dg-cell>
+          <a href="javascript:void(0)"><clr-icon shape="trash"></clr-icon></a>
+          <a href="javascript:void(0)" (click)="editProjectMember()"><clr-icon shape="pencil"></clr-icon></a>
+        </clr-dg-cell>
+      </clr-dg-row>
+      <clr-dg-footer>{{projects ? projects.length : 0}} items</clr-dg-footer>
+    </clr-datagrid>
+  </div>
+</div>

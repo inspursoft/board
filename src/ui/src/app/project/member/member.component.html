@@ -1,1 +1,25 @@
-<h2>Project Member Component</h2>
+<clr-modal [(clrModalOpen)]="projectMemberOpened">
+  <h3 class="modal-title">Project Member</h3>
+  <div class="modal-body">
+    <div class="row flex-items-xs-center" style="min-height: 200px;">
+      <div class="col-xs-4" style="flex: 0;">
+          <select id="selSelected" multiple style="height: 100%; min-width: 180px;">
+            <option *ngFor="let m of members" [hidden]="m.isMember"  value="{{ m.userId }}" (click)="doSet=true; doUnset=false; pickUpMember(m)">{{ m.username }}</option>
+          </select>
+      </div>
+      <div class="col-xs-4 flex-xs-middle" style="flex: 0; margin-left: 12px;">
+        <p style="margin-top: 0;"><button class="btn btn-link" [disabled]="doUnset" (click)="setMember()"><clr-icon shape="caret right"></clr-icon></button></p>
+        <p><button class="btn btn-link" [disabled]="doSet" (click)="unsetMember()"><clr-icon shape="caret left"></clr-icon></button></p>
+      </div>
+      <div class="col-xs-4" style="flex: 0; padding-left: 0;">
+          <select id="selDeselected" multiple style="height: 100%; min-width: 180px;">
+            <option *ngFor="let m of members" value="{{ m.userId }}" [hidden]="!m.isMember" (click)="doSet=false; doUnset=true; pickUpMember(m)">{{ m.username }}</option>
+          </select>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+      <button type="button" class="btn btn-outline" (click)="projectMemberOpened = false">Cancel</button>
+      <button type="button" class="btn btn-primary" (click)="confirm()">Confirm</button>
+  </div>
+</clr-modal>
