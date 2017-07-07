@@ -23,7 +23,7 @@ _testmain.go
 *.exe
 *.test
 *.prof
-
+.DS_Store
 pkg
 bin
 src/apiserver/apiserver
