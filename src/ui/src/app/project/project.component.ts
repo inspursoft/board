@@ -27,7 +27,7 @@ export class ProjectComponent implements OnInit {
     this.createProjectModal.openModal();
   }
 
-  editProjectMember(): void {
-    this.memberModal.openModal();
+  editProjectMember(p: Project): void {
+    this.memberModal.openModal(p);
   }
 }

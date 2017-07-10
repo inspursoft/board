@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Project } from '../project';
 import { Member } from './member';
 import { Subject } from 'rxjs/Subject';
 
@@ -30,6 +31,8 @@ export class MemberComponent implements OnInit {
   
   selectedMember: Member;
   
+  project: Project = new Project();
+
   doSet: boolean;
   doUnset: boolean;
 
@@ -48,8 +51,9 @@ export class MemberComponent implements OnInit {
     });
   }
 
-  openModal(): void {
+  openModal(p: Project): void {
     this.projectMemberOpened = true;
+    this.project = p;
   }
 
   confirm(): void {
