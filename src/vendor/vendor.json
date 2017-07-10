@@ -79,6 +79,13 @@
 		{
 			"path": "google.golang.org/appengine/urlfetch",
 			"revision": ""
+		},
+		{
+			"checksumSHA1": "hBin8FR+b38/hbMfFwH2YIGsSQc=",
+			"path": "k8s.io/client-go",
+			"revision": "e121606b0d09b2e1c467183ee46217fa85a6b672",
+			"revisionTime": "2017-02-13T17:46:50Z",
+			"tree": true
 		}
 	],
 	"rootPath": "git/inspursoft/board/src"
