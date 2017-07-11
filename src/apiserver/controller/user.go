@@ -116,7 +116,7 @@ func OperateUserAction(resp http.ResponseWriter, req *http.Request) {
 func deleteUserAction(resp http.ResponseWriter, req *http.Request) {
 	c := NewCustomController(resp, req)
 	if c.assertMethod(http.MethodDelete) {
-		userID, err := strconv.Atoi(c.GetStringFromPath(apiprefix + "/users/"))
+		userID, err := strconv.Atoi(c.GetStringFromPath("id"))
 		if err != nil {
 			c.serveStatus(http.StatusBadRequest, "Invalid user ID.")
 			return
@@ -144,7 +144,7 @@ func updateUserAction(resp http.ResponseWriter, req *http.Request) {
 				c.internalError(err)
 				return
 			}
-			userID, err := strconv.Atoi(c.GetStringFromPath(apiprefix + "/users/"))
+			userID, err := strconv.Atoi(c.GetStringFromPath("id"))
 			if err != nil {
 				c.serveStatus(http.StatusBadRequest, "Invalid user ID.")
 				return

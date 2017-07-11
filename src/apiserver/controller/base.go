@@ -6,7 +6,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strings"
+
+	"github.com/gorilla/mux"
 )
 
 type controller struct {
@@ -18,9 +19,8 @@ func NewCustomController(resp http.ResponseWriter, req *http.Request) *controlle
 	return &controller{resp: resp, req: req}
 }
 
-func (c *controller) GetStringFromPath(cutset string) string {
-	log.Printf("%s, %s", c.req.URL.Path, cutset)
-	return strings.TrimPrefix(c.req.URL.Path, cutset)
+func (c *controller) GetStringFromPath(key string) string {
+	return mux.Vars(c.req)[key]
 }
 
 func (c *controller) resolveBody() []byte {

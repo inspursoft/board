@@ -17,6 +17,11 @@ func ConfigRouters() *mux.Router {
 	s.HandleFunc("/sign-up", SignUpAction).Methods("POST")
 	s.HandleFunc("/users", GetUsersAction).Methods("GET")
 	s.HandleFunc("/users/{id:[0-9]+}", OperateUserAction).Methods("PUT", "DELETE")
+	s.HandleFunc("/projects", ListAndCreateProjectAction).Methods("GET", "POST")
+	s.HandleFunc("/projects/{id:[0-9]+}", GetAndDeleteProjectAction).Methods("GET", "DELETE")
+	s.HandleFunc("/projects/{id:[0-9]+}/publicity", ToggleProjectPublicAction).Methods("PUT")
+	s.HandleFunc("/projects/{id:[0-9]+}/members", OperateProjectMembersAction).Methods("GET", "POST", "DELETE")
+
 	if _, err := os.Stat("./swagger"); err == nil {
 		r.PathPrefix(root).Handler(http.FileServer(http.Dir("./swagger")))
 	}

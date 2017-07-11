@@ -33,20 +33,20 @@ func UpdateUser(user model.User) (bool, error) {
 	if user.ID == 0 {
 		return false, errors.New("No user ID provided.")
 	}
-	count, err := dao.UpdateUser(user)
+	_, err := dao.UpdateUser(user)
 	if err != nil {
 		return false, err
 	}
-	return (count != 0), nil
+	return true, nil
 }
 
 func DeleteUser(userID int64) (bool, error) {
 	user := model.User{ID: userID}
-	affected, err := dao.DeleteUser(user)
+	_, err := dao.DeleteUser(user)
 	if err != nil {
 		return false, err
 	}
-	return (affected != 0), nil
+	return true, nil
 }
 
 func UsernameExists(username string) (bool, error) {
