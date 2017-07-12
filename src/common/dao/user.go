@@ -2,12 +2,15 @@ package dao
 
 import (
 	"git/inspursoft/board/src/common/model"
+	"time"
 
 	"github.com/astaxie/beego/orm"
 )
 
 func AddUser(user model.User) (int64, error) {
 	o := orm.NewOrm()
+	user.CreationTime = time.Now()
+	user.UpdateTime = user.CreationTime
 	userID, err := o.Insert(&user)
 	if err != nil {
 		if err == orm.ErrNoRows {
@@ -20,6 +23,7 @@ func AddUser(user model.User) (int64, error) {
 
 func UpdateUser(user model.User, fieldNames ...string) (int64, error) {
 	o := orm.NewOrm()
+	user.UpdateTime = time.Now()
 	userID, err := o.Update(&user, fieldNames...)
 	if err != nil {
 		if err == orm.ErrNoRows {
@@ -35,11 +39,10 @@ func GetUser(user model.User, fieldNames ...string) (*model.User, error) {
 	err := o.Read(&user, fieldNames...)
 	if err != nil {
 		if err == orm.ErrNoRows {
-			return &user, nil
+			return nil, nil
 		}
 		return nil, err
 	}
-
 	return &user, err
 }
 
@@ -58,9 +61,4 @@ func GetUsers(field string, value interface{}, selectedFields ...string) ([]*mod
 		return nil, err
 	}
 	return users, nil
-}
-
-func DeleteUser(user model.User) (int64, error) {
-	o := orm.NewOrm()
-	return o.Delete(&user)
 }

@@ -11,15 +11,12 @@ func CreateProject(project model.Project) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	userQuery := model.User{ID: 1}
-	user, err := dao.GetUser(userQuery)
-	if err != nil {
-		return false, err
+
+	projectMember := model.ProjectMember{
+		ProjectID: projectID,
+		UserID:    int64(project.OwnerID),
+		RoleID:    model.ProjectAdmin,
 	}
-	if user == nil {
-		return false, errors.New("none of user found")
-	}
-	projectMember := model.ProjectMember{ProjectID: projectID, UserID: user.ID}
 	projectMemberID, err := dao.InsertOrUpdateProjectMember(projectMember)
 	if err != nil {
 		return false, errors.New("failed to create project member")
@@ -27,8 +24,8 @@ func CreateProject(project model.Project) (bool, error) {
 	return (projectID != 0 && projectMemberID != 0), nil
 }
 
-func GetProject(project model.Project) (*model.Project, error) {
-	p, err := dao.GetProject(project)
+func GetProject(project model.Project, selectedFields ...string) (*model.Project, error) {
+	p, err := dao.GetProject(project, selectedFields...)
 	if err != nil {
 		return nil, err
 	}
@@ -41,16 +38,16 @@ func ProjectExists(projectName string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return (project.ID != 0), nil
+	return (project != nil && project.ID != 0), nil
 }
 
 func ProjectExistsByID(projectID int64) (bool, error) {
-	query := model.Project{ID: projectID}
-	project, err := dao.GetProject(query, "id")
+	query := model.Project{ID: projectID, Deleted: 0}
+	project, err := dao.GetProject(query, "id", "deleted")
 	if err != nil {
 		return false, err
 	}
-	return (project.Name != ""), nil
+	return (project != nil && project.Name != ""), nil
 }
 
 func UpdateProject(project model.Project, fieldNames ...string) (bool, error) {
@@ -64,13 +61,17 @@ func UpdateProject(project model.Project, fieldNames ...string) (bool, error) {
 	return true, nil
 }
 
-func GetProjects(fieldName string, value interface{}, selectedFields ...string) ([]*model.Project, error) {
-	return dao.GetProjects(fieldName, value, selectedFields...)
+func GetAllProjects(query model.Project) ([]*model.Project, error) {
+	return dao.GetAllProjects(query)
+}
+
+func GetProjectsByUser(query model.Project, userID int64) ([]*model.Project, error) {
+	return dao.GetProjectsByUser(query, userID)
 }
 
 func DeleteProject(projectID int64) (bool, error) {
-	project := model.Project{ID: projectID}
-	_, err := dao.DeleteProject(project)
+	project := model.Project{ID: projectID, Deleted: 1}
+	_, err := dao.UpdateProject(project, "deleted")
 	if err != nil {
 		return false, err
 	}

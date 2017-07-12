@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
+
+	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/common/model"
 
 	"github.com/gorilla/mux"
 )
@@ -32,7 +34,6 @@ func (c *controller) resolveBody() []byte {
 			err)
 		return nil
 	}
-	log.Printf("%s\n", string(data))
 	return data
 }
 
@@ -76,4 +77,39 @@ func (c *controller) serveStatus(status int, message string) {
 	}
 	c.resp.WriteHeader(status)
 	c.serveJSON(ms)
+}
+
+func getCurrentUser() (*model.User, error) {
+	user, err := service.GetUserByID(1)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+func checkUserPermission(projectID int64) (bool, error) {
+	user, err := getCurrentUser()
+	if err != nil {
+		return false, err
+	}
+	if user == nil {
+		return false, nil
+	}
+	return checkUserChangePermission(projectID, user.ID)
+}
+
+func checkUserChangePermission(projectID int64, userID int64) (bool, error) {
+	isSysAdmin, err := service.IsSysAdmin(userID)
+	if err != nil {
+		return false, err
+	}
+	if isSysAdmin {
+		return true, nil
+	}
+	hasProjectAdmin, err := service.HasProjectAdminRole(projectID, userID)
+	if err != nil {
+		return false, err
+	}
+	return hasProjectAdmin, nil
+
 }

@@ -2,7 +2,6 @@ package controller
 
 import (
 	"encoding/json"
-	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
 	"net/http"
@@ -34,6 +33,20 @@ func createProjectAction(resp http.ResponseWriter, req *http.Request) {
 				c.serveStatus(http.StatusConflict, "Project name already exists.")
 				return
 			}
+
+			currentUser, err := getCurrentUser()
+			if err != nil {
+				c.internalError(err)
+				return
+			}
+			if currentUser == nil {
+				c.customAbort(http.StatusUnauthorized, "Need sign in first.")
+				return
+			}
+
+			reqProject.OwnerID = int(currentUser.ID)
+			reqProject.OwnerName = currentUser.Username
+
 			isSuccess, err := service.CreateProject(reqProject)
 			if err != nil {
 				c.internalError(err)
@@ -49,8 +62,43 @@ func createProjectAction(resp http.ResponseWriter, req *http.Request) {
 func getProjectsAction(resp http.ResponseWriter, req *http.Request) {
 	c := NewCustomController(resp, req)
 	if c.assertMethod("GET") {
+
 		projectName := req.FormValue("project_name")
-		projects, err := service.GetProjects("name", projectName)
+		strPublic := req.FormValue("project_public")
+
+		query := model.Project{Name: projectName, Public: 0}
+
+		var err error
+
+		public, err := strconv.Atoi(strPublic)
+		if err == nil {
+			query.Public = public
+		}
+
+		currentUser, err := getCurrentUser()
+		if err != nil {
+			c.internalError(err)
+			return
+		}
+		if currentUser == nil {
+			c.customAbort(http.StatusUnauthorized, "Need sign in first.")
+			return
+		}
+
+		isSysAdmin, err := service.IsSysAdmin(currentUser.ID)
+		if err != nil {
+			c.internalError(err)
+			return
+		}
+
+		var projects []*model.Project
+
+		if isSysAdmin {
+			projects, err = service.GetAllProjects(query)
+		} else {
+			projects, err = service.GetProjectsByUser(query, currentUser.ID)
+		}
+
 		if err != nil {
 			c.internalError(err)
 			return
@@ -76,10 +124,14 @@ func getProjectAction(resp http.ResponseWriter, req *http.Request) {
 			c.internalError(err)
 			return
 		}
-		projectQuery := model.Project{ID: int64(projectID)}
-		project, err := service.GetProject(projectQuery)
+		projectQuery := model.Project{ID: int64(projectID), Deleted: 0}
+		project, err := service.GetProject(projectQuery, "id", "deleted")
 		if err != nil {
 			c.internalError(err)
+			return
+		}
+		if project == nil {
+			c.customAbort(http.StatusNotFound, "No project was found with provided ID.")
 			return
 		}
 		c.serveJSON(project)
@@ -93,6 +145,27 @@ func deleteProjectAction(resp http.ResponseWriter, req *http.Request) {
 			c.internalError(err)
 			return
 		}
+
+		isExists, err := service.ProjectExistsByID(int64(projectID))
+		if err != nil {
+			c.internalError(err)
+			return
+		}
+		if !isExists {
+			c.customAbort(http.StatusNotFound, "Cannot find project by ID")
+			return
+		}
+
+		hasPermission, err := checkUserPermission(int64(projectID))
+		if err != nil {
+			c.internalError(err)
+			return
+		}
+		if !hasPermission {
+			c.customAbort(http.StatusForbidden, "Insuffient privileges.")
+			return
+		}
+
 		isSuccess, err := service.DeleteProject(int64(projectID))
 		if err != nil {
 			c.internalError(err)
@@ -117,7 +190,6 @@ func ToggleProjectPublicAction(resp http.ResponseWriter, req *http.Request) {
 	c := NewCustomController(resp, req)
 	if c.assertMethod("PUT") {
 		projectID, err := strconv.Atoi(c.GetStringFromPath("id"))
-		fmt.Printf("Project ID: %d\n", projectID)
 		if err != nil {
 			c.internalError(err)
 			return
@@ -134,6 +206,16 @@ func ToggleProjectPublicAction(resp http.ResponseWriter, req *http.Request) {
 		}
 		if !isExists {
 			c.customAbort(http.StatusNotFound, "Cannot find project by ID")
+			return
+		}
+
+		hasPermission, err := checkUserPermission(int64(projectID))
+		if err != nil {
+			c.internalError(err)
+			return
+		}
+		if !hasPermission {
+			c.customAbort(http.StatusForbidden, "Insuffient privileges.")
 			return
 		}
 

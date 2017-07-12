@@ -27,8 +27,8 @@ CREATE TABLE `user` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 
-INSERT INTO `board`.`user` (`username`, `password`, `email`, `realname`, `comment`, `creation_time`)
-  VALUES ('admin', 'Board12345', 'admin@inspur.com', 'admin', 'admin user', now());
+INSERT INTO `board`.`user` (`username`, `password`, `email`, `realname`, `comment`, `creation_time`, `deleted`, `system_admin`)
+  VALUES ('admin', 'Board12345', 'admin@inspur.com', 'admin', 'admin user', now(), 0, 1);
 
 CREATE TABLE `board`.`project` (
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -57,9 +57,13 @@ CREATE TABLE `project_member` (
   `user_id` int(11) NOT NULL,
   `project_id` int(11) NOT NULL,
   `role_id` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`,`user_id`,`project_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+INSERT INTO `board`.`project_member`
+ (`id`, `user_id`, `project_id`, `role_id`)
+ VALUES
+ (2, 1, 1, 2);
 
 CREATE TABLE `board`.`role` (
   `id` INT NOT NULL AUTO_INCREMENT,
