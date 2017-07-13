@@ -1,0 +1,109 @@
+<clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'md'">
+	<h3 class="modal-title">{{ Title | translate }}</h3>
+	<div class="modal-body">
+		<div *ngIf="afterCommitErr && afterCommitErr != ''" class="alert alert-danger">
+			<div class="alert-item">
+				<span class="alert-text">{{afterCommitErr | translate}}</span>
+			</div>
+		</div>
+		<form #signUpForm="ngForm" (ngSubmit)="submitUser()">
+			<section class="form-block">
+				<div class="form-group">
+					<label for="txtUsername"><span class="asterisk">*</span>{{ 'USER_CENTER.USERNAME' | translate }}</label>
+					<label for="txtUsername" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left"
+					 [class.invalid]="usernameInput.invalid && (usernameInput.dirty || usernameInput.touched)">
+                <input type="text" 
+								id="txtUsername" 
+								placeholder="{{ 'USER_CENTER.INPUT_USERNAME' | translate }}"
+                name="username"
+                [(ngModel)]="userModel.user_name"
+                #usernameInput = "ngModel"
+								[disabled]="CurEditModel == 1"
+								required>
+                <span style="display: block;z-index: 10" 
+								      class="tooltip-content" 
+											*ngIf="usernameInput.errors && usernameInput.errors['required']">
+                {{ 'USER_CENTER.USERNAME_IS_REQUIRED' | translate }}
+                </span>
+            </label>
+				</div>
+				<div class="form-group">
+					<label for="txtEmail"><span class="asterisk">*</span>{{ 'USER_CENTER.EMAIL' | translate }}</label>
+					<label for="txtEmail" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md  tooltip-top-left"
+					 [class.invalid]="emailInput.invalid && (emailInput.dirty || emailInput.touched)">
+                <input type="email" 
+								id="txtEmail" 
+								placeholder="{{ 'USER_CENTER.INPUT_EMAIL' | translate }}"
+                required 
+								check-item-pattern
+                name="email"
+                [(ngModel)]="userModel.user_email"
+                #emailInput="ngModel">
+                <span class="tooltip-content" 
+								      *ngIf="emailInput.errors && emailInput.errors['required']">
+                      {{ 'USER_CENTER.EMAIL_IS_REQUIRED' | translate }}
+                </span>
+                <span class="tooltip-content" 
+								     *ngIf="emailInput.errors && emailInput.errors['emailFormat']">
+                     {{ 'USER_CENTER.EMAIL_IS_ILLEGAL' | translate }}
+                </span>
+            </label>
+				</div>
+				<div *ngIf="CurEditModel == 0" class="form-group">
+					<label for="txtPassword"><span class="asterisk">*</span>{{ 'USER_CENTER.PASSWORD' | translate }}</label>
+					<label for="txtPassword" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md  tooltip-top-left"
+					 [class.invalid]="passwordInput.invalid && (passwordInput.dirty || passwordInput.touched)">
+                <input type="password" 
+								id="txtPassword" 
+								placeholder="{{ 'USER_CENTER.INPUT_PASSWORD' | translate }}"
+                name="password"
+                [(ngModel)]="userModel.user_password"
+                #passwordInput="ngModel"
+								required>
+                <span class="tooltip-content" 
+								      *ngIf="passwordInput.errors && passwordInput.errors['required']">
+                      {{ 'USER_CENTER.PASSWORD_IS_REQUIRED' | translate }}
+                </span>
+            </label>
+				</div>
+				<div *ngIf="CurEditModel == 0" class="form-group">
+					<label for="txtConfirmPassword">
+						<span class="asterisk">*</span>{{ 'USER_CENTER.CONFIRM_PASSWORD' | translate }}
+					</label>
+					<label for="txtConfirmPassword" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md  tooltip-top-left"
+					 [class.invalid]="confirmPasswordInput.invalid && (confirmPasswordInput.dirty || confirmPasswordInput.touched)">
+                <input type="password" 
+								id="txtConfirmPassword" 
+								placeholder="{{ 'USER_CENTER.INPUT_CONFIRM_PASSWORD' | translate }}"
+                required checkItemIdentical="signUpModel.confirmPassword" 
+								[comparison]="userModel.user_password"
+                name="confirmPassword"
+                [(ngModel)]="userModel.user_confirm_password"
+                #confirmPasswordInput="ngModel">
+                <span class="tooltip-content" 
+								      *ngIf="confirmPasswordInput.errors && confirmPasswordInput.errors['checkItemIdentical']">
+                      {{ 'USER_CENTER.PASSWORDS_ARE_NOT_IDENTICAL' | translate }}
+                </span>
+            </label>
+				</div>
+				<div class="form-group">
+					<label for="txtComment">{{ 'USER_CENTER.COMMENT' | translate }}</label>
+					<label for="txtComment" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left "
+					 [class.invalid]="commentInput.invalid && (commentInput.dirty || commentInput.touched)">
+                <input type="text" 
+								id="txtComment"
+                name="comment"
+                [(ngModel)]="userModel.user_comment"
+                #commentInput="ngModel">
+            </label>
+				</div>
+				<div class="form-group">
+					<label for="txtNotice"></label>
+					<label for="txtNotice"><span class="asterisk">*</span> {{ 'USER_CENTER.REQUIRED_ITEMS' | translate }}</label>
+				</div>
+				<button type="submit" class="btn btn-primary" [disabled]="signUpForm.invalid">{{ ActionCaption | translate }}</button>&nbsp;&nbsp;
+				<button type="button" class="btn btn-default" (click)="isOpen = false">{{ 'USER_CENTER.CANCEL' | translate }}</button>
+			</section>
+		</form>
+	</div>
+</clr-modal>

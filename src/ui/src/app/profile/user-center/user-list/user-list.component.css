@@ -1,0 +1,14 @@
+.trash{
+  cursor: pointer;
+}
+.trash:hover{
+  color: blue;
+}
+
+.edit{
+  margin-left: 10px;
+  cursor: pointer;
+}
+.edit:hover{
+  color: blue;
+}

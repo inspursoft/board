@@ -67,5 +67,31 @@ export const LANG_ZH_CN = {
     "USAGE": "已用",
     "TOTAL": "总共",
     "STORAGE": "存储", 
- }
+  },
+  "USER_CENTER": {
+    "EDIT":"修改",
+    "EDIT_USER":"修改用户",
+    "ADD_USER": "添加用户",
+    "USERNAME": "用户名",
+    "INPUT_USERNAME": "输入用户名",
+    "USERNAME_IS_REQUIRED": "用户名为必填项。",
+    "EMAIL": "邮箱",
+    "INPUT_EMAIL": "输入邮箱",
+    "EMAIL_IS_REQUIRED": "邮箱为必填项。",
+    "EMAIL_IS_ILLEGAL": "邮箱格式非法。",
+    "PASSWORD_PLACEHOLDER": "密码",
+    "PASSWORD": "密码",
+    "PASSWORD_IS_REQUIRED": "密码为必填项。",
+    "INPUT_PASSWORD": "输入密码",
+    "PASSWORDS_ARE_NOT_IDENTICAL": "两次密码内容不一致。",
+    "CONFIRM_PASSWORD": "确认密码",
+    "INPUT_CONFIRM_PASSWORD": "输入确认密码",
+    "COMMENT": "备注",
+    "REQUIRED_ITEMS": "为必填项。",
+    "USERNAME_ALREADY_EXISTS": "用户名已存在。",
+    "ERROR": "错误",
+    "INCORRECT_USERNAME_OR_PASSWORD": "用户名或密码错误。",
+    "ADD": "添加",
+    "CANCEL":"取消"
+  } 
 };

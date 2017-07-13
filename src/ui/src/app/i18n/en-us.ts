@@ -67,5 +67,31 @@ export const LANG_EN_US = {
     "USAGE": "Usage",
     "TOTAL": "Total",
     "STORAGE": "Storage",
- }
+  },
+  "USER_CENTER": {
+    "EDIT":"EDIT",
+    "EDIT_USER":"Edit User",
+    "ADD_USER": "Add New User",
+    "USERNAME": "Username",
+    "INPUT_USERNAME": "Input username",
+    "USERNAME_IS_REQUIRED": "Username is required.",
+    "EMAIL": "Email",
+    "INPUT_EMAIL": "Input email",
+    "EMAIL_IS_REQUIRED": "Email is required.",
+    "EMAIL_IS_ILLEGAL": "Email is illegal.",
+    "PASSWORD": "Password",
+    "PASSWORD_PLACEHOLDER": "Password",
+    "PASSWORD_IS_REQUIRED": "Password is required.",
+    "INPUT_PASSWORD": "Input password",
+    "CONFIRM_PASSWORD": "Confirm Password",
+    "INPUT_CONFIRM_PASSWORD": "Input confirm password",
+    "PASSWORDS_ARE_NOT_IDENTICAL": "Passwords are not identical.",
+    "COMMENT": "Comment",
+    "REQUIRED_ITEMS": "Required items.",
+    "USERNAME_ALREADY_EXISTS": "Username already exists.",
+    "ERROR": "Error",
+    "INCORRECT_USERNAME_OR_PASSWORD": "Incorrect username or password.",
+    "ADD": "ADD",
+    "CANCEL":"CANCEL"
+  }
 };
