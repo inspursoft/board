@@ -3,6 +3,12 @@ create database board charset = utf8;
 
 use board;
 
+DROP TABLE IF EXISTS `user`;
+DROP TABLE IF EXISTS `project`;
+DROP TABLE IF EXISTS `project_member`;
+DROP TABLE IF EXISTS `role`;
+
+
 CREATE TABLE `user` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(45) NOT NULL,
@@ -21,8 +27,55 @@ CREATE TABLE `user` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 
-INSERT INTO `board`.`user` (`username`, `password`, `email`, `realname`, `comment`, `creation_time`)
-  VALUES ('admin', 'Board12345', 'admin@inspur.com', 'admin', 'admin user', now());
+INSERT INTO `board`.`user` (`username`, `password`, `email`, `realname`, `comment`, `creation_time`, `deleted`, `system_admin`)
+  VALUES ('admin', 'Board12345', 'admin@inspur.com', 'admin', 'admin user', now(), 0, 1);
+
+CREATE TABLE `board`.`project` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(50) NULL,
+  `comment` VARCHAR(255) NULL,
+  `creation_time` DATETIME NULL,
+  `update_time` DATETIME NULL,
+  `deleted` SMALLINT(1) NULL,
+  `owner_id` INT NULL,
+  `owner_name` VARCHAR(45) NULL,
+  `public` SMALLINT(1) NULL,
+  `toggleable` SMALLINT(1) NULL,
+  `current_user_role_id` INT NULL,
+  `service_count` INT NULL,
+  PRIMARY KEY (`id`));
+
+INSERT INTO `board`.`project`
+ (`id`, `name`, `comment`, `creation_time`, `update_time`, `deleted`, `owner_id`, 
+  `owner_name`, `public`, `toggleable`, `current_user_role_id`, `service_count`)
+ VALUES
+ (1, 'library', 'library comment', now(), null, 0, 1,'admin', 1, 1, 1, 0);
+
+
+CREATE TABLE `project_member` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `project_id` int(11) NOT NULL,
+  `role_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`,`user_id`,`project_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO `board`.`project_member`
+ (`id`, `user_id`, `project_id`, `role_id`)
+ VALUES
+ (2, 1, 1, 2);
+
+CREATE TABLE `board`.`role` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(45) NULL,
+  `comment` VARCHAR(45) NULL,
+  PRIMARY KEY (`id`));
+
+INSERT INTO `board`.`role` (id, name, comment) 
+  VALUES (1, 'sysAdmin', 'System Admin'),
+         (2, 'projectAdmin', 'Project Admin'),
+         (3, 'developer', 'Developer'),
+         (4, 'visitor', 'Visitor');
 
 -- --------------------------------------------------
 --  Table Structure for `model/get_resource.Pods`

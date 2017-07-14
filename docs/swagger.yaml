@@ -117,11 +117,62 @@ paths:
           description: User registration can only be used by admin role user when self-registration is off.
         500:
           description: Unexpected internal errors.
+  /v1/adduser:
+    post:
+      summary: Add a new user account (This feature is only provided for system admin user).
+      description: |
+        This endpoint is to create a user if the user does not already exist  (This feature is only provided for system admin user).
+      parameters:
+        - name: user
+          in: body
+          description: New created user.
+          required: true
+          schema:
+            $ref: '#/definitions/UserDetail'
+      tags:
+        - Products
+      responses:
+        201:
+          description: User created successfully.
+        400:
+          description: Unsatisfied with constraints of the user creation.
+        403:
+          description: User registration can only be used by admin role user when self-registration is off.
+        500:
+          description: Unexpected internal errors.          
+  /v1/sign-in:
+    post:
+      summary: Sign in with available user account.
+      description: |
+        Sign in system with available user account including username/email and password.
+      parameters:
+        - name: user
+          in: body
+          description: Available user account.
+          required: true
+          schema:
+            $ref: '#/definitions/UserDetail'
+      tags:
+        - Products
+      responses:
+        200:
+          description: User signed in successfully.
+        400:
+          description: Incorrect username or password.
+        500:
+          description: Unexpected internal error.
   /v1/users/{user_id}:
     get:
       summary: Get current user info.
       description: |
         This endpoint is to get the current user infomation.
+      parameters:
+        - name: user_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Registered user ID        
       tags:
         - Products
       responses:
@@ -208,46 +259,12 @@ paths:
           description:  Toggle a user to system admin or not.
           required: true
           schema:
-            $ref: '#/definitions/UserProjectAdminUpdate'
+            $ref: '#/definitions/UserSystemAdminUpdate'
       tags:
         - Products
       responses:
         200:
           description: Updated user's system admin role successfully.
-        400:
-          description: Invalid user ID.
-        401:
-          description: User need to log in first.
-        403:
-          description: User does not have permission of admin role.
-        404:
-          description: User ID does not exist.
-        500:
-          description: Unexpected internal errors.
-  /v1/users/{user_id}/projectadmin:
-    put:
-      summary: Update a registered user to change to be an project administrator of Board.
-      description: |
-        This endpoint let a registered user change to be an project administrator
-        of Board.
-      parameters:
-        - name: user_id
-          in: path
-          type: integer
-          format: int32
-          required: true
-          description: Registered user ID
-        - name: user_system_admin
-          in: body
-          description:  Toggle a user to project admin or not.
-          required: true
-          schema:
-            $ref: '#/definitions/UserProjectAdminUpdate'
-      tags:
-        - Products
-      responses:
-        200:
-          description: Updated user's project admin role successfully.
         400:
           description: Invalid user ID.
         401:
@@ -437,39 +454,7 @@ paths:
         401:
           description: User need to log in first.
         500:
-          description: Internal errors.
-    put:
-      summary: Update properties for a selected project.
-      description: |
-       This endpoint update properties of the project.
-      parameters:
-        - name: project_id
-          in: path
-          type: integer
-          format: int32
-          required: true
-          description: The project ID.
-        - name: project_properties
-          in: body
-          description: Only project name and comment can be modified.
-          required: true
-          schema:
-            $ref: '#/definitions/ProjectPropertyUpdate' 
-      tags:
-        - Products
-      responses:
-        200:
-          description: Updated user's admin role successfully.
-        400:
-          description: Invalid user ID.
-        401:
-          description: User need to log in first.
-        403:
-          description: User does not have permission of admin role.
-        404:
-          description: User ID does not exist.
-        500:
-          description: Unexpected internal errors.      
+          description: Internal errors.     
     delete:
       summary: Delete project by projectID
       description: |
@@ -529,7 +514,7 @@ paths:
           description: Project ID does not exist.
         500:
           description: Unexpected internal errors.
-  /v1/projects/{project_id}/members/:
+  /v1/projects/{project_id}/members:
     get:
       summary: Return a project's relevant members.
       description: |
@@ -575,9 +560,7 @@ paths:
           in: body
           required: true
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/UserBrief'
+            $ref: '#/definitions/RoleBrief'
           description: Members list for adding to relevant project.
       tags:
         - Products
@@ -594,6 +577,38 @@ paths:
           description: Project ID or username does not exist.
         500:
           description: Unexpected internal errors.
+    delete:
+      summary: Delete member accompany with relevant project.
+      description: |
+        This endpoint is for user to delete member accompany with relevant project.
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Relevant project ID.
+        - name: project_member
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/RoleBrief'
+          description: Members list for adding to relevant project.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Members added to relevant project successfully.
+        400:
+          description: Illegal format of provided ID value.
+        401:
+          description: User need to log in first.
+        403:
+          description: User in session does not have permission to the project.
+        404:
+          description: Project ID or username does not exist.
+        500:
+          description: Unexpected internal errors.        
   /v1/service:
     get:
       summary: Return services created by Board.
@@ -1352,6 +1367,15 @@ definitions:
       project_public: 
         type: integer
         description: 1-public, 0-not.
+  RoleBrief:
+    type: object
+    properties:
+      project_member_role_id:
+        type: integer
+        description: 1-system admin, 2-project admin, 3-developer, 4-visitor
+      project_member_user_id:
+        type: integer
+        description: User ID set as member to relevant project. 
   ServiceBrief:
     type: object
     properties: 

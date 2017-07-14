@@ -22,31 +22,40 @@ func SignIn(principal string, password string) (bool, error) {
 		log.Printf("Failed to get user in SignIn: %+v\n", err)
 		return false, err
 	}
-	return (user.ID != 0), nil
+	return (user != nil && user.ID != 0), nil
+}
+
+func GetUserByID(userID int64) (*model.User, error) {
+	query := model.User{ID: userID, Deleted: 0}
+	user, err := dao.GetUser(query, "id", "deleted")
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }
 
 func GetUsers(field string, value interface{}, selectedFields ...string) ([]*model.User, error) {
 	return dao.GetUsers(field, value, selectedFields...)
 }
 
-func UpdateUser(user model.User) (bool, error) {
+func UpdateUser(user model.User, selectedFields ...string) (bool, error) {
 	if user.ID == 0 {
 		return false, errors.New("No user ID provided.")
 	}
-	count, err := dao.UpdateUser(user)
+	_, err := dao.UpdateUser(user, selectedFields...)
 	if err != nil {
 		return false, err
 	}
-	return (count != 0), nil
+	return true, nil
 }
 
 func DeleteUser(userID int64) (bool, error) {
-	user := model.User{ID: userID}
-	affected, err := dao.DeleteUser(user)
+	user := model.User{ID: userID, Deleted: 1}
+	_, err := dao.UpdateUser(user, "deleted")
 	if err != nil {
 		return false, err
 	}
-	return (affected != 0), nil
+	return true, nil
 }
 
 func UsernameExists(username string) (bool, error) {
@@ -55,7 +64,7 @@ func UsernameExists(username string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return (user.ID != 0), nil
+	return (user != nil && user.ID != 0), nil
 }
 
 func EmailExists(email string) (bool, error) {
@@ -64,5 +73,14 @@ func EmailExists(email string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return (user.ID != 0), nil
+	return (user != nil && user.ID != 0), nil
+}
+
+func IsSysAdmin(userID int64) (bool, error) {
+	query := model.User{ID: userID}
+	user, err := dao.GetUser(query, "id")
+	if err != nil {
+		return false, err
+	}
+	return (user != nil && user.ID != 0 && user.SystemAdmin == 1), nil
 }
