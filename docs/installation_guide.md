@@ -1,9 +1,9 @@
 <img src="img/board_logo.png" width="100" alt="Board">
-## Board container service platfrom cluster
+## Board container service platform cluster
 
-The "Board" product is a container platform based on open source technologies, Docker, Kubernetes, Jenkins, MySQL etc. We provide cloud solutions for Inspur software group, including lightweight container virtualization, micro service, DevOps, continuous delivery, help enterprises and developent teams achieve fast business application delivery and continuous innovation.
+The "Board" product is a container platform based on open source technologies, Docker, Kubernetes, Jenkins, MySQL etc. We provide cloud solutions for Inspur software group, including lightweight container virtualization, micro service, DevOps, continuous delivery, help enterprises and development teams achieve fast business application delivery and continuous innovation.
 
-This document is a guide to install a Board cluster. The Board cluster includes all physical components of Board container service plaform. The following is a logic structure diagram.
+This document is a guide to install a Board cluster. The Board cluster includes all physical components of Board container service platform. The following is a logic structure diagram.
 
 <img src="img/boardcluster.PNG" width="100" alt="Board Cluster">
 
@@ -16,7 +16,7 @@ As its name, the Board core is the core of the whole system, please refer to the
 
 ### K-master installation
 
-Recommented OS: CentOS7.2
+Recommended OS: CentOS7.2
 
 Dependent packages:
 
