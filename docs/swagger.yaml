@@ -275,6 +275,40 @@ paths:
           description: User ID does not exist.
         500:
           description: Unexpected internal errors.
+  /v1/users/{user_id}/projectadmin:
+    put:
+      summary: Update a registered user to change to be an project administrator of Board.
+      description: |
+        This endpoint let a registered user change to be an project administrator
+        of Board.
+      parameters:
+        - name: user_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Registered user ID
+        - name: user_project_admin
+          in: body
+          description:  Toggle a user to project admin or not.
+          required: true
+          schema:
+            $ref: '#/definitions/UserProjectAdminUpdate'
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated user's project admin role successfully.
+        400:
+          description: Invalid user ID.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        404:
+          description: User ID does not exist.
+        500:
+          description: Unexpected internal errors.          
   /v1/users/{user_id}/password:
     put:
       summary: Change the password on a user that already exists.

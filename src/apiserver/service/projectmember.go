@@ -3,6 +3,8 @@ package service
 import (
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
+
+	"github.com/astaxie/beego/orm"
 )
 
 func AddOrUpdateProjectMember(projectID int64, userID int64, roleID int64) (bool, error) {
@@ -41,4 +43,15 @@ func IsProjectMember(projectID int64) (bool, error) {
 		return false, err
 	}
 	return (members != nil && len(members) > 0), nil
+}
+
+func GetRoleByID(roleID int64) (*model.Role, error) {
+	role, err := dao.GetRole(model.Role{ID: roleID}, "id")
+	if err != nil {
+		if err == orm.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return role, nil
 }

@@ -1,10 +1,11 @@
 package main
 
 import (
-	"git/inspursoft/board/src/apiserver/controller"
-	"net/http"
+	_ "git/inspursoft/board/src/apiserver/router"
+
+	"github.com/astaxie/beego"
 )
 
 func main() {
-	http.ListenAndServe(":8080", controller.ConfigRouters())
+	beego.Run(":8080")
 }

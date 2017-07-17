@@ -27,8 +27,8 @@ CREATE TABLE `user` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 
-INSERT INTO `board`.`user` (`username`, `password`, `email`, `realname`, `comment`, `creation_time`, `deleted`, `system_admin`)
-  VALUES ('admin', 'Board12345', 'admin@inspur.com', 'admin', 'admin user', now(), 0, 1);
+INSERT INTO `board`.`user` (`username`, `password`, `email`, `realname`, `comment`, `creation_time`, `update_time`, `deleted`, `system_admin`, `project_admin`)
+  VALUES ('admin', 'Board12345', 'admin@inspur.com', 'admin', 'admin user', now(), now(), 0, 1, 1);
 
 CREATE TABLE `board`.`project` (
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -49,7 +49,7 @@ INSERT INTO `board`.`project`
  (`id`, `name`, `comment`, `creation_time`, `update_time`, `deleted`, `owner_id`, 
   `owner_name`, `public`, `toggleable`, `current_user_role_id`, `service_count`)
  VALUES
- (1, 'library', 'library comment', now(), null, 0, 1,'admin', 1, 1, 1, 0);
+ (1, 'library', 'library comment', now(), now(), 0, 1,'admin', 1, 1, 1, 0);
 
 
 CREATE TABLE `project_member` (
@@ -72,10 +72,9 @@ CREATE TABLE `board`.`role` (
   PRIMARY KEY (`id`));
 
 INSERT INTO `board`.`role` (id, name, comment) 
-  VALUES (1, 'sysAdmin', 'System Admin'),
-         (2, 'projectAdmin', 'Project Admin'),
-         (3, 'developer', 'Developer'),
-         (4, 'visitor', 'Visitor');
+  VALUES (1, 'projectAdmin', 'Project Admin'),
+         (2, 'developer', 'Developer'),
+         (3, 'visitor', 'Visitor');
 
 -- --------------------------------------------------
 --  Table Structure for `model/get_resource.Pods`
