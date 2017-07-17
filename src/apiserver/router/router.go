@@ -44,7 +44,10 @@ func init() {
 				"get:GetProjectAction;delete:DeleteProjectAction"),
 			beego.NSRouter("/projects/:id([0-9]+)/members",
 				&controller.ProjectMemberController{},
-				"get:GetProjectMembersAction;post:AddOrUpdateProjectMemberAction;delete:DeleteProjectMemberAction"),
+				"get:GetProjectMembersAction;post:AddOrUpdateProjectMemberAction"),
+			beego.NSRouter("/projects/:id([0-9]+)/members/id([0-9]+)",
+				&controller.ProjectMemberController{},
+				"delete:DeleteProjectMemberAction"),
 		),
 	)
 	beego.AddNamespace(ns)

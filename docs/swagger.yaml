@@ -568,7 +568,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/UserBrief'
+              $ref: '#/definitions/ProjectMemberDetail'
         400:
           description: Illegal format of provided ID value.
         401:
@@ -611,6 +611,7 @@ paths:
           description: Project ID or username does not exist.
         500:
           description: Unexpected internal errors.
+  /v1/projects/{project_id}/members/{user_id}:
     delete:
       summary: Delete member accompany with relevant project.
       description: |
@@ -622,12 +623,12 @@ paths:
           format: int32
           required: true
           description: Relevant project ID.
-        - name: project_member
-          in: body
+        - name: user_id
+          in: path
+          type: integer
+          format: int32
           required: true
-          schema:
-            $ref: '#/definitions/RoleBrief'
-          description: Members list for adding to relevant project.
+          description: Relevant user ID.
       tags:
         - Products
       responses:
@@ -1401,6 +1402,28 @@ definitions:
       project_public: 
         type: integer
         description: 1-public, 0-not.
+  ProjectMemberDetail:
+    type: object
+    properties:
+      project_member_id:
+        type: integer
+        format: int32
+        description: Project member ID.
+      project_member_user_id:
+        type: integer
+        format: int32
+        description: Project member user ID.
+      project_member_username:
+        type: string
+        description: Project member username.
+      project_member_project_id:
+        type: integer
+        format: int32
+        description: Project member relevant project ID.
+      project_member_role_id:
+        type: integer
+        format: int32
+        description: Project member relevant project role ID.
   RoleBrief:
     type: object
     properties:

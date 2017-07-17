@@ -38,21 +38,21 @@ func DeleteProjectMember(projectMember model.ProjectMember) (int64, error) {
 	return o.Delete(&projectMember)
 }
 
-func GetProjectMembers(project model.Project) ([]*model.User, error) {
+func GetProjectMembers(project model.Project) ([]*model.ProjectMember, error) {
 	o := orm.NewOrm()
-	sql := `select u.id, u.username 
+	sql := `select pm.id, pm.user_id, u.username, pm.project_id, pm.role_id
 		from user u left join project_member pm 
 				on u.id = pm.user_id 
 	  where pm.project_id = ?`
-	var users []*model.User
-	_, err := o.Raw(sql, project.ID).QueryRows(&users)
+	var members []*model.ProjectMember
+	_, err := o.Raw(sql, project.ID).QueryRows(&members)
 	if err != nil {
 		if err == orm.ErrNoRows {
 			return nil, nil
 		}
 		return nil, err
 	}
-	return users, nil
+	return members, nil
 }
 
 func GetProjectMemberRole(project model.Project, user model.User) (*model.Role, error) {

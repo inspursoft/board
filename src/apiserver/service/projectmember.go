@@ -16,7 +16,7 @@ func AddOrUpdateProjectMember(projectID int64, userID int64, roleID int64) (bool
 	return true, nil
 }
 
-func GetProjectMembers(projectID int64) ([]*model.User, error) {
+func GetProjectMembers(projectID int64) ([]*model.ProjectMember, error) {
 	return dao.GetProjectMembers(model.Project{ID: projectID})
 }
 
