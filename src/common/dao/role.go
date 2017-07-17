@@ -6,9 +6,9 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
-func GetRole(role model.Role) (*model.Role, error) {
+func GetRole(role model.Role, selectedFields ...string) (*model.Role, error) {
 	o := orm.NewOrm()
-	err := o.Read(&role)
+	err := o.Read(&role, selectedFields...)
 	if err != nil {
 		return nil, err
 	}

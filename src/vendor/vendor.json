@@ -19,10 +19,68 @@
 			"revision": ""
 		},
 		{
+			"path": "github.com/astaxie/beego",
+			"revision": ""
+		},
+		{
+			"path": "github.com/astaxie/beego/config",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "Ke5tJx+JR8p4oMbr4aU4OND0fsk=",
+			"path": "github.com/astaxie/beego/context",
+			"revision": "cab8458c1c4a5a3b4bf5192922be620e6dede15b",
+			"revisionTime": "2017-05-19T13:19:18Z"
+		},
+		{
+			"checksumSHA1": "MXGs366RP4mY+x7vtP8V0ko4iPM=",
+			"path": "github.com/astaxie/beego/context/param",
+			"revision": "cab8458c1c4a5a3b4bf5192922be620e6dede15b",
+			"revisionTime": "2017-05-19T13:19:18Z"
+		},
+		{
+			"checksumSHA1": "nvu//SCUWiPzXaxuQg3Nkuj33g0=",
+			"path": "github.com/astaxie/beego/grace",
+			"revision": "cab8458c1c4a5a3b4bf5192922be620e6dede15b",
+			"revisionTime": "2017-05-19T13:19:18Z"
+		},
+		{
+			"checksumSHA1": "+MEWMsS4mJ9jNhwfVeyBMpdyVCQ=",
+			"path": "github.com/astaxie/beego/logs",
+			"revision": "cab8458c1c4a5a3b4bf5192922be620e6dede15b",
+			"revisionTime": "2017-05-19T13:19:18Z"
+		},
+		{
 			"checksumSHA1": "ZaRth9xGaP46N4Wg72Z/9N0nH1o=",
 			"path": "github.com/astaxie/beego/orm",
 			"revision": "cab8458c1c4a5a3b4bf5192922be620e6dede15b",
 			"revisionTime": "2017-05-19T13:19:18Z"
+		},
+		{
+			"checksumSHA1": "qGvZUP7mTKGvMa3ui7kqLJQiXNc=",
+			"path": "github.com/astaxie/beego/session",
+			"revision": "cab8458c1c4a5a3b4bf5192922be620e6dede15b",
+			"revisionTime": "2017-05-19T13:19:18Z"
+		},
+		{
+			"checksumSHA1": "EOoY9qbCsWnu5FlZZnMKUKkLcMk=",
+			"path": "github.com/astaxie/beego/toolbox",
+			"revision": "cab8458c1c4a5a3b4bf5192922be620e6dede15b",
+			"revisionTime": "2017-05-19T13:19:18Z"
+		},
+		{
+			"checksumSHA1": "W7HBzu7HlF18vCfNPgax7xvHXB0=",
+			"path": "github.com/astaxie/beego/utils",
+			"revision": "cab8458c1c4a5a3b4bf5192922be620e6dede15b",
+			"revisionTime": "2017-05-19T13:19:18Z"
+		},
+		{
+			"path": "github.com/coreos/pkg/health",
+			"revision": ""
+		},
+		{
+			"path": "github.com/coreos/pkg/timeutil",
+			"revision": ""
 		},
 		{
 			"path": "github.com/dgrijalva/jwt-go",

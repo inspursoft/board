@@ -9,234 +9,187 @@ import (
 	"strings"
 )
 
-func createProjectAction(resp http.ResponseWriter, req *http.Request) {
-	c := NewCustomController(resp, req)
-	if c.assertMethod("POST") {
-		reqData := c.resolveBody()
-		if reqData != nil {
-			var reqProject model.Project
-			err := json.Unmarshal(reqData, &reqProject)
-			if err != nil {
-				c.internalError(err)
-				return
-			}
-			if strings.TrimSpace(reqProject.Name) == "" {
-				c.customAbort(http.StatusBadRequest, "Project name cannot be empty.")
-				return
-			}
-			projectExists, err := service.ProjectExists(reqProject.Name)
-			if err != nil {
-				c.internalError(err)
-				return
-			}
-			if projectExists {
-				c.serveStatus(http.StatusConflict, "Project name already exists.")
-				return
-			}
+type ProjectController struct {
+	baseController
+}
 
-			currentUser, err := getCurrentUser()
-			if err != nil {
-				c.internalError(err)
-				return
-			}
-			if currentUser == nil {
-				c.customAbort(http.StatusUnauthorized, "Need sign in first.")
-				return
-			}
+func (p *ProjectController) Prepare() {
+	user, err := p.getCurrentUser()
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if user == nil {
+		p.CustomAbort(http.StatusUnauthorized, "Need to login first.")
+		return
+	}
+	p.currentUser = user
+	p.isSysAdmin = (user.SystemAdmin == 1)
+	p.isProjectAdmin = (user.ProjectAdmin == 1)
+}
 
-			reqProject.OwnerID = int(currentUser.ID)
-			reqProject.OwnerName = currentUser.Username
+func (p *ProjectController) CreateProjectAction() {
+	if !p.isProjectAdmin {
+		p.CustomAbort(http.StatusForbidden, "Insuffient privileges for creating projects.")
+		return
+	}
+	var err error
+	reqData, err := p.resolveBody()
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	var reqProject model.Project
+	err = json.Unmarshal(reqData, &reqProject)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if strings.TrimSpace(reqProject.Name) == "" {
+		p.serveStatus(http.StatusBadRequest, "Project name cannot be empty.")
+		return
+	}
+	projectExists, err := service.ProjectExists(reqProject.Name)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if projectExists {
+		p.serveStatus(http.StatusConflict, "Project name already exists.")
+		return
+	}
 
-			isSuccess, err := service.CreateProject(reqProject)
-			if err != nil {
-				c.internalError(err)
-				return
-			}
-			if !isSuccess {
-				c.serveStatus(http.StatusBadRequest, "Project contains invalid characters.")
-			}
-		}
+	reqProject.OwnerID = int(p.currentUser.ID)
+	reqProject.OwnerName = p.currentUser.Username
+
+	isSuccess, err := service.CreateProject(reqProject)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if !isSuccess {
+		p.serveStatus(http.StatusBadRequest, "Project contains invalid characters.")
 	}
 }
 
-func getProjectsAction(resp http.ResponseWriter, req *http.Request) {
-	c := NewCustomController(resp, req)
-	if c.assertMethod("GET") {
+func (p *ProjectController) GetProjectsAction() {
+	projectName := p.GetString("project_name")
+	strPublic := p.GetString("project_public")
 
-		projectName := req.FormValue("project_name")
-		strPublic := req.FormValue("project_public")
+	query := model.Project{Name: projectName, Public: 0}
 
-		query := model.Project{Name: projectName, Public: 0}
+	var err error
+	public, err := strconv.Atoi(strPublic)
+	if err == nil {
+		query.Public = public
+	}
 
-		var err error
+	var projects []*model.Project
+	if p.isSysAdmin {
+		projects, err = service.GetAllProjects(query)
+	} else {
+		projects, err = service.GetProjectsByUser(query, p.currentUser.ID)
+	}
 
-		public, err := strconv.Atoi(strPublic)
-		if err == nil {
-			query.Public = public
-		}
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	p.Data["json"] = projects
+	p.ServeJSON()
+}
 
-		currentUser, err := getCurrentUser()
-		if err != nil {
-			c.internalError(err)
-			return
-		}
-		if currentUser == nil {
-			c.customAbort(http.StatusUnauthorized, "Need sign in first.")
-			return
-		}
+func (p *ProjectController) GetProjectAction() {
+	projectID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	projectQuery := model.Project{ID: int64(projectID), Deleted: 0}
+	project, err := service.GetProject(projectQuery, "id", "deleted")
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if project == nil {
+		p.CustomAbort(http.StatusNotFound, "No project was found with provided ID.")
+		return
+	}
+	p.Data["json"] = project
+	p.ServeJSON()
+}
 
-		isSysAdmin, err := service.IsSysAdmin(currentUser.ID)
-		if err != nil {
-			c.internalError(err)
-			return
-		}
+func (p *ProjectController) DeleteProjectAction() {
+	if !p.isProjectAdmin {
+		p.CustomAbort(http.StatusForbidden, "Insuffient privileges for creating projects.")
+		return
+	}
 
-		var projects []*model.Project
-
-		if isSysAdmin {
-			projects, err = service.GetAllProjects(query)
-		} else {
-			projects, err = service.GetProjectsByUser(query, currentUser.ID)
-		}
-
-		if err != nil {
-			c.internalError(err)
-			return
-		}
-		c.serveJSON(projects)
+	projectID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	isExists, err := service.ProjectExistsByID(int64(projectID))
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if !isExists {
+		p.CustomAbort(http.StatusNotFound, "Cannot find project by ID")
+		return
+	}
+	isSuccess, err := service.DeleteProject(int64(projectID))
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if !isSuccess {
+		p.CustomAbort(http.StatusBadRequest, "Failed to delete project.")
 	}
 }
 
-func ListAndCreateProjectAction(resp http.ResponseWriter, req *http.Request) {
-	switch req.Method {
-	case "GET":
-		getProjectsAction(resp, req)
-	case "POST":
-		createProjectAction(resp, req)
+func (p *ProjectController) ToggleProjectPublicAction() {
+	if !p.isProjectAdmin {
+		p.CustomAbort(http.StatusForbidden, "Insuffient privileges for creating projects.")
+		return
 	}
-}
 
-func getProjectAction(resp http.ResponseWriter, req *http.Request) {
-	c := NewCustomController(resp, req)
-	if c.assertMethod("GET") {
-		projectID, err := strconv.Atoi(c.GetStringFromPath("id"))
-		if err != nil {
-			c.internalError(err)
-			return
-		}
-		projectQuery := model.Project{ID: int64(projectID), Deleted: 0}
-		project, err := service.GetProject(projectQuery, "id", "deleted")
-		if err != nil {
-			c.internalError(err)
-			return
-		}
-		if project == nil {
-			c.customAbort(http.StatusNotFound, "No project was found with provided ID.")
-			return
-		}
-		c.serveJSON(project)
+	var err error
+	projectID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
+	if err != nil {
+		p.internalError(err)
+		return
 	}
-}
-func deleteProjectAction(resp http.ResponseWriter, req *http.Request) {
-	c := NewCustomController(resp, req)
-	if c.assertMethod("DELETE") {
-		projectID, err := strconv.Atoi(c.GetStringFromPath("id"))
-		if err != nil {
-			c.internalError(err)
-			return
-		}
-
-		isExists, err := service.ProjectExistsByID(int64(projectID))
-		if err != nil {
-			c.internalError(err)
-			return
-		}
-		if !isExists {
-			c.customAbort(http.StatusNotFound, "Cannot find project by ID")
-			return
-		}
-
-		hasPermission, err := checkUserPermission(int64(projectID))
-		if err != nil {
-			c.internalError(err)
-			return
-		}
-		if !hasPermission {
-			c.customAbort(http.StatusForbidden, "Insuffient privileges.")
-			return
-		}
-
-		isSuccess, err := service.DeleteProject(int64(projectID))
-		if err != nil {
-			c.internalError(err)
-			return
-		}
-		if !isSuccess {
-			c.customAbort(http.StatusBadRequest, "Failed to delete project.")
-		}
+	isExists, err := service.ProjectExistsByID(int64(projectID))
+	if err != nil {
+		p.internalError(err)
+		return
 	}
-}
-
-func GetAndDeleteProjectAction(resp http.ResponseWriter, req *http.Request) {
-	switch req.Method {
-	case "GET":
-		getProjectAction(resp, req)
-	case "DELETE":
-		deleteProjectAction(resp, req)
+	if !isExists {
+		p.CustomAbort(http.StatusNotFound, "Cannot find project by ID")
+		return
 	}
-}
 
-func ToggleProjectPublicAction(resp http.ResponseWriter, req *http.Request) {
-	c := NewCustomController(resp, req)
-	if c.assertMethod("PUT") {
-		projectID, err := strconv.Atoi(c.GetStringFromPath("id"))
-		if err != nil {
-			c.internalError(err)
-			return
-		}
-		if projectID == 0 {
-			c.customAbort(http.StatusBadRequest, "Invalid project ID")
-			return
-		}
+	reqData, err := p.resolveBody()
+	if err != nil {
+		p.internalError(err)
+		return
+	}
 
-		isExists, err := service.ProjectExistsByID(int64(projectID))
-		if err != nil {
-			c.internalError(err)
-			return
-		}
-		if !isExists {
-			c.customAbort(http.StatusNotFound, "Cannot find project by ID")
-			return
-		}
-
-		hasPermission, err := checkUserPermission(int64(projectID))
-		if err != nil {
-			c.internalError(err)
-			return
-		}
-		if !hasPermission {
-			c.customAbort(http.StatusForbidden, "Insuffient privileges.")
-			return
-		}
-
-		reqData := c.resolveBody()
-		if reqData != nil {
-			var reqProject model.Project
-			var err error
-			err = json.Unmarshal(reqData, &reqProject)
-			if err != nil {
-				c.internalError(err)
-				return
-			}
-			reqProject.ID = int64(projectID)
-			isSuccess, err := service.UpdateProject(reqProject, "public")
-			if err != nil {
-				c.internalError(err)
-				return
-			}
-			if !isSuccess {
-				c.customAbort(http.StatusBadRequest, "Failed to update project public.")
-			}
-		}
+	var reqProject model.Project
+	err = json.Unmarshal(reqData, &reqProject)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	reqProject.ID = int64(projectID)
+	isSuccess, err := service.UpdateProject(reqProject, "public")
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if !isSuccess {
+		p.CustomAbort(http.StatusBadRequest, "Failed to update project public.")
 	}
 }
