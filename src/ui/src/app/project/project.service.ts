@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { Http, Headers } from '@angular/http';
 import { Project } from './project';
 import { Member } from './member/member';
-import { ProjectMember } from './project-member';
 
 @Injectable()
 export class ProjectService {
