@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { ConfirmationMessage } from '../../shared/service/confirmation-message';
-import { MessageService } from '../../shared/service/message.service';
+import { Message } from '../../shared/message-service/message';
+import { MessageService } from '../../shared/message-service/message.service';
 
 import { Subscription } from 'rxjs/Subscription';
 
@@ -35,14 +35,14 @@ export class SignUpComponent {
       .signUp(account)
       .then(res=>this.router.navigate(['/sign-in']))
       .catch(err=>{
-        let m: ConfirmationMessage = new ConfirmationMessage();
-        m.title = "ACCOUNT.ERROR";
+        let confirmationMessage = new Message();
+        confirmationMessage.title = "ACCOUNT.ERROR";
         if(err && err.status === 409) {
-          m.message = 'ACCOUNT.USERNAME_ALREADY_EXISTS';
+          confirmationMessage.message = 'ACCOUNT.USERNAME_ALREADY_EXISTS';
         } else {
-          m.message = "ACCOUNT.FAILED_TO_SIGN_UP";
+          confirmationMessage.message = "ACCOUNT.FAILED_TO_SIGN_UP";
         }
-        this.messageService.announceMessage(m);
+        this.messageService.announceMessage(confirmationMessage);
       });
   }
 

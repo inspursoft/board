@@ -4,18 +4,17 @@ import { Subscription } from 'rxjs/Subscription';
 
 import { TranslateService } from '@ngx-translate/core';
 
-import { MessageService } from '../service/message.service';
-import { ConfirmationMessage } from '../service/confirmation-message';
+import { MessageService } from '../message-service/message.service';
+import { Message } from '../message-service/message';
 
 @Component({
   selector: 'confirmation-dialog',
-  templateUrl: 'confirmation-dialog.component.html',
-  styleUrls: [ 'confirmation-dialog.component.css']
+  templateUrl: 'confirmation-dialog.component.html'
 })
 export class ConfirmationDialogComponent implements OnDestroy {
 
   opened: boolean;
-  confirmationMessage: ConfirmationMessage = new ConfirmationMessage();
+  confirmationMessage: Message = new Message();
   
   _subscription: Subscription
 
@@ -23,7 +22,7 @@ export class ConfirmationDialogComponent implements OnDestroy {
     private messageService: MessageService,
     private translateService: TranslateService) {
     this._subscription = this.messageService.messageAnnounced$.subscribe((message: any)=>{
-      this.confirmationMessage = <ConfirmationMessage>message;
+      this.confirmationMessage = <Message>message;
       this.translateService.get(this.confirmationMessage.title)
         .subscribe(res=>this.confirmationMessage.title = res);
       this.translateService.get(this.confirmationMessage.message)

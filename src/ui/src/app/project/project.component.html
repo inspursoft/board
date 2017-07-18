@@ -4,7 +4,8 @@
   </div>
 </div>
 <div class="row">
-  <create-project></create-project>
+  <confirmation-dialog></confirmation-dialog>
+  <create-project (reload)="retrieve()"></create-project>
   <project-member></project-member>
   <div class="col-xs-12">
     <clr-datagrid>
@@ -15,17 +16,18 @@
       <clr-dg-column>Comment</clr-dg-column>
       <clr-dg-column>Actions</clr-dg-column>
       <clr-dg-row *ngFor="let p of projects">
-        <clr-dg-cell>{{p.projectName}}</clr-dg-cell>
-        <clr-dg-cell>{{p.creator}}</clr-dg-cell>
-        <clr-dg-cell>{{p.creationTime}}</clr-dg-cell>
+        <clr-dg-cell>{{p.project_name}}</clr-dg-cell>
+        <clr-dg-cell>{{p.project_owner_name}}</clr-dg-cell>
+        <clr-dg-cell>{{p.project_creation_time}}</clr-dg-cell>
         <clr-dg-cell>
-          <input type="checkbox" id="chkPublic" [checked]="p.isPublic">
+          <input type="checkbox" id="chkPublic" [checked]="p.project_public === 1" (click)="toggleProjectPublic(p)">
           <label for="chkPublic"></label>
         </clr-dg-cell>
-        <clr-dg-cell>{{p.comment}}</clr-dg-cell>
+        <clr-dg-cell>{{p.project_comment}}</clr-dg-cell>
         <clr-dg-cell>
-          <a href="javascript:void(0)"><clr-icon shape="trash"></clr-icon></a>
-          <a href="javascript:void(0)" (click)="editProjectMember(p)"><clr-icon shape="pencil"></clr-icon></a>
+          <a href="javascript:void(0)" (click)="editProjectMember(p)"><clr-icon shape="group"></clr-icon></a>
+          &nbsp;&nbsp;
+          <a href="javascript:void(0)"><clr-icon shape="trash" (click)="confirmToDeleteProject(p)"></clr-icon></a>
         </clr-dg-cell>
       </clr-dg-row>
       <clr-dg-footer>{{projects ? projects.length : 0}} items</clr-dg-footer>
