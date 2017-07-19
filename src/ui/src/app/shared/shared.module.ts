@@ -11,6 +11,9 @@ import { CheckItemIdenticalDirective } from './directives/check-item-identical.d
 
 import { MessageService } from './message-service/message.service';
 
+import {CheckItemPatternDirective} from "./directives/check-item-pattern.directive";
+import {GlobalMessageComponent} from "./global-message/global-message.component";
+
 @NgModule({
   imports: [
     CoreModule,
@@ -22,7 +25,9 @@ import { MessageService } from './message-service/message.service';
     ConfirmationDialogComponent,
     InlineAlertComponent,
     CheckItemExistingDirective,
-    CheckItemIdenticalDirective
+    CheckItemIdenticalDirective,
+    CheckItemPatternDirective,
+    GlobalMessageComponent
   ],
   exports: [
     CoreModule,
@@ -32,7 +37,9 @@ import { MessageService } from './message-service/message.service';
     ConfirmationDialogComponent,
     InlineAlertComponent,
     CheckItemExistingDirective,
-    CheckItemIdenticalDirective
+    CheckItemIdenticalDirective,
+    CheckItemPatternDirective,
+    GlobalMessageComponent
   ],
   providers: [
     MessageService
