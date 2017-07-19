@@ -4,11 +4,12 @@ import { AngularEchartsModule } from 'angular2-echarts';
 import { ChartComponent } from './chart/chart.component';
 import { HeaderComponent } from './header/header.component';
 import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-dialog.component';
+import { InlineAlertComponent } from './inline-alert/inline-alert.component';
 
 import { CheckItemExistingDirective } from './directives/check-item-existing.directive';
 import { CheckItemIdenticalDirective } from './directives/check-item-identical.directive';
 
-import { MessageService } from './service/message.service';
+import { MessageService } from './message-service/message.service';
 
 @NgModule({
   imports: [
@@ -19,6 +20,7 @@ import { MessageService } from './service/message.service';
     ChartComponent,
     HeaderComponent, 
     ConfirmationDialogComponent,
+    InlineAlertComponent,
     CheckItemExistingDirective,
     CheckItemIdenticalDirective
   ],
@@ -28,6 +30,7 @@ import { MessageService } from './service/message.service';
     ChartComponent,
     HeaderComponent,
     ConfirmationDialogComponent,
+    InlineAlertComponent,
     CheckItemExistingDirective,
     CheckItemIdenticalDirective
   ],

@@ -1,19 +1,21 @@
 <clr-modal [(clrModalOpen)]="createProjectOpened">
   <h3 class="modal-title">Create Project</h3>
   <div class="modal-body">
+    <clr-alert [clrAlertType]="'alert-danger'" [(clrAlertClosed)]="alertClosed">
+      <div class="alert-item">
+          <span class="alert-text">
+            {{errorMessage}}
+          </span>
+      </div>
+    </clr-alert>
     <form #createProjectForm="ngForm">
       <section class="form-block">
         <div class="form-group">
           <label for="txtProjectName">Project Name</label>
-          <label for="txtProjectName"
-            aria-haspopup="true"
-            role="tooltip"
+          <label for="txtProjectName" aria-haspopup="true" role="tooltip"
             class="tooltip tooltip-validation tooltip-md tooltip-bottom-left"
             [class.invalid]="projectNameInput.invalid && (projectNameInput.dirty || projectNameInput.touched)">
-            <input type="text" id="txtProjectName"
-               name="projectName" 
-               [(ngModel)]="project.projectName" 
-               #projectNameInput="ngModel" required>
+            <input type="text" id="txtProjectName" name="projectName" [(ngModel)]="createProject.projectName" #projectNameInput="ngModel" required>
             <span class="tooltip-content" *ngIf="projectNameInput.errors && projectNameInput.errors.required">
               Project name is required.
             </span>
@@ -21,20 +23,20 @@
         </div>
         <div class="form-group">
           <label for="chkIsPublic">Public</label>
-          <div class="checkbox-inline">
-            <input type="checkbox" id="chkIsPublic">
+          <div class="checkbox">
+            <input type="checkbox" id="chkIsPublic" [(ngModel)]="createProject.publicity" name="public">
             <label for="chkIsPublic"></label>
           </div>
         </div>
         <div class="form-group">
           <label for="txtComment">Comment</label>
-          <input type="text" id="txtComment">
+          <input type="text" id="txtComment" [(ngModel)]="createProject.comment" name="comment">
         </div>
       </section>
     </form>
   </div>
   <div class="modal-footer">
       <button type="button" class="btn btn-outline" (click)="createProjectOpened = false">Cancel</button>
-      <button type="button" class="btn btn-primary" (click)="confirm()">Confirm</button>
+      <button type="button" class="btn btn-primary" [disabled]="createProjectForm.invalid" (click)="confirm()">Confirm</button>
   </div>
 </clr-modal>

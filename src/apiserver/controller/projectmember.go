@@ -91,7 +91,7 @@ func (pm *ProjectMemberController) AddOrUpdateProjectMemberAction() {
 
 func (pm *ProjectMemberController) DeleteProjectMemberAction() {
 	var err error
-	projectID, err := strconv.Atoi(pm.Ctx.Input.Param(":id"))
+	projectID, err := strconv.Atoi(pm.Ctx.Input.Param(":projectId"))
 	if err != nil {
 		pm.internalError(err)
 		return
@@ -105,22 +105,17 @@ func (pm *ProjectMemberController) DeleteProjectMemberAction() {
 		pm.CustomAbort(http.StatusNotFound, "Cannot find project by ID")
 		return
 	}
-	var reqProjectMember model.ProjectMember
-	reqData, err := pm.resolveBody()
+
+	userID, err := strconv.Atoi(pm.Ctx.Input.Param(":userId"))
 	if err != nil {
 		pm.internalError(err)
 		return
 	}
-	err = json.Unmarshal(reqData, &reqProjectMember)
-	if err != nil {
-		pm.internalError(err)
-		return
-	}
-	if reqProjectMember.UserID == pm.currentUser.ID {
+	if int64(userID) == pm.currentUser.ID {
 		pm.CustomAbort(http.StatusConflict, "Self privilege to the current project cannot be deleted.")
 		return
 	}
-	user, err := service.GetUserByID(reqProjectMember.UserID)
+	user, err := service.GetUserByID(int64(userID))
 	if err != nil {
 		pm.internalError(err)
 		return
@@ -129,7 +124,7 @@ func (pm *ProjectMemberController) DeleteProjectMemberAction() {
 		pm.CustomAbort(http.StatusNotFound, "No user was found with provided user ID.")
 		return
 	}
-	isSuccess, err := service.DeleteProjectMember(int64(projectID), reqProjectMember.UserID)
+	isSuccess, err := service.DeleteProjectMember(int64(projectID), int64(userID))
 	if err != nil {
 		pm.internalError(err)
 		return
