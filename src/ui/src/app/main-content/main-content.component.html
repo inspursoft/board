@@ -10,13 +10,9 @@
         <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/services">
           {{ 'SIDE_NAV.SERVICES' | translate }}
         </a>
-        <section class="nav-group collapsible">
-          <input id="tabprojects" type="checkbox">
-          <label for="tabprojects" [routerLinkActive]="['active']" routerLink="/projects">{{ 'SIDE_NAV.PROJECTS' | translate }}</label>
-          <ul class="nav-list">
-            <li><a class="nav-link" [routerLinkActive]="['active']" routerLink="/projects/members">{{ 'SIDE_NAV.MEMBERS' | translate }}</a></li>      
-          </ul>
-        </section>
+        <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/projects">
+         {{ 'SIDE_NAV.PROJECTS' | translate }}
+        </a>
         <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/nodes">
           {{ 'SIDE_NAV.NODES' | translate }}
         </a>
@@ -32,6 +28,8 @@
       </section>
     </nav>
     <div class="content-area">
+      <inline-alert></inline-alert>
+      <confirmation-dialog></confirmation-dialog>
       <router-outlet></router-outlet>
     </div>
   </div>

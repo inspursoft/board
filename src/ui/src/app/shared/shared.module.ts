@@ -4,12 +4,12 @@ import { AngularEchartsModule } from 'angular2-echarts';
 import { ChartComponent } from './chart/chart.component';
 import { HeaderComponent } from './header/header.component';
 import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-dialog.component';
+import { InlineAlertComponent } from './inline-alert/inline-alert.component';
 
 import { CheckItemExistingDirective } from './directives/check-item-existing.directive';
 import { CheckItemIdenticalDirective } from './directives/check-item-identical.directive';
-import { CheckItemPatternDirective } from "app/shared/directives/check-item-pattern.directive";
-import { MessageService } from './service/message.service';
-import { FixAlert } from "app/shared/FixAlert/fix-alert.component";
+
+import { MessageService } from './message-service/message.service';
 
 @NgModule({
   imports: [
@@ -20,10 +20,9 @@ import { FixAlert } from "app/shared/FixAlert/fix-alert.component";
     ChartComponent,
     HeaderComponent, 
     ConfirmationDialogComponent,
+    InlineAlertComponent,
     CheckItemExistingDirective,
-    CheckItemIdenticalDirective,
-    CheckItemPatternDirective,
-    FixAlert
+    CheckItemIdenticalDirective
   ],
   exports: [
     CoreModule,
@@ -31,10 +30,9 @@ import { FixAlert } from "app/shared/FixAlert/fix-alert.component";
     ChartComponent,
     HeaderComponent,
     ConfirmationDialogComponent,
+    InlineAlertComponent,
     CheckItemExistingDirective,
-    CheckItemIdenticalDirective,
-    CheckItemPatternDirective,
-    FixAlert
+    CheckItemIdenticalDirective
   ],
   providers: [
     MessageService

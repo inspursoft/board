@@ -1,8 +1,8 @@
 import { Component, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { SignIn } from './sign-in';
-import { ConfirmationMessage } from '../../shared/service/confirmation-message';
-import { MessageService } from '../../shared/service/message.service';
+import { Message } from '../../shared/message-service/message';
+import { MessageService } from '../../shared/message-service/message.service';
 
 import { Subscription } from 'rxjs/Subscription';
 
@@ -23,8 +23,8 @@ export class SignInComponent implements OnDestroy {
     private accountService: AccountService,
     private router: Router) {
     this._subscription = this.messageService.messageConfirmed$.subscribe((message: any)=>{
-      let confirm: ConfirmationMessage = <ConfirmationMessage>message;
-      console.error('Received:' + JSON.stringify(confirm));
+      let confirmationMessage = <Message>message;
+      console.error('Received:' + JSON.stringify(confirmationMessage));
     })
   }
 
@@ -35,14 +35,14 @@ export class SignInComponent implements OnDestroy {
           this.router.navigate(['/dashboard']);
       })
       .catch(err=>{
-        let m: ConfirmationMessage = new ConfirmationMessage();
-        m.title = 'ACCOUNT.ERROR';
+        let announceMessage = new Message();
+          announceMessage.title = 'ACCOUNT.ERROR';
         if(err && err.status === 400) {
-          m.message = 'ACCOUNT.INCORRECT_USERNAME_OR_PASSWORD';
+          announceMessage.message = 'ACCOUNT.INCORRECT_USERNAME_OR_PASSWORD';
         } else {
-          m.message = 'ACCOUNT.FAILED_TO_SIGN_IN' + (err && err.status);
+          announceMessage.message = 'ACCOUNT.FAILED_TO_SIGN_IN' + (err && err.status);
         }
-        this.messageService.announceMessage(m);
+        this.messageService.announceMessage(announceMessage);
       });
   }
 
