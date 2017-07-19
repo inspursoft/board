@@ -98,6 +98,7 @@ export const LANG_EN_US = {
     "ADD": "ADD",
     "CANCEL":"CANCEL",
     "ERROR":"Error",
+    "ERR_500":"Unexpected internal errors.",
     "ADD_ERR_400":"400:Unsatisfied with constraints of the user creation.",
     "ADD_ERR_403":"403:User registration can only be used by admin role user when self-registration is off..",
     "ADD_ERR_404":"404:Cannot connect to server.",

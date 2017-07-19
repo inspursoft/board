@@ -1,6 +1,8 @@
 import {Injectable} from "@angular/core";
-import {Http, RequestOptions, Headers} from "@angular/http";
+import {Http, RequestOptions, Headers, Response} from "@angular/http";
 import {user} from "app/profile/user-center/user";
+import {MessageService} from "../../../shared/message-service/message.service";
+import {Message} from "../../../shared/message-service/message";
 import "rxjs/add/operator/toPromise";
 
 const BASE_URL = "/api/v1";
@@ -16,21 +18,37 @@ export class UserService {
 			`${reason.status}:${reason.statusText}`;
 	}
 
-	constructor(private http: Http) {
+	handleErrMsg(reason: Response, statusArr: Array<number>, errorKey: string): void {
+		let m: Message = new Message();
+		if (reason.status == 500) {
+			m.message = "USER_CENTER.ERR_500";
+			this.messageService.globalMessage(m);
+		} else {
+			m.message = UserService.getErrorMsg(reason, statusArr, errorKey);
+			this.messageService.inlineAlertMessage(m);
+		}
 	}
 
-	deleteUser(user: user): Promise<object> {
+	constructor(private http: Http,
+							private messageService: MessageService) {
+	}
+
+	deleteUser(user: user): Promise<user> {
 		let options = new RequestOptions({
 			headers: this.defaultHeaders
 		});
-		return this.http.delete(BASE_URL.concat("/users/").concat(user.user_id.toString()), options)
-			.toPromise().then(
-				res => {
-					return Promise.resolve(res);
-				},
-				(reason: Response) => {
-					return Promise.reject(UserService.getErrorMsg(reason, Array.from([400, 401, 403, 404]), "DEL"));
-				});
+		return this.http.delete(BASE_URL.concat("/users/").concat(user.user_id.toString()), options).toPromise()
+			.then(res => res.json())
+			.catch(reason => {
+				if (reason instanceof Response) {
+					this.handleErrMsg(reason, Array.from([400, 401, 403, 404]), "DEL");
+				} else if (reason instanceof Error) {
+					console.log(`name:${(<Error>reason).name};message:${(<Error>reason).message}`);
+				} else {
+					console.log(reason);
+				}
+				return Promise.reject(reason);
+			})
 	}
 
 	getUser(userID: number): Promise<user> {
@@ -39,43 +57,51 @@ export class UserService {
 		});
 		return this.http.get(BASE_URL.concat("/users/").concat(userID.toString()), options)
 			.toPromise()
-			.then(
-				res => {
-					return Promise.resolve(res.json() as user);
-				},
-				reason => {
-					return Promise.reject(UserService.getErrorMsg(reason, Array.from([401, 404]), "GET"));
+			.then(res => res.json())
+			.catch(reason => {
+				if (reason instanceof Response) {
+					this.handleErrMsg(reason, Array.from([401, 404]), "GET");
+				} else if (reason instanceof Error) {
+					console.log(`name:${(<Error>reason).name};message:${(<Error>reason).message}`);
+				} else {
+					console.log(reason);
 				}
-			);
+				return Promise.reject(reason);
+			});
 	}
 
-	updateUser(user: user): Promise<object> {
+	updateUser(user: user): Promise<user> {
 		let options = new RequestOptions({
 			headers: this.defaultHeaders
 		});
 		return this.http.put(BASE_URL.concat("/users/").concat(user.user_id.toString()), user, options)
 			.toPromise()
-			.then(res => {
-					return Promise.resolve(res);
-				},
-				reason => {
-					return Promise.reject(UserService.getErrorMsg(reason, Array.from([400, 401, 403, 404]), "UPT"));
-				});
+			.then(res => res.json())
+			.catch(reason => {
+				let r: string = "";
+				if (reason instanceof Response) {
+					r = UserService.getErrorMsg(reason, Array.from([400, 401, 403, 404]), "UPT");
+				} else {
+					r = `name:${(<Error>reason).name};message:${(<Error>reason).message}`;
+				}
+				return Promise.reject(r);
+			});
 	}
 
-	newUser(userParams: user): Promise<object> {
+	newUser(userParams: user): Promise<user> {
 		let options = new RequestOptions({
 			headers: this.defaultHeaders
 		});
-		return this.http.post(BASE_URL.concat("/adduser"), userParams, options)
-			.toPromise()
-			.then(res => {
-					return Promise.resolve(res);
-				},
-				(reason: Response) => {
-					return Promise.reject(UserService.getErrorMsg(reason, Array.from([400, 403, 404, 409]), "ADD"));
-				}).catch(err => {
-				return Promise.reject(err);
+		return this.http.post(BASE_URL.concat("/adduser"), userParams, options).toPromise()
+			.then(res => res.json())
+			.catch(reason => {
+				let r: string = "";
+				if (reason instanceof Response) {
+					r = UserService.getErrorMsg(reason, Array.from([400, 403, 404, 409]), "ADD");
+				} else {
+					r = `name:${(<Error>reason).name};message:${(<Error>reason).message}`;
+				}
+				return Promise.reject(r);
 			});
 	}
 
@@ -90,13 +116,19 @@ export class UserService {
 			headers: this.defaultHeaders,
 			search: params
 		});
-		return this.http.get(BASE_URL.concat("/users"), options).toPromise().then(
-			res => {
-				return Promise.resolve(Array.from(res.json()) as user[]);
-			},
-			(reason: Response) => {
-				return Promise.reject(UserService.getErrorMsg(reason, Array.from([400, 401, 403, 404]), "GET"));
-			}
-		)
+		return this.http.get(BASE_URL.concat("/users"), options).toPromise()
+			.then(res => {
+				return Array.from(res.json()) as user[];
+			})
+			.catch(reason => {
+				if (reason instanceof Response) {
+					this.handleErrMsg(reason, Array.from([400, 401, 403, 404]), "GET");
+				} else if (reason instanceof Error) {
+					console.log(`name:${(<Error>reason).name};message:${(<Error>reason).message}`);
+				} else {
+					console.log(reason);
+				}
+				return Promise.reject(reason);
+			})
 	}
 }

@@ -98,6 +98,7 @@ export const LANG_ZH_CN = {
     "INCORRECT_USERNAME_OR_PASSWORD": "用户名或密码错误。",
     "ADD": "添加",
     "CANCEL":"取消",
+    "ERR_500":"服务器内部错误.",
     "ADD_ERR_400":"400:未满足新建的约束条件.",
     "ADD_ERR_403":"403:您的权限不足,只能管理员使用.",
     "ADD_ERR_404":"404:不能链接到服务器.",

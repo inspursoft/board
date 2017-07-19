@@ -1,7 +1,6 @@
 import {Component, Input, Output, EventEmitter, OnDestroy} from "@angular/core";
-import {User, user} from 'app/profile/user-center/user';
+import {User} from 'app/profile/user-center/user';
 import {UserService} from "../user-service/user-service"
-import {MessageService} from "../../../shared/service/message.service";
 
 export enum editModel {
 	emNew = 0,
@@ -19,8 +18,7 @@ export class NewUser implements OnDestroy {
 	_afterCommitErrSeed: number = 0;
 	afterCommitErr: string = "";
 
-	constructor(private userService: UserService,
-							private messageService: MessageService) {
+	constructor(private userService: UserService) {
 		this._afterCommitErrInterval = setInterval(() => {
 			if (this._afterCommitErrSeed > 0 && this.afterCommitErr != '') {
 				this._afterCommitErrSeed--;
@@ -69,12 +67,12 @@ export class NewUser implements OnDestroy {
 	}
 
 	updateUser() {
-		this.userService.updateUser(this.userModel).then(
-			res => {
+		this.userService.updateUser(this.userModel)
+			.then(() => {
 				this.SubmitSuccessEvent.emit(true);
 				this.isOpen = false
-			},
-			(reason: string) => {
+			})
+			.catch((reason: string) => {
 				this.afterCommitErr = reason;
 				this._afterCommitErrSeed = 3;
 			});
@@ -82,15 +80,13 @@ export class NewUser implements OnDestroy {
 
 	addNewUser() {
 		this.userService.newUser(this.userModel)
-			.then(
-				res => {
-					this.SubmitSuccessEvent.emit(true);
-					this.isOpen = false;
-				}, (reason: string) => {
-					this.afterCommitErr = reason;
-					this._afterCommitErrSeed = 3;
-				})
-			.catch(err => {
+			.then(() => {
+				this.SubmitSuccessEvent.emit(true);
+				this.isOpen = false;
+			})
+			.catch((reason: string) => {
+				this.afterCommitErr = reason;
+				this._afterCommitErrSeed = 3;
 			})
 	}
 
