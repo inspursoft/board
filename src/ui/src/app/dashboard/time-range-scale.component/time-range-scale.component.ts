@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter } from "@angular/core"
 
 export interface scaleOption {
 	readonly description: string;
+	readonly value: string;
 	readonly id: number;
 }
 interface StandardKeyValue<T>{

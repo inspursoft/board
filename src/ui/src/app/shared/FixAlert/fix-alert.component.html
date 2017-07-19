@@ -1,0 +1,11 @@
+<div *ngIf="IsShow" class="fix-alert-container">
+	<clr-alert [clrAlertClosable]="true"
+						 (clrAlertClosedChange)="IsShow(false)"
+						 [clrAlertType]="AlertType">
+		<div class="alert-item">
+		<span style="text-align: center" class="alert-text">
+          {{Message | translate}}
+    </span>
+		</div>
+	</clr-alert>
+</div>

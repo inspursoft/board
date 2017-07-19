@@ -9,6 +9,7 @@ import { CheckItemExistingDirective } from './directives/check-item-existing.dir
 import { CheckItemIdenticalDirective } from './directives/check-item-identical.directive';
 import { CheckItemPatternDirective } from "app/shared/directives/check-item-pattern.directive";
 import { MessageService } from './service/message.service';
+import { FixAlert } from "app/shared/FixAlert/fix-alert.component";
 
 @NgModule({
   imports: [
@@ -21,7 +22,8 @@ import { MessageService } from './service/message.service';
     ConfirmationDialogComponent,
     CheckItemExistingDirective,
     CheckItemIdenticalDirective,
-    CheckItemPatternDirective
+    CheckItemPatternDirective,
+    FixAlert
   ],
   exports: [
     CoreModule,
@@ -31,7 +33,8 @@ import { MessageService } from './service/message.service';
     ConfirmationDialogComponent,
     CheckItemExistingDirective,
     CheckItemIdenticalDirective,
-    CheckItemPatternDirective
+    CheckItemPatternDirective,
+    FixAlert
   ],
   providers: [
     MessageService

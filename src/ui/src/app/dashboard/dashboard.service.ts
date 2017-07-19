@@ -1,16 +1,21 @@
 import { Injectable } from '@angular/core';
-import { Http } from "@angular/http"
+import { Http, RequestOptions, Headers } from "@angular/http"
 import "rxjs/add/operator/map";
 import 'rxjs/add/operator/toPromise';
 
+export interface LineDataModel {
+	readonly date: Date;
+	readonly value: number;
+}
+
 export interface ServiceListModel {
-	readonly id: number;
-	readonly serviceName: string;
+	readonly service_name: string;
 }
 
 export interface ServiceDataModel {
-	readonly date: Date;
-	readonly value: number;
+	readonly time_stamp: number;
+	readonly pods_number: number;
+	readonly container_number: number;
 }
 
 export interface NodeDataModel {
@@ -23,8 +28,10 @@ export interface StorageDataModel {
 	readonly value: number;
 }
 
+const BASE_URL = "/api/v1";
 @Injectable()
 export class DashboardService {
+
 	static baseDate: Date = new Date();
 
 	getOneStepTime(dateScaleId: number): number {
@@ -65,16 +72,16 @@ export class DashboardService {
 	}
 
 	/**
-	 * getServiceData
-	 * @param serviceID
-	 * @param dateScaleId
-	 *node:dateScaleId=>1:1min;2:1hr;3:1day;4:1mth
-	 */
-	getServiceData(serviceID: number, dateScaleId: number): Map<number, ServiceDataModel[]> {
+     * getServiceData
+     * @param serviceID
+     * @param dateScaleId
+     *node:dateScaleId=>1:1min;2:1hr;3:1day;4:1mth
+     */
+	getBySimulateData(serviceID: number, dateScaleId: number): Map<number, LineDataModel[]> {
 		if (!dateScaleId || dateScaleId < 1 || dateScaleId > 4) return null;
-		let r: Map<number, ServiceDataModel[]> = new Map<number, ServiceDataModel[]>();
-		r[0] = new Array<ServiceDataModel>(0);
-		r[1] = new Array<ServiceDataModel>(0);
+		let r: Map<number, LineDataModel[]> = new Map<number, LineDataModel[]>();
+		r[0] = new Array<LineDataModel>(0);
+		r[1] = new Array<LineDataModel>(0);
 		for (let i = 0; i < 11; i++) {
 			let date: Date = this.getSimulateDate(dateScaleId)
 			let arrBuf1 = [date, this.getSimulateData(serviceID)];
@@ -84,21 +91,66 @@ export class DashboardService {
 		}
 		return r;
 	}
+	constructor(private http: Http) { };
 
-	getServiceList(): ServiceListModel[] {
-		return Array.from([
-			{ "id": 0, "serviceName": "total" },
-			{ "id": 1, "serviceName": "myService1" },
-			{ "id": 2, "serviceName": "myService2" },
-			{ "id": 3, "serviceName": "我的服务3" },
-			{ "id": 4, "serviceName": "我的服务4" }
-		]);
-		// return this.http.get("./someData/ServiceList.JSON")
-		//   .toPromise()
-		//   .then(res=> Array.from(res.json()))
-		//   .catch(this.handleError);
+	readonly defaultHeaders: Headers = new Headers({
+		contentType: "application/json"
+	});
+
+	getServiceList(): Promise<ServiceListModel[]> {
+		let options = new RequestOptions({ headers: this.defaultHeaders });
+		return this.http.get(BASE_URL.concat("/service/list"), options)
+			.toPromise()
+			.then(res => {
+				let arr = Array.from(res.json()).sort((a, b) => {
+					return a["service_name"] == b["service_name"] ? 0 :
+						a["service_name"] > b["service_name"] ? 1 : -1;
+				});
+				//add total service
+				arr.unshift({service_name:"total"});
+				return Promise.resolve(arr as ServiceListModel[]);
+			})
+			.catch(this.handleError);
+	};
+
+	/**data origin
+	 *{"service_name": "mysql-read",
+			"service_timeunit": "second",
+			"service_count": "11",
+			"service_statuslogs": [{
+						"pods_number": 2,
+						"container_number": 4,
+						"time_stamp":1499842237
+			}]
+		}
+*/
+	getServiceData(service_time_count: number, service_time_unit: string, service_name: string):
+		Promise<Map<string, LineDataModel[]>> {
+		let params: Map<string, string> = new Map<string, string>();
+		params["service_time_count"] = service_time_count.toString();
+		params["service_timeunit"] = service_time_unit;
+		params["service_name"] = service_name;
+		let options = new RequestOptions({
+			headers: this.defaultHeaders,
+			search: params
+		});
+		return this.http.get(BASE_URL.concat("/dashboard/service"), options)
+			.toPromise()
+			.then(res => {
+				let resJson: object = res.json();
+				let logs: ServiceDataModel[] = resJson["service_statuslogs"];
+				let r: Map<string, LineDataModel[]> = new Map<string, LineDataModel[]>();
+				r["pods"] = new Array<LineDataModel>(0);
+				r["container"] = new Array<LineDataModel>(0);
+				if (logs && logs.length > 0) {
+					logs.forEach((item: ServiceDataModel) => {
+						r["pods"].unshift([new Date(item.time_stamp * 1000), item.pods_number]);
+						r["container"].unshift([new Date(item.time_stamp * 1000), item.container_number]);
+					});
+				}
+				return Promise.resolve(r);
+			}).catch(this.handleError);
 	}
-
 
 	private handleError(error: Response | any) {
 		let errMsg: string;
@@ -109,7 +161,6 @@ export class DashboardService {
 		} else {
 			errMsg = error.message ? error.message : error.toString();
 		}
-		console.error(errMsg);
 		return Promise.reject(errMsg);
 	}
 

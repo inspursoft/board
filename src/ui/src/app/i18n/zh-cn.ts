@@ -67,8 +67,12 @@ export const LANG_ZH_CN = {
     "USAGE": "已用",
     "TOTAL": "总共",
     "STORAGE": "存储", 
+    "NODATA":"暂无数据"
   },
   "USER_CENTER": {
+    "DELETE_USER_SUCCESS":"删除用户成功!",
+    "DELETE_USER": "删除用户",
+    "CONFIRM_DELETE_USER":"确定删除用户:",
     "EDIT":"修改",
     "EDIT_USER":"修改用户",
     "ADD_USER": "添加用户",
@@ -82,6 +86,7 @@ export const LANG_ZH_CN = {
     "PASSWORD_PLACEHOLDER": "密码",
     "PASSWORD": "密码",
     "PASSWORD_IS_REQUIRED": "密码为必填项。",
+    "PASSWORD_FORMAT": "密码长度至少为8且需包含至少一个大写字符，一个小写字符和一个数字。",
     "INPUT_PASSWORD": "输入密码",
     "PASSWORDS_ARE_NOT_IDENTICAL": "两次密码内容不一致。",
     "CONFIRM_PASSWORD": "确认密码",
@@ -92,6 +97,22 @@ export const LANG_ZH_CN = {
     "ERROR": "错误",
     "INCORRECT_USERNAME_OR_PASSWORD": "用户名或密码错误。",
     "ADD": "添加",
-    "CANCEL":"取消"
+    "CANCEL":"取消",
+    "ADD_ERR_400":"400:未满足新建的约束条件.",
+    "ADD_ERR_403":"403:您的权限不足,只能管理员使用.",
+    "ADD_ERR_404":"404:不能链接到服务器.",
+    "ADD_ERR_409":"409:用户名或邮箱重复.",
+    "GET_ERR_400":"400:无效的用户ID.",
+    "GET_ERR_401":"401:请先登录系统.",
+    "GET_ERR_403":"403:您的权限不足,只能管理员使用.",
+    "GET_ERR_404":"404:用户ID不存在.",
+    "DEL_ERR_400":"400:无效的用户ID.",
+    "DEL_ERR_401":"401:请先登录系统.",
+    "DEL_ERR_403":"403:您的权限不足,只能管理员使用.",
+    "DEL_ERR_404":"404:用户ID不存在.",
+    "UPT_ERR_400":"400:无效的用户ID.",
+    "UPT_ERR_401":"401:请先登录系统.",
+    "UPT_ERR_403":"403:您的权限不足,只能管理员使用.",
+    "UPT_ERR_404":"404:用户ID不存在."
   } 
 };

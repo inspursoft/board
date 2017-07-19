@@ -67,8 +67,12 @@ export const LANG_EN_US = {
     "USAGE": "Usage",
     "TOTAL": "Total",
     "STORAGE": "Storage",
+    "NODATA":"No Data"
   },
   "USER_CENTER": {
+    "DELETE_USER_SUCCESS":"Delete user success!",
+    "DELETE_USER": "Delete User",
+    "CONFIRM_DELETE_USER":"Are you sure delete the user:",
     "EDIT":"EDIT",
     "EDIT_USER":"Edit User",
     "ADD_USER": "Add New User",
@@ -82,6 +86,7 @@ export const LANG_EN_US = {
     "PASSWORD": "Password",
     "PASSWORD_PLACEHOLDER": "Password",
     "PASSWORD_IS_REQUIRED": "Password is required.",
+    "PASSWORD_FORMAT": "Password should be at least 8 characters with at least 1 uppercase, 1 lowercase and 1 number.",
     "INPUT_PASSWORD": "Input password",
     "CONFIRM_PASSWORD": "Confirm Password",
     "INPUT_CONFIRM_PASSWORD": "Input confirm password",
@@ -89,9 +94,25 @@ export const LANG_EN_US = {
     "COMMENT": "Comment",
     "REQUIRED_ITEMS": "Required items.",
     "USERNAME_ALREADY_EXISTS": "Username already exists.",
-    "ERROR": "Error",
     "INCORRECT_USERNAME_OR_PASSWORD": "Incorrect username or password.",
     "ADD": "ADD",
-    "CANCEL":"CANCEL"
+    "CANCEL":"CANCEL",
+    "ERROR":"Error",
+    "ADD_ERR_400":"400:Unsatisfied with constraints of the user creation.",
+    "ADD_ERR_403":"403:User registration can only be used by admin role user when self-registration is off..",
+    "ADD_ERR_404":"404:Cannot connect to server.",
+    "ADD_ERR_409":"409:Username or password is exist.",
+    "GET_ERR_400":"400:Invalid user ID.",
+    "GET_ERR_401":"401:User need to log in first.",
+    "GET_ERR_403":"403:User does not have permission of admin role.",
+    "GET_ERR_404":"404:No user found with provided User ID.",
+    "DEL_ERR_400":"400:Invalid user ID.",
+    "DEL_ERR_401":"401:User need to log in first.",
+    "DEL_ERR_403":"403:User does not have permission of admin role.",
+    "DEL_ERR_404":"404:User ID does not exist.",
+    "UPT_ERR_400":"400:Invalid user ID.",
+    "UPT_ERR_401":"401:User need to log in first.",
+    "UPT_ERR_403":"403:User does not have permission of admin role.",
+    "UPT_ERR_404":"404:User ID does not exist."
   }
 };

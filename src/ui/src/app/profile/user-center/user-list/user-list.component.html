@@ -1,32 +1,37 @@
 <div style="display: flex;flex-direction: column">
-  <confirmation-dialog></confirmation-dialog>
-  <div style="justify-content: flex-end; display: flex;flex-basis: 100%;height: 40px">
-    <button class="btn btn-primary" (click)="addUser()">添加用户</button>
-    <new-user *ngIf="showNewUser" [CurEditModel]="curEditModel" [userModel]="curUser" [(isOpen)]="showNewUser" (SubmitSuccessEvent)="refreshData()"></new-user>
-  </div>
-  <div style="display: flex;flex-basis: 100%;">
-    <clr-datagrid style="min-width: 100%">
-      <clr-dg-placeholder>{{userListErrMsg}}</clr-dg-placeholder>
-      <clr-dg-column>用户名</clr-dg-column>
-      <clr-dg-column>邮箱</clr-dg-column>
-      <clr-dg-column>创建时间</clr-dg-column>
-      <clr-dg-column>管理员</clr-dg-column>
-      <clr-dg-column>操作</clr-dg-column>
-      <clr-dg-row *ngFor="let user of userListData; let i = index">
-        <clr-dg-cell>{{user.user_name}}</clr-dg-cell>
-        <clr-dg-cell>{{user.user_email}}</clr-dg-cell>
-        <clr-dg-cell>{{user.user_creation_time | date:'yyyy/MM/dd HH:mm:ss'}}</clr-dg-cell>
-        <clr-dg-cell>
-          <clr-checkbox [clrDisabled]=true [clrChecked]="user.user_system_admin == 1"></clr-checkbox>
-        </clr-dg-cell>
-        <clr-dg-cell>
-          <clr-icon class="trash" (click)="deleteUser(user)" shape="trash"></clr-icon>
-          <clr-icon class="edit" (click)="editUser(user)" shape="edit"></clr-icon>
-        </clr-dg-cell>
-      </clr-dg-row>
-    </clr-datagrid>
-  </div>
-  <div style="display: flex;flex-basis: 100%;flex-direction: column;height: 50px">
-    <pagination [recordCount]="userListData.length"></pagination>
-  </div>
+	<confirmation-dialog></confirmation-dialog>
+	<div class="user-list-head">
+		<button class="btn btn-primary" (click)="addUser()">添加用户</button>
+		<new-user *ngIf="showNewUser"
+							[CurEditModel]="curEditModel"
+							[userModel]="curUser"
+							[(isOpen)]="showNewUser"
+							(SubmitSuccessEvent)="refreshData()">
+		</new-user>
+	</div>
+	<div style="display: flex;flex-basis: 100%;">
+		<clr-datagrid style="min-width: 100%">
+			<clr-dg-placeholder>{{userListErrMsg}}</clr-dg-placeholder>
+			<clr-dg-column>用户名</clr-dg-column>
+			<clr-dg-column>邮箱</clr-dg-column>
+			<clr-dg-column>创建时间</clr-dg-column>
+			<clr-dg-column>管理员</clr-dg-column>
+			<clr-dg-column>操作</clr-dg-column>
+			<clr-dg-row *ngFor="let user of userListData; let i = index">
+				<clr-dg-cell>{{user.user_name}}</clr-dg-cell>
+				<clr-dg-cell>{{user.user_email}}</clr-dg-cell>
+				<clr-dg-cell>{{user.user_creation_time | date:'yyyy/MM/dd HH:mm:ss'}}</clr-dg-cell>
+				<clr-dg-cell>
+					<clr-checkbox [clrDisabled]=true [clrChecked]="user.user_system_admin == 1"></clr-checkbox>
+				</clr-dg-cell>
+				<clr-dg-cell>
+					<clr-icon class="trash" (click)="deleteUser(user)" shape="trash"></clr-icon>
+					<clr-icon class="edit" (click)="editUser(user)" shape="edit"></clr-icon>
+				</clr-dg-cell>
+			</clr-dg-row>
+		</clr-datagrid>
+	</div>
+	<div style="display: flex;flex-basis: 100%;flex-direction: column;height: 50px">
+		<pagination [recordCount]=198></pagination>
+	</div>
 </div>
