@@ -1,5 +1,5 @@
 
-import { Directive, Input,Attribute } from '@angular/core';
+import { Directive, Input } from '@angular/core';
 import { ValidatorFn, AbstractControl, Validator, NG_VALIDATORS } from '@angular/forms';
 
 function validatorEmailFunction(): ValidatorFn {

@@ -70,6 +70,12 @@ export const LANG_ZH_CN = {
     "NODATA":"暂无数据"
   },
   "USER_CENTER": {
+    "LIST_COL_USERNAME":"用户名",
+    "LIST_COL_EMAIL":"邮箱",
+    "LIST_COL_CREATE_DATE":"创建时间",
+    "LIST_COL_SYSTEM_ADMIN":"系统管理员",
+    "LIST_COL_DELETE":"删除",
+    "LIST_COL_OPERATION":"操作",
     "DELETE_USER_SUCCESS":"删除用户成功!",
     "DELETE_USER": "删除用户",
     "CONFIRM_DELETE_USER":"确定删除用户:",

@@ -70,6 +70,12 @@ export const LANG_EN_US = {
     "NODATA":"No Data"
   },
   "USER_CENTER": {
+    "LIST_COL_USERNAME":"Username",
+    "LIST_COL_EMAIL":"Email",
+    "LIST_COL_CREATE_DATE":"Create Date",
+    "LIST_COL_SYSTEM_ADMIN":"System Admin",
+    "LIST_COL_DELETE":"Delete",
+    "LIST_COL_OPERATION":"Operation",
     "DELETE_USER_SUCCESS":"Delete user success!",
     "DELETE_USER": "Delete User",
     "CONFIRM_DELETE_USER":"Are you sure delete the user:",

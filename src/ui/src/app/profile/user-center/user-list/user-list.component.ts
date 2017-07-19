@@ -18,8 +18,10 @@ export class UserList implements OnInit, OnDestroy {
 	_deleteSubscription: Subscription;
 	userListData: Array<user> = Array<user>();
 	userListErrMsg: string = "";
+	userCountPerPage:number = 2;
 	curUser: user;
 	curEditModel: editModel = editModel.emNew;
+	curPage:number = 1;
 	showNewUser: boolean = false;
 
 	constructor(private userService: UserService,
@@ -51,6 +53,11 @@ export class UserList implements OnInit, OnDestroy {
 				this.showNewUser = true;
 			})
 			.catch(()=>{});
+	}
+
+	pageChange(page:number){
+		this.curPage = page;
+		console.log(this.curPage);
 	}
 
 	deleteUser(user: user) {
