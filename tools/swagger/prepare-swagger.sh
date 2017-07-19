@@ -39,7 +39,7 @@ if ! [ -f $FILE ]; then
     echo "Untarring Swagger UI package to the static file path..."
     tar -C ./vendors -zxf swagger.tar.gz swagger-ui-2.1.4/dist
     echo "Executing some processes..."
-    sed -i.bak 's/http:\/\/petstore\.swagger\.io\/v2\/swagger\.json/'$SCHEME':\/\/'$SERVER_IP'\/swagger\.yaml/g' \
+    sed -i.bak 's/http:\/\/petstore\.swagger\.io\/v2\/swagger\.json/'$SCHEME':\/\/'$SERVER_IP'\/swagger\/swagger\.yaml/g' \
     ./vendors/swagger-ui-2.1.4/dist/index.html
     sed -i.bak '/jsonEditor: false,/a\        validatorUrl: null,' ./vendors/swagger-ui-2.1.4/dist/index.html
     

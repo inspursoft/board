@@ -10,6 +10,7 @@ import { CheckItemExistingDirective } from './directives/check-item-existing.dir
 import { CheckItemIdenticalDirective } from './directives/check-item-identical.directive';
 
 import { MessageService } from './message-service/message.service';
+
 import {CheckItemPatternDirective} from "./directives/check-item-pattern.directive";
 import {GlobalMessageComponent} from "./global-message/global-message.component";
 
