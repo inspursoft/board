@@ -1122,12 +1122,12 @@ paths:
           description: The name for this servcie, 'total' is for the sum of all services.
           required: true
           type: string
-        - name: service_timeunit
+        - name: service_timestruct
           in: body
           required: true
           schema:
-            $ref: '#/definitions/TimeUnit'
-          description: The time unit for status logs of this servcie.       
+            $ref: '#/definitions/TimeStruct'
+          description: The time struct for status logs of this servcie.       
       tags:
         - Products
       responses:
@@ -1152,12 +1152,12 @@ paths:
           description: The name for this node, 'total' is for the sum of all nodes.
           required: true
           type: string
-        - name: node_timeunit
+        - name: node_timestruct
           in: body
           required: true
           schema:
-            $ref: '#/definitions/TimeUnit'
-          description: The time unit for status logs of this node.    
+            $ref: '#/definitions/TimeStruct'
+          description: The time struct for status logs of this node.    
       tags:
         - Products
       responses:
@@ -1182,12 +1182,12 @@ paths:
           description: The name for this storage, 'total' is for the sum of all storages.
           required: true
           type: string
-        - name: storage_timeunit
+        - name: storage_timestruct
           in: body
           required: true
           schema:
-            $ref: '#/definitions/TimeUnit'
-          description: The time unit for status logs of this storage.    
+            $ref: '#/definitions/TimeStruct'
+          description: The time struct for status logs of this storage.    
       tags:
         - Products
       responses:
@@ -1858,7 +1858,7 @@ definitions:
         description: The storage status logs based on storage_timeunit, count is array length.
         items:
           $ref: '#/definitions/StorageUsageInfo'    
-  TimeUnit:
+  TimeStruct:
     type: object
     properties:
       time_unit:
