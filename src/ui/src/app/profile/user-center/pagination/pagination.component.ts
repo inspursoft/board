@@ -70,35 +70,36 @@ export class Pagination implements OnChanges {
     let curHideMode: HideMode = this.getHideMode();
     if (this._lastVisitPage == this.curPage) {
       return this._dynamicButtons
-    };
+    }
+    ;
     this._dynamicButtons = [];
     switch (curHideMode) {
       case HideMode.hmNone: {
         for (let i = 1; i <= this.pageCount; i++) {
-          this._dynamicButtons.push({ pageIndex: i, description: i.toString() })
+          this._dynamicButtons.push({pageIndex: i, description: i.toString()})
         }
         break;
       }
       case HideMode.hmFooter: {
         for (let i = 1; i <= 3; i++) {
-          this._dynamicButtons.push({ pageIndex: i, description: i.toString() })
+          this._dynamicButtons.push({pageIndex: i, description: i.toString()})
         }
-        this._dynamicButtons.push({ pageIndex: this.pageCount, description: "..." });
+        this._dynamicButtons.push({pageIndex: this.pageCount, description: "..."});
         break;
       }
       case HideMode.hmHeader: {
-        this._dynamicButtons.push({ pageIndex: 1, description: "..." })
+        this._dynamicButtons.push({pageIndex: 1, description: "..."})
         for (let i = this.pageCount - 2; i <= this.pageCount; i++) {
-          this._dynamicButtons.push({ pageIndex: i, description: i.toString() })
+          this._dynamicButtons.push({pageIndex: i, description: i.toString()})
         }
         break;
       }
       case HideMode.hmBoth: {
-        this._dynamicButtons.push({ pageIndex: 1, description: "..." })
+        this._dynamicButtons.push({pageIndex: 1, description: "..."})
         for (let i = this.curPage - 1; i <= this.curPage + 1; i++) {
-          this._dynamicButtons.push({ pageIndex: i, description: i.toString() })
+          this._dynamicButtons.push({pageIndex: i, description: i.toString()})
         }
-        this._dynamicButtons.push({ pageIndex: this.pageCount, description: "..." });
+        this._dynamicButtons.push({pageIndex: this.pageCount, description: "..."});
         break;
       }
     }

@@ -16,4 +16,5 @@ import { TimeRangeScale } from "app/dashboard/time-range-scale.component/time-ra
     DashboardService
   ]
 })
-export class DashboardModule { }
+export class DashboardModule {
+}

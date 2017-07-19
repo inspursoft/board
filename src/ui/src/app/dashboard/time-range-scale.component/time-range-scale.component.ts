@@ -9,22 +9,22 @@ interface StandardKeyValue<T> {
   [key: string]: T
 }
 
-@Component( {
+@Component({
   selector: "time-range-scale",
   templateUrl: "./time-range-scale.component.html",
-  styleUrls: [ "./time-range-scale.component.css" ]
-} )
+  styleUrls: ["./time-range-scale.component.css"]
+})
 export class TimeRangeScale {
   @Input() options: Array<scaleOption>;
   @Output() changeScale: EventEmitter<scaleOption> = new EventEmitter<scaleOption>();
   _activeIndex: number = 0;
 
-  changeBlock( index: number, data: scaleOption ): void {
+  changeBlock(index: number, data: scaleOption): void {
     this._activeIndex = index;
-    this.changeScale.emit( data );
+    this.changeScale.emit(data);
   }
 
-  getClassByIndex( index: number ): StandardKeyValue<boolean> {
+  getClassByIndex(index: number): StandardKeyValue<boolean> {
     return {
       "normal-block": true,
       "left-block": index == 0,

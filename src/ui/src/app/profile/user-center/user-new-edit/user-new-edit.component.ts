@@ -4,17 +4,17 @@ import { UserService } from "../user-service/user-service"
 
 export enum editModel { emNew, emEdit }
 
-@Component( {
+@Component({
   selector: "new-user",
   templateUrl: "./user-new-edit.component.html",
-  styleUrls: [ "./user-new-edit.component.css" ]
-} )
+  styleUrls: ["./user-new-edit.component.css"]
+})
 export class NewUser implements AfterViewChecked {
   _isOpen: boolean;
   isAlertOpen: boolean = false;
   afterCommitErr: string = "";
 
-  constructor( private userService: UserService ) {
+  constructor(private userService: UserService) {
   };
 
   ngAfterViewChecked() {
@@ -30,9 +30,9 @@ export class NewUser implements AfterViewChecked {
     return this._isOpen;
   }
 
-  set isOpen( open: boolean ) {
+  set isOpen(open: boolean) {
     this._isOpen = open;
-    this.isOpenChange.emit( this._isOpen );
+    this.isOpenChange.emit(this._isOpen);
   }
 
   @Output() isOpenChange: EventEmitter<boolean> = new EventEmitter<boolean>();
@@ -55,27 +55,27 @@ export class NewUser implements AfterViewChecked {
   }
 
   updateUser() {
-    this.userService.updateUser( this.userModel )
-      .then( () => {
-        this.SubmitSuccessEvent.emit( true );
+    this.userService.updateUser(this.userModel)
+      .then(() => {
+        this.SubmitSuccessEvent.emit(true);
         this.isOpen = false
-      } )
-      .catch( ( reason: string ) => {
+      })
+      .catch((reason: string) => {
         this.afterCommitErr = reason;
         this.isAlertOpen = true;
-      } );
+      });
   }
 
   addNewUser() {
-    this.userService.newUser( this.userModel )
-      .then( () => {
-        this.SubmitSuccessEvent.emit( true );
+    this.userService.newUser(this.userModel)
+      .then(() => {
+        this.SubmitSuccessEvent.emit(true);
         this.isOpen = false;
-      } )
-      .catch( ( reason: string ) => {
+      })
+      .catch((reason: string) => {
         this.afterCommitErr = reason;
         this.isAlertOpen = true;
-      } )
+      })
   }
 
 }

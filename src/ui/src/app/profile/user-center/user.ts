@@ -30,5 +30,7 @@ export class User implements user {
   public user_salt: string = "";
   public user_creation_time: Date = new Date();
   public user_update_time: Date = new Date();
-  constructor() {}
+
+  constructor() {
+  }
 }
