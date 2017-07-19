@@ -1,176 +1,177 @@
 <div style="display: flex;flex-wrap: nowrap">
-	<div class="section-container split-line">
-		<div class="section-image-container">
-			<div class="circle">
-				<img class="section-image" src="../../images/service_icon.png" alt="service icon"/>
-			</div>
-			<span class="section-text">{{ 'DASHBOARD.SERVICE' | translate }}</span>
-		</div>
-		<div class="section-right-container">
+  <div class="section-container split-line">
+    <div class="section-image-container">
+      <div class="circle">
+        <img class="section-image" src="../../images/service_icon.png" alt="service icon"/>
+      </div>
+      <span class="section-text">{{ 'DASHBOARD.SERVICE' | translate }}</span>
+    </div>
+    <div class="section-right-container">
 			<span class="stat-panel-title stat-panel-title-font">
 				 {{ 'DASHBOARD.PODS' | translate }}:
 				 <span class="stat-panel-value-font">{{podCount}}</span></span>
-			<span class="stat-panel-title stat-panel-title-font">
+      <span class="stat-panel-title stat-panel-title-font">
 				 {{ 'DASHBOARD.CONTAINERS' | translate }}:
 				<span class="stat-panel-value-font">{{containerCount}}</span>
 			</span>
-		</div>
-	</div>
-	<div class="section-container split-line">
-		<div class="section-image-container">
-			<div class="circle">
-				<img class="section-image" src="../../images/node_icon.png" alt="node icon"/>
-			</div>
-			<span class="section-text">{{ 'DASHBOARD.NODE' | translate }}</span>
-		</div>
-		<div class="section-right-container">
+    </div>
+  </div>
+  
+  <div class="section-container split-line">
+    <div class="section-image-container">
+      <div class="circle">
+        <img class="section-image" src="../../images/node_icon.png" alt="node icon"/>
+      </div>
+      <span class="section-text">{{ 'DASHBOARD.NODE' | translate }}</span>
+    </div>
+    <div class="section-right-container">
 			<span class="stat-panel-title stat-panel-title-font">
 				 {{ 'DASHBOARD.MEMORY' | translate }}:
 				 <span class="stat-panel-value-font">{{memoryPercent}}</span></span>
-			<span class="stat-panel-title stat-panel-title-font">
+      <span class="stat-panel-title stat-panel-title-font">
 				 {{ 'DASHBOARD.CPU' | translate }}:
 				<span class="stat-panel-value-font">{{cpuPercent}}</span>
 			</span>
-		</div>
-	</div>
-	<div class="section-container">
-		<div class="section-image-container">
-			<div class="circle">
-				<img class="section-image" src="../../images/storage_icon.png" alt="storage icon"/>
-			</div>
-			<span class="section-text">{{ 'DASHBOARD.STORAGE' | translate }}</span>
-		</div>
-		<div class="section-right-container">
+    </div>
+  </div>
+  <div class="section-container">
+    <div class="section-image-container">
+      <div class="circle">
+        <img class="section-image" src="../../images/storage_icon.png" alt="storage icon"/>
+      </div>
+      <span class="section-text">{{ 'DASHBOARD.STORAGE' | translate }}</span>
+    </div>
+    <div class="section-right-container">
 			<span class="stat-panel-title stat-panel-title-font">
 				 {{ 'DASHBOARD.USAGE' | translate }}:
 				 <span class="stat-panel-value-font">{{usageVolume}}</span></span>
-			<span class="stat-panel-title stat-panel-title-font">
+      <span class="stat-panel-title stat-panel-title-font">
 				 {{ 'DASHBOARD.TOTAL' | translate }}:
 				<span class="stat-panel-value-font">{{totalVolume}}</span>
 			</span>
-		</div>
-	</div>
+    </div>
+  </div>
 </div>
 
 <div style="display: flex;flex-direction: column">
-	<div style="flex-basis: 100%" class="card">
-		<div class="card-header">{{'DASHBOARD.SERVICE' | translate }}</div>
-		<div class="card-block">
-			<div class="card-block-top-container">
-				<clr-dropdown #serviceDropdown>
-					<button style="width: 150px;font-size: 10px;text-align: left" class="btn btn-outline-primary"
-									clrDropdownToggle>
-						{{serviceBtnValue}}
-						<span *ngIf="!serviceBtnValue || serviceBtnValue == ''" class="spinner spinner-sm"></span>
-						<clr-icon shape="caret down"></clr-icon>
-					</button>
-					<clr-dropdown-menu class="card-block-dropdown">
-						<button [ngClass]="{'active':serviceBtnValue == service.service_name}" class="dropdown-item"
-										(click)="serviceDropDownChange(service);serviceDropdown.toggleDropdown()"
-										*ngFor="let service of serviceList;">
-							{{service.service_name}}
-						</button>
-					</clr-dropdown-menu>
-				</clr-dropdown>
-				<div class="caption_container">
+  <div style="flex-basis: 100%" class="card">
+    <div class="card-header">{{'DASHBOARD.SERVICE' | translate }}</div>
+    <div class="card-block">
+      <div class="card-block-top-container">
+        <clr-dropdown #serviceDropdown>
+          <button style="width: 150px;font-size: 10px;text-align: left" class="btn btn-outline-primary"
+                  clrDropdownToggle>
+            {{serviceBtnValue}}
+            <span *ngIf="!serviceBtnValue || serviceBtnValue == ''" class="spinner spinner-sm"></span>
+            <clr-icon shape="caret down"></clr-icon>
+          </button>
+          <clr-dropdown-menu class="card-block-dropdown">
+            <button [ngClass]="{'active':serviceBtnValue == service.service_name}" class="dropdown-item"
+                    (click)="serviceDropDownChange(service);serviceDropdown.toggleDropdown()"
+                    *ngFor="let service of serviceList;">
+              {{service.service_name}}
+            </button>
+          </clr-dropdown-menu>
+        </clr-dropdown>
+        <div class="caption_container">
 					<span class="first-line">
 						{{ 'DASHBOARD.PODS' | translate }}:{{podCount}}
 					</span>
-					<span class="second-line">
+          <span class="second-line">
 						{{ 'DASHBOARD.CONTAINERS' | translate }}:{{containerCount}}
 					</span>
-				</div>
-				<div class="select-time-container">
-					<time-range-scale (changeScale)="serviceScaleChange($event)" [options]="scaleOptions"></time-range-scale>
-				</div>
-			</div>
-			<div class="card-block-bottom-container">
-				<div *ngIf="serviceAlready" style="flex-basis: 100%;">
-					<div *ngIf="serviceNoData" class="no-data-mask">
-						<span>{{ 'DASHBOARD.NODATA' | translate }}</span>
-					</div>
-					<div echarts [options]="serviceOptions" style="height: 300px"></div>
-				</div>
-				<div *ngIf="!serviceAlready" class="no-already">
-					<span class="spinner spinner-lg"></span>
-				</div>
-			</div>
-		</div>
-	</div>
+        </div>
+        <div class="select-time-container">
+          <time-range-scale (changeScale)="serviceScaleChange($event)" [options]="scaleOptions"></time-range-scale>
+        </div>
+      </div>
+      <div class="card-block-bottom-container">
+        <div *ngIf="serviceAlready" style="flex-basis: 100%;">
+          <div *ngIf="serviceNoData" class="no-data-mask">
+            <span>{{ 'DASHBOARD.NODATA' | translate }}</span>
+          </div>
+          <div echarts [options]="serviceOptions" style="height: 300px"></div>
+        </div>
+        <div *ngIf="!serviceAlready" class="no-already">
+          <span class="spinner spinner-lg"></span>
+        </div>
+      </div>
+    </div>
+  </div>
 
 
-	<div style="flex-basis: 100%" class="card">
-		<div class="card-header">{{'DASHBOARD.NODE' | translate }}</div>
-		<div class="card-block">
-			<div class="card-block-top-container">
-				<clr-dropdown #nodeDropdown>
-					<button style="width: 150px" class="btn btn-outline-primary" clrDropdownToggle>
-						{{nodeBtnValue}}
-						<clr-icon shape="caret down"></clr-icon>
-					</button>
-					<clr-dropdown-menu class="card-block-dropdown">
-						<button class="dropdown-item" [ngClass]="{'active':nodeBtnValue == service.service_name}"
-										(click)="nodeBtnValue = service.service_name ;nodeDropdown.toggleDropdown()"
-										*ngFor="let service of serviceList">
-							{{service.service_name}}
-						</button>
-					</clr-dropdown-menu>
-				</clr-dropdown>
-				<div class="caption_container">
+  <div style="flex-basis: 100%" class="card">
+    <div class="card-header">{{'DASHBOARD.NODE' | translate }}</div>
+    <div class="card-block">
+      <div class="card-block-top-container">
+        <clr-dropdown #nodeDropdown>
+          <button style="width: 150px" class="btn btn-outline-primary" clrDropdownToggle>
+            {{nodeBtnValue}}
+            <clr-icon shape="caret down"></clr-icon>
+          </button>
+          <clr-dropdown-menu class="card-block-dropdown">
+            <button class="dropdown-item" [ngClass]="{'active':nodeBtnValue == service.service_name}"
+                    (click)="nodeBtnValue = service.service_name ;nodeDropdown.toggleDropdown()"
+                    *ngFor="let service of serviceList">
+              {{service.service_name}}
+            </button>
+          </clr-dropdown-menu>
+        </clr-dropdown>
+        <div class="caption_container">
 					<span class="first-line">
 						{{ 'DASHBOARD.CPU' | translate }}:{{cpuPercent}}
 					</span>
-					<span class="second-line">
+          <span class="second-line">
 						{{ 'DASHBOARD.MEMORY' | translate }}:{{memoryPercent}}
 					</span>
-				</div>
-				<div class="select-time-container">
-					<time-range-scale [options]="scaleOptions"></time-range-scale>
-				</div>
-			</div>
-			<div class="card-block-bottom-container">
-				<div style="flex-basis: 100%;">
-					<div echarts [options]="nodeOptions" style="height: 285px;"></div>
-				</div>
-			</div>
-		</div>
-	</div>
+        </div>
+        <div class="select-time-container">
+          <time-range-scale [options]="scaleOptions"></time-range-scale>
+        </div>
+      </div>
+      <div class="card-block-bottom-container">
+        <div style="flex-basis: 100%;">
+          <div echarts [options]="nodeOptions" style="height: 285px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-	<div style="flex-basis: 100%" class="card">
-		<div class="card-header">{{'DASHBOARD.STORAGE' | translate }}</div>
-		<div class="card-block">
-			<div class="card-block-top-container">
-				<clr-dropdown #storageDropdown>
-					<button style="width: 150px" class="btn btn-outline-primary" clrDropdownToggle>
-						{{storageBtnValue}}
-						<clr-icon shape="caret down"></clr-icon>
-					</button>
-					<clr-dropdown-menu class="card-block-dropdown">
-						<button class="dropdown-item" [ngClass]="{'active':storageBtnValue == service.service_name}"
-										(click)="storageBtnValue = service.service_name;storageDropdown.toggleDropdown()"
-										*ngFor="let service of serviceList;">
-							{{service.service_name}}
-						</button>
-					</clr-dropdown-menu>
-				</clr-dropdown>
-				<div class="caption_container">
+  <div style="flex-basis: 100%" class="card">
+    <div class="card-header">{{'DASHBOARD.STORAGE' | translate }}</div>
+    <div class="card-block">
+      <div class="card-block-top-container">
+        <clr-dropdown #storageDropdown>
+          <button style="width: 150px" class="btn btn-outline-primary" clrDropdownToggle>
+            {{storageBtnValue}}
+            <clr-icon shape="caret down"></clr-icon>
+          </button>
+          <clr-dropdown-menu class="card-block-dropdown">
+            <button class="dropdown-item" [ngClass]="{'active':storageBtnValue == service.service_name}"
+                    (click)="storageBtnValue = service.service_name;storageDropdown.toggleDropdown()"
+                    *ngFor="let service of serviceList;">
+              {{service.service_name}}
+            </button>
+          </clr-dropdown-menu>
+        </clr-dropdown>
+        <div class="caption_container">
 					<span class="first-line">
 						{{ 'DASHBOARD.USAGE' | translate }}:{{usageVolume}}
 					</span>
-					<span class="second-line">
+          <span class="second-line">
 						{{ 'DASHBOARD.TOTAL' | translate }}:{{totalVolume}}
 					</span>
-				</div>
-				<div class="select-time-container">
-					<time-range-scale [options]="scaleOptions"></time-range-scale>
-				</div>
-			</div>
-			<div class="card-block-bottom-container">
+        </div>
+        <div class="select-time-container">
+          <time-range-scale [options]="scaleOptions"></time-range-scale>
+        </div>
+      </div>
+      <div class="card-block-bottom-container">
 
-				<div style="flex-basis: 100%;">
-					<div echarts [options]="storageOptions" style="height: 285px;"></div>
-				</div>
-			</div>
-		</div>
-	</div>
+        <div style="flex-basis: 100%;">
+          <div echarts [options]="storageOptions" style="height: 285px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
