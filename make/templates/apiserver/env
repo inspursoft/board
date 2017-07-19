@@ -1,0 +1,3 @@
+HOSTNAME=$hostname
+DB_PASSWORD=$db_password
+BOARD_ADMIN_PASSWORD=$board_admin_password

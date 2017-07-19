@@ -19,7 +19,7 @@ services:
     volumes:
       - /data/board/database:/var/lib/mysql
     env_file:
-      - ./container/db/env
+      - ../config/db/env
     networks:
       - board
     ports:
@@ -38,6 +38,8 @@ services:
     restart: always
     volumes:
       - ../../tools/swagger/vendors/swagger-ui-2.1.4/dist:/go/bin/swagger:z
+    env_file:
+      - ../config/apiserver/env
     networks:
       - board
     links:
