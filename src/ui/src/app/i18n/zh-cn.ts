@@ -78,7 +78,7 @@ export const LANG_ZH_CN = {
     "LIST_COL_OPERATION":"操作",
     "DELETE_USER_SUCCESS":"删除用户成功!",
     "DELETE_USER": "删除用户",
-    "CONFIRM_DELETE_USER":"确定删除用户:",
+    "CONFIRM_DELETE_USER":"确定删除用户:{{0}}",
     "EDIT":"修改",
     "EDIT_USER":"修改用户",
     "ADD_USER": "添加用户",

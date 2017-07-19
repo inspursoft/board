@@ -1,18 +1,21 @@
-.trash{
+.trash {
   cursor: pointer;
 }
-.trash:hover{
+
+.trash:hover {
   color: blue;
 }
 
-.edit{
+.edit {
   margin-left: 10px;
   cursor: pointer;
 }
-.edit:hover{
+
+.edit:hover {
   color: blue;
 }
-.user-list-head{
+
+.user-list-head {
   justify-content: flex-end;
   display: flex;
   flex-basis: 100%;

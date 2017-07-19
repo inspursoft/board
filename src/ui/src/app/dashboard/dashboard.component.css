@@ -107,9 +107,9 @@
   justify-content: flex-end;
 }
 
-.caption_container{
+.caption_container {
   flex-basis: 100%;
-  display:flex;
+  display: flex;
   justify-content: center;
   line-height: 40px;
 }

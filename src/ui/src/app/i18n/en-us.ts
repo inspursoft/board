@@ -78,7 +78,7 @@ export const LANG_EN_US = {
     "LIST_COL_OPERATION":"Operation",
     "DELETE_USER_SUCCESS":"Delete user success!",
     "DELETE_USER": "Delete User",
-    "CONFIRM_DELETE_USER":"Are you sure delete the user:",
+    "CONFIRM_DELETE_USER":"Are you sure delete the user:{{0}}",
     "EDIT":"EDIT",
     "EDIT_USER":"Edit User",
     "ADD_USER": "Add New User",
