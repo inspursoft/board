@@ -7,13 +7,13 @@
 			<span class="section-text">{{ 'DASHBOARD.SERVICE' | translate }}</span>
 		</div>
 		<div class="section-right-container">
-      <span class="stat-panel-title stat-panel-title-font">
+			<span class="stat-panel-title stat-panel-title-font">
 				 {{ 'DASHBOARD.PODS' | translate }}:
 				 <span class="stat-panel-value-font">{{podCount}}</span></span>
 			<span class="stat-panel-title stat-panel-title-font">
 				 {{ 'DASHBOARD.CONTAINERS' | translate }}:
 				<span class="stat-panel-value-font">{{containerCount}}</span>
-      </span>
+			</span>
 		</div>
 	</div>
 	<div class="section-container split-line">
@@ -24,13 +24,13 @@
 			<span class="section-text">{{ 'DASHBOARD.NODE' | translate }}</span>
 		</div>
 		<div class="section-right-container">
-      <span class="stat-panel-title stat-panel-title-font">
+			<span class="stat-panel-title stat-panel-title-font">
 				 {{ 'DASHBOARD.MEMORY' | translate }}:
 				 <span class="stat-panel-value-font">{{memoryPercent}}</span></span>
 			<span class="stat-panel-title stat-panel-title-font">
 				 {{ 'DASHBOARD.CPU' | translate }}:
 				<span class="stat-panel-value-font">{{cpuPercent}}</span>
-      </span>
+			</span>
 		</div>
 	</div>
 	<div class="section-container">
@@ -41,15 +41,14 @@
 			<span class="section-text">{{ 'DASHBOARD.STORAGE' | translate }}</span>
 		</div>
 		<div class="section-right-container">
-      <span class="stat-panel-title stat-panel-title-font">
+			<span class="stat-panel-title stat-panel-title-font">
 				 {{ 'DASHBOARD.USAGE' | translate }}:
 				 <span class="stat-panel-value-font">{{usageVolume}}</span></span>
 			<span class="stat-panel-title stat-panel-title-font">
 				 {{ 'DASHBOARD.TOTAL' | translate }}:
 				<span class="stat-panel-value-font">{{totalVolume}}</span>
-      </span>
+			</span>
 		</div>
-
 	</div>
 </div>
 
@@ -74,12 +73,12 @@
 					</clr-dropdown-menu>
 				</clr-dropdown>
 				<div class="caption_container">
-          <span class="first-line">
-            {{ 'DASHBOARD.PODS' | translate }}:{{podCount}}
-          </span>
+					<span class="first-line">
+						{{ 'DASHBOARD.PODS' | translate }}:{{podCount}}
+					</span>
 					<span class="second-line">
-            {{ 'DASHBOARD.CONTAINERS' | translate }}:{{containerCount}}
-          </span>
+						{{ 'DASHBOARD.CONTAINERS' | translate }}:{{containerCount}}
+					</span>
 				</div>
 				<div class="select-time-container">
 					<time-range-scale (changeScale)="serviceScaleChange($event)" [options]="scaleOptions"></time-range-scale>
