@@ -44,7 +44,7 @@ export class CreateProjectComponent {
       .then(resp=>{
         this.createProjectOpened = false;
         let inlineMessage = new Message();
-        inlineMessage.message = 'Successful created project.';
+        inlineMessage.message = 'PROJECT.SUCCESSFUL_CREATED_PROJECT';
         this.messageService.inlineAlertMessage(inlineMessage);
         this.reload.emit(true);
       })
@@ -53,11 +53,11 @@ export class CreateProjectComponent {
           switch(err.status) {
           case 409:
             this.alertClosed = false;
-            this.errorMessage = 'Project name already exists.';
+            this.errorMessage = 'PROJECT.PROJECT_NAME_ALREADY_EXISTS';
             break;
           default:
             this.alertClosed = false;
-            this.errorMessage = 'Unknown error.';
+            this.errorMessage = 'ERROR.UNKNOWN_ERROR';
             break;
           }
         }

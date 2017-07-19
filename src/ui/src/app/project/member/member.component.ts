@@ -1,4 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
 import { Project } from '../project';
 import { ProjectService } from '../project.service';
 import { Member } from './member';
@@ -6,6 +7,8 @@ import { Role } from './role';
 import { Subject } from 'rxjs/Subject';
 
 import { ROLES } from '../../shared/shared.const';
+import { MessageService } from '../../shared/message-service/message.service';
+
 
 @Component({
   selector: 'project-member',
@@ -30,7 +33,11 @@ export class MemberComponent implements OnInit {
 
   memberSubject: Subject<Member[]> = new Subject<Member[]>();
 
-  constructor(private projectService: ProjectService){}
+  constructor(
+    private projectService: ProjectService,
+    private translateService: TranslateService,
+    private messageService: MessageService
+  ){}
 
   ngOnInit(): void {}
 
@@ -88,8 +95,8 @@ export class MemberComponent implements OnInit {
       .addOrUpdateProjectMember(this.project.project_id, 
         this.selectedMember.project_member_user_id, 
         this.selectedMember.project_member_role_id)
-      .then(()=>this.displayInlineMessage('Successful changed member ' + this.selectedMember.project_member_username + ' with role ' + ROLES[this.selectedMember.project_member_role_id]))
-      .catch(err=>console.error('Failed to delete member user_id:' + this.selectedMember.project_member_user_id));
+      .then(()=>this.displayInlineMessage('PROJECT.SUCCESSFUL_CHANGED_MEMBER_ROLE', [this.selectedMember.project_member_username]))
+      .catch(err=>this.messageService.dispatchError(err, 'PROJECT.FAILED_TO_CHANGE_MEMBER_ROLE'));
   }
 
   setMember(): void {
@@ -100,7 +107,8 @@ export class MemberComponent implements OnInit {
           .addOrUpdateProjectMember(this.project.project_id, 
             this.selectedMember.project_member_user_id, 
             this.selectedMember.project_member_role_id)
-          .then(()=>this.displayInlineMessage('Successful added member ' + this.selectedMember.project_member_username + ' with role ' + ROLES[this.selectedMember.project_member_role_id]));
+          .then(()=>this.displayInlineMessage('PROJECT.SUCCESSFUL_ADDED_MEMBER',[this.selectedMember.project_member_username]))
+          .catch(err=>this.messageService.dispatchError(err, 'PROJECT.FAILED_TO_ADD_MEMBER'));
         m.isMember = true;
       }
     });
@@ -115,18 +123,21 @@ export class MemberComponent implements OnInit {
         this.projectService
           .deleteProjectMember(this.project.project_id, this.selectedMember.project_member_user_id)
           .then(()=>{
-            this.displayInlineMessage('Successful deleted member ' + this.selectedMember.project_member_username);
+            this.displayInlineMessage('PROJECT.SUCCESSFUL_REMOVED_MEMBER', [this.selectedMember.project_member_username]);
             this.doSet = true;
           })
-          .catch(err=>console.error('Failed to delete member user_id:' + this.selectedMember.project_member_user_id));
+          .catch(err=>this.messageService.dispatchError(err, 'PROJECT.FAILED_TO_REMOVE_MEMBER'));
       }
     });
     this.memberSubject.next(this.availableMembers);
   }
 
-  displayInlineMessage(message: string): void {
+  displayInlineMessage(message: string, params?: object): void {
     this.hasChanged = true;
-    this.changedMessage = message;
+    this.translateService.get(message, params || [])
+      .subscribe(res=>{
+        this.changedMessage = res;
+      });
     setTimeout(()=>this.hasChanged = false, 2*1000);
   }
 }

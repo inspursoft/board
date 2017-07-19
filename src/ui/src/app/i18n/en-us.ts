@@ -4,7 +4,19 @@ export const LANG_EN_US = {
     "YES": "Yes",
     "NO": "No",
     "CONFIRM": "Confirm",
-    "CANCEL": "Cancel"
+    "CANCEL": "Cancel",
+    "DELETE": "Delete"
+  },
+  "DATAGRID": {
+    "ITEMS": "items"
+  },
+  "GLOBAL_ALERT": {
+    "SIGN_IN": "Sign In"
+  },
+  "ERROR": {
+    "UNKNOWN_ERROR": "Unknown error.",
+    "INTERNAL_ERROR": "Unexpected internal error.",
+    "INVALID_USER": "Invalid user status, please sign-in to try again."
   },
   "ACCOUNT": {
     "SIGN_IN": "Sign In",
@@ -67,5 +79,37 @@ export const LANG_EN_US = {
     "USAGE": "Usage",
     "TOTAL": "Total",
     "STORAGE": "Storage",
- }
+  },
+  "PROJECT": {
+    "CREATE_PROJECT": "Create Project",
+    "PROJECT_NAME": "Project Name",
+    "CREATOR": "Creator",
+    "CREATION_TIME": "Creation Time",
+    "PUBLIC": "Public",
+    "COMMENT": "Comment",
+    "ACTIONS": "Actions",
+    "PROJECT_NAME_IS_REQUIRED": "Project name is required.",
+    "ADD_MEMBER_FOR": "Add member for",
+    "AVAILABLE_MEMBERS": "Available Members",
+    "ASSIGNED_MEMBERS": "Assigned Members",
+    "ROLE": "Role",
+    "PROJECT_ADMIN": "Project Admin",
+    "DEVELOPER": "Developer",
+    "VISITOR": "Visitor",
+    "SUCCESSFUL_DELETE_PROJECT": "Succesful delete project.",
+    "FAILED_TO_DELETE_PROJECT": "Failed to delete project.",
+    "FAILED_TO_RETRIEVE_PROJECTS": "Failed to retrieve projects.",
+    "DELETE_PROJECT": "Delete Project",
+    "CONFIRM_TO_DELETE_PROJECT": "Do you confirm to delete project {{0}}?",
+    "SUCCESSFUL_TOGGLE_PROJECT": "Successful toggle project.",
+    "FAILED_TO_TOGGLE_PROJECT": "Failed to toggle project.",
+    "SUCCESSFUL_ADDED_MEMBER": "Added member: {{0}}.",
+    "SUCCESSFUL_CHANGED_MEMBER_ROLE": "Changed project member: {{0}}‘s role.",
+    "SUCCESSFUL_REMOVED_MEMBER": "Removed project member: {{0}}.",
+    "FAILED_TO_ADD_MEMBER": "Failed to add member.",
+    "FAILED_TO_CHANGE_MEMBER_ROLE": "Failed to change member role.",
+    "FAILED_TO_REMOVE_MEMBER": "Failed to remove member.",
+    "SUCCESSFUL_CREATED_PROJECT": "Successful created project.",
+    "PROJECT_NAME_ALREADY_EXISTS": "Project name already exists."
+  }
 };

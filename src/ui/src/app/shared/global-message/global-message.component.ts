@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
 import { MessageService } from '../message-service/message.service';
 import { Message } from '../message-service/message';
-import { MESSAGE_TYPE } from '../shared.const';
+import { MESSAGE_TYPE, DISMISS_GLOBAL_ALERT_INTERVAL } from '../shared.const';
 
 @Component({
   selector: 'global-message',
@@ -11,6 +11,7 @@ import { MESSAGE_TYPE } from '../shared.const';
 })
 export class GlobalMessageComponent implements OnDestroy {
 
+  globalMessageClosed: boolean;
   globalAnnoucedMessage: string;
   showAction: boolean;
 
@@ -20,10 +21,13 @@ export class GlobalMessageComponent implements OnDestroy {
     private messageService: MessageService,
     private router: Router
   ) {
+    this.globalMessageClosed = true;
     this.showAction = false;
     this._subscription = this.messageService
       .globalAnnounced$
       .subscribe(m=>{
+        setTimeout(()=>this.globalMessageClosed = true, DISMISS_GLOBAL_ALERT_INTERVAL);
+        this.globalMessageClosed = false;
         let globalMessage = <Message>m;
         this.globalAnnoucedMessage = globalMessage.message;
         if(globalMessage) {

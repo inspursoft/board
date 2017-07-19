@@ -1,7 +1,7 @@
-<clr-alert [clrAlertType]="'alert-success'" [(clrAlertClosed)]="inlineAlertClosed">
+<clr-alert [clrAlertType]="inlineAlertType" [(clrAlertClosed)]="inlineAlertClosed">
   <div class="alert-item">
     <span class="alert-text">
-      {{ inlineAnnouncedMessage }}
+      {{ inlineAnnouncedMessage | translate }}
     </span>
   </div>
 </clr-alert>
