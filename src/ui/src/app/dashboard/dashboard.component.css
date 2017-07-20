@@ -28,6 +28,7 @@
   flex-basis: 100%;
   display: flex;
   margin-right: 20px;
+  justify-content: center;
 }
 
 .split-line {
@@ -52,7 +53,6 @@
 
 .section-right-container {
   display: flex;
-  flex-basis: 100%;
   margin-left: 10px;
   flex-direction: column;
   justify-content: space-between

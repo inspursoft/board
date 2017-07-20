@@ -1,7 +1,7 @@
 import { OnInit, AfterViewInit, Component, OnDestroy } from '@angular/core';
 import { Assist } from "./dashboard-assist"
 import { scaleOption } from "app/dashboard/time-range-scale.component/time-range-scale.component";
-import { DashboardService, ServiceListModel, LineDataModel } from "app/dashboard/dashboard.service";
+import { DashboardService, ServiceListModel, LineDataModel, LinesData } from "app/dashboard/dashboard.service";
 import { TranslateService } from "@ngx-translate/core";
 import { Subscription } from "rxjs/Subscription";
 
@@ -31,10 +31,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   serviceBtnValue: string;
   serviceList: Array<ServiceListModel>;
   serviceQuery: {model: ServiceListModel, scale: scaleOption, count: number};
+  serviceOptionsBuffer: {lastZoomStart: number, lastZoomEnd: number};
   serviceOptions: object = {};
   serviceAlready: boolean = false;
   serviceNoData: boolean = false;
-  serviceData: Map<string, LineDataModel[]>;
+  serviceData: LinesData;
 
   nodeBtnValue: string;
   nodeOptions: object = {};
@@ -59,7 +60,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.refreshServiceData();
   }
 
-  translateForService(isResolve: boolean): void {
+  setServiceOption(){
     this.translateService.get(["DASHBOARD.CONTAINERS", "DASHBOARD.PODS"])
       .subscribe(res => {
         let podsTranslate: string = res["DASHBOARD.PODS"];
@@ -70,45 +71,40 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         this.serviceOptions["series"][0]["name"] = podsTranslate;
         this.serviceOptions["series"][1]["name"] = containersTranslate;
         this.serviceOptions["legend"] = {data: [podsTranslate, containersTranslate], x: "left"};
-        if (isResolve && this.serviceData && this.serviceData["pods"].length > 0) {
-          this.serviceOptions["series"][0]["data"] = this.serviceData["pods"];
-          this.serviceOptions["series"][1]["data"] = this.serviceData["container"];
-          this.podCount = this.serviceData["pods"][this.serviceData["pods"].length - 1][1] | 0;
-          this.containerCount = this.serviceData["container"][this.serviceData["container"].length - 1][1] | 0;
-          this.serviceNoData = false;
-        } else {
-          this.serviceOptions["series"][0]["data"] = [[new Date(), 0]];
-          this.serviceOptions["series"][1]["data"] = [[new Date(), 0]];
-          this.podCount = 0;
-          this.containerCount = 0;
-          this.serviceNoData = true;
+      });
+  }
+
+  serviceChartDataZoom(event: object) {
+    this.serviceOptionsBuffer.lastZoomStart = event["start"];
+    this.serviceOptionsBuffer.lastZoomEnd = event["end"];
+  }
+
+  refreshServiceData() {
+    this.serviceOptions["dataZoom"][0]["start"] = this.serviceOptionsBuffer.lastZoomStart;
+    this.serviceOptions["dataZoom"][0]["end"] = this.serviceOptionsBuffer.lastZoomEnd;
+    this.service.getServiceData(this.serviceQuery.count, this.serviceQuery.scale.value, this.serviceQuery.model.service_name)
+      .then(res => {
+        this.serviceData = res;
+        this.serviceNoData = false;
+        this.serviceAlready = true;
+        if (this.serviceData[0] && this.serviceData[0].length > 0){
+          this.podCount = this.serviceData[0][this.serviceData[0].length - 1][1] | 0;
+          this.containerCount = this.serviceData[1][this.serviceData[1].length - 1][1] | 0;
         }
+      })
+      .catch(() => {
+        this.serviceData = [[], []];
+        this.podCount = 0;
+        this.containerCount = 0;
+        this.serviceNoData = true;
         this.serviceAlready = true;
       });
   }
 
-  refreshServiceData() {
-    this.service.getServiceData(
-      this.serviceQuery.count,
-      this.serviceQuery.scale.value,
-      this.serviceQuery.model.service_name).then(res => {
-      this.serviceData = res;
-      this.translateForService(true);
-    }).catch(err => {
-      if (this.serviceData) {
-        this.serviceData.clear();
-      }
-      this.translateForService(false);
-    });
-  }
-
   ngOnInit() {
-    this._intervalRead = setInterval(() => {
-      // this.refreshServiceData();
-    }, 10000);
     this._onLangChangeSubscription = this.translateService.onLangChange.subscribe(() => {
-      this.refreshServiceData();
-    })
+      this.setServiceOption();
+    });
   }
 
   ngOnDestroy() {
@@ -119,21 +115,31 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    this.service.getServiceList().then(res => {
-      this.serviceList = res;
-      this.serviceBtnValue = this.serviceList[0].service_name;
-      this.nodeBtnValue = this.serviceList[0].service_name;
-      this.storageBtnValue = this.serviceList[0].service_name;
-
-      this.serviceQuery = Object.create({
-        count: 300,
-        model: this.serviceList[0],
-        scale: this.scaleOptions[0]
-      });
-      this.refreshServiceData();
+    this.setServiceOption();
+    this.serviceOptionsBuffer = Object.create({
+      lastZoomStart: 100,
+      lastZoomEnd: 80
     });
+    this.service.getServiceList()
+      .then(res => {
+        this.serviceList = res;
+        this._intervalRead = setInterval(() => {
+          this.refreshServiceData();
+        }, 10000);
+        this.serviceBtnValue = this.serviceList[0].service_name;
+        this.nodeBtnValue = this.serviceList[0].service_name;
+        this.storageBtnValue = this.serviceList[0].service_name;
+        this.serviceQuery = Object.create({
+          count: 300,
+          model: this.serviceList[0],
+          scale: this.scaleOptions[0]
+        });
+        this.serviceAlready = false;
+        this.refreshServiceData();
+      })
+      .catch(() => null);
 
-    let serviceSimulateData = this.service.getBySimulateData(0, 1);
+    let serviceSimulateData = DashboardService.getBySimulateData(0, 1);
 
     this.nodeOptions = Assist.getBaseOptions();
     this.nodeOptions["tooltip"] = Assist.getTooltip("CPU", "Memory");

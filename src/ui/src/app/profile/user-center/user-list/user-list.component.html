@@ -36,6 +36,7 @@
         {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
         of {{pagination.totalItems}} users
         <clr-dg-pagination #pagination
+                           (clrDgPageChange)="pageChange(pageIndex)"
                            [clrDgPage]="curPage"
                            [clrDgTotalItems]="userListData.length"
                            [clrDgPageSize]="userCountPerPage">

@@ -1,7 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Http, RequestOptions, Headers } from "@angular/http"
+import { MessageService } from "app/shared/message-service/message.service"
 import "rxjs/add/operator/map";
 import 'rxjs/add/operator/toPromise';
+
+export type LinesData = [[Date, number][], [Date, number][]];
 
 export interface LineDataModel {
   readonly date: Date;
@@ -77,7 +80,7 @@ export class DashboardService {
    * @param dateScaleId
    *node:dateScaleId=>1:1min;2:1hr;3:1day;4:1mth
    */
-  getBySimulateData(serviceID: number, dateScaleId: number): Map<number, LineDataModel[]> {
+  static getBySimulateData(serviceID: number, dateScaleId: number): Map<number, LineDataModel[]> {
     if (!dateScaleId || dateScaleId < 1 || dateScaleId > 4) return null;
     let r: Map<number, LineDataModel[]> = new Map<number, LineDataModel[]>();
     r[0] = new Array<LineDataModel>(0);
@@ -92,7 +95,8 @@ export class DashboardService {
     return r;
   }
 
-  constructor(private http: Http) {
+  constructor(private http: Http,
+              private messageService: MessageService) {
   };
 
   readonly defaultHeaders: Headers = new Headers({
@@ -101,7 +105,7 @@ export class DashboardService {
 
   getServiceList(): Promise<ServiceListModel[]> {
     let options = new RequestOptions({headers: this.defaultHeaders});
-    return this.http.get(BASE_URL.concat("/service/list"), options)
+    return this.http.get(`${BASE_URL}/service/list`, options)
       .toPromise()
       .then(res => {
         let arr = Array.from(res.json()).sort((a, b) => {
@@ -110,9 +114,9 @@ export class DashboardService {
         });
         //add total service
         arr.unshift({service_name: "total"});
-        return Promise.resolve(arr as ServiceListModel[]);
+        return arr;
       })
-      .catch(DashboardService.handleError);
+      .catch(this.handleError);
   };
 
   /**data origin
@@ -125,7 +129,7 @@ export class DashboardService {
    * "time_stamp":1499842237
    * }]}
    */
-  getServiceData(service_time_count: number, service_time_unit: string, service_name: string): Promise<Map<string, LineDataModel[]>> {
+  getServiceData(service_time_count: number, service_time_unit: string, service_name: string): Promise<LinesData> {
     let params: Map<string, string> = new Map<string, string>();
     params["service_time_count"] = service_time_count.toString();
     params["service_timeunit"] = service_time_unit;
@@ -134,26 +138,24 @@ export class DashboardService {
       headers: this.defaultHeaders,
       search: params
     });
-    return this.http.get(BASE_URL.concat("/dashboard/service"), options)
+    return this.http.get(`${BASE_URL}/dashboard/service`, options)
       .toPromise()
       .then(res => {
         let resJson: object = res.json();
         let logs: ServiceDataModel[] = resJson["service_statuslogs"];
-        let r: Map<string, LineDataModel[]> = new Map<string, LineDataModel[]>();
-        r["pods"] = new Array<LineDataModel>(0);
-        r["container"] = new Array<LineDataModel>(0);
+        let r: LinesData = [new Array<[Date, number]>(0), new Array<[Date, number]>(0)];
         if (logs && logs.length > 0) {
           logs.forEach((item: ServiceDataModel) => {
-            r["pods"].unshift([new Date(item.time_stamp * 1000), item.pods_number]);
-            r["container"].unshift([new Date(item.time_stamp * 1000), item.container_number]);
+            r[0].unshift([new Date(item.time_stamp * 1000), item.pods_number]);
+            r[1].unshift([new Date(item.time_stamp * 1000), item.container_number]);
           });
         }
         return r;
       })
-      .catch(DashboardService.handleError);
+      .catch(this.handleError);
   }
 
-  private static  handleError(error: Response | any) {
+  handleError(error: Response | any) {
     let errMsg: string;
     if (error instanceof Response) {
       const body = error.json() || '';
@@ -162,6 +164,7 @@ export class DashboardService {
     } else {
       errMsg = error.message ? error.message : error.toString();
     }
+    this.messageService.dispatchError(error, errMsg);
     return Promise.reject(errMsg);
   }
 

@@ -1,31 +1,29 @@
 import { Component, OnInit, OnDestroy } from "@angular/core";
 import { UserService } from "app/profile/user-center/user-service/user-service";
-import { user, User } from "app/profile/user-center/user";
+import { User } from "app/profile/user-center/user";
 import { editModel } from "../user-new-edit/user-new-edit.component"
 import { Message } from "app/shared/message-service/message";
 import { MessageService } from "app/shared/message-service/message.service";
 import { Subscription } from "rxjs/Subscription";
-import { TranslateService } from "@ngx-translate/core";
+import { BUTTON_STYLE } from "app/shared/shared.const"
 
 @Component({
   selector: "user-list",
   templateUrl: "./user-list.component.html",
-  styleUrls: ["./user-list.component.css"],
-  providers: [TranslateService]
+  styleUrls: ["./user-list.component.css"]
 })
 
 export class UserList implements OnInit, OnDestroy {
   _deleteSubscription: Subscription;
-  userListData: Array<user> = Array<user>();
+  userListData: Array<User> = Array<User>();
   userListErrMsg: string = "";
   userCountPerPage: number = 2;
-  curUser: user;
+  curUser: User;
   curEditModel: editModel = editModel.emNew;
   curPage: number = 1;
   showNewUser: boolean = false;
 
   constructor(private userService: UserService,
-              private translateService: TranslateService,
               private messageService: MessageService) {
   }
 
@@ -45,7 +43,7 @@ export class UserList implements OnInit, OnDestroy {
     this.showNewUser = true;
   }
 
-  editUser(user: user) {
+  editUser(user: User) {
     this.curEditModel = editModel.emEdit;
     this.userService.getUser(user.user_id)
       .then(user => {
@@ -60,15 +58,14 @@ export class UserList implements OnInit, OnDestroy {
     this.curPage = page;
   }
 
-  deleteUser(user: user) {
-    this.translateService.get("USER_CENTER.CONFIRM_DELETE_USER", [user.user_name])
-      .subscribe((res: string) => {
-        let m: Message = new Message();
-        m.title = "USER_CENTER.DELETE_USER";
-        m.data = user;
-        m.message = res;
-        this.messageService.announceMessage(m);
-      });
+  deleteUser(user: User) {
+    let m: Message = new Message();
+    m.title = "USER_CENTER.DELETE_USER";
+    m.buttons = BUTTON_STYLE.DELETION;
+    m.data = user;
+    m.params = [user.user_name];
+    m.message = "USER_CENTER.CONFIRM_DELETE_USER";
+    this.messageService.announceMessage(m);
   }
 
   ngOnInit() {

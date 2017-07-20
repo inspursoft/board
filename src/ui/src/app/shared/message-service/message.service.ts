@@ -36,7 +36,7 @@ export class MessageService {
     this.globalAnnouncedSource.next(message);
   }
 
-  dispatchError(response: Response | Error, error: string) {
+  dispatchError(response: Response | Error, error?: string) {
     let errMessage = new Message();
     if(response instanceof Response) {
       errMessage.message = error;

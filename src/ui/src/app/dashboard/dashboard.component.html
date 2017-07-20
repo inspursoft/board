@@ -85,14 +85,17 @@
         </div>
       </div>
       <div class="card-block-bottom-container">
-        <div *ngIf="serviceAlready" style="flex-basis: 100%;">
+        <div style="flex-basis: 100%;">
           <div *ngIf="serviceNoData" class="no-data-mask">
             <span>{{ 'DASHBOARD.NODATA' | translate }}</span>
           </div>
-          <div echarts [options]="serviceOptions" style="height: 300px"></div>
-        </div>
-        <div *ngIf="!serviceAlready" class="no-already">
-          <span class="spinner spinner-lg"></span>
+          <div echarts
+               [loading]="!serviceAlready"
+               [options]="serviceOptions"
+               [dataset]="serviceData"
+               (chartDataZoom)="serviceChartDataZoom($event)"
+               style="height: 300px">
+          </div>
         </div>
       </div>
     </div>
