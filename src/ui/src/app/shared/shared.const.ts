@@ -1,9 +1,16 @@
 export enum MESSAGE_TARGET { TOGGLE_PROJECT, DELETE_PROJECT };
 
 export const DISMISS_INLINE_ALERT_INTERVAL: number = 2 * 1000;
+export const DISMISS_GLOBAL_ALERT_INTERVAL: number = 10 * 1000;
 
 export enum MESSAGE_TYPE {
-  INVALID_USER, INTERNAL_ERROR
-}
+  COMMON_ERROR = 1, INVALID_USER, INTERNAL_ERROR
+};
 
-export const ROLES: {[key: number]: string} = { 1: 'Project Admin', 2: 'Developer', 3: 'Visitor' };
+export const ROLES: {[key: number]: string} = { 
+  1: 'PROJECT.PROJECT_ADMIN', 2: 'PROJECT.DEVELOPER', 3: 'PROJECT.VISITOR' 
+};
+
+export enum BUTTON_STYLE {
+  CONFIRMATION = 1, DELETION, YES_NO
+};

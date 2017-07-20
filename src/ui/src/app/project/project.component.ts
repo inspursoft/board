@@ -5,7 +5,7 @@ import { Subscription } from 'rxjs/Subscription';
 import { MessageService } from '../shared/message-service/message.service';
 import { ConfirmationDialogComponent } from '../shared/confirmation-dialog/confirmation-dialog.component';
 import { Message } from '../shared/message-service/message';
-import { MESSAGE_TARGET } from '../shared/shared.const';
+import { MESSAGE_TARGET, BUTTON_STYLE } from '../shared/shared.const';
 
 import { Project } from './project';
 import { ProjectService } from './project.service';
@@ -38,15 +38,11 @@ export class ProjectComponent implements OnInit, OnDestroy {
           .deleteProject(project)
           .then(()=>{
             let inlineMessage = new Message();
-            inlineMessage.message = 'Successful deleted project.';
+            inlineMessage.message = 'PROJECT.SUCCESSFUL_DELETE_PROJECT';
             this.messageService.inlineAlertMessage(inlineMessage);
             this.retrieve();
           })
-          .catch(err=>{
-            let globalMessage = new Message();
-            globalMessage.message = 'Unexpected error:' + err;
-            this.messageService.globalMessage(err);
-          });
+          .catch(err=>this.messageService.dispatchError(err, 'PROJECT.FAILED_TO_DELETE_PROJECT'));
       }
     });
   }
@@ -66,7 +62,8 @@ export class ProjectComponent implements OnInit, OnDestroy {
       .getProjects()
       .then(projects=>{
         this.projects = projects;
-      });
+      })
+      .catch(err=>this.messageService.dispatchError(err.status, 'PROJECT.FAILED_TO_RETRIEVE_PROJECTS'));
   }
 
   createProject(): void {
@@ -79,9 +76,11 @@ export class ProjectComponent implements OnInit, OnDestroy {
 
   confirmToDeleteProject(p: Project): void {
     let announceMessage = new Message();
-    announceMessage.title = 'Delete Project';
-    announceMessage.message = 'Are you sure to delete project?';
+    announceMessage.title = 'PROJECT.DELETE_PROJECT';
+    announceMessage.message = 'PROJECT.CONFIRM_TO_DELETE_PROJECT';
+    announceMessage.params = [p.project_name];
     announceMessage.target = MESSAGE_TARGET.DELETE_PROJECT;
+    announceMessage.buttons = BUTTON_STYLE.DELETION;
     announceMessage.data = p;
     this.messageService.announceMessage(announceMessage);
   }
@@ -89,16 +88,12 @@ export class ProjectComponent implements OnInit, OnDestroy {
   toggleProjectPublic(p: Project): void {
     p.project_public = (p.project_public === 1 ? 0 : 1);
     let toggleMessage = new Message();
-    toggleMessage.title = 'Toggle Project Public';
     this.projectService
       .togglePublicity(p)
       .then(()=>{
-        toggleMessage.message = 'Successful toggle project to ' + ((p.project_public === 1) ? 'public' : 'private'); 
+        toggleMessage.message = 'PROJECT.SUCCESSFUL_TOGGLE_PROJECT'; 
         this.messageService.inlineAlertMessage(toggleMessage);
       })
-      .catch(err=>{
-        toggleMessage.message = 'Failed to toggle project, due to ' + err.responseText;
-        this.messageService.inlineAlertMessage(toggleMessage);
-      });
+      .catch(err=>this.messageService.dispatchError(err, 'PROJECT.FAILED_TO_TOGGLE_PROJECT'));
   }
 }

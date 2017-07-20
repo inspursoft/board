@@ -1,6 +1,6 @@
 <div class="row flex-items-xs-right">
   <div class="col-xs-12" style="flex: 0;">
-    <button class="btn btn-primary" (click)="createProject()">Create Project</button>
+    <button class="btn btn-primary" (click)="createProject()">{{ 'PROJECT.CREATE_PROJECT' | translate }}</button>
   </div>
 </div>
 <div class="row">
@@ -8,12 +8,12 @@
   <project-member></project-member>
   <div class="col-xs-12">
     <clr-datagrid>
-      <clr-dg-column>Project Name</clr-dg-column>
-      <clr-dg-column>Creator</clr-dg-column>
-      <clr-dg-column>Creation Time</clr-dg-column>
-      <clr-dg-column>Public</clr-dg-column>
-      <clr-dg-column>Comment</clr-dg-column>
-      <clr-dg-column>Actions</clr-dg-column>
+      <clr-dg-column>{{ 'PROJECT.PROJECT_NAME' | translate }}</clr-dg-column>
+      <clr-dg-column>{{ 'PROJECT.CREATOR' | translate }}</clr-dg-column>
+      <clr-dg-column>{{ 'PROJECT.CREATION_TIME' | translate }}</clr-dg-column>
+      <clr-dg-column>{{ 'PROJECT.PUBLIC' | translate }}</clr-dg-column>
+      <clr-dg-column>{{ 'PROJECT.COMMENT' | translate }}</clr-dg-column>
+      <clr-dg-column>{{ 'PROJECT.ACTIONS' | translate }}</clr-dg-column>
       <clr-dg-row *ngFor="let p of projects">
         <clr-dg-cell>{{p.project_name}}</clr-dg-cell>
         <clr-dg-cell>{{p.project_owner_name}}</clr-dg-cell>
@@ -29,7 +29,7 @@
           <a href="javascript:void(0)"><clr-icon shape="trash" (click)="confirmToDeleteProject(p)"></clr-icon></a>
         </clr-dg-cell>
       </clr-dg-row>
-      <clr-dg-footer>{{projects ? projects.length : 0}} items</clr-dg-footer>
+      <clr-dg-footer>{{projects ? projects.length : 0}} {{ 'DATAGRID.ITEMS' | translate }}</clr-dg-footer>
     </clr-datagrid>
   </div>
 </div>

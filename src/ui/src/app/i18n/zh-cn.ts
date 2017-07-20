@@ -1,10 +1,22 @@
 export const LANG_ZH_CN = {
   "BUTTON": {
-    "OK": "好",
+    "OK": "确定",
     "YES": "是",
     "NO": "否",
     "CONFIRM": "确定",
-    "CANCEL": "取消"
+    "CANCEL": "取消",
+    "DELETE": "删除"
+  },
+  "DATAGRID": {
+    "ITEMS": "条记录"
+  },
+  "GLOBAL_ALERT": {
+    "SIGN_IN": "登录"
+  },
+  "ERROR": {
+    "UNKNOWN_ERROR": "未知错误。",
+    "INTERNAL_ERROR": "系统内部错误。",
+    "INVALID_USER": "无效的用户状态，请登录后重试。"
   },
   "ACCOUNT": {
     "SIGN_IN": "登录",
@@ -69,6 +81,38 @@ export const LANG_ZH_CN = {
     "STORAGE": "存储", 
     "NODATA":"暂无数据"
   },
+  "PROJECT": {
+    "CREATE_PROJECT": "创建项目",
+    "PROJECT_NAME": "项目名称",
+    "CREATOR": "创建者",
+    "CREATION_TIME": "创建时间",
+    "PUBLIC": "公开",
+    "COMMENT": "备注",
+    "ACTIONS": "操作",
+    "PROJECT_NAME_IS_REQUIRED": "项目名称为必填项。",
+    "ADD_MEMBER_FOR": "添加成员到项目",
+    "AVAILABLE_MEMBERS": "可用成员",
+    "ASSIGNED_MEMBERS": "已指派成员",
+    "ROLE": "角色",
+    "PROJECT_ADMIN": "项目管理员",
+    "DEVELOPER": "开发人员",
+    "VISITOR": "访客",
+    "SUCCESSFUL_DELETE_PROJECT": "删除项目成功。",
+    "FAILED_TO_DELETE_PROJECT": "删除项目失败。",
+    "FAILED_TO_RETRIEVE_PROJECTS": "查询项目失败。",
+    "DELETE_PROJECT": "删除项目",
+    "CONFIRM_TO_DELETE_PROJECT": "确认删除项目 {{0}}?",
+    "SUCCESSFUL_TOGGLE_PROJECT": "切换项目状态成功。",
+    "FAILED_TO_TOGGLE_PROJECT": "切换项目公开失败。",
+    "SUCCESSFUL_ADDED_MEMBER": "添加项目成员:{{0}} 成功。",
+    "SUCCESSFUL_CHANGED_MEMBER_ROLE": "改变成员:{{0}} 的角色成功。",
+    "SUCCESSFUL_REMOVED_MEMBER": "移除项目成员:{{0}} 成功。",
+    "FAILED_TO_ADD_MEMBER": "添加项目成员失败。",
+    "FAILED_TO_CHANGE_MEMBER_ROLE": "改变项目成员角色失败。",
+    "FAILED_TO_REMOVE_MEMBER": "移除项目成员失败。",
+    "SUCCESSFUL_CREATED_PROJECT": "创建项目成功。",
+    "PROJECT_NAME_ALREADY_EXISTS": "项目名称已存在。"
+  },
   "USER_CENTER": {
     "LIST_COL_USERNAME":"用户名",
     "LIST_COL_EMAIL":"邮箱",
@@ -121,5 +165,5 @@ export const LANG_ZH_CN = {
     "UPT_ERR_401":"401:请先登录系统.",
     "UPT_ERR_403":"403:您的权限不足,只能管理员使用.",
     "UPT_ERR_404":"404:用户ID不存在."
-  } 
+  }
 };
