@@ -891,7 +891,7 @@ paths:
           description: User need to log in as admin.
         500:
           description: Unexpected internal errors.  
-  /v1/image:
+  /v1/images:
     get:
       summary: Return images in Board system.
       description: |
@@ -934,7 +934,7 @@ paths:
           description: Bad Request
         500:
           description: Internal errors.
-  /v1/image/{image_name}:
+  /v1/images/{image_name}:
     get:
       summary: Return all detailed info of this image.
       description: |
@@ -1111,17 +1111,18 @@ paths:
           description: User need to log in as admin.
         500:
           description: Unexpected internal errors. 
-  /v1/dashboard/service/{service_name}:
+  /v1/dashboard/service/{service_id}:
     get:
       summary: Return the status logs of this service
       description: |
         This endpoint returns the status logs of this service.
       parameters:
-        - name: service_name
+        - name: service_id
           in: path
-          description: The name for this servcie, 'total' is for the sum of all services.
+          description: The integer ID of this service, 'null' is for the sum of all services.
           required: true
-          type: string
+          type: integer
+          format: int32
         - name: service_timestruct
           in: body
           required: true
@@ -1141,17 +1142,18 @@ paths:
           description: Invalid service name.
         500:
           description: Internal errors.    
-  /v1/dashboard/node/{node_name}:
+  /v1/dashboard/node/{node_id}:
     get:
       summary: Return the status logs of this node
       description: |
         This endpoint returns the status logs of this node.
       parameters:
-        - name: node_name
+        - name: node_id
           in: path
-          description: The name for this node, 'total' is for the sum of all nodes.
+          description: The integer ID of this node, 'null' is for the sum of all nodes.
           required: true
-          type: string
+          type: integer
+          format: int32
         - name: node_timestruct
           in: body
           required: true
@@ -1171,17 +1173,18 @@ paths:
           description: Invalid node name.
         500:
           description: Internal errors.    
-  /v1/dashboard/storage/{storage_name}:
+  /v1/dashboard/storage/{storage_id}:
     get:
       summary: Return the status logs of this storage
       description: |
         This endpoint returns the status logs of this storage.
       parameters:
-        - name: storage_name
+        - name: storage_id
           in: path
-          description: The name for this storage, 'total' is for the sum of all storages.
+          description: The integer ID of this storage, 'null' is for the sum of all storages.
           required: true
-          type: string
+          type: integer
+          format: int32
         - name: storage_timestruct
           in: body
           required: true
