@@ -1,13 +1,13 @@
 <!--fixture height=50px-->
 <div *ngIf="options" class="scale-container" [ngStyle]="{'min-width':50 * options.length + 'px'}">
-	<div class="scale-block-container">
-		<div *ngFor="let option of options;let i = index">
-			<div [ngClass]="getClassByIndex(i)" (click)="changeBlock(i,option)"></div>
-		</div>
-	</div>
-	<div class="scale-text-container">
-		<div class="scale-text" *ngFor="let option of options;let i = index" (click)="changeBlock(i,option)">
-			{{option.description | translate }}
-		</div>
-	</div>
+  <div class="scale-block-container">
+    <div *ngFor="let option of options;let i = index">
+      <div [ngClass]="getClassByIndex(i)" (click)="changeBlock(i,option)"></div>
+    </div>
+  </div>
+  <div class="scale-text-container">
+    <div class="scale-text" *ngFor="let option of options;let i = index" (click)="changeBlock(i,option)">
+      {{option.description | translate }}
+    </div>
+  </div>
 </div>

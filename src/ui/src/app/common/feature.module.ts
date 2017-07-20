@@ -5,7 +5,6 @@ import { NodeModule } from '../node/node.module';
 import { ServiceModule } from '../service/service.module';
 import { ProjectModule } from '../project/project.module';
 import { ImageModule } from '../image/image.module';
-import { AdminOptionModule } from '../admin-option/admin-option.module';
 import { ProfileModule } from '../profile/profile.module';
 
 @NgModule({
@@ -16,7 +15,6 @@ import { ProfileModule } from '../profile/profile.module';
     ServiceModule,
     ProjectModule,
     ImageModule,
-    AdminOptionModule,
     ProfileModule
   ]
 })

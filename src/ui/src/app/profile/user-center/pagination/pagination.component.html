@@ -1,0 +1,28 @@
+<div style="display: flex;height: 50px;flex-basis: 100%;align-items: center">
+  <span style="font: 10px; min-width: 200px">
+    显示 {{(curPage - 1)* recordCountPerPage + 1}} 到 {{onePageMaxRecord}}条 共 {{recordCount}} 条</span>
+  <div style="display: flex; flex-basis: 100%; justify-content: flex-end">
+    <clr-dropdown #serviceDropdown>
+      <button class="btn btn-outline-primary" clrDropdownToggle>
+        {{recordCountPerPage}}
+        <clr-icon shape="caret down"></clr-icon>
+      </button>
+      <clr-dropdown-menu class="card-block-dropdown">
+        <button (click)="changePerPageCount(perPageCount); serviceDropdown.toggleDropdown()" class="dropdown-item"
+                *ngFor="let perPageCount of perPageCountList;">
+          {{perPageCount}}
+        </button>
+      </clr-dropdown-menu>
+    </clr-dropdown>
+    <div style=" margin-left: 15px; display: flex;justify-content:flex-end" class="btn-group btn-outline-primary;">
+      <button class="btn" (click)="changePage(1)" [ngClass]="{active:curPage == 1}">首页</button>
+      <button class="btn" (click)="changePage(curPage - 1)" [disabled]="curPage <= 1">上一页</button>
+      <button class="btn" (click)="changePage(dButton.pageIndex)" [ngClass]="{active:dButton.pageIndex == curPage}"
+              *ngFor="let dButton of getDynamicButtons">
+        {{dButton.description}}
+      </button>
+      <button class="btn" (click)="changePage(curPage + 1)" [disabled]="curPage == pageCount">下一页</button>
+      <button class="btn" (click)="changePage(pageCount)" [ngClass]="{active:curPage == pageCount}">尾页</button>
+    </div>
+  </div>
+</div>
