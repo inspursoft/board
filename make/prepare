@@ -90,6 +90,8 @@ rcp = ConfigParser.RawConfigParser()
 rcp.readfp(conf)
 
 hostname = rcp.get("configuration", "hostname")
+kubernetes_apiserver_host = rcp.get("configuration", "kubernetes_apiserver_host")
+kubernetes_apiserver_port = rcp.get("configuration", "kubernetes_apiserver_port")
 board_admin_password = rcp.get("configuration", "board_admin_password")
 db_password = rcp.get("configuration", "db_password")
 secretkey_path = rcp.get("configuration", "secretkey_path")
@@ -122,6 +124,8 @@ if not os.path.exists(nginx_config_dir):
 render(os.path.join(templates_dir, "apiserver", "env"),
         apiserver_conf_env,
         hostname=hostname,
+        kubernetes_apiserver_host=kubernetes_apiserver_host,
+        kubernetes_apiserver_port=kubernetes_apiserver_port,
         db_password=db_password,
         board_admin_password=board_admin_password)
 
