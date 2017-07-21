@@ -1,0 +1,12 @@
+.trash {
+  cursor: pointer;
+}
+
+.trash:hover {
+  color: blue;
+}
+
+.cell_max_100_px{
+  max-width: 100px;
+  word-break: break-all;
+}

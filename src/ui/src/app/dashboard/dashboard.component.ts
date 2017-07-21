@@ -1,7 +1,7 @@
 import { OnInit, AfterViewInit, Component, OnDestroy } from '@angular/core';
 import { Assist } from "./dashboard-assist"
 import { scaleOption } from "app/dashboard/time-range-scale.component/time-range-scale.component";
-import { DashboardService, ServiceListModel, LineDataModel, LinesData } from "app/dashboard/dashboard.service";
+import { DashboardService, ServiceListModel, LinesData } from "app/dashboard/dashboard.service";
 import { TranslateService } from "@ngx-translate/core";
 import { Subscription } from "rxjs/Subscription";
 
@@ -28,10 +28,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   usageVolume: string = '3T';
   totalVolume: string = '10T';
 
+  _serviceIntervalSeed: number = 10;
+  _serviceQuery: {model: ServiceListModel, scale: scaleOption, count: number};
+  _serviceOptionsBuffer: {lastZoomStart: number, lastZoomEnd: number};
   serviceBtnValue: string;
   serviceList: Array<ServiceListModel>;
-  serviceQuery: {model: ServiceListModel, scale: scaleOption, count: number};
-  serviceOptionsBuffer: {lastZoomStart: number, lastZoomEnd: number};
   serviceOptions: object = {};
   serviceAlready: boolean = false;
   serviceNoData: boolean = false;
@@ -48,19 +49,27 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   serviceScaleChange(data: scaleOption) {
-    this.serviceQuery.scale = data;
-    this.serviceAlready = false;
-    this.refreshServiceData();
+    if (this.serviceAlready) {
+      this._serviceIntervalSeed = 10;
+      this._serviceQuery.scale = data;
+      this.serviceAlready = false;
+      this.serviceNoData = false;
+      this.refreshServiceData();
+    }
   }
 
   serviceDropDownChange(service: ServiceListModel) {
-    this.serviceBtnValue = service.service_name;
-    this.serviceAlready = false;
-    this.serviceQuery.model = service;
-    this.refreshServiceData();
+    if (this.serviceAlready) {
+      this._serviceIntervalSeed = 10;
+      this.serviceBtnValue = service.service_name;
+      this.serviceAlready = false;
+      this.serviceNoData = false;
+      this._serviceQuery.model = service;
+      this.refreshServiceData();
+    }
   }
 
-  setServiceOption(){
+  setServiceOption() {
     this.translateService.get(["DASHBOARD.CONTAINERS", "DASHBOARD.PODS"])
       .subscribe(res => {
         let podsTranslate: string = res["DASHBOARD.PODS"];
@@ -75,19 +84,20 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   serviceChartDataZoom(event: object) {
-    this.serviceOptionsBuffer.lastZoomStart = event["start"];
-    this.serviceOptionsBuffer.lastZoomEnd = event["end"];
+    this._serviceOptionsBuffer.lastZoomStart = event["start"];
+    this._serviceOptionsBuffer.lastZoomEnd = event["end"];
   }
 
   refreshServiceData() {
-    this.serviceOptions["dataZoom"][0]["start"] = this.serviceOptionsBuffer.lastZoomStart;
-    this.serviceOptions["dataZoom"][0]["end"] = this.serviceOptionsBuffer.lastZoomEnd;
-    this.service.getServiceData(this.serviceQuery.count, this.serviceQuery.scale.value, this.serviceQuery.model.service_name)
+    this.service.getServiceData(this._serviceQuery.count, this._serviceQuery.scale.value, this._serviceQuery.model.service_name)
       .then(res => {
+        this.serviceOptions["dataZoom"][0]["start"] = this._serviceOptionsBuffer.lastZoomStart;
+        this.serviceOptions["dataZoom"][0]["end"] = this._serviceOptionsBuffer.lastZoomEnd;
         this.serviceData = res;
+        this._serviceIntervalSeed = 10;
         this.serviceNoData = false;
         this.serviceAlready = true;
-        if (this.serviceData[0] && this.serviceData[0].length > 0){
+        if (this.serviceData[0] && this.serviceData[0].length > 0) {
           this.podCount = this.serviceData[0][this.serviceData[0].length - 1][1] | 0;
           this.containerCount = this.serviceData[1][this.serviceData[1].length - 1][1] | 0;
         }
@@ -96,6 +106,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         this.serviceData = [[], []];
         this.podCount = 0;
         this.containerCount = 0;
+        this._serviceIntervalSeed = 10;
         this.serviceNoData = true;
         this.serviceAlready = true;
       });
@@ -116,7 +127,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     this.setServiceOption();
-    this.serviceOptionsBuffer = Object.create({
+    this._serviceOptionsBuffer = Object.create({
       lastZoomStart: 100,
       lastZoomEnd: 80
     });
@@ -124,12 +135,17 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       .then(res => {
         this.serviceList = res;
         this._intervalRead = setInterval(() => {
-          this.refreshServiceData();
-        }, 10000);
+          if (this._serviceIntervalSeed > 0 && this.serviceAlready) {
+            this._serviceIntervalSeed--;
+            if (this._serviceIntervalSeed == 0) {
+              this.refreshServiceData();
+            }
+          }
+        }, 1000);
         this.serviceBtnValue = this.serviceList[0].service_name;
         this.nodeBtnValue = this.serviceList[0].service_name;
         this.storageBtnValue = this.serviceList[0].service_name;
-        this.serviceQuery = Object.create({
+        this._serviceQuery = Object.create({
           count: 300,
           model: this.serviceList[0],
           scale: this.scaleOptions[0]

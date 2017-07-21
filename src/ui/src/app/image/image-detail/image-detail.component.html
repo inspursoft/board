@@ -1,0 +1,36 @@
+<clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'lg'">
+  <h3 class="modal-title">{{ 'IMAGE.DETAIL_TITLE' | translate }}</h3>
+  <div class="modal-body">
+    <clr-datagrid [clrDgLoading]="false" style="min-width: 100%">
+      <clr-dg-placeholder>{{imageDetailErrMsg | translate}}</clr-dg-placeholder>
+      <clr-dg-column>{{ 'IMAGE.COL_IMAGE_NAME' | translate }}</clr-dg-column>
+      <clr-dg-column>{{ 'IMAGE.COL_TAG' | translate }}</clr-dg-column>
+      <clr-dg-column>{{ 'IMAGE.COL_AUTHOR' | translate }}</clr-dg-column>
+      <clr-dg-column class="cell_max_100_px">ID</clr-dg-column>
+      <clr-dg-column>{{ 'IMAGE.COL_CREATION_TIME' | translate }}</clr-dg-column>
+      <clr-dg-column>{{ 'IMAGE.COL_SIZE' | translate }}</clr-dg-column>
+      <clr-dg-column>{{ 'IMAGE.COL_OPERATION' | translate }}</clr-dg-column>
+      <clr-dg-row *ngFor="let imageDetail of imageDetailList; let i = index">
+        <clr-dg-cell>{{imageDetail.image_name}}</clr-dg-cell>
+        <clr-dg-cell>{{imageDetail.image_tag}}</clr-dg-cell>
+        <clr-dg-cell>{{imageDetail.image_author}}</clr-dg-cell>
+        <clr-dg-cell class="cell_max_100_px">{{imageDetail.image_id}}</clr-dg-cell>
+        <clr-dg-cell>{{imageDetail.image_creationtime | date:'yyyy-MM-dd hh:mm:ss'}}</clr-dg-cell>
+        <clr-dg-cell>{{imageDetail.image_size_number}}{{imageDetail.image_size_unit}}</clr-dg-cell>
+        <clr-dg-cell>
+          <clr-icon class="trash" shape="trash"></clr-icon>
+        </clr-dg-cell>
+      </clr-dg-row>
+      <clr-dg-footer>
+        {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
+        of {{pagination.totalItems}} details
+        <clr-dg-pagination #pagination
+                           (clrDgPageChange)="pageChange(pageIndex)"
+                           [clrDgPage]="curPage"
+                           [clrDgTotalItems]="imageDetailList.length"
+                           [clrDgPageSize]="imageDetailPageSize">
+        </clr-dg-pagination>
+      </clr-dg-footer>
+    </clr-datagrid>
+  </div>
+</clr-modal>

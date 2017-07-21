@@ -165,5 +165,18 @@ export const LANG_ZH_CN = {
     "UPT_ERR_401":"401:请先登录系统.",
     "UPT_ERR_403":"403:您的权限不足,只能管理员使用.",
     "UPT_ERR_404":"404:用户ID不存在."
+  },
+  "IMAGE":{
+    "COL_IMAGE_NAME":"镜像名",
+    "COL_NODE":"注释",
+    "COL_DETAIL_INFO":"详细信息",
+    "COL_TAG":"标签",
+    "COL_AUTHOR":"创建者",
+    "COL_CREATION_TIME":"创建时间",
+    "COL_SIZE":"大小",
+    "COL_OPERATION":"操作",
+    "DETAIL_TITLE":"镜像",
+    "GET_ERR_400":"400:错误的请求",
+    "GET_ERR_404":"404:镜像序列号不存在."
   }
 };

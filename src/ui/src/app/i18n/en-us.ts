@@ -165,5 +165,18 @@ export const LANG_EN_US = {
     "UPT_ERR_401":"401:User need to log in first.",
     "UPT_ERR_403":"403:User does not have permission of admin role.",
     "UPT_ERR_404":"404:User ID does not exist."
+  },
+  "IMAGE":{
+    "COL_IMAGE_NAME":"Image Name",
+    "COL_NODE":"Comment",
+    "COL_DETAIL_INFO":"Image Detail",
+    "COL_TAG":"Tag",
+    "COL_AUTHOR":"Author",
+    "COL_CREATION_TIME":"Creation Time",
+    "COL_SIZE":"Size",
+    "COL_OPERATION":"Operation",
+    "DETAIL_TITLE":"Image",
+    "GET_ERR_400":"400:Bad request.",
+    "GET_ERR_404":"404:Image serial number does not exist."
   }
 };

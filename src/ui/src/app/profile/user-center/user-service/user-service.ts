@@ -11,10 +11,12 @@ export class UserService {
     contentType: "application/json"
   });
 
-  static getErrorMsg(reason: Response, statusArr: Array<number>, errorKey: string): string {
-    return statusArr.indexOf(reason.status) > -1 ?
-      `USER_CENTER.${errorKey}_ERR_${reason.status}` :
-      `${reason.status}:${reason.statusText}`;
+  static getErrorMsg(reason: Response | Error, statusArr: Array<number>, errorKey: string): string {
+    if (reason instanceof Response){
+      return statusArr.indexOf(reason.status) > -1 ?
+        `USER_CENTER.${errorKey}_ERR_${reason.status}` :
+        `${reason.status}:${reason.statusText}`;
+    }
   }
 
   constructor(private http: Http,
@@ -28,8 +30,9 @@ export class UserService {
     return this.http.delete(`${BASE_URL}/users/${user.user_id}`, options).toPromise()
       .then(res => res.json())
       .catch(reason => {
-        this.messageService.dispatchError(reason, UserService.getErrorMsg(reason, Array.from([400, 401, 403, 404]), "DEL"));
-        return Promise.reject(reason);
+        let errMsg: string = UserService.getErrorMsg(reason, Array.from([400, 401, 403, 404]), "DEL");
+        this.messageService.dispatchError(reason, errMsg);
+        return Promise.reject(errMsg);
       })
   }
 

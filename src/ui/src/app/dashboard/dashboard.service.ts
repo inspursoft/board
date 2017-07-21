@@ -4,12 +4,8 @@ import { MessageService } from "app/shared/message-service/message.service"
 import "rxjs/add/operator/map";
 import 'rxjs/add/operator/toPromise';
 
-export type LinesData = [[Date, number][], [Date, number][]];
-
-export interface LineDataModel {
-  readonly date: Date;
-  readonly value: number;
-}
+export type LineDataModel = [Date, number];
+export type LinesData = [LineDataModel[], LineDataModel[]];
 
 export interface ServiceListModel {
   readonly service_name: string;
