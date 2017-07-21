@@ -1,10 +1,18 @@
 <clr-modal [(clrModalOpen)]="projectMemberOpened">
-  <h3 class="modal-title">Add members for {{ project.projectName }}</h3>
-  <div class="modal-body">
-    <div class="row flex-items-xs-center" style="min-height: 200px;">
+  <h3 class="modal-title">{{ 'PROJECT.ADD_MEMBER_FOR' | translate }}&nbsp;{{ project.project_name }}</h3>
+  <div class="modal-body" style="min-height: 42vh;">
+    <clr-alert [clrAlertSizeSmall]="true" [(clrAlertClosed)]="!hasChanged">
+      <div class="alert-item">
+          <span class="alert-text">
+            {{ changedMessage }}
+          </span>
+      </div>
+    </clr-alert>
+    <div class="row flex-items-xs-center" style="margin-top: 24px; min-height: 200px;">
       <div class="col-xs-4" style="flex: 0;">
+          <span>{{ 'PROJECT.AVAILABLE_MEMBERS' | translate }}:</span>
           <select id="selSelected" multiple style="height: 100%; min-width: 180px;">
-            <option *ngFor="let m of members" [hidden]="m.isMember"  value="{{ m.userId }}" (click)="doSet=true; doUnset=false; pickUpMember(m)">{{ m.username }}</option>
+            <option *ngFor="let m of availableMembers" [hidden]="m.isMember"  value="{{ m.project_member_user_id }}" (click)="doSet=true; doUnset=false; pickUpMember(m)">{{ m.project_member_username }}</option>
           </select>
       </div>
       <div class="col-xs-4 flex-xs-middle" style="flex: 0; margin-left: 12px;">
@@ -12,14 +20,36 @@
         <p><button class="btn btn-link" [disabled]="doSet" (click)="unsetMember()"><clr-icon shape="caret left"></clr-icon></button></p>
       </div>
       <div class="col-xs-4" style="flex: 0; padding-left: 0;">
+          <span>{{ 'PROJECT.ASSIGNED_MEMBERS' | translate }}:</span>
           <select id="selDeselected" multiple style="height: 100%; min-width: 180px;">
-            <option *ngFor="let m of members" value="{{ m.userId }}" [hidden]="!m.isMember" (click)="doSet=false; doUnset=true; pickUpMember(m)">{{ m.username }}</option>
+            <option *ngFor="let m of availableMembers" value="{{ m.project_member_user_id }}" [hidden]="!m.isMember" (click)="doSet=false; doUnset=true; pickUpMember(m)">{{ m.project_member_username }}</option>
           </select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xs-12">
+        <form class="compact" [hidden]="doSet">
+          <section class="form-block">
+            <div class="form-group" style="margin-left:36px; padding-left: 100px;">
+              <label style="width: auto;">{{ 'PROJECT.ROLE' | translate }}</label>
+              <div style="float: left;">
+                <input type="radio" name="roleRadios" id="role_project_admin" [(ngModel)]="role.role_id" [value]="1" (click)="role.role_id = 1; pickUpRole(role)" [checked]="role.role_id === 1">
+                <label for="role_project_admin">{{ 'PROJECT.PROJECT_ADMIN' | translate }}</label>
+                &nbsp;&nbsp;
+                <input type="radio" name="roleRadios" id="role_developer" [(ngModel)]="role.role_id" [value]="2" (click)="role.role_id = 2; pickUpRole(role)" [checked]="role.role_id === 2">
+                <label for="role_developer">{{ 'PROJECT.DEVELOPER' | translate }}</label>
+                &nbsp;&nbsp;
+                <input type="radio" name="roleRadios" id="role_visitor" [(ngModel)]="role.role_id" [value]="3" (click)="role.role_id = 3; pickUpRole(role)" [checked]="role.role_id === 3">
+                <label for="role_visitor">{{ 'PROJECT.VISITOR' | translate }}</label>
+                &nbsp;&nbsp;
+              </div>
+            </div>
+          </section>
+        </form>
       </div>
     </div>
   </div>
   <div class="modal-footer">
-      <button type="button" class="btn btn-outline" (click)="projectMemberOpened = false">Cancel</button>
-      <button type="button" class="btn btn-primary" (click)="confirm()">Confirm</button>
+      <button type="button" class="btn btn-primary" (click)="confirm()">{{ 'BUTTON.CONFIRM' | translate }}</button>
   </div>
 </clr-modal>

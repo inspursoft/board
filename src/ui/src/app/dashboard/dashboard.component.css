@@ -25,61 +25,61 @@
 }
 
 .section-container {
-  flex-basis: 100%; 
+  flex-basis: 100%;
   display: flex;
   margin-right: 20px;
 }
 
-.split-line{
+.split-line {
   border-right: 1px solid #ccc;
 }
 
-.section-image-container{
+.section-image-container {
   display: flex;
   width: 120px;
   flex-direction: column;
 }
 
-.section-image{
+.section-image {
   width: 50px;
   height: 50px;
 }
 
-.section-text{
+.section-text {
   flex-basis: 20px;
   text-align: center;
 }
 
-.section-right-container{
-   display: flex;
-   flex-basis: 100%;
-   margin-left: 10px;
-   flex-direction: column;
-   justify-content:space-between
+.section-right-container {
+  display: flex;
+  flex-basis: 100%;
+  margin-left: 10px;
+  flex-direction: column;
+  justify-content: space-between
 }
 
 .card-block {
   display: flex;
   flex-wrap: nowrap;
-  padding:0;
+  flex-direction: column;
+  padding: 0;
 }
 
-.card-block-left-container {
+.card-block-top-container {
+  flex-basis: 100%;
+  height: 60px;
+  display: flex;
+  padding: 10px 20px 10px 20px;
+}
+
+.card-block-bottom-container {
+  flex-basis: 100%;
+  height: 300px;
   display: flex;
   flex-direction: column;
-  min-width: 200px;
-  min-height: 285px;
-  padding: 20px;
-  border-right: solid 1px #bbbbbb;
 }
 
-.card-block-right-container{
-    flex-basis: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
-.card-block-dropdown{
+.card-block-dropdown {
   max-height: 250px;
   overflow-y: scroll;
   width: 170px;
@@ -91,20 +91,56 @@
   color: black;
 }
 
-.first-line{
-    color:#c23531;
+.first-line {
+  color: #c23531;
 }
 
-.second-line{
-    color:#2f4554
+.second-line {
+  margin-left: 20px;
+  color: #2f4554
 }
 
 .select-time-container {
   flex-basis: 50px;
+  height: 60px;
   display: flex;
-  justify-content:flex-end;
+  justify-content: flex-end;
 }
 
-button:focus{
+.caption_container {
+  flex-basis: 100%;
+  display: flex;
+  justify-content: center;
+  line-height: 40px;
+}
+
+button:focus {
   outline: 0;
+}
+
+.dropdown-item {
+  min-height: 30px;
+}
+
+.no-data-mask {
+  color: white;
+  position: absolute;
+  background-color: black;
+  border-radius: 5px;
+  z-index: 2;
+  opacity: 0.5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: -webkit-calc(100% - 105px);
+  height: -moz-calc(100% - 105px);
+  height: calc(100% - 105px);
+  width: 100%;
+}
+
+.no-already {
+  flex-basis: 285px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

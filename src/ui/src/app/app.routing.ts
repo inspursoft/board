@@ -15,7 +15,6 @@ import { ProjectComponent } from './project/project.component';
 import { MemberComponent } from './project/member/member.component';
 import { ImageComponent } from './image/image.component';
 import { ServiceComponent } from './service/service.component';
-import { AdminOptionComponent } from './admin-option/admin-option.component';
 import { ProfileComponent } from './profile/profile.component';
 
 export const ROUTES: Routes = [
@@ -33,8 +32,7 @@ export const ROUTES: Routes = [
         },
         { path: 'images', component: ImageComponent },
         { path: 'services', component: ServiceComponent },
-        { path: 'profiles', component: ProfileComponent },
-        { path: 'admin-options', component: AdminOptionComponent }
+        { path: 'profiles', component: ProfileComponent }
     ]}
 ];
 

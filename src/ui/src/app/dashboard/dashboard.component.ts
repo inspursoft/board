@@ -1,84 +1,150 @@
-import {AfterViewInit, OnInit, Component, OnDestroy} from '@angular/core';
-import {DatePipe} from "@angular/common";
-import {Assist} from "./dashboard-assist"
-import {scaleOption} from "app/dashboard/time-range-scale.component/time-range-scale.component";
-import {DashboardService, ServiceListModel} from "app/dashboard/dashboard.service";
+import { OnInit, AfterViewInit, Component, OnDestroy } from '@angular/core';
+import { Assist } from "./dashboard-assist"
+import { scaleOption } from "app/dashboard/time-range-scale.component/time-range-scale.component";
+import { DashboardService, ServiceListModel, LineDataModel } from "app/dashboard/dashboard.service";
+import { TranslateService } from "@ngx-translate/core";
+import { Subscription } from "rxjs/Subscription";
 
 @Component({
-	selector: 'dashboard',
-	templateUrl: 'dashboard.component.html',
-	styleUrls: ['dashboard.component.css']
+  selector: 'dashboard',
+  templateUrl: 'dashboard.component.html',
+  styleUrls: ['dashboard.component.css']
 })
-	
+
 export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
-	scaleOptions: Array<scaleOption> = [
-		{"id": 1, "description": "DASHBOARD.MIN"},
-		{"id": 2, "description": "DASHBOARD.HR"},
-		{"id": 3, "description": "DASHBOARD.DAY"},
-		{ "id": 4, "description": "DASHBOARD.MTH" }];
-	
-	podCount: number = 7;
-	containerCount: number = 32;
-	memoryPercent: string = '70%';
-	cpuPercent: string = '40%';
-	usageVolume: string = '3T';
-	totalVolume: string = '10T';
+  _intervalRead: any;
+  _onLangChangeSubscription: Subscription;
+  scaleOptions: Array<scaleOption> = [
+    {"id": 1, "description": "DASHBOARD.MIN", "value": "second"},
+    {"id": 2, "description": "DASHBOARD.HR", "value": "minute"},
+    {"id": 3, "description": "DASHBOARD.DAY", "value": "hour"},
+    {"id": 4, "description": "DASHBOARD.MTH", "value": "day"}];
 
-	serviceBtnValue: string;
-	nodeBtnValue: string;
-	storageBtnValue: string;
-	serviceList: Array<ServiceListModel>;
-	serviceOptions: object = {};
-	nodeOptions: object = {};
-	storageOptions: object = {};
+  podCount: number = 0;
+  containerCount: number = 0;
 
-	constructor(private service: DashboardService) {
-		let s: Set<object> = new Set<object>();
-		const a = { name: "123" };
-		const b = { name: "123" };
-		s.add(a).add(b).add(a);
-    s.forEach(value => console.log(value));
-	}
+  memoryPercent: string = '70%';
+  cpuPercent: string = '40%';
+  usageVolume: string = '3T';
+  totalVolume: string = '10T';
 
-	ngOnInit() {
-		this.serviceList = this.service.getServiceList();
-		this.serviceBtnValue = this.serviceList[0].serviceName;
-		this.nodeBtnValue = this.serviceList[0].serviceName;
-		this.storageBtnValue = this.serviceList[0].serviceName;
-	}
+  serviceBtnValue: string;
+  serviceList: Array<ServiceListModel>;
+  serviceQuery: {model: ServiceListModel, scale: scaleOption, count: number};
+  serviceOptions: object = {};
+  serviceAlready: boolean = false;
+  serviceNoData: boolean = false;
+  serviceData: Map<string, LineDataModel[]>;
 
-	ngOnDestroy() {
+  nodeBtnValue: string;
+  nodeOptions: object = {};
 
-	}
+  storageBtnValue: string;
+  storageOptions: object = {};
 
-	scaleChange(data: scaleOption) {
+  constructor(private service: DashboardService,
+              private translateService: TranslateService) {
+  }
 
-	}
+  serviceScaleChange(data: scaleOption) {
+    this.serviceQuery.scale = data;
+    this.serviceAlready = false;
+    this.refreshServiceData();
+  }
 
-	ngAfterViewInit() {
-		this.serviceOptions = Assist.getBaseOptions();
-		this.nodeOptions = Assist.getBaseOptions();
-		this.storageOptions = Assist.getBaseOptions();
+  serviceDropDownChange(service: ServiceListModel) {
+    this.serviceBtnValue = service.service_name;
+    this.serviceAlready = false;
+    this.serviceQuery.model = service;
+    this.refreshServiceData();
+  }
 
-		this.serviceOptions["tooltip"] = Assist.getTooltip("pods", "containers");
-		this.nodeOptions["tooltip"] = Assist.getTooltip("CPU", "Memory");
-		this.storageOptions["tooltip"] = Assist.getTooltip("", "Total");
+  translateForService(isResolve: boolean): void {
+    this.translateService.get(["DASHBOARD.CONTAINERS", "DASHBOARD.PODS"])
+      .subscribe(res => {
+        let podsTranslate: string = res["DASHBOARD.PODS"];
+        let containersTranslate: string = res["DASHBOARD.CONTAINERS"];
+        this.serviceOptions = Assist.getServiceOptions();
+        this.serviceOptions["tooltip"] = Assist.getTooltip(podsTranslate, containersTranslate);
+        this.serviceOptions["series"] = [Assist.getBaseSeries(), Assist.getBaseSeries()];
+        this.serviceOptions["series"][0]["name"] = podsTranslate;
+        this.serviceOptions["series"][1]["name"] = containersTranslate;
+        this.serviceOptions["legend"] = {data: [podsTranslate, containersTranslate], x: "left"};
+        if (isResolve && this.serviceData && this.serviceData["pods"].length > 0) {
+          this.serviceOptions["series"][0]["data"] = this.serviceData["pods"];
+          this.serviceOptions["series"][1]["data"] = this.serviceData["container"];
+          this.podCount = this.serviceData["pods"][this.serviceData["pods"].length - 1][1] | 0;
+          this.containerCount = this.serviceData["container"][this.serviceData["container"].length - 1][1] | 0;
+          this.serviceNoData = false;
+        } else {
+          this.serviceOptions["series"][0]["data"] = [[new Date(), 0]];
+          this.serviceOptions["series"][1]["data"] = [[new Date(), 0]];
+          this.podCount = 0;
+          this.containerCount = 0;
+          this.serviceNoData = true;
+        }
+        this.serviceAlready = true;
+      });
+  }
 
-		this.serviceOptions["series"] = [Assist.getBaseSeries(), Assist.getBaseSeries()];
-		let serviceData = this.service.getServiceData(0, 1);
-		this.serviceOptions["series"][0]["data"] = serviceData[0];
-		this.serviceOptions["series"][1]["data"] = serviceData[1];
-	}
+  refreshServiceData() {
+    this.service.getServiceData(
+      this.serviceQuery.count,
+      this.serviceQuery.scale.value,
+      this.serviceQuery.model.service_name).then(res => {
+      this.serviceData = res;
+      this.translateForService(true);
+    }).catch(err => {
+      if (this.serviceData) {
+        this.serviceData.clear();
+      }
+      this.translateForService(false);
+    });
+  }
 
-	get serviceIcon(): string {
-		return '../../images/service_icon.png';
-	}
+  ngOnInit() {
+    this._intervalRead = setInterval(() => {
+      // this.refreshServiceData();
+    }, 10000);
+    this._onLangChangeSubscription = this.translateService.onLangChange.subscribe(() => {
+      this.refreshServiceData();
+    })
+  }
 
-	get nodeIcon(): string {
-		return '../../images/node_icon.png';
-	}
+  ngOnDestroy() {
+    clearInterval(this._intervalRead);
+    if (this._onLangChangeSubscription) {
+      this._onLangChangeSubscription.unsubscribe();
+    }
+  }
 
-	get storageIcon(): string {
-		return '../../images/storage_icon.png';
-	}
+  ngAfterViewInit() {
+    this.service.getServiceList().then(res => {
+      this.serviceList = res;
+      this.serviceBtnValue = this.serviceList[0].service_name;
+      this.nodeBtnValue = this.serviceList[0].service_name;
+      this.storageBtnValue = this.serviceList[0].service_name;
+
+      this.serviceQuery = Object.create({
+        count: 300,
+        model: this.serviceList[0],
+        scale: this.scaleOptions[0]
+      });
+      this.refreshServiceData();
+    });
+
+    let serviceSimulateData = this.service.getBySimulateData(0, 1);
+
+    this.nodeOptions = Assist.getBaseOptions();
+    this.nodeOptions["tooltip"] = Assist.getTooltip("CPU", "Memory");
+    this.nodeOptions["series"] = [Assist.getBaseSeries(), Assist.getBaseSeries()];
+    this.nodeOptions["series"][0]["data"] = serviceSimulateData[0];
+    this.nodeOptions["series"][1]["data"] = serviceSimulateData[1];
+
+    this.storageOptions = Assist.getBaseOptions();
+    this.storageOptions["tooltip"] = Assist.getTooltip("", "Total");
+    this.storageOptions["series"] = [Assist.getBaseSeries(), Assist.getBaseSeries()];
+    this.storageOptions["series"][0]["data"] = serviceSimulateData[0];
+    this.storageOptions["series"][1]["data"] = serviceSimulateData[1];
+  }
 }

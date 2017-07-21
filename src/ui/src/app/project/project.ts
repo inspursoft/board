@@ -1,8 +1,8 @@
 export class Project {
-  id: number;
-  projectName: string;
-  creator: string;
-  isPublic: boolean;
-  creationTime: Date;
-  comment: string;
+  project_id: number;
+  project_name: string;
+  publicity: boolean;
+  project_public: number;
+  project_creation_time: Date;
+  project_comment: string;
 }

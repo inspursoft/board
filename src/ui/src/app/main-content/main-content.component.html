@@ -1,5 +1,6 @@
 <clr-main-container>
   <header-content [isSignIn]="false" [hasSignedIn]="true"></header-content>
+  <global-message></global-message>
   <div class="content-container">
     <nav class="sidenav">
       <section class="sidenav-content">
@@ -27,6 +28,8 @@
       </section>
     </nav>
     <div class="content-area">
+      <inline-alert></inline-alert>
+      <confirmation-dialog></confirmation-dialog>
       <router-outlet></router-outlet>
     </div>
   </div>

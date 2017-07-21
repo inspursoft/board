@@ -4,11 +4,14 @@ import { AngularEchartsModule } from 'angular2-echarts';
 import { ChartComponent } from './chart/chart.component';
 import { HeaderComponent } from './header/header.component';
 import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-dialog.component';
-
+import { InlineAlertComponent } from './inline-alert/inline-alert.component';
+import { GlobalMessageComponent } from './global-message/global-message.component';
 import { CheckItemExistingDirective } from './directives/check-item-existing.directive';
 import { CheckItemIdenticalDirective } from './directives/check-item-identical.directive';
 
-import { MessageService } from './service/message.service';
+import { MessageService } from './message-service/message.service';
+
+import {CheckItemPatternDirective} from "./directives/check-item-pattern.directive";
 
 @NgModule({
   imports: [
@@ -19,8 +22,12 @@ import { MessageService } from './service/message.service';
     ChartComponent,
     HeaderComponent, 
     ConfirmationDialogComponent,
+    InlineAlertComponent,
+    GlobalMessageComponent,
     CheckItemExistingDirective,
-    CheckItemIdenticalDirective
+    CheckItemIdenticalDirective,
+    CheckItemPatternDirective,
+    GlobalMessageComponent
   ],
   exports: [
     CoreModule,
@@ -28,8 +35,12 @@ import { MessageService } from './service/message.service';
     ChartComponent,
     HeaderComponent,
     ConfirmationDialogComponent,
+    InlineAlertComponent,
+    GlobalMessageComponent,
     CheckItemExistingDirective,
-    CheckItemIdenticalDirective
+    CheckItemIdenticalDirective,
+    CheckItemPatternDirective,
+    GlobalMessageComponent
   ],
   providers: [
     MessageService
