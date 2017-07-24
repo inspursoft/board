@@ -5,7 +5,7 @@ import (
 	"github.com/astaxie/beego/orm"
 	 _"github.com/go-sql-driver/mysql"
 	"git/inspursoft/board/src/collector/cmd/app"
-	"git/inspursoft/board/src/collector/util"
+//	"git/inspursoft/board/src/collector/util"
 )
 
 func init() {
@@ -13,10 +13,11 @@ func init() {
 	sqlip:=app.RunFlag.ServerDbIp
 	sqlpass:=app.RunFlag.ServerDbPassword
 	sqlpo:=app.RunFlag.ServerDbPort
-	util.Logger.SetInfo("root:"+sqlpass+"@tcp("+sqlip+":"+sqlpo+")/k8s?charset=utf8")
 	orm.RegisterDriver("mysql", orm.DRMySQL)
+	//err := orm.RegisterDataBase("default", "mysql", "root:"+sqlpass+"@tcp(mysql:3306)/board?charset=utf8")
+	connStr:=fmt.Sprintf("root:%s@tcp(%s:%s)/board?charset=utf8",sqlpass,sqlip,sqlpo)
 	err := orm.RegisterDataBase("default", "mysql",
-		"root:"+sqlpass+"@tcp("+sqlip+":"+sqlpo+")/k8s?charset=utf8")
+		connStr)
 	orm.RunSyncdb("default", false, true)
 	if err != nil {
 		fmt.Printf("Error occurred on registering DB: %+v\n", err)

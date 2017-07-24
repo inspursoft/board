@@ -3,18 +3,16 @@ package collect
 import (
 	"git/inspursoft/board/src/collector/dao"
 	"git/inspursoft/board/src/collector/util"
-	"strconv"
 	"time"
 	"net/http"
 	"io/ioutil"
 	"encoding/json"
 	modelK8s "k8s.io/client-go/pkg/api/v1"
-	"log"
 	"git/inspursoft/board/src/collector/model/collect"
 	"git/inspursoft/board/src/collector/model/collect/dashboard"
 	"strings"
 	"github.com/google/cadvisor/info/v2"
-	"os"
+	"fmt"
 )
 
 var PodList modelK8s.PodList
@@ -23,28 +21,35 @@ var ServiceList modelK8s.ServiceList
 var KuberMasterIp string
 var KuberMasterStatus bool
 var podItem []modelK8s.Pod
-//var nodeCollect []collect.Node
+var KuberMasterURL string
+var KuberPort string
 
-func init() {
-	KuberMasterIp = os.Getenv("KUBEIP")
-	//KuberMasterIp = "http://10.110.18.107:8080"
-	K8sApiLinkTest()
+func SetInitVar(ip string,port string ) {
+	KuberMasterIp = ip
+	KubePort = port
+	KuberMasterURL=fmt.Sprintf("%s%s%s",KuberMasterIp,":",KuberPort)
+	pingK8sApiLink()
 }
-func K8sApiLinkTest() {
-	_, err := http.Get(KuberMasterIp + "/version")
-	if err != nil {
-		util.Logger.SetFatal(err)
-		KuberMasterStatus = false
-	} else {
-		KuberMasterStatus = true
-	}
-	log.Printf("%s\t%s\t%s\t", "KuberMasterStatus status is ", strconv.FormatBool(KuberMasterStatus), time.Now())
+func pingK8sApiLink() {
+	url := fmt.Sprintf("%s/version", KuberMasterURL)
+        cl := &http.Client{Timeout: time.Millisecond * 2000}
+        fmt.Println("url is ",url)
+        req, err := http.NewRequest("GET", url, nil)
+        if err != nil {
+                fmt.Println(err)
+        }
+        resp, _ :=cl.Do(req)
+        body, err := ioutil.ReadAll(resp.Body)
+        if err != nil {
+                fmt.Println(err)
+        }
+        fmt.Println("kubernetes version is ", string(body))
 }
 
 //get resource form k8s api-server
-func k8sGet(resource interface{}, urls string) {
+func k8sGet(resource interface{}, path string) {
 	if body, err2 := ioutil.ReadAll(func() *http.Response {
-		resp, err1 := http.Get(KuberMasterIp + urls)
+		resp, err1 := http.Get(KuberMasterURL + path)
 		if err1 != nil {
 			util.Logger.SetFatal(err1)
 		}
