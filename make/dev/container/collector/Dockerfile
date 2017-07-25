@@ -1,0 +1,17 @@
+FROM golang:1.8.1
+
+MAINTAINER wangkun_lc@inspur.com
+
+COPY src/collector /go/src/git/inspursoft/board/src/collector
+COPY src/common /go/src/git/inspursoft/board/src/common
+COPY src/vendor /go/src/git/inspursoft/board/vendor
+WORKDIR /go/src/git/inspursoft/board/src/collector/cmd
+
+RUN go build -v -a -o /go/bin/collector
+
+RUN chmod u+x /go/bin/collector
+
+WORKDIR /go/bin/
+CMD ["collector"]
+
+EXPOSE 8080

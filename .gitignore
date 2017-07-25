@@ -33,3 +33,4 @@ src/ui/.idea/**
 src/ui/proxy.config.json*
 src/ui/dist
 src/collector/cmd/cmd
+.idea/

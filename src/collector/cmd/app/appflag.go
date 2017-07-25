@@ -4,6 +4,7 @@ import (
 	"flag"
 	"os"
 	"git/inspursoft/board/src/collector/util"
+	"git/inspursoft/board/src/collector/service/collect"
 )
 type ServerRunOptions struct {
 	ServerDbType     string
@@ -24,12 +25,12 @@ type env struct {
 
 func getOsEnv() (NewEnv env) {
 	NewEnv = env{
-		envDbType:     os.Getenv("DBTYPE"),
-		envDbIp:       os.Getenv("DBIP"),
-		envDbPort:     os.Getenv("DBPORT"),
-		envDbPassword: os.Getenv("DBPASSWORD"),
-		envKubeIp:     os.Getenv("KUBEIP"),
-		envKubePort:   os.Getenv("KUBEPORT"),
+		envDbType:     os.Getenv("DB_TYPE"),
+		envDbIp:       os.Getenv("DB_IP"),
+		envDbPort:     os.Getenv("DB_PORT"),
+		envDbPassword: os.Getenv("DB_PASSWORD"),
+		envKubeIp:     os.Getenv("KUBE_IP"),
+		envKubePort:   os.Getenv("KUBE_PORT"),
 	}
 	return
 }
@@ -95,4 +96,5 @@ func preFlag() {
 }
 func init() {
 	preFlag()
+	collect.SetInitVar(RunFlag.ServerKubeIp,RunFlag.ServerKubePort)
 }
