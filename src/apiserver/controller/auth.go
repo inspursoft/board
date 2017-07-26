@@ -41,11 +41,13 @@ func (u *AuthController) SignInAction() {
 		payload := make(map[string]interface{})
 		payload["id"] = strconv.Itoa(int(user.ID))
 
-		err = u.signToken(strconv.Itoa(int(user.ID)), payload)
+		token, err := signToken(payload)
 		if err != nil {
 			u.internalError(err)
 			return
 		}
+		u.Data["json"] = token
+		u.ServeJSON()
 	}
 }
 

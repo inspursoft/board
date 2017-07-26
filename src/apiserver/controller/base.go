@@ -1,29 +1,28 @@
 package controller
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 
-	"git/inspursoft/board/src/common/model"
-
 	"encoding/json"
+	"git/inspursoft/board/src/common/model"
 
 	"bytes"
 
 	"git/inspursoft/board/src/apiserver/service"
 
-	"time"
-
 	"strconv"
 
+	"net/url"
+
 	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/cache"
+	"github.com/astaxie/beego/config"
 	"github.com/astaxie/beego/logs"
 )
 
-var memoryCache cache.Cache
+var conf config.Configer
+var tokenServerURL *url.URL
 
 type baseController struct {
 	beego.Controller
@@ -65,16 +64,11 @@ func (b *baseController) internalError(err error) {
 }
 
 func (b *baseController) getCurrentUser() (*model.User, error) {
-	userID, err := b.GetInt("user_id")
+	tokenString := b.GetString("token")
+	payload, err := verifyToken(tokenString)
 	if err != nil {
 		return nil, err
 	}
-	payload, err := verifyToken(strconv.Itoa(userID))
-	if err != nil {
-		memoryCache.Delete(strconv.Itoa(userID))
-		return nil, err
-	}
-
 	if strID, ok := payload["id"].(string); ok {
 		userID, err := strconv.Atoi(strID)
 		if err != nil {
@@ -85,57 +79,58 @@ func (b *baseController) getCurrentUser() (*model.User, error) {
 	return nil, err
 }
 
-func (b *baseController) signToken(key interface{}, payload map[string]interface{}) error {
+func signToken(payload map[string]interface{}) (*model.Token, error) {
 	var err error
 	reqData, err := json.Marshal(payload)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	resp, err := http.Post("http://localhost:4000/tokenservice/token", "application/json", bytes.NewReader(reqData))
+	resp, err := http.Post(tokenServerURL.String(), "application/json", bytes.NewReader(reqData))
 	if err != nil {
-		return err
+		return nil, err
 	}
 	respData, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	var token model.Token
 	err = json.Unmarshal(respData, &token)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	log.Printf("Get token from server: %s\n", token.TokenString)
-	memoryCache.Put(key.(string), token.TokenString, time.Second*1800)
-	return nil
+	return &token, nil
 }
 
-func verifyToken(key string) (map[string]interface{}, error) {
-	token := memoryCache.Get(key)
-	if tokenString, ok := token.(string); ok {
-		resp, err := http.Get("http://localhost:4000/tokenservice/token?token=" + tokenString)
-		if err != nil {
-			return nil, err
-		}
-		respData, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		defer resp.Body.Close()
-
-		var payload map[string]interface{}
-		err = json.Unmarshal(respData, &payload)
-		if err != nil {
-			return nil, err
-		}
-		return payload, nil
+func verifyToken(tokenString string) (map[string]interface{}, error) {
+	resp, err := http.Get(tokenServerURL.String() + "?token=" + tokenString)
+	if err != nil {
+		return nil, err
 	}
-	return nil, fmt.Errorf("invalid token in cache")
+	respData, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var payload map[string]interface{}
+	err = json.Unmarshal(respData, &payload)
+	if err != nil {
+		return nil, err
+	}
+	return payload, nil
 }
 
 func init() {
 	var err error
-	memoryCache, err = cache.NewCache("memory", "")
+	conf, err = config.NewConfig("ini", "app.conf")
 	if err != nil {
-		log.Fatalf("Failed to init memory cache: %+v", err)
+		log.Fatalf("Failed to load config file: %+v\n", err)
 	}
+	rawURL := conf.String("tokenServerURL")
+	tokenServerURL, err = url.Parse(rawURL)
+	if err != nil {
+		log.Fatalf("Failed to parse token server URL: %+v\n", err)
+	}
+	log.Printf("Set tokenservice URL as %s", tokenServerURL.String())
 }
