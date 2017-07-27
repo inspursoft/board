@@ -5,7 +5,6 @@ import (
 	"github.com/astaxie/beego/orm"
 	 _"github.com/go-sql-driver/mysql"
 	"git/inspursoft/board/src/collector/cmd/app"
-//	"git/inspursoft/board/src/collector/util"
 )
 
 func init() {
