@@ -8,12 +8,7 @@ COPY make/dev/container/uibuilder/entrypoint.sh /
 
 WORKDIR /board_resource
 
-ARG https_proxy
-
-RUN echo "Use https.proxy $https_proxy"
-
-RUN npm config set https.proxy $https_proxy && \
-    npm install -g @angular/cli  && \
+RUN npm install -g @angular/cli  && \
 	npm install && \
     chmod u+x /entrypoint.sh
 VOLUME ["/board_src"]
