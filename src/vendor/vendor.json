@@ -181,6 +181,12 @@
 			"revisionTime": "2017-07-18T16:56:48Z"
 		},
 		{
+			"checksumSHA1": "sLZf4pM2CTDW1FrEKLnTrXMxM0s=",
+			"path": "github.com/astaxie/beego/cache",
+			"revision": "d96289a81bf67728cff7a19b067aaecc65a62ec6",
+			"revisionTime": "2017-07-18T16:56:48Z"
+		},
+		{
 			"checksumSHA1": "zgHK1vxUJDZTXAPCw+Bls7St0Ks=",
 			"path": "github.com/astaxie/beego/config",
 			"revision": "d96289a81bf67728cff7a19b067aaecc65a62ec6",
