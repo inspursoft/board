@@ -5,7 +5,7 @@ import { Message } from '../../shared/message-service/message';
 import { MessageService } from '../../shared/message-service/message.service';
 
 import { Subscription } from 'rxjs/Subscription';
-
+import { AppInitService } from '../../app.init.service';
 import { AccountService } from '../account.service';
 
 @Component({
@@ -19,6 +19,7 @@ export class SignInComponent implements OnDestroy {
   _subscription: Subscription;
 
   constructor(
+    private appInitService: AppInitService,
     private messageService: MessageService, 
     private accountService: AccountService,
     private router: Router) {
@@ -32,6 +33,7 @@ export class SignInComponent implements OnDestroy {
     this.accountService
       .signIn(this.signInUser.username, this.signInUser.password)
       .then(res=>{
+          this.appInitService.token = res.token;
           this.router.navigate(['/dashboard']);
       })
       .catch(err=>{

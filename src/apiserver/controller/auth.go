@@ -40,7 +40,9 @@ func (u *AuthController) SignInAction() {
 
 		payload := make(map[string]interface{})
 		payload["id"] = strconv.Itoa(int(user.ID))
-
+		payload["username"] = user.Username
+		payload["email"] = user.Email
+		payload["realname"] = user.Realname
 		token, err := signToken(payload)
 		if err != nil {
 			u.internalError(err)
@@ -98,4 +100,19 @@ func (u *AuthController) SignUpAction() {
 	if !isSuccess {
 		u.serveStatus(http.StatusBadRequest, "Failed to sign up user.")
 	}
+}
+
+func (u *AuthController) CurrentUserAction() {
+	token := u.GetString("token")
+	payload, err := verifyToken(token)
+	if err != nil {
+		u.CustomAbort(http.StatusUnauthorized, "Need to login first.")
+		return
+	}
+	u.Data["json"] = payload
+	u.ServeJSON()
+}
+
+func (u *AuthController) LogOutAction() {
+	u.signOff()
 }

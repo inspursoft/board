@@ -14,11 +14,7 @@ type UserController struct {
 }
 
 func (u *UserController) Prepare() {
-	user, err := u.getCurrentUser()
-	if err != nil {
-		u.internalError(err)
-		return
-	}
+	user := u.getCurrentUser()
 	if user == nil {
 		u.CustomAbort(http.StatusUnauthorized, "Need to login first.")
 		return
@@ -88,11 +84,7 @@ type SystemAdminController struct {
 }
 
 func (u *SystemAdminController) Prepare() {
-	user, err := u.getCurrentUser()
-	if err != nil {
-		u.internalError(err)
-		return
-	}
+	user := u.getCurrentUser()
 	if user == nil {
 		u.CustomAbort(http.StatusUnauthorized, "Need to login first.")
 		return

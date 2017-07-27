@@ -1,6 +1,8 @@
 import { Component, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
+import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/operator/switchMap';
 import { MessageService } from '../message-service/message.service';
 import { Message } from '../message-service/message';
 import { MESSAGE_TYPE, DISMISS_GLOBAL_ALERT_INTERVAL } from '../shared.const';
@@ -25,8 +27,8 @@ export class GlobalMessageComponent implements OnDestroy {
     this.showAction = false;
     this._subscription = this.messageService
       .globalAnnounced$
+      .switchMap(m=>Observable.of(m))
       .subscribe(m=>{
-        setTimeout(()=>this.globalMessageClosed = true, DISMISS_GLOBAL_ALERT_INTERVAL);
         this.globalMessageClosed = false;
         let globalMessage = <Message>m;
         this.globalAnnoucedMessage = globalMessage.message;

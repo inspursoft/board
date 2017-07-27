@@ -2,7 +2,6 @@ package controller
 
 import (
 	"io/ioutil"
-	"log"
 	"net/http"
 
 	"encoding/json"
@@ -16,13 +15,21 @@ import (
 
 	"net/url"
 
+	"time"
+
+	"strings"
+
+	"fmt"
+
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/cache"
 	"github.com/astaxie/beego/config"
 	"github.com/astaxie/beego/logs"
 )
 
 var conf config.Configer
 var tokenServerURL *url.URL
+var memoryCache cache.Cache
 
 type baseController struct {
 	beego.Controller
@@ -63,20 +70,35 @@ func (b *baseController) internalError(err error) {
 	b.CustomAbort(http.StatusInternalServerError, "Unexpected error occurred.")
 }
 
-func (b *baseController) getCurrentUser() (*model.User, error) {
+func (b *baseController) getCurrentUser() *model.User {
 	tokenString := b.GetString("token")
 	payload, err := verifyToken(tokenString)
 	if err != nil {
-		return nil, err
+		return nil
 	}
 	if strID, ok := payload["id"].(string); ok {
 		userID, err := strconv.Atoi(strID)
 		if err != nil {
-			return nil, err
+			logs.Error("Error occurred on converting userID: %+v\n", err)
+			return nil
 		}
-		return service.GetUserByID(int64(userID))
+		user, err := service.GetUserByID(int64(userID))
+		if err != nil {
+			logs.Error("Error occurred while getting user by ID: %d\n", err)
+			return nil
+		}
+		return user
 	}
-	return nil, err
+	return nil
+}
+
+func (b *baseController) signOff() {
+	tokenString := b.GetString("token")
+	err := memoryCache.Delete(tokenString)
+	if err != nil {
+		logs.Error("Failed to delete token from memory cache: %+v", err)
+	}
+	logs.Info("Successful sign off from API server.")
 }
 
 func signToken(payload map[string]interface{}) (*model.Token, error) {
@@ -98,11 +120,20 @@ func signToken(payload map[string]interface{}) (*model.Token, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("Get token from server: %s\n", token.TokenString)
+	logs.Debug("Get token from server: %s\n", token.TokenString)
+	memoryCache.Put(token.TokenString, token.TokenString, time.Second*1800)
 	return &token, nil
 }
 
 func verifyToken(tokenString string) (map[string]interface{}, error) {
+	if strings.TrimSpace(tokenString) == "" {
+		return nil, fmt.Errorf("no token was provided")
+	}
+	storedToken := memoryCache.Get(tokenString)
+	if storedToken == nil {
+		logs.Info("token has been expired forcely.")
+		return nil, nil
+	}
 	resp, err := http.Get(tokenServerURL.String() + "?token=" + tokenString)
 	if err != nil {
 		return nil, err
@@ -125,12 +156,18 @@ func init() {
 	var err error
 	conf, err = config.NewConfig("ini", "app.conf")
 	if err != nil {
-		log.Fatalf("Failed to load config file: %+v\n", err)
+		logs.Error("Failed to load config file: %+v\n", err)
 	}
 	rawURL := conf.String("tokenServerURL")
 	tokenServerURL, err = url.Parse(rawURL)
 	if err != nil {
-		log.Fatalf("Failed to parse token server URL: %+v\n", err)
+		logs.Error("Failed to parse token server URL: %+v\n", err)
 	}
-	log.Printf("Set tokenservice URL as %s", tokenServerURL.String())
+	logs.Info("Set tokenservice URL as %s", tokenServerURL.String())
+
+	memoryCache, err = cache.NewCache("memory", `{"interval": 360}`)
+	if err != nil {
+		logs.Error("Failed to initialize cache: %+v\n", err)
+	}
+
 }

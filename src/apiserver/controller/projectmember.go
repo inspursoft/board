@@ -13,11 +13,7 @@ type ProjectMemberController struct {
 }
 
 func (pm *ProjectMemberController) Prepare() {
-	user, err := pm.getCurrentUser()
-	if err != nil {
-		pm.internalError(err)
-		return
-	}
+	user := pm.getCurrentUser()
 	if user == nil {
 		pm.CustomAbort(http.StatusUnauthorized, "Need to login first.")
 		return

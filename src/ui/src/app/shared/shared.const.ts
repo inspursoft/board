@@ -1,6 +1,6 @@
 export enum MESSAGE_TARGET { TOGGLE_PROJECT, DELETE_PROJECT };
 
-export const DISMISS_INLINE_ALERT_INTERVAL: number = 2 * 1000;
+export const DISMISS_INLINE_ALERT_INTERVAL: number = 4 * 1000;
 export const DISMISS_GLOBAL_ALERT_INTERVAL: number = 10 * 1000;
 
 export enum MESSAGE_TYPE {

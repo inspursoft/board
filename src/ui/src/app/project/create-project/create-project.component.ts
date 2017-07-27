@@ -56,9 +56,7 @@ export class CreateProjectComponent {
             this.errorMessage = 'PROJECT.PROJECT_NAME_ALREADY_EXISTS';
             break;
           default:
-            this.alertClosed = false;
-            this.errorMessage = 'ERROR.UNKNOWN_ERROR';
-            break;
+            this.messageService.dispatchError(err, '');
           }
         }
       });

@@ -16,12 +16,13 @@ import { MemberComponent } from './project/member/member.component';
 import { ImageComponent } from './image/image.component';
 import { ServiceComponent } from './service/service.component';
 import { ProfileComponent } from './profile/profile.component';
-
-export const ROUTES: Routes = [
-    { path: '', redirectTo: 'sign-in', pathMatch: 'full' },
+import { AuthGuard } from './shared/auth-guard.service';
+export const ROUTES: Routes = [   
     { path: 'sign-in', component: SignInComponent },
     { path: 'sign-up', component: SignUpComponent },
-    { path: '', component: MainContentComponent, children: [
+    { path: '', component: MainContentComponent, 
+        canActivate: [ AuthGuard ],
+        children: [
         { path: 'dashboard', component: DashboardComponent },
         { path: 'nodes', component: NodeComponent },
         { path: 'projects',  
@@ -33,7 +34,9 @@ export const ROUTES: Routes = [
         { path: 'images', component: ImageComponent },
         { path: 'services', component: ServiceComponent },
         { path: 'profiles', component: ProfileComponent }
-    ]}
+    ]},
+    { path: '', redirectTo: '/sign-in', pathMatch: 'full' },
+    { path: '**', component: SignInComponent }
 ];
 
 export const ROUTING: ModuleWithProviders = RouterModule.forRoot(ROUTES);
