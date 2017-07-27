@@ -14,11 +14,7 @@ type ProjectController struct {
 }
 
 func (p *ProjectController) Prepare() {
-	user, err := p.getCurrentUser()
-	if err != nil {
-		p.internalError(err)
-		return
-	}
+	user := p.getCurrentUser()
 	if user == nil {
 		p.CustomAbort(http.StatusUnauthorized, "Need to login first.")
 		return

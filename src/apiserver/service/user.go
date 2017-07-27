@@ -15,14 +15,14 @@ func SignUp(user model.User) (bool, error) {
 	return (userID != 0), nil
 }
 
-func SignIn(principal string, password string) (bool, error) {
+func SignIn(principal string, password string) (*model.User, error) {
 	query := model.User{Username: principal, Password: password}
 	user, err := dao.GetUser(query, "username", "password")
 	if err != nil {
 		log.Printf("Failed to get user in SignIn: %+v\n", err)
-		return false, err
+		return nil, err
 	}
-	return (user != nil && user.ID != 0), nil
+	return user, nil
 }
 
 func GetUserByID(userID int64) (*model.User, error) {

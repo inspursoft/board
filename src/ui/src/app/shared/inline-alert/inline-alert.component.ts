@@ -1,5 +1,8 @@
 import { Component, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
+import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/operator/switchMap';
+
 import { TranslateService } from '@ngx-translate/core';
 
 import { MessageService } from '../message-service/message.service';
@@ -23,12 +26,14 @@ export class InlineAlertComponent implements OnDestroy {
     private translateService: TranslateService
   ){
     this.inlineAlertClosed = true;
+    let hnd: any;
     this._subscription = this.messageService
       .inlineAlertAnnounced$
+      .switchMap(m=>Observable.of(m))
       .subscribe(m=>{
-        setTimeout(()=>this.inlineAlertClosed = true, DISMISS_INLINE_ALERT_INTERVAL);
         let inlineMessage = <Message>m;
         if(inlineMessage) {
+          hnd = setTimeout(()=>{this.inlineAlertClosed = true; clearTimeout(hnd);}, DISMISS_INLINE_ALERT_INTERVAL); 
           this.translateService.get(inlineMessage.message, inlineMessage.params || [])
             .subscribe(res=>{
               this.inlineAnnouncedMessage = res;

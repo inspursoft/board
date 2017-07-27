@@ -10,8 +10,8 @@ import { CheckItemExistingDirective } from './directives/check-item-existing.dir
 import { CheckItemIdenticalDirective } from './directives/check-item-identical.directive';
 
 import { MessageService } from './message-service/message.service';
-
-import {CheckItemPatternDirective} from "./directives/check-item-pattern.directive";
+import { AuthGuard } from './auth-guard.service';
+import { CheckItemPatternDirective } from "./directives/check-item-pattern.directive";
 
 @NgModule({
   imports: [
@@ -43,6 +43,7 @@ import {CheckItemPatternDirective} from "./directives/check-item-pattern.directi
     GlobalMessageComponent
   ],
   providers: [
+    AuthGuard,
     MessageService
   ]
 })

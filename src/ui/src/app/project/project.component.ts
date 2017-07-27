@@ -63,7 +63,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
       .then(projects=>{
         this.projects = projects;
       })
-      .catch(err=>this.messageService.dispatchError(err.status, 'PROJECT.FAILED_TO_RETRIEVE_PROJECTS'));
+      .catch(err=>this.messageService.dispatchError(err, 'PROJECT.FAILED_TO_RETRIEVE_PROJECTS'));
   }
 
   createProject(): void {
