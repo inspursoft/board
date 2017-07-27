@@ -1,37 +1,60 @@
-import { Directive, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { NG_VALIDATORS, Validator, Validators, ValidatorFn, AbstractControl } from '@angular/forms';
+import { Directive, Input} from '@angular/core';
+import { NG_ASYNC_VALIDATORS, AsyncValidator, 
+         Validators, ValidatorFn,
+         AbstractControl } from '@angular/forms';
+
+import { Http } from '@angular/http';
+
+import { AppInitService } from '../../app.init.service';
 
 @Directive({
   selector: '[checkItemExisting]',
   providers: [
-    {provide: NG_VALIDATORS, useExisting: CheckItemExistingDirective, multi: true }
+    {provide: NG_ASYNC_VALIDATORS, useExisting: CheckItemExistingDirective, multi: true }
   ]
 })
-export class CheckItemExistingDirective implements Validator, OnChanges {
-
-  @Input() checkItemExisting: string;
-  @Input() targetName: string;
-
+export class CheckItemExistingDirective implements AsyncValidator {
+  @Input() checkItemExisting;
+    
   valFn: ValidatorFn = Validators.nullValidator;
 
-  ngOnChanges(changes: SimpleChanges): void {
-    const change = changes['checkItemExisting'];
-    if(change) {
-      const val: string = change.currentValue;
-      console.log(val);
-      this.valFn = CheckItemExisting(val);
-    } else {
-      this.valFn = Validators.nullValidator;
-    }
-  }
-  validate(control: AbstractControl): {[key: string]: any} {
-    return this.valFn(control);
-  }
-}
+  constructor(
+    private http: Http,
+    private appInitService: AppInitService
+  ){}
 
-export function CheckItemExisting(inputVal: string): ValidatorFn {
-  return (control: AbstractControl): {[key: string]: any} => {
-    const controlValue = control.value;
-    return (controlValue === 'admin')? {checkItemExisting: {controlValue}}: null;
+  checkUserExists(target: string, value: string): Promise<any> {
+    return this.http.get("/api/v1/user-exists", {
+      params: {
+        'target': target,
+        'value': value
+      }
+    }).toPromise();
+  }
+  
+  checkProjectExists(token: string, projectName: string): Promise<any>{
+    return this.http.head('/api/v1/projects', {
+      params: {
+        'token': token,
+        'project_name': projectName
+      }
+    }).toPromise();
+  } 
+
+  validate(control: AbstractControl): Promise<{[key: string]: any}> {
+    const value = control.value; 
+    switch(this.checkItemExisting) {
+    case 'username':
+    case 'email':
+      return this.checkUserExists(this.checkItemExisting, value)
+        .then(()=>this.valFn)
+        .catch(()=>Promise.resolve({ 'checkItemExisting': value }));
+    case 'project':
+      return this.checkProjectExists(this.appInitService.token, value)
+        .then(()=>this.valFn)
+        .catch(()=>Promise.resolve({ 'checkItemExisting': value }));
+    default:
+      return Promise.resolve(this.valFn);
+    }
   }
 }

@@ -40,6 +40,7 @@ export const LANG_ZH_CN = {
     "USERNAME_ALREADY_EXISTS": "用户名已存在。",
     "EMAIL_IS_REQUIRED": "邮箱为必填项。",
     "EMAIL_IS_ILLEGAL": "邮箱格式非法。",
+    "EMAIL_ALREADY_EXISTS": "邮箱已存在。",
     "PASSWORD_IS_REQUIRED": "密码为必填项。",
     "PASSWORDS_ARE_NOT_IDENTICAL": "两次密码内容不一致。",
     "ERROR": "错误",

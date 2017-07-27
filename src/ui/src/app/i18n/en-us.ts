@@ -40,6 +40,7 @@ export const LANG_EN_US = {
     "USERNAME_ALREADY_EXISTS": "Username already exists.",
     "EMAIL_IS_REQUIRED": "Email is required.",
     "EMAIL_IS_ILLEGAL": "Email is illegal.",
+    "EMAIL_ALREADY_EXISTS": "Email already exists",
     "PASSWORD_IS_REQUIRED": "Password is required.",
     "PASSWORDS_ARE_NOT_IDENTICAL": "Passwords are not identical.",
     "ERROR": "Error",
