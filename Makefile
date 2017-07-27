@@ -23,6 +23,7 @@ MAKEPATH=$(BUILDPATH)/make
 MAKEDEVPATH=$(MAKEPATH)/dev
 SRCPATH= src
 TOOLSPATH=$(BUILDPATH)/tools
+DEVIMAGEPATH= make/dev
 
 # docker parameters
 DOCKERCMD=$(shell which docker)
@@ -55,24 +56,31 @@ PREPARECMD_PARAMETERS=--conf $(CONFIGPATH)/$(CONFIGFILE)
 
 # Package lists
 TOPLEVEL_PKG := .
-INT_LIST := $(SRCPATH)/apiserver $(SRCPATH)/tokenserver $(SRCPATH)/collector/cmd
+INT_LIST := apiserver tokenserver collector/cmd
+#IMG_LIST := apiserver tokenserver collector db log
+IMG_LIST := apiserver tokenserver db log #collector
+ 
 
 # List building
-ALL_LIST = $(INT_LIST) #$(IMPL_LIST) $(CMD_LIST)
+COMPILEALL_LIST = $(foreach int, $(INT_LIST), $(SRCPATH)/$(int))
 
-BUILD_LIST = $(foreach int, $(ALL_LIST), $(int)_build)
-CLEAN_LIST = $(foreach int, $(ALL_LIST), $(int)_clean)
-INSTALL_LIST = $(foreach int, $(ALL_LIST), $(int)_install)
-TEST_LIST = $(foreach int, $(ALL_LIST), $(int)_test)
-FMT_LIST = $(foreach int, $(ALL_LIST), $(int)_fmt)
-VET_LIST = $(foreach int, $(ALL_LIST), $(int)_vet)
-GOLINT_LIST = $(foreach int, $(ALL_LIST), $(int)_golint)
+COMPILE_LIST = $(foreach int, $(COMPILEALL_LIST), $(int)_compile)
+CLEAN_LIST = $(foreach int, $(COMPILEALL_LIST), $(int)_clean)
+INSTALL_LIST = $(foreach int, $(COMPILEALL_LIST), $(int)_install)
+TEST_LIST = $(foreach int, $(COMPILEALL_LIST), $(int)_test)
+FMT_LIST = $(foreach int, $(COMPILEALL_LIST), $(int)_fmt)
+VET_LIST = $(foreach int, $(COMPILEALL_LIST), $(int)_vet)
+GOLINT_LIST = $(foreach int, $(COMPILEALL_LIST), $(int)_golint)
+
+BUILDALL_LIST = $(foreach int, $(IMG_LIST), container/$(int))
+BUILD_LIST = $(foreach int, $(BUILDALL_LIST), $(int)_build)
+RMIMG_LIST = $(foreach int, $(BUILDALL_LIST), $(int)_rmi)
 
 # All are .PHONY for now because dependencyness is hard
-.PHONY: $(CLEAN_LIST) $(TEST_LIST) $(FMT_LIST) $(INSTALL_LIST) $(BUILD_LIST) $(IREF_LIST) $(VET_LIST) $(GOLINT_LIST)
+.PHONY: $(CLEAN_LIST) $(TEST_LIST) $(FMT_LIST) $(INSTALL_LIST) $(COMPILE_LIST) $(VET_LIST) $(GOLINT_LIST) $(BUILD_LIST)
 
-all: build
-build: $(BUILD_LIST)
+all: compile
+compile: $(COMPILE_LIST)
 clean_binary: $(CLEAN_LIST)
 install: $(INSTALL_LIST)
 test: $(TEST_LIST)
@@ -80,7 +88,7 @@ fmt: $(FMT_LIST)
 vet: $(VET_LIST)
 golint: $(GOLINT_LIST)
 
-$(BUILD_LIST): %_build: %_fmt %_vet %_golint
+$(COMPILE_LIST): %_compile: %_fmt %_vet %_golint
 	cd $(TOPLEVEL_PKG)/$*/; $(GOBUILD) .
 $(CLEAN_LIST): %_clean:
 	$(GOCLEAN) $(TOPLEVEL_PKG)/$* 
@@ -94,6 +102,14 @@ $(VET_LIST): %_vet:
 	$(GOVET) ./$*/...
 $(GOLINT_LIST): %_golint:
 	$(GOLINT) $*/...
+
+build: $(BUILD_LIST)
+rmimage: $(RMIMG_LIST)
+
+$(BUILD_LIST): %_build:
+	$(DOCKERBUILD) -f $(MAKEDEVPATH)/$*/Dockerfile . -t $*:dev
+$(RMIMG_LIST): %_rmi:
+	$(DOCKERRMIMAGE) $*:dev
 
 prepare:
 	@echo "preparing..."

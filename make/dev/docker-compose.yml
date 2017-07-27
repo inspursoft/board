@@ -2,8 +2,8 @@ version: '2'
 services:
   log:
     build:
-      context: ./container/log/
-      dockerfile: Dockerfile
+      context: ../../
+      dockerfile: make/dev/container/log/Dockerfile
     restart: always
     volumes:
       - /var/log/board/:/var/log/docker/
@@ -13,8 +13,8 @@ services:
       - 1514:514
   mysql:
     build: 
-      context: ./container/db/
-      dockerfile: Dockerfile
+      context: ../../
+      dockerfile: make/dev/container/db/Dockerfile
     restart: always
     volumes:
       - /data/board/database:/var/lib/mysql
