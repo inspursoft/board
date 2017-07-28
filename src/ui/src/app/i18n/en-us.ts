@@ -79,7 +79,9 @@ export const LANG_EN_US = {
     "USAGE": "Usage",
     "TOTAL": "Total",
     "STORAGE": "Storage",
-    "NODATA":"No Data"
+    "GET_ERR_409":"409:No Data",
+    "GET_ERR_404": "404:Connect error.",
+    "GET_ERR_504": "504:Gateway Timeout."
   },
   "PROJECT": {
     "CREATE_PROJECT": "Create Project",

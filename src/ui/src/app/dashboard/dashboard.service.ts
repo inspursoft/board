@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { Http, RequestOptions, Headers } from "@angular/http"
+import { Http, RequestOptions, Headers, Response } from "@angular/http"
 import { MessageService } from "app/shared/message-service/message.service"
 import "rxjs/add/operator/map";
 import 'rxjs/add/operator/toPromise';
+import 'rxjs/add/operator/timeout';
 
 export type LineDataModel = [Date, number];
 export type LinesData = [LineDataModel[], LineDataModel[]];
@@ -12,7 +13,7 @@ export interface ServiceListModel {
 }
 
 export interface ServiceDataModel {
-  readonly time_stamp: number;
+  readonly podcontainer_timestamp: number;
   readonly pods_number: number;
   readonly container_number: number;
 }
@@ -99,20 +100,33 @@ export class DashboardService {
     contentType: "application/json"
   });
 
+  static getErrorMsg(reason: Response | Error, statusArr: Array<number>, errorKey: string): string {
+    if (reason instanceof Response) {
+      return statusArr.indexOf(reason.status) > -1 ?
+        `DASHBOARD.${errorKey}_ERR_${reason.status}` :
+        `${reason.status}:${reason.statusText}`;
+    }
+    else {
+      return `${reason.name}:${reason.message}`;
+    }
+  }
+
   getServiceList(): Promise<ServiceListModel[]> {
     let options = new RequestOptions({headers: this.defaultHeaders});
-    return this.http.get(`${BASE_URL}/service/list`, options)
+    return this.http.get(`${BASE_URL}/dashboard/service/list`, options)
       .toPromise()
       .then(res => {
         let arr = Array.from(res.json()).sort((a, b) => {
           return a["service_name"] == b["service_name"] ? 0 :
             a["service_name"] > b["service_name"] ? 1 : -1;
         });
-        //add total service
-        arr.unshift({service_name: "total"});
+        arr.unshift({service_name: "total"});//add total service
         return arr;
       })
-      .catch(this.handleError);
+      .catch(reason => {
+        let errMsg: string = DashboardService.getErrorMsg(reason, Array.from([404, 409, 504]), "GET");
+        return Promise.reject(errMsg);
+      });
   };
 
   /**data origin
@@ -125,43 +139,36 @@ export class DashboardService {
    * "time_stamp":1499842237
    * }]}
    */
-  getServiceData(service_time_count: number, service_time_unit: string, service_name: string): Promise<LinesData> {
+  getServiceData(query: {time_count: number, time_unit: string, service_name: string, timestamp_base: number}): Promise<LinesData> {
     let params: Map<string, string> = new Map<string, string>();
-    params["service_time_count"] = service_time_count.toString();
-    params["service_timeunit"] = service_time_unit;
-    params["service_name"] = service_name;
+    params["service_name"] = query.service_name;
     let options = new RequestOptions({
       headers: this.defaultHeaders,
       search: params
     });
-    return this.http.get(`${BASE_URL}/dashboard/service`, options)
+    return this.http.post(`${BASE_URL}/dashboard/service`, {
+      time_count: query.time_count.toString(),
+      time_unit: query.time_unit,
+      timestamp_base: query.timestamp_base.toString()
+    }, options)
       .toPromise()
-      .then(res => {
+      .then((res: Response) => {
         let resJson: object = res.json();
         let logs: ServiceDataModel[] = resJson["service_statuslogs"];
-        let r: LinesData = [new Array<[Date, number]>(0), new Array<[Date, number]>(0)];
+        let r: LinesData = [[[new Date(), 1]], [[new Date(), 1]]];
         if (logs && logs.length > 0) {
+          r[0] = r[0].slice(0,0);
+          r[1] = r[1].slice(0,0);
           logs.forEach((item: ServiceDataModel) => {
-            r[0].unshift([new Date(item.time_stamp * 1000), item.pods_number]);
-            r[1].unshift([new Date(item.time_stamp * 1000), item.container_number]);
+            r[0].push([new Date(item.podcontainer_timestamp * 1000), item.pods_number]);
+            r[1].push([new Date(item.podcontainer_timestamp * 1000), item.container_number]);
           });
         }
         return r;
       })
-      .catch(this.handleError);
+      .catch(reason => {
+        let errMsg: string = DashboardService.getErrorMsg(reason, Array.from([404, 409, 504]), "GET");
+        return Promise.reject(errMsg);
+      });
   }
-
-  handleError(error: Response | any) {
-    let errMsg: string;
-    if (error instanceof Response) {
-      const body = error.json() || '';
-      const err = body["error"] || JSON.stringify(body);
-      errMsg = `${error.status} - ${error.statusText || ''} ${err}`;
-    } else {
-      errMsg = error.message ? error.message : error.toString();
-    }
-    this.messageService.dispatchError(error, errMsg);
-    return Promise.reject(errMsg);
-  }
-
 }

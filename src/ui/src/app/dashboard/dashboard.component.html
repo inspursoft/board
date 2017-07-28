@@ -9,10 +9,10 @@
     <div class="section-right-container">
 			<span class="stat-panel-title stat-panel-title-font">
 				 {{ 'DASHBOARD.PODS' | translate }}:
-				 <span class="stat-panel-value-font">{{podCount}}</span></span>
+				 <span class="stat-panel-value-font">{{serviceCurPod}}</span></span>
       <span class="stat-panel-title stat-panel-title-font">
 				 {{ 'DASHBOARD.CONTAINERS' | translate }}:
-				<span class="stat-panel-value-font">{{containerCount}}</span>
+				<span class="stat-panel-value-font">{{serviceCurContainer}}</span>
 			</span>
     </div>
   </div>
@@ -58,17 +58,14 @@
     <div class="card-block">
       <div class="card-block-top-container">
         <clr-dropdown #serviceDropdown >
-          <button style="width: 150px;font-size: 10px;text-align: left" class="btn btn-outline-primary"
-                  clrDropdownToggle>
-            {{serviceBtnValue}}
-            <span *ngIf="!serviceBtnValue || serviceBtnValue == ''" class="spinner spinner-sm"></span>
-            <clr-icon shape="caret down"></clr-icon>
+          <button class="btn btn-outline-primary dropdown-button" clrDropdownToggle>
+            {{serviceDropdownText | translate}}
+            <span *ngIf="!serviceDropdownText || serviceDropdownText == ''" class="spinner spinner-sm"></span>
+            <clr-icon *ngIf="serviceList && serviceList.length > 0" shape="caret down"></clr-icon>
           </button>
-          <clr-dropdown-menu class="card-block-dropdown">
+          <clr-dropdown-menu [hidden]="serviceList.length == 0" class="card-block-dropdown">
             <button *ngFor="let service of serviceList;"
-
-              [ngClass]="{'active':serviceBtnValue == service.service_name}"
-
+              [ngClass]="{'active':serviceDropdownText == service.service_name}"
                     class="dropdown-item"
                     (click)="serviceDropDownChange(service);serviceDropdown.toggleDropdown()">
               {{service.service_name}}
@@ -77,10 +74,10 @@
         </clr-dropdown>
         <div class="caption_container">
 					<span class="first-line">
-						{{ 'DASHBOARD.PODS' | translate }}:{{podCount}}
+						{{ 'DASHBOARD.PODS' | translate }}:{{serviceCurPod}}
 					</span>
           <span class="second-line">
-						{{ 'DASHBOARD.CONTAINERS' | translate }}:{{containerCount}}
+						{{ 'DASHBOARD.CONTAINERS' | translate }}:{{serviceCurContainer}}
 					</span>
         </div>
         <div class="select-time-container">
@@ -90,12 +87,12 @@
       <div class="card-block-bottom-container">
         <div style="flex-basis: 100%;">
           <div *ngIf="serviceNoData" class="no-data-mask">
-            <span>{{ 'DASHBOARD.NODATA' | translate }}</span>
+            <span>{{ serviceNoDataErrMsg | translate }}</span>
           </div>
           <div echarts
                [loading]="!serviceAlready"
                [options]="serviceOptions"
-               [dataset]="serviceData"
+               [dataset]="serviceData[0] && serviceData[0].length > 0 ? serviceData : null"
                (chartDataZoom)="serviceChartDataZoom($event)"
                style="height: 300px">
           </div>

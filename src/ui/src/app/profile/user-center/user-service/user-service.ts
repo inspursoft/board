@@ -12,7 +12,7 @@ export class UserService {
   });
 
   static getErrorMsg(reason: Response | Error, statusArr: Array<number>, errorKey: string): string {
-    if (reason instanceof Response){
+    if (reason instanceof Response) {
       return statusArr.indexOf(reason.status) > -1 ?
         `USER_CENTER.${errorKey}_ERR_${reason.status}` :
         `${reason.status}:${reason.statusText}`;
@@ -23,12 +23,12 @@ export class UserService {
               private messageService: MessageService) {
   }
 
-  deleteUser(user: User): Promise<User> {
+  deleteUser(user: User): Promise<boolean> {
     let options = new RequestOptions({
       headers: this.defaultHeaders
     });
     return this.http.delete(`${BASE_URL}/users/${user.user_id}`, options).toPromise()
-      .then(res => res.json())
+      .then(res => res.ok)
       .catch(reason => {
         let errMsg: string = UserService.getErrorMsg(reason, Array.from([400, 401, 403, 404]), "DEL");
         this.messageService.dispatchError(reason, errMsg);
@@ -49,13 +49,13 @@ export class UserService {
       });
   }
 
-  updateUser(user: User): Promise<User> {
+  updateUser(user: User): Promise<boolean> {
     let options = new RequestOptions({
       headers: this.defaultHeaders
     });
     return this.http.put(`${BASE_URL}/users/${user.user_id}`, user, options)
       .toPromise()
-      .then(res => res.json())
+      .then(res => res.ok)
       .catch(reason => {
         let r: string = "";
         if (reason instanceof Response) {
@@ -67,12 +67,12 @@ export class UserService {
       });
   }
 
-  newUser(userParams: User): Promise<User> {
+  newUser(userParams: User): Promise<boolean> {
     let options = new RequestOptions({
       headers: this.defaultHeaders
     });
     return this.http.post(`${BASE_URL}/adduser`, userParams, options).toPromise()
-      .then(res => res.json())
+      .then(res => res.ok)
       .catch(reason => {
         let r: string = "";
         if (reason instanceof Response) {

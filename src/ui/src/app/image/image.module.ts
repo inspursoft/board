@@ -3,12 +3,11 @@ import { NgModule } from '@angular/core';
 import { ImageListComponent } from './image-list/image-list.component';
 import { ImageDetailComponent } from "./image-detail/image-detail.component";
 import { SharedModule } from "../shared/shared.module";
-import { MessageService } from "../shared/message-service/message.service";
 import { ImageService } from "./image-service/image-service";
 
 @NgModule({
   imports: [SharedModule],
-  providers: [MessageService,ImageService],
+  providers: [ImageService],
   declarations: [
     ImageListComponent,
     ImageDetailComponent]

@@ -71,7 +71,7 @@ export class UserList implements OnInit, OnDestroy {
   ngOnInit() {
     this._deleteSubscription = this.messageService.messageConfirmed$.subscribe(next => {
       this.userService.deleteUser(next.data)
-        .then((res: User) => {
+        .then(() => {
           this.refreshData();
           let m: Message = new Message();
           m.message = "USER_CENTER.DELETE_USER_SUCCESS";

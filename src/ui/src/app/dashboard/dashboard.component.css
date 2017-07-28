@@ -144,3 +144,9 @@ button:focus {
   align-items: center;
   justify-content: center;
 }
+
+.dropdown-button{
+  width: 150px;
+  font-size: 10px;
+  text-align: left;
+}

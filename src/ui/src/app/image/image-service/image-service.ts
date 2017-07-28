@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core"
 import { Http, RequestOptions, Headers, Response } from "@angular/http"
-import { Image,ImageDetail } from "../image"
+import { Image, ImageDetail } from "../image"
 import { MessageService } from "../../shared/message-service/message.service";
 import "rxjs/operator/toPromise"
 
@@ -17,18 +17,12 @@ export class ImageService {
   static getErrorMsg(reason: Response | Error, statusArr: Array<number>, errorKey: string): string {
     if (reason instanceof Response) {
       return statusArr.indexOf(reason.status) > -1 ?
-        `USER_CENTER.${errorKey}_ERR_${reason.status}` :
+        `IMAGE.${errorKey}_ERR_${reason.status}` :
         `${reason.status}:${reason.statusText}`;
     }
     else {
       return `${reason.name}:${reason.message}`;
     }
-  }
-
-  handleGetError(reason:Response | Error){
-    let errMsg: string = ImageService.getErrorMsg(reason, Array.from([400, 404]), "GET");
-    this.messageService.dispatchError(reason, errMsg);
-    return Promise.reject(errMsg);
   }
 
   getImages(image_name?: string, image_list_page?: number, image_list_page_size?: number): Promise<Image[]> {
@@ -42,16 +36,61 @@ export class ImageService {
     });
     return this.http.get("/api/v1/images", options).toPromise()
       .then(res => res.json())
-      .catch(this.handleGetError);
+      .catch(reason => {
+        let errMsg: string = ImageService.getErrorMsg(reason, Array.from([400, 404]), "GET");
+        this.messageService.dispatchError(reason, errMsg);
+        return Promise.reject(errMsg);
+      });
   }
 
-  getImageDetailList(image_name: string): Promise<ImageDetail[]> {
+  // private getTimeOutPromise(): Promise<boolean> {
+  //   return new Promise((resolve,reject) => {
+  //     setTimeout(() => {
+  //       reject(true);
+  //     }, 50)
+  //   });
+  // }
+
+  // getImageTimeOut(image_name?: string, image_list_page?: number, image_list_page_size?: number): Promise<Image[]> {
+  //   return Promise.race([this.getTimeOutPromise(), this.getImages(image_name,image_list_page,image_list_page_size)])
+  //     .then(result => {
+  //       console.log(result);
+  //       return result[1];
+  //     })
+  //     .catch(reason => {
+  //       return Promise.reject("链接超时");
+  //     })
+  // }
+
+   getImageDetailList(image_name: string): Promise<ImageDetail[]> {
     let options = new RequestOptions({
       headers: this.defaultHeaders
     });
-    return this.http.get(`/api/v1/images/${image_name}`, options).toPromise()
-      .then(res => res.json())
-      .catch(this.handleGetError);
+    return this.http.get(`/api/v1/images/${image_name}`, options)
+      .timeout(3000)
+      .toPromise()
+      .then(res => {
+        let s = res.json();
+        let result: ImageDetail[] = Array<ImageDetail>();
+        s.forEach(item => {
+          let image_creationtime = JSON.parse(item["image_creationtime"]);
+          let image_author = JSON.parse(item["image_author"]);
+          result.push({
+            image_name: item["image_name"],
+            image_tag: item["image_tag"],
+            image_author: image_author["author"],
+            image_id: (item["image_id"] as string).replace(/sha256:/g,""),
+            image_creationtime: image_creationtime["created"],
+            image_size_number: item["image_size_number"],
+            image_size_unit: item["image_size_unit"]
+          })
+        });
+        return result;
+      })
+      .catch(reason => {
+        let errMsg: string = ImageService.getErrorMsg(reason, Array.from([400, 404]), "GET");
+        this.messageService.dispatchError(reason, errMsg);
+        return Promise.reject(errMsg);
+      });
   }
-
 }

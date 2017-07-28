@@ -79,7 +79,9 @@ export const LANG_ZH_CN = {
     "USAGE": "已用",
     "TOTAL": "总共",
     "STORAGE": "存储", 
-    "NODATA":"暂无数据"
+    "GET_ERR_409":"409:暂无数据",
+    "GET_ERR_404":"404:链接错误.",
+    "GET_ERR_504": "504:链接超时."
   },
   "PROJECT": {
     "CREATE_PROJECT": "创建项目",
