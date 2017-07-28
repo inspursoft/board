@@ -43,6 +43,7 @@ export const LANG_ZH_CN = {
     "EMAIL_ALREADY_EXISTS": "邮箱已存在。",
     "PASSWORD_IS_REQUIRED": "密码为必填项。",
     "PASSWORDS_ARE_NOT_IDENTICAL": "两次密码内容不一致。",
+    "PASSWORD_FORMAT": "密码长度至少为8且需包含至少一个大写字符，一个小写字符和一个数字。",
     "ERROR": "错误",
     "INCORRECT_USERNAME_OR_PASSWORD": "用户名或密码错误。",
     "FAILED_TO_SIGN_IN": "登录失败:",

@@ -1,32 +1,43 @@
-import { Directive, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { NG_VALIDATORS, Validator, Validators, ValidatorFn,  AbstractControl } from '@angular/forms';
+import { Directive, forwardRef, Attribute } from '@angular/core';
+import { Validator, AbstractControl, NG_VALIDATORS } from '@angular/forms';
 
 @Directive({
-  selector: '[checkItemIdentical]',
-  providers: [{ provide: NG_VALIDATORS, useExisting: CheckItemIdenticalDirective, multi: true }]
+    selector: '[validateEqual][formControlName],[validateEqual][formControl],[validateEqual][ngModel]',
+    providers: [
+        { provide: NG_VALIDATORS, useExisting: forwardRef(() => CheckItemIdenticalDirective), multi: true }
+    ]
 })
-export class CheckItemIdenticalDirective implements Validator, OnChanges {
-  @Input() comparison: string;
-  valFn:ValidatorFn = Validators.nullValidator;
+export class CheckItemIdenticalDirective implements Validator {
+  
+    constructor(
+      @Attribute('validateEqual') public validateEqual: string,
+      @Attribute('reverse') public reverse: string
+    ){}
 
-  ngOnChanges(changes: SimpleChanges): void {
-    const change = changes['comparison'];
-    if(change) {
-      const value: string = change.currentValue;
-      this.valFn = CheckItemIdenticalValidator(value);  
-    } else {
-      this.valFn = Validators.nullValidator;
+    private get isReverse() {
+        if (!this.reverse) return false;
+        return this.reverse === 'true' ? true: false;
     }
-  }
 
-  validate(control: AbstractControl): {[key: string]: any} {
-    return this.valFn(control);
-  }
-}
+    validate(control: AbstractControl): { [key: string]: any } {
+        let value = control.value;
+        let element = control.root.get(this.validateEqual);
 
-export function CheckItemIdenticalValidator(comparison: string): ValidatorFn {
-  return (control: AbstractControl): {[key: string]: any} => {
-    const inputValue = control.value;
-    return (comparison && comparison === inputValue) ? null : {'checkItemIdentical':  {inputValue}};
-  };
+        // value not equal
+        if (element && value !== element.value && !this.isReverse) {
+            return { 'validateEqual': false };
+        }
+        // value equal and reverse
+        if (element && value === element.value && this.isReverse) {
+            delete element.errors['validateEqual'];
+            if (!Object.keys(element.errors).length) element.setErrors(null);
+        }
+
+        // value not equal and reverse
+        if (element && value !== element.value && this.isReverse) {
+            element.setErrors({ 'validateEqual': false });
+        }
+
+        return null;
+    }
 }

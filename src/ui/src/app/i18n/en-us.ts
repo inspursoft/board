@@ -42,6 +42,7 @@ export const LANG_EN_US = {
     "EMAIL_IS_ILLEGAL": "Email is illegal.",
     "EMAIL_ALREADY_EXISTS": "Email already exists",
     "PASSWORD_IS_REQUIRED": "Password is required.",
+    "PASSWORD_FORMAT": "Password should be at least 8 characters with at least 1 uppercase, 1 lowercase and 1 number.",
     "PASSWORDS_ARE_NOT_IDENTICAL": "Passwords are not identical.",
     "ERROR": "Error",
     "INCORRECT_USERNAME_OR_PASSWORD": "Incorrect username or password.",
