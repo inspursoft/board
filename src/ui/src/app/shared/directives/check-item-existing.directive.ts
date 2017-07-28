@@ -3,6 +3,14 @@ import { NG_ASYNC_VALIDATORS, AsyncValidator,
          Validators, ValidatorFn,
          AbstractControl } from '@angular/forms';
 
+import { Observable } from 'rxjs/Observable';
+
+import 'rxjs/add/operator/debounceTime';
+import 'rxjs/add/operator/distinctUntilChanged';
+import 'rxjs/add/operator/switchMap';
+import 'rxjs/add/operator/catch';
+import 'rxjs/add/operator/first';
+
 import { Http } from '@angular/http';
 
 import { AppInitService } from '../../app.init.service';
@@ -23,38 +31,41 @@ export class CheckItemExistingDirective implements AsyncValidator {
     private appInitService: AppInitService
   ){}
 
-  checkUserExists(target: string, value: string): Promise<any> {
+  checkUserExists(target: string, value: string): Observable<{[key: string]: any}> {
     return this.http.get("/api/v1/user-exists", {
       params: {
         'target': target,
         'value': value
       }
-    }).toPromise();
+    })
+    .map(()=>this.valFn)
+    .catch(()=>Observable.of({ 'checkItemExisting': {value} }));
   }
   
-  checkProjectExists(token: string, projectName: string): Promise<any>{
+  checkProjectExists(token: string, projectName: string): Observable<{[key: string]: any}>{
     return this.http.head('/api/v1/projects', {
       params: {
         'token': token,
         'project_name': projectName
       }
-    }).toPromise();
+    })
+    .map(()=>this.valFn)
+    .catch(()=>Observable.of({ 'checkItemExisting': projectName }));
   } 
 
-  validate(control: AbstractControl): Promise<{[key: string]: any}> {
-    const value = control.value; 
-    switch(this.checkItemExisting) {
-    case 'username':
-    case 'email':
-      return this.checkUserExists(this.checkItemExisting, value)
-        .then(()=>this.valFn)
-        .catch(()=>Promise.resolve({ 'checkItemExisting': value }));
-    case 'project':
-      return this.checkProjectExists(this.appInitService.token, value)
-        .then(()=>this.valFn)
-        .catch(()=>Promise.resolve({ 'checkItemExisting': value }));
-    default:
-      return Promise.resolve(this.valFn);
-    }
+  validate(control: AbstractControl): Observable<{[key: string]: any}> {
+    return control.valueChanges
+      .debounceTime(200)
+      .distinctUntilChanged()
+      .switchMap(value=> {
+        switch(this.checkItemExisting) {
+        case 'username':
+        case 'email':
+          return this.checkUserExists(this.checkItemExisting, value);
+        case 'project':
+          return this.checkProjectExists(this.appInitService.token, value);
+        }
+      })
+      .first();
   }
 }
