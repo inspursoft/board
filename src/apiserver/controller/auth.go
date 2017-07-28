@@ -116,3 +116,28 @@ func (u *AuthController) CurrentUserAction() {
 func (u *AuthController) LogOutAction() {
 	u.signOff()
 }
+
+func (u *AuthController) UserExists() {
+
+	target := u.GetString("target")
+	value := u.GetString("value")
+
+	var isExists bool
+	var err error
+	switch target {
+	case "username":
+		isExists, err = service.UsernameExists(value)
+	case "email":
+		isExists, err = service.EmailExists(value)
+	default:
+		u.CustomAbort(http.StatusBadRequest, "unsupported check target.")
+		return
+	}
+	if err != nil {
+		u.internalError(err)
+		return
+	}
+	if isExists {
+		u.CustomAbort(http.StatusConflict, target+" already exists.")
+	}
+}

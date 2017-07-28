@@ -1,5 +1,5 @@
-import { Component, Output, EventEmitter } from '@angular/core';
-
+import { Component, Output, EventEmitter, ViewChild } from '@angular/core';
+import { NgForm } from '@angular/forms';
 import { CreateProject } from './create-project';
 
 import { Project } from '../project';
@@ -19,6 +19,8 @@ export class CreateProjectComponent {
   alertClosed: boolean;
   errorMessage: string;
 
+  @ViewChild('createProjectForm') projectForm: NgForm;
+
   @Output() reload: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   createProject: CreateProject = new CreateProject();
@@ -31,6 +33,7 @@ export class CreateProjectComponent {
   openModal(): void {
     this.createProjectOpened = true;
     this.alertClosed = true;
+    this.projectForm.resetForm();
   }
 
   confirm(): void {
