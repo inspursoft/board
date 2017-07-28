@@ -1,22 +1,29 @@
 # Makefile for Board project
 #
 # Targets:
+#   all: Builds the code
+#   build: Builds the code
+#   fmt: Formats the source files
+#   clean_binary: cleans the code
+#   install: Installs the code to the GOPATH
+#   test: Runs the tests
+#   vet: Vet examines source code and reports suspicious constructs
+#   golint: Linter for source code
 #
-# all:			start
-# compile: 		compile apiserver, tokenserver code
 #
-# compile_apiserver, compile_tokenserver: compile specific binary
-#
-# clean:        remove binary and images
-# cleanbinary:	remove apiserver, tokenserver
+
+# Common
+BASEIMAGE=ubuntu:14.04
+GOBUILDIMAGE=golang:1.8.1
 
 # Base shell parameters
 SHELL := /bin/bash
 BUILDPATH=$(CURDIR)
 MAKEPATH=$(BUILDPATH)/make
 MAKEDEVPATH=$(MAKEPATH)/dev
-SRCPATH=./src
+SRCPATH= src
 TOOLSPATH=$(BUILDPATH)/tools
+DEVIMAGEPATH= make/dev
 
 # docker parameters
 DOCKERCMD=$(shell which docker)
@@ -31,93 +38,79 @@ DOCKERTAG=$(DOCKERCMD) tag
 DOCKERCOMPOSEFILEPATH=$(MAKEDEVPATH)
 DOCKERCOMPOSEFILENAME=docker-compose.yml
 
-# go parameters
-GOBASEPATH=/go/src/git
-GOCMD=$(shell which go)
+# Go parameters
+GOCMD=go
 GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
 GOINSTALL=$(GOCMD) install
 GOTEST=$(GOCMD) test
-GODEP=$(GOTEST) -i
+#GODEP=$(GOTEST) -i
 GOFMT=gofmt -w
 GOVET=$(GOCMD) vet
 GOLINT=golint
-
-# Common
-BASEIMAGE=ubuntu:14.04
-GOBUILDIMAGE=golang:1.8.1
-GOBUILDPATH=$(GOBASEPATH)/inspursoft/board
-GOIMAGEBUILD=$(GOCMD) build
-GOBUILDMAKEPATH=$(GOBUILDPATH)/make
-
-# Board Component
-## UI
-
-## API Server
-GOBUILDPATH_APISERVER=$(GOBUILDPATH)/src/apiserver
-APISERVERSOURCECODE=$(SRCPATH)/apiserver
-APISERVERBINARYPATH=$(MAKEDEVPATH)/apiserver
-APISERVERBINARYNAME=apiserver
-DOCKERIMAGENAME_APISERVER=apiserver
-
-## Token Server
-GOBUILDPATH_TOKENSERVER=$(GOBUILDPATH)/src/tokenserver
-TOKENSERVERSOURCECODE=$(SRCPATH)/tokenserver
-TOKENSERVERBINARYPATH=$(MAKEDEVPATH)/tokenserver
-TOKENSERVERBINARYNAME=tokenserver
-DOCKERIMAGENAME_TOKENSERVER=tokenserver
-
-## Database
-DOCKERIMAGENAME_DATABASE=mysql
-
-## Log
-DOCKERIMAGENAME_LOG=log
-
-## Nginx
-DOCKERIMAGENAME_NGINX=nginx
-
-# configfile
-CONFIGPATH=$(MAKEPATH)
-CONFIGFILE=board.cfg
 
 # prepare parameters
 PREPAREPATH=$(TOOLSPATH)
 PREPARECMD=prepare
 PREPARECMD_PARAMETERS=--conf $(CONFIGPATH)/$(CONFIGFILE)
 
-# package
-TARCMD=$(shell which tar)
-ZIPCMD=$(shell which gzip)
-DOCKERIMGFILE=Board
+# Package lists
+TOPLEVEL_PKG := .
+INT_LIST := apiserver tokenserver collector/cmd
+#IMG_LIST := apiserver tokenserver collector db log
+IMG_LIST := apiserver tokenserver db log #collector
+ 
 
-# commands
-compile_apiserver:
-	@echo "compiling binary for apiserver..."
-	@$(GOBUILD) -o $(APISERVERBINARYPATH)/$(APISERVERBINARYNAME) $(APISERVERSOURCECODE)
-	@echo "Done."
+# List building
+COMPILEALL_LIST = $(foreach int, $(INT_LIST), $(SRCPATH)/$(int))
 
-compile_tokenserver:
-	@echo "compiling binary for tokenserver..."
-	@$(GOBUILD) -o $(TOKENSERVERBINARYPATH)/$(TOKENSERVERBINARYNAME) $(TOKENSERVERSOURCECODE)
-	@echo "Done."
+COMPILE_LIST = $(foreach int, $(COMPILEALL_LIST), $(int)_compile)
+CLEAN_LIST = $(foreach int, $(COMPILEALL_LIST), $(int)_clean)
+INSTALL_LIST = $(foreach int, $(COMPILEALL_LIST), $(int)_install)
+TEST_LIST = $(foreach int, $(COMPILEALL_LIST), $(int)_test)
+FMT_LIST = $(foreach int, $(COMPILEALL_LIST), $(int)_fmt)
+VET_LIST = $(foreach int, $(COMPILEALL_LIST), $(int)_vet)
+GOLINT_LIST = $(foreach int, $(COMPILEALL_LIST), $(int)_golint)
 
-compile_normal: compile_apiserver compile_tokenserver
+BUILDALL_LIST = $(foreach int, $(IMG_LIST), container/$(int))
+BUILD_LIST = $(foreach int, $(BUILDALL_LIST), $(int)_build)
+RMIMG_LIST = $(foreach int, $(BUILDALL_LIST), $(int)_rmi)
 
-compile_golangimage: 
-	@echo "compiling binary for apiserver (golang image)..."
-	@echo $(GOBASEPATH)
-	@echo $(GOBUILDPATH)
-	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_APISERVER) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -v -o $(GOBUILDMAKEPATH)/dev/$(APISERVERBINARYNAME)/$(APISERVERBINARYNAME) # <-need improve
-	@echo "Done."
+# All are .PHONY for now because dependencyness is hard
+.PHONY: $(CLEAN_LIST) $(TEST_LIST) $(FMT_LIST) $(INSTALL_LIST) $(COMPILE_LIST) $(VET_LIST) $(GOLINT_LIST) $(BUILD_LIST)
 
-	@echo "compiling binary for tokenserver (golang image)..."
-	@echo $(GOBASEPATH)
-	@echo $(GOBUILDPATH)
-	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_TOKENSERVER) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -v -o $(GOBUILDMAKEPATH)/dev/$(TOKENSERVERBINARYNAME)/$(TOKENSERVERBINARYNAME) # <-need improve
-	@echo "Done."
+all: compile
+compile: $(COMPILE_LIST)
+clean_binary: $(CLEAN_LIST)
+install: $(INSTALL_LIST)
+test: $(TEST_LIST)
+fmt: $(FMT_LIST)
+vet: $(VET_LIST)
+golint: $(GOLINT_LIST)
 
-compile: compile_golangimage
-	
+$(COMPILE_LIST): %_compile: %_fmt %_vet %_golint
+	cd $(TOPLEVEL_PKG)/$*/; $(GOBUILD) .
+$(CLEAN_LIST): %_clean:
+	$(GOCLEAN) $(TOPLEVEL_PKG)/$* 
+$(INSTALL_LIST): %_install:
+	$(GOINSTALL) $(TOPLEVEL_PKG)/$*
+$(TEST_LIST): %_test:
+	$(GOTEST) $(TOPLEVEL_PKG)/$*
+$(FMT_LIST): %_fmt:
+	$(GOFMT) ./$*
+$(VET_LIST): %_vet:
+	$(GOVET) ./$*/...
+$(GOLINT_LIST): %_golint:
+	$(GOLINT) $*/...
+
+build: $(BUILD_LIST)
+rmimage: $(RMIMG_LIST)
+
+$(BUILD_LIST): %_build:
+	$(DOCKERBUILD) -f $(MAKEDEVPATH)/$*/Dockerfile . -t $*:dev
+$(RMIMG_LIST): %_rmi:
+	$(DOCKERRMIMAGE) $*:dev
+
 prepare:
 	@echo "preparing..."
 	@$(MAKEPATH)/$(PREPARECMD) $(PREPARECMD_PARA)
@@ -131,21 +124,3 @@ down:
 	@echo "stoping Board instance..."
 	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) down -v
 	@echo "Done."
-
-cleanbinary:
-	@echo "cleaning binary..."
-	@if [ -f $(APISERVERBINARYPATH)/$(APISERVERBINARYNAME) ] ; then rm $(APISERVERBINARYPATH)/$(APISERVERBINARYNAME) ; fi
-	@if [ -f $(TOKENSERVERBINARYPATH)/$(TOKENSERVERBINARYNAME) ] ; then rm $(TOKENSERVERBINARYPATH)/$(TOKENSERVERBINARYNAME) ; fi
-
-cleanimage:
-	@echo "cleaning images for Board..."
-
-.PHONY: cleanall
-cleanall: cleanbinary cleanimage 
-
-clean:
-	@echo "  make cleanall:		        remove binaries and Board images"
-	@echo "  make cleanbinary:		remove apiserver and tokenserver binary"
-	@echo "  make cleanimage:		remove Board images"
-
-all: start

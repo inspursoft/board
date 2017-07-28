@@ -16,7 +16,7 @@ export const LANG_EN_US = {
   "ERROR": {
     "UNKNOWN_ERROR": "Unknown error.",
     "INTERNAL_ERROR": "Unexpected internal error.",
-    "INVALID_USER": "Invalid user status, please sign-in to try again."
+    "INVALID_USER": "User's token has expired, please sign in again."
   },
   "ACCOUNT": {
     "SIGN_IN": "Sign In",

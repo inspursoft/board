@@ -16,7 +16,7 @@ export const LANG_ZH_CN = {
   "ERROR": {
     "UNKNOWN_ERROR": "未知错误。",
     "INTERNAL_ERROR": "系统内部错误。",
-    "INVALID_USER": "无效的用户状态，请登录后重试。"
+    "INVALID_USER": "当前用户令牌过期，请重新登录。"
   },
   "ACCOUNT": {
     "SIGN_IN": "登录",

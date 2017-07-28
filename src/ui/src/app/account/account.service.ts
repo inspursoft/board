@@ -19,7 +19,7 @@ export class AccountService {
         { user_name: principal, user_password: password }, 
         { headers: this.defaultHeaders })
       .toPromise()
-      .then(res=>res)
+      .then(res=>res.json())
       .catch(err=>Promise.reject(err));
   }
 

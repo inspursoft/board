@@ -50,9 +50,11 @@ export class MessageService {
         break;
       case 401:
         errMessage.type = MESSAGE_TYPE.INVALID_USER;
+        errMessage.message = 'ERROR.INVALID_USER';
         break;
       case 500:
         errMessage.type = MESSAGE_TYPE.INTERNAL_ERROR;
+        errMessage.message = 'ERROR.INTERNAL_ERROR';
         break;
       }
       if(errMessage.type === MESSAGE_TYPE.COMMON_ERROR) {

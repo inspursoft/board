@@ -24,7 +24,6 @@ _testmain.go
 *.test
 *.prof
 .DS_Store
-pkg
 bin
 src/apiserver/apiserver
 src/tokenserver/tokenserver
@@ -33,3 +32,5 @@ src/ui/.vscode/**
 src/ui/.idea/**
 src/ui/proxy.config.json*
 src/ui/dist
+src/collector/cmd/cmd
+.idea/
