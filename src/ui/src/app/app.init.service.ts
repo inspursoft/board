@@ -33,7 +33,7 @@ export class AppInitService {
         })
       .toPromise()
       .then(res=>{
-        this.currentUser = res.json()
+        this.currentUser = res.json();
         Promise.resolve(this.currentUser);
       })
       .catch(err=>Promise.reject(err));
