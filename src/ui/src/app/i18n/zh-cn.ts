@@ -47,7 +47,8 @@ export const LANG_ZH_CN = {
     "ERROR": "错误",
     "INCORRECT_USERNAME_OR_PASSWORD": "用户名或密码错误。",
     "FAILED_TO_SIGN_IN": "登录失败:",
-    "FAILED_TO_SIGN_UP": "注册失败:"
+    "FAILED_TO_SIGN_UP": "注册失败:",
+    "FAILED_TO_SIGN_OUT": "登出系统失败。"
   },
   "HEAD_NAV": {
     "INPUT_FOR_SEARCHING": "输入搜索内容",

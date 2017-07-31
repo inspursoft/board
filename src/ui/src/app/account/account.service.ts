@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Http, Headers } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 
+import { AppInitService } from '../app.init.service';
 import { Account } from './account';
 
 export const BASE_URL = '/api/v1';
@@ -10,7 +11,9 @@ export const BASE_URL = '/api/v1';
 export class AccountService {
   
   defaultHeaders: Headers = new Headers({contentType: 'application/json'});
-  constructor(private http: Http){}
+  constructor(
+    private http: Http, 
+    private appInitService: AppInitService){}
 
   signIn(principal: string, password: string): Promise<any> {
     return this.http
@@ -33,6 +36,21 @@ export class AccountService {
           user_comment: account.comment
         },
         { headers: this.defaultHeaders }
+      )
+      .toPromise()
+      .then(res=>res)
+      .catch(err=>Promise.reject(err));
+  }
+
+  signOut(): Promise<any> {
+    return this.http
+      .get(
+        BASE_URL + '/log-out',
+        {
+          params: {
+            'token': this.appInitService.token
+          }
+        }
       )
       .toPromise()
       .then(res=>res)

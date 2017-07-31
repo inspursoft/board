@@ -1,19 +1,23 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { TranslateService, LangChangeEvent } from '@ngx-translate/core';
 
+import { AppInitService } from '../../app.init.service';
+import { AccountService } from '../../account/account.service';
+import { MessageService } from '../message-service/message.service';
 
 @Component({
   selector: 'header-content',
   templateUrl: 'header.component.html',
   styleUrls: [ 'header.component.css' ]
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit {
 
   currentLang: string;
   @Input() isSignIn: boolean;
   @Input() hasSignedIn: boolean;
+  currentUser: {[key: string]: any};
 
   get brandLogoUrl(): string {
     return this.isSignIn ? '../../images/board-blue.jpg': '../../../images/board.png';
@@ -21,9 +25,16 @@ export class HeaderComponent {
 
   constructor(
     private router: Router,
-    private translateService: TranslateService) {
+    private translateService: TranslateService,
+    private appInitService: AppInitService,
+    private accountService: AccountService,
+    private messageService: MessageService) {
     let lang: string = this.translateService.getBrowserCultureLang();
     this._assertLanguage(lang);
+  }
+
+  ngOnInit(): void {
+    this.currentUser = this.appInitService.currentUser || {};
   }
 
   _assertLanguage(lang: string) {
@@ -49,6 +60,10 @@ export class HeaderComponent {
   }
 
   logOut() {
-    this.router.navigate(['/sign-in']);
+    this.accountService
+      .signOut()
+      .then(res=>this.router.navigate(['/sign-in']))
+      .catch(err=>this.messageService.dispatchError(err, 'ACCOUNT.FAILED_TO_SIGN_OUT'));
+    ;
   }
 }
