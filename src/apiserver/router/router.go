@@ -57,6 +57,12 @@ func init() {
 			beego.NSRouter("/projects/:projectId([0-9]+)/members/:userId([0-9]+)",
 				&controller.ProjectMemberController{},
 				"delete:DeleteProjectMemberAction"),
+			beego.NSRouter("/images",
+				&controller.ImageController{},
+				"get:GetImagesAction"),
+			beego.NSRouter("/images/:imagename(.*)",
+				&controller.ImageController{},
+				"get:GetImageDetailAction"),
 		),
 	)
 	beego.AddNamespace(ns)
