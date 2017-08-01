@@ -2,7 +2,7 @@ package router
 
 import (
 	"git/inspursoft/board/src/apiserver/controller"
-
+	"git/inspursoft/board/src/apiserver/controller/dashboard"
 	"github.com/astaxie/beego"
 )
 
@@ -63,6 +63,14 @@ func init() {
 			beego.NSRouter("/images/:imagename(.*)",
 				&controller.ImageController{},
 				"get:GetImageDetailAction"),
+			beego.NSNamespace("/dashboard", beego.NSRouter("/service",
+				&dashboard.DashboardServiceController{},
+				"get:GetService;post:GetService"),
+				beego.NSRouter("/service/list",
+					&dashboard.DashboardServiceController{},
+					"get:GetList"),
+
+			),
 		),
 	)
 	beego.AddNamespace(ns)
