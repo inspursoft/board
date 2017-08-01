@@ -14,7 +14,7 @@ export class ImageDetail {
   image_author: string = "";
   image_id: string = "";
   image_creationtime: Date;
-  image_size_number: number;
+  image_size_number: string;
   image_size_unit: string = "";
 
   constructor() {

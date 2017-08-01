@@ -5,8 +5,8 @@ import { DashboardService, ServiceListModel, LinesData, LineDataModel } from "ap
 import { TranslateService } from "@ngx-translate/core";
 import { Subscription } from "rxjs/Subscription";
 
-const MAX_COUNT_PER_PAGE: number = 300;
-const MAX_COUNT_PER_DRAG: number = 150;
+const MAX_COUNT_PER_PAGE: number = 200;
+const MAX_COUNT_PER_DRAG: number = 100;
 const REFRESH_SEED_SERVICE: number = 10;
 @Component({
   selector: 'dashboard',
@@ -89,6 +89,17 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       return 0;
     }
     return isMin ? valueArr[0][1] : valueArr[valueArr.length - 1][1]
+  }
+
+  private static haveLessMinTimeValue(timeBase, timeStepAsSecond, count: number, res: LinesData): boolean {
+    let curTime = timeBase - timeStepAsSecond * 90;
+    let result: boolean = false;
+    res[0].forEach((item: [Date, number]) => {
+      if (Math.round(item[0].getTime() / 1000) < curTime) {
+        result = true;
+      }
+    });
+    return result;
   }
 
   private static calculateZoom(source: LinesData, res: LinesData): {start: number, end: number} {
@@ -179,21 +190,29 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this._serviceInRefresh = true;
     this.service.getServiceData(query)
       .then(res => {
-        this.serviceData = DashboardComponent.concatLineData(this.serviceData, res, this._serviceDropInfo.isDropNext);
-        this.serviceCurPod = DashboardComponent.getValue(this.serviceData, 0, true);
-        this.serviceCurContainer = DashboardComponent.getValue(this.serviceData, 1, true);
-        if (this._serviceDropInfo.isInDrop) {
-          this.serviceOptions["dataZoom"][0]["start"] = DashboardComponent.calculateZoom(this.serviceData, res).start;
-          this.serviceOptions["dataZoom"][0]["end"] = DashboardComponent.calculateZoom(this.serviceData, res).end;
-        }
-        else {
-          this.serviceOptions["dataZoom"][0]["start"] = this._serviceOptionsBuffer.lastZoomStart;
-          this.serviceOptions["dataZoom"][0]["end"] = this._serviceOptionsBuffer.lastZoomEnd;
-        }
-        this.serviceNoData = false;
-        this.serviceAlready = true;
-        this._serviceInRefresh = false;
-        this._serviceIntervalSeed = REFRESH_SEED_SERVICE;
+        // if (this._serviceDropInfo.isInDrop && !this._serviceDropInfo.isDropNext &&
+        //   DashboardComponent.haveLessMinTimeValue(this._serviceQuery.timestamp_base,
+        //     this._serviceQuery.scale.valueOfSecond, this._serviceQuery.time_count, res)) {
+        //   this.resetServiceState();
+        //   this.refreshServiceData();
+        // } else {
+          if (this._serviceDropInfo.isInDrop) {
+            this.serviceOptions["dataZoom"][0]["start"] = DashboardComponent.calculateZoom(this.serviceData, res).start;
+            this.serviceOptions["dataZoom"][0]["end"] = DashboardComponent.calculateZoom(this.serviceData, res).end;
+          }
+          else {
+            this.serviceOptions["dataZoom"][0]["start"] = this._serviceOptionsBuffer.lastZoomStart;
+            this.serviceOptions["dataZoom"][0]["end"] = this._serviceOptionsBuffer.lastZoomEnd;
+          }
+          this.serviceData = DashboardComponent.concatLineData(this.serviceData, res, this._serviceDropInfo.isDropNext);
+          this.serviceCurPod = DashboardComponent.getValue(this.serviceData, 0, true);
+          this.serviceCurContainer = DashboardComponent.getValue(this.serviceData, 1, true);
+
+          this.serviceNoData = false;
+          this.serviceAlready = true;
+          this._serviceInRefresh = false;
+          this._serviceIntervalSeed = REFRESH_SEED_SERVICE;
+        // }
       })
       .catch((reason: string) => {
         this.serviceData = [[[new Date(), 1]], [[new Date(), 1]]];

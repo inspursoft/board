@@ -155,7 +155,7 @@ export class DashboardService {
       .then((res: Response) => {
         let resJson: object = res.json();
         let logs: ServiceDataModel[] = resJson["service_statuslogs"];
-        let r: LinesData = [[[new Date(), 1]], [[new Date(), 1]]];
+        let r: LinesData = [[[new Date(), 0]], [[new Date(), 0]]];
         if (logs && logs.length > 0) {
           r[0] = r[0].slice(0,0);
           r[1] = r[1].slice(0,0);

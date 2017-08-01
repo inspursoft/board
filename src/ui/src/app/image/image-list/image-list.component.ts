@@ -1,11 +1,12 @@
 import { OnInit, Component } from '@angular/core';
 import { Image } from "../image";
 import { ImageService } from "../image-service/image-service"
+import { MessageService } from "../../shared/message-service/message.service";
 
 @Component({
   selector: 'image-list',
   templateUrl: './image-list.component.html',
-  styleUrls:["./image-list.component.css"]
+  styleUrls: ["./image-list.component.css"]
 })
 export class ImageListComponent implements OnInit {
   curPage: number = 1;
@@ -15,13 +16,24 @@ export class ImageListComponent implements OnInit {
   imageList: Image[] = Array<Image>();
   imageCountPerPage: number = 10;
 
-  constructor(private imageService: ImageService) {
+  constructor(private imageService: ImageService,
+              private messageService: MessageService) {
   }
 
   ngOnInit() {
     this.imageService.getImages("", 0, 0)
       .then(res => this.imageList = res)
-      .catch((reason: string) => this.imageListErrMsg = reason);
+      .catch(err => {
+        if (err) {
+          switch (err.status) {
+            case 400:
+              this.imageListErrMsg = 'IMAGE.BAD_REQUEST';
+              break;
+            default:
+              this.messageService.dispatchError(err, '');
+          }
+        }
+      });
   }
 
   showImageDetail(image: Image) {

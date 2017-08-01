@@ -30,10 +30,18 @@ export class UserList implements OnInit, OnDestroy {
   refreshData(username?: string,
               user_list_page: number = 0,
               user_list_page_size: number = 0): void {
-    this.userService.getUserList()
+    this.userService.getUserList(username, user_list_page, user_list_page_size)
       .then(res => this.userListData = res)
-      .catch((reason: Response) => {
-        this.userListErrMsg = `${reason.status}:${reason.statusText}`;
+      .catch(err => {
+        if (err) {
+          switch (err.status) {
+            case 400:
+              this.userListErrMsg = 'USER_CENTER.INVALID_USER_ID';
+              break;
+            default:
+              this.messageService.dispatchError(err, '');
+          }
+        }
       });
   }
 
@@ -50,7 +58,16 @@ export class UserList implements OnInit, OnDestroy {
         this.curUser = user;
         this.showNewUser = true;
       })
-      .catch(() => {
+      .catch((err) => {
+        if (err) {
+          switch (err.status) {
+            case 400:
+              this.userListErrMsg = 'USER_CENTER.INVALID_USER_ID';
+              break;
+            default:
+              this.messageService.dispatchError(err, '');
+          }
+        }
       });
   }
 
@@ -77,7 +94,16 @@ export class UserList implements OnInit, OnDestroy {
           m.message = "USER_CENTER.DELETE_USER_SUCCESS";
           this.messageService.inlineAlertMessage(m);
         })
-        .catch(() => {
+        .catch((err) => {
+          if (err) {
+            switch (err.status) {
+              case 400:
+                this.userListErrMsg = 'USER_CENTER.INVALID_USER_ID';
+                break;
+              default:
+                this.messageService.dispatchError(err, '');
+            }
+          }
         });
     });
     this.refreshData();

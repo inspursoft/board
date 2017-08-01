@@ -4,7 +4,7 @@
   </div>
   <clr-datagrid [clrDgLoading]="false" style="min-width: 100%">
     <clr-dg-placeholder>{{imageListErrMsg | translate}}</clr-dg-placeholder>
-    <clr-dg-column>{{ 'IMAGE.COL_CREATION_TIME' | translate }}</clr-dg-column>
+    <clr-dg-column>{{ 'IMAGE.COL_IMAGE_NAME' | translate }}</clr-dg-column>
     <clr-dg-column>{{ 'IMAGE.COL_NODE' | translate }}</clr-dg-column>
     <clr-dg-column>{{ 'IMAGE.COL_DETAIL_INFO' | translate }}</clr-dg-column>
     <clr-dg-row *ngFor="let image of imageList; let i = index">
@@ -15,8 +15,7 @@
       </clr-dg-cell>
     </clr-dg-row>
     <clr-dg-footer>
-      {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
-      of {{pagination.totalItems}} images
+      {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} of {{pagination.totalItems}} items
       <clr-dg-pagination #pagination
                          (clrDgPageChange)="pageChange(pageIndex)"
                          [clrDgPage]="curPage"

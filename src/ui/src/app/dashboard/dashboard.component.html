@@ -57,7 +57,7 @@
     <div class="card-header">{{'DASHBOARD.SERVICE' | translate }}</div>
     <div class="card-block">
       <div class="card-block-top-container">
-        <clr-dropdown #serviceDropdown >
+        <clr-dropdown #serviceDropdown>
           <button class="btn btn-outline-primary dropdown-button" clrDropdownToggle>
             {{serviceDropdownText | translate}}
             <span *ngIf="!serviceDropdownText || serviceDropdownText == ''" class="spinner spinner-sm"></span>
@@ -65,7 +65,7 @@
           </button>
           <clr-dropdown-menu [hidden]="serviceList.length == 0" class="card-block-dropdown">
             <button *ngFor="let service of serviceList;"
-              [ngClass]="{'active':serviceDropdownText == service.service_name}"
+                    [ngClass]="{'active':serviceDropdownText == service.service_name}"
                     class="dropdown-item"
                     (click)="serviceDropDownChange(service);serviceDropdown.toggleDropdown()">
               {{service.service_name}}

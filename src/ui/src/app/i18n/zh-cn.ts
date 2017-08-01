@@ -78,10 +78,10 @@ export const LANG_ZH_CN = {
     "NODE": "节点",
     "USAGE": "已用",
     "TOTAL": "总共",
-    "STORAGE": "存储", 
-    "GET_ERR_409":"409:暂无数据",
-    "GET_ERR_404":"404:链接错误.",
-    "GET_ERR_504": "504:链接超时."
+    "STORAGE": "存储",
+    "GET_ERR_409":"暂无数据",
+    "GET_ERR_404":"连接错误.",
+    "GET_ERR_504": "链接超时."
   },
   "PROJECT": {
     "CREATE_PROJECT": "创建项目",
@@ -120,6 +120,7 @@ export const LANG_ZH_CN = {
     "LIST_COL_EMAIL":"邮箱",
     "LIST_COL_CREATE_DATE":"创建时间",
     "LIST_COL_SYSTEM_ADMIN":"系统管理员",
+    "LIST_COL_PROJECT_MANAGER":"项目管理员",
     "LIST_COL_DELETE":"删除",
     "LIST_COL_OPERATION":"操作",
     "DELETE_USER_SUCCESS":"删除用户成功!",
@@ -150,23 +151,9 @@ export const LANG_ZH_CN = {
     "INCORRECT_USERNAME_OR_PASSWORD": "用户名或密码错误。",
     "ADD": "添加",
     "CANCEL":"取消",
-    "ERR_500":"服务器内部错误.",
-    "ADD_ERR_400":"400:未满足新建的约束条件.",
-    "ADD_ERR_403":"403:您的权限不足,只能管理员使用.",
-    "ADD_ERR_404":"404:不能链接到服务器.",
-    "ADD_ERR_409":"409:用户名或邮箱重复.",
-    "GET_ERR_400":"400:无效的用户ID.",
-    "GET_ERR_401":"401:请先登录系统.",
-    "GET_ERR_403":"403:您的权限不足,只能管理员使用.",
-    "GET_ERR_404":"404:用户ID不存在.",
-    "DEL_ERR_400":"400:无效的用户ID.",
-    "DEL_ERR_401":"401:请先登录系统.",
-    "DEL_ERR_403":"403:您的权限不足,只能管理员使用.",
-    "DEL_ERR_404":"404:用户ID不存在.",
-    "UPT_ERR_400":"400:无效的用户ID.",
-    "UPT_ERR_401":"401:请先登录系统.",
-    "UPT_ERR_403":"403:您的权限不足,只能管理员使用.",
-    "UPT_ERR_404":"404:用户ID不存在."
+    "INVALID_USER_ID.":"无效的用户ID.",
+    "UNSATISFIED_WITH_CONSTRAINTS":"未满足新建的约束条件.",
+    "USERNAME_OR_EMAIL_EXIST":"用户名或邮箱重复."
   },
   "IMAGE":{
     "COL_IMAGE_NAME":"镜像名",
@@ -178,7 +165,7 @@ export const LANG_ZH_CN = {
     "COL_SIZE":"大小",
     "COL_OPERATION":"操作",
     "DETAIL_TITLE":"镜像",
-    "GET_ERR_400":"400:错误的请求",
-    "GET_ERR_404":"404:镜像序列号不存在."
+    "BAD_REQUEST":"错误的请求",
+    "DELETE_IMAGE_ITEM":"删除镜像详情"
   }
 };

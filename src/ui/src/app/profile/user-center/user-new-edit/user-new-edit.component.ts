@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, AfterViewChecked } from "@angular/core";
 import { User } from 'app/profile/user-center/user';
 import { UserService } from "../user-service/user-service"
+import { MessageService } from "../../../shared/message-service/message.service";
 
 export enum editModel { emNew, emEdit }
 
@@ -14,7 +15,8 @@ export class NewUser implements AfterViewChecked {
   isAlertOpen: boolean = false;
   afterCommitErr: string = "";
 
-  constructor(private userService: UserService) {
+  constructor(private userService: UserService,
+              private messageService: MessageService) {
   };
 
   ngAfterViewChecked() {
@@ -25,7 +27,6 @@ export class NewUser implements AfterViewChecked {
   @Input() CurEditModel: editModel;
 
   @Input()
-
   get isOpen() {
     return this._isOpen;
   }
@@ -60,9 +61,17 @@ export class NewUser implements AfterViewChecked {
         this.SubmitSuccessEvent.emit(true);
         this.isOpen = false
       })
-      .catch((reason: string) => {
-        this.afterCommitErr = reason;
-        this.isAlertOpen = true;
+      .catch(err => {
+        if (err) {
+          switch (err.status) {
+            case 400:
+              this.isAlertOpen = true;
+              this.afterCommitErr = 'USER_CENTER.INVALID_USER_ID';
+              break;
+            default:
+              this.messageService.dispatchError(err, '');
+          }
+        }
       });
   }
 
@@ -72,10 +81,18 @@ export class NewUser implements AfterViewChecked {
         this.SubmitSuccessEvent.emit(true);
         this.isOpen = false;
       })
-      .catch((reason: string) => {
-        this.afterCommitErr = reason;
-        this.isAlertOpen = true;
-      })
+      .catch(err => {
+        if (err) {
+          switch (err.status) {
+            case 400:
+              this.isAlertOpen = true;
+              this.afterCommitErr = 'USER_CENTER.INVALID_USER_ID';
+              break;
+            default:
+              this.messageService.dispatchError(err, '');
+          }
+        }
+      });
   }
 
 }

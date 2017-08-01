@@ -7,10 +7,13 @@ import { Pagination } from "app/profile/user-center/pagination/pagination.compon
 import { UserService } from "app/profile/user-center/user-service/user-service";
 import { NewUser } from "app/profile/user-center/user-new-edit/user-new-edit.component";
 import { MessageService } from "app/shared/message-service/message.service";
+import { AppInitService } from "../app.init.service";
+
 
 @NgModule({
   imports: [SharedModule],
   providers: [
+    AppInitService,
     UserService,
     MessageService],
   declarations: [
