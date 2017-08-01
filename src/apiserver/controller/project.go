@@ -68,6 +68,19 @@ func (p *ProjectController) CreateProjectAction() {
 	}
 }
 
+func (p *ProjectController) ProjectExists() {
+	projectName := p.GetString("project_name")
+	query := model.Project{Name: projectName}
+	project, err := service.GetProject(query, "name")
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if project != nil {
+		p.CustomAbort(http.StatusConflict, "project name already exists")
+	}
+}
+
 func (p *ProjectController) GetProjectsAction() {
 	projectName := p.GetString("project_name")
 	strPublic := p.GetString("project_public")

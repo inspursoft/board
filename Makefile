@@ -37,6 +37,7 @@ DOCKERTAG=$(DOCKERCMD) tag
 
 DOCKERCOMPOSEFILEPATH=$(MAKEDEVPATH)
 DOCKERCOMPOSEFILENAME=docker-compose.yml
+DOCKERCOMPOSEUIFILENAME=docker-compose.uibuilder.yml
 
 # Go parameters
 GOCMD=go
@@ -57,9 +58,7 @@ PREPARECMD_PARAMETERS=--conf $(CONFIGPATH)/$(CONFIGFILE)
 # Package lists
 TOPLEVEL_PKG := .
 INT_LIST := apiserver tokenserver collector/cmd
-#IMG_LIST := apiserver tokenserver collector db log
-IMG_LIST := apiserver tokenserver db log #collector
- 
+IMG_LIST := apiserver tokenserver db log collector
 
 # List building
 COMPILEALL_LIST = $(foreach int, $(INT_LIST), $(SRCPATH)/$(int))
@@ -79,14 +78,17 @@ RMIMG_LIST = $(foreach int, $(BUILDALL_LIST), $(int)_rmi)
 # All are .PHONY for now because dependencyness is hard
 .PHONY: $(CLEAN_LIST) $(TEST_LIST) $(FMT_LIST) $(INSTALL_LIST) $(COMPILE_LIST) $(VET_LIST) $(GOLINT_LIST) $(BUILD_LIST)
 
-all: compile
-compile: $(COMPILE_LIST)
+all: compile 
+compile: $(COMPILE_LIST) compile_ui
 clean_binary: $(CLEAN_LIST)
 install: $(INSTALL_LIST)
 test: $(TEST_LIST)
 fmt: $(FMT_LIST)
 vet: $(VET_LIST)
 golint: $(GOLINT_LIST)
+
+compile_ui:
+	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEUIFILENAME) up
 
 $(COMPILE_LIST): %_compile: %_fmt %_vet %_golint
 	cd $(TOPLEVEL_PKG)/$*/; $(GOBUILD) .
@@ -115,7 +117,7 @@ prepare:
 	@echo "preparing..."
 	@$(MAKEPATH)/$(PREPARECMD) $(PREPARECMD_PARA)
 
-start:
+start: compile_ui
 	@echo "loading Board images..."
 	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) up -d
 	@echo "Start complete. You can visit Board now."

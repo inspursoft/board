@@ -13,6 +13,8 @@ export class AppInitService {
 
   _tokenString: string;
 
+  currentUser: {[key: string]: any};
+
   set token(t: string) {
     this._tokenString = t;
   }
@@ -21,7 +23,7 @@ export class AppInitService {
     return this._tokenString;
   }
 
-  currentUser(): Promise<any> {
+  getCurrentUser(): Promise<any> {
     return this.http
       .get('/api/v1/users/current', 
         { headers: this.defaultHeaders, 
@@ -30,7 +32,10 @@ export class AppInitService {
           }
         })
       .toPromise()
-      .then(res=>res.json())
+      .then(res=>{
+        this.currentUser = res.json();
+        Promise.resolve(this.currentUser);
+      })
       .catch(err=>Promise.reject(err));
   }
   

@@ -1,56 +1,28 @@
 import { Directive, Input } from '@angular/core';
-import { ValidatorFn, AbstractControl, Validator, NG_VALIDATORS } from '@angular/forms';
+import { ValidatorFn, AbstractControl, Validator, NG_VALIDATORS, Validators } from '@angular/forms';
 
-function validatorEmailFunction(): ValidatorFn {
-  return (control: AbstractControl): {[key: string]: any} => {
-    const emailPattern = /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    if (control.value) {
-      const regExp = new RegExp(emailPattern);
-      if (!regExp.test(control.value)) {
-        return {"emailFormat": true};
-      }
-    }
-    return null;
-  }
-}
-
-function validatorPasswordFunction(): ValidatorFn {
-  return (control: AbstractControl): {[key: string]: any} => {
-    const passwordPattern = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,20}$/;
-    if (control.value) {
-      const regExp = new RegExp(passwordPattern);
-      if (!regExp.test(control.value)) {
-        return {"passwordFormat": true};
-      }
-    }
-    return null;
-  }
-}
+const emailPattern = /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+const passwordPattern = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,20}$/;
 
 @Directive({
-  selector: 'input[check-item-pattern]',
+  selector: '[checkItemPattern]',
   providers: [{
     provide: NG_VALIDATORS,
     useExisting: CheckItemPatternDirective,
     multi: true
   }]
 })
-
 export class CheckItemPatternDirective implements Validator {
 
-  @Input('check-item-pattern') checkItemType: string = "email";
-
-  getValidatorFn(): ValidatorFn {
-    if (this.checkItemType == "email") {
-      return validatorEmailFunction();
-    }
-    else if (this.checkItemType == "password") {
-      return validatorPasswordFunction();
-    }
-  }
+  @Input() checkItemPattern;
 
   validate(control: AbstractControl): {[key: string]: any} {
-    let validatorFn: ValidatorFn = this.getValidatorFn();
-    return validatorFn(control);
+    const value = control.value;
+    switch(this.checkItemPattern) {
+    case "email":
+      return emailPattern.test(value) ? Validators.nullValidator : { 'checkItemPattern': value };
+    case "password":
+      return passwordPattern.test(value) ? Validators.nullValidator : { 'checkItemPattern': value };
+    }
   }
 }
