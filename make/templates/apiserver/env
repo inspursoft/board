@@ -1,0 +1,3 @@
+REGISTRY_HOST=$registry_host
+REGISTRY_PORT=$registry_port
+

@@ -77,6 +77,8 @@ db_password = rcp.get("configuration", "db_password")
 token_cache_expire_seconds = rcp.get("configuration", "token_cache_expire_seconds")
 token_expire_seconds = rcp.get("configuration", "token_expire_seconds")
 token_secret_key = rcp.get("configuration", "token_secret_key")
+registry_host = rcp.get("configuration", "registry_host")
+registry_port = rcp.get("configuration", "registry_port")
 
 ########
 
@@ -116,7 +118,9 @@ render(os.path.join(templates_dir, "apiserver", "app.conf"),
         db_password=db_password)
 
 render(os.path.join(templates_dir, "apiserver", "env"),
-        apiserver_env)
+        apiserver_env,
+        registry_host=registry_host,
+        registry_port=registry_port)
 
 render(os.path.join(templates_dir, "tokenserver", "app.conf"),
         tokenserver_conf,
