@@ -74,7 +74,6 @@ mysql_ip = rcp.get("configuration", "mysql_ip")
 mysql_port = rcp.get("configuration", "mysql_port")
 board_admin_password = rcp.get("configuration", "board_admin_password")
 db_password = rcp.get("configuration", "db_password")
-token_server_url = rcp.get("configuration", "token_server_url")
 token_cache_expire_seconds = rcp.get("configuration", "token_cache_expire_seconds")
 token_expire_seconds = rcp.get("configuration", "token_expire_seconds")
 token_secret_key = rcp.get("configuration", "token_secret_key")
@@ -113,7 +112,6 @@ if not os.path.exists(nginx_config_dir):
 #Render Configure File
 render(os.path.join(templates_dir, "apiserver", "app.conf"),
         apiserver_conf,
-        token_server_url=token_server_url,
         token_cache_expire_seconds=token_cache_expire_seconds,
         db_password=db_password)
 
