@@ -9,18 +9,23 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+        "os"
 )
 
 type ImageController struct {
 	baseController
 }
 
-var RegistryIp string = "http://10.110.13.58:5000" // TODO: get from cfg env
+var RegistryIp string
 var RegistryStatus bool
 var commentTemp = "Inspur image" // TODO: get from mysql in the next release
 var sizeunitTemp = "B"
 
 func init() {
+        var registryip = os.Getenv("REGISTRY_HOST")
+        var registryport = os.Getenv("REGISTRY_PORT")
+        RegistryIp = "http://" + registryip + ":" + registryport
+
 	_, err := http.Get(RegistryIp + "/v2/")
 	if err != nil {
 		RegistryStatus = false
@@ -175,7 +180,7 @@ func (p *ImageController) GetImageDetailAction() {
 
 }
 
-/*  Checking the user priviledge
+/*  TODO: Checking the user priviledge token
 func (p *ProjectController) Prepare() {
 	user, err := p.getCurrentUser()
 	if err != nil {
