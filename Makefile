@@ -109,15 +109,15 @@ build: $(BUILD_LIST)
 rmimage: $(RMIMG_LIST)
 
 $(BUILD_LIST): %_build:
-	$(DOCKERBUILD) -f $(MAKEDEVPATH)/$*/Dockerfile . -t $*:dev
+	$(DOCKERBUILD) -f $(MAKEDEVPATH)/$*/Dockerfile . -t dev_$(subst container/,,$*):latest
 $(RMIMG_LIST): %_rmi:
-	$(DOCKERRMIMAGE) $*:dev
+	$(DOCKERRMIMAGE) dev_$(subst container/,,$*):latest
 
 prepare:
 	@echo "preparing..."
 	@$(MAKEPATH)/$(PREPARECMD) $(PREPARECMD_PARA)
 
-start: compile_ui
+start:
 	@echo "loading Board images..."
 	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) up -d
 	@echo "Start complete. You can visit Board now."
