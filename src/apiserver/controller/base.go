@@ -29,6 +29,7 @@ import (
 
 var conf config.Configer
 var tokenServerURL *url.URL
+var tokenCacheExpireSeconds int
 var memoryCache cache.Cache
 
 type baseController struct {
@@ -132,7 +133,7 @@ func ReassignToken(tokenString string) (map[string]interface{}, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to re-assign token: %+v", err)
 	}
-	memoryCache.Put(tokenString, newToken.TokenString, time.Second*1800)
+	memoryCache.Put(tokenString, newToken.TokenString, time.Second*time.Duration(tokenCacheExpireSeconds))
 	return payload, nil
 }
 
@@ -178,7 +179,12 @@ func init() {
 	if err != nil {
 		logs.Error("Failed to parse token server URL: %+v\n", err)
 	}
-	logs.Info("Set tokenservice URL as %s", tokenServerURL.String())
+	tokenCacheExpireSeconds, err = conf.Int("tokenCacheExpireSeconds")
+	if err != nil {
+		logs.Error("Failed to parse token expire seconds: %+v\n", err)
+	}
+
+	logs.Info("Set token server URL as %s and will expiration time after %d second(s) in cache", tokenServerURL.String(), tokenCacheExpireSeconds)
 
 	memoryCache, err = cache.NewCache("memory", `{"interval": 360}`)
 	if err != nil {
