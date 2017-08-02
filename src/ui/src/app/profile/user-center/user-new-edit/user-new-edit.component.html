@@ -19,6 +19,7 @@
                  [class.invalid]="usernameInput.invalid && (usernameInput.dirty || usernameInput.touched)">
             <input type="text"
                    id="txtUsername"
+                   checkItemExisting="username"
                    placeholder="{{ 'USER_CENTER.INPUT_USERNAME' | translate }}"
                    name="username"
                    [(ngModel)]="userModel.user_name"
@@ -29,7 +30,12 @@
                   class="tooltip-content"
                   *ngIf="usernameInput.errors && usernameInput.errors.required">
                 {{ 'USER_CENTER.USERNAME_IS_REQUIRED' | translate }}
-                </span>
+            </span>
+            <span style="display: block;z-index: 10"
+                  class="tooltip-content"
+                  *ngIf="usernameInput.errors && usernameInput.errors.checkItemExisting">
+                {{ 'USER_CENTER.USERNAME_ALREADY_EXISTS' | translate }}
+            </span>
           </label>
         </div>
         <div class="form-group">
@@ -44,15 +50,20 @@
                    name="email"
                    [(ngModel)]="userModel.user_email"
                    #emailInput="ngModel"
+                   checkItemExisting="email"
                    checkItemPattern="email">
             <span class="tooltip-content"
                   *ngIf="emailInput.errors && emailInput.errors.required">
                       {{ 'USER_CENTER.EMAIL_IS_REQUIRED' | translate }}
-                </span>
+            </span>
             <span class="tooltip-content"
                   *ngIf="emailInput.errors && emailInput.errors.checkItemPattern">
                      {{ 'USER_CENTER.EMAIL_IS_ILLEGAL' | translate }}
-                </span>
+            </span>
+            <span class="tooltip-content"
+                  *ngIf="emailInput.errors && emailInput.errors.checkItemExisting">
+                     {{ 'USER_CENTER.EMAIL_ALREADY_EXISTS' | translate }}
+            </span>
           </label>
         </div>
         <div *ngIf="CurEditModel == 0" class="form-group">
@@ -68,7 +79,8 @@
                    #passwordInput="ngModel"
                    required
                    checkItemPattern="password"
-                   validateEqual="confirmPassword" reverse="true">
+                   validateEqual="confirmPassword"
+                   reverse="true">
             <span class="tooltip-content"
                   *ngIf="passwordInput.errors && passwordInput.errors.required">
                       {{ 'USER_CENTER.PASSWORD_IS_REQUIRED' | translate }}

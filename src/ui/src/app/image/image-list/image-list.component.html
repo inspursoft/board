@@ -2,12 +2,13 @@
   <div style="height: 1px">
     <image-detail *ngIf="isShowDetail" [curImage]="curImage" [(isOpen)]="isShowDetail"></image-detail>
   </div>
-  <clr-datagrid [clrDgLoading]="false" style="min-width: 100%">
+  <clr-datagrid [clrDgLoading]="imageList.length == 0 && imageListErrMsg == ''" style="min-width: 100%">
     <clr-dg-placeholder>{{imageListErrMsg | translate}}</clr-dg-placeholder>
     <clr-dg-column>{{ 'IMAGE.COL_IMAGE_NAME' | translate }}</clr-dg-column>
-    <clr-dg-column>{{ 'IMAGE.COL_NODE' | translate }}</clr-dg-column>
+    <clr-dg-column>{{ 'IMAGE.COL_COMMENT' | translate }}</clr-dg-column>
     <clr-dg-column>{{ 'IMAGE.COL_DETAIL_INFO' | translate }}</clr-dg-column>
-    <clr-dg-row *ngFor="let image of imageList; let i = index">
+    <clr-dg-row *ngFor="let image of imageList; let i = index"
+                [hidden]="!(i >= (curPage - 1) * imageCountPerPage && i < curPage * imageCountPerPage)">
       <clr-dg-cell>{{image.image_name}}</clr-dg-cell>
       <clr-dg-cell>{{image.image_comment}}</clr-dg-cell>
       <clr-dg-cell>
@@ -17,7 +18,7 @@
     <clr-dg-footer>
       {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} of {{pagination.totalItems}} items
       <clr-dg-pagination #pagination
-                         (clrDgPageChange)="pageChange(pageIndex)"
+                         (clrDgPageChange)="pageChange($event)"
                          [clrDgPage]="curPage"
                          [clrDgTotalItems]="imageList.length"
                          [clrDgPageSize]="imageCountPerPage">

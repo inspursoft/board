@@ -1,11 +1,13 @@
-import { Injectable } from "@angular/core"
-import { Http, RequestOptions, Headers } from "@angular/http"
-import { Image, ImageDetail } from "../image"
-import "rxjs/operator/toPromise"
+import { Injectable } from "@angular/core";
+import { Http, RequestOptions, Headers } from "@angular/http";
+import { Image, ImageDetail } from "../image";
+import { AppInitService } from "../../app.init.service";
+import "rxjs/operator/toPromise";
 
 @Injectable()
 export class ImageService {
-  constructor(private http: Http) {
+  constructor(private http: Http,
+              private appInitService: AppInitService) {
   }
 
   readonly defaultHeaders: Headers = new Headers({
@@ -19,6 +21,7 @@ export class ImageService {
     params["image_list_page_size"] = image_list_page_size.toString();
     let options = new RequestOptions({
       headers: this.defaultHeaders,
+      params: {'token': this.appInitService.token},
       search: params
     });
     return this.http.get("/api/v1/images", options).toPromise()
@@ -28,7 +31,8 @@ export class ImageService {
 
   getImageDetailList(image_name: string): Promise<ImageDetail[]> {
     let options = new RequestOptions({
-      headers: this.defaultHeaders
+      headers: this.defaultHeaders,
+      params: {'token': this.appInitService.token}
     });
     return this.http.get(`/api/v1/images/${image_name}`, options)
       .timeout(3000)

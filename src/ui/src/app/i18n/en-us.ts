@@ -82,9 +82,8 @@ export const LANG_EN_US = {
     "USAGE": "Usage",
     "TOTAL": "Total",
     "STORAGE": "Storage",
-    "GET_ERR_409":"No Data",
-    "GET_ERR_404": "Connect error.",
-    "GET_ERR_504": "Gateway Timeout."
+    "NO_DATA_409":"No Data",
+    "GATEWAY_TIMEOUT_504": "Gateway Timeout."
   },
   "PROJECT": {
     "CREATE_PROJECT": "Create Project",
@@ -139,6 +138,7 @@ export const LANG_EN_US = {
     "INPUT_EMAIL": "Input email",
     "EMAIL_IS_REQUIRED": "Email is required.",
     "EMAIL_IS_ILLEGAL": "Email is illegal.",
+    "EMAIL_ALREADY_EXISTS": "EMail already exists.",
     "PASSWORD": "Password",
     "PASSWORD_PLACEHOLDER": "Password",
     "PASSWORD_IS_REQUIRED": "Password is required.",
@@ -160,7 +160,7 @@ export const LANG_EN_US = {
   },
   "IMAGE":{
     "COL_IMAGE_NAME":"Image Name",
-    "COL_NODE":"Comment",
+    "COL_COMMENT":"Comment",
     "COL_DETAIL_INFO":"Image Detail",
     "COL_TAG":"Tag",
     "COL_AUTHOR":"Author",
@@ -169,6 +169,7 @@ export const LANG_EN_US = {
     "COL_OPERATION":"Operation",
     "DETAIL_TITLE":"Image",
     "BAD_REQUEST":"Bad request.",
-    "DELETE_IMAGE_ITEM":"Delete image detail."
+    "DELETE_IMAGE_ITEM":"Delete image detail.",
+    "GATEWAY_TIMEOUT":"Gateway timeout."
   }
 };

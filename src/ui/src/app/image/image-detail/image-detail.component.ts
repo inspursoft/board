@@ -15,8 +15,8 @@ export class ImageDetailComponent implements OnInit {
   @Input() curImage: Image;
   showDeleteAlert:boolean = false;
   curPage: number = 1;
-  imageDetailPageSize: number = 10;
-  imageDetailErrMsg: string;
+  imageDetailPageSize: number = 1;
+  imageDetailErrMsg: string = "";
   imageDetailList: ImageDetail[] = Array<ImageDetail>();
 
   @Input()
@@ -60,6 +60,6 @@ export class ImageDetailComponent implements OnInit {
   }
 
   pageChange(pageIndex: number) {
-
+    this.curPage = pageIndex;
   }
 }

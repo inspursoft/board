@@ -14,7 +14,7 @@ export class ImageListComponent implements OnInit {
   isShowDetail: boolean = false;
   imageListErrMsg: string = "";
   imageList: Image[] = Array<Image>();
-  imageCountPerPage: number = 10;
+  imageCountPerPage: number = 2;
 
   constructor(private imageService: ImageService,
               private messageService: MessageService) {
@@ -29,6 +29,9 @@ export class ImageListComponent implements OnInit {
             case 400:
               this.imageListErrMsg = 'IMAGE.BAD_REQUEST';
               break;
+            case 504:
+              this.imageListErrMsg = 'IMAGE.GATEWAY_TIMEOUT';
+              break;
             default:
               this.messageService.dispatchError(err, '');
           }
@@ -42,8 +45,7 @@ export class ImageListComponent implements OnInit {
     this.isShowDetail = true;
   }
 
-
-  pageChange(pageIndex: number) {
-
+  pageChange(pageIndex) {
+    this.curPage = pageIndex;
   }
 }

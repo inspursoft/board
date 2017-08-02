@@ -82,9 +82,8 @@ export const LANG_ZH_CN = {
     "USAGE": "已用",
     "TOTAL": "总共",
     "STORAGE": "存储",
-    "GET_ERR_409":"暂无数据",
-    "GET_ERR_404":"连接错误.",
-    "GET_ERR_504": "链接超时."
+    "NO_DATA_409":"暂无数据",
+    "GATEWAY_TIMEOUT_504": "连接超时."
   },
   "PROJECT": {
     "CREATE_PROJECT": "创建项目",
@@ -139,6 +138,7 @@ export const LANG_ZH_CN = {
     "INPUT_EMAIL": "输入邮箱",
     "EMAIL_IS_REQUIRED": "邮箱为必填项。",
     "EMAIL_IS_ILLEGAL": "邮箱格式非法。",
+    "EMAIL_ALREADY_EXISTS": "邮箱已存在。",
     "PASSWORD_PLACEHOLDER": "密码",
     "PASSWORD": "密码",
     "PASSWORD_IS_REQUIRED": "密码为必填项。",
@@ -160,7 +160,7 @@ export const LANG_ZH_CN = {
   },
   "IMAGE":{
     "COL_IMAGE_NAME":"镜像名",
-    "COL_NODE":"注释",
+    "COL_COMMENT":"备注",
     "COL_DETAIL_INFO":"详细信息",
     "COL_TAG":"标签",
     "COL_AUTHOR":"创建者",
@@ -169,6 +169,7 @@ export const LANG_ZH_CN = {
     "COL_OPERATION":"操作",
     "DETAIL_TITLE":"镜像",
     "BAD_REQUEST":"错误的请求",
-    "DELETE_IMAGE_ITEM":"删除镜像详情"
+    "DELETE_IMAGE_ITEM":"删除镜像详情",
+    "GATEWAY_TIMEOUT":"请求超时"
   }
 };

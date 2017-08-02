@@ -1,8 +1,8 @@
-.trash {
+.icon-pointer {
   cursor: pointer;
 }
 
-.trash:hover {
+.icon-pointer:hover {
   color: blue;
 }
 

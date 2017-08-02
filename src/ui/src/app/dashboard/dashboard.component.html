@@ -60,7 +60,7 @@
         <clr-dropdown #serviceDropdown>
           <button class="btn btn-outline-primary dropdown-button" clrDropdownToggle>
             {{serviceDropdownText | translate}}
-            <span *ngIf="!serviceDropdownText || serviceDropdownText == ''" class="spinner spinner-sm"></span>
+            <span *ngIf="serviceDropdownText == ''" class="spinner spinner-sm"></span>
             <clr-icon *ngIf="serviceList && serviceList.length > 0" shape="caret down"></clr-icon>
           </button>
           <clr-dropdown-menu [hidden]="serviceList.length == 0" class="card-block-dropdown">
@@ -89,10 +89,13 @@
           <div *ngIf="serviceNoData" class="no-data-mask">
             <span>{{ serviceNoDataErrMsg | translate }}</span>
           </div>
+          <div *ngIf="!serviceAlready" class="no-already">
+            <span class="spinner spinner-lg"></span>
+          </div>
           <div echarts
-               [loading]="!serviceAlready"
+               *ngIf="!serviceNoData && serviceAlready"
                [options]="serviceOptions"
-               [dataset]="serviceData[0] && serviceData[0].length > 0 ? serviceData : null"
+               [dataset]="serviceData"
                (chartDataZoom)="serviceChartDataZoom($event)"
                style="height: 300px">
           </div>

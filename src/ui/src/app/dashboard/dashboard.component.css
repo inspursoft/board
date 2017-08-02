@@ -125,10 +125,9 @@ button:focus {
 .no-data-mask {
   color: white;
   position: absolute;
-  background-color: black;
+  background-color: #505050;
   border-radius: 5px;
   z-index: 2;
-  opacity: 0.5;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -139,10 +138,11 @@ button:focus {
 }
 
 .no-already {
-  flex-basis: 285px;
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 100%;
+  width: 100%;
 }
 
 .dropdown-button{
