@@ -34,6 +34,7 @@ export class AppInitService {
       .toPromise()
       .then(res=>{
         this.currentUser = res.json();
+        this.token = this.currentUser['token'];
         Promise.resolve(this.currentUser);
       })
       .catch(err=>Promise.reject(err));
