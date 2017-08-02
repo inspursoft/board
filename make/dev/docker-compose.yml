@@ -60,7 +60,7 @@ services:
       context: ../../
       dockerfile: make/dev/container/tokenserver/Dockerfile
     env_file:
-      - container/tokenserver/env
+      - ../config/tokenserver/env
     restart: always
     volumes:
       - ../config/tokenserver/app.conf:/go/bin/app.conf:z
