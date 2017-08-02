@@ -34,3 +34,6 @@ src/ui/proxy.config.json*
 src/ui/dist
 src/collector/cmd/cmd
 .idea/
+make/config
+tools/swagger
+!tools/swagger/*.sh
