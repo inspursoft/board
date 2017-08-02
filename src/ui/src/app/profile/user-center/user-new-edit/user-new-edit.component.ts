@@ -10,7 +10,7 @@ export enum editModel { emNew, emEdit }
   templateUrl: "./user-new-edit.component.html",
   styleUrls: ["./user-new-edit.component.css"]
 })
-export class NewUser implements AfterViewChecked {
+export class NewEditUserComponent implements AfterViewChecked {
   _isOpen: boolean;
   isAlertOpen: boolean = false;
   afterCommitErr: string = "";
