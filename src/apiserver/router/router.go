@@ -3,7 +3,9 @@ package router
 import (
 	"git/inspursoft/board/src/apiserver/controller"
 	"git/inspursoft/board/src/apiserver/controller/dashboard"
+
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/context"
 )
 
 func init() {
@@ -69,10 +71,17 @@ func init() {
 				beego.NSRouter("/service/list",
 					&dashboard.DashboardServiceController{},
 					"get:GetList"),
-
 			),
 		),
 	)
+
 	beego.AddNamespace(ns)
+	beego.InsertFilter("/*", beego.AfterExec, func(ctx *context.Context) {
+		token := ctx.Request.FormValue("token")
+		if token != "" {
+			controller.ReassignToken(token)
+		}
+
+	}, true)
 	beego.SetStaticPath("/swagger", "swagger")
 }

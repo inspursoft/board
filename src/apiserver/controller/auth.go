@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type AuthController struct {
@@ -48,6 +49,7 @@ func (u *AuthController) SignInAction() {
 			u.internalError(err)
 			return
 		}
+		memoryCache.Put(token.TokenString, token.TokenString, time.Second*1800)
 		u.Data["json"] = token
 		u.ServeJSON()
 	}
@@ -109,6 +111,7 @@ func (u *AuthController) CurrentUserAction() {
 		u.CustomAbort(http.StatusUnauthorized, "Need to login first.")
 		return
 	}
+	payload["token"] = token
 	u.Data["json"] = payload
 	u.ServeJSON()
 }

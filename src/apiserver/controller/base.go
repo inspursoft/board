@@ -15,11 +15,11 @@ import (
 
 	"net/url"
 
-	"time"
-
 	"strings"
 
 	"fmt"
+
+	"time"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/cache"
@@ -120,9 +120,20 @@ func signToken(payload map[string]interface{}) (*model.Token, error) {
 	if err != nil {
 		return nil, err
 	}
-	logs.Debug("Get token from server: %s\n", token.TokenString)
-	memoryCache.Put(token.TokenString, token.TokenString, time.Second*1800)
 	return &token, nil
+}
+
+func ReassignToken(tokenString string) (map[string]interface{}, error) {
+	payload, err := verifyToken(tokenString)
+	if err != nil {
+		return nil, fmt.Errorf("token is invalid for re-assignment")
+	}
+	newToken, err := signToken(payload)
+	if err != nil {
+		return nil, fmt.Errorf("failed to re-assign token: %+v", err)
+	}
+	memoryCache.Put(tokenString, newToken.TokenString, time.Second*1800)
+	return payload, nil
 }
 
 func verifyToken(tokenString string) (map[string]interface{}, error) {
@@ -134,7 +145,11 @@ func verifyToken(tokenString string) (map[string]interface{}, error) {
 		logs.Info("token has been expired forcely.")
 		return nil, nil
 	}
-	resp, err := http.Get(tokenServerURL.String() + "?token=" + tokenString)
+	currentToken, ok := storedToken.(string)
+	if !ok {
+		return nil, fmt.Errorf("failed to assert stored token")
+	}
+	resp, err := http.Get(tokenServerURL.String() + "?token=" + currentToken)
 	if err != nil {
 		return nil, err
 	}
