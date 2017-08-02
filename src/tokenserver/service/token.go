@@ -57,11 +57,11 @@ func init() {
 	if err != nil {
 		log.Fatalf("Failed to load config file: %+v\n", err)
 	}
-	expireSeconds, err = iniConf.Int("expireSeconds")
+	expireSeconds, err = iniConf.Int("tokenExpireSeconds")
 	if err != nil {
 		log.Fatalf("Failed to get expireSeconds from config file: %+v\n", err)
 	}
-	encodedKey := iniConf.String("secretKey")
+	encodedKey := iniConf.String("tokenSecretKey")
 	secretKey, err = base64.StdEncoding.DecodeString(encodedKey)
 	if err != nil {
 		log.Fatalf("Failed to decode secret key from config file: %+v\n", err)

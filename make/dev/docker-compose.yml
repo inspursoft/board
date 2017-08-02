@@ -37,6 +37,7 @@ services:
       dockerfile: make/dev/container/apiserver/Dockerfile
     restart: always
     volumes:
+      - ../config/apiserver/app.conf:/go/bin/app.conf:z
       - ../../tools/swagger/vendors/swagger-ui-2.1.4/dist:/go/bin/swagger:z
     env_file:
       - ../config/apiserver/env
@@ -61,6 +62,8 @@ services:
     env_file:
       - container/tokenserver/env
     restart: always
+    volumes:
+      - ../config/tokenserver/app.conf:/go/bin/app.conf:z
     networks:
       - board
     ports:
