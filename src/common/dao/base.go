@@ -20,7 +20,7 @@ func init() {
 
 	fmt.Println("Initializing DB registration.")
 	orm.RegisterDriver("mysql", orm.DRMySQL)
-	err = orm.RegisterDataBase("default", "mysql", "root:"+dbPassword+"@tcp(10.165.33.196:3306)/board?charset=utf8")
+	err = orm.RegisterDataBase("default", "mysql", "root:"+dbPassword+"@tcp(mysql:3306)/board?charset=utf8")
 	if err != nil {
 		fmt.Printf("error occurred on registering DB: %+v", err)
 	}
