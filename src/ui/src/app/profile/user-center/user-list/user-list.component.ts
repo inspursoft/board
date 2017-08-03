@@ -20,7 +20,6 @@ export class UserList implements OnInit, OnDestroy {
   userCountPerPage: number = 2;
   curUser: User;
   curEditModel: editModel = editModel.emNew;
-  curPage: number = 1;
   showNewUser: boolean = false;
 
   constructor(private userService: UserService,
@@ -49,10 +48,6 @@ export class UserList implements OnInit, OnDestroy {
         this.showNewUser = true;
       })
       .catch(err => this.messageService.dispatchError(err));
-  }
-
-  pageChange(page: number) {
-    this.curPage = page;
   }
 
   deleteUser(user: User) {

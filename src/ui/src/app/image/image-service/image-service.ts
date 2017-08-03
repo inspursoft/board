@@ -36,24 +36,7 @@ export class ImageService {
     });
     return this.http.get(`/api/v1/images/${image_name}`, options)
       .toPromise()
-      .then(res => {
-        let s = res.json();
-        let result: ImageDetail[] = Array<ImageDetail>();
-        s.forEach(item => {
-          let image_creationtime = JSON.parse(item["image_creationtime"]);
-          let image_author = JSON.parse(item["image_author"]);
-          result.push({
-            image_name: item["image_name"],
-            image_tag: item["image_tag"],
-            image_author: image_author["author"],
-            image_id: (item["image_id"] as string).replace(/sha256:/g, ""),
-            image_creationtime: image_creationtime["created"],
-            image_size_number: (item["image_size_number"] / (1024 * 1024)).toFixed(2),
-            image_size_unit: "MB"
-          })
-        });
-        return result;
-      })
+      .then(res => res.json())
       .catch(err => Promise.reject(err));
   }
 }

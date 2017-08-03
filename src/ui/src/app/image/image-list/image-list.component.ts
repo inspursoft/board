@@ -9,7 +9,6 @@ import { MessageService } from "../../shared/message-service/message.service";
   styleUrls: ["./image-list.component.css"]
 })
 export class ImageListComponent implements OnInit {
-  curPage: number = 1;
   curImage: Image;
   isShowDetail: boolean = false;
   imageListErrMsg: string = "";
@@ -30,9 +29,5 @@ export class ImageListComponent implements OnInit {
     //need add get one Image from server
     this.curImage = image;
     this.isShowDetail = true;
-  }
-
-  pageChange(pageIndex) {
-    this.curPage = pageIndex;
   }
 }

@@ -14,11 +14,10 @@
       <clr-dg-column>{{ 'IMAGE.COL_CREATION_TIME' | translate }}</clr-dg-column>
       <clr-dg-column>{{ 'IMAGE.COL_SIZE' | translate }}</clr-dg-column>
       <clr-dg-column>{{ 'IMAGE.COL_OPERATION' | translate }}</clr-dg-column>
-      <clr-dg-row *ngFor="let imageDetail of imageDetailList; let i = index"
-                  [hidden]="!(i >= (curPage - 1) * imageDetailPageSize && i < curPage * imageDetailPageSize)">
+      <clr-dg-row *clrDgItems="let imageDetail of imageDetailList">
         <clr-dg-cell>{{imageDetail.image_tag}}</clr-dg-cell>
-        <clr-dg-cell>{{imageDetail.image_author}}</clr-dg-cell>
-        <clr-dg-cell>{{imageDetail.image_creationtime | date:'yyyy-MM-dd hh:mm:ss'}}</clr-dg-cell>
+        <clr-dg-cell>{{imageDetail.image_author.author}}</clr-dg-cell>
+        <clr-dg-cell>{{imageDetail.image_author.created | date:'short'}}</clr-dg-cell>
         <clr-dg-cell>{{imageDetail.image_size_number}}{{imageDetail.image_size_unit}}</clr-dg-cell>
         <clr-dg-cell>
           <clr-icon *ngIf="!showDeleteAlert"
@@ -33,11 +32,7 @@
       </clr-dg-row>
       <clr-dg-footer>
         {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} of {{pagination.totalItems}} items
-        <clr-dg-pagination #pagination
-                           (clrDgPageChange)="pageChange($event)"
-                           [clrDgPage]="curPage"
-                           [clrDgTotalItems]="imageDetailList.length"
-                           [clrDgPageSize]="imageDetailPageSize">
+        <clr-dg-pagination #pagination [clrDgTotalItems]="imageDetailList.length" [clrDgPageSize]="imageDetailPageSize">
         </clr-dg-pagination>
       </clr-dg-footer>
     </clr-datagrid>

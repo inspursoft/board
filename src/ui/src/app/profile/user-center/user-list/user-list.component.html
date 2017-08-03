@@ -18,7 +18,7 @@
       <clr-dg-column>{{'USER_CENTER.LIST_COL_PROJECT_MANAGER' | translate}}</clr-dg-column>
       <clr-dg-column>{{'USER_CENTER.LIST_COL_DELETE' | translate}}</clr-dg-column>
       <clr-dg-column>{{'USER_CENTER.LIST_COL_OPERATION' | translate}}</clr-dg-column>
-      <clr-dg-row *ngFor="let user of userListData; let i = index">
+      <clr-dg-row *clrDgItems="let user of userListData">
         <clr-dg-cell>{{user.user_name}}</clr-dg-cell>
         <clr-dg-cell>{{user.user_email}}</clr-dg-cell>
         <clr-dg-cell>{{user.user_creation_time | date:'yyyy/MM/dd HH:mm:ss'}}</clr-dg-cell>
@@ -37,13 +37,8 @@
         </clr-dg-cell>
       </clr-dg-row>
       <clr-dg-footer>
-        {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
-        of {{pagination.totalItems}} users
-        <clr-dg-pagination #pagination
-                           (clrDgPageChange)="pageChange(pageIndex)"
-                           [clrDgPage]="curPage"
-                           [clrDgTotalItems]="userListData.length"
-                           [clrDgPageSize]="userCountPerPage">
+        {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} of {{pagination.totalItems}} users
+        <clr-dg-pagination #pagination [clrDgTotalItems]="userListData.length" [clrDgPageSize]="userCountPerPage">
         </clr-dg-pagination>
       </clr-dg-footer>
     </clr-datagrid>

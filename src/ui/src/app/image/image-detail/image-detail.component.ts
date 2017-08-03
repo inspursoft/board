@@ -13,8 +13,7 @@ export class ImageDetailComponent implements OnInit {
   _isOpen: boolean;
   alertClosed: boolean;
   @Input() curImage: Image;
-  showDeleteAlert:boolean = false;
-  curPage: number = 1;
+  showDeleteAlert: boolean = false;
   imageDetailPageSize: number = 1;
   imageDetailErrMsg: string = "";
   imageDetailList: ImageDetail[] = Array<ImageDetail>();
@@ -43,12 +42,15 @@ export class ImageDetailComponent implements OnInit {
   getImageDetailList() {
     if (this.curImage && this.curImage.image_name) {
       this.imageService.getImageDetailList(this.curImage.image_name)
-        .then(res => this.imageDetailList = res)
+        .then((res: ImageDetail[]) => {
+          for (let item of res) {
+            item['image_author'] = JSON.parse(item['image_author']);
+            item['image_size_number'] = Number.parseFloat((item['image_size_number'] / (1024 * 1024)).toFixed(2));
+            item['image_size_unit'] = 'MB';
+          }
+          this.imageDetailList = res;
+        })
         .catch(err => this.messageService.dispatchError(err));
     }
-  }
-
-  pageChange(pageIndex: number) {
-    this.curPage = pageIndex;
   }
 }
