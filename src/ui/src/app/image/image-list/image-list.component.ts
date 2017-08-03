@@ -23,17 +23,7 @@ export class ImageListComponent implements OnInit {
   ngOnInit() {
     this.imageService.getImages("", 0, 0)
       .then(res => this.imageList = res)
-      .catch(err => {
-        if (err) {
-          switch (err.status) {
-            case 400:
-              this.imageListErrMsg = 'IMAGE.BAD_REQUEST';
-              break;
-            default:
-              this.messageService.dispatchError(err, '');
-          }
-        }
-      });
+      .catch(err => this.messageService.dispatchError(err));
   }
 
   showImageDetail(image: Image) {

@@ -16,7 +16,12 @@ export const LANG_ZH_CN = {
   "ERROR": {
     "UNKNOWN_ERROR": "未知错误。",
     "INTERNAL_ERROR": "系统内部错误。",
-    "INVALID_USER": "当前用户令牌过期，请重新登录。"
+    "INVALID_USER": "当前用户令牌过期，请重新登录。",
+    "NOT_FOUND": "资源未找到。",
+    "INSUFFIENT_PRIVILEGES": "权限不足，无法操作。",
+    "BAD_REQUEST": "无效的用户请求。",
+    "CONFLICT_INPUT": "存在一个与当前有冲突的资源。",
+    "PECONDITION_FAILED": "请求内容不满足应提供的前置条件。"
   },
   "ACCOUNT": {
     "SIGN_IN": "登录",
@@ -81,8 +86,7 @@ export const LANG_ZH_CN = {
     "NODE": "节点",
     "USAGE": "已用",
     "TOTAL": "总共",
-    "STORAGE": "存储",
-    "NO_DATA_409":"暂无数据"
+    "STORAGE": "存储"
   },
   "PROJECT": {
     "CREATE_PROJECT": "创建项目",
@@ -151,11 +155,9 @@ export const LANG_ZH_CN = {
     "COMMENT": "备注",
     "REQUIRED_ITEMS": "为必填项。",
     "USERNAME_ALREADY_EXISTS": "用户名已存在。",
-    "ERROR": "错误",
     "INCORRECT_USERNAME_OR_PASSWORD": "用户名或密码错误。",
     "ADD": "添加",
     "CANCEL":"取消",
-    "INVALID_USER_ID.":"无效的用户ID.",
     "UNSATISFIED_WITH_CONSTRAINTS":"未满足新建的约束条件.",
     "USERNAME_OR_EMAIL_EXIST":"用户名或邮箱重复."
   },
@@ -169,7 +171,6 @@ export const LANG_ZH_CN = {
     "COL_SIZE":"大小",
     "COL_OPERATION":"操作",
     "DETAIL_TITLE":"镜像",
-    "BAD_REQUEST":"错误的请求",
     "DELETE_IMAGE_ITEM":"删除镜像详情"
   }
 };

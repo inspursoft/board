@@ -44,18 +44,7 @@ export class ImageDetailComponent implements OnInit {
     if (this.curImage && this.curImage.image_name) {
       this.imageService.getImageDetailList(this.curImage.image_name)
         .then(res => this.imageDetailList = res)
-        .catch(err => {
-          if (err) {
-            switch (err.status) {
-              case 400:
-                this.alertClosed = false;
-                this.imageDetailErrMsg = 'IMAGE.BAD_REQUEST';
-                break;
-              default://alert back???
-                this.messageService.dispatchError(err, '');
-            }
-          }
-        });
+        .catch(err => this.messageService.dispatchError(err));
     }
   }
 

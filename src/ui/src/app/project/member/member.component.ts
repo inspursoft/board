@@ -112,7 +112,7 @@ export class MemberComponent implements OnInit {
         this.selectedMember.project_member_user_id, 
         this.selectedMember.project_member_role_id)
       .then(()=>this.displayInlineMessage('PROJECT.SUCCESSFUL_CHANGED_MEMBER_ROLE', [this.selectedMember.project_member_username]))
-      .catch(err=>this.messageService.dispatchError(err, 'PROJECT.FAILED_TO_CHANGE_MEMBER_ROLE'));
+      .catch(err=>this.messageService.dispatchError(err, ''));
   }
 
   setMember(): void {
@@ -124,7 +124,7 @@ export class MemberComponent implements OnInit {
             this.selectedMember.project_member_user_id, 
             this.selectedMember.project_member_role_id)
           .then(()=>this.displayInlineMessage('PROJECT.SUCCESSFUL_ADDED_MEMBER',[this.selectedMember.project_member_username]))
-          .catch(err=>this.messageService.dispatchError(err, 'PROJECT.FAILED_TO_ADD_MEMBER'));
+          .catch(err=>this.messageService.dispatchError(err, ''));
         m.isMember = true;
       }
     });
@@ -142,7 +142,7 @@ export class MemberComponent implements OnInit {
             this.displayInlineMessage('PROJECT.SUCCESSFUL_REMOVED_MEMBER', [this.selectedMember.project_member_username]);
             this.doSet = true;
           })
-          .catch(err=>this.messageService.dispatchError(err, 'PROJECT.FAILED_TO_REMOVE_MEMBER'));
+          .catch(err=>this.messageService.dispatchError(err, ''));
       }
     });
     this.memberSubject.next(this.availableMembers);

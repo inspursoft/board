@@ -61,18 +61,7 @@ export class NewEditUserComponent implements AfterViewChecked {
         this.SubmitSuccessEvent.emit(true);
         this.isOpen = false
       })
-      .catch(err => {
-        if (err) {
-          switch (err.status) {
-            case 400:
-              this.isAlertOpen = true;
-              this.afterCommitErr = 'USER_CENTER.INVALID_USER_ID';
-              break;
-            default:
-              this.messageService.dispatchError(err, '');
-          }
-        }
-      });
+      .catch(err => this.messageService.dispatchError(err));
   }
 
   addNewUser() {
@@ -81,18 +70,7 @@ export class NewEditUserComponent implements AfterViewChecked {
         this.SubmitSuccessEvent.emit(true);
         this.isOpen = false;
       })
-      .catch(err => {
-        if (err) {
-          switch (err.status) {
-            case 400:
-              this.isAlertOpen = true;
-              this.afterCommitErr = 'USER_CENTER.INVALID_USER_ID';
-              break;
-            default:
-              this.messageService.dispatchError(err, '');
-          }
-        }
-      });
+      .catch(err => this.messageService.dispatchError(err));
   }
 
 }

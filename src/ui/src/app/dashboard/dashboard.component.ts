@@ -13,7 +13,7 @@ const REFRESH_SEED_SERVICE: number = 10;
 
 @Component({
   selector: 'dashboard',
-  templateUrl: 'app/dashboard/dashboard.component.html',
+  templateUrl: './dashboard.component.html',
   styleUrls: ['dashboard.component.css']
 })
 export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -103,11 +103,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private static calculateZoom(source: LinesData, res: LinesData, isDropNext: boolean): {start: number, end: number} {
     let result = {start: 100, end: 80};
     if (res[0].length > 0) {
-      if (isDropNext){
+      if (isDropNext) {
         result.start = Math.max((res[0].length / source[0].length) * 100 + 10, 20);
         result.start = result.start > 100 ? 100 : result.start;
         result.end = result.start - 20;
-      } else{
+      } else {
         result.start = 100 - Math.max((res[0].length / source[0].length) * 100 - 10, 20);
         result.start = result.start < 0 ? 0 : result.start;
         result.end = result.start - 20;
@@ -224,15 +224,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         this._serviceAlready = true;
         this._serviceInRefreshIng = false;
         this._serviceIntervalSeed = REFRESH_SEED_SERVICE;
-        if (err) {
-          switch (err.status) {
-            case 409:
-              this.serviceNoDataErrMsg = 'DASHBOARD.NO_DATA_409';
-              break;
-            default:
-              this.messageService.dispatchError(err, '');
-          }
-        }
+        this.messageService.dispatchError(err);
       });
   }
 
@@ -278,15 +270,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         this.nodeBtnValue = this.serviceList[0].service_name;
         this.storageBtnValue = this.serviceList[0].service_name;
       })
-      .catch(err => {
-        switch (err.status) {
-          case 409:
-            this.serviceDropdownText = 'DASHBOARD.NO_DATA_409';
-            break;
-          default:
-            this.messageService.dispatchError(err, '');
-        }
-      });
+      .catch(err => this.messageService.dispatchError(err));
 
     let serviceSimulateData = DashboardService.getBySimulateData(0, 1);
     this.nodeOptions = Assist.getBaseOptions();

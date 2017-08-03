@@ -16,7 +16,12 @@ export const LANG_EN_US = {
   "ERROR": {
     "UNKNOWN_ERROR": "Unknown error.",
     "INTERNAL_ERROR": "Unexpected internal error.",
-    "INVALID_USER": "User's token has expired, please sign in again."
+    "INVALID_USER": "User's token has expired, please sign in again.",
+    "NOT_FOUND": "Resource not found.",
+    "INSUFFIENT_PRIVILEGES": "Insuffient privileges.",
+    "BAD_REQUEST": "Invalid user request.",
+    "CONFLICT_INPUT": "A conflict with the current state of the resource.",
+    "PECONDITION_FAILED": "Precondition given in one or more of the request are evaluated to false."
   },
   "ACCOUNT": {
     "SIGN_IN": "Sign In",
@@ -81,8 +86,7 @@ export const LANG_EN_US = {
     "NODE": "Node",
     "USAGE": "Usage",
     "TOTAL": "Total",
-    "STORAGE": "Storage",
-    "NO_DATA_409":"No Data"
+    "STORAGE": "Storage"
   },
   "PROJECT": {
     "CREATE_PROJECT": "Create Project",
@@ -154,10 +158,8 @@ export const LANG_EN_US = {
     "INCORRECT_USERNAME_OR_PASSWORD": "Incorrect username or password.",
     "ADD": "ADD",
     "CANCEL":"CANCEL",
-    "ERROR":"Error",
     "UNSATISFIED_WITH_CONSTRAINTS":"Unsatisfied with constraints of the user creation.",
-    "USERNAME_OR_EMAIL_EXIST":"Username or email is exist.",
-    "INVALID_USER_ID":"Invalid user ID."
+    "USERNAME_OR_EMAIL_EXIST":"Username or email is exist."
   },
   "IMAGE":{
     "COL_IMAGE_NAME":"Image Name",
@@ -169,7 +171,6 @@ export const LANG_EN_US = {
     "COL_SIZE":"Size",
     "COL_OPERATION":"Operation",
     "DETAIL_TITLE":"Image",
-    "BAD_REQUEST":"Bad request.",
     "DELETE_IMAGE_ITEM":"Delete image detail."
   }
 };

@@ -36,26 +36,51 @@ export class MessageService {
     this.globalAnnouncedSource.next(message);
   }
 
-  dispatchError(response: Response | Error, error?: string) {
+  _setErrorMessage(m: Message, defaultMessage: string, customMessage: string) {
+    if(customMessage && customMessage.trim().length > 0) {
+      m.message = customMessage;
+    } else {
+      m.message = defaultMessage;
+    }
+  }
+
+  dispatchError(response: Response | Error, customMessage?: string) {
     let errMessage = new Message();
     if(response instanceof Response) {
-      errMessage.message = error;
       switch(response.status){
-      case 400:
-      case 403:
-      case 404:
-      case 409:
-      case 412:
-        errMessage.type = MESSAGE_TYPE.COMMON_ERROR;
-        break;
       case 401:
         errMessage.type = MESSAGE_TYPE.INVALID_USER;
-        errMessage.message = 'ERROR.INVALID_USER';
+        this._setErrorMessage(errMessage, 'ERROR.INVALID_USER', customMessage);
+        break;
+      case 404:
+        errMessage.type = MESSAGE_TYPE.COMMON_ERROR;
+        this._setErrorMessage(errMessage, 'ERROR.NOT_FOUND', customMessage);
+        break;
+      case 400:
+        errMessage.type = MESSAGE_TYPE.COMMON_ERROR;
+        this._setErrorMessage(errMessage, 'ERROR.BAD_REQUEST', customMessage);
+        break;
+      case 403:
+        errMessage.type = MESSAGE_TYPE.COMMON_ERROR;
+        this._setErrorMessage(errMessage, 'ERROR.INSUFFIENT_PRIVILEGES', customMessage);
+        break;
+      case 409:
+        errMessage.type = MESSAGE_TYPE.COMMON_ERROR;
+        this._setErrorMessage(errMessage, 'ERROR.CONFLICT_INPUT', customMessage);
+        break;
+      case 412:
+        errMessage.type = MESSAGE_TYPE.COMMON_ERROR;
+        this._setErrorMessage(errMessage, 'ERROR.PECONDITION_FAILED', customMessage);
         break;
       case 500:
+      case 502:
+      case 504:
         errMessage.type = MESSAGE_TYPE.INTERNAL_ERROR;
-        errMessage.message = 'ERROR.INTERNAL_ERROR';
+        this._setErrorMessage(errMessage, 'ERROR.INTERNAL_ERROR', customMessage);
         break;
+      default:
+        errMessage.type = MESSAGE_TYPE.INTERNAL_ERROR;
+        this._setErrorMessage(errMessage, 'ERROR.UNKNOWN_ERROR', customMessage);
       }
       if(errMessage.type === MESSAGE_TYPE.COMMON_ERROR) {
         this.inlineAlertMessage(errMessage);
