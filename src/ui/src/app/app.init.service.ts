@@ -23,12 +23,12 @@ export class AppInitService {
     return this._tokenString;
   }
 
-  getCurrentUser(): Promise<any> {
+  getCurrentUser(tokenParam?: string): Promise<any> {
     return this.http
       .get('/api/v1/users/current', 
         { headers: this.defaultHeaders, 
           params: {
-            'token': this.token
+            'token': this.token || tokenParam || ''
           }
         })
       .toPromise()

@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
-
 import { Subscription } from 'rxjs/Subscription';
 
+import { AppInitService } from '../app.init.service';
 import { MessageService } from '../shared/message-service/message.service';
 import { ConfirmationDialogComponent } from '../shared/confirmation-dialog/confirmation-dialog.component';
 import { Message } from '../shared/message-service/message';
@@ -25,8 +25,10 @@ export class ProjectComponent implements OnInit, OnDestroy {
   @ViewChild(MemberComponent) memberModal;
 
   _subscription: Subscription;
+  currentUser: {[key: string]: any};
 
   constructor(
+    private appInitService: AppInitService,
     private projectService: ProjectService,
     private messageService: MessageService
   ){
@@ -48,6 +50,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.currentUser = this.appInitService.currentUser;
     this.retrieve();
   }
 
