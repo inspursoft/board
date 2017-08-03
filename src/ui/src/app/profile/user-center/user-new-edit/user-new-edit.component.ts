@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, AfterViewChecked } from "@angular/core";
 import { User } from 'app/profile/user-center/user';
 import { UserService } from "../user-service/user-service"
+import { MessageService } from "../../../shared/message-service/message.service";
 
 export enum editModel { emNew, emEdit }
 
@@ -9,12 +10,13 @@ export enum editModel { emNew, emEdit }
   templateUrl: "./user-new-edit.component.html",
   styleUrls: ["./user-new-edit.component.css"]
 })
-export class NewUser implements AfterViewChecked {
+export class NewEditUserComponent implements AfterViewChecked {
   _isOpen: boolean;
   isAlertOpen: boolean = false;
   afterCommitErr: string = "";
 
-  constructor(private userService: UserService) {
+  constructor(private userService: UserService,
+              private messageService: MessageService) {
   };
 
   ngAfterViewChecked() {
@@ -25,7 +27,6 @@ export class NewUser implements AfterViewChecked {
   @Input() CurEditModel: editModel;
 
   @Input()
-
   get isOpen() {
     return this._isOpen;
   }
@@ -60,10 +61,7 @@ export class NewUser implements AfterViewChecked {
         this.SubmitSuccessEvent.emit(true);
         this.isOpen = false
       })
-      .catch((reason: string) => {
-        this.afterCommitErr = reason;
-        this.isAlertOpen = true;
-      });
+      .catch(err => this.messageService.dispatchError(err));
   }
 
   addNewUser() {
@@ -72,10 +70,7 @@ export class NewUser implements AfterViewChecked {
         this.SubmitSuccessEvent.emit(true);
         this.isOpen = false;
       })
-      .catch((reason: string) => {
-        this.afterCommitErr = reason;
-        this.isAlertOpen = true;
-      })
+      .catch(err => this.messageService.dispatchError(err));
   }
 
 }

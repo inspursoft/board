@@ -1,0 +1,21 @@
+<div style="display: flex;flex-direction: column">
+  <div style="height: 1px">
+    <image-detail *ngIf="isShowDetail" [curImage]="curImage" [(isOpen)]="isShowDetail"></image-detail>
+  </div>
+  <clr-datagrid [clrDgLoading]="imageList.length == 0 && imageListErrMsg == ''" style="min-width: 100%">
+    <clr-dg-placeholder>{{imageListErrMsg | translate}}</clr-dg-placeholder>
+    <clr-dg-column>{{ 'IMAGE.COL_IMAGE_NAME' | translate }}</clr-dg-column>
+    <clr-dg-column>{{ 'IMAGE.COL_COMMENT' | translate }}</clr-dg-column>
+    <clr-dg-column>{{ 'IMAGE.COL_DETAIL_INFO' | translate }}</clr-dg-column>
+    <clr-dg-row *clrDgItems="let image of imageList">
+      <clr-dg-cell>{{image.image_name}}</clr-dg-cell>
+      <clr-dg-cell>{{image.image_comment}}</clr-dg-cell>
+      <clr-dg-cell><clr-icon class="edit" (click)="showImageDetail(image)" shape="info"></clr-icon></clr-dg-cell>
+    </clr-dg-row>
+    <clr-dg-footer>
+      {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} of {{pagination.totalItems}} items
+      <clr-dg-pagination #pagination [clrDgTotalItems]="imageList.length" [clrDgPageSize]="imageCountPerPage">
+      </clr-dg-pagination>
+    </clr-dg-footer>
+  </clr-datagrid>
+</div>

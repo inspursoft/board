@@ -5,17 +5,20 @@ import { UserList } from "app/profile/user-center/user-list/user-list.component"
 import { SharedModule } from "app/shared/shared.module";
 import { Pagination } from "app/profile/user-center/pagination/pagination.component";
 import { UserService } from "app/profile/user-center/user-service/user-service";
-import { NewUser } from "app/profile/user-center/user-new-edit/user-new-edit.component";
+import { NewEditUserComponent } from "app/profile/user-center/user-new-edit/user-new-edit.component";
 import { MessageService } from "app/shared/message-service/message.service";
+import { AppInitService } from "../app.init.service";
+
 
 @NgModule({
   imports: [SharedModule],
   providers: [
+    AppInitService,
     UserService,
     MessageService],
   declarations: [
     ProfileComponent,
-    NewUser,
+    NewEditUserComponent,
     UserList,
     Pagination]
 })

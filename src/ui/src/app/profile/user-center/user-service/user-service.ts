@@ -1,8 +1,7 @@
 import { Injectable } from "@angular/core";
-import { Http, RequestOptions, Headers, Response } from "@angular/http";
-import { user } from "app/profile/user-center/user";
-import { MessageService } from "../../../shared/message-service/message.service";
-import { Message } from "../../../shared/message-service/message";
+import { Http, RequestOptions, Headers } from "@angular/http";
+import { User } from "app/profile/user-center/user";
+import { AppInitService } from "../../../app.init.service";
 import "rxjs/add/operator/toPromise";
 
 const BASE_URL = "/api/v1";
@@ -12,123 +11,68 @@ export class UserService {
     contentType: "application/json"
   });
 
-  static getErrorMsg(reason: Response, statusArr: Array<number>, errorKey: string): string {
-    return statusArr.indexOf(reason.status) > -1 ?
-      `USER_CENTER.${errorKey}_ERR_${reason.status}` :
-      `${reason.status}:${reason.statusText}`;
-  }
-
-  handleErrMsg(reason: Response, statusArr: Array<number>, errorKey: string): void {
-    let m: Message = new Message();
-    if (reason.status == 500) {
-      m.message = "USER_CENTER.ERR_500";
-      this.messageService.globalMessage(m);
-    } else {
-      m.message = UserService.getErrorMsg(reason, statusArr, errorKey);
-      this.messageService.inlineAlertMessage(m);
-    }
-  }
-
   constructor(private http: Http,
-              private messageService: MessageService) {
+              private appInitService: AppInitService) {
   }
 
-  deleteUser(user: user): Promise<user> {
+  deleteUser(user: User): Promise<boolean> {
     let options = new RequestOptions({
-      headers: this.defaultHeaders
+      headers: this.defaultHeaders,
+      params: {'token': this.appInitService.token}
     });
     return this.http.delete(`${BASE_URL}/users/${user.user_id}`, options).toPromise()
-      .then(res => res.json())
-      .catch(reason => {
-        if (reason instanceof Response) {
-          this.handleErrMsg(reason, Array.from([400, 401, 403, 404]), "DEL");
-        } else if (reason instanceof Error) {
-          console.error(`name:${(<Error>reason).name};message:${(<Error>reason).message}`);
-        } else {
-          console.error(reason);
-        }
-        return Promise.reject(reason);
-      })
+      .then(res => res.ok)
+      .catch(err => Promise.reject(err));
   }
 
-  getUser(userID: number): Promise<user> {
+  getUser(userID: number): Promise<User> {
     let options = new RequestOptions({
-      headers: this.defaultHeaders
+      headers: this.defaultHeaders,
+      params: {'token': this.appInitService.token}
     });
     return this.http.get(`${BASE_URL}/users/${userID}`, options)
       .toPromise()
       .then(res => res.json())
-      .catch(reason => {
-        if (reason instanceof Response) {
-          this.handleErrMsg(reason, Array.from([401, 404]), "GET");
-        } else if (reason instanceof Error) {
-          console.error(`name:${(<Error>reason).name};message:${(<Error>reason).message}`);
-        } else {
-          console.error(reason);
-        }
-        return Promise.reject(reason);
-      });
+      .catch(err => Promise.reject(err));
   }
 
-  updateUser(user: user): Promise<user> {
+  updateUser(user: User): Promise<boolean> {
     let options = new RequestOptions({
-      headers: this.defaultHeaders
+      headers: this.defaultHeaders,
+      params: {'token': this.appInitService.token}
     });
     return this.http.put(`${BASE_URL}/users/${user.user_id}`, user, options)
       .toPromise()
-      .then(res => res.json())
-      .catch(reason => {
-        let r: string = "";
-        if (reason instanceof Response) {
-          r = UserService.getErrorMsg(reason, Array.from([400, 401, 403, 404]), "UPT");
-        } else {
-          r = `name:${(<Error>reason).name};message:${(<Error>reason).message}`;
-        }
-        return Promise.reject(r);
-      });
+      .then(res => res.ok)
+      .catch(err => Promise.reject(err));
   }
 
-  newUser(userParams: user): Promise<user> {
+  newUser(userParams: User): Promise<boolean> {
     let options = new RequestOptions({
-      headers: this.defaultHeaders
+      headers: this.defaultHeaders,
+      params: {'token': this.appInitService.token}
     });
     return this.http.post(`${BASE_URL}/adduser`, userParams, options).toPromise()
-      .then(res => res.json())
-      .catch(reason => {
-        let r: string = "";
-        if (reason instanceof Response) {
-          r = UserService.getErrorMsg(reason, Array.from([400, 403, 404, 409]), "ADD");
-        } else {
-          r = `name:${(<Error>reason).name};message:${(<Error>reason).message}`;
-        }
-        return Promise.reject(r);
-      });
+      .then(res => res.ok)
+      .catch(err => Promise.reject(err));
   }
 
   getUserList(username?: string,
               user_list_page: number = 0,
-              user_list_page_size: number = 0): Promise<user[]> {
-    let params: Map<string, string> = new Map<string, string>();
-    params["username"] = username;
-    params["user_list_page"] = user_list_page.toString();
-    params["user_list_page_size"] = user_list_page_size.toString();
+              user_list_page_size: number = 0): Promise<User[]> {
     let options = new RequestOptions({
       headers: this.defaultHeaders,
-      search: params
+      params: {
+        'username': username,
+        'user_list_page': user_list_page.toString(),
+        'user_list_page_size': user_list_page_size.toString(),
+        'token': this.appInitService.token
+      }
     });
     return this.http.get(`${BASE_URL}/users`, options).toPromise()
       .then(res => {
-        return Array.from(res.json()) as user[];
+        return Array.from(res.json()) as User[];
       })
-      .catch(reason => {
-        if (reason instanceof Response) {
-          this.handleErrMsg(reason, Array.from([400, 401, 403, 404]), "GET");
-        } else if (reason instanceof Error) {
-          console.error(`name:${(<Error>reason).name};message:${(<Error>reason).message}`);
-        } else {
-          console.error(reason);
-        }
-        return Promise.reject(reason);
-      })
+      .catch(err => Promise.reject(err))
   }
 }

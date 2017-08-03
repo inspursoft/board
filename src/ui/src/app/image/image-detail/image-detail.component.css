@@ -1,0 +1,12 @@
+.icon-pointer {
+  cursor: pointer;
+}
+
+.icon-pointer:hover {
+  color: blue;
+}
+
+.cell_max_100_px{
+  max-width: 100px;
+  word-break: break-all;
+}

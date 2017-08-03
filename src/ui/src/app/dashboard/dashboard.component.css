@@ -28,6 +28,7 @@
   flex-basis: 100%;
   display: flex;
   margin-right: 20px;
+  justify-content: center;
 }
 
 .split-line {
@@ -52,7 +53,6 @@
 
 .section-right-container {
   display: flex;
-  flex-basis: 100%;
   margin-left: 10px;
   flex-direction: column;
   justify-content: space-between
@@ -125,10 +125,9 @@ button:focus {
 .no-data-mask {
   color: white;
   position: absolute;
-  background-color: black;
+  background-color: #505050;
   border-radius: 5px;
   z-index: 2;
-  opacity: 0.5;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -139,8 +138,16 @@ button:focus {
 }
 
 .no-already {
-  flex-basis: 285px;
+  opacity: 0.2;
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 100%;
+  width: 100%;
+}
+
+.dropdown-button{
+  width: 150px;
+  font-size: 10px;
+  text-align: left;
 }

@@ -13,7 +13,7 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { NodeComponent } from './node/node.component';
 import { ProjectComponent } from './project/project.component';
 import { MemberComponent } from './project/member/member.component';
-import { ImageComponent } from './image/image.component';
+import { ImageListComponent } from './image/image-list/image-list.component';
 import { ServiceComponent } from './service/service.component';
 import { ProfileComponent } from './profile/profile.component';
 import { AuthGuard } from './shared/auth-guard.service';
@@ -31,7 +31,7 @@ export const ROUTES: Routes = [
                 { path: 'members', component: MemberComponent }
             ] 
         },
-        { path: 'images', component: ImageComponent },
+        { path: 'images', component: ImageListComponent },
         { path: 'services', component: ServiceComponent },
         { path: 'profiles', component: ProfileComponent }
     ]},

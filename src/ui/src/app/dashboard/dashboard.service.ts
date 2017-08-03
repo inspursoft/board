@@ -1,19 +1,19 @@
 import { Injectable } from '@angular/core';
-import { Http, RequestOptions, Headers } from "@angular/http"
+import { Http, RequestOptions, Headers, Response } from "@angular/http"
+import { AppInitService } from "../app.init.service";
 import "rxjs/add/operator/map";
 import 'rxjs/add/operator/toPromise';
+import 'rxjs/add/operator/timeout';
 
-export interface LineDataModel {
-  readonly date: Date;
-  readonly value: number;
-}
+export type LineDataModel = [Date, number];
+export type LinesData = [LineDataModel[], LineDataModel[]];
 
 export interface ServiceListModel {
   readonly service_name: string;
 }
 
 export interface ServiceDataModel {
-  readonly time_stamp: number;
+  readonly podcontainer_timestamp: number;
   readonly pods_number: number;
   readonly container_number: number;
 }
@@ -77,22 +77,23 @@ export class DashboardService {
    * @param dateScaleId
    *node:dateScaleId=>1:1min;2:1hr;3:1day;4:1mth
    */
-  getBySimulateData(serviceID: number, dateScaleId: number): Map<number, LineDataModel[]> {
+  static getBySimulateData(serviceID: number, dateScaleId: number): Map<number, LineDataModel[]> {
     if (!dateScaleId || dateScaleId < 1 || dateScaleId > 4) return null;
-    let r: Map<number, LineDataModel[]> = new Map<number, LineDataModel[]>();
-    r[0] = new Array<LineDataModel>(0);
-    r[1] = new Array<LineDataModel>(0);
+    let result: Map<number, LineDataModel[]> = new Map<number, LineDataModel[]>();
+    result[0] = Array<LineDataModel>(0);
+    result[1] = Array<LineDataModel>(0);
     for (let i = 0; i < 11; i++) {
       let date: Date = DashboardService.getSimulateDate(dateScaleId);
       let arrBuf1 = [date, DashboardService.getSimulateData(serviceID)];
       let arrBuf2 = [date, DashboardService.getSimulateData(serviceID)];
-      r[0].push(arrBuf1);
-      r[1].push(arrBuf2);
+      result[0].push(arrBuf1);
+      result[1].push(arrBuf2);
     }
-    return r;
+    return result;
   }
 
-  constructor(private http: Http) {
+  constructor(private http: Http,
+              private appInitService: AppInitService) {
   };
 
   readonly defaultHeaders: Headers = new Headers({
@@ -100,19 +101,22 @@ export class DashboardService {
   });
 
   getServiceList(): Promise<ServiceListModel[]> {
-    let options = new RequestOptions({headers: this.defaultHeaders});
-    return this.http.get(BASE_URL.concat("/service/list"), options)
+    let options = new RequestOptions({
+        headers: this.defaultHeaders,
+        params: {'token': this.appInitService.token}
+      }
+    );
+    return this.http.get(`${BASE_URL}/dashboard/service/list`, options)
       .toPromise()
       .then(res => {
         let arr = Array.from(res.json()).sort((a, b) => {
           return a["service_name"] == b["service_name"] ? 0 :
             a["service_name"] > b["service_name"] ? 1 : -1;
         });
-        //add total service
-        arr.unshift({service_name: "total"});
-        return Promise.resolve(arr as ServiceListModel[]);
+        arr.unshift({service_name: "total"});//add total service
+        return arr;
       })
-      .catch(DashboardService.handleError);
+      .catch(err => Promise.reject(err));
   };
 
   /**data origin
@@ -125,44 +129,32 @@ export class DashboardService {
    * "time_stamp":1499842237
    * }]}
    */
-  getServiceData(service_time_count: number, service_time_unit: string, service_name: string): Promise<Map<string, LineDataModel[]>> {
-    let params: Map<string, string> = new Map<string, string>();
-    params["service_time_count"] = service_time_count.toString();
-    params["service_timeunit"] = service_time_unit;
-    params["service_name"] = service_name;
+  getServiceData(query: {time_count: number, time_unit: string, service_name: string, timestamp_base: number}): Promise<LinesData> {
     let options = new RequestOptions({
       headers: this.defaultHeaders,
-      search: params
+      params: {
+        'token': this.appInitService.token,
+        'service_name': query.service_name
+      }
     });
-    return this.http.get(BASE_URL.concat("/dashboard/service"), options)
+    return this.http.post(`${BASE_URL}/dashboard/service`, {
+      time_count: query.time_count.toString(),
+      time_unit: query.time_unit,
+      timestamp_base: query.timestamp_base.toString()
+    }, options)
       .toPromise()
-      .then(res => {
+      .then((res: Response) => {
         let resJson: object = res.json();
         let logs: ServiceDataModel[] = resJson["service_statuslogs"];
-        let r: Map<string, LineDataModel[]> = new Map<string, LineDataModel[]>();
-        r["pods"] = new Array<LineDataModel>(0);
-        r["container"] = new Array<LineDataModel>(0);
+        let result: LinesData = [Array<[Date, number]>(0), Array<[Date, number]>(0)];
         if (logs && logs.length > 0) {
           logs.forEach((item: ServiceDataModel) => {
-            r["pods"].unshift([new Date(item.time_stamp * 1000), item.pods_number]);
-            r["container"].unshift([new Date(item.time_stamp * 1000), item.container_number]);
+            result[0].push([new Date(item.podcontainer_timestamp * 1000), item.pods_number]);
+            result[1].push([new Date(item.podcontainer_timestamp * 1000), item.container_number]);
           });
         }
-        return r;
+        return result;
       })
-      .catch(DashboardService.handleError);
+      .catch(err => Promise.reject(err));
   }
-
-  private static  handleError(error: Response | any) {
-    let errMsg: string;
-    if (error instanceof Response) {
-      const body = error.json() || '';
-      const err = body["error"] || JSON.stringify(body);
-      errMsg = `${error.status} - ${error.statusText || ''} ${err}`;
-    } else {
-      errMsg = error.message ? error.message : error.toString();
-    }
-    return Promise.reject(errMsg);
-  }
-
 }

@@ -86,8 +86,7 @@ export const LANG_EN_US = {
     "NODE": "Node",
     "USAGE": "Usage",
     "TOTAL": "Total",
-    "STORAGE": "Storage",
-    "NODATA":"No Data"
+    "STORAGE": "Storage"
   },
   "PROJECT": {
     "CREATE_PROJECT": "Create Project",
@@ -107,7 +106,7 @@ export const LANG_EN_US = {
     "PROJECT_ADMIN": "Project Admin",
     "DEVELOPER": "Developer",
     "VISITOR": "Visitor",
-    "SUCCESSFUL_DELETE_PROJECT": "Succesful delete project.",
+    "SUCCESSFUL_DELETE_PROJECT": "Successful delete project.",
     "FAILED_TO_DELETE_PROJECT": "Failed to delete project.",
     "FAILED_TO_RETRIEVE_PROJECTS": "Failed to retrieve projects.",
     "DELETE_PROJECT": "Delete Project",
@@ -128,6 +127,7 @@ export const LANG_EN_US = {
     "LIST_COL_EMAIL":"Email",
     "LIST_COL_CREATE_DATE":"Create Date",
     "LIST_COL_SYSTEM_ADMIN":"System Admin",
+    "LIST_COL_PROJECT_MANAGER":"Project Manager",
     "LIST_COL_DELETE":"Delete",
     "LIST_COL_OPERATION":"Operation",
     "DELETE_USER_SUCCESS":"Delete user success!",
@@ -143,6 +143,7 @@ export const LANG_EN_US = {
     "INPUT_EMAIL": "Input email",
     "EMAIL_IS_REQUIRED": "Email is required.",
     "EMAIL_IS_ILLEGAL": "Email is illegal.",
+    "EMAIL_ALREADY_EXISTS": "EMail already exists.",
     "PASSWORD": "Password",
     "PASSWORD_PLACEHOLDER": "Password",
     "PASSWORD_IS_REQUIRED": "Password is required.",
@@ -157,23 +158,19 @@ export const LANG_EN_US = {
     "INCORRECT_USERNAME_OR_PASSWORD": "Incorrect username or password.",
     "ADD": "ADD",
     "CANCEL":"CANCEL",
-    "ERROR":"Error",
-    "ERR_500":"Unexpected internal errors.",
-    "ADD_ERR_400":"400:Unsatisfied with constraints of the user creation.",
-    "ADD_ERR_403":"403:User registration can only be used by admin role user when self-registration is off..",
-    "ADD_ERR_404":"404:Cannot connect to server.",
-    "ADD_ERR_409":"409:Username or password is exist.",
-    "GET_ERR_400":"400:Invalid user ID.",
-    "GET_ERR_401":"401:User need to log in first.",
-    "GET_ERR_403":"403:User does not have permission of admin role.",
-    "GET_ERR_404":"404:No user found with provided User ID.",
-    "DEL_ERR_400":"400:Invalid user ID.",
-    "DEL_ERR_401":"401:User need to log in first.",
-    "DEL_ERR_403":"403:User does not have permission of admin role.",
-    "DEL_ERR_404":"404:User ID does not exist.",
-    "UPT_ERR_400":"400:Invalid user ID.",
-    "UPT_ERR_401":"401:User need to log in first.",
-    "UPT_ERR_403":"403:User does not have permission of admin role.",
-    "UPT_ERR_404":"404:User ID does not exist."
+    "UNSATISFIED_WITH_CONSTRAINTS":"Unsatisfied with constraints of the user creation.",
+    "USERNAME_OR_EMAIL_EXIST":"Username or email is exist."
+  },
+  "IMAGE":{
+    "COL_IMAGE_NAME":"Image Name",
+    "COL_COMMENT":"Comment",
+    "COL_DETAIL_INFO":"Image Detail",
+    "COL_TAG":"Tag",
+    "COL_AUTHOR":"Author",
+    "COL_CREATION_TIME":"Creation Time",
+    "COL_SIZE":"Size",
+    "COL_OPERATION":"Operation",
+    "DETAIL_TITLE":"Image",
+    "DELETE_IMAGE_ITEM":"Delete image detail."
   }
 };

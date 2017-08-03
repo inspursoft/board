@@ -33,8 +33,6 @@ export class Assist {
       dataZoom: [
         {
           show: true,
-          start: 100,
-          end: 80,
           xAxisIndex: 0
         }
       ],
