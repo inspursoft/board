@@ -60,14 +60,14 @@ export class UserService {
   getUserList(username?: string,
               user_list_page: number = 0,
               user_list_page_size: number = 0): Promise<User[]> {
-    let params: Map<string, string> = new Map<string, string>();
-    params["username"] = username;
-    params["user_list_page"] = user_list_page.toString();
-    params["user_list_page_size"] = user_list_page_size.toString();
     let options = new RequestOptions({
       headers: this.defaultHeaders,
-      params: {'token': this.appInitService.token},
-      search: params
+      params: {
+        'username': username,
+        'user_list_page': user_list_page.toString(),
+        'user_list_page_size': user_list_page_size.toString(),
+        'token': this.appInitService.token
+      }
     });
     return this.http.get(`${BASE_URL}/users`, options).toPromise()
       .then(res => {

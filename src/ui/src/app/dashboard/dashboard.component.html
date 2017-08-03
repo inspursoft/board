@@ -7,13 +7,12 @@
       <span class="section-text">{{ 'DASHBOARD.SERVICE' | translate }}</span>
     </div>
     <div class="section-right-container">
-			<span class="stat-panel-title stat-panel-title-font">
-				 {{ 'DASHBOARD.PODS' | translate }}:
-				 <span class="stat-panel-value-font">{{serviceCurPod}}</span></span>
       <span class="stat-panel-title stat-panel-title-font">
-				 {{ 'DASHBOARD.CONTAINERS' | translate }}:
-				<span class="stat-panel-value-font">{{serviceCurContainer}}</span>
-			</span>
+        {{ 'DASHBOARD.PODS' | translate }}:
+        <span class="stat-panel-value-font">{{serviceCurPod}}</span></span>
+      <span class="stat-panel-title stat-panel-title-font">
+        {{ 'DASHBOARD.CONTAINERS' | translate }}:
+        <span class="stat-panel-value-font">{{serviceCurContainer}}</span></span>
     </div>
   </div>
   <div class="section-container split-line">
@@ -25,12 +24,11 @@
     </div>
     <div class="section-right-container">
 			<span class="stat-panel-title stat-panel-title-font">
-				 {{ 'DASHBOARD.MEMORY' | translate }}:
-				 <span class="stat-panel-value-font">{{memoryPercent}}</span></span>
+        {{ 'DASHBOARD.MEMORY' | translate }}:
+        <span class="stat-panel-value-font">{{memoryPercent}}</span></span>
       <span class="stat-panel-title stat-panel-title-font">
-				 {{ 'DASHBOARD.CPU' | translate }}:
-				<span class="stat-panel-value-font">{{cpuPercent}}</span>
-			</span>
+        {{ 'DASHBOARD.CPU' | translate }}:
+        <span class="stat-panel-value-font">{{cpuPercent}}</span></span>
     </div>
   </div>
   <div class="section-container">
@@ -42,12 +40,11 @@
     </div>
     <div class="section-right-container">
 			<span class="stat-panel-title stat-panel-title-font">
-				 {{ 'DASHBOARD.USAGE' | translate }}:
-				 <span class="stat-panel-value-font">{{usageVolume}}</span></span>
+        {{ 'DASHBOARD.USAGE' | translate }}:
+        <span class="stat-panel-value-font">{{usageVolume}}</span></span>
       <span class="stat-panel-title stat-panel-title-font">
-				 {{ 'DASHBOARD.TOTAL' | translate }}:
-				<span class="stat-panel-value-font">{{totalVolume}}</span>
-			</span>
+        {{ 'DASHBOARD.TOTAL' | translate }}:
+        <span class="stat-panel-value-font">{{totalVolume}}</span></span>
     </div>
   </div>
 </div>
@@ -73,12 +70,8 @@
           </clr-dropdown-menu>
         </clr-dropdown>
         <div class="caption_container">
-					<span class="first-line">
-						{{ 'DASHBOARD.PODS' | translate }}:{{serviceCurPod}}
-					</span>
-          <span class="second-line">
-						{{ 'DASHBOARD.CONTAINERS' | translate }}:{{serviceCurContainer}}
-					</span>
+          <span class="first-line">{{ 'DASHBOARD.PODS' | translate }}:{{serviceCurPod}}</span>
+          <span class="second-line">{{ 'DASHBOARD.CONTAINERS' | translate }}:{{serviceCurContainer}}</span>
         </div>
         <div class="select-time-container">
           <time-range-scale (changeScale)="serviceScaleChange($event)" [options]="scaleOptions"></time-range-scale>
@@ -89,11 +82,8 @@
           <div *ngIf="serviceNoData" class="no-data-mask">
             <span>{{ serviceNoDataErrMsg | translate }}</span>
           </div>
-          <div *ngIf="!serviceAlready" class="no-already">
-            <span class="spinner spinner-lg"></span>
-          </div>
           <div echarts
-               *ngIf="!serviceNoData && serviceAlready"
+               *ngIf="!serviceNoData"
                [options]="serviceOptions"
                [dataset]="serviceData"
                (chartDataZoom)="serviceChartDataZoom($event)"
@@ -103,7 +93,6 @@
       </div>
     </div>
   </div>
-
 
   <div style="flex-basis: 100%" class="card">
     <div class="card-header">{{'DASHBOARD.NODE' | translate }}</div>
@@ -124,12 +113,8 @@
           </clr-dropdown-menu>
         </clr-dropdown>
         <div class="caption_container">
-					<span class="first-line">
-						{{ 'DASHBOARD.CPU' | translate }}:{{cpuPercent}}
-					</span>
-          <span class="second-line">
-						{{ 'DASHBOARD.MEMORY' | translate }}:{{memoryPercent}}
-					</span>
+          <span class="first-line">{{ 'DASHBOARD.CPU' | translate }}:{{cpuPercent}}</span>
+          <span class="second-line">{{ 'DASHBOARD.MEMORY' | translate }}:{{memoryPercent}}</span>
         </div>
         <div class="select-time-container">
           <time-range-scale [options]="scaleOptions"></time-range-scale>
@@ -161,19 +146,14 @@
           </clr-dropdown-menu>
         </clr-dropdown>
         <div class="caption_container">
-					<span class="first-line">
-						{{ 'DASHBOARD.USAGE' | translate }}:{{usageVolume}}
-					</span>
-          <span class="second-line">
-						{{ 'DASHBOARD.TOTAL' | translate }}:{{totalVolume}}
-					</span>
+          <span class="first-line">{{ 'DASHBOARD.USAGE' | translate }}:{{usageVolume}}</span>
+          <span class="second-line">{{ 'DASHBOARD.TOTAL' | translate }}:{{totalVolume}}</span>
         </div>
         <div class="select-time-container">
           <time-range-scale [options]="scaleOptions"></time-range-scale>
         </div>
       </div>
       <div class="card-block-bottom-container">
-
         <div style="flex-basis: 100%;">
           <div echarts [options]="storageOptions" style="height: 285px;"></div>
         </div>

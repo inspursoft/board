@@ -82,8 +82,7 @@ export const LANG_ZH_CN = {
     "USAGE": "已用",
     "TOTAL": "总共",
     "STORAGE": "存储",
-    "NO_DATA_409":"暂无数据",
-    "GATEWAY_TIMEOUT_504": "连接超时."
+    "NO_DATA_409":"暂无数据"
   },
   "PROJECT": {
     "CREATE_PROJECT": "创建项目",
@@ -169,7 +168,6 @@ export const LANG_ZH_CN = {
     "COL_OPERATION":"操作",
     "DETAIL_TITLE":"镜像",
     "BAD_REQUEST":"错误的请求",
-    "DELETE_IMAGE_ITEM":"删除镜像详情",
-    "GATEWAY_TIMEOUT":"请求超时"
+    "DELETE_IMAGE_ITEM":"删除镜像详情"
   }
 };

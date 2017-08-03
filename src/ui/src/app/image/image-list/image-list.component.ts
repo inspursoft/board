@@ -29,9 +29,6 @@ export class ImageListComponent implements OnInit {
             case 400:
               this.imageListErrMsg = 'IMAGE.BAD_REQUEST';
               break;
-            case 504:
-              this.imageListErrMsg = 'IMAGE.GATEWAY_TIMEOUT';
-              break;
             default:
               this.messageService.dispatchError(err, '');
           }

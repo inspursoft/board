@@ -15,14 +15,14 @@ export class ImageService {
   });
 
   getImages(image_name?: string, image_list_page?: number, image_list_page_size?: number): Promise<Image[]> {
-    let params: Map<string, string> = new Map<string, string>();
-    params["image_name"] = image_name;
-    params["image_list_page"] = image_list_page.toString();
-    params["image_list_page_size"] = image_list_page_size.toString();
     let options = new RequestOptions({
       headers: this.defaultHeaders,
-      params: {'token': this.appInitService.token},
-      search: params
+      params: {
+        'token': this.appInitService.token,
+        'image_name': image_name,
+        'image_list_page': image_list_page.toString(),
+        'image_list_page_size': image_list_page_size.toString()
+      }
     });
     return this.http.get("/api/v1/images", options).toPromise()
       .then(res => res.json())
@@ -35,7 +35,6 @@ export class ImageService {
       params: {'token': this.appInitService.token}
     });
     return this.http.get(`/api/v1/images/${image_name}`, options)
-      .timeout(3000)
       .toPromise()
       .then(res => {
         let s = res.json();

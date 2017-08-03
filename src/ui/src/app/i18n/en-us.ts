@@ -82,8 +82,7 @@ export const LANG_EN_US = {
     "USAGE": "Usage",
     "TOTAL": "Total",
     "STORAGE": "Storage",
-    "NO_DATA_409":"No Data",
-    "GATEWAY_TIMEOUT_504": "Gateway Timeout."
+    "NO_DATA_409":"No Data"
   },
   "PROJECT": {
     "CREATE_PROJECT": "Create Project",
@@ -169,7 +168,6 @@ export const LANG_EN_US = {
     "COL_OPERATION":"Operation",
     "DETAIL_TITLE":"Image",
     "BAD_REQUEST":"Bad request.",
-    "DELETE_IMAGE_ITEM":"Delete image detail.",
-    "GATEWAY_TIMEOUT":"Gateway timeout."
+    "DELETE_IMAGE_ITEM":"Delete image detail."
   }
 };

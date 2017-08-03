@@ -130,12 +130,12 @@ export class DashboardService {
    * }]}
    */
   getServiceData(query: {time_count: number, time_unit: string, service_name: string, timestamp_base: number}): Promise<LinesData> {
-    let params: Map<string, string> = new Map<string, string>();
-    params["service_name"] = query.service_name;
     let options = new RequestOptions({
       headers: this.defaultHeaders,
-      params: {'token': this.appInitService.token},
-      search: params
+      params: {
+        'token': this.appInitService.token,
+        'service_name': query.service_name
+      }
     });
     return this.http.post(`${BASE_URL}/dashboard/service`, {
       time_count: query.time_count.toString(),
@@ -148,8 +148,6 @@ export class DashboardService {
         let logs: ServiceDataModel[] = resJson["service_statuslogs"];
         let result: LinesData = [Array<[Date, number]>(0), Array<[Date, number]>(0)];
         if (logs && logs.length > 0) {
-          result[0] = result[0].slice(0, 0);
-          result[1] = result[1].slice(0, 0);
           logs.forEach((item: ServiceDataModel) => {
             result[0].push([new Date(item.podcontainer_timestamp * 1000), item.pods_number]);
             result[1].push([new Date(item.podcontainer_timestamp * 1000), item.container_number]);

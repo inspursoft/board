@@ -5,16 +5,17 @@ import { DashboardService, ServiceListModel, LinesData, LineDataModel } from "ap
 import { TranslateService } from "@ngx-translate/core";
 import { Subscription } from "rxjs/Subscription";
 import { MessageService } from "../shared/message-service/message.service";
+import { reject, resolve } from "q";
 
-const MAX_COUNT_PER_PAGE: number = 200;
+const MAX_COUNT_PER_PAGE: number = 300;
 const MAX_COUNT_PER_DRAG: number = 100;
 const REFRESH_SEED_SERVICE: number = 10;
+
 @Component({
   selector: 'dashboard',
-  templateUrl: 'dashboard.component.html',
+  templateUrl: 'app/dashboard/dashboard.component.html',
   styleUrls: ['dashboard.component.css']
 })
-
 export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   _intervalRead: any;
   _onLangChangeSubscription: Subscription;
@@ -39,15 +40,15 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   _serviceIntervalSeed: number = REFRESH_SEED_SERVICE;
   _serviceInRefreshIng: boolean = false;
   _serviceDropInfo: {isInDrop: boolean, isDropNext: boolean};
+  _serviceAlready: boolean = false;
   serviceCurPod: number = 0;
   serviceCurContainer: number = 0;
   serviceDropdownText: string = "";
   serviceList: Array<ServiceListModel> = Array<ServiceListModel>();
   serviceOptions: object = {};
-  serviceAlready: boolean = false;
   serviceNoData: boolean = false;
   serviceNoDataErrMsg: string = "";
-  serviceData: LinesData = [Array<[Date, number]>(0), Array<[Date, number]>(0)];
+  serviceData: LinesData;
 
   constructor(private service: DashboardService,
               private messageService: MessageService,
@@ -57,8 +58,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private static concatLineData(source: LinesData, res: LinesData, isAppend: boolean): LinesData {
     let result: LinesData = [Array<[Date, number]>(0), Array<[Date, number]>(0)];
     if (isAppend) {
-      let bufArr1: LineDataModel[] = source[0].slice(0, res[0].length);
-      let bufArr2: LineDataModel[] = source[1].slice(0, res[1].length);
+      let bufArr1: LineDataModel[] = source[0].slice(0, source[0].length - res[0].length);
+      let bufArr2: LineDataModel[] = source[1].slice(0, source[0].length - res[1].length);
       result[0] = res[0].concat(bufArr1);
       result[1] = res[1].concat(bufArr2);
     } else {
@@ -87,7 +88,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     return isMin ? valueArr[0][1] : valueArr[valueArr.length - 1][1]
   }
 
-  private static haveLessMinTimeValue(source: LinesData, res: LinesData): boolean {
+  private static haveLessMaxTimeValue(source: LinesData, res: LinesData): boolean {
     let curMaxTimeStamp = DashboardComponent.getTimeStamp(source, false);
     let result: boolean = false;
     for (let item of res[0]) {
@@ -99,12 +100,18 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     return result;
   }
 
-  private static calculateZoom(source: LinesData, res: LinesData): {start: number, end: number} {
+  private static calculateZoom(source: LinesData, res: LinesData, isDropNext: boolean): {start: number, end: number} {
     let result = {start: 100, end: 80};
     if (res[0].length > 0) {
-      result.start = Math.max((res[0].length / source[0].length) * 100 + 10, 20);
-      result.start = result.start > 100 ? 100 : result.start;
-      result.end = result.start - 20;
+      if (isDropNext){
+        result.start = Math.max((res[0].length / source[0].length) * 100 + 10, 20);
+        result.start = result.start > 100 ? 100 : result.start;
+        result.end = result.start - 20;
+      } else{
+        result.start = 100 - Math.max((res[0].length / source[0].length) * 100 - 10, 20);
+        result.start = result.start < 0 ? 0 : result.start;
+        result.end = result.start - 20;
+      }
     }
     return result;
   }
@@ -114,15 +121,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this._serviceQuery.time_count = MAX_COUNT_PER_PAGE;
     this._serviceDropInfo.isInDrop = false;
     this._serviceDropInfo.isDropNext = false;
-    this.serviceAlready = false;
+    this._serviceAlready = false;
     this.serviceNoData = false;
     this._serviceOptionsBuffer.lastZoomEnd = 80;
     this._serviceOptionsBuffer.lastZoomStart = 100;
-    this.serviceData = [[[new Date(), 0]], [[new Date(), 0]]];
   }
 
   serviceScaleChange(data: scaleOption) {
-    if (this.serviceAlready) {
+    if (this._serviceAlready) {
       this._serviceQuery.scale = data;
       this.resetServiceState();
       this.refreshServiceData();
@@ -130,7 +136,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   serviceDropDownChange(service: ServiceListModel) {
-    if (this.serviceAlready) {
+    if (this._serviceAlready) {
       this._serviceQuery.model = service;
       this.serviceDropdownText = service.service_name;
       this.resetServiceState();
@@ -157,7 +163,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this._serviceOptionsBuffer.lastZoomStart = event["start"];
     if (event["start"] == 0 && !this._serviceInRefreshIng) {//get backup data
       this._serviceInRefreshIng = true;
-      this.serviceAlready = false;
+      this._serviceAlready = false;
       this.serviceNoData = false;
       this._serviceDropInfo.isInDrop = true;
       this._serviceDropInfo.isDropNext = true;
@@ -167,7 +173,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     else if (event["end"] == 100 && this._serviceDropInfo.isInDrop && !this._serviceInRefreshIng) {//get forward data
       this._serviceInRefreshIng = true;
-      this.serviceAlready = false;
+      this._serviceAlready = false;
       this.serviceNoData = false;
       this._serviceDropInfo.isInDrop = true;
       this._serviceDropInfo.isDropNext = false;
@@ -189,14 +195,15 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.service.getServiceData(query)
       .then(res => {
         if (this._serviceDropInfo.isInDrop && !this._serviceDropInfo.isDropNext &&
-          DashboardComponent.haveLessMinTimeValue(this.serviceData, res)) {
+          DashboardComponent.haveLessMaxTimeValue(this.serviceData, res)) {
           this.resetServiceState();
           this.refreshServiceData();
         } else {
-          this.serviceData = DashboardComponent.concatLineData(this.serviceData, res, this._serviceDropInfo.isDropNext);
+          this.serviceData ? this.serviceData = DashboardComponent.concatLineData(this.serviceData, res, this._serviceDropInfo.isDropNext) :
+            this.serviceData = res;
           if (this._serviceDropInfo.isInDrop) {
-            this.serviceOptions["dataZoom"][0]["start"] = DashboardComponent.calculateZoom(this.serviceData, res).start;
-            this.serviceOptions["dataZoom"][0]["end"] = DashboardComponent.calculateZoom(this.serviceData, res).end;
+            this.serviceOptions["dataZoom"][0]["start"] = DashboardComponent.calculateZoom(this.serviceData, res, this._serviceDropInfo.isDropNext).start;
+            this.serviceOptions["dataZoom"][0]["end"] = DashboardComponent.calculateZoom(this.serviceData, res, this._serviceDropInfo.isDropNext).end;
           }
           else {
             this.serviceOptions["dataZoom"][0]["start"] = this._serviceOptionsBuffer.lastZoomStart;
@@ -205,26 +212,22 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             this.serviceCurContainer = DashboardComponent.getValue(this.serviceData, 1, true);
           }
           this.serviceNoData = false;
-          this.serviceAlready = true;
+          this._serviceAlready = true;
           this._serviceInRefreshIng = false;
           this._serviceIntervalSeed = REFRESH_SEED_SERVICE;
         }
       })
       .catch(err => {
-        this.serviceData = [Array<[Date, number]>(0), Array<[Date, number]>(0)];
         this.serviceCurPod = 0;
         this.serviceCurContainer = 0;
         this.serviceNoData = true;
-        this.serviceAlready = true;
+        this._serviceAlready = true;
         this._serviceInRefreshIng = false;
         this._serviceIntervalSeed = REFRESH_SEED_SERVICE;
         if (err) {
           switch (err.status) {
             case 409:
               this.serviceNoDataErrMsg = 'DASHBOARD.NO_DATA_409';
-              break;
-            case 504:
-              this.serviceNoDataErrMsg = 'DASHBOARD.GATEWAY_TIMEOUT_504';
               break;
             default:
               this.messageService.dispatchError(err, '');
@@ -260,7 +263,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     });
     this._serviceDropInfo = {isInDrop: false, isDropNext: false};
     this._intervalRead = setInterval(() => {
-      if (this._serviceIntervalSeed > 0 && this.serviceAlready) {
+      if (this._serviceIntervalSeed > 0 && this._serviceAlready) {
         this._serviceIntervalSeed--;
         if (this._serviceIntervalSeed == 0 && !this._serviceDropInfo.isInDrop) {
           this.refreshServiceData();
@@ -279,9 +282,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         switch (err.status) {
           case 409:
             this.serviceDropdownText = 'DASHBOARD.NO_DATA_409';
-            break;
-          case 504:
-            this.serviceDropdownText = 'DASHBOARD.GATEWAY_TIMEOUT_504';
             break;
           default:
             this.messageService.dispatchError(err, '');

@@ -138,6 +138,7 @@ button:focus {
 }
 
 .no-already {
+  opacity: 0.2;
   display: flex;
   align-items: center;
   justify-content: center;
