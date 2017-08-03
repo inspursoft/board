@@ -1,5 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
+
+import { AppInitService } from '../../app.init.service';
+
 import { Project } from '../project';
 import { ProjectService } from '../project.service';
 import { Member } from './member';
@@ -15,13 +18,16 @@ import { MessageService } from '../../shared/message-service/message.service';
   templateUrl: 'member.component.html'
 })
 export class MemberComponent implements OnInit {
+
+  currentUser: {[key: string]: any};
+
   projectMemberOpened: boolean;
 
   role: Role = new Role();
   members: Member[];
   availableMembers: Member[];
 
-  selectedMember: Member;
+  selectedMember: Member = new Member();
   
   project: Project = new Project();
 
@@ -34,12 +40,19 @@ export class MemberComponent implements OnInit {
   memberSubject: Subject<Member[]> = new Subject<Member[]>();
 
   constructor(
+    private appInitService: AppInitService,
     private projectService: ProjectService,
     private translateService: TranslateService,
     private messageService: MessageService
   ){}
+  
+  get roleToggleable(): boolean {
+    return (this.currentUser.id != this.selectedMember.project_member_user_id);
+  }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.currentUser = this.appInitService.currentUser;
+  }
 
   retrieveAvailableMembers() {
     this.projectService
@@ -84,9 +97,12 @@ export class MemberComponent implements OnInit {
 
   pickUpMember(m: Member) {
     this.selectedMember = m;
-    if(this.doUnset){
-      this.role.role_id = this.selectedMember.project_member_role_id;    
+    if(this.currentUser.is_system_admin != 1 || this.project.project_owner_id == this.selectedMember.project_member_user_id) { 
+      // this.doSet = false;
+      this.doUnset = false;
     }
+    this.role.role_id = this.selectedMember.project_member_role_id;    
+    
   }
 
   pickUpRole(r: Role) {
