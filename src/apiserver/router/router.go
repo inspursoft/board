@@ -2,8 +2,10 @@ package router
 
 import (
 	"git/inspursoft/board/src/apiserver/controller"
+	"git/inspursoft/board/src/apiserver/controller/dashboard"
 
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/context"
 )
 
 func init() {
@@ -24,6 +26,9 @@ func init() {
 			beego.NSRouter("/users/current",
 				&controller.AuthController{},
 				"get:CurrentUserAction"),
+			beego.NSRouter("/users",
+				&controller.UserController{},
+				"get:GetUsersAction"),
 			beego.NSRouter("/users/:id([0-9]+)/password",
 				&controller.UserController{},
 				"put:ChangePasswordAction"),
@@ -33,9 +38,6 @@ func init() {
 			beego.NSRouter("/users/:id([0-9]+)",
 				&controller.SystemAdminController{},
 				"get:GetUserAction;put:UpdateUserAction;delete:DeleteUserAction"),
-			beego.NSRouter("/users",
-				&controller.SystemAdminController{},
-				"get:GetUsersAction"),
 			beego.NSRouter("/users/:id([0-9]+)/systemadmin",
 				&controller.SystemAdminController{},
 				"put:ToggleSystemAdminAction"),
@@ -63,8 +65,23 @@ func init() {
 			beego.NSRouter("/images/:imagename(.*)",
 				&controller.ImageController{},
 				"get:GetImageDetailAction"),
+			beego.NSNamespace("/dashboard", beego.NSRouter("/service",
+				&dashboard.DashboardServiceController{},
+				"get:GetService;post:GetService"),
+				beego.NSRouter("/service/list",
+					&dashboard.DashboardServiceController{},
+					"get:GetList"),
+			),
 		),
 	)
+
 	beego.AddNamespace(ns)
+	beego.InsertFilter("/*", beego.AfterExec, func(ctx *context.Context) {
+		token := ctx.Request.FormValue("token")
+		if token != "" {
+			controller.ReassignToken(token)
+		}
+
+	}, true)
 	beego.SetStaticPath("/swagger", "swagger")
 }

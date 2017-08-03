@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type AuthController struct {
@@ -43,11 +44,14 @@ func (u *AuthController) SignInAction() {
 		payload["username"] = user.Username
 		payload["email"] = user.Email
 		payload["realname"] = user.Realname
+		payload["is_project_admin"] = user.ProjectAdmin
+		payload["is_system_admin"] = user.SystemAdmin
 		token, err := signToken(payload)
 		if err != nil {
 			u.internalError(err)
 			return
 		}
+		memoryCache.Put(token.TokenString, token.TokenString, time.Second*1800)
 		u.Data["json"] = token
 		u.ServeJSON()
 	}
@@ -105,10 +109,11 @@ func (u *AuthController) SignUpAction() {
 func (u *AuthController) CurrentUserAction() {
 	token := u.GetString("token")
 	payload, err := verifyToken(token)
-	if err != nil {
+	if err != nil || payload == nil {
 		u.CustomAbort(http.StatusUnauthorized, "Need to login first.")
 		return
 	}
+	payload["token"] = token
 	u.Data["json"] = payload
 	u.ServeJSON()
 }

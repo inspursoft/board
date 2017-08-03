@@ -21,6 +21,34 @@ func (u *UserController) Prepare() {
 	}
 	u.currentUser = user
 	u.isSysAdmin = (u.currentUser.SystemAdmin == 1)
+	u.isProjectAdmin = (u.currentUser.ProjectAdmin == 1)
+	if !u.isProjectAdmin {
+		u.CustomAbort(http.StatusForbidden, "Insuffient privileges.")
+		return
+	}
+}
+
+func (u *UserController) GetUsersAction() {
+	username := u.GetString("username")
+	email := u.GetString("email")
+	var users []*model.User
+	var err error
+	if strings.TrimSpace(username) != "" {
+		users, err = service.GetUsers("username", username)
+	} else if strings.TrimSpace(email) != "" {
+		users, err = service.GetUsers("email", email)
+	} else {
+		users, err = service.GetUsers("", nil)
+	}
+	if err != nil {
+		u.internalError(err)
+		return
+	}
+	for _, u0 := range users {
+		u0.Password = ""
+	}
+	u.Data["json"] = users
+	u.ServeJSON()
 }
 
 func (u *UserController) ChangePasswordAction() {
@@ -144,29 +172,6 @@ func (u *SystemAdminController) AddUserAction() {
 	if !isSuccess {
 		u.serveStatus(http.StatusBadRequest, "Failed to sign up user.")
 	}
-}
-
-func (u *SystemAdminController) GetUsersAction() {
-	username := u.GetString("username")
-	email := u.GetString("email")
-	var users []*model.User
-	var err error
-	if strings.TrimSpace(username) != "" {
-		users, err = service.GetUsers("username", username)
-	} else if strings.TrimSpace(email) != "" {
-		users, err = service.GetUsers("email", email)
-	} else {
-		users, err = service.GetUsers("", nil)
-	}
-	if err != nil {
-		u.internalError(err)
-		return
-	}
-	for _, u0 := range users {
-		u0.Password = ""
-	}
-	u.Data["json"] = users
-	u.ServeJSON()
 }
 
 func (u *SystemAdminController) GetUserAction() {

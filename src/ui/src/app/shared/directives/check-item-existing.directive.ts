@@ -14,6 +14,7 @@ import 'rxjs/add/operator/first';
 import { Http } from '@angular/http';
 
 import { AppInitService } from '../../app.init.service';
+import { MessageService } from '../message-service/message.service';
 
 @Directive({
   selector: '[checkItemExisting]',
@@ -28,7 +29,8 @@ export class CheckItemExistingDirective implements AsyncValidator {
 
   constructor(
     private http: Http,
-    private appInitService: AppInitService
+    private appInitService: AppInitService,
+    private messageService: MessageService
   ){}
 
   checkUserExists(target: string, value: string): Observable<{[key: string]: any}> {
@@ -39,7 +41,12 @@ export class CheckItemExistingDirective implements AsyncValidator {
       }
     })
     .map(()=>this.valFn)
-    .catch(()=>Observable.of({ 'checkItemExisting': {value} }));
+    .catch(err=>{
+      if(err && err.status === 409) {
+        return Observable.of({ 'checkItemExisting': { value } });
+      }
+      this.messageService.dispatchError(err, 'ERROR.INVALID_USER');
+    });
   }
   
   checkProjectExists(token: string, projectName: string): Observable<{[key: string]: any}>{
@@ -50,7 +57,12 @@ export class CheckItemExistingDirective implements AsyncValidator {
       }
     })
     .map(()=>this.valFn)
-    .catch(()=>Observable.of({ 'checkItemExisting': projectName }));
+    .catch(err=>{
+      if(err && err.status === 409) {
+        return Observable.of({ 'checkItemExisting': { projectName } });
+      }
+      this.messageService.dispatchError(err, 'ERROR.INVALID_USER');
+    });
   } 
 
   validate(control: AbstractControl): Observable<{[key: string]: any}> {

@@ -35,28 +35,6 @@ def render(src, dest, **kw):
         f.write(t.substitute(**kw))
     print("Generated configuration file: %s" % dest)
 
-def get_secret_key(path):
-    secret_key = _get_secret(path, "secretkey") 
-    if len(secret_key) != 16:
-        raise Exception("secret key's length has to be 16 chars, current length: %d" % len(secret_key))
-    return secret_key
-
-def _get_secret(folder, filename, length=16):
-    key_file = os.path.join(folder, filename)
-    if os.path.isfile(key_file):
-        with open(key_file, 'r') as f:
-            key = f.read()
-            print("loaded secret from file: %s" % key_file)
-        return key
-    if not os.path.isdir(folder):
-        os.makedirs(folder, mode=0600)
-    key = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(length))  
-    with open(key_file, 'w') as f:
-        f.write(key)
-        print("Generated and saved secret to file: %s" % key_file)
-    os.chmod(key_file, 0600)
-    return key
-
 def delfile(src):
     if os.path.isfile(src):
         try:
@@ -96,20 +74,26 @@ mysql_ip = rcp.get("configuration", "mysql_ip")
 mysql_port = rcp.get("configuration", "mysql_port")
 board_admin_password = rcp.get("configuration", "board_admin_password")
 db_password = rcp.get("configuration", "db_password")
-secretkey_path = rcp.get("configuration", "secretkey_path")
-secret_key = get_secret_key(secretkey_path)
+token_cache_expire_seconds = rcp.get("configuration", "token_cache_expire_seconds")
+token_expire_seconds = rcp.get("configuration", "token_expire_seconds")
+token_secret_key = rcp.get("configuration", "token_secret_key")
+registry_host = rcp.get("configuration", "registry_host")
+registry_port = rcp.get("configuration", "registry_port")
+
 ########
 
 #Setting Directory
 apiserver_config_dir = os.path.join(config_dir,"apiserver")
 if not os.path.exists(apiserver_config_dir):
     os.makedirs(os.path.join(config_dir, "apiserver"))
-apiserver_conf_env = os.path.join(config_dir, "apiserver", "env")
+apiserver_conf= os.path.join(config_dir, "apiserver", "app.conf")
+apiserver_env= os.path.join(config_dir, "apiserver", "env")
 
 tokenserver_config_dir = os.path.join(config_dir,"tokenserver")
 if not os.path.exists(tokenserver_config_dir):
     os.makedirs(os.path.join(config_dir, "tokenserver"))
-tokenserver_conf_env = os.path.join(config_dir, "tokenserver", "env")
+tokenserver_conf = os.path.join(config_dir, "tokenserver", "app.conf")
+tokenserver_env = os.path.join(config_dir, "tokenserver", "env")
 
 collector_config_dir = os.path.join(config_dir,"collector")
 if not os.path.exists(collector_config_dir):
@@ -128,13 +112,23 @@ if not os.path.exists(nginx_config_dir):
 
 
 #Render Configure File
+render(os.path.join(templates_dir, "apiserver", "app.conf"),
+        apiserver_conf,
+        token_cache_expire_seconds=token_cache_expire_seconds,
+        db_password=db_password)
+
 render(os.path.join(templates_dir, "apiserver", "env"),
-        apiserver_conf_env,
-        hostname=hostname,
-        kubernetes_apiserver_host=kubernetes_apiserver_host,
-        kubernetes_apiserver_port=kubernetes_apiserver_port,
-        db_password=db_password,
-        board_admin_password=board_admin_password)
+        apiserver_env,
+        registry_host=registry_host,
+        registry_port=registry_port)
+
+render(os.path.join(templates_dir, "tokenserver", "app.conf"),
+        tokenserver_conf,
+        token_expire_seconds=token_expire_seconds,
+        token_secret_key=token_secret_key)
+
+render(os.path.join(templates_dir, "tokenserver", "env"),
+        tokenserver_env)
 
 render(os.path.join(templates_dir, "collector", "env"),
         collector_conf_env,

@@ -15,11 +15,11 @@ import (
 
 	"net/url"
 
-	"time"
-
 	"strings"
 
 	"fmt"
+
+	"time"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/cache"
@@ -29,6 +29,7 @@ import (
 
 var conf config.Configer
 var tokenServerURL *url.URL
+var tokenCacheExpireSeconds int
 var memoryCache cache.Cache
 
 type baseController struct {
@@ -120,9 +121,20 @@ func signToken(payload map[string]interface{}) (*model.Token, error) {
 	if err != nil {
 		return nil, err
 	}
-	logs.Debug("Get token from server: %s\n", token.TokenString)
-	memoryCache.Put(token.TokenString, token.TokenString, time.Second*1800)
 	return &token, nil
+}
+
+func ReassignToken(tokenString string) (map[string]interface{}, error) {
+	payload, err := verifyToken(tokenString)
+	if err != nil {
+		return nil, fmt.Errorf("token is invalid for re-assignment")
+	}
+	newToken, err := signToken(payload)
+	if err != nil {
+		return nil, fmt.Errorf("failed to re-assign token: %+v", err)
+	}
+	memoryCache.Put(tokenString, newToken.TokenString, time.Second*time.Duration(tokenCacheExpireSeconds))
+	return payload, nil
 }
 
 func verifyToken(tokenString string) (map[string]interface{}, error) {
@@ -134,7 +146,11 @@ func verifyToken(tokenString string) (map[string]interface{}, error) {
 		logs.Info("token has been expired forcely.")
 		return nil, nil
 	}
-	resp, err := http.Get(tokenServerURL.String() + "?token=" + tokenString)
+	currentToken, ok := storedToken.(string)
+	if !ok {
+		return nil, fmt.Errorf("failed to assert stored token")
+	}
+	resp, err := http.Get(tokenServerURL.String() + "?token=" + currentToken)
 	if err != nil {
 		return nil, err
 	}
@@ -163,7 +179,12 @@ func init() {
 	if err != nil {
 		logs.Error("Failed to parse token server URL: %+v\n", err)
 	}
-	logs.Info("Set tokenservice URL as %s", tokenServerURL.String())
+	tokenCacheExpireSeconds, err = conf.Int("tokenCacheExpireSeconds")
+	if err != nil {
+		logs.Error("Failed to parse token expire seconds: %+v\n", err)
+	}
+
+	logs.Info("Set token server URL as %s and will expiration time after %d second(s) in cache", tokenServerURL.String(), tokenCacheExpireSeconds)
 
 	memoryCache, err = cache.NewCache("memory", `{"interval": 360}`)
 	if err != nil {

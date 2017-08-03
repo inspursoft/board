@@ -1,5 +1,3 @@
-HOSTNAME=$hostname
-DB_PASSWORD=$db_password
-BOARD_ADMIN_PASSWORD=$board_admin_password
-K8S_APISERVER_HOST=$kubernetes_apiserver_host
-K8S_APISERVER_PORT=$kubernetes_apiserver_port
+REGISTRY_HOST=$registry_host
+REGISTRY_PORT=$registry_port
+
