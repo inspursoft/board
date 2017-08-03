@@ -16,7 +16,12 @@ export const LANG_ZH_CN = {
   "ERROR": {
     "UNKNOWN_ERROR": "未知错误。",
     "INTERNAL_ERROR": "系统内部错误。",
-    "INVALID_USER": "当前用户令牌过期，请重新登录。"
+    "INVALID_USER": "当前用户令牌过期，请重新登录。",
+    "NOT_FOUND": "资源未找到。",
+    "INSUFFIENT_PRIVILEGES": "权限不足，无法操作。",
+    "BAD_REQUEST": "无效的用户请求。",
+    "CONFLICT_INPUT": "存在一个与当前有冲突的资源。",
+    "PECONDITION_FAILED": "请求内容不满足应提供的前置条件。"
   },
   "ACCOUNT": {
     "SIGN_IN": "登录",

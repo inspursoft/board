@@ -44,7 +44,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
             this.messageService.inlineAlertMessage(inlineMessage);
             this.retrieve();
           })
-          .catch(err=>this.messageService.dispatchError(err, 'PROJECT.FAILED_TO_DELETE_PROJECT'));
+          .catch(err=>this.messageService.dispatchError(err, ''));
       }
     });
   }
@@ -97,6 +97,6 @@ export class ProjectComponent implements OnInit, OnDestroy {
         toggleMessage.message = 'PROJECT.SUCCESSFUL_TOGGLE_PROJECT'; 
         this.messageService.inlineAlertMessage(toggleMessage);
       })
-      .catch(err=>this.messageService.dispatchError(err, 'PROJECT.FAILED_TO_TOGGLE_PROJECT'));
+      .catch(err=>this.messageService.dispatchError(err, ''));
   }
 }

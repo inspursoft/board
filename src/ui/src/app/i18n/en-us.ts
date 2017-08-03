@@ -16,7 +16,12 @@ export const LANG_EN_US = {
   "ERROR": {
     "UNKNOWN_ERROR": "Unknown error.",
     "INTERNAL_ERROR": "Unexpected internal error.",
-    "INVALID_USER": "User's token has expired, please sign in again."
+    "INVALID_USER": "User's token has expired, please sign in again.",
+    "NOT_FOUND": "Resource not found.",
+    "INSUFFIENT_PRIVILEGES": "Insuffient privileges.",
+    "BAD_REQUEST": "Invalid user request.",
+    "CONFLICT_INPUT": "A conflict with the current state of the resource.",
+    "PECONDITION_FAILED": "Precondition given in one or more of the request are evaluated to false."
   },
   "ACCOUNT": {
     "SIGN_IN": "Sign In",
