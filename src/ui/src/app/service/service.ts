@@ -1,0 +1,8 @@
+export class Service {
+  service_name: string;
+  service_project_name: string;
+  service_owner: string;
+  service_create_time: Date;
+  service_public: boolean;
+  service_status: number;
+}
