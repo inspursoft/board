@@ -37,6 +37,7 @@ func (u *AuthController) SignInAction() {
 		}
 		if user == nil {
 			u.serveStatus(http.StatusBadRequest, "Incorrect username or password.")
+			return
 		}
 
 		payload := make(map[string]interface{})
