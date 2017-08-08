@@ -177,5 +177,15 @@ export const LANG_EN_US = {
     "COL_OPERATION":"Operation",
     "DETAIL_TITLE":"Image",
     "DELETE_IMAGE_ITEM":"Delete image detail."
+  },
+  "SERVICE": {
+    "CREATE_SERVICE": "Create Service",
+    "SERVICE_NAME": "Service Name",
+    "PROJECT_NAME": "Project Name",
+    "OWNER": "Owner",
+    "CREATE_TIME": "Create Time",
+    "PUBLIC": "Public",
+    "STATUS": "Status",
+    "OPERATION": "Operation"
   }
 };

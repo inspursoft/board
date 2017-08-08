@@ -45,4 +45,5 @@ type TagDetail struct {
 	ImageCreationTime string `json:"image_creationtime"`
 	ImageSize         int    `json:"image_size_number"`
 	ImageSizeUnit     string `json:"image_size_unit"`
+	ImageDetail       string `json:"image_detail"`
 }

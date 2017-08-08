@@ -180,5 +180,15 @@ export const LANG_ZH_CN = {
     "COL_OPERATION":"操作",
     "DETAIL_TITLE":"镜像",
     "DELETE_IMAGE_ITEM":"删除镜像详情"
+  },
+  "SERVICE": {
+    "CREATE_SERVICE": "创建服务",
+    "SERVICE_NAME": "服务名称",
+    "PROJECT_NAME": "项目名称",
+    "OWNER": "所有者",
+    "CREATE_TIME": "创建时间",
+    "PUBLIC": "公开性",
+    "STATUS": "状态",
+    "OPERATION": "操作"
   }
 };
