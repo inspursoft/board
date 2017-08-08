@@ -18,6 +18,7 @@ export class HeaderComponent implements OnInit {
   @Input() isSignIn: boolean;
   @Input() hasSignedIn: boolean;
   currentUser: {[key: string]: any};
+  showChangePassword:boolean = false;
 
   get brandLogoUrl(): string {
     return this.isSignIn ? '../../images/board-blue.jpg': '../../../images/board.png';
@@ -64,6 +65,5 @@ export class HeaderComponent implements OnInit {
       .signOut()
       .then(res=>this.router.navigate(['/sign-in']))
       .catch(err=>this.messageService.dispatchError(err, 'ACCOUNT.FAILED_TO_SIGN_OUT'));
-    ;
   }
 }

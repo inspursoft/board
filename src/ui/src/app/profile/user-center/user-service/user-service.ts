@@ -36,6 +36,20 @@ export class UserService {
       .catch(err => Promise.reject(err));
   }
 
+  changeUserPassword(userID: number, user_password_old: string, user_password_new: string): Promise<boolean> {
+    let options = new RequestOptions({
+      headers: this.defaultHeaders,
+      params: {'token': this.appInitService.token}
+    });
+    let body = {
+      "user_password_old": user_password_old,
+      "user_password_new": user_password_new
+    };
+    return this.http.put(`${BASE_URL}/users/${userID}/password`, body, options).toPromise()
+      .then(res => res.ok)
+      .catch(err => Promise.reject(err));
+  }
+
   updateUser(user: User): Promise<boolean> {
     let options = new RequestOptions({
       headers: this.defaultHeaders,

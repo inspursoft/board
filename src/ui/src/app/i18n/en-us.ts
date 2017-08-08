@@ -61,7 +61,12 @@ export const LANG_EN_US = {
     "ACCOUNT_SETTINGS": "Account Settings",
     "LANG_EN_US": "English",
     "LANG_ZH_CN": "中文",
-    "LOG_OUT": "Log Out"
+    "LOG_OUT": "Log Out",
+    "OLD_PASSWORD":"Old password",
+    "NEW_PASSWORD":"New password",
+    "NEW_PASSWORD_CONFIRM":"Confirm new password",
+    "OLD_PASSWORD_WRONG":"Old password is wrong.",
+    "CHANGE_PASSWORD_SUCCESS":"Change password success."
   },
   "SIDE_NAV": {
     "DASHBOARD": "Dashboard",

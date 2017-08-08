@@ -12,6 +12,7 @@ import { CheckItemIdenticalDirective } from './directives/check-item-identical.d
 import { MessageService } from './message-service/message.service';
 import { AuthGuard } from './auth-guard.service';
 import { CheckItemPatternDirective } from "./directives/check-item-pattern.directive";
+import { ChangePasswordComponent } from "./change-password/change-password.component";
 
 @NgModule({
   imports: [
@@ -27,7 +28,7 @@ import { CheckItemPatternDirective } from "./directives/check-item-pattern.direc
     CheckItemExistingDirective,
     CheckItemIdenticalDirective,
     CheckItemPatternDirective,
-    GlobalMessageComponent
+    ChangePasswordComponent
   ],
   exports: [
     CoreModule,
@@ -39,8 +40,7 @@ import { CheckItemPatternDirective } from "./directives/check-item-pattern.direc
     GlobalMessageComponent,
     CheckItemExistingDirective,
     CheckItemIdenticalDirective,
-    CheckItemPatternDirective,
-    GlobalMessageComponent
+    CheckItemPatternDirective
   ],
   providers: [
     AuthGuard,

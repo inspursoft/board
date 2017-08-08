@@ -53,7 +53,10 @@ export const LANG_ZH_CN = {
     "INCORRECT_USERNAME_OR_PASSWORD": "用户名或密码错误。",
     "FAILED_TO_SIGN_IN": "登录失败:",
     "FAILED_TO_SIGN_UP": "注册失败:",
-    "FAILED_TO_SIGN_OUT": "登出系统失败。"
+    "FAILED_TO_SIGN_OUT": "登出系统失败。",
+    "OLD_PASSWORD":"旧密码",
+    "NEW_PASSWORD":"新密码",
+    "NEW_PASSWORD_CONFIRM":"确认新密码",
   },
   "HEAD_NAV": {
     "INPUT_FOR_SEARCHING": "输入搜索内容",
@@ -61,7 +64,12 @@ export const LANG_ZH_CN = {
     "ACCOUNT_SETTINGS": "账户设置",
     "LANG_EN_US": "English",
     "LANG_ZH_CN": "中文",
-    "LOG_OUT": "退出"
+    "LOG_OUT": "退出",
+    "OLD_PASSWORD":"旧密码",
+    "NEW_PASSWORD":"新密码",
+    "NEW_PASSWORD_CONFIRM":"确认新密码",
+    "OLD_PASSWORD_WRONG":"旧密码错误",
+    "CHANGE_PASSWORD_SUCCESS":"修改密码成功."
   },
   "SIDE_NAV": {
     "DASHBOARD": "仪表盘",
