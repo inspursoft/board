@@ -36,20 +36,24 @@ Now we have a **Makefile** for building the whole project. So, you can build and
 These commands will pull/build the images for Board and run them. Depend on your net speed, it will take a few minitus or hours.
 
 ### Building and Running(By compose)
-
-You can use docker-compose to build Board directly.
+Change the directory into the workspace.
+   ```sh
+     $ cd board
+   ```
+Use `docker-compose` to build Board directly.
 
    ```sh
-      $ cd board
       $ docker-compose -f make/dev/docker-compose.yml build
    ```
-
+The UI components (writen in TypeScript) can be built by running with a UI Builder image separately.
+   ```sh
+      $ docker-compose -f make/dev/docker-compose.uibuilder.yml up
+   ```
 And start:
-
    ```sh
       $ docker-compose -f make/dev/docker-compose.yml up
    ```
-
+   
 ## Step 4: Verify the Board
 
 Refer to [View and test Board REST API via Swagger](configure_swagger.md) for testing the Board REST API.
