@@ -61,10 +61,13 @@ export class ChangePasswordComponent implements OnInit {
           this.isOpen = false;
         })
         .catch(err => {
-          this.isOpen = false;
-          (err && err["status"] && err["status"] == 403) ?
-            this.messageService.dispatchError(err, "HEAD_NAV.OLD_PASSWORD_WRONG") :
+          if (err && err["status"] && err["status"] == 403) {
+            this.errMessage = "HEAD_NAV.OLD_PASSWORD_WRONG";
+            this.isAlertClose = false;
+          } else {
+            this.isOpen = false;
             this.messageService.dispatchError(err);
+          }
         })
     }
   }
