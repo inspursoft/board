@@ -43,16 +43,10 @@ export class ChangePasswordComponent implements OnInit {
   set isOpen(open: boolean) {
     this._isOpen = open;
     this.isOpenChange.emit(this._isOpen);
-
   }
 
   submitChangePassword(): void {
-    if (this._curUser["status"] == "401") {
-      this.isOpen = false;
-      let err: Error = new Error(this._curUser["message"]);
-      this.messageService.dispatchError(err)
-    }
-    else if (this._curUser["id"]) {
+    if (this._curUser && this._curUser["id"]) {
       this.userService.changeUserPassword(this._curUser["id"], this.curPassword, this.newPassword)
         .then(() => {
           let m: Message = new Message();
@@ -69,7 +63,9 @@ export class ChangePasswordComponent implements OnInit {
             this.messageService.dispatchError(err);
           }
         })
+    } else {
+      this.errMessage = "ERROR.INVALID_USER";
+      this.isAlertClose = false;
     }
   }
-
 }
