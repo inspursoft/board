@@ -53,10 +53,7 @@ export const LANG_ZH_CN = {
     "INCORRECT_USERNAME_OR_PASSWORD": "用户名或密码错误。",
     "FAILED_TO_SIGN_IN": "登录失败:",
     "FAILED_TO_SIGN_UP": "注册失败:",
-    "FAILED_TO_SIGN_OUT": "登出系统失败。",
-    "OLD_PASSWORD":"旧密码",
-    "NEW_PASSWORD":"新密码",
-    "NEW_PASSWORD_CONFIRM":"确认新密码",
+    "FAILED_TO_SIGN_OUT": "登出系统失败。"
   },
   "HEAD_NAV": {
     "INPUT_FOR_SEARCHING": "输入搜索内容",
