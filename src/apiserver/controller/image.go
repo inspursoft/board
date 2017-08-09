@@ -181,19 +181,13 @@ func (p *ImageController) GetImageDetailAction() {
 
 }
 
-/*  TODO: Checking the user priviledge token
-func (p *ProjectController) Prepare() {
-	user, err := p.getCurrentUser()
-	if err != nil {
-		p.internalError(err)
-		return
-	}
+//  Checking the user priviledge by token
+func (p *ImageController) Prepare() {
+	user := p.getCurrentUser()
 	if user == nil {
 		p.CustomAbort(http.StatusUnauthorized, "Need to login first.")
 		return
 	}
 	p.currentUser = user
 	p.isSysAdmin = (user.SystemAdmin == 1)
-	p.isProjectAdmin = (user.ProjectAdmin == 1)
 }
-*/
