@@ -1221,18 +1221,21 @@ paths:
           description: User need to log in as admin.
         500:
           description: Unexpected internal errors. 
-  /v1/dashboard/service/{service_id}:
+  /v1/dashboard/service/:
     post:
       summary: Return the status logs of this service
       description: |
         This endpoint returns the status logs of this service.
       parameters:
-        - name: service_id
-          in: path
-          description: The integer ID of this service, 'null' is for the sum of all services.
+        - name: token
+          in: query
+          type: string
           required: true
-          type: integer
-          format: int32
+          description: Current available token.
+        - name: service_name
+          in: query
+          description: The integer ID of this service, 'null' is for the sum of all services.
+          type: string
         - name: service_timestruct
           in: body
           required: true
@@ -1251,14 +1254,43 @@ paths:
         401:
           description: Invalid service name.
         500:
-          description: Internal errors.    
-  /v1/dashboard/node/{node_id}:
+          description: Internal errors.
+  /v1/dashboard/service/list:
+    get:
+      summary: Return the list of this service
+      description: |
+        This endpoint returns the list of this service.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the list of this service.
+          schema:
+            $ref: '#/definitions/DashboardServiceList'
+        400:
+          description: Bad Request.
+        401:
+          description: Invalid service name.
+        500:
+          description: Internal errors.
+  /v1/dashboard/node/:
     post:
       summary: Return the status logs of this node
       description: |
         This endpoint returns the status logs of this node.
       parameters:
-        - name: node_id
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: node_name
           in: path
           description: The integer ID of this node, 'null' is for the sum of all nodes.
           required: true
@@ -1269,7 +1301,7 @@ paths:
           required: true
           schema:
             $ref: '#/definitions/TimeStruct'
-          description: The time struct for status logs of this node.    
+          description: The time struct for status logs of this node.
       tags:
         - Products
       responses:
@@ -1282,7 +1314,31 @@ paths:
         401:
           description: Invalid node name.
         500:
-          description: Internal errors.    
+          description: Internal errors.
+  /v1/dashboard/node/list:
+    get:
+      summary: Return the list of node.
+      description: |
+        This endpoint the list of node.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the status logs of this node.
+          schema:
+            $ref: '#/definitions/DashboardNodeList'
+        400:
+          description: Bad Request.
+        401:
+          description: Invalid node name.
+        500:
+          description: Internal errors.
   /v1/dashboard/storage/{storage_id}:
     get:
       summary: Return the status logs of this storage
@@ -1788,25 +1844,21 @@ definitions:
   ResourcesUsage:
     type: object
     properties:
-      cpu_usageinfo:        
+      cpu_usage:
+        type: string
         description: The usage information of cpu.
-        $ref: '#/definitions/CPUUsageInfo'
-      memory_initial_number:
-        type: integer
-        format: int32
+      mem_usage:
+        type: string
         description: The memory capability count number.
-      memory_usage_number:
-        type: integer
-        format: int32
-        description: The memory utilization count number.
-      memory_size_unit:
+      mem_size:
         type: string
         description: The memory unit of measurement.
-      storage_usageinfo:        
-        type: array
+      storage_total:
+        type: string
         description: Storage usage information, division by different volume.
-        items:
-          $ref: '#/definitions/StorageUsageInfo'
+      storage_use:
+        type: string
+        description: Storage usage information, division by different volume.
       timestamp:
         type: string
         description: The timestamp for resource usage recording.        
@@ -1939,8 +1991,7 @@ definitions:
         type: string
         description: The time unit of service status logs, minute, hour, day, month.
       service_count:
-        type: integer
-        format: int32
+        type: string
         description: The number of the service log based on time unit.
       service_statuslogs:
         type: array
@@ -1972,8 +2023,7 @@ definitions:
         type: string
         description: The time unit of node status logs, minute, hour, day, month.     
       node_count:
-        type: integer
-        format: int32
+        type: string
         description: The number of the node logs based on time unit.   
       node_statuslogs:
         type: array
@@ -2005,8 +2055,7 @@ definitions:
         type: string
         description: The time unit for status logs, minute, hour, day, month.    
       time_count:
-        type: integer
-        format: int32
+        type: string
         description: The number of the status logs based on timeunit.
       timestamp_base:
         type: string
@@ -2018,3 +2067,34 @@ definitions:
       token:
         type: string
         description: The JWT format token.
+  DashboardServiceList:
+    type: object
+    properties:
+      service_list:
+         type: array
+         items:
+           $ref: '#/definitions/DashboardServiceListInfo'
+  DashboardServiceListInfo:
+    name: service_list
+    type: string
+    properties:
+      service_name:
+        type: string
+        description: service name.
+  DashboardNodeList:
+    type: object
+    properties:
+      list:
+        type: array
+        items:
+           $ref: '#/definitions/DashboardNodeListInfo'
+  DashboardNodeListInfo:
+    name: list
+    type: string
+    properties:
+      node_name:
+        type: string
+        description: node name.
+
+
+
