@@ -1234,7 +1234,7 @@ paths:
           description: Current available token.
         - name: service_name
           in: query
-          description: The integer ID of this service, 'null' is for the sum of all services.
+          description: The integer ID of this service, null name is for the sum of all services.
           type: string
         - name: service_timestruct
           in: body
@@ -1291,8 +1291,8 @@ paths:
           required: true
           description: Current available token.
         - name: node_name
-          in: path
-          description: The integer ID of this node, 'null' is for the sum of all nodes.
+          in: query
+          description: The integer ID of this node, null name is for the sum of all nodes.
           required: true
           type: integer
           format: int32
@@ -2075,7 +2075,6 @@ definitions:
          items:
            $ref: '#/definitions/DashboardServiceListInfo'
   DashboardServiceListInfo:
-    name: service_list
     type: string
     properties:
       service_name:
@@ -2089,7 +2088,6 @@ definitions:
         items:
            $ref: '#/definitions/DashboardNodeListInfo'
   DashboardNodeListInfo:
-    name: list
     type: string
     properties:
       node_name:
