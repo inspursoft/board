@@ -1,11 +1,16 @@
 import { OnInit, AfterViewInit, Component, OnDestroy } from '@angular/core';
 import { Assist } from "./dashboard-assist"
 import { scaleOption } from "app/dashboard/time-range-scale.component/time-range-scale.component";
-import { DashboardService, ServiceListModel, LinesData, LineDataModel } from "app/dashboard/dashboard.service";
+import {
+  DashboardService,
+  LinesData,
+  LineDataModel,
+  LineType,
+  LineListDataModel
+} from "app/dashboard/dashboard.service";
 import { TranslateService } from "@ngx-translate/core";
 import { Subscription } from "rxjs/Subscription";
 import { MessageService } from "../shared/message-service/message.service";
-import { reject, resolve } from "q";
 
 const MAX_COUNT_PER_PAGE: number = 300;
 const MAX_COUNT_PER_DRAG: number = 100;
@@ -24,35 +29,61 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     {"id": 2, "description": "DASHBOARD.HR", "value": "minute", valueOfSecond: 60},
     {"id": 3, "description": "DASHBOARD.DAY", "value": "hour", valueOfSecond: 60 * 60},
     {"id": 4, "description": "DASHBOARD.MTH", "value": "day", valueOfSecond: 60 * 60 * 24}];
-
-  memoryPercent: string = '70%';
-  cpuPercent: string = '40%';
-  usageVolume: string = '3T';
-  totalVolume: string = '10T';
-  nodeBtnValue: string;
-  nodeOptions: object = {};
-
-  storageBtnValue: string;
-  storageOptions: object = {};
-
-  _serviceQuery: {model: ServiceListModel, scale: scaleOption, time_count: number, timestamp_base: number};
-  _serviceOptionsBuffer: {lastZoomStart: number, lastZoomEnd: number};
-  _serviceIntervalSeed: number = REFRESH_SEED_SERVICE;
-  _serviceInRefreshIng: boolean = false;
-  _serviceDropInfo: {isInDrop: boolean, isDropNext: boolean};
-  _serviceAlready: boolean = false;
-  serviceCurPod: number = 0;
-  serviceCurContainer: number = 0;
-  serviceDropdownText: string = "";
-  serviceList: Array<ServiceListModel> = Array<ServiceListModel>();
-  serviceOptions: object = {};
-  serviceNoData: boolean = false;
-  serviceNoDataErrMsg: string = "";
-  serviceData: LinesData;
-
+  LineNamesList: Map<LineType, LineListDataModel[]>;
+  LineData: Map<LineType, LinesData>;
+  LineOptions: Map<LineType, Object>;
+  DropdownText: Map<LineType, string>;
+  OptionsBuffer: Map<LineType, {lastZoomStart: number, lastZoomEnd: number}>;
+  Query: Map<LineType, {model: LineListDataModel, scale: scaleOption, time_count: number, timestamp_base: number}>;
+  DropInfo: Map<LineType, {isInDrop: boolean, isDropNext: boolean}>;
+  IntervalSeed: Map<LineType, number>;
+  Already: Map<LineType, boolean>;
+  InRefreshIng: Map<LineType, boolean>;
+  NoData: Map<LineType, boolean>;
+  CurValue: Map<LineType, {curFirst: number, curSecond: number}>;
+  NoDataErrMsg: Map<LineType, string>;
   constructor(private service: DashboardService,
               private messageService: MessageService,
               private translateService: TranslateService) {
+    this.LineNamesList = new Map<LineType, LineListDataModel[]>();
+    this.LineOptions = new Map<LineType, Object>();
+    this.DropdownText = new Map<LineType, string>();
+    this.OptionsBuffer = new Map<LineType, {lastZoomStart: number, lastZoomEnd: number}>();
+    this.Query = new Map<LineType, {model: LineListDataModel, scale: scaleOption, time_count: number, timestamp_base: number}>();
+    this.DropInfo = new Map<LineType, {isInDrop: boolean, isDropNext: boolean}>();
+    this.IntervalSeed = new Map<LineType, number>();
+    this.Already = new Map<LineType, boolean>();
+    this.InRefreshIng = new Map<LineType, boolean>();
+    this.LineData = new Map<LineType, LinesData>();
+    this.NoData = new Map<LineType, boolean>();
+    this.CurValue = new Map<LineType, {curFirst: number, curSecond: number}>();
+    this.NoDataErrMsg = new Map<LineType, string>();
+  }
+
+  ngOnInit() {
+    this.initLine(LineType.ltService);
+    this.initLine(LineType.ltNode);
+    this.initLine(LineType.ltStorage);
+    this._onLangChangeSubscription = this.translateService.onLangChange.subscribe(() => {
+      this.setLineBaseOption(LineType.ltService).then(res => this.LineOptions.set(LineType.ltService, res));
+      this.setLineBaseOption(LineType.ltNode).then(res => this.LineOptions.set(LineType.ltNode, res));
+      this.setLineBaseOption(LineType.ltStorage).then(res => this.LineOptions.set(LineType.ltStorage, res));
+    });
+  }
+
+  ngOnDestroy() {
+    clearInterval(this._intervalRead);
+    if (this._onLangChangeSubscription) {
+      this._onLangChangeSubscription.unsubscribe();
+    }
+  }
+
+  ngAfterViewInit() {
+    this._intervalRead = setInterval(() => {
+      this.autoRefreshDada(LineType.ltService);
+      this.autoRefreshDada(LineType.ltNode);
+      this.autoRefreshDada(LineType.ltStorage);
+    }, 1000);
   }
 
   private static concatLineData(source: LinesData, res: LinesData, isAppend: boolean): LinesData {
@@ -116,173 +147,171 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     return result;
   }
 
-  private resetServiceState() {
-    this._serviceIntervalSeed = REFRESH_SEED_SERVICE;
-    this._serviceQuery.time_count = MAX_COUNT_PER_PAGE;
-    this._serviceDropInfo.isInDrop = false;
-    this._serviceDropInfo.isDropNext = false;
-    this._serviceAlready = false;
-    this.serviceNoData = false;
-    this._serviceOptionsBuffer.lastZoomEnd = 80;
-    this._serviceOptionsBuffer.lastZoomStart = 100;
-  }
-
-  serviceScaleChange(data: scaleOption) {
-    if (this._serviceAlready) {
-      this._serviceQuery.scale = data;
-      this.resetServiceState();
-      this.refreshServiceData();
-    }
-  }
-
-  serviceDropDownChange(service: ServiceListModel) {
-    if (this._serviceAlready) {
-      this._serviceQuery.model = service;
-      this.serviceDropdownText = service.service_name;
-      this.resetServiceState();
-      this.refreshServiceData();
-    }
-  }
-
-  setServiceOption() {
-    this.translateService.get(["DASHBOARD.CONTAINERS", "DASHBOARD.PODS"])
-      .subscribe(res => {
-        let podsTranslate: string = res["DASHBOARD.PODS"];
-        let containersTranslate: string = res["DASHBOARD.CONTAINERS"];
-        this.serviceOptions = Assist.getServiceOptions();
-        this.serviceOptions["tooltip"] = Assist.getTooltip(podsTranslate, containersTranslate);
-        this.serviceOptions["series"] = [Assist.getBaseSeries(), Assist.getBaseSeries()];
-        this.serviceOptions["series"][0]["name"] = podsTranslate;
-        this.serviceOptions["series"][1]["name"] = containersTranslate;
-        this.serviceOptions["legend"] = {data: [podsTranslate, containersTranslate], x: "left"};
-      });
-  }
-
-  serviceChartDataZoom(event: object) {
-    this._serviceOptionsBuffer.lastZoomEnd = event["end"];
-    this._serviceOptionsBuffer.lastZoomStart = event["start"];
-    if (event["start"] == 0 && !this._serviceInRefreshIng) {//get backup data
-      this._serviceInRefreshIng = true;
-      this._serviceAlready = false;
-      this.serviceNoData = false;
-      this._serviceDropInfo.isInDrop = true;
-      this._serviceDropInfo.isDropNext = true;
-      this._serviceQuery.timestamp_base = DashboardComponent.getTimeStamp(this.serviceData, true);
-      this._serviceQuery.time_count = MAX_COUNT_PER_DRAG;
-      this.refreshServiceData();
-    }
-    else if (event["end"] == 100 && this._serviceDropInfo.isInDrop && !this._serviceInRefreshIng) {//get forward data
-      this._serviceInRefreshIng = true;
-      this._serviceAlready = false;
-      this.serviceNoData = false;
-      this._serviceDropInfo.isInDrop = true;
-      this._serviceDropInfo.isDropNext = false;
-      this._serviceQuery.timestamp_base = DashboardComponent.getTimeStamp(this.serviceData, false) +
-        this._serviceQuery.scale.valueOfSecond * MAX_COUNT_PER_DRAG;
-      this._serviceQuery.time_count = MAX_COUNT_PER_DRAG;
-      this.refreshServiceData();
-    }
-  }
-
-  refreshServiceData() {
-    let query = {
-      time_count: this._serviceQuery.time_count,
-      time_unit: this._serviceQuery.scale.value,
-      service_name: this._serviceQuery.model.service_name == "total" ? "" : this._serviceQuery.model.service_name,
-      timestamp_base: this._serviceDropInfo.isInDrop ? this._serviceQuery.timestamp_base : Math.round(new Date().getTime() / 1000)
-    };
-    this._serviceInRefreshIng = true;
-    this.service.getServiceData(query)
+  private initLine(lineType: LineType) {
+    this.CurValue.set(lineType, {curFirst: 0, curSecond: 0});
+    this.InRefreshIng.set(lineType, false);
+    this.Already.set(lineType, false);
+    this.IntervalSeed.set(lineType, REFRESH_SEED_SERVICE);
+    this.DropInfo.set(lineType, {isInDrop: false, isDropNext: false});
+    this.OptionsBuffer.set(lineType, {lastZoomStart: 100, lastZoomEnd: 80});
+    this.setLineBaseOption(lineType).then(res => this.LineOptions.set(lineType, res));
+    this.service.getLineNameList(lineType)
       .then(res => {
-        if (this._serviceDropInfo.isInDrop && !this._serviceDropInfo.isDropNext &&
-          DashboardComponent.haveLessMaxTimeValue(this.serviceData, res)) {
-          this.resetServiceState();
-          this.refreshServiceData();
+        let firstLineList: LineListDataModel = res[0];//default total
+        this.LineNamesList.set(lineType, res);
+        this.DropdownText.set(lineType, firstLineList.list_name);
+        this.Query.set(lineType, {
+          time_count: MAX_COUNT_PER_PAGE,
+          model: firstLineList,
+          timestamp_base: Math.round(new Date().getTime() / 1000),
+          scale: this.scaleOptions[0]
+        });
+        this.refreshData(lineType);
+      })
+      .catch(err => this.messageService.dispatchError(err));
+  }
+
+  private autoRefreshDada(lineType: LineType): void {
+    if (this.IntervalSeed.get(lineType) > 0 && this.Already.get(lineType)) {
+      this.IntervalSeed.set(lineType, this.IntervalSeed.get(lineType) - 1);
+      if (this.IntervalSeed.get(lineType) == 0 && !this.DropInfo.get(lineType).isInDrop) {
+        this.refreshData(lineType);
+      }
+    }
+  }
+
+  private setLineBaseOption(lineType: LineType): Promise<Object> {
+    let firstKey, secondKey: string;
+    switch (lineType) {
+      case LineType.ltService: {
+        firstKey = "DASHBOARD.PODS";
+        secondKey = "DASHBOARD.CONTAINERS";
+        break;
+      }
+      case LineType.ltNode: {
+        firstKey = "DASHBOARD.CPU";
+        secondKey = "DASHBOARD.MEMORY";
+        break;
+      }
+      case LineType.ltStorage: {
+        firstKey = "DASHBOARD.USAGE";
+        secondKey = "DASHBOARD.TOTAL";
+        break;
+      }
+    }
+    return this.translateService.get([firstKey, secondKey]).toPromise()
+      .then(res => {
+        let firstLineTitle: string = res[firstKey];
+        let secondLineTitle: string = res[secondKey];
+        let result = Assist.getBaseOptions();
+        result["tooltip"] = Assist.getTooltip(firstLineTitle, secondLineTitle);
+        result["series"] = [Assist.getBaseSeries(), Assist.getBaseSeries()];
+        result["series"][0]["name"] = firstLineTitle;
+        result["series"][1]["name"] = secondLineTitle;
+        result["legend"] = {data: [firstLineTitle, secondLineTitle], x: "left"};
+        return result;
+      })
+  }
+
+  private resetState(lineType: LineType) {
+    this.IntervalSeed.set(lineType, REFRESH_SEED_SERVICE);
+    this.Query.get(lineType).time_count = MAX_COUNT_PER_PAGE;
+    this.DropInfo.get(lineType).isDropNext = false;
+    this.DropInfo.get(lineType).isInDrop = false;
+    this.Already.set(lineType, false);
+    this.OptionsBuffer.get(lineType).lastZoomEnd = 80;
+    this.OptionsBuffer.get(lineType).lastZoomStart = 100;
+    this.NoData.set(lineType, false);
+  }
+
+  private refreshData(lineType: LineType) {
+    let lineQuery = this.Query.get(lineType);
+    let lineDropInfo = this.DropInfo.get(lineType);
+    let lineOption = this.LineOptions.get(lineType);
+    let query = {
+      time_count: lineQuery.time_count,
+      time_unit: lineQuery.scale.value,
+      list_name: lineQuery.model.list_name == "total" ? "" : lineQuery.model.list_name,
+      timestamp_base: lineDropInfo.isInDrop ? lineQuery.timestamp_base : Math.round(new Date().getTime() / 1000)
+    };
+    this.InRefreshIng.set(lineType, true);
+    this.service.getLineData(lineType, query)
+      .then(res => {
+        if (lineDropInfo.isInDrop && !lineDropInfo.isDropNext &&
+          DashboardComponent.haveLessMaxTimeValue(this.LineData.get(lineType), res)) {
+          this.resetState(lineType);
+          this.refreshData(lineType);
         } else {
-          this.serviceData ? this.serviceData = DashboardComponent.concatLineData(this.serviceData, res, this._serviceDropInfo.isDropNext) :
-            this.serviceData = res;
-          if (this._serviceDropInfo.isInDrop) {
-            this.serviceOptions["dataZoom"][0]["start"] = DashboardComponent.calculateZoom(this.serviceData, res, this._serviceDropInfo.isDropNext).start;
-            this.serviceOptions["dataZoom"][0]["end"] = DashboardComponent.calculateZoom(this.serviceData, res, this._serviceDropInfo.isDropNext).end;
+          if (lineDropInfo.isInDrop) {
+            this.LineData.set(lineType, DashboardComponent.concatLineData(this.LineData.get(lineType), res, lineDropInfo.isDropNext));
+            lineOption["dataZoom"][0]["start"] = DashboardComponent.calculateZoom(this.LineData.get(lineType), res, lineDropInfo.isDropNext).start;
+            lineOption["dataZoom"][0]["end"] = DashboardComponent.calculateZoom(this.LineData.get(lineType), res, lineDropInfo.isDropNext).end;
           }
           else {
-            this.serviceOptions["dataZoom"][0]["start"] = this._serviceOptionsBuffer.lastZoomStart;
-            this.serviceOptions["dataZoom"][0]["end"] = this._serviceOptionsBuffer.lastZoomEnd;
-            this.serviceCurPod = DashboardComponent.getValue(this.serviceData, 0, true);
-            this.serviceCurContainer = DashboardComponent.getValue(this.serviceData, 1, true);
+            this.LineData.set(lineType, res);
+            lineOption["dataZoom"][0]["start"] = this.OptionsBuffer.get(lineType).lastZoomStart;
+            lineOption["dataZoom"][0]["end"] = this.OptionsBuffer.get(lineType).lastZoomEnd;
+            this.CurValue.set(lineType, {
+              curFirst: DashboardComponent.getValue(this.LineData.get(lineType), 0, true),
+              curSecond: DashboardComponent.getValue(this.LineData.get(lineType), 1, true)
+            });
           }
-          this.serviceNoData = false;
-          this._serviceAlready = true;
-          this._serviceInRefreshIng = false;
-          this._serviceIntervalSeed = REFRESH_SEED_SERVICE;
+          this.NoData.set(lineType, false);
+          this.Already.set(lineType, true);
+          this.InRefreshIng.set(lineType, false);
+          this.IntervalSeed.set(lineType, REFRESH_SEED_SERVICE);
         }
       })
       .catch(err => {
-        this.serviceCurPod = 0;
-        this.serviceCurContainer = 0;
-        this.serviceNoData = true;
-        this._serviceAlready = true;
-        this._serviceInRefreshIng = false;
-        this._serviceIntervalSeed = REFRESH_SEED_SERVICE;
+        this.CurValue.set(lineType, {curFirst: 0, curSecond: 0});
+        this.NoData.set(lineType, true);
+        this.Already.set(lineType, true);
+        this.InRefreshIng.set(lineType, false);
+        this.IntervalSeed.set(lineType, REFRESH_SEED_SERVICE);
         this.messageService.dispatchError(err);
       });
   }
 
-  ngOnInit() {
-    this._onLangChangeSubscription = this.translateService.onLangChange.subscribe(() => {
-      this.setServiceOption();
-    });
-  }
-
-  ngOnDestroy() {
-    clearInterval(this._intervalRead);
-    if (this._onLangChangeSubscription) {
-      this._onLangChangeSubscription.unsubscribe();
+  scaleChange(lineType: LineType, data: scaleOption) {
+    if (this.Already.get(lineType)) {
+      this.Query.get(lineType).scale = data;
+      this.resetState(lineType);
+      this.refreshData(lineType);
     }
   }
 
-  ngAfterViewInit() {
-    this.setServiceOption();
-    this._serviceOptionsBuffer = Object.create({
-      lastZoomStart: 100,
-      lastZoomEnd: 80
-    });
-    this._serviceQuery = Object.create({
-      time_count: MAX_COUNT_PER_PAGE,
-      model: {service_name: ""},//default total
-      timestamp_base: Math.round(new Date().getTime() / 1000),
-      scale: this.scaleOptions[0]
-    });
-    this._serviceDropInfo = {isInDrop: false, isDropNext: false};
-    this._intervalRead = setInterval(() => {
-      if (this._serviceIntervalSeed > 0 && this._serviceAlready) {
-        this._serviceIntervalSeed--;
-        if (this._serviceIntervalSeed == 0 && !this._serviceDropInfo.isInDrop) {
-          this.refreshServiceData();
-        }
-      }
-    }, 1000);
-    this.refreshServiceData();
-    this.service.getServiceList()
-      .then(res => {
-        this.serviceList = res;
-        this.serviceDropdownText = this.serviceList[0].service_name;
-        this.nodeBtnValue = this.serviceList[0].service_name;
-        this.storageBtnValue = this.serviceList[0].service_name;
-      })
-      .catch(err => this.messageService.dispatchError(err));
+  dropDownChange(lineType: LineType, lineListData: LineListDataModel) {
+    if (this.Already.get(lineType)) {
+      this.Query.get(lineType).model = lineListData;
+      this.DropdownText.set(lineType, lineListData.list_name);
+      this.resetState(lineType);
+      this.refreshData(lineType);
+    }
+  }
 
-    let serviceSimulateData = DashboardService.getBySimulateData(0, 1);
-    this.nodeOptions = Assist.getBaseOptions();
-    this.nodeOptions["tooltip"] = Assist.getTooltip("CPU", "Memory");
-    this.nodeOptions["series"] = [Assist.getBaseSeries(), Assist.getBaseSeries()];
-    this.nodeOptions["series"][0]["data"] = serviceSimulateData[0];
-    this.nodeOptions["series"][1]["data"] = serviceSimulateData[1];
-
-    this.storageOptions = Assist.getBaseOptions();
-    this.storageOptions["tooltip"] = Assist.getTooltip("", "Total");
-    this.storageOptions["series"] = [Assist.getBaseSeries(), Assist.getBaseSeries()];
-    this.storageOptions["series"][0]["data"] = serviceSimulateData[0];
-    this.storageOptions["series"][1]["data"] = serviceSimulateData[1];
+  chartDataZoom(lineType: LineType, event: Object) {
+    this.OptionsBuffer.get(lineType).lastZoomStart = event["start"];
+    this.OptionsBuffer.get(lineType).lastZoomEnd = event["end"];
+    if (event["start"] == 0 && !this.InRefreshIng.get(lineType)) {//get backup data
+      this.InRefreshIng.set(lineType, true);
+      this.Already.set(lineType, false);
+      this.NoData.set(lineType, false);
+      this.DropInfo.get(lineType).isInDrop = true;
+      this.DropInfo.get(lineType).isDropNext = true;
+      this.Query.get(lineType).timestamp_base = DashboardComponent.getTimeStamp(this.LineData.get(lineType), true);
+      this.Query.get(lineType).time_count = MAX_COUNT_PER_DRAG;
+      this.refreshData(lineType);
+    }
+    else if (event["end"] == 100 && this.DropInfo.get(lineType).isInDrop && !this.InRefreshIng.get(lineType)) {//get forward data
+      this.InRefreshIng.set(lineType, true);
+      this.Already.set(lineType, false);
+      this.NoData.set(lineType, false);
+      this.DropInfo.get(lineType).isInDrop = true;
+      this.DropInfo.get(lineType).isDropNext = false;
+      this.Query.get(lineType).timestamp_base = DashboardComponent.getTimeStamp(this.LineData.get(lineType), false) +
+        this.Query.get(lineType).scale.valueOfSecond * MAX_COUNT_PER_DRAG;
+      this.Query.get(lineType).time_count = MAX_COUNT_PER_DRAG;
+      this.refreshData(lineType);
+    }
   }
 }

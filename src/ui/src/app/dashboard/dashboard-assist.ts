@@ -28,7 +28,7 @@ export class Assist {
     }
   }
 
-  static getServiceOptions(): object {
+  static getBaseOptions(): Object {
     return {
       dataZoom: [
         {
@@ -42,35 +42,6 @@ export class Assist {
         splitNumber: 10,
         splitLine: {show: false}
       }],
-      yAxis: {
-        type: "value",
-        splitLine: {show: true}
-      }
-    };
-  }
-
-  static getBaseOptions(): object {
-    return {
-      // legend: {
-      // 	data: ["pods", "container"],
-      // 	x: 'left'
-      // },
-      toolbox: {
-        show: true,
-        feature: {
-          mark: {show: true},
-          dataView: {show: true, readOnly: false},
-          magicType: {show: true, type: ['line', 'bar', 'stack', 'tiled']},
-          restore: {show: true},
-          saveAsImage: {show: true}
-        }
-      },
-      calculable: true,
-      xAxis: {
-        type: "time",
-        splitNumber: 11,
-        splitLine: {show: false}
-      },
       yAxis: {
         type: "value",
         splitLine: {show: true}
