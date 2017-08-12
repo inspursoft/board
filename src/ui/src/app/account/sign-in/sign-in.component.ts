@@ -34,7 +34,7 @@ export class SignInComponent implements OnDestroy {
       .signIn(this.signInUser.username, this.signInUser.password)
       .then(res=>{
           this.appInitService.token = res.token;
-          this.router.navigate(['/dashboard'], { queryParams: { token: this.appInitService.token }});
+          this.router.navigate(['/projects'], { queryParams: { token: this.appInitService.token }});
       })
       .catch(err=>{
         let announceMessage = new Message();

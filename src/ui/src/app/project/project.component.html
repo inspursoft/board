@@ -1,6 +1,6 @@
 <div class="row flex-items-xs-right">
   <div class="col-xs-12" style="flex: 0;">
-    <button *ngIf="currentUser.is_system_admin === 1 || currentUser.is_project_admin === 1" class="btn btn-primary" (click)="createProject()">{{ 'PROJECT.CREATE_PROJECT' | translate }}</button>
+    <button *ngIf="currentUser.user_system_admin === 1 || currentUser.user_project_admin === 1" class="btn btn-primary" (click)="createProject()">{{ 'PROJECT.CREATE_PROJECT' | translate }}</button>
   </div>
 </div>
 <div class="row">
@@ -13,12 +13,12 @@
       <clr-dg-column>{{ 'PROJECT.CREATION_TIME' | translate }}</clr-dg-column>
       <clr-dg-column>{{ 'PROJECT.PUBLICITY' | translate }}</clr-dg-column>
       <clr-dg-column>{{ 'PROJECT.COMMENT' | translate }}</clr-dg-column>
-      <clr-dg-column *ngIf="currentUser.is_system_admin === 1 || currentUser.is_project_admin === 1">{{ 'PROJECT.ACTIONS' | translate }}</clr-dg-column>
+      <clr-dg-column *ngIf="currentUser.user_system_admin === 1 || currentUser.user_project_admin === 1">{{ 'PROJECT.ACTIONS' | translate }}</clr-dg-column>
       <clr-dg-row *ngFor="let p of projects">
         <clr-dg-cell>{{p.project_name}}</clr-dg-cell>
         <clr-dg-cell>{{p.project_owner_name}}</clr-dg-cell>
         <clr-dg-cell>{{p.project_creation_time | date: 'short'}}</clr-dg-cell>
-        <clr-dg-cell [ngSwitch]="currentUser.is_project_admin">
+        <clr-dg-cell [ngSwitch]="currentUser.user_project_admin">
           <ng-template [ngSwitchCase]="1">
             <input type="checkbox" id="chkPublic" [checked]="p.project_public === 1" (click)="toggleProjectPublic(p)">
             <label for="chkPublic"></label>
@@ -26,7 +26,7 @@
           <label *ngSwitchDefault>{{ (p.project_public === 1 ? 'PROJECT.PUBLIC' : 'PROJECT.PRIVATE') | translate }}</label>
         </clr-dg-cell>
         <clr-dg-cell>{{p.project_comment}}</clr-dg-cell>
-        <clr-dg-cell *ngIf="currentUser.is_system_admin === 1 || currentUser.is_project_admin === 1">
+        <clr-dg-cell *ngIf="currentUser.user_system_admin === 1 || currentUser.user_project_admin === 1">
           <a href="javascript:void(0)" (click)="editProjectMember(p)"><clr-icon shape="group"></clr-icon></a>
           &nbsp;&nbsp;
           <a href="javascript:void(0)"><clr-icon shape="trash" (click)="confirmToDeleteProject(p)"></clr-icon></a>

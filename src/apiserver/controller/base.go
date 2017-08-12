@@ -3,6 +3,7 @@ package controller
 import (
 	"io/ioutil"
 	"net/http"
+	"time"
 
 	"encoding/json"
 	"git/inspursoft/board/src/common/model"
@@ -18,8 +19,6 @@ import (
 	"strings"
 
 	"fmt"
-
-	"time"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/cache"
@@ -72,11 +71,25 @@ func (b *baseController) internalError(err error) {
 }
 
 func (b *baseController) getCurrentUser() *model.User {
-	tokenString := b.GetString("token")
-	payload, err := verifyToken(tokenString)
+	token := b.Ctx.Request.Header.Get("token")
+	if token == "" {
+		token = b.GetString("token")
+	}
+
+	payload, err := verifyToken(token)
 	if err != nil {
 		return nil
 	}
+
+	newToken, err := signToken(payload)
+	if err != nil {
+		logs.Error("failed to re-assign token: %+v", err)
+		return nil
+	}
+
+	b.Ctx.ResponseWriter.Header().Set("token", newToken.TokenString)
+	memoryCache.Put(newToken.TokenString, newToken.TokenString, time.Second*time.Duration(tokenCacheExpireSeconds))
+
 	if strID, ok := payload["id"].(string); ok {
 		userID, err := strconv.Atoi(strID)
 		if err != nil {
@@ -124,19 +137,6 @@ func signToken(payload map[string]interface{}) (*model.Token, error) {
 	return &token, nil
 }
 
-func ReassignToken(tokenString string) (map[string]interface{}, error) {
-	payload, err := verifyToken(tokenString)
-	if err != nil {
-		return nil, fmt.Errorf("token is invalid for re-assignment")
-	}
-	newToken, err := signToken(payload)
-	if err != nil {
-		return nil, fmt.Errorf("failed to re-assign token: %+v", err)
-	}
-	memoryCache.Put(tokenString, newToken.TokenString, time.Second*time.Duration(tokenCacheExpireSeconds))
-	return payload, nil
-}
-
 func verifyToken(tokenString string) (map[string]interface{}, error) {
 	if strings.TrimSpace(tokenString) == "" {
 		return nil, fmt.Errorf("no token was provided")
@@ -148,7 +148,8 @@ func verifyToken(tokenString string) (map[string]interface{}, error) {
 	}
 	currentToken, ok := storedToken.(string)
 	if !ok {
-		return nil, fmt.Errorf("failed to assert stored token")
+		logs.Error("failed to convert stored token to string.")
+		return nil, nil
 	}
 	resp, err := http.Get(tokenServerURL.String() + "?token=" + currentToken)
 	if err != nil {
@@ -185,8 +186,7 @@ func init() {
 	}
 
 	logs.Info("Set token server URL as %s and will expiration time after %d second(s) in cache", tokenServerURL.String(), tokenCacheExpireSeconds)
-
-	memoryCache, err = cache.NewCache("memory", `{"interval": 360}`)
+	memoryCache, err = cache.NewCache("memory", `{"interval": 3600}`)
 	if err != nil {
 		logs.Error("Failed to initialize cache: %+v\n", err)
 	}

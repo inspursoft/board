@@ -52,7 +52,7 @@ func (u *AuthController) SignInAction() {
 			u.internalError(err)
 			return
 		}
-		memoryCache.Put(token.TokenString, token.TokenString, time.Second*1800)
+		memoryCache.Put(token.TokenString, token.TokenString, time.Second*time.Duration(tokenCacheExpireSeconds))
 		u.Data["json"] = token
 		u.ServeJSON()
 	}
@@ -108,14 +108,12 @@ func (u *AuthController) SignUpAction() {
 }
 
 func (u *AuthController) CurrentUserAction() {
-	token := u.GetString("token")
-	payload, err := verifyToken(token)
-	if err != nil || payload == nil {
+	user := u.getCurrentUser()
+	if user == nil {
 		u.CustomAbort(http.StatusUnauthorized, "Need to login first.")
 		return
 	}
-	payload["token"] = token
-	u.Data["json"] = payload
+	u.Data["json"] = user
 	u.ServeJSON()
 }
 

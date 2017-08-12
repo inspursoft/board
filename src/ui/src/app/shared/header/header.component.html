@@ -23,7 +23,7 @@
     </clr-dropdown>
     <clr-dropdown [hidden]="!hasSignedIn" [clrMenuPosition]="'bottom-right'" [clrCloseMenuOnItemClick]="true">
       <button class="btn btn-link" clrDropdownToggle>
-        {{ currentUser.username }}
+        {{ currentUser.user_name }}
         <clr-icon shape="caret down"></clr-icon>
       </button>
       <clr-dropdown-menu>

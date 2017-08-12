@@ -1,11 +1,15 @@
 import { Injectable } from '@angular/core';
-import { Http, Headers } from '@angular/http';
+import { Http, Headers, Response } from '@angular/http';
+import { Subject } from 'rxjs/Subject';
+import { Observable } from 'rxjs/Observable';
+import { Message } from './shared/message-service/message';
+import { MessageService } from './shared/message-service/message.service';
 
 @Injectable()
 export class AppInitService {
-  defaultHeaders = new Headers({
-    'Content-Type': 'application/json'
-  });
+  
+  tokenMessageSource: Subject<string> = new Subject<string>();
+  tokenMessage$: Observable<string> = this.tokenMessageSource.asObservable()
 
   constructor(private http: Http) {
     console.log('App initialized from current service.');
@@ -23,18 +27,27 @@ export class AppInitService {
     return this._tokenString;
   }
 
+  chainResponse(r: Response): Response {
+    this.token = r.headers.get('token');
+    this.tokenMessageSource.next(this.token);
+    return r;
+  }
+
   getCurrentUser(tokenParam?: string): Promise<any> {
     return this.http
       .get('/api/v1/users/current', 
-        { headers: this.defaultHeaders, 
+        { headers: new Headers({
+          'Content-Type': 'application/json',
+          'token': this.token || tokenParam || ''
+          }),
           params: {
-            'token': this.token || tokenParam || ''
+           'token': this.token || tokenParam || ''
           }
         })
       .toPromise()
       .then(res=>{
+        this.chainResponse(res);
         this.currentUser = res.json();
-        this.token = this.currentUser['token'];
         Promise.resolve(this.currentUser);
       })
       .catch(err=>Promise.reject(err));

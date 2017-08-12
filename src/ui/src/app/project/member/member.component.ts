@@ -47,7 +47,7 @@ export class MemberComponent implements OnInit {
   ){}
   
   get roleToggleable(): boolean {
-    return (this.currentUser.id != this.selectedMember.project_member_user_id);
+    return (this.currentUser.user_id != this.selectedMember.project_member_user_id && this.currentUser.user_project_admin === 1);
   }
 
   ngOnInit(): void {
@@ -97,7 +97,7 @@ export class MemberComponent implements OnInit {
 
   pickUpMember(m: Member) {
     this.selectedMember = m;
-    if(this.currentUser.is_system_admin != 1 || this.project.project_owner_id == this.selectedMember.project_member_user_id) { 
+    if(this.currentUser.user_system_admin != 1 || this.project.project_owner_id == this.selectedMember.project_member_user_id) { 
       // this.doSet = false;
       this.doUnset = false;
     }
