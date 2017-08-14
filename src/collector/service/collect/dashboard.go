@@ -21,7 +21,7 @@ func (c *KvMap) dashaboardCollect5s() {
 		s := setServerSecond(v.PodNumber, k, v.ContainerNumber, (*serviceDashboardID)[*minuteCounterI])
 		dao.InsertDb(&s)
 	}
-	c.startCollectMinute()
+	c.startCollectMinute()()
 }
 func setServerSecond(podNumber int64, serviceName string,
 	containerNumber int64, timeListId int64) dashboard.ServiceDashboardSecond {

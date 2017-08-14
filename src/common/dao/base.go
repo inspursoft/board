@@ -17,7 +17,6 @@ func init() {
 		logs.Error("Faild to load app.conf: %+v", err)
 	}
 	dbPassword := conf.String("dbPassword")
-
 	fmt.Println("Initializing DB registration.")
 	orm.RegisterDriver("mysql", orm.DRMySQL)
 	err = orm.RegisterDataBase("default", "mysql", "root:"+dbPassword+"@tcp(mysql:3306)/board?charset=utf8")
