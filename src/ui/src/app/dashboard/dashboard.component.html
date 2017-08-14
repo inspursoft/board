@@ -63,7 +63,7 @@
           <clr-dropdown-menu [hidden]="!LineNamesList.get(0) || LineNamesList.get(0).length == 0"
                              class="card-block-dropdown">
             <button *ngFor="let lineList of LineNamesList.get(0);"
-                    [ngClass]="{'active':serviceDropdownText == lineList.list_name}"
+                    [ngClass]="{'active':DropdownText.get(0) == lineList.list_name}"
                     class="dropdown-item"
                     (click)="dropDownChange(0,lineList);serviceDropdown.toggleDropdown()">
               {{lineList.list_name}}
@@ -85,7 +85,7 @@
           </div>
           <div echarts
                *ngIf="!NoData.get(0)"
-               [options]="LineOptions.get(0)"
+               [options]="ServiceLineOption"
                [dataset]="LineData.get(0)"
                (chartDataZoom)="chartDataZoom(0,$event)"
                style="height: 300px">
@@ -110,7 +110,7 @@
           <clr-dropdown-menu [hidden]="!LineNamesList.get(1) || LineNamesList.get(1).length == 0"
                              class="card-block-dropdown">
             <button *ngFor="let lineList of LineNamesList.get(1);"
-                    [ngClass]="{'active':serviceDropdownText == lineList.list_name}"
+                    [ngClass]="{'active':DropdownText.get(1) == lineList.list_name}"
                     class="dropdown-item"
                     (click)="dropDownChange(1,lineList);nodeDropdown.toggleDropdown()">
               {{lineList.list_name}}
@@ -132,7 +132,7 @@
           </div>
           <div echarts
                *ngIf="!NoData.get(1)"
-               [options]="LineOptions.get(1)"
+               [options]="NodeLineOption"
                [dataset]="LineData.get(1)"
                (chartDataZoom)="chartDataZoom(1,$event)"
                style="height: 300px">
@@ -157,7 +157,7 @@
           <clr-dropdown-menu [hidden]="!LineNamesList.get(2) || LineNamesList.get(2).length == 0"
                              class="card-block-dropdown">
             <button *ngFor="let lineList of LineNamesList.get(2);"
-                    [ngClass]="{'active':serviceDropdownText == lineList.list_name}"
+                    [ngClass]="{'active':DropdownText.get(2) == lineList.list_name}"
                     class="dropdown-item"
                     (click)="dropDownChange(2,lineList);storageDropdown.toggleDropdown()">
               {{lineList.list_name}}
@@ -179,7 +179,7 @@
           </div>
           <div echarts
                *ngIf="!NoData.get(2)"
-               [options]="LineOptions.get(2)"
+               [options]="StorageLineOption"
                [dataset]="LineData.get(2)"
                (chartDataZoom)="chartDataZoom(2,$event)"
                style="height: 300px">

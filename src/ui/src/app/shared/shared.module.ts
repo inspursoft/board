@@ -13,6 +13,7 @@ import { MessageService } from './message-service/message.service';
 import { AuthGuard } from './auth-guard.service';
 import { CheckItemPatternDirective } from "./directives/check-item-pattern.directive";
 import { ChangePasswordComponent } from "./change-password/change-password.component";
+import { AccountSettingComponent } from "./account-setting/account-setting.component";
 
 @NgModule({
   imports: [
@@ -28,7 +29,8 @@ import { ChangePasswordComponent } from "./change-password/change-password.compo
     CheckItemExistingDirective,
     CheckItemIdenticalDirective,
     CheckItemPatternDirective,
-    ChangePasswordComponent
+    ChangePasswordComponent,
+    AccountSettingComponent
   ],
   exports: [
     CoreModule,

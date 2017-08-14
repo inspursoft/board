@@ -44,7 +44,7 @@ export class ImageDetailComponent implements OnInit {
       this.imageService.getImageDetailList(this.curImage.image_name)
         .then((res: ImageDetail[]) => {
           for (let item of res) {
-            item['image_author'] = JSON.parse(item['image_author']);
+            item['image_detail'] = JSON.parse(item['image_detail']);
             item['image_size_number'] = Number.parseFloat((item['image_size_number'] / (1024 * 1024)).toFixed(2));
             item['image_size_unit'] = 'MB';
           }

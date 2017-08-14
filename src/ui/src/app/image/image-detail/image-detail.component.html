@@ -16,8 +16,8 @@
       <clr-dg-column>{{ 'IMAGE.COL_OPERATION' | translate }}</clr-dg-column>
       <clr-dg-row *clrDgItems="let imageDetail of imageDetailList">
         <clr-dg-cell>{{imageDetail.image_tag}}</clr-dg-cell>
-        <clr-dg-cell>{{imageDetail.image_author.author}}</clr-dg-cell>
-        <clr-dg-cell>{{imageDetail.image_author.created | date:'short'}}</clr-dg-cell>
+        <clr-dg-cell>{{imageDetail.image_detail.author}}</clr-dg-cell>
+        <clr-dg-cell>{{imageDetail.image_detail.created | date:'short'}}</clr-dg-cell>
         <clr-dg-cell>{{imageDetail.image_size_number}}{{imageDetail.image_size_unit}}</clr-dg-cell>
         <clr-dg-cell>
           <clr-icon *ngIf="!showDeleteAlert"

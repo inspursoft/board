@@ -7,6 +7,7 @@ import { AppInitService } from '../../app.init.service';
 import { AccountService } from '../../account/account.service';
 import { MessageService } from '../message-service/message.service';
 
+
 @Component({
   selector: 'header-content',
   templateUrl: 'header.component.html',
@@ -14,11 +15,13 @@ import { MessageService } from '../message-service/message.service';
 })
 export class HeaderComponent implements OnInit {
 
+
   currentLang: string;
   @Input() isSignIn: boolean;
   @Input() hasSignedIn: boolean;
-  currentUser: {[key: string]: any};
+          currentUser: {[key: string]: any};
   showChangePassword:boolean = false;
+  showAccountSetting:boolean = false;
 
   get brandLogoUrl(): string {
     return this.isSignIn ? '../../images/board-blue.jpg': '../../../images/board.png';

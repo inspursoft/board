@@ -104,7 +104,7 @@ export class DashboardService {
     return this.http.post(`${BASE_URL}/dashboard/${this.LineNameMap.get(lineType).data_url_key}`, {
       time_count: query.time_count.toString(),
       time_unit: query.time_unit,
-      timestamp_base: (query.timestamp_base * 100).toString()
+      timestamp_base: (query.timestamp_base).toString()
     }, options)
       .toPromise()
       .then((res: Response) => {
@@ -118,6 +118,12 @@ export class DashboardService {
           logs.forEach((item: Object) => {
             result[0].push([new Date(item[time_key] * 1000), Math.round(item[first_key] * 100) / 100]);
             result[1].push([new Date(item[time_key] * 1000), Math.round(item[second_key] * 100) / 100]);
+          });
+          result[0].sort((left,right)=>{
+            return left[0] == right[0] ? 0 : left[0] > right[0] ? 1 : -1;
+          });
+          result[1].sort((left,right)=>{
+            return left[0] == right[0] ? 0 : left[0] > right[0] ? 1 : -1;
           });
         }
         return result;
