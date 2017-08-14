@@ -75,7 +75,9 @@
           <span class="second-line">{{ 'DASHBOARD.CONTAINERS' | translate }}:{{CurValue.get(0).curSecond}}</span>
         </div>
         <div class="select-time-container">
-          <time-range-scale (changeScale)="scaleChange(0,$event)" [options]="scaleOptions"></time-range-scale>
+          <time-range-scale [curScale]="Query.get(0) ? Query.get(0).scale:{}"
+                            (scaleChange)="scaleChange(0,$event)"
+                            [options]="scaleOptions"></time-range-scale>
         </div>
       </div>
       <div class="card-block-bottom-container">
@@ -84,8 +86,8 @@
             <span>{{ NoDataErrMsg.get(0) | translate }}</span>
           </div>
           <div echarts
-               *ngIf="!NoData.get(0)"
-               [options]="ServiceLineOption"
+               (chartInit)="eChartInit(0,$event)"
+               [options]="LineOptions.get(0)"
                [dataset]="LineData.get(0)"
                (chartDataZoom)="chartDataZoom(0,$event)"
                style="height: 300px">
@@ -122,7 +124,10 @@
           <span class="second-line">{{ 'DASHBOARD.MEMORY' | translate }}:{{CurValue.get(1).curSecond}}%</span>
         </div>
         <div class="select-time-container">
-          <time-range-scale (changeScale)="scaleChange(1,$event)" [options]="scaleOptions"></time-range-scale>
+          <time-range-scale [curScale]="Query.get(1) ? Query.get(1).scale:{}"
+                            (scaleChange)="scaleChange(1,$event)"
+                            [options]="scaleOptions">
+          </time-range-scale>
         </div>
       </div>
       <div class="card-block-bottom-container">
@@ -131,8 +136,8 @@
             <span>{{ NoDataErrMsg.get(1) | translate }}</span>
           </div>
           <div echarts
-               *ngIf="!NoData.get(1)"
-               [options]="NodeLineOption"
+               (chartInit)="eChartInit(1,$event)"
+               [options]="LineOptions.get(1)"
                [dataset]="LineData.get(1)"
                (chartDataZoom)="chartDataZoom(1,$event)"
                style="height: 300px">
@@ -166,10 +171,13 @@
         </clr-dropdown>
         <div class="caption_container">
           <span class="first-line">{{ 'DASHBOARD.USAGE' | translate }}:{{CurValue.get(2).curFirst}}</span>
-          <span class="second-line">{{ 'DASHBOARD.TOTAL' | translate }}:{{CurValue.get(2).curSecond}}</span>
+          <span class="second-line">{{ 'DASHBOARD.TOTAL' | translate   }}:{{CurValue.get(2).curSecond}}</span>
         </div>
         <div class="select-time-container">
-          <time-range-scale (changeScale)="scaleChange(2,$event)" [options]="scaleOptions"></time-range-scale>
+          <time-range-scale [curScale]="Query.get(2) ? Query.get(2).scale:{}"
+                            (scaleChange)="scaleChange(2,$event)"
+                            [options]="scaleOptions">
+          </time-range-scale>
         </div>
       </div>
       <div class="card-block-bottom-container">
@@ -178,8 +186,8 @@
             <span>{{ NoDataErrMsg.get(2) | translate }}</span>
           </div>
           <div echarts
-               *ngIf="!NoData.get(2)"
-               [options]="StorageLineOption"
+               (chartInit)="eChartInit(2,$event)"
+               [options]="LineOptions.get(2)"
                [dataset]="LineData.get(2)"
                (chartDataZoom)="chartDataZoom(2,$event)"
                style="height: 300px">

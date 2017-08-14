@@ -3,7 +3,6 @@ import { Http, RequestOptions, Headers, Response } from "@angular/http"
 import { AppInitService } from "../app.init.service";
 import "rxjs/add/operator/map";
 import 'rxjs/add/operator/toPromise';
-import 'rxjs/add/operator/timeout';
 
 export enum LineType {ltService, ltNode, ltStorage}
 export type LineDataModel = [Date, number];
@@ -63,14 +62,16 @@ export class DashboardService {
     });
   };
 
-  readonly defaultHeaders: Headers = new Headers({
-    contentType: "application/json"
-  });
+  get defaultHeader(): Headers {
+    let headers = new Headers();
+    headers.append('Content-Type','application/json');
+    headers.append('token', this.appInitService.token);
+    return headers;
+  }
 
   getLineNameList(lineType: LineType): Promise<LineListDataModel[]> {
     let options = new RequestOptions({
-        headers: this.defaultHeaders,
-        params: {'token': this.appInitService.token}
+        headers: this.defaultHeader
       }
     );
     return this.http.get(`${BASE_URL}/dashboard/${this.LineNameMap.get(lineType).list_url_key}`, options)
@@ -95,10 +96,10 @@ export class DashboardService {
 
   getLineData(lineType: LineType, query: {time_count: number, time_unit: string, list_name: string, timestamp_base: number}): Promise<LinesData> {
     let lineKey = this.LineNameMap.get(lineType).list_name_Key;
-    let requestParams = {'token': this.appInitService.token};
+    let requestParams = {};
     requestParams[lineKey] = query.list_name;
     let options = new RequestOptions({
-      headers: this.defaultHeaders,
+      headers: this.defaultHeader,
       params: requestParams
     });
     return this.http.post(`${BASE_URL}/dashboard/${this.LineNameMap.get(lineType).data_url_key}`, {
