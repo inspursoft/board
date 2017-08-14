@@ -54,7 +54,7 @@ paths:
         This endpoint is for user to search registered users, support for filtering results with username. Notice, by now this operation is only for administrator.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -129,7 +129,7 @@ paths:
         This endpoint is to create a user if the user does not already exist  (This feature is only provided for system admin user).
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -178,7 +178,7 @@ paths:
         This endpoint is to get the current user infomation.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -203,7 +203,7 @@ paths:
        This endpoint let a registered user change his profile.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -241,7 +241,7 @@ paths:
         be removed.It actually won't be deleted from DB.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -274,7 +274,7 @@ paths:
         of Board.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -313,7 +313,7 @@ paths:
         of Board.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -351,7 +351,7 @@ paths:
         This endpoint is for user to update password. Users with the admin role can change any user's password. Guest users can change only their own password.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -415,7 +415,7 @@ paths:
         This endpoint returns all projects created by Board, and can be filtered by project name.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -468,7 +468,7 @@ paths:
         This endpoint is for user to create a new project.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -498,7 +498,7 @@ paths:
         This endpoint returns specific project information by project ID.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -525,7 +525,7 @@ paths:
         This endpoint is aimed to delete project by project ID.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -557,7 +557,7 @@ paths:
         This endpoint is aimed to toggle a project publicity status.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -595,7 +595,7 @@ paths:
         This endpoint is for user to search a specified project's relevant members.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -630,7 +630,7 @@ paths:
         This endpoint is for user to add member accompany with relevant project.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -668,7 +668,7 @@ paths:
         This endpoint is for user to delete member accompany with relevant project.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -706,7 +706,7 @@ paths:
         This endpoint returns all services created by Board, and can be filtered by project name.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -760,7 +760,7 @@ paths:
         This endpoint returns specific service information by service_id ID.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -788,7 +788,7 @@ paths:
         This endpoint returns all nodes in Board, and can be filtered by node name.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -837,7 +837,7 @@ paths:
         This endpoint is for admin to add a new node.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -867,7 +867,7 @@ paths:
         This endpoint returns a specific node's information by node ID.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -896,7 +896,7 @@ paths:
         This endpoint is aimed to remove a node by node ID.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -925,7 +925,7 @@ paths:
        This endpoint is to update node info.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -959,7 +959,7 @@ paths:
         This endpoint is aimed to toggle a node's running status stop/start.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -993,7 +993,7 @@ paths:
         This endpoint returns all images in Board, and can be filtered by image name.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -1041,7 +1041,7 @@ paths:
         This endpoint returns all detailed info of this image by the image internal serial number
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -1090,7 +1090,7 @@ paths:
         This endpoint is to delete an image by the image tag.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -1228,7 +1228,7 @@ paths:
         This endpoint returns the status logs of this service.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -1262,7 +1262,7 @@ paths:
         This endpoint returns the list of this service.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -1286,7 +1286,7 @@ paths:
         This endpoint returns the status logs of this node.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -1322,7 +1322,7 @@ paths:
         This endpoint the list of node.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
