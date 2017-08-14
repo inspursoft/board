@@ -22,10 +22,6 @@ func (u *UserController) Prepare() {
 	u.currentUser = user
 	u.isSysAdmin = (u.currentUser.SystemAdmin == 1)
 	u.isProjectAdmin = (u.currentUser.ProjectAdmin == 1)
-	if !u.isProjectAdmin {
-		u.CustomAbort(http.StatusForbidden, "Insuffient privileges.")
-		return
-	}
 }
 
 func (u *UserController) GetUsersAction() {

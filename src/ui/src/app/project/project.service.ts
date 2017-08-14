@@ -7,37 +7,43 @@ import { AppInitService } from '../app.init.service';
 
 @Injectable()
 export class ProjectService {
-  
-  headers: Headers = new Headers({"Content-type": "application/json"});
-  
+
+  get defaultHeader(): Headers {
+    let headers = new Headers();
+    headers.append('Content-Type','application/json');
+    headers.append('token', this.appInitService.token);
+    return headers;
+  }
+
   constructor(
     private http: Http,
     private appInitService: AppInitService
   ){}
   
   getProjects(projectName?: string): Promise<Project[]> {
+    
     return this.http
       .get('/api/v1/projects', {
-        headers: this.headers,
+        headers: this.defaultHeader,
         params: {
-          'token': this.appInitService.token,
           'project_name': projectName
         }
       })
       .toPromise()
-      .then(resp=><Project[]>resp.json())
+      .then(resp=>{
+        this.appInitService.chainResponse(resp);
+        return resp.json();
+      })
       .catch(err=>Promise.reject(err));
   }
 
   createProject(project: Project): Promise<any> {    
     return this.http
       .post('/api/v1/projects', project, {
-        params: {
-          'token': this.appInitService.token
-        }
+        headers: this.defaultHeader,
       })
       .toPromise()
-      .then(resp=>resp)
+      .then(resp=>this.appInitService.chainResponse(resp))
       .catch(err=>Promise.reject(err));
   }
 
@@ -46,71 +52,66 @@ export class ProjectService {
       .put(`/api/v1/projects/${project.project_id}/publicity`, {
         'project_public': project.project_public
       }, {
-        params: {
-          'token': this.appInitService.token
-        }
+        headers: this.defaultHeader
       })
       .toPromise()
-      .then(resp=>resp)
+      .then(resp=>this.appInitService.chainResponse(resp))
       .catch(err=>Promise.reject(err));
   }
 
   deleteProject(project: Project): Promise<any> {
     return this.http
       .delete(`/api/v1/projects/${project.project_id}`, {
-        params: {
-          'token': this.appInitService.token
-        }
+        headers: this.defaultHeader
       })
       .toPromise()
-      .then(resp=>resp)
+      .then(resp=>this.appInitService.chainResponse(resp))
       .catch(err=>Promise.reject(err));
   }
 
   getProjectMembers(projectId: number): Promise<Member[]> {
-    return this.http.get(`/api/v1/projects/${projectId}/members`, {
-        params: {
-          'token': this.appInitService.token
-        }
+    return this.http
+      .get(`/api/v1/projects/${projectId}/members`, {
+        headers: this.defaultHeader
       })
       .toPromise()
-      .then(resp=><Member[]>resp.json())
+      .then(resp=>{
+        this.appInitService.chainResponse(resp);
+        return <Member[]>resp.json();
+      })
       .catch(err=>Promise.reject(err));
   }
 
   addOrUpdateProjectMember(projectId: number, userId: number, roleId: number): Promise<any> {
     return this.http.post(`/api/v1/projects/${projectId}/members`, {
-      'project_member_role_id': roleId,
-      'project_member_user_id': userId
-    },{
-      params: {
-        'token': this.appInitService.token
-      }
-    })
-    .toPromise()
-    .then(resp=>resp)
-    .catch(err=>Promise.reject(err));
+        'project_member_role_id': roleId,
+        'project_member_user_id': userId
+      },{
+        headers: this.defaultHeader
+      })
+      .toPromise()
+      .then(resp=>this.appInitService.chainResponse(resp))
+      .catch(err=>Promise.reject(err));
   }
 
   deleteProjectMember(projectId: number, userId: number): Promise<any> {
-    return this.http.delete(`/api/v1/projects/${projectId}/members/${userId}`, {
-      params: {
-        'token': this.appInitService.token
-      }
-    })
-    .toPromise()
-    .then(resp=>resp)
-    .catch(err=>Promise.reject(err));
+    return this.http
+      .delete(`/api/v1/projects/${projectId}/members/${userId}`, {
+        headers: this.defaultHeader
+      })
+      .toPromise()
+      .then(resp=>this.appInitService.chainResponse(resp))
+      .catch(err=>Promise.reject(err));
   }
 
   getAvailableMembers(): Promise<Member[]> {
-    return this.http.get('/api/v1/users', {
-        params: {
-        'token': this.appInitService.token
-        }
+    return this.http
+      .get('/api/v1/users', {
+        headers: this.defaultHeader
       })
       .toPromise()
       .then(resp=>{
+        this.appInitService.chainResponse(resp);
         let members = Array<Member>();
         let users = <any[]>resp.json();
         users.forEach(u => {

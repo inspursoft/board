@@ -11,7 +11,7 @@ import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/first';
 
-import { Http } from '@angular/http';
+import { Http, Headers } from '@angular/http';
 
 import { AppInitService } from '../../app.init.service';
 import { MessageService } from '../message-service/message.service';
@@ -51,8 +51,10 @@ export class CheckItemExistingDirective implements AsyncValidator {
   
   checkProjectExists(token: string, projectName: string): Observable<{[key: string]: any}>{
     return this.http.head('/api/v1/projects', {
+      headers: new Headers({
+        'token': token
+      }),
       params: {
-        'token': token,
         'project_name': projectName
       }
     })

@@ -53,6 +53,11 @@ paths:
       description: |
         This endpoint is for user to search registered users, support for filtering results with username. Notice, by now this operation is only for administrator.
       parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
         - name: username
           in: query
           type: string
@@ -123,6 +128,11 @@ paths:
       description: |
         This endpoint is to create a user if the user does not already exist  (This feature is only provided for system admin user).
       parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
         - name: user
           in: body
           description: New created user.
@@ -144,7 +154,7 @@ paths:
     post:
       summary: Sign in with available user account.
       description: |
-        Sign in system with available user account including username/email and password.
+        Sign in system with available user account including username/email and password and get the token. 
       parameters:
         - name: user
           in: body
@@ -163,10 +173,15 @@ paths:
           description: Unexpected internal error.
   /v1/users/{user_id}:
     get:
-      summary: Get current user info.
+      summary: Get user by ID.
       description: |
         This endpoint is to get the current user infomation.
       parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
         - name: user_id
           in: path
           type: integer
@@ -187,6 +202,11 @@ paths:
       description: |
        This endpoint let a registered user change his profile.
       parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
         - name: user_id
           in: path
           type: integer
@@ -220,6 +240,11 @@ paths:
         This endpoint let administrator of Board mark a registered user as
         be removed.It actually won't be deleted from DB.
       parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
         - name: user_id
           in: path
           type: integer
@@ -248,6 +273,11 @@ paths:
         This endpoint let a registered user change to be an system administrator
         of Board.
       parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
         - name: user_id
           in: path
           type: integer
@@ -282,6 +312,11 @@ paths:
         This endpoint let a registered user change to be an project administrator
         of Board.
       parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
         - name: user_id
           in: path
           type: integer
@@ -315,6 +350,11 @@ paths:
       description: |
         This endpoint is for user to update password. Users with the admin role can change any user's password. Guest users can change only their own password.
       parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
         - name: user_id
           in: path
           type: integer
@@ -340,65 +380,45 @@ paths:
           description: Old password is not correct.
         500:
           description: Unexpected internal errors.
-  /v1/users/{user_id}/token:
-    post:
-      summary: Get JWT token from service.
+  /v1/users/current:
+    get:
+      summary: Get current user.
       description: |
-        The Login endpoint returns JWT token for registered user. The response is JWT format (https://jwt.io/).
+        This endpoint is for getting current user with available token.
       parameters:
-        - name: user
-          in: body
-          description: New created user to apply for token.
+        - name: token
+          in: query
+          type: string
           required: true
-          schema:
-            $ref: '#/definitions/UserDetail'
+          description: Current available token.
       tags:
         - Products
       responses:
         200:
-          description: JWT Token.
+          description: Updated user's project admin role successfully.
           schema:
-            $ref: '#/definitions/Token'
+            $ref: '#/definitions/TokenPayload'
         400:
-          description: Bad Request
+          description: Invalid user ID.
         401:
-          description: Unauthorized
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        404:
+          description: User ID does not exist.
         500:
-          description: Unexpected internal errors.
-    delete:
-      summary: Delete the JWT token of user.
-      description: |
-        Delete user JWT token.
-      parameters:
-        - name: user_id
-          in: path
-          type: integer
-          format: int32
-          required: true
-          description: Registered user ID
-        - name: user_token
-          in: body
-          description: The user token to be deleled.
-          required: true
-          schema:
-            $ref: '#/definitions/Token'
-      tags:
-        - Products
-      responses:
-        200:
-          description: JWT Token was deleted successfully.
-        400:
-          description: Bad Request
-        401:
-          description: Unauthorized
-        500:
-          description: Unexpected internal errors.
+          description: Unexpected internal errors.              
   /v1/projects:
     get:
       summary: Return projects created by Board.
       description: |
         This endpoint returns all projects created by Board, and can be filtered by project name.
       parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
         - name: project_name 
           in: query
           description: Project name for filtering results.
@@ -447,6 +467,11 @@ paths:
       description: |
         This endpoint is for user to create a new project.
       parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
         - name: project
           in: body
           description: New created project.
@@ -472,6 +497,11 @@ paths:
       description: |
         This endpoint returns specific project information by project ID.
       parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
         - name: project_id
           in: path
           description: Project ID for filtering results.
@@ -494,6 +524,11 @@ paths:
       description: |
         This endpoint is aimed to delete project by project ID.
       parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
         - name: project_id
           in: path
           description: Project ID of project which will be deleted.
@@ -521,6 +556,11 @@ paths:
       description: |
         This endpoint is aimed to toggle a project publicity status.
       parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
         - name: project_id
           in: path
           type: integer
@@ -554,6 +594,11 @@ paths:
       description: |
         This endpoint is for user to search a specified project's relevant members.
       parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
         - name: project_id
           in: path
           type: integer
@@ -584,6 +629,11 @@ paths:
       description: |
         This endpoint is for user to add member accompany with relevant project.
       parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
         - name: project_id
           in: path
           type: integer
@@ -617,6 +667,11 @@ paths:
       description: |
         This endpoint is for user to delete member accompany with relevant project.
       parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
         - name: project_id
           in: path
           type: integer
@@ -650,6 +705,11 @@ paths:
       description: |
         This endpoint returns all services created by Board, and can be filtered by project name.
       parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
         - name: service_name 
           in: query
           description: Service name for filtering results.
@@ -699,6 +759,11 @@ paths:
       description: |
         This endpoint returns specific service information by service_id ID.
       parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
         - name: service_id
           in: path
           description: Service ID for filtering results.
@@ -722,6 +787,11 @@ paths:
       description: |
         This endpoint returns all nodes in Board, and can be filtered by node name.
       parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
         - name: node_name 
           in: query
           description: node name for filtering results.
@@ -766,6 +836,11 @@ paths:
       description: |
         This endpoint is for admin to add a new node.
       parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
         - name: node
           in: body
           description: New added node.
@@ -791,6 +866,11 @@ paths:
       description: |
         This endpoint returns a specific node's information by node ID.
       parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
         - name: node_id
           in: path
           description: Node ID for filtering results.
@@ -815,6 +895,11 @@ paths:
       description: |
         This endpoint is aimed to remove a node by node ID.
       parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
         - name: node_id
           in: path
           description: Node will be removed by node_id.
@@ -839,6 +924,11 @@ paths:
       description: |
        This endpoint is to update node info.
       parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
         - name: node_id
           in: path
           type: integer
@@ -868,6 +958,11 @@ paths:
       description: |
         This endpoint is aimed to toggle a node's running status stop/start.
       parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
         - name: node_id
           in: path
           type: integer
@@ -897,6 +992,11 @@ paths:
       description: |
         This endpoint returns all images in Board, and can be filtered by image name.
       parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
         - name: image_name 
           in: query
           description: image name for filtering results.
@@ -940,6 +1040,11 @@ paths:
       description: |
         This endpoint returns all detailed info of this image by the image internal serial number
       parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
         - name: image_name
           in: path
           description: image name to specify an image.
@@ -984,6 +1089,11 @@ paths:
       description: |
         This endpoint is to delete an image by the image tag.
       parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
         - name: image_name
           in: path
           description: image name to specify an image.
@@ -1111,18 +1221,21 @@ paths:
           description: User need to log in as admin.
         500:
           description: Unexpected internal errors. 
-  /v1/dashboard/service/{service_id}:
+  /v1/dashboard/service/:
     post:
       summary: Return the status logs of this service
       description: |
         This endpoint returns the status logs of this service.
       parameters:
-        - name: service_id
-          in: path
-          description: The integer ID of this service, 'null' is for the sum of all services.
+        - name: token
+          in: header
+          type: string
           required: true
-          type: integer
-          format: int32
+          description: Current available token.
+        - name: service_name
+          in: query
+          description: The integer ID of this service, null name is for the sum of all services.
+          type: string
         - name: service_timestruct
           in: body
           required: true
@@ -1141,16 +1254,45 @@ paths:
         401:
           description: Invalid service name.
         500:
-          description: Internal errors.    
-  /v1/dashboard/node/{node_id}:
+          description: Internal errors.
+  /v1/dashboard/service/list:
+    get:
+      summary: Return the list of this service
+      description: |
+        This endpoint returns the list of this service.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the list of this service.
+          schema:
+            $ref: '#/definitions/DashboardServiceList'
+        400:
+          description: Bad Request.
+        401:
+          description: Invalid service name.
+        500:
+          description: Internal errors.
+  /v1/dashboard/node/:
     post:
       summary: Return the status logs of this node
       description: |
         This endpoint returns the status logs of this node.
       parameters:
-        - name: node_id
-          in: path
-          description: The integer ID of this node, 'null' is for the sum of all nodes.
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: node_name
+          in: query
+          description: The integer ID of this node, null name is for the sum of all nodes.
           required: true
           type: integer
           format: int32
@@ -1159,7 +1301,7 @@ paths:
           required: true
           schema:
             $ref: '#/definitions/TimeStruct'
-          description: The time struct for status logs of this node.    
+          description: The time struct for status logs of this node.
       tags:
         - Products
       responses:
@@ -1172,7 +1314,31 @@ paths:
         401:
           description: Invalid node name.
         500:
-          description: Internal errors.    
+          description: Internal errors.
+  /v1/dashboard/node/list:
+    get:
+      summary: Return the list of node.
+      description: |
+        This endpoint the list of node.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the status logs of this node.
+          schema:
+            $ref: '#/definitions/DashboardNodeList'
+        400:
+          description: Bad Request.
+        401:
+          description: Invalid node name.
+        500:
+          description: Internal errors.
   /v1/dashboard/storage/{storage_id}:
     get:
       summary: Return the status logs of this storage
@@ -1234,6 +1400,33 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/UserBrief'
+  TokenPayload:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int32
+        description: The ID of current user.
+      username:
+        type: string
+        description: The name of current user.
+      email:
+        type: string
+        description: The email of current user.
+      realname:
+        type: string
+        description: The realname of current user.
+      is_project_admin:
+        type: integer
+        format: int32
+        description: The project admin status of current user.
+      is_system_admin:
+        type: integer
+        format: int32
+        description: The system admin status of current user.
+      token:
+        type: string
+        description: The token of current user.
   UserBrief:
     type: object
     properties:
@@ -1651,25 +1844,21 @@ definitions:
   ResourcesUsage:
     type: object
     properties:
-      cpu_usageinfo:        
+      cpu_usage:
+        type: string
         description: The usage information of cpu.
-        $ref: '#/definitions/CPUUsageInfo'
-      memory_initial_number:
-        type: integer
-        format: int32
+      mem_usage:
+        type: string
         description: The memory capability count number.
-      memory_usage_number:
-        type: integer
-        format: int32
-        description: The memory utilization count number.
-      memory_size_unit:
+      mem_size:
         type: string
         description: The memory unit of measurement.
-      storage_usageinfo:        
-        type: array
+      storage_total:
+        type: string
         description: Storage usage information, division by different volume.
-        items:
-          $ref: '#/definitions/StorageUsageInfo'
+      storage_use:
+        type: string
+        description: Storage usage information, division by different volume.
       timestamp:
         type: string
         description: The timestamp for resource usage recording.        
@@ -1802,8 +1991,7 @@ definitions:
         type: string
         description: The time unit of service status logs, minute, hour, day, month.
       service_count:
-        type: integer
-        format: int32
+        type: string
         description: The number of the service log based on time unit.
       service_statuslogs:
         type: array
@@ -1835,8 +2023,7 @@ definitions:
         type: string
         description: The time unit of node status logs, minute, hour, day, month.     
       node_count:
-        type: integer
-        format: int32
+        type: string
         description: The number of the node logs based on time unit.   
       node_statuslogs:
         type: array
@@ -1868,8 +2055,7 @@ definitions:
         type: string
         description: The time unit for status logs, minute, hour, day, month.    
       time_count:
-        type: integer
-        format: int32
+        type: string
         description: The number of the status logs based on timeunit.
       timestamp_base:
         type: string
@@ -1881,3 +2067,32 @@ definitions:
       token:
         type: string
         description: The JWT format token.
+  DashboardServiceList:
+    type: object
+    properties:
+      service_list:
+         type: array
+         items:
+           $ref: '#/definitions/DashboardServiceListInfo'
+  DashboardServiceListInfo:
+    type: string
+    properties:
+      service_name:
+        type: string
+        description: service name.
+  DashboardNodeList:
+    type: object
+    properties:
+      list:
+        type: array
+        items:
+           $ref: '#/definitions/DashboardNodeListInfo'
+  DashboardNodeListInfo:
+    type: string
+    properties:
+      node_name:
+        type: string
+        description: node name.
+
+
+

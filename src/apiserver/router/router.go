@@ -5,7 +5,6 @@ import (
 	"git/inspursoft/board/src/apiserver/controller/dashboard"
 
 	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/context"
 )
 
 func init() {
@@ -72,16 +71,21 @@ func init() {
 					&dashboard.DashboardServiceController{},
 					"get:GetList"),
 			),
+			beego.NSRouter("/git/serve",
+				&controller.GitRepoController{},
+				"post:CreateServeRepo"),
+			beego.NSRouter("/git/repo",
+				&controller.GitRepoController{},
+				"post:InitUserRepo"),
+			beego.NSRouter("/git/push",
+				&controller.GitRepoController{},
+				"post:PushObjects"),
+			beego.NSRouter("/git/pull",
+				&controller.GitRepoController{},
+				"post:PullObjects"),
 		),
 	)
 
 	beego.AddNamespace(ns)
-	beego.InsertFilter("/*", beego.AfterExec, func(ctx *context.Context) {
-		token := ctx.Request.FormValue("token")
-		if token != "" {
-			controller.ReassignToken(token)
-		}
-
-	}, true)
 	beego.SetStaticPath("/swagger", "swagger")
 }
