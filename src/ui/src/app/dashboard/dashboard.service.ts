@@ -3,154 +3,153 @@ import { Http, RequestOptions, Headers, Response } from "@angular/http"
 import { AppInitService } from "../app.init.service";
 import "rxjs/add/operator/map";
 import 'rxjs/add/operator/toPromise';
-import 'rxjs/add/operator/timeout';
 
+export enum LineType {ltService, ltNode, ltStorage}
 export type LineDataModel = [Date, number];
 export type LinesData = [LineDataModel[], LineDataModel[]];
 
-export interface ServiceListModel {
-  readonly service_name: string;
+export interface LineListQueryModel {
+  readonly list_name_Key: string;
+  readonly list_filed_Key: string;
+  readonly list_url_key: string;
+  readonly data_filed_key: string;
+  readonly data_url_key: string;
+  readonly data_time_stamp_key: string;
+  readonly data_first_line_key: string;
+  readonly data_second_line_key: string;
 }
 
-export interface ServiceDataModel {
-  readonly podcontainer_timestamp: number;
-  readonly pods_number: number;
-  readonly container_number: number;
+export interface LineListDataModel {
+  list_name: string;
+  time_list_name?: number;
 }
-
-export interface NodeDataModel {
-  readonly date: Date;
-  readonly value: number;
-}
-
-export interface StorageDataModel {
-  readonly date: Date;
-  readonly value: number;
-}
-
 const BASE_URL = "/api/v1";
+const ARR_SIZE_UNIT: Array<string> = ["B", "KB", "MB", "GB", "TB"];
 @Injectable()
 export class DashboardService {
-
-  static baseDate: Date = new Date();
-
-  static getOneStepTime(dateScaleId: number): number {
-    switch (dateScaleId) {
-      case 1:
-        return 5 * 1000;
-      case 2:
-        return 60 * 1000;
-      case 3:
-        return 24 * 60 * 1000;
-      case 4:
-        return 12 * 24 * 60 * 1000;
-
-      default:
-        return 1;
-    }
-  }
-
-  private static getSimulateData(serviceID: number): number {
-    switch (serviceID) {
-      case 0:
-        return 130 + Math.round(Math.random() * 50);
-      case 1:
-        return 30 + Math.round(Math.random() * 10);
-      case 2:
-        return 20 + Math.round(Math.random() * 10);
-      case 3:
-        return 50 + Math.round(Math.random() * 10);
-      case 4:
-        return 30 + Math.round(Math.random() * 20);
-    }
-  }
-
-  private static  getSimulateDate(dateScaleId: number): Date {
-    DashboardService.baseDate.setTime(DashboardService.baseDate.getTime()
-      + DashboardService.getOneStepTime(dateScaleId));
-    return new Date(DashboardService.baseDate.getTime());
-  }
-
-  /**
-   *getServiceData
-   * @param serviceID
-   * @param dateScaleId
-   *node:dateScaleId=>1:1min;2:1hr;3:1day;4:1mth
-   */
-  static getBySimulateData(serviceID: number, dateScaleId: number): Map<number, LineDataModel[]> {
-    if (!dateScaleId || dateScaleId < 1 || dateScaleId > 4) return null;
-    let result: Map<number, LineDataModel[]> = new Map<number, LineDataModel[]>();
-    result[0] = Array<LineDataModel>(0);
-    result[1] = Array<LineDataModel>(0);
-    for (let i = 0; i < 11; i++) {
-      let date: Date = DashboardService.getSimulateDate(dateScaleId);
-      let arrBuf1 = [date, DashboardService.getSimulateData(serviceID)];
-      let arrBuf2 = [date, DashboardService.getSimulateData(serviceID)];
-      result[0].push(arrBuf1);
-      result[1].push(arrBuf2);
-    }
-    return result;
-  }
+  LineNameMap: Map<LineType, LineListQueryModel>;
+  StorageUnit: string;
 
   constructor(private http: Http,
               private appInitService: AppInitService) {
+    this.LineNameMap = new Map<LineType, LineListQueryModel>();
+    this.LineNameMap.set(LineType.ltService, {
+      list_name_Key: "service_name",
+      list_filed_Key: "service_list",
+      list_url_key: "service/list",
+      data_filed_key: "service_statuslogs",
+      data_url_key: "service",
+      data_time_stamp_key: "podcontainer_timestamp",
+      data_first_line_key: "pods_number",
+      data_second_line_key: "container_number"
+    });
+    this.LineNameMap.set(LineType.ltNode, {
+      list_name_Key: "node_name",
+      list_filed_Key: "list",
+      list_url_key: "node/list",
+      data_filed_key: "node_logs",
+      data_url_key: "node",
+      data_time_stamp_key: "time_stamp",
+      data_first_line_key: "cpu_usage",
+      data_second_line_key: "mem_usage"
+    });
+    this.LineNameMap.set(LineType.ltStorage, {
+      list_name_Key: "node_name",
+      list_filed_Key: "list",
+      list_url_key: "node/list",
+      data_filed_key: "node_logs",
+      data_url_key: "node",
+      data_time_stamp_key: "time_stamp",
+      data_first_line_key: "storage_use",
+      data_second_line_key: "storage_total"
+    });
   };
 
-  readonly defaultHeaders: Headers = new Headers({
-    contentType: "application/json"
-  });
+  private getUnitMultipleValue(sample: number): number {
+    let result: number = 1;
+    let nameIndex: number = 0;
+    while (sample > 1024) {
+      sample = sample / 1024;
+      nameIndex += 1;
+      result *= 1024;
+    }
+    this.StorageUnit = ARR_SIZE_UNIT[nameIndex];
+    return result;
+  }
 
-  getServiceList(): Promise<ServiceListModel[]> {
+  get CurStorageUnit():string{
+    return this.StorageUnit;
+  }
+
+  get defaultHeader(): Headers {
+    let headers = new Headers();
+    headers.append('Content-Type', 'application/json');
+    headers.append('token', this.appInitService.token);
+    return headers;
+  }
+
+  getLineNameList(lineType: LineType): Promise<LineListDataModel[]> {
     let options = new RequestOptions({
-        headers: this.defaultHeaders,
-        params: {'token': this.appInitService.token}
+        headers: this.defaultHeader
       }
     );
-    return this.http.get(`${BASE_URL}/dashboard/service/list`, options)
+    return this.http.get(`${BASE_URL}/dashboard/${this.LineNameMap.get(lineType).list_url_key}`, options)
       .toPromise()
       .then(res => {
-        let arr = Array.from(res.json()).sort((a, b) => {
-          return a["service_name"] == b["service_name"] ? 0 :
-            a["service_name"] > b["service_name"] ? 1 : -1;
+        this.appInitService.chainResponse(res);
+        let resJson = res.json();
+        let resultArr = Array<LineListDataModel>();
+        let nameKey = this.LineNameMap.get(lineType).list_name_Key;
+        Array.from(resJson[this.LineNameMap.get(lineType).list_filed_Key]).forEach(value => {
+          resultArr.push({list_name: value[nameKey], time_list_name: value["time_list_name"]});
         });
-        arr.unshift({service_name: "total"});//add total service
-        return arr;
+        resultArr.sort((left, right) => {
+          return left.list_name == right.list_name ? 0 : left.list_name > right.list_name ? 1 : -1;
+        });
+        if (lineType == LineType.ltService) {//only service have total api
+          resultArr.unshift({list_name: "total"});
+        }
+        return resultArr;
       })
       .catch(err => Promise.reject(err));
-  };
+  }
 
-  /**data origin
-   * {"service_name": "mysql-read",
-   * "service_timeunit": "second",
-   * "service_count": "11",
-   * "service_statuslogs": [{
-   * "pods_number": 2,
-   * "container_number": 4,
-   * "time_stamp":1499842237
-   * }]}
-   */
-  getServiceData(query: {time_count: number, time_unit: string, service_name: string, timestamp_base: number}): Promise<LinesData> {
+  getLineData(lineType: LineType, query: {time_count: number, time_unit: string, list_name: string, timestamp_base: number}): Promise<LinesData> {
+    let lineKey = this.LineNameMap.get(lineType).list_name_Key;
+    let requestParams = {};
+    requestParams[lineKey] = query.list_name;
     let options = new RequestOptions({
-      headers: this.defaultHeaders,
-      params: {
-        'token': this.appInitService.token,
-        'service_name': query.service_name
-      }
+      headers: this.defaultHeader,
+      params: requestParams
     });
-    return this.http.post(`${BASE_URL}/dashboard/service`, {
+    return this.http.post(`${BASE_URL}/dashboard/${this.LineNameMap.get(lineType).data_url_key}`, {
       time_count: query.time_count.toString(),
       time_unit: query.time_unit,
-      timestamp_base: query.timestamp_base.toString()
+      timestamp_base: (query.timestamp_base).toString()
     }, options)
       .toPromise()
       .then((res: Response) => {
-        let resJson: object = res.json();
-        let logs: ServiceDataModel[] = resJson["service_statuslogs"];
+        this.appInitService.chainResponse(res);
+        let resJson: Object = res.json();
         let result: LinesData = [Array<[Date, number]>(0), Array<[Date, number]>(0)];
+        let logs: Array<Object> = resJson[this.LineNameMap.get(lineType).data_filed_key];
+        let time_key = this.LineNameMap.get(lineType).data_time_stamp_key;
+        let first_key = this.LineNameMap.get(lineType).data_first_line_key;
+        let second_key = this.LineNameMap.get(lineType).data_second_line_key;
         if (logs && logs.length > 0) {
-          logs.forEach((item: ServiceDataModel) => {
-            result[0].push([new Date(item.podcontainer_timestamp * 1000), item.pods_number]);
-            result[1].push([new Date(item.podcontainer_timestamp * 1000), item.container_number]);
+          let multiple: number = 1;
+          if (lineType == LineType.ltStorage) {
+            multiple = this.getUnitMultipleValue(logs[0][first_key]);
+          }
+          logs.forEach((item: Object) => {
+            result[0].push([new Date(item[time_key] * 1000), Math.round(item[first_key] / multiple * 100) / 100]);
+            result[1].push([new Date(item[time_key] * 1000), Math.round(item[second_key] / multiple * 100) / 100]);
+          });
+          result[0].sort((left, right) => {
+            return left[0] == right[0] ? 0 : left[0] > right[0] ? 1 : -1;
+          });
+          result[1].sort((left, right) => {
+            return left[0] == right[0] ? 0 : left[0] > right[0] ? 1 : -1;
           });
         }
         return result;

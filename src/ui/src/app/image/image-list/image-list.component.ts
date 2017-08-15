@@ -13,7 +13,7 @@ export class ImageListComponent implements OnInit {
   isShowDetail: boolean = false;
   imageListErrMsg: string = "";
   imageList: Image[] = Array<Image>();
-  imageCountPerPage: number = 2;
+  imageCountPerPage: number = 10;
 
   constructor(private imageService: ImageService,
               private messageService: MessageService) {

@@ -6,11 +6,11 @@ export class Assist {
   static getHoverValue(params: object, firstHint: string, secondHint: string): string {
     return `<div style="display: flex;flex-direction: column">
     <div style="display: flex;align-items: center">
-        <div style='width: 16px;height: 16px; background-color: #c23531;border-radius: 50%'></div>
+        <div style='width: 16px;height: 16px; background-color: #61a0a8;border-radius: 50%'></div>
         <div>${firstHint}:${params[0].value[1]}</div>
     </div>
     <div style="display: flex;align-items: center">
-        <div style='width: 16px;height: 16px; background-color: #2f4554;border-radius: 50%'></div>
+        <div style='width: 16px;height: 16px; background-color: #d48265;border-radius: 50%'></div>
         <div>${secondHint}:${params[1].value[1]}</div>
     </div>
 </div>`
@@ -28,7 +28,7 @@ export class Assist {
     }
   }
 
-  static getServiceOptions(): object {
+  static getBaseOptions(): Object {
     return {
       dataZoom: [
         {
@@ -45,36 +45,8 @@ export class Assist {
       yAxis: {
         type: "value",
         splitLine: {show: true}
-      }
-    };
-  }
-
-  static getBaseOptions(): object {
-    return {
-      // legend: {
-      // 	data: ["pods", "container"],
-      // 	x: 'left'
-      // },
-      toolbox: {
-        show: true,
-        feature: {
-          mark: {show: true},
-          dataView: {show: true, readOnly: false},
-          magicType: {show: true, type: ['line', 'bar', 'stack', 'tiled']},
-          restore: {show: true},
-          saveAsImage: {show: true}
-        }
       },
-      calculable: true,
-      xAxis: {
-        type: "time",
-        splitNumber: 11,
-        splitLine: {show: false}
-      },
-      yAxis: {
-        type: "value",
-        splitLine: {show: true}
-      }
+      color:['#61a0a8', '#d48265', '#91c7ae','#749f83',  '#ca8622', '#bda29a','#6e7074', '#546570', '#c4ccd3']
     };
   }
 

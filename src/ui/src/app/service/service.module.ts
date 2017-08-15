@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/shared.module';
 
 import { ServiceComponent } from './service.component';
-import { ServiceGroupComponent } from './service-group.component';
 import { ServiceHostDirective } from './service-host.directive';
 import { StepService } from './service-step.service';
 
@@ -21,7 +20,6 @@ import { DeployTestingComponent } from './step5-deploy-testing/deploy-testing.co
   ],
   declarations: [ 
     ServiceComponent,
-    ServiceGroupComponent,
     ServiceHostDirective,
     ListServiceComponent,
     ChooseProjectComponent,

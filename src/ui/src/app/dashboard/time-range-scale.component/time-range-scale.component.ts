@@ -1,9 +1,9 @@
-import { Component, Input, Output, EventEmitter } from "@angular/core"
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from "@angular/core"
 
 export interface scaleOption {
   readonly description: string;
   readonly value: string;
-  readonly valueOfSecond:number;
+  readonly valueOfSecond: number;
   readonly id: number;
 }
 interface StandardKeyValue<T> {
@@ -15,14 +15,25 @@ interface StandardKeyValue<T> {
   templateUrl: "./time-range-scale.component.html",
   styleUrls: ["./time-range-scale.component.css"]
 })
-export class TimeRangeScale {
+export class TimeRangeScale implements OnChanges {
   @Input() options: Array<scaleOption>;
-  @Output() changeScale: EventEmitter<scaleOption> = new EventEmitter<scaleOption>();
+  @Input() curScale: scaleOption;
+  @Output() scaleChange: EventEmitter<scaleOption> = new EventEmitter<scaleOption>();
   _activeIndex: number = 0;
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes["curScale"]) {
+      for (let i = 0; i < this.options.length; i++) {
+        if (this.options[i].id == changes["curScale"].currentValue["id"]) {
+          this._activeIndex = i;
+        }
+      }
+    }
+  }
 
   changeBlock(index: number, data: scaleOption): void {
     this._activeIndex = index;
-    this.changeScale.emit(data);
+    this.scaleChange.emit(data);
   }
 
   getClassByIndex(index: number): StandardKeyValue<boolean> {

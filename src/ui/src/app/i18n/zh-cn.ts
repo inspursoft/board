@@ -61,7 +61,12 @@ export const LANG_ZH_CN = {
     "ACCOUNT_SETTINGS": "账户设置",
     "LANG_EN_US": "English",
     "LANG_ZH_CN": "中文",
-    "LOG_OUT": "退出"
+    "LOG_OUT": "退出",
+    "OLD_PASSWORD":"旧密码",
+    "NEW_PASSWORD":"新密码",
+    "NEW_PASSWORD_CONFIRM":"确认新密码",
+    "OLD_PASSWORD_WRONG":"旧密码错误",
+    "CHANGE_PASSWORD_SUCCESS":"修改密码成功."
   },
   "SIDE_NAV": {
     "DASHBOARD": "仪表盘",

@@ -17,10 +17,12 @@ export class UserList implements OnInit, OnDestroy {
   _deleteSubscription: Subscription;
   userListData: Array<User> = Array<User>();
   userListErrMsg: string = "";
-  userCountPerPage: number = 2;
+  userCountPerPage: number = 10;
   curUser: User;
   curEditModel: editModel = editModel.emNew;
   showNewUser: boolean = false;
+  setUserSystemAdminIng: boolean = false;
+  setUserProjectAdminIng: boolean = false;
 
   constructor(private userService: UserService,
               private messageService: MessageService) {
@@ -60,6 +62,32 @@ export class UserList implements OnInit, OnDestroy {
     this.messageService.announceMessage(m);
   }
 
+  setUserSystemAdmin(userId: number, userSystemAdmin: number) {
+    this.setUserSystemAdminIng = true;
+    this.userService.setUserSystemAdmin(userId, userSystemAdmin)
+      .then(() => {
+        this.setUserSystemAdminIng = false;
+        this.userListData.find((value, index, obj) => value.user_id == userId).user_system_admin = userSystemAdmin;
+      })
+      .catch(err => {
+        this.setUserSystemAdminIng = false;
+        this.messageService.dispatchError(err)
+      })
+  }
+
+  setUserProjectAdmin(userId: number, userProjectAdmin: number) {
+    this.setUserProjectAdminIng = true;
+    this.userService.setUserProjectAdmin(userId, userProjectAdmin)
+      .then(() => {
+        this.setUserProjectAdminIng = false;
+        this.userListData.find((value, index, obj) => value.user_id == userId).user_project_admin = userProjectAdmin;
+      })
+      .catch(err => {
+        this.setUserProjectAdminIng = false;
+        this.messageService.dispatchError(err)
+      })
+  }
+
   ngOnInit() {
     this._deleteSubscription = this.messageService.messageConfirmed$.subscribe(next => {
       this.userService.deleteUser(next.data)
@@ -69,7 +97,7 @@ export class UserList implements OnInit, OnDestroy {
           m.message = "USER_CENTER.DELETE_USER_SUCCESS";
           this.messageService.inlineAlertMessage(m);
         })
-        .catch(err=> this.messageService.dispatchError(err));
+        .catch(err => this.messageService.dispatchError(err));
     });
     this.refreshData();
   }
