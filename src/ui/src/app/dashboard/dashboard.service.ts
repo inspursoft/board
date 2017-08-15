@@ -24,9 +24,12 @@ export interface LineListDataModel {
   time_list_name?: number;
 }
 const BASE_URL = "/api/v1";
+const ARR_SIZE_UNIT: Array<string> = ["B", "KB", "MB", "GB", "TB"];
 @Injectable()
 export class DashboardService {
   LineNameMap: Map<LineType, LineListQueryModel>;
+  StorageUnit: string;
+
   constructor(private http: Http,
               private appInitService: AppInitService) {
     this.LineNameMap = new Map<LineType, LineListQueryModel>();
@@ -62,9 +65,25 @@ export class DashboardService {
     });
   };
 
+  private getUnitMultipleValue(sample: number): number {
+    let result: number = 1;
+    let nameIndex: number = 0;
+    while (sample > 1024) {
+      sample = sample / 1024;
+      nameIndex += 1;
+      result *= 1024;
+    }
+    this.StorageUnit = ARR_SIZE_UNIT[nameIndex];
+    return result;
+  }
+
+  get CurStorageUnit():string{
+    return this.StorageUnit;
+  }
+
   get defaultHeader(): Headers {
     let headers = new Headers();
-    headers.append('Content-Type','application/json');
+    headers.append('Content-Type', 'application/json');
     headers.append('token', this.appInitService.token);
     return headers;
   }
@@ -77,6 +96,7 @@ export class DashboardService {
     return this.http.get(`${BASE_URL}/dashboard/${this.LineNameMap.get(lineType).list_url_key}`, options)
       .toPromise()
       .then(res => {
+        this.appInitService.chainResponse(res);
         let resJson = res.json();
         let resultArr = Array<LineListDataModel>();
         let nameKey = this.LineNameMap.get(lineType).list_name_Key;
@@ -109,6 +129,7 @@ export class DashboardService {
     }, options)
       .toPromise()
       .then((res: Response) => {
+        this.appInitService.chainResponse(res);
         let resJson: Object = res.json();
         let result: LinesData = [Array<[Date, number]>(0), Array<[Date, number]>(0)];
         let logs: Array<Object> = resJson[this.LineNameMap.get(lineType).data_filed_key];
@@ -116,14 +137,18 @@ export class DashboardService {
         let first_key = this.LineNameMap.get(lineType).data_first_line_key;
         let second_key = this.LineNameMap.get(lineType).data_second_line_key;
         if (logs && logs.length > 0) {
+          let multiple: number = 1;
+          if (lineType == LineType.ltStorage) {
+            multiple = this.getUnitMultipleValue(logs[0][first_key]);
+          }
           logs.forEach((item: Object) => {
-            result[0].push([new Date(item[time_key] * 1000), Math.round(item[first_key] * 100) / 100]);
-            result[1].push([new Date(item[time_key] * 1000), Math.round(item[second_key] * 100) / 100]);
+            result[0].push([new Date(item[time_key] * 1000), Math.round(item[first_key] / multiple * 100) / 100]);
+            result[1].push([new Date(item[time_key] * 1000), Math.round(item[second_key] / multiple * 100) / 100]);
           });
-          result[0].sort((left,right)=>{
+          result[0].sort((left, right) => {
             return left[0] == right[0] ? 0 : left[0] > right[0] ? 1 : -1;
           });
-          result[1].sort((left,right)=>{
+          result[1].sort((left, right) => {
             return left[0] == right[0] ? 0 : left[0] > right[0] ? 1 : -1;
           });
         }

@@ -14,7 +14,7 @@ export class ImageDetailComponent implements OnInit {
   alertClosed: boolean;
   @Input() curImage: Image;
   showDeleteAlert: boolean = false;
-  imageDetailPageSize: number = 1;
+  imageDetailPageSize: number = 10;
   imageDetailErrMsg: string = "";
   imageDetailList: ImageDetail[] = Array<ImageDetail>();
 

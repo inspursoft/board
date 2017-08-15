@@ -41,10 +41,10 @@
     <div class="section-right-container">
       <span class="stat-panel-title stat-panel-title-font">
         {{ 'DASHBOARD.USAGE' | translate }}:
-        <span class="stat-panel-value-font">{{CurValue.get(2).curFirst}}</span></span>
+        <span class="stat-panel-value-font">{{CurValue.get(2).curFirst}}{{StorageUnit}}</span></span>
       <span class="stat-panel-title stat-panel-title-font">
         {{ 'DASHBOARD.TOTAL' | translate }}:
-        <span class="stat-panel-value-font">{{CurValue.get(2).curSecond}}</span></span>
+        <span class="stat-panel-value-font">{{CurValue.get(2).curSecond}}{{StorageUnit}}</span></span>
     </div>
   </div>
 </div>
@@ -170,8 +170,8 @@
           </clr-dropdown-menu>
         </clr-dropdown>
         <div class="caption_container">
-          <span class="first-line">{{ 'DASHBOARD.USAGE' | translate }}:{{CurValue.get(2).curFirst}}</span>
-          <span class="second-line">{{ 'DASHBOARD.TOTAL' | translate   }}:{{CurValue.get(2).curSecond}}</span>
+          <span class="first-line">{{ 'DASHBOARD.USAGE' | translate }}:{{CurValue.get(2).curFirst}}{{StorageUnit}}</span>
+          <span class="second-line">{{ 'DASHBOARD.TOTAL' | translate   }}:{{CurValue.get(2).curSecond}}{{StorageUnit}}</span>
         </div>
         <div class="select-time-container">
           <time-range-scale [curScale]="Query.get(2) ? Query.get(2).scale:{}"

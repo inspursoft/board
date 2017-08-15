@@ -13,8 +13,8 @@ import { Subscription } from "rxjs/Subscription";
 import { Subject } from "rxjs/Subject";
 import { MessageService } from "../shared/message-service/message.service";
 
-const MAX_COUNT_PER_PAGE: number = 100;
-const MAX_COUNT_PER_DRAG: number = 40;
+const MAX_COUNT_PER_PAGE: number = 200;
+const MAX_COUNT_PER_DRAG: number = 50;
 const REFRESH_SEED_SERVICE: number = 10;
 
 @Component({
@@ -113,13 +113,16 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       });
     });
     this.EventLangChangeSubscription = this.translateService.onLangChange.subscribe(() => {
-      this.setLineBaseOption(LineType.ltService).then(res => this.LineOptions.set(LineType.ltService, res));
-      this.setLineBaseOption(LineType.ltNode).then(res => this.LineOptions.set(LineType.ltNode, res));
-      this.setLineBaseOption(LineType.ltStorage).then(res => this.LineOptions.set(LineType.ltStorage, res));
+      this.LineTypeSet.forEach((lineType:LineType) => {
+        this.setLineBaseOption(lineType).then(res => this.LineOptions.set(lineType, res));
+      });
     });
   }
 
   ngOnDestroy() {
+    this.LineTypeSet.forEach((value) => {//for update at after destroy
+      this.EChartInstance.set(value, null);
+    });
     clearInterval(this.IntervalAutoRefresh);
     if (this.EventLangChangeSubscription) {
       this.EventLangChangeSubscription.unsubscribe();
@@ -237,6 +240,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.IntervalSeed.get(lineType) > 0 && this.getAllLineCanRefresh && !this.DropInfo.get(lineType).isInDrop) {
       this.IntervalSeed.set(lineType, this.IntervalSeed.get(lineType) - 1);
       if (this.IntervalSeed.get(lineType) == 0) {
+        this.Query.get(lineType).time_count = MAX_COUNT_PER_PAGE;
         this.Query.get(lineType).timestamp_base = Math.round(new Date().getTime() / 1000);
         this.refreshOneLineData(lineType);
       }
@@ -311,7 +315,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             this.LineData.set(lineType, DashboardComponent.concatLineData(this.LineData.get(lineType), res, lineDropInfo.isDropNext));
             lineOption["dataZoom"][0]["start"] = DashboardComponent.calculateZoom(this.LineData.get(lineType), res, lineDropInfo.isDropNext).start;
             lineOption["dataZoom"][0]["end"] = DashboardComponent.calculateZoom(this.LineData.get(lineType), res, lineDropInfo.isDropNext).end;
-            if (res.length < MAX_COUNT_PER_DRAG){
+            if (res.length < MAX_COUNT_PER_DRAG && !this.DropInfo.get(lineType).isDropNext) {
               this.DropInfo.get(lineType).isInDrop = false;
             }
           }
@@ -367,4 +371,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   chartDataZoom(lineType: LineType, event: Object) {
     this.EventZoomChange.next({lineType: lineType, value: event});
   }
+
+  get StorageUnit(): string {
+    return this.service.CurStorageUnit;
+  };
 }
