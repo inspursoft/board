@@ -753,6 +753,27 @@ paths:
           description: User need to log in first.
         500:
           description: Internal errors.
+    post: 
+      summary: Create a new original service.
+      description: |
+        This endpoint is to create a new original service.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return a new original service config 
+          schema:
+            $ref: '#/definitions/ServiceConfig'
+        401:
+          description: User need to log in first.
+        500:
+          description: Unexpected internal errors.
   /v1/service/{service_id}:
     get:
       summary: Return specific service_id detail infomation.
@@ -781,6 +802,174 @@ paths:
           description: User need to log in first.
         500:
           description: Internal errors.  
+  /v1/service/{service_id}/serviceconfig:
+    put:  
+      summary: Update service configuration data.
+      description: |
+        This endpoint is aimed to update service configuration data.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.
+        - name: serviceconfig
+          in: body
+          required: true 
+          schema:
+            $ref: '#/definitions/ServiceConfig'
+          description: Updates of ServiceConfig data.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated service config successfully.
+        401:
+          description: User need to log in first.
+        402:
+          description: Invalid configuration phase.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.
+    delete:
+      summary: Delete service configuration data.
+      description: |
+        This endpoint is aimed to delete service configuration data.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.  
+      tags:
+        - Products
+      responses:
+        200:
+          description: Delete service config successfully.
+        401:
+          description: User need to log in first.
+        402:
+          description: Invalid configuration phase.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.
+  /v1/service/{service_id}/servicetest:  
+    post:
+      summary: Setup a test by this service configuration.
+      description: |
+        This endpoint is aimed to setup a test by this service configuration.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.
+        - name: serviceconfig
+          in: body
+          required: true 
+          schema:
+            $ref: '#/definitions/ServiceConfig'
+          description: Updates of ServiceConfig data.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Service config test successfully.
+        401:
+          description: User need to log in first.
+        402:
+          description: Invalid configuration phase.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.
+    delete: 
+      summary: Cleanup the test resource.
+      description: |
+        This endpoint is aimed to cleanup the test environment.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Cleanup the test resource successfully.
+        401:
+          description: User need to log in first.
+        402:
+          description: Invalid configuration phase.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.
+  /v1/service/{service_id}/deployment:
+    post:
+      summary: Deploy service by this service configuration.
+      description: |
+        This endpoint is aimed to deploy service by this service configuration.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.
+        - name: serviceconfig
+          in: body
+          required: true 
+          schema:
+            $ref: '#/definitions/ServiceConfig'
+          description: Updates of ServiceConfig data.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Deploy service successfully, return serive brief.
+          schema:
+            $ref: '#/definitions/ServiceBrief'
+        401:
+          description: User need to log in first.
+        402:
+          description: Invalid configuration phase.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.
   /v1/node:
     get:
       summary: Return nodes in Board added by admin.
@@ -1034,6 +1223,156 @@ paths:
           description: Bad Request
         500:
           description: Internal errors.
+    post:
+      summary: Create a new image
+      description: |
+        This endpoint is to create a new image with image_tag.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: image_config
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ImageConfig'
+          description: The image configuration struct for the new image.       
+      tags:
+        - Products
+      responses:
+        200:
+          description: Create Image configuration info successfully.
+        400:
+          description: Bad Request.
+        401:
+          description: Invalid image name.
+        500:
+          description: Internal errors.   
+  /v1/images/{image_name}/preview:
+    get:
+      summary: Return the Dockerfile of this image configuration.
+      description: |
+        This endpoint returns the Dockerfile of this image configuration.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: image_name
+          in: path
+          description: image name to specify an image.
+          required: true
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the Dockerfile of this image.
+          schema:
+            $ref: '#/definitions/ImageDockerfile'
+        400:
+          description: Bad Request.
+        401:
+          description: Invalid image name.
+        500:
+          description: Internal errors.
+    delete:
+      summary: Delete this image configuration.
+      description: |
+        This endpoint is to delete this image configuration.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: image_name
+          in: path
+          description: image name to specify an image.
+          required: true
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Delete the image configuration info successfully.
+        400:
+          description: Bad Request.
+        401:
+          description: Invalid image name.
+        500:
+          description: Internal errors.
+  /v1/images/{image_name}/building:          
+    post:
+      summary: Build a new image for the image configuration
+      description: |
+        This endpoint is to build a new image for the image configuration.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: image_name
+          in: path
+          description: image name to specify an image.
+          required: true
+          type: string
+        - name: image_config
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ImageConfig'
+          description: The image configuration struct for the new image.       
+      tags:
+        - Products
+      responses:
+        200:
+          description: Build the image successfully.
+        400:
+          description: Bad Request.
+        401:
+          description: Invalid image name.
+        500:
+          description: Internal errors.   
+  /v1/images/{image_name}/deployment:   
+    post:
+      summary: Upload the new image to board registry
+      description: |
+        This endpoint is to upload the new image to board registry.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: image_name
+          in: path
+          description: image name to specify an image.
+          required: true
+          type: string
+        - name: image_config
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ImageConfig'
+          description: The image configuration struct for the new image.       
+      tags:
+        - Products
+      responses:
+        200:
+          description: Upload the image to board registry successfully.
+          schema:
+            $ref: '#/definitions/ImageDetail'
+        400:
+          description: Bad Request.
+        401:
+          description: Invalid image name.
+        500:
+          description: Internal errors. 
   /v1/images/{image_name}:
     get:
       summary: Return all detailed info of this image.
@@ -1709,6 +2048,148 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/ResourcesUsage'
+  ServiceConfig:
+    type: object
+    properties:
+      service_id:
+        type: integer
+        format: int32
+        description: The integer ID of this service.
+      project_id:
+        type: integer
+        format: int32
+        description: The project's integer ID which include this service.
+      config_phase:
+        type: string
+        description: The phase name of the service configuration process.        
+      image_list:
+        description: The images of this service.
+        type: array
+        items:
+          type: string
+          description: The name of this image.
+      deployment_yaml:
+        description: The deployment yaml struct of this service configuration.
+        $ref: '#/definitions/DeploymentYaml'
+      service_yaml:
+        description: The service yaml struct of this service configuration.
+        $ref: '#/definitions/ServiceYaml'
+  DeploymentYaml:
+    type: object
+    properties:
+      deployment_name:
+        type: string
+        description: The deployment name of the service configuration.  
+      deployment_replicas:
+        type: integer
+        format: int32
+        description: The replicas number of this deployment.
+      volume_list:
+        description: The volumes of this deployment.
+        type: array
+        items:
+          $ref: '#/definitions/NFSVolume'        
+      container_list:
+        description: The containers of this deployment.
+        type: array
+        items:
+          $ref: '#/definitions/ContainerYaml'
+  ContainerYaml: 
+    type: object
+    properties:
+      container_name:
+        type: string
+        description: The container name in the deployment. 
+      container_baseimage:
+        type: string
+        description: The base image name of this container. 
+      container_workdir:
+        type: string
+        description: The working directory of this container. 
+      container_ports:
+        description: The container ports of this container.
+        type: array
+        items:
+          type: integer   
+          format: int32
+          description: The port number of this container.
+      container_volumes:
+        description: The volume mounts of this container.
+        type: array
+        items:
+          $ref: '#/definitions/ContainerVolume'
+      container_envs:
+        description: The environment variables of this container.
+        type: array
+        items:
+          $ref: '#/definitions/ContainerEnv'
+      container_command:
+        type: string
+        description: The commander of this container.   
+      container_memory:
+        type: string
+        description: The memory request of this container.      
+      container_cpu:
+        type: string
+        description: The CPU request of this container.  
+  NFSVolume:
+    type: object
+    properties:
+      volume_name:
+        type: string
+        description: The volume name in the deployment.     
+      server_name:
+        type: string
+        description: The NFS server name in the deployment.
+      volume_path:
+        type: string
+        description: The NFS path in the deployment.
+  ContainerVolume:
+    type: object
+    properties:
+      container_dir:
+        type: string
+        description: The directory in this container.     
+      target_storagename:
+        type: string
+        description: The storage server name.
+      target_dir:
+        type: string
+        description: The target directory of storage server.
+  ContainerEnv:
+    type: object
+    properties:
+      env_name:
+        type: string
+        description: The environment variable name in this container.     
+      env_value:
+        type: string
+        description: The environment variable value in this container.
+  ServiceYaml:
+    type: object
+    properties:
+      service_name:
+        type: string
+        description: The service name of the service configuration. 
+      service_nodeports:
+        description: The nodeports of this service.
+        type: array
+        items:
+          type: integer   
+          format: int32
+          description: The node port of this service.
+      service_externalpaths:
+        description: The external access paths of this service.
+        type: array
+        items:
+          type: string   
+          description: The external access path of this service.
+      service_selectors:
+        description: The selectors of this service.
+        type: array
+        items:
+          type: string   
+          description: The selector of this service.
   PodBrief:
     type: object
     properties:
@@ -1769,6 +2250,49 @@ definitions:
       image_tag:
         type: string
         description: The tag of the image version      
+  ImageDockerfile:
+    type: object
+    properties:
+      image_base:
+        type: string
+        description: The base image.        
+      image_author:
+        type: string
+        description: The author of this image.
+      image_copyfrom:
+        type: string
+        description: The source path of copy.
+      image_copyto:
+        type: string
+        description: The destination path of copy.
+      image_entrypoint:
+        type: string
+        description: The entrypoint of this image.
+      image_cmd:
+        type: string
+        description: The author of this image.
+  ImageConfig:
+    type: object
+    properties:
+      image_name:
+        type: string
+        description: The name of this image.
+      image_tag:
+        type: string
+        description: The tag of this image.
+      project_id:
+        type: integer
+        format: int32
+        description: The integer ID of the project that this image belongs to.
+      project_name:
+        type: string
+        description: The name of the project that this image belongs to.      
+      image_template:
+        type: string
+        description: The image dockerfile template of this image.
+      image_dockerfile:        
+        description: The dockerfile of this image configuration.
+        $ref: '#/definitions/ImageDockerfile'
   NodeBrief:
     type: object
     properties:
