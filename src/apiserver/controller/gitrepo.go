@@ -13,7 +13,7 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
-const baseRepoPath = `/tmp`
+const baseRepoPath = `/repos`
 
 var repoServePath = filepath.Join(baseRepoPath, "board_repo")
 

@@ -1,9 +1,13 @@
 package service
 
 import (
+	"io/ioutil"
+
+	"golang.org/x/crypto/ssh"
 	git "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport"
+	gitssh "gopkg.in/src-d/go-git.v4/plumbing/transport/ssh"
 )
 
 type repoHandler struct {
@@ -19,9 +23,27 @@ func InitBareRepo(servePath string) (*repoHandler, error) {
 	return &repoHandler{repo: repo}, nil
 }
 
+func getSSHAuth() (*gitssh.PublicKeys, error) {
+	deployKey, err := ioutil.ReadFile("/root/.ssh/id_rsa")
+	if err != nil {
+		return nil, err
+	}
+	signer, err := ssh.ParsePrivateKey(deployKey)
+	if err != nil {
+		return nil, err
+	}
+	auth := &gitssh.PublicKeys{User: "git", Signer: signer}
+	return auth, nil
+}
+
 func InitRepo(servePath, path string) (*repoHandler, error) {
+	auth, err := getSSHAuth()
+	if err != nil {
+		return nil, err
+	}
 	repo, err := git.PlainClone(path, false, &git.CloneOptions{
-		URL: servePath,
+		URL:  "git@gitserver:/gitserver" + servePath,
+		Auth: auth,
 	})
 	if err != nil {
 		if err == git.ErrRepositoryAlreadyExists {
@@ -78,11 +100,19 @@ func (r *repoHandler) Commit(message string, signature *object.Signature) (*repo
 }
 
 func (r *repoHandler) Push() error {
-	return r.repo.Push(&git.PushOptions{})
+	auth, err := getSSHAuth()
+	if err != nil {
+		return err
+	}
+	return r.repo.Push(&git.PushOptions{Auth: auth})
 }
 
 func (r *repoHandler) Pull() error {
-	err := r.worktree.Pull(&git.PullOptions{})
+	auth, err := getSSHAuth()
+	if err != nil {
+		return err
+	}
+	err = r.worktree.Pull(&git.PullOptions{Auth: auth})
 	if err == git.NoErrAlreadyUpToDate {
 		return nil
 	}

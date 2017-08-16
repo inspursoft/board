@@ -14,7 +14,10 @@ RUN chmod u+x /go/bin/apiserver
 
 WORKDIR /go/bin/
 
-CMD ["apiserver"]
+COPY make/dev/container/apiserver/entrypoint.sh /go/bin/entrypoint.sh
+RUN chmod u+x entrypoint.sh
+
+ENTRYPOINT ["sh", "entrypoint.sh"]
 
 VOLUME ["/go/bin"]
 
