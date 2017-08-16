@@ -37,8 +37,7 @@ services:
       dockerfile: make/dev/container/gitserver/Dockerfile
     restart: always
     volumes:
-      - /data/board/gitserver/repos:/gitserver/repos
-      - /data/board/gitserver/keys:/gitserver/keys
+      - ../config/ssh_keys:/gitserver/keys
     networks:
       - board
     depends_on:
@@ -56,8 +55,8 @@ services:
     volumes:
       - ../config/apiserver/app.conf:/go/bin/app.conf:z
       - ../../tools/swagger/vendors/swagger-ui-2.1.4/dist:/go/bin/swagger:z
-      - /data/board/gitserver/keys:/root/.ssh
-      - /data/board/gitserver/repos:/repos
+      - ../config/ssh_keys:/root/.ssh
+      - /data/board/repos:/repos
     env_file:
       - ../config/apiserver/env
     networks:

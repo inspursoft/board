@@ -15,7 +15,7 @@ import (
 
 const baseRepoPath = `/repos`
 
-var repoServePath = filepath.Join(baseRepoPath, "board_repo")
+var repoServePath = filepath.Join("git@gitserver:", "gitserver", "repos", "board_repo")
 
 type GitRepoController struct {
 	baseController

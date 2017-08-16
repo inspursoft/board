@@ -8,9 +8,8 @@ COPY src/vendor /go/src/git/inspursoft/board/vendor
 
 WORKDIR /go/src/git/inspursoft/board/src/apiserver
 
-RUN go build -v -a -o /go/bin/apiserver
-
-RUN chmod u+x /go/bin/apiserver
+RUN go build -v -a -o /go/bin/apiserver && \
+    chmod u+x /go/bin/apiserver
 
 WORKDIR /go/bin/
 

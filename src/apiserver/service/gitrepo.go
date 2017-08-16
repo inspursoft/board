@@ -42,7 +42,7 @@ func InitRepo(servePath, path string) (*repoHandler, error) {
 		return nil, err
 	}
 	repo, err := git.PlainClone(path, false, &git.CloneOptions{
-		URL:  "git@gitserver:/gitserver" + servePath,
+		URL:  servePath,
 		Auth: auth,
 	})
 	if err != nil {

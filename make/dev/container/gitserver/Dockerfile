@@ -5,9 +5,6 @@ MAINTAINER wangkun "wangkun_lc@inspur.com"
 # "--no-cache" is new in Alpine 3.3 and it avoid using
 # "--update + rm -rf /var/cache/apk/*" (to remove cache)
 
-ENV http_proxy http://10.165.22.223:8118
-ENV https_proxy http://10.165.22.223:8118
-
 RUN apk add --no-cache \
   openssh \
   git
@@ -25,7 +22,10 @@ WORKDIR /gitserver/
 RUN mkdir /gitserver/keys \
   && adduser -D -s /usr/bin/git-shell git \
   && echo git:12345 | chpasswd \
-  && mkdir /home/git/.ssh
+  && mkdir /home/git/.ssh \
+  && mkdir /gitserver/repos \
+  && git init /gitserver/repos/board_repo --bare
+
 
 # This is a login shell for SSH accounts to provide restricted Git access.
 # It permits execution only of server-side Git commands implementing the
@@ -42,6 +42,6 @@ RUN chmod u+x entrypoint.sh
 
 EXPOSE 22
 
-VOLUME ["/gitserver/keys", "/gitserver/repos"]
+VOLUME ["/gitserver/keys"]
 
 CMD ["sh", "entrypoint.sh"]
