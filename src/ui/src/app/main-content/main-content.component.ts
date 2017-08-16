@@ -20,6 +20,10 @@ export class MainContentComponent {
     })
   }
 
+  get isSystemAdmin():boolean{
+    return this.appInitService.currentUser["user_system_admin"] == 1;
+  }
+
   navigateTo(link) {
     this.appInitService.token = this.token;
     this.router.navigate([link], {

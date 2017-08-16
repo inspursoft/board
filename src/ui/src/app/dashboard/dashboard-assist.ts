@@ -46,14 +46,14 @@ export class Assist {
         type: "value",
         splitLine: {show: true}
       },
-      color:['#61a0a8', '#d48265', '#91c7ae','#749f83',  '#ca8622', '#bda29a','#6e7074', '#546570', '#c4ccd3']
+      color:['#91c7ae','#749f83',  '#ca8622', '#bda29a','#6e7074', '#546570', '#c4ccd3']
     };
   }
 
   static getBaseSeries(): object {
     return {
       type: "line",
-      showSymbol: true,
+      showSymbol: false,
       smooth: true,
       symbolSize: 5,
       hoverAnimation: false

@@ -24,6 +24,7 @@
 }
 
 .scale-text {
+  margin-left: 7px;
   cursor: pointer;
 }
 
@@ -39,10 +40,12 @@
 }
 
 .left-block.active {
-  height: 20px;
-  margin-top: -9px;
+  height: 14px;
+  width: 14px;
+  margin-top: -6px;
   border: solid 1px #bbbbbb;
   background: blue;
+  border-radius: 7px;
 }
 
 .middle-block {
@@ -51,8 +54,10 @@
 }
 
 .middle-block.active {
-  height: 20px;
-  margin-top: -9px;
+  height: 14px;
+  width: 14px;
+  border-radius: 7px;
+  margin-top: -6px;
   border: solid 1px #bbbbbb;
   background: blue;
 }
@@ -62,8 +67,10 @@
 }
 
 .right-block.active {
-  height: 20px;
-  margin-top: -9px;
+  height: 14px;
+  width: 14px;
+  border-radius: 7px;
+  margin-top: -6px;
   border: solid 1px #bbbbbb;
   background: blue;
 }
