@@ -5,10 +5,10 @@ import (
 	"fmt"
 
 	"github.com/astaxie/beego/orm"
+	"github.com/astaxie/beego"
 )
 
 const (
-	defaultDuraTime    = 12000
 	defaultMaxQueryNum = 500
 )
 
@@ -65,13 +65,26 @@ func (d *DashboardNodeDao) getDurationTime() (last int, prev int, err error) {
 		return 0, 0, errors.New("no time stamp")
 	}
 	if d.DuraTime == 0 {
-		fmt.Println("default DuraTime", d.TimeStamp, d.TimeStamp-defaultDuraTime)
-		return d.TimeStamp, d.TimeStamp - defaultDuraTime, nil
+		switch d.QueryPara.TimeUnit {
+		case "second":
+			t := d.TimeCount * 5
+			return d.TimeStamp, d.TimeStamp - t, nil
+		case "minute":
+			t := d.TimeCount * 5 * 60
+			return d.TimeStamp, d.TimeStamp - t, nil
+		case "hour":
+			t := d.TimeCount * 5 * 60 * 60
+			return d.TimeStamp, d.TimeStamp - t, nil
+		case "day":
+			t := d.TimeCount * 5 * 60 * 60 * 24
+			return d.TimeStamp, d.TimeStamp - t, nil
+
+		}
 	} else {
-		fmt.Println("given DuraTime", d.TimeStamp, d.TimeStamp-d.DuraTime)
+		beego.Debug("given DuraTime", d.TimeStamp, d.TimeStamp-d.DuraTime)
 		return d.TimeStamp, d.TimeStamp - d.DuraTime, nil
 	}
-
+	return
 }
 func (d *DashboardNodeDao) GetTotalNodeData() (count int, nodeItems []NodeDataLogs, err error) {
 	if d.TimeCount > defaultMaxQueryNum {
@@ -262,13 +275,26 @@ func (d *DashboardServiceDao) getDurationTime() (last int, prev int, err error) 
 		return 0, 0, errors.New("no time stamp")
 	}
 	if d.DuraTime == 0 {
-		fmt.Println("default DuraTime", d.TimeStamp, d.TimeStamp-defaultDuraTime)
-		return d.TimeStamp, d.TimeStamp - defaultDuraTime, nil
+		switch d.QueryPara.TimeUnit {
+		case "second":
+			t := d.TimeCount * 5
+			return d.TimeStamp, d.TimeStamp - t, nil
+		case "minute":
+			t := d.TimeCount * 5 * 60
+			return d.TimeStamp, d.TimeStamp - t, nil
+		case "hour":
+			t := d.TimeCount * 5 * 60 * 60
+			return d.TimeStamp, d.TimeStamp - t, nil
+		case "day":
+			t := d.TimeCount * 5 * 60 * 60 * 24
+			return d.TimeStamp, d.TimeStamp - t, nil
+
+		}
 	} else {
 		fmt.Println("given DuraTime", d.TimeStamp, d.TimeStamp-d.DuraTime)
 		return d.TimeStamp, d.TimeStamp - d.DuraTime, nil
 	}
-
+	return
 }
 func (d *DashboardServiceDao) GetTotalServiceData() (count int, serviceItems []ServiceDataLog, err error) {
 	tableName, err := d.getServiceDataTableName()
