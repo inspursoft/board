@@ -31,6 +31,22 @@ services:
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "mysql"
+  gitserver:
+    build:
+      context: ../../
+      dockerfile: make/dev/container/gitserver/Dockerfile
+    restart: always
+    volumes:
+      - ../config/ssh_keys:/gitserver/keys
+    networks:
+      - board
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "gitserver"
   apiserver:
     build:
       context: ../../
@@ -39,17 +55,20 @@ services:
     volumes:
       - ../config/apiserver/app.conf:/go/bin/app.conf:z
       - ../../tools/swagger/vendors/swagger-ui-2.1.4/dist:/go/bin/swagger:z
+      - ../config/ssh_keys:/root/.ssh
+      - /data/board/repos:/repos
     env_file:
       - ../config/apiserver/env
     networks:
       - board
     links:
       - mysql
+      - gitserver
     ports: 
       - 8088:8080
     depends_on:
-      - log
       - mysql
+      - log
     logging:
       driver: "syslog"
       options:
@@ -66,8 +85,6 @@ services:
       - ../config/tokenserver/app.conf:/go/bin/app.conf:z
     networks:
       - board
-    ports:
-      - 4000:4000
     depends_on:
       - log
     logging:
