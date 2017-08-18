@@ -9,9 +9,11 @@ export type LineDataModel = [Date, number];
 export type LinesData = [LineDataModel[], LineDataModel[]];
 
 export interface LineListQueryModel {
-  readonly list_name_Key: string;
-  readonly list_filed_Key: string;
-  readonly list_url_key: string;
+  readonly query_name_Key: string;
+  readonly data_list_filed_key: string;
+  readonly data_list_name_key: string;
+  readonly data_list_time_stamp_key: string;
+  readonly data_list_cur_name: string;
   readonly data_filed_key: string;
   readonly data_url_key: string;
   readonly data_time_stamp_key: string;
@@ -21,7 +23,7 @@ export interface LineListQueryModel {
 
 export interface LineListDataModel {
   list_name: string;
-  time_list_name?: number;
+  time_stamp?: number;
 }
 const BASE_URL = "/api/v1";
 const ARR_SIZE_UNIT: Array<string> = ["B", "KB", "MB", "GB", "TB"];
@@ -34,32 +36,38 @@ export class DashboardService {
               private appInitService: AppInitService) {
     this.LineNameMap = new Map<LineType, LineListQueryModel>();
     this.LineNameMap.set(LineType.ltService, {
-      list_name_Key: "service_name",
-      list_filed_Key: "service_list",
-      list_url_key: "service/list",
-      data_filed_key: "service_statuslogs",
+      query_name_Key: "service_name",
+      data_list_filed_key: "service_list_data",
+      data_list_name_key: "service_name",
+      data_list_time_stamp_key: "timestamp",
+      data_list_cur_name: "service_name",
+      data_filed_key: "service_logs_data",
       data_url_key: "service",
-      data_time_stamp_key: "podcontainer_timestamp",
-      data_first_line_key: "pods_number",
+      data_time_stamp_key: "timestamp",
+      data_first_line_key: "pod_number",
       data_second_line_key: "container_number"
     });
     this.LineNameMap.set(LineType.ltNode, {
-      list_name_Key: "node_name",
-      list_filed_Key: "list",
-      list_url_key: "node/list",
-      data_filed_key: "node_logs",
+      query_name_Key: "node_name",
+      data_list_filed_key: "node_list_data",
+      data_list_name_key: "node_name",
+      data_list_time_stamp_key: "﻿timestamp",
+      data_list_cur_name: "node_name",
+      data_filed_key: "node_logs_data",
       data_url_key: "node",
-      data_time_stamp_key: "time_stamp",
+      data_time_stamp_key: "timestamp",
       data_first_line_key: "cpu_usage",
-      data_second_line_key: "mem_usage"
+      data_second_line_key: "memory_usage"
     });
     this.LineNameMap.set(LineType.ltStorage, {
-      list_name_Key: "node_name",
-      list_filed_Key: "list",
-      list_url_key: "node/list",
-      data_filed_key: "node_logs",
+      query_name_Key: "node_name",
+      data_list_filed_key: "node_list_data",
+      data_list_name_key: "node_name",
+      data_list_time_stamp_key: "﻿timestamp",
+      data_list_cur_name: "node_name",
+      data_filed_key: "node_logs_data",
       data_url_key: "node",
-      data_time_stamp_key: "time_stamp",
+      data_time_stamp_key: "timestamp",
       data_first_line_key: "storage_use",
       data_second_line_key: "storage_total"
     });
@@ -77,7 +85,7 @@ export class DashboardService {
     return result;
   }
 
-  get CurStorageUnit():string{
+  get CurStorageUnit(): string {
     return this.StorageUnit;
   }
 
@@ -88,71 +96,73 @@ export class DashboardService {
     return headers;
   }
 
-  getLineNameList(lineType: LineType): Promise<LineListDataModel[]> {
-    let options = new RequestOptions({
-        headers: this.defaultHeader
-      }
-    );
-    return this.http.get(`${BASE_URL}/dashboard/${this.LineNameMap.get(lineType).list_url_key}`, options)
-      .toPromise()
-      .then(res => {
-        this.appInitService.chainResponse(res);
-        let resJson = res.json();
-        let resultArr = Array<LineListDataModel>();
-        let nameKey = this.LineNameMap.get(lineType).list_name_Key;
-        Array.from(resJson[this.LineNameMap.get(lineType).list_filed_Key]).forEach(value => {
-          resultArr.push({list_name: value[nameKey], time_list_name: value["time_list_name"]});
-        });
-        resultArr.sort((left, right) => {
-          return left.list_name == right.list_name ? 0 : left.list_name > right.list_name ? 1 : -1;
-        });
-        if (lineType == LineType.ltService) {//only service have total api
-          resultArr.unshift({list_name: "total"});
-        }
-        return resultArr;
-      })
-      .catch(err => Promise.reject(err));
-  }
-
-  getLineData(lineType: LineType, query: {time_count: number, time_unit: string, list_name: string, timestamp_base: number}): Promise<LinesData> {
-    let lineKey = this.LineNameMap.get(lineType).list_name_Key;
+  getLineData(lineType: LineType, query: {
+    time_count: number,
+    time_unit: string,
+    list_name: string,
+    timestamp_base: number,
+    service_duration_time?: number
+  }): Promise<{List: Array<LineListDataModel>, Data: LinesData, CurListName: string}> {
+    let lineKey = this.LineNameMap.get(lineType).query_name_Key;
     let requestParams = {};
     requestParams[lineKey] = query.list_name;
     let options = new RequestOptions({
       headers: this.defaultHeader,
       params: requestParams
     });
-    return this.http.post(`${BASE_URL}/dashboard/${this.LineNameMap.get(lineType).data_url_key}`, {
-      time_count: query.time_count.toString(),
-      time_unit: query.time_unit,
-      timestamp_base: (query.timestamp_base).toString()
-    }, options)
+    let body: Object;
+    switch (lineType) {
+      case LineType.ltService: {
+        body = {
+          service_time_unit: query.time_unit,
+          service_time_count: query.time_count,
+          service_timestamp: query.timestamp_base
+        };
+        break;
+      }
+      case LineType.ltStorage:
+      case LineType.ltNode: {
+        body = {
+          node_time_unit: query.time_unit,
+          node_time_count: query.time_count,
+          node_timestamp: query.timestamp_base
+        };
+        break;
+      }
+    }
+    return this.http.post(`${BASE_URL}/dashboard/${this.LineNameMap.get(lineType).data_url_key}`, body, options)
       .toPromise()
       .then((res: Response) => {
         this.appInitService.chainResponse(res);
+        let lineNameMap = this.LineNameMap.get(lineType);
+        let time_key = lineNameMap.data_time_stamp_key;
+        let first_key = lineNameMap.data_first_line_key;
+        let second_key = lineNameMap.data_second_line_key;
         let resJson: Object = res.json();
-        let result: LinesData = [Array<[Date, number]>(0), Array<[Date, number]>(0)];
-        let logs: Array<Object> = resJson[this.LineNameMap.get(lineType).data_filed_key];
-        let time_key = this.LineNameMap.get(lineType).data_time_stamp_key;
-        let first_key = this.LineNameMap.get(lineType).data_first_line_key;
-        let second_key = this.LineNameMap.get(lineType).data_second_line_key;
-        if (logs && logs.length > 0) {
+        let dataLogs: Array<Object> = resJson[lineNameMap.data_filed_key];
+        let dataListLogs: Array<Object> = resJson[lineNameMap.data_list_filed_key];
+        let resultData: LinesData = [Array<[Date, number]>(0), Array<[Date, number]>(0)];
+        let resultList: Array<LineListDataModel> = new Array<LineListDataModel>(0);
+        if (dataLogs && dataLogs.length > 0) {//for data
           let multiple: number = 1;
           if (lineType == LineType.ltStorage) {
-            multiple = this.getUnitMultipleValue(logs[0][first_key]);
+            multiple = this.getUnitMultipleValue(dataLogs[0][first_key]);
           }
-          logs.forEach((item: Object) => {
-            result[0].push([new Date(item[time_key] * 1000), Math.round(item[first_key] / multiple * 100) / 100]);
-            result[1].push([new Date(item[time_key] * 1000), Math.round(item[second_key] / multiple * 100) / 100]);
-          });
-          result[0].sort((left, right) => {
-            return left[0] == right[0] ? 0 : left[0] > right[0] ? 1 : -1;
-          });
-          result[1].sort((left, right) => {
-            return left[0] == right[0] ? 0 : left[0] > right[0] ? 1 : -1;
+          dataLogs.forEach((item: Object) => {
+            resultData[0].push([new Date(item[time_key] * 1000), Math.round(item[first_key] / multiple * 100) / 100]);
+            resultData[1].push([new Date(item[time_key] * 1000), Math.round(item[second_key] / multiple * 100) / 100]);
           });
         }
-        return result;
+        if (dataListLogs && dataListLogs.length > 0) {//for list
+          resultList.push({list_name: "total", time_stamp: 0});
+          dataListLogs.forEach((item: Object) => {
+            resultList.push({
+              list_name: item[lineNameMap.data_list_name_key],
+              time_stamp: item[lineNameMap.data_list_time_stamp_key]
+            });
+          });
+        }
+        return {List: resultList, Data: resultData, CurListName: resJson[lineNameMap.data_list_cur_name]};
       })
       .catch(err => Promise.reject(err));
   }

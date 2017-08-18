@@ -77,7 +77,8 @@
         <div class="select-time-container">
           <time-range-scale [curScale]="Query.get(0) ? Query.get(0).scale:{}"
                             (scaleChange)="scaleChange(0,$event)"
-                            [options]="scaleOptions"></time-range-scale>
+                            [options]="scaleOptions">
+          </time-range-scale>
         </div>
       </div>
       <div class="card-block-bottom-container">
