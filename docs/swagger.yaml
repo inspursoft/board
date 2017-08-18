@@ -1240,7 +1240,7 @@ paths:
           in: body
           required: true
           schema:
-            $ref: '#/definitions/TimeStruct'
+            $ref: '#/definitions/ServiceDashboardReq'
           description: The time struct for status logs of this servcie.       
       tags:
         - Products
@@ -1249,30 +1249,6 @@ paths:
           description: Return the status logs of this service.
           schema:
             $ref: '#/definitions/DashboardService'
-        400:
-          description: Bad Request.
-        401:
-          description: Invalid service name.
-        500:
-          description: Internal errors.
-  /v1/dashboard/service/list:
-    get:
-      summary: Return the list of this service
-      description: |
-        This endpoint returns the list of this service.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-      tags:
-        - Products
-      responses:
-        200:
-          description: Return the list of this service.
-          schema:
-            $ref: '#/definitions/DashboardServiceList'
         400:
           description: Bad Request.
         401:
@@ -1300,7 +1276,7 @@ paths:
           in: body
           required: true
           schema:
-            $ref: '#/definitions/TimeStruct'
+            $ref: '#/definitions/NodeDashboardReq'
           description: The time struct for status logs of this node.
       tags:
         - Products
@@ -1309,30 +1285,6 @@ paths:
           description: Return the status logs of this node.
           schema:
             $ref: '#/definitions/DashboardNode'
-        400:
-          description: Bad Request.
-        401:
-          description: Invalid node name.
-        500:
-          description: Internal errors.
-  /v1/dashboard/node/list:
-    get:
-      summary: Return the list of node.
-      description: |
-        This endpoint the list of node.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-      tags:
-        - Products
-      responses:
-        200:
-          description: Return the status logs of this node.
-          schema:
-            $ref: '#/definitions/DashboardNodeList'
         400:
           description: Bad Request.
         401:
@@ -1987,12 +1939,13 @@ definitions:
       service_name:
         type: string
         description: The name of this service, 'total' is for the sum all services.
-      service_timeunit:
+      service_time_unit:
         type: string
         description: The time unit of service status logs, minute, hour, day, month.
-      service_count:
-        type: string
-        description: The number of the service log based on time unit.
+      service_time_count:
+         type: integer
+         format: int32
+         description: The number of the service log based on time unit.
       service_statuslogs:
         type: array
         description: The service status logs based on service_timeunit, count is array length.
@@ -2002,7 +1955,7 @@ definitions:
   PodContainerStatus:
     type: object
     properties:
-      pods_number:
+      pod_number:
         type: integer
         format: int32
         description: The pod number in this service.
@@ -2010,26 +1963,50 @@ definitions:
         type: integer
         format: int32
         description: The container number in this service.
-      podcontainer_timestamp:
-        type: string
-        description: The timestamp for the pod and container recording.
+      timestamp:
+        type: integer
+        format: int32
   DashboardNode:
     type: object
     properties:
       node_name:
         type: string
         description: The name of this node, 'total' is for the sum all nodes.
-      node_timeunit:
+      time_unit:
         type: string
         description: The time unit of node status logs, minute, hour, day, month.     
       node_count:
-        type: string
+        type: integer
+        format: int32
         description: The number of the node logs based on time unit.   
-      node_statuslogs:
+      node_logs_data:
         type: array
         description: The node status logs based on node_timeunit, count is array length.
         items:
-          $ref: '#/definitions/ResourcesUsage'
+          $ref: '#/definitions/DashboardNodeLogs'
+      node_list_data:
+         type: array
+         description: The node status logs based on node_timeunit, count is array length.
+         items:
+            $ref: '#/definitions/DashboardNodeList'
+  DashboardNodeLogs:
+      type: object
+      properties:
+        timestamp:
+          type: integer
+          format: int32
+        cpu_usage:
+          type: number
+          format: float
+        memory_usage:
+          type: number
+          format: float
+        storage_total:
+          type: number
+          format: float
+        storage_use:
+          type: number
+          format: float
   DashboardStorage:
     type: object
     properties:
@@ -2059,7 +2036,35 @@ definitions:
         description: The number of the status logs based on timeunit.
       timestamp_base:
         type: string
-        description: The base timestamp for record checking.        
+        description: The base timestamp for record checking.
+  ServiceDashboardReq:
+      type: object
+      properties:
+        service_time_unit:
+          type: string
+          description: The time unit for status logs, minute, hour, day, month.
+        service_time_count:
+          type: integer
+          format: int32
+          description: The number of the status logs based on timeunit.
+        service_timestamp:
+          type: integer
+          format: int32
+          description: The base timestamp for record checking.
+  NodeDashboardReq:
+        type: object
+        properties:
+          node_time_unit:
+            type: string
+            description: The time unit for status logs, minute, hour, day, month.
+          node_time_count:
+            type: integer
+            format: int32
+            description: The number of the status logs based on timeunit.
+          node_timestamp:
+            type: integer
+            format: int32
+            description: The base timestamp for record checking.
   Token:
     type: object
     description: The token for Board system.
@@ -2070,29 +2075,20 @@ definitions:
   DashboardServiceList:
     type: object
     properties:
-      service_list:
-         type: array
-         items:
-           $ref: '#/definitions/DashboardServiceListInfo'
-  DashboardServiceListInfo:
-    type: string
-    properties:
-      service_name:
-        type: string
-        description: service name.
+       service_name:
+          type: string
+       timestamp:
+          type: integer
+          format: int32
   DashboardNodeList:
     type: object
     properties:
-      list:
-        type: array
-        items:
-           $ref: '#/definitions/DashboardNodeListInfo'
-  DashboardNodeListInfo:
-    type: string
-    properties:
       node_name:
         type: string
-        description: node name.
+      timestamp:
+         type: integer
+         format: int32
+
 
 
 
