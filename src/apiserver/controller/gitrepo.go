@@ -15,7 +15,8 @@ import (
 
 const baseRepoPath = `/repos`
 
-var repoServePath = filepath.Join("git@gitserver:", "gitserver", "repos", "board_repo")
+var repoServePath = filepath.Join("/repos", "board_repo")
+var repoServeURL = filepath.Join("git@gitserver:", "gitserver", "repos", "board_repo")
 
 type GitRepoController struct {
 	baseController
@@ -47,7 +48,7 @@ func (g *GitRepoController) CreateServeRepo() {
 }
 
 func (g *GitRepoController) InitUserRepo() {
-	_, err := service.InitRepo(repoServePath, g.repoPath)
+	_, err := service.InitRepo(repoServeURL, g.repoPath)
 	if err != nil {
 		g.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to initialize user's repo: %+v\n", err))
 		return
@@ -103,7 +104,7 @@ func (g *GitRepoController) PullObjects() {
 		return
 	}
 	targetPath := filepath.Join(baseRepoPath, target)
-	repoHandler, err := service.InitRepo(repoServePath, targetPath)
+	repoHandler, err := service.InitRepo(repoServeURL, targetPath)
 	if err != nil {
 		g.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to open user's repo: %+v\n", err))
 		return

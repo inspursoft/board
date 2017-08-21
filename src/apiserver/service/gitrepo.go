@@ -32,17 +32,17 @@ func getSSHAuth() (*gitssh.PublicKeys, error) {
 	if err != nil {
 		return nil, err
 	}
-	auth := &gitssh.PublicKeys{User: "git", Signer: signer}
+	auth := &gitssh.PublicKeys{User: "root", Signer: signer}
 	return auth, nil
 }
 
-func InitRepo(servePath, path string) (*repoHandler, error) {
+func InitRepo(serveURL, path string) (*repoHandler, error) {
 	auth, err := getSSHAuth()
 	if err != nil {
 		return nil, err
 	}
 	repo, err := git.PlainClone(path, false, &git.CloneOptions{
-		URL:  servePath,
+		URL:  serveURL,
 		Auth: auth,
 	})
 	if err != nil {
