@@ -41,6 +41,8 @@ services:
       - ../config/ssh_keys:/gitserver/keys
     networks:
       - board
+    links:
+      - jenkins
     depends_on:
       - log
     logging:
@@ -62,13 +64,10 @@ services:
       - board
     volumes:
       - /data/board/jenkins:/var/jenkins_home
-      - ../config/ssh_keys:/home/jenkins/.ssh
+      - ../config/ssh_keys:/root/.ssh
     ports:
       - 8888:8080
       - 50000:50000
-    links:
-      - gitserver
-      - apiserver
     depends_on:
       - log
     logging:
@@ -96,7 +95,6 @@ services:
     ports: 
       - 8088:8088
     depends_on:
-      - mysql
       - log
     logging:
       driver: "syslog"

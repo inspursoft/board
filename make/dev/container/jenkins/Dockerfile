@@ -22,7 +22,9 @@ ENV JENKINS_SLAVE_AGENT_PORT ${agent_port}
 
 # Jenkins home directory is a volume, so configuration and build history 
 # can be persisted and survive image upgrades
-VOLUME /var/jenkins_home
+RUN mkdir /repos
+
+VOLUME ["/var/jenkins_home", "/repos"]
 
 # `/usr/share/jenkins/ref/` contains all reference configuration we want 
 # to set on a fresh new installation. Use it to bundle additional plugins 

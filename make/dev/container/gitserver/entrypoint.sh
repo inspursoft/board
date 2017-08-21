@@ -7,5 +7,10 @@ if [ "$(ls -A /gitserver/keys/)" ]; then
   cat /gitserver/keys/*.pub > .ssh/authorized_keys
 fi
 
+mkdir -p /gitserver/repos/board_repo \
+ && cd /gitserver/repos/board_repo \
+ && git init --bare \
+ && cp /gitserver/post.update hooks/post.update
+
 # -D flag avoids executing sshd as a daemon
 /usr/sbin/sshd -D

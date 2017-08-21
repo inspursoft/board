@@ -1,0 +1,2 @@
+#!/bin/bash
+http://jenkins/job/mytest/build?token=123456

@@ -1,12 +1,14 @@
 package controller
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"net/http"
 	"path/filepath"
 	"strings"
+	"text/template"
 
 	"github.com/astaxie/beego/logs"
 
@@ -14,9 +16,11 @@ import (
 )
 
 const baseRepoPath = `/repos`
+const jenkinsTriggerURL = `http://jenkins:8080/job/{{.JobName}}/build?token={{.Token}}`
+const jenkinsToken = `123456`
 
 var repoServePath = filepath.Join("/repos", "board_repo")
-var repoServeURL = filepath.Join("git@gitserver:", "gitserver", "repos", "board_repo")
+var repoServeURL = filepath.Join("root@gitserver:", "gitserver", "repos", "board_repo")
 
 type GitRepoController struct {
 	baseController
@@ -26,6 +30,7 @@ type GitRepoController struct {
 type pushObject struct {
 	Items   []string `json:"items"`
 	Message string   `json:"message"`
+	JobName string   `json:"job_name"`
 }
 
 func (g *GitRepoController) Prepare() {
@@ -95,6 +100,23 @@ func (g *GitRepoController) PushObjects() {
 	if err != nil {
 		g.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to push objects to git repo: %+v\n", err))
 	}
+
+	templates := template.Must(template.New("").Parse(jenkinsTriggerURL))
+	var triggerURL bytes.Buffer
+	data := struct {
+		JobName string
+		Token   string
+	}{
+		JobName: reqPush.JobName,
+		Token:   jenkinsToken,
+	}
+	templates.Execute(&triggerURL, data)
+	logs.Debug("Jenkins trigger url: %s", triggerURL.String())
+	resp, err := http.Get(triggerURL.String())
+	if err != nil {
+		g.internalError(err)
+	}
+	g.CustomAbort(resp.StatusCode, "")
 }
 
 func (g *GitRepoController) PullObjects() {
