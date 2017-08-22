@@ -77,7 +77,8 @@
         <div class="select-time-container">
           <time-range-scale [curScale]="Query.get(0) ? Query.get(0).scale:{}"
                             (scaleChange)="scaleChange(0,$event)"
-                            [options]="scaleOptions"></time-range-scale>
+                            [options]="scaleOptions">
+          </time-range-scale>
         </div>
       </div>
       <div class="card-block-bottom-container">
@@ -86,7 +87,7 @@
             <span>{{ NoDataErrMsg.get(0) | translate }}</span>
           </div>
           <div echarts
-               (chartInit)="eChartInit(0,$event)"
+               (chartInit)="onEChartInit(0,$event)"
                [options]="LineOptions.get(0)"
                [dataset]="LineData.get(0)"
                (chartDataZoom)="chartDataZoom(0,$event)"
@@ -136,7 +137,7 @@
             <span>{{ NoDataErrMsg.get(1) | translate }}</span>
           </div>
           <div echarts
-               (chartInit)="eChartInit(1,$event)"
+               (chartInit)="onEChartInit(1,$event)"
                [options]="LineOptions.get(1)"
                [dataset]="LineData.get(1)"
                (chartDataZoom)="chartDataZoom(1,$event)"
@@ -186,7 +187,7 @@
             <span>{{ NoDataErrMsg.get(2) | translate }}</span>
           </div>
           <div echarts
-               (chartInit)="eChartInit(2,$event)"
+               (chartInit)="onEChartInit(2,$event)"
                [options]="LineOptions.get(2)"
                [dataset]="LineData.get(2)"
                (chartDataZoom)="chartDataZoom(2,$event)"
