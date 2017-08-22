@@ -20,4 +20,4 @@ ENTRYPOINT ["sh", "entrypoint.sh"]
 
 VOLUME ["/go/bin"]
 
-EXPOSE 8080
+EXPOSE 8088
