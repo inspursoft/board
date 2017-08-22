@@ -161,7 +161,7 @@ paths:
           description: Available user account.
           required: true
           schema:
-            $ref: '#/definitions/UserDetail'
+            $ref: '#/definitions/UserSignIn'
       tags:
         - Products
       responses:
@@ -1321,7 +1321,114 @@ paths:
         401:
           description: Invalid storage name.
         500:
-          description: Internal errors.    
+          description: Internal errors.
+  /v1/git/serve:
+    post:
+      summary: Create bared repo named as 'board_repo' to store pushed commits from cloned repos.
+      description: |
+        This endpoint is used to create serve repo for storing pushed commits from cloned repos.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the status creation of serve repo.
+        400:
+          description: Bad request.
+        401:
+          description: Need to login first.
+        403:
+          description: Insufficient privileges.
+        500:
+          description: Internal errors.
+  /v1/git/repo:
+    post:
+      summary: Create customer repo named as 'board_repo_{username}' to store users' specific files.
+      description: |
+        This endpoint is used to create customer repo to store users' specific files.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the status creation customer repo.
+        400:
+          description: Bad request.
+        401:
+          description: Need to login first.
+        403:
+          description: Insufficient privileges.
+        500:
+          description: Internal errors.
+  /v1/git/push:
+    post:
+      summary: Push commits for each repo and trigger specified Jenkins Job.
+      description: |
+        This endpoint is used to push commits to specified repo and trigger Jenkins Job.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: push
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/PushObject'
+          description: The pushed object from custom repo.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the status creation customer repo.
+        400:
+          description: Bad request.
+        401:
+          description: Need to login first.
+        403:
+          description: Insufficient privileges.
+        500:
+          description: Internal errors.
+  /v1/git/pull:
+    post:
+      summary: Pull customer commits from each repo.
+      description: |
+        This endpoint is used to pull customer commits from specified repo.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: target
+          in: query
+          type: string
+          required: true
+          description: Target repo to pull commits.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the status creation customer repo.
+        400:
+          description: Bad request.
+        401:
+          description: Need to login first.
+        403:
+          description: Insufficient privileges.
+        500:
+          description: Internal errors.
 # The following is for structure definition          
 definitions:
   Search:
@@ -1379,6 +1486,15 @@ definitions:
       token:
         type: string
         description: The token of current user.
+  UserSignIn:
+    type: object
+    properties:
+      user_name:
+        type: string
+        description: The name of user.
+      user_password:
+        type: string
+        description: The password of user.
   UserBrief:
     type: object
     properties:
@@ -2088,6 +2204,18 @@ definitions:
       timestamp:
          type: integer
          format: int32
+  PushObject:
+    type: object
+    properties:
+      items:
+        type: array
+        items:
+          type: string
+      message:
+        type: string
+      job_name:
+        type: string
+
 
 
 

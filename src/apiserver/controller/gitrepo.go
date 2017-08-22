@@ -16,10 +16,11 @@ import (
 )
 
 const baseRepoPath = `/repos`
-const jenkinsTriggerURL = `http://jenkins:8080/job/{{.JobName}}/build?token={{.Token}}`
-const jenkinsToken = `123456`
 
-var repoServePath = filepath.Join("/repos", "board_repo")
+var jenkinsJobURL string
+var jenkinsJobToken string
+
+var repoServePath = filepath.Join(baseRepoPath, "board_repo")
 var repoServeURL = filepath.Join("root@gitserver:", "gitserver", "repos", "board_repo")
 
 type GitRepoController struct {
@@ -40,6 +41,11 @@ func (g *GitRepoController) Prepare() {
 		return
 	}
 	g.currentUser = user
+	g.isSysAdmin = (g.currentUser.SystemAdmin == 1)
+	if !g.isSysAdmin {
+		g.CustomAbort(http.StatusForbidden, "Insufficient privileges for manipulating Git repos.")
+		return
+	}
 	g.repoPath = filepath.Join(baseRepoPath, "board_repo_"+user.Username)
 	logs.Debug("Current repo path: %s\n", g.repoPath)
 }
@@ -101,14 +107,14 @@ func (g *GitRepoController) PushObjects() {
 		g.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to push objects to git repo: %+v\n", err))
 	}
 
-	templates := template.Must(template.New("").Parse(jenkinsTriggerURL))
+	templates := template.Must(template.New("job_url").Parse(jenkinsJobURL))
 	var triggerURL bytes.Buffer
 	data := struct {
 		JobName string
 		Token   string
 	}{
 		JobName: reqPush.JobName,
-		Token:   jenkinsToken,
+		Token:   jenkinsJobToken,
 	}
 	templates.Execute(&triggerURL, data)
 	logs.Debug("Jenkins trigger url: %s", triggerURL.String())
@@ -135,5 +141,9 @@ func (g *GitRepoController) PullObjects() {
 	if err != nil {
 		g.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to pull objects from git repo: %+v\n", err))
 	}
+}
 
+func init() {
+	jenkinsJobURL = conf.String("jenkinsJobURL")
+	jenkinsJobToken = conf.String("jenkinsJobToken")
 }

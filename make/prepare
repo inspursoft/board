@@ -88,6 +88,7 @@ db_password = rcp.get("configuration", "db_password")
 token_cache_expire_seconds = rcp.get("configuration", "token_cache_expire_seconds")
 token_expire_seconds = rcp.get("configuration", "token_expire_seconds")
 token_secret_key = rcp.get("configuration", "token_secret_key")
+jenkins_job_token = rcp.get("configuration", "jenkins_job_token")
 registry_host = rcp.get("configuration", "registry_host")
 registry_port = rcp.get("configuration", "registry_port")
 
@@ -126,7 +127,8 @@ if not os.path.exists(nginx_config_dir):
 render(os.path.join(templates_dir, "apiserver", "app.conf"),
         apiserver_conf,
         token_cache_expire_seconds=token_cache_expire_seconds,
-        db_password=db_password)
+        db_password=db_password,
+        jenkins_job_token=jenkins_job_token)
 
 render(os.path.join(templates_dir, "apiserver", "env"),
         apiserver_env,
