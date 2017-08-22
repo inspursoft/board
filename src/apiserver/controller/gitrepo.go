@@ -20,18 +20,19 @@ const baseRepoPath = `/repos`
 var jenkinsJobURL string
 var jenkinsJobToken string
 
-var repoServePath = filepath.Join(baseRepoPath, "board_repo")
-var repoServeURL = filepath.Join("root@gitserver:", "gitserver", "repos", "board_repo")
+var repoServePath = filepath.Join(baseRepoPath, "board_repo_serve")
+var repoServeURL = filepath.Join("root@gitserver:", "gitserver", "repos", "board_repo_serve")
+var repoPath = filepath.Join(baseRepoPath, "board_repo")
 
 type GitRepoController struct {
 	baseController
-	repoPath string
 }
 
 type pushObject struct {
 	Items   []string `json:"items"`
 	Message string   `json:"message"`
 	JobName string   `json:"job_name"`
+	Value   string   `json:"value"`
 }
 
 func (g *GitRepoController) Prepare() {
@@ -46,8 +47,6 @@ func (g *GitRepoController) Prepare() {
 		g.CustomAbort(http.StatusForbidden, "Insufficient privileges for manipulating Git repos.")
 		return
 	}
-	g.repoPath = filepath.Join(baseRepoPath, "board_repo_"+user.Username)
-	logs.Debug("Current repo path: %s\n", g.repoPath)
 }
 
 func (g *GitRepoController) CreateServeRepo() {
@@ -59,10 +58,18 @@ func (g *GitRepoController) CreateServeRepo() {
 }
 
 func (g *GitRepoController) InitUserRepo() {
-	_, err := service.InitRepo(repoServeURL, g.repoPath)
+	_, err := service.InitRepo(repoServeURL, repoPath)
 	if err != nil {
 		g.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to initialize user's repo: %+v\n", err))
 		return
+	}
+
+	subPath := g.GetString("sub_path")
+	if subPath != "" {
+		err = service.CreatePath(repoPath, subPath)
+		if err != nil {
+			g.internalError(err)
+		}
 	}
 }
 
@@ -79,13 +86,13 @@ func (g *GitRepoController) PushObjects() {
 		return
 	}
 
-	defaultCommitMessage := fmt.Sprintf("Added items: %s to repo: %s", strings.Join(reqPush.Items, ","), g.repoPath)
+	defaultCommitMessage := fmt.Sprintf("Added items: %s to repo: %s", strings.Join(reqPush.Items, ","), repoPath)
 
 	if len(reqPush.Message) == 0 {
 		reqPush.Message = defaultCommitMessage
 	}
 
-	repoHandler, err := service.OpenRepo(g.repoPath)
+	repoHandler, err := service.OpenRepo(repoPath)
 	if err != nil {
 		g.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to open user's repo: %+v\n", err))
 		return
@@ -110,11 +117,13 @@ func (g *GitRepoController) PushObjects() {
 	templates := template.Must(template.New("job_url").Parse(jenkinsJobURL))
 	var triggerURL bytes.Buffer
 	data := struct {
-		JobName string
 		Token   string
+		JobName string
+		Value   string
 	}{
-		JobName: reqPush.JobName,
 		Token:   jenkinsJobToken,
+		JobName: reqPush.JobName,
+		Value:   reqPush.Value,
 	}
 	templates.Execute(&triggerURL, data)
 	logs.Debug("Jenkins trigger url: %s", triggerURL.String())

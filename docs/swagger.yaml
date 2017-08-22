@@ -1357,6 +1357,11 @@ paths:
           type: string
           required: true
           description: Current available token.
+        - name: sub_path
+          in: query
+          type: string
+          required: true
+          description: Provide project name or service ID to store specific archives.
       tags:
         - Products
       responses:
@@ -2204,6 +2209,16 @@ definitions:
       timestamp:
          type: integer
          format: int32
+  InitObject:
+    type: object
+    properties:
+      target:
+        type: string
+      service_id:
+        type: integer
+        format: int32
+      project_name:
+        type: string
   PushObject:
     type: object
     properties:
@@ -2214,6 +2229,8 @@ definitions:
       message:
         type: string
       job_name:
+        type: string
+      value:
         type: string
 
 
