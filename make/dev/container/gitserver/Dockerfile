@@ -23,10 +23,6 @@ RUN mkdir /gitserver/keys \
   && mkdir /var/run/sshd \
   && chsh -s /usr/bin/git-shell
 
-
-COPY make/dev/container/gitserver/post.update post.update
-RUN chmod u+x post.update
-
 # This is a login shell for SSH accounts to provide restricted Git access.
 # It permits execution only of server-side Git commands implementing the
 # pull/push functionality, plus custom commands present in a subdirectory
