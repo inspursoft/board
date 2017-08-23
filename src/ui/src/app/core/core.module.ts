@@ -12,7 +12,7 @@ import { BrowserModule } from '@angular/platform-browser';
 
 @NgModule({
   imports:[
-   ClarityModule.forRoot(),
+    ClarityModule.forRoot(),
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,
