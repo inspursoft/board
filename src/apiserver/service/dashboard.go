@@ -2,6 +2,7 @@ package service
 
 import (
 	"git/inspursoft/board/src/common/dao"
+
 	"github.com/astaxie/beego"
 )
 
@@ -22,17 +23,21 @@ type ServiceListResp struct {
 }
 
 type NodeResp struct {
-	NodeName      string         `json:"node_name"`
-	NodeTimestamp int            `json:"node_timestamp"`
-	NodeCount     int            `json:"node_count"`
-	TimeUnit      string         `json:"time_unit"`
-	NodeLogsData  []dao.NodeDataLogs `json:"node_logs_data"`
+	NodeName       string             `json:"node_name"`
+	IsOverMinLimit bool               `json:"is_over_min_limit"`
+	IsOverMaxLimit bool               `json:"is_over_max_limit"`
+	NodeTimestamp  int                `json:"node_timestamp"`
+	NodeCount      int                `json:"node_count"`
+	TimeUnit       string             `json:"time_unit"`
+	NodeLogsData   []dao.NodeDataLogs `json:"node_logs_data"`
 	NodeListResp
 }
 type ServiceResp struct {
-	ServiceName     string           `json:"service_name"`
-	ServiceTimeUnit string           `json:"service_time_unit"`
-	ServiceCount    int              `json:"service_count"`
+	ServiceName     string               `json:"service_name"`
+	IsOverMinLimit  bool                 `json:"is_over_min_limit"`
+	IsOverMaxLimit  bool                 `json:"is_over_max_limit"`
+	ServiceTimeUnit string               `json:"service_time_unit"`
+	ServiceCount    int                  `json:"service_count"`
 	ServiceLogsData []dao.ServiceDataLog `json:"service_logs_data"`
 	ServiceListResp
 }
@@ -99,6 +104,16 @@ func (d *Dashboard) GetServiceDataToObj() (err error) {
 			ServiceName:     d.ServiceReqPara.ServiceName,
 			ServiceTimeUnit: d.ServiceReqPara.TimeUnit,
 		}
+		lt, err := s.GetLimitTime()
+		if err != nil {
+			return err
+		}
+		if d.ServiceReqPara.TimeStamp > lt.MaxTime {
+			d.ServiceResp.IsOverMaxLimit = true
+		}
+		if d.ServiceReqPara.TimeStamp < lt.MinTime {
+			d.ServiceResp.IsOverMinLimit = true
+		}
 		d.ServiceResp.ServiceCount, d.ServiceLogsData, err = s.GetServiceData()
 		if err != nil {
 			return err
@@ -127,6 +142,17 @@ func (d *Dashboard) GetNodeDataToObj() (err error) {
 			NodeName:      d.NodeReqPara.NodeName,
 			TimeUnit:      d.NodeReqPara.TimeUnit,
 			NodeTimestamp: d.NodeReqPara.TimeStamp,
+		}
+		lt, err := s.GetLimitTime()
+		if err != nil {
+			return err
+		}
+		if d.NodeReqPara.TimeStamp > lt.MaxTime {
+
+			d.NodeResp.IsOverMaxLimit = true
+		}
+		if d.NodeReqPara.TimeStamp < lt.MinTime {
+			d.NodeResp.IsOverMinLimit = true
 		}
 		d.NodeResp.NodeCount, d.NodeLogsData, err = s.GetNodeData()
 	}

@@ -2,11 +2,12 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"io/ioutil"
 	"net/http"
+
 	"github.com/astaxie/beego"
-	"fmt"
 )
 
 type DashboardNodeController struct {
@@ -15,9 +16,9 @@ type DashboardNodeController struct {
 
 type NodeBodyReqPara struct {
 	TimeUnit      string `json:"node_time_unit"`
-	TimeCount     int `json:"node_time_count"`
-	TimestampBase int `json:"node_timestamp"`
-	DurationTime  int `json:"node_duration_time"`
+	TimeCount     int    `json:"node_time_count"`
+	TimestampBase int    `json:"node_timestamp"`
+	DurationTime  int    `json:"node_duration_time"`
 }
 
 func (p *DashboardNodeController) Prepare() {
@@ -59,7 +60,7 @@ func (s *DashboardNodeController) GetNodeData() {
 	}
 	var dashboardNodeDataResp service.Dashboard
 	dashboardNodeDataResp.SetNodeParaFromBodyReq(getNodeDataBodyReq.TimeUnit, getNodeDataBodyReq.TimeCount,
-		getNodeDataBodyReq.TimestampBase, nodeName,getNodeDataBodyReq.DurationTime)
+		getNodeDataBodyReq.TimestampBase, nodeName, getNodeDataBodyReq.DurationTime)
 	beego.Debug(getNodeDataBodyReq.TimeUnit, getNodeDataBodyReq.TimeCount,
 		getNodeDataBodyReq.TimestampBase, nodeName)
 	err := dashboardNodeDataResp.GetNodeDataToObj()
@@ -77,4 +78,3 @@ func (s *DashboardNodeController) GetNodeData() {
 	s.ServeJSON()
 
 }
-

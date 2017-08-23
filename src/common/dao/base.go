@@ -3,11 +3,10 @@ package dao
 import (
 	"fmt"
 
-	"github.com/astaxie/beego/orm"
-	_ "github.com/go-sql-driver/mysql"
-
 	"github.com/astaxie/beego/config"
 	"github.com/astaxie/beego/logs"
+	"github.com/astaxie/beego/orm"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 func init() {

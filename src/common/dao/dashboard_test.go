@@ -33,4 +33,6 @@ func TestGetDashboardServiceList(t *testing.T) {
 	fmt.Println(se.GetTotalServiceData())
 	s0,s1,s2:=se.GetServiceData()
 	fmt.Println(s0,s1,s2)
+	fmt.Println(se.GetLimitTime())
+	fmt.Println(s.GetLimitTime())
 }
