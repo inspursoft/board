@@ -7,14 +7,15 @@ import (
 
 	"git/inspursoft/board/src/apiserver/service"
 	"net/http"
+
 	"github.com/astaxie/beego"
 )
 
 type ServiceBodyPara struct {
 	TimeUnit      string `json:"service_time_unit"`
-	TimeCount     int `json:"service_time_count"`
-	TimestampBase int `json:"service_timestamp"`
-	DurationTime  int `json:"service_duration_time"`
+	TimeCount     int    `json:"service_time_count"`
+	TimestampBase int    `json:"service_timestamp"`
+	DurationTime  int    `json:"service_duration_time"`
 }
 
 func (p *DashboardServiceController) Prepare() {

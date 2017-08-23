@@ -45,6 +45,57 @@ type ServiceListDataLogs struct {
 	NodeName  string `json:"service_name" orm:"column(service_name)"`
 	Timestamp int64  `json:"timestamp" orm:"column(record_time)"`
 }
+type LimitTime struct {
+	FieldName string `orm:"column(field_name)"`
+	MinTime   int `orm:"column(min_time)"`
+	MaxTime   int `orm:"column(max_time)"`
+}
+
+func (d *DashboardServiceDao) GetLimitTime() (LimitTime, error) {
+	var lt LimitTime
+	tableName, err := d.getServiceDataTableName()
+	if err != nil {
+		return lt, err
+	}
+	sql := fmt.Sprintf(`
+SELECT
+  sd.service_name      AS field_name,
+  min(tll.record_time) AS min_time,
+  max(tll.record_time) AS max_time
+FROM %s sd
+  JOIN time_list_log tll ON time_list_id = tll.id
+WHERE 1 = 1
+      AND sd.service_name = ?
+GROUP BY sd.service_name;
+	`, tableName)
+	o := orm.NewOrm()
+	err = o.Raw(sql, d.Name).QueryRow(&lt)
+	return lt, err
+
+}
+
+func (d *DashboardNodeDao) GetLimitTime() (LimitTime, error) {
+	var lt LimitTime
+	tableName, err := d.getNodeDataTableName()
+	if err != nil {
+		return lt, err
+	}
+	sql := fmt.Sprintf(`
+SELECT
+  sd.node_name     AS field_name,
+  min(tll.record_time) AS min_time,
+  max(tll.record_time) AS max_time
+FROM %s sd
+  JOIN time_list_log tll ON time_list_id = tll.id
+WHERE 1 = 1
+      AND sd.node_name = ?
+GROUP BY sd.node_name;;
+	`, tableName)
+	o := orm.NewOrm()
+	err = o.Raw(sql, d.Name).QueryRow(&lt)
+	return lt, err
+
+}
 
 func (d *DashboardNodeDao) getNodeDataTableName() (string, error) {
 	switch d.TimeUnit {
@@ -70,13 +121,13 @@ func (d *DashboardNodeDao) getDurationTime() (last int, prev int, err error) {
 			t := d.TimeCount * 5
 			return d.TimeStamp, d.TimeStamp - t, nil
 		case "minute":
-			t := d.TimeCount * 5 * 60
+			t := d.TimeCount * 60
 			return d.TimeStamp, d.TimeStamp - t, nil
 		case "hour":
-			t := d.TimeCount * 5 * 60 * 60
+			t := d.TimeCount * 60 * 60
 			return d.TimeStamp, d.TimeStamp - t, nil
 		case "day":
-			t := d.TimeCount * 5 * 60 * 60 * 24
+			t := d.TimeCount * 60 * 60 * 24
 			return d.TimeStamp, d.TimeStamp - t, nil
 
 		}
