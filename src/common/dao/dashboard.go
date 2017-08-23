@@ -121,13 +121,13 @@ func (d *DashboardNodeDao) getDurationTime() (last int, prev int, err error) {
 			t := d.TimeCount * 5
 			return d.TimeStamp, d.TimeStamp - t, nil
 		case "minute":
-			t := d.TimeCount * 5 * 60
+			t := d.TimeCount * 60
 			return d.TimeStamp, d.TimeStamp - t, nil
 		case "hour":
-			t := d.TimeCount * 5 * 60 * 60
+			t := d.TimeCount * 60 * 60
 			return d.TimeStamp, d.TimeStamp - t, nil
 		case "day":
-			t := d.TimeCount * 5 * 60 * 60 * 24
+			t := d.TimeCount * 60 * 60 * 24
 			return d.TimeStamp, d.TimeStamp - t, nil
 
 		}
