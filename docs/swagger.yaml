@@ -763,13 +763,20 @@ paths:
           type: string
           required: true
           description: Current available token.
+        - name: service_project
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ServiceProject'
+          description: The project info for this servcie.  
       tags:
         - Products
       responses:
         200:
-          description: Return a new original service config 
+          description: Return a new service id for service config. 
           schema:
-            $ref: '#/definitions/ServiceConfig'
+            type: string
+            description: the service id string.
         401:
           description: User need to log in first.
         500:
@@ -798,6 +805,31 @@ paths:
           description: Return matched service information.
           schema:
             $ref: '#/definitions/ServiceDetail'
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.  
+    delete:
+      summary: Delete the specific service by service_id.
+      description: |
+        This endpoint to delete the specific service by service_id ID.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          description: Service ID for deleting.
+          required: true
+          type: integer
+          format: int32
+      tags:
+        - Products
+      responses:
+        200:
+          description: Delete the service successfully.
         401:
           description: User need to log in first.
         500:
@@ -970,6 +1002,41 @@ paths:
           description: Invalid service ID.
         500:
           description: Unexpected internal errors.
+  /v1/service/{service_id}/toggle:
+    put:  
+      summary: Update the service to stop or run.
+      description: |
+        This endpoint is aimed to update service the service to stop or run.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.
+        - name: project_togglable
+          description: New running status of this service.
+          in: body
+          required: true 
+          schema:
+            type: boolean
+            description: the new status of this service.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Toggle this service successfully.
+        401:
+          description: User need to log in first.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.    
   /v1/node:
     get:
       summary: Return nodes in Board added by admin.
@@ -1338,7 +1405,7 @@ paths:
           description: Invalid image name.
         500:
           description: Internal errors.   
-  /v1/images/{image_name}/deployment:   
+  /v1/images/{image_name}/push:   
     post:
       summary: Upload the new image to board registry
       description: |
@@ -1977,9 +2044,12 @@ definitions:
       service_owner_name:
         type: string
         description: The owner name of this service.
-      service_entry_url:
-        type: string
-        description: The url of this service entry.
+      service_entry_urls:
+        type: array
+        description: The url list of this service entry.
+        items:
+          type: string
+          description: The url of this service entry.        
       service_public:
         type: integer
         format: int32
@@ -2000,6 +2070,16 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/ResourcesUsage'
+  ServiceProject:
+    type: object
+    properties:
+      project_id:
+        type: integer
+        format: int32
+        description: The project's integer ID of this service.    
+      project_name:
+        type: string
+        description: The project's name of this service.
   ServiceConfig:
     type: object
     properties:
@@ -2211,12 +2291,18 @@ definitions:
       image_author:
         type: string
         description: The author of this image.
+      image_volume:
+        type: string
+        description: The volume of this image to expose.
       image_copyfrom:
         type: string
         description: The source path of copy.
       image_copyto:
         type: string
         description: The destination path of copy.
+      image_run:
+        type: string
+        description: The directive when building this image.
       image_entrypoint:
         type: string
         description: The entrypoint of this image.
