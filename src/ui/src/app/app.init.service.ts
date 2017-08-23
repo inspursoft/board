@@ -11,11 +11,14 @@ export class AppInitService {
   tokenMessageSource: Subject<string> = new Subject<string>();
   tokenMessage$: Observable<string> = this.tokenMessageSource.asObservable()
 
-  constructor(private http: Http) {
+  constructor(
+    private http: Http
+  ) {
     console.log('App initialized from current service.');
   }
 
   _tokenString: string;
+  _currentLang: string;
 
   currentUser: {[key: string]: any};
 
@@ -25,6 +28,14 @@ export class AppInitService {
 
   get token(): string {
     return this._tokenString;
+  }
+
+  set currentLang(lang: string) {
+    this._currentLang = lang;
+  }
+
+  get currentLang(): string {
+    return this._currentLang;
   }
 
   chainResponse(r: Response): Response {
