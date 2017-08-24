@@ -1729,9 +1729,9 @@ paths:
           description: Internal errors.
   /v1/git/serve:
     post:
-      summary: Create bared repo named as 'board_repo' to store pushed commits from cloned repos.
+      summary: Create bared repo named as 'board_repo_serve' which to store pushed commits.
       description: |
-        This endpoint is used to create serve repo for storing pushed commits from cloned repos.
+        This endpoint is used to create serve repo for storing pushed commits.
       parameters:
         - name: token
           in: header
@@ -1753,9 +1753,9 @@ paths:
           description: Internal errors.
   /v1/git/repo:
     post:
-      summary: Create customer repo named as 'board_repo_{username}' to store users' specific files.
+      summary: Create repo named as 'board_repo' to store files.
       description: |
-        This endpoint is used to create customer repo to store users' specific files.
+        This endpoint is used to create repo and sub path to store users' specific files.
       parameters:
         - name: token
           in: header
@@ -1782,9 +1782,9 @@ paths:
           description: Internal errors.
   /v1/git/push:
     post:
-      summary: Push commits for each repo and trigger specified Jenkins Job.
+      summary: Add files and push commits to serve repo and trigger specified Jenkins Job.
       description: |
-        This endpoint is used to push commits to specified repo and trigger Jenkins Job.
+        This endpoint is used to add files and push commits to serve repo and trigger Jenkins Job.
       parameters:
         - name: token
           in: header
@@ -1812,9 +1812,9 @@ paths:
           description: Internal errors.
   /v1/git/pull:
     post:
-      summary: Pull customer commits from each repo.
+      summary: Pull commits from serve repo.
       description: |
-        This endpoint is used to pull customer commits from specified repo.
+        This endpoint is used to pull commits to target name repo from serve repo.
       parameters:
         - name: token
           in: header
