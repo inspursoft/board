@@ -65,6 +65,10 @@ services:
     volumes:
       - /data/board/jenkins:/var/jenkins_home
       - ../config/ssh_keys:/root/.ssh
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker
+    env_file:
+      - ../config/jenkins/env
     ports:
       - 8888:8080
       - 50000:50000

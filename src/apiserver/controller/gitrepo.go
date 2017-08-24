@@ -17,8 +17,8 @@ import (
 
 const baseRepoPath = `/repos`
 
-var jenkinsJobURL string
-var jenkinsJobToken string
+var jenkinsJobURL = "http://jenkins:8080/job/{{.JobName}}/buildWithParameters?token={{.Token}}&value={{.Value}}&extras={{.Extras}}&file_name={{.FileName}}"
+var jenkinsJobToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
 
 var repoServePath = filepath.Join(baseRepoPath, "board_repo_serve")
 var repoServeURL = filepath.Join("root@gitserver:", "gitserver", "repos", "board_repo_serve")
@@ -29,10 +29,12 @@ type GitRepoController struct {
 }
 
 type pushObject struct {
-	Items   []string `json:"items"`
-	Message string   `json:"message"`
-	JobName string   `json:"job_name"`
-	Value   string   `json:"value"`
+	Items    []string `json:"items"`
+	Message  string   `json:"message"`
+	JobName  string   `json:"job_name"`
+	Value    string   `json:"value"`
+	Extras   string   `json:"extras"`
+	FileName string   `json:"file_name"`
 }
 
 func (g *GitRepoController) Prepare() {
@@ -117,13 +119,17 @@ func (g *GitRepoController) PushObjects() {
 	templates := template.Must(template.New("job_url").Parse(jenkinsJobURL))
 	var triggerURL bytes.Buffer
 	data := struct {
-		Token   string
-		JobName string
-		Value   string
+		Token    string
+		JobName  string
+		Value    string
+		Extras   string
+		FileName string
 	}{
-		Token:   jenkinsJobToken,
-		JobName: reqPush.JobName,
-		Value:   reqPush.Value,
+		Token:    jenkinsJobToken,
+		JobName:  reqPush.JobName,
+		Value:    reqPush.Value,
+		Extras:   reqPush.Extras,
+		FileName: reqPush.FileName,
 	}
 	templates.Execute(&triggerURL, data)
 	logs.Debug("Jenkins trigger url: %s", triggerURL.String())
@@ -150,9 +156,4 @@ func (g *GitRepoController) PullObjects() {
 	if err != nil {
 		g.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to pull objects from git repo: %+v\n", err))
 	}
-}
-
-func init() {
-	jenkinsJobURL = conf.String("jenkinsJobURL")
-	jenkinsJobToken = conf.String("jenkinsJobToken")
 }

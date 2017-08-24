@@ -2,7 +2,7 @@ FROM openjdk:8-jdk
 
 COPY make/dev/container/jenkins/sources.list /tmp/sources.list
 
-RUN cat /tmp/sources.list > /etc/apt/sources.list && apt-get update && apt-get install -y git curl && rm -rf /var/lib/apt/lists/*
+RUN cat /tmp/sources.list > /etc/apt/sources.list && apt-get update && apt-get install -y --allow-unauthenticated git curl libltdl7 && rm -rf /var/lib/apt/lists/*
 
 ARG user=jenkins
 ARG group=jenkins
