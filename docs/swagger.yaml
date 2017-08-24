@@ -1020,12 +1020,11 @@ paths:
           required: true
           description: Selected service ID.
         - name: project_togglable
-          description: New running status of this service.
           in: body
           required: true 
           schema:
-            type: boolean
-            description: the new status of this service.
+            $ref: '#/definitions/ServiceToggle'
+          description: New running status of this service.
       tags:
         - Products
       responses:
@@ -2201,6 +2200,12 @@ definitions:
       project_name:
         type: string
         description: The project's name of this service.
+  ServiceToggle:
+    type: object
+    properties:
+      project_toggle:
+        type: boolean
+        description: The new toggle value, true for run false for stop.
   ServiceConfig:
     type: object
     properties:
