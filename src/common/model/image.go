@@ -51,14 +51,14 @@ type TagDetail struct {
 
 // The structure for dockerfile template
 type Dockerfile struct {
-	Base       string `json:"image_base"`
-	Author     string `json:"image_author"`
-	Volume     string `json:"image_volume"`
-	CopyFrom   string `json:"image_copyfrom"`
-	CopyTo     string `json:"image_copyto"`
-	RUN        string `json:"image_run"`
-	EntryPoint string `json:"image_entrypoint"`
-	Command    string `json:"image_cmd"`
+	Base       string   `json:"image_base"`
+	Author     string   `json:"image_author"`
+	Volume     []string `json:"image_volume"`
+	CopyFrom   string   `json:"image_copyfrom"`
+	CopyTo     string   `json:"image_copyto"`
+	RUN        []string `json:"image_run"`
+	EntryPoint []string `json:"image_entrypoint"`
+	Command    []string `json:"image_cmd"`
 }
 
 type ImageConfig struct {
