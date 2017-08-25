@@ -55,10 +55,14 @@ PREPAREPATH=$(TOOLSPATH)
 PREPARECMD=prepare
 PREPARECMD_PARAMETERS=--conf $(CONFIGPATH)/$(CONFIGFILE)
 
+# swagger parameters
+SWAGGERTOOLPATH=$(TOOLSPATH)/swagger
+SWAGGERFILEPATH=$(BUILDPATH)/docs
+
 # Package lists
 TOPLEVEL_PKG := .
 INT_LIST := apiserver tokenserver collector/cmd
-IMG_LIST := apiserver tokenserver db log collector
+IMG_LIST := apiserver tokenserver log collector 
 
 # List building
 COMPILEALL_LIST = $(foreach int, $(INT_LIST), $(SRCPATH)/$(int))
@@ -80,7 +84,7 @@ RMIMG_LIST = $(foreach int, $(BUILDALL_LIST), $(int)_rmi)
 
 all: compile 
 compile: $(COMPILE_LIST) compile_ui
-clean_binary: $(CLEAN_LIST)
+cleanbinary: $(CLEAN_LIST)
 install: $(INSTALL_LIST)
 test: $(TEST_LIST)
 fmt: $(FMT_LIST)
@@ -105,17 +109,23 @@ $(VET_LIST): %_vet:
 $(GOLINT_LIST): %_golint:
 	$(GOLINT) $*/...
 
-build: $(BUILD_LIST)
-rmimage: $(RMIMG_LIST)
+build: $(BUILD_LIST) container/db_build
+cleanimage: $(RMIMG_LIST) container/db_rmi
 
 $(BUILD_LIST): %_build:
 	$(DOCKERBUILD) -f $(MAKEDEVPATH)/$*/Dockerfile . -t dev_$(subst container/,,$*):latest
 $(RMIMG_LIST): %_rmi:
 	$(DOCKERRMIMAGE) dev_$(subst container/,,$*):latest
 
+container/db_build:
+	$(DOCKERBUILD) -f $(MAKEDEVPATH)/container/db/Dockerfile . -t dev_mysql:latest
+container/db_rmi:
+	$(DOCKERRMIMAGE) dev_mysql:latest
+
 prepare:
 	@echo "preparing..."
 	@$(MAKEPATH)/$(PREPARECMD) $(PREPARECMD_PARA)
+	@echo "Done."
 
 start:
 	@echo "loading Board images..."
@@ -126,3 +136,16 @@ down:
 	@echo "stoping Board instance..."
 	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) down -v
 	@echo "Done."
+
+prepare_swagger:
+	@echo "preparing swagger environment..."
+	@cd $(SWAGGERTOOLPATH); ./prepare-swagger.sh
+	@echo "Done."
+
+.PHONY: cleanall
+cleanall: cleanbinary cleanimage
+
+clean:
+	@echo "  make cleanall:         remove binaries and Board images"
+	@echo "  make cleanbinary:      remove apiserver tokenserver and collector/cmd binary"
+	@echo "  make cleanimage:       remove Board images"

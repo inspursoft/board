@@ -59,6 +59,17 @@ def render(src, dest, **kw):
         f.write(t.substitute(**kw))
     print("Generated configuration file: %s" % dest)
 
+FNULL = open(os.devnull, 'w')
+
+def generate_ssh_key_pairs(dest_path=os.path.join(config_dir,'ssh_keys')):
+    if not os.path.exists(dest_path):
+        os.makedirs(dest_path)
+    rc = subprocess.call(["ssh-keygen", "-t", "rsa", "-f", os.path.join(dest_path, "id_rsa"), "-q", "-N", ""], stdout=FNULL, stderr=subprocess.STDOUT)
+    if rc != 0:
+        return rc
+generate_ssh_key_pairs()
+
+
 #Read Configurations
 conf = StringIO.StringIO()
 conf.write("[configuration]\n")
@@ -79,6 +90,9 @@ token_expire_seconds = rcp.get("configuration", "token_expire_seconds")
 token_secret_key = rcp.get("configuration", "token_secret_key")
 registry_host = rcp.get("configuration", "registry_host")
 registry_port = rcp.get("configuration", "registry_port")
+docker_username = rcp.get("configuration", "docker_username")
+docker_password = rcp.get("configuration", "docker_password")
+docker_registry = rcp.get("configuration", "docker_registry")
 
 ########
 
@@ -109,6 +123,11 @@ nginx_conf = os.path.join(config_dir, "nginx", "nginx.conf")
 nginx_config_dir = os.path.join(config_dir, "nginx")
 if not os.path.exists(nginx_config_dir):
     os.makedirs(os.path.join(config_dir, "nginx"))
+
+jenkins_config_dir = os.path.join(config_dir, "jenkins")
+if not os.path.exists(jenkins_config_dir):
+    os.makedirs(os.path.join(config_dir, "jenkins"))
+jenkins_env = os.path.join(config_dir, "jenkins", "env")
 
 
 #Render Configure File
@@ -144,5 +163,11 @@ render(os.path.join(templates_dir, "db", "env"),
 
 render(os.path.join(templates_dir, "nginx", "nginx.http.conf"), 
         nginx_conf)
+
+render(os.path.join(templates_dir, "jenkins", "env"),
+        jenkins_env,
+        docker_username=docker_username,
+        docker_password=docker_password,
+        docker_registry=docker_registry)
 
 print("The configuration files are ready, please use docker-compose to start the service.")

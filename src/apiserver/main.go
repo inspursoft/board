@@ -7,5 +7,5 @@ import (
 )
 
 func main() {
-	beego.Run(":8080")
+	beego.Run(":8088")
 }

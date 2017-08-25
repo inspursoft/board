@@ -26,7 +26,7 @@ func (p *ProjectController) Prepare() {
 
 func (p *ProjectController) CreateProjectAction() {
 	if !p.isProjectAdmin {
-		p.CustomAbort(http.StatusForbidden, "Insuffient privileges for creating projects.")
+		p.CustomAbort(http.StatusForbidden, "Insufficient privileges for creating projects.")
 		return
 	}
 	var err error

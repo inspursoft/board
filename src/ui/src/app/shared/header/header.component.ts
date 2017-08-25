@@ -33,8 +33,7 @@ export class HeaderComponent implements OnInit {
     private appInitService: AppInitService,
     private accountService: AccountService,
     private messageService: MessageService) {
-    let lang: string = this.translateService.getBrowserCultureLang();
-    this._assertLanguage(lang);
+    this._assertLanguage(this.appInitService.currentLang);
   }
 
   ngOnInit(): void {

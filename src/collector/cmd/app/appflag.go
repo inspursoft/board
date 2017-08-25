@@ -2,10 +2,11 @@ package app
 
 import (
 	"flag"
-	"os"
-	"git/inspursoft/board/src/collector/util"
 	"git/inspursoft/board/src/collector/service/collect"
+	"git/inspursoft/board/src/collector/util"
+	"os"
 )
+
 type ServerRunOptions struct {
 	ServerDbType     string
 	ServerDbIp       string
@@ -43,7 +44,7 @@ func preCmdFlag(vName string, vValue string, usage string) *string {
 
 func getRunFlag() map[string]*string {
 	var runFlag map[string]*string
-	runFlag=make(map[string]*string)
+	runFlag = make(map[string]*string)
 	runFlag["DbType"] = preCmdFlag("dbtype", "non", "input the Database type name")
 	runFlag["DbIp"] = preCmdFlag("dbip", "non", "input the Database ip address")
 	runFlag["DbPort"] = preCmdFlag("dbport", "non", "input the database port")
@@ -96,5 +97,5 @@ func preFlag() {
 }
 func init() {
 	preFlag()
-	collect.SetInitVar(RunFlag.ServerKubeIp,RunFlag.ServerKubePort)
+	collect.SetInitVar(RunFlag.ServerKubeIp, RunFlag.ServerKubePort)
 }
