@@ -46,16 +46,16 @@ You can compile the code by the approache:
       $ make prepare
    ```
 
-#### Ⅱ . Building and Running Board(except UI components) 
-
-   ```sh
-      $ make start
-   ```
-   
-#### Ⅲ . Building and Running UI components 
+#### Ⅱ. Compile UI  
 
    ```sh
       $ make compile_ui
+   ```
+   
+#### Ⅲ. Building and Running Board
+
+   ```sh
+      $ make start
    ```
 
 
@@ -82,9 +82,9 @@ Target              | Description
 --------------------|-------------
 all                 | composition of the target : vet, fmt, golint and compile_ui 
 prepare             | prepare configuration and env 
-start               | building and running board(except UI component)
-compile_ui          | building and running UI 
-down                | shutdown board instance(except UI component)
+start               | building and running board instance
+compile_ui          | building and running UI builder 
+down                | shutdown board instance
 clean_binary        | clean apiserver,tokenserver and collector/cmd binary
 install             | compile apiserver,tokenserver and collector/cmd binary
 test                | used to test a program written in the Go language 
