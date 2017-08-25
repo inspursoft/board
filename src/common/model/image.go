@@ -4,9 +4,10 @@ type RegistryRepo struct {
 	Names []string `json:"repositories"`
 }
 
-type BoardImage struct {
-	ImageName    string `json:"image_name"`
-	ImageComment string `json:"image_comment"`
+type Image struct {
+	ImageID      int64  `json:"-" orm:"column(id)"`
+	ImageName    string `json:"image_name" orm:"column(name)"`
+	ImageComment string `json:"image_comment" orm:"column(comment)"`
 }
 
 type RegistryTags struct {
@@ -67,11 +68,4 @@ type ImageConfig struct {
 	ProjectName     string     `json:"project_name"`
 	ImageTemplate   string     `json:"image_template"`
 	ImageDockerfile Dockerfile `json:"image_dockerfile"`
-}
-
-// For Image info in Database
-type ImageDB struct {
-	ImageID      int64  `orm:"column(id)"`
-	ImageName    string `orm:"column(name)"`
-	ImageComment string `orm:"column(comment)"`
 }
