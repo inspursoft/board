@@ -19,19 +19,19 @@
       <clr-dg-column>{{'USER_CENTER.LIST_COL_DELETE' | translate}}</clr-dg-column>
       <clr-dg-column>{{'USER_CENTER.LIST_COL_OPERATION' | translate}}</clr-dg-column>
       <clr-dg-row *clrDgItems="let user of userListData">
-        <clr-dg-cell>{{user.user_name}}</clr-dg-cell>
+        <clr-dg-cell class="text-with-omit">{{user.user_name}}</clr-dg-cell>
         <clr-dg-cell>{{user.user_email}}</clr-dg-cell>
         <clr-dg-cell>{{user.user_creation_time | date:'yyyy/MM/dd HH:mm:ss'}}</clr-dg-cell>
         <clr-dg-cell>
-          <clr-checkbox (clrCheckedChange)="setUserSystemAdmin(user.user_id, user.user_system_admin == 1?0:1)"
-                        [clrDisabled]="setUserSystemAdminIng"
-                        [clrChecked]="user.user_system_admin == 1">
+          <clr-checkbox [clrDisabled]="setUserSystemAdminIng"
+                        [clrChecked]="user.user_system_admin == 1"
+                        (clrCheckedChange)="setUserSystemAdmin(user.user_id, user.user_system_admin == 1?0:1)">
           </clr-checkbox>
         </clr-dg-cell>
         <clr-dg-cell>
-          <clr-checkbox (clrCheckedChange)="setUserProjectAdmin(user.user_id, user.user_project_admin == 1?0:1)"
-                        [clrDisabled]="setUserProjectAdminIng"
-                        [clrChecked]="user.user_project_admin == 1">
+          <clr-checkbox [clrDisabled]="setUserProjectAdminIng"
+                        [clrChecked]="user.user_project_admin == 1"
+                        (clrCheckedChange)="setUserProjectAdmin(user.user_id, user.user_project_admin == 1?0:1)">
           </clr-checkbox>
         </clr-dg-cell>
         <clr-dg-cell>

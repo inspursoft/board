@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from "@angular/core";
+import { Component, OnInit, OnDestroy, AfterContentInit } from "@angular/core";
 import { UserService } from "app/profile/user-center/user-service/user-service";
 import { User } from "app/profile/user-center/user";
 import { editModel } from "../user-new-edit/user-new-edit.component"
@@ -13,8 +13,9 @@ import { BUTTON_STYLE } from "app/shared/shared.const"
   styleUrls: ["./user-list.component.css"]
 })
 
-export class UserList implements OnInit, OnDestroy {
+export class UserList implements OnInit, OnDestroy, AfterContentInit {
   _deleteSubscription: Subscription;
+  _isCanSetOption: boolean = false;
   userListData: Array<User> = Array<User>();
   userListErrMsg: string = "";
   userCountPerPage: number = 10;
@@ -26,6 +27,30 @@ export class UserList implements OnInit, OnDestroy {
 
   constructor(private userService: UserService,
               private messageService: MessageService) {
+  }
+
+  ngOnInit() {
+    this._deleteSubscription = this.messageService.messageConfirmed$.subscribe(next => {
+      this.userService.deleteUser(next.data)
+        .then(() => {
+          this.refreshData();
+          let m: Message = new Message();
+          m.message = "USER_CENTER.DELETE_USER_SUCCESS";
+          this.messageService.inlineAlertMessage(m);
+        })
+        .catch(err => this.messageService.dispatchError(err));
+    });
+    this.refreshData();
+  }
+
+  ngOnDestroy(): void {
+    if (this._deleteSubscription) {
+      this._deleteSubscription.unsubscribe();
+    }
+  }
+
+  ngAfterContentInit() {
+    this._isCanSetOption = true;
   }
 
   refreshData(username?: string,
@@ -63,48 +88,32 @@ export class UserList implements OnInit, OnDestroy {
   }
 
   setUserSystemAdmin(userId: number, userSystemAdmin: number) {
-    this.setUserSystemAdminIng = true;
-    this.userService.setUserSystemAdmin(userId, userSystemAdmin)
-      .then(() => {
-        this.setUserSystemAdminIng = false;
-        this.userListData.find((value, index, obj) => value.user_id == userId).user_system_admin = userSystemAdmin;
-      })
-      .catch(err => {
-        this.setUserSystemAdminIng = false;
-        this.messageService.dispatchError(err)
-      })
+    if (this._isCanSetOption) {
+      this.setUserSystemAdminIng = true;
+      this.userService.setUserSystemAdmin(userId, userSystemAdmin)
+        .then(() => {
+          this.setUserSystemAdminIng = false;
+          this.userListData.find((value, index, obj) => value.user_id == userId).user_system_admin = userSystemAdmin;
+        })
+        .catch(err => {
+          this.setUserSystemAdminIng = false;
+          this.messageService.dispatchError(err)
+        })
+    }
   }
 
   setUserProjectAdmin(userId: number, userProjectAdmin: number) {
-    this.setUserProjectAdminIng = true;
-    this.userService.setUserProjectAdmin(userId, userProjectAdmin)
-      .then(() => {
-        this.setUserProjectAdminIng = false;
-        this.userListData.find((value, index, obj) => value.user_id == userId).user_project_admin = userProjectAdmin;
-      })
-      .catch(err => {
-        this.setUserProjectAdminIng = false;
-        this.messageService.dispatchError(err)
-      })
-  }
-
-  ngOnInit() {
-    this._deleteSubscription = this.messageService.messageConfirmed$.subscribe(next => {
-      this.userService.deleteUser(next.data)
+    if (this._isCanSetOption) {
+      this.setUserProjectAdminIng = true;
+      this.userService.setUserProjectAdmin(userId, userProjectAdmin)
         .then(() => {
-          this.refreshData();
-          let m: Message = new Message();
-          m.message = "USER_CENTER.DELETE_USER_SUCCESS";
-          this.messageService.inlineAlertMessage(m);
+          this.setUserProjectAdminIng = false;
+          this.userListData.find((value, index, obj) => value.user_id == userId).user_project_admin = userProjectAdmin;
         })
-        .catch(err => this.messageService.dispatchError(err));
-    });
-    this.refreshData();
-  }
-
-  ngOnDestroy(): void {
-    if (this._deleteSubscription) {
-      this._deleteSubscription.unsubscribe();
+        .catch(err => {
+          this.setUserProjectAdminIng = false;
+          this.messageService.dispatchError(err)
+        })
     }
   }
 }

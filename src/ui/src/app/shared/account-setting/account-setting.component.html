@@ -1,15 +1,21 @@
 <clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'md'">
   <h3 class="modal-title">{{ 'HEAD_NAV.ACCOUNT_SETTINGS' | translate }}</h3>
   <div class="modal-body">
-    <div class="hide-error-msg">
-      <clr-alert [clrAlertType]="'alert-danger'"
-                 [clrAlertSizeSmall]="true"
-                 [(clrAlertClosed)]="isAlertClose">
-        <div class="alert-item">
-          <span class="alert-text">{{errMessage | translate}}</span>
-        </div>
-      </clr-alert>
-    </div>
+    <form #signUpForm="ngForm" (ngSubmit)="submitUser()">
+      <div class="hide-error-msg">
+        <clr-alert [clrAlertType]="'alert-danger'"
+                   [clrAlertSizeSmall]="true"
+                   [(clrAlertClosed)]="isAlertClose">
+          <div class="alert-item">
+            <span class="alert-text">{{errMessage | translate}}</span>
+          </div>
+        </clr-alert>
+      </div>
+      <div class="form-group">
+        <label style="color: black">{{ 'USER_CENTER.USERNAME' | translate }}</label>
+        <label style="color: black">{{curUser?.user_name}}</label>
+      </div>
 
+    </form>
   </div>
 </clr-modal>

@@ -12,16 +12,13 @@
 
 .stat-panel-title {
   margin-bottom: 32px;
-}
-
-.stat-panel-title-font {
   font-weight: bold;
 }
 
 .stat-panel-value-font {
   color: black;
   font-size: 24pt;
-  margin-left: 10px;
+  margin-bottom: 32px;
 }
 
 .section-container {
@@ -52,10 +49,15 @@
 }
 
 .section-right-container {
-  display: flex;
   margin-left: 10px;
+  display: flex;
+  width: 100%;
+}
+
+.section-right-container-container{
+  display: flex;
   flex-direction: column;
-  justify-content: space-between
+  justify-content: space-between;
 }
 
 .card-block {

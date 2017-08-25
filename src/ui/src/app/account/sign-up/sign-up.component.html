@@ -5,7 +5,7 @@
     <div class="content-area">
       <form #signUpForm="ngForm" (ngSubmit)="signUp()">
         <section class="form-block">
-          <div class="form-group">
+          <div class="form-group group-margin">
             <label for="txtUsername"><span class="asterisk">*</span>{{ 'ACCOUNT.USERNAME' | translate }}</label>
             <label for="txtUsername"
                 aria-haspopup="true"
@@ -13,12 +13,16 @@
                 class="tooltip tooltip-validation tooltip-md"
                 [class.invalid]="usernameInput.invalid && (usernameInput.dirty || usernameInput.touched)">
                 <input type="text" id="txtUsername" placeholder="{{ 'ACCOUNT.INPUT_USERNAME' | translate }}"
-                required checkItemExisting="username" name="username" [(ngModel)]="signUpModel.username" #usernameInput="ngModel">
+                required checkItemExisting="username" checkItemPattern="username"
+                       maxlength="40" minlength="4" name="username" [(ngModel)]="signUpModel.username" #usernameInput="ngModel">
                 <span class="tooltip-content" *ngIf="usernameInput.errors && usernameInput.errors.required">
                 {{ 'ACCOUNT.USERNAME_IS_REQUIRED' | translate }}
                 </span>
                 <span class="tooltip-content" *ngIf="usernameInput.errors && usernameInput.errors.checkItemExisting">
                 {{ 'ACCOUNT.USERNAME_ALREADY_EXISTS' | translate }}
+                </span>
+              <span class="tooltip-content" *ngIf="usernameInput.errors && usernameInput.errors.checkItemPattern">
+                {{ 'ACCOUNT.USERNAME_ARE_NOT_IDENTICAL' | translate }}
                 </span>
             </label>
           </div>

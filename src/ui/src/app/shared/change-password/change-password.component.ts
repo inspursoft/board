@@ -46,8 +46,8 @@ export class ChangePasswordComponent implements OnInit {
   }
 
   submitChangePassword(): void {
-    if (this._curUser && this._curUser["id"]) {
-      this.userService.changeUserPassword(this._curUser["id"], this.curPassword, this.newPassword)
+    if (this._curUser && this._curUser["user_id"]) {
+      this.userService.changeUserPassword(this._curUser["user_id"], this.curPassword, this.newPassword)
         .then(() => {
           let m: Message = new Message();
           m.message = "HEAD_NAV.CHANGE_PASSWORD_SUCCESS";
