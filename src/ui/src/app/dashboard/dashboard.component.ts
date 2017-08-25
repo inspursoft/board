@@ -280,7 +280,6 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
         this.LineNamesList.set(lineType, res.List);
         this.DropdownText.set(lineType, res.CurListName);
         this.LineStateInfo.get(lineType).InRefreshIng = false;
-        console.log(res.Limit);
         return res.Data;
       })
       .catch(err => {
@@ -456,7 +455,6 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
       let lineData = this.LineData.get(lineType);
       query.time_count = MAX_COUNT_PER_DRAG;
       query.timestamp_base = DashboardComponent.getTimeStamp(lineData, false) + query.scale.valueOfSecond * MAX_COUNT_PER_DRAG;
-      console.log(new Date(query.timestamp_base * 1000));
       this.getOneLineData(lineType).then(res => {
         this.delayNormal(lineType).then(() => {//add delay for drag
           // if (DashboardComponent.haveLessMaxTimeValue(lineData, res)) {//need api support

@@ -132,13 +132,22 @@
           </label>
         </div>
         <div class="form-group">
-          <label><span class="asterisk">*</span> {{ 'USER_CENTER.REQUIRED_ITEMS' | translate }}</label>
+          <label></label>
+          <label><span class="asterisk">*</span>{{ 'USER_CENTER.REQUIRED_ITEMS' | translate }}</label>
+        </div>
+        <div class="form-group">
+          <button type="submit"
+                  class="btn btn-primary"
+                  [disabled]="signUpForm.invalid || isAlertOpen">
+            {{ActionCaption | translate }}
+          </button>
+          <button type="button"
+                  class="btn btn-default"
+                  (click)="isOpen = false">
+            {{'USER_CENTER.CANCEL' | translate}}
+          </button>
         </div>
       </section>
-      <button type="submit" class="btn btn-primary" [disabled]="signUpForm.invalid || isAlertOpen">{{ ActionCaption | translate }}
-      </button>&nbsp;&nbsp;
-      <button type="button" class="btn btn-default" (click)="isOpen = false">{{ 'USER_CENTER.CANCEL' | translate}}
-      </button>
     </form>
   </div>
 </clr-modal>

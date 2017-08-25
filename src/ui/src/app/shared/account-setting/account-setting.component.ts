@@ -1,8 +1,9 @@
-import { Component, EventEmitter, Input, Output,OnInit } from "@angular/core"
+import { Component, EventEmitter, Input, Output, OnInit } from "@angular/core"
 import { AppInitService } from "../../app.init.service";
 import { UserService } from "../../profile/user-center/user-service/user-service";
 import { User } from "../../profile/user-center/user";
 import { MessageService } from "../message-service/message.service";
+import { Message } from "../message-service/message";
 
 @Component({
   selector: "user-setting",
@@ -10,9 +11,9 @@ import { MessageService } from "../message-service/message.service";
   styleUrls: ["./account-setting.component.css"],
   providers: [UserService]
 })
-export class AccountSettingComponent implements OnInit{
+export class AccountSettingComponent implements OnInit {
   _isOpen: boolean = false;
-  curUser: User;
+  curUser: User = new User();
   isAlertClose: boolean = true;
   errMessage: string;
 
@@ -21,16 +22,12 @@ export class AccountSettingComponent implements OnInit{
               private messageService: MessageService) {
   }
 
-  ngOnInit(){
+  ngOnInit() {
     let curUserID = this.appInitService.currentUser["user_id"];
     this.userService.getUser(curUserID).then(res => {
-      console.log(res);
       this.curUser = res;
     }).catch(err => {
-      if (err && err["status"] && err["status"] == 404) {
-        this.errMessage = "ERROR.INVALID_USER";
-        this.isAlertClose = false;
-      } else if (err && err["status"] && err["status"] == 401) {
+      if (err && err["status"] && err["status"] == 401) {
         this.errMessage = "ERROR.INVALID_USER";
         this.isAlertClose = false;
       }
@@ -51,5 +48,29 @@ export class AccountSettingComponent implements OnInit{
   set isOpen(open: boolean) {
     this._isOpen = open;
     this.isOpenChange.emit(this._isOpen);
+  }
+
+  submitAccountSetting() {
+    if (this.curUser.user_id > 0) {
+      this.userService.updateUser(this.curUser)
+        .then(() => {
+          let m: Message = new Message();
+          m.message = "ACCOUNT.ACCOUNT_SETTING_SUCCESS";
+          this.messageService.inlineAlertMessage(m);
+          this.isOpen = false
+        })
+        .catch(err => {
+          if (err && err["status"] && err["status"] == 401) {
+            this.errMessage = "ERROR.INVALID_USER";
+            this.isAlertClose = false;
+          } else if (err && err["status"] && err["status"] == 403) {
+            this.errMessage = "ERROR.INSUFFIENT_PRIVILEGES";
+            this.isAlertClose = false;
+          } else {
+            this.messageService.dispatchError(err);
+          }
+        });
+    }
+
   }
 }

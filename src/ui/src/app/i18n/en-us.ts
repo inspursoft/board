@@ -30,6 +30,7 @@ export const LANG_EN_US = {
     "SIGN_UP": "Sign Up",
     "FORGOT_PASSWORD": "Forgot Password",
     "USERNAME": "Username",
+    "REALNAME":"Real name",
     "INPUT_USERNAME": "Input username",
     "EMAIL": "Email",
     "INPUT_EMAIL": "Input email",
@@ -54,7 +55,8 @@ export const LANG_EN_US = {
     "INCORRECT_USERNAME_OR_PASSWORD": "Incorrect username or password.",
     "FAILED_TO_SIGN_IN": "Failed to sign in:",
     "FAILED_TO_SIGN_UP": "Failed to sign up:",
-    "FAILED_TO_SIGN_OUT": "Failed to sign out."
+    "FAILED_TO_SIGN_OUT": "Failed to sign out.",
+    "ACCOUNT_SETTING_SUCCESS":"Account setting success."
   },
   "HEAD_NAV": {
     "INPUT_FOR_SEARCHING": "Input for searching.",
