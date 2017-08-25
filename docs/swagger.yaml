@@ -380,6 +380,34 @@ paths:
           description: Old password is not correct.
         500:
           description: Unexpected internal errors.
+  /v1/users/changeaccount:
+    put:
+      summary: Change the current user account.
+      description: |
+        This endpoint is for current user to update account.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: user_profile
+          in: body
+          description: User account to be updated.
+          required: true
+          schema:
+            $ref: '#/definitions/UserProfileUpdate'          
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated user account successfully.
+        400:
+          description: Invalid user account input.
+        401:
+          description: Don't have authority to change password. Please check login status.
+        500:
+          description: Unexpected internal errors.          
   /v1/users/current:
     get:
       summary: Get current user.
@@ -2282,8 +2310,10 @@ definitions:
         items:
           $ref: '#/definitions/ContainerEnv'
       container_command:
-        type: string
-        description: The commander of this container.   
+        type: array
+        items:
+          type: string
+          description: The commander of this container.   
       container_memory:
         type: string
         description: The memory request of this container.      
@@ -2418,8 +2448,10 @@ definitions:
         type: string
         description: The author of this image.
       image_volume:
-        type: string
-        description: The volume of this image to expose.
+        type: array
+        items: 
+          type: string
+          description: The volume of this image to expose.
       image_copyfrom:
         type: string
         description: The source path of copy.
@@ -2433,8 +2465,10 @@ definitions:
         type: string
         description: The entrypoint of this image.
       image_cmd:
-        type: string
-        description: The author of this image.
+        type: array
+        items:
+          type: string
+          description: The author of this image.
   ImageConfig:
     type: object
     properties:
