@@ -43,6 +43,7 @@ export const LANG_EN_US = {
     "REGISTER": "Register",
     "USERNAME_IS_REQUIRED": "Username is required.",
     "USERNAME_ALREADY_EXISTS": "Username already exists.",
+    "USERNAME_ARE_NOT_IDENTICAL": "Username is illegal.Username is a string of Numbers or lowercase letters or underlined [4 - 40]",
     "EMAIL_IS_REQUIRED": "Email is required.",
     "EMAIL_IS_ILLEGAL": "Email is illegal.",
     "EMAIL_ALREADY_EXISTS": "Email already exists",

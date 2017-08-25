@@ -21,3 +21,9 @@
   flex-basis: 100%;
   height: 40px;
 }
+
+.text-with-omit{
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

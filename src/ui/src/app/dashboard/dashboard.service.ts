@@ -96,13 +96,29 @@ export class DashboardService {
     return headers;
   }
 
+  getServerTimeStamp(): Promise<number> {
+    let options = new RequestOptions({
+      headers: this.defaultHeader
+    });
+    return this.http.get(`${BASE_URL}/dashboard/time`, options).toPromise()
+      .then((res: Response) => {
+        this.appInitService.chainResponse(res);
+        return res.json()["time_now"];
+      }).catch(err => Promise.reject(err));
+  }
+
   getLineData(lineType: LineType, query: {
     time_count: number,
     time_unit: string,
     list_name: string,
     timestamp_base: number,
     service_duration_time?: number
-  }): Promise<{List: Array<LineListDataModel>, Data: LinesData, CurListName: string}> {
+  }): Promise<{
+    List: Array<LineListDataModel>,
+    Data: LinesData,
+    CurListName: string,
+    Limit: {isMax: boolean, isMin: boolean}
+  }> {
     let lineKey = this.LineNameMap.get(lineType).query_name_Key;
     let requestParams = {};
     requestParams[lineKey] = query.list_name;
@@ -162,7 +178,11 @@ export class DashboardService {
             });
           });
         }
-        return {List: resultList, Data: resultData, CurListName: resJson[lineNameMap.data_list_cur_name]};
+        return {
+          List: resultList, Data: resultData,
+          CurListName: resJson[lineNameMap.data_list_cur_name],
+          Limit: {isMax: resJson["is_over_max_limit"], isMin: resJson["is_over_min_limit"]}
+        };
       })
       .catch(err => Promise.reject(err));
   }

@@ -43,6 +43,7 @@ export const LANG_ZH_CN = {
     "REGISTER": "用户注册",
     "USERNAME_IS_REQUIRED": "用户名为必填项。",
     "USERNAME_ALREADY_EXISTS": "用户名已存在。",
+    "USERNAME_ARE_NOT_IDENTICAL": "用户名格式不合法,用户名是由数字或小写字母或下划线组成的[4-40]位字符串",
     "EMAIL_IS_REQUIRED": "邮箱为必填项。",
     "EMAIL_IS_ILLEGAL": "邮箱格式非法。",
     "EMAIL_ALREADY_EXISTS": "邮箱已存在。",
