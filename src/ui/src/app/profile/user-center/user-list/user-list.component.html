@@ -25,13 +25,13 @@
         <clr-dg-cell>
           <clr-checkbox [clrDisabled]="setUserSystemAdminIng"
                         [clrChecked]="user.user_system_admin == 1"
-                        (clrCheckedChange)="setUserSystemAdmin(user.user_id, user.user_system_admin == 1?0:1)">
+                        (clrCheckedChange)="setUserSystemAdmin(user)">
           </clr-checkbox>
         </clr-dg-cell>
         <clr-dg-cell>
           <clr-checkbox [clrDisabled]="setUserProjectAdminIng"
                         [clrChecked]="user.user_project_admin == 1"
-                        (clrCheckedChange)="setUserProjectAdmin(user.user_id, user.user_project_admin == 1?0:1)">
+                        (clrCheckedChange)="setUserProjectAdmin(user)">
           </clr-checkbox>
         </clr-dg-cell>
         <clr-dg-cell>

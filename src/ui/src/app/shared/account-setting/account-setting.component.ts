@@ -52,7 +52,7 @@ export class AccountSettingComponent implements OnInit {
 
   submitAccountSetting() {
     if (this.curUser.user_id > 0) {
-      this.userService.updateUser(this.curUser)
+      this.userService.usesChangeAccount(this.curUser)
         .then(() => {
           let m: Message = new Message();
           m.message = "ACCOUNT.ACCOUNT_SETTING_SUCCESS";
