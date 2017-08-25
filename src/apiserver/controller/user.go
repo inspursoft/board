@@ -47,6 +47,49 @@ func (u *UserController) GetUsersAction() {
 	u.ServeJSON()
 }
 
+func (u *UserController) ChangeUserAccount() {
+	reqData, err := u.resolveBody()
+	if err != nil {
+		u.internalError(err)
+		return
+	}
+
+	var reqUser model.User
+	err = json.Unmarshal(reqData, &reqUser)
+	if err != nil {
+		u.internalError(err)
+		return
+	}
+
+	reqUser.ID = u.currentUser.ID
+
+	users, err := service.GetUsers("email", reqUser.Email)
+	if err != nil {
+		u.internalError(err)
+		return
+	}
+
+	if reqUser.Email == "" {
+		u.CustomAbort(http.StatusBadRequest, "Email is required.")
+		return
+	}
+
+	if reqUser.Email != "" && len(users) > 1 {
+		u.CustomAbort(http.StatusConflict, "Email already exists.")
+		return
+	}
+
+	isSuccess, err := service.UpdateUser(reqUser, "email", "realname", "comment")
+	if err != nil {
+		u.internalError(err)
+		return
+	}
+
+	if !isSuccess {
+		u.CustomAbort(http.StatusBadRequest, "Failed to change password")
+	}
+}
+
 func (u *UserController) ChangePasswordAction() {
 	var err error
 	userID, err := strconv.Atoi(u.Ctx.Input.Param(":id"))
