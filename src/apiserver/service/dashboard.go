@@ -69,6 +69,7 @@ func (d *Dashboard) SetNodeParaFromBodyReq(timeUnit string, timeCount int, times
 	}
 	return nil
 }
+
 func (d *Dashboard) SetServicePara(timeUnit string, timeCount int,
 	timestamp int, serviceName string, daraTime int) (err error) {
 	d.ServiceReqPara = ServiceReqPara{
@@ -81,6 +82,18 @@ func (d *Dashboard) SetServicePara(timeUnit string, timeCount int,
 	return nil
 }
 func (d *Dashboard) GetServiceDataToObj() (err error) {
+	var tMin int
+	switch d.ServiceReqPara.TimeUnit {
+	case "second":
+		tMin = d.ServiceReqPara.TimeCount * 5
+	case "minute":
+		tMin = d.ServiceReqPara.TimeCount * 60
+	case "hour":
+		tMin = d.ServiceReqPara.TimeCount * 60 * 60
+	case "day":
+		tMin = d.ServiceReqPara.TimeCount * 60 * 60 * 24
+
+	}
 	s := dao.DashboardServiceDao{}
 	s.QueryPara = dao.QueryPara{
 		Name:      d.ServiceReqPara.ServiceName,
@@ -104,24 +117,38 @@ func (d *Dashboard) GetServiceDataToObj() (err error) {
 			ServiceName:     d.ServiceReqPara.ServiceName,
 			ServiceTimeUnit: d.ServiceReqPara.TimeUnit,
 		}
-		lt, err := s.GetLimitTime()
-		if err != nil {
-			return err
-		}
-		if d.ServiceReqPara.TimeStamp > lt.MaxTime {
-			d.ServiceResp.IsOverMaxLimit = true
-		}
-		if d.ServiceReqPara.TimeStamp < lt.MinTime {
-			d.ServiceResp.IsOverMinLimit = true
-		}
-		d.ServiceResp.ServiceCount, d.ServiceLogsData, err = s.GetServiceData()
-		if err != nil {
-			return err
-		}
 	}
+	lt, err := s.GetLimitTime()
+	if err != nil {
+		return err
+	}
+	d.ServiceResp.ServiceCount, d.ServiceLogsData, err = s.GetServiceData()
+	if err != nil {
+		return err
+	}
+
+	if tMin > lt.MaxTime {
+		d.ServiceResp.IsOverMaxLimit = true
+	}
+	if d.ServiceReqPara.TimeStamp < lt.MinTime {
+		d.ServiceResp.IsOverMinLimit = true
+	}
+
 	return nil
 }
 func (d *Dashboard) GetNodeDataToObj() (err error) {
+	var tMin int
+	switch d.NodeReqPara.TimeUnit {
+	case "second":
+		tMin = d.ServiceReqPara.TimeCount * 5
+	case "minute":
+		tMin = d.ServiceReqPara.TimeCount * 60
+	case "hour":
+		tMin = d.ServiceReqPara.TimeCount * 60 * 60
+	case "day":
+		tMin = d.ServiceReqPara.TimeCount * 60 * 60 * 24
+
+	}
 	s := dao.DashboardNodeDao{}
 	s.QueryPara = dao.QueryPara{
 		Name:      d.NodeReqPara.NodeName,
@@ -143,18 +170,18 @@ func (d *Dashboard) GetNodeDataToObj() (err error) {
 			TimeUnit:      d.NodeReqPara.TimeUnit,
 			NodeTimestamp: d.NodeReqPara.TimeStamp,
 		}
-		lt, err := s.GetLimitTime()
-		if err != nil {
-			return err
-		}
-		if d.NodeReqPara.TimeStamp > lt.MaxTime {
+	}
+	lt, err := s.GetLimitTime()
+	if err != nil {
+		return err
+	}
 
-			d.NodeResp.IsOverMaxLimit = true
-		}
-		if d.NodeReqPara.TimeStamp < lt.MinTime {
-			d.NodeResp.IsOverMinLimit = true
-		}
-		d.NodeResp.NodeCount, d.NodeLogsData, err = s.GetNodeData()
+	d.NodeResp.NodeCount, d.NodeLogsData, err = s.GetNodeData()
+	if tMin > lt.MaxTime {
+		d.NodeResp.IsOverMaxLimit = true
+	}
+	if d.NodeReqPara.TimeStamp < lt.MinTime {
+		d.NodeResp.IsOverMinLimit = true
 	}
 	return nil
 }
