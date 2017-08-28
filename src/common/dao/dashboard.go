@@ -57,7 +57,8 @@ func (d *DashboardServiceDao) GetLimitTime() (LimitTime, error) {
 	if err != nil {
 		return lt, err
 	}
-	sql := fmt.Sprintf(`
+	if d.Name != "" {
+		sql := fmt.Sprintf(`
 SELECT
   sd.service_name      AS field_name,
   min(tll.record_time) AS min_time,
@@ -68,9 +69,21 @@ WHERE 1 = 1
       AND sd.service_name = ?
 GROUP BY sd.service_name;
 	`, tableName)
-	o := orm.NewOrm()
-	err = o.Raw(sql, d.Name).QueryRow(&lt)
-	return lt, err
+		o := orm.NewOrm()
+		err = o.Raw(sql, d.Name).QueryRow(&lt)
+		return lt, err
+	} else {
+		sql := fmt.Sprintf(`
+SELECT
+  min(tll.record_time) AS min_time,
+  max(tll.record_time) AS max_time
+FROM %s sd
+  JOIN time_list_log tll ON time_list_id = tll.id
+WHERE 1 = 1;`, tableName)
+		o := orm.NewOrm()
+		err = o.Raw(sql).QueryRow(&lt)
+		return lt, err
+	}
 
 }
 
@@ -80,7 +93,8 @@ func (d *DashboardNodeDao) GetLimitTime() (LimitTime, error) {
 	if err != nil {
 		return lt, err
 	}
-	sql := fmt.Sprintf(`
+	if d.Name != "" {
+		sql := fmt.Sprintf(`
 SELECT
   sd.node_name     AS field_name,
   min(tll.record_time) AS min_time,
@@ -91,9 +105,22 @@ WHERE 1 = 1
       AND sd.node_name = ?
 GROUP BY sd.node_name;;
 	`, tableName)
-	o := orm.NewOrm()
-	err = o.Raw(sql, d.Name).QueryRow(&lt)
-	return lt, err
+		o := orm.NewOrm()
+		err = o.Raw(sql, d.Name).QueryRow(&lt)
+		return lt, err
+	} else {
+		sql := fmt.Sprintf(`
+SELECT
+  min(tll.record_time) AS min_time,
+  max(tll.record_time) AS max_time
+FROM %s sd
+  JOIN time_list_log tll ON time_list_id = tll.id
+WHERE 1 = 1 ;
+`, tableName)
+		o := orm.NewOrm()
+		err = o.Raw(sql).QueryRow(&lt)
+		return lt, err
+	}
 
 }
 
