@@ -27,7 +27,7 @@ then
 fi
 
 cp ../../docs/swagger.yaml swagger.yaml
-cp ../../docs/swagger.token.yaml swagger.token.yaml
+#cp ../../docs/swagger.token.yaml swagger.token.yaml
 
 FILE="swagger.tar.gz"
 if ! [ -f $FILE ]; then
@@ -44,16 +44,16 @@ if ! [ -f $FILE ]; then
     sed -i.bak '/jsonEditor: false,/a\        validatorUrl: null,' ./vendors/swagger-ui-2.1.4/dist/index.html
     
     cp swagger.yaml ./vendors/swagger-ui-2.1.4/dist
-    cp swagger.token.yaml ./vendors/swagger-ui-2.1.4/dist
+#   cp swagger.token.yaml ./vendors/swagger-ui-2.1.4/dist
 
     sed -i.bak 's/host: localhost/host: '$SERVER_IP'/g' ./vendors/swagger-ui-2.1.4/dist/swagger.yaml
     sed -i.bak 's/  \- http$/  \- '$SCHEME'/g' ./vendors/swagger-ui-2.1.4/dist/swagger.yaml
 
-    sed -i.bak 's/host: localhost/host: '$SERVER_IP:4000'/g' ./vendors/swagger-ui-2.1.4/dist/swagger.token.yaml
-    sed -i.bak 's/  \- http$/  \- '$SCHEME'/g' ./vendors/swagger-ui-2.1.4/dist/swagger.token.yaml
+#   sed -i.bak 's/host: localhost/host: '$SERVER_IP:4000'/g' ./vendors/swagger-ui-2.1.4/dist/swagger.token.yaml
+#   sed -i.bak 's/  \- http$/  \- '$SCHEME'/g' ./vendors/swagger-ui-2.1.4/dist/swagger.token.yaml
 
     echo "Finish preparation for the Swagger UI."
 
 fi
 
-echo "Start docker container for Swagger, please visit http://$SERVER_IP/index.html."
+echo "Start docker container for Swagger, please visit http://$SERVER_IP/swagger/index.html."
