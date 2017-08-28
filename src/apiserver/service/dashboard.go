@@ -70,18 +70,6 @@ func (d *Dashboard) SetNodeParaFromBodyReq(timeUnit string, timeCount int, times
 	return nil
 }
 
-func formatResp(timeUnit string, slice []int) {
-
-	for k := 0; k < len(slice); k++ {
-		if k >= 1 {
-			if x := (slice[k] - slice[k-1]) % 5; x > 1 {
-
-			}
-		}
-	}
-
-}
-
 func (d *Dashboard) SetServicePara(timeUnit string, timeCount int,
 	timestamp int, serviceName string, daraTime int) (err error) {
 	d.ServiceReqPara = ServiceReqPara{
