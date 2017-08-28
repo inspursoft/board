@@ -62,9 +62,9 @@ func (p *ImageController) GetImagesAction() {
 
 	// fmt.Println(repolist)
 	/* Interpret the message to api server */
-	var imagelist []model.BoardImage
+	var imagelist []model.Image
 	for _, imagename := range repolist.Names {
-		var newImage model.BoardImage
+		var newImage model.Image
 		newImage.ImageName = imagename
 		newImage.ImageComment = commentTemp
 		//fmt.Println(newImage)

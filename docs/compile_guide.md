@@ -2,6 +2,7 @@
 
 This guide provides instructions for developers to build and run Board from source code.
 
+
 ## Step 1: Prepare for a build environment for Board
 
 Board is deployed as several Docker containers and most of the code is written in Go language. The build environment requires Python, Docker, Docker Compose and golang development environment. Please install the below prerequisites:
@@ -16,75 +17,91 @@ git                   | 1.8.3 +
 make                  | 3.81 +
 golang                | 1.8.1 +
 
+
 ## Step 2: Getting the source code
 
    ```sh
       $ git clone http://10.110.18.40:10080/inspursoft/board.git
    ```
 
-## Step 3: Building and Running Board
 
-### Building and Running
+## Step 3: Building and installing Board
 
-Now we have a **Makefile** for building the whole project. So, you can build and start Board very simply.
+### Configuration
+
+Edit the file **make/board.cfg** and make necessary configuration changes such as hostname, admin password ,mysql server and so on. Refer to **[Installation and Configuration Guide](installation_guide.md#configuring-board)** for more info.
 
    ```sh
       $ cd board
+      $ vi make/board.cfg
+   ```
+
+### Compiling and Running
+
+You can compile the code by the approache:
+
+#### I. Prepare configuration and env 
+
+   ```sh
+      $ make prepare
+   ```
+
+#### Ⅱ. Compile UI  
+
+   ```sh
+      $ make compile_ui
+   ```
+   
+#### Ⅲ. Building and Running Board
+
+   ```sh
       $ make start
    ```
 
-These commands will pull/build the images for Board and run them. Depend on your net speed, it will take a few minitus or hours.
 
-### Building and Running(By compose)
-Change the directory into the workspace.
-   ```sh
-     $ cd board
-   ```
-Use `docker-compose` to build Board directly.
-
-   ```sh
-      $ docker-compose -f make/dev/docker-compose.yml build
-   ```
-The UI components (writen in TypeScript) can be built by running with a UI Builder image separately.
-   ```sh
-      $ docker-compose -f make/dev/docker-compose.uibuilder.yml up
-   ```
-And start:
-   ```sh
-      $ docker-compose -f make/dev/docker-compose.yml up
-   ```
-   
 ## Step 4: Verify the Board
 
 Refer to [View and test Board REST API via Swagger](configure_swagger.md) for testing the Board REST API.
 
-## Step 5: Stop Board
 
-When you want to stop Board, run:
+## Step 5: Stop Board Instance
+
+When you want to stop Board instance, run:
 
    ```sh
       $ make down
    ```
 
-To use compose directly, run:
-
-   ```sh
-      $ docker-compose -f make/dev/docker-compose.yml down
-   ```
 
 ## Appendix
-For development and test, Board build the source code in container. But you can build source code in host GO environment.
-First, create directory in your $GOPATH/src for Board and copy the source code into it:
+* Using the Makefile
+
+The `Makefile` contains predefined targets:
+
+Target              | Description
+--------------------|-------------
+all                 | composition of the target : vet, fmt, golint and compile_ui 
+prepare             | prepare configuration and env 
+start               | building and running board instance
+compile_ui          | building and running UI builder 
+down                | shutdown board instance
+clean_binary        | clean apiserver,tokenserver and collector/cmd binary
+install             | compile apiserver,tokenserver and collector/cmd binary
+test                | used to test a program written in the Go language 
+fmt                 | format the code for all the go language source files in the code package 
+vet                 | check for static errors in the go source file 
+golint              | used to check for irregularities in the go code  
+build               | build apiserver, tokenserver, db, log, collector images
+rmimage             | remove apiserver, tokenserver, db, log, collector images 
+
+#### EXAMPLE:
+
+
+#### compile apiserver,tokenserver and collector/cmd binary 
 
    ```sh
-      $ mkdir -p $GOPATH/src/git/inspursoft
-      $ cp -r board $GOPATH/src/git/inspursoft
+      $ make install
    ```
 
-Then you can use Makefile to build the apiserver and so on
+   **Note**: the board file path:$GOPATH/src/git/inspursoft/
 
-   ```sh
-      $ make compile_apiserver
-      $ make compile_tokenserver
-      ...
-   ```
