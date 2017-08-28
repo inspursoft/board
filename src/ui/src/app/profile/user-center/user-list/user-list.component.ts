@@ -101,7 +101,6 @@ export class UserList implements OnInit, OnDestroy {
         user.user_system_admin = userSystemAdmin;
       })
       .catch(err => {
-        this.refreshData();
         this.setUserSystemAdminIng = false;
         this.messageService.dispatchError(err)
       })
@@ -116,7 +115,6 @@ export class UserList implements OnInit, OnDestroy {
         user.user_project_admin = userProjectAdmin;
       })
       .catch(err => {
-        this.refreshData();
         this.setUserProjectAdminIng = false;
         this.messageService.dispatchError(err)
       })
