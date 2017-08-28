@@ -6,6 +6,7 @@ import { Message } from "app/shared/message-service/message";
 import { MessageService } from "app/shared/message-service/message.service";
 import { Subscription } from "rxjs/Subscription";
 import { BUTTON_STYLE } from "app/shared/shared.const"
+import { AppInitService } from "../../../app.init.service";
 
 @Component({
   selector: "user-list",
@@ -25,6 +26,7 @@ export class UserList implements OnInit, OnDestroy {
   setUserProjectAdminIng: boolean = false;
 
   constructor(private userService: UserService,
+              private appInitService: AppInitService,
               private messageService: MessageService) {
   }
 
@@ -48,12 +50,18 @@ export class UserList implements OnInit, OnDestroy {
     }
   }
 
+  get currentUserID(): number {
+    return this.appInitService.currentUser["user_id"];
+  }
+
   refreshData(username?: string,
               user_list_page: number = 0,
               user_list_page_size: number = 0): void {
     this.userService.getUserList(username, user_list_page, user_list_page_size)
       .then(res => {
-        this.userListData = res;
+        this.userListData = res.filter(value => {
+          return value.user_name != "admin";
+        });
       })
       .catch(err => this.messageService.dispatchError(err, ''));
   }
