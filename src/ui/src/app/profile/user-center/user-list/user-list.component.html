@@ -23,16 +23,18 @@
         <clr-dg-cell>{{user.user_email}}</clr-dg-cell>
         <clr-dg-cell>{{user.user_creation_time | date:'yyyy/MM/dd HH:mm:ss'}}</clr-dg-cell>
         <clr-dg-cell>
-          <clr-checkbox [clrDisabled]="setUserSystemAdminIng || user.user_id == currentUserID"
-                        [clrChecked]="user.user_system_admin == 1"
-                        (clrCheckedChange)="setUserSystemAdmin(user)">
-          </clr-checkbox>
+          <div (click)="setUserSystemAdmin(user)">
+            <clr-checkbox [clrDisabled]="setUserSystemAdminIng || user.user_id == currentUserID"
+                          [clrChecked]="user.user_system_admin == 1">
+            </clr-checkbox>
+          </div>
         </clr-dg-cell>
         <clr-dg-cell>
-          <clr-checkbox [clrDisabled]="setUserProjectAdminIng || user.user_id == currentUserID"
-                        [clrChecked]="user.user_project_admin == 1"
-                        (clrCheckedChange)="setUserProjectAdmin(user)">
-          </clr-checkbox>
+          <div (click)="setUserProjectAdmin(user)">
+            <clr-checkbox [clrDisabled]="setUserProjectAdminIng || user.user_id == currentUserID"
+                          [clrChecked]="user.user_project_admin == 1">
+            </clr-checkbox>
+          </div>
         </clr-dg-cell>
         <clr-dg-cell>
           <clr-checkbox [clrDisabled]=true [clrChecked]="user.user_deleted == 1"></clr-checkbox>
