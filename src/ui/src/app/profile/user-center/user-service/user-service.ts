@@ -126,4 +126,16 @@ export class UserService {
       })
       .catch(err => Promise.reject(err));
   }
+
+  usesChangeAccount(user: User): Promise<boolean> {
+    let options = new RequestOptions({
+      headers: this.defaultHeader
+    });
+    return this.http.put(`${BASE_URL}/users/changeaccount`, user, options).toPromise()
+      .then(res => {
+        this.appInitService.chainResponse(res);
+        return res.status == 200;
+      })
+      .catch(err => Promise.reject(err));
+  }
 }

@@ -12,9 +12,9 @@ import { promise } from "selenium-webdriver";
 import checkedNodeCall = promise.checkedNodeCall;
 
 const MAX_COUNT_PER_PAGE: number = 200;
-const MAX_COUNT_PER_DRAG: number = 50;
+const MAX_COUNT_PER_DRAG: number = 100;
 const AUTO_REFRESH_SEED: number = 10;
-const AUTO_REFRESH_CUR_SEED: number = 2;
+const AUTO_REFRESH_CUR_SEED: number = 5;
 @Component({
   selector: 'dashboard',
   templateUrl: './dashboard.component.html',
@@ -27,7 +27,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     {"id": 3, "description": "DASHBOARD.DAY", "value": "hour", valueOfSecond: 60 * 60},
     {"id": 4, "description": "DASHBOARD.MTH", "value": "day", valueOfSecond: 60 * 60 * 24}];
   _ServerTimeStamp: number;
-  _AutoRefreshCurInterval: number = AUTO_REFRESH_CUR_SEED;
+  _AutoRefreshCurInterval: number = 1;
   IntervalAutoRefresh: any;
   LineOptions: Map<LineType, Object>;
   LineStateInfo: Map<LineType, {InRefreshIng: boolean, InDrop: boolean, IsDropBack: boolean, IsCanAutoRefresh: boolean}>;
@@ -92,7 +92,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
         if (ScaleInfo["lineType"] != value) {
           this.getOneLineData(value).then(res => {
             this.clearEChart(value);
-            this.LineData.set(value, res);
+            this.LineData.set(value, res.Data);
             let lineOption = this.LineOptions.get(value);
             let baseLineTimeStamp = this.Query.get(value).baseLineTimeStamp;
             let newZoomPos = DashboardComponent.calculateZoomByTimeStamp(this.LineData.get(value), baseLineTimeStamp);
@@ -132,17 +132,11 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
 
   private static getTimeStamp(source: LinesData, isMinTimeStamp: boolean): number {
     let timeArr: LineDataModel[] = source[0];
-    if (timeArr.length == 0) {
-      return Math.round(new Date().getTime() / 1000);
-    }
     let date: Date = isMinTimeStamp ? timeArr[0][0] : timeArr[timeArr.length - 1][0];
     return Math.round(date.getTime() / 1000);
   }
 
   private static  concatLineData(source: LinesData, res: LinesData): LinesData {
-    if (source[0].length == 0) {
-      return res;
-    }
     let result: LinesData = [Array<[Date, number]>(0), Array<[Date, number]>(0)];
     let maxResTimeStamp = DashboardComponent.getTimeStamp(res, false);
     let minResTimeStamp = DashboardComponent.getTimeStamp(res, true);
@@ -261,12 +255,12 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
   private async initAsyncLine(lineType: LineType) {
     await this.initLine(lineType);
     await this.getOneLineData(lineType)
-      .then(res => this.LineData.set(lineType, res))
+      .then(res => this.LineData.set(lineType, res.Data))
       .catch(() => {
       });
   };
 
-  private getOneLineData(lineType: LineType): Promise<LinesData> {
+  private getOneLineData(lineType: LineType): Promise<{Data: LinesData, Limit: {isMax: boolean, isMin: boolean}}> {
     let query = {
       time_count: this.Query.get(lineType).time_count,
       time_unit: this.Query.get(lineType).scale.value,
@@ -280,8 +274,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
         this.LineNamesList.set(lineType, res.List);
         this.DropdownText.set(lineType, res.CurListName);
         this.LineStateInfo.get(lineType).InRefreshIng = false;
-        console.log(res.Limit);
-        return res.Data;
+        return {Data: res.Data, Limit: res.Limit};
       })
       .catch(err => {
         this.LineStateInfo.get(lineType).InRefreshIng = false;
@@ -392,7 +385,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
           this.Query.get(lineType).timestamp_base = this._ServerTimeStamp;
           this.getOneLineData(lineType).then(res => {
             this.clearEChart(lineType);
-            this.LineData.set(lineType, res);
+            this.LineData.set(lineType, res.Data);
           }).catch(() => {
           });
         }
@@ -434,16 +427,18 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
       query.time_count = MAX_COUNT_PER_DRAG;
       this.getOneLineData(lineType).then(res => {
         this.delayNormal(lineType).then(() => {
-          let resData: LinesData = [Array<[Date, number]>(0), Array<[Date, number]>(0)];
-          if (res[0].length == 0) {
-            resData = this.addForNoneData(lineType, true);
-          } else {
-            resData = DashboardComponent.concatLineData(this.LineData.get(lineType), res);
+          if (!res.Limit.isMin) {
+            let resData: LinesData = [Array<[Date, number]>(0), Array<[Date, number]>(0)];
+            if (res.Data[0].length == 0) {
+              resData = this.addForNoneData(lineType, true);
+            } else {
+              resData = DashboardComponent.concatLineData(this.LineData.get(lineType), res.Data);
+            }
+            this.clearEChart(lineType);
+            this.LineData.set(lineType, resData);
+            this.setLineZoomByCount(lineType, res.Data[0].length, true);
+            this.resetBaseLinePos(lineType);
           }
-          this.clearEChart(lineType);
-          this.LineData.set(lineType, resData);
-          this.setLineZoomByCount(lineType, res[0].length, true);
-          this.resetBaseLinePos(lineType);
         });
       }).catch(() => {
       });
@@ -456,27 +451,20 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
       let lineData = this.LineData.get(lineType);
       query.time_count = MAX_COUNT_PER_DRAG;
       query.timestamp_base = DashboardComponent.getTimeStamp(lineData, false) + query.scale.valueOfSecond * MAX_COUNT_PER_DRAG;
-      console.log(new Date(query.timestamp_base * 1000));
       this.getOneLineData(lineType).then(res => {
         this.delayNormal(lineType).then(() => {//add delay for drag
-          // if (DashboardComponent.haveLessMaxTimeValue(lineData, res)) {//need api support
-          //   lineState.IsDropBack = false;
-          //   lineState.InDrop = false;
-          //   lineState.IsCanAutoRefresh = true;
-          //   this.IntervalSeed.set(lineType, 1);
-          // }
-          // else {
-          let resData: LinesData = [Array<[Date, number]>(0), Array<[Date, number]>(0)];
-          if (res[0].length == 0) {
-            resData = this.addForNoneData(lineType, false);
-          } else {
-            resData = DashboardComponent.concatLineData(this.LineData.get(lineType), res);
+          if (!res.Limit.isMax) {
+            let resData: LinesData = [Array<[Date, number]>(0), Array<[Date, number]>(0)];
+            if (res.Data[0].length == 0) {
+              resData = this.addForNoneData(lineType, false);
+            } else {
+              resData = DashboardComponent.concatLineData(this.LineData.get(lineType), res.Data);
+            }
+            this.clearEChart(lineType);
+            this.LineData.set(lineType, resData);
+            this.setLineZoomByCount(lineType, res.Data[0].length, false);
+            this.resetBaseLinePos(lineType);
           }
-          this.clearEChart(lineType);
-          this.LineData.set(lineType, resData);
-          this.setLineZoomByCount(lineType, res[0].length, false);
-          this.resetBaseLinePos(lineType);
-          // }
         });
       }).catch(() => {
       });
@@ -534,16 +522,16 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
       });
       this.getOneLineData(lineType).then(res => {
         let query = this.Query.get(lineType);
-        if (res[0].length == 0) {
+        if (res.Data[0].length == 0) {
           let maxTimeStamp = query.timestamp_base;
           let minTimeStamp = query.timestamp_base - query.scale.valueOfSecond * MAX_COUNT_PER_PAGE;
-          res[0].push([new Date(minTimeStamp * 1000), 0]);
-          res[0].push([new Date(maxTimeStamp * 1000), 0]);
-          res[1].push([new Date(minTimeStamp * 1000), 0]);
-          res[1].push([new Date(maxTimeStamp * 1000), 0]);
+          res.Data[0].push([new Date(minTimeStamp * 1000), 0]);
+          res.Data[0].push([new Date(maxTimeStamp * 1000), 0]);
+          res.Data[1].push([new Date(minTimeStamp * 1000), 0]);
+          res.Data[1].push([new Date(maxTimeStamp * 1000), 0]);
         }
         this.clearEChart(lineType);
-        this.LineData.set(lineType, res);
+        this.LineData.set(lineType, res.Data);
         let lineOption = this.LineOptions.get(lineType);
         let baseLineTimeStamp = query.baseLineTimeStamp;
         let newZoomPos = DashboardComponent.calculateZoomByTimeStamp(this.LineData.get(lineType), baseLineTimeStamp);
@@ -562,7 +550,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
       this.Query.get(lineType).time_count = MAX_COUNT_PER_PAGE;
       this.getOneLineData(lineType).then(res => {
         this.clearEChart(lineType);
-        this.LineData.set(lineType, res);
+        this.LineData.set(lineType, res.Data);
       }).catch(() => {
       });
     }

@@ -30,6 +30,7 @@ export const LANG_ZH_CN = {
     "SIGN_UP": "立即注册",
     "FORGOT_PASSWORD": "忘记密码",
     "USERNAME": "用户名",
+    "REALNAME":"真实姓名",
     "INPUT_USERNAME": "输入用户名",
     "EMAIL": "邮箱",
     "INPUT_EMAIL": "输入邮箱",
@@ -54,7 +55,8 @@ export const LANG_ZH_CN = {
     "INCORRECT_USERNAME_OR_PASSWORD": "用户名或密码错误。",
     "FAILED_TO_SIGN_IN": "登录失败:",
     "FAILED_TO_SIGN_UP": "注册失败:",
-    "FAILED_TO_SIGN_OUT": "登出系统失败。"
+    "FAILED_TO_SIGN_OUT": "登出系统失败。",
+    "ACCOUNT_SETTING_SUCCESS":"账户设置成功."
   },
   "HEAD_NAV": {
     "INPUT_FOR_SEARCHING": "输入搜索内容",

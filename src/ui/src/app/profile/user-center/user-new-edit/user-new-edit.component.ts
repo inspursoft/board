@@ -59,9 +59,12 @@ export class NewEditUserComponent implements AfterViewChecked {
     this.userService.updateUser(this.userModel)
       .then(() => {
         this.SubmitSuccessEvent.emit(true);
-        this.isOpen = false
+        this.isOpen = false;
       })
-      .catch(err => this.messageService.dispatchError(err));
+      .catch(err => {
+        this.isOpen = false;
+        this.messageService.dispatchError(err)
+      });
   }
 
   addNewUser() {
@@ -70,7 +73,10 @@ export class NewEditUserComponent implements AfterViewChecked {
         this.SubmitSuccessEvent.emit(true);
         this.isOpen = false;
       })
-      .catch(err => this.messageService.dispatchError(err));
+      .catch(err => {
+        this.isOpen = false;
+        this.messageService.dispatchError(err)
+      });
   }
 
 }

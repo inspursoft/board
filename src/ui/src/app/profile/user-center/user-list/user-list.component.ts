@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterContentInit } from "@angular/core";
+import { Component, OnInit, OnDestroy } from "@angular/core";
 import { UserService } from "app/profile/user-center/user-service/user-service";
 import { User } from "app/profile/user-center/user";
 import { editModel } from "../user-new-edit/user-new-edit.component"
@@ -6,6 +6,7 @@ import { Message } from "app/shared/message-service/message";
 import { MessageService } from "app/shared/message-service/message.service";
 import { Subscription } from "rxjs/Subscription";
 import { BUTTON_STYLE } from "app/shared/shared.const"
+import { AppInitService } from "../../../app.init.service";
 
 @Component({
   selector: "user-list",
@@ -13,9 +14,8 @@ import { BUTTON_STYLE } from "app/shared/shared.const"
   styleUrls: ["./user-list.component.css"]
 })
 
-export class UserList implements OnInit, OnDestroy, AfterContentInit {
+export class UserList implements OnInit, OnDestroy {
   _deleteSubscription: Subscription;
-  _isCanSetOption: boolean = false;
   userListData: Array<User> = Array<User>();
   userListErrMsg: string = "";
   userCountPerPage: number = 10;
@@ -26,6 +26,7 @@ export class UserList implements OnInit, OnDestroy, AfterContentInit {
   setUserProjectAdminIng: boolean = false;
 
   constructor(private userService: UserService,
+              private appInitService: AppInitService,
               private messageService: MessageService) {
   }
 
@@ -49,15 +50,19 @@ export class UserList implements OnInit, OnDestroy, AfterContentInit {
     }
   }
 
-  ngAfterContentInit() {
-    this._isCanSetOption = true;
+  get currentUserID(): number {
+    return this.appInitService.currentUser["user_id"];
   }
 
   refreshData(username?: string,
               user_list_page: number = 0,
               user_list_page_size: number = 0): void {
     this.userService.getUserList(username, user_list_page, user_list_page_size)
-      .then(res => this.userListData = res)
+      .then(res => {
+        this.userListData = res.filter(value => {
+          return value.user_name != "admin";
+        });
+      })
       .catch(err => this.messageService.dispatchError(err, ''));
   }
 
@@ -87,33 +92,33 @@ export class UserList implements OnInit, OnDestroy, AfterContentInit {
     this.messageService.announceMessage(m);
   }
 
-  setUserSystemAdmin(userId: number, userSystemAdmin: number) {
-    if (this._isCanSetOption) {
-      this.setUserSystemAdminIng = true;
-      this.userService.setUserSystemAdmin(userId, userSystemAdmin)
-        .then(() => {
-          this.setUserSystemAdminIng = false;
-          this.userListData.find((value, index, obj) => value.user_id == userId).user_system_admin = userSystemAdmin;
-        })
-        .catch(err => {
-          this.setUserSystemAdminIng = false;
-          this.messageService.dispatchError(err)
-        })
-    }
+  setUserSystemAdmin(user: User) {
+    this.setUserSystemAdminIng = true;
+    let userSystemAdmin = user.user_system_admin == 1 ? 0 : 1;
+    this.userService.setUserSystemAdmin(user.user_id, userSystemAdmin)
+      .then(() => {
+        this.setUserSystemAdminIng = false;
+        user.user_system_admin = userSystemAdmin;
+      })
+      .catch(err => {
+        this.refreshData();
+        this.setUserSystemAdminIng = false;
+        this.messageService.dispatchError(err)
+      })
   }
 
-  setUserProjectAdmin(userId: number, userProjectAdmin: number) {
-    if (this._isCanSetOption) {
-      this.setUserProjectAdminIng = true;
-      this.userService.setUserProjectAdmin(userId, userProjectAdmin)
-        .then(() => {
-          this.setUserProjectAdminIng = false;
-          this.userListData.find((value, index, obj) => value.user_id == userId).user_project_admin = userProjectAdmin;
-        })
-        .catch(err => {
-          this.setUserProjectAdminIng = false;
-          this.messageService.dispatchError(err)
-        })
-    }
+  setUserProjectAdmin(user: User) {
+    this.setUserProjectAdminIng = true;
+    let userProjectAdmin = user.user_project_admin == 1 ? 0 : 1;
+    this.userService.setUserProjectAdmin(user.user_id, userProjectAdmin)
+      .then(() => {
+        this.setUserProjectAdminIng = false;
+        user.user_project_admin = userProjectAdmin;
+      })
+      .catch(err => {
+        this.refreshData();
+        this.setUserProjectAdminIng = false;
+        this.messageService.dispatchError(err)
+      })
   }
 }
