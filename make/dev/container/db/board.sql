@@ -280,3 +280,34 @@ DROP TABLE IF EXISTS `log`;
         `storage_use` bigint NOT NULL DEFAULT 0,
         KEY `idx_time_list_id` (`time_list_id`)
     ) ENGINE=InnoDB;
+
+    -- --------------------------------------------------
+    --  Table Structure for `git/inspursoft/board/src/common/model/image`
+    -- --------------------------------------------------
+    CREATE TABLE `board`.`image` (
+        `id` INT AUTO_INCREMENT NOT NULL,
+        `name` VARCHAR(255) NOT NULL DEFAULT '',
+        `comment` VARCHAR(255) NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+    CREATE TABLE `board`.`image_tag` (
+        `id` INT AUTO_INCREMENT NOT NULL,
+        `image_name` VARCHAR(255) NOT NULL DEFAULT '',
+        `tag` VARCHAR(255) NOT NULL DEFAULT '',
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+    -- --------------------------------------------------
+    --  Table Structure for `git/inspursoft/board/src/common/model/yaml/serviceconfig`
+    -- --------------------------------------------------
+    CREATE TABLE `board`.`serviceconfig` (
+        `id` INT AUTO_INCREMENT NOT NULL,
+        `project_id` INT NOT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+    CREATE TABLE `board`.`serviceconfigimage` (
+        `service_id` INT NOT NULL,
+        `image_tag_id` INT NOT NULL
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
