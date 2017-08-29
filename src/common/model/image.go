@@ -10,6 +10,12 @@ type Image struct {
 	ImageComment string `json:"image_comment" orm:"column(comment)"`
 }
 
+type ImageTag struct {
+	ImageTagID int64  `orm:"column(id)"`
+	ImageName  string `orm:"column(image_name)"`
+	Tag        string `orm:"column(tag)"`
+}
+
 type RegistryTags struct {
 	ImageName string   `json:"name"`
 	Tags      []string `json:"tags"`
