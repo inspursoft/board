@@ -11,7 +11,7 @@ type SearchResult struct {
 	ProjectName string `json:"project_name" orm:"column(project_name)"`
 }
 
-func SearchPrivite(pjName string, usrName string) ([]SearchResult, error) {
+func SearchPrivite(projectName string, usrName string) ([]SearchResult, error) {
 	var serachRes []SearchResult
 	sql := `
 SELECT
@@ -23,10 +23,10 @@ FROM user
 WHERE username = ? AND project.name LIKE ?;
 	`
 	o := orm.NewOrm()
-	_, err := o.Raw(sql, usrName, pjName).QueryRows(&serachRes)
+	_, err := o.Raw(sql, usrName, "%"+projectName+"%").QueryRows(&serachRes)
 	return serachRes, err
 }
-func SearchPublic(pjName string) ([]SearchResult, error) {
+func SearchPublic(projectName string) ([]SearchResult, error) {
 	var serachRes []SearchResult
 	sql := fmt.Sprintf(`
 	SELECT
@@ -37,6 +37,6 @@ func SearchPublic(pjName string) ([]SearchResult, error) {
 	AND project.name LIKE ?;
 		`)
 	o := orm.NewOrm()
-	_, err := o.Raw(sql, pjName).QueryRows(&serachRes)
+	_, err := o.Raw(sql, "%"+projectName+"%").QueryRows(&serachRes)
 	return serachRes, err
 }
