@@ -1467,6 +1467,78 @@ paths:
           description: Invalid image name.
         500:
           description: Internal errors. 
+  /v1/images/{image_name}/fileupload:   
+    post:
+      summary: Upload the external archive to image building server
+      description: |
+        This endpoint is to upload the external archive to image building server.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: image_name
+          in: path
+          description: image name to specify an image.
+          required: true
+          type: string
+        - name: image_externalfile
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ImageExternalfile'
+          description: The external archive to upload. 
+      tags:
+        - Products
+      responses:
+        200:
+          description: Upload the external archive to image building server successfully.
+        400:
+          description: Bad Request.
+        401:
+          description: Invalid image name.
+        500:
+          description: Internal errors. 
+  /v1/images/{image_name}/dockerfile:
+    get:
+      summary: Return the dockerfile of this image.
+      description: |
+        This endpoint returns the dockerfile of this image.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: image_name
+          in: path
+          description: image name to specify an image.
+          required: true
+          type: string
+        - name: image_tag
+          in: query
+          type: string
+          required: true
+          description: The tag of this image.
+        - name: project_name
+          in: query
+          type: string
+          required: true
+          description: The project name that the image belongs to.   
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the dockerfile of this image successfully.
+          schema:
+            $ref: '#/definitions/ImageDockerfile'
+        400:
+          description: Bad Request.
+        404:
+          description: Image name does not exist.
+        500:
+          description: Internal errors.
   /v1/images/{image_name}:
     get:
       summary: Return all detailed info of this image.
@@ -2459,16 +2531,16 @@ definitions:
         type: string
         description: The destination path of copy.
       image_run:
-        type: string
-        description: The directive when building this image.
+        type: array
+        items:
+          type: string
+          description: The directive when building this image.
       image_entrypoint:
         type: string
         description: The entrypoint of this image.
       image_cmd:
-        type: array
-        items:
-          type: string
-          description: The author of this image.
+        type: string
+        description: The author of this image.
   ImageConfig:
     type: object
     properties:
@@ -2491,6 +2563,18 @@ definitions:
       image_dockerfile:        
         description: The dockerfile of this image configuration.
         $ref: '#/definitions/ImageDockerfile'
+  ImageExternalfile:
+    type: object
+    properties:
+      image_externalfilename:
+        type: string
+        description: The full name of the external file.
+      project_name:
+        type: string
+        description: The name of the project that this image belongs to.    
+      image_tag:
+        type: string
+        description: The tag of this image.
   NodeBrief:
     type: object
     properties:
