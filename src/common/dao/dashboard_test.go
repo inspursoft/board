@@ -1,10 +1,8 @@
 package dao
 
 import (
-	"testing"
-
-	//_ "github.com/go-sql-driver/mysql"
 	"fmt"
+	"testing"
 
 	"github.com/astaxie/beego/orm"
 )
