@@ -16,8 +16,8 @@ func (pm *SearchSourceController) Prepare() {
 
 }
 func (pm *SearchSourceController) Search() {
-	projectName := pm.GetString("search_parameter")
-	res, err := service.SearchSource(pm.currentUser, projectName)
+	searchCondition := pm.GetString("q")
+	res, err := service.SearchSource(pm.currentUser, searchCondition)
 	if err != nil {
 		pm.CustomAbort(http.StatusInternalServerError, fmt.Sprint(err))
 		return
