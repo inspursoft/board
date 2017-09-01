@@ -14,11 +14,14 @@ import { EditContainerComponent } from './step3-edit-container/edit-container.co
 import { ConfigSettingComponent } from './step4-config-setting/config-setting.component';
 import { DeployTestingComponent } from './step5-deploy-testing/deploy-testing.component';
 
+import { DynamicFormModule } from '../shared/dynamic-form/dynamic-form.module';
+
 @NgModule({
   imports: [
-    SharedModule
+    SharedModule,
+    DynamicFormModule
   ],
-  declarations: [ 
+  declarations: [
     ServiceComponent,
     ServiceHostDirective,
     ListServiceComponent,
