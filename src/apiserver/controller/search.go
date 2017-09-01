@@ -20,8 +20,10 @@ func (pm *SearchSourceController) Search() {
 	res, err := service.SearchSource(pm.currentUser, projectName)
 	if err != nil {
 		pm.CustomAbort(http.StatusInternalServerError, fmt.Sprint(err))
+		return
 	}
 	pm.Data["json"] = res
 	pm.ServeJSON()
+	return
 
 }
