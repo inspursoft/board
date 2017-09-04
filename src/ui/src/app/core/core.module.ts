@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 
 import { ClarityModule } from 'clarity-angular';
@@ -25,6 +25,7 @@ import { BrowserModule } from '@angular/platform-browser';
     BrowserModule,
     HttpModule,
     FormsModule,
+    ReactiveFormsModule,
     ClarityModule,
     TranslateModule
   ]
