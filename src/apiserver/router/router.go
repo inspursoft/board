@@ -86,6 +86,12 @@ func init() {
 			beego.NSRouter("/git/pull",
 				&controller.GitRepoController{},
 				"post:PullObjects"),
+			beego.NSRouter("/files/upload",
+				&controller.FileUploadController{},
+				"post:Upload"),
+			beego.NSRouter("/files/list",
+				&controller.FileUploadController{},
+				"post:ListFiles"),
 		),
 	)
 

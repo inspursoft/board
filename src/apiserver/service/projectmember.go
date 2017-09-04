@@ -4,6 +4,8 @@ import (
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 
+	"errors"
+
 	"github.com/astaxie/beego/orm"
 )
 
@@ -54,4 +56,16 @@ func GetRoleByID(roleID int64) (*model.Role, error) {
 		return nil, err
 	}
 	return role, nil
+}
+
+func IsProjectMemberByName(projectName string) (bool, error) {
+	queryProject := model.Project{Name: projectName}
+	project, err := GetProject(queryProject, "name")
+	if err != nil {
+		return false, err
+	}
+	if project.ID == 0 {
+		return false, errors.New("invalid project ID")
+	}
+	return IsProjectMember(project.ID)
 }

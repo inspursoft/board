@@ -68,7 +68,7 @@ func (g *GitRepoController) InitUserRepo() {
 
 	subPath := g.GetString("sub_path")
 	if subPath != "" {
-		err = service.CreatePath(repoPath, subPath)
+		_, err = service.CreatePath(repoPath, subPath)
 		if err != nil {
 			g.internalError(err)
 		}
