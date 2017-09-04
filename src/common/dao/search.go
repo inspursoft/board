@@ -24,12 +24,13 @@ FROM user
 WHERE project.deleted = 0
       AND project.name LIKE ?
       AND ((project.owner_name = ?)
+           OR user.username = ?
            OR (project.public = 1)
            OR ((SELECT DISTINCT user.system_admin
                 FROM user
                 WHERE user.username = ?) = 1));`
 	o := orm.NewOrm()
-	_, err := o.Raw(sql,"%"+projectName+"%",  usrName,   usrName).QueryRows(&serachRes)
+	_, err := o.Raw(sql, "%"+projectName+"%", usrName, usrName, usrName).QueryRows(&serachRes)
 	return serachRes, err
 }
 func SearchPublic(projectName string) ([]SearchResult, error) {
