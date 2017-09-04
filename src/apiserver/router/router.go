@@ -66,6 +66,8 @@ func init() {
 			beego.NSRouter("/images/:imagename(.*)",
 				&controller.ImageController{},
 				"get:GetImageDetailAction"),
+			beego.NSRouter("/search",
+				&controller.SearchSourceController{}, "get:Search"),
 			beego.NSNamespace("/dashboard", beego.NSRouter("/service",
 				&controller.DashboardServiceController{},
 				"post:GetServiceData"),
@@ -73,6 +75,7 @@ func init() {
 					&controller.DashboardNodeController{}, "post:GetNodeData"),
 				beego.NSRouter("/time",
 					&controller.ServerTimeController{}, "get:GetServerTime"),
+
 			),
 			beego.NSRouter("/git/serve",
 				&controller.GitRepoController{},
