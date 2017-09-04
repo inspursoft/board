@@ -9,6 +9,7 @@ import (
 type SearchResult struct {
 	OwnerName   string `json:"owner_name" orm:"column(owner_name)"`
 	ProjectName string `json:"project_name" orm:"column(project_name)"`
+	IsPublic    bool `json:"is_public"  orm:"column(is_public)"`
 }
 
 func SearchPrivite(projectName string, usrName string) ([]SearchResult, error) {
@@ -16,7 +17,8 @@ func SearchPrivite(projectName string, usrName string) ([]SearchResult, error) {
 	sql := `
 SELECT DISTINCT
   project.owner_name AS owner_name,
-  project.name       AS project_name
+  project.name       AS project_name,
+  project.public     AS is_public
 FROM user
   JOIN project_member ON user_id = project_member.user_id
   JOIN project ON project_id = project.id
@@ -37,7 +39,8 @@ func SearchPublic(projectName string) ([]SearchResult, error) {
 	sql := fmt.Sprintf(`
 	SELECT
 	  owner_name AS owner_name,
-	  project.name AS project_name
+	  project.name AS project_name,
+	  project.public     AS is_public
 	FROM project
 	WHERE public = 1
 	AND project.name LIKE ?;

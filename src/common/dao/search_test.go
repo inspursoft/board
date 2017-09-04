@@ -19,4 +19,5 @@ func TestSearchPrivite(t *testing.T) {
 		fmt.Printf("Error occurred on registering DB: %+v\n", err)
 	}
 	fmt.Println(dao.SearchPrivite("l", "Admin"))
+	fmt.Println(dao.SearchPublic("l"))
 }
