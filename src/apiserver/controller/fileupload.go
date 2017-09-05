@@ -2,6 +2,7 @@ package controller
 
 import (
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/common/model"
 
 	"github.com/astaxie/beego/logs"
 
@@ -34,10 +35,10 @@ func (f *FileUploadController) Prepare() {
 		f.CustomAbort(http.StatusForbidden, "Insufficient privileges.")
 		return
 	}
+	f.resolveFilePath()
 }
 
 func (f *FileUploadController) resolveFilePath() {
-
 	projectName := f.GetString("project_name")
 	serviceID, err := f.GetInt64("service_id", 0)
 	if err != nil {
@@ -79,7 +80,6 @@ func (f *FileUploadController) resolveFilePath() {
 }
 
 func (f *FileUploadController) Upload() {
-	f.resolveFilePath()
 	_, fh, err := f.GetFile("upload_file")
 	if err != nil {
 		f.internalError(err)
@@ -96,7 +96,6 @@ func (f *FileUploadController) Upload() {
 }
 
 func (f *FileUploadController) ListFiles() {
-	f.resolveFilePath()
 	uploads, err := service.ListUploadFiles(filepath.Join(repoPath, f.toFilePath))
 	if err != nil {
 		f.internalError(err)
@@ -104,4 +103,17 @@ func (f *FileUploadController) ListFiles() {
 	}
 	f.Data["json"] = uploads
 	f.ServeJSON()
+}
+
+func (f *FileUploadController) RemoveFile() {
+	fileInfo := model.FileInfo{
+		Path:     filepath.Join(repoPath, f.toFilePath),
+		FileName: f.GetString("file_name"),
+	}
+
+	logs.Info("Removed file: %s", filepath.Join(fileInfo.Path, fileInfo.FileName))
+	err := service.RemoveUploadFile(fileInfo)
+	if err != nil {
+		f.internalError(err)
+	}
 }
