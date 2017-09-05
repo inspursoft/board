@@ -1946,6 +1946,149 @@ paths:
           description: Insufficient privileges.
         500:
           description: Internal errors.
+  /v1/files/upload:
+    post:
+      summary: Upload file to specified path.
+      description: |
+        This endpoint is used to upload file to specified path.
+      consumes:
+         - multipart/form-data
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: upload_file
+          in: formData
+          type: file
+          required: true
+          description: File to be uploaded.
+        - name: project_name
+          in: query
+          type: string
+          required: false
+          description: Project name as partial of generated path.
+        - name: service_id
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: Service id as partial of generated path.
+        - name: image_name
+          in: query
+          type: string
+          required: true
+          description: Image name as partial of generated path.
+        - name: tag_name
+          in: query
+          type: string
+          required: true
+          description: Tag name as partial of generated path.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Sucessful uploaded file.
+        400:
+          description: Bad Request.
+        401:
+          description: Invalid storage name.
+        500:
+          description: Internal errors.
+  /v1/files/list:
+    post:
+      summary: List files uploaded from specified path.
+      description: |
+        This endpoint is used to list files uploaded from specified path.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name
+          in: query
+          type: string
+          required: false
+          description: Project name as partial of generated path.
+        - name: service_id
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: Service id as partial of generated path.
+        - name: image_name
+          in: query
+          type: string
+          required: true
+          description: Image name as partial of generated path.
+        - name: tag_name
+          in: query
+          type: string
+          required: true
+          description: Tag name as partial of generated path.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the list of uploaded files.
+          schema:
+            $ref: '#/definitions/FileInfoObject'
+        400:
+          description: Bad Request.
+        401:
+          description: Invalid storage name.
+        500:
+          description: Internal errors.
+  /v1/files/remove:
+    post:
+      summary: Remove uploaded file with specified path.
+      description: |
+        This endpoint is used to remove file with specified path.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name
+          in: query
+          type: string
+          required: false
+          description: Project name as partial of generated path.
+        - name: service_id
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: Service id as partial of generated path.
+        - name: image_name
+          in: query
+          type: string
+          required: true
+          description: Image name as partial of generated path.
+        - name: tag_name
+          in: query
+          type: string
+          required: true
+          description: Tag name as partial of generated path.
+        - name: file_name
+          in: query
+          type: string
+          required: true
+          description: File name to be deleted.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Successful deleted file.
+        400:
+          description: Bad Request.
+        401:
+          description: Invalid storage name.
+        500:
+          description: Internal errors.
 # The following is for structure definition          
 definitions:
   Search:
@@ -3000,6 +3143,29 @@ definitions:
         type: string
       extras:
         type: string
+  FileUploadObject:
+    type: object
+    properties:
+      project_name:
+        type: string
+      service_id:
+        type: integer
+        format: int32
+      image_name:
+        type: string
+      tag_name:
+        type: string
+  FileInfoObject:
+    type: object
+    properties:
+      path:
+        type: string
+      file_name:
+        type: string
+      size:
+        type: integer
+        format: int32
+        
 
 
 

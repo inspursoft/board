@@ -75,7 +75,6 @@ func init() {
 					&controller.DashboardNodeController{}, "post:GetNodeData"),
 				beego.NSRouter("/time",
 					&controller.ServerTimeController{}, "get:GetServerTime"),
-
 			),
 			beego.NSRouter("/git/serve",
 				&controller.GitRepoController{},
@@ -95,6 +94,9 @@ func init() {
 			beego.NSRouter("/files/list",
 				&controller.FileUploadController{},
 				"post:ListFiles"),
+			beego.NSRouter("/files/remove",
+				&controller.FileUploadController{},
+				"post:RemoveFile"),
 		),
 	)
 
