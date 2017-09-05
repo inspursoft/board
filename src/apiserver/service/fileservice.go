@@ -9,13 +9,13 @@ import (
 func ListUploadFiles(directory string) ([]model.FileInfo, error) {
 	uploads := []model.FileInfo{}
 	filepath.Walk(directory, func(path string, info os.FileInfo, err error) error {
-		upload := model.FileInfo{}
-		upload.Path = path
-		if !info.IsDir() {
-			upload.FileName = info.Name()
-			upload.Size = info.Size()
+		if info != nil && !info.IsDir() {
+			uploads = append(uploads, model.FileInfo{
+				Path:     filepath.Dir(path),
+				FileName: info.Name(),
+				Size:     info.Size(),
+			})
 		}
-		uploads = append(uploads, upload)
 		return err
 	})
 	return uploads, nil

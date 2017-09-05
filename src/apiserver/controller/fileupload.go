@@ -13,9 +13,9 @@ import (
 type uploadFile struct {
 	ProjectName string `json:"project_name"`
 	ServiceID   int64  `json:"service_id"`
+	ImageName   string `json:"image_name"`
+	TagName     string `json:"tag_name"`
 }
-
-const maxFileuploadSize = 1 << 22
 
 type FileUploadController struct {
 	baseController
@@ -37,21 +37,33 @@ func (f *FileUploadController) Prepare() {
 }
 
 func (f *FileUploadController) resolveFilePath() {
+
 	projectName := f.GetString("project_name")
 	serviceID, err := f.GetInt64("service_id", 0)
 	if err != nil {
 		f.internalError(err)
 		return
 	}
+	imageName := f.GetString("image_name")
+	tagName := f.GetString("tag_name")
+
 	reqUploadFile := uploadFile{
 		ProjectName: projectName,
 		ServiceID:   serviceID,
+		ImageName:   imageName,
+		TagName:     tagName,
 	}
 
 	if reqUploadFile.ProjectName == "" && reqUploadFile.ServiceID == 0 {
 		f.CustomAbort(http.StatusBadRequest, "No project name or service ID provided.")
 		return
 	}
+
+	if reqUploadFile.ImageName == "" && reqUploadFile.TagName == "" {
+		f.CustomAbort(http.StatusBadRequest, "No image name or tag name provided.")
+		return
+	}
+
 	if reqUploadFile.ProjectName != "" {
 		isMember, err := service.IsProjectMemberByName(reqUploadFile.ProjectName)
 		if err != nil {
@@ -62,22 +74,22 @@ func (f *FileUploadController) resolveFilePath() {
 			f.CustomAbort(http.StatusForbidden, "Not member to the current project with provided ID.")
 			return
 		}
-		f.toFilePath = reqUploadFile.ProjectName
+		f.toFilePath = filepath.Join(reqUploadFile.ProjectName, reqUploadFile.ImageName, reqUploadFile.TagName, "upload")
 	}
 }
 
 func (f *FileUploadController) Upload() {
 	f.resolveFilePath()
-	_, fh, err := f.GetFile("uploadFile")
+	_, fh, err := f.GetFile("upload_file")
 	if err != nil {
 		f.internalError(err)
 		return
 	}
-	targetFilePath := filepath.Join(repoPath, f.toFilePath, "upload")
+	targetFilePath := filepath.Join(repoPath, f.toFilePath)
 	os.MkdirAll(targetFilePath, 0755)
 
 	logs.Info("User: %s uploaded file from %s to %s.", f.currentUser.Username, fh.Filename, targetFilePath)
-	err = f.SaveToFile("uploadFile", filepath.Join(targetFilePath, fh.Filename))
+	err = f.SaveToFile("upload_file", filepath.Join(targetFilePath, fh.Filename))
 	if err != nil {
 		f.internalError(err)
 	}
@@ -85,7 +97,7 @@ func (f *FileUploadController) Upload() {
 
 func (f *FileUploadController) ListFiles() {
 	f.resolveFilePath()
-	uploads, err := service.ListUploadFiles(filepath.Join(repoPath, f.toFilePath, "upload"))
+	uploads, err := service.ListUploadFiles(filepath.Join(repoPath, f.toFilePath))
 	if err != nil {
 		f.internalError(err)
 		return
