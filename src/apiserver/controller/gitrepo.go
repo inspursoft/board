@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 	"text/template"
@@ -68,7 +69,7 @@ func (g *GitRepoController) InitUserRepo() {
 
 	subPath := g.GetString("sub_path")
 	if subPath != "" {
-		_, err = service.CreatePath(repoPath, subPath)
+		os.MkdirAll(filepath.Join(repoPath, subPath), 0755)
 		if err != nil {
 			g.internalError(err)
 		}

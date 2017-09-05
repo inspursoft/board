@@ -6,6 +6,7 @@ import (
 	"github.com/astaxie/beego/logs"
 
 	"net/http"
+	"os"
 	"path/filepath"
 )
 
@@ -72,9 +73,11 @@ func (f *FileUploadController) Upload() {
 		f.internalError(err)
 		return
 	}
-	targetFilePath := filepath.Join(repoPath, f.toFilePath, fh.Filename)
+	targetFilePath := filepath.Join(repoPath, f.toFilePath, "upload")
+	os.MkdirAll(targetFilePath, 0755)
+
 	logs.Info("User: %s uploaded file from %s to %s.", f.currentUser.Username, fh.Filename, targetFilePath)
-	err = f.SaveToFile("uploadFile", targetFilePath)
+	err = f.SaveToFile("uploadFile", filepath.Join(targetFilePath, fh.Filename))
 	if err != nil {
 		f.internalError(err)
 	}
@@ -82,7 +85,7 @@ func (f *FileUploadController) Upload() {
 
 func (f *FileUploadController) ListFiles() {
 	f.resolveFilePath()
-	uploads, err := service.ListUploadFiles(filepath.Join(repoPath, f.toFilePath))
+	uploads, err := service.ListUploadFiles(filepath.Join(repoPath, f.toFilePath, "upload"))
 	if err != nil {
 		f.internalError(err)
 		return
