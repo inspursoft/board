@@ -1323,7 +1323,7 @@ paths:
         This endpoint is to create a new image with image_tag.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -1344,20 +1344,58 @@ paths:
           description: Invalid image name.
         500:
           description: Internal errors.   
-  /v1/images/{image_name}/preview:
+  /v1/images/clean:
+    delete:
+      summary: Delete this image configuration.
+      description: |
+        This endpoint is to delete this image configuration.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: image_index
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ImageIndex'
+          description: The image index struct for the image to be deleted.    
+      tags:
+        - Products
+      responses:
+        200:
+          description: Delete the image configuration info successfully.
+        400:
+          description: Bad Request.
+        401:
+          description: Invalid image name.
+        500:
+          description: Internal errors.
+  /v1/images/preview:
     get:
       summary: Return the Dockerfile of this image configuration.
       description: |
         This endpoint returns the Dockerfile of this image configuration.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
         - name: image_name
-          in: path
+          in: query
           description: image name to specify an image.
+          required: true
+          type: string
+        - name: image_tag
+          in: query
+          description: image tag for this image.
+          required: true
+          type: string
+        - name: project_name 
+          in: query
+          description: Project name for this image.
           required: true
           type: string
       tags:
@@ -1373,48 +1411,17 @@ paths:
           description: Invalid image name.
         500:
           description: Internal errors.
-    delete:
-      summary: Delete this image configuration.
-      description: |
-        This endpoint is to delete this image configuration.
-      parameters:
-        - name: token
-          in: query
-          type: string
-          required: true
-          description: Current available token.
-        - name: image_name
-          in: path
-          description: image name to specify an image.
-          required: true
-          type: string
-      tags:
-        - Products
-      responses:
-        200:
-          description: Delete the image configuration info successfully.
-        400:
-          description: Bad Request.
-        401:
-          description: Invalid image name.
-        500:
-          description: Internal errors.
-  /v1/images/{image_name}/building:          
+  /v1/images/building:          
     post:
       summary: Build a new image for the image configuration
       description: |
         This endpoint is to build a new image for the image configuration.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
-        - name: image_name
-          in: path
-          description: image name to specify an image.
-          required: true
-          type: string
         - name: image_config
           in: body
           required: true
@@ -1439,7 +1446,7 @@ paths:
         This endpoint is to upload the new image to board registry.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -1474,7 +1481,7 @@ paths:
         This endpoint is to upload the external archive to image building server.
       parameters:
         - name: token
-          in: query
+          in: header
           type: string
           required: true
           description: Current available token.
@@ -2575,6 +2582,18 @@ definitions:
       image_tag:
         type: string
         description: The tag of this image.
+  ImageIndex:
+    type: object
+    properties:
+      project_name:
+        type: string
+        description: The name of the project that this image belongs to.    
+      image_name:
+        type: string
+        description: The name of this image. 
+      image_tag:
+        type: string
+        description: The tag of this image.    
   NodeBrief:
     type: object
     properties:
