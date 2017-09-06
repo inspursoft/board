@@ -94,6 +94,9 @@ func init() {
 			beego.NSRouter("/files/list",
 				&controller.FileUploadController{},
 				"post:ListFiles"),
+			beego.NSRouter("/files/remove",
+				&controller.FileUploadController{},
+				"post:RemoveFile"),
 		),
 	)
 

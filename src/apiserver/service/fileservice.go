@@ -20,3 +20,7 @@ func ListUploadFiles(directory string) ([]model.FileInfo, error) {
 	})
 	return uploads, nil
 }
+
+func RemoveUploadFile(file model.FileInfo) error {
+	return os.Remove(filepath.Join(file.Path, file.FileName))
+}
