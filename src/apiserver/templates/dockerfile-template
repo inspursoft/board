@@ -1,0 +1,13 @@
+FROM {{.Base}}
+{{if .Author}}MAINTAINER {{.Author}}
+{{end -}}
+{{if .Volume}}{{range .Volume}}VOLUME [ {{str2exec .}} ]
+{{end}}{{end -}}
+{{if .Copy}}{{range .Copy}}COPY [ {{str2exec .CopyFrom}}, {{str2exec .CopyTo}} ]
+{{end}}{{end -}}
+{{if .RUN}}{{range .RUN}}RUN {{.}}
+{{end}}{{end -}}
+{{if .EntryPoint}}ENTRYPOINT [ {{str2exec .EntryPoint}} ]
+{{end -}}
+{{if .Command}}CMD [ {{str2exec .Command}} ]
+{{end -}}

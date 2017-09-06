@@ -2692,6 +2692,15 @@ definitions:
       image_tag:
         type: string
         description: The tag of the image version      
+  DockerfileCopy:
+    type: object
+    properties:
+      dockerfile_copyfrom:
+        type: string
+        description: The source of copy
+      dockerfile_copyto:
+        type: string
+        description: The destination of copy
   ImageDockerfile:
     type: object
     properties:
@@ -2706,12 +2715,11 @@ definitions:
         items: 
           type: string
           description: The volume of this image to expose.
-      image_copyfrom:
-        type: string
-        description: The source path of copy.
-      image_copyto:
-        type: string
-        description: The destination path of copy.
+      image_copy:
+        type: array
+        description: The copy instructions in this image
+        items:
+            $ref: '#/definitions/DockerfileCopy'
       image_run:
         type: array
         items:
@@ -2732,10 +2740,6 @@ definitions:
       image_tag:
         type: string
         description: The tag of this image.
-      project_id:
-        type: integer
-        format: int32
-        description: The integer ID of the project that this image belongs to.
       project_name:
         type: string
         description: The name of the project that this image belongs to.      

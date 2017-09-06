@@ -5,6 +5,7 @@ MAINTAINER wangkun_lc@inspur.com
 COPY src/apiserver /go/src/git/inspursoft/board/src/apiserver
 COPY src/common /go/src/git/inspursoft/board/src/common
 COPY src/vendor /go/src/git/inspursoft/board/vendor
+COPY src/apiserver/templates /go/bin/templates
 
 WORKDIR /go/src/git/inspursoft/board/src/apiserver
 
