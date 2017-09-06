@@ -74,3 +74,10 @@ func (s *DashboardServiceController) GetServiceData() {
 	s.Data["json"] = dashboardServiceDataResp.ServiceResp
 	s.ServeJSON()
 }
+
+func (s *DashboardServiceController) GetServerTime() {
+	time := service.GetServerTime()
+	s.Data["json"] = time
+	s.ServeJSON()
+
+}
