@@ -64,7 +64,7 @@ func IsProjectMemberByName(projectName string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if project.ID == 0 {
+	if project == nil {
 		return false, errors.New("invalid project ID")
 	}
 	return IsProjectMember(project.ID)
