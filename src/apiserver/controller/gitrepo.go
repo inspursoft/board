@@ -45,8 +45,8 @@ func (g *GitRepoController) Prepare() {
 		return
 	}
 	g.currentUser = user
-	g.isSysAdmin = (g.currentUser.SystemAdmin == 1)
-	if !g.isSysAdmin {
+	g.isProjectAdmin = (g.currentUser.ProjectAdmin == 1)
+	if !g.isProjectAdmin {
 		g.CustomAbort(http.StatusForbidden, "Insufficient privileges for manipulating Git repos.")
 		return
 	}

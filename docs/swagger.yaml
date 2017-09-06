@@ -1993,7 +1993,7 @@ paths:
         400:
           description: Bad Request.
         401:
-          description: Invalid storage name.
+          description: Need to login first.
         500:
           description: Internal errors.
   /v1/files/list:
@@ -2038,7 +2038,7 @@ paths:
         400:
           description: Bad Request.
         401:
-          description: Invalid storage name.
+          description: Need to login first.
         500:
           description: Internal errors.
   /v1/files/remove:
@@ -2086,7 +2086,39 @@ paths:
         400:
           description: Bad Request.
         401:
-          description: Invalid storage name.
+          description: Need to login first.
+        500:
+          description: Internal errors.
+  /v1/jenkins-job/console:
+    get:
+      summary: Redirect Jenkins' job output.
+      description: |
+        This endpoint is used to redirect Jenkins' job output by specifying job name and build serial ID.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: job_name
+          in: query
+          type: string
+          required: true
+          description: Specify job name to fetch console output.
+        - name: build_serial_id
+          in: query
+          type: string
+          required: false
+          description: This value would be either 'lastBuild' by default or as user specified build number. 
+      tags:
+        - Products
+      responses:
+        200:
+          description: Successful get console output from Jenkins.
+        400:
+          description: Bad request.
+        401:
+          description: Need to login first.
         500:
           description: Internal errors.
 # The following is for structure definition          
