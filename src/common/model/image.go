@@ -56,21 +56,24 @@ type TagDetail struct {
 }
 
 // The structure for dockerfile template
+type CopyStruct struct {
+	CopyFrom string `json:"dockerfile_copyfrom"`
+	CopyTo   string `json:"dockerfile_copyto"`
+}
+
 type Dockerfile struct {
-	Base       string   `json:"image_base"`
-	Author     string   `json:"image_author"`
-	Volume     []string `json:"image_volume"`
-	CopyFrom   string   `json:"image_copyfrom"`
-	CopyTo     string   `json:"image_copyto"`
-	RUN        []string `json:"image_run"`
-	EntryPoint []string `json:"image_entrypoint"`
-	Command    []string `json:"image_cmd"`
+	Base       string       `json:"image_base"`
+	Author     string       `json:"image_author"`
+	Volume     []string     `json:"image_volume,omitempty"`
+	Copy       []CopyStruct `json:"image_copy,omitempty"`
+	RUN        []string     `json:"image_run,omitempty"`
+	EntryPoint string       `json:"image_entrypoint"`
+	Command    string       `json:"image_cmd"`
 }
 
 type ImageConfig struct {
 	ImageName       string     `json:"image_name"`
 	ImageTag        string     `json:"image_tag"`
-	ProjectID       int        `json:"project_id"`
 	ProjectName     string     `json:"project_name"`
 	ImageTemplate   string     `json:"image_template"`
 	ImageDockerfile Dockerfile `json:"image_dockerfile"`

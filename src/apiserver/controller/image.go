@@ -3,13 +3,18 @@ package controller
 import (
 	"encoding/json"
 	"fmt"
+	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
+	//"strings"
+	"path/filepath"
 	"time"
+
+	"github.com/astaxie/beego/logs"
 )
 
 type ImageController struct {
@@ -20,6 +25,9 @@ var RegistryIp string
 var RegistryStatus bool
 var commentTemp = "Inspur image" // TODO: get from mysql in the next release
 var sizeunitTemp = "B"
+
+var defaultDockerfilename = "Dockerfile"
+var imageProcess = "process_image"
 
 func init() {
 	var registryip = os.Getenv("REGISTRY_HOST")
@@ -190,4 +198,89 @@ func (p *ImageController) Prepare() {
 	}
 	p.currentUser = user
 	p.isSysAdmin = (user.SystemAdmin == 1)
+	p.isProjectAdmin = (user.ProjectAdmin == 1)
+}
+
+func (p *ImageController) BuildImageAction() {
+	var err error
+
+	//Check user priviledge project admin
+	if p.isProjectAdmin == false {
+		p.serveStatus(http.StatusForbidden, "Invalid user for project admin")
+		return
+	}
+
+	reqData, err := p.resolveBody()
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	var reqImageConfig model.ImageConfig
+	err = json.Unmarshal(reqData, &reqImageConfig)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	//Checking invalid parameters
+	err = service.CheckDockerfileConfig(reqImageConfig)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	var dockerfilepath = filepath.Join(repoPath, reqImageConfig.ProjectName,
+		reqImageConfig.ImageName, reqImageConfig.ImageTag)
+	service.SetDockerfilePath(dockerfilepath)
+
+	err = service.BuildDockerfile(reqImageConfig)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	//push to git
+	var pushobject pushObject
+
+	pushobject.FileName = defaultDockerfilename
+	pushobject.JobName = imageProcess
+	pushobject.Value = filepath.Join(reqImageConfig.ProjectName,
+		reqImageConfig.ImageName, reqImageConfig.ImageTag)
+	pushobject.Extras = filepath.Join(reqImageConfig.ProjectName,
+		reqImageConfig.ImageName) + ":" + reqImageConfig.ImageTag
+	pushobject.Message = fmt.Sprintf("Build image: %s", pushobject.Extras)
+
+	//Get file list for Jenkis git repo
+	uploads, err := service.ListUploadFiles(dockerfilepath)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	for _, finfo := range uploads {
+		filefullname := filepath.Join(pushobject.Value, finfo.FileName)
+		pushobject.Items = append(pushobject.Items, filefullname)
+	}
+
+	ret, msg, err := InternalPushObjects(&pushobject, &(p.baseController))
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	logs.Info("Internal push object: %d %s", ret, msg)
+	p.CustomAbort(ret, msg)
+}
+
+//TODO
+func (p *ImageController) GetImageDockerfileAction() {
+
+	p.serveStatus(200, "Get dockerfile successfully")
+	return
+}
+
+//TODO
+func (p *ImageController) GetImagePreviewAction() {
+
+	p.serveStatus(200, "Get preview successfully")
+	return
 }

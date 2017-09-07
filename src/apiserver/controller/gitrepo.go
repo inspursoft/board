@@ -158,3 +158,55 @@ func (g *GitRepoController) PullObjects() {
 		g.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to pull objects from git repo: %+v\n", err))
 	}
 }
+
+func InternalPushObjects(p *pushObject, g *baseController) (int, string, error) {
+
+	defaultCommitMessage := fmt.Sprintf("Added items: %s to repo: %s", strings.Join(p.Items, ","), repoPath)
+
+	if len(p.Message) == 0 {
+		p.Message = defaultCommitMessage
+	}
+
+	repoHandler, err := service.OpenRepo(repoPath)
+	if err != nil {
+		return http.StatusInternalServerError, "Failed to open user's repo", err
+	}
+	for _, item := range p.Items {
+		repoHandler.Add(item)
+	}
+
+	username := g.currentUser.Username
+	email := g.currentUser.Email
+
+	_, err = repoHandler.Commit(p.Message, &object.Signature{Name: username, Email: email})
+	if err != nil {
+		return http.StatusInternalServerError, "Failed to commit changes to user's repo", err
+	}
+	err = repoHandler.Push()
+	if err != nil {
+		return http.StatusInternalServerError, "Failed to push objects to git repo", err
+	}
+
+	templates := template.Must(template.New("job_url").Parse(jenkinsJobURL))
+	var triggerURL bytes.Buffer
+	data := struct {
+		Token    string
+		JobName  string
+		Value    string
+		Extras   string
+		FileName string
+	}{
+		Token:    jenkinsJobToken,
+		JobName:  p.JobName,
+		Value:    p.Value,
+		Extras:   p.Extras,
+		FileName: p.FileName,
+	}
+	templates.Execute(&triggerURL, data)
+	logs.Debug("Jenkins trigger url: %s", triggerURL.String())
+	resp, err := http.Get(triggerURL.String())
+	if err != nil {
+		return http.StatusInternalServerError, "Failed to triggerURL", err
+	}
+	return resp.StatusCode, "Internal Push Object successfully", err
+}
