@@ -1373,36 +1373,27 @@ paths:
         500:
           description: Internal errors.
   /v1/images/preview:
-    get:
-      summary: Return the Dockerfile of this image configuration.
+    post:
+      summary: Preview a new image for the image configuration
       description: |
-        This endpoint returns the Dockerfile of this image configuration.
+        This endpoint is to return a new image dockerfile for the image configuration.
       parameters:
         - name: token
           in: header
           type: string
           required: true
           description: Current available token.
-        - name: image_name
-          in: query
-          description: image name to specify an image.
+        - name: image_config
+          in: body
           required: true
-          type: string
-        - name: image_tag
-          in: query
-          description: image tag for this image.
-          required: true
-          type: string
-        - name: project_name 
-          in: query
-          description: Project name for this image.
-          required: true
-          type: string
+          schema:
+            $ref: '#/definitions/ImageConfig'
+          description: The image configuration struct for the new image.       
       tags:
         - Products
       responses:
         200:
-          description: Return the Dockerfile of this image.
+          description: Build the image successfully.
           schema:
             $ref: '#/definitions/ImageDockerfile'
         400:

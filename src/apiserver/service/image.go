@@ -3,8 +3,10 @@ package service
 import (
 	"errors"
 	"git/inspursoft/board/src/common/model"
+	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"text/template"
 )
@@ -40,16 +42,28 @@ func str2execform(str string) string {
 }
 
 func CheckDockerfileConfig(config model.ImageConfig) error {
-	if strings.ContainsAny(config.ImageDockerfile.Base, "ABCDEFGHIJKLMNOPQRSTUVWXYZ") {
-		return errors.New("dockerfile's baseimage shouldn't contain upper character")
+	isMatch, err := regexp.MatchString("[A-Z]", config.ImageDockerfile.Base)
+	if err != nil {
+		return err
+	}
+	if isMatch {
+		return errors.New("dockerfile's baseimage name shouldn't contain upper character")
 	}
 
-	if strings.ContainsAny(config.ImageName, "ABCDEFGHIJKLMNOPQRSTUVWXYZ") {
-		return errors.New("docker's image name shouldn't contain upper character")
+	isMatch, err = regexp.MatchString("[A-Z]", config.ImageName)
+	if err != nil {
+		return err
+	}
+	if isMatch {
+		return errors.New("docker image's name shouldn't contain upper character")
 	}
 
-	if strings.ContainsAny(config.ImageTag, "ABCDEFGHIJKLMNOPQRSTUVWXYZ") {
-		return errors.New("docker's image tag shouldn't contain upper character")
+	isMatch, err = regexp.MatchString("[A-Z]", config.ImageTag)
+	if err != nil {
+		return err
+	}
+	if isMatch {
+		return errors.New("docker image's tag shouldn't contain upper character")
 	}
 
 	return nil
@@ -67,7 +81,7 @@ func changeDockerfileStructPath(dockerfile model.Dockerfile) error {
 	return nil
 }
 
-func BuildDockerfile(reqImageConfig model.ImageConfig) error {
+func BuildDockerfile(reqImageConfig model.ImageConfig, wr io.Writer) error {
 	var templatename string
 
 	if err := changeDockerfileStructPath(reqImageConfig.ImageDockerfile); err != nil {
@@ -83,6 +97,13 @@ func BuildDockerfile(reqImageConfig model.ImageConfig) error {
 	tmpl, err := template.New(templatename).Funcs(template.FuncMap{"str2exec": str2execform}).ParseFiles(filepath.Join(dockerTemplatePath, templatename))
 	if err != nil {
 		return err
+	}
+
+	if wr != nil {
+		if err = tmpl.Execute(wr, reqImageConfig.ImageDockerfile); err != nil {
+			return err
+		}
+		return nil
 	}
 
 	if fi, err := os.Stat(GetDockerfilePath()); os.IsNotExist(err) {

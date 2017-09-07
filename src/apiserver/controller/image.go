@@ -234,7 +234,7 @@ func (p *ImageController) BuildImageAction() {
 		reqImageConfig.ImageName, reqImageConfig.ImageTag)
 	service.SetDockerfilePath(dockerfilepath)
 
-	err = service.BuildDockerfile(reqImageConfig)
+	err = service.BuildDockerfile(reqImageConfig, nil)
 	if err != nil {
 		p.internalError(err)
 		return
@@ -280,7 +280,41 @@ func (p *ImageController) GetImageDockerfileAction() {
 
 //TODO
 func (p *ImageController) GetImagePreviewAction() {
+	var err error
 
-	p.serveStatus(200, "Get preview successfully")
-	return
+	//Check user priviledge project admin
+	if p.isProjectAdmin == false {
+		p.serveStatus(http.StatusForbidden, "Invalid user for project admin")
+		return
+	}
+
+	reqData, err := p.resolveBody()
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	var reqImageConfig model.ImageConfig
+	err = json.Unmarshal(reqData, &reqImageConfig)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	//Checking invalid parameters
+	err = service.CheckDockerfileConfig(reqImageConfig)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	var dockerfilepath = filepath.Join(repoPath, reqImageConfig.ProjectName,
+		reqImageConfig.ImageName, reqImageConfig.ImageTag)
+	service.SetDockerfilePath(dockerfilepath)
+
+	err = service.BuildDockerfile(reqImageConfig, p.Ctx.ResponseWriter)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
 }
