@@ -52,18 +52,13 @@ services:
         tag: "gitserver"
   jenkins:
     build:
-      context: ../../
-      dockerfile: make/dev/container/jenkins/Dockerfile
-      args:
-        user: root
-        group: root
-        uid: 0
-        gid: 0
+      context: container/jenkins
+      dockerfile: Dockerfile
     restart: always
     networks:
       - board
     volumes:
-      - /data/board/jenkins:/var/jenkins_home
+      - /data/board/jenkins_home:/var/jenkins_home
       - ../config/ssh_keys:/root/.ssh
       - /var/run/docker.sock:/var/run/docker.sock
       - /usr/bin/docker:/usr/bin/docker
