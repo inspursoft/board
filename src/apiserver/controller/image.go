@@ -234,6 +234,8 @@ func (p *ImageController) BuildImageAction() {
 		reqImageConfig.ImageName, reqImageConfig.ImageTag)
 	service.SetDockerfilePath(dockerfilepath)
 
+	service.SetCopyFromPath("")
+
 	err = service.BuildDockerfile(reqImageConfig)
 	if err != nil {
 		p.internalError(err)
