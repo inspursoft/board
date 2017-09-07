@@ -11,27 +11,9 @@ import (
 	"text/template"
 )
 
-var dockerfilePath = filepath.Join("/", "repos", "board_repo", "library")
 var dockerTemplatePath = "templates"
 var dockerfileName = "Dockerfile"
 var templateNameDefault = "dockerfile-template"
-var copyFromPath = ""
-
-func SetDockerfilePath(path string) {
-	dockerfilePath = path
-}
-
-func GetDockerfilePath() string {
-	return dockerfilePath
-}
-
-func SetCopyFromPath(path string) {
-	copyFromPath = path
-}
-
-func GetCopyFromPath() string {
-	return copyFromPath
-}
 
 func str2execform(str string) string {
 	sli := strings.Split(str, " ")
@@ -69,24 +51,8 @@ func CheckDockerfileConfig(config model.ImageConfig) error {
 	return nil
 }
 
-func changeDockerfileStructPath(dockerfile model.Dockerfile) error {
-	if len(GetCopyFromPath()) == 0 {
-		return nil
-	}
-
-	for num, node := range dockerfile.Copy {
-		dockerfile.Copy[num].CopyFrom = filepath.Join(GetCopyFromPath(), node.CopyFrom)
-	}
-
-	return nil
-}
-
 func BuildDockerfile(reqImageConfig model.ImageConfig, wr ...io.Writer) error {
 	var templatename string
-
-	if err := changeDockerfileStructPath(reqImageConfig.ImageDockerfile); err != nil {
-		return err
-	}
 
 	if len(reqImageConfig.ImageTemplate) != 0 {
 		templatename = reqImageConfig.ImageTemplate
@@ -106,15 +72,15 @@ func BuildDockerfile(reqImageConfig model.ImageConfig, wr ...io.Writer) error {
 		return nil
 	}
 
-	if fi, err := os.Stat(GetDockerfilePath()); os.IsNotExist(err) {
-		if err := os.MkdirAll(GetDockerfilePath(), 0755); err != nil {
+	if fi, err := os.Stat(reqImageConfig.ImageDockerfilePath); os.IsNotExist(err) {
+		if err := os.MkdirAll(reqImageConfig.ImageDockerfilePath, 0755); err != nil {
 			return err
 		}
 	} else if !fi.IsDir() {
 		return errors.New("Dockerfile path is not dir")
 	}
 
-	dockerfile, err := os.OpenFile(filepath.Join(GetDockerfilePath(), dockerfileName), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	dockerfile, err := os.OpenFile(filepath.Join(reqImageConfig.ImageDockerfilePath, dockerfileName), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
 	}

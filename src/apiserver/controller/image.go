@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
-	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -202,17 +201,6 @@ func (p *ImageController) Prepare() {
 	p.isProjectAdmin = (user.ProjectAdmin == 1)
 }
 
-func buildDockerfile(reqImageConfig model.ImageConfig, wr ...io.Writer) error {
-	var dockerfilepath = filepath.Join(repoPath, reqImageConfig.ProjectName,
-		reqImageConfig.ImageName, reqImageConfig.ImageTag)
-	service.SetDockerfilePath(dockerfilepath)
-
-	if len(wr) != 0 {
-		return service.BuildDockerfile(reqImageConfig, wr[0])
-	}
-	return service.BuildDockerfile(reqImageConfig)
-}
-
 func (p *ImageController) BuildImageAction() {
 	var err error
 
@@ -242,7 +230,9 @@ func (p *ImageController) BuildImageAction() {
 		return
 	}
 
-	err = buildDockerfile(reqImageConfig)
+	reqImageConfig.ImageDockerfilePath = filepath.Join(repoPath, reqImageConfig.ProjectName,
+		reqImageConfig.ImageName, reqImageConfig.ImageTag)
+	err = service.BuildDockerfile(reqImageConfig)
 	if err != nil {
 		p.internalError(err)
 		return
@@ -260,7 +250,7 @@ func (p *ImageController) BuildImageAction() {
 	pushobject.Message = fmt.Sprintf("Build image: %s", pushobject.Extras)
 
 	//Get file list for Jenkis git repo
-	uploads, err := service.ListUploadFiles(filepath.Join(repoPath, reqImageConfig.ProjectName, reqImageConfig.ImageName, reqImageConfig.ImageTag, "update"))
+	uploads, err := service.ListUploadFiles(filepath.Join(reqImageConfig.ImageDockerfilePath, "update"))
 	if err != nil {
 		p.internalError(err)
 		return
@@ -320,7 +310,9 @@ func (p *ImageController) DockerfilePreviewAction() {
 		return
 	}
 
-	err = buildDockerfile(reqImageConfig, p.Ctx.ResponseWriter)
+	reqImageConfig.ImageDockerfilePath = filepath.Join(repoPath, reqImageConfig.ProjectName,
+		reqImageConfig.ImageName, reqImageConfig.ImageTag)
+	err = service.BuildDockerfile(reqImageConfig, p.Ctx.ResponseWriter)
 	if err != nil {
 		p.internalError(err)
 		return
