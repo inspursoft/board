@@ -260,15 +260,19 @@ func (p *ImageController) BuildImageAction() {
 	pushobject.Message = fmt.Sprintf("Build image: %s", pushobject.Extras)
 
 	//Get file list for Jenkis git repo
-	uploads, err := service.ListUploadFiles(filepath.Join(repoPath, reqImageConfig.ProjectName, reqImageConfig.ImageName, reqImageConfig.ImageTag))
+	uploads, err := service.ListUploadFiles(filepath.Join(repoPath, reqImageConfig.ProjectName, reqImageConfig.ImageName, reqImageConfig.ImageTag, "update"))
 	if err != nil {
 		p.internalError(err)
 		return
 	}
+	// Add upload files
 	for _, finfo := range uploads {
-		filefullname := filepath.Join(pushobject.Value, finfo.FileName)
+		filefullname := filepath.Join(pushobject.Value, "upload", finfo.FileName)
 		pushobject.Items = append(pushobject.Items, filefullname)
 	}
+	// Add Dockerfile
+	pushobject.Items = append(pushobject.Items, filepath.Join(pushobject.Value,
+		defaultDockerfilename))
 
 	ret, msg, err := InternalPushObjects(&pushobject, &(p.baseController))
 	if err != nil {

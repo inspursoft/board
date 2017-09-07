@@ -15,7 +15,7 @@ var dockerfilePath = filepath.Join("/", "repos", "board_repo", "library")
 var dockerTemplatePath = "templates"
 var dockerfileName = "Dockerfile"
 var templateNameDefault = "dockerfile-template"
-var copyFromPath = "upload"
+var copyFromPath = ""
 
 func SetDockerfilePath(path string) {
 	dockerfilePath = path
