@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/astaxie/beego/orm"
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/orm"
 )
 
 const (
@@ -26,9 +26,9 @@ type QueryPara struct {
 	DuraTime  int
 }
 type ServiceDataLog struct {
-	PodNumber       int64  `json:"pod_number" orm:"column(pod_number)"`
-	ContainerNumber int64  `json:"container_number" orm:"column(container_number)"`
-	Timestamp       int  `json:"timestamp" orm:"column(record_time)"`
+	PodNumber       int64 `json:"pod_number" orm:"column(pod_number)"`
+	ContainerNumber int64 `json:"container_number" orm:"column(container_number)"`
+	Timestamp       int   `json:"timestamp" orm:"column(record_time)"`
 }
 type NodeDataLogs struct {
 	Record_time   int     `json:"timestamp" orm:"column(record_time)"`
@@ -47,8 +47,8 @@ type ServiceListDataLogs struct {
 }
 type LimitTime struct {
 	FieldName string `orm:"column(field_name)"`
-	MinTime   int `orm:"column(min_time)"`
-	MaxTime   int `orm:"column(max_time)"`
+	MinTime   int    `orm:"column(min_time)"`
+	MaxTime   int    `orm:"column(max_time)"`
 }
 
 func (d *DashboardServiceDao) GetLimitTime() (LimitTime, error) {
@@ -309,7 +309,7 @@ func (d *DashboardNodeDao) GetNodeData() (count int, nodeItems []NodeDataLogs, e
 	return count, nodeItems, err
 
 }
-func (d *DashboardServiceDao) genServiceDataTotalSqlString(tableName string, ) string {
+func (d *DashboardServiceDao) genServiceDataTotalSqlString(tableName string) string {
 	sql := fmt.Sprintf(`
 (SELECT
   sum(nt.pod_number)       AS pod_number,
@@ -358,13 +358,13 @@ func (d *DashboardServiceDao) getDurationTime() (last int, prev int, err error) 
 			t := d.TimeCount * 5
 			return d.TimeStamp, d.TimeStamp - t, nil
 		case "minute":
-			t := d.TimeCount * 5 * 60
+			t := d.TimeCount * 60
 			return d.TimeStamp, d.TimeStamp - t, nil
 		case "hour":
-			t := d.TimeCount * 5 * 60 * 60
+			t := d.TimeCount * 60 * 60
 			return d.TimeStamp, d.TimeStamp - t, nil
 		case "day":
-			t := d.TimeCount * 5 * 60 * 60 * 24
+			t := d.TimeCount * 60 * 60 * 24
 			return d.TimeStamp, d.TimeStamp - t, nil
 
 		}
@@ -412,6 +412,25 @@ func (d *DashboardServiceDao) genServiceDataSqlString(tableName string) (sql str
 	`, tableName)
 	return sql
 }
+
+/*func (d *DashboardServiceDao) newGenServiceDataSqlString() (sql string) {
+	sql = fmt.Sprintf(`
+(SELECT
+   ds.service_name     AS service_name,
+   ds.pod_number       AS pod_number,
+   ds.container_number AS container_number,
+   ds.time_list_id     AS record_time
+ FROM %s ds
+ WHERE ds.time_list_id >=  ? AND
+       ds.time_list_id <= ? AND
+       ds.service_name = ?
+ ORDER BY ds.time_list_id DESC
+ LIMIT ?)
+ ORDER BY record_time ASC;
+	`, fmt.Sprintf(`dashboard_service_%s`, time.Now().Format("2006_01_02")))
+	return sql
+}*/
+
 func (d *DashboardServiceDao) GetServiceData() (count int, serviceItems []ServiceDataLog, err error) {
 	tableName, err := d.getServiceDataTableName()
 	if err != nil {
@@ -433,3 +452,25 @@ func (d *DashboardServiceDao) GetServiceData() (count int, serviceItems []Servic
 	return count, serviceItems, err
 
 }
+
+/*func (d *DashboardServiceDao) GetServiceData() (count int, serviceItems []ServiceDataLog, err error) {
+	tableName, err := d.getServiceDataTableName()
+	if err != nil {
+		return count, []ServiceDataLog{}, err
+	}
+	last, prev, err := d.getDurationTime()
+	sql := d.genServiceDataSqlString(tableName)
+	o := orm.NewOrm()
+	i, err := o.Raw(sql, prev, last, d.Name, d.TimeCount).QueryRows(&serviceItems)
+
+	count = int(i)
+	if err != nil {
+		return count, []ServiceDataLog{}, err
+	}
+
+	if d.TimeCount > 500 {
+		err = errors.New("time count must < 500")
+	}
+	return count, serviceItems, err
+
+}*/

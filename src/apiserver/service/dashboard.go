@@ -85,13 +85,13 @@ func (d *Dashboard) GetServiceDataToObj() (err error) {
 	var tMin int
 	switch d.ServiceReqPara.TimeUnit {
 	case "second":
-		tMin = d.ServiceReqPara.TimeCount * 5
+		tMin = d.ServiceReqPara.TimeStamp - d.ServiceReqPara.TimeCount*5
 	case "minute":
-		tMin = d.ServiceReqPara.TimeCount * 60
+		tMin = d.ServiceReqPara.TimeStamp - d.ServiceReqPara.TimeCount*60
 	case "hour":
-		tMin = d.ServiceReqPara.TimeCount * 60 * 60
+		tMin = d.ServiceReqPara.TimeStamp - d.ServiceReqPara.TimeCount*60*60
 	case "day":
-		tMin = d.ServiceReqPara.TimeCount * 60 * 60 * 24
+		tMin = d.ServiceReqPara.TimeStamp - d.ServiceReqPara.TimeCount*60*60*24
 
 	}
 	s := dao.DashboardServiceDao{}
@@ -117,16 +117,16 @@ func (d *Dashboard) GetServiceDataToObj() (err error) {
 			ServiceName:     d.ServiceReqPara.ServiceName,
 			ServiceTimeUnit: d.ServiceReqPara.TimeUnit,
 		}
+		d.ServiceResp.ServiceCount, d.ServiceLogsData, err = s.GetServiceData()
 	}
 	lt, err := s.GetLimitTime()
 	if err != nil {
 		return err
 	}
-	d.ServiceResp.ServiceCount, d.ServiceLogsData, err = s.GetServiceData()
+
 	if err != nil {
 		return err
 	}
-
 	if tMin > lt.MaxTime {
 		d.ServiceResp.IsOverMaxLimit = true
 	}
@@ -140,13 +140,13 @@ func (d *Dashboard) GetNodeDataToObj() (err error) {
 	var tMin int
 	switch d.NodeReqPara.TimeUnit {
 	case "second":
-		tMin = d.ServiceReqPara.TimeCount * 5
+		tMin =  d.NodeReqPara.TimeStamp-d.ServiceReqPara.TimeCount * 5
 	case "minute":
-		tMin = d.ServiceReqPara.TimeCount * 60
+		tMin = d.NodeReqPara.TimeStamp-d.ServiceReqPara.TimeCount * 60
 	case "hour":
-		tMin = d.ServiceReqPara.TimeCount * 60 * 60
+		tMin = d.NodeReqPara.TimeStamp-d.ServiceReqPara.TimeCount * 60 * 60
 	case "day":
-		tMin = d.ServiceReqPara.TimeCount * 60 * 60 * 24
+		tMin = d.NodeReqPara.TimeStamp-d.ServiceReqPara.TimeCount * 60 * 60 * 24
 
 	}
 	s := dao.DashboardNodeDao{}
@@ -170,16 +170,17 @@ func (d *Dashboard) GetNodeDataToObj() (err error) {
 			TimeUnit:      d.NodeReqPara.TimeUnit,
 			NodeTimestamp: d.NodeReqPara.TimeStamp,
 		}
+		d.NodeResp.NodeCount, d.NodeLogsData, err = s.GetNodeData()
 	}
 	lt, err := s.GetLimitTime()
 	if err != nil {
 		return err
 	}
 
-	d.NodeResp.NodeCount, d.NodeLogsData, err = s.GetNodeData()
 	if tMin > lt.MaxTime {
 		d.NodeResp.IsOverMaxLimit = true
 	}
+
 	if d.NodeReqPara.TimeStamp < lt.MinTime {
 		d.NodeResp.IsOverMinLimit = true
 	}

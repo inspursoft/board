@@ -42,8 +42,10 @@ type DashboardServiceController struct {
 }
 
 func (s *DashboardServiceController) GetServiceData() {
+
 	getServiceDataBodyReq, _ := s.resolveBody()
 	serviceName := s.GetString("service_name")
+	fmt.Println(getServiceDataBodyReq)
 	beego.Debug("servicename", serviceName, getServiceDataBodyReq.DurationTime)
 	if getServiceDataBodyReq.TimeCount == 0 {
 		s.CustomAbort(http.StatusBadRequest, "")
@@ -57,6 +59,7 @@ func (s *DashboardServiceController) GetServiceData() {
 		s.CustomAbort(http.StatusBadRequest, "")
 		return
 	}
+
 	var dashboardServiceDataResp service.Dashboard
 	dashboardServiceDataResp.SetServicePara(getServiceDataBodyReq.TimeUnit,
 		getServiceDataBodyReq.TimeCount, getServiceDataBodyReq.TimestampBase, serviceName,
