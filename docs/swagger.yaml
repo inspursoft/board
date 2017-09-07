@@ -1772,7 +1772,6 @@ paths:
         - name: node_name
           in: query
           description: The integer ID of this node, null name is for the sum of all nodes.
-          required: true
           type: integer
           format: int32
         - name: node_timestruct
