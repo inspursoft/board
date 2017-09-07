@@ -2,11 +2,13 @@ package controller
 
 import (
 	"encoding/json"
-	"fmt"
+
 	"io/ioutil"
 
 	"git/inspursoft/board/src/apiserver/service"
 	"net/http"
+
+	"fmt"
 
 	"github.com/astaxie/beego"
 )
@@ -45,7 +47,7 @@ func (s *DashboardServiceController) GetServiceData() {
 
 	getServiceDataBodyReq, _ := s.resolveBody()
 	serviceName := s.GetString("service_name")
-	fmt.Println(getServiceDataBodyReq)
+
 	beego.Debug("servicename", serviceName, getServiceDataBodyReq.DurationTime)
 	if getServiceDataBodyReq.TimeCount == 0 {
 		s.CustomAbort(http.StatusBadRequest, "")
@@ -64,8 +66,6 @@ func (s *DashboardServiceController) GetServiceData() {
 	dashboardServiceDataResp.SetServicePara(getServiceDataBodyReq.TimeUnit,
 		getServiceDataBodyReq.TimeCount, getServiceDataBodyReq.TimestampBase, serviceName,
 		getServiceDataBodyReq.DurationTime)
-	fmt.Println(getServiceDataBodyReq.TimeUnit, getServiceDataBodyReq.TimeCount,
-		getServiceDataBodyReq.TimestampBase, serviceName)
 	err := dashboardServiceDataResp.GetServiceDataToObj()
 	beego.Error(err)
 	_, err = dashboardServiceDataResp.GetServiceListToObj()
