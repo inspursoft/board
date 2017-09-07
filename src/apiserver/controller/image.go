@@ -226,16 +226,12 @@ func (p *ImageController) BuildImageAction() {
 	//Checking invalid parameters
 	err = service.CheckDockerfileConfig(reqImageConfig)
 	if err != nil {
-		p.internalError(err)
+		p.serveStatus(http.StatusBadRequest, err.Error())
 		return
 	}
 
-	var dockerfilepath = filepath.Join(repoPath, reqImageConfig.ProjectName,
+	reqImageConfig.ImageDockerfilePath = filepath.Join(repoPath, reqImageConfig.ProjectName,
 		reqImageConfig.ImageName, reqImageConfig.ImageTag)
-	service.SetDockerfilePath(dockerfilepath)
-
-	service.SetCopyFromPath("")
-
 	err = service.BuildDockerfile(reqImageConfig)
 	if err != nil {
 		p.internalError(err)
@@ -254,8 +250,7 @@ func (p *ImageController) BuildImageAction() {
 	pushobject.Message = fmt.Sprintf("Build image: %s", pushobject.Extras)
 
 	//Get file list for Jenkis git repo
-	uploadpath := filepath.Join(dockerfilepath, "upload")
-	uploads, err := service.ListUploadFiles(uploadpath)
+	uploads, err := service.ListUploadFiles(filepath.Join(reqImageConfig.ImageDockerfilePath, "upload"))
 	if err != nil {
 		p.internalError(err)
 		return
@@ -286,8 +281,40 @@ func (p *ImageController) GetImageDockerfileAction() {
 }
 
 //TODO
-func (p *ImageController) GetImagePreviewAction() {
+func (p *ImageController) DockerfilePreviewAction() {
+	var err error
 
-	p.serveStatus(200, "Get preview successfully")
-	return
+	//Check user priviledge project admin
+	if p.isProjectAdmin == false {
+		p.serveStatus(http.StatusForbidden, "Invalid user for project admin")
+		return
+	}
+
+	reqData, err := p.resolveBody()
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	var reqImageConfig model.ImageConfig
+	err = json.Unmarshal(reqData, &reqImageConfig)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	//Checking invalid parameters
+	err = service.CheckDockerfileConfig(reqImageConfig)
+	if err != nil {
+		p.serveStatus(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	reqImageConfig.ImageDockerfilePath = filepath.Join(repoPath, reqImageConfig.ProjectName,
+		reqImageConfig.ImageName, reqImageConfig.ImageTag)
+	err = service.BuildDockerfile(reqImageConfig, p.Ctx.ResponseWriter)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
 }
