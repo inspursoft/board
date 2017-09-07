@@ -81,7 +81,7 @@ func changeDockerfileStructPath(dockerfile model.Dockerfile) error {
 	return nil
 }
 
-func BuildDockerfile(reqImageConfig model.ImageConfig, wr io.Writer) error {
+func BuildDockerfile(reqImageConfig model.ImageConfig, wr ...io.Writer) error {
 	var templatename string
 
 	if err := changeDockerfileStructPath(reqImageConfig.ImageDockerfile); err != nil {
@@ -99,8 +99,8 @@ func BuildDockerfile(reqImageConfig model.ImageConfig, wr io.Writer) error {
 		return err
 	}
 
-	if wr != nil {
-		if err = tmpl.Execute(wr, reqImageConfig.ImageDockerfile); err != nil {
+	if len(wr) != 0 {
+		if err = tmpl.Execute(wr[0], reqImageConfig.ImageDockerfile); err != nil {
 			return err
 		}
 		return nil

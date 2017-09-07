@@ -226,7 +226,7 @@ func (p *ImageController) BuildImageAction() {
 	//Checking invalid parameters
 	err = service.CheckDockerfileConfig(reqImageConfig)
 	if err != nil {
-		p.internalError(err)
+		p.serveStatus(http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -234,7 +234,7 @@ func (p *ImageController) BuildImageAction() {
 		reqImageConfig.ImageName, reqImageConfig.ImageTag)
 	service.SetDockerfilePath(dockerfilepath)
 
-	err = service.BuildDockerfile(reqImageConfig, nil)
+	err = service.BuildDockerfile(reqImageConfig)
 	if err != nil {
 		p.internalError(err)
 		return
@@ -304,7 +304,7 @@ func (p *ImageController) GetImagePreviewAction() {
 	//Checking invalid parameters
 	err = service.CheckDockerfileConfig(reqImageConfig)
 	if err != nil {
-		p.internalError(err)
+		p.serveStatus(http.StatusBadRequest, err.Error())
 		return
 	}
 
