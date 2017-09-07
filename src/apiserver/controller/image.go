@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -201,6 +202,17 @@ func (p *ImageController) Prepare() {
 	p.isProjectAdmin = (user.ProjectAdmin == 1)
 }
 
+func buildDockerfile(reqImageConfig model.ImageConfig, wr ...io.Writer) error {
+	var dockerfilepath = filepath.Join(repoPath, reqImageConfig.ProjectName,
+		reqImageConfig.ImageName, reqImageConfig.ImageTag)
+	service.SetDockerfilePath(dockerfilepath)
+
+	if len(wr) != 0 {
+		return service.BuildDockerfile(reqImageConfig, wr[0])
+	}
+	return service.BuildDockerfile(reqImageConfig)
+}
+
 func (p *ImageController) BuildImageAction() {
 	var err error
 
@@ -230,11 +242,7 @@ func (p *ImageController) BuildImageAction() {
 		return
 	}
 
-	var dockerfilepath = filepath.Join(repoPath, reqImageConfig.ProjectName,
-		reqImageConfig.ImageName, reqImageConfig.ImageTag)
-	service.SetDockerfilePath(dockerfilepath)
-
-	err = service.BuildDockerfile(reqImageConfig)
+	err = buildDockerfile(reqImageConfig)
 	if err != nil {
 		p.internalError(err)
 		return
@@ -252,7 +260,7 @@ func (p *ImageController) BuildImageAction() {
 	pushobject.Message = fmt.Sprintf("Build image: %s", pushobject.Extras)
 
 	//Get file list for Jenkis git repo
-	uploads, err := service.ListUploadFiles(dockerfilepath)
+	uploads, err := service.ListUploadFiles(filepath.Join(repoPath, reqImageConfig.ProjectName, reqImageConfig.ImageName, reqImageConfig.ImageTag))
 	if err != nil {
 		p.internalError(err)
 		return
@@ -279,7 +287,7 @@ func (p *ImageController) GetImageDockerfileAction() {
 }
 
 //TODO
-func (p *ImageController) GetImagePreviewAction() {
+func (p *ImageController) DockerfilePreviewAction() {
 	var err error
 
 	//Check user priviledge project admin
@@ -308,11 +316,7 @@ func (p *ImageController) GetImagePreviewAction() {
 		return
 	}
 
-	var dockerfilepath = filepath.Join(repoPath, reqImageConfig.ProjectName,
-		reqImageConfig.ImageName, reqImageConfig.ImageTag)
-	service.SetDockerfilePath(dockerfilepath)
-
-	err = service.BuildDockerfile(reqImageConfig, p.Ctx.ResponseWriter)
+	err = buildDockerfile(reqImageConfig, p.Ctx.ResponseWriter)
 	if err != nil {
 		p.internalError(err)
 		return

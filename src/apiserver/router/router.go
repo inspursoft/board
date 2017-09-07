@@ -74,7 +74,7 @@ func init() {
 				"get:GetImageDockerfileAction"),
 			beego.NSRouter("/images/preview",
 				&controller.ImageController{},
-				"post:GetImagePreviewAction"),
+				"post:DockerfilePreviewAction"),
 			beego.NSRouter("/search",
 				&controller.SearchSourceController{}, "get:Search"),
 			beego.NSNamespace("/dashboard", beego.NSRouter("/service",
