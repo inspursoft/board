@@ -3,8 +3,8 @@ package model
 import "git/inspursoft/board/src/common/model/yaml"
 
 type ServiceConfig struct {
-	ServiceID      int64           `json:"service_config_service_id" orm:"column(id)"`
-	ProjectID      int64           `json:"service_config_project_id" orm:"column(project_id)"`
+	ServiceID      int64           `json:"service_id" orm:"column(id)"`
+	ProjectID      int64           `json:"project_id" orm:"column(project_id)"`
 	ProjectName    string          `json:"project_name"`
 	Phase          string          `json:"service_config_phase"`
 	ImageList      []string        `json:"service_image_list"`
