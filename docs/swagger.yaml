@@ -2489,6 +2489,9 @@ definitions:
         type: integer
         format: int32
         description: The project's integer ID which include this service.
+      project_name:
+        type: string
+        description: The project's name of this service.
       config_phase:
         type: string
         description: The phase name of the service configuration process.        
