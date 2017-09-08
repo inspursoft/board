@@ -72,19 +72,23 @@ git pull
 
 echo &quot;Build image tagged as $extras with $file_name&quot;
 
+echo &quot;docker build -f $value/$file_name -t $extras .&quot;
+
 docker build -f $value/$file_name -t $extras .
 
-if [ ! -z $docker_username ] &amp;&amp; [ ! -z $docker_password ]; then
+#if [ ! -z $docker_username ] &amp;&amp; [ ! -z $docker_password ]; then
  
-  echo &quot;Login docker registry with username and password.&quot;  
+#  echo &quot;Login docker registry with username and password.&quot;  
   
-  docker login --username $docker_username --password $docker_password $docker_registry
+#  docker login --username $docker_username --password $docker_password $docker_registry
 
-fi
+#fi
 
 echo &quot;Push image $extras&quot;
 
-docker push $extras
+docker tag $extras $docker_registry/$extras
+
+docker push $docker_registry/$extras
 
 echo &quot;Remove pushed image.&quot;
 
