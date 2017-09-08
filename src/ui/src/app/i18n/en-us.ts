@@ -211,5 +211,6 @@ export const LANG_EN_US = {
     "STEP_2_COMMAND":"Command",
     "STEP_2_PREVIEW":"Preview",
     "STEP_2_BUILD_IMAGE":"Build Image",
+    "STEP_2_UPLOAD_SUCCESS":"Upload file success.",
   }
 };

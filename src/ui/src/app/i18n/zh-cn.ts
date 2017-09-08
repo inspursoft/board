@@ -211,5 +211,6 @@ export const LANG_ZH_CN = {
     "STEP_2_COMMAND":"命令",
     "STEP_2_PREVIEW":"预览",
     "STEP_2_BUILD_IMAGE":"构建镜像",
+    "STEP_2_UPLOAD_SUCCESS":"上传文件成功.",
   }
 };

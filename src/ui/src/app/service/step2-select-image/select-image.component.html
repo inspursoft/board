@@ -118,14 +118,15 @@
         </div>
         <div class="create-image-line-container ">
           <label class="base-text">{{"SERVICE.STEP_2_UPLOAD_ARCHIVES" | translate}}:</label>
-          <input class="base-input" type="file" [disabled]="isNeedAutoRefreshImageList">
+          ﻿<input type="file"
+                  class="base-input"
+                  [disabled]="isNeedAutoRefreshImageList"
+                  (change)="uploadFile($event)"
+                  placeholder="Upload file"
+                  accept="*.*">
         </div>
-        <div class="create-image-line-container">
-          <label class="base-text"></label>
-          <button class="btn default-primary" [disabled]="isNeedAutoRefreshImageList">
-            {{"SERVICE.STEP_2_UPLOAD" | translate}}
-          </button>
-          <button class="btn default-primary" [disabled]="isNeedAutoRefreshImageList">{{"Empty" | translate}}</button>
+        <div style="margin-left: 200px;font-size: 10px" *ngFor="let file of filesList.get(outputData.image_name)">
+          <clr-icon class="dynamic-icon" shape="minus"></clr-icon>{{file.file_name}}
         </div>
         <div class="create-image-area-container">
           <label for="areaCommand" class="base-text">{{"SERVICE.STEP_2_COMMAND" | translate}}:</label>

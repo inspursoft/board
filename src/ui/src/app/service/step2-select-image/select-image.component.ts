@@ -4,6 +4,7 @@ import { K8sService } from '../service.k8s';
 import { MessageService } from "../../shared/message-service/message.service";
 import { Image, ImageDetail } from "../../image/image";
 import { AppInitService } from "../../app.init.service";
+import { Message } from "../../shared/message-service/message";
 
 enum ImageSource{
   fromBoardRegistry,
@@ -25,6 +26,7 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
   imageDetailSelectList: Map<string, ImageDetail>;
   imageTemplateList: Array<Object> = [{name: "Docker File Template"}];
   outputData: ServiceStep2Output = new ServiceStep2Output();
+  filesList: Map<string, Array<{path: string, file_name: string, size: number}>>;
 
   constructor(private k8sService: K8sService,
               private messageService: MessageService,
@@ -32,6 +34,7 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
     this.imageSelectList = Array<Image>();
     this.imageDetailSelectList = new Map<string, ImageDetail>();
     this.imageDetailSourceList = new Map<string, Array<ImageDetail>>();
+    this.filesList = new Map<string, Array<{path: string, file_name: string, size: number}>>();
   }
 
   ngOnInit() {
@@ -121,6 +124,32 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
 
   get imageVolume(): Array<string> {
     return this.outputData.image_dockerfile.image_volume;
+  }
+
+  uploadFile(event): void {
+    let fileList: FileList = event.target.files;
+    if (fileList.length > 0) {
+      let file: File = fileList[0];
+      let formData: FormData = new FormData();
+      formData.append('upload_file', file, file.name);
+      formData.append('project_name', this.outputData.project_name);
+      formData.append('image_name', this.outputData.image_name);
+      formData.append('tag_name', this.outputData.image_tag);
+      this.k8sService.uploadFile(formData).then(res => {
+        event.target.value = "";
+        let m: Message = new Message();
+        m.message = "SERVICE.STEP_2_UPLOAD_SUCCESS";
+        this.messageService.inlineAlertMessage(m);
+
+        let formDataList: FormData = new FormData();
+        formDataList.append('project_name', this.outputData.project_name);
+        formDataList.append('image_name', this.outputData.image_name);
+        formDataList.append('tag_name', this.outputData.image_tag);
+        this.k8sService.getFileList(formDataList).then(res => {
+          this.filesList.set(this.outputData.image_name, res);
+        }).catch(err => this.messageService.dispatchError(err));
+      }).catch(err => this.messageService.dispatchError(err));
+    }
   }
 
   isImageDetailExist(image: Image): boolean {
