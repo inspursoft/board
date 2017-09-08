@@ -45,6 +45,30 @@ export class K8sService {
       .catch(err => Promise.reject(err));
   }
 
+  getFileList(formData: FormData): Promise<Array<{path: string, file_name: string, size: number}>> {
+    let headers = new Headers();
+    headers.append('token', this.appInitService.token);
+    let options = new RequestOptions({headers: headers});
+    return this.http.post(`/api/v1/files/list`, formData, options).toPromise()
+      .then(resp => {
+        this.appInitService.chainResponse(resp);
+        return resp.json();
+      })
+      .catch(err => Promise.reject(err));
+  }
+
+  uploadFile(formData: FormData): Promise<boolean> {
+    let headers = new Headers();
+    headers.append('token', this.appInitService.token);
+    let options = new RequestOptions({headers: headers});
+    return this.http.post(`/api/v1/files/upload`, formData, options).toPromise()
+      .then(resp => {
+        this.appInitService.chainResponse(resp);
+        return resp.status == 200;
+      })
+      .catch(err => Promise.reject(err));
+  }
+
   getStepData(step: number): Object {
     return this.stepData.get(step);
   }
