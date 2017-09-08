@@ -1,0 +1,17 @@
+<clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'md'">
+  <fieldset class=" modal-body fieldSet-default" style="margin-bottom: 20px">
+    <legend class="legend-default">{{"Environment Value" | translate}}:</legend>
+    <div class="hide-error-msg">
+      <clr-alert (clrAlertClosedChange)="isAlertOpen = false"
+                 [clrAlertClosed]="!isAlertOpen"
+                 [clrAlertType]="'alert-danger'">
+        <div class="alert-item">
+          <span class="alert-text">{{afterCommitErr | translate}}</span>
+        </div>
+      </clr-alert>
+    </div>
+    <div style="display: flex;width: 100%;flex-direction: column;margin-bottom: 10px;">
+
+    </div>
+  </fieldset>
+</clr-modal>

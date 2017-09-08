@@ -1,3 +1,4 @@
-<!--<service-group [serviceSteps]="serviceSteps"></service-group>-->
-
-<ng-template service-host></ng-template>
+<div *ngIf="currentStepIndex>0">
+  <service-wizard [step]="currentStepIndex"></service-wizard>
+</div>
+<ng-template  service-host></ng-template>

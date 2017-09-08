@@ -1,12 +1,10 @@
-
 export class Image {
-  image_name: string = "";
-  image_comment: string = "";
+   image_name:string = "";
+   image_comment:string = "";
 
   constructor() {
   }
 }
-
 
 export class ImageDetail {
   image_name: string = "";
@@ -15,6 +13,7 @@ export class ImageDetail {
   image_creationtime: string;
   image_size_number: number;
   image_size_unit: string = "MB";
+
   constructor() {
   }
 }

@@ -1,0 +1,30 @@
+<div style="display: flex; align-items: center; width: 100%;height: 30px;">
+  <label for="fieldInput" style="flex-basis: 170px;text-align: right">{{labelText}}</label>
+  <span *ngIf="curField.status == 0"
+        style="flex-basis: 300px;text-align: left;margin-left: 30px">
+        {{curField.value}}
+  </span>
+  <input *ngIf="curField.status == 1 && curFieldType == 0"
+         type="text"
+         id="fieldInput"
+         style="flex-basis: 300px;text-align: left;margin-left: 30px"
+         [(ngModel)]="curField.value">
+  <a *ngIf="curField.status == 0"
+     style="margin-left: 15px;"
+     (click)="onEditIconClick()"
+     href="javascript:void(0)">
+    <clr-icon shape="note"></clr-icon>
+  </a>
+  <a *ngIf="curField.status == 1 && curFieldType == 0"
+     href="javascript:void(0)"
+     style="margin-left: 15px;"
+     (click)="curField.status = 0">
+    <clr-icon shape="check"></clr-icon>
+  </a>
+  <a *ngIf="curField.status == 1 && curFieldType == 0"
+     href="javascript:void(0)"
+     style="margin-left: 15px;"
+     (click)="curField.value=curField.defaultValue; curField.status = 0">
+    <clr-icon shape="refresh"></clr-icon>
+  </a>
+</div>

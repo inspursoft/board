@@ -1,0 +1,122 @@
+div.service-wizard-container {
+  height: 70px; /*fixed height*/
+  display: flex;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+}
+
+div.step-session-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+div.step-graphics-container {
+  display: flex;
+  align-items: flex-end;
+  height: 20%;
+  width: 100%;
+}
+
+div.step-circle {
+  border: solid 2px gray;
+  background-color: white;
+  height: 20px;
+  width: 20px;
+  z-index: 3;
+  border-radius: 10px;
+  margin-bottom: -10px;
+}
+
+div.step-circle.active {
+  border-color: transparent;
+  background-color:#004A70;
+}
+
+div.step-circle.complete {
+  border-color: transparent;
+  background-color: darkgreen;
+}
+
+div.step-arrow {
+  border: 8px solid transparent;
+  border-left: 8px solid gray;
+  border-right: 0 solid transparent;
+  width: 0;
+  height: 0;
+  margin-bottom: -8px;
+}
+
+div.step-arrow.active {
+  border-left: 10px solid #004A70;
+}
+
+div.step-arrow.complete {
+  border-left: 10px solid darkgreen;
+}
+
+div.step-line {
+  height: 2px;
+  z-index: 2;
+  background-color: gray;
+  border-right: 0;
+  border-left: 0;
+  margin-bottom: -1px;
+}
+
+div.step-line.active {
+  background-color: #004A70;
+}
+
+div.step-line.complete {
+  background-color: darkgreen;
+}
+
+div.step-line.start {
+  width: -webkit-calc(50% - 5px);
+  width: -moz-calc(50% - 5px);
+  width: calc(50% - 5px);
+}
+
+div.step-line.start.right {
+  margin-left: -5px;
+}
+
+div.step-line.start.left {
+  border-color: transparent;
+  background-color: transparent;
+  margin-right: -5px;
+}
+
+div.step-line.middle {
+  width: -webkit-calc(50% - 14px);
+  width: -moz-calc(50% - 14px);
+  width: calc(50% - 14px);
+}
+
+div.step-line.middle.right {
+  width: -webkit-calc(50% - 9px);
+  width: -moz-calc(50% - 9px);
+  width: calc(50% - 9px);
+  margin-left: -5px;
+}
+
+div.step-line.end {
+  width: -webkit-calc(50% - 5px);
+  width: -moz-calc(50% - 5px);
+  width: calc(50% - 5px);
+}
+
+div.step-line.end.left {
+  margin-right: -5px;
+}
+
+div.step-line.end.right {
+  border-color: transparent;
+  background-color: transparent;
+}
+
+span.step-text{
+  text-align: center;
+}

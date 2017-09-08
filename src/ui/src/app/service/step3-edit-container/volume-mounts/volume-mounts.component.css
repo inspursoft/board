@@ -1,0 +1,11 @@
+fieldset.fieldSet-default {
+  margin: 0 2px;
+  border: 1px solid silver;
+}
+
+legend.legend-default {
+  padding: .5em;
+  border: 0;
+  width: auto;
+  margin-left: 30px;
+}

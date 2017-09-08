@@ -1,0 +1,29 @@
+<div>
+  <clr-dropdown #csDropdown>
+    <div clrDropdownToggle
+         class="cs-dropdown-title-container"
+         style="padding-right: 0"
+         [ngStyle]="{'width':dropdownWidth + 'px'}">
+      <span class="cs-dropdown-title" [ngClass]="{dropdownDisabled:'disabled'}">{{ dropdownText | translate}}</span>
+      <div class="cs-dropdown-icon-container" *ngIf="dropdownList && dropdownList.length > 0 && !dropdownDisabled">
+        <div style="width: 20px;height: 20px;"
+             [ngClass]="{'cs-dropdown-open':csDropdown.open,'cs-dropdown-close':!csDropdown.open}">
+          <clr-icon shape="caret up" style="width: 20px;height: 20px;color: darkgreen;"></clr-icon>
+        </div>
+      </div>
+    </div>
+    <clr-dropdown-menu [hidden]="!dropdownList|| dropdownList.length == 0 || dropdownDisabled"
+                       [ngStyle]="{'width':dropdownWidth + 30 + 'px'}"
+                       class="cs-dropdown-menu">
+      <button *ngFor="let item of dropdownList;"
+              class="dropdown-item"
+              [ngClass]="{'active':dropdownText== item[dropdownListTextKey]}"
+              (click)="changeSelect(item);csDropdown.toggleDropdown()">
+        {{item[dropdownListTextKey]}}
+      </button>
+    </clr-dropdown-menu>
+  </clr-dropdown>
+</div>
+
+
+

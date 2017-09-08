@@ -6,7 +6,7 @@ import 'rxjs/add/operator/toPromise';
 
 export enum LineType {ltService, ltNode, ltStorage}
 export type LineDataModel = [Date, number];
-export type LinesData = [LineDataModel[], LineDataModel[]];
+export type LinesData = [LineDataModel[], LineDataModel[], LineDataModel[]];
 
 export interface LineListQueryModel {
   readonly query_name_Key: string;
@@ -157,7 +157,7 @@ export class DashboardService {
         let resJson: Object = res.json();
         let dataLogs: Array<Object> = resJson[lineNameMap.data_filed_key];
         let dataListLogs: Array<Object> = resJson[lineNameMap.data_list_filed_key];
-        let resultData: LinesData = [Array<[Date, number]>(0), Array<[Date, number]>(0)];
+        let resultData: LinesData = [Array<[Date, number]>(0), Array<[Date, number]>(0),Array<[Date, number]>(0)];
         let resultList: Array<LineListDataModel> = new Array<LineListDataModel>(0);
         if (dataLogs && dataLogs.length > 0) {//for data
           let multiple: number = 1;
@@ -178,6 +178,8 @@ export class DashboardService {
             });
           });
         }
+        resultData[2].push([new Date(query.timestamp_base * 1000), 0.5]);
+        resultData[2].push([new Date(query.service_duration_time * 1000), 0.5]);
         return {
           List: resultList, Data: resultData,
           CurListName: resJson[lineNameMap.data_list_cur_name],

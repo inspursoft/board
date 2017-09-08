@@ -1,0 +1,17 @@
+
+.drop-down-open{
+  -ms-transform:rotate(-180deg); /* IE 9 */
+  -moz-transform:rotate(-180deg); /* Firefox */
+  -webkit-transform:rotate(-180deg); /* Safari and Chrome */
+  -o-transform:rotate(-180deg); /* Opera */
+  transform:rotate(-180deg);
+  -moz-transition-duration: 5s; /* Firefox 4 */
+  -webkit-transition-duration: 5s; /* Safari 和 Chrome */
+  -o-transition-duration: 5s; /* Opera */
+  transition-duration: 0.5s;
+}
+
+.drop-down-close{
+  transform:rotate(-0deg);
+  transition-duration: 0.5s;
+}
