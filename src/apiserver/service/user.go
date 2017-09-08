@@ -4,10 +4,13 @@ import (
 	"errors"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
 	"log"
 )
 
 func SignUp(user model.User) (bool, error) {
+	user.Salt = utils.GenerateRandomString()
+	user.Password = utils.Encrypt(user.Password, user.Salt)
 	userID, err := dao.AddUser(user)
 	if err != nil {
 		return false, err
@@ -17,11 +20,16 @@ func SignUp(user model.User) (bool, error) {
 
 func SignIn(principal string, password string) (*model.User, error) {
 	query := model.User{Username: principal, Password: password}
-	user, err := dao.GetUser(query, "username", "password")
+	user, err := dao.GetUser(query, "username")
 	if err != nil {
 		log.Printf("Failed to get user in SignIn: %+v\n", err)
 		return nil, err
 	}
+	if user == nil {
+		return nil, nil
+	}
+	query.Password = utils.Encrypt(query.Password, user.Salt)
+	user, err = dao.GetUser(query, "username", "password")
 	return user, nil
 }
 

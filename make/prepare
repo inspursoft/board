@@ -139,7 +139,8 @@ render(os.path.join(templates_dir, "apiserver", "app.conf"),
 render(os.path.join(templates_dir, "apiserver", "env"),
         apiserver_env,
         registry_host=registry_host,
-        registry_port=registry_port)
+        registry_port=registry_port,
+        board_admin_password=board_admin_password)
 
 render(os.path.join(templates_dir, "tokenserver", "app.conf"),
         tokenserver_conf,

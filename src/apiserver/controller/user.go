@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"strconv"
 	"strings"
@@ -124,6 +125,9 @@ func (u *UserController) ChangePasswordAction() {
 		u.internalError(err)
 		return
 	}
+
+	changePassword.OldPassword = utils.Encrypt(changePassword.OldPassword, u.currentUser.Salt)
+
 	if changePassword.OldPassword != user.Password {
 		u.CustomAbort(http.StatusForbidden, "Old password input is incorrect.")
 		return
@@ -134,7 +138,7 @@ func (u *UserController) ChangePasswordAction() {
 	}
 	updateUser := model.User{
 		ID:       user.ID,
-		Password: changePassword.NewPassword,
+		Password: utils.Encrypt(changePassword.NewPassword, u.currentUser.Salt),
 	}
 	isSuccess, err := service.UpdateUser(updateUser, "password")
 	if err != nil {
