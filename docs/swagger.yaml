@@ -1344,7 +1344,7 @@ paths:
           description: Invalid image name.
         500:
           description: Internal errors.   
-  /v1/images/clean:
+  /v1/images/configclean:
     delete:
       summary: Delete this image configuration.
       description: |
