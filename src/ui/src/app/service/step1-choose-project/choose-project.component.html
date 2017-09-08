@@ -1,2 +1,29 @@
-<h3>{{ data.title }}</h3>
+<div class="select-project-container">
+  <div class="select-container">
+    <span class="filed-text">{{"SERVICE.STEP_TITLE_1"|translate}}:</span>
+    <clr-dropdown #selectProjectDropdown>
+      <button class="btn btn-outline-primary dropdown-button select-project custom-margin" clrDropdownToggle>
+        {{dropdownText | translate}}
+        <span *ngIf="getProjectIng" class="spinner spinner-sm"></span>
+        <clr-icon *ngIf="projectsList && projectsList.length > 0" shape="caret down"></clr-icon>
+      </button>
+      <clr-dropdown-menu [hidden]="!projectsList|| projectsList.length == 0"
+                         class="dropdown-menu custom-margin">
+        <button *ngFor="let project of projectsList;"
+                class="dropdown-item"
+                [ngClass]="{'active':dropdownText == project.project_name}"
+                (click)="selectProject(project);selectProjectDropdown.toggleDropdown()">
+          {{project.project_name}}
+        </button>
+      </clr-dropdown-menu>
+    </clr-dropdown>
+    <span class="custom-margin">{{"SERVICE.STEP_1_SELECT_DES"|translate}}</span>
+  </div>
+  <div class="select-container">
+    <span class="filed-text">{{"SERVICE.STEP_1_CREATE_PROJECT"|translate}}:</span>
+    <button class="btn btn-primary custom-margin" (click)="redirectToCreateProject()">
+      {{"SERVICE.STEP_1_CREATE_PROJECT"|translate}}
+    </button>
+  </div>
+</div>
 <button class="btn btn-default" (click)="forward()">Next</button>

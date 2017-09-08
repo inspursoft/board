@@ -60,22 +60,25 @@
     <div class="card-header">{{'DASHBOARD.SERVICE' | translate }}</div>
     <div class="card-block">
       <div class="card-block-top-container">
-        <clr-dropdown #serviceDropdown>
-          <button class="btn btn-outline-primary dropdown-button" clrDropdownToggle>
-            {{DropdownText.get(0) | translate}}
-            <span *ngIf="DropdownText.get(0) == ''" class="spinner spinner-sm"></span>
-            <clr-icon *ngIf="LineNamesList.get(0) && LineNamesList.get(0).length > 0" shape="caret down"></clr-icon>
-          </button>
-          <clr-dropdown-menu [hidden]="!LineNamesList.get(0) || LineNamesList.get(0).length == 0"
-                             class="card-block-dropdown">
-            <button *ngFor="let lineList of LineNamesList.get(0);"
-                    [ngClass]="{'active':DropdownText.get(0) == lineList.list_name}"
-                    class="dropdown-item"
-                    (click)="dropDownChange(0,lineList);serviceDropdown.toggleDropdown()">
-              {{lineList.list_name}}
+        <div>
+          <clr-dropdown #serviceDropdown>
+            <button class="btn btn-outline-primary dropdown-button" clrDropdownToggle>
+              {{DropdownText.get(0) | translate}}
+              <span *ngIf="DropdownText.get(0) == ''" class="spinner spinner-sm"></span>
+              <clr-icon *ngIf="LineNamesList.get(0) && LineNamesList.get(0).length > 0" shape="caret down"></clr-icon>
             </button>
-          </clr-dropdown-menu>
-        </clr-dropdown>
+            <clr-dropdown-menu [hidden]="!LineNamesList.get(0) || LineNamesList.get(0).length == 0"
+                               class="card-block-dropdown">
+              <button *ngFor="let lineList of LineNamesList.get(0);"
+                      [ngClass]="{'active':DropdownText.get(0) == lineList.list_name}"
+                      class="dropdown-item"
+                      (click)="dropDownChange(0,lineList);serviceDropdown.toggleDropdown()">
+                {{lineList.list_name}}
+              </button>
+            </clr-dropdown-menu>
+          </clr-dropdown>
+        </div>
+
         <div class="caption_container">
           <span class="first-line">{{ 'DASHBOARD.PODS' | translate }}:{{CurValue.get(0)?.curFirst}}</span>
           <span class="second-line">{{ 'DASHBOARD.CONTAINERS' | translate }}:{{CurValue.get(0)?.curSecond}}</span>
@@ -96,6 +99,7 @@
                (chartInit)="onEChartInit(0,$event)"
                [options]="LineOptions.get(0)"
                [dataset]="LineData.get(0)"
+               (mousedown)="chartMouseDown(0,$event)"
                (chartDataZoom)="chartDataZoom(0,$event)"
                style="height: 300px">
           </div>
@@ -110,22 +114,24 @@
     <div class="card-header">{{'DASHBOARD.NODE' | translate }}</div>
     <div class="card-block">
       <div class="card-block-top-container">
-        <clr-dropdown #nodeDropdown>
-          <button class="btn btn-outline-primary dropdown-button" clrDropdownToggle>
-            {{DropdownText.get(1) | translate}}
-            <span *ngIf="DropdownText.get(1) == ''" class="spinner spinner-sm"></span>
-            <clr-icon *ngIf="LineNamesList.get(1) && LineNamesList.get(1).length > 0" shape="caret down"></clr-icon>
-          </button>
-          <clr-dropdown-menu [hidden]="!LineNamesList.get(1) || LineNamesList.get(1).length == 0"
-                             class="card-block-dropdown">
-            <button *ngFor="let lineList of LineNamesList.get(1);"
-                    [ngClass]="{'active':DropdownText.get(1) == lineList.list_name}"
-                    class="dropdown-item"
-                    (click)="dropDownChange(1,lineList);nodeDropdown.toggleDropdown()">
-              {{lineList.list_name}}
+        <div>
+          <clr-dropdown #nodeDropdown>
+            <button class="btn btn-outline-primary dropdown-button" clrDropdownToggle>
+              {{DropdownText.get(1) | translate}}
+              <span *ngIf="DropdownText.get(1) == ''" class="spinner spinner-sm"></span>
+              <clr-icon *ngIf="LineNamesList.get(1) && LineNamesList.get(1).length > 0" shape="caret down"></clr-icon>
             </button>
-          </clr-dropdown-menu>
-        </clr-dropdown>
+            <clr-dropdown-menu [hidden]="!LineNamesList.get(1) || LineNamesList.get(1).length == 0"
+                               class="card-block-dropdown">
+              <button *ngFor="let lineList of LineNamesList.get(1);"
+                      [ngClass]="{'active':DropdownText.get(1) == lineList.list_name}"
+                      class="dropdown-item"
+                      (click)="dropDownChange(1,lineList);nodeDropdown.toggleDropdown()">
+                {{lineList.list_name}}
+              </button>
+            </clr-dropdown-menu>
+          </clr-dropdown>
+        </div>
         <div class="caption_container">
           <span class="first-line">{{ 'DASHBOARD.CPU' | translate }}:{{CurValue.get(1)?.curFirst}}%</span>
           <span class="second-line">{{ 'DASHBOARD.MEMORY' | translate }}:{{CurValue.get(1)?.curSecond}}%</span>
@@ -145,6 +151,7 @@
           <div echarts
                (chartInit)="onEChartInit(1,$event)"
                [options]="LineOptions.get(1)"
+               (mousedown)="chartMouseDown(1,$event)"
                [dataset]="LineData.get(1)"
                (chartDataZoom)="chartDataZoom(1,$event)"
                style="height: 300px">
@@ -160,22 +167,24 @@
     <div class="card-header">{{'DASHBOARD.STORAGE' | translate }}</div>
     <div class="card-block">
       <div class="card-block-top-container">
-        <clr-dropdown #storageDropdown>
-          <button class="btn btn-outline-primary dropdown-button" clrDropdownToggle>
-            {{DropdownText.get(2) | translate}}
-            <span *ngIf="DropdownText.get(2) == ''" class="spinner spinner-sm"></span>
-            <clr-icon *ngIf="LineNamesList.get(2) && LineNamesList.get(2).length > 0" shape="caret down"></clr-icon>
-          </button>
-          <clr-dropdown-menu [hidden]="!LineNamesList.get(2) || LineNamesList.get(2).length == 0"
-                             class="card-block-dropdown">
-            <button *ngFor="let lineList of LineNamesList.get(2);"
-                    [ngClass]="{'active':DropdownText.get(2) == lineList.list_name}"
-                    class="dropdown-item"
-                    (click)="dropDownChange(2,lineList);storageDropdown.toggleDropdown()">
-              {{lineList.list_name}}
+        <div>
+          <clr-dropdown #storageDropdown>
+            <button class="btn btn-outline-primary dropdown-button" clrDropdownToggle>
+              {{DropdownText.get(2) | translate}}
+              <span *ngIf="DropdownText.get(2) == ''" class="spinner spinner-sm"></span>
+              <clr-icon *ngIf="LineNamesList.get(2) && LineNamesList.get(2).length > 0" shape="caret down"></clr-icon>
             </button>
-          </clr-dropdown-menu>
-        </clr-dropdown>
+            <clr-dropdown-menu [hidden]="!LineNamesList.get(2) || LineNamesList.get(2).length == 0"
+                               class="card-block-dropdown">
+              <button *ngFor="let lineList of LineNamesList.get(2);"
+                      [ngClass]="{'active':DropdownText.get(2) == lineList.list_name}"
+                      class="dropdown-item"
+                      (click)="dropDownChange(2,lineList);storageDropdown.toggleDropdown()">
+                {{lineList.list_name}}
+              </button>
+            </clr-dropdown-menu>
+          </clr-dropdown>
+        </div>
         <div class="caption_container">
           <span
             class="first-line">{{ 'DASHBOARD.USAGE' | translate }}:{{CurValue.get(2)?.curFirst}}{{StorageUnit}}</span>
@@ -196,6 +205,7 @@
           </div>
           <div echarts
                (chartInit)="onEChartInit(2,$event)"
+               (mousedown)="chartMouseDown(2,$event)"
                [options]="LineOptions.get(2)"
                [dataset]="LineData.get(2)"
                (chartDataZoom)="chartDataZoom(2,$event)"

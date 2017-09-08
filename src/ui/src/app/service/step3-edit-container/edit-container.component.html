@@ -1,2 +1,54 @@
-<h3>{{ data.title }}</h3>
+<div style="border: solid 1px silver;  width: 100%;display: flex;flex-direction: column;padding: 15px">
+  <volume-mounts *ngIf="showVolumeMounts" [(isOpen)]="showVolumeMounts"></volume-mounts>
+  <environment-value *ngIf="showEnvironmentValue" [(isOpen)]="showEnvironmentValue"></environment-value>
+  <span>Select container for compose:</span>
+  <div style="display: flex;width: 100%;align-items: center;flex-direction: column"
+       *ngFor="let container of containerList;let i = index">
+    <div style="width: 100%;display: flex;margin-top: 10px">
+      <clr-icon *ngIf="i == containerList.length - 1 && container.status == 1"
+                style="color: white;background: green;width: 20px;height: 20px;border-radius: 5px;cursor: pointer;"
+                shape="plus"
+                (click)="modifySelectContainer(i)"></clr-icon>
+      <clr-icon *ngIf="i < containerList.length - 1"
+                shape="minus"
+                style="color: white;background: green;width: 20px;height: 20px;border-radius: 5px;cursor: pointer;"
+                (click)="modifySelectContainer(i)"></clr-icon>
+      <span style="flex-basis: 150px;text-align: right"
+            [ngStyle]="{'margin-left':container.status == 0 ?'20px':'0'}">
+        {{container.status == 1 ?"Container":"Add New Container"}}:
+      </span>
+      <cs-dropdown style="margin-left: 30px"
+                   [width]="250"
+                   [list]="imageSourceList"
+                   [defaultText]="'Select Image...'"
+                   [textKey]="'image_name'"
+                   (onChange)="changeSelectImage(container, $event)">
+      </cs-dropdown>
+    </div>
+    <div *ngIf="container.status == 1" style="display: flex;width: 100%; flex-direction: column; margin-top: 10px">
+      <container-field [Label]="'Container Name:'"
+                       [Field]="getDetail(container)?.containerName"></container-field>
+      <container-field [Label]="'Working Dir:'"
+                       [Field]="getDetail(container)?.workingDir"></container-field>
+      <container-field [Label]="'Volume Mounts:'"
+                       [Type]="1"
+                       [Field]="getDetail(container)?.volumeMounts"
+                       (OnEdit)="showVolumeMounts = true"></container-field>
+      <container-field [Label]="'Env:'"
+                       [Type]="1"
+                       [Field]="getDetail(container)?.env"
+                       (OnEdit)="showEnvironmentValue = true"></container-field>
+      <container-field [Label]="'Container Port:'"
+                       [Field]="getDetail(container).containerPort"></container-field>
+      <container-field [Label]="'Command:'"
+                       [Field]="getDetail(container).command"></container-field>
+      <container-field [Label]="'CPU:'"
+                       [Field]="getDetail(container).cpu"></container-field>
+      <container-field [Label]="'Memory:'"
+                       [Field]="getDetail(container).memory"></container-field>
+    </div>
+  </div>
+</div>
+
+
 <button class="btn btn-default" (click)="forward()">Next</button>

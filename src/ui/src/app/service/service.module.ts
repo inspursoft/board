@@ -13,8 +13,13 @@ import { SelectImageComponent } from './step2-select-image/select-image.componen
 import { EditContainerComponent } from './step3-edit-container/edit-container.component';
 import { ConfigSettingComponent } from './step4-config-setting/config-setting.component';
 import { DeployTestingComponent } from './step5-deploy-testing/deploy-testing.component';
+import { ServiceWizardComponent } from "./service-wizard/service-wizard.component";
+import { ContainerFieldComponent } from "./step3-edit-container/container-field/container-field.component";
+import { VolumeMountsComponent } from "./step3-edit-container/volume-mounts/volume-mounts.component";
 
 import { DynamicFormModule } from '../shared/dynamic-form/dynamic-form.module';
+import { EnvironmentValueComponent } from "./step3-edit-container/environment-value/environment-value.component";
+import { CsDropdownComponent } from "./cs-dropdown/cs-dropdown.component";
 
 @NgModule({
   imports: [
@@ -29,7 +34,12 @@ import { DynamicFormModule } from '../shared/dynamic-form/dynamic-form.module';
     SelectImageComponent,
     EditContainerComponent,
     ConfigSettingComponent,
-    DeployTestingComponent
+    DeployTestingComponent,
+    ServiceWizardComponent,
+    ContainerFieldComponent,
+    CsDropdownComponent,
+    VolumeMountsComponent,
+    EnvironmentValueComponent
   ],
   entryComponents: [
     ListServiceComponent,

@@ -1,0 +1,35 @@
+div.select-project-container {
+  display: flex;
+  width: 100%;
+  height: 200px; /*fixed height*/
+  flex-direction: column;
+}
+
+div.select-container {
+  flex-basis: 50%;
+  display: flex;
+  align-items: center;
+}
+
+span.filed-text {
+  text-align: right;
+  flex-basis: 200px;
+}
+
+button.select-project {
+  min-width: 150px;
+}
+
+.custom-margin {
+  margin-left: 20px;
+}
+
+.dropdown-menu {
+  overflow-y: scroll;
+  width: 250px;
+}
+
+.dropdown-item {
+  min-height: 30px;
+}
+

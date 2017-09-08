@@ -7,7 +7,6 @@ import { K8sService } from '../service.k8s';
 })
 export class ConfigSettingComponent implements ServiceStepComponent {
   @Input() data: any;
-
   constructor(private k8sService: K8sService){}
 
   forward(): void {

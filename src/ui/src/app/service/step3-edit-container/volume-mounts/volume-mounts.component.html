@@ -1,0 +1,62 @@
+<clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'md'">
+  <fieldset class=" modal-body fieldSet-default" style="margin-bottom: 20px">
+    <legend class="legend-default">{{"Volume Mounts" | translate}}:</legend>
+    <div class="hide-error-msg">
+      <clr-alert (clrAlertClosedChange)="isAlertOpen = false"
+                 [clrAlertClosed]="!isAlertOpen"
+                 [clrAlertType]="'alert-danger'">
+        <div class="alert-item">
+          <span class="alert-text">{{afterCommitErr | translate}}</span>
+        </div>
+      </clr-alert>
+    </div>
+    <div style="display: flex;width: 100%;flex-direction: column;margin-bottom: 10px;">
+      <div style="height: 50px;display: flex;align-items: center;margin-top: 10px">
+        <span style="width: 150px;text-align: right">Target Storage:</span>
+        <clr-dropdown #selectStorageDropdown>
+          <div class="dropdown" clrDropdownToggle
+               style=" border: solid 1px silver; border-radius: 5px; margin-left: 30px;display: flex;
+             height: 30px; justify-content: flex-end; align-items: center; padding-right: 0">
+          <span style="width: 250px; text-overflow: ellipsis;white-space: nowrap;overflow: hidden">
+            {{"Select Storage..."| translate}}</span>
+            <div style="flex-basis: 20px;height: 100%;display: flex;justify-content: center;align-items: center"
+                 *ngIf="false">
+              <div style="width: 20px;height: 20px;"
+                   [ngClass]="{'drop-down-open':selectStorageDropdown.open,'drop-down-close':!selectStorageDropdown.open}">
+                <clr-icon style="width: 20px;height: 20px; color: darkgreen;" shape="caret up"></clr-icon>
+              </div>
+            </div>
+          </div>
+          <clr-dropdown-menu [hidden]="true"
+                             style="margin-left: 30px;width: 280px"
+                             class="dropdown-menu">
+            <!--<button *ngFor="let image of imageSourceList;"-->
+                    <!--class="dropdown-item"-->
+                    <!--[ngClass]="{'active':container.image?.image_name== image.image_name}"-->
+                    <!--(click)="changeSelectImage(container,image);selectContainerDropdown.toggleDropdown()">-->
+              <!--{{image.image_name}}-->
+            <!--</button>-->
+          </clr-dropdown-menu>
+        </clr-dropdown>
+      </div>
+      <div style="height: 50px;display: flex;align-items: center;margin-top: 10px">
+        <label for="inputContainerDir" style="width: 150px;text-align: right">Container Dir:</label>
+        <input type="text" id="inputContainerDir" style=" margin-left: 30px;width: 200px" value="/export">
+        <a style="margin-left: 15px;" href="javascript:void(0)">
+          <clr-icon shape="note"></clr-icon>
+        </a>
+      </div>
+      <div style="height: 50px;display: flex;align-items: center;margin-top: 10px">
+        <label for="inputTargetDir" style="width: 150px;text-align: right">Target Dir:</label>
+        <input type="text" id="inputTargetDir" style=" margin-left: 30px;width: 200px" value="/service001/data">
+        <a style="margin-left: 15px;" href="javascript:void(0)">
+          <clr-icon shape="note"></clr-icon>
+        </a>
+      </div>
+      <div style="height: 100px;display: flex;align-items: center;margin-top: 10px;justify-content: flex-end">
+        <button style="margin-right: 30px;" class="btn btn-primary">Confirm</button>
+      </div>
+    </div>
+
+  </fieldset>
+</clr-modal>

@@ -1,0 +1,54 @@
+<div class="service-wizard-container">
+  <div class="step-session-container">
+    <div class="step-graphics-container">
+      <div class="step-line start left"></div>
+      <div class="step-circle" [ngClass]="{complete:curStep > 1,active:curStep==1}"></div>
+      <div class="step-line start right" [ngClass]="{complete:curStep > 2,active:curStep==2}"></div>
+    </div>
+    <span class="step-text">{{"SERVICE.STEP_TITLE_1"|translate}}</span>
+  </div>
+  <div class="step-session-container">
+    <div class="step-graphics-container">
+      <div class="step-line middle" [ngClass]="{complete:curStep > 2,active:curStep==2}"></div>
+      <div class="step-arrow" [ngClass]="{complete:curStep > 2,active:curStep==2}"></div>
+      <div class="step-circle" [ngClass]="{complete:curStep > 2,active:curStep==2}"></div>
+      <div class="step-line middle right" [ngClass]="{complete:curStep > 3,active:curStep==3}"></div>
+    </div>
+    <span class="step-text">{{"SERVICE.STEP_TITLE_2"|translate}}</span>
+  </div>
+  <div class="step-session-container">
+    <div class="step-graphics-container">
+      <div class="step-line middle" [ngClass]="{complete:curStep > 3,active:curStep==3}"></div>
+      <div class="step-arrow" [ngClass]="{complete:curStep > 3,active:curStep==3}"></div>
+      <div class="step-circle" [ngClass]="{complete:curStep > 3,active:curStep==3}"></div>
+      <div class="step-line middle right" [ngClass]="{complete:curStep > 4,active:curStep==4}"></div>
+    </div>
+    <span class="step-text">{{"SERVICE.STEP_TITLE_3"|translate}}</span>
+  </div>
+  <div class="step-session-container">
+    <div class="step-graphics-container">
+      <div class="step-line middle" [ngClass]="{complete:curStep > 4,active:curStep==4}"></div>
+      <div class="step-arrow" [ngClass]="{complete:curStep > 4,active:curStep==4}"></div>
+      <div class="step-circle" [ngClass]="{complete:curStep > 4,active:curStep==4}"></div>
+      <div class="step-line middle right" [ngClass]="{complete:curStep > 5,active:curStep==5}"></div>
+    </div>
+    <span class="step-text">{{"SERVICE.STEP_TITLE_4"|translate}}</span>
+  </div>
+  <div class="step-session-container">
+    <div class="step-graphics-container">
+      <div class="step-line middle" [ngClass]="{complete:curStep > 5,active:curStep==5}"></div>
+      <div class="step-arrow" [ngClass]="{complete:curStep > 5,active:curStep==5}"></div>
+      <div class="step-circle" [ngClass]="{complete:curStep > 5,active:curStep==5}"></div>
+      <div class="step-line middle right" [ngClass]="{complete:curStep > 6,active:curStep==6}"></div>
+    </div>
+    <span class="step-text">{{"SERVICE.STEP_TITLE_5"|translate}}</span>
+  </div>
+  <div class="step-session-container">
+    <div class="step-graphics-container">
+      <div class="step-line end left" [ngClass]="{complete:curStep > 6,active:curStep==6}"></div>
+      <div class="step-circle" [ngClass]="{complete:curStep > 6,active:curStep==6}"></div>
+      <div class="step-line end right"></div>
+    </div>
+    <span class="step-text">{{"SERVICE.STEP_TITLE_6"|translate}}</span>
+  </div>
+</div>
