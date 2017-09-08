@@ -1,3 +1,4 @@
 REGISTRY_HOST=$registry_host
 REGISTRY_PORT=$registry_port
+BOARD_ADMIN_PASSWORD=$board_admin_password
 
