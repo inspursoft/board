@@ -5,6 +5,10 @@ FROM {{.Base}}
 {{end}}{{end -}}
 {{if .Copy}}{{range .Copy}}COPY [ {{str2exec .CopyFrom}}, {{str2exec .CopyTo}} ]
 {{end}}{{end -}}
+{{if .EnvList}}{{range .EnvList}}ENV {{.EnvName}} {{.EnvValue}}
+{{end}}{{end -}}
+{{if .ExposePort}}{{range .ExposePort}}EXPOSE {{.}}
+{{end}}{{end -}}
 {{if .RUN}}{{range .RUN}}RUN {{.}}
 {{end}}{{end -}}
 {{if .EntryPoint}}ENTRYPOINT [ {{str2exec .EntryPoint}} ]

@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"git/inspursoft/board/src/common/model"
 	"io"
 	"os"
@@ -23,31 +24,44 @@ func str2execform(str string) string {
 	return strings.Join(sli, ", ")
 }
 
+func checkStringHasUpper(str ...string) error {
+	for _, node := range str {
+		isMatch, err := regexp.MatchString("[A-Z]", node)
+		if err != nil {
+			return err
+		}
+		if isMatch {
+			errString := fmt.Sprintf("string \"%s\" has upper charactor", node)
+			return errors.New(errString)
+		}
+	}
+	return nil
+}
+
+func checkStringHasEnter(str ...string) error {
+	for _, node := range str {
+		isMatch, err := regexp.MatchString("[\n][^$]", node)
+		if err != nil {
+			return err
+		}
+		if isMatch {
+			errString := fmt.Sprintf("string \"%s\" has enter charactor", node)
+			return errors.New(errString)
+		}
+	}
+	return nil
+}
+
 func CheckDockerfileConfig(config model.ImageConfig) error {
-	isMatch, err := regexp.MatchString("[A-Z]", config.ImageDockerfile.Base)
+	err := checkStringHasUpper(config.ImageDockerfile.Base, config.ImageName, config.ImageTag)
 	if err != nil {
 		return err
 	}
-	if isMatch {
-		return errors.New("dockerfile's baseimage name shouldn't contain upper character")
-	}
 
-	isMatch, err = regexp.MatchString("[A-Z]", config.ImageName)
+	err = checkStringHasEnter(config.ImageDockerfile.EntryPoint, config.ImageDockerfile.Command)
 	if err != nil {
 		return err
 	}
-	if isMatch {
-		return errors.New("docker image's name shouldn't contain upper character")
-	}
-
-	isMatch, err = regexp.MatchString("[A-Z]", config.ImageTag)
-	if err != nil {
-		return err
-	}
-	if isMatch {
-		return errors.New("docker image's tag shouldn't contain upper character")
-	}
-
 	return nil
 }
 
