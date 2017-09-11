@@ -140,7 +140,9 @@ render(os.path.join(templates_dir, "apiserver", "env"),
         apiserver_env,
         registry_host=registry_host,
         registry_port=registry_port,
-        board_admin_password=board_admin_password)
+        board_admin_password=board_admin_password,
+		kubernetes_apiserver_host=kubernetes_apiserver_host,
+		kubernetes_apiserver_port=kubernetes_apiserver_port)
 
 render(os.path.join(templates_dir, "tokenserver", "app.conf"),
         tokenserver_conf,
