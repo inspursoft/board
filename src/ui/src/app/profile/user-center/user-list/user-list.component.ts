@@ -99,10 +99,17 @@ export class UserList implements OnInit, OnDestroy {
       .then(() => {
         this.setUserSystemAdminIng = false;
         user.user_system_admin = userSystemAdmin;
+        let m: Message = new Message();
+        if (user.user_system_admin === 1) {
+          m.message = "USER_CENTER.SUCCESSFUL_SET_SYS_ADMIN";
+        } else {
+          m.message = "USER_CENTER.SUCCESSFUL_SET_NOT_SYS_ADMIN";
+        }
+        this.messageService.inlineAlertMessage(m);
       })
       .catch(err => {
         this.setUserSystemAdminIng = false;
-        this.messageService.dispatchError(err)
+        this.messageService.dispatchError(err);
       })
   }
 
@@ -113,6 +120,13 @@ export class UserList implements OnInit, OnDestroy {
       .then(() => {
         this.setUserProjectAdminIng = false;
         user.user_project_admin = userProjectAdmin;
+        let m: Message = new Message();
+        if (user.user_project_admin === 1) {
+          m.message = "USER_CENTER.SUCCESSFUL_SET_PROJECT_ADMIN";
+        } else {
+          m.message = "USER_CENTER.SUCCESSFUL_SET_NOT_PROJECT_ADMIN";
+        }
+        this.messageService.inlineAlertMessage(m);
       })
       .catch(err => {
         this.setUserProjectAdminIng = false;

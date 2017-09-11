@@ -75,7 +75,7 @@ func (u *UserController) ChangeUserAccount() {
 		return
 	}
 
-	if reqUser.Email != "" && len(users) > 1 {
+	if len(users) > 0 && users[0].ID != reqUser.ID {
 		u.CustomAbort(http.StatusConflict, "Email already exists.")
 		return
 	}
@@ -286,6 +286,7 @@ func (u *SystemAdminController) UpdateUserAction() {
 		u.CustomAbort(http.StatusNotFound, "No user was found with provided ID.")
 		return
 	}
+
 	reqData, err := u.resolveBody()
 	if err != nil {
 		u.internalError(err)
@@ -299,9 +300,24 @@ func (u *SystemAdminController) UpdateUserAction() {
 		return
 	}
 	reqUser.ID = user.ID
-	if strings.TrimSpace(reqUser.Email) != "" {
-		user.Email = reqUser.Email
+
+	users, err := service.GetUsers("email", reqUser.Email)
+	if err != nil {
+		u.internalError(err)
+		return
 	}
+
+	if !utils.ValidateWithPattern("email", reqUser.Email) {
+		u.CustomAbort(http.StatusBadRequest, "Email content is illegal.")
+		return
+	}
+
+	if len(users) > 0 && users[0].ID != reqUser.ID {
+		u.CustomAbort(http.StatusConflict, "Email already exists.")
+		return
+	}
+
+	user.Email = reqUser.Email
 	user.Realname = reqUser.Realname
 	user.Comment = reqUser.Comment
 

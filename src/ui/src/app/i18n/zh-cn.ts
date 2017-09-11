@@ -128,7 +128,8 @@ export const LANG_ZH_CN = {
     "FAILED_TO_CHANGE_MEMBER_ROLE": "改变项目成员角色失败。",
     "FAILED_TO_REMOVE_MEMBER": "移除项目成员失败。",
     "SUCCESSFUL_CREATED_PROJECT": "创建项目成功。",
-    "PROJECT_NAME_ALREADY_EXISTS": "项目名称已存在。"
+    "PROJECT_NAME_ALREADY_EXISTS": "项目名称已存在。",
+    "PROJECT_NAME_IS_ILLEGAL": "项目名称非法。"
   },
   "USER_CENTER": {
     "LIST_COL_USERNAME":"用户名",
@@ -167,7 +168,11 @@ export const LANG_ZH_CN = {
     "ADD": "添加",
     "CANCEL":"取消",
     "UNSATISFIED_WITH_CONSTRAINTS":"未满足新建的约束条件.",
-    "USERNAME_OR_EMAIL_EXIST":"用户名或邮箱重复."
+    "USERNAME_OR_EMAIL_EXIST":"用户名或邮箱重复.",
+    "SUCCESSFUL_SET_SYS_ADMIN": "设置用户为系统管理员操作成功。",
+    "SUCCESSFUL_SET_NOT_SYS_ADMIN": "取消用户为系统管理员操作成功。",
+    "SUCCESSFUL_SET_PROJECT_ADMIN": "设置用户为项目管理员操作成功。",
+    "SUCCESSFUL_SET_NOT_PROJECT_ADMIN": "取消用户为项目管理员操作成功。"
   },
   "IMAGE":{
     "COL_IMAGE_NAME":"镜像名",
@@ -211,6 +216,6 @@ export const LANG_ZH_CN = {
     "STEP_2_COMMAND":"命令",
     "STEP_2_PREVIEW":"预览",
     "STEP_2_BUILD_IMAGE":"构建镜像",
-    "STEP_2_UPLOAD_SUCCESS":"上传文件成功.",
+    "STEP_2_UPLOAD_SUCCESS":"上传文件成功."
   }
 };

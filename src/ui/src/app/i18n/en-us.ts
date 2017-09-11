@@ -128,7 +128,8 @@ export const LANG_EN_US = {
     "FAILED_TO_CHANGE_MEMBER_ROLE": "Failed to change member role.",
     "FAILED_TO_REMOVE_MEMBER": "Failed to remove member.",
     "SUCCESSFUL_CREATED_PROJECT": "Successful created project.",
-    "PROJECT_NAME_ALREADY_EXISTS": "Project name already exists."
+    "PROJECT_NAME_ALREADY_EXISTS": "Project name already exists.",
+    "PROJECT_NAME_IS_ILLEGAL": "Project name is illegal."
   },
   "USER_CENTER": {
     "LIST_COL_USERNAME":"Username",
@@ -167,7 +168,11 @@ export const LANG_EN_US = {
     "ADD": "ADD",
     "CANCEL":"CANCEL",
     "UNSATISFIED_WITH_CONSTRAINTS":"Unsatisfied with constraints of the user creation.",
-    "USERNAME_OR_EMAIL_EXIST":"Username or email is exist."
+    "USERNAME_OR_EMAIL_EXIST":"Username or email is exist.",
+    "SUCCESSFUL_SET_SYS_ADMIN": "Set user as system admin successfully.",
+    "SUCCESSFUL_SET_NOT_SYS_ADMIN": "Set user not as system admin successfully.",
+    "SUCCESSFUL_SET_PROJECT_ADMIN": "Set user as project admin successfully.",
+    "SUCCESSFUL_SET_NOT_PROJECT_ADMIN": "Set user not as project admin successfully."
   },
   "IMAGE":{
     "COL_IMAGE_NAME":"Image Name",
@@ -211,6 +216,6 @@ export const LANG_EN_US = {
     "STEP_2_COMMAND":"Command",
     "STEP_2_PREVIEW":"Preview",
     "STEP_2_BUILD_IMAGE":"Build Image",
-    "STEP_2_UPLOAD_SUCCESS":"Upload file success.",
+    "STEP_2_UPLOAD_SUCCESS":"Upload file success."
   }
 };

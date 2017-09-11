@@ -62,8 +62,18 @@ export class NewEditUserComponent implements AfterViewChecked {
         this.isOpen = false;
       })
       .catch(err => {
-        this.isOpen = false;
-        this.messageService.dispatchError(err)
+        if(err) {
+          if(err.status === 400) {
+            this.isAlertOpen = true;
+            this.afterCommitErr = 'ACCOUNT.EMAIL_IS_ILLEGAL';
+          } else if(err.status === 409){
+            this.isAlertOpen = true;
+            this.afterCommitErr = 'ACCOUNT.EMAIL_ALREADY_EXISTS';
+          } else {
+            this.isOpen = false;
+            this.messageService.dispatchError(err)
+          }
+        }
       });
   }
 

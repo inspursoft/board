@@ -55,7 +55,6 @@
                    name="email"
                    [(ngModel)]="userModel.user_email"
                    #emailInput="ngModel"
-                   checkItemExisting="email"
                    checkItemPattern="email">
             <span class="tooltip-content"
                   *ngIf="emailInput.errors && emailInput.errors.required">

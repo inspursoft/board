@@ -30,6 +30,19 @@ export class UserService {
       .catch(err => Promise.reject(err));
   }
 
+  getCurrentUser(): Promise<User> {
+    let options = new RequestOptions({
+      headers: this.defaultHeader
+    });
+    return this.http.get(`${BASE_URL}/users/current`, options)
+      .toPromise()
+      .then(res => {
+        this.appInitService.chainResponse(res);
+        return res.json();
+      })
+      .catch(err => Promise.reject(err));
+  }
+
   getUser(userID: number): Promise<User> {
     let options = new RequestOptions({
       headers: this.defaultHeader
@@ -103,38 +116,38 @@ export class UserService {
       .catch(err => Promise.reject(err))
   }
 
-  setUserSystemAdmin(userID: number, userSystemAdmin: number): Promise<boolean> {
+  setUserSystemAdmin(userID: number, userSystemAdmin: number): Promise<any> {
     let options = new RequestOptions({
       headers: this.defaultHeader
     });
     return this.http.put(`${BASE_URL}/users/${userID}/systemadmin`, {user_system_admin: userSystemAdmin}, options).toPromise()
       .then(res => {
         this.appInitService.chainResponse(res);
-        return res.status == 200;
+        return res;
       })
       .catch(err => Promise.reject(err));
   }
 
-  setUserProjectAdmin(userID: number, userProjectAdmin: number): Promise<boolean> {
+  setUserProjectAdmin(userID: number, userProjectAdmin: number): Promise<any> {
     let options = new RequestOptions({
       headers: this.defaultHeader
     });
     return this.http.put(`${BASE_URL}/users/${userID}/projectadmin`, {user_project_admin: userProjectAdmin}, options).toPromise()
       .then(res => {
         this.appInitService.chainResponse(res);
-        return res.status == 200;
+        return res;
       })
       .catch(err => Promise.reject(err));
   }
 
-  usesChangeAccount(user: User): Promise<boolean> {
+  usesChangeAccount(user: User): Promise<any> {
     let options = new RequestOptions({
       headers: this.defaultHeader
     });
     return this.http.put(`${BASE_URL}/users/changeaccount`, user, options).toPromise()
       .then(res => {
         this.appInitService.chainResponse(res);
-        return res.status == 200;
+        return res;
       })
       .catch(err => Promise.reject(err));
   }

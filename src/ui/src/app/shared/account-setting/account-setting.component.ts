@@ -24,18 +24,11 @@ export class AccountSettingComponent implements OnInit {
 
   ngOnInit() {
     let curUserID = this.appInitService.currentUser["user_id"];
-    this.userService.getUser(curUserID).then(res => {
-      this.curUser = res;
-    }).catch(err => {
-      if (err && err["status"] && err["status"] == 401) {
-        this.errMessage = "ERROR.INVALID_USER";
-        this.isAlertClose = false;
-      }
-      else {
-        this.isOpen = false;
-        this.messageService.dispatchError(err);
-      }
-    });
+    this.userService.getCurrentUser()
+      .then(res => {
+        this.curUser = res;
+      })
+      .catch(err =>this.messageService.dispatchError(err));
   }
 
   @Output() isOpenChange: EventEmitter<boolean> = new EventEmitter<boolean>();
@@ -51,26 +44,22 @@ export class AccountSettingComponent implements OnInit {
   }
 
   submitAccountSetting() {
-    if (this.curUser.user_id > 0) {
-      this.userService.usesChangeAccount(this.curUser)
-        .then(() => {
-          let m: Message = new Message();
-          m.message = "ACCOUNT.ACCOUNT_SETTING_SUCCESS";
-          this.messageService.inlineAlertMessage(m);
-          this.isOpen = false
-        })
-        .catch(err => {
-          if (err && err["status"] && err["status"] == 401) {
-            this.errMessage = "ERROR.INVALID_USER";
+    this.userService.usesChangeAccount(this.curUser)
+      .then(() => {
+        let m: Message = new Message();
+        m.message = "ACCOUNT.ACCOUNT_SETTING_SUCCESS";
+        this.messageService.inlineAlertMessage(m);
+        this.isOpen = false;
+      })
+      .catch(err => {
+        if (err){
+          if(err.status === 409) {
             this.isAlertClose = false;
-          } else if (err && err["status"] && err["status"] == 403) {
-            this.errMessage = "ERROR.INSUFFIENT_PRIVILEGES";
-            this.isAlertClose = false;
+            this.errMessage = "ACCOUNT.EMAIL_ALREADY_EXISTS";
           } else {
             this.messageService.dispatchError(err);
           }
-        });
-    }
-
+        }
+      });
   }
 }
