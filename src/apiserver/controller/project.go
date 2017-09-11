@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"strconv"
-	"strings"
 )
 
 type ProjectController struct {
@@ -41,10 +41,15 @@ func (p *ProjectController) CreateProjectAction() {
 		p.internalError(err)
 		return
 	}
-	if strings.TrimSpace(reqProject.Name) == "" {
-		p.serveStatus(http.StatusBadRequest, "Project name cannot be empty.")
+	if !utils.ValidateWithLengthRange(reqProject.Name, 2, 30) {
+		p.serveStatus(http.StatusBadRequest, "Project name length should be between 2 and 30 characters.")
 		return
 	}
+	if !utils.ValidateWithPattern("project", reqProject.Name) {
+		p.CustomAbort(http.StatusBadRequest, "Project name is invalid.")
+		return
+	}
+
 	projectExists, err := service.ProjectExists(reqProject.Name)
 	if err != nil {
 		p.internalError(err)

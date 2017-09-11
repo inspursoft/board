@@ -70,8 +70,8 @@ func (u *UserController) ChangeUserAccount() {
 		return
 	}
 
-	if reqUser.Email == "" {
-		u.CustomAbort(http.StatusBadRequest, "Email is required.")
+	if !utils.ValidateWithPattern("email", reqUser.Email) {
+		u.CustomAbort(http.StatusBadRequest, "Email content is illegal.")
 		return
 	}
 
@@ -87,7 +87,7 @@ func (u *UserController) ChangeUserAccount() {
 	}
 
 	if !isSuccess {
-		u.CustomAbort(http.StatusBadRequest, "Failed to change password")
+		u.CustomAbort(http.StatusBadRequest, "Failed to change user account.")
 	}
 }
 
@@ -132,8 +132,8 @@ func (u *UserController) ChangePasswordAction() {
 		u.CustomAbort(http.StatusForbidden, "Old password input is incorrect.")
 		return
 	}
-	if changePassword.NewPassword == "" {
-		u.CustomAbort(http.StatusBadRequest, "New password cannot be empty.")
+	if !utils.ValidateWithLengthRange(changePassword.NewPassword, 8, 20) {
+		u.CustomAbort(http.StatusBadRequest, "Password does not satisfy complexity requirement.")
 		return
 	}
 	updateUser := model.User{
@@ -181,12 +181,12 @@ func (u *SystemAdminController) AddUserAction() {
 		u.internalError(err)
 		return
 	}
-	if strings.TrimSpace(reqUser.Username) == "" {
-		u.CustomAbort(http.StatusBadRequest, "Username cannot be empty.")
+	if !utils.ValidateWithPattern("username", reqUser.Username) {
+		u.CustomAbort(http.StatusBadRequest, "Username content is illegal.")
 		return
 	}
-	if strings.TrimSpace(reqUser.Email) == "" {
-		u.CustomAbort(http.StatusBadRequest, "Email cannot be empty.")
+	if !utils.ValidateWithPattern("email", reqUser.Email) {
+		u.CustomAbort(http.StatusBadRequest, "Email content is illegal.")
 		return
 	}
 	usernameExists, err := service.UsernameExists(reqUser.Username)

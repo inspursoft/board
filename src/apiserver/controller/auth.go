@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -71,23 +71,33 @@ func (u *AuthController) SignUpAction() {
 		u.internalError(err)
 		return
 	}
-	if strings.TrimSpace(reqUser.Username) == "" {
-		u.CustomAbort(http.StatusBadRequest, "Username cannot be empty.")
+
+	if !utils.ValidateWithPattern("username", reqUser.Username) {
+		u.CustomAbort(http.StatusBadRequest, "Username content is illegal.")
 		return
 	}
-	if strings.TrimSpace(reqUser.Email) == "" {
-		u.CustomAbort(http.StatusBadRequest, "Email cannot be empty.")
-		return
-	}
+
 	usernameExists, err := service.UsernameExists(reqUser.Username)
 	if err != nil {
 		u.internalError(err)
 		return
 	}
+
 	if usernameExists {
 		u.CustomAbort(http.StatusConflict, "Username already exists.")
 		return
 	}
+
+	if !utils.ValidateWithLengthRange(reqUser.Password, 8, 20) {
+		u.CustomAbort(http.StatusBadRequest, "Password length should be between 8 and 20 characters.")
+		return
+	}
+
+	if !utils.ValidateWithPattern("email", reqUser.Email) {
+		u.CustomAbort(http.StatusBadRequest, "Email content is illegal.")
+		return
+	}
+
 	emailExists, err := service.EmailExists(reqUser.Email)
 	if err != nil {
 		u.internalError(err)
@@ -97,6 +107,7 @@ func (u *AuthController) SignUpAction() {
 		u.serveStatus(http.StatusConflict, "Email already exists.")
 		return
 	}
+
 	isSuccess, err := service.SignUp(reqUser)
 	if err != nil {
 		u.internalError(err)
