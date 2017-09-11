@@ -18,6 +18,6 @@ func TestSearchPrivite(t *testing.T) {
 	if err != nil {
 		fmt.Printf("Error occurred on registering DB: %+v\n", err)
 	}
-	fmt.Println(dao.SearchPrivite("l", "Admin"))
-	fmt.Println(dao.SearchPublic("l"))
+	fmt.Println(dao.SearchPrivateProject("l", "Admin"))
+	fmt.Println(dao.SearchPublicProject("l"))
 }
