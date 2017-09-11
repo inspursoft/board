@@ -13,7 +13,7 @@ type SearchProjectResult struct {
 }
 type SearchUserResult struct {
 	UserName string `json:"user_name" orm:"column(user_name)"`
-	RoleName string`json:"user_name" orm:"column(role_name)"`
+	RoleName string`json:"role_name" orm:"column(role_name)"`
 	UserEmail string `json:"user_email" orm:"column(user_email)"`
 }
 

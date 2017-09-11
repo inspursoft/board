@@ -32,6 +32,10 @@ paths:
           description: Search parameter for project/service/image/node/user name.
           required: false
           type: string
+        - name: token
+          in: header
+          type: string
+          description: Current available token.
       tags:
         - Products
       responses:
@@ -2116,31 +2120,34 @@ definitions:
   Search:
     type: object
     properties:
-      projects:
+      project_result:
         description: Search results of the projects that matched the filter keywords.
         type: array
         items:
-          $ref: '#/definitions/ProjectBrief'
-      services:
+          $ref: '#/definitions/ProjectSearch'
+      user_result:
         description: Search results of the services that matched the filter keywords.
         type: array
         items:
-          $ref: '#/definitions/ServiceBrief'
-      images:
-        description: Search results of the images that matched the filter keywords.
-        type: array
-        items:
-          $ref: '#/definitions/ImageBrief'
-      nodes:
-        description: Search results of the nodes that matched the filter keywords.
-        type: array
-        items:
-          $ref: '#/definitions/NodeBrief'
-      users:
-        description: Search results of the users that matched the filter keywords.
-        type: array
-        items:
-          $ref: '#/definitions/UserBrief'
+          $ref: '#/definitions/UserSearch'
+  UserSearch:
+      type: object
+      properties:
+        user_name:
+          type: string
+        role_name:
+          type: string
+        user_email:
+          type: string
+  ProjectSearch:
+        type: object
+        properties:
+          owner_name:
+            type: string
+          project_name:
+            type: string
+          is_public:
+            type: boolean
   TokenPayload:
     type: object
     properties:
