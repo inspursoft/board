@@ -32,7 +32,7 @@ type ServiceStructYml struct {
 	Kind       string
 	Metadata   struct {
 		Name   string
-		Lables struct {
+		Labels struct {
 			App string
 		}
 	}
@@ -44,7 +44,7 @@ type ServiceStructYml struct {
 }
 
 type PortsDeploymentYml struct {
-	ContainerPort int `yaml:"ContainerPort,flow"`
+	ContainerPort int `yaml:"containerPort,flow"`
 }
 
 type VolumeMountDeploymentYml struct {
@@ -91,7 +91,7 @@ type DeploymentStructYml struct {
 		Replicas int `yaml:",omitempty"`
 		Template struct {
 			Metadata struct {
-				Lables struct {
+				Labels struct {
 					App string
 				} `yaml:",omitempty"`
 			} `yaml:",omitempty"`
