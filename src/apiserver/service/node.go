@@ -30,7 +30,9 @@ func GetNode(nodeName string) (node NodeInfo, err error) {
 	var url string
 	url = fmt.Sprintf("%s:%s/api/v1/nodes", os.Getenv("KUBE_IP"), os.Getenv("KUBE_PORT"))
 	err = getFromK8sApi(url, &Node)
-	fmt.Println("dddd", err, url)
+	if err != nil {
+		return
+	}
 	for _, v := range Node.Items {
 		var mlimit string
 		if strings.Contains(v.Status.Addresses[1].Address, nodeName) {
