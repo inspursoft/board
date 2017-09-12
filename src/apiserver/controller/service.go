@@ -6,15 +6,44 @@ import (
 	"git/inspursoft/board/src/common/model"
 	//"io/ioutil"
 	"git/inspursoft/board/src/apiserver/service"
+	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/astaxie/beego/logs"
 )
 
 type ServiceController struct {
 	baseController
+}
+
+var KubeMasterIp string
+var KubeMasterStatus bool
+var deploymentFilename = "deployment.yaml"
+var serviceFilename = "service.yaml"
+var serviceProcess = "process_service"
+
+var apiheader = "Content-Type: application/yaml"
+var deploymentAPI = "/apis/extensions/v1beta1/namespaces/"
+var serviceAPI = "/api/v1/namespaces/"
+
+var serviceNamespace = "default" //TODO create in project post
+
+func init() {
+	var masterip = os.Getenv("KUBEMASTER_IP")
+	var masterport = os.Getenv("KUBEMASTER_PORT")
+	KubeMasterIp = masterip + ":" + masterport
+
+	_, err := http.Get(KubeMasterIp + "/api/v1/nodes")
+	if err != nil {
+		KubeMasterStatus = false
+	} else {
+		KubeMasterStatus = true
+	}
+	log.Printf("%s\t%s\t%s\t", "KubeMasterStatus status is ", strconv.FormatBool(KubeMasterStatus), time.Now())
 }
 
 //  Checking the user priviledge by token
@@ -63,7 +92,7 @@ func (p *ServiceController) DeployServiceAction() {
 		return
 	}
 
-	//Build deployment yaml file
+	//Build service yaml file
 	err = service.BuildServiceYml(reqServiceConfig)
 	if err != nil {
 		logs.Info("Build Service Yaml failed")
@@ -71,22 +100,48 @@ func (p *ServiceController) DeployServiceAction() {
 		return
 	}
 
-	//TODO: push service deployment to jenkins
-	//push to git
-	/*
-			var pushobject pushObject
+	//serviceNamespace = reqServiceConfig.ProjectName TODO in project
 
-		    pushobject.FileName = "service.yaml and deployment.yaml"
-		    pushobject.JobName = "process_service"
-		    pushobject.Message = "upload deployment file"
-		    pushobject.Value = loadPath
+	// Push deployment to jenkins
+	var pushobject pushObject
+	pushobject.FileName = deploymentFilename
+	pushobject.JobName = "process_service"
+	pushobject.Value = filepath.Join(reqServiceConfig.ProjectName,
+		strconv.FormatInt(reqServiceConfig.ServiceID, 10))
+	pushobject.Message = fmt.Sprintf("Create deployment for project %s service %d",
+		reqServiceConfig.ProjectName, reqServiceConfig.ServiceID)
+	pushobject.Extras = KubeMasterIp + deploymentAPI + serviceNamespace + "/deployments"
 
-			ret, msg, err := InternalPushObjects(&pushobject, &(p.baseController))
-			if err != nil {
-				p.internalError(err)
-				return
-			}
-			logs.Info("Internal push object: %d %s", ret, msg)
-			p.CustomAbort(ret, msg)
-	*/
+	// Add deployment file
+	pushobject.Items = []string{filepath.Join(pushobject.Value, deploymentFilename)}
+
+	ret, msg, err := InternalPushObjects(&pushobject, &(p.baseController))
+	if err != nil {
+		logs.Info("Create deployment failed %s", pushobject.Extras)
+		p.internalError(err)
+		return
+	}
+	logs.Info("Internal push deployment object: %d %s", ret, msg)
+
+	//Push service to jenkins
+	pushobject.FileName = serviceFilename
+	pushobject.JobName = "process_service"
+	pushobject.Value = filepath.Join(reqServiceConfig.ProjectName,
+		strconv.FormatInt(reqServiceConfig.ServiceID, 10))
+	pushobject.Message = fmt.Sprintf("Create service for project %s service %d",
+		reqServiceConfig.ProjectName, reqServiceConfig.ServiceID)
+	pushobject.Extras = KubeMasterIp + serviceAPI + serviceNamespace + "/services"
+
+	// Add deployment file
+	pushobject.Items = []string{filepath.Join(pushobject.Value, serviceFilename)}
+
+	ret, msg, err = InternalPushObjects(&pushobject, &(p.baseController))
+	if err != nil {
+		logs.Info("Create service failed %s", pushobject.Extras)
+		p.internalError(err)
+		return
+	}
+	logs.Info("Internal push service object: %d %s", ret, msg)
+	p.CustomAbort(ret, msg)
+
 }
