@@ -29,6 +29,7 @@ export class SignUpComponent {
       username: this.signUpModel.username,
       email: this.signUpModel.email,
       password: this.signUpModel.password,
+      realname: this.signUpModel.realname,
       comment: this.signUpModel.comment
     };
     this.accountService

@@ -58,6 +58,10 @@ export class CreateProjectComponent {
             this.alertClosed = false;
             this.errorMessage = 'PROJECT.PROJECT_NAME_ALREADY_EXISTS';
             break;
+          case 400:
+            this.alertClosed = false;
+            this.errorMessage = 'PROJECT.PROJECT_NAME_IS_ILLEGAL';
+            break;
           default:
             this.messageService.dispatchError(err, '');
           }

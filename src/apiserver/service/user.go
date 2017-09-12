@@ -19,8 +19,8 @@ func SignUp(user model.User) (bool, error) {
 }
 
 func SignIn(principal string, password string) (*model.User, error) {
-	query := model.User{Username: principal, Password: password}
-	user, err := dao.GetUser(query, "username")
+	query := model.User{Username: principal, Password: password, Deleted: 0}
+	user, err := dao.GetUser(query, "username", "deleted")
 	if err != nil {
 		log.Printf("Failed to get user in SignIn: %+v\n", err)
 		return nil, err

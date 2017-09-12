@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"strconv"
 	"strings"
@@ -71,23 +72,33 @@ func (u *AuthController) SignUpAction() {
 		u.internalError(err)
 		return
 	}
-	if strings.TrimSpace(reqUser.Username) == "" {
-		u.CustomAbort(http.StatusBadRequest, "Username cannot be empty.")
+
+	if !utils.ValidateWithPattern("username", reqUser.Username) {
+		u.CustomAbort(http.StatusBadRequest, "Username content is illegal.")
 		return
 	}
-	if strings.TrimSpace(reqUser.Email) == "" {
-		u.CustomAbort(http.StatusBadRequest, "Email cannot be empty.")
-		return
-	}
+
 	usernameExists, err := service.UsernameExists(reqUser.Username)
 	if err != nil {
 		u.internalError(err)
 		return
 	}
+
 	if usernameExists {
 		u.CustomAbort(http.StatusConflict, "Username already exists.")
 		return
 	}
+
+	if !utils.ValidateWithLengthRange(reqUser.Password, 8, 20) {
+		u.CustomAbort(http.StatusBadRequest, "Password length should be between 8 and 20 characters.")
+		return
+	}
+
+	if !utils.ValidateWithPattern("email", reqUser.Email) {
+		u.CustomAbort(http.StatusBadRequest, "Email content is illegal.")
+		return
+	}
+
 	emailExists, err := service.EmailExists(reqUser.Email)
 	if err != nil {
 		u.internalError(err)
@@ -97,6 +108,22 @@ func (u *AuthController) SignUpAction() {
 		u.serveStatus(http.StatusConflict, "Email already exists.")
 		return
 	}
+
+	if !utils.ValidateWithMaxLength(reqUser.Realname, 40) {
+		u.CustomAbort(http.StatusBadRequest, "Realname maximum length is 40 characters.")
+		return
+	}
+
+	if !utils.ValidateWithMaxLength(reqUser.Comment, 127) {
+		u.CustomAbort(http.StatusBadRequest, "Comment maximum length is 127 characters.")
+		return
+	}
+
+	reqUser.Username = strings.TrimSpace(reqUser.Username)
+	reqUser.Email = strings.TrimSpace(reqUser.Email)
+	reqUser.Realname = strings.TrimSpace(reqUser.Realname)
+	reqUser.Comment = strings.TrimSpace(reqUser.Comment)
+
 	isSuccess, err := service.SignUp(reqUser)
 	if err != nil {
 		u.internalError(err)
