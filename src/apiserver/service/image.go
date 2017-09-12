@@ -52,7 +52,44 @@ func checkStringHasEnter(str ...string) error {
 	return nil
 }
 
+func changeDockerfileStructItem(dockerfile *model.Dockerfile) {
+	dockerfile.Base = strings.TrimSpace(dockerfile.Base)
+	dockerfile.Author = strings.TrimSpace(dockerfile.Author)
+	dockerfile.EntryPoint = strings.TrimSpace(dockerfile.EntryPoint)
+	dockerfile.Command = strings.TrimSpace(dockerfile.Command)
+
+	for num, node := range dockerfile.Volume {
+		dockerfile.Volume[num] = strings.TrimSpace(node)
+	}
+
+	for num, node := range dockerfile.Copy {
+		dockerfile.Copy[num].CopyFrom = strings.TrimSpace(node.CopyFrom)
+		dockerfile.Copy[num].CopyTo = strings.TrimSpace(node.CopyTo)
+	}
+
+	for num, node := range dockerfile.RUN {
+		dockerfile.RUN[num] = strings.TrimSpace(node)
+	}
+
+	for num, node := range dockerfile.EnvList {
+		dockerfile.EnvList[num].EnvName = strings.TrimSpace(node.EnvName)
+		dockerfile.EnvList[num].EnvValue = strings.TrimSpace(node.EnvValue)
+	}
+}
+
+func changeImageConfigStructItem(reqImageConfig *model.ImageConfig) {
+	reqImageConfig.ImageName = strings.TrimSpace(reqImageConfig.ImageName)
+	reqImageConfig.ImageTag = strings.TrimSpace(reqImageConfig.ImageTag)
+	reqImageConfig.ProjectName = strings.TrimSpace(reqImageConfig.ProjectName)
+	reqImageConfig.ImageTemplate = strings.TrimSpace(reqImageConfig.ImageTemplate)
+	reqImageConfig.ImageDockerfilePath = strings.TrimSpace(reqImageConfig.ImageDockerfilePath)
+
+	changeDockerfileStructItem(&reqImageConfig.ImageDockerfile)
+}
+
 func CheckDockerfileConfig(config model.ImageConfig) error {
+	changeImageConfigStructItem(&config)
+
 	if len(config.ImageDockerfile.Base) == 0 {
 		return errors.New("Baseimage in dockerfile should not be empty")
 	}
