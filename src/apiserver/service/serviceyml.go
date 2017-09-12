@@ -54,7 +54,7 @@ func BuildServiceYml(reqServiceConfig model.ServiceConfig) error {
 	service.ApiVersion = "v1"
 	service.Kind = "Service"
 	service.Metadata.Name = reqServiceConfig.ServiceYaml.Name
-	service.Metadata.Lables.App = reqServiceConfig.ServiceYaml.Name
+	service.Metadata.Labels.App = reqServiceConfig.ServiceYaml.Name
 
 	if len(reqServiceConfig.ServiceYaml.ExternalPaths) > 0 {
 		service.Spec.Tpe = "NodePort"
@@ -107,7 +107,7 @@ func BuildDeploymentYml(reqServiceConfig model.ServiceConfig) error {
 	deployment.Kind = "Deployment"
 	deployment.Metadata.Name = reqServiceConfig.DeploymentYaml.Name
 	deployment.Spec.Replicas = reqServiceConfig.DeploymentYaml.Replicas
-	deployment.Spec.Template.Metadata.Lables.App = reqServiceConfig.DeploymentYaml.Name
+	deployment.Spec.Template.Metadata.Labels.App = reqServiceConfig.DeploymentYaml.Name
 
 	for _, vlme := range reqServiceConfig.DeploymentYaml.VolumeList {
 		nfsvolume.Name = vlme.Name
