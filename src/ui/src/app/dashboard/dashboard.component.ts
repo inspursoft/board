@@ -8,10 +8,6 @@ import { TranslateService } from "@ngx-translate/core";
 import { Subscription } from "rxjs/Subscription";
 import { Subject } from "rxjs/Subject";
 import { MessageService } from "../shared/message-service/message.service";
-import { promise } from "selenium-webdriver";
-import checkedNodeCall = promise.checkedNodeCall;
-import { max } from "rxjs/operator/max";
-import { min } from "rxjs/operator/min";
 
 const MAX_COUNT_PER_PAGE: number = 200;
 const MAX_COUNT_PER_DRAG: number = 100;
