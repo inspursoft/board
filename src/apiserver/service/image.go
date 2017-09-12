@@ -52,6 +52,33 @@ func checkStringHasEnter(str ...string) error {
 	return nil
 }
 
+func fixStructEmptyIssue(obj interface{}) {
+	if f, ok := obj.(*[]string); ok {
+		if len(*f) == 1 && len((*f)[0]) == 0 {
+			*f = nil
+		}
+		return
+	}
+	if f, ok := obj.(*[]model.CopyStruct); ok {
+		if len(*f) == 1 && len((*f)[0].CopyFrom) == 0 && len((*f)[0].CopyTo) == 0 {
+			*f = nil
+		}
+		return
+	}
+	if f, ok := obj.(*[]model.EnvStruct); ok {
+		if len(*f) == 1 && len((*f)[0].EnvName) == 0 && len((*f)[0].EnvValue) == 0 {
+			*f = nil
+		}
+		return
+	}
+	if f, ok := obj.(*[]int); ok {
+		if len(*f) == 1 && (*f)[0] == 0 {
+			*f = nil
+		}
+	}
+	return
+}
+
 func changeDockerfileStructItem(dockerfile *model.Dockerfile) {
 	dockerfile.Base = strings.TrimSpace(dockerfile.Base)
 	dockerfile.Author = strings.TrimSpace(dockerfile.Author)
@@ -61,20 +88,26 @@ func changeDockerfileStructItem(dockerfile *model.Dockerfile) {
 	for num, node := range dockerfile.Volume {
 		dockerfile.Volume[num] = strings.TrimSpace(node)
 	}
+	fixStructEmptyIssue(&dockerfile.Volume)
 
 	for num, node := range dockerfile.Copy {
 		dockerfile.Copy[num].CopyFrom = strings.TrimSpace(node.CopyFrom)
 		dockerfile.Copy[num].CopyTo = strings.TrimSpace(node.CopyTo)
 	}
+	fixStructEmptyIssue(&dockerfile.Copy)
 
 	for num, node := range dockerfile.RUN {
 		dockerfile.RUN[num] = strings.TrimSpace(node)
 	}
+	fixStructEmptyIssue(&dockerfile.RUN)
 
 	for num, node := range dockerfile.EnvList {
 		dockerfile.EnvList[num].EnvName = strings.TrimSpace(node.EnvName)
 		dockerfile.EnvList[num].EnvValue = strings.TrimSpace(node.EnvValue)
 	}
+	fixStructEmptyIssue(&dockerfile.EnvList)
+
+	fixStructEmptyIssue(&dockerfile.ExposePort)
 }
 
 func changeImageConfigStructItem(reqImageConfig *model.ImageConfig) {
@@ -87,8 +120,8 @@ func changeImageConfigStructItem(reqImageConfig *model.ImageConfig) {
 	changeDockerfileStructItem(&reqImageConfig.ImageDockerfile)
 }
 
-func CheckDockerfileConfig(config model.ImageConfig) error {
-	changeImageConfigStructItem(&config)
+func CheckDockerfileConfig(config *model.ImageConfig) error {
+	changeImageConfigStructItem(config)
 
 	if len(config.ImageDockerfile.Base) == 0 {
 		return errors.New("Baseimage in dockerfile should not be empty")
