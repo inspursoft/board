@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strconv"
 	yaml "yaml-2"
 
 	"github.com/astaxie/beego/logs"
@@ -61,9 +60,9 @@ func BuildServiceYml(reqServiceConfig model.ServiceConfig) error {
 	}
 
 	for _, nodePort := range reqServiceConfig.ServiceYaml.NodePorts {
-		port.Port = "8080"
-		port.Tagertport = "8080"
-		port.Nodeport = strconv.Itoa(nodePort)
+		port.Port = 8080
+		port.TargetPort = 8080
+		port.NodePort = nodePort
 		service.Spec.Ports = append(service.Spec.Ports, port)
 	}
 
