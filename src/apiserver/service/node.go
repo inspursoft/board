@@ -20,8 +20,8 @@ type NodeInfo struct {
 	CpuUsage     float32 `json:"cpu_usage" orm:"column(cpu_usage)"`
 	MemoryUsage  float32 `json:"memory_usage" orm:"column(memory_usage)"`
 	MemorySize   string  `json:"memory_size" orm:"column(memory_size)"`
-	StorageTotal int64   `json:"storage_total" orm:"column(storage_total)"`
-	StorageUse   int64   `json:"storage_use" orm:"column(storage_usage)"`
+	StorageTotal uint64   `json:"storage_total" orm:"column(storage_total)"`
+	StorageUse   uint64   `json:"storage_use" orm:"column(storage_usage)"`
 }
 
 func GetNode(nodeName string) (node NodeInfo, err error) {
@@ -43,22 +43,22 @@ func GetNode(nodeName string) (node NodeInfo, err error) {
 				}
 			}
 			time := v.CreationTimestamp.Unix()
-			var y []v2.ProcessInfo
-			getFromK8sApi(nodeName+":4194/api/v2.0/ps/", &y)
+			var ps []v2.ProcessInfo
+			getFromK8sApi("http://"+nodeName+":4194/api/v2.0/ps/", &ps)
 			var c, m float32
-			for _, v := range y {
-				c = c + v.PercentCpu
-				m = m + v.PercentMemory
+			for _, v := range ps {
+				c += v.PercentCpu
+				m += v.PercentMemory
 			}
 			cpu := c
 			mem := m
 			var fs []v2.MachineFsStats
-			getFromK8sApi(nodeName+":4194/api/v2.0/storage", &fs)
-			var Capacity uint64
-			var Use uint64
+			getFromK8sApi("http://"+nodeName+":4194/api/v2.0/storage", &fs)
+			var capacity uint64
+			var use uint64
 			for _, v := range fs {
-				Capacity = *v.Capacity + Capacity
-				Use = *v.Usage + Use
+				capacity += *v.Capacity
+				use += *v.Usage
 			}
 			node = NodeInfo{
 				NodeName:     nodeName,
@@ -67,8 +67,8 @@ func GetNode(nodeName string) (node NodeInfo, err error) {
 				CpuUsage:     cpu,
 				MemoryUsage:  mem,
 				MemorySize:   mlimit,
-				StorageTotal: int64(Capacity),
-				StorageUse:   int64(Use),
+				StorageTotal: capacity,
+				StorageUse:   use,
 			}
 			break
 		}

@@ -29,6 +29,4 @@ func (n *NodeController) GetNode() {
 	}
 	n.Data["json"] = res
 	n.ServeJSON()
-	return
-
 }
