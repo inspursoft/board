@@ -103,7 +103,7 @@ func BuildDeploymentYml(reqServiceConfig model.ServiceConfig) error {
 		return err
 	}
 
-	deployment.ApiVersion = "extensions/v1bata1"
+	deployment.ApiVersion = "extensions/v1beta1"
 	deployment.Kind = "Deployment"
 	deployment.Metadata.Name = reqServiceConfig.DeploymentYaml.Name
 	deployment.Spec.Replicas = reqServiceConfig.DeploymentYaml.Replicas
