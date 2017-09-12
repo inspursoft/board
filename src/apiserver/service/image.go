@@ -31,7 +31,7 @@ func checkStringHasUpper(str ...string) error {
 			return err
 		}
 		if isMatch {
-			errString := fmt.Sprintf("string \"%s\" has upper charactor", node)
+			errString := fmt.Sprintf(`string "%s" has upper charactor`, node)
 			return errors.New(errString)
 		}
 	}
@@ -40,12 +40,12 @@ func checkStringHasUpper(str ...string) error {
 
 func checkStringHasEnter(str ...string) error {
 	for _, node := range str {
-		isMatch, err := regexp.MatchString("[\n][^$]", node)
+		isMatch, err := regexp.MatchString(`^\s*\n?(?:.*[^\n])*\n?\s*$`, node)
 		if err != nil {
 			return err
 		}
-		if isMatch {
-			errString := fmt.Sprintf("string \"%s\" has enter charactor", node)
+		if !isMatch {
+			errString := fmt.Sprintf(`string "%s" has enter charactor`, node)
 			return errors.New(errString)
 		}
 	}
@@ -53,6 +53,10 @@ func checkStringHasEnter(str ...string) error {
 }
 
 func CheckDockerfileConfig(config model.ImageConfig) error {
+	if len(config.ImageDockerfile.Base) == 0 {
+		return errors.New("Baseimage in dockerfile should not be empty")
+	}
+
 	err := checkStringHasUpper(config.ImageDockerfile.Base, config.ImageName, config.ImageTag)
 	if err != nil {
 		return err
