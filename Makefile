@@ -62,7 +62,7 @@ SWAGGERFILEPATH=$(BUILDPATH)/docs
 # Package lists
 TOPLEVEL_PKG := .
 INT_LIST := apiserver tokenserver collector/cmd
-IMG_LIST := apiserver tokenserver log collector 
+IMG_LIST := apiserver tokenserver log collector gitserver jenkins 
 
 # List building
 COMPILEALL_LIST = $(foreach int, $(INT_LIST), $(SRCPATH)/$(int))
@@ -115,7 +115,7 @@ cleanimage: $(RMIMG_LIST) container/db_rmi
 $(BUILD_LIST): %_build:
 	$(DOCKERBUILD) -f $(MAKEDEVPATH)/$*/Dockerfile . -t dev_$(subst container/,,$*):latest
 $(RMIMG_LIST): %_rmi:
-	$(DOCKERRMIMAGE) dev_$(subst container/,,$*):latest
+	$(DOCKERRMIMAGE) -f dev_$(subst container/,,$*):latest
 
 container/db_build:
 	$(DOCKERBUILD) -f $(MAKEDEVPATH)/container/db/Dockerfile . -t dev_mysql:latest
