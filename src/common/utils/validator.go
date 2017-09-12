@@ -34,7 +34,7 @@ func ValidateWithLengthRange(target string, min int, max int) bool {
 }
 
 func ValidateWithMaxLength(target string, max int) bool {
-	return ValidateWithLengthRange(target, 1, max)
+	return ValidateWithLengthRange(target, 0, max)
 }
 
 func ValidateWithMinLength(target string, min int) bool {

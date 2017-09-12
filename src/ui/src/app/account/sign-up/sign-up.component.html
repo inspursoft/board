@@ -88,6 +88,19 @@
             </label>
           </div>
           <div class="form-group">
+            <label for="txtRealname">{{ 'ACCOUNT.REALNAME' | translate }}</label>
+            <label for="txtRealname"
+                aria-haspopup="true"
+                role="tooltip"
+                class="tooltip tooltip-validation tooltip-md"
+                [class.invalid]="realnameInput.invalid && (realnameInput.dirty || realnameInput.touched)">
+                <input type="text" id="txtRealname"
+                name="realname"
+                [(ngModel)]="signUpModel.realname"
+                #realnameInput="ngModel">
+            </label>
+          </div>
+          <div class="form-group">
             <label for="txtComment">{{ 'ACCOUNT.COMMENT' | translate }}</label>
             <label for="txtComment"
                 aria-haspopup="true"

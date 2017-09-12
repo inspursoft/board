@@ -7,6 +7,7 @@ import (
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type ProjectController struct {
@@ -59,6 +60,8 @@ func (p *ProjectController) CreateProjectAction() {
 		p.serveStatus(http.StatusConflict, "Project name already exists.")
 		return
 	}
+
+	reqProject.Name = strings.TrimSpace(reqProject.Name)
 
 	reqProject.OwnerID = int(p.currentUser.ID)
 	reqProject.OwnerName = p.currentUser.Username

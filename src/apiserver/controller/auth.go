@@ -7,6 +7,7 @@ import (
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -107,6 +108,21 @@ func (u *AuthController) SignUpAction() {
 		u.serveStatus(http.StatusConflict, "Email already exists.")
 		return
 	}
+
+	if !utils.ValidateWithMaxLength(reqUser.Realname, 40) {
+		u.CustomAbort(http.StatusBadRequest, "Realname maximum length is 40 characters.")
+		return
+	}
+
+	if !utils.ValidateWithMaxLength(reqUser.Comment, 127) {
+		u.CustomAbort(http.StatusBadRequest, "Comment maximum length is 127 characters.")
+		return
+	}
+
+	reqUser.Username = strings.TrimSpace(reqUser.Username)
+	reqUser.Email = strings.TrimSpace(reqUser.Email)
+	reqUser.Realname = strings.TrimSpace(reqUser.Realname)
+	reqUser.Comment = strings.TrimSpace(reqUser.Comment)
 
 	isSuccess, err := service.SignUp(reqUser)
 	if err != nil {

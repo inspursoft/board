@@ -3,8 +3,7 @@
   <div class="modal-body">
     <form #signUpForm="ngForm" (ngSubmit)="submitUser()">
       <div class="hide-error-msg">
-        <clr-alert (clrAlertClosedChange)="isAlertOpen = false"
-                   [clrAlertClosed]="!isAlertOpen"
+        <clr-alert [clrAlertClosed]="!isAlertOpen"
                    [clrAlertType]="'alert-danger'">
           <div class="alert-item">
             <span class="alert-text">{{afterCommitErr | translate}}</span>
@@ -116,6 +115,19 @@
                   *ngIf="confirmPasswordInput.errors && confirmPasswordInput.invalid">
                       {{ 'USER_CENTER.PASSWORDS_ARE_NOT_IDENTICAL' | translate }}
                 </span>
+          </label>
+        </div>
+        <div class="form-group">
+          <label for="txtRealname">{{ 'ACCOUNT.REALNAME' | translate }}</label>
+          <label for="txtRealname"
+              aria-haspopup="true"
+              role="tooltip"
+              class="tooltip tooltip-validation tooltip-md"
+              [class.invalid]="realnameInput.invalid && (realnameInput.dirty || realnameInput.touched)">
+              <input type="text" id="txtRealname"
+              name="realname"
+              [(ngModel)]="userModel.user_realname"
+              #realnameInput="ngModel">
           </label>
         </div>
         <div class="form-group">

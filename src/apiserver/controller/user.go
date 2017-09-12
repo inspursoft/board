@@ -80,6 +80,20 @@ func (u *UserController) ChangeUserAccount() {
 		return
 	}
 
+	if !utils.ValidateWithMaxLength(reqUser.Realname, 40) {
+		u.CustomAbort(http.StatusBadRequest, "Realname maximum length is 40 characters.")
+		return
+	}
+
+	if !utils.ValidateWithMaxLength(reqUser.Comment, 127) {
+		u.CustomAbort(http.StatusBadRequest, "Comment maximum length is 127 characters.")
+		return
+	}
+
+	reqUser.Email = strings.TrimSpace(reqUser.Email)
+	reqUser.Realname = strings.TrimSpace(reqUser.Realname)
+	reqUser.Comment = strings.TrimSpace(reqUser.Comment)
+
 	isSuccess, err := service.UpdateUser(reqUser, "email", "realname", "comment")
 	if err != nil {
 		u.internalError(err)
@@ -185,10 +199,6 @@ func (u *SystemAdminController) AddUserAction() {
 		u.CustomAbort(http.StatusBadRequest, "Username content is illegal.")
 		return
 	}
-	if !utils.ValidateWithPattern("email", reqUser.Email) {
-		u.CustomAbort(http.StatusBadRequest, "Email content is illegal.")
-		return
-	}
 	usernameExists, err := service.UsernameExists(reqUser.Username)
 	if err != nil {
 		u.internalError(err)
@@ -196,6 +206,10 @@ func (u *SystemAdminController) AddUserAction() {
 	}
 	if usernameExists {
 		u.CustomAbort(http.StatusConflict, "Username already exists.")
+		return
+	}
+	if !utils.ValidateWithPattern("email", reqUser.Email) {
+		u.CustomAbort(http.StatusBadRequest, "Email content is illegal.")
 		return
 	}
 	emailExists, err := service.EmailExists(reqUser.Email)
@@ -207,6 +221,27 @@ func (u *SystemAdminController) AddUserAction() {
 		u.serveStatus(http.StatusConflict, "Email already exists.")
 		return
 	}
+
+	if !utils.ValidateWithLengthRange(reqUser.Password, 8, 20) {
+		u.CustomAbort(http.StatusBadRequest, "Password does not satisfy complexity requirement.")
+		return
+	}
+
+	if !utils.ValidateWithMaxLength(reqUser.Realname, 40) {
+		u.CustomAbort(http.StatusBadRequest, "Realname maximum length is 40 characters.")
+		return
+	}
+
+	if !utils.ValidateWithMaxLength(reqUser.Comment, 127) {
+		u.CustomAbort(http.StatusBadRequest, "Comment maximum length is 127 characters.")
+		return
+	}
+
+	reqUser.Username = strings.TrimSpace(reqUser.Username)
+	reqUser.Email = strings.TrimSpace(reqUser.Email)
+	reqUser.Realname = strings.TrimSpace(reqUser.Realname)
+	reqUser.Comment = strings.TrimSpace(reqUser.Comment)
+
 	isSuccess, err := service.SignUp(reqUser)
 	if err != nil {
 		u.internalError(err)
