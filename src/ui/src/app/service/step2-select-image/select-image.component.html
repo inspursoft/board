@@ -50,37 +50,43 @@
           </cs-dropdown>
         </div>
         <cs-input [inputMaxlength]="255"
-                  [Label]="'SERVICE.STEP_2_NEW_IMAGE_NAME'|translate"
+                  [inputLabel]="'SERVICE.STEP_2_NEW_IMAGE_NAME'|translate"
                   [validatorFns]="testValidatorFn"
                   [disabled]="isNeedAutoRefreshImageList"
-                  [SimpleFiled]="outputData.image_name"
-                  (OnCheck)="outputData.image_name = $event;asyncGetDockerFilePreviewInfo()"></cs-input>
+                  [simpleFiled]="outputData.image_name"
+                  (onCheck)="outputData.image_name = $event;asyncGetDockerFilePreviewInfo()"></cs-input>
         <cs-input [inputMaxlength]="255"
-                  [Label]="'SERVICE.STEP_2_IMAGE_TAG'|translate"
+                  [inputLabel] ="'SERVICE.STEP_2_IMAGE_TAG'|translate"
                   [disabled]="isNeedAutoRefreshImageList"
                   [validatorFns]="testValidatorFn"
-                  [SimpleFiled]="outputData.image_tag"
-                  (OnCheck)="outputData.image_tag = $event;asyncGetDockerFilePreviewInfo()"></cs-input>
+                  [simpleFiled]="outputData.image_tag"
+                  (onCheck)="outputData.image_tag = $event;asyncGetDockerFilePreviewInfo()"></cs-input>
         <cs-input [inputMaxlength]="255"
-                  [Label]="'SERVICE.STEP_2_BASE_IMAGE'|translate"
+                  [inputLabel] ="'SERVICE.STEP_2_BASE_IMAGE'|translate"
                   [disabled]="isNeedAutoRefreshImageList"
-                  [SimpleFiled]="outputData.image_dockerfile.image_base"
-                  (OnCheck)="outputData.image_dockerfile.image_base = $event;getDockerFilePreviewInfo()"></cs-input>
+                  [simpleFiled]="outputData.image_dockerfile.image_base"
+                  (onCheck)="outputData.image_dockerfile.image_base = $event;getDockerFilePreviewInfo()"></cs-input>
         <cs-input [inputMaxlength]="255"
-                  [Label]="'SERVICE.STEP_2_IMAGE_ENTRYPOINT'|translate"
+                  [inputLabel] ="'SERVICE.STEP_2_IMAGE_ENTRYPOINT'|translate"
                   [disabled]="isNeedAutoRefreshImageList"
-                  [SimpleFiled]="outputData.image_dockerfile.image_entrypoint"
-                  (OnCheck)="outputData.image_dockerfile.image_entrypoint = $event;getDockerFilePreviewInfo()"></cs-input>
-        <cs-input-array [Source]="imageVolume"
+                  [simpleFiled]="outputData.image_dockerfile.image_entrypoint"
+                  (onCheck)="outputData.image_dockerfile.image_entrypoint = $event;getDockerFilePreviewInfo()"></cs-input>
+        <cs-input-array [source]="imageVolume"
                         [disabled]="isNeedAutoRefreshImageList"
-                        [Label]="'SERVICE.STEP_2_IMAGE_VOLUME'|translate"
-                        (OnCheck)="getDockerFilePreviewInfo()"
-                        (OnMinus)="getDockerFilePreviewInfo()"></cs-input-array>
-        <cs-input-array [Source]="imageRun"
+                        [labelText]="'SERVICE.STEP_2_IMAGE_VOLUME'|translate"
+                        (onCheck)="getDockerFilePreviewInfo()"
+                        (onMinus)="getDockerFilePreviewInfo()"></cs-input-array>
+        <cs-input-array [source]="imageRun"
                         [disabled]="isNeedAutoRefreshImageList"
-                        [Label]="'SERVICE.STEP_2_IMAGE_RUN'|translate"
-                        (OnCheck)="getDockerFilePreviewInfo()"
-                        (OnMinus)="getDockerFilePreviewInfo()"></cs-input-array>
+                        [labelText]="'SERVICE.STEP_2_IMAGE_RUN'|translate"
+                        (onCheck)="getDockerFilePreviewInfo()"
+                        (onMinus)="getDockerFilePreviewInfo()"></cs-input-array>
+        <cs-input-array [source]="imageExpose"
+                        [type]="1"
+                        [disabled]="isNeedAutoRefreshImageList"
+                        [labelText]="'SERVICE.STEP_2_IMAGE_EXPOSE'|translate"
+                        (onCheck)="getDockerFilePreviewInfo()"
+                        (onMinus)="getDockerFilePreviewInfo()"></cs-input-array>
         <div class="create-image-line-container ">
           <label class="base-text">{{"SERVICE.STEP_2_UPLOAD_ARCHIVES" | translate}}:</label>
           ﻿<input type="file"

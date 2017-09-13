@@ -4,10 +4,12 @@
 import { Component, Input, Output, EventEmitter, OnInit } from "@angular/core"
 
 export enum CsInputArrStatus{iasView, iasEdit}
+export enum CsInputArrType{iasString, iasNumber}
+export type CsInputArrSupportType = string | number
 export class CsInputArrFiled {
   constructor(public status: CsInputArrStatus,
-              public defaultValue: string,
-              public value: string) {
+              public defaultValue: CsInputArrSupportType,
+              public value: CsInputArrSupportType) {
   }
 }
 
@@ -17,19 +19,20 @@ export class CsInputArrFiled {
   styleUrls: ["./cs-input-array.component.css"]
 })
 export class CsInputArrayComponent implements OnInit {
-  _isDisabled: boolean = false;
-  _sourceArr: Array<string>;
+  _sourceArr: Array<CsInputArrSupportType>;
   FiledArray: Array<CsInputArrFiled>;
 
   constructor() {
-    this.FiledArray = Array<CsInputArrFiled>();
+    this.FiledArray = Array();
   }
 
   ngOnInit() {
-    this.FiledArray.push(new CsInputArrFiled(CsInputArrStatus.iasView, "", ""))
+    this.type == CsInputArrType.iasString ?
+      this.FiledArray.push(new CsInputArrFiled(CsInputArrStatus.iasView, "", "")) :
+      this.FiledArray.push(new CsInputArrFiled(CsInputArrStatus.iasView, 0, 0))
   }
 
-  @Input("Source")
+  @Input("source")
   set sourceArr(value: Array<string>) {
     this._sourceArr = value;
     value.forEach(value => {
@@ -37,23 +40,19 @@ export class CsInputArrayComponent implements OnInit {
     })
   }
 
-  @Input("Label") labelText: string = "";
+  @Input() type: CsInputArrType = CsInputArrType.iasString;
+  @Input() labelText: string = "";
   @Input() inputMaxlength: string;
+  @Input() disabled: boolean;
 
-  @Input("disabled")
-  set isDisabled(value: boolean) {
-    this._isDisabled = value;
-
+  get inputType(): string {
+    return this.type == CsInputArrType.iasString ? "text" : "number";
   }
 
-  get isDisabled() {
-    return this._isDisabled;
-  }
-
-  @Output("OnEdit") onEditEvent: EventEmitter<any> = new EventEmitter<any>();
-  @Output("OnCheck") onCheckEvent: EventEmitter<any> = new EventEmitter<any>();
-  @Output("OnRevert") onRevertEvent: EventEmitter<any> = new EventEmitter<any>();
-  @Output("OnMinus") onMinusEvent: EventEmitter<any> = new EventEmitter<any>();
+  @Output("onEdit") onEditEvent: EventEmitter<any> = new EventEmitter<any>();
+  @Output("onCheck") onCheckEvent: EventEmitter<any> = new EventEmitter<any>();
+  @Output("onRevert") onRevertEvent: EventEmitter<any> = new EventEmitter<any>();
+  @Output("onMinus") onMinusEvent: EventEmitter<any> = new EventEmitter<any>();
 
   onEditClick(index: number) {
     this.FiledArray[index].status = CsInputArrStatus.iasEdit;
@@ -65,7 +64,9 @@ export class CsInputArrayComponent implements OnInit {
     this.FiledArray[index].defaultValue = this.FiledArray[index].value;
     if (index == this.FiledArray.length - 1) {
       this._sourceArr.push(this.FiledArray[index].value);
-      this.FiledArray.push(new CsInputArrFiled(CsInputArrStatus.iasView, "", ""));
+      this.type == CsInputArrType.iasString ?
+        this.FiledArray.push(new CsInputArrFiled(CsInputArrStatus.iasView, "", "")) :
+        this.FiledArray.push(new CsInputArrFiled(CsInputArrStatus.iasView, 0, 0))
     } else {
       this._sourceArr[index] = this.FiledArray[index].value;
     }

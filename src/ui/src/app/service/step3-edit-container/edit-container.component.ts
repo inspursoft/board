@@ -7,14 +7,14 @@ import { CsInputFiled, CsInputStatus } from "../cs-input/cs-input.component";
 
 enum ContainerStatus{csNew, csSelectedImage}
 class ContainerConfigure {
-  containerName: CsInputFiled<string>;
-  workingDir: CsInputFiled<string>;
-  volumeMounts: CsInputFiled<string>;
-  env: CsInputFiled<string>;
-  containerPort: CsInputFiled<number>;
-  command: CsInputFiled<string>;
-  cpu: CsInputFiled<string>;
-  memory: CsInputFiled<string>;
+  containerName: CsInputFiled;
+  workingDir: CsInputFiled;
+  volumeMounts: CsInputFiled;
+  env: CsInputFiled;
+  containerPort: CsInputFiled;
+  command: CsInputFiled;
+  cpu: CsInputFiled;
+  memory: CsInputFiled;
 
   constructor() {
     this.containerName = new CsInputFiled(CsInputStatus.isView, "", "");

@@ -215,6 +215,7 @@ export const LANG_ZH_CN = {
     "STEP_2_IMAGE_ENTRYPOINT":"镜像进入点",
     "STEP_2_IMAGE_VOLUME":"镜像卷:",
     "STEP_2_IMAGE_RUN":"镜像执行:",
+    "STEP_2_IMAGE_EXPOSE":"镜像外部端口:",
     "STEP_2_UPLOAD_ARCHIVES":"上传外部文件",
     "STEP_2_UPLOAD":"上传",
     "STEP_2_COMMAND":"命令",

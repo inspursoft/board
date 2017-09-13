@@ -215,6 +215,7 @@ export const LANG_EN_US = {
     "STEP_2_IMAGE_ENTRYPOINT":"Image EntryPoint",
     "STEP_2_IMAGE_VOLUME":"Image Volume:",
     "STEP_2_IMAGE_RUN":"Image Run:",
+    "STEP_2_IMAGE_EXPOSE":"Image Expose:",
     "STEP_2_UPLOAD_ARCHIVES":"Upload External Archives",
     "STEP_2_UPLOAD":"Upload",
     "STEP_2_COMMAND":"Command",

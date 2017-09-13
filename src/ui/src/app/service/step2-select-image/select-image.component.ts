@@ -91,6 +91,10 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
     return this.outputData.image_dockerfile.image_volume;
   }
 
+  get imageExpose(): Array<number> {
+    return this.outputData.image_dockerfile.image_expose;
+  }
+
   get isCanNextStep(): boolean {
     return this.imageSelectList.filter(value => {
         return value.image_name != "SERVICE.STEP_2_SELECT_IMAGE" &&

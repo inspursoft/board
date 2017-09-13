@@ -6,11 +6,12 @@ import { FormControl, FormGroup, ValidatorFn } from "@angular/forms";
 
 export enum CsInputStatus{isView, isEdit}
 export enum CsInputType{itWithInput, itWithNoInput}
-export type CsInputTypeFiled = CsInputFiled<string> | CsInputFiled<number>;
-export class CsInputFiled<T> {
+export enum CsInputFiledType{iftString, iftNumber}
+export type CsInputSupportType = string | number
+export class CsInputFiled {
   constructor(public status: CsInputStatus,
-              public defaultValue: T,
-              public value: T) {
+              public defaultValue: CsInputSupportType,
+              public value: CsInputSupportType) {
   }
 }
 
@@ -23,11 +24,13 @@ export class CsInputComponent implements OnInit {
   _isDisabled: boolean = false;
   inputFormGroup: FormGroup;
   @ViewChild("input") Input;
-  @Input("Label") labelText: string = "";
-  @Input("Field") curField: CsInputTypeFiled;
-  @Input("Type") curFieldType: CsInputType = CsInputType.itWithInput;
-  @Input() validatorFns: Array<ValidatorFn>;
+  @Input() inputLabel: string = "";
+  @Input() inputFiledType: CsInputFiledType = CsInputFiledType.iftString;
+  @Input() inputField: CsInputFiled;
+  @Input() inputType: CsInputType = CsInputType.itWithInput;
   @Input() inputMaxlength: string;
+  @Input() validatorFns: Array<ValidatorFn>;
+
 
   ngOnInit() {
     this.inputFormGroup = new FormGroup({
@@ -39,7 +42,7 @@ export class CsInputComponent implements OnInit {
   set isDisabled(value: boolean) {
     this._isDisabled = value;
     if (value) {
-      this.curField.status = CsInputStatus.isView;
+      this.inputField.status = CsInputStatus.isView;
     }
   }
 
@@ -47,39 +50,43 @@ export class CsInputComponent implements OnInit {
     return this._isDisabled;
   }
 
-  @Input("SimpleFiled")
-  set SimpleFiled(value: string) {
-    this.curField = new CsInputFiled(
+  @Input("simpleFiled")
+  set SimpleFiled(value: CsInputSupportType) {
+    this.inputField = new CsInputFiled(
       CsInputStatus.isView, value, value
     );
   }
 
   get typeName(): string {
-    return typeof this.curField.value;
+    return typeof this.inputField.value;
   }
 
-  @Output("OnEdit") onEditEvent: EventEmitter<any> = new EventEmitter<any>();
-  @Output("OnCheck") onCheckEvent: EventEmitter<any> = new EventEmitter<any>();
-  @Output("OnRevert") onRevertEvent: EventEmitter<any> = new EventEmitter<any>();
+  get inputFieldTypeString(): string {
+    return this.inputFiledType == CsInputFiledType.iftString ? "text" : "number";
+  }
+
+  @Output("onEdit") onEditEvent: EventEmitter<any> = new EventEmitter<any>();
+  @Output("onCheck") onCheckEvent: EventEmitter<any> = new EventEmitter<any>();
+  @Output("onRevert") onRevertEvent: EventEmitter<any> = new EventEmitter<any>();
 
   onEditClick() {
-    if (this.curFieldType == CsInputType.itWithInput) {
-      this.curField.status = 1;
+    if (this.inputType == CsInputType.itWithInput) {
+      this.inputField.status = 1;
     }
     this.onEditEvent.emit();
   }
 
   onCheckClick() {
-    if (this.inputFormGroup.valid){
-      this.curField.status = 0;
-      this.curField.defaultValue = this.curField.value;
-      this.onCheckEvent.emit(this.curField.value);
+    if (this.inputFormGroup.valid) {
+      this.inputField.status = CsInputStatus.isView;
+      this.inputField.defaultValue = this.inputField.value;
+      this.onCheckEvent.emit(this.inputField.value);
     }
   }
 
   onRevertClick() {
-    this.curField.value = this.curField.defaultValue;
-    this.curField.status = 0;
+    this.inputField.value = this.inputField.defaultValue;
+    this.inputField.status = CsInputStatus.isView;
     this.onRevertEvent.emit();
   }
 }

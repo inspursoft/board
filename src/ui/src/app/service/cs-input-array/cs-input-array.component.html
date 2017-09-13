@@ -12,14 +12,14 @@
         [ngClass]="{'last':iIndex == FiledArray.length - 1}"
         class="cs-input-array-span">{{item.value}}</span>
   <input #input
-         type="text"
          id="fieldInput"
          class="cs-input-array-input"
          *ngIf="item.status == 1"
+         [type]="inputType"
          [ngClass]="{'last':iIndex == FiledArray.length - 1}"
          [maxlength]="inputMaxlength"
          [(ngModel)]="item.value">
-  <a *ngIf="item.status == 0 && ! isDisabled"
+  <a *ngIf="item.status == 0 && !disabled"
      href="javascript:void(0)"
      class="cs-input-array-icon"
      (click)="onEditClick(iIndex)">
