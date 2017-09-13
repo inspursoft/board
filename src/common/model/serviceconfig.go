@@ -36,9 +36,9 @@ type ServiceStructYml struct {
 		}
 	}
 	Spec struct {
-		Tpe      string               `yaml:"type,flow,omitempty"`
-		Ports    []PortsServiceYml    `yaml:",omitempty"`
-		Selector []SelectorServiceYml `yaml:",omitempty"`
+		Tpe      string             `yaml:"type,flow,omitempty"`
+		Ports    []PortsServiceYml  `yaml:",omitempty"`
+		Selector SelectorServiceYml `yaml:",omitempty"`
 	} `yaml:",omitempty"`
 }
 

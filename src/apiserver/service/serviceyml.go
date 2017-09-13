@@ -41,7 +41,7 @@ func CheckDeploymentPath(loadPath string) error {
 func BuildServiceYml(reqServiceConfig model.ServiceConfig) error {
 	var service model.ServiceStructYml
 	var port model.PortsServiceYml
-	var selector model.SelectorServiceYml
+	//var selector model.SelectorServiceYml
 
 	serviceLoadPath := GetDeploymentPath()
 	err := CheckDeploymentPath(serviceLoadPath)
@@ -66,10 +66,11 @@ func BuildServiceYml(reqServiceConfig model.ServiceConfig) error {
 		service.Spec.Ports = append(service.Spec.Ports, port)
 	}
 
-	for _, sltor := range reqServiceConfig.ServiceYaml.Selectors {
-		selector.App = sltor
-		service.Spec.Selector = append(service.Spec.Selector, selector)
-	}
+	// for _, sltor := range reqServiceConfig.ServiceYaml.Selectors {
+	// 	selector.App = sltor
+	// 	service.Spec.Selector = append(service.Spec.Selector, selector)
+	// }
+	service.Spec.Selector.App = reqServiceConfig.ServiceYaml.Selectors[0]
 
 	context, err := yaml.Marshal(&service)
 	if err != nil {

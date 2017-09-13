@@ -15,12 +15,6 @@ func SelectProject(config *model.ServiceConfig, projectID int64) (*model.Service
 	return config, nil
 }
 
-func SelectImages(config *model.ServiceConfig, images []string) (*model.ServiceConfig, error) {
-	config.Phase = "SELECT_IMAGES"
-	config.ImageList = images
-	return config, nil
-}
-
 func ConfigureContainers(config *model.ServiceConfig, containers []yaml.Container) (*model.ServiceConfig, error) {
 	config.Phase = "CONFIGURE_CONTAINERS"
 	config.DeploymentYaml = yaml.Deployment{}
