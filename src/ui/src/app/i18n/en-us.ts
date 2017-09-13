@@ -234,5 +234,19 @@ export const LANG_EN_US = {
     "STEP_3_SELECT_IMAGE":"Select Image...",
     "STEP_3_ADD_NEW_CONTAINER":"Add New Container",
     "STEP_3_CONTAINER":"Container"
+  },
+  "GLOBAL_SEARCH": {
+    "PROJECTS": "Projects",
+    "PROJECT_NAME": "Project Name",
+    "OWNER_NAME": "Owner Name",
+    "IS_PUBLIC": "Public",
+    "TRUE": "True",
+    "FALSE": "False",
+    "USERS": "Users",
+    "USERNAME": "Username",
+    "EMAIL": "Email",
+    "ROLE": "Role",
+    "SEARCH_FOR": "",
+    "ITEMS": " record(s) found."
   }
 };

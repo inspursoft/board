@@ -29,13 +29,13 @@ func GetNode(nodeName string) (node NodeInfo, err error) {
 	defer func() { recover() }()
 	var url string
 	url = fmt.Sprintf("%s:%s/api/v1/nodes", os.Getenv("KUBE_IP"), os.Getenv("KUBE_PORT"))
-	err = getFromK8sApi(url, &Node)
+	err = getFromRequest(url, &Node)
 	if err != nil {
 		return
 	}
 	for _, v := range Node.Items {
 		var mlimit string
-		if strings.Contains(v.Status.Addresses[1].Address, nodeName) {
+		if strings.EqualFold(v.Status.Addresses[1].Address, nodeName) {
 			for k, v := range v.Status.Capacity {
 				switch k {
 				case "memory":
@@ -44,7 +44,7 @@ func GetNode(nodeName string) (node NodeInfo, err error) {
 			}
 			time := v.CreationTimestamp.Unix()
 			var ps []v2.ProcessInfo
-			getFromK8sApi("http://"+nodeName+":4194/api/v2.0/ps/", &ps)
+			getFromRequest("http://"+nodeName+":4194/api/v2.0/ps/", &ps)
 			var c, m float32
 			for _, v := range ps {
 				c += v.PercentCpu
@@ -53,7 +53,7 @@ func GetNode(nodeName string) (node NodeInfo, err error) {
 			cpu := c
 			mem := m
 			var fs []v2.MachineFsStats
-			getFromK8sApi("http://"+nodeName+":4194/api/v2.0/storage", &fs)
+			getFromRequest("http://"+nodeName+":4194/api/v2.0/storage", &fs)
 			var capacity uint64
 			var use uint64
 			for _, v := range fs {
@@ -76,7 +76,7 @@ func GetNode(nodeName string) (node NodeInfo, err error) {
 
 	return
 }
-func getFromK8sApi(url string, source interface{}) (err error) {
+func getFromRequest(url string, source interface{}) (err error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return
