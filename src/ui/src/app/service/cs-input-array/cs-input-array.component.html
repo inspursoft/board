@@ -1,0 +1,40 @@
+<div *ngFor="let item of FiledArray;let iIndex = index"
+     class="cs-input-array-container">
+  <label for="fieldInput" class="cs-input-array-label">{{iIndex == 0 ? labelText : ""}}</label>
+  <div class="cs-input-array-minus-container"
+       *ngIf="iIndex < FiledArray.length - 1 && !isDisabled">
+    <clr-icon
+      class="cs-input-array-minus"
+      shape="minus"
+      (click)="onMinusClick(iIndex)"></clr-icon>
+  </div>
+  <span *ngIf="item.status == 0"
+        [ngClass]="{'last':iIndex == FiledArray.length - 1}"
+        class="cs-input-array-span">{{item.value}}</span>
+  <input #input
+         id="fieldInput"
+         class="cs-input-array-input"
+         *ngIf="item.status == 1"
+         [type]="inputType"
+         [ngClass]="{'last':iIndex == FiledArray.length - 1}"
+         [maxlength]="inputMaxlength"
+         [(ngModel)]="item.value">
+  <a *ngIf="item.status == 0 && !disabled"
+     href="javascript:void(0)"
+     class="cs-input-array-icon"
+     (click)="onEditClick(iIndex)">
+    <clr-icon shape="note"></clr-icon>
+  </a>
+  <a *ngIf="item.status == 1"
+     href="javascript:void(0)"
+     class="cs-input-array-icon"
+     (click)="onCheckClick(iIndex)">
+    <clr-icon shape="check"></clr-icon>
+  </a>
+  <a *ngIf="item.status == 1"
+     href="javascript:void(0)"
+     class="cs-input-array-icon"
+     (click)="onRevertClick(iIndex)">
+    <clr-icon shape="refresh"></clr-icon>
+  </a>
+</div>

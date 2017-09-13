@@ -45,6 +45,17 @@ export class K8sService {
       .catch(err => Promise.reject(err));
   }
 
+  getDockerFilePreview(imageData: ServiceStep2Output): Promise<string> {
+    return this.http.post(`/api/v1/images/preview`, imageData, {
+      headers: this.defaultHeader
+    }).toPromise()
+      .then(res => {
+        this.appInitService.chainResponse(res);
+        return res.text();
+      })
+      .catch(err => Promise.reject(err));
+  }
+
   getFileList(formData: FormData): Promise<Array<{path: string, file_name: string, size: number}>> {
     let headers = new Headers();
     headers.append('token', this.appInitService.token);

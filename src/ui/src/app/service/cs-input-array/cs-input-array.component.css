@@ -1,0 +1,59 @@
+div.cs-input-array-container {
+  display: flex;
+  width: 100%;
+  margin-top: 10px;
+  height: 30px;
+}
+
+label.cs-input-array-label {
+  min-width: 180px;
+  text-align: right;
+}
+
+div.cs-input-array-minus-container {
+  display: flex;
+  align-items: center;
+  flex-basis: 20px;
+  height: 100%;
+  margin-left: 10px;
+}
+
+.cs-input-array-minus {
+  color: white;
+  background: green;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+span.cs-input-array-span {
+  flex-basis: 100%;
+  text-align: left;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  border-bottom: solid 1px silver;
+  height: 30px;
+  line-height: 30px;
+}
+
+span.cs-input-array-span.last {
+  margin-left: 10px;
+}
+
+input.cs-input-array-input {
+  text-align: left;
+  line-height: 30px;
+  height: 30px;
+  flex-basis: 100%;
+}
+
+input.cs-input-array-input.last {
+  margin-left: 10px;
+}
+
+a.cs-input-array-icon {
+  margin-left: 5px;
+  flex-basis: 20px;
+}
