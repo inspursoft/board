@@ -1,6 +1,6 @@
 <clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'md'">
+  <h3 class="modal-title">{{ "Environment Value" | translate }}</h3>
   <fieldset class=" modal-body fieldSet-default" style="margin-bottom: 20px">
-    <legend class="legend-default">{{"Environment Value" | translate}}:</legend>
     <div class="hide-error-msg">
       <clr-alert (clrAlertClosedChange)="isAlertOpen = false"
                  [clrAlertClosed]="!isAlertOpen"
@@ -11,7 +11,17 @@
       </clr-alert>
     </div>
     <div style="display: flex;width: 100%;flex-direction: column;margin-bottom: 10px;">
-
+      <div style="border: solid 1px yellowgreen;height: 30px"></div>
+      <div style="border: solid 1px red;flex-basis: 100%;display: flex">
+        <div style="flex-basis: 50%">
+          <!--<cs-input [inputMaxlength]="255"-->
+                    <!--[labelText]="'SERVICE.STEP_2_BASE_IMAGE'|translate"></cs-input>-->
+        </div>
+        <div style="flex-basis: 50%">
+          <!--<cs-input [inputMaxlength]="255"-->
+                    <!--[labelText]="'SERVICE.STEP_2_BASE_IMAGE'|translate"></cs-input>-->
+        </div>
+      </div>
     </div>
   </fieldset>
 </clr-modal>

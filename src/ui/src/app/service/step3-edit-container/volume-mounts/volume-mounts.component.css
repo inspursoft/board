@@ -1,6 +1,7 @@
 fieldset.fieldSet-default {
   margin: 0 2px;
   border: 1px solid silver;
+  overflow: hidden;
 }
 
 legend.legend-default {
