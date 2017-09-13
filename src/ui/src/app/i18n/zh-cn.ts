@@ -217,5 +217,19 @@ export const LANG_ZH_CN = {
     "STEP_2_PREVIEW":"预览",
     "STEP_2_BUILD_IMAGE":"构建镜像",
     "STEP_2_UPLOAD_SUCCESS":"上传文件成功。"
+  },
+  "GLOBAL_SEARCH": {
+    "PROJECTS": "项目",
+    "PROJECT_NAME": "项目名称",
+    "OWNER_NAME": "所有者",
+    "IS_PUBLIC": "公开性",
+    "TRUE": "是",
+    "FALSE": "否",
+    "USERS": "用户",
+    "USERNAME": "用户名",
+    "EMAIL": "邮箱",
+    "ROLE": "角色",
+    "SEARCH_FOR": "搜索到 ",
+    "ITEMS": " 条记录。"
   }
 };
