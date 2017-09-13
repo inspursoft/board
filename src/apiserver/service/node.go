@@ -35,7 +35,7 @@ func GetNode(nodeName string) (node NodeInfo, err error) {
 	}
 	for _, v := range Node.Items {
 		var mlimit string
-		if strings.Contains(v.Status.Addresses[1].Address, nodeName) {
+		if strings.EqualFold(v.Status.Addresses[1].Address, nodeName) {
 			for k, v := range v.Status.Capacity {
 				switch k {
 				case "memory":
