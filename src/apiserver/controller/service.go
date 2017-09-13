@@ -67,7 +67,6 @@ func (p *ServiceController) DeployServiceAction() {
 		p.internalError(err)
 		return
 	}
-	fmt.Println(reqData)
 	var reqServiceConfig model.ServiceConfig
 	err = json.Unmarshal(reqData, &reqServiceConfig)
 	if err != nil {
@@ -76,13 +75,19 @@ func (p *ServiceController) DeployServiceAction() {
 	}
 	fmt.Println(reqServiceConfig)
 
-	//TODO check valid()
+	//TODO check valid(reqServiceConfig)
 
 	var serviceConfigPath = filepath.Join(repoPath,
 		reqServiceConfig.ProjectName, strconv.FormatInt(reqServiceConfig.ServiceID, 10))
 
 	logs.Info("Service config path: %s", serviceConfigPath)
 	service.SetDeploymentPath(serviceConfigPath)
+
+	//Add registry to container images for deployment
+	registryprefix := os.Getenv("REGISTRY_HOST") + ":" + os.Getenv("REGISTRY_PORT")
+	for _, container := range reqServiceConfig.DeploymentYaml.ContainerList {
+		container.BaseImage = filepath.Join(registryprefix, container.BaseImage)
+	}
 
 	//Build deployment yaml file
 	err = service.BuildDeploymentYml(reqServiceConfig)
@@ -123,6 +128,8 @@ func (p *ServiceController) DeployServiceAction() {
 	}
 	logs.Info("Internal push deployment object: %d %s", ret, msg)
 
+	//TODO: If fail to create deployment, should not continue to create service
+
 	//Push service to jenkins
 	pushobject.FileName = serviceFilename
 	pushobject.JobName = "process_service"
@@ -144,4 +151,12 @@ func (p *ServiceController) DeployServiceAction() {
 	logs.Info("Internal push service object: %d %s", ret, msg)
 	p.CustomAbort(ret, msg)
 
+}
+
+// API to create service config
+func (p *ServiceController) CreateServiceConfigAction() {
+	//TODO: Assign and return Service ID with mysql
+	var serviceID = "1"
+	p.Data["json"] = serviceID
+	p.ServeJSON()
 }
