@@ -86,3 +86,9 @@ type ImageConfig struct {
 	ImageDockerfile     Dockerfile `json:"image_dockerfile"`
 	ImageDockerfilePath string     `json:"-"`
 }
+
+type ImageIndex struct {
+	ImageName   string `json:"image_name"`
+	ImageTag    string `json:"image_tag"`
+	ProjectName string `json:"project_name"`
+}
