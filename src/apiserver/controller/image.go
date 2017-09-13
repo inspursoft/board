@@ -9,9 +9,9 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
-	//"strings"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/astaxie/beego/logs"
@@ -280,7 +280,6 @@ func (p *ImageController) GetImageDockerfileAction() {
 	return
 }
 
-//TODO
 func (p *ImageController) DockerfilePreviewAction() {
 	var err error
 
@@ -313,6 +312,35 @@ func (p *ImageController) DockerfilePreviewAction() {
 	reqImageConfig.ImageDockerfilePath = filepath.Join(repoPath, reqImageConfig.ProjectName,
 		reqImageConfig.ImageName, reqImageConfig.ImageTag)
 	err = service.BuildDockerfile(reqImageConfig, p.Ctx.ResponseWriter)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+}
+
+func (p *ImageController) ConfigCleanAction() {
+	var err error
+
+	if p.isProjectAdmin == false {
+		p.serveStatus(http.StatusForbidden, "Invalid user for project admin")
+		return
+	}
+
+	reqData, err := p.resolveBody()
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	var reqImageIndex model.ImageIndex
+	err = json.Unmarshal(reqData, &reqImageIndex)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	configPath := filepath.Join(repoPath, strings.TrimSpace(reqImageIndex.ProjectName), strings.TrimSpace(reqImageIndex.ImageName), strings.TrimSpace(reqImageIndex.ImageTag))
+	err = service.ImageConfigClean(configPath)
 	if err != nil {
 		p.internalError(err)
 		return

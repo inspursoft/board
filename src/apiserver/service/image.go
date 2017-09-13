@@ -181,3 +181,43 @@ func BuildDockerfile(reqImageConfig model.ImageConfig, wr ...io.Writer) error {
 
 	return nil
 }
+
+func ImageConfigClean(path string) error {
+	//remove Tag dir
+	err := os.RemoveAll(path)
+	if err != nil {
+		return err
+	}
+
+	//remove Image dir
+	if fi, err := os.Stat(filepath.Dir(path)); os.IsNotExist(err) {
+		return nil
+	} else if !fi.IsDir() {
+		errMsg := fmt.Sprintf(`%s is not dir`, filepath.Dir(path))
+		return errors.New(errMsg)
+	}
+
+	ok := false
+	parent, err := os.Open(filepath.Dir(path))
+	if err != nil {
+		return err
+	}
+	defer parent.Close()
+
+	names, err := parent.Readdirnames(0)
+	if err != nil {
+		return err
+	}
+	for _, node := range names {
+		if strings.Compare(node, `.`) != 0 && strings.Compare(node, `..`) != 0 {
+			ok = true
+			break
+		}
+	}
+
+	if !ok {
+		return os.RemoveAll(filepath.Dir(path))
+	}
+
+	return nil
+}
