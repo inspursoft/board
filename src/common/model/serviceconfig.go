@@ -18,9 +18,9 @@ type ServiceConfigImage struct {
 }
 
 type PortsServiceYml struct {
-	Port       string
-	Tagertport string
-	Nodeport   string
+	Port       int
+	TargetPort int `yaml:"targetPort,flow"`
+	NodePort   int `yaml:"nodePort,flow"`
 }
 
 type SelectorServiceYml struct {
