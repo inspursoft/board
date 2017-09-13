@@ -73,9 +73,22 @@ func (p *ServiceController) DeployServiceAction() {
 		p.internalError(err)
 		return
 	}
-	fmt.Println(reqServiceConfig)
 
-	//TODO check valid(reqServiceConfig)
+	// Check deployment parameters
+	err = service.CheckDeploymentYmlPara(reqServiceConfig)
+	if err != nil {
+		logs.Info("Deployment config parameters error")
+		p.internalError(err)
+		return
+	}
+
+	// Check service parameters
+	err = service.CheckServiceYmlPara(reqServiceConfig)
+	if err != nil {
+		logs.Info("Service config parameters error")
+		p.internalError(err)
+		return
+	}
 
 	var serviceConfigPath = filepath.Join(repoPath,
 		reqServiceConfig.ProjectName, strconv.FormatInt(reqServiceConfig.ServiceID, 10))
@@ -85,9 +98,11 @@ func (p *ServiceController) DeployServiceAction() {
 
 	//Add registry to container images for deployment
 	registryprefix := os.Getenv("REGISTRY_HOST") + ":" + os.Getenv("REGISTRY_PORT")
-	for _, container := range reqServiceConfig.DeploymentYaml.ContainerList {
-		container.BaseImage = filepath.Join(registryprefix, container.BaseImage)
+	for index, container := range reqServiceConfig.DeploymentYaml.ContainerList {
+		reqServiceConfig.DeploymentYaml.ContainerList[index].BaseImage =
+			filepath.Join(registryprefix, container.BaseImage)
 	}
+	fmt.Println(reqServiceConfig) //DEBUG
 
 	//Build deployment yaml file
 	err = service.BuildDeploymentYml(reqServiceConfig)

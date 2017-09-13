@@ -6,10 +6,9 @@ type ServiceConfig struct {
 	ServiceID      int64           `json:"service_id" orm:"column(id)"`
 	ProjectID      int64           `json:"project_id" orm:"column(project_id)"`
 	ProjectName    string          `json:"project_name"`
-	Phase          string          `json:"service_config_phase"`
-	ImageList      []string        `json:"service_image_list"`
-	ServiceYaml    yaml.Service    `json:"service_yaml"`
+	Phase          string          `json:"config_phase"`
 	DeploymentYaml yaml.Deployment `json:"deployment_yaml"`
+	ServiceYaml    yaml.Service    `json:"service_yaml"`
 }
 
 type ServiceConfigImage struct {
@@ -37,9 +36,9 @@ type ServiceStructYml struct {
 		}
 	}
 	Spec struct {
-		Tpe      string               `yaml:"type,flow,omitempty"`
-		Ports    []PortsServiceYml    `yaml:",omitempty"`
-		Selector []SelectorServiceYml `yaml:",omitempty"`
+		Tpe      string             `yaml:"type,flow,omitempty"`
+		Ports    []PortsServiceYml  `yaml:",omitempty"`
+		Selector SelectorServiceYml `yaml:",omitempty"`
 	} `yaml:",omitempty"`
 }
 
@@ -49,7 +48,7 @@ type PortsDeploymentYml struct {
 
 type VolumeMountDeploymentYml struct {
 	Name      string
-	MountPath string `yaml:"MountPath,flow"`
+	MountPath string `yaml:"mountPath,flow"`
 }
 
 type EnvDeploymentYml struct {
@@ -58,11 +57,14 @@ type EnvDeploymentYml struct {
 }
 
 type VolumesDeploymentYml struct {
-	Name string
+	Name string `yaml:",omitempty"`
 	Nfs  struct {
 		Server string
 		Path   string
-	}
+	} `yaml:",omitempty"`
+	HostPath struct {
+		Path string
+	} `yaml:"hostPath,flow,omitempty"`
 }
 
 type ContainersDeploymentYml struct {
