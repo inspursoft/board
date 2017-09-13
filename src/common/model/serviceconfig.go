@@ -7,7 +7,6 @@ type ServiceConfig struct {
 	ProjectID      int64           `json:"project_id" orm:"column(project_id)"`
 	ProjectName    string          `json:"project_name"`
 	Phase          string          `json:"config_phase"`
-	ImageList      []string        `json:"image_list"`
 	DeploymentYaml yaml.Deployment `json:"deployment_yaml"`
 	ServiceYaml    yaml.Service    `json:"service_yaml"`
 }

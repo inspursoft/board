@@ -2495,12 +2495,6 @@ definitions:
       config_phase:
         type: string
         description: The phase name of the service configuration process.        
-      image_list:
-        description: The images of this service.
-        type: array
-        items:
-          type: string
-          description: The name of this image.
       deployment_yaml:
         description: The deployment yaml struct of this service configuration.
         $ref: '#/definitions/DeploymentYaml'
