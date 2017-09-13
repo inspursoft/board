@@ -15,7 +15,7 @@ type OriginImage struct {
 type SearchResult struct {
 	ProjectResult []dao.SearchProjectResult `json:"project_result"`
 	UserResult    []dao.SearchUserResult    `json:"user_result"`
-	ImageResult   []SearchImageResult                 `json:"images_name"`
+	ImageResult   []SearchImageResult       `json:"images_name"`
 }
 type SearchImageResult struct {
 	ImageName   string `json:"image_name"`
