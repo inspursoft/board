@@ -178,7 +178,7 @@
                                class="card-block-dropdown">
               <button *ngFor="let lineList of LineNamesList.get(2);"
                       [ngClass]="{'active':DropdownText.get(2) == lineList.list_name}"
-                      class="dropdown-item"
+                      class="dropdown-item cs-dropdown-item"
                       (click)="dropDownChange(2,lineList);storageDropdown.toggleDropdown()">
                 {{lineList.list_name}}
               </button>

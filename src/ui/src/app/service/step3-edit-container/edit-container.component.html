@@ -1,54 +1,53 @@
-<div style="border: solid 1px silver;  width: 100%;display: flex;flex-direction: column;padding: 15px">
+<div class="edit-container-container">
   <volume-mounts *ngIf="showVolumeMounts" [(isOpen)]="showVolumeMounts"></volume-mounts>
   <environment-value *ngIf="showEnvironmentValue" [(isOpen)]="showEnvironmentValue"></environment-value>
-  <span>Select container for compose:</span>
-  <div style="display: flex;width: 100%;align-items: center;flex-direction: column"
-       *ngFor="let container of containerList;let i = index">
-    <div style="width: 100%;display: flex;margin-top: 10px">
-      <clr-icon *ngIf="i == containerList.length - 1 && container.status == 1"
-                style="color: white;background: green;width: 20px;height: 20px;border-radius: 5px;cursor: pointer;"
+  <span>{{"SERVICE.STEP_3_SELECT_CONTAINER" | translate}}</span>
+  <div class="edit-container-one-container"
+       *ngFor="let container of containerList;let iContainer = index">
+    <div class="edit-container-head-container">
+      <clr-icon *ngIf="iContainer == containerList.length - 1 && container.status == 1"
+                class="edit-container-icon"
                 shape="plus"
-                (click)="modifySelectContainer(i)"></clr-icon>
-      <clr-icon *ngIf="i < containerList.length - 1"
+                (click)="modifySelectContainer(iContainer)"></clr-icon>
+      <clr-icon *ngIf="iContainer < containerList.length - 1"
                 shape="minus"
-                style="color: white;background: green;width: 20px;height: 20px;border-radius: 5px;cursor: pointer;"
-                (click)="modifySelectContainer(i)"></clr-icon>
-      <span style="flex-basis: 150px;text-align: right"
+                class="edit-container-icon"
+                (click)="modifySelectContainer(iContainer)"></clr-icon>
+      <span style="flex-basis: 160px;text-align: right"
             [ngStyle]="{'margin-left':container.status == 0 ?'20px':'0'}">
-        {{container.status == 1 ?"Container":"Add New Container"}}:
+        {{container.status == 1 ?('SERVICE.STEP_3_CONTAINER'| translate):('SERVICE.STEP_3_ADD_NEW_CONTAINER'| translate)}}:
       </span>
-      <cs-dropdown style="margin-left: 30px"
-                   [width]="250"
-                   [list]="imageSourceList"
-                   [defaultText]="'Select Image...'"
-                   [textKey]="'image_name'"
-                   (onChange)="changeSelectImage(container, $event)">
+      <cs-dropdown style="margin-left: 10px"
+                   [Width]="250"
+                   [List]="imageSourceList"
+                   [DefaultText]="'SERVICE.STEP_3_SELECT_IMAGE'| translate"
+                   [TextKey]="'image_name'"
+                   (OnChange)="changeSelectImage(container, $event)">
       </cs-dropdown>
     </div>
-    <div *ngIf="container.status == 1" style="display: flex;width: 100%; flex-direction: column; margin-top: 10px">
-      <container-field [Label]="'Container Name:'"
-                       [Field]="getDetail(container)?.containerName"></container-field>
-      <container-field [Label]="'Working Dir:'"
-                       [Field]="getDetail(container)?.workingDir"></container-field>
-      <container-field [Label]="'Volume Mounts:'"
-                       [Type]="1"
-                       [Field]="getDetail(container)?.volumeMounts"
-                       (OnEdit)="showVolumeMounts = true"></container-field>
-      <container-field [Label]="'Env:'"
-                       [Type]="1"
-                       [Field]="getDetail(container)?.env"
-                       (OnEdit)="showEnvironmentValue = true"></container-field>
-      <container-field [Label]="'Container Port:'"
-                       [Field]="getDetail(container).containerPort"></container-field>
-      <container-field [Label]="'Command:'"
-                       [Field]="getDetail(container).command"></container-field>
-      <container-field [Label]="'CPU:'"
-                       [Field]="getDetail(container).cpu"></container-field>
-      <container-field [Label]="'Memory:'"
-                       [Field]="getDetail(container).memory"></container-field>
+    <div *ngIf="container.status == 1"
+         class="edit-container-filed-container">
+      <cs-input [Label]="'SERVICE.STEP_3_CONTAINER_NAME' | translate"
+                [Field]="getDetail(container)?.containerName"></cs-input>
+      <cs-input [Label]="'SERVICE.STEP_3_WORKING_DIR' | translate"
+                [Field]="getDetail(container)?.workingDir"></cs-input>
+      <cs-input [Type]="1"
+                [Label]="'SERVICE.STEP_3_VOLUME_MOUNTS' | translate"
+                [Field]="getDetail(container)?.volumeMounts"
+                (OnEdit)="showVolumeMounts = true"></cs-input>
+      <cs-input [Type]="1"
+                [Label]="'SERVICE.STEP_3_Env' | translate"
+                [Field]="getDetail(container)?.env"
+                (OnEdit)="showEnvironmentValue = true"></cs-input>
+      <cs-input [Label]="'SERVICE.STEP_3_CONTAINER_PORT' | translate"
+                [Field]="getDetail(container)?.containerPort"></cs-input>
+      <cs-input [Label]="'SERVICE.STEP_3_COMMAND' | translate"
+                [Field]="getDetail(container)?.command"></cs-input>
+      <cs-input [Label]="'SERVICE.STEP_3_CPU' | translate"
+                [Field]="getDetail(container)?.cpu"></cs-input>
+      <cs-input [Label]="'SERVICE.STEP_3_MEMORY' | translate"
+                [Field]="getDetail(container)?.memory"></cs-input>
     </div>
   </div>
 </div>
-
-
 <button class="btn btn-default" (click)="forward()">Next</button>

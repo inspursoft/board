@@ -5,15 +5,9 @@ div.select-project-container {
   flex-direction: column;
 }
 
-div.select-container {
-  flex-basis: 50%;
-  display: flex;
-  align-items: center;
-}
-
 span.filed-text {
-  text-align: right;
-  flex-basis: 200px;
+  margin-top: 30px;
+  text-align: left;
 }
 
 button.select-project {
@@ -22,14 +16,6 @@ button.select-project {
 
 .custom-margin {
   margin-left: 20px;
-}
-
-.dropdown-menu {
-  overflow-y: scroll;
-  width: 250px;
-}
-
-.dropdown-item {
-  min-height: 30px;
+  margin-top: 30px;
 }
 

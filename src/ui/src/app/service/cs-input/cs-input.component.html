@@ -1,0 +1,39 @@
+<div class="cs-input-container" [formGroup]="inputFormGroup">
+  <label for="inputField" class="cs-input-label">{{labelText}}:</label>
+  <span *ngIf="curField.status == 0" class="cs-input-span">{{curField.value}}</span>
+  <label *ngIf="curField.status == 1 && curFieldType == 0"
+         for="inputField"
+         aria-haspopup="true"
+         role="tooltip"
+         class="cs-input-field-container tooltip tooltip-validation tooltip-md"
+         [class.invalid]="inputFormGroup.invalid && (inputFormGroup.dirty || inputFormGroup.touched)">
+    <input #input
+           type="text"
+           id="inputField"
+           formControlName="inputControl"
+           class="cs-input-input"
+           [maxlength]="inputMaxlength"
+           [(ngModel)]="curField.value">
+    <span class="tooltip-content" *ngIf="inputFormGroup.invalid">
+      {{inputFormGroup.controls.inputControl?.errors | json}}
+    </span>
+  </label>
+  <a *ngIf="curField.status == 0 && ! isDisabled"
+     href="javascript:void(0)"
+     class="cs-input-icon"
+     (click)="onEditClick()">
+    <clr-icon shape="note"></clr-icon>
+  </a>
+  <a *ngIf="curField.status == 1 && curFieldType == 0"
+     href="javascript:void(0)"
+     class="cs-input-icon"
+     (click)="onCheckClick()">
+    <clr-icon shape="check"></clr-icon>
+  </a>
+  <a *ngIf="curField.status == 1 && curFieldType == 0"
+     href="javascript:void(0)"
+     class="cs-input-icon"
+     (click)="onRevertClick()">
+    <clr-icon shape="refresh"></clr-icon>
+  </a>
+</div>

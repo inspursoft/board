@@ -1,10 +1,11 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ServiceStep1Output, ServiceStep2Output, ServiceStepComponent } from '../service-step.component';
 import { K8sService } from '../service.k8s';
 import { MessageService } from "../../shared/message-service/message.service";
 import { Image, ImageDetail } from "../../image/image";
 import { AppInitService } from "../../app.init.service";
 import { Message } from "../../shared/message-service/message";
+import { FormControl, FormGroup, ValidatorFn, Validators } from "@angular/forms";
 
 enum ImageSource{
   fromBoardRegistry,
@@ -25,9 +26,14 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
   imageDetailSourceList: Map<string, Array<ImageDetail>>;
   imageDetailSelectList: Map<string, ImageDetail>;
   imageTemplateList: Array<Object> = [{name: "Docker File Template"}];
+  customerCreateImage: Image;
+  customerSelectImage: Image;
   outputData: ServiceStep2Output = new ServiceStep2Output();
   filesList: Map<string, Array<{path: string, file_name: string, size: number}>>;
-
+  consoleText: string = "";
+  isOpenNewImage: boolean = false;
+  newImageIndex: number;
+  testValidatorFn: Array<ValidatorFn> = [Validators.required, Validators.maxLength(10)];
   constructor(private k8sService: K8sService,
               private messageService: MessageService,
               private appInitService: AppInitService) {
@@ -35,6 +41,8 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
     this.imageDetailSelectList = new Map<string, ImageDetail>();
     this.imageDetailSourceList = new Map<string, Array<ImageDetail>>();
     this.filesList = new Map<string, Array<{path: string, file_name: string, size: number}>>();
+    this.customerCreateImage = new Image();
+    this.customerSelectImage = new Image();
   }
 
   ngOnInit() {
@@ -42,13 +50,17 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
     this.outputData.image_dockerfile.image_author = this.appInitService.currentUser["user_name"];
     this.outputData.project_name = step1Out.project_name;
     this.outputData.image_template = "dockerfile-template";
-    this.k8sService.getImages("", 0, 0).then(res => {
-      if (res.length > 0) {
+    this.customerCreateImage.image_name = "SERVICE.STEP_2_CREATE_IMAGE";
+    this.customerCreateImage["isSpecial"] = true;
+    this.customerCreateImage["OnlyClick"] = true;
+    this.customerSelectImage.image_name = "SERVICE.STEP_2_SELECT_IMAGE";
+    this.k8sService.getImages("", 0, 0)
+      .then(res => {
         this.imageSourceList = res;
-        this.imageSelectList.push(res[0]);
-        this.setImageDetailList(res[0].image_name);
-      }
-    }).catch(err => this.messageService.dispatchError(err));
+        this.imageSourceList.unshift(this.customerCreateImage);
+        this.imageSelectList.push(this.customerSelectImage);
+      })
+      .catch(err => this.messageService.dispatchError(err));
     this.intervalAutoRefreshImageList = setInterval(() => {
       if (this.isNeedAutoRefreshImageList) {
         this.k8sService.getImages("", 0, 0).then(res => {
@@ -57,6 +69,8 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
             if (value.image_name == newImageName) {
               this.isNeedAutoRefreshImageList = false;
               this.imageSourceList = res;
+              this.imageSelectList[this.newImageIndex] = value;
+              this.isOpenNewImage = false;
             }
           });
         }).catch(err => this.messageService.dispatchError(err));
@@ -67,6 +81,28 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
   ngOnDestroy() {
     this.k8sService.setStepData(2, this.outputData);
     clearInterval(this.intervalAutoRefreshImageList);
+  }
+
+  get imageRun(): Array<string> {
+    return this.outputData.image_dockerfile.image_run;
+  }
+
+  get imageVolume(): Array<string> {
+    return this.outputData.image_dockerfile.image_volume;
+  }
+
+  get isCanNextStep(): boolean {
+    return this.imageSelectList.filter(value => {
+        return value.image_name != "SERVICE.STEP_2_SELECT_IMAGE" &&
+          value.image_name != "SERVICE.STEP_2_CREATE_IMAGE"
+      }).length > 0;
+  }
+
+  shieldEnter($event: KeyboardEvent) {
+    if ($event.charCode == 13) {
+      (<any>$event.target).blur();
+      this.getDockerFilePreviewInfo();
+    }
   }
 
   setImageDetailList(imageName: string): void {
@@ -86,13 +122,18 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
     this.setImageDetailList(image.image_name);
   }
 
+  clickSelectImage(index: number, image: Image) {
+    this.isOpenNewImage = true;
+    this.newImageIndex = index;
+  }
+
   changeSelectImageDetail(imageName: string, imageDetail: ImageDetail) {
     this.imageDetailSelectList.set(imageName, imageDetail);
   }
 
   modifySelectImage(index: number) {
     if (index == this.imageSelectList.length - 1) {
-      this.imageSelectList.push(this.imageSourceList[0]);
+      this.imageSelectList.push(this.customerSelectImage);
     } else {
       this.imageSelectList.splice(index, 1);
     }
@@ -100,33 +141,39 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
 
   buildImage() {
     this.isNeedAutoRefreshImageList = true;
-    console.log(this.outputData);
-    this.outputData.image_dockerfile.image_volume = this.outputData.image_dockerfile.image_volume
-      .filter(value => {
-        return value != ""
+    this.k8sService.buildImage(this.outputData)
+      .then(res => res)
+      .catch((err) => {
+        this.messageService.dispatchError(err);
+        this.isNeedAutoRefreshImageList = false;
+      })
+  }
+
+  updateFileList(): Promise<boolean> {
+    let formFileList: FormData = new FormData();
+    formFileList.append('project_name', this.outputData.project_name);
+    formFileList.append('image_name', this.outputData.image_name);
+    formFileList.append('tag_name', this.outputData.image_tag);
+    return this.k8sService.getFileList(formFileList).then(res => {
+      this.filesList.set(this.outputData.image_name, res);
+      let imageCopyArr = this.outputData.image_dockerfile.image_copy;
+      imageCopyArr.splice(0, imageCopyArr.length);
+      this.filesList.get(this.outputData.image_name).forEach(value => {
+        imageCopyArr.push({
+          dockerfile_copyfrom: value.path + "/" + value.file_name,
+          dockerfile_copyto: "tmp"
+        });
       });
-    this.outputData.image_dockerfile.image_run = this.outputData.image_dockerfile.image_run
-      .filter(value => {
-        return value != ""
-      });
-    console.log(this.outputData);
-    this.k8sService.buildImage(this.outputData).then(res => {
-      //show log...
-    }).catch((err) => {
-      this.messageService.dispatchError(err);
-      this.isNeedAutoRefreshImageList = false;
-    })
+      return true;
+    }).catch(err => this.messageService.dispatchError(err));
   }
 
-  get imageRun(): Array<string> {
-    return this.outputData.image_dockerfile.image_run;
+  async asyncGetDockerFilePreviewInfo() {
+    await this.updateFileList();
+    this.getDockerFilePreviewInfo();
   }
 
-  get imageVolume(): Array<string> {
-    return this.outputData.image_dockerfile.image_volume;
-  }
-
-  uploadFile(event): void {
+  async uploadFile(event) {
     let fileList: FileList = event.target.files;
     if (fileList.length > 0) {
       let file: File = fileList[0];
@@ -140,23 +187,17 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
         let m: Message = new Message();
         m.message = "SERVICE.STEP_2_UPLOAD_SUCCESS";
         this.messageService.inlineAlertMessage(m);
-
-        let formDataList: FormData = new FormData();
-        formDataList.append('project_name', this.outputData.project_name);
-        formDataList.append('image_name', this.outputData.image_name);
-        formDataList.append('tag_name', this.outputData.image_tag);
-        this.k8sService.getFileList(formDataList).then(res => {
-          this.filesList.set(this.outputData.image_name, res);
-        }).catch(err => this.messageService.dispatchError(err));
+        this.asyncGetDockerFilePreviewInfo();
       }).catch(err => this.messageService.dispatchError(err));
     }
   }
 
-  isImageDetailExist(image: Image): boolean {
-    return this.imageDetailSourceList.get(image.image_name) &&
-      this.imageDetailSourceList.get(image.image_name).length > 0;
+  getDockerFilePreviewInfo() {
+    this.k8sService.getDockerFilePreview(this.outputData)
+      .then(res => {
+        this.consoleText = res;
+      }).catch(err => this.messageService.dispatchError(err));
   }
-
 
   forward(): void {
     this.k8sService.stepSource.next(3);

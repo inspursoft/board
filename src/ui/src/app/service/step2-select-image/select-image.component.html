@@ -1,6 +1,6 @@
 <div class="select-image-container">
   <div class="image-source-container">
-    <span class="base-text">{{"SERVICE.STEP_2_SELECT_IMAGE" | translate}}:</span>
+    <span class="base-text">{{"SERVICE.STEP_2_SELECT_IMAGE_SOURCE" | translate}}:</span>
     <div class="btn-group base-margin-left">
       <button class="btn" [ngClass]="{'btn-primary':imageSource == 0}">Board registry</button>
       <button class="btn" [ngClass]="{'btn-primary':imageSource == 1}" [disabled]="true">Docker hub</button>
@@ -14,133 +14,98 @@
                 (click)="modifySelectImage(iImage)"></clr-icon>
     </div>
     <cs-dropdown class="base-margin-left"
-                 [width]="300"
-                 [list]="imageSourceList"
-                 [defaultText]="imageSelectList[iImage].image_name"
-                 [textKey]="'image_name'"
-                 (onChange)="changeSelectImage(iImage,$event)">
+                 [Width]="300"
+                 [List]="imageSourceList"
+                 [DefaultText]="selectedImage.image_name"
+                 [TextKey]="'image_name'"
+                 (OnChange)="changeSelectImage(iImage,$event)"
+                 (OnOnlyClickItem)="clickSelectImage(iImage,$event)">
     </cs-dropdown>
     <cs-dropdown class="base-margin-left"
-                 [width]="150"
-                 [defaultText]="imageDetailSelectList.get(selectedImage.image_name)?.image_tag"
-                 [list]="imageDetailSourceList.get(selectedImage.image_name)"
-                 [textKey]="'image_tag'"
-                 (onChange)="changeSelectImageDetail(selectedImage.image_name,$event)">
+                 *ngIf="imageDetailSourceList.get(selectedImage.image_name)"
+                 [Width]="150"
+                 [DefaultText]="imageDetailSelectList.get(selectedImage.image_name)?.image_tag"
+                 [List]="imageDetailSourceList.get(selectedImage.image_name)"
+                 [TextKey]="'image_tag'"
+                 (OnChange)="changeSelectImageDetail(selectedImage.image_name,$event)">
     </cs-dropdown>
   </div>
-  <fieldset class="fieldSet-default">
-    <legend class="legend-default">{{"SERVICE.STEP_2_CREATE_IMAGE" | translate}}:</legend>
-    <div style="display: flex;">
+</div>
+<clr-modal *ngIf="isOpenNewImage"
+           [(clrModalOpen)]="isOpenNewImage"
+           [clrModalSize]="'lg'"
+           [clrModalClosable]="!isNeedAutoRefreshImageList">
+  <h3 class="modal-title">{{ "SERVICE.STEP_2_CREATE_IMAGE" | translate }}</h3>
+  <fieldset class="modal-body fieldSet-default">
+    <div style="display: flex">
       <div class="create-image-container">
         <div class="create-image-line-container">
-          <span class="base-text">{{"SERVICE.STEP_2_SELECT_IMAGE_TEMP" | translate}}:</span>
+          <label class="base-text">{{"SERVICE.STEP_2_SELECT_IMAGE_TEMP" | translate}}:</label>
           <cs-dropdown class="base-margin-left"
-                       [disabled]="isNeedAutoRefreshImageList"
-                       [width]="300"
-                       [defaultText]="'Docker File Template'"
-                       [list]="imageTemplateList"
-                       [textKey]="'name'">
+                       [Disabled]="isNeedAutoRefreshImageList"
+                       [Width]="300"
+                       [DefaultText]="'Docker File Template'"
+                       [List]="imageTemplateList"
+                       [TextKey]="'name'">
           </cs-dropdown>
         </div>
-        <div class="create-image-line-container">
-          <label for="inputNewImageName" class="base-text">{{"SERVICE.STEP_2_NEW_IMAGE_NAME" | translate}}:</label>
-          <input type="text"
-                 id="inputNewImageName"
-                 class="base-input"
-                 [disabled]="isNeedAutoRefreshImageList"
-                 [(ngModel)]="outputData.image_name">
-        </div>
-        <div class="create-image-line-container">
-          <label for="inputNewImageTag" class="base-text">{{"SERVICE.STEP_2_IMAGE_TAG" | translate}}:</label>
-          <input type="text"
-                 id="inputNewImageTag"
-                 class="base-input"
-                 [(ngModel)]="outputData.image_tag"
-                 [disabled]="isNeedAutoRefreshImageList">
-        </div>
-        <div class="create-image-line-container">
-          <label for="inputBaseImage" class="base-text">{{"SERVICE.STEP_2_BASE_IMAGE" | translate}}:</label>
-          <input type="text"
-                 id="inputBaseImage"
-                 class="base-input"
-                 [(ngModel)]="outputData.image_dockerfile.image_base"
-                 [disabled]="isNeedAutoRefreshImageList">
-        </div>
-        <div class="create-image-line-container">
-          <label for="inputNewImageEntryPoint" class="base-text">{{"Image EntryPoint" | translate}}:</label>
-          <input type="text"
-                 id="inputNewImageEntryPoint"
-                 class="base-input"
-                 [(ngModel)]="outputData.image_dockerfile.image_entrypoint"
-                 [disabled]="isNeedAutoRefreshImageList">
-        </div>
-        <div *ngFor="let volume of imageVolume;let iVolume = index" class="create-image-line-container">
-          <label for="inputImageVolume" class="base-text">{{iVolume == 0 ? "Image Volume:" : "" | translate}}</label>
-          <input type="text"
-                 #inputVolume
-                 value="{{volume}}"
-                 (change)="imageVolume[iVolume] = inputVolume.value"
-                 id="inputImageVolume"
-                 class="base-input"
-                 [ngStyle]="{'color':iVolume < imageVolume.length - 1 ? 'gray' : 'black'}"
-                 [readonly]="iVolume < imageVolume.length - 1 ? 'readonly': ''"
-                 [disabled]="isNeedAutoRefreshImageList"
-                 style="min-width: 280px">
-          <clr-icon *ngIf="iVolume == imageVolume.length - 1 && !isNeedAutoRefreshImageList"
-                    class="dynamic-icon"
-                    shape="plus"
-                    (click)="imageVolume.push('')"></clr-icon>
-          <clr-icon *ngIf="iVolume < imageVolume.length - 1 && !isNeedAutoRefreshImageList"
-                    class="dynamic-icon"
-                    shape="minus"
-                    (click)="imageVolume.splice(iVolume,1)"></clr-icon>
-        </div>
-        <div *ngFor="let run of imageRun;let iRun = index" class="create-image-line-container">
-          <label for="inputImageRun" class="base-text">{{iRun == 0 ? "Image Run:" : "" | translate}}</label>
-          <input type="text"
-                 #inputRun
-                 value="{{run}}"
-                 (change)="imageRun[iRun] = inputRun.value"
-                 id="inputImageRun"
-                 class="base-input"
-                 [ngStyle]="{'color':iRun < imageRun.length - 1 ? 'gray' : 'black'}"
-                 [readonly]="iRun < imageRun.length - 1 ? 'readonly': ''"
-                 [disabled]="isNeedAutoRefreshImageList"
-                 style="min-width: 280px;">
-          <clr-icon *ngIf="iRun == imageRun.length - 1 && !isNeedAutoRefreshImageList"
-                    class="dynamic-icon"
-                    shape="plus"
-                    (click)="imageRun.push('')"></clr-icon>
-          <clr-icon *ngIf="iRun < imageRun.length - 1 && !isNeedAutoRefreshImageList"
-                    class="dynamic-icon"
-                    shape="minus"
-                    (click)="imageRun.splice(iRun,1)"></clr-icon>
-        </div>
+        <cs-input [inputMaxlength]="255"
+                  [Label]="'SERVICE.STEP_2_NEW_IMAGE_NAME'|translate"
+                  [validatorFns]="testValidatorFn"
+                  [disabled]="isNeedAutoRefreshImageList"
+                  [SimpleFiled]="outputData.image_name"
+                  (OnCheck)="outputData.image_name = $event;asyncGetDockerFilePreviewInfo()"></cs-input>
+        <cs-input [inputMaxlength]="255"
+                  [Label]="'SERVICE.STEP_2_IMAGE_TAG'|translate"
+                  [disabled]="isNeedAutoRefreshImageList"
+                  [validatorFns]="testValidatorFn"
+                  [SimpleFiled]="outputData.image_tag"
+                  (OnCheck)="outputData.image_tag = $event;asyncGetDockerFilePreviewInfo()"></cs-input>
+        <cs-input [inputMaxlength]="255"
+                  [Label]="'SERVICE.STEP_2_BASE_IMAGE'|translate"
+                  [disabled]="isNeedAutoRefreshImageList"
+                  [SimpleFiled]="outputData.image_dockerfile.image_base"
+                  (OnCheck)="outputData.image_dockerfile.image_base = $event;getDockerFilePreviewInfo()"></cs-input>
+        <cs-input [inputMaxlength]="255"
+                  [Label]="'SERVICE.STEP_2_IMAGE_ENTRYPOINT'|translate"
+                  [disabled]="isNeedAutoRefreshImageList"
+                  [SimpleFiled]="outputData.image_dockerfile.image_entrypoint"
+                  (OnCheck)="outputData.image_dockerfile.image_entrypoint = $event;getDockerFilePreviewInfo()"></cs-input>
+        <cs-input-array [Source]="imageVolume"
+                        [disabled]="isNeedAutoRefreshImageList"
+                        [Label]="'SERVICE.STEP_2_IMAGE_VOLUME'|translate"
+                        (OnCheck)="getDockerFilePreviewInfo()"
+                        (OnMinus)="getDockerFilePreviewInfo()"></cs-input-array>
+        <cs-input-array [Source]="imageRun"
+                        [disabled]="isNeedAutoRefreshImageList"
+                        [Label]="'SERVICE.STEP_2_IMAGE_RUN'|translate"
+                        (OnCheck)="getDockerFilePreviewInfo()"
+                        (OnMinus)="getDockerFilePreviewInfo()"></cs-input-array>
         <div class="create-image-line-container ">
           <label class="base-text">{{"SERVICE.STEP_2_UPLOAD_ARCHIVES" | translate}}:</label>
           ﻿<input type="file"
-                  class="base-input"
+                  class="upload-file-input"
                   [disabled]="isNeedAutoRefreshImageList"
                   (change)="uploadFile($event)"
-                  placeholder="Upload file"
                   accept="*.*">
         </div>
-        <div style="margin-left: 200px;font-size: 10px" *ngFor="let file of filesList.get(outputData.image_name)">
-          <clr-icon class="dynamic-icon" shape="minus"></clr-icon>{{file.file_name}}
+        <div style="margin-left: 190px;font-size: 10px"
+             *ngFor="let file of filesList.get(outputData.image_name)">
+          <clr-icon class="dynamic-icon" shape="minus"></clr-icon>
+          {{file.file_name}}
         </div>
         <div class="create-image-area-container">
           <label for="areaCommand" class="base-text">{{"SERVICE.STEP_2_COMMAND" | translate}}:</label>
           <textarea id="areaCommand"
+                    rows="3"
                     class="area-command"
+                    (keypress)="shieldEnter($event)"
                     [(ngModel)]="outputData.image_dockerfile.image_cmd"
                     [disabled]="isNeedAutoRefreshImageList"></textarea>
         </div>
       </div>
-      <div style="margin-top: 10px; flex-basis: 100%;padding: 0 20px 40px 20px;">
-        <textarea title="" id="areaStatus" class="area-status">some text</textarea>
-        <button class="btn btn-primary default-primary" [disabled]="isNeedAutoRefreshImageList">
-          {{"SERVICE.STEP_2_PREVIEW" | translate}}
-        </button>
+      <div class="console-container">
+        <textarea title="" id="areaStatus" class="area-status" readonly>{{consoleText}}</textarea>
         <button class="btn btn-primary default-primary" [disabled]="isNeedAutoRefreshImageList" (click)="buildImage()">
           {{"SERVICE.STEP_2_BUILD_IMAGE" | translate}}
         </button>
@@ -148,5 +113,5 @@
       </div>
     </div>
   </fieldset>
-</div>
-<button class="btn btn-default" [disabled]="isNeedAutoRefreshImageList" (click)="forward()">Next</button>
+</clr-modal>
+<button class="btn btn-default" [disabled]="!isCanNextStep" (click)="forward()">Next</button>

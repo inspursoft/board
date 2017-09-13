@@ -4,7 +4,9 @@
          class="cs-dropdown-title-container"
          style="padding-right: 0"
          [ngStyle]="{'width':dropdownWidth + 'px'}">
-      <span class="cs-dropdown-title" [ngClass]="{dropdownDisabled:'disabled'}">{{ dropdownText | translate}}</span>
+      <span class="cs-dropdown-title"
+            [ngClass]="{dropdownDisabled:'disabled'}">
+        {{ isShowDefaultText? (dropdownDefaultText | translate):(dropdownText| translate )}}</span>
       <div class="cs-dropdown-icon-container" *ngIf="dropdownList && dropdownList.length > 0 && !dropdownDisabled">
         <div style="width: 20px;height: 20px;"
              [ngClass]="{'cs-dropdown-open':csDropdown.open,'cs-dropdown-close':!csDropdown.open}">
@@ -16,10 +18,10 @@
                        [ngStyle]="{'width':dropdownWidth + 30 + 'px'}"
                        class="cs-dropdown-menu">
       <button *ngFor="let item of dropdownList;"
-              class="dropdown-item"
-              [ngClass]="{'active':dropdownText== item[dropdownListTextKey]}"
+              class="dropdown-item cs-dropdown-item"
+              [ngClass]="{'active':dropdownText== item[dropdownListTextKey] ,'special':item['isSpecial']}"
               (click)="changeSelect(item);csDropdown.toggleDropdown()">
-        {{item[dropdownListTextKey]}}
+        {{item[dropdownListTextKey] | translate}}
       </button>
     </clr-dropdown-menu>
   </clr-dropdown>

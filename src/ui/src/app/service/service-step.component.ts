@@ -2,7 +2,7 @@ export interface ServiceStepComponent {
   data: any;
 }
 
-export class ServiceStep1Output{
+export class ServiceStep1Output {
   public project_name: string;
   public project_id: number;
 
@@ -12,7 +12,7 @@ export class ServiceStep1Output{
   }
 }
 
-export class ServiceStep2Output{
+export class ServiceStep2Output {
   image_name: string;
   image_tag: string;
   project_id: number;
@@ -22,8 +22,7 @@ export class ServiceStep2Output{
     image_base: string,
     image_author: string,
     image_volume?: Array<string>,
-    image_copyfrom?: string,
-    image_copyto?: string,
+    image_copy?: [{dockerfile_copyfrom?: string, dockerfile_copyto?: string}],
     image_run?: Array<string>,
     image_entrypoint?: string,
     image_cmd?: string
@@ -37,8 +36,9 @@ export class ServiceStep2Output{
     this.image_dockerfile = {
       image_base: "",
       image_author: "",
-      image_volume:[""],
-      image_run:[""]
+      image_volume: [],
+      image_run: [],
+      image_copy: [{}]
     }
   }
 }
