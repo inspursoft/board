@@ -10,7 +10,8 @@ import (
 
 func TestSearchSource(t *testing.T) {
 	var user *model.User
-	user = &model.User{Username: "aaa"}
-	res, err := service.SearchSource(user, "b")
+	user = &model.User{Username: "aaa",ID:1}
+	service.RegistryIp="http://10.110.13.58:5000/v2/_catalog"
+	res, err := service.SearchSource(user, "m")
 	fmt.Println(res, err)
 }
