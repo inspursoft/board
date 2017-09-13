@@ -217,5 +217,19 @@ export const LANG_EN_US = {
     "STEP_2_PREVIEW":"Preview",
     "STEP_2_BUILD_IMAGE":"Build Image",
     "STEP_2_UPLOAD_SUCCESS":"Upload file success."
+  },
+  "GLOBAL_SEARCH": {
+    "PROJECTS": "Projects",
+    "PROJECT_NAME": "Project Name",
+    "OWNER_NAME": "Owner Name",
+    "IS_PUBLIC": "Public",
+    "TRUE": "True",
+    "FALSE": "False",
+    "USERS": "Users",
+    "USERNAME": "Username",
+    "EMAIL": "Email",
+    "ROLE": "Role",
+    "SEARCH_FOR": "",
+    "ITEMS": " record(s) found."
   }
 };

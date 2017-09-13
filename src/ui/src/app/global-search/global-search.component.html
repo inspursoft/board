@@ -1,0 +1,33 @@
+<div class="row">
+  <div class="col-xs-12">
+    <h2>{{ 'GLOBAL_SEARCH.PROJECTS' | translate }}</h2>
+    <clr-datagrid>
+      <clr-dg-column>{{ 'GLOBAL_SEARCH.PROJECT_NAME' | translate }}</clr-dg-column>
+      <clr-dg-column>{{ 'GLOBAL_SEARCH.OWNER_NAME' | translate }}</clr-dg-column>
+      <clr-dg-column>{{ 'GLOBAL_SEARCH.IS_PUBLIC' | translate }}</clr-dg-column>            
+      <clr-dg-row *ngFor="let p of globalSearch.project_result">
+        <clr-dg-cell [ngSwitch]="hasSignedIn">
+          <a *ngSwitchCase="true" href="javascript:void(0)" routerLink="/projects" (click)="navigateTo('/projects')" >{{ p.project_name }}</a>
+          <ng-template ngSwitchDefault>{{ p.project_name }}</ng-template>
+        </clr-dg-cell>
+        <clr-dg-cell>{{ p.owner_name }}</clr-dg-cell>
+        <clr-dg-cell>{{ (p.is_public ? 'GLOBAL_SEARCH.TRUE' : 'GLOBAL_SEARCH.FALSE') | translate }}</clr-dg-cell>
+      </clr-dg-row>
+      <clr-dg-footer>{{ 'GLOBAL_SEARCH.SEARCH_FOR' | translate }} {{ globalSearch.project_result ? globalSearch.project_result.length : 0 }} {{ 'GLOBAL_SEARCH.ITEMS' | translate }}</clr-dg-footer>
+    </clr-datagrid>
+    <ng-template [ngIf]="hasSignedIn">
+      <h2>{{ 'GLOBAL_SEARCH.USERS' | translate }}</h2>
+      <clr-datagrid>
+        <clr-dg-column>{{ 'GLOBAL_SEARCH.USERNAME' | translate }}</clr-dg-column>
+        <clr-dg-column>{{ 'GLOBAL_SEARCH.EMAIL' | translate }}</clr-dg-column>
+        <clr-dg-column>{{ 'GLOBAL_SEARCH.ROLE' | translate }}</clr-dg-column>            
+        <clr-dg-row *ngFor="let u of globalSearch.user_result">
+          <clr-dg-cell><a href="javascript:void(0)" routerLink="/profiles" (click)="navigateTo('/profiles')">{{ u.user_name }}</a></clr-dg-cell>
+          <clr-dg-cell>{{ u.user_email }}</clr-dg-cell>
+          <clr-dg-cell>{{ u.role_name }}</clr-dg-cell>
+        </clr-dg-row>
+        <clr-dg-footer>{{ 'GLOBAL_SEARCH.SEARCH_FOR' | translate }} {{ globalSearch.user_result ? globalSearch.user_result.length : 0 }} {{ 'GLOBAL_SEARCH.ITEMS' | translate }}</clr-dg-footer>
+      </clr-datagrid>
+    </ng-template>  
+  </div>
+</div>

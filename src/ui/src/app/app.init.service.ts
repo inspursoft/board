@@ -20,7 +20,7 @@ export class AppInitService {
   _tokenString: string;
   _currentLang: string;
 
-  currentUser: {[key: string]: any};
+  currentUser: {[key: string]: any} = null;
 
   set token(t: string) {
     this._tokenString = t;
