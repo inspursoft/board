@@ -14,20 +14,20 @@
                 (click)="modifySelectImage(iImage)"></clr-icon>
     </div>
     <cs-dropdown class="base-margin-left"
-                 [Width]="300"
-                 [List]="imageSourceList"
-                 [DefaultText]="selectedImage.image_name"
-                 [TextKey]="'image_name'"
-                 (OnChange)="changeSelectImage(iImage,$event)"
-                 (OnOnlyClickItem)="clickSelectImage(iImage,$event)">
+                 [width]="300"
+                 [list]="imageSourceList"
+                 [defaultText]="selectedImage.image_name"
+                 [textKey]="'image_name'"
+                 (onChange)="changeSelectImage(iImage,$event)"
+                 (onOnlyClickItem)="clickSelectImage(iImage,$event)">
     </cs-dropdown>
     <cs-dropdown class="base-margin-left"
                  *ngIf="imageDetailSourceList.get(selectedImage.image_name)"
-                 [Width]="150"
-                 [DefaultText]="imageDetailSelectList.get(selectedImage.image_name)?.image_tag"
-                 [List]="imageDetailSourceList.get(selectedImage.image_name)"
-                 [TextKey]="'image_tag'"
-                 (OnChange)="changeSelectImageDetail(selectedImage.image_name,$event)">
+                 [width]="150"
+                 [defaultText]="imageDetailSelectList.get(selectedImage.image_name)?.image_tag"
+                 [list]="imageDetailSourceList.get(selectedImage.image_name)"
+                 [textKey]="'image_tag'"
+                 (onChange)="changeSelectImageDetail(selectedImage.image_name,$event)">
     </cs-dropdown>
   </div>
 </div>
@@ -42,11 +42,11 @@
         <div class="create-image-line-container">
           <label class="base-text">{{"SERVICE.STEP_2_SELECT_IMAGE_TEMP" | translate}}:</label>
           <cs-dropdown class="base-margin-left"
-                       [Disabled]="isNeedAutoRefreshImageList"
-                       [Width]="300"
-                       [DefaultText]="'Docker File Template'"
-                       [List]="imageTemplateList"
-                       [TextKey]="'name'">
+                       [disabled]="isNeedAutoRefreshImageList"
+                       [width]="300"
+                       [defaultText]="'Docker File Template'"
+                       [list]="imageTemplateList"
+                       [textKey]="'name'">
           </cs-dropdown>
         </div>
         <cs-input [inputMaxlength]="255"

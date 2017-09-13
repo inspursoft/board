@@ -15,13 +15,13 @@ export const ONLY_FOR_CLICK = "OnlyClick";
 export class CsDropdownComponent {
   isShowDefaultText: boolean = true;
   dropdownText: string;
-  @Input("Width") dropdownWidth: number = 100;
-  @Input("DefaultText") dropdownDefaultText;
-  @Input("Disabled") dropdownDisabled: boolean = false;
-  @Input("List") dropdownList: Array<Object>;
-  @Input("TextKey") dropdownListTextKey: string;
-  @Output("OnChange") dropdownChange: EventEmitter<Object>;
-  @Output("OnOnlyClickItem") dropdownClick: EventEmitter<Object>;
+  @Input("width") dropdownWidth: number = 100;
+  @Input("defaultText") dropdownDefaultText;
+  @Input("disabled") dropdownDisabled: boolean = false;
+  @Input("list") dropdownList: Array<Object>;
+  @Input("textKey") dropdownListTextKey: string;
+  @Output("onChange") dropdownChange: EventEmitter<Object>;
+  @Output("onOnlyClickItem") dropdownClick: EventEmitter<Object>;
 
   constructor() {
     this.dropdownChange = new EventEmitter<Object>();

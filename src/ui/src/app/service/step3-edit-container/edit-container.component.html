@@ -18,11 +18,11 @@
         {{container.status == 1 ?('SERVICE.STEP_3_CONTAINER'| translate):('SERVICE.STEP_3_ADD_NEW_CONTAINER'| translate)}}:
       </span>
       <cs-dropdown style="margin-left: 10px"
-                   [Width]="250"
-                   [List]="imageSourceList"
-                   [DefaultText]="'SERVICE.STEP_3_SELECT_IMAGE'| translate"
-                   [TextKey]="'image_name'"
-                   (OnChange)="changeSelectImage(container, $event)">
+                   [width]="250"
+                   [list]="imageSourceList"
+                   [defaultText]="'SERVICE.STEP_3_SELECT_IMAGE'| translate"
+                   [textKey]="'image_name'"
+                   (onChange)="changeSelectImage(container, $event)">
       </cs-dropdown>
     </div>
     <div *ngIf="container.status == 1"
