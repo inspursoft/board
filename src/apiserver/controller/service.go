@@ -87,8 +87,9 @@ func (p *ServiceController) DeployServiceAction() {
 	registryprefix := os.Getenv("REGISTRY_HOST") + ":" + os.Getenv("REGISTRY_PORT")
 	for _, container := range reqServiceConfig.DeploymentYaml.ContainerList {
 		container.BaseImage = filepath.Join(registryprefix, container.BaseImage)
+		fmt.Println(container.BaseImage) //DEBUG
 	}
-
+	fmt.Println(reqServiceConfig) //DEBUG
 	//Build deployment yaml file
 	err = service.BuildDeploymentYml(reqServiceConfig)
 	if err != nil {
