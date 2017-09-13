@@ -73,7 +73,6 @@ func (p *ServiceController) DeployServiceAction() {
 		p.internalError(err)
 		return
 	}
-	fmt.Println(reqServiceConfig)
 
 	//TODO check valid(reqServiceConfig)
 
@@ -85,11 +84,12 @@ func (p *ServiceController) DeployServiceAction() {
 
 	//Add registry to container images for deployment
 	registryprefix := os.Getenv("REGISTRY_HOST") + ":" + os.Getenv("REGISTRY_PORT")
-	for _, container := range reqServiceConfig.DeploymentYaml.ContainerList {
-		container.BaseImage = filepath.Join(registryprefix, container.BaseImage)
-		fmt.Println(container.BaseImage) //DEBUG
+	for index, container := range reqServiceConfig.DeploymentYaml.ContainerList {
+		reqServiceConfig.DeploymentYaml.ContainerList[index].BaseImage =
+			filepath.Join(registryprefix, container.BaseImage)
 	}
 	fmt.Println(reqServiceConfig) //DEBUG
+
 	//Build deployment yaml file
 	err = service.BuildDeploymentYml(reqServiceConfig)
 	if err != nil {
