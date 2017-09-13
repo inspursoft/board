@@ -139,7 +139,10 @@ render(os.path.join(templates_dir, "apiserver", "app.conf"),
 render(os.path.join(templates_dir, "apiserver", "env"),
         apiserver_env,
         registry_host=registry_host,
-        registry_port=registry_port)
+        registry_port=registry_port,
+        kubernetes_apiserver_host=kubernetes_apiserver_host,
+        kubernetes_apiserver_port=kubernetes_apiserver_port,
+        board_admin_password=board_admin_password)
 
 render(os.path.join(templates_dir, "tokenserver", "app.conf"),
         tokenserver_conf,
@@ -161,7 +164,7 @@ render(os.path.join(templates_dir, "db", "env"),
         db_conf_env,
         db_password=db_password)
 
-render(os.path.join(templates_dir, "nginx", "nginx.http.conf"), 
+render(os.path.join(templates_dir, "nginx", "nginx.http.conf"),
         nginx_conf)
 
 render(os.path.join(templates_dir, "jenkins", "env"),

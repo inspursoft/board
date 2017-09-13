@@ -61,6 +61,11 @@ type CopyStruct struct {
 	CopyTo   string `json:"dockerfile_copyto"`
 }
 
+type EnvStruct struct {
+	EnvName  string `json:"dockerfile_envname"`
+	EnvValue string `json:"dockerfile_envvalue"`
+}
+
 type Dockerfile struct {
 	Base       string       `json:"image_base"`
 	Author     string       `json:"image_author"`
@@ -69,6 +74,8 @@ type Dockerfile struct {
 	RUN        []string     `json:"image_run,omitempty"`
 	EntryPoint string       `json:"image_entrypoint"`
 	Command    string       `json:"image_cmd"`
+	EnvList    []EnvStruct  `json:"image_env,omitempty"`
+	ExposePort []int        `json:"image_expose,omitempty"`
 }
 
 type ImageConfig struct {

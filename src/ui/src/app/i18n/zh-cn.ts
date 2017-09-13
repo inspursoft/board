@@ -44,7 +44,7 @@ export const LANG_ZH_CN = {
     "REGISTER": "用户注册",
     "USERNAME_IS_REQUIRED": "用户名为必填项。",
     "USERNAME_ALREADY_EXISTS": "用户名已存在。",
-    "USERNAME_ARE_NOT_IDENTICAL": "用户名格式不合法,用户名是由数字或小写字母或下划线组成的[4-40]位字符串",
+    "USERNAME_ARE_NOT_IDENTICAL": "用户名至少为4个字符。",
     "EMAIL_IS_REQUIRED": "邮箱为必填项。",
     "EMAIL_IS_ILLEGAL": "邮箱格式非法。",
     "EMAIL_ALREADY_EXISTS": "邮箱已存在。",
@@ -56,7 +56,7 @@ export const LANG_ZH_CN = {
     "FAILED_TO_SIGN_IN": "登录失败:",
     "FAILED_TO_SIGN_UP": "注册失败:",
     "FAILED_TO_SIGN_OUT": "登出系统失败。",
-    "ACCOUNT_SETTING_SUCCESS":"账户设置成功."
+    "ACCOUNT_SETTING_SUCCESS":"账户设置成功。"
   },
   "HEAD_NAV": {
     "INPUT_FOR_SEARCHING": "输入搜索内容",
@@ -69,7 +69,7 @@ export const LANG_ZH_CN = {
     "NEW_PASSWORD":"新密码",
     "NEW_PASSWORD_CONFIRM":"确认新密码",
     "OLD_PASSWORD_WRONG":"旧密码错误",
-    "CHANGE_PASSWORD_SUCCESS":"修改密码成功."
+    "CHANGE_PASSWORD_SUCCESS":"修改密码成功。"
   },
   "SIDE_NAV": {
     "DASHBOARD": "仪表盘",
@@ -128,7 +128,8 @@ export const LANG_ZH_CN = {
     "FAILED_TO_CHANGE_MEMBER_ROLE": "改变项目成员角色失败。",
     "FAILED_TO_REMOVE_MEMBER": "移除项目成员失败。",
     "SUCCESSFUL_CREATED_PROJECT": "创建项目成功。",
-    "PROJECT_NAME_ALREADY_EXISTS": "项目名称已存在。"
+    "PROJECT_NAME_ALREADY_EXISTS": "项目名称已存在。",
+    "PROJECT_NAME_IS_ILLEGAL": "项目名称非法。"
   },
   "USER_CENTER": {
     "LIST_COL_USERNAME":"用户名",
@@ -167,7 +168,11 @@ export const LANG_ZH_CN = {
     "ADD": "添加",
     "CANCEL":"取消",
     "UNSATISFIED_WITH_CONSTRAINTS":"未满足新建的约束条件.",
-    "USERNAME_OR_EMAIL_EXIST":"用户名或邮箱重复."
+    "USERNAME_OR_EMAIL_EXIST":"用户名或邮箱重复.",
+    "SUCCESSFUL_SET_SYS_ADMIN": "设置用户为系统管理员操作成功。",
+    "SUCCESSFUL_SET_NOT_SYS_ADMIN": "取消用户为系统管理员操作成功。",
+    "SUCCESSFUL_SET_PROJECT_ADMIN": "设置用户为项目管理员操作成功。",
+    "SUCCESSFUL_SET_NOT_PROJECT_ADMIN": "取消用户为项目管理员操作成功。"
   },
   "IMAGE":{
     "COL_IMAGE_NAME":"镜像名",
@@ -224,11 +229,9 @@ export const LANG_ZH_CN = {
     "STEP_3_COMMAND":"命令",
     "STEP_3_CPU":"Cpu",
     "STEP_3_MEMORY":"内存",
-
     "STEP_3_SELECT_CONTAINER":"选择配置的容器",
     "STEP_3_SELECT_IMAGE":"选择镜像...",
     "STEP_3_ADD_NEW_CONTAINER":"增加容器",
-    "STEP_3_CONTAINER":"容器",
-
+    "STEP_3_CONTAINER":"容器"
   }
 };

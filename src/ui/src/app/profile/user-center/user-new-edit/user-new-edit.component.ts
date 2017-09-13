@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, AfterViewChecked } from "@angular/core";
+import { Component, Input, Output, EventEmitter } from "@angular/core";
 import { User } from 'app/profile/user-center/user';
 import { UserService } from "../user-service/user-service"
 import { MessageService } from "../../../shared/message-service/message.service";
@@ -10,7 +10,7 @@ export enum editModel { emNew, emEdit }
   templateUrl: "./user-new-edit.component.html",
   styleUrls: ["./user-new-edit.component.css"]
 })
-export class NewEditUserComponent implements AfterViewChecked {
+export class NewEditUserComponent {
   _isOpen: boolean;
   isAlertOpen: boolean = false;
   afterCommitErr: string = "";
@@ -18,10 +18,6 @@ export class NewEditUserComponent implements AfterViewChecked {
   constructor(private userService: UserService,
               private messageService: MessageService) {
   };
-
-  ngAfterViewChecked() {
-    this.isAlertOpen = false;
-  }
 
   @Input() userModel: User;
   @Input() CurEditModel: editModel;
@@ -62,8 +58,18 @@ export class NewEditUserComponent implements AfterViewChecked {
         this.isOpen = false;
       })
       .catch(err => {
-        this.isOpen = false;
-        this.messageService.dispatchError(err)
+        if(err) {
+          if(err.status === 400) {
+            this.isAlertOpen = true;
+            this.afterCommitErr = 'ACCOUNT.EMAIL_IS_ILLEGAL';
+          } else if(err.status === 409){
+            this.isAlertOpen = true;
+            this.afterCommitErr = 'ACCOUNT.EMAIL_ALREADY_EXISTS';
+          } else {
+            this.isOpen = false;
+            this.messageService.dispatchError(err)
+          }
+        }
       });
   }
 
@@ -74,8 +80,18 @@ export class NewEditUserComponent implements AfterViewChecked {
         this.isOpen = false;
       })
       .catch(err => {
-        this.isOpen = false;
-        this.messageService.dispatchError(err)
+        if(err) {
+          if(err.status === 400) {
+            this.isAlertOpen = true;
+            this.afterCommitErr = 'ACCOUNT.EMAIL_IS_ILLEGAL';
+          } else if(err.status === 409){
+            this.isAlertOpen = true;
+            this.afterCommitErr = 'ACCOUNT.EMAIL_ALREADY_EXISTS';
+          } else {
+            this.isOpen = false;
+            this.messageService.dispatchError(err)
+          }
+        }
       });
   }
 

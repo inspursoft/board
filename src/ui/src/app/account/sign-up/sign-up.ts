@@ -3,5 +3,6 @@ export class SignUp {
   email: string;
   password: string;
   confirmPassword: string;
+  realname: string;
   comment: string;
 }

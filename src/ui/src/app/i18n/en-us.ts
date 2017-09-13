@@ -44,7 +44,7 @@ export const LANG_EN_US = {
     "REGISTER": "Register",
     "USERNAME_IS_REQUIRED": "Username is required.",
     "USERNAME_ALREADY_EXISTS": "Username already exists.",
-    "USERNAME_ARE_NOT_IDENTICAL": "Username is illegal.Username is a string of Numbers or lowercase letters or underlined [4 - 40]",
+    "USERNAME_ARE_NOT_IDENTICAL": "Username should be at least 4 characters.",
     "EMAIL_IS_REQUIRED": "Email is required.",
     "EMAIL_IS_ILLEGAL": "Email is illegal.",
     "EMAIL_ALREADY_EXISTS": "Email already exists",
@@ -128,7 +128,8 @@ export const LANG_EN_US = {
     "FAILED_TO_CHANGE_MEMBER_ROLE": "Failed to change member role.",
     "FAILED_TO_REMOVE_MEMBER": "Failed to remove member.",
     "SUCCESSFUL_CREATED_PROJECT": "Successful created project.",
-    "PROJECT_NAME_ALREADY_EXISTS": "Project name already exists."
+    "PROJECT_NAME_ALREADY_EXISTS": "Project name already exists.",
+    "PROJECT_NAME_IS_ILLEGAL": "Project name is illegal."
   },
   "USER_CENTER": {
     "LIST_COL_USERNAME":"Username",
@@ -151,7 +152,7 @@ export const LANG_EN_US = {
     "INPUT_EMAIL": "Input email",
     "EMAIL_IS_REQUIRED": "Email is required.",
     "EMAIL_IS_ILLEGAL": "Email is illegal.",
-    "EMAIL_ALREADY_EXISTS": "EMail already exists.",
+    "EMAIL_ALREADY_EXISTS": "Email already exists.",
     "PASSWORD": "Password",
     "PASSWORD_PLACEHOLDER": "Password",
     "PASSWORD_IS_REQUIRED": "Password is required.",
@@ -167,7 +168,11 @@ export const LANG_EN_US = {
     "ADD": "ADD",
     "CANCEL":"CANCEL",
     "UNSATISFIED_WITH_CONSTRAINTS":"Unsatisfied with constraints of the user creation.",
-    "USERNAME_OR_EMAIL_EXIST":"Username or email is exist."
+    "USERNAME_OR_EMAIL_EXIST":"Username or email already exists.",
+    "SUCCESSFUL_SET_SYS_ADMIN": "Set user as system admin successfully.",
+    "SUCCESSFUL_SET_NOT_SYS_ADMIN": "Set user not as system admin successfully.",
+    "SUCCESSFUL_SET_PROJECT_ADMIN": "Set user as project admin successfully.",
+    "SUCCESSFUL_SET_NOT_PROJECT_ADMIN": "Set user not as project admin successfully."
   },
   "IMAGE":{
     "COL_IMAGE_NAME":"Image Name",
@@ -227,6 +232,6 @@ export const LANG_EN_US = {
     "STEP_3_SELECT_CONTAINER":"Select container for compose",
     "STEP_3_SELECT_IMAGE":"Select Image...",
     "STEP_3_ADD_NEW_CONTAINER":"Add New Container",
-    "STEP_3_CONTAINER":"Container",
+    "STEP_3_CONTAINER":"Container"
   }
 };
