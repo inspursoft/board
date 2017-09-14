@@ -69,7 +69,7 @@ func init() {
 			beego.NSRouter("/images/building",
 				&controller.ImageController{},
 				"post:BuildImageAction"),
-			beego.NSRouter("/images/dockerfile",
+			beego.NSRouter("/images/:imagename(.*)/dockerfile",
 				&controller.ImageController{},
 				"get:GetImageDockerfileAction"),
 			beego.NSRouter("/images/preview",
