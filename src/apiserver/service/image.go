@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"text/template"
 )
@@ -107,6 +108,9 @@ func changeDockerfileStructItem(dockerfile *model.Dockerfile) {
 	}
 	fixStructEmptyIssue(&dockerfile.EnvList)
 
+	for num, node := range dockerfile.ExposePort {
+		dockerfile.ExposePort[num] = strings.TrimSpace(node)
+	}
 	fixStructEmptyIssue(&dockerfile.ExposePort)
 }
 
@@ -116,27 +120,40 @@ func changeImageConfigStructItem(reqImageConfig *model.ImageConfig) {
 	reqImageConfig.ProjectName = strings.TrimSpace(reqImageConfig.ProjectName)
 	reqImageConfig.ImageTemplate = strings.TrimSpace(reqImageConfig.ImageTemplate)
 	reqImageConfig.ImageDockerfilePath = strings.TrimSpace(reqImageConfig.ImageDockerfilePath)
+}
 
-	changeDockerfileStructItem(&reqImageConfig.ImageDockerfile)
+func CheckDockerfileItem(dockerfile *model.Dockerfile) error {
+	changeDockerfileStructItem(dockerfile)
+
+	if len(dockerfile.Base) == 0 {
+		return errors.New("Baseimage in dockerfile should not be empty")
+	}
+
+	if err := checkStringHasUpper(dockerfile.Base); err != nil {
+		return err
+	}
+
+	if err := checkStringHasEnter(dockerfile.EntryPoint, dockerfile.Command); err != nil {
+		return err
+	}
+
+	for _, node := range dockerfile.ExposePort {
+		if _, err := strconv.Atoi(node); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func CheckDockerfileConfig(config *model.ImageConfig) error {
 	changeImageConfigStructItem(config)
 
-	if len(config.ImageDockerfile.Base) == 0 {
-		return errors.New("Baseimage in dockerfile should not be empty")
-	}
-
-	err := checkStringHasUpper(config.ImageDockerfile.Base, config.ImageName, config.ImageTag)
-	if err != nil {
+	if err := checkStringHasUpper(config.ImageName, config.ImageTag); err != nil {
 		return err
 	}
 
-	err = checkStringHasEnter(config.ImageDockerfile.EntryPoint, config.ImageDockerfile.Command)
-	if err != nil {
-		return err
-	}
-	return nil
+	return CheckDockerfileItem(&config.ImageDockerfile)
 }
 
 func BuildDockerfile(reqImageConfig model.ImageConfig, wr ...io.Writer) error {
