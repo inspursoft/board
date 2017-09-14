@@ -18,11 +18,11 @@ export class HeaderComponent implements OnInit {
   currentLang: string;
   @Input() isSignIn: boolean;
   @Input() hasSignedIn: boolean;
-          currentUser: {[key: string]: any};
+  @Input() searchContent: string;
+
+  currentUser: {[key: string]: any};
   showChangePassword:boolean = false;
   showAccountSetting:boolean = false;
-
-  searchContent: string;
 
   get brandLogoUrl(): string {
     return this.isSignIn ? '../../images/board-blue.jpg': '../../../images/board.png';
@@ -68,12 +68,14 @@ export class HeaderComponent implements OnInit {
     if(this.hasSignedIn) {
       this.router.navigate(['/search' ], { queryParams: { q: this.searchContent, token: this.appInitService.token }});
     } else {
-      if(this.searchContent.trim() === '') {
-        this.router.navigate(['/sign-in']);
-      } else {
-        this.router.navigate(['/search' ], { queryParams: { q: this.searchContent }});
-      }
-    } 
+      this.router.navigate(['/search' ], { queryParams: { q: this.searchContent }});
+    }
+  }
+
+  clickLogoAction() {
+    if(!this.hasSignedIn) {
+      this.router.navigate(['/sign-in']);
+    }
   }
 
   logOut() {

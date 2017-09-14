@@ -1,5 +1,5 @@
 <clr-main-container>
-  <header-content [isSignIn]="isSignIn" [hasSignedIn]="hasSignedIn"></header-content>
+  <header-content [isSignIn]="isSignIn" [hasSignedIn]="hasSignedIn" [searchContent]="searchContent"></header-content>
   <global-message></global-message>
   <div class="content-container">
     <nav class="sidenav" *ngIf="hasSignedIn">
@@ -19,7 +19,7 @@
         <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/images" (click)="navigateTo('/images')">
           {{ 'SIDE_NAV.IMAGES' | translate }}
         </a>
-        <a *ngIf="isSystemAdmin" href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/profiles" (click)="navigateTo('profiles')">
+        <a *ngIf="isSystemAdmin" href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/user-center" (click)="navigateTo('/user-center')">
           {{ 'SIDE_NAV.ADMIN_OPTIONS' | translate }}
         </a>
       </section>
