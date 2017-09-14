@@ -37,6 +37,16 @@ func CheckDeploymentPath(loadPath string) error {
 	return nil
 }
 
+//check parameter of service yaml file
+func CheckServiceYmlPara(reqServiceConfig model.ServiceConfig) error {
+	return nil
+}
+
+//check parameter of deployment yaml file
+func CheckDeploymentYmlPara(reqServiceConfig model.ServiceConfig) error {
+	return nil
+}
+
 //build yaml file of service
 func BuildServiceYml(reqServiceConfig model.ServiceConfig) error {
 	var service model.ServiceStructYml
@@ -60,9 +70,9 @@ func BuildServiceYml(reqServiceConfig model.ServiceConfig) error {
 	}
 
 	for _, nodePort := range reqServiceConfig.ServiceYaml.NodePorts {
-		port.Port = 8080
-		port.TargetPort = 8080
-		port.NodePort = nodePort
+		port.Port = nodePort.ContainerPort
+		port.TargetPort = nodePort.ContainerPort
+		port.NodePort = nodePort.ExternalPort
 		service.Spec.Ports = append(service.Spec.Ports, port)
 	}
 
