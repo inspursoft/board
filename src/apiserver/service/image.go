@@ -203,7 +203,7 @@ func ImageConfigClean(path string) error {
 	}
 	defer parent.Close()
 
-	_, err := parent.Readdirnames(1)
+	_, err = parent.Readdirnames(1)
 	if err == io.EOF {
 		return os.RemoveAll(filepath.Dir(path))
 	}
