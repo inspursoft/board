@@ -11,9 +11,7 @@ import { Router } from "@angular/router";
 })
 export class ChooseProjectComponent implements ServiceStepComponent, OnInit, OnDestroy {
   @Input() data: any;
-  dropdownText: string = '';
   projectsList: Array<Project>;
-  getProjectIng: boolean = false;
   outputData: ServiceStep1Output = new ServiceStep1Output();
 
   constructor(private k8sService: K8sService,
@@ -22,24 +20,17 @@ export class ChooseProjectComponent implements ServiceStepComponent, OnInit, OnD
   }
 
   ngOnInit() {
-    this.getProjectIng = true;
     this.k8sService.clearStepData();
     this.k8sService.getProjects()
       .then(res => {
-        this.getProjectIng = false;
-        if (res.length > 0) {
-          this.projectsList = res;
-          this.dropdownText = res[0].project_name;
-          this.outputData.project_name = res[0].project_name;
-          this.outputData.project_id = res[0].project_id;
-        } else {
-          this.dropdownText = "SERVICE.STEP_1_NONE_PROJECT";
-        }
+        let createNewProject: Project = new Project();
+        createNewProject.project_name = "SERVICE.STEP_1_CREATE_PROJECT";
+        createNewProject["isSpecial"] = true;
+        createNewProject["OnlyClick"] = true;
+        this.projectsList = res;
+        this.projectsList.unshift(createNewProject);
       })
-      .catch(err => {
-        this.getProjectIng = false;
-        this.messageService.dispatchError(err);
-      });
+      .catch(err => this.messageService.dispatchError(err));
   }
 
   ngOnDestroy() {
@@ -50,14 +41,12 @@ export class ChooseProjectComponent implements ServiceStepComponent, OnInit, OnD
     this.k8sService.stepSource.next(2);
   }
 
-  selectProject(project: Project) {
-    this.outputData.project_name = project.project_name;
-    this.outputData.project_id = project.project_id;
-    this.dropdownText = project.project_name;
+  clickSelectProject(project: Project) {
+    this.router.navigate(["/projects"]);
   }
 
-  redirectToCreateProject() {
-    this.router.navigate(["/projects"]);
-
+  changeSelectProject(project: Project) {
+    this.outputData.project_name = project.project_name;
+    this.outputData.project_id = project.project_id;
   }
 }
