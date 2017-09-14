@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { Http, RequestOptions, Headers } from "@angular/http";
-import { User } from "app/profile/user-center/user";
-import { AppInitService } from "../../../app.init.service";
+import { User } from "../user";
+import { AppInitService } from "../../app.init.service";
 import "rxjs/add/operator/toPromise";
 
 const BASE_URL = "/api/v1";
@@ -14,8 +14,9 @@ export class UserService {
     return headers;
   }
 
-  constructor(private http: Http,
-              private appInitService: AppInitService) {
+  constructor(
+    private http: Http,
+    private appInitService: AppInitService) {
   }
 
   deleteUser(user: User): Promise<boolean> {

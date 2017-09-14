@@ -406,6 +406,12 @@ func toggleUserAction(u *SystemAdminController, actionName string) {
 		user.ProjectAdmin = reqUser.ProjectAdmin
 	}
 	isSuccess, err := service.UpdateUser(*user, actionName)
+
+	if reqUser.SystemAdmin == 1 {
+		user.ProjectAdmin = 1
+		isSuccess, err = service.UpdateUser(*user, "project_admin")
+	}
+
 	if err != nil {
 		u.internalError(err)
 		return

@@ -3,14 +3,14 @@
   <change-password *ngIf="showChangePassword" [(isOpen)]="showChangePassword"></change-password>
   <user-setting *ngIf="showAccountSetting" [(isOpen)]="showAccountSetting"></user-setting>
   <div class="branding">
-    <a href="javascript:void(0)" class="nav-link">
-    <span class="clr-icon clr-clarity-logo"></span>
-    <img [src]="brandLogoUrl" alt="board-logo"/>
+    <a href="javascript:void(0)" class="nav-link" (click)="clickLogoAction()">
+      <span class="clr-icon clr-clarity-logo"></span>
+      <img [src]="brandLogoUrl" alt="board-logo"/>
     </a>
   </div>
   <form class="search">
     <label for="search_input">
-      <input id="search_input" type="text" placeholder="{{ 'HEAD_NAV.INPUT_FOR_SEARCHING' | translate }}..." (keyup.enter)="doSearch($event)" name="searchContent" [(ngModel)]="searchContent">
+      <input id="search_input" type="text" placeholder="{{ 'HEAD_NAV.INPUT_FOR_SEARCHING' | translate }}..." (keyup.enter)="doSearch($event)" name="searchContent" value="{{searchContent}}">
     </label>
   </form>
   <div class="header-actions" [class.signInForecolor]="isSignIn">
