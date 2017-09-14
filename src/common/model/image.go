@@ -21,21 +21,21 @@ type RegistryTags struct {
 	Tags      []string `json:"tags"`
 }
 
-type Menifest2Config struct {
+type Manifest2Config struct {
 	MediaType string `json:"mediaType"`
 	Size      int    `json:"size"`
 	Digest    string `json:"digest"`
 }
 
-type RegistryMenifest2 struct {
+type RegistryManifest2 struct {
 	SchemaVersion int               `json:"schemaVersion"`
 	MediaType     string            `json:"mediaType"`
-	Config        Menifest2Config   `json:"config"`
-	Layers        []Menifest2Config `json:"layers"`
+	Config        Manifest2Config   `json:"config"`
+	Layers        []Manifest2Config `json:"layers"`
 	//Layers interface{} `json:"layers"`
 }
 
-type RegistryMenifest1 struct {
+type RegistryManifest1 struct {
 	SchemaVersion int                 `json:"schemaVersion"`
 	ImageName     string              `json:"name"`
 	ImageTag      string              `json:"tag"`
