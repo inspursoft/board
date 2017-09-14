@@ -197,25 +197,14 @@ func ImageConfigClean(path string) error {
 		return errors.New(errMsg)
 	}
 
-	ok := false
 	parent, err := os.Open(filepath.Dir(path))
 	if err != nil {
 		return err
 	}
 	defer parent.Close()
 
-	names, err := parent.Readdirnames(0)
-	if err != nil {
-		return err
-	}
-	for _, node := range names {
-		if strings.Compare(node, `.`) != 0 && strings.Compare(node, `..`) != 0 {
-			ok = true
-			break
-		}
-	}
-
-	if !ok {
+	_, err := parent.Readdirnames(1)
+	if err == io.EOF {
 		return os.RemoveAll(filepath.Dir(path))
 	}
 
