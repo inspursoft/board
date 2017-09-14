@@ -120,10 +120,16 @@ func BuildDeploymentYml(reqServiceConfig model.ServiceConfig) error {
 	deployment.Spec.Template.Metadata.Labels.App = reqServiceConfig.DeploymentYaml.Name
 
 	for _, vlme := range reqServiceConfig.DeploymentYaml.VolumeList {
-		nfsvolume.Name = vlme.Name
-		nfsvolume.Nfs.Path = vlme.Path
-		nfsvolume.Nfs.Server = vlme.ServerName
-		deployment.Spec.Template.Spec.Volumes = append(deployment.Spec.Template.Spec.Volumes, nfsvolume)
+		if vlme.ServerName == "" {
+			nfsvolume.Name = vlme.Name
+			nfsvolume.HostPath.Path = vlme.Path
+			deployment.Spec.Template.Spec.Volumes = append(deployment.Spec.Template.Spec.Volumes, nfsvolume)
+		} else {
+			nfsvolume.Name = vlme.Name
+			nfsvolume.Nfs.Path = vlme.Path
+			nfsvolume.Nfs.Server = vlme.ServerName
+			deployment.Spec.Template.Spec.Volumes = append(deployment.Spec.Template.Spec.Volumes, nfsvolume)
+		}
 	}
 
 	for _, ctner := range reqServiceConfig.DeploymentYaml.ContainerList {

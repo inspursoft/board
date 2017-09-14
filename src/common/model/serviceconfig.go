@@ -48,7 +48,7 @@ type PortsDeploymentYml struct {
 
 type VolumeMountDeploymentYml struct {
 	Name      string
-	MountPath string `yaml:"MountPath,flow"`
+	MountPath string `yaml:"mountPath,flow"`
 }
 
 type EnvDeploymentYml struct {
@@ -57,11 +57,14 @@ type EnvDeploymentYml struct {
 }
 
 type VolumesDeploymentYml struct {
-	Name string
+	Name string `yaml:",omitempty"`
 	Nfs  struct {
 		Server string
 		Path   string
-	}
+	} `yaml:",omitempty"`
+	HostPath struct {
+		Path string
+	} `yaml:"hostPath,flow,omitempty"`
 }
 
 type ContainersDeploymentYml struct {
