@@ -133,13 +133,16 @@ func BuildDeploymentYml(reqServiceConfig model.ServiceConfig) error {
 	}
 
 	for _, ctner := range reqServiceConfig.DeploymentYaml.ContainerList {
+
 		container.Name = ctner.Name
 		container.Image = ctner.BaseImage
 		container.Workingdir = ctner.WorkDir
 		container.Command = ctner.Command
 		container.Resource.Request.Cpu = ctner.CPU
 		container.Resource.Request.Memory = ctner.Memory
-
+		container.Ports = container.Ports[:0]
+		container.VolumeMount = container.VolumeMount[:0]
+		container.Env = container.Env[:0]
 		for _, prt := range ctner.Ports {
 			port.ContainerPort = prt
 			container.Ports = append(container.Ports, port)
