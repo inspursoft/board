@@ -74,7 +74,21 @@ func (p *ServiceController) DeployServiceAction() {
 		return
 	}
 
-	//TODO check valid(reqServiceConfig)
+	// Check deployment parameters
+	err = service.CheckDeploymentYmlPara(reqServiceConfig)
+	if err != nil {
+		logs.Info("Deployment config parameters error")
+		p.internalError(err)
+		return
+	}
+
+	// Check service parameters
+	err = service.CheckServiceYmlPara(reqServiceConfig)
+	if err != nil {
+		logs.Info("Service config parameters error")
+		p.internalError(err)
+		return
+	}
 
 	var serviceConfigPath = filepath.Join(repoPath,
 		reqServiceConfig.ProjectName, strconv.FormatInt(reqServiceConfig.ServiceID, 10))
