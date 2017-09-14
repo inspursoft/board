@@ -75,7 +75,7 @@ type Dockerfile struct {
 	EntryPoint string       `json:"image_entrypoint"`
 	Command    string       `json:"image_cmd"`
 	EnvList    []EnvStruct  `json:"image_env,omitempty"`
-	ExposePort []int        `json:"image_expose,omitempty"`
+	ExposePort []string     `json:"image_expose,omitempty"`
 }
 
 type ImageConfig struct {
