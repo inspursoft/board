@@ -2632,19 +2632,18 @@ definitions:
         description: The nodeports of this service.
         type: array
         items:
-          type: integer   
-          format: int32
-          description: The node port of this service.
+          $ref: '#/definitions/ServiceNodeport'
       service_externalpaths:
         description: The external access paths of this service.
         type: array
         items:
-          $ref: '#/definitions/ServiceNodeport'
+          $ref: '#/definitions/ServiceExternalpath'
       service_selectors:
         description: The selectors of this service.
         type: array
         items:
-          $ref: '#/definitions/ServiceExternalpath'
+          type: string
+          description: The selector of this service.
   PodBrief:
     type: object
     properties:
