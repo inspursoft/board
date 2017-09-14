@@ -140,20 +140,21 @@ func BuildDeploymentYml(reqServiceConfig model.ServiceConfig) error {
 		container.Command = ctner.Command
 		container.Resource.Request.Cpu = ctner.CPU
 		container.Resource.Request.Memory = ctner.Memory
-		container.Ports = container.Ports[:0]
-		container.VolumeMount = container.VolumeMount[:0]
-		container.Env = container.Env[:0]
+
+		container.Ports = make([]model.PortsDeploymentYml, 0)
 		for _, prt := range ctner.Ports {
 			port.ContainerPort = prt
 			container.Ports = append(container.Ports, port)
 		}
 
+		container.VolumeMount = make([]model.VolumeMountDeploymentYml, 0)
 		for _, vlmeMount := range ctner.Volumes {
 			volumemount.Name = vlmeMount.TargetStorageName
 			volumemount.MountPath = vlmeMount.Dir
 			container.VolumeMount = append(container.VolumeMount, volumemount)
 		}
 
+		container.Env = make([]model.EnvDeploymentYml, 0)
 		for _, enviroment := range ctner.Envs {
 			env.Name = enviroment.Name
 			env.Value = enviroment.Value
