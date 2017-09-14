@@ -65,7 +65,7 @@ func BuildServiceYml(reqServiceConfig model.ServiceConfig) error {
 	service.Metadata.Name = reqServiceConfig.ServiceYaml.Name
 	service.Metadata.Labels.App = reqServiceConfig.ServiceYaml.Name
 
-	if len(reqServiceConfig.ServiceYaml.ExternalPaths) > 0 {
+	if len(reqServiceConfig.ServiceYaml.NodePorts) > 0 {
 		service.Spec.Tpe = "NodePort"
 	}
 
