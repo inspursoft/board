@@ -6,7 +6,8 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	yaml "yaml-2"
+
+	yaml "gopkg.in/yaml.v2"
 
 	"github.com/astaxie/beego/logs"
 )
