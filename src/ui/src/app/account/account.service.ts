@@ -33,6 +33,7 @@ export class AccountService {
         { user_name: account.username, 
           user_email: account.email,
           user_password: account.password,
+          user_realname: account.realname,
           user_comment: account.comment
         },
         { headers: this.defaultHeaders }

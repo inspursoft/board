@@ -21,21 +21,21 @@ type RegistryTags struct {
 	Tags      []string `json:"tags"`
 }
 
-type Menifest2Config struct {
+type Manifest2Config struct {
 	MediaType string `json:"mediaType"`
 	Size      int    `json:"size"`
 	Digest    string `json:"digest"`
 }
 
-type RegistryMenifest2 struct {
+type RegistryManifest2 struct {
 	SchemaVersion int               `json:"schemaVersion"`
 	MediaType     string            `json:"mediaType"`
-	Config        Menifest2Config   `json:"config"`
-	Layers        []Menifest2Config `json:"layers"`
+	Config        Manifest2Config   `json:"config"`
+	Layers        []Manifest2Config `json:"layers"`
 	//Layers interface{} `json:"layers"`
 }
 
-type RegistryMenifest1 struct {
+type RegistryManifest1 struct {
 	SchemaVersion int                 `json:"schemaVersion"`
 	ImageName     string              `json:"name"`
 	ImageTag      string              `json:"tag"`
@@ -61,6 +61,11 @@ type CopyStruct struct {
 	CopyTo   string `json:"dockerfile_copyto"`
 }
 
+type EnvStruct struct {
+	EnvName  string `json:"dockerfile_envname"`
+	EnvValue string `json:"dockerfile_envvalue"`
+}
+
 type Dockerfile struct {
 	Base       string       `json:"image_base"`
 	Author     string       `json:"image_author"`
@@ -69,6 +74,8 @@ type Dockerfile struct {
 	RUN        []string     `json:"image_run,omitempty"`
 	EntryPoint string       `json:"image_entrypoint"`
 	Command    string       `json:"image_cmd"`
+	EnvList    []EnvStruct  `json:"image_env,omitempty"`
+	ExposePort []string     `json:"image_expose,omitempty"`
 }
 
 type ImageConfig struct {
@@ -78,4 +85,10 @@ type ImageConfig struct {
 	ImageTemplate       string     `json:"image_template"`
 	ImageDockerfile     Dockerfile `json:"image_dockerfile"`
 	ImageDockerfilePath string     `json:"-"`
+}
+
+type ImageIndex struct {
+	ImageName   string `json:"image_name"`
+	ImageTag    string `json:"image_tag"`
+	ProjectName string `json:"project_name"`
 }

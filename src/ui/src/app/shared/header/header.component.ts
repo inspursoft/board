@@ -15,11 +15,12 @@ import { MessageService } from '../message-service/message.service';
 })
 export class HeaderComponent implements OnInit {
 
-
   currentLang: string;
   @Input() isSignIn: boolean;
   @Input() hasSignedIn: boolean;
-          currentUser: {[key: string]: any};
+  @Input() searchContent: string;
+
+  currentUser: {[key: string]: any};
   showChangePassword:boolean = false;
   showAccountSetting:boolean = false;
 
@@ -62,10 +63,29 @@ export class HeaderComponent implements OnInit {
     this._assertLanguage(lang);
   }
 
+  doSearch(event) {
+    this.searchContent = event.target.value;
+    if(this.hasSignedIn) {
+      this.router.navigate(['/search' ], { queryParams: { q: this.searchContent, token: this.appInitService.token }});
+    } else {
+      this.router.navigate(['/search' ], { queryParams: { q: this.searchContent }});
+    }
+  }
+
+  clickLogoAction() {
+    if(!this.hasSignedIn) {
+      this.router.navigate(['/sign-in']);
+    }
+  }
+
   logOut() {
     this.accountService
       .signOut()
-      .then(res=>this.router.navigate(['/sign-in']))
+      .then(res=>{
+        this.appInitService.token = '';
+        this.appInitService.currentUser = null;
+        this.router.navigate(['/sign-in']);
+      })
       .catch(err=>this.messageService.dispatchError(err, 'ACCOUNT.FAILED_TO_SIGN_OUT'));
   }
 }

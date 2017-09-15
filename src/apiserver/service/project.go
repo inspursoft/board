@@ -61,10 +61,6 @@ func UpdateProject(project model.Project, fieldNames ...string) (bool, error) {
 	return true, nil
 }
 
-func GetAllProjects(query model.Project) ([]*model.Project, error) {
-	return dao.GetAllProjects(query)
-}
-
 func GetProjectsByUser(query model.Project, userID int64) ([]*model.Project, error) {
 	return dao.GetProjectsByUser(query, userID)
 }

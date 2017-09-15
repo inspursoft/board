@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"strconv"
 	"strings"
@@ -41,10 +42,15 @@ func (p *ProjectController) CreateProjectAction() {
 		p.internalError(err)
 		return
 	}
-	if strings.TrimSpace(reqProject.Name) == "" {
-		p.serveStatus(http.StatusBadRequest, "Project name cannot be empty.")
+	if !utils.ValidateWithLengthRange(reqProject.Name, 2, 30) {
+		p.serveStatus(http.StatusBadRequest, "Project name length should be between 2 and 30 characters.")
 		return
 	}
+	if !utils.ValidateWithPattern("project", reqProject.Name) {
+		p.CustomAbort(http.StatusBadRequest, "Project name is invalid.")
+		return
+	}
+
 	projectExists, err := service.ProjectExists(reqProject.Name)
 	if err != nil {
 		p.internalError(err)
@@ -54,6 +60,8 @@ func (p *ProjectController) CreateProjectAction() {
 		p.serveStatus(http.StatusConflict, "Project name already exists.")
 		return
 	}
+
+	reqProject.Name = strings.TrimSpace(reqProject.Name)
 
 	reqProject.OwnerID = int(p.currentUser.ID)
 	reqProject.OwnerName = p.currentUser.Username
@@ -85,7 +93,7 @@ func (p *ProjectController) GetProjectsAction() {
 	projectName := p.GetString("project_name")
 	strPublic := p.GetString("project_public")
 
-	query := model.Project{Name: projectName, Public: 0}
+	query := model.Project{Name: projectName, OwnerName: p.currentUser.Username, Public: 0}
 
 	var err error
 	public, err := strconv.Atoi(strPublic)
@@ -93,13 +101,7 @@ func (p *ProjectController) GetProjectsAction() {
 		query.Public = public
 	}
 
-	var projects []*model.Project
-	if p.isSysAdmin {
-		projects, err = service.GetAllProjects(query)
-	} else {
-		projects, err = service.GetProjectsByUser(query, p.currentUser.ID)
-	}
-
+	projects, err := service.GetProjectsByUser(query, p.currentUser.ID)
 	if err != nil {
 		p.internalError(err)
 		return

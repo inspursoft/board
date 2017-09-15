@@ -2,11 +2,13 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"git/inspursoft/board/src/common/model"
 	"io"
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"text/template"
 )
@@ -23,32 +25,135 @@ func str2execform(str string) string {
 	return strings.Join(sli, ", ")
 }
 
-func CheckDockerfileConfig(config model.ImageConfig) error {
-	isMatch, err := regexp.MatchString("[A-Z]", config.ImageDockerfile.Base)
-	if err != nil {
-		return err
+func checkStringHasUpper(str ...string) error {
+	for _, node := range str {
+		isMatch, err := regexp.MatchString("[A-Z]", node)
+		if err != nil {
+			return err
+		}
+		if isMatch {
+			errString := fmt.Sprintf(`string "%s" has upper charactor`, node)
+			return errors.New(errString)
+		}
 	}
-	if isMatch {
-		return errors.New("dockerfile's baseimage name shouldn't contain upper character")
+	return nil
+}
+
+func checkStringHasEnter(str ...string) error {
+	for _, node := range str {
+		isMatch, err := regexp.MatchString(`^\s*\n?(?:.*[^\n])*\n?\s*$`, node)
+		if err != nil {
+			return err
+		}
+		if !isMatch {
+			errString := fmt.Sprintf(`string "%s" has enter charactor`, node)
+			return errors.New(errString)
+		}
+	}
+	return nil
+}
+
+func fixStructEmptyIssue(obj interface{}) {
+	if f, ok := obj.(*[]string); ok {
+		if len(*f) == 1 && len((*f)[0]) == 0 {
+			*f = nil
+		}
+		return
+	}
+	if f, ok := obj.(*[]model.CopyStruct); ok {
+		if len(*f) == 1 && len((*f)[0].CopyFrom) == 0 && len((*f)[0].CopyTo) == 0 {
+			*f = nil
+		}
+		return
+	}
+	if f, ok := obj.(*[]model.EnvStruct); ok {
+		if len(*f) == 1 && len((*f)[0].EnvName) == 0 && len((*f)[0].EnvValue) == 0 {
+			*f = nil
+		}
+		return
+	}
+	if f, ok := obj.(*[]int); ok {
+		if len(*f) == 1 && (*f)[0] == 0 {
+			*f = nil
+		}
+	}
+	return
+}
+
+func changeDockerfileStructItem(dockerfile *model.Dockerfile) {
+	dockerfile.Base = strings.TrimSpace(dockerfile.Base)
+	dockerfile.Author = strings.TrimSpace(dockerfile.Author)
+	dockerfile.EntryPoint = strings.TrimSpace(dockerfile.EntryPoint)
+	dockerfile.Command = strings.TrimSpace(dockerfile.Command)
+
+	for num, node := range dockerfile.Volume {
+		dockerfile.Volume[num] = strings.TrimSpace(node)
+	}
+	fixStructEmptyIssue(&dockerfile.Volume)
+
+	for num, node := range dockerfile.Copy {
+		dockerfile.Copy[num].CopyFrom = strings.TrimSpace(node.CopyFrom)
+		dockerfile.Copy[num].CopyTo = strings.TrimSpace(node.CopyTo)
+	}
+	fixStructEmptyIssue(&dockerfile.Copy)
+
+	for num, node := range dockerfile.RUN {
+		dockerfile.RUN[num] = strings.TrimSpace(node)
+	}
+	fixStructEmptyIssue(&dockerfile.RUN)
+
+	for num, node := range dockerfile.EnvList {
+		dockerfile.EnvList[num].EnvName = strings.TrimSpace(node.EnvName)
+		dockerfile.EnvList[num].EnvValue = strings.TrimSpace(node.EnvValue)
+	}
+	fixStructEmptyIssue(&dockerfile.EnvList)
+
+	for num, node := range dockerfile.ExposePort {
+		dockerfile.ExposePort[num] = strings.TrimSpace(node)
+	}
+	fixStructEmptyIssue(&dockerfile.ExposePort)
+}
+
+func changeImageConfigStructItem(reqImageConfig *model.ImageConfig) {
+	reqImageConfig.ImageName = strings.TrimSpace(reqImageConfig.ImageName)
+	reqImageConfig.ImageTag = strings.TrimSpace(reqImageConfig.ImageTag)
+	reqImageConfig.ProjectName = strings.TrimSpace(reqImageConfig.ProjectName)
+	reqImageConfig.ImageTemplate = strings.TrimSpace(reqImageConfig.ImageTemplate)
+	reqImageConfig.ImageDockerfilePath = strings.TrimSpace(reqImageConfig.ImageDockerfilePath)
+}
+
+func CheckDockerfileItem(dockerfile *model.Dockerfile) error {
+	changeDockerfileStructItem(dockerfile)
+
+	if len(dockerfile.Base) == 0 {
+		return errors.New("Baseimage in dockerfile should not be empty")
 	}
 
-	isMatch, err = regexp.MatchString("[A-Z]", config.ImageName)
-	if err != nil {
+	if err := checkStringHasUpper(dockerfile.Base); err != nil {
 		return err
-	}
-	if isMatch {
-		return errors.New("docker image's name shouldn't contain upper character")
 	}
 
-	isMatch, err = regexp.MatchString("[A-Z]", config.ImageTag)
-	if err != nil {
+	if err := checkStringHasEnter(dockerfile.EntryPoint, dockerfile.Command); err != nil {
 		return err
 	}
-	if isMatch {
-		return errors.New("docker image's tag shouldn't contain upper character")
+
+	for _, node := range dockerfile.ExposePort {
+		if _, err := strconv.Atoi(node); err != nil {
+			return err
+		}
 	}
 
 	return nil
+}
+
+func CheckDockerfileConfig(config *model.ImageConfig) error {
+	changeImageConfigStructItem(config)
+
+	if err := checkStringHasUpper(config.ImageName, config.ImageTag); err != nil {
+		return err
+	}
+
+	return CheckDockerfileItem(&config.ImageDockerfile)
 }
 
 func BuildDockerfile(reqImageConfig model.ImageConfig, wr ...io.Writer) error {
@@ -89,6 +194,35 @@ func BuildDockerfile(reqImageConfig model.ImageConfig, wr ...io.Writer) error {
 	err = tmpl.Execute(dockerfile, reqImageConfig.ImageDockerfile)
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func ImageConfigClean(path string) error {
+	//remove Tag dir
+	err := os.RemoveAll(path)
+	if err != nil {
+		return err
+	}
+
+	//remove Image dir
+	if fi, err := os.Stat(filepath.Dir(path)); os.IsNotExist(err) {
+		return nil
+	} else if !fi.IsDir() {
+		errMsg := fmt.Sprintf(`%s is not dir`, filepath.Dir(path))
+		return errors.New(errMsg)
+	}
+
+	parent, err := os.Open(filepath.Dir(path))
+	if err != nil {
+		return err
+	}
+	defer parent.Close()
+
+	_, err = parent.Readdirnames(1)
+	if err == io.EOF {
+		return os.RemoveAll(filepath.Dir(path))
 	}
 
 	return nil

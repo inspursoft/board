@@ -47,7 +47,7 @@ export class MemberComponent implements OnInit {
   ){}
   
   get roleToggleable(): boolean {
-    return (this.currentUser.user_id != this.selectedMember.project_member_user_id && this.currentUser.user_project_admin === 1);
+    return (this.selectedMember.project_member_user_id !== this.currentUser.user_id && (this.currentUser.user_project_admin || this.currentUser.user_system_admin) && this.doUnset);
   }
 
   ngOnInit(): void {
@@ -97,8 +97,7 @@ export class MemberComponent implements OnInit {
 
   pickUpMember(m: Member) {
     this.selectedMember = m;
-    if(this.currentUser.user_system_admin != 1 || this.project.project_owner_id == this.selectedMember.project_member_user_id) { 
-      // this.doSet = false;
+    if(this.selectedMember.project_member_user_id == this.project.project_owner_id || this.selectedMember.project_member_user_id == this.currentUser.user_id) { 
       this.doUnset = false;
     }
     this.role.role_id = this.selectedMember.project_member_role_id;    

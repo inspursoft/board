@@ -8,10 +8,6 @@ import { TranslateService } from "@ngx-translate/core";
 import { Subscription } from "rxjs/Subscription";
 import { Subject } from "rxjs/Subject";
 import { MessageService } from "../shared/message-service/message.service";
-import { promise } from "selenium-webdriver";
-import checkedNodeCall = promise.checkedNodeCall;
-import { max } from "rxjs/operator/max";
-import { min } from "rxjs/operator/min";
 
 const MAX_COUNT_PER_PAGE: number = 200;
 const MAX_COUNT_PER_DRAG: number = 100;
@@ -36,8 +32,9 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
   LineNamesList: Map<LineType, LineListDataModel[]>;
   LineTypeSet: Set<LineType>;
   LineData: Map<LineType, LinesData>;
-  EventZoomChange: Subject<{lineType: LineType, isDragBack: boolean}>;
+  EventDragChange: Subject<{lineType: LineType, isDragBack: boolean}>;
   EventScaleChange: Subject<Object>;
+  EventZoomBarChange: Subject<LineType>;
   EventLangChangeSubscription: Subscription;
   EChartInstance: Map<LineType, Object>;
   DropdownText: Map<LineType, string>;
@@ -52,8 +49,9 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
               private messageService: MessageService,
               private translateService: TranslateService) {
     super();
-    this.EventZoomChange = new Subject<{lineType: LineType, isDragBack: boolean}>();
+    this.EventDragChange = new Subject<{lineType: LineType, isDragBack: boolean}>();
     this.EventScaleChange = new Subject<Object>();
+    this.EventZoomBarChange = new Subject<LineType>();
     this.LineNamesList = new Map<LineType, LineListDataModel[]>();
     this.DropdownText = new Map<LineType, string>();
     this.LineStateInfo = new Map<LineType, {InRefreshIng: boolean, InDrop: boolean, IsDropBack: boolean, IsCanAutoRefresh: boolean}>();
@@ -79,11 +77,16 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
         this.initAsyncLine(lineType);
       });
     }).catch(err => this.messageService.dispatchError(err));
-    this.EventZoomChange.asObservable().debounceTime(300).subscribe(dragInfo => {
+    this.EventDragChange.asObservable().debounceTime(300).subscribe(dragInfo => {
       this.LineTypeSet.forEach((value) => {
         if (dragInfo.lineType != value) {
           this.refreshLineDataByDrag(value, dragInfo.isDragBack);
         }
+        this.resetBaseLinePos(value);
+      });
+    });
+    this.EventZoomBarChange.asObservable().debounceTime(300).subscribe(lineType => {
+      this.LineTypeSet.forEach((value) => {
         this.resetBaseLinePos(value);
       });
     });
@@ -230,7 +233,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
 
   private resetBaseLinePos(lineType: LineType) {
     let option = this.LineOptions.get(lineType);
-    if (option["dataZoom"]){
+    if (option["dataZoom"]) {
       let zoomStart = option["dataZoom"][0]["start"] / 100;
       let zoomEnd = option["dataZoom"][0]["end"] / 100;
       let eChartWidth = this.EChartInstance.get(lineType)["getWidth"]() - 70;
@@ -459,18 +462,18 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     let lineState = this.LineStateInfo.get(lineType);
     if (zoomStart == 0 && zoomEnd < 100 && !lineState.InRefreshIng) {//get backup data
       this.refreshLineDataByDrag(lineType, true);
-      this.EventZoomChange.next({lineType: lineType, isDragBack: true});
+      this.EventDragChange.next({lineType: lineType, isDragBack: true});
     }
     else if (zoomEnd == 100 && zoomStart > 0 && lineState.InDrop && !lineState.InRefreshIng && !lineState.IsCanAutoRefresh) {//get forward data
       this.refreshLineDataByDrag(lineType, false);
-      this.EventZoomChange.next({lineType: lineType, isDragBack: false});
+      this.EventDragChange.next({lineType: lineType, isDragBack: false});
     }
   }
 
-  private DragZoomBar(lineType: LineType, ZoomInfo: {start: number, end: number}) {
+  private ZoomBarChange(lineType: LineType, ZoomInfo: {start: number, end: number}) {
     this.LineOptions.get(lineType)["dataZoom"][0]["start"] = ZoomInfo.start;
     this.LineOptions.get(lineType)["dataZoom"][0]["end"] = ZoomInfo.end;
-    this.resetBaseLinePos(lineType);
+    this.EventZoomBarChange.next();
   }
 
   private setLineBaseOption(lineType: LineType): Promise<Object> {
@@ -578,7 +581,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
 
   chartDataZoom(lineType: LineType, event: Object) {
     this.LineTypeSet.forEach((value) => {
-      this.DragZoomBar(value, {start: event["start"], end: event["end"]});
+      this.ZoomBarChange(value, {start: event["start"], end: event["end"]});
     });
   }
 

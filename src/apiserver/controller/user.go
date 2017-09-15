@@ -70,15 +70,29 @@ func (u *UserController) ChangeUserAccount() {
 		return
 	}
 
-	if reqUser.Email == "" {
-		u.CustomAbort(http.StatusBadRequest, "Email is required.")
+	if !utils.ValidateWithPattern("email", reqUser.Email) {
+		u.CustomAbort(http.StatusBadRequest, "Email content is illegal.")
 		return
 	}
 
-	if reqUser.Email != "" && len(users) > 1 {
+	if len(users) > 0 && users[0].ID != reqUser.ID {
 		u.CustomAbort(http.StatusConflict, "Email already exists.")
 		return
 	}
+
+	if !utils.ValidateWithMaxLength(reqUser.Realname, 40) {
+		u.CustomAbort(http.StatusBadRequest, "Realname maximum length is 40 characters.")
+		return
+	}
+
+	if !utils.ValidateWithMaxLength(reqUser.Comment, 127) {
+		u.CustomAbort(http.StatusBadRequest, "Comment maximum length is 127 characters.")
+		return
+	}
+
+	reqUser.Email = strings.TrimSpace(reqUser.Email)
+	reqUser.Realname = strings.TrimSpace(reqUser.Realname)
+	reqUser.Comment = strings.TrimSpace(reqUser.Comment)
 
 	isSuccess, err := service.UpdateUser(reqUser, "email", "realname", "comment")
 	if err != nil {
@@ -87,7 +101,7 @@ func (u *UserController) ChangeUserAccount() {
 	}
 
 	if !isSuccess {
-		u.CustomAbort(http.StatusBadRequest, "Failed to change password")
+		u.CustomAbort(http.StatusBadRequest, "Failed to change user account.")
 	}
 }
 
@@ -132,8 +146,8 @@ func (u *UserController) ChangePasswordAction() {
 		u.CustomAbort(http.StatusForbidden, "Old password input is incorrect.")
 		return
 	}
-	if changePassword.NewPassword == "" {
-		u.CustomAbort(http.StatusBadRequest, "New password cannot be empty.")
+	if !utils.ValidateWithLengthRange(changePassword.NewPassword, 8, 20) {
+		u.CustomAbort(http.StatusBadRequest, "Password does not satisfy complexity requirement.")
 		return
 	}
 	updateUser := model.User{
@@ -181,12 +195,8 @@ func (u *SystemAdminController) AddUserAction() {
 		u.internalError(err)
 		return
 	}
-	if strings.TrimSpace(reqUser.Username) == "" {
-		u.CustomAbort(http.StatusBadRequest, "Username cannot be empty.")
-		return
-	}
-	if strings.TrimSpace(reqUser.Email) == "" {
-		u.CustomAbort(http.StatusBadRequest, "Email cannot be empty.")
+	if !utils.ValidateWithPattern("username", reqUser.Username) {
+		u.CustomAbort(http.StatusBadRequest, "Username content is illegal.")
 		return
 	}
 	usernameExists, err := service.UsernameExists(reqUser.Username)
@@ -198,6 +208,10 @@ func (u *SystemAdminController) AddUserAction() {
 		u.CustomAbort(http.StatusConflict, "Username already exists.")
 		return
 	}
+	if !utils.ValidateWithPattern("email", reqUser.Email) {
+		u.CustomAbort(http.StatusBadRequest, "Email content is illegal.")
+		return
+	}
 	emailExists, err := service.EmailExists(reqUser.Email)
 	if err != nil {
 		u.internalError(err)
@@ -207,6 +221,27 @@ func (u *SystemAdminController) AddUserAction() {
 		u.serveStatus(http.StatusConflict, "Email already exists.")
 		return
 	}
+
+	if !utils.ValidateWithLengthRange(reqUser.Password, 8, 20) {
+		u.CustomAbort(http.StatusBadRequest, "Password does not satisfy complexity requirement.")
+		return
+	}
+
+	if !utils.ValidateWithMaxLength(reqUser.Realname, 40) {
+		u.CustomAbort(http.StatusBadRequest, "Realname maximum length is 40 characters.")
+		return
+	}
+
+	if !utils.ValidateWithMaxLength(reqUser.Comment, 127) {
+		u.CustomAbort(http.StatusBadRequest, "Comment maximum length is 127 characters.")
+		return
+	}
+
+	reqUser.Username = strings.TrimSpace(reqUser.Username)
+	reqUser.Email = strings.TrimSpace(reqUser.Email)
+	reqUser.Realname = strings.TrimSpace(reqUser.Realname)
+	reqUser.Comment = strings.TrimSpace(reqUser.Comment)
+
 	isSuccess, err := service.SignUp(reqUser)
 	if err != nil {
 		u.internalError(err)
@@ -286,6 +321,7 @@ func (u *SystemAdminController) UpdateUserAction() {
 		u.CustomAbort(http.StatusNotFound, "No user was found with provided ID.")
 		return
 	}
+
 	reqData, err := u.resolveBody()
 	if err != nil {
 		u.internalError(err)
@@ -299,9 +335,24 @@ func (u *SystemAdminController) UpdateUserAction() {
 		return
 	}
 	reqUser.ID = user.ID
-	if strings.TrimSpace(reqUser.Email) != "" {
-		user.Email = reqUser.Email
+
+	users, err := service.GetUsers("email", reqUser.Email)
+	if err != nil {
+		u.internalError(err)
+		return
 	}
+
+	if !utils.ValidateWithPattern("email", reqUser.Email) {
+		u.CustomAbort(http.StatusBadRequest, "Email content is illegal.")
+		return
+	}
+
+	if len(users) > 0 && users[0].ID != reqUser.ID {
+		u.CustomAbort(http.StatusConflict, "Email already exists.")
+		return
+	}
+
+	user.Email = reqUser.Email
 	user.Realname = reqUser.Realname
 	user.Comment = reqUser.Comment
 
@@ -355,6 +406,12 @@ func toggleUserAction(u *SystemAdminController, actionName string) {
 		user.ProjectAdmin = reqUser.ProjectAdmin
 	}
 	isSuccess, err := service.UpdateUser(*user, actionName)
+
+	if reqUser.SystemAdmin == 1 {
+		user.ProjectAdmin = 1
+		isSuccess, err = service.UpdateUser(*user, "project_admin")
+	}
+
 	if err != nil {
 		u.internalError(err)
 		return

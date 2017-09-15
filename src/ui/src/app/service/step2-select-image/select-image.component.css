@@ -34,32 +34,12 @@ div.dynamic-icon-container {
   cursor: pointer;
 }
 
-.base-drop-down {
-  border: 1px solid silver;
-  margin-left: 10px;
-  width: 300px;
-}
-
-.base-drop-down-menu {
-  margin-left: 10px;
-  width: 330px;
-}
-
-.base-text {
-  flex-basis: 200px;
-  text-align: right;
-}
-
-input.base-input {
-  min-width: 300px;
-  margin-left: 10px;
-}
-
 fieldset.fieldSet-default {
   margin: 0 2px;
   border: 1px solid silver;
-  padding-bottom: 30px;
   border-radius: 5px;
+  overflow-y: scroll;
+  padding-bottom: 20px;
 }
 
 legend.legend-default {
@@ -76,12 +56,21 @@ div.create-image-container {
   padding: 0 0 40px 0;
 }
 
+label.base-text {
+  min-width: 180px;
+  text-align: right;
+}
+
 div.create-image-line-container {
   display: flex;
-  align-items: center;
   width: 100%;
   margin-top: 10px;
   height: 30px;
+}
+
+input.upload-file-input {
+  font-size: 10px;
+  margin-left: 10px;
 }
 
 div.create-image-area-container {
@@ -91,9 +80,13 @@ div.create-image-area-container {
   margin-top: 10px;
 }
 
+div.console-container {
+  margin-top: 10px;
+  flex-basis: 100%;
+  padding: 0 20px 40px 20px;
+}
+
 textarea.area-command {
-  min-height: 150px;
-  max-width: 300px;
   margin-left: 10px;
 }
 
@@ -102,6 +95,7 @@ textarea.area-status {
   width: 100%;
   height: 100%;
   color: black;
+  font-size: 11px;
 }
 
 button.default-primary {

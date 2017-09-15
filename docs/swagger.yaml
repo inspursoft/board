@@ -2754,8 +2754,7 @@ definitions:
       image_expose:
         type: array
         items: 
-          type: integer
-          format: int32
+          type: string
           description: The port number to expose for this image.
       image_entrypoint:
         type: string
