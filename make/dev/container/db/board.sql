@@ -300,13 +300,13 @@ DROP TABLE IF EXISTS `log`;
     -- --------------------------------------------------
     --  Table Structure for `git/inspursoft/board/src/common/model/yaml/serviceconfig`
     -- --------------------------------------------------
-    CREATE TABLE `board`.`serviceconfig` (
+    CREATE TABLE `board`.`service_config` (
         `id` INT AUTO_INCREMENT NOT NULL,
         `project_id` INT NOT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
-    CREATE TABLE `board`.`serviceconfigimage` (
+    CREATE TABLE `board`.`service_config_image` (
         `service_id` INT NOT NULL,
         `image_tag_id` INT NOT NULL
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
