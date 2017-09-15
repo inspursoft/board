@@ -249,17 +249,21 @@ func GetDockerfileInfo(path string) (*model.Dockerfile, error) {
 	}
 	defer dockerfile.Close()
 
-	buf := bufio.NewReader(dockerfile)
-	for line, _, err := buf.ReadLine(); err == nil; line, _, err = buf.ReadLine() {
-		if strings.HasPrefix(strings.TrimSpace(string(line)), "#") {
+	scanner := bufio.NewScanner(dockerfile)
+	for scanner.Scan() {
+		if strings.HasPrefix(strings.TrimSpace(scanner.Text()), "#") {
 			continue
 		}
-		fulline += string(line)
-		if strings.HasSuffix(string(line), "\\") {
+		fulline += string(scanner.Text())
+		if strings.HasSuffix(scanner.Text(), "\\") {
 			fulline = fulline[:len(fulline)-1]
 			continue
 		}
-		split := strings.SplitN(fulline, " ", 2)
+		split := strings.SplitN(strings.TrimSpace(fulline), " ", 2)
+		if len(split) < 2 {
+			continue
+		}
+		split[1] = strings.TrimSpace(split[1])
 		switch split[0] {
 		case "FROM":
 			Dockerfile.Base = split[1]
@@ -272,7 +276,7 @@ func GetDockerfileInfo(path string) (*model.Dockerfile, error) {
 				var node model.CopyStruct
 				var copyfrom, copyto string
 				copystring := exec2str(split[1])
-				split_copy := strings.Split(copystring, " ")
+				split_copy := strings.Split(strings.TrimSpace(copystring), " ")
 				copyfrom = strings.Join(split_copy[:len(split_copy)-1], " ")
 				copyto = split_copy[len(split_copy)-1]
 				node.CopyFrom = copyfrom
@@ -291,7 +295,7 @@ func GetDockerfileInfo(path string) (*model.Dockerfile, error) {
 				envstring := split[1]
 				split_env := strings.SplitN(envstring, " ", 2)
 				node.EnvName = split_env[0]
-				node.EnvValue = split_env[1]
+				node.EnvValue = strings.TrimSpace(split_env[1])
 				Dockerfile.EnvList = append(Dockerfile.EnvList, node)
 			}
 		case "EXPOSE":
