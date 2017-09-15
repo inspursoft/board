@@ -1,8 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, ParamMap } from '@angular/router';
 
-import 'rxjs/add/operator/switchMap';
-
 import { AppInitService } from '../app.init.service';
 import { GlobalSearchService } from './global-search.service';
 
@@ -27,17 +25,13 @@ export class GlobalSearchComponent implements OnInit {
 
   ngOnInit(): void {
     this.hasSignedIn = (this.appInitService.currentUser !== null);
-    this.route.queryParamMap.subscribe(params=>{
-      this.search(params.get("q"));
-    });
+    this.route.queryParamMap.subscribe(params=>this.search(params.get("q")));
   }
 
   search(q: string) {
     this.globalSearchService
       .search(q)
-      .then(search=>{
-        this.globalSearch = search;
-      })
+      .then(search=>this.globalSearch = search)
       .catch(err=>this.messageService.dispatchError(err));
   }
 

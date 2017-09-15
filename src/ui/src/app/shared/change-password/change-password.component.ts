@@ -5,7 +5,7 @@
 import { Component, Input, Output, EventEmitter, OnInit } from "@angular/core"
 import { AppInitService } from "../../app.init.service";
 import { MessageService } from "../message-service/message.service";
-import { UserService } from "../../profile/user-center/user-service/user-service";
+import { UserService } from "../../user-center/user-service/user-service";
 import { Message } from "../message-service/message";
 
 @Component({

@@ -1,10 +1,10 @@
 <clr-alert [clrAlertType]="'alert-danger'" [clrAlertAppLevel]="true" [(clrAlertClosed)]="globalMessageClosed">
   <div class="alert-item">
     <span class="alert-text">
-       {{ globalAnnoucedMessage | translate }}
+      {{ globalAnnoucedMessage | translate }}
     </span>
     <div class="alert-actions" *ngIf="showAction">
-        <button class="btn alert-action" (click)="redirectToSignIn()">{{ 'GLOBAL_ALERT.SIGN_IN' | translate }}</button>
+      <button class="btn alert-action" (click)="redirectToSignIn()">{{ 'GLOBAL_ALERT.SIGN_IN' | translate }}</button>
     </div>
   </div>
 </clr-alert>

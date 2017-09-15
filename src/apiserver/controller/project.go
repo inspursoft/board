@@ -93,7 +93,7 @@ func (p *ProjectController) GetProjectsAction() {
 	projectName := p.GetString("project_name")
 	strPublic := p.GetString("project_public")
 
-	query := model.Project{Name: projectName, Public: 0}
+	query := model.Project{Name: projectName, OwnerName: p.currentUser.Username, Public: 0}
 
 	var err error
 	public, err := strconv.Atoi(strPublic)
@@ -101,13 +101,7 @@ func (p *ProjectController) GetProjectsAction() {
 		query.Public = public
 	}
 
-	var projects []*model.Project
-	if p.isSysAdmin {
-		projects, err = service.GetAllProjects(query)
-	} else {
-		projects, err = service.GetProjectsByUser(query, p.currentUser.ID)
-	}
-
+	projects, err := service.GetProjectsByUser(query, p.currentUser.ID)
 	if err != nil {
 		p.internalError(err)
 		return

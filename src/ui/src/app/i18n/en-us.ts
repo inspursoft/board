@@ -247,6 +247,11 @@ export const LANG_EN_US = {
     "EMAIL": "Email",
     "ROLE": "Role",
     "SEARCH_FOR": "",
-    "ITEMS": " record(s) found."
+    "ITEMS": " record(s) found.",
+    "IMAGES": "Images",
+    "IMAGE_NAME": "Image Name",
+    "NODES": "Nodes",
+    "NODE_NAME": "Node Name",
+    "NODE_IP": "Node IP Address"
   }
 };

@@ -41,15 +41,16 @@ func SearchSource(user *model.User, searchPara string) (searchResult SearchResul
 		resProject, err = dao.SearchPublicProject(searchPara)
 		searchResult.ProjectResult = resProject
 	} else {
-		currentProject, err := getProjectByUser(user.ID)
-		if err != nil {
-			return searchResult, err
-		}
+
 		resProject, err = dao.SearchPrivateProject(searchPara, user.Username)
 		if err != nil {
 			return searchResult, err
 		}
 		resUser, err = dao.SearchUser(user.Username, searchPara)
+		if err != nil {
+			return searchResult, err
+		}
+		currentProject, err := getProjectByUser(user.ID)
 		if err != nil {
 			return searchResult, err
 		}
