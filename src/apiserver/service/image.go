@@ -1,6 +1,7 @@
 package service
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"git/inspursoft/board/src/common/model"
@@ -23,6 +24,17 @@ func str2execform(str string) string {
 		sli[num] = "\"" + node + "\""
 	}
 	return strings.Join(sli, ", ")
+}
+
+func exec2str(str string) string {
+	line := strings.TrimSpace(str)
+	line = strings.TrimLeft(strings.TrimRight(line, "]"), "[")
+	split := strings.Split(line, ",")
+	for num, node := range split {
+		node = strings.TrimSpace(node)
+		split[num] = strings.TrimLeft(strings.TrimRight(node, "\""), "\"")
+	}
+	return strings.Join(split, " ")
 }
 
 func checkStringHasUpper(str ...string) error {
@@ -226,4 +238,73 @@ func ImageConfigClean(path string) error {
 	}
 
 	return nil
+}
+
+func GetDockerfileInfo(path string) (*model.Dockerfile, error) {
+	var Dockerfile model.Dockerfile
+	var fulline string
+	dockerfile, err := os.Open(filepath.Join(path, "Dockerfile"))
+	if err != nil {
+		return nil, err
+	}
+	defer dockerfile.Close()
+
+	scanner := bufio.NewScanner(dockerfile)
+	for scanner.Scan() {
+		if strings.HasPrefix(strings.TrimSpace(scanner.Text()), "#") {
+			continue
+		}
+		fulline += string(scanner.Text())
+		if strings.HasSuffix(scanner.Text(), "\\") {
+			fulline = fulline[:len(fulline)-1]
+			continue
+		}
+		split := strings.SplitN(strings.TrimSpace(fulline), " ", 2)
+		fulline = ""
+
+		// ignore empty line and lines with only one field
+		if len(split) < 2 {
+			continue
+		}
+		split[1] = strings.TrimSpace(split[1])
+		switch split[0] {
+		case "FROM":
+			Dockerfile.Base = split[1]
+		case "MAINTAINER":
+			Dockerfile.Author = split[1]
+		case "VOLUME":
+			Dockerfile.Volume = append(Dockerfile.Volume, exec2str(split[1]))
+		case "COPY":
+			{
+				var node model.CopyStruct
+				var copyfrom, copyto string
+				copystring := exec2str(split[1])
+				split_copy := strings.Split(strings.TrimSpace(copystring), " ")
+				copyfrom = strings.Join(split_copy[:len(split_copy)-1], " ")
+				copyto = split_copy[len(split_copy)-1]
+				node.CopyFrom = copyfrom
+				node.CopyTo = copyto
+				Dockerfile.Copy = append(Dockerfile.Copy, node)
+			}
+		case "RUN":
+			Dockerfile.RUN = append(Dockerfile.RUN, split[1])
+		case "ENTRYPOINT":
+			Dockerfile.EntryPoint = exec2str(split[1])
+		case "CMD":
+			Dockerfile.Command = exec2str(split[1])
+		case "ENV":
+			{
+				var node model.EnvStruct
+				envstring := split[1]
+				split_env := strings.SplitN(envstring, " ", 2)
+				node.EnvName = split_env[0]
+				node.EnvValue = strings.TrimSpace(split_env[1])
+				Dockerfile.EnvList = append(Dockerfile.EnvList, node)
+			}
+		case "EXPOSE":
+			Dockerfile.ExposePort = append(Dockerfile.ExposePort, split[1])
+		}
+	}
+
+	return &Dockerfile, nil
 }
