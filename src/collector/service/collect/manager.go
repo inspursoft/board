@@ -17,7 +17,7 @@ func getPods(resource *SourceMap, podItems []modelK8s.Pod) []modelK8s.Pod {
 		x.PodName = v.Name
 		x.CreateTime = v.CreationTimestamp.Format("2006-01-02 15:04:05")
 		x.TimeListId = (*serviceDashboardID)[*minuteCounterI]
-		tem_containers := len(v.Status.Conditions)
+		tem_containers := len(v.Spec.Containers)
 		n_containers = tem_containers + n_containers
 		resource.maps.PodContainerCount[v.Name] = int64(tem_containers)
 		for k, v := range v.Labels {
