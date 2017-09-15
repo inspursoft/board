@@ -6,7 +6,6 @@ import (
 	"git/inspursoft/board/src/common/model"
 	//"io/ioutil"
 	"git/inspursoft/board/src/apiserver/service"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -37,13 +36,7 @@ func init() {
 	var masterport = os.Getenv("KUBEMASTER_PORT")
 	KubeMasterIp = masterip + ":" + masterport
 
-	_, err := http.Get(KubeMasterIp + "/api/v1/nodes")
-	if err != nil {
-		KubeMasterStatus = false
-	} else {
-		KubeMasterStatus = true
-	}
-	log.Printf("%s\t%s\t%s\t", "KubeMasterStatus status is ", strconv.FormatBool(KubeMasterStatus), time.Now())
+	logs.Info("Service api started KubeMaster %s %s", KubeMasterIp, time.Now())
 }
 
 //  Checking the user priviledge by token
@@ -102,7 +95,7 @@ func (p *ServiceController) DeployServiceAction() {
 		reqServiceConfig.DeploymentYaml.ContainerList[index].BaseImage =
 			filepath.Join(registryprefix, container.BaseImage)
 	}
-	fmt.Println(reqServiceConfig) //DEBUG
+	logs.Info(reqServiceConfig)
 
 	//Build deployment yaml file
 	err = service.BuildDeploymentYml(reqServiceConfig)
@@ -168,7 +161,7 @@ func (p *ServiceController) DeployServiceAction() {
 
 }
 
-// API to create service config
+// TODO API to create service config
 func (p *ServiceController) CreateServiceConfigAction() {
 	//TODO: Assign and return Service ID with mysql
 	var serviceID = "1"
