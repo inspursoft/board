@@ -20,11 +20,11 @@ type NodeInfo struct {
 	CpuUsage     float32 `json:"cpu_usage" orm:"column(cpu_usage)"`
 	MemoryUsage  float32 `json:"memory_usage" orm:"column(memory_usage)"`
 	MemorySize   string  `json:"memory_size" orm:"column(memory_size)"`
-	StorageTotal uint64   `json:"storage_total" orm:"column(storage_total)"`
-	StorageUse   uint64   `json:"storage_use" orm:"column(storage_usage)"`
+	StorageTotal uint64  `json:"storage_total" orm:"column(storage_total)"`
+	StorageUse   uint64  `json:"storage_use" orm:"column(storage_usage)"`
 }
 
-var NodeUrl = fmt.Sprintf("%s:%s/api/v1/nodes", os.Getenv("KUBE_IP"), os.Getenv("KUBE_PORT"))
+var NodeUrl = fmt.Sprintf("%s:%s/api/v1/nodes", os.Getenv("KUBEMASTER_IP"), os.Getenv("KUBEMASTER_PORT"))
 
 func GetNode(nodeName string) (node NodeInfo, err error) {
 	var Node modelK8s.NodeList

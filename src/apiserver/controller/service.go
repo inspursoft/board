@@ -3,47 +3,30 @@ package controller
 import (
 	"encoding/json"
 	"fmt"
-	"git/inspursoft/board/src/common/model"
-	//"io/ioutil"
 	"git/inspursoft/board/src/apiserver/service"
-	"log"
+	"git/inspursoft/board/src/common/model"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
-	"time"
 
 	"github.com/astaxie/beego/logs"
 )
 
+const deploymentFilename = "deployment.yaml"
+const serviceFilename = "service.yaml"
+const serviceProcess = "process_service"
+const apiheader = "Content-Type: application/yaml"
+const deploymentAPI = "/apis/extensions/v1beta1/namespaces/"
+const serviceAPI = "/api/v1/namespaces/"
+
+var KubeMasterStatus bool
+var serviceNamespace = "default" //TODO create in project post
+var registryprefix = os.Getenv("REGISTRY_HOST") + ":" + os.Getenv("REGISTRY_PORT")
+var KubeMasterUrl = os.Getenv("KUBEMASTER_IP") + ":" + os.Getenv("KUBEMASTER_PORT")
+
 type ServiceController struct {
 	baseController
-}
-
-var KubeMasterIp string
-var KubeMasterStatus bool
-var deploymentFilename = "deployment.yaml"
-var serviceFilename = "service.yaml"
-var serviceProcess = "process_service"
-
-var apiheader = "Content-Type: application/yaml"
-var deploymentAPI = "/apis/extensions/v1beta1/namespaces/"
-var serviceAPI = "/api/v1/namespaces/"
-
-var serviceNamespace = "default" //TODO create in project post
-
-func init() {
-	var masterip = os.Getenv("KUBEMASTER_IP")
-	var masterport = os.Getenv("KUBEMASTER_PORT")
-	KubeMasterIp = masterip + ":" + masterport
-
-	_, err := http.Get(KubeMasterIp + "/api/v1/nodes")
-	if err != nil {
-		KubeMasterStatus = false
-	} else {
-		KubeMasterStatus = true
-	}
-	log.Printf("%s\t%s\t%s\t", "KubeMasterStatus status is ", strconv.FormatBool(KubeMasterStatus), time.Now())
 }
 
 //  Checking the user priviledge by token
@@ -61,13 +44,23 @@ func (p *ServiceController) Prepare() {
 // API to deploy service
 func (p *ServiceController) DeployServiceAction() {
 	var err error
+	var reqServiceConfig model.ServiceConfig
+	var pushobject pushObject
 
+	//Judge authority
+	if p.isSysAdmin == false && p.isProjectAdmin == false {
+		p.CustomAbort(http.StatusForbidden, "Insuffient privileges to manipulate user.")
+		return
+	}
+
+	//get the request data
 	reqData, err := p.resolveBody()
 	if err != nil {
 		p.internalError(err)
 		return
 	}
-	var reqServiceConfig model.ServiceConfig
+
+	//prase the request data to struct
 	err = json.Unmarshal(reqData, &reqServiceConfig)
 	if err != nil {
 		p.internalError(err)
@@ -75,47 +68,43 @@ func (p *ServiceController) DeployServiceAction() {
 	}
 
 	// Check deployment parameters
-	err = service.CheckDeploymentYmlPara(reqServiceConfig)
+	err = service.CheckDeploymentYamlPara(reqServiceConfig)
 	if err != nil {
-		logs.Info("Deployment config parameters error")
-		p.internalError(err)
+		p.CustomAbort(http.StatusBadRequest, err.Error())
 		return
 	}
 
 	// Check service parameters
-	err = service.CheckServiceYmlPara(reqServiceConfig)
+	err = service.CheckServiceYamlPara(reqServiceConfig)
 	if err != nil {
-		logs.Info("Service config parameters error")
-		p.internalError(err)
+		p.CustomAbort(http.StatusBadRequest, err.Error())
 		return
 	}
 
-	var serviceConfigPath = filepath.Join(repoPath,
-		reqServiceConfig.ProjectName, strconv.FormatInt(reqServiceConfig.ServiceID, 10))
-
-	logs.Info("Service config path: %s", serviceConfigPath)
+	//set deployment path
+	serviceId := int(reqServiceConfig.ServiceID)
+	serviceConfigPath := filepath.Join(repoPath,
+		reqServiceConfig.ProjectName, strconv.Itoa(serviceId))
+	logs.Debug("Service config path: %s", serviceConfigPath)
 	service.SetDeploymentPath(serviceConfigPath)
 
 	//Add registry to container images for deployment
-	registryprefix := os.Getenv("REGISTRY_HOST") + ":" + os.Getenv("REGISTRY_PORT")
 	for index, container := range reqServiceConfig.DeploymentYaml.ContainerList {
 		reqServiceConfig.DeploymentYaml.ContainerList[index].BaseImage =
 			filepath.Join(registryprefix, container.BaseImage)
 	}
-	fmt.Println(reqServiceConfig) //DEBUG
+	logs.Info(reqServiceConfig)
 
 	//Build deployment yaml file
-	err = service.BuildDeploymentYml(reqServiceConfig)
+	err = service.BuildDeploymentYaml(reqServiceConfig)
 	if err != nil {
-		logs.Info("Build Deployment Yaml failed")
 		p.internalError(err)
 		return
 	}
 
 	//Build service yaml file
-	err = service.BuildServiceYml(reqServiceConfig)
+	err = service.BuildServiceYaml(reqServiceConfig)
 	if err != nil {
-		logs.Info("Build Service Yaml failed")
 		p.internalError(err)
 		return
 	}
@@ -123,21 +112,18 @@ func (p *ServiceController) DeployServiceAction() {
 	//serviceNamespace = reqServiceConfig.ProjectName TODO in project
 
 	// Push deployment to jenkins
-	var pushobject pushObject
 	pushobject.FileName = deploymentFilename
-	pushobject.JobName = "process_service"
-	pushobject.Value = filepath.Join(reqServiceConfig.ProjectName,
-		strconv.FormatInt(reqServiceConfig.ServiceID, 10))
+	pushobject.JobName = serviceProcess
+	pushobject.Value = filepath.Join(reqServiceConfig.ProjectName, strconv.Itoa(serviceId))
 	pushobject.Message = fmt.Sprintf("Create deployment for project %s service %d",
 		reqServiceConfig.ProjectName, reqServiceConfig.ServiceID)
-	pushobject.Extras = KubeMasterIp + deploymentAPI + serviceNamespace + "/deployments"
+	pushobject.Extras = filepath.Join(KubeMasterUrl, deploymentAPI, serviceNamespace, "/deployments")
 
 	// Add deployment file
 	pushobject.Items = []string{filepath.Join(pushobject.Value, deploymentFilename)}
 
 	ret, msg, err := InternalPushObjects(&pushobject, &(p.baseController))
 	if err != nil {
-		logs.Info("Create deployment failed %s", pushobject.Extras)
 		p.internalError(err)
 		return
 	}
@@ -147,28 +133,24 @@ func (p *ServiceController) DeployServiceAction() {
 
 	//Push service to jenkins
 	pushobject.FileName = serviceFilename
-	pushobject.JobName = "process_service"
-	pushobject.Value = filepath.Join(reqServiceConfig.ProjectName,
-		strconv.FormatInt(reqServiceConfig.ServiceID, 10))
 	pushobject.Message = fmt.Sprintf("Create service for project %s service %d",
 		reqServiceConfig.ProjectName, reqServiceConfig.ServiceID)
-	pushobject.Extras = KubeMasterIp + serviceAPI + serviceNamespace + "/services"
+	pushobject.Extras = filepath.Join(KubeMasterUrl, serviceAPI, serviceNamespace, "/services")
 
 	// Add deployment file
 	pushobject.Items = []string{filepath.Join(pushobject.Value, serviceFilename)}
 
 	ret, msg, err = InternalPushObjects(&pushobject, &(p.baseController))
 	if err != nil {
-		logs.Info("Create service failed %s", pushobject.Extras)
 		p.internalError(err)
 		return
 	}
 	logs.Info("Internal push service object: %d %s", ret, msg)
-	p.CustomAbort(ret, msg)
 
+	p.CustomAbort(ret, msg)
 }
 
-// API to create service config
+// TODO API to create service config
 func (p *ServiceController) CreateServiceConfigAction() {
 	//TODO: Assign and return Service ID with mysql
 	var serviceID = "1"

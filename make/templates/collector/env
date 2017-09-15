@@ -1,5 +1,5 @@
 DB_PASSWORD=$db_password
-KUBE_IP=$kubernetes_apiserver_host
-KUBE_PORT=$kubernetes_apiserver_port
+KUBEMASTER_IP=$kubernetes_apiserver_host
+KUBEMASTER_PORT=$kubernetes_apiserver_port
 DB_IP=$mysql_ip
 DB_PORT=$mysql_port
