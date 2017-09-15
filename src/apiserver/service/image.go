@@ -260,6 +260,9 @@ func GetDockerfileInfo(path string) (*model.Dockerfile, error) {
 			continue
 		}
 		split := strings.SplitN(strings.TrimSpace(fulline), " ", 2)
+		fulline = ""
+
+		// ignore empty line and lines with only one field
 		if len(split) < 2 {
 			continue
 		}
@@ -301,10 +304,7 @@ func GetDockerfileInfo(path string) (*model.Dockerfile, error) {
 		case "EXPOSE":
 			Dockerfile.ExposePort = append(Dockerfile.ExposePort, split[1])
 		}
-		fulline = ""
 	}
-	if err != nil {
-		return nil, err
-	}
+
 	return &Dockerfile, nil
 }
