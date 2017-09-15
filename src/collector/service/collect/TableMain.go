@@ -94,7 +94,7 @@ loopNode:
 	for _, v := range NodeList.Items {
 		for _, cond := range v.Status.Conditions {
 			if strings.EqualFold(string(cond.Type), "Ready") {
-				if cond.Status != v1.ConditionTrue {
+				if cond.Status != v1.ConditionTrue && !v.Spec.Unschedulable {
 					util.Logger.SetWarn("this node status is false", v.Status.Addresses[1].Address)
 					continue loopNode
 				}

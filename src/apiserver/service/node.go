@@ -93,3 +93,9 @@ func getFromRequest(url string, source interface{}) (err error) {
 	}
 	return nil
 }
+func SuspendNode(nodeName string) (bool, error) {
+	return Suspend(nodeName)
+}
+func ResumeNode(nodeName string) (bool, error) {
+	return Resume(nodeName)
+}

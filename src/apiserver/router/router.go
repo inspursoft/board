@@ -79,6 +79,8 @@ func init() {
 				&controller.SearchSourceController{}, "get:Search"),
 			beego.NSRouter("/node",
 				&controller.NodeController{}, "get:GetNode"),
+			beego.NSRouter("/node/toggle",
+				&controller.NodeController{}, "get:NodeToggle"),
 			beego.NSNamespace("/dashboard", beego.NSRouter("/service",
 				&controller.DashboardServiceController{},
 				"post:GetServiceData"),
