@@ -1,12 +1,12 @@
 import { Component, OnInit, OnDestroy } from "@angular/core";
-import { UserService } from "app/profile/user-center/user-service/user-service";
-import { User } from "app/profile/user-center/user";
+import { UserService } from "../user-service/user-service";
+import { User } from "../user";
 import { editModel } from "../user-new-edit/user-new-edit.component"
 import { Message } from "app/shared/message-service/message";
 import { MessageService } from "app/shared/message-service/message.service";
 import { Subscription } from "rxjs/Subscription";
 import { BUTTON_STYLE } from "app/shared/shared.const"
-import { AppInitService } from "../../../app.init.service";
+import { AppInitService } from "../../app.init.service";
 
 @Component({
   selector: "user-list",
@@ -102,6 +102,7 @@ export class UserList implements OnInit, OnDestroy {
         let m: Message = new Message();
         if (user.user_system_admin === 1) {
           m.message = "USER_CENTER.SUCCESSFUL_SET_SYS_ADMIN";
+          user.user_project_admin = 1;
         } else {
           m.message = "USER_CENTER.SUCCESSFUL_SET_NOT_SYS_ADMIN";
         }
