@@ -56,9 +56,9 @@ func CheckDeploymentYmlPara(reqServiceConfig model.ServiceConfig) error {
 }
 
 //build yaml file of service
-func BuildServiceYml(reqServiceConfig model.ServiceConfig) error {
-	var service model.ServiceStructYml
-	var port model.PortsServiceYml
+func BuildServiceYaml(reqServiceConfig model.ServiceConfig) error {
+	var service model.ServiceStructYaml
+	var port model.PortsServiceYaml
 
 	serviceLoadPath := GetDeploymentPath()
 	err := CheckDeploymentPath(serviceLoadPath)
@@ -105,13 +105,13 @@ func BuildServiceYml(reqServiceConfig model.ServiceConfig) error {
 }
 
 //build yaml file of deployment
-func BuildDeploymentYml(reqServiceConfig model.ServiceConfig) error {
-	var deployment model.DeploymentStructYml
-	var nfsvolume model.VolumesDeploymentYml
-	var container model.ContainersDeploymentYml
-	var port model.PortsDeploymentYml
-	var volumeMount model.VolumeMountDeploymentYml
-	var env model.EnvDeploymentYml
+func BuildDeploymentYaml(reqServiceConfig model.ServiceConfig) error {
+	var deployment model.DeploymentStructYaml
+	var nfsvolume model.VolumesDeploymentYaml
+	var container model.ContainersDeploymentYaml
+	var port model.PortsDeploymentYaml
+	var volumeMount model.VolumeMountDeploymentYaml
+	var env model.EnvDeploymentYaml
 
 	deploymentLoadPath := GetDeploymentPath()
 	err := CheckDeploymentPath(deploymentLoadPath)
@@ -148,20 +148,20 @@ func BuildDeploymentYml(reqServiceConfig model.ServiceConfig) error {
 		container.Resource.Request.Cpu = cont.CPU
 		container.Resource.Request.Memory = cont.Memory
 
-		container.Ports = make([]model.PortsDeploymentYml, 0)
+		container.Ports = make([]model.PortsDeploymentYaml, 0)
 		for _, por := range cont.Ports {
 			port.ContainerPort = por
 			container.Ports = append(container.Ports, port)
 		}
 
-		container.VolumeMount = make([]model.VolumeMountDeploymentYml, 0)
+		container.VolumeMount = make([]model.VolumeMountDeploymentYaml, 0)
 		for _, volMount := range cont.Volumes {
 			volumeMount.Name = volMount.TargetStorageName
 			volumeMount.MountPath = volMount.Dir
 			container.VolumeMount = append(container.VolumeMount, volumeMount)
 		}
 
-		container.Env = make([]model.EnvDeploymentYml, 0)
+		container.Env = make([]model.EnvDeploymentYaml, 0)
 		for _, enviroment := range cont.Envs {
 			env.Name = enviroment.Name
 			env.Value = enviroment.Value

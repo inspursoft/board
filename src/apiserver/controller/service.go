@@ -96,14 +96,14 @@ func (p *ServiceController) DeployServiceAction() {
 	logs.Info(reqServiceConfig)
 
 	//Build deployment yaml file
-	err = service.BuildDeploymentYml(reqServiceConfig)
+	err = service.BuildDeploymentYaml(reqServiceConfig)
 	if err != nil {
 		p.internalError(err)
 		return
 	}
 
 	//Build service yaml file
-	err = service.BuildServiceYml(reqServiceConfig)
+	err = service.BuildServiceYaml(reqServiceConfig)
 	if err != nil {
 		p.internalError(err)
 		return

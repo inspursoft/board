@@ -16,17 +16,17 @@ type ServiceConfigImage struct {
 	ImageID   int64 `json:"service_image_id" orm:"column(image_id)"`
 }
 
-type PortsServiceYml struct {
+type PortsServiceYaml struct {
 	Port       int
 	TargetPort int `yaml:"targetPort,flow"`
 	NodePort   int `yaml:"nodePort,flow"`
 }
 
-type SelectorServiceYml struct {
+type SelectorServiceYaml struct {
 	App string
 }
 
-type ServiceStructYml struct {
+type ServiceStructYaml struct {
 	ApiVersion string `yaml:"apiVersion,flow"`
 	Kind       string
 	Metadata   struct {
@@ -36,27 +36,27 @@ type ServiceStructYml struct {
 		}
 	}
 	Spec struct {
-		Tpe      string             `yaml:"type,flow,omitempty"`
-		Ports    []PortsServiceYml  `yaml:",omitempty"`
-		Selector SelectorServiceYml `yaml:",omitempty"`
+		Tpe      string              `yaml:"type,flow,omitempty"`
+		Ports    []PortsServiceYaml  `yaml:",omitempty"`
+		Selector SelectorServiceYaml `yaml:",omitempty"`
 	} `yaml:",omitempty"`
 }
 
-type PortsDeploymentYml struct {
+type PortsDeploymentYaml struct {
 	ContainerPort int `yaml:"containerPort,flow"`
 }
 
-type VolumeMountDeploymentYml struct {
+type VolumeMountDeploymentYaml struct {
 	Name      string
 	MountPath string `yaml:"mountPath,flow"`
 }
 
-type EnvDeploymentYml struct {
+type EnvDeploymentYaml struct {
 	Name  string
 	Value string
 }
 
-type VolumesDeploymentYml struct {
+type VolumesDeploymentYaml struct {
 	Name string `yaml:",omitempty"`
 	Nfs  struct {
 		Server string
@@ -67,7 +67,7 @@ type VolumesDeploymentYml struct {
 	} `yaml:"hostPath,flow,omitempty"`
 }
 
-type ContainersDeploymentYml struct {
+type ContainersDeploymentYaml struct {
 	Name       string
 	Image      string
 	Workingdir string   `yaml:",omitempty"`
@@ -78,12 +78,12 @@ type ContainersDeploymentYml struct {
 			Memory string `yaml:",omitempty"`
 		}
 	} `yaml:",omitempty"`
-	Ports       []PortsDeploymentYml       `yaml:",omitempty"`
-	VolumeMount []VolumeMountDeploymentYml `yaml:"VolumeMount,omitempty,flow"`
-	Env         []EnvDeploymentYml         `yaml:",omitempty"`
+	Ports       []PortsDeploymentYaml       `yaml:",omitempty"`
+	VolumeMount []VolumeMountDeploymentYaml `yaml:"VolumeMount,omitempty,flow"`
+	Env         []EnvDeploymentYaml         `yaml:",omitempty"`
 }
 
-type DeploymentStructYml struct {
+type DeploymentStructYaml struct {
 	ApiVersion string `yaml:"apiVersion,flow"`
 	Kind       string
 	Metadata   struct {
@@ -98,8 +98,8 @@ type DeploymentStructYml struct {
 				} `yaml:",omitempty"`
 			} `yaml:",omitempty"`
 			Spec struct {
-				Volumes    []VolumesDeploymentYml    `yaml:",omitempty"`
-				Containers []ContainersDeploymentYml `yaml:",omitempty"`
+				Volumes    []VolumesDeploymentYaml    `yaml:",omitempty"`
+				Containers []ContainersDeploymentYaml `yaml:",omitempty"`
 			} `yaml:",omitempty"`
 		} `yaml:",omitempty"`
 	} `yaml:",omitempty"`
