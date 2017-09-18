@@ -266,11 +266,20 @@ func (p *ImageController) BuildImageAction() {
 	p.CustomAbort(ret, msg)
 }
 
-//TODO
 func (p *ImageController) GetImageDockerfileAction() {
+	imageName := strings.TrimSpace(p.Ctx.Input.Param(":imagename"))
+	imageTag := strings.TrimSpace(p.GetString("image_tag"))
+	projectName := strings.TrimSpace(p.GetString("project_name"))
 
-	p.serveStatus(200, "Get dockerfile successfully")
-	return
+	dockerfilePath := filepath.Join(repoPath, projectName, imageName, imageTag)
+	dockerfile, err := service.GetDockerfileInfo(dockerfilePath)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	p.Data["json"] = dockerfile
+	p.ServeJSON()
 }
 
 func (p *ImageController) DockerfilePreviewAction() {
