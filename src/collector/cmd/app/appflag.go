@@ -30,8 +30,8 @@ func getOsEnv() (NewEnv env) {
 		envDbIp:       os.Getenv("DB_IP"),
 		envDbPort:     os.Getenv("DB_PORT"),
 		envDbPassword: os.Getenv("DB_PASSWORD"),
-		envKubeIp:     os.Getenv("KUBEMASTER_IP"),
-		envKubePort:   os.Getenv("KUBEMASTER_PORT"),
+		envKubeIp:     os.Getenv("KUBE_IP"),
+		envKubePort:   os.Getenv("KUBE_PORT"),
 	}
 	return
 }

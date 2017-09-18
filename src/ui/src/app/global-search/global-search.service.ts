@@ -21,7 +21,10 @@ export class GlobalSearchService {
         }
       })
       .toPromise()
-      .then(res=>res.json())
+      .then(res=>{
+        this.appInitService.chainResponse(res);
+        return res.json();
+      })
       .catch(err=>Promise.reject(err));
   }
 

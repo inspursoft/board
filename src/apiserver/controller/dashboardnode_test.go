@@ -2,7 +2,6 @@ package controller
 
 import (
 	"fmt"
-	"testing"
 
 	"github.com/astaxie/beego/orm"
 )
@@ -15,10 +14,4 @@ func init() {
 	if err != nil {
 		fmt.Printf("Error occurred on registering DB: %+v\n", err)
 	}
-}
-func TestDashboardNodeController_GetList(t *testing.T) {
-	var s *DashboardNodeController
-	s = new(DashboardNodeController)
-	s.GetNodeList()
-	s.GetService()
 }

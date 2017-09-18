@@ -2,10 +2,9 @@ package service
 
 import (
 	"encoding/json"
-	"fmt"
+	"git/inspursoft/board/src/common/utils"
 	"io/ioutil"
 	"net/http"
-	"os"
 
 	"strings"
 
@@ -16,10 +15,10 @@ import (
 type NodeStatus int
 
 const (
-	_             NodeStatus = iota
+	_ NodeStatus = iota
 	Running
 	Unschedulable
-	UnKnown
+	Unknown
 )
 
 type NodeListResult struct {
@@ -31,21 +30,19 @@ type NodeInfo struct {
 	NodeName     string  `json:"node_name" orm:"column(node_name)"`
 	NodeIP       string  `json:"node_ip" orm:"column(node_ip)"`
 	CreateTime   int64   `json:"create_time" orm:"column(create_time)"`
-	CpuUsage     float32 `json:"cpu_usage" orm:"column(cpu_usage)"`
+	CPUUsage     float32 `json:"cpu_usage" orm:"column(cpu_usage)"`
 	MemoryUsage  float32 `json:"memory_usage" orm:"column(memory_usage)"`
 	MemorySize   string  `json:"memory_size" orm:"column(memory_size)"`
 	StorageTotal uint64  `json:"storage_total" orm:"column(storage_total)"`
 	StorageUse   uint64  `json:"storage_use" orm:"column(storage_usage)"`
 }
 
-var NodeUrl = fmt.Sprintf("%s:%s/api/v1/nodes", os.Getenv("KUBEMASTER_IP"), os.Getenv("KUBEMASTER_PORT"))
+var kubeNodeURL = utils.GetConfig("KUBE_NODE_URL")
 
 func GetNode(nodeName string) (node NodeInfo, err error) {
 	var Node modelK8s.NodeList
 	defer func() { recover() }()
-	var url string
-	url = NodeUrl
-	err = getFromRequest(url, &Node)
+	err = getFromRequest(kubeNodeURL(), &Node)
 	if err != nil {
 		return
 	}
@@ -80,7 +77,7 @@ func GetNode(nodeName string) (node NodeInfo, err error) {
 				NodeName:     nodeName,
 				NodeIP:       nodeName,
 				CreateTime:   time,
-				CpuUsage:     cpu,
+				CPUUsage:     cpu,
 				MemoryUsage:  mem,
 				MemorySize:   mlimit,
 				StorageTotal: capacity,
@@ -89,7 +86,6 @@ func GetNode(nodeName string) (node NodeInfo, err error) {
 			break
 		}
 	}
-
 	return
 }
 func getFromRequest(url string, source interface{}) (err error) {
@@ -117,7 +113,7 @@ func GetNodeList() (res []NodeListResult) {
 
 	var Node modelK8s.NodeList
 	defer func() { recover() }()
-	err := getFromRequest(NodeUrl, &Node)
+	err := getFromRequest(kubeNodeURL(), &Node)
 	if err != nil {
 		return
 	}
@@ -134,7 +130,7 @@ func GetNodeList() (res []NodeListResult) {
 						return Running
 					}
 				}
-				return UnKnown
+				return Unknown
 			}()})
 	}
 	return
