@@ -5,25 +5,27 @@ import (
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strconv"
 
 	"github.com/astaxie/beego/logs"
 )
 
-const deploymentFilename = "deployment.yaml"
-const serviceFilename = "service.yaml"
-const serviceProcess = "process_service"
-const apiheader = "Content-Type: application/yaml"
-const deploymentAPI = "/apis/extensions/v1beta1/namespaces/"
-const serviceAPI = "/api/v1/namespaces/"
+const (
+	deploymentFilename = "deployment.yaml"
+	serviceFilename    = "service.yaml"
+	serviceProcess     = "process_service"
+	apiheader          = "Content-Type: application/yaml"
+	deploymentAPI      = "/apis/extensions/v1beta1/namespaces/"
+	serviceAPI         = "/api/v1/namespaces/"
+	serviceNamespace   = "default" //TODO create in project post
+)
 
-var KubeMasterStatus bool
-var serviceNamespace = "default" //TODO create in project post
-var registryprefix = os.Getenv("REGISTRY_HOST") + ":" + os.Getenv("REGISTRY_PORT")
-var KubeMasterUrl = os.Getenv("KUBEMASTER_IP") + ":" + os.Getenv("KUBEMASTER_PORT")
+var kubeMasterStatus bool
+
+var kubeMasterURL = utils.GetConfig("KUBE_MASTER_URL")
 
 type ServiceController struct {
 	baseController
@@ -91,7 +93,7 @@ func (p *ServiceController) DeployServiceAction() {
 	//Add registry to container images for deployment
 	for index, container := range reqServiceConfig.DeploymentYaml.ContainerList {
 		reqServiceConfig.DeploymentYaml.ContainerList[index].BaseImage =
-			filepath.Join(registryprefix, container.BaseImage)
+			filepath.Join(registryURL(), container.BaseImage)
 	}
 	logs.Info(reqServiceConfig)
 
@@ -117,7 +119,7 @@ func (p *ServiceController) DeployServiceAction() {
 	pushobject.Value = filepath.Join(reqServiceConfig.ProjectName, strconv.Itoa(serviceId))
 	pushobject.Message = fmt.Sprintf("Create deployment for project %s service %d",
 		reqServiceConfig.ProjectName, reqServiceConfig.ServiceID)
-	pushobject.Extras = filepath.Join(KubeMasterUrl, deploymentAPI, serviceNamespace, "/deployments")
+	pushobject.Extras = filepath.Join(kubeMasterURL(), deploymentAPI, serviceNamespace, "/deployments")
 
 	// Add deployment file
 	pushobject.Items = []string{filepath.Join(pushobject.Value, deploymentFilename)}
@@ -135,7 +137,7 @@ func (p *ServiceController) DeployServiceAction() {
 	pushobject.FileName = serviceFilename
 	pushobject.Message = fmt.Sprintf("Create service for project %s service %d",
 		reqServiceConfig.ProjectName, reqServiceConfig.ServiceID)
-	pushobject.Extras = filepath.Join(KubeMasterUrl, serviceAPI, serviceNamespace, "/services")
+	pushobject.Extras = filepath.Join(kubeMasterURL(), serviceAPI, serviceNamespace, "/services")
 
 	// Add deployment file
 	pushobject.Items = []string{filepath.Join(pushobject.Value, serviceFilename)}

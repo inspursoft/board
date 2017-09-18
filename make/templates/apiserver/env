@@ -1,6 +1,6 @@
 REGISTRY_HOST=$registry_host
 REGISTRY_PORT=$registry_port
 BOARD_ADMIN_PASSWORD=$board_admin_password
-KUBEMASTER_IP=$kubernetes_apiserver_host
-KUBEMASTER_PORT=$kubernetes_apiserver_port
+KUBE_MASTER_HOST=$kube_master_host
+KUBE_MASTER_PORT=$kube_master_port
 

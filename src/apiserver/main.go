@@ -5,7 +5,6 @@ import (
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
-	"os"
 
 	"github.com/astaxie/beego/logs"
 
@@ -34,7 +33,21 @@ func updateAdminPassword(initialPassword string) {
 }
 
 func main() {
-	initialPassword := os.Getenv("BOARD_ADMIN_PASSWORD")
-	updateAdminPassword(initialPassword)
+	utils.Initialize()
+
+	utils.AddEnv("BOARD_ADMIN_PASSWORD")
+	utils.AddEnv("KUBE_MASTER_HOST")
+	utils.AddEnv("KUBE_MASTER_PORT")
+	utils.AddEnv("REGISTRY_HOST")
+	utils.AddEnv("REGISTRY_PORT")
+
+	utils.SetConfig("REGISTRY_URL", "%s:%s", "REGISTRY_HOST", "REGISTRY_PORT")
+	utils.SetConfig("KUBE_MASTER_URL", "%s:%s", "KUBE_MASTER_HOST", "KUBE_MASTER_PORT")
+	utils.SetConfig("KUBE_NODE_URL", "%s:%s/api/v1/nodes", "KUBE_MASTER_HOST", "KUBE_MASTER_PORT")
+
+	utils.ShowAllConfigs()
+
+	updateAdminPassword(utils.GetStringValue("BOARD_ADMIN_PASSWORD"))
+
 	beego.Run(":8088")
 }

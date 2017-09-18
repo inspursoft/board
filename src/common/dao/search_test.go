@@ -1,8 +1,7 @@
-package dao_test
+package dao
 
 import (
 	"fmt"
-	"git/inspursoft/board/src/common/dao"
 
 	"testing"
 
@@ -18,6 +17,6 @@ func TestSearchPrivite(t *testing.T) {
 	if err != nil {
 		fmt.Printf("Error occurred on registering DB: %+v\n", err)
 	}
-	fmt.Println(dao.SearchPrivateProject("l", "Admin"))
-	fmt.Println(dao.SearchPublicProject("l"))
+	fmt.Println(SearchPrivateProject("l", "Admin"))
+	fmt.Println(SearchPublicProject("l"))
 }
