@@ -20,6 +20,8 @@ const serviceKind = "Service"
 const nodePort = "NodePort"
 const deploymentApiVersion = "extensions/v1beta1"
 const deploymentKind = "Deployment"
+const MaxPort = 65535
+const MinPort = 30000
 
 func SetDeploymentPath(Path string) {
 	loadPath = strings.Replace(Path, " ", "", -1)
@@ -46,12 +48,36 @@ func CheckDeploymentPath(loadPath string) error {
 }
 
 //check parameter of service yaml file
-func CheckServiceYmlPara(reqServiceConfig model.ServiceConfig) error {
+func CheckServiceYamlPara(reqServiceConfig model.ServiceConfig) error {
+	if reqServiceConfig.DeploymentYaml.Name == "" {
+		return errors.New("Deployment_Name is NULL.")
+	}
+
+	if reqServiceConfig.DeploymentYaml.Replicas < 1 {
+		return errors.New("Deployment_Replicas < 1 is invaild.")
+	}
+
+	if len(reqServiceConfig.DeploymentYaml.ContainerList) < 1 {
+		return errors.New("Container_List is NULL.")
+	}
+
 	return nil
 }
 
 //check parameter of deployment yaml file
-func CheckDeploymentYmlPara(reqServiceConfig model.ServiceConfig) error {
+func CheckDeploymentYamlPara(reqServiceConfig model.ServiceConfig) error {
+	if reqServiceConfig.ServiceYaml.Name == "" {
+		return errors.New("ServiceYaml.Name is NULL.")
+	}
+
+	for _, nodePort := range reqServiceConfig.ServiceYaml.NodePorts {
+		if nodePort.ExternalPort > MaxPort {
+			return errors.New("Service_nodeports exceed maximum limit.")
+		} else if nodePort.ExternalPort < MinPort {
+			return errors.New("Service_nodeports exceed minimum limit.")
+		}
+	}
+
 	return nil
 }
 

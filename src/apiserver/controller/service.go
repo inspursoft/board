@@ -68,14 +68,14 @@ func (p *ServiceController) DeployServiceAction() {
 	}
 
 	// Check deployment parameters
-	err = service.CheckDeploymentYmlPara(reqServiceConfig)
+	err = service.CheckDeploymentYamlPara(reqServiceConfig)
 	if err != nil {
 		p.CustomAbort(http.StatusBadRequest, err.Error())
 		return
 	}
 
 	// Check service parameters
-	err = service.CheckServiceYmlPara(reqServiceConfig)
+	err = service.CheckServiceYamlPara(reqServiceConfig)
 	if err != nil {
 		p.CustomAbort(http.StatusBadRequest, err.Error())
 		return
