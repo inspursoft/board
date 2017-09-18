@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 
 	yaml "gopkg.in/yaml.v2"
 
@@ -23,8 +22,8 @@ const deploymentKind = "Deployment"
 const MaxPort = 65535
 const MinPort = 30000
 
-func SetDeploymentPath(Path string) {
-	loadPath = strings.Replace(Path, " ", "", -1)
+func SetDeploymentPath(path string) {
+	loadPath = path
 }
 
 func GetDeploymentPath() string {
@@ -32,10 +31,6 @@ func GetDeploymentPath() string {
 }
 
 func CheckDeploymentPath(loadPath string) error {
-	if len(loadPath) == 0 {
-		return errors.New("loadPath is Null.")
-	}
-
 	if fi, err := os.Stat(loadPath); os.IsNotExist(err) {
 		if err := os.MkdirAll(loadPath, 0755); err != nil {
 			return err
@@ -50,7 +45,7 @@ func CheckDeploymentPath(loadPath string) error {
 //check parameter of service yaml file
 func CheckServiceYamlPara(reqServiceConfig model.ServiceConfig) error {
 	if reqServiceConfig.DeploymentYaml.Name == "" {
-		return errors.New("Deployment_Name is NULL.")
+		return errors.New("Deployment_Name is empty.")
 	}
 
 	if reqServiceConfig.DeploymentYaml.Replicas < 1 {
@@ -58,7 +53,7 @@ func CheckServiceYamlPara(reqServiceConfig model.ServiceConfig) error {
 	}
 
 	if len(reqServiceConfig.DeploymentYaml.ContainerList) < 1 {
-		return errors.New("Container_List is NULL.")
+		return errors.New("Container_List is empty.")
 	}
 
 	return nil
@@ -67,7 +62,7 @@ func CheckServiceYamlPara(reqServiceConfig model.ServiceConfig) error {
 //check parameter of deployment yaml file
 func CheckDeploymentYamlPara(reqServiceConfig model.ServiceConfig) error {
 	if reqServiceConfig.ServiceYaml.Name == "" {
-		return errors.New("ServiceYaml.Name is NULL.")
+		return errors.New("ServiceYaml.Name is empty.")
 	}
 
 	for _, external := range reqServiceConfig.ServiceYaml.External {
@@ -109,10 +104,6 @@ func BuildServiceYaml(reqServiceConfig model.ServiceConfig) error {
 		service.Spec.Ports = append(service.Spec.Ports, port)
 	}
 
-	// for _, sltor := range reqServiceConfig.ServiceYaml.Selectors {
-	// 	selector.App = sltor
-	// 	service.Spec.Selector = append(service.Spec.Selector, selector)
-	// }
 	service.Spec.Selector.App = reqServiceConfig.ServiceYaml.Selectors[0]
 
 	context, err := yaml.Marshal(&service)
