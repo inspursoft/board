@@ -57,3 +57,12 @@ func (n *NodeController) NodeToggle() {
 	}
 
 }
+func (n *NodeController) NodeList() {
+	if !n.isSysAdmin {
+		n.CustomAbort(http.StatusForbidden, "user should be admin")
+		return
+	}
+	res := service.GetNodeList()
+	n.Data["json"] = res
+	n.ServeJSON()
+}
