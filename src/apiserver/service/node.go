@@ -38,7 +38,7 @@ type NodeInfo struct {
 	StorageUse   uint64  `json:"storage_use" orm:"column(storage_usage)"`
 }
 
-var NodeUrl = fmt.Sprintf("%s:%s/api/v1/nodes", os.Getenv("KUBE_IP"), os.Getenv("KUBE_PORT"))
+var NodeUrl = fmt.Sprintf("%s:%s/api/v1/nodes", os.Getenv("KUBEMASTER_IP"), os.Getenv("KUBEMASTER_PORT"))
 
 func GetNode(nodeName string) (node NodeInfo, err error) {
 	var Node modelK8s.NodeList

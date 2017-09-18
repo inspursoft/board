@@ -2496,15 +2496,12 @@ definitions:
         type: integer
         format: int32
         description: The project's integer ID which include this service.
+      project_name:
+        type: string
+        description: The project's name of this service.
       config_phase:
         type: string
         description: The phase name of the service configuration process.        
-      image_list:
-        description: The images of this service.
-        type: array
-        items:
-          type: string
-          description: The name of this image.
       deployment_yaml:
         description: The deployment yaml struct of this service configuration.
         $ref: '#/definitions/DeploymentYaml'
@@ -2604,6 +2601,27 @@ definitions:
       env_value:
         type: string
         description: The environment variable value in this container.
+  ServiceNodeport:
+    type: object
+    properties:
+      container_port:
+        type: integer   
+        format: int32
+        description: The service port number of this Nodeport.
+      node_port:
+        type: integer   
+        format: int32
+        description: The node port number of this Nodeport.
+  ServiceExternalpath:
+    type: object
+    properties:
+      container_port:
+        type: integer   
+        format: int32
+        description: The service port number of this Nodeport.
+      external_path:
+        type: string   
+        description: The external access path of this service.        
   ServiceYaml:
     type: object
     properties:
@@ -2614,20 +2632,17 @@ definitions:
         description: The nodeports of this service.
         type: array
         items:
-          type: integer   
-          format: int32
-          description: The node port of this service.
+          $ref: '#/definitions/ServiceNodeport'
       service_externalpaths:
         description: The external access paths of this service.
         type: array
         items:
-          type: string   
-          description: The external access path of this service.
+          $ref: '#/definitions/ServiceExternalpath'
       service_selectors:
         description: The selectors of this service.
         type: array
         items:
-          type: string   
+          type: string
           description: The selector of this service.
   PodBrief:
     type: object
