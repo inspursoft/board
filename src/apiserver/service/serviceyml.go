@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	yaml "gopkg.in/yaml.v2"
 
@@ -14,8 +15,14 @@ import (
 
 var loadPath string
 
+const serviceApiVersion = "v1"
+const serviceKind = "Service"
+const nodePort = "NodePort"
+const deploymentApiVersion = "extensions/v1beta1"
+const deploymentKind = "Deployment"
+
 func SetDeploymentPath(Path string) {
-	loadPath = Path
+	loadPath = strings.Replace(Path, " ", "", -1)
 }
 
 func GetDeploymentPath() string {
@@ -52,7 +59,6 @@ func CheckDeploymentYmlPara(reqServiceConfig model.ServiceConfig) error {
 func BuildServiceYml(reqServiceConfig model.ServiceConfig) error {
 	var service model.ServiceStructYml
 	var port model.PortsServiceYml
-	//var selector model.SelectorServiceYml
 
 	serviceLoadPath := GetDeploymentPath()
 	err := CheckDeploymentPath(serviceLoadPath)
@@ -61,13 +67,13 @@ func BuildServiceYml(reqServiceConfig model.ServiceConfig) error {
 		return err
 	}
 
-	service.ApiVersion = "v1"
-	service.Kind = "Service"
+	service.ApiVersion = serviceApiVersion
+	service.Kind = serviceKind
 	service.Metadata.Name = reqServiceConfig.ServiceYaml.Name
 	service.Metadata.Labels.App = reqServiceConfig.ServiceYaml.Name
 
 	if len(reqServiceConfig.ServiceYaml.NodePorts) > 0 {
-		service.Spec.Tpe = "NodePort"
+		service.Spec.Tpe = nodePort
 	}
 
 	for _, nodePort := range reqServiceConfig.ServiceYaml.NodePorts {
@@ -104,7 +110,7 @@ func BuildDeploymentYml(reqServiceConfig model.ServiceConfig) error {
 	var nfsvolume model.VolumesDeploymentYml
 	var container model.ContainersDeploymentYml
 	var port model.PortsDeploymentYml
-	var volumemount model.VolumeMountDeploymentYml
+	var volumeMount model.VolumeMountDeploymentYml
 	var env model.EnvDeploymentYml
 
 	deploymentLoadPath := GetDeploymentPath()
@@ -114,49 +120,49 @@ func BuildDeploymentYml(reqServiceConfig model.ServiceConfig) error {
 		return err
 	}
 
-	deployment.ApiVersion = "extensions/v1beta1"
-	deployment.Kind = "Deployment"
+	deployment.ApiVersion = deploymentApiVersion
+	deployment.Kind = deploymentKind
 	deployment.Metadata.Name = reqServiceConfig.DeploymentYaml.Name
 	deployment.Spec.Replicas = reqServiceConfig.DeploymentYaml.Replicas
 	deployment.Spec.Template.Metadata.Labels.App = reqServiceConfig.DeploymentYaml.Name
 
-	for _, vlme := range reqServiceConfig.DeploymentYaml.VolumeList {
-		if vlme.ServerName == "" {
-			nfsvolume.Name = vlme.Name
-			nfsvolume.HostPath.Path = vlme.Path
-			deployment.Spec.Template.Spec.Volumes = append(deployment.Spec.Template.Spec.Volumes, nfsvolume)
+	for _, vol := range reqServiceConfig.DeploymentYaml.VolumeList {
+		nfsvolume.Name = vol.Name
+
+		if vol.ServerName == "" {
+			nfsvolume.HostPath.Path = vol.Path
 		} else {
-			nfsvolume.Name = vlme.Name
-			nfsvolume.Nfs.Path = vlme.Path
-			nfsvolume.Nfs.Server = vlme.ServerName
-			deployment.Spec.Template.Spec.Volumes = append(deployment.Spec.Template.Spec.Volumes, nfsvolume)
+			nfsvolume.Nfs.Path = vol.Path
+			nfsvolume.Nfs.Server = vol.ServerName
 		}
+
+		deployment.Spec.Template.Spec.Volumes = append(deployment.Spec.Template.Spec.Volumes, nfsvolume)
 	}
 
-	for _, ctner := range reqServiceConfig.DeploymentYaml.ContainerList {
+	for _, cont := range reqServiceConfig.DeploymentYaml.ContainerList {
 
-		container.Name = ctner.Name
-		container.Image = ctner.BaseImage
-		container.Workingdir = ctner.WorkDir
-		container.Command = ctner.Command
-		container.Resource.Request.Cpu = ctner.CPU
-		container.Resource.Request.Memory = ctner.Memory
+		container.Name = cont.Name
+		container.Image = cont.BaseImage
+		container.Workingdir = cont.WorkDir
+		container.Command = cont.Command
+		container.Resource.Request.Cpu = cont.CPU
+		container.Resource.Request.Memory = cont.Memory
 
 		container.Ports = make([]model.PortsDeploymentYml, 0)
-		for _, prt := range ctner.Ports {
-			port.ContainerPort = prt
+		for _, por := range cont.Ports {
+			port.ContainerPort = por
 			container.Ports = append(container.Ports, port)
 		}
 
 		container.VolumeMount = make([]model.VolumeMountDeploymentYml, 0)
-		for _, vlmeMount := range ctner.Volumes {
-			volumemount.Name = vlmeMount.TargetStorageName
-			volumemount.MountPath = vlmeMount.Dir
-			container.VolumeMount = append(container.VolumeMount, volumemount)
+		for _, volMount := range cont.Volumes {
+			volumeMount.Name = volMount.TargetStorageName
+			volumeMount.MountPath = volMount.Dir
+			container.VolumeMount = append(container.VolumeMount, volumeMount)
 		}
 
 		container.Env = make([]model.EnvDeploymentYml, 0)
-		for _, enviroment := range ctner.Envs {
+		for _, enviroment := range cont.Envs {
 			env.Name = enviroment.Name
 			env.Value = enviroment.Value
 			container.Env = append(container.Env, env)
