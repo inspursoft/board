@@ -104,3 +104,8 @@ type DeploymentStructYaml struct {
 		} `yaml:",omitempty"`
 	} `yaml:",omitempty"`
 }
+
+type ServiceProject struct {
+	ProjectID   int64  `json:"project_id"`
+	ProjectName string `json:"project_name"`
+}
