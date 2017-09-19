@@ -28,25 +28,24 @@ func GetIntValue(name string) int {
 	if v, ok := configStorage[name].(int); ok {
 		return v
 	}
-	logs.Error("Failed to get value for key: %s", name)
-	return 0
+	panic(fmt.Sprintf("Failed to get value for key: %s", name))
 }
 
 func GetStringValue(name string) string {
 	if s, ok := configStorage[name].(string); ok {
 		return s
 	}
-	logs.Error("Failed to get value for key: %s", name)
-	return ""
+	panic(fmt.Sprintf("Failed to get value for key: %s", name))
 }
 
 func SetConfig(name, formatter string, keys ...string) {
-	configStorage[name] = fmt.Sprintf(formatter, func() (values []interface{}) {
-		for _, key := range keys {
-			values = append(values, GetStringValue(key))
-		}
-		return
-	}()...)
+	configStorage[name] = fmt.Sprintf(formatter,
+		func() (values []interface{}) {
+			for _, key := range keys {
+				values = append(values, GetStringValue(key))
+			}
+			return
+		}()...)
 	return
 }
 
@@ -61,6 +60,6 @@ func Initialize() {
 func ShowAllConfigs() {
 	logs.Info("Current configurations in storage:\n")
 	for k, v := range configStorage {
-		logs.Info("%s: %s\n", k, v)
+		logs.Info("\t%s: %s", k, v)
 	}
 }
