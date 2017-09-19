@@ -2,6 +2,7 @@ package dao
 
 import (
 	"github.com/astaxie/beego/orm"
+	"git/inspursoft/board/src/common/model"
 )
 
 type SearchProjectResult struct {
@@ -63,4 +64,12 @@ where u.deleted = 0
 	o := orm.NewOrm()
 	_, err := o.Raw(sql, activeUser, "%"+searchName+"%").QueryRows(&searchRes)
 	return searchRes, err
+}
+func SearchService(para string) ([]model.ServiceStatus ,error){
+	var svr []model.ServiceStatus
+	o := orm.NewOrm()
+	svrModel := new(model.ServiceStatus)
+	qs := o.QueryTable(svrModel)
+	_,err:=qs.Filter("name__contains", para).All(&svr)
+	return svr,err
 }

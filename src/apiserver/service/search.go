@@ -13,6 +13,10 @@ import (
 type OriginImage struct {
 	Repositories []string `json:"repositories"`
 }
+type SearchServiceResult struct {
+	ServiceName string `json:"service_name"`
+	ProjectName string `json:"project_name"`
+}
 type SearchNodeResult struct {
 	NodeName string `json:"node_name"`
 	NodeIP   string `json:"node_ip"`
@@ -22,6 +26,7 @@ type SearchResult struct {
 	UserResult    []dao.SearchUserResult    `json:"user_result"`
 	ImageResult   []SearchImageResult       `json:"images_name"`
 	NodeResult    []SearchNodeResult        `json:"node_result"`
+	ServiceResult []SearchServiceResult     `json:"service_result"`
 }
 type SearchImageResult struct {
 	ImageName   string `json:"image_name"`
@@ -36,6 +41,7 @@ func SearchSource(user *model.User, searchPara string) (searchResult SearchResul
 		resUser    []dao.SearchUserResult
 		resImages  []SearchImageResult
 		resNode    []SearchNodeResult
+		resSvr     []SearchServiceResult
 	)
 	if user == nil {
 		resProject, err = dao.SearchPublicProject(searchPara)
@@ -64,11 +70,16 @@ func SearchSource(user *model.User, searchPara string) (searchResult SearchResul
 		if err != nil {
 			return searchResult, err
 		}
+		resSvr, err = searchService(searchPara)
+		if err != nil {
+			return searchResult, err
+		}
 		searchResult = SearchResult{
 			ProjectResult: resProject,
 			UserResult:    resUser,
 			ImageResult:   resImages,
 			NodeResult:    resNode,
+			ServiceResult: resSvr,
 		}
 	}
 	return searchResult, nil
@@ -129,4 +140,14 @@ func searchNode(para string) (res []SearchNodeResult, err error) {
 
 	}
 	return
+}
+func searchService(searchPara string) (res []SearchServiceResult, err error) {
+	resSvr, err := dao.SearchService(searchPara)
+	for _, val := range resSvr {
+		var svr SearchServiceResult
+		svr.ServiceName = val.Name
+		svr.ProjectName = val.ProjectName
+		res = append(res, svr)
+	}
+	return res, err
 }
