@@ -253,5 +253,20 @@ export const LANG_EN_US = {
     "NODES": "Nodes",
     "NODE_NAME": "Node Name",
     "NODE_IP": "Node IP Address"
+  },
+  "NODE": {
+    "CREATE_NODE": "Create Node",
+    "NODE_NAME": "Node Name",
+    "NODE_IP": "Node IP Address",
+    "NODE_STATUS": "Node Status",
+    "OPERATION": "Operation",
+    "ITEMS": " record(s) found.",
+    "NODE_DETAILS": "Node Details",
+    "CREATION_TIME": "Creation Time",
+    "CPU_USAGE": "CPU Usage",
+    "MEMORY_USAGE": "Memory Usage",
+    "MEMORY_SIZE": "Memory Size",
+    "STORAGE_TOTAL": "Storage Total",
+    "STORAGE_USAGE": "Storage Usage"
   }
 };

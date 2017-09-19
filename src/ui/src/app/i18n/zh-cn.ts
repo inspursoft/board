@@ -253,5 +253,20 @@ export const LANG_ZH_CN = {
     "NODES": "节点",
     "NODE_NAME": "节点名称",
     "NODE_IP": "节点IP地址"
+  },
+  "NODE": {
+    "CREATE_NODE": "创建节点",
+    "NODE_NAME": "节点名称",
+    "NODE_IP": "节点IP地址",
+    "NODE_STATUS": "节点状态",
+    "OPERATION": "操作",
+    "ITEMS": " 条记录。",
+    "NODE_DETAILS": "节点明细",
+    "CREATION_TIME": "创建时间",
+    "CPU_USAGE": "CPU使用率",
+    "MEMORY_USAGE": "内存使用率",
+    "MEMORY_SIZE": "内存大小",
+    "STORAGE_TOTAL": "存储总量",
+    "STORAGE_USAGE": "存储使用率"
   }
 };
