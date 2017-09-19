@@ -1502,7 +1502,7 @@ paths:
           description: Invalid image name.
         500:
           description: Internal errors. 
-  /v1/images/{image_name}/dockerfile:
+  /v1/images/dockerfile:
     get:
       summary: Return the dockerfile of this image.
       description: |
@@ -1514,7 +1514,7 @@ paths:
           required: true
           description: Current available token.
         - name: image_name
-          in: path
+          in: query
           description: image name to specify an image.
           required: true
           type: string
