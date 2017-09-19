@@ -6,7 +6,7 @@ import { AppInitService } from "../app.init.service";
 import { Http, Headers, RequestOptions } from "@angular/http";
 import { Project } from "../project/project";
 import { Image, ImageDetail } from "../image/image";
-import { ServiceStep2Output } from "./service-step.component";
+import { ImageDockerfile, ServiceStep2NewImageType } from "./service-step.component";
 
 @Injectable()
 export class K8sService {
@@ -32,9 +32,10 @@ export class K8sService {
 
   setStepData(step: number, Data: Object) {
     this.stepData.set(step, Data);
+    console.log(Data);
   }
 
-  buildImage(imageData: ServiceStep2Output): Promise<boolean> {
+  buildImage(imageData: ServiceStep2NewImageType): Promise<boolean> {
     return this.http.post(`/api/v1/images/building`, imageData, {
       headers: this.defaultHeader
     }).toPromise()
@@ -45,7 +46,20 @@ export class K8sService {
       .catch(err => Promise.reject(err));
   }
 
-  getDockerFilePreview(imageData: ServiceStep2Output): Promise<string> {
+  getContainerDefaultInfo(image_name: string, image_tag: string, project_name: string): Promise<ImageDockerfile> {
+    return this.http.get(`/api/v1/images/dockerfile`, {
+      headers: this.defaultHeader,
+      params: {image_name: image_name, project_name: project_name, image_tag: image_tag}
+    }).toPromise()
+      .then(res => {
+        this.appInitService.chainResponse(res);
+        return res.json();
+      })
+      .catch(err => Promise.reject(err));
+  }
+
+
+  getDockerFilePreview(imageData: ServiceStep2NewImageType): Promise<string> {
     return this.http.post(`/api/v1/images/preview`, imageData, {
       headers: this.defaultHeader
     }).toPromise()
@@ -76,6 +90,18 @@ export class K8sService {
       .then(resp => {
         this.appInitService.chainResponse(resp);
         return resp.status == 200;
+      })
+      .catch(err => Promise.reject(err));
+  }
+
+  getServiceID(postData:{project_name:string,project_id:number}){
+    return this.http.post(`/api/v1/service`, postData, {
+      headers: this.defaultHeader
+    }).toPromise()
+      .then(res => {
+        this.appInitService.chainResponse(res);
+        console.log(res);
+        return res.json();
       })
       .catch(err => Promise.reject(err));
   }

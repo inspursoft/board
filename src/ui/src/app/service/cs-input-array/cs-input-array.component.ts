@@ -20,6 +20,7 @@ export class CsInputArrFiled {
 })
 export class CsInputArrayComponent implements OnInit {
   _sourceArr: Array<CsInputArrSupportType>;
+  _isDisable: boolean = false;
   FiledArray: Array<CsInputArrFiled>;
 
   constructor() {
@@ -27,9 +28,7 @@ export class CsInputArrayComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.type == CsInputArrType.iasString ?
-      this.FiledArray.push(new CsInputArrFiled(CsInputArrStatus.iasView, "", "")) :
-      this.FiledArray.push(new CsInputArrFiled(CsInputArrStatus.iasView, 0, 0))
+    this.FiledArray.push(new CsInputArrFiled(CsInputArrStatus.iasView, "", ""));
   }
 
   @Input("source")
@@ -43,10 +42,28 @@ export class CsInputArrayComponent implements OnInit {
   @Input() type: CsInputArrType = CsInputArrType.iasString;
   @Input() labelText: string = "";
   @Input() inputMaxlength: string;
-  @Input() disabled: boolean;
+
+
+  @Input()
+  set disabled(value) {
+    this._isDisable = value;
+    if (value) {
+      this.FiledArray.forEach(item => item.status = CsInputArrStatus.iasView);
+    }
+  }
+
+  get disabled() {
+    return this._isDisable;
+  }
 
   get inputType(): string {
     return this.type == CsInputArrType.iasString ? "text" : "number";
+  }
+
+  changeEditState(item: CsInputArrFiled) {
+    if (!this.disabled) {
+      item.status = CsInputArrStatus.iasEdit;
+    }
   }
 
   @Output("onEdit") onEditEvent: EventEmitter<any> = new EventEmitter<any>();
@@ -64,9 +81,7 @@ export class CsInputArrayComponent implements OnInit {
     this.FiledArray[index].defaultValue = this.FiledArray[index].value;
     if (index == this.FiledArray.length - 1) {
       this._sourceArr.push(this.FiledArray[index].value);
-      this.type == CsInputArrType.iasString ?
-        this.FiledArray.push(new CsInputArrFiled(CsInputArrStatus.iasView, "", "")) :
-        this.FiledArray.push(new CsInputArrFiled(CsInputArrStatus.iasView, 0, 0))
+      this.FiledArray.push(new CsInputArrFiled(CsInputArrStatus.iasView, "", ""));
     } else {
       this._sourceArr[index] = this.FiledArray[index].value;
     }

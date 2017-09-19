@@ -1,11 +1,11 @@
 /**
  * Created by liyanq on 9/11/17.
  */
-import { Component, Input, Output, EventEmitter, ViewChild, OnInit } from "@angular/core"
+import { Component, Input, Output, EventEmitter, OnInit } from "@angular/core"
 import { FormControl, FormGroup, ValidatorFn } from "@angular/forms";
 
 export enum CsInputStatus{isView, isEdit}
-export enum CsInputType{itWithInput, itWithNoInput}
+export enum CsInputType{itWithInput, itWithNoInput, itOnlyWithInput}
 export enum CsInputFiledType{iftString, iftNumber}
 export type CsInputSupportType = string | number
 export class CsInputFiled {
@@ -23,7 +23,6 @@ export class CsInputFiled {
 export class CsInputComponent implements OnInit {
   _isDisabled: boolean = false;
   inputFormGroup: FormGroup;
-  @ViewChild("input") Input;
   @Input() inputLabel: string = "";
   @Input() inputFiledType: CsInputFiledType = CsInputFiledType.iftString;
   @Input() inputField: CsInputFiled;
@@ -31,11 +30,17 @@ export class CsInputComponent implements OnInit {
   @Input() inputMaxlength: string;
   @Input() validatorFns: Array<ValidatorFn>;
 
-
   ngOnInit() {
     this.inputFormGroup = new FormGroup({
       inputControl: new FormControl("", this.validatorFns)
     })
+  }
+
+  @Input("simpleFiled")
+  set SimpleFiled(value: CsInputSupportType) {
+    this.inputField = new CsInputFiled(
+      CsInputStatus.isView, value, value
+    );
   }
 
   @Input("disabled")
@@ -48,13 +53,6 @@ export class CsInputComponent implements OnInit {
 
   get isDisabled() {
     return this._isDisabled;
-  }
-
-  @Input("simpleFiled")
-  set SimpleFiled(value: CsInputSupportType) {
-    this.inputField = new CsInputFiled(
-      CsInputStatus.isView, value, value
-    );
   }
 
   get typeName(): string {
@@ -70,10 +68,11 @@ export class CsInputComponent implements OnInit {
   @Output("onRevert") onRevertEvent: EventEmitter<any> = new EventEmitter<any>();
 
   onEditClick() {
-    if (this.inputType == CsInputType.itWithInput) {
-      this.inputField.status = 1;
+    if (!this.isDisabled && this.inputType != CsInputType.itWithNoInput) {
+      this.inputField.status = CsInputStatus.isEdit;
+    } else if (!this.isDisabled && this.inputType == CsInputType.itWithNoInput) {
+      this.onEditEvent.emit();
     }
-    this.onEditEvent.emit();
   }
 
   onCheckClick() {

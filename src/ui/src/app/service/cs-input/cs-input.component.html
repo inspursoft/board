@@ -1,14 +1,20 @@
-<div class="cs-input-container" [formGroup]="inputFormGroup">
-  <label for="inputField" class="cs-input-label">{{inputLabel}}:</label>
-  <span *ngIf="inputField.status == 0" class="cs-input-span">{{inputField.value}}</span>
-  <label *ngIf="inputField.status == 1 && inputType == 0"
+<div class="cs-input-container"
+     [formGroup]="inputFormGroup">
+  <label *ngIf="inputType == 0 || inputType == 1"
+         for="inputField"
+         (click)="onEditClick()"
+         class="cs-input-label">{{inputLabel}}:</label>
+  <span *ngIf="inputField.status == 0"
+        (click)="onEditClick()"
+        class="cs-input-span">{{inputField.value}}</span>
+  <label *ngIf="inputField.status == 1 && inputType != 1"
          for="inputField"
          aria-haspopup="true"
          role="tooltip"
          class="cs-input-field-container tooltip tooltip-validation tooltip-md"
+         (click)="onEditClick()"
          [class.invalid]="inputFormGroup.invalid && (inputFormGroup.dirty || inputFormGroup.touched)">
-    <input #input
-           id="inputField"
+    <input id="inputField"
            formControlName="inputControl"
            class="cs-input-input"
            [type]="inputFieldTypeString"
@@ -24,13 +30,13 @@
      (click)="onEditClick()">
     <clr-icon shape="note"></clr-icon>
   </a>
-  <a *ngIf="inputField.status == 1 && inputType == 0"
+  <a *ngIf="inputField.status == 1 && inputType != 1"
      href="javascript:void(0)"
      class="cs-input-icon"
      (click)="onCheckClick()">
     <clr-icon shape="check"></clr-icon>
   </a>
-  <a *ngIf="inputField.status == 1 && inputType == 0"
+  <a *ngIf="inputField.status == 1 && inputType != 1"
      href="javascript:void(0)"
      class="cs-input-icon"
      (click)="onRevertClick()">

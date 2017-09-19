@@ -8,7 +8,7 @@ export class Image {
 
 export class ImageDetail {
   image_name: string = "";
-  image_tag: number = 0;
+  image_tag: string = "";
   image_detail: string = "";
   image_creationtime: string;
   image_size_number: number;

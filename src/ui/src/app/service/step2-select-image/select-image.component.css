@@ -20,7 +20,7 @@ div.dynamic-image-source-container {
 }
 
 div.dynamic-icon-container {
-  flex-basis: 200px;
+  flex-basis: 20px;
   display: flex;
   justify-content: flex-end;
 }
@@ -32,6 +32,10 @@ div.dynamic-icon-container {
   height: 20px;
   border-radius: 5px;
   cursor: pointer;
+}
+
+.dynamic-icon.plus {
+  margin-top: 10px;
 }
 
 fieldset.fieldSet-default {
@@ -83,7 +87,7 @@ div.create-image-area-container {
 div.console-container {
   margin-top: 10px;
   flex-basis: 100%;
-  padding: 0 20px 40px 20px;
+  padding: 0 10px 40px 10px;
 }
 
 textarea.area-command {
@@ -104,4 +108,9 @@ button.default-primary {
 
 .base-margin-left {
   margin-left: 10px;
+}
+
+div.file-list {
+  margin-left: 190px;
+  font-size: 10px;
 }
