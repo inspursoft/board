@@ -9,7 +9,7 @@ import (
 	"github.com/astaxie/beego/logs"
 )
 
-var jenkinsJobConsoleURL = "http://jenkins:8080/job/{{.JobName}}/{{.BuildSerialID}}/consoleText"
+const jenkinsJobConsoleURL = "http://jenkins:8080/job/{{.JobName}}/{{.BuildSerialID}}/consoleText"
 
 type jobConsole struct {
 	JobName       string `json:"job_name"`

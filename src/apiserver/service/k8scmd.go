@@ -1,18 +1,16 @@
 package service
 
 import (
+	"git/inspursoft/board/src/common/utils"
+
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	apiCli "k8s.io/client-go/tools/clientcmd/api"
 
-	"fmt"
-
-	"os"
-
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-var MasterUrl = fmt.Sprintf("%s:%s", os.Getenv("KUBE_IP"), os.Getenv("KUBE_PORT"))
+var kubeMasterURL = utils.GetConfig("KUBE_MASTER_URL")
 
 func K8sCliFactory(clusterName string, masterUrl string, apiVersion string) (*rest.Config, error) {
 	cli := apiCli.NewConfig()
@@ -26,7 +24,7 @@ func K8sCliFactory(clusterName string, masterUrl string, apiVersion string) (*re
 }
 func Suspend(nodeName string) (bool, error) {
 
-	cli, err := K8sCliFactory("", MasterUrl, "v1")
+	cli, err := K8sCliFactory("", kubeMasterURL(), "v1")
 	apiSet, err := kubernetes.NewForConfig(cli)
 	if err != nil {
 		return false, err
@@ -40,8 +38,7 @@ func Suspend(nodeName string) (bool, error) {
 }
 
 func Resume(nodeName string) (bool, error) {
-
-	cli, err := K8sCliFactory("", MasterUrl, "v1")
+	cli, err := K8sCliFactory("", kubeMasterURL(), "v1")
 	apiSet, err := kubernetes.NewForConfig(cli)
 	if err != nil {
 		return false, err
@@ -50,9 +47,5 @@ func Resume(nodeName string) (bool, error) {
 	nodeData, err := n.Get(nodeName)
 	nodeData.Spec.Unschedulable = false
 	res, err := n.Update(nodeData)
-	if res.Spec.Unschedulable == false {
-		return true, nil
-	}
-	return false, err
-
+	return !res.Spec.Unschedulable, err
 }

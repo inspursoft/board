@@ -1,10 +1,9 @@
-package service_test
+package service
 
 import (
 	"testing"
-	"git/inspursoft/board/src/apiserver/service"
 )
 
 func TestGetTimeNow(t *testing.T) {
-	service.GetServerTime()
+	GetServerTime()
 }

@@ -14,9 +14,11 @@ import (
 	"text/template"
 )
 
-var dockerTemplatePath = "templates"
-var dockerfileName = "Dockerfile"
-var templateNameDefault = "dockerfile-template"
+const (
+	dockerTemplatePath  = "templates"
+	dockerfileName      = "Dockerfile"
+	templateNameDefault = "dockerfile-template"
+)
 
 func str2execform(str string) string {
 	sli := strings.Split(str, " ")

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
-	"os"
+	"git/inspursoft/board/src/common/utils"
 	"strings"
 
 	modelK8s "k8s.io/client-go/pkg/api/v1"
@@ -28,7 +28,7 @@ type SearchImageResult struct {
 	ProjectName string `json:"project_name"`
 }
 
-var RegistryURL = fmt.Sprintf("http://%s:%s/v2/_catalog", os.Getenv("REGISTRY_HOST"), os.Getenv("REGISTRY_PORT"))
+var registryURL = utils.GetConfig("REGISTRY_URL")
 
 func SearchSource(user *model.User, searchPara string) (searchResult SearchResult, err error) {
 	var (
@@ -54,7 +54,7 @@ func SearchSource(user *model.User, searchPara string) (searchResult SearchResul
 		if err != nil {
 			return searchResult, err
 		}
-		resImages, err = searchImages(RegistryURL, currentProject, searchPara)
+		resImages, err = searchImages(fmt.Sprintf("%s/v2/_catalog", registryURL()), currentProject, searchPara)
 		if err != nil {
 			return searchResult, err
 		}
@@ -115,7 +115,7 @@ func getProjectByUser(userID int64) (projectName []string, err error) {
 func searchNode(para string) (res []SearchNodeResult, err error) {
 	var Node modelK8s.NodeList
 	defer func() { recover() }()
-	err = getFromRequest(NodeUrl, &Node)
+	err = getFromRequest(kubeNodeURL(), &Node)
 	if err != nil {
 		return
 	}

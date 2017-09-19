@@ -14,13 +14,15 @@ import (
 
 var loadPath string
 
-const serviceApiVersion = "v1"
-const serviceKind = "Service"
-const nodePort = "NodePort"
-const deploymentApiVersion = "extensions/v1beta1"
-const deploymentKind = "Deployment"
-const MaxPort = 65535
-const MinPort = 30000
+const (
+	serviceAPIVersion    = "v1"
+	serviceKind          = "Service"
+	nodePort             = "NodePort"
+	deploymentAPIVersion = "extensions/v1beta1"
+	deploymentKind       = "Deployment"
+	maxPort              = 65535
+	minPort              = 30000
+)
 
 func SetDeploymentPath(path string) {
 	loadPath = path
@@ -66,9 +68,9 @@ func CheckDeploymentYamlPara(reqServiceConfig model.ServiceConfig) error {
 	}
 
 	for _, external := range reqServiceConfig.ServiceYaml.External {
-		if external.NodePort > MaxPort {
+		if external.NodePort > maxPort {
 			return errors.New("Service_nodeport exceed maximum limit.")
-		} else if external.NodePort < MinPort {
+		} else if external.NodePort < minPort {
 			return errors.New("Service_nodeport exceed minimum limit.")
 		}
 	}
@@ -88,7 +90,7 @@ func BuildServiceYaml(reqServiceConfig model.ServiceConfig) error {
 		return err
 	}
 
-	service.ApiVersion = serviceApiVersion
+	service.ApiVersion = serviceAPIVersion
 	service.Kind = serviceKind
 	service.Metadata.Name = reqServiceConfig.ServiceYaml.Name
 	service.Metadata.Labels.App = reqServiceConfig.ServiceYaml.Name
@@ -137,7 +139,7 @@ func BuildDeploymentYaml(reqServiceConfig model.ServiceConfig) error {
 		return err
 	}
 
-	deployment.ApiVersion = deploymentApiVersion
+	deployment.ApiVersion = deploymentAPIVersion
 	deployment.Kind = deploymentKind
 	deployment.Metadata.Name = reqServiceConfig.DeploymentYaml.Name
 	deployment.Spec.Replicas = reqServiceConfig.DeploymentYaml.Replicas
