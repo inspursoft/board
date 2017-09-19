@@ -313,15 +313,15 @@ DROP TABLE IF EXISTS `log`;
 
 	CREATE TABLE `board`.`service_status` (
         `id` INT NOT NULL AUTO_INCREMENT,
-		`name` VARCHAR(255) NOT NULL DEFAULT '',
+        `name` VARCHAR(255) NOT NULL DEFAULT '',
         `project_id` INT NOT NULL,
-		`project_name` VARCHAR(255) NOT NULL DEFAULT '',
-		`comment` VARCHAR(255) NOT NULL DEFAULT '',
-		`owner_id` INT NOT NULL,
-		`status` SMALLINT(1) NOT NULL,
-		`public` SMALLINT(1) NULL,
-		`deleted` SMALLINT(1) NOT NULL DEFAULT 0,
-		`creation_time` datetime DEFAULT NULL,
+        `project_name` VARCHAR(255) NOT NULL DEFAULT '',
+        `comment` VARCHAR(255) NOT NULL DEFAULT '',
+        `owner_id` INT NOT NULL,
+        `status` SMALLINT(1) NOT NULL,
+        `public` SMALLINT(1) NULL,
+        `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
+        `creation_time` datetime DEFAULT NULL,
         `update_time` datetime DEFAULT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	

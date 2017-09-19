@@ -25,6 +25,12 @@ var serviceNamespace = "default" //TODO create in project post
 var registryprefix = os.Getenv("REGISTRY_HOST") + ":" + os.Getenv("REGISTRY_PORT")
 var KubeMasterUrl = os.Getenv("KUBEMASTER_IP") + ":" + os.Getenv("KUBEMASTER_PORT")
 
+const (
+	preparing = iota
+	running
+	suspending
+)
+
 type ServiceController struct {
 	baseController
 }
@@ -155,7 +161,7 @@ func (p *ServiceController) DeployServiceAction() {
 	logs.Info("Internal push service object: %d %s", ret, msg)
 
 	// Update service status in database
-	updateService := model.ServiceStatus{ID: int64(serviceID), Status: 1,
+	updateService := model.ServiceStatus{ID: int64(serviceID), Status: running,
 		Name: reqServiceConfig.ServiceYaml.Name}
 	_, err = service.UpdateService(updateService, "name", "status")
 	if err != nil {
@@ -185,7 +191,7 @@ func (p *ServiceController) CreateServiceConfigAction() {
 	var newservice model.ServiceStatus
 	newservice.ProjectID = reqServiceProject.ProjectID
 	newservice.ProjectName = reqServiceProject.ProjectName
-	newservice.Status = 0 // 0: preparing 1: running 2: suspending
+	newservice.Status = preparing // 0: preparing 1: running 2: suspending
 	newservice.OwnerID = p.currentUser.ID
 
 	serviceID, err := service.CreateServiceConfig(newservice)
