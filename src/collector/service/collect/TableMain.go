@@ -1,18 +1,20 @@
 package collect
 
 import (
-	"git/inspursoft/board/src/collector/dao"
-	"git/inspursoft/board/src/collector/util"
-	"time"
-	"net/http"
-	"io/ioutil"
 	"encoding/json"
-	modelK8s "k8s.io/client-go/pkg/api/v1"
+	"fmt"
+	"git/inspursoft/board/src/collector/dao"
 	"git/inspursoft/board/src/collector/model/collect"
 	"git/inspursoft/board/src/collector/model/collect/dashboard"
+	"git/inspursoft/board/src/collector/util"
+	"io/ioutil"
+	"net/http"
 	"strings"
+	"time"
+
 	"github.com/google/cadvisor/info/v2"
-	"fmt"
+	"k8s.io/client-go/pkg/api/v1"
+	modelK8s "k8s.io/client-go/pkg/api/v1"
 )
 
 var PodList modelK8s.PodList
@@ -24,26 +26,26 @@ var podItem []modelK8s.Pod
 var KuberMasterURL string
 var KuberPort string
 
-func SetInitVar(ip string,port string ) {
+func SetInitVar(ip string, port string) {
 	KuberMasterIp = ip
 	KuberPort = port
-	KuberMasterURL=fmt.Sprintf("%s%s%s",KuberMasterIp,":",KuberPort)
+	KuberMasterURL = fmt.Sprintf("%s%s%s", KuberMasterIp, ":", KuberPort)
 	pingK8sApiLink()
 }
 func pingK8sApiLink() {
 	url := fmt.Sprintf("%s/version", KuberMasterURL)
-        cl := &http.Client{Timeout: time.Millisecond * 2000}
-        fmt.Println("url is ",url)
-        req, err := http.NewRequest("GET", url, nil)
-        if err != nil {
-                fmt.Println(err)
-        }
-        resp, _ :=cl.Do(req)
-        body, err := ioutil.ReadAll(resp.Body)
-        if err != nil {
-                fmt.Println(err)
-        }
-        fmt.Println("kubernetes version is ", string(body))
+	cl := &http.Client{Timeout: time.Millisecond * 2000}
+	fmt.Println("url is ", url)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		fmt.Println(err)
+	}
+	resp, _ := cl.Do(req)
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("kubernetes version is ", string(body))
 }
 
 //get resource form k8s api-server
@@ -88,7 +90,16 @@ func (this *SourceMap) GainPods() error {
 func (resource SourceMap) GainNodes() error {
 	var nodeCollect []collect.Node
 	k8sGet(&NodeList, "/api/v1/nodes")
+loopNode:
 	for _, v := range NodeList.Items {
+		for _, cond := range v.Status.Conditions {
+			if strings.EqualFold(string(cond.Type), "Ready") {
+				if cond.Status != v1.ConditionTrue && !v.Spec.Unschedulable {
+					util.Logger.SetWarn("this node status is false", v.Status.Addresses[1].Address)
+					continue loopNode
+				}
+			}
+		}
 		var nodes = resource.nodes
 		nodes.NodeName = v.Name
 		nodes.CreateTime = v.CreationTimestamp.Format("2006-01-02 15:04:05")
@@ -138,7 +149,7 @@ func getNodeJson(pre interface{}, method string, url string) {
 	body, _ := ioutil.ReadAll(resp.Body)
 	json.Unmarshal(body, pre)
 }
-func GetNodeMachine(ip string) (interface{}) {
+func GetNodeMachine(ip string) interface{} {
 	if ip == "127.0.0.1" {
 		return nil
 	}
@@ -155,7 +166,7 @@ func GetNodeMachine(ip string) (interface{}) {
 		outCapacity int64
 		outUse      int64
 	}{outCapacity: int64(outCapacity),
-		outUse:    int64(outUse)}
+		outUse: int64(outUse)}
 }
 
 //get nodes ps info

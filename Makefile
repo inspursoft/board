@@ -13,17 +13,31 @@
 #
 
 # Common
-BASEIMAGE=ubuntu:14.04
-GOBUILDIMAGE=golang:1.8.1
+# Develop flag
+DEVFLAG=release
+ifeq ($(DEVFLAG), release) 
+	BASEIMAGE=alpine:3.5
+	GOBUILDIMAGE=golang:1.8.3-alpine3.5
+	WORKPATH=release
+	IMAGEPREFIX=board
+else
+	BASEIMAGE=ubuntu:14.04
+	GOBUILDIMAGE=golang:1.8.1
+	WORKPATH=dev
+	IMAGEPREFIX=dev
+endif 
+VERSIONTAG=latest
 
 # Base shell parameters
 SHELL := /bin/bash
 BUILDPATH=$(CURDIR)
 MAKEPATH=$(BUILDPATH)/make
-MAKEDEVPATH=$(MAKEPATH)/dev
-SRCPATH= src
+MAKEWORKPATH=$(MAKEPATH)/$(WORKPATH)
+SRCPATH=$(BUILDPATH)/src
 TOOLSPATH=$(BUILDPATH)/tools
-DEVIMAGEPATH= make/dev
+IMAGEPATH=$(BUILDPATH)/make/$(MAKEWORKPATH)
+PACKAGEPATH=$(BUILDPATH)/Deploy
+
 
 # docker parameters
 DOCKERCMD=$(shell which docker)
@@ -35,7 +49,7 @@ DOCKERSAVE=$(DOCKERCMD) save
 DOCKERCOMPOSECMD=$(shell which docker-compose)
 DOCKERTAG=$(DOCKERCMD) tag
 
-DOCKERCOMPOSEFILEPATH=$(MAKEDEVPATH)
+DOCKERCOMPOSEFILEPATH=$(MAKEWORKPATH)
 DOCKERCOMPOSEFILENAME=docker-compose.yml
 DOCKERCOMPOSEUIFILENAME=docker-compose.uibuilder.yml
 
@@ -49,6 +63,7 @@ GOTEST=$(GOCMD) test
 GOFMT=gofmt -w
 GOVET=$(GOCMD) vet
 GOLINT=golint
+GOIMGBASEPATH=/go/src/git/inspursoft/board
 
 # prepare parameters
 PREPAREPATH=$(TOOLSPATH)
@@ -59,10 +74,16 @@ PREPARECMD_PARAMETERS=--conf $(CONFIGPATH)/$(CONFIGFILE)
 SWAGGERTOOLPATH=$(TOOLSPATH)/swagger
 SWAGGERFILEPATH=$(BUILDPATH)/docs
 
+#package 
+TARCMD=$(shell which tar)
+ZIPCMD=$(shell which gzip)
+PKGTEMPPATH=Deploy
+PKGNAME=board
+
 # Package lists
-TOPLEVEL_PKG := .
+# TOPLEVEL_PKG := .
 INT_LIST := apiserver tokenserver collector/cmd
-IMG_LIST := apiserver tokenserver log collector gitserver jenkins 
+IMG_LIST := apiserver tokenserver log collector gitserver jenkins mysql nginx
 
 # List building
 COMPILEALL_LIST = $(foreach int, $(INT_LIST), $(SRCPATH)/$(int))
@@ -74,6 +95,7 @@ TEST_LIST = $(foreach int, $(COMPILEALL_LIST), $(int)_test)
 FMT_LIST = $(foreach int, $(COMPILEALL_LIST), $(int)_fmt)
 VET_LIST = $(foreach int, $(COMPILEALL_LIST), $(int)_vet)
 GOLINT_LIST = $(foreach int, $(COMPILEALL_LIST), $(int)_golint)
+PKG_LIST = $(foreach int, $(IMG_LIST), $(IMAGEPREFIX)_$(int):$(VERSIONTAG))
 
 BUILDALL_LIST = $(foreach int, $(IMG_LIST), container/$(int))
 BUILD_LIST = $(foreach int, $(BUILDALL_LIST), $(int)_build)
@@ -83,7 +105,7 @@ RMIMG_LIST = $(foreach int, $(BUILDALL_LIST), $(int)_rmi)
 .PHONY: $(CLEAN_LIST) $(TEST_LIST) $(FMT_LIST) $(INSTALL_LIST) $(COMPILE_LIST) $(VET_LIST) $(GOLINT_LIST) $(BUILD_LIST)
 
 all: compile 
-compile: $(COMPILE_LIST) compile_ui
+compile: $(COMPILE_LIST)
 cleanbinary: $(CLEAN_LIST)
 install: $(INSTALL_LIST)
 test: $(TEST_LIST)
@@ -95,9 +117,13 @@ compile_ui:
 	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEUIFILENAME) up
 
 $(COMPILE_LIST): %_compile: %_fmt %_vet %_golint
-	cd $(TOPLEVEL_PKG)/$*/; $(GOBUILD) .
+	$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOIMGBASEPATH) \
+					-w $(GOIMGBASEPATH)/$* $(GOBUILDIMAGE) $(GOBUILD) \
+					-v -o $(GOIMGBASEPATH)/make/$(WORKPATH)/container/$(subst /cmd,,$(subst src/,,$*))/$(subst /cmd,,$(subst src/,,$*)) 
+
 $(CLEAN_LIST): %_clean:
 	$(GOCLEAN) $(TOPLEVEL_PKG)/$* 
+	rm $(MAKEWORKPATH)/container/$(subst /cmd,,$(subst src/,,$*))/$(subst /cmd,,$(subst src/,,$*))	    
 $(INSTALL_LIST): %_install:
 	$(GOINSTALL) $(TOPLEVEL_PKG)/$*
 $(TEST_LIST): %_test:
@@ -109,18 +135,19 @@ $(VET_LIST): %_vet:
 $(GOLINT_LIST): %_golint:
 	$(GOLINT) $*/...
 
-build: $(BUILD_LIST) container/db_build
-cleanimage: $(RMIMG_LIST) container/db_rmi
+build: $(BUILD_LIST) #container/db_build
+cleanimage: $(RMIMG_LIST) #container/db_rmi
 
-$(BUILD_LIST): %_build:
-	$(DOCKERBUILD) -f $(MAKEDEVPATH)/$*/Dockerfile . -t dev_$(subst container/,,$*):latest
+$(BUILD_LIST): %_build: 
+	$(DOCKERBUILD) -f $(MAKEWORKPATH)/$(subst mysql,db,$*)/Dockerfile . -t $(IMAGEPREFIX)_$(subst container/,,$*):latest
+	
 $(RMIMG_LIST): %_rmi:
-	$(DOCKERRMIMAGE) -f dev_$(subst container/,,$*):latest
+	$(DOCKERRMIMAGE) -f $(IMAGEPREFIX)_$(subst container/,,$*):latest
 
-container/db_build:
-	$(DOCKERBUILD) -f $(MAKEDEVPATH)/container/db/Dockerfile . -t dev_mysql:latest
-container/db_rmi:
-	$(DOCKERRMIMAGE) dev_mysql:latest
+#container/db_build:
+#	$(DOCKERBUILD) -f $(MAKEWORKPATH)/container/db/Dockerfile . -t $(IMAGEPREFIX)_mysql:latest
+#container/db_rmi:
+#	$(DOCKERRMIMAGE) $(IMAGEPREFIX)_mysql:latest
 
 prepare:
 	@echo "preparing..."
@@ -141,6 +168,23 @@ prepare_swagger:
 	@echo "preparing swagger environment..."
 	@cd $(SWAGGERTOOLPATH); ./prepare-swagger.sh
 	@echo "Done."
+
+package:
+	@echo "packing offline package ..."
+	@mkdir Deploy
+	@cp $(TOOLSPATH)/install.sh $(PKGTEMPPATH)/install.sh
+	@cp $(MAKEPATH)/board.cfg $(PKGTEMPPATH)/.
+	@cp $(MAKEPATH)/prepare $(PKGTEMPPATH)/.
+	@cp -rf $(MAKEPATH)/templates $(PKGTEMPPATH)/.
+	@cp $(MAKEWORKPATH)/docker-compose.yml $(PKGTEMPPATH)/.
+#	@cp LICENSE $(PKGTEMPPATH)/LICENSE
+#	@cp NOTICE $(PKGTEMPPATH)/NOTICE
+	@sed -i "s/..\/config/.\/config/" $(PKGTEMPPATH)/docker-compose.yml
+	@echo "pcakage images ..."
+	@$(DOCKERSAVE) -o $(PKGTEMPPATH)/$(IMAGEPREFIX)_deployment.$(VERSIONTAG).tgz $(PKG_LIST)
+	@$(TARCMD) -zcvf $(PKGNAME)-offline-installer-$(VERSIONTAG).tgz $(PKGTEMPPATH)
+	
+	@rm -rf $(PACKAGEPATH)
 
 .PHONY: cleanall
 cleanall: cleanbinary cleanimage

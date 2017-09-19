@@ -16,10 +16,11 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
-const baseRepoPath = `/repos`
-
-var jenkinsJobURL = "http://jenkins:8080/job/{{.JobName}}/buildWithParameters?token={{.Token}}&value={{.Value}}&extras={{.Extras}}&file_name={{.FileName}}"
-var jenkinsJobToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+const (
+	baseRepoPath    = `/repos`
+	jenkinsJobURL   = "http://jenkins:8080/job/{{.JobName}}/buildWithParameters?token={{.Token}}&value={{.Value}}&extras={{.Extras}}&file_name={{.FileName}}"
+	jenkinsJobToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+)
 
 var repoServePath = filepath.Join(baseRepoPath, "board_repo_serve")
 var repoServeURL = filepath.Join("root@gitserver:", "gitserver", "repos", "board_repo_serve")

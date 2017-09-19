@@ -273,6 +273,11 @@ export const LANG_ZH_CN = {
     "EMAIL": "邮箱",
     "ROLE": "角色",
     "SEARCH_FOR": "搜索到 ",
-    "ITEMS": " 条记录。"
+    "ITEMS": " 条记录。",
+    "IMAGES": "镜像",
+    "IMAGE_NAME": "镜像名称",
+    "NODES": "节点",
+    "NODE_NAME": "节点名称",
+    "NODE_IP": "节点IP地址"
   }
 };

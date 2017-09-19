@@ -79,9 +79,9 @@ rcp = ConfigParser.RawConfigParser()
 rcp.readfp(conf)
 
 hostname = rcp.get("configuration", "hostname")
-kubernetes_apiserver_host = rcp.get("configuration", "kubernetes_apiserver_host")
-kubernetes_apiserver_port = rcp.get("configuration", "kubernetes_apiserver_port")
-mysql_ip = rcp.get("configuration", "mysql_ip")
+kube_master_host = rcp.get("configuration", "kube_master_host")
+kube_master_port = rcp.get("configuration", "kube_master_port")
+mysql_host = rcp.get("configuration", "mysql_host")
 mysql_port = rcp.get("configuration", "mysql_port")
 board_admin_password = rcp.get("configuration", "board_admin_password")
 db_password = rcp.get("configuration", "db_password")
@@ -140,8 +140,8 @@ render(os.path.join(templates_dir, "apiserver", "env"),
         apiserver_env,
         registry_host=registry_host,
         registry_port=registry_port,
-        kubernetes_apiserver_host=kubernetes_apiserver_host,
-        kubernetes_apiserver_port=kubernetes_apiserver_port,
+        kube_master_host=kube_master_host,
+        kube_master_port=kube_master_port,
         board_admin_password=board_admin_password)
 
 render(os.path.join(templates_dir, "tokenserver", "app.conf"),
@@ -154,9 +154,9 @@ render(os.path.join(templates_dir, "tokenserver", "env"),
 
 render(os.path.join(templates_dir, "collector", "env"),
         collector_conf_env,
-        kubernetes_apiserver_host=kubernetes_apiserver_host,
-        kubernetes_apiserver_port=kubernetes_apiserver_port,
-        mysql_ip=mysql_ip,
+        kube_master_host=kube_master_host,
+        kube_master_port=kube_master_port,
+        mysql_host=mysql_host,
         mysql_port=mysql_port,
         db_password=db_password)
 

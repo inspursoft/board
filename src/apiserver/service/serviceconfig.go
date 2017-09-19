@@ -1,6 +1,8 @@
 package service
 
 import (
+	"errors"
+	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/model/yaml"
 )
@@ -12,12 +14,6 @@ func InitServiceConfig() (*model.ServiceConfig, error) {
 func SelectProject(config *model.ServiceConfig, projectID int64) (*model.ServiceConfig, error) {
 	config.Phase = "SELECT_PROJECT"
 	config.ProjectID = projectID
-	return config, nil
-}
-
-func SelectImages(config *model.ServiceConfig, images []string) (*model.ServiceConfig, error) {
-	config.Phase = "SELECT_IMAGES"
-	config.ImageList = images
 	return config, nil
 }
 
@@ -43,4 +39,23 @@ func ConfigureTest(config *model.ServiceConfig) error {
 func Deploy(config *model.ServiceConfig) error {
 	config.Phase = "CONFIGURE_DEPLOY"
 	return nil
+}
+
+func CreateServiceConfig(s model.ServiceStatus) (int64, error) {
+	serviceID, err := dao.AddService(s)
+	if err != nil {
+		return 0, err
+	}
+	return serviceID, err
+}
+
+func UpdateService(s model.ServiceStatus, fieldNames ...string) (bool, error) {
+	if s.ID == 0 {
+		return false, errors.New("no Service ID provided")
+	}
+	_, err := dao.UpdateService(s, fieldNames...)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }

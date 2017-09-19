@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter } from "@angular/core";
-import { User } from 'app/profile/user-center/user';
+import { User } from '../user';
 import { UserService } from "../user-service/user-service"
-import { MessageService } from "../../../shared/message-service/message.service";
+import { MessageService } from "../../shared/message-service/message.service";
 
 export enum editModel { emNew, emEdit }
 

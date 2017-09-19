@@ -138,7 +138,9 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "collector" 
   proxy:
-    image: nginx:1.11.5
+    build:
+      context: ../../
+      dockerfile: make/dev/container/nginx/Dockerfile
     networks:
       - board
     restart: always

@@ -5,14 +5,12 @@ import (
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
 	"io/ioutil"
-	"log"
 	"net/http"
-	"os"
-	"strconv"
-	//"strings"
 	"path/filepath"
-	"time"
+
+	"strings"
 
 	"github.com/astaxie/beego/logs"
 )
@@ -21,35 +19,22 @@ type ImageController struct {
 	baseController
 }
 
-var RegistryIp string
-var RegistryStatus bool
-var commentTemp = "Inspur image" // TODO: get from mysql in the next release
-var sizeunitTemp = "B"
+var registryURL = utils.GetConfig("REGISTRY_URL")
 
-var defaultDockerfilename = "Dockerfile"
-var imageProcess = "process_image"
+const (
+	commentTemp  = "Inspur image" // TODO: get from mysql in the next release
+	sizeunitTemp = "B"
 
-func init() {
-	var registryip = os.Getenv("REGISTRY_HOST")
-	var registryport = os.Getenv("REGISTRY_PORT")
-	RegistryIp = "http://" + registryip + ":" + registryport
-
-	_, err := http.Get(RegistryIp + "/v2/")
-	if err != nil {
-		RegistryStatus = false
-	} else {
-		RegistryStatus = true
-	}
-	log.Printf("%s\t%s\t%s\t", "RegistryStatus status is ", strconv.FormatBool(RegistryStatus), time.Now())
-}
+	defaultDockerfilename = "Dockerfile"
+	imageProcess          = "process_image"
+)
 
 // API to get image list
 func (p *ImageController) GetImagesAction() {
 
 	var repolist model.RegistryRepo
-
 	// Get the image list from registry v2
-	httpresp, err := http.Get(RegistryIp + "/v2/_catalog")
+	httpresp, err := http.Get(registryURL() + "/v2/_catalog")
 	if err != nil {
 		p.internalError(err)
 		return
@@ -63,22 +48,20 @@ func (p *ImageController) GetImagesAction() {
 
 	err = json.Unmarshal(body, &repolist)
 	if err != nil {
-		fmt.Println(body)
+		logs.Info(string(body))
 		p.internalError(err)
 		return
 	}
 
-	// fmt.Println(repolist)
 	/* Interpret the message to api server */
 	var imagelist []model.Image
 	for _, imagename := range repolist.Names {
 		var newImage model.Image
 		newImage.ImageName = imagename
 		newImage.ImageComment = commentTemp
-		//fmt.Println(newImage)
 		imagelist = append(imagelist, newImage)
 	}
-	fmt.Println(imagelist)
+	logs.Info(imagelist)
 	p.Data["json"] = imagelist
 	p.ServeJSON()
 }
@@ -92,9 +75,9 @@ func (p *ImageController) GetImageDetailAction() {
 
 	gettagsurl := "/v2/" + imageName + "/tags/list"
 
-	httpresp, err := http.Get(RegistryIp + gettagsurl)
+	httpresp, err := http.Get(registryURL() + gettagsurl)
 	if err != nil {
-		fmt.Println("url=", gettagsurl)
+		logs.Info("url=%s", gettagsurl)
 		p.internalError(err)
 		return
 	}
@@ -107,7 +90,7 @@ func (p *ImageController) GetImageDetailAction() {
 
 	err = json.Unmarshal(body, &taglist)
 	if err != nil {
-		fmt.Println(string(body))
+		logs.Info(string(body))
 		p.internalError(err)
 		return
 	}
@@ -121,10 +104,10 @@ func (p *ImageController) GetImageDetailAction() {
 		tagdetail.ImageSizeUnit = sizeunitTemp
 
 		// Get version one schema
-		getmenifesturl := "/v2/" + taglist.ImageName + "/manifests/" + tagid
-		httpresp, err = http.Get(RegistryIp + getmenifesturl)
+		getmanifesturl := "/v2/" + taglist.ImageName + "/manifests/" + tagid
+		httpresp, err = http.Get(registryURL() + getmanifesturl)
 		if err != nil {
-			fmt.Println(getmenifesturl)
+			logs.Info(getmanifesturl)
 			p.internalError(err)
 			return
 		}
@@ -135,24 +118,24 @@ func (p *ImageController) GetImageDetailAction() {
 			return
 		}
 
-		var menifest1 model.RegistryMenifest1
-		err = json.Unmarshal(body, &menifest1)
+		var manifest1 model.RegistryManifest1
+		err = json.Unmarshal(body, &manifest1)
 		if err != nil {
-			fmt.Println(string(body))
+			logs.Info(string(body))
 			p.internalError(err)
 			return
 		}
 
-		//fmt.Println((menifest1.History[0])["v1Compatibility"])
+		//fmt.Println((manifest1.History[0])["v1Compatibility"])
 
 		// Interpret it on the frontend
-		tagdetail.ImageDetail = (menifest1.History[0])["v1Compatibility"]
+		tagdetail.ImageDetail = (manifest1.History[0])["v1Compatibility"]
 		tagdetail.ImageAuthor = ""       //TODO: get the author by frontend simply
 		tagdetail.ImageCreationTime = "" //TODO: get the time by frontend simply
 
 		// Get version two schema
-		getmenifesturl = RegistryIp + getmenifesturl
-		req, _ := http.NewRequest("GET", getmenifesturl, nil)
+		getmanifesturl = registryURL() + getmanifesturl
+		req, _ := http.NewRequest("GET", getmanifesturl, nil)
 		req.Header.Set("Accept", "application/vnd.docker.distribution.manifest.v2+json")
 		client := http.Client{}
 		httpresp, err = client.Do(req)
@@ -163,19 +146,19 @@ func (p *ImageController) GetImageDetailAction() {
 			return
 		}
 
-		var menifest2 model.RegistryMenifest2
-		err = json.Unmarshal(body, &menifest2)
+		var manifest2 model.RegistryManifest2
+		err = json.Unmarshal(body, &manifest2)
 		if err != nil {
-			fmt.Println(string(body))
+			logs.Info(string(body))
 			p.internalError(err)
 			return
 		}
 
-		tagdetail.ImageId = menifest2.Config.Digest
-		tagdetail.ImageSize = menifest2.Config.Size
+		tagdetail.ImageId = manifest2.Config.Digest
+		tagdetail.ImageSize = manifest2.Config.Size
 
-		var layerconfig model.Menifest2Config
-		for _, layerconfig = range menifest2.Layers {
+		var layerconfig model.Manifest2Config
+		for _, layerconfig = range manifest2.Layers {
 			tagdetail.ImageSize += layerconfig.Size
 		}
 
@@ -183,7 +166,7 @@ func (p *ImageController) GetImageDetailAction() {
 		imagedetail = append(imagedetail, tagdetail)
 
 	}
-	fmt.Println(imagedetail)
+	logs.Info(imagedetail)
 	p.Data["json"] = imagedetail
 	p.ServeJSON()
 
@@ -273,14 +256,26 @@ func (p *ImageController) BuildImageAction() {
 	p.CustomAbort(ret, msg)
 }
 
-//TODO
 func (p *ImageController) GetImageDockerfileAction() {
+	imageName := strings.TrimSpace(p.GetString("image_name"))
+	imageTag := strings.TrimSpace(p.GetString("image_tag"))
+	projectName := strings.TrimSpace(p.GetString("project_name"))
 
-	p.serveStatus(200, "Get dockerfile successfully")
-	return
+	dockerfilePath := filepath.Join(repoPath, projectName, imageName, imageTag)
+	if _, err := os.Stat(dockerfilePath); os.IsNotExist(err) {
+		p.CustomAbort(http.StatusNotFound, "Image path doe's not exist.")
+		return
+	}
+	dockerfile, err := service.GetDockerfileInfo(dockerfilePath)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	p.Data["json"] = dockerfile
+	p.ServeJSON()
 }
 
-//TODO
 func (p *ImageController) DockerfilePreviewAction() {
 	var err error
 
@@ -313,6 +308,35 @@ func (p *ImageController) DockerfilePreviewAction() {
 	reqImageConfig.ImageDockerfilePath = filepath.Join(repoPath, reqImageConfig.ProjectName,
 		reqImageConfig.ImageName, reqImageConfig.ImageTag)
 	err = service.BuildDockerfile(reqImageConfig, p.Ctx.ResponseWriter)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+}
+
+func (p *ImageController) ConfigCleanAction() {
+	var err error
+
+	if p.isProjectAdmin == false {
+		p.serveStatus(http.StatusForbidden, "Invalid user for project admin")
+		return
+	}
+
+	reqData, err := p.resolveBody()
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	var reqImageIndex model.ImageIndex
+	err = json.Unmarshal(reqData, &reqImageIndex)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	configPath := filepath.Join(repoPath, strings.TrimSpace(reqImageIndex.ProjectName), strings.TrimSpace(reqImageIndex.ImageName), strings.TrimSpace(reqImageIndex.ImageTag))
+	err = service.ImageConfigClean(configPath)
 	if err != nil {
 		p.internalError(err)
 		return

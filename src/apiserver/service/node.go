@@ -2,10 +2,9 @@ package service
 
 import (
 	"encoding/json"
-	"fmt"
+	"git/inspursoft/board/src/common/utils"
 	"io/ioutil"
 	"net/http"
-	"os"
 
 	"strings"
 
@@ -13,23 +12,37 @@ import (
 	modelK8s "k8s.io/client-go/pkg/api/v1"
 )
 
+type NodeStatus int
+
+const (
+	_ NodeStatus = iota
+	Running
+	Unschedulable
+	Unknown
+)
+
+type NodeListResult struct {
+	NodeName string     `json:"node_name"`
+	NodeIP   string     `json:"node_ip"`
+	Status   NodeStatus `json:"status"`
+}
 type NodeInfo struct {
 	NodeName     string  `json:"node_name" orm:"column(node_name)"`
 	NodeIP       string  `json:"node_ip" orm:"column(node_ip)"`
 	CreateTime   int64   `json:"create_time" orm:"column(create_time)"`
-	CpuUsage     float32 `json:"cpu_usage" orm:"column(cpu_usage)"`
+	CPUUsage     float32 `json:"cpu_usage" orm:"column(cpu_usage)"`
 	MemoryUsage  float32 `json:"memory_usage" orm:"column(memory_usage)"`
 	MemorySize   string  `json:"memory_size" orm:"column(memory_size)"`
-	StorageTotal uint64   `json:"storage_total" orm:"column(storage_total)"`
-	StorageUse   uint64   `json:"storage_use" orm:"column(storage_usage)"`
+	StorageTotal uint64  `json:"storage_total" orm:"column(storage_total)"`
+	StorageUse   uint64  `json:"storage_use" orm:"column(storage_usage)"`
 }
+
+var kubeNodeURL = utils.GetConfig("KUBE_NODE_URL")
 
 func GetNode(nodeName string) (node NodeInfo, err error) {
 	var Node modelK8s.NodeList
 	defer func() { recover() }()
-	var url string
-	url = fmt.Sprintf("%s:%s/api/v1/nodes", os.Getenv("KUBE_IP"), os.Getenv("KUBE_PORT"))
-	err = getFromRequest(url, &Node)
+	err = getFromRequest(kubeNodeURL(), &Node)
 	if err != nil {
 		return
 	}
@@ -64,7 +77,7 @@ func GetNode(nodeName string) (node NodeInfo, err error) {
 				NodeName:     nodeName,
 				NodeIP:       nodeName,
 				CreateTime:   time,
-				CpuUsage:     cpu,
+				CPUUsage:     cpu,
 				MemoryUsage:  mem,
 				MemorySize:   mlimit,
 				StorageTotal: capacity,
@@ -73,7 +86,6 @@ func GetNode(nodeName string) (node NodeInfo, err error) {
 			break
 		}
 	}
-
 	return
 }
 func getFromRequest(url string, source interface{}) (err error) {
@@ -90,4 +102,36 @@ func getFromRequest(url string, source interface{}) (err error) {
 		return
 	}
 	return nil
+}
+func SuspendNode(nodeName string) (bool, error) {
+	return Suspend(nodeName)
+}
+func ResumeNode(nodeName string) (bool, error) {
+	return Resume(nodeName)
+}
+func GetNodeList() (res []NodeListResult) {
+
+	var Node modelK8s.NodeList
+	defer func() { recover() }()
+	err := getFromRequest(kubeNodeURL(), &Node)
+	if err != nil {
+		return
+	}
+	for _, v := range Node.Items {
+		res = append(res, NodeListResult{
+			NodeName: v.Status.Addresses[1].Address,
+			NodeIP:   v.Status.Addresses[1].Address,
+			Status: func() NodeStatus {
+				if v.Spec.Unschedulable {
+					return Unschedulable
+				}
+				for _, cond := range v.Status.Conditions {
+					if strings.EqualFold(string(cond.Type), "Ready") && cond.Status == modelK8s.ConditionTrue {
+						return Running
+					}
+				}
+				return Unknown
+			}()})
+	}
+	return
 }
