@@ -94,6 +94,18 @@ export class K8sService {
       .catch(err => Promise.reject(err));
   }
 
+  getServiceID(postData:{project_name:string,project_id:number}){
+    return this.http.post(`/api/v1/service`, postData, {
+      headers: this.defaultHeader
+    }).toPromise()
+      .then(res => {
+        this.appInitService.chainResponse(res);
+        console.log(res);
+        return res.json();
+      })
+      .catch(err => Promise.reject(err));
+  }
+
   getStepData(step: number): Object {
     return this.stepData.get(step);
   }

@@ -66,18 +66,24 @@ export class EditContainerComponent implements ServiceStepComponent, OnInit, OnD
     config.container_name = image.image_name;
     config.container_baseimage = image.image_name + ":" + image.image_tag;
     let firstPos = image.image_name.indexOf("/");
-    let projectName = image.image_name.slice(0,firstPos);
-    if (projectName == image.project_name){
+    let projectName = image.image_name.slice(0, firstPos);
+    if (projectName == image.project_name) {
       let imageName = image.image_name.slice(firstPos + 1);
       this.k8sService.getContainerDefaultInfo(imageName, image.image_tag, image.project_name)
         .then((res: ImageDockerfile) => {
-          config.container_command.push(res.image_cmd);//copy cmd
-          res.image_env.forEach(value => {//copy env
-            config.container_envs.push({env_name: value.dockerfile_envvalue, env_value: value.dockerfile_envvalue})
-          });
-          res.image_expose.forEach(value => {//copy port
-            config.container_ports.push(Number(value).valueOf());
-          });
+          if (res.image_cmd) {
+            config.container_command.push(res.image_cmd);//copy cmd
+          }
+          if (res.image_env) {
+            res.image_env.forEach(value => {//copy env
+              config.container_envs.push({env_name: value.dockerfile_envvalue, env_value: value.dockerfile_envvalue})
+            });
+          }
+          if (res.image_expose) {
+            res.image_expose.forEach(value => {//copy port
+              config.container_ports.push(Number(value).valueOf());
+            });
+          }
         })
         .catch(err => this.messageService.dispatchError(err));
     }

@@ -9,8 +9,11 @@ export class ServiceEnvOutput {
 }
 
 export class ServiceStep1Output {
+  service_id:number;
+  service_name:string;
   constructor(public  project_id: number = 0,
               public project_name: string = "") {
+    this.service_id = 0;
   }
 }
 

@@ -29,7 +29,7 @@ export class ChooseProjectComponent implements ServiceStepComponent, OnInit, OnD
         createNewProject["isSpecial"] = true;
         createNewProject["OnlyClick"] = true;
         this.projectsList.push(createNewProject);
-        if (res && res.length > 0){
+        if (res && res.length > 0) {
           this.projectsList = this.projectsList.concat(res);
         }
       })
@@ -41,7 +41,13 @@ export class ChooseProjectComponent implements ServiceStepComponent, OnInit, OnD
   }
 
   forward() {
-    this.k8sService.stepSource.next(2);
+    this.k8sService.getServiceID({
+      project_name: this.outputData.project_name,
+      project_id: this.outputData.project_id
+    }).then(res => {
+      this.outputData.service_id = res;
+      this.k8sService.stepSource.next(2);
+    }).catch(err => this.messageService.dispatchError(err));
   }
 
   clickSelectProject(project: Project) {
