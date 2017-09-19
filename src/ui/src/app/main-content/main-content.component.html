@@ -13,7 +13,7 @@
         <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/projects" (click)="navigateTo('/projects')">
          {{ 'SIDE_NAV.PROJECTS' | translate }}
         </a>
-        <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/nodes" (click)="navigateTo('/nodes')">
+        <a *ngIf="isSystemAdmin" href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/nodes" (click)="navigateTo('/nodes')">
           {{ 'SIDE_NAV.NODES' | translate }}
         </a>
         <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/images" (click)="navigateTo('/images')">
