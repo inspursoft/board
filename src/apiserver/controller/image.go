@@ -257,11 +257,15 @@ func (p *ImageController) BuildImageAction() {
 }
 
 func (p *ImageController) GetImageDockerfileAction() {
-	imageName := strings.TrimSpace(p.Ctx.Input.Param(":imagename"))
+	imageName := strings.TrimSpace(p.GetString("image_name"))
 	imageTag := strings.TrimSpace(p.GetString("image_tag"))
 	projectName := strings.TrimSpace(p.GetString("project_name"))
 
 	dockerfilePath := filepath.Join(repoPath, projectName, imageName, imageTag)
+	if _, err := os.Stat(dockerfilePath); os.IsNotExist(err) {
+		p.CustomAbort(http.StatusNotFound, "Image path doe's not exist.")
+		return
+	}
 	dockerfile, err := service.GetDockerfileInfo(dockerfilePath)
 	if err != nil {
 		p.internalError(err)
