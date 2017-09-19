@@ -59,3 +59,13 @@ func UpdateService(s model.ServiceStatus, fieldNames ...string) (bool, error) {
 	}
 	return true, nil
 }
+
+func GetServiceList() ([]model.ServiceStatus, error) {
+
+	serviceList, err := dao.GetServiceData()
+	if err != nil {
+		return nil, err
+	}
+
+	return serviceList, err
+}
