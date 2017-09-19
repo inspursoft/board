@@ -171,7 +171,7 @@ prepare_swagger:
 
 package:
 	@echo "packing offline package ..."
-	@if [ ! -d $(PKGTEMPPATH) ] ; mkdir $(PKGTEMPPATH) ; fi
+	@if [ ! -d $(PKGTEMPPATH) ] ; then mkdir $(PKGTEMPPATH) ; fi
 	@cp $(TOOLSPATH)/install.sh $(PKGTEMPPATH)/install.sh
 	@cp $(MAKEPATH)/board.cfg $(PKGTEMPPATH)/.
 	@cp $(MAKEPATH)/prepare $(PKGTEMPPATH)/.
