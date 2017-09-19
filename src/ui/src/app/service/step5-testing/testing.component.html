@@ -1,0 +1,21 @@
+<div style="display: flex;flex-direction: column;margin-top: 30px;">
+  <div style="display:flex;min-height: 100px;align-items: center">
+    <span>{{"Select test environment"|translate}}:</span>
+    <cs-dropdown style="margin-left: 10px;"
+                 [dropdownWidth]="230"
+                 [dropdownDefaultText]="'Select Container...'"></cs-dropdown>
+  </div>
+  <div style="display:flex;min-height: 100px;align-items: center">
+    <span>{{"Start Testing"|translate}}:</span>
+    <div
+      style="display:flex; justify-content: center;margin-left: 10px; align-items: center; width: 40px;height: 30px;border-radius: 5px;background-color: black">
+      <div class="step5-start-icon"></div>
+    </div>
+    <span style="margin-left: 50px;" class="spinner spinner-md"></span>
+  </div>
+  <div style="display:flex;min-height: 100px;align-items: center">
+    <label for="areaJournal">{{"Journal" | translate}}:</label>
+    <textarea id="areaJournal" rows="5" style="margin-left: 10px;max-width: 500px"></textarea>
+  </div>
+</div>
+<button class="btn btn-default" (click)="forward()">Next</button>

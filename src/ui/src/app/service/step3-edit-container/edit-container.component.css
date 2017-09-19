@@ -31,6 +31,11 @@ div.edit-container-filed-container {
   cursor: pointer;
 }
 
+span.edit-container-filed-title {
+  flex-basis: 160px;
+  text-align: right;
+}
+
 .drop-down-open {
   -ms-transform: rotate(-180deg); /* IE 9 */
   -moz-transform: rotate(-180deg); /* Firefox */
@@ -46,4 +51,20 @@ div.edit-container-filed-container {
 .drop-down-close {
   transform: rotate(-0deg);
   transition-duration: 0.5s;
+}
+
+div.edit-container-area {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-top: 10px;
+}
+
+textarea.area-command {
+  margin-left: 10px;
+}
+
+label.base-text {
+  min-width: 180px;
+  text-align: right;
 }

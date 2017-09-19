@@ -1,10 +1,10 @@
 <div class="select-project-container">
   <span class="filed-text">{{"SERVICE.STEP_TITLE_1"|translate}}:</span>
   <cs-dropdown class="custom-margin"
-               [defaultText]="'SERVICE.STEP_TITLE_1'|translate"
-               [width]="200"
-               [list]="projectsList"
-               [textKey]="'project_name'"
+               [dropdownDefaultText]="'SERVICE.STEP_TITLE_1'|translate"
+               [dropdownWidth]="200"
+               [dropdownList]="projectsList"
+               [dropdownListTextKey]="'project_name'"
                (onChange)="changeSelectProject($event)"
                (onOnlyClickItem)="clickSelectProject($event)"></cs-dropdown>
   <span class="custom-margin">{{"SERVICE.STEP_1_SELECT_DES"|translate}}</span>

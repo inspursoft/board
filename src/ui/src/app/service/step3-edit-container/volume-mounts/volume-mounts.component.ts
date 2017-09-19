@@ -13,7 +13,7 @@ import { Component, Input, Output, EventEmitter } from "@angular/core"
 export class VolumeMountsComponent {
   _isOpen: boolean = false;
   isAlertOpen: boolean = false;
-  afterCommitErr: string = "";
+  volumeErrMsg: string = "";
 
   @Input()
   get isOpen() {
@@ -25,5 +25,10 @@ export class VolumeMountsComponent {
     this.isOpenChange.emit(this._isOpen);
   }
 
+  @Input() volumeData: {container_dir: string, target_storagename: string, target_dir: string};
   @Output() isOpenChange: EventEmitter<boolean> = new EventEmitter<boolean>();
+
+  confirmVolumeInfo() {
+    this.isOpen = false;
+  }
 }

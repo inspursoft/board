@@ -19,9 +19,9 @@
                        class="cs-dropdown-menu">
       <button *ngFor="let item of dropdownList;"
               class="dropdown-item cs-dropdown-item"
-              [ngClass]="{'active':dropdownText== item[dropdownListTextKey] ,'special':item['isSpecial']}"
+              [ngClass]="getItemClass(item)"
               (click)="changeSelect(item);csDropdown.toggleDropdown()">
-        {{item[dropdownListTextKey] | translate}}
+        {{getItemDescription(item) | translate}}
       </button>
     </clr-dropdown-menu>
   </clr-dropdown>

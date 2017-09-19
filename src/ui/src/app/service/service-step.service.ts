@@ -7,7 +7,8 @@ import { ChooseProjectComponent } from './step1-choose-project/choose-project.co
 import { SelectImageComponent } from './step2-select-image/select-image.component';
 import { EditContainerComponent } from './step3-edit-container/edit-container.component';
 import { ConfigSettingComponent } from './step4-config-setting/config-setting.component';
-import { DeployTestingComponent } from './step5-deploy-testing/deploy-testing.component';
+import { TestingComponent } from './step5-testing/testing.component';
+import { DeployComponent } from "./step6-deploy/deploy.component";
 
 @Injectable()
 export class StepService {
@@ -18,7 +19,8 @@ export class StepService {
       new ServiceStep(SelectImageComponent,   { 'title': 'Select Image'   }),
       new ServiceStep(EditContainerComponent, { 'title': 'Edit Container' }),
       new ServiceStep(ConfigSettingComponent, { 'title': 'Config Setting' }),
-      new ServiceStep(DeployTestingComponent, { 'title': 'Deploy Testing' })
+      new ServiceStep(TestingComponent, { 'title': 'Deploy Testing' }),
+      new ServiceStep(DeployComponent, { 'title': 'Deploy Testing' })
     ];
   }
 }

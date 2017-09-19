@@ -8,69 +8,85 @@
   </div>
   <div *ngFor="let selectedImage of imageSelectList;let iImage = index" class="dynamic-image-source-container">
     <div class="dynamic-icon-container">
-      <clr-icon *ngIf="iImage == imageSelectList.length - 1" class="dynamic-icon" shape="plus"
-                (click)="modifySelectImage(iImage)"></clr-icon>
-      <clr-icon *ngIf="iImage < imageSelectList.length - 1" class="dynamic-icon" shape="minus"
-                (click)="modifySelectImage(iImage)"></clr-icon>
+      <clr-icon class="dynamic-icon" shape="minus" (click)="minusSelectImage(iImage)"></clr-icon>
     </div>
     <cs-dropdown class="base-margin-left"
-                 [width]="300"
-                 [list]="imageSourceList"
-                 [defaultText]="selectedImage.image_name"
-                 [textKey]="'image_name'"
+                 [dropdownWidth]="300"
+                 [dropdownList]="imageSourceList"
+                 [dropdownDefaultText]="selectedImage.image_name"
+                 [dropdownListTextKey]="'image_name'"
+                 [dropdownCanSelect]="canChangeSelectImage.bind(selfObject)"
                  (onChange)="changeSelectImage(iImage,$event)"
                  (onOnlyClickItem)="clickSelectImage(iImage,$event)">
     </cs-dropdown>
     <cs-dropdown class="base-margin-left"
                  *ngIf="imageDetailSourceList.get(selectedImage.image_name)"
-                 [width]="150"
-                 [defaultText]="imageDetailSelectList.get(selectedImage.image_name)?.image_tag"
-                 [list]="imageDetailSourceList.get(selectedImage.image_name)"
-                 [textKey]="'image_tag'"
+                 [dropdownWidth]="150"
+                 [dropdownDefaultText]="imageDetailSelectList.get(selectedImage.image_name)?.image_tag"
+                 [dropdownList]="imageDetailSourceList.get(selectedImage.image_name)"
+                 [dropdownListTextKey]="'image_tag'"
                  (onChange)="changeSelectImageDetail(selectedImage.image_name,$event)">
     </cs-dropdown>
   </div>
+  <clr-icon  class="dynamic-icon plus" shape="plus" (click)="addSelectImage()"></clr-icon>
 </div>
+<environment-value
+  *ngIf="isOpenEnvironment"
+  [inputEnvsData]="defaultEnvsData"
+  [(isOpen)]="isOpenEnvironment"
+  (onConfirm)="setEnvironment($event)"></environment-value>
 <clr-modal *ngIf="isOpenNewImage"
            [(clrModalOpen)]="isOpenNewImage"
            [clrModalSize]="'lg'"
            [clrModalClosable]="!isNeedAutoRefreshImageList">
   <h3 class="modal-title">{{ "SERVICE.STEP_2_CREATE_IMAGE" | translate }}</h3>
   <fieldset class="modal-body fieldSet-default">
+    <clr-alert (clrAlertClosedChange)="isNewImageAlertOpen = false"
+               [clrAlertClosed]="!isNewImageAlertOpen"
+               [clrAlertType]="'alert-danger'">
+      <div class="alert-item">
+        <span class="alert-text">{{newImageErrMessage | translate}}</span>
+      </div>
+    </clr-alert>
     <div style="display: flex">
       <div class="create-image-container">
         <div class="create-image-line-container">
           <label class="base-text">{{"SERVICE.STEP_2_SELECT_IMAGE_TEMP" | translate}}:</label>
           <cs-dropdown class="base-margin-left"
-                       [disabled]="isNeedAutoRefreshImageList"
-                       [width]="300"
-                       [defaultText]="'Docker File Template'"
-                       [list]="imageTemplateList"
-                       [textKey]="'name'">
+                       [dropdownDisabled]="isNeedAutoRefreshImageList"
+                       [dropdownWidth]="300"
+                       [dropdownDefaultText]="'Docker File Template'"
+                       [dropdownList]="imageTemplateList"
+                       [dropdownListTextKey]="'name'">
           </cs-dropdown>
         </div>
         <cs-input [inputMaxlength]="255"
                   [inputLabel]="'SERVICE.STEP_2_NEW_IMAGE_NAME'|translate"
                   [validatorFns]="testValidatorFn"
                   [disabled]="isNeedAutoRefreshImageList"
-                  [simpleFiled]="outputData.image_name"
-                  (onCheck)="outputData.image_name = $event;asyncGetDockerFilePreviewInfo()"></cs-input>
+                  [simpleFiled]="customerNewImage.image_name"
+                  (onCheck)="customerNewImage.image_name = $event;asyncGetDockerFilePreviewInfo()"></cs-input>
         <cs-input [inputMaxlength]="255"
-                  [inputLabel] ="'SERVICE.STEP_2_IMAGE_TAG'|translate"
+                  [inputLabel]="'SERVICE.STEP_2_IMAGE_TAG'|translate"
                   [disabled]="isNeedAutoRefreshImageList"
                   [validatorFns]="testValidatorFn"
-                  [simpleFiled]="outputData.image_tag"
-                  (onCheck)="outputData.image_tag = $event;asyncGetDockerFilePreviewInfo()"></cs-input>
+                  [simpleFiled]="customerNewImage.image_tag"
+                  (onCheck)="customerNewImage.image_tag = $event;asyncGetDockerFilePreviewInfo()"></cs-input>
         <cs-input [inputMaxlength]="255"
-                  [inputLabel] ="'SERVICE.STEP_2_BASE_IMAGE'|translate"
+                  [inputLabel]="'SERVICE.STEP_2_BASE_IMAGE'|translate"
                   [disabled]="isNeedAutoRefreshImageList"
-                  [simpleFiled]="outputData.image_dockerfile.image_base"
-                  (onCheck)="outputData.image_dockerfile.image_base = $event;getDockerFilePreviewInfo()"></cs-input>
+                  [simpleFiled]="customerNewImage.image_dockerfile.image_base"
+                  (onCheck)="customerNewImage.image_dockerfile.image_base = $event;getDockerFilePreviewInfo()"></cs-input>
         <cs-input [inputMaxlength]="255"
-                  [inputLabel] ="'SERVICE.STEP_2_IMAGE_ENTRYPOINT'|translate"
+                  [inputLabel]="'SERVICE.STEP_2_IMAGE_ENTRYPOINT'|translate"
                   [disabled]="isNeedAutoRefreshImageList"
-                  [simpleFiled]="outputData.image_dockerfile.image_entrypoint"
-                  (onCheck)="outputData.image_dockerfile.image_entrypoint = $event;getDockerFilePreviewInfo()"></cs-input>
+                  [simpleFiled]="customerNewImage.image_dockerfile.image_entrypoint"
+                  (onCheck)="customerNewImage.image_dockerfile.image_entrypoint = $event;getDockerFilePreviewInfo()"></cs-input>
+        <cs-input [inputType]="1"
+                  [inputLabel]="'SERVICE.STEP_2_IMAGE_ENV'|translate"
+                  [disabled]="isNeedAutoRefreshImageList"
+                  [simpleFiled]="envsDescription"
+                  (onEdit)="isOpenEnvironment = true"></cs-input>
         <cs-input-array [source]="imageVolume"
                         [disabled]="isNeedAutoRefreshImageList"
                         [labelText]="'SERVICE.STEP_2_IMAGE_VOLUME'|translate"
@@ -82,7 +98,6 @@
                         (onCheck)="getDockerFilePreviewInfo()"
                         (onMinus)="getDockerFilePreviewInfo()"></cs-input-array>
         <cs-input-array [source]="imageExpose"
-                        [type]="1"
                         [disabled]="isNeedAutoRefreshImageList"
                         [labelText]="'SERVICE.STEP_2_IMAGE_EXPOSE'|translate"
                         (onCheck)="getDockerFilePreviewInfo()"
@@ -95,8 +110,8 @@
                   (change)="uploadFile($event)"
                   accept="*.*">
         </div>
-        <div style="margin-left: 190px;font-size: 10px"
-             *ngFor="let file of filesList.get(outputData.image_name)">
+        <div class="file-list"
+             *ngFor="let file of filesList.get(customerNewImage.image_name)">
           <clr-icon class="dynamic-icon" shape="minus"></clr-icon>
           {{file.file_name}}
         </div>
@@ -106,13 +121,15 @@
                     rows="3"
                     class="area-command"
                     (keypress)="shieldEnter($event)"
-                    [(ngModel)]="outputData.image_dockerfile.image_cmd"
+                    [(ngModel)]="customerNewImage.image_dockerfile.image_cmd"
                     [disabled]="isNeedAutoRefreshImageList"></textarea>
         </div>
       </div>
       <div class="console-container">
         <textarea title="" id="areaStatus" class="area-status" readonly>{{consoleText}}</textarea>
-        <button class="btn btn-primary default-primary" [disabled]="isNeedAutoRefreshImageList" (click)="buildImage()">
+        <button class="btn btn-primary default-primary"
+                [disabled]="isNeedAutoRefreshImageList"
+                (click)="buildImage()">
           {{"SERVICE.STEP_2_BUILD_IMAGE" | translate}}
         </button>
         <span *ngIf="isNeedAutoRefreshImageList" class="spinner spinner-sm"></span>

@@ -17,6 +17,7 @@ export class ChooseProjectComponent implements ServiceStepComponent, OnInit, OnD
   constructor(private k8sService: K8sService,
               private router: Router,
               private messageService: MessageService) {
+    this.projectsList = Array<Project>();
   }
 
   ngOnInit() {
@@ -27,8 +28,10 @@ export class ChooseProjectComponent implements ServiceStepComponent, OnInit, OnD
         createNewProject.project_name = "SERVICE.STEP_1_CREATE_PROJECT";
         createNewProject["isSpecial"] = true;
         createNewProject["OnlyClick"] = true;
-        this.projectsList = res;
-        this.projectsList.unshift(createNewProject);
+        this.projectsList.push(createNewProject);
+        if (res && res.length > 0){
+          this.projectsList = this.projectsList.concat(res);
+        }
       })
       .catch(err => this.messageService.dispatchError(err));
   }
