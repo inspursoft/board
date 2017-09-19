@@ -27,6 +27,12 @@ var kubeMasterStatus bool
 
 var kubeMasterURL = utils.GetConfig("KUBE_MASTER_URL")
 
+const (
+	preparing = iota
+	running
+	suspending
+)
+
 type ServiceController struct {
 	baseController
 }
@@ -54,6 +60,13 @@ func (p *ServiceController) DeployServiceAction() {
 		p.CustomAbort(http.StatusForbidden, "Insuffient privileges to manipulate user.")
 		return
 	}
+
+	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	logs.Info("To check serviceID existing %s", serviceID) //TODO
 
 	//get the request data
 	reqData, err := p.resolveBody()
@@ -149,13 +162,45 @@ func (p *ServiceController) DeployServiceAction() {
 	}
 	logs.Info("Internal push service object: %d %s", ret, msg)
 
+	// Update service status in database
+	updateService := model.ServiceStatus{ID: int64(serviceID), Status: running,
+		Name: reqServiceConfig.ServiceYaml.Name}
+	_, err = service.UpdateService(updateService, "name", "status")
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
 	p.CustomAbort(ret, msg)
 }
 
 // TODO API to create service config
 func (p *ServiceController) CreateServiceConfigAction() {
-	//TODO: Assign and return Service ID with mysql
-	var serviceID = "1"
-	p.Data["json"] = serviceID
+	var err error
+	reqData, err := p.resolveBody()
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	var reqServiceProject model.ServiceProject
+	err = json.Unmarshal(reqData, &reqServiceProject)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	logs.Info(reqServiceProject)
+	//Assign and return Service ID with mysql
+	var newservice model.ServiceStatus
+	newservice.ProjectID = reqServiceProject.ProjectID
+	newservice.ProjectName = reqServiceProject.ProjectName
+	newservice.Status = preparing // 0: preparing 1: running 2: suspending
+	newservice.OwnerID = p.currentUser.ID
+
+	serviceID, err := service.CreateServiceConfig(newservice)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	p.Data["json"] = strconv.FormatInt(serviceID, 10)
 	p.ServeJSON()
 }
