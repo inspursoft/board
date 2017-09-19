@@ -8,6 +8,7 @@ import (
 	"git/inspursoft/board/src/common/utils"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"path/filepath"
 
 	"strings"
