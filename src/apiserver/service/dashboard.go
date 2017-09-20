@@ -159,7 +159,7 @@ func (d *Dashboard) GetNodeDataToObj() (err error) {
 	}
 	if d.NodeReqPara.NodeName == "" {
 		d.NodeResp = NodeResp{
-			NodeName:      "total",
+			NodeName:      "average",
 			TimeUnit:      d.ServiceReqPara.TimeUnit,
 			NodeTimestamp: d.NodeReqPara.TimeStamp,
 		}
