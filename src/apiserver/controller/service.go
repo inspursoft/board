@@ -171,7 +171,7 @@ func (p *ServiceController) DeployServiceAction() {
 		return
 	}
 
-	p.CustomAbort(ret, msg)
+	//p.CustomAbort(ret, msg)
 }
 
 // API to create service config
