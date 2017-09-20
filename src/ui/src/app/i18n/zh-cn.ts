@@ -279,5 +279,26 @@ export const LANG_ZH_CN = {
     "NODES": "节点",
     "NODE_NAME": "节点名称",
     "NODE_IP": "节点IP地址"
+  },
+  "NODE": {
+    "NODE_NAME": "节点名称",
+    "NODE_IP": "节点IP地址",
+    "NODE_STATUS": "节点状态",
+    "OPERATION": "操作",
+    "ITEMS": " 条记录。",
+    "NODE_DETAILS": "节点明细",
+    "CREATION_TIME": "创建时间",
+    "CPU_USAGE": "CPU使用率",
+    "MEMORY_USAGE": "内存使用率",
+    "MEMORY_SIZE": "内存大小",
+    "STORAGE_TOTAL": "存储总量",
+    "STORAGE_USAGE": "存储使用率",
+    "STATUS_RUNNING": "运行中",
+    "STATUS_UNSCHEDULABLE": "已停止",
+    "STATUS_UNKNOWN": "未知",
+    "SUCCESSFUL_TOGGLE": "切换节点状态成功。",
+    "FAILED_TO_TOGGLE": "切换节点状态失败。",
+    "TOGGLE_NODE": "切换状态",
+    "CONFIRM_TO_TOGGLE_NODE": "确认切换节点状态？"
   }
 };

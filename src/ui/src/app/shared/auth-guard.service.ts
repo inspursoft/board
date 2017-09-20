@@ -18,14 +18,14 @@ export class AuthGuard implements CanActivate, CanActivateChild {
   ){}
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> | boolean {
-    if(this.appInitService.currentUser === null && state.url.indexOf('/search') === 0) {
-      return Promise.resolve(true);
-    }
     return new Promise<boolean>((resolve, reject)=>{
       this.appInitService
         .getCurrentUser(route.queryParamMap.get("token"))
         .then(res=>resolve(true))
         .catch(err=>{
+          if(state.url.indexOf('/search') === 0) {
+            return resolve(true);
+          }
           this.router.navigate(['/sign-in']);
           resolve(false);
         });

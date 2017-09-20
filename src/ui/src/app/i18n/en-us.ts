@@ -279,5 +279,26 @@ export const LANG_EN_US = {
     "NODES": "Nodes",
     "NODE_NAME": "Node Name",
     "NODE_IP": "Node IP Address"
+  },
+  "NODE": {
+    "NODE_NAME": "Node Name",
+    "NODE_IP": "Node IP Address",
+    "NODE_STATUS": "Node Status",
+    "OPERATION": "Operation",
+    "ITEMS": " record(s) found.",
+    "NODE_DETAILS": "Node Details",
+    "CREATION_TIME": "Creation Time",
+    "CPU_USAGE": "CPU Usage",
+    "MEMORY_USAGE": "Memory Usage",
+    "MEMORY_SIZE": "Memory Size",
+    "STORAGE_TOTAL": "Storage Total",
+    "STORAGE_USAGE": "Storage Usage",
+    "STATUS_RUNNING": "Running",
+    "STATUS_UNSCHEDULABLE": "Stopped",
+    "STATUS_UNKNOWN": "Unknown",
+    "SUCCESSFUL_TOGGLE": "Successful change node status.",
+    "FAILED_TO_TOGGLE": "Failed to toggle node status.",
+    "TOGGLE_NODE": "Toggle Status",
+    "CONFIRM_TO_TOGGLE_NODE": "Confirm to change node status?"
   }
 };

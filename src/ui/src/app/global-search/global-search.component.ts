@@ -12,6 +12,8 @@ import { MessageService } from '../shared/message-service/message.service';
 })
 export class GlobalSearchComponent implements OnInit {
 
+  token: string;
+  
   hasSignedIn: boolean;
   globalSearch: {[key: string]: any} = {};
   
@@ -24,18 +26,28 @@ export class GlobalSearchComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.hasSignedIn = (this.appInitService.currentUser !== null);
+    if(this.appInitService.currentUser) {
+      this.hasSignedIn = true;
+    }
+    this.appInitService.tokenMessage$.subscribe(token=>this.token = token);
     this.route.queryParamMap.subscribe(params=>this.search(params.get("q")));
+    console.log(this.appInitService.currentUser);
   }
 
   search(q: string) {
     this.globalSearchService
       .search(q)
-      .then(search=>this.globalSearch = search)
+      .then(search=>{
+        this.globalSearch = search;
+        this.route.queryParamMap.subscribe(params=>{
+          params["token"] = this.token;
+        })
+      })
       .catch(err=>this.messageService.dispatchError(err));
   }
 
   navigateTo(link) {
+    this.appInitService.token = this.token;
     this.router.navigate([link], {
       queryParams: {
         'token': this.appInitService.token

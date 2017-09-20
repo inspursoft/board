@@ -23,12 +23,13 @@ func SearchPrivateProject(projectName string, userName string) ([]SearchProjectR
 	p.owner_name, 
 	p.public as is_public
 from project p 
+left join project_member pm on p.id = pm.project_id
+left join user u on u.id = pm.user_id
 where p.deleted = 0 
- and p.name like ?
- and (p.owner_name = ?
-		or p.public = 1
-		or exists (select * from user where deleted = 0 and system_admin = 1 and username = ?)
-		or exists (select * from project p left join project_member pm on p.id = pm.project_id where p.deleted = 0));`
+and p.name like ?
+and (p.public = 1
+or p.id in (select p.id from project p left join project_member pm on p.id = pm.project_id  left join user u on u.id = pm.user_id where p.deleted = 0 and u.deleted = 0 and u.username = ?)
+or exists (select * from user u where u.deleted = 0 and u.system_admin = 1 and u.username = ?));`
 	o := orm.NewOrm()
 	_, err := o.Raw(sql, "%"+projectName+"%", userName, userName).QueryRows(&searchRes)
 	return searchRes, err
@@ -67,6 +68,7 @@ func SearchService(para string) ([]model.ServiceStatus, error) {
 	o := orm.NewOrm()
 	svrModel := new(model.ServiceStatus)
 	qs := o.QueryTable(svrModel)
+	qs.Filter("deleted", 0)
 	_, err := qs.Filter("name__contains", para).All(&svr)
 	return svr, err
 }

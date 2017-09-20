@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/astaxie/beego/logs"
 )
@@ -60,6 +61,9 @@ func Initialize() {
 func ShowAllConfigs() {
 	logs.Info("Current configurations in storage:\n")
 	for k, v := range configStorage {
+		if strings.Contains(strings.ToUpper(k), "PASSWORD") {
+			continue
+		}
 		logs.Info("\t%s: %s", k, v)
 	}
 }

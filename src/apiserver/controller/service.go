@@ -32,7 +32,7 @@ var kubeMasterURL = utils.GetConfig("KUBE_MASTER_URL")
 const (
 	preparing = iota
 	running
-	suspending
+	stopped
 )
 
 type ServiceController struct {
@@ -176,7 +176,7 @@ func (p *ServiceController) DeployServiceAction() {
 	p.CustomAbort(ret, msg)
 }
 
-// API to deploy service
+// API to deploy test service
 func (p *ServiceController) DeployServiceTestAction() {
 	var err error
 	var reqServiceConfig model.ServiceConfig
@@ -320,7 +320,7 @@ func (p *ServiceController) GetServiceListAction() {
 
 }
 
-// TODO API to create service config
+// API to create service config
 func (p *ServiceController) CreateServiceConfigAction() {
 	var err error
 	reqData, err := p.resolveBody()
@@ -349,4 +349,28 @@ func (p *ServiceController) CreateServiceConfigAction() {
 	}
 	p.Data["json"] = strconv.FormatInt(serviceID, 10)
 	p.ServeJSON()
+}
+
+func (p *ServiceController) DeleteServiceAction() {
+
+	if p.isSysAdmin == false && p.isProjectAdmin == false {
+		p.CustomAbort(http.StatusForbidden, "Insuffient privileges to manipulate user.")
+		return
+	}
+
+	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	// TODO check service id exist
+	// TODO call stop service
+	isSuccess, err := service.DeleteService(int64(serviceID))
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if !isSuccess {
+		p.CustomAbort(http.StatusBadRequest, "Failed to delete service.")
+	}
 }

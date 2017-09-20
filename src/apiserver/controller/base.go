@@ -191,6 +191,12 @@ func init() {
 		logs.Error("Failed to initialize cache: %+v\n", err)
 	}
 
+	logs.Info("Initialize serve repo\n")
+	_, err = service.InitBareRepo(repoServePath)
+	if err != nil {
+		logs.Error("Failed to initialize serve repo: %+v\n", err)
+	}
+
 	beego.BConfig.MaxMemory = 1 << 22
 
 }
