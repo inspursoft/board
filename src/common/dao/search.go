@@ -67,6 +67,7 @@ func SearchService(para string) ([]model.ServiceStatus, error) {
 	o := orm.NewOrm()
 	svrModel := new(model.ServiceStatus)
 	qs := o.QueryTable(svrModel)
+	qs.Filter("deleted", 0)
 	_, err := qs.Filter("name__contains", para).All(&svr)
 	return svr, err
 }
