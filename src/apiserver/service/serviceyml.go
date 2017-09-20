@@ -20,7 +20,6 @@ const (
 	nodePort             = "NodePort"
 	deploymentAPIVersion = "extensions/v1beta1"
 	deploymentKind       = "Deployment"
-	Test                 = "test"
 	maxPort              = 65535
 	minPort              = 30000
 )
@@ -46,7 +45,7 @@ func CheckDeploymentPath(loadPath string) error {
 }
 
 //check parameter of service yaml file
-func CheckServiceYamlPara(reqServiceConfig model.ServiceConfig) error {
+func CheckServicePara(reqServiceConfig model.ServiceConfig) error {
 	if reqServiceConfig.DeploymentYaml.Name == "" {
 		return errors.New("Deployment_Name is empty.")
 	}
@@ -63,7 +62,7 @@ func CheckServiceYamlPara(reqServiceConfig model.ServiceConfig) error {
 }
 
 //check parameter of deployment yaml file
-func CheckDeploymentYamlPara(reqServiceConfig model.ServiceConfig) error {
+func CheckDeploymentPara(reqServiceConfig model.ServiceConfig) error {
 	if reqServiceConfig.ServiceYaml.Name == "" {
 		return errors.New("ServiceYaml.Name is empty.")
 	}
@@ -79,8 +78,26 @@ func CheckDeploymentYamlPara(reqServiceConfig model.ServiceConfig) error {
 	return nil
 }
 
+//check request massage parameters
+func CheckReqPara(reqServiceConfig model.ServiceConfig) error {
+	var err error
+	// Check deployment parameters
+	err = CheckDeploymentPara(reqServiceConfig)
+	if err != nil {
+		return err
+	}
+
+	// Check service parameters
+	err = CheckServicePara(reqServiceConfig)
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
 //build yaml file of service
-func BuildServiceYaml(reqServiceConfig model.ServiceConfig) error {
+func BuildServiceYaml(reqServiceConfig model.ServiceConfig, yamlFileName string) error {
 	var service model.ServiceStructYaml
 	var port model.PortsServiceYaml
 
@@ -115,7 +132,7 @@ func BuildServiceYaml(reqServiceConfig model.ServiceConfig) error {
 		return err
 	}
 
-	fileName := filepath.Join(serviceLoadPath, "service.yaml")
+	fileName := filepath.Join(serviceLoadPath, yamlFileName)
 	err = ioutil.WriteFile(fileName, context, 0644)
 	if err != nil {
 		logs.Error("Failed to build service yaml file: %+v\n", err)
@@ -125,7 +142,7 @@ func BuildServiceYaml(reqServiceConfig model.ServiceConfig) error {
 }
 
 //build yaml file of deployment
-func BuildDeploymentYaml(reqServiceConfig model.ServiceConfig) error {
+func BuildDeploymentYaml(reqServiceConfig model.ServiceConfig, yamlFileName string) error {
 	var deployment model.DeploymentStructYaml
 	var nfsvolume model.VolumesDeploymentYaml
 	var container model.ContainersDeploymentYaml
@@ -197,139 +214,11 @@ func BuildDeploymentYaml(reqServiceConfig model.ServiceConfig) error {
 		return err
 	}
 
-	fileName := filepath.Join(deploymentLoadPath, "deployment.yaml")
+	fileName := filepath.Join(deploymentLoadPath, yamlFileName)
 
 	err = ioutil.WriteFile(fileName, context, 0644)
 	if err != nil {
 		logs.Error("Failed to build deployment yaml file: %+v\n", err)
-		return err
-	}
-	return nil
-}
-
-//build test yaml file of service
-func BuildTestServiceYaml(reqServiceConfig model.ServiceConfig) error {
-	var service model.ServiceStructYaml
-	var port model.PortsServiceYaml
-
-	serviceLoadPath := GetDeploymentPath()
-	err := CheckDeploymentPath(serviceLoadPath)
-	if err != nil {
-		logs.Error("Failed to check deployment path: %+v\n", err)
-		return err
-	}
-
-	service.ApiVersion = serviceAPIVersion
-	service.Kind = serviceKind
-	service.Metadata.Name = reqServiceConfig.ServiceYaml.Name + Test
-	service.Metadata.Labels.App = reqServiceConfig.ServiceYaml.Name + Test
-
-	if len(reqServiceConfig.ServiceYaml.External) > 0 {
-		service.Spec.Tpe = nodePort
-	}
-
-	for _, external := range reqServiceConfig.ServiceYaml.External {
-		port.Port = external.ContainerPort
-		port.TargetPort = external.ContainerPort
-		port.NodePort = external.NodePort
-		service.Spec.Ports = append(service.Spec.Ports, port)
-	}
-
-	service.Spec.Selector.App = reqServiceConfig.ServiceYaml.Selectors[0] + Test
-
-	context, err := yaml.Marshal(&service)
-	if err != nil {
-		logs.Error("Failed to Marshal service test yaml file: %+v\n", err)
-		return err
-	}
-
-	fileName := filepath.Join(serviceLoadPath, "service_test.yaml")
-	err = ioutil.WriteFile(fileName, context, 0644)
-	if err != nil {
-		logs.Error("Failed to build service test yaml file: %+v\n", err)
-		return err
-	}
-	return nil
-}
-
-//build test yaml file of deployment
-func BuildTestDeploymentYaml(reqServiceConfig model.ServiceConfig) error {
-	var deployment model.DeploymentStructYaml
-	var nfsvolume model.VolumesDeploymentYaml
-	var container model.ContainersDeploymentYaml
-	var port model.PortsDeploymentYaml
-	var volumeMount model.VolumeMountDeploymentYaml
-	var env model.EnvDeploymentYaml
-
-	deploymentLoadPath := GetDeploymentPath()
-	err := CheckDeploymentPath(deploymentLoadPath)
-	if err != nil {
-		logs.Error("Failed to check deployment path: %+v\n", err)
-		return err
-	}
-
-	deployment.ApiVersion = deploymentAPIVersion
-	deployment.Kind = deploymentKind
-	deployment.Metadata.Name = reqServiceConfig.DeploymentYaml.Name + Test
-	deployment.Spec.Replicas = reqServiceConfig.DeploymentYaml.Replicas
-	deployment.Spec.Template.Metadata.Labels.App = reqServiceConfig.DeploymentYaml.Name + Test
-
-	for _, vol := range reqServiceConfig.DeploymentYaml.VolumeList {
-		nfsvolume.Name = vol.Name
-
-		if vol.ServerName == "" {
-			nfsvolume.HostPath.Path = vol.Path
-		} else {
-			nfsvolume.Nfs.Path = vol.Path
-			nfsvolume.Nfs.Server = vol.ServerName
-		}
-
-		deployment.Spec.Template.Spec.Volumes = append(deployment.Spec.Template.Spec.Volumes, nfsvolume)
-	}
-
-	for _, cont := range reqServiceConfig.DeploymentYaml.ContainerList {
-
-		container.Name = cont.Name
-		container.Image = cont.BaseImage
-		container.Workingdir = cont.WorkDir
-		container.Command = cont.Command
-		container.Resource.Request.Cpu = cont.CPU
-		container.Resource.Request.Memory = cont.Memory
-
-		container.Ports = make([]model.PortsDeploymentYaml, 0)
-		for _, por := range cont.Ports {
-			port.ContainerPort = por
-			container.Ports = append(container.Ports, port)
-		}
-
-		container.VolumeMount = make([]model.VolumeMountDeploymentYaml, 0)
-		for _, volMount := range cont.Volumes {
-			volumeMount.Name = volMount.TargetStorageName
-			volumeMount.MountPath = volMount.Dir
-			container.VolumeMount = append(container.VolumeMount, volumeMount)
-		}
-
-		container.Env = make([]model.EnvDeploymentYaml, 0)
-		for _, enviroment := range cont.Envs {
-			env.Name = enviroment.Name
-			env.Value = enviroment.Value
-			container.Env = append(container.Env, env)
-		}
-
-		deployment.Spec.Template.Spec.Containers = append(deployment.Spec.Template.Spec.Containers, container)
-	}
-
-	context, err := yaml.Marshal(&deployment)
-	if err != nil {
-		logs.Error("Failed to Marshal deployment test yaml file: %+v\n", err)
-		return err
-	}
-
-	fileName := filepath.Join(deploymentLoadPath, "deployment_test.yaml")
-
-	err = ioutil.WriteFile(fileName, context, 0644)
-	if err != nil {
-		logs.Error("Failed to build deployment test yaml file: %+v\n", err)
 		return err
 	}
 	return nil

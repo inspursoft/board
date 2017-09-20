@@ -731,7 +731,7 @@ paths:
           description: Project ID or username does not exist.
         500:
           description: Unexpected internal errors.        
-  /v1/service:
+  /v1/services:
     get:
       summary: Return services created by Board.
       description: |
@@ -813,7 +813,7 @@ paths:
           description: User need to log in first.
         500:
           description: Unexpected internal errors.
-  /v1/service/{service_id}:
+  /v1/services/{service_id}:
     get:
       summary: Return specific service_id detail infomation.
       description: |
@@ -866,7 +866,7 @@ paths:
           description: User need to log in first.
         500:
           description: Internal errors.  
-  /v1/service/{service_id}/serviceconfig:
+  /v1/services/{service_id}/serviceconfig:
     put:  
       summary: Update service configuration data.
       description: |
@@ -931,7 +931,7 @@ paths:
           description: Invalid service ID.
         500:
           description: Unexpected internal errors.
-  /v1/service/{service_id}/servicetest:  
+  /v1/services/{service_id}/test:  
     post:
       summary: Setup a test by this service configuration.
       description: |
@@ -996,7 +996,7 @@ paths:
           description: Invalid service ID.
         500:
           description: Unexpected internal errors.
-  /v1/service/{service_id}/deployment:
+  /v1/services/{service_id}/deployment:
     post:
       summary: Deploy service by this service configuration.
       description: |
@@ -1034,7 +1034,7 @@ paths:
           description: Invalid service ID.
         500:
           description: Unexpected internal errors.
-  /v1/service/{service_id}/toggle:
+  /v1/services/{service_id}/toggle:
     put:  
       summary: Update the service to stop or run.
       description: |

@@ -55,6 +55,7 @@ func GetServiceData() ([]model.ServiceStatus, error) {
 	o := orm.NewOrm()
 	serviceModel := new(model.ServiceStatus)
 	qs := o.QueryTable(serviceModel)
+	qs.Filter("deleted", 0)
 	_, err := qs.All(&serviceList)
 	if err != nil {
 		return nil, err
