@@ -27,4 +27,16 @@ export class NodeDetailComponent {
       .catch(err=>this.messageService.dispatchError(err));
   }
 
+
+  toPercentage(num: number) {
+    return Math.round(num * 100) / 100 + '%';
+  }
+
+  toGigaBytes(num: string, baseUnit?: string) {
+    let denominator = 1024 * 1024 * 1024;
+    if(baseUnit === 'KiB') {
+      denominator = 1024 * 1024;
+    }
+    return Math.round(Number.parseInt(num) / denominator) + 'GB';
+  }
 }
