@@ -14,7 +14,7 @@
       <clr-dg-column>{{ 'PROJECT.PUBLICITY' | translate }}</clr-dg-column>
       <clr-dg-column>{{ 'PROJECT.COMMENT' | translate }}</clr-dg-column>
       <clr-dg-column *ngIf="currentUser.user_system_admin === 1 || currentUser.user_project_admin === 1">{{ 'PROJECT.ACTIONS' | translate }}</clr-dg-column>
-      <clr-dg-row *ngFor="let p of projects">
+      <clr-dg-row *clrDgItems="let p of projects">
         <clr-dg-cell>{{p.project_name}}</clr-dg-cell>
         <clr-dg-cell>{{p.project_owner_name}}</clr-dg-cell>
         <clr-dg-cell>{{p.project_creation_time | date: 'short'}}</clr-dg-cell>
@@ -32,7 +32,10 @@
           <a href="javascript:void(0)"><clr-icon shape="trash" (click)="confirmToDeleteProject(p)"></clr-icon></a>
         </clr-dg-cell>
       </clr-dg-row>
-      <clr-dg-footer>{{projects ? projects.length : 0}} {{ 'DATAGRID.ITEMS' | translate }}</clr-dg-footer>
+      <clr-dg-footer>
+        <clr-dg-pagination #pagination [clrDgPageSize]="10"></clr-dg-pagination>
+        {{projects ? projects.length : 0}} {{ 'DATAGRID.ITEMS' | translate }}
+      </clr-dg-footer>
     </clr-datagrid>
   </div>
 </div>
