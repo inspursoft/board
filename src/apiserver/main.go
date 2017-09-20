@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "git/inspursoft/board/src/apiserver/controller"
 	_ "git/inspursoft/board/src/apiserver/router"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
@@ -8,11 +9,17 @@ import (
 
 	"github.com/astaxie/beego/logs"
 
+	"path/filepath"
+
 	"github.com/astaxie/beego"
 )
 
 var adminUserID int64 = 1
 var defaultInitialPassword = "123456a?"
+
+var baseRepoPath = `/repos`
+var repoServeURL = filepath.Join("root@gitserver:", "gitserver", "repos", "board_repo_serve")
+var repoPath = filepath.Join(baseRepoPath, "board_repo")
 
 func updateAdminPassword(initialPassword string) {
 	if initialPassword == "" {
@@ -44,6 +51,9 @@ func main() {
 	utils.SetConfig("REGISTRY_URL", "%s:%s", "REGISTRY_HOST", "REGISTRY_PORT")
 	utils.SetConfig("KUBE_MASTER_URL", "%s:%s", "KUBE_MASTER_HOST", "KUBE_MASTER_PORT")
 	utils.SetConfig("KUBE_NODE_URL", "%s:%s/api/v1/nodes", "KUBE_MASTER_HOST", "KUBE_MASTER_PORT")
+
+	utils.SetConfig("REPO_SERVE_URL", repoServeURL)
+	utils.SetConfig("REPO_PATH", repoPath)
 
 	utils.ShowAllConfigs()
 
