@@ -66,7 +66,7 @@ func (p *ServiceController) DeployServiceAction() {
 		p.internalError(err)
 		return
 	}
-	logs.Info("To check serviceID existing %s", serviceID) //TODO
+	logs.Info("To check serviceID existing", serviceID) //TODO
 
 	//get the request data
 	reqData, err := p.resolveBody()
