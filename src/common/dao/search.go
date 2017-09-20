@@ -23,11 +23,13 @@ func SearchPrivateProject(projectName string, userName string) ([]SearchProjectR
 	p.owner_name, 
 	p.public as is_public
 from project p 
+left join project_member pm on p.id = pm.project_id
+left join user u on u.id = pm.user_id
 where p.deleted = 0 
- and p.name like ?
- and (p.owner_name = ?
-		or p.public = 1
-		or exists (select * from project p left join project_member pm on p.id = pm.project_id  left join user u on u.id = pm.user_id where p.deleted = 0 and u.deleted = 0 and u.system_admin=1 and u.username=?));`
+and p.name like ?
+and (p.public = 1
+or p.id in (select p.id from project p left join project_member pm on p.id = pm.project_id  left join user u on u.id = pm.user_id where p.deleted = 0 and u.deleted = 0 and u.username = ?)
+or exists (select * from user u where u.deleted = 0 and u.system_admin = 1 and u.username = ?));`
 	o := orm.NewOrm()
 	_, err := o.Raw(sql, "%"+projectName+"%", userName, userName).QueryRows(&searchRes)
 	return searchRes, err
