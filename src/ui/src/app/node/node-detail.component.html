@@ -5,35 +5,35 @@
       <tbody>
         <tr>
           <th width="25%">{{ 'NODE.NODE_NAME' | translate }}</th>
-          <td>{{ node.node_name !== '' ? node.node_name : '-' }}</td>
+          <td>{{ node.node_name }}</td>
         </tr>
         <tr>
           <th>{{ 'NODE.NODE_IP' | translate }}</th>
-          <td>{{ node.node_ip !== '' ? node.node_ip : '-' }}</td>
+          <td>{{ node.node_ip }}</td>
         </tr>
         <tr>
           <th>{{ 'NODE.CREATION_TIME' | translate }}</th>
-          <td>{{ node.create_time !== '' ? node.create_time : '-' }}</td>
+          <td>{{ node.create_time * 1000 | date: 'short' }}</td>
         </tr>
         <tr>
           <th>{{ 'NODE.CPU_USAGE' | translate }}</th>
-          <td>{{ node.cpu_usage !== '' ? node.cpu_usage : '-' }}</td>
+          <td>{{ toPercentage(node.cpu_usage) }}</td>
         </tr>
         <tr>
           <th>{{ 'NODE.MEMORY_USAGE' | translate }}</th>
-          <td>{{ node.memory_usage !== '' ? node.memory_usage : '-' }}</td>
+          <td>{{ toPercentage(node.memory_usage) }}</td>
         </tr>
         <tr>
           <th>{{ 'NODE.MEMORY_SIZE' | translate }}</th>
-          <td>{{ node.memory_size !== '' ? node.memory_size : '-' }}</td>
+          <td>{{ toGigaBytes(node.memory_size, 'KiB') }}</td>
         </tr>
         <tr>
           <th>{{ 'NODE.STORAGE_TOTAL' | translate }}</th>
-          <td>{{ node.storage_total !== '' ? node.storage_total : '-' }}</td>
+          <td>{{ toGigaBytes(node.storage_total) }}</td>
         </tr>  
         <tr>
           <th>{{ 'NODE.STORAGE_USAGE' | translate }}</th>
-          <td>{{ node.storage_use !== '' ? node.storage_use : '-' }}</td>
+          <td>{{ toGigaBytes(node.storage_use) }}</td>
         </tr>  
       </tbody>
     </table>
