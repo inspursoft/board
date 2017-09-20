@@ -46,8 +46,7 @@ from project p
 	and p.name like ?	
 	and (p.owner_name = ?
 		or p.public = 1
-		or exists (select * from user where deleted = 0 and system_admin = 1 and id = ?)
-		or exists (select * from project p left join project_member pm on p.id = pm.project_id  where p.deleted = 0));`
+		or exists (select * from project p left join project_member pm on p.id = pm.project_id  left join user u on u.id = pm.user_id where p.deleted = 0 and u.deleted = 0 and u.system_admin=1 and u.id=?));`
 
 	params := make([]interface{}, 0)
 	params = append(params, "%"+query.Name+"%", query.OwnerName, userID)
