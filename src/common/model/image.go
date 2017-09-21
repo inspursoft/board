@@ -5,15 +5,17 @@ type RegistryRepo struct {
 }
 
 type Image struct {
-	ImageID      int64  `json:"-" orm:"column(id)"`
+	ImageID      int64  `json:"-" orm:"column(id);pk"`
 	ImageName    string `json:"image_name" orm:"column(name)"`
 	ImageComment string `json:"image_comment" orm:"column(comment)"`
+	ImageDeleted int    `json:"image_deleted" orm:"column(deleted)"`
 }
 
 type ImageTag struct {
-	ImageTagID int64  `orm:"column(id)"`
-	ImageName  string `orm:"column(image_name)"`
-	Tag        string `orm:"column(tag)"`
+	ImageTagID      int64  `orm:"column(id);pk"`
+	ImageName       string `orm:"column(image_name)"`
+	Tag             string `orm:"column(tag)"`
+	ImageTagDeleted int    `orm:"column(deleted)"`
 }
 
 type RegistryTags struct {
@@ -53,6 +55,7 @@ type TagDetail struct {
 	ImageSize         int    `json:"image_size_number"`
 	ImageSizeUnit     string `json:"image_size_unit"`
 	ImageDetail       string `json:"image_detail"`
+	ImageTagDeleted   int    `json:"image_tag_deleted"`
 }
 
 // The structure for dockerfile template
