@@ -3,17 +3,35 @@
  */
 
 
-import { Component, Input, Output, EventEmitter } from "@angular/core"
+import { Component, Input, Output, EventEmitter, ViewChildren, QueryList, OnInit } from "@angular/core"
+import { CsInputComponent } from "../../cs-input/cs-input.component";
 
 @Component({
   selector: "volume-mounts",
   templateUrl: "./volume-mounts.component.html",
   styleUrls: ["./volume-mounts.component.css"]
 })
-export class VolumeMountsComponent {
+export class VolumeMountsComponent implements OnInit {
   _isOpen: boolean = false;
   isAlertOpen: boolean = false;
   volumeErrMsg: string = "";
+  volumeData: {
+    container_dir: string,
+    target_storagename: string,
+    target_storageServer,
+    target_dir: string
+  };
+  @ViewChildren(CsInputComponent) inputList: QueryList<CsInputComponent>;
+  @Output() isOpenChange: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Output() onConfirmEvent: EventEmitter<Object> = new EventEmitter<Object>();
+  ngOnInit() {
+    this.volumeData = {
+      container_dir: "",
+      target_storagename: "",
+      target_storageServer: "",
+      target_dir: ""
+    }
+  }
 
   @Input()
   get isOpen() {
@@ -25,10 +43,9 @@ export class VolumeMountsComponent {
     this.isOpenChange.emit(this._isOpen);
   }
 
-  @Input() volumeData: {container_dir: string, target_storagename: string, target_dir: string};
-  @Output() isOpenChange: EventEmitter<boolean> = new EventEmitter<boolean>();
-
   confirmVolumeInfo() {
+    this.inputList.forEach(value => value.checkValueByHost());
+    this.onConfirmEvent.emit(this.volumeData);
     this.isOpen = false;
   }
 }

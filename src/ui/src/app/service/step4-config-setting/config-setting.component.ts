@@ -36,6 +36,7 @@ export class ConfigSettingComponent implements ServiceStepComponent, OnInit, OnD
     let step1Out = this.k8sService.getStepData(1) as ServiceStep1Output;
     this.step2Output = this.k8sService.getStepData(2) as ServiceStep2Output;
     this.step3Output = this.k8sService.getStepData(3) as ServiceStep3Output;
+    this.step4Output.service_id = step1Out.service_id;
     this.step4Output.project_name = step1Out.project_name;
     this.step4Output.project_id = step1Out.project_id;
     this.step4Output.deployment_yaml.container_list = this.step3Output;
@@ -55,17 +56,18 @@ export class ConfigSettingComponent implements ServiceStepComponent, OnInit, OnD
   }
 
   get serviceExternalArray() {
-    return this.step4Output.deployment_yaml.service_yaml.service_external;
+    return this.step4Output.service_yaml.service_external;
   }
+
   get serviceSelectorsArray() {
     //get selectors list api ...
-    return this.step4Output.deployment_yaml.service_yaml.service_selectors;
+    return this.step4Output.service_yaml.service_selectors;
   }
 
   setServiceName(serviceName: string) {
     this.step4Output.deployment_yaml.deployment_name = serviceName;
-    this.step4Output.deployment_yaml.service_yaml.service_name = serviceName;
-    let selectors = this.step4Output.deployment_yaml.service_yaml.service_selectors;
+    this.step4Output.service_yaml.service_name = serviceName;
+    let selectors = this.step4Output.service_yaml.service_selectors;
     if (selectors.length == 0) {
       selectors.push(serviceName);
     } else {
@@ -95,7 +97,7 @@ export class ConfigSettingComponent implements ServiceStepComponent, OnInit, OnD
   }
 
   getContainerPortDropdownText(index: number): string {
-    let serviceExternal = this.step4Output.deployment_yaml.service_yaml.service_external;
+    let serviceExternal = this.step4Output.service_yaml.service_external;
     let result = serviceExternal[index].service_containerport;
     return result == 0 ? "SERVICE.STEP_4_SELECT_PORT" : result.toString();
   }
@@ -119,6 +121,11 @@ export class ConfigSettingComponent implements ServiceStepComponent, OnInit, OnD
     let serviceExternal = this.serviceExternalArray;
     serviceExternal[index].service_nodeport = 0;
   }
+
+  setServiceNodeport(port: string, index: number) {
+    this.serviceExternalArray[index].service_nodeport = Number(port).valueOf();
+  }
+
 
   forward(): void {
     this.k8sService.stepSource.next(5);

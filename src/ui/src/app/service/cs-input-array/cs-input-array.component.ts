@@ -22,6 +22,7 @@ export class CsInputArrayComponent implements OnInit {
   _sourceArr: Array<CsInputArrSupportType>;
   _isDisable: boolean = false;
   FiledArray: Array<CsInputArrFiled>;
+  @Input() type: CsInputArrType = CsInputArrType.iasString;
 
   constructor() {
     this.FiledArray = Array();
@@ -39,7 +40,7 @@ export class CsInputArrayComponent implements OnInit {
     })
   }
 
-  @Input() type: CsInputArrType = CsInputArrType.iasString;
+
   @Input() labelText: string = "";
   @Input() inputMaxlength: string;
 
@@ -80,10 +81,13 @@ export class CsInputArrayComponent implements OnInit {
     this.FiledArray[index].status = CsInputArrStatus.iasView;
     this.FiledArray[index].defaultValue = this.FiledArray[index].value;
     if (index == this.FiledArray.length - 1) {
-      this._sourceArr.push(this.FiledArray[index].value);
-      this.FiledArray.push(new CsInputArrFiled(CsInputArrStatus.iasView, "", ""));
+      this.type == CsInputArrType.iasString ?
+        this._sourceArr.push(this.FiledArray[index].value) :
+        this._sourceArr.push(Number(this.FiledArray[index].value).valueOf());
     } else {
-      this._sourceArr[index] = this.FiledArray[index].value;
+      this.type == CsInputArrType.iasString ?
+        this._sourceArr[index] = this.FiledArray[index].value :
+        this._sourceArr[index] = Number(this.FiledArray[index].value).valueOf();
     }
     this.onCheckEvent.emit();
   }
@@ -94,9 +98,19 @@ export class CsInputArrayComponent implements OnInit {
     this.onRevertEvent.emit();
   }
 
+  onPlusClick() {
+    this.FiledArray.push(new CsInputArrFiled(CsInputArrStatus.iasView, "", ""));
+  }
+
   onMinusClick(index: number) {
     this._sourceArr.splice(index, 1);
     this.FiledArray.splice(index, 1);
     this.onMinusEvent.emit();
+  }
+
+  onInputKeyPress(event:KeyboardEvent,index:number){
+    if (event.keyCode == 13){
+      this.onCheckClick(index);
+    }
   }
 }

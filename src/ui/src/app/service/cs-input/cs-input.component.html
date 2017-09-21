@@ -11,19 +11,22 @@
          for="inputField"
          aria-haspopup="true"
          role="tooltip"
-         class="cs-input-field-container tooltip tooltip-validation tooltip-md"
+         class="cs-input-field-container tooltip tooltip-validation tooltip-md tooltip-bottom-left"
          (click)="onEditClick()"
          [class.invalid]="inputFormGroup.invalid && (inputFormGroup.dirty || inputFormGroup.touched)">
     <input id="inputField"
            formControlName="inputControl"
            class="cs-input-input"
-           [type]="inputFieldTypeString"
+           type="text"
            [maxlength]="inputMaxlength"
+           [pattern]="inputPattern"
+           (keypress)="onInputKeyPress($event)"
            [(ngModel)]="inputField.value">
-    <span class="tooltip-content" *ngIf="inputFormGroup.invalid">
-      {{inputFormGroup.controls.inputControl?.errors | json}}
+    <span class="tooltip-content" style="width: 200px;" *ngIf="inputFormGroup.invalid">
+      {{getValidatorMessage(inputFormGroup.controls.inputControl?.errors) | translate}}
     </span>
   </label>
+
   <a *ngIf="inputField.status == 0 && !isDisabled"
      href="javascript:void(0)"
      class="cs-input-icon"

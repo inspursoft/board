@@ -63,7 +63,8 @@ export class EditContainerComponent implements ServiceStepComponent, OnInit, OnD
     } else {
       config = this.step3Output[index];
     }
-    config.container_name = image.image_name;
+    let firstIndex = image.image_name.indexOf("/");
+    config.container_name = image.image_name.slice(firstIndex + 1, image.image_name.length);
     config.container_baseimage = image.image_name + ":" + image.image_tag;
     let firstPos = image.image_name.indexOf("/");
     let projectName = image.image_name.slice(0, firstPos);
@@ -87,7 +88,6 @@ export class EditContainerComponent implements ServiceStepComponent, OnInit, OnD
         })
         .catch(err => this.messageService.dispatchError(err));
     }
-
   }
 
   getVolumesDescription(index: number): string {
@@ -95,9 +95,9 @@ export class EditContainerComponent implements ServiceStepComponent, OnInit, OnD
     let result: string = "";
     volumesArr.forEach(value => {
       let storageServer = value.target_storageServer == "" ? "" : value.target_storageServer.concat(":");
-      result += `${value.container_dir} : ${storageServer}${value.target_dir}`
+      result += `${value.container_dir}:${storageServer}${value.target_dir}`
     });
-    return result;
+    return result == ":" ? "" : result;
   }
 
   getSelectImageDefaultText(index: number) {
@@ -143,7 +143,16 @@ export class EditContainerComponent implements ServiceStepComponent, OnInit, OnD
     envsArray.splice(0, envsArray.length);
     envsData.forEach((value: EnvType) => {
       envsArray.push({env_name: value.envName, env_value: value.envValue})
-    })
+    });
+  }
+
+  setVolumeMount(data:Object,index:number){
+    let volumeArr = this.step3Output[index].container_volumes;
+    if (volumeArr.length == 0){
+      volumeArr.push(data as any)
+    } else {
+      volumeArr[0] = data as any;
+    }
   }
 
   shieldEnter($event: KeyboardEvent) {

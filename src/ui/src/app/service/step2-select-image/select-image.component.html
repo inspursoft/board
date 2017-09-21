@@ -43,7 +43,7 @@
   <fieldset class="modal-body fieldSet-default">
     <clr-alert (clrAlertClosedChange)="isNewImageAlertOpen = false"
                [clrAlertClosed]="!isNewImageAlertOpen"
-               [clrAlertType]="'alert-danger'">
+               [clrAlertType]="newImageAlertType">
       <div class="alert-item">
         <span class="alert-text">{{newImageErrMessage | translate}}</span>
       </div>
