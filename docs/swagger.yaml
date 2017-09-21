@@ -2667,6 +2667,10 @@ definitions:
       image_comment:
         type: string
         description: The description of this image.
+      image_deleted:
+        type: integer
+        format: int32
+        description: A deletion mark of this image (1 means it's deleted, 0 is not).
   ImageDetail:
     type: object
     properties:
