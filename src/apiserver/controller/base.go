@@ -7,6 +7,7 @@ import (
 
 	"encoding/json"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
 
 	"bytes"
 
@@ -30,6 +31,10 @@ var conf config.Configer
 var tokenServerURL *url.URL
 var tokenCacheExpireSeconds int
 var memoryCache cache.Cache
+
+var kubeMasterURL = utils.GetConfig("KUBE_MASTER_URL")
+var registryURL = utils.GetConfig("REGISTRY_URL")
+var registryBaseURI = utils.GetConfig("REGISTRY_BASE_URI")
 
 type baseController struct {
 	beego.Controller
