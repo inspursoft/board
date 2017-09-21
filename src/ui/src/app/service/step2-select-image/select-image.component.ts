@@ -14,11 +14,9 @@ import { Message } from "../../shared/message-service/message";
 import { ValidatorFn, Validators } from "@angular/forms";
 import { EnvType } from "../environment-value/environment-value.component";
 
-enum ImageSource{
-  fromBoardRegistry,
-  fromDockerHub
-}
+enum ImageSource{fromBoardRegistry, fromDockerHub}
 const AUTO_REFRESH_IMAGE_LIST: number = 2000;
+type alertType = "alert-info" | "alert-danger";
 @Component({
   templateUrl: './select-image.component.html',
   styleUrls: ["./select-image.component.css"]
@@ -41,6 +39,7 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
   consoleText: string = "";
   isOpenNewImage: boolean = false;
   newImageErrMessage: string = "";
+  newImageAlertType: alertType = "alert-danger";
   isNewImageAlertOpen: boolean = false;
   newImageIndex: number;
   testValidatorFn: Array<ValidatorFn> = [Validators.required, Validators.maxLength(10)];
@@ -80,7 +79,14 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
             }
           });
         }).catch(err => {
-
+          if (err && err.status == 401) {
+            this.isOpenNewImage = false;
+            this.messageService.dispatchError(err);
+          } else {
+            this.newImageAlertType = "alert-danger";
+            this.newImageErrMessage = "SERVICE.STEP_2_UPDATE_IMAGE_LIST_FAILED";
+            this.isNewImageAlertOpen = true;
+          }
         });
       }
     }, AUTO_REFRESH_IMAGE_LIST);
@@ -178,6 +184,7 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
     let step1Out: ServiceStep1Output = this.k8sService.getStepData(1) as ServiceStep1Output;
     this.customerNewImage = new ServiceStep2NewImageType();
     this.customerNewImage.image_dockerfile.image_author = this.appInitService.currentUser["user_name"];
+    this.customerNewImage.project_id = step1Out.project_id;
     this.customerNewImage.project_name = step1Out.project_name;
     this.customerNewImage.image_template = "dockerfile-template";
     this.isOpenNewImage = true;
@@ -205,30 +212,44 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
     this.k8sService.buildImage(this.customerNewImage)
       .then(res => res)
       .catch((err) => {
-        this.messageService.dispatchError(err);
         this.isNeedAutoRefreshImageList = false;
+        if (err && err.status == 401) {
+          this.isOpenNewImage = false;
+          this.messageService.dispatchError(err);
+        } else {
+          this.newImageAlertType = "alert-danger";
+          this.newImageErrMessage = "SERVICE.STEP_2_BUILD_IMAGE_FAILED";
+          this.isNewImageAlertOpen = true;
+        }
       })
   }
 
   updateFileList(): Promise<boolean> {
-    if (this.customerNewImage.image_dockerfile.image_base != "") {
-      let formFileList: FormData = new FormData();
-      formFileList.append('project_name', this.customerNewImage.project_name);
-      formFileList.append('image_name', this.customerNewImage.image_name);
-      formFileList.append('tag_name', this.customerNewImage.image_tag);
-      return this.k8sService.getFileList(formFileList).then(res => {
-        this.filesList.set(this.customerNewImage.image_name, res);
-        let imageCopyArr = this.customerNewImage.image_dockerfile.image_copy;
-        imageCopyArr.splice(0, imageCopyArr.length);
-        this.filesList.get(this.customerNewImage.image_name).forEach(value => {
-          imageCopyArr.push({
-            dockerfile_copyfrom: value.path + "/" + value.file_name,
-            dockerfile_copyto: "/tmp"
-          });
+    let formFileList: FormData = new FormData();
+    formFileList.append('project_name', this.customerNewImage.project_name);
+    formFileList.append('image_name', this.customerNewImage.image_name);
+    formFileList.append('tag_name', this.customerNewImage.image_tag);
+    return this.k8sService.getFileList(formFileList).then(res => {
+      this.filesList.set(this.customerNewImage.image_name, res);
+      let imageCopyArr = this.customerNewImage.image_dockerfile.image_copy;
+      imageCopyArr.splice(0, imageCopyArr.length);
+      this.filesList.get(this.customerNewImage.image_name).forEach(value => {
+        imageCopyArr.push({
+          dockerfile_copyfrom: value.path + "/" + value.file_name,
+          dockerfile_copyto: "/tmp"
         });
-        return true;
-      }).catch(err => this.messageService.dispatchError(err));
-    }
+      });
+      return true;
+    }).catch(err => {
+      if (err && err.status == 401) {
+        this.isOpenNewImage = false;
+        this.messageService.dispatchError(err);
+      } else {
+        this.newImageAlertType = "alert-danger";
+        this.newImageErrMessage = "SERVICE.STEP_2_UPDATE_FILE_LIST_FAILED";
+        this.isNewImageAlertOpen = true;
+      }
+    });
   }
 
   async asyncGetDockerFilePreviewInfo() {
@@ -247,11 +268,20 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
       formData.append('tag_name', this.customerNewImage.image_tag);
       this.k8sService.uploadFile(formData).then(res => {
         event.target.value = "";
-        let m: Message = new Message();
-        m.message = "SERVICE.STEP_2_UPLOAD_SUCCESS";
-        this.messageService.inlineAlertMessage(m);
+        this.newImageAlertType = "alert-info";
+        this.newImageErrMessage = "SERVICE.STEP_2_UPLOAD_SUCCESS";
+        this.isNewImageAlertOpen = true;
         this.asyncGetDockerFilePreviewInfo();
-      }).catch(err => this.messageService.dispatchError(err));
+      }).catch(err => {
+        if (err && err.status == 401) {
+          this.isOpenNewImage = false;
+          this.messageService.dispatchError(err);
+        } else {
+          this.newImageAlertType = "alert-danger";
+          this.newImageErrMessage = "SERVICE.STEP_2_UPLOAD_FAILED";
+          this.isNewImageAlertOpen = true;
+        }
+      });
     }
   }
 
@@ -260,7 +290,16 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
       this.k8sService.getDockerFilePreview(this.customerNewImage)
         .then(res => {
           this.consoleText = res;
-        }).catch(err => this.messageService.dispatchError(err));
+        }).catch(err => {
+        if (err && err.status == 401) {
+          this.isOpenNewImage = false;
+          this.messageService.dispatchError(err);
+        } else {
+          this.newImageAlertType = "alert-danger";
+          this.newImageErrMessage = "SERVICE.STEP_2_UPDATE_DOCKER_FILE_FAILED";
+          this.isNewImageAlertOpen = true;
+        }
+      });
     }
   }
 
@@ -272,7 +311,8 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
         dockerfile_envname: value.envName,
         dockerfile_envvalue: value.envValue
       })
-    })
+    });
+    this.getDockerFilePreviewInfo();
   }
 
   forward(): void {

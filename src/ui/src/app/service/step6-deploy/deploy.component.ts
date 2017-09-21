@@ -2,19 +2,48 @@
  * Created by liyanq on 9/17/17.
  */
 
-import { Component } from "@angular/core"
+import { Component, OnInit } from "@angular/core"
 import { K8sService } from "../service.k8s";
+import { ServiceStep4Output } from "../service-step.component";
+import { MessageService } from "../../shared/message-service/message.service";
+import { Router } from "@angular/router";
 
 @Component({
   templateUrl: "./deploy.component.html",
   styleUrls: ["./deploy.component.css"]
 })
-export class DeployComponent {
+export class DeployComponent implements OnInit {
+  isInDeployIng: boolean = false;
+  consoleText: string = "";
+  output4: ServiceStep4Output;
 
-  constructor(private k8sService: K8sService) {
+  constructor(private k8sService: K8sService,
+              private messageService: MessageService,
+              private router: Router) {
   }
 
-  forward(): void {
-    this.k8sService.stepSource.next(6);
+  ngOnInit() {
+    this.output4 = this.k8sService.getStepData(4) as ServiceStep4Output;
+    this.output4.config_phase = "deploy";
+  }
+
+  serviceDeploy() {
+    if (!this.isInDeployIng) {
+      this.isInDeployIng = true;
+      console.log(this.output4);
+      this.k8sService.serviceDeployment(this.output4)
+        .then(res => {
+          this.consoleText = JSON.stringify(res);
+          this.isInDeployIng = false;
+        })
+        .catch(err => {
+          this.messageService.dispatchError(err);
+          this.isInDeployIng = false;
+        })
+    }
+  }
+
+  deployComplete(): void {
+    this.router.navigate(["/services"]);
   }
 }

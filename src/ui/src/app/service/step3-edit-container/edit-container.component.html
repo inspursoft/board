@@ -57,7 +57,7 @@
                        (onConfirm)="setEnvironment(iStatus,$event)"></environment-value>
     <volume-mounts *ngIf="showVolumeMounts"
                    [(isOpen)]="showVolumeMounts"
-                   [volumeData]="step3Output[iStatus].container_volumes[0]"></volume-mounts>
+                   (onConfirmEvent)="setVolumeMount($event,iStatus)"></volume-mounts>
   </div>
 </div>
 <button class="btn btn-default" [disabled]="'disabled'">Test</button>

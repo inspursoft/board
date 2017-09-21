@@ -97,7 +97,7 @@ export class MemberComponent implements OnInit {
 
   pickUpMember(m: Member) {
     this.selectedMember = m;
-    if(this.selectedMember.project_member_user_id == this.project.project_owner_id || this.selectedMember.project_member_user_id == this.currentUser.user_id) { 
+    if(this.selectedMember.project_member_user_id === this.project.project_owner_id) { 
       this.doUnset = false;
     }
     this.role.role_id = this.selectedMember.project_member_role_id;    

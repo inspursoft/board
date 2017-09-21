@@ -20,20 +20,28 @@
       <cs-input class="env-item-input"
                 [inputMaxlength]="255"
                 [inputType]="2"
+                [validatorFns]="inputValidator"
+                [validatorMessage]="inputValidatorMsg"
                 [simpleFiled]="envInfo.envName"
                 (onCheck)="envInfo.envName = $event"></cs-input>
       <cs-input class="env-item-input"
                 [inputMaxlength]="255"
                 [inputType]="2"
+                [validatorFns]="inputValidator"
+                [validatorMessage]="inputValidatorMsg"
                 [simpleFiled]="envInfo.envValue"
                 (onCheck)="envInfo.envValue = $event"></cs-input>
     </div>
-    <div class="env-item-add-container" (click)="addNewEnv()">
-      <clr-icon class="env-icon" shape="plus"></clr-icon>
+    <div class="env-item-add-container">
+      <clr-icon class="env-icon" (click)="addNewEnv()" shape="plus"></clr-icon>
       <span>{{"SERVICE.ENV_ADD" | translate }}</span>
     </div>
     <div class="env-item-confirm-container">
-      <button class="btn btn-primary" (click)="confirmEnvInfo()">{{"SERVICE.ENV_CONFIRM" | translate }}</button>
+      <button class="btn btn-primary"
+              [disabled]="!isCanConfirm || envsData.length == 0"
+              (click)="confirmEnvInfo()">
+        {{"SERVICE.ENV_CONFIRM" | translate }}
+      </button>
     </div>
   </fieldset>
 </clr-modal>

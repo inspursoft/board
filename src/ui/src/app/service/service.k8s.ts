@@ -6,7 +6,10 @@ import { AppInitService } from "../app.init.service";
 import { Http, Headers, RequestOptions } from "@angular/http";
 import { Project } from "../project/project";
 import { Image, ImageDetail } from "../image/image";
-import { ImageDockerfile, ServiceStep2NewImageType } from "./service-step.component";
+import {
+  ImageDockerfile, ServiceStep2NewImageType, ServiceStep4Output,
+  ServiceStep6Output
+} from "./service-step.component";
 
 @Injectable()
 export class K8sService {
@@ -58,6 +61,16 @@ export class K8sService {
       .catch(err => Promise.reject(err));
   }
 
+  serviceDeployment(postData: ServiceStep4Output): Promise<ServiceStep6Output> {
+    return this.http.post(`/api/v1/service/${postData.service_id}/deployment`, postData, {
+      headers: this.defaultHeader
+    }).toPromise()
+      .then(res => {
+        this.appInitService.chainResponse(res);
+        return res.json();
+      })
+      .catch(err => Promise.reject(err));
+  }
 
   getDockerFilePreview(imageData: ServiceStep2NewImageType): Promise<string> {
     return this.http.post(`/api/v1/images/preview`, imageData, {
@@ -94,13 +107,12 @@ export class K8sService {
       .catch(err => Promise.reject(err));
   }
 
-  getServiceID(postData:{project_name:string,project_id:number}){
+  getServiceID(postData: {project_name: string, project_id: number}) {
     return this.http.post(`/api/v1/service`, postData, {
       headers: this.defaultHeader
     }).toPromise()
       .then(res => {
         this.appInitService.chainResponse(res);
-        console.log(res);
         return res.json();
       })
       .catch(err => Promise.reject(err));
