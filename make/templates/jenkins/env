@@ -1,3 +1,1 @@
-docker_username=$docker_username
-docker_password=$docker_password
-docker_registry=$docker_registry
+docker_registry=$registry_ip:$registry_port
