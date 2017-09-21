@@ -14,13 +14,16 @@ import (
 )
 
 const (
-	deploymentFilename = "deployment.yaml"
-	serviceFilename    = "service.yaml"
-	serviceProcess     = "process_service"
-	apiheader          = "Content-Type: application/yaml"
-	deploymentAPI      = "/apis/extensions/v1beta1/namespaces/"
-	serviceAPI         = "/api/v1/namespaces/"
-	serviceNamespace   = "default" //TODO create in project post
+	deploymentFilename     = "deployment.yaml"
+	serviceFilename        = "service.yaml"
+	deploymentTestFilename = "testdeployment.yaml"
+	serviceTestFilename    = "testservice.yaml"
+	serviceProcess         = "process_service"
+	apiheader              = "Content-Type: application/yaml"
+	deploymentAPI          = "/apis/extensions/v1beta1/namespaces/"
+	serviceAPI             = "/api/v1/namespaces/"
+	test                   = "test"
+	serviceNamespace       = "default" //TODO create in project post
 )
 
 var kubeMasterStatus bool
@@ -49,76 +52,91 @@ func (p *ServiceController) Prepare() {
 	p.isProjectAdmin = (user.ProjectAdmin == 1)
 }
 
-// API to deploy service
-func (p *ServiceController) DeployServiceAction() {
+//Get request massage parameters
+func handleReqPara(p *ServiceController) (model.ServiceConfig, int, error) {
 	var err error
 	var reqServiceConfig model.ServiceConfig
-	var pushobject pushObject
-
-	//Judge authority
-	if p.isSysAdmin == false && p.isProjectAdmin == false {
-		p.CustomAbort(http.StatusForbidden, "Insuffient privileges to manipulate user.")
-		return
-	}
-
-	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	logs.Info("To check serviceID existing", serviceID) //TODO
 
 	//get the request data
 	reqData, err := p.resolveBody()
 	if err != nil {
-		p.internalError(err)
-		return
+		return reqServiceConfig, 0, err
 	}
 
 	//prase the request data to struct
 	err = json.Unmarshal(reqData, &reqServiceConfig)
 	if err != nil {
-		p.internalError(err)
-		return
+		return reqServiceConfig, 0, err
 	}
-
-	// Check deployment parameters
-	err = service.CheckDeploymentYamlPara(reqServiceConfig)
-	if err != nil {
-		p.CustomAbort(http.StatusBadRequest, err.Error())
-		return
-	}
-
-	// Check service parameters
-	err = service.CheckServiceYamlPara(reqServiceConfig)
-	if err != nil {
-		p.CustomAbort(http.StatusBadRequest, err.Error())
-		return
-	}
-
-	//set deployment path
-	serviceId := int(reqServiceConfig.ServiceID)
-	serviceConfigPath := filepath.Join(repoPath,
-		reqServiceConfig.ProjectName, strconv.Itoa(serviceId))
-	logs.Debug("Service config path: %s", serviceConfigPath)
-	service.SetDeploymentPath(serviceConfigPath)
 
 	//Add registry to container images for deployment
 	for index, container := range reqServiceConfig.DeploymentYaml.ContainerList {
 		reqServiceConfig.DeploymentYaml.ContainerList[index].BaseImage =
 			filepath.Join(registryURL(), container.BaseImage)
 	}
-	logs.Info(reqServiceConfig)
+
+	logs.Debug("%+v", reqServiceConfig)
+
+	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
+	if err != nil {
+		return reqServiceConfig, 0, err
+	}
+	logs.Debug("To check serviceID existing %d", serviceID) //TODO
+
+	return reqServiceConfig, serviceID, err
+}
+
+func handleTestReqPara(reqServiceConfig model.ServiceConfig) model.ServiceConfig {
+	//alter parameter for test
+	//totest use pointer transfer parameter
+	reqServiceConfig.ServiceYaml.Name = test + reqServiceConfig.ServiceYaml.Name
+	reqServiceConfig.ServiceYaml.Selectors[0] = test + reqServiceConfig.ServiceYaml.Selectors[0]
+	reqServiceConfig.DeploymentYaml.Name = test + reqServiceConfig.DeploymentYaml.Name
+	logs.Debug("%+v", reqServiceConfig)
+
+	return reqServiceConfig
+}
+
+// API to deploy service
+func deployServiceCommonAction(p *ServiceController, depFileName string, serFileName string,
+	handleTestRepPara ...func(model.ServiceConfig) model.ServiceConfig) {
+	var err error
+	var pushobject pushObject
+
+	//Get request massage parameters
+	reqServiceConfig, serviceID, err := handleReqPara(p)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	// Check request parameters
+	err = service.CheckReqPara(reqServiceConfig)
+	if err != nil {
+		p.CustomAbort(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	//set deployment path
+	serviceConfigPath := filepath.Join(repoPath,
+		reqServiceConfig.ProjectName, strconv.Itoa(serviceID))
+	logs.Debug("Service config path: %s", serviceConfigPath)
+	service.SetDeploymentPath(serviceConfigPath)
+
+	//Handle parameter for test
+	if len(handleTestRepPara) > 0 {
+		reqServiceConfig = handleTestRepPara[0](reqServiceConfig)
+	}
 
 	//Build deployment yaml file
-	err = service.BuildDeploymentYaml(reqServiceConfig)
+	err = service.BuildDeploymentYaml(reqServiceConfig, depFileName)
 	if err != nil {
 		p.internalError(err)
 		return
 	}
 
 	//Build service yaml file
-	err = service.BuildServiceYaml(reqServiceConfig)
+	err = service.BuildServiceYaml(reqServiceConfig, serFileName)
 	if err != nil {
 		p.internalError(err)
 		return
@@ -127,15 +145,15 @@ func (p *ServiceController) DeployServiceAction() {
 	//serviceNamespace = reqServiceConfig.ProjectName TODO in project
 
 	// Push deployment to jenkins
-	pushobject.FileName = deploymentFilename
+	pushobject.FileName = depFileName
 	pushobject.JobName = serviceProcess
-	pushobject.Value = filepath.Join(reqServiceConfig.ProjectName, strconv.Itoa(serviceId))
+	pushobject.Value = filepath.Join(reqServiceConfig.ProjectName, strconv.Itoa(serviceID))
 	pushobject.Message = fmt.Sprintf("Create deployment for project %s service %d",
 		reqServiceConfig.ProjectName, reqServiceConfig.ServiceID)
-	pushobject.Extras = filepath.Join(kubeMasterURL(), deploymentAPI, serviceNamespace, "/deployments")
+	pushobject.Extras = filepath.Join(kubeMasterURL(), deploymentAPI, serviceNamespace, "deployments")
 
 	// Add deployment file
-	pushobject.Items = []string{filepath.Join(pushobject.Value, deploymentFilename)}
+	pushobject.Items = []string{filepath.Join(pushobject.Value, depFileName)}
 
 	ret, msg, err := InternalPushObjects(&pushobject, &(p.baseController))
 	if err != nil {
@@ -147,20 +165,20 @@ func (p *ServiceController) DeployServiceAction() {
 	//TODO: If fail to create deployment, should not continue to create service
 
 	//Push service to jenkins
-	pushobject.FileName = serviceFilename
+	pushobject.FileName = serFileName
 	pushobject.Message = fmt.Sprintf("Create service for project %s service %d",
 		reqServiceConfig.ProjectName, reqServiceConfig.ServiceID)
-	pushobject.Extras = filepath.Join(kubeMasterURL(), serviceAPI, serviceNamespace, "/services")
+	pushobject.Extras = filepath.Join(kubeMasterURL(), serviceAPI, serviceNamespace, "services")
 
 	// Add deployment file
-	pushobject.Items = []string{filepath.Join(pushobject.Value, serviceFilename)}
+	pushobject.Items = []string{filepath.Join(pushobject.Value, serFileName)}
 
 	ret, msg, err = InternalPushObjects(&pushobject, &(p.baseController))
 	if err != nil {
 		p.internalError(err)
 		return
 	}
-	logs.Info("Internal push service object: %d %s", ret, msg)
+	logs.Debug("Internal push service object: %d %s", ret, msg)
 
 	// Update service status in database
 	updateService := model.ServiceStatus{ID: int64(serviceID), Status: running,
@@ -171,12 +189,47 @@ func (p *ServiceController) DeployServiceAction() {
 		return
 	}
 
-	//p.CustomAbort(ret, msg)
+	p.serveStatus(ret, msg)
+}
+
+// API to deploy service
+func (p *ServiceController) DeployServiceAction() {
+	//Judge authority
+	if !(p.isSysAdmin && p.isProjectAdmin) {
+		p.CustomAbort(http.StatusForbidden, "Insuffient privileges to manipulate user.")
+		return
+	}
+	deployServiceCommonAction(p, deploymentFilename, serviceFilename)
+}
+
+// API to deploy test service
+func (p *ServiceController) DeployServiceTestAction() {
+	//Judge authority
+	if !(p.isSysAdmin && p.isProjectAdmin) {
+		p.CustomAbort(http.StatusForbidden, "Insuffient privileges to manipulate user.")
+		return
+	}
+	deployServiceCommonAction(p, deploymentTestFilename, serviceTestFilename, handleTestReqPara)
+}
+
+//get service list
+func (p *ServiceController) GetServiceListAction() {
+	serviceList, err := service.GetServiceList()
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	p.Data["json"] = serviceList
+	p.ServeJSON()
 }
 
 // API to create service config
 func (p *ServiceController) CreateServiceConfigAction() {
-	var err error
+	//Judge authority
+	if !(p.isSysAdmin && p.isProjectAdmin) {
+		p.CustomAbort(http.StatusForbidden, "Insuffient privileges to manipulate user.")
+		return
+	}
 	reqData, err := p.resolveBody()
 	if err != nil {
 		p.internalError(err)
@@ -188,7 +241,7 @@ func (p *ServiceController) CreateServiceConfigAction() {
 		p.internalError(err)
 		return
 	}
-	logs.Info(reqServiceProject)
+	logs.Debug("%+v", reqServiceProject)
 	//Assign and return Service ID with mysql
 	var newservice model.ServiceStatus
 	newservice.ProjectID = reqServiceProject.ProjectID
@@ -201,25 +254,24 @@ func (p *ServiceController) CreateServiceConfigAction() {
 		p.internalError(err)
 		return
 	}
-	p.Data["json"] = strconv.FormatInt(serviceID, 10)
+	p.Data["json"] = strconv.Itoa(int(serviceID))
 	p.ServeJSON()
 }
 
 func (p *ServiceController) DeleteServiceAction() {
-
-	if p.isSysAdmin == false && p.isProjectAdmin == false {
+	if !(p.isSysAdmin && p.isProjectAdmin) {
 		p.CustomAbort(http.StatusForbidden, "Insuffient privileges to manipulate user.")
 		return
 	}
 
-	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
+	serviceID, err := strconv.ParseInt(p.Ctx.Input.Param(":id"), 10, 64)
 	if err != nil {
 		p.internalError(err)
 		return
 	}
 	// TODO check service id exist
 	// TODO call stop service
-	isSuccess, err := service.DeleteService(int64(serviceID))
+	isSuccess, err := service.DeleteService(serviceID)
 	if err != nil {
 		p.internalError(err)
 		return
