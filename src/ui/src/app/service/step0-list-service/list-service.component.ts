@@ -29,14 +29,14 @@ export class ListServiceComponent implements OnInit, OnDestroy {
   currentUser: {[key: string]: any};
   services: Service[];
   
-  _subscriptionDeletion: Subscription;
+  _subscription: Subscription;
 
   constructor(
     private appInitService: AppInitService,          
     private k8sService: K8sService,
     private messageService: MessageService
   ){
-    this._subscriptionDeletion = this.messageService.messageConfirmed$.subscribe(m=>{
+    this._subscription = this.messageService.messageConfirmed$.subscribe(m=>{
       let confirmationMessage = <Message>m;
       if(confirmationMessage) {
         let serviceData = <ServiceData>confirmationMessage.data;
@@ -66,8 +66,8 @@ export class ListServiceComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if(this._subscriptionDeletion) {
-      this._subscriptionDeletion.unsubscribe();
+    if(this._subscription) {
+      this._subscription.unsubscribe();
     }
   }
 
