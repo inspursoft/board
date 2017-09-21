@@ -268,6 +268,17 @@ export const LANG_ZH_CN = {
     "STEP_4_SELECT_SERVICE":"选择服务...",
     "STEP_6_DEPLOY":"部署",
     "STEP_6_JOURNAL":"日志",
+    "STATUS_PREPARING": "创建中",
+    "STATUS_RUNNING": "运行中",
+    "STATUS_SUSPENDING": "挂起中",
+    "STATUS_PUBLIC": "公开",
+    "STATUS_PRIVATE": "私有",
+    "TOGGLE_SERVICE": "切换服务状态",
+    "CONFIRM_TO_TOGGLE_SERVICE": "确认切换当前服务状态吗？",
+    "DELETE_SERVICE": "删除服务",
+    "CONFIRM_TO_DELETE_SERVICE": "确认删除服务吗?",
+    "SUCCESSFUL_DELETE": "删除服务成功。",
+    "FAILED_TO_DELETE_SERVICE": "删除服务失败。"
   },
   "GLOBAL_SEARCH": {
     "PROJECTS": "项目",
@@ -287,5 +298,26 @@ export const LANG_ZH_CN = {
     "NODES": "节点",
     "NODE_NAME": "节点名称",
     "NODE_IP": "节点IP地址"
+  },
+  "NODE": {
+    "NODE_NAME": "节点名称",
+    "NODE_IP": "节点IP地址",
+    "NODE_STATUS": "节点状态",
+    "OPERATION": "操作",
+    "ITEMS": " 条记录。",
+    "NODE_DETAILS": "节点明细",
+    "CREATION_TIME": "创建时间",
+    "CPU_USAGE": "CPU使用率",
+    "MEMORY_USAGE": "内存使用率",
+    "MEMORY_SIZE": "内存大小",
+    "STORAGE_TOTAL": "存储总量",
+    "STORAGE_USAGE": "存储使用率",
+    "STATUS_RUNNING": "运行中",
+    "STATUS_UNSCHEDULABLE": "已停止",
+    "STATUS_UNKNOWN": "未知",
+    "SUCCESSFUL_TOGGLE": "切换节点状态成功。",
+    "FAILED_TO_TOGGLE": "切换节点状态失败。",
+    "TOGGLE_NODE": "切换状态",
+    "CONFIRM_TO_TOGGLE_NODE": "确认切换节点状态？"
   }
 };

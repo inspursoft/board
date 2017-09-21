@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"io"
 	"os"
@@ -309,4 +310,32 @@ func GetDockerfileInfo(path string) (*model.Dockerfile, error) {
 	}
 
 	return &Dockerfile, nil
+}
+
+// Image in database
+func CreateImage(image model.Image) (int64, error) {
+	imageID, err := dao.AddImage(image)
+	if err != nil {
+		return 0, err
+	}
+	return imageID, nil
+}
+
+func GetImage(image model.Image, selectedFields ...string) (*model.Image, error) {
+	m, err := dao.GetImage(image, selectedFields...)
+	if err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func UpdateImage(image model.Image, fieldNames ...string) (bool, error) {
+	if image.ImageID == 0 {
+		return false, errors.New("no Image ID provided")
+	}
+	_, err := dao.UpdateImage(image, fieldNames...)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }

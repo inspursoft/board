@@ -8,6 +8,7 @@ import (
 	"git/inspursoft/board/src/common/utils"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"path/filepath"
 
 	"strings"
@@ -58,7 +59,30 @@ func (p *ImageController) GetImagesAction() {
 	for _, imagename := range repolist.Names {
 		var newImage model.Image
 		newImage.ImageName = imagename
-		newImage.ImageComment = commentTemp
+		// Check image in DB
+		dbimage, err := service.GetImage(newImage, "name")
+		if err != nil {
+			logs.Info("Checking image name in DB error")
+			p.internalError(err)
+			return
+		}
+		if dbimage != nil {
+			// image already in DB, use the status in DB
+			newImage.ImageID = dbimage.ImageID
+			newImage.ImageComment = dbimage.ImageComment
+			newImage.ImageDeleted = dbimage.ImageDeleted
+		} else {
+			// image not in DB, add it to DB
+			newImage.ImageComment = commentTemp
+			id, err := service.CreateImage(newImage)
+			if err != nil {
+				logs.Info("Create image in DB error")
+				p.internalError(err)
+				return
+			}
+			newImage.ImageID = id
+		}
+
 		imagelist = append(imagelist, newImage)
 	}
 	logs.Info(imagelist)

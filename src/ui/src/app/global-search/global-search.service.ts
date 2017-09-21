@@ -5,7 +5,12 @@ import { AppInitService } from '../app.init.service';
 @Injectable()
 export class GlobalSearchService {
 
-  defaultHeaders: Headers = new Headers({contentType: 'application/json'});
+  get defaultHeader(): Headers {
+    let headers = new Headers();
+    headers.append('Content-Type','application/json');
+    headers.append('token', this.appInitService.token);
+    return headers;
+  }
 
   constructor(
     private http: Http,
@@ -14,7 +19,7 @@ export class GlobalSearchService {
 
   search(content: string): Promise<any>{
     return this.http.get("/api/v1/search", { 
-        headers: this.defaultHeaders,
+        headers: this.defaultHeader,
         params: {
           q: content,
           token: this.appInitService.token

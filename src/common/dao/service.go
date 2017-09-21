@@ -48,3 +48,16 @@ func UpdateService(service model.ServiceStatus, fieldNames ...string) (int64, er
 	}
 	return serviceID, err
 }
+
+func GetServiceData() ([]model.ServiceStatus, error) {
+	var serviceList []model.ServiceStatus
+
+	o := orm.NewOrm()
+	qs := o.QueryTable("service_status")
+	_, err := qs.Filter("deleted", 0).All(&serviceList)
+	if err != nil {
+		return nil, err
+	}
+
+	return serviceList, err
+}

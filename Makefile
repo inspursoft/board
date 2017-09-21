@@ -33,7 +33,7 @@ SHELL := /bin/bash
 BUILDPATH=$(CURDIR)
 MAKEPATH=$(BUILDPATH)/make
 MAKEWORKPATH=$(MAKEPATH)/$(WORKPATH)
-SRCPATH=$(BUILDPATH)/src
+SRCPATH= src
 TOOLSPATH=$(BUILDPATH)/tools
 IMAGEPATH=$(BUILDPATH)/make/$(MAKEWORKPATH)
 PACKAGEPATH=$(BUILDPATH)/Deploy
@@ -114,7 +114,7 @@ vet: $(VET_LIST)
 golint: $(GOLINT_LIST)
 
 compile_ui:
-	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEUIFILENAME) up
+	$(DOCKERCOMPOSECMD) -f $(MAKEPATH)/dev/$(DOCKERCOMPOSEUIFILENAME) up
 
 $(COMPILE_LIST): %_compile: %_fmt %_vet %_golint
 	$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOIMGBASEPATH) \
@@ -122,7 +122,7 @@ $(COMPILE_LIST): %_compile: %_fmt %_vet %_golint
 					-v -o $(GOIMGBASEPATH)/make/$(WORKPATH)/container/$(subst /cmd,,$(subst src/,,$*))/$(subst /cmd,,$(subst src/,,$*)) 
 
 $(CLEAN_LIST): %_clean:
-	$(GOCLEAN) $(TOPLEVEL_PKG)/$* 
+#	$(GOCLEAN) $(TOPLEVEL_PKG)/$* 
 	rm $(MAKEWORKPATH)/container/$(subst /cmd,,$(subst src/,,$*))/$(subst /cmd,,$(subst src/,,$*))	    
 $(INSTALL_LIST): %_install:
 	$(GOINSTALL) $(TOPLEVEL_PKG)/$*
@@ -171,7 +171,7 @@ prepare_swagger:
 
 package:
 	@echo "packing offline package ..."
-	@mkdir Deploy
+	@if [ ! -d $(PKGTEMPPATH) ] ; then mkdir $(PKGTEMPPATH) ; fi
 	@cp $(TOOLSPATH)/install.sh $(PKGTEMPPATH)/install.sh
 	@cp $(MAKEPATH)/board.cfg $(PKGTEMPPATH)/.
 	@cp $(MAKEPATH)/prepare $(PKGTEMPPATH)/.
@@ -185,6 +185,8 @@ package:
 	@$(TARCMD) -zcvf $(PKGNAME)-offline-installer-$(VERSIONTAG).tgz $(PKGTEMPPATH)
 	
 	@rm -rf $(PACKAGEPATH)
+
+packageonestep: compile compile_ui build package
 
 .PHONY: cleanall
 cleanall: cleanbinary cleanimage

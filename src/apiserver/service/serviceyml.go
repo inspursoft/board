@@ -45,7 +45,7 @@ func CheckDeploymentPath(loadPath string) error {
 }
 
 //check parameter of service yaml file
-func CheckServiceYamlPara(reqServiceConfig model.ServiceConfig) error {
+func CheckServicePara(reqServiceConfig model.ServiceConfig) error {
 	if reqServiceConfig.DeploymentYaml.Name == "" {
 		return errors.New("Deployment_Name is empty.")
 	}
@@ -62,7 +62,7 @@ func CheckServiceYamlPara(reqServiceConfig model.ServiceConfig) error {
 }
 
 //check parameter of deployment yaml file
-func CheckDeploymentYamlPara(reqServiceConfig model.ServiceConfig) error {
+func CheckDeploymentPara(reqServiceConfig model.ServiceConfig) error {
 	if reqServiceConfig.ServiceYaml.Name == "" {
 		return errors.New("ServiceYaml.Name is empty.")
 	}
@@ -78,8 +78,26 @@ func CheckDeploymentYamlPara(reqServiceConfig model.ServiceConfig) error {
 	return nil
 }
 
+//check request massage parameters
+func CheckReqPara(reqServiceConfig model.ServiceConfig) error {
+	var err error
+	// Check deployment parameters
+	err = CheckDeploymentPara(reqServiceConfig)
+	if err != nil {
+		return err
+	}
+
+	// Check service parameters
+	err = CheckServicePara(reqServiceConfig)
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
 //build yaml file of service
-func BuildServiceYaml(reqServiceConfig model.ServiceConfig) error {
+func BuildServiceYaml(reqServiceConfig model.ServiceConfig, yamlFileName string) error {
 	var service model.ServiceStructYaml
 	var port model.PortsServiceYaml
 
@@ -114,7 +132,7 @@ func BuildServiceYaml(reqServiceConfig model.ServiceConfig) error {
 		return err
 	}
 
-	fileName := filepath.Join(serviceLoadPath, "service.yaml")
+	fileName := filepath.Join(serviceLoadPath, yamlFileName)
 	err = ioutil.WriteFile(fileName, context, 0644)
 	if err != nil {
 		logs.Error("Failed to build service yaml file: %+v\n", err)
@@ -124,7 +142,7 @@ func BuildServiceYaml(reqServiceConfig model.ServiceConfig) error {
 }
 
 //build yaml file of deployment
-func BuildDeploymentYaml(reqServiceConfig model.ServiceConfig) error {
+func BuildDeploymentYaml(reqServiceConfig model.ServiceConfig, yamlFileName string) error {
 	var deployment model.DeploymentStructYaml
 	var nfsvolume model.VolumesDeploymentYaml
 	var container model.ContainersDeploymentYaml
@@ -196,7 +214,7 @@ func BuildDeploymentYaml(reqServiceConfig model.ServiceConfig) error {
 		return err
 	}
 
-	fileName := filepath.Join(deploymentLoadPath, "deployment.yaml")
+	fileName := filepath.Join(deploymentLoadPath, yamlFileName)
 
 	err = ioutil.WriteFile(fileName, context, 0644)
 	if err != nil {

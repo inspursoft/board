@@ -268,6 +268,17 @@ export const LANG_EN_US = {
     "STEP_4_SELECT_SERVICE":"Select Service...",
     "STEP_6_DEPLOY":"Deploy",
     "STEP_6_JOURNAL":"Journal",
+    "STATUS_PREPARING": "Preparing",
+    "STATUS_RUNNING": "Running",
+    "STATUS_SUSPENDING": "Suspending",
+    "STATUS_PUBLIC": "Public",
+    "STATUS_PRIVATE": "Private",
+    "TOGGLE_SERVICE": "Change Service Status",
+    "CONFIRM_TO_TOGGLE_SERVICE": "Confirm to change current service status?",
+    "DELETE_SERVICE": "Delete Service",
+    "CONFIRM_TO_DELETE_SERVICE": "Confirm to delete service?",
+    "SUCCESSFUL_DELETE": "Successful delete service.",
+    "FAILED_TO_DELETE_SERVICE": "Failed to delete service."
   },
   "GLOBAL_SEARCH": {
     "PROJECTS": "Projects",
@@ -287,5 +298,26 @@ export const LANG_EN_US = {
     "NODES": "Nodes",
     "NODE_NAME": "Node Name",
     "NODE_IP": "Node IP Address"
+  },
+  "NODE": {
+    "NODE_NAME": "Node Name",
+    "NODE_IP": "Node IP Address",
+    "NODE_STATUS": "Node Status",
+    "OPERATION": "Operation",
+    "ITEMS": " record(s) found.",
+    "NODE_DETAILS": "Node Details",
+    "CREATION_TIME": "Creation Time",
+    "CPU_USAGE": "CPU Usage",
+    "MEMORY_USAGE": "Memory Usage",
+    "MEMORY_SIZE": "Memory Size",
+    "STORAGE_TOTAL": "Storage Total",
+    "STORAGE_USAGE": "Storage Usage",
+    "STATUS_RUNNING": "Running",
+    "STATUS_UNSCHEDULABLE": "Stopped",
+    "STATUS_UNKNOWN": "Unknown",
+    "SUCCESSFUL_TOGGLE": "Successful change node status.",
+    "FAILED_TO_TOGGLE": "Failed to toggle node status.",
+    "TOGGLE_NODE": "Toggle Status",
+    "CONFIRM_TO_TOGGLE_NODE": "Confirm to change node status?"
   }
 };

@@ -11,14 +11,14 @@ DROP TABLE IF EXISTS `role`;
 
 CREATE TABLE `user` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `username` varchar(45) NOT NULL,
+  `username` varchar(255) NOT NULL,
   `password` varchar(45) NOT NULL,
-  `email` varchar(45) NOT NULL,
-  `realname` varchar(45) DEFAULT NULL,
+  `email` varchar(255) NOT NULL,
+  `realname` varchar(255) DEFAULT NULL,
   `comment` varchar(255) DEFAULT NULL,
-  `deleted` int(11) DEFAULT NULL,
-  `system_admin` int(11) DEFAULT NULL,
-  `project_admin` int(11) DEFAULT NULL,
+  `deleted` SMALLINT(1) DEFAULT NULL,
+  `system_admin` SMALLINT(1) DEFAULT NULL,
+  `project_admin` SMALLINT(1) DEFAULT NULL,
   `reset_uuid` varchar(255) DEFAULT NULL,
   `salt` varchar(255) DEFAULT NULL,
   `creation_time` datetime DEFAULT NULL,
@@ -63,7 +63,7 @@ CREATE TABLE `project_member` (
 INSERT INTO `board`.`project_member`
  (`id`, `user_id`, `project_id`, `role_id`)
  VALUES
- (2, 1, 1, 2);
+ (1, 1, 1, 1);
 
 CREATE TABLE `board`.`role` (
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -288,6 +288,7 @@ DROP TABLE IF EXISTS `log`;
         `id` INT AUTO_INCREMENT NOT NULL,
         `name` VARCHAR(255) NOT NULL DEFAULT '',
         `comment` VARCHAR(255) NULL,
+        `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
@@ -295,19 +296,35 @@ DROP TABLE IF EXISTS `log`;
         `id` INT AUTO_INCREMENT NOT NULL,
         `image_name` VARCHAR(255) NOT NULL DEFAULT '',
         `tag` VARCHAR(255) NOT NULL DEFAULT '',
+        `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
     -- --------------------------------------------------
     --  Table Structure for `git/inspursoft/board/src/common/model/yaml/serviceconfig`
     -- --------------------------------------------------
-    CREATE TABLE `board`.`serviceconfig` (
+    CREATE TABLE `board`.`service_config` (
         `id` INT AUTO_INCREMENT NOT NULL,
         `project_id` INT NOT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
-    CREATE TABLE `board`.`serviceconfigimage` (
+    CREATE TABLE `board`.`service_config_image` (
         `service_id` INT NOT NULL,
         `image_tag_id` INT NOT NULL
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+	CREATE TABLE `board`.`service_status` (
+        `id` INT NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(255) NOT NULL DEFAULT '',
+        `project_id` INT NOT NULL,
+        `project_name` VARCHAR(255) NOT NULL DEFAULT '',
+        `comment` VARCHAR(255) NOT NULL DEFAULT '',
+        `owner_id` INT NOT NULL,
+        `status` SMALLINT(1) NOT NULL,
+        `public` SMALLINT(1) NULL,
+        `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
+        `creation_time` datetime DEFAULT NULL,
+        `update_time` datetime DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
 

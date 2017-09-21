@@ -67,9 +67,7 @@ func SearchSource(user *model.User, searchPara string) (searchResult SearchResul
 		if user.SystemAdmin == 1 {
 			resNode, err = searchNode(searchPara)
 		}
-		if err != nil {
-			return searchResult, err
-		}
+
 		resSvr, err = searchService(searchPara)
 		if err != nil {
 			return searchResult, err

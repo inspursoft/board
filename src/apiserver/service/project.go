@@ -4,7 +4,15 @@ import (
 	"errors"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
+	"os"
+	"path/filepath"
+
+	"github.com/astaxie/beego/logs"
 )
+
+var repoServeURL = utils.GetConfig("REPO_SERVE_URL")
+var repoPath = utils.GetConfig("REPO_PATH")
 
 func CreateProject(project model.Project) (bool, error) {
 	projectID, err := dao.AddProject(project)
@@ -21,7 +29,25 @@ func CreateProject(project model.Project) (bool, error) {
 	if err != nil {
 		return false, errors.New("failed to create project member")
 	}
-	return (projectID != 0 && projectMemberID != 0), nil
+	if projectID == 0 || projectMemberID == 0 {
+		return false, errors.New("failed to create projectID memberID")
+	}
+
+	// Setup git repo for this project
+	logs.Info("Initializing project %s repo", project.Name)
+	_, err = InitRepo(repoServeURL(), repoPath())
+	if err != nil {
+		return false, errors.New("Initialize Project repo failed.")
+	}
+
+	subPath := project.Name
+	if subPath != "" {
+		os.MkdirAll(filepath.Join(repoPath(), subPath), 0755)
+		if err != nil {
+			return false, errors.New("Initialize Project path failed.")
+		}
+	}
+	return true, nil
 }
 
 func GetProject(project model.Project, selectedFields ...string) (*model.Project, error) {

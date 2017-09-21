@@ -165,39 +165,25 @@ export class K8sService {
   }
 
   getServices(): Promise<Service[]> {
-    return new Promise((resolve, reject) => resolve([
-      {
-        service_name: 'portal_bu01',
-        service_project_name: 'bu01',
-        service_owner: 'aron',
-        service_create_time: new Date('2017-08-04T09:54:32+08:00'),
-        service_public: true,
-        service_status: 0
-      },
-      {
-        service_name: 'hr_bu01',
-        service_project_name: 'bu01',
-        service_owner: 'bron',
-        service_create_time: new Date('2017-08-03T13:52:16+08:00'),
-        service_public: false,
-        service_status: 0
-      },
-      {
-        service_name: 'bigdata_bu02',
-        service_project_name: 'bu02',
-        service_owner: 'mike',
-        service_create_time: new Date('2017-07-31T14:20:44+08:00'),
-        service_public: false,
-        service_status: 1
-      },
-      {
-        service_name: 'testenv',
-        service_project_name: 'du01',
-        service_owner: 'tim',
-        service_create_time: new Date('2017-07-28T14:20:44+08:00'),
-        service_public: true,
-        service_status: 1
-      }
-    ]));
+    return this.http
+      .get(`/api/v1/services`, { headers: this.defaultHeader })
+      .toPromise()
+      .then(res=>{
+        this.appInitService.chainResponse(res);
+        return <Service[]>res.json();
+      })
+      .catch(err=>Promise.reject(err));
   }
+
+  deleteService(serviceID: number): Promise<any> {
+    return this.http
+      .delete(`/api/v1/services/${serviceID}`, { headers: this.defaultHeader })
+      .toPromise()
+      .then(res=>{
+        this.appInitService.chainResponse(res);
+        return res;
+      })
+      .catch(err=>Promise.reject(err));
+  }
+  
 }
