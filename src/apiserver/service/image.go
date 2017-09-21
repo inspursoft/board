@@ -107,7 +107,8 @@ func changeDockerfileStructItem(dockerfile *model.Dockerfile) {
 	fixStructEmptyIssue(&dockerfile.Volume)
 
 	for num, node := range dockerfile.Copy {
-		dockerfile.Copy[num].CopyFrom = strings.TrimSpace(node.CopyFrom)
+		fromPath, _ := filepath.Rel(repoPath(), strings.TrimSpace(node.CopyFrom))
+		dockerfile.Copy[num].CopyFrom = fromPath
 		dockerfile.Copy[num].CopyTo = strings.TrimSpace(node.CopyTo)
 	}
 	fixStructEmptyIssue(&dockerfile.Copy)
