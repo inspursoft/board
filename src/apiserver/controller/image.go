@@ -21,7 +21,7 @@ type ImageController struct {
 }
 
 var registryURL = utils.GetConfig("REGISTRY_URL")
-var registryBaseURI = "http://" + registryURL()
+var registryBaseURI = "http://" + os.Getenv("REGISTRY_HOST") + ":" + os.Getenv("REGISTRY_PORT")
 
 const (
 	commentTemp  = "Inspur image" // TODO: get from mysql in the next release
