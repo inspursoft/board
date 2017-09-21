@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
@@ -33,7 +32,7 @@ type SearchImageResult struct {
 	ProjectName string `json:"project_name"`
 }
 
-var registryURL = utils.GetConfig("REGISTRY_URL")
+var registryBaseURI = utils.GetConfig("REGISTRY_BASE_URI")
 
 func SearchSource(user *model.User, searchPara string) (searchResult SearchResult, err error) {
 	var (
@@ -60,7 +59,7 @@ func SearchSource(user *model.User, searchPara string) (searchResult SearchResul
 		if err != nil {
 			return searchResult, err
 		}
-		resImages, err = searchImages(fmt.Sprintf("%s/v2/_catalog", registryURL()), currentProject, searchPara)
+		resImages, err = searchImages(registryBaseURI()+"/v2/_catalog", currentProject, searchPara)
 		if err != nil {
 			return searchResult, err
 		}

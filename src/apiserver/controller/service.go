@@ -29,6 +29,7 @@ const (
 var kubeMasterStatus bool
 
 var kubeMasterURL = utils.GetConfig("KUBE_MASTER_URL")
+var registryURL = utils.GetConfig("REGISTRY_URL")
 
 const (
 	preparing = iota
