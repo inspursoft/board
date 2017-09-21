@@ -266,6 +266,17 @@ export const LANG_ZH_CN = {
     "STEP_4_COLLABORATIVE":"关联服务配置",
     "STEP_4_SERVICE":"服务",
     "STEP_4_SELECT_SERVICE":"选择服务...",
+    "STATUS_PREPARING": "创建中",
+    "STATUS_RUNNING": "运行中",
+    "STATUS_SUSPENDING": "挂起中",
+    "STATUS_PUBLIC": "公开",
+    "STATUS_PRIVATE": "私有",
+    "TOGGLE_SERVICE": "切换服务状态",
+    "CONFIRM_TO_TOGGLE_SERVICE": "确认切换当前服务状态吗？",
+    "DELETE_SERVICE": "删除服务",
+    "CONFIRM_TO_DELETE_SERVICE": "确认删除服务吗?",
+    "SUCCESSFUL_DELETE": "删除服务成功。",
+    "FAILED_TO_DELETE_SERVICE": "删除服务失败。"
   },
   "GLOBAL_SEARCH": {
     "PROJECTS": "项目",

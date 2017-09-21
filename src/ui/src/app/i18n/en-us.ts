@@ -266,6 +266,17 @@ export const LANG_EN_US = {
     "STEP_4_COLLABORATIVE":"Collaborative service",
     "STEP_4_SERVICE":"Service",
     "STEP_4_SELECT_SERVICE":"Select Service...",
+    "STATUS_PREPARING": "Preparing",
+    "STATUS_RUNNING": "Running",
+    "STATUS_SUSPENDING": "Suspending",
+    "STATUS_PUBLIC": "Public",
+    "STATUS_PRIVATE": "Private",
+    "TOGGLE_SERVICE": "Change Service Status",
+    "CONFIRM_TO_TOGGLE_SERVICE": "Confirm to change current service status?",
+    "DELETE_SERVICE": "Delete Service",
+    "CONFIRM_TO_DELETE_SERVICE": "Confirm to delete service?",
+    "SUCCESSFUL_DELETE": "Successful delete service.",
+    "FAILED_TO_DELETE_SERVICE": "Failed to delete service."
   },
   "GLOBAL_SEARCH": {
     "PROJECTS": "Projects",
