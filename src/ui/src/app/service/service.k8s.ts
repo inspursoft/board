@@ -62,7 +62,7 @@ export class K8sService {
   }
 
   serviceDeployment(postData: ServiceStep4Output): Promise<ServiceStep6Output> {
-    return this.http.post(`/api/v1/service/${postData.service_id}/deployment`, postData, {
+    return this.http.post(`/api/v1/services/${postData.service_id}/deployment`, postData, {
       headers: this.defaultHeader
     }).toPromise()
       .then(res => {

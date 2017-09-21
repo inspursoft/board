@@ -25,7 +25,6 @@ const InputPatternString: RegExp = null;
 export class CsInputComponent implements OnInit {
   _isDisabled: boolean = false;
   inputFormGroup: FormGroup;
-
   @Input() inputLabel: string = "";
   @Input() inputFiledType: CsInputFiledType = CsInputFiledType.iftString;
   @Input() inputField: CsInputFiled;
@@ -60,7 +59,9 @@ export class CsInputComponent implements OnInit {
   }
 
   get inputPattern(): RegExp {
-    return this.inputFiledType == CsInputFiledType.iftString ? InputPatternString : InputPatternNumber;
+    return this.inputFiledType == CsInputFiledType.iftString ?
+      InputPatternString :
+      InputPatternNumber;
   }
 
   get isDisabled() {

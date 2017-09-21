@@ -39,9 +39,10 @@
                 [inputLabel]="'SERVICE.STEP_3_Env' | translate"
                 [simpleFiled]="getEnvsDescription(iStatus)"
                 (onEdit)="showEnvironmentValue = true"></cs-input>
-      <cs-input-array [type]="1"
+      <cs-input-array [inputArrayType]="1"
                       [labelText]="'SERVICE.STEP_3_CONTAINER_PORT' | translate"
-                      [source]="step3Output[iStatus].container_ports"></cs-input-array>
+                      [inputArraySource]="step3Output[iStatus].container_ports">
+      </cs-input-array>
       <div class="edit-container-area">
         <label for="areaCommand" class="base-text">{{"SERVICE.STEP_3_COMMAND" | translate}}:</label>
         <textarea id="areaCommand"
