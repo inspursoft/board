@@ -5,5 +5,20 @@ div.step6-start-icon {
   border-right: 0 solid transparent;
   width: 14px;
   height: 14px;
+  cursor: pointer;
+}
 
+div.step6-icon-container {
+  display: flex;
+  justify-content: center;
+  margin-left: 10px;
+  align-items: center;
+  width: 40px;
+  height: 30px;
+  border-radius: 5px;
+  background-color: black;
+}
+
+div.step6-icon-container.deploy {
+  background-color: gray;
 }

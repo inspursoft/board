@@ -64,7 +64,7 @@
                   [simpleFiled]="serviceExternal.service_nodeport"
                   [disabled]="!radNode.checked"
                   [inputLabel]="'SERVICE.STEP_4_NODE_PORT' | translate"
-                  (onCheck)="serviceExternal.service_nodeport = $event">
+                  (onCheck)="setServiceNodeport($event,iIndex)">
         </cs-input>
         <div class="radio-inline external-radio-container">
           <input #radNode

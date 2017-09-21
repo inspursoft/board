@@ -10,7 +10,7 @@ label.cs-input-array-label {
   text-align: right;
 }
 
-div.cs-input-array-minus-container {
+div.cs-input-array-icon-container {
   display: flex;
   align-items: center;
   flex-basis: 20px;
@@ -18,12 +18,21 @@ div.cs-input-array-minus-container {
   margin-left: 10px;
 }
 
-.cs-input-array-minus {
+clr-icon.cs-input-array.plus {
   color: white;
-  background: green;
-  width: 20px;
-  height: 20px;
-  border-radius: 5px;
+  background: darkblue;
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+clr-icon.cs-input-array.minus {
+  color: wheat;
+  background: darkgreen;
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
   cursor: pointer;
 }
 

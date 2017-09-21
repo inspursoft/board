@@ -3,23 +3,29 @@
   <label for="fieldInput"
          (click)="changeEditState(item)"
          class="cs-input-array-label">{{iIndex == 0 ? labelText.concat(':') : ""}}</label>
-  <div class="cs-input-array-minus-container"
+  <div class="cs-input-array-icon-container"
        *ngIf="FiledArray.length > 1 && !disabled">
     <clr-icon
-      class="cs-input-array-minus"
+      class="cs-input-array minus"
       shape="minus"
       (click)="onMinusClick(iIndex)"></clr-icon>
   </div>
+  <div class="cs-input-array-icon-container"
+       *ngIf="iIndex == FiledArray.length - 1 && !disabled">
+    <clr-icon
+      class="cs-input-array plus"
+      shape="plus"
+      (click)="onPlusClick()"></clr-icon>
+  </div>
   <span *ngIf="item.status == 0"
         (click)="changeEditState(item)"
-        [ngClass]="{'last':FiledArray.length  == 1}"
         class="cs-input-array-span">{{item.value}}</span>
   <input type="text"
          id="fieldInput"
-         [ngClass]="{'last':FiledArray.length  == 1}"
          class="cs-input-array-input"
          *ngIf="item.status == 1"
          [maxlength]="inputMaxlength"
+         (keypress)="onInputKeyPress($event,iIndex)"
          [(ngModel)]="item.value">
   <a *ngIf="item.status == 0 && !disabled"
      href="javascript:void(0)"

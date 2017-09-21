@@ -45,7 +45,7 @@ export class ChooseProjectComponent implements ServiceStepComponent, OnInit, OnD
       project_name: this.outputData.project_name,
       project_id: this.outputData.project_id
     }).then(res => {
-      this.outputData.service_id = res;
+      this.outputData.service_id = Number(res).valueOf();
       this.k8sService.stepSource.next(2);
     }).catch(err => this.messageService.dispatchError(err));
   }
