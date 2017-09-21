@@ -26,7 +26,8 @@ export class ServiceComponent implements OnInit, OnDestroy {
   constructor(
     private k8sService: K8sService,
     private componentFactoryResolver: ComponentFactoryResolver,
-    private stepService: StepService){}
+    private stepService: StepService
+  ){}
 
   ngOnInit(): void {
     this._subscription = this.k8sService.step$.subscribe((index: number)=>{

@@ -1,4 +1,5 @@
 export class Service {
+  service_id: number;
   service_name: string;
   service_project_name: string;
   service_owner: string;
