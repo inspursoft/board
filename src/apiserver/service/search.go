@@ -32,7 +32,7 @@ type SearchImageResult struct {
 	ProjectName string `json:"project_name"`
 }
 
-var registryBaseURI = utils.GetConfig("REGISTRY_BASE_URI")
+var registryURL = utils.GetConfig("REGISTRY_URL")
 
 func SearchSource(user *model.User, searchPara string) (searchResult SearchResult, err error) {
 	var (
@@ -59,7 +59,7 @@ func SearchSource(user *model.User, searchPara string) (searchResult SearchResul
 		if err != nil {
 			return searchResult, err
 		}
-		resImages, err = searchImages(registryBaseURI()+"/v2/_catalog", currentProject, searchPara)
+		resImages, err = searchImages(registryURL()+"/v2/_catalog", currentProject, searchPara)
 		if err != nil {
 			return searchResult, err
 		}

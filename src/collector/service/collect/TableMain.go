@@ -29,7 +29,7 @@ var KuberPort string
 func SetInitVar(ip string, port string) {
 	KuberMasterIp = ip
 	KuberPort = port
-	KuberMasterURL = fmt.Sprintf("%s%s%s", KuberMasterIp, ":", KuberPort)
+	KuberMasterURL = fmt.Sprintf("http://%s%s%s", KuberMasterIp, ":", KuberPort)
 	pingK8sApiLink()
 }
 func pingK8sApiLink() {
