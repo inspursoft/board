@@ -288,6 +288,7 @@ DROP TABLE IF EXISTS `log`;
         `id` INT AUTO_INCREMENT NOT NULL,
         `name` VARCHAR(255) NOT NULL DEFAULT '',
         `comment` VARCHAR(255) NULL,
+        `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
@@ -295,6 +296,7 @@ DROP TABLE IF EXISTS `log`;
         `id` INT AUTO_INCREMENT NOT NULL,
         `image_name` VARCHAR(255) NOT NULL DEFAULT '',
         `tag` VARCHAR(255) NOT NULL DEFAULT '',
+        `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
     -- --------------------------------------------------
