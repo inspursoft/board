@@ -108,7 +108,7 @@ export class K8sService {
   }
 
   getServiceID(postData: {project_name: string, project_id: number}) {
-    return this.http.post(`/api/v1/service`, postData, {
+    return this.http.post(`/api/v1/services`, postData, {
       headers: this.defaultHeader
     }).toPromise()
       .then(res => {

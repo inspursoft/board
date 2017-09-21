@@ -266,6 +266,8 @@ export const LANG_ZH_CN = {
     "STEP_4_COLLABORATIVE":"关联服务配置",
     "STEP_4_SERVICE":"服务",
     "STEP_4_SELECT_SERVICE":"选择服务...",
+    "STEP_6_DEPLOY":"部署",
+    "STEP_6_JOURNAL":"日志",
   },
   "GLOBAL_SEARCH": {
     "PROJECTS": "项目",
