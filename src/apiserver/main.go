@@ -55,6 +55,8 @@ func main() {
 	utils.SetConfig("REPO_SERVE_URL", repoServeURL)
 	utils.SetConfig("REPO_PATH", repoPath)
 
+	utils.SetConfig("REGISTRY_BASE_URI", "http://%s:%s", "REGISTRY_HOST", "REGISTRY_PORT")
+
 	utils.ShowAllConfigs()
 
 	updateAdminPassword(utils.GetStringValue("BOARD_ADMIN_PASSWORD"))

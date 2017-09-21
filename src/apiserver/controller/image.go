@@ -20,8 +20,7 @@ type ImageController struct {
 	baseController
 }
 
-var registryURL = utils.GetConfig("REGISTRY_URL")
-var registryBaseURI = "http://" + os.Getenv("REGISTRY_HOST") + ":" + os.Getenv("REGISTRY_PORT")
+var registryBaseURI = utils.GetConfig("REGISTRY_BASE_URI")
 
 const (
 	commentTemp  = "Inspur image" // TODO: get from mysql in the next release
@@ -36,7 +35,7 @@ func (p *ImageController) GetImagesAction() {
 
 	var repolist model.RegistryRepo
 	// Get the image list from registry v2
-	httpresp, err := http.Get(registryBaseURI + "/v2/_catalog")
+	httpresp, err := http.Get(registryBaseURI() + "/v2/_catalog")
 	if err != nil {
 		p.internalError(err)
 		return
@@ -100,7 +99,7 @@ func (p *ImageController) GetImageDetailAction() {
 
 	gettagsurl := "/v2/" + imageName + "/tags/list"
 
-	httpresp, err := http.Get(registryBaseURI + gettagsurl)
+	httpresp, err := http.Get(registryBaseURI() + gettagsurl)
 	if err != nil {
 		logs.Info("url=%s", gettagsurl)
 		p.internalError(err)
@@ -130,7 +129,7 @@ func (p *ImageController) GetImageDetailAction() {
 
 		// Get version one schema
 		getmanifesturl := "/v2/" + taglist.ImageName + "/manifests/" + tagid
-		httpresp, err = http.Get(registryBaseURI + getmanifesturl)
+		httpresp, err = http.Get(registryBaseURI() + getmanifesturl)
 		if err != nil {
 			logs.Info(getmanifesturl)
 			p.internalError(err)
@@ -159,7 +158,7 @@ func (p *ImageController) GetImageDetailAction() {
 		tagdetail.ImageCreationTime = "" //TODO: get the time by frontend simply
 
 		// Get version two schema
-		getmanifesturl = registryBaseURI + getmanifesturl
+		getmanifesturl = registryBaseURI() + getmanifesturl
 		req, _ := http.NewRequest("GET", getmanifesturl, nil)
 		req.Header.Set("Accept", "application/vnd.docker.distribution.manifest.v2+json")
 		client := http.Client{}
