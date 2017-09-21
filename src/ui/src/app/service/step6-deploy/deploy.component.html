@@ -1,17 +1,18 @@
 <div style="display: flex;flex-direction: column;margin-top: 30px;">
   <div style="display:flex;min-height: 100px;align-items: center">
-    <span>{{"Deploy"|translate}}:</span>
+    <span>{{"SERVICE.STEP_6_DEPLOY"|translate}}:</span>
     <div class="step6-icon-container" [ngClass]="{'deploy':isInDeployIng}">
       <div class="step6-start-icon" (click)="serviceDeploy()"></div>
     </div>
     <span *ngIf="isInDeployIng" style="margin-left: 50px;" class="spinner spinner-md"></span>
   </div>
   <div style="display:flex;min-height: 100px;align-items: center">
-    <label for="areaJournal">{{"Journal" | translate}}:</label>
+    <label for="areaJournal">{{"SERVICE.STEP_6_JOURNAL"|translate}}:</label>
     <textarea id="areaJournal"
               rows="5"
               style="margin-left: 10px;max-width: 500px"
-              [(ngModel)]="consoleText"></textarea>
+              [(ngModel)]="consoleText">
+    </textarea>
   </div>
 </div>
-<button class="btn btn-default" [disabled]="!isInDeployIng" (click)="deployComplete()">OK</button>
+<button class="btn btn-default" [disabled]="!isInDeployed" (click)="deployComplete()">OK</button>

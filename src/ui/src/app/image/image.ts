@@ -1,6 +1,7 @@
 export class Image {
-   image_name:string = "";
-   image_comment:string = "";
+  image_name: string = "";
+  image_comment: string = "";
+  image_deleted: number = 0;
 
   constructor() {
   }

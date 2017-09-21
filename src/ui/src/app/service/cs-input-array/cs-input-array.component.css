@@ -27,6 +27,11 @@ clr-icon.cs-input-array.plus {
   cursor: pointer;
 }
 
+clr-icon.cs-input-array.plus.disabled {
+  background: gray;
+  cursor: not-allowed;
+}
+
 clr-icon.cs-input-array.minus {
   color: wheat;
   background: darkgreen;
@@ -51,11 +56,17 @@ span.cs-input-array-span.last {
   margin-left: 10px;
 }
 
+label.cs-input-array-container {
+  height: 30px;
+  margin-left: 10px;
+  flex-basis: 100%;
+}
+
 input.cs-input-array-input {
   text-align: left;
   line-height: 30px;
   height: 30px;
-  flex-basis: 100%;
+  width: 100%;
 }
 
 input.cs-input-array-input.last {

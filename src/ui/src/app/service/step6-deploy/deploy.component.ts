@@ -13,6 +13,7 @@ import { Router } from "@angular/router";
   styleUrls: ["./deploy.component.css"]
 })
 export class DeployComponent implements OnInit {
+  isInDeployed: boolean = false;
   isInDeployIng: boolean = false;
   consoleText: string = "";
   output4: ServiceStep4Output;
@@ -28,16 +29,17 @@ export class DeployComponent implements OnInit {
   }
 
   serviceDeploy() {
-    if (!this.isInDeployIng) {
+    if (!this.isInDeployed) {
       this.isInDeployIng = true;
-      console.log(this.output4);
       this.k8sService.serviceDeployment(this.output4)
         .then(res => {
           this.consoleText = JSON.stringify(res);
+          this.isInDeployed = true;
           this.isInDeployIng = false;
         })
         .catch(err => {
           this.messageService.dispatchError(err);
+          this.isInDeployed = true;
           this.isInDeployIng = false;
         })
     }

@@ -87,17 +87,17 @@
                   [disabled]="isNeedAutoRefreshImageList"
                   [simpleFiled]="envsDescription"
                   (onEdit)="isOpenEnvironment = true"></cs-input>
-        <cs-input-array [source]="imageVolume"
+        <cs-input-array [inputArraySource]="imageVolume"
                         [disabled]="isNeedAutoRefreshImageList"
                         [labelText]="'SERVICE.STEP_2_IMAGE_VOLUME'|translate"
                         (onCheck)="getDockerFilePreviewInfo()"
                         (onMinus)="getDockerFilePreviewInfo()"></cs-input-array>
-        <cs-input-array [source]="imageRun"
+        <cs-input-array [inputArraySource]="imageRun"
                         [disabled]="isNeedAutoRefreshImageList"
                         [labelText]="'SERVICE.STEP_2_IMAGE_RUN'|translate"
                         (onCheck)="getDockerFilePreviewInfo()"
                         (onMinus)="getDockerFilePreviewInfo()"></cs-input-array>
-        <cs-input-array [source]="imageExpose"
+        <cs-input-array [inputArraySource]="imageExpose"
                         [disabled]="isNeedAutoRefreshImageList"
                         [labelText]="'SERVICE.STEP_2_IMAGE_EXPOSE'|translate"
                         (onCheck)="getDockerFilePreviewInfo()"

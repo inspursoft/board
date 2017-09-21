@@ -266,6 +266,8 @@ export const LANG_EN_US = {
     "STEP_4_COLLABORATIVE":"Collaborative service",
     "STEP_4_SERVICE":"Service",
     "STEP_4_SELECT_SERVICE":"Select Service...",
+    "STEP_6_DEPLOY":"Deploy",
+    "STEP_6_JOURNAL":"Journal",
     "STATUS_PREPARING": "Preparing",
     "STATUS_RUNNING": "Running",
     "STATUS_SUSPENDING": "Suspending",
