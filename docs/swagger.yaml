@@ -1345,7 +1345,33 @@ paths:
         400:
           description: Bad Request.
         401:
-          description: Invalid image name.
+          description: User need to log in as admin.
+        500:
+          description: Internal errors.   
+    delete:
+      summary: Delete an image
+      description: |
+        This endpoint is to delete a image with image_name.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: image_name
+          in: query
+          type: string
+          required: true
+          description: The image name which will be delete.       
+      tags:
+        - Products
+      responses:
+        200:
+          description: Delete Image successfully.
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
         500:
           description: Internal errors.   
   /v1/images/configclean:
@@ -1373,7 +1399,7 @@ paths:
         400:
           description: Bad Request.
         401:
-          description: Invalid image name.
+          description: User need to log in as admin.
         500:
           description: Internal errors.
   /v1/images/preview:
@@ -1403,7 +1429,7 @@ paths:
         400:
           description: Bad Request.
         401:
-          description: Invalid image name.
+          description: User need to log in as admin.
         500:
           description: Internal errors.
   /v1/images/building:          
@@ -1431,7 +1457,7 @@ paths:
         400:
           description: Bad Request.
         401:
-          description: Invalid image name.
+          description: User need to log in as admin.
         500:
           description: Internal errors.   
   /v1/images/{image_name}/push:   
@@ -1466,7 +1492,7 @@ paths:
         400:
           description: Bad Request.
         401:
-          description: Invalid image name.
+          description: User need to log in as admin.
         500:
           description: Internal errors. 
   /v1/images/{image_name}/fileupload:   
@@ -1499,7 +1525,7 @@ paths:
         400:
           description: Bad Request.
         401:
-          description: Invalid image name.
+          description: User need to log in as admin.
         500:
           description: Internal errors. 
   /v1/images/dockerfile:
@@ -1607,10 +1633,9 @@ paths:
           required: true
           type: string
         - name: image_tag
-          in: body
+          in: query
+          type: string
           required: true
-          schema:
-            $ref: '#/definitions/ImageTagUpdate'
           description: The image tag to be deleted       
       tags:
         - Products
@@ -1618,11 +1643,9 @@ paths:
         200:
           description: The image of this tag is deleted successfully.
         400:
-          description: Invalid image name.
+          description: Invalid image name or tag.
         401:
           description: User need to log in first.
-        404:
-          description: Invalid image tag number.
         500:
           description: Internal errors.
   /v1/profile:
@@ -2698,12 +2721,6 @@ definitions:
       image_detail:
         type: string
         description: The description of the detail info of the image.
-  ImageTagUpdate:
-    type: object
-    properties:
-      image_tag:
-        type: string
-        description: The tag of the image version      
   DockerfileCopy:
     type: object
     properties:
