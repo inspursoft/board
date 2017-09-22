@@ -21,7 +21,12 @@ export const LANG_EN_US = {
     "INSUFFIENT_PRIVILEGES": "Insuffient privileges.",
     "BAD_REQUEST": "Invalid user request.",
     "CONFLICT_INPUT": "A conflict with the current state of the resource.",
-    "PECONDITION_FAILED": "Precondition given in one or more of the request are evaluated to false."
+    "PECONDITION_FAILED": "Precondition given in one or more of the request are evaluated to false.",
+    "INPUT_ONLY_NUMBER":"Only input number",
+    "INPUT_REQUIRED":"This field is required",
+    "INPUT_MAX_LENGTH":"Max length",
+    "INPUT_MIN_LENGTH":"Min length",
+    "INPUT_PATTERN":"Input does not conform to the rules"
   },
   "ACCOUNT": {
     "SIGN_IN": "Sign In",
@@ -208,6 +213,7 @@ export const LANG_EN_US = {
     "VOLUME_TITLE":"Volume Mounts",
     "VOLUME_SELECT_STORAGE":"Select Storage...",
     "VOLUME_CONTAINER_DIR":"Container Dir",
+    "VOLUME_NAME":"Volume name",
     "VOLUME_TARGET_DIR":"Target Dir",
     "VOLUME_TARGET_STORAGE":"Target Storage Server",
     "VOLUME_CONFIRM":"Confirm",

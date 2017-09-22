@@ -2,7 +2,7 @@
  * Created by liyanq on 9/12/17.
  */
 import { Component, Input, Output, EventEmitter, OnInit } from "@angular/core"
-import { AbstractControl, FormControl, FormGroup, ValidationErrors, ValidatorFn } from "@angular/forms";
+import { FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from "@angular/forms";
 
 export enum CsInputArrStatus{iasView, iasEdit}
 export enum CsInputArrType{iasString, iasNumber}
@@ -15,7 +15,6 @@ export class CsInputArrFiled {
 }
 
 const InputArrayPatternNumber: RegExp = /^[1-9]\d*$/;
-const InputArrayPatternString: RegExp = null;
 @Component({
   selector: "cs-input-array",
   templateUrl: "./cs-input-array.component.html",
@@ -23,31 +22,59 @@ const InputArrayPatternString: RegExp = null;
 })
 export class CsInputArrayComponent implements OnInit {
   _isDisable: boolean = false;
-  FiledArray: Array<CsInputArrFiled>;
+  inputArrayFileds: Array<CsInputArrFiled>;
+  inputArrayErrors: Map<string, ValidationErrors>;
   inputArrayFormGroup: FormGroup;
+  inputArrayValidatorFns: Array<ValidatorFn>;
+  inputArrayValidatorMessageParam: string = "";
   @Input() inputArrayType: CsInputArrType = CsInputArrType.iasString;
-  @Input() validatorFns: Array<ValidatorFn>;
+  @Input() customerArrayValidatorFns: Array<ValidatorFn>;
+  @Input() inputArrayIsRequired: boolean = false;
+  @Input() inputArrayPattern: RegExp;
+  @Input() inputArrayMaxlength: number = 0;
+  @Input() inputArrayMinlength: number = 0;
   @Input() validatorMessage: Array<{validatorKey: string, validatorMessage: string}>;
-  @Input() labelText: string = "";
-  @Input() inputMaxlength: string;
   @Input() inputArraySource: Array<CsInputArrSupportType>;
+  @Input() labelText: string = "";
 
   constructor() {
-    this.FiledArray = Array();
+    this.inputArrayFileds = Array<CsInputArrFiled>();
+    this.inputArrayValidatorFns = Array<ValidatorFn>();
+    this.inputArrayErrors = new Map<string, ValidationErrors>();
   }
 
   ngOnInit() {
     if (this.inputArraySource.length == 0) {
       this.inputArrayFormGroup = new FormGroup({
-        inputControl_0: new FormControl("", this.validatorFns)
+        inputControl_0: new FormControl("")
       });
-      this.FiledArray.push(new CsInputArrFiled(CsInputArrStatus.iasView, "", ""));
+      this.inputArrayFileds.push(new CsInputArrFiled(CsInputArrStatus.iasView, "", ""));
     } else {
       this.inputArrayFormGroup = new FormGroup({});
       this.inputArraySource.forEach((value, index) => {
         let formControlName = `inputControl_` + index;
-        this.inputArrayFormGroup.controls[formControlName] = new FormControl(value, this.validatorFns);
-        this.FiledArray.push(new CsInputArrFiled(CsInputArrStatus.iasView, value.toString(), value.toString()));
+        this.inputArrayFormGroup.addControl(formControlName, new FormControl(value));
+        this.inputArrayFileds.push(new CsInputArrFiled(CsInputArrStatus.iasView, value.toString(), value.toString()));
+      })
+    }
+    if (this.inputArrayType == CsInputArrType.iasNumber) {
+      this.inputArrayValidatorFns.push(Validators.pattern(InputArrayPatternNumber));
+    }
+    if (this.inputArrayIsRequired) {
+      this.inputArrayValidatorFns.push(Validators.required);
+    }
+    if (this.inputArrayMaxlength > 0) {
+      this.inputArrayValidatorFns.push(Validators.maxLength(this.inputArrayMaxlength));
+    }
+    if (this.inputArrayMinlength > 0) {
+      this.inputArrayValidatorFns.push(Validators.minLength(this.inputArrayMinlength));
+    }
+    if (this.inputArrayPattern) {
+      this.inputArrayValidatorFns.push(Validators.pattern(this.inputArrayPattern));
+    }
+    if (this.customerArrayValidatorFns) {
+      this.customerArrayValidatorFns.forEach(value => {
+        this.inputArrayValidatorFns.push(value);
       })
     }
   }
@@ -56,48 +83,79 @@ export class CsInputArrayComponent implements OnInit {
   set disabled(value) {
     this._isDisable = value;
     if (value) {
-      this.FiledArray.forEach(item => item.status = CsInputArrStatus.iasView);
+      this.inputArrayFileds.forEach(item => item.status = CsInputArrStatus.iasView);
     }
   }
 
   getControlName(index: number): string {
-    if (index < this.FiledArray.length) {
+    if (index < this.inputArrayFileds.length) {
       return 'inputControl_' + index;
     }
   }
 
-  get plusDisabled(): boolean {
-    let lastControl = this.getFormControl(this.FiledArray.length - 1);
-    return this.FiledArray[this.FiledArray.length - 1].value == "" || lastControl.invalid;
+  get plusEnable(): boolean {
+    return this.inputArrayFileds[this.inputArrayFileds.length - 1].value != "";
   }
 
   get disabled() {
     return this._isDisable;
   }
 
-  get inputArrayPattern() {
-    return this.inputArrayType == CsInputArrType.iasString ? InputArrayPatternString : InputArrayPatternNumber;
+  validatorArrayErrors(controlName: string): boolean {
+    let result = true;
+    this.inputArrayErrors.set(controlName, null);
+    this.inputArrayValidatorFns.forEach(value => {
+      let errors = value(this.inputArrayFormGroup.controls[controlName]);
+      if (errors) {
+        result = false;
+        this.inputArrayErrors.set(controlName, errors);
+      }
+    });
+    return result;
   }
 
-  getFormControl(index: number): AbstractControl {
+  getArrayErrors(index: number) {
     let formControlName = this.getControlName(index);
-    return this.inputArrayFormGroup.controls[formControlName]
+    return this.inputArrayErrors.get(formControlName);
   }
 
   getValidatorMessage(index: number) {
+    this.inputArrayValidatorMessageParam = "";
     let formControlName = this.getControlName(index);
-    let errors: ValidationErrors = this.inputArrayFormGroup.controls[formControlName].errors;
     let result: string = "";
-    if (errors["pattern"]) {
-      result = "只能输入数字"
-    }
-    else if (this.validatorMessage) {
+    let errors = this.inputArrayErrors.get(formControlName);
+    if (this.validatorMessage) {
       this.validatorMessage.forEach(value => {
         if (errors[value.validatorKey]) {
           result = value.validatorMessage;
         }
-      })
+      });
     }
+    if (result == "") {
+      if (errors["required"]) {
+        result = "ERROR.INPUT_REQUIRED"
+      } else if (errors["pattern"] && this.inputArrayType == CsInputArrType.iasNumber) {
+        result = "ERROR.INPUT_ONLY_NUMBER"
+      } else if (errors["pattern"] && this.inputArrayType == CsInputArrType.iasString) {
+        result = "ERROR.INPUT_PATTERN"
+      } else if (errors["maxlength"]) {
+        result = `ERROR.INPUT_MAX_LENGTH`;
+        this.inputArrayValidatorMessageParam = `:${this.inputArrayMaxlength}`
+      } else if (errors["minlength"]) {
+        result = `ERROR.INPUT_MIN_LENGTH`;
+        this.inputArrayValidatorMessageParam = `:${this.inputArrayMinlength}`
+      }
+    }
+    return result;
+  }
+
+  arrayIsValid(): boolean {
+    let result: boolean = true;
+    this.inputArrayFileds.forEach(value => {
+      if (value.status == CsInputArrStatus.iasEdit) {
+        result = false;
+      }
+    });
     return result;
   }
 
@@ -108,40 +166,41 @@ export class CsInputArrayComponent implements OnInit {
 
   onEditClick(index: number) {
     if (!this.disabled) {
-      this.FiledArray[index].status = CsInputArrStatus.iasEdit;
+      this.inputArrayFileds[index].status = CsInputArrStatus.iasEdit;
       this.onEditEvent.emit();
     }
   }
 
   onCheckClick(index: number) {
-    if (this.getFormControl(index).valid) {
-      this.FiledArray[index].status = CsInputArrStatus.iasView;
-      this.FiledArray[index].defaultValue = this.FiledArray[index].value;
+    let controlName = this.getControlName(index);
+    if ((this.inputArrayFormGroup.touched || this.inputArrayFormGroup.dirty) && this.validatorArrayErrors(controlName)) {
+      this.inputArrayFileds[index].status = CsInputArrStatus.iasView;
+      this.inputArrayFileds[index].defaultValue = this.inputArrayFileds[index].value;
       if (this.inputArraySource.length == 0) {
         this.inputArrayType == CsInputArrType.iasString ?
-          this.inputArraySource.push(this.FiledArray[index].value) :
-          this.inputArraySource.push(Number(this.FiledArray[index].value).valueOf());
+          this.inputArraySource.push(this.inputArrayFileds[index].value) :
+          this.inputArraySource.push(Number(this.inputArrayFileds[index].value).valueOf());
       } else {
         this.inputArrayType == CsInputArrType.iasString ?
-          this.inputArraySource[index] = this.FiledArray[index].value :
-          this.inputArraySource[index] = Number(this.FiledArray[index].value).valueOf();
+          this.inputArraySource[index] = this.inputArrayFileds[index].value :
+          this.inputArraySource[index] = Number(this.inputArrayFileds[index].value).valueOf();
       }
       this.onCheckEvent.emit();
     }
   }
 
   onRevertClick(index: number) {
-    this.FiledArray[index].status = CsInputArrStatus.iasView;
-    this.FiledArray[index].value = this.FiledArray[index].defaultValue;
+    this.inputArrayFileds[index].status = CsInputArrStatus.iasView;
+    this.inputArrayFileds[index].value = this.inputArrayFileds[index].defaultValue;
     this.onRevertEvent.emit();
   }
 
   onPlusClick() {
-    if (!this.plusDisabled) {
-      this.FiledArray.push(new CsInputArrFiled(CsInputArrStatus.iasView, "", ""));
-      let inputControl = new FormControl("", this.validatorFns);
-      let inputControlName = `inputControl_${this.FiledArray.length - 1}`;
-      this.inputArrayFormGroup.controls[inputControlName] = inputControl;
+    if (this.plusEnable) {
+      this.inputArrayFileds.push(new CsInputArrFiled(CsInputArrStatus.iasView, "", ""));
+      let inputControl = new FormControl("");
+      let inputControlName = this.getControlName(this.inputArrayFileds.length - 1);
+      this.inputArrayFormGroup.addControl(inputControlName, inputControl);
       this.inputArrayType == CsInputArrType.iasString ?
         this.inputArraySource.push("") :
         this.inputArraySource.push(0);
@@ -150,11 +209,11 @@ export class CsInputArrayComponent implements OnInit {
 
   onMinusClick(index: number) {
     this.inputArraySource.splice(index, 1);
-    this.FiledArray.splice(index, 1);
+    this.inputArrayFileds.splice(index, 1);
     this.onMinusEvent.emit();
   }
 
-  onInputKeyPress(event: KeyboardEvent, index: number) {
+  onInputKeyPressEvent(event: KeyboardEvent, index: number) {
     if (event.keyCode == 13) {
       this.onCheckClick(index);
     }

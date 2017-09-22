@@ -21,4 +21,5 @@ div.step6-icon-container {
 
 div.step6-icon-container.deploy {
   background-color: gray;
+  cursor: not-allowed;
 }

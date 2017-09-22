@@ -21,7 +21,12 @@ export const LANG_ZH_CN = {
     "INSUFFIENT_PRIVILEGES": "权限不足，无法操作。",
     "BAD_REQUEST": "无效的用户请求。",
     "CONFLICT_INPUT": "存在一个与当前有冲突的资源。",
-    "PECONDITION_FAILED": "请求内容不满足应提供的前置条件。"
+    "PECONDITION_FAILED": "请求内容不满足应提供的前置条件。",
+    "INPUT_ONLY_NUMBER":"只能输入数字",
+    "INPUT_REQUIRED":"字段为必填项",
+    "INPUT_MAX_LENGTH":"最大长度",
+    "INPUT_MIN_LENGTH":"最小长度",
+    "INPUT_PATTERN":"输入不符合规则"
   },
   "ACCOUNT": {
     "SIGN_IN": "登录",
@@ -205,6 +210,7 @@ export const LANG_ZH_CN = {
     "VOLUME_TARGET_DIR":"目标路径",
     "VOLUME_TARGET_STORAGE":"目标存储服务",
     "VOLUME_CONFIRM":"确认",
+    "VOLUME_NAME":"卷名称",
     "STEP_TITLE_1":"选择项目",
     "STEP_TITLE_2":"选择镜像",
     "STEP_TITLE_3":"配置容器",

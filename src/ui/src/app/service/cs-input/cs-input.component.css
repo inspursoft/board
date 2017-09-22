@@ -12,7 +12,7 @@ label.cs-input-label {
 }
 
 span.cs-input-span {
-  flex-basis: 100%;
+  width: 100%;
   text-align: left;
   overflow: hidden;
   white-space: nowrap;
@@ -27,6 +27,10 @@ label.cs-input-field-container {
   height: 30px;
   margin-left: 10px;
   flex-basis: 100%;
+}
+
+span.asterisk {
+  color: #FF0000;
 }
 
 input.cs-input-input {

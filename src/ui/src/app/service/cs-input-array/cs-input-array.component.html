@@ -1,15 +1,15 @@
 <div [formGroup]="inputArrayFormGroup">
-  <div *ngFor="let item of FiledArray;let iIndex = index"
+  <div *ngFor="let item of inputArrayFileds;let iIndex = index"
        class="cs-input-array-container">
     <label [for]="'fieldInput' + iIndex"
            (click)="onEditClick(iIndex)"
            class="cs-input-array-label">{{iIndex == 0 ? labelText.concat(':') : ""}}</label>
-    <div class="cs-input-array-icon-container" *ngIf="FiledArray.length > 1 && !disabled">
+    <div class="cs-input-array-icon-container" *ngIf="inputArrayFileds.length > 1 && !disabled">
       <clr-icon class="cs-input-array minus" shape="minus" (click)="onMinusClick(iIndex)"></clr-icon>
     </div>
-    <div class="cs-input-array-icon-container" *ngIf="iIndex == FiledArray.length - 1 && !disabled">
+    <div class="cs-input-array-icon-container" *ngIf="iIndex == inputArrayFileds.length - 1 && !disabled">
       <clr-icon class="cs-input-array plus"
-                [ngClass]="{'disabled':plusDisabled}"
+                [ngClass]="{'disabled':!plusEnable}"
                 shape="plus"
                 (click)="onPlusClick()">
       </clr-icon>
@@ -21,17 +21,16 @@
            class="cs-input-array-container tooltip tooltip-validation tooltip-md tooltip-bottom-left"
            (click)="onEditClick(iIndex)"
            [for]="'fieldInput'+iIndex"
-           [class.invalid]="getFormControl(iIndex).invalid && (getFormControl(iIndex).dirty || getFormControl(iIndex).touched)">
+           [class.invalid]="getArrayErrors(iIndex) && (inputArrayFormGroup.dirty || inputArrayFormGroup.touched)">
       <input type="text"
              class="cs-input-array-input"
              *ngIf="item.status == 1"
              [id]="'fieldInput'+iIndex"
-             [pattern]="inputArrayPattern"
              [formControlName]="'inputControl_' + iIndex"
-             [maxlength]="inputMaxlength"
-             (keypress)="onInputKeyPress($event,iIndex)"
+             (keypress)="onInputKeyPressEvent($event,iIndex)"
+             (blur)="onCheckClick(iIndex);"
              [(ngModel)]="item.value">
-      <span class="tooltip-content" style="width: 200px;" *ngIf="getFormControl(iIndex).invalid">
+      <span class="tooltip-content" style="width: 200px;" *ngIf="getArrayErrors(iIndex)">
       {{getValidatorMessage(iIndex) | translate}}
     </span>
     </label>

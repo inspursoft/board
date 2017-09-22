@@ -17,20 +17,22 @@
         <span class="env-item-title-no">{{iEnv + 1}}.</span>
         <clr-icon class="env-icon" shape="minus" (click)="envMinusClick(iEnv)"></clr-icon>
       </div>
-      <cs-input class="env-item-input"
-                [inputMaxlength]="255"
-                [inputType]="2"
-                [validatorFns]="inputValidator"
-                [validatorMessage]="inputValidatorMsg"
-                [simpleFiled]="envInfo.envName"
-                (onCheck)="envInfo.envName = $event"></cs-input>
-      <cs-input class="env-item-input"
-                [inputMaxlength]="255"
-                [inputType]="2"
-                [validatorFns]="inputValidator"
-                [validatorMessage]="inputValidatorMsg"
-                [simpleFiled]="envInfo.envValue"
-                (onCheck)="envInfo.envValue = $event"></cs-input>
+        <cs-input class="env-item-input"
+                  [inputIsRequired]="true"
+                  [inputPattern]="patternEnv"
+                  [inputType]="2"
+                  [validatorMessage]="inputValidatorMsg"
+                  [simpleFiled]="envInfo.envName"
+                  (onCheck)="envInfo.envName = $event">
+        </cs-input>
+        <cs-input class="env-item-input"
+                  [inputIsRequired]="true"
+                  [inputPattern]="patternEnv"
+                  [inputType]="2"
+                  [validatorMessage]="inputValidatorMsg"
+                  [simpleFiled]="envInfo.envValue"
+                  (onCheck)="envInfo.envValue = $event">
+        </cs-input>
     </div>
     <div class="env-item-add-container">
       <clr-icon class="env-icon" (click)="addNewEnv()" shape="plus"></clr-icon>

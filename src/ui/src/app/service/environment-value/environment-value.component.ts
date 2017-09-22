@@ -27,6 +27,7 @@ export class EnvType {
 })
 export class EnvironmentValueComponent implements OnInit, AfterContentChecked {
   _isOpen: boolean = false;
+  patternEnv:RegExp = /^[\w-$/\\=\"[\]{}@:,'`\t. ]+$/;
   isCanConfirm: boolean = false;
   envAlertMessage: string;
   envsData: Array<EnvType>;
