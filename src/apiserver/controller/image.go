@@ -408,10 +408,13 @@ func (p *ImageController) DeleteImageAction() {
 		return
 	}
 
-	URLPrefix += URLPrefix + `/manifests/`
+	URLPrefix += `/manifests/`
 	for _, tag := range reqTagList.Tags {
+		var client = &http.Client{}
 		manifestsURL := URLPrefix + tag
-		resp, err := http.Get(manifestsURL)
+		req, err := http.NewRequest("HEAD", manifestsURL, nil)
+		req.Header.Add("Accept", `application/vnd.docker.distribution.manifest.v2+json`)
+		resp, err = client.Do(req)
 		if err != nil {
 			p.internalError(err)
 			return
@@ -420,13 +423,12 @@ func (p *ImageController) DeleteImageAction() {
 
 		digest := strings.Trim(resp.Header.Get("Etag"), `"`)
 		deleteURL := URLPrefix + digest
-		req, err := http.NewRequest("DELETE", deleteURL, nil)
+		req, err = http.NewRequest("DELETE", deleteURL, nil)
 		if err != nil {
 			p.internalError(err)
 			return
 		}
 
-		var client = &http.Client{}
 		resp, err = client.Do(req)
 		if err != nil {
 			p.internalError(err)
@@ -471,9 +473,12 @@ func (p *ImageController) DeleteImageTagAction() {
 	imageName := strings.TrimSpace(p.Ctx.Input.Param(":imagename"))
 	_imageTag := strings.TrimSpace(p.GetString("image_tag"))
 
+	var client = &http.Client{}
 	URLPrefix := registryURL() + `/v2/` + imageName + `/manifests/`
 	manifestsURL := URLPrefix + _imageTag
-	resp, err := http.Get(manifestsURL)
+	req, err := http.NewRequest("HEAD", manifestsURL, nil)
+	req.Header.Add("Accept", `application/vnd.docker.distribution.manifest.v2+json`)
+	resp, err := client.Do(req)
 	if err != nil {
 		p.internalError(err)
 		return
@@ -487,13 +492,12 @@ func (p *ImageController) DeleteImageTagAction() {
 
 	digest := strings.Trim(resp.Header.Get("Etag"), `"`)
 	deleteURL := URLPrefix + digest
-	req, err := http.NewRequest("DELETE", deleteURL, nil)
+	req, err = http.NewRequest("DELETE", deleteURL, nil)
 	if err != nil {
 		p.internalError(err)
 		return
 	}
 
-	var client = &http.Client{}
 	resp, err = client.Do(req)
 	if err != nil {
 		p.internalError(err)
