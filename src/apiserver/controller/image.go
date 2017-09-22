@@ -381,7 +381,8 @@ func (p *ImageController) DeleteImageAction() {
 
 	imageName := strings.TrimSpace(p.GetString("image_name"))
 
-	tagListURL := `http://10.110.13.58:5000/v2/` + imageName + `/tags/list`
+	URLPrefix := registryURL() + `/v2/` + imageName
+	tagListURL := URLPrefix + `/tags/list`
 	resp, err := http.Get(tagListURL)
 	if err != nil {
 		p.internalError(err)
@@ -398,6 +399,8 @@ func (p *ImageController) DeleteImageAction() {
 		return
 	}
 
+	resp.Body.Close()
+
 	var reqTagList tagList
 	err = json.Unmarshal(reqBody, &reqTagList)
 	if err != nil {
@@ -405,15 +408,18 @@ func (p *ImageController) DeleteImageAction() {
 		return
 	}
 
-	for _, node := range reqTagList.Tags {
-		manifestsURL := `http://10.110.13.58:5000/v2/` + reqTagList.Name + `/manifests/` + node
+	URLPrefix += URLPrefix + `/manifests/`
+	for _, tag := range reqTagList.Tags {
+		manifestsURL := URLPrefix + tag
 		resp, err := http.Get(manifestsURL)
 		if err != nil {
 			p.internalError(err)
 			return
 		}
-		digest := strings.TrimLeft(strings.TrimRight(resp.Header.Get("Etag"), `"`), `"`)
-		deleteURL := `http://10.110.13.58:5000/v2/` + reqTagList.Name + `/manifests/` + digest
+		resp.Body.Close()
+
+		digest := strings.Trim(resp.Header.Get("Etag"), `"`)
+		deleteURL := URLPrefix + digest
 		req, err := http.NewRequest("DELETE", deleteURL, nil)
 		if err != nil {
 			p.internalError(err)
@@ -427,9 +433,11 @@ func (p *ImageController) DeleteImageAction() {
 			return
 		}
 		if resp.StatusCode != http.StatusAccepted {
-			p.serveStatus(http.StatusInternalServerError, "Remove registry image error")
+			errString := fmt.Sprintf(`Remove registry image %s error`, tag)
+			p.serveStatus(http.StatusInternalServerError, errString)
 			return
 		}
+		resp.Body.Close()
 	}
 
 	var image model.Image
@@ -463,7 +471,8 @@ func (p *ImageController) DeleteImageTagAction() {
 	imageName := strings.TrimSpace(p.Ctx.Input.Param(":imagename"))
 	_imageTag := strings.TrimSpace(p.GetString("image_tag"))
 
-	manifestsURL := `http://10.110.13.58:5000/v2/` + imageName + `/manifests/` + _imageTag
+	URLPrefix := registryURL() + `/v2/` + imageName + `/manifests/`
+	manifestsURL := URLPrefix + _imageTag
 	resp, err := http.Get(manifestsURL)
 	if err != nil {
 		p.internalError(err)
@@ -474,8 +483,10 @@ func (p *ImageController) DeleteImageTagAction() {
 		return
 	}
 
-	digest := strings.TrimLeft(strings.TrimRight(resp.Header.Get("Etag"), `"`), `"`)
-	deleteURL := `http://10.110.13.58:5000/v2/` + imageName + `/manifests/` + digest
+	resp.Body.Close()
+
+	digest := strings.Trim(resp.Header.Get("Etag"), `"`)
+	deleteURL := URLPrefix + digest
 	req, err := http.NewRequest("DELETE", deleteURL, nil)
 	if err != nil {
 		p.internalError(err)
@@ -488,6 +499,8 @@ func (p *ImageController) DeleteImageTagAction() {
 		p.internalError(err)
 		return
 	}
+	defer resp.Body.Close()
+
 	if resp.StatusCode != http.StatusAccepted {
 		p.serveStatus(http.StatusInternalServerError, "Remove registry image error")
 		return
