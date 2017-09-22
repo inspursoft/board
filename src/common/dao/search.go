@@ -49,15 +49,15 @@ func SearchPublicProject(projectName string) ([]SearchProjectResult, error) {
 }
 func SearchUser(activeUser string, searchName string) ([]SearchUserResult, error) {
 	var searchRes []SearchUserResult
-	sql := `select distinct
+	sql := ` select distinct
   u.username as user_name,
   r.name     as role_name,
   u.email    as user_email
-from project_member pm
-  join user u on pm.user_id = u.id
-  join role r on pm.role_id = r.id
-where u.deleted = 0
-			and exists (select * from user where deleted = 0 and project_admin = 1 and username = ? ) 
+from user u 
+  left join  project_member pm on pm.user_id = u.id
+  left  join role r on pm.role_id = r.id
+  where u.deleted = 0
+			and exists (select * from user where deleted = 0 and system_admin = 1 and username = ? ) 
 			and u.username like ?;`
 	o := orm.NewOrm()
 	_, err := o.Raw(sql, activeUser, "%"+searchName+"%").QueryRows(&searchRes)

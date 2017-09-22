@@ -303,7 +303,9 @@ export const LANG_EN_US = {
     "IMAGE_NAME": "Image Name",
     "NODES": "Nodes",
     "NODE_NAME": "Node Name",
-    "NODE_IP": "Node IP Address"
+    "NODE_IP": "Node IP Address",
+    "SERVICES": "Services",
+    "SERVICE_NAME": "Service Name"
   },
   "NODE": {
     "NODE_NAME": "Node Name",

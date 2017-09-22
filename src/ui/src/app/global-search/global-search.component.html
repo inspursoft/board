@@ -18,6 +18,19 @@
         {{ 'GLOBAL_SEARCH.SEARCH_FOR' | translate }} {{ globalSearch.project_result ? globalSearch.project_result.length : 0 }} {{ 'GLOBAL_SEARCH.ITEMS' | translate }}
       </clr-dg-footer>
     </clr-datagrid>
+    <h2>{{ 'GLOBAL_SEARCH.SERVICES' | translate }}</h2>
+    <clr-datagrid>
+      <clr-dg-column>{{ 'GLOBAL_SEARCH.SERVICE_NAME' | translate }}</clr-dg-column>
+      <clr-dg-column>{{ 'GLOBAL_SEARCH.PROJECT_NAME' | translate }}</clr-dg-column>     
+      <clr-dg-row *clrDgItems="let s of globalSearch.service_result">
+        <clr-dg-cell><a href="javascript:void(0)" routerLink="/services" (click)="navigateTo('/services')">{{ s.service_name }}</a></clr-dg-cell>
+        <clr-dg-cell>{{ s.project_name }}</clr-dg-cell>
+      </clr-dg-row>
+      <clr-dg-footer>
+        <clr-dg-pagination #pagination [clrDgPageSize]="5"></clr-dg-pagination>
+        {{ 'GLOBAL_SEARCH.SEARCH_FOR' | translate }} {{ globalSearch.service_result ? globalSearch.service_result.length : 0 }} {{ 'GLOBAL_SEARCH.ITEMS' | translate }}
+      </clr-dg-footer>
+    </clr-datagrid>
     <ng-template [ngIf]="hasSignedIn">
       <h2>{{ 'GLOBAL_SEARCH.USERS' | translate }}</h2>
       <clr-datagrid>
