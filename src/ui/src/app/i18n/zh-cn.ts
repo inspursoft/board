@@ -303,7 +303,9 @@ export const LANG_ZH_CN = {
     "IMAGE_NAME": "镜像名称",
     "NODES": "节点",
     "NODE_NAME": "节点名称",
-    "NODE_IP": "节点IP地址"
+    "NODE_IP": "节点IP地址",
+    "SERVICES": "服务",
+    "SERVICE_NAME": "服务名称"
   },
   "NODE": {
     "NODE_NAME": "节点名称",
