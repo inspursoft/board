@@ -1368,10 +1368,10 @@ paths:
       responses:
         200:
           description: Delete Image successfully.
-        400:
-          description: Bad Request.
         401:
           description: User need to log in as admin.
+        404:
+          description: Image name not found.
         500:
           description: Internal errors.   
   /v1/images/configclean:
@@ -1642,10 +1642,10 @@ paths:
       responses:
         200:
           description: The image of this tag is deleted successfully.
-        400:
-          description: Invalid image name or tag.
         401:
           description: User need to log in first.
+        404:
+          description: Invalid image name or tag.
         500:
           description: Internal errors.
   /v1/profile:
