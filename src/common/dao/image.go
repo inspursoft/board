@@ -58,3 +58,28 @@ func AddImageTag(imagetag model.ImageTag) (int64, error) {
 	}
 	return imagetagID, err
 }
+
+func GetImageTag(imageTag model.ImageTag, fieldNames ...string) (*model.ImageTag, error) {
+	o := orm.NewOrm()
+	err := o.Read(&imageTag, fieldNames...)
+	if err != nil {
+		if err == orm.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &imageTag, err
+}
+
+func UpdateImageTag(imageTag model.ImageTag, fieldNames ...string) (int64, error) {
+	o := orm.NewOrm()
+
+	imageTagID, err := o.Update(&imageTag, fieldNames...)
+	if err != nil {
+		if err == orm.ErrNoRows {
+			return 0, nil
+		}
+		return 0, err
+	}
+	return imageTagID, err
+}
