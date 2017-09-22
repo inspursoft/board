@@ -385,7 +385,7 @@ func (p *ImageController) DeleteImageAction() {
 		return
 	}
 	if dbImage == nil {
-		p.serveStatus(http.StatusBadRequest, err.Error())
+		p.serveStatus(http.StatusNotFound, "Image name not found")
 		return
 	}
 
@@ -417,7 +417,7 @@ func (p *ImageController) DeleteImageTagAction() {
 		return
 	}
 	if dbImageTag == nil {
-		p.serveStatus(http.StatusBadRequest, err.Error())
+		p.serveStatus(http.StatusNotFound, "Image name or tag not found")
 		return
 	}
 
