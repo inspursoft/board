@@ -66,22 +66,16 @@ func DeleteUser(userID int64) (bool, error) {
 	return true, nil
 }
 
-func UsernameExists(username string) (bool, error) {
-	query := model.User{Username: username}
-	user, err := dao.GetUser(query, "username")
+func UserExists(fieldName string, value string, userID int64) (bool, error) {
+	query := model.User{ID: userID, Username: value, Email: value}
+	user, err := dao.GetUser(query, fieldName)
 	if err != nil {
 		return false, err
 	}
-	return (user != nil && user.ID != 0), nil
-}
-
-func EmailExists(email string) (bool, error) {
-	query := model.User{Email: email}
-	user, err := dao.GetUser(query, "email")
-	if err != nil {
-		return false, err
+	if userID == 0 {
+		return (user != nil && user.ID != 0), nil
 	}
-	return (user != nil && user.ID != 0), nil
+	return (user != nil && user.ID != userID), nil
 }
 
 func IsSysAdmin(userID int64) (bool, error) {

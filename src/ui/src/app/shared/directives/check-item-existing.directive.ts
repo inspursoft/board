@@ -24,6 +24,7 @@ import { MessageService } from '../message-service/message.service';
 })
 export class CheckItemExistingDirective implements AsyncValidator {
   @Input() checkItemExisting;
+  @Input() userID: number = 0;
     
   valFn: ValidatorFn = Validators.nullValidator;
 
@@ -33,11 +34,12 @@ export class CheckItemExistingDirective implements AsyncValidator {
     private messageService: MessageService
   ){}
 
-  checkUserExists(target: string, value: string): Observable<{[key: string]: any}> {
+  checkUserExists(target: string, value: string, userID: number): Observable<{[key: string]: any}> {
     return this.http.get("/api/v1/user-exists", {
       params: {
         'target': target,
-        'value': value
+        'value': value,
+        'user_id': userID
       }
     })
     .map(()=>this.valFn)
@@ -75,7 +77,7 @@ export class CheckItemExistingDirective implements AsyncValidator {
         switch(this.checkItemExisting) {
         case 'username':
         case 'email':
-          return this.checkUserExists(this.checkItemExisting, value);
+          return this.checkUserExists(this.checkItemExisting, value, this.userID);
         case 'project':
           return this.checkProjectExists(this.appInitService.token, value);
         }

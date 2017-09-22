@@ -199,7 +199,7 @@ func (u *SystemAdminController) AddUserAction() {
 		u.CustomAbort(http.StatusBadRequest, "Username content is illegal.")
 		return
 	}
-	usernameExists, err := service.UsernameExists(reqUser.Username)
+	usernameExists, err := service.UserExists("username", reqUser.Username, 0)
 	if err != nil {
 		u.internalError(err)
 		return
@@ -212,7 +212,7 @@ func (u *SystemAdminController) AddUserAction() {
 		u.CustomAbort(http.StatusBadRequest, "Email content is illegal.")
 		return
 	}
-	emailExists, err := service.EmailExists(reqUser.Email)
+	emailExists, err := service.UserExists("email", reqUser.Email, 0)
 	if err != nil {
 		u.internalError(err)
 		return
