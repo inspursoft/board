@@ -1,6 +1,6 @@
-REGISTRY_HOST=$registry_host
+REGISTRY_IP=$registry_ip
 REGISTRY_PORT=$registry_port
 BOARD_ADMIN_PASSWORD=$board_admin_password
-KUBE_MASTER_HOST=$kube_master_host
+KUBE_MASTER_IP=$kube_master_ip
 KUBE_MASTER_PORT=$kube_master_port
 

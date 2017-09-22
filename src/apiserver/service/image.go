@@ -107,7 +107,8 @@ func changeDockerfileStructItem(dockerfile *model.Dockerfile) {
 	fixStructEmptyIssue(&dockerfile.Volume)
 
 	for num, node := range dockerfile.Copy {
-		dockerfile.Copy[num].CopyFrom = strings.TrimSpace(node.CopyFrom)
+		fromPath, _ := filepath.Rel(repoPath(), strings.TrimSpace(node.CopyFrom))
+		dockerfile.Copy[num].CopyFrom = fromPath
 		dockerfile.Copy[num].CopyTo = strings.TrimSpace(node.CopyTo)
 	}
 	fixStructEmptyIssue(&dockerfile.Copy)
@@ -338,4 +339,47 @@ func UpdateImage(image model.Image, fieldNames ...string) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+func GetImageTag(imageTag model.ImageTag, selectedFields ...string) (*model.ImageTag, error) {
+	mt, err := dao.GetImageTag(imageTag, selectedFields...)
+	if err != nil {
+		return nil, err
+	}
+	return mt, nil
+}
+
+func UpdateImageTag(imageTag model.ImageTag, fieldNames ...string) (bool, error) {
+	if imageTag.ImageTagID == 0 {
+		return false, errors.New("no Image ID provided")
+	}
+	_, err := dao.UpdateImageTag(imageTag, fieldNames...)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func DeleteImage(image model.Image) error {
+	//TODO delete registry image
+
+	//Mark image deleted in db
+	image.ImageDeleted = 1
+	_, err := dao.UpdateImage(image, "deleted")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func DeleteImageTag(imageTag model.ImageTag) error {
+	//TODO delete registry image tag
+
+	//Mark image tag deleted in db
+	imageTag.ImageTagDeleted = 1
+	_, err := dao.UpdateImageTag(imageTag, "deleted")
+	if err != nil {
+		return err
+	}
+	return nil
 }

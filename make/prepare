@@ -79,20 +79,17 @@ rcp = ConfigParser.RawConfigParser()
 rcp.readfp(conf)
 
 hostname = rcp.get("configuration", "hostname")
-kube_master_host = rcp.get("configuration", "kube_master_host")
+kube_master_ip = rcp.get("configuration", "kube_master_ip")
 kube_master_port = rcp.get("configuration", "kube_master_port")
-mysql_host = rcp.get("configuration", "mysql_host")
+mysql_ip = rcp.get("configuration", "mysql_ip")
 mysql_port = rcp.get("configuration", "mysql_port")
 board_admin_password = rcp.get("configuration", "board_admin_password")
 db_password = rcp.get("configuration", "db_password")
 token_cache_expire_seconds = rcp.get("configuration", "token_cache_expire_seconds")
 token_expire_seconds = rcp.get("configuration", "token_expire_seconds")
 token_secret_key = rcp.get("configuration", "token_secret_key")
-registry_host = rcp.get("configuration", "registry_host")
+registry_ip = rcp.get("configuration", "registry_ip")
 registry_port = rcp.get("configuration", "registry_port")
-docker_username = rcp.get("configuration", "docker_username")
-docker_password = rcp.get("configuration", "docker_password")
-docker_registry = rcp.get("configuration", "docker_registry")
 
 ########
 
@@ -138,9 +135,9 @@ render(os.path.join(templates_dir, "apiserver", "app.conf"),
 
 render(os.path.join(templates_dir, "apiserver", "env"),
         apiserver_env,
-        registry_host=registry_host,
+        registry_ip=registry_ip,
         registry_port=registry_port,
-        kube_master_host=kube_master_host,
+        kube_master_ip=kube_master_ip,
         kube_master_port=kube_master_port,
         board_admin_password=board_admin_password)
 
@@ -154,9 +151,9 @@ render(os.path.join(templates_dir, "tokenserver", "env"),
 
 render(os.path.join(templates_dir, "collector", "env"),
         collector_conf_env,
-        kube_master_host=kube_master_host,
+        kube_master_ip=kube_master_ip,
         kube_master_port=kube_master_port,
-        mysql_host=mysql_host,
+        mysql_ip=mysql_ip,
         mysql_port=mysql_port,
         db_password=db_password)
 
@@ -169,8 +166,7 @@ render(os.path.join(templates_dir, "nginx", "nginx.http.conf"),
 
 render(os.path.join(templates_dir, "jenkins", "env"),
         jenkins_env,
-        docker_username=docker_username,
-        docker_password=docker_password,
-        docker_registry=docker_registry)
+        registry_ip=registry_ip,
+        registry_port=registry_port)
 
 print("The configuration files are ready, please use docker-compose to start the service.")

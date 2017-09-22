@@ -12,7 +12,7 @@
       </div>
       <section class="form-block">
         <div class="form-group group-margin">
-          <label for="txtUsername"><span class="asterisk">*</span>{{ 'USER_CENTER.USERNAME' | translate }}</label>
+          <label for="txtUsername" class="required">{{ 'USER_CENTER.USERNAME' | translate }}</label>
           <label for="txtUsername" aria-haspopup="true" role="tooltip"
                  class="tooltip tooltip-validation tooltip-md tooltip-top-left"
                  [class.invalid]="usernameInput.invalid && (usernameInput.dirty || usernameInput.touched)">
@@ -21,13 +21,15 @@
                    maxlength="40"
                    minlength="4"
                    checkItemExisting="username"
+                   [userID]="userModel.user_id"
                    checkItemPattern="username"
                    placeholder="{{ 'USER_CENTER.INPUT_USERNAME' | translate }}"
                    name="username"
                    [(ngModel)]="userModel.user_name"
                    #usernameInput="ngModel"
                    [disabled]="CurEditModel == 1"
-                   required>
+                   required
+                   validate-onblur>
             <span class="tooltip-content"
                   *ngIf="usernameInput.errors && usernameInput.errors.required">
                 {{ 'USER_CENTER.USERNAME_IS_REQUIRED' | translate }}
@@ -43,7 +45,7 @@
           </label>
         </div>
         <div class="form-group">
-          <label for="txtEmail"><span class="asterisk">*</span>{{ 'USER_CENTER.EMAIL' | translate }}</label>
+          <label for="txtEmail" class="required">{{ 'USER_CENTER.EMAIL' | translate }}</label>
           <label for="txtEmail" aria-haspopup="true" role="tooltip"
                  class="tooltip tooltip-validation tooltip-md  tooltip-top-left"
                  [class.invalid]="emailInput.invalid && (emailInput.dirty || emailInput.touched)">
@@ -54,23 +56,26 @@
                    name="email"
                    [(ngModel)]="userModel.user_email"
                    #emailInput="ngModel"
-                   checkItemPattern="email">
+                   checkItemPattern="email"
+                   checkItemExisting="email"
+                   [userID]="userModel.user_id"
+                   validate-onblur>
             <span class="tooltip-content"
                   *ngIf="emailInput.errors && emailInput.errors.required">
-                      {{ 'USER_CENTER.EMAIL_IS_REQUIRED' | translate }}
+                  {{ 'USER_CENTER.EMAIL_IS_REQUIRED' | translate }}
             </span>
             <span class="tooltip-content"
                   *ngIf="emailInput.errors && emailInput.errors.checkItemPattern">
-                     {{ 'USER_CENTER.EMAIL_IS_ILLEGAL' | translate }}
+                  {{ 'USER_CENTER.EMAIL_IS_ILLEGAL' | translate }}
             </span>
             <span class="tooltip-content"
                   *ngIf="emailInput.errors && emailInput.errors.checkItemExisting">
-                     {{ 'USER_CENTER.EMAIL_ALREADY_EXISTS' | translate }}
+                  {{ 'USER_CENTER.EMAIL_ALREADY_EXISTS' | translate }}
             </span>
           </label>
         </div>
         <div *ngIf="CurEditModel == 0" class="form-group">
-          <label for="txtPassword"><span class="asterisk">*</span>{{ 'USER_CENTER.PASSWORD' | translate }}</label>
+          <label for="txtPassword" class="required">{{ 'USER_CENTER.PASSWORD' | translate }}</label>
           <label for="txtPassword" aria-haspopup="true" role="tooltip"
                  class="tooltip tooltip-validation tooltip-md  tooltip-top-left"
                  [class.invalid]="passwordInput.invalid && (passwordInput.dirty || passwordInput.touched)">
@@ -83,23 +88,24 @@
                    required
                    checkItemPattern="password"
                    validateEqual="confirmPassword"
-                   reverse="true">
+                   reverse="true"
+                   validate-onblur>
             <span class="tooltip-content"
                   *ngIf="passwordInput.errors && passwordInput.errors.required">
-                      {{ 'USER_CENTER.PASSWORD_IS_REQUIRED' | translate }}
+                  {{ 'USER_CENTER.PASSWORD_IS_REQUIRED' | translate }}
 						</span>
             <span class="tooltip-content"
                   *ngIf="passwordInput.errors && passwordInput.errors.checkItemPattern">
-                      {{ 'USER_CENTER.PASSWORD_FORMAT' | translate }}
+                  {{ 'USER_CENTER.PASSWORD_FORMAT' | translate }}
             </span>
             <span class="tooltip-content" *ngIf="passwordInput.invalid">
-                      {{ 'USER_CENTER.PASSWORDS_ARE_NOT_IDENTICAL' | translate }}
+                  {{ 'USER_CENTER.PASSWORDS_ARE_NOT_IDENTICAL' | translate }}
             </span>
           </label>
         </div>
         <div *ngIf="CurEditModel == 0" class="form-group">
-          <label for="txtConfirmPassword">
-            <span class="asterisk">*</span>{{ 'USER_CENTER.CONFIRM_PASSWORD' | translate }}
+          <label for="txtConfirmPassword" class="required">
+             {{ 'USER_CENTER.CONFIRM_PASSWORD' | translate }}
           </label>
           <label for="txtConfirmPassword" aria-haspopup="true" role="tooltip"
                  class="tooltip tooltip-validation tooltip-md  tooltip-top-left"
@@ -110,10 +116,11 @@
                    required validateEqual="password" reverse="false"
                    name="confirmPassword"
                    [(ngModel)]="userModel.user_confirm_password"
-                   #confirmPasswordInput="ngModel">
+                   #confirmPasswordInput="ngModel"
+                   validate-onblur>
             <span class="tooltip-content"
                   *ngIf="confirmPasswordInput.errors && confirmPasswordInput.invalid">
-                      {{ 'USER_CENTER.PASSWORDS_ARE_NOT_IDENTICAL' | translate }}
+                  {{ 'USER_CENTER.PASSWORDS_ARE_NOT_IDENTICAL' | translate }}
                 </span>
           </label>
         </div>

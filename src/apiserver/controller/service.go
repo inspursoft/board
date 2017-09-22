@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
-	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -25,10 +24,6 @@ const (
 	test                   = "test"
 	serviceNamespace       = "default" //TODO create in project post
 )
-
-var kubeMasterStatus bool
-
-var kubeMasterURL = utils.GetConfig("KUBE_MASTER_URL")
 
 const (
 	preparing = iota
@@ -72,7 +67,7 @@ func handleReqPara(p *ServiceController) (model.ServiceConfig, int, error) {
 	//Add registry to container images for deployment
 	for index, container := range reqServiceConfig.DeploymentYaml.ContainerList {
 		reqServiceConfig.DeploymentYaml.ContainerList[index].BaseImage =
-			filepath.Join(registryURL(), container.BaseImage)
+			filepath.Join(registryBaseURI(), container.BaseImage)
 	}
 
 	logs.Debug("%+v", reqServiceConfig)
@@ -182,8 +177,8 @@ func deployServiceCommonAction(p *ServiceController, depFileName string, serFile
 
 	// Update service status in database
 	updateService := model.ServiceStatus{ID: int64(serviceID), Status: running,
-		Name: reqServiceConfig.ServiceYaml.Name}
-	_, err = service.UpdateService(updateService, "name", "status")
+		Name: reqServiceConfig.ServiceYaml.Name, OwnerID: p.currentUser.ID}
+	_, err = service.UpdateService(updateService, "name", "status", "owner_id")
 	if err != nil {
 		p.internalError(err)
 		return

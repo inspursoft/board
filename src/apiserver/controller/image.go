@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
-	"git/inspursoft/board/src/common/utils"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -19,8 +18,6 @@ import (
 type ImageController struct {
 	baseController
 }
-
-var registryURL = utils.GetConfig("REGISTRY_URL")
 
 const (
 	commentTemp  = "Inspur image" // TODO: get from mysql in the next release
@@ -83,7 +80,9 @@ func (p *ImageController) GetImagesAction() {
 			newImage.ImageID = id
 		}
 
-		imagelist = append(imagelist, newImage)
+		if newImage.ImageDeleted == 0 {
+			imagelist = append(imagelist, newImage)
+		}
 	}
 	logs.Info(imagelist)
 	p.Data["json"] = imagelist
@@ -361,6 +360,68 @@ func (p *ImageController) ConfigCleanAction() {
 
 	configPath := filepath.Join(repoPath, strings.TrimSpace(reqImageIndex.ProjectName), strings.TrimSpace(reqImageIndex.ImageName), strings.TrimSpace(reqImageIndex.ImageTag))
 	err = service.ImageConfigClean(configPath)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+}
+
+func (p *ImageController) DeleteImageAction() {
+	var err error
+
+	if p.isProjectAdmin == false {
+		p.serveStatus(http.StatusForbidden, "Invalid user for project admin")
+		return
+	}
+
+	imageName := strings.TrimSpace(p.GetString("image_name"))
+
+	var image model.Image
+	image.ImageName = imageName
+
+	dbImage, err := service.GetImage(image, "name")
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if dbImage == nil {
+		p.serveStatus(http.StatusNotFound, "Image name not found")
+		return
+	}
+
+	err = service.DeleteImage(*dbImage)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+}
+
+func (p *ImageController) DeleteImageTagAction() {
+	var err error
+
+	if p.isProjectAdmin == false {
+		p.serveStatus(http.StatusForbidden, "Invalid user for project admin")
+		return
+	}
+
+	imageName := strings.TrimSpace(p.Ctx.Input.Param(":imagename"))
+	_imageTag := strings.TrimSpace(p.GetString("image_tag"))
+
+	var imageTag model.ImageTag
+	imageTag.ImageName = imageName
+	imageTag.Tag = _imageTag
+
+	dbImageTag, err := service.GetImageTag(imageTag, "image_name", "tag")
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if dbImageTag == nil {
+		p.serveStatus(http.StatusNotFound, "Image name or tag not found")
+		return
+	}
+
+	err = service.DeleteImageTag(*dbImageTag)
 	if err != nil {
 		p.internalError(err)
 		return

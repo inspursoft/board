@@ -29,8 +29,10 @@ export class CheckItemIdenticalDirective implements Validator {
         }
         // value equal and reverse
         if (element && value === element.value && this.isReverse) {
-            delete element.errors['validateEqual'];
-            if (!Object.keys(element.errors).length) element.setErrors(null);
+            if (element.errors) {
+                delete element.errors['validateEqual'];
+                if (!Object.keys(element.errors).length) element.setErrors(null);
+            }
         }
 
         // value not equal and reverse

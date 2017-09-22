@@ -40,20 +40,23 @@ func updateAdminPassword(initialPassword string) {
 }
 
 func main() {
+
 	utils.Initialize()
 
 	utils.AddEnv("BOARD_ADMIN_PASSWORD")
-	utils.AddEnv("KUBE_MASTER_HOST")
+	utils.AddEnv("KUBE_MASTER_IP")
 	utils.AddEnv("KUBE_MASTER_PORT")
-	utils.AddEnv("REGISTRY_HOST")
+	utils.AddEnv("REGISTRY_IP")
 	utils.AddEnv("REGISTRY_PORT")
 
-	utils.SetConfig("REGISTRY_URL", "%s:%s", "REGISTRY_HOST", "REGISTRY_PORT")
-	utils.SetConfig("KUBE_MASTER_URL", "%s:%s", "KUBE_MASTER_HOST", "KUBE_MASTER_PORT")
-	utils.SetConfig("KUBE_NODE_URL", "%s:%s/api/v1/nodes", "KUBE_MASTER_HOST", "KUBE_MASTER_PORT")
+	utils.SetConfig("REGISTRY_URL", "http://%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
+	utils.SetConfig("KUBE_MASTER_URL", "http://%s:%s", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
+	utils.SetConfig("KUBE_NODE_URL", "http://%s:%s/api/v1/nodes", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
 
 	utils.SetConfig("REPO_SERVE_URL", repoServeURL)
 	utils.SetConfig("REPO_PATH", repoPath)
+
+	utils.SetConfig("REGISTRY_BASE_URI", "%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
 
 	utils.ShowAllConfigs()
 

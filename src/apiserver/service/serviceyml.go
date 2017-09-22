@@ -46,23 +46,7 @@ func CheckDeploymentPath(loadPath string) error {
 
 //check parameter of service yaml file
 func CheckServicePara(reqServiceConfig model.ServiceConfig) error {
-	if reqServiceConfig.DeploymentYaml.Name == "" {
-		return errors.New("Deployment_Name is empty.")
-	}
-
-	if reqServiceConfig.DeploymentYaml.Replicas < 1 {
-		return errors.New("Deployment_Replicas < 1 is invaild.")
-	}
-
-	if len(reqServiceConfig.DeploymentYaml.ContainerList) < 1 {
-		return errors.New("Container_List is empty.")
-	}
-
-	return nil
-}
-
-//check parameter of deployment yaml file
-func CheckDeploymentPara(reqServiceConfig model.ServiceConfig) error {
+	//check empty
 	if reqServiceConfig.ServiceYaml.Name == "" {
 		return errors.New("ServiceYaml.Name is empty.")
 	}
@@ -75,12 +59,78 @@ func CheckDeploymentPara(reqServiceConfig model.ServiceConfig) error {
 		}
 	}
 
+	//check upper
+	err := checkStringHasUpper(reqServiceConfig.ServiceYaml.Name,
+		reqServiceConfig.ServiceYaml.Selectors[0])
+	if err != nil {
+		return err
+	}
+
+	for _, ext := range reqServiceConfig.ServiceYaml.External {
+		err := checkStringHasUpper(ext.ContainerName, ext.ExternalPath)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+//check parameter of deployment yaml file
+func CheckDeploymentPara(reqServiceConfig model.ServiceConfig) error {
+	//check empty
+	if reqServiceConfig.DeploymentYaml.Name == "" {
+		return errors.New("Deployment_Name is empty.")
+	}
+
+	if reqServiceConfig.DeploymentYaml.Replicas < 1 {
+		return errors.New("Deployment_Replicas < 1 is invaild.")
+	}
+
+	if len(reqServiceConfig.DeploymentYaml.ContainerList) < 1 {
+		return errors.New("Container_List is empty.")
+	}
+
+	//check upper
+	err := checkStringHasUpper(reqServiceConfig.DeploymentYaml.Name)
+	if err != nil {
+		return err
+	}
+
+	for _, cont := range reqServiceConfig.DeploymentYaml.ContainerList {
+
+		err := checkStringHasUpper(cont.Name, cont.BaseImage, cont.WorkDir, cont.CPU, cont.Memory)
+		if err != nil {
+			return err
+		}
+
+		for _, com := range cont.Command {
+			err := checkStringHasUpper(com)
+			if err != nil {
+				return err
+			}
+		}
+
+		for _, volMount := range cont.Volumes {
+			err := checkStringHasUpper(volMount.Dir, volMount.TargetStorageName)
+			if err != nil {
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
 //check request massage parameters
 func CheckReqPara(reqServiceConfig model.ServiceConfig) error {
 	var err error
+	//check upper of project name and phase
+	err = checkStringHasUpper(reqServiceConfig.ProjectName, reqServiceConfig.Phase)
+	if err != nil {
+		return err
+	}
 	// Check deployment parameters
 	err = CheckDeploymentPara(reqServiceConfig)
 	if err != nil {
@@ -111,7 +161,7 @@ func BuildServiceYaml(reqServiceConfig model.ServiceConfig, yamlFileName string)
 	service.ApiVersion = serviceAPIVersion
 	service.Kind = serviceKind
 	service.Metadata.Name = reqServiceConfig.ServiceYaml.Name
-	service.Metadata.Labels.App = reqServiceConfig.ServiceYaml.Name
+	service.Metadata.Labels.App = reqServiceConfig.ServiceYaml.Selectors[0]
 
 	if len(reqServiceConfig.ServiceYaml.External) > 0 {
 		service.Spec.Tpe = nodePort

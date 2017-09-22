@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
@@ -60,7 +59,7 @@ func SearchSource(user *model.User, searchPara string) (searchResult SearchResul
 		if err != nil {
 			return searchResult, err
 		}
-		resImages, err = searchImages(fmt.Sprintf("%s/v2/_catalog", registryURL()), currentProject, searchPara)
+		resImages, err = searchImages(registryURL()+"/v2/_catalog", currentProject, searchPara)
 		if err != nil {
 			return searchResult, err
 		}

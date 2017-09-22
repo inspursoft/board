@@ -15,6 +15,8 @@ import { CheckItemPatternDirective } from "./directives/check-item-pattern.direc
 import { ChangePasswordComponent } from "./change-password/change-password.component";
 import { AccountSettingComponent } from "./account-setting/account-setting.component";
 
+import { ValidateOnBlurDirective } from './directives/validate-onblur.directive';
+
 @NgModule({
   imports: [
     CoreModule,
@@ -29,6 +31,7 @@ import { AccountSettingComponent } from "./account-setting/account-setting.compo
     CheckItemExistingDirective,
     CheckItemIdenticalDirective,
     CheckItemPatternDirective,
+    ValidateOnBlurDirective,
     ChangePasswordComponent,
     AccountSettingComponent
   ],
@@ -42,7 +45,8 @@ import { AccountSettingComponent } from "./account-setting/account-setting.compo
     GlobalMessageComponent,
     CheckItemExistingDirective,
     CheckItemIdenticalDirective,
-    CheckItemPatternDirective
+    CheckItemPatternDirective,
+    ValidateOnBlurDirective
   ],
   providers: [
     AuthGuard,
