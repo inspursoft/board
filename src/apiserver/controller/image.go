@@ -80,7 +80,9 @@ func (p *ImageController) GetImagesAction() {
 			newImage.ImageID = id
 		}
 
-		imagelist = append(imagelist, newImage)
+		if newImage.ImageDeleted == 0 {
+			imagelist = append(imagelist, newImage)
+		}
 	}
 	logs.Info(imagelist)
 	p.Data["json"] = imagelist
