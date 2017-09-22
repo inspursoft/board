@@ -177,8 +177,8 @@ func deployServiceCommonAction(p *ServiceController, depFileName string, serFile
 
 	// Update service status in database
 	updateService := model.ServiceStatus{ID: int64(serviceID), Status: running,
-		Name: reqServiceConfig.ServiceYaml.Name}
-	_, err = service.UpdateService(updateService, "name", "status")
+		Name: reqServiceConfig.ServiceYaml.Name, OwnerID: p.currentUser.ID}
+	_, err = service.UpdateService(updateService, "name", "status", "owner_id")
 	if err != nil {
 		p.internalError(err)
 		return
