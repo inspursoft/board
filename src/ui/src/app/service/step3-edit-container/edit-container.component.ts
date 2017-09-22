@@ -16,6 +16,7 @@ enum ContainerStatus{csNew, csSelectedImage}
 })
 export class EditContainerComponent implements ServiceStepComponent, OnInit, OnDestroy {
   @Input() data: any;
+  patternWorkdir:RegExp = /^~?[\w\d-\/.{}$\/:]+[\s]*$/;
   step2Output: ServiceStep2Output;
   step3Output: ServiceStep3Output;
   containerStatusList: Array<ContainerStatus>;
@@ -77,7 +78,7 @@ export class EditContainerComponent implements ServiceStepComponent, OnInit, OnD
           }
           if (res.image_env) {
             res.image_env.forEach(value => {//copy env
-              config.container_envs.push({env_name: value.dockerfile_envvalue, env_value: value.dockerfile_envvalue})
+              config.container_envs.push({env_name: value.dockerfile_envname, env_value: value.dockerfile_envvalue})
             });
           }
           if (res.image_expose) {
@@ -133,7 +134,7 @@ export class EditContainerComponent implements ServiceStepComponent, OnInit, OnD
   getDefaultEnvsData(index: number) {
     let result = Array<EnvType>();
     this.step3Output[index].container_envs.forEach(value => {
-      result.push(new EnvType(value.env_value, value.env_name))
+      result.push(new EnvType(value.env_name, value.env_value))
     });
     return result;
   }
@@ -146,9 +147,9 @@ export class EditContainerComponent implements ServiceStepComponent, OnInit, OnD
     });
   }
 
-  setVolumeMount(data:Object,index:number){
+  setVolumeMount(data: Object, index: number) {
     let volumeArr = this.step3Output[index].container_volumes;
-    if (volumeArr.length == 0){
+    if (volumeArr.length == 0) {
       volumeArr.push(data as any)
     } else {
       volumeArr[0] = data as any;

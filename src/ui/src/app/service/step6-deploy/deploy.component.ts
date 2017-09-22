@@ -6,7 +6,6 @@ import { Component, OnInit } from "@angular/core"
 import { K8sService } from "../service.k8s";
 import { ServiceStep4Output } from "../service-step.component";
 import { MessageService } from "../../shared/message-service/message.service";
-import { Router } from "@angular/router";
 
 @Component({
   templateUrl: "./deploy.component.html",
@@ -19,8 +18,7 @@ export class DeployComponent implements OnInit {
   output4: ServiceStep4Output;
 
   constructor(private k8sService: K8sService,
-              private messageService: MessageService,
-              private router: Router) {
+              private messageService: MessageService) {
   }
 
   ngOnInit() {
@@ -46,6 +44,6 @@ export class DeployComponent implements OnInit {
   }
 
   deployComplete(): void {
-    this.router.navigate(["/services"]);
+    this.k8sService.stepSource.next(0);
   }
 }

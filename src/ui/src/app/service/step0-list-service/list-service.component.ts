@@ -62,6 +62,7 @@ export class ListServiceComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.currentUser = this.appInitService.currentUser;
+    console.log(this.currentUser);
     this.retrieve();
   }
 
@@ -72,6 +73,7 @@ export class ListServiceComponent implements OnInit, OnDestroy {
   }
 
   createService(): void {
+
     this.k8sService.stepSource.next(1);
   }
 

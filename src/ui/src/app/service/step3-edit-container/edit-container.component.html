@@ -29,6 +29,7 @@
                 [simpleFiled]="step3Output[iStatus].container_name"
                 (onCheck)="step3Output[iStatus].container_name = $event"></cs-input>
       <cs-input [inputLabel]="'SERVICE.STEP_3_WORKING_DIR' | translate"
+                [inputPattern]="patternWorkdir"
                 [simpleFiled]="step3Output[iStatus].container_workdir"
                 (onCheck)="step3Output[iStatus].container_workdir = $event"></cs-input>
       <cs-input [inputType]="1"

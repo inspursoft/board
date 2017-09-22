@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, QueryList, ViewChildren } from '@angular/core';
 import {
   ServiceStep1Output,
   ServiceStep2Output,
@@ -11,18 +11,29 @@ import { MessageService } from "../../shared/message-service/message.service";
 import { Image, ImageDetail } from "../../image/image";
 import { AppInitService } from "../../app.init.service";
 import { Message } from "../../shared/message-service/message";
-import { ValidatorFn, Validators } from "@angular/forms";
 import { EnvType } from "../environment-value/environment-value.component";
+import { CsInputArrayComponent } from "../cs-input-array/cs-input-array.component";
+import { CsInputComponent } from "../cs-input/cs-input.component";
 
 enum ImageSource{fromBoardRegistry, fromDockerHub}
 const AUTO_REFRESH_IMAGE_LIST: number = 2000;
 type alertType = "alert-info" | "alert-danger";
+
 @Component({
   templateUrl: './select-image.component.html',
   styleUrls: ["./select-image.component.css"]
 })
 export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDestroy {
   @Input() data: any;
+  @ViewChildren(CsInputArrayComponent) inputArrayComponents: QueryList<CsInputArrayComponent>;
+  @ViewChildren(CsInputComponent) inputComponents: QueryList<CsInputComponent>;
+  patternNewImageName: RegExp = /^[a-z\d.]+$/;
+  patternNewImageTag: RegExp = /^[a-z\d.]+$/;
+  patternBaseImage: RegExp = /^[a-z\d.]+$/;
+  patternExpose: RegExp = /^[\d-\s\w/\\]+$/;
+  patternVolume: RegExp = /^[a-zA-Z_]+$/;
+  patternRun: RegExp = /^[a-zA-Z_]+$/;
+  patternEntryPoint:RegExp = /^[a-zA-Z_]+$/;
   _isOpenEnvironment = false;
   intervalAutoRefreshImageList: any;
   isNeedAutoRefreshImageList: boolean = false;
@@ -42,7 +53,6 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
   newImageAlertType: alertType = "alert-danger";
   isNewImageAlertOpen: boolean = false;
   newImageIndex: number;
-  testValidatorFn: Array<ValidatorFn> = [Validators.required, Validators.maxLength(10)];
 
   constructor(private k8sService: K8sService,
               private messageService: MessageService,
@@ -67,6 +77,7 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
       .catch(err => this.messageService.dispatchError(err));
     this.intervalAutoRefreshImageList = setInterval(() => {
       if (this.isNeedAutoRefreshImageList) {
+        this.isNewImageAlertOpen = false;
         this.k8sService.getImages("", 0, 0).then(res => {
           res.forEach(value => {
             let newImageName = `${this.customerNewImage.project_name}/${this.customerNewImage.image_name}`;
@@ -146,6 +157,21 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
     return result;
   }
 
+  get newImageFormValid(): boolean {
+    let result = true;
+    this.inputArrayComponents.forEach(item => {
+      if (!item.arrayIsValid()) {
+        result = false;
+      }
+    });
+    this.inputComponents.forEach(item => {
+      if (!item.valid) {
+        result = false;
+      }
+    });
+    return result;
+  }
+
   shieldEnter($event: KeyboardEvent) {
     if ($event.charCode == 13) {
       (<any>$event.target).blur();
@@ -208,6 +234,7 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
   }
 
   buildImage() {
+    this.isNewImageAlertOpen = false;
     this.isNeedAutoRefreshImageList = true;
     this.k8sService.buildImage(this.customerNewImage)
       .then(res => res)
@@ -225,6 +252,7 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
   }
 
   updateFileList(): Promise<boolean> {
+    this.isNewImageAlertOpen = false;
     let formFileList: FormData = new FormData();
     formFileList.append('project_name', this.customerNewImage.project_name);
     formFileList.append('image_name', this.customerNewImage.image_name);
@@ -260,6 +288,7 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
   async uploadFile(event) {
     let fileList: FileList = event.target.files;
     if (fileList.length > 0) {
+      this.isNewImageAlertOpen = false;
       let file: File = fileList[0];
       let formData: FormData = new FormData();
       formData.append('upload_file', file, file.name);
@@ -287,6 +316,7 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
 
   getDockerFilePreviewInfo() {
     if (this.customerNewImage.image_dockerfile.image_base != "") {
+      this.isNewImageAlertOpen = false;
       this.k8sService.getDockerFilePreview(this.customerNewImage)
         .then(res => {
           this.consoleText = res;

@@ -60,24 +60,25 @@
                        [dropdownListTextKey]="'name'">
           </cs-dropdown>
         </div>
-        <cs-input [inputMaxlength]="255"
+        <cs-input [inputIsRequired]="true"
+                  [inputPattern]="patternNewImageName"
                   [inputLabel]="'SERVICE.STEP_2_NEW_IMAGE_NAME'|translate"
-                  [validatorFns]="testValidatorFn"
                   [disabled]="isNeedAutoRefreshImageList"
                   [simpleFiled]="customerNewImage.image_name"
                   (onCheck)="customerNewImage.image_name = $event;asyncGetDockerFilePreviewInfo()"></cs-input>
-        <cs-input [inputMaxlength]="255"
+        <cs-input [inputIsRequired]="true"
+                  [inputPattern]="patternNewImageTag"
                   [inputLabel]="'SERVICE.STEP_2_IMAGE_TAG'|translate"
                   [disabled]="isNeedAutoRefreshImageList"
-                  [validatorFns]="testValidatorFn"
                   [simpleFiled]="customerNewImage.image_tag"
                   (onCheck)="customerNewImage.image_tag = $event;asyncGetDockerFilePreviewInfo()"></cs-input>
-        <cs-input [inputMaxlength]="255"
+        <cs-input [inputIsRequired]="true"
+                  [inputPattern]="patternBaseImage"
                   [inputLabel]="'SERVICE.STEP_2_BASE_IMAGE'|translate"
                   [disabled]="isNeedAutoRefreshImageList"
                   [simpleFiled]="customerNewImage.image_dockerfile.image_base"
                   (onCheck)="customerNewImage.image_dockerfile.image_base = $event;getDockerFilePreviewInfo()"></cs-input>
-        <cs-input [inputMaxlength]="255"
+        <cs-input [inputPattern]="patternEntryPoint"
                   [inputLabel]="'SERVICE.STEP_2_IMAGE_ENTRYPOINT'|translate"
                   [disabled]="isNeedAutoRefreshImageList"
                   [simpleFiled]="customerNewImage.image_dockerfile.image_entrypoint"
@@ -88,16 +89,19 @@
                   [simpleFiled]="envsDescription"
                   (onEdit)="isOpenEnvironment = true"></cs-input>
         <cs-input-array [inputArraySource]="imageVolume"
+                        [inputArrayPattern]="patternVolume"
                         [disabled]="isNeedAutoRefreshImageList"
                         [labelText]="'SERVICE.STEP_2_IMAGE_VOLUME'|translate"
                         (onCheck)="getDockerFilePreviewInfo()"
                         (onMinus)="getDockerFilePreviewInfo()"></cs-input-array>
         <cs-input-array [inputArraySource]="imageRun"
+                        [inputArrayPattern]="patternRun"
                         [disabled]="isNeedAutoRefreshImageList"
                         [labelText]="'SERVICE.STEP_2_IMAGE_RUN'|translate"
                         (onCheck)="getDockerFilePreviewInfo()"
                         (onMinus)="getDockerFilePreviewInfo()"></cs-input-array>
         <cs-input-array [inputArraySource]="imageExpose"
+                        [inputArrayPattern]="patternExpose"
                         [disabled]="isNeedAutoRefreshImageList"
                         [labelText]="'SERVICE.STEP_2_IMAGE_EXPOSE'|translate"
                         (onCheck)="getDockerFilePreviewInfo()"
@@ -122,13 +126,14 @@
                     class="area-command"
                     (keypress)="shieldEnter($event)"
                     [(ngModel)]="customerNewImage.image_dockerfile.image_cmd"
-                    [disabled]="isNeedAutoRefreshImageList"></textarea>
+                    [disabled]="isNeedAutoRefreshImageList">
+          </textarea>
         </div>
       </div>
       <div class="console-container">
         <textarea title="" id="areaStatus" class="area-status" readonly>{{consoleText}}</textarea>
         <button class="btn btn-primary default-primary"
-                [disabled]="isNeedAutoRefreshImageList"
+                [disabled]="isNeedAutoRefreshImageList || !newImageFormValid"
                 (click)="buildImage()">
           {{"SERVICE.STEP_2_BUILD_IMAGE" | translate}}
         </button>

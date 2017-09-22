@@ -15,9 +15,14 @@
           [dropdownDefaultText]="'SERVICE.VOLUME_SELECT_STORAGE'| translate"
           [dropdownWidth]="200"></cs-dropdown>
       </div>
+      <cs-input [inputLabel]="'SERVICE.VOLUME_NAME'| translate"
+                [simpleFiled]="volumeData.target_storagename"
+                (onCheck)="volumeData.target_storagename = $event">
+      </cs-input>
       <cs-input [inputLabel]="'SERVICE.VOLUME_CONTAINER_DIR'| translate"
                 [simpleFiled]="volumeData.container_dir"
-                (onCheck)="volumeData.container_dir = $event"></cs-input>
+                (onCheck)="volumeData.container_dir = $event">
+      </cs-input>
       <cs-input [inputLabel]="'SERVICE.VOLUME_TARGET_DIR'| translate"
                 [simpleFiled]="volumeData.target_dir"
                 (onCheck)="volumeData.target_dir=$event"></cs-input>

@@ -2,7 +2,7 @@
   <label *ngIf="inputType == 0 || inputType == 1"
          for="inputField"
          (click)="onEditClick()"
-         class="cs-input-label">{{inputLabel}}:</label>
+         class="cs-input-label">{{inputLabel}}:<span *ngIf="inputIsRequired" class="asterisk">*</span></label>
   <span *ngIf="inputField.status == 0"
         (click)="onEditClick()"
         class="cs-input-span">{{inputField.value}}</span>
@@ -12,17 +12,16 @@
          role="tooltip"
          class="cs-input-field-container tooltip tooltip-validation tooltip-md tooltip-bottom-left"
          (click)="onEditClick()"
-         [class.invalid]="inputFormGroup.invalid && (inputFormGroup.dirty || inputFormGroup.touched)">
+         [class.invalid]="inputErrors && (inputFormGroup.dirty || inputFormGroup.touched)">
     <input id="inputField"
            formControlName="inputControl"
            class="cs-input-input"
            type="text"
-           [maxlength]="inputMaxlength"
-           [pattern]="inputPattern"
-           (keypress)="onInputKeyPress($event)"
+           (keypress)="onInputKeyPressEvent($event)"
+           (blur)="onInputBlurEvent($event)"
            [(ngModel)]="inputField.value">
-    <span class="tooltip-content" style="width: 200px;" *ngIf="inputFormGroup.invalid">
-      {{getValidatorMessage(inputFormGroup.controls.inputControl?.errors) | translate}}
+    <span class="tooltip-content" style="width: 200px;" *ngIf="inputErrors">
+      {{getValidatorMessage(inputErrors) | translate}}{{inputValidatorMessageParam}}
     </span>
   </label>
 
