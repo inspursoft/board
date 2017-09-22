@@ -366,6 +366,11 @@ func (p *ImageController) ConfigCleanAction() {
 	}
 }
 
+type tagList struct {
+	Name string   `json:"name"`
+	Tags []string `json:"tags"`
+}
+
 func (p *ImageController) DeleteImageAction() {
 	var err error
 
@@ -375,6 +380,57 @@ func (p *ImageController) DeleteImageAction() {
 	}
 
 	imageName := strings.TrimSpace(p.GetString("image_name"))
+
+	tagListURL := `http://10.110.13.58:5000/v2/` + imageName + `/tags/list`
+	resp, err := http.Get(tagListURL)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		p.serveStatus(resp.StatusCode, "repository name not known to registry")
+		return
+	}
+
+	reqBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	var reqTagList tagList
+	err = json.Unmarshal(reqBody, &reqTagList)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	for _, node := range reqTagList.Tags {
+		manifestsURL := `http://10.110.13.58:5000/v2/` + reqTagList.Name + `/manifests/` + node
+		resp, err := http.Get(manifestsURL)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+		digest := strings.TrimLeft(strings.TrimRight(resp.Header.Get("Etag"), `"`), `"`)
+		deleteURL := `http://10.110.13.58:5000/v2/` + reqTagList.Name + `/manifests/` + digest
+		req, err := http.NewRequest("DELETE", deleteURL, nil)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+
+		var client = &http.Client{}
+		resp, err = client.Do(req)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+		if resp.StatusCode != http.StatusAccepted {
+			p.serveStatus(http.StatusInternalServerError, "Remove registry image error")
+			return
+		}
+	}
 
 	var image model.Image
 	image.ImageName = imageName
@@ -406,6 +462,36 @@ func (p *ImageController) DeleteImageTagAction() {
 
 	imageName := strings.TrimSpace(p.Ctx.Input.Param(":imagename"))
 	_imageTag := strings.TrimSpace(p.GetString("image_tag"))
+
+	manifestsURL := `http://10.110.13.58:5000/v2/` + imageName + `/manifests/` + _imageTag
+	resp, err := http.Get(manifestsURL)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		p.serveStatus(resp.StatusCode, "repository name or tag not known to registry")
+		return
+	}
+
+	digest := strings.TrimLeft(strings.TrimRight(resp.Header.Get("Etag"), `"`), `"`)
+	deleteURL := `http://10.110.13.58:5000/v2/` + imageName + `/manifests/` + digest
+	req, err := http.NewRequest("DELETE", deleteURL, nil)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	var client = &http.Client{}
+	resp, err = client.Do(req)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if resp.StatusCode != http.StatusAccepted {
+		p.serveStatus(http.StatusInternalServerError, "Remove registry image error")
+		return
+	}
 
 	var imageTag model.ImageTag
 	imageTag.ImageName = imageName
