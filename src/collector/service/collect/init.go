@@ -2,6 +2,7 @@ package collect
 
 import (
 	"sync"
+	modelK8s "k8s.io/client-go/pkg/api/v1"
 )
 
 var ThreadCountGet sync.WaitGroup
@@ -12,10 +13,14 @@ func RunOneCycle() error {
 	newSource.gainResource()
 	ThreadCountGet.Wait()
 	newSource.MapRun()
+	PodList = modelK8s.PodList{}
+	NodeList = modelK8s.NodeList{}
+	ServiceList = modelK8s.ServiceList{}
+	podItem = []modelK8s.Pod{}
 	return nil
 }
 
-func (c *SourceMap)gainResource() {
+func (c *SourceMap) gainResource() {
 	ThreadCountGet.Add(3)
 	timeList()
 	go c.GainPods()
