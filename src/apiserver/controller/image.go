@@ -366,6 +366,11 @@ func (p *ImageController) ConfigCleanAction() {
 	}
 }
 
+type tagList struct {
+	Name string   `json:"name"`
+	Tags []string `json:"tags"`
+}
+
 func (p *ImageController) DeleteImageAction() {
 	var err error
 
@@ -375,6 +380,67 @@ func (p *ImageController) DeleteImageAction() {
 	}
 
 	imageName := strings.TrimSpace(p.GetString("image_name"))
+
+	URLPrefix := registryURL() + `/v2/` + imageName
+	tagListURL := URLPrefix + `/tags/list`
+	resp, err := http.Get(tagListURL)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		p.serveStatus(resp.StatusCode, "repository name not known to registry")
+		return
+	}
+
+	reqBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	resp.Body.Close()
+
+	var reqTagList tagList
+	err = json.Unmarshal(reqBody, &reqTagList)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	URLPrefix += `/manifests/`
+	for _, tag := range reqTagList.Tags {
+		var client = &http.Client{}
+		manifestsURL := URLPrefix + tag
+		req, err := http.NewRequest("HEAD", manifestsURL, nil)
+		req.Header.Add("Accept", `application/vnd.docker.distribution.manifest.v2+json`)
+		resp, err = client.Do(req)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+		resp.Body.Close()
+
+		digest := strings.Trim(resp.Header.Get("Etag"), `"`)
+		deleteURL := URLPrefix + digest
+		req, err = http.NewRequest("DELETE", deleteURL, nil)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+
+		resp, err = client.Do(req)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+		if resp.StatusCode != http.StatusAccepted {
+			errString := fmt.Sprintf(`Remove registry image %s error`, tag)
+			p.serveStatus(http.StatusInternalServerError, errString)
+			return
+		}
+		resp.Body.Close()
+	}
 
 	var image model.Image
 	image.ImageName = imageName
@@ -406,6 +472,43 @@ func (p *ImageController) DeleteImageTagAction() {
 
 	imageName := strings.TrimSpace(p.Ctx.Input.Param(":imagename"))
 	_imageTag := strings.TrimSpace(p.GetString("image_tag"))
+
+	var client = &http.Client{}
+	URLPrefix := registryURL() + `/v2/` + imageName + `/manifests/`
+	manifestsURL := URLPrefix + _imageTag
+	req, err := http.NewRequest("HEAD", manifestsURL, nil)
+	req.Header.Add("Accept", `application/vnd.docker.distribution.manifest.v2+json`)
+	resp, err := client.Do(req)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		p.serveStatus(resp.StatusCode, "repository name or tag not known to registry")
+		return
+	}
+
+	resp.Body.Close()
+
+	digest := strings.Trim(resp.Header.Get("Etag"), `"`)
+	deleteURL := URLPrefix + digest
+	req, err = http.NewRequest("DELETE", deleteURL, nil)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	resp, err = client.Do(req)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusAccepted {
+		p.serveStatus(http.StatusInternalServerError, "Remove registry image error")
+		return
+	}
 
 	var imageTag model.ImageTag
 	imageTag.ImageName = imageName
