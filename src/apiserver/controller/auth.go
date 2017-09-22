@@ -78,7 +78,7 @@ func (u *AuthController) SignUpAction() {
 		return
 	}
 
-	usernameExists, err := service.UsernameExists(reqUser.Username)
+	usernameExists, err := service.UserExists("username", reqUser.Username, 0)
 	if err != nil {
 		u.internalError(err)
 		return
@@ -99,7 +99,7 @@ func (u *AuthController) SignUpAction() {
 		return
 	}
 
-	emailExists, err := service.EmailExists(reqUser.Email)
+	emailExists, err := service.UserExists("username", reqUser.Email, 0)
 	if err != nil {
 		u.internalError(err)
 		return
@@ -149,21 +149,10 @@ func (u *AuthController) LogOutAction() {
 }
 
 func (u *AuthController) UserExists() {
-
 	target := u.GetString("target")
 	value := u.GetString("value")
-
-	var isExists bool
-	var err error
-	switch target {
-	case "username":
-		isExists, err = service.UsernameExists(value)
-	case "email":
-		isExists, err = service.EmailExists(value)
-	default:
-		u.CustomAbort(http.StatusBadRequest, "unsupported check target.")
-		return
-	}
+	userID, _ := u.GetInt64("user_id")
+	isExists, err := service.UserExists(target, value, userID)
 	if err != nil {
 		u.internalError(err)
 		return
