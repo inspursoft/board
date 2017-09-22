@@ -18,7 +18,6 @@ import { CsInputComponent } from "../cs-input/cs-input.component";
 enum ImageSource{fromBoardRegistry, fromDockerHub}
 const AUTO_REFRESH_IMAGE_LIST: number = 2000;
 type alertType = "alert-info" | "alert-danger";
-
 @Component({
   templateUrl: './select-image.component.html',
   styleUrls: ["./select-image.component.css"]

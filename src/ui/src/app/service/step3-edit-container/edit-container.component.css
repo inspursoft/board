@@ -22,7 +22,7 @@ div.edit-container-filed-container {
   width: 500px;
 }
 
-.edit-container-icon {
+clr-icon.edit-container-icon {
   color: white;
   background: green;
   width: 20px;

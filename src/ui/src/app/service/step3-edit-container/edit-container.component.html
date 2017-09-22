@@ -3,15 +3,11 @@
   <div class="edit-container-one-container"
        *ngFor="let status of containerStatusList;let iStatus = index">
     <div class="edit-container-head-container">
-      <clr-icon *ngIf="iStatus == containerStatusList.length - 1 && status == 1"
+      <clr-icon shape="minus"
                 class="edit-container-icon"
-                shape="plus"
-                (click)="modifySelectContainer(iStatus)"></clr-icon>
-      <clr-icon *ngIf="iStatus < containerStatusList.length - 1"
-                shape="minus"
-                class="edit-container-icon"
-                (click)="modifySelectContainer(iStatus)"></clr-icon>
-      <span class="edit-container-filed-title" [ngStyle]="{'margin-left':status == 0 ?'20px':'0'}">
+                (click)="minusSelectContainer(iStatus)">
+      </clr-icon>
+      <span class="edit-container-filed-title">
         {{status == 1 ?('SERVICE.STEP_3_CONTAINER'| translate):('SERVICE.STEP_3_ADD_NEW_CONTAINER'| translate)}}:
       </span>
       <cs-dropdown style="margin-left: 10px"
@@ -23,9 +19,10 @@
                    (onChange)="changeSelectImage(iStatus, status, $event)">
       </cs-dropdown>
     </div>
-    <div *ngIf="status == 1"
-         class="edit-container-filed-container">
+    <div *ngIf="status == 1" class="edit-container-filed-container">
       <cs-input [inputLabel]="'SERVICE.STEP_3_CONTAINER_NAME' | translate"
+                [inputIsRequired]="true"
+                [inputPattern]="patternContainerName"
                 [simpleFiled]="step3Output[iStatus].container_name"
                 (onCheck)="step3Output[iStatus].container_name = $event"></cs-input>
       <cs-input [inputLabel]="'SERVICE.STEP_3_WORKING_DIR' | translate"
@@ -52,15 +49,20 @@
                   (keypress)="shieldEnter($event)"
                   [(ngModel)]="step3Output[iStatus].container_command"></textarea>
       </div>
+      <environment-value *ngIf="showEnvironmentValue"
+                         [inputEnvsData]="getDefaultEnvsData(iStatus)"
+                         [(isOpen)]="showEnvironmentValue"
+                         (onConfirm)="setEnvironment(iStatus,$event)">
+      </environment-value>
+      <volume-mounts *ngIf="showVolumeMounts"
+                     [volumeData]="getVolumeMountData(iStatus)"
+                     [(isOpen)]="showVolumeMounts"
+                     (onConfirmEvent)="setVolumeMount($event,iStatus)">
+      </volume-mounts>
     </div>
-    <environment-value *ngIf="showEnvironmentValue"
-                       [inputEnvsData]="getDefaultEnvsData(iStatus)"
-                       [(isOpen)]="showEnvironmentValue"
-                       (onConfirm)="setEnvironment(iStatus,$event)"></environment-value>
-    <volume-mounts *ngIf="showVolumeMounts"
-                   [(isOpen)]="showVolumeMounts"
-                   (onConfirmEvent)="setVolumeMount($event,iStatus)"></volume-mounts>
   </div>
+  <clr-icon class="edit-container-icon" shape="plus" (click)="addSelectContainer()">
+  </clr-icon>
 </div>
 <button class="btn btn-default" [disabled]="'disabled'">Test</button>
 <button class="btn btn-default" [disabled]="!isCanNextStep" (click)="forward()">Next</button>

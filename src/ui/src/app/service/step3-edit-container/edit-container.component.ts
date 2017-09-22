@@ -16,7 +16,9 @@ enum ContainerStatus{csNew, csSelectedImage}
 })
 export class EditContainerComponent implements ServiceStepComponent, OnInit, OnDestroy {
   @Input() data: any;
-  patternWorkdir:RegExp = /^~?[\w\d-\/.{}$\/:]+[\s]*$/;
+  patternContainerName: RegExp = /^[a-zA-Z_-]+$/;
+  patternWorkdir: RegExp = /^~?[\w\d-\/.{}$\/:]+[\s]*$/;
+
   step2Output: ServiceStep2Output;
   step3Output: ServiceStep3Output;
   containerStatusList: Array<ContainerStatus>;
@@ -39,6 +41,7 @@ export class EditContainerComponent implements ServiceStepComponent, OnInit, OnD
   }
 
   get isCanNextStep(): boolean {
+
     return this.step3Output.length > 0;
   }
 
@@ -46,13 +49,13 @@ export class EditContainerComponent implements ServiceStepComponent, OnInit, OnD
     return this;
   }
 
-  modifySelectContainer(index: number) {
-    if (index == this.containerStatusList.length - 1) {
-      this.containerStatusList.push(ContainerStatus.csNew);
-    } else {
-      this.containerStatusList.splice(index, 1);
-      this.step3Output.splice(index, 1);
-    }
+  minusSelectContainer(index: number) {
+    this.containerStatusList.splice(index, 1);
+    this.step3Output.splice(index, 1);
+  }
+
+  addSelectContainer() {
+    this.containerStatusList.push(ContainerStatus.csNew);
   }
 
   changeSelectImage(index: number, status: ContainerStatus, image: ServiceStep2Type) {
@@ -153,6 +156,20 @@ export class EditContainerComponent implements ServiceStepComponent, OnInit, OnD
       volumeArr.push(data as any)
     } else {
       volumeArr[0] = data as any;
+    }
+  }
+
+  getVolumeMountData(index: number) {
+    let volumeArr = this.step3Output[index].container_volumes;
+    if (volumeArr.length == 0) {
+      return {
+        container_dir: "",
+        target_storagename: "",
+        target_storageServer: "",
+        target_dir: ""
+      };
+    } else {
+      return volumeArr[0];
     }
   }
 
