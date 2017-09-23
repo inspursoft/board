@@ -61,7 +61,8 @@ export const LANG_ZH_CN = {
     "FAILED_TO_SIGN_IN": "登录失败:",
     "FAILED_TO_SIGN_UP": "注册失败:",
     "FAILED_TO_SIGN_OUT": "登出系统失败。",
-    "ACCOUNT_SETTING_SUCCESS":"账户设置成功。"
+    "ACCOUNT_SETTING_SUCCESS":"账户设置成功。",
+    "ALREADY_SIGNED_IN": "该用户已在其他地方登录。"
   },
   "HEAD_NAV": {
     "INPUT_FOR_SEARCHING": "输入搜索内容",
