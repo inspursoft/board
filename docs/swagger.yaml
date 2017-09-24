@@ -866,6 +866,63 @@ paths:
           description: User need to log in first.
         500:
           description: Internal errors.  
+  /v1/services/info/{service_name}:
+    get:
+      summary: Return specific service_name infomation.
+      description: |
+        This endpoint returns specific service  information by service_name.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_name
+          in: path
+          description: Service name for filtering results.
+          required: true
+          type: integer
+          format: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched service information.
+          schema:
+            $ref: '#/definitions/ServiceDetail'
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.  
+  /v1/services/status/{service_name}:
+    get:
+      summary: Return specific service_name status.
+      description: |
+        This endpoint returns specific service status by service_name.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_name
+          in: path
+          description: Service name for filtering results.
+          required: true
+          type: integer
+          format: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched service status.
+          schema:
+            $ref: '#/definitions/ServiceDetail'
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.    
+     
   /v1/services/{service_id}/serviceconfig:
     put:  
       summary: Update service configuration data.
@@ -1051,7 +1108,7 @@ paths:
           format: int32
           required: true
           description: Selected service ID.
-        - name: project_togglable
+        - name: service_togglable
           in: body
           required: true 
           schema:
@@ -2505,7 +2562,7 @@ definitions:
   ServiceToggle:
     type: object
     properties:
-      project_toggle:
+      service_toggle:
         type: boolean
         description: The new toggle value, true for run false for stop.
   ServiceConfig:
