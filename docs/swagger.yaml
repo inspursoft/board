@@ -1051,7 +1051,7 @@ paths:
           format: int32
           required: true
           description: Selected service ID.
-        - name: project_togglable
+        - name: service_togglable
           in: body
           required: true 
           schema:
@@ -2505,7 +2505,7 @@ definitions:
   ServiceToggle:
     type: object
     properties:
-      project_toggle:
+      service_toggle:
         type: boolean
         description: The new toggle value, true for run false for stop.
   ServiceConfig:
