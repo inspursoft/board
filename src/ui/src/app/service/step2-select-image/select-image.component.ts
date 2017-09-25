@@ -26,13 +26,13 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
   @Input() data: any;
   @ViewChildren(CsInputArrayComponent) inputArrayComponents: QueryList<CsInputArrayComponent>;
   @ViewChildren(CsInputComponent) inputComponents: QueryList<CsInputComponent>;
-  patternNewImageName: RegExp = /^[a-z\d.]+$/;
-  patternNewImageTag: RegExp = /^[a-z\d.]+$/;
-  patternBaseImage: RegExp = /^[a-z\d.:]+$/;
+  patternNewImageName: RegExp = /^[a-z\d.-]+$/;
+  patternNewImageTag: RegExp = /^[a-z\d.-]+$/;
+  patternBaseImage: RegExp = /^[a-z\d.:-]+$/;
   patternExpose: RegExp = /^[\d-\s\w/\\]+$/;
   patternVolume: RegExp = /^[a-zA-Z_]+$/;
   patternRun: RegExp = /^[a-zA-Z_]+$/;
-  patternEntryPoint: RegExp = /^[a-zA-Z_]+$/;
+  patternEntryPoint: RegExp = /^[a-zA-Z\d_-]+$/;
   _isOpenEnvironment = false;
   intervalAutoRefreshImageList: any;
   isNeedAutoRefreshImageList: boolean = false;
@@ -43,6 +43,7 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
   imageSelectList: Array<Image>;
   imageDetailSourceList: Map<string, Array<ImageDetail>>;
   imageDetailSelectList: Map<string, ImageDetail>;
+  imageTagNotReadyList: Map<string, boolean>;
   imageTemplateList: Array<Object> = [{name: "Docker File Template"}];
   customerNewImage: ServiceStep2NewImageType;
   outputData: ServiceStep2Output;
@@ -61,6 +62,7 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
     this.imageSelectList = Array<Image>();
     this.imageDetailSelectList = new Map<string, ImageDetail>();
     this.imageDetailSourceList = new Map<string, Array<ImageDetail>>();
+    this.imageTagNotReadyList = new Map<string, boolean>();
     this.filesList = new Map<string, Array<{path: string, file_name: string, size: number}>>();
   }
 
@@ -178,8 +180,8 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
     return result;
   }
 
-  unshiftCustomerCreateImage(){
-    let customerCreateImage:Image = new Image();
+  unshiftCustomerCreateImage() {
+    let customerCreateImage: Image = new Image();
     customerCreateImage.image_name = "SERVICE.STEP_2_CREATE_IMAGE";
     customerCreateImage["isSpecial"] = true;
     customerCreateImage["OnlyClick"] = true;
@@ -194,14 +196,19 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
   }
 
   setImageDetailList(imageName: string): void {
+    this.imageTagNotReadyList.set(imageName, false);
     this.k8sService.getImageDetailList(imageName).then((res: ImageDetail[]) => {
-      for (let item of res) {
-        item['image_detail'] = JSON.parse(item['image_detail']);
-        item['image_size_number'] = Number.parseFloat((item['image_size_number'] / (1024 * 1024)).toFixed(2));
-        item['image_size_unit'] = 'MB';
+      if (res && res.length > 0) {
+        for (let item of res) {
+          item['image_detail'] = JSON.parse(item['image_detail']);
+          item['image_size_number'] = Number.parseFloat((item['image_size_number'] / (1024 * 1024)).toFixed(2));
+          item['image_size_unit'] = 'MB';
+        }
+        this.imageDetailSourceList.set(res[0].image_name, res);
+        this.imageDetailSelectList.set(res[0].image_name, res[0]);
+      } else {
+        this.imageTagNotReadyList.set(imageName, true);
       }
-      this.imageDetailSourceList.set(res[0].image_name, res);
-      this.imageDetailSelectList.set(res[0].image_name, res[0]);
     }).catch(err => this.messageService.dispatchError(err));
   }
 
@@ -354,7 +361,7 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
     envsData.forEach((value: EnvType) => {
       envsArray.push({
         dockerfile_envname: value.envName,
-        dockerfile_envvalue: value.envValue
+        dockerfile_envvalue: value.envValue,
       })
     });
     this.getDockerFilePreviewInfo();
@@ -390,7 +397,6 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
     this.k8sService.removeFile(fromRemoveData).then(res => {
       this.asyncGetDockerFilePreviewInfo();
     }).catch(err => {
-      console.log(err);
       if (err && err.status == 401) {
         this.isOpenNewImage = false;
         this.messageService.dispatchError(err);

@@ -51,6 +51,7 @@
       </div>
       <environment-value *ngIf="showEnvironmentValue"
                          [inputEnvsData]="getDefaultEnvsData(iStatus)"
+                         [inputFixedKeyList]="fixedEnvKeys"
                          [(isOpen)]="showEnvironmentValue"
                          (onConfirm)="setEnvironment(iStatus,$event)">
       </environment-value>

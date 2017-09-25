@@ -194,6 +194,7 @@ export const LANG_EN_US = {
   },
   "SERVICE": {
     "CREATE_SERVICE": "Create Service",
+    "SERVICE_DETAIL": "Service Detail",
     "SERVICE_NAME": "Service Name",
     "PROJECT_NAME": "Project Name",
     "OWNER": "Owner",
@@ -249,6 +250,7 @@ export const LANG_EN_US = {
     "STEP_2_CANCEL_WAIT":"Cancel wait",
     "STEP_2_REMOVE_FILE_FAILED":"Remove file failed.",
     "STEP_2_ADD_NEW_IMAGE_DES":"Add image for build service.",
+    "STEP_2_GET_IMAGE_TAG":"Get Tag",
     "STEP_3_IMAGE_SELECTED":"The image selected.",
     "STEP_3_CONTAINER_NAME":"Container Name",
     "STEP_3_WORKING_DIR":"Working Dir",

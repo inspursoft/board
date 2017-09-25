@@ -1,7 +1,7 @@
 <div class="step6-container">
   <div class="step6-deploy-container">
     <span>{{"SERVICE.STEP_6_DEPLOY"|translate}}:</span>
-    <div class="step6-icon-container" (click)="serviceDeploy()" [ngClass]="{'deploy':isInDeployIng}">
+    <div class="step6-icon-container" (click)="serviceDeploy()" [ngClass]="{'deploy':isInDeployIng || isInDeployed}">
       <div class="step6-start-icon"></div>
     </div>
     <span *ngIf="isInDeployIng" class="spinner spinner-md step6-spinner"></span>
