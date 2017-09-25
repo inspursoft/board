@@ -92,9 +92,6 @@ func (b *baseController) getCurrentUser() *model.User {
 		return nil
 	}
 
-	b.Ctx.ResponseWriter.Header().Set("token", newToken.TokenString)
-	memoryCache.Put(newToken.TokenString, newToken.TokenString, time.Second*time.Duration(tokenCacheExpireSeconds))
-
 	if strID, ok := payload["id"].(string); ok {
 		userID, err := strconv.Atoi(strID)
 		if err != nil {
@@ -106,16 +103,23 @@ func (b *baseController) getCurrentUser() *model.User {
 			logs.Error("Error occurred while getting user by ID: %d\n", err)
 			return nil
 		}
+		if !memoryCache.IsExist(user.Username) {
+			logs.Error("Token has been expired forcely.")
+			return nil
+		}
+		memoryCache.Put(user.Username, newToken.TokenString, time.Second*time.Duration(tokenCacheExpireSeconds))
+		b.Ctx.ResponseWriter.Header().Set("token", newToken.TokenString)
+
 		return user
 	}
 	return nil
 }
 
 func (b *baseController) signOff() {
-	tokenString := b.GetString("token")
-	err := memoryCache.Delete(tokenString)
+	username := b.GetString("username")
+	err := memoryCache.Delete(username)
 	if err != nil {
-		logs.Error("Failed to delete token from memory cache: %+v", err)
+		logs.Error("Failed to delete username from memory cache: %+v", err)
 	}
 	logs.Info("Successful sign off from API server.")
 }
@@ -146,17 +150,7 @@ func verifyToken(tokenString string) (map[string]interface{}, error) {
 	if strings.TrimSpace(tokenString) == "" {
 		return nil, fmt.Errorf("no token was provided")
 	}
-	storedToken := memoryCache.Get(tokenString)
-	if storedToken == nil {
-		logs.Info("token has been expired forcely.")
-		return nil, nil
-	}
-	currentToken, ok := storedToken.(string)
-	if !ok {
-		logs.Error("failed to convert stored token to string.")
-		return nil, nil
-	}
-	resp, err := http.Get(tokenServerURL.String() + "?token=" + currentToken)
+	resp, err := http.Get(tokenServerURL.String() + "?token=" + tokenString)
 	if err != nil {
 		return nil, err
 	}

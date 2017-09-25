@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Http, Headers, Response } from '@angular/http';
 import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
+import { NgXCookies } from 'ngx-cookies';
 import { Message } from './shared/message-service/message';
 import { MessageService } from './shared/message-service/message.service';
 
@@ -40,19 +41,21 @@ export class AppInitService {
 
   chainResponse(r: Response): Response {
     this.token = r.headers.get('token');
+    NgXCookies.setCookie("token", this.token);
     this.tokenMessageSource.next(this.token);
     return r;
   }
 
   getCurrentUser(tokenParam?: string): Promise<any> {
+    let token = this.token || tokenParam || NgXCookies.getCookie("token") || '';
     return this.http
       .get('/api/v1/users/current', 
         { headers: new Headers({
           'Content-Type': 'application/json',
-          'token': this.token || tokenParam || ''
+          'token': token
           }),
           params: {
-           'token': this.token || tokenParam || ''
+           'token': token
           }
         })
       .toPromise()

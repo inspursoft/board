@@ -39,8 +39,15 @@ export class SignInComponent implements OnDestroy {
       .catch(err=>{
         let announceMessage = new Message();
           announceMessage.title = 'ACCOUNT.ERROR';
-        if(err && err.status === 400) {
-          announceMessage.message = 'ACCOUNT.INCORRECT_USERNAME_OR_PASSWORD';
+        if(err) {
+          switch(err.status){
+          case 400:
+            announceMessage.message = 'ACCOUNT.INCORRECT_USERNAME_OR_PASSWORD';
+            break;
+          case 409:
+            announceMessage.message = 'ACCOUNT.ALREADY_SIGNED_IN';
+            break;
+          }
         } else {
           announceMessage.message = 'ACCOUNT.FAILED_TO_SIGN_IN' + (err && err.status);
         }

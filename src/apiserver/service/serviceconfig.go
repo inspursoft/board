@@ -77,3 +77,11 @@ func DeleteService(serviceID int64) (bool, error) {
 	}
 	return true, nil
 }
+
+func GetService(service model.ServiceStatus, selectedFields ...string) (*model.ServiceStatus, error) {
+	s, err := dao.GetService(service, selectedFields...)
+	if err != nil {
+		return nil, err
+	}
+	return s, nil
+}

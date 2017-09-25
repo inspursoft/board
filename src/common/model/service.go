@@ -19,3 +19,7 @@ type ServiceStatus struct {
 //func (s *Service) TableName() string {
 //	return "service_status"
 //}
+
+type ServiceToggle struct {
+	Toggle bool `json:"service_toggle"`
+}
