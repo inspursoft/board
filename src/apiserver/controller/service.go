@@ -478,9 +478,10 @@ func (p *ServiceController) GetServiceInfoAction() {
 	}
 
 	//Get NodeIP
-	endpointUrl := fmt.Sprintf("%s/api/v1/namespaces/default/endpoints/%s", kubeMasterURL(), serviceName)
-	logs.Debug("Get Service info serviceUrl(endpoint):%+s", endpointUrl)
-	endpointStatus, err, flag := service.GetEndpointStatus(endpointUrl)
+	//endpointUrl format /api/v1/namespaces/default/endpoints/
+	nodesUrl := fmt.Sprintf("%s/api/v1/nodes", kubeMasterURL())
+	logs.Debug("Get Service info serviceUrl(endpoint):%+s", nodesUrl)
+	nodesStatus, err, flag := service.GetNodesStatus(nodesUrl)
 	if flag == false {
 		json.Unmarshal([]byte(err.Error()), &errOutput)
 		p.Data["json"] = errOutput
@@ -493,20 +494,18 @@ func (p *ServiceController) GetServiceInfoAction() {
 		return
 	}
 
-	if len(serviceStatus.Spec.Ports) == 0 || len(endpointStatus.Subsets) == 0 {
-		serviceInfo.NodeName = append(serviceInfo.NodeName, NA)
+	if len(serviceStatus.Spec.Ports) == 0 || len(nodesStatus.Items) == 0 {
+		p.Data["json"] = NA
+		p.ServeJSON()
+		return
 	} else {
-		for _, por := range serviceStatus.Spec.Ports {
-			serviceInfo.NodePort = append(serviceInfo.NodePort, por.NodePort)
+		for _, ports := range serviceStatus.Spec.Ports {
+			serviceInfo.NodePort = append(serviceInfo.NodePort, ports.NodePort)
 		}
-		for _, sub := range endpointStatus.Subsets {
-			for _, add := range sub.Addresses {
-				serviceInfo.NodeName = append(serviceInfo.NodeName, *add.NodeName)
-			}
+		for _, items := range nodesStatus.Items {
+			serviceInfo.NodeName = append(serviceInfo.NodeName, items.Status.Addresses...)
 		}
 
-		//serviceInfo.NodePort = serviceStatus.Spec.Ports[0].NodePort
-		//serviceInfo.NodeName = *endpointStatus.Subsets[0].Addresses[0].NodeName
 	}
 
 	p.Data["json"] = serviceInfo
