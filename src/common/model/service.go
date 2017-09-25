@@ -1,6 +1,10 @@
 package model
 
-import "time"
+import (
+	"time"
+
+	modelK8s "k8s.io/client-go/pkg/api/v1"
+)
 
 type ServiceStatus struct {
 	ID           int64     `json:"service_id" orm:"column(id)"`
@@ -16,8 +20,8 @@ type ServiceStatus struct {
 	UpdateTime   time.Time `json:"service_update_time" orm:"column(update_time)"`
 }
 type ServiceInfoStruct struct {
-	NodePort []int32  `json:"node_Port,omitempty"`
-	NodeName []string `json:"node_Name,omitempty"`
+	NodePort []int32                `json:"node_Port,omitempty"`
+	NodeName []modelK8s.NodeAddress `json:"node_Name,omitempty"`
 }
 
 //func (s *Service) TableName() string {

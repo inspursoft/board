@@ -94,6 +94,20 @@ func GetServiceStatus(serviceUrl string) (modelK8s.Service, error, bool) {
 	return service, err, true
 }
 
+func GetNodesStatus(nodesUrl string) (modelK8s.NodeList, error, bool) {
+	var nodes modelK8s.NodeList
+
+	flag, err := k8sGet(&nodes, nodesUrl)
+	if flag == false {
+		return nodes, err, false
+	}
+	if err != nil {
+		return nodes, err, true
+	}
+
+	return nodes, err, true
+}
+
 func GetEndpointStatus(serviceUrl string) (modelK8s.Endpoints, error, bool) {
 	var endpoint modelK8s.Endpoints
 
