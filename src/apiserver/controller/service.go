@@ -494,10 +494,19 @@ func (p *ServiceController) GetServiceInfoAction() {
 	}
 
 	if len(serviceStatus.Spec.Ports) == 0 || len(endpointStatus.Subsets) == 0 {
-		serviceInfo.NodeName = NA
+		serviceInfo.NodeName = append(serviceInfo.NodeName, NA)
 	} else {
-		serviceInfo.NodePort = serviceStatus.Spec.Ports[0].NodePort
-		serviceInfo.NodeName = *endpointStatus.Subsets[0].Addresses[0].NodeName
+		for _, por := range serviceStatus.Spec.Ports {
+			serviceInfo.NodePort = append(serviceInfo.NodePort, por.NodePort)
+		}
+		for _, sub := range endpointStatus.Subsets {
+			for _, add := range sub.Addresses {
+				serviceInfo.NodeName = append(serviceInfo.NodeName, *add.NodeName)
+			}
+		}
+
+		//serviceInfo.NodePort = serviceStatus.Spec.Ports[0].NodePort
+		//serviceInfo.NodeName = *endpointStatus.Subsets[0].Addresses[0].NodeName
 	}
 
 	p.Data["json"] = serviceInfo
