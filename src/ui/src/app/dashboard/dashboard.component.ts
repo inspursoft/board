@@ -284,7 +284,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
         let query = {
           time_count: 1,
           time_unit: this.Query.get(lineType).scale.value,
-          list_name: this.Query.get(lineType).model.list_name == "total" ? "" : this.Query.get(lineType).model.list_name,
+          list_name: "",
           timestamp_base: this._ServerTimeStamp
         };
         this.service.getLineData(lineType, query)
@@ -517,7 +517,14 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
   scaleChange(lineType: LineType, data: scaleOption) {
     if (!this.getLineInRefreshIng()) {
       let baseLineTimeStamp = this.getBaseLineTimeStamp(lineType);
-      let queryTimeStamp = baseLineTimeStamp + data.valueOfSecond * MAX_COUNT_PER_PAGE / 2;
+      let queryTimeStamp = 0;
+      let maxLineTimeStamp = baseLineTimeStamp + data.valueOfSecond * MAX_COUNT_PER_PAGE / 2;
+      if (maxLineTimeStamp > this._ServerTimeStamp) {
+        queryTimeStamp = this._ServerTimeStamp;
+        baseLineTimeStamp -= maxLineTimeStamp - this._ServerTimeStamp
+      } else {
+        queryTimeStamp = maxLineTimeStamp;
+      }
       this.LineTypeSet.forEach((value: LineType) => {
         this.LineStateInfo.get(value).IsCanAutoRefresh = false;
         this.Query.get(value).scale = data;

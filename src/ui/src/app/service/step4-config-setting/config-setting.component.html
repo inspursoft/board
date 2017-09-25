@@ -3,6 +3,8 @@
   <div class="config-service-info-container">
     <div class="config-service-info-line">
       <cs-input class="base-input"
+                [inputIsRequired]="true"
+                [inputPattern]="patternServiceName"
                 [inputLabel]="'SERVICE.STEP_4_SERVICE_NAME' | translate"
                 [simpleFiled]="step4Output.deployment_yaml.deployment_name"
                 (onCheck)="setServiceName($event)">
@@ -113,4 +115,4 @@
   </div>
 </div>
 <button class="btn btn-default" [disabled]="true">Test</button>
-<button class="btn btn-default" (click)="forward()">Next</button>
+<button class="btn btn-default" [disabled]="!isInputComponentsValid" (click)="forward()">Next</button>

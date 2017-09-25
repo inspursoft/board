@@ -1,26 +1,30 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, AfterContentChecked, ViewChildren, QueryList } from '@angular/core';
 import {
   ServiceStep1Output,
   ServiceStep2Output, ServiceStep3Output, ServiceStep3Type, ServiceStep4Output,
   ServiceStepComponent
 } from '../service-step.component';
 import { K8sService } from '../service.k8s';
+import { CsInputComponent } from "../cs-input/cs-input.component";
 
 
 @Component({
   styleUrls: ["./config-setting.component.css"],
   templateUrl: './config-setting.component.html'
 })
-export class ConfigSettingComponent implements ServiceStepComponent, OnInit, OnDestroy {
+export class ConfigSettingComponent implements ServiceStepComponent, OnInit, OnDestroy, AfterContentChecked {
   @Input() data: any;
+  @ViewChildren(CsInputComponent) inputComponents: QueryList<CsInputComponent>;
+  patternServiceName: RegExp = /^[a-zA-Z\d_-]+$/;
   dropDownListNum: Array<number>;
   selectContainerPorts: Map<string, Array<number>>;
   step2Output: ServiceStep2Output;
   step3Output: ServiceStep3Output;
   step4Output: ServiceStep4Output;
-  showAdvanced: boolean = false;
-  showExternal: boolean = false;
-  showCollaborative: boolean = false;
+  showAdvanced: boolean = true;
+  showExternal: boolean = true;
+  showCollaborative: boolean = true;
+  isInputComponentsValid = false;
 
   constructor(private k8sService: K8sService) {
     this.dropDownListNum = Array<number>();
@@ -30,6 +34,17 @@ export class ConfigSettingComponent implements ServiceStepComponent, OnInit, OnD
 
   ngOnDestroy() {
     this.k8sService.setStepData(4, this.step4Output);
+  }
+
+  ngAfterContentChecked() {
+    this.isInputComponentsValid = true;
+    if (this.inputComponents) {
+      this.inputComponents.forEach(item => {
+        if (!item.valid) {
+          this.isInputComponentsValid = false;
+        }
+      });
+    }
   }
 
   ngOnInit() {
@@ -126,8 +141,7 @@ export class ConfigSettingComponent implements ServiceStepComponent, OnInit, OnD
     this.serviceExternalArray[index].service_nodeport = Number(port).valueOf();
   }
 
-
   forward(): void {
-    this.k8sService.stepSource.next(5);
+    this.k8sService.stepSource.next(6);
   }
 }

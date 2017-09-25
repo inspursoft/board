@@ -34,10 +34,6 @@ div.dynamic-icon-container {
   cursor: pointer;
 }
 
-.dynamic-icon.plus {
-  margin-top: 10px;
-}
-
 fieldset.fieldSet-default {
   margin: 0 2px;
   border: 1px solid silver;
@@ -104,6 +100,12 @@ textarea.area-status {
 
 button.default-primary {
   font-size: 10px;
+}
+
+div.plus-container {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
 }
 
 .base-margin-left {
