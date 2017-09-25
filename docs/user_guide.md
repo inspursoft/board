@@ -7,10 +7,10 @@ This guide walks you through the fundamentals of using Board. You'll learn how t
 * Manage Projects
 * Manage Members of a Project
 * Manage Services
-  * Building images.
-  * Building Services.
-  * Testing.
-  * Deployment.
+  * Build Images.
+  * Build Services.
+  * Test Services.
+  * Deploy Services.
 * Search Projects, Services, Users and Images.
 * Monitoring Dashboard
 * Administrator Options
@@ -57,13 +57,56 @@ Besides the above three roles, there are two system-wide roles:
 
 ## Manage Services
 
-### Building images
+Board supports creating container service. All services must be grouped by projects. Click into "create service", the first step is to select a project. if there is no project, please create a project first. 
 
-### Building Services
+### Build Images
+On the "select images" page, select "Create Custom Image" from the pull-down menu to build new image.
+There will be a pop-up window for user to input image parameters for building.
+* New Image Name
+* Image Tag
+* Base Image
+* Image EntryPoint
+* Image Env
+* Image Volume
+* Image Run
+* Image Expose
+* Upload External Archives
 
-### Testing
+After fill in all required parameters, click "Build image" to start building the new image.
+If build successfully, the new image will be added into Board's registry.
 
-### Deployment
+### Build Services
+
+The "select images" is the first step to build service.  
+Select required image and its image tag, select multiple images if needed.
+
+Next step to configure containers.
+The following parameters could be customized for containers of this service.
+* Working Directory
+* Volume Mounts
+* ENV
+* Container Port
+* Commands
+
+Next step to configure service.
+The following parameters could be customized for this service.
+* Service Name
+* Instance
+
+In the advanced configuration, can assign node pord for external service.
+
+Next step after configure service.
+
+### Test Service
+
+This step is to test the service's configurations. Next step to skip testing.
+
+### Deploy Service
+
+Click "Deploy" to deploy the new service.
+After successfully deploy the service, user can monitor the service status from the service list.
+
+### Examples to create services
 
 ## Search Projects, Services, Users and Images
 
