@@ -110,26 +110,38 @@ After successfully deploy the service, user can monitor the service status from 
 
 #### Example demoshow
 Deploy a service "demoshow"
+
+Login board
 <img src="img/userguide/demoshow-a.PNG" width="100" alt="Board login">
 
+Select the library project
 <img src="img/userguide/demoshow-d.PNG" width="100" alt="Select project">
 
+Select library/mydemoshow image
 <img src="img/userguide/demoshow-e.PNG" width="100" alt="Select image">
 
+Configure container
 <img src="img/userguide/demoshow-f.PNG" width="100" alt="Container image">
 
+Select container mydemoshow
 <img src="img/userguide/demoshow-g.PNG" width="100" alt="Container name">
 
+Set the container port to 5000
 <img src="img/userguide/demoshow-h.PNG" width="100" alt="Container port">
 
+Set the service name
 <img src="img/userguide/demoshow-i.PNG" width="100" alt="Service name">
 
+Set the node port for external service
 <img src="img/userguide/demoshow-j.PNG" width="100" alt="Service port">
 
+Test the service
 <img src="img/userguide/demoshow-k.PNG" width="100" alt="Service test">
 
+Deploy the service demoshow
 <img src="img/userguide/demoshow-l.PNG" width="100" alt="Service deploy">
 
+Deploy the demoshow successfully
 <img src="img/userguide/demoshow-m.PNG" width="100" alt="Service success">
 
 
