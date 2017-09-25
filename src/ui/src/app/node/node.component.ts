@@ -5,7 +5,7 @@ import { Subscription } from 'rxjs/Subscription';
 import { NodeDetailComponent } from './node-detail.component';
 import { NodeService } from './node.service';
 
-import { MESSAGE_TARGET, BUTTON_STYLE } from '../shared/shared.const';
+import { MESSAGE_TARGET, BUTTON_STYLE, MESSAGE_TYPE } from '../shared/shared.const';
 import { Message } from '../shared/message-service/message';
 import { MessageService } from '../shared/message-service/message.service';
 
@@ -50,6 +50,7 @@ export class NodeComponent implements OnInit, OnDestroy {
           })
           .catch(err=>{
             m.message = 'NODE.FAILED_TO_TOGGLE';
+            m.type = MESSAGE_TYPE.COMMON_ERROR;
             this.messageService.inlineAlertMessage(m);
           });
       }
@@ -92,7 +93,7 @@ export class NodeComponent implements OnInit, OnDestroy {
     announceMessage.title = 'NODE.TOGGLE_NODE';
     announceMessage.message = 'NODE.CONFIRM_TO_TOGGLE_NODE';
     announceMessage.params = [ nodeName ];
-    announceMessage.target = MESSAGE_TARGET.DELETE_PROJECT;
+    announceMessage.target = MESSAGE_TARGET.TOGGLE_NODE;
     announceMessage.buttons = BUTTON_STYLE.CONFIRMATION;
     announceMessage.data = new NodeStatus(nodeName, !(status === 1));
     this.messageService.announceMessage(announceMessage);

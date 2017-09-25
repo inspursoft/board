@@ -1,16 +1,26 @@
 <div style="display: flex;flex-direction: column">
   <div style="height: 1px">
-    <image-detail *ngIf="isShowDetail" [curImage]="curImage" [(isOpen)]="isShowDetail"></image-detail>
+    <image-detail *ngIf="isShowDetail" [curImage]="curImage" [(isOpen)]="isShowDetail" (reload)="retrieve()"></image-detail>
   </div>
-  <clr-datagrid [clrDgLoading]="imageList.length == 0 && imageListErrMsg == ''" style="min-width: 100%">
+  <clr-datagrid [clrDgLoading]="loadingWIP" style="min-width: 100%">
     <clr-dg-placeholder>{{imageListErrMsg | translate}}</clr-dg-placeholder>
     <clr-dg-column>{{ 'IMAGE.COL_IMAGE_NAME' | translate }}</clr-dg-column>
     <clr-dg-column>{{ 'IMAGE.COL_COMMENT' | translate }}</clr-dg-column>
     <clr-dg-column>{{ 'IMAGE.COL_DETAIL_INFO' | translate }}</clr-dg-column>
+    <clr-dg-column>{{ 'IMAGE.COL_OPERATION' | translate }}</clr-dg-column>
     <clr-dg-row *clrDgItems="let image of imageList">
       <clr-dg-cell>{{image.image_name}}</clr-dg-cell>
       <clr-dg-cell>{{image.image_comment}}</clr-dg-cell>
-      <clr-dg-cell><clr-icon class="edit" (click)="showImageDetail(image)" shape="info"></clr-icon></clr-dg-cell>
+      <clr-dg-cell>
+        <a href="javascript:void(0)" (click)="showImageDetail(image)">
+          <clr-icon shape="info-standard"></clr-icon>
+        </a>
+      </clr-dg-cell>
+      <clr-dg-cell>
+        <a href="javascript:void(0)">
+          <clr-icon shape="trash" (click)="confirmToDeleteImage(image.image_name)"></clr-icon>
+        </a>          
+      </clr-dg-cell>
     </clr-dg-row>
     <clr-dg-footer>
       {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} of {{pagination.totalItems}} items

@@ -190,7 +190,15 @@ export const LANG_EN_US = {
     "COL_SIZE":"Size",
     "COL_OPERATION":"Operation",
     "DETAIL_TITLE":"Image",
-    "DELETE_IMAGE_ITEM":"Delete image detail."
+    "DELETE_IMAGE_ITEM":"Delete image detail.",
+    "DELETE_IMAGE": "Delete Image",
+    "CONFIRM_TO_DELETE_IMAGE": "Confirm to delete image {{0}}?",
+    "DELETE_TAG": "Delete Tag",
+    "CONFIRM_TO_DELETE_TAG": "Confirm to delete tag {{0}}?",
+    "SUCCESSFUL_DELETED_IMAGE": "Successful deleted image.",
+    "FAILED_TO_DELETE_IMAGE": "Failed to delete image.",
+    "SUCCESSFUL_DELETED_TAG": "Successful deleted tag.",
+    "FAILED_TO_DELETE_TAG": "Failed to delete tag."
   },
   "SERVICE": {
     "CREATE_SERVICE": "Create Service",
@@ -288,11 +296,11 @@ export const LANG_EN_US = {
     "STATUS_PUBLIC": "Public",
     "STATUS_PRIVATE": "Private",
     "TOGGLE_SERVICE": "Change Service Status",
-    "CONFIRM_TO_TOGGLE_SERVICE": "Confirm to change current service status?",
+    "CONFIRM_TO_TOGGLE_SERVICE": "Confirm to change service {{0}} status?",
     "DELETE_SERVICE": "Delete Service",
     "CONFIRM_TO_DELETE_SERVICE": "Confirm to delete service?",
-    "SUCCESSFUL_DELETE": "Successful delete service.",
-    "SUCCESSFUL_TOGGLE": "Successful change service status.",
+    "SUCCESSFUL_DELETE": "Successful deleted service.",
+    "SUCCESSFUL_TOGGLE": "Successful changed service status.",
     "FAILED_TO_TOGGLE": "Failed to toggle service status.",
     "FAILED_TO_DELETE_SERVICE": "Failed to delete service."
   },
@@ -333,9 +341,9 @@ export const LANG_EN_US = {
     "STATUS_RUNNING": "Running",
     "STATUS_UNSCHEDULABLE": "Stopped",
     "STATUS_UNKNOWN": "Unknown",
-    "SUCCESSFUL_TOGGLE": "Successful change node status.",
+    "SUCCESSFUL_TOGGLE": "Successful changed node status.",
     "FAILED_TO_TOGGLE": "Failed to toggle node status.",
     "TOGGLE_NODE": "Toggle Status",
-    "CONFIRM_TO_TOGGLE_NODE": "Confirm to change node status?"
+    "CONFIRM_TO_TOGGLE_NODE": "Confirm to change node {{0}} status?"
   }
 };
