@@ -1,7 +1,11 @@
 package service
 
 import (
+	"encoding/json"
+
 	"git/inspursoft/board/src/common/utils"
+	"io/ioutil"
+	"net/http"
 
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -48,4 +52,25 @@ func Resume(nodeName string) (bool, error) {
 	nodeData.Spec.Unschedulable = false
 	res, err := n.Update(nodeData)
 	return !res.Spec.Unschedulable, err
+}
+
+//get resource form k8s api-server
+func k8sGet(resource interface{}, url string) error {
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(body, resource)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

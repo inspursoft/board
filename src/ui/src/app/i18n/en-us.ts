@@ -61,7 +61,8 @@ export const LANG_EN_US = {
     "FAILED_TO_SIGN_IN": "Failed to sign in:",
     "FAILED_TO_SIGN_UP": "Failed to sign up:",
     "FAILED_TO_SIGN_OUT": "Failed to sign out.",
-    "ACCOUNT_SETTING_SUCCESS":"Account setting success."
+    "ACCOUNT_SETTING_SUCCESS":"Account setting success.",
+    "ALREADY_SIGNED_IN": "The user has already signed in other place."
   },
   "HEAD_NAV": {
     "INPUT_FOR_SEARCHING": "Input for searching.",
@@ -310,7 +311,9 @@ export const LANG_EN_US = {
     "IMAGE_NAME": "Image Name",
     "NODES": "Nodes",
     "NODE_NAME": "Node Name",
-    "NODE_IP": "Node IP Address"
+    "NODE_IP": "Node IP Address",
+    "SERVICES": "Services",
+    "SERVICE_NAME": "Service Name"
   },
   "NODE": {
     "NODE_NAME": "Node Name",

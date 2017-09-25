@@ -49,6 +49,7 @@ export class InlineAlertComponent implements OnDestroy {
   ngOnDestroy(): void {
     if(this._subscription) {
       this._subscription.unsubscribe();
+      this.inlineAlertType = 'alert-success';
     }
   }
 }

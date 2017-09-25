@@ -61,7 +61,8 @@ export const LANG_ZH_CN = {
     "FAILED_TO_SIGN_IN": "登录失败:",
     "FAILED_TO_SIGN_UP": "注册失败:",
     "FAILED_TO_SIGN_OUT": "登出系统失败。",
-    "ACCOUNT_SETTING_SUCCESS":"账户设置成功。"
+    "ACCOUNT_SETTING_SUCCESS":"账户设置成功。",
+    "ALREADY_SIGNED_IN": "该用户已在其他地方登录。"
   },
   "HEAD_NAV": {
     "INPUT_FOR_SEARCHING": "输入搜索内容",
@@ -310,7 +311,9 @@ export const LANG_ZH_CN = {
     "IMAGE_NAME": "镜像名称",
     "NODES": "节点",
     "NODE_NAME": "节点名称",
-    "NODE_IP": "节点IP地址"
+    "NODE_IP": "节点IP地址",
+    "SERVICES": "服务",
+    "SERVICE_NAME": "服务名称"
   },
   "NODE": {
     "NODE_NAME": "节点名称",

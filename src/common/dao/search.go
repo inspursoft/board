@@ -49,15 +49,15 @@ func SearchPublicProject(projectName string) ([]SearchProjectResult, error) {
 }
 func SearchUser(activeUser string, searchName string) ([]SearchUserResult, error) {
 	var searchRes []SearchUserResult
-	sql := `select distinct
+	sql := ` select distinct
   u.username as user_name,
   r.name     as role_name,
   u.email    as user_email
-from project_member pm
-  join user u on pm.user_id = u.id
-  join role r on pm.role_id = r.id
-where u.deleted = 0
-			and exists (select * from user where deleted = 0 and project_admin = 1 and username = ? ) 
+from user u 
+  left join  project_member pm on pm.user_id = u.id
+  left  join role r on pm.role_id = r.id
+  where u.deleted = 0
+			and exists (select * from user where deleted = 0 and system_admin = 1 and username = ? ) 
 			and u.username like ?;`
 	o := orm.NewOrm()
 	_, err := o.Raw(sql, activeUser, "%"+searchName+"%").QueryRows(&searchRes)
@@ -66,9 +66,7 @@ where u.deleted = 0
 func SearchService(para string) ([]model.ServiceStatus, error) {
 	var svr []model.ServiceStatus
 	o := orm.NewOrm()
-	svrModel := new(model.ServiceStatus)
-	qs := o.QueryTable(svrModel)
-	qs.Filter("deleted", 0)
-	_, err := qs.Filter("name__contains", para).All(&svr)
+	qs := o.QueryTable("service_status")
+	_, err := qs.Filter("deleted", 0).Filter("status__gte", 1).Filter("name__contains", para).All(&svr)
 	return svr, err
 }

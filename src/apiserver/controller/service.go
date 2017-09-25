@@ -22,6 +22,7 @@ const (
 	deploymentAPI          = "/apis/extensions/v1beta1/namespaces/"
 	serviceAPI             = "/api/v1/namespaces/"
 	test                   = "test"
+	NA                     = "NA"
 	serviceNamespace       = "default" //TODO create in project post
 )
 
@@ -264,8 +265,28 @@ func (p *ServiceController) DeleteServiceAction() {
 		p.internalError(err)
 		return
 	}
-	// TODO check service id exist
-	// TODO call stop service
+	// Check service id exist
+	var servicequery model.ServiceStatus
+	servicequery.ID = int64(serviceID)
+	s, err := service.GetService(servicequery, "id")
+	if err != nil {
+		p.internalError(err)
+		return
+	} else if s == nil {
+		logs.Info("Invalid service ID", serviceID)
+		p.CustomAbort(http.StatusBadRequest, "Invalid service ID.")
+		return
+	}
+
+	// Call stop service if running
+	if s.Status == running {
+		err = stopService(s)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+	}
+
 	isSuccess, err := service.DeleteService(serviceID)
 	if err != nil {
 		p.internalError(err)
@@ -274,4 +295,208 @@ func (p *ServiceController) DeleteServiceAction() {
 	if !isSuccess {
 		p.CustomAbort(http.StatusBadRequest, "Failed to delete service.")
 	}
+}
+
+// API to deploy service
+func (p *ServiceController) ToggleServiceAction() {
+	if !(p.isSysAdmin && p.isProjectAdmin) {
+		p.CustomAbort(http.StatusForbidden, "Insuffient privileges to manipulate user.")
+		return
+	}
+	var err error
+	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	reqData, err := p.resolveBody()
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	var reqServiceToggle model.ServiceToggle
+	err = json.Unmarshal(reqData, &reqServiceToggle)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	logs.Info(reqServiceToggle)
+
+	// Check the current service status
+	var servicequery model.ServiceStatus
+	servicequery.ID = int64(serviceID)
+	s, err := service.GetService(servicequery, "id")
+	if err != nil {
+		p.internalError(err)
+		return
+	} else if s == nil {
+		logs.Info("Invalid service ID", serviceID)
+		p.CustomAbort(http.StatusBadRequest, "Invalid service ID.")
+		return
+	}
+
+	if s.Status == stopped && reqServiceToggle.Toggle == false {
+		logs.Info("Service already stopped")
+		return
+	}
+
+	if s.Status == running && reqServiceToggle.Toggle == true {
+		logs.Info("Service already running")
+		return
+	}
+
+	if reqServiceToggle.Toggle == false {
+		// stop service
+		err = stopService(s)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+		//logs.Info("Stop service successful")
+		// Update service status DB
+		servicequery.Status = stopped
+		_, err = service.UpdateService(servicequery, "status")
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+	} else {
+		// start service
+		//serviceNamespace = reqServiceConfig.ProjectName TODO in project
+		// Push deployment to jenkins
+		var pushobject pushObject
+		pushobject.FileName = deploymentFilename
+		pushobject.JobName = serviceProcess
+		pushobject.Value = filepath.Join(s.ProjectName, strconv.Itoa(serviceID))
+		pushobject.Message = fmt.Sprintf("Create deployment for project %s service %d",
+			s.ProjectName, s.ID)
+		pushobject.Extras = filepath.Join(kubeMasterURL(), deploymentAPI,
+			serviceNamespace, "deployments")
+
+		// Add deployment file
+		pushobject.Items = []string{filepath.Join(pushobject.Value, deploymentFilename)}
+
+		ret, msg, err := InternalPushObjects(&pushobject, &(p.baseController))
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+		logs.Info("Internal push deployment object: %d %s", ret, msg)
+
+		//TODO: If fail to create deployment, should not continue to create service
+
+		//Push service to jenkins
+		pushobject.FileName = serviceFilename
+		pushobject.Message = fmt.Sprintf("Create service for project %s service %d",
+			s.ProjectName, s.ID)
+		pushobject.Extras = filepath.Join(kubeMasterURL(), serviceAPI, serviceNamespace, "services")
+		// Add deployment file
+		pushobject.Items = []string{filepath.Join(pushobject.Value, serviceFilename)}
+
+		ret, msg, err = InternalPushObjects(&pushobject, &(p.baseController))
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+		logs.Debug("Internal push service object: %d %s", ret, msg)
+
+		// Update service status DB
+		servicequery.Status = running
+		_, err = service.UpdateService(servicequery, "status")
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+		//logs.Info("Start service successful")
+	}
+}
+
+func stopService(s *model.ServiceStatus) error {
+	var err error
+	var client = &http.Client{}
+	// Stop service
+	//deleteServiceURL := filepath.Join(kubeMasterURL(), serviceAPI,
+	//	serviceNamespace, "services", s.Name)
+	deleteServiceURL := kubeMasterURL() + serviceAPI + serviceNamespace + "/services/" + s.Name
+	req, err := http.NewRequest("DELETE", deleteServiceURL, nil)
+	if err != nil {
+		logs.Info("Failed to new request for delete service", deleteServiceURL)
+		return err
+	}
+	req.Header.Set("Content-Type", "application/yaml")
+	resp, err := client.Do(req)
+	if err != nil {
+		logs.Info(req)
+		return err
+	}
+	defer resp.Body.Close()
+	logs.Info("Stop service successfully", s.ID, s.Name, resp)
+
+	// Stop deployment
+	//deleteDeploymentURL := filepath.Join(kubeMasterURL(), deploymentAPI,
+	//	serviceNamespace, "deployments", s.Name)
+	deleteDeploymentURL := kubeMasterURL() + deploymentAPI + serviceNamespace + "/deployments/" + s.Name
+	req, err = http.NewRequest("DELETE", deleteDeploymentURL, nil)
+	if err != nil {
+		logs.Info("Failed to new request for delete deployment", deleteDeploymentURL)
+		return err
+	}
+	req.Header.Set("Content-Type", "application/yaml")
+	resp, err = client.Do(req)
+	if err != nil {
+		logs.Info(req)
+		return err
+	}
+	defer resp.Body.Close()
+
+	logs.Info("Stop deployment successfully", s.ID, s.Name, resp)
+	return nil
+}
+
+func (p *ServiceController) GetServiceInfoAction() {
+	var serviceInfo model.ServiceInfoStruct
+	//Get Nodeport
+	serviceName := p.Ctx.Input.Param(":service_name")
+	serviceUrl := fmt.Sprintf("%s/api/v1/namespaces/default/services/%s", kubeMasterURL(), serviceName)
+	logs.Debug("Get Service info serviceUrl(service):%+s", serviceUrl)
+	serviceStatus, err := service.GetServiceStatus(serviceUrl)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	//Get NodeIP
+	endpointUrl := fmt.Sprintf("%s/api/v1/namespaces/default/endpoints/%s", kubeMasterURL(), serviceName)
+	logs.Debug("Get Service info serviceUrl(endpoint):%+s", endpointUrl)
+	endpointStatus, err := service.GetEndpointStatus(endpointUrl)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	if len(serviceStatus.Spec.Ports) == 0 || len(endpointStatus.Subsets) == 0 {
+		serviceInfo.NodeName = NA
+	} else {
+		serviceInfo.NodePort = serviceStatus.Spec.Ports[0].NodePort
+		serviceInfo.NodeName = *endpointStatus.Subsets[0].Addresses[0].NodeName
+	}
+
+	p.Data["json"] = serviceInfo
+	p.ServeJSON()
+}
+
+func (p *ServiceController) GetServiceStatusAction() {
+	serviceName := p.Ctx.Input.Param(":service_name")
+	serviceUrl := fmt.Sprintf("%s/api/v1/namespaces/default/services/%s", kubeMasterURL(), serviceName)
+	logs.Debug("Get Service Status serviceUrl:%+s", serviceUrl)
+
+	serviceStatus, err := service.GetServiceStatus(serviceUrl)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	p.Data["json"] = serviceStatus
+	p.ServeJSON()
 }
