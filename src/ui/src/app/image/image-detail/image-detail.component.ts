@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter, OnInit } from "@angular/core"
 import { Image, ImageDetail } from "../image"
 import { ImageService } from "../image-service/image-service";
 import { MessageService } from "../../shared/message-service/message.service";
-import { MESSAGE_TARGET, BUTTON_STYLE } from '../../shared/shared.const';
+import { MESSAGE_TARGET, BUTTON_STYLE, MESSAGE_TYPE } from '../../shared/shared.const';
 import { Message } from '../../shared/message-service/message';
 
 @Component({
@@ -79,6 +79,7 @@ export class ImageDetailComponent implements OnInit {
       })
       .catch(err=>{
         m.message = 'IMAGE.FAILED_TO_DELETE_TAG';
+        m.type = MESSAGE_TYPE.COMMON_ERROR;
         this.messageService.inlineAlertMessage(m);
       });
   }
