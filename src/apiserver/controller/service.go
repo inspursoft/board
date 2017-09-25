@@ -22,6 +22,7 @@ const (
 	deploymentAPI          = "/apis/extensions/v1beta1/namespaces/"
 	serviceAPI             = "/api/v1/namespaces/"
 	test                   = "test"
+	NA                     = "NA"
 	serviceNamespace       = "default" //TODO create in project post
 )
 
@@ -451,4 +452,51 @@ func stopService(s *model.ServiceStatus) error {
 
 	logs.Info("Stop deployment successfully", s.ID, s.Name, resp)
 	return nil
+}
+
+func (p *ServiceController) GetServiceInfoAction() {
+	var serviceInfo model.ServiceInfoStruct
+	//Get Nodeport
+	serviceName := p.Ctx.Input.Param(":service_name")
+	serviceUrl := fmt.Sprintf("%s/api/v1/namespaces/default/services/%s", kubeMasterURL(), serviceName)
+	logs.Debug("Get Service info serviceUrl(service):%+s", serviceUrl)
+	serviceStatus, err := service.GetServiceStatus(serviceUrl)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	//Get NodeIP
+	endpointUrl := fmt.Sprintf("%s/api/v1/namespaces/default/endpoints/%s", kubeMasterURL(), serviceName)
+	logs.Debug("Get Service info serviceUrl(endpoint):%+s", endpointUrl)
+	endpointStatus, err := service.GetEndpointStatus(endpointUrl)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	if len(serviceStatus.Spec.Ports) == 0 || len(endpointStatus.Subsets) == 0 {
+		serviceInfo.NodeName = NA
+	} else {
+		serviceInfo.NodePort = serviceStatus.Spec.Ports[0].NodePort
+		serviceInfo.NodeName = *endpointStatus.Subsets[0].Addresses[0].NodeName
+	}
+
+	p.Data["json"] = serviceInfo
+	p.ServeJSON()
+}
+
+func (p *ServiceController) GetServiceStatusAction() {
+	serviceName := p.Ctx.Input.Param(":service_name")
+	serviceUrl := fmt.Sprintf("%s/api/v1/namespaces/default/services/%s", kubeMasterURL(), serviceName)
+	logs.Debug("Get Service Status serviceUrl:%+s", serviceUrl)
+
+	serviceStatus, err := service.GetServiceStatus(serviceUrl)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	p.Data["json"] = serviceStatus
+	p.ServeJSON()
 }

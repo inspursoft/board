@@ -5,6 +5,8 @@ import (
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/model/yaml"
+
+	modelK8s "k8s.io/client-go/pkg/api/v1"
 )
 
 func InitServiceConfig() (*model.ServiceConfig, error) {
@@ -76,6 +78,28 @@ func DeleteService(serviceID int64) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+func GetServiceStatus(serviceUrl string) (modelK8s.Service, error) {
+	var service modelK8s.Service
+
+	err := k8sGet(&service, serviceUrl)
+	if err != nil {
+		return service, err
+	}
+
+	return service, err
+}
+
+func GetEndpointStatus(serviceUrl string) (modelK8s.Endpoints, error) {
+	var endpoint modelK8s.Endpoints
+
+	err := k8sGet(&endpoint, serviceUrl)
+	if err != nil {
+		return endpoint, err
+	}
+
+	return endpoint, err
 }
 
 func GetService(service model.ServiceStatus, selectedFields ...string) (*model.ServiceStatus, error) {
