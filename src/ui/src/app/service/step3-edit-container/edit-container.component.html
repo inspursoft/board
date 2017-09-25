@@ -61,8 +61,10 @@
       </volume-mounts>
     </div>
   </div>
-  <clr-icon class="edit-container-icon" shape="plus" (click)="addSelectContainer()">
-  </clr-icon>
+  <div class="plus-container">
+    <clr-icon class="edit-container-icon" shape="plus" (click)="addSelectContainer()"></clr-icon>
+    <span class="base-margin-left">{{"SERVICE.STEP_3_ADD_NEW_CONTAINER" | translate}}</span>
+  </div>
 </div>
 <button class="btn btn-default" [disabled]="'disabled'">Test</button>
 <button class="btn btn-default" [disabled]="!isCanNextStep" (click)="forward()">Next</button>

@@ -53,6 +53,21 @@ export class ListServiceComponent implements OnInit, OnDestroy {
                 this.messageService.inlineAlertMessage(m);
               });
             break;
+          case MESSAGE_TARGET.TOGGLE_SERVICE: {
+            let service:ServiceData = confirmationMessage.params[0];
+            this.k8sService
+              .toggleService(service.id,!service.status)
+              .then(res => {
+                m.message = 'SERVICE.SUCCESSFUL_TOGGLE';
+                this.messageService.inlineAlertMessage(m);
+                this.retrieve();
+              })
+              .catch(err => {
+                m.message = 'SERVICE.FAILED_TO_TOGGLE';
+                this.messageService.inlineAlertMessage(m);
+              });
+              break;
+          }
         }
       }
     });
@@ -96,7 +111,7 @@ export class ListServiceComponent implements OnInit, OnDestroy {
       case 1:
         return 'SERVICE.STATUS_RUNNING';
       case 2:
-        return 'SERVICE.SUSPENDING';
+        return 'SERVICE.STATUS_STOPPED';
     }
   }
 

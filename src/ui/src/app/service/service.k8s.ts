@@ -95,6 +95,18 @@ export class K8sService {
       .catch(err => Promise.reject(err));
   }
 
+  removeFile(formData: FormData): Promise<boolean> {
+    let headers = new Headers();
+    headers.append('token', this.appInitService.token);
+    let options = new RequestOptions({headers: headers});
+    return this.http.post(`/api/v1/files/remove`, formData, options).toPromise()
+      .then(resp => {
+        this.appInitService.chainResponse(resp);
+        return resp.status == 200;
+      })
+      .catch(err => Promise.reject(err));
+  }
+
   uploadFile(formData: FormData): Promise<boolean> {
     let headers = new Headers();
     headers.append('token', this.appInitService.token);
@@ -134,6 +146,18 @@ export class K8sService {
       .catch(err => Promise.reject(err));
   }
 
+  getDeployStatus(serviceName: string): Promise<object> {
+    let options = new RequestOptions({
+      headers: this.defaultHeader
+    });
+    return this.http.get(`/api/v1/namespaces/default/services/${serviceName}`, options).toPromise()
+      .then(res => {
+        this.appInitService.chainResponse(res);
+        return res.json();
+      })
+      .catch(err => Promise.reject(err));
+  }
+
   getImages(image_name?: string, image_list_page?: number, image_list_page_size?: number): Promise<Image[]> {
     let options = new RequestOptions({
       headers: this.defaultHeader,
@@ -166,24 +190,51 @@ export class K8sService {
 
   getServices(): Promise<Service[]> {
     return this.http
-      .get(`/api/v1/services`, { headers: this.defaultHeader })
+      .get(`/api/v1/services`, {headers: this.defaultHeader})
       .toPromise()
-      .then(res=>{
+      .then(res => {
         this.appInitService.chainResponse(res);
         return <Service[]>res.json();
       })
-      .catch(err=>Promise.reject(err));
+      .catch(err => Promise.reject(err));
   }
 
   deleteService(serviceID: number): Promise<any> {
     return this.http
-      .delete(`/api/v1/services/${serviceID}`, { headers: this.defaultHeader })
+      .delete(`/api/v1/services/${serviceID}`, {headers: this.defaultHeader})
       .toPromise()
-      .then(res=>{
+      .then(res => {
         this.appInitService.chainResponse(res);
         return res;
       })
-      .catch(err=>Promise.reject(err));
+      .catch(err => Promise.reject(err));
   }
-  
+
+  toggleService(serviceID: number, isStart: boolean): Promise<any> {
+    return this.http
+      .put(`/api/v1/services/${serviceID}/toggle`, {project_togglable: isStart}, {headers: this.defaultHeader})
+      .toPromise()
+      .then(res => {
+        this.appInitService.chainResponse(res);
+        return res;
+      })
+      .catch(err => Promise.reject(err));
+  }
+
+  getConsole(jobName: string, buildSerialId?: string): Promise<string> {
+    return this.http
+      .get(`/api/v1/jenkins-job/console`, {
+        headers: this.defaultHeader,
+        params: {
+          "job_name": jobName,
+          "build_serial_id": buildSerialId
+        }
+      })
+      .toPromise()
+      .then(res => {
+        this.appInitService.chainResponse(res);
+        return res.text();
+      })
+      .catch(err => Promise.reject(err));
+  }
 }

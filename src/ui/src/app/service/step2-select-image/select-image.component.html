@@ -28,7 +28,10 @@
                  (onChange)="changeSelectImageDetail(selectedImage.image_name,$event)">
     </cs-dropdown>
   </div>
-  <clr-icon  class="dynamic-icon plus" shape="plus" (click)="addSelectImage()"></clr-icon>
+  <div class="plus-container">
+    <clr-icon class="dynamic-icon" shape="plus" (click)="addSelectImage()"></clr-icon>
+    <span class="base-margin-left">{{"SERVICE.STEP_2_ADD_NEW_IMAGE_DES"|translate}}</span>
+  </div>
 </div>
 <environment-value
   *ngIf="isOpenEnvironment"
@@ -116,7 +119,7 @@
         </div>
         <div class="file-list"
              *ngFor="let file of filesList.get(customerNewImage.image_name)">
-          <clr-icon class="dynamic-icon" shape="minus"></clr-icon>
+          <clr-icon class="dynamic-icon" shape="minus" (click)="removeFile(file)"></clr-icon>
           {{file.file_name}}
         </div>
         <div class="create-image-area-container">
@@ -133,9 +136,15 @@
       <div class="console-container">
         <textarea title="" id="areaStatus" class="area-status" readonly>{{consoleText}}</textarea>
         <button class="btn btn-primary default-primary"
-                [disabled]="isNeedAutoRefreshImageList || !newImageFormValid"
+                [disabled]="isNeedAutoRefreshImageList || !isInputComponentsValid"
                 (click)="buildImage()">
           {{"SERVICE.STEP_2_BUILD_IMAGE" | translate}}
+        </button>
+        <button class="btn btn-primary default-primary"
+                *ngIf="isNeedAutoRefreshImageList"
+                [disabled]="autoRefreshTimesCount < 15"
+                (click)="cancelBuildImage()">
+          {{"SERVICE.STEP_2_CANCEL_WAIT" | translate}}
         </button>
         <span *ngIf="isNeedAutoRefreshImageList" class="spinner spinner-sm"></span>
       </div>

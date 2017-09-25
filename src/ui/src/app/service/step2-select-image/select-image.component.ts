@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, QueryList, ViewChildren, AfterContentChecked } from '@angular/core';
 import {
   ServiceStep1Output,
   ServiceStep2Output,
@@ -22,20 +22,22 @@ type alertType = "alert-info" | "alert-danger";
   templateUrl: './select-image.component.html',
   styleUrls: ["./select-image.component.css"]
 })
-export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDestroy {
+export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDestroy, AfterContentChecked {
   @Input() data: any;
   @ViewChildren(CsInputArrayComponent) inputArrayComponents: QueryList<CsInputArrayComponent>;
   @ViewChildren(CsInputComponent) inputComponents: QueryList<CsInputComponent>;
   patternNewImageName: RegExp = /^[a-z\d.]+$/;
   patternNewImageTag: RegExp = /^[a-z\d.]+$/;
-  patternBaseImage: RegExp = /^[a-z\d.]+$/;
+  patternBaseImage: RegExp = /^[a-z\d.:]+$/;
   patternExpose: RegExp = /^[\d-\s\w/\\]+$/;
   patternVolume: RegExp = /^[a-zA-Z_]+$/;
   patternRun: RegExp = /^[a-zA-Z_]+$/;
-  patternEntryPoint:RegExp = /^[a-zA-Z_]+$/;
+  patternEntryPoint: RegExp = /^[a-zA-Z_]+$/;
   _isOpenEnvironment = false;
   intervalAutoRefreshImageList: any;
   isNeedAutoRefreshImageList: boolean = false;
+  isInputComponentsValid: boolean = false;
+  autoRefreshTimesCount: number = 0;
   imageSource: ImageSource = ImageSource.fromBoardRegistry;
   imageSourceList: Array<Image>;
   imageSelectList: Array<Image>;
@@ -43,7 +45,6 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
   imageDetailSelectList: Map<string, ImageDetail>;
   imageTemplateList: Array<Object> = [{name: "Docker File Template"}];
   customerNewImage: ServiceStep2NewImageType;
-  customerCreateImage: Image;
   outputData: ServiceStep2Output;
   filesList: Map<string, Array<{path: string, file_name: string, size: number}>>;
   consoleText: string = "";
@@ -61,28 +62,26 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
     this.imageDetailSelectList = new Map<string, ImageDetail>();
     this.imageDetailSourceList = new Map<string, Array<ImageDetail>>();
     this.filesList = new Map<string, Array<{path: string, file_name: string, size: number}>>();
-    this.customerCreateImage = new Image();
   }
 
   ngOnInit() {
-    this.customerCreateImage.image_name = "SERVICE.STEP_2_CREATE_IMAGE";
-    this.customerCreateImage["isSpecial"] = true;
-    this.customerCreateImage["OnlyClick"] = true;
     this.k8sService.getImages("", 0, 0)
       .then(res => {
         this.imageSourceList = res;
-        this.imageSourceList.unshift(this.customerCreateImage);
+        this.unshiftCustomerCreateImage();
       })
       .catch(err => this.messageService.dispatchError(err));
     this.intervalAutoRefreshImageList = setInterval(() => {
       if (this.isNeedAutoRefreshImageList) {
+        this.autoRefreshTimesCount++;
         this.isNewImageAlertOpen = false;
         this.k8sService.getImages("", 0, 0).then(res => {
           res.forEach(value => {
             let newImageName = `${this.customerNewImage.project_name}/${this.customerNewImage.image_name}`;
             if (value.image_name == newImageName) {
               this.isNeedAutoRefreshImageList = false;
-              this.imageSourceList = res;
+              this.imageSourceList = Object.create(res);
+              this.unshiftCustomerCreateImage();
               this.imageSelectList[this.newImageIndex] = value;
               this.setImageDetailList(value.image_name);
               this.isOpenNewImage = false;
@@ -98,6 +97,11 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
             this.isNewImageAlertOpen = true;
           }
         });
+        this.k8sService.getConsole("process_image").then(res => {
+          this.consoleText = res;
+        }).catch(() => {
+          this.consoleText = "";
+        })
       }
     }, AUTO_REFRESH_IMAGE_LIST);
   }
@@ -105,6 +109,24 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
   ngOnDestroy() {
     this.k8sService.setStepData(2, this.outputData);
     clearInterval(this.intervalAutoRefreshImageList);
+  }
+
+  ngAfterContentChecked() {
+    this.isInputComponentsValid = true;
+    if (this.inputArrayComponents) {
+      this.inputArrayComponents.forEach(item => {
+        if (!item.arrayIsValid()) {
+          this.isInputComponentsValid = false;
+        }
+      });
+    }
+    if (this.isInputComponentsValid && this.inputComponents) {
+      this.inputComponents.forEach(item => {
+        if (!item.valid) {
+          this.isInputComponentsValid = false;
+        }
+      });
+    }
   }
 
   set isOpenEnvironment(value) {
@@ -132,7 +154,7 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
   get isCanNextStep(): boolean {
     let hasSelectImage = this.imageSelectList.filter(value => {
         return value.image_name != "SERVICE.STEP_2_SELECT_IMAGE";
-      }).length > 0;
+      }).length == this.imageSelectList.length;
     return hasSelectImage && this.imageDetailSelectList.size > 0;
   }
 
@@ -156,19 +178,12 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
     return result;
   }
 
-  get newImageFormValid(): boolean {
-    let result = true;
-    this.inputArrayComponents.forEach(item => {
-      if (!item.arrayIsValid()) {
-        result = false;
-      }
-    });
-    this.inputComponents.forEach(item => {
-      if (!item.valid) {
-        result = false;
-      }
-    });
-    return result;
+  unshiftCustomerCreateImage(){
+    let customerCreateImage:Image = new Image();
+    customerCreateImage.image_name = "SERVICE.STEP_2_CREATE_IMAGE";
+    customerCreateImage["isSpecial"] = true;
+    customerCreateImage["OnlyClick"] = true;
+    this.imageSourceList.unshift(customerCreateImage);
   }
 
   shieldEnter($event: KeyboardEvent) {
@@ -235,6 +250,7 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
   buildImage() {
     this.isNewImageAlertOpen = false;
     this.isNeedAutoRefreshImageList = true;
+    this.autoRefreshTimesCount = 0;
     this.k8sService.buildImage(this.customerNewImage)
       .then(res => res)
       .catch((err) => {
@@ -357,5 +373,32 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
       }
     });
     this.k8sService.stepSource.next(3);
+  }
+
+  cancelBuildImage() {
+    this.isNeedAutoRefreshImageList = false;
+    this.isOpenNewImage = false;
+  }
+
+  removeFile(file: {path: string, file_name: string, size: number}) {
+    this.isNewImageAlertOpen = false;
+    let fromRemoveData: FormData = new FormData();
+    fromRemoveData.append("project_name", this.customerNewImage.project_name);
+    fromRemoveData.append("image_name", this.customerNewImage.image_name);
+    fromRemoveData.append("tag_name", this.customerNewImage.image_tag);
+    fromRemoveData.append("file_name", file.file_name);
+    this.k8sService.removeFile(fromRemoveData).then(res => {
+      this.asyncGetDockerFilePreviewInfo();
+    }).catch(err => {
+      console.log(err);
+      if (err && err.status == 401) {
+        this.isOpenNewImage = false;
+        this.messageService.dispatchError(err);
+      } else {
+        this.newImageAlertType = "alert-danger";
+        this.newImageErrMessage = "SERVICE.STEP_2_REMOVE_FILE_FAILED";
+        this.isNewImageAlertOpen = true;
+      }
+    });
   }
 }

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, AfterContentChecked, QueryList, ViewChildren } from '@angular/core';
 import {
   ImageDockerfile,
   ServiceStep2Output, ServiceStep2Type, ServiceStep3Output, ServiceStep3Type,
@@ -8,22 +8,24 @@ import { K8sService } from '../service.k8s';
 import { MessageService } from "../../shared/message-service/message.service";
 import { EnvType } from "../environment-value/environment-value.component";
 import { Message } from "../../shared/message-service/message";
+import { CsInputComponent } from "../cs-input/cs-input.component";
 
 enum ContainerStatus{csNew, csSelectedImage}
 @Component({
   templateUrl: './edit-container.component.html',
   styleUrls: ["./edit-container.component.css"]
 })
-export class EditContainerComponent implements ServiceStepComponent, OnInit, OnDestroy {
+export class EditContainerComponent implements ServiceStepComponent, OnInit, OnDestroy, AfterContentChecked {
   @Input() data: any;
+  @ViewChildren(CsInputComponent) inputComponents: QueryList<CsInputComponent>;
   patternContainerName: RegExp = /^[a-zA-Z_-]+$/;
   patternWorkdir: RegExp = /^~?[\w\d-\/.{}$\/:]+[\s]*$/;
-
   step2Output: ServiceStep2Output;
   step3Output: ServiceStep3Output;
   containerStatusList: Array<ContainerStatus>;
   showVolumeMounts = false;
   showEnvironmentValue = false;
+  isInputComponentsValid = false;
 
   constructor(private k8sService: K8sService,
               private messageService: MessageService) {
@@ -33,16 +35,25 @@ export class EditContainerComponent implements ServiceStepComponent, OnInit, OnD
 
   ngOnInit() {
     this.step2Output = this.k8sService.getStepData(2) as ServiceStep2Output;
-    this.containerStatusList.push(ContainerStatus.csNew)
   }
 
   ngOnDestroy() {
     this.k8sService.setStepData(3, this.step3Output);
   }
 
-  get isCanNextStep(): boolean {
+  ngAfterContentChecked() {
+    this.isInputComponentsValid = true;
+    if (this.inputComponents) {
+      this.inputComponents.forEach(item => {
+        if (!item.valid) {
+          this.isInputComponentsValid = false;
+        }
+      });
+    }
+  }
 
-    return this.step3Output.length > 0;
+  get isCanNextStep(): boolean {
+    return this.step3Output.length > 0 && this.isInputComponentsValid;
   }
 
   get selfObject() {

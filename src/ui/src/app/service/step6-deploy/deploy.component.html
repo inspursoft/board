@@ -1,18 +1,20 @@
-<div style="display: flex;flex-direction: column;margin-top: 30px;">
-  <div style="display:flex;min-height: 100px;align-items: center">
+<div class="step6-container">
+  <div class="step6-deploy-container">
     <span>{{"SERVICE.STEP_6_DEPLOY"|translate}}:</span>
-    <div class="step6-icon-container" [ngClass]="{'deploy':isInDeployIng}">
-      <div class="step6-start-icon" (click)="serviceDeploy()"></div>
+    <div class="step6-icon-container" (click)="serviceDeploy()" [ngClass]="{'deploy':isInDeployIng}">
+      <div class="step6-start-icon"></div>
     </div>
-    <span *ngIf="isInDeployIng" style="margin-left: 50px;" class="spinner spinner-md"></span>
+    <span *ngIf="isInDeployIng" class="spinner spinner-md step6-spinner"></span>
   </div>
-  <div style="display:flex;min-height: 100px;align-items: center">
+  <div class="step6-journal-container">
     <label for="areaJournal">{{"SERVICE.STEP_6_JOURNAL"|translate}}:</label>
-    <textarea id="areaJournal"
-              rows="5"
-              style="margin-left: 10px;max-width: 500px"
-              [(ngModel)]="consoleText">
-    </textarea>
+    <textarea id="areaJournal" rows="10" class="step6-journal" [(ngModel)]="consoleText" readonly></textarea>
   </div>
 </div>
 <button class="btn btn-default" [disabled]="!isInDeployed" (click)="deployComplete()">OK</button>
+<button class="btn btn-primary default-primary"
+        *ngIf="isNeedAutoRefreshDeployStatus"
+        [disabled]="autoRefreshTimesCount < 15"
+        (click)="deployComplete()">
+  {{"SERVICE.STEP_6_CANCEL_WAIT" | translate}}
+</button>
