@@ -23,6 +23,7 @@ const (
 	serviceAPI             = "/api/v1/namespaces/"
 	test                   = "test"
 	NA                     = "NA"
+	NotFound               = "NotFound"
 	serviceNamespace       = "default" //TODO create in project post
 )
 
@@ -456,11 +457,21 @@ func stopService(s *model.ServiceStatus) error {
 
 func (p *ServiceController) GetServiceInfoAction() {
 	var serviceInfo model.ServiceInfoStruct
+
 	//Get Nodeport
 	serviceName := p.Ctx.Input.Param(":service_name")
 	serviceUrl := fmt.Sprintf("%s/api/v1/namespaces/default/services/%s", kubeMasterURL(), serviceName)
 	logs.Debug("Get Service info serviceUrl(service):%+s", serviceUrl)
-	serviceStatus, err := service.GetServiceStatus(serviceUrl)
+	serviceStatus, err, flag := service.GetServiceStatus(serviceUrl)
+
+	var errOutput interface{}
+	if flag == false {
+		json.Unmarshal([]byte(err.Error()), &errOutput)
+		p.Data["json"] = errOutput
+		p.ServeJSON()
+		return
+	}
+
 	if err != nil {
 		p.internalError(err)
 		return
@@ -469,17 +480,33 @@ func (p *ServiceController) GetServiceInfoAction() {
 	//Get NodeIP
 	endpointUrl := fmt.Sprintf("%s/api/v1/namespaces/default/endpoints/%s", kubeMasterURL(), serviceName)
 	logs.Debug("Get Service info serviceUrl(endpoint):%+s", endpointUrl)
-	endpointStatus, err := service.GetEndpointStatus(endpointUrl)
+	endpointStatus, err, flag := service.GetEndpointStatus(endpointUrl)
+	if flag == false {
+		json.Unmarshal([]byte(err.Error()), &errOutput)
+		p.Data["json"] = errOutput
+		p.ServeJSON()
+		return
+	}
+
 	if err != nil {
 		p.internalError(err)
 		return
 	}
 
 	if len(serviceStatus.Spec.Ports) == 0 || len(endpointStatus.Subsets) == 0 {
-		serviceInfo.NodeName = NA
+		serviceInfo.NodeName = append(serviceInfo.NodeName, NA)
 	} else {
-		serviceInfo.NodePort = serviceStatus.Spec.Ports[0].NodePort
-		serviceInfo.NodeName = *endpointStatus.Subsets[0].Addresses[0].NodeName
+		for _, por := range serviceStatus.Spec.Ports {
+			serviceInfo.NodePort = append(serviceInfo.NodePort, por.NodePort)
+		}
+		for _, sub := range endpointStatus.Subsets {
+			for _, add := range sub.Addresses {
+				serviceInfo.NodeName = append(serviceInfo.NodeName, *add.NodeName)
+			}
+		}
+
+		//serviceInfo.NodePort = serviceStatus.Spec.Ports[0].NodePort
+		//serviceInfo.NodeName = *endpointStatus.Subsets[0].Addresses[0].NodeName
 	}
 
 	p.Data["json"] = serviceInfo
@@ -490,8 +517,15 @@ func (p *ServiceController) GetServiceStatusAction() {
 	serviceName := p.Ctx.Input.Param(":service_name")
 	serviceUrl := fmt.Sprintf("%s/api/v1/namespaces/default/services/%s", kubeMasterURL(), serviceName)
 	logs.Debug("Get Service Status serviceUrl:%+s", serviceUrl)
+	serviceStatus, err, flag := service.GetServiceStatus(serviceUrl)
 
-	serviceStatus, err := service.GetServiceStatus(serviceUrl)
+	var errOutput interface{}
+	if flag == false {
+		json.Unmarshal([]byte(err.Error()), &errOutput)
+		p.Data["json"] = errOutput
+		p.ServeJSON()
+		return
+	}
 	if err != nil {
 		p.internalError(err)
 		return
