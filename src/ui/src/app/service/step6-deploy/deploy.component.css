@@ -1,3 +1,15 @@
+div.step6-container {
+  display: flex;
+  flex-direction: column;
+  margin-top: 30px;
+}
+
+div.step6-deploy-container {
+  display: flex;
+  min-height: 100px;
+  align-items: center;
+}
+
 div.step6-start-icon {
   border-radius: 5px;
   border: 14px solid transparent;
@@ -5,7 +17,21 @@ div.step6-start-icon {
   border-right: 0 solid transparent;
   width: 14px;
   height: 14px;
-  cursor: pointer;
+}
+
+span.step6-spinner {
+  margin-left: 50px;
+}
+
+div.step6-journal-container {
+  display: flex;
+  min-height: 100px;
+  align-items: center;
+}
+
+textarea.step6-journal {
+  margin-left: 10px;
+  max-width: 500px
 }
 
 div.step6-icon-container {
@@ -16,6 +42,7 @@ div.step6-icon-container {
   width: 40px;
   height: 30px;
   border-radius: 5px;
+  cursor: pointer;
   background-color: black;
 }
 
