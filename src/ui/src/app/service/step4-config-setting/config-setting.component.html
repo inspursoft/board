@@ -26,7 +26,7 @@
   </div>
   <div *ngIf="showAdvanced" class="advanced-item-container" (click)="showExternal = !showExternal">
     <div class="advanced-item-icon-container"
-         [ngClass]="{'external-open':showExternal,'external-close':!showExternal}">
+         [ngClass]="{'external-close':showExternal,'external-open':!showExternal}">
       <clr-icon shape="caret up" class="advanced-item-icon"></clr-icon>
     </div>
     <span class="base-margin-left">{{"SERVICE.STEP_4_EXTERNAL_SERVICE"|translate}}:</span>
@@ -99,7 +99,7 @@
   </div>
   <div *ngIf="showAdvanced" class="advanced-item-container" (click)="showCollaborative = !showCollaborative">
     <div class="advanced-item-icon-container"
-         [ngClass]="{'collaborative-open':showCollaborative,'collaborative-close':!showCollaborative}">
+         [ngClass]="{'collaborative-close':showCollaborative,'collaborative-open':!showCollaborative}">
       <clr-icon shape="caret up" class="advanced-item-icon"></clr-icon>
     </div>
     <span class="base-margin-left">{{"SERVICE.STEP_4_COLLABORATIVE"|translate}}:</span>

@@ -37,6 +37,7 @@ export class EnvironmentValueComponent implements OnInit, AfterContentChecked {
   inputValidatorMsg: Array<{validatorKey: string, validatorMessage: string}>;
   @ViewChildren(CsInputComponent) inputComponents: QueryList<CsInputComponent>;
   @Input() inputEnvsData: Array<EnvType>;
+  @Input() inputFixedKeyList: Array<string>;
 
   constructor() {
     this.envsData = Array<EnvType>();

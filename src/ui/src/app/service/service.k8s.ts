@@ -146,11 +146,11 @@ export class K8sService {
       .catch(err => Promise.reject(err));
   }
 
-  getDeployStatus(serviceName: string): Promise<object> {
+  getDeployStatus(serviceName: string): Promise<Object> {
     let options = new RequestOptions({
       headers: this.defaultHeader
     });
-    return this.http.get(`/api/v1/namespaces/default/services/${serviceName}`, options).toPromise()
+    return this.http.get(`/api/v1/services/status/${serviceName}`, options).toPromise()
       .then(res => {
         this.appInitService.chainResponse(res);
         return res.json();
@@ -199,6 +199,17 @@ export class K8sService {
       .catch(err => Promise.reject(err));
   }
 
+  getServiceDetail(serviceName:string):Promise<Object>{
+    return this.http
+      .get(`/api/v1/services/info/${serviceName}`, {headers: this.defaultHeader})
+      .toPromise()
+      .then(res => {
+        this.appInitService.chainResponse(res);
+        return res.json();
+      })
+      .catch(err => Promise.reject(err));
+  }
+
   deleteService(serviceID: number): Promise<any> {
     return this.http
       .delete(`/api/v1/services/${serviceID}`, {headers: this.defaultHeader})
@@ -236,5 +247,16 @@ export class K8sService {
         return res.text();
       })
       .catch(err => Promise.reject(err));
+  }
+
+  getNodesList(): Promise<any> {
+    return this.http
+      .get(`/api/v1/nodes`, { headers: this.defaultHeader })
+      .toPromise()
+      .then(res=>{
+        this.appInitService.chainResponse(res);
+        return res.json();
+      })
+      .catch(err=>Promise.reject(err));
   }
 }

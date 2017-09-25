@@ -202,6 +202,7 @@ export const LANG_ZH_CN = {
   },
   "SERVICE": {
     "CREATE_SERVICE": "创建服务",
+    "SERVICE_DETAIL": "服务详情",
     "SERVICE_NAME": "服务名称",
     "PROJECT_NAME": "项目名称",
     "OWNER": "所有者",
@@ -257,6 +258,7 @@ export const LANG_ZH_CN = {
     "STEP_2_CANCEL_WAIT":"取消等待",
     "STEP_2_REMOVE_FILE_FAILED":"删除文件失败。",
     "STEP_2_ADD_NEW_IMAGE_DES":"添加镜像。",
+    "STEP_2_GET_IMAGE_TAG":"获取Tag",
     "STEP_3_IMAGE_SELECTED":"已经选择了该镜像。",
     "STEP_3_CONTAINER_NAME":"容器名称",
     "STEP_3_WORKING_DIR":"工作路径",

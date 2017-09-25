@@ -15,7 +15,11 @@
     <div *ngFor="let envInfo of envsData;let iEnv = index" class="env-item-container">
       <div class="env-item-title-container">
         <span class="env-item-title-no">{{iEnv + 1}}.</span>
-        <clr-icon class="env-icon" shape="minus" (click)="envMinusClick(iEnv)"></clr-icon>
+        <clr-icon class="env-icon"
+                  shape="minus"
+                  *ngIf="!inputFixedKeyList || inputFixedKeyList.indexOf(envInfo.envName) == -1"
+                  (click)="envMinusClick(iEnv)">
+        </clr-icon>
       </div>
         <cs-input class="env-item-input"
                   [inputIsRequired]="true"

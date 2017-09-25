@@ -22,18 +22,23 @@ class ServiceData {
 }
 
 @Component({
-  templateUrl: './list-service.component.html'
+  templateUrl: './list-service.component.html',
+  styleUrls: ["./list-service.component.css"]
 })
 export class ListServiceComponent implements OnInit, OnDestroy {
   @Input() data: any;
   currentUser: {[key: string]: any};
   services: Service[];
-
+  isOpenServiceDetail = false;
+  serviceDetail: string = "";
+  serviceDetailName: string = "";
+  urlList: Array<string>;
   _subscription: Subscription;
 
   constructor(private appInitService: AppInitService,
               private k8sService: K8sService,
               private messageService: MessageService) {
+    this.urlList = Array<string>();
     this._subscription = this.messageService.messageConfirmed$.subscribe(m => {
       let confirmationMessage = <Message>m;
       if (confirmationMessage) {
@@ -55,9 +60,9 @@ export class ListServiceComponent implements OnInit, OnDestroy {
               });
             break;
           case MESSAGE_TARGET.TOGGLE_SERVICE: {
-            let service:ServiceData = confirmationMessage.params[0];
+            let service: ServiceData = confirmationMessage.params[0];
             this.k8sService
-              .toggleService(service.id,!service.status)
+              .toggleService(service.id, !service.status)
               .then(res => {
                 m.message = 'SERVICE.SUCCESSFUL_TOGGLE';
                 this.messageService.inlineAlertMessage(m);
@@ -68,7 +73,7 @@ export class ListServiceComponent implements OnInit, OnDestroy {
                 m.type = MESSAGE_TYPE.COMMON_ERROR;
                 this.messageService.inlineAlertMessage(m);
               });
-              break;
+            break;
           }
         }
       }
@@ -157,5 +162,27 @@ export class ListServiceComponent implements OnInit, OnDestroy {
 
   confirmToDeleteService(s: Service) {
 
+  }
+
+  getServiceDetail(serviceName: string): void {
+    this.urlList = [];
+    this.serviceDetailName = serviceName;
+    this.k8sService.getServiceDetail(serviceName).then(res => {
+      if (!res["details"]) {
+        let arrNodePort = res["node_Port"] as Array<number>;
+        this.k8sService.getNodesList().then(res => {
+          let arrNode = res as Array<{node_name: string, node_ip: string, status: number}>;
+          arrNode.forEach(node => {
+            if (node.status == 1) {
+              arrNodePort.forEach(port => {
+                this.urlList.push(`http://${node.node_ip}:${port}`);
+              });
+            }
+          });
+        });
+      }
+      this.serviceDetail = JSON.stringify(res);
+      this.isOpenServiceDetail = true;
+    }).catch(err => this.messageService.dispatchError(err))
   }
 }
