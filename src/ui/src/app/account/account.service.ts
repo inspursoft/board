@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Http, Headers } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
+import { NgXCookies } from 'ngx-cookies';
 
 import { AppInitService } from '../app.init.service';
 import { Account } from './account';
@@ -49,12 +50,14 @@ export class AccountService {
         BASE_URL + '/log-out',
         {
           params: {
-            'token': this.appInitService.token
+            'username': this.appInitService.currentUser.user_name
           }
         }
       )
       .toPromise()
-      .then(res=>res)
+      .then(res=>{
+        NgXCookies.deleteCookie('token');
+      })
       .catch(err=>Promise.reject(err));
   }
 } 

@@ -40,6 +40,10 @@ func (u *AuthController) SignInAction() {
 			u.serveStatus(http.StatusBadRequest, "Incorrect username or password.")
 			return
 		}
+		if memoryCache.IsExist(user.Username) {
+			u.serveStatus(http.StatusConflict, "The user has already signed in other place.")
+			return
+		}
 
 		payload := make(map[string]interface{})
 		payload["id"] = strconv.Itoa(int(user.ID))
@@ -53,7 +57,7 @@ func (u *AuthController) SignInAction() {
 			u.internalError(err)
 			return
 		}
-		memoryCache.Put(token.TokenString, token.TokenString, time.Second*time.Duration(tokenCacheExpireSeconds))
+		memoryCache.Put(user.Username, token.TokenString, time.Second*time.Duration(tokenCacheExpireSeconds))
 		u.Data["json"] = token
 		u.ServeJSON()
 	}
