@@ -11,8 +11,8 @@
         <clr-dg-cell>{{n.node_ip}}</clr-dg-cell>
         <clr-dg-cell>{{ getStatus(n.status) | translate }}</clr-dg-cell>
         <clr-dg-cell>
-          <a *ngIf="n.status === 2" href="javascript:void(0)" (click)="confirmToToggleNodeStatus(n.node_name, n.status)"><clr-icon shape="play" class="is-solid"></clr-icon></a>
-          <a *ngIf="n.status === 1" href="javascript:void(0)" (click)="confirmToToggleNodeStatus(n.node_name, n.status)"><clr-icon shape="stop" class="is-solid"></clr-icon></a>
+          <a *ngIf="n.status === 2" href="javascript:void(0)" (click)="confirmToToggleNodeStatus(n.node_name, n.status)"><clr-icon shape="play"></clr-icon></a>
+          <a *ngIf="n.status === 1" href="javascript:void(0)" (click)="confirmToToggleNodeStatus(n.node_name, n.status)"><clr-icon shape="pause"></clr-icon></a>
           <a *ngIf="n.status === 3"><clr-icon shape="no-access" class="is-solid"></clr-icon></a>
         </clr-dg-cell>
       </clr-dg-row>
