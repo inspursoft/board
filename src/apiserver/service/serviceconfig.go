@@ -80,26 +80,32 @@ func DeleteService(serviceID int64) (bool, error) {
 	return true, nil
 }
 
-func GetServiceStatus(serviceUrl string) (modelK8s.Service, error) {
+func GetServiceStatus(serviceUrl string) (modelK8s.Service, error, bool) {
 	var service modelK8s.Service
 
-	err := k8sGet(&service, serviceUrl)
+	flag, err := k8sGet(&service, serviceUrl)
+	if flag == false {
+		return service, err, false
+	}
 	if err != nil {
-		return service, err
+		return service, err, true
 	}
 
-	return service, err
+	return service, err, true
 }
 
-func GetEndpointStatus(serviceUrl string) (modelK8s.Endpoints, error) {
+func GetEndpointStatus(serviceUrl string) (modelK8s.Endpoints, error, bool) {
 	var endpoint modelK8s.Endpoints
 
-	err := k8sGet(&endpoint, serviceUrl)
+	flag, err := k8sGet(&endpoint, serviceUrl)
+	if flag == false {
+		return endpoint, err, false
+	}
 	if err != nil {
-		return endpoint, err
+		return endpoint, err, true
 	}
 
-	return endpoint, err
+	return endpoint, err, true
 }
 
 func GetService(service model.ServiceStatus, selectedFields ...string) (*model.ServiceStatus, error) {
