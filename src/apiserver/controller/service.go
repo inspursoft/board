@@ -265,8 +265,28 @@ func (p *ServiceController) DeleteServiceAction() {
 		p.internalError(err)
 		return
 	}
-	// TODO check service id exist
-	// TODO call stop service if running
+	// Check service id exist
+	var servicequery model.ServiceStatus
+	servicequery.ID = int64(serviceID)
+	s, err := service.GetService(servicequery, "id")
+	if err != nil {
+		p.internalError(err)
+		return
+	} else if s == nil {
+		logs.Info("Invalid service ID", serviceID)
+		p.CustomAbort(http.StatusBadRequest, "Invalid service ID.")
+		return
+	}
+
+	// Call stop service if running
+	if s.Status == running {
+		err = stopService(s)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+	}
+
 	isSuccess, err := service.DeleteService(serviceID)
 	if err != nil {
 		p.internalError(err)
@@ -313,6 +333,7 @@ func (p *ServiceController) ToggleServiceAction() {
 	} else if s == nil {
 		logs.Info("Invalid service ID", serviceID)
 		p.CustomAbort(http.StatusBadRequest, "Invalid service ID.")
+		return
 	}
 
 	if s.Status == stopped && reqServiceToggle.Toggle == false {
