@@ -108,6 +108,31 @@ After successfully deploy the service, user can monitor the service status from 
 
 ### Examples to create services
 
+#### Example demoshow
+Deploy a service "demoshow"
+<img src="img/userguide/demoshow-a.PNG" width="100" alt="Board login">
+
+<img src="img/userguide/demoshow-d.PNG" width="100" alt="Select project">
+
+<img src="img/userguide/demoshow-e.PNG" width="100" alt="Select image">
+
+<img src="img/userguide/demoshow-f.PNG" width="100" alt="Container image">
+
+<img src="img/userguide/demoshow-g.PNG" width="100" alt="Container name">
+
+<img src="img/userguide/demoshow-h.PNG" width="100" alt="Container port">
+
+<img src="img/userguide/demoshow-i.PNG" width="100" alt="Service name">
+
+<img src="img/userguide/demoshow-j.PNG" width="100" alt="Service port">
+
+<img src="img/userguide/demoshow-k.PNG" width="100" alt="Service test">
+
+<img src="img/userguide/demoshow-l.PNG" width="100" alt="Service deploy">
+
+<img src="img/userguide/demoshow-m.PNG" width="100" alt="Service success">
+
+
 ## Search Projects, Services, Users and Images
 
 ## Monitoring Dashboard
