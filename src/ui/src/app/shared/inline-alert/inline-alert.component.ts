@@ -26,6 +26,7 @@ export class InlineAlertComponent implements OnDestroy {
     private translateService: TranslateService
   ){
     this.inlineAlertClosed = true;
+    
     let hnd: any;
     this._subscription = this.messageService
       .inlineAlertAnnounced$
@@ -33,6 +34,7 @@ export class InlineAlertComponent implements OnDestroy {
       .subscribe(m=>{
         let inlineMessage = <Message>m;
         if(inlineMessage) {
+          this.inlineAlertType = 'alert-success';
           hnd = setTimeout(()=>{this.inlineAlertClosed = true; clearTimeout(hnd);}, DISMISS_INLINE_ALERT_INTERVAL); 
           this.translateService.get(inlineMessage.message, inlineMessage.params || [])
             .subscribe(res=>{

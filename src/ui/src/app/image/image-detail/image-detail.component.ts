@@ -2,6 +2,8 @@ import { Component, Input, Output, EventEmitter, OnInit } from "@angular/core"
 import { Image, ImageDetail } from "../image"
 import { ImageService } from "../image-service/image-service";
 import { MessageService } from "../../shared/message-service/message.service";
+import { MESSAGE_TARGET, BUTTON_STYLE } from '../../shared/shared.const';
+import { Message } from '../../shared/message-service/message';
 
 @Component({
   selector: "image-detail",
@@ -13,10 +15,13 @@ export class ImageDetailComponent implements OnInit {
   _isOpen: boolean;
   alertClosed: boolean;
   @Input() curImage: Image;
-  showDeleteAlert: boolean = false;
+  showDeleteAlert: boolean[];
   imageDetailPageSize: number = 10;
   imageDetailErrMsg: string = "";
   imageDetailList: ImageDetail[] = Array<ImageDetail>();
+
+  loadingWIP: boolean;
+  @Output() reload = new EventEmitter<boolean>();
 
   @Input()
   get isOpen() {
@@ -31,9 +36,10 @@ export class ImageDetailComponent implements OnInit {
 
   @Output() isOpenChange: EventEmitter<boolean> = new EventEmitter<boolean>();
 
-  constructor(private imageService: ImageService,
-              private messageService: MessageService) {
-  }
+  constructor(
+    private imageService: ImageService,
+    private messageService: MessageService
+  ) {}
 
   ngOnInit() {
     this.getImageDetailList();
@@ -41,16 +47,39 @@ export class ImageDetailComponent implements OnInit {
 
   getImageDetailList() {
     if (this.curImage && this.curImage.image_name) {
+      this.loadingWIP = true;
       this.imageService.getImageDetailList(this.curImage.image_name)
         .then((res: ImageDetail[]) => {
-          for (let item of res) {
+          this.loadingWIP = false;
+          for (let item of res || []) {
             item['image_detail'] = JSON.parse(item['image_detail']);
             item['image_size_number'] = Number.parseFloat((item['image_size_number'] / (1024 * 1024)).toFixed(2));
             item['image_size_unit'] = 'MB';
           }
-          this.imageDetailList = res;
+          this.showDeleteAlert = new Array(this.imageDetailList.length);
+          this.imageDetailList = res || [];
+          
         })
-        .catch(err => this.messageService.dispatchError(err));
+        .catch(err =>{
+          this.loadingWIP = false;
+          this.messageService.dispatchError(err)
+        });
     }
+  }
+
+  deleteTag(tagName: string) {
+    let m: Message = new Message();
+    this.imageService
+      .deleteImages(this.curImage.image_name, tagName)
+      .then(res=>{
+        m.message = 'IMAGE.SUCCESSFUL_DELETED_TAG';
+        this.messageService.inlineAlertMessage(m);
+        this.getImageDetailList();
+        this.reload.emit(true);
+      })
+      .catch(err=>{
+        m.message = 'IMAGE.FAILED_TO_DELETE_TAG';
+        this.messageService.inlineAlertMessage(m);
+      });
   }
 }

@@ -6,7 +6,7 @@ import { AppInitService } from '../../app.init.service';
 import { K8sService } from '../service.k8s';
 import { Service } from '../service';
 import { MessageService } from '../../shared/message-service/message.service';
-import { MESSAGE_TARGET, BUTTON_STYLE } from '../../shared/shared.const';
+import { MESSAGE_TARGET, BUTTON_STYLE, MESSAGE_TYPE } from '../../shared/shared.const';
 import { Message } from '../../shared/message-service/message';
 
 class ServiceData {
@@ -50,6 +50,7 @@ export class ListServiceComponent implements OnInit, OnDestroy {
               })
               .catch(err => {
                 m.message = 'SERVICE.FAILED_TO_DELETE';
+                m.type = MESSAGE_TYPE.COMMON_ERROR;
                 this.messageService.inlineAlertMessage(m);
               });
             break;
@@ -64,6 +65,7 @@ export class ListServiceComponent implements OnInit, OnDestroy {
               })
               .catch(err => {
                 m.message = 'SERVICE.FAILED_TO_TOGGLE';
+                m.type = MESSAGE_TYPE.COMMON_ERROR;
                 this.messageService.inlineAlertMessage(m);
               });
               break;
@@ -123,10 +125,6 @@ export class ListServiceComponent implements OnInit, OnDestroy {
 
   }
 
-  toggleServiceStatus(s: Service) {
-
-  }
-
   confirmToServiceAction(s: Service, action: string): void {
     let serviceData = new ServiceData(s.service_id, s.service_name, (s.service_status === 1));
     let title: string;
@@ -150,7 +148,7 @@ export class ListServiceComponent implements OnInit, OnDestroy {
     let announceMessage = new Message();
     announceMessage.title = title;
     announceMessage.message = message;
-    announceMessage.params = [serviceData];
+    announceMessage.params = [ s.service_name ];
     announceMessage.target = target;
     announceMessage.buttons = buttonStyle;
     announceMessage.data = serviceData;

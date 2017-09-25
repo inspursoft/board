@@ -35,14 +35,28 @@ export class ImageService {
   }
 
   getImageDetailList(image_name: string): Promise<ImageDetail[]> {
-    let options = new RequestOptions({
-      headers: this.defaultHeader
-    });
-    return this.http.get(`/api/v1/images/${image_name}`, options)
+    return this.http.get(`/api/v1/images/${image_name}`, { headers: this.defaultHeader })
       .toPromise()
       .then(res => {
         this.appInitService.chainResponse(res);
         return res.json();
+      })
+      .catch(err => Promise.reject(err));
+  }
+
+  deleteImages(imageName: string, tag?: string): Promise<any> {
+    return this.http
+      .delete(`/api/v1/images`, 
+        { headers: this.defaultHeader,
+          params: { 
+            image_name: imageName,
+            image_tag: tag 
+          }
+        })
+      .toPromise()
+      .then(res => {
+        this.appInitService.chainResponse(res);
+        return res;
       })
       .catch(err => Promise.reject(err));
   }

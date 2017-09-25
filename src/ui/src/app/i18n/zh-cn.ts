@@ -190,7 +190,15 @@ export const LANG_ZH_CN = {
     "COL_SIZE":"大小",
     "COL_OPERATION":"操作",
     "DETAIL_TITLE":"镜像",
-    "DELETE_IMAGE_ITEM":"删除镜像详情"
+    "DELETE_IMAGE_ITEM":"删除镜像详情",
+    "DELETE_IMAGE": "删除镜像",
+    "CONFIRM_TO_DELETE_IMAGE": "确认删除镜像 {{0}}?",
+    "DELETE_TAG": "删除标签",
+    "CONFIRM_TO_DELETE_TAG": "确认删除标签 {{0}}?",
+    "SUCCESSFUL_DELETED_IMAGE": "删除镜像成功。",
+    "FAILED_TO_DELETE_IMAGE": "删除镜像失败。",
+    "SUCCESSFUL_DELETED_TAG": "删除标签成功。",
+    "FAILED_TO_DELETE_TAG": "删除标签失败。"
   },
   "SERVICE": {
     "CREATE_SERVICE": "创建服务",
@@ -286,9 +294,9 @@ export const LANG_ZH_CN = {
     "STATUS_PUBLIC": "公开",
     "STATUS_PRIVATE": "私有",
     "TOGGLE_SERVICE": "切换服务状态",
-    "CONFIRM_TO_TOGGLE_SERVICE": "确认切换当前服务状态吗？",
+    "CONFIRM_TO_TOGGLE_SERVICE": "确认切换服务 {{0}} 的状态？",
     "DELETE_SERVICE": "删除服务",
-    "CONFIRM_TO_DELETE_SERVICE": "确认删除服务吗?",
+    "CONFIRM_TO_DELETE_SERVICE": "确认删除服务 {{0}}?",
     "SUCCESSFUL_DELETE": "删除服务成功。",
     "SUCCESSFUL_TOGGLE": "切换服务状态成功。",
     "FAILED_TO_TOGGLE": "切换服务状态失败。",
@@ -334,6 +342,6 @@ export const LANG_ZH_CN = {
     "SUCCESSFUL_TOGGLE": "切换节点状态成功。",
     "FAILED_TO_TOGGLE": "切换节点状态失败。",
     "TOGGLE_NODE": "切换状态",
-    "CONFIRM_TO_TOGGLE_NODE": "确认切换节点状态？"
+    "CONFIRM_TO_TOGGLE_NODE": "确认切换节点 {{0}} 的状态？"
   }
 };
