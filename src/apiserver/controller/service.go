@@ -23,6 +23,7 @@ const (
 	serviceAPI             = "/api/v1/namespaces/"
 	test                   = "test"
 	NA                     = "NA"
+	NotFound               = "NotFound"
 	serviceNamespace       = "default" //TODO create in project post
 )
 
@@ -456,11 +457,21 @@ func stopService(s *model.ServiceStatus) error {
 
 func (p *ServiceController) GetServiceInfoAction() {
 	var serviceInfo model.ServiceInfoStruct
+
 	//Get Nodeport
 	serviceName := p.Ctx.Input.Param(":service_name")
 	serviceUrl := fmt.Sprintf("%s/api/v1/namespaces/default/services/%s", kubeMasterURL(), serviceName)
 	logs.Debug("Get Service info serviceUrl(service):%+s", serviceUrl)
-	serviceStatus, err := service.GetServiceStatus(serviceUrl)
+	serviceStatus, err, flag := service.GetServiceStatus(serviceUrl)
+
+	var errOutput interface{}
+	if flag == false {
+		json.Unmarshal([]byte(err.Error()), &errOutput)
+		p.Data["json"] = errOutput
+		p.ServeJSON()
+		return
+	}
+
 	if err != nil {
 		p.internalError(err)
 		return
@@ -469,7 +480,14 @@ func (p *ServiceController) GetServiceInfoAction() {
 	//Get NodeIP
 	endpointUrl := fmt.Sprintf("%s/api/v1/namespaces/default/endpoints/%s", kubeMasterURL(), serviceName)
 	logs.Debug("Get Service info serviceUrl(endpoint):%+s", endpointUrl)
-	endpointStatus, err := service.GetEndpointStatus(endpointUrl)
+	endpointStatus, err, flag := service.GetEndpointStatus(endpointUrl)
+	if flag == false {
+		json.Unmarshal([]byte(err.Error()), &errOutput)
+		p.Data["json"] = errOutput
+		p.ServeJSON()
+		return
+	}
+
 	if err != nil {
 		p.internalError(err)
 		return
@@ -490,8 +508,15 @@ func (p *ServiceController) GetServiceStatusAction() {
 	serviceName := p.Ctx.Input.Param(":service_name")
 	serviceUrl := fmt.Sprintf("%s/api/v1/namespaces/default/services/%s", kubeMasterURL(), serviceName)
 	logs.Debug("Get Service Status serviceUrl:%+s", serviceUrl)
+	serviceStatus, err, flag := service.GetServiceStatus(serviceUrl)
 
-	serviceStatus, err := service.GetServiceStatus(serviceUrl)
+	var errOutput interface{}
+	if flag == false {
+		json.Unmarshal([]byte(err.Error()), &errOutput)
+		p.Data["json"] = errOutput
+		p.ServeJSON()
+		return
+	}
 	if err != nil {
 		p.internalError(err)
 		return

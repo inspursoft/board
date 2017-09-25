@@ -2,6 +2,7 @@ package service
 
 import (
 	"encoding/json"
+	"errors"
 
 	"git/inspursoft/board/src/common/utils"
 	"io/ioutil"
@@ -55,22 +56,26 @@ func Resume(nodeName string) (bool, error) {
 }
 
 //get resource form k8s api-server
-func k8sGet(resource interface{}, url string) error {
+func k8sGet(resource interface{}, url string) (bool, error) {
 	resp, err := http.Get(url)
+
 	if err != nil {
-		return err
+		return true, err
 	}
 
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return true, err
 	}
 
+	if resp.StatusCode == http.StatusNotFound {
+		return false, errors.New(string(body))
+	}
 	err = json.Unmarshal(body, resource)
 	if err != nil {
-		return err
+		return true, err
 	}
 
-	return nil
+	return true, nil
 }
