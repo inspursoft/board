@@ -34,20 +34,17 @@ export class DeployComponent implements OnInit, OnDestroy {
         this.k8sService.getDeployStatus(this.output4.service_yaml.service_name)
           .then(res => {
             this.consoleText = JSON.stringify(res);
-            this.isNeedAutoRefreshDeployStatus = false;
-            this.isInDeployed = true;
-            this.isInDeployIng = false;
+            if (!res["code"]){
+              this.isNeedAutoRefreshDeployStatus = false;
+              this.isInDeployed = true;
+              this.isInDeployIng = false;
+            }
           }).catch(err => {
-          if (err && err.status == 404) {
-            this.consoleText = JSON.stringify(err.json());
-          } else {
             this.isNeedAutoRefreshDeployStatus = false;
             this.messageService.dispatchError(err);
-          }
         });
       }
     }, AUTO_REFRESH_DEPLOY_STATUS);
-
   }
 
   ngOnDestroy() {

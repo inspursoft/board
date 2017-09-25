@@ -26,11 +26,13 @@ export class EditContainerComponent implements ServiceStepComponent, OnInit, OnD
   showVolumeMounts = false;
   showEnvironmentValue = false;
   isInputComponentsValid = false;
+  fixedEnvKeys: Array<string>;
 
   constructor(private k8sService: K8sService,
               private messageService: MessageService) {
     this.step3Output = Array<ServiceStep3Type>();
     this.containerStatusList = Array<ContainerStatus>();
+    this.fixedEnvKeys = Array<string>();
   }
 
   ngOnInit() {
@@ -92,7 +94,8 @@ export class EditContainerComponent implements ServiceStepComponent, OnInit, OnD
           }
           if (res.image_env) {
             res.image_env.forEach(value => {//copy env
-              config.container_envs.push({env_name: value.dockerfile_envname, env_value: value.dockerfile_envvalue})
+              config.container_envs.push({env_name: value.dockerfile_envname, env_value: value.dockerfile_envvalue});
+              this.fixedEnvKeys.push(value.dockerfile_envname);
             });
           }
           if (res.image_expose) {
@@ -101,7 +104,8 @@ export class EditContainerComponent implements ServiceStepComponent, OnInit, OnD
             });
           }
         })
-        .catch(err => this.messageService.dispatchError(err));
+        .catch(() => {
+        });
     }
   }
 
