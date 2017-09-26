@@ -56,6 +56,30 @@ func (p *ImageController) GetImagesAction() {
 	for _, imagename := range repolist.Names {
 		var newImage model.Image
 		newImage.ImageName = imagename
+
+		var reqTagList tagList
+		tagListURL := registryURL() + "/v2/" + imagename + "/tags/list"
+		httpresp, err := http.Get(tagListURL)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+		body, err := ioutil.ReadAll(httpresp.Body)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+		defer httpresp.Body.Close()
+
+		err = json.Unmarshal(body, &reqTagList)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+		if len(reqTagList.Tags) == 0 {
+			continue
+		}
+
 		// Check image in DB
 		dbimage, err := service.GetImage(newImage, "name")
 		if err != nil {
@@ -442,24 +466,24 @@ func (p *ImageController) DeleteImageAction() {
 		resp.Body.Close()
 	}
 
-	var image model.Image
-	image.ImageName = imageName
-
-	dbImage, err := service.GetImage(image, "name")
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if dbImage == nil {
-		p.serveStatus(http.StatusNotFound, "Image name not found")
-		return
-	}
-
-	err = service.DeleteImage(*dbImage)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
+	//	var image model.Image
+	//	image.ImageName = imageName
+	//
+	//	dbImage, err := service.GetImage(image, "name")
+	//	if err != nil {
+	//		p.internalError(err)
+	//		return
+	//	}
+	//	if dbImage == nil {
+	//		p.serveStatus(http.StatusNotFound, "Image name not found")
+	//		return
+	//	}
+	//
+	//	err = service.DeleteImage(*dbImage)
+	//	if err != nil {
+	//		p.internalError(err)
+	//		return
+	//	}
 }
 
 func (p *ImageController) DeleteImageTagAction() {
@@ -510,23 +534,23 @@ func (p *ImageController) DeleteImageTagAction() {
 		return
 	}
 
-	var imageTag model.ImageTag
-	imageTag.ImageName = imageName
-	imageTag.Tag = _imageTag
-
-	dbImageTag, err := service.GetImageTag(imageTag, "image_name", "tag")
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if dbImageTag == nil {
-		p.serveStatus(http.StatusNotFound, "Image name or tag not found")
-		return
-	}
-
-	err = service.DeleteImageTag(*dbImageTag)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
+	//	var imageTag model.ImageTag
+	//	imageTag.ImageName = imageName
+	//	imageTag.Tag = _imageTag
+	//
+	//	dbImageTag, err := service.GetImageTag(imageTag, "image_name", "tag")
+	//	if err != nil {
+	//		p.internalError(err)
+	//		return
+	//	}
+	//	if dbImageTag == nil {
+	//		p.serveStatus(http.StatusNotFound, "Image name or tag not found")
+	//		return
+	//	}
+	//
+	//	err = service.DeleteImageTag(*dbImageTag)
+	//	if err != nil {
+	//		p.internalError(err)
+	//		return
+	//	}
 }
