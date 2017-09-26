@@ -1,3 +1,4 @@
+<service-detail ></service-detail>
 <div class="row flex-items-xs-right">
   <div class="col-xs-12" style="flex: 0;">
     <button class="btn btn-primary"
@@ -33,8 +34,8 @@
           <a href="javascript:void(0)">
             <clr-icon shape="trash" (click)="confirmToServiceAction(s, 'DELETE')"></clr-icon>
           </a>
-          <a href="javascript:void(0)" (click)="getServiceDetail(s.service_name)">
-            <clr-icon shape="info"></clr-icon>
+          <a href="javascript:void(0)" (click)="openServiceDetail(s.service_name)">
+            <clr-icon shape="info-standard"></clr-icon>
           </a>
         </clr-dg-cell>
       </clr-dg-row>
@@ -42,22 +43,3 @@
     </clr-datagrid>
   </div>
 </div>
-
-<clr-modal *ngIf="isOpenServiceDetail"
-           [(clrModalOpen)]="isOpenServiceDetail"
-           [clrModalSize]="'md'">
-  <h3 class="modal-title">{{ "SERVICE.SERVICE_DETAIL" | translate }}</h3>
-  <fieldset class="modal-body fieldSet-default">
-    <div class="service-detail-container">
-      <div class="service-detail-line-container">
-        <span class="service-detail-text">{{ "SERVICE.SERVICE_NAME" | translate }}:</span>
-        <span class="service-detail-service-name">{{serviceDetailName}}</span>
-      </div>
-      <div *ngFor="let url of urlList;let iUrl = index" class="service-detail-line-container">
-        <span class="service-detail-text">{{iUrl == 0 ? 'Urls:' : ''}} </span>
-        <a [href]="url" target="_blank" class="service-detail-link-text">{{url}}</a>
-      </div>
-    </div>
-    <textarea title="" rows="5" class="area-detail" readonly>{{serviceDetail}}</textarea>
-  </fieldset>
-</clr-modal>
