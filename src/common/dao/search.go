@@ -70,3 +70,11 @@ func SearchService(para string) ([]model.ServiceStatus, error) {
 	_, err := qs.Filter("deleted", 0).Filter("status__gte", 1).Filter("name__contains", para).All(&svr)
 	return svr, err
 }
+
+func SearchPublicSvr(para string) ([]model.ServiceStatus, error) {
+	var svr []model.ServiceStatus
+	o := orm.NewOrm()
+	qs := o.QueryTable("service_status")
+	_, err := qs.Filter("deleted", 0).Filter("public",1).Filter("status__gte", 1).Filter("name__contains", para).All(&svr)
+	return svr, err
+}
