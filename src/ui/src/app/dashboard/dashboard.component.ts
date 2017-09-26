@@ -122,7 +122,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
 
   ngAfterViewInit() {
     this.IntervalAutoRefresh = setInterval(() => {
-      // this.autoRefreshCurDada();
+      this.autoRefreshCurDada();
       this.LineTypeSet.forEach(value => {
         this.autoRefreshDada(value);
       });
