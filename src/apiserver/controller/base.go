@@ -115,13 +115,15 @@ func (b *baseController) getCurrentUser() *model.User {
 	return nil
 }
 
-func (b *baseController) signOff() {
+func (b *baseController) signOff() error {
 	username := b.GetString("username")
 	err := memoryCache.Delete(username)
 	if err != nil {
 		logs.Error("Failed to delete username from memory cache: %+v", err)
+		return err
 	}
 	logs.Info("Successful sign off from API server.")
+	return nil
 }
 
 func signToken(payload map[string]interface{}) (*model.Token, error) {

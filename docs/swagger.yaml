@@ -175,6 +175,26 @@ paths:
           description: Incorrect username or password.
         500:
           description: Unexpected internal error.
+  /v1/log-out:
+    get:
+      summary: Log out session for current user account.
+      description: |
+        Log out system with available username. 
+      parameters:
+        - name: username
+          in: query
+          description: Available username.
+          required: true
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: User logged out successfully.
+        400:
+          description: Incorrect username.
+        500:
+          description: Unexpected internal error.
   /v1/users/{user_id}:
     get:
       summary: Get user by ID.
