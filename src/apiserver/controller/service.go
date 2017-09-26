@@ -337,17 +337,17 @@ func (p *ServiceController) ToggleServiceAction() {
 		return
 	}
 
-	if s.Status == stopped && reqServiceToggle.Toggle == false {
+	if s.Status == stopped && reqServiceToggle.Toggle == 0 {
 		logs.Info("Service already stopped")
 		return
 	}
 
-	if s.Status == running && reqServiceToggle.Toggle == true {
+	if s.Status == running && reqServiceToggle.Toggle == 1 {
 		logs.Info("Service already running")
 		return
 	}
 
-	if reqServiceToggle.Toggle == false {
+	if reqServiceToggle.Toggle == 0 {
 		// stop service
 		err = stopService(s)
 		if err != nil {
@@ -532,4 +532,49 @@ func (p *ServiceController) GetServiceStatusAction() {
 
 	p.Data["json"] = serviceStatus
 	p.ServeJSON()
+}
+
+func (p *ServiceController) ServicePublicityAction() {
+	var err error
+	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	reqData, err := p.resolveBody()
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	var reqServiceUpdate model.ServicePublicityUpdate
+	err = json.Unmarshal(reqData, &reqServiceUpdate)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	logs.Info(reqServiceUpdate)
+
+	// Check the current service status
+	var servicequery model.ServiceStatus
+	servicequery.ID = int64(serviceID)
+	s, err := service.GetService(servicequery, "id")
+	if err != nil {
+		p.internalError(err)
+		return
+	} else if s == nil {
+		logs.Info("Invalid service ID", serviceID)
+		p.CustomAbort(http.StatusBadRequest, "Invalid service ID.")
+		return
+	}
+	if s.Public != reqServiceUpdate.Public {
+		servicequery.Public = reqServiceUpdate.Public
+		_, err = service.UpdateService(servicequery, "public")
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+	} else {
+		logs.Info("Already in target publicity status")
+	}
 }
