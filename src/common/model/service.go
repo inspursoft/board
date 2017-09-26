@@ -31,3 +31,7 @@ type ServiceInfoStruct struct {
 type ServiceToggle struct {
 	Toggle bool `json:"service_toggle"`
 }
+
+type ServicePublicityUpdate struct {
+	Public int `json:"service_public"`
+}
