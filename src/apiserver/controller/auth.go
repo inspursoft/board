@@ -149,7 +149,10 @@ func (u *AuthController) CurrentUserAction() {
 }
 
 func (u *AuthController) LogOutAction() {
-	u.signOff()
+	err := u.signOff()
+	if err != nil {
+		u.CustomAbort(http.StatusBadRequest, "Incorrect username to log out.")
+	}
 }
 
 func (u *AuthController) UserExists() {
