@@ -44,7 +44,9 @@ func SearchSource(user *model.User, searchPara string) (searchResult SearchResul
 	)
 	if user == nil {
 		resProject, err = dao.SearchPublicProject(searchPara)
+		resSvr, err = searchPublicService(searchPara)
 		searchResult.ProjectResult = resProject
+		searchResult.ServiceResult = resSvr
 	} else {
 
 		resProject, err = dao.SearchPrivateProject(searchPara, user.Username)
@@ -140,6 +142,17 @@ func searchNode(para string) (res []SearchNodeResult, err error) {
 }
 func searchService(searchPara string) (res []SearchServiceResult, err error) {
 	resSvr, err := dao.SearchService(searchPara)
+	for _, val := range resSvr {
+		var svr SearchServiceResult
+		svr.ServiceName = val.Name
+		svr.ProjectName = val.ProjectName
+		res = append(res, svr)
+	}
+	return res, err
+}
+
+func searchPublicService(searchPara string) (res []SearchServiceResult, err error) {
+	resSvr, err := dao.SearchPublicSvr(searchPara)
 	for _, val := range resSvr {
 		var svr SearchServiceResult
 		svr.ServiceName = val.Name
