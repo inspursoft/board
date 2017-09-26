@@ -23,6 +23,10 @@ span.cs-input-span {
   line-height: 30px;
 }
 
+span.cs-input-span.enable{
+  cursor: text;
+}
+
 label.cs-input-field-container {
   height: 30px;
   margin-left: 10px;

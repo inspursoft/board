@@ -60,9 +60,9 @@ export class ListServiceComponent implements OnInit, OnDestroy {
               });
             break;
           case MESSAGE_TARGET.TOGGLE_SERVICE: {
-            let service: ServiceData = confirmationMessage.params[0];
+            let service: ServiceData = confirmationMessage.data;
             this.k8sService
-              .toggleService(service.id, !service.status)
+              .toggleService(service.id, service.status ? 0 : 1)
               .then(res => {
                 m.message = 'SERVICE.SUCCESSFUL_TOGGLE';
                 this.messageService.inlineAlertMessage(m);
