@@ -52,8 +52,36 @@ Besides the above three roles, there are two system-wide roles:
 * **Anonymous**: When a user is not logged in, the user is considered as an "Anonymous" user. An anonymous user has no access to private projects and has read-only access to public projects and services.  
 
 ## Manage Projects
+A project in Board contains all services, images etc., There are two types of projects in Board:
+
+* **Public**: All users have the read privilege to a public project, it's convenient for you to share some services or others in this way.
+
+* **Private**: A private project can only be accessed by users with proper privileges.
+
+You can create a project after you signed in. Check on the "Public/Private" checkbox will make this project public.
+
+<img src="img/userguide/create-project.png" width="100" alt="Board create project">
+
+After the project is created, you can browse services, users and images using the navigation bar on  the left.
 
 ## Manage Members of a Project
+### Adding members
+
+You can add members with different roles to an existing project.
+
+<img src="img/userguide/add-members.png" width="100" alt="Board add members">
+
+### Updating and removing members
+
+You can update or remove a member by clicking the left arrow to remove or right to add member in the middle of the users and members list.
+
+<img src="img/userguide/add-remove-members.png" width="100" alt="Board add remove members">
+
+### Changing member role
+
+You can change member's role by clicking role radio button below.
+
+<img src="img/userguide/change-member-role.png" width="100" alt="Board change member role">
 
 ## Manage Services
 
@@ -202,6 +230,32 @@ dashboard show the statistical real-time and average numbers
 ![search](img/userguide/dashboard_storage.png) 
 
 ## Administrator Options
+* Administrator options provide user management which can add, change or remove user by an admin user.
+
+* **NOTE**: This option only provide to user with system-admin role.
+### List current users in Board
+* This list show all users signed up in Board. 
+* 
+<img src="img/userguide/list-all-users.png" width="100" alt="Board list all users">
+
+* **NOTE**: Admin user which is the system default first user cannot be manipulated. 
+
+* The user with system-admin role can change other user's privileges.
+
+### Manipulate users in Board
+* User can be created by clicking "Add User" button.
+
+<img src="img/userguide/add-user.png" width="100" alt="Board add user">
+
+* User can be edited by clicking pencil button.
+
+<img src="img/userguide/edit-user.png" width="100" alt="Board edit user">
+
+* Delete user from list. 
+
+<img src="img/userguide/delete-user.png" width="100" alt="Board delete user">
+
+* **NOTE**: User currently only can be deleted as set 'deleted' flag as 1.
 
 ## Q&A
 
