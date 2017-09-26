@@ -171,18 +171,17 @@ Deploy a service "demoshow"
 
 <img src="img/userguide/demoshow-j.PNG" width="100" alt="Service port">
 
-* Test the service
-
-<img src="img/userguide/demoshow-k.PNG" width="100" alt="Service test">
-
 * Deploy the service demoshow
 
-<img src="img/userguide/demoshow-l.PNG" width="100" alt="Service deploy">
+<img src="img/userguide/demoshow-todeploy.PNG" width="100" alt="Service deploy">
 
 * Deploy the demoshow successfully
 
-<img src="img/userguide/demoshow-m.PNG" width="100" alt="Service success">
+<img src="img/userguide/demoshow-deploy.PNG" width="100" alt="Service success">
 
+* Service can be showed in service list
+
+<img src="img/userguide/demoshow-ok.PNG" width="100" alt="Service success">
 
 ## Search Projects, Services, Users and Images
 Board search  engine could search project, service, users and image.
