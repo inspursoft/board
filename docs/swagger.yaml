@@ -2617,8 +2617,9 @@ definitions:
     type: object
     properties:
       service_toggle:
-        type: boolean
-        description: The new toggle value, true for run false for stop.
+        type: integer
+        format: int32
+        description: The new toggle value, 1 for run 0 for stop.
   ServicePublicityUpdate:
     type: object
     properties:

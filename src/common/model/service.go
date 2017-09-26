@@ -29,7 +29,7 @@ type ServiceInfoStruct struct {
 //}
 
 type ServiceToggle struct {
-	Toggle bool `json:"service_toggle"`
+	Toggle int `json:"service_toggle"`
 }
 
 type ServicePublicityUpdate struct {

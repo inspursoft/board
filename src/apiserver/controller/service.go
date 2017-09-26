@@ -337,17 +337,17 @@ func (p *ServiceController) ToggleServiceAction() {
 		return
 	}
 
-	if s.Status == stopped && reqServiceToggle.Toggle == false {
+	if s.Status == stopped && reqServiceToggle.Toggle == 0 {
 		logs.Info("Service already stopped")
 		return
 	}
 
-	if s.Status == running && reqServiceToggle.Toggle == true {
+	if s.Status == running && reqServiceToggle.Toggle == 1 {
 		logs.Info("Service already running")
 		return
 	}
 
-	if reqServiceToggle.Toggle == false {
+	if reqServiceToggle.Toggle == 0 {
 		// stop service
 		err = stopService(s)
 		if err != nil {
