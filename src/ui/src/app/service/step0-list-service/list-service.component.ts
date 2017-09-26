@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ViewChild } from '@angular/core';
 
 import { Subscription } from 'rxjs/Subscription';
 
@@ -8,6 +8,8 @@ import { Service } from '../service';
 import { MessageService } from '../../shared/message-service/message.service';
 import { MESSAGE_TARGET, BUTTON_STYLE, MESSAGE_TYPE } from '../../shared/shared.const';
 import { Message } from '../../shared/message-service/message';
+
+import { ServiceDetailComponent } from './service-detail/service-detail.component';
 
 class ServiceData {
   id: number;
@@ -22,23 +24,19 @@ class ServiceData {
 }
 
 @Component({
-  templateUrl: './list-service.component.html',
-  styleUrls: ["./list-service.component.css"]
+  templateUrl: './list-service.component.html'
 })
 export class ListServiceComponent implements OnInit, OnDestroy {
   @Input() data: any;
   currentUser: {[key: string]: any};
   services: Service[];
-  isOpenServiceDetail = false;
-  serviceDetail: string = "";
-  serviceDetailName: string = "";
-  urlList: Array<string>;
   _subscription: Subscription;
+
+  @ViewChild(ServiceDetailComponent) serviceDetailComponent;
 
   constructor(private appInitService: AppInitService,
               private k8sService: K8sService,
               private messageService: MessageService) {
-    this.urlList = Array<string>();
     this._subscription = this.messageService.messageConfirmed$.subscribe(m => {
       let confirmationMessage = <Message>m;
       if (confirmationMessage) {
@@ -164,25 +162,8 @@ export class ListServiceComponent implements OnInit, OnDestroy {
 
   }
 
-  getServiceDetail(serviceName: string): void {
-    this.urlList = [];
-    this.serviceDetailName = serviceName;
-    this.k8sService.getServiceDetail(serviceName).then(res => {
-      if (!res["details"]) {
-        let arrNodePort = res["node_Port"] as Array<number>;
-        this.k8sService.getNodesList().then(res => {
-          let arrNode = res as Array<{node_name: string, node_ip: string, status: number}>;
-          arrNode.forEach(node => {
-            if (node.status == 1) {
-              arrNodePort.forEach(port => {
-                this.urlList.push(`http://${node.node_ip}:${port}`);
-              });
-            }
-          });
-        });
-      }
-      this.serviceDetail = JSON.stringify(res);
-      this.isOpenServiceDetail = true;
-    }).catch(err => this.messageService.dispatchError(err))
+  openServiceDetail(serviceName: string) {
+    this.serviceDetailComponent.openModal(serviceName);
   }
+
 }

@@ -23,7 +23,10 @@
       <clr-dg-column>{{ 'GLOBAL_SEARCH.SERVICE_NAME' | translate }}</clr-dg-column>
       <clr-dg-column>{{ 'GLOBAL_SEARCH.PROJECT_NAME' | translate }}</clr-dg-column>     
       <clr-dg-row *clrDgItems="let s of globalSearch.service_result">
-        <clr-dg-cell><a href="javascript:void(0)" routerLink="/services" (click)="navigateTo('/services')">{{ s.service_name }}</a></clr-dg-cell>
+        <clr-dg-cell [ngSwitch]="hasSignedIn">
+          <a *ngSwitchCase="true" href="javascript:void(0)" routerLink="/services" (click)="navigateTo('/services')">{{ s.service_name }}</a>
+          <ng-template ngSwitchDefault>{{ s.service_name }}</ng-template>
+        </clr-dg-cell>
         <clr-dg-cell>{{ s.project_name }}</clr-dg-cell>
       </clr-dg-row>
       <clr-dg-footer>
