@@ -4,6 +4,7 @@
          (click)="onEditClick()"
          class="cs-input-label">{{inputLabel}}:<span *ngIf="inputIsRequired" class="asterisk">*</span></label>
   <span *ngIf="inputField.status == 0"
+        [ngClass]="{'enable':!isDisabled}"
         (click)="onEditClick()"
         class="cs-input-span">{{inputField.value}}</span>
   <label *ngIf="inputField.status == 1 && inputType != 1"

@@ -99,7 +99,7 @@
                (chartInit)="onEChartInit(0,$event)"
                [options]="LineOptions.get(0)"
                [dataset]="LineData.get(0)"
-               (mousedown)="chartMouseDown(0,$event)"
+               (mouseup)="chartMouseUp(0,$event)"
                (chartDataZoom)="chartDataZoom(0,$event)"
                style="height: 300px">
           </div>
@@ -151,7 +151,7 @@
           <div echarts
                (chartInit)="onEChartInit(1,$event)"
                [options]="LineOptions.get(1)"
-               (mousedown)="chartMouseDown(1,$event)"
+               (mouseup)="chartMouseUp(1,$event)"
                [dataset]="LineData.get(1)"
                (chartDataZoom)="chartDataZoom(1,$event)"
                style="height: 300px">
@@ -186,10 +186,12 @@
           </clr-dropdown>
         </div>
         <div class="caption_container">
-          <span
-            class="first-line">{{ 'DASHBOARD.USAGE' | translate }}:{{CurValue.get(2)?.curFirst}}{{StorageUnit}}</span>
-          <span
-            class="second-line">{{ 'DASHBOARD.TOTAL' | translate   }}:{{CurValue.get(2)?.curSecond}}{{StorageUnit}}</span>
+          <span class="first-line">
+            {{ 'DASHBOARD.USAGE' | translate }}:{{CurValue.get(2)?.curFirst}}{{StorageUnit}}
+          </span>
+          <span class="second-line">
+            {{'DASHBOARD.TOTAL' | translate }}:{{CurValue.get(2)?.curSecond}}{{StorageUnit}}
+          </span>
         </div>
         <div class="select-time-container">
           <time-range-scale [curScale]="Query.get(2) ? Query.get(2).scale:{}"
@@ -205,7 +207,7 @@
           </div>
           <div echarts
                (chartInit)="onEChartInit(2,$event)"
-               (mousedown)="chartMouseDown(2,$event)"
+               (mouseup)="chartMouseUp(2,$event)"
                [options]="LineOptions.get(2)"
                [dataset]="LineData.get(2)"
                (chartDataZoom)="chartDataZoom(2,$event)"

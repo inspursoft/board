@@ -122,7 +122,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
 
   ngAfterViewInit() {
     this.IntervalAutoRefresh = setInterval(() => {
-      this.autoRefreshCurDada();
+      // this.autoRefreshCurDada();
       this.LineTypeSet.forEach(value => {
         this.autoRefreshDada(value);
       });
@@ -283,7 +283,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
       this.LineTypeSet.forEach(lineType => {
         let query = {
           time_count: 1,
-          time_unit: this.Query.get(lineType).scale.value,
+          time_unit: "second",
           list_name: "",
           timestamp_base: this._ServerTimeStamp
         };
@@ -464,7 +464,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
       this.refreshLineDataByDrag(lineType, true);
       this.EventDragChange.next({lineType: lineType, isDragBack: true});
     }
-    else if (zoomEnd == 100 && zoomStart > 0 && lineState.InDrop && !lineState.InRefreshIng && !lineState.IsCanAutoRefresh) {//get forward data
+    else if (zoomEnd == 100 && zoomStart > 0 && !lineState.InRefreshIng && !lineState.IsCanAutoRefresh) {//get forward data
       this.refreshLineDataByDrag(lineType, false);
       this.EventDragChange.next({lineType: lineType, isDragBack: false});
     }
@@ -526,7 +526,6 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
         queryTimeStamp = maxLineTimeStamp;
       }
       this.LineTypeSet.forEach((value: LineType) => {
-        this.LineStateInfo.get(value).IsCanAutoRefresh = false;
         this.Query.get(value).scale = data;
         this.Query.get(value).time_count = MAX_COUNT_PER_PAGE;
         this.Query.get(value).timestamp_base = queryTimeStamp;
@@ -582,7 +581,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     });
   }
 
-  chartMouseDown(lineType: LineType, event: Object) {
+  chartMouseUp(lineType: LineType, event: Object) {
     this.afterDragZoomBar(lineType);
   }
 

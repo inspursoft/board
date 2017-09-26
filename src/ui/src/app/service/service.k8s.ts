@@ -221,9 +221,9 @@ export class K8sService {
       .catch(err => Promise.reject(err));
   }
 
-  toggleService(serviceID: number, isStart: boolean): Promise<any> {
+  toggleService(serviceID: number, isStart: 0 | 1): Promise<any> {
     return this.http
-      .put(`/api/v1/services/${serviceID}/toggle`, {project_togglable: isStart}, {headers: this.defaultHeader})
+      .put(`/api/v1/services/${serviceID}/toggle`, {service_toggle: isStart}, {headers: this.defaultHeader})
       .toPromise()
       .then(res => {
         this.appInitService.chainResponse(res);
