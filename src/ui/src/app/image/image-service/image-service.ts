@@ -46,10 +46,9 @@ export class ImageService {
 
   deleteImages(imageName: string, tag?: string): Promise<any> {
     return this.http
-      .delete(`/api/v1/images`, 
+      .delete(`/api/v1/images/${imageName}`, 
         { headers: this.defaultHeader,
           params: { 
-            image_name: imageName,
             image_tag: tag 
           }
         })
