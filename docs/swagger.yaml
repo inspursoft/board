@@ -1125,6 +1125,40 @@ paths:
           description: Invalid service ID.
         500:
           description: Unexpected internal errors.    
+  /v1/services/{service_id}/publicity:
+    put:  
+      summary: Update service publicity for a selected service.yy
+      description: |
+        This endpoint is aimed to toggle a service publicity status.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.
+        - name: service_publicity
+          in: body
+          required: true 
+          schema:
+            $ref: '#/definitions/ServicePublicityUpdate'
+          description: New publicity status of this service.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Toggle this service successfully.
+        401:
+          description: User need to log in first.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.    
   /v1/node:
     get:
       summary: Return nodes in Board added by admin.
@@ -2565,6 +2599,12 @@ definitions:
       service_toggle:
         type: boolean
         description: The new toggle value, true for run false for stop.
+  ServicePublicityUpdate:
+    type: object
+    properties:
+      service_public: 
+        type: integer
+        description: 1-public, 0-not.
   ServiceConfig:
     type: object
     properties:
