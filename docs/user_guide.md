@@ -157,8 +157,49 @@ Deploy a service "demoshow"
 
 
 ## Search Projects, Services, Users and Images
+Board search  engine could search project, service, users and image.
+### Search categories
+* **project**:
+Users can search projects with some constraints: 
+
+
+ > 1. Ordinary users only can search these projects which they blong to 
+   and common project 
+ > 2. System admin can search all of projetcs
+
+
+* **service**:
+Users can search services with some constraints: 
+
+ > 1.  Ordinary users only can search services which is owner of the service，
+    or blong a same project.
+ > 2.  System admin can search all of projetcs
+
+* **user**
+Users can search users with some constraints: 
+
+ > 1.  project admin can search user which is belong to this project.
+ > 2.  System admin can search all of users
+
+* **image**
+
+ > 1.  Ordinary users only can search images which blong a same project or common images.
+ > 2.  System admin can search all of iamges
+
+### Search results
+* **search results** as shown below
+![search](img/userguide/search_result.png)
 
 ## Monitoring Dashboard
+ **Monitoring Dashboard** collect logs from k8s master and nodes. It cover the 
+machine indicators, such as cpu, memory usage, file system and k8s services runtime.
+* **services runtime** collect all af service and corresponding to labels of pods and containers. In
+dashboard show the statistical real-time and average numbers
+![search](img/userguide/dashboard_service.png) 
+* **machine indicators** collect all cpu and memory nodes indicators of all nodes
+![search](img/userguide/dashboard_node.png) 
+* **file system** collect all storage indicators of nodes
+![search](img/userguide/dashboard_storage.png) 
 
 ## Administrator Options
 
