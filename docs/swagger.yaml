@@ -2264,6 +2264,21 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/UserSearch'
+      images_result:
+        description: Search results of the services that matched the filter keywords.
+        type: array
+        items:
+          $ref: '#/definitions/ImagesResult'
+      node_result:
+        description: Search results of the services that matched the filter keywords.
+        type: array
+        items:
+          $ref: '#/definitions/NodeResult'
+      service_result:
+        description: Search results of the services that matched the filter keywords.
+        type: array
+        items:
+          $ref: '#/definitions/ServiceResult'
   UserSearch:
       type: object
       properties:
@@ -2282,6 +2297,27 @@ definitions:
             type: string
           is_public:
             type: boolean
+  ImagesResult:
+      type: object
+      properties:
+          image_name:
+              type: string
+          project_name:
+              type: string
+  NodeResult:
+      type: object
+      properties:
+          node_name:
+              type: string
+          node_ip:
+              type: string
+  ServiceResult:
+      type: object
+      properties:
+          service_name:
+              type: string
+          project_name:
+              type: string
   TokenPayload:
     type: object
     properties:
