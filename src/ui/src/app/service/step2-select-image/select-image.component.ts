@@ -53,6 +53,7 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
   newImageErrMessage: string = "";
   newImageAlertType: alertType = "alert-danger";
   isNewImageAlertOpen: boolean = false;
+  isUploadFileIng = false;
   newImageIndex: number;
 
   constructor(private k8sService: K8sService,
@@ -311,6 +312,7 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
     let fileList: FileList = event.target.files;
     if (fileList.length > 0) {
       this.isNewImageAlertOpen = false;
+      this.isUploadFileIng = true;
       let file: File = fileList[0];
       let formData: FormData = new FormData();
       formData.append('upload_file', file, file.name);
@@ -322,6 +324,7 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
         this.newImageAlertType = "alert-info";
         this.newImageErrMessage = "SERVICE.STEP_2_UPLOAD_SUCCESS";
         this.isNewImageAlertOpen = true;
+        this.isUploadFileIng = false;
         this.asyncGetDockerFilePreviewInfo();
       }).catch(err => {
         if (err && err.status == 401) {
@@ -331,6 +334,7 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
           this.newImageAlertType = "alert-danger";
           this.newImageErrMessage = "SERVICE.STEP_2_UPLOAD_FAILED";
           this.isNewImageAlertOpen = true;
+          this.isUploadFileIng = false;
         }
       });
     }
