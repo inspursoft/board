@@ -30,9 +30,9 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
   patternNewImageTag: RegExp = /^[a-z\d.-]+$/;
   patternBaseImage: RegExp = /^[a-z\d.:-]+$/;
   patternExpose: RegExp = /^[\d-\s\w/\\]+$/;
-  patternVolume: RegExp = /^[a-zA-Z_]+$/;
-  patternRun: RegExp = /^[a-zA-Z_]+$/;
-  patternEntryPoint: RegExp = /^[a-zA-Z\d_-]+$/;
+  patternVolume: RegExp = /^[a-zA-Z_/]+$/;
+  patternRun: RegExp = /^[a-zA-Z_/]+$/;
+  patternEntryPoint: RegExp = /^[a-zA-Z\d_/-]+$/;
   _isOpenEnvironment = false;
   intervalAutoRefreshImageList: any;
   isNeedAutoRefreshImageList: boolean = false;
