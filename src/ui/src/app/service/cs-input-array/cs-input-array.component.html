@@ -1,0 +1,57 @@
+<div [formGroup]="inputArrayFormGroup">
+  <div *ngFor="let item of inputArrayFileds;let iIndex = index"
+       class="cs-input-array-container">
+    <label [for]="'fieldInput' + iIndex"
+           (click)="onEditClick(iIndex)"
+           class="cs-input-array-label">{{iIndex == 0 ? labelText.concat(':') : ""}}</label>
+    <div class="cs-input-array-icon-container" *ngIf="inputArrayFileds.length > 1 && !disabled">
+      <clr-icon class="cs-input-array minus" shape="minus" (click)="onMinusClick(iIndex)"></clr-icon>
+    </div>
+    <div class="cs-input-array-icon-container" *ngIf="iIndex == inputArrayFileds.length - 1 && !disabled">
+      <clr-icon class="cs-input-array plus"
+                [ngClass]="{'disabled':!plusEnable}"
+                shape="plus"
+                (click)="onPlusClick()">
+      </clr-icon>
+    </div>
+    <span *ngIf="item.status == 0" class="cs-input-array-span" (click)="onEditClick(iIndex)">{{item.value}}</span>
+    <label *ngIf="item.status == 1"
+           aria-haspopup="true"
+           role="tooltip"
+           class="cs-input-array-container tooltip tooltip-validation tooltip-md tooltip-bottom-left"
+           (click)="onEditClick(iIndex)"
+           [for]="'fieldInput'+iIndex"
+           [class.invalid]="getArrayErrors(iIndex) && (inputArrayFormGroup.dirty || inputArrayFormGroup.touched)">
+      <input type="text"
+             class="cs-input-array-input"
+             *ngIf="item.status == 1"
+             [id]="'fieldInput'+iIndex"
+             [formControlName]="'inputControl_' + iIndex"
+             (keypress)="onInputKeyPressEvent($event,iIndex)"
+             (blur)="onCheckClick(iIndex);"
+             [(ngModel)]="item.value">
+      <span class="tooltip-content" style="width: 200px;" *ngIf="getArrayErrors(iIndex)">
+      {{getValidatorMessage(iIndex) | translate}}
+    </span>
+    </label>
+    <a *ngIf="item.status == 0 && !disabled"
+       href="javascript:void(0)"
+       class="cs-input-array-icon"
+       (click)="onEditClick(iIndex)">
+      <clr-icon shape="note"></clr-icon>
+    </a>
+    <a *ngIf="item.status == 1"
+       href="javascript:void(0)"
+       class="cs-input-array-icon"
+       (click)="onCheckClick(iIndex)">
+      <clr-icon shape="check"></clr-icon>
+    </a>
+    <a *ngIf="item.status == 1"
+       href="javascript:void(0)"
+       class="cs-input-array-icon"
+       (click)="onRevertClick(iIndex)">
+      <clr-icon shape="refresh"></clr-icon>
+    </a>
+  </div>
+</div>
+

@@ -1,0 +1,33 @@
+<clr-main-container>
+  <header-content [isSignIn]="isSignIn" [hasSignedIn]="hasSignedIn" [searchContent]="searchContent"></header-content>
+  <global-message></global-message>
+  <div class="content-container">
+    <nav class="sidenav" *ngIf="hasSignedIn">
+      <section class="sidenav-content">
+        <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/dashboard" (click)="navigateTo('/dashboard')">
+          {{ 'SIDE_NAV.DASHBOARD' | translate }}
+        </a>
+        <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/services" (click)="navigateTo('/services')"> 
+          {{ 'SIDE_NAV.SERVICES' | translate }}
+        </a>
+        <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/projects" (click)="navigateTo('/projects')">
+         {{ 'SIDE_NAV.PROJECTS' | translate }}
+        </a>
+        <a *ngIf="isSystemAdmin" href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/nodes" (click)="navigateTo('/nodes')">
+          {{ 'SIDE_NAV.NODES' | translate }}
+        </a>
+        <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/images" (click)="navigateTo('/images')">
+          {{ 'SIDE_NAV.IMAGES' | translate }}
+        </a>
+        <a *ngIf="isSystemAdmin" href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/user-center" (click)="navigateTo('/user-center')">
+          {{ 'SIDE_NAV.ADMIN_OPTIONS' | translate }}
+        </a>
+      </section>
+    </nav>
+    <div class="content-area">
+      <inline-alert></inline-alert>
+      <confirmation-dialog></confirmation-dialog>
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</clr-main-container>

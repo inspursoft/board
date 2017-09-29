@@ -1,0 +1,154 @@
+.circle {
+  border: 2px solid #0066ff;
+  border-radius: 50%;
+  -moz-border-radius: 50%;
+  -webkit-border-radius: 50%;
+  display: flex;
+  height: 90px;
+  width: 90px;
+  justify-content: center;
+  align-items: center;
+}
+
+.stat-panel-title {
+  margin-bottom: 32px;
+  font-weight: bold;
+}
+
+.stat-panel-value-font {
+  color: black;
+  font-size: 24pt;
+  margin-bottom: 32px;
+}
+
+.section-container {
+  flex-basis: 100%;
+  display: flex;
+  margin-right: 20px;
+  justify-content: center;
+}
+
+.split-line {
+  border-right: 1px solid #ccc;
+}
+
+.section-image-container {
+  display: flex;
+  width: 120px;
+  flex-direction: column;
+}
+
+.section-image {
+  width: 50px;
+  height: 50px;
+}
+
+.section-text {
+  flex-basis: 20px;
+  text-align: center;
+}
+
+.section-right-container {
+  margin-left: 10px;
+  display: flex;
+}
+
+.section-right-container-container{
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card-block {
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: column;
+  padding: 0;
+}
+
+.card-block-top-container {
+  
+  height: 60px;
+  display: flex;
+  padding: 10px 20px 10px 20px;
+}
+
+.card-block-bottom-container {
+  
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-block-dropdown {
+  max-height: 250px;
+  overflow-y: scroll;
+  width: 170px;
+}
+
+.btn-default {
+  border-color: #bbbbbb;
+  color: black;
+}
+
+.first-line {
+  color: #2f4554;
+}
+
+.second-line {
+  margin-left: 20px;
+  color: #d48265
+}
+
+.select-time-container {
+  width: 100%;
+  flex-basis: 50px;
+  height: 60px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.caption_container {
+  flex-basis: 100%;
+  display: flex;
+  justify-content: center;
+  line-height: 40px;
+}
+
+button:focus {
+  outline: 0;
+}
+
+.dropdown-item {
+  min-height: 30px;
+}
+
+.no-data-mask {
+  color: white;
+  position: absolute;
+  background-color: #505050;
+  border-radius: 5px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: -webkit-calc(100% - 105px);
+  height: -moz-calc(100% - 105px);
+  height: calc(100% - 105px);
+  width: 100%;
+}
+
+.no-already {
+  opacity: 0.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+}
+
+.dropdown-button{
+  width: 150px;
+  font-size: 10px;
+  text-align: left;
+}

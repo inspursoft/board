@@ -1,0 +1,597 @@
+import { OnInit, AfterViewInit, Component, OnDestroy, HostListener } from '@angular/core';
+import { DashboardComponentParent } from "./dashboard.component.parent"
+import { scaleOption } from "app/dashboard/time-range-scale.component/time-range-scale.component";
+import {
+  DashboardService, LinesData, LineDataModel, LineType, LineListDataModel
+} from "app/dashboard/dashboard.service";
+import { TranslateService } from "@ngx-translate/core";
+import { Subscription } from "rxjs/Subscription";
+import { Subject } from "rxjs/Subject";
+import { MessageService } from "../shared/message-service/message.service";
+
+const MAX_COUNT_PER_PAGE: number = 200;
+const MAX_COUNT_PER_DRAG: number = 100;
+const AUTO_REFRESH_SEED: number = 10;
+const AUTO_REFRESH_CUR_SEED: number = 5;
+@Component({
+  selector: 'dashboard',
+  templateUrl: './dashboard.component.html',
+  styleUrls: ['dashboard.component.css']
+})
+export class DashboardComponent extends DashboardComponentParent implements OnInit, AfterViewInit, OnDestroy {
+  scaleOptions: Array<scaleOption> = [
+    {"id": 1, "description": "DASHBOARD.MIN", "value": "second", valueOfSecond: 5},
+    {"id": 2, "description": "DASHBOARD.HR", "value": "minute", valueOfSecond: 60},
+    {"id": 3, "description": "DASHBOARD.DAY", "value": "hour", valueOfSecond: 60 * 60},
+    {"id": 4, "description": "DASHBOARD.MTH", "value": "day", valueOfSecond: 60 * 60 * 24}];
+  _ServerTimeStamp: number;
+  _AutoRefreshCurInterval: number = 1;
+  IntervalAutoRefresh: any;
+  LineOptions: Map<LineType, Object>;
+  LineStateInfo: Map<LineType, {InRefreshIng: boolean, InDrop: boolean, IsDropBack: boolean, IsCanAutoRefresh: boolean}>;
+  LineNamesList: Map<LineType, LineListDataModel[]>;
+  LineTypeSet: Set<LineType>;
+  LineData: Map<LineType, LinesData>;
+  EventDragChange: Subject<{lineType: LineType, isDragBack: boolean}>;
+  EventScaleChange: Subject<Object>;
+  EventZoomBarChange: Subject<LineType>;
+  EventLangChangeSubscription: Subscription;
+  EChartInstance: Map<LineType, Object>;
+  DropdownText: Map<LineType, string>;
+  Query: Map<LineType, {model: LineListDataModel, scale: scaleOption, baseLineTimeStamp: number, time_count: number, timestamp_base: number}>;
+  AutoRefreshInterval: Map<LineType, number>;
+  NoData: Map<LineType, boolean>;
+  CurValue: Map<LineType, {curFirst: number, curSecond: number}>;
+  CurRealTimeValue: Map<LineType, {curFirst: number, curSecond: number}>;
+  NoDataErrMsg: Map<LineType, string>;
+
+  constructor(private service: DashboardService,
+              private messageService: MessageService,
+              private translateService: TranslateService) {
+    super();
+    this.EventDragChange = new Subject<{lineType: LineType, isDragBack: boolean}>();
+    this.EventScaleChange = new Subject<Object>();
+    this.EventZoomBarChange = new Subject<LineType>();
+    this.LineNamesList = new Map<LineType, LineListDataModel[]>();
+    this.DropdownText = new Map<LineType, string>();
+    this.LineStateInfo = new Map<LineType, {InRefreshIng: boolean, InDrop: boolean, IsDropBack: boolean, IsCanAutoRefresh: boolean}>();
+    this.AutoRefreshInterval = new Map<LineType, number>();
+    this.LineData = new Map<LineType, LinesData>();
+    this.NoData = new Map<LineType, boolean>();
+    this.CurValue = new Map<LineType, {curFirst: number, curSecond: number}>();
+    this.CurRealTimeValue = new Map<LineType, {curFirst: number, curSecond: number}>();
+    this.NoDataErrMsg = new Map<LineType, string>();
+    this.LineOptions = new Map<LineType, Object>();
+    this.EChartInstance = new Map<LineType, Object>();
+    this.LineTypeSet = new Set<LineType>();
+    this.Query = new Map<LineType, {model: LineListDataModel, scale: scaleOption, baseLineTimeStamp: number, time_count: number, timestamp_base: number}>();
+  }
+
+  ngOnInit() {
+    this.LineTypeSet.add(LineType.ltService);
+    this.LineTypeSet.add(LineType.ltNode);
+    this.LineTypeSet.add(LineType.ltStorage);
+    this.service.getServerTimeStamp().then(serverTime => {
+      this._ServerTimeStamp = serverTime;
+      this.LineTypeSet.forEach((lineType: LineType) => {
+        this.initAsyncLine(lineType);
+      });
+    }).catch(err => this.messageService.dispatchError(err));
+    this.EventDragChange.asObservable().debounceTime(300).subscribe(dragInfo => {
+      this.LineTypeSet.forEach((value) => {
+        if (dragInfo.lineType != value) {
+          this.refreshLineDataByDrag(value, dragInfo.isDragBack);
+        }
+        this.resetBaseLinePos(value);
+      });
+    });
+    this.EventZoomBarChange.asObservable().debounceTime(300).subscribe(lineType => {
+      this.LineTypeSet.forEach((value) => {
+        this.resetBaseLinePos(value);
+      });
+    });
+    this.EventScaleChange.asObservable().debounceTime(300).subscribe(ScaleInfo => {
+      this.LineTypeSet.forEach((value: LineType) => {
+        if (ScaleInfo["lineType"] != value) {
+          this.getOneLineData(value).then(res => {
+            this.clearEChart(value);
+            this.LineData.set(value, res.Data);
+            this.setLineZoomByTimeStamp(value, this.Query.get(value).baseLineTimeStamp);
+            this.resetBaseLinePos(value);
+          }).catch(() => {
+          })
+        }
+      });
+    });
+    this.EventLangChangeSubscription = this.translateService.onLangChange.subscribe(() => {
+      this.LineTypeSet.forEach((lineType: LineType) => {
+        this.setLineBaseOption(lineType).then(res => this.LineOptions.set(lineType, res));
+      });
+    });
+  }
+
+  ngOnDestroy() {
+    this.LineTypeSet.forEach((value) => {//for update at after destroy
+      this.EChartInstance.set(value, null);
+    });
+    clearInterval(this.IntervalAutoRefresh);
+    if (this.EventLangChangeSubscription) {
+      this.EventLangChangeSubscription.unsubscribe();
+    }
+  }
+
+  ngAfterViewInit() {
+    this.IntervalAutoRefresh = setInterval(() => {
+      this.autoRefreshCurDada();
+      this.LineTypeSet.forEach(value => {
+        this.autoRefreshDada(value);
+      });
+    }, 1000);
+  }
+
+  private getBaseLineTimeStamp(lineType: LineType): number {
+    let option = this.LineOptions.get(lineType);
+    let lineData = this.LineData.get(lineType);
+    let start = option["dataZoom"][0]["start"] / 100;
+    let end = option["dataZoom"][0]["end"] / 100;
+    let middlePos: number = (start + end) / 2;
+    let maxDate: Date = lineData[2][0][0];
+    let minDate: Date = lineData[2][1][0];
+    let maxTimeStamp = Math.round(maxDate.getTime() / 1000);
+    let minTimeStamp = Math.round(minDate.getTime() / 1000);
+    let screenMaxTimeStamp = maxTimeStamp - (maxTimeStamp - minTimeStamp) * (1 - end);
+    let screenTimeStamp = (maxTimeStamp - minTimeStamp) * (end - start);
+    return Math.round(screenMaxTimeStamp - screenTimeStamp * (1 - middlePos));
+  }
+
+  private setLineZoomByCount(lineType: LineType, resCount: number, isDragBack: boolean): void {
+    if (resCount > 0) {
+      let lineData = this.LineData.get(lineType);
+      let lineOption = this.LineOptions.get(lineType);
+      let lineZoomStart = lineOption["dataZoom"][0]["start"];
+      let lineZoomEnd = lineOption["dataZoom"][0]["end"];
+      let lineZoomHalf: number = (lineZoomEnd - lineZoomStart) / 2;
+      if (lineData[0].length > 0) {
+        let countPercent = Math.min((resCount / lineData[0].length) * 100, 99);
+        if (isDragBack) {
+          lineOption["dataZoom"][0]["start"] = Math.min(countPercent - lineZoomHalf, 99 - 2 * lineZoomHalf);
+          lineOption["dataZoom"][0]["end"] = lineOption["dataZoom"][0]["start"] + 2 * lineZoomHalf;
+        } else {
+          lineOption["dataZoom"][0]["end"] = Math.min(99 - countPercent + lineZoomHalf, 99);
+          lineOption["dataZoom"][0]["start"] = lineOption["dataZoom"][0]["end"] - 2 * lineZoomHalf;
+        }
+      }
+    }
+  }
+
+  private  setLineZoomByTimeStamp(lineType: LineType, lineTimeStamp: number): void {
+    let lineData = this.LineData.get(lineType);
+    let lineOption = this.LineOptions.get(lineType);
+    let lineZoomStart = lineOption["dataZoom"][0]["start"];
+    let lineZoomEnd = lineOption["dataZoom"][0]["end"];
+    let lineZoomHalf: number = (lineZoomEnd - lineZoomStart) / 2;
+    let maxDate: Date = lineData[2][0][0];
+    let minDate: Date = lineData[2][1][0];
+    let maxTimeStrap = Math.round(maxDate.getTime() / 1000);
+    let minTimeStrap = Math.round(minDate.getTime() / 1000);
+    let percent = ((maxTimeStrap - lineTimeStamp) / (maxTimeStrap - minTimeStrap)) * 100;
+    lineOption["dataZoom"][0]["start"] = Math.max(percent - lineZoomHalf, 1);
+    lineOption["dataZoom"][0]["end"] = Math.min(lineOption["dataZoom"][0]["start"] + 2 * lineZoomHalf, 99);
+  }
+
+  private async initAsyncLine(lineType: LineType) {
+    await this.initLine(lineType);
+    await this.getOneLineData(lineType)
+      .then(res => this.LineData.set(lineType, res.Data))
+      .catch(() => {
+      });
+  };
+
+  private getOneLineData(lineType: LineType): Promise<{Data: LinesData, Limit: {isMax: boolean, isMin: boolean}}> {
+    let query = this.Query.get(lineType);
+    let httpQuery = {
+      time_count: query.time_count,
+      time_unit: query.scale.value,
+      list_name: query.model.list_name == "total" ? "" : query.model.list_name,
+      timestamp_base: query.timestamp_base,
+      service_duration_time: query.timestamp_base - query.time_count * query.scale.valueOfSecond
+    };
+    this.LineStateInfo.get(lineType).InRefreshIng = true;
+    return this.service.getLineData(lineType, httpQuery)
+      .then((res: {List: Array<LineListDataModel>, Data: LinesData, CurListName: string, Limit: {isMax: boolean, isMin: boolean}}) => {
+        this.NoData.set(lineType, false);
+        this.LineNamesList.set(lineType, res.List);
+        this.DropdownText.set(lineType, res.CurListName);
+        this.LineStateInfo.get(lineType).InRefreshIng = false;
+        return {Data: res.Data, Limit: res.Limit};
+      })
+      .catch(err => {
+        this.LineStateInfo.get(lineType).InRefreshIng = false;
+        this.NoData.set(lineType, true);
+        this.messageService.dispatchError(err);
+      });
+  }
+
+  private getLineInRefreshIng(): boolean {
+    let iter: IterableIterator<LineType> = this.LineTypeSet.values();
+    let iterResult: IteratorResult<LineType> = iter.next();
+    while (!iterResult.done) {
+      if (this.LineStateInfo.get(iterResult.value).InRefreshIng) {
+        return true;
+      }
+      iterResult = iter.next();
+    }
+    return false;
+  }
+
+  private clearEChart(lineType: LineType): void {
+    let eChart = this.EChartInstance.get(lineType);
+    if (eChart && eChart["clear"]) {
+      eChart["clear"]();
+    }
+  }
+
+  private resetBaseLinePos(lineType: LineType) {
+    let option = this.LineOptions.get(lineType);
+    if (option["dataZoom"]) {
+      let zoomStart = option["dataZoom"][0]["start"] / 100;
+      let zoomEnd = option["dataZoom"][0]["end"] / 100;
+      let eChartWidth = this.EChartInstance.get(lineType)["getWidth"]() - 70;
+      let zoomBarWidth = eChartWidth * (zoomEnd - zoomStart);
+      option["graphic"][0]["left"] = eChartWidth * (1 - zoomEnd) + zoomBarWidth * (1 - (zoomEnd + zoomStart) / 2) + 38;
+      this.EChartInstance.get(lineType)["setOption"](option, true, false);
+      if (this.LineData.get(lineType)) {
+        this.clearEChart(lineType);
+        this.LineData.set(lineType, Object.create(this.LineData.get(lineType)));
+      }
+    }
+  }
+
+  private  delayNormal(lineType: LineType): Promise<boolean> {
+    return new Promise<boolean>((resolve, reject) => {
+      this.LineStateInfo.get(lineType).InRefreshIng = true;
+      setTimeout(() => {
+        this.LineStateInfo.get(lineType).InRefreshIng = false;
+        resolve(true);
+      }, 200)
+    });
+  }
+
+  private initLine(lineType: LineType): Promise<boolean> {
+    this.CurValue.set(lineType, {curFirst: 0, curSecond: 0});
+    this.CurRealTimeValue.set(lineType, {curFirst: 0, curSecond: 0});
+    this.LineStateInfo.set(lineType, {IsCanAutoRefresh: true, IsDropBack: false, InDrop: false, InRefreshIng: false});
+    this.AutoRefreshInterval.set(lineType, AUTO_REFRESH_SEED);
+    this.Query.set(lineType, {
+      time_count: MAX_COUNT_PER_PAGE,
+      model: {list_name: "", time_stamp: 0},
+      baseLineTimeStamp: 0,
+      timestamp_base: this._ServerTimeStamp,
+      scale: this.scaleOptions[0]
+    });
+    return this.setLineBaseOption(lineType).then(res => {
+      this.LineOptions.set(lineType, res);
+      return true;
+    });
+  }
+
+  private async autoRefreshCurDada() {
+    this._AutoRefreshCurInterval--;
+    if (this._AutoRefreshCurInterval == 0) {
+      this._AutoRefreshCurInterval = AUTO_REFRESH_CUR_SEED;
+      await this.service.getServerTimeStamp().then(serverTime => this._ServerTimeStamp = serverTime);
+      this.LineTypeSet.forEach(lineType => {
+        let query = {
+          time_count: 1,
+          time_unit: "second",
+          list_name: "",
+          timestamp_base: this._ServerTimeStamp
+        };
+        this.service.getLineData(lineType, query)
+          .then((res: {
+            List: Array<LineListDataModel>,
+            Data: LinesData,
+            CurListName: string,
+            Limit: {isMax: boolean, isMin: boolean}
+          }) => {
+            if (res.Data[0].length > 0) {
+              this.CurRealTimeValue.set(lineType, {
+                curFirst: res.Data[0][0][1],
+                curSecond: res.Data[1][0][1]
+              })
+            }
+          })
+          .catch(err => this.messageService.dispatchError(err));
+      });
+    }
+  }
+
+  private autoRefreshDada(lineType: LineType): void {
+    if (this.AutoRefreshInterval.get(lineType) > 0) {
+      this.AutoRefreshInterval.set(lineType, this.AutoRefreshInterval.get(lineType) - 1);
+      if (this.AutoRefreshInterval.get(lineType) == 0) {
+        this.AutoRefreshInterval.set(lineType, AUTO_REFRESH_SEED);
+        if (this.LineStateInfo.get(lineType).IsCanAutoRefresh) {
+          this.Query.get(lineType).time_count = MAX_COUNT_PER_PAGE;
+          this.Query.get(lineType).timestamp_base = this._ServerTimeStamp;
+          this.getOneLineData(lineType).then(res => {
+            this.clearEChart(lineType);
+            this.LineData.set(lineType, res.Data);
+          }).catch(() => {
+          });
+        }
+      }
+    }
+  }
+
+  private  updateAfterDragTimeStamp(lineType: LineType, isDropBack: boolean): void {
+    let query = this.Query.get(lineType);
+    let lineData = this.LineData.get(lineType);
+    let maxDate: Date = lineData[2][0][0];
+    let minDate: Date = lineData[2][1][0];
+    let minTimeStrap = Math.round(minDate.getTime() / 1000);
+    let maxTimeStrap = Math.round(maxDate.getTime() / 1000);
+    query.time_count = MAX_COUNT_PER_DRAG;
+    let newMaxTimeStrap: number = 0;
+    let newMinTimeStrap: number = 0;
+    if (isDropBack) {
+      newMaxTimeStrap = maxTimeStrap - MAX_COUNT_PER_DRAG * query.scale.valueOfSecond;
+      newMinTimeStrap = newMaxTimeStrap - MAX_COUNT_PER_PAGE * query.scale.valueOfSecond;
+      query.timestamp_base = minTimeStrap;
+    } else {
+      newMaxTimeStrap = Math.min(maxTimeStrap + MAX_COUNT_PER_DRAG * query.scale.valueOfSecond, this._ServerTimeStamp);
+      newMinTimeStrap = newMaxTimeStrap - MAX_COUNT_PER_PAGE * query.scale.valueOfSecond;
+      query.timestamp_base = newMaxTimeStrap;
+    }
+    lineData[2][0][0] = new Date(newMaxTimeStrap * 1000);
+    lineData[2][1][0] = new Date(newMinTimeStrap * 1000);
+  }
+
+  private resetAfterDragLineData(lineType: LineType): void {
+    let lineData = this.LineData.get(lineType);
+    let maxDate: Date = lineData[2][0][0];
+    let minDate: Date = lineData[2][1][0];
+    let minTimeStrap = Math.round(minDate.getTime() / 1000);
+    let maxTimeStrap = Math.round(maxDate.getTime() / 1000);
+    lineData[0] = lineData[0].filter((value) => {
+      let date = value[0];
+      let timeStrap = Math.round(date.getTime() / 1000);
+      return timeStrap > minTimeStrap && timeStrap < maxTimeStrap;
+    });
+    lineData[1] = lineData[1].filter((value) => {
+      let date = value[0];
+      let timeStrap = Math.round(date.getTime() / 1000);
+      return timeStrap > minTimeStrap && timeStrap < maxTimeStrap;
+    });
+  }
+
+  private resetAfterDragTimeStamp(lineType: LineType): void {
+    let query = this.Query.get(lineType);
+    let lineData = this.LineData.get(lineType);
+    let maxDate: Date = lineData[2][0][0];
+    let minDate: Date = lineData[2][1][0];
+    let maxTimeStrap = Math.round(maxDate.getTime() / 1000);
+    let minTimeStrap = Math.round(minDate.getTime() / 1000);
+    let newMaxTimeStrap = maxTimeStrap + MAX_COUNT_PER_DRAG * query.scale.valueOfSecond;
+    let newMinTimeStrap = newMaxTimeStrap - MAX_COUNT_PER_PAGE * query.scale.valueOfSecond;
+    lineData[2][0][0] = new Date(newMaxTimeStrap * 1000);
+    lineData[2][1][0] = new Date(newMinTimeStrap * 1000);
+  }
+
+  private filterMaxLineData(this: LineDataModel[], value: [Date, number]): boolean {
+    let date = value[0];
+    let timeStrap = Math.round(date.getTime() / 1000);
+    if (this.length > 0) {
+      let maxAlreadyDate = this[this.length - 1][0];
+      return timeStrap > Math.round(maxAlreadyDate.getTime() / 1000);
+    }
+    return true;
+  }
+
+  private filterMinLineData(this: LineDataModel[], value: [Date, number]): boolean {
+    let date = value[0];
+    let timeStrap = Math.round(date.getTime() / 1000);
+    if (this.length > 0) {
+      let minAlreadyDate = this[0][0];
+      return timeStrap < Math.round(minAlreadyDate.getTime() / 1000);
+    }
+    return true;
+  }
+
+  private concatLineData(lineType: LineType, res: LinesData, isDropBack: boolean): number {
+    let lineData = this.LineData.get(lineType);
+    if (!isDropBack) {
+      let newData1 = res[0].filter(this.filterMaxLineData, lineData[0]);
+      let newData2 = res[1].filter(this.filterMaxLineData, lineData[1]);
+      lineData[0] = lineData[0].concat(newData1);
+      lineData[1] = lineData[1].concat(newData2);
+      return newData2.length;
+    } else {
+      let newData1 = res[0].filter(this.filterMinLineData, lineData[0]);
+      let newData2 = res[1].filter(this.filterMinLineData, lineData[1]);
+      lineData[0] = newData1.concat(lineData[0]);
+      lineData[1] = newData2.concat(lineData[1]);
+      return newData2.length;
+    }
+  }
+
+  private refreshLineDataByDrag(lineType: LineType, isDragBack) {
+    let lineState = this.LineStateInfo.get(lineType);
+    if (isDragBack) {
+      lineState.InDrop = true;
+      lineState.IsDropBack = true;
+      lineState.IsCanAutoRefresh = false;
+      this.updateAfterDragTimeStamp(lineType, true);
+      this.getOneLineData(lineType).then(res => {
+        this.delayNormal(lineType).then(() => {
+          if (!res.Limit.isMin) {
+            this.clearEChart(lineType);
+            this.resetAfterDragLineData(lineType);
+            let newCount = this.concatLineData(lineType, res.Data, true);
+            this.setLineZoomByCount(lineType, newCount, true);
+            this.resetBaseLinePos(lineType);
+          } else {
+            this.resetAfterDragTimeStamp(lineType);
+          }
+        });
+      }).catch(() => {
+      });
+    } else {
+      lineState.InDrop = true;
+      lineState.IsDropBack = false;
+      lineState.IsCanAutoRefresh = false;
+      this.updateAfterDragTimeStamp(lineType, false);
+      this.getOneLineData(lineType).then(res => {
+        this.delayNormal(lineType).then(() => {//add delay for drag
+          if (!res.Limit.isMax) {
+            this.clearEChart(lineType);
+            this.resetAfterDragLineData(lineType);
+            let newCount = this.concatLineData(lineType, res.Data, false);
+            this.setLineZoomByCount(lineType, newCount, false);
+            this.resetBaseLinePos(lineType);
+          }
+        });
+      }).catch(() => {
+      });
+    }
+  }
+
+  private afterDragZoomBar(lineType: LineType) {
+    let zoomStart = this.LineOptions.get(lineType)["dataZoom"][0]["start"];
+    let zoomEnd = this.LineOptions.get(lineType)["dataZoom"][0]["end"];
+    let lineState = this.LineStateInfo.get(lineType);
+    if (zoomStart == 0 && zoomEnd < 100 && !lineState.InRefreshIng) {//get backup data
+      this.refreshLineDataByDrag(lineType, true);
+      this.EventDragChange.next({lineType: lineType, isDragBack: true});
+    }
+    else if (zoomEnd == 100 && zoomStart > 0 && !lineState.InRefreshIng && !lineState.IsCanAutoRefresh) {//get forward data
+      this.refreshLineDataByDrag(lineType, false);
+      this.EventDragChange.next({lineType: lineType, isDragBack: false});
+    }
+  }
+
+  private ZoomBarChange(lineType: LineType, ZoomInfo: {start: number, end: number}) {
+    this.LineOptions.get(lineType)["dataZoom"][0]["start"] = ZoomInfo.start;
+    this.LineOptions.get(lineType)["dataZoom"][0]["end"] = ZoomInfo.end;
+    this.EventZoomBarChange.next();
+  }
+
+  private setLineBaseOption(lineType: LineType): Promise<Object> {
+    let firstKey, secondKey: string;
+    switch (lineType) {
+      case LineType.ltService: {
+        firstKey = "DASHBOARD.PODS";
+        secondKey = "DASHBOARD.CONTAINERS";
+        break;
+      }
+      case LineType.ltNode: {
+        firstKey = "DASHBOARD.CPU";
+        secondKey = "DASHBOARD.MEMORY";
+        break;
+      }
+      case LineType.ltStorage: {
+        firstKey = "DASHBOARD.USAGE";
+        secondKey = "DASHBOARD.TOTAL";
+        break;
+      }
+    }
+    return this.translateService.get([firstKey, secondKey]).toPromise()
+      .then(res => {
+        let firstLineTitle: string = res[firstKey];
+        let secondLineTitle: string = res[secondKey];
+        let result = DashboardComponentParent.getBaseOptions();
+        result["tooltip"] = this.getTooltip(firstLineTitle, secondLineTitle, lineType);
+        result["series"] = [
+          DashboardComponentParent.getBaseSeries(),
+          DashboardComponentParent.getBaseSeries(),
+          DashboardComponentParent.getBaseSeriesThirdLine()];
+        result["series"][0]["name"] = firstLineTitle;
+        result["series"][1]["name"] = secondLineTitle;
+        result["dataZoom"][0]["start"] = 80;
+        result["dataZoom"][0]["end"] = 100;
+        result["legend"] = {data: [firstLineTitle, secondLineTitle], x: "left"};
+        return result;
+      })
+  }
+
+  scaleChange(lineType: LineType, data: scaleOption) {
+    if (!this.getLineInRefreshIng()) {
+      let baseLineTimeStamp = this.getBaseLineTimeStamp(lineType);
+      let queryTimeStamp = 0;
+      let maxLineTimeStamp = baseLineTimeStamp + data.valueOfSecond * MAX_COUNT_PER_PAGE / 2;
+      if (maxLineTimeStamp > this._ServerTimeStamp) {
+        queryTimeStamp = this._ServerTimeStamp;
+        baseLineTimeStamp -= maxLineTimeStamp - this._ServerTimeStamp
+      } else {
+        queryTimeStamp = maxLineTimeStamp;
+      }
+      this.LineTypeSet.forEach((value: LineType) => {
+        this.Query.get(value).scale = data;
+        this.Query.get(value).time_count = MAX_COUNT_PER_PAGE;
+        this.Query.get(value).timestamp_base = queryTimeStamp;
+        this.Query.get(value).baseLineTimeStamp = baseLineTimeStamp;
+      });
+      this.getOneLineData(lineType).then(res => {
+        let query = this.Query.get(lineType);
+        if (res.Data[0].length == 0) {
+          let maxTimeStamp = query.timestamp_base;
+          let minTimeStamp = query.timestamp_base - query.scale.valueOfSecond * MAX_COUNT_PER_PAGE;
+          res.Data[0].push([new Date(minTimeStamp * 1000), 0]);
+          res.Data[0].push([new Date(maxTimeStamp * 1000), 0]);
+          res.Data[1].push([new Date(minTimeStamp * 1000), 0]);
+          res.Data[1].push([new Date(maxTimeStamp * 1000), 0]);
+        }
+        this.clearEChart(lineType);
+        this.LineData.set(lineType, res.Data);
+        this.setLineZoomByTimeStamp(lineType, query.baseLineTimeStamp);
+        this.resetBaseLinePos(lineType);
+        this.EventScaleChange.next({lineType: lineType, value: data});//refresh others lines
+      }).catch(() => {
+      });
+    }
+  }
+
+  dropDownChange(lineType: LineType, lineListData: LineListDataModel) {
+    if (!this.LineStateInfo.get(lineType).InRefreshIng) {
+      this.Query.get(lineType).model = lineListData;
+      this.Query.get(lineType).time_count = MAX_COUNT_PER_PAGE;
+      this.getOneLineData(lineType).then(res => {
+        this.clearEChart(lineType);
+        this.LineData.set(lineType, res.Data);
+      }).catch(() => {
+      });
+    }
+  }
+
+  public onToolTipEvent(params: Object, lineType: LineType) {
+    if ((params as Array<any>).length > 1) {
+      this.CurValue.set(lineType, {curFirst: params[0].value[1], curSecond: params[1].value[1]});
+    }
+  }
+
+  public onEChartInit(lineType: LineType, eChart: Object) {
+    this.EChartInstance.set(lineType, eChart);
+    this.resetBaseLinePos(lineType);
+  }
+
+  @HostListener("window:resize", ["$event"])
+  onEChartWindowResize(event: Object) {
+    this.LineTypeSet.forEach(value => {
+      this.resetBaseLinePos(value);
+    });
+  }
+
+  chartMouseUp(lineType: LineType, event: Object) {
+    this.afterDragZoomBar(lineType);
+  }
+
+  chartDataZoom(lineType: LineType, event: Object) {
+    this.LineTypeSet.forEach((value) => {
+      this.ZoomBarChange(value, {start: event["start"], end: event["end"]});
+    });
+  }
+
+  get StorageUnit(): string {
+    return this.service.CurStorageUnit;
+  };
+}

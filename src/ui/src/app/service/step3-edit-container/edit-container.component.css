@@ -1,0 +1,80 @@
+div.edit-container-container {
+  width: 100%;
+  display: flex;
+  padding: 15px;
+  flex-direction: column;
+}
+
+div.edit-container-one-container {
+  display: flex;
+  flex-basis: 100%;
+  flex-direction: column;
+}
+
+div.edit-container-head-container {
+  display: flex;
+  margin-top: 10px;
+}
+
+div.edit-container-filed-container {
+  display: flex;
+  flex-direction: column;
+  width: 500px;
+}
+
+clr-icon.edit-container-icon {
+  color: white;
+  background: green;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+span.edit-container-filed-title {
+  flex-basis: 160px;
+  text-align: right;
+}
+
+div.plus-container {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.base-margin-left {
+  margin-left: 10px;
+}
+
+.drop-down-open {
+  -ms-transform: rotate(-180deg); /* IE 9 */
+  -moz-transform: rotate(-180deg); /* Firefox */
+  -webkit-transform: rotate(-180deg); /* Safari and Chrome */
+  -o-transform: rotate(-180deg); /* Opera */
+  transform: rotate(-180deg);
+  -moz-transition-duration: 5s; /* Firefox 4 */
+  -webkit-transition-duration: 5s; /* Safari 和 Chrome */
+  -o-transition-duration: 5s; /* Opera */
+  transition-duration: 0.5s;
+}
+
+.drop-down-close {
+  transform: rotate(-0deg);
+  transition-duration: 0.5s;
+}
+
+div.edit-container-area {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-top: 10px;
+}
+
+textarea.area-command {
+  margin-left: 10px;
+}
+
+label.base-text {
+  min-width: 180px;
+  text-align: right;
+}

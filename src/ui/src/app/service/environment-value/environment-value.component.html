@@ -1,0 +1,53 @@
+<clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'md'">
+  <h3 class="modal-title">{{"SERVICE.ENV_TITLE" | translate }}</h3>
+  <fieldset class="modal-body fieldSet-default">
+    <clr-alert (clrAlertClosedChange)="isAlertOpen = false"
+               [clrAlertClosed]="!isAlertOpen"
+               [clrAlertType]="'alert-danger'">
+      <div class="alert-item">
+        <span class="alert-text">{{envAlertMessage | translate}}</span>
+      </div>
+    </clr-alert>
+    <div class="env-title-container">
+      <span class="env-title">Key</span>
+      <span class="env-title">Value</span>
+    </div>
+    <div *ngFor="let envInfo of envsData;let iEnv = index" class="env-item-container">
+      <div class="env-item-title-container">
+        <span class="env-item-title-no">{{iEnv + 1}}.</span>
+        <clr-icon class="env-icon"
+                  shape="minus"
+                  *ngIf="!inputFixedKeyList || inputFixedKeyList.indexOf(envInfo.envName) == -1"
+                  (click)="envMinusClick(iEnv)">
+        </clr-icon>
+      </div>
+        <cs-input class="env-item-input"
+                  [inputIsRequired]="true"
+                  [inputPattern]="patternEnv"
+                  [inputType]="2"
+                  [validatorMessage]="inputValidatorMsg"
+                  [simpleFiled]="envInfo.envName"
+                  (onCheck)="envInfo.envName = $event">
+        </cs-input>
+        <cs-input class="env-item-input"
+                  [inputIsRequired]="true"
+                  [inputPattern]="patternEnv"
+                  [inputType]="2"
+                  [validatorMessage]="inputValidatorMsg"
+                  [simpleFiled]="envInfo.envValue"
+                  (onCheck)="envInfo.envValue = $event">
+        </cs-input>
+    </div>
+    <div class="env-item-add-container">
+      <clr-icon class="env-icon" (click)="addNewEnv()" shape="plus"></clr-icon>
+      <span>{{"SERVICE.ENV_ADD" | translate }}</span>
+    </div>
+    <div class="env-item-confirm-container">
+      <button class="btn btn-primary"
+              [disabled]="!isCanConfirm || envsData.length == 0"
+              (click)="confirmEnvInfo()">
+        {{"SERVICE.ENV_CONFIRM" | translate }}
+      </button>
+    </div>
+  </fieldset>
+</clr-modal>

@@ -1,0 +1,70 @@
+
+div.cs-dropdown-title-container {
+  border: solid 1px silver;
+  border-radius: 5px;
+  display: flex;
+  height: 30px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+span.cs-dropdown-title {
+  width: 100%;
+  margin-left: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  color: black;
+}
+
+span.cs-dropdown-title.disabled {
+  color: silver;
+}
+
+div.cs-dropdown-icon-container {
+  flex-basis: 20px;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.cs-dropdown-menu {
+  padding-top: 0;
+  max-height: 300px;
+  border-radius: 5px;
+  overflow-y: scroll;
+}
+
+button.cs-dropdown-item{
+  min-height: 30px;
+}
+
+button.cs-dropdown-item.special{
+  color: blue;
+  font-style: italic;
+}
+
+div.cs-dropdown-open {
+  -ms-transform: rotate(0deg); /* IE 9 */
+  -moz-transform: rotate(0deg); /* Firefox */
+  -webkit-transform: rotate(0deg); /* Safari and Chrome */
+  -o-transform: rotate(0deg); /* Opera */
+  transform: rotate(0deg);
+  -moz-transition-duration: 0.5s; /* Firefox 4 */
+  -webkit-transition-duration: 0.5s; /* Safari 和 Chrome */
+  -o-transition-duration: 0.5s; /* Opera */
+  transition-duration: 0.5s;
+}
+
+div.cs-dropdown-close {
+  -ms-transform: rotate(-180deg); /* IE 9 */
+  -moz-transform: rotate(-180deg); /* Firefox */
+  -webkit-transform: rotate(-180deg); /* Safari and Chrome */
+  -o-transform: rotate(-180deg); /* Opera */
+  transform: rotate(-180deg);
+  -moz-transition-duration: 0.5s; /* Firefox 4 */
+  -webkit-transition-duration: 0.5s; /* Safari 和 Chrome */
+  -o-transition-duration: 0.5s; /* Opera */
+  transition-duration: 0.5s;
+}

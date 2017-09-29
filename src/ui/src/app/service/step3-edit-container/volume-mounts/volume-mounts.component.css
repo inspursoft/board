@@ -1,0 +1,46 @@
+fieldset.fieldSet-default {
+  margin: 0 2px;
+  border: 1px solid silver;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+legend.legend-default {
+  padding: .5em;
+  border: 0;
+  width: auto;
+  margin-left: 30px;
+}
+
+div.vol-configure-container {
+  display: flex;
+  width: 400px;
+  flex-direction: column;
+  margin-bottom: 10px;
+}
+
+div.vol-title-container {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+}
+
+span.vol-item-title {
+  width: 180px;
+  text-align: right;
+  margin-right: 10px;
+}
+
+div.vol-confirm-container {
+  width: 100%;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  justify-content: flex-end;
+}
+
+button.vol-confirm {
+  margin-right: 30px;
+}

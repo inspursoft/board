@@ -1,0 +1,9 @@
+div.step5-start-icon {
+  border-radius: 5px;
+  border: 14px solid transparent;
+  border-left: 14px solid white;
+  border-right: 0 solid transparent;
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}

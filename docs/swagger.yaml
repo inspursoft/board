@@ -1,0 +1,3415 @@
+# this is an example of the Uber API
+# as a demonstration of an API spec in YAML
+swagger: '2.0'
+info:
+  title: Board API
+  description: These APIs provide services for manipulating Board project.
+  version: "0.1.0"
+# the domain of the service
+host: localhost
+# array of all schemes that your API supports
+schemes:
+  - http
+basePath: /api
+produces:
+  - application/json
+  - text/plain
+consumes:
+  - text/plain
+  - application/json
+paths:
+  /v1/search:
+    get:
+      summary: Search in Board web site
+      description: |
+        The Search endpoint returns information about the projects, services,
+        images, nodes, users offered at public status or accessible to the 
+        current login user. The response includes the project, service, 
+        image, node and user list in a proper display order.
+      parameters:
+        - name: q
+          in: query
+          description: Search parameter for project/service/image/node/user name.
+          required: false
+          type: string
+        - name: token
+          in: header
+          type: string
+          description: Current available token.
+      tags:
+        - Products
+      responses:
+        200:
+          description: An array of search results.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Search'
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        500:
+          description: Unexpected internal errors.
+  /v1/users:
+    get:
+      summary: Get registered users of Board. (need discuss)
+      description: |
+        This endpoint is for user to search registered users, support for filtering results with username. Notice, by now this operation is only for administrator.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: username
+          in: query
+          type: string
+          required: false
+          description: Username for filtering results.
+        - name: user_list_page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: user_list_page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Searched for users of Board successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserDetail'
+          headers:
+            X-Total-Count:
+              description: The total count of users.
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page.
+              type: string
+        400:
+          description: Invalid user ID.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        500:
+          description: Unexpected internal errors.
+  /v1/sign-up:
+    post:
+      summary: Creates a new user account.
+      description: |
+        This endpoint is to create a user if the user does not already exist.
+      parameters:
+        - name: user
+          in: body
+          description: New created user.
+          required: true
+          schema:
+            $ref: '#/definitions/UserDetail'
+      tags:
+        - Products
+      responses:
+        201:
+          description: User created successfully.
+        400:
+          description: Unsatisfied with constraints of the user creation.
+        403:
+          description: User registration can only be used by admin role user when self-registration is off.
+        500:
+          description: Unexpected internal errors.
+  /v1/adduser:
+    post:
+      summary: Add a new user account (This feature is only provided for system admin user).
+      description: |
+        This endpoint is to create a user if the user does not already exist  (This feature is only provided for system admin user).
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: user
+          in: body
+          description: New created user.
+          required: true
+          schema:
+            $ref: '#/definitions/UserDetail'
+      tags:
+        - Products
+      responses:
+        201:
+          description: User created successfully.
+        400:
+          description: Unsatisfied with constraints of the user creation.
+        403:
+          description: User registration can only be used by admin role user when self-registration is off.
+        500:
+          description: Unexpected internal errors.          
+  /v1/sign-in:
+    post:
+      summary: Sign in with available user account.
+      description: |
+        Sign in system with available user account including username/email and password and get the token. 
+      parameters:
+        - name: user
+          in: body
+          description: Available user account.
+          required: true
+          schema:
+            $ref: '#/definitions/UserSignIn'
+      tags:
+        - Products
+      responses:
+        200:
+          description: User signed in successfully.
+        400:
+          description: Incorrect username or password.
+        500:
+          description: Unexpected internal error.
+  /v1/log-out:
+    get:
+      summary: Log out session for current user account.
+      description: |
+        Log out system with available username. 
+      parameters:
+        - name: username
+          in: query
+          description: Available username.
+          required: true
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: User logged out successfully.
+        400:
+          description: Incorrect username.
+        500:
+          description: Unexpected internal error.
+  /v1/users/{user_id}:
+    get:
+      summary: Get user by ID.
+      description: |
+        This endpoint is to get the current user infomation.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: user_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Registered user ID        
+      tags:
+        - Products
+      responses:
+        200:
+          description: Get current user information successfully.
+          schema:
+            $ref: '#/definitions/UserDetail'
+        401:
+          description: User need to log in first.
+    put:
+      summary: Update a registered user to change his profile.
+      description: |
+       This endpoint let a registered user change his profile.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: user_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Registered user ID
+        - name: user_profile
+          in: body
+          description: Only email, realname and comment can be modified.
+          required: true
+          schema:
+            $ref: '#/definitions/UserProfileUpdate' 
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated user's admin role successfully.
+        400:
+          description: Invalid user ID.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        404:
+          description: User ID does not exist.
+        500:
+          description: Unexpected internal errors.
+    delete:
+      summary: Mark a registered user as be removed.
+      description: |
+        This endpoint let administrator of Board mark a registered user as
+        be removed.It actually won't be deleted from DB.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: user_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: User ID for marking as to be removed.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Marked user as be removed successfully.
+        400:
+          description: Invalid user ID.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        404:
+          description: User ID does not exist.
+        500:
+          description: Unexpected internal errors.
+  /v1/users/{user_id}/systemadmin:
+    put:
+      summary: Update a registered user to change to be an system administrator of Board.
+      description: |
+        This endpoint let a registered user change to be an system administrator
+        of Board.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: user_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Registered user ID
+        - name: user_system_admin
+          in: body
+          description:  Toggle a user to system admin or not.
+          required: true
+          schema:
+            $ref: '#/definitions/UserSystemAdminUpdate'
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated user's system admin role successfully.
+        400:
+          description: Invalid user ID.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        404:
+          description: User ID does not exist.
+        500:
+          description: Unexpected internal errors.
+  /v1/users/{user_id}/projectadmin:
+    put:
+      summary: Update a registered user to change to be an project administrator of Board.
+      description: |
+        This endpoint let a registered user change to be an project administrator
+        of Board.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: user_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Registered user ID
+        - name: user_project_admin
+          in: body
+          description:  Toggle a user to project admin or not.
+          required: true
+          schema:
+            $ref: '#/definitions/UserProjectAdminUpdate'
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated user's project admin role successfully.
+        400:
+          description: Invalid user ID.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        404:
+          description: User ID does not exist.
+        500:
+          description: Unexpected internal errors.          
+  /v1/users/{user_id}/password:
+    put:
+      summary: Change the password on a user that already exists.
+      description: |
+        This endpoint is for user to update password. Users with the admin role can change any user's password. Guest users can change only their own password.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: user_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Registered user ID.
+        - name: user_password
+          in: body
+          description: Password to be updated.
+          required: true
+          schema:
+            $ref: '#/definitions/UserPasswordUpdate'          
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated password successfully.
+        400:
+          description: Invalid user ID; Old password is blank; New password is blank.
+        401:
+          description: Don't have authority to change password. Please check login status.
+        403:
+          description: Old password is not correct.
+        500:
+          description: Unexpected internal errors.
+  /v1/users/changeaccount:
+    put:
+      summary: Change the current user account.
+      description: |
+        This endpoint is for current user to update account.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: user_profile
+          in: body
+          description: User account to be updated.
+          required: true
+          schema:
+            $ref: '#/definitions/UserProfileUpdate'          
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated user account successfully.
+        400:
+          description: Invalid user account input.
+        401:
+          description: Don't have authority to change password. Please check login status.
+        500:
+          description: Unexpected internal errors.          
+  /v1/users/current:
+    get:
+      summary: Get current user.
+      description: |
+        This endpoint is for getting current user with available token.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated user's project admin role successfully.
+          schema:
+            $ref: '#/definitions/TokenPayload'
+        400:
+          description: Invalid user ID.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        404:
+          description: User ID does not exist.
+        500:
+          description: Unexpected internal errors.              
+  /v1/projects:
+    get:
+      summary: Return projects created by Board.
+      description: |
+        This endpoint returns all projects created by Board, and can be filtered by project name.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name 
+          in: query
+          description: Project name for filtering results.
+          required: false
+          type: string
+        - name: project_public
+          in: query
+          description: Public public sign for filtering projects.
+          required: false
+          type: integer
+          format: int32
+        - name: project_list_page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: project_list_page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched projects.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ProjectDetail'
+          headers:
+            X-Total-Count:
+              description: The total count of projects.
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page.
+              type: string
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+    post:
+      summary: Create a new project.
+      description: |
+        This endpoint is for user to create a new project.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project
+          in: body
+          description: New created project.
+          required: true
+          schema:
+            $ref: '#/definitions/ProjectDetail'
+      tags:
+        - Products
+      responses:
+        201:
+          description: Project created successfully.
+        400:
+          description: Unsatisfied with constraints of the project creation.
+        401:
+          description: User need to log in first.
+        409:
+          description: Project name already exists.
+        500:
+          description: Unexpected internal errors.
+  /v1/projects/{project_id}:
+    get:
+      summary: Return specific project detail infomation.
+      description: |
+        This endpoint returns specific project information by project ID.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_id
+          in: path
+          description: Project ID for filtering results.
+          required: true
+          type: integer
+          format: int32
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched project information.
+          schema:
+            $ref: '#/definitions/ProjectDetail'
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.     
+    delete:
+      summary: Delete project by projectID
+      description: |
+        This endpoint is aimed to delete project by project ID.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_id
+          in: path
+          description: Project ID of project which will be deleted.
+          required: true
+          type: integer
+          format: int32
+      tags:
+        - Products
+      responses:
+        200:
+          description: Project is deleted successfully.
+        400:
+          description: Invalid project id.
+        403:
+          description: User need to log in first.
+        404:
+          description: Project does not exist.
+        412:
+          description: Project contains policies, can not be deleted.
+        500:
+          description: Internal errors.
+  /v1/projects/{project_id}/publicity:
+    put:
+      summary: Update project publicity for a selected project.
+      description: |
+        This endpoint is aimed to toggle a project publicity status.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected project ID.
+        - name: project
+          in: body
+          required: true 
+          schema:
+            $ref: '#/definitions/ProjectPublicityUpdate'
+          description: Updates of project publicity.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated project publicity status successfully.
+        400:
+          description: Illegal format of provided ID value.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission to the project.
+        404:
+          description: Project ID does not exist.
+        500:
+          description: Unexpected internal errors.
+  /v1/projects/{project_id}/members:
+    get:
+      summary: Return a project's relevant members.
+      description: |
+        This endpoint is for user to search a specified project's relevant members.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Relevant project ID.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Get project's relevant role members successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ProjectMemberDetail'
+        400:
+          description: Illegal format of provided ID value.
+        401:
+          description: User need to log in first.
+        403:
+          description: User in session does not have permission to the project.
+        404:
+          description: Project ID does not exist.
+        500:
+          description: Unexpected internal errors.
+    post:
+      summary: Add member accompany with relevant project.
+      description: |
+        This endpoint is for user to add member accompany with relevant project.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Relevant project ID.
+        - name: project_member
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/RoleBrief'
+          description: Members list for adding to relevant project.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Members added to relevant project successfully.
+        400:
+          description: Illegal format of provided ID value.
+        401:
+          description: User need to log in first.
+        403:
+          description: User in session does not have permission to the project.
+        404:
+          description: Project ID or username does not exist.
+        500:
+          description: Unexpected internal errors.
+  /v1/projects/{project_id}/members/{user_id}:
+    delete:
+      summary: Delete member accompany with relevant project.
+      description: |
+        This endpoint is for user to delete member accompany with relevant project.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Relevant project ID.
+        - name: user_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Relevant user ID.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Members added to relevant project successfully.
+        400:
+          description: Illegal format of provided ID value.
+        401:
+          description: User need to log in first.
+        403:
+          description: User in session does not have permission to the project.
+        404:
+          description: Project ID or username does not exist.
+        500:
+          description: Unexpected internal errors.        
+  /v1/services:
+    get:
+      summary: Return services created by Board.
+      description: |
+        This endpoint returns all services created by Board, and can be filtered by project name.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_name 
+          in: query
+          description: Service name for filtering results.
+          required: false
+          type: string
+        - name: service_public
+          in: query
+          description: Service public sign for filtering projects.
+          required: false
+          type: integer
+          format: int32
+        - name: service_list_page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: servie_list_page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched services.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ServiceDetail'
+          headers:
+            X-Total-Count:
+              description: The total count of services.
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page.
+              type: string
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+    post: 
+      summary: Create a new original service.
+      description: |
+        This endpoint is to create a new original service.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_project
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ServiceProject'
+          description: The project info for this servcie.  
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return a new service id for service config. 
+          schema:
+            type: string
+            description: the service id string.
+        401:
+          description: User need to log in first.
+        500:
+          description: Unexpected internal errors.
+  /v1/services/{service_id}:
+    get:
+      summary: Return specific service_id detail infomation.
+      description: |
+        This endpoint returns specific service information by service_id ID.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          description: Service ID for filtering results.
+          required: true
+          type: integer
+          format: int32
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched service information.
+          schema:
+            $ref: '#/definitions/ServiceDetail'
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.  
+    delete:
+      summary: Delete the specific service by service_id.
+      description: |
+        This endpoint to delete the specific service by service_id ID.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          description: Service ID for deleting.
+          required: true
+          type: integer
+          format: int32
+      tags:
+        - Products
+      responses:
+        200:
+          description: Delete the service successfully.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.  
+  /v1/services/info/{service_name}:
+    get:
+      summary: Return specific service_name infomation.
+      description: |
+        This endpoint returns specific service  information by service_name.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_name
+          in: path
+          description: Service name for filtering results.
+          required: true
+          type: integer
+          format: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched service information.
+          schema:
+            $ref: '#/definitions/ServiceDetail'
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.  
+  /v1/services/status/{service_name}:
+    get:
+      summary: Return specific service_name status.
+      description: |
+        This endpoint returns specific service status by service_name.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_name
+          in: path
+          description: Service name for filtering results.
+          required: true
+          type: integer
+          format: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched service status.
+          schema:
+            $ref: '#/definitions/ServiceDetail'
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.    
+     
+  /v1/services/{service_id}/serviceconfig:
+    put:  
+      summary: Update service configuration data.
+      description: |
+        This endpoint is aimed to update service configuration data.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.
+        - name: serviceconfig
+          in: body
+          required: true 
+          schema:
+            $ref: '#/definitions/ServiceConfig'
+          description: Updates of ServiceConfig data.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated service config successfully.
+        401:
+          description: User need to log in first.
+        402:
+          description: Invalid configuration phase.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.
+    delete:
+      summary: Delete service configuration data.
+      description: |
+        This endpoint is aimed to delete service configuration data.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.  
+      tags:
+        - Products
+      responses:
+        200:
+          description: Delete service config successfully.
+        401:
+          description: User need to log in first.
+        402:
+          description: Invalid configuration phase.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.
+  /v1/services/{service_id}/test:  
+    post:
+      summary: Setup a test by this service configuration.
+      description: |
+        This endpoint is aimed to setup a test by this service configuration.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.
+        - name: serviceconfig
+          in: body
+          required: true 
+          schema:
+            $ref: '#/definitions/ServiceConfig'
+          description: Updates of ServiceConfig data.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Service config test successfully.
+        401:
+          description: User need to log in first.
+        402:
+          description: Invalid configuration phase.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.
+    delete: 
+      summary: Cleanup the test resource.
+      description: |
+        This endpoint is aimed to cleanup the test environment.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Cleanup the test resource successfully.
+        401:
+          description: User need to log in first.
+        402:
+          description: Invalid configuration phase.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.
+  /v1/services/{service_id}/deployment:
+    post:
+      summary: Deploy service by this service configuration.
+      description: |
+        This endpoint is aimed to deploy service by this service configuration.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.
+        - name: serviceconfig
+          in: body
+          required: true 
+          schema:
+            $ref: '#/definitions/ServiceConfig'
+          description: Updates of ServiceConfig data.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Deploy service successfully, return serive brief.
+          schema:
+            $ref: '#/definitions/ServiceBrief'
+        401:
+          description: User need to log in first.
+        402:
+          description: Invalid configuration phase.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.
+  /v1/services/{service_id}/toggle:
+    put:  
+      summary: Update the service to stop or run.
+      description: |
+        This endpoint is aimed to update service the service to stop or run.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.
+        - name: service_togglable
+          in: body
+          required: true 
+          schema:
+            $ref: '#/definitions/ServiceToggle'
+          description: New running status of this service.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Toggle this service successfully.
+        401:
+          description: User need to log in first.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.    
+  /v1/services/{service_id}/publicity:
+    put:  
+      summary: Update service publicity for a selected service.yy
+      description: |
+        This endpoint is aimed to toggle a service publicity status.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.
+        - name: service_publicity
+          in: body
+          required: true 
+          schema:
+            $ref: '#/definitions/ServicePublicityUpdate'
+          description: New publicity status of this service.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Toggle this service successfully.
+        401:
+          description: User need to log in first.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.    
+  /v1/node:
+    get:
+      summary: Return nodes in Board added by admin.
+      description: |
+        This endpoint returns all nodes in Board, and can be filtered by node name.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: node_name 
+          in: query
+          description: node name for filtering results.
+          required: false
+          type: string
+        - name: node_list_page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: node_list_page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched nodes.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/NodeDetail'
+          headers:
+            X-Total-Count:
+              description: The total count of nodes.
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page.
+              type: string
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+    post:
+      summary: Add a new node.
+      description: |
+        This endpoint is for admin to add a new node.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: node
+          in: body
+          description: New added node.
+          required: true
+          schema:
+            $ref: '#/definitions/NodePropertyUpdate'
+      tags:
+        - Products
+      responses:
+        201:
+          description: Node added successfully.
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        409:
+          description: Node name already exists.
+        500:
+          description: Internal errors.
+  /v1/node/{node_id}:
+    get:
+      summary: Return a specific node detail infomation.
+      description: |
+        This endpoint returns a specific node's information by node ID.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: node_id
+          in: path
+          description: Node ID for filtering results.
+          required: true
+          type: integer
+          format: int32
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched node information.
+          schema:
+            $ref: '#/definitions/NodeDetail'
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Internal errors.
+    delete:
+      summary: Delete a node by node ID
+      description: |
+        This endpoint is aimed to remove a node by node ID.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: node_id
+          in: path
+          description: Node will be removed by node_id.
+          required: true
+          type: integer
+          format: int32
+      tags:
+        - Products
+      responses:
+        200:
+          description: Node is deleted successfully.
+        400:
+          description: Invalid node id.
+        403:
+          description: User need to log in as admin.
+        404:
+          description: Node does not exist.
+        500:
+          description: Internal errors.
+    put:
+      summary: Update node properties.
+      description: |
+       This endpoint is to update node info.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: node_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: The node ID for node info changing.
+        - name: node_profile
+          in: body
+          description: The node properties to be changed.
+          required: true
+          schema:
+            $ref: '#/definitions/NodePropertyUpdate' 
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated node properties successfully.
+        400:
+          description: Invalid node ID.
+        403:
+          description: User need to log in as admin.
+        500:
+          description: Unexpected internal errors.
+  /v1/node/{node_id}/runningstatus:
+    put:
+      summary: Start or stop the node
+      description: |
+        This endpoint is aimed to toggle a node's running status stop/start.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: node_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Node ID.
+        - name: node_runningstatus
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/NodeRunningstatusUpdate'
+          description: The new running status of the node.         
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated running status successfully.
+        400:
+          description: Invalid running status request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Unexpected internal errors.  
+  /v1/images:
+    get:
+      summary: Return images in Board system.
+      description: |
+        This endpoint returns all images in Board, and can be filtered by image name.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: image_name 
+          in: query
+          description: image name for filtering results.
+          required: false
+          type: string
+        - name: image_list_page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: image_list_page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched images.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ImageBrief'
+          headers:
+            X-Total-Count:
+              description: The total count of images.
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page.
+              type: string
+        400:
+          description: Bad Request
+        500:
+          description: Internal errors.
+    post:
+      summary: Create a new image
+      description: |
+        This endpoint is to create a new image with image_tag.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: image_config
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ImageConfig'
+          description: The image configuration struct for the new image.       
+      tags:
+        - Products
+      responses:
+        200:
+          description: Create Image configuration info successfully.
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Internal errors.   
+    delete:
+      summary: Delete an image
+      description: |
+        This endpoint is to delete a image with image_name.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: image_name
+          in: query
+          type: string
+          required: true
+          description: The image name which will be delete.       
+      tags:
+        - Products
+      responses:
+        200:
+          description: Delete Image successfully.
+        401:
+          description: User need to log in as admin.
+        404:
+          description: Image name not found.
+        500:
+          description: Internal errors.   
+  /v1/images/configclean:
+    delete:
+      summary: Delete this image configuration.
+      description: |
+        This endpoint is to delete this image configuration.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: image_index
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ImageIndex'
+          description: The image index struct for the image to be deleted.    
+      tags:
+        - Products
+      responses:
+        200:
+          description: Delete the image configuration info successfully.
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Internal errors.
+  /v1/images/preview:
+    post:
+      summary: Preview a new image for the image configuration
+      description: |
+        This endpoint is to return a new image dockerfile for the image configuration.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: image_config
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ImageConfig'
+          description: The image configuration struct for the new image.       
+      tags:
+        - Products
+      responses:
+        200:
+          description: Build the image successfully.
+          schema:
+            $ref: '#/definitions/ImageDockerfile'
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Internal errors.
+  /v1/images/building:          
+    post:
+      summary: Build a new image for the image configuration
+      description: |
+        This endpoint is to build a new image for the image configuration.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: image_config
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ImageConfig'
+          description: The image configuration struct for the new image.       
+      tags:
+        - Products
+      responses:
+        200:
+          description: Build the image successfully.
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Internal errors.   
+  /v1/images/{image_name}/push:   
+    post:
+      summary: Upload the new image to board registry
+      description: |
+        This endpoint is to upload the new image to board registry.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: image_name
+          in: path
+          description: image name to specify an image.
+          required: true
+          type: string
+        - name: image_config
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ImageConfig'
+          description: The image configuration struct for the new image.       
+      tags:
+        - Products
+      responses:
+        200:
+          description: Upload the image to board registry successfully.
+          schema:
+            $ref: '#/definitions/ImageDetail'
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Internal errors. 
+  /v1/images/{image_name}/fileupload:   
+    post:
+      summary: Upload the external archive to image building server
+      description: |
+        This endpoint is to upload the external archive to image building server.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: image_name
+          in: path
+          description: image name to specify an image.
+          required: true
+          type: string
+        - name: image_externalfile
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ImageExternalfile'
+          description: The external archive to upload. 
+      tags:
+        - Products
+      responses:
+        200:
+          description: Upload the external archive to image building server successfully.
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Internal errors. 
+  /v1/images/dockerfile:
+    get:
+      summary: Return the dockerfile of this image.
+      description: |
+        This endpoint returns the dockerfile of this image.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: image_name
+          in: query
+          description: image name to specify an image.
+          required: true
+          type: string
+        - name: image_tag
+          in: query
+          type: string
+          required: true
+          description: The tag of this image.
+        - name: project_name
+          in: query
+          type: string
+          required: true
+          description: The project name that the image belongs to.   
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the dockerfile of this image successfully.
+          schema:
+            $ref: '#/definitions/ImageDockerfile'
+        400:
+          description: Bad Request.
+        404:
+          description: Image name does not exist.
+        500:
+          description: Internal errors.
+  /v1/images/{image_name}:
+    get:
+      summary: Return all detailed info of this image.
+      description: |
+        This endpoint returns all detailed info of this image by the image internal serial number
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: image_name
+          in: path
+          description: image name to specify an image.
+          required: true
+          type: string
+        - name: tag_list_page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: tag_list_page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.          
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all tags matched this image.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ImageDetail'
+          headers:
+            X-Total-Count:
+              description: The total count of image detail.
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page.
+              type: string
+        400:
+          description: Bad Request.
+        404:
+          description: Image serial number does not exist.
+        500:
+          description: Internal errors.
+    delete:
+      summary: Delete an image by image tag.
+      description: |
+        This endpoint is to delete an image by the image tag.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: image_name
+          in: path
+          description: image name to specify an image.
+          required: true
+          type: string
+        - name: image_tag
+          in: query
+          type: string
+          required: true
+          description: The image tag to be deleted       
+      tags:
+        - Products
+      responses:
+        200:
+          description: The image of this tag is deleted successfully.
+        401:
+          description: User need to log in first.
+        404:
+          description: Invalid image name or tag.
+        500:
+          description: Internal errors.
+  /v1/profile:
+    get:
+      summary: Return the Board system profile information
+      description: |
+        This endpoint returns the Board system profile information.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return profile information.
+          schema:
+            $ref: '#/definitions/ProfileDetail'
+        400:
+          description: Bad Request
+        500:
+          description: Internal errors.
+  /v1/system:
+    get:
+      summary: Return the admin and system management info
+      description: |
+        This endpoint returns admin and system management info.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return admin and system management info.
+          schema:
+            $ref: '#/definitions/System'
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Internal errors.    
+  /v1/system/host_setting:
+    put:
+      summary: Update host info
+      description: |
+        This endpoint is to update host info.
+      parameters:
+        - name: host_setting
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/HostInfo'
+          description: The host's information to be updated.         
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated host info successfully.
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Unexpected internal errors.     
+  /v1/system/admin_setting:
+    put:
+      summary: Update admin account info
+      description: |
+        This endpoint is to update the admin account info.
+      parameters:
+        - name: admin_setting
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/AdminAccount'
+          description: The new admin account info.         
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated admin account info successfully.
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Unexpected internal errors.     
+  /v1/system/email_setting:
+    put:
+      summary: Update email server info
+      description: |
+        This endpoint is to update the email server info.
+      parameters:
+        - name: email_setting
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/EmailServer'
+          description: The new email server info.         
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated email server info successfully.
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Unexpected internal errors. 
+  /v1/dashboard/service/:
+    post:
+      summary: Return the status logs of this service
+      description: |
+        This endpoint returns the status logs of this service.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_name
+          in: query
+          description: The integer ID of this service, null name is for the sum of all services.
+          type: string
+        - name: service_timestruct
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ServiceDashboardReq'
+          description: The time struct for status logs of this servcie.       
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the status logs of this service.
+          schema:
+            $ref: '#/definitions/DashboardService'
+        400:
+          description: Bad Request.
+        401:
+          description: Invalid service name.
+        500:
+          description: Internal errors.
+  /v1/dashboard/node/:
+    post:
+      summary: Return the status logs of this node
+      description: |
+        This endpoint returns the status logs of this node.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: node_name
+          in: query
+          description: The integer ID of this node, null name is for the sum of all nodes.
+          type: integer
+          format: int32
+        - name: node_timestruct
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/NodeDashboardReq'
+          description: The time struct for status logs of this node.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the status logs of this node.
+          schema:
+            $ref: '#/definitions/DashboardNode'
+        400:
+          description: Bad Request.
+        401:
+          description: Invalid node name.
+        500:
+          description: Internal errors.
+  /v1/dashboard/storage/{storage_id}:
+    get:
+      summary: Return the status logs of this storage
+      description: |
+        This endpoint returns the status logs of this storage.
+      parameters:
+        - name: storage_id
+          in: path
+          description: The integer ID of this storage, 'null' is for the sum of all storages.
+          required: true
+          type: integer
+          format: int32
+        - name: storage_timestruct
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/TimeStruct'
+          description: The time struct for status logs of this storage.    
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the status logs of this storage.
+          schema:
+            $ref: '#/definitions/DashboardStorage'
+        400:
+          description: Bad Request.
+        401:
+          description: Invalid storage name.
+        500:
+          description: Internal errors.
+  /v1/git/serve:
+    post:
+      summary: Create bared repo named as 'board_repo_serve' which to store pushed commits.
+      description: |
+        This endpoint is used to create serve repo for storing pushed commits.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the status creation of serve repo.
+        400:
+          description: Bad request.
+        401:
+          description: Need to login first.
+        403:
+          description: Insufficient privileges.
+        500:
+          description: Internal errors.
+  /v1/git/repo:
+    post:
+      summary: Create repo named as 'board_repo' to store files.
+      description: |
+        This endpoint is used to create repo and sub path to store users' specific files.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: sub_path
+          in: query
+          type: string
+          required: true
+          description: Provide project name or service ID to store specific archives.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the status creation customer repo.
+        400:
+          description: Bad request.
+        401:
+          description: Need to login first.
+        403:
+          description: Insufficient privileges.
+        500:
+          description: Internal errors.
+  /v1/git/push:
+    post:
+      summary: Add files and push commits to serve repo and trigger specified Jenkins Job.
+      description: |
+        This endpoint is used to add files and push commits to serve repo and trigger Jenkins Job.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: push
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/PushObject'
+          description: The pushed object from custom repo.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the status creation customer repo.
+        400:
+          description: Bad request.
+        401:
+          description: Need to login first.
+        403:
+          description: Insufficient privileges.
+        500:
+          description: Internal errors.
+  /v1/git/pull:
+    post:
+      summary: Pull commits from serve repo.
+      description: |
+        This endpoint is used to pull commits to target name repo from serve repo.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: target
+          in: query
+          type: string
+          required: true
+          description: Target repo to pull commits.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the status creation customer repo.
+        400:
+          description: Bad request.
+        401:
+          description: Need to login first.
+        403:
+          description: Insufficient privileges.
+        500:
+          description: Internal errors.
+  /v1/files/upload:
+    post:
+      summary: Upload file to specified path.
+      description: |
+        This endpoint is used to upload file to specified path.
+      consumes:
+         - multipart/form-data
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: upload_file
+          in: formData
+          type: file
+          required: true
+          description: File to be uploaded.
+        - name: project_name
+          in: query
+          type: string
+          required: false
+          description: Project name as partial of generated path.
+        - name: service_id
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: Service id as partial of generated path.
+        - name: image_name
+          in: query
+          type: string
+          required: true
+          description: Image name as partial of generated path.
+        - name: tag_name
+          in: query
+          type: string
+          required: true
+          description: Tag name as partial of generated path.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Sucessful uploaded file.
+        400:
+          description: Bad Request.
+        401:
+          description: Need to login first.
+        500:
+          description: Internal errors.
+  /v1/files/list:
+    post:
+      summary: List files uploaded from specified path.
+      description: |
+        This endpoint is used to list files uploaded from specified path.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name
+          in: query
+          type: string
+          required: false
+          description: Project name as partial of generated path.
+        - name: service_id
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: Service id as partial of generated path.
+        - name: image_name
+          in: query
+          type: string
+          required: true
+          description: Image name as partial of generated path.
+        - name: tag_name
+          in: query
+          type: string
+          required: true
+          description: Tag name as partial of generated path.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the list of uploaded files.
+          schema:
+            $ref: '#/definitions/FileInfoObject'
+        400:
+          description: Bad Request.
+        401:
+          description: Need to login first.
+        500:
+          description: Internal errors.
+  /v1/files/remove:
+    post:
+      summary: Remove uploaded file with specified path.
+      description: |
+        This endpoint is used to remove file with specified path.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name
+          in: query
+          type: string
+          required: false
+          description: Project name as partial of generated path.
+        - name: service_id
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: Service id as partial of generated path.
+        - name: image_name
+          in: query
+          type: string
+          required: true
+          description: Image name as partial of generated path.
+        - name: tag_name
+          in: query
+          type: string
+          required: true
+          description: Tag name as partial of generated path.
+        - name: file_name
+          in: query
+          type: string
+          required: true
+          description: File name to be deleted.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Successful deleted file.
+        400:
+          description: Bad Request.
+        401:
+          description: Need to login first.
+        500:
+          description: Internal errors.
+  /v1/jenkins-job/console:
+    get:
+      summary: Redirect Jenkins' job output.
+      description: |
+        This endpoint is used to redirect Jenkins' job output by specifying job name and build serial ID.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: job_name
+          in: query
+          type: string
+          required: true
+          description: Specify job name to fetch console output.
+        - name: build_serial_id
+          in: query
+          type: string
+          required: false
+          description: This value would be either 'lastBuild' by default or as user specified build number. 
+      tags:
+        - Products
+      responses:
+        200:
+          description: Successful get console output from Jenkins.
+        400:
+          description: Bad request.
+        401:
+          description: Need to login first.
+        500:
+          description: Internal errors.
+# The following is for structure definition          
+definitions:
+  Search:
+    type: object
+    properties:
+      project_result:
+        description: Search results of the projects that matched the filter keywords.
+        type: array
+        items:
+          $ref: '#/definitions/ProjectSearch'
+      user_result:
+        description: Search results of the services that matched the filter keywords.
+        type: array
+        items:
+          $ref: '#/definitions/UserSearch'
+      images_result:
+        description: Search results of the services that matched the filter keywords.
+        type: array
+        items:
+          $ref: '#/definitions/ImagesResult'
+      node_result:
+        description: Search results of the services that matched the filter keywords.
+        type: array
+        items:
+          $ref: '#/definitions/NodeResult'
+      service_result:
+        description: Search results of the services that matched the filter keywords.
+        type: array
+        items:
+          $ref: '#/definitions/ServiceResult'
+  UserSearch:
+      type: object
+      properties:
+        user_name:
+          type: string
+        role_name:
+          type: string
+        user_email:
+          type: string
+  ProjectSearch:
+        type: object
+        properties:
+          owner_name:
+            type: string
+          project_name:
+            type: string
+          is_public:
+            type: boolean
+  ImagesResult:
+      type: object
+      properties:
+          image_name:
+              type: string
+          project_name:
+              type: string
+  NodeResult:
+      type: object
+      properties:
+          node_name:
+              type: string
+          node_ip:
+              type: string
+  ServiceResult:
+      type: object
+      properties:
+          service_name:
+              type: string
+          project_name:
+              type: string
+  TokenPayload:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int32
+        description: The ID of current user.
+      username:
+        type: string
+        description: The name of current user.
+      email:
+        type: string
+        description: The email of current user.
+      realname:
+        type: string
+        description: The realname of current user.
+      is_project_admin:
+        type: integer
+        format: int32
+        description: The project admin status of current user.
+      is_system_admin:
+        type: integer
+        format: int32
+        description: The system admin status of current user.
+      token:
+        type: string
+        description: The token of current user.
+  UserSignIn:
+    type: object
+    properties:
+      user_name:
+        type: string
+        description: The name of user.
+      user_password:
+        type: string
+        description: The password of user.
+  UserBrief:
+    type: object
+    properties:
+      user_id:
+        type: integer
+        format: int32
+        description: The integer ID of this user.         
+      user_name:
+        type: string
+        description: The name of this user.
+      user_email:
+        type: string
+        description: The email address of this user.
+      user_registertime:
+        type: string
+        description: The registration time of this user.
+      user_systemadmin:
+        type: integer 
+        format: int32
+        description: The flag to indicate the role, 1 for is_admin, 0 for not_admin.
+      user_projectadmin:
+        type: integer 
+        format: int32
+        description: The flag to indicate the role, 1 for is_projectowner, 0 for not_projectowner.
+  UserDetail:
+    type: object
+    properties:
+      user_id:
+        type: integer
+        format: int32
+        description: The integer ID of this user.
+      user_name:
+        type: string
+      user_email:
+        type: string
+      user_password:
+        type: string
+      user_realname:
+        type: string
+      user_comment:
+        type: string
+      user_deleted:
+        type: integer
+        format: int32
+      user_system_admin:
+        type: integer 
+        format: int32
+        description: The flag to indicate the role, 1 for system admin, 0 for not project admin
+      user_project_admin:
+        type: integer 
+        format: int32
+        description: The flag to indicate the role, 1 for project admin, 0 for not project admin
+      user_reset_uuid:
+        type: string
+      user_salt:
+        type: string
+      user_creation_time:
+        type: string
+      user_update_time:
+        type: string
+  UserPasswordUpdate:
+    type: object
+    properties:
+      user_password_old:
+        type: string
+        description: The user's existing password.
+      user_password_new:
+        type: string
+        description: New password for marking as to be updated.
+  UserProfileUpdate:
+    type: object
+    properties:
+      user_email:
+        type: string
+        description: The new email of this user.
+      user_realname:
+        type: string
+        description: The new realname of this user.
+      user_comment:
+        type: string
+        description: The new comment of this user.
+  UserSystemAdminUpdate:
+    type: object
+    properties:
+      user_system_admin: 
+        type: integer
+        description: 1-has system admin, 0-not.
+  UserProjectAdminUpdate:
+    type: object
+    properties:
+      user_project_admin: 
+        type: integer
+        description: 1-has project admin, 0-not.
+  ProjectBrief:
+    type: object
+    properties:
+      project_id: 
+        type: integer
+        format: int32
+        description: The integer ID of this project.
+      project_name: 
+        type: string
+        description: The name of this project.
+      project_owner:
+        type: string
+        description: The owner name of this project.
+      project_creationtime:
+        type: string
+        description: The creation time of this project.
+      project_public:
+        type: integer 
+        format: int32
+        description: The flag to indicate the publicity of the project (1 is public, 0 is non-public)
+  ProjectDetail:
+    type: object
+    properties:
+      project_id:
+        type: integer
+        format: int32
+        description: The integer ID of this project.
+      project_name:
+        type: string
+        description: The name of this project.
+      project_comment:
+        type: string
+        description: The commnet of this project.
+      project_creation_time:
+        type: string
+        description: The creation time of the project.
+      project_update_time:
+        type: string
+        description: The update time of the project.
+      project_deleted:
+        type: integer
+        format: int32
+        description: A deletion mark of the project (1 means it's deleted, 0 is not).
+      project_owner_id:
+        type: integer
+        format: int32
+        description: The owner ID of the project always means the creator of the project.
+      project_owner_name:
+        type: string
+        description: The owner name of the project.
+      project_public:
+        type: integer
+        format: int32
+        description: The public status of the project.
+      project_togglable:
+        type: boolean
+        description: Correspond to the UI about whether the project's publicity is  updatable (for UI)
+      project_current_user_role_id:
+        type: integer
+        description: The role ID of the current user who triggered the API (for UI)
+      project_service_count:
+        type: integer
+        description: The number of the services under this project.
+  ProjectPropertyUpdate:
+    type: object
+    properties:
+      project_name:
+        type: string
+        description: The new name of this project.
+      project_comment:
+        type: string
+        description: The new comment of this project.
+  ProjectPublicityUpdate:
+    type: object
+    properties:
+      project_public: 
+        type: integer
+        description: 1-public, 0-not.
+  ProjectMemberDetail:
+    type: object
+    properties:
+      project_member_id:
+        type: integer
+        format: int32
+        description: Project member ID.
+      project_member_user_id:
+        type: integer
+        format: int32
+        description: Project member user ID.
+      project_member_username:
+        type: string
+        description: Project member username.
+      project_member_project_id:
+        type: integer
+        format: int32
+        description: Project member relevant project ID.
+      project_member_role_id:
+        type: integer
+        format: int32
+        description: Project member relevant project role ID.
+  RoleBrief:
+    type: object
+    properties:
+      project_member_role_id:
+        type: integer
+        description: 1-system admin, 2-project admin, 3-developer, 4-visitor
+      project_member_user_id:
+        type: integer
+        description: User ID set as member to relevant project. 
+  ServiceBrief:
+    type: object
+    properties: 
+      service_id:
+        type: integer
+        format: int32
+        description: The integer ID of this service.
+      service_name:
+        type: string
+        description: The name of this service.
+      project_id:
+        type: integer
+        format: int32
+        description: The project's integer ID which include this service.
+      project_name:
+        type: string
+        description: The project's name which include this service.
+      service_owner:
+        type: string
+        description: The owner name of this service.
+      service_creationtime:
+        type: string
+        description: The creation time of this service.
+      service_public:
+        type: integer 
+        format: int32
+        description: The flag to indicate the publicity of the service (1 is public, 0 is non-public).
+  ServiceDetail:
+    type: object
+    properties:
+      service_id:
+        type: integer
+        format: int32
+        description: The integer ID of this service.
+      service_name:
+        type: string
+        description: The name of this service.
+      service_comment:
+        type: string
+        description: The commnet of this service.
+      service_creation_time:
+        type: string
+        description: The creation time of this service.
+      service_update_time:
+        type: string
+        description: The update time of this service.
+      service_deleted:
+        type: integer
+        format: int32
+        description: A deletion mark of the service (1 means it's deleted, 0 is not).
+      service_owner_id:
+        type: integer
+        format: int32
+        description: The owner ID of the service always means the creator of the service.
+      service_owner_name:
+        type: string
+        description: The owner name of this service.
+      service_entry_urls:
+        type: array
+        description: The url list of this service entry.
+        items:
+          type: string
+          description: The url of this service entry.        
+      service_public:
+        type: integer
+        format: int32
+        description: The status of this service.
+      service_togglable:
+        type: boolean
+        description: Correspond to the UI about whether the service's publicity is  updatable (for UI)
+      service_current_user_role_id:
+        type: integer
+        description: The role ID of the current user who triggered the API (for UI)
+      service_pods_info:
+        description: The pods information of this service.
+        type: array
+        items:
+          $ref: '#/definitions/PodBrief'
+      service_resource_usage:
+        description: The resources usage of this service.
+        type: array
+        items:
+          $ref: '#/definitions/ResourcesUsage'
+  ServiceProject:
+    type: object
+    properties:
+      project_id:
+        type: integer
+        format: int32
+        description: The project's integer ID of this service.    
+      project_name:
+        type: string
+        description: The project's name of this service.
+  ServiceToggle:
+    type: object
+    properties:
+      service_toggle:
+        type: integer
+        format: int32
+        description: The new toggle value, 1 for run 0 for stop.
+  ServicePublicityUpdate:
+    type: object
+    properties:
+      service_public: 
+        type: integer
+        description: 1-public, 0-not.
+  ServiceConfig:
+    type: object
+    properties:
+      service_id:
+        type: integer
+        format: int32
+        description: The integer ID of this service.
+      project_id:
+        type: integer
+        format: int32
+        description: The project's integer ID which include this service.
+      project_name:
+        type: string
+        description: The project's name of this service.
+      config_phase:
+        type: string
+        description: The phase name of the service configuration process.        
+      deployment_yaml:
+        description: The deployment yaml struct of this service configuration.
+        $ref: '#/definitions/DeploymentYaml'
+      service_yaml:
+        description: The service yaml struct of this service configuration.
+        $ref: '#/definitions/ServiceYaml'
+  DeploymentYaml:
+    type: object
+    properties:
+      deployment_name:
+        type: string
+        description: The deployment name of the service configuration.  
+      deployment_replicas:
+        type: integer
+        format: int32
+        description: The replicas number of this deployment.
+      volume_list:
+        description: The volumes of this deployment.
+        type: array
+        items:
+          $ref: '#/definitions/NFSVolume'        
+      container_list:
+        description: The containers of this deployment.
+        type: array
+        items:
+          $ref: '#/definitions/ContainerYaml'
+  ContainerYaml: 
+    type: object
+    properties:
+      container_name:
+        type: string
+        description: The container name in the deployment. 
+      container_baseimage:
+        type: string
+        description: The base image name of this container. 
+      container_workdir:
+        type: string
+        description: The working directory of this container. 
+      container_ports:
+        description: The container ports of this container.
+        type: array
+        items:
+          type: integer   
+          format: int32
+          description: The port number of this container.
+      container_volumes:
+        description: The volume mounts of this container.
+        type: array
+        items:
+          $ref: '#/definitions/ContainerVolume'
+      container_envs:
+        description: The environment variables of this container.
+        type: array
+        items:
+          $ref: '#/definitions/ContainerEnv'
+      container_command:
+        type: array
+        items:
+          type: string
+          description: The commander of this container.   
+      container_memory:
+        type: string
+        description: The memory request of this container.      
+      container_cpu:
+        type: string
+        description: The CPU request of this container.  
+  NFSVolume:
+    type: object
+    properties:
+      volume_name:
+        type: string
+        description: The volume name in the deployment.     
+      server_name:
+        type: string
+        description: The NFS server name in the deployment.
+      volume_path:
+        type: string
+        description: The NFS path in the deployment.
+  ContainerVolume:
+    type: object
+    properties:
+      container_dir:
+        type: string
+        description: The directory in this container.     
+      target_storagename:
+        type: string
+        description: The storage server name.
+      target_dir:
+        type: string
+        description: The target directory of storage server.
+  ContainerEnv:
+    type: object
+    properties:
+      env_name:
+        type: string
+        description: The environment variable name in this container.     
+      env_value:
+        type: string
+        description: The environment variable value in this container.
+  ServiceNodeport:
+    type: object
+    properties:
+      container_port:
+        type: integer   
+        format: int32
+        description: The service port number of this Nodeport.
+      node_port:
+        type: integer   
+        format: int32
+        description: The node port number of this Nodeport.
+  ServiceExternalpath:
+    type: object
+    properties:
+      container_port:
+        type: integer   
+        format: int32
+        description: The service port number of this Nodeport.
+      external_path:
+        type: string   
+        description: The external access path of this service.        
+  ServiceYaml:
+    type: object
+    properties:
+      service_name:
+        type: string
+        description: The service name of the service configuration. 
+      service_nodeports:
+        description: The nodeports of this service.
+        type: array
+        items:
+          $ref: '#/definitions/ServiceNodeport'
+      service_externalpaths:
+        description: The external access paths of this service.
+        type: array
+        items:
+          $ref: '#/definitions/ServiceExternalpath'
+      service_selectors:
+        description: The selectors of this service.
+        type: array
+        items:
+          type: string
+          description: The selector of this service.
+  PodBrief:
+    type: object
+    properties:
+      pod_id:
+        type: integer
+        format: int32
+        description: The integer ID of this pod.
+      pod_name:
+        type: string
+        description: The name of this pod.
+      pod_instance:
+        type: integer
+        format: int32
+        description: The instance number of this pod. 
+  ImageBrief:
+    type: object
+    properties:
+      image_name:
+        type: string
+        description: The name of this image.
+      image_comment:
+        type: string
+        description: The description of this image.
+      image_deleted:
+        type: integer
+        format: int32
+        description: A deletion mark of this image (1 means it's deleted, 0 is not).
+  ImageDetail:
+    type: object
+    properties:
+      image_name:
+        type: string
+        description: The name of this image.
+      image_tag:
+        type: string
+        description: The tag of this image.
+      image_author:
+        type: string
+        description: The author of this image.
+      image_id:
+        type: string
+        description: The integer ID of this pod.
+      image_creationtime:
+        type: string
+        description: The creation time of this image.
+      image_size_number:
+        type: integer
+        format: int32
+        description: The image size number.
+      image_size_unit:
+        type: string
+        description: The image size unit.    
+      image_comment:
+        type: string
+        description: The description of this image.        
+      image_detail:
+        type: string
+        description: The description of the detail info of the image.
+  DockerfileCopy:
+    type: object
+    properties:
+      dockerfile_copyfrom:
+        type: string
+        description: The source of copy
+      dockerfile_copyto:
+        type: string
+        description: The destination of copy
+  DockerfileENV:
+    type: object
+    properties:
+      dockerfile_envname:
+        type: string
+        description: The name of this env
+      dockerfile_envvalue:
+        type: string
+        description: The value of this env name
+  ImageDockerfile:
+    type: object
+    properties:
+      image_base:
+        type: string
+        description: The base image.        
+      image_author:
+        type: string
+        description: The author of this image.
+      image_volume:
+        type: array
+        items: 
+          type: string
+          description: The volume of this image to expose.
+      image_copy:
+        type: array
+        description: The copy instructions in this image
+        items:
+            $ref: '#/definitions/DockerfileCopy'
+      image_run:
+        type: array
+        items:
+          type: string
+          description: The directive when building this image.
+      image_env:
+        type: array
+        description: The ENV in this image
+        items:
+            $ref: '#/definitions/DockerfileENV'
+      image_expose:
+        type: array
+        items: 
+          type: string
+          description: The port number to expose for this image.
+      image_entrypoint:
+        type: string
+        description: The entrypoint of this image.
+      image_cmd:
+        type: string
+        description: The author of this image.
+  ImageConfig:
+    type: object
+    properties:
+      image_name:
+        type: string
+        description: The name of this image.
+      image_tag:
+        type: string
+        description: The tag of this image.
+      project_name:
+        type: string
+        description: The name of the project that this image belongs to.      
+      image_template:
+        type: string
+        description: The image dockerfile template of this image.
+      image_dockerfile:        
+        description: The dockerfile of this image configuration.
+        $ref: '#/definitions/ImageDockerfile'
+  ImageExternalfile:
+    type: object
+    properties:
+      image_externalfilename:
+        type: string
+        description: The full name of the external file.
+      project_name:
+        type: string
+        description: The name of the project that this image belongs to.    
+      image_tag:
+        type: string
+        description: The tag of this image.
+  ImageIndex:
+    type: object
+    properties:
+      project_name:
+        type: string
+        description: The name of the project that this image belongs to.    
+      image_name:
+        type: string
+        description: The name of this image. 
+      image_tag:
+        type: string
+        description: The tag of this image.    
+  NodeBrief:
+    type: object
+    properties:
+      node_id:
+        type: integer
+        format: int32
+        description: The integer ID of this node.      
+      node_name:
+        type: string
+        description: The name of this node.
+      node_ip:
+        type: string
+        description: The IP address of this node.
+      node_powerswitch:        
+        type: integer
+        format: int32
+        description: The running status of the node, 0 poweroff, 1 running.
+  NodeDetail:
+    type: object
+    description: The detail information of this node. 
+    properties:
+      node_id:
+        type: integer
+        format: int32
+        description: The integer ID of this node.      
+      node_name:
+        type: string
+        description: The name of this node.
+      node_ip:
+        type: string
+        description: The IP address of this node.
+      node_runningstatus:        
+        type: integer
+        format: int32
+        description: The running status of this node, 0 poweroff, 1 running.
+      node_rootpassword:
+        type: string
+        description: The node's root password.
+      node_resource_usage:
+        description: The resources usage of this node.
+        type: array
+        items:
+          $ref: '#/definitions/ResourcesUsage'
+      node_container_count:
+        type: integer
+        format: int32
+        description: The number of containers in this node.
+      node_description:
+        type: string
+        description: A simple descrition for this node.
+  NodePropertyUpdate:
+    type: object
+    properties:
+      node_name:
+        type: string
+        description: The name of the node.
+      node_ip:
+        type: string
+        description: The IP address of the node.      
+      node_rootpassword:
+        type: string
+        description: The node's root password.
+      node_description:
+        type: string
+        description: A simple descrition for this node.
+  NodeRunningstatusUpdate:
+    type: object
+    properties:
+      node_powerswitch:        
+        type: integer
+        format: int32
+        description: The running status of the node, 0 poweroff, 1 running.
+  ResourcesUsage:
+    type: object
+    properties:
+      cpu_usage:
+        type: string
+        description: The usage information of cpu.
+      mem_usage:
+        type: string
+        description: The memory capability count number.
+      mem_size:
+        type: string
+        description: The memory unit of measurement.
+      storage_total:
+        type: string
+        description: Storage usage information, division by different volume.
+      storage_use:
+        type: string
+        description: Storage usage information, division by different volume.
+      timestamp:
+        type: string
+        description: The timestamp for resource usage recording.        
+  CPUUsageInfo:
+    type: object
+    properties:
+      cpu_id:
+        type: integer
+        format: int32
+        description: The integer ID of this cpu.
+      cpu_type:
+        type: string
+        description: The type of this cpu.
+      cpu_initial_number:
+        type: integer
+        format: int32
+        description: The cpu capability count number.
+      cpu_usage_number:
+        type: integer
+        format: int32
+        description: The cpu utilization count number.
+      cpu_size_unit:
+        type: string
+        description: The cpu unit of measurement.
+  StorageUsageInfo:
+    type: object
+    description: The usage information of storage. 
+    properties:
+      storage_id:
+        type: integer
+        format: int32
+        description: The integer ID of this storage.
+      storage_name:
+        type: string
+        description: The name of this storage.
+      storage_initial_number:
+        type: integer
+        format: int32
+        description: The storage capability count number.
+      storage_usage_number:
+        type: integer
+        format: int32
+        description: The storage utilization count number.
+      storage_size_unit:
+        type: string
+        description: The storage unit of measurement.
+      storage_timestamp:
+        type: string
+        description: The timestamp for the storage usage recording.
+  ProfileDetail:
+    type: object
+    description: The profile for Board system.
+    properties:
+      profile_description:
+        type: string
+        description: A summary for this Board system.     
+      profile_boardversion:
+        type: string
+        description: The Board version number.
+      profile_kubernetes:
+        type: string
+        description: The Kubernetes version number in Board.
+      profile_mail:
+        type: string
+        description: The contact mail alias for Board system.
+  System:
+    type: object
+    properties:
+      host_setting:
+        description: Host info for setting.
+        $ref: '#/definitions/HostInfo'
+      admin_setting:
+        description: Admin account info for settting.
+        $ref: '#/definitions/AdminAccount'
+      email_setting:
+        description: Email Server info for setting.
+        $ref: '#/definitions/EmailServer'
+  HostInfo:
+    type: object
+    properties:
+      host_name:
+        type: string
+        description: The name of this host.
+      self_registration:
+        type: integer        
+        format: int32
+        description: Self registration, 0 no, 1 yes.
+  AdminAccount:
+    type: object
+    properties:
+      admin_email:
+        type: string
+        description: The email address of admin.
+      admin_password:
+        type: string
+        description: The password of admin.
+      admin_passwordconfirm:
+        type: string
+        description: The password of admin to confirm.
+  EmailServer:
+    type: object
+    properties:
+      email_servername:
+        type: string
+        description: The email server name.
+      email_serverport:
+        type: integer
+        format: int32
+        description: The port number for email in this server.
+      email_username:
+        type: string
+        description: The email username.
+      email_password:
+        type: string
+        description: The email password.
+      email_form:
+        type: string
+        description: The email form.
+      email_ssl:
+        type: integer
+        format: int32
+        description: The email securiy mode, 0 not SSL, 1 is SSL. 
+  DashboardService:
+    type: object
+    properties:
+      service_name:
+        type: string
+        description: The name of this service, 'total' is for the sum all services.
+      is_over_min_limit:
+        type: boolean
+        format: boolean
+      is_over_max_limit:
+        type: boolean
+        format: boolean
+      service_time_unit:
+        type: string
+        description: The time unit of service status logs, minute, hour, day, month.
+      service_time_count:
+         type: integer
+         format: int32
+         description: The number of the service log based on time unit.
+      service_statuslogs:
+        type: array
+        description: The service status logs based on service_timeunit, count is array length.
+        items:
+          $ref: '#/definitions/PodContainerStatus'
+          description: The pod and container number in this service.
+  PodContainerStatus:
+    type: object
+    properties:
+      pod_number:
+        type: integer
+        format: int32
+        description: The pod number in this service.
+      container_number:
+        type: integer
+        format: int32
+        description: The container number in this service.
+      timestamp:
+        type: integer
+        format: int32
+  DashboardNode:
+    type: object
+    properties:
+      node_name:
+        type: string
+        description: The name of this node, 'total' is for the sum all nodes.
+      is_over_min_limit:
+        type: boolean
+        format: boolean
+      is_over_max_limit:
+        type: boolean
+        format: boolean
+      time_unit:
+        type: string
+        description: The time unit of node status logs, minute, hour, day, month.     
+      node_count:
+        type: integer
+        format: int32
+        description: The number of the node logs based on time unit.   
+      node_logs_data:
+        type: array
+        description: The node status logs based on node_timeunit, count is array length.
+        items:
+          $ref: '#/definitions/DashboardNodeLogs'
+      node_list_data:
+         type: array
+         description: The node status logs based on node_timeunit, count is array length.
+         items:
+            $ref: '#/definitions/DashboardNodeList'
+  DashboardNodeLogs:
+      type: object
+      properties:
+        timestamp:
+          type: integer
+          format: int32
+        cpu_usage:
+          type: number
+          format: float
+        memory_usage:
+          type: number
+          format: float
+        storage_total:
+          type: number
+          format: float
+        storage_use:
+          type: number
+          format: float
+  DashboardStorage:
+    type: object
+    properties:
+      storage_name:
+        type: string
+        description: The name of this storage, 'total' is for the sum all storages.
+      storage_timeunit:
+        type: string
+        description: The time unit of node status logs, minute, hour, day, month.        
+      stoarge_count:
+        type: integer
+        format: int32
+        description: The number of the storage logs based on time unit. 
+      storage_statuslogs:
+        type: array
+        description: The storage status logs based on storage_timeunit, count is array length.
+        items:
+          $ref: '#/definitions/StorageUsageInfo'    
+  TimeStruct:
+    type: object
+    properties:
+      time_unit:
+        type: string
+        description: The time unit for status logs, minute, hour, day, month.    
+      time_count:
+        type: string
+        description: The number of the status logs based on timeunit.
+      timestamp_base:
+        type: string
+        description: The base timestamp for record checking.
+  ServiceDashboardReq:
+      type: object
+      properties:
+        service_time_unit:
+          type: string
+          description: The time unit for status logs, minute, hour, day, month.
+        service_time_count:
+          type: integer
+          format: int32
+          description: The number of the status logs based on timeunit.
+        service_timestamp:
+          type: integer
+          format: int32
+          description: The base timestamp for record checking.
+  NodeDashboardReq:
+        type: object
+        properties:
+          node_time_unit:
+            type: string
+            description: The time unit for status logs, minute, hour, day, month.
+          node_time_count:
+            type: integer
+            format: int32
+            description: The number of the status logs based on timeunit.
+          node_timestamp:
+            type: integer
+            format: int32
+            description: The base timestamp for record checking.
+  Token:
+    type: object
+    description: The token for Board system.
+    properties:
+      token:
+        type: string
+        description: The JWT format token.
+  DashboardServiceList:
+    type: object
+    properties:
+       service_name:
+          type: string
+       timestamp:
+          type: integer
+          format: int32
+  DashboardNodeList:
+    type: object
+    properties:
+      node_name:
+        type: string
+      timestamp:
+         type: integer
+         format: int32
+  InitObject:
+    type: object
+    properties:
+      target:
+        type: string
+      service_id:
+        type: integer
+        format: int32
+      project_name:
+        type: string
+  PushObject:
+    type: object
+    properties:
+      items:
+        type: array
+        items:
+          type: string
+      message:
+        type: string
+      job_name:
+        type: string
+      value:
+        type: string
+      file_name:
+        type: string
+      extras:
+        type: string
+  FileUploadObject:
+    type: object
+    properties:
+      project_name:
+        type: string
+      service_id:
+        type: integer
+        format: int32
+      image_name:
+        type: string
+      tag_name:
+        type: string
+  FileInfoObject:
+    type: object
+    properties:
+      path:
+        type: string
+      file_name:
+        type: string
+      size:
+        type: integer
+        format: int32
+        
+
+
+
+
+

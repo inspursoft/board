@@ -1,0 +1,47 @@
+<div class="cs-input-container" [formGroup]="inputFormGroup">
+  <label *ngIf="inputType == 0 || inputType == 1"
+         for="inputField"
+         (click)="onEditClick()"
+         class="cs-input-label">{{inputLabel}}:<span *ngIf="inputIsRequired" class="asterisk">*</span></label>
+  <span *ngIf="inputField.status == 0"
+        [ngClass]="{'enable':!isDisabled}"
+        (click)="onEditClick()"
+        class="cs-input-span">{{inputField.value}}</span>
+  <label *ngIf="inputField.status == 1 && inputType != 1"
+         for="inputField"
+         aria-haspopup="true"
+         role="tooltip"
+         class="cs-input-field-container tooltip tooltip-validation tooltip-md tooltip-bottom-left"
+         (click)="onEditClick()"
+         [class.invalid]="inputErrors && (inputFormGroup.dirty || inputFormGroup.touched)">
+    <input id="inputField"
+           formControlName="inputControl"
+           class="cs-input-input"
+           type="text"
+           (keypress)="onInputKeyPressEvent($event)"
+           (blur)="onInputBlurEvent($event)"
+           [(ngModel)]="inputField.value">
+    <span class="tooltip-content" style="width: 200px;" *ngIf="inputErrors">
+      {{getValidatorMessage(inputErrors) | translate}}{{inputValidatorMessageParam}}
+    </span>
+  </label>
+
+  <a *ngIf="inputField.status == 0 && !isDisabled"
+     href="javascript:void(0)"
+     class="cs-input-icon"
+     (click)="onEditClick()">
+    <clr-icon shape="note"></clr-icon>
+  </a>
+  <a *ngIf="inputField.status == 1 && inputType != 1"
+     href="javascript:void(0)"
+     class="cs-input-icon"
+     (click)="onCheckClick()">
+    <clr-icon shape="check"></clr-icon>
+  </a>
+  <a *ngIf="inputField.status == 1 && inputType != 1"
+     href="javascript:void(0)"
+     class="cs-input-icon"
+     (click)="onRevertClick()">
+    <clr-icon shape="refresh"></clr-icon>
+  </a>
+</div>

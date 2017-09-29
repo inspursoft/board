@@ -1,0 +1,1 @@
+docker_registry=$registry_ip:$registry_port

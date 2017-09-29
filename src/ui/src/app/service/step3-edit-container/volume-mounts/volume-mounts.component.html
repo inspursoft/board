@@ -1,0 +1,41 @@
+<clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'md'">
+  <fieldset class=" modal-body fieldSet-default">
+    <legend class="legend-default">{{"SERVICE.VOLUME_TITLE" | translate}}:</legend>
+    <clr-alert (clrAlertClosedChange)="isAlertOpen = false"
+               [clrAlertClosed]="!isAlertOpen"
+               [clrAlertType]="'alert-danger'">
+      <div class="alert-item">
+        <span class="alert-text">{{volumeErrMsg | translate}}</span>
+      </div>
+    </clr-alert>
+    <div class="vol-configure-container">
+      <div class="vol-title-container">
+        <span class="vol-item-title">{{"SERVICE.VOLUME_TARGET_STORAGE" | translate}}:</span>
+        <cs-dropdown
+          [dropdownDefaultText]="'SERVICE.VOLUME_SELECT_STORAGE'| translate"
+          [dropdownWidth]="200"></cs-dropdown>
+      </div>
+      <cs-input [inputLabel]="'SERVICE.VOLUME_NAME'| translate"
+                [inputPattern]="patternVolumeName"
+                [simpleFiled]="volumeData.target_storagename"
+                (onCheck)="volumeData.target_storagename = $event">
+      </cs-input>
+      <cs-input [inputLabel]="'SERVICE.VOLUME_CONTAINER_DIR'| translate"
+                [inputPattern]="patternContainerDir"
+                [simpleFiled]="volumeData.container_dir"
+                (onCheck)="volumeData.container_dir = $event">
+      </cs-input>
+      <cs-input [inputLabel]="'SERVICE.VOLUME_TARGET_DIR'| translate"
+                [inputPattern]="patternTargetDir"
+                [simpleFiled]="volumeData.target_dir"
+                (onCheck)="volumeData.target_dir=$event"></cs-input>
+    </div>
+    <div class="vol-confirm-container">
+      <button class="btn btn-primary vol-confirm"
+              [disabled]="!isConfirmEnabled"
+              (click)="confirmVolumeInfo()">
+        {{"SERVICE.VOLUME_CONFIRM" | translate}}
+      </button>
+    </div>
+  </fieldset>
+</clr-modal>

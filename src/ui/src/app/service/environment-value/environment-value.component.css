@@ -1,0 +1,64 @@
+.env-icon {
+  color: white;
+  background: green;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+div.env-title-container {
+  display: flex;
+  height: 20px;
+  width: 100%;
+}
+
+span.env-title {
+  flex-basis: 50%;
+  text-align: center;
+  line-height: 20px;
+}
+
+div.env-item-container {
+  display: flex;
+  width: 100%;
+}
+
+div.env-item-title-container {
+  flex-basis: 40px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+span.env-item-title-no {
+  width: 10px;
+  height: 15px;
+  margin-top: 15px;
+  line-height: 15px;
+  text-align: center;
+  margin-right: 10px;
+}
+
+div.env-item-add-container {
+  width: 100%;
+  height: 30px;
+  margin-top: 20px;
+}
+
+div.env-item-confirm-container {
+  width: 100%;
+  height: 30px;
+  display: flex;
+  flex-direction: row-reverse;
+}
+
+.env-item-input {
+  width: calc(50% - 20px);
+}
+
+fieldset.fieldSet-default {
+  margin: 0 2px;
+  border-radius: 5px;
+  padding-bottom: 20px;
+}

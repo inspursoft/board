@@ -1,0 +1,163 @@
+version: '2'
+services:
+  log:
+    build:
+      context: ../../
+      dockerfile: make/dev/container/log/Dockerfile
+    restart: always
+    volumes:
+      - /var/log/board/:/var/log/docker/
+    networks:
+      - board
+    ports:
+      - 1514:514
+  mysql:
+    build: 
+      context: ../../
+      dockerfile: make/dev/container/db/Dockerfile
+    restart: always
+    volumes:
+      - /data/board/database:/var/lib/mysql
+    env_file:
+      - ../config/db/env
+    networks:
+      - board
+    ports:
+      - 3306:3306
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "mysql"
+  gitserver:
+    build:
+      context: ../../
+      dockerfile: make/dev/container/gitserver/Dockerfile
+    restart: always
+    volumes:
+      - /data/board/gitserver/repos:/gitserver/repos
+      - ../config/ssh_keys:/gitserver/keys
+    networks:
+      - board
+    links:
+      - jenkins
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "gitserver"
+  jenkins:
+    build:
+      context: ../../
+      dockerfile: make/dev/container/jenkins/Dockerfile
+    restart: always
+    networks:
+      - board
+    volumes:
+      - /data/board/jenkins_home:/var/jenkins_home
+      - ../config/ssh_keys:/root/.ssh
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker
+    env_file:
+      - ../config/jenkins/env
+    ports:
+      - 8888:8080
+      - 50000:50000
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "jenkins"
+  apiserver:
+    build:
+      context: ../../
+      dockerfile: make/dev/container/apiserver/Dockerfile
+    restart: always
+    volumes:
+      - ../config/apiserver/app.conf:/go/bin/app.conf:z
+      - ../../tools/swagger/vendors/swagger-ui-2.1.4/dist:/go/bin/swagger:z
+      - ../config/ssh_keys:/root/.ssh
+      - /data/board/gitserver/repos:/repos
+    env_file:
+      - ../config/apiserver/env
+    networks:
+      - board
+    links:
+      - mysql
+      - gitserver
+    ports: 
+      - 8088:8088
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "apiserver"
+  tokenserver:
+    build:
+      context: ../../
+      dockerfile: make/dev/container/tokenserver/Dockerfile
+    env_file:
+      - ../config/tokenserver/env
+    restart: always
+    volumes:
+      - ../config/tokenserver/app.conf:/go/bin/app.conf:z
+    networks:
+      - board
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "tokenserver"
+  collector:
+    build:
+      context: ../../
+      dockerfile: make/dev/container/collector/Dockerfile
+    restart: always
+    env_file:
+      - ../config/collector/env
+    networks:
+      - board
+    links:
+      - mysql
+    depends_on:
+      - log
+      - mysql
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "collector" 
+  proxy:
+    build:
+      context: ../../
+      dockerfile: make/dev/container/nginx/Dockerfile
+    networks:
+      - board
+    restart: always
+    volumes:
+      - ../config/nginx/nginx.conf:/etc/nginx/nginx.conf:z
+      - ../../src/ui/dist:/usr/share/nginx/html:z
+    ports: 
+      - 80:80
+    links:
+      - apiserver
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "proxy"
+networks:
+  board:
+    external: false
