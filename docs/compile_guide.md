@@ -36,9 +36,9 @@ Edit the file **make/board.cfg** and make necessary configuration changes such a
       $ vi make/board.cfg
    ```
 
-### Compiling and Running
+### Compiling and Running in development
 
-You can compile the code by the approache:
+Make sure DEVFLAG=dev in Makefile, then you can compile and running by the approache:
 
 #### I. Prepare configuration and env 
 
@@ -57,7 +57,6 @@ You can compile the code by the approache:
    ```sh
       $ make start
    ```
-
 
 ## Step 4: Verify the Board
 
@@ -78,30 +77,78 @@ When you want to stop Board instance, run:
 
 The `Makefile` contains predefined targets:
 
-Target              | Description
---------------------|-------------
-all                 | composition of the target : vet, fmt, golint and compile_ui 
-prepare             | prepare configuration and env 
-start               | building and running board instance
-compile_ui          | building and running UI builder 
-down                | shutdown board instance
-clean_binary        | clean apiserver,tokenserver and collector/cmd binary
-install             | compile apiserver,tokenserver and collector/cmd binary
-test                | used to test a program written in the Go language 
-fmt                 | format the code for all the go language source files in the code package 
-vet                 | check for static errors in the go source file 
-golint              | used to check for irregularities in the go code  
-build               | build apiserver, tokenserver, db, log, collector images
-rmimage             | remove apiserver, tokenserver, db, log, collector images 
+Target                           | Description
+---------------------------------|-------------
+all                              | Check board source file by fmt vet golint and compile  
+prepare                          | Prepare configuration and env 
+compile                          | Check board source file by fmt vet golint and compile
+compile_ui                       | Building ui
+start                            | Building images containers and running
+test                             | Runs the tests
+fmt                              | Formats board source files
+vet                              | Examines board source code and reports suspicious constructs 
+golint                           | Linter for source code
+clean                            | Print help infomation about clean
+cleanall                         | Clean binary and images 
+cleanbinary                      | Clean binary 
+cleanimage                       | Clean images
+down                             | Stop and remove board instance 
+install                          | Compile board binary
+build                            | Build board images
+container/mysql_build            | Build mysql image
+container/apiserver_build        | Build apiserver image
+container/collector_build        | Build collector image
+container/gitserver_build        | Build gitserver image
+container/jenkins_build          | Build jenkins image
+container/log_build              | Build log image
+container/nginx_build            | Build nginx image
+container/tokenserver_build      | Build tokenserver image
+container/mysql_rmi              | Clean mysql image
+container/apiserver_rmi          | Clean apiserver image
+container/collector_rmi          | Clean collector image
+container/gitserver_rmi          | Clean gitserver image
+container/jenkins_rmi            | Clean jenkins image
+container/log_rmi                | Clean log image
+container/nginx_rmi              | Clean nginx image
+container/tokenserver_rmi        | Clean tokenserver image
+src/apiserver_clean              | Clean apiserver binary
+src/apiserver_fmt                | Formats apiserver source files
+src/apiserver_install            | Compile apiserver binary
+src/apiserver_vet                | Examines apiserver source code and reports suspicious constructs
+src/apiserver_compile            | Check apiserver source file by fmt vet golint and compile
+src/apiserver_golint             | Linter for apiserver source code
+src/apiserver_test               | Runs apiserver tests
+src/tokenserver_clean            | Clean tokenserver binary
+src/tokenserver_fmt              | Formats tokenserver source files
+src/tokenserver_install          | Compile tokenserver binary
+src/tokenserver_vet              | Examines tokenserver source code and reports suspicious constructs
+src/tokenserver_compile          | Check tokenserver source file by fmt vet golint and compile
+src/tokenserver_golint           | Linter for tokenserver source code
+src/tokenserver_test             | Runs tokenserver tests
+src/collector/cmd_clean          | Clean collector binary
+src/collector/cmd_fmt            | Formats collector source files
+src/collector/cmd_install        | Compile collector binary
+src/collector/cmd_vet            | Examines collector source code and reports suspicious constructs
+src/collector/cmd_compile        | Check collector source file by fmt vet golint and compile
+src/collector/cmd_golint         | Linter for collector source code
+src/collector/cmd_test           | Runs collector tests
+
+
+
 
 #### EXAMPLE:
 
 
-#### compile apiserver,tokenserver and collector/cmd binary 
+#### Compile apiserver,tokenserver and collector/cmd binary 
 
    ```sh
       $ make install
    ```
+   
+#### Formats apiserver source code
+
+   ```sh
+      $ make src/apiserver_fmt 
+   ```
 
    **Note**: the board file path:$GOPATH/src/git/inspursoft/
-
