@@ -16,6 +16,7 @@ import { ChangePasswordComponent } from "./change-password/change-password.compo
 import { AccountSettingComponent } from "./account-setting/account-setting.component";
 
 import { ValidateOnBlurDirective } from './directives/validate-onblur.directive';
+import { WebsocketService } from './websocket-service/websocket.service';
 
 @NgModule({
   imports: [
@@ -50,7 +51,8 @@ import { ValidateOnBlurDirective } from './directives/validate-onblur.directive'
   ],
   providers: [
     AuthGuard,
-    MessageService
+    MessageService,
+    WebsocketService
   ]
 })
 export class SharedModule {}
