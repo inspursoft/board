@@ -43,10 +43,12 @@
   *ngIf="isOpenEnvironment"
   [inputEnvsData]="defaultEnvsData"
   [(isOpen)]="isOpenEnvironment"
-  (onConfirm)="setEnvironment($event)"></environment-value>
+  (onConfirm)="setEnvironment($event)">
+</environment-value>
 <clr-modal *ngIf="isOpenNewImage"
            [(clrModalOpen)]="isOpenNewImage"
            [clrModalSize]="'lg'"
+           [clrModalPreventClose]="true"
            [clrModalClosable]="!isNeedAutoRefreshImageList">
   <h3 class="modal-title">{{ "SERVICE.STEP_2_CREATE_IMAGE" | translate }}</h3>
   <fieldset class="modal-body fieldSet-default">
@@ -100,19 +102,19 @@
         <cs-input-array [inputArraySource]="imageVolume"
                         [inputArrayPattern]="patternVolume"
                         [disabled]="isNeedAutoRefreshImageList"
-                        [labelText]="'SERVICE.STEP_2_IMAGE_VOLUME'|translate"
+                        [inputArrayLabelText]="'SERVICE.STEP_2_IMAGE_VOLUME'|translate"
                         (onCheck)="getDockerFilePreviewInfo()"
                         (onMinus)="getDockerFilePreviewInfo()"></cs-input-array>
         <cs-input-array [inputArraySource]="imageRun"
                         [inputArrayPattern]="patternRun"
                         [disabled]="isNeedAutoRefreshImageList"
-                        [labelText]="'SERVICE.STEP_2_IMAGE_RUN'|translate"
+                        [inputArrayLabelText]="'SERVICE.STEP_2_IMAGE_RUN'|translate"
                         (onCheck)="getDockerFilePreviewInfo()"
                         (onMinus)="getDockerFilePreviewInfo()"></cs-input-array>
         <cs-input-array [inputArraySource]="imageExpose"
                         [inputArrayPattern]="patternExpose"
                         [disabled]="isNeedAutoRefreshImageList"
-                        [labelText]="'SERVICE.STEP_2_IMAGE_EXPOSE'|translate"
+                        [inputArrayLabelText]="'SERVICE.STEP_2_IMAGE_EXPOSE'|translate"
                         (onCheck)="getDockerFilePreviewInfo()"
                         (onMinus)="getDockerFilePreviewInfo()"></cs-input-array>
         <div class="create-image-line-container ">

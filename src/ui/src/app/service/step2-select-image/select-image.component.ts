@@ -68,6 +68,14 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
   }
 
   ngOnInit() {
+    if (this.k8sService.getStepData(2)) {
+      this.outputData = this.k8sService.getStepData(2) as ServiceStep2Output;
+      this.outputData.forEach((value: ServiceStep2Type) => {
+        this.imageSelectList.push({image_name: value.image_name, image_comment: "", image_deleted: 0});
+        this.setImageDetailList(value.image_name, value.image_tag);
+      })
+    }
+
     this.k8sService.getImages("", 0, 0)
       .then(res => {
         this.imageSourceList = res;
@@ -118,7 +126,7 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
     this.isInputComponentsValid = true;
     if (this.inputArrayComponents) {
       this.inputArrayComponents.forEach(item => {
-        if (!item.arrayIsValid()) {
+        if (item.valid) {
           this.isInputComponentsValid = false;
         }
       });
@@ -196,7 +204,7 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
     }
   }
 
-  setImageDetailList(imageName: string): void {
+  setImageDetailList(imageName: string, imageTag?: string): void {
     this.imageTagNotReadyList.set(imageName, false);
     this.k8sService.getImageDetailList(imageName).then((res: ImageDetail[]) => {
       if (res && res.length > 0) {
@@ -206,7 +214,13 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
           item['image_size_unit'] = 'MB';
         }
         this.imageDetailSourceList.set(res[0].image_name, res);
-        this.imageDetailSelectList.set(res[0].image_name, res[0]);
+        if (imageTag) {
+          let detail = res.find(value => value.image_tag == imageTag);
+          this.imageDetailSelectList.set(res[0].image_name, detail);
+        } else {
+          this.imageDetailSelectList.set(res[0].image_name, res[0]);
+        }
+
       } else {
         this.imageTagNotReadyList.set(imageName, true);
       }
@@ -374,7 +388,10 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
   forward(): void {
     let step1Out: ServiceStep1Output = this.k8sService.getStepData(1) as ServiceStep1Output;
     this.imageSelectList.forEach(value => {
-      if (value.image_name != "SERVICE.STEP_2_SELECT_IMAGE") {
+      let outValue = this.outputData.find(out => {
+        return out.image_name == value.image_name
+      });
+      if (!outValue && value.image_name != "SERVICE.STEP_2_SELECT_IMAGE") {
         let serviceStep2 = new ServiceStep2Type();
         serviceStep2.image_name = value.image_name;
         serviceStep2.image_tag = this.imageDetailSelectList.get(value.image_name).image_tag;

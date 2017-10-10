@@ -26,7 +26,9 @@ export const LANG_ZH_CN = {
     "INPUT_REQUIRED":"字段为必填项",
     "INPUT_MAX_LENGTH":"最大长度",
     "INPUT_MIN_LENGTH":"最小长度",
-    "INPUT_PATTERN":"输入不符合规则"
+    "INPUT_PATTERN":"输入不符合规则",
+    "INPUT_MAX_VALUE":"最大值",
+    "INPUT_MIN_VALUE":"最小值"
   },
   "ACCOUNT": {
     "SIGN_IN": "登录",
@@ -201,6 +203,9 @@ export const LANG_ZH_CN = {
     "FAILED_TO_DELETE_TAG": "删除标签失败。"
   },
   "SERVICE": {
+    "ASK_TITLE":"取消",
+    "ASK_TEXT":"是否取消新建服务？",
+    "INPUT_ARRAY_DES":"'+':新建;'回车':确定",
     "CREATE_SERVICE": "创建服务",
     "SERVICE_DETAIL": "服务详情",
     "SERVICE_NAME": "服务名称",
@@ -268,10 +273,6 @@ export const LANG_ZH_CN = {
     "STEP_3_COMMAND":"命令",
     "STEP_3_CPU":"Cpu",
     "STEP_3_MEMORY":"内存",
-    "STEP_3_SELECT_CONTAINER":"选择配置的容器",
-    "STEP_3_SELECT_IMAGE":"选择镜像...",
-    "STEP_3_ADD_NEW_CONTAINER":"增加容器",
-    "STEP_3_CONTAINER":"容器",
     "STEP_4_SERVICE_CONFIG_TITLE":"服务配置",
     "STEP_4_SERVICE_NAME":"服务名称",
     "STEP_4_INSTANCE":"实例",

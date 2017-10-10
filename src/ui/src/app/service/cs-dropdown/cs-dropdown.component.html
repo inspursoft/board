@@ -7,6 +7,7 @@
       <span class="cs-dropdown-title"
             [ngClass]="{dropdownDisabled:'disabled'}">
         {{ isShowDefaultText? (dropdownDefaultText | translate):(dropdownText| translate )}}</span>
+      <span *ngIf="!dropdownList" class="spinner spinner-sm"></span>
       <div class="cs-dropdown-icon-container" *ngIf="dropdownList && dropdownList.length > 0 && !dropdownDisabled">
         <div style="width: 20px;height: 20px;"
              [ngClass]="{'cs-dropdown-open':csDropdown.open,'cs-dropdown-close':!csDropdown.open}">

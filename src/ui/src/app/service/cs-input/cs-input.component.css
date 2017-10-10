@@ -11,22 +11,6 @@ label.cs-input-label {
   text-align: right;
 }
 
-span.cs-input-span {
-  width: 100%;
-  text-align: left;
-  overflow: hidden;
-  white-space: nowrap;
-  margin-left: 10px;
-  text-overflow: ellipsis;
-  border-bottom: solid 1px silver;
-  height: 30px;
-  line-height: 30px;
-}
-
-span.cs-input-span.enable{
-  cursor: text;
-}
-
 label.cs-input-field-container {
   height: 30px;
   margin-left: 10px;
@@ -42,6 +26,15 @@ input.cs-input-input {
   line-height: 30px;
   height: 30px;
   width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+input.cs-input-input.no-input-module {
+  opacity: 1;
+  cursor: pointer;
+  color: darkblue;
 }
 
 a.cs-input-icon {
