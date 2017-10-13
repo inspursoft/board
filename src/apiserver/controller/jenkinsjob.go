@@ -2,11 +2,14 @@ package controller
 
 import (
 	"bytes"
-	"io"
+	"io/ioutil"
 	"net/http"
+	"strings"
 	"text/template"
+	"time"
 
 	"github.com/astaxie/beego/logs"
+	"github.com/gorilla/websocket"
 )
 
 const jenkinsJobConsoleURL = "http://jenkins:8080/job/{{.JobName}}/{{.BuildSerialID}}/consoleText"
@@ -49,20 +52,62 @@ func (j *JenkinsJobController) Console() {
 		return
 	}
 	logs.Debug("Requested Jenkins console URL: %s", consoleURL.String())
+
+	ws, err := websocket.Upgrade(j.Ctx.ResponseWriter, j.Ctx.Request, nil, 1024, 1024)
+	if _, ok := err.(websocket.HandshakeError); ok {
+		j.CustomAbort(http.StatusBadRequest, "Not a websocket handshake.")
+		return
+	} else if err != nil {
+		j.CustomAbort(http.StatusInternalServerError, "Cannot setup websocket connection.")
+		return
+	}
+	defer ws.Close()
+
 	req, err := http.NewRequest("GET", consoleURL.String(), nil)
-	if err != nil {
-		j.internalError(err)
-		return
-	}
 	client := http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		j.internalError(err)
-		return
-	}
-	_, err = io.Copy(j.Ctx.ResponseWriter, resp.Body)
-	if err != nil {
-		j.internalError(err)
-		return
+
+	buffer := make(chan []byte, 1024)
+
+	done := make(chan bool)
+	ticker := time.NewTicker(time.Second * 1)
+
+	go func() {
+		for range ticker.C {
+
+			resp, err := client.Do(req)
+			if err != nil {
+				j.internalError(err)
+				return
+			}
+
+			data, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				j.internalError(err)
+				return
+			}
+			buffer <- data
+			resp.Body.Close()
+
+			for _, line := range strings.Split(string(data), "\n") {
+				if strings.HasPrefix(line, "Finished:") {
+					ticker.Stop()
+					done <- true
+				}
+			}
+		}
+	}()
+
+	for {
+		select {
+		case content := <-buffer:
+			err = ws.WriteMessage(websocket.TextMessage, content)
+			logs.Debug("WS is writing.")
+		case <-done:
+			err = ws.Close()
+			logs.Debug("WS is being closed.")
+		}
+		if err != nil {
+			logs.Error("Failed to write message: %+v", err)
+		}
 	}
 }
