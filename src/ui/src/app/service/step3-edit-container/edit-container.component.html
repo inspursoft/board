@@ -27,8 +27,8 @@
                 (onEdit)="curContainerIndex = iStep3;showEnvironmentValue = true;"></cs-input>
       <cs-input-array [inputArrayType]="1"
                       [inputArrayFixedSource]="fixedContainerPort"
-                      [inputArrayMin]="30000"
-                      [inputArrayMax]="32766"
+                      [inputArrayMin]="1"
+                      [inputArrayMax]="65535"
                       [inputArrayLabelText]="'SERVICE.STEP_3_CONTAINER_PORT' | translate"
                       [inputArraySource]="item.container_ports">
       </cs-input-array>
