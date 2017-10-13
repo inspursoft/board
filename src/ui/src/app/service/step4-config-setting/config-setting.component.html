@@ -66,6 +66,8 @@
                   [inputFiledType]="1"
                   [simpleFiled]="serviceExternal.service_nodeport"
                   [disabled]="!radNode.checked"
+                  [inputMin]="30000"
+                  [inputMax]="32766"
                   [inputLabel]="'SERVICE.STEP_4_NODE_PORT' | translate"
                   (onCheck)="setServiceNodeport($event,iIndex)">
         </cs-input>
