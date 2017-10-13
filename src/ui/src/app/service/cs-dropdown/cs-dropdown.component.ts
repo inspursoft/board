@@ -23,6 +23,7 @@ export class CsDropdownComponent {
   @Input() dropdownDisabled: boolean = false;
   @Input() dropdownList: Array<any>;
   @Input() dropdownListTextKey;
+  @Input() dropdownTitleFontSize:number = 14;
   @Output("onChange") dropdownChange: EventEmitter<any>;
   @Output("onOnlyClickItem") dropdownClick: EventEmitter<any>;
 

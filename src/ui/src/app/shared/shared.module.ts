@@ -16,6 +16,7 @@ import { ChangePasswordComponent } from "./change-password/change-password.compo
 import { AccountSettingComponent } from "./account-setting/account-setting.component";
 
 import { ValidateOnBlurDirective } from './directives/validate-onblur.directive';
+import { CsDropdownComponent } from "../service/cs-dropdown/cs-dropdown.component";
 
 @NgModule({
   imports: [
@@ -33,6 +34,7 @@ import { ValidateOnBlurDirective } from './directives/validate-onblur.directive'
     CheckItemPatternDirective,
     ValidateOnBlurDirective,
     ChangePasswordComponent,
+    CsDropdownComponent,
     AccountSettingComponent
   ],
   exports: [
@@ -45,6 +47,7 @@ import { ValidateOnBlurDirective } from './directives/validate-onblur.directive'
     GlobalMessageComponent,
     CheckItemExistingDirective,
     CheckItemIdenticalDirective,
+    CsDropdownComponent,
     CheckItemPatternDirective,
     ValidateOnBlurDirective
   ],

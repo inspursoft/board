@@ -5,6 +5,7 @@
          style="padding-right: 0"
          [ngStyle]="{'width':dropdownWidth + 'px'}">
       <span class="cs-dropdown-title"
+            [ngStyle]="{'font-size':dropdownTitleFontSize + 'px'}"
             [ngClass]="{dropdownDisabled:'disabled'}">
         {{ isShowDefaultText? (dropdownDefaultText | translate):(dropdownText| translate )}}</span>
       <span *ngIf="!dropdownList" class="spinner spinner-sm"></span>
