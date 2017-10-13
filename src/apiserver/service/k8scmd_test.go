@@ -1,13 +1,13 @@
 package service
 
-import (
-	"fmt"
+// import (
+// 	"fmt"
 
-	"testing"
-)
+// 	"testing"
+// )
 
-func TestK8sCliFactory(t *testing.T) {
-	defer func() { recover() }()
-	s, d := Suspend("10.110.18.71")
-	fmt.Println(s, d)
-}
+// func TestK8sCliFactory(t *testing.T) {
+// 	defer func() { recover() }()
+// 	s, d := Suspend("10.110.18.71")
+// 	fmt.Println(s, d)
+// }

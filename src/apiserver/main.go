@@ -1,9 +1,10 @@
 package main
 
 import (
-	_ "git/inspursoft/board/src/apiserver/controller"
+	"git/inspursoft/board/src/apiserver/controller"
 	_ "git/inspursoft/board/src/apiserver/router"
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 
@@ -60,6 +61,8 @@ func main() {
 
 	utils.ShowAllConfigs()
 
+	dao.InitDB()
+	controller.InitController()
 	updateAdminPassword(utils.GetStringValue("BOARD_ADMIN_PASSWORD"))
 
 	beego.Run(":8088")
