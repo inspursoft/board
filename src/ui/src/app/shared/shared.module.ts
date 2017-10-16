@@ -17,6 +17,7 @@ import { AccountSettingComponent } from "./account-setting/account-setting.compo
 
 import { ValidateOnBlurDirective } from './directives/validate-onblur.directive';
 import { CsDropdownComponent } from "../service/cs-dropdown/cs-dropdown.component";
+import { WebsocketService } from './websocket-service/websocket.service';
 
 @NgModule({
   imports: [
@@ -54,7 +55,8 @@ import { CsDropdownComponent } from "../service/cs-dropdown/cs-dropdown.componen
   providers: [
     AuthGuard,
     ServiceGuard,
-    MessageService
+    MessageService,
+    WebsocketService
   ]
 })
 export class SharedModule {}

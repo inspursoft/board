@@ -170,7 +170,7 @@ func verifyToken(tokenString string) (map[string]interface{}, error) {
 	return payload, nil
 }
 
-func init() {
+func InitController() {
 	var err error
 	conf, err = config.NewConfig("ini", "app.conf")
 	if err != nil {
