@@ -5,6 +5,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql"
@@ -47,37 +49,24 @@ func TestMain(m *testing.M) {
 }
 
 func TestSignIn(t *testing.T) {
+	assert := assert.New(t)
 	u, err := SignIn("admin", "123456a?")
-	if err != nil {
-		t.Errorf("Error occurred while sign in: %+v\n", err)
-	}
-	if u == nil {
-		t.Error("Sign in failed.")
-	}
-	if u.Username == "admin" {
-		t.Log("Signed in successfully.")
-	}
+	assert.Nil(err, "No error occurred while calling SignIn method.")
+	assert.NotNil(u, "User is not nil.")
+	assert.Equal("admin", u.Username, "Signed in successfully.")
 }
 
 func TestGetUserByID(t *testing.T) {
+	assert := assert.New(t)
 	u, err := GetUserByID(1)
-	if err != nil {
-		t.Errorf("Error occurred while sign in: %+v\n", err)
-	}
-	if u == nil {
-		t.Fatal("Sign in failed.")
-	}
-	if u.Username == "admin" {
-		t.Log("Signed in successfully.")
-	}
+	assert.Nil(err, "No error occurred while calling GetUserByID method.")
+	assert.NotNil(u, "User exists")
+	assert.Equal("admin", u.Username, "Username is equal to expected.")
 }
 
 func TestSignUp(t *testing.T) {
+	assert := assert.New(t)
 	status, err := SignUp(user)
-	if err != nil {
-		t.Fatalf("Failed to sign up: %+v\n", err)
-	}
-	if status {
-		t.Log("Successful signed up.")
-	}
+	assert.Nil(err, "No error occurred while calling SignUp method.")
+	assert.True(status, "Signed up successfully.")
 }
