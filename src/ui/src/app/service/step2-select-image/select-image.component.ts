@@ -126,7 +126,7 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
     this.isInputComponentsValid = true;
     if (this.inputArrayComponents) {
       this.inputArrayComponents.forEach(item => {
-        if (item.valid) {
+        if (!item.valid) {
           this.isInputComponentsValid = false;
         }
       });
