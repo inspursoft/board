@@ -86,6 +86,7 @@ func (s *Dashboard) GetData() {
 	err := para.GetNodeDataToObj()
 	if err != nil {
 		s.CustomAbort(http.StatusInternalServerError, fmt.Sprint(err))
+		beego.Error(err)
 		return
 	}
 	_, err = para.GetNodeListToObj()
@@ -100,16 +101,21 @@ func (s *Dashboard) GetData() {
 		req.Service.DurationTime)
 	err = para.GetServiceDataToObj()
 	if err != nil {
+		s.CustomAbort(http.StatusInternalServerError, fmt.Sprint(err))
 		beego.Error(err)
+		return
 	}
 	_, err = para.GetServiceListToObj()
 	if err != nil {
 		s.CustomAbort(http.StatusInternalServerError, fmt.Sprint(err))
+		beego.Error(err)
 		return
 	}
 	resp.Service = para.ServiceResp
 	if err != nil {
+		s.CustomAbort(http.StatusInternalServerError, fmt.Sprint(err))
 		beego.Error(err)
+		return
 	}
 	s.Data["json"] = resp
 	s.ServeJSON()
