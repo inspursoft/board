@@ -15,16 +15,39 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-var kubeMasterURL = utils.GetConfig("KUBE_MASTER_URL")
+var (
+	kubeMasterURL             = utils.GetConfig("KUBE_MASTER_URL")
+	EntryMethod   EntryMethodEnum
+	CAPath        string
+	TokenStr      string
+)
+
+type EntryMethodEnum int
+
+const (
+	Insecure EntryMethodEnum = iota + 1
+	CertificateAuthority
+	Token
+)
+const defaultEntry = Insecure
 
 func K8sCliFactory(clusterName string, masterUrl string, apiVersion string) (*rest.Config, error) {
 	cli := apiCli.NewConfig()
 	cli.Clusters[clusterName] = &apiCli.Cluster{
-		Server:                masterUrl,
-		InsecureSkipTLSVerify: true,
-		APIVersion:            apiVersion}
+		Server:     masterUrl,
+		APIVersion: apiVersion}
+	switch EntryMethod {
+	case CertificateAuthority:
+		cli.Clusters[clusterName].CertificateAuthority = CAPath
+	case Token:
+		cli.AuthInfos[clusterName].Token = TokenStr
+	default:
+		EntryMethod = defaultEntry
+		cli.Clusters[clusterName].InsecureSkipTLSVerify = true
+	}
 	cli.CurrentContext = clusterName
-	clientBuilder := clientcmd.NewNonInteractiveClientConfig(*cli, clusterName, &clientcmd.ConfigOverrides{}, nil)
+	clientBuilder := clientcmd.NewNonInteractiveClientConfig(*cli, clusterName,
+		&clientcmd.ConfigOverrides{}, nil)
 	return clientBuilder.ClientConfig()
 }
 func Suspend(nodeName string) (bool, error) {
