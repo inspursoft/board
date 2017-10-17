@@ -63,16 +63,16 @@ func (s *Dashboard) GetData() {
 	serviceName := s.GetString("service_name")
 	beego.Debug("node_name", nodeName)
 	if req.Node.TimeCount == 0 && req.Service.TimeCount == 0 {
-		s.CustomAbort(http.StatusBadRequest, "")
+		s.CustomAbort(http.StatusBadRequest, "should provide time count")
 		return
 	}
 	if req.Node.TimestampBase == 0 && req.Service.TimestampBase == 0 {
-		s.CustomAbort(http.StatusBadRequest, "")
+		s.CustomAbort(http.StatusBadRequest, "should provide timestamp")
 
 		return
 	}
 	if req.Node.TimeUnit == "" && req.Service.TimeUnit == "" {
-		s.CustomAbort(http.StatusBadRequest, "")
+		s.CustomAbort(http.StatusBadRequest, "should provide time unit")
 		return
 	}
 	var (
@@ -85,7 +85,7 @@ func (s *Dashboard) GetData() {
 		req.Node.TimestampBase, nodeName)
 	err := para.GetNodeDataToObj()
 	if err != nil {
-		s.CustomAbort(http.StatusInternalServerError, "")
+		s.CustomAbort(http.StatusInternalServerError, fmt.Sprint(err))
 		return
 	}
 	_, err = para.GetNodeListToObj()
