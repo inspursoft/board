@@ -91,10 +91,8 @@ func (s *Dashboard) GetData() {
 	_, err = para.GetNodeListToObj()
 	if err != nil {
 		s.CustomAbort(http.StatusInternalServerError, fmt.Sprint(err))
-		return
-	}
-	if err != nil {
 		beego.Error(err)
+		return
 	}
 	resp.Node = para.NodeResp
 	para.SetServicePara(req.Service.TimeUnit,
