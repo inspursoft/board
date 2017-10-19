@@ -78,7 +78,7 @@ func (u *AuthController) SignUpAction() {
 	}
 
 	if !utils.ValidateWithPattern("username", reqUser.Username) {
-		u.CustomAbort(http.StatusBadRequest, "Username content is illegal.")
+		u.customAbort(http.StatusBadRequest, "Username content is illegal.")
 		return
 	}
 
@@ -89,17 +89,17 @@ func (u *AuthController) SignUpAction() {
 	}
 
 	if usernameExists {
-		u.CustomAbort(http.StatusConflict, "Username already exists.")
+		u.customAbort(http.StatusConflict, "Username already exists.")
 		return
 	}
 
 	if !utils.ValidateWithLengthRange(reqUser.Password, 8, 20) {
-		u.CustomAbort(http.StatusBadRequest, "Password length should be between 8 and 20 characters.")
+		u.customAbort(http.StatusBadRequest, "Password length should be between 8 and 20 characters.")
 		return
 	}
 
 	if !utils.ValidateWithPattern("email", reqUser.Email) {
-		u.CustomAbort(http.StatusBadRequest, "Email content is illegal.")
+		u.customAbort(http.StatusBadRequest, "Email content is illegal.")
 		return
 	}
 
@@ -114,12 +114,12 @@ func (u *AuthController) SignUpAction() {
 	}
 
 	if !utils.ValidateWithMaxLength(reqUser.Realname, 40) {
-		u.CustomAbort(http.StatusBadRequest, "Realname maximum length is 40 characters.")
+		u.customAbort(http.StatusBadRequest, "Realname maximum length is 40 characters.")
 		return
 	}
 
 	if !utils.ValidateWithMaxLength(reqUser.Comment, 127) {
-		u.CustomAbort(http.StatusBadRequest, "Comment maximum length is 127 characters.")
+		u.customAbort(http.StatusBadRequest, "Comment maximum length is 127 characters.")
 		return
 	}
 
@@ -141,7 +141,7 @@ func (u *AuthController) SignUpAction() {
 func (u *AuthController) CurrentUserAction() {
 	user := u.getCurrentUser()
 	if user == nil {
-		u.CustomAbort(http.StatusUnauthorized, "Need to login first.")
+		u.customAbort(http.StatusUnauthorized, "Need to login first.")
 		return
 	}
 	u.Data["json"] = user
@@ -151,7 +151,7 @@ func (u *AuthController) CurrentUserAction() {
 func (u *AuthController) LogOutAction() {
 	err := u.signOff()
 	if err != nil {
-		u.CustomAbort(http.StatusBadRequest, "Incorrect username to log out.")
+		u.customAbort(http.StatusBadRequest, "Incorrect username to log out.")
 	}
 }
 
@@ -165,6 +165,6 @@ func (u *AuthController) UserExists() {
 		return
 	}
 	if isExists {
-		u.CustomAbort(http.StatusConflict, target+" already exists.")
+		u.customAbort(http.StatusConflict, target+" already exists.")
 	}
 }

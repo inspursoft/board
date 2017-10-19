@@ -46,7 +46,6 @@ func (p *ImageController) GetImagesAction() {
 
 	err = json.Unmarshal(body, &repolist)
 	if err != nil {
-		logs.Info(string(body))
 		p.internalError(err)
 		return
 	}
@@ -83,8 +82,7 @@ func (p *ImageController) GetImagesAction() {
 		// Check image in DB
 		dbimage, err := service.GetImage(newImage, "name")
 		if err != nil {
-			logs.Info("Checking image name in DB error")
-			p.internalError(err)
+			p.customAbort(http.StatusInternalServerError, fmt.Sprintf("Checking image name in DB error: %+v", err))
 			return
 		}
 		if dbimage != nil {
@@ -97,8 +95,7 @@ func (p *ImageController) GetImagesAction() {
 			newImage.ImageComment = commentTemp
 			id, err := service.CreateImage(newImage)
 			if err != nil {
-				logs.Info("Create image in DB error")
-				p.internalError(err)
+				p.customAbort(http.StatusInternalServerError, fmt.Sprintf("Create image in DB error: %+v", err))
 				return
 			}
 			newImage.ImageID = id
@@ -124,7 +121,7 @@ func (p *ImageController) GetImageDetailAction() {
 
 	httpresp, err := http.Get(registryURL() + gettagsurl)
 	if err != nil {
-		logs.Info("url=%s", gettagsurl)
+		logs.Debug("Get image detail URL: %s", gettagsurl)
 		p.internalError(err)
 		return
 	}
@@ -137,7 +134,6 @@ func (p *ImageController) GetImageDetailAction() {
 
 	err = json.Unmarshal(body, &taglist)
 	if err != nil {
-		logs.Info(string(body))
 		p.internalError(err)
 		return
 	}
@@ -154,7 +150,7 @@ func (p *ImageController) GetImageDetailAction() {
 		getmanifesturl := "/v2/" + taglist.ImageName + "/manifests/" + tagid
 		httpresp, err = http.Get(registryURL() + getmanifesturl)
 		if err != nil {
-			logs.Info(getmanifesturl)
+			logs.Debug(getmanifesturl)
 			p.internalError(err)
 			return
 		}
@@ -168,7 +164,6 @@ func (p *ImageController) GetImageDetailAction() {
 		var manifest1 model.RegistryManifest1
 		err = json.Unmarshal(body, &manifest1)
 		if err != nil {
-			logs.Info(string(body))
 			p.internalError(err)
 			return
 		}
@@ -196,7 +191,6 @@ func (p *ImageController) GetImageDetailAction() {
 		var manifest2 model.RegistryManifest2
 		err = json.Unmarshal(body, &manifest2)
 		if err != nil {
-			logs.Info(string(body))
 			p.internalError(err)
 			return
 		}
@@ -213,7 +207,7 @@ func (p *ImageController) GetImageDetailAction() {
 		imagedetail = append(imagedetail, tagdetail)
 
 	}
-	logs.Info(imagedetail)
+	logs.Debug(imagedetail)
 	p.Data["json"] = imagedetail
 	p.ServeJSON()
 
@@ -223,7 +217,7 @@ func (p *ImageController) GetImageDetailAction() {
 func (p *ImageController) Prepare() {
 	user := p.getCurrentUser()
 	if user == nil {
-		p.CustomAbort(http.StatusUnauthorized, "Need to login first.")
+		p.customAbort(http.StatusUnauthorized, "Need to login first.")
 		return
 	}
 	p.currentUser = user
@@ -300,7 +294,7 @@ func (p *ImageController) BuildImageAction() {
 		return
 	}
 	logs.Info("Internal push object: %d %s", ret, msg)
-	p.CustomAbort(ret, msg)
+	p.customAbort(ret, msg)
 }
 
 func (p *ImageController) GetImageDockerfileAction() {
@@ -310,7 +304,7 @@ func (p *ImageController) GetImageDockerfileAction() {
 
 	dockerfilePath := filepath.Join(repoPath, projectName, imageName, imageTag)
 	if _, err := os.Stat(dockerfilePath); os.IsNotExist(err) {
-		p.CustomAbort(http.StatusNotFound, "Image path doe's not exist.")
+		p.customAbort(http.StatusNotFound, "Image path does not exist.")
 		return
 	}
 	dockerfile, err := service.GetDockerfileInfo(dockerfilePath)
@@ -318,7 +312,6 @@ func (p *ImageController) GetImageDockerfileAction() {
 		p.internalError(err)
 		return
 	}
-
 	p.Data["json"] = dockerfile
 	p.ServeJSON()
 }
@@ -328,7 +321,7 @@ func (p *ImageController) DockerfilePreviewAction() {
 
 	//Check user priviledge project admin
 	if p.isProjectAdmin == false {
-		p.serveStatus(http.StatusForbidden, "Invalid user for project admin")
+		p.customAbort(http.StatusForbidden, "Invalid user for project admin")
 		return
 	}
 
@@ -365,7 +358,7 @@ func (p *ImageController) ConfigCleanAction() {
 	var err error
 
 	if p.isProjectAdmin == false {
-		p.serveStatus(http.StatusForbidden, "Invalid user for project admin")
+		p.customAbort(http.StatusForbidden, "Invalid user for project admin")
 		return
 	}
 
@@ -399,7 +392,7 @@ func (p *ImageController) DeleteImageAction() {
 	var err error
 
 	if p.isProjectAdmin == false {
-		p.serveStatus(http.StatusForbidden, "Invalid user for project admin")
+		p.customAbort(http.StatusForbidden, "Invalid user for project admin")
 		return
 	}
 
@@ -413,7 +406,7 @@ func (p *ImageController) DeleteImageAction() {
 		return
 	}
 	if resp.StatusCode != http.StatusOK {
-		p.serveStatus(resp.StatusCode, "repository name not known to registry")
+		p.customAbort(resp.StatusCode, "repository name not known to registry")
 		return
 	}
 
@@ -459,8 +452,8 @@ func (p *ImageController) DeleteImageAction() {
 			return
 		}
 		if resp.StatusCode != http.StatusAccepted {
-			errString := fmt.Sprintf(`Remove registry image %s error`, tag)
-			p.serveStatus(http.StatusInternalServerError, errString)
+			errString := fmt.Sprintf("Remove registry image tag: %s", tag)
+			p.customAbort(http.StatusInternalServerError, errString)
 			return
 		}
 		resp.Body.Close()
@@ -490,7 +483,7 @@ func (p *ImageController) DeleteImageTagAction() {
 	var err error
 
 	if p.isProjectAdmin == false {
-		p.serveStatus(http.StatusForbidden, "Invalid user for project admin")
+		p.customAbort(http.StatusForbidden, "Invalid user for project admin")
 		return
 	}
 
@@ -508,7 +501,7 @@ func (p *ImageController) DeleteImageTagAction() {
 		return
 	}
 	if resp.StatusCode != http.StatusOK {
-		p.serveStatus(resp.StatusCode, "repository name or tag not known to registry")
+		p.customAbort(resp.StatusCode, "Repository name or tag not to known to registry")
 		return
 	}
 
@@ -530,7 +523,7 @@ func (p *ImageController) DeleteImageTagAction() {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusAccepted {
-		p.serveStatus(http.StatusInternalServerError, "Remove registry image error")
+		p.customAbort(http.StatusInternalServerError, "Remove registry image error")
 		return
 	}
 

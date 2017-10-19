@@ -8,8 +8,6 @@ import (
 	"git/inspursoft/board/src/apiserver/service"
 	"net/http"
 
-	"fmt"
-
 	"github.com/astaxie/beego"
 )
 
@@ -37,12 +35,10 @@ type DsResp struct {
 func (p *Dashboard) Prepare() {
 	user := p.getCurrentUser()
 	if user == nil {
-		p.CustomAbort(http.StatusUnauthorized, "Need to login first.")
+		p.customAbort(http.StatusUnauthorized, "Need to login first.")
 		return
 	}
 	p.currentUser = user
-	p.isSysAdmin = (user.SystemAdmin == 1)
-	p.isProjectAdmin = (user.ProjectAdmin == 1)
 }
 func (b *Dashboard) resolveBody() (in DsBodyPara, err error) {
 	data, err := ioutil.ReadAll(b.Ctx.Request.Body)
@@ -63,16 +59,15 @@ func (s *Dashboard) GetData() {
 	serviceName := s.GetString("service_name")
 	beego.Debug("node_name", nodeName)
 	if req.Node.TimeCount == 0 && req.Service.TimeCount == 0 {
-		s.CustomAbort(http.StatusBadRequest, "should provide time count")
+		s.customAbort(http.StatusBadRequest, "Time count for dashboard data retrieval cannot be empty.")
 		return
 	}
 	if req.Node.TimestampBase == 0 && req.Service.TimestampBase == 0 {
-		s.CustomAbort(http.StatusBadRequest, "should provide timestamp")
-
+		s.customAbort(http.StatusBadRequest, "Timestamp for dashboard data retrieval cannot be empty.")
 		return
 	}
 	if req.Node.TimeUnit == "" && req.Service.TimeUnit == "" {
-		s.CustomAbort(http.StatusBadRequest, "should provide time unit")
+		s.customAbort(http.StatusBadRequest, "Time unit for dashboard data retrieval cannot be empty.")
 		return
 	}
 	var (
@@ -85,14 +80,12 @@ func (s *Dashboard) GetData() {
 		req.Node.TimestampBase, nodeName)
 	err := para.GetNodeDataToObj()
 	if err != nil {
-		s.CustomAbort(http.StatusInternalServerError, fmt.Sprint(err))
-		beego.Error(err)
+		s.internalError(err)
 		return
 	}
 	_, err = para.GetNodeListToObj()
 	if err != nil {
-		s.CustomAbort(http.StatusInternalServerError, fmt.Sprint(err))
-		beego.Error(err)
+		s.internalError(err)
 		return
 	}
 	resp.Node = para.NodeResp
@@ -101,20 +94,17 @@ func (s *Dashboard) GetData() {
 		req.Service.DurationTime)
 	err = para.GetServiceDataToObj()
 	if err != nil {
-		s.CustomAbort(http.StatusInternalServerError, fmt.Sprint(err))
-		beego.Error(err)
+		s.internalError(err)
 		return
 	}
 	_, err = para.GetServiceListToObj()
 	if err != nil {
-		s.CustomAbort(http.StatusInternalServerError, fmt.Sprint(err))
-		beego.Error(err)
+		s.internalError(err)
 		return
 	}
 	resp.Service = para.ServiceResp
 	if err != nil {
-		s.CustomAbort(http.StatusInternalServerError, fmt.Sprint(err))
-		beego.Error(err)
+		s.internalError(err)
 		return
 	}
 	s.Data["json"] = resp

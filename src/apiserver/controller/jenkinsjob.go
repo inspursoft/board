@@ -12,7 +12,8 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-const jenkinsJobConsoleURL = "http://jenkins:8080/job/{{.JobName}}/{{.BuildSerialID}}/consoleText"
+const jenkinsBuildConsoleURL = "http://jenkins:8080/job/{{.JobName}}/{{.BuildSerialID}}/consoleText"
+const jenkinsLastBuildNumberURL = "http://jenkins:8080/job/{{.JobName}}/lastBuild/buildNumber"
 
 type jobConsole struct {
 	JobName       string `json:"job_name"`
@@ -26,60 +27,91 @@ type JenkinsJobController struct {
 func (j *JenkinsJobController) Prepare() {
 	user := j.getCurrentUser()
 	if user == nil {
-		j.CustomAbort(http.StatusUnauthorized, "Need to login first.")
+		j.customAbort(http.StatusUnauthorized, "Need to login first.")
 		return
 	}
 	j.currentUser = user
 	j.isProjectAdmin = (j.currentUser.ProjectAdmin == 1)
 	if !j.isProjectAdmin {
-		j.CustomAbort(http.StatusForbidden, "Insufficient privileges for manipulating Git repos.")
+		j.customAbort(http.StatusForbidden, "Insufficient privileges for manipulating Git repos.")
 		return
 	}
+}
+
+func generateURL(rawTemplate string, data interface{}) (string, error) {
+	t := template.Must(template.New("").Parse(rawTemplate))
+	var targetURL bytes.Buffer
+	err := t.Execute(&targetURL, data)
+	if err != nil {
+		return "", err
+	}
+	return targetURL.String(), nil
 }
 
 func (j *JenkinsJobController) Console() {
 	jobName := j.GetString("job_name")
 	if jobName == "" {
-		j.CustomAbort(http.StatusBadRequest, "No job name found.")
+		j.customAbort(http.StatusBadRequest, "No job name found.")
 		return
 	}
 	buildSerialID := j.GetString("build_serial_id", "lastBuild")
-	templates := template.Must(template.New("jobConsole").Parse(jenkinsJobConsoleURL))
-	var consoleURL bytes.Buffer
-	err := templates.Execute(&consoleURL, jobConsole{JobName: jobName, BuildSerialID: buildSerialID})
+
+	lastBuildNumberURL, err := generateURL(jenkinsLastBuildNumberURL, jobConsole{JobName: jobName})
 	if err != nil {
 		j.internalError(err)
 		return
 	}
-	logs.Debug("Requested Jenkins console URL: %s", consoleURL.String())
+
+	respBuildNumber, err := http.Get(lastBuildNumberURL)
+	if err != nil {
+		j.internalError(err)
+		return
+	}
+	defer respBuildNumber.Body.Close()
+	respBuildNumberData, err := ioutil.ReadAll(respBuildNumber.Body)
+	if err != nil {
+		j.internalError(err)
+		return
+	}
+	if respBuildNumberData != nil {
+		buildSerialID = string(respBuildNumberData)
+	}
+
+	buildConsoleURL, err := generateURL(jenkinsBuildConsoleURL, jobConsole{JobName: jobName, BuildSerialID: buildSerialID})
+	if err != nil {
+		j.internalError(err)
+		return
+	}
+
+	logs.Debug("Requested Jenkins build console URL: %s", buildConsoleURL)
+	logs.Debug("Requested Jenkins build number URL: %s", lastBuildNumberURL)
 
 	ws, err := websocket.Upgrade(j.Ctx.ResponseWriter, j.Ctx.Request, nil, 1024, 1024)
 	if _, ok := err.(websocket.HandshakeError); ok {
-		j.CustomAbort(http.StatusBadRequest, "Not a websocket handshake.")
+		j.customAbort(http.StatusBadRequest, "Not a websocket handshake.")
 		return
 	} else if err != nil {
-		j.CustomAbort(http.StatusInternalServerError, "Cannot setup websocket connection.")
+		j.customAbort(http.StatusInternalServerError, "Cannot setup websocket connection.")
 		return
 	}
 	defer ws.Close()
 
-	req, err := http.NewRequest("GET", consoleURL.String(), nil)
+	req, err := http.NewRequest("GET", buildConsoleURL, nil)
 	client := http.Client{}
 
 	buffer := make(chan []byte, 1024)
-
 	done := make(chan bool)
+
+	timer := time.NewTimer(time.Second * 120)
 	ticker := time.NewTicker(time.Second * 1)
 
 	go func() {
 		for range ticker.C {
-
 			resp, err := client.Do(req)
 			if err != nil {
 				j.internalError(err)
 				return
 			}
-
 			data, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
 				j.internalError(err)
@@ -101,10 +133,13 @@ func (j *JenkinsJobController) Console() {
 		select {
 		case content := <-buffer:
 			err = ws.WriteMessage(websocket.TextMessage, content)
-			logs.Debug("WS is writing.")
 		case <-done:
 			err = ws.Close()
 			logs.Debug("WS is being closed.")
+		case <-timer.C:
+			err = ws.Close()
+			ticker.Stop()
+			logs.Debug("WS is being closed due to timeout.")
 		}
 		if err != nil {
 			logs.Error("Failed to write message: %+v", err)

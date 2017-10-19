@@ -18,7 +18,7 @@ func (pm *SearchSourceController) Search() {
 	searchCondition := pm.GetString("q")
 	res, err := service.SearchSource(pm.currentUser, searchCondition)
 	if err != nil {
-		pm.CustomAbort(http.StatusInternalServerError, fmt.Sprint(err))
+		pm.customAbort(http.StatusInternalServerError, fmt.Sprint(err))
 		return
 	}
 	pm.Data["json"] = res

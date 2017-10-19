@@ -41,7 +41,7 @@ type ServiceController struct {
 func (p *ServiceController) Prepare() {
 	user := p.getCurrentUser()
 	if user == nil {
-		p.CustomAbort(http.StatusUnauthorized, "Need to login first.")
+		p.customAbort(http.StatusUnauthorized, "Need to login first.")
 		return
 	}
 	p.currentUser = user
@@ -110,7 +110,7 @@ func deployServiceCommonAction(p *ServiceController, depFileName string, serFile
 	// Check request parameters
 	err = service.CheckReqPara(reqServiceConfig)
 	if err != nil {
-		p.CustomAbort(http.StatusBadRequest, err.Error())
+		p.customAbort(http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -193,7 +193,7 @@ func deployServiceCommonAction(p *ServiceController, depFileName string, serFile
 func (p *ServiceController) DeployServiceAction() {
 	//Judge authority
 	if !(p.isSysAdmin && p.isProjectAdmin) {
-		p.CustomAbort(http.StatusForbidden, "Insuffient privileges to manipulate user.")
+		p.customAbort(http.StatusForbidden, "Insufficient privileges to manipulate user.")
 		return
 	}
 	deployServiceCommonAction(p, deploymentFilename, serviceFilename)
@@ -203,7 +203,7 @@ func (p *ServiceController) DeployServiceAction() {
 func (p *ServiceController) DeployServiceTestAction() {
 	//Judge authority
 	if !(p.isSysAdmin && p.isProjectAdmin) {
-		p.CustomAbort(http.StatusForbidden, "Insuffient privileges to manipulate user.")
+		p.customAbort(http.StatusForbidden, "Insufficient privileges to manipulate user.")
 		return
 	}
 	deployServiceCommonAction(p, deploymentTestFilename, serviceTestFilename, handleTestReqPara)
@@ -224,7 +224,7 @@ func (p *ServiceController) GetServiceListAction() {
 func (p *ServiceController) CreateServiceConfigAction() {
 	//Judge authority
 	if !(p.isSysAdmin && p.isProjectAdmin) {
-		p.CustomAbort(http.StatusForbidden, "Insuffient privileges to manipulate user.")
+		p.customAbort(http.StatusForbidden, "Insuffient privileges to manipulate user.")
 		return
 	}
 	reqData, err := p.resolveBody()
@@ -257,7 +257,7 @@ func (p *ServiceController) CreateServiceConfigAction() {
 
 func (p *ServiceController) DeleteServiceAction() {
 	if !(p.isSysAdmin && p.isProjectAdmin) {
-		p.CustomAbort(http.StatusForbidden, "Insuffient privileges to manipulate user.")
+		p.customAbort(http.StatusForbidden, "Insuffient privileges to manipulate user.")
 		return
 	}
 
@@ -273,9 +273,9 @@ func (p *ServiceController) DeleteServiceAction() {
 	if err != nil {
 		p.internalError(err)
 		return
-	} else if s == nil {
-		logs.Info("Invalid service ID", serviceID)
-		p.CustomAbort(http.StatusBadRequest, "Invalid service ID.")
+	}
+	if s == nil {
+		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
 		return
 	}
 
@@ -294,14 +294,14 @@ func (p *ServiceController) DeleteServiceAction() {
 		return
 	}
 	if !isSuccess {
-		p.CustomAbort(http.StatusBadRequest, "Failed to delete service.")
+		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Failed to delete service with ID: %d", serviceID))
 	}
 }
 
 // API to deploy service
 func (p *ServiceController) ToggleServiceAction() {
 	if !(p.isSysAdmin && p.isProjectAdmin) {
-		p.CustomAbort(http.StatusForbidden, "Insuffient privileges to manipulate user.")
+		p.customAbort(http.StatusForbidden, "Insuffient privileges to manipulate user.")
 		return
 	}
 	var err error
@@ -331,19 +331,19 @@ func (p *ServiceController) ToggleServiceAction() {
 	if err != nil {
 		p.internalError(err)
 		return
-	} else if s == nil {
-		logs.Info("Invalid service ID", serviceID)
-		p.CustomAbort(http.StatusBadRequest, "Invalid service ID.")
+	}
+	if s == nil {
+		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
 		return
 	}
 
 	if s.Status == stopped && reqServiceToggle.Toggle == 0 {
-		logs.Info("Service already stopped")
+		p.customAbort(http.StatusBadRequest, "Service already stopped.")
 		return
 	}
 
 	if s.Status == running && reqServiceToggle.Toggle == 1 {
-		logs.Info("Service already running")
+		p.customAbort(http.StatusBadRequest, "Service already running.")
 		return
 	}
 
@@ -422,7 +422,7 @@ func stopService(s *model.ServiceStatus) error {
 	deleteServiceURL := kubeMasterURL() + serviceAPI + serviceNamespace + "/services/" + s.Name
 	req, err := http.NewRequest("DELETE", deleteServiceURL, nil)
 	if err != nil {
-		logs.Info("Failed to new request for delete service", deleteServiceURL)
+		logs.Error("Failed to new request for delete service: %s", deleteServiceURL)
 		return err
 	}
 	req.Header.Set("Content-Type", "application/yaml")
@@ -440,18 +440,18 @@ func stopService(s *model.ServiceStatus) error {
 	deleteDeploymentURL := kubeMasterURL() + deploymentAPI + serviceNamespace + "/deployments/" + s.Name
 	req, err = http.NewRequest("DELETE", deleteDeploymentURL, nil)
 	if err != nil {
-		logs.Info("Failed to new request for delete deployment", deleteDeploymentURL)
+		logs.Error("Failed to new request for delete deployment: %s", deleteDeploymentURL)
 		return err
 	}
 	req.Header.Set("Content-Type", "application/yaml")
 	resp, err = client.Do(req)
 	if err != nil {
-		logs.Info(req)
+		logs.Error(req)
 		return err
 	}
 	defer resp.Body.Close()
 
-	logs.Info("Stop deployment successfully", s.ID, s.Name, resp)
+	logs.Info("Stop deployment successfully, id: %d, name: %s, resp: %+v", s.ID, s.Name, resp)
 	return nil
 }
 
@@ -460,10 +460,9 @@ func (p *ServiceController) GetServiceInfoAction() {
 
 	//Get Nodeport
 	serviceName := p.Ctx.Input.Param(":service_name")
-	serviceUrl := fmt.Sprintf("%s/api/v1/namespaces/default/services/%s", kubeMasterURL(), serviceName)
-	logs.Debug("Get Service info serviceUrl(service):%+s", serviceUrl)
-	serviceStatus, err, flag := service.GetServiceStatus(serviceUrl)
-
+	serviceURL := fmt.Sprintf("%s/api/v1/namespaces/default/services/%s", kubeMasterURL(), serviceName)
+	logs.Debug("Get Service info serviceURL(service): %+s", serviceURL)
+	serviceStatus, err, flag := service.GetServiceStatus(serviceURL)
 	var errOutput interface{}
 	if flag == false {
 		json.Unmarshal([]byte(err.Error()), &errOutput)
@@ -479,9 +478,9 @@ func (p *ServiceController) GetServiceInfoAction() {
 
 	//Get NodeIP
 	//endpointUrl format /api/v1/namespaces/default/endpoints/
-	nodesUrl := fmt.Sprintf("%s/api/v1/nodes", kubeMasterURL())
-	logs.Debug("Get Service info serviceUrl(endpoint):%+s", nodesUrl)
-	nodesStatus, err, flag := service.GetNodesStatus(nodesUrl)
+	nodesURL := fmt.Sprintf("%s/api/v1/nodes", kubeMasterURL())
+	logs.Debug("Get Node info nodeURL (endpoint): %+s", nodesURL)
+	nodesStatus, err, flag := service.GetNodesStatus(nodesURL)
 	if flag == false {
 		json.Unmarshal([]byte(err.Error()), &errOutput)
 		p.Data["json"] = errOutput
@@ -498,14 +497,13 @@ func (p *ServiceController) GetServiceInfoAction() {
 		p.Data["json"] = NA
 		p.ServeJSON()
 		return
-	} else {
-		for _, ports := range serviceStatus.Spec.Ports {
-			serviceInfo.NodePort = append(serviceInfo.NodePort, ports.NodePort)
-		}
-		for _, items := range nodesStatus.Items {
-			serviceInfo.NodeName = append(serviceInfo.NodeName, items.Status.Addresses...)
-		}
+	}
 
+	for _, ports := range serviceStatus.Spec.Ports {
+		serviceInfo.NodePort = append(serviceInfo.NodePort, ports.NodePort)
+	}
+	for _, items := range nodesStatus.Items {
+		serviceInfo.NodeName = append(serviceInfo.NodeName, items.Status.Addresses...)
 	}
 
 	p.Data["json"] = serviceInfo
@@ -514,9 +512,9 @@ func (p *ServiceController) GetServiceInfoAction() {
 
 func (p *ServiceController) GetServiceStatusAction() {
 	serviceName := p.Ctx.Input.Param(":service_name")
-	serviceUrl := fmt.Sprintf("%s/api/v1/namespaces/default/services/%s", kubeMasterURL(), serviceName)
-	logs.Debug("Get Service Status serviceUrl:%+s", serviceUrl)
-	serviceStatus, err, flag := service.GetServiceStatus(serviceUrl)
+	serviceURL := fmt.Sprintf("%s/api/v1/namespaces/default/services/%s", kubeMasterURL(), serviceName)
+	logs.Debug("Get Service Status serviceURL: %+s", serviceURL)
+	serviceStatus, err, flag := service.GetServiceStatus(serviceURL)
 
 	var errOutput interface{}
 	if flag == false {
@@ -529,7 +527,6 @@ func (p *ServiceController) GetServiceStatusAction() {
 		p.internalError(err)
 		return
 	}
-
 	p.Data["json"] = serviceStatus
 	p.ServeJSON()
 }
@@ -562,9 +559,9 @@ func (p *ServiceController) ServicePublicityAction() {
 	if err != nil {
 		p.internalError(err)
 		return
-	} else if s == nil {
-		logs.Info("Invalid service ID", serviceID)
-		p.CustomAbort(http.StatusBadRequest, "Invalid service ID.")
+	}
+	if s == nil {
+		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
 		return
 	}
 	if s.Public != reqServiceUpdate.Public {

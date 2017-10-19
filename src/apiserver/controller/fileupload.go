@@ -26,13 +26,13 @@ type FileUploadController struct {
 func (f *FileUploadController) Prepare() {
 	user := f.getCurrentUser()
 	if user == nil {
-		f.CustomAbort(http.StatusUnauthorized, "Need to login first.")
+		f.customAbort(http.StatusUnauthorized, "Need to login first.")
 		return
 	}
 	f.currentUser = user
 	f.isProjectAdmin = (user.ProjectAdmin == 1)
 	if !f.isProjectAdmin {
-		f.CustomAbort(http.StatusForbidden, "Insufficient privileges.")
+		f.customAbort(http.StatusForbidden, "Insufficient privileges.")
 		return
 	}
 	f.resolveFilePath()
@@ -56,12 +56,12 @@ func (f *FileUploadController) resolveFilePath() {
 	}
 
 	if reqUploadFile.ProjectName == "" && reqUploadFile.ServiceID == 0 {
-		f.CustomAbort(http.StatusBadRequest, "No project name or service ID provided.")
+		f.customAbort(http.StatusBadRequest, "No project name or service ID provided.")
 		return
 	}
 
 	if reqUploadFile.ImageName == "" && reqUploadFile.TagName == "" {
-		f.CustomAbort(http.StatusBadRequest, "No image name or tag name provided.")
+		f.customAbort(http.StatusBadRequest, "No image name or tag name provided.")
 		return
 	}
 
@@ -72,7 +72,7 @@ func (f *FileUploadController) resolveFilePath() {
 			return
 		}
 		if !isMember {
-			f.CustomAbort(http.StatusForbidden, "Not member to the current project with provided ID.")
+			f.customAbort(http.StatusForbidden, "Not member to the current project with provided ID.")
 			return
 		}
 		f.toFilePath = filepath.Join(reqUploadFile.ProjectName, reqUploadFile.ImageName, reqUploadFile.TagName, "upload")
