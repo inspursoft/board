@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	baseRepoPath    = `/tmp/repos`
+	baseRepoPath    = `/repos`
 	jenkinsJobURL   = "http://jenkins:8080/job/{{.JobName}}/buildWithParameters?token={{.Token}}&value={{.Value}}&extras={{.Extras}}&file_name={{.FileName}}"
 	jenkinsJobToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
 )
