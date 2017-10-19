@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
@@ -25,7 +26,7 @@ type ProjectController struct {
 func (p *ProjectController) Prepare() {
 	user := p.getCurrentUser()
 	if user == nil {
-		p.CustomAbort(http.StatusUnauthorized, "Need to login first.")
+		p.customAbort(http.StatusUnauthorized, "Need to login first.")
 		return
 	}
 	p.currentUser = user
@@ -35,7 +36,7 @@ func (p *ProjectController) Prepare() {
 
 func (p *ProjectController) CreateProjectAction() {
 	if !p.isProjectAdmin {
-		p.CustomAbort(http.StatusForbidden, "Insufficient privileges for creating projects.")
+		p.customAbort(http.StatusForbidden, "Insufficient privileges for creating projects.")
 		return
 	}
 	var err error
@@ -51,11 +52,11 @@ func (p *ProjectController) CreateProjectAction() {
 		return
 	}
 	if !utils.ValidateWithLengthRange(reqProject.Name, 2, 30) {
-		p.serveStatus(http.StatusBadRequest, "Project name length should be between 2 and 30 characters.")
+		p.customAbort(http.StatusBadRequest, "Project name length should be between 2 and 30 characters.")
 		return
 	}
 	if !utils.ValidateWithPattern("project", reqProject.Name) {
-		p.CustomAbort(http.StatusBadRequest, "Project name is invalid.")
+		p.customAbort(http.StatusBadRequest, "Project name is invalid.")
 		return
 	}
 
@@ -65,7 +66,7 @@ func (p *ProjectController) CreateProjectAction() {
 		return
 	}
 	if projectExists {
-		p.serveStatus(http.StatusConflict, "Project name already exists.")
+		p.customAbort(http.StatusConflict, "Project name already exists.")
 		return
 	}
 
@@ -80,7 +81,7 @@ func (p *ProjectController) CreateProjectAction() {
 		return
 	}
 	if !isSuccess {
-		p.serveStatus(http.StatusBadRequest, "Project contains invalid characters.")
+		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Project name: %s is illegal.", reqProject.Name))
 	}
 
 }
@@ -94,7 +95,7 @@ func (p *ProjectController) ProjectExists() {
 		return
 	}
 	if project != nil {
-		p.CustomAbort(http.StatusConflict, "project name already exists")
+		p.customAbort(http.StatusConflict, fmt.Sprintf("Project name: %s already exists.", projectName))
 	}
 }
 
@@ -132,7 +133,7 @@ func (p *ProjectController) GetProjectAction() {
 		return
 	}
 	if project == nil {
-		p.CustomAbort(http.StatusNotFound, "No project was found with provided ID.")
+		p.customAbort(http.StatusNotFound, fmt.Sprintf("No project was found with provided ID: %d", projectID))
 		return
 	}
 	p.Data["json"] = project
@@ -141,7 +142,7 @@ func (p *ProjectController) GetProjectAction() {
 
 func (p *ProjectController) DeleteProjectAction() {
 	if !p.isProjectAdmin {
-		p.CustomAbort(http.StatusForbidden, "Insuffient privileges for creating projects.")
+		p.customAbort(http.StatusForbidden, "Insuffient privileges for creating projects.")
 		return
 	}
 
@@ -156,7 +157,7 @@ func (p *ProjectController) DeleteProjectAction() {
 		return
 	}
 	if !isExists {
-		p.CustomAbort(http.StatusNotFound, "Cannot find project by ID")
+		p.customAbort(http.StatusNotFound, fmt.Sprintf("Cannot find project with ID: %d", projectID))
 		return
 	}
 	isSuccess, err := service.DeleteProject(int64(projectID))
@@ -165,13 +166,13 @@ func (p *ProjectController) DeleteProjectAction() {
 		return
 	}
 	if !isSuccess {
-		p.CustomAbort(http.StatusBadRequest, "Failed to delete project.")
+		p.customAbort(http.StatusBadRequest, "Failed to delete project.")
 	}
 }
 
 func (p *ProjectController) ToggleProjectPublicAction() {
 	if !p.isProjectAdmin {
-		p.CustomAbort(http.StatusForbidden, "Insuffient privileges for creating projects.")
+		p.customAbort(http.StatusForbidden, "Insufficient privileges for creating projects.")
 		return
 	}
 
@@ -187,7 +188,7 @@ func (p *ProjectController) ToggleProjectPublicAction() {
 		return
 	}
 	if !isExists {
-		p.CustomAbort(http.StatusNotFound, "Cannot find project by ID")
+		p.customAbort(http.StatusNotFound, fmt.Sprintf("Cannot find project by ID: %d", projectID))
 		return
 	}
 
@@ -210,7 +211,7 @@ func (p *ProjectController) ToggleProjectPublicAction() {
 		return
 	}
 	if !isSuccess {
-		p.CustomAbort(http.StatusBadRequest, "Failed to update project public.")
+		p.customAbort(http.StatusBadRequest, "Failed to update project public.")
 	}
 }
 

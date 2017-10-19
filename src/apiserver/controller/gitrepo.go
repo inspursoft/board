@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	baseRepoPath    = `/repos`
+	baseRepoPath    = `/tmp/repos`
 	jenkinsJobURL   = "http://jenkins:8080/job/{{.JobName}}/buildWithParameters?token={{.Token}}&value={{.Value}}&extras={{.Extras}}&file_name={{.FileName}}"
 	jenkinsJobToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
 )
@@ -42,13 +42,13 @@ type pushObject struct {
 func (g *GitRepoController) Prepare() {
 	user := g.getCurrentUser()
 	if user == nil {
-		g.CustomAbort(http.StatusUnauthorized, "Need to login first.")
+		g.customAbort(http.StatusUnauthorized, "Need to login first.")
 		return
 	}
 	g.currentUser = user
 	g.isProjectAdmin = (g.currentUser.ProjectAdmin == 1)
 	if !g.isProjectAdmin {
-		g.CustomAbort(http.StatusForbidden, "Insufficient privileges for manipulating Git repos.")
+		g.customAbort(http.StatusForbidden, "Insufficient privileges for manipulating Git repos.")
 		return
 	}
 }
@@ -56,7 +56,7 @@ func (g *GitRepoController) Prepare() {
 func (g *GitRepoController) CreateServeRepo() {
 	_, err := service.InitBareRepo(repoServePath)
 	if err != nil {
-		g.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to initialize serve repo: %+v\n", err))
+		g.customAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to initialize serve repo: %+v\n", err))
 		return
 	}
 }
@@ -64,7 +64,7 @@ func (g *GitRepoController) CreateServeRepo() {
 func (g *GitRepoController) InitUserRepo() {
 	_, err := service.InitRepo(repoServeURL, repoPath)
 	if err != nil {
-		g.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to initialize user's repo: %+v\n", err))
+		g.customAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to initialize user's repo: %+v\n", err))
 		return
 	}
 
@@ -98,7 +98,7 @@ func (g *GitRepoController) PushObjects() {
 
 	repoHandler, err := service.OpenRepo(repoPath)
 	if err != nil {
-		g.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to open user's repo: %+v\n", err))
+		g.customAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to open user's repo: %+v\n", err))
 		return
 	}
 	for _, item := range reqPush.Items {
@@ -110,12 +110,12 @@ func (g *GitRepoController) PushObjects() {
 
 	_, err = repoHandler.Commit(reqPush.Message, &object.Signature{Name: username, Email: email})
 	if err != nil {
-		g.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to commit changes to user's repo: %+v\n", err))
+		g.customAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to commit changes to user's repo: %+v\n", err))
 		return
 	}
 	err = repoHandler.Push()
 	if err != nil {
-		g.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to push objects to git repo: %+v\n", err))
+		g.customAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to push objects to git repo: %+v\n", err))
 	}
 
 	templates := template.Must(template.New("job_url").Parse(jenkinsJobURL))
@@ -139,24 +139,24 @@ func (g *GitRepoController) PushObjects() {
 	if err != nil {
 		g.internalError(err)
 	}
-	g.CustomAbort(resp.StatusCode, "")
+	g.customAbort(resp.StatusCode, "")
 }
 
 func (g *GitRepoController) PullObjects() {
 	target := g.GetString("target")
 	if target == "" {
-		g.CustomAbort(http.StatusBadRequest, "No target provided for pulling.")
+		g.customAbort(http.StatusBadRequest, "No target provided for pulling.")
 		return
 	}
 	targetPath := filepath.Join(baseRepoPath, target)
 	repoHandler, err := service.InitRepo(repoServeURL, targetPath)
 	if err != nil {
-		g.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to open user's repo: %+v\n", err))
+		g.customAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to open user's repo: %+v\n", err))
 		return
 	}
 	err = repoHandler.Pull()
 	if err != nil {
-		g.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to pull objects from git repo: %+v\n", err))
+		g.customAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to pull objects from git repo: %+v\n", err))
 	}
 }
 

@@ -75,6 +75,11 @@ func (b *baseController) internalError(err error) {
 	b.CustomAbort(http.StatusInternalServerError, "Unexpected error occurred.")
 }
 
+func (b *baseController) customAbort(status int, body string) {
+	logs.Error("Error occurred: %s", body)
+	b.CustomAbort(status, body)
+}
+
 func (b *baseController) getCurrentUser() *model.User {
 	token := b.Ctx.Request.Header.Get("token")
 	if token == "" {

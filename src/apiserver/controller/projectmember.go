@@ -15,14 +15,14 @@ type ProjectMemberController struct {
 func (pm *ProjectMemberController) Prepare() {
 	user := pm.getCurrentUser()
 	if user == nil {
-		pm.CustomAbort(http.StatusUnauthorized, "Need to login first.")
+		pm.customAbort(http.StatusUnauthorized, "Need to login first.")
 		return
 	}
 	pm.currentUser = user
 	pm.isSysAdmin = (user.SystemAdmin == 1)
 	pm.isProjectAdmin = (user.ProjectAdmin == 1)
 	if !pm.isProjectAdmin {
-		pm.CustomAbort(http.StatusForbidden, "Insuffient privileges to for manipulating projects.")
+		pm.customAbort(http.StatusForbidden, "Insufficient privileges to for manipulating projects.")
 		return
 	}
 }
@@ -40,7 +40,7 @@ func (pm *ProjectMemberController) AddOrUpdateProjectMemberAction() {
 		return
 	}
 	if !isExists {
-		pm.CustomAbort(http.StatusNotFound, "Cannot find project by ID")
+		pm.customAbort(http.StatusNotFound, "Cannot find project by ID")
 		return
 	}
 	reqData, err := pm.resolveBody()
@@ -61,7 +61,7 @@ func (pm *ProjectMemberController) AddOrUpdateProjectMemberAction() {
 		return
 	}
 	if role == nil {
-		pm.CustomAbort(http.StatusNotFound, "No role was found with provided role ID.")
+		pm.customAbort(http.StatusNotFound, "No role found with provided role ID.")
 		return
 	}
 
@@ -71,7 +71,7 @@ func (pm *ProjectMemberController) AddOrUpdateProjectMemberAction() {
 		return
 	}
 	if user == nil {
-		pm.CustomAbort(http.StatusNotFound, "No user was found with provided user ID.")
+		pm.customAbort(http.StatusNotFound, "No user found with provided user ID.")
 		return
 	}
 
@@ -81,7 +81,7 @@ func (pm *ProjectMemberController) AddOrUpdateProjectMemberAction() {
 		return
 	}
 	if !isSuccess {
-		pm.CustomAbort(http.StatusBadRequest, "Failed to add or upate project member.")
+		pm.customAbort(http.StatusBadRequest, "Failed to add or upate project member.")
 	}
 }
 
@@ -98,7 +98,7 @@ func (pm *ProjectMemberController) DeleteProjectMemberAction() {
 		return
 	}
 	if !isExists {
-		pm.CustomAbort(http.StatusNotFound, "Cannot find project by ID")
+		pm.customAbort(http.StatusNotFound, "Cannot find project by ID")
 		return
 	}
 
@@ -108,7 +108,7 @@ func (pm *ProjectMemberController) DeleteProjectMemberAction() {
 		return
 	}
 	if int64(userID) == pm.currentUser.ID {
-		pm.CustomAbort(http.StatusConflict, "Self privilege to the current project cannot be deleted.")
+		pm.customAbort(http.StatusConflict, "Self privilege to the current project cannot be deleted.")
 		return
 	}
 	user, err := service.GetUserByID(int64(userID))
@@ -117,7 +117,7 @@ func (pm *ProjectMemberController) DeleteProjectMemberAction() {
 		return
 	}
 	if user == nil {
-		pm.CustomAbort(http.StatusNotFound, "No user was found with provided user ID.")
+		pm.customAbort(http.StatusNotFound, "No user was found with provided user ID.")
 		return
 	}
 	isSuccess, err := service.DeleteProjectMember(int64(projectID), int64(userID))
@@ -126,7 +126,7 @@ func (pm *ProjectMemberController) DeleteProjectMemberAction() {
 		return
 	}
 	if !isSuccess {
-		pm.CustomAbort(http.StatusBadRequest, "Failed to delete project member.")
+		pm.customAbort(http.StatusBadRequest, "Failed to delete project member.")
 	}
 }
 
@@ -142,7 +142,7 @@ func (pm *ProjectMemberController) GetProjectMembersAction() {
 		return
 	}
 	if !isExists {
-		pm.CustomAbort(http.StatusNotFound, "Cannot find project by ID")
+		pm.customAbort(http.StatusNotFound, "Cannot find project by ID")
 		return
 	}
 	projectMembers, err := service.GetProjectMembers(int64(projectID))

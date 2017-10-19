@@ -1,8 +1,6 @@
 package dao
 
 import (
-	"fmt"
-
 	"github.com/astaxie/beego/config"
 	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/orm"
@@ -20,6 +18,6 @@ func InitDB() {
 	orm.RegisterDriver("mysql", orm.DRMySQL)
 	err = orm.RegisterDataBase("default", "mysql", "root:"+dbPassword+"@tcp(mysql:3306)/board?charset=utf8")
 	if err != nil {
-		fmt.Printf("error occurred on registering DB: %+v", err)
+		logs.Error("error occurred on registering DB: %+v", err)
 	}
 }
