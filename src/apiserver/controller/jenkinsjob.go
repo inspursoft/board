@@ -13,7 +13,6 @@ import (
 )
 
 const jenkinsBuildConsoleURL = "http://jenkins:8080/job/{{.JobName}}/{{.BuildSerialID}}/consoleText"
-const jenkinsLastBuildNumberURL = "http://jenkins:8080/job/{{.JobName}}/lastBuild/buildNumber"
 
 type jobConsole struct {
 	JobName       string `json:"job_name"`
@@ -56,27 +55,6 @@ func (j *JenkinsJobController) Console() {
 	}
 	buildSerialID := j.GetString("build_serial_id", "lastBuild")
 
-	lastBuildNumberURL, err := generateURL(jenkinsLastBuildNumberURL, jobConsole{JobName: jobName})
-	if err != nil {
-		j.internalError(err)
-		return
-	}
-
-	respBuildNumber, err := http.Get(lastBuildNumberURL)
-	if err != nil {
-		j.internalError(err)
-		return
-	}
-	defer respBuildNumber.Body.Close()
-	respBuildNumberData, err := ioutil.ReadAll(respBuildNumber.Body)
-	if err != nil {
-		j.internalError(err)
-		return
-	}
-	if respBuildNumberData != nil {
-		buildSerialID = string(respBuildNumberData)
-	}
-
 	buildConsoleURL, err := generateURL(jenkinsBuildConsoleURL, jobConsole{JobName: jobName, BuildSerialID: buildSerialID})
 	if err != nil {
 		j.internalError(err)
@@ -84,7 +62,6 @@ func (j *JenkinsJobController) Console() {
 	}
 
 	logs.Debug("Requested Jenkins build console URL: %s", buildConsoleURL)
-	logs.Debug("Requested Jenkins build number URL: %s", lastBuildNumberURL)
 
 	ws, err := websocket.Upgrade(j.Ctx.ResponseWriter, j.Ctx.Request, nil, 1024, 1024)
 	if _, ok := err.(websocket.HandshakeError); ok {
