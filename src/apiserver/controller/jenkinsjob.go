@@ -100,8 +100,9 @@ func (j *JenkinsJobController) Console() {
 	client := http.Client{}
 
 	buffer := make(chan []byte, 1024)
-
 	done := make(chan bool)
+
+	timer := time.NewTimer(time.Second * 120)
 	ticker := time.NewTicker(time.Second * 1)
 
 	go func() {
@@ -111,7 +112,6 @@ func (j *JenkinsJobController) Console() {
 				j.internalError(err)
 				return
 			}
-
 			data, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
 				j.internalError(err)
@@ -136,8 +136,9 @@ func (j *JenkinsJobController) Console() {
 		case <-done:
 			err = ws.Close()
 			logs.Debug("WS is being closed.")
-		case <-time.After(time.Second * 80):
+		case <-timer.C:
 			err = ws.Close()
+			ticker.Stop()
 			logs.Debug("WS is being closed due to timeout.")
 		}
 		if err != nil {
