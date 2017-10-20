@@ -119,6 +119,10 @@ func (j *JenkinsJobController) Console() {
 				j.internalError(err)
 				return
 			}
+			if resp.StatusCode == http.StatusNotFound {
+				logs.Debug("Jenkins console is not ready at this moment, will retry for next request...")
+				continue
+			}
 			data, err = ioutil.ReadAll(resp.Body)
 			if err != nil {
 				j.internalError(err)
