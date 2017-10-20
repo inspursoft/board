@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 	"text/template"
 	"time"
@@ -12,7 +13,8 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-const jenkinsBuildConsoleURL = "http://jenkins:8080/job/{{.JobName}}/{{.BuildSerialID}}/consoleText"
+const jenkinsLastBuildNumberTemplateURL = "http://jenkins:8080/job/{{.JobName}}/lastBuild/buildNumber"
+const jenkinsBuildConsoleTemplateURL = "http://jenkins:8080/job/{{.JobName}}/{{.BuildSerialID}}/consoleText"
 
 type jobConsole struct {
 	JobName       string `json:"job_name"`
@@ -53,9 +55,37 @@ func (j *JenkinsJobController) Console() {
 		j.customAbort(http.StatusBadRequest, "No job name found.")
 		return
 	}
-	buildSerialID := j.GetString("build_serial_id", "lastBuild")
 
-	buildConsoleURL, err := generateURL(jenkinsBuildConsoleURL, jobConsole{JobName: jobName, BuildSerialID: buildSerialID})
+	query := jobConsole{JobName: jobName}
+
+	lastBuildNumberURL, err := generateURL(jenkinsLastBuildNumberTemplateURL, query)
+	if err != nil {
+		j.internalError(err)
+		return
+	}
+
+	resp, err := http.Get(lastBuildNumberURL)
+	if err != nil {
+		j.internalError(err)
+		return
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		j.internalError(err)
+		return
+	}
+
+	lastBuildNumber, err := strconv.Atoi(string(data))
+	if err != nil {
+		j.internalError(err)
+		return
+	}
+
+	query.BuildSerialID = j.GetString("build_serial_id", strconv.Itoa(lastBuildNumber+1))
+
+	buildConsoleURL, err := generateURL(jenkinsBuildConsoleTemplateURL, query)
 	if err != nil {
 		j.internalError(err)
 		return
@@ -84,12 +114,12 @@ func (j *JenkinsJobController) Console() {
 
 	go func() {
 		for range ticker.C {
-			resp, err := client.Do(req)
+			resp, err = client.Do(req)
 			if err != nil {
 				j.internalError(err)
 				return
 			}
-			data, err := ioutil.ReadAll(resp.Body)
+			data, err = ioutil.ReadAll(resp.Body)
 			if err != nil {
 				j.internalError(err)
 				return
