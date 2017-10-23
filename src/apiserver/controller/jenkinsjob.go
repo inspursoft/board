@@ -15,6 +15,7 @@ import (
 
 const jenkinsLastBuildNumberTemplateURL = "http://jenkins:8080/job/{{.JobName}}/lastBuild/buildNumber"
 const jenkinsBuildConsoleTemplateURL = "http://jenkins:8080/job/{{.JobName}}/{{.BuildSerialID}}/consoleText"
+const maxRetryCount = 30
 
 type jobConsole struct {
 	JobName       string `json:"job_name"`
@@ -109,7 +110,8 @@ func (j *JenkinsJobController) Console() {
 	buffer := make(chan []byte, 1024)
 	done := make(chan bool)
 
-	timer := time.NewTimer(time.Second * 120)
+	retryCount := 0
+	expiryTimer := time.NewTimer(time.Second * 900)
 	ticker := time.NewTicker(time.Second * 1)
 
 	go func() {
@@ -117,15 +119,24 @@ func (j *JenkinsJobController) Console() {
 			resp, err = client.Do(req)
 			if err != nil {
 				j.internalError(err)
+				logs.Error("Failed to get console response: %+v", err)
+				done <- true
 				return
 			}
 			if resp.StatusCode == http.StatusNotFound {
-				logs.Debug("Jenkins console is not ready at this moment, will retry for next request...")
-				continue
+				if retryCount >= maxRetryCount {
+					done <- true
+				} else {
+					retryCount++
+					logs.Debug("Jenkins console is not ready at this moment, will retry for next %d request...", retryCount)
+					continue
+				}
 			}
 			data, err = ioutil.ReadAll(resp.Body)
 			if err != nil {
 				j.internalError(err)
+				logs.Error("Failed to read data from response body: %+v", err)
+				done <- true
 				return
 			}
 			buffer <- data
@@ -133,7 +144,6 @@ func (j *JenkinsJobController) Console() {
 
 			for _, line := range strings.Split(string(data), "\n") {
 				if strings.HasPrefix(line, "Finished:") {
-					ticker.Stop()
 					done <- true
 				}
 			}
@@ -145,11 +155,12 @@ func (j *JenkinsJobController) Console() {
 		case content := <-buffer:
 			err = ws.WriteMessage(websocket.TextMessage, content)
 		case <-done:
+			ticker.Stop()
 			err = ws.Close()
 			logs.Debug("WS is being closed.")
-		case <-timer.C:
-			err = ws.Close()
+		case <-expiryTimer.C:
 			ticker.Stop()
+			err = ws.Close()
 			logs.Debug("WS is being closed due to timeout.")
 		}
 		if err != nil {
