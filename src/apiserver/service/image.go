@@ -87,11 +87,6 @@ func fixStructEmptyIssue(obj interface{}) {
 		}
 		return
 	}
-	if f, ok := obj.(*[]int); ok {
-		if len(*f) == 1 && (*f)[0] == 0 {
-			*f = nil
-		}
-	}
 	return
 }
 
