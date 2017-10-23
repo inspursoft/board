@@ -119,7 +119,7 @@ golint: $(GOLINT_LIST)
 compile_ui:
 	$(DOCKERCOMPOSECMD) -f $(MAKEPATH)/dev/$(DOCKERCOMPOSEUIFILENAME) up
 
-$(COMPILE_LIST): %_compile: %_fmt %_vet %_golint
+$(COMPILE_LIST): %_compile: # %_fmt  %_vet %_golint
 	$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOIMGBASEPATH) \
 					-w $(GOIMGBASEPATH)/$* $(GOBUILDIMAGE) $(GOBUILD) \
 					-v -o $(GOIMGBASEPATH)/make/$(WORKPATH)/container/$(subst /cmd,,$(subst src/,,$*))/$(subst /cmd,,$(subst src/,,$*)) 
@@ -130,7 +130,10 @@ $(CLEAN_LIST): %_clean:
 $(INSTALL_LIST): %_install:
 	$(GOINSTALL) $(TOPLEVEL_PKG)/$*
 $(TEST_LIST): %_test:
-	$(GOTEST) $(TOPLEVEL_PKG)/$*
+#	$(GOTEST) $(TOPLEVEL_PKG)/$*
+	$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOIMGBASEPATH) \
+                                        -w $(GOIMGBASEPATH)/$* $(GOBUILDIMAGE) $(GOTEST) \
+                                        -v -o $(GOIMGBASEPATH)/make/$(WORKPATH)/container/$(subst /cmd,,$(subst src/,,$*))/$(subst /cmd,,$(subst src/,,$*))
 $(FMT_LIST): %_fmt:
 	$(GOFMT) ./$*
 $(VET_LIST): %_vet:
