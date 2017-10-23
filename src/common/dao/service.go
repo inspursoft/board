@@ -61,3 +61,24 @@ func GetServiceData() ([]model.ServiceStatus, error) {
 
 	return serviceList, err
 }
+
+//GetService(servicequery, "id")
+func SyncServiceData(service model.ServiceStatus) (int64, error) {
+
+	var servicequery model.ServiceStatus
+	servicequery.Name = service.Name
+	o := orm.NewOrm()
+	err := o.Read(&servicequery, "name")
+	if err != orm.ErrNoRows {
+		return 0, nil
+	}
+
+	serviceID, err := o.Insert(&service)
+	if err != nil {
+		if err == orm.ErrNoRows {
+			return 0, nil
+		}
+		return 0, err
+	}
+	return serviceID, err
+}

@@ -102,3 +102,24 @@ func k8sGet(resource interface{}, url string) (bool, error) {
 
 	return true, nil
 }
+
+//get resource form k8s api-server
+func GetK8sData(resource interface{}, url string) ([]byte, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(body, resource)
+	if err != nil {
+		return body, err
+	}
+
+	return body, nil
+}

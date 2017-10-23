@@ -40,6 +40,10 @@ func updateAdminPassword(initialPassword string) {
 	}
 }
 
+func syncServiceWithK8s() {
+	service.SyncServiceWithK8s()
+}
+
 func main() {
 
 	utils.Initialize()
@@ -64,6 +68,8 @@ func main() {
 	dao.InitDB()
 	controller.InitController()
 	updateAdminPassword(utils.GetStringValue("BOARD_ADMIN_PASSWORD"))
+
+	syncServiceWithK8s()
 
 	beego.Run(":8088")
 }
