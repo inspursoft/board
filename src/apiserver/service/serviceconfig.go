@@ -2,11 +2,21 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/model/yaml"
+	"time"
+
+	"github.com/astaxie/beego/logs"
 
 	modelK8s "k8s.io/client-go/pkg/api/v1"
+)
+
+const (
+	NAComment = "NA"
+	noDeleted = 0
+	running   = 1
 )
 
 func InitServiceConfig() (*model.ServiceConfig, error) {
@@ -128,4 +138,35 @@ func GetService(service model.ServiceStatus, selectedFields ...string) (*model.S
 		return nil, err
 	}
 	return s, nil
+}
+
+func SyncServiceWithK8s() error {
+
+	serviceUrl := fmt.Sprintf("%s/api/v1/services", kubeMasterURL())
+	logs.Debug("Get Service Status serviceUrl:%+s", serviceUrl)
+
+	//obtain serviceList data
+	var serviceList modelK8s.ServiceList
+	_, err := GetK8sData(&serviceList, serviceUrl)
+	if err != nil {
+		return err
+	}
+
+	//handle the serviceList data
+	var servicequery model.ServiceStatus
+	for _, item := range serviceList.Items {
+		servicequery.Name = item.ObjectMeta.Name
+		servicequery.ProjectName = NAComment
+		servicequery.Comment = NAComment
+		servicequery.Deleted = noDeleted
+		servicequery.Status = running
+		servicequery.CreationTime, _ = time.Parse(time.RFC3339, item.CreationTimestamp.Format(time.RFC3339))
+		servicequery.UpdateTime, _ = time.Parse(time.RFC3339, item.CreationTimestamp.Format(time.RFC3339))
+		_, err = dao.SyncServiceData(servicequery)
+		if err != nil {
+			logs.Error("Sync Service %s failed.", servicequery.Name)
+		}
+	}
+
+	return nil
 }
