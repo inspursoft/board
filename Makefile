@@ -14,7 +14,6 @@
 
 # Common
 # Develop flag
-# guyingyan test
 DEVFLAG=release
 ifeq ($(DEVFLAG), release) 
 	BASEIMAGE=alpine:3.5
