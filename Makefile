@@ -14,6 +14,9 @@
 
 # Common
 # Develop flag
+#
+#
+#
 DEVFLAG=release
 ifeq ($(DEVFLAG), release) 
 	BASEIMAGE=alpine:3.5
