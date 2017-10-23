@@ -23,7 +23,7 @@ var imageConfig model.ImageConfig
 func TestCheckDockerfileConfig(t *testing.T) {
 	err := CheckDockerfileConfig(&imageConfig)
 	if err == nil {
-		t.Errorf("Check nil dockerfile config should fail")
+		t.Errorf("Check nil dockerfile config should be failed")
 	} else {
 		t.Log("Check nil config fail as expect.")
 	}
@@ -31,7 +31,7 @@ func TestCheckDockerfileConfig(t *testing.T) {
 	imageConfig.ImageDockerfile.Base = "Test:1.0"
 	err = CheckDockerfileConfig(&imageConfig)
 	if err == nil {
-		t.Errorf("Check dockerfile with upper charactor in base showld fail")
+		t.Errorf("Check dockerfile with upper charactor in base should be failed")
 	} else {
 		t.Log("Check dockerfile with upper charactor in base successfully.")
 	}
@@ -40,7 +40,7 @@ func TestCheckDockerfileConfig(t *testing.T) {
 	imageConfig.ImageDockerfile.EntryPoint = "a\nb"
 	err = CheckDockerfileConfig(&imageConfig)
 	if err == nil {
-		t.Errorf("Check dockerfile with enter in Entrypoint showld fail")
+		t.Errorf("Check dockerfile with enter in Entrypoint should be failed")
 	} else {
 		t.Log("Check dockerfile with enter in Entrypoint successfully.")
 	}
@@ -49,7 +49,7 @@ func TestCheckDockerfileConfig(t *testing.T) {
 	imageConfig.ImageDockerfile.ExposePort = append(imageConfig.ImageDockerfile.ExposePort, "0s")
 	err = CheckDockerfileConfig(&imageConfig)
 	if err == nil {
-		t.Errorf("Check dockerfile port showld fail")
+		t.Errorf("Check dockerfile port should be failed")
 	} else {
 		t.Log("Check dockerfile port successfully.")
 	}
