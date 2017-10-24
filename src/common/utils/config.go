@@ -10,19 +10,16 @@ import (
 
 var configStorage map[string]interface{}
 
-func addValue(name string, value interface{}) {
+func add(name string, value interface{}) {
 	configStorage[name] = value
 }
 
-func getValue(name string) (interface{}, bool) {
-	if val, exists := configStorage[name]; exists {
-		return val, true
-	}
-	return nil, false
+func AddEnv(name string) {
+	add(name, os.Getenv(name))
 }
 
-func AddEnv(name string) {
-	addValue(name, os.Getenv(name))
+func AddValue(name string, value interface{}) {
+	add(name, value)
 }
 
 func GetIntValue(name string) int {
@@ -32,7 +29,10 @@ func GetIntValue(name string) int {
 	panic(fmt.Sprintf("Failed to get value for key: %s", name))
 }
 
-func GetStringValue(name string) string {
+func GetStringValue(name string, defaultValue ...string) string {
+	if defaultValue != nil && len(defaultValue) > 0 {
+		return defaultValue[0]
+	}
 	if s, ok := configStorage[name].(string); ok {
 		return s
 	}
@@ -50,8 +50,8 @@ func SetConfig(name, formatter string, keys ...string) {
 	return
 }
 
-func GetConfig(name string) func() string {
-	return func() string { return GetStringValue(name) }
+func GetConfig(name string, defaultValue ...string) func() string {
+	return func() string { return GetStringValue(name, defaultValue...) }
 }
 
 func Initialize() {
