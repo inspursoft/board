@@ -944,6 +944,37 @@ paths:
           description: Internal errors.    
      
   /v1/services/{service_id}/serviceconfig:
+    get:  
+      summary: Get service configuration data.
+      description: |
+        This endpoint is aimed to get service configuration data.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return service config data.
+          schema:
+            $ref: '#/definitions/ServiceConfig'
+        401:
+          description: User need to log in first.
+        402:
+          description: Invalid configuration phase.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.
     put:  
       summary: Update service configuration data.
       description: |
@@ -1147,7 +1178,7 @@ paths:
           description: Unexpected internal errors.    
   /v1/services/{service_id}/publicity:
     put:  
-      summary: Update service publicity for a selected service.yy
+      summary: Update service publicity for a selected service.
       description: |
         This endpoint is aimed to toggle a service publicity status.
       parameters:
