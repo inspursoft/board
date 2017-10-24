@@ -51,22 +51,22 @@ func TestMain(m *testing.M) {
 func TestSignIn(t *testing.T) {
 	assert := assert.New(t)
 	u, err := SignIn("admin", "123456a?")
-	assert.Nil(err, "No error occurred while calling SignIn method.")
-	assert.NotNil(u, "User is not nil.")
-	assert.Equal("admin", u.Username, "Signed in successfully.")
+	assert.Nil(err, "Error occurred while calling SignIn method.")
+	assert.NotNil(u, "User is nil.")
+	assert.Equal("admin", u.Username, "Signed in failed.")
 }
 
 func TestGetUserByID(t *testing.T) {
 	assert := assert.New(t)
 	u, err := GetUserByID(1)
-	assert.Nil(err, "No error occurred while calling GetUserByID method.")
-	assert.NotNil(u, "User exists")
-	assert.Equal("admin", u.Username, "Username is equal to expected.")
+	assert.Nil(err, "Error occurred while calling GetUserByID method.")
+	assert.NotNil(u, "User does not exists.")
+	assert.Equal("admin", u.Username, "Username is not equal to be expected.")
 }
 
 func TestSignUp(t *testing.T) {
 	assert := assert.New(t)
 	status, err := SignUp(user)
-	assert.Nil(err, "No error occurred while calling SignUp method.")
-	assert.True(status, "Signed up successfully.")
+	assert.Nil(err, "Error occurred while calling SignUp method.")
+	assert.True(status, "Signed up failed.")
 }
