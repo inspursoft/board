@@ -143,7 +143,7 @@ export const LANG_EN_US = {
     "LIST_COL_CREATE_DATE":"Create Date",
     "LIST_COL_SYSTEM_ADMIN":"System Admin",
     "LIST_COL_PROJECT_MANAGER":"Project Manager",
-    "LIST_COL_DELETE":"Delete",
+    "LIST_COL_DELETE":"Deleted",
     "LIST_COL_OPERATION":"Operation",
     "DELETE_USER_SUCCESS":"Delete user success!",
     "DELETE_USER": "Delete User",
