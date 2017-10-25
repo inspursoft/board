@@ -7,12 +7,15 @@ import { Response } from '@angular/http';
 
 @Injectable()
 export class MessageService {
-  
+
   messageAnnouncedSource: Subject<Message> = new Subject<Message>();
   messageAnnounced$: Observable<Message> = this.messageAnnouncedSource.asObservable();
 
   messageConfirmedSource: Subject<Message> = new Subject<Message>();
   messageConfirmed$: Observable<Message> = this.messageConfirmedSource.asObservable();
+
+  messageCanceledSource: Subject<boolean> = new Subject<boolean>();
+  messageCanceled$: Observable<boolean> = this.messageCanceledSource.asObservable();
 
   inlineAlertAnnouncedSource: Subject<Message> = new Subject<Message>();
   inlineAlertAnnounced$: Observable<Message> = this.inlineAlertAnnouncedSource.asObservable();
@@ -26,6 +29,10 @@ export class MessageService {
 
   confirmMessage(message: Message) {
     this.messageConfirmedSource.next(message);
+  }
+
+  cancelMessage() {
+    this.messageCanceledSource.next(true);
   }
 
   inlineAlertMessage(message: Message) {

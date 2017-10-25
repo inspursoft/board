@@ -199,7 +199,7 @@ export class K8sService {
       .catch(err => Promise.reject(err));
   }
 
-  getServiceDetail(serviceName:string):Promise<Object>{
+  getServiceDetail(serviceName: string): Promise<Object> {
     return this.http
       .get(`/api/v1/services/info/${serviceName}`, {headers: this.defaultHeader})
       .toPromise()
@@ -221,9 +221,20 @@ export class K8sService {
       .catch(err => Promise.reject(err));
   }
 
-  toggleService(serviceID: number, isStart: 0 | 1): Promise<any> {
+  toggleServiceStatus(serviceID: number, isStart: 0 | 1): Promise<any> {
     return this.http
       .put(`/api/v1/services/${serviceID}/toggle`, {service_toggle: isStart}, {headers: this.defaultHeader})
+      .toPromise()
+      .then(res => {
+        this.appInitService.chainResponse(res);
+        return res;
+      })
+      .catch(err => Promise.reject(err));
+  }
+
+  toggleServicePublicity(serviceID: number, service_togglable: 0 | 1): Promise<any> {
+    return this.http
+      .put(`/api/v1/services/${serviceID}/publicity`, {service_public: service_togglable}, {headers: this.defaultHeader})
       .toPromise()
       .then(res => {
         this.appInitService.chainResponse(res);
@@ -251,12 +262,14 @@ export class K8sService {
 
   getNodesList(): Promise<any> {
     return this.http
-      .get(`/api/v1/nodes`, { headers: this.defaultHeader })
+      .get(`/api/v1/nodes`, {headers: this.defaultHeader})
       .toPromise()
-      .then(res=>{
+      .then(res => {
         this.appInitService.chainResponse(res);
         return res.json();
       })
-      .catch(err=>Promise.reject(err));
+      .catch(err => Promise.reject(err));
   }
+
+
 }

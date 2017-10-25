@@ -1,7 +1,7 @@
 /**
  * Created by liyanq on 9/12/17.
  */
-import { Component, Input, Output, EventEmitter, OnInit } from "@angular/core"
+import { Component, Input, Output, EventEmitter, OnInit, ViewChildren, QueryList, ElementRef } from "@angular/core"
 import { FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from "@angular/forms";
 
 export enum CsInputArrStatus{iasView, iasEdit}
@@ -27,15 +27,20 @@ export class CsInputArrayComponent implements OnInit {
   inputArrayFormGroup: FormGroup;
   inputArrayValidatorFns: Array<ValidatorFn>;
   inputArrayValidatorMessageParam: string = "";
+  @ViewChildren("arrInput") elemRefList: QueryList<ElementRef>;
   @Input() inputArrayType: CsInputArrType = CsInputArrType.iasString;
   @Input() customerArrayValidatorFns: Array<ValidatorFn>;
   @Input() inputArrayIsRequired: boolean = false;
   @Input() inputArrayPattern: RegExp;
   @Input() inputArrayMaxlength: number = 0;
   @Input() inputArrayMinlength: number = 0;
+  @Input() inputArrayMax: number = 0;
+  @Input() inputArrayMin: number = 0;
   @Input() validatorMessage: Array<{validatorKey: string, validatorMessage: string}>;
   @Input() inputArraySource: Array<CsInputArrSupportType>;
-  @Input() labelText: string = "";
+  @Input() inputArrayFixedSource: Array<CsInputArrSupportType>;
+  @Input() inputArrayLabelText: string = "";
+  @Input() inputArrayTipText: string = "";
 
   constructor() {
     this.inputArrayFileds = Array<CsInputArrFiled>();
@@ -44,19 +49,12 @@ export class CsInputArrayComponent implements OnInit {
   }
 
   ngOnInit() {
-    if (this.inputArraySource.length == 0) {
-      this.inputArrayFormGroup = new FormGroup({
-        inputControl_0: new FormControl("")
-      });
-      this.inputArrayFileds.push(new CsInputArrFiled(CsInputArrStatus.iasView, "", ""));
-    } else {
-      this.inputArrayFormGroup = new FormGroup({});
-      this.inputArraySource.forEach((value, index) => {
-        let formControlName = `inputControl_` + index;
-        this.inputArrayFormGroup.addControl(formControlName, new FormControl(value));
-        this.inputArrayFileds.push(new CsInputArrFiled(CsInputArrStatus.iasView, value.toString(), value.toString()));
-      })
-    }
+    this.inputArrayFormGroup = new FormGroup({});
+    this.inputArraySource.forEach((value, index) => {
+      this.inputArrayFileds.push(new CsInputArrFiled(CsInputArrStatus.iasView, value.toString(), value.toString()));
+      let formControlName = this.getControlName(index);
+      this.inputArrayFormGroup.addControl(formControlName, new FormControl(value));
+    });
     if (this.inputArrayType == CsInputArrType.iasNumber) {
       this.inputArrayValidatorFns.push(Validators.pattern(InputArrayPatternNumber));
     }
@@ -68,6 +66,12 @@ export class CsInputArrayComponent implements OnInit {
     }
     if (this.inputArrayMinlength > 0) {
       this.inputArrayValidatorFns.push(Validators.minLength(this.inputArrayMinlength));
+    }
+    if (this.inputArrayMax > 0) {
+      this.inputArrayValidatorFns.push(Validators.max(this.inputArrayMax));
+    }
+    if (this.inputArrayMin > 0) {
+      this.inputArrayValidatorFns.push(Validators.min(this.inputArrayMin));
     }
     if (this.inputArrayPattern) {
       this.inputArrayValidatorFns.push(Validators.pattern(this.inputArrayPattern));
@@ -85,6 +89,27 @@ export class CsInputArrayComponent implements OnInit {
     if (value) {
       this.inputArrayFileds.forEach(item => item.status = CsInputArrStatus.iasView);
     }
+    if (this.inputArrayFormGroup) {
+      for (let index = 0; index < this.inputArrayFileds.length; index++) {
+        let controlName = this.getControlName(index);
+        let control = this.inputArrayFormGroup.controls[controlName];
+        control.reset({value: this.inputArrayFileds[index].value, disabled: value});
+      }
+    }
+  }
+
+  public get valid(): boolean {
+    let notEmpty: boolean = true;
+    let isInView: boolean = true;
+    this.inputArrayFileds.forEach(item => {
+      if (item.value == "") {
+        notEmpty = false;
+      }
+      if (item.status == CsInputArrStatus.iasEdit) {
+        isInView = false;
+      }
+    });
+    return notEmpty && isInView;
   }
 
   getControlName(index: number): string {
@@ -93,12 +118,14 @@ export class CsInputArrayComponent implements OnInit {
     }
   }
 
-  get plusEnable(): boolean {
-    return this.inputArrayFileds[this.inputArrayFileds.length - 1].value != "";
-  }
-
   get disabled() {
     return this._isDisable;
+  }
+
+  isShowMinus(item: CsInputArrFiled): boolean {
+    return this.inputArrayFixedSource ?
+      (!this.disabled && this.inputArrayFixedSource.indexOf(item.value) < 0) :
+      (!this.disabled);
   }
 
   validatorArrayErrors(controlName: string): boolean {
@@ -144,18 +171,14 @@ export class CsInputArrayComponent implements OnInit {
       } else if (errors["minlength"]) {
         result = `ERROR.INPUT_MIN_LENGTH`;
         this.inputArrayValidatorMessageParam = `:${this.inputArrayMinlength}`
+      } else if (errors["max"]) {
+        result = `ERROR.INPUT_MAX_VALUE`;
+        this.inputArrayValidatorMessageParam = `:${this.inputArrayMax}`
+      } else if (errors["min"]) {
+        result = `ERROR.INPUT_MIN_VALUE`;
+        this.inputArrayValidatorMessageParam = `:${this.inputArrayMin}`
       }
     }
-    return result;
-  }
-
-  arrayIsValid(): boolean {
-    let result: boolean = true;
-    this.inputArrayFileds.forEach(value => {
-      if (value.status == CsInputArrStatus.iasEdit) {
-        result = false;
-      }
-    });
     return result;
   }
 
@@ -176,15 +199,11 @@ export class CsInputArrayComponent implements OnInit {
     if ((this.inputArrayFormGroup.touched || this.inputArrayFormGroup.dirty) && this.validatorArrayErrors(controlName)) {
       this.inputArrayFileds[index].status = CsInputArrStatus.iasView;
       this.inputArrayFileds[index].defaultValue = this.inputArrayFileds[index].value;
-      if (this.inputArraySource.length == 0) {
-        this.inputArrayType == CsInputArrType.iasString ?
-          this.inputArraySource.push(this.inputArrayFileds[index].value) :
-          this.inputArraySource.push(Number(this.inputArrayFileds[index].value).valueOf());
-      } else {
-        this.inputArrayType == CsInputArrType.iasString ?
-          this.inputArraySource[index] = this.inputArrayFileds[index].value :
-          this.inputArraySource[index] = Number(this.inputArrayFileds[index].value).valueOf();
-      }
+      this.inputArrayType == CsInputArrType.iasString ?
+        this.inputArraySource[index] = this.inputArrayFileds[index].value :
+        this.inputArraySource[index] = Number(this.inputArrayFileds[index].value).valueOf();
+      let arrElemRef = this.elemRefList.toArray();
+      arrElemRef[index].nativeElement.blur();
       this.onCheckEvent.emit();
     }
   }
@@ -196,15 +215,13 @@ export class CsInputArrayComponent implements OnInit {
   }
 
   onPlusClick() {
-    if (this.plusEnable) {
-      this.inputArrayFileds.push(new CsInputArrFiled(CsInputArrStatus.iasView, "", ""));
-      let inputControl = new FormControl("");
-      let inputControlName = this.getControlName(this.inputArrayFileds.length - 1);
-      this.inputArrayFormGroup.addControl(inputControlName, inputControl);
-      this.inputArrayType == CsInputArrType.iasString ?
-        this.inputArraySource.push("") :
-        this.inputArraySource.push(0);
-    }
+    this.inputArrayFileds.push(new CsInputArrFiled(CsInputArrStatus.iasView, "", ""));
+    this.inputArrayType == CsInputArrType.iasString ?
+      this.inputArraySource.push("") :
+      this.inputArraySource.push(0);
+    let inputControl = new FormControl("");
+    let inputControlName = this.getControlName(this.inputArrayFileds.length - 1);
+    this.inputArrayFormGroup.addControl(inputControlName, inputControl);
   }
 
   onMinusClick(index: number) {

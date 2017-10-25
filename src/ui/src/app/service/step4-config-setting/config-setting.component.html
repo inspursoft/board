@@ -13,7 +13,7 @@
     <div class="config-service-info-line">
       <span class="instance">{{"SERVICE.STEP_4_INSTANCE"|translate}}:</span>
       <cs-dropdown class="base-margin-left"
-                   [dropdownWidth]="210"
+                   [dropdownWidth]="310"
                    [dropdownDefaultText]="'1'"
                    [dropdownList]="dropDownListNum"
                    (onChange)="step4Output.deployment_yaml.deployment_replicas = $event">
@@ -46,7 +46,7 @@
         <cs-dropdown class="base-margin-left"
                      [dropdownList]="step3Output"
                      [dropdownListTextKey]="'container_name'"
-                     [dropdownWidth]="210"
+                     [dropdownWidth]="310"
                      [dropdownDefaultText]="getContainerDropdownText(iIndex) | translate"
                      (onChange)="setExternalInfo($event, iIndex)">
         </cs-dropdown>
@@ -56,15 +56,18 @@
         <cs-dropdown class="base-margin-left"
                      [dropdownDisabled]="serviceExternal.service_containername == ''"
                      [dropdownList]="getContainerPorts(serviceExternal.service_containername)"
-                     [dropdownWidth]="210"
+                     [dropdownWidth]="310"
                      [dropdownDefaultText]="getContainerPortDropdownText(iIndex) | translate"
                      (onChange)="serviceExternal.service_containerport = $event">
         </cs-dropdown>
       </div>
       <div class="external-line-container">
         <cs-input class="base-input"
+                  [inputFiledType]="1"
                   [simpleFiled]="serviceExternal.service_nodeport"
                   [disabled]="!radNode.checked"
+                  [inputMin]="30000"
+                  [inputMax]="32766"
                   [inputLabel]="'SERVICE.STEP_4_NODE_PORT' | translate"
                   (onCheck)="setServiceNodeport($event,iIndex)">
         </cs-input>
@@ -109,10 +112,11 @@
     <span class="service">{{"SERVICE.STEP_4_SERVICE"|translate}}:</span>
     <cs-dropdown class="base-margin-left"
                  [dropdownList]="serviceSelectorsArray"
-                 [dropdownWidth]="210"
+                 [dropdownWidth]="310"
                  [dropdownDefaultText]="'SERVICE.STEP_4_SELECT_SERVICE' | translate">
     </cs-dropdown>
   </div>
 </div>
 <button class="btn btn-default" [disabled]="true">Test</button>
+<button class="btn btn-default" (click)="backUpStep()">Back</button>
 <button class="btn btn-default" [disabled]="!isInputComponentsValid" (click)="forward()">Next</button>

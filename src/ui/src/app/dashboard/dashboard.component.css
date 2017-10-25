@@ -34,7 +34,8 @@
 
 .section-image-container {
   display: flex;
-  width: 120px;
+  align-items: flex-end;
+  flex-basis: 40%;
   flex-direction: column;
 }
 
@@ -45,12 +46,14 @@
 
 .section-text {
   flex-basis: 20px;
+  width: 90px;
   text-align: center;
 }
 
 .section-right-container {
   margin-left: 10px;
   display: flex;
+  flex-basis: 60%;
 }
 
 .section-right-container-container{
@@ -67,14 +70,14 @@
 }
 
 .card-block-top-container {
-  
+  flex-basis: 100%;
   height: 60px;
   display: flex;
   padding: 10px 20px 10px 20px;
 }
 
 .card-block-bottom-container {
-  
+  flex-basis: 100%;
   height: 300px;
   display: flex;
   flex-direction: column;
@@ -87,6 +90,7 @@
 }
 
 .btn-default {
+  width: 100%;
   border-color: #bbbbbb;
   color: black;
 }
@@ -101,7 +105,6 @@
 }
 
 .select-time-container {
-  width: 100%;
   flex-basis: 50px;
   height: 60px;
   display: flex;

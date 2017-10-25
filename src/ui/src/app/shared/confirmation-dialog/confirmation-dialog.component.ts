@@ -36,6 +36,11 @@ export class ConfirmationDialogComponent implements OnDestroy {
     this.opened = false;
   }
 
+  cancel(): void {
+    this.messageService.cancelMessage();
+    this.opened = false;
+  }
+
   ngOnDestroy(): void {
     if(this._subscription) {
       this._subscription.unsubscribe();

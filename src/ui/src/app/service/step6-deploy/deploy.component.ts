@@ -70,4 +70,8 @@ export class DeployComponent implements OnInit, OnDestroy {
   deployComplete(): void {
     this.k8sService.stepSource.next(0);
   }
+
+  backStep(): void {
+    this.k8sService.stepSource.next(4);
+  }
 }

@@ -10,7 +10,7 @@ import { CheckItemExistingDirective } from './directives/check-item-existing.dir
 import { CheckItemIdenticalDirective } from './directives/check-item-identical.directive';
 
 import { MessageService } from './message-service/message.service';
-import { AuthGuard } from './auth-guard.service';
+import { AuthGuard, ServiceGuard } from './auth-guard.service';
 import { CheckItemPatternDirective } from "./directives/check-item-pattern.directive";
 import { ChangePasswordComponent } from "./change-password/change-password.component";
 import { AccountSettingComponent } from "./account-setting/account-setting.component";
@@ -51,6 +51,7 @@ import { WebsocketService } from './websocket-service/websocket.service';
   ],
   providers: [
     AuthGuard,
+    ServiceGuard,
     MessageService,
     WebsocketService
   ]
