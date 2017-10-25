@@ -143,7 +143,7 @@ export const LANG_ZH_CN = {
     "LIST_COL_CREATE_DATE":"创建时间",
     "LIST_COL_SYSTEM_ADMIN":"系统管理员",
     "LIST_COL_PROJECT_MANAGER":"项目管理员",
-    "LIST_COL_DELETE":"删除",
+    "LIST_COL_DELETE":"已删除",
     "LIST_COL_OPERATION":"操作",
     "DELETE_USER_SUCCESS":"删除用户成功!",
     "DELETE_USER": "删除用户",
