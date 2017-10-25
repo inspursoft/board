@@ -1,6 +1,7 @@
 package service
 
 import (
+	"git/inspursoft/board/src/common/utils"
 	"io/ioutil"
 
 	"golang.org/x/crypto/ssh"
@@ -9,6 +10,8 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing/transport"
 	gitssh "gopkg.in/src-d/go-git.v4/plumbing/transport/ssh"
 )
+
+var sshKeyPath = utils.GetConfig("SSH_KEY_PATH")
 
 type repoHandler struct {
 	repo     *git.Repository
@@ -24,7 +27,7 @@ func InitBareRepo(servePath string) (*repoHandler, error) {
 }
 
 func getSSHAuth() (*gitssh.PublicKeys, error) {
-	deployKey, err := ioutil.ReadFile("/root/.ssh/id_rsa")
+	deployKey, err := ioutil.ReadFile(sshKeyPath())
 	if err != nil {
 		return nil, err
 	}

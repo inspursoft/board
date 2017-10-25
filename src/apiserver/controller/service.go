@@ -115,7 +115,7 @@ func deployServiceCommonAction(p *ServiceController, depFileName string, serFile
 	}
 
 	//set deployment path
-	serviceConfigPath := filepath.Join(repoPath,
+	serviceConfigPath := filepath.Join(repoPath(),
 		reqServiceConfig.ProjectName, strconv.Itoa(serviceID))
 	logs.Debug("Service config path: %s", serviceConfigPath)
 	service.SetDeploymentPath(serviceConfigPath)

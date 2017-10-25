@@ -15,10 +15,14 @@ import (
 	"github.com/astaxie/beego"
 )
 
-var adminUserID int64 = 1
-var defaultInitialPassword = "123456a?"
+const (
+	adminUserID            = 1
+	defaultInitialPassword = "123456a?"
+	baseRepoPath           = "/repos"
+	sshKeyPath             = "/root/.ssh/id_rsa"
+)
 
-var baseRepoPath = `/repos`
+var repoServePath = filepath.Join(baseRepoPath, "board_repo_serve")
 var repoServeURL = filepath.Join("root@gitserver:", "gitserver", "repos", "board_repo_serve")
 var repoPath = filepath.Join(baseRepoPath, "board_repo")
 
@@ -58,8 +62,13 @@ func main() {
 	utils.SetConfig("KUBE_MASTER_URL", "http://%s:%s", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
 	utils.SetConfig("KUBE_NODE_URL", "http://%s:%s/api/v1/nodes", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
 
+	logs.Debug("base repo path: %s", baseRepoPath)
+
+	utils.SetConfig("BASE_REPO_PATH", baseRepoPath)
+	utils.SetConfig("REPO_SERVE_PATH", repoServePath)
 	utils.SetConfig("REPO_SERVE_URL", repoServeURL)
 	utils.SetConfig("REPO_PATH", repoPath)
+	utils.SetConfig("SSH_KEY_PATH", sshKeyPath)
 
 	utils.SetConfig("REGISTRY_BASE_URI", "%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
 

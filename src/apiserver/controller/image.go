@@ -254,7 +254,7 @@ func (p *ImageController) BuildImageAction() {
 		return
 	}
 
-	reqImageConfig.ImageDockerfilePath = filepath.Join(repoPath, reqImageConfig.ProjectName,
+	reqImageConfig.ImageDockerfilePath = filepath.Join(repoPath(), reqImageConfig.ProjectName,
 		reqImageConfig.ImageName, reqImageConfig.ImageTag)
 	err = service.BuildDockerfile(reqImageConfig)
 	if err != nil {
@@ -302,7 +302,7 @@ func (p *ImageController) GetImageDockerfileAction() {
 	imageTag := strings.TrimSpace(p.GetString("image_tag"))
 	projectName := strings.TrimSpace(p.GetString("project_name"))
 
-	dockerfilePath := filepath.Join(repoPath, projectName, imageName, imageTag)
+	dockerfilePath := filepath.Join(repoPath(), projectName, imageName, imageTag)
 	if _, err := os.Stat(dockerfilePath); os.IsNotExist(err) {
 		p.customAbort(http.StatusNotFound, "Image path does not exist.")
 		return
@@ -345,7 +345,7 @@ func (p *ImageController) DockerfilePreviewAction() {
 		return
 	}
 
-	reqImageConfig.ImageDockerfilePath = filepath.Join(repoPath, reqImageConfig.ProjectName,
+	reqImageConfig.ImageDockerfilePath = filepath.Join(repoPath(), reqImageConfig.ProjectName,
 		reqImageConfig.ImageName, reqImageConfig.ImageTag)
 	err = service.BuildDockerfile(reqImageConfig, p.Ctx.ResponseWriter)
 	if err != nil {
@@ -375,7 +375,7 @@ func (p *ImageController) ConfigCleanAction() {
 		return
 	}
 
-	configPath := filepath.Join(repoPath, strings.TrimSpace(reqImageIndex.ProjectName), strings.TrimSpace(reqImageIndex.ImageName), strings.TrimSpace(reqImageIndex.ImageTag))
+	configPath := filepath.Join(repoPath(), strings.TrimSpace(reqImageIndex.ProjectName), strings.TrimSpace(reqImageIndex.ImageName), strings.TrimSpace(reqImageIndex.ImageTag))
 	err = service.ImageConfigClean(configPath)
 	if err != nil {
 		p.internalError(err)

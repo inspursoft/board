@@ -3,6 +3,8 @@ package controller
 import (
 	"io/ioutil"
 	"net/http"
+	"os"
+	"path/filepath"
 	"time"
 
 	"encoding/json"
@@ -176,8 +178,8 @@ func verifyToken(tokenString string) (map[string]interface{}, error) {
 }
 
 func InitController() {
-	var err error
-	conf, err = config.NewConfig("ini", "app.conf")
+
+	conf, err := config.NewConfig("ini", "app.conf")
 	if err != nil {
 		logs.Error("Failed to load config file: %+v\n", err)
 	}
@@ -198,11 +200,26 @@ func InitController() {
 	}
 
 	logs.Info("Initialize serve repo\n")
-	_, err = service.InitBareRepo(repoServePath)
+	_, err = service.InitBareRepo(repoServePath())
 	if err != nil {
 		logs.Error("Failed to initialize serve repo: %+v\n", err)
 	}
 
 	beego.BConfig.MaxMemory = 1 << 22
+
+	logs.Info("Init git repo for default project %s", defaultProject)
+	_, err = service.InitRepo(repoServeURL(), repoPath())
+	if err != nil {
+		logs.Error("Failed to initialize default user's repo: %+v\n", err)
+		return
+	}
+
+	subPath := defaultProject
+	if subPath != "" {
+		os.MkdirAll(filepath.Join(repoPath(), subPath), 0755)
+		if err != nil {
+			logs.Error("Failed to make default user's repo: %+v\n", err)
+		}
+	}
 
 }

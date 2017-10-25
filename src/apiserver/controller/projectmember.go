@@ -20,15 +20,10 @@ func (pm *ProjectMemberController) Prepare() {
 	}
 	pm.currentUser = user
 	pm.isSysAdmin = (user.SystemAdmin == 1)
-	pm.isProjectAdmin = (user.ProjectAdmin == 1)
-	if !pm.isProjectAdmin {
-		pm.customAbort(http.StatusForbidden, "Insufficient privileges to for manipulating projects.")
-		return
-	}
 }
 
 func (pm *ProjectMemberController) AddOrUpdateProjectMemberAction() {
-	var err error
+
 	projectID, err := strconv.Atoi(pm.Ctx.Input.Param(":id"))
 	if err != nil {
 		pm.internalError(err)
@@ -75,6 +70,28 @@ func (pm *ProjectMemberController) AddOrUpdateProjectMemberAction() {
 		return
 	}
 
+	isMember, err := service.IsProjectMember(int64(projectID), pm.currentUser.ID)
+	if err != nil {
+		pm.internalError(err)
+		return
+	}
+
+	if !(isMember || pm.isSysAdmin) {
+		pm.customAbort(http.StatusForbidden, "User neither has no member to this project nor isn't a system admin.")
+		return
+	}
+
+	queryProject := model.Project{ID: int64(projectID)}
+	project, err := service.GetProject(queryProject, "id")
+	if err != nil {
+		pm.internalError(err)
+		return
+	}
+	if !(pm.isSysAdmin || int64(project.OwnerID) == pm.currentUser.ID) {
+		pm.customAbort(http.StatusForbidden, "User is not the owner of the project.")
+		return
+	}
+
 	isSuccess, err := service.AddOrUpdateProjectMember(int64(projectID), reqProjectMember.UserID, reqProjectMember.RoleID)
 	if err != nil {
 		pm.internalError(err)
@@ -86,7 +103,7 @@ func (pm *ProjectMemberController) AddOrUpdateProjectMemberAction() {
 }
 
 func (pm *ProjectMemberController) DeleteProjectMemberAction() {
-	var err error
+
 	projectID, err := strconv.Atoi(pm.Ctx.Input.Param(":projectId"))
 	if err != nil {
 		pm.internalError(err)
@@ -107,10 +124,7 @@ func (pm *ProjectMemberController) DeleteProjectMemberAction() {
 		pm.internalError(err)
 		return
 	}
-	if int64(userID) == pm.currentUser.ID {
-		pm.customAbort(http.StatusConflict, "Self privilege to the current project cannot be deleted.")
-		return
-	}
+
 	user, err := service.GetUserByID(int64(userID))
 	if err != nil {
 		pm.internalError(err)
@@ -120,6 +134,35 @@ func (pm *ProjectMemberController) DeleteProjectMemberAction() {
 		pm.customAbort(http.StatusNotFound, "No user was found with provided user ID.")
 		return
 	}
+
+	query := model.Project{ID: int64(projectID)}
+	project, err := service.GetProject(query, "id")
+	if err != nil {
+		pm.internalError(err)
+		return
+	}
+
+	if project.OwnerID == int(user.ID) {
+		pm.customAbort(http.StatusForbidden, "Project owner cannnot be removed.")
+		return
+	}
+
+	isMember, err := service.IsProjectMember(int64(projectID), pm.currentUser.ID)
+	if err != nil {
+		pm.internalError(err)
+		return
+	}
+
+	if !(isMember || pm.isSysAdmin) {
+		pm.customAbort(http.StatusForbidden, "User neither has no member to this project nor isn't a system admin.")
+		return
+	}
+
+	if !(pm.isSysAdmin || int64(project.OwnerID) == pm.currentUser.ID) {
+		pm.customAbort(http.StatusForbidden, "User is not the owner of the project.")
+		return
+	}
+
 	isSuccess, err := service.DeleteProjectMember(int64(projectID), int64(userID))
 	if err != nil {
 		pm.internalError(err)

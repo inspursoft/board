@@ -7,12 +7,8 @@ import (
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
-
-	"github.com/astaxie/beego/logs"
 )
 
 const (
@@ -31,15 +27,10 @@ func (p *ProjectController) Prepare() {
 	}
 	p.currentUser = user
 	p.isSysAdmin = (user.SystemAdmin == 1)
-	p.isProjectAdmin = (user.ProjectAdmin == 1)
 }
 
 func (p *ProjectController) CreateProjectAction() {
-	if !p.isProjectAdmin {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges for creating projects.")
-		return
-	}
-	var err error
+
 	reqData, err := p.resolveBody()
 	if err != nil {
 		p.internalError(err)
@@ -71,7 +62,6 @@ func (p *ProjectController) CreateProjectAction() {
 	}
 
 	reqProject.Name = strings.TrimSpace(reqProject.Name)
-
 	reqProject.OwnerID = int(p.currentUser.ID)
 	reqProject.OwnerName = p.currentUser.Username
 
@@ -105,7 +95,6 @@ func (p *ProjectController) GetProjectsAction() {
 
 	query := model.Project{Name: projectName, OwnerName: p.currentUser.Username, Public: 0}
 
-	var err error
 	public, err := strconv.Atoi(strPublic)
 	if err == nil {
 		query.Public = public
@@ -141,16 +130,22 @@ func (p *ProjectController) GetProjectAction() {
 }
 
 func (p *ProjectController) DeleteProjectAction() {
-	if !p.isProjectAdmin {
-		p.customAbort(http.StatusForbidden, "Insuffient privileges for creating projects.")
-		return
-	}
 
 	projectID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
 	if err != nil {
 		p.internalError(err)
 		return
 	}
+	isMember, err := service.IsProjectMember(int64(projectID), p.currentUser.ID)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if !(isMember || p.isSysAdmin) {
+		p.customAbort(http.StatusForbidden, "Insufficient privileges for creating projects.")
+		return
+	}
+
 	isExists, err := service.ProjectExistsByID(int64(projectID))
 	if err != nil {
 		p.internalError(err)
@@ -160,6 +155,18 @@ func (p *ProjectController) DeleteProjectAction() {
 		p.customAbort(http.StatusNotFound, fmt.Sprintf("Cannot find project with ID: %d", projectID))
 		return
 	}
+
+	queryProject := model.Project{ID: int64(projectID)}
+	project, err := service.GetProject(queryProject, "id")
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if !(p.isSysAdmin || int64(project.OwnerID) == p.currentUser.ID) {
+		p.customAbort(http.StatusForbidden, "User is not the owner of the project.")
+		return
+	}
+
 	isSuccess, err := service.DeleteProject(int64(projectID))
 	if err != nil {
 		p.internalError(err)
@@ -171,17 +178,22 @@ func (p *ProjectController) DeleteProjectAction() {
 }
 
 func (p *ProjectController) ToggleProjectPublicAction() {
-	if !p.isProjectAdmin {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges for creating projects.")
-		return
-	}
 
-	var err error
 	projectID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
 	if err != nil {
 		p.internalError(err)
 		return
 	}
+	isMember, err := service.IsProjectMember(int64(projectID), p.currentUser.ID)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if !(isMember || p.isSysAdmin) {
+		p.customAbort(http.StatusForbidden, "Insufficient privileges for creating projects.")
+		return
+	}
+
 	isExists, err := service.ProjectExistsByID(int64(projectID))
 	if err != nil {
 		p.internalError(err)
@@ -189,6 +201,17 @@ func (p *ProjectController) ToggleProjectPublicAction() {
 	}
 	if !isExists {
 		p.customAbort(http.StatusNotFound, fmt.Sprintf("Cannot find project by ID: %d", projectID))
+		return
+	}
+
+	queryProject := model.Project{ID: int64(projectID)}
+	project, err := service.GetProject(queryProject, "id")
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if !(p.isSysAdmin || int64(project.OwnerID) == p.currentUser.ID) {
+		p.customAbort(http.StatusForbidden, "User is not the owner of the project.")
 		return
 	}
 
@@ -205,6 +228,7 @@ func (p *ProjectController) ToggleProjectPublicAction() {
 		return
 	}
 	reqProject.ID = int64(projectID)
+
 	isSuccess, err := service.UpdateProject(reqProject, "public")
 	if err != nil {
 		p.internalError(err)
@@ -212,23 +236,5 @@ func (p *ProjectController) ToggleProjectPublicAction() {
 	}
 	if !isSuccess {
 		p.customAbort(http.StatusBadRequest, "Failed to update project public.")
-	}
-}
-
-// TODO
-func init() {
-	logs.Info("Init git repo for default project %s", defaultProject)
-	_, err := service.InitRepo(repoServeURL, repoPath)
-	if err != nil {
-		logs.Error("Failed to initialize default user's repo: %+v\n", err)
-		return
-	}
-
-	subPath := defaultProject
-	if subPath != "" {
-		os.MkdirAll(filepath.Join(repoPath, subPath), 0755)
-		if err != nil {
-			logs.Error("Failed to make default user's repo: %+v\n", err)
-		}
 	}
 }

@@ -178,7 +178,7 @@ func (u *SystemAdminController) Prepare() {
 	u.currentUser = user
 	u.isSysAdmin = (user.SystemAdmin == 1)
 	if !u.isSysAdmin {
-		u.customAbort(http.StatusForbidden, "Insuffient privileges to manipulate user.")
+		u.customAbort(http.StatusForbidden, "Insufficient privileges to manipulate user.")
 		return
 	}
 }
@@ -367,8 +367,8 @@ func (u *SystemAdminController) UpdateUserAction() {
 	}
 }
 
-func toggleUserAction(u *SystemAdminController, actionName string) {
-	var err error
+func (u *SystemAdminController) ToggleSystemAdminAction() {
+
 	userID, err := strconv.Atoi(u.Ctx.Input.Param(":id"))
 	if err != nil {
 		u.internalError(err)
@@ -400,19 +400,10 @@ func toggleUserAction(u *SystemAdminController, actionName string) {
 		u.internalError(err)
 		return
 	}
-	switch actionName {
-	case "system_admin":
-		user.SystemAdmin = reqUser.SystemAdmin
-	case "project_admin":
-		user.ProjectAdmin = reqUser.ProjectAdmin
-	}
-	isSuccess, err := service.UpdateUser(*user, actionName)
 
-	if reqUser.SystemAdmin == 1 {
-		user.ProjectAdmin = 1
-		isSuccess, err = service.UpdateUser(*user, "project_admin")
-	}
+	user.SystemAdmin = reqUser.SystemAdmin
 
+	isSuccess, err := service.UpdateUser(*user, "system_admin")
 	if err != nil {
 		u.internalError(err)
 		return
@@ -420,12 +411,4 @@ func toggleUserAction(u *SystemAdminController, actionName string) {
 	if !isSuccess {
 		u.CustomAbort(http.StatusBadRequest, "Failed to toggle user system admin.")
 	}
-}
-
-func (u *SystemAdminController) ToggleSystemAdminAction() {
-	toggleUserAction(u, "system_admin")
-}
-
-func (u *SystemAdminController) ToggleProjectAdminAction() {
-	toggleUserAction(u, "project_admin")
 }
