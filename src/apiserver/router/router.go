@@ -144,6 +144,9 @@ func init() {
 			beego.NSRouter("/jenkins-job/console",
 				&controller.JenkinsJobController{},
 				"get:Console"),
+			beego.NSRouter("/jenkins-job/stop",
+				&controller.JenkinsJobController{},
+				"get:Stop"),
 		),
 	)
 
