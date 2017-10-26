@@ -1,6 +1,6 @@
 ## Introduction
 
-This guide provides instructions for developers to build and run Board from source code.
+There are dev method and release method to build and run Board. This guide provides instructions for developers to build and run Board by dev method. 
 
 
 ## Step 1: Prepare for a build environment for Board
@@ -38,7 +38,7 @@ Edit the file **make/board.cfg** and make necessary configuration changes such a
 
 ### Compiling and Running in development
 
-Make sure DEVFLAG=dev in Makefile, then you can compile and running by the approache:
+You can compile and running by the approache:
 
 #### I. Prepare configuration and env 
 
@@ -55,7 +55,7 @@ Make sure DEVFLAG=dev in Makefile, then you can compile and running by the appro
 #### Ⅲ. Building and Running Board
 
    ```sh
-      $ make start
+      $ make -e DEVFLAG=dev start
    ```
 
 ## Step 4: Verify the Board
@@ -68,7 +68,7 @@ Refer to [View and test Board REST API via Swagger](configure_swagger.md) for te
 When you want to stop Board instance, run:
 
    ```sh
-      $ make down
+      $ make -e DEVFLAG=dev down
    ```
 
 
@@ -95,45 +95,17 @@ cleanimage                       | Clean images
 down                             | Stop and remove board instance 
 install                          | Compile board binary
 build                            | Build board images
-container/mysql_build            | Build mysql image
-container/apiserver_build        | Build apiserver image
-container/collector_build        | Build collector image
-container/gitserver_build        | Build gitserver image
-container/jenkins_build          | Build jenkins image
-container/log_build              | Build log image
-container/nginx_build            | Build nginx image
-container/tokenserver_build      | Build tokenserver image
-container/mysql_rmi              | Clean mysql image
-container/apiserver_rmi          | Clean apiserver image
-container/collector_rmi          | Clean collector image
-container/gitserver_rmi          | Clean gitserver image
-container/jenkins_rmi            | Clean jenkins image
-container/log_rmi                | Clean log image
-container/nginx_rmi              | Clean nginx image
-container/tokenserver_rmi        | Clean tokenserver image
-src/apiserver_clean              | Clean apiserver binary
-src/apiserver_fmt                | Formats apiserver source files
-src/apiserver_install            | Compile apiserver binary
-src/apiserver_vet                | Examines apiserver source code and reports suspicious constructs
-src/apiserver_compile            | Check apiserver source file by fmt vet golint and compile
-src/apiserver_golint             | Linter for apiserver source code
-src/apiserver_test               | Runs apiserver tests
-src/tokenserver_clean            | Clean tokenserver binary
-src/tokenserver_fmt              | Formats tokenserver source files
-src/tokenserver_install          | Compile tokenserver binary
-src/tokenserver_vet              | Examines tokenserver source code and reports suspicious constructs
-src/tokenserver_compile          | Check tokenserver source file by fmt vet golint and compile
-src/tokenserver_golint           | Linter for tokenserver source code
-src/tokenserver_test             | Runs tokenserver tests
-src/collector/cmd_clean          | Clean collector binary
-src/collector/cmd_fmt            | Formats collector source files
-src/collector/cmd_install        | Compile collector binary
-src/collector/cmd_vet            | Examines collector source code and reports suspicious constructs
-src/collector/cmd_compile        | Check collector source file by fmt vet golint and compile
-src/collector/cmd_golint         | Linter for collector source code
-src/collector/cmd_test           | Runs collector tests
+container/$IMG_build             | Build $IMG image 
+container/$IMG_rmi               | Clean $IMG image
+src/$PACKAGE_clean               | Clean $PACKAGE binary
+src/$PACKAGE_fmt                 | Formats $PACKAGE source files
+src/$PACKAGE_install             | Compile $PACKAGE binary
+src/$PACKAGE_vet                 | Examines $PACKAGE source code and reports suspicious constructs
+src/$PACKAGE_compile             | Check $PACKAGE source file by fmt vet golint and compile
+src/$PACKAGE_golint              | Linter for $PACKAGE source code
+src/$PACKAGE_test                | Runs $PACKAGE tests
 
-
+   **Note**: IMG's value is one of apiserver, tokenserver, log, collector, gitserver, jenkins, mysql and nginx. PACKAGE's value is one of apiserver, tokenserver and collector/cmd. 
 
 
 #### EXAMPLE:
@@ -145,10 +117,52 @@ src/collector/cmd_test           | Runs collector tests
       $ make install
    ```
    
-#### Formats apiserver source code
+#### Build apiserver image
+
+   ```sh
+      $ make container/apiserver_build 
+   ```
+
+#### Clean apiserver image
+
+   ```sh
+      $ make container/apiserver_rmi 
+   ```
+
+#### Formats apiserver source files
 
    ```sh
       $ make src/apiserver_fmt 
+   ```
+
+#### Examines apiserver source code and reports suspicious constructs
+
+   ```sh
+      $ make src/apiserver_vet 
+   ```
+
+#### Linter for apiserver source code
+
+   ```sh
+      $ make src/apiserver_golint
+   ```
+
+#### Compile apiserver binary
+
+   ```sh
+      $ make src/apiserver_install
+   ```
+
+#### Check apiserver source file by fmt vet golint and compile
+
+   ```sh
+      $ make src/apiserver_compile 
+   ```
+
+#### Clean apiserver binary
+
+   ```sh
+      $ make src/apiserver_clean
    ```
 
    **Note**: the board file path:$GOPATH/src/git/inspursoft/
