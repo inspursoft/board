@@ -93,9 +93,7 @@ func (j *JenkinsJobController) Console() {
 	}
 
 	query := jobConsole{JobName: jobName}
-
-	lastBuildNumber, err := getBuildNumber(query)
-	query.BuildSerialID = j.GetString("build_serial_id", strconv.Itoa(lastBuildNumber+1))
+	query.BuildSerialID = j.GetString("build_serial_id", "lastBuild")
 
 	buildConsoleURL, err := generateURL(jenkinsBuildConsoleTemplateURL, query)
 	if err != nil {
