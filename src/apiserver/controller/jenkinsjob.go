@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 	"strings"
 	"text/template"
 	"time"
@@ -58,33 +57,7 @@ func (j *JenkinsJobController) Console() {
 	}
 
 	query := jobConsole{JobName: jobName}
-
-	lastBuildNumberURL, err := generateURL(jenkinsLastBuildNumberTemplateURL, query)
-	if err != nil {
-		j.internalError(err)
-		return
-	}
-
-	resp, err := http.Get(lastBuildNumberURL)
-	if err != nil {
-		j.internalError(err)
-		return
-	}
-	defer resp.Body.Close()
-
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		j.internalError(err)
-		return
-	}
-
-	lastBuildNumber, err := strconv.Atoi(string(data))
-	if err != nil {
-		j.internalError(err)
-		return
-	}
-
-	query.BuildSerialID = j.GetString("build_serial_id", strconv.Itoa(lastBuildNumber+1))
+	query.BuildSerialID = j.GetString("build_serial_id", "lastBuild")
 
 	buildConsoleURL, err := generateURL(jenkinsBuildConsoleTemplateURL, query)
 	if err != nil {
@@ -116,7 +89,7 @@ func (j *JenkinsJobController) Console() {
 
 	go func() {
 		for range ticker.C {
-			resp, err = client.Do(req)
+			resp, err := client.Do(req)
 			if err != nil {
 				j.internalError(err)
 				logs.Error("Failed to get console response: %+v", err)
@@ -132,7 +105,7 @@ func (j *JenkinsJobController) Console() {
 					continue
 				}
 			}
-			data, err = ioutil.ReadAll(resp.Body)
+			data, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
 				j.internalError(err)
 				logs.Error("Failed to read data from response body: %+v", err)
