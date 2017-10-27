@@ -149,6 +149,7 @@
         </button>
         <button class="btn btn-primary default-primary"
                 *ngIf="imageInBuilding"
+                [disabled]="lastJobNumber <= 0"
                 (click)="cancelBuildImage()">
           {{"SERVICE.STEP_2_CANCEL_WAIT" | translate}}
         </button>

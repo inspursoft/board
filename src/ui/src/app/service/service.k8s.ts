@@ -3,7 +3,7 @@ import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
 import { Service } from './service';
 import { AppInitService } from "../app.init.service";
-import { Http, Headers, RequestOptions,Response } from "@angular/http";
+import { Http, Headers, RequestOptions, Response } from "@angular/http";
 import { Project } from "../project/project";
 import { Image, ImageDetail } from "../image/image";
 import {
@@ -260,15 +260,29 @@ export class K8sService {
       .catch(err => Promise.reject(err));
   }
 
-  cancelConsole(jobName: string): Promise<boolean> {
+  getLastJobId(jobName: string): Promise<number> {
+    return this.http
+      .get(`/api/v1/jenkins-job/lastbuildnumber`, {
+        headers: this.defaultHeader,
+        params: {"job_name": jobName}
+      })
+      .toPromise()
+      .then((res: Response) => {
+        this.appInitService.chainResponse(res);
+        return Number(res.text());
+      })
+      .catch(err => Promise.reject(err));
+  }
+
+  cancelConsole(jobName: string, buildSerialId: number): Promise<boolean> {
     return this.http
       .get(`/api/v1/jenkins-job/stop`, {
         headers: this.defaultHeader,
         params: {
-          "job_name": jobName
+          "job_name": jobName,
+          "build_serial_id": buildSerialId
         }
-      })
-      .toPromise()
+      }).toPromise()
       .then((res: Response) => {
         this.appInitService.chainResponse(res);
         return res.status == 200;
