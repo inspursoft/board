@@ -1,6 +1,6 @@
 ## Introduction
 
-This guide provides instructions for developers to build and run Board from source code.
+There are dev method and release method to build and run Board. This guide provides instructions for developers to build and run Board by dev method. 
 
 
 ## Step 1: Prepare for a build environment for Board
@@ -36,9 +36,9 @@ Edit the file **make/board.cfg** and make necessary configuration changes such a
       $ vi make/board.cfg
    ```
 
-### Compiling and Running
+### Compiling and Running in development
 
-You can compile the code by the approache:
+You can compile and running by the approache:
 
 #### I. Prepare configuration and env 
 
@@ -55,9 +55,8 @@ You can compile the code by the approache:
 #### Ⅲ. Building and Running Board
 
    ```sh
-      $ make start
+      $ make -e DEVFLAG=dev start
    ```
-
 
 ## Step 4: Verify the Board
 
@@ -69,7 +68,7 @@ Refer to [View and test Board REST API via Swagger](configure_swagger.md) for te
 When you want to stop Board instance, run:
 
    ```sh
-      $ make down
+      $ make -e DEVFLAG=dev down
    ```
 
 
@@ -78,30 +77,92 @@ When you want to stop Board instance, run:
 
 The `Makefile` contains predefined targets:
 
-Target              | Description
---------------------|-------------
-all                 | composition of the target : vet, fmt, golint and compile_ui 
-prepare             | prepare configuration and env 
-start               | building and running board instance
-compile_ui          | building and running UI builder 
-down                | shutdown board instance
-clean_binary        | clean apiserver,tokenserver and collector/cmd binary
-install             | compile apiserver,tokenserver and collector/cmd binary
-test                | used to test a program written in the Go language 
-fmt                 | format the code for all the go language source files in the code package 
-vet                 | check for static errors in the go source file 
-golint              | used to check for irregularities in the go code  
-build               | build apiserver, tokenserver, db, log, collector images
-rmimage             | remove apiserver, tokenserver, db, log, collector images 
+Target                           | Description
+---------------------------------|-------------
+all                              | Check board source file by fmt vet golint and compile  
+prepare                          | Prepare configuration and env 
+compile                          | Check board source file by fmt vet golint and compile
+compile_ui                       | Building ui
+start                            | Building images containers and running
+test                             | Runs the tests
+fmt                              | Formats board source files
+vet                              | Examines board source code and reports suspicious constructs 
+golint                           | Linter for source code
+clean                            | Print help infomation about clean
+cleanall                         | Clean binary and images 
+cleanbinary                      | Clean binary 
+cleanimage                       | Clean images
+down                             | Stop and remove board instance 
+install                          | Compile board binary
+build                            | Build board images
+container/$IMG_build             | Build $IMG image 
+container/$IMG_rmi               | Clean $IMG image
+src/$PACKAGE_clean               | Clean $PACKAGE binary
+src/$PACKAGE_fmt                 | Formats $PACKAGE source files
+src/$PACKAGE_install             | Compile $PACKAGE binary
+src/$PACKAGE_vet                 | Examines $PACKAGE source code and reports suspicious constructs
+src/$PACKAGE_compile             | Check $PACKAGE source file by fmt vet golint and compile
+src/$PACKAGE_golint              | Linter for $PACKAGE source code
+src/$PACKAGE_test                | Runs $PACKAGE tests
+
+   **Note**: IMG's value is one of apiserver, tokenserver, log, collector, gitserver, jenkins, mysql and nginx. PACKAGE's value is one of apiserver, tokenserver and collector/cmd. 
+
 
 #### EXAMPLE:
 
 
-#### compile apiserver,tokenserver and collector/cmd binary 
+#### Compile apiserver,tokenserver and collector/cmd binary 
 
    ```sh
       $ make install
    ```
+   
+#### Build apiserver image
+
+   ```sh
+      $ make container/apiserver_build 
+   ```
+
+#### Clean apiserver image
+
+   ```sh
+      $ make container/apiserver_rmi 
+   ```
+
+#### Formats apiserver source files
+
+   ```sh
+      $ make src/apiserver_fmt 
+   ```
+
+#### Examines apiserver source code and reports suspicious constructs
+
+   ```sh
+      $ make src/apiserver_vet 
+   ```
+
+#### Linter for apiserver source code
+
+   ```sh
+      $ make src/apiserver_golint
+   ```
+
+#### Compile apiserver binary
+
+   ```sh
+      $ make src/apiserver_install
+   ```
+
+#### Check apiserver source file by fmt vet golint and compile
+
+   ```sh
+      $ make src/apiserver_compile 
+   ```
+
+#### Clean apiserver binary
+
+   ```sh
+      $ make src/apiserver_clean
+   ```
 
    **Note**: the board file path:$GOPATH/src/git/inspursoft/
-
