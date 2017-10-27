@@ -1,4 +1,8 @@
 
+clr-dropdown.cs-dropdown {
+  width: 100%;
+}
+
 div.cs-dropdown-title-container {
   border: solid 1px silver;
   border-radius: 5px;
@@ -6,6 +10,7 @@ div.cs-dropdown-title-container {
   height: 30px;
   justify-content: flex-end;
   align-items: center;
+  padding: 0 !important;
 }
 
 span.cs-dropdown-title {
@@ -29,42 +34,70 @@ div.cs-dropdown-icon-container {
   align-items: center;
 }
 
-.cs-dropdown-menu {
-  padding-top: 0;
-  max-height: 300px;
-  border-radius: 5px;
-  overflow-y: scroll;
+div.cs-dropdown-icon {
+  width: 20px;
+  height: 20px;
 }
 
-button.cs-dropdown-item{
+clr-icon.cs-dropdown-icon-shape {
+  width: 20px;
+  height: 20px;
+  color: darkgreen;
+}
+
+clr-dropdown-menu.cs-dropdown-menu {
+  padding-top: 0;
+}
+
+div.cs-dropdown-menu-container {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  border-radius: 5px;
+  width: 100%;
+}
+
+div.cs-dropdown-search-container {
+  display: flex;
+  width: 100%;
   min-height: 30px;
 }
 
-button.cs-dropdown-item.special{
+input.cs-dropdown-search {
+  flex-basis: 100%;
+}
+
+div.cs-dropdown-menu {
+  display: flex;
+  flex-direction: column;
+  max-height: 300px;
+  overflow-y: scroll;
+}
+
+button.cs-dropdown-item {
+  min-height: 30px;
+  padding: 0;
+}
+
+button.cs-dropdown-item.special {
   color: blue;
   font-style: italic;
 }
 
 div.cs-dropdown-open {
-  -ms-transform: rotate(0deg); /* IE 9 */
-  -moz-transform: rotate(0deg); /* Firefox */
-  -webkit-transform: rotate(0deg); /* Safari and Chrome */
-  -o-transform: rotate(0deg); /* Opera */
   transform: rotate(0deg);
-  -moz-transition-duration: 0.5s; /* Firefox 4 */
-  -webkit-transition-duration: 0.5s; /* Safari 和 Chrome */
-  -o-transition-duration: 0.5s; /* Opera */
   transition-duration: 0.5s;
 }
 
 div.cs-dropdown-close {
-  -ms-transform: rotate(-180deg); /* IE 9 */
-  -moz-transform: rotate(-180deg); /* Firefox */
-  -webkit-transform: rotate(-180deg); /* Safari and Chrome */
-  -o-transform: rotate(-180deg); /* Opera */
   transform: rotate(-180deg);
-  -moz-transition-duration: 0.5s; /* Firefox 4 */
-  -webkit-transition-duration: 0.5s; /* Safari 和 Chrome */
-  -o-transition-duration: 0.5s; /* Opera */
   transition-duration: 0.5s;
+}
+
+span.cs-dropdown-more {
+  width: 100%;
+  height: 30px;
+  text-align: right;
+  color: #d48265;
+  cursor: pointer;
 }

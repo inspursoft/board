@@ -14,9 +14,13 @@ import { Message } from "../../shared/message-service/message";
 import { EnvType } from "../environment-value/environment-value.component";
 import { CsInputArrayComponent } from "../cs-input-array/cs-input-array.component";
 import { CsInputComponent } from "../cs-input/cs-input.component";
+import { WebsocketService } from "../../shared/websocket-service/websocket.service";
+import { Subscription } from "rxjs/Subscription";
 
 enum ImageSource{fromBoardRegistry, fromDockerHub}
 const AUTO_REFRESH_IMAGE_LIST: number = 2000;
+// const PROCESS_IMAGE_CONSOLE_URL = `ws://10.165.22.61:8088/api/v1/jenkins-job/console?job_name=process_image`;
+const PROCESS_IMAGE_CONSOLE_URL = `ws://apiserver/api/v1/jenkins-job/console?job_name=process_image`;
 type alertType = "alert-info" | "alert-danger";
 @Component({
   templateUrl: './select-image.component.html',
@@ -34,8 +38,10 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
   patternRun: RegExp = /.+/;
   patternEntryPoint: RegExp = /.+/;
   _isOpenEnvironment = false;
+  _isOpenNewImage = false;
   intervalAutoRefreshImageList: any;
   isNeedAutoRefreshImageList: boolean = false;
+  imageInBuilding: boolean = false;
   isInputComponentsValid: boolean = false;
   autoRefreshTimesCount: number = 0;
   imageSource: ImageSource = ImageSource.fromBoardRegistry;
@@ -49,16 +55,17 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
   outputData: ServiceStep2Output;
   filesList: Map<string, Array<{path: string, file_name: string, size: number}>>;
   consoleText: string = "";
-  isOpenNewImage: boolean = false;
   newImageErrMessage: string = "";
   newImageAlertType: alertType = "alert-danger";
   isNewImageAlertOpen: boolean = false;
   isUploadFileIng = false;
   newImageIndex: number;
+  processImageSubscription: Subscription;
 
   constructor(private k8sService: K8sService,
               private messageService: MessageService,
-              private appInitService: AppInitService) {
+              private appInitService: AppInitService,
+              private webSocketService: WebsocketService) {
     this.outputData = Array<ServiceStep2Type>();
     this.imageSelectList = Array<Image>();
     this.imageDetailSelectList = new Map<string, ImageDetail>();
@@ -75,7 +82,6 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
         this.setImageDetailList(value.image_name, value.image_tag);
       })
     }
-
     this.k8sService.getImages("", 0, 0)
       .then(res => {
         this.imageSourceList = res;
@@ -83,7 +89,7 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
       })
       .catch(err => this.messageService.dispatchError(err));
     this.intervalAutoRefreshImageList = setInterval(() => {
-      if (this.isNeedAutoRefreshImageList) {
+      if (this.isNeedAutoRefreshImageList && this.imageInBuilding) {
         this.autoRefreshTimesCount++;
         this.isNewImageAlertOpen = false;
         this.k8sService.getImages("", 0, 0).then(res => {
@@ -103,22 +109,21 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
             this.isOpenNewImage = false;
             this.messageService.dispatchError(err);
           } else {
+            this.imageInBuilding = false;
             this.newImageAlertType = "alert-danger";
             this.newImageErrMessage = "SERVICE.STEP_2_UPDATE_IMAGE_LIST_FAILED";
             this.isNewImageAlertOpen = true;
           }
         });
-        this.k8sService.getConsole("process_image").then(res => {
-          this.consoleText = res;
-        }).catch(() => {
-          this.consoleText = "";
-        })
       }
     }, AUTO_REFRESH_IMAGE_LIST);
   }
 
   ngOnDestroy() {
     this.k8sService.setStepData(2, this.outputData);
+    if (this.processImageSubscription) {
+      this.processImageSubscription.unsubscribe();
+    }
     clearInterval(this.intervalAutoRefreshImageList);
   }
 
@@ -137,6 +142,17 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
           this.isInputComponentsValid = false;
         }
       });
+    }
+  }
+
+  get isOpenNewImage(): boolean {
+    return this._isOpenNewImage;
+  }
+
+  set isOpenNewImage(value: boolean) {
+    this._isOpenNewImage = value;
+    if (value) {
+      this.resetNewImage();
     }
   }
 
@@ -187,6 +203,13 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
       result.push(new EnvType(value.dockerfile_envname, value.dockerfile_envvalue))
     });
     return result;
+  }
+
+  resetNewImage() {
+    this.consoleText = "";
+    this.isNewImageAlertOpen = false;
+    this.isNeedAutoRefreshImageList = false;
+    this.imageInBuilding = false;
   }
 
   unshiftCustomerCreateImage() {
@@ -271,11 +294,32 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
 
   buildImage() {
     this.isNewImageAlertOpen = false;
-    this.isNeedAutoRefreshImageList = true;
-    this.autoRefreshTimesCount = 0;
+    this.imageInBuilding = true;
+    this.consoleText = "Jenkins preparing...";
     this.k8sService.buildImage(this.customerNewImage)
-      .then(res => res)
+      .then(res => {
+        this.processImageSubscription = this.webSocketService
+          .connect(PROCESS_IMAGE_CONSOLE_URL + `&token=${this.appInitService.token}`)
+          .subscribe(obs => {
+            this.consoleText = <string>obs.data;
+            let consoleTextArr: Array<string> = this.consoleText.split(/[\n]/g);
+            if (consoleTextArr.find(value => value == "Finished: SUCCESS")) {
+              this.isNeedAutoRefreshImageList = true;
+              this.autoRefreshTimesCount = 0;
+              this.processImageSubscription.unsubscribe();
+            }
+            if (consoleTextArr.find(value => value == "Finished: FAILURE")) {
+              this.imageInBuilding = false;
+              this.isNeedAutoRefreshImageList = false;
+              this.newImageAlertType = "alert-danger";
+              this.newImageErrMessage = "SERVICE.STEP_2_BUILD_IMAGE_FAILED";
+              this.isNewImageAlertOpen = true;
+              this.processImageSubscription.unsubscribe();
+            }
+          });
+      })
       .catch((err) => {
+        this.imageInBuilding = false;
         this.isNeedAutoRefreshImageList = false;
         if (err && err.status == 401) {
           this.isOpenNewImage = false;
@@ -285,7 +329,9 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
           this.newImageErrMessage = "SERVICE.STEP_2_BUILD_IMAGE_FAILED";
           this.isNewImageAlertOpen = true;
         }
-      })
+      });
+
+
   }
 
   updateFileList(): Promise<boolean> {
@@ -404,8 +450,9 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
   }
 
   cancelBuildImage() {
-    this.isNeedAutoRefreshImageList = false;
-    this.isOpenNewImage = false;
+    this.k8sService.cancelConsole("process_image").then(()=>{
+      this.isOpenNewImage = false;
+    })
   }
 
   removeFile(file: {path: string, file_name: string, size: number}) {

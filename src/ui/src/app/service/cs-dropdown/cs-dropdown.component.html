@@ -1,30 +1,48 @@
-<div>
-  <clr-dropdown #csDropdown>
-    <div clrDropdownToggle
-         class="cs-dropdown-title-container"
-         style="padding-right: 0"
-         [ngStyle]="{'width':dropdownWidth + 'px'}">
+<div [ngStyle]="{'width':dropdownWidth + 'px'}">
+  <clr-dropdown #csDropdown class="cs-dropdown">
+    <div class="cs-dropdown-title-container" clrDropdownToggle>
       <span class="cs-dropdown-title"
             [ngStyle]="{'font-size':dropdownTitleFontSize + 'px'}"
             [ngClass]="{dropdownDisabled:'disabled'}">
-        {{ isShowDefaultText? (dropdownDefaultText | translate):(dropdownText| translate )}}</span>
+        {{ isShowDefaultText? (dropdownDefaultText | translate):(dropdownText| translate )}}
+      </span>
       <span *ngIf="!dropdownList" class="spinner spinner-sm"></span>
-      <div class="cs-dropdown-icon-container" *ngIf="dropdownList && dropdownList.length > 0 && !dropdownDisabled">
-        <div style="width: 20px;height: 20px;"
+      <div class="cs-dropdown-icon-container"
+           *ngIf="dropdownList && dropdownList.length > 0 && !dropdownDisabled">
+        <div class="cs-dropdown-icon"
              [ngClass]="{'cs-dropdown-open':csDropdown.open,'cs-dropdown-close':!csDropdown.open}">
-          <clr-icon shape="caret up" style="width: 20px;height: 20px;color: darkgreen;"></clr-icon>
+          <clr-icon shape="caret up" style="height: 20px;width: 20px;color: darkgreen"></clr-icon>
         </div>
       </div>
     </div>
-    <clr-dropdown-menu [hidden]="!dropdownList|| dropdownList.length == 0 || dropdownDisabled"
+    <clr-dropdown-menu *ngIf="csDropdown.open"
+                       [hidden]="!dropdownList|| dropdownList.length == 0 || dropdownDisabled"
                        [ngStyle]="{'width':dropdownWidth + 30 + 'px'}"
                        class="cs-dropdown-menu">
-      <button *ngFor="let item of dropdownList;"
-              class="dropdown-item cs-dropdown-item"
-              [ngClass]="getItemClass(item)"
-              (click)="changeSelect(item);csDropdown.toggleDropdown()">
-        {{getItemDescription(item) | translate}}
-      </button>
+      <div class="cs-dropdown-menu-container">
+        <div *ngIf="dropdownShowItems && dropdownList && dropdownShowItems.length < dropdownList.length"
+             class="cs-dropdown-search-container">
+          <input title=""
+                 type="text"
+                 class="cs-dropdown-search"
+                 (click)="$event.stopPropagation()"
+                 [(ngModel)]="dropdownSearchText">
+          <clr-icon shape="search" style="height: 20px;flex-basis: 20px;color: darkgreen"></clr-icon>
+        </div>
+        <div class="cs-dropdown-menu">
+          <button *ngFor="let item of dropdownShowItems;"
+                  class="dropdown-item cs-dropdown-item"
+                  [ngClass]="getItemClass(item)"
+                  (click)="changeSelect(item);csDropdown.toggleDropdown()">
+            {{getItemDescription(item) | translate}}
+          </button>
+          <span class="cs-dropdown-more"
+                *ngIf="dropdownShowItems && dropdownList && dropdownShowItems.length < dropdownList.length"
+                (click)="incShowTimes()">
+          more...
+        </span>
+        </div>
+      </div>
     </clr-dropdown-menu>
   </clr-dropdown>
 </div>

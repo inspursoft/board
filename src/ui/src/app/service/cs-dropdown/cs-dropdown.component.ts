@@ -7,6 +7,7 @@
 import { Component, Input, Output, EventEmitter } from "@angular/core"
 
 export const ONLY_FOR_CLICK = "OnlyClick";
+const DROP_DOWN_SHOW_COUNT = 20;
 export type EnableSelectCallBack = (item: Object) => boolean;
 @Component({
   selector: "cs-dropdown",
@@ -16,6 +17,14 @@ export type EnableSelectCallBack = (item: Object) => boolean;
 export class CsDropdownComponent {
   isShowDefaultText: boolean = true;
   dropdownText: string;
+  dropdownShowTimes: number = 1;
+  _dropdownSearchText: string = "";
+  set dropdownSearchText(value:string){
+    this._dropdownSearchText = value;
+  }
+  get dropdownSearchText():string{
+    return this._dropdownSearchText;
+  }
 
   @Input() dropdownCanSelect: EnableSelectCallBack;
   @Input() dropdownWidth: number = 100;
@@ -23,7 +32,7 @@ export class CsDropdownComponent {
   @Input() dropdownDisabled: boolean = false;
   @Input() dropdownList: Array<any>;
   @Input() dropdownListTextKey;
-  @Input() dropdownTitleFontSize:number = 14;
+  @Input() dropdownTitleFontSize: number = 14;
   @Output("onChange") dropdownChange: EventEmitter<any>;
   @Output("onOnlyClickItem") dropdownClick: EventEmitter<any>;
 
@@ -37,6 +46,20 @@ export class CsDropdownComponent {
       'special': (typeof item == "object") && item['isSpecial'],
       'active': this.dropdownText == this.getItemDescription(item) ||
       this.dropdownDefaultText == this.getItemDescription(item)
+    }
+  }
+
+  get dropdownShowItems(): Array<any> {
+    if (this.dropdownSearchText == "") {
+      return this.dropdownList ? this.dropdownList.filter(
+        (value, index) => index < this.dropdownShowTimes * DROP_DOWN_SHOW_COUNT) : null;
+
+    } else {
+      let result = this.dropdownList.filter(value => {
+        let text = this.getItemDescription(value);
+        return text.indexOf(this.dropdownSearchText) > -1;
+      });
+      return result.filter((value, index) => index < this.dropdownShowTimes * DROP_DOWN_SHOW_COUNT)
     }
   }
 
@@ -60,5 +83,9 @@ export class CsDropdownComponent {
         this.dropdownChange.emit(item);
       }
     }
+  }
+
+  incShowTimes(): void {
+    this.dropdownShowTimes += 1;
   }
 }

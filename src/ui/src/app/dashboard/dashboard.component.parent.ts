@@ -23,7 +23,7 @@ export abstract class DashboardComponentParent {
       graphic: [{
         type: "line",
         style: {lineWidth: 2, stroke: '#91c7ae'},
-        shape: {x1: 0, y1: 30, x2: 0, y2: 140}
+        shape: {x1: 0, y1: 30, x2: 0, y2: 240}
       }],
       xAxis: [{
         inverse: "true",

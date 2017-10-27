@@ -1,7 +1,7 @@
 /**
  * Created by liyanq on 9/11/17.
  */
-import { Component, Input, Output, EventEmitter, OnInit, ViewChild } from "@angular/core"
+import { Component, Input, Output, EventEmitter, OnInit, ViewChild, ElementRef } from "@angular/core"
 import { FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from "@angular/forms";
 
 export enum CsInputStatus{isView = 0, isEdit = 1}
@@ -30,6 +30,7 @@ export class CsInputComponent implements OnInit {
   inputValidatorMessageParam: string;
   inputField: CsInputFiled;
   @ViewChild("input") inputHtml;
+  @ViewChild("container") containerHtml: ElementRef;
   @Input() inputLabel: string = "";
   @Input() inputFiledType: CsInputFiledType = CsInputFiledType.iftString;
   @Input() inputIsRequired: boolean = false;
@@ -173,6 +174,13 @@ export class CsInputComponent implements OnInit {
   onInputKeyPressEvent(event: KeyboardEvent) {
     if (event.keyCode == 13) {
       this.onCheckClick();
+      let nextInputElement: Element = this.containerHtml.nativeElement.parentElement.nextElementSibling;
+      if (nextInputElement) {
+        let nextLabelElement: NodeListOf<HTMLLabelElement> = nextInputElement.getElementsByClassName("cs-input-label") as NodeListOf<HTMLLabelElement>;
+        if (nextLabelElement && nextLabelElement.length > 0) {
+          nextLabelElement[0].click();
+        }
+      }
     }
   }
 
@@ -183,6 +191,7 @@ export class CsInputComponent implements OnInit {
   onEditClick() {
     if (!this.isDisabled && this.inputType != CsInputType.itWithNoInput) {
       this.inputField.status = CsInputStatus.isEdit;
+      this.inputHtml.nativeElement.focus();
     } else if (!this.isDisabled && this.inputType == CsInputType.itWithNoInput) {
       this.onEditEvent.emit();
     }
