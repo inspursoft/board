@@ -69,6 +69,22 @@ func getBuildNumber(query interface{}) (int, error) {
 	return strconv.Atoi(string(data))
 }
 
+func (j *JenkinsJobController) GetLastBuildNumber() {
+	jobName := j.GetString("job_name")
+	if jobName == "" {
+		j.customAbort(http.StatusBadRequest, "No job name found.")
+		return
+	}
+	query := jobConsole{JobName: jobName}
+	lastBuildNumber, err := getBuildNumber(query)
+	if err != nil {
+		j.internalError(err)
+		return
+	}
+	j.Data["json"] = lastBuildNumber
+	j.ServeJSON()
+}
+
 func (j *JenkinsJobController) Console() {
 	jobName := j.GetString("job_name")
 	if jobName == "" {
