@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 	"text/template"
 	"time"
@@ -14,6 +15,7 @@ import (
 
 const jenkinsLastBuildNumberTemplateURL = "http://jenkins:8080/job/{{.JobName}}/lastBuild/buildNumber"
 const jenkinsBuildConsoleTemplateURL = "http://jenkins:8080/job/{{.JobName}}/{{.BuildSerialID}}/consoleText"
+const jenkinsStopBuildTemplateURL = "http://jenkins:8080/job/{{.JobName}}/{{.BuildSerialID}}/stop"
 const maxRetryCount = 30
 
 type jobConsole struct {
@@ -47,6 +49,40 @@ func generateURL(rawTemplate string, data interface{}) (string, error) {
 		return "", err
 	}
 	return targetURL.String(), nil
+}
+
+func getBuildNumber(query interface{}) (int, error) {
+	lastBuildNumberURL, err := generateURL(jenkinsLastBuildNumberTemplateURL, query)
+	if err != nil {
+		return 0, err
+	}
+	resp, err := http.Get(lastBuildNumberURL)
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0, err
+	}
+	return strconv.Atoi(string(data))
+}
+
+func (j *JenkinsJobController) GetLastBuildNumber() {
+	jobName := j.GetString("job_name")
+	if jobName == "" {
+		j.customAbort(http.StatusBadRequest, "No job name found.")
+		return
+	}
+	query := jobConsole{JobName: jobName}
+	lastBuildNumber, err := getBuildNumber(query)
+	if err != nil {
+		j.internalError(err)
+		return
+	}
+	j.Data["json"] = lastBuildNumber
+	j.ServeJSON()
 }
 
 func (j *JenkinsJobController) Console() {
@@ -143,4 +179,35 @@ func (j *JenkinsJobController) Console() {
 			logs.Error("Failed to write message: %+v", err)
 		}
 	}
+}
+
+func (j *JenkinsJobController) Stop() {
+	jobName := j.GetString("job_name")
+	if jobName == "" {
+		j.customAbort(http.StatusBadRequest, "No job name found.")
+		return
+	}
+
+	query := jobConsole{JobName: jobName}
+
+	lastBuildNumber, err := getBuildNumber(query)
+	if err != nil {
+		j.customAbort(http.StatusInternalServerError, "Failed to get job number.")
+		return
+	}
+	query.BuildSerialID = j.GetString("build_serial_id", strconv.Itoa(lastBuildNumber))
+	stopBuildURL, err := generateURL(jenkinsStopBuildTemplateURL, query)
+	if err != nil {
+		j.internalError(err)
+		return
+	}
+	logs.Debug("Requested stop Jenkins build URL: %s", stopBuildURL)
+	resp, err := http.PostForm(stopBuildURL, nil)
+	if err != nil {
+		j.internalError(err)
+		return
+	}
+	defer resp.Body.Close()
+	logs.Debug("Response status of stopping Jenkins jobs: %d", resp.StatusCode)
+	j.serveStatus(resp.StatusCode, "")
 }

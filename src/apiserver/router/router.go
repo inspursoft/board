@@ -141,9 +141,15 @@ func init() {
 			beego.NSRouter("/files/remove",
 				&controller.FileUploadController{},
 				"post:RemoveFile"),
+			beego.NSRouter("/jenkins-job/lastbuildnumber",
+				&controller.JenkinsJobController{},
+				"get:GetLastBuildNumber"),
 			beego.NSRouter("/jenkins-job/console",
 				&controller.JenkinsJobController{},
 				"get:Console"),
+			beego.NSRouter("/jenkins-job/stop",
+				&controller.JenkinsJobController{},
+				"get:Stop"),
 		),
 	)
 
