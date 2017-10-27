@@ -165,6 +165,9 @@ func (j *JenkinsJobController) Console() {
 		select {
 		case content := <-buffer:
 			err = ws.WriteMessage(websocket.TextMessage, content)
+			if err != nil {
+				done <- true
+			}
 		case <-done:
 			ticker.Stop()
 			err = ws.Close()
