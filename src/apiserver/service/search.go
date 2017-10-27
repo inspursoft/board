@@ -15,6 +15,7 @@ type OriginImage struct {
 type SearchServiceResult struct {
 	ServiceName string `json:"service_name"`
 	ProjectName string `json:"project_name"`
+	IsPublic    bool   `json:"is_public"`
 }
 type SearchNodeResult struct {
 	NodeName string `json:"node_name"`
@@ -146,6 +147,7 @@ func searchService(searchPara string) (res []SearchServiceResult, err error) {
 		var svr SearchServiceResult
 		svr.ServiceName = val.Name
 		svr.ProjectName = val.ProjectName
+		svr.IsPublic = (val.Public == 1)
 		res = append(res, svr)
 	}
 	return res, err
