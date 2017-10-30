@@ -1,8 +1,14 @@
 package service
 
 import (
+	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"testing"
+
+	"github.com/astaxie/beego/logs"
+	"github.com/astaxie/beego/orm"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -108,4 +114,61 @@ func TestSyncServiceWithK8s(t *testing.T) {
 		t.Log("SyncServiceWithK8s is ok.\n")
 	}
 
+}
+
+var scCreate = model.ServiceStatus{
+	ProjectID:   2,
+	ProjectName: "test",
+	Status:      0,
+}
+
+var scUpdate = model.ServiceStatus{
+	ProjectID:   2,
+	ProjectName: "testproject",
+	Status:      1,
+	Name:        "testservice",
+	OwnerID:     2,
+}
+
+//var scID int64
+
+func cleanSeviceTestByID(scid int64) {
+	o := orm.NewOrm()
+	rs := o.Raw("delete from service_status where id = ?", scid)
+	r, err := rs.Exec()
+	if err != nil {
+		logs.Error("Error occurred while deleting service: %+v", err)
+	}
+	affected, err := r.RowsAffected()
+	if err != nil {
+		logs.Error("Error occurred while deleting service: %+v", err)
+	}
+	if affected == 0 {
+		logs.Error("Failed to delete service", scid)
+	} else {
+		logs.Info("Successful cleared up.", scid)
+	}
+}
+
+func TestCreateServiceConfig(t *testing.T) {
+	assert := assert.New(t)
+	serviceid, err := CreateServiceConfig(scCreate)
+	assert.Nil(err, "Failed, err when create service config.")
+	assert.NotEqual(0, serviceid, "Failed to assign a service id")
+	t.Log("clean test", serviceid)
+	cleanSeviceTestByID(serviceid)
+}
+
+func TestUpdateService(t *testing.T) {
+	assert := assert.New(t)
+	serviceid, err := CreateServiceConfig(scCreate)
+	assert.Nil(err, "Failed, err when create service config.")
+	assert.NotEqual(0, serviceid, "Failed to assign a service id")
+	scUpdate.ID = serviceid
+	res, err := UpdateService(scUpdate, "name", "status", "owner_id")
+	assert.Nil(err, "Failed, err when update service status.")
+	assert.NotEqual(false, res, "Failed to update service status")
+	t.Log("updated", serviceid)
+	t.Log("clean test", serviceid)
+	cleanSeviceTestByID(serviceid)
 }
