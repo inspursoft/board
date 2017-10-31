@@ -1,10 +1,8 @@
-<div class="cs-input-container" [formGroup]="inputFormGroup">
+<div #container class="cs-input-container" [formGroup]="inputFormGroup">
   <label *ngIf="inputType == 0 || inputType == 1"
-         for="inputField"
          (click)="onEditClick()"
          class="cs-input-label">{{inputLabel}}:<span *ngIf="inputIsRequired" class="asterisk">*</span></label>
-  <label for="inputField"
-         aria-haspopup="true"
+  <label aria-haspopup="true"
          role="tooltip"
          class="cs-input-field-container tooltip tooltip-validation tooltip-md tooltip-bottom-left"
          (click)="onEditClick()"
