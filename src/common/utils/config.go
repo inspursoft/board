@@ -14,8 +14,12 @@ func add(name string, value interface{}) {
 	configStorage[name] = value
 }
 
-func AddEnv(name string) {
-	add(name, os.Getenv(name))
+func AddEnv(name string, defaultValue ...string) {
+	value := os.Getenv(name)
+	if value == "" && len(defaultValue) > 0 {
+		value = defaultValue[0]
+	}
+	add(name, value)
 }
 
 func AddValue(name string, value interface{}) {
