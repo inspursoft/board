@@ -1,7 +1,11 @@
-package collect
+package collect_test
 
-import "testing"
+import (
+	"git/inspursoft/board/src/collector/service/collect"
+	"testing"
+)
 
 func TestGetNodeMachine(t *testing.T) {
-	GetNodeMachine("10.110.18.107")
+	collect.SetInitVar("10.110.18.26", "8080")
+	collect.GetNodeMachine("10.110.18.71")
 }
