@@ -53,6 +53,7 @@ func main() {
 	utils.AddEnv("KUBE_MASTER_PORT")
 	utils.AddEnv("REGISTRY_IP")
 	utils.AddEnv("REGISTRY_PORT")
+	utils.AddEnv("AUTH_MODE", "db_auth")
 
 	utils.SetConfig("REGISTRY_URL", "http://%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
 	utils.SetConfig("KUBE_MASTER_URL", "http://%s:%s", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")

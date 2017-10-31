@@ -35,6 +35,7 @@ var memoryCache cache.Cache
 var kubeMasterURL = utils.GetConfig("KUBE_MASTER_URL")
 var registryURL = utils.GetConfig("REGISTRY_URL")
 var registryBaseURI = utils.GetConfig("REGISTRY_BASE_URI")
+var authMode = utils.GetConfig("AUTH_MODE")
 
 type baseController struct {
 	beego.Controller
@@ -204,5 +205,6 @@ func InitController() {
 	}
 
 	beego.BConfig.MaxMemory = 1 << 22
+	logs.Debug("Current auth mode is: %s", authMode())
 
 }
