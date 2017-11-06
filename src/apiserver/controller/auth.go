@@ -48,10 +48,6 @@ func (u *AuthController) SignInAction() {
 			u.serveStatus(http.StatusBadRequest, "Incorrect username or password.")
 			return
 		}
-		if memoryCache.IsExist(user.Username) {
-			u.serveStatus(http.StatusConflict, "The user has already signed in other place.")
-			return
-		}
 
 		payload := make(map[string]interface{})
 		payload["id"] = strconv.Itoa(int(user.ID))
