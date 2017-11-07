@@ -7,6 +7,7 @@ import (
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
+	"os"
 
 	"github.com/astaxie/beego/logs"
 
@@ -17,6 +18,7 @@ import (
 
 var adminUserID int64 = 1
 var defaultInitialPassword = "123456a?"
+var defaultProject = "library"
 
 var baseRepoPath = `/repos`
 var repoServeURL = filepath.Join("root@gitserver:", "gitserver", "repos", "board_repo_serve")
@@ -38,6 +40,23 @@ func updateAdminPassword(initialPassword string) {
 		logs.Info("Admin password has been updated successfully.")
 	} else {
 		logs.Info("Failed to update admin initial password.")
+	}
+}
+
+func initProjectRepo() {
+	logs.Info("Init git repo for default project %s", defaultProject)
+	_, err := service.InitRepo(repoServeURL, repoPath)
+	if err != nil {
+		logs.Error("Failed to initialize default user's repo: %+v\n", err)
+		return
+	}
+
+	subPath := defaultProject
+	if subPath != "" {
+		os.MkdirAll(filepath.Join(repoPath, subPath), 0755)
+		if err != nil {
+			logs.Error("Failed to make default user's repo: %+v\n", err)
+		}
 	}
 }
 
@@ -73,6 +92,7 @@ func main() {
 	controller.InitController()
 	updateAdminPassword(utils.GetStringValue("BOARD_ADMIN_PASSWORD"))
 
+	initProjectRepo()
 	syncServiceWithK8s()
 
 	beego.Run(":8088")
