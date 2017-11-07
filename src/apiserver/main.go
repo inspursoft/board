@@ -60,6 +60,7 @@ func main() {
 	utils.SetConfig("KUBE_MASTER_URL", "http://%s:%s", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
 	utils.SetConfig("KUBE_NODE_URL", "http://%s:%s/api/v1/nodes", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
 
+	utils.SetConfig("BASE_REPO_PATH", baseRepoPath)
 	utils.SetConfig("REPO_SERVE_URL", repoServeURL)
 	utils.SetConfig("REPO_SERVE_PATH", repoServePath)
 	utils.SetConfig("REPO_PATH", repoPath)
