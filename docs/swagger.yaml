@@ -1142,6 +1142,35 @@ paths:
           description: Invalid service ID.
         500:
           description: Unexpected internal errors.
+    delete:
+      summary: Delete service deployment configuration data.
+      description: |
+        This endpoint is aimed to delete service deployment configuration data.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.  
+      tags:
+        - Products
+      responses:
+        200:
+          description: Delete service deployment config successfully.
+        401:
+          description: User need to log in first.
+        402:
+          description: Invalid configuration phase.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.
   /v1/services/{service_id}/toggle:
     put:  
       summary: Update the service to stop or run.
