@@ -91,6 +91,7 @@ func (b *baseController) customAbort(status int, body string) {
 
 func (b *baseController) getCurrentUser() *model.User {
 	token := b.Ctx.Request.Header.Get("token")
+
 	if token == "" {
 		token = b.GetString("token")
 	}
@@ -98,6 +99,12 @@ func (b *baseController) getCurrentUser() *model.User {
 	payload, err := verifyToken(token)
 	if err != nil {
 		if err == errInvalidToken {
+			newToken, err := signToken(payload)
+			token = newToken.TokenString
+			if err != nil {
+				logs.Error("failed to re-assign token: %+v", err)
+				return nil
+			}
 			logs.Error("failed to re-assign token due to timeout.")
 		} else {
 			logs.Error("failed to verify token: %+v\n", err)
@@ -117,17 +124,12 @@ func (b *baseController) getCurrentUser() *model.User {
 			return nil
 		}
 		if currentToken, ok := memoryCache.Get(user.Username).(string); ok {
-			if currentToken != token {
+			if currentToken != "" && currentToken != token {
 				logs.Info("Another same name user has signed in other places.")
 				return nil
 			}
-			newToken, err := signToken(payload)
-			if err != nil {
-				logs.Error("failed to re-assign token: %+v", err)
-				return nil
-			}
-			memoryCache.Put(user.Username, newToken.TokenString, time.Second*time.Duration(tokenCacheExpireSeconds))
-			b.Ctx.ResponseWriter.Header().Set("token", newToken.TokenString)
+			memoryCache.Put(user.Username, token, time.Second*time.Duration(tokenCacheExpireSeconds))
+			b.Ctx.ResponseWriter.Header().Set("token", token)
 		}
 		return user
 	}
@@ -139,7 +141,6 @@ func (b *baseController) signOff() error {
 	err := memoryCache.Delete(username)
 	if err != nil {
 		logs.Error("Failed to delete user from memory cache: %+v", err)
-		return err
 	}
 	logs.Info("Successful sign off from API server.")
 
