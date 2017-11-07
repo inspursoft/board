@@ -27,6 +27,8 @@ const (
 	serviceNamespace       = "default" //TODO create in project post
 )
 
+var InputParaErr = errors.New("InputParaErr")
+
 const (
 	preparing = iota
 	running
@@ -72,7 +74,7 @@ func (p *ServiceController) handleReqData() (model.ServiceConfig2, int, error) {
 	//check data
 	err = service.CheckReqPara(reqServiceConfig)
 	if err != nil {
-		return reqServiceConfig, serviceID, errors.New("InputParaErr")
+		return reqServiceConfig, serviceID, InputParaErr
 	}
 
 	return reqServiceConfig, serviceID, err
@@ -174,7 +176,7 @@ func (p *ServiceController) DeployServiceAction() {
 
 	reqServiceConfig, serviceID, err := p.handleReqData()
 	if err != nil {
-		if err.Error() == "InputParaErr" {
+		if err == InputParaErr {
 			p.customAbort(http.StatusBadRequest, err.Error())
 			return
 		}
@@ -201,7 +203,7 @@ func (p *ServiceController) DeployServiceTestAction() {
 	}
 	reqServiceConfig, serviceID, err := p.handleReqData()
 	if err != nil {
-		if err.Error() == "InputParaErr" {
+		if err == InputParaErr {
 			p.customAbort(http.StatusBadRequest, err.Error())
 			return
 		}
@@ -215,10 +217,10 @@ func (p *ServiceController) DeployServiceTestAction() {
 			filepath.Join(registryBaseURI(), container.Image)
 	}
 
-	reqServiceConfig.Service.ObjectMeta.Name += test
-	reqServiceConfig.Service.ObjectMeta.Labels["app"] += test
-	reqServiceConfig.Deployment.ObjectMeta.Name += test
-	reqServiceConfig.Deployment.Spec.Template.ObjectMeta.Labels["app"] += test
+	reqServiceConfig.Service.ObjectMeta.Name = test + reqServiceConfig.Service.ObjectMeta.Name
+	reqServiceConfig.Service.ObjectMeta.Labels["app"] = test + reqServiceConfig.Service.ObjectMeta.Labels["app"]
+	reqServiceConfig.Deployment.ObjectMeta.Name = test + reqServiceConfig.Deployment.ObjectMeta.Name
+	reqServiceConfig.Deployment.Spec.Template.ObjectMeta.Labels["app"] = test + reqServiceConfig.Deployment.Spec.Template.ObjectMeta.Labels["app"]
 
 	logs.Debug("%+v", reqServiceConfig)
 
