@@ -3,6 +3,7 @@ package controller
 import (
 	"encoding/json"
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/apiserver/service/auth"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
@@ -31,17 +32,20 @@ func (u *AuthController) SignInAction() {
 			u.internalError(err)
 			return
 		}
-		user, err := service.SignIn(reqUser.Username, reqUser.Password)
+
+		currentAuth, err := auth.GetAuth(authMode())
 		if err != nil {
 			u.internalError(err)
 			return
 		}
-		if user == nil {
-			u.serveStatus(http.StatusBadRequest, "Incorrect username or password.")
+		user, err := (*currentAuth).DoAuth(reqUser.Username, reqUser.Password)
+		if err != nil {
+			u.internalError(err)
 			return
 		}
-		if memoryCache.IsExist(user.Username) {
-			u.serveStatus(http.StatusConflict, "The user has already signed in other place.")
+
+		if user == nil {
+			u.serveStatus(http.StatusBadRequest, "Incorrect username or password.")
 			return
 		}
 

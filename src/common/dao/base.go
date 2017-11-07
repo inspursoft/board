@@ -16,7 +16,7 @@ func InitDB() {
 	dbPassword := conf.String("dbPassword")
 	logs.Info("Initializing DB registration.")
 	orm.RegisterDriver("mysql", orm.DRMySQL)
-	err = orm.RegisterDataBase("default", "mysql", "root:"+dbPassword+"@tcp(mysql:3306)/board?charset=utf8")
+	err = orm.RegisterDataBase("default", "mysql", "root:"+dbPassword+"@tcp(localhost:3306)/board?charset=utf8")
 	if err != nil {
 		logs.Error("error occurred on registering DB: %+v", err)
 	}

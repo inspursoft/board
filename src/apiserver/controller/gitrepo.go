@@ -212,3 +212,35 @@ func InternalPushObjects(p *pushObject, g *baseController) (int, string, error) 
 	}
 	return resp.StatusCode, "Internal Push Object successfully", err
 }
+
+// Clean git repo after remove config files
+func InternalCleanObjects(p *pushObject, g *baseController) (int, string, error) {
+
+	defaultCommitMessage := fmt.Sprintf("Removed items: %s from repo: %s", strings.Join(p.Items, ","), repoPath)
+
+	if len(p.Message) == 0 {
+		p.Message = defaultCommitMessage
+	}
+
+	repoHandler, err := service.OpenRepo(repoPath)
+	if err != nil {
+		return http.StatusInternalServerError, "Failed to open user's repo", err
+	}
+	for _, item := range p.Items {
+		repoHandler.Remove(item)
+	}
+
+	username := g.currentUser.Username
+	email := g.currentUser.Email
+
+	_, err = repoHandler.Commit(p.Message, &object.Signature{Name: username, Email: email})
+	if err != nil {
+		return http.StatusInternalServerError, "Failed to commit changes to user's repo", err
+	}
+	err = repoHandler.Push()
+	if err != nil {
+		return http.StatusInternalServerError, "Failed to push objects to git repo", err
+	}
+
+	return 0, "Internal Push Object successfully", err
+}

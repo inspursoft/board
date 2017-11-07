@@ -49,6 +49,18 @@ func UpdateService(service model.ServiceStatus, fieldNames ...string) (int64, er
 	return serviceID, err
 }
 
+func DeleteService(service model.ServiceStatus) (int64, error) {
+	o := orm.NewOrm()
+	num, err := o.Delete(&service)
+	if err != nil {
+		if err == orm.ErrNoRows {
+			return 0, nil
+		}
+		return 0, err
+	}
+	return num, err
+}
+
 func GetServiceData() ([]model.ServiceStatus, error) {
 	var serviceList []model.ServiceStatus
 

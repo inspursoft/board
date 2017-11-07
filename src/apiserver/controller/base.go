@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -34,9 +35,12 @@ var tokenServerURL *url.URL
 var tokenCacheExpireSeconds int
 var memoryCache cache.Cache
 
+var errInvalidToken = errors.New("error for invalid token")
+
 var kubeMasterURL = utils.GetConfig("KUBE_MASTER_URL")
 var registryURL = utils.GetConfig("REGISTRY_URL")
 var registryBaseURI = utils.GetConfig("REGISTRY_BASE_URI")
+var authMode = utils.GetConfig("AUTH_MODE")
 
 type baseController struct {
 	beego.Controller
@@ -90,12 +94,11 @@ func (b *baseController) getCurrentUser() *model.User {
 
 	payload, err := verifyToken(token)
 	if err != nil {
-		return nil
-	}
-
-	newToken, err := signToken(payload)
-	if err != nil {
-		logs.Error("failed to re-assign token: %+v", err)
+		if err == errInvalidToken {
+			logs.Error("failed to re-assign token due to timeout.")
+		} else {
+			logs.Error("failed to verify token: %+v\n", err)
+		}
 		return nil
 	}
 
@@ -110,13 +113,19 @@ func (b *baseController) getCurrentUser() *model.User {
 			logs.Error("Error occurred while getting user by ID: %d\n", err)
 			return nil
 		}
-		if !memoryCache.IsExist(user.Username) {
-			logs.Error("Token has been expired forcely.")
-			return nil
+		if currentToken, ok := memoryCache.Get(user.Username).(string); ok {
+			if currentToken != token {
+				logs.Info("Another same name user has signed in other places.")
+				return nil
+			}
+			newToken, err := signToken(payload)
+			if err != nil {
+				logs.Error("failed to re-assign token: %+v", err)
+				return nil
+			}
+			memoryCache.Put(user.Username, newToken.TokenString, time.Second*time.Duration(tokenCacheExpireSeconds))
+			b.Ctx.ResponseWriter.Header().Set("token", newToken.TokenString)
 		}
-		memoryCache.Put(user.Username, newToken.TokenString, time.Second*time.Duration(tokenCacheExpireSeconds))
-		b.Ctx.ResponseWriter.Header().Set("token", newToken.TokenString)
-
 		return user
 	}
 	return nil
@@ -126,10 +135,11 @@ func (b *baseController) signOff() error {
 	username := b.GetString("username")
 	err := memoryCache.Delete(username)
 	if err != nil {
-		logs.Error("Failed to delete username from memory cache: %+v", err)
+		logs.Error("Failed to delete user from memory cache: %+v", err)
 		return err
 	}
 	logs.Info("Successful sign off from API server.")
+
 	return nil
 }
 
@@ -163,6 +173,12 @@ func verifyToken(tokenString string) (map[string]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	if resp.StatusCode == http.StatusUnauthorized {
+		logs.Error("Invalid token due to session timeout.")
+		return nil, errInvalidToken
+	}
+
 	respData, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
@@ -206,6 +222,7 @@ func InitController() {
 	}
 
 	beego.BConfig.MaxMemory = 1 << 22
+	logs.Debug("Current auth mode is: %s", authMode())
 
 	logs.Info("Init git repo for default project %s", defaultProject)
 	_, err = service.InitRepo(repoServeURL(), repoPath())

@@ -1,7 +1,7 @@
 div.select-project-container {
   display: flex;
   width: 100%;
-  height: 200px; /*fixed height*/
+  min-height: 400px; /*fixed height*/
   flex-direction: column;
 }
 

@@ -3,7 +3,7 @@ import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
 import { Service } from './service';
 import { AppInitService } from "../app.init.service";
-import { Http, Headers, RequestOptions } from "@angular/http";
+import { Http, Headers, RequestOptions, Response } from "@angular/http";
 import { Project } from "../project/project";
 import { Image, ImageDetail } from "../image/image";
 import {
@@ -199,7 +199,7 @@ export class K8sService {
       .catch(err => Promise.reject(err));
   }
 
-  getServiceDetail(serviceName:string):Promise<Object>{
+  getServiceDetail(serviceName: string): Promise<Object> {
     return this.http
       .get(`/api/v1/services/info/${serviceName}`, {headers: this.defaultHeader})
       .toPromise()
@@ -221,9 +221,20 @@ export class K8sService {
       .catch(err => Promise.reject(err));
   }
 
-  toggleService(serviceID: number, isStart: 0 | 1): Promise<any> {
+  toggleServiceStatus(serviceID: number, isStart: 0 | 1): Promise<any> {
     return this.http
       .put(`/api/v1/services/${serviceID}/toggle`, {service_toggle: isStart}, {headers: this.defaultHeader})
+      .toPromise()
+      .then(res => {
+        this.appInitService.chainResponse(res);
+        return res;
+      })
+      .catch(err => Promise.reject(err));
+  }
+
+  toggleServicePublicity(serviceID: number, service_togglable: 0 | 1): Promise<any> {
+    return this.http
+      .put(`/api/v1/services/${serviceID}/publicity`, {service_public: service_togglable}, {headers: this.defaultHeader})
       .toPromise()
       .then(res => {
         this.appInitService.chainResponse(res);
@@ -249,14 +260,46 @@ export class K8sService {
       .catch(err => Promise.reject(err));
   }
 
+  getLastJobId(jobName: string): Promise<number> {
+    return this.http
+      .get(`/api/v1/jenkins-job/lastbuildnumber`, {
+        headers: this.defaultHeader,
+        params: {"job_name": jobName}
+      })
+      .toPromise()
+      .then((res: Response) => {
+        this.appInitService.chainResponse(res);
+        return Number(res.text());
+      })
+      .catch(err => Promise.reject(err));
+  }
+
+  cancelConsole(jobName: string, buildSerialId: number): Promise<boolean> {
+    return this.http
+      .get(`/api/v1/jenkins-job/stop`, {
+        headers: this.defaultHeader,
+        params: {
+          "job_name": jobName,
+          "build_serial_id": buildSerialId
+        }
+      }).toPromise()
+      .then((res: Response) => {
+        this.appInitService.chainResponse(res);
+        return res.status == 200;
+      })
+      .catch(err => Promise.reject(err));
+  }
+
   getNodesList(): Promise<any> {
     return this.http
-      .get(`/api/v1/nodes`, { headers: this.defaultHeader })
+      .get(`/api/v1/nodes`, {headers: this.defaultHeader})
       .toPromise()
-      .then(res=>{
+      .then(res => {
         this.appInitService.chainResponse(res);
         return res.json();
       })
-      .catch(err=>Promise.reject(err));
+      .catch(err => Promise.reject(err));
   }
+
+
 }

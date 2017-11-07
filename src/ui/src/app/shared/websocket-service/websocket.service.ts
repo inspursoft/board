@@ -9,14 +9,10 @@ export class WebsocketService {
   socket: Subject<MessageEvent>;
 
   connect(url: string): Subject<MessageEvent> {
-    if (!this.socket) {
-      this.socket = this.create(url);
-    }
-    return this.socket;
+    return this.create(url);
   }
 
   create(url: string): Subject<MessageEvent> {
-  
     let ws = new WebSocket(url);
     let observable = Observable.create(
       (obs: Observer<MessageEvent>)=> {

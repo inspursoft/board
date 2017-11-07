@@ -14,9 +14,13 @@ import { Message } from "../../shared/message-service/message";
 import { EnvType } from "../environment-value/environment-value.component";
 import { CsInputArrayComponent } from "../cs-input-array/cs-input-array.component";
 import { CsInputComponent } from "../cs-input/cs-input.component";
+import { WebsocketService } from "../../shared/websocket-service/websocket.service";
+import { Subscription } from "rxjs/Subscription";
 
 enum ImageSource{fromBoardRegistry, fromDockerHub}
 const AUTO_REFRESH_IMAGE_LIST: number = 2000;
+// const PROCESS_IMAGE_CONSOLE_URL = `ws://10.165.22.61:8088/api/v1/jenkins-job/console?job_name=process_image`;
+const PROCESS_IMAGE_CONSOLE_URL = `ws://localhost/api/v1/jenkins-job/console?job_name=process_image`;
 type alertType = "alert-info" | "alert-danger";
 @Component({
   templateUrl: './select-image.component.html',
@@ -30,12 +34,14 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
   patternNewImageTag: RegExp = /^[a-z\d.-]+$/;
   patternBaseImage: RegExp = /^[a-z\d.:-]+$/;
   patternExpose: RegExp = /^[\d-\s\w/\\]+$/;
-  patternVolume: RegExp = /^[a-zA-Z_]+$/;
-  patternRun: RegExp = /^[a-zA-Z_]+$/;
-  patternEntryPoint: RegExp = /^[a-zA-Z\d_-]+$/;
+  patternVolume: RegExp = /.+/;
+  patternRun: RegExp = /.+/;
+  patternEntryPoint: RegExp = /.+/;
   _isOpenEnvironment = false;
+  _isOpenNewImage = false;
   intervalAutoRefreshImageList: any;
   isNeedAutoRefreshImageList: boolean = false;
+  imageInBuilding: boolean = false;
   isInputComponentsValid: boolean = false;
   autoRefreshTimesCount: number = 0;
   imageSource: ImageSource = ImageSource.fromBoardRegistry;
@@ -49,15 +55,18 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
   outputData: ServiceStep2Output;
   filesList: Map<string, Array<{path: string, file_name: string, size: number}>>;
   consoleText: string = "";
-  isOpenNewImage: boolean = false;
   newImageErrMessage: string = "";
   newImageAlertType: alertType = "alert-danger";
   isNewImageAlertOpen: boolean = false;
+  isUploadFileIng = false;
   newImageIndex: number;
+  lastJobNumber: number = 0;
+  processImageSubscription: Subscription;
 
   constructor(private k8sService: K8sService,
               private messageService: MessageService,
-              private appInitService: AppInitService) {
+              private appInitService: AppInitService,
+              private webSocketService: WebsocketService) {
     this.outputData = Array<ServiceStep2Type>();
     this.imageSelectList = Array<Image>();
     this.imageDetailSelectList = new Map<string, ImageDetail>();
@@ -67,6 +76,13 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
   }
 
   ngOnInit() {
+    if (this.k8sService.getStepData(2)) {
+      this.outputData = this.k8sService.getStepData(2) as ServiceStep2Output;
+      this.outputData.forEach((value: ServiceStep2Type) => {
+        this.imageSelectList.push({image_name: value.image_name, image_comment: "", image_deleted: 0});
+        this.setImageDetailList(value.image_name, value.image_tag);
+      })
+    }
     this.k8sService.getImages("", 0, 0)
       .then(res => {
         this.imageSourceList = res;
@@ -74,7 +90,7 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
       })
       .catch(err => this.messageService.dispatchError(err));
     this.intervalAutoRefreshImageList = setInterval(() => {
-      if (this.isNeedAutoRefreshImageList) {
+      if (this.isNeedAutoRefreshImageList && this.imageInBuilding) {
         this.autoRefreshTimesCount++;
         this.isNewImageAlertOpen = false;
         this.k8sService.getImages("", 0, 0).then(res => {
@@ -94,22 +110,21 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
             this.isOpenNewImage = false;
             this.messageService.dispatchError(err);
           } else {
+            this.imageInBuilding = false;
             this.newImageAlertType = "alert-danger";
             this.newImageErrMessage = "SERVICE.STEP_2_UPDATE_IMAGE_LIST_FAILED";
             this.isNewImageAlertOpen = true;
           }
         });
-        this.k8sService.getConsole("process_image").then(res => {
-          this.consoleText = res;
-        }).catch(() => {
-          this.consoleText = "";
-        })
       }
     }, AUTO_REFRESH_IMAGE_LIST);
   }
 
   ngOnDestroy() {
     this.k8sService.setStepData(2, this.outputData);
+    if (this.processImageSubscription) {
+      this.processImageSubscription.unsubscribe();
+    }
     clearInterval(this.intervalAutoRefreshImageList);
   }
 
@@ -117,7 +132,7 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
     this.isInputComponentsValid = true;
     if (this.inputArrayComponents) {
       this.inputArrayComponents.forEach(item => {
-        if (!item.arrayIsValid()) {
+        if (!item.valid) {
           this.isInputComponentsValid = false;
         }
       });
@@ -128,6 +143,17 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
           this.isInputComponentsValid = false;
         }
       });
+    }
+  }
+
+  get isOpenNewImage(): boolean {
+    return this._isOpenNewImage;
+  }
+
+  set isOpenNewImage(value: boolean) {
+    this._isOpenNewImage = value;
+    if (value) {
+      this.resetNewImage();
     }
   }
 
@@ -180,6 +206,13 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
     return result;
   }
 
+  resetNewImage() {
+    this.consoleText = "";
+    this.isNewImageAlertOpen = false;
+    this.isNeedAutoRefreshImageList = false;
+    this.imageInBuilding = false;
+  }
+
   unshiftCustomerCreateImage() {
     let customerCreateImage: Image = new Image();
     customerCreateImage.image_name = "SERVICE.STEP_2_CREATE_IMAGE";
@@ -195,7 +228,7 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
     }
   }
 
-  setImageDetailList(imageName: string): void {
+  setImageDetailList(imageName: string, imageTag?: string): void {
     this.imageTagNotReadyList.set(imageName, false);
     this.k8sService.getImageDetailList(imageName).then((res: ImageDetail[]) => {
       if (res && res.length > 0) {
@@ -205,7 +238,13 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
           item['image_size_unit'] = 'MB';
         }
         this.imageDetailSourceList.set(res[0].image_name, res);
-        this.imageDetailSelectList.set(res[0].image_name, res[0]);
+        if (imageTag) {
+          let detail = res.find(value => value.image_tag == imageTag);
+          this.imageDetailSelectList.set(res[0].image_name, detail);
+        } else {
+          this.imageDetailSelectList.set(res[0].image_name, res[0]);
+        }
+
       } else {
         this.imageTagNotReadyList.set(imageName, true);
       }
@@ -254,13 +293,45 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
     this.imageSelectList.push(customerSelectImage);
   }
 
-  buildImage() {
+  async buildImage() {
     this.isNewImageAlertOpen = false;
-    this.isNeedAutoRefreshImageList = true;
-    this.autoRefreshTimesCount = 0;
+    this.imageInBuilding = true;
+    this.lastJobNumber = 0;
+    this.consoleText = "Jenkins preparing...";
     this.k8sService.buildImage(this.customerNewImage)
-      .then(res => res)
+      .then(res => {
+        setTimeout(() => {
+          this.processImageSubscription = this.webSocketService
+            .connect(PROCESS_IMAGE_CONSOLE_URL + `&token=${this.appInitService.token}`)
+            .subscribe(obs => {
+              this.consoleText = <string>obs.data;
+              if (this.lastJobNumber == 0) {
+                this.k8sService.getLastJobId("process_image").then(res => {
+                  this.lastJobNumber = res;
+                });
+              }
+              let consoleTextArr: Array<string> = this.consoleText.split(/[\n]/g);
+              if (consoleTextArr.find(value => value == "Finished: SUCCESS")) {
+                this.isNeedAutoRefreshImageList = true;
+                this.autoRefreshTimesCount = 0;
+                this.processImageSubscription.unsubscribe();
+              }
+              if (consoleTextArr.find(value => value == "Finished: FAILURE")) {
+                this.imageInBuilding = false;
+                this.isNeedAutoRefreshImageList = false;
+                this.newImageAlertType = "alert-danger";
+                this.newImageErrMessage = "SERVICE.STEP_2_BUILD_IMAGE_FAILED";
+                this.isNewImageAlertOpen = true;
+                this.processImageSubscription.unsubscribe();
+              }
+            }, err => err, () => {
+              console.log("web close event");
+              this.isOpenNewImage = false;
+            });
+        }, 10000);
+      })
       .catch((err) => {
+        this.imageInBuilding = false;
         this.isNeedAutoRefreshImageList = false;
         if (err && err.status == 401) {
           this.isOpenNewImage = false;
@@ -270,7 +341,7 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
           this.newImageErrMessage = "SERVICE.STEP_2_BUILD_IMAGE_FAILED";
           this.isNewImageAlertOpen = true;
         }
-      })
+      });
   }
 
   updateFileList(): Promise<boolean> {
@@ -311,6 +382,7 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
     let fileList: FileList = event.target.files;
     if (fileList.length > 0) {
       this.isNewImageAlertOpen = false;
+      this.isUploadFileIng = true;
       let file: File = fileList[0];
       let formData: FormData = new FormData();
       formData.append('upload_file', file, file.name);
@@ -322,6 +394,7 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
         this.newImageAlertType = "alert-info";
         this.newImageErrMessage = "SERVICE.STEP_2_UPLOAD_SUCCESS";
         this.isNewImageAlertOpen = true;
+        this.isUploadFileIng = false;
         this.asyncGetDockerFilePreviewInfo();
       }).catch(err => {
         if (err && err.status == 401) {
@@ -331,6 +404,7 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
           this.newImageAlertType = "alert-danger";
           this.newImageErrMessage = "SERVICE.STEP_2_UPLOAD_FAILED";
           this.isNewImageAlertOpen = true;
+          this.isUploadFileIng = false;
         }
       });
     }
@@ -370,7 +444,10 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
   forward(): void {
     let step1Out: ServiceStep1Output = this.k8sService.getStepData(1) as ServiceStep1Output;
     this.imageSelectList.forEach(value => {
-      if (value.image_name != "SERVICE.STEP_2_SELECT_IMAGE") {
+      let outValue = this.outputData.find(out => {
+        return out.image_name == value.image_name
+      });
+      if (!outValue && value.image_name != "SERVICE.STEP_2_SELECT_IMAGE") {
         let serviceStep2 = new ServiceStep2Type();
         serviceStep2.image_name = value.image_name;
         serviceStep2.image_tag = this.imageDetailSelectList.get(value.image_name).image_tag;
@@ -383,8 +460,12 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
   }
 
   cancelBuildImage() {
-    this.isNeedAutoRefreshImageList = false;
-    this.isOpenNewImage = false;
+    if (this.lastJobNumber > 0) {
+      this.k8sService.cancelConsole("process_image", this.lastJobNumber).then(() => {
+        this.isOpenNewImage = false;
+      });
+      this.lastJobNumber = -1;
+    }
   }
 
   removeFile(file: {path: string, file_name: string, size: number}) {

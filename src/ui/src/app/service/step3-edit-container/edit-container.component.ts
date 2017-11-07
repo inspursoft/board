@@ -5,12 +5,10 @@ import {
   ServiceStepComponent
 } from '../service-step.component';
 import { K8sService } from '../service.k8s';
-import { MessageService } from "../../shared/message-service/message.service";
 import { EnvType } from "../environment-value/environment-value.component";
-import { Message } from "../../shared/message-service/message";
 import { CsInputComponent } from "../cs-input/cs-input.component";
+import { CsInputArrayComponent } from "../cs-input-array/cs-input-array.component";
 
-enum ContainerStatus{csNew, csSelectedImage}
 @Component({
   templateUrl: './edit-container.component.html',
   styleUrls: ["./edit-container.component.css"]
@@ -18,25 +16,45 @@ enum ContainerStatus{csNew, csSelectedImage}
 export class EditContainerComponent implements ServiceStepComponent, OnInit, OnDestroy, AfterContentChecked {
   @Input() data: any;
   @ViewChildren(CsInputComponent) inputComponents: QueryList<CsInputComponent>;
-  patternContainerName: RegExp = /^[a-zA-Z_-]+$/;
+  @ViewChildren(CsInputArrayComponent) inputArrayComponents: QueryList<CsInputArrayComponent>;
+  patternContainerName: RegExp = /^[a-zA-Z\d_-]+$/;
   patternWorkdir: RegExp = /^~?[\w\d-\/.{}$\/:]+[\s]*$/;
   step2Output: ServiceStep2Output;
   step3Output: ServiceStep3Output;
-  containerStatusList: Array<ContainerStatus>;
+  step3TypeStatus: Map<ServiceStep3Type, boolean>;
   showVolumeMounts = false;
   showEnvironmentValue = false;
   isInputComponentsValid = false;
   fixedEnvKeys: Array<string>;
+  fixedContainerPort: Array<number>;
+  curContainerIndex:number;
 
-  constructor(private k8sService: K8sService,
-              private messageService: MessageService) {
+  constructor(private k8sService: K8sService) {
     this.step3Output = Array<ServiceStep3Type>();
-    this.containerStatusList = Array<ContainerStatus>();
+    this.step3TypeStatus = new Map<ServiceStep3Type, boolean>();
     this.fixedEnvKeys = Array<string>();
+    this.fixedContainerPort = Array<number>();
   }
 
   ngOnInit() {
     this.step2Output = this.k8sService.getStepData(2) as ServiceStep2Output;
+    if (this.k8sService.getStepData(3)) {
+      this.step3Output = this.k8sService.getStepData(3) as ServiceStep3Output;
+      this.step3Output.forEach((value: ServiceStep3Type) => {
+        this.step3TypeStatus.set(value, false);
+        this.setDefaultContainerInfo(value, false);
+      });
+    } else {
+      this.step2Output.forEach((value: ServiceStep2Type) => {
+        let config = new ServiceStep3Type();
+        let firstIndex = value.image_name.indexOf("/");
+        config.container_name = value.image_name.slice(firstIndex + 1, value.image_name.length);
+        config.container_baseimage = value.image_name + ":" + value.image_tag;
+        this.step3TypeStatus.set(config, false);
+        this.setDefaultContainerInfo(config, true);
+        this.step3Output.push(config);
+      });
+    }
   }
 
   ngOnDestroy() {
@@ -52,65 +70,58 @@ export class EditContainerComponent implements ServiceStepComponent, OnInit, OnD
         }
       });
     }
+    if (this.inputArrayComponents) {
+      this.inputArrayComponents.forEach(item => {
+        if (!item.valid) {
+          this.isInputComponentsValid = false;
+        }
+      });
+    }
+  }
+
+  setDefaultContainerInfo(config: ServiceStep3Type, isNew: boolean): void {
+    let imageName: string = config.container_baseimage.split(":")[0];
+    let imageTag: string = config.container_baseimage.split(":")[1];
+    let firstIndex = imageName.indexOf("/");
+    let projectName = imageName.slice(0, firstIndex);
+    if (this.step2Output[0].project_name == projectName) {
+      this.k8sService.getContainerDefaultInfo(imageName, imageTag, projectName)
+        .then((res: ImageDockerfile) => {
+          this.step3TypeStatus.set(config, true);
+          if (res.image_cmd && isNew) {
+            config.container_command.push(res.image_cmd);//copy cmd
+          }
+          if (res.image_env) {
+            res.image_env.forEach(value => {//copy env
+              if (isNew) {
+                config.container_envs.push({
+                  env_name: value.dockerfile_envname,
+                  env_value: value.dockerfile_envvalue
+                });
+              }
+              this.fixedEnvKeys.push(value.dockerfile_envname);
+            });
+          }
+          if (res.image_expose) {
+            res.image_expose.forEach(value => {//copy port
+              let port: number = Number(value).valueOf();
+              this.fixedContainerPort.push(port);
+              if (isNew) {
+                config.container_ports.push(port);
+              }
+            });
+          }
+        }).catch(() => {
+      });
+    }
   }
 
   get isCanNextStep(): boolean {
     return this.step3Output.length > 0 && this.isInputComponentsValid;
   }
 
-  get selfObject() {
-    return this;
-  }
-
-  minusSelectContainer(index: number) {
-    this.containerStatusList.splice(index, 1);
-    this.step3Output.splice(index, 1);
-  }
-
-  addSelectContainer() {
-    this.containerStatusList.push(ContainerStatus.csNew);
-  }
-
-  changeSelectImage(index: number, status: ContainerStatus, image: ServiceStep2Type) {
-    let config: ServiceStep3Type;
-    if (status == ContainerStatus.csNew) {
-      config = new ServiceStep3Type();
-      this.containerStatusList[index] = ContainerStatus.csSelectedImage;
-      this.step3Output.push(config);
-    } else {
-      config = this.step3Output[index];
-    }
-    let firstIndex = image.image_name.indexOf("/");
-    config.container_name = image.image_name.slice(firstIndex + 1, image.image_name.length);
-    config.container_baseimage = image.image_name + ":" + image.image_tag;
-    let firstPos = image.image_name.indexOf("/");
-    let projectName = image.image_name.slice(0, firstPos);
-    if (projectName == image.project_name) {
-      let imageName = image.image_name.slice(firstPos + 1);
-      this.k8sService.getContainerDefaultInfo(imageName, image.image_tag, image.project_name)
-        .then((res: ImageDockerfile) => {
-          if (res.image_cmd) {
-            config.container_command.push(res.image_cmd);//copy cmd
-          }
-          if (res.image_env) {
-            res.image_env.forEach(value => {//copy env
-              config.container_envs.push({env_name: value.dockerfile_envname, env_value: value.dockerfile_envvalue});
-              this.fixedEnvKeys.push(value.dockerfile_envname);
-            });
-          }
-          if (res.image_expose) {
-            res.image_expose.forEach(value => {//copy port
-              config.container_ports.push(Number(value).valueOf());
-            });
-          }
-        })
-        .catch(() => {
-        });
-    }
-  }
-
-  getVolumesDescription(index: number): string {
-    let volumesArr = this.step3Output[index].container_volumes;
+  getVolumesDescription(item: ServiceStep3Type): string {
+    let volumesArr = item.container_volumes;
     let result: string = "";
     volumesArr.forEach(value => {
       let storageServer = value.target_storageServer == "" ? "" : value.target_storageServer.concat(":");
@@ -119,29 +130,8 @@ export class EditContainerComponent implements ServiceStepComponent, OnInit, OnD
     return result == ":" ? "" : result;
   }
 
-  getSelectImageDefaultText(index: number) {
-    if (this.containerStatusList[index] == ContainerStatus.csNew) {
-      return "SERVICE.STEP_3_SELECT_IMAGE"
-    }
-    return this.step3Output[index].container_name;
-  }
-
-  canChangeSelectImage(item: ServiceStep2Type) {
-    let baseImage = item.image_name + ":" + item.image_tag;
-    let hasItem = this.step3Output.find(value => {
-      return value.container_baseimage == baseImage;
-    });
-    if (hasItem) {
-      let m: Message = new Message();
-      m.message = "SERVICE.STEP_3_IMAGE_SELECTED";
-      this.messageService.inlineAlertMessage(m);
-      return false;
-    }
-    return true;
-  }
-
-  getEnvsDescription(index: number): string {
-    let envsArr = this.step3Output[index].container_envs;
+  getEnvsDescription(item: ServiceStep3Type): string {
+    let envsArr = item.container_envs;
     let result: string = "";
     envsArr.forEach(value => {
       result += `${value.env_name}=${value.env_value};`
@@ -188,10 +178,19 @@ export class EditContainerComponent implements ServiceStepComponent, OnInit, OnD
     }
   }
 
+  toggleShowStatus(item: ServiceStep3Type):void {
+    let status = this.step3TypeStatus.get(item);
+    this.step3TypeStatus.set(item, !status);
+  }
+
   shieldEnter($event: KeyboardEvent) {
     if ($event.charCode == 13) {
       (<any>$event.target).blur();
     }
+  }
+
+  backStep(): void {
+    this.k8sService.stepSource.next(2);
   }
 
   forward(): void {

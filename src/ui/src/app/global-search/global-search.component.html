@@ -21,13 +21,15 @@
     <h2>{{ 'GLOBAL_SEARCH.SERVICES' | translate }}</h2>
     <clr-datagrid>
       <clr-dg-column>{{ 'GLOBAL_SEARCH.SERVICE_NAME' | translate }}</clr-dg-column>
-      <clr-dg-column>{{ 'GLOBAL_SEARCH.PROJECT_NAME' | translate }}</clr-dg-column>     
+      <clr-dg-column>{{ 'GLOBAL_SEARCH.PROJECT_NAME' | translate }}</clr-dg-column>
+      <clr-dg-column>{{ 'GLOBAL_SEARCH.IS_PUBLIC' | translate }}</clr-dg-column>     
       <clr-dg-row *clrDgItems="let s of globalSearch.service_result">
         <clr-dg-cell [ngSwitch]="hasSignedIn">
           <a *ngSwitchCase="true" href="javascript:void(0)" routerLink="/services" (click)="navigateTo('/services')">{{ s.service_name }}</a>
           <ng-template ngSwitchDefault>{{ s.service_name }}</ng-template>
         </clr-dg-cell>
         <clr-dg-cell>{{ s.project_name }}</clr-dg-cell>
+        <clr-dg-cell>{{ (s.is_public ? 'GLOBAL_SEARCH.TRUE' : 'GLOBAL_SEARCH.FALSE') | translate }}</clr-dg-cell>
       </clr-dg-row>
       <clr-dg-footer>
         <clr-dg-pagination #pagination [clrDgPageSize]="5"></clr-dg-pagination>

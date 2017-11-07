@@ -60,7 +60,7 @@ export class ListServiceComponent implements OnInit, OnDestroy {
           case MESSAGE_TARGET.TOGGLE_SERVICE: {
             let service: ServiceData = confirmationMessage.data;
             this.k8sService
-              .toggleService(service.id, service.status ? 0 : 1)
+              .toggleServiceStatus(service.id, service.status ? 0 : 1)
               .then(res => {
                 m.message = 'SERVICE.SUCCESSFUL_TOGGLE';
                 this.messageService.inlineAlertMessage(m);
@@ -120,8 +120,15 @@ export class ListServiceComponent implements OnInit, OnDestroy {
     }
   }
 
-  getServicePublic(publicity: number): string {
-    return publicity === 1 ? 'SERVICE.STATUS_PUBLIC' : 'SERVICE.STATUS_PRIVATE';
+  toggleServicePublic(s: Service): void {
+    let toggleMessage = new Message();
+    this.k8sService
+      .toggleServicePublicity(s.service_id, s.service_public ? 0 : 1)
+      .then(() => {
+        toggleMessage.message = 'SERVICE.SUCCESSFUL_TOGGLE';
+        this.messageService.inlineAlertMessage(toggleMessage);
+      })
+      .catch(err => this.messageService.dispatchError(err, ''));
   }
 
   editService(s: Service) {
@@ -151,7 +158,7 @@ export class ListServiceComponent implements OnInit, OnDestroy {
     let announceMessage = new Message();
     announceMessage.title = title;
     announceMessage.message = message;
-    announceMessage.params = [ s.service_name ];
+    announceMessage.params = [s.service_name];
     announceMessage.target = target;
     announceMessage.buttons = buttonStyle;
     announceMessage.data = serviceData;

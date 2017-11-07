@@ -92,6 +92,8 @@ docker push $docker_registry/$extras
 
 echo &quot;Remove pushed image.&quot;
 
+docker rmi $docker_registry/$extras
+
 docker rmi $extras</command>
     </hudson.tasks.Shell>
   </builders>

@@ -72,6 +72,17 @@ func UpdateService(s model.ServiceStatus, fieldNames ...string) (bool, error) {
 	return true, nil
 }
 
+func DeleteServiceByID(s model.ServiceStatus) (int64, error) {
+	if s.ID == 0 {
+		return 0, errors.New("no Service ID provided")
+	}
+	num, err := dao.DeleteService(s)
+	if err != nil {
+		return 0, err
+	}
+	return num, nil
+}
+
 func GetServiceList() ([]model.ServiceStatus, error) {
 
 	serviceList, err := dao.GetServiceData()

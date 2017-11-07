@@ -51,20 +51,24 @@ export class ConfigSettingComponent implements ServiceStepComponent, OnInit, OnD
     let step1Out = this.k8sService.getStepData(1) as ServiceStep1Output;
     this.step2Output = this.k8sService.getStepData(2) as ServiceStep2Output;
     this.step3Output = this.k8sService.getStepData(3) as ServiceStep3Output;
-    this.step4Output.service_id = step1Out.service_id;
-    this.step4Output.project_name = step1Out.project_name;
-    this.step4Output.project_id = step1Out.project_id;
-    this.step4Output.deployment_yaml.container_list = this.step3Output;
-    let volumeList = this.step4Output.deployment_yaml.volume_list;
-    this.step3Output.forEach((value: ServiceStep3Type) => {
-      value.container_volumes.forEach(volume => {
-        volumeList.push({
-          volume_name: volume.target_storagename,
-          volume_path: volume.target_dir,
-          server_name: ""
-        })
+    if (this.k8sService.getStepData(4)){
+      this.step4Output = this.k8sService.getStepData(4) as ServiceStep4Output;
+    } else {
+      this.step4Output.service_id = step1Out.service_id;
+      this.step4Output.project_name = step1Out.project_name;
+      this.step4Output.project_id = step1Out.project_id;
+      this.step4Output.deployment_yaml.container_list = this.step3Output;
+      let volumeList = this.step4Output.deployment_yaml.volume_list;
+      this.step3Output.forEach((value: ServiceStep3Type) => {
+        value.container_volumes.forEach(volume => {
+          volumeList.push({
+            volume_name: volume.target_storagename,
+            volume_path: volume.target_dir,
+            server_name: ""
+          })
+        });
       });
-    });
+    }
     for (let i = 1; i <= 100; i++) {
       this.dropDownListNum.push(i)
     }
@@ -143,5 +147,9 @@ export class ConfigSettingComponent implements ServiceStepComponent, OnInit, OnD
 
   forward(): void {
     this.k8sService.stepSource.next(6);
+  }
+
+  backUpStep(): void {
+    this.k8sService.stepSource.next(3);
   }
 }

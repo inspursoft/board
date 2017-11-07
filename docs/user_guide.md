@@ -183,6 +183,69 @@ Deploy a service "demoshow"
 
 <img src="img/userguide/demoshow-ok.PNG" width="100" alt="Service success">
 
+#### Example inspur bigdata
+Deploy a service "bigdata" which is a containerized project for the Inspur bigdata software platform.
+
+* Start to create a service
+
+<img src="img/userguide/bigdata-a.PNG" width="100" alt="create a service">
+
+* Select a project
+
+<img src="img/userguide/bigdata-b.PNG" width="100" alt="Select a project">
+
+* Add images for this service
+
+<img src="img/userguide/bigdata-c.PNG" width="100" alt="add images">
+
+* Select images for this service
+
+<img src="img/userguide/bigdata-d.PNG" width="100" alt="select images">
+
+* Select two images for this service
+
+<img src="img/userguide/bigdata-e.PNG" width="100" alt="select two images">
+
+* Configure containers
+
+<img src="img/userguide/bigdata-f.PNG" width="100" alt="Configure containers">
+
+* Configure storage volume for the mysql container
+
+<img src="img/userguide/bigdata-g.PNG" width="100" alt="Configure storage volume">
+
+* Configure environment parameters
+
+<img src="img/userguide/bigdata-i.PNG" width="100" alt="Configure environment parameters">
+
+* Configure container ports
+
+<img src="img/userguide/bigdata-j.PNG" width="100" alt="Configure container ports">
+
+* Configure the bigdata service
+
+<img src="img/userguide/bigdata-k.PNG" width="100" alt="Configure bigdata service">
+
+* Configure the external node port
+
+<img src="img/userguide/bigdata-l.PNG" width="100" alt="Configure the external node port">
+
+* Deploy the bigdata service
+
+<img src="img/userguide/bigdata-m.PNG" width="100" alt="Deploy the bigdata service">
+
+<img src="img/userguide/bigdata-n.PNG" width="100" alt="Deployed the bigdata service">
+
+* The bigdata service is deployed
+
+<img src="img/userguide/bigdata-p.PNG" width="100" alt="bigdata service deployed">
+
+<img src="img/userguide/bigdata-q.PNG" width="100" alt="bigdata service deployed">
+
+* Monitor the bigdata service status on Board
+
+<img src="img/userguide/bigdata-o.PNG" width="100" alt="Monitor the bigdata service status">
+
 ## Search Projects, Services, Users and Images
 Board search  engine could search project, service, users and image.
 ### Search categories

@@ -15,6 +15,7 @@ import (
 
 const jenkinsLastBuildNumberTemplateURL = "http://jenkins:8080/job/{{.JobName}}/lastBuild/buildNumber"
 const jenkinsBuildConsoleTemplateURL = "http://jenkins:8080/job/{{.JobName}}/{{.BuildSerialID}}/consoleText"
+const jenkinsStopBuildTemplateURL = "http://jenkins:8080/job/{{.JobName}}/{{.BuildSerialID}}/stop"
 const maxRetryCount = 30
 
 type jobConsole struct {
@@ -50,6 +51,40 @@ func generateURL(rawTemplate string, data interface{}) (string, error) {
 	return targetURL.String(), nil
 }
 
+func getBuildNumber(query interface{}) (int, error) {
+	lastBuildNumberURL, err := generateURL(jenkinsLastBuildNumberTemplateURL, query)
+	if err != nil {
+		return 0, err
+	}
+	resp, err := http.Get(lastBuildNumberURL)
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0, err
+	}
+	return strconv.Atoi(string(data))
+}
+
+func (j *JenkinsJobController) GetLastBuildNumber() {
+	jobName := j.GetString("job_name")
+	if jobName == "" {
+		j.customAbort(http.StatusBadRequest, "No job name found.")
+		return
+	}
+	query := jobConsole{JobName: jobName}
+	lastBuildNumber, err := getBuildNumber(query)
+	if err != nil {
+		j.internalError(err)
+		return
+	}
+	j.Data["json"] = lastBuildNumber
+	j.ServeJSON()
+}
+
 func (j *JenkinsJobController) Console() {
 	jobName := j.GetString("job_name")
 	if jobName == "" {
@@ -58,33 +93,7 @@ func (j *JenkinsJobController) Console() {
 	}
 
 	query := jobConsole{JobName: jobName}
-
-	lastBuildNumberURL, err := generateURL(jenkinsLastBuildNumberTemplateURL, query)
-	if err != nil {
-		j.internalError(err)
-		return
-	}
-
-	resp, err := http.Get(lastBuildNumberURL)
-	if err != nil {
-		j.internalError(err)
-		return
-	}
-	defer resp.Body.Close()
-
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		j.internalError(err)
-		return
-	}
-
-	lastBuildNumber, err := strconv.Atoi(string(data))
-	if err != nil {
-		j.internalError(err)
-		return
-	}
-
-	query.BuildSerialID = j.GetString("build_serial_id", strconv.Itoa(lastBuildNumber+1))
+	query.BuildSerialID = j.GetString("build_serial_id", "lastBuild")
 
 	buildConsoleURL, err := generateURL(jenkinsBuildConsoleTemplateURL, query)
 	if err != nil {
@@ -116,7 +125,7 @@ func (j *JenkinsJobController) Console() {
 
 	go func() {
 		for range ticker.C {
-			resp, err = client.Do(req)
+			resp, err := client.Do(req)
 			if err != nil {
 				j.internalError(err)
 				logs.Error("Failed to get console response: %+v", err)
@@ -132,7 +141,7 @@ func (j *JenkinsJobController) Console() {
 					continue
 				}
 			}
-			data, err = ioutil.ReadAll(resp.Body)
+			data, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
 				j.internalError(err)
 				logs.Error("Failed to read data from response body: %+v", err)
@@ -154,6 +163,9 @@ func (j *JenkinsJobController) Console() {
 		select {
 		case content := <-buffer:
 			err = ws.WriteMessage(websocket.TextMessage, content)
+			if err != nil {
+				done <- true
+			}
 		case <-done:
 			ticker.Stop()
 			err = ws.Close()
@@ -167,4 +179,35 @@ func (j *JenkinsJobController) Console() {
 			logs.Error("Failed to write message: %+v", err)
 		}
 	}
+}
+
+func (j *JenkinsJobController) Stop() {
+	jobName := j.GetString("job_name")
+	if jobName == "" {
+		j.customAbort(http.StatusBadRequest, "No job name found.")
+		return
+	}
+
+	query := jobConsole{JobName: jobName}
+
+	lastBuildNumber, err := getBuildNumber(query)
+	if err != nil {
+		j.customAbort(http.StatusInternalServerError, "Failed to get job number.")
+		return
+	}
+	query.BuildSerialID = j.GetString("build_serial_id", strconv.Itoa(lastBuildNumber))
+	stopBuildURL, err := generateURL(jenkinsStopBuildTemplateURL, query)
+	if err != nil {
+		j.internalError(err)
+		return
+	}
+	logs.Debug("Requested stop Jenkins build URL: %s", stopBuildURL)
+	resp, err := http.PostForm(stopBuildURL, nil)
+	if err != nil {
+		j.internalError(err)
+		return
+	}
+	defer resp.Body.Close()
+	logs.Debug("Response status of stopping Jenkins jobs: %d", resp.StatusCode)
+	j.serveStatus(resp.StatusCode, "")
 }

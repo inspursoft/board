@@ -4,7 +4,10 @@ import (
 	"git/inspursoft/board/src/common/model"
 	"testing"
 
+	"github.com/astaxie/beego/logs"
+	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/stretchr/testify/assert"
 )
 
 var Copy = model.CopyStruct{
@@ -98,4 +101,79 @@ func TestImageConfigClean(t *testing.T) {
 	} else {
 		t.Log("Clean config successfully.")
 	}
+}
+
+func cleanImageTestByID(imageid int64) {
+	o := orm.NewOrm()
+	rs := o.Raw("delete from image where id = ?", imageid)
+	r, err := rs.Exec()
+	if err != nil {
+		logs.Error("Error occurred while deleting image: %+v", err)
+	}
+	affected, err := r.RowsAffected()
+	if err != nil {
+		logs.Error("Error occurred while deleting image: %+v", err)
+	}
+	if affected == 0 {
+		logs.Error("Failed to delete image", imageid)
+	} else {
+		logs.Info("Successful cleared up.", imageid)
+	}
+}
+
+func cleanImageTestByName(imagename string) {
+	o := orm.NewOrm()
+	rs := o.Raw("delete from image where name = ?", imagename)
+	r, err := rs.Exec()
+	if err != nil {
+		logs.Error("Error occurred while deleting image: %+v", err)
+	}
+	affected, err := r.RowsAffected()
+	if err != nil {
+		logs.Error("Error occurred while deleting image: %+v", err)
+	}
+	if affected == 0 {
+		logs.Error("Failed to delete image", imagename)
+	} else {
+		logs.Info("Successful cleared up.", imagename)
+	}
+}
+
+var testimage = model.Image{
+	ImageName:    "testimage1",
+	ImageComment: "testimage1",
+}
+
+var testImageid int64
+
+func TestCreateImage(t *testing.T) {
+	assert := assert.New(t)
+	id, err := CreateImage(testimage)
+	assert.Nil(err, "Failed, err when create test image.")
+	assert.NotEqual(0, id, "Failed to assign a image id")
+	testImageid = id
+	t.Log(testImageid)
+}
+
+func TestUpdateImage(t *testing.T) {
+	assert := assert.New(t)
+	testimage.ImageDeleted = 1
+	testimage.ImageID = testImageid
+	ret, err := UpdateImage(testimage, "deleted")
+	assert.Nil(err, "Failed, err when update test image.")
+	assert.Equal(true, ret, "Failed to update test image.")
+}
+
+func TestGetImage(t *testing.T) {
+	assert := assert.New(t)
+	testimage.ImageID = testImageid
+	retimage, err := GetImage(testimage, "id")
+	assert.Nil(err, "Failed, err when get test image.")
+	assert.Equal("testimage1", retimage.ImageName, "Failed to get image name.")
+	t.Log(retimage)
+}
+
+func TestClean(t *testing.T) {
+	t.Log("Clean test image", testImageid)
+	cleanImageTestByID(testImageid)
 }

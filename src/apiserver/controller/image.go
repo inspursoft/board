@@ -356,7 +356,6 @@ func (p *ImageController) DockerfilePreviewAction() {
 
 func (p *ImageController) ConfigCleanAction() {
 	var err error
-
 	if p.isProjectAdmin == false {
 		p.customAbort(http.StatusForbidden, "Invalid user for project admin")
 		return
@@ -374,13 +373,50 @@ func (p *ImageController) ConfigCleanAction() {
 		p.internalError(err)
 		return
 	}
+	configPath := filepath.Join(repoPath, strings.TrimSpace(reqImageIndex.ProjectName),
+		strings.TrimSpace(reqImageIndex.ImageName), strings.TrimSpace(reqImageIndex.ImageTag))
 
-	configPath := filepath.Join(repoPath(), strings.TrimSpace(reqImageIndex.ProjectName), strings.TrimSpace(reqImageIndex.ImageName), strings.TrimSpace(reqImageIndex.ImageTag))
+	// Update git repo
+	var pushobject pushObject
+
+	pushobject.FileName = defaultDockerfilename
+	pushobject.JobName = imageProcess
+	pushobject.Value = filepath.Join(reqImageIndex.ProjectName,
+		reqImageIndex.ImageName, reqImageIndex.ImageTag)
+	pushobject.Extras = filepath.Join(reqImageIndex.ProjectName,
+		reqImageIndex.ImageName) + ":" + reqImageIndex.ImageTag
+	pushobject.Message = fmt.Sprintf("Build image: %s", pushobject.Extras)
+
+	//Get file list for Jenkis git repo
+	uploads, err := service.ListUploadFiles(filepath.Join(configPath, "upload"))
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	// Add upload files
+	for _, finfo := range uploads {
+		filefullname := filepath.Join(pushobject.Value, "upload", finfo.FileName)
+		pushobject.Items = append(pushobject.Items, filefullname)
+	}
+	// Add Dockerfile
+	pushobject.Items = append(pushobject.Items, filepath.Join(pushobject.Value,
+		defaultDockerfilename))
+
+	ret, msg, err := InternalCleanObjects(&pushobject, &(p.baseController))
+	if err != nil {
+		logs.Info("Failed to push object for git repo clean", msg, ret)
+		p.internalError(err)
+		return
+	}
+	logs.Info("Internal push object for git repo clean: %s", msg)
+
+	//Delete the config files
 	err = service.ImageConfigClean(configPath)
 	if err != nil {
 		p.internalError(err)
 		return
 	}
+
 }
 
 type tagList struct {
