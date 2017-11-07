@@ -22,10 +22,6 @@ const (
 	jenkinsJobToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
 )
 
-var repoServePath = filepath.Join(baseRepoPath, "board_repo_serve")
-var repoServeURL = filepath.Join("root@gitserver:", "gitserver", "repos", "board_repo_serve")
-var repoPath = filepath.Join(baseRepoPath, "board_repo")
-
 type GitRepoController struct {
 	baseController
 }
@@ -54,7 +50,7 @@ func (g *GitRepoController) Prepare() {
 }
 
 func (g *GitRepoController) CreateServeRepo() {
-	_, err := service.InitBareRepo(repoServePath)
+	_, err := service.InitBareRepo(repoServePath())
 	if err != nil {
 		g.customAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to initialize serve repo: %+v\n", err))
 		return
@@ -62,7 +58,7 @@ func (g *GitRepoController) CreateServeRepo() {
 }
 
 func (g *GitRepoController) InitUserRepo() {
-	_, err := service.InitRepo(repoServeURL, repoPath)
+	_, err := service.InitRepo(repoServeURL(), repoPath())
 	if err != nil {
 		g.customAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to initialize user's repo: %+v\n", err))
 		return
@@ -70,7 +66,7 @@ func (g *GitRepoController) InitUserRepo() {
 
 	subPath := g.GetString("sub_path")
 	if subPath != "" {
-		os.MkdirAll(filepath.Join(repoPath, subPath), 0755)
+		os.MkdirAll(filepath.Join(repoPath(), subPath), 0755)
 		if err != nil {
 			g.internalError(err)
 		}
@@ -96,7 +92,7 @@ func (g *GitRepoController) PushObjects() {
 		reqPush.Message = defaultCommitMessage
 	}
 
-	repoHandler, err := service.OpenRepo(repoPath)
+	repoHandler, err := service.OpenRepo(repoPath())
 	if err != nil {
 		g.customAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to open user's repo: %+v\n", err))
 		return
@@ -149,7 +145,7 @@ func (g *GitRepoController) PullObjects() {
 		return
 	}
 	targetPath := filepath.Join(baseRepoPath, target)
-	repoHandler, err := service.InitRepo(repoServeURL, targetPath)
+	repoHandler, err := service.InitRepo(repoServeURL(), targetPath)
 	if err != nil {
 		g.customAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to open user's repo: %+v\n", err))
 		return
@@ -168,7 +164,7 @@ func InternalPushObjects(p *pushObject, g *baseController) (int, string, error) 
 		p.Message = defaultCommitMessage
 	}
 
-	repoHandler, err := service.OpenRepo(repoPath)
+	repoHandler, err := service.OpenRepo(repoPath())
 	if err != nil {
 		return http.StatusInternalServerError, "Failed to open user's repo", err
 	}
@@ -221,7 +217,7 @@ func InternalCleanObjects(p *pushObject, g *baseController) (int, string, error)
 		p.Message = defaultCommitMessage
 	}
 
-	repoHandler, err := service.OpenRepo(repoPath)
+	repoHandler, err := service.OpenRepo(repoPath())
 	if err != nil {
 		return http.StatusInternalServerError, "Failed to open user's repo", err
 	}

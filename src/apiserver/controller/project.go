@@ -218,7 +218,7 @@ func (p *ProjectController) ToggleProjectPublicAction() {
 // TODO
 func init() {
 	logs.Info("Init git repo for default project %s", defaultProject)
-	_, err := service.InitRepo(repoServeURL, repoPath)
+	_, err := service.InitRepo(repoServeURL(), repoPath())
 	if err != nil {
 		logs.Error("Failed to initialize default user's repo: %+v\n", err)
 		return
@@ -226,7 +226,7 @@ func init() {
 
 	subPath := defaultProject
 	if subPath != "" {
-		os.MkdirAll(filepath.Join(repoPath, subPath), 0755)
+		os.MkdirAll(filepath.Join(repoPath(), subPath), 0755)
 		if err != nil {
 			logs.Error("Failed to make default user's repo: %+v\n", err)
 		}
