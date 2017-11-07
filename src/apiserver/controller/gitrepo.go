@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
-	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -21,11 +20,6 @@ const (
 	jenkinsJobURL   = "http://jenkins:8080/job/{{.JobName}}/buildWithParameters?token={{.Token}}&value={{.Value}}&extras={{.Extras}}&file_name={{.FileName}}"
 	jenkinsJobToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
 )
-
-var baseRepoPath = utils.GetConfig("BASE_REPO_PATH")
-var repoServePath = utils.GetConfig("REPO_SERVE_PATH")
-var repoServeURL = utils.GetConfig("REPO_SERVE_URL")
-var repoPath = utils.GetConfig("REPO_PATH")
 
 type GitRepoController struct {
 	baseController
@@ -222,7 +216,7 @@ func InternalCleanObjects(p *pushObject, g *baseController) (int, string, error)
 		p.Message = defaultCommitMessage
 	}
 
-	repoHandler, err := service.OpenRepo(repoPath)
+	repoHandler, err := service.OpenRepo(repoPath())
 	if err != nil {
 		return http.StatusInternalServerError, "Failed to open user's repo", err
 	}

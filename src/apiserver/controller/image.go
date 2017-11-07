@@ -373,7 +373,7 @@ func (p *ImageController) ConfigCleanAction() {
 		p.internalError(err)
 		return
 	}
-	configPath := filepath.Join(repoPath, strings.TrimSpace(reqImageIndex.ProjectName),
+	configPath := filepath.Join(repoPath(), strings.TrimSpace(reqImageIndex.ProjectName),
 		strings.TrimSpace(reqImageIndex.ImageName), strings.TrimSpace(reqImageIndex.ImageTag))
 
 	// Update git repo

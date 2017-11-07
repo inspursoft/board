@@ -24,6 +24,7 @@ const (
 
 var repoServePath = filepath.Join(baseRepoPath, "board_repo_serve")
 var repoServeURL = filepath.Join("root@gitserver:", "gitserver", "repos", "board_repo_serve")
+var repoServePath = filepath.Join(baseRepoPath, "board_repo_serve")
 var repoPath = filepath.Join(baseRepoPath, "board_repo")
 
 func updateAdminPassword(initialPassword string) {
@@ -62,11 +63,9 @@ func main() {
 	utils.SetConfig("KUBE_MASTER_URL", "http://%s:%s", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
 	utils.SetConfig("KUBE_NODE_URL", "http://%s:%s/api/v1/nodes", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
 
-	logs.Debug("base repo path: %s", baseRepoPath)
-
 	utils.SetConfig("BASE_REPO_PATH", baseRepoPath)
-	utils.SetConfig("REPO_SERVE_PATH", repoServePath)
 	utils.SetConfig("REPO_SERVE_URL", repoServeURL)
+	utils.SetConfig("REPO_SERVE_PATH", repoServePath)
 	utils.SetConfig("REPO_PATH", repoPath)
 	utils.SetConfig("SSH_KEY_PATH", sshKeyPath)
 

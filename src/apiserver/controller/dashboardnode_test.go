@@ -1,4 +1,5 @@
 package controller
+/*
 
 import (
 	"fmt"
@@ -15,3 +16,4 @@ func init() {
 		fmt.Printf("Error occurred on registering DB: %+v\n", err)
 	}
 }
+*/

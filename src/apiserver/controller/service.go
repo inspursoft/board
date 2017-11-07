@@ -600,7 +600,7 @@ func (p *ServiceController) GetServiceConfigAction() {
 	logs.Info("service status: ", s)
 
 	// Get the path of the service config files
-	serviceConfigPath := filepath.Join(repoPath, s.ProjectName,
+	serviceConfigPath := filepath.Join(repoPath(), s.ProjectName,
 		strconv.Itoa(serviceID))
 	logs.Debug("Service config path: %s", serviceConfigPath)
 
@@ -643,7 +643,7 @@ func (p *ServiceController) UpdateServiceConfigAction() {
 		return
 	}
 
-	serviceConfigPath := filepath.Join(repoPath, reqServiceConfig.ProjectName,
+	serviceConfigPath := filepath.Join(repoPath(), reqServiceConfig.ProjectName,
 		strconv.Itoa(serviceID))
 	// TODO update yaml files by service config
 	// err = service.UpdateServiceConfigYaml(reqServiceConfig, serviceConfigPath)
@@ -678,7 +678,7 @@ func (p *ServiceController) DeleteServiceConfigAction() {
 	logs.Info("service status: ", s)
 
 	// Get the path of the service config files
-	serviceConfigPath := filepath.Join(repoPath, s.ProjectName,
+	serviceConfigPath := filepath.Join(repoPath(), s.ProjectName,
 		strconv.Itoa(serviceID))
 	logs.Debug("Service config path: %s", serviceConfigPath)
 

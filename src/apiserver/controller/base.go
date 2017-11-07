@@ -42,6 +42,11 @@ var registryURL = utils.GetConfig("REGISTRY_URL")
 var registryBaseURI = utils.GetConfig("REGISTRY_BASE_URI")
 var authMode = utils.GetConfig("AUTH_MODE")
 
+var repoServeURL = utils.GetConfig("REPO_SERVE_URL")
+var baseRepoPath = utils.GetConfig("BASE_REPO_PATH")
+var repoServePath = utils.GetConfig("REPO_SERVE_PATH")
+var repoPath = utils.GetConfig("REPO_PATH")
+
 type baseController struct {
 	beego.Controller
 	currentUser    *model.User
