@@ -17,7 +17,6 @@ import (
 )
 
 const (
-	baseRepoPath    = `/repos`
 	jenkinsJobURL   = "http://jenkins:8080/job/{{.JobName}}/buildWithParameters?token={{.Token}}&value={{.Value}}&extras={{.Extras}}&file_name={{.FileName}}"
 	jenkinsJobToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
 )
@@ -144,7 +143,7 @@ func (g *GitRepoController) PullObjects() {
 		g.customAbort(http.StatusBadRequest, "No target provided for pulling.")
 		return
 	}
-	targetPath := filepath.Join(baseRepoPath, target)
+	targetPath := filepath.Join(baseRepoPath(), target)
 	repoHandler, err := service.InitRepo(repoServeURL(), targetPath)
 	if err != nil {
 		g.customAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to open user's repo: %+v\n", err))
