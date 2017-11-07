@@ -118,3 +118,11 @@ func (r *repoHandler) Pull() error {
 	}
 	return err
 }
+
+func (r *repoHandler) Remove(filename string) (*repoHandler, error) {
+	_, err := r.worktree.Remove(filename)
+	if err != nil {
+		return nil, err
+	}
+	return r, nil
+}

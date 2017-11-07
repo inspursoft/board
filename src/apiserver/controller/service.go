@@ -92,7 +92,7 @@ func (p *ServiceController) commonDeployService(reqServiceConfig model.ServiceCo
 
 	//push to git
 	var pushobject pushObject
-	deploymentAbsName := filepath.Join(repoPath, reqServiceConfig.Project.ProjectName, strconv.Itoa(serviceID), deploymentFile)
+	deploymentAbsName := filepath.Join(repoPath(), reqServiceConfig.Project.ProjectName, strconv.Itoa(serviceID), deploymentFile)
 	pushobject.FileName = deploymentFile
 	pushobject.JobName = serviceProcess
 	pushobject.Value = filepath.Join(reqServiceConfig.Project.ProjectName, strconv.Itoa(serviceID))
@@ -100,7 +100,7 @@ func (p *ServiceController) commonDeployService(reqServiceConfig model.ServiceCo
 		reqServiceConfig.Project.ProjectName, reqServiceConfig.Project.ServiceID)
 	pushobject.Extras = filepath.Join(kubeMasterURL(), deploymentAPI, serviceNamespace, "deployments")
 	pushobject.Items = []string{filepath.Join(pushobject.Value, deploymentFile)}
-	loadPath := filepath.Join(repoPath, reqServiceConfig.Project.ProjectName, strconv.Itoa(serviceID))
+	loadPath := filepath.Join(repoPath(), reqServiceConfig.Project.ProjectName, strconv.Itoa(serviceID))
 	logs.Info("deployment pushobject.FileName:%+v\n", pushobject.FileName)
 	logs.Info("deployment pushobject.Value:%+v\n", pushobject.Value)
 	logs.Info("deployment pushobject.Extras:%+v\n", pushobject.Extras)
@@ -124,7 +124,7 @@ func (p *ServiceController) commonDeployService(reqServiceConfig model.ServiceCo
 	}
 	logs.Info("Internal push deployment object: %d %s", ret, msg)
 
-	serviceAbsName := filepath.Join(repoPath, reqServiceConfig.Project.ProjectName, strconv.Itoa(serviceID), serviceFile)
+	serviceAbsName := filepath.Join(repoPath(), reqServiceConfig.Project.ProjectName, strconv.Itoa(serviceID), serviceFile)
 	pushobject.FileName = serviceFile
 	pushobject.Message = fmt.Sprintf("Create service for project %s service %d",
 		reqServiceConfig.Project.ProjectName, reqServiceConfig.Project.ServiceID)
@@ -589,5 +589,128 @@ func (p *ServiceController) ServicePublicityAction() {
 		}
 	} else {
 		logs.Info("Already in target publicity status")
+	}
+}
+
+func (p *ServiceController) GetServiceConfigAction() {
+	var err error
+	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	// Get the project info of this service
+	var servicequery model.ServiceStatus
+	servicequery.ID = int64(serviceID)
+	s, err := service.GetService(servicequery, "id")
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if s == nil {
+		p.customAbort(http.StatusBadRequest,
+			fmt.Sprintf("Invalid service ID: %d", serviceID))
+		return
+	}
+	logs.Info("service status: ", s)
+
+	// Get the path of the service config files
+	serviceConfigPath := filepath.Join(repoPath(), s.ProjectName,
+		strconv.Itoa(serviceID))
+	logs.Debug("Service config path: %s", serviceConfigPath)
+
+	// Get the service config by yaml files
+	var serviceConfig model.ServiceConfig
+	serviceConfig.ServiceID = s.ID
+	serviceConfig.ProjectID = s.ProjectID
+	serviceConfig.ProjectName = s.ProjectName
+	//TODO
+	// err = service.InterpretServiceConfigYaml(&serviceConfig, serviceConfigPath)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	logs.Debug("Service config: ", serviceConfig)
+
+	p.Data["json"] = serviceConfig
+	p.ServeJSON()
+}
+
+func (p *ServiceController) UpdateServiceConfigAction() {
+	var err error
+	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	//Get request massage of service config
+	reqServiceConfig, serviceID, err := p.handleReqData()
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	// Check request parameters
+	err = service.CheckReqPara(reqServiceConfig)
+	if err != nil {
+		p.customAbort(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	serviceConfigPath := filepath.Join(repoPath(), reqServiceConfig.Project.ProjectName,
+		strconv.Itoa(serviceID))
+	// TODO update yaml files by service config
+	// err = service.UpdateServiceConfigYaml(reqServiceConfig, serviceConfigPath)
+	if err != nil {
+		logs.Info("failed to update service yaml", serviceConfigPath)
+		p.customAbort(http.StatusBadRequest, err.Error())
+		return
+	}
+}
+
+func (p *ServiceController) DeleteServiceConfigAction() {
+	var err error
+	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	// Get the project info of this service
+	var servicequery model.ServiceStatus
+	servicequery.ID = int64(serviceID)
+	s, err := service.GetService(servicequery, "id")
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if s == nil {
+		p.customAbort(http.StatusBadRequest,
+			fmt.Sprintf("Invalid service ID: %d", serviceID))
+		return
+	}
+	logs.Info("service status: ", s)
+
+	// Get the path of the service config files
+	serviceConfigPath := filepath.Join(repoPath(), s.ProjectName,
+		strconv.Itoa(serviceID))
+	logs.Debug("Service config path: %s", serviceConfigPath)
+
+	// Delete yaml files
+	// TODO
+	// err = service.DeleteServiceConfigYaml(serviceConfigPath)
+	if err != nil {
+		logs.Info("failed to delete service yaml", serviceConfigPath)
+		p.internalError(err)
+		return
+	}
+
+	// For terminated service config, actually delete it in DB
+	_, err = service.DeleteServiceByID(servicequery)
+	if err != nil {
+		p.internalError(err)
+		return
 	}
 }

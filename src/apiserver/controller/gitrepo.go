@@ -17,14 +17,9 @@ import (
 )
 
 const (
-	baseRepoPath    = `/repos`
 	jenkinsJobURL   = "http://jenkins:8080/job/{{.JobName}}/buildWithParameters?token={{.Token}}&value={{.Value}}&extras={{.Extras}}&file_name={{.FileName}}"
 	jenkinsJobToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
 )
-
-var repoServePath = filepath.Join(baseRepoPath, "board_repo_serve")
-var repoServeURL = filepath.Join("root@gitserver:", "gitserver", "repos", "board_repo_serve")
-var repoPath = filepath.Join(baseRepoPath, "board_repo")
 
 type GitRepoController struct {
 	baseController
@@ -54,7 +49,7 @@ func (g *GitRepoController) Prepare() {
 }
 
 func (g *GitRepoController) CreateServeRepo() {
-	_, err := service.InitBareRepo(repoServePath)
+	_, err := service.InitBareRepo(repoServePath())
 	if err != nil {
 		g.customAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to initialize serve repo: %+v\n", err))
 		return
@@ -62,7 +57,7 @@ func (g *GitRepoController) CreateServeRepo() {
 }
 
 func (g *GitRepoController) InitUserRepo() {
-	_, err := service.InitRepo(repoServeURL, repoPath)
+	_, err := service.InitRepo(repoServeURL(), repoPath())
 	if err != nil {
 		g.customAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to initialize user's repo: %+v\n", err))
 		return
@@ -70,7 +65,7 @@ func (g *GitRepoController) InitUserRepo() {
 
 	subPath := g.GetString("sub_path")
 	if subPath != "" {
-		os.MkdirAll(filepath.Join(repoPath, subPath), 0755)
+		os.MkdirAll(filepath.Join(repoPath(), subPath), 0755)
 		if err != nil {
 			g.internalError(err)
 		}
@@ -96,7 +91,7 @@ func (g *GitRepoController) PushObjects() {
 		reqPush.Message = defaultCommitMessage
 	}
 
-	repoHandler, err := service.OpenRepo(repoPath)
+	repoHandler, err := service.OpenRepo(repoPath())
 	if err != nil {
 		g.customAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to open user's repo: %+v\n", err))
 		return
@@ -148,8 +143,8 @@ func (g *GitRepoController) PullObjects() {
 		g.customAbort(http.StatusBadRequest, "No target provided for pulling.")
 		return
 	}
-	targetPath := filepath.Join(baseRepoPath, target)
-	repoHandler, err := service.InitRepo(repoServeURL, targetPath)
+	targetPath := filepath.Join(baseRepoPath(), target)
+	repoHandler, err := service.InitRepo(repoServeURL(), targetPath)
 	if err != nil {
 		g.customAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to open user's repo: %+v\n", err))
 		return
@@ -168,7 +163,7 @@ func InternalPushObjects(p *pushObject, g *baseController) (int, string, error) 
 		p.Message = defaultCommitMessage
 	}
 
-	repoHandler, err := service.OpenRepo(repoPath)
+	repoHandler, err := service.OpenRepo(repoPath())
 	if err != nil {
 		return http.StatusInternalServerError, "Failed to open user's repo", err
 	}
@@ -210,4 +205,36 @@ func InternalPushObjects(p *pushObject, g *baseController) (int, string, error) 
 		return http.StatusInternalServerError, "Failed to triggerURL", err
 	}
 	return resp.StatusCode, "Internal Push Object successfully", err
+}
+
+// Clean git repo after remove config files
+func InternalCleanObjects(p *pushObject, g *baseController) (int, string, error) {
+
+	defaultCommitMessage := fmt.Sprintf("Removed items: %s from repo: %s", strings.Join(p.Items, ","), repoPath)
+
+	if len(p.Message) == 0 {
+		p.Message = defaultCommitMessage
+	}
+
+	repoHandler, err := service.OpenRepo(repoPath())
+	if err != nil {
+		return http.StatusInternalServerError, "Failed to open user's repo", err
+	}
+	for _, item := range p.Items {
+		repoHandler.Remove(item)
+	}
+
+	username := g.currentUser.Username
+	email := g.currentUser.Email
+
+	_, err = repoHandler.Commit(p.Message, &object.Signature{Name: username, Email: email})
+	if err != nil {
+		return http.StatusInternalServerError, "Failed to commit changes to user's repo", err
+	}
+	err = repoHandler.Push()
+	if err != nil {
+		return http.StatusInternalServerError, "Failed to push objects to git repo", err
+	}
+
+	return 0, "Internal Push Object successfully", err
 }
