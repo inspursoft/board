@@ -7,16 +7,8 @@ import (
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
-
-	"github.com/astaxie/beego/logs"
-)
-
-const (
-	defaultProject = "library"
 )
 
 type ProjectController struct {
@@ -212,23 +204,5 @@ func (p *ProjectController) ToggleProjectPublicAction() {
 	}
 	if !isSuccess {
 		p.customAbort(http.StatusBadRequest, "Failed to update project public.")
-	}
-}
-
-// TODO
-func init() {
-	logs.Info("Init git repo for default project %s", defaultProject)
-	_, err := service.InitRepo(repoServeURL(), repoPath())
-	if err != nil {
-		logs.Error("Failed to initialize default user's repo: %+v\n", err)
-		return
-	}
-
-	subPath := defaultProject
-	if subPath != "" {
-		os.MkdirAll(filepath.Join(repoPath(), subPath), 0755)
-		if err != nil {
-			logs.Error("Failed to make default user's repo: %+v\n", err)
-		}
 	}
 }
