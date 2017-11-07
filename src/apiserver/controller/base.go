@@ -40,6 +40,10 @@ var registryURL = utils.GetConfig("REGISTRY_URL")
 var registryBaseURI = utils.GetConfig("REGISTRY_BASE_URI")
 var authMode = utils.GetConfig("AUTH_MODE")
 
+var repoServeURL = utils.GetConfig("REPO_SERVE_URL")
+var repoServePath = utils.GetConfig("REPO_SERVE_PATH")
+var repoPath = utils.GetConfig("REPO_PATH")
+
 type baseController struct {
 	beego.Controller
 	currentUser    *model.User
@@ -214,7 +218,7 @@ func InitController() {
 	}
 
 	logs.Info("Initialize serve repo\n")
-	_, err = service.InitBareRepo(repoServePath)
+	_, err = service.InitBareRepo(repoServePath())
 	if err != nil {
 		logs.Error("Failed to initialize serve repo: %+v\n", err)
 	}
