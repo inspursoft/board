@@ -101,6 +101,7 @@ export class CsInputArrayComponent implements OnInit {
   public get valid(): boolean {
     let notEmpty: boolean = true;
     let isInView: boolean = true;
+    let result: boolean = false;
     this.inputArrayFileds.forEach(item => {
       if (item.value == "") {
         notEmpty = false;
@@ -109,7 +110,9 @@ export class CsInputArrayComponent implements OnInit {
         isInView = false;
       }
     });
-    return notEmpty && isInView;
+    this.inputArrayIsRequired ? result = notEmpty && isInView && this.inputArrayFileds.length > 0 :
+      result = notEmpty && isInView;
+    return result;
   }
 
   getControlName(index: number): string {
@@ -128,8 +131,9 @@ export class CsInputArrayComponent implements OnInit {
       (!this.disabled);
   }
 
-  validatorArrayErrors(controlName: string): boolean {
+  validatorArrayErrors(index: number): boolean {
     let result = true;
+    let controlName = this.getControlName(index);
     this.inputArrayErrors.set(controlName, null);
     this.inputArrayValidatorFns.forEach(value => {
       let errors = value(this.inputArrayFormGroup.controls[controlName]);
@@ -138,6 +142,13 @@ export class CsInputArrayComponent implements OnInit {
         this.inputArrayErrors.set(controlName, errors);
       }
     });
+    if (this.inputArrayType == CsInputArrType.iasNumber) {
+      let curValue = this.inputArrayFileds[index].value;
+      if (this.inputArraySource.find((value,indexNum) => value == curValue && indexNum != index)) {
+        this.inputArrayErrors.set(controlName, {notRepeat: "ERROR.INPUT_NOT_REPEAT"});
+        result = false;
+      }
+    }
     return result;
   }
 
@@ -159,7 +170,10 @@ export class CsInputArrayComponent implements OnInit {
       });
     }
     if (result == "") {
-      if (errors["required"]) {
+      if (errors["notRepeat"]) {
+        result = errors["notRepeat"];
+      }
+      else if (errors["required"]) {
         result = "ERROR.INPUT_REQUIRED"
       } else if (errors["pattern"] && this.inputArrayType == CsInputArrType.iasNumber) {
         result = "ERROR.INPUT_ONLY_NUMBER"
@@ -196,7 +210,7 @@ export class CsInputArrayComponent implements OnInit {
 
   onCheckClick(index: number) {
     let controlName = this.getControlName(index);
-    if ((this.inputArrayFormGroup.touched || this.inputArrayFormGroup.dirty) && this.validatorArrayErrors(controlName)) {
+    if ((this.inputArrayFormGroup.touched || this.inputArrayFormGroup.dirty) && this.validatorArrayErrors(index)) {
       this.inputArrayFileds[index].status = CsInputArrStatus.iasView;
       this.inputArrayFileds[index].defaultValue = this.inputArrayFileds[index].value;
       this.inputArrayType == CsInputArrType.iasString ?
