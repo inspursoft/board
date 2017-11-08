@@ -59,7 +59,7 @@ func (f *ConfigFilesController) UploadDeploymentYamlFileAction() {
 			f.internalError(err)
 			return
 		}
-		os.MkdirAll(filepath.Join(repoPath, projectName, serviceID), 0755)
+		os.MkdirAll(filepath.Join(repoPath(), projectName, serviceID), 0755)
 	}
 
 	yamlType := f.GetString("yaml_type")
@@ -68,7 +68,7 @@ func (f *ConfigFilesController) UploadDeploymentYamlFileAction() {
 		f.customAbort(http.StatusBadRequest, "yaml type invalid.")
 		return
 	}
-	targetFilePath := filepath.Join(repoPath, projectName, serviceID)
+	targetFilePath := filepath.Join(repoPath(), projectName, serviceID)
 	logs.Info("User: %s uploaded %s yaml file to %s.", f.currentUser.Username, yamlType, targetFilePath)
 
 	err = f.SaveToFile("upload_file", filepath.Join(targetFilePath, fileName))
@@ -108,7 +108,7 @@ func (f *ConfigFilesController) DownloadDeploymentYamlFileAction() {
 		f.customAbort(http.StatusBadRequest, "yaml type invalid.")
 		return
 	}
-	absFileName := filepath.Join(repoPath, projectName, serviceID, fileName)
+	absFileName := filepath.Join(repoPath(), projectName, serviceID, fileName)
 	logs.Info("User: %s download %s yaml file from %s.", f.currentUser.Username, yamlType, absFileName)
 
 	f.Ctx.Output.Download(absFileName, fileName)
@@ -128,7 +128,7 @@ func (f *ConfigFilesController) UploadDockerfileFileAction() {
 
 	imageName := f.GetString("image_name")
 	tagName := f.GetString("tag_name")
-	targetFilePath := filepath.Join(repoPath, projectName, imageName, tagName)
+	targetFilePath := filepath.Join(repoPath(), projectName, imageName, tagName)
 	err = os.MkdirAll(targetFilePath, 0755)
 	if err != nil {
 		f.internalError(err)
@@ -157,13 +157,13 @@ func (f *ConfigFilesController) DownloadDockerfileFileAction() {
 
 	imageName := f.GetString("image_name")
 	tagName := f.GetString("tag_name")
-	targetFilePath := filepath.Join(repoPath, projectName, imageName, tagName)
+	targetFilePath := filepath.Join(repoPath(), projectName, imageName, tagName)
 	if _, err := os.Stat(targetFilePath); os.IsNotExist(err) {
 		f.customAbort(http.StatusBadRequest, "image Name and  tag name are invalid.")
 		return
 	}
 
-	absFileName := filepath.Join(repoPath, projectName, imageName, tagName, "Dockerfile")
+	absFileName := filepath.Join(repoPath(), projectName, imageName, tagName, "Dockerfile")
 	logs.Info("User: %s download Dockerfile file from %s.", f.currentUser.Username, absFileName)
 
 	f.Ctx.Output.Download(absFileName, "Dockerfile")
