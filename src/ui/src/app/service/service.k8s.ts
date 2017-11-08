@@ -61,13 +61,13 @@ export class K8sService {
       .catch(err => Promise.reject(err));
   }
 
-  serviceDeployment(postData: ServiceStep4Output): Promise<ServiceStep6Output> {
-    return this.http.post(`/api/v1/services/${postData.service_id}/deployment`, postData, {
+  serviceDeployment(postData: ServiceStep4Output): Promise<any> {
+    return this.http.post(`/api/v1/services/${postData.projectinfo.service_id}/deployment`, postData, {
       headers: this.defaultHeader
     }).toPromise()
       .then(res => {
         this.appInitService.chainResponse(res);
-        return res.json();
+        return res;
       })
       .catch(err => Promise.reject(err));
   }
@@ -151,7 +151,7 @@ export class K8sService {
       headers: this.defaultHeader
     });
     return this.http.get(`/api/v1/services/status/${serviceName}`, options).toPromise()
-      .then(res => {
+      .then((res: Response) => {
         this.appInitService.chainResponse(res);
         return res.json();
       })

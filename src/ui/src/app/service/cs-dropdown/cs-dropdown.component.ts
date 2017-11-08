@@ -65,7 +65,7 @@ export class CsDropdownComponent {
 
   getItemDescription(item: any): string {
     if (typeof item == "object") {
-      return item[this.dropdownListTextKey];
+      return item[this.dropdownListTextKey].toString();
     }
     return item.toString();
   }

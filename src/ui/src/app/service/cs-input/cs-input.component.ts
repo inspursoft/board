@@ -173,12 +173,13 @@ export class CsInputComponent implements OnInit {
 
   onInputKeyPressEvent(event: KeyboardEvent) {
     if (event.keyCode == 13) {
-      this.onCheckClick();
-      let nextInputElement: Element = this.containerHtml.nativeElement.parentElement.nextElementSibling;
-      if (nextInputElement) {
-        let nextLabelElement: NodeListOf<HTMLLabelElement> = nextInputElement.getElementsByClassName("cs-input-label") as NodeListOf<HTMLLabelElement>;
-        if (nextLabelElement && nextLabelElement.length > 0) {
-          nextLabelElement[0].click();
+      if (this.onCheckClick()) {
+        let nextInputElement: Element = this.containerHtml.nativeElement.parentElement.nextElementSibling;
+        if (nextInputElement) {
+          let nextLabelElement: NodeListOf<HTMLLabelElement> = nextInputElement.getElementsByClassName("cs-input-label") as NodeListOf<HTMLLabelElement>;
+          if (nextLabelElement && nextLabelElement.length > 0) {
+            nextLabelElement[0].click();
+          }
         }
       }
     }
@@ -197,13 +198,15 @@ export class CsInputComponent implements OnInit {
     }
   }
 
-  onCheckClick() {
+  onCheckClick(): boolean {
     if (this.isPassValidator) {
       this.inputField.status = CsInputStatus.isView;
       this.inputField.defaultValue = this.inputField.value;
       this.inputHtml.nativeElement.blur();
       this.onCheckEvent.emit(this.inputField.value);
+      return true;
     }
+    return false;
   }
 
   onRevertClick() {

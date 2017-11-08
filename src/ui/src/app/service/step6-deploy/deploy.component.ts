@@ -27,11 +27,12 @@ export class DeployComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.output4 = this.k8sService.getStepData(4) as ServiceStep4Output;
-    this.output4.config_phase = "deploy";
+    this.output4.projectinfo.config_phase = "deploy";
+
     this.intervalAutoRefreshDeployStatus = setInterval(() => {
       if (this.isNeedAutoRefreshDeployStatus) {
         this.autoRefreshTimesCount++;
-        this.k8sService.getDeployStatus(this.output4.service_yaml.service_name)
+        this.k8sService.getDeployStatus(this.output4.projectinfo.service_name)
           .then(res => {
             this.consoleText = JSON.stringify(res);
             if (!res["code"]){
@@ -45,6 +46,7 @@ export class DeployComponent implements OnInit, OnDestroy {
         });
       }
     }, AUTO_REFRESH_DEPLOY_STATUS);
+
   }
 
   ngOnDestroy() {

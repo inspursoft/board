@@ -6,7 +6,7 @@
                 [inputIsRequired]="true"
                 [inputPattern]="patternServiceName"
                 [inputLabel]="'SERVICE.STEP_4_SERVICE_NAME' | translate"
-                [simpleFiled]="step4Output.deployment_yaml.deployment_name"
+                [simpleFiled]="step4Output.projectinfo.service_name"
                 (onCheck)="setServiceName($event)">
       </cs-input>
     </div>
@@ -16,7 +16,7 @@
                    [dropdownWidth]="310"
                    [dropdownDefaultText]="'1'"
                    [dropdownList]="dropDownListNum"
-                   (onChange)="step4Output.deployment_yaml.deployment_replicas = $event">
+                   (onChange)="step4Output.deployment_yaml.spec.replicas = $event">
       </cs-dropdown>
     </div>
   </div>
@@ -32,20 +32,16 @@
     <span class="base-margin-left">{{"SERVICE.STEP_4_EXTERNAL_SERVICE"|translate}}:</span>
   </div>
   <div *ngIf="showExternal && showAdvanced">
-    <div class="external-container" *ngFor="let serviceExternal of serviceExternalArray;let iIndex = index">
+    <div class="external-container" *ngFor="let servicePort of servicePortsArray;let iIndex = index">
       <div class="external-line-container">
-        <clr-icon *ngIf="iIndex == serviceExternalArray.length - 1"
-                  class="plus-icon"
-                  shape="plus"
-                  (click)="addContainerInfo()"></clr-icon>
-        <clr-icon *ngIf="iIndex < serviceExternalArray.length - 1"
-                  class="plus-icon"
+        <clr-icon class="plus-icon"
                   shape="minus"
-                  (click)="removeContainerInfo(iIndex)"></clr-icon>
+                  (click)="removeContainerInfo(iIndex)">
+        </clr-icon>
         <span class="external-title icon">{{"SERVICE.STEP_4_CONTAINER"|translate}}:</span>
         <cs-dropdown class="base-margin-left"
                      [dropdownList]="step3Output"
-                     [dropdownListTextKey]="'container_name'"
+                     [dropdownListTextKey]="'name'"
                      [dropdownWidth]="310"
                      [dropdownDefaultText]="getContainerDropdownText(iIndex) | translate"
                      (onChange)="setExternalInfo($event, iIndex)">
@@ -54,20 +50,19 @@
       <div class="external-line-container">
         <span class="external-title">{{"SERVICE.STEP_4_PORT"|translate}}:</span>
         <cs-dropdown class="base-margin-left"
-                     [dropdownDisabled]="serviceExternal.service_containername == ''"
-                     [dropdownList]="getContainerPorts(serviceExternal.service_containername)"
+                     [dropdownDisabled]="servicePort.name == ''"
+                     [dropdownList]="getContainerPorts(servicePort.name)"
+                     [dropdownListTextKey]="'containerPort'"
                      [dropdownWidth]="310"
                      [dropdownDefaultText]="getContainerPortDropdownText(iIndex) | translate"
-                     (onChange)="serviceExternal.service_containerport = $event">
+                     (onChange)="servicePort.port = $event.containerPort">
         </cs-dropdown>
       </div>
       <div class="external-line-container">
         <cs-input class="base-input"
                   [inputFiledType]="1"
-                  [simpleFiled]="serviceExternal.service_nodeport"
+                  [simpleFiled]="servicePort.nodePort"
                   [disabled]="!radNode.checked"
-                  [inputMin]="30000"
-                  [inputMax]="32766"
                   [inputLabel]="'SERVICE.STEP_4_NODE_PORT' | translate"
                   [inputMin]="30000"
                   [inputMax]="32766"
@@ -85,10 +80,10 @@
       </div>
       <div class="external-line-container">
         <cs-input class="base-input"
-                  [simpleFiled]="serviceExternal.service_externalpath"
+                  [simpleFiled]="getExternalPath(iIndex)"
                   [disabled]="!radExternal.checked"
                   [inputLabel]="'SERVICE.STEP_4_EXTERNAL_ACCESS' | translate"
-                  (onCheck)="serviceExternal.service_externalpath = $event">
+                  (onCheck)="setExternalPath(iIndex,$event)">
         </cs-input>
         <div class="radio-inline external-radio-container">
           <input #radExternal
@@ -101,6 +96,11 @@
         </div>
       </div>
     </div>
+    <clr-icon class="plus-icon"
+              shape="plus"
+              (click)="addContainerInfo()">
+    </clr-icon>
+    <span class="base-margin-left">{{"SERVICE.STEP_4_EXTERNAL_SERVICE_ADD"|translate}}</span>
   </div>
   <div *ngIf="showAdvanced" class="advanced-item-container" (click)="showCollaborative = !showCollaborative">
     <div class="advanced-item-icon-container"
@@ -110,13 +110,14 @@
     <span class="base-margin-left">{{"SERVICE.STEP_4_COLLABORATIVE"|translate}}:</span>
   </div>
   <div class="service-container" *ngIf="showCollaborative && showAdvanced">
-    <clr-icon class="plus-icon" shape="plus"></clr-icon>
-    <span class="service">{{"SERVICE.STEP_4_SERVICE"|translate}}:</span>
-    <cs-dropdown class="base-margin-left"
-                 [dropdownList]="serviceSelectorsArray"
-                 [dropdownWidth]="310"
-                 [dropdownDefaultText]="'SERVICE.STEP_4_SELECT_SERVICE' | translate">
-    </cs-dropdown>
+    <!--<clr-icon class="plus-icon" shape="plus"></clr-icon>-->
+    <!--<span class="service">{{"SERVICE.STEP_4_SERVICE"|translate}}:</span>-->
+    <!--<cs-dropdown class="base-margin-left"-->
+    <!--[dropdownList]="serviceSelectorsArray"-->
+    <!--[dropdownListTextKey]="'app'"-->
+    <!--[dropdownWidth]="310"-->
+    <!--[dropdownDefaultText]="'SERVICE.STEP_4_SELECT_SERVICE' | translate">-->
+    <!--</cs-dropdown>-->
   </div>
 </div>
 <button class="btn btn-default" [disabled]="true">Test</button>
