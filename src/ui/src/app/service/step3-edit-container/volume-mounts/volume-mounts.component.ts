@@ -6,6 +6,13 @@
 import { Component, Input, Output, EventEmitter, ViewChildren, QueryList } from "@angular/core"
 import { CsInputComponent } from "../../cs-input/cs-input.component";
 
+export interface VolumeOutPut {
+  out_name: string;     //old=>target_storagename || deployment_yaml.volume_list.volume_name
+  out_mountPath: string;//old=>container_dir
+  out_path: string;     //old=>target_dir || deployment_yaml.volume_list.volume_path
+  out_medium: string;   //old=>target_storageServer
+}
+
 @Component({
   selector: "volume-mounts",
   templateUrl: "./volume-mounts.component.html",
@@ -13,13 +20,13 @@ import { CsInputComponent } from "../../cs-input/cs-input.component";
 })
 export class VolumeMountsComponent {
   _isOpen: boolean = false;
-  patternVolumeName: RegExp = /^[a-zA-Z_]+$/;
-  patternContainerDir: RegExp = /^[a-zA-Z_/.]+$/;
-  patternTargetDir: RegExp = /^[a-zA-Z_/.]+$/;
+  patternName: RegExp = /^[a-zA-Z_]+$/;
+  patternMountPath: RegExp = /^[a-zA-Z_/.]+$/;
+  patternPath: RegExp = /^[a-zA-Z_/.]+$/;
   isAlertOpen: boolean = false;
   volumeErrMsg: string = "";
   @ViewChildren(CsInputComponent) inputList: QueryList<CsInputComponent>;
-  @Input() volumeData: {container_dir: string, target_storagename: string, target_storageServer, target_dir: string};
+  @Input() volumeData:VolumeOutPut;
 
   @Input()
   get isOpen() {
@@ -32,7 +39,7 @@ export class VolumeMountsComponent {
   }
 
   @Output() isOpenChange: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() onConfirmEvent: EventEmitter<Object> = new EventEmitter<Object>();
+  @Output() onConfirmEvent: EventEmitter<VolumeOutPut> = new EventEmitter<VolumeOutPut>();
 
   get isConfirmEnabled(): boolean {
     let result = true;

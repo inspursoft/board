@@ -1,36 +1,37 @@
 <div class="edit-container-container">
-  <div class="edit-container-one-container" *ngFor="let item of step3Output;let iStep3 = index">
-    <div class="edit-container-item-container" (click)="toggleShowStatus(item)">
+  <div class="edit-container-one-container" *ngFor="let container of step3Output;let iStep3 = index">
+    <div class="edit-container-item-container" (click)="toggleShowStatus(container)">
       <div class="edit-container-item-icon-container"
-           [ngClass]="{'icon-close':step3TypeStatus.get(item),'icon-open':!step3TypeStatus.get(item)}">
+           [ngClass]="{'icon-close':step3TypeStatus.get(container),'icon-open':!step3TypeStatus.get(container)}">
         <clr-icon shape="caret up" class="item-icon"></clr-icon>
       </div>
-      <span class="edit-container-title base-margin-left">{{item.container_name}}:</span>
+      <span class="edit-container-title base-margin-left">{{container.name}}:</span>
     </div>
-    <div *ngIf="step3TypeStatus.get(item)" class="edit-container-filed-container">
+    <div *ngIf="step3TypeStatus.get(container)" class="edit-container-filed-container">
       <cs-input [inputLabel]="'SERVICE.STEP_3_CONTAINER_NAME' | translate"
                 [inputIsRequired]="true"
                 [inputPattern]="patternContainerName"
-                [simpleFiled]="item.container_name"
-                (onCheck)="item.container_name = $event"></cs-input>
+                [simpleFiled]="container.name"
+                (onCheck)="container.name = $event"></cs-input>
       <cs-input [inputLabel]="'SERVICE.STEP_3_WORKING_DIR' | translate"
                 [inputPattern]="patternWorkdir"
-                [simpleFiled]="item.container_workdir"
-                (onCheck)="item.container_workdir = $event"></cs-input>
+                [simpleFiled]="container.workingDir"
+                (onCheck)="container.workingDir = $event"></cs-input>
       <cs-input [inputType]="1"
                 [inputLabel]="'SERVICE.STEP_3_VOLUME_MOUNTS' | translate"
-                [simpleFiled]="getVolumesDescription(item)"
+                [simpleFiled]="getVolumesDescription(container)"
                 (onEdit)="curContainerIndex = iStep3; showVolumeMounts = true;"></cs-input>
       <cs-input [inputType]="1"
                 [inputLabel]="'SERVICE.STEP_3_Env' | translate"
-                [simpleFiled]="getEnvsDescription(item)"
+                [simpleFiled]="getEnvsDescription(container)"
                 (onEdit)="curContainerIndex = iStep3;showEnvironmentValue = true;"></cs-input>
       <cs-input-array [inputArrayType]="1"
-                      [inputArrayFixedSource]="fixedContainerPort"
+                      [inputArrayFixedSource]="fixedContainerPort.get(container.name)"
                       [inputArrayMin]="1"
                       [inputArrayMax]="65535"
+                      [inputArrayIsRequired]="true"
                       [inputArrayLabelText]="'SERVICE.STEP_3_CONTAINER_PORT' | translate"
-                      [inputArraySource]="item.container_ports">
+                      [inputArraySource]="containerPort.get(container.name)">
       </cs-input-array>
       <div class="edit-container-area">
         <label for="areaCommand" class="base-text">{{"SERVICE.STEP_3_COMMAND" | translate}}:</label>
@@ -38,7 +39,7 @@
                   rows="3"
                   class="area-command"
                   (keypress)="shieldEnter($event)"
-                  [(ngModel)]="item.container_command"></textarea>
+                  [(ngModel)]="container.command[0]"></textarea>
       </div>
     </div>
   </div>
@@ -54,6 +55,5 @@
                  (onConfirmEvent)="setVolumeMount($event,curContainerIndex)">
   </volume-mounts>
 </div>
-<button class="btn btn-default" [disabled]="'disabled'">Test</button>
 <button class="btn btn-default" (click)="backStep()">Back</button>
 <button class="btn btn-default" [disabled]="!isCanNextStep" (click)="forward()">Next</button>
