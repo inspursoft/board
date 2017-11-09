@@ -70,12 +70,6 @@ func (p *ServiceController) handleReqData() (model.ServiceConfig2, int, error) {
 	}
 	logs.Debug("Deploy service info: %+v\n", reqServiceConfig)
 
-	//check data
-	err = service.CheckReqPara(reqServiceConfig)
-	if err != nil {
-		return reqServiceConfig, serviceID, InputParaErr
-	}
-
 	return reqServiceConfig, serviceID, err
 }
 
@@ -187,11 +181,14 @@ func (p *ServiceController) commonDeployService(reqServiceConfig model.ServiceCo
 func (p *ServiceController) DeployServiceAction() {
 	reqServiceConfig, serviceID, err := p.handleReqData()
 	if err != nil {
-		if err == InputParaErr {
-			p.customAbort(http.StatusBadRequest, err.Error())
-			return
-		}
 		p.internalError(err)
+		return
+	}
+
+	//check data
+	err = service.CheckReqPara(reqServiceConfig)
+	if err != nil {
+		p.customAbort(http.StatusBadRequest, InputParaErr.Error())
 		return
 	}
 
@@ -210,11 +207,14 @@ func (p *ServiceController) DeployServiceTestAction() {
 	//Judge authority
 	reqServiceConfig, serviceID, err := p.handleReqData()
 	if err != nil {
-		if err == InputParaErr {
-			p.customAbort(http.StatusBadRequest, err.Error())
-			return
-		}
 		p.internalError(err)
+		return
+	}
+
+	//check data
+	err = service.CheckReqPara(reqServiceConfig)
+	if err != nil {
+		p.customAbort(http.StatusBadRequest, InputParaErr.Error())
 		return
 	}
 
@@ -662,12 +662,12 @@ func (p *ServiceController) GetServiceConfigAction() {
 	logs.Debug("Service config path: %s", serviceConfigPath)
 
 	// Get the service config by yaml files
-	var serviceConfig model.ServiceConfig
-	serviceConfig.ServiceID = s.ID
-	serviceConfig.ProjectID = s.ProjectID
-	serviceConfig.ProjectName = s.ProjectName
-	//TODO
-	// err = service.InterpretServiceConfigYaml(&serviceConfig, serviceConfigPath)
+	var serviceConfig model.ServiceConfig2
+	serviceConfig.Project.ServiceID = s.ID
+	serviceConfig.Project.ProjectID = s.ProjectID
+	serviceConfig.Project.ProjectName = s.ProjectName
+
+	err = service.UnmarshalServiceConfigYaml(&serviceConfig, serviceConfigPath)
 	if err != nil {
 		p.internalError(err)
 		return
@@ -693,17 +693,10 @@ func (p *ServiceController) UpdateServiceConfigAction() {
 		return
 	}
 
-	// Check request parameters
-	err = service.CheckReqPara(reqServiceConfig)
-	if err != nil {
-		p.customAbort(http.StatusBadRequest, err.Error())
-		return
-	}
-
 	serviceConfigPath := filepath.Join(repoPath(), reqServiceConfig.Project.ProjectName,
 		strconv.Itoa(serviceID))
-	// TODO update yaml files by service config
-	// err = service.UpdateServiceConfigYaml(reqServiceConfig, serviceConfigPath)
+	//update yaml files by service config
+	err = service.UpdateServiceConfigYaml(reqServiceConfig, serviceConfigPath)
 	if err != nil {
 		logs.Info("failed to update service yaml", serviceConfigPath)
 		p.customAbort(http.StatusBadRequest, err.Error())
@@ -741,7 +734,7 @@ func (p *ServiceController) DeleteServiceConfigAction() {
 
 	// Delete yaml files
 	// TODO
-	// err = service.DeleteServiceConfigYaml(serviceConfigPath)
+	err = service.DeleteServiceConfigYaml(serviceConfigPath)
 	if err != nil {
 		logs.Info("failed to delete service yaml", serviceConfigPath)
 		p.internalError(err)

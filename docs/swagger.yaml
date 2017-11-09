@@ -1140,7 +1140,7 @@ paths:
         200:
           description: Return service config data.
           schema:
-            $ref: '#/definitions/ServiceConfig'
+            $ref: '#/definitions/ServiceConfig2'
         401:
           description: User need to log in first.
         402:
@@ -1169,7 +1169,7 @@ paths:
           in: body
           required: true 
           schema:
-            $ref: '#/definitions/ServiceConfig'
+            $ref: '#/definitions/ServiceConfig2'
           description: Updates of ServiceConfig data.
       tags:
         - Products
