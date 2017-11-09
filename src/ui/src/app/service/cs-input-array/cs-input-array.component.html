@@ -1,5 +1,5 @@
 <div [formGroup]="inputArrayFormGroup" style="display: flex;width: 100%;">
-  <span class="cs-input-array-label">{{inputArrayLabelText}}:</span>
+  <span class="cs-input-array-label">{{inputArrayLabelText}}:<span *ngIf="inputArrayIsRequired" class="asterisk">*</span></span>
   <div style="flex-basis: 100%">
     <div *ngFor="let item of inputArrayFileds;let iIndex = index" class="cs-input-array-container">
       <div class="cs-input-array-icon-container" *ngIf="isShowMinus(item)">

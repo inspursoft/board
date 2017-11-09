@@ -81,3 +81,7 @@ a.cs-input-array-icon {
   margin-left: 5px;
   flex-basis: 20px;
 }
+
+span.asterisk {
+  color: #FF0000;
+}

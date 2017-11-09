@@ -91,6 +91,7 @@ func (b *baseController) customAbort(status int, body string) {
 
 func (b *baseController) getCurrentUser() *model.User {
 	token := b.Ctx.Request.Header.Get("token")
+
 	if token == "" {
 		token = b.GetString("token")
 	}
@@ -100,11 +101,11 @@ func (b *baseController) getCurrentUser() *model.User {
 		if err == errInvalidToken {
 			newToken, err := signToken(payload)
 			if err != nil {
-				logs.Error("failed to re-assign token: %+v", err)
+				logs.Error("failed to sign token: %+v\n", err)
 				return nil
 			}
-			logs.Info("Token has been re-signed due to timeout.")
 			token = newToken.TokenString
+			logs.Info("Token has been re-signed due to timeout.")
 		} else {
 			logs.Error("failed to verify token: %+v\n", err)
 		}
@@ -123,7 +124,7 @@ func (b *baseController) getCurrentUser() *model.User {
 			return nil
 		}
 		if currentToken, ok := memoryCache.Get(user.Username).(string); ok {
-			if currentToken != token {
+			if currentToken != "" && currentToken != token {
 				logs.Info("Another same name user has signed in other places.")
 				return nil
 			}
@@ -140,7 +141,6 @@ func (b *baseController) signOff() error {
 	err := memoryCache.Delete(username)
 	if err != nil {
 		logs.Error("Failed to delete user from memory cache: %+v", err)
-		return err
 	}
 	logs.Info("Successful sign off from API server.")
 

@@ -10,23 +10,23 @@
     </clr-alert>
     <div class="vol-configure-container">
       <cs-input [inputLabel]="'SERVICE.VOLUME_TARGET_STORAGE'| translate"
-                [simpleFiled]="volumeData.target_storageServer"
-                (onCheck)="volumeData.target_storageServer = $event">
+                [simpleFiled]="volumeData.out_medium"
+                (onCheck)="volumeData.out_medium = $event">
       </cs-input>
       <cs-input [inputLabel]="'SERVICE.VOLUME_TARGET_DIR'| translate"
-                [inputPattern]="patternTargetDir"
-                [simpleFiled]="volumeData.target_dir"
-                (onCheck)="volumeData.target_dir=$event">
+                [inputPattern]="patternPath"
+                [simpleFiled]="volumeData.out_path"
+                (onCheck)="volumeData.out_path=$event">
       </cs-input>
       <cs-input [inputLabel]="'SERVICE.VOLUME_NAME'| translate"
-                [inputPattern]="patternVolumeName"
-                [simpleFiled]="volumeData.target_storagename"
-                (onCheck)="volumeData.target_storagename = $event">
+                [inputPattern]="patternName"
+                [simpleFiled]="volumeData.out_name"
+                (onCheck)="volumeData.out_name = $event">
       </cs-input>
       <cs-input [inputLabel]="'SERVICE.VOLUME_CONTAINER_DIR'| translate"
-                [inputPattern]="patternContainerDir"
-                [simpleFiled]="volumeData.container_dir"
-                (onCheck)="volumeData.container_dir = $event">
+                [inputPattern]="patternMountPath"
+                [simpleFiled]="volumeData.out_mountPath"
+                (onCheck)="volumeData.out_mountPath = $event">
       </cs-input>
     </div>
     <div class="vol-confirm-container">

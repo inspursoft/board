@@ -914,6 +914,180 @@ paths:
           description: User need to log in first.
         500:
           description: Internal errors.  
+  /v1/services/dockerfile/upload:
+    post:
+      summary: Return upload status.
+      description:
+        This endpoint upload dockerfile.
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: image_name
+          in: query
+          description: image name for filtering results.
+          required: true
+          type: integer
+          format: string
+        - name: tag_name
+          in: query
+          description: tag_name for filtering results.
+          required: true
+          type: integer
+          format: string
+        - name: project_name
+          in: query
+          description: project_name for filtering results.
+          required: true
+          type: integer
+          format: string
+        - name: upload_file
+          in: formData
+          type: file
+          required: true
+          description: File to be uploaded.
+      tags:
+        - Products
+      responses:
+        200:
+          description: An array of search results.           
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        500:
+          description: Unexpected internal errors. 
+  /v1/services/dockerfile/download:
+    get:
+      summary: Return download status.
+      description: |
+        This endpoint download dockfile.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: image_name
+          in: query
+          description: image name for filtering results.
+          required: true
+          type: integer
+          format: string
+        - name: tag_name
+          in: query
+          description: tag_name for filtering results.
+          required: true
+          type: integer
+          format: string
+        - name: project_name
+          in: query
+          description: project_name for filtering results.
+          required: true
+          type: integer
+          format: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: An array of search results.           
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        500:
+          description: Unexpected internal errors.         
+  /v1/services/yaml/upload:
+    post:
+      summary: Return upload status.
+      description:
+        This endpoint upload yaml file.
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_name
+          in: query
+          description: Service name for filtering results.
+          required: true
+          type: integer
+          format: string
+        - name: project_name
+          in: query
+          description: project_name for filtering results.
+          required: true
+          type: integer
+          format: string
+        - name: yaml_type
+          in: query
+          description: service yaml file type for filtering results.
+          required: true
+          type: integer
+          format: string
+        - name: upload_file
+          in: formData
+          type: file
+          required: true
+          description: File to be uploaded.
+      tags:
+        - Products
+      responses:
+        200:
+          description: An array of search results.           
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        500:
+          description: Unexpected internal errors. 
+  /v1/services/yaml/download:
+    get:
+      summary: Return download status.
+      description: 
+        This endpoint download yaml file.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_name
+          in: query
+          description: Service name for filtering results.
+          required: true
+          type: integer
+          format: string
+        - name: project_name
+          in: query
+          description: project_name for filtering results.
+          required: true
+          type: integer
+          format: string
+        - name: yaml_type
+          in: query
+          description: service yaml file type for filtering results.
+          required: true
+          type: integer
+          format: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: An array of search results.           
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        500:
+          description: Unexpected internal errors.
   /v1/services/status/{service_name}:
     get:
       summary: Return specific service_name status.
@@ -1125,8 +1299,8 @@ paths:
           in: body
           required: true 
           schema:
-            $ref: '#/definitions/ServiceConfig'
-          description: Updates of ServiceConfig data.
+            $ref: '#/definitions/ServiceConfig2'
+          description: Updates of ServiceConfig2 data.
       tags:
         - Products
       responses:
@@ -1134,6 +1308,35 @@ paths:
           description: Deploy service successfully, return serive brief.
           schema:
             $ref: '#/definitions/ServiceBrief'
+        401:
+          description: User need to log in first.
+        402:
+          description: Invalid configuration phase.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.
+    delete:
+      summary: Delete service deployment configuration data.
+      description: |
+        This endpoint is aimed to delete service deployment configuration data.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.  
+      tags:
+        - Products
+      responses:
+        200:
+          description: Delete service deployment config successfully.
         401:
           description: User need to log in first.
         402:
@@ -2716,6 +2919,173 @@ definitions:
       service_yaml:
         description: The service yaml struct of this service configuration.
         $ref: '#/definitions/ServiceYaml'
+  ServiceConfig2:
+    type: object
+    properties:
+      projectinfo:
+        $ref: '#/definitions/ProjectInformation'      
+      deployment_yaml:
+        description: The deployment yaml struct of this service configuration.
+        $ref: '#/definitions/DeploymentYaml2'
+      service_yaml:
+        description: The service yaml struct of this service configuration.
+        $ref: '#/definitions/ServiceYaml2'
+  ProjectInformation:
+    type: object
+    properties:
+      service_id:
+        type: integer
+        format: int32
+        description: The integer ID of this service.
+      project_id:
+        type: integer
+        format: int32
+        description: The project's integer ID which include this service.
+      project_name:
+        type: string
+        description: The project's name of this service.
+      namespace:
+        type: string
+        description: The project's name of this service.
+      comment:
+        type: string
+        description: The project's name of this service.
+      config_phase:
+        type: string
+        description: The phase name of the service configuration process.   
+      service_externalpath:
+        type: array
+        items:
+          type: string
+  ServiceYaml2:
+    type: object
+    properties:
+      kind:
+        type: string
+        description: "comment"
+      apiVersion:
+        type: string
+        description: "comment"
+      metadata:
+        description: "comment"
+        $ref: '#/definitions/Metadate3'
+      spec:
+        description: "comment"
+        $ref: '#/definitions/Spec3'  
+  Spec3:
+    type: object
+    properties:
+      type:
+        type: string
+      ports:
+        type: array
+        items:
+          $ref: '#/definitions/port3'
+      selector:
+        type: object
+        additionalProperties:
+           type: string
+  port3:
+    type: object
+    properties:  
+      port:
+        type: integer
+        format: int32
+      nodePort:
+        type: integer
+        format: int32
+  Metadate3:
+    type: object
+    properties:
+      name:
+        type: string 
+      labels:
+        type: object
+        additionalProperties:
+           type: string     
+  DeploymentYaml2:
+    type: object
+    properties:
+      kind:
+        type: string
+        description: "comment"
+      apiVersion:
+        type: string
+        description: "comment"
+      metadata:
+        description: "comment"
+        $ref: '#/definitions/Metadate'
+      spec:
+        description: "comment"
+        $ref: '#/definitions/Spec'
+  Spec:
+    type: object
+    properties:
+      replicas:
+        type: integer
+        format: int32
+      selector:
+        type: object
+        additionalProperties:
+           type: string
+      template:
+        $ref: '#/definitions/Template'
+  Metadate2:
+    type: object
+    properties:
+      labels:
+        type: object
+        additionalProperties:
+           type: string
+      namespace:
+        type: string
+
+  Template:
+    type: object
+    properties:
+      metadata:
+        $ref: '#/definitions/Metadate2'
+      spec:
+        $ref: '#/definitions/Spec2'
+  Spec2:
+    type: object
+    properties:
+      containers:
+        type: array
+        items:
+          $ref: '#/definitions/Container'
+  Container:
+    type: object
+    properties:
+      name:
+        type: string
+      image:
+        type: string
+      ports:
+        type: array
+        items:
+          $ref: '#/definitions/ContainerPorts'
+      env:
+        type: array
+        items:
+          $ref: '#/definitions/ContainerEnvs'
+  ContainerEnvs:
+    type: object
+    properties:
+      name:
+        type: string
+      value:
+        type: string        
+  ContainerPorts:
+    type: object
+    properties:
+      containerPort:
+        type: integer        
+  Metadate:
+    type: object
+    properties:
+      name:
+        type: string
   DeploymentYaml:
     type: object
     properties:
