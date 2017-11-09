@@ -168,8 +168,9 @@ func (p *ServiceController) commonDeployService(reqServiceConfig model.ServiceCo
 
 	//update db
 	updateService := model.ServiceStatus{ID: int64(serviceID), Status: running,
-		Name: reqServiceConfig.Service.ObjectMeta.Name, OwnerID: p.currentUser.ID}
-	_, err = service.UpdateService(updateService, "name", "status", "owner_id")
+		Name: reqServiceConfig.Service.ObjectMeta.Name, OwnerID: p.currentUser.ID,
+		OwnerName: p.currentUser.Username, Comment: reqServiceConfig.Project.Comment}
+	_, err = service.UpdateService(updateService, "name", "status", "owner_id", "OwnerName", "Comment")
 	if err != nil {
 		p.internalError(err)
 		return
