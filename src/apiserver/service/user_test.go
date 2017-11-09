@@ -19,7 +19,7 @@ var user = model.User{
 }
 
 func connectToDB() {
-	err := orm.RegisterDataBase("default", "mysql", "root:root123@tcp(mysql:3306)/board?charset=utf8")
+	err := orm.RegisterDataBase("default", "mysql", "root:root123@tcp(localhost:3306)/board?charset=utf8")
 	if err != nil {
 		logs.Error("Failed to connect to DB.")
 	}

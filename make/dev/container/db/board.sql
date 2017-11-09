@@ -320,6 +320,7 @@ DROP TABLE IF EXISTS `log`;
         `project_name` VARCHAR(255) NOT NULL DEFAULT '',
         `comment` VARCHAR(255) NOT NULL DEFAULT '',
         `owner_id` INT NOT NULL,
+        `owner_name` VARCHAR(255) DEFAULT NULL,
         `status` SMALLINT(1) NOT NULL,
         `public` SMALLINT(1) NULL,
         `deleted` SMALLINT(1) NOT NULL DEFAULT 0,

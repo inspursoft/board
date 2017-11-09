@@ -100,12 +100,12 @@ func (b *baseController) getCurrentUser() *model.User {
 	if err != nil {
 		if err == errInvalidToken {
 			newToken, err := signToken(payload)
-			token = newToken.TokenString
 			if err != nil {
-				logs.Error("failed to re-assign token: %+v", err)
+				logs.Error("failed to sign token: %+v\n", err)
 				return nil
 			}
-			logs.Error("failed to re-assign token due to timeout.")
+			token = newToken.TokenString
+			logs.Info("Token has been re-signed due to timeout.")
 		} else {
 			logs.Error("failed to verify token: %+v\n", err)
 		}
@@ -198,8 +198,8 @@ func verifyToken(tokenString string) (map[string]interface{}, error) {
 }
 
 func InitController() {
-	var err error
-	conf, err = config.NewConfig("ini", "app.conf")
+
+	conf, err := config.NewConfig("ini", "app.conf")
 	if err != nil {
 		logs.Error("Failed to load config file: %+v\n", err)
 	}
@@ -227,5 +227,4 @@ func InitController() {
 
 	beego.BConfig.MaxMemory = 1 << 22
 	logs.Debug("Current auth mode is: %s", authMode())
-
 }
