@@ -169,8 +169,8 @@ export class ListServiceComponent implements OnInit, OnDestroy {
 
   }
 
-  openServiceDetail(serviceName: string) {
-    this.serviceDetailComponent.openModal(serviceName);
+  openServiceDetail(serviceName: string, projectName: string, ownerName: string) {
+    this.serviceDetailComponent.openModal(serviceName, projectName, ownerName);
   }
 
 }
