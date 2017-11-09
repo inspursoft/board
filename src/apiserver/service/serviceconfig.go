@@ -83,9 +83,9 @@ func DeleteServiceByID(s model.ServiceStatus) (int64, error) {
 	return num, nil
 }
 
-func GetServiceList() ([]model.ServiceStatus, error) {
-
-	serviceList, err := dao.GetServiceData()
+func GetServiceList(name string, userID int64) ([]model.ServiceStatus, error) {
+	query := model.ServiceStatus{Name: name}
+	serviceList, err := dao.GetServiceData(query, userID)
 	if err != nil {
 		return nil, err
 	}

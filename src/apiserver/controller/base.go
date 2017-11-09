@@ -98,7 +98,13 @@ func (b *baseController) getCurrentUser() *model.User {
 	payload, err := verifyToken(token)
 	if err != nil {
 		if err == errInvalidToken {
-			logs.Error("failed to re-assign token due to timeout.")
+			newToken, err := signToken(payload)
+			if err != nil {
+				logs.Error("failed to re-assign token: %+v", err)
+				return nil
+			}
+			logs.Info("Token has been re-signed due to timeout.")
+			token = newToken.TokenString
 		} else {
 			logs.Error("failed to verify token: %+v\n", err)
 		}
@@ -121,13 +127,8 @@ func (b *baseController) getCurrentUser() *model.User {
 				logs.Info("Another same name user has signed in other places.")
 				return nil
 			}
-			newToken, err := signToken(payload)
-			if err != nil {
-				logs.Error("failed to re-assign token: %+v", err)
-				return nil
-			}
-			memoryCache.Put(user.Username, newToken.TokenString, time.Second*time.Duration(tokenCacheExpireSeconds))
-			b.Ctx.ResponseWriter.Header().Set("token", newToken.TokenString)
+			memoryCache.Put(user.Username, token, time.Second*time.Duration(tokenCacheExpireSeconds))
+			b.Ctx.ResponseWriter.Header().Set("token", token)
 		}
 		return user
 	}

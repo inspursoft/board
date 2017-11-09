@@ -46,7 +46,6 @@ func (p *ServiceController) Prepare() {
 	}
 	p.currentUser = user
 	p.isSysAdmin = (user.SystemAdmin == 1)
-	p.isProjectAdmin = (user.ProjectAdmin == 1)
 }
 
 //Get request massage parameters
@@ -97,13 +96,23 @@ func handleTestReqPara(reqServiceConfig model.ServiceConfig) model.ServiceConfig
 // API to deploy service
 func deployServiceCommonAction(p *ServiceController, depFileName string, serFileName string,
 	handleTestRepPara ...func(model.ServiceConfig) model.ServiceConfig) {
-	var err error
+
 	var pushobject pushObject
 
 	//Get request massage parameters
 	reqServiceConfig, serviceID, err := handleReqPara(p)
 	if err != nil {
 		p.internalError(err)
+		return
+	}
+
+	isMember, err := service.IsProjectMember(reqServiceConfig.ProjectID, p.currentUser.ID)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if !(p.isSysAdmin || isMember) {
+		p.customAbort(http.StatusForbidden, "Insufficient privileges to deploy service.")
 		return
 	}
 
@@ -191,27 +200,18 @@ func deployServiceCommonAction(p *ServiceController, depFileName string, serFile
 
 // API to deploy service
 func (p *ServiceController) DeployServiceAction() {
-	//Judge authority
-	if !(p.isSysAdmin && p.isProjectAdmin) {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges to manipulate user.")
-		return
-	}
 	deployServiceCommonAction(p, deploymentFilename, serviceFilename)
 }
 
 // API to deploy test service
 func (p *ServiceController) DeployServiceTestAction() {
-	//Judge authority
-	if !(p.isSysAdmin && p.isProjectAdmin) {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges to manipulate user.")
-		return
-	}
 	deployServiceCommonAction(p, deploymentTestFilename, serviceTestFilename, handleTestReqPara)
 }
 
 //get service list
 func (p *ServiceController) GetServiceListAction() {
-	serviceList, err := service.GetServiceList()
+	serviceName := p.GetString("service_name", "")
+	serviceList, err := service.GetServiceList(serviceName, p.currentUser.ID)
 	if err != nil {
 		p.internalError(err)
 		return
@@ -222,11 +222,6 @@ func (p *ServiceController) GetServiceListAction() {
 
 // API to create service config
 func (p *ServiceController) CreateServiceConfigAction() {
-	//Judge authority
-	if !(p.isSysAdmin && p.isProjectAdmin) {
-		p.customAbort(http.StatusForbidden, "Insuffient privileges to manipulate user.")
-		return
-	}
 	reqData, err := p.resolveBody()
 	if err != nil {
 		p.internalError(err)
@@ -238,13 +233,24 @@ func (p *ServiceController) CreateServiceConfigAction() {
 		p.internalError(err)
 		return
 	}
-	logs.Debug("%+v", reqServiceProject)
 	//Assign and return Service ID with mysql
 	var newservice model.ServiceStatus
 	newservice.ProjectID = reqServiceProject.ProjectID
 	newservice.ProjectName = reqServiceProject.ProjectName
 	newservice.Status = preparing // 0: preparing 1: running 2: suspending
 	newservice.OwnerID = p.currentUser.ID
+
+	isMember, err := service.IsProjectMember(newservice.ProjectID, p.currentUser.ID)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	//Judge authority
+	if !(p.isSysAdmin || isMember) {
+		p.customAbort(http.StatusForbidden, "Insufficient privileges to create service.")
+		return
+	}
 
 	serviceID, err := service.CreateServiceConfig(newservice)
 	if err != nil {
@@ -256,11 +262,6 @@ func (p *ServiceController) CreateServiceConfigAction() {
 }
 
 func (p *ServiceController) DeleteServiceAction() {
-	if !(p.isSysAdmin && p.isProjectAdmin) {
-		p.customAbort(http.StatusForbidden, "Insuffient privileges to manipulate user.")
-		return
-	}
-
 	serviceID, err := strconv.ParseInt(p.Ctx.Input.Param(":id"), 10, 64)
 	if err != nil {
 		p.internalError(err)
@@ -276,6 +277,18 @@ func (p *ServiceController) DeleteServiceAction() {
 	}
 	if s == nil {
 		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
+		return
+	}
+
+	isMember, err := service.IsProjectMember(s.ProjectID, p.currentUser.ID)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	//Judge authority
+	if !(p.isSysAdmin || isMember) {
+		p.customAbort(http.StatusForbidden, "Insufficient privileges to delete service.")
 		return
 	}
 
@@ -300,11 +313,6 @@ func (p *ServiceController) DeleteServiceAction() {
 
 // API to deploy service
 func (p *ServiceController) ToggleServiceAction() {
-	if !(p.isSysAdmin && p.isProjectAdmin) {
-		p.customAbort(http.StatusForbidden, "Insuffient privileges to manipulate user.")
-		return
-	}
-	var err error
 	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
 	if err != nil {
 		p.internalError(err)
@@ -334,6 +342,18 @@ func (p *ServiceController) ToggleServiceAction() {
 	}
 	if s == nil {
 		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
+		return
+	}
+
+	isMember, err := service.IsProjectMember(s.ProjectID, p.currentUser.ID)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	//Judge authority
+	if !(p.isSysAdmin || isMember) {
+		p.customAbort(http.StatusForbidden, "Insufficient privileges to toggle service status.")
 		return
 	}
 
@@ -532,7 +552,6 @@ func (p *ServiceController) GetServiceStatusAction() {
 }
 
 func (p *ServiceController) ServicePublicityAction() {
-	var err error
 	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
 	if err != nil {
 		p.internalError(err)
@@ -564,6 +583,19 @@ func (p *ServiceController) ServicePublicityAction() {
 		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
 		return
 	}
+
+	isMember, err := service.IsProjectMember(s.ProjectID, p.currentUser.ID)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	//Judge authority
+	if !(p.isSysAdmin || isMember) {
+		p.customAbort(http.StatusForbidden, "Insufficient privileges to get publicity of service.")
+		return
+	}
+
 	if s.Public != reqServiceUpdate.Public {
 		servicequery.Public = reqServiceUpdate.Public
 		_, err = service.UpdateService(servicequery, "public")
@@ -577,7 +609,6 @@ func (p *ServiceController) ServicePublicityAction() {
 }
 
 func (p *ServiceController) GetServiceConfigAction() {
-	var err error
 	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
 	if err != nil {
 		p.internalError(err)

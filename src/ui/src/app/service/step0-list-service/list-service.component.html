@@ -18,7 +18,7 @@
       <clr-dg-row *ngFor="let s of services">
         <clr-dg-cell>{{s.service_name}}</clr-dg-cell>
         <clr-dg-cell>{{s.service_project_name}}</clr-dg-cell>
-        <clr-dg-cell>{{s.service_owner}}</clr-dg-cell>
+        <clr-dg-cell>{{s.service_owner_name}}</clr-dg-cell>
         <clr-dg-cell>{{s.service_creation_time | date: 'short'}}</clr-dg-cell>
         <clr-dg-cell>
           <input type="checkbox" id="chkPublic" [checked]="s.service_public === 1" (click)="toggleServicePublic(s)">

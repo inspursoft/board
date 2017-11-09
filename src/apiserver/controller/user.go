@@ -23,7 +23,6 @@ func (u *UserController) Prepare() {
 	}
 	u.currentUser = user
 	u.isSysAdmin = (u.currentUser.SystemAdmin == 1)
-	u.isProjectAdmin = (u.currentUser.ProjectAdmin == 1)
 }
 
 func (u *UserController) GetUsersAction() {

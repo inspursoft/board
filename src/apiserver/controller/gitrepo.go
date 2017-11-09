@@ -41,11 +41,6 @@ func (g *GitRepoController) Prepare() {
 		return
 	}
 	g.currentUser = user
-	g.isProjectAdmin = (g.currentUser.ProjectAdmin == 1)
-	if !g.isProjectAdmin {
-		g.customAbort(http.StatusForbidden, "Insufficient privileges for manipulating Git repos.")
-		return
-	}
 }
 
 func (g *GitRepoController) CreateServeRepo() {
