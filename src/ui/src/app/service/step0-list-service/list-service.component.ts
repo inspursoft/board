@@ -52,7 +52,7 @@ export class ListServiceComponent implements OnInit, OnDestroy {
                 this.retrieve();
               })
               .catch(err => {
-                m.message = 'SERVICE.FAILED_TO_DELETE';
+                m.message = 'SERVICE.FAILED_TO_DELETE_SERVICE';
                 m.type = MESSAGE_TYPE.COMMON_ERROR;
                 this.messageService.inlineAlertMessage(m);
               });
