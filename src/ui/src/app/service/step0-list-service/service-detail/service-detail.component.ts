@@ -7,10 +7,13 @@ import { MESSAGE_TARGET, BUTTON_STYLE, MESSAGE_TYPE } from '../../../shared/shar
 
 class NodeURL {
   url: string;
-  description: string;
-  constructor(url: string, description: string) {
+  identity: string;
+  route: string;
+  
+  constructor(url: string, identity: string, route: string) {
     this.url = url;
-    this.description = description;
+    this.identity = identity;
+    this.route = route;
   }
 }
 
@@ -49,7 +52,13 @@ export class ServiceDetailComponent {
             let node = arrNode[i];
             if (node.status == 1) {
               let port = arrNodePort[Math.floor(Math.random() * arrNodePort.length)];
-              this.urlList.push(new NodeURL(`http://${node.node_ip}:${port}`, `http://${window.location.host}/${ownerName}/${projectName}/${serviceName}`));
+              let nodeInfo = {
+                url: `http://${node.node_ip}:${port}`, 
+                identity: `${ownerName}_${projectName}_${serviceName}`, 
+                route: `http://${window.location.host}/deploy/${ownerName}/${projectName}/${serviceName}`
+              };
+              this.urlList.push(nodeInfo);
+              this.k8sService.addServiceRoute(nodeInfo.url, nodeInfo.identity)
               break;
             }
           }
