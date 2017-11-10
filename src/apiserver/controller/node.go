@@ -18,7 +18,6 @@ func (p *NodeController) Prepare() {
 	}
 	p.currentUser = user
 	p.isSysAdmin = (user.SystemAdmin == 1)
-	p.isProjectAdmin = (user.ProjectAdmin == 1)
 }
 func (n *NodeController) GetNode() {
 	para := n.GetString("node_name")

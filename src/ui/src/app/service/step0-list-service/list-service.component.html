@@ -18,7 +18,7 @@
       <clr-dg-row *ngFor="let s of services">
         <clr-dg-cell>{{s.service_name}}</clr-dg-cell>
         <clr-dg-cell>{{s.service_project_name}}</clr-dg-cell>
-        <clr-dg-cell>{{s.service_owner}}</clr-dg-cell>
+        <clr-dg-cell>{{s.service_owner_name}}</clr-dg-cell>
         <clr-dg-cell>{{s.service_creation_time | date: 'short'}}</clr-dg-cell>
         <clr-dg-cell>
           <input type="checkbox" id="chkPublic" [checked]="s.service_public === 1" (click)="toggleServicePublic(s)">
@@ -35,7 +35,7 @@
           <a href="javascript:void(0)">
             <clr-icon shape="trash" (click)="confirmToServiceAction(s, 'DELETE')"></clr-icon>
           </a>
-          <a href="javascript:void(0)" (click)="openServiceDetail(s.service_name)">
+          <a href="javascript:void(0)" (click)="openServiceDetail(s.service_name, s.service_project_name, s.service_owner_name)">
             <clr-icon shape="info-standard"></clr-icon>
           </a>
         </clr-dg-cell>

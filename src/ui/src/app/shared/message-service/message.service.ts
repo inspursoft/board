@@ -69,7 +69,7 @@ export class MessageService {
         break;
       case 403:
         errMessage.type = MESSAGE_TYPE.COMMON_ERROR;
-        this._setErrorMessage(errMessage, 'ERROR.INSUFFIENT_PRIVILEGES', customMessage);
+        this._setErrorMessage(errMessage, 'ERROR.INSUFFICIENT_PRIVILEGES', customMessage);
         break;
       case 409:
         errMessage.type = MESSAGE_TYPE.COMMON_ERROR;

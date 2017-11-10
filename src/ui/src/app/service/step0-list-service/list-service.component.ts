@@ -53,7 +53,7 @@ export class ListServiceComponent implements OnInit, OnDestroy {
                 this.retrieve();
               })
               .catch(err => {
-                m.message = 'SERVICE.FAILED_TO_DELETE';
+                m.message = 'SERVICE.FAILED_TO_DELETE_SERVICE';
                 m.type = MESSAGE_TYPE.COMMON_ERROR;
                 this.messageService.inlineAlertMessage(m);
               });
@@ -177,8 +177,8 @@ export class ListServiceComponent implements OnInit, OnDestroy {
 
   }
 
-  openServiceDetail(serviceName: string) {
-    this.serviceDetailComponent.openModal(serviceName);
+  openServiceDetail(serviceName: string, projectName: string, ownerName: string) {
+    this.serviceDetailComponent.openModal(serviceName, projectName, ownerName);
   }
 
 }

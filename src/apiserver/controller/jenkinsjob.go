@@ -34,11 +34,6 @@ func (j *JenkinsJobController) Prepare() {
 		return
 	}
 	j.currentUser = user
-	j.isProjectAdmin = (j.currentUser.ProjectAdmin == 1)
-	if !j.isProjectAdmin {
-		j.customAbort(http.StatusForbidden, "Insufficient privileges for manipulating Git repos.")
-		return
-	}
 }
 
 func generateURL(rawTemplate string, data interface{}) (string, error) {

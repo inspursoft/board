@@ -1,7 +1,7 @@
 <clr-modal [(clrModalOpen)]="projectMemberOpened">
   <h3 class="modal-title">{{ 'PROJECT.ADD_MEMBER_FOR' | translate }}&nbsp;{{ project.project_name }}</h3>
   <div class="modal-body" style="min-height: 42vh;">
-    <clr-alert [clrAlertSizeSmall]="true" [(clrAlertClosed)]="!hasChanged">
+    <clr-alert [clrAlertType]="alertType" [clrAlertSizeSmall]="true" [(clrAlertClosed)]="!hasChanged">
       <div class="alert-item">
           <span class="alert-text">
             {{ changedMessage }}
@@ -26,7 +26,7 @@
           </select>
       </div>
     </div>
-    <div class="row">
+    <!-- <div class="row">
       <div class="col-xs-12">
         <form class="compact" [hidden]="doSet">
           <section class="form-block">
@@ -47,7 +47,7 @@
           </section>
         </form>
       </div>
-    </div>
+    </div> -->
   </div>
   <div class="modal-footer">
       <button type="button" class="btn btn-primary" (click)="confirm()">{{ 'BUTTON.CONFIRM' | translate }}</button>

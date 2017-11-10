@@ -6,6 +6,7 @@ import (
 	"git/inspursoft/board/src/common/model"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/ghodss/yaml"
@@ -158,5 +159,76 @@ func GenerateYamlFile(name string, structdata interface{}) error {
 		logs.Error("Generate yaml file failed, err:%+v\n", err)
 		return err
 	}
+	return nil
+}
+
+func UnmarshalServiceConfigYaml(serviceConfig *model.ServiceConfig2, serviceConfigPath string) error {
+	err := CheckDeploymentPath(serviceConfigPath)
+	if err != nil {
+		logs.Error("Failed to check deployment path: %+v\n", err)
+		return err
+	}
+
+	err = getYamlFileData(&serviceConfig.Service, serviceConfigPath, "service.yaml")
+	if err != nil {
+		return err
+	}
+
+	err = getYamlFileData(&serviceConfig.Deployment, serviceConfigPath, "deployment.yaml")
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func UpdateServiceConfigYaml(reqServiceConfig model.ServiceConfig2, serviceConfigPath string) error {
+	err := CheckDeploymentPath(serviceConfigPath)
+	if err != nil {
+		logs.Error("Failed to check deployment path: %+v\n", err)
+		return err
+	}
+
+	deploymentFileName := filepath.Join(serviceConfigPath, "deployment.yaml")
+	err = GenerateYamlFile(deploymentFileName, reqServiceConfig.Deployment)
+	if err != nil {
+		return err
+	}
+
+	serviceFileName := filepath.Join(serviceConfigPath, "service.yaml")
+	err = GenerateYamlFile(serviceFileName, reqServiceConfig.Service)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func DeleteServiceConfigYaml(serviceConfigPath string) error {
+	err := os.RemoveAll(serviceConfigPath)
+	if err != nil {
+		logs.Error("Failed to delete deployment files: %+v\n", err)
+		return err
+	}
+
+	return nil
+}
+
+func getYamlFileData(serviceConfig interface{}, serviceConfigPath string, fileName string) error {
+	serviceFileName := filepath.Join(serviceConfigPath, fileName)
+	yamlData, err := ioutil.ReadFile(serviceFileName)
+	if err != nil {
+		return err
+	}
+
+	jsonData, err := yaml.YAMLToJSON(yamlData)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(jsonData, serviceConfig)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

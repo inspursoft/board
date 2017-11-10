@@ -48,7 +48,6 @@ func (p *ServiceController) Prepare() {
 	}
 	p.currentUser = user
 	p.isSysAdmin = (user.SystemAdmin == 1)
-	p.isProjectAdmin = (user.ProjectAdmin == 1)
 }
 
 func (p *ServiceController) handleReqData() (model.ServiceConfig2, int, error) {
@@ -71,16 +70,29 @@ func (p *ServiceController) handleReqData() (model.ServiceConfig2, int, error) {
 	}
 	logs.Debug("Deploy service info: %+v\n", reqServiceConfig)
 
-	//check data
-	err = service.CheckReqPara(reqServiceConfig)
-	if err != nil {
-		return reqServiceConfig, serviceID, InputParaErr
-	}
-
 	return reqServiceConfig, serviceID, err
 }
 
 func (p *ServiceController) commonDeployService(reqServiceConfig model.ServiceConfig2, serviceID int, testFlag bool) {
+	currentProject, err := service.GetProject(model.Project{ID: reqServiceConfig.Project.ProjectID}, "id")
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if currentProject == nil {
+		p.customAbort(http.StatusBadRequest, "Invalid project ID.")
+		return
+	}
+	isMember, err := service.IsProjectMember(reqServiceConfig.Project.ProjectID, p.currentUser.ID)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if !(p.isSysAdmin || isMember) {
+		p.customAbort(http.StatusForbidden, "Insufficient privileges to deploy service.")
+		return
+	}
+
 	//get deployment type
 	var deploymentFile string
 	var serviceFile string
@@ -92,7 +104,6 @@ func (p *ServiceController) commonDeployService(reqServiceConfig model.ServiceCo
 		serviceFile = serviceFilename
 	}
 
-	//push to git
 	var pushobject pushObject
 	deploymentAbsName := filepath.Join(repoPath(), reqServiceConfig.Project.ProjectName, strconv.Itoa(serviceID), deploymentFile)
 	pushobject.FileName = deploymentFile
@@ -107,7 +118,7 @@ func (p *ServiceController) commonDeployService(reqServiceConfig model.ServiceCo
 	logs.Info("deployment pushobject.Value:%+v\n", pushobject.Value)
 	logs.Info("deployment pushobject.Extras:%+v\n", pushobject.Extras)
 
-	err := service.CheckDeploymentPath(loadPath)
+	err = service.CheckDeploymentPath(loadPath)
 	if err != nil {
 		logs.Error("Failed to check deployment path: %+v\n", err)
 		return
@@ -157,8 +168,9 @@ func (p *ServiceController) commonDeployService(reqServiceConfig model.ServiceCo
 
 	//update db
 	updateService := model.ServiceStatus{ID: int64(serviceID), Status: running,
-		Name: reqServiceConfig.Service.ObjectMeta.Name, OwnerID: p.currentUser.ID}
-	_, err = service.UpdateService(updateService, "name", "status", "owner_id")
+		Name: reqServiceConfig.Service.ObjectMeta.Name, OwnerID: p.currentUser.ID,
+		OwnerName: p.currentUser.Username, Comment: reqServiceConfig.Project.Comment}
+	_, err = service.UpdateService(updateService, "name", "status", "owner_id", "OwnerName", "Comment")
 	if err != nil {
 		p.internalError(err)
 		return
@@ -168,19 +180,16 @@ func (p *ServiceController) commonDeployService(reqServiceConfig model.ServiceCo
 
 // API to deploy service
 func (p *ServiceController) DeployServiceAction() {
-	//Judge authority
-	if !(p.isSysAdmin && p.isProjectAdmin) {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges to manipulate user.")
+	reqServiceConfig, serviceID, err := p.handleReqData()
+	if err != nil {
+		p.internalError(err)
 		return
 	}
 
-	reqServiceConfig, serviceID, err := p.handleReqData()
+	//check data
+	err = service.CheckReqPara(reqServiceConfig)
 	if err != nil {
-		if err == InputParaErr {
-			p.customAbort(http.StatusBadRequest, err.Error())
-			return
-		}
-		p.internalError(err)
+		p.customAbort(http.StatusBadRequest, InputParaErr.Error())
 		return
 	}
 
@@ -197,17 +206,16 @@ func (p *ServiceController) DeployServiceAction() {
 // API to deploy test service
 func (p *ServiceController) DeployServiceTestAction() {
 	//Judge authority
-	if !(p.isSysAdmin && p.isProjectAdmin) {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges to manipulate user.")
-		return
-	}
 	reqServiceConfig, serviceID, err := p.handleReqData()
 	if err != nil {
-		if err == InputParaErr {
-			p.customAbort(http.StatusBadRequest, err.Error())
-			return
-		}
 		p.internalError(err)
+		return
+	}
+
+	//check data
+	err = service.CheckReqPara(reqServiceConfig)
+	if err != nil {
+		p.customAbort(http.StatusBadRequest, InputParaErr.Error())
 		return
 	}
 
@@ -229,7 +237,8 @@ func (p *ServiceController) DeployServiceTestAction() {
 
 //get service list
 func (p *ServiceController) GetServiceListAction() {
-	serviceList, err := service.GetServiceList()
+	serviceName := p.GetString("service_name", "")
+	serviceList, err := service.GetServiceList(serviceName, p.currentUser.ID)
 	if err != nil {
 		p.internalError(err)
 		return
@@ -240,11 +249,6 @@ func (p *ServiceController) GetServiceListAction() {
 
 // API to create service config
 func (p *ServiceController) CreateServiceConfigAction() {
-	//Judge authority
-	if !(p.isSysAdmin && p.isProjectAdmin) {
-		p.customAbort(http.StatusForbidden, "Insuffient privileges to manipulate user.")
-		return
-	}
 	reqData, err := p.resolveBody()
 	if err != nil {
 		p.internalError(err)
@@ -256,13 +260,24 @@ func (p *ServiceController) CreateServiceConfigAction() {
 		p.internalError(err)
 		return
 	}
-	logs.Debug("%+v", reqServiceProject)
 	//Assign and return Service ID with mysql
 	var newservice model.ServiceStatus
 	newservice.ProjectID = reqServiceProject.ProjectID
 	newservice.ProjectName = reqServiceProject.ProjectName
 	newservice.Status = preparing // 0: preparing 1: running 2: suspending
 	newservice.OwnerID = p.currentUser.ID
+
+	isMember, err := service.IsProjectMember(newservice.ProjectID, p.currentUser.ID)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	//Judge authority
+	if !(p.isSysAdmin || isMember) {
+		p.customAbort(http.StatusForbidden, "Insufficient privileges to create service.")
+		return
+	}
 
 	serviceID, err := service.CreateServiceConfig(newservice)
 	if err != nil {
@@ -274,11 +289,6 @@ func (p *ServiceController) CreateServiceConfigAction() {
 }
 
 func (p *ServiceController) DeleteServiceAction() {
-	if !(p.isSysAdmin && p.isProjectAdmin) {
-		p.customAbort(http.StatusForbidden, "Insuffient privileges to manipulate user.")
-		return
-	}
-
 	serviceID, err := strconv.ParseInt(p.Ctx.Input.Param(":id"), 10, 64)
 	if err != nil {
 		p.internalError(err)
@@ -294,6 +304,18 @@ func (p *ServiceController) DeleteServiceAction() {
 	}
 	if s == nil {
 		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
+		return
+	}
+
+	isMember, err := service.IsProjectMember(s.ProjectID, p.currentUser.ID)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	//Judge authority
+	if !(p.isSysAdmin || isMember) {
+		p.customAbort(http.StatusForbidden, "Insufficient privileges to delete service.")
 		return
 	}
 
@@ -318,11 +340,6 @@ func (p *ServiceController) DeleteServiceAction() {
 
 // API to deploy service
 func (p *ServiceController) ToggleServiceAction() {
-	if !(p.isSysAdmin && p.isProjectAdmin) {
-		p.customAbort(http.StatusForbidden, "Insuffient privileges to manipulate user.")
-		return
-	}
-	var err error
 	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
 	if err != nil {
 		p.internalError(err)
@@ -352,6 +369,18 @@ func (p *ServiceController) ToggleServiceAction() {
 	}
 	if s == nil {
 		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
+		return
+	}
+
+	isMember, err := service.IsProjectMember(s.ProjectID, p.currentUser.ID)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	//Judge authority
+	if !(p.isSysAdmin || isMember) {
+		p.customAbort(http.StatusForbidden, "Insufficient privileges to toggle service status.")
 		return
 	}
 
@@ -550,7 +579,6 @@ func (p *ServiceController) GetServiceStatusAction() {
 }
 
 func (p *ServiceController) ServicePublicityAction() {
-	var err error
 	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
 	if err != nil {
 		p.internalError(err)
@@ -582,6 +610,19 @@ func (p *ServiceController) ServicePublicityAction() {
 		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
 		return
 	}
+
+	isMember, err := service.IsProjectMember(s.ProjectID, p.currentUser.ID)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	//Judge authority
+	if !(p.isSysAdmin || isMember) {
+		p.customAbort(http.StatusForbidden, "Insufficient privileges to get publicity of service.")
+		return
+	}
+
 	if s.Public != reqServiceUpdate.Public {
 		servicequery.Public = reqServiceUpdate.Public
 		_, err = service.UpdateService(servicequery, "public")
@@ -595,7 +636,6 @@ func (p *ServiceController) ServicePublicityAction() {
 }
 
 func (p *ServiceController) GetServiceConfigAction() {
-	var err error
 	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
 	if err != nil {
 		p.internalError(err)
@@ -623,12 +663,12 @@ func (p *ServiceController) GetServiceConfigAction() {
 	logs.Debug("Service config path: %s", serviceConfigPath)
 
 	// Get the service config by yaml files
-	var serviceConfig model.ServiceConfig
-	serviceConfig.ServiceID = s.ID
-	serviceConfig.ProjectID = s.ProjectID
-	serviceConfig.ProjectName = s.ProjectName
-	//TODO
-	// err = service.InterpretServiceConfigYaml(&serviceConfig, serviceConfigPath)
+	var serviceConfig model.ServiceConfig2
+	serviceConfig.Project.ServiceID = s.ID
+	serviceConfig.Project.ProjectID = s.ProjectID
+	serviceConfig.Project.ProjectName = s.ProjectName
+
+	err = service.UnmarshalServiceConfigYaml(&serviceConfig, serviceConfigPath)
 	if err != nil {
 		p.internalError(err)
 		return
@@ -654,17 +694,10 @@ func (p *ServiceController) UpdateServiceConfigAction() {
 		return
 	}
 
-	// Check request parameters
-	err = service.CheckReqPara(reqServiceConfig)
-	if err != nil {
-		p.customAbort(http.StatusBadRequest, err.Error())
-		return
-	}
-
 	serviceConfigPath := filepath.Join(repoPath(), reqServiceConfig.Project.ProjectName,
 		strconv.Itoa(serviceID))
-	// TODO update yaml files by service config
-	// err = service.UpdateServiceConfigYaml(reqServiceConfig, serviceConfigPath)
+	//update yaml files by service config
+	err = service.UpdateServiceConfigYaml(reqServiceConfig, serviceConfigPath)
 	if err != nil {
 		logs.Info("failed to update service yaml", serviceConfigPath)
 		p.customAbort(http.StatusBadRequest, err.Error())
@@ -702,7 +735,83 @@ func (p *ServiceController) DeleteServiceConfigAction() {
 
 	// Delete yaml files
 	// TODO
-	// err = service.DeleteServiceConfigYaml(serviceConfigPath)
+	err = service.DeleteServiceConfigYaml(serviceConfigPath)
+	if err != nil {
+		logs.Info("failed to delete service yaml", serviceConfigPath)
+		p.internalError(err)
+		return
+	}
+
+	// For terminated service config, actually delete it in DB
+	_, err = service.DeleteServiceByID(servicequery)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+}
+
+func (p *ServiceController) DeleteDeploymentAction() {
+	var err error
+	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	// Get the project info of this service
+	var servicequery model.ServiceStatus
+	servicequery.ID = int64(serviceID)
+	s, err := service.GetService(servicequery, "id")
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if s == nil {
+		p.customAbort(http.StatusBadRequest,
+			fmt.Sprintf("Invalid service ID: %d", serviceID))
+		return
+	}
+	logs.Info("service status: ", s)
+
+	// Get the path of the service config files
+	serviceConfigPath := filepath.Join(repoPath(), s.ProjectName,
+		strconv.Itoa(serviceID))
+	logs.Debug("Service config path: %s", serviceConfigPath)
+
+	// TODO clear kube-master, even if the service is not deployed successfully
+
+	// Update git repo
+	var pushobject pushObject
+	pushobject.FileName = deploymentFilename
+	pushobject.JobName = serviceProcess
+	pushobject.Value = filepath.Join(s.ProjectName, strconv.Itoa(serviceID))
+	pushobject.Message = fmt.Sprintf("Delete yaml files for project %s service %d",
+		s.ProjectName, s.ID)
+	pushobject.Extras = filepath.Join(kubeMasterURL(), deploymentAPI,
+		serviceNamespace, "deployments")
+
+	//Get file list for Jenkis git repo
+	uploads, err := service.ListUploadFiles(serviceConfigPath)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	// Add yaml files
+	for _, finfo := range uploads {
+		filefullname := filepath.Join(pushobject.Value, finfo.FileName)
+		pushobject.Items = append(pushobject.Items, filefullname)
+	}
+
+	ret, msg, err := InternalCleanObjects(&pushobject, &(p.baseController))
+	if err != nil {
+		logs.Info("Failed to push object for git repo clean", msg, ret, pushobject)
+		p.internalError(err)
+		return
+	}
+	logs.Info("Internal push clean deployment object: %d %s", ret, msg)
+
+	// Delete yaml files
+	err = service.DeleteServiceConfigYaml(serviceConfigPath)
 	if err != nil {
 		logs.Info("failed to delete service yaml", serviceConfigPath)
 		p.internalError(err)

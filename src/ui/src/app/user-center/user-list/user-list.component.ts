@@ -123,25 +123,4 @@ export class UserList implements OnInit, OnDestroy {
         this.messageService.dispatchError(err);
       })
   }
-
-  setUserProjectAdmin(user: User) {
-    this.setUserProjectAdminIng = true;
-    let userProjectAdmin = user.user_project_admin == 1 ? 0 : 1;
-    this.userService.setUserProjectAdmin(user.user_id, userProjectAdmin)
-      .then(() => {
-        this.setUserProjectAdminIng = false;
-        user.user_project_admin = userProjectAdmin;
-        let m: Message = new Message();
-        if (user.user_project_admin === 1) {
-          m.message = "USER_CENTER.SUCCESSFUL_SET_PROJECT_ADMIN";
-        } else {
-          m.message = "USER_CENTER.SUCCESSFUL_SET_NOT_PROJECT_ADMIN";
-        }
-        this.messageService.inlineAlertMessage(m);
-      })
-      .catch(err => {
-        this.setUserProjectAdminIng = false;
-        this.messageService.dispatchError(err)
-      })
-  }
 }

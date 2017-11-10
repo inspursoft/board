@@ -1,10 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 
 import { K8sService } from '../../service.k8s';
 
 import { MessageService } from '../../../shared/message-service/message.service';
 import { MESSAGE_TARGET, BUTTON_STYLE, MESSAGE_TYPE } from '../../../shared/shared.const';
 
+class NodeURL {
+  url: string;
+  description: string;
+  constructor(url: string, description: string) {
+    this.url = url;
+    this.description = description;
+  }
+}
 
 @Component({
   selector: 'service-detail',
@@ -15,7 +23,7 @@ export class ServiceDetailComponent {
   isOpenServiceDetail = false;
   serviceDetail: string = "";
 
-  urlList: Array<string>;
+  urlList: Array<NodeURL>;
   
   serviceName: string;
 
@@ -24,12 +32,12 @@ export class ServiceDetailComponent {
     private messageService: MessageService
   ) {}
 
-  openModal(serviceName: string): void {
+  openModal(serviceName: string, projectName: string, ownerName: string): void {
     this.isOpenServiceDetail = true;
-    this.getServiceDetail(serviceName);
+    this.getServiceDetail(serviceName, projectName, ownerName);
   }
 
-  getServiceDetail(serviceName: string): void {
+  getServiceDetail(serviceName: string, projectName: string, ownerName: string): void {
     this.urlList = [];
     this.serviceName = serviceName;
     this.k8sService.getServiceDetail(serviceName).then(res => {
@@ -37,13 +45,14 @@ export class ServiceDetailComponent {
         let arrNodePort = res["node_Port"] as Array<number>;
         this.k8sService.getNodesList().then(res => {
           let arrNode = res as Array<{node_name: string, node_ip: string, status: number}>;
-          arrNode.forEach(node => {
+          for(let i = 0; i < arrNode.length; i++){
+            let node = arrNode[i];
             if (node.status == 1) {
-              arrNodePort.forEach(port => {
-                this.urlList.push(`http://${node.node_ip}:${port}`);
-              });
+              let port = arrNodePort[Math.floor(Math.random() * arrNodePort.length)];
+              this.urlList.push(new NodeURL(`http://${node.node_ip}:${port}`, `http://${window.location.host}/${ownerName}/${projectName}/${serviceName}`));
+              break;
             }
-          });
+          }
         });
       }
       this.serviceDetail = JSON.stringify(res);

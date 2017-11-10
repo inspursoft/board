@@ -16,13 +16,16 @@ import (
 	"github.com/astaxie/beego"
 )
 
-var adminUserID int64 = 1
-var defaultInitialPassword = "123456a?"
-var defaultProject = "library"
+const (
+	adminUserID            = 1
+	defaultInitialPassword = "123456a?"
+	baseRepoPath           = "/repos"
+	sshKeyPath             = "/root/.ssh/id_rsa"
+	defaultProject         = "library"
+)
 
-var baseRepoPath = `/repos`
-var repoServeURL = filepath.Join("root@gitserver:", "gitserver", "repos", "board_repo_serve")
 var repoServePath = filepath.Join(baseRepoPath, "board_repo_serve")
+var repoServeURL = filepath.Join("root@gitserver:", "gitserver", "repos", "board_repo_serve")
 var repoPath = filepath.Join(baseRepoPath, "board_repo")
 
 func updateAdminPassword(initialPassword string) {
@@ -83,6 +86,7 @@ func main() {
 	utils.SetConfig("REPO_SERVE_URL", repoServeURL)
 	utils.SetConfig("REPO_SERVE_PATH", repoServePath)
 	utils.SetConfig("REPO_PATH", repoPath)
+	utils.SetConfig("SSH_KEY_PATH", sshKeyPath)
 
 	utils.SetConfig("REGISTRY_BASE_URI", "%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
 

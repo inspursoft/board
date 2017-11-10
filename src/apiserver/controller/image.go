@@ -222,18 +222,10 @@ func (p *ImageController) Prepare() {
 	}
 	p.currentUser = user
 	p.isSysAdmin = (user.SystemAdmin == 1)
-	p.isProjectAdmin = (user.ProjectAdmin == 1)
 }
 
 func (p *ImageController) BuildImageAction() {
-	var err error
-
 	//Check user priviledge project admin
-	if p.isProjectAdmin == false {
-		p.serveStatus(http.StatusForbidden, "Invalid user for project admin")
-		return
-	}
-
 	reqData, err := p.resolveBody()
 	if err != nil {
 		p.internalError(err)
@@ -251,6 +243,27 @@ func (p *ImageController) BuildImageAction() {
 	err = service.CheckDockerfileConfig(&reqImageConfig)
 	if err != nil {
 		p.serveStatus(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	currentProject, err := service.GetProject(model.Project{Name: reqImageConfig.ProjectName}, "name")
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if currentProject == nil {
+		p.customAbort(http.StatusBadRequest, "Invalid project name.")
+		return
+	}
+
+	isMember, err := service.IsProjectMember(currentProject.ID, p.currentUser.ID)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	if !(p.isSysAdmin || isMember) {
+		p.customAbort(http.StatusForbidden, "Insufficient privileges to build image.")
 		return
 	}
 
@@ -317,14 +330,6 @@ func (p *ImageController) GetImageDockerfileAction() {
 }
 
 func (p *ImageController) DockerfilePreviewAction() {
-	var err error
-
-	//Check user priviledge project admin
-	if p.isProjectAdmin == false {
-		p.customAbort(http.StatusForbidden, "Invalid user for project admin")
-		return
-	}
-
 	reqData, err := p.resolveBody()
 	if err != nil {
 		p.internalError(err)
@@ -345,6 +350,27 @@ func (p *ImageController) DockerfilePreviewAction() {
 		return
 	}
 
+	currentProject, err := service.GetProject(model.Project{Name: reqImageConfig.ProjectName}, "name")
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if currentProject == nil {
+		p.customAbort(http.StatusBadRequest, "Invalid project name.")
+		return
+	}
+
+	isMember, err := service.IsProjectMember(currentProject.ID, p.currentUser.ID)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	if !(p.isSysAdmin || isMember) {
+		p.customAbort(http.StatusForbidden, "Insufficient privileges to build image.")
+		return
+	}
+
 	reqImageConfig.ImageDockerfilePath = filepath.Join(repoPath(), reqImageConfig.ProjectName,
 		reqImageConfig.ImageName, reqImageConfig.ImageTag)
 	err = service.BuildDockerfile(reqImageConfig, p.Ctx.ResponseWriter)
@@ -355,12 +381,6 @@ func (p *ImageController) DockerfilePreviewAction() {
 }
 
 func (p *ImageController) ConfigCleanAction() {
-	var err error
-	if p.isProjectAdmin == false {
-		p.customAbort(http.StatusForbidden, "Invalid user for project admin")
-		return
-	}
-
 	reqData, err := p.resolveBody()
 	if err != nil {
 		p.internalError(err)
@@ -373,6 +393,28 @@ func (p *ImageController) ConfigCleanAction() {
 		p.internalError(err)
 		return
 	}
+
+	currentProject, err := service.GetProject(model.Project{Name: reqImageIndex.ProjectName}, "name")
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if currentProject == nil {
+		p.customAbort(http.StatusBadRequest, "Invalid project name.")
+		return
+	}
+
+	isMember, err := service.IsProjectMember(currentProject.ID, p.currentUser.ID)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	if !(p.isSysAdmin || isMember) {
+		p.customAbort(http.StatusForbidden, "Insufficient privileges to build image.")
+		return
+	}
+
 	configPath := filepath.Join(repoPath(), strings.TrimSpace(reqImageIndex.ProjectName),
 		strings.TrimSpace(reqImageIndex.ImageName), strings.TrimSpace(reqImageIndex.ImageTag))
 
@@ -425,10 +467,9 @@ type tagList struct {
 }
 
 func (p *ImageController) DeleteImageAction() {
-	var err error
 
-	if p.isProjectAdmin == false {
-		p.customAbort(http.StatusForbidden, "Invalid user for project admin")
+	if p.isSysAdmin == false {
+		p.customAbort(http.StatusForbidden, "Insufficient privileges to delete image.")
 		return
 	}
 
@@ -518,8 +559,8 @@ func (p *ImageController) DeleteImageAction() {
 func (p *ImageController) DeleteImageTagAction() {
 	var err error
 
-	if p.isProjectAdmin == false {
-		p.customAbort(http.StatusForbidden, "Invalid user for project admin")
+	if p.isSysAdmin == false {
+		p.customAbort(http.StatusForbidden, "Insufficient privileges to delete image tag.")
 		return
 	}
 

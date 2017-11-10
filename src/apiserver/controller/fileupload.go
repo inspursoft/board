@@ -30,11 +30,6 @@ func (f *FileUploadController) Prepare() {
 		return
 	}
 	f.currentUser = user
-	f.isProjectAdmin = (user.ProjectAdmin == 1)
-	if !f.isProjectAdmin {
-		f.customAbort(http.StatusForbidden, "Insufficient privileges.")
-		return
-	}
 	f.resolveFilePath()
 }
 
@@ -66,7 +61,7 @@ func (f *FileUploadController) resolveFilePath() {
 	}
 
 	if reqUploadFile.ProjectName != "" {
-		isMember, err := service.IsProjectMemberByName(reqUploadFile.ProjectName)
+		isMember, err := service.IsProjectMemberByName(reqUploadFile.ProjectName, f.currentUser.ID)
 		if err != nil {
 			f.internalError(err)
 			return
