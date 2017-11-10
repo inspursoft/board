@@ -14,9 +14,12 @@ import (
 )
 
 const (
-	NAComment = "NA"
-	noDeleted = 0
-	running   = 1
+	defaultProjectName = "library"
+	defaultOwnerID     = 1
+	defaultOwnerName   = "admin"
+	defaultComment     = "init service"
+	defaultDeleted     = 0
+	defaultStatus      = 1
 )
 
 func InitServiceConfig() (*model.ServiceConfig, error) {
@@ -167,10 +170,12 @@ func SyncServiceWithK8s() error {
 	var servicequery model.ServiceStatus
 	for _, item := range serviceList.Items {
 		servicequery.Name = item.ObjectMeta.Name
-		servicequery.ProjectName = NAComment
-		servicequery.Comment = NAComment
-		servicequery.Deleted = noDeleted
-		servicequery.Status = running
+		servicequery.OwnerID = defaultOwnerID
+		servicequery.OwnerName = defaultOwnerName
+		servicequery.ProjectName = defaultProjectName
+		servicequery.Comment = defaultComment
+		servicequery.Deleted = defaultDeleted
+		servicequery.Status = defaultStatus
 		servicequery.CreationTime, _ = time.Parse(time.RFC3339, item.CreationTimestamp.Format(time.RFC3339))
 		servicequery.UpdateTime, _ = time.Parse(time.RFC3339, item.CreationTimestamp.Format(time.RFC3339))
 		_, err = dao.SyncServiceData(servicequery)
