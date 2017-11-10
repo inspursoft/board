@@ -749,3 +749,79 @@ func (p *ServiceController) DeleteServiceConfigAction() {
 		return
 	}
 }
+
+func (p *ServiceController) DeleteDeploymentAction() {
+	var err error
+	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	// Get the project info of this service
+	var servicequery model.ServiceStatus
+	servicequery.ID = int64(serviceID)
+	s, err := service.GetService(servicequery, "id")
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if s == nil {
+		p.customAbort(http.StatusBadRequest,
+			fmt.Sprintf("Invalid service ID: %d", serviceID))
+		return
+	}
+	logs.Info("service status: ", s)
+
+	// Get the path of the service config files
+	serviceConfigPath := filepath.Join(repoPath(), s.ProjectName,
+		strconv.Itoa(serviceID))
+	logs.Debug("Service config path: %s", serviceConfigPath)
+
+	// TODO clear kube-master, even if the service is not deployed successfully
+
+	// Update git repo
+	var pushobject pushObject
+	pushobject.FileName = deploymentFilename
+	pushobject.JobName = serviceProcess
+	pushobject.Value = filepath.Join(s.ProjectName, strconv.Itoa(serviceID))
+	pushobject.Message = fmt.Sprintf("Delete yaml files for project %s service %d",
+		s.ProjectName, s.ID)
+	pushobject.Extras = filepath.Join(kubeMasterURL(), deploymentAPI,
+		serviceNamespace, "deployments")
+
+	//Get file list for Jenkis git repo
+	uploads, err := service.ListUploadFiles(serviceConfigPath)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	// Add yaml files
+	for _, finfo := range uploads {
+		filefullname := filepath.Join(pushobject.Value, finfo.FileName)
+		pushobject.Items = append(pushobject.Items, filefullname)
+	}
+
+	ret, msg, err := InternalCleanObjects(&pushobject, &(p.baseController))
+	if err != nil {
+		logs.Info("Failed to push object for git repo clean", msg, ret, pushobject)
+		p.internalError(err)
+		return
+	}
+	logs.Info("Internal push clean deployment object: %d %s", ret, msg)
+
+	// Delete yaml files
+	err = service.DeleteServiceConfigYaml(serviceConfigPath)
+	if err != nil {
+		logs.Info("failed to delete service yaml", serviceConfigPath)
+		p.internalError(err)
+		return
+	}
+
+	// For terminated service config, actually delete it in DB
+	_, err = service.DeleteServiceByID(servicequery)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+}
