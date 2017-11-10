@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/astaxie/beego/logs"
 )
@@ -824,4 +826,11 @@ func (p *ServiceController) DeleteDeploymentAction() {
 		p.internalError(err)
 		return
 	}
+}
+
+func (p *ServiceController) StoreServiceRoute() {
+	serviceIdentity := p.GetString("service_identity")
+	serviceURL := p.GetString("service_url")
+	memoryCache.Put(strings.ToLower(serviceIdentity), serviceURL, time.Second*time.Duration(tokenCacheExpireSeconds))
+	logs.Debug("Service identity: %s, URL: %s", serviceIdentity, serviceURL)
 }
