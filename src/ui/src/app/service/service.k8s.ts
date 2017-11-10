@@ -72,6 +72,17 @@ export class K8sService {
       .catch(err => Promise.reject(err));
   }
 
+  deleteDeployment(serviceId: number): Promise<boolean> {
+    return this.http
+      .delete(`/api/v1/services/${serviceId}/deployment`, {headers: this.defaultHeader})
+      .toPromise()
+      .then((res: Response) => {
+        this.appInitService.chainResponse(res);
+        return res.status == 200;
+      })
+      .catch(err => Promise.reject(err));
+  }
+
   getDockerFilePreview(imageData: ServiceStep2NewImageType): Promise<string> {
     return this.http.post(`/api/v1/images/preview`, imageData, {
       headers: this.defaultHeader

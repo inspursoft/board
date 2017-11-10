@@ -1,7 +1,7 @@
 <node-detail></node-detail>
 <div class="row">
   <div class="col-xs-12">
-    <clr-datagrid>
+    <clr-datagrid [clrDgLoading]="isInLoading">
       <clr-dg-column>{{ 'NODE.NODE_NAME' | translate }}</clr-dg-column>
       <clr-dg-column>{{ 'NODE.NODE_IP' | translate }}</clr-dg-column>
       <clr-dg-column>{{ 'NODE.NODE_STATUS' | translate }}</clr-dg-column>

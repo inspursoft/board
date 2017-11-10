@@ -20,9 +20,9 @@ export interface VolumeOutPut {
 })
 export class VolumeMountsComponent {
   _isOpen: boolean = false;
-  patternName: RegExp = /^[a-zA-Z_]+$/;
-  patternMountPath: RegExp = /^[a-zA-Z_/.]+$/;
-  patternPath: RegExp = /^[a-zA-Z_/.]+$/;
+  patternName: RegExp = /^[a-z0-9A-Z_]+$/;
+  patternMountPath: RegExp = /^[a-z0-9A-Z_/]+$/;
+  patternPath: RegExp = /^[a-z0-9A-Z_/]+$/;
   isAlertOpen: boolean = false;
   volumeErrMsg: string = "";
   @ViewChildren(CsInputComponent) inputList: QueryList<CsInputComponent>;

@@ -5,7 +5,7 @@
   <create-project (reload)="retrieve()"></create-project>
   <project-member></project-member>
   <div class="col-xs-12">
-    <clr-datagrid>
+    <clr-datagrid [clrDgLoading]="isInLoading">
       <clr-dg-column>{{ 'PROJECT.PROJECT_NAME' | translate }}</clr-dg-column>
       <clr-dg-column>{{ 'PROJECT.CREATOR' | translate }}</clr-dg-column>
       <clr-dg-column>{{ 'PROJECT.CREATION_TIME' | translate }}</clr-dg-column>

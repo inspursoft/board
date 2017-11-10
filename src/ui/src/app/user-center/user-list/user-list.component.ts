@@ -24,6 +24,7 @@ export class UserList implements OnInit, OnDestroy {
   showNewUser: boolean = false;
   setUserSystemAdminIng: boolean = false;
   setUserProjectAdminIng: boolean = false;
+  isInLoading: boolean = false;
 
   constructor(private userService: UserService,
               private appInitService: AppInitService,
@@ -57,13 +58,18 @@ export class UserList implements OnInit, OnDestroy {
   refreshData(username?: string,
               user_list_page: number = 0,
               user_list_page_size: number = 0): void {
+    this.isInLoading = true;
     this.userService.getUserList(username, user_list_page, user_list_page_size)
       .then(res => {
         this.userListData = res.filter(value => {
           return value.user_name != "admin";
         });
+        this.isInLoading = false;
       })
-      .catch(err => this.messageService.dispatchError(err, ''));
+      .catch(err => {
+        this.messageService.dispatchError(err, '');
+        this.isInLoading = false;
+      });
   }
 
   addUser() {
@@ -73,23 +79,27 @@ export class UserList implements OnInit, OnDestroy {
   }
 
   editUser(user: User) {
-    this.curEditModel = editModel.emEdit;
-    this.userService.getUser(user.user_id)
-      .then(user => {
-        this.curUser = user;
-        this.showNewUser = true;
-      })
-      .catch(err => this.messageService.dispatchError(err));
+    if (user.user_deleted != 1){
+      this.curEditModel = editModel.emEdit;
+      this.userService.getUser(user.user_id)
+        .then(user => {
+          this.curUser = user;
+          this.showNewUser = true;
+        })
+        .catch(err => this.messageService.dispatchError(err));
+    }
   }
 
   deleteUser(user: User) {
-    let m: Message = new Message();
-    m.title = "USER_CENTER.DELETE_USER";
-    m.buttons = BUTTON_STYLE.DELETION;
-    m.data = user;
-    m.params = [user.user_name];
-    m.message = "USER_CENTER.CONFIRM_DELETE_USER";
-    this.messageService.announceMessage(m);
+    if (user.user_deleted != 1){
+      let m: Message = new Message();
+      m.title = "USER_CENTER.DELETE_USER";
+      m.buttons = BUTTON_STYLE.DELETION;
+      m.data = user;
+      m.params = [user.user_name];
+      m.message = "USER_CENTER.CONFIRM_DELETE_USER";
+      this.messageService.announceMessage(m);
+    }
   }
 
   setUserSystemAdmin(user: User) {

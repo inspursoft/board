@@ -325,7 +325,6 @@ export class SelectImageComponent implements ServiceStepComponent, OnInit, OnDes
                 this.processImageSubscription.unsubscribe();
               }
             }, err => err, () => {
-              console.log("web close event");
               this.isOpenNewImage = false;
             });
         }, 10000);

@@ -7,7 +7,7 @@
 </div>
 <div class="row">
   <div class="col-xs-12">
-    <clr-datagrid>
+    <clr-datagrid [clrDgLoading]="isInLoading">
       <clr-dg-column>{{ 'SERVICE.SERVICE_NAME' | translate }}</clr-dg-column>
       <clr-dg-column>{{ 'SERVICE.PROJECT_NAME' | translate }}</clr-dg-column>
       <clr-dg-column>{{ 'SERVICE.OWNER' | translate }}</clr-dg-column>
