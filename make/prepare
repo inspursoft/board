@@ -87,7 +87,6 @@ board_admin_password = rcp.get("configuration", "board_admin_password")
 db_password = rcp.get("configuration", "db_password")
 token_cache_expire_seconds = rcp.get("configuration", "token_cache_expire_seconds")
 token_expire_seconds = rcp.get("configuration", "token_expire_seconds")
-token_secret_key = rcp.get("configuration", "token_secret_key")
 registry_ip = rcp.get("configuration", "registry_ip")
 registry_port = rcp.get("configuration", "registry_port")
 
@@ -143,8 +142,7 @@ render(os.path.join(templates_dir, "apiserver", "env"),
 
 render(os.path.join(templates_dir, "tokenserver", "app.conf"),
         tokenserver_conf,
-        token_expire_seconds=token_expire_seconds,
-        token_secret_key=token_secret_key)
+        token_expire_seconds=token_expire_seconds)
 
 render(os.path.join(templates_dir, "tokenserver", "env"),
         tokenserver_env)
