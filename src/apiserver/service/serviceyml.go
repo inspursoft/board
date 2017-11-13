@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/json"
 	"errors"
+
 	"git/inspursoft/board/src/common/model"
 	"io/ioutil"
 	"os"
@@ -24,13 +25,23 @@ const (
 	minPort              = 30000
 )
 
+var (
+	pathErr             = errors.New("ERR_DEPLOYMENT_PATH_NOT_DIRECTORY")
+	emptyServiceNameErr = errors.New("ERR_NO_SERVICE_NAME")
+	portMaxErr          = errors.New("ERR_SERVICE_NODEPORT_EXCEED_MAX_LIMIT")
+	portMinErr          = errors.New("ERR_SERVICE_NODEPORT_EXCEED_MIN_LIMIT")
+	emptyDeployErr      = errors.New("ERR_NO_DEPLOYMENT_NAME")
+	invalidErr          = errors.New("ERR_DEPLOYMENT_REPLICAS_INVAILD")
+	emptyContainerErr   = errors.New("ERR_NO_CONTAINER")
+)
+
 func CheckDeploymentPath(loadPath string) error {
 	if fi, err := os.Stat(loadPath); os.IsNotExist(err) {
 		if err := os.MkdirAll(loadPath, 0755); err != nil {
 			return err
 		}
 	} else if !fi.IsDir() {
-		return errors.New("Deployment path is not directory.")
+		return pathErr
 	}
 
 	return nil
@@ -40,14 +51,14 @@ func CheckDeploymentPath(loadPath string) error {
 func CheckServicePara(reqServiceConfig model.ServiceConfig2) error {
 	//check empty
 	if reqServiceConfig.Service.ObjectMeta.Name == "" {
-		return errors.New("ServiceYaml.Name is empty.")
+		return emptyServiceNameErr
 	}
 
 	for _, external := range reqServiceConfig.Service.Spec.Ports {
 		if external.NodePort > maxPort {
-			return errors.New("Service_nodeport exceed maximum limit.")
+			return portMaxErr
 		} else if external.NodePort < minPort {
-			return errors.New("Service_nodeport exceed minimum limit.")
+			return portMinErr
 		}
 	}
 
@@ -67,23 +78,32 @@ func CheckServicePara(reqServiceConfig model.ServiceConfig2) error {
 	return nil
 }
 
+func IsServiceNameDuplicated(serviceName string, projectName string) (bool, error) {
+	var servicequery model.ServiceStatus
+	servicequery.Name = serviceName
+	servicequery.ProjectName = projectName
+	s, err := GetService(servicequery, "name", "project_name")
+
+	return s != nil, err
+}
+
 //check parameter of deployment yaml file
 func CheckDeploymentPara(reqServiceConfig model.ServiceConfig2) error {
 	//check empty
 	if reqServiceConfig.Deployment.ObjectMeta.Name == "" {
-		return errors.New("Deployment_Name is empty.")
+		return emptyDeployErr
 	}
 
 	if *reqServiceConfig.Deployment.Spec.Replicas < 1 {
-		return errors.New("Deployment_Replicas < 1 is invaild.")
+		return invalidErr
 	}
 
 	if reqServiceConfig.Deployment.Spec.Template == nil {
-		return errors.New("Template is empty.")
+		return emptyContainerErr
 	}
 
 	if len(reqServiceConfig.Deployment.Spec.Template.Spec.Containers) < 1 {
-		return errors.New("Container_List is empty.")
+		return emptyContainerErr
 	}
 
 	//check upper
