@@ -95,6 +95,9 @@ cleanimage                       | Clean images
 down                             | Stop and remove board instance 
 install                          | Compile board binary
 build                            | Build board images
+package                          | Pack offline package of board project
+packageonestep                   | Generate offline package of board project by one step
+prepare_swagger                  | Prepare swagger environment
 container/$IMG_build             | Build $IMG image 
 container/$IMG_rmi               | Clean $IMG image
 src/$PACKAGE_clean               | Clean $PACKAGE binary
