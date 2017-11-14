@@ -275,7 +275,7 @@ export class K8sService {
       .catch(err => Promise.reject(err));
   }
 
-  getServiceDetail(serviceName: string): Promise<Object> {
+  getServiceDetail(serviceName: string): Promise<any> {
     return this.http
       .get(`/api/v1/services/info/${serviceName}`, {headers: this.defaultHeader})
       .toPromise()
@@ -377,5 +377,18 @@ export class K8sService {
       .catch(err => Promise.reject(err));
   }
 
+  addServiceRoute(serviceURL: string, serviceIdentity: string): Promise<any> {
+    return this.http
+      .post(`/api/v1/services/info`, {}, {
+        headers: this.defaultHeader,
+        params: {
+          'service_url': serviceURL,
+          'service_identity': serviceIdentity
+        }
+      })
+      .toPromise()
+      .then(res=>this.appInitService.chainResponse(res))
+      .catch(err => Promise.reject(err));
+  }
 
 }

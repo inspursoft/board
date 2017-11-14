@@ -132,6 +132,9 @@ func init() {
 			beego.NSRouter("/services/info/:service_name([a-z0-9]+)",
 				&controller.ServiceController{},
 				"get:GetServiceInfoAction"),
+			beego.NSRouter("/services/info",
+				&controller.ServiceController{},
+				"post:StoreServiceRoute"),
 			beego.NSRouter("/services/:id([0-9]+)/test",
 				&controller.ServiceController{},
 				"post:DeployServiceTestAction"),
@@ -166,5 +169,6 @@ func init() {
 	)
 
 	beego.AddNamespace(ns)
+	beego.Router("/deploy/:owner_name/:project_name/:service_name", &controller.ServiceShowController{})
 	beego.SetStaticPath("/swagger", "swagger")
 }

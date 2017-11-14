@@ -4,11 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
 	"net/http"
 	"path/filepath"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/astaxie/beego/logs"
 )
@@ -27,7 +30,7 @@ const (
 	serviceNamespace       = "default" //TODO create in project post
 )
 
-var InputParaErr = errors.New("InputParaErr")
+var serverNameDuplicateErr = errors.New("ERR_SERVICE_NAME_DUPLICATE")
 
 const (
 	preparing = iota
@@ -189,7 +192,19 @@ func (p *ServiceController) DeployServiceAction() {
 	//check data
 	err = service.CheckReqPara(reqServiceConfig)
 	if err != nil {
-		p.customAbort(http.StatusBadRequest, InputParaErr.Error())
+		p.serveStatus(http.StatusBadRequest, err.Error())
+		logs.Error("Request parameters error when deploy service, error: %+v", err.Error())
+		return
+	}
+
+	flag, err := service.IsServiceNameDuplicated(reqServiceConfig.Service.ObjectMeta.Name, reqServiceConfig.Project.ProjectName)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if flag == true {
+		p.serveStatus(http.StatusBadRequest, serverNameDuplicateErr.Error())
+		logs.Error("Request parameters error when deploy service, error: %+v", serverNameDuplicateErr.Error())
 		return
 	}
 
@@ -215,7 +230,19 @@ func (p *ServiceController) DeployServiceTestAction() {
 	//check data
 	err = service.CheckReqPara(reqServiceConfig)
 	if err != nil {
-		p.customAbort(http.StatusBadRequest, InputParaErr.Error())
+		p.serveStatus(http.StatusBadRequest, err.Error())
+		logs.Error("Request parameters error when deploy service, error: %+v", err.Error())
+		return
+	}
+
+	flag, err := service.IsServiceNameDuplicated(reqServiceConfig.Service.ObjectMeta.Name, reqServiceConfig.Project.ProjectName)
+	if err != nil {
+		p.internalError(err)
+		logs.Error("Request parameters error when deploy service, error: %+v", serverNameDuplicateErr.Error())
+		return
+	}
+	if flag == true {
+		p.customAbort(http.StatusBadRequest, serverNameDuplicateErr.Error())
 		return
 	}
 
@@ -824,4 +851,11 @@ func (p *ServiceController) DeleteDeploymentAction() {
 		p.internalError(err)
 		return
 	}
+}
+
+func (p *ServiceController) StoreServiceRoute() {
+	serviceIdentity := p.GetString("service_identity")
+	serviceURL := p.GetString("service_url")
+	memoryCache.Put(strings.ToLower(serviceIdentity), serviceURL, time.Second*time.Duration(tokenCacheExpireSeconds))
+	logs.Debug("Service identity: %s, URL: %s", serviceIdentity, serviceURL)
 }

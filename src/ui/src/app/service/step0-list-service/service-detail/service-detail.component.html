@@ -4,7 +4,7 @@
     <div class="service-detail-container">
       <div *ngFor="let u of urlList; let i = index" class="service-detail-line-container">
         <span class="service-detail-text">{{i == 0 ? 'URL:' : ''}}</span>
-        <a [href]="u.url" target="_blank" class="service-detail-link-text">{{ u.description }}</a>
+        <a [href]="u.route" target="_blank" class="service-detail-link-text">{{ u.route }}</a>
       </div>
     </div>
     <textarea rows="5" class="area-detail" readonly>{{ serviceDetail }}</textarea>
