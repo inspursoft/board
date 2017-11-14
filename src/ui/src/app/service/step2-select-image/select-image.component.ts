@@ -299,12 +299,12 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit, OnD
                 });
               }
               let consoleTextArr: Array<string> = this.consoleText.split(/[\n]/g);
-              if (consoleTextArr.find(value => value == "Finished: SUCCESS")) {
+              if (consoleTextArr.find(value => value.indexOf("Finished: SUCCESS") > -1 )) {
                 this.isNeedAutoRefreshImageList = true;
                 this.autoRefreshTimesCount = 0;
                 this.processImageSubscription.unsubscribe();
               }
-              if (consoleTextArr.find(value => value == "Finished: FAILURE")) {
+              if (consoleTextArr.find(value => value.indexOf("Finished: FAILURE") > -1)) {
                 this.imageInBuilding = false;
                 this.isNeedAutoRefreshImageList = false;
                 this.newImageAlertType = "alert-danger";
