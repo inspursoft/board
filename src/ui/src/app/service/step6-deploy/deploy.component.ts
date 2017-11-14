@@ -12,8 +12,8 @@ import { BUTTON_STYLE } from "../../shared/shared.const";
 import { WebsocketService } from "../../shared/websocket-service/websocket.service";
 import { AppInitService } from "../../app.init.service";
 
-const PROCESS_SERVICE_CONSOLE_URL = `ws://10.165.22.61:8088/api/v1/jenkins-job/console?job_name=process_service`;
-// const PROCESS_SERVICE_CONSOLE_URL = `ws://localhost/api/v1/jenkins-job/console?job_name=process_service`;
+// const PROCESS_SERVICE_CONSOLE_URL = `ws://10.165.22.61:8088/api/v1/jenkins-job/console?job_name=process_service`;
+const PROCESS_SERVICE_CONSOLE_URL = `ws://localhost/api/v1/jenkins-job/console?job_name=process_service`;
 @Component({
   templateUrl: "./deploy.component.html",
   styleUrls: ["./deploy.component.css"]
