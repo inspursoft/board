@@ -752,6 +752,35 @@ paths:
         500:
           description: Unexpected internal errors.        
   /v1/services:
+    head:
+      summary: Return the results whether does the service exist.
+      description: 
+        This endpoint returns the results whether does the service exist.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name 
+          in: query
+          description: Project name for filtering results.
+          required: false
+          type: string
+        - name: service_name 
+          in: query
+          description: Service name for filtering results.
+          required: false
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched services.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
     get:
       summary: Return services created by Board.
       description: |
