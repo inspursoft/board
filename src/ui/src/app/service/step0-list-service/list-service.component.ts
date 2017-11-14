@@ -30,6 +30,7 @@ export class ListServiceComponent implements OnInit, OnDestroy {
   @Input() data: any;
   currentUser: {[key: string]: any};
   services: Service[];
+  isInLoading:boolean =false;
   _subscription: Subscription;
 
   @ViewChild(ServiceDetailComponent) serviceDetailComponent;
@@ -103,9 +104,16 @@ export class ListServiceComponent implements OnInit, OnDestroy {
   }
 
   retrieve(): void {
+    this.isInLoading = true;
     this.k8sService.getServices()
-      .then(services => this.services = services)
-      .catch(err => this.messageService.dispatchError(err));
+      .then(services => {
+        this.services = services;
+        this.isInLoading = false;
+      })
+      .catch(err => {
+        this.messageService.dispatchError(err);
+        this.isInLoading =false;
+      });
   }
 
   getServiceStatus(status: number): string {

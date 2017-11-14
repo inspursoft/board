@@ -26,7 +26,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
 
   _subscription: Subscription;
   currentUser: {[key: string]: any};
-
+  isInLoading:boolean = false;
   constructor(
     private appInitService: AppInitService,
     private projectService: ProjectService,
@@ -61,12 +61,17 @@ export class ProjectComponent implements OnInit, OnDestroy {
   }
 
   retrieve(): void {
+    this.isInLoading = true;
     this.projectService
       .getProjects()
       .then(projects=>{
         this.projects = projects;
+        this.isInLoading = false;
       })
-      .catch(err=>this.messageService.dispatchError(err, 'PROJECT.FAILED_TO_RETRIEVE_PROJECTS'));
+      .catch(err=>{
+        this.messageService.dispatchError(err, 'PROJECT.FAILED_TO_RETRIEVE_PROJECTS');
+        this.isInLoading = false;
+      });
   }
 
   createProject(): void {
