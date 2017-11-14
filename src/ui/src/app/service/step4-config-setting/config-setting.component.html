@@ -6,7 +6,7 @@
                 [inputIsRequired]="true"
                 [inputPattern]="patternServiceName"
                 [inputLabel]="'SERVICE.STEP_4_SERVICE_NAME' | translate"
-                [simpleFiled]="step4Output.projectinfo.service_name"
+                [simpleFiled]="outputData.service_yaml.metadata.name"
                 (onCheck)="setServiceName($event)">
       </cs-input>
     </div>
@@ -16,7 +16,7 @@
                    [dropdownWidth]="310"
                    [dropdownDefaultText]="'1'"
                    [dropdownList]="dropDownListNum"
-                   (onChange)="step4Output.deployment_yaml.spec.replicas = $event">
+                   (onChange)="outputData.deployment_yaml.spec.replicas = $event">
       </cs-dropdown>
     </div>
   </div>
@@ -40,7 +40,7 @@
         </clr-icon>
         <span class="external-title icon">{{"SERVICE.STEP_4_CONTAINER"|translate}}:</span>
         <cs-dropdown class="base-margin-left"
-                     [dropdownList]="step3Output"
+                     [dropdownList]="containerList"
                      [dropdownListTextKey]="'name'"
                      [dropdownWidth]="310"
                      [dropdownDefaultText]="getContainerDropdownText(iIndex) | translate"
@@ -120,6 +120,7 @@
     <!--</cs-dropdown>-->
   </div>
 </div>
+<button class="btn btn-default" (click)="cancelBuildService()">Cancel</button>
 <button class="btn btn-default" [disabled]="true">Test</button>
 <button class="btn btn-default" (click)="backUpStep()">Back</button>
 <button class="btn btn-default" [disabled]="!isInputComponentsValid" (click)="forward()">Next</button>

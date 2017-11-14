@@ -12,6 +12,7 @@ import { Observable } from "rxjs/Observable";
 import { Subscription } from "rxjs/Subscription";
 import { BUTTON_STYLE } from "./shared.const";
 import { Subject } from "rxjs/Subject";
+import { K8sService } from "../service/service.k8s";
 
 @Injectable()
 export class AuthGuard implements CanActivate, CanActivateChild {
@@ -52,9 +53,11 @@ export class ServiceGuard implements OnDestroy, CanDeactivate<ServiceComponent> 
   _confirmSubscription: Subscription;
   _cancelSubscription: Subscription;
 
-  constructor(private messageService: MessageService) {
+  constructor(private messageService: MessageService,
+              private k8sService: K8sService) {
     this._confirmSubscription = this.messageService.messageConfirmed$.subscribe(next => {
       this.serviceSubject.next(true);
+      this.k8sService.cancelBuildService();
     });
     this._cancelSubscription = this.messageService.messageCanceled$.subscribe(next => {
       this.serviceSubject.next(false);

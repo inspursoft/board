@@ -6,16 +6,13 @@ import { AppInitService } from "../app.init.service";
 import { Http, Headers, RequestOptions, Response } from "@angular/http";
 import { Project } from "../project/project";
 import { Image, ImageDetail } from "../image/image";
-import {
-  ImageDockerfile, ServiceStep2NewImageType, ServiceStep4Output,
-  ServiceStep6Output
-} from "./service-step.component";
+import { FactoryByPropertyName, ImageDockerfile, ServiceStep2NewImageType, DeploymentServiceData, } from "./service-step.component";
 
 @Injectable()
 export class K8sService {
-  stepSource: Subject<number> = new Subject<number>();
-  step$: Observable<number> = this.stepSource.asObservable();
-  stepData: Map<number, Object>;
+  stepSource: Subject<{index: number, isBack: boolean}> = new Subject<{index: number, isBack: boolean}>();
+  step$: Observable<{index: number, isBack: boolean}> = this.stepSource.asObservable();
+  _newServiceId: number = 0;
 
   get defaultHeader(): Headers {
     let headers = new Headers();
@@ -26,16 +23,40 @@ export class K8sService {
 
   constructor(private http: Http,
               private appInitService: AppInitService) {
-    this.stepData = new Map<number, Object>();
   }
 
-  clearStepData() {
-    this.stepData.clear();
+  get newServiceId(): number {
+    return this._newServiceId;
   }
 
-  setStepData(step: number, Data: Object) {
-    this.stepData.set(step, Data);
-    console.log(Data);
+  set newServiceId(value: number) {
+    this._newServiceId = value;
+  }
+
+  deepCopySource(source: Object, target: Object): void {
+    let keys: string[] = Object.keys(source);
+    keys.forEach((key: string) => {
+      if (typeof source[key] != "undefined" && source[key] != null &&
+        typeof target[key] != "undefined" && target[key] != null) {
+        if (typeof source[key] == "string" || typeof source[key] == "number") {
+          target[key] = source[key];
+        } else if (typeof source[key] == "object") {
+          if (Array.isArray(source[key])) {
+            (source[key] as Array<any>).forEach(value => {
+              if (typeof value == "string" || typeof value == "number") {
+                (target[key] as Array<any>).push(value)
+              } else {
+                let newItem = (target as FactoryByPropertyName).getInstanceByPropertyName(key);
+                (target[key] as Array<any>).push(newItem);
+                this.deepCopySource(value, newItem);
+              }
+            })
+          } else {
+            this.deepCopySource(source[key], target[key]);
+          }
+        }
+      }
+    });
   }
 
   buildImage(imageData: ServiceStep2NewImageType): Promise<boolean> {
@@ -61,7 +82,7 @@ export class K8sService {
       .catch(err => Promise.reject(err));
   }
 
-  serviceDeployment(postData: ServiceStep4Output): Promise<any> {
+  serviceDeployment(postData: DeploymentServiceData): Promise<any> {
     return this.http.post(`/api/v1/services/${postData.projectinfo.service_id}/deployment`, postData, {
       headers: this.defaultHeader
     }).toPromise()
@@ -78,10 +99,58 @@ export class K8sService {
       .toPromise()
       .then((res: Response) => {
         this.appInitService.chainResponse(res);
-        return res.status == 200;
+        return true;
       })
       .catch(err => Promise.reject(err));
   }
+
+  deleteServiceConfig(serviceId: number): Promise<boolean> {
+    return this.http
+      .delete(`/api/v1/services/${serviceId}/serviceconfig`, {headers: this.defaultHeader})
+      .toPromise()
+      .then((res: Response) => {
+        this.appInitService.chainResponse(res);
+        return true;
+      })
+      .catch(err => Promise.reject(err));
+  }
+
+  getServiceConfig(serviceId: number, defaultData: DeploymentServiceData): Promise<DeploymentServiceData> {
+    return this.http.get(`/api/v1/services/${serviceId}/serviceconfig`, {
+      headers: this.defaultHeader
+    }).toPromise()
+      .then((res: Response) => {
+        this.appInitService.chainResponse(res);
+        this.deepCopySource(res.json(), defaultData);
+        return defaultData;
+      })
+      .catch(err => Promise.reject(err));
+  }
+
+  cancelBuildService(): void {
+    if (this.newServiceId > 0) {
+      this.deleteServiceConfig(this.newServiceId)
+        .then(isDelete => {
+          this.stepSource.next({index: 0, isBack: false});
+        })
+        .catch(() => {
+        });
+    } else {
+      this.stepSource.next({index: 0, isBack: false});
+    }
+  }
+
+  setServiceConfig(config: DeploymentServiceData): Promise<boolean> {
+    let serviceId = config.projectinfo.service_id;
+    return this.http.put(`/api/v1/services/${serviceId}/serviceconfig`, config, {headers: this.defaultHeader})
+      .toPromise()
+      .then((res: Response) => {
+        this.appInitService.chainResponse(res);
+        return true;
+      })
+      .catch(err => Promise.reject(err));
+  }
+
 
   getDockerFilePreview(imageData: ServiceStep2NewImageType): Promise<string> {
     return this.http.post(`/api/v1/images/preview`, imageData, {
@@ -139,10 +208,6 @@ export class K8sService {
         return res.json();
       })
       .catch(err => Promise.reject(err));
-  }
-
-  getStepData(step: number): Object {
-    return this.stepData.get(step);
   }
 
   getProjects(projectName?: string): Promise<Project[]> {
@@ -296,7 +361,7 @@ export class K8sService {
       }).toPromise()
       .then((res: Response) => {
         this.appInitService.chainResponse(res);
-        return res.status == 200;
+        return true;
       })
       .catch(err => Promise.reject(err));
   }

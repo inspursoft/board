@@ -1,55 +1,50 @@
 /**
  * Created by liyanq on 9/17/17.
  */
-
-import { Component, OnDestroy, OnInit } from "@angular/core"
-import { K8sService } from "../service.k8s";
-import { ServiceStep4Output } from "../service-step.component";
-import { MessageService } from "../../shared/message-service/message.service";
+import { Component, Injector, OnDestroy, OnInit } from "@angular/core"
 import { Subscription } from "rxjs/Subscription";
 import { Message } from "../../shared/message-service/message";
 import { BUTTON_STYLE } from "../../shared/shared.const";
 import { WebsocketService } from "../../shared/websocket-service/websocket.service";
-import { AppInitService } from "../../app.init.service";
+import { ServiceStepBase } from "../service-step";
 
-const PROCESS_SERVICE_CONSOLE_URL = `ws://10.165.22.61:8088/api/v1/jenkins-job/console?job_name=process_service`;
-// const PROCESS_SERVICE_CONSOLE_URL = `ws://localhost/api/v1/jenkins-job/console?job_name=process_service`;
+// const PROCESS_SERVICE_CONSOLE_URL = `ws://10.165.22.61:8088/api/v1/jenkins-job/console?job_name=process_service`;
+const PROCESS_SERVICE_CONSOLE_URL = `ws://localhost/api/v1/jenkins-job/console?job_name=process_service`;
 @Component({
   templateUrl: "./deploy.component.html",
   styleUrls: ["./deploy.component.css"]
 })
-export class DeployComponent implements OnInit, OnDestroy {
+export class DeployComponent extends ServiceStepBase implements OnInit, OnDestroy {
   isDeployed: boolean = false;
-  isInDeploySuccess: boolean = false;
+  isDeploySuccess: boolean = false;
   isInDeployIng: boolean = false;
   consoleText: string = "";
-  output4: ServiceStep4Output;
   processImageSubscription: Subscription;
   _confirmSubscription: Subscription;
 
-  constructor(private k8sService: K8sService,
-              private appInitService: AppInitService,
-              private webSocketService: WebsocketService,
-              private messageService: MessageService) {
+  constructor(protected injector: Injector, private webSocketService: WebsocketService,) {
+    super(injector);
   }
 
   ngOnInit() {
-    this.output4 = this.k8sService.getStepData(4) as ServiceStep4Output;
-    this.output4.projectinfo.config_phase = "deploy";
+    this.k8sService.getServiceConfig(this.newServiceId,this.outputData).then(res => {
+      this.outputData = res;
+      this.outputData.projectinfo.config_phase = "deploy";
+    });
     this._confirmSubscription = this.messageService.messageConfirmed$.subscribe((next: Message) => {
-      this.k8sService.deleteDeployment(this.output4.projectinfo.service_id)
+      this.k8sService.deleteDeployment(this.outputData.projectinfo.service_id)
         .then(isDelete => {
-          if (this.processImageSubscription){
+          if (this.processImageSubscription) {
             this.processImageSubscription.unsubscribe();
           }
-          this.k8sService.stepSource.next(0);
+          this.k8sService.stepSource.next({index:0,isBack:false});
         })
         .catch(err => {
           this.messageService.dispatchError(err);
-          if (this.processImageSubscription){
+          if (this.processImageSubscription) {
             this.processImageSubscription.unsubscribe();
           }
-          this.k8sService.stepSource.next(0);
+          this.k8sService.stepSource.next({index:0,isBack:false});
         })
     });
   }
@@ -63,7 +58,7 @@ export class DeployComponent implements OnInit, OnDestroy {
       this.isDeployed = true;
       this.isInDeployIng = true;
       this.consoleText = "Deploying...";
-      this.k8sService.serviceDeployment(this.output4)
+      this.k8sService.serviceDeployment(this.outputData)
         .then(res => {
           setTimeout(() => {
             this.processImageSubscription = this.webSocketService
@@ -72,31 +67,27 @@ export class DeployComponent implements OnInit, OnDestroy {
                 this.consoleText = <string>obs.data;
                 let consoleTextArr: Array<string> = this.consoleText.split(/[\n]/g);
                 if (consoleTextArr.find(value => value.indexOf("Finished: SUCCESS") > -1)) {
-                  this.isInDeploySuccess = true;
+                  this.isDeploySuccess = true;
                   this.isInDeployIng = false;
                   this.processImageSubscription.unsubscribe();
                 }
                 if (consoleTextArr.find(value => value.indexOf("Finished: FAILURE") > -1)) {
-                  this.isInDeploySuccess = false;
+                  this.isDeploySuccess = false;
                   this.isInDeployIng = false;
                   this.processImageSubscription.unsubscribe();
                 }
               }, err => err, () => {
-                this.isInDeploySuccess = false;
+                this.isDeploySuccess = false;
                 this.isInDeployIng = false;
               });
           }, 10000);
         })
         .catch(err => {
           this.messageService.dispatchError(err);
-          this.isInDeploySuccess = false;
+          this.isDeploySuccess = false;
           this.isInDeployIng = false;
         })
     }
-  }
-
-  deployComplete(): void {
-    this.k8sService.stepSource.next(0);
   }
 
   deleteDeploy(): void {
@@ -107,7 +98,11 @@ export class DeployComponent implements OnInit, OnDestroy {
     this.messageService.announceMessage(m);
   }
 
+  deployComplete(): void {
+    this.k8sService.stepSource.next({isBack: false, index: 0});
+  }
+
   backStep(): void {
-    this.k8sService.stepSource.next(4);
+    this.k8sService.stepSource.next({index: 4, isBack: true});
   }
 }

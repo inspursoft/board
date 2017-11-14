@@ -1,27 +1,23 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { ServiceStep1Output, ServiceStepComponent } from '../service-step.component';
-import { K8sService } from '../service.k8s';
+import { Component, Injector, OnInit } from '@angular/core';
+import { DeploymentServiceData } from '../service-step.component';
 import { Project } from "../../project/project";
-import { MessageService } from "../../shared/message-service/message.service";
 import { Router } from "@angular/router";
+import { ServiceStepBase } from "../service-step";
 
 @Component({
   styleUrls: ["./choose-project.component.css"],
   templateUrl: './choose-project.component.html'
 })
-export class ChooseProjectComponent implements ServiceStepComponent, OnInit, OnDestroy {
-  @Input() data: any;
+export class ChooseProjectComponent extends ServiceStepBase implements OnInit {
   projectsList: Array<Project>;
-  outputData: ServiceStep1Output = new ServiceStep1Output();
 
-  constructor(private k8sService: K8sService,
-              private router: Router,
-              private messageService: MessageService) {
+  constructor(protected injector: Injector) {
+    super(injector);
     this.projectsList = Array<Project>();
   }
 
   ngOnInit() {
-    this.k8sService.clearStepData();
+    this.outputData = new DeploymentServiceData();
     this.k8sService.getProjects()
       .then(res => {
         let createNewProject: Project = new Project();
@@ -36,17 +32,17 @@ export class ChooseProjectComponent implements ServiceStepComponent, OnInit, OnD
       .catch(err => this.messageService.dispatchError(err));
   }
 
-  ngOnDestroy() {
-    this.k8sService.setStepData(1, this.outputData);
-  }
-
   forward() {
     this.k8sService.getServiceID({
-      project_name: this.outputData.project_name,
-      project_id: this.outputData.project_id
+      project_name: this.outputData.projectinfo.project_name,
+      project_id: this.outputData.projectinfo.project_id
     }).then(res => {
-      this.outputData.service_id = Number(res).valueOf();
-      this.k8sService.stepSource.next(2);
+      let serviceId = Number(res).valueOf();
+      this.newServiceId = serviceId;
+      this.outputData.projectinfo.service_id = serviceId;
+      this.k8sService.setServiceConfig(this.outputData).then((isCompleted) => {
+        this.k8sService.stepSource.next({index: 2, isBack: false});
+      });
     }).catch(err => this.messageService.dispatchError(err));
   }
 
@@ -55,7 +51,7 @@ export class ChooseProjectComponent implements ServiceStepComponent, OnInit, OnD
   }
 
   changeSelectProject(project: Project) {
-    this.outputData.project_name = project.project_name;
-    this.outputData.project_id = project.project_id;
+    this.outputData.projectinfo.project_name = project.project_name;
+    this.outputData.projectinfo.project_id = project.project_id;
   }
 }

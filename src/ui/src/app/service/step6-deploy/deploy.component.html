@@ -13,10 +13,10 @@
     <textarea id="areaJournal" rows="10" class="step6-journal" [(ngModel)]="consoleText" readonly></textarea>
   </div>
 </div>
-<button class="btn btn-default" [disabled]="isDeployed" (click)="backStep()">Back</button>
-<button class="btn btn-default" [disabled]="!isDeployed || isInDeployIng" (click)="deployComplete()">OK</button>
 <button class="btn btn-primary default-primary"
-        [disabled]="isInDeploySuccess || !isDeployed"
+        [disabled]="isDeploySuccess || !isDeployed"
         (click)="deleteDeploy()">
   {{"SERVICE.STEP_6_CANCEL" | translate}}
 </button>
+<button class="btn btn-default" [disabled]="isDeployed" (click)="backStep()">Back</button>
+<button class="btn btn-default" [disabled]="!isDeployed || isInDeployIng" (click)="deployComplete()">OK</button>
