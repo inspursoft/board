@@ -1,19 +1,17 @@
-import { Component, Input } from '@angular/core';
-import { ServiceStepComponent } from '../service-step.component';
-import { K8sService } from "../service.k8s";
+import { Component, Injector } from '@angular/core';
+import { ServiceStepBase } from "../service-step";
 @Component({
   templateUrl: './testing.component.html',
   styleUrls: ["./testing.component.css"]
 })
-export class TestingComponent implements ServiceStepComponent {
-  @Input() data: any;
-  inTesting:boolean = false;
+export class TestingComponent extends ServiceStepBase {
+  inTesting: boolean = false;
 
-  constructor(private k8sService: K8sService) {
+  constructor(protected injector: Injector) {
+    super(injector);
   }
 
-
   forward(): void {
-    this.k8sService.stepSource.next(6);
+    this.k8sService.stepSource.next({index: 6, isBack: false});
   }
 }

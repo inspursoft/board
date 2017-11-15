@@ -1,18 +1,3 @@
-export interface ServiceStepComponent {
-  data: any;
-}
-
-export class ServiceStep1Output {
-  service_id: number;
-  service_name: string;
-
-  constructor(public  project_id: number = 0,
-              public project_name: string = "") {
-    this.service_id = 0;
-  }
-}
-
-export type ServiceStep2Output = Array<ServiceStep2Type>;
 export class ServiceStep2Type {
   image_name: string;
   image_tag: string;
@@ -54,6 +39,10 @@ export class ServiceStep2NewImageType extends ServiceStep2Type {
   }
 }
 
+export interface FactoryByPropertyName {
+  getInstanceByPropertyName(propName: string): Object
+}
+
 /*---------------------------------service configure start-------------------------------------*/
 export class ContainerPort {
   hostPort?: number = 0;     //old=>service_nodeport
@@ -74,7 +63,7 @@ export class VolumeMount {
   ui_nfs_path: string = "";   //old=>target_target_dir;only for ui;
 }
 
-export class Container {
+export class Container implements FactoryByPropertyName {
   name: string = "";               //old=>container_name
   image: string = "";              //old=>container_baseimage
   command: Array<string> = Array();//old=>container_command
@@ -84,12 +73,21 @@ export class Container {
   ports: Array<ContainerPort> = Array();
   volumeMounts: Array<VolumeMount> = Array();
 
-  constructor() {
-    this.command.push("");
+  getInstanceByPropertyName(propName: string): Object {
+    switch (propName) {
+      case "env":
+        return new EnvVar();
+      case "ports":
+        return new ContainerPort();
+      case "volumeMounts":
+        return new VolumeMount();
+      default:
+        return {};
+    }
   }
 }
 
-export type ServiceStep3Output = Array<Container>;
+export type ServiceContainerList = Array<Container>;
 
 export class ProjectInfo {
   service_id: number = 0;
@@ -129,9 +127,20 @@ export class Volume {
   nfs: NFSVolumeSource = new NFSVolumeSource();
 }
 
-export class PodSpec {
+export class PodSpec implements FactoryByPropertyName {
   volumes: Array<Volume> = Array();
   containers: Array<Container> = Array();
+
+  getInstanceByPropertyName(propName: string): Object {
+    switch (propName) {
+      case "volumes":
+        return new Volume();
+      case "containers":
+        return new Container();
+      default:
+        return {};
+    }
+  }
 }
 
 export class PodTemplateSpec {
@@ -158,10 +167,19 @@ export class ServicePort {
   nodePort: number = 0;           //old=>service_external.service_nodeport
 }
 
-export class ServiceSpec {
+export class ServiceSpec implements FactoryByPropertyName {
   ports: Array<ServicePort> = Array();   //old=>service_external
   selector: {[key: string]: string} = {};
   type: string = "";                    //ports.length > 0? =>"NodePort":""
+
+  getInstanceByPropertyName(propName: string): Object {
+    switch (propName) {
+      case "ports":
+        return new ServicePort();
+      default:
+        return {};
+    }
+  }
 }
 
 export class Service {
@@ -171,7 +189,7 @@ export class Service {
   spec: ServiceSpec = new ServiceSpec();
 }
 
-export class ServiceStep4Output {        //equal ServiceConfig2 on goLang
+export class DeploymentServiceData {        //equal ServiceConfig2 on goLang
   deployment_yaml: ReplicationController = new ReplicationController();
   service_yaml: Service = new Service();
   projectinfo: ProjectInfo = new ProjectInfo();

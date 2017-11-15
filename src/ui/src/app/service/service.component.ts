@@ -1,12 +1,11 @@
 import {
-  Component, OnInit, Output, EventEmitter, OnDestroy,
-  ComponentFactoryResolver, ViewChild
+  Component, OnInit, OnDestroy,
+  ComponentFactoryResolver, ViewChild, Type
 } from '@angular/core';
 
-import { ServiceStep } from './service-step';
+import { ServiceStepBase } from './service-step';
 import { K8sService } from './service.k8s';
 import { StepService } from './service-step.service';
-import { ServiceStepComponent } from "./service-step.component";
 import { ServiceHostDirective } from "./service-host.directive";
 import { Subscription } from 'rxjs/Subscription';
 
@@ -16,40 +15,36 @@ import { Subscription } from 'rxjs/Subscription';
 })
 export class ServiceComponent implements OnInit, OnDestroy {
 
-  serviceSteps: ServiceStep[];
-
   @ViewChild(ServiceHostDirective) serviceHost: ServiceHostDirective;
-
+  serviceSteps: Array<Type<ServiceStepBase>>;
   currentStepIndex: number = 0;
   _subscription: Subscription;
 
-  constructor(
-    private k8sService: K8sService,
-    private componentFactoryResolver: ComponentFactoryResolver,
-    private stepService: StepService
-  ){}
-
-  ngOnInit(): void {
-    this._subscription = this.k8sService.step$.subscribe((index: number)=>{
-      this.currentStepIndex = index;
-      this.loadComponent();
-    });
-    this.serviceSteps = this.stepService.getServiceSteps();
-    this.k8sService.stepSource.next(0);
+  constructor(private k8sService: K8sService,
+              private componentFactoryResolver: ComponentFactoryResolver) {
   }
 
-  ngOnDestroy(){
-    if(this._subscription) {
+  ngOnInit(): void {
+    this._subscription = this.k8sService.step$.subscribe((stepInfo: {index: number, isBack: boolean}) => {
+      this.currentStepIndex = stepInfo.index;
+      this.loadComponent(stepInfo.isBack);
+    });
+    this.serviceSteps = StepService.getServiceSteps();
+    this.k8sService.stepSource.next({index: 0, isBack: false});
+  }
+
+  ngOnDestroy() {
+    if (this._subscription) {
       this._subscription.unsubscribe();
     }
   }
 
-  loadComponent(){
+  loadComponent(isBack: boolean) {
     let currentStep = this.serviceSteps[this.currentStepIndex];
-    let componentFactory = this.componentFactoryResolver.resolveComponentFactory(currentStep.component);
+    let componentFactory = this.componentFactoryResolver.resolveComponentFactory(currentStep);
     let viewContainerRef = this.serviceHost.viewContainerRef;
     viewContainerRef.clear();
-    let componentRef = viewContainerRef.createComponent(componentFactory);
-    (<ServiceStepComponent>componentRef.instance).data = currentStep.data;
+    let nextComponent = viewContainerRef.createComponent(componentFactory);
+    (nextComponent.instance as ServiceStepBase).isBack = isBack;
   }
 }

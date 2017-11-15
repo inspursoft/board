@@ -10,4 +10,5 @@
                (onOnlyClickItem)="clickSelectProject($event)"></cs-dropdown>
   <span class="custom-margin">{{"SERVICE.STEP_1_SELECT_DES"|translate}}</span>
 </div>
-<button class="btn btn-default" [disabled]="!(outputData.project_id > 0)" (click)="forward()">Next</button>
+<button class="btn btn-default" (click)="cancelBuildService()">Cancel</button>
+<button class="btn btn-default" [disabled]="!(outputData.projectinfo.project_id > 0)" (click)="forward()">Next</button>

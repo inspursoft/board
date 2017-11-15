@@ -1,5 +1,5 @@
 <div class="edit-container-container">
-  <div class="edit-container-one-container" *ngFor="let container of step3Output;let iStep3 = index">
+  <div class="edit-container-one-container" *ngFor="let container of containerList;let iStep3 = index">
     <div class="edit-container-item-container" (click)="toggleShowStatus(container)">
       <div class="edit-container-item-icon-container"
            [ngClass]="{'icon-close':step3TypeStatus.get(container),'icon-open':!step3TypeStatus.get(container)}">
@@ -55,5 +55,7 @@
                  (onConfirmEvent)="setVolumeMount($event,curContainerIndex)">
   </volume-mounts>
 </div>
+<button class="btn btn-default" (click)="cancelBuildService()">Cancel</button>
 <button class="btn btn-default" (click)="backStep()">Back</button>
+<button class="btn btn-default" [disabled]="true">Test</button>
 <button class="btn btn-default" [disabled]="!isCanNextStep" (click)="forward()">Next</button>

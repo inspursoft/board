@@ -1,15 +1,12 @@
-import { Component, Input, OnInit, OnDestroy, ViewChild } from '@angular/core';
-
+import { Component, Input, OnInit, OnDestroy, ViewChild, Injector } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
-
 import { AppInitService } from '../../app.init.service';
-import { K8sService } from '../service.k8s';
 import { Service } from '../service';
 import { MessageService } from '../../shared/message-service/message.service';
 import { MESSAGE_TARGET, BUTTON_STYLE, MESSAGE_TYPE } from '../../shared/shared.const';
 import { Message } from '../../shared/message-service/message';
-
 import { ServiceDetailComponent } from './service-detail/service-detail.component';
+import { ServiceStepBase } from "../service-step";
 
 class ServiceData {
   id: number;
@@ -26,18 +23,16 @@ class ServiceData {
 @Component({
   templateUrl: './list-service.component.html'
 })
-export class ListServiceComponent implements OnInit, OnDestroy {
-  @Input() data: any;
+export class ListServiceComponent extends ServiceStepBase implements OnInit, OnDestroy {
   currentUser: {[key: string]: any};
   services: Service[];
-  isInLoading:boolean =false;
+  isInLoading: boolean = false;
   _subscription: Subscription;
 
   @ViewChild(ServiceDetailComponent) serviceDetailComponent;
 
-  constructor(private appInitService: AppInitService,
-              private k8sService: K8sService,
-              private messageService: MessageService) {
+  constructor(protected injector: Injector) {
+    super(injector);
     this._subscription = this.messageService.messageConfirmed$.subscribe(m => {
       let confirmationMessage = <Message>m;
       if (confirmationMessage) {
@@ -47,7 +42,7 @@ export class ListServiceComponent implements OnInit, OnDestroy {
           case MESSAGE_TARGET.DELETE_SERVICE:
             this.k8sService
               .deleteService(serviceData.id)
-              .then(res => {
+              .then(() => {
                 m.message = 'SERVICE.SUCCESSFUL_DELETE';
                 this.messageService.inlineAlertMessage(m);
                 this.retrieve();
@@ -62,7 +57,7 @@ export class ListServiceComponent implements OnInit, OnDestroy {
             let service: ServiceData = confirmationMessage.data;
             this.k8sService
               .toggleServiceStatus(service.id, service.status ? 0 : 1)
-              .then(res => {
+              .then(() => {
                 m.message = 'SERVICE.SUCCESSFUL_TOGGLE';
                 this.messageService.inlineAlertMessage(m);
                 this.retrieve();
@@ -100,7 +95,7 @@ export class ListServiceComponent implements OnInit, OnDestroy {
   }
 
   createService(): void {
-    this.k8sService.stepSource.next(1);
+    this.k8sService.stepSource.next({index: 1, isBack: false});
   }
 
   retrieve(): void {
@@ -112,7 +107,7 @@ export class ListServiceComponent implements OnInit, OnDestroy {
       })
       .catch(err => {
         this.messageService.dispatchError(err);
-        this.isInLoading =false;
+        this.isInLoading = false;
       });
   }
 
