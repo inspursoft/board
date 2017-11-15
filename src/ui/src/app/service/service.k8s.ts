@@ -6,7 +6,12 @@ import { AppInitService } from "../app.init.service";
 import { Http, Headers, RequestOptions, Response } from "@angular/http";
 import { Project } from "../project/project";
 import { Image, ImageDetail } from "../image/image";
-import { FactoryByPropertyName, ImageDockerfile, ServiceStep2NewImageType, DeploymentServiceData, } from "./service-step.component";
+import {
+  FactoryByPropertyName,
+  ImageDockerfile,
+  ServiceStep2NewImageType,
+  DeploymentServiceData,
+} from "./service-step.component";
 
 @Injectable()
 export class K8sService {
@@ -59,14 +64,11 @@ export class K8sService {
     });
   }
 
-  buildImage(imageData: ServiceStep2NewImageType): Promise<boolean> {
+  buildImage(imageData: ServiceStep2NewImageType): Promise<any> {
     return this.http.post(`/api/v1/images/building`, imageData, {
       headers: this.defaultHeader
     }).toPromise()
-      .then(resp => {
-        this.appInitService.chainResponse(resp);
-        return resp.status == 200;
-      })
+      .then(resp => this.appInitService.chainResponse(resp))
       .catch(err => Promise.reject(err));
   }
 
@@ -93,25 +95,19 @@ export class K8sService {
       .catch(err => Promise.reject(err));
   }
 
-  deleteDeployment(serviceId: number): Promise<boolean> {
+  deleteDeployment(serviceId: number): Promise<any> {
     return this.http
       .delete(`/api/v1/services/${serviceId}/deployment`, {headers: this.defaultHeader})
       .toPromise()
-      .then((res: Response) => {
-        this.appInitService.chainResponse(res);
-        return true;
-      })
+      .then((res: Response) => this.appInitService.chainResponse(res))
       .catch(err => Promise.reject(err));
   }
 
-  deleteServiceConfig(serviceId: number): Promise<boolean> {
+  deleteServiceConfig(serviceId: number): Promise<any> {
     return this.http
       .delete(`/api/v1/services/${serviceId}/serviceconfig`, {headers: this.defaultHeader})
       .toPromise()
-      .then((res: Response) => {
-        this.appInitService.chainResponse(res);
-        return true;
-      })
+      .then((res: Response) => this.appInitService.chainResponse(res))
       .catch(err => Promise.reject(err));
   }
 
@@ -140,14 +136,11 @@ export class K8sService {
     }
   }
 
-  setServiceConfig(config: DeploymentServiceData): Promise<boolean> {
+  setServiceConfig(config: DeploymentServiceData): Promise<any> {
     let serviceId = config.projectinfo.service_id;
     return this.http.put(`/api/v1/services/${serviceId}/serviceconfig`, config, {headers: this.defaultHeader})
       .toPromise()
-      .then((res: Response) => {
-        this.appInitService.chainResponse(res);
-        return true;
-      })
+      .then((res: Response) => this.appInitService.chainResponse(res))
       .catch(err => Promise.reject(err));
   }
 
@@ -175,27 +168,21 @@ export class K8sService {
       .catch(err => Promise.reject(err));
   }
 
-  removeFile(formData: FormData): Promise<boolean> {
+  removeFile(formData: FormData): Promise<any> {
     let headers = new Headers();
     headers.append('token', this.appInitService.token);
     let options = new RequestOptions({headers: headers});
     return this.http.post(`/api/v1/files/remove`, formData, options).toPromise()
-      .then(resp => {
-        this.appInitService.chainResponse(resp);
-        return resp.status == 200;
-      })
+      .then(resp => this.appInitService.chainResponse(resp))
       .catch(err => Promise.reject(err));
   }
 
-  uploadFile(formData: FormData): Promise<boolean> {
+  uploadFile(formData: FormData): Promise<any> {
     let headers = new Headers();
     headers.append('token', this.appInitService.token);
     let options = new RequestOptions({headers: headers});
     return this.http.post(`/api/v1/files/upload`, formData, options).toPromise()
-      .then(resp => {
-        this.appInitService.chainResponse(resp);
-        return resp.status == 200;
-      })
+      .then(resp => this.appInitService.chainResponse(resp))
       .catch(err => Promise.reject(err));
   }
 
@@ -290,10 +277,7 @@ export class K8sService {
     return this.http
       .delete(`/api/v1/services/${serviceID}`, {headers: this.defaultHeader})
       .toPromise()
-      .then(res => {
-        this.appInitService.chainResponse(res);
-        return res;
-      })
+      .then(res => this.appInitService.chainResponse(res))
       .catch(err => Promise.reject(err));
   }
 
@@ -301,10 +285,7 @@ export class K8sService {
     return this.http
       .put(`/api/v1/services/${serviceID}/toggle`, {service_toggle: isStart}, {headers: this.defaultHeader})
       .toPromise()
-      .then(res => {
-        this.appInitService.chainResponse(res);
-        return res;
-      })
+      .then(res => this.appInitService.chainResponse(res))
       .catch(err => Promise.reject(err));
   }
 
@@ -312,10 +293,7 @@ export class K8sService {
     return this.http
       .put(`/api/v1/services/${serviceID}/publicity`, {service_public: service_togglable}, {headers: this.defaultHeader})
       .toPromise()
-      .then(res => {
-        this.appInitService.chainResponse(res);
-        return res;
-      })
+      .then(res => this.appInitService.chainResponse(res))
       .catch(err => Promise.reject(err));
   }
 
@@ -350,7 +328,7 @@ export class K8sService {
       .catch(err => Promise.reject(err));
   }
 
-  cancelConsole(jobName: string, buildSerialId: number): Promise<boolean> {
+  cancelConsole(jobName: string, buildSerialId: number): Promise<any> {
     return this.http
       .get(`/api/v1/jenkins-job/stop`, {
         headers: this.defaultHeader,
@@ -359,10 +337,7 @@ export class K8sService {
           "build_serial_id": buildSerialId
         }
       }).toPromise()
-      .then((res: Response) => {
-        this.appInitService.chainResponse(res);
-        return true;
-      })
+      .then((res: Response) => this.appInitService.chainResponse(res))
       .catch(err => Promise.reject(err));
   }
 
@@ -387,7 +362,7 @@ export class K8sService {
         }
       })
       .toPromise()
-      .then(res=>this.appInitService.chainResponse(res))
+      .then(res => this.appInitService.chainResponse(res))
       .catch(err => Promise.reject(err));
   }
 

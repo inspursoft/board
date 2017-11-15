@@ -33,7 +33,7 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
     });
     this._confirmSubscription = this.messageService.messageConfirmed$.subscribe((next: Message) => {
       this.k8sService.deleteDeployment(this.outputData.projectinfo.service_id)
-        .then(isDelete => {
+        .then(() => {
           if (this.processImageSubscription) {
             this.processImageSubscription.unsubscribe();
           }

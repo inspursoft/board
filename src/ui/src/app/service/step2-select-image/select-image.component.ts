@@ -287,7 +287,7 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit, OnD
     this.lastJobNumber = 0;
     this.consoleText = "Jenkins preparing...";
     this.k8sService.buildImage(this.customerNewImage)
-      .then(res => {
+      .then(() => {
         setTimeout(() => {
           this.processImageSubscription = this.webSocketService
             .connect(PROCESS_IMAGE_CONSOLE_URL + `&token=${this.appInitService.token}`)
@@ -299,7 +299,7 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit, OnD
                 });
               }
               let consoleTextArr: Array<string> = this.consoleText.split(/[\n]/g);
-              if (consoleTextArr.find(value => value.indexOf("Finished: SUCCESS") > -1 )) {
+              if (consoleTextArr.find(value => value.indexOf("Finished: SUCCESS") > -1)) {
                 this.isNeedAutoRefreshImageList = true;
                 this.autoRefreshTimesCount = 0;
                 this.processImageSubscription.unsubscribe();
@@ -376,7 +376,7 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit, OnD
       formData.append('project_name', this.customerNewImage.project_name);
       formData.append('image_name', this.customerNewImage.image_name);
       formData.append('tag_name', this.customerNewImage.image_tag);
-      this.k8sService.uploadFile(formData).then(res => {
+      this.k8sService.uploadFile(formData).then(() => {
         event.target.value = "";
         this.newImageAlertType = "alert-info";
         this.newImageErrMessage = "SERVICE.STEP_2_UPLOAD_SUCCESS";
@@ -463,17 +463,17 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit, OnD
     fromRemoveData.append("image_name", this.customerNewImage.image_name);
     fromRemoveData.append("tag_name", this.customerNewImage.image_tag);
     fromRemoveData.append("file_name", file.file_name);
-    this.k8sService.removeFile(fromRemoveData).then(res => {
-      this.asyncGetDockerFilePreviewInfo();
-    }).catch(err => {
-      if (err && err.status == 401) {
-        this.isOpenNewImage = false;
-        this.messageService.dispatchError(err);
-      } else {
-        this.newImageAlertType = "alert-danger";
-        this.newImageErrMessage = "SERVICE.STEP_2_REMOVE_FILE_FAILED";
-        this.isNewImageAlertOpen = true;
-      }
-    });
+    this.k8sService.removeFile(fromRemoveData)
+      .then(() => this.asyncGetDockerFilePreviewInfo())
+      .catch(err => {
+        if (err && err.status == 401) {
+          this.isOpenNewImage = false;
+          this.messageService.dispatchError(err);
+        } else {
+          this.newImageAlertType = "alert-danger";
+          this.newImageErrMessage = "SERVICE.STEP_2_REMOVE_FILE_FAILED";
+          this.isNewImageAlertOpen = true;
+        }
+      });
   }
 }

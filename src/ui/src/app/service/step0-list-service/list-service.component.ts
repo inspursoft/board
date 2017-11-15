@@ -42,7 +42,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
           case MESSAGE_TARGET.DELETE_SERVICE:
             this.k8sService
               .deleteService(serviceData.id)
-              .then(res => {
+              .then(() => {
                 m.message = 'SERVICE.SUCCESSFUL_DELETE';
                 this.messageService.inlineAlertMessage(m);
                 this.retrieve();
@@ -57,7 +57,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
             let service: ServiceData = confirmationMessage.data;
             this.k8sService
               .toggleServiceStatus(service.id, service.status ? 0 : 1)
-              .then(res => {
+              .then(() => {
                 m.message = 'SERVICE.SUCCESSFUL_TOGGLE';
                 this.messageService.inlineAlertMessage(m);
                 this.retrieve();
