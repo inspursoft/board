@@ -36,3 +36,18 @@ type ServiceToggle struct {
 type ServicePublicityUpdate struct {
 	Public int `json:"service_public"`
 }
+
+type ExternalService struct {
+	ContainerName      string
+	NodeConfig         NodeType
+	LoadBalancerConfig LoadBalancer
+}
+
+type NodeType struct {
+	TargetPort int
+	NodePort   int
+}
+
+type LoadBalancer struct {
+	ExternalAccess string
+}
