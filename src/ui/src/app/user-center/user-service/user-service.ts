@@ -129,18 +129,6 @@ export class UserService {
       .catch(err => Promise.reject(err));
   }
 
-  setUserProjectAdmin(userID: number, userProjectAdmin: number): Promise<any> {
-    let options = new RequestOptions({
-      headers: this.defaultHeader
-    });
-    return this.http.put(`${BASE_URL}/users/${userID}/projectadmin`, {user_project_admin: userProjectAdmin}, options).toPromise()
-      .then(res => {
-        this.appInitService.chainResponse(res);
-        return res;
-      })
-      .catch(err => Promise.reject(err));
-  }
-
   usesChangeAccount(user: User): Promise<any> {
     let options = new RequestOptions({
       headers: this.defaultHeader

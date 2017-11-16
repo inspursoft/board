@@ -23,7 +23,6 @@ export class UserList implements OnInit, OnDestroy {
   curEditModel: editModel = editModel.emNew;
   showNewUser: boolean = false;
   setUserSystemAdminIng: boolean = false;
-  setUserProjectAdminIng: boolean = false;
   isInLoading: boolean = false;
 
   constructor(private userService: UserService,
