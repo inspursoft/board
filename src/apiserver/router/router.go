@@ -107,7 +107,7 @@ func init() {
 				"post:PullObjects"),
 			beego.NSRouter("/services",
 				&controller.ServiceController{},
-				"post:CreateServiceConfigAction;get:GetServiceListAction"),
+				"head:ServiceExists;post:CreateServiceConfigAction;get:GetServiceListAction"),
 			beego.NSRouter("/services/:id([0-9]+)",
 				&controller.ServiceController{},
 				"delete:DeleteServiceAction"),

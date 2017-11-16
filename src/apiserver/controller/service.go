@@ -197,12 +197,12 @@ func (p *ServiceController) DeployServiceAction() {
 		return
 	}
 
-	flag, err := service.IsServiceNameDuplicated(reqServiceConfig.Service.ObjectMeta.Name, reqServiceConfig.Project.ProjectName)
+	isServiceDuplicated, err := service.ServiceExists(reqServiceConfig.Service.ObjectMeta.Name, reqServiceConfig.Project.ProjectName)
 	if err != nil {
 		p.internalError(err)
 		return
 	}
-	if flag == true {
+	if isServiceDuplicated == true {
 		p.serveStatus(http.StatusBadRequest, serverNameDuplicateErr.Error())
 		logs.Error("Request parameters error when deploy service, error: %+v", serverNameDuplicateErr.Error())
 		return
@@ -235,13 +235,13 @@ func (p *ServiceController) DeployServiceTestAction() {
 		return
 	}
 
-	flag, err := service.IsServiceNameDuplicated(reqServiceConfig.Service.ObjectMeta.Name, reqServiceConfig.Project.ProjectName)
+	isServiceDuplicated, err := service.ServiceExists(reqServiceConfig.Service.ObjectMeta.Name, reqServiceConfig.Project.ProjectName)
 	if err != nil {
 		p.internalError(err)
 		logs.Error("Request parameters error when deploy service, error: %+v", serverNameDuplicateErr.Error())
 		return
 	}
-	if flag == true {
+	if isServiceDuplicated == true {
 		p.customAbort(http.StatusBadRequest, serverNameDuplicateErr.Error())
 		return
 	}
@@ -858,4 +858,17 @@ func (p *ServiceController) StoreServiceRoute() {
 	serviceURL := p.GetString("service_url")
 	memoryCache.Put(strings.ToLower(serviceIdentity), serviceURL, time.Second*time.Duration(tokenCacheExpireSeconds))
 	logs.Debug("Service identity: %s, URL: %s", serviceIdentity, serviceURL)
+}
+
+func (p *ServiceController) ServiceExists() {
+	projectName := p.GetString("project_name")
+	serviceName := p.GetString("service_name")
+	isServiceExists, err := service.ServiceExists(serviceName, projectName)
+	if err != nil {
+		p.internalError(err)
+		logs.Error("Check service name failed, error: %+v", err.Error())
+		return
+	}
+	p.Data["json"] = isServiceExists
+	p.ServeJSON()
 }

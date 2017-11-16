@@ -78,7 +78,7 @@ func CheckServicePara(reqServiceConfig model.ServiceConfig2) error {
 	return nil
 }
 
-func IsServiceNameDuplicated(serviceName string, projectName string) (bool, error) {
+func ServiceExists(serviceName string, projectName string) (bool, error) {
 	var servicequery model.ServiceStatus
 	servicequery.Name = serviceName
 	servicequery.ProjectName = projectName
