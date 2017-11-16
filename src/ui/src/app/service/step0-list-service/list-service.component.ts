@@ -26,6 +26,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   currentUser: {[key: string]: any};
   services: Service[];
   isInLoading: boolean = false;
+  checkboxRevertInfo: {isNeeded: boolean; value: boolean};
   _subscription: Subscription;
 
   @ViewChild(ServiceDetailComponent) serviceDetailComponent;
@@ -124,13 +125,18 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
 
   toggleServicePublic(s: Service): void {
     let toggleMessage = new Message();
+    let oldServicePublic = s.service_public;
     this.k8sService
       .toggleServicePublicity(s.service_id, s.service_public ? 0 : 1)
       .then(() => {
+        s.service_public = ! oldServicePublic;
         toggleMessage.message = 'SERVICE.SUCCESSFUL_TOGGLE';
         this.messageService.inlineAlertMessage(toggleMessage);
       })
-      .catch(err => this.messageService.dispatchError(err, ''));
+      .catch(err => {
+        this.messageService.dispatchError(err, '');
+        this.checkboxRevertInfo = {isNeeded: true, value: oldServicePublic};
+      });
   }
 
   editService(s: Service) {

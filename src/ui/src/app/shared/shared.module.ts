@@ -18,6 +18,8 @@ import { AccountSettingComponent } from "./account-setting/account-setting.compo
 import { ValidateOnBlurDirective } from './directives/validate-onblur.directive';
 import { CsDropdownComponent } from "../service/cs-dropdown/cs-dropdown.component";
 import { WebsocketService } from './websocket-service/websocket.service';
+import { CsSearchInput } from "./cs-components-library/cs-search-input/cs-search-input.component";
+import { CheckboxRevert } from "./directives/checkbox-revert.directive";
 
 @NgModule({
   imports: [
@@ -36,7 +38,9 @@ import { WebsocketService } from './websocket-service/websocket.service';
     ValidateOnBlurDirective,
     ChangePasswordComponent,
     CsDropdownComponent,
-    AccountSettingComponent
+    AccountSettingComponent,
+    CsSearchInput,
+    CheckboxRevert
   ],
   exports: [
     CoreModule,
@@ -50,7 +54,9 @@ import { WebsocketService } from './websocket-service/websocket.service';
     CheckItemIdenticalDirective,
     CsDropdownComponent,
     CheckItemPatternDirective,
-    ValidateOnBlurDirective
+    ValidateOnBlurDirective,
+    CsSearchInput,
+    CheckboxRevert
   ],
   providers: [
     AuthGuard,

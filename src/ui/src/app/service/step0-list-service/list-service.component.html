@@ -21,7 +21,7 @@
         <clr-dg-cell>{{s.service_owner_name}}</clr-dg-cell>
         <clr-dg-cell>{{s.service_creation_time | date: 'short'}}</clr-dg-cell>
         <clr-dg-cell>
-          <input type="checkbox" id="chkPublic" [checked]="s.service_public === 1" (click)="toggleServicePublic(s)">
+          <input [checkbox-revert]="checkboxRevertInfo" type="checkbox" id="chkPublic" [checked]="s.service_public === 1" (click)="toggleServicePublic(s,$event)">
           <label for="chkPublic"></label>
         </clr-dg-cell>
         <clr-dg-cell>{{ getServiceStatus(s.service_status) | translate }}</clr-dg-cell>
