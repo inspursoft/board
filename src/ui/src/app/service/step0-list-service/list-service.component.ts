@@ -1,8 +1,6 @@
-import { Component, Input, OnInit, OnDestroy, ViewChild, Injector } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, Injector } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
-import { AppInitService } from '../../app.init.service';
 import { Service } from '../service';
-import { MessageService } from '../../shared/message-service/message.service';
 import { MESSAGE_TARGET, BUTTON_STYLE, MESSAGE_TYPE } from '../../shared/shared.const';
 import { Message } from '../../shared/message-service/message';
 import { ServiceDetailComponent } from './service-detail/service-detail.component';
@@ -21,7 +19,8 @@ class ServiceData {
 }
 
 @Component({
-  templateUrl: './list-service.component.html'
+  templateUrl: './list-service.component.html',
+  styleUrls:["./list-service.component.css"]
 })
 export class ListServiceComponent extends ServiceStepBase implements OnInit, OnDestroy {
   currentUser: {[key: string]: any};
@@ -139,33 +138,35 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   }
 
   confirmToServiceAction(s: Service, action: string): void {
-    let serviceData = new ServiceData(s.service_id, s.service_name, (s.service_status === 1));
-    let title: string;
-    let message: string;
-    let target: MESSAGE_TARGET;
-    let buttonStyle: BUTTON_STYLE;
-    switch (action) {
-      case 'DELETE':
-        title = 'SERVICE.DELETE_SERVICE';
-        message = 'SERVICE.CONFIRM_TO_DELETE_SERVICE';
-        target = MESSAGE_TARGET.DELETE_SERVICE;
-        buttonStyle = BUTTON_STYLE.DELETION;
-        break;
-      case 'TOGGLE':
-        title = 'SERVICE.TOGGLE_SERVICE';
-        message = 'SERVICE.CONFIRM_TO_TOGGLE_SERVICE';
-        target = MESSAGE_TARGET.TOGGLE_SERVICE;
-        buttonStyle = BUTTON_STYLE.CONFIRMATION;
-        break;
+    if (s.service_status == 2){
+      let serviceData = new ServiceData(s.service_id, s.service_name, false);
+      let title: string;
+      let message: string;
+      let target: MESSAGE_TARGET;
+      let buttonStyle: BUTTON_STYLE;
+      switch (action) {
+        case 'DELETE':
+          title = 'SERVICE.DELETE_SERVICE';
+          message = 'SERVICE.CONFIRM_TO_DELETE_SERVICE';
+          target = MESSAGE_TARGET.DELETE_SERVICE;
+          buttonStyle = BUTTON_STYLE.DELETION;
+          break;
+        case 'TOGGLE':
+          title = 'SERVICE.TOGGLE_SERVICE';
+          message = 'SERVICE.CONFIRM_TO_TOGGLE_SERVICE';
+          target = MESSAGE_TARGET.TOGGLE_SERVICE;
+          buttonStyle = BUTTON_STYLE.CONFIRMATION;
+          break;
+      }
+      let announceMessage = new Message();
+      announceMessage.title = title;
+      announceMessage.message = message;
+      announceMessage.params = [s.service_name];
+      announceMessage.target = target;
+      announceMessage.buttons = buttonStyle;
+      announceMessage.data = serviceData;
+      this.messageService.announceMessage(announceMessage);
     }
-    let announceMessage = new Message();
-    announceMessage.title = title;
-    announceMessage.message = message;
-    announceMessage.params = [s.service_name];
-    announceMessage.target = target;
-    announceMessage.buttons = buttonStyle;
-    announceMessage.data = serviceData;
-    this.messageService.announceMessage(announceMessage);
   }
 
   confirmToDeleteService(s: Service) {
