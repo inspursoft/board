@@ -1408,6 +1408,40 @@ paths:
           description: Invalid service ID.
         500:
           description: Unexpected internal errors.    
+  /v1/services/{service_id}/scale:
+    put:  
+      summary: Manually scale the service replica.
+      description: |
+        This endpoint is aimed to update the replica number of the service manually.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.
+        - name: service_scale
+          in: body
+          required: true 
+          schema:
+            $ref: '#/definitions/ServiceScale'
+          description: New replica number to scale manually.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Manually scale this service successfully.
+        401:
+          description: User need to log in first.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.             
   /v1/services/{service_id}/publicity:
     put:  
       summary: Update service publicity for a selected service.
@@ -2919,6 +2953,13 @@ definitions:
         type: integer
         format: int32
         description: The new toggle value, 1 for run 0 for stop.
+  ServiceScale:
+    type: object
+    properties:
+      service_scale:
+        type: integer
+        format: int32
+        description: The new replica number of the service.                
   ServicePublicityUpdate:
     type: object
     properties:
