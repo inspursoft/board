@@ -17,7 +17,11 @@
         <clr-dg-cell>{{p.project_owner_name}}</clr-dg-cell>
         <clr-dg-cell>{{p.project_creation_time | date: 'short'}}</clr-dg-cell>
         <clr-dg-cell>
-          <input type="checkbox" id="chkPublic" [checked]="p.project_public === 1" (click)="toggleProjectPublic(p)">
+          <input type="checkbox"
+                 id="chkPublic"
+                 [checkbox-revert]="checkboxRevertInfo"
+                 [checked]="p.project_public === 1"
+                 (click)="toggleProjectPublic(p)">
           <label for="chkPublic"></label>
         </clr-dg-cell>
         <clr-dg-cell>{{p.project_comment}}</clr-dg-cell>

@@ -4,9 +4,6 @@ export class ServiceStep2Type {
   project_id: number;
   project_name: string;
   image_template: string;
-
-  constructor() {
-  }
 }
 
 export class ImageDockerfile {
@@ -103,7 +100,7 @@ export class ProjectInfo {
 export class ObjectMeta {
   name: string = "";
   namespace: string = "";
-  labels: {[key: string]: string} = {};
+  labels: {[key: string]: string} = {app: ""};
 }
 
 export class HostPathVolumeSource {
@@ -150,7 +147,7 @@ export class PodTemplateSpec {
 
 export class ReplicationControllerSpec {
   replicas: number = 1;                   //old=>deployment_replicas
-  selector: {[key: string]: string} = {};//{"app": deployment_name}
+  selector: {[key: string]: string} = {};
   template: PodTemplateSpec = new PodTemplateSpec();
 }
 
@@ -169,7 +166,7 @@ export class ServicePort {
 
 export class ServiceSpec implements FactoryByPropertyName {
   ports: Array<ServicePort> = Array();   //old=>service_external
-  selector: {[key: string]: string} = {};
+  selector: {[key: string]: string} = {app: ""};
   type: string = "";                    //ports.length > 0? =>"NodePort":""
 
   getInstanceByPropertyName(propName: string): Object {

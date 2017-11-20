@@ -7,6 +7,7 @@ import { Message } from "../../shared/message-service/message";
 import { BUTTON_STYLE } from "../../shared/shared.const";
 import { WebsocketService } from "../../shared/websocket-service/websocket.service";
 import { ServiceStepBase } from "../service-step";
+import { Response } from "@angular/http"
 
 // const PROCESS_SERVICE_CONSOLE_URL = `ws://10.165.22.61:8088/api/v1/jenkins-job/console?job_name=process_service`;
 const PROCESS_SERVICE_CONSOLE_URL = `ws://localhost/api/v1/jenkins-job/console?job_name=process_service`;
@@ -83,7 +84,14 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
           }, 10000);
         })
         .catch(err => {
-          this.messageService.dispatchError(err);
+          if (err instanceof Response && (err as Response).status == 400){
+            let errMessage = new Message();
+            let resBody = (err as Response).json();
+            errMessage.message = resBody["message"];
+            this.messageService.globalMessage(errMessage)
+          } else {
+            this.messageService.dispatchError(err);
+          }
           this.isDeploySuccess = false;
           this.isInDeployIng = false;
         })

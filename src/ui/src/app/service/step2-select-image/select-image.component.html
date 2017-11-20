@@ -110,6 +110,7 @@
                         (onCheck)="getDockerFilePreviewInfo()"
                         (onMinus)="getDockerFilePreviewInfo()"></cs-input-array>
         <cs-input-array [inputArraySource]="imageExpose"
+                        [inputArrayIsRequired]="true"
                         [inputArrayPattern]="patternExpose"
                         [disabled]="imageInBuilding"
                         [inputArrayLabelText]="'SERVICE.STEP_2_IMAGE_EXPOSE'|translate"

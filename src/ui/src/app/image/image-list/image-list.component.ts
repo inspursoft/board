@@ -88,4 +88,8 @@ export class ImageListComponent implements OnInit, OnDestroy {
     this.messageService.announceMessage(announceMessage);
   }
 
+  onSearch(searchText:string){
+      console.log(searchText);
+  }
+
 }
