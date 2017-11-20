@@ -9,14 +9,17 @@ import (
 	"net/http"
 
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/pkg/api/resource"
+	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/rest"
 	apiCli "k8s.io/client-go/tools/clientcmd/api"
 
+	"github.com/golang/glog"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
 var (
-	kubeMasterURL             = utils.GetConfig("KUBE_MASTER_URL")
+	kubeMasterURL = utils.GetConfig("KUBE_MASTER_URL")
 	EntryMethod   EntryMethodEnum
 	CAPath        string
 	TokenStr      string
@@ -122,4 +125,60 @@ func GetK8sData(resource interface{}, url string) ([]byte, error) {
 	}
 
 	return body, nil
+}
+
+func SetNFSVol(name string, server, path string, cap int64) error {
+	// common date pv and pvc
+	var (
+		storage v1.ResourceList = make(v1.ResourceList)
+		q       resource.Quantity
+		mode    []v1.PersistentVolumeAccessMode = []v1.PersistentVolumeAccessMode{v1.ReadWriteMany}
+	)
+	// init common date
+	q.Set(cap)
+	storage[v1.ResourceStorage] = q
+
+	// get k8s client
+	cli, err := K8sCliFactory("", kubeMasterURL(), "v1")
+	apiSet, err := kubernetes.NewForConfig(cli)
+	if err != nil {
+		return err
+	}
+	// bound k8s client and create source
+	pvSet := apiSet.PersistentVolumes()
+
+	pv := v1.PersistentVolume{}
+
+	pv.Name = name
+
+	pv.Spec.NFS = &v1.NFSVolumeSource{
+		Server:   server,
+		Path:     path,
+		ReadOnly: false,
+	}
+	pv.Spec.AccessModes = mode
+
+	pv.Spec.Capacity = storage
+
+	info, err := pvSet.Create(&pv)
+	glog.Infof("%s", info)
+	if err != nil {
+		return err
+	}
+
+	pvcSet := apiSet.PersistentVolumeClaims("default")
+	pvc := v1.PersistentVolumeClaim{}
+
+	pvc.Name = name
+
+	pvc.Spec.AccessModes = mode
+
+	pvc.Spec.Resources.Requests = storage
+
+	infoP, err := pvcSet.Create(&pvc)
+	glog.Infof("%s", infoP)
+	if err != nil {
+		return err
+	}
+	return nil
 }
