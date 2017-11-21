@@ -38,16 +38,16 @@ type ServicePublicityUpdate struct {
 }
 
 type ExternalService struct {
-	ContainerName      string
-	NodeConfig         NodeType
-	LoadBalancerConfig LoadBalancer
+	ContainerName      string       `json:"container_name"`
+	NodeConfig         NodeType     `json:"node_config"`
+	LoadBalancerConfig LoadBalancer `json:"load_balancer_config"`
 }
 
 type NodeType struct {
-	TargetPort int
-	NodePort   int
+	TargetPort int `json:"target_port"`
+	NodePort   int `json:"node_port"`
 }
 
 type LoadBalancer struct {
-	ExternalAccess string
+	ExternalAccess string `json:"external_access"`
 }
