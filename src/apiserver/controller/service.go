@@ -872,3 +872,60 @@ func (p *ServiceController) ServiceExists() {
 	p.Data["json"] = isServiceExists
 	p.ServeJSON()
 }
+
+func (p *ServiceController) ScaleServiceAction() {
+	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	reqData, err := p.resolveBody()
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	var reqServiceScale model.ServiceScale
+	err = json.Unmarshal(reqData, &reqServiceScale)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	logs.Info(reqServiceScale)
+
+	// Get the current service status
+	var servicequery model.ServiceStatus
+	servicequery.ID = int64(serviceID)
+	s, err := service.GetService(servicequery, "id")
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if s == nil {
+		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
+		return
+	}
+
+	isMember, err := service.IsProjectMember(s.ProjectID, p.currentUser.ID)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	//Judge authority
+	if !(p.isSysAdmin || isMember) {
+		p.customAbort(http.StatusForbidden, "Insufficient privileges to get publicity of service.")
+		return
+	}
+
+	// change the replica number of service
+
+	res, err := service.ScaleReplica(*s, reqServiceScale.Replica)
+
+	if res != true {
+		logs.Info("Failed to scale service replica", s, reqServiceScale.Replica)
+		p.internalError(err)
+		return
+	}
+	logs.Info("Scale service replica successfully")
+}
