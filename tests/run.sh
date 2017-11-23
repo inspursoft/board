@@ -39,6 +39,7 @@ do
         cat profile.tmp | tail -n +2 >> profile.cov
         rm profile.tmp
      fi
-go tool cover -func=profile.cov
+go tool cover -func=profile.cov > out.temp
+go tool cover -html=profile.cov -o profile.html
 done
 

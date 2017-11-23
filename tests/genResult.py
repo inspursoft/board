@@ -1,5 +1,6 @@
 import os
 import sys
+import shutil
 
 def main():
     os.system('cd ..')
@@ -26,7 +27,6 @@ def main():
     inf.write("</html>")
     f.close()
     inf.close()
-    
     cov = os.popen("cat out.temp|grep \"total\"|awk '{print $NF}'").readline()
     covDir = resultDir + "/index"
     covHtml = covDir + "/index.html"
@@ -51,6 +51,8 @@ def main():
     tagf.write("</html>")
     tagf.write("</body>")
     tagf.close()
+
+    shutil.copy("profile.html", resultHtml) 
 
 if __name__ == "__main__":
     main()
