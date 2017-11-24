@@ -1,6 +1,8 @@
 package model
 
-import "k8s.io/client-go/pkg/api/v1"
+import (
+	"k8s.io/client-go/pkg/api/v1"
+)
 
 type ServiceConfig2 struct {
 	Project    ProjectInfo              `json:"projectinfo"`
@@ -17,4 +19,14 @@ type ProjectInfo struct {
 	Comment             string   `json:"comment"`
 	Phase               string   `json:"config_phase"`
 	ServiceExternalPath []string `json:"service_externalpath"`
+}
+
+type ConfigServiceStep struct {
+	ProjectID           int64             `json:"project_id"`
+	ServiceID           int64             `json:"service_id"`
+	ImageList           []ImageIndex      `json:"image_list"`
+	ServiceName         string            `json:"service_name"`
+	Instance            int               `json:"instance"`
+	ContainerList       []Container       `json:"container_list"`
+	ExternalServiceList []ExternalService `json:"external_service_list"`
 }

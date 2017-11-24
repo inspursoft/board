@@ -2,30 +2,42 @@ package controller
 
 import (
 	"encoding/json"
+	"errors"
+	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"net/http"
+	"strings"
 	"time"
+
+	"github.com/astaxie/beego/logs"
 )
 
 const (
 	expircyTimeSpan       time.Duration = 900
 	selectProject                       = "SELECT_PROJECT"
 	selectImageList                     = "SELECT_IMAGES"
-	createImage                         = "CREATE_IMAGE"
 	configContainerList                 = "CONFIG_CONTAINERS"
 	configExternalService               = "EXTERNAL_SERVICE"
+	configEntireService                 = "ENTIRE_SERVICE"
+	maximumPortNum                      = 32765
+	minimumPortNum                      = 30000
 )
 
-type ConfigServiceStep struct {
-	ProjectID           int64
-	ServiceID           int64
-	ImageList           []model.ImageIndex
-	Dockerfile          model.Dockerfile
-	ServiceName         string
-	Instance            int
-	ContainerList       []model.Container
-	ExternalServiceList []model.ExternalService
-}
+var (
+	serverNameDuplicateErr        = errors.New("ERR_DUPLICATE_SERVICE_NAME")
+	projectIDInvalidErr           = errors.New("ERR_INVALID_PROJECT_ID")
+	imageListInvalidErr           = errors.New("ERR_INVALID_IMAGE_LIST")
+	portInvalidErr                = errors.New("ERR_INVALID_SERVICE_NODEPORT")
+	instanceInvalidErr            = errors.New("ERR_INVALID_SERVICE_INSTANCE")
+	emptyServiceNameErr           = errors.New("ERR_EMPTY_SERVICE_NAME")
+	phaseInvalidErr               = errors.New("ERR_INVALID_PHASE")
+	serviceConfigNotCreateErr     = errors.New("ERR_NOT_CREATE_SERVICE_CONFIG")
+	serviceConfigNotSetProjectErr = errors.New("ERR_NOT_SET_PROJECT_IN_SERVICE_CONFIG")
+	emptyExternalServiceListErr   = errors.New("ERR_EMPTY_EXTERNAL_SERVICE_LIST")
+)
+
+type ConfigServiceStep model.ConfigServiceStep
 
 func NewConfigServiceStep(key string) *ConfigServiceStep {
 	configServiceStep := GetConfigServiceStep(key)
@@ -42,6 +54,13 @@ func SetConfigServiceStep(key string, s *ConfigServiceStep) {
 func GetConfigServiceStep(key string) *ConfigServiceStep {
 	if s, ok := memoryCache.Get(key).(*ConfigServiceStep); ok {
 		return s
+	}
+	return nil
+}
+
+func DeleteConfigServiceStep(key string) error {
+	if memoryCache.IsExist(key) {
+		return memoryCache.Delete(key)
 	}
 	return nil
 }
@@ -69,19 +88,6 @@ func (s *ConfigServiceStep) GetSelectedImageList() interface{} {
 		ImageList []model.ImageIndex
 	}{
 		ImageList: s.ImageList,
-	}
-}
-
-func (s *ConfigServiceStep) CreateDockerImage(dockerfile model.Dockerfile) *ConfigServiceStep {
-	s.Dockerfile = dockerfile
-	return s
-}
-
-func (s *ConfigServiceStep) GetDockerImage() interface{} {
-	return struct {
-		Dockerfile model.Dockerfile
-	}{
-		Dockerfile: s.Dockerfile,
 	}
 }
 
@@ -145,8 +151,6 @@ func (sc *ServiceConfigController) GetConfigServiceStepAction() {
 		result = configServiceStep.GetSelectedProject()
 	case selectImageList:
 		result = configServiceStep.GetSelectedImageList()
-	case createImage:
-		result = configServiceStep.GetConfigContainerList()
 	case configContainerList:
 		result = configServiceStep.GetConfigContainerList()
 	case configExternalService:
@@ -170,21 +174,44 @@ func (sc *ServiceConfigController) SetConfigServiceStepAction() {
 		sc.selectProject(key, configServiceStep)
 	case selectImageList:
 		sc.selectImageList(key, configServiceStep, reqData)
-	case createImage:
-		sc.createImage(key, configServiceStep, reqData)
 	case configContainerList:
 		sc.configContainerList(key, configServiceStep, reqData)
 	case configExternalService:
 		sc.configExternalService(key, configServiceStep, reqData)
+	case configEntireService:
+		sc.configEntireService(key, configServiceStep, reqData)
+	default:
+		sc.serveStatus(http.StatusBadRequest, phaseInvalidErr.Error())
+		return
 	}
+	logs.Info("set configService after phase %s is :%+v", phase, NewConfigServiceStep(key))
 }
 
+func (sc *ServiceConfigController) DeleteServiceStepAction() {
+	key := sc.token
+	err := DeleteConfigServiceStep(key)
+	if err != nil {
+		sc.internalError(err)
+		return
+	}
+}
 func (sc *ServiceConfigController) selectProject(key string, configServiceStep *ConfigServiceStep) {
 	projectID, err := sc.GetInt64("project_id")
 	if err != nil {
 		sc.internalError(err)
 		return
 	}
+
+	isExists, err := service.ProjectExistsByID(projectID)
+	if err != nil {
+		sc.internalError(err)
+		return
+	}
+	if !isExists {
+		sc.serveStatus(http.StatusBadRequest, projectIDInvalidErr.Error())
+		return
+	}
+
 	SetConfigServiceStep(key, configServiceStep.SelectProject(projectID))
 }
 
@@ -195,17 +222,12 @@ func (sc *ServiceConfigController) selectImageList(key string, configServiceStep
 		sc.internalError(err)
 		return
 	}
-	SetConfigServiceStep(key, configServiceStep.SelectImageList(imageList))
-}
 
-func (sc *ServiceConfigController) createImage(key string, configServiceStep *ConfigServiceStep, reqData []byte) {
-	var dockerfile model.Dockerfile
-	err := json.Unmarshal(reqData, &dockerfile)
-	if err != nil {
-		sc.internalError(err)
-		return
+	if len(imageList) < 0 {
+		sc.serveStatus(http.StatusBadRequest, imageListInvalidErr.Error())
 	}
-	SetConfigServiceStep(key, configServiceStep.CreateDockerImage(dockerfile))
+
+	SetConfigServiceStep(key, configServiceStep.SelectImageList(imageList))
 }
 
 func (sc *ServiceConfigController) configContainerList(key string, configServiceStep *ConfigServiceStep, reqData []byte) {
@@ -215,21 +237,141 @@ func (sc *ServiceConfigController) configContainerList(key string, configService
 		sc.internalError(err)
 		return
 	}
+
+	for _, container := range containerList {
+		container.VolumeMounts.VolumeName = strings.ToLower(container.VolumeMounts.VolumeName)
+		container.Name = strings.ToLower(container.Name)
+	}
+
 	SetConfigServiceStep(key, configServiceStep.ConfigContainerList(containerList))
 }
 
 func (sc *ServiceConfigController) configExternalService(key string, configServiceStep *ConfigServiceStep, reqData []byte) {
-	serviceName := sc.GetString("service_name")
+	serviceName := strings.ToLower(sc.GetString("service_name"))
+	if serviceName == "" {
+		sc.serveStatus(http.StatusBadRequest, emptyServiceNameErr.Error())
+		return
+	}
+
+	isDuplicate, err := sc.checkServiceDuplicateName(serviceName)
+	if err != nil {
+		sc.serveStatus(http.StatusBadRequest, serviceConfigNotCreateErr.Error())
+		return
+	}
+	if isDuplicate == true {
+		sc.serveStatus(http.StatusBadRequest, serverNameDuplicateErr.Error())
+		return
+	}
+
 	instance, err := sc.GetInt("instance")
 	if err != nil {
 		sc.internalError(err)
 		return
 	}
+	if instance < 1 {
+		sc.serveStatus(http.StatusBadRequest, err.Error())
+		return
+	}
+
 	var externalServiceList []model.ExternalService
 	err = json.Unmarshal(reqData, &externalServiceList)
 	if err != nil {
 		sc.internalError(err)
 		return
 	}
+
+	if len(externalServiceList) < 1 {
+		sc.serveStatus(http.StatusBadRequest, serverNameDuplicateErr.Error())
+		return
+	}
+
+	for _, external := range externalServiceList {
+		if external.NodeConfig.NodePort > maximumPortNum || external.NodeConfig.NodePort < minimumPortNum {
+			sc.serveStatus(http.StatusBadRequest, portInvalidErr.Error())
+			return
+		}
+	}
+
 	SetConfigServiceStep(key, configServiceStep.ConfigExternalService(serviceName, instance, externalServiceList))
+}
+
+func (sc *ServiceConfigController) checkServiceDuplicateName(serviceName string) (bool, error) {
+	key := sc.token
+	configServiceStep := GetConfigServiceStep(key)
+	if configServiceStep == nil {
+		return false, serviceConfigNotCreateErr
+	}
+
+	project, err := service.GetProject(model.Project{ID: configServiceStep.ProjectID}, "id")
+	if err != nil {
+		sc.internalError(err)
+	}
+	if project == nil {
+		return false, serviceConfigNotSetProjectErr
+	}
+
+	isServiceDuplicated, err := service.ServiceExists(serviceName, project.Name)
+	if err != nil {
+		sc.internalError(err)
+	}
+	return isServiceDuplicated, nil
+
+}
+
+func (sc *ServiceConfigController) checkEntireServiceConfig(entireService *ConfigServiceStep) error {
+	project, err := dao.GetProject(model.Project{ID: entireService.ProjectID, Deleted: 0}, "id", "deleted")
+	if err != nil {
+		sc.internalError(err)
+	}
+	if project == nil {
+		return projectIDInvalidErr
+	}
+
+	serviceName := strings.ToLower(entireService.ServiceName)
+	if serviceName == "" {
+		return emptyServiceNameErr
+	}
+	isDuplicate, err := service.ServiceExists(serviceName, project.Name)
+	if err != nil {
+		sc.internalError(err)
+	}
+	if isDuplicate == true {
+		return serverNameDuplicateErr
+	}
+
+	if entireService.Instance < 1 {
+		return instanceInvalidErr
+	}
+
+	for key, container := range entireService.ContainerList {
+		entireService.ContainerList[key].VolumeMounts.VolumeName = strings.ToLower(container.VolumeMounts.VolumeName)
+		entireService.ContainerList[key].Name = strings.ToLower(container.Name)
+	}
+
+	if len(entireService.ExternalServiceList) < 1 {
+		return emptyExternalServiceListErr
+	}
+	for _, external := range entireService.ExternalServiceList {
+		if external.NodeConfig.NodePort > 32765 || external.NodeConfig.NodePort < 30000 {
+			return portInvalidErr
+		}
+	}
+
+	return nil
+}
+
+func (sc *ServiceConfigController) configEntireService(key string, configServiceStep *ConfigServiceStep, reqData []byte) {
+	var entireService ConfigServiceStep
+	err := json.Unmarshal(reqData, &entireService)
+	if err != nil {
+		sc.internalError(err)
+		return
+	}
+
+	if err = sc.checkEntireServiceConfig(&entireService); err != nil {
+		sc.serveStatus(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	SetConfigServiceStep(key, &entireService)
 }
