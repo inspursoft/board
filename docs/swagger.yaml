@@ -943,7 +943,7 @@ paths:
           description: User need to log in first.
         500:
           description: Internal errors.  
-  /v1/services/dockerfile/upload:
+  /v1/images/dockerfile/upload:
     post:
       summary: Return upload status.
       description:
@@ -990,7 +990,7 @@ paths:
           description: Unauthorized
         500:
           description: Unexpected internal errors. 
-  /v1/services/dockerfile/download:
+  /v1/images/dockerfile/download:
     get:
       summary: Return download status.
       description: |
