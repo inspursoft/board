@@ -20,16 +20,16 @@ export class ImageDetail {
 }
 
 export class BuildImageDataBase {
-  image_name: string;
-  image_tag: string;
-  project_id: number;
-  project_name: string;
-  image_template: string;
+  image_name: string = "";
+  image_tag: string = "";
+  project_id: number = 0;
+  project_name: string = "";
+  image_template: string = "";
 }
 
 export class BuildImageDockerfileData {
-  image_base: string;
-  image_author: string;
+  image_base: string = "";
+  image_author: string = "";
   image_volume?: Array<string>;
   image_copy?: Array<{dockerfile_copyfrom?: string, dockerfile_copyto?: string}>;
   image_run?: Array<string>;
@@ -39,7 +39,6 @@ export class BuildImageDockerfileData {
   image_cmd?: string;
 
   constructor() {
-    this.image_base = "";
     this.image_volume = Array<string>();
     this.image_run = Array<string>();
     this.image_expose = Array<string>();

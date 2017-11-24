@@ -18,6 +18,7 @@ import { WebsocketService } from "../../shared/websocket-service/websocket.servi
 import { EnvType } from "../../shared/environment-value/environment-value.component";
 
 enum ImageSource{fromBoardRegistry, fromDockerHub}
+enum ImageBuildMethod{fromTemplate, fromImportFile}
 const AUTO_REFRESH_IMAGE_LIST: number = 2000;
 const PROCESS_IMAGE_CONSOLE_URL = `ws://10.165.22.61:8088/api/v1/jenkins-job/console?job_name=process_image`;
 // const PROCESS_IMAGE_CONSOLE_URL = `ws://localhost/api/v1/jenkins-job/console?job_name=process_image`;
@@ -37,8 +38,6 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   @Input() projectName: string = "";
   @Output() onBuildCompleted: EventEmitter<string>;
   @Output() isOpenChange: EventEmitter<boolean> = new EventEmitter<boolean>();
-
-
   _isOpenEnvironment = false;
   patternNewImageName: RegExp = /^[a-z\d.-]+$/;
   patternNewImageTag: RegExp = /^[a-z\d.-]+$/;
@@ -48,13 +47,16 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   patternRun: RegExp = /.+/;
   patternEntryPoint: RegExp = /.+/;
   imageSource: ImageSource = ImageSource.fromBoardRegistry;
+  imageBuildMethod: ImageBuildMethod = ImageBuildMethod.fromTemplate;
   newImageAlertType: alertType = "alert-danger";
   imageTemplateList: Array<Object> = [{name: "Docker File Template"}];
   filesList: Map<string, Array<{path: string, file_name: string, size: number}>>;
+  selectFromImportFile: File;
   intervalAutoRefreshImageList: any;
   isNeedAutoRefreshImageList: boolean = false;
-  imageInBuilding: boolean = false;
+  isInBuildingImage: boolean = false;
   isInputComponentsValid: boolean = false;
+  isServerHaveDockerFile: boolean = false;
   isUploadFileIng = false;
   customerNewImage: BuildImageData;
   autoRefreshTimesCount: number = 0;
@@ -79,7 +81,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     this.customerNewImage.project_name = this.projectName;
     this.customerNewImage.image_template = "dockerfile-template";
     this.intervalAutoRefreshImageList = setInterval(() => {
-      if (this.isNeedAutoRefreshImageList && this.imageInBuilding) {
+      if (this.isNeedAutoRefreshImageList && this.isInBuildingImage) {
         this.autoRefreshTimesCount++;
         this.isNewImageAlertOpen = false;
         this.imageService.getImages("", 0, 0).then(res => {
@@ -96,7 +98,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
             this.isOpen = false;
             this.messageService.dispatchError(err);
           } else {
-            this.imageInBuilding = false;
+            this.isInBuildingImage = false;
             this.newImageAlertType = "alert-danger";
             this.newImageErrMessage = "IMAGE.CREATE_IMAGE_UPDATE_IMAGE_LIST_FAILED";
             this.isNewImageAlertOpen = true;
@@ -141,7 +143,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   }
 
   set isOpenEnvironment(value) {
-    this.isOpen = !value;
+    // this.isOpen = !value;
     this._isOpenEnvironment = value;
   }
 
@@ -178,6 +180,12 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     return result;
   }
 
+  get isBuildDisabled() {
+    let baseDisabled = this.isInBuildingImage || !this.isInputComponentsValid || this.isUploadFileIng;
+    let fromDockerFile = baseDisabled || (!this.selectFromImportFile && !this.isServerHaveDockerFile);
+    return this.imageBuildMethod == ImageBuildMethod.fromTemplate ? baseDisabled : fromDockerFile;
+  }
+
   cancelBuildImage() {
     if (this.lastJobNumber > 0) {
       this.imageService.cancelConsole("process_image", this.lastJobNumber).then(() => {
@@ -187,54 +195,98 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     }
   }
 
-  async buildImage() {
+  uploadDockerFile(): Promise<boolean> {
+    if (this.selectFromImportFile) {
+      this.isUploadFileIng = true;
+      let formData: FormData = new FormData();
+      formData.append("upload_file", this.selectFromImportFile, this.selectFromImportFile.name);
+      formData.append("project_name", this.customerNewImage.project_name);
+      formData.append("image_name", this.customerNewImage.image_name);
+      formData.append("tag_name", this.customerNewImage.image_tag);
+      return this.imageService.uploadDockerFile(formData)
+        .then(() => {
+          this.isUploadFileIng = false;
+          return true;
+        })
+    }
+  }
+
+  buildImageByTemplate(): Promise<any> {
+    return this.imageService.buildImageFromTemp(this.customerNewImage);
+  }
+
+  async buildImageByDockerFile(): Promise<any> {
+    let fileInfo = {
+      imageName: this.customerNewImage.image_name,
+      tagName: this.customerNewImage.image_tag,
+      projectName: this.customerNewImage.project_name
+    };
+    if (this.isServerHaveDockerFile) {
+      return this.imageService.buildImageFromDockerFile(fileInfo);
+    } else {
+      if (await this.uploadDockerFile()) {
+        return this.imageService.buildImageFromDockerFile(fileInfo);
+      } else {
+        return Promise.reject(false);
+      }
+    }
+  }
+
+  buildImageResole() {
+    setTimeout(() => {
+      this.processImageSubscription = this.webSocketService
+        .connect(PROCESS_IMAGE_CONSOLE_URL + `&token=${this.appInitService.token}`)
+        .subscribe((obs: MessageEvent) => {
+          this.consoleText = <string>obs.data;
+          if (this.lastJobNumber == 0) {
+            this.imageService.getLastJobId("process_image").then(res => {
+              this.lastJobNumber = res;
+            });
+          }
+          let consoleTextArr: Array<string> = this.consoleText.split(/[\n]/g);
+          if (consoleTextArr.find(value => value.indexOf("Finished: SUCCESS") > -1)) {
+            this.isNeedAutoRefreshImageList = true;
+            this.autoRefreshTimesCount = 0;
+            this.processImageSubscription.unsubscribe();
+          }
+          if (consoleTextArr.find(value => value.indexOf("Finished: FAILURE") > -1)) {
+            this.isInBuildingImage = false;
+            this.isNeedAutoRefreshImageList = false;
+            this.newImageAlertType = "alert-danger";
+            this.newImageErrMessage = "IMAGE.CREATE_IMAGE_BUILD_IMAGE_FAILED";
+            this.isNewImageAlertOpen = true;
+            this.processImageSubscription.unsubscribe();
+          }
+        }, err => err, () => {
+          this.isOpen = false;
+        });
+    }, 10000);
+  }
+
+  buildImageReject(err: any) {
+    this.isInBuildingImage = false;
+    this.isNeedAutoRefreshImageList = false;
+    if (err && err instanceof Response && (err as Response).status == 401) {
+      this.isOpen = false;
+      this.messageService.dispatchError(err);
+    } else {
+      this.newImageAlertType = "alert-danger";
+      this.newImageErrMessage = "IMAGE.CREATE_IMAGE_BUILD_IMAGE_FAILED";
+      this.isNewImageAlertOpen = true;
+    }
+  }
+
+  buildImage() {
     this.isNewImageAlertOpen = false;
-    this.imageInBuilding = true;
+    this.isInBuildingImage = true;
     this.lastJobNumber = 0;
     this.consoleText = "Jenkins preparing...";
-    this.imageService.buildImage(this.customerNewImage)
-      .then(() => {
-        setTimeout(() => {
-          this.processImageSubscription = this.webSocketService
-            .connect(PROCESS_IMAGE_CONSOLE_URL + `&token=${this.appInitService.token}`)
-            .subscribe(obs => {
-              this.consoleText = <string>obs.data;
-              if (this.lastJobNumber == 0) {
-                this.imageService.getLastJobId("process_image").then(res => {
-                  this.lastJobNumber = res;
-                });
-              }
-              let consoleTextArr: Array<string> = this.consoleText.split(/[\n]/g);
-              if (consoleTextArr.find(value => value.indexOf("Finished: SUCCESS") > -1)) {
-                this.isNeedAutoRefreshImageList = true;
-                this.autoRefreshTimesCount = 0;
-                this.processImageSubscription.unsubscribe();
-              }
-              if (consoleTextArr.find(value => value.indexOf("Finished: FAILURE") > -1)) {
-                this.imageInBuilding = false;
-                this.isNeedAutoRefreshImageList = false;
-                this.newImageAlertType = "alert-danger";
-                this.newImageErrMessage = "IMAGE.CREATE_IMAGE_BUILD_IMAGE_FAILED";
-                this.isNewImageAlertOpen = true;
-                this.processImageSubscription.unsubscribe();
-              }
-            }, err => err, () => {
-              this.isOpen = false;
-            });
-        }, 10000);
-      })
-      .catch((err) => {
-        this.imageInBuilding = false;
-        this.isNeedAutoRefreshImageList = false;
-        if (err && err instanceof Response && (err as Response).status == 401) {
-          this.isOpen = false;
-          this.messageService.dispatchError(err);
-        } else {
-          this.newImageAlertType = "alert-danger";
-          this.newImageErrMessage = "IMAGE.CREATE_IMAGE_BUILD_IMAGE_FAILED";
-          this.isNewImageAlertOpen = true;
-        }
-      });
+    let buildImageFun: () => Promise<any> = this.imageBuildMethod == ImageBuildMethod.fromTemplate ?
+      this.buildImageByTemplate.bind(this) :
+      this.buildImageByDockerFile.bind(this);
+    buildImageFun()
+      .then(this.buildImageResole.bind(this))
+      .catch(this.buildImageReject.bind(this));
   }
 
   updateFileList(): Promise<boolean> {
@@ -271,8 +323,38 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     this.getDockerFilePreviewInfo();
   }
 
-  async uploadFile(event) {
-    let fileList: FileList = event.target.files;
+  selectDockerFile(event: Event) {
+    let fileList: FileList = (event.target as HTMLInputElement).files;
+    if (fileList.length > 0) {
+      this.selectFromImportFile = fileList[0];
+      let reader = new FileReader();
+      reader.onload = (ev: ProgressEvent) => {
+        this.consoleText = (ev.target as FileReader).result;
+      };
+      reader.readAsText(this.selectFromImportFile);
+    }
+  }
+
+  downloadDockerFile(): Promise<boolean> {
+    this.selectFromImportFile = null;
+    this.consoleText = "";
+    this.isServerHaveDockerFile = false;
+    if (this.customerNewImage.image_name && this.customerNewImage.image_tag) {
+      let downloadInfo = {
+        imageName: this.customerNewImage.image_name,
+        tagName: this.customerNewImage.image_tag,
+        projectName: this.customerNewImage.project_name
+      };
+      return this.imageService.downloadDockerFile(downloadInfo)
+        .then((res: Response) => {
+          this.consoleText = res.text();
+          this.isServerHaveDockerFile = true;
+        });
+    }
+  }
+
+  uploadFile(event: Event) {
+    let fileList: FileList = (event.target as HTMLInputElement).files;
     if (fileList.length > 0) {
       this.isNewImageAlertOpen = false;
       this.isUploadFileIng = true;
@@ -283,13 +365,14 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
       formData.append('image_name', this.customerNewImage.image_name);
       formData.append('tag_name', this.customerNewImage.image_tag);
       this.imageService.uploadFile(formData).then(() => {
-        event.target.value = "";
+        (event.target as HTMLInputElement).value = "";
         this.newImageAlertType = "alert-info";
         this.newImageErrMessage = "IMAGE.CREATE_IMAGE_UPLOAD_SUCCESS";
         this.isNewImageAlertOpen = true;
         this.isUploadFileIng = false;
         this.asyncGetDockerFilePreviewInfo();
       }).catch(err => {
+        this.isUploadFileIng = false;
         if (err && (err instanceof Response) && (err as Response).status == 401) {
           this.isOpen = false;
           this.messageService.dispatchError(err);
@@ -297,7 +380,6 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
           this.newImageAlertType = "alert-danger";
           this.newImageErrMessage = "IMAGE.CREATE_IMAGE_UPLOAD_FAILED";
           this.isNewImageAlertOpen = true;
-          this.isUploadFileIng = false;
         }
       });
     }
@@ -360,6 +442,14 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
           this.isNewImageAlertOpen = true;
         }
       });
+  }
+
+  resetBuildMethod(method: ImageBuildMethod) {
+    this.imageBuildMethod = method;
+    this.consoleText = "";
+    if (method == ImageBuildMethod.fromTemplate) {
+      this.selectFromImportFile = null;
+    }
   }
 
 }

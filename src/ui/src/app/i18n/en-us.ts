@@ -226,6 +226,12 @@ export const LANG_EN_US = {
     "CREATE_IMAGE_IMAGE_SELECTED":"The image selected.",
     "CREATE_IMAGE_CANCEL_WAIT":"Cancel wait",
     "CREATE_IMAGE_REMOVE_FILE_FAILED":"Remove file failed.",
+    "CREATE_IMAGE_SELECT_DOCKER_FILE":"Select docker-file for build image",
+    "CREATE_IMAGE_SELECTED_FILE_INFO":"Selected docker-file base info",
+    "CREATE_IMAGE_FILE_NAME":"File Name",
+    "CREATE_IMAGE_FILE_TYPE":"File Type",
+    "CREATE_IMAGE_FILE_SIZE":"File Size",
+    "CREATE_IMAGE_FILE_LAST_MODIFY":"Last Modify Date",
   },
   "SERVICE": {
     "ASK_TITLE":"Cancel",

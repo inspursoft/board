@@ -1,8 +1,9 @@
 import { Injectable } from "@angular/core";
 import { Http, RequestOptions, Headers, Response } from "@angular/http";
-import { BuildImageData, BuildImageDockerfileData, Image, ImageDetail } from "../image";
+import { BuildImageData, Image, ImageDetail } from "../image";
 import { AppInitService } from "../../app.init.service";
 import "rxjs/operator/toPromise";
+import { Project } from "app/project/project";
 
 @Injectable()
 export class ImageService {
@@ -25,6 +26,45 @@ export class ImageService {
       .then(resp => this.appInitService.chainResponse(resp))
       .catch(err => Promise.reject(err));
   }
+
+  getProjects(projectName?: string): Promise<Project[]> {
+    return this.http.get('/api/v1/projects', {
+      headers: this.defaultHeader,
+      params: {'project_name': projectName}
+    }).toPromise()
+      .then(resp => {
+        this.appInitService.chainResponse(resp);
+        return resp.json();
+      })
+      .catch(err => Promise.reject(err));
+  }
+
+  uploadDockerFile(formData: FormData): Promise<any> {
+    let headers = new Headers();
+    headers.append('token', this.appInitService.token);
+    let options = new RequestOptions({headers: headers});
+    console.log("准备上传文件");
+    return this.http.post(`/api/v1/services/dockerfile/upload`, formData, options).toPromise()
+      .then(resp => this.appInitService.chainResponse(resp))
+      .catch(err => Promise.reject(err));
+  }
+
+  downloadDockerFile(fileInfo: {imageName: string, tagName: string, projectName: string}): Promise<any> {
+    let headers = new Headers();
+    headers.append('token', this.appInitService.token);
+    let options = new RequestOptions({
+      headers: headers,
+      params: {
+        image_name: fileInfo.imageName,
+        tag_name: fileInfo.tagName,
+        project_name: fileInfo.projectName
+      }
+    });
+    return this.http.get(`/api/v1/services/dockerfile/download`, options).toPromise()
+      .then(resp => this.appInitService.chainResponse(resp))
+      .catch(err => Promise.reject(err));
+  }
+
 
   removeFile(formData: FormData): Promise<any> {
     let headers = new Headers();
@@ -62,12 +102,22 @@ export class ImageService {
       .catch(err => Promise.reject(err));
   }
 
-  buildImage(imageData: BuildImageData): Promise<any> {
+  buildImageFromTemp(imageData: BuildImageData): Promise<any> {
     return this.http.post(`/api/v1/images/building`, imageData, {
       headers: this.defaultHeader
     }).toPromise()
       .then(res => this.appInitService.chainResponse(res))
       .catch(err => Promise.reject(err));
+  }
+
+  buildImageFromDockerFile(fileInfo: {imageName: string, tagName: string, projectName: string}): Promise<any> {
+    console.log(fileInfo);
+    return Promise.resolve(false);
+    // return this.http.post(`/api/v1/images/building`, fileInfo, {
+    //   headers: this.defaultHeader
+    // }).toPromise()
+    //   .then(res => this.appInitService.chainResponse(res))
+    //   .catch(err => Promise.reject(err));
   }
 
   getFileList(formData: FormData): Promise<Array<{path: string, file_name: string, size: number}>> {

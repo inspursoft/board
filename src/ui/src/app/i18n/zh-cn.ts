@@ -226,6 +226,18 @@ export const LANG_ZH_CN = {
     "CREATE_IMAGE_IMAGE_SELECTED":"已经选择了该镜像。",
     "CREATE_IMAGE_CANCEL_WAIT":"取消等待",
     "CREATE_IMAGE_REMOVE_FILE_FAILED":"删除文件失败。",
+    "CREATE_IMAGE_SELECT_DOCKER_FILE":"选择创建镜像使用的docker-file文件",
+    "CREATE_IMAGE_SELECTED_FILE_INFO":"选择docker-file文件的基本信息",
+    "CREATE_IMAGE_FILE_NAME":"文件名",
+    "CREATE_IMAGE_FILE_TYPE":"文件类型",
+    "CREATE_IMAGE_FILE_SIZE":"文件大小",
+    "CREATE_IMAGE_FILE_LAST_MODIFY":"文件最后修改日期",
+    "CREATE_IMAGE_SELECT_PROJECT":"选择项目",
+    "CREATE_IMAGE_CREATE_PROJECT":"创建项目...",
+    "CREATE_IMAGE_SELECT_DES":"如果没有项目可供选择,需要新建一个项目。",
+    "CREATE_IMAGE_IMPORT_DEVOPES":"从DevOpes导入",
+    "CREATE_IMAGE_IMPORT_DOCKER_FILE":"从Docker-File导入",
+
   },
   "SERVICE": {
     "ASK_TITLE":"取消",
