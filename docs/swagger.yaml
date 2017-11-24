@@ -1975,6 +1975,43 @@ paths:
           description: Image name does not exist.
         500:
           description: Internal errors.
+  /v1/images/dockerfilebuilding:
+    post:
+      summary: Build a new image based on a dockerfile.
+      description: |
+        This endpoint is to build a new image based on a dockerfile.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: image_name
+          in: query
+          description: image name to specify an image.
+          required: true
+          type: string
+        - name: image_tag
+          in: query
+          type: string
+          required: true
+          description: The tag of this image.
+        - name: project_name
+          in: query
+          type: string
+          required: true
+          description: The project name that the image belongs to.   
+      tags:
+        - Products
+      responses:
+        200:
+          description: Build the image successfully.
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Internal errors.
   /v1/images/{image_name}:
     get:
       summary: Return all detailed info of this image.
