@@ -116,7 +116,7 @@ func CreateNamespace(projectName string) (bool, error) {
 	namespace.ObjectMeta.Name = projectName
 	_, err = n.Create(&namespace)
 	if err != nil {
-		logs.Info("Failed to creat namespace", projectName)
+		logs.Error("Failed to creat namespace", projectName)
 		return false, err
 	}
 	logs.Info(namespace)
