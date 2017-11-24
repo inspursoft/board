@@ -76,9 +76,9 @@ func main() {
 	utils.AddEnv("KUBE_MASTER_PORT")
 	utils.AddEnv("REGISTRY_IP")
 	utils.AddEnv("REGISTRY_PORT")
-	utils.AddEnv("AUTH_MODE", "db_auth")
 
 	utils.AddEnv("AUTH_MODE")
+
 	utils.AddEnv("LDAP_URL")
 	utils.AddEnv("LDAP_SEARCH_DN")
 	utils.AddEnv("LDAP_SEARCH_PWD")
@@ -88,7 +88,9 @@ func main() {
 	utils.AddEnv("LDAP_SCOPE")
 	utils.AddEnv("LDAP_TIMEOUT")
 
-        utils.SetConfig("REGISTRY_URL", "http://%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
+	utils.AddValue("IS_EXTERNAL_AUTH", (utils.GetStringValue("AUTH_MODE") != "db_auth"))
+
+	utils.SetConfig("REGISTRY_URL", "http://%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
 	utils.SetConfig("KUBE_MASTER_URL", "http://%s:%s", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
 	utils.SetConfig("KUBE_NODE_URL", "http://%s:%s/api/v1/nodes", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
 

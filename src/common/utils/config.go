@@ -30,7 +30,14 @@ func GetIntValue(name string) int {
 	if v, ok := configStorage[name].(int); ok {
 		return v
 	}
-	panic(fmt.Sprintf("Failed to get value for key: %s", name))
+	panic(fmt.Sprintf("Failed to get int value for key: %s", name))
+}
+
+func GetBoolValue(name string) bool {
+	if v, ok := configStorage[name].(bool); ok {
+		return v
+	}
+	panic(fmt.Sprintf("Failed to get bool value for key: %s", name))
 }
 
 func GetStringValue(name string, defaultValue ...string) string {

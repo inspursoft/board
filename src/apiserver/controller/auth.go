@@ -10,13 +10,17 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/astaxie/beego/logs"
 )
 
 type AuthController struct {
 	baseController
 }
 
-func (u *AuthController) Prepare() {}
+func (u *AuthController) Prepare() {
+	u.isExternalAuth = utils.GetBoolValue("IS_EXTERNAL_AUTH")
+}
 
 func (u *AuthController) SignInAction() {
 	var err error
@@ -69,6 +73,13 @@ func (u *AuthController) SignInAction() {
 
 func (u *AuthController) SignUpAction() {
 	var err error
+
+	if u.isExternalAuth {
+		logs.Debug("Current AUTH_MODE is external auth.")
+		u.customAbort(http.StatusMethodNotAllowed, "Current AUTH_MODE is external auth.")
+		return
+	}
+
 	reqData, err := u.resolveBody()
 	if err != nil {
 		u.internalError(err)
