@@ -9,6 +9,10 @@ import (
 	"path/filepath"
 
 	"github.com/astaxie/beego/logs"
+
+	modelK8s "k8s.io/client-go/pkg/api/v1"
+
+	"k8s.io/client-go/kubernetes"
 )
 
 var repoServeURL = utils.GetConfig("REPO_SERVE_URL")
@@ -97,5 +101,24 @@ func DeleteProject(projectID int64) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+	return true, nil
+}
+
+func CreateNamespace(projectName string) (bool, error) {
+	cli, err := K8sCliFactory("", kubeMasterURL(), "v1")
+	apiSet, err := kubernetes.NewForConfig(cli)
+	if err != nil {
+		return false, err
+	}
+
+	n := apiSet.Namespaces()
+	var namespace modelK8s.Namespace
+	namespace.ObjectMeta.Name = projectName
+	_, err = n.Create(&namespace)
+	if err != nil {
+		logs.Info("Failed to creat namespace", projectName)
+		return false, err
+	}
+	logs.Info(namespace)
 	return true, nil
 }
