@@ -13,13 +13,13 @@
                   [disabled]="isInBuildingImage"
                   [ngClass]="{'btn-primary':imageBuildMethod == 0}"
                   (click)="resetBuildMethod(0)">
-            From Template
+            {{"IMAGE.CREATE_IMAGE_FROM_TEMP" | translate}}
           </button>
           <button class="btn"
                   [disabled]="isInBuildingImage"
                   [ngClass]="{'btn-primary':imageBuildMethod == 1}"
                   (click)="resetBuildMethod(1)">
-            From LocalFile
+            {{"IMAGE.CREATE_IMAGE_FROM_FILE" | translate}}
           </button>
         </div>
         <ng-template [ngSwitchCase]="0">
@@ -127,19 +127,17 @@
                       [simpleFiled]="customerNewImage.image_tag"
                       (onCheck)="customerNewImage.image_tag = $event;downloadDockerFile()">
             </cs-input>
-            <div class="line-container" style="margin-top: 10px;">
+            <div class="line-container base-margin-top">
               <label>{{"IMAGE.CREATE_IMAGE_SELECT_DOCKER_FILE" | translate}}:</label>
             </div>
-            <div class="line-container" style="margin-top: 10px;">
+            <div class="line-container base-margin-top">
               ﻿<input type="file"
                       [disabled]="customerNewImage.image_name == '' || customerNewImage.image_tag == '' || isInBuildingImage || isUploadFileIng"
                       (change)="selectDockerFile($event)"
                       accept="*.*">
               <span *ngIf="isUploadFileIng" class="spinner spinner-sm"></span>
             </div>
-            <div class="line-container"
-                 *ngIf="selectFromImportFile"
-                 style="margin-top: 10px; display: flex;flex-direction: column">
+            <div *ngIf="selectFromImportFile" class="line-container file-info-container">
               <label>{{"IMAGE.CREATE_IMAGE_SELECTED_FILE_INFO" | translate}}:</label>
               <table class="table table-vertical">
                 <tbody>
@@ -167,7 +165,7 @@
       </div>
       <div class="console-container">
         <textarea title="" id="areaStatus" class="area-status" readonly>{{consoleText}}</textarea>
-        <div style="height: 50px;">
+        <div class="build-btn-container">
           <button class="btn btn-primary default-primary"
                   [disabled]="isBuildDisabled"
                   (click)="buildImage()">

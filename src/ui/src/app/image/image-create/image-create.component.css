@@ -10,6 +10,10 @@ div.modal-body-container {
   margin-left: 10px;
 }
 
+div.base-margin-top {
+  margin-top: 10px;
+}
+
 .dynamic-icon {
   color: white;
   background: green;
@@ -108,4 +112,14 @@ div.file-list {
 span.file-title {
   color: blue;
   font-style: italic;
+}
+
+div.build-btn-container {
+  height: 50px;
+}
+
+div.file-info-container {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
 }

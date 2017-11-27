@@ -4,6 +4,7 @@
 
 import { Pipe, PipeTransform } from "@angular/core"
 const ARR_SIZE_UNIT: Array<string> = ["B", "KB", "MB", "GB", "TB"];
+
 @Pipe({name: "size"})
 export class SizePipe implements PipeTransform {
   transform(origin: number): string {

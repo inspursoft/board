@@ -237,7 +237,8 @@ export const LANG_ZH_CN = {
     "CREATE_IMAGE_SELECT_DES":"如果没有项目可供选择,需要新建一个项目。",
     "CREATE_IMAGE_IMPORT_DEVOPES":"从DevOpes导入",
     "CREATE_IMAGE_IMPORT_DOCKER_FILE":"从Docker-File导入",
-
+    "CREATE_IMAGE_FROM_TEMP":"来自模版",
+    "CREATE_IMAGE_FROM_FILE":"来自文件",
   },
   "SERVICE": {
     "ASK_TITLE":"取消",
