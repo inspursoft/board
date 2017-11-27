@@ -72,7 +72,7 @@ func (s *ConfigServiceStep) SelectProject(projectID int64) *ConfigServiceStep {
 
 func (s *ConfigServiceStep) GetSelectedProject() interface{} {
 	return struct {
-		ProjectID int64
+		ProjectID int64 `json:"project_id"`
 	}{
 		ProjectID: s.ProjectID,
 	}
@@ -85,7 +85,7 @@ func (s *ConfigServiceStep) SelectImageList(imageList []model.ImageIndex) *Confi
 
 func (s *ConfigServiceStep) GetSelectedImageList() interface{} {
 	return struct {
-		ImageList []model.ImageIndex
+		ImageList []model.ImageIndex `json:"image_list"`
 	}{
 		ImageList: s.ImageList,
 	}
@@ -98,7 +98,7 @@ func (s *ConfigServiceStep) ConfigContainerList(containerList []model.Container)
 
 func (s *ConfigServiceStep) GetConfigContainerList() interface{} {
 	return struct {
-		ContainerList []model.Container
+		ContainerList []model.Container `json:"container_list"`
 	}{
 		ContainerList: s.ContainerList,
 	}
@@ -113,9 +113,9 @@ func (s *ConfigServiceStep) ConfigExternalService(serviceName string, instance i
 
 func (s *ConfigServiceStep) GetConfigExternalService() interface{} {
 	return struct {
-		ServiceName         string
-		Instance            int
-		ExternalServiceList []model.ExternalService
+		ServiceName         string                  `json:"service_name"`
+		Instance            int                     `json:"instance"`
+		ExternalServiceList []model.ExternalService `json:"external_service_list"`
 	}{
 		ServiceName:         s.ServiceName,
 		Instance:            s.Instance,
