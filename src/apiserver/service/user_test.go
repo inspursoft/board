@@ -1,7 +1,6 @@
 package service
 
 import (
-	"git/inspursoft/board/src/apiserver/service/auth"
 	"git/inspursoft/board/src/common/model"
 	"os"
 	"testing"
@@ -47,15 +46,6 @@ func TestMain(m *testing.M) {
 	connectToDB()
 	cleanUp(user.Username)
 	os.Exit(m.Run())
-}
-
-func TestSignIn(t *testing.T) {
-	assert := assert.New(t)
-	currentAuth, err := auth.GetAuth("db_auth")
-	u, err := (*currentAuth).DoAuth("admin", "123456a?")
-	assert.Nil(err, "Error occurred while calling SignIn method.")
-	assert.NotNil(u, "User is nil.")
-	assert.Equal("admin", u.Username, "Signed in failed.")
 }
 
 func TestGetUserByID(t *testing.T) {
