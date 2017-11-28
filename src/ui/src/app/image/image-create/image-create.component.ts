@@ -349,6 +349,8 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
         .then((res: Response) => {
           this.consoleText = res.text();
           this.isServerHaveDockerFile = true;
+        })
+        .catch(() => {//need't handle this error
         });
     }
   }
