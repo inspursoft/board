@@ -127,12 +127,17 @@ func GetK8sData(resource interface{}, url string) ([]byte, error) {
 	return body, nil
 }
 
+// setNFSVol is the function of setting a PVC to bound PV storage with nfs.
+// The name is name of PVC, path is the path of nfs, cap is the capacity of PV and PVC
 func SetNFSVol(name string, server, path string, cap int64) error {
 	// common date pv and pvc
 	var (
+		// initialize date map
 		storage v1.ResourceList = make(v1.ResourceList)
-		q       resource.Quantity
-		mode    []v1.PersistentVolumeAccessMode = []v1.PersistentVolumeAccessMode{v1.ReadWriteMany}
+		// q is capacity of storage
+		q resource.Quantity
+		// storage mode. It can be set "ReadWriteOnce", "ReadOnlyMany" and "ReadWriteMany"
+		mode []v1.PersistentVolumeAccessMode = []v1.PersistentVolumeAccessMode{v1.ReadWriteMany}
 	)
 	// init common date
 	q.Set(cap)
@@ -161,6 +166,7 @@ func SetNFSVol(name string, server, path string, cap int64) error {
 	pv.Spec.Capacity = storage
 
 	info, err := pvSet.Create(&pv)
+	// set info logs with creating pv
 	glog.Infof("%s", info)
 	if err != nil {
 		return err
@@ -174,7 +180,7 @@ func SetNFSVol(name string, server, path string, cap int64) error {
 	pvc.Spec.AccessModes = mode
 
 	pvc.Spec.Resources.Requests = storage
-
+	// set info logs with creating pvc
 	infoP, err := pvcSet.Create(&pvc)
 	glog.Infof("%s", infoP)
 	if err != nil {
