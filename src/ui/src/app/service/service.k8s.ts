@@ -5,13 +5,8 @@ import { Service } from './service';
 import { AppInitService } from "../app.init.service";
 import { Http, Headers, RequestOptions, Response } from "@angular/http";
 import { Project } from "../project/project";
-import { Image, ImageDetail } from "../image/image";
-import {
-  FactoryByPropertyName,
-  ImageDockerfile,
-  ServiceStep2NewImageType,
-  DeploymentServiceData,
-} from "./service-step.component";
+import { BuildImageDockerfileData, Image, ImageDetail } from "../image/image";
+import { FactoryByPropertyName, DeploymentServiceData } from "./service-step.component";
 
 @Injectable()
 export class K8sService {
@@ -62,26 +57,6 @@ export class K8sService {
         }
       }
     });
-  }
-
-  buildImage(imageData: ServiceStep2NewImageType): Promise<any> {
-    return this.http.post(`/api/v1/images/building`, imageData, {
-      headers: this.defaultHeader
-    }).toPromise()
-      .then(resp => this.appInitService.chainResponse(resp))
-      .catch(err => Promise.reject(err));
-  }
-
-  getContainerDefaultInfo(image_name: string, image_tag: string, project_name: string): Promise<ImageDockerfile> {
-    return this.http.get(`/api/v1/images/dockerfile`, {
-      headers: this.defaultHeader,
-      params: {image_name: image_name, project_name: project_name, image_tag: image_tag}
-    }).toPromise()
-      .then(res => {
-        this.appInitService.chainResponse(res);
-        return res.json();
-      })
-      .catch(err => Promise.reject(err));
   }
 
   serviceDeployment(postData: DeploymentServiceData): Promise<any> {
@@ -136,53 +111,22 @@ export class K8sService {
     }
   }
 
+  getContainerDefaultInfo(image_name: string, image_tag: string, project_name: string): Promise<BuildImageDockerfileData> {
+    return this.http.get(`/api/v1/images/dockerfile`, {
+      headers: this.defaultHeader,
+      params: {image_name: image_name, project_name: project_name, image_tag: image_tag}
+    }).toPromise()
+      .then((res: Response) => {
+        this.appInitService.chainResponse(res);
+        return res.json();
+      })
+      .catch(err => Promise.reject(err));
+  }
   setServiceConfig(config: DeploymentServiceData): Promise<any> {
     let serviceId = config.projectinfo.service_id;
     return this.http.put(`/api/v1/services/${serviceId}/serviceconfig`, config, {headers: this.defaultHeader})
       .toPromise()
       .then((res: Response) => this.appInitService.chainResponse(res))
-      .catch(err => Promise.reject(err));
-  }
-
-
-  getDockerFilePreview(imageData: ServiceStep2NewImageType): Promise<string> {
-    return this.http.post(`/api/v1/images/preview`, imageData, {
-      headers: this.defaultHeader
-    }).toPromise()
-      .then(res => {
-        this.appInitService.chainResponse(res);
-        return res.text();
-      })
-      .catch(err => Promise.reject(err));
-  }
-
-  getFileList(formData: FormData): Promise<Array<{path: string, file_name: string, size: number}>> {
-    let headers = new Headers();
-    headers.append('token', this.appInitService.token);
-    let options = new RequestOptions({headers: headers});
-    return this.http.post(`/api/v1/files/list`, formData, options).toPromise()
-      .then(resp => {
-        this.appInitService.chainResponse(resp);
-        return resp.json();
-      })
-      .catch(err => Promise.reject(err));
-  }
-
-  removeFile(formData: FormData): Promise<any> {
-    let headers = new Headers();
-    headers.append('token', this.appInitService.token);
-    let options = new RequestOptions({headers: headers});
-    return this.http.post(`/api/v1/files/remove`, formData, options).toPromise()
-      .then(resp => this.appInitService.chainResponse(resp))
-      .catch(err => Promise.reject(err));
-  }
-
-  uploadFile(formData: FormData): Promise<any> {
-    let headers = new Headers();
-    headers.append('token', this.appInitService.token);
-    let options = new RequestOptions({headers: headers});
-    return this.http.post(`/api/v1/files/upload`, formData, options).toPromise()
-      .then(resp => this.appInitService.chainResponse(resp))
       .catch(err => Promise.reject(err));
   }
 
@@ -311,33 +255,6 @@ export class K8sService {
         this.appInitService.chainResponse(res);
         return res.text();
       })
-      .catch(err => Promise.reject(err));
-  }
-
-  getLastJobId(jobName: string): Promise<number> {
-    return this.http
-      .get(`/api/v1/jenkins-job/lastbuildnumber`, {
-        headers: this.defaultHeader,
-        params: {"job_name": jobName}
-      })
-      .toPromise()
-      .then((res: Response) => {
-        this.appInitService.chainResponse(res);
-        return Number(res.text());
-      })
-      .catch(err => Promise.reject(err));
-  }
-
-  cancelConsole(jobName: string, buildSerialId: number): Promise<any> {
-    return this.http
-      .get(`/api/v1/jenkins-job/stop`, {
-        headers: this.defaultHeader,
-        params: {
-          "job_name": jobName,
-          "build_serial_id": buildSerialId
-        }
-      }).toPromise()
-      .then((res: Response) => this.appInitService.chainResponse(res))
       .catch(err => Promise.reject(err));
   }
 

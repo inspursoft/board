@@ -1,6 +1,6 @@
 import { Component, OnInit, AfterContentChecked, ViewChildren, QueryList, Injector } from '@angular/core';
 import { Container, ContainerPort, ServicePort } from '../service-step.component';
-import { CsInputComponent } from "../cs-input/cs-input.component";
+import { CsInputComponent } from "../../shared/cs-components-library/cs-input/cs-input.component";
 import { ServiceStepBase } from "../service-step";
 
 @Component({

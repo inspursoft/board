@@ -9,3 +9,50 @@
   color: blue;
 }
 
+div.image-list-container {
+  display: flex;
+  flex-direction: column;
+}
+
+div.build-image-container {
+  display: flex;
+  width: 100%;
+  min-height: 400px; /*fixed height*/
+  flex-direction: column;
+}
+
+span.custom-margin {
+  margin-left: 20px;
+  margin-top: 30px;
+}
+
+cs-dropdown.custom-margin {
+  margin-left: 20px;
+  margin-top: 30px;
+}
+
+button.build-image {
+  min-width: 100px;
+  align-self: flex-end;
+}
+
+button.cancel-build {
+  max-width: 100px;
+}
+
+div.import-method-container {
+  margin-top: 100px;
+  margin-bottom: 50px;
+}
+
+label.disabled{
+  color: silver;
+}
+
+label.disabled:hover{
+  cursor: not-allowed;
+}
+
+label.enable:hover{
+  cursor: pointer;
+}

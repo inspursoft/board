@@ -1,10 +1,11 @@
 import { Component, OnInit, AfterContentChecked, QueryList, ViewChildren, Injector } from '@angular/core';
-import { ImageDockerfile, Container, ServiceContainerList, DeploymentServiceData } from '../service-step.component';
-import { EnvType } from "../environment-value/environment-value.component";
-import { CsInputComponent } from "../cs-input/cs-input.component";
-import { CsInputArrayComponent } from "../cs-input-array/cs-input-array.component";
+import { Container, ServiceContainerList } from '../service-step.component';
+import { EnvType } from "../../shared/environment-value/environment-value.component";
+import { CsInputComponent } from "../../shared/cs-components-library/cs-input/cs-input.component";
+import { CsInputArrayComponent } from "../../shared/cs-components-library/cs-input-array/cs-input-array.component";
 import { VolumeOutPut } from "./volume-mounts/volume-mounts.component";
 import { ServiceStepBase } from "../service-step";
+import { BuildImageDockerfileData } from "../../image/image";
 
 @Component({
   templateUrl: './edit-container.component.html',
@@ -72,7 +73,7 @@ export class EditContainerComponent extends ServiceStepBase implements OnInit, A
     let firstIndex = imageName.indexOf("/");
     let projectName = firstIndex > -1 ? imageName.slice(0, firstIndex) : "";
     this.k8sService.getContainerDefaultInfo(imageName, imageTag, projectName)
-      .then((res: ImageDockerfile) => {
+      .then((res: BuildImageDockerfileData) => {
         this.step3TypeStatus.set(container, true);
         if (res.image_cmd && isNew) {
           container.command.push(res.image_cmd);//copy cmd
