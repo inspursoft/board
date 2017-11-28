@@ -1145,7 +1145,41 @@ paths:
           description: User need to log in first.
         500:
           description: Internal errors.    
-     
+  /v1/services/selectservices:
+    get:
+      summary: Return the available service list to be selected.
+      description: |
+        This endpoint returns the available service list to be selected.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_name
+          in: query
+          description: Service name for filtering results.
+          required: true
+          type: string
+        - name: project_name 
+          in: query
+          description: project name for filtering results.
+          required: true
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all selectable services.
+          schema:
+            type: array
+            items:
+              type: string
+              description: The service name.  
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.       
   /v1/services/{service_id}/serviceconfig:
     get:  
       summary: Get service configuration data.
