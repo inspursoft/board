@@ -1,5 +1,11 @@
 import { Component, OnInit, AfterContentChecked, QueryList, ViewChildren, Injector } from '@angular/core';
-import { Container, ServiceContainerList } from '../service-step.component';
+import {
+  PHASE_CONFIG_CONTAINERS,
+  Container,
+  ServiceStepPhase,
+  UIServiceStep3,
+  EnvStruct
+} from '../service-step.component';
 import { EnvType } from "../../shared/environment-value/environment-value.component";
 import { CsInputComponent } from "../../shared/cs-components-library/cs-input/cs-input.component";
 import { CsInputArrayComponent } from "../../shared/cs-components-library/cs-input-array/cs-input-array.component";
@@ -21,22 +27,20 @@ export class EditContainerComponent extends ServiceStepBase implements OnInit, A
   showEnvironmentValue = false;
   isInputComponentsValid = false;
   fixedEnvKeys: Array<string>;
-  containerPort: Map<string, Array<number>>;
   fixedContainerPort: Map<string, Array<number>>;
   curContainerIndex: number;
 
   constructor(protected injector: Injector) {
     super(injector);
     this.step3TypeStatus = new Map<Container, boolean>();
-    this.containerPort = new Map<string, Array<number>>();
     this.fixedEnvKeys = Array<string>();
     this.fixedContainerPort = new Map<string, Array<number>>();
   }
 
   ngOnInit() {
-    this.k8sService.getServiceConfig(this.newServiceId, this.outputData).then(res => {
-      this.outputData = res;
-      this.containerList.forEach((container: Container) => {
+    this.k8sService.getServiceConfig(this.stepPhase).then(res => {
+      this.uiBaseData = res;
+      this.uiData.containerList.forEach((container: Container) => {
         this.step3TypeStatus.set(container, false);
         this.setDefaultContainerInfo(container);
       });
@@ -61,28 +65,30 @@ export class EditContainerComponent extends ServiceStepBase implements OnInit, A
     }
   }
 
+  get stepPhase(): ServiceStepPhase {
+    return PHASE_CONFIG_CONTAINERS;
+  }
+
+  get uiData(): UIServiceStep3 {
+    return this.uiBaseData as UIServiceStep3;
+  }
+
   setDefaultContainerInfo(container: Container): void {
     let isNew = !this.isBack;
-    let ports: Array<number> = Array();
-    container.ports.forEach(value => {
-      ports.push(value.containerPort);
-    });
-    this.containerPort.set(container.name, ports);
-    let imageName: string = container.image.split(":")[0];
-    let imageTag: string = container.image.split(":")[1];
-    let firstIndex = imageName.indexOf("/");
-    let projectName = firstIndex > -1 ? imageName.slice(0, firstIndex) : "";
-    this.k8sService.getContainerDefaultInfo(imageName, imageTag, projectName)
+    this.k8sService.getContainerDefaultInfo(container.image.image_name, container.image.image_tag, container.project_name)
       .then((res: BuildImageDockerfileData) => {
         this.step3TypeStatus.set(container, true);
         if (res.image_cmd && isNew) {
-          container.command.push(res.image_cmd);//copy cmd
+          container.command = res.image_cmd;//copy cmd
         }
         if (res.image_env) {
           res.image_env.forEach(value => {//copy env
             this.fixedEnvKeys.push(value.dockerfile_envname);
             if (isNew) {
-              container.env.push({name: value.dockerfile_envname, value: value.dockerfile_envvalue});
+              let env = new EnvStruct();
+              env.dockerfile_envname = value.dockerfile_envname;
+              env.dockerfile_envvalue = value.dockerfile_envvalue;
+              container.env.push(env);
             }
           });
         }
@@ -91,7 +97,7 @@ export class EditContainerComponent extends ServiceStepBase implements OnInit, A
           res.image_expose.forEach(value => {//copy port
             let port: number = Number(value).valueOf();
             fixedPorts.push(port);
-            this.containerPort.get(container.name).push(port);
+            container.container_port.push(port);
           });
           this.fixedContainerPort.set(container.name, fixedPorts);
         }
@@ -100,83 +106,60 @@ export class EditContainerComponent extends ServiceStepBase implements OnInit, A
   }
 
   get isCanNextStep(): boolean {
-    if (this.outputData) {
-      let containerList: ServiceContainerList = this.outputData.deployment_yaml.spec.template.spec.containers;
-      return containerList.length > 0 && this.isInputComponentsValid;
-    } else {
-      return false;
-    }
+    return this.uiData.containerList.length > 0 && this.isInputComponentsValid;
   }
 
   getVolumesDescription(container: Container): string {
-    let volumesArr = container.volumeMounts;
-    let result: string = "";
-    volumesArr.forEach(value => {
-      let storageServer = value.name == "" ? "" : value.name.concat(":");
-      result += `${value.mountPath}:${storageServer}${value.mountPath}`
-    });
+    let volume = container.volume_mount;
+    let storageServer = volume.target_storage_service == "" ? "" : volume.target_storage_service.concat(":");
+    let result = `${volume.container_path}:${storageServer}${volume.target_path}`;
     return result == ":" ? "" : result;
   }
 
   getEnvsDescription(container: Container): string {
     let envsArr = container.env;
     let result: string = "";
-    envsArr.forEach(value => {
-      result += `${value.name}=${value.value};`
+    envsArr.forEach((value: EnvStruct) => {
+      result += `${value.dockerfile_envname}=${value.dockerfile_envvalue};`
     });
     return result;
   }
 
   getDefaultEnvsData(index: number) {
     let result = Array<EnvType>();
-    this.containerList[index].env.forEach(value => {
-      result.push(new EnvType(value.name, value.value))
+    this.uiData.containerList[index].env.forEach((value: EnvStruct) => {
+      result.push(new EnvType(value.dockerfile_envname, value.dockerfile_envvalue))
     });
     return result;
   }
 
   setEnvironment(index: number, envsData: Array<EnvType>) {
-    let envsArray = this.containerList[index].env;
+    let envsArray = this.uiData.containerList[index].env;
     envsArray.splice(0, envsArray.length);
     envsData.forEach((value: EnvType) => {
-      envsArray.push({name: value.envName, value: value.envValue})
+      let env = new EnvStruct();
+      env.dockerfile_envname = value.envName;
+      env.dockerfile_envvalue = value.envValue;
+      envsArray.push(env);
     });
   }
 
   setVolumeMount(data: VolumeOutPut, index: number) {
-    let volumeArr = this.containerList[index].volumeMounts;
-    if (volumeArr.length == 0) {
-      volumeArr.push({
-        name: data.out_name,
-        mountPath: data.out_mountPath,
-        ui_nfs_server: data.out_medium,
-        ui_nfs_path: data.out_path
-      })
-    } else {
-      volumeArr[0].name = data.out_name;
-      volumeArr[0].mountPath = data.out_mountPath;
-      volumeArr[0].ui_nfs_server = data.out_medium;
-      volumeArr[0].ui_nfs_path = data.out_path;
-    }
+    let volume = this.uiData.containerList[index].volume_mount;
+    volume.target_storage_service = data.out_medium;
+    volume.target_path = data.out_path;
+    volume.container_path = data.out_mountPath;
+    volume.volume_name = data.out_name;
   }
 
   getVolumeMountData(index: number): VolumeOutPut {
-    let volumeArr = this.containerList[index].volumeMounts;
-    if (volumeArr.length == 0) {
-      return {
-        out_name: "",
-        out_mountPath: "",
-        out_path: "",
-        out_medium: ""
-      };
-    } else {
-      return {
-        out_name: volumeArr[0].name,
-        out_mountPath: volumeArr[0].mountPath,
-        out_path: volumeArr[0].ui_nfs_path,
-        out_medium: volumeArr[0].ui_nfs_server
-      };
-    }
+    let volume = this.uiData.containerList[index].volume_mount;
+    return {
+      out_name: volume.volume_name,
+      out_mountPath: volume.container_path,
+      out_path: volume.target_path,
+      out_medium: volume.target_storage_service
+    };
   }
 
   toggleShowStatus(container: Container): void {
@@ -190,26 +173,14 @@ export class EditContainerComponent extends ServiceStepBase implements OnInit, A
     }
   }
 
-  setContainerPorts(): void {
-    this.containerList.forEach((container: Container) => {
-      container.ports.splice(0,container.ports.length);
-      let ports = this.containerPort.get(container.name);
-      ports.forEach(port => {
-        container.ports.push({containerPort: port});
-      });
-    });
-  }
-
   backStep(): void {
-    this.setContainerPorts();
-    this.k8sService.setServiceConfig(this.outputData).then(res => {
+    this.k8sService.setServiceConfig(this.uiData.uiToServer()).then(res => {
       this.k8sService.stepSource.next({index: 2, isBack: true});
     });
   }
 
   forward(): void {
-    this.setContainerPorts();
-    this.k8sService.setServiceConfig(this.outputData).then(res => {
+    this.k8sService.setServiceConfig(this.uiData.uiToServer()).then(res => {
       this.k8sService.stepSource.next({index: 4, isBack: false});
     });
   }

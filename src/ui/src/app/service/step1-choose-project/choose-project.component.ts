@@ -1,7 +1,6 @@
 import { Component, Injector, OnInit } from '@angular/core';
-import { DeploymentServiceData } from '../service-step.component';
+import { PHASE_SELECT_PROJECT, ServiceStepPhase, UIServiceStep1 } from '../service-step.component';
 import { Project } from "../../project/project";
-import { Router } from "@angular/router";
 import { ServiceStepBase } from "../service-step";
 
 @Component({
@@ -17,7 +16,6 @@ export class ChooseProjectComponent extends ServiceStepBase implements OnInit {
   }
 
   ngOnInit() {
-    this.outputData = new DeploymentServiceData();
     this.k8sService.getProjects()
       .then(res => {
         let createNewProject: Project = new Project();
@@ -32,17 +30,17 @@ export class ChooseProjectComponent extends ServiceStepBase implements OnInit {
       .catch(err => this.messageService.dispatchError(err));
   }
 
+  get stepPhase(): ServiceStepPhase {
+    return PHASE_SELECT_PROJECT;
+  }
+
+  get uiData():UIServiceStep1{
+    return this.uiBaseData as UIServiceStep1;
+  }
+
   forward() {
-    this.k8sService.getServiceID({
-      project_name: this.outputData.projectinfo.project_name,
-      project_id: this.outputData.projectinfo.project_id
-    }).then(res => {
-      let serviceId = Number(res).valueOf();
-      this.newServiceId = serviceId;
-      this.outputData.projectinfo.service_id = serviceId;
-      this.k8sService.setServiceConfig(this.outputData).then((isCompleted) => {
-        this.k8sService.stepSource.next({index: 2, isBack: false});
-      });
+    this.k8sService.setServiceConfig(this.uiData.uiToServer()).then((isCompleted) => {
+      this.k8sService.stepSource.next({index: 2, isBack: false});
     }).catch(err => this.messageService.dispatchError(err));
   }
 
@@ -51,7 +49,6 @@ export class ChooseProjectComponent extends ServiceStepBase implements OnInit {
   }
 
   changeSelectProject(project: Project) {
-    this.outputData.projectinfo.project_name = project.project_name;
-    this.outputData.projectinfo.project_id = project.project_id;
+    this.uiData.projectId = project.project_id;
   }
 }

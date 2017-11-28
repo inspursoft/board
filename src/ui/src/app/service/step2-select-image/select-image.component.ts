@@ -1,5 +1,12 @@
 import { Component, OnInit, Injector } from '@angular/core';
-import { Container } from '../service-step.component';
+import {
+  PHASE_SELECT_IMAGES,
+  PHASE_SELECT_PROJECT,
+  ImageIndex,
+  ServiceStepPhase,
+  UIServiceStep1,
+  UIServiceStep2
+} from '../service-step.component';
 import { Image, ImageDetail } from "../../image/image";
 import { Message } from "../../shared/message-service/message";
 import { ServiceStepBase } from "../service-step";
@@ -16,6 +23,7 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
   imageDetailSelectList: Map<string, ImageDetail>;
   imageTagNotReadyList: Map<string, boolean>;
   newImageIndex: number;
+  uiPreData: UIServiceStep1 = new UIServiceStep1();//only for build custom image:projectName.projectID;
 
   constructor(protected injector: Injector) {
     super(injector);
@@ -26,22 +34,30 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
   }
 
   ngOnInit() {
-    this.k8sService.getServiceConfig(this.newServiceId, this.outputData).then(res => {
-      this.outputData = res;
-      this.containerList.forEach((container: Container) => {
-        let index = container.image.indexOf(":");
-        let imageName = container.image.slice(0, index);
-        let imageTag = container.image.slice(index + 1);
-        this.imageSelectList.push({image_name: imageName, image_comment: "", image_deleted: 0});
-        this.setImageDetailList(imageName, imageTag);
-      })
+    this.k8sService.getServiceConfig(PHASE_SELECT_PROJECT).then(res => {
+      this.uiPreData = res as UIServiceStep1;
     });
+    this.k8sService.getServiceConfig(this.stepPhase).then(res => {
+      this.uiBaseData = res;
+      this.uiData.imageList.forEach((image: ImageIndex) => {
+        this.imageSelectList.push({image_name: image.image_name, image_comment: "", image_deleted: 0});
+        this.setImageDetailList(image.image_name, image.image_tag);
+      })
+    }).catch(err => this.messageService.dispatchError(err));
     this.k8sService.getImages("", 0, 0)
       .then(res => {
         this.imageSourceList = res;
         this.unshiftCustomerCreateImage();
       })
       .catch(err => this.messageService.dispatchError(err));
+  }
+
+  get stepPhase(): ServiceStepPhase {
+    return PHASE_SELECT_IMAGES;
+  }
+
+  get uiData(): UIServiceStep2 {
+    return this.uiBaseData as UIServiceStep2;
   }
 
   get isCanNextStep(): boolean {
@@ -56,11 +72,11 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
   }
 
   get projectName(): string {
-    return this.outputData.projectinfo.project_name;
+    return this.uiPreData.projectName;
   }
 
   get projectId(): number {
-    return this.outputData.projectinfo.project_id;
+    return this.uiPreData.projectId;
   }
 
   onBuildImageCompleted(imageName: string) {
@@ -144,19 +160,17 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
 
   forward(): void {
     this.imageSelectList.forEach((image: Image) => {
-      let outValue = this.containerList.find((container: Container) => {
-        return container.image.startsWith(image.image_name);
-      });
-      if (!outValue && image.image_name != "SERVICE.STEP_2_SELECT_IMAGE") {
-        let newContainer = new Container();
-        let firstIndex = image.image_name.indexOf("/");
-        let imageTag = this.imageDetailSelectList.get(image.image_name).image_tag;
-        newContainer.name = image.image_name.slice(firstIndex + 1, image.image_name.length);
-        newContainer.image = image.image_name + ":" + imageTag;
-        this.containerList.push(newContainer);
+      let selectedImage = this.uiData.imageList.find((imageIndex: ImageIndex) => imageIndex.image_name == image.image_name);
+      if (selectedImage) {
+        selectedImage.image_tag = this.imageDetailSelectList.get(selectedImage.image_name).image_tag
+      } else if (image.image_name != "SERVICE.STEP_2_SELECT_IMAGE") {
+        let newImageIndex = new ImageIndex();
+        newImageIndex.image_name = image.image_name;
+        newImageIndex.image_tag = this.imageDetailSelectList.get(image.image_name).image_tag;
+        this.uiData.imageList.push(newImageIndex);
       }
     });
-    this.k8sService.setServiceConfig(this.outputData).then(res => {
+    this.k8sService.setServiceConfig(this.uiData.uiToServer()).then(res => {
       this.k8sService.stepSource.next({index: 3, isBack: false});
     });
   }
