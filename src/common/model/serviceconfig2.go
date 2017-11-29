@@ -23,9 +23,10 @@ type ProjectInfo struct {
 
 type ConfigServiceStep struct {
 	ProjectID           int64             `json:"project_id"`
+	ProjectName         string            `json:"project_name"`
 	ServiceID           int64             `json:"service_id"`
-	ImageList           []ImageIndex      `json:"image_list"`
 	ServiceName         string            `json:"service_name"`
+	ImageList           []ImageIndex      `json:"image_list"`
 	Instance            int               `json:"instance"`
 	ContainerList       []Container       `json:"container_list"`
 	ExternalServiceList []ExternalService `json:"external_service_list"`

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"git/inspursoft/board/src/apiserver/service"
-	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"net/http"
 	"strings"
@@ -65,16 +64,19 @@ func DeleteConfigServiceStep(key string) error {
 	return nil
 }
 
-func (s *ConfigServiceStep) SelectProject(projectID int64) *ConfigServiceStep {
+func (s *ConfigServiceStep) SelectProject(projectID int64, projectName string) *ConfigServiceStep {
 	s.ProjectID = projectID
+	s.ProjectName = projectName
 	return s
 }
 
 func (s *ConfigServiceStep) GetSelectedProject() interface{} {
 	return struct {
-		ProjectID int64
+		ProjectID   int64  `json:"project_id"`
+		ProjectName string `json:"project_name"`
 	}{
-		ProjectID: s.ProjectID,
+		ProjectID:   s.ProjectID,
+		ProjectName: s.ProjectName,
 	}
 }
 
@@ -85,9 +87,13 @@ func (s *ConfigServiceStep) SelectImageList(imageList []model.ImageIndex) *Confi
 
 func (s *ConfigServiceStep) GetSelectedImageList() interface{} {
 	return struct {
-		ImageList []model.ImageIndex
+		ProjectID   int64              `json:"project_id"`
+		ProjectName string             `json:"project_name"`
+		ImageList   []model.ImageIndex `json:"image_list"`
 	}{
-		ImageList: s.ImageList,
+		ProjectID:   s.ProjectID,
+		ProjectName: s.ProjectName,
+		ImageList:   s.ImageList,
 	}
 }
 
@@ -97,8 +103,16 @@ func (s *ConfigServiceStep) ConfigContainerList(containerList []model.Container)
 }
 
 func (s *ConfigServiceStep) GetConfigContainerList() interface{} {
+	if len(s.ContainerList) < 1 {
+		for _, image := range s.ImageList {
+			fromIndex := strings.LastIndex(image.ImageName, "/")
+			image.ProjectName = image.ImageName[:fromIndex]
+			s.ContainerList = append(s.ContainerList, model.Container{Name: image.ImageName[fromIndex+1:], Image: image})
+		}
+	}
+
 	return struct {
-		ContainerList []model.Container
+		ContainerList []model.Container `json:"container_list"`
 	}{
 		ContainerList: s.ContainerList,
 	}
@@ -113,9 +127,9 @@ func (s *ConfigServiceStep) ConfigExternalService(serviceName string, instance i
 
 func (s *ConfigServiceStep) GetConfigExternalService() interface{} {
 	return struct {
-		ServiceName         string
-		Instance            int
-		ExternalServiceList []model.ExternalService
+		ServiceName         string                  `json:"service_name"`
+		Instance            int                     `json:"instance"`
+		ExternalServiceList []model.ExternalService `json:"external_service_list"`
 	}{
 		ServiceName:         s.ServiceName,
 		Instance:            s.Instance,
@@ -156,6 +170,15 @@ func (sc *ServiceConfigController) GetConfigServiceStepAction() {
 	case configExternalService:
 		result = configServiceStep.GetConfigExternalService()
 	}
+
+	if err, ok := result.(error); ok {
+		if err == projectIDInvalidErr {
+			sc.serveStatus(http.StatusBadRequest, err.Error())
+			return
+		}
+		sc.internalError(err)
+	}
+
 	sc.Data["json"] = result
 	sc.ServeJSON()
 }
@@ -202,17 +225,17 @@ func (sc *ServiceConfigController) selectProject(key string, configServiceStep *
 		return
 	}
 
-	isExists, err := service.ProjectExistsByID(projectID)
+	project, err := service.GetProject(model.Project{ID: projectID}, "id")
 	if err != nil {
 		sc.internalError(err)
 		return
 	}
-	if !isExists {
+	if project == nil {
 		sc.serveStatus(http.StatusBadRequest, projectIDInvalidErr.Error())
 		return
 	}
 
-	SetConfigServiceStep(key, configServiceStep.SelectProject(projectID))
+	SetConfigServiceStep(key, configServiceStep.SelectProject(projectID, project.Name))
 }
 
 func (sc *ServiceConfigController) selectImageList(key string, configServiceStep *ConfigServiceStep, reqData []byte) {
@@ -243,6 +266,16 @@ func (sc *ServiceConfigController) configContainerList(key string, configService
 		container.Name = strings.ToLower(container.Name)
 	}
 
+	for _, image := range configServiceStep.ImageList {
+		fromIndex := strings.LastIndex(image.ImageName, "/")
+		imageName := image.ImageName[fromIndex+1:]
+		for i, container := range containerList {
+			if container.Name == imageName {
+				containerList[i].Image = image
+			}
+		}
+	}
+
 	SetConfigServiceStep(key, configServiceStep.ConfigContainerList(containerList))
 }
 
@@ -255,7 +288,7 @@ func (sc *ServiceConfigController) configExternalService(key string, configServi
 
 	isDuplicate, err := sc.checkServiceDuplicateName(serviceName)
 	if err != nil {
-		sc.serveStatus(http.StatusBadRequest, serviceConfigNotCreateErr.Error())
+		sc.serveStatus(http.StatusBadRequest, err.Error())
 		return
 	}
 	if isDuplicate == true {
@@ -269,7 +302,7 @@ func (sc *ServiceConfigController) configExternalService(key string, configServi
 		return
 	}
 	if instance < 1 {
-		sc.serveStatus(http.StatusBadRequest, err.Error())
+		sc.serveStatus(http.StatusBadRequest, instanceInvalidErr.Error())
 		return
 	}
 
@@ -319,7 +352,7 @@ func (sc *ServiceConfigController) checkServiceDuplicateName(serviceName string)
 }
 
 func (sc *ServiceConfigController) checkEntireServiceConfig(entireService *ConfigServiceStep) error {
-	project, err := dao.GetProject(model.Project{ID: entireService.ProjectID, Deleted: 0}, "id", "deleted")
+	project, err := service.GetProject(model.Project{ID: entireService.ProjectID}, "id")
 	if err != nil {
 		sc.internalError(err)
 	}
