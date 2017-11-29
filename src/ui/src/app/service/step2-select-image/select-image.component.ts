@@ -4,7 +4,6 @@ import {
   PHASE_SELECT_PROJECT,
   ImageIndex,
   ServiceStepPhase,
-  UIServiceStep1,
   UIServiceStep2
 } from '../service-step.component';
 import { Image, ImageDetail } from "../../image/image";
@@ -23,7 +22,6 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
   imageDetailSelectList: Map<string, ImageDetail>;
   imageTagNotReadyList: Map<string, boolean>;
   newImageIndex: number;
-  uiPreData: UIServiceStep1 = new UIServiceStep1();//only for build custom image:projectName.projectID;
 
   constructor(protected injector: Injector) {
     super(injector);
@@ -34,9 +32,6 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
   }
 
   ngOnInit() {
-    this.k8sService.getServiceConfig(PHASE_SELECT_PROJECT).then(res => {
-      this.uiPreData = res as UIServiceStep1;
-    });
     this.k8sService.getServiceConfig(this.stepPhase).then(res => {
       this.uiBaseData = res;
       this.uiData.imageList.forEach((image: ImageIndex) => {
@@ -72,11 +67,11 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
   }
 
   get projectName(): string {
-    return this.uiPreData.projectName;
+    return this.uiData.projectName;
   }
 
   get projectId(): number {
-    return this.uiPreData.projectId;
+    return this.uiData.projectId;
   }
 
   onBuildImageCompleted(imageName: string) {

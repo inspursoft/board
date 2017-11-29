@@ -174,9 +174,7 @@ export class EditContainerComponent extends ServiceStepBase implements OnInit, A
   }
 
   backStep(): void {
-    this.k8sService.setServiceConfig(this.uiData.uiToServer()).then(res => {
-      this.k8sService.stepSource.next({index: 2, isBack: true});
-    });
+    this.k8sService.stepSource.next({index: 2, isBack: true});
   }
 
   forward(): void {

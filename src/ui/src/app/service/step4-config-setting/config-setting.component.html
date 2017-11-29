@@ -54,18 +54,18 @@
                      [dropdownList]="getContainerPorts(externalService.container_name)"
                      [dropdownWidth]="310"
                      [dropdownDefaultText]="getContainerPortDropdownText(iIndex) | translate"
-                     (onChange)="externalService.node_config.node_port = $event">
+                     (onChange)="externalService.node_config.target_port = $event">
         </cs-dropdown>
       </div>
       <div class="external-line-container">
         <cs-input class="base-input"
                   [inputFiledType]="1"
-                  [simpleFiled]="externalService.node_config.target_port"
+                  [simpleFiled]="externalService.node_config.node_port"
                   [disabled]="!radNode.checked"
                   [inputLabel]="'SERVICE.STEP_4_NODE_PORT' | translate"
                   [inputMin]="30000"
                   [inputMax]="32766"
-                  (onCheck)="externalService.node_config.target_port = $event">
+                  (onCheck)="setNodePort(iIndex,$event)">
         </cs-input>
         <div class="radio-inline external-radio-container">
           <input #radNode
@@ -90,7 +90,7 @@
                  type="radio"
                  [name]="'port' + iIndex"
                  [id]="'radExternal' + iIndex"
-                 (change)="externalService.node_config.target_port = 0">
+                 (change)="externalService.node_config.node_port = 0">
           <label [for]="'radExternal'+ iIndex"></label>
         </div>
       </div>

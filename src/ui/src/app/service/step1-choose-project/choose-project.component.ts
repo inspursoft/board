@@ -16,6 +16,7 @@ export class ChooseProjectComponent extends ServiceStepBase implements OnInit {
   }
 
   ngOnInit() {
+    this.k8sService.deleteServiceConfig().then(res => res);
     this.k8sService.getProjects()
       .then(res => {
         let createNewProject: Project = new Project();
@@ -34,7 +35,7 @@ export class ChooseProjectComponent extends ServiceStepBase implements OnInit {
     return PHASE_SELECT_PROJECT;
   }
 
-  get uiData():UIServiceStep1{
+  get uiData(): UIServiceStep1 {
     return this.uiBaseData as UIServiceStep1;
   }
 

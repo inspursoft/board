@@ -61,6 +61,10 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
     return this.uiBaseData as UIServiceStep4;
   }
 
+  setNodePort(index: number, port: number) {
+    this.uiData.externalServiceList[index].node_config.node_port = Number(port).valueOf();
+  }
+
   addContainerInfo() {
     this.uiData.externalServiceList.push(new ExternalService());
   }
@@ -75,7 +79,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
   }
 
   getContainerPortDropdownText(index: number): string {
-    let result = this.uiData.externalServiceList[index].node_config.node_port;
+    let result = this.uiData.externalServiceList[index].node_config.target_port;
     return result == 0 ? "SERVICE.STEP_4_SELECT_PORT" : result.toString();
   }
 
@@ -100,8 +104,6 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
   }
 
   backUpStep(): void {
-    this.k8sService.setServiceConfig(this.uiData.uiToServer()).then(() => {
-      this.k8sService.stepSource.next({index: 3, isBack: true});
-    });
+    this.k8sService.stepSource.next({index: 3, isBack: true});
   }
 }

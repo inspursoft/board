@@ -44,7 +44,8 @@ export class K8sService {
 
   getServiceConfig(phase: ServiceStepPhase): Promise<UIServiceStepBase> {
     return this.http.get(`/api/v1/services/config`, {
-      headers: this.defaultHeader
+      headers: this.defaultHeader,
+      params: {phase: phase}
     }).toPromise()
       .then((res: Response) => {
         this.appInitService.chainResponse(res);
@@ -86,14 +87,14 @@ export class K8sService {
       .catch(err => Promise.reject(err));
   }
 
-
   serviceDeployment(): Promise<number> {
     return this.http.post(`/api/v1/services/deployment`, {}, {
       headers: this.defaultHeader
     }).toPromise()
       .then((res: Response) => {
         this.appInitService.chainResponse(res);
-        return Number(res.text()).valueOf();
+        let resJson = res.json();
+        return resJson["project_id"]
       })
       .catch(err => Promise.reject(err));
   }

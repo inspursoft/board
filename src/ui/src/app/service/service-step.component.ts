@@ -10,8 +10,15 @@ export type ServiceStepPhase =
   | "EXTERNAL_SERVICE"
   | "ENTIRE_SERVICE"
 
-interface DeepCopy<T> {
-  deepCopyBySelf(): T;
+export interface UiServerExchangeData<T> {
+  uiToServer(): Object;
+  serverToUi(serverResponse: Object): T;
+}
+
+export abstract class UIServiceStepBase implements UiServerExchangeData<UIServiceStepBase> {
+  abstract uiToServer(): ServerServiceStep;
+
+  abstract serverToUi(serverResponse: Object): UIServiceStepBase;
 }
 
 export class ServerServiceStep {
@@ -22,42 +29,49 @@ export class ServerServiceStep {
   public postData?: Object;
 }
 
-export abstract class UIServiceStepBase {
-  abstract uiToServer(): ServerServiceStep;
-
-  abstract serverToUi(serverResponse: Object): UIServiceStepBase;
-}
-
-export class ImageIndex implements DeepCopy<ImageIndex> {
+export class ImageIndex implements UiServerExchangeData<ImageIndex> {
   image_name: string = "";
   image_tag: string = "";
+  project_name: string = "";
 
-  deepCopyBySelf(): ImageIndex {
-    return Object.assign(new ImageIndex(), this);
+  serverToUi(serverResponse: Object): ImageIndex {
+    return Object.assign(this, serverResponse);
+  }
+
+  uiToServer(): ImageIndex {
+    return this;
   }
 }
 
-export class EnvStruct implements DeepCopy<EnvStruct> {
+export class EnvStruct implements UiServerExchangeData<EnvStruct> {
   dockerfile_envname: string = "";
   dockerfile_envvalue: string = "";
 
-  deepCopyBySelf(): EnvStruct {
-    return Object.assign(new EnvStruct(), this);
+  serverToUi(serverResponse: Object): EnvStruct {
+    return Object.assign(this, serverResponse);
+  }
+
+  uiToServer(): EnvStruct {
+    return this;
   }
 }
 
-export class VolumeStruct implements DeepCopy<VolumeStruct> {
+export class VolumeStruct implements UiServerExchangeData<VolumeStruct> {
   public target_storage_service: string = "";
   public target_path: string = "";
   public volume_name: string = "";
   public container_path: string = "";
 
-  deepCopyBySelf(): VolumeStruct {
-    return Object.assign(new VolumeStruct(), this);
+  serverToUi(serverResponse: Object): VolumeStruct {
+    return Object.assign(this, serverResponse);
+  }
+
+  uiToServer(): VolumeStruct {
+    return this;
   }
 }
 
-export class Container implements DeepCopy<Container> {
+export class Container implements UiServerExchangeData<Container> {
   public name: string = "";
   public working_dir: string = "";
   public volume_mount: VolumeStruct = new VolumeStruct();
@@ -67,52 +81,69 @@ export class Container implements DeepCopy<Container> {
   public container_port: Array<number> = Array();
   public command: string = "";
 
-  deepCopyBySelf(): Container {
-    let result: Container = new Container;
-    result.name = this.name;
-    result.working_dir = this.working_dir;
-    result.volume_mount = this.volume_mount.deepCopyBySelf();
-    result.image = this.image.deepCopyBySelf();
-    result.project_name = this.project_name;
-    this.env.forEach((env: EnvStruct) => {
-      result.env.push(env.deepCopyBySelf());
-    });
-    result.container_port = Array.from(this.container_port);
-    result.command = this.command;
-    return result;
+  serverToUi(serverResponse: Object): Container {
+    this.name = serverResponse["name"];
+    this.working_dir = serverResponse["working_dir"];
+    this.volume_mount = (new VolumeStruct()).serverToUi(serverResponse["volume_mount"]);
+    this.image = (new ImageIndex()).serverToUi(serverResponse["image"]);
+    this.project_name = serverResponse["project_name"];
+    if (serverResponse["env"]){
+      let envArr: Array<EnvStruct> = serverResponse["env"];
+      envArr.forEach((env: EnvStruct) => {
+        this.env.push((new EnvStruct()).serverToUi(env));
+      });
+    }
+    if (serverResponse["container_port"]){
+      this.container_port = Array.from(serverResponse["container_port"]) as Array<number>;
+    }
+    this.command = serverResponse["command"];
+    return this;
+  }
+
+  uiToServer(): Container {
+    return this;
   }
 }
 
-export class NodeType implements DeepCopy<NodeType> {
+export class NodeType implements UiServerExchangeData<NodeType> {
   target_port: number = 0;
   node_port: number = 0;
 
-  deepCopyBySelf(): NodeType {
-    return Object.assign(new NodeType(), this);
+  serverToUi(serverResponse: Object): NodeType {
+    return Object.assign(this, serverResponse);
+  }
+
+  uiToServer(): NodeType {
+    return this;
   }
 }
 
-export class LoadBalancer implements DeepCopy<LoadBalancer> {
+export class LoadBalancer implements UiServerExchangeData<LoadBalancer> {
   external_access: string;
 
-  deepCopyBySelf(): LoadBalancer {
-    let result: LoadBalancer = new LoadBalancer();
-    result.external_access = this.external_access;
-    return result
+  serverToUi(serverResponse: Object): LoadBalancer {
+    return Object.assign(this, serverResponse);
+  }
+
+  uiToServer(): LoadBalancer {
+    return this;
   }
 }
 
-export class ExternalService implements DeepCopy<ExternalService> {
+export class ExternalService implements UiServerExchangeData<ExternalService> {
   public container_name: string = "";
   public node_config: NodeType = new NodeType();
   public load_balancer_config: LoadBalancer = new LoadBalancer();
 
-  deepCopyBySelf(): ExternalService {
-    let result: ExternalService = new ExternalService();
-    result.container_name = this.container_name;
-    result.node_config = this.node_config.deepCopyBySelf();
-    result.load_balancer_config = this.load_balancer_config.deepCopyBySelf();
-    return result;
+  serverToUi(serverResponse: Object): ExternalService {
+    this.container_name = serverResponse["container_name"];
+    this.node_config = (new NodeType()).serverToUi(serverResponse["node_config"]);
+    this.load_balancer_config = (new LoadBalancer()).serverToUi(serverResponse["load_balancer_config"]);
+    return this;
+  }
+
+  uiToServer(): ExternalService {
+    return this;
   }
 }
 
@@ -138,37 +169,43 @@ export class UIServiceStep1 extends UIServiceStepBase {
   }
 
   serverToUi(serverResponse: Object): UIServiceStep1 {
-    let step1 = new UIServiceStep1();
     if (serverResponse && serverResponse["project_id"]) {
-      step1.projectId = serverResponse["project_id"];
+      this.projectId = serverResponse["project_id"];
     }
-    return step1;
+    return this;
   }
 }
 
 export class UIServiceStep2 extends UIServiceStepBase {
   public imageList: Array<ImageIndex> = Array<ImageIndex>();
+  public projectId: number = 0;
+  public projectName: string = "";
 
   uiToServer(): ServerServiceStep {
     let result = new ServerServiceStep();
     let postData: Array<ImageIndex> = Array<ImageIndex>();
     result.phase = PHASE_SELECT_IMAGES;
     this.imageList.forEach((value: ImageIndex) => {
-      postData.push(value.deepCopyBySelf());
+      postData.push(value.uiToServer());
     });
     result.postData = postData;
     return result;
   }
 
   serverToUi(serverResponse: Object): UIServiceStep2 {
-    let step2 = new UIServiceStep2();
+    if (serverResponse && serverResponse["project_id"]) {
+      this.projectId = serverResponse["project_id"];
+    }
+    if (serverResponse && serverResponse["project_name"]) {
+      this.projectName = serverResponse["project_name"];
+    }
     if (serverResponse && serverResponse["image_list"]) {
       let list: Array<ImageIndex> = serverResponse["image_list"];
       list.forEach((value: ImageIndex) => {
-        step2.imageList.push(value.deepCopyBySelf())
+        this.imageList.push((new ImageIndex()).serverToUi(value))
       });
     }
-    return step2;
+    return this;
   }
 }
 
@@ -180,37 +217,36 @@ export class UIServiceStep3 extends UIServiceStepBase {
     let postData: Array<Container> = Array<Container>();
     result.phase = PHASE_CONFIG_CONTAINERS;
     this.containerList.forEach((value: Container) => {
-      postData.push(value.deepCopyBySelf());
+      postData.push(value.uiToServer());
     });
     result.postData = postData;
     return result;
   }
 
   serverToUi(serverResponse: Object): UIServiceStep3 {
-    let step3 = new UIServiceStep3();
     if (serverResponse && serverResponse["container_list"]) {
       let list: Array<Container> = serverResponse["container_list"];
       list.forEach((value: Container) => {
-        step3.containerList.push(value.deepCopyBySelf())
+        this.containerList.push((new Container()).serverToUi(value))
       });
     }
-    return step3;
+    return this;
   }
 }
 
 export class UIServiceStep4 extends UIServiceStepBase {
   public serviceName: string = "";
-  public instance: number = 0;
+  public instance: number = 1;
   public externalServiceList: Array<ExternalService> = Array<ExternalService>();
 
   uiToServer(): ServerServiceStep {
     let result = new ServerServiceStep();
     let postData: Array<ExternalService> = Array<ExternalService>();
-    result.phase = PHASE_ENTIRE_SERVICE;
+    result.phase = PHASE_EXTERNAL_SERVICE;
     result.service_name = this.serviceName;
     result.instance = this.instance;
     this.externalServiceList.forEach((value: ExternalService) => {
-      postData.push(value.deepCopyBySelf());
+      postData.push(value.uiToServer());
     });
     result.postData = postData;
     return result;
@@ -221,7 +257,7 @@ export class UIServiceStep4 extends UIServiceStepBase {
     if (serverResponse && serverResponse["external_service_list"]) {
       let list: Array<ExternalService> = serverResponse["external_service_list"];
       list.forEach((value: ExternalService) => {
-        step4.externalServiceList.push(value.deepCopyBySelf());
+        step4.externalServiceList.push((new ExternalService()).serverToUi(value));
       });
     }
     if (serverResponse && serverResponse["instance"]) {
