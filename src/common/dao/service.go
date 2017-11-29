@@ -105,3 +105,18 @@ func SyncServiceData(service model.ServiceStatus) (int64, error) {
 	}
 	return serviceID, err
 }
+
+func GetSelectableServices(pName string, sName string) ([]string, error) {
+	o := orm.NewOrm()
+	sql := `select s.name
+	from service_status s 
+	where s.deleted = 0 and s.status >= 1
+	and s.project_name = ? and s.name != ?`
+
+	params := make([]interface{}, 0)
+	params = append(params, pName, sName)
+
+	var serviceList []string
+	_, err := o.Raw(sql, params).QueryRows(&serviceList)
+	return serviceList, err
+}
