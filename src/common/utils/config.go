@@ -75,6 +75,6 @@ func ShowAllConfigs() {
 		if strings.Contains(strings.ToUpper(k), "PASSWORD") {
 			continue
 		}
-		logs.Info("\t%s: %s", k, v)
+		logs.Info("\t%s: %v", k, v)
 	}
 }

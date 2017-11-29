@@ -70,7 +70,7 @@ func syncServiceWithK8s() {
 func main() {
 
 	logs.SetLogFuncCall(true)
-	logs.SetLogFuncCallDepth(3)
+	logs.SetLogFuncCallDepth(4)
 
 	utils.Initialize()
 
