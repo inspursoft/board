@@ -36,3 +36,7 @@ type ServiceToggle struct {
 type ServicePublicityUpdate struct {
 	Public int `json:"service_public"`
 }
+
+type ServiceScale struct {
+	Replica int32 `json:"service_scale"`
+}

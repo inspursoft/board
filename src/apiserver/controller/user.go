@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
@@ -9,6 +10,8 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/astaxie/beego/logs"
 )
 
 type UserController struct {
@@ -23,6 +26,7 @@ func (u *UserController) Prepare() {
 	}
 	u.currentUser = user
 	u.isSysAdmin = (u.currentUser.SystemAdmin == 1)
+	u.isExternalAuth = utils.GetBoolValue("IS_EXTERNAL_AUTH")
 }
 
 func (u *UserController) GetUsersAction() {
@@ -49,6 +53,13 @@ func (u *UserController) GetUsersAction() {
 }
 
 func (u *UserController) ChangeUserAccount() {
+
+	if u.isExternalAuth && u.currentUser.Username != "admin" {
+		logs.Debug("Current AUTH_MODE is external auth.")
+		u.internalError(errors.New("Current AUTH_MODE is external auth."))
+		return
+	}
+
 	reqData, err := u.resolveBody()
 	if err != nil {
 		u.internalError(err)
@@ -107,6 +118,13 @@ func (u *UserController) ChangeUserAccount() {
 
 func (u *UserController) ChangePasswordAction() {
 	var err error
+
+	if u.isExternalAuth && u.currentUser.Username != "admin" {
+		logs.Debug("Current AUTH_MODE is external auth.")
+		u.customAbort(http.StatusMethodNotAllowed, "Current AUTH_MODE is external auth.")
+		return
+	}
+
 	userID, err := strconv.Atoi(u.Ctx.Input.Param(":id"))
 	if err != nil {
 		u.internalError(err)
@@ -180,9 +198,17 @@ func (u *SystemAdminController) Prepare() {
 		u.customAbort(http.StatusForbidden, "Insufficient privileges to manipulate user.")
 		return
 	}
+	u.isExternalAuth = utils.GetBoolValue("IS_EXTERNAL_AUTH")
 }
 
 func (u *SystemAdminController) AddUserAction() {
+
+	if u.isExternalAuth {
+		logs.Debug("Current AUTH_MODE is external auth.")
+		u.customAbort(http.StatusMethodNotAllowed, "Current AUTH_MODE is external auth.")
+		return
+	}
+
 	var err error
 	reqData, err := u.resolveBody()
 	if err != nil {
@@ -253,6 +279,7 @@ func (u *SystemAdminController) AddUserAction() {
 }
 
 func (u *SystemAdminController) GetUserAction() {
+
 	userID, err := strconv.Atoi(u.Ctx.Input.Param(":id"))
 	if err != nil {
 		u.internalError(err)
@@ -273,6 +300,13 @@ func (u *SystemAdminController) GetUserAction() {
 }
 
 func (u *SystemAdminController) DeleteUserAction() {
+
+	if u.isExternalAuth {
+		logs.Debug("Current AUTH_MODE is external auth.")
+		u.customAbort(http.StatusMethodNotAllowed, "Current AUTH_MODE is external auth.")
+		return
+	}
+
 	userID, err := strconv.Atoi(u.Ctx.Input.Param(":id"))
 	if err != nil {
 		u.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid user ID: %d", userID))
@@ -302,6 +336,13 @@ func (u *SystemAdminController) DeleteUserAction() {
 }
 
 func (u *SystemAdminController) UpdateUserAction() {
+
+	if u.isExternalAuth && u.currentUser.Username != "admin" {
+		logs.Debug("Current AUTH_MODE is external auth.")
+		u.customAbort(http.StatusMethodNotAllowed, "Current AUTH_MODE is external auth.")
+		return
+	}
+
 	var err error
 	userID, err := strconv.Atoi(u.Ctx.Input.Param(":id"))
 	if err != nil {

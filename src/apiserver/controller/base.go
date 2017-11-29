@@ -50,6 +50,7 @@ type baseController struct {
 	currentUser    *model.User
 	isSysAdmin     bool
 	isProjectAdmin bool
+	isExternalAuth bool
 }
 
 func (b *baseController) Render() error {

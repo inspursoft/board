@@ -20,8 +20,8 @@ import { EnvType } from "../../shared/environment-value/environment-value.compon
 enum ImageSource{fromBoardRegistry, fromDockerHub}
 enum ImageBuildMethod{fromTemplate, fromImportFile}
 const AUTO_REFRESH_IMAGE_LIST: number = 2000;
-const PROCESS_IMAGE_CONSOLE_URL = `ws://10.165.22.61:8088/api/v1/jenkins-job/console?job_name=process_image`;
-// const PROCESS_IMAGE_CONSOLE_URL = `ws://localhost/api/v1/jenkins-job/console?job_name=process_image`;
+// const PROCESS_IMAGE_CONSOLE_URL = `ws://10.165.22.61:8088/api/v1/jenkins-job/console?job_name=process_image`;
+const PROCESS_IMAGE_CONSOLE_URL = `ws://localhost/api/v1/jenkins-job/console?job_name=process_image`;
 type alertType = "alert-info" | "alert-danger";
 
 /*declared in shared-module*/
@@ -349,6 +349,8 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
         .then((res: Response) => {
           this.consoleText = res.text();
           this.isServerHaveDockerFile = true;
+        })
+        .catch(() => {//need't handle this error
         });
     }
   }

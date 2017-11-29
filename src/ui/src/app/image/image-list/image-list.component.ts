@@ -130,6 +130,7 @@ export class ImageListComponent implements OnInit, OnDestroy {
   }
 
   onBuildImageCompleted(imageName: string) {
+    this.isInBuildingImage = false;
     this.retrieve();
   }
 }

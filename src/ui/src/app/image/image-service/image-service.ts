@@ -43,8 +43,7 @@ export class ImageService {
     let headers = new Headers();
     headers.append('token', this.appInitService.token);
     let options = new RequestOptions({headers: headers});
-    console.log("准备上传文件");
-    return this.http.post(`/api/v1/services/dockerfile/upload`, formData, options).toPromise()
+    return this.http.post(`/api/v1/images/dockerfile/upload`, formData, options).toPromise()
       .then(resp => this.appInitService.chainResponse(resp))
       .catch(err => Promise.reject(err));
   }
@@ -60,8 +59,8 @@ export class ImageService {
         project_name: fileInfo.projectName
       }
     });
-    return this.http.get(`/api/v1/services/dockerfile/download`, options).toPromise()
-      .then(resp => this.appInitService.chainResponse(resp))
+    return this.http.get(`/api/v1/images/dockerfile/download`, options).toPromise()
+      .then(res => this.appInitService.chainResponse(res))
       .catch(err => Promise.reject(err));
   }
 
@@ -111,13 +110,16 @@ export class ImageService {
   }
 
   buildImageFromDockerFile(fileInfo: {imageName: string, tagName: string, projectName: string}): Promise<any> {
-    console.log(fileInfo);
-    return Promise.resolve(false);
-    // return this.http.post(`/api/v1/images/building`, fileInfo, {
-    //   headers: this.defaultHeader
-    // }).toPromise()
-    //   .then(res => this.appInitService.chainResponse(res))
-    //   .catch(err => Promise.reject(err));
+    return this.http.post(`/api/v1/images/dockerfilebuilding`, fileInfo, {
+      headers: this.defaultHeader,
+      params: {
+        image_name: fileInfo.imageName,
+        image_tag: fileInfo.tagName,
+        project_name: fileInfo.projectName
+      }
+    }).toPromise()
+      .then(res => this.appInitService.chainResponse(res))
+      .catch(err => Promise.reject(err));
   }
 
   getFileList(formData: FormData): Promise<Array<{path: string, file_name: string, size: number}>> {

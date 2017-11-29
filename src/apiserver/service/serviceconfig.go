@@ -11,6 +11,12 @@ import (
 	"github.com/astaxie/beego/logs"
 
 	modelK8s "k8s.io/client-go/pkg/api/v1"
+
+	"k8s.io/client-go/kubernetes"
+	//"k8s.io/client-go/pkg/api/resource"
+	//"k8s.io/client-go/pkg/api/v1"
+	//"k8s.io/client-go/rest"
+	//apiCli "k8s.io/client-go/tools/clientcmd/api"
 )
 
 const (
@@ -20,6 +26,8 @@ const (
 	defaultComment     = "init service"
 	defaultDeleted     = 0
 	defaultStatus      = 1
+	serviceNamespace   = "default" //TODO create namespace in project post
+	scaleKind          = "Deployment"
 )
 
 func InitServiceConfig() (*model.ServiceConfig, error) {
@@ -185,4 +193,35 @@ func SyncServiceWithK8s() error {
 	}
 
 	return nil
+}
+
+func ScaleReplica(serviceInfo model.ServiceStatus, number int32) (bool, error) {
+
+	cli, err := K8sCliFactory("", kubeMasterURL(), "v1beta1")
+	apiSet, err := kubernetes.NewForConfig(cli)
+	if err != nil {
+		return false, err
+	}
+	s := apiSet.Scales(serviceNamespace)
+	scale, err := s.Get(scaleKind, serviceInfo.Name)
+
+	if scale.Spec.Replicas != number {
+		scale.Spec.Replicas = number
+		_, err = s.Update(scaleKind, scale)
+		if err != nil {
+			logs.Info("Failed to update service replicas", scale)
+			return false, err
+		}
+	} else {
+		logs.Info("Service replicas needn't change", scale.Spec.Replicas)
+	}
+	return true, err
+}
+
+func GetSelectableServices(pname string, sName string) ([]string, error) {
+	serviceList, err := dao.GetSelectableServices(pname, sName)
+	if err != nil {
+		return nil, err
+	}
+	return serviceList, err
 }
