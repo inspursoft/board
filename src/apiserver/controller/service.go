@@ -929,3 +929,18 @@ func (p *ServiceController) ScaleServiceAction() {
 	}
 	logs.Info("Scale service replica successfully")
 }
+
+//get selectable service list
+func (p *ServiceController) GetSelectableServicesAction() {
+	serviceName := p.GetString("service_name", "")
+	projectName := p.GetString("project_name", "")
+	logs.Info("Get selectable service list for", projectName, serviceName)
+	serviceList, err := service.GetSelectableServices(projectName, serviceName)
+	if err != nil {
+		logs.Error("Failed to get selectable services.")
+		p.internalError(err)
+		return
+	}
+	p.Data["json"] = serviceList
+	p.ServeJSON()
+}
