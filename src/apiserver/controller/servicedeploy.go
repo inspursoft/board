@@ -89,7 +89,7 @@ func (p *ServiceDeployController) DeployServiceAction() {
 	logs.Info("Internal push deployment object: %d %s", ret, msg)
 
 	updateService := model.ServiceStatus{ID: serviceID, Status: running}
-	_, err = service.UpdateService(updateService, "name", "status")
+	_, err = service.UpdateService(updateService, "id", "status")
 	if err != nil {
 		p.internalError(err)
 		return
