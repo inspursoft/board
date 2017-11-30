@@ -1,7 +1,6 @@
 import { Component, OnInit, Injector } from '@angular/core';
 import {
   PHASE_SELECT_IMAGES,
-  PHASE_SELECT_PROJECT,
   ImageIndex,
   ServiceStepPhase,
   UIServiceStep2
