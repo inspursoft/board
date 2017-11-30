@@ -33,7 +33,7 @@ export const LANG_ZH_CN = {
   },
   "ACCOUNT": {
     "SIGN_IN": "登录",
-    "USERNAME_PLACEHOLDER": "用户名／邮箱",
+    "USERNAME_PLACEHOLDER": "用户名",
     "PASSWORD_PLACEHOLDER": "密码",
     "SIGN_UP": "立即注册",
     "FORGOT_PASSWORD": "忘记密码",

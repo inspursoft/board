@@ -33,7 +33,7 @@ export const LANG_EN_US = {
   },
   "ACCOUNT": {
     "SIGN_IN": "Sign In",
-    "USERNAME_PLACEHOLDER": "Username/Email",
+    "USERNAME_PLACEHOLDER": "Username",
     "PASSWORD_PLACEHOLDER": "Password",
     "SIGN_UP": "Sign Up",
     "FORGOT_PASSWORD": "Forgot Password",
