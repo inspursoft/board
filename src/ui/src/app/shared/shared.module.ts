@@ -16,8 +16,15 @@ import { ChangePasswordComponent } from "./change-password/change-password.compo
 import { AccountSettingComponent } from "./account-setting/account-setting.component";
 
 import { ValidateOnBlurDirective } from './directives/validate-onblur.directive';
-import { CsDropdownComponent } from "../service/cs-dropdown/cs-dropdown.component";
+import { CsDropdownComponent } from "./cs-components-library/cs-dropdown/cs-dropdown.component";
 import { WebsocketService } from './websocket-service/websocket.service';
+import { CsSearchInput } from "./cs-components-library/cs-search-input/cs-search-input.component";
+import { CheckboxRevert } from "./directives/checkbox-revert.directive";
+import { CsInputComponent } from "./cs-components-library/cs-input/cs-input.component";
+import { CsInputArrayComponent } from "./cs-components-library/cs-input-array/cs-input-array.component";
+import { CreateImageComponent } from "../image/image-create/image-create.component";
+import { EnvironmentValueComponent } from "./environment-value/environment-value.component";
+import { SizePipe } from "./pipes/size-pipe";
 
 @NgModule({
   imports: [
@@ -36,7 +43,14 @@ import { WebsocketService } from './websocket-service/websocket.service';
     ValidateOnBlurDirective,
     ChangePasswordComponent,
     CsDropdownComponent,
-    AccountSettingComponent
+    AccountSettingComponent,
+    CreateImageComponent,
+    EnvironmentValueComponent,
+    CsSearchInput,
+    CsInputComponent,
+    CsInputArrayComponent,
+    CheckboxRevert,
+    SizePipe
   ],
   exports: [
     CoreModule,
@@ -50,7 +64,14 @@ import { WebsocketService } from './websocket-service/websocket.service';
     CheckItemIdenticalDirective,
     CsDropdownComponent,
     CheckItemPatternDirective,
-    ValidateOnBlurDirective
+    ValidateOnBlurDirective,
+    CreateImageComponent,
+    EnvironmentValueComponent,
+    CsSearchInput,
+    CsInputComponent,
+    CsInputArrayComponent,
+    CheckboxRevert,
+    SizePipe
   ],
   providers: [
     AuthGuard,

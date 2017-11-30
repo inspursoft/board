@@ -1,8 +1,6 @@
-import { Component, Input, OnInit, OnDestroy, ViewChild, Injector } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, Injector } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
-import { AppInitService } from '../../app.init.service';
 import { Service } from '../service';
-import { MessageService } from '../../shared/message-service/message.service';
 import { MESSAGE_TARGET, BUTTON_STYLE, MESSAGE_TYPE } from '../../shared/shared.const';
 import { Message } from '../../shared/message-service/message';
 import { ServiceDetailComponent } from './service-detail/service-detail.component';
@@ -21,12 +19,14 @@ class ServiceData {
 }
 
 @Component({
-  templateUrl: './list-service.component.html'
+  templateUrl: './list-service.component.html',
+  styleUrls: ["./list-service.component.css"]
 })
 export class ListServiceComponent extends ServiceStepBase implements OnInit, OnDestroy {
   currentUser: {[key: string]: any};
   services: Service[];
   isInLoading: boolean = false;
+  checkboxRevertInfo: {isNeeded: boolean; value: boolean};
   _subscription: Subscription;
 
   @ViewChild(ServiceDetailComponent) serviceDetailComponent;
@@ -125,13 +125,18 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
 
   toggleServicePublic(s: Service): void {
     let toggleMessage = new Message();
+    let oldServicePublic = s.service_public;
     this.k8sService
       .toggleServicePublicity(s.service_id, s.service_public ? 0 : 1)
       .then(() => {
+        s.service_public = ! oldServicePublic;
         toggleMessage.message = 'SERVICE.SUCCESSFUL_TOGGLE';
         this.messageService.inlineAlertMessage(toggleMessage);
       })
-      .catch(err => this.messageService.dispatchError(err, ''));
+      .catch(err => {
+        this.messageService.dispatchError(err, '');
+        this.checkboxRevertInfo = {isNeeded: true, value: oldServicePublic};
+      });
   }
 
   editService(s: Service) {
@@ -139,6 +144,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   }
 
   confirmToServiceAction(s: Service, action: string): void {
+    if (action == 'DELETE' && s.service_status != 2) return;
     let serviceData = new ServiceData(s.service_id, s.service_name, (s.service_status === 1));
     let title: string;
     let message: string;

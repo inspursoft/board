@@ -1,5 +1,5 @@
 <div class="edit-container-container">
-  <div class="edit-container-one-container" *ngFor="let container of containerList;let iStep3 = index">
+  <div class="edit-container-one-container" *ngFor="let container of uiData.containerList;let iStep3 = index">
     <div class="edit-container-item-container" (click)="toggleShowStatus(container)">
       <div class="edit-container-item-icon-container"
            [ngClass]="{'icon-close':step3TypeStatus.get(container),'icon-open':!step3TypeStatus.get(container)}">
@@ -15,7 +15,7 @@
                 (onCheck)="container.name = $event"></cs-input>
       <cs-input [inputLabel]="'SERVICE.STEP_3_WORKING_DIR' | translate"
                 [inputPattern]="patternWorkdir"
-                [simpleFiled]="container.workingDir"
+                [simpleFiled]="container.working_dir"
                 (onCheck)="container.workingDir = $event"></cs-input>
       <cs-input [inputType]="1"
                 [inputLabel]="'SERVICE.STEP_3_VOLUME_MOUNTS' | translate"
@@ -31,7 +31,7 @@
                       [inputArrayMax]="65535"
                       [inputArrayIsRequired]="true"
                       [inputArrayLabelText]="'SERVICE.STEP_3_CONTAINER_PORT' | translate"
-                      [inputArraySource]="containerPort.get(container.name)">
+                      [inputArraySource]="container.container_port">
       </cs-input-array>
       <div class="edit-container-area">
         <label for="areaCommand" class="base-text">{{"SERVICE.STEP_3_COMMAND" | translate}}:</label>

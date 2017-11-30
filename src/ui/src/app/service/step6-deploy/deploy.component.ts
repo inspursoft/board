@@ -7,9 +7,11 @@ import { Message } from "../../shared/message-service/message";
 import { BUTTON_STYLE } from "../../shared/shared.const";
 import { WebsocketService } from "../../shared/websocket-service/websocket.service";
 import { ServiceStepBase } from "../service-step";
+import { Response } from "@angular/http"
+import { PHASE_ENTIRE_SERVICE, ServiceStepPhase, UIServiceStepBase } from "../service-step.component";
 
-// const PROCESS_SERVICE_CONSOLE_URL = `ws://10.165.22.61:8088/api/v1/jenkins-job/console?job_name=process_service`;
-const PROCESS_SERVICE_CONSOLE_URL = `ws://localhost/api/v1/jenkins-job/console?job_name=process_service`;
+const PROCESS_SERVICE_CONSOLE_URL = `ws://10.165.22.61:8088/api/v1/jenkins-job/console?job_name=process_service`;
+// const PROCESS_SERVICE_CONSOLE_URL = `ws://localhost/api/v1/jenkins-job/console?job_name=process_service`;
 @Component({
   templateUrl: "./deploy.component.html",
   styleUrls: ["./deploy.component.css"]
@@ -18,6 +20,7 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
   isDeployed: boolean = false;
   isDeploySuccess: boolean = false;
   isInDeployIng: boolean = false;
+  serviceID: number = 0;
   consoleText: string = "";
   processImageSubscription: Subscription;
   _confirmSubscription: Subscription;
@@ -27,24 +30,20 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
   }
 
   ngOnInit() {
-    this.k8sService.getServiceConfig(this.newServiceId,this.outputData).then(res => {
-      this.outputData = res;
-      this.outputData.projectinfo.config_phase = "deploy";
-    });
     this._confirmSubscription = this.messageService.messageConfirmed$.subscribe((next: Message) => {
-      this.k8sService.deleteDeployment(this.outputData.projectinfo.service_id)
+      this.k8sService.deleteDeployment(this.serviceID)
         .then(() => {
           if (this.processImageSubscription) {
             this.processImageSubscription.unsubscribe();
           }
-          this.k8sService.stepSource.next({index:0,isBack:false});
+          this.k8sService.stepSource.next({index: 0, isBack: false});
         })
         .catch(err => {
           this.messageService.dispatchError(err);
           if (this.processImageSubscription) {
             this.processImageSubscription.unsubscribe();
           }
-          this.k8sService.stepSource.next({index:0,isBack:false});
+          this.k8sService.stepSource.next({index: 0, isBack: false});
         })
     });
   }
@@ -53,17 +52,26 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
     this._confirmSubscription.unsubscribe();
   }
 
+  get stepPhase(): ServiceStepPhase {
+    return PHASE_ENTIRE_SERVICE;
+  }
+
+  get uiData(): UIServiceStepBase {
+    return this.uiBaseData;
+  }
+
   serviceDeploy() {
     if (!this.isDeployed) {
       this.isDeployed = true;
       this.isInDeployIng = true;
       this.consoleText = "Deploying...";
-      this.k8sService.serviceDeployment(this.outputData)
-        .then(res => {
+      this.k8sService.serviceDeployment()
+        .then(serviceID => {
+          this.serviceID = serviceID;
           setTimeout(() => {
             this.processImageSubscription = this.webSocketService
               .connect(PROCESS_SERVICE_CONSOLE_URL + `&token=${this.appInitService.token}`)
-              .subscribe(obs => {
+              .subscribe((obs: MessageEvent) => {
                 this.consoleText = <string>obs.data;
                 let consoleTextArr: Array<string> = this.consoleText.split(/[\n]/g);
                 if (consoleTextArr.find(value => value.indexOf("Finished: SUCCESS") > -1)) {
@@ -83,7 +91,14 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
           }, 10000);
         })
         .catch(err => {
-          this.messageService.dispatchError(err);
+          if (err instanceof Response && (err as Response).status == 400) {
+            let errMessage = new Message();
+            let resBody = (err as Response).json();
+            errMessage.message = resBody["message"];
+            this.messageService.globalMessage(errMessage)
+          } else {
+            this.messageService.dispatchError(err);
+          }
           this.isDeploySuccess = false;
           this.isInDeployIng = false;
         })

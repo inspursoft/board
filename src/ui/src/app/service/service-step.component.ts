@@ -1,207 +1,286 @@
-export class ServiceStep2Type {
-  image_name: string;
-  image_tag: string;
-  project_id: number;
-  project_name: string;
-  image_template: string;
+export const PHASE_SELECT_PROJECT = "SELECT_PROJECT";
+export const PHASE_SELECT_IMAGES = "SELECT_IMAGES";
+export const PHASE_CONFIG_CONTAINERS = "CONFIG_CONTAINERS";
+export const PHASE_EXTERNAL_SERVICE = "EXTERNAL_SERVICE";
+export const PHASE_ENTIRE_SERVICE = "ENTIRE_SERVICE";
+export type ServiceStepPhase =
+  "SELECT_PROJECT"
+  | "SELECT_IMAGES"
+  | "CONFIG_CONTAINERS"
+  | "EXTERNAL_SERVICE"
+  | "ENTIRE_SERVICE"
 
-  constructor() {
-  }
+export interface UiServerExchangeData<T> {
+  uiToServer(): Object;
+  serverToUi(serverResponse: Object): T;
 }
 
-export class ImageDockerfile {
-  image_base: string;
-  image_author: string;
-  image_volume?: Array<string>;
-  image_copy?: Array<{dockerfile_copyfrom?: string, dockerfile_copyto?: string}>;
-  image_run?: Array<string>;
-  image_env?: Array<{dockerfile_envname?: string, dockerfile_envvalue?: string}>;
-  image_expose?: Array<string>;
-  image_entrypoint?: string;
-  image_cmd?: string;
+export abstract class UIServiceStepBase implements UiServerExchangeData<UIServiceStepBase> {
+  abstract uiToServer(): ServerServiceStep;
 
-  constructor() {
-    this.image_base = "";
-    this.image_volume = Array<string>();
-    this.image_run = Array<string>();
-    this.image_expose = Array<string>();
-    this.image_copy = Array<{dockerfile_copyfrom?: string, dockerfile_copyto?: string}>();
-    this.image_env = Array<{dockerfile_envname?: string, dockerfile_envvalue?: string}>();
-  }
+  abstract serverToUi(serverResponse: Object): UIServiceStepBase;
 }
 
-export class ServiceStep2NewImageType extends ServiceStep2Type {
-  image_dockerfile: ImageDockerfile;
-
-  constructor() {
-    super();
-    this.image_dockerfile = new ImageDockerfile();
-  }
+export class ServerServiceStep {
+  public phase: ServiceStepPhase;
+  public project_id?: number = 0;
+  public service_name?: string = "";
+  public instance?: number = 0;
+  public postData?: Object;
 }
 
-export interface FactoryByPropertyName {
-  getInstanceByPropertyName(propName: string): Object
-}
-
-/*---------------------------------service configure start-------------------------------------*/
-export class ContainerPort {
-  hostPort?: number = 0;     //old=>service_nodeport
-  containerPort?: number = 0;//old=>container_ports
-}
-
-export class EnvVar {
-  name: string = ""; //old=>env_name
-  value: string = "";//old=>env_value
-}
-
-export class VolumeMount {
-  name: string = "";          //old=>target_storagename
-  readOnly?: boolean = false;
-  mountPath: string = "";     //old=>container_dir
-  subPath?: string = "";
-  ui_nfs_server: string = ""; //old=>target_storageServer;only for ui;
-  ui_nfs_path: string = "";   //old=>target_target_dir;only for ui;
-}
-
-export class Container implements FactoryByPropertyName {
-  name: string = "";               //old=>container_name
-  image: string = "";              //old=>container_baseimage
-  command: Array<string> = Array();//old=>container_command
-  args: Array<string> = Array();
-  workingDir: string = "";         //old=>container_workdir
-  env: Array<EnvVar> = Array();    //old=>container_envs
-  ports: Array<ContainerPort> = Array();
-  volumeMounts: Array<VolumeMount> = Array();
-
-  getInstanceByPropertyName(propName: string): Object {
-    switch (propName) {
-      case "env":
-        return new EnvVar();
-      case "ports":
-        return new ContainerPort();
-      case "volumeMounts":
-        return new VolumeMount();
-      default:
-        return {};
-    }
-  }
-}
-
-export type ServiceContainerList = Array<Container>;
-
-export class ProjectInfo {
-  service_id: number = 0;
-  project_id: number = 0;
-  service_name: string = "";
+export class ImageIndex implements UiServerExchangeData<ImageIndex> {
+  image_name: string = "";
+  image_tag: string = "";
   project_name: string = "";
-  namespace: string = "";
-  comment: string = "";
-  config_phase: string = "";
-  service_externalpath: Array<string> = Array();//old=>service_external.service_externalpath
-}
 
-export class ObjectMeta {
-  name: string = "";
-  namespace: string = "";
-  labels: {[key: string]: string} = {};
-}
+  serverToUi(serverResponse: Object): ImageIndex {
+    return Object.assign(this, serverResponse);
+  }
 
-export class HostPathVolumeSource {
-  path: string = "";
-}
-
-export class EmptyDirVolumeSource {
-  medium: string = "";
-}
-
-export class NFSVolumeSource {
-  server: string = ""; //old=>target_storageServer
-  path: string;        //old=>target_dir
-  ReadOnly?: boolean = false;
-}
-
-export class Volume {
-  name: string = "";
-  hostPath?: HostPathVolumeSource = new HostPathVolumeSource();
-  emptyDir?: EmptyDirVolumeSource = new EmptyDirVolumeSource();
-  nfs: NFSVolumeSource = new NFSVolumeSource();
-}
-
-export class PodSpec implements FactoryByPropertyName {
-  volumes: Array<Volume> = Array();
-  containers: Array<Container> = Array();
-
-  getInstanceByPropertyName(propName: string): Object {
-    switch (propName) {
-      case "volumes":
-        return new Volume();
-      case "containers":
-        return new Container();
-      default:
-        return {};
-    }
+  uiToServer(): ImageIndex {
+    return this;
   }
 }
 
-export class PodTemplateSpec {
-  metadata: ObjectMeta = new ObjectMeta();//only input labels
-  spec: PodSpec = new PodSpec();
-}
+export class EnvStruct implements UiServerExchangeData<EnvStruct> {
+  dockerfile_envname: string = "";
+  dockerfile_envvalue: string = "";
 
-export class ReplicationControllerSpec {
-  replicas: number = 1;                   //old=>deployment_replicas
-  selector: {[key: string]: string} = {};//{"app": deployment_name}
-  template: PodTemplateSpec = new PodTemplateSpec();
-}
+  serverToUi(serverResponse: Object): EnvStruct {
+    return Object.assign(this, serverResponse);
+  }
 
-export class ReplicationController {
-  readonly kind: string = "Deployment";              //fixed value
-  readonly apiVersion: string = "extensions/v1beta1";//fixed value
-  metadata: ObjectMeta = new ObjectMeta();           //only input name value old=>deployment_name || service_name
-  spec: ReplicationControllerSpec = new ReplicationControllerSpec();
-}
-
-export class ServicePort {
-  name: string = "";              //old=>service_external.service_containername
-  port: number = 0;               //old=>service_external.service_containerport
-  nodePort: number = 0;           //old=>service_external.service_nodeport
-}
-
-export class ServiceSpec implements FactoryByPropertyName {
-  ports: Array<ServicePort> = Array();   //old=>service_external
-  selector: {[key: string]: string} = {};
-  type: string = "";                    //ports.length > 0? =>"NodePort":""
-
-  getInstanceByPropertyName(propName: string): Object {
-    switch (propName) {
-      case "ports":
-        return new ServicePort();
-      default:
-        return {};
-    }
+  uiToServer(): EnvStruct {
+    return this;
   }
 }
 
-export class Service {
-  readonly kind: string = "Service";    //fixed value
-  readonly apiVersion: string = "v1";   //fixed value
-  metadata: ObjectMeta = new ObjectMeta;//metadata.name = service_name; service_name.labels={"app":service_name}
-  spec: ServiceSpec = new ServiceSpec();
+export class VolumeStruct implements UiServerExchangeData<VolumeStruct> {
+  public target_storage_service: string = "";
+  public target_path: string = "";
+  public volume_name: string = "";
+  public container_path: string = "";
+
+  serverToUi(serverResponse: Object): VolumeStruct {
+    return Object.assign(this, serverResponse);
+  }
+
+  uiToServer(): VolumeStruct {
+    return this;
+  }
 }
 
-export class DeploymentServiceData {        //equal ServiceConfig2 on goLang
-  deployment_yaml: ReplicationController = new ReplicationController();
-  service_yaml: Service = new Service();
-  projectinfo: ProjectInfo = new ProjectInfo();
+export class Container implements UiServerExchangeData<Container> {
+  public name: string = "";
+  public working_dir: string = "";
+  public volume_mount: VolumeStruct = new VolumeStruct();
+  public image: ImageIndex = new ImageIndex();
+  public project_name: string = "";
+  public env: Array<EnvStruct> = Array<EnvStruct>();
+  public container_port: Array<number> = Array();
+  public command: string = "";
+
+  serverToUi(serverResponse: Object): Container {
+    this.name = serverResponse["name"];
+    this.working_dir = serverResponse["working_dir"];
+    this.volume_mount = (new VolumeStruct()).serverToUi(serverResponse["volume_mount"]);
+    this.image = (new ImageIndex()).serverToUi(serverResponse["image"]);
+    this.project_name = serverResponse["project_name"];
+    if (serverResponse["env"]){
+      let envArr: Array<EnvStruct> = serverResponse["env"];
+      envArr.forEach((env: EnvStruct) => {
+        this.env.push((new EnvStruct()).serverToUi(env));
+      });
+    }
+    if (serverResponse["container_port"]){
+      this.container_port = Array.from(serverResponse["container_port"]) as Array<number>;
+    }
+    this.command = serverResponse["command"];
+    return this;
+  }
+
+  uiToServer(): Container {
+    return this;
+  }
 }
 
-export class ServiceStep6Output {
-  service_id: number;
-  service_name: string;
-  project_id: number;
-  project_name: string;
-  service_owner: string;
-  service_creationtime: string;
-  service_public: number;
+export class NodeType implements UiServerExchangeData<NodeType> {
+  target_port: number = 0;
+  node_port: number = 0;
+
+  serverToUi(serverResponse: Object): NodeType {
+    return Object.assign(this, serverResponse);
+  }
+
+  uiToServer(): NodeType {
+    return this;
+  }
 }
-/*---------------------------------service configure end-------------------------------------*/
+
+export class LoadBalancer implements UiServerExchangeData<LoadBalancer> {
+  external_access: string;
+
+  serverToUi(serverResponse: Object): LoadBalancer {
+    return Object.assign(this, serverResponse);
+  }
+
+  uiToServer(): LoadBalancer {
+    return this;
+  }
+}
+
+export class ExternalService implements UiServerExchangeData<ExternalService> {
+  public container_name: string = "";
+  public node_config: NodeType = new NodeType();
+  public load_balancer_config: LoadBalancer = new LoadBalancer();
+
+  serverToUi(serverResponse: Object): ExternalService {
+    this.container_name = serverResponse["container_name"];
+    this.node_config = (new NodeType()).serverToUi(serverResponse["node_config"]);
+    this.load_balancer_config = (new LoadBalancer()).serverToUi(serverResponse["load_balancer_config"]);
+    return this;
+  }
+
+  uiToServer(): ExternalService {
+    return this;
+  }
+}
+
+export class ConfigServiceStep {
+  project_id: number = 0;
+  service_id: number = 0;
+  image_list: Array<ImageIndex> = Array<ImageIndex>();
+  service_name: string = "";
+  instance: number = 0;
+  container_list: Array<Container> = Array<Container>();
+  external_service_list: Array<ExternalService> = Array<ExternalService>();
+}
+
+export class UIServiceStep1 extends UIServiceStepBase {
+  public projectId: number = 0;
+  public projectName: string = "";
+
+  uiToServer(): ServerServiceStep {
+    let result = new ServerServiceStep();
+    result.phase = PHASE_SELECT_PROJECT;
+    result.project_id = this.projectId;
+    return result;
+  }
+
+  serverToUi(serverResponse: Object): UIServiceStep1 {
+    if (serverResponse && serverResponse["project_id"]) {
+      this.projectId = serverResponse["project_id"];
+    }
+    return this;
+  }
+}
+
+export class UIServiceStep2 extends UIServiceStepBase {
+  public imageList: Array<ImageIndex> = Array<ImageIndex>();
+  public projectId: number = 0;
+  public projectName: string = "";
+
+  uiToServer(): ServerServiceStep {
+    let result = new ServerServiceStep();
+    let postData: Array<ImageIndex> = Array<ImageIndex>();
+    result.phase = PHASE_SELECT_IMAGES;
+    this.imageList.forEach((value: ImageIndex) => {
+      postData.push(value.uiToServer());
+    });
+    result.postData = postData;
+    return result;
+  }
+
+  serverToUi(serverResponse: Object): UIServiceStep2 {
+    if (serverResponse && serverResponse["project_id"]) {
+      this.projectId = serverResponse["project_id"];
+    }
+    if (serverResponse && serverResponse["project_name"]) {
+      this.projectName = serverResponse["project_name"];
+    }
+    if (serverResponse && serverResponse["image_list"]) {
+      let list: Array<ImageIndex> = serverResponse["image_list"];
+      list.forEach((value: ImageIndex) => {
+        this.imageList.push((new ImageIndex()).serverToUi(value))
+      });
+    }
+    return this;
+  }
+}
+
+export class UIServiceStep3 extends UIServiceStepBase {
+  public containerList: Array<Container> = Array<Container>();
+
+  uiToServer(): ServerServiceStep {
+    let result = new ServerServiceStep();
+    let postData: Array<Container> = Array<Container>();
+    result.phase = PHASE_CONFIG_CONTAINERS;
+    this.containerList.forEach((value: Container) => {
+      postData.push(value.uiToServer());
+    });
+    result.postData = postData;
+    return result;
+  }
+
+  serverToUi(serverResponse: Object): UIServiceStep3 {
+    if (serverResponse && serverResponse["container_list"]) {
+      let list: Array<Container> = serverResponse["container_list"];
+      list.forEach((value: Container) => {
+        this.containerList.push((new Container()).serverToUi(value))
+      });
+    }
+    return this;
+  }
+}
+
+export class UIServiceStep4 extends UIServiceStepBase {
+  public serviceName: string = "";
+  public instance: number = 1;
+  public externalServiceList: Array<ExternalService> = Array<ExternalService>();
+
+  uiToServer(): ServerServiceStep {
+    let result = new ServerServiceStep();
+    let postData: Array<ExternalService> = Array<ExternalService>();
+    result.phase = PHASE_EXTERNAL_SERVICE;
+    result.service_name = this.serviceName;
+    result.instance = this.instance;
+    this.externalServiceList.forEach((value: ExternalService) => {
+      postData.push(value.uiToServer());
+    });
+    result.postData = postData;
+    return result;
+  }
+
+  serverToUi(serverResponse: Object): UIServiceStep4 {
+    let step4 = new UIServiceStep4();
+    if (serverResponse && serverResponse["external_service_list"]) {
+      let list: Array<ExternalService> = serverResponse["external_service_list"];
+      list.forEach((value: ExternalService) => {
+        step4.externalServiceList.push((new ExternalService()).serverToUi(value));
+      });
+    }
+    if (serverResponse && serverResponse["instance"]) {
+      step4.instance = serverResponse["instance"];
+    }
+    if (serverResponse && serverResponse["service_name"]) {
+      step4.serviceName = serverResponse["service_name"];
+    }
+    return step4;
+  }
+}
+
+export class UiServiceFactory {
+  static getInstance(phase: ServiceStepPhase): UIServiceStepBase {
+    switch (phase) {
+      case PHASE_SELECT_PROJECT:
+        return new UIServiceStep1();
+      case PHASE_SELECT_IMAGES:
+        return new UIServiceStep2();
+      case PHASE_CONFIG_CONTAINERS:
+        return new UIServiceStep3();
+      case PHASE_EXTERNAL_SERVICE:
+        return new UIServiceStep4();
+    }
+  }
+}

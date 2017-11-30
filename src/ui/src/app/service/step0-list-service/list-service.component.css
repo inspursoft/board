@@ -1,0 +1,7 @@
+clr-icon.delete.disabled {
+  color: silver;
+}
+
+clr-icon.delete.disabled:hover {
+  cursor: not-allowed;
+}

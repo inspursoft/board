@@ -35,68 +35,9 @@ div.dynamic-icon-container {
   cursor: pointer;
 }
 
-fieldset.fieldSet-default {
-  margin: 0 2px;
-  border: 1px solid silver;
-  border-radius: 5px;
-  overflow-y: scroll;
-  padding-bottom: 20px;
-}
-
-legend.legend-default {
-  padding: .5em;
-  border: 0;
-  width: auto;
-  margin-left: 30px;
-}
-
-div.create-image-container {
-  display: flex;
-  flex-direction: column;
-  min-width: 500px;
-  padding: 0 0 40px 0;
-}
-
 label.base-text {
   min-width: 180px;
   text-align: right;
-}
-
-div.create-image-line-container {
-  display: flex;
-  width: 100%;
-  margin-top: 10px;
-  height: 30px;
-}
-
-input.upload-file-input {
-  font-size: 10px;
-  margin-left: 10px;
-}
-
-div.create-image-area-container {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  margin-top: 10px;
-}
-
-div.console-container {
-  margin-top: 10px;
-  flex-basis: 100%;
-  padding: 0 10px 40px 10px;
-}
-
-textarea.area-command {
-  margin-left: 10px;
-}
-
-textarea.area-status {
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  color: black;
-  font-size: 11px;
 }
 
 button.default-primary {
@@ -113,7 +54,9 @@ div.plus-container {
   margin-left: 10px;
 }
 
-div.file-list {
-  margin-left: 190px;
+button.get-tag {
+  margin-left: 10px;
+  height: 30px;
   font-size: 10px;
+  line-height: 30px;
 }

@@ -37,17 +37,6 @@ type ServicePublicityUpdate struct {
 	Public int `json:"service_public"`
 }
 
-type ExternalService struct {
-	ContainerName      string       `json:"container_name"`
-	NodeConfig         NodeType     `json:"node_config"`
-	LoadBalancerConfig LoadBalancer `json:"load_balancer_config"`
-}
-
-type NodeType struct {
-	TargetPort int `json:"target_port"`
-	NodePort   int `json:"node_port"`
-}
-
-type LoadBalancer struct {
-	ExternalAccess string `json:"external_access"`
+type ServiceScale struct {
+	Replica int32 `json:"service_scale"`
 }

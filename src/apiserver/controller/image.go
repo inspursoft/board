@@ -624,3 +624,70 @@ func (p *ImageController) DeleteImageTagAction() {
 	//		return
 	//	}
 }
+
+func (p *ImageController) DockerfileBuildImageAction() {
+	imageName := strings.TrimSpace(p.GetString("image_name"))
+	imageTag := strings.TrimSpace(p.GetString("image_tag"))
+	projectName := strings.TrimSpace(p.GetString("project_name"))
+
+	dockerfilePath := filepath.Join(repoPath(), projectName, imageName, imageTag)
+	if _, err := os.Stat(dockerfilePath); os.IsNotExist(err) {
+		p.customAbort(http.StatusNotFound, "Image path does not exist.")
+		return
+	}
+
+	currentProject, err := service.GetProject(model.Project{Name: projectName}, "name")
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if currentProject == nil {
+		p.customAbort(http.StatusBadRequest, "Invalid project name.")
+		return
+	}
+
+	isMember, err := service.IsProjectMember(currentProject.ID, p.currentUser.ID)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	if !(p.isSysAdmin || isMember) {
+		p.customAbort(http.StatusForbidden, "Insufficient privileges to build image.")
+		return
+	}
+
+	// TODO check the dockerfile content in service.dockerfilecheck
+
+	//push to git
+	var pushobject pushObject
+
+	pushobject.FileName = defaultDockerfilename
+	pushobject.JobName = imageProcess
+	pushobject.Value = filepath.Join(projectName, imageName, imageTag)
+	pushobject.Extras = filepath.Join(projectName, imageName) + ":" + imageTag
+	pushobject.Message = fmt.Sprintf("Build image: %s", pushobject.Extras)
+
+	//Get file list for Jenkis git repo
+	uploads, err := service.ListUploadFiles(filepath.Join(dockerfilePath, "upload"))
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	// Add upload files
+	for _, finfo := range uploads {
+		filefullname := filepath.Join(pushobject.Value, "upload", finfo.FileName)
+		pushobject.Items = append(pushobject.Items, filefullname)
+	}
+	// Add Dockerfile
+	pushobject.Items = append(pushobject.Items, filepath.Join(pushobject.Value,
+		defaultDockerfilename))
+
+	ret, msg, err := InternalPushObjects(&pushobject, &(p.baseController))
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	logs.Info("Internal push object: %d %s", ret, msg)
+	p.customAbort(ret, msg)
+}

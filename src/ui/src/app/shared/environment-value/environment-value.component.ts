@@ -12,7 +12,7 @@ import {
   QueryList,
   AfterContentChecked
 } from "@angular/core"
-import { CsInputComponent } from "../cs-input/cs-input.component";
+import { CsInputComponent } from "../cs-components-library/cs-input/cs-input.component";
 import { ValidatorFn, Validators } from "@angular/forms";
 
 export class EnvType {

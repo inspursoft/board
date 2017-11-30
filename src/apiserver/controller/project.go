@@ -70,6 +70,14 @@ func (p *ProjectController) CreateProjectAction() {
 		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Project name: %s is illegal.", reqProject.Name))
 	}
 
+	isSuccess, err = service.CreateNamespace(reqProject.Name)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if !isSuccess {
+		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Namespace name: %s is illegal.", reqProject.Name))
+	}
 }
 
 func (p *ProjectController) ProjectExists() {

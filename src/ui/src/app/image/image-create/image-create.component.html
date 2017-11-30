@@ -1,0 +1,190 @@
+<clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'lg'" [clrModalClosable]="!imageInBuilding">
+  <h4 class="modal-title">{{ "IMAGE.CREATE_IMAGE_TITLE" | translate }}</h4>
+  <div class="modal-body">
+    <clr-alert [(clrAlertClosed)]="!isNewImageAlertOpen" [clrAlertType]="newImageAlertType">
+      <div class="alert-item">
+        <span class="alert-text">{{newImageErrMessage | translate}}</span>
+      </div>
+    </clr-alert>
+    <div class="modal-body-container" [ngSwitch]="imageBuildMethod">
+      <div class="create-image-container">
+        <div class="btn-group build-method-container">
+          <button class="btn"
+                  [disabled]="isInBuildingImage"
+                  [ngClass]="{'btn-primary':imageBuildMethod == 0}"
+                  (click)="resetBuildMethod(0)">
+            {{"IMAGE.CREATE_IMAGE_FROM_TEMP" | translate}}
+          </button>
+          <button class="btn"
+                  [disabled]="isInBuildingImage"
+                  [ngClass]="{'btn-primary':imageBuildMethod == 1}"
+                  (click)="resetBuildMethod(1)">
+            {{"IMAGE.CREATE_IMAGE_FROM_FILE" | translate}}
+          </button>
+        </div>
+        <ng-template [ngSwitchCase]="0">
+          <div class="from-temp-container">
+            <div class="line-container">
+              <label class="base-text">{{"IMAGE.CREATE_IMAGE_SELECT_IMAGE_TEMP" | translate}}:</label>
+              <cs-dropdown class="base-margin-left"
+                           [dropdownDisabled]="isInBuildingImage"
+                           [dropdownWidth]="230"
+                           [dropdownDefaultText]="'Docker File Template'"
+                           [dropdownList]="imageTemplateList"
+                           [dropdownListTextKey]="'name'">
+              </cs-dropdown>
+            </div>
+            <cs-input [inputIsRequired]="true"
+                      [inputPattern]="patternNewImageName"
+                      [inputLabel]="'IMAGE.CREATE_IMAGE_NEW_IMAGE_NAME'|translate"
+                      [disabled]="isInBuildingImage"
+                      [simpleFiled]="customerNewImage.image_name"
+                      (onCheck)="customerNewImage.image_name = $event;asyncGetDockerFilePreviewInfo()">
+            </cs-input>
+            <cs-input [inputIsRequired]="true"
+                      [inputPattern]="patternNewImageTag"
+                      [inputLabel]="'IMAGE.CREATE_IMAGE_IMAGE_TAG'|translate"
+                      [disabled]="isInBuildingImage"
+                      [simpleFiled]="customerNewImage.image_tag"
+                      (onCheck)="customerNewImage.image_tag = $event;asyncGetDockerFilePreviewInfo()">
+            </cs-input>
+            <cs-input [inputIsRequired]="true"
+                      [inputPattern]="patternBaseImage"
+                      [inputLabel]="'IMAGE.CREATE_IMAGE_BASE_IMAGE'|translate"
+                      [disabled]="isInBuildingImage"
+                      [simpleFiled]="customerNewImage.image_dockerfile.image_base"
+                      (onCheck)="customerNewImage.image_dockerfile.image_base = $event;getDockerFilePreviewInfo()">
+            </cs-input>
+            <cs-input [inputPattern]="patternEntryPoint"
+                      [inputLabel]="'IMAGE.CREATE_IMAGE_IMAGE_ENTRYPOINT'|translate"
+                      [disabled]="isInBuildingImage"
+                      [simpleFiled]="customerNewImage.image_dockerfile.image_entrypoint"
+                      (onCheck)="customerNewImage.image_dockerfile.image_entrypoint = $event;getDockerFilePreviewInfo()">
+            </cs-input>
+            <cs-input [inputType]="1"
+                      [inputLabel]="'IMAGE.CREATE_IMAGE_IMAGE_ENV'|translate"
+                      [disabled]="isInBuildingImage"
+                      [simpleFiled]="envsDescription"
+                      (onEdit)="isOpenEnvironment = true"></cs-input>
+            <cs-input-array [inputArraySource]="imageVolume"
+                            [inputArrayPattern]="patternVolume"
+                            [disabled]="isInBuildingImage"
+                            [inputArrayLabelText]="'IMAGE.CREATE_IMAGE_IMAGE_VOLUME'|translate"
+                            (onCheck)="getDockerFilePreviewInfo()"
+                            (onMinus)="getDockerFilePreviewInfo()"></cs-input-array>
+            <cs-input-array [inputArraySource]="imageRun"
+                            [inputArrayPattern]="patternRun"
+                            [disabled]="isInBuildingImage"
+                            [inputArrayLabelText]="'IMAGE.CREATE_IMAGE_IMAGE_RUN'|translate"
+                            (onCheck)="getDockerFilePreviewInfo()"
+                            (onMinus)="getDockerFilePreviewInfo()"></cs-input-array>
+            <cs-input-array [inputArraySource]="imageExpose"
+                            [inputArrayIsRequired]="true"
+                            [inputArrayPattern]="patternExpose"
+                            [disabled]="isInBuildingImage"
+                            [inputArrayLabelText]="'IMAGE.CREATE_IMAGE_IMAGE_EXPOSE'|translate"
+                            (onCheck)="getDockerFilePreviewInfo()"
+                            (onMinus)="getDockerFilePreviewInfo()"></cs-input-array>
+            <div class="line-container ">
+              <label class="base-text">{{"IMAGE.CREATE_IMAGE_UPLOAD_ARCHIVES" | translate}}:</label>
+              ﻿<input type="file"
+                      class="upload-file-input"
+                      [disabled]="isInBuildingImage || isUploadFileIng"
+                      (change)="uploadFile($event)"
+                      accept="*.*">
+              <span *ngIf="isUploadFileIng" class="spinner spinner-sm"></span>
+            </div>
+            <div class="file-list"
+                 *ngFor="let file of filesList.get(customerNewImage.image_name)">
+              <clr-icon class="dynamic-icon" shape="minus" (click)="removeFile(file)"></clr-icon>
+              {{file.file_name}}
+            </div>
+            <div class="create-image-area-container">
+              <label for="areaCommand" class="base-text">{{"IMAGE.CREATE_IMAGE_COMMAND" | translate}}:</label>
+              <textarea id="areaCommand"
+                        rows="3"
+                        class="area-command"
+                        (keypress)="shieldEnter($event)"
+                        [(ngModel)]="customerNewImage.image_dockerfile.image_cmd"
+                        [disabled]="isInBuildingImage">
+              </textarea>
+            </div>
+          </div>
+        </ng-template>
+        <ng-template [ngSwitchCase]="1">
+          <div class="from-docker-file-container">
+            <cs-input [inputIsRequired]="true"
+                      [inputPattern]="patternNewImageName"
+                      [inputLabel]="'IMAGE.CREATE_IMAGE_NEW_IMAGE_NAME'|translate"
+                      [disabled]="isInBuildingImage"
+                      [simpleFiled]="customerNewImage.image_name"
+                      (onCheck)="customerNewImage.image_name = $event;downloadDockerFile()">
+            </cs-input>
+            <cs-input [inputIsRequired]="true"
+                      [inputPattern]="patternNewImageTag"
+                      [inputLabel]="'IMAGE.CREATE_IMAGE_IMAGE_TAG'|translate"
+                      [disabled]="isInBuildingImage"
+                      [simpleFiled]="customerNewImage.image_tag"
+                      (onCheck)="customerNewImage.image_tag = $event;downloadDockerFile()">
+            </cs-input>
+            <div class="line-container base-margin-top">
+              <label>{{"IMAGE.CREATE_IMAGE_SELECT_DOCKER_FILE" | translate}}:</label>
+            </div>
+            <div class="line-container base-margin-top">
+              ﻿<input type="file"
+                      [disabled]="customerNewImage.image_name == '' || customerNewImage.image_tag == '' || isInBuildingImage || isUploadFileIng"
+                      (change)="selectDockerFile($event)"
+                      accept="*.*">
+              <span *ngIf="isUploadFileIng" class="spinner spinner-sm"></span>
+            </div>
+            <div *ngIf="selectFromImportFile" class="line-container file-info-container">
+              <label>{{"IMAGE.CREATE_IMAGE_SELECTED_FILE_INFO" | translate}}:</label>
+              <table class="table table-vertical">
+                <tbody>
+                <tr>
+                  <th><span class="file-title">{{"IMAGE.CREATE_IMAGE_FILE_NAME" | translate}}:</span></th>
+                  <td>{{selectFromImportFile?.name}}</td>
+                </tr>
+                <tr>
+                  <th><span class="file-title">{{"IMAGE.CREATE_IMAGE_FILE_TYPE" | translate}}:</span></th>
+                  <td>{{selectFromImportFile?.type}}</td>
+                </tr>
+                <tr>
+                  <th><span class="file-title">{{"IMAGE.CREATE_IMAGE_FILE_SIZE" | translate}}:</span></th>
+                  <td>{{selectFromImportFile?.size | size}}</td>
+                </tr>
+                <tr>
+                  <th><span class="file-title">{{"IMAGE.CREATE_IMAGE_FILE_LAST_MODIFY" | translate}}:</span></th>
+                  <td>{{selectFromImportFile?.lastModifiedDate | date:'yyyy-MM-dd HH:mm:ss'}}</td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </ng-template>
+      </div>
+      <div class="console-container">
+        <textarea title="" id="areaStatus" class="area-status" readonly>{{consoleText}}</textarea>
+        <div class="build-btn-container">
+          <button class="btn btn-primary default-primary"
+                  [disabled]="isBuildDisabled"
+                  (click)="buildImage()">
+            {{"IMAGE.CREATE_IMAGE_BUILD_IMAGE" | translate}}
+          </button>
+          <button class="btn btn-primary default-primary"
+                  *ngIf="isInBuildingImage"
+                  [disabled]="lastJobNumber <= 0"
+                  (click)="cancelBuildImage()">
+            {{"IMAGE.CREATE_IMAGE_CANCEL_WAIT" | translate}}
+          </button>
+          <span *ngIf="isInBuildingImage" class="spinner spinner-sm"></span>
+        </div>
+      </div>
+    </div>
+    <environment-value *ngIf="isOpenEnvironment"
+                       [inputEnvsData]="defaultEnvsData"
+                       [(isOpen)]="isOpenEnvironment"
+                       (onConfirm)="setEnvironment($event)">
+    </environment-value>
+  </div>
+</clr-modal>

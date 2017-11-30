@@ -6,8 +6,8 @@
                 [inputIsRequired]="true"
                 [inputPattern]="patternServiceName"
                 [inputLabel]="'SERVICE.STEP_4_SERVICE_NAME' | translate"
-                [simpleFiled]="outputData.service_yaml.metadata.name"
-                (onCheck)="setServiceName($event)">
+                [simpleFiled]="uiData.serviceName"
+                (onCheck)="uiData.serviceName = $event">
       </cs-input>
     </div>
     <div class="config-service-info-line">
@@ -16,7 +16,7 @@
                    [dropdownWidth]="310"
                    [dropdownDefaultText]="'1'"
                    [dropdownList]="dropDownListNum"
-                   (onChange)="outputData.deployment_yaml.spec.replicas = $event">
+                   (onChange)="uiData.instance = $event">
       </cs-dropdown>
     </div>
   </div>
@@ -32,7 +32,7 @@
     <span class="base-margin-left">{{"SERVICE.STEP_4_EXTERNAL_SERVICE"|translate}}:</span>
   </div>
   <div *ngIf="showExternal && showAdvanced">
-    <div class="external-container" *ngFor="let servicePort of servicePortsArray;let iIndex = index">
+    <div class="external-container" *ngFor="let externalService of uiData.externalServiceList;let iIndex = index">
       <div class="external-line-container">
         <clr-icon class="plus-icon"
                   shape="minus"
@@ -40,7 +40,7 @@
         </clr-icon>
         <span class="external-title icon">{{"SERVICE.STEP_4_CONTAINER"|translate}}:</span>
         <cs-dropdown class="base-margin-left"
-                     [dropdownList]="containerList"
+                     [dropdownList]="uiPreData.containerList"
                      [dropdownListTextKey]="'name'"
                      [dropdownWidth]="310"
                      [dropdownDefaultText]="getContainerDropdownText(iIndex) | translate"
@@ -50,23 +50,22 @@
       <div class="external-line-container">
         <span class="external-title">{{"SERVICE.STEP_4_PORT"|translate}}:</span>
         <cs-dropdown class="base-margin-left"
-                     [dropdownDisabled]="servicePort.name == ''"
-                     [dropdownList]="getContainerPorts(servicePort.name)"
-                     [dropdownListTextKey]="'containerPort'"
+                     [dropdownDisabled]="externalService.container_name == ''"
+                     [dropdownList]="getContainerPorts(externalService.container_name)"
                      [dropdownWidth]="310"
                      [dropdownDefaultText]="getContainerPortDropdownText(iIndex) | translate"
-                     (onChange)="servicePort.port = $event.containerPort">
+                     (onChange)="externalService.node_config.target_port = $event">
         </cs-dropdown>
       </div>
       <div class="external-line-container">
         <cs-input class="base-input"
                   [inputFiledType]="1"
-                  [simpleFiled]="servicePort.nodePort"
+                  [simpleFiled]="externalService.node_config.node_port"
                   [disabled]="!radNode.checked"
                   [inputLabel]="'SERVICE.STEP_4_NODE_PORT' | translate"
                   [inputMin]="30000"
                   [inputMax]="32766"
-                  (onCheck)="setServiceNodeport($event,iIndex)">
+                  (onCheck)="setNodePort(iIndex,$event)">
         </cs-input>
         <div class="radio-inline external-radio-container">
           <input #radNode
@@ -74,16 +73,16 @@
                  type="radio"
                  [name]="'port' + iIndex"
                  [id]="'radNode' + iIndex"
-                 (change)="onRadNodeChange(iIndex)" checked>
+                 (change)="externalService.load_balancer_config.external_access = ''" checked>
           <label [for]="'radNode' + iIndex"></label>
         </div>
       </div>
       <div class="external-line-container">
         <cs-input class="base-input"
-                  [simpleFiled]="getExternalPath(iIndex)"
+                  [simpleFiled]="externalService.load_balancer_config.external_access"
                   [disabled]="!radExternal.checked"
                   [inputLabel]="'SERVICE.STEP_4_EXTERNAL_ACCESS' | translate"
-                  (onCheck)="setExternalPath(iIndex,$event)">
+                  (onCheck)="externalService.load_balancer_config.external_access = $event">
         </cs-input>
         <div class="radio-inline external-radio-container">
           <input #radExternal
@@ -91,7 +90,7 @@
                  type="radio"
                  [name]="'port' + iIndex"
                  [id]="'radExternal' + iIndex"
-                 (change)="onRadExternalpathChange(iIndex)">
+                 (change)="externalService.node_config.node_port = 0">
           <label [for]="'radExternal'+ iIndex"></label>
         </div>
       </div>

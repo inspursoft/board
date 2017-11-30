@@ -1,10 +1,8 @@
 /**
  * Created by liyanq on 9/1/17.
  */
-
-
 import { Component, Input, Output, EventEmitter, ViewChildren, QueryList } from "@angular/core"
-import { CsInputComponent } from "../../cs-input/cs-input.component";
+import { CsInputComponent } from "../../../shared/cs-components-library/cs-input/cs-input.component";
 
 export interface VolumeOutPut {
   out_name: string;     //old=>target_storagename || deployment_yaml.volume_list.volume_name

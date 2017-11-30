@@ -18,11 +18,12 @@ import { MemberComponent } from './member/member.component';
   templateUrl: 'project.component.html'
 })
 export class ProjectComponent implements OnInit, OnDestroy {
-  
+
   projects: Project[];
 
   @ViewChild(CreateProjectComponent) createProjectModal;
   @ViewChild(MemberComponent) memberModal;
+  checkboxRevertInfo:{isNeeded: boolean, value: boolean};
 
   _subscription: Subscription;
   currentUser: {[key: string]: any};
@@ -94,14 +95,18 @@ export class ProjectComponent implements OnInit, OnDestroy {
   }
 
   toggleProjectPublic(p: Project): void {
-    p.project_public = (p.project_public === 1 ? 0 : 1);
+    let oldPublic = p.project_public;
     let toggleMessage = new Message();
     this.projectService
-      .togglePublicity(p)
+      .togglePublicity(p.project_id, p.project_public === 1? 0 : 1)
       .then(()=>{
+        p.project_public = oldPublic == 1 ? 0 : 1;
         toggleMessage.message = 'PROJECT.SUCCESSFUL_TOGGLE_PROJECT'; 
         this.messageService.inlineAlertMessage(toggleMessage);
       })
-      .catch(err=>this.messageService.dispatchError(err, ''));
+      .catch(err=>{
+        this.checkboxRevertInfo = {isNeeded:true,value:oldPublic === 1};
+        this.messageService.dispatchError(err, '');
+      });
   }
 }

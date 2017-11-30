@@ -24,6 +24,7 @@ export class UserList implements OnInit, OnDestroy {
   showNewUser: boolean = false;
   setUserSystemAdminIng: boolean = false;
   isInLoading: boolean = false;
+  checkboxRevertInfo: {isNeeded: boolean, value: boolean};
 
   constructor(private userService: UserService,
               private appInitService: AppInitService,
@@ -78,7 +79,7 @@ export class UserList implements OnInit, OnDestroy {
   }
 
   editUser(user: User) {
-    if (user.user_deleted != 1){
+    if (user.user_deleted != 1) {
       this.curEditModel = editModel.emEdit;
       this.userService.getUser(user.user_id)
         .then(user => {
@@ -90,7 +91,7 @@ export class UserList implements OnInit, OnDestroy {
   }
 
   deleteUser(user: User) {
-    if (user.user_deleted != 1){
+    if (user.user_deleted != 1) {
       let m: Message = new Message();
       m.title = "USER_CENTER.DELETE_USER";
       m.buttons = BUTTON_STYLE.DELETION;
@@ -103,11 +104,11 @@ export class UserList implements OnInit, OnDestroy {
 
   setUserSystemAdmin(user: User) {
     this.setUserSystemAdminIng = true;
-    let userSystemAdmin = user.user_system_admin == 1 ? 0 : 1;
-    this.userService.setUserSystemAdmin(user.user_id, userSystemAdmin)
+    let oldUserSystemAdmin = user.user_system_admin;
+    this.userService.setUserSystemAdmin(user.user_id, oldUserSystemAdmin == 1 ? 0 : 1)
       .then(() => {
         this.setUserSystemAdminIng = false;
-        user.user_system_admin = userSystemAdmin;
+        user.user_system_admin = oldUserSystemAdmin == 1 ? 0 : 1;
         let m: Message = new Message();
         if (user.user_system_admin === 1) {
           m.message = "USER_CENTER.SUCCESSFUL_SET_SYS_ADMIN";
@@ -119,6 +120,7 @@ export class UserList implements OnInit, OnDestroy {
       })
       .catch(err => {
         this.setUserSystemAdminIng = false;
+        this.checkboxRevertInfo = {isNeeded: true, value: oldUserSystemAdmin == 1};
         this.messageService.dispatchError(err);
       })
   }

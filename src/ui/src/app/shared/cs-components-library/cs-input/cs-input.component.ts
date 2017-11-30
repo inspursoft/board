@@ -111,7 +111,7 @@ export class CsInputComponent implements OnInit {
   }
 
   public get valid(): boolean {
-    let notEmpty = this.inputField.value != 0 && this.inputField.value != "";
+    let notEmpty = this.inputField.value != 0 && this.inputField.value;
     let isInView = this.inputField.status == CsInputStatus.isView;
     if (this.inputIsRequired) {
       return notEmpty && isInView;

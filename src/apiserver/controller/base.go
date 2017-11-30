@@ -51,6 +51,7 @@ type baseController struct {
 	token          string
 	isSysAdmin     bool
 	isProjectAdmin bool
+	isExternalAuth bool
 }
 
 func (b *baseController) Render() error {

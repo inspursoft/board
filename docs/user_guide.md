@@ -36,7 +36,11 @@ Board supports databse authentication modes, will support LDAP next release:
 	
 * **LDAP/Active Directory (ldap_auth)**  
 
-	Support in next release
+	Under this authentication mode, users whose credentials are stored in an external LDAP or AD server can log in to Board directly.  
+	
+	When an LDAP/AD user logs in by *username* and *password*, Board binds to the LDAP/AD server with the **"LDAP Search DN"** and **"LDAP Search Password"** described in [installation guide](installation_guide.md). If it succeeded, Board looks up the user under the LDAP entry **"LDAP Base DN"** including substree. The attribute (such as uid, cn) specified by **"LDAP UID"** is used to match a user with the *username*. If a match is found, the user's *password* is verified by a bind request to the LDAP/AD server.  
+	
+	Self-registration, changing password and resetting password are not supported under LDAP/AD authentication mode because the users are managed by LDAP or AD.  
 
 ## Role Based Access Control(RBAC)  
 

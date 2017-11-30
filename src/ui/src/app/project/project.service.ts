@@ -47,10 +47,10 @@ export class ProjectService {
       .catch(err=>Promise.reject(err));
   }
 
-  togglePublicity(project: Project): Promise<any> {
+  togglePublicity(projectId:number,projectPublic:number): Promise<any> {
     return this.http
-      .put(`/api/v1/projects/${project.project_id}/publicity`, {
-        'project_public': project.project_public
+      .put(`/api/v1/projects/${projectId}/publicity`, {
+        'project_public': projectPublic
       }, {
         headers: this.defaultHeader
       })
