@@ -284,16 +284,6 @@ func (sc *ServiceConfigController) configContainerList(key string, configService
 		container.Name = strings.ToLower(container.Name)
 	}
 
-	for _, image := range configServiceStep.ImageList {
-		fromIndex := strings.LastIndex(image.ImageName, "/")
-		imageName := image.ImageName[fromIndex+1:]
-		for i, container := range containerList {
-			if container.Name == imageName {
-				containerList[i].Image = image
-			}
-		}
-	}
-
 	SetConfigServiceStep(key, configServiceStep.ConfigContainerList(containerList))
 }
 
