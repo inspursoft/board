@@ -69,6 +69,9 @@ func syncServiceWithK8s() {
 
 func main() {
 
+	logs.SetLogFuncCall(true)
+	logs.SetLogFuncCallDepth(4)
+
 	utils.Initialize()
 
 	utils.AddEnv("BOARD_ADMIN_PASSWORD")
