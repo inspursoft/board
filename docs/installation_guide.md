@@ -346,6 +346,34 @@ $ systemctl start kube-scheduler
 ```
 #### Install and Configure Kubernetes Nodes
 
+Install kubernetes node softwares on a node
+```
+$ yum install -y docker kubelet kubeadm kubectl kubernetes-cni
+```
+
+Start docker on a node
+```
+$ systemctl enable docker && systemctl start docker
+```
+
+Start kubelet on a node
+```
+$ systemctl enable kubelet && systemctl start kubelet
+```
+
+Join the kubernetes cluster
+```
+$ kubeadm join --token <token> <KUBE_MASTER_IP:PORT>
+```
+
+* Manage the nodes in the cluster by Board
+
+User can monitor all nodes in the current cluster by the Board system, click the "nodes" button:
+<img src="img/userguide/node1.JPG" width="100" alt="List nodes in cluster">
+
+User can manage the nodes by operations, such as remove a node from the cluster:
+<img src="img/userguide/node3.JPG" width="100" alt="Remove a node from cluster">
+
 ### Network Configuration
 
 ### Storage Configuration 
