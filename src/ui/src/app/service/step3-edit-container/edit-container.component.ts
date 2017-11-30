@@ -75,7 +75,7 @@ export class EditContainerComponent extends ServiceStepBase implements OnInit, A
 
   setDefaultContainerInfo(container: Container): void {
     let isNew = !this.isBack;
-    this.k8sService.getContainerDefaultInfo(container.image.image_name, container.image.image_tag, container.project_name)
+    this.k8sService.getContainerDefaultInfo(container.image.image_name, container.image.image_tag, container.image.project_name)
       .then((res: BuildImageDockerfileData) => {
         this.step3TypeStatus.set(container, true);
         if (res.image_cmd && isNew) {

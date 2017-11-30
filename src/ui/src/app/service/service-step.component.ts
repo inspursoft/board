@@ -76,7 +76,6 @@ export class Container implements UiServerExchangeData<Container> {
   public working_dir: string = "";
   public volume_mount: VolumeStruct = new VolumeStruct();
   public image: ImageIndex = new ImageIndex();
-  public project_name: string = "";
   public env: Array<EnvStruct> = Array<EnvStruct>();
   public container_port: Array<number> = Array();
   public command: string = "";
@@ -86,7 +85,6 @@ export class Container implements UiServerExchangeData<Container> {
     this.working_dir = serverResponse["working_dir"];
     this.volume_mount = (new VolumeStruct()).serverToUi(serverResponse["volume_mount"]);
     this.image = (new ImageIndex()).serverToUi(serverResponse["image"]);
-    this.project_name = serverResponse["project_name"];
     if (serverResponse["env"]){
       let envArr: Array<EnvStruct> = serverResponse["env"];
       envArr.forEach((env: EnvStruct) => {
