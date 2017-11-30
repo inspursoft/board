@@ -53,3 +53,10 @@ div.plus-container {
 .base-margin-left {
   margin-left: 10px;
 }
+
+button.get-tag {
+  margin-left: 10px;
+  height: 30px;
+  font-size: 10px;
+  line-height: 30px;
+}

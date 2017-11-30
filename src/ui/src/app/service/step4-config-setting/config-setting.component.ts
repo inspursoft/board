@@ -1,5 +1,13 @@
 import { Component, OnInit, AfterContentChecked, ViewChildren, QueryList, Injector } from '@angular/core';
-import { Container, ContainerPort, ServicePort } from '../service-step.component';
+import {
+  PHASE_EXTERNAL_SERVICE,
+  PHASE_CONFIG_CONTAINERS,
+  Container,
+  ServiceStepPhase,
+  UIServiceStep4,
+  UIServiceStep3,
+  ExternalService
+} from '../service-step.component';
 import { CsInputComponent } from "../../shared/cs-components-library/cs-input/cs-input.component";
 import { ServiceStepBase } from "../service-step";
 
@@ -15,6 +23,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
   showExternal: boolean = false;
   showCollaborative: boolean = false;
   isInputComponentsValid = false;
+  uiPreData: UIServiceStep3 = new UIServiceStep3();
 
   constructor(protected injector: Injector) {
     super(injector);
@@ -33,103 +42,68 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
   }
 
   ngOnInit() {
-    this.k8sService.getServiceConfig(this.newServiceId, this.outputData).then(res => {
-      this.outputData = res;
-      this.containerList.forEach((container: Container) => {
-        container.volumeMounts.forEach(volume => {
-          this.deployVolumes.push({
-            name: volume.name,
-            nfs: {server: volume.ui_nfs_server, path: volume.ui_nfs_path}
-          });
-        });
-      });
+    this.k8sService.getServiceConfig(PHASE_CONFIG_CONTAINERS).then(res => {
+      this.uiPreData = res as UIServiceStep3;
+    });
+    this.k8sService.getServiceConfig(this.stepPhase).then(res => {
+      this.uiBaseData = res;
     });
     for (let i = 1; i <= 100; i++) {
       this.dropDownListNum.push(i)
     }
   }
 
-  get servicePortsArray(): Array<ServicePort> {
-    return this.outputData.service_yaml.spec.ports;
+  get stepPhase(): ServiceStepPhase {
+    return PHASE_EXTERNAL_SERVICE
   }
 
-  get serviceSelectorsArray(): {[key: string]: string} {
-    //get selectors list api ...
-    return this.outputData.service_yaml.spec.selector;
+  get uiData(): UIServiceStep4 {
+    return this.uiBaseData as UIServiceStep4;
   }
 
-  setServiceName(serviceName: string) {
-    this.outputData.service_yaml.metadata.name = serviceName;
-    this.outputData.service_yaml.metadata.labels = {"app": serviceName};
-    this.outputData.service_yaml.spec.selector = {"app": serviceName};
-    this.outputData.deployment_yaml.metadata.name = serviceName;
-    this.outputData.deployment_yaml.spec.template.metadata.labels = {"app": serviceName};
+  setNodePort(index: number, port: number) {
+    this.uiData.externalServiceList[index].node_config.node_port = Number(port).valueOf();
   }
 
   addContainerInfo() {
-    this.servicePortsArray.push({name: "", port: 0, nodePort: 0});
-    this.outputData.service_yaml.spec.type = "NodePort";
-    this.outputData.projectinfo.service_externalpath.push("");
+    this.uiData.externalServiceList.push(new ExternalService());
   }
 
   removeContainerInfo(index: number) {
-    this.servicePortsArray.splice(index, 1);
-    this.outputData.projectinfo.service_externalpath.splice(index, 1);
+    this.uiData.externalServiceList.splice(index, 1);
   }
 
   getContainerDropdownText(index: number): string {
-    let result = this.servicePortsArray[index].name;
+    let result = this.uiData.externalServiceList[index].container_name;
     return result == "" ? "SERVICE.STEP_4_SELECT_CONTAINER" : result;
   }
 
   getContainerPortDropdownText(index: number): string {
-    let result = this.servicePortsArray[index].port;
+    let result = this.uiData.externalServiceList[index].node_config.target_port;
     return result == 0 ? "SERVICE.STEP_4_SELECT_PORT" : result.toString();
   }
 
   setExternalInfo(container: Container, index: number) {
-    this.servicePortsArray[index].name = container.name;
+    this.uiData.externalServiceList[index].container_name = container.name;
   }
 
-  getContainerPorts(containerName: string): Array<ContainerPort> {
-    let result: Array<ContainerPort>;
-    this.containerList.forEach(container => {
+  getContainerPorts(containerName: string): Array<number> {
+    let result: Array<number> = Array<number>();
+    this.uiPreData.containerList.forEach((container: Container) => {
       if (container.name == containerName) {
-        result = container.ports;
+        result = container.container_port;
       }
     });
     return result;
   }
 
-  onRadNodeChange(index: number) {
-    this.outputData.projectinfo.service_externalpath[index] = "";
-  }
-
-  onRadExternalpathChange(index: number) {
-    this.servicePortsArray[index].nodePort = 0;
-  }
-
-  setServiceNodeport(port: string, index: number) {
-    this.servicePortsArray[index].nodePort = Number(port).valueOf();
-  }
-
-  getExternalPath(index: number): string {
-    return this.outputData.projectinfo.service_externalpath[index];
-  }
-
-  setExternalPath(index: number, value: string): void {
-    this.outputData.projectinfo.service_externalpath[index] = value;
-  }
-
   forward(): void {
-    this.k8sService.setServiceConfig(this.outputData).then(() => {
+    this.k8sService.setServiceConfig(this.uiData.uiToServer()).then(() => {
       this.k8sService.stepSource.next({index: 6, isBack: false});
     });
   }
 
   backUpStep(): void {
-    this.k8sService.setServiceConfig(this.outputData).then(() => {
-      this.k8sService.stepSource.next({index: 3, isBack: true});
-    });
+    this.k8sService.stepSource.next({index: 3, isBack: true});
   }
 }

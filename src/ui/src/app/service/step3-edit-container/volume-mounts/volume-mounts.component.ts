@@ -1,8 +1,6 @@
 /**
  * Created by liyanq on 9/1/17.
  */
-
-
 import { Component, Input, Output, EventEmitter, ViewChildren, QueryList } from "@angular/core"
 import { CsInputComponent } from "../../../shared/cs-components-library/cs-input/cs-input.component";
 

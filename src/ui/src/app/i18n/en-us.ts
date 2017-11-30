@@ -232,6 +232,7 @@ export const LANG_EN_US = {
     "CREATE_IMAGE_FILE_TYPE":"File Type",
     "CREATE_IMAGE_FILE_SIZE":"File Size",
     "CREATE_IMAGE_FILE_LAST_MODIFY":"Last Modify Date",
+    "CREATE_IMAGE_EXIST":"Image have selected",
     "CREATE_IMAGE_FROM_TEMP":"From Template",
     "CREATE_IMAGE_FROM_FILE":"From LocalFile",
   },

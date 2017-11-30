@@ -2,7 +2,6 @@ package controller
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	"git/inspursoft/board/src/apiserver/service"
@@ -29,8 +28,6 @@ const (
 	nacomment              = "NA"
 	serviceNamespace       = "default" //TODO create in project post
 )
-
-var serverNameDuplicateErr = errors.New("ERR_SERVICE_NAME_DUPLICATE")
 
 const (
 	preparing = iota

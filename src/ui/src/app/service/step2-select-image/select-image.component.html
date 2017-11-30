@@ -19,8 +19,7 @@
                  (onChange)="changeSelectImage(iImage,$event)"
                  (onOnlyClickItem)="clickSelectImage(iImage,$event)">
     </cs-dropdown>
-    <button class="btn btn-default"
-            style="margin-left: 10px;height: 30px;font-size: 10px;line-height: 30px;"
+    <button class="btn btn-default get-tag"
             (click)="setImageDetailList(selectedImage.image_name)"
             *ngIf="imageTagNotReadyList.get(selectedImage.image_name)">
       {{"SERVICE.STEP_2_GET_IMAGE_TAG"|translate}}
