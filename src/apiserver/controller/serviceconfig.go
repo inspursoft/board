@@ -109,6 +109,24 @@ func (s *ConfigServiceStep) GetConfigContainerList() interface{} {
 			image.ProjectName = image.ImageName[:fromIndex]
 			s.ContainerList = append(s.ContainerList, model.Container{Name: image.ImageName[fromIndex+1:], Image: image})
 		}
+	} else {
+		containerList := make([]model.Container, 0)
+		for _, image := range s.ImageList {
+			hasChanged := false
+			for _, container := range s.ContainerList {
+				if image.ImageName == container.Image.ImageName && image.ImageTag == container.Image.ImageTag {
+					hasChanged = true
+					containerList = append(containerList, container)
+					break
+				}
+			}
+			if hasChanged == false {
+				fromIndex := strings.LastIndex(image.ImageName, "/")
+				image.ProjectName = image.ImageName[:fromIndex]
+				containerList = append(containerList, model.Container{Name: image.ImageName[fromIndex+1:], Image: image})
+			}
+		}
+		s.ContainerList = containerList
 	}
 
 	return struct {
