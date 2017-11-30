@@ -118,9 +118,9 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
   }
 
   canChangeSelectImage(image: Image) {
-    if (this.imageSelectList.indexOf(image) > -1) {
+    if (this.imageSelectList.find(value => value.image_name == image.image_name)) {
       let m: Message = new Message();
-      m.message = "SERVICE.STEP_2_IMAGE_SELECTED";
+      m.message = "IMAGE.CREATE_IMAGE_EXIST";
       this.messageService.inlineAlertMessage(m);
       return false;
     }
@@ -154,6 +154,7 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
   }
 
   forward(): void {
+    this.uiData.imageList.splice(0, this.uiData.imageList.length);//empty list
     this.imageSelectList.forEach((image: Image) => {
       let selectedImage = this.uiData.imageList.find((imageIndex: ImageIndex) => imageIndex.image_name == image.image_name);
       if (selectedImage) {
