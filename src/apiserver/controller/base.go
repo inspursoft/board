@@ -48,6 +48,7 @@ var repoPath = utils.GetConfig("REPO_PATH")
 type baseController struct {
 	beego.Controller
 	currentUser    *model.User
+	token          string
 	isSysAdmin     bool
 	isProjectAdmin bool
 	isExternalAuth bool
@@ -112,6 +113,8 @@ func (b *baseController) getCurrentUser() *model.User {
 		}
 		return nil
 	}
+
+	b.token = token
 
 	if strID, ok := payload["id"].(string); ok {
 		userID, err := strconv.Atoi(strID)

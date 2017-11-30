@@ -1341,6 +1341,143 @@ paths:
           description: Invalid service ID.
         500:
           description: Unexpected internal errors.
+
+      
+  /v1/services/config:
+    post:
+      summary: Deploy service by this service configuration.
+      description: 
+        This endpoint is aimed to deploy service by this service configuration.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: phase
+          in: query
+          type: string
+          required: true
+        - name: project_id
+          in: query
+          type: integer
+          format: int64
+          required: false 
+        - name: service_name
+          in: query
+          type: string
+          required: false
+        - name: instance
+          in: query
+          type: integer
+          format: int
+          required: false 
+        - name: imagelist
+          in: body
+          required: false 
+          type: array
+          items:
+            $ref: '#/definitions/ImageList'
+          description: Updates of imagelist data.
+        - name: containerlist
+          in: body
+          required: false 
+          type: array
+          items:
+            $ref: '#/definitions/ContainerList'
+          description: Updates of ContainerList data.
+        - name: externalservice
+          in: body
+          required: false 
+          type: array
+          items:
+            $ref: '#/definitions/ExternalService'
+          description: Updates of ExternalService data.
+        - name: entireservice
+          in: body
+          required: false 
+          type: object
+          schema:
+            $ref: '#/definitions/EntireService'
+          description: Updates of EntireService data.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Deploy service successfully, return serive brief.
+          schema:
+            $ref: '#/definitions/ServiceBrief'
+        401:
+          description: User need to log in first.
+        402:
+          description: Invalid configuration phase.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.
+    get:
+      summary: Return nodes in Board added by admin.
+      description: |
+        This endpoint returns all nodes in Board, and can be filtered by node name.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: phase
+          in: query
+          type: string
+          required: true
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched nodes.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/NodeDetail'
+          headers:
+            X-Total-Count:
+              description: The total count of nodes.
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page.
+              type: string
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+
+  /v1/services/deployment:
+    post:
+      summary: Deploy service by this service configuration.
+      description: |
+        This endpoint is aimed to deploy service by this service configuration.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Deploy service successfully, return serive brief.
+          schema:
+            $ref: '#/definitions/ServiceBrief'
+        401:
+          description: User need to log in first.
+        402:
+          description: Invalid configuration phase.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.
   /v1/services/{service_id}/deployment:
     post:
       summary: Deploy service by this service configuration.
@@ -3210,6 +3347,100 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/ContainerEnvs'
+  ImageList:
+    type: object
+    properties:
+      image_name:
+        type: string
+      image_tag:
+        type: string
+      project_name:
+        type: string
+  ContainerList:
+    type: object
+    properties:
+      name:
+        type: string
+      working_Dir:
+        type: string
+      command:
+        type: string
+      container_port:
+        type: array
+        items:
+          type: integer   
+          format: int
+      volume_mounts:
+        type: object
+        properties:
+          target_storage_service:
+            type: string
+          target_path:
+            type: string    
+          volume_name:
+            type: string
+          container_path:
+            type: string 
+      image:
+        type: object
+        schema:
+            $ref: '#/definitions/ImageList'       
+      env:
+        type: array
+        items:
+          $ref: '#/definitions/EnvStruct' 
+  EnvStruct:
+    type: object
+    properties:
+      dockerfile_envname:
+        type: string
+      dockerfile_envvalue:
+        type: string   
+  ExternalService:
+    type: object
+    properties:
+      container_name:
+        type: string
+      node_config:
+        type: object
+        properties:
+          target_port:
+            type: integer   
+            format: int
+          node_port:
+            type: integer   
+            format: int 
+      load_balancer_config:
+        type: object
+        properties:
+          external_access:
+            type: string
+  EntireService:
+    type: object
+    properties:
+      project_id:
+        type: integer   
+        format: int64
+      service_id:
+        type: integer   
+        format: int64
+      instance:
+        type: integer   
+        format: int
+      service_name:
+        type: string
+      image_list:
+        type: array
+        items:
+            $ref: '#/definitions/ImageList'
+      container_list:
+        type: array
+        items:
+            $ref: '#/definitions/ContainerList'
+      external_service_list:
+        type: array
+        items:
+            $ref: '#/definitions/ExternalService'      
   ContainerEnvs:
     type: object
     properties:
