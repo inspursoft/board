@@ -1,6 +1,8 @@
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 
+import { State } from "clarity-angular";
+
 import { AppInitService } from '../app.init.service';
 import { MessageService } from '../shared/message-service/message.service';
 import { ConfirmationDialogComponent } from '../shared/confirmation-dialog/confirmation-dialog.component';
@@ -12,18 +14,19 @@ import { ProjectService } from './project.service';
 import { CreateProjectComponent } from './create-project/create-project.component';
 import { MemberComponent } from './member/member.component';
 
-
 @Component({
   selector: 'project',
   templateUrl: 'project.component.html'
 })
 export class ProjectComponent implements OnInit, OnDestroy {
-
+  totalRecordCount: number;
+  pageIndex: number = 1;  
+  pageSize: number = 15;
   projects: Project[];
 
   @ViewChild(CreateProjectComponent) createProjectModal;
   @ViewChild(MemberComponent) memberModal;
-  checkboxRevertInfo:{isNeeded: boolean, value: boolean};
+  checkboxRevertInfo: {isNeeded: boolean; value: boolean;};
 
   _subscription: Subscription;
   currentUser: {[key: string]: any};
@@ -52,7 +55,6 @@ export class ProjectComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.currentUser = this.appInitService.currentUser;
-    this.retrieve();
   }
 
   ngOnDestroy(): void {
@@ -61,18 +63,21 @@ export class ProjectComponent implements OnInit, OnDestroy {
     }
   }
 
-  retrieve(): void {
-    this.isInLoading = true;
-    this.projectService
-      .getProjects()
-      .then(projects=>{
-        this.projects = projects;
-        this.isInLoading = false;
-      })
-      .catch(err=>{
-        this.messageService.dispatchError(err, 'PROJECT.FAILED_TO_RETRIEVE_PROJECTS');
-        this.isInLoading = false;
-      });
+  retrieve(state?: State): void {
+    setTimeout(()=>{
+      this.isInLoading = true;
+      this.projectService
+        .getProjects('', this.pageIndex, this.pageSize)
+        .then(paginatedProjects=>{
+          this.totalRecordCount = paginatedProjects.pagination.total_count;
+          this.projects = paginatedProjects.project_list;
+          this.isInLoading = false;
+        })
+        .catch(err=>{
+          this.messageService.dispatchError(err, 'PROJECT.FAILED_TO_RETRIEVE_PROJECTS');
+          this.isInLoading = false;
+        });
+    });
   }
 
   createProject(): void {
@@ -105,7 +110,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
         this.messageService.inlineAlertMessage(toggleMessage);
       })
       .catch(err=>{
-        this.checkboxRevertInfo = {isNeeded:true,value:oldPublic === 1};
+        this.checkboxRevertInfo = {isNeeded:true, value:oldPublic === 1};
         this.messageService.dispatchError(err, '');
       });
   }

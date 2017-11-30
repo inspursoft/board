@@ -20,14 +20,16 @@ type ServiceStatus struct {
 	CreationTime time.Time `json:"service_creation_time" orm:"column(creation_time)"`
 	UpdateTime   time.Time `json:"service_update_time" orm:"column(update_time)"`
 }
+
+type PaginatedServiceStatus struct {
+	Pagination        *Pagination      `json:"pagination"`
+	ServiceStatusList []*ServiceStatus `json:"service_status_list"`
+}
+
 type ServiceInfoStruct struct {
 	NodePort []int32                `json:"node_Port,omitempty"`
 	NodeName []modelK8s.NodeAddress `json:"node_Name,omitempty"`
 }
-
-//func (s *Service) TableName() string {
-//	return "service_status"
-//}
 
 type ServiceToggle struct {
 	Toggle int `json:"service_toggle"`

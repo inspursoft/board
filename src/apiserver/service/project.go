@@ -95,6 +95,10 @@ func GetProjectsByUser(query model.Project, userID int64) ([]*model.Project, err
 	return dao.GetProjectsByUser(query, userID)
 }
 
+func GetPaginatedProjectsByUser(query model.Project, userID int64, pageIndex int, pageSize int) (*model.PaginatedProjects, error) {
+	return dao.GetPaginatedProjectsByUser(query, userID, pageIndex, pageSize)
+}
+
 func DeleteProject(projectID int64) (bool, error) {
 	project := model.Project{ID: projectID, Deleted: 1}
 	_, err := dao.UpdateProject(project, "deleted")
