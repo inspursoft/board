@@ -52,7 +52,6 @@ export class VolumeMountsComponent {
   }
 
   confirmVolumeInfo() {
-    this.inputList.forEach(value => value.checkValueByHost());
     this.onConfirmEvent.emit(this.volumeData);
     this.isOpen = false;
   }

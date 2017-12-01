@@ -10,6 +10,7 @@ import {
 } from '../service-step.component';
 import { CsInputComponent } from "../../shared/cs-components-library/cs-input/cs-input.component";
 import { ServiceStepBase } from "../service-step";
+import { ValidationErrors } from "@angular/forms/forms";
 
 @Component({
   styleUrls: ["./config-setting.component.css"],
@@ -59,6 +60,16 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
 
   get uiData(): UIServiceStep4 {
     return this.uiBaseData as UIServiceStep4;
+  }
+
+  get checkServiceNameFun() {
+    return this.checkServiceName.bind(this);
+  }
+
+  checkServiceName(control: HTMLInputElement): Promise<ValidationErrors | null> {
+    return this.k8sService.checkServiceExist(this.uiData.projectName, control.value).then((isExist) => {
+      return isExist ? {serviceExist: "SERVICE.STEP_4_SERVICE_NAME_EXIST"} : null;
+    });
   }
 
   setNodePort(index: number, port: number) {

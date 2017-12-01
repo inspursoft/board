@@ -84,9 +84,6 @@ export class EnvironmentValueComponent implements OnInit, AfterContentChecked {
   }
 
   confirmEnvInfo() {
-    this.inputComponents.forEach(value => {
-      value.checkValueByHost();
-    });
     this.onConfirm.emit(this.envsData);
     this.isOpen = false;
   }

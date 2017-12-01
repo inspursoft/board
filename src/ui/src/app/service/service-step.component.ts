@@ -233,6 +233,7 @@ export class UIServiceStep3 extends UIServiceStepBase {
 }
 
 export class UIServiceStep4 extends UIServiceStepBase {
+  public projectName:string = "";
   public serviceName: string = "";
   public instance: number = 1;
   public externalServiceList: Array<ExternalService> = Array<ExternalService>();
@@ -263,6 +264,9 @@ export class UIServiceStep4 extends UIServiceStepBase {
     }
     if (serverResponse && serverResponse["service_name"]) {
       step4.serviceName = serverResponse["service_name"];
+    }
+    if (serverResponse && serverResponse["project_name"]) {
+      step4.projectName = serverResponse["project_name"];
     }
     return step4;
   }

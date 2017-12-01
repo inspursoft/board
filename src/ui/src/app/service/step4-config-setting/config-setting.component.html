@@ -6,6 +6,7 @@
                 [inputIsRequired]="true"
                 [inputPattern]="patternServiceName"
                 [inputLabel]="'SERVICE.STEP_4_SERVICE_NAME' | translate"
+                [customerValidatorAsyncFunc]="checkServiceNameFun"
                 [simpleFiled]="uiData.serviceName"
                 (onCheck)="uiData.serviceName = $event">
       </cs-input>

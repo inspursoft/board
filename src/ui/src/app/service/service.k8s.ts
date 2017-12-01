@@ -42,6 +42,18 @@ export class K8sService {
       });
   }
 
+  checkServiceExist(projectName: string, serviceName: string): Promise<boolean> {
+    return this.http.get(`/api/v1/services/exists`, {
+      headers: this.defaultHeader,
+      params: {project_name: projectName, service_name: serviceName}
+    }).toPromise()
+      .then((res: Response) => {
+        this.appInitService.chainResponse(res);
+        return res.text().toLocaleLowerCase() == "true";
+      })
+      .catch(err => Promise.reject(err));
+  }
+
   getServiceConfig(phase: ServiceStepPhase): Promise<UIServiceStepBase> {
     return this.http.get(`/api/v1/services/config`, {
       headers: this.defaultHeader,
