@@ -50,7 +50,6 @@ type baseController struct {
 	currentUser    *model.User
 	token          string
 	isSysAdmin     bool
-	isProjectAdmin bool
 	isExternalAuth bool
 }
 
