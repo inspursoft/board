@@ -28,7 +28,6 @@ func (p *DashboardServiceController) Prepare() {
 	}
 	p.currentUser = user
 	p.isSysAdmin = (user.SystemAdmin == 1)
-	p.isProjectAdmin = (user.ProjectAdmin == 1)
 }
 func (b *DashboardServiceController) resolveBody() (in ServiceBodyPara, err error) {
 	data, err := ioutil.ReadAll(b.Ctx.Request.Body)
