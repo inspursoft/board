@@ -79,7 +79,6 @@ export class K8sService {
       .toPromise()
       .then((res: Response) => {
         this.appInitService.chainResponse(res);
-        console.log(res);
       })
       .catch(err => Promise.reject(err));
   }

@@ -1,15 +1,17 @@
 <clr-modal [(clrModalOpen)]="isOpenServiceDetail" [clrModalSize]="'md'">
   <h3 class="modal-title">{{ serviceName }} {{ "SERVICE.SERVICE_DETAIL" | translate }}</h3>
   <div class="modal-body">
-    <div class="service-detail-container">
-      <div *ngFor="let u of urlList; let i = index" class="service-detail-line-container">
-        <span class="service-detail-text">{{i == 0 ? 'URL:' : ''}}</span>
-        <a [href]="u.route" target="_blank" class="service-detail-link-text">{{ u.route }}</a>
-      </div>
+    <div *ngFor="let u of urlList; let i = index">
+      <span>{{i == 0 ? 'URL:' : ''}}</span>
+      <a [href]="u.route" target="_blank">{{ u.route }}</a>
     </div>
-    <textarea rows="5" class="area-detail" readonly>{{ serviceDetail }}</textarea>
+    <textarea title="" rows="5" readonly>{{ serviceDetail }}</textarea>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-primary" (click)="isOpenServiceDetail = false">{{ 'BUTTON.OK' | translate }}</button>
+    <button type="button"
+            class="btn btn-primary"
+            (click)="isOpenServiceDetail = false">
+      {{ 'BUTTON.OK' | translate }}
+    </button>
   </div>
 </clr-modal>
