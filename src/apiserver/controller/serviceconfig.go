@@ -145,10 +145,12 @@ func (s *ConfigServiceStep) ConfigExternalService(serviceName string, instance i
 
 func (s *ConfigServiceStep) GetConfigExternalService() interface{} {
 	return struct {
+		ProjectName         string                  `json:"project_name"`
 		ServiceName         string                  `json:"service_name"`
 		Instance            int                     `json:"instance"`
 		ExternalServiceList []model.ExternalService `json:"external_service_list"`
 	}{
+		ProjectName:         s.ProjectName,
 		ServiceName:         s.ServiceName,
 		Instance:            s.Instance,
 		ExternalServiceList: s.ExternalServiceList,
@@ -282,16 +284,6 @@ func (sc *ServiceConfigController) configContainerList(key string, configService
 	for _, container := range containerList {
 		container.VolumeMounts.VolumeName = strings.ToLower(container.VolumeMounts.VolumeName)
 		container.Name = strings.ToLower(container.Name)
-	}
-
-	for _, image := range configServiceStep.ImageList {
-		fromIndex := strings.LastIndex(image.ImageName, "/")
-		imageName := image.ImageName[fromIndex+1:]
-		for i, container := range containerList {
-			if container.Name == imageName {
-				containerList[i].Image = image
-			}
-		}
 	}
 
 	SetConfigServiceStep(key, configServiceStep.ConfigContainerList(containerList))

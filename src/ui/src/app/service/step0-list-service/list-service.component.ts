@@ -1,5 +1,8 @@
 import { Component, OnInit, OnDestroy, ViewChild, Injector } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
+
+import { State } from "clarity-angular";
+
 import { Service } from '../service';
 import { MESSAGE_TARGET, BUTTON_STYLE, MESSAGE_TYPE } from '../../shared/shared.const';
 import { Message } from '../../shared/message-service/message';
@@ -26,8 +29,12 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   currentUser: {[key: string]: any};
   services: Service[];
   isInLoading: boolean = false;
-  checkboxRevertInfo: {isNeeded: boolean; value: boolean};
+  checkboxRevertInfo: {isNeeded: boolean; value: boolean;};
   _subscription: Subscription;
+
+  totalRecordCount: number;
+  pageIndex: number = 1;
+  pageSize: number = 15;
 
   @ViewChild(ServiceDetailComponent) serviceDetailComponent;
 
@@ -76,7 +83,6 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
 
   ngOnInit(): void {
     this.currentUser = this.appInitService.currentUser;
-    this.retrieve();
   }
 
   ngOnDestroy(): void {
@@ -98,17 +104,20 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
     this.k8sService.stepSource.next({index: 1, isBack: false});
   }
 
-  retrieve(): void {
-    this.isInLoading = true;
-    this.k8sService.getServices()
-      .then(services => {
-        this.services = services;
-        this.isInLoading = false;
-      })
-      .catch(err => {
-        this.messageService.dispatchError(err);
-        this.isInLoading = false;
-      });
+  retrieve(state?: State): void {
+    setTimeout(()=>{
+      this.isInLoading = true;
+      this.k8sService.getServices(this.pageIndex, this.pageSize)
+        .then(paginatedServices => {
+          this.totalRecordCount = paginatedServices.pagination.total_count;
+          this.services = paginatedServices.service_status_list;
+          this.isInLoading = false;
+        })
+        .catch(err => {
+          this.messageService.dispatchError(err);
+          this.isInLoading = false;
+        });
+    });
   }
 
   getServiceStatus(status: number): string {

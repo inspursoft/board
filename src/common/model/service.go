@@ -20,14 +20,16 @@ type ServiceStatus struct {
 	CreationTime time.Time `json:"service_creation_time" orm:"column(creation_time)"`
 	UpdateTime   time.Time `json:"service_update_time" orm:"column(update_time)"`
 }
+
+type PaginatedServiceStatus struct {
+	Pagination        *Pagination      `json:"pagination"`
+	ServiceStatusList []*ServiceStatus `json:"service_status_list"`
+}
+
 type ServiceInfoStruct struct {
 	NodePort []int32                `json:"node_Port,omitempty"`
 	NodeName []modelK8s.NodeAddress `json:"node_Name,omitempty"`
 }
-
-//func (s *Service) TableName() string {
-//	return "service_status"
-//}
 
 type ServiceToggle struct {
 	Toggle int `json:"service_toggle"`
@@ -39,4 +41,19 @@ type ServicePublicityUpdate struct {
 
 type ServiceScale struct {
 	Replica int32 `json:"service_scale"`
+}
+
+type ExternalService struct {
+	ContainerName      string       `json:"container_name"`
+	NodeConfig         NodeType     `json:"node_config"`
+	LoadBalancerConfig LoadBalancer `json:"load_balancer_config"`
+}
+
+type NodeType struct {
+	TargetPort int `json:"target_port"`
+	NodePort   int `json:"node_port"`
+}
+
+type LoadBalancer struct {
+	ExternalAccess string `json:"external_access"`
 }

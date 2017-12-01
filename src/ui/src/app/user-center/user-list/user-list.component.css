@@ -28,11 +28,11 @@
   white-space: nowrap;
 }
 
-clr-icon.enabled{
+clr-icon.disabled{
   cursor: not-allowed;
   color: silver;
 }
 
-clr-icon.enabled:hover{
+clr-icon.disabled:hover{
   color: silver !important;
 }

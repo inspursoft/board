@@ -32,23 +32,47 @@ func (u *UserController) Prepare() {
 func (u *UserController) GetUsersAction() {
 	username := u.GetString("username")
 	email := u.GetString("email")
+	pageIndex, _ := u.GetInt("page_index", 0)
+	pageSize, _ := u.GetInt("page_size", 0)
+	isPaginated := !(pageIndex == 0 && pageSize == 0)
+	var paginatedUsers *model.PaginatedUsers
 	var users []*model.User
 	var err error
 	if strings.TrimSpace(username) != "" {
-		users, err = service.GetUsers("username", username)
+		if isPaginated {
+			paginatedUsers, err = service.GetPaginatedUsers("username", username, pageIndex, pageSize)
+		} else {
+			users, err = service.GetUsers("username", username)
+		}
 	} else if strings.TrimSpace(email) != "" {
-		users, err = service.GetUsers("email", email)
+		if isPaginated {
+			paginatedUsers, err = service.GetPaginatedUsers("email", email, pageIndex, pageSize)
+		} else {
+			users, err = service.GetUsers("email", email)
+		}
 	} else {
-		users, err = service.GetUsers("", nil)
+		if isPaginated {
+			paginatedUsers, err = service.GetPaginatedUsers("", nil, pageIndex, pageSize)
+		} else {
+			users, err = service.GetUsers("", nil)
+		}
 	}
 	if err != nil {
 		u.internalError(err)
 		return
 	}
-	for _, u0 := range users {
-		u0.Password = ""
+
+	if isPaginated {
+		for _, u0 := range paginatedUsers.UserList {
+			u0.Password = ""
+		}
+		u.Data["json"] = paginatedUsers
+	} else {
+		for _, u0 := range users {
+			u0.Password = ""
+		}
+		u.Data["json"] = users
 	}
-	u.Data["json"] = users
 	u.ServeJSON()
 }
 

@@ -177,13 +177,19 @@ export class K8sService {
       .catch(err => Promise.reject(err));
   }
 
-  getServices(): Promise<Service[]> {
+  getServices(pageIndex?: number, pageSize?: number): Promise<any> {
     return this.http
-      .get(`/api/v1/services`, {headers: this.defaultHeader})
+      .get(`/api/v1/services`, { 
+        headers: this.defaultHeader,
+        params: {
+          'page_index': pageIndex,
+          'page_size': pageSize
+        } 
+      })
       .toPromise()
       .then((res: Response) => {
         this.appInitService.chainResponse(res);
-        return <Service[]>res.json();
+        return res.json();
       })
       .catch(err => Promise.reject(err));
   }

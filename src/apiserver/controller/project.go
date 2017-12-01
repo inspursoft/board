@@ -97,6 +97,9 @@ func (p *ProjectController) GetProjectsAction() {
 	projectName := p.GetString("project_name")
 	strPublic := p.GetString("project_public")
 
+	pageIndex, _ := p.GetInt("page_index", 0)
+	pageSize, _ := p.GetInt("page_size", 0)
+
 	query := model.Project{Name: projectName, OwnerName: p.currentUser.Username, Public: 0}
 
 	public, err := strconv.Atoi(strPublic)
@@ -104,12 +107,21 @@ func (p *ProjectController) GetProjectsAction() {
 		query.Public = public
 	}
 
-	projects, err := service.GetProjectsByUser(query, p.currentUser.ID)
-	if err != nil {
-		p.internalError(err)
-		return
+	if pageIndex == 0 && pageSize == 0 {
+		projects, err := service.GetProjectsByUser(query, p.currentUser.ID)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+		p.Data["json"] = projects
+	} else {
+		paginatedProjects, err := service.GetPaginatedProjectsByUser(query, p.currentUser.ID, pageIndex, pageSize)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+		p.Data["json"] = paginatedProjects
 	}
-	p.Data["json"] = projects
 	p.ServeJSON()
 }
 
