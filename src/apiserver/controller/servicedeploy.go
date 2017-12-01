@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
@@ -88,8 +89,14 @@ func (p *ServiceDeployController) DeployServiceAction() {
 	}
 	logs.Info("Internal push deployment object: %d %s", ret, msg)
 
-	updateService := model.ServiceStatus{ID: serviceID, Status: running}
-	_, err = service.UpdateService(updateService, "id", "status")
+	serviceConfig, err := json.Marshal(&configService)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	updateService := model.ServiceStatus{ID: serviceID, Status: running, ServiceConfig: string(serviceConfig)}
+	_, err = service.UpdateService(updateService, "id", "status", "service_config")
 	if err != nil {
 		p.internalError(err)
 		return
