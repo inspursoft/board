@@ -9,7 +9,7 @@
 </div>
 <div class="row">
   <div class="col-xs-12">
-    <clr-datagrid [clrDgLoading]="isInLoading">
+    <clr-datagrid (clrDgRefresh)="refreshData($event)" [clrDgLoading]="isInLoading">
       <clr-dg-placeholder>{{userListErrMsg | translate}}</clr-dg-placeholder>
       <clr-dg-column>{{'USER_CENTER.LIST_COL_USERNAME' | translate}}</clr-dg-column>
       <clr-dg-column>{{'USER_CENTER.LIST_COL_EMAIL' | translate}}</clr-dg-column>
@@ -17,7 +17,7 @@
       <clr-dg-column>{{'USER_CENTER.LIST_COL_SYSTEM_ADMIN' | translate}}</clr-dg-column>
       <clr-dg-column>{{'USER_CENTER.LIST_COL_DELETE' | translate}}</clr-dg-column>
       <clr-dg-column>{{'USER_CENTER.LIST_COL_OPERATION' | translate}}</clr-dg-column>
-      <clr-dg-row *clrDgItems="let user of userListData ">
+      <clr-dg-row *ngFor="let user of userListData">
         <clr-dg-cell class="text-with-omit">{{user.user_name}}</clr-dg-cell>
         <clr-dg-cell>{{user.user_email}}</clr-dg-cell>
         <clr-dg-cell>{{user.user_creation_time | date:'yyyy/MM/dd HH:mm:ss'}}</clr-dg-cell>
@@ -30,15 +30,16 @@
                  (change)="setUserSystemAdmin(user)">
         </clr-dg-cell>
         <clr-dg-cell>
-          <clr-checkbox [clrDisabled]=true [clrChecked]="user.user_deleted == 1"></clr-checkbox>
+          <input type="checkbox"
+                 [disabled]="true" [checked]="user.user_deleted == 1">
         </clr-dg-cell>
         <clr-dg-cell>
-          <clr-icon [ngClass]="{'enabled':user.user_deleted == 1}"
+          <clr-icon [ngClass]="{'disabled': user.user_deleted == 1 ||  user.user_id == 1 || user.user_id == currentUserID}"
                     (click)="deleteUser(user)"
                     class="trash"
                     shape="trash">
           </clr-icon>
-          <clr-icon [ngClass]="{'enabled':user.user_deleted == 1}"
+          <clr-icon [ngClass]="{'disabled': user.user_deleted == 1 ||  user.user_id == 1 || user.user_id == currentUserID}"
                     (click)="editUser(user)"
                     class="edit"
                     shape="edit">
@@ -47,7 +48,7 @@
       </clr-dg-row>
       <clr-dg-footer>
         {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} of {{pagination.totalItems}} users
-        <clr-dg-pagination #pagination [clrDgTotalItems]="userListData.length" [clrDgPageSize]="userCountPerPage">
+        <clr-dg-pagination #pagination [clrDgTotalItems]="totalRecordCount" [(clrDgPage)]="pageIndex" [clrDgPageSize]="pageSize">
         </clr-dg-pagination>
       </clr-dg-footer>
     </clr-datagrid>

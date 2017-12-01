@@ -20,13 +20,15 @@ export class ProjectService {
     private appInitService: AppInitService
   ){}
   
-  getProjects(projectName?: string): Promise<Project[]> {
+  getProjects(projectName?: string, pageIndex?: number, pageSize?: number): Promise<any> {
     
     return this.http
       .get('/api/v1/projects', {
         headers: this.defaultHeader,
         params: {
-          'project_name': projectName
+          'project_name': projectName,
+          'page_index': pageIndex,
+          'page_size': pageSize
         }
       })
       .toPromise()

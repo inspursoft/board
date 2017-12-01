@@ -262,12 +262,23 @@ func (p *ServiceController) DeployServiceTestAction() {
 //get service list
 func (p *ServiceController) GetServiceListAction() {
 	serviceName := p.GetString("service_name", "")
-	serviceList, err := service.GetServiceList(serviceName, p.currentUser.ID)
-	if err != nil {
-		p.internalError(err)
-		return
+	pageIndex, _ := p.GetInt("page_index", 0)
+	pageSize, _ := p.GetInt("page_size", 0)
+	if pageIndex == 0 && pageSize == 0 {
+		serviceStatus, err := service.GetServiceList(serviceName, p.currentUser.ID)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+		p.Data["json"] = serviceStatus
+	} else {
+		paginatedServiceStatus, err := service.GetPaginatedServiceList(serviceName, p.currentUser.ID, pageIndex, pageSize)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+		p.Data["json"] = paginatedServiceStatus
 	}
-	p.Data["json"] = serviceList
 	p.ServeJSON()
 }
 
