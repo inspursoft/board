@@ -33,6 +33,7 @@ const (
 	preparing = iota
 	running
 	stopped
+	warning
 )
 
 type ServiceController struct {
@@ -259,6 +260,74 @@ func (p *ServiceController) DeployServiceTestAction() {
 	p.commonDeployService(reqServiceConfig, serviceID, true)
 }
 
+//
+func syncK8sStatus(serviceList []*model.ServiceStatus) error {
+	var err error
+	// synchronize service status with the cluster system
+	for _, serviceStatus := range serviceList {
+		if (*serviceStatus).Status == stopped {
+			continue
+		}
+		// Check the deployment status
+		deployment, err := service.GetDeployment(serviceNamespace, (*serviceStatus).Name)
+		if deployment == nil {
+			logs.Info("Failed to get deployment", err)
+			var reason = "The deployment is not established in cluster system"
+			(*serviceStatus).Status = warning
+			// TODO create a new field in serviceStatus for reason
+			(*serviceStatus).Comment = "Reason: " + reason
+			_, err = service.UpdateService(*serviceStatus, "status", "Comment")
+			if err != nil {
+				logs.Error("Failed to update deployment.")
+				break
+			}
+			continue
+		} else {
+			if deployment.Status.Replicas > deployment.Status.AvailableReplicas {
+				logs.Debug("The desired replicas number is not available",
+					deployment.Status.Replicas, deployment.Status.AvailableReplicas)
+				(*serviceStatus).Status = warning
+				reason := "The desired replicas number is not available"
+				(*serviceStatus).Comment = "Reason: " + reason
+				_, err = service.UpdateService(*serviceStatus, "status", "Comment")
+				if err != nil {
+					logs.Error("Failed to update deployment replicas.")
+					break
+				}
+				continue
+			}
+		}
+
+		// Check the service in k8s cluster status
+		serviceK8s, err := service.GetK8sService(serviceNamespace, (*serviceStatus).Name)
+		if serviceK8s == nil {
+			logs.Info("Failed to get service in cluster", err)
+			var reason = "The service is not established in cluster system"
+			(*serviceStatus).Status = warning
+			(*serviceStatus).Comment = "Reason: " + reason
+			_, err = service.UpdateService(*serviceStatus, "status", "Comment")
+			if err != nil {
+				logs.Error("Failed to update service in cluster.")
+				break
+			}
+			continue
+		}
+
+		if serviceStatus.Status == warning {
+			logs.Info("The service is restored to running")
+			(*serviceStatus).Status = running
+			(*serviceStatus).Comment = ""
+			_, err = service.UpdateService(*serviceStatus, "status", "Comment")
+			if err != nil {
+				logs.Error("Failed to update service status.")
+				break
+			}
+			continue
+		}
+	}
+	return err
+}
+
 //get service list
 func (p *ServiceController) GetServiceListAction() {
 	serviceName := p.GetString("service_name", "")
@@ -270,9 +339,19 @@ func (p *ServiceController) GetServiceListAction() {
 			p.internalError(err)
 			return
 		}
+		err = syncK8sStatus(serviceStatus)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
 		p.Data["json"] = serviceStatus
 	} else {
 		paginatedServiceStatus, err := service.GetPaginatedServiceList(serviceName, p.currentUser.ID, pageIndex, pageSize)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+		err = syncK8sStatus(paginatedServiceStatus.ServiceStatusList)
 		if err != nil {
 			p.internalError(err)
 			return
