@@ -47,7 +47,7 @@ echo $base_repo_url
 git remote add upstream $base_repo_url
 git fetch upstream
 git branch --all
-git checkout -b master-main --track upstream/master
+git checkout -b master-main --track upstream/$base_branch
 git merge $head_branch 
 
 export TAG=`git describe --tags`
