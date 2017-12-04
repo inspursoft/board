@@ -14,15 +14,15 @@ import (
 var (
 	kubeMasterUrl        = "http://10.110.18.26:8080"
 	kubeMasterInvalidUrl = "http://10.110.18.26:8081"
-	serviceUrl           = kubeMasterUrl + "/api/v1/namespaces/default/services/demoshow2"
+	serviceUrl           = kubeMasterUrl + "/api/v1/namespaces/default/services/demoshow"
 	noServiceUrl         = kubeMasterUrl + "/api/v1/namespaces/default/services/demoshow1"
 	invalidServiceUrl    = kubeMasterInvalidUrl + "/api/v1/namespaces/default/services/demoshow1"
 	nodeUrl              = kubeMasterUrl + "/api/v1/nodes/10.110.18.71"
 	noNodeUrl            = kubeMasterUrl + "/api/v1/nodes/10.110.18.70"
 	invalidNodeUrl       = kubeMasterInvalidUrl + "/api/v1/nodes/10.110.18.71"
-	endpointUrl          = kubeMasterUrl + "/api/v1/namespaces/default/endpoints/demoshow2"
+	endpointUrl          = kubeMasterUrl + "/api/v1/namespaces/default/endpoints/demoshow"
 	noEndpointUrl        = kubeMasterUrl + "/api/v1/namespaces/default/endpoints/demoshow1"
-	invalidEndpointUrl   = kubeMasterInvalidUrl + "/api/v1/namespaces/default/endpoints/demoshow2"
+	invalidEndpointUrl   = kubeMasterInvalidUrl + "/api/v1/namespaces/default/endpoints/demoshow"
 )
 
 func TestGetServiceStatus(t *testing.T) {
