@@ -4,7 +4,8 @@
  * The full license information can be found in LICENSE in the root directory of this project.
  */
 import { ModuleWithProviders } from '@angular/core/src/metadata/ng_module';
-import { Routes, RouterModule } from '@angular/router';
+import { Routes, RouterModule, Resolve,
+         ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 
 import { GlobalSearchComponent } from './global-search/global-search.component';
 import { SignInComponent } from './account/sign-in/sign-in.component';
@@ -18,11 +19,32 @@ import { ImageListComponent } from './image/image-list/image-list.component';
 import { ServiceComponent } from './service/service.component';
 import { UserCenterComponent } from './user-center/user-center.component';
 import { AuthGuard, ServiceGuard } from './shared/auth-guard.service';
+import { resolve } from 'dns';
+import { AppInitService } from 'app/app.init.service';
+import { Injectable } from '@angular/core';
+
+@Injectable()
+export class SystemInfoResolve implements Resolve<any> {
+  constructor(private appInitService: AppInitService){}
+  resolve(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot): Promise<any>|any {
+      return this.appInitService.getSystemInfo();
+    }
+}
 
 export const ROUTES: Routes = [
-    { path: 'sign-in', component: SignInComponent },
+    { path: 'sign-in',
+      component: SignInComponent, 
+      resolve: {
+        systeminfo: SystemInfoResolve
+      }
+    },
     { path: 'sign-up', component: SignUpComponent },
     { path: '', component: MainContentComponent,
+        resolve: {
+          systeminfo: SystemInfoResolve
+        },
         canActivate: [ AuthGuard ],
         children: [
         { path: 'search', component: GlobalSearchComponent },
@@ -35,7 +57,7 @@ export const ROUTES: Routes = [
             ]
         },
         { path: 'images', component: ImageListComponent },
-        { path: 'services', component: ServiceComponent,canDeactivate: [ServiceGuard]},
+        { path: 'services', component: ServiceComponent, canDeactivate: [ ServiceGuard ]},
         { path: 'user-center', component: UserCenterComponent }
     ]},
     { path: '', redirectTo: '/sign-in', pathMatch: 'full' },

@@ -28,7 +28,8 @@ var repoServePath = filepath.Join(baseRepoPath, "board_repo_serve")
 var repoServeURL = filepath.Join("root@gitserver:", "gitserver", "repos", "board_repo_serve")
 var repoPath = filepath.Join(baseRepoPath, "board_repo")
 
-func updateAdminPassword(initialPassword string) {
+func updateAdminPassword() {
+	initialPassword := utils.GetStringValue("BOARD_ADMIN_PASSWORD")
 	if initialPassword == "" {
 		initialPassword = defaultInitialPassword
 	}
@@ -40,6 +41,12 @@ func updateAdminPassword(initialPassword string) {
 		logs.Error("Failed to update user password: %+v", err)
 	}
 	if isSuccess {
+		utils.SetConfig("SET_ADMIN_PASSWORD", "updated")
+		err = service.SetSystemInfo("SET_ADMIN_PASSWORD")
+		if err != nil {
+			logs.Error("Failed to set system config: %+v", err)
+			panic(err)
+		}
 		logs.Info("Admin password has been updated successfully.")
 	} else {
 		logs.Info("Failed to update admin initial password.")
@@ -47,19 +54,29 @@ func updateAdminPassword(initialPassword string) {
 }
 
 func initProjectRepo() {
+	logs.Info("Initialize serve repo\n")
+	_, err := service.InitBareRepo(repoServePath)
+	if err != nil {
+		logs.Error("Failed to initialize serve repo: %+v\n", err)
+	}
+
 	logs.Info("Init git repo for default project %s", defaultProject)
-	_, err := service.InitRepo(repoServeURL, repoPath)
+	_, err = service.InitRepo(repoServeURL, repoPath)
 	if err != nil {
 		logs.Error("Failed to initialize default user's repo: %+v\n", err)
 		return
 	}
 
-	subPath := defaultProject
-	if subPath != "" {
-		os.MkdirAll(filepath.Join(repoPath, subPath), 0755)
-		if err != nil {
-			logs.Error("Failed to make default user's repo: %+v\n", err)
-		}
+	os.MkdirAll(filepath.Join(repoPath, defaultProject), 0755)
+	if err != nil {
+		logs.Error("Failed to make default user's repo: %+v\n", err)
+	}
+
+	utils.SetConfig("INIT_PROJECT_REPO", "created")
+	err = service.SetSystemInfo("INIT_PROJECT_REPO")
+	if err != nil {
+		logs.Error("Failed to set system config: %+v", err)
+		panic(err)
 	}
 }
 
@@ -91,8 +108,6 @@ func main() {
 	utils.AddEnv("LDAP_SCOPE")
 	utils.AddEnv("LDAP_TIMEOUT")
 
-	utils.AddValue("IS_EXTERNAL_AUTH", (utils.GetStringValue("AUTH_MODE") != "db_auth"))
-
 	utils.SetConfig("REGISTRY_URL", "http://%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
 	utils.SetConfig("KUBE_MASTER_URL", "http://%s:%s", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
 	utils.SetConfig("KUBE_NODE_URL", "http://%s:%s/api/v1/nodes", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
@@ -105,14 +120,30 @@ func main() {
 
 	utils.SetConfig("REGISTRY_BASE_URI", "%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
 
+	dao.InitDB()
+	err := service.SetSystemInfo("AUTH_MODE")
+	if err != nil {
+		logs.Error("Failed to set system config: %+v", err)
+		panic(err)
+	}
+
+	utils.AddValue("IS_EXTERNAL_AUTH", (utils.GetStringValue("AUTH_MODE") != "db_auth"))
 	utils.ShowAllConfigs()
 
-	dao.InitDB()
 	controller.InitController()
-	updateAdminPassword(utils.GetStringValue("BOARD_ADMIN_PASSWORD"))
 
-	initProjectRepo()
+	systemInfo, err := service.GetSystemInfo()
+	if err != nil {
+		logs.Error("Failed to set system config: %+v", err)
+		panic(err)
+	}
+
+	if systemInfo.SetAdminPassword == "" {
+		updateAdminPassword()
+	}
+	if systemInfo.InitProjectRepo == "" {
+		initProjectRepo()
+	}
 	syncServiceWithK8s()
-
 	beego.Run(":8088")
 }

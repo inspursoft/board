@@ -1,5 +1,5 @@
-import { Component, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 import { SignIn } from './sign-in';
 import { Message } from '../../shared/message-service/message';
 import { MessageService } from '../../shared/message-service/message.service';
@@ -12,21 +12,29 @@ import { AccountService } from '../account.service';
   templateUrl: './sign-in.component.html',
   styleUrls: [ './sign-in.component.css' ]
 })
-export class SignInComponent implements OnDestroy {
+export class SignInComponent implements OnInit, OnDestroy {
 
   signInUser: SignIn = new SignIn();
-  
+  authMode: string = '';
   _subscription: Subscription;
 
   constructor(
     private appInitService: AppInitService,
     private messageService: MessageService, 
     private accountService: AccountService,
-    private router: Router) {
+    private router: Router,
+    private route: ActivatedRoute
+  ) {
     this._subscription = this.messageService.messageConfirmed$.subscribe((message: any)=>{
       let confirmationMessage = <Message>message;
       console.error('Received:' + JSON.stringify(confirmationMessage));
-    })
+    });
+    this.appInitService.systemInfo = this.route.snapshot.data['systeminfo'];
+    this.authMode = this.appInitService.systemInfo['auth_mode'];
+  }
+
+  ngOnInit(): void {
+
   }
 
   signIn(): void {

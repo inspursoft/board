@@ -163,6 +163,16 @@ func (u *AuthController) CurrentUserAction() {
 	u.ServeJSON()
 }
 
+func (u *AuthController) GetSystemInfo() {
+	systemInfo, err := service.GetSystemInfo()
+	if err != nil {
+		u.internalError(err)
+		return
+	}
+	u.Data["json"] = systemInfo
+	u.ServeJSON()
+}
+
 func (u *AuthController) LogOutAction() {
 	err := u.signOff()
 	if err != nil {

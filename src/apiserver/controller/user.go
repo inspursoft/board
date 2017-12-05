@@ -324,13 +324,6 @@ func (u *SystemAdminController) GetUserAction() {
 }
 
 func (u *SystemAdminController) DeleteUserAction() {
-
-	if u.isExternalAuth {
-		logs.Debug("Current AUTH_MODE is external auth.")
-		u.customAbort(http.StatusMethodNotAllowed, "Current AUTH_MODE is external auth.")
-		return
-	}
-
 	userID, err := strconv.Atoi(u.Ctx.Input.Param(":id"))
 	if err != nil {
 		u.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid user ID: %d", userID))
