@@ -195,6 +195,20 @@ paths:
           description: Incorrect username.
         500:
           description: Unexpected internal error.
+  /v1/systeminfo:
+    get:
+      summary: Get system info.
+      description: |
+        Get system info of current configurations. 
+      tags:
+        - Products
+      responses:
+        200:
+          description: Get system info successfully.
+          schema:
+            $ref: '#/definitions/SystemInfo'
+        500:
+          description: Unexpected internal error.     
   /v1/users/{user_id}:
     get:
       summary: Get user by ID.
@@ -751,8 +765,8 @@ paths:
           description: Project ID or username does not exist.
         500:
           description: Unexpected internal errors.        
-  /v1/services:
-    head:
+  /v1/services/exists:
+    get:
       summary: Return the results whether does the service exist.
       description: 
         This endpoint returns the results whether does the service exist.
@@ -781,6 +795,37 @@ paths:
           description: User need to log in first.
         500:
           description: Internal errors.
+  /v1/services/reconfig:
+    get:
+      summary: load service config from service DB.
+      description: 
+        This endpoint returns nil.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name 
+          in: query
+          description: Project name for filtering results.
+          required: false
+          type: string
+        - name: service_name 
+          in: query
+          description: Service name for filtering results.
+          required: false
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched services.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+  /v1/services:
     get:
       summary: Return services created by Board.
       description: |
@@ -4180,6 +4225,16 @@ definitions:
       size:
         type: integer
         format: int32
+  SystemInfo:
+    type: object
+    properties:
+      auth_mode:
+        type: string
+      set_auth_password:
+        type: string
+      init_project_repo:
+        type: string
+      
         
 
 

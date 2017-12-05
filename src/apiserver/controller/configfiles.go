@@ -28,11 +28,6 @@ func (f *ConfigFilesController) Prepare() {
 		return
 	}
 	f.currentUser = user
-	f.isProjectAdmin = (user.ProjectAdmin == 1)
-	if !f.isProjectAdmin {
-		f.customAbort(http.StatusForbidden, "Insufficient privileges.")
-		return
-	}
 }
 
 func (f *ConfigFilesController) UploadDeploymentYamlFileAction() {

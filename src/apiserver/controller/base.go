@@ -50,7 +50,6 @@ type baseController struct {
 	currentUser    *model.User
 	token          string
 	isSysAdmin     bool
-	isProjectAdmin bool
 	isExternalAuth bool
 }
 
@@ -221,12 +220,6 @@ func InitController() {
 	memoryCache, err = cache.NewCache("memory", `{"interval": 3600}`)
 	if err != nil {
 		logs.Error("Failed to initialize cache: %+v\n", err)
-	}
-
-	logs.Info("Initialize serve repo\n")
-	_, err = service.InitBareRepo(repoServePath())
-	if err != nil {
-		logs.Error("Failed to initialize serve repo: %+v\n", err)
 	}
 
 	beego.BConfig.MaxMemory = 1 << 22

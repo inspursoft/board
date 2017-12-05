@@ -28,7 +28,6 @@ func (p *DashboardServiceController) Prepare() {
 	}
 	p.currentUser = user
 	p.isSysAdmin = (user.SystemAdmin == 1)
-	p.isProjectAdmin = (user.ProjectAdmin == 1)
 }
 func (b *DashboardServiceController) resolveBody() (in ServiceBodyPara, err error) {
 	data, err := ioutil.ReadAll(b.Ctx.Request.Body)
@@ -67,13 +66,11 @@ func (s *DashboardServiceController) GetServiceData() {
 		getServiceDataBodyReq.TimeCount, getServiceDataBodyReq.TimestampBase, serviceName,
 		getServiceDataBodyReq.DurationTime)
 	err := dashboardServiceDataResp.GetServiceDataToObj()
-	beego.Error(err)
 	_, err = dashboardServiceDataResp.GetServiceListToObj()
 	if err != nil {
 		s.CustomAbort(http.StatusInternalServerError, fmt.Sprint(err))
 		return
 	}
-	beego.Error(err)
 	s.Data["json"] = dashboardServiceDataResp.ServiceResp
 	s.ServeJSON()
 }

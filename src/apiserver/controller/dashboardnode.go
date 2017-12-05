@@ -69,7 +69,6 @@ func (s *DashboardNodeController) GetNodeData() {
 		s.internalError(err)
 		return
 	}
-	beego.Error(err)
 	s.Data["json"] = dashboardNodeDataResp.NodeResp
 	s.ServeJSON()
 

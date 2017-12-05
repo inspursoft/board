@@ -71,6 +71,10 @@ export class MessageService {
         errMessage.type = MESSAGE_TYPE.COMMON_ERROR;
         this._setErrorMessage(errMessage, 'ERROR.INSUFFICIENT_PRIVILEGES', customMessage);
         break;
+      case 405:
+        errMessage.type = MESSAGE_TYPE.COMMON_ERROR;
+        this._setErrorMessage(errMessage, 'ERROR.', customMessage);
+        break;
       case 409:
         errMessage.type = MESSAGE_TYPE.COMMON_ERROR;
         this._setErrorMessage(errMessage, 'ERROR.CONFLICT_INPUT', customMessage);

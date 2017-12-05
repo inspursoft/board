@@ -20,6 +20,7 @@ export const LANG_ZH_CN = {
     "NOT_FOUND": "资源未找到。",
     "INSUFFICIENT_PRIVILEGES": "权限不足，无法操作。",
     "BAD_REQUEST": "无效的用户请求。",
+    "METHOD_NOT_ALLOWED": "不允许调用的方法。",
     "CONFLICT_INPUT": "存在一个与当前有冲突的资源。",
     "PECONDITION_FAILED": "请求内容不满足应提供的前置条件。",
     "INPUT_ONLY_NUMBER":"只能输入数字",
@@ -180,8 +181,6 @@ export const LANG_ZH_CN = {
     "USERNAME_OR_EMAIL_EXIST":"用户名或邮箱重复.",
     "SUCCESSFUL_SET_SYS_ADMIN": "设置用户为系统管理员操作成功。",
     "SUCCESSFUL_SET_NOT_SYS_ADMIN": "取消用户为系统管理员操作成功。",
-    "SUCCESSFUL_SET_PROJECT_ADMIN": "设置用户为项目管理员操作成功。",
-    "SUCCESSFUL_SET_NOT_PROJECT_ADMIN": "取消用户为项目管理员操作成功。"
   },
   "IMAGE":{
     "COL_IMAGE_NAME":"镜像名",
@@ -235,8 +234,8 @@ export const LANG_ZH_CN = {
     "CREATE_IMAGE_SELECT_PROJECT":"选择项目",
     "CREATE_IMAGE_CREATE_PROJECT":"创建项目...",
     "CREATE_IMAGE_SELECT_DES":"如果没有项目可供选择,需要新建一个项目。",
-    "CREATE_IMAGE_IMPORT_DEVOPES":"从DevOpes导入",
-    "CREATE_IMAGE_IMPORT_DOCKER_FILE":"从Docker-File导入",
+    "CREATE_IMAGE_IMPORT_DEVOPES":"从 DevOps 导入",
+    "CREATE_IMAGE_IMPORT_DOCKER_FILE":"从 Dockerfile 导入",
     "CREATE_IMAGE_EXIST":"已经选择了镜像",
     "CREATE_IMAGE_FROM_TEMP":"来自模版",
     "CREATE_IMAGE_FROM_FILE":"来自文件",

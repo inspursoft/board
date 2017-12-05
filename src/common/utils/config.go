@@ -72,7 +72,7 @@ func Initialize() {
 func ShowAllConfigs() {
 	logs.Info("Current configurations in storage:\n")
 	for k, v := range configStorage {
-		if strings.Contains(strings.ToUpper(k), "PASSWORD") {
+		if strings.Contains(strings.ToUpper(k), "PASSWORD") || strings.Contains(strings.ToUpper(k), "PWD") {
 			continue
 		}
 		logs.Info("\t%s: %v", k, v)
