@@ -10,6 +10,8 @@ import { MessageService } from "app/shared/message-service/message.service";
 import { Subscription } from "rxjs/Subscription";
 import { BUTTON_STYLE } from "app/shared/shared.const"
 import { AppInitService } from "../../app.init.service";
+import { ActivatedRoute } from "@angular/router";
+
 
 @Component({
   selector: "user-list",
@@ -32,10 +34,17 @@ export class UserList implements OnInit, OnDestroy {
   totalRecordCount: number;
   pageIndex: number = 1;
   pageSize: number = 15;
+  
+  authMode: string = '';
 
-  constructor(private userService: UserService,
-              private appInitService: AppInitService,
-              private messageService: MessageService) {
+  currentUserID: number;
+
+  constructor(
+    private route: ActivatedRoute,
+    private userService: UserService,
+    private appInitService: AppInitService,
+    private messageService: MessageService) {
+      this.authMode = this.appInitService.systemInfo['auth_mode'];
   }
 
   ngOnInit() {
@@ -49,16 +58,13 @@ export class UserList implements OnInit, OnDestroy {
         })
         .catch(err => this.messageService.dispatchError(err));
     });
+    this.currentUserID = this.appInitService.currentUser["user_id"];
   }
 
   ngOnDestroy(): void {
     if (this._deleteSubscription) {
       this._deleteSubscription.unsubscribe();
     }
-  }
-
-  get currentUserID(): number {
-    return this.appInitService.currentUser["user_id"];
   }
 
   refreshData(state?: State): void {

@@ -195,6 +195,20 @@ paths:
           description: Incorrect username.
         500:
           description: Unexpected internal error.
+  /v1/systeminfo:
+    get:
+      summary: Get system info.
+      description: |
+        Get system info of current configurations. 
+      tags:
+        - Products
+      responses:
+        200:
+          description: Get system info successfully.
+          schema:
+            $ref: '#/definitions/SystemInfo'
+        500:
+          description: Unexpected internal error.     
   /v1/users/{user_id}:
     get:
       summary: Get user by ID.
@@ -4211,6 +4225,16 @@ definitions:
       size:
         type: integer
         format: int32
+  SystemInfo:
+    type: object
+    properties:
+      auth_mode:
+        type: string
+      set_auth_password:
+        type: string
+      init_project_repo:
+        type: string
+      
         
 
 

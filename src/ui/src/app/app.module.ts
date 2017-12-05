@@ -7,7 +7,7 @@ import { AppComponent } from './app.component';
 
 import { AppInitService } from './app.init.service';
 
-import { ROUTING } from './app.routing';
+import { ROUTING, SystemInfoResolve } from './app.routing';
 
 export function appInitServiceFactory(appInitService: AppInitService) {
   return () => (appInitService);
@@ -30,7 +30,8 @@ export function appInitServiceFactory(appInitService: AppInitService) {
       useFactory: appInitServiceFactory,
       deps: [ AppInitService ],
       multi: true
-    }
+    },
+    SystemInfoResolve
   ],
   bootstrap: [ AppComponent ]
 })

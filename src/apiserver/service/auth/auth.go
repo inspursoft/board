@@ -1,8 +1,11 @@
 package auth
 
-import "fmt"
-import "git/inspursoft/board/src/common/model"
-import "github.com/astaxie/beego/logs"
+import (
+	"fmt"
+	"git/inspursoft/board/src/common/model"
+
+	"github.com/astaxie/beego/logs"
+)
 
 type Auth interface {
 	DoAuth(principal, password string) (*model.User, error)

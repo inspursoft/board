@@ -330,3 +330,11 @@ DROP TABLE IF EXISTS `log`;
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
 
+    CREATE TABLE `board`.`config` (
+        `name` varchar(50) NOT NULL DEFAULT '',
+        `value` varchar(255) DEFAULT NULL,
+        `comment` varchar(50) DEFAULT NULL,
+        PRIMARY KEY (`name`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+

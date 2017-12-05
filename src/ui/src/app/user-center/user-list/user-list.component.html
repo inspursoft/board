@@ -1,5 +1,5 @@
 <div class="row flex-items-xs-right">
-  <button class="btn btn-primary" (click)="addUser()">{{'USER_CENTER.ADD_USER' | translate}}</button>
+  <button *ngIf="authMode === 'db_auth'" class="btn btn-primary" (click)="addUser()">{{'USER_CENTER.ADD_USER' | translate}}</button>
   <new-user *ngIf="showNewUser"
             [CurEditModel]="curEditModel"
             [userModel]="curUser"
@@ -39,7 +39,7 @@
                     class="trash"
                     shape="trash">
           </clr-icon>
-          <clr-icon [ngClass]="{'disabled': user.user_deleted == 1 ||  user.user_id == 1 || user.user_id == currentUserID}"
+          <clr-icon *ngIf="authMode === 'db_auth'" [ngClass]="{'disabled': user.user_deleted == 1 ||  user.user_id == 1 || user.user_id == currentUserID}"
                     (click)="editUser(user)"
                     class="edit"
                     shape="edit">

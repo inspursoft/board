@@ -26,6 +26,7 @@ export class MainContentComponent {
     this.token = this.appInitService.token;
     this.appInitService.tokenMessage$.subscribe(token=>this.token = token);
     this.route.queryParamMap.subscribe(params=>this.searchContent = params.get("q"));
+    this.appInitService.systemInfo = this.route.snapshot.data['systeminfo'];
   }
 
   get isSystemAdmin(): boolean {
