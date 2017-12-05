@@ -34,6 +34,7 @@ var (
 	serviceConfigNotCreateErr     = errors.New("ERR_NOT_CREATE_SERVICE_CONFIG")
 	serviceConfigNotSetProjectErr = errors.New("ERR_NOT_SET_PROJECT_IN_SERVICE_CONFIG")
 	emptyExternalServiceListErr   = errors.New("ERR_EMPTY_EXTERNAL_SERVICE_LIST")
+	notFoundErr                   = errors.New("ERR_NOT_FOUND")
 )
 
 type ConfigServiceStep model.ConfigServiceStep
@@ -417,4 +418,29 @@ func (sc *ServiceConfigController) configEntireService(key string, configService
 	}
 
 	SetConfigServiceStep(key, &entireService)
+}
+
+func (sc *ServiceConfigController) GetConfigServiceFromDBAction() {
+	key := sc.token
+	configServiceStep := NewConfigServiceStep(key)
+	serviceName := strings.ToLower(sc.GetString("service_name"))
+	projectName := strings.ToLower(sc.GetString("project_name"))
+	serviceData, err := service.GetService(model.ServiceStatus{Name: serviceName, ProjectName: projectName}, "name", "project_name")
+	if err != nil {
+		sc.internalError(err)
+		return
+	}
+	if serviceData == nil || serviceData.ServiceConfig == "" {
+		sc.serveStatus(http.StatusNotFound, notFoundErr.Error())
+		return
+	}
+
+	logs.Info("service config form DB is %+v\n", serviceData)
+
+	err = json.Unmarshal([]byte(serviceData.ServiceConfig), configServiceStep)
+	if err != nil {
+		sc.internalError(err)
+		return
+	}
+	SetConfigServiceStep(key, configServiceStep)
 }
