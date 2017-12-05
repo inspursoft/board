@@ -29,6 +29,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   currentUser: {[key: string]: any};
   services: Service[];
   isInLoading: boolean = false;
+  isServiceControlOpen:boolean = false;
   checkboxRevertInfo: {isNeeded: boolean; value: boolean;};
   _subscription: Subscription;
 
@@ -105,7 +106,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   }
 
   retrieve(state?: State): void {
-    setTimeout(()=>{
+    setTimeout(() => {
       this.isInLoading = true;
       this.k8sService.getServices(this.pageIndex, this.pageSize)
         .then(paginatedServices => {
@@ -129,6 +130,16 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
         return 'SERVICE.STATUS_RUNNING';
       case 2:
         return 'SERVICE.STATUS_STOPPED';
+      case 3:
+        return 'SERVICE.STATUS_WARNING';
+    }
+  }
+
+  getStatusClass(status: number) {
+    return {
+      'running': status == 1,
+      'stopped': status == 2,
+      'warning': status == 3
     }
   }
 
@@ -138,7 +149,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
     this.k8sService
       .toggleServicePublicity(s.service_id, s.service_public ? 0 : 1)
       .then(() => {
-        s.service_public = ! oldServicePublic;
+        s.service_public = !oldServicePublic;
         toggleMessage.message = 'SERVICE.SUCCESSFUL_TOGGLE';
         this.messageService.inlineAlertMessage(toggleMessage);
       })

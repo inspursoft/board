@@ -1,0 +1,81 @@
+<clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'lg'">
+  <h3 class="modal-title">{{ "SERVICE.SERVICE_CONTROL" | translate }}</h3>
+  <div class="modal-body">
+    <fieldset class="fieldSet-default">
+      <legend class="legend-default">{{"SERVICE.SERVICE_CONTROL_STATUS" | translate}}</legend>
+      <div style="display: flex;flex-direction: column;border: solid 1px yellowgreen">
+        <div style="height: 25px;">
+          <span>{{ 'SERVICE.SERVICE_CONTROL_NAME' | translate }}:
+            <span class="status-value">Some names</span>
+          </span>
+          <span>{{ 'SERVICE.STATUS' | translate }}:
+            <span class="status-value">Some Status</span>
+          </span>
+          <span>{{ 'SERVICE.SERVICE_CONTROL_INSTANCE' | translate }}:
+            <span class="status-value">Some Instance</span>
+          </span>
+        </div>
+        <div style="height: 25px;">
+          <span>{{ 'SERVICE.SERVICE_CONTROL_REASON' | translate }}:
+          <span class="status-value">some reason</span>
+          </span>
+        </div>
+        <div style="height: 25px;">
+          <span>{{ 'SERVICE.SERVICE_CONTROL_POD' | translate }}:
+           <span class="status-value">podName</span>
+          </span>
+          <span>{{ 'SERVICE.SERVICE_CONTROL_POD_STATUS' | translate }}:
+            <span class="status-value">Pod status</span>
+          </span>
+          <span>{{ 'SERVICE.SERVICE_CONTROL_CPU_USAGE' | translate }}:
+            <span class="status-value">Some Instance</span>
+          </span>
+          <span>{{ 'SERVICE.SERVICE_CONTROL_MEM_USAGE' | translate }}:
+            <span class="status-value">Some Instance</span>
+          </span>
+        </div>
+      </div>
+    </fieldset>
+    <div style="margin: 20px 0 20px 0">
+      <span>Current CPU utilization: </span>
+      <span>Qualified CPU utilization: </span>
+    </div>
+    <div style="display: flex;height: 30px;align-items: center">
+      <input title=""
+             type="radio"
+             id="manually"
+             name="scaleMethod">
+      <label for="manually">
+        {{"SERVICE.SERVICE_CONTROL_MANUALLY_SCALE"|translate}}
+      </label>
+      <span  style="margin-left: 20px;">{{"SERVICE.SERVICE_CONTROL_INSTANCE_NUMBER"|translate}}: </span>
+      <cs-dropdown class="base-margin-left"
+                   [dropdownWidth]="100"
+                   [dropdownHideSearch]="true"
+                   [dropdownDefaultText]="'1'"
+                   [dropdownList]="dropDownListNum">
+      </cs-dropdown>
+    </div>
+    <div>
+      <input title=""
+             type="radio"
+             id="auto"
+             name="scaleMethod">
+      <label for="auto" [ngClass]="{'disabled':selectedProjectId == 0,'enable':selectedProjectId > 0}">
+        {{"SERVICE.SERVICE_CONTROL_AUTO_SCALE"|translate}}
+      </label>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button"
+            class="btn btn-primary"
+            (click)="isOpen = false">
+      {{ 'BUTTON.CANCEL' | translate }}
+    </button>
+    <button type="button"
+            class="btn btn-primary"
+            (click)="isOpen = false">
+      {{ 'BUTTON.CONFIRM' | translate }}
+    </button>
+  </div>
+</clr-modal>

@@ -15,6 +15,7 @@ import { VolumeMountsComponent } from "./step3-edit-container/volume-mounts/volu
 import { DynamicFormModule } from '../shared/dynamic-form/dynamic-form.module';
 import { DeployComponent } from "./step6-deploy/deploy.component";
 import { ServiceDetailComponent } from './step0-list-service/service-detail/service-detail.component';
+import { ServiceControlComponent } from "./step0-list-service/service-control/service-control.component";
 
 @NgModule({
   imports: [
@@ -33,7 +34,8 @@ import { ServiceDetailComponent } from './step0-list-service/service-detail/serv
     DeployComponent,
     ServiceWizardComponent,
     VolumeMountsComponent,
-    ServiceDetailComponent
+    ServiceDetailComponent,
+    ServiceControlComponent
   ],
   entryComponents: [
     ListServiceComponent,

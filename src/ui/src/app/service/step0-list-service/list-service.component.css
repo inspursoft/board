@@ -5,3 +5,15 @@ clr-icon.delete.disabled {
 clr-icon.delete.disabled:hover {
   cursor: not-allowed;
 }
+
+span.warning{
+  color: greenyellow;
+}
+
+span.stopped{
+  color: gray;
+}
+
+span.running{
+  color: green;
+}

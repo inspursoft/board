@@ -1,4 +1,5 @@
 <service-detail></service-detail>
+<service-control [(isOpen)]="isServiceControlOpen"></service-control>
 <div class="row flex-items-xs-right">
   <button class="btn btn-primary"
           [disabled]="createActionIsDisabled"
@@ -21,10 +22,15 @@
         <clr-dg-cell>{{s.service_owner_name}}</clr-dg-cell>
         <clr-dg-cell>{{s.service_creation_time | date: 'short'}}</clr-dg-cell>
         <clr-dg-cell>
-          <input [checkbox-revert]="checkboxRevertInfo" type="checkbox" id="chkPublic" [checked]="s.service_public === 1" (click)="toggleServicePublic(s,$event)">
+          <input [checkbox-revert]="checkboxRevertInfo" type="checkbox" id="chkPublic"
+                 [checked]="s.service_public === 1" (click)="toggleServicePublic(s,$event)">
           <label for="chkPublic"></label>
         </clr-dg-cell>
-        <clr-dg-cell>{{ getServiceStatus(s.service_status) | translate }}</clr-dg-cell>
+        <clr-dg-cell>
+          <span [ngClass]="getStatusClass(s.service_status)">
+            {{ getServiceStatus(s.service_status) | translate }}
+          </span>
+        </clr-dg-cell>
         <clr-dg-cell>
           <a *ngIf="s.service_status === 2" href="javascript:void(0)" (click)="confirmToServiceAction(s, 'TOGGLE')">
             <clr-icon shape="play"></clr-icon>
@@ -42,11 +48,16 @@
              (click)="openServiceDetail(s.service_name, s.service_project_name, s.service_owner_name)">
             <clr-icon shape="info-standard"></clr-icon>
           </a>
+          <a href="javascript:void(0)"
+             (click)="isServiceControlOpen = true">
+            <clr-icon shape="wrench"></clr-icon>
+          </a>
         </clr-dg-cell>
       </clr-dg-row>
       <clr-dg-footer>
         {{services ? services.length : 0}} {{ 'DATAGRID.ITEMS' | translate }}
-        <clr-dg-pagination #pagination [clrDgTotalItems]="totalRecordCount" [(clrDgPage)]="pageIndex" [clrDgPageSize]="pageSize"></clr-dg-pagination>
+        <clr-dg-pagination #pagination [clrDgTotalItems]="totalRecordCount" [(clrDgPage)]="pageIndex"
+                           [clrDgPageSize]="pageSize"></clr-dg-pagination>
       </clr-dg-footer>
     </clr-datagrid>
   </div>
