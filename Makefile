@@ -178,6 +178,7 @@ package:
 	@echo "packing offline package ..."
 	@if [ ! -d $(PKGTEMPPATH) ] ; then mkdir $(PKGTEMPPATH) ; fi
 	@cp $(TOOLSPATH)/install.sh $(PKGTEMPPATH)/install.sh
+	@cp $(TOOLSPATH)/uninstall.sh $(PKGTEMPPATH)/uninstall.sh
 	@cp $(MAKEPATH)/board.cfg $(PKGTEMPPATH)/.
 	@cp $(MAKEPATH)/prepare $(PKGTEMPPATH)/.
 	@cp -rf $(MAKEPATH)/templates $(PKGTEMPPATH)/.
@@ -188,7 +189,7 @@ package:
 	@echo "pcakage images ..."
 	@$(DOCKERSAVE) -o $(PKGTEMPPATH)/$(IMAGEPREFIX)_deployment.$(VERSIONTAG).tgz $(PKG_LIST)
 	@$(TARCMD) -zcvf $(PKGNAME)-offline-installer-$(VERSIONTAG).tgz $(PKGTEMPPATH)
-	
+
 	@rm -rf $(PACKAGEPATH)
 
 packageonestep: compile compile_ui build package
