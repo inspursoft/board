@@ -201,7 +201,7 @@ func (p *ServiceController) DeployServiceAction() {
 		return
 	}
 	if isServiceDuplicated == true {
-		p.serveStatus(http.StatusBadRequest, serverNameDuplicateErr.Error())
+		p.serveStatus(http.StatusConflict, serverNameDuplicateErr.Error())
 		logs.Error("Request parameters error when deploy service, error: %+v", serverNameDuplicateErr.Error())
 		return
 	}
@@ -240,7 +240,7 @@ func (p *ServiceController) DeployServiceTestAction() {
 		return
 	}
 	if isServiceDuplicated == true {
-		p.customAbort(http.StatusBadRequest, serverNameDuplicateErr.Error())
+		p.customAbort(http.StatusConflict, serverNameDuplicateErr.Error())
 		return
 	}
 
@@ -956,8 +956,10 @@ func (p *ServiceController) ServiceExists() {
 		logs.Error("Check service name failed, error: %+v", err.Error())
 		return
 	}
-	p.Data["json"] = isServiceExists
-	p.ServeJSON()
+	if isServiceExists == true {
+		p.customAbort(http.StatusConflict, serverNameDuplicateErr.Error())
+		return
+	}
 }
 
 func (p *ServiceController) ScaleServiceAction() {
