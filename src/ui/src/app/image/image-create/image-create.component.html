@@ -89,10 +89,10 @@
               <label class="base-text">{{"IMAGE.CREATE_IMAGE_UPLOAD_ARCHIVES" | translate}}:</label>
               ﻿<input type="file"
                       class="upload-file-input"
-                      [disabled]="isInBuildingImage || isUploadFileIng"
+                      [disabled]="isInBuildingImage || isUploadFileWip"
                       (change)="uploadFile($event)"
                       accept="*.*">
-              <span *ngIf="isUploadFileIng" class="spinner spinner-sm"></span>
+              <span *ngIf="isUploadFileWip" class="spinner spinner-sm"></span>
             </div>
             <div class="file-list"
                  *ngFor="let file of filesList.get(customerNewImage.image_name)">
@@ -132,10 +132,10 @@
             </div>
             <div class="line-container base-margin-top">
               ﻿<input type="file"
-                      [disabled]="customerNewImage.image_name == '' || customerNewImage.image_tag == '' || isInBuildingImage || isUploadFileIng"
+                      [disabled]="customerNewImage.image_name == '' || customerNewImage.image_tag == '' || isInBuildingImage || isUploadFileWip"
                       (change)="selectDockerFile($event)"
                       accept="*.*">
-              <span *ngIf="isUploadFileIng" class="spinner spinner-sm"></span>
+              <span *ngIf="isUploadFileWip" class="spinner spinner-sm"></span>
             </div>
             <div *ngIf="selectFromImportFile" class="line-container file-info-container">
               <label>{{"IMAGE.CREATE_IMAGE_SELECTED_FILE_INFO" | translate}}:</label>

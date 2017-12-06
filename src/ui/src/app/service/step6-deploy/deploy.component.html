@@ -6,7 +6,7 @@
          [ngClass]="{'deploy':isDeployed}">
       <div class="step6-start-icon"></div>
     </div>
-    <span *ngIf="isInDeployIng" class="spinner spinner-md step6-spinner"></span>
+    <span *ngIf="isInDeployWip" class="spinner spinner-md step6-spinner"></span>
   </div>
   <div class="step6-journal-container">
     <label for="areaJournal">{{"SERVICE.STEP_6_JOURNAL"|translate}}:</label>
@@ -19,4 +19,4 @@
   {{"SERVICE.STEP_6_CANCEL" | translate}}
 </button>
 <button class="btn btn-default" [disabled]="isDeployed" (click)="backStep()">Back</button>
-<button class="btn btn-default" [disabled]="!isDeployed || isInDeployIng" (click)="deployComplete()">OK</button>
+<button class="btn btn-default" [disabled]="!isDeployed || isInDeployWip" (click)="deployComplete()">OK</button>

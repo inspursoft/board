@@ -28,7 +28,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
   _AutoRefreshCurInterval: number = 1;
   IntervalAutoRefresh: any;
   LineOptions: Map<LineType, Object>;
-  LineStateInfo: Map<LineType, {InRefreshIng: boolean, InDrop: boolean, IsDropBack: boolean, IsCanAutoRefresh: boolean}>;
+  LineStateInfo: Map<LineType, {InRefreshWip: boolean, InDrop: boolean, IsDropBack: boolean, IsCanAutoRefresh: boolean}>;
   LineNamesList: Map<LineType, LineListDataModel[]>;
   LineTypeSet: Set<LineType>;
   LineData: Map<LineType, LinesData>;
@@ -54,7 +54,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     this.EventZoomBarChange = new Subject<LineType>();
     this.LineNamesList = new Map<LineType, LineListDataModel[]>();
     this.DropdownText = new Map<LineType, string>();
-    this.LineStateInfo = new Map<LineType, {InRefreshIng: boolean, InDrop: boolean, IsDropBack: boolean, IsCanAutoRefresh: boolean}>();
+    this.LineStateInfo = new Map<LineType, {InRefreshWip: boolean, InDrop: boolean, IsDropBack: boolean, IsCanAutoRefresh: boolean}>();
     this.AutoRefreshInterval = new Map<LineType, number>();
     this.LineData = new Map<LineType, LinesData>();
     this.NoData = new Map<LineType, boolean>();
@@ -196,27 +196,27 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
       timestamp_base: query.timestamp_base,
       service_duration_time: query.timestamp_base - query.time_count * query.scale.valueOfSecond
     };
-    this.LineStateInfo.get(lineType).InRefreshIng = true;
+    this.LineStateInfo.get(lineType).InRefreshWip = true;
     return this.service.getLineData(lineType, httpQuery)
       .then((res: {List: Array<LineListDataModel>, Data: LinesData, CurListName: string, Limit: {isMax: boolean, isMin: boolean}}) => {
         this.NoData.set(lineType, false);
         this.LineNamesList.set(lineType, res.List);
         this.DropdownText.set(lineType, res.CurListName);
-        this.LineStateInfo.get(lineType).InRefreshIng = false;
+        this.LineStateInfo.get(lineType).InRefreshWip = false;
         return {Data: res.Data, Limit: res.Limit};
       })
       .catch(err => {
-        this.LineStateInfo.get(lineType).InRefreshIng = false;
+        this.LineStateInfo.get(lineType).InRefreshWip = false;
         this.NoData.set(lineType, true);
         this.messageService.dispatchError(err);
       });
   }
 
-  private getLineInRefreshIng(): boolean {
+  private getLineInRefreshWip(): boolean {
     let iter: IterableIterator<LineType> = this.LineTypeSet.values();
     let iterResult: IteratorResult<LineType> = iter.next();
     while (!iterResult.done) {
-      if (this.LineStateInfo.get(iterResult.value).InRefreshIng) {
+      if (this.LineStateInfo.get(iterResult.value).InRefreshWip) {
         return true;
       }
       iterResult = iter.next();
@@ -249,9 +249,9 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
 
   private  delayNormal(lineType: LineType): Promise<boolean> {
     return new Promise<boolean>((resolve, reject) => {
-      this.LineStateInfo.get(lineType).InRefreshIng = true;
+      this.LineStateInfo.get(lineType).InRefreshWip = true;
       setTimeout(() => {
-        this.LineStateInfo.get(lineType).InRefreshIng = false;
+        this.LineStateInfo.get(lineType).InRefreshWip = false;
         resolve(true);
       }, 200)
     });
@@ -260,7 +260,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
   private initLine(lineType: LineType): Promise<boolean> {
     this.CurValue.set(lineType, {curFirst: 0, curSecond: 0});
     this.CurRealTimeValue.set(lineType, {curFirst: 0, curSecond: 0});
-    this.LineStateInfo.set(lineType, {IsCanAutoRefresh: true, IsDropBack: false, InDrop: false, InRefreshIng: false});
+    this.LineStateInfo.set(lineType, {IsCanAutoRefresh: true, IsDropBack: false, InDrop: false, InRefreshWip: false});
     this.AutoRefreshInterval.set(lineType, AUTO_REFRESH_SEED);
     this.Query.set(lineType, {
       time_count: MAX_COUNT_PER_PAGE,
@@ -460,11 +460,11 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     let zoomStart = this.LineOptions.get(lineType)["dataZoom"][0]["start"];
     let zoomEnd = this.LineOptions.get(lineType)["dataZoom"][0]["end"];
     let lineState = this.LineStateInfo.get(lineType);
-    if (zoomStart == 0 && zoomEnd < 100 && !lineState.InRefreshIng) {//get backup data
+    if (zoomStart == 0 && zoomEnd < 100 && !lineState.InRefreshWip) {//get backup data
       this.refreshLineDataByDrag(lineType, true);
       this.EventDragChange.next({lineType: lineType, isDragBack: true});
     }
-    else if (zoomEnd == 100 && zoomStart > 0 && !lineState.InRefreshIng && !lineState.IsCanAutoRefresh) {//get forward data
+    else if (zoomEnd == 100 && zoomStart > 0 && !lineState.InRefreshWip && !lineState.IsCanAutoRefresh) {//get forward data
       this.refreshLineDataByDrag(lineType, false);
       this.EventDragChange.next({lineType: lineType, isDragBack: false});
     }
@@ -515,7 +515,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
   }
 
   scaleChange(lineType: LineType, data: scaleOption) {
-    if (!this.getLineInRefreshIng()) {
+    if (!this.getLineInRefreshWip()) {
       let baseLineTimeStamp = this.getBaseLineTimeStamp(lineType);
       let queryTimeStamp = 0;
       let maxLineTimeStamp = baseLineTimeStamp + data.valueOfSecond * MAX_COUNT_PER_PAGE / 2;
@@ -552,7 +552,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
   }
 
   dropDownChange(lineType: LineType, lineListData: LineListDataModel) {
-    if (!this.LineStateInfo.get(lineType).InRefreshIng) {
+    if (!this.LineStateInfo.get(lineType).InRefreshWip) {
       this.Query.get(lineType).model = lineListData;
       this.Query.get(lineType).time_count = MAX_COUNT_PER_PAGE;
       this.getOneLineData(lineType).then(res => {

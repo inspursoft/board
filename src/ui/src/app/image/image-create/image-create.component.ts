@@ -57,7 +57,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   isInBuildingImage: boolean = false;
   isInputComponentsValid: boolean = false;
   isServerHaveDockerFile: boolean = false;
-  isUploadFileIng = false;
+  isUploadFileWip = false;
   customerNewImage: BuildImageData;
   autoRefreshTimesCount: number = 0;
   isNewImageAlertOpen: boolean = false;
@@ -181,7 +181,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   }
 
   get isBuildDisabled() {
-    let baseDisabled = this.isInBuildingImage || !this.isInputComponentsValid || this.isUploadFileIng;
+    let baseDisabled = this.isInBuildingImage || !this.isInputComponentsValid || this.isUploadFileWip;
     let fromDockerFile = baseDisabled || (!this.selectFromImportFile && !this.isServerHaveDockerFile);
     return this.imageBuildMethod == ImageBuildMethod.fromTemplate ? baseDisabled : fromDockerFile;
   }
@@ -197,7 +197,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
 
   uploadDockerFile(): Promise<boolean> {
     if (this.selectFromImportFile) {
-      this.isUploadFileIng = true;
+      this.isUploadFileWip = true;
       let formData: FormData = new FormData();
       formData.append("upload_file", this.selectFromImportFile, this.selectFromImportFile.name);
       formData.append("project_name", this.customerNewImage.project_name);
@@ -205,7 +205,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
       formData.append("tag_name", this.customerNewImage.image_tag);
       return this.imageService.uploadDockerFile(formData)
         .then(() => {
-          this.isUploadFileIng = false;
+          this.isUploadFileWip = false;
           return true;
         })
     }
@@ -359,7 +359,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     let fileList: FileList = (event.target as HTMLInputElement).files;
     if (fileList.length > 0) {
       this.isNewImageAlertOpen = false;
-      this.isUploadFileIng = true;
+      this.isUploadFileWip = true;
       let file: File = fileList[0];
       let formData: FormData = new FormData();
       formData.append('upload_file', file, file.name);
@@ -371,10 +371,10 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
         this.newImageAlertType = "alert-info";
         this.newImageErrMessage = "IMAGE.CREATE_IMAGE_UPLOAD_SUCCESS";
         this.isNewImageAlertOpen = true;
-        this.isUploadFileIng = false;
+        this.isUploadFileWip = false;
         this.asyncGetDockerFilePreviewInfo();
       }).catch(err => {
-        this.isUploadFileIng = false;
+        this.isUploadFileWip = false;
         if (err && (err instanceof Response) && (err as Response).status == 401) {
           this.isOpen = false;
           this.messageService.dispatchError(err);
