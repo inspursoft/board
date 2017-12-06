@@ -193,6 +193,8 @@ export const LANG_ZH_CN = {
     "SERVICE_CONTROL_MANUALLY_SCALE":"手动缩放",
     "SERVICE_CONTROL_AUTO_SCALE":"自动缩放",
     "SERVICE_CONTROL_INSTANCE_NUMBER":"实例个数",
+    "SERVICE_CONTROL_CPU_UTILIZATION_CURRENT":"当前CPU利用率",
+    "SERVICE_CONTROL_CPU_UTILIZATION_QUALIFIED":"合格的CPU利用率"
   },
   "IMAGE":{
     "COL_IMAGE_NAME":"镜像名",
@@ -323,6 +325,7 @@ export const LANG_ZH_CN = {
     "STATUS_PREPARING": "创建中",
     "STATUS_RUNNING": "运行中",
     "STATUS_STOPPED": "已停止",
+    "STATUS_WARNING": "警告",
     "STATUS_SUSPENDING": "挂起中",
     "STATUS_PUBLIC": "公开",
     "STATUS_PRIVATE": "私有",

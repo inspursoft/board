@@ -1,5 +1,8 @@
 <service-detail></service-detail>
-<service-control [(isOpen)]="isServiceControlOpen"></service-control>
+<service-control *ngIf="isServiceControlOpen"
+                 [(isOpen)]="isServiceControlOpen"
+                 [service]="serviceControlData">
+</service-control>
 <div class="row flex-items-xs-right">
   <button class="btn btn-primary"
           [disabled]="createActionIsDisabled"
@@ -49,7 +52,7 @@
             <clr-icon shape="info-standard"></clr-icon>
           </a>
           <a href="javascript:void(0)"
-             (click)="isServiceControlOpen = true">
+             (click)="openServiceControl(s)">
             <clr-icon shape="wrench"></clr-icon>
           </a>
         </clr-dg-cell>

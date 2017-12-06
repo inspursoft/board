@@ -30,6 +30,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   services: Service[];
   isInLoading: boolean = false;
   isServiceControlOpen:boolean = false;
+  serviceControlData:Service;
   checkboxRevertInfo: {isNeeded: boolean; value: boolean;};
   _subscription: Subscription;
 
@@ -200,6 +201,11 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
 
   openServiceDetail(serviceName: string, projectName: string, ownerName: string) {
     this.serviceDetailComponent.openModal(serviceName, projectName, ownerName);
+  }
+
+  openServiceControl(service:Service){
+    this.serviceControlData = service;
+    this.isServiceControlOpen = true;
   }
 
 }

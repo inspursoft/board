@@ -12,6 +12,18 @@ legend.legend-default {
   margin-left: 30px;
 }
 
-span.status-value{
+span.status-value {
   color: darkblue;
+}
+
+span.warning {
+  color: darkorange;
+}
+
+span.stopped {
+  color: gray;
+}
+
+span.running {
+  color: green;
 }

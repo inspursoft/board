@@ -263,4 +263,11 @@ export class K8sService {
       .catch(err => Promise.reject(err));
   }
 
+  setServiceScale(serviceID: number, scale: number): Promise<any> {
+    return this.http
+      .put(`/api/v1/services/${serviceID}/scale`, {service_scale: scale}, {headers: this.defaultHeader})
+      .toPromise()
+      .then(res => this.appInitService.chainResponse(res))
+      .catch(err => Promise.reject(err));
+  }
 }

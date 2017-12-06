@@ -311,6 +311,7 @@ export const LANG_EN_US = {
     "STATUS_PREPARING": "Preparing",
     "STATUS_RUNNING": "Running",
     "STATUS_STOPPED": "Stopped",
+    "STATUS_WARNING": "Warning",
     "STATUS_SUSPENDING": "Suspending",
     "STATUS_PUBLIC": "Public",
     "STATUS_PRIVATE": "Private",
@@ -334,6 +335,8 @@ export const LANG_EN_US = {
     "SERVICE_CONTROL_MANUALLY_SCALE":"Manually scale",
     "SERVICE_CONTROL_AUTO_SCALE":"Auto scale",
     "SERVICE_CONTROL_INSTANCE_NUMBER":"Instance number",
+    "SERVICE_CONTROL_CPU_UTILIZATION_CURRENT":"Current CPU utilization",
+    "SERVICE_CONTROL_CPU_UTILIZATION_QUALIFIED":"Qualified CPU utilization"
   },
   "GLOBAL_SEARCH": {
     "PROJECTS": "Projects",
