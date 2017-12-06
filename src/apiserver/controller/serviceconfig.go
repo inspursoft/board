@@ -269,6 +269,13 @@ func (sc *ServiceConfigController) selectImageList(key string, configServiceStep
 
 	if len(imageList) < 0 {
 		sc.serveStatus(http.StatusBadRequest, imageListInvalidErr.Error())
+		return
+	}
+	for _, image := range imageList {
+		if strings.Index(image.ImageName, "/") == -1 || len(strings.TrimSpace(image.ImageTag)) == 0 {
+			sc.serveStatus(http.StatusBadRequest, imageListInvalidErr.Error())
+			return
+		}
 	}
 
 	SetConfigServiceStep(key, configServiceStep.SelectImageList(imageList))
