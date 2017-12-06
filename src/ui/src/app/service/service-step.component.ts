@@ -76,7 +76,6 @@ export class Container implements UiServerExchangeData<Container> {
   public working_dir: string = "";
   public volume_mount: VolumeStruct = new VolumeStruct();
   public image: ImageIndex = new ImageIndex();
-  public project_name: string = "";
   public env: Array<EnvStruct> = Array<EnvStruct>();
   public container_port: Array<number> = Array();
   public command: string = "";
@@ -86,7 +85,6 @@ export class Container implements UiServerExchangeData<Container> {
     this.working_dir = serverResponse["working_dir"];
     this.volume_mount = (new VolumeStruct()).serverToUi(serverResponse["volume_mount"]);
     this.image = (new ImageIndex()).serverToUi(serverResponse["image"]);
-    this.project_name = serverResponse["project_name"];
     if (serverResponse["env"]){
       let envArr: Array<EnvStruct> = serverResponse["env"];
       envArr.forEach((env: EnvStruct) => {
@@ -235,6 +233,7 @@ export class UIServiceStep3 extends UIServiceStepBase {
 }
 
 export class UIServiceStep4 extends UIServiceStepBase {
+  public projectName:string = "";
   public serviceName: string = "";
   public instance: number = 1;
   public externalServiceList: Array<ExternalService> = Array<ExternalService>();
@@ -265,6 +264,9 @@ export class UIServiceStep4 extends UIServiceStepBase {
     }
     if (serverResponse && serverResponse["service_name"]) {
       step4.serviceName = serverResponse["service_name"];
+    }
+    if (serverResponse && serverResponse["project_name"]) {
+      step4.projectName = serverResponse["project_name"];
     }
     return step4;
   }

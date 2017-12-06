@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
-import { Service } from './service';
 import { AppInitService } from "../app.init.service";
 import { Http, Headers, RequestOptions, Response, RequestOptionsArgs } from "@angular/http";
 import { Project } from "../project/project";
@@ -12,7 +11,6 @@ import { ServerServiceStep, ServiceStepPhase, UiServiceFactory, UIServiceStepBas
 export class K8sService {
   stepSource: Subject<{index: number, isBack: boolean}> = new Subject<{index: number, isBack: boolean}>();
   step$: Observable<{index: number, isBack: boolean}> = this.stepSource.asObservable();
-  _newServiceId: number = 0;
 
   get defaultHeader(): Headers {
     let headers = new Headers();
@@ -25,14 +23,6 @@ export class K8sService {
               private appInitService: AppInitService) {
   }
 
-  get newServiceId(): number {
-    return this._newServiceId;
-  }
-
-  set newServiceId(value: number) {
-    this._newServiceId = value;
-  }
-
   cancelBuildService(): void {
     this.deleteServiceConfig()
       .then(isDelete => {
@@ -40,6 +30,15 @@ export class K8sService {
       })
       .catch(() => {
       });
+  }
+
+  checkServiceExist(projectName: string, serviceName: string): Promise<any> {
+    return this.http.get(`/api/v1/services/exists`, {
+      headers: this.defaultHeader,
+      params: {project_name: projectName, service_name: serviceName}
+    }).toPromise()
+      .then((res: Response) => this.appInitService.chainResponse(res))
+      .catch(err => Promise.reject(err));
   }
 
   getServiceConfig(phase: ServiceStepPhase): Promise<UIServiceStepBase> {
@@ -75,7 +74,9 @@ export class K8sService {
     return this.http
       .delete(`/api/v1/services/config`, {headers: this.defaultHeader})
       .toPromise()
-      .then((res: Response) => this.appInitService.chainResponse(res))
+      .then((res: Response) => {
+        this.appInitService.chainResponse(res);
+      })
       .catch(err => Promise.reject(err));
   }
 
@@ -167,12 +168,12 @@ export class K8sService {
 
   getServices(pageIndex?: number, pageSize?: number): Promise<any> {
     return this.http
-      .get(`/api/v1/services`, { 
+      .get(`/api/v1/services`, {
         headers: this.defaultHeader,
         params: {
           'page_index': pageIndex,
           'page_size': pageSize
-        } 
+        }
       })
       .toPromise()
       .then((res: Response) => {
