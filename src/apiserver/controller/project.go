@@ -57,6 +57,17 @@ func (p *ProjectController) CreateProjectAction() {
 		return
 	}
 
+	// Check namespace in k8s cluster
+	projectExists, err = service.NamespaceExists(reqProject.Name)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if projectExists {
+		p.customAbort(http.StatusConflict, "Project name already exists in cluster.")
+		return
+	}
+
 	reqProject.Name = strings.TrimSpace(reqProject.Name)
 	reqProject.OwnerID = int(p.currentUser.ID)
 	reqProject.OwnerName = p.currentUser.Username
