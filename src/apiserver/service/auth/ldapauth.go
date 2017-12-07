@@ -55,8 +55,8 @@ func (auth LdapAuth) DoAuth(principal, password string) (*model.User, error) {
 		user, err = ldapAuth(principal, password, &ldapconf)
 
 		if err != nil {
-			logs.Debug("Failed to auth user with LDAP: %+v\n", err)
-			return nil, err
+			logs.Error("Failed to auth user with LDAP: %+v\n", err)
+			return nil, nil
 		}
 		password = "12345678AbC"
 	}
