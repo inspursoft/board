@@ -23,7 +23,7 @@ const InputPatternNumber: RegExp = /^[1-9]\d*$/;
 })
 export class CsInputComponent implements OnInit {
   _isDisabled: boolean = false;
-  isInValidatorIng:boolean = false;
+  isInValidatorWIP:boolean = false;
   inputErrors: ValidationErrors;
   inputFormGroup: FormGroup;
   inputControl: FormControl;
@@ -52,7 +52,7 @@ export class CsInputComponent implements OnInit {
   ngOnInit() {
     this.inputControl = new FormControl({
       value: this.SimpleFiled,
-      disabled: this.isDisabled || this.inputType == CsInputType.itWithNoInput || this.isInValidatorIng
+      disabled: this.isDisabled || this.inputType == CsInputType.itWithNoInput || this.isInValidatorWIP
     });
     this.inputFormGroup = new FormGroup({inputControl: this.inputControl});
     if (this.inputFiledType == CsInputFiledType.iftNumber) {
@@ -161,7 +161,7 @@ export class CsInputComponent implements OnInit {
   get isPassValidator(): Promise<boolean> {
     let result = true;
     this.inputErrors = null;
-    this.isInValidatorIng = true;
+    this.isInValidatorWIP = true;
     this.inputValidatorFns.forEach(value => {
       let error = value(this.inputControl);
       if (error) {
@@ -173,11 +173,11 @@ export class CsInputComponent implements OnInit {
       let asyncResult = this.customerValidatorAsyncFunc(this.inputControl);
       return (asyncResult as Promise<ValidationErrors | null>).then((error) => {
         this.inputErrors = error;
-        this.isInValidatorIng = false;
+        this.isInValidatorWIP = false;
         return !error;
       });
     } else {
-      this.isInValidatorIng = false;
+      this.isInValidatorWIP = false;
       return Promise.resolve(result);
     }
   }

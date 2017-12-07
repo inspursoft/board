@@ -19,7 +19,7 @@ const PROCESS_SERVICE_CONSOLE_URL = `ws://localhost/api/v1/jenkins-job/console?j
 export class DeployComponent extends ServiceStepBase implements OnInit, OnDestroy {
   isDeployed: boolean = false;
   isDeploySuccess: boolean = false;
-  isInDeployIng: boolean = false;
+  isInDeployWIP: boolean = false;
   serviceID: number = 0;
   consoleText: string = "";
   processImageSubscription: Subscription;
@@ -63,7 +63,7 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
   serviceDeploy() {
     if (!this.isDeployed) {
       this.isDeployed = true;
-      this.isInDeployIng = true;
+      this.isInDeployWIP = true;
       this.consoleText = "Deploying...";
       this.k8sService.serviceDeployment()
         .then(serviceID => {
@@ -76,17 +76,17 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
                 let consoleTextArr: Array<string> = this.consoleText.split(/[\n]/g);
                 if (consoleTextArr.find(value => value.indexOf("Finished: SUCCESS") > -1)) {
                   this.isDeploySuccess = true;
-                  this.isInDeployIng = false;
+                  this.isInDeployWIP = false;
                   this.processImageSubscription.unsubscribe();
                 }
                 if (consoleTextArr.find(value => value.indexOf("Finished: FAILURE") > -1)) {
                   this.isDeploySuccess = false;
-                  this.isInDeployIng = false;
+                  this.isInDeployWIP = false;
                   this.processImageSubscription.unsubscribe();
                 }
               }, err => err, () => {
                 this.isDeploySuccess = false;
-                this.isInDeployIng = false;
+                this.isInDeployWIP = false;
               });
           }, 10000);
         })
@@ -100,7 +100,7 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
             this.messageService.dispatchError(err);
           }
           this.isDeploySuccess = false;
-          this.isInDeployIng = false;
+          this.isInDeployWIP = false;
         })
     }
   }

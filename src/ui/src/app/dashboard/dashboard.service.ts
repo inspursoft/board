@@ -107,7 +107,7 @@ export class DashboardService {
       }).catch(err => Promise.reject(err));
   }
 
-  getLineData(lineType: LineType, query: {
+  getlineData(lineType: LineType, query: {
     time_count: number,
     time_unit: string,
     list_name: string,
