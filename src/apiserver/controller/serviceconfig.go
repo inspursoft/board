@@ -190,6 +190,11 @@ func (sc *ServiceConfigController) GetConfigServiceStepAction() {
 		result = configServiceStep.GetConfigContainerList()
 	case configExternalService:
 		result = configServiceStep.GetConfigExternalService()
+	case configEntireService:
+		result = configServiceStep
+	default:
+		sc.serveStatus(http.StatusBadRequest, phaseInvalidErr.Error())
+		return
 	}
 
 	if err, ok := result.(error); ok {
