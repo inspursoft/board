@@ -5,8 +5,8 @@ import "rxjs/add/operator/map";
 import 'rxjs/add/operator/toPromise';
 
 export enum LineType {ltService, ltNode, ltStorage}
-export type LineDataModel = [Date, number];
-export type LinesData = [LineDataModel[], LineDataModel[], LineDataModel[]];
+export type lineDataModel = [Date, number];
+export type LinesData = [lineDataModel[], lineDataModel[], lineDataModel[]];
 
 export interface LineListQueryModel {
   readonly query_name_Key: string;
@@ -107,7 +107,7 @@ export class DashboardService {
       }).catch(err => Promise.reject(err));
   }
 
-  getLineData(lineType: LineType, query: {
+  getlineData(lineType: LineType, query: {
     time_count: number,
     time_unit: string,
     list_name: string,
