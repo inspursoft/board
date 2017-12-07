@@ -7,11 +7,7 @@ import { Service } from "../../service";
 import { K8sService } from "../../service.k8s";
 import { MessageService } from "../../../shared/message-service/message.service";
 
-enum ScaleMethod{
-  smNone,
-  smManually,
-  smAuto
-}
+enum ScaleMethod{smNone, smManually, smAuto}
 @Component({
   selector: "service-control",
   styleUrls: ["./service-control.component.css"],

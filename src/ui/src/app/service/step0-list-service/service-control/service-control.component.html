@@ -3,8 +3,8 @@
   <div class="modal-body">
     <fieldset class="fieldSet-default">
       <legend class="legend-default">{{"SERVICE.SERVICE_CONTROL_STATUS" | translate}}</legend>
-      <div style="display: flex;flex-direction: column;">
-        <div style="height: 25px;">
+      <div class="detail-container">
+        <div class="detail-line">
           <span>{{ 'SERVICE.SERVICE_CONTROL_NAME' | translate }}:
             <span class="status-value">{{service.service_name}}</span>
           </span>
@@ -16,12 +16,12 @@
             <span class="status-value"></span>
           </span>
         </div>
-        <div style="height: 25px;">
+        <div class="detail-line">
           <span>{{ 'SERVICE.SERVICE_CONTROL_REASON' | translate }}:
           <span class="status-value">{{reason}}</span>
           </span>
         </div>
-        <div style="height: 25px;">
+        <div class="detail-line">
           <span>{{ 'SERVICE.SERVICE_CONTROL_POD' | translate }}:
            <span class="status-value"> </span>
           </span>
@@ -37,7 +37,7 @@
         </div>
       </div>
     </fieldset>
-    <div style="margin: 20px 0 20px 0;display: flex">
+    <div class="utilization-container">
       <cs-input [inputLabel]="'SERVICE.SERVICE_CONTROL_CPU_UTILIZATION_CURRENT'| translate"
                 [disabled]="true"
                 [simpleFiled]="'50%'">
@@ -46,12 +46,12 @@
                 [simpleFiled]="'55%'">
       </cs-input>
     </div>
-    <div style="display: flex;height: 30px;align-items: center">
+    <div class="scale-line">
       <input title="" type="radio" id="manually" name="scaleMethod" (change)="setScaleMethod(1)">
-      <label style="margin-left: 10px;" for="manually">
+      <label class="margin-left-10" for="manually">
         {{"SERVICE.SERVICE_CONTROL_MANUALLY_SCALE"|translate}}
       </label>
-      <span *ngIf="scaleModule == 1" style="margin-left: 20px;">
+      <span *ngIf="scaleModule == 1" class="margin-left-20">
         {{"SERVICE.SERVICE_CONTROL_INSTANCE_NUMBER"|translate}}:
       </span>
       <cs-dropdown *ngIf="scaleModule == 1"
@@ -62,9 +62,9 @@
                    (onChange)="scaleNum = $event">
       </cs-dropdown>
     </div>
-    <div style="display: flex;height: 30px;align-items: center">
+    <div class="scale-line">
       <input title="" type="radio" id="auto" name="scaleMethod" (change)="setScaleMethod(2)">
-      <label style="margin-left: 10px;" for="auto">
+      <label class="margin-left-10" for="auto">
         {{"SERVICE.SERVICE_CONTROL_AUTO_SCALE"|translate}}
       </label>
     </div>
