@@ -93,15 +93,6 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
     }
   }
 
-  get createActionIsDisabled(): boolean {
-    if (this.currentUser &&
-      this.currentUser.hasOwnProperty("user_project_admin") &&
-      this.currentUser.hasOwnProperty("user_system_admin")) {
-      return this.currentUser["user_project_admin"] == 0 && this.currentUser["user_system_admin"] == 0;
-    }
-    return true;
-  }
-
   createService(): void {
     this.k8sService.stepSource.next({index: 1, isBack: false});
   }

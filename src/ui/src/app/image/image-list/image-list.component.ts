@@ -76,14 +76,6 @@ export class ImageListComponent implements OnInit, OnDestroy {
     }
   }
 
-  get createActionIsDisabled(): boolean {
-    let user = this.appInitService.currentUser;
-    if (user && user.hasOwnProperty("user_project_admin") && user.hasOwnProperty("user_system_admin")) {
-      return user["user_project_admin"] == 0 && user["user_system_admin"] == 0;
-    }
-    return true;
-  }
-
   clickSelectProject(project: Project) {
     this.router.navigate(["/projects"]);
   }
