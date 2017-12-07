@@ -5,8 +5,8 @@ import "rxjs/add/operator/map";
 import 'rxjs/add/operator/toPromise';
 
 export enum LineType {ltService, ltNode, ltStorage}
-export type lineDataModel = [Date, number];
-export type LinesData = [lineDataModel[], lineDataModel[], lineDataModel[]];
+export type LineDataModel = [Date, number];
+export type LinesData = [LineDataModel[], LineDataModel[], LineDataModel[]];
 
 export interface LineListQueryModel {
   readonly query_name_Key: string;

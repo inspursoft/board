@@ -2,7 +2,7 @@ import { OnInit, AfterViewInit, Component, OnDestroy, HostListener } from '@angu
 import { DashboardComponentParent } from "./dashboard.component.parent"
 import { scaleOption } from "app/dashboard/time-range-scale.component/time-range-scale.component";
 import {
-  DashboardService, LinesData, lineDataModel, LineType, LineListDataModel
+  DashboardService, LinesData, LineDataModel, LineType, LineListDataModel
 } from "app/dashboard/dashboard.service";
 import { TranslateService } from "@ngx-translate/core";
 import { Subscription } from "rxjs/Subscription";
@@ -80,7 +80,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     this.eventDragChange.asObservable().debounceTime(300).subscribe(dragInfo => {
       this.lineTypeSet.forEach((value) => {
         if (dragInfo.lineType != value) {
-          this.refreshlineDataByDrag(value, dragInfo.isDragBack);
+          this.refreshLineDataByDrag(value, dragInfo.isDragBack);
         }
         this.resetBaseLinePos(value);
       });
@@ -93,7 +93,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     this.eventScaleChange.asObservable().debounceTime(300).subscribe(ScaleInfo => {
       this.lineTypeSet.forEach((value: LineType) => {
         if (ScaleInfo["lineType"] != value) {
-          this.getOnelineData(value).then(res => {
+          this.getOneLineData(value).then(res => {
             this.clearEChart(value);
             this.lineData.set(value, res.Data);
             this.setLineZoomByTimeStamp(value, this.query.get(value).baseLineTimeStamp);
@@ -181,13 +181,13 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
 
   private async initAsyncLine(lineType: LineType) {
     await this.initLine(lineType);
-    await this.getOnelineData(lineType)
+    await this.getOneLineData(lineType)
       .then(res => this.lineData.set(lineType, res.Data))
       .catch(() => {
       });
   };
 
-  private getOnelineData(lineType: LineType): Promise<{Data: LinesData, Limit: {isMax: boolean, isMin: boolean}}> {
+  private getOneLineData(lineType: LineType): Promise<{Data: LinesData, Limit: {isMax: boolean, isMin: boolean}}> {
     let query = this.query.get(lineType);
     let httpQuery = {
       time_count: query.time_count,
@@ -212,7 +212,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
       });
   }
 
-  private getLineinRefreshWIP(): boolean {
+  private getLineInRefreshWIP(): boolean {
     let iter: IterableIterator<LineType> = this.lineTypeSet.values();
     let iterResult: IteratorResult<LineType> = iter.next();
     while (!iterResult.done) {
@@ -314,7 +314,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
         if (this.lineStateInfo.get(lineType).isCanAutoRefresh) {
           this.query.get(lineType).time_count = MAX_COUNT_PER_PAGE;
           this.query.get(lineType).timestamp_base = this._serverTimeStamp;
-          this.getOnelineData(lineType).then(res => {
+          this.getOneLineData(lineType).then(res => {
             this.clearEChart(lineType);
             this.lineData.set(lineType, res.Data);
           }).catch(() => {
@@ -378,7 +378,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     lineData[2][1][0] = new Date(newMinTimeStrap * 1000);
   }
 
-  private filterMaxlineData(this: lineDataModel[], value: [Date, number]): boolean {
+  private filterMaxLineData(this: LineDataModel[], value: [Date, number]): boolean {
     let date = value[0];
     let timeStrap = Math.round(date.getTime() / 1000);
     if (this.length > 0) {
@@ -388,7 +388,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     return true;
   }
 
-  private filterMinlineData(this: lineDataModel[], value: [Date, number]): boolean {
+  private filterMinlineData(this: LineDataModel[], value: [Date, number]): boolean {
     let date = value[0];
     let timeStrap = Math.round(date.getTime() / 1000);
     if (this.length > 0) {
@@ -398,11 +398,11 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     return true;
   }
 
-  private concatlineData(lineType: LineType, res: LinesData, isDropBack: boolean): number {
+  private concatLineData(lineType: LineType, res: LinesData, isDropBack: boolean): number {
     let lineData = this.lineData.get(lineType);
     if (!isDropBack) {
-      let newData1 = res[0].filter(this.filterMaxlineData, lineData[0]);
-      let newData2 = res[1].filter(this.filterMaxlineData, lineData[1]);
+      let newData1 = res[0].filter(this.filterMaxLineData, lineData[0]);
+      let newData2 = res[1].filter(this.filterMaxLineData, lineData[1]);
       lineData[0] = lineData[0].concat(newData1);
       lineData[1] = lineData[1].concat(newData2);
       return newData2.length;
@@ -415,19 +415,19 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     }
   }
 
-  private refreshlineDataByDrag(lineType: LineType, isDragBack) {
+  private refreshLineDataByDrag(lineType: LineType, isDragBack) {
     let lineState = this.lineStateInfo.get(lineType);
     if (isDragBack) {
       lineState.inDrop = true;
       lineState.isDropBack = true;
       lineState.isCanAutoRefresh = false;
       this.updateAfterDragTimeStamp(lineType, true);
-      this.getOnelineData(lineType).then(res => {
+      this.getOneLineData(lineType).then(res => {
         this.delayNormal(lineType).then(() => {
           if (!res.Limit.isMin) {
             this.clearEChart(lineType);
             this.resetAfterDraglineData(lineType);
-            let newCount = this.concatlineData(lineType, res.Data, true);
+            let newCount = this.concatLineData(lineType, res.Data, true);
             this.setLineZoomByCount(lineType, newCount, true);
             this.resetBaseLinePos(lineType);
           } else {
@@ -441,12 +441,12 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
       lineState.isDropBack = false;
       lineState.isCanAutoRefresh = false;
       this.updateAfterDragTimeStamp(lineType, false);
-      this.getOnelineData(lineType).then(res => {
+      this.getOneLineData(lineType).then(res => {
         this.delayNormal(lineType).then(() => {//add delay for drag
           if (!res.Limit.isMax) {
             this.clearEChart(lineType);
             this.resetAfterDraglineData(lineType);
-            let newCount = this.concatlineData(lineType, res.Data, false);
+            let newCount = this.concatLineData(lineType, res.Data, false);
             this.setLineZoomByCount(lineType, newCount, false);
             this.resetBaseLinePos(lineType);
           }
@@ -461,11 +461,11 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     let zoomEnd = this.lineOptions.get(lineType)["dataZoom"][0]["end"];
     let lineState = this.lineStateInfo.get(lineType);
     if (zoomStart == 0 && zoomEnd < 100 && !lineState.inRefreshWIP) {//get backup data
-      this.refreshlineDataByDrag(lineType, true);
+      this.refreshLineDataByDrag(lineType, true);
       this.eventDragChange.next({lineType: lineType, isDragBack: true});
     }
     else if (zoomEnd == 100 && zoomStart > 0 && !lineState.inRefreshWIP && !lineState.isCanAutoRefresh) {//get forward data
-      this.refreshlineDataByDrag(lineType, false);
+      this.refreshLineDataByDrag(lineType, false);
       this.eventDragChange.next({lineType: lineType, isDragBack: false});
     }
   }
@@ -515,7 +515,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
   }
 
   scaleChange(lineType: LineType, data: scaleOption) {
-    if (!this.getLineinRefreshWIP()) {
+    if (!this.getLineInRefreshWIP()) {
       let baseLineTimeStamp = this.getBaseLineTimeStamp(lineType);
       let queryTimeStamp = 0;
       let maxLineTimeStamp = baseLineTimeStamp + data.valueOfSecond * MAX_COUNT_PER_PAGE / 2;
@@ -531,7 +531,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
         this.query.get(value).timestamp_base = queryTimeStamp;
         this.query.get(value).baseLineTimeStamp = baseLineTimeStamp;
       });
-      this.getOnelineData(lineType).then(res => {
+      this.getOneLineData(lineType).then(res => {
         let query = this.query.get(lineType);
         if (res.Data[0].length == 0) {
           let maxTimeStamp = query.timestamp_base;
@@ -555,7 +555,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     if (!this.lineStateInfo.get(lineType).inRefreshWIP) {
       this.query.get(lineType).model = lineListData;
       this.query.get(lineType).time_count = MAX_COUNT_PER_PAGE;
-      this.getOnelineData(lineType).then(res => {
+      this.getOneLineData(lineType).then(res => {
         this.clearEChart(lineType);
         this.lineData.set(lineType, res.Data);
       }).catch(() => {
