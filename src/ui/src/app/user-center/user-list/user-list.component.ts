@@ -27,7 +27,7 @@ export class UserList implements OnInit, OnDestroy {
   curUser: User;
   curEditModel: editModel = editModel.emNew;
   showNewUser: boolean = false;
-  setUserSystemAdminWip: boolean = false;
+  setUserSystemAdminWIP: boolean = false;
   isInLoading: boolean = false;
   checkboxRevertInfo: {isNeeded: boolean; value: boolean;};
 
@@ -114,11 +114,11 @@ export class UserList implements OnInit, OnDestroy {
   }
 
   setUserSystemAdmin(user: User) {
-    this.setUserSystemAdminWip = true;
+    this.setUserSystemAdminWIP = true;
     let oldUserSystemAdmin = user.user_system_admin;
     this.userService.setUserSystemAdmin(user.user_id, oldUserSystemAdmin == 1 ? 0 : 1)
       .then(() => {
-        this.setUserSystemAdminWip = false;
+        this.setUserSystemAdminWIP = false;
         user.user_system_admin = oldUserSystemAdmin == 1 ? 0 : 1;
         let m: Message = new Message();
         if (user.user_system_admin === 1) {
@@ -130,7 +130,7 @@ export class UserList implements OnInit, OnDestroy {
         this.messageService.inlineAlertMessage(m);
       })
       .catch(err => {
-        this.setUserSystemAdminWip = false;
+        this.setUserSystemAdminWIP = false;
         this.checkboxRevertInfo = {isNeeded: true, value: oldUserSystemAdmin == 1};
         this.messageService.dispatchError(err);
       })

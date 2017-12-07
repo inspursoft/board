@@ -24,7 +24,7 @@
         <clr-dg-cell>
           <input type="checkbox"
                  title=""
-                 [disabled]="setUserSystemAdminWip || user.user_id == currentUserID || user.user_deleted == 1"
+                 [disabled]="setUserSystemAdminWIP || user.user_id == currentUserID || user.user_deleted == 1"
                  [checked]="user.user_system_admin"
                  [checkbox-revert]="checkboxRevertInfo"
                  (change)="setUserSystemAdmin(user)">
