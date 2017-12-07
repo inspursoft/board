@@ -19,10 +19,11 @@ export class CsDropdownComponent {
   dropdownText: string;
   dropdownShowTimes: number = 1;
   _dropdownSearchText: string = "";
-  set dropdownSearchText(value:string){
+  set dropdownSearchText(value: string) {
     this._dropdownSearchText = value;
   }
-  get dropdownSearchText():string{
+
+  get dropdownSearchText(): string {
     return this._dropdownSearchText;
   }
 
@@ -33,6 +34,7 @@ export class CsDropdownComponent {
   @Input() dropdownList: Array<any>;
   @Input() dropdownListTextKey;
   @Input() dropdownTitleFontSize: number = 14;
+  @Input() dropdownHideSearch: boolean = false;
   @Output("onChange") dropdownChange: EventEmitter<any>;
   @Output("onOnlyClickItem") dropdownClick: EventEmitter<any>;
 
@@ -51,9 +53,12 @@ export class CsDropdownComponent {
 
   get dropdownShowItems(): Array<any> {
     if (this.dropdownSearchText == "") {
-      return this.dropdownList ? this.dropdownList.filter(
-        (value, index) => index < this.dropdownShowTimes * DROP_DOWN_SHOW_COUNT) : null;
-
+      if (this.dropdownHideSearch) {
+        return this.dropdownList
+      } else {
+        return this.dropdownList ? this.dropdownList.filter(
+          (value, index) => index < this.dropdownShowTimes * DROP_DOWN_SHOW_COUNT) : null;
+      }
     } else {
       let result = this.dropdownList.filter(value => {
         let text = this.getItemDescription(value);

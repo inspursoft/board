@@ -4,7 +4,7 @@ import { Subscription } from 'rxjs/Subscription';
 import { State } from "clarity-angular";
 
 import { Service } from '../service';
-import { MESSAGE_TARGET, BUTTON_STYLE, MESSAGE_TYPE } from '../../shared/shared.const';
+import { MESSAGE_TARGET, BUTTON_STYLE, MESSAGE_TYPE, SERVICE_STATUS } from '../../shared/shared.const';
 import { Message } from '../../shared/message-service/message';
 import { ServiceDetailComponent } from './service-detail/service-detail.component';
 import { ServiceStepBase } from "../service-step";
@@ -29,6 +29,8 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   currentUser: {[key: string]: any};
   services: Service[];
   isInLoading: boolean = false;
+  isServiceControlOpen:boolean = false;
+  serviceControlData:Service;
   checkboxRevertInfo: {isNeeded: boolean; value: boolean;};
   _subscription: Subscription;
 
@@ -91,21 +93,12 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
     }
   }
 
-  get createActionIsDisabled(): boolean {
-    if (this.currentUser &&
-      this.currentUser.hasOwnProperty("user_project_admin") &&
-      this.currentUser.hasOwnProperty("user_system_admin")) {
-      return this.currentUser["user_project_admin"] == 0 && this.currentUser["user_system_admin"] == 0;
-    }
-    return true;
-  }
-
   createService(): void {
     this.k8sService.stepSource.next({index: 1, isBack: false});
   }
 
   retrieve(state?: State): void {
-    setTimeout(()=>{
+    setTimeout(() => {
       this.isInLoading = true;
       this.k8sService.getServices(this.pageIndex, this.pageSize)
         .then(paginatedServices => {
@@ -120,15 +113,24 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
     });
   }
 
-  getServiceStatus(status: number): string {
-    //0: preparing 1: running 2: suspending
+  getServiceStatus(status: SERVICE_STATUS): string {
     switch (status) {
-      case 0:
+      case SERVICE_STATUS.PREPARING:
         return 'SERVICE.STATUS_PREPARING';
-      case 1:
+      case SERVICE_STATUS.RUNNING:
         return 'SERVICE.STATUS_RUNNING';
-      case 2:
+      case SERVICE_STATUS.STOPPED:
         return 'SERVICE.STATUS_STOPPED';
+      case SERVICE_STATUS.WARNING:
+        return 'SERVICE.STATUS_WARNING';
+    }
+  }
+
+  getStatusClass(status: SERVICE_STATUS) {
+    return {
+      'running': status == SERVICE_STATUS.RUNNING,
+      'stopped': status == SERVICE_STATUS.STOPPED,
+      'warning': status == SERVICE_STATUS.WARNING
     }
   }
 
@@ -138,7 +140,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
     this.k8sService
       .toggleServicePublicity(s.service_id, s.service_public ? 0 : 1)
       .then(() => {
-        s.service_public = ! oldServicePublic;
+        s.service_public = !oldServicePublic;
         toggleMessage.message = 'SERVICE.SUCCESSFUL_TOGGLE';
         this.messageService.inlineAlertMessage(toggleMessage);
       })
@@ -189,6 +191,11 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
 
   openServiceDetail(serviceName: string, projectName: string, ownerName: string) {
     this.serviceDetailComponent.openModal(serviceName, projectName, ownerName);
+  }
+
+  openServiceControl(service:Service){
+    this.serviceControlData = service;
+    this.isServiceControlOpen = true;
   }
 
 }
