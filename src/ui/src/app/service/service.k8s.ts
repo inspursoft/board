@@ -32,15 +32,12 @@ export class K8sService {
       });
   }
 
-  checkServiceExist(projectName: string, serviceName: string): Promise<boolean> {
+  checkServiceExist(projectName: string, serviceName: string): Promise<any> {
     return this.http.get(`/api/v1/services/exists`, {
       headers: this.defaultHeader,
       params: {project_name: projectName, service_name: serviceName}
     }).toPromise()
-      .then((res: Response) => {
-        this.appInitService.chainResponse(res);
-        return res.text().toLocaleLowerCase() == "true";
-      })
+      .then((res: Response) => this.appInitService.chainResponse(res))
       .catch(err => Promise.reject(err));
   }
 

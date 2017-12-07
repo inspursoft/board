@@ -10,6 +10,7 @@ import {
 } from '../service-step.component';
 import { CsInputComponent } from "../../shared/cs-components-library/cs-input/cs-input.component";
 import { ServiceStepBase } from "../service-step";
+import { Response } from "@angular/http";
 import { ValidationErrors } from "@angular/forms/forms";
 
 @Component({
@@ -67,9 +68,15 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
   }
 
   checkServiceName(control: HTMLInputElement): Promise<ValidationErrors | null> {
-    return this.k8sService.checkServiceExist(this.uiData.projectName, control.value).then((isExist) => {
-      return isExist ? {serviceExist: "SERVICE.STEP_4_SERVICE_NAME_EXIST"} : null;
-    });
+    return this.k8sService.checkServiceExist(this.uiData.projectName, control.value)
+      .then(() => null)
+      .catch(err => {
+        if (err && err instanceof Response && (err as Response).status == 409) {
+          return {serviceExist: "SERVICE.STEP_4_SERVICE_NAME_EXIST"}
+        } else {
+          return null;
+        }
+      });
   }
 
   setNodePort(index: number, port: number) {
