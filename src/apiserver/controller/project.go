@@ -107,6 +107,7 @@ func (p *ProjectController) ProjectExists() {
 func (p *ProjectController) GetProjectsAction() {
 	projectName := p.GetString("project_name")
 	strPublic := p.GetString("project_public")
+	memberOnly, _ := p.GetInt("member_only", 0)
 
 	pageIndex, _ := p.GetInt("page_index", 0)
 	pageSize, _ := p.GetInt("page_size", 0)
@@ -119,7 +120,13 @@ func (p *ProjectController) GetProjectsAction() {
 	}
 
 	if pageIndex == 0 && pageSize == 0 {
-		projects, err := service.GetProjectsByUser(query, p.currentUser.ID)
+		var projects []*model.Project
+		var err error
+		if memberOnly == 1 {
+			projects, err = service.GetProjectsByMember(query, p.currentUser.ID)
+		} else {
+			projects, err = service.GetProjectsByUser(query, p.currentUser.ID)
+		}
 		if err != nil {
 			p.internalError(err)
 			return
