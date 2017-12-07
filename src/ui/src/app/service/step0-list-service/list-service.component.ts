@@ -4,7 +4,7 @@ import { Subscription } from 'rxjs/Subscription';
 import { State } from "clarity-angular";
 
 import { Service } from '../service';
-import { MESSAGE_TARGET, BUTTON_STYLE, MESSAGE_TYPE } from '../../shared/shared.const';
+import { MESSAGE_TARGET, BUTTON_STYLE, MESSAGE_TYPE, SERVICE_STATUS } from '../../shared/shared.const';
 import { Message } from '../../shared/message-service/message';
 import { ServiceDetailComponent } from './service-detail/service-detail.component';
 import { ServiceStepBase } from "../service-step";
@@ -122,25 +122,24 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
     });
   }
 
-  getServiceStatus(status: number): string {
-    //0: preparing 1: running 2: suspending
+  getServiceStatus(status: SERVICE_STATUS): string {
     switch (status) {
-      case 0:
+      case SERVICE_STATUS.PREPARING:
         return 'SERVICE.STATUS_PREPARING';
-      case 1:
+      case SERVICE_STATUS.RUNNING:
         return 'SERVICE.STATUS_RUNNING';
-      case 2:
+      case SERVICE_STATUS.STOPPED:
         return 'SERVICE.STATUS_STOPPED';
-      case 3:
+      case SERVICE_STATUS.WARNING:
         return 'SERVICE.STATUS_WARNING';
     }
   }
 
-  getStatusClass(status: number) {
+  getStatusClass(status: SERVICE_STATUS) {
     return {
-      'running': status == 1,
-      'stopped': status == 2,
-      'warning': status == 3
+      'running': status == SERVICE_STATUS.RUNNING,
+      'stopped': status == SERVICE_STATUS.STOPPED,
+      'warning': status == SERVICE_STATUS.WARNING
     }
   }
 

@@ -6,6 +6,7 @@ import { Component, EventEmitter, Input, Output, OnInit } from "@angular/core"
 import { Service } from "../../service";
 import { K8sService } from "../../service.k8s";
 import { MessageService } from "../../../shared/message-service/message.service";
+import { SERVICE_STATUS } from "../../../shared/shared.const";
 
 enum ScaleMethod{smNone, smManually, smAuto}
 @Component({
@@ -50,24 +51,24 @@ export class ServiceControlComponent implements OnInit {
     return result;
   }
 
-  getServiceStatus(status: number): string {
+  getServiceStatus(status: SERVICE_STATUS): string {
     switch (status) {
-      case 0:
+      case SERVICE_STATUS.PREPARING:
         return 'SERVICE.STATUS_PREPARING';
-      case 1:
+      case SERVICE_STATUS.RUNNING:
         return 'SERVICE.STATUS_RUNNING';
-      case 2:
+      case SERVICE_STATUS.STOPPED:
         return 'SERVICE.STATUS_STOPPED';
-      case 3:
+      case SERVICE_STATUS.WARNING:
         return 'SERVICE.STATUS_WARNING';
     }
   }
 
-  getStatusClass(status: number) {
+  getStatusClass(status: SERVICE_STATUS) {
     return {
-      'running': status == 1,
-      'stopped': status == 2,
-      'warning': status == 3
+      'running': status == SERVICE_STATUS.RUNNING,
+      'stopped': status == SERVICE_STATUS.STOPPED,
+      'warning': status == SERVICE_STATUS.WARNING
     }
   }
 
