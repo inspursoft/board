@@ -30,7 +30,7 @@ export class ImageService {
   getProjects(projectName?: string): Promise<Project[]> {
     return this.http.get('/api/v1/projects', {
       headers: this.defaultHeader,
-      params: {'project_name': projectName}
+      params: {'project_name': projectName, 'member_only': 1}
     }).toPromise()
       .then(resp => {
         this.appInitService.chainResponse(resp);
