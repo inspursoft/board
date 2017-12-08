@@ -33,7 +33,7 @@ func SetSystemInfo(name string, reconfigurable bool) error {
 	if err != nil {
 		return err
 	}
-	if reconfigurable {
+	if config.Name == "" || reconfigurable {
 		value := utils.GetStringValue(name)
 		if value == "" {
 			return fmt.Errorf("Has not set config %s yet", name)
