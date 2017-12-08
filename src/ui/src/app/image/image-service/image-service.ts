@@ -172,15 +172,26 @@ export class ImageService {
       .catch(err => Promise.reject(err));
   }
 
-  deleteImages(imageName: string, tag?: string): Promise<any> {
+  deleteImages(imageName: string): Promise<any> {
     return this.http
-      .delete(`/api/v1/images/${imageName}`,
-        {
-          headers: this.defaultHeader,
-          params: {
-            image_tag: tag
-          }
-        })
+      .delete(`/api/v1/images`, {
+        headers: this.defaultHeader,
+        params: {image_name: imageName}
+      })
+      .toPromise()
+      .then(res => {
+        this.appInitService.chainResponse(res);
+        return res;
+      })
+      .catch(err => Promise.reject(err));
+  }
+
+  deleteImageTag(imageName: string, imageTag: string): Promise<any> {
+    return this.http
+      .delete(`/api/v1/images/${imageName}`, {
+        headers: this.defaultHeader,
+        params: {image_tag: imageTag}
+      })
       .toPromise()
       .then(res => {
         this.appInitService.chainResponse(res);

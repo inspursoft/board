@@ -5,7 +5,11 @@ export const LANG_EN_US = {
     "NO": "No",
     "CONFIRM": "Confirm",
     "CANCEL": "Cancel",
-    "DELETE": "Delete"
+    "DELETE": "Delete",
+    "CREATE":"Create",
+    "NEXT":"Next",
+    "BACK":"Back",
+    "TEST":"Test",
   },
   "DATAGRID": {
     "ITEMS": "items"
@@ -30,7 +34,7 @@ export const LANG_EN_US = {
     "INPUT_MIN_LENGTH":"Min length",
     "INPUT_MAX_VALUE":"Max value",
     "INPUT_MIN_VALUE":"Min value",
-    "INPUT_PATTERN":"Input does not conform to the rules"
+    "INPUT_PATTERN":"Input does not confirm to the rules"
   },
   "ACCOUNT": {
     "SIGN_IN": "Sign In",
@@ -234,11 +238,12 @@ export const LANG_EN_US = {
     "CREATE_IMAGE_SELECT_PROJECT":"Select Project",
     "CREATE_IMAGE_CREATE_PROJECT":"Create Project...",
     "CREATE_IMAGE_SELECT_DES": "Create a project, if there has no proper one.",
-    "CREATE_IMAGE_IMPORT_DEVOPES":"Import from DevOps",
-    "CREATE_IMAGE_IMPORT_DOCKER_FILE":"Import from Dockerfile",
+    "CREATE_IMAGE_DEVOPES":"Create by DevOps method",
+    "CREATE_IMAGE_DOCKER_FILE":"Use Dockerfile for create",
+    "CREATE_IMAGE_TEMPLATE":"Use template for create",
     "CREATE_IMAGE_EXIST":"Image already exists.",
     "CREATE_IMAGE_FROM_TEMP":"From Template",
-    "CREATE_IMAGE_FROM_FILE":"From File",
+    "CREATE_IMAGE_FROM_FILE":"From Docker-File",
   },
   "SERVICE": {
     "ASK_TITLE":"Cancel",

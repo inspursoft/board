@@ -45,5 +45,9 @@
   [projectId]="projectId"
   (onBuildCompleted)="onBuildImageCompleted($event)">
 </create-image>
-<button class="btn btn-default" (click)="cancelBuildService()">Cancel</button>
-<button class="btn btn-default" [disabled]="!isCanNextStep" (click)="forward()">Next</button>
+<button class="btn btn-default" (click)="cancelBuildService()">
+  {{"BUTTON.CANCEL"|translate}}
+</button>
+<button class="btn btn-default" [disabled]="!isCanNextStep" (click)="forward()">
+  {{"BUTTON.NEXT"|translate}}
+</button>
