@@ -336,11 +336,6 @@ func (sc *ServiceConfigController) configExternalService(key string, configServi
 		return
 	}
 
-	if len(externalServiceList) < 1 {
-		sc.serveStatus(http.StatusBadRequest, serverNameDuplicateErr.Error())
-		return
-	}
-
 	for _, external := range externalServiceList {
 		if external.NodeConfig.NodePort > maximumPortNum || external.NodeConfig.NodePort < minimumPortNum {
 			sc.serveStatus(http.StatusBadRequest, portInvalidErr.Error())
