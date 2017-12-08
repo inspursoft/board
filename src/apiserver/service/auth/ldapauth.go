@@ -151,7 +151,6 @@ func ldapAuth(principal string, password string, settings *model.LdapConf) (*mod
 		logs.Debug("Search DN: ", ldapSearchDn)
 		ldapSearchPwd := settings.LdapSearchPassword
 		err = ldap.Bind(ldapSearchDn, ldapSearchPwd)
-		logs.Debug("Search pwd: ", ldapSearchPwd)
 		if err != nil {
 			logs.Debug("Bind search dn error", err)
 			return nil, err

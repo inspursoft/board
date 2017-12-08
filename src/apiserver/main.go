@@ -42,7 +42,7 @@ func updateAdminPassword() {
 	}
 	if isSuccess {
 		utils.SetConfig("SET_ADMIN_PASSWORD", "updated")
-		err = service.SetSystemInfo("SET_ADMIN_PASSWORD")
+		err = service.SetSystemInfo("SET_ADMIN_PASSWORD", false)
 		if err != nil {
 			logs.Error("Failed to set system config: %+v", err)
 			panic(err)
@@ -73,7 +73,7 @@ func initProjectRepo() {
 	}
 
 	utils.SetConfig("INIT_PROJECT_REPO", "created")
-	err = service.SetSystemInfo("INIT_PROJECT_REPO")
+	err = service.SetSystemInfo("INIT_PROJECT_REPO", true)
 	if err != nil {
 		logs.Error("Failed to set system config: %+v", err)
 		panic(err)
@@ -91,6 +91,7 @@ func main() {
 
 	utils.Initialize()
 
+	utils.AddEnv("BOARD_HOST")
 	utils.AddEnv("BOARD_ADMIN_PASSWORD")
 	utils.AddEnv("KUBE_MASTER_IP")
 	utils.AddEnv("KUBE_MASTER_PORT")
@@ -121,9 +122,14 @@ func main() {
 	utils.SetConfig("REGISTRY_BASE_URI", "%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
 
 	dao.InitDB()
-	err := service.SetSystemInfo("AUTH_MODE")
+	err := service.SetSystemInfo("BOARD_HOST", true)
 	if err != nil {
-		logs.Error("Failed to set system config: %+v", err)
+		logs.Error("Failed to set BOARD_HOST system config: %+v", err)
+		panic(err)
+	}
+	err = service.SetSystemInfo("AUTH_MODE", false)
+	if err != nil {
+		logs.Error("Failed to set AUTH_MODE system config: %+v", err)
 		panic(err)
 	}
 
