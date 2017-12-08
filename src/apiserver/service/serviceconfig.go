@@ -21,6 +21,7 @@ import (
 
 const (
 	defaultProjectName = "library"
+	defaultProjectID   = 1
 	defaultOwnerID     = 1
 	defaultOwnerName   = "admin"
 	defaultComment     = "init service"
@@ -190,6 +191,7 @@ func SyncServiceWithK8s() error {
 		servicequery.OwnerID = defaultOwnerID
 		servicequery.OwnerName = defaultOwnerName
 		servicequery.ProjectName = defaultProjectName
+		servicequery.ProjectID = defaultProjectID
 		servicequery.Comment = defaultComment
 		servicequery.Deleted = defaultDeleted
 		servicequery.Status = defaultStatus
