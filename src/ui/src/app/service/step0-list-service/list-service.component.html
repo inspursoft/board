@@ -47,7 +47,7 @@
           </a>
           <a href="javascript:void(0)">
             <clr-icon shape="trash" class="delete"
-                      [ngClass]="{'disabled':s.service_status != 2}"
+                      [ngClass]="{'disabled':s.service_status != 2 && s.service_status != 3}"
                       (click)="confirmToServiceAction(s, 'DELETE')">
             </clr-icon>
           </a>
