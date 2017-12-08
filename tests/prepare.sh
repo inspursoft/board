@@ -21,8 +21,8 @@ mkdir -p $WORKSPACE/total
 
 
 #git the para to tigger job
-echo "CONSOLEL_INKE=$consoleLink" > /var/log/trig.tmp
-echo "COMMENT_URL=$comments_url" >> /var/log/trig.tmp
+echo "CONSOLE_LINKE=$consoleLink" > /var/log/errortrig.tmp
+echo "COMMENT_URL=$comments_url" >> /var/log/errortrig.tmp
 
 
 export GOPATH=$WORKSPACE
@@ -46,12 +46,10 @@ cd $boardDir/$branchDir
 echo $base_repo_url
 git remote add upstream $base_repo_url
 git fetch upstream
-git branch --all
 git checkout -b master-main --track upstream/$base_branch
 git merge $head_branch 
 
 export TAG=`git describe --tags`
-git pull
 echo VVV=$TAG > /var/log/tag.tmp
 
 
