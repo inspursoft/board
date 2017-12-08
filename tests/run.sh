@@ -1,6 +1,7 @@
 # listDeps lists packages referenced by package in $1, 
 # excluding golang standard library and packages in 
 # direcotry vendor
+
 function listDeps()
 {
     pkg=$1
@@ -19,9 +20,13 @@ function listDeps()
 set -e
 echo "mode: set" >profile.cov
 
+# set envirnment
 deps=""
-packages=$(go list ../... | grep -v -E 'vendor|tests')
+gopath=/go/src/git/inspursoft/board/
+golangImage=golang:1.8.3-alpine3.5
+volumeDir=`dirname $(pwd)`
 
+packages=$(go list ../... | grep -v -E 'vendor|tests')
 for package in $packages
 do
     listDeps $package
@@ -33,12 +38,17 @@ do
     echo $deps
     echo $package
     echo "+++++++++++++++++++++++++++++++++++++++"
-    go test -v -race -cover -coverprofile=profile.tmp -coverpkg "$deps" $package
-    if [ -f profile.tmp ]
+    
+    #go env used docker container
+    echo "$dock run --rm -v $volumeDir:$gopath -w $gopath $golangImage go test -v -cover -coverprofile=profile.tmp -coverpkg "$deps" $package"
+    /usr/bin/docker run --rm -v $volumeDir:$gopath -w $gopath $golangImage go test -v -cover -coverprofile=profile.tmp -coverpkg "$deps" $package
+
+    if [ -f $volumeDir/profile.tmp ]
     then
-        cat profile.tmp | tail -n +2 >> profile.cov
-        rm profile.tmp
+        cat $volumeDir/profile.tmp | tail -n +2 >> profile.cov
+        rm $volumeDir/profile.tmp
      fi
-go tool cover -func=profile.cov
 done
+go tool cover -func=profile.cov > out.temp
+go tool cover -html=profile.cov -o profile.html
 
