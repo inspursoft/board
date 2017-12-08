@@ -35,10 +35,14 @@
           </span>
         </clr-dg-cell>
         <clr-dg-cell>
-          <a *ngIf="s.service_status === 2" href="javascript:void(0)" (click)="confirmToServiceAction(s, 'TOGGLE')">
+          <a *ngIf="s.service_status === 2"
+             (click)="confirmToServiceAction(s, 'TOGGLE')"
+             href="javascript:void(0)">
             <clr-icon shape="play"></clr-icon>
           </a>
-          <a *ngIf="s.service_status === 1" href="javascript:void(0)" (click)="confirmToServiceAction(s, 'TOGGLE')">
+          <a *ngIf="s.service_status === 1 || s.service_status ===3"
+             (click)="confirmToServiceAction(s, 'TOGGLE')"
+             href="javascript:void(0)">
             <clr-icon shape="pause"></clr-icon>
           </a>
           <a href="javascript:void(0)">
