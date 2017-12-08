@@ -3,6 +3,7 @@
  */
 import { Component, Injector, OnDestroy, OnInit } from "@angular/core"
 import { Subscription } from "rxjs/Subscription";
+import { AppInitService } from "../../app.init.service";
 import { Message } from "../../shared/message-service/message";
 import { BUTTON_STYLE } from "../../shared/shared.const";
 import { WebsocketService } from "../../shared/websocket-service/websocket.service";
@@ -10,13 +11,12 @@ import { ServiceStepBase } from "../service-step";
 import { Response } from "@angular/http"
 import { PHASE_ENTIRE_SERVICE, ServiceStepPhase, UIServiceStepBase } from "../service-step.component";
 
-// const PROCESS_SERVICE_CONSOLE_URL = `ws://10.165.22.61:8088/api/v1/jenkins-job/console?job_name=process_service`;
-const PROCESS_SERVICE_CONSOLE_URL = `ws://localhost/api/v1/jenkins-job/console?job_name=process_service`;
 @Component({
   templateUrl: "./deploy.component.html",
   styleUrls: ["./deploy.component.css"]
 })
 export class DeployComponent extends ServiceStepBase implements OnInit, OnDestroy {
+  boardHost: string;
   isDeployed: boolean = false;
   isDeploySuccess: boolean = false;
   isInDeployWIP: boolean = false;
@@ -25,8 +25,12 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
   processImageSubscription: Subscription;
   _confirmSubscription: Subscription;
 
-  constructor(protected injector: Injector, private webSocketService: WebsocketService,) {
+  constructor(protected injector: Injector, 
+    private webSocketService: WebsocketService,
+  ) {
     super(injector);
+    this.boardHost = this.appInitService.systemInfo['board_host'];
+    console.log(`board_host=${this.boardHost}`);
   }
 
   ngOnInit() {
@@ -70,7 +74,7 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
           this.serviceID = serviceID;
           setTimeout(() => {
             this.processImageSubscription = this.webSocketService
-              .connect(PROCESS_SERVICE_CONSOLE_URL + `&token=${this.appInitService.token}`)
+              .connect(`ws://${this.boardHost}/api/v1/jenkins-job/console?job_name=process_service&token=${this.appInitService.token}`)
               .subscribe((obs: MessageEvent) => {
                 this.consoleText = <string>obs.data;
                 let consoleTextArr: Array<string> = this.consoleText.split(/[\n]/g);
