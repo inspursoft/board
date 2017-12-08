@@ -18,6 +18,8 @@ import (
 var repoServeURL = utils.GetConfig("REPO_SERVE_URL")
 var repoPath = utils.GetConfig("REPO_PATH")
 
+const k8sAPIversion1 = "v1"
+
 func CreateProject(project model.Project) (bool, error) {
 	projectID, err := dao.AddProject(project)
 	if err != nil {
@@ -99,6 +101,10 @@ func GetPaginatedProjectsByUser(query model.Project, userID int64, pageIndex int
 	return dao.GetPaginatedProjectsByUser(query, userID, pageIndex, pageSize)
 }
 
+func GetProjectsByMember(query model.Project, userID int64) ([]*model.Project, error) {
+	return dao.GetProjectsByMember(query, userID)
+}
+
 func DeleteProject(projectID int64) (bool, error) {
 	project := model.Project{ID: projectID, Deleted: 1}
 	_, err := dao.UpdateProject(project, "deleted")
@@ -106,6 +112,30 @@ func DeleteProject(projectID int64) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+func NamespaceExists(projectName string) (bool, error) {
+	cli, err := K8sCliFactory("", kubeMasterURL(), k8sAPIversion1)
+	apiSet, err := kubernetes.NewForConfig(cli)
+	if err != nil {
+		return false, err
+	}
+
+	n := apiSet.Namespaces()
+	var listOpt modelK8s.ListOptions
+	namespaceList, err := n.List(listOpt)
+	if err != nil {
+		logs.Error("Failed to check namespace list in cluster", projectName)
+		return false, err
+	}
+
+	for _, namespace := range (*namespaceList).Items {
+		if projectName == namespace.Name {
+			logs.Info("Namespace existing %+v", namespace)
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 func CreateNamespace(projectName string) (bool, error) {

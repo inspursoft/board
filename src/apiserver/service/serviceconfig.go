@@ -21,6 +21,7 @@ import (
 
 const (
 	defaultProjectName = "library"
+	defaultProjectID   = 1
 	defaultOwnerID     = 1
 	defaultOwnerName   = "admin"
 	defaultComment     = "init service"
@@ -190,6 +191,7 @@ func SyncServiceWithK8s() error {
 		servicequery.OwnerID = defaultOwnerID
 		servicequery.OwnerName = defaultOwnerName
 		servicequery.ProjectName = defaultProjectName
+		servicequery.ProjectID = defaultProjectID
 		servicequery.Comment = defaultComment
 		servicequery.Deleted = defaultDeleted
 		servicequery.Status = defaultStatus
@@ -222,7 +224,7 @@ func ScaleReplica(serviceInfo model.ServiceStatus, number int32) (bool, error) {
 			return false, err
 		}
 	} else {
-		logs.Info("Service replicas needn't change", scale.Spec.Replicas)
+		logs.Info("Service replicas needn't change %d", scale.Spec.Replicas)
 	}
 	return true, err
 }

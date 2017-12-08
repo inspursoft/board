@@ -190,6 +190,11 @@ func (sc *ServiceConfigController) GetConfigServiceStepAction() {
 		result = configServiceStep.GetConfigContainerList()
 	case configExternalService:
 		result = configServiceStep.GetConfigExternalService()
+	case configEntireService:
+		result = configServiceStep
+	default:
+		sc.serveStatus(http.StatusBadRequest, phaseInvalidErr.Error())
+		return
 	}
 
 	if err, ok := result.(error); ok {
@@ -269,6 +274,13 @@ func (sc *ServiceConfigController) selectImageList(key string, configServiceStep
 
 	if len(imageList) < 0 {
 		sc.serveStatus(http.StatusBadRequest, imageListInvalidErr.Error())
+		return
+	}
+	for _, image := range imageList {
+		if strings.Index(image.ImageName, "/") == -1 || len(strings.TrimSpace(image.ImageTag)) == 0 {
+			sc.serveStatus(http.StatusBadRequest, imageListInvalidErr.Error())
+			return
+		}
 	}
 
 	SetConfigServiceStep(key, configServiceStep.SelectImageList(imageList))
@@ -321,11 +333,6 @@ func (sc *ServiceConfigController) configExternalService(key string, configServi
 	err = json.Unmarshal(reqData, &externalServiceList)
 	if err != nil {
 		sc.internalError(err)
-		return
-	}
-
-	if len(externalServiceList) < 1 {
-		sc.serveStatus(http.StatusBadRequest, serverNameDuplicateErr.Error())
 		return
 	}
 

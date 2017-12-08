@@ -20,8 +20,7 @@ import { EnvType } from "../../shared/environment-value/environment-value.compon
 enum ImageSource{fromBoardRegistry, fromDockerHub}
 enum ImageBuildMethod{fromTemplate, fromImportFile}
 const AUTO_REFRESH_IMAGE_LIST: number = 2000;
-// const PROCESS_IMAGE_CONSOLE_URL = `ws://10.165.22.61:8088/api/v1/jenkins-job/console?job_name=process_image`;
-const PROCESS_IMAGE_CONSOLE_URL = `ws://localhost/api/v1/jenkins-job/console?job_name=process_image`;
+
 type alertType = "alert-info" | "alert-danger";
 
 /*declared in shared-module*/
@@ -31,6 +30,7 @@ type alertType = "alert-info" | "alert-danger";
   styleUrls: ["./image-create.component.css"]
 })
 export class CreateImageComponent implements OnInit, AfterContentChecked, OnDestroy {
+  boardHost: string;
   _isOpen: boolean = false;
   @ViewChildren(CsInputArrayComponent) inputArrayComponents: QueryList<CsInputArrayComponent>;
   @ViewChildren(CsInputComponent) inputComponents: QueryList<CsInputComponent>;
@@ -73,6 +73,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
               private appInitService: AppInitService) {
     this.onBuildCompleted = new EventEmitter<string>();
     this.filesList = new Map<string, Array<{path: string, file_name: string, size: number}>>();
+    this.boardHost = this.appInitService.systemInfo['board_host'];
   }
 
   ngOnInit() {
@@ -236,7 +237,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   buildImageResole() {
     setTimeout(() => {
       this.processImageSubscription = this.webSocketService
-        .connect(PROCESS_IMAGE_CONSOLE_URL + `&token=${this.appInitService.token}`)
+        .connect(`ws://${this.boardHost}/api/v1/jenkins-job/console?job_name=process_image&token=${this.appInitService.token}`)
         .subscribe((obs: MessageEvent) => {
           this.consoleText = <string>obs.data;
           if (this.lastJobNumber == 0) {

@@ -55,8 +55,8 @@ func (auth LdapAuth) DoAuth(principal, password string) (*model.User, error) {
 		user, err = ldapAuth(principal, password, &ldapconf)
 
 		if err != nil {
-			logs.Debug("Failed to auth user with LDAP: %+v\n", err)
-			return nil, err
+			logs.Error("Failed to auth user with LDAP: %+v\n", err)
+			return nil, nil
 		}
 		password = "12345678AbC"
 	}
@@ -151,7 +151,6 @@ func ldapAuth(principal string, password string, settings *model.LdapConf) (*mod
 		logs.Debug("Search DN: ", ldapSearchDn)
 		ldapSearchPwd := settings.LdapSearchPassword
 		err = ldap.Bind(ldapSearchDn, ldapSearchPwd)
-		logs.Debug("Search pwd: ", ldapSearchPwd)
 		if err != nil {
 			logs.Debug("Bind search dn error", err)
 			return nil, err

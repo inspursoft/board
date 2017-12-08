@@ -15,6 +15,8 @@ func GetSystemInfo() (*model.SystemInfo, error) {
 	var systemInfo model.SystemInfo
 	for _, config := range configs {
 		switch config.Name {
+		case "BOARD_HOST":
+			systemInfo.BoardHost = config.Value
 		case "AUTH_MODE":
 			systemInfo.AuthMode = config.Value
 		case "SET_ADMIN_PASSWORD":
@@ -26,12 +28,12 @@ func GetSystemInfo() (*model.SystemInfo, error) {
 	return &systemInfo, nil
 }
 
-func SetSystemInfo(name string) error {
+func SetSystemInfo(name string, reconfigurable bool) error {
 	config, err := dao.GetConfig(name)
 	if err != nil {
 		return err
 	}
-	if config.Name == "" {
+	if config.Name == "" || reconfigurable {
 		value := utils.GetStringValue(name)
 		if value == "" {
 			return fmt.Errorf("Has not set config %s yet", name)

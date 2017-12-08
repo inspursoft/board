@@ -14,15 +14,15 @@ import (
 var (
 	kubeMasterUrl        = "http://10.110.18.26:8080"
 	kubeMasterInvalidUrl = "http://10.110.18.26:8081"
-	serviceUrl           = kubeMasterUrl + "/api/v1/namespaces/default/services/demoshow"
-	noServiceUrl         = kubeMasterUrl + "/api/v1/namespaces/default/services/demoshow1"
-	invalidServiceUrl    = kubeMasterInvalidUrl + "/api/v1/namespaces/default/services/demoshow1"
+	serviceUrl           = kubeMasterUrl + "/api/v1/namespaces/default/services/kubernetes"
+	noServiceUrl         = kubeMasterUrl + "/api/v1/namespaces/default/services/kubernetesinvaild"
+	invalidServiceUrl    = kubeMasterInvalidUrl + "/api/v1/namespaces/default/services/kubernetes"
 	nodeUrl              = kubeMasterUrl + "/api/v1/nodes/10.110.18.71"
 	noNodeUrl            = kubeMasterUrl + "/api/v1/nodes/10.110.18.70"
 	invalidNodeUrl       = kubeMasterInvalidUrl + "/api/v1/nodes/10.110.18.71"
-	endpointUrl          = kubeMasterUrl + "/api/v1/namespaces/default/endpoints/demoshow"
-	noEndpointUrl        = kubeMasterUrl + "/api/v1/namespaces/default/endpoints/demoshow1"
-	invalidEndpointUrl   = kubeMasterInvalidUrl + "/api/v1/namespaces/default/endpoints/demoshow"
+	endpointUrl          = kubeMasterUrl + "/api/v1/namespaces/default/endpoints/kubernetes"
+	noEndpointUrl        = kubeMasterUrl + "/api/v1/namespaces/default/endpoints/kubernetesinvaild"
+	invalidEndpointUrl   = kubeMasterInvalidUrl + "/api/v1/namespaces/default/endpoints/kubernetes"
 )
 
 func TestGetServiceStatus(t *testing.T) {
