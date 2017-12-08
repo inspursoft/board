@@ -182,7 +182,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
     announceMessage.data = serviceData;
     this.messageService.announceMessage(announceMessage);
   }
-  
+
   openServiceDetail(serviceName: string, projectName: string, ownerName: string) {
     this.serviceDetailComponent.openModal(serviceName, projectName, ownerName);
   }
