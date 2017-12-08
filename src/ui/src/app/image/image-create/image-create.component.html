@@ -1,6 +1,13 @@
-<clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'lg'" [clrModalClosable]="!imageInBuilding">
-  <h4 class="modal-title">{{ "IMAGE.CREATE_IMAGE_TITLE" | translate }}</h4>
-  <div class="modal-body">
+<clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'lg'" [clrModalClosable]="false" [clrModalPreventClose]="true">
+  <div class="modal-title title-container">
+    <span>{{ "IMAGE.CREATE_IMAGE_TITLE" | translate }}</span>
+    <button class="close"
+            [ngClass]="{'disabled':isBuildImageWIP}"
+            (click)="isOpen = false"
+            [disabled]="isBuildImageWIP">X
+    </button>
+  </div>
+  <div class="modal-body modal-body-reset-position">
     <clr-alert [(clrAlertClosed)]="!isNewImageAlertOpen" [clrAlertType]="newImageAlertType">
       <div class="alert-item">
         <span class="alert-text">{{newImageErrMessage | translate}}{{newImageErrReason}}</span>
@@ -89,14 +96,14 @@
               <label class="base-text">{{"IMAGE.CREATE_IMAGE_UPLOAD_ARCHIVES" | translate}}:</label>
               ﻿<input type="file"
                       class="upload-file-input"
-
+                      [disabled]="!customerNewImage.image_name|| !customerNewImage.image_tag || isBuildImageWIP || isUploadFileWIP"
                       (change)="uploadFile($event)"
                       accept="*.*">
               <span *ngIf="isUploadFileWIP" class="spinner spinner-sm"></span>
             </div>
             <div class="file-list"
                  *ngFor="let file of filesList.get(customerNewImage.image_name)">
-              <clr-icon class="dynamic-icon" shape="minus" (click)="removeFile(file)"></clr-icon>
+              <clr-icon *ngIf="!isBuildImageWIP" class="dynamic-icon" shape="minus" (click)="removeFile(file)"></clr-icon>
               {{file.file_name}}
             </div>
             <div class="create-image-area-container">

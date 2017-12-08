@@ -382,7 +382,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
           this.messageService.dispatchError(err);
         } else {
           if (err && (err instanceof Response)){
-            this.newImageErrReason = (err as Response).text();
+            this.newImageErrReason = `:${(err as Response).text()}`;
           }
           (event.target as HTMLInputElement).value = "";
           this.newImageAlertType = "alert-danger";

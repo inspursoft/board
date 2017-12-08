@@ -123,3 +123,24 @@ div.file-info-container {
   display: flex;
   flex-direction: column;
 }
+
+button.close {
+  width: 30px;
+  border: none;
+  cursor: pointer;
+}
+
+button.close.disabled {
+  cursor: not-allowed;
+}
+
+div.title-container {
+  display: flex;
+  height: 30px;
+  justify-content: space-between;
+  align-content: center;
+}
+
+div.modal-body-reset-position{
+  margin-top: -20px;
+}
