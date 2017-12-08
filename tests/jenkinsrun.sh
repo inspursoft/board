@@ -25,13 +25,13 @@ docker-compose -f docker-compose.mysql.a.yml down -v
 docker-compose -f docker-compose.mysql.a.yml up -d
 
 
-yes|cp /home/jenkinsRun/user_test.go $boardDir/$branchDir/src/apiserver/service/user_test.go
-yes|cp /home/jenkinsRun/collectordao_test.go $boardDir/$branchDir/src/collector/dao
-yes|cp /home/jenkinsRun/init_test.go $boardDir/$branchDir/src/collector/service/collect
-yes|cp /home/jenkinsRun/dashboard_test.go $boardDir/$branchDir/src/common/dao
+#yes|cp /home/backup/user_test.go $boardDir/$branchDir/src/apiserver/service/user_test.go
+yes|cp /home/backup/collectordao_test.go $boardDir/$branchDir/src/collector/dao
+#yes|cp /home/backup/init_test.go $boardDir/$branchDir/src/collector/service/collect
+yes|cp /home/backup/dashboard_test.go $boardDir/$branchDir/src/common/dao
 
 yes|cp /home/backup/genResult.py $boardDir/$branchDir/tests
-yes|cp /home/jenkinsRun/run.sh $boardDir/$branchDir/tests
+yes|cp /home/backup/run.sh $boardDir/$branchDir/tests
 
 
 export GOPATH=$workDir
@@ -57,5 +57,5 @@ echo $f_comments_url
 
 
 echo "curl --user Jenkins-10.110.18.40:123456 -X POST -H "content-type: application/x-www-form-urlencoded" $f_comments_url"
-
+echo `curl --user 'Jenkins-10.110.18.40:123456' -X POST -H 'content-type: application/x-www-form-urlencoded' $f_comments_url`
 

@@ -22,11 +22,9 @@ echo "mode: set" >profile.cov
 
 # set envirnment
 deps=""
-gop=/go/src/git/inspursoft/board/
-goversion=golang:1.8.3-alpine3.5
-dock=/usr/bin/docker
-var=`pwd`
-PWD=`dirname $var`
+gopath=/go/src/git/inspursoft/board/
+golangImage=golang:1.8.3-alpine3.5
+volumeDir=`dirname $(pwd)`
 
 packages=$(go list ../... | grep -v -E 'vendor|tests')
 for package in $packages
@@ -42,13 +40,13 @@ do
     echo "+++++++++++++++++++++++++++++++++++++++"
     
     #go env used docker container
-    echo "$dock run --rm -v $PWD:$gop -w $gop $goversion go test -v -cover -coverprofile=profile.tmp -coverpkg "$deps" $package"
-    /usr/bin/docker run --rm -v $PWD:$gop -w $gop $goversion go test -v -cover -coverprofile=profile.tmp -coverpkg "$deps" $package
+    echo "$dock run --rm -v $volumeDir:$gopath -w $gopath $golangImage go test -v -cover -coverprofile=profile.tmp -coverpkg "$deps" $package"
+    /usr/bin/docker run --rm -v $volumeDir:$gopath -w $gopath $golangImage go test -v -cover -coverprofile=profile.tmp -coverpkg "$deps" $package
 
-    if [ -f $PWD/profile.tmp ]
+    if [ -f $volumeDir/profile.tmp ]
     then
-        cat $PWD/profile.tmp | tail -n +2 >> profile.cov
-        rm $PWD/profile.tmp
+        cat $volumeDir/profile.tmp | tail -n +2 >> profile.cov
+        rm $volumeDir/profile.tmp
      fi
 done
 go tool cover -func=profile.cov > out.temp
