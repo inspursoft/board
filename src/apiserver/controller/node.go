@@ -31,15 +31,16 @@ func (n *NodeController) GetNode() {
 }
 
 func (n *NodeController) NodeToggle() {
+	if !n.isSysAdmin {
+		n.customAbort(http.StatusForbidden, "user should be admin")
+		return
+	}
+
 	var responseStatus bool
 	var err error
 	paraName := n.GetString("node_name")
 	paraStatus, _ := n.GetBool("node_status")
-	if !n.isSysAdmin {
-		n.customAbort(http.StatusForbidden, "user should be admin")
-		return
 
-	}
 	switch paraStatus {
 	case true:
 		responseStatus, err = service.ResumeNode(paraName)
@@ -50,17 +51,12 @@ func (n *NodeController) NodeToggle() {
 		n.customAbort(http.StatusInternalServerError, fmt.Sprint(err))
 		return
 	}
-
 	if responseStatus != true {
 		n.customAbort(http.StatusPreconditionFailed, fmt.Sprint(err))
 	}
-
 }
+
 func (n *NodeController) NodeList() {
-	if !n.isSysAdmin {
-		n.customAbort(http.StatusForbidden, "user should be admin")
-		return
-	}
 	res := service.GetNodeList()
 	n.Data["json"] = res
 	n.ServeJSON()

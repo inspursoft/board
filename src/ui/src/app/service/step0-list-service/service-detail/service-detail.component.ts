@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 import { K8sService } from '../../service.k8s';
 
 import { MessageService } from '../../../shared/message-service/message.service';
+import { AppInitService } from '../../../app.init.service';
 
 class NodeURL {
   url: string;
@@ -21,14 +22,18 @@ class NodeURL {
   templateUrl: 'service-detail.component.html'
 })
 export class ServiceDetailComponent {
+  boardHost: string;
   isOpenServiceDetail = false;
   serviceDetail: string = "";
   urlList: Array<NodeURL>;
   serviceName: string;
 
-  constructor(private k8sService: K8sService,
-              private messageService: MessageService) {
-  }
+  constructor(
+    private appInitService: AppInitService,
+    private k8sService: K8sService,
+    private messageService: MessageService) {
+      this.boardHost = this.appInitService.systemInfo['board_host'];
+    }
 
   openModal(serviceName: string, projectName: string, ownerName: string): void {
     this.getServiceDetail(serviceName, projectName, ownerName);
@@ -50,7 +55,7 @@ export class ServiceDetailComponent {
               let nodeInfo = {
                 url: `http://${node.node_ip}:${port}`,
                 identity: `${ownerName}_${projectName}_${serviceName}`,
-                route: `http://${window.location.host}/deploy/${ownerName}/${projectName}/${serviceName}`
+                route: `http://${this.boardHost}/deploy/${ownerName}/${projectName}/${serviceName}`
               };
               this.urlList.push(nodeInfo);
               this.k8sService.addServiceRoute(nodeInfo.url, nodeInfo.identity)
