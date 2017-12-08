@@ -25,7 +25,7 @@ div.base-margin-top {
 
 div.build-method-container {
   min-height: 50px;
-  box-shadow: 0 0 5px #bbbbbb;
+  /*box-shadow: 0 0 5px #bbbbbb;*/
   align-items: center;
   display: flex;
   justify-content: center;
@@ -122,4 +122,25 @@ div.file-info-container {
   margin-top: 10px;
   display: flex;
   flex-direction: column;
+}
+
+button.close {
+  width: 30px;
+  border: none;
+  cursor: pointer;
+}
+
+button.close.disabled {
+  cursor: not-allowed;
+}
+
+div.title-container {
+  display: flex;
+  height: 30px;
+  justify-content: space-between;
+  align-content: center;
+}
+
+div.modal-body-reset-position{
+  margin-top: -20px;
 }

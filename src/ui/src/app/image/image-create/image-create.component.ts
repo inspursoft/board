@@ -36,6 +36,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   @ViewChildren(CsInputComponent) inputComponents: QueryList<CsInputComponent>;
   @Input() projectId: number = 0;
   @Input() projectName: string = "";
+  @Input() imageBuildMethod: ImageBuildMethod = ImageBuildMethod.fromTemplate;
   @Output() onBuildCompleted: EventEmitter<string>;
   @Output() isOpenChange: EventEmitter<boolean> = new EventEmitter<boolean>();
   _isOpenEnvironment = false;
@@ -47,14 +48,13 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   patternRun: RegExp = /.+/;
   patternEntryPoint: RegExp = /.+/;
   imageSource: ImageSource = ImageSource.fromBoardRegistry;
-  imageBuildMethod: ImageBuildMethod = ImageBuildMethod.fromTemplate;
   newImageAlertType: alertType = "alert-danger";
   imageTemplateList: Array<Object> = [{name: "Docker File Template"}];
   filesList: Map<string, Array<{path: string, file_name: string, size: number}>>;
   selectFromImportFile: File;
   intervalAutoRefreshImageList: any;
   isNeedAutoRefreshImageList: boolean = false;
-  isInBuildingImage: boolean = false;
+  isBuildImageWIP: boolean = false;
   isInputComponentsValid: boolean = false;
   isServerHaveDockerFile: boolean = false;
   isUploadFileWIP = false;
@@ -62,6 +62,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   autoRefreshTimesCount: number = 0;
   isNewImageAlertOpen: boolean = false;
   newImageErrMessage: string = "";
+  newImageErrReason:string = "";
   consoleText: string = "";
   lastJobNumber: number = 0;
   processImageSubscription: Subscription;
@@ -82,7 +83,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     this.customerNewImage.project_name = this.projectName;
     this.customerNewImage.image_template = "dockerfile-template";
     this.intervalAutoRefreshImageList = setInterval(() => {
-      if (this.isNeedAutoRefreshImageList && this.isInBuildingImage) {
+      if (this.isNeedAutoRefreshImageList && this.isBuildImageWIP) {
         this.autoRefreshTimesCount++;
         this.isNewImageAlertOpen = false;
         this.imageService.getImages("", 0, 0).then(res => {
@@ -99,7 +100,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
             this.isOpen = false;
             this.messageService.dispatchError(err);
           } else {
-            this.isInBuildingImage = false;
+            this.isBuildImageWIP = false;
             this.newImageAlertType = "alert-danger";
             this.newImageErrMessage = "IMAGE.CREATE_IMAGE_UPDATE_IMAGE_LIST_FAILED";
             this.isNewImageAlertOpen = true;
@@ -182,7 +183,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   }
 
   get isBuildDisabled() {
-    let baseDisabled = this.isInBuildingImage || !this.isInputComponentsValid || this.isUploadFileWIP;
+    let baseDisabled = this.isBuildImageWIP || !this.isInputComponentsValid || this.isUploadFileWIP;
     let fromDockerFile = baseDisabled || (!this.selectFromImportFile && !this.isServerHaveDockerFile);
     return this.imageBuildMethod == ImageBuildMethod.fromTemplate ? baseDisabled : fromDockerFile;
   }
@@ -251,7 +252,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
             this.processImageSubscription.unsubscribe();
           }
           if (consoleTextArr.find(value => value.indexOf("Finished: FAILURE") > -1)) {
-            this.isInBuildingImage = false;
+            this.isBuildImageWIP = false;
             this.isNeedAutoRefreshImageList = false;
             this.newImageAlertType = "alert-danger";
             this.newImageErrMessage = "IMAGE.CREATE_IMAGE_BUILD_IMAGE_FAILED";
@@ -265,7 +266,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   }
 
   buildImageReject(err: any) {
-    this.isInBuildingImage = false;
+    this.isBuildImageWIP = false;
     this.isNeedAutoRefreshImageList = false;
     if (err && err instanceof Response && (err as Response).status == 401) {
       this.isOpen = false;
@@ -279,7 +280,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
 
   buildImage() {
     this.isNewImageAlertOpen = false;
-    this.isInBuildingImage = true;
+    this.isBuildImageWIP = true;
     this.lastJobNumber = 0;
     this.consoleText = "Jenkins preparing...";
     let buildImageFun: () => Promise<any> = this.imageBuildMethod == ImageBuildMethod.fromTemplate ?
@@ -380,6 +381,10 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
           this.isOpen = false;
           this.messageService.dispatchError(err);
         } else {
+          if (err && (err instanceof Response)){
+            this.newImageErrReason = `:${(err as Response).text()}`;
+          }
+          (event.target as HTMLInputElement).value = "";
           this.newImageAlertType = "alert-danger";
           this.newImageErrMessage = "IMAGE.CREATE_IMAGE_UPLOAD_FAILED";
           this.isNewImageAlertOpen = true;

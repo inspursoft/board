@@ -18,5 +18,9 @@
         (click)="deleteDeploy()">
   {{"SERVICE.STEP_6_CANCEL" | translate}}
 </button>
-<button class="btn btn-default" [disabled]="isDeployed" (click)="backStep()">Back</button>
-<button class="btn btn-default" [disabled]="!isDeployed || isInDeployWIP" (click)="deployComplete()">OK</button>
+<button class="btn btn-default" [disabled]="isDeployed" (click)="backStep()">
+  {{"BUTTON.BACK" | translate}}
+</button>
+<button class="btn btn-default" [disabled]="!isDeployed || isInDeployWIP" (click)="deployComplete()">
+  {{"BUTTON.OK" | translate}}
+</button>

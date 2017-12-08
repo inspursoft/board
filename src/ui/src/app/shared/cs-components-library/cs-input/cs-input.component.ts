@@ -52,7 +52,7 @@ export class CsInputComponent implements OnInit {
   ngOnInit() {
     this.inputControl = new FormControl({
       value: this.SimpleFiled,
-      disabled: this.isDisabled || this.inputType == CsInputType.itWithNoInput || this.isInValidatorWIP
+      disabled: this.isDisabled || this.isInValidatorWIP
     });
     this.inputFormGroup = new FormGroup({inputControl: this.inputControl});
     if (this.inputFiledType == CsInputFiledType.iftNumber) {
@@ -138,7 +138,8 @@ export class CsInputComponent implements OnInit {
       } else if (errors["pattern"] && this.inputFiledType == CsInputFiledType.iftNumber) {
         result = "ERROR.INPUT_ONLY_NUMBER"
       } else if (errors["pattern"] && this.inputFiledType == CsInputFiledType.iftString) {
-        result = "ERROR.INPUT_PATTERN"
+        result = "ERROR.INPUT_PATTERN";
+        this.inputValidatorMessageParam = `:${errors["pattern"]["requiredPattern"]}`
       } else if (errors["maxlength"]) {
         result = `ERROR.INPUT_MAX_LENGTH`;
         this.inputValidatorMessageParam = `:${this.inputMaxlength}`
@@ -207,6 +208,7 @@ export class CsInputComponent implements OnInit {
       this.inputField.status = CsInputStatus.isEdit;
       this.inputHtml.nativeElement.focus();
     } else if (!this.isDisabled && this.inputType == CsInputType.itWithNoInput) {
+      this.inputHtml.nativeElement.blur();
       this.onEditEvent.emit();
     }
   }

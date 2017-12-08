@@ -120,7 +120,15 @@
     <!--</cs-dropdown>-->
   </div>
 </div>
-<button class="btn btn-default" (click)="cancelBuildService()">Cancel</button>
-<button class="btn btn-default" [disabled]="true">Test</button>
-<button class="btn btn-default" (click)="backUpStep()">Back</button>
-<button class="btn btn-default" [disabled]="!isInputComponentsValid" (click)="forward()">Next</button>
+<button class="btn btn-default" (click)="cancelBuildService()">
+  {{"BUTTON.CANCEL" | translate}}
+</button>
+<button class="btn btn-default" [disabled]="true">
+  {{"BUTTON.TEST" | translate}}
+</button>
+<button class="btn btn-default" (click)="backUpStep()">
+  {{"BUTTON.BACK" | translate}}
+</button>
+<button class="btn btn-default" [disabled]="!isInputComponentsValid" (click)="forward()">
+  {{"BUTTON.NEXT" | translate}}
+</button>

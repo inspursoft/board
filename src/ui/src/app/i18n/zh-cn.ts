@@ -5,7 +5,11 @@ export const LANG_ZH_CN = {
     "NO": "否",
     "CONFIRM": "确定",
     "CANCEL": "取消",
-    "DELETE": "删除"
+    "DELETE": "删除",
+    "CREATE":"创建",
+    "NEXT":"下一步",
+    "BACK":"上一步",
+    "TEST":"测试",
   },
   "DATAGRID": {
     "ITEMS": "条记录"
@@ -234,8 +238,9 @@ export const LANG_ZH_CN = {
     "CREATE_IMAGE_SELECT_PROJECT":"选择项目",
     "CREATE_IMAGE_CREATE_PROJECT":"创建项目...",
     "CREATE_IMAGE_SELECT_DES":"如果没有项目可供选择,需要新建一个项目。",
-    "CREATE_IMAGE_IMPORT_DEVOPES":"从 DevOps 导入",
-    "CREATE_IMAGE_IMPORT_DOCKER_FILE":"从 Dockerfile 导入",
+    "CREATE_IMAGE_DEVOPES":"DevOps方式创建",
+    "CREATE_IMAGE_DOCKER_FILE":"利用Dockerfile文档创建",
+    "CREATE_IMAGE_TEMPLATE":"利用模版创建",
     "CREATE_IMAGE_EXIST":"已经选择了镜像",
     "CREATE_IMAGE_FROM_TEMP":"来自模版",
     "CREATE_IMAGE_FROM_FILE":"来自文件",

@@ -9,6 +9,7 @@ import { AppInitService } from "../../app.init.service";
 import { Project } from "../../project/project";
 import { Router } from "@angular/router";
 
+enum CreateImageMethod{None, Template, DockerFile, DevOps}
 @Component({
   selector: 'image-list',
   templateUrl: './image-list.component.html',
@@ -17,7 +18,7 @@ import { Router } from "@angular/router";
 export class ImageListComponent implements OnInit, OnDestroy {
   curImage: Image;
   isShowDetail: boolean = false;
-  isInBuildingImage: boolean = false;
+  isBuildImageWIP: boolean = false;
   isOpenNewImage: boolean = false;
   selectedProjectName: string = "";
   selectedProjectId: number = 0;
@@ -26,6 +27,7 @@ export class ImageListComponent implements OnInit, OnDestroy {
   imageCountPerPage: number = 10;
   loadingWIP: boolean;
   projectsList: Array<Project>;
+  createImageMethod: CreateImageMethod = CreateImageMethod.None;
   _subscription: Subscription;
 
   constructor(private imageService: ImageService,
@@ -116,13 +118,17 @@ export class ImageListComponent implements OnInit, OnDestroy {
   }
 
   createImage() {
-    this.isInBuildingImage = true;
+    this.isBuildImageWIP = true;
     this.selectedProjectName = "";
     this.selectedProjectId = 0;
   }
 
   onBuildImageCompleted(imageName: string) {
-    this.isInBuildingImage = false;
+    this.isBuildImageWIP = false;
     this.retrieve();
+  }
+
+  setCreateImageMethod(method: CreateImageMethod): void {
+    this.createImageMethod = method;
   }
 }

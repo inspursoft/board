@@ -75,7 +75,7 @@ export class ServiceGuard implements OnDestroy, CanDeactivate<ServiceComponent> 
                 currentRoute: ActivatedRouteSnapshot,
                 currentState: RouterStateSnapshot,
                 nextState?: RouterStateSnapshot): Observable<boolean> | Promise<boolean> | boolean {
-    if (component.currentStepIndex > 1) {
+    if (component.currentStepIndex > 0) {
       let m: Message = new Message();
       m.title = "SERVICE.ASK_TITLE";
       m.buttons = BUTTON_STYLE.YES_NO;

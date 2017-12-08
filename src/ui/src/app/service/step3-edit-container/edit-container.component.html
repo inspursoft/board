@@ -55,7 +55,15 @@
                  (onConfirmEvent)="setVolumeMount($event,curContainerIndex)">
   </volume-mounts>
 </div>
-<button class="btn btn-default" (click)="cancelBuildService()">Cancel</button>
-<button class="btn btn-default" (click)="backStep()">Back</button>
-<button class="btn btn-default" [disabled]="true">Test</button>
-<button class="btn btn-default" [disabled]="!isCanNextStep" (click)="forward()">Next</button>
+<button class="btn btn-default" (click)="cancelBuildService()">
+  {{"BUTTON.CANCEL" | translate}}
+</button>
+<button class="btn btn-default" [disabled]="true">
+  {{"BUTTON.TEST" | translate}}
+</button>
+<button class="btn btn-default" (click)="backStep()">
+  {{"BUTTON.BACK" | translate}}
+</button>
+<button class="btn btn-default" [disabled]="!isCanNextStep" (click)="forward()">
+  {{"BUTTON.NEXT" | translate}}
+</button>
