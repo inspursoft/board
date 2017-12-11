@@ -23,7 +23,8 @@ const (
 	defaultProjectName = "library"
 	defaultProjectID   = 1
 	defaultOwnerID     = 1
-	defaultOwnerName   = "admin"
+	defaultOwnerName   = "anonymous"
+	defaultPublic      = 0
 	defaultComment     = "init service"
 	defaultDeleted     = 0
 	defaultStatus      = 1
@@ -192,6 +193,7 @@ func SyncServiceWithK8s() error {
 		servicequery.OwnerName = defaultOwnerName
 		servicequery.ProjectName = defaultProjectName
 		servicequery.ProjectID = defaultProjectID
+		servicequery.Public = defaultPublic
 		servicequery.Comment = defaultComment
 		servicequery.Deleted = defaultDeleted
 		servicequery.Status = defaultStatus
