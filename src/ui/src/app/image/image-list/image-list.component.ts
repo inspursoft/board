@@ -48,9 +48,7 @@ export class ImageListComponent implements OnInit, OnDestroy {
             this.retrieve();
           })
           .catch(err => {
-            m.message = 'IMAGE.FAILED_TO_DELETE_IMAGE';
-            m.type = MESSAGE_TYPE.COMMON_ERROR;
-            this.messageService.inlineAlertMessage(m);
+             this.messageService.dispatchError(err);
           });
       }
     });

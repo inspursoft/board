@@ -76,9 +76,8 @@ export class ImageDetailComponent implements OnInit {
         this.isOpen = false;
       })
       .catch(err => {
-        m.message = 'IMAGE.FAILED_TO_DELETE_TAG';
-        m.type = MESSAGE_TYPE.COMMON_ERROR;
-        this.messageService.inlineAlertMessage(m);
+        this.messageService.dispatchError(err);
+        this.isOpen = false;
       });
   }
 }
