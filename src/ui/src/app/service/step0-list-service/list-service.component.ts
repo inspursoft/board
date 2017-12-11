@@ -93,6 +93,18 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
     }
   }
 
+  serviceInStoppedStatus(s: Service): boolean {
+    return s.service_status == SERVICE_STATUS.STOPPED;
+  }
+
+  serviceCanChangePauseStatus(s: Service): boolean {
+    return s.service_status in [SERVICE_STATUS.RUNNING, SERVICE_STATUS.WARNING];
+  }
+
+  serviceDeleteStatusDisabled(s: Service): boolean {
+    return s.service_status in [SERVICE_STATUS.PREPARING, SERVICE_STATUS.RUNNING];
+  }
+
   createService(): void {
     this.k8sService.stepSource.next({index: 1, isBack: false});
   }
