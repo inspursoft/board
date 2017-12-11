@@ -9,11 +9,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-var user = model.User{
-	Username: "Tester",
-	Password: "123456a?",
-}
-
 func TestGetUserByID(t *testing.T) {
 	assert := assert.New(t)
 	u, err := GetUserByID(1)
@@ -24,7 +19,11 @@ func TestGetUserByID(t *testing.T) {
 
 func TestSignUp(t *testing.T) {
 	assert := assert.New(t)
-	status, err := SignUp(user)
+	status, err := SignUp(
+		model.User{
+			Username: "Tester",
+			Password: "123456a?",
+		})
 	assert.Nil(err, "Error occurred while calling SignUp method.")
 	assert.True(status, "Signed up failed.")
 }
