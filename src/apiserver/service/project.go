@@ -139,6 +139,15 @@ func NamespaceExists(projectName string) (bool, error) {
 }
 
 func CreateNamespace(projectName string) (bool, error) {
+	projectExists, err := NamespaceExists(projectName)
+	if err != nil {
+		return false, err
+	}
+	if projectExists {
+		logs.Info("Project library already exists in cluster.")
+		return true, nil
+	}
+
 	cli, err := K8sCliFactory("", kubeMasterURL(), "v1")
 	apiSet, err := kubernetes.NewForConfig(cli)
 	if err != nil {
