@@ -128,6 +128,7 @@ func main() {
 	utils.AddEnv("LDAP_UID")
 	utils.AddEnv("LDAP_SCOPE")
 	utils.AddEnv("LDAP_TIMEOUT")
+	utils.AddEnv("FORCE_INIT_SYNC")
 
 	utils.SetConfig("REGISTRY_URL", "http://%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
 	utils.SetConfig("KUBE_MASTER_URL", "http://%s:%s", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
@@ -167,7 +168,9 @@ func main() {
 	if systemInfo.SetAdminPassword == "" {
 		updateAdminPassword()
 	}
-	if systemInfo.InitProjectRepo == "" {
+
+	forceInit := utils.GetConfig("FORCE_INIT_SYNC")
+	if systemInfo.InitProjectRepo == "" || forceInit() == "true" {
 		initProjectRepo()
 		initDefaultProjects()
 		// TODO whether to syncNamespaceWithK8s TBD
