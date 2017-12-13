@@ -13,3 +13,4 @@ LDAP_FILTER=$ldap_filter
 LDAP_UID=$ldap_uid                                
 LDAP_SCOPE=$ldap_scope                            
 LDAP_TIMEOUT=$ldap_timeout
+FORCE_INIT_SYNC=false
