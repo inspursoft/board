@@ -35,6 +35,7 @@ const (
 	preparing = iota
 	running
 	stopped
+	uncompleted
 	warning
 )
 
@@ -275,7 +276,7 @@ func syncK8sStatus(serviceList []*model.ServiceStatus) error {
 		if deployment == nil {
 			logs.Info("Failed to get deployment", err)
 			var reason = "The deployment is not established in cluster system"
-			(*serviceStatus).Status = warning
+			(*serviceStatus).Status = uncompleted
 			// TODO create a new field in serviceStatus for reason
 			(*serviceStatus).Comment = "Reason: " + reason
 			_, err = service.UpdateService(*serviceStatus, "status", "Comment")
@@ -288,7 +289,7 @@ func syncK8sStatus(serviceList []*model.ServiceStatus) error {
 			if deployment.Status.Replicas > deployment.Status.AvailableReplicas {
 				logs.Debug("The desired replicas number is not available",
 					deployment.Status.Replicas, deployment.Status.AvailableReplicas)
-				(*serviceStatus).Status = warning
+				(*serviceStatus).Status = uncompleted
 				reason := "The desired replicas number is not available"
 				(*serviceStatus).Comment = "Reason: " + reason
 				_, err = service.UpdateService(*serviceStatus, "status", "Comment")
@@ -305,7 +306,7 @@ func syncK8sStatus(serviceList []*model.ServiceStatus) error {
 		if serviceK8s == nil {
 			logs.Info("Failed to get service in cluster", err)
 			var reason = "The service is not established in cluster system"
-			(*serviceStatus).Status = warning
+			(*serviceStatus).Status = uncompleted
 			(*serviceStatus).Comment = "Reason: " + reason
 			_, err = service.UpdateService(*serviceStatus, "status", "Comment")
 			if err != nil {
@@ -315,7 +316,7 @@ func syncK8sStatus(serviceList []*model.ServiceStatus) error {
 			continue
 		}
 
-		if serviceStatus.Status == warning {
+		if serviceStatus.Status == uncompleted {
 			logs.Info("The service is restored to running")
 			(*serviceStatus).Status = running
 			(*serviceStatus).Comment = ""
@@ -436,7 +437,7 @@ func (p *ServiceController) DeleteServiceAction() {
 	}
 
 	// Call stop service if running
-	if s.Status == running || s.Status == warning {
+	if s.Status == running || s.Status == uncompleted {
 		//err = stopService(s)
 		err = stopServiceK8s(s)
 		if err != nil {
