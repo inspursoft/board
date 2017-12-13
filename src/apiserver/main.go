@@ -80,6 +80,26 @@ func initProjectRepo() {
 	}
 }
 
+func initDefaultProjects() {
+	logs.Info("Initialize default projects\n")
+	query := model.Project{OwnerID: adminUserID}
+	projects, err := service.GetProjectsByUser(query, adminUserID)
+	if err != nil {
+		logs.Error("Failed to get default projects: %+v", err)
+		panic(err)
+	}
+
+	for _, project := range projects {
+		_, err = service.CreateNamespace((*project).Name)
+		if err != nil {
+			logs.Error("Failed to create namespace: %s", (*project).Name)
+			panic(err)
+		}
+
+	}
+
+}
+
 func syncServiceWithK8s() {
 	service.SyncServiceWithK8s()
 }
@@ -149,7 +169,10 @@ func main() {
 	}
 	if systemInfo.InitProjectRepo == "" {
 		initProjectRepo()
+		initDefaultProjects()
+		// TODO whether to syncNamespaceWithK8s TBD
+		syncServiceWithK8s()
 	}
-	syncServiceWithK8s()
+
 	beego.Run(":8088")
 }
