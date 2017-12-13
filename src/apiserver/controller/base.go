@@ -92,27 +92,34 @@ func (b *baseController) customAbort(status int, body string) {
 
 func (b *baseController) getCurrentUser() *model.User {
 	token := b.Ctx.Request.Header.Get("token")
-
 	if token == "" {
 		token = b.GetString("token")
 	}
-
+	if isTokenExists := memoryCache.IsExist(token); !isTokenExists {
+		logs.Info("Token stored in cache has expired.")
+		return nil
+	}
+	var hasResignedToken bool
 	payload, err := verifyToken(token)
 	if err != nil {
 		if err == errInvalidToken {
-			newToken, err := signToken(payload)
-			if err != nil {
-				logs.Error("failed to sign token: %+v\n", err)
-				return nil
+			if lastPayload, ok := memoryCache.Get(token).(map[string]interface{}); ok {
+				newToken, err := signToken(lastPayload)
+				if err != nil {
+					logs.Error("failed to sign token: %+v\n", err)
+					return nil
+				}
+				hasResignedToken = true
+				token = newToken.TokenString
+				payload = lastPayload
+				logs.Info("Token has been re-signed due to timeout.")
 			}
-			token = newToken.TokenString
-			logs.Info("Token has been re-signed due to timeout.")
 		} else {
 			logs.Error("failed to verify token: %+v\n", err)
 		}
-		return nil
 	}
 
+	memoryCache.Put(token, payload, time.Second*time.Duration(tokenCacheExpireSeconds))
 	b.token = token
 
 	if strID, ok := payload["id"].(string); ok {
@@ -127,7 +134,7 @@ func (b *baseController) getCurrentUser() *model.User {
 			return nil
 		}
 		if currentToken, ok := memoryCache.Get(user.Username).(string); ok {
-			if currentToken != "" && currentToken != token {
+			if !hasResignedToken && currentToken != "" && currentToken != token {
 				logs.Info("Another same name user has signed in other places.")
 				return nil
 			}

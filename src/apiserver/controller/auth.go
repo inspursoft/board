@@ -66,6 +66,7 @@ func (u *AuthController) SignInAction() {
 			return
 		}
 		memoryCache.Put(user.Username, token.TokenString, time.Second*time.Duration(tokenCacheExpireSeconds))
+		memoryCache.Put(token.TokenString, payload, time.Second*time.Duration(tokenCacheExpireSeconds))
 		u.Data["json"] = token
 		u.ServeJSON()
 	}
