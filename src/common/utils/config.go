@@ -3,7 +3,6 @@ package utils
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/astaxie/beego/logs"
@@ -35,12 +34,10 @@ func GetIntValue(name string) int {
 }
 
 func GetBoolValue(name string) bool {
-	s := configStorage[name]
-	v, err := strconv.ParseBool(s.(string))
-	if err != nil {
-		panic(fmt.Sprintf("Failed to get bool value for key: %s", name))
+	if v, ok := configStorage[name].(bool); ok {
+		return v
 	}
-	return v
+	panic(fmt.Sprintf("Failed to get bool value for key: %s", name))
 }
 
 func GetStringValue(name string, defaultValue ...string) string {

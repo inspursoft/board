@@ -23,6 +23,8 @@ func GetSystemInfo() (*model.SystemInfo, error) {
 			systemInfo.SetAdminPassword = config.Value
 		case "INIT_PROJECT_REPO":
 			systemInfo.InitProjectRepo = config.Value
+		case "SYNC_K8S":
+			systemInfo.SyncK8s = config.Value
 		}
 	}
 	return &systemInfo, nil

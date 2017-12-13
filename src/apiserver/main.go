@@ -179,7 +179,7 @@ func main() {
 		initProjectRepo()
 	}
 
-	if systemInfo.SyncK8s == "" || utils.GetBoolValue("FORCE_INIT_SYNC") {
+	if systemInfo.SyncK8s == "" || utils.GetStringValue("FORCE_INIT_SYNC") == "true" {
 		initDefaultProjects()
 		syncServiceWithK8s()
 	}
