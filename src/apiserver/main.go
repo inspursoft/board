@@ -102,6 +102,12 @@ func initDefaultProjects() {
 
 func syncServiceWithK8s() {
 	service.SyncServiceWithK8s()
+	utils.SetConfig("SYNC_K8S", "created")
+	err := service.SetSystemInfo("SYNC_K8S", true)
+	if err != nil {
+		logs.Error("Failed to set system config: %+v", err)
+		panic(err)
+	}
 }
 
 func main() {
@@ -169,11 +175,12 @@ func main() {
 		updateAdminPassword()
 	}
 
-	forceInit := utils.GetConfig("FORCE_INIT_SYNC")
-	if systemInfo.InitProjectRepo == "" || forceInit() == "true" {
+	if systemInfo.InitProjectRepo == "" {
 		initProjectRepo()
+	}
+
+	if systemInfo.SyncK8s == "" || utils.GetBoolValue("FORCE_INIT_SYNC") {
 		initDefaultProjects()
-		// TODO whether to syncNamespaceWithK8s TBD
 		syncServiceWithK8s()
 	}
 
