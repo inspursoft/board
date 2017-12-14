@@ -29,8 +29,8 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   currentUser: {[key: string]: any};
   services: Service[];
   isInLoading: boolean = false;
-  isServiceControlOpen:boolean = false;
-  serviceControlData:Service;
+  isServiceControlOpen: boolean = false;
+  serviceControlData: Service;
   checkboxRevertInfo: {isNeeded: boolean; value: boolean;};
   _subscription: Subscription;
 
@@ -93,6 +93,18 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
     }
   }
 
+  serviceInStoppedStatus(s: Service): boolean {
+    return s.service_status == SERVICE_STATUS.STOPPED;
+  }
+
+  serviceCanChangePauseStatus(s: Service): boolean {
+    return s.service_status in [SERVICE_STATUS.RUNNING, SERVICE_STATUS.WARNING];
+  }
+
+  serviceDeleteStatusDisabled(s: Service): boolean {
+    return s.service_status in [SERVICE_STATUS.PREPARING, SERVICE_STATUS.RUNNING];
+  }
+
   createService(): void {
     this.k8sService.stepSource.next({index: 1, isBack: false});
   }
@@ -150,13 +162,11 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
       });
   }
 
-  editService(s: Service) {
-
-  }
-
   confirmToServiceAction(s: Service, action: string): void {
-    if (action == 'DELETE' && s.service_status != 2) return;
-    let serviceData = new ServiceData(s.service_id, s.service_name, (s.service_status === 1));
+    if (action == 'DELETE' &&
+      (s.service_status != SERVICE_STATUS.STOPPED) &&
+      (s.service_status != SERVICE_STATUS.WARNING)) return;
+    let serviceData = new ServiceData(s.service_id, s.service_name, (s.service_status === SERVICE_STATUS.RUNNING));
     let title: string;
     let message: string;
     let target: MESSAGE_TARGET;
@@ -185,15 +195,11 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
     this.messageService.announceMessage(announceMessage);
   }
 
-  confirmToDeleteService(s: Service) {
-
-  }
-
   openServiceDetail(serviceName: string, projectName: string, ownerName: string) {
     this.serviceDetailComponent.openModal(serviceName, projectName, ownerName);
   }
 
-  openServiceControl(service:Service){
+  openServiceControl(service: Service) {
     this.serviceControlData = service;
     this.isServiceControlOpen = true;
   }

@@ -76,8 +76,8 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
   onBuildImageCompleted(imageName: string) {
     this.k8sService.getImages("", 0, 0).then(res => {
       res.forEach(value => {
-        if (value.image_name == imageName) {
-          this.imageSourceList = res;
+        if (value.image_name === imageName) {
+          this.imageSourceList = Object.create(res);
           this.unshiftCustomerCreateImage();
           this.imageSelectList[this.newImageIndex] = value;
           this.setImageDetailList(value.image_name);

@@ -188,11 +188,21 @@ func SyncServiceWithK8s() error {
 	//handle the serviceList data
 	var servicequery model.ServiceStatus
 	for _, item := range serviceList.Items {
+		queryProject := model.Project{Name: item.Namespace}
+		project, err := GetProject(queryProject, "name")
+		if err != nil {
+			logs.Error("Failed to check project in DB %s", item.Namespace)
+			return err
+		}
+		if project == nil {
+			logs.Error("not found project in DB: %s", item.Namespace)
+			continue
+		}
 		servicequery.Name = item.ObjectMeta.Name
-		servicequery.OwnerID = defaultOwnerID
-		servicequery.OwnerName = defaultOwnerName
-		servicequery.ProjectName = item.ObjectMeta.Namespace
-		servicequery.ProjectID = defaultProjectID
+		servicequery.OwnerID = int64(project.OwnerID) //owner or admin TBD
+		servicequery.OwnerName = project.OwnerName
+		servicequery.ProjectName = project.Name
+		servicequery.ProjectID = project.ID
 		servicequery.Public = defaultPublic
 		servicequery.Comment = defaultComment
 		servicequery.Deleted = defaultDeleted

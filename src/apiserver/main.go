@@ -80,8 +80,34 @@ func initProjectRepo() {
 	}
 }
 
+func initDefaultProjects() {
+	logs.Info("Initialize default projects\n")
+	query := model.Project{OwnerID: adminUserID}
+	projects, err := service.GetProjectsByUser(query, adminUserID)
+	if err != nil {
+		logs.Error("Failed to get default projects: %+v", err)
+		panic(err)
+	}
+
+	for _, project := range projects {
+		_, err = service.CreateNamespace((*project).Name)
+		if err != nil {
+			logs.Error("Failed to create namespace: %s", (*project).Name)
+			panic(err)
+		}
+
+	}
+
+}
+
 func syncServiceWithK8s() {
 	service.SyncServiceWithK8s()
+	utils.SetConfig("SYNC_K8S", "created")
+	err := service.SetSystemInfo("SYNC_K8S", true)
+	if err != nil {
+		logs.Error("Failed to set system config: %+v", err)
+		panic(err)
+	}
 }
 
 func main() {
@@ -108,6 +134,7 @@ func main() {
 	utils.AddEnv("LDAP_UID")
 	utils.AddEnv("LDAP_SCOPE")
 	utils.AddEnv("LDAP_TIMEOUT")
+	utils.AddEnv("FORCE_INIT_SYNC")
 
 	utils.SetConfig("REGISTRY_URL", "http://%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
 	utils.SetConfig("KUBE_MASTER_URL", "http://%s:%s", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
@@ -147,9 +174,15 @@ func main() {
 	if systemInfo.SetAdminPassword == "" {
 		updateAdminPassword()
 	}
+
 	if systemInfo.InitProjectRepo == "" {
 		initProjectRepo()
 	}
-	syncServiceWithK8s()
+
+	if systemInfo.SyncK8s == "" || utils.GetStringValue("FORCE_INIT_SYNC") == "true" {
+		initDefaultProjects()
+		syncServiceWithK8s()
+	}
+
 	beego.Run(":8088")
 }

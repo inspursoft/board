@@ -144,9 +144,9 @@ func cleanSeviceTestByID(scid int64) {
 		logs.Error("Error occurred while deleting service: %+v", err)
 	}
 	if affected == 0 {
-		logs.Error("Failed to delete service", scid)
+		logs.Error("Failed to delete service: %d", scid)
 	} else {
-		logs.Info("Successful cleared up.", scid)
+		logs.Info("Successful cleared up service: %d", scid)
 	}
 }
 

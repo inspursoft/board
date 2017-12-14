@@ -114,7 +114,7 @@ func (p *ServiceController) commonDeployService(reqServiceConfig model.ServiceCo
 	pushobject.Value = filepath.Join(reqServiceConfig.Project.ProjectName, strconv.Itoa(serviceID))
 	pushobject.Message = fmt.Sprintf("Create deployment for project %s service %d",
 		reqServiceConfig.Project.ProjectName, reqServiceConfig.Project.ServiceID)
-	pushobject.Extras = filepath.Join(kubeMasterURL(), deploymentAPI, serviceNamespace, "deployments")
+	pushobject.Extras = filepath.Join(kubeMasterURL(), deploymentAPI, reqServiceConfig.Project.ProjectName, "deployments")
 	pushobject.Items = []string{filepath.Join(pushobject.Value, deploymentFile)}
 	loadPath := filepath.Join(repoPath(), reqServiceConfig.Project.ProjectName, strconv.Itoa(serviceID))
 	logs.Info("deployment pushobject.FileName:%+v\n", pushobject.FileName)
@@ -144,7 +144,7 @@ func (p *ServiceController) commonDeployService(reqServiceConfig model.ServiceCo
 	pushobject.FileName = serviceFile
 	pushobject.Message = fmt.Sprintf("Create service for project %s service %d",
 		reqServiceConfig.Project.ProjectName, reqServiceConfig.Project.ServiceID)
-	pushobject.Extras = filepath.Join(kubeMasterURL(), serviceAPI, serviceNamespace, "services")
+	pushobject.Extras = filepath.Join(kubeMasterURL(), serviceAPI, reqServiceConfig.Project.ProjectName, "services")
 	pushobject.Items = []string{filepath.Join(pushobject.Value, serviceFile)}
 	logs.Info("service pushobject.FileName:%+v\n", pushobject.FileName)
 	logs.Info("service pushobject.Value:%+v\n", pushobject.Value)
@@ -271,7 +271,7 @@ func syncK8sStatus(serviceList []*model.ServiceStatus) error {
 			continue
 		}
 		// Check the deployment status
-		deployment, err := service.GetDeployment(serviceNamespace, (*serviceStatus).Name)
+		deployment, err := service.GetDeployment((*serviceStatus).ProjectName, (*serviceStatus).Name)
 		if deployment == nil {
 			logs.Info("Failed to get deployment", err)
 			var reason = "The deployment is not established in cluster system"
@@ -301,7 +301,7 @@ func syncK8sStatus(serviceList []*model.ServiceStatus) error {
 		}
 
 		// Check the service in k8s cluster status
-		serviceK8s, err := service.GetK8sService(serviceNamespace, (*serviceStatus).Name)
+		serviceK8s, err := service.GetK8sService((*serviceStatus).ProjectName, (*serviceStatus).Name)
 		if serviceK8s == nil {
 			logs.Info("Failed to get service in cluster", err)
 			var reason = "The service is not established in cluster system"
@@ -538,7 +538,7 @@ func (p *ServiceController) ToggleServiceAction() {
 		pushobject.Message = fmt.Sprintf("Create deployment for project %s service %d",
 			s.ProjectName, s.ID)
 		pushobject.Extras = filepath.Join(kubeMasterURL(), deploymentAPI,
-			serviceNamespace, "deployments")
+			s.ProjectName, "deployments")
 
 		// Add deployment file
 		pushobject.Items = []string{filepath.Join(pushobject.Value, deploymentFilename)}
@@ -556,7 +556,7 @@ func (p *ServiceController) ToggleServiceAction() {
 		pushobject.FileName = serviceFilename
 		pushobject.Message = fmt.Sprintf("Create service for project %s service %d",
 			s.ProjectName, s.ID)
-		pushobject.Extras = filepath.Join(kubeMasterURL(), serviceAPI, serviceNamespace, "services")
+		pushobject.Extras = filepath.Join(kubeMasterURL(), serviceAPI, s.ProjectName, "services")
 		// Add deployment file
 		pushobject.Items = []string{filepath.Join(pushobject.Value, serviceFilename)}
 
@@ -584,7 +584,7 @@ func stopService(s *model.ServiceStatus) error {
 	// Stop service
 	//deleteServiceURL := filepath.Join(kubeMasterURL(), serviceAPI,
 	//	serviceNamespace, "services", s.Name)
-	deleteServiceURL := kubeMasterURL() + serviceAPI + serviceNamespace + "/services/" + s.Name
+	deleteServiceURL := kubeMasterURL() + serviceAPI + s.ProjectName + "/services/" + s.Name
 	req, err := http.NewRequest("DELETE", deleteServiceURL, nil)
 	if err != nil {
 		logs.Error("Failed to new request for delete service: %s", deleteServiceURL)
@@ -602,7 +602,7 @@ func stopService(s *model.ServiceStatus) error {
 	// Stop deployment
 	//deleteDeploymentURL := filepath.Join(kubeMasterURL(), deploymentAPI,
 	//	serviceNamespace, "deployments", s.Name)
-	deleteDeploymentURL := kubeMasterURL() + deploymentAPI + serviceNamespace + "/deployments/" + s.Name
+	deleteDeploymentURL := kubeMasterURL() + deploymentAPI + s.ProjectName + "/deployments/" + s.Name
 	req, err = http.NewRequest("DELETE", deleteDeploymentURL, nil)
 	if err != nil {
 		logs.Error("Failed to new request for delete deployment: %s", deleteDeploymentURL)
@@ -628,7 +628,7 @@ func stopServiceK8s(s *model.ServiceStatus) error {
 	if err != nil {
 		return err
 	}
-	d := apiSet.Deployments(serviceNamespace)
+	d := apiSet.Deployments(s.ProjectName)
 	deployData, err := d.Get(s.Name)
 	if err != nil {
 		logs.Error("Failed to get deployment in cluster")
@@ -650,7 +650,7 @@ func stopServiceK8s(s *model.ServiceStatus) error {
 	}
 	logs.Info("Deleted deployment %s", s.Name)
 
-	r := apiSet.ReplicaSets(serviceNamespace)
+	r := apiSet.ReplicaSets(s.ProjectName)
 	var listoption v1.ListOptions
 	listoption.LabelSelector = "app=" + s.Name
 	rsList, err := r.List(listoption)
@@ -674,7 +674,7 @@ func stopServiceK8s(s *model.ServiceStatus) error {
 	if err != nil {
 		return err
 	}
-	servcieInt := apiSet.Services(serviceNamespace)
+	servcieInt := apiSet.Services(s.ProjectName)
 	//serviceData, err := servcieInt.Get(s.Name)
 	//if err != nil {
 	//	logs.Error("Failed to get service in cluster %s", s.Name)
@@ -975,7 +975,7 @@ func (p *ServiceController) DeleteDeploymentAction() {
 	pushobject.Message = fmt.Sprintf("Delete yaml files for project %s service %d",
 		s.ProjectName, s.ID)
 	pushobject.Extras = filepath.Join(kubeMasterURL(), deploymentAPI,
-		serviceNamespace, "deployments")
+		s.ProjectName, "deployments")
 
 	//Get file list for Jenkis git repo
 	uploads, err := service.ListUploadFiles(serviceConfigPath)

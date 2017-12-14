@@ -4,15 +4,12 @@ import (
 	"git/inspursoft/board/src/common/model"
 	"testing"
 
+	"github.com/astaxie/beego/logs"
+	"github.com/astaxie/beego/orm"
 	"github.com/stretchr/testify/assert"
 
 	_ "github.com/go-sql-driver/mysql"
 )
-
-var user = model.User{
-	Username: "Tester",
-	Password: "123456a?",
-}
 
 func TestGetUserByID(t *testing.T) {
 	assert := assert.New(t)
@@ -24,7 +21,30 @@ func TestGetUserByID(t *testing.T) {
 
 func TestSignUp(t *testing.T) {
 	assert := assert.New(t)
-	status, err := SignUp(user)
+	status, err := SignUp(
+		model.User{
+			Username: "Tester",
+			Password: "123456a?",
+		})
 	assert.Nil(err, "Error occurred while calling SignUp method.")
 	assert.True(status, "Signed up failed.")
+	cleanUp("Tester")
+}
+
+func cleanUp(username string) {
+	o := orm.NewOrm()
+	rs := o.Raw("delete from user where username = ?", username)
+	r, err := rs.Exec()
+	if err != nil {
+		logs.Error("Error occurred while deleting user: %+v", err)
+	}
+	affected, err := r.RowsAffected()
+	if err != nil {
+		logs.Error("Error occurred while deleting user: %+v", err)
+	}
+	if affected == 0 {
+		logs.Error("Failed to delete user")
+	} else {
+		logs.Info("Successful cleared up.")
+	}
 }
