@@ -27,8 +27,12 @@ func (p *ServiceDeployController) Prepare() {
 	p.isSysAdmin = (user.SystemAdmin == 1)
 }
 
+func (p *ServiceDeployController) getKey() string {
+	return strconv.Itoa(int(p.currentUser.ID))
+}
+
 func (p *ServiceDeployController) DeployServiceAction() {
-	key := p.token
+	key := p.getKey()
 	configService := NewConfigServiceStep(key)
 
 	var newservice model.ServiceStatus
@@ -134,7 +138,7 @@ func assemblePushObject(fileName string, serviceID int64, projectName string, ex
 }
 
 func (p *ServiceDeployController) DeployServiceTestAction() {
-	key := p.token
+	key := p.getKey()
 	configService := NewConfigServiceStep(key)
 	configService.ServiceName = test + configService.ServiceName
 	SetConfigServiceStep(key, configService)
