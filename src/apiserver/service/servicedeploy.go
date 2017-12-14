@@ -47,6 +47,10 @@ func (d *DeploymentConfig) setDeploymentInstance(Instance *int32) {
 	d.Spec.Replicas = Instance
 }
 
+func (d *DeploymentConfig) setDeploymentNamespace(name string) {
+	d.ObjectMeta.Namespace = name
+}
+
 func (d *DeploymentConfig) setDeploymentContainers(ContainerList []model.Container) {
 	for _, cont := range ContainerList {
 		container := v1.Container{}
@@ -126,6 +130,10 @@ func (s *ServiceConfig) setServiceSelector(name string) {
 	s.Spec.Selector["app"] = name
 }
 
+func (s *ServiceConfig) setServiceNamespace(name string) {
+	s.ObjectMeta.Namespace = name
+}
+
 func (s *ServiceConfig) setServicePort(ExternalServiceList []model.ExternalService) {
 	for _, extService := range ExternalServiceList {
 		s.Spec.Ports = append(s.Spec.Ports, v1.ServicePort{
@@ -141,6 +149,7 @@ func AssembleDeploymentYaml(serviceConfig *model.ConfigServiceStep, loadPath str
 	instance := (int32)(serviceConfig.Instance)
 	deployConfig := NewDeployment()
 	deployConfig.setDeploymentName(serviceConfig.ServiceName)
+	deployConfig.setDeploymentNamespace(serviceConfig.ProjectName)
 	deployConfig.setDeploymentInstance(&instance)
 	deployConfig.setDeploymentContainers(serviceConfig.ContainerList)
 	deployConfig.setDeploymentVolumes(serviceConfig.ContainerList)
@@ -157,6 +166,7 @@ func AssembleServiceYaml(serviceConfig *model.ConfigServiceStep, loadPath string
 	//build struct
 	svcConfig := NewService()
 	svcConfig.setServiceName(serviceConfig.ServiceName)
+	svcConfig.setServiceNamespace(serviceConfig.ProjectName)
 	svcConfig.setServiceSelector(serviceConfig.ServiceName)
 	svcConfig.setServicePort(serviceConfig.ExternalServiceList)
 	ServiceAbsName := filepath.Join(loadPath, serviceFilename)
