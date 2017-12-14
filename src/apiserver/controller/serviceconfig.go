@@ -6,6 +6,7 @@ import (
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -172,8 +173,12 @@ func (sc *ServiceConfigController) Prepare() {
 	sc.isSysAdmin = (user.SystemAdmin == 1)
 }
 
+func (sc *ServiceConfigController) getKey() string {
+	return strconv.Itoa(int(sc.currentUser.ID))
+}
+
 func (sc *ServiceConfigController) GetConfigServiceStepAction() {
-	key := sc.token
+	key := sc.getKey()
 	configServiceStep := GetConfigServiceStep(key)
 	if configServiceStep == nil {
 		sc.customAbort(http.StatusNotFound, "Config service step has not been created yet.")
@@ -211,7 +216,7 @@ func (sc *ServiceConfigController) GetConfigServiceStepAction() {
 
 func (sc *ServiceConfigController) SetConfigServiceStepAction() {
 	phase := sc.GetString("phase")
-	key := sc.token
+	key := sc.getKey()
 	configServiceStep := NewConfigServiceStep(key)
 	reqData, err := sc.resolveBody()
 	if err != nil {
@@ -237,7 +242,7 @@ func (sc *ServiceConfigController) SetConfigServiceStepAction() {
 }
 
 func (sc *ServiceConfigController) DeleteServiceStepAction() {
-	key := sc.token
+	key := sc.getKey()
 	err := DeleteConfigServiceStep(key)
 	if err != nil {
 		sc.internalError(err)
@@ -347,7 +352,7 @@ func (sc *ServiceConfigController) configExternalService(key string, configServi
 }
 
 func (sc *ServiceConfigController) checkServiceDuplicateName(serviceName string) (bool, error) {
-	key := sc.token
+	key := sc.getKey()
 	configServiceStep := GetConfigServiceStep(key)
 	if configServiceStep == nil {
 		return false, serviceConfigNotCreateErr
@@ -428,7 +433,7 @@ func (sc *ServiceConfigController) configEntireService(key string, configService
 }
 
 func (sc *ServiceConfigController) GetConfigServiceFromDBAction() {
-	key := sc.token
+	key := sc.getKey()
 	configServiceStep := NewConfigServiceStep(key)
 	serviceName := strings.ToLower(sc.GetString("service_name"))
 	projectName := strings.ToLower(sc.GetString("project_name"))

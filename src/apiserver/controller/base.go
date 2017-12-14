@@ -149,6 +149,7 @@ func (b *baseController) getCurrentUser() *model.User {
 func (b *baseController) signOff() error {
 	username := b.GetString("username")
 	err := memoryCache.Delete(username)
+	err = memoryCache.Delete(strconv.Itoa(int(b.currentUser.ID)))
 	if err != nil {
 		logs.Error("Failed to delete user from memory cache: %+v", err)
 	}
