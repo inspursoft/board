@@ -20,9 +20,9 @@ type ImageController struct {
 }
 
 const (
-	commentTemp  = "Inspur image" // TODO: get from mysql in the next release
-	sizeunitTemp = "B"
-
+	commentTemp           = "Inspur image" // TODO: get from mysql in the next release
+	sizeunitTemp          = "B"
+	adminID               = 1
 	defaultDockerfilename = "Dockerfile"
 	imageProcess          = "process_image"
 )
@@ -31,6 +31,7 @@ const (
 func (p *ImageController) GetImagesAction() {
 
 	var repolist model.RegistryRepo
+	var repolistFiltered model.RegistryRepo
 	// Get the image list from registry v2
 	httpresp, err := http.Get(registryURL() + "/v2/_catalog")
 	if err != nil {
@@ -50,9 +51,30 @@ func (p *ImageController) GetImagesAction() {
 		return
 	}
 
+	query := model.Project{}
+	projectList, err := service.GetProjectsByUser(query, p.currentUser.ID)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	for _, imageName := range repolist.Names {
+		fromIndex := strings.LastIndex(imageName, "/")
+		if fromIndex == -1 {
+			continue
+		}
+		for _, project := range projectList {
+			if imageName[:fromIndex] == project.Name {
+				repolistFiltered.Names = append(repolistFiltered.Names, imageName)
+				break
+			}
+		}
+	}
+
+	logs.Info("Image list is %+v\n", repolistFiltered)
+
 	/* Interpret the message to api server */
 	var imagelist []model.Image
-	for _, imagename := range repolist.Names {
+	for _, imagename := range repolistFiltered.Names {
 		var newImage model.Image
 		newImage.ImageName = imagename
 
