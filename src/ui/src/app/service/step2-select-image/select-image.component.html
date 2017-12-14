@@ -2,8 +2,8 @@
   <div class="image-source-container">
     <span class="base-text">{{"SERVICE.STEP_2_SELECT_IMAGE_SOURCE" | translate}}:</span>
     <div class="btn-group base-margin-left">
-      <button class="btn" [ngClass]="{'btn-primary':imageSource == 0}">Board registry</button>
-      <button class="btn" [ngClass]="{'btn-primary':imageSource == 1}" [disabled]="true">Docker hub</button>
+      <!--<button class="btn" [ngClass]="{'btn-primary':imageSource == 0}">Board registry</button>-->
+      <!--<button class="btn" [ngClass]="{'btn-primary':imageSource == 1}" [disabled]="true">Docker hub</button>-->
     </div>
   </div>
   <div *ngFor="let selectedImage of imageSelectList;let iImage = index" class="dynamic-image-source-container">

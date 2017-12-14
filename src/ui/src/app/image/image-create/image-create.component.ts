@@ -74,7 +74,6 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     this.onBuildCompleted = new EventEmitter<string>();
     this.filesList = new Map<string, Array<{path: string, file_name: string, size: number}>>();
     this.boardHost = this.appInitService.systemInfo['board_host'];
-    console.log(this.boardHost);
   }
 
   ngOnInit() {
@@ -238,7 +237,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   buildImageResole() {
     setTimeout(() => {
       this.processImageSubscription = this.webSocketService
-        .connect(`ws://10.165.22.61:8088/api/v1/jenkins-job/console?job_name=process_image&token=${this.appInitService.token}`)
+        .connect(`ws://${this.boardHost}/api/v1/jenkins-job/console?job_name=process_image&token=${this.appInitService.token}`)
         .subscribe((obs: MessageEvent) => {
           this.consoleText = <string>obs.data;
           if (this.lastJobNumber == 0) {

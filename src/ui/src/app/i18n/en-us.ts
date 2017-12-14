@@ -316,7 +316,7 @@ export const LANG_EN_US = {
     "STATUS_PREPARING": "Preparing",
     "STATUS_RUNNING": "Running",
     "STATUS_STOPPED": "Stopped",
-    "STATUS_WARNING": "Warning",
+    "STATUS_UNCOMPLETED": "Uncompleted",
     "STATUS_SUSPENDING": "Suspending",
     "STATUS_PUBLIC": "Public",
     "STATUS_PRIVATE": "Private",
