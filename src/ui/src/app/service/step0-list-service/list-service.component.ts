@@ -134,7 +134,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
       case SERVICE_STATUS.STOPPED:
         return 'SERVICE.STATUS_STOPPED';
       case SERVICE_STATUS.WARNING:
-        return 'SERVICE.STATUS_WARNING';
+        return 'SERVICE.STATUS_UNCOMPLETED';
     }
   }
 

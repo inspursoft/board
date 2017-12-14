@@ -184,7 +184,7 @@ export const LANG_EN_US = {
     "UNSATISFIED_WITH_CONSTRAINTS":"Unsatisfied with constraints of the user creation.",
     "USERNAME_OR_EMAIL_EXIST":"Username or email already exists.",
     "SUCCESSFUL_SET_SYS_ADMIN": "Set user as system admin successfully.",
-    "SUCCESSFUL_SET_NOT_SYS_ADMIN": "Successful change user not as system admin.",
+    "SUCCESSFUL_SET_NOT_SYS_ADMIN": "Successful cancel user as system admin.",
   },
   "IMAGE":{
     "COL_IMAGE_NAME":"Image Name",
@@ -316,7 +316,7 @@ export const LANG_EN_US = {
     "STATUS_PREPARING": "Preparing",
     "STATUS_RUNNING": "Running",
     "STATUS_STOPPED": "Stopped",
-    "STATUS_WARNING": "Warning",
+    "STATUS_UNCOMPLETED": "Uncompleted",
     "STATUS_SUSPENDING": "Suspending",
     "STATUS_PUBLIC": "Public",
     "STATUS_PRIVATE": "Private",

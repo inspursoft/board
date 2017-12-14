@@ -316,7 +316,7 @@ export const LANG_ZH_CN = {
     "STATUS_PREPARING": "创建中",
     "STATUS_RUNNING": "运行中",
     "STATUS_STOPPED": "已停止",
-    "STATUS_WARNING": "警告",
+    "STATUS_UNCOMPLETED": "未完成",
     "STATUS_SUSPENDING": "挂起中",
     "STATUS_PUBLIC": "公开",
     "STATUS_PRIVATE": "私有",

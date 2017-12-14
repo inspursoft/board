@@ -60,7 +60,7 @@ export class ServiceControlComponent implements OnInit {
       case SERVICE_STATUS.STOPPED:
         return 'SERVICE.STATUS_STOPPED';
       case SERVICE_STATUS.WARNING:
-        return 'SERVICE.STATUS_WARNING';
+        return 'SERVICE.STATUS_UNCOMPLETED';
     }
   }
 
@@ -73,7 +73,6 @@ export class ServiceControlComponent implements OnInit {
   }
 
   setScaleMethod(scaleMethod: ScaleMethod): void {
-    console.log(scaleMethod);
     this.scaleModule = scaleMethod;
   }
 

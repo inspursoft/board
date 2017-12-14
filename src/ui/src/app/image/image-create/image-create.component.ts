@@ -42,7 +42,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   _isOpenEnvironment = false;
   patternNewImageName: RegExp = /^[a-z\d.-]+$/;
   patternNewImageTag: RegExp = /^[a-z\d.-]+$/;
-  patternBaseImage: RegExp = /^[a-z\d.:-]+$/;
+  patternBaseImage: RegExp = /^[a-z\d/.:-]+$/;
   patternExpose: RegExp = /^[\d-\s\w/\\]+$/;
   patternVolume: RegExp = /.+/;
   patternRun: RegExp = /.+/;
