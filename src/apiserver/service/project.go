@@ -18,7 +18,12 @@ import (
 var repoServeURL = utils.GetConfig("REPO_SERVE_URL")
 var repoPath = utils.GetConfig("REPO_PATH")
 
-const k8sAPIversion1 = "v1"
+const (
+	k8sAPIversion1 = "v1"
+	adminUserID    = 1
+	adminUserName  = "admin"
+	projectPrivate = 0
+)
 
 func CreateProject(project model.Project) (bool, error) {
 	projectID, err := dao.AddProject(project)
@@ -164,4 +169,53 @@ func CreateNamespace(projectName string) (bool, error) {
 	}
 	logs.Info(namespace)
 	return true, nil
+}
+
+func SyncProjectsWithK8s() error {
+	cli, err := K8sCliFactory("", kubeMasterURL(), k8sAPIversion1)
+	apiSet, err := kubernetes.NewForConfig(cli)
+	if err != nil {
+		logs.Error("Failed to get K8s cli")
+		return err
+	}
+
+	n := apiSet.Namespaces()
+	var listOpt modelK8s.ListOptions
+	namespaceList, err := n.List(listOpt)
+	if err != nil {
+		logs.Error("Failed to check namespace list in cluster")
+		return err
+	}
+
+	for _, namespace := range (*namespaceList).Items {
+
+		existing, err := ProjectExists(namespace.Name)
+		if err != nil {
+			logs.Error("Failed to check prject existing %s %+v", namespace.Name, err)
+			continue
+		}
+		if existing {
+			logs.Info("Project existing %s", namespace.Name)
+		} else {
+			//Add it to projects
+			var reqProject model.Project
+			reqProject.Name = namespace.Name
+			reqProject.OwnerID = adminUserID
+			reqProject.OwnerName = adminUserName
+			reqProject.Public = projectPrivate
+
+			isSuccess, err := CreateProject(reqProject)
+			if err != nil {
+				logs.Error("Failed to create project %s %+v", namespace.Name, err)
+				// Still can work
+				continue
+			}
+			if !isSuccess {
+				logs.Error("Failed to create project %s", namespace.Name)
+				// Still can work
+				continue
+			}
+		}
+	}
+	return err
 }

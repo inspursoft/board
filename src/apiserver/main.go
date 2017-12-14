@@ -97,7 +97,12 @@ func initDefaultProjects() {
 		}
 
 	}
-
+	// Sync projects from cluster namespaces
+	err = service.SyncProjectsWithK8s()
+	if err != nil {
+		logs.Error("Failed to sync projects from namespaces: %+v", err)
+		//panic(err)
+	}
 }
 
 func syncServiceWithK8s() {
