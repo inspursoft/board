@@ -23,7 +23,7 @@ const (
 	defaultProjectName = "library"
 	defaultProjectID   = 1
 	defaultOwnerID     = 1
-	defaultOwnerName   = "anonymous"
+	defaultOwnerName   = "admin"
 	defaultPublic      = 0
 	defaultComment     = "init service"
 	defaultDeleted     = 0
@@ -194,22 +194,24 @@ func SyncServiceWithK8s() error {
 			logs.Error("Failed to check project in DB %s", item.Namespace)
 			return err
 		}
-		if project != nil {
-			servicequery.Name = item.ObjectMeta.Name
-			servicequery.OwnerID = int64(project.OwnerID) //owner or admin TBD
-			servicequery.OwnerName = project.OwnerName
-			servicequery.ProjectName = project.Name
-			servicequery.ProjectID = project.ID
-			servicequery.Public = defaultPublic
-			servicequery.Comment = defaultComment
-			servicequery.Deleted = defaultDeleted
-			servicequery.Status = defaultStatus
-			servicequery.CreationTime, _ = time.Parse(time.RFC3339, item.CreationTimestamp.Format(time.RFC3339))
-			servicequery.UpdateTime, _ = time.Parse(time.RFC3339, item.CreationTimestamp.Format(time.RFC3339))
-			_, err = dao.SyncServiceData(servicequery)
-			if err != nil {
-				logs.Error("Sync Service %s failed.", servicequery.Name)
-			}
+		if project == nil {
+			logs.Error("not found project in DB: %s", item.Namespace)
+			continue
+		}
+		servicequery.Name = item.ObjectMeta.Name
+		servicequery.OwnerID = int64(project.OwnerID) //owner or admin TBD
+		servicequery.OwnerName = project.OwnerName
+		servicequery.ProjectName = project.Name
+		servicequery.ProjectID = project.ID
+		servicequery.Public = defaultPublic
+		servicequery.Comment = defaultComment
+		servicequery.Deleted = defaultDeleted
+		servicequery.Status = defaultStatus
+		servicequery.CreationTime, _ = time.Parse(time.RFC3339, item.CreationTimestamp.Format(time.RFC3339))
+		servicequery.UpdateTime, _ = time.Parse(time.RFC3339, item.CreationTimestamp.Format(time.RFC3339))
+		_, err = dao.SyncServiceData(servicequery)
+		if err != nil {
+			logs.Error("Sync Service %s failed.", servicequery.Name)
 		}
 	}
 
