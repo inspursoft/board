@@ -6,11 +6,14 @@ import (
 	"io/ioutil"
 
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/common/dao"
+	"git/inspursoft/board/src/common/model"
 	"net/http"
 
 	"fmt"
 
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
 )
 
 type ServiceBodyPara struct {
@@ -71,6 +74,33 @@ func (s *DashboardServiceController) GetServiceData() {
 		s.CustomAbort(http.StatusInternalServerError, fmt.Sprint(err))
 		return
 	}
+
+	query := model.Project{}
+	projectList, err := service.GetProjectsByUser(query, s.currentUser.ID)
+	if err != nil {
+		s.internalError(err)
+		return
+	}
+	serviceList := make([]dao.ServiceListDataLogs, 0)
+	for _, svc := range dashboardServiceDataResp.ServiceResp.ServiceListData {
+		svcQuery, err := service.GetService(model.ServiceStatus{Name: svc.NodeName}, "name")
+		if err != nil {
+			s.internalError(err)
+			return
+		}
+		if svcQuery == nil {
+			continue
+		}
+		for _, project := range projectList {
+			if svcQuery.ProjectName == project.Name {
+				serviceList = append(serviceList, svc)
+				break
+			}
+		}
+	}
+	dashboardServiceDataResp.ServiceResp.ServiceListData = serviceList
+	logs.Info("serivcelist:%+v\n", dashboardServiceDataResp.ServiceResp.ServiceListData)
+
 	s.Data["json"] = dashboardServiceDataResp.ServiceResp
 	s.ServeJSON()
 }
