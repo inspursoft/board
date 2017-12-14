@@ -148,13 +148,26 @@ func (b *baseController) getCurrentUser() *model.User {
 
 func (b *baseController) signOff() error {
 	username := b.GetString("username")
-	err := memoryCache.Delete(username)
-	err = memoryCache.Delete(strconv.Itoa(int(b.currentUser.ID)))
-	if err != nil {
-		logs.Error("Failed to delete user from memory cache: %+v", err)
+	var err error
+	if token, ok := memoryCache.Get(username).(string); ok {
+		if payload, ok := memoryCache.Get(token).(map[string]interface{}); ok {
+			if userID, ok := payload["id"].(int); ok {
+				err = memoryCache.Delete(strconv.Itoa(userID))
+				if err != nil {
+					logs.Error("Failed to delete by userID from memory cache: %+v", err)
+				}
+			}
+		}
+		err = memoryCache.Delete(token)
+		if err != nil {
+			logs.Error("Failed to delete by token from memory cache: %+v", err)
+		}
 	}
-	logs.Info("Successful sign off from API server.")
-
+	err = memoryCache.Delete(username)
+	if err != nil {
+		logs.Error("Failed to delete by username from memory cache: %+v", err)
+	}
+	logs.Info("Successful signed off from API server.")
 	return nil
 }
 
