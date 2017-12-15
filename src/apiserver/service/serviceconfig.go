@@ -30,6 +30,7 @@ const (
 	defaultStatus      = 1
 	serviceNamespace   = "default" //TODO create namespace in project post
 	scaleKind          = "Deployment"
+	k8sService         = "kubernetes"
 )
 
 func InitServiceConfig() (*model.ServiceConfig, error) {
@@ -196,6 +197,9 @@ func SyncServiceWithK8s() error {
 		}
 		if project == nil {
 			logs.Error("not found project in DB: %s", item.Namespace)
+			continue
+		}
+		if item.ObjectMeta.Name == k8sService {
 			continue
 		}
 		servicequery.Name = item.ObjectMeta.Name
