@@ -29,6 +29,7 @@ const (
 	test                   = "test"
 	nacomment              = "NA"
 	serviceNamespace       = "default" //TODO create in project post
+	k8sServices            = "kubernetes"
 )
 
 const (
@@ -273,7 +274,7 @@ func syncK8sStatus(serviceList []*model.ServiceStatus) error {
 		}
 		// Check the deployment status
 		deployment, err := service.GetDeployment((*serviceStatus).ProjectName, (*serviceStatus).Name)
-		if deployment == nil {
+		if deployment == nil && serviceStatus.Name != k8sServices {
 			logs.Info("Failed to get deployment", err)
 			var reason = "The deployment is not established in cluster system"
 			(*serviceStatus).Status = uncompleted
