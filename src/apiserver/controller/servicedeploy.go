@@ -126,9 +126,9 @@ func assemblePushObject(fileName string, serviceID int64, projectName string, ex
 	pushobject.Message = fmt.Sprintf("Create %s for project %s service %d", extras,
 		projectName, serviceID)
 	if extras == "deployments" {
-		pushobject.Extras = filepath.Join(kubeMasterURL(), deploymentAPI, serviceNamespace, extras)
+		pushobject.Extras = filepath.Join(kubeMasterURL(), deploymentAPI, projectName, extras)
 	} else {
-		pushobject.Extras = filepath.Join(kubeMasterURL(), serviceAPI, serviceNamespace, extras)
+		pushobject.Extras = filepath.Join(kubeMasterURL(), serviceAPI, projectName, extras)
 	}
 	pushobject.Items = []string{filepath.Join(pushobject.Value, fileName)}
 	logs.Info("pushobject.FileName:%+v\n", pushobject.FileName)
