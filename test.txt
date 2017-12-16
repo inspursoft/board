@@ -1,2 +1,2 @@
 ABCDEFG
-This is a file for testing trigger Jenkins job.
+It is a file for testing trigger Jenkins job.
