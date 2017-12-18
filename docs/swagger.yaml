@@ -2309,7 +2309,7 @@ paths:
           description: Invalid image name or tag.
         500:
           description: Internal errors.
-  /v1/images/{image_name}/exsiting:
+  /v1/images/{image_name}/existing:
     get:
       summary: Return the existing of an image tag.
       description: |

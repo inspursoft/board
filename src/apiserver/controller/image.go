@@ -291,6 +291,20 @@ func (p *ImageController) BuildImageAction() {
 
 	reqImageConfig.ImageDockerfilePath = filepath.Join(repoPath(), reqImageConfig.ProjectName,
 		reqImageConfig.ImageName, reqImageConfig.ImageTag)
+
+	// Check image:tag path existing for rebuild
+	existing, err := exists(reqImageConfig.ImageDockerfilePath)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	if existing {
+		logs.Error("This image:tag existing in system %s", reqImageConfig.ImageDockerfilePath)
+		p.customAbort(http.StatusConflict, "This image:tag already existing.")
+		return
+	}
+
 	err = service.BuildDockerfile(reqImageConfig)
 	if err != nil {
 		p.internalError(err)
@@ -329,7 +343,7 @@ func (p *ImageController) BuildImageAction() {
 		return
 	}
 	logs.Info("Internal push object: %d %s", ret, msg)
-	p.customAbort(ret, msg)
+	p.ServeJSON()
 }
 
 func (p *ImageController) GetImageDockerfileAction() {
@@ -712,4 +726,66 @@ func (p *ImageController) DockerfileBuildImageAction() {
 	}
 	logs.Info("Internal push object: %d %s", ret, msg)
 	p.customAbort(ret, msg)
+}
+
+func exists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return true, err
+}
+
+func (p *ImageController) CheckImageTagExistingAction() {
+	var err error
+	var res int32
+
+	imageName := strings.TrimSpace(p.Ctx.Input.Param(":imagename"))
+	imageTag := strings.TrimSpace(p.GetString("image_tag"))
+	projectName := strings.TrimSpace(p.GetString("project_name"))
+
+	currentProject, err := service.GetProject(model.Project{Name: projectName}, "name")
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if currentProject == nil {
+		p.customAbort(http.StatusBadRequest, "Invalid project name.")
+		return
+	}
+
+	isMember, err := service.IsProjectMember(currentProject.ID, p.currentUser.ID)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	if !(p.isSysAdmin || isMember) {
+		p.customAbort(http.StatusForbidden, "Insufficient privileges to build image.")
+		return
+	}
+
+	// check this image:tag in system
+	dockerfilePath := filepath.Join(repoPath(), projectName, imageName, imageTag)
+	existing, err := exists(dockerfilePath)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	if existing {
+		logs.Info("This image:tag existing in system %s", dockerfilePath)
+		res = 1
+	} else {
+		res = 0
+	}
+
+	// TODO check image imported from registry
+	logs.Debug("checking image:tag result %d", res)
+	p.Data["json"] = res
+	p.ServeJSON()
+	return
 }
