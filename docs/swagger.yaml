@@ -2309,6 +2309,47 @@ paths:
           description: Invalid image name or tag.
         500:
           description: Internal errors.
+  /v1/images/{image_name}/exsiting:
+    get:
+      summary: Return the existing of an image tag.
+      description: |
+        This endpoint checks the existing of an image tag.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: image_name
+          in: path
+          description: image name to specify an image.
+          required: true
+          type: string
+        - name: image_tag
+          in: query
+          type: string
+          required: true
+          description: The image tag to be checked   
+        - name: project_name
+          in: query
+          type: string
+          required: true
+          description: The project name that the image belongs to.             
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the existing of an image tag. 
+          schema:
+            type: integer
+            format: int32            
+            description: the existing of an image tag, 1 existing 0 not existing.
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
   /v1/profile:
     get:
       summary: Return the Board system profile information
