@@ -2333,7 +2333,7 @@ paths:
         - name: project_name
           in: query
           type: string
-          required: false
+          required: true
           description: The project name that the image belongs to.             
       tags:
         - Products
