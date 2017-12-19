@@ -416,6 +416,42 @@ func (p *ImageController) DockerfilePreviewAction() {
 	}
 }
 
+func cleanGitImageTag(imageName string, imageTag string, projectName string, p *ImageController) error {
+	configPath := filepath.Join(repoPath(), projectName, imageName, imageTag)
+
+	// Update git repo
+	var pushobject pushObject
+
+	pushobject.FileName = defaultDockerfilename
+	pushobject.JobName = imageProcess
+	pushobject.Value = filepath.Join(projectName, imageName, imageTag)
+	pushobject.Extras = filepath.Join(projectName, imageName) + ":" + imageTag
+	pushobject.Message = fmt.Sprintf("Build image: %s", pushobject.Extras)
+
+	//Get file list for Jenkis git repo
+	uploads, err := service.ListUploadFiles(filepath.Join(configPath, "upload"))
+	if err != nil {
+		logs.Error("Failed to list upload files")
+		return err
+	}
+	// Add upload files
+	for _, finfo := range uploads {
+		filefullname := filepath.Join(pushobject.Value, "upload", finfo.FileName)
+		pushobject.Items = append(pushobject.Items, filefullname)
+	}
+	// Add Dockerfile
+	pushobject.Items = append(pushobject.Items, filepath.Join(pushobject.Value,
+		defaultDockerfilename))
+
+	ret, msg, err := InternalCleanObjects(&pushobject, &(p.baseController))
+	if err != nil {
+		logs.Error("Failed to push object for git repo clean", msg, ret)
+		return err
+	}
+	logs.Info("Internal push object for git repo clean: %s", msg)
+	return err
+}
+
 func (p *ImageController) ConfigCleanAction() {
 	reqData, err := p.resolveBody()
 	if err != nil {
@@ -570,6 +606,25 @@ func (p *ImageController) DeleteImageAction() {
 			return
 		}
 		resp.Body.Close()
+
+		// Clean image tag path in git
+		projectName := imageName[:strings.Index(imageName, "/")]
+		realName := imageName[strings.Index(imageName, "/")+1:]
+		err = cleanGitImageTag(realName, tag, projectName, p)
+		if err != nil {
+			logs.Error("failed to clean image tag git %s:%s %s", realName, tag, projectName)
+			p.internalError(err)
+			return
+		}
+
+		//Delete the config files
+		configPath := filepath.Join(repoPath(), projectName, realName, tag)
+		err = service.ImageConfigClean(configPath)
+		if err != nil {
+			logs.Error("failed to delete config files %s", configPath)
+			p.internalError(err)
+			return
+		}
 	}
 
 	//	var image model.Image
@@ -602,6 +657,9 @@ func (p *ImageController) DeleteImageTagAction() {
 
 	imageName := strings.TrimSpace(p.Ctx.Input.Param(":imagename"))
 	_imageTag := strings.TrimSpace(p.GetString("image_tag"))
+
+	projectName := imageName[:strings.Index(imageName, "/")]
+	realName := imageName[strings.Index(imageName, "/")+1:]
 
 	var client = &http.Client{}
 	URLPrefix := registryURL() + `/v2/` + imageName + `/manifests/`
@@ -637,6 +695,23 @@ func (p *ImageController) DeleteImageTagAction() {
 
 	if resp.StatusCode != http.StatusAccepted {
 		p.customAbort(http.StatusInternalServerError, "Remove registry image error")
+		return
+	}
+
+	// Clean image tag path in git
+	err = cleanGitImageTag(realName, _imageTag, projectName, p)
+	if err != nil {
+		logs.Error("failed to clean image tag git %s:%s %s", realName, _imageTag, projectName)
+		p.internalError(err)
+		return
+	}
+
+	//Delete the config files
+	configPath := filepath.Join(repoPath(), projectName, realName, _imageTag)
+	err = service.ImageConfigClean(configPath)
+	if err != nil {
+		logs.Error("failed to delete config files %s", configPath)
+		p.internalError(err)
 		return
 	}
 
