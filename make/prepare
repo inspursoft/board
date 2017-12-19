@@ -91,6 +91,7 @@ registry_ip = rcp.get("configuration", "registry_ip")
 registry_port = rcp.get("configuration", "registry_port")
 
 auth_mode = rcp.get("configuration", "auth_mode")
+verification_url = rcp.get("configuration", "verification_url")
 
 ###ldap configuration
 ldap_url = rcp.get("configuration", "ldap_url")
@@ -170,7 +171,8 @@ render(os.path.join(templates_dir, "apiserver", "env"),
         ldap_filter=ldap_filter,
         ldap_uid=ldap_uid,
         ldap_scope=ldap_scope,
-        ldap_timeout=ldap_timeout
+        ldap_timeout=ldap_timeout,
+        verification_url=verification_url
         )
 
 render(os.path.join(templates_dir, "tokenserver", "app.conf"),

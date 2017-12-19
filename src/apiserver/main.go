@@ -140,6 +140,7 @@ func main() {
 	utils.AddEnv("LDAP_SCOPE")
 	utils.AddEnv("LDAP_TIMEOUT")
 	utils.AddEnv("FORCE_INIT_SYNC")
+	utils.AddEnv("VERIFICATION_URL")
 
 	utils.SetConfig("REGISTRY_URL", "http://%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
 	utils.SetConfig("KUBE_MASTER_URL", "http://%s:%s", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
