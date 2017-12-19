@@ -235,7 +235,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   }
 
   buildImageResole() {
-    setTimeout(() => {
+    // setTimeout(() => {
       this.processImageSubscription = this.webSocketService
         .connect(`ws://${this.boardHost}/api/v1/jenkins-job/console?job_name=process_image&token=${this.appInitService.token}`)
         .subscribe((obs: MessageEvent) => {
@@ -262,7 +262,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
         }, err => err, () => {
           this.isOpen = false;
         });
-    }, 10000);
+    // }, 10000);
   }
 
   buildImageReject(err: any) {
