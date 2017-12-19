@@ -36,11 +36,11 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
       this.uiData.imageList.forEach((image: ImageIndex) => {
         this.imageSelectList.push({image_name: image.image_name, image_comment: "", image_deleted: 0});
         this.setImageDetailList(image.image_name, image.image_tag);
-      })
+      });
     }).catch(err => this.messageService.dispatchError(err));
     this.k8sService.getImages("", 0, 0)
       .then(res => {
-        this.imageSourceList = res;
+        this.imageSourceList = res || [];
         this.unshiftCustomerCreateImage();
       })
       .catch(err => this.messageService.dispatchError(err));
