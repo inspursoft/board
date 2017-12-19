@@ -816,7 +816,6 @@ func exists(path string) (bool, error) {
 
 func (p *ImageController) CheckImageTagExistingAction() {
 	var err error
-	var res int32
 
 	imageName := strings.TrimSpace(p.Ctx.Input.Param(":imagename"))
 	imageTag := strings.TrimSpace(p.GetString("image_tag"))
@@ -853,14 +852,13 @@ func (p *ImageController) CheckImageTagExistingAction() {
 
 	if existing {
 		logs.Info("This image:tag existing in system %s", dockerfilePath)
-		res = 1
-	} else {
-		res = 0
+		p.customAbort(http.StatusConflict, "This image:tag already existing.")
+		return
 	}
 
 	// TODO check image imported from registry
-	logs.Debug("checking image:tag result %d", res)
-	p.Data["json"] = res
+	logs.Debug("checking image:tag result %t", existing)
+
 	p.ServeJSON()
 	return
 }
