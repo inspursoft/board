@@ -209,6 +209,16 @@ func (p *ProjectController) DeleteProjectAction() {
 	if !isSuccess {
 		p.customAbort(http.StatusBadRequest, "Failed to delete project.")
 	}
+
+	//Delete namespace in cluster
+	isSuccess, err = service.DeleteNamespace(project.Name)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if !isSuccess {
+		p.customAbort(http.StatusBadRequest, "Failed to delete namespace.")
+	}
 }
 
 func (p *ProjectController) ToggleProjectPublicAction() {
