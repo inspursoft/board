@@ -2339,15 +2339,13 @@ paths:
         - Products
       responses:
         200:
-          description: Return the existing of an image tag. 
-          schema:
-            type: integer
-            format: int32            
-            description: the existing of an image tag, 1 existing 0 not existing.
+          description: The image tag not existing. 
         400:
           description: Bad Request.
         401:
           description: User need to log in first.
+        409:
+          description: The image tag existing.          
         500:
           description: Internal errors.
   /v1/profile:
