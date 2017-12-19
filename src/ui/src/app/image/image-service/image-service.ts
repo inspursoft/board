@@ -157,7 +157,7 @@ export class ImageService {
     return this.http.get("/api/v1/images", options).toPromise()
       .then(res => {
         this.appInitService.chainResponse(res);
-        return res.json();
+        return res.json() || [];
       })
       .catch(err => Promise.reject(err));
   }

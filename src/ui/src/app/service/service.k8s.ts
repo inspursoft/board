@@ -148,7 +148,7 @@ export class K8sService {
     return this.http.get("/api/v1/images", options).toPromise()
       .then((res: Response) => {
         this.appInitService.chainResponse(res);
-        return res.json();
+        return res.json() || [];
       })
       .catch(err => Promise.reject(err));
   }
