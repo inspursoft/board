@@ -267,4 +267,20 @@ export class K8sService {
       .then(res => this.appInitService.chainResponse(res))
       .catch(err => Promise.reject(err));
   }
+
+  getCollaborativeService(serviceName: string, projectName): Promise<Array<string>> {
+    return this.http
+      .get(`/api/v1/services/selectservices`, {
+        headers: this.defaultHeader, params: {
+          service_name: serviceName,
+          project_name: projectName
+        }
+      })
+      .toPromise()
+      .then((res: Response) => {
+        this.appInitService.chainResponse(res);
+        return res.json() || Array<string>();
+      })
+      .catch(err => Promise.reject(err));
+  }
 }
