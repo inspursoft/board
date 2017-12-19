@@ -40,7 +40,7 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
     }).catch(err => this.messageService.dispatchError(err));
     this.k8sService.getImages("", 0, 0)
       .then(res => {
-        this.imageSourceList = res || [];
+        this.imageSourceList = res;
         this.unshiftCustomerCreateImage();
       })
       .catch(err => this.messageService.dispatchError(err));
