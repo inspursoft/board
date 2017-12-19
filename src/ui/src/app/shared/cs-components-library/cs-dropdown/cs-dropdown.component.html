@@ -38,7 +38,7 @@
           </button>
           <span class="cs-dropdown-more"
                 *ngIf="dropdownShowItems && dropdownList && dropdownShowItems.length < dropdownList.length"
-                (click)="incShowTimes()">
+                (click)="incShowTimes($event)">
           more...
         </span>
         </div>
