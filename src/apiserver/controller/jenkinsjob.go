@@ -97,6 +97,7 @@ func (j *JenkinsJobController) Console() {
 	}
 
 	logs.Debug("Requested Jenkins build console URL: %s", buildConsoleURL)
+	time.Sleep(time.Duration(time.Second * 10))
 
 	ws, err := websocket.Upgrade(j.Ctx.ResponseWriter, j.Ctx.Request, nil, 1024, 1024)
 	if _, ok := err.(websocket.HandshakeError); ok {
