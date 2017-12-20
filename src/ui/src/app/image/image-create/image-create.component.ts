@@ -16,10 +16,12 @@ import { AppInitService } from "../../app.init.service";
 import { Subscription } from "rxjs/Subscription";
 import { WebsocketService } from "../../shared/websocket-service/websocket.service";
 import { EnvType } from "../../shared/environment-value/environment-value.component";
-import { setTimeout } from "core-js/library/web/timers";
+import { ValidationErrors } from "@angular/forms";
 
-enum ImageSource{fromBoardRegistry, fromDockerHub}
-enum ImageBuildMethod{fromTemplate, fromImportFile}
+enum ImageSource {fromBoardRegistry, fromDockerHub}
+
+enum ImageBuildMethod {fromTemplate, fromImportFile}
+
 const AUTO_REFRESH_IMAGE_LIST: number = 2000;
 
 type alertType = "alert-info" | "alert-danger";
@@ -63,9 +65,9 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   autoRefreshTimesCount: number = 0;
   isNewImageAlertOpen: boolean = false;
   newImageErrMessage: string = "";
-  newImageErrReason:string = "";
+  newImageErrReason: string = "";
   consoleText: string = "";
-  toggleCancelBuilding: boolean;
+  toggleCancelBuilding: boolean = false;
   processImageSubscription: Subscription;
 
   constructor(private imageService: ImageService,
@@ -79,6 +81,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
 
   ngOnInit() {
     this.customerNewImage = new BuildImageData();
+    this.toggleCancelBuilding = false;
     this.customerNewImage.image_dockerfile.image_author = this.appInitService.currentUser["user_name"];
     this.customerNewImage.project_id = this.projectId;
     this.customerNewImage.project_name = this.projectName;
@@ -189,6 +192,38 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     return this.imageBuildMethod == ImageBuildMethod.fromTemplate ? baseDisabled : fromDockerFile;
   }
 
+  get checkImageTagFun() {
+    return this.checkImageTag.bind(this);
+  }
+
+  get checkImageNameFun() {
+    return this.checkImageName.bind(this);
+  }
+
+  checkImageTag(control: HTMLInputElement): Promise<ValidationErrors> {
+    return this.imageService.checkImageExist(this.projectName, this.customerNewImage.image_name, control.value)
+      .then(res => res)
+      .catch(err => {
+        if (err && err instanceof Response && (err as Response).status == 409) {
+          return {imageTagExist: "IMAGE.CREATE_IMAGE_TAG_EXIST"}
+        }
+        this.isOpen = false;
+        this.messageService.dispatchError(err);
+      });
+  }
+
+  checkImageName(control: HTMLInputElement): Promise<ValidationErrors> {
+    return this.imageService.checkImageExist(this.projectName, control.value, this.customerNewImage.image_tag)
+      .then(res => res)
+      .catch(err => {
+        if (err && err instanceof Response && (err as Response).status == 409) {
+          return {imageNameExist: "IMAGE.CREATE_IMAGE_NAME_EXIST"}
+        }
+        this.isOpen = false;
+        this.messageService.dispatchError(err);
+      });
+  }
+
   cancelBuildImage() {
     this.imageService.cancelConsole("process_image").then(() => {
       this.isOpen = false;
@@ -266,6 +301,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     } else {
       this.newImageAlertType = "alert-danger";
       this.newImageErrMessage = "IMAGE.CREATE_IMAGE_BUILD_IMAGE_FAILED";
+      this.newImageErrReason = err instanceof Response ? (err as Response).text() : "";
       this.isNewImageAlertOpen = true;
     }
   }
@@ -273,7 +309,8 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   buildImage() {
     this.isNewImageAlertOpen = false;
     this.isBuildImageWIP = true;
-    this.consoleText = "Jenkins preparing...";
+    this.consoleText = "IMAGE.CREATE_IMAGE_JENKINS_PREPARE";
+    this.newImageErrReason = "";
     let buildImageFun: () => Promise<any> = this.imageBuildMethod == ImageBuildMethod.fromTemplate ?
       this.buildImageByTemplate.bind(this) :
       this.buildImageByDockerFile.bind(this);
@@ -372,7 +409,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
           this.isOpen = false;
           this.messageService.dispatchError(err);
         } else {
-          if (err && (err instanceof Response)){
+          if (err && (err instanceof Response)) {
             this.newImageErrReason = `:${(err as Response).text()}`;
           }
           (event.target as HTMLInputElement).value = "";

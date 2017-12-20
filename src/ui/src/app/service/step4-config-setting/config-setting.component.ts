@@ -26,10 +26,12 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
   showCollaborative: boolean = false;
   isInputComponentsValid = false;
   uiPreData: UIServiceStep3 = new UIServiceStep3();
+  collaborativeServiceList: Array<string>;
 
   constructor(protected injector: Injector) {
     super(injector);
     this.dropDownListNum = Array<number>();
+    this.collaborativeServiceList = Array<string>();
   }
 
   ngAfterContentChecked() {
@@ -73,14 +75,23 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
       .catch(err => {
         if (err && err instanceof Response && (err as Response).status == 409) {
           return {serviceExist: "SERVICE.STEP_4_SERVICE_NAME_EXIST"}
-        } else {
-          return null;
         }
+        this.messageService.dispatchError(err);
       });
   }
 
   setNodePort(index: number, port: number) {
     this.uiData.externalServiceList[index].node_config.node_port = Number(port).valueOf();
+  }
+
+  setServiceName(serviceName: string): void {
+    this.uiData.serviceName = serviceName;
+    /*Todo:add reset the Collaborative service Info*/
+    this.collaborativeServiceList.splice(0, this.collaborativeServiceList.length);
+    this.k8sService.getCollaborativeService(serviceName, this.uiData.projectName)
+      .then(res => {
+        this.collaborativeServiceList = res;
+      })
   }
 
   addContainerInfo() {

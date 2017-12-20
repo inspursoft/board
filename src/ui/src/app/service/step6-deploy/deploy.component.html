@@ -10,7 +10,7 @@
   </div>
   <div class="step6-journal-container">
     <label for="areaJournal">{{"SERVICE.STEP_6_JOURNAL"|translate}}:</label>
-    <textarea id="areaJournal" rows="10" class="step6-journal" [(ngModel)]="consoleText" readonly></textarea>
+    <textarea id="areaJournal" rows="10" class="step6-journal" readonly>{{consoleText | translate}}</textarea>
   </div>
 </div>
 <button class="btn btn-primary default-primary"
