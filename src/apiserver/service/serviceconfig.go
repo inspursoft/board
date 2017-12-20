@@ -229,7 +229,7 @@ func ScaleReplica(serviceInfo model.ServiceStatus, number int32) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	s := apiSet.Scales(serviceNamespace)
+	s := apiSet.Scales(serviceInfo.ProjectName)
 	scale, err := s.Get(scaleKind, serviceInfo.Name)
 
 	if scale.Spec.Replicas != number {
