@@ -293,17 +293,17 @@ func (p *ImageController) BuildImageAction() {
 		reqImageConfig.ImageName, reqImageConfig.ImageTag)
 
 	// Check image:tag path existing for rebuild
-	existing, err := exists(reqImageConfig.ImageDockerfilePath)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	if existing {
-		logs.Error("This image:tag existing in system %s", reqImageConfig.ImageDockerfilePath)
-		p.customAbort(http.StatusConflict, "This image:tag already existing.")
-		return
-	}
+	//existing, err := exists(reqImageConfig.ImageDockerfilePath)
+	//if err != nil {
+	//	p.internalError(err)
+	//	return
+	//}
+	//
+	//if existing {
+	//	logs.Error("This image:tag existing in system %s", reqImageConfig.ImageDockerfilePath)
+	//	p.customAbort(http.StatusConflict, "This image:tag already existing.")
+	//	return
+	//}
 
 	err = service.BuildDockerfile(reqImageConfig)
 	if err != nil {
