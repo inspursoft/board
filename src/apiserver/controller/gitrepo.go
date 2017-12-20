@@ -8,8 +8,10 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/astaxie/beego/logs"
 
@@ -152,7 +154,7 @@ func (g *GitRepoController) PullObjects() {
 
 func InternalPushObjects(p *pushObject, g *baseController) (int, string, error) {
 
-	defaultCommitMessage := fmt.Sprintf("Added items: %s to repo: %s", strings.Join(p.Items, ","), repoPath)
+	defaultCommitMessage := fmt.Sprintf("Added items: %s to repo: %s", strings.Join(p.Items, ","), repoPath())
 
 	if len(p.Message) == 0 {
 		p.Message = defaultCommitMessage
@@ -199,13 +201,21 @@ func InternalPushObjects(p *pushObject, g *baseController) (int, string, error) 
 	if err != nil {
 		return http.StatusInternalServerError, "Failed to triggerURL", err
 	}
+	locationURL, err := resp.Location()
+	if err != nil {
+		return http.StatusInternalServerError, "Failed to get location from Jenkins job trigger", fmt.Errorf("Failed to get location from Jenkins job trigger: %+v", err)
+	}
+	buildNumber, _ := strconv.Atoi(strings.Split(locationURL.Path, "/")[3])
+	logs.Debug("Parsing location URL for build number while starting Jenkins job: %d", buildNumber)
+	memoryCache.Put(strconv.Itoa(int(g.currentUser.ID))+"_lastBuildNumber", buildNumber, time.Minute*5)
+
 	return resp.StatusCode, "Internal Push Object successfully", err
 }
 
 // Clean git repo after remove config files
 func InternalCleanObjects(p *pushObject, g *baseController) (int, string, error) {
 
-	defaultCommitMessage := fmt.Sprintf("Removed items: %s from repo: %s", strings.Join(p.Items, ","), repoPath)
+	defaultCommitMessage := fmt.Sprintf("Removed items: %s from repo: %s", strings.Join(p.Items, ","), repoPath())
 
 	if len(p.Message) == 0 {
 		p.Message = defaultCommitMessage
