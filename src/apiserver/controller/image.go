@@ -305,6 +305,20 @@ func (p *ImageController) BuildImageAction() {
 	//	return
 	//}
 
+	// Check image:tag existing in registry
+	existing, err := existRegistry(reqImageConfig.ProjectName, reqImageConfig.ImageName,
+		reqImageConfig.ImageTag)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	if existing {
+		logs.Error("This image:tag existing in registry %s", reqImageConfig.ImageDockerfilePath)
+		p.customAbort(http.StatusConflict, "This image:tag already existing.")
+		return
+	}
+
 	err = service.BuildDockerfile(reqImageConfig)
 	if err != nil {
 		p.internalError(err)
