@@ -72,7 +72,6 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
       this.k8sService.serviceDeployment()
         .then(serviceID => {
           this.serviceID = serviceID;
-          // setTimeout(() => {
             this.processImageSubscription = this.webSocketService
               .connect(`ws://${this.boardHost}/api/v1/jenkins-job/console?job_name=process_service&token=${this.appInitService.token}`)
               .subscribe((obs: MessageEvent) => {
@@ -92,7 +91,6 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
                 this.isDeploySuccess = false;
                 this.isInDeployWIP = false;
               });
-          // }, 10000);
         })
         .catch(err => {
           if (err instanceof Response && (err as Response).status == 400) {
