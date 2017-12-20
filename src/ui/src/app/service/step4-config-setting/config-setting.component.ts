@@ -76,7 +76,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
         if (err && err instanceof Response && (err as Response).status == 409) {
           return {serviceExist: "SERVICE.STEP_4_SERVICE_NAME_EXIST"}
         } else {
-          return null;
+          this.messageService.dispatchError(err);
         }
       });
   }

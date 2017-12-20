@@ -18,8 +18,10 @@ import { WebsocketService } from "../../shared/websocket-service/websocket.servi
 import { EnvType } from "../../shared/environment-value/environment-value.component";
 import { ValidationErrors } from "@angular/forms";
 
-enum ImageSource{fromBoardRegistry, fromDockerHub}
-enum ImageBuildMethod{fromTemplate, fromImportFile}
+enum ImageSource {fromBoardRegistry, fromDockerHub}
+
+enum ImageBuildMethod {fromTemplate, fromImportFile}
+
 const AUTO_REFRESH_IMAGE_LIST: number = 2000;
 
 type alertType = "alert-info" | "alert-danger";
@@ -200,24 +202,26 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
 
   checkImageTag(control: HTMLInputElement): Promise<ValidationErrors> {
     return this.imageService.checkImageExist(this.projectName, this.customerNewImage.image_name, control.value)
-      .then(() => null)
+      .then(res => res)
       .catch(err => {
         if (err && err instanceof Response && (err as Response).status == 409) {
           return {imageTagExist: "IMAGE.CREATE_IMAGE_TAG_EXIST"}
         } else {
-          return null;
+          this.isOpen = false;
+          this.messageService.dispatchError(err);
         }
       });
   }
 
   checkImageName(control: HTMLInputElement): Promise<ValidationErrors> {
     return this.imageService.checkImageExist(this.projectName, control.value, this.customerNewImage.image_tag)
-      .then(() => null)
+      .then(res => res)
       .catch(err => {
         if (err && err instanceof Response && (err as Response).status == 409) {
           return {imageTagExist: "IMAGE.CREATE_IMAGE_NAME_EXIST"}
         } else {
-          return null;
+          this.isOpen = false;
+          this.messageService.dispatchError(err);
         }
       });
   }
@@ -307,7 +311,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   buildImage() {
     this.isNewImageAlertOpen = false;
     this.isBuildImageWIP = true;
-    this.consoleText = "Jenkins preparing...";
+    this.consoleText = "IMAGE.CREATE_IMAGE_JENKINS_PREPARE";
     this.newImageErrReason = "";
     let buildImageFun: () => Promise<any> = this.imageBuildMethod == ImageBuildMethod.fromTemplate ?
       this.buildImageByTemplate.bind(this) :

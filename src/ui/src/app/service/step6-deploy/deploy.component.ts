@@ -66,7 +66,7 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
     if (!this.isDeployed) {
       this.isDeployed = true;
       this.isInDeployWIP = true;
-      this.consoleText = "Deploying...";
+      this.consoleText = "SERVICE.STEP_6_DEPLOYING";
       this.k8sService.serviceDeployment()
         .then(serviceID => {
           this.serviceID = serviceID;
