@@ -105,7 +105,7 @@ func (j *JenkinsJobController) Console() {
 	expiryTimer := time.NewTimer(time.Second * 900)
 	ticker := time.NewTicker(time.Second * 1)
 
-	go func() {
+	go func(done chan bool) {
 		for range ticker.C {
 			resp, err := client.Do(req)
 			if err != nil {
@@ -141,7 +141,7 @@ func (j *JenkinsJobController) Console() {
 				}
 			}
 		}
-	}()
+	}(done)
 
 	for {
 		select {
