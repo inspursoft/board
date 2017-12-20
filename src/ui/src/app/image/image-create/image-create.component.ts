@@ -16,6 +16,7 @@ import { AppInitService } from "../../app.init.service";
 import { Subscription } from "rxjs/Subscription";
 import { WebsocketService } from "../../shared/websocket-service/websocket.service";
 import { EnvType } from "../../shared/environment-value/environment-value.component";
+import { setTimeout } from "core-js/library/web/timers";
 
 enum ImageSource{fromBoardRegistry, fromDockerHub}
 enum ImageBuildMethod{fromTemplate, fromImportFile}
@@ -64,7 +65,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   newImageErrMessage: string = "";
   newImageErrReason:string = "";
   consoleText: string = "";
-  lastJobNumber: number = 0;
+  toggleCancelBuilding: boolean;
   processImageSubscription: Subscription;
 
   constructor(private imageService: ImageService,
@@ -189,12 +190,9 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   }
 
   cancelBuildImage() {
-    if (this.lastJobNumber > 0) {
-      this.imageService.cancelConsole("process_image", this.lastJobNumber).then(() => {
-        this.isOpen = false;
-      });
-      this.lastJobNumber = -1;
-    }
+    this.imageService.cancelConsole("process_image").then(() => {
+      this.isOpen = false;
+    });
   }
 
   uploadDockerFile(): Promise<boolean> {
@@ -235,34 +233,28 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   }
 
   buildImageResole() {
-    // setTimeout(() => {
-      this.processImageSubscription = this.webSocketService
-        .connect(`ws://${this.boardHost}/api/v1/jenkins-job/console?job_name=process_image&token=${this.appInitService.token}`)
-        .subscribe((obs: MessageEvent) => {
-          this.consoleText = <string>obs.data;
-          if (this.lastJobNumber == 0) {
-            this.imageService.getLastJobId("process_image").then(res => {
-              this.lastJobNumber = res;
-            });
-          }
-          let consoleTextArr: Array<string> = this.consoleText.split(/[\n]/g);
-          if (consoleTextArr.find(value => value.indexOf("Finished: SUCCESS") > -1)) {
-            this.isNeedAutoRefreshImageList = true;
-            this.autoRefreshTimesCount = 0;
-            this.processImageSubscription.unsubscribe();
-          }
-          if (consoleTextArr.find(value => value.indexOf("Finished: FAILURE") > -1)) {
-            this.isBuildImageWIP = false;
-            this.isNeedAutoRefreshImageList = false;
-            this.newImageAlertType = "alert-danger";
-            this.newImageErrMessage = "IMAGE.CREATE_IMAGE_BUILD_IMAGE_FAILED";
-            this.isNewImageAlertOpen = true;
-            this.processImageSubscription.unsubscribe();
-          }
-        }, err => err, () => {
-          this.isOpen = false;
-        });
-    // }, 10000);
+    this.processImageSubscription = this.webSocketService
+      .connect(`ws://${this.boardHost}/api/v1/jenkins-job/console?job_name=process_image&token=${this.appInitService.token}`)
+      .subscribe((obs: MessageEvent) => {
+        this.consoleText = <string>obs.data;
+        this.toggleCancelBuilding = true;
+        let consoleTextArr: Array<string> = this.consoleText.split(/[\n]/g);
+        if (consoleTextArr.find(value => value.indexOf("Finished: SUCCESS") > -1)) {
+          this.isNeedAutoRefreshImageList = true;
+          this.autoRefreshTimesCount = 0;
+          this.processImageSubscription.unsubscribe();
+        }
+        if (consoleTextArr.find(value => value.indexOf("Finished: FAILURE") > -1)) {
+          this.isBuildImageWIP = false;
+          this.isNeedAutoRefreshImageList = false;
+          this.newImageAlertType = "alert-danger";
+          this.newImageErrMessage = "IMAGE.CREATE_IMAGE_BUILD_IMAGE_FAILED";
+          this.isNewImageAlertOpen = true;
+          this.processImageSubscription.unsubscribe();
+        }
+      }, err => err, () => {
+        this.isOpen = false;
+      });
   }
 
   buildImageReject(err: any) {
@@ -281,7 +273,6 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   buildImage() {
     this.isNewImageAlertOpen = false;
     this.isBuildImageWIP = true;
-    this.lastJobNumber = 0;
     this.consoleText = "Jenkins preparing...";
     let buildImageFun: () => Promise<any> = this.imageBuildMethod == ImageBuildMethod.fromTemplate ?
       this.buildImageByTemplate.bind(this) :

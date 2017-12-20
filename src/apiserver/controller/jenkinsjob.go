@@ -2,6 +2,7 @@ package controller
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -13,10 +14,9 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-const jenkinsLastBuildNumberTemplateURL = "http://jenkins:8080/job/{{.JobName}}/lastBuild/buildNumber"
 const jenkinsBuildConsoleTemplateURL = "http://jenkins:8080/job/{{.JobName}}/{{.BuildSerialID}}/consoleText"
 const jenkinsStopBuildTemplateURL = "http://jenkins:8080/job/{{.JobName}}/{{.BuildSerialID}}/stop"
-const maxRetryCount = 30
+const maxRetryCount = 600
 
 type jobConsole struct {
 	JobName       string `json:"job_name"`
@@ -46,32 +46,16 @@ func generateURL(rawTemplate string, data interface{}) (string, error) {
 	return targetURL.String(), nil
 }
 
-func getBuildNumber(query interface{}) (int, error) {
-	lastBuildNumberURL, err := generateURL(jenkinsLastBuildNumberTemplateURL, query)
-	if err != nil {
-		return 0, err
+func (j *JenkinsJobController) getBuildNumber() (int, error) {
+	if buildNumber, ok := memoryCache.Get(strconv.Itoa(int(j.currentUser.ID)) + "_lastBuildNumber").(int); ok {
+		logs.Info("Get build number with key %s from cache is %d", strconv.Itoa(int(j.currentUser.ID))+"_lastBuildNumber", buildNumber)
+		return buildNumber, nil
 	}
-	resp, err := http.Get(lastBuildNumberURL)
-	if err != nil {
-		return 0, err
-	}
-	defer resp.Body.Close()
-
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return 0, err
-	}
-	return strconv.Atoi(string(data))
+	return 0, fmt.Errorf("failed to get build number from cache")
 }
 
 func (j *JenkinsJobController) GetLastBuildNumber() {
-	jobName := j.GetString("job_name")
-	if jobName == "" {
-		j.customAbort(http.StatusBadRequest, "No job name found.")
-		return
-	}
-	query := jobConsole{JobName: jobName}
-	lastBuildNumber, err := getBuildNumber(query)
+	lastBuildNumber, err := j.getBuildNumber()
 	if err != nil {
 		j.internalError(err)
 		return
@@ -86,10 +70,13 @@ func (j *JenkinsJobController) Console() {
 		j.customAbort(http.StatusBadRequest, "No job name found.")
 		return
 	}
-
 	query := jobConsole{JobName: jobName}
-	query.BuildSerialID = j.GetString("build_serial_id", "lastBuild")
-
+	buildNumber, err := j.getBuildNumber()
+	if err != nil {
+		j.internalError(err)
+		return
+	}
+	query.BuildSerialID = strconv.Itoa(buildNumber)
 	buildConsoleURL, err := generateURL(jenkinsBuildConsoleTemplateURL, query)
 	if err != nil {
 		j.internalError(err)
@@ -97,7 +84,6 @@ func (j *JenkinsJobController) Console() {
 	}
 
 	logs.Debug("Requested Jenkins build console URL: %s", buildConsoleURL)
-	time.Sleep(time.Duration(time.Second * 10))
 
 	ws, err := websocket.Upgrade(j.Ctx.ResponseWriter, j.Ctx.Request, nil, 1024, 1024)
 	if _, ok := err.(websocket.HandshakeError); ok {
@@ -133,7 +119,9 @@ func (j *JenkinsJobController) Console() {
 					done <- true
 				} else {
 					retryCount++
-					logs.Debug("Jenkins console is not ready at this moment, will retry for next %d request...", retryCount)
+					if retryCount%50 == 0 {
+						logs.Debug("Jenkins console is not ready at this moment, will retry for next %d request...", retryCount)
+					}
 					continue
 				}
 			}
@@ -183,10 +171,8 @@ func (j *JenkinsJobController) Stop() {
 		j.customAbort(http.StatusBadRequest, "No job name found.")
 		return
 	}
-
 	query := jobConsole{JobName: jobName}
-
-	lastBuildNumber, err := getBuildNumber(query)
+	lastBuildNumber, err := j.getBuildNumber()
 	if err != nil {
 		j.customAbort(http.StatusInternalServerError, "Failed to get job number.")
 		return
