@@ -299,6 +299,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     } else {
       this.newImageAlertType = "alert-danger";
       this.newImageErrMessage = "IMAGE.CREATE_IMAGE_BUILD_IMAGE_FAILED";
+      this.newImageErrReason = err instanceof Response ? (err as Response).text() : "";
       this.isNewImageAlertOpen = true;
     }
   }
@@ -307,6 +308,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     this.isNewImageAlertOpen = false;
     this.isBuildImageWIP = true;
     this.consoleText = "Jenkins preparing...";
+    this.newImageErrReason = "";
     let buildImageFun: () => Promise<any> = this.imageBuildMethod == ImageBuildMethod.fromTemplate ?
       this.buildImageByTemplate.bind(this) :
       this.buildImageByDockerFile.bind(this);
