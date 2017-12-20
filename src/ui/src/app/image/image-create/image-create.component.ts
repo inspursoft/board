@@ -218,7 +218,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
       .then(res => res)
       .catch(err => {
         if (err && err instanceof Response && (err as Response).status == 409) {
-          return {imageTagExist: "IMAGE.CREATE_IMAGE_NAME_EXIST"}
+          return {imageNameExist: "IMAGE.CREATE_IMAGE_NAME_EXIST"}
         } else {
           this.isOpen = false;
           this.messageService.dispatchError(err);
