@@ -44,6 +44,7 @@
             <cs-input [inputIsRequired]="true"
                       [inputPattern]="patternNewImageName"
                       [inputLabel]="'IMAGE.CREATE_IMAGE_NEW_IMAGE_NAME'|translate"
+                      [customerValidatorAsyncFunc]="checkImageNameFun"
                       [disabled]="isBuildImageWIP"
                       [simpleFiled]="customerNewImage.image_name"
                       (onCheck)="customerNewImage.image_name = $event;asyncGetDockerFilePreviewInfo()">
@@ -51,6 +52,7 @@
             <cs-input [inputIsRequired]="true"
                       [inputPattern]="patternNewImageTag"
                       [inputLabel]="'IMAGE.CREATE_IMAGE_IMAGE_TAG'|translate"
+                      [customerValidatorAsyncFunc]="checkImageTagFun"
                       [disabled]="isBuildImageWIP"
                       [simpleFiled]="customerNewImage.image_tag"
                       (onCheck)="customerNewImage.image_tag = $event;asyncGetDockerFilePreviewInfo()">

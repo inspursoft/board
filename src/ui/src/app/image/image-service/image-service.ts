@@ -184,4 +184,13 @@ export class ImageService {
       })
       .catch(err => Promise.reject(err));
   }
+
+  checkImageExist(projectName: string, imageName: string, imageTag: string): Promise<any> {
+    return this.http.get(`/api/v1/images/${imageName}/existing`, {
+      headers: this.defaultHeader,
+      params: {image_tag: imageTag, project_name: projectName}
+    }).toPromise()
+      .then((res: Response) => this.appInitService.chainResponse(res))
+      .catch(err => Promise.reject(err));
+  }
 }

@@ -5,7 +5,6 @@
  */
 
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from "@angular/core"
-import { MockSchemaRegistry } from "@angular/compiler/testing";
 
 export const ONLY_FOR_CLICK = "OnlyClick";
 const DROP_DOWN_SHOW_COUNT = 20;

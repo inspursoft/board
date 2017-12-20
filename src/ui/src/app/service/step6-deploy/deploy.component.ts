@@ -3,7 +3,6 @@
  */
 import { Component, Injector, OnDestroy, OnInit } from "@angular/core"
 import { Subscription } from "rxjs/Subscription";
-import { AppInitService } from "../../app.init.service";
 import { Message } from "../../shared/message-service/message";
 import { BUTTON_STYLE } from "../../shared/shared.const";
 import { WebsocketService } from "../../shared/websocket-service/websocket.service";
@@ -30,7 +29,6 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
   ) {
     super(injector);
     this.boardHost = this.appInitService.systemInfo['board_host'];
-    console.log(`board_host=${this.boardHost}`);
   }
 
   ngOnInit() {

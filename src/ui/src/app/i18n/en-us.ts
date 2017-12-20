@@ -244,6 +244,8 @@ export const LANG_EN_US = {
     "CREATE_IMAGE_EXIST":"Image already exists.",
     "CREATE_IMAGE_FROM_TEMP":"From Template",
     "CREATE_IMAGE_FROM_FILE":"From Dockerfile",
+    "CREATE_IMAGE_TAG_EXIST":"Image tag exist.",
+    "CREATE_IMAGE_NAME_EXIST":"Image name exist.",
   },
   "SERVICE": {
     "ASK_TITLE":"Cancel",
