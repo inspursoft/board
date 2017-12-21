@@ -345,7 +345,9 @@ export const LANG_EN_US = {
     "SERVICE_CONTROL_AUTO_SCALE":"Auto scale",
     "SERVICE_CONTROL_INSTANCE_NUMBER":"Instance number",
     "SERVICE_CONTROL_CPU_UTILIZATION_CURRENT":"Current CPU utilization",
-    "SERVICE_CONTROL_CPU_UTILIZATION_QUALIFIED":"Qualified CPU utilization"
+    "SERVICE_CONTROL_CPU_UTILIZATION_QUALIFIED":"Qualified CPU utilization",
+    "SERVICE_DETAIL_DEPLOYMENT_FILE":"Deployment file",
+    "SERVICE_DETAIL_SERVICE_FILE":"Service file",
   },
   "GLOBAL_SEARCH": {
     "PROJECTS": "Projects",

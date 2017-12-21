@@ -1,9 +1,8 @@
 import { Component } from '@angular/core';
-
 import { K8sService } from '../../service.k8s';
-
 import { MessageService } from '../../../shared/message-service/message.service';
 import { AppInitService } from '../../../app.init.service';
+import { Service } from "../../service";
 
 class NodeURL {
   url: string;
@@ -19,24 +18,42 @@ class NodeURL {
 
 @Component({
   selector: 'service-detail',
-  templateUrl: 'service-detail.component.html'
+  styleUrls: ["./service-detail.component.css"],
+  templateUrl: './service-detail.component.html'
 })
 export class ServiceDetailComponent {
+  _isOpenServiceDetail: boolean = false;
   boardHost: string;
-  isOpenServiceDetail = false;
   serviceDetail: string = "";
   urlList: Array<NodeURL>;
   serviceName: string;
+  curService: Service;
+  deploymentYamlFile: string = "";
+  deploymentYamlWIP: boolean = false;
+  isShowDeploymentYaml: boolean = false;
+  serviceYamlFile: string = "";
+  serviceYamlWIP: boolean = false;
+  isShowServiceYaml: boolean = false;
 
-  constructor(
-    private appInitService: AppInitService,
-    private k8sService: K8sService,
-    private messageService: MessageService) {
-      this.boardHost = this.appInitService.systemInfo['board_host'];
-    }
+  constructor(private appInitService: AppInitService,
+              private k8sService: K8sService,
+              private messageService: MessageService) {
+    this.boardHost = this.appInitService.systemInfo['board_host'];
+  }
 
-  openModal(serviceName: string, projectName: string, ownerName: string): void {
-    this.getServiceDetail(serviceName, projectName, ownerName);
+  get isOpenServiceDetail(): boolean {
+    return this._isOpenServiceDetail;
+  }
+
+  set isOpenServiceDetail(value: boolean) {
+    this._isOpenServiceDetail = value;
+    this.isShowServiceYaml = false;
+    this.isShowDeploymentYaml = false;
+  }
+
+  openModal(s: Service): void {
+    this.curService = s;
+    this.getServiceDetail(s.service_name, s.service_project_name, s.service_owner);
   }
 
   getServiceDetail(serviceName: string, projectName: string, ownerName: string): void {
@@ -58,7 +75,7 @@ export class ServiceDetailComponent {
                 route: `http://${this.boardHost}/deploy/${ownerName}/${projectName}/${serviceName}`
               };
               this.urlList.push(nodeInfo);
-              this.k8sService.addServiceRoute(nodeInfo.url, nodeInfo.identity)
+              this.k8sService.addServiceRoute(nodeInfo.url, nodeInfo.identity);
               break;
             }
           }
@@ -70,5 +87,39 @@ export class ServiceDetailComponent {
       this.isOpenServiceDetail = false;
       this.messageService.dispatchError(err);
     })
+  }
+
+  getDeploymentYamlFile() {
+    this.isShowDeploymentYaml = !this.isShowDeploymentYaml;
+    if (this.isShowDeploymentYaml) {
+      this.deploymentYamlWIP = true;
+      this.k8sService.getServiceYamlFile(this.curService.service_project_name, this.curService.service_name, "deployment")
+        .then((res: string) => {
+          this.deploymentYamlWIP = false;
+          this.deploymentYamlFile = res;
+        })
+        .catch(err => {
+          this.deploymentYamlWIP = false;
+          this.isOpenServiceDetail = false;
+          this.messageService.dispatchError(err);
+        })
+    }
+  }
+
+  getServiceYamlFile() {
+    this.isShowServiceYaml = !this.isShowServiceYaml;
+    if (this.isShowServiceYaml) {
+      this.serviceYamlWIP = true;
+      this.k8sService.getServiceYamlFile(this.curService.service_project_name, this.curService.service_name, "service")
+        .then((res: string) => {
+          this.serviceYamlWIP = false;
+          this.serviceYamlFile = res;
+        })
+        .catch(err => {
+          this.serviceYamlWIP = false;
+          this.isOpenServiceDetail = false;
+          this.messageService.dispatchError(err);
+        })
+    }
   }
 }

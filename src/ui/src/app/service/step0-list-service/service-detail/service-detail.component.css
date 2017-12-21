@@ -1,0 +1,40 @@
+div.file-detail-container {
+    margin-top: 10px;
+}
+
+div.file-detail-title-container {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+div.file-detail-icon-container {
+    width: 20px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+clr-icon.file-detail-icon {
+    width: 20px;
+    height: 20px;
+    color: gray;
+}
+
+div.file-open {
+    transform: rotate(180deg);
+    transition-duration: 0.5s;
+}
+
+div.file-close {
+    transform: rotate(0deg);
+    transition-duration: 0.5s;
+}
+
+div.base-margin-left {
+    margin-left: 10px;
+}
+
+
+
+

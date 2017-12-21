@@ -6,6 +6,28 @@
       <a [href]="u.route" target="_blank">{{ u.route }}</a>
     </div>
     <textarea title="" rows="5" readonly>{{ serviceDetail }}</textarea>
+    <div class="file-detail-container" >
+      <div class="file-detail-title-container" (click)="getDeploymentYamlFile()">
+        <div class="file-detail-icon-container"
+             [ngClass]="{'file-close':isShowDeploymentYaml,'file-open':!isShowDeploymentYaml}">
+          <clr-icon shape="caret up" class="file-detail-icon"></clr-icon>
+        </div>
+        <span class="base-margin-left">{{"SERVICE.SERVICE_DETAIL_DEPLOYMENT_FILE"|translate}}:</span>
+      </div>
+      <span *ngIf="deploymentYamlWIP" class="spinner spinner-md"></span>
+      <textarea title="" *ngIf="isShowDeploymentYaml && !deploymentYamlWIP" rows="5">{{deploymentYamlFile}}</textarea>
+    </div>
+    <div class="file-detail-container">
+      <div class="file-detail-title-container" (click)="getServiceYamlFile()">
+        <div class="file-detail-icon-container"
+             [ngClass]="{'file-close':isShowServiceYaml,'file-open':!isShowServiceYaml}">
+          <clr-icon shape="caret up" class="file-detail-icon"></clr-icon>
+        </div>
+        <span class="base-margin-left">{{"SERVICE.SERVICE_DETAIL_SERVICE_FILE"|translate}}:</span>
+      </div>
+      <span *ngIf="serviceYamlWIP" class="spinner spinner-md"></span>
+      <textarea title="" *ngIf="isShowServiceYaml && !serviceYamlWIP" rows="5">{{serviceYamlFile}}</textarea>
+    </div>
   </div>
   <div class="modal-footer">
     <button type="button"
