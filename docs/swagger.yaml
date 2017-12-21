@@ -960,23 +960,23 @@ paths:
           description: User need to log in first.
         500:
           description: Internal errors.  
-  /v1/services/info/{service_name}:
+  /v1/services/{service_id}/info:
     get:
       summary: Return specific service_name infomation.
       description: |
-        This endpoint returns specific service  information by service_name.
+        This endpoint returns specific service information by service_name.
       parameters:
         - name: token
           in: header
           type: string
           required: true
           description: Current available token.
-        - name: service_name
+        - name: service_id
           in: path
-          description: Service name for filtering results.
-          required: true
           type: integer
-          format: string
+          format: int32
+          required: true
+          description: Selected service ID.
       tags:
         - Products
       responses:
@@ -1162,9 +1162,9 @@ paths:
           description: Unauthorized
         500:
           description: Unexpected internal errors.
-  /v1/services/status/{service_name}:
+  /v1/services/{service_id}/status:
     get:
-      summary: Return specific service_name status.
+      summary: Return specific service status.
       description: |
         This endpoint returns specific service status by service_name.
       parameters:
@@ -1173,12 +1173,12 @@ paths:
           type: string
           required: true
           description: Current available token.
-        - name: service_name
+        - name: service_id
           in: path
-          description: Service name for filtering results.
-          required: true
           type: integer
-          format: string
+          format: int32
+          required: true
+          description: Selected service ID.
       tags:
         - Products
       responses:
