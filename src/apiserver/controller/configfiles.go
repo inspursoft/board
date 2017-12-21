@@ -49,7 +49,7 @@ func (f *ConfigFilesController) UploadDeploymentYamlFileAction() {
 		return
 	}
 	if serviceID == "" {
-		serviceID, err = createServiceConfig(projectName, f.currentUser.ID)
+		serviceID, err = createUploadedServiceConfig(projectName, serviceName, f.currentUser.ID, f.currentUser.Username)
 		if err != nil {
 			f.internalError(err)
 			return
@@ -179,7 +179,7 @@ func getServiceID(serviceName string, projectName string) (string, error) {
 	return strconv.Itoa(int(service.ID)), nil
 }
 
-func createServiceConfig(projectName string, ID int64) (string, error) {
+func createUploadedServiceConfig(projectName string, serviceName string, ID int64, userName string) (string, error) {
 	//get ProjectID
 	query := model.Project{Name: projectName}
 	project, err := service.GetProject(query, "name")
@@ -192,9 +192,11 @@ func createServiceConfig(projectName string, ID int64) (string, error) {
 	}
 
 	var newservice model.ServiceStatus
+	newservice.Name = serviceName
 	newservice.ProjectName = projectName
 	newservice.Status = preparing // 0: preparing 1: running 2: suspending
 	newservice.OwnerID = ID
+	newservice.OwnerName = userName
 	newservice.ProjectID = project.ID
 	serviceID, err := service.CreateServiceConfig(newservice)
 	if err != nil {
