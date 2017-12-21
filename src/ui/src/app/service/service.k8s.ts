@@ -246,16 +246,14 @@ export class K8sService {
       .catch(err => Promise.reject(err));
   }
 
-  addServiceRoute(serviceURL: string, serviceIdentity: string): Promise<any> {
-    return this.http
-      .post(`/api/v1/services/info`, {}, {
-        headers: this.defaultHeader,
-        params: {
-          'service_url': serviceURL,
-          'service_identity': serviceIdentity
-        }
-      })
-      .toPromise()
+  addServiceRoute(serviceURL: string, serviceIdentity: string): void {
+    this.http.post(`/api/v1/services/info`, {}, {
+      headers: this.defaultHeader,
+      params: {
+        'service_url': serviceURL,
+        'service_identity': serviceIdentity
+      }
+    }).toPromise()
       .then(res => this.appInitService.chainResponse(res))
       .catch(err => Promise.reject(err));
   }
@@ -280,6 +278,23 @@ export class K8sService {
       .then((res: Response) => {
         this.appInitService.chainResponse(res);
         return res.json() || Array<string>();
+      })
+      .catch(err => Promise.reject(err));
+  }
+
+  getServiceYamlFile(projectName: string, serviceName: string, yamlType: string): Promise<string> {
+    return this.http
+      .get(`/api/v1/services/yaml/download`, {
+        headers: this.defaultHeader, params: {
+          service_name: serviceName,
+          project_name: projectName,
+          yaml_type: yamlType
+        }
+      })
+      .toPromise()
+      .then((res: Response) => {
+        this.appInitService.chainResponse(res);
+        return res.text();
       })
       .catch(err => Promise.reject(err));
   }
