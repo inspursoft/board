@@ -7,9 +7,11 @@ import (
 	"git/inspursoft/board/src/common/model"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"path/filepath"
 	"strings"
-	yaml "yaml-2"
+
+	"github.com/ghodss/yaml"
 
 	"k8s.io/client-go/pkg/api/v1"
 
@@ -31,7 +33,7 @@ func (p *ServiceRollingUpdateController) Prepare() {
 }
 
 func (p *ServiceRollingUpdateController) GetRollingUpdateServiceConfigAction() {
-	projectName, serviceID := p.isServiceValid()
+	projectName, serviceID := p.resolveServiceParam()
 	serviceConfig := p.getServiceConfig(projectName, serviceID)
 
 	if serviceConfig.Spec.Template == nil || len(serviceConfig.Spec.Template.Spec.Containers) < 1 {
@@ -52,7 +54,7 @@ func (p *ServiceRollingUpdateController) GetRollingUpdateServiceConfigAction() {
 	p.ServeJSON()
 }
 func (p *ServiceRollingUpdateController) PostRollingUpdateServiceConfigAction() {
-	projectName, serviceID := p.isServiceValid()
+	projectName, serviceID := p.resolveServiceParam()
 
 	var imageList []model.ImageIndex
 	reqData, err := p.resolveBody()
@@ -71,6 +73,7 @@ func (p *ServiceRollingUpdateController) PostRollingUpdateServiceConfigAction() 
 	}
 
 	var rollingUpdateConfig v1.ReplicationController
+	rollingUpdateConfig.Spec.Template = &v1.PodTemplateSpec{}
 	for index, container := range serviceConfig.Spec.Template.Spec.Containers {
 		image := registryBaseURI() + "/" + imageList[index].ImageName + ":" + imageList[index].ImageTag
 		if serviceConfig.Spec.Template.Spec.Containers[index].Image != image {
@@ -81,24 +84,36 @@ func (p *ServiceRollingUpdateController) PostRollingUpdateServiceConfigAction() 
 		}
 	}
 
-	deploymentAbsName := filepath.Join(repoPath(), projectName, serviceID, rollingUpdateFilename)
-	err = service.GenerateYamlFile(deploymentAbsName, rollingUpdateConfig)
+	serviceRollConfig, err := json.Marshal(rollingUpdateConfig)
 	if err != nil {
 		p.internalError(err)
 	}
+	extras := fmt.Sprintf("%s%s", kubeMasterURL(), filepath.Join(deploymentAPI, projectName, "deployments", serviceConfig.Name))
+	logs.Debug("Requested rolling update jenkins with extras: %s", extras)
 
-	extras := filepath.Join("deployments", serviceConfig.Name)
-	deployPushobject := p.rollingUpdateService(rollingUpdateFilename, serviceID, projectName, extras, rollingUpdate, deploymentAPI)
-	ret, msg, err := InternalPushObjects(&deployPushobject, &(p.baseController))
+	req, err := http.NewRequest("POST", `http://jenkins:8080/job/rolling_update/buildWithParameters`, nil)
 	if err != nil {
 		p.internalError(err)
-		return
 	}
-	logs.Info("Internal push deployment object: %d %s", ret, msg)
+	form := url.Values{}
+	form.Add("value", string(serviceRollConfig))
+	form.Add("extras", extras)
+	req.URL.RawQuery = form.Encode()
+	logs.Debug("Request object to Jenkins is %+v", req)
+	client := http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		p.internalError(err)
+	}
+	if resp != nil {
+		defer resp.Body.Close()
+		respData, _ := ioutil.ReadAll(resp.Body)
+		logs.Debug("Response with requested Jenkins rolling update job: %s", string(respData))
+	}
 
 }
 
-func (p *ServiceRollingUpdateController) isServiceValid() (string, string) {
+func (p *ServiceRollingUpdateController) resolveServiceParam() (string, string) {
 	projectName := p.GetString("project_name")
 	isExistence, err := service.ProjectExists(projectName)
 	if err != nil {
@@ -128,27 +143,11 @@ func (p *ServiceRollingUpdateController) getServiceConfig(projectName string, se
 		p.internalError(err)
 	}
 
-	var serviceConfig v1.ReplicationController
-	err = yaml.Unmarshal(yamlFile, &serviceConfig)
+	var rcConfig v1.ReplicationController
+	err = yaml.Unmarshal(yamlFile, &rcConfig)
 	if err != nil {
 		p.internalError(err)
 	}
 
-	return &serviceConfig
-}
-func (p *ServiceRollingUpdateController) rollingUpdateService(fileName string, serviceID string, projectName string,
-	extras string, jobName string, apiVersion string) pushObject {
-	var pushobject pushObject
-	pushobject.FileName = fileName
-	pushobject.JobName = jobName
-	pushobject.Value = filepath.Join(projectName, serviceID)
-	pushobject.Message = fmt.Sprintf("Create %s for project %s service %s", extras,
-		projectName, serviceID)
-	pushobject.Extras = filepath.Join(kubeMasterURL(), apiVersion, projectName, extras)
-
-	pushobject.Items = []string{filepath.Join(pushobject.Value, fileName)}
-	logs.Info("pushobject.FileName:%+v\n", pushobject.FileName)
-	logs.Info("pushobject.Value:%+v\n", pushobject.Value)
-	logs.Info("pushobject.Extras:%+v\n", pushobject.Extras)
-	return pushobject
+	return &rcConfig
 }
