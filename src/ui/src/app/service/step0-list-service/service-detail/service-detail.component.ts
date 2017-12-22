@@ -26,7 +26,6 @@ export class ServiceDetailComponent {
   boardHost: string;
   serviceDetail: string = "";
   urlList: Array<NodeURL>;
-  serviceName: string;
   curService: Service;
   deploymentYamlFile: string = "";
   deploymentYamlWIP: boolean = false;
@@ -53,14 +52,13 @@ export class ServiceDetailComponent {
 
   openModal(s: Service): void {
     this.curService = s;
-    this.getServiceDetail(s.service_name, s.service_project_name, s.service_owner);
+    this.getServiceDetail(s.service_id, s.service_project_name, s.service_owner);
   }
 
-  getServiceDetail(serviceName: string, projectName: string, ownerName: string): void {
+  getServiceDetail(serviceId: number, projectName: string, ownerName: string): void {
     this.urlList = [];
     this.serviceDetail = "";
-    this.serviceName = serviceName;
-    this.k8sService.getServiceDetail(serviceName).then(res => {
+    this.k8sService.getServiceDetail(serviceId).then(res => {
       if (!res["details"]) {
         let arrNodePort = res["node_Port"] as Array<number>;
         this.k8sService.getNodesList().then(res => {
@@ -71,8 +69,8 @@ export class ServiceDetailComponent {
               let port = arrNodePort[Math.floor(Math.random() * arrNodePort.length)];
               let nodeInfo = {
                 url: `http://${node.node_ip}:${port}`,
-                identity: `${ownerName}_${projectName}_${serviceName}`,
-                route: `http://${this.boardHost}/deploy/${ownerName}/${projectName}/${serviceName}`
+                identity: `${ownerName}_${projectName}_${this.curService.service_name}`,
+                route: `http://${this.boardHost}/deploy/${ownerName}/${projectName}/${this.curService.service_name}`
               };
               this.urlList.push(nodeInfo);
               this.k8sService.addServiceRoute(nodeInfo.url, nodeInfo.identity);

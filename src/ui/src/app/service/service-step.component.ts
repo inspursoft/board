@@ -12,6 +12,7 @@ export type ServiceStepPhase =
 
 export interface UiServerExchangeData<T> {
   uiToServer(): Object;
+
   serverToUi(serverResponse: Object): T;
 }
 
@@ -85,13 +86,13 @@ export class Container implements UiServerExchangeData<Container> {
     this.working_dir = serverResponse["working_dir"];
     this.volume_mount = (new VolumeStruct()).serverToUi(serverResponse["volume_mount"]);
     this.image = (new ImageIndex()).serverToUi(serverResponse["image"]);
-    if (serverResponse["env"]){
+    if (serverResponse["env"]) {
       let envArr: Array<EnvStruct> = serverResponse["env"];
       envArr.forEach((env: EnvStruct) => {
         this.env.push((new EnvStruct()).serverToUi(env));
       });
     }
-    if (serverResponse["container_port"]){
+    if (serverResponse["container_port"]) {
       this.container_port = Array.from(serverResponse["container_port"]) as Array<number>;
     }
     this.command = serverResponse["command"];
@@ -233,7 +234,7 @@ export class UIServiceStep3 extends UIServiceStepBase {
 }
 
 export class UIServiceStep4 extends UIServiceStepBase {
-  public projectName:string = "";
+  public projectName: string = "";
   public serviceName: string = "";
   public instance: number = 1;
   public externalServiceList: Array<ExternalService> = Array<ExternalService>();

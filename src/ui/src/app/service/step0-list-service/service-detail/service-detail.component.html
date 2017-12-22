@@ -1,5 +1,5 @@
 <clr-modal [(clrModalOpen)]="isOpenServiceDetail" [clrModalSize]="'md'">
-  <h3 class="modal-title">{{ serviceName }} {{ "SERVICE.SERVICE_DETAIL" | translate }}</h3>
+  <h3 class="modal-title">{{ curService?.service_name }} {{ "SERVICE.SERVICE_DETAIL" | translate }}</h3>
   <div class="modal-body">
     <div *ngFor="let u of urlList; let i = index">
       <span>{{i == 0 ? 'URL:' : ''}}</span>

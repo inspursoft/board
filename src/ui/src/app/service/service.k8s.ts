@@ -5,7 +5,7 @@ import { AppInitService } from "../app.init.service";
 import { Http, Headers, RequestOptions, Response, RequestOptionsArgs } from "@angular/http";
 import { Project } from "../project/project";
 import { BuildImageDockerfileData, Image, ImageDetail } from "../image/image";
-import { ServerServiceStep, ServiceStepPhase, UiServiceFactory, UIServiceStepBase } from "./service-step.component";
+import { ImageIndex, ServerServiceStep, ServiceStepPhase, UiServiceFactory, UIServiceStepBase } from "./service-step.component";
 
 @Injectable()
 export class K8sService {
@@ -124,11 +124,11 @@ export class K8sService {
       .catch(err => Promise.reject(err));
   }
 
-  getDeployStatus(serviceName: string): Promise<Object> {
+  getDeployStatus(serviceId: number): Promise<Object> {
     let options = new RequestOptions({
       headers: this.defaultHeader
     });
-    return this.http.get(`/api/v1/services/status/${serviceName}`, options).toPromise()
+    return this.http.get(`/api/v1/services/${serviceId}/status`, options).toPromise()
       .then((res: Response) => {
         this.appInitService.chainResponse(res);
         return res.json();
@@ -183,9 +183,9 @@ export class K8sService {
       .catch(err => Promise.reject(err));
   }
 
-  getServiceDetail(serviceName: string): Promise<any> {
+  getServiceDetail(serviceId: number): Promise<any> {
     return this.http
-      .get(`/api/v1/services/info/${serviceName}`, {headers: this.defaultHeader})
+      .get(`/api/v1/services/${serviceId}/info`, {headers: this.defaultHeader})
       .toPromise()
       .then((res: Response) => {
         this.appInitService.chainResponse(res);
@@ -296,6 +296,35 @@ export class K8sService {
         this.appInitService.chainResponse(res);
         return res.text();
       })
+      .catch(err => Promise.reject(err));
+  }
+
+  getServiceImages(projectName: string, serviceName: string): Promise<Array<ImageIndex>> {
+    return this.http
+      .get(`/api/v1/services/rollingupdate`, {
+        headers: this.defaultHeader, params: {
+          service_name: serviceName,
+          project_name: projectName
+        }
+      })
+      .toPromise()
+      .then((res: Response) => {
+        this.appInitService.chainResponse(res);
+        return res.json();
+      })
+      .catch(err => Promise.reject(err));
+  }
+
+  updateServiceImages(projectName: string, serviceName: string, postData: Array<ImageIndex>): Promise<any> {
+    return this.http
+      .post(`/api/v1/services/rollingupdate`, postData, {
+        headers: this.defaultHeader, params: {
+          service_name: serviceName,
+          project_name: projectName
+        }
+      })
+      .toPromise()
+      .then((res) => this.appInitService.chainResponse(res))
       .catch(err => Promise.reject(err));
   }
 }
