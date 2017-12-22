@@ -43,25 +43,9 @@ set -e
 
 curl http://apiserver:8088/api/v1/jenkins-job/$user_id/$BUILD_NUMBER
 
-cd ~
+echo &quot;CURL $extras with request $value&quot;
 
-if [ ! -d &quot;board_repo&quot; ]; then
-
-  echo &quot;Clone board repo as it doesn&apos;t exist yet.&quot;
-
-  git clone root@gitserver:/gitserver/repos/board_repo
-
-fi
-
-cd board_repo
-
-echo &quot;Pull changes from repo.&quot;
-
-git pull
-
-echo &quot;CURL $extras with file $value/$file_name&quot;
-
-curl -X PATCH -H &apos;Content-Type: application/yaml&apos; --data-binary @$value/$file_name $extras</command>
+curl -X PATCH -H &apos;Content-Type: application/strategic-merge-patch+json&apos; -d $value $extras</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers/>
