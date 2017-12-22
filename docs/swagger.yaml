@@ -795,6 +795,71 @@ paths:
           description: User need to log in first.
         500:
           description: Internal errors.
+  /v1/services/rollingupdate:
+    get:
+      summary: Return the results the rolling update service config.
+      description: 
+        This endpoint returns the results the rolling update service config.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name 
+          in: query
+          description: Project name for filtering results.
+          required: false
+          type: string
+        - name: service_name 
+          in: query
+          description: Service name for filtering results.
+          required: false
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched services.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+    post:
+      summary: Return the results of rolling update service.
+      description: 
+        This endpoint returns the results of rolling update service.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name 
+          in: query
+          description: Project name for filtering results.
+          required: false
+          type: string
+        - name: service_name 
+          in: query
+          description: Service name for filtering results.
+          required: false
+          type: string
+        - name: image_list 
+          in: body
+          type: object
+          items:
+            $ref: '#/definitions/ImageList'
+          description: Updates of imagelist data.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched services.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
   /v1/services/reconfig:
     get:
       summary: load service config from service DB.
