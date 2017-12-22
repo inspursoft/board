@@ -16,8 +16,8 @@ import (
 const jenkinsBuildConsoleTemplateURL = "http://jenkins:8080/job/{{.JobName}}/{{.BuildSerialID}}/consoleText"
 const jenkinsStopBuildTemplateURL = "http://jenkins:8080/job/{{.JobName}}/{{.BuildSerialID}}/stop"
 const maxRetryCount = 600
-const maxBuildNumberRetryCount = 600
-const buildNumberCacheExpireSecond = 1800
+const buildNumberCacheExpireSecond = time.Duration(maxRetryCount * time.Second)
+const toggleBuildingCacheExpireSecond = time.Duration(maxRetryCount * time.Second)
 
 type jobConsole struct {
 	JobName       string `json:"job_name"`
@@ -32,7 +32,7 @@ func (j *JenkinsJobCallbackController) BuildNumberCallback() {
 	userID := j.Ctx.Input.Param(":userID")
 	buildNumber, _ := strconv.Atoi(j.Ctx.Input.Param(":buildNumber"))
 	logs.Info("Get build number from Jenkins job callback: %d", buildNumber)
-	memoryCache.Put(userID+"_buildNumber", buildNumber, time.Second*buildNumberCacheExpireSecond)
+	memoryCache.Put(userID+"_buildNumber", buildNumber, buildNumberCacheExpireSecond)
 }
 
 type JenkinsJobController struct {
@@ -64,20 +64,37 @@ func (j *JenkinsJobController) clearBuildNumber() {
 	}
 }
 
+func (j *JenkinsJobController) toggleBuild(status bool) {
+	logs.Info("Set building signal as %+v currently.", status)
+	memoryCache.Put(strconv.Itoa(int(j.currentUser.ID))+"_buildSignal", status, toggleBuildingCacheExpireSecond)
+}
+
+func (j *JenkinsJobController) getBuildSignal() bool {
+	key := strconv.Itoa(int(j.currentUser.ID)) + "_buildSignal"
+	if buildingSignal, ok := memoryCache.Get(key).(bool); ok {
+		return buildingSignal
+	}
+	return false
+}
+
 func (j *JenkinsJobController) Console() {
 	j.clearBuildNumber()
-	buildNumberRetryCount := 0
+	j.toggleBuild(true)
+	getBuildNumberRetryCount := 0
 	var buildNumber int
 	var err error
 	for true {
 		buildNumber, err = j.getBuildNumber()
-		if err != nil {
+		if j.getBuildSignal() == false || getBuildNumberRetryCount >= maxRetryCount {
+			logs.Debug("User canceled current process or exceeded max retry count, will exit.")
+			return
+		} else if err != nil {
 			logs.Debug("Error occurred: %+v", err)
-		} else if err == nil || buildNumberRetryCount >= maxBuildNumberRetryCount {
+		} else {
 			break
 		}
-		buildNumberRetryCount = buildNumberRetryCount + 1
-		time.Sleep(time.Second * 1)
+		getBuildNumberRetryCount++
+		time.Sleep(time.Second * 2)
 	}
 
 	jobName := j.GetString("job_name")
@@ -112,7 +129,7 @@ func (j *JenkinsJobController) Console() {
 	retryCount := 0
 	expiryTimer := time.NewTimer(time.Second * 900)
 	ticker := time.NewTicker(time.Second * 1)
-	go func(done chan bool) {
+	go func() {
 		for range ticker.C {
 			resp, err := client.Do(req)
 			if err != nil {
@@ -141,14 +158,13 @@ func (j *JenkinsJobController) Console() {
 			}
 			buffer <- data
 			resp.Body.Close()
-
 			for _, line := range strings.Split(string(data), "\n") {
 				if strings.HasPrefix(line, "Finished:") {
 					done <- true
 				}
 			}
 		}
-	}(done)
+	}()
 
 	for {
 		select {
@@ -173,17 +189,19 @@ func (j *JenkinsJobController) Console() {
 }
 
 func (j *JenkinsJobController) Stop() {
+	lastBuildNumber, err := j.getBuildNumber()
+	if err != nil {
+		logs.Error("Failed to get job number: %+v", err)
+		j.toggleBuild(false)
+		return
+	}
+
 	jobName := j.GetString("job_name")
 	if jobName == "" {
 		j.customAbort(http.StatusBadRequest, "No job name found.")
 		return
 	}
 	query := jobConsole{JobName: jobName}
-	lastBuildNumber, err := j.getBuildNumber()
-	if err != nil {
-		j.customAbort(http.StatusInternalServerError, "Failed to get job number.")
-		return
-	}
 	query.BuildSerialID = j.GetString("build_serial_id", strconv.Itoa(lastBuildNumber))
 	stopBuildURL, err := utils.GenerateURL(jenkinsStopBuildTemplateURL, query)
 	if err != nil {
