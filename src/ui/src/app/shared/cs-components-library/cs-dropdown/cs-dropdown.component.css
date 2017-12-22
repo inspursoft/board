@@ -13,6 +13,11 @@ div.cs-dropdown-title-container {
   padding: 0 !important;
 }
 
+div.cs-dropdown-title-container.disabled {
+  cursor: not-allowed !important;
+}
+
+
 span.cs-dropdown-title {
   width: 100%;
   margin-left: 10px;
@@ -24,6 +29,7 @@ span.cs-dropdown-title {
 
 span.cs-dropdown-title.disabled {
   color: silver;
+  cursor: not-allowed;
 }
 
 div.cs-dropdown-icon-container {
