@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#docker version: 1.11.2 
+#docker version: 17.0 
 #docker-compose version: 1.7.1 
 #Board version: 0.8.0
 
@@ -34,7 +34,7 @@ fi
 function check_docker {
 	if ! docker --version &> /dev/null
 	then
-		echo "Need to install docker(1.10.0+) first and run this script again."
+		echo "Need to install docker(17.0+) first and run this script again."
 		exit 1
 	fi
 	
@@ -46,9 +46,9 @@ function check_docker {
 		docker_version_part2=${BASH_REMATCH[3]}
 		
 		# the version of docker does not meet the requirement
-		if [ "$docker_version_part1" -lt 1 ] || ([ "$docker_version_part1" -eq 1 ] && [ "$docker_version_part2" -lt 10 ])
+		if [ "$docker_version_part1" -lt 17 ] || ([ "$docker_version_part1" -eq 17 ] && [ "$docker_version_part2" -lt 0 ])
 		then
-			echo "Need to upgrade docker package to 1.10.0+."
+			echo "Need to upgrade docker package to 17.0+."
 			exit 1
 		else
 			echo "docker version: $docker_version"
