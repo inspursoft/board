@@ -20,9 +20,11 @@ import (
 const (
 	deploymentFilename     = "deployment.yaml"
 	serviceFilename        = "service.yaml"
+	rollingUpdateFilename  = "rollingUpdateDeployment.yaml"
 	deploymentTestFilename = "testdeployment.yaml"
 	serviceTestFilename    = "testservice.yaml"
 	serviceProcess         = "process_service"
+	rollingUpdate          = "rolling_update"
 	apiheader              = "Content-Type: application/yaml"
 	deploymentAPI          = "/apis/extensions/v1beta1/namespaces/"
 	serviceAPI             = "/api/v1/namespaces/"
