@@ -25,17 +25,18 @@ const (
 )
 
 var (
-	serverNameDuplicateErr        = errors.New("ERR_DUPLICATE_SERVICE_NAME")
-	projectIDInvalidErr           = errors.New("ERR_INVALID_PROJECT_ID")
-	imageListInvalidErr           = errors.New("ERR_INVALID_IMAGE_LIST")
-	portInvalidErr                = errors.New("ERR_INVALID_SERVICE_NODEPORT")
-	instanceInvalidErr            = errors.New("ERR_INVALID_SERVICE_INSTANCE")
-	emptyServiceNameErr           = errors.New("ERR_EMPTY_SERVICE_NAME")
-	phaseInvalidErr               = errors.New("ERR_INVALID_PHASE")
-	serviceConfigNotCreateErr     = errors.New("ERR_NOT_CREATE_SERVICE_CONFIG")
-	serviceConfigNotSetProjectErr = errors.New("ERR_NOT_SET_PROJECT_IN_SERVICE_CONFIG")
-	emptyExternalServiceListErr   = errors.New("ERR_EMPTY_EXTERNAL_SERVICE_LIST")
-	notFoundErr                   = errors.New("ERR_NOT_FOUND")
+	serverNameDuplicateErr             = errors.New("ERR_DUPLICATE_SERVICE_NAME")
+	projectIDInvalidErr                = errors.New("ERR_INVALID_PROJECT_ID")
+	imageListInvalidErr                = errors.New("ERR_INVALID_IMAGE_LIST")
+	portInvalidErr                     = errors.New("ERR_INVALID_SERVICE_NODEPORT")
+	instanceInvalidErr                 = errors.New("ERR_INVALID_SERVICE_INSTANCE")
+	emptyServiceNameErr                = errors.New("ERR_EMPTY_SERVICE_NAME")
+	emptyVolumeTargetStorageServiceErr = errors.New("ERR_EMPTY_VOLUME_TARGET_STORAGE_SERVICE_ERR")
+	phaseInvalidErr                    = errors.New("ERR_INVALID_PHASE")
+	serviceConfigNotCreateErr          = errors.New("ERR_NOT_CREATE_SERVICE_CONFIG")
+	serviceConfigNotSetProjectErr      = errors.New("ERR_NOT_SET_PROJECT_IN_SERVICE_CONFIG")
+	emptyExternalServiceListErr        = errors.New("ERR_EMPTY_EXTERNAL_SERVICE_LIST")
+	notFoundErr                        = errors.New("ERR_NOT_FOUND")
 )
 
 type ConfigServiceStep model.ConfigServiceStep
@@ -300,6 +301,10 @@ func (sc *ServiceConfigController) configContainerList(key string, configService
 	}
 
 	for _, container := range containerList {
+		if container.VolumeMounts.TargetPath != "" && container.VolumeMounts.TargetStorageService == "" {
+			sc.serveStatus(http.StatusBadRequest, emptyVolumeTargetStorageServiceErr.Error())
+			return
+		}
 		container.VolumeMounts.VolumeName = strings.ToLower(container.VolumeMounts.VolumeName)
 		container.Name = strings.ToLower(container.Name)
 	}
