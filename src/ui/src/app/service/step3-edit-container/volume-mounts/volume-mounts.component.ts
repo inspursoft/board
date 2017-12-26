@@ -21,7 +21,7 @@ export class VolumeMountsComponent {
   volumeDataOrigin:VolumeOutPut;
   patternName: RegExp = /^[a-z0-9A-Z_]+$/;
   patternMountPath: RegExp = /^[a-z0-9A-Z_/]+$/;
-  patternPath: RegExp = /^[a-z0-9A-Z_/]+$/;
+  patternPath: RegExp = /^[a-z0-9A-Z_/.:]+$/;
   isAlertOpen: boolean = false;
   volumeErrMsg: string = "";
   @ViewChildren(CsInputComponent) inputList: QueryList<CsInputComponent>;
