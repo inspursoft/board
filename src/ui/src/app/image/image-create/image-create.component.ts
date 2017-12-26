@@ -201,6 +201,9 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   }
 
   checkImageTag(control: HTMLInputElement): Promise<ValidationErrors> {
+    if (this.customerNewImage.image_name == "") {
+      return Promise.resolve(null);
+    }
     return this.imageService.checkImageExist(this.projectName, this.customerNewImage.image_name, control.value)
       .then(() => null)
       .catch(err => {
@@ -213,6 +216,9 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   }
 
   checkImageName(control: HTMLInputElement): Promise<ValidationErrors> {
+    if (this.customerNewImage.image_tag == "") {
+      return Promise.resolve(null);
+    }
     return this.imageService.checkImageExist(this.projectName, control.value, this.customerNewImage.image_tag)
       .then(() => null)
       .catch(err => {
