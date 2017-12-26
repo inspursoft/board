@@ -27,11 +27,14 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
   isInputComponentsValid = false;
   uiPreData: UIServiceStep3 = new UIServiceStep3();
   collaborativeServiceList: Array<string>;
+  /*Todo:Only for collaborative plus action.It must be delete after update UIServiceStep4*/
+  collaborativeList:Array<Object>;
 
   constructor(protected injector: Injector) {
     super(injector);
     this.dropDownListNum = Array<number>();
     this.collaborativeServiceList = Array<string>();
+    this.collaborativeList = Array<Object>();
   }
 
   ngAfterContentChecked() {
@@ -46,6 +49,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
   }
 
   ngOnInit() {
+    this.collaborativeList.push(Object());
     this.k8sService.getServiceConfig(PHASE_CONFIG_CONTAINERS).then(res => {
       this.uiPreData = res as UIServiceStep3;
     });

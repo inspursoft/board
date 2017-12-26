@@ -3,6 +3,7 @@ div.config-container {
   min-height: 400px; /*fixed height*/
   flex-direction: column;
   margin-top: 30px;
+  margin-bottom: 20px;
 }
 
 div.config-service-info-container {
@@ -54,11 +55,6 @@ div.advanced-item-container {
   align-items: center;
 }
 
-div.service-container {
-  display: flex;
-  margin-top: 10px;
-  height: 30px;
-}
 
 span.service {
   width: 160px;
