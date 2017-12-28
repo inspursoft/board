@@ -18,8 +18,6 @@ services:
       - ../config/db/env
     networks:
       - board
-    ports:
-      - 3306:3306
     depends_on:
       - log
     logging:
@@ -57,7 +55,6 @@ services:
     env_file:
       - ../config/jenkins/env
     ports:
-#      - 8888:8080
       - 50000:50000
     depends_on:
       - log

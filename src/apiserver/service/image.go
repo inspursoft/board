@@ -71,26 +71,21 @@ func checkStringHasEnter(str ...string) error {
 func fixStructEmptyIssue(obj interface{}) {
 	if f, ok := obj.(*[]string); ok {
 		if len(*f) == 1 && len((*f)[0]) == 0 {
-			*f = nil
+			*f = make([]string, 0, 0)
 		}
 		return
 	}
 	if f, ok := obj.(*[]model.CopyStruct); ok {
 		if len(*f) == 1 && len((*f)[0].CopyFrom) == 0 && len((*f)[0].CopyTo) == 0 {
-			*f = nil
+			*f = make([]model.CopyStruct, 0, 0)
 		}
 		return
 	}
 	if f, ok := obj.(*[]model.EnvStruct); ok {
 		if len(*f) == 1 && len((*f)[0].EnvName) == 0 && len((*f)[0].EnvValue) == 0 {
-			*f = nil
+			*f = make([]model.EnvStruct, 0, 0)
 		}
 		return
-	}
-	if f, ok := obj.(*[]int); ok {
-		if len(*f) == 1 && (*f)[0] == 0 {
-			*f = nil
-		}
 	}
 	return
 }

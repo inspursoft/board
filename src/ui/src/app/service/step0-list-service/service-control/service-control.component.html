@@ -1,0 +1,132 @@
+<clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'md'" [clrModalClosable]="!isActionInWIP">
+  <h3 class="modal-title">{{ "SERVICE.SERVICE_CONTROL" | translate }}</h3>
+  <div class="modal-body">
+    <div class="btn-group action-method">
+      <button class="btn"
+              [disabled]="isActionInWIP"
+              [ngClass]="{'btn-primary':actionMethod == 0}"
+              (click)="actionMethod = 0">
+        {{"SERVICE.SERVICE_CONTROL_SCALE" | translate}}
+      </button>
+      <button class="btn"
+              [disabled]="isActionInWIP"
+              [ngClass]="{'btn-primary':actionMethod == 1}"
+              (click)="actionMethod = 1;getServiceImages()">
+        {{"SERVICE.SERVICE_CONTROL_UPDATE" | translate}}
+      </button>
+    </div>
+    <fieldset class="fieldSet-default">
+      <legend class="legend-default">{{"SERVICE.SERVICE_CONTROL_STATUS" | translate}}</legend>
+      <div class="detail-container">
+        <div class="detail-line">
+          <span>{{ 'SERVICE.SERVICE_CONTROL_NAME' | translate }}:
+            <span class="status-value">{{service.service_name}}</span>
+          </span>
+          <span>{{ 'SERVICE.STATUS' | translate }}:
+            <span [ngClass]="getStatusClass(service.service_status)" class="status-value">
+              {{getServiceStatus(service.service_status) | translate}}</span>
+          </span>
+          <span>{{ 'SERVICE.SERVICE_CONTROL_INSTANCE' | translate }}:
+            <span class="status-value"></span>
+          </span>
+        </div>
+        <div class="detail-line">
+          <span>{{ 'SERVICE.SERVICE_CONTROL_REASON' | translate }}:
+          <span class="status-value">{{reason}}</span>
+          </span>
+        </div>
+        <div class="detail-line">
+          <span>{{ 'SERVICE.SERVICE_CONTROL_POD' | translate }}:
+           <span class="status-value"> </span>
+          </span>
+          <span>{{ 'SERVICE.SERVICE_CONTROL_POD_STATUS' | translate }}:
+            <span class="status-value"> </span>
+          </span>
+          <span>{{ 'SERVICE.SERVICE_CONTROL_CPU_USAGE' | translate }}:
+            <span class="status-value"> </span>
+          </span>
+          <span>{{ 'SERVICE.SERVICE_CONTROL_MEM_USAGE' | translate }}:
+            <span class="status-value"> </span>
+          </span>
+        </div>
+      </div>
+    </fieldset>
+    <div [ngSwitch]="actionMethod">
+      <ng-template [ngSwitchCase]="0">
+        <div class="utilization-container">
+          <cs-input [inputLabel]="'SERVICE.SERVICE_CONTROL_CPU_UTILIZATION_CURRENT'| translate"
+                    [disabled]="true"
+                    [simpleFiled]="'50%'">
+          </cs-input>
+          <cs-input [inputLabel]="'SERVICE.SERVICE_CONTROL_CPU_UTILIZATION_QUALIFIED'| translate"
+                    [disabled]="isActionInWIP"
+                    [simpleFiled]="'55%'">
+          </cs-input>
+        </div>
+        <div class="scale-line">
+          <input [disabled]="isActionInWIP" title="" type="radio" id="manually" name="scaleMethod"
+                 (change)="setScaleMethod(1)">
+          <label class="margin-left-10" for="manually">
+            {{"SERVICE.SERVICE_CONTROL_MANUALLY_SCALE"|translate}}
+          </label>
+          <span *ngIf="scaleModule == 1"
+                class="margin-left-20">
+            {{"SERVICE.SERVICE_CONTROL_INSTANCE_NUMBER"|translate}}:
+          </span>
+          <cs-dropdown *ngIf="scaleModule == 1"
+                       class="base-margin-left"
+                       [dropdownDisabled]="isActionInWIP"
+                       [dropdownWidth]="100"
+                       [dropdownHideSearch]="true"
+                       [dropdownList]="dropDownListNum"
+                       (onChange)="scaleNum = $event">
+          </cs-dropdown>
+        </div>
+        <div class="scale-line">
+          <input [disabled]="isActionInWIP" title="" type="radio" id="auto" name="scaleMethod"
+                 (change)="setScaleMethod(2)">
+          <label class="margin-left-10" for="auto">
+            {{"SERVICE.SERVICE_CONTROL_AUTO_SCALE"|translate}}
+          </label>
+        </div>
+      </ng-template>
+      <ng-template [ngSwitchCase]="1">
+        <table class="table">
+          <caption *ngIf="isGetServiceImagesWIP" class="spinner spinner-md"></caption>
+          <thead>
+          <tr>
+            <th class="left">{{"SERVICE.SERVICE_CONTROL_IMAGE_NAME"|translate}}</th>
+            <th class="left">{{"SERVICE.SERVICE_CONTROL_IMAGE_TAG"|translate}}</th>
+            <th class="left">{{"SERVICE.SERVICE_CONTROL_UPDATE_TAG"|translate}}</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr class="btn-primary image-tag-line" *ngFor="let imageIndex of imageList">
+            <td class="left image-name">{{imageIndex.image_name}}</td>
+            <td class="left image-tag">{{imageIndex.image_tag}}</td>
+            <td class="left" [ngClass]="{'change':imageIndex.image_tag != imageTagSelected.get(imageIndex.image_name)}">
+              <cs-dropdown [dropdownDefaultText]="imageIndex.image_tag"
+                           [dropdownWidth]="150"
+                           [dropdownList]="imageTagList.get(imageIndex.image_name)"
+                           [dropdownListTextKey]="'image_tag'"
+                           [dropdownTitleFontSize]="14"
+                           [dropdownDisabled]="isActionInWIP"
+                           (onChange)="changeImageTag(imageIndex.image_name,$event)">
+              </cs-dropdown>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </ng-template>
+    </div>
+  </div>
+  <div class="modal-footer footer">
+    <button type="button" class="btn" [disabled]="isActionInWIP" (click)="isOpen = false">
+      {{ 'BUTTON.CANCEL' | translate }}
+    </button>
+    <button type="button" class="btn btn-primary" [disabled]="!actionEnable" (click)="actionExecute()">
+      {{ 'BUTTON.CONFIRM' | translate }}
+    </button>
+    <span *ngIf="isActionInWIP" class="spinner spinner-sm"></span>
+  </div>
+</clr-modal>

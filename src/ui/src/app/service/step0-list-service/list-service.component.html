@@ -1,13 +1,17 @@
-<service-detail ></service-detail>
+<service-detail></service-detail>
+<service-control *ngIf="isServiceControlOpen"
+                 [(isOpen)]="isServiceControlOpen"
+                 [service]="serviceControlData">
+</service-control>
 <div class="row flex-items-xs-right">
   <button class="btn btn-primary"
-          [disabled]="createActionIsDisabled"
-          (click)="createService()">{{ 'SERVICE.CREATE_SERVICE' | translate }}
+          (click)="createService()">
+    {{ 'SERVICE.CREATE_SERVICE' | translate }}
   </button>
 </div>
 <div class="row">
   <div class="col-xs-12">
-    <clr-datagrid>
+    <clr-datagrid (clrDgRefresh)="retrieve($event)" [clrDgLoading]="isInLoading">
       <clr-dg-column>{{ 'SERVICE.SERVICE_NAME' | translate }}</clr-dg-column>
       <clr-dg-column>{{ 'SERVICE.PROJECT_NAME' | translate }}</clr-dg-column>
       <clr-dg-column>{{ 'SERVICE.OWNER' | translate }}</clr-dg-column>
@@ -18,26 +22,50 @@
       <clr-dg-row *ngFor="let s of services">
         <clr-dg-cell>{{s.service_name}}</clr-dg-cell>
         <clr-dg-cell>{{s.service_project_name}}</clr-dg-cell>
-        <clr-dg-cell>{{s.service_owner}}</clr-dg-cell>
+        <clr-dg-cell>{{s.service_owner_name}}</clr-dg-cell>
         <clr-dg-cell>{{s.service_creation_time | date: 'short'}}</clr-dg-cell>
-        <clr-dg-cell>{{ getServicePublic(s.service_public) | translate }}</clr-dg-cell>
-        <clr-dg-cell>{{ getServiceStatus(s.service_status) | translate }}</clr-dg-cell>
         <clr-dg-cell>
-          <a *ngIf="s.service_status === 2" href="javascript:void(0)" (click)="confirmToServiceAction(s, 'TOGGLE')">
+          <input [checkbox-revert]="checkboxRevertInfo" type="checkbox" id="chkPublic"
+                 [checked]="s.service_public === 1" (click)="toggleServicePublic(s,$event)">
+          <label for="chkPublic"></label>
+        </clr-dg-cell>
+        <clr-dg-cell>
+          <span [ngClass]="getStatusClass(s.service_status)">
+            {{ getServiceStatus(s.service_status) | translate }}
+          </span>
+        </clr-dg-cell>
+        <clr-dg-cell>
+          <a *ngIf="serviceInStoppedStatus(s)"
+             (click)="confirmToServiceAction(s, 'TOGGLE')"
+             href="javascript:void(0)">
             <clr-icon shape="play"></clr-icon>
           </a>
-          <a *ngIf="s.service_status === 1" href="javascript:void(0)" (click)="confirmToServiceAction(s, 'TOGGLE')">
+          <a *ngIf="serviceCanChangePauseStatus(s)"
+             (click)="confirmToServiceAction(s, 'TOGGLE')"
+             href="javascript:void(0)">
             <clr-icon shape="pause"></clr-icon>
           </a>
           <a href="javascript:void(0)">
-            <clr-icon shape="trash" (click)="confirmToServiceAction(s, 'DELETE')"></clr-icon>
+            <clr-icon shape="trash" class="delete"
+                      [ngClass]="{'disabled':serviceDeleteStatusDisabled(s)}"
+                      (click)="confirmToServiceAction(s, 'DELETE')">
+            </clr-icon>
           </a>
-          <a href="javascript:void(0)" (click)="openServiceDetail(s.service_name)">
+          <a href="javascript:void(0)"
+             (click)="openServiceDetail(s)">
             <clr-icon shape="info-standard"></clr-icon>
+          </a>
+          <a href="javascript:void(0)"
+             (click)="openServiceControl(s)">
+            <clr-icon shape="wrench"></clr-icon>
           </a>
         </clr-dg-cell>
       </clr-dg-row>
-      <clr-dg-footer>{{services ? services.length : 0}} {{ 'DATAGRID.ITEMS' | translate }}</clr-dg-footer>
+      <clr-dg-footer>
+        {{services ? services.length : 0}} {{ 'DATAGRID.ITEMS' | translate }}
+        <clr-dg-pagination #pagination [clrDgTotalItems]="totalRecordCount" [(clrDgPage)]="pageIndex"
+                           [clrDgPageSize]="pageSize"></clr-dg-pagination>
+      </clr-dg-footer>
     </clr-datagrid>
   </div>
 </div>

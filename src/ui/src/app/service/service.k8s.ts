@@ -1,21 +1,16 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
-import { Service } from './service';
 import { AppInitService } from "../app.init.service";
-import { Http, Headers, RequestOptions } from "@angular/http";
+import { Http, Headers, RequestOptions, Response, RequestOptionsArgs } from "@angular/http";
 import { Project } from "../project/project";
-import { Image, ImageDetail } from "../image/image";
-import {
-  ImageDockerfile, ServiceStep2NewImageType, ServiceStep4Output,
-  ServiceStep6Output
-} from "./service-step.component";
+import { BuildImageDockerfileData, Image, ImageDetail } from "../image/image";
+import { ImageIndex, ServerServiceStep, ServiceStepPhase, UiServiceFactory, UIServiceStepBase } from "./service-step.component";
 
 @Injectable()
 export class K8sService {
-  stepSource: Subject<number> = new Subject<number>();
-  step$: Observable<number> = this.stepSource.asObservable();
-  stepData: Map<number, Object>;
+  stepSource: Subject<{index: number, isBack: boolean}> = new Subject<{index: number, isBack: boolean}>();
+  step$: Observable<{index: number, isBack: boolean}> = this.stepSource.asObservable();
 
   get defaultHeader(): Headers {
     let headers = new Headers();
@@ -26,132 +21,115 @@ export class K8sService {
 
   constructor(private http: Http,
               private appInitService: AppInitService) {
-    this.stepData = new Map<number, Object>();
   }
 
-  clearStepData() {
-    this.stepData.clear();
+  cancelBuildService(): void {
+    this.deleteServiceConfig()
+      .then(isDelete => {
+        this.stepSource.next({index: 0, isBack: false});
+      })
+      .catch(() => {
+      });
   }
 
-  setStepData(step: number, Data: Object) {
-    this.stepData.set(step, Data);
-    console.log(Data);
-  }
-
-  buildImage(imageData: ServiceStep2NewImageType): Promise<boolean> {
-    return this.http.post(`/api/v1/images/building`, imageData, {
-      headers: this.defaultHeader
+  checkServiceExist(projectName: string, serviceName: string): Promise<any> {
+    return this.http.get(`/api/v1/services/exists`, {
+      headers: this.defaultHeader,
+      params: {project_name: projectName, service_name: serviceName}
     }).toPromise()
-      .then(resp => {
-        this.appInitService.chainResponse(resp);
-        return resp.status == 200;
+      .then((res: Response) => this.appInitService.chainResponse(res))
+      .catch(err => Promise.reject(err));
+  }
+
+  getServiceConfig(phase: ServiceStepPhase): Promise<UIServiceStepBase> {
+    return this.http.get(`/api/v1/services/config`, {
+      headers: this.defaultHeader,
+      params: {phase: phase}
+    }).toPromise()
+      .then((res: Response) => {
+        this.appInitService.chainResponse(res);
+        let stepBase = UiServiceFactory.getInstance(phase);
+        return stepBase.serverToUi(res.json());
       })
       .catch(err => Promise.reject(err));
   }
 
-  getContainerDefaultInfo(image_name: string, image_tag: string, project_name: string): Promise<ImageDockerfile> {
+  setServiceConfig(config: ServerServiceStep): Promise<any> {
+    let option: RequestOptionsArgs = {
+      headers: this.defaultHeader,
+      params: {
+        phase: config.phase,
+        project_id: config.project_id,
+        service_name: config.service_name,
+        instance: config.instance
+      }
+    };
+    return this.http.post(`/api/v1/services/config`, config.postData, option)
+      .toPromise()
+      .then((res: Response) => this.appInitService.chainResponse(res))
+      .catch(err => Promise.reject(err));
+  }
+
+  deleteServiceConfig(): Promise<any> {
+    return this.http
+      .delete(`/api/v1/services/config`, {headers: this.defaultHeader})
+      .toPromise()
+      .then((res: Response) => {
+        this.appInitService.chainResponse(res);
+      })
+      .catch(err => Promise.reject(err));
+  }
+
+  deleteDeployment(serviceId: number): Promise<any> {
+    return this.http
+      .delete(`/api/v1/services/${serviceId}/deployment`, {headers: this.defaultHeader})
+      .toPromise()
+      .then((res: Response) => this.appInitService.chainResponse(res))
+      .catch(err => Promise.reject(err));
+  }
+
+  serviceDeployment(): Promise<number> {
+    return this.http.post(`/api/v1/services/deployment`, {}, {
+      headers: this.defaultHeader
+    }).toPromise()
+      .then((res: Response) => {
+        this.appInitService.chainResponse(res);
+        let resJson = res.json();
+        return resJson["project_id"]
+      })
+      .catch(err => Promise.reject(err));
+  }
+
+  getContainerDefaultInfo(image_name: string, image_tag: string, project_name: string): Promise<BuildImageDockerfileData> {
     return this.http.get(`/api/v1/images/dockerfile`, {
       headers: this.defaultHeader,
       params: {image_name: image_name, project_name: project_name, image_tag: image_tag}
     }).toPromise()
-      .then(res => {
+      .then((res: Response) => {
         this.appInitService.chainResponse(res);
         return res.json();
       })
       .catch(err => Promise.reject(err));
-  }
-
-  serviceDeployment(postData: ServiceStep4Output): Promise<ServiceStep6Output> {
-    return this.http.post(`/api/v1/services/${postData.service_id}/deployment`, postData, {
-      headers: this.defaultHeader
-    }).toPromise()
-      .then(res => {
-        this.appInitService.chainResponse(res);
-        return res.json();
-      })
-      .catch(err => Promise.reject(err));
-  }
-
-  getDockerFilePreview(imageData: ServiceStep2NewImageType): Promise<string> {
-    return this.http.post(`/api/v1/images/preview`, imageData, {
-      headers: this.defaultHeader
-    }).toPromise()
-      .then(res => {
-        this.appInitService.chainResponse(res);
-        return res.text();
-      })
-      .catch(err => Promise.reject(err));
-  }
-
-  getFileList(formData: FormData): Promise<Array<{path: string, file_name: string, size: number}>> {
-    let headers = new Headers();
-    headers.append('token', this.appInitService.token);
-    let options = new RequestOptions({headers: headers});
-    return this.http.post(`/api/v1/files/list`, formData, options).toPromise()
-      .then(resp => {
-        this.appInitService.chainResponse(resp);
-        return resp.json();
-      })
-      .catch(err => Promise.reject(err));
-  }
-
-  removeFile(formData: FormData): Promise<boolean> {
-    let headers = new Headers();
-    headers.append('token', this.appInitService.token);
-    let options = new RequestOptions({headers: headers});
-    return this.http.post(`/api/v1/files/remove`, formData, options).toPromise()
-      .then(resp => {
-        this.appInitService.chainResponse(resp);
-        return resp.status == 200;
-      })
-      .catch(err => Promise.reject(err));
-  }
-
-  uploadFile(formData: FormData): Promise<boolean> {
-    let headers = new Headers();
-    headers.append('token', this.appInitService.token);
-    let options = new RequestOptions({headers: headers});
-    return this.http.post(`/api/v1/files/upload`, formData, options).toPromise()
-      .then(resp => {
-        this.appInitService.chainResponse(resp);
-        return resp.status == 200;
-      })
-      .catch(err => Promise.reject(err));
-  }
-
-  getServiceID(postData: {project_name: string, project_id: number}) {
-    return this.http.post(`/api/v1/services`, postData, {
-      headers: this.defaultHeader
-    }).toPromise()
-      .then(res => {
-        this.appInitService.chainResponse(res);
-        return res.json();
-      })
-      .catch(err => Promise.reject(err));
-  }
-
-  getStepData(step: number): Object {
-    return this.stepData.get(step);
   }
 
   getProjects(projectName?: string): Promise<Project[]> {
     return this.http.get('/api/v1/projects', {
       headers: this.defaultHeader,
-      params: {'project_name': projectName}
+      params: {'project_name': projectName, 'member_only': 1}
     }).toPromise()
-      .then(resp => {
-        this.appInitService.chainResponse(resp);
-        return resp.json();
+      .then((res: Response) => {
+        this.appInitService.chainResponse(res);
+        return res.json();
       })
       .catch(err => Promise.reject(err));
   }
 
-  getDeployStatus(serviceName: string): Promise<Object> {
+  getDeployStatus(serviceId: number): Promise<Object> {
     let options = new RequestOptions({
       headers: this.defaultHeader
     });
-    return this.http.get(`/api/v1/services/status/${serviceName}`, options).toPromise()
-      .then(res => {
+    return this.http.get(`/api/v1/services/${serviceId}/status`, options).toPromise()
+      .then((res: Response) => {
         this.appInitService.chainResponse(res);
         return res.json();
       })
@@ -168,9 +146,9 @@ export class K8sService {
       }
     });
     return this.http.get("/api/v1/images", options).toPromise()
-      .then(res => {
+      .then((res: Response) => {
         this.appInitService.chainResponse(res);
-        return res.json();
+        return res.json() || [];
       })
       .catch(err => Promise.reject(err));
   }
@@ -181,29 +159,35 @@ export class K8sService {
     });
     return this.http.get(`/api/v1/images/${image_name}`, options)
       .toPromise()
-      .then(res => {
+      .then((res: Response) => {
         this.appInitService.chainResponse(res);
         return res.json();
       })
       .catch(err => Promise.reject(err));
   }
 
-  getServices(): Promise<Service[]> {
+  getServices(pageIndex?: number, pageSize?: number): Promise<any> {
     return this.http
-      .get(`/api/v1/services`, {headers: this.defaultHeader})
+      .get(`/api/v1/services`, {
+        headers: this.defaultHeader,
+        params: {
+          'page_index': pageIndex,
+          'page_size': pageSize
+        }
+      })
       .toPromise()
-      .then(res => {
+      .then((res: Response) => {
         this.appInitService.chainResponse(res);
-        return <Service[]>res.json();
+        return res.json();
       })
       .catch(err => Promise.reject(err));
   }
 
-  getServiceDetail(serviceName:string):Promise<Object>{
+  getServiceDetail(serviceId: number): Promise<any> {
     return this.http
-      .get(`/api/v1/services/info/${serviceName}`, {headers: this.defaultHeader})
+      .get(`/api/v1/services/${serviceId}/info`, {headers: this.defaultHeader})
       .toPromise()
-      .then(res => {
+      .then((res: Response) => {
         this.appInitService.chainResponse(res);
         return res.json();
       })
@@ -214,21 +198,23 @@ export class K8sService {
     return this.http
       .delete(`/api/v1/services/${serviceID}`, {headers: this.defaultHeader})
       .toPromise()
-      .then(res => {
-        this.appInitService.chainResponse(res);
-        return res;
-      })
+      .then(res => this.appInitService.chainResponse(res))
       .catch(err => Promise.reject(err));
   }
 
-  toggleService(serviceID: number, isStart: 0 | 1): Promise<any> {
+  toggleServiceStatus(serviceID: number, isStart: 0 | 1): Promise<any> {
     return this.http
       .put(`/api/v1/services/${serviceID}/toggle`, {service_toggle: isStart}, {headers: this.defaultHeader})
       .toPromise()
-      .then(res => {
-        this.appInitService.chainResponse(res);
-        return res;
-      })
+      .then(res => this.appInitService.chainResponse(res))
+      .catch(err => Promise.reject(err));
+  }
+
+  toggleServicePublicity(serviceID: number, service_togglable: 0 | 1): Promise<any> {
+    return this.http
+      .put(`/api/v1/services/${serviceID}/publicity`, {service_public: service_togglable}, {headers: this.defaultHeader})
+      .toPromise()
+      .then(res => this.appInitService.chainResponse(res))
       .catch(err => Promise.reject(err));
   }
 
@@ -242,7 +228,7 @@ export class K8sService {
         }
       })
       .toPromise()
-      .then(res => {
+      .then((res: Response) => {
         this.appInitService.chainResponse(res);
         return res.text();
       })
@@ -251,12 +237,94 @@ export class K8sService {
 
   getNodesList(): Promise<any> {
     return this.http
-      .get(`/api/v1/nodes`, { headers: this.defaultHeader })
+      .get(`/api/v1/nodes`, {headers: this.defaultHeader})
       .toPromise()
-      .then(res=>{
+      .then((res: Response) => {
         this.appInitService.chainResponse(res);
         return res.json();
       })
-      .catch(err=>Promise.reject(err));
+      .catch(err => Promise.reject(err));
+  }
+
+  addServiceRoute(serviceURL: string, serviceIdentity: string): void {
+    this.http.post(`/api/v1/services/info`, {}, {
+      headers: this.defaultHeader,
+      params: {
+        'service_url': serviceURL,
+        'service_identity': serviceIdentity
+      }
+    }).toPromise()
+      .then(res => this.appInitService.chainResponse(res))
+      .catch(err => Promise.reject(err));
+  }
+
+  setServiceScale(serviceID: number, scale: number): Promise<any> {
+    return this.http
+      .put(`/api/v1/services/${serviceID}/scale`, {service_scale: scale}, {headers: this.defaultHeader})
+      .toPromise()
+      .then(res => this.appInitService.chainResponse(res))
+      .catch(err => Promise.reject(err));
+  }
+
+  getCollaborativeService(serviceName: string, projectName): Promise<Array<string>> {
+    return this.http
+      .get(`/api/v1/services/selectservices`, {
+        headers: this.defaultHeader, params: {
+          service_name: serviceName,
+          project_name: projectName
+        }
+      })
+      .toPromise()
+      .then((res: Response) => {
+        this.appInitService.chainResponse(res);
+        return res.json() || Array<string>();
+      })
+      .catch(err => Promise.reject(err));
+  }
+
+  getServiceYamlFile(projectName: string, serviceName: string, yamlType: string): Promise<string> {
+    return this.http
+      .get(`/api/v1/services/yaml/download`, {
+        headers: this.defaultHeader, params: {
+          service_name: serviceName,
+          project_name: projectName,
+          yaml_type: yamlType
+        }
+      })
+      .toPromise()
+      .then((res: Response) => {
+        this.appInitService.chainResponse(res);
+        return res.text();
+      })
+      .catch(err => Promise.reject(err));
+  }
+
+  getServiceImages(projectName: string, serviceName: string): Promise<Array<ImageIndex>> {
+    return this.http
+      .get(`/api/v1/services/rollingupdate`, {
+        headers: this.defaultHeader, params: {
+          service_name: serviceName,
+          project_name: projectName
+        }
+      })
+      .toPromise()
+      .then((res: Response) => {
+        this.appInitService.chainResponse(res);
+        return res.json();
+      })
+      .catch(err => Promise.reject(err));
+  }
+
+  updateServiceImages(projectName: string, serviceName: string, postData: Array<ImageIndex>): Promise<any> {
+    return this.http
+      .post(`/api/v1/services/rollingupdate`, postData, {
+        headers: this.defaultHeader, params: {
+          service_name: serviceName,
+          project_name: projectName
+        }
+      })
+      .toPromise()
+      .then((res) => this.appInitService.chainResponse(res))
+      .catch(err => Promise.reject(err));
   }
 }

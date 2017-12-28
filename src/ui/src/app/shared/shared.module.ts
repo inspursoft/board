@@ -10,12 +10,21 @@ import { CheckItemExistingDirective } from './directives/check-item-existing.dir
 import { CheckItemIdenticalDirective } from './directives/check-item-identical.directive';
 
 import { MessageService } from './message-service/message.service';
-import { AuthGuard } from './auth-guard.service';
+import { AuthGuard, ServiceGuard } from './auth-guard.service';
 import { CheckItemPatternDirective } from "./directives/check-item-pattern.directive";
 import { ChangePasswordComponent } from "./change-password/change-password.component";
 import { AccountSettingComponent } from "./account-setting/account-setting.component";
 
 import { ValidateOnBlurDirective } from './directives/validate-onblur.directive';
+import { CsDropdownComponent } from "./cs-components-library/cs-dropdown/cs-dropdown.component";
+import { WebsocketService } from './websocket-service/websocket.service';
+import { CsSearchInput } from "./cs-components-library/cs-search-input/cs-search-input.component";
+import { CheckboxRevert } from "./directives/checkbox-revert.directive";
+import { CsInputComponent } from "./cs-components-library/cs-input/cs-input.component";
+import { CsInputArrayComponent } from "./cs-components-library/cs-input-array/cs-input-array.component";
+import { CreateImageComponent } from "../image/image-create/image-create.component";
+import { EnvironmentValueComponent } from "./environment-value/environment-value.component";
+import { SizePipe } from "./pipes/size-pipe";
 
 @NgModule({
   imports: [
@@ -33,7 +42,15 @@ import { ValidateOnBlurDirective } from './directives/validate-onblur.directive'
     CheckItemPatternDirective,
     ValidateOnBlurDirective,
     ChangePasswordComponent,
-    AccountSettingComponent
+    CsDropdownComponent,
+    AccountSettingComponent,
+    CreateImageComponent,
+    EnvironmentValueComponent,
+    CsSearchInput,
+    CsInputComponent,
+    CsInputArrayComponent,
+    CheckboxRevert,
+    SizePipe
   ],
   exports: [
     CoreModule,
@@ -45,12 +62,22 @@ import { ValidateOnBlurDirective } from './directives/validate-onblur.directive'
     GlobalMessageComponent,
     CheckItemExistingDirective,
     CheckItemIdenticalDirective,
+    CsDropdownComponent,
     CheckItemPatternDirective,
-    ValidateOnBlurDirective
+    ValidateOnBlurDirective,
+    CreateImageComponent,
+    EnvironmentValueComponent,
+    CsSearchInput,
+    CsInputComponent,
+    CsInputArrayComponent,
+    CheckboxRevert,
+    SizePipe
   ],
   providers: [
     AuthGuard,
-    MessageService
+    ServiceGuard,
+    MessageService,
+    WebsocketService
   ]
 })
 export class SharedModule {}

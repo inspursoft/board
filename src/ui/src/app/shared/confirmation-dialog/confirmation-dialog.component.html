@@ -13,7 +13,7 @@
       <button type="button" class="btn btn-danger" (click)="confirm()">{{ 'BUTTON.DELETE' | translate }}</button>
     </ng-template>
     <ng-template [ngSwitchCase]="3">
-      <button type="button" class="btn btn-outline" (click)="opened = false">{{ 'BUTTON.NO' | translate }}</button>
+      <button type="button" class="btn btn-outline" (click)="cancel()">{{ 'BUTTON.NO' | translate }}</button>
       <button type="button" class="btn btn-primary" (click)="confirm()">{{ 'BUTTON.YES' | translate }}</button>
     </ng-template>
   </div>

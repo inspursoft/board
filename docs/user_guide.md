@@ -1,4 +1,4 @@
-# User Guide  
+## User Guide  
 ## Overview  
 This guide walks you through the fundamentals of using Board. You'll learn how to use Board to:  
 
@@ -17,7 +17,7 @@ This guide walks you through the fundamentals of using Board. You'll learn how t
 * Q&A
 
 ## User account
-Board supports databse authentication modes, will support LDAP next release:  
+Board supports databse authentication modes and support LDAP mode:  
 
 * **Database(db_auth)**  
 
@@ -27,24 +27,21 @@ Board supports databse authentication modes, will support LDAP next release:
 	
 	When registering or adding a new user, the username and email must be unique in the Board system. The password must contain at least 8 characters with 1 lowercase letter, 1 uppercase letter and 1 numeric character.  
 	
-	When you forgot your password, you can follow the below steps to reset the password(need SMTP server support):  
-
-	1. Click the link "Forgot Password" in the sign in page.  
-	2. Input the email address entered when you signed up, an email will be sent out to you for password reset.  
-	3. After receiving the email, click on the link in the email which directs you to a password reset web page.  
-	4. Input your new password and click "Save".  
-	
 * **LDAP/Active Directory (ldap_auth)**  
 
-	Support in next release
+	Under this authentication mode, users whose credentials are stored in an external LDAP or AD server can log in to Board directly.  
+	
+	When an LDAP/AD user logs in by *username* and *password*, Board binds to the LDAP/AD server with the **"LDAP Search DN"** and **"LDAP Search Password"** described in [installation guide](installation_guide.md). If it succeeded, Board looks up the user under the LDAP entry **"LDAP Base DN"** including substree. The attribute (such as uid, cn) specified by **"LDAP UID"** is used to match a user with the *username*. If a match is found, the user's *password* is verified by a bind request to the LDAP/AD server.  
+	
+	Self-registration, changing password and resetting password are not supported under LDAP/AD authentication mode because the users are managed by LDAP or AD.  
 
 ## Role Based Access Control(RBAC)  
 
 Board manages services through projects on container service platform. Users can be added into one services as a member with 3 different roles:  
 
-* **Guest**: Guest has read-only privilege for public project and sevices.
-* **ProjectMember**: Developer has read and write privileges for a project.
-* **ProjectAdmin**: When creating a new project, you will be assigned the "ProjectAdmin" role to the project. Besides read-write privileges, the "ProjectAdmin" also has some management privileges, such as adding and removing members.
+* **Anonymous**: Can search public project and sevices but only-read.
+* **System Admin**: Have supper role to read and write all project.
+* **Restry User**: When creating a new project incluce privilege and public, you will be assigned the "ProjectMember role to the project. the "ProjectMember" and read and write the project but can not delete the project.
 
 Besides the above three roles, there are two system-wide roles:  
 
@@ -77,18 +74,14 @@ You can update or remove a member by clicking the left arrow to remove or right 
 
 <img src="img/userguide/add-remove-members.png" width="100" alt="Board add remove members">
 
-### Changing member role
-
-You can change member's role by clicking role radio button below.
-
-<img src="img/userguide/change-member-role.png" width="100" alt="Board change member role">
-
 ## Manage Services
 
 Board supports creating container service. All services must be grouped by projects. Click into "create service", the first step is to select a project. if there is no project, please create a project first. 
 
 ### Build Images
-On the "select images" page, select "Create Custom Image" from the pull-down menu to build new image.
+On the "select images" page, select "Create Custom Image" from the pull-down menu to build new image. Or on the "images" page, click "create image"
+Surpport three method to create images that are "Use template for creaton", "Use Dockerfile for creation", "Create by DevOps method"(will be surpport)
+Use template for creaton：
 There will be a pop-up window for user to input image parameters for building.
 * New Image Name
 * Image Tag
@@ -99,6 +92,13 @@ There will be a pop-up window for user to input image parameters for building.
 * Image Run
 * Image Expose
 * Upload External Archives
+* Command
+
+Use Dockerfile for creation:
+There will be a pop-up window for user to input image parameters for building.
+* New Image Name
+* Image Tag
+* Select Dockerfile for build image
 
 After fill in all required parameters, click "Build image" to start building the new image.
 If build successfully, the new image will be added into Board's registry.
@@ -119,6 +119,7 @@ The following parameters could be customized for containers of this service.
 Next step to configure service.
 The following parameters could be customized for this service.
 * Service Name
+* External service
 * Instance
 
 In the advanced configuration, can assign node pord for external service.
@@ -182,6 +183,69 @@ Deploy a service "demoshow"
 * Service can be showed in service list
 
 <img src="img/userguide/demoshow-ok.PNG" width="100" alt="Service success">
+
+#### Example inspur bigdata
+Deploy a service "bigdata" which is a containerized project for the Inspur bigdata software platform.
+
+* Start to create a service
+
+<img src="img/userguide/bigdata-a.PNG" width="100" alt="create a service">
+
+* Select a project
+
+<img src="img/userguide/bigdata-b.PNG" width="100" alt="Select a project">
+
+* Add images for this service
+
+<img src="img/userguide/bigdata-c.PNG" width="100" alt="add images">
+
+* Select images for this service
+
+<img src="img/userguide/bigdata-d.PNG" width="100" alt="select images">
+
+* Select two images for this service
+
+<img src="img/userguide/bigdata-e.PNG" width="100" alt="select two images">
+
+* Configure containers
+
+<img src="img/userguide/bigdata-f.PNG" width="100" alt="Configure containers">
+
+* Configure storage volume for the mysql container
+
+<img src="img/userguide/bigdata-g.PNG" width="100" alt="Configure storage volume">
+
+* Configure environment parameters
+
+<img src="img/userguide/bigdata-i.PNG" width="100" alt="Configure environment parameters">
+
+* Configure container ports
+
+<img src="img/userguide/bigdata-j.PNG" width="100" alt="Configure container ports">
+
+* Configure the bigdata service
+
+<img src="img/userguide/bigdata-k.PNG" width="100" alt="Configure bigdata service">
+
+* Configure the external node port
+
+<img src="img/userguide/bigdata-l.PNG" width="100" alt="Configure the external node port">
+
+* Deploy the bigdata service
+
+<img src="img/userguide/bigdata-m.PNG" width="100" alt="Deploy the bigdata service">
+
+<img src="img/userguide/bigdata-n.PNG" width="100" alt="Deployed the bigdata service">
+
+* The bigdata service is deployed
+
+<img src="img/userguide/bigdata-p.PNG" width="100" alt="bigdata service deployed">
+
+<img src="img/userguide/bigdata-q.PNG" width="100" alt="bigdata service deployed">
+
+* Monitor the bigdata service status on Board
+
+<img src="img/userguide/bigdata-o.PNG" width="100" alt="Monitor the bigdata service status">
 
 ## Search Projects, Services, Users and Images
 Board search  engine could search project, service, users and image.

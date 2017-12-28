@@ -1,11 +1,16 @@
 #!/bin/bash
 set -e
 
-cd /board_src
-rm -rf dist/*
+rm -rf /board_src/dist
 
-cat ./package.json
+cp -R /board_src/* /board_resource/.
+
+cd /board_resource
+
+cat package.json
 
 npm install
 
 ng build
+
+cp -R dist /board_src

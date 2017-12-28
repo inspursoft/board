@@ -43,7 +43,7 @@ func GetProjectMembers(project model.Project) ([]*model.ProjectMember, error) {
 	sql := `select pm.id, pm.user_id, u.username, pm.project_id, pm.role_id
 		from user u left join project_member pm 
 				on u.id = pm.user_id 
-	  where pm.project_id = ?`
+		where pm.project_id = ?`
 	var members []*model.ProjectMember
 	_, err := o.Raw(sql, project.ID).QueryRows(&members)
 	if err != nil {

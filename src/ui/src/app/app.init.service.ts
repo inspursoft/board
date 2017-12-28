@@ -22,7 +22,8 @@ export class AppInitService {
   _currentLang: string;
 
   currentUser: {[key: string]: any} = null;
-
+  systemInfo: {[key: string]: any} = null;
+  
   set token(t: string) {
     this._tokenString = t;
   }
@@ -64,6 +65,14 @@ export class AppInitService {
         this.currentUser = res.json();
         Promise.resolve(this.currentUser);
       })
+      .catch(err=>Promise.reject(err));
+  }
+
+  getSystemInfo(): Promise<any> {
+    return this.http
+      .get(`/api/v1/systeminfo`)
+      .toPromise()
+      .then(res=>res.json())
       .catch(err=>Promise.reject(err));
   }
   

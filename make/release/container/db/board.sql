@@ -320,11 +320,21 @@ DROP TABLE IF EXISTS `log`;
         `project_name` VARCHAR(255) NOT NULL DEFAULT '',
         `comment` VARCHAR(255) NOT NULL DEFAULT '',
         `owner_id` INT NOT NULL,
+        `owner_name` VARCHAR(255) DEFAULT NULL,
         `status` SMALLINT(1) NOT NULL,
         `public` SMALLINT(1) NULL,
         `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
         `creation_time` datetime DEFAULT NULL,
         `update_time` datetime DEFAULT NULL,
+        `service_config` TEXT,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
+
+    CREATE TABLE `board`.`config` (
+        `name` varchar(50) NOT NULL DEFAULT '',
+        `value` varchar(255) DEFAULT NULL,
+        `comment` varchar(50) DEFAULT NULL,
+        PRIMARY KEY (`name`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
