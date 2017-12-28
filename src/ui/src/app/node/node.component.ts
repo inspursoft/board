@@ -31,7 +31,7 @@ export class NodeComponent implements OnInit, OnDestroy {
   @ViewChild(NodeDetailComponent) nodeDetailModal;
 
   _subscription: Subscription;
-
+  isInLoading:boolean = false;
   constructor(
     private nodeService: NodeService,
     private messageService: MessageService
@@ -68,9 +68,16 @@ export class NodeComponent implements OnInit, OnDestroy {
   }
 
   retrieve(): void {
+    this.isInLoading = true;
     this.nodeService.getNodes()
-    .then(nodes=>this.nodes = nodes)
-    .catch(err=>this.messageService.dispatchError(err));
+    .then(nodes=>{
+      this.nodes = nodes;
+      this.isInLoading = false;
+    })
+    .catch(err=>{
+      this.messageService.dispatchError(err);
+      this.isInLoading = false;
+    });
   }
 
   getStatus(status: number): string {

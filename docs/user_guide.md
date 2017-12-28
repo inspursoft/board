@@ -237,8 +237,6 @@ Deploy a service "bigdata" which is a containerized project for the Inspur bigda
 
 <img src="img/userguide/bigdata-n.PNG" width="100" alt="Deployed the bigdata service">
 
-Here is a example： 
-
 * The bigdata service is deployed
 
 <img src="img/userguide/bigdata-p.PNG" width="100" alt="bigdata service deployed">

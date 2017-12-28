@@ -6,17 +6,18 @@
                 [inputIsRequired]="true"
                 [inputPattern]="patternServiceName"
                 [inputLabel]="'SERVICE.STEP_4_SERVICE_NAME' | translate"
-                [simpleFiled]="step4Output.deployment_yaml.deployment_name"
+                [customerValidatorAsyncFunc]="checkServiceNameFun"
+                [simpleFiled]="uiData.serviceName"
                 (onCheck)="setServiceName($event)">
       </cs-input>
     </div>
     <div class="config-service-info-line">
       <span class="instance">{{"SERVICE.STEP_4_INSTANCE"|translate}}:</span>
       <cs-dropdown class="base-margin-left"
-                   [dropdownWidth]="210"
+                   [dropdownWidth]="310"
                    [dropdownDefaultText]="'1'"
                    [dropdownList]="dropDownListNum"
-                   (onChange)="step4Output.deployment_yaml.deployment_replicas = $event">
+                   (onChange)="uiData.instance = $event">
       </cs-dropdown>
     </div>
   </div>
@@ -32,21 +33,17 @@
     <span class="base-margin-left">{{"SERVICE.STEP_4_EXTERNAL_SERVICE"|translate}}:</span>
   </div>
   <div *ngIf="showExternal && showAdvanced">
-    <div class="external-container" *ngFor="let serviceExternal of serviceExternalArray;let iIndex = index">
+    <div class="external-container" *ngFor="let externalService of uiData.externalServiceList;let iIndex = index">
       <div class="external-line-container">
-        <clr-icon *ngIf="iIndex == serviceExternalArray.length - 1"
-                  class="plus-icon"
-                  shape="plus"
-                  (click)="addContainerInfo()"></clr-icon>
-        <clr-icon *ngIf="iIndex < serviceExternalArray.length - 1"
-                  class="plus-icon"
+        <clr-icon class="plus-icon"
                   shape="minus"
-                  (click)="removeContainerInfo(iIndex)"></clr-icon>
+                  (click)="removeContainerInfo(iIndex)">
+        </clr-icon>
         <span class="external-title icon">{{"SERVICE.STEP_4_CONTAINER"|translate}}:</span>
         <cs-dropdown class="base-margin-left"
-                     [dropdownList]="step3Output"
-                     [dropdownListTextKey]="'container_name'"
-                     [dropdownWidth]="210"
+                     [dropdownList]="uiPreData.containerList"
+                     [dropdownListTextKey]="'name'"
+                     [dropdownWidth]="310"
                      [dropdownDefaultText]="getContainerDropdownText(iIndex) | translate"
                      (onChange)="setExternalInfo($event, iIndex)">
         </cs-dropdown>
@@ -54,19 +51,22 @@
       <div class="external-line-container">
         <span class="external-title">{{"SERVICE.STEP_4_PORT"|translate}}:</span>
         <cs-dropdown class="base-margin-left"
-                     [dropdownDisabled]="serviceExternal.service_containername == ''"
-                     [dropdownList]="getContainerPorts(serviceExternal.service_containername)"
-                     [dropdownWidth]="210"
+                     [dropdownDisabled]="externalService.container_name == ''"
+                     [dropdownList]="getContainerPorts(externalService.container_name)"
+                     [dropdownWidth]="310"
                      [dropdownDefaultText]="getContainerPortDropdownText(iIndex) | translate"
-                     (onChange)="serviceExternal.service_containerport = $event">
+                     (onChange)="externalService.node_config.target_port = $event">
         </cs-dropdown>
       </div>
       <div class="external-line-container">
         <cs-input class="base-input"
-                  [simpleFiled]="serviceExternal.service_nodeport"
+                  [inputFiledType]="1"
+                  [simpleFiled]="externalService.node_config.node_port"
                   [disabled]="!radNode.checked"
                   [inputLabel]="'SERVICE.STEP_4_NODE_PORT' | translate"
-                  (onCheck)="setServiceNodeport($event,iIndex)">
+                  [inputMin]="30000"
+                  [inputMax]="32766"
+                  (onCheck)="setNodePort(iIndex,$event)">
         </cs-input>
         <div class="radio-inline external-radio-container">
           <input #radNode
@@ -74,16 +74,16 @@
                  type="radio"
                  [name]="'port' + iIndex"
                  [id]="'radNode' + iIndex"
-                 (change)="onRadNodeChange(iIndex)" checked>
+                 (change)="externalService.load_balancer_config.external_access = ''" checked>
           <label [for]="'radNode' + iIndex"></label>
         </div>
       </div>
       <div class="external-line-container">
         <cs-input class="base-input"
-                  [simpleFiled]="serviceExternal.service_externalpath"
+                  [simpleFiled]="externalService.load_balancer_config.external_access"
                   [disabled]="!radExternal.checked"
                   [inputLabel]="'SERVICE.STEP_4_EXTERNAL_ACCESS' | translate"
-                  (onCheck)="serviceExternal.service_externalpath = $event">
+                  (onCheck)="externalService.load_balancer_config.external_access = $event">
         </cs-input>
         <div class="radio-inline external-radio-container">
           <input #radExternal
@@ -91,11 +91,16 @@
                  type="radio"
                  [name]="'port' + iIndex"
                  [id]="'radExternal' + iIndex"
-                 (change)="onRadExternalpathChange(iIndex)">
+                 (change)="externalService.node_config.node_port = 0">
           <label [for]="'radExternal'+ iIndex"></label>
         </div>
       </div>
     </div>
+    <clr-icon class="plus-icon"
+              shape="plus"
+              (click)="addContainerInfo()">
+    </clr-icon>
+    <span class="base-margin-left">{{"SERVICE.STEP_4_EXTERNAL_SERVICE_ADD"|translate}}</span>
   </div>
   <div *ngIf="showAdvanced" class="advanced-item-container" (click)="showCollaborative = !showCollaborative">
     <div class="advanced-item-icon-container"
@@ -104,15 +109,36 @@
     </div>
     <span class="base-margin-left">{{"SERVICE.STEP_4_COLLABORATIVE"|translate}}:</span>
   </div>
-  <div class="service-container" *ngIf="showCollaborative && showAdvanced">
-    <clr-icon class="plus-icon" shape="plus"></clr-icon>
-    <span class="service">{{"SERVICE.STEP_4_SERVICE"|translate}}:</span>
-    <cs-dropdown class="base-margin-left"
-                 [dropdownList]="serviceSelectorsArray"
-                 [dropdownWidth]="210"
-                 [dropdownDefaultText]="'SERVICE.STEP_4_SELECT_SERVICE' | translate">
-    </cs-dropdown>
+  <div *ngIf="showCollaborative && showAdvanced">
+    <div style="display: flex;height: 30px;margin-top: 10px;" *ngFor="let obj of collaborativeList; let i = index">
+      <clr-icon shape="plus"
+                class="plus-icon"
+                *ngIf="i === collaborativeList.length - 1"
+                (click)="collaborativeList.push({})">
+      </clr-icon>
+      <clr-icon class="plus-icon"
+                shape="minus"
+                *ngIf="i < collaborativeList.length - 1"
+                (click)="collaborativeList.splice(collaborativeList.indexOf(obj), 1)">
+      </clr-icon>
+      <span class="service">{{"SERVICE.STEP_4_SERVICE"|translate}}:</span>
+      <cs-dropdown class="base-margin-left"
+                   [dropdownList]="collaborativeServiceList"
+                   [dropdownWidth]="310"
+                   [dropdownDefaultText]="'SERVICE.STEP_4_SELECT_SERVICE' | translate">
+      </cs-dropdown>
+    </div>
   </div>
 </div>
-<button class="btn btn-default" [disabled]="true">Test</button>
-<button class="btn btn-default" [disabled]="!isInputComponentsValid" (click)="forward()">Next</button>
+<button class="btn btn-default" (click)="cancelBuildService()">
+  {{"BUTTON.CANCEL" | translate}}
+</button>
+<button class="btn btn-default" [disabled]="true">
+  {{"BUTTON.TEST" | translate}}
+</button>
+<button class="btn btn-default" (click)="backUpStep()">
+  {{"BUTTON.BACK" | translate}}
+</button>
+<button class="btn btn-default" [disabled]="!isInputComponentsValid" (click)="forward()">
+  {{"BUTTON.NEXT" | translate}}
+</button>

@@ -98,21 +98,19 @@ export class UserService {
       .catch(err => Promise.reject(err));
   }
 
-  getUserList(username?: string,
-              user_list_page: number = 0,
-              user_list_page_size: number = 0): Promise<User[]> {
+  getUserList(username?: string, pageIndex?: number, pageSize?: number): Promise<any> {
     let options = new RequestOptions({
       headers: this.defaultHeader,
       params: {
         'username': username,
-        'user_list_page': user_list_page.toString(),
-        'user_list_page_size': user_list_page_size.toString()
+        'page_index': pageIndex,
+        'page_size': pageSize
       }
     });
     return this.http.get(`${BASE_URL}/users`, options).toPromise()
       .then(res => {
         this.appInitService.chainResponse(res);
-        return Array.from(res.json()) as User[];
+        return res.json();
       })
       .catch(err => Promise.reject(err))
   }
@@ -122,18 +120,6 @@ export class UserService {
       headers: this.defaultHeader
     });
     return this.http.put(`${BASE_URL}/users/${userID}/systemadmin`, {user_system_admin: userSystemAdmin}, options).toPromise()
-      .then(res => {
-        this.appInitService.chainResponse(res);
-        return res;
-      })
-      .catch(err => Promise.reject(err));
-  }
-
-  setUserProjectAdmin(userID: number, userProjectAdmin: number): Promise<any> {
-    let options = new RequestOptions({
-      headers: this.defaultHeader
-    });
-    return this.http.put(`${BASE_URL}/users/${userID}/projectadmin`, {user_project_admin: userProjectAdmin}, options).toPromise()
       .then(res => {
         this.appInitService.chainResponse(res);
         return res;

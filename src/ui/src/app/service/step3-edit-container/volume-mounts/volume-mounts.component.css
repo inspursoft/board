@@ -19,19 +19,6 @@ div.vol-configure-container {
   margin-bottom: 10px;
 }
 
-div.vol-title-container {
-  height: 50px;
-  display: flex;
-  align-items: center;
-  margin-top: 10px;
-}
-
-span.vol-item-title {
-  width: 180px;
-  text-align: right;
-  margin-right: 10px;
-}
-
 div.vol-confirm-container {
   width: 100%;
   height: 100px;

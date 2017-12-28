@@ -12,7 +12,6 @@ import { Subject } from 'rxjs/Subject';
 import { ROLES } from '../../shared/shared.const';
 import { MessageService } from '../../shared/message-service/message.service';
 
-
 @Component({
   selector: 'project-member',
   templateUrl: 'member.component.html'
@@ -31,9 +30,13 @@ export class MemberComponent implements OnInit {
   
   project: Project = new Project();
 
+  isLeftPane: boolean;
+  isRightPane: boolean;
+  
   doSet: boolean;
   doUnset: boolean;
 
+  alertType: string;
   hasChanged: boolean;
   changedMessage: string;
 
@@ -46,10 +49,6 @@ export class MemberComponent implements OnInit {
     private messageService: MessageService
   ){}
   
-  get roleToggleable(): boolean {
-    return (this.selectedMember.project_member_user_id !== this.currentUser.user_id && (this.currentUser.user_project_admin || this.currentUser.user_system_admin) && this.doUnset);
-  }
-
   ngOnInit(): void {
     this.currentUser = this.appInitService.currentUser;
   }
@@ -71,11 +70,6 @@ export class MemberComponent implements OnInit {
                 }
               });
             });
-            if(this.availableMembers && this.availableMembers.length > 0) {
-              this.selectedMember = this.availableMembers[0];
-              this.doSet = true;
-              this.doUnset = false;
-            }
             this.memberSubject.subscribe(changedMembers=>{
               this.availableMembers = changedMembers;
             });
@@ -97,11 +91,22 @@ export class MemberComponent implements OnInit {
 
   pickUpMember(m: Member) {
     this.selectedMember = m;
-    if(this.selectedMember.project_member_user_id === this.project.project_owner_id) { 
+    this.doSet = false;
+    this.doUnset = false;
+    let isProjectOwner = (this.project.project_owner_id === this.currentUser.user_id);
+    let isSelf = (this.currentUser.user_id === this.selectedMember.project_member_user_id);
+    let isSystemAdmin = (this.currentUser.user_system_admin === 1);
+    let isOnesProject = (this.project.project_owner_id === this.selectedMember.project_member_user_id);
+    if((isSelf && isProjectOwner) || (isSystemAdmin && isOnesProject)) {
+      this.doSet = false;
       this.doUnset = false;
+    } else { 
+      if(isProjectOwner || isSystemAdmin) {
+        this.doSet = this.isLeftPane;
+        this.doUnset = this.isRightPane;
+      }
     }
-    this.role.role_id = this.selectedMember.project_member_role_id;    
-    
+    this.role.role_id = this.selectedMember.project_member_role_id;
   }
 
   pickUpRole(r: Role) {
@@ -110,8 +115,14 @@ export class MemberComponent implements OnInit {
       .addOrUpdateProjectMember(this.project.project_id, 
         this.selectedMember.project_member_user_id, 
         this.selectedMember.project_member_role_id)
-      .then(()=>this.displayInlineMessage('PROJECT.SUCCESSFUL_CHANGED_MEMBER_ROLE', [this.selectedMember.project_member_username]))
-      .catch(err=>this.messageService.dispatchError(err, ''));
+      .then(()=>{
+        this.alertType = 'alert-info';
+        this.displayInlineMessage('PROJECT.SUCCESSFUL_CHANGED_MEMBER_ROLE', [this.selectedMember.project_member_username]);
+      })
+      .catch(err=>{
+        this.alertType = 'alert-danger';
+        this.displayInlineMessage('PROJECT.FAILED_TO_CHANGE_MEMBER_ROLE');
+      });
   }
 
   setMember(): void {
@@ -122,8 +133,14 @@ export class MemberComponent implements OnInit {
           .addOrUpdateProjectMember(this.project.project_id, 
             this.selectedMember.project_member_user_id, 
             this.selectedMember.project_member_role_id)
-          .then(()=>this.displayInlineMessage('PROJECT.SUCCESSFUL_ADDED_MEMBER',[this.selectedMember.project_member_username]))
-          .catch(err=>this.messageService.dispatchError(err, ''));
+          .then(()=>{
+            this.alertType = 'alert-info';
+            this.displayInlineMessage('PROJECT.SUCCESSFUL_ADDED_MEMBER',[this.selectedMember.project_member_username])
+          })
+          .catch(err=>{
+            this.alertType = 'alert-danger';
+            this.displayInlineMessage('PROJECT.FAILED_TO_ADD_MEMBER');
+          });
         m.isMember = true;
       }
     });
@@ -138,10 +155,13 @@ export class MemberComponent implements OnInit {
         this.projectService
           .deleteProjectMember(this.project.project_id, this.selectedMember.project_member_user_id)
           .then(()=>{
+            this.alertType = 'alert-info';
             this.displayInlineMessage('PROJECT.SUCCESSFUL_REMOVED_MEMBER', [this.selectedMember.project_member_username]);
-            this.doSet = true;
           })
-          .catch(err=>this.messageService.dispatchError(err, ''));
+          .catch(err=>{
+            this.alertType = 'alert-danger';
+            this.displayInlineMessage('PROJECT.FAILED_TO_REMOVE_MEMBER');
+          });
       }
     });
     this.memberSubject.next(this.availableMembers);

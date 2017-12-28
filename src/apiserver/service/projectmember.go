@@ -39,12 +39,19 @@ func HasProjectAdminRole(projectID int64, userID int64) (bool, error) {
 	return (role != nil && role.ID == model.ProjectAdmin), nil
 }
 
-func IsProjectMember(projectID int64) (bool, error) {
+func IsProjectMember(projectID int64, userID int64) (bool, error) {
 	members, err := GetProjectMembers(projectID)
 	if err != nil {
 		return false, err
 	}
-	return (members != nil && len(members) > 0), nil
+	var isMember bool
+	for _, m := range members {
+		if m.UserID == userID {
+			isMember = true
+			break
+		}
+	}
+	return isMember, nil
 }
 
 func GetRoleByID(roleID int64) (*model.Role, error) {
@@ -58,7 +65,7 @@ func GetRoleByID(roleID int64) (*model.Role, error) {
 	return role, nil
 }
 
-func IsProjectMemberByName(projectName string) (bool, error) {
+func IsProjectMemberByName(projectName string, userID int64) (bool, error) {
 	queryProject := model.Project{Name: projectName}
 	project, err := GetProject(queryProject, "name")
 	if err != nil {
@@ -67,5 +74,5 @@ func IsProjectMemberByName(projectName string) (bool, error) {
 	if project == nil {
 		return false, errors.New("invalid project ID")
 	}
-	return IsProjectMember(project.ID)
+	return IsProjectMember(project.ID, userID)
 }

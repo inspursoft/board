@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 
 import { TranslateService, LangChangeEvent } from '@ngx-translate/core';
 
@@ -23,6 +23,7 @@ export class HeaderComponent implements OnInit {
   currentUser: {[key: string]: any};
   showChangePassword:boolean = false;
   showAccountSetting:boolean = false;
+  authMode: string = '';
 
   get brandLogoUrl(): string {
     return this.isSignIn ? '../../images/board-blue.jpg': '../../../images/board.png';
@@ -35,6 +36,7 @@ export class HeaderComponent implements OnInit {
     private accountService: AccountService,
     private messageService: MessageService) {
     this._assertLanguage(this.appInitService.currentLang);
+    this.authMode = this.appInitService.systemInfo['auth_mode'];
   }
 
   ngOnInit(): void {

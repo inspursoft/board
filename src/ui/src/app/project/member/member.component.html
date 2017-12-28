@@ -1,7 +1,7 @@
 <clr-modal [(clrModalOpen)]="projectMemberOpened">
   <h3 class="modal-title">{{ 'PROJECT.ADD_MEMBER_FOR' | translate }}&nbsp;{{ project.project_name }}</h3>
   <div class="modal-body" style="min-height: 42vh;">
-    <clr-alert [clrAlertSizeSmall]="true" [(clrAlertClosed)]="!hasChanged">
+    <clr-alert [clrAlertType]="alertType" [clrAlertSizeSmall]="true" [(clrAlertClosed)]="!hasChanged">
       <div class="alert-item">
           <span class="alert-text">
             {{ changedMessage }}
@@ -12,7 +12,7 @@
       <div class="col-xs-4" style="flex: 0;">
           <span>{{ 'PROJECT.AVAILABLE_MEMBERS' | translate }}:</span>
           <select id="selSelected" multiple style="height: 100%; min-width: 180px;">
-            <option *ngFor="let m of availableMembers" [hidden]="m.isMember"  value="{{ m.project_member_user_id }}" (click)="doSet=true; doUnset=false; pickUpMember(m)">{{ m.project_member_username }}</option>
+            <option *ngFor="let m of availableMembers" [hidden]="m.isMember"  value="{{ m.project_member_user_id }}" (click)="isLeftPane=true; isRightPane=false; pickUpMember(m)">{{ m.project_member_username }}</option>
           </select>
       </div>
       <div class="col-xs-4 flex-xs-middle" style="flex: 0; margin-left: 12px;">
@@ -22,11 +22,11 @@
       <div class="col-xs-4" style="flex: 0; padding-left: 0;">
           <span>{{ 'PROJECT.ASSIGNED_MEMBERS' | translate }}:</span>
           <select id="selDeselected" multiple style="height: 100%; min-width: 180px;">
-            <option *ngFor="let m of availableMembers" value="{{ m.project_member_user_id }}" [hidden]="!m.isMember" (click)="doSet=false; doUnset=true; pickUpMember(m)">{{ m.project_member_username }}</option>
+            <option *ngFor="let m of availableMembers" value="{{ m.project_member_user_id }}" [hidden]="!m.isMember" (click)="isLeftPane=false; isRightPane=true; pickUpMember(m)">{{ m.project_member_username }}</option>
           </select>
       </div>
     </div>
-    <div class="row">
+    <!-- <div class="row">
       <div class="col-xs-12">
         <form class="compact" [hidden]="doSet">
           <section class="form-block">
@@ -47,7 +47,7 @@
           </section>
         </form>
       </div>
-    </div>
+    </div> -->
   </div>
   <div class="modal-footer">
       <button type="button" class="btn btn-primary" (click)="confirm()">{{ 'BUTTON.CONFIRM' | translate }}</button>

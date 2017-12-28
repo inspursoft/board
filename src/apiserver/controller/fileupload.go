@@ -30,11 +30,6 @@ func (f *FileUploadController) Prepare() {
 		return
 	}
 	f.currentUser = user
-	f.isProjectAdmin = (user.ProjectAdmin == 1)
-	if !f.isProjectAdmin {
-		f.customAbort(http.StatusForbidden, "Insufficient privileges.")
-		return
-	}
 	f.resolveFilePath()
 }
 
@@ -66,7 +61,7 @@ func (f *FileUploadController) resolveFilePath() {
 	}
 
 	if reqUploadFile.ProjectName != "" {
-		isMember, err := service.IsProjectMemberByName(reqUploadFile.ProjectName)
+		isMember, err := service.IsProjectMemberByName(reqUploadFile.ProjectName, f.currentUser.ID)
 		if err != nil {
 			f.internalError(err)
 			return
@@ -85,7 +80,7 @@ func (f *FileUploadController) Upload() {
 		f.internalError(err)
 		return
 	}
-	targetFilePath := filepath.Join(repoPath, f.toFilePath)
+	targetFilePath := filepath.Join(repoPath(), f.toFilePath)
 	os.MkdirAll(targetFilePath, 0755)
 
 	logs.Info("User: %s uploaded file from %s to %s.", f.currentUser.Username, fh.Filename, targetFilePath)
@@ -96,7 +91,7 @@ func (f *FileUploadController) Upload() {
 }
 
 func (f *FileUploadController) ListFiles() {
-	uploads, err := service.ListUploadFiles(filepath.Join(repoPath, f.toFilePath))
+	uploads, err := service.ListUploadFiles(filepath.Join(repoPath(), f.toFilePath))
 	if err != nil {
 		f.internalError(err)
 		return
@@ -107,7 +102,7 @@ func (f *FileUploadController) ListFiles() {
 
 func (f *FileUploadController) RemoveFile() {
 	fileInfo := model.FileInfo{
-		Path:     filepath.Join(repoPath, f.toFilePath),
+		Path:     filepath.Join(repoPath(), f.toFilePath),
 		FileName: f.GetString("file_name"),
 	}
 

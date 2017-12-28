@@ -27,3 +27,12 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+clr-icon.disabled{
+  cursor: not-allowed;
+  color: silver;
+}
+
+clr-icon.disabled:hover{
+  color: silver !important;
+}

@@ -3,19 +3,24 @@ package controller
 import (
 	"encoding/json"
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/apiserver/service/auth"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/astaxie/beego/logs"
 )
 
 type AuthController struct {
 	baseController
 }
 
-func (u *AuthController) Prepare() {}
+func (u *AuthController) Prepare() {
+	u.isExternalAuth = utils.GetBoolValue("IS_EXTERNAL_AUTH")
+}
 
 func (u *AuthController) SignInAction() {
 	var err error
@@ -31,17 +36,20 @@ func (u *AuthController) SignInAction() {
 			u.internalError(err)
 			return
 		}
-		user, err := service.SignIn(reqUser.Username, reqUser.Password)
+
+		currentAuth, err := auth.GetAuth(authMode())
 		if err != nil {
 			u.internalError(err)
 			return
 		}
-		if user == nil {
-			u.serveStatus(http.StatusBadRequest, "Incorrect username or password.")
+		user, err := (*currentAuth).DoAuth(reqUser.Username, reqUser.Password)
+		if err != nil {
+			u.internalError(err)
 			return
 		}
-		if memoryCache.IsExist(user.Username) {
-			u.serveStatus(http.StatusConflict, "The user has already signed in other place.")
+
+		if user == nil {
+			u.serveStatus(http.StatusBadRequest, "Incorrect username or password.")
 			return
 		}
 
@@ -58,6 +66,7 @@ func (u *AuthController) SignInAction() {
 			return
 		}
 		memoryCache.Put(user.Username, token.TokenString, time.Second*time.Duration(tokenCacheExpireSeconds))
+		memoryCache.Put(token.TokenString, payload, time.Second*time.Duration(tokenCacheExpireSeconds))
 		u.Data["json"] = token
 		u.ServeJSON()
 	}
@@ -65,6 +74,13 @@ func (u *AuthController) SignInAction() {
 
 func (u *AuthController) SignUpAction() {
 	var err error
+
+	if u.isExternalAuth {
+		logs.Debug("Current AUTH_MODE is external auth.")
+		u.customAbort(http.StatusMethodNotAllowed, "Current AUTH_MODE is external auth.")
+		return
+	}
+
 	reqData, err := u.resolveBody()
 	if err != nil {
 		u.internalError(err)
@@ -145,6 +161,16 @@ func (u *AuthController) CurrentUserAction() {
 		return
 	}
 	u.Data["json"] = user
+	u.ServeJSON()
+}
+
+func (u *AuthController) GetSystemInfo() {
+	systemInfo, err := service.GetSystemInfo()
+	if err != nil {
+		u.internalError(err)
+		return
+	}
+	u.Data["json"] = systemInfo
 	u.ServeJSON()
 }
 

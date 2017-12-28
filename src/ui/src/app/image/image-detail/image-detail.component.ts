@@ -36,10 +36,9 @@ export class ImageDetailComponent implements OnInit {
 
   @Output() isOpenChange: EventEmitter<boolean> = new EventEmitter<boolean>();
 
-  constructor(
-    private imageService: ImageService,
-    private messageService: MessageService
-  ) {}
+  constructor(private imageService: ImageService,
+              private messageService: MessageService) {
+  }
 
   ngOnInit() {
     this.getImageDetailList();
@@ -58,9 +57,8 @@ export class ImageDetailComponent implements OnInit {
           }
           this.showDeleteAlert = new Array(this.imageDetailList.length);
           this.imageDetailList = res || [];
-          
         })
-        .catch(err =>{
+        .catch(err => {
           this.loadingWIP = false;
           this.messageService.dispatchError(err)
         });
@@ -70,17 +68,16 @@ export class ImageDetailComponent implements OnInit {
   deleteTag(tagName: string) {
     let m: Message = new Message();
     this.imageService
-      .deleteImages(this.curImage.image_name, tagName)
-      .then(res=>{
+      .deleteImageTag(this.curImage.image_name, tagName)
+      .then(res => {
         m.message = 'IMAGE.SUCCESSFUL_DELETED_TAG';
         this.messageService.inlineAlertMessage(m);
-        this.getImageDetailList();
         this.reload.emit(true);
+        this.isOpen = false;
       })
-      .catch(err=>{
-        m.message = 'IMAGE.FAILED_TO_DELETE_TAG';
-        m.type = MESSAGE_TYPE.COMMON_ERROR;
-        this.messageService.inlineAlertMessage(m);
+      .catch(err => {
+        this.messageService.dispatchError(err);
+        this.isOpen = false;
       });
   }
 }

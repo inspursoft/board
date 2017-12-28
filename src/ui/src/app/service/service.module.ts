@@ -13,12 +13,9 @@ import { TestingComponent } from './step5-testing/testing.component';
 import { ServiceWizardComponent } from "./service-wizard/service-wizard.component";
 import { VolumeMountsComponent } from "./step3-edit-container/volume-mounts/volume-mounts.component";
 import { DynamicFormModule } from '../shared/dynamic-form/dynamic-form.module';
-import { EnvironmentValueComponent } from "./environment-value/environment-value.component";
-import { CsDropdownComponent } from "./cs-dropdown/cs-dropdown.component";
-import { CsInputComponent } from "./cs-input/cs-input.component";
-import { CsInputArrayComponent } from "./cs-input-array/cs-input-array.component";
 import { DeployComponent } from "./step6-deploy/deploy.component";
 import { ServiceDetailComponent } from './step0-list-service/service-detail/service-detail.component';
+import { ServiceControlComponent } from "./step0-list-service/service-control/service-control.component";
 
 @NgModule({
   imports: [
@@ -36,12 +33,9 @@ import { ServiceDetailComponent } from './step0-list-service/service-detail/serv
     TestingComponent,
     DeployComponent,
     ServiceWizardComponent,
-    CsDropdownComponent,
-    CsInputComponent,
-    CsInputArrayComponent,
     VolumeMountsComponent,
-    EnvironmentValueComponent,
-    ServiceDetailComponent
+    ServiceDetailComponent,
+    ServiceControlComponent
   ],
   entryComponents: [
     ListServiceComponent,

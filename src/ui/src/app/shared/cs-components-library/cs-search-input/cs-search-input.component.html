@@ -1,0 +1,6 @@
+<div style="height: 34px;width:100%;display: flex;align-items: center;border: solid 1px red">
+  <input #inputControl type="text" title="" style="height: 100%;width: 400px;"
+         (keypress)="onInputChange($event)"
+         [(ngModel)]="searchText">
+  <clr-icon shape="search" class="search" (click)="onIconClick()"></clr-icon>
+</div>
