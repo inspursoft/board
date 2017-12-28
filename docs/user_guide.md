@@ -1,4 +1,4 @@
-# User Guide  
+## User Guide  
 ## Overview  
 This guide walks you through the fundamentals of using Board. You'll learn how to use Board to:  
 
