@@ -4,6 +4,7 @@ import { Observable } from 'rxjs/Observable';
 
 import { LANG_EN_US } from './en-us';
 import { LANG_ZH_CN } from './zh-cn';
+import "rxjs/add/observable/of"
 
 export class CustomTranslateLoader implements TranslateLoader {
   

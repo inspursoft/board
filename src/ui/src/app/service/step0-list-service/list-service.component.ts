@@ -1,8 +1,5 @@
 import { Component, OnInit, OnDestroy, ViewChild, Injector } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
-
-import { State } from "clarity-angular";
-
 import { Service } from '../service';
 import { MESSAGE_TARGET, BUTTON_STYLE, MESSAGE_TYPE, SERVICE_STATUS } from '../../shared/shared.const';
 import { Message } from '../../shared/message-service/message';
@@ -109,7 +106,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
     this.k8sService.stepSource.next({index: 1, isBack: false});
   }
 
-  retrieve(state?: State): void {
+  retrieve(): void {
     setTimeout(() => {
       this.isInLoading = true;
       this.k8sService.getServices(this.pageIndex, this.pageSize)

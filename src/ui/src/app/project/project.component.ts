@@ -1,8 +1,7 @@
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 
-import { State } from "clarity-angular";
-
+// import { State } from "clarity-angular";
 import { AppInitService } from '../app.init.service';
 import { MessageService } from '../shared/message-service/message.service';
 import { ConfirmationDialogComponent } from '../shared/confirmation-dialog/confirmation-dialog.component';
@@ -63,7 +62,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
     }
   }
 
-  retrieve(state?: State): void {
+  retrieve(): void {
     setTimeout(()=>{
       this.isInLoading = true;
       this.projectService

@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Http, Headers } from '@angular/http';
-import 'rxjs/add/operator/toPromise';
-import { NgXCookies } from 'ngx-cookies';
-
 import { AppInitService } from '../app.init.service';
 import { Account } from './account';
+import { CookieService } from "ngx-cookie";
+import 'rxjs/add/operator/toPromise';
 
 export const BASE_URL = '/api/v1';
 
@@ -13,7 +12,8 @@ export class AccountService {
   
   defaultHeaders: Headers = new Headers({contentType: 'application/json'});
   constructor(
-    private http: Http, 
+    private http: Http,
+    private cookieService:CookieService,
     private appInitService: AppInitService){}
 
   signIn(principal: string, password: string): Promise<any> {
@@ -56,7 +56,7 @@ export class AccountService {
       )
       .toPromise()
       .then(res=>{
-        NgXCookies.deleteCookie('token');
+        this.cookieService.remove('token');
       })
       .catch(err=>Promise.reject(err));
   }

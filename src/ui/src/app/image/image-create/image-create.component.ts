@@ -325,7 +325,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
       .catch(this.buildImageReject.bind(this));
   }
 
-  updateFileList(): Promise<boolean> {
+  updateFileList(): Promise<any> {
     this.isNewImageAlertOpen = false;
     let formFileList: FormData = new FormData();
     formFileList.append('project_name', this.customerNewImage.project_name);
@@ -341,7 +341,6 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
           dockerfile_copyto: "/tmp"
         });
       });
-      return true;
     }).catch(err => {
       if (err && err instanceof Response && (err as Response).status == 401) {
         this.isOpen = false;
@@ -371,7 +370,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     }
   }
 
-  downloadDockerFile(): Promise<boolean> {
+  downloadDockerFile(): Promise<any> {
     this.selectFromImportFile = null;
     this.consoleText = "";
     this.isServerHaveDockerFile = false;
