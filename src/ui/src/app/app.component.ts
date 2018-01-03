@@ -9,7 +9,7 @@ import { CookieService } from "ngx-cookie";
 })
 export class AppComponent {
 
-  cookieExpiry: Date = new Date(2018, 2, 1);
+  cookieExpiry: Date = new Date(Date.now() + 60 * 60 * 24 * 365 * 1000);
 
   constructor(private appInitService: AppInitService,
               private cookieService: CookieService,
