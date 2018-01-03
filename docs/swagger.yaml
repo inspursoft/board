@@ -882,21 +882,20 @@ paths:
           type: string
         - name: image_list 
           in: body
-          type: object
+          type: array
           items:
             $ref: '#/definitions/ImageList'
           description: Updates of imagelist data.
+          required: true
       tags:
         - Products
       responses:
         200:
-          description: Return the new image list.
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/ImageList'
+          description: Update service successfully.
         401:
           description: User need to log in first.
+        409:
+          description: The updated image list conflict.
         500:
           description: Internal errors.
   /v1/services/reconfig:
@@ -1219,8 +1218,7 @@ paths:
           description: Upload files successfully return service id.     
           schema:
             description: The service id.  
-            type: integer
-            format: int32       
+            type: string     
         400:
           description: Bad Request
         401:
