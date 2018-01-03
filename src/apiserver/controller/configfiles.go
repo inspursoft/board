@@ -71,6 +71,8 @@ func (f *ConfigFilesController) UploadDeploymentYamlFileAction() {
 		f.internalError(err)
 	}
 
+	f.Data["json"] = serviceID
+	f.ServeJSON()
 }
 
 func (f *ConfigFilesController) DownloadDeploymentYamlFileAction() {

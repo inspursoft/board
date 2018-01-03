@@ -882,11 +882,11 @@ paths:
           type: string
         - name: image_list 
           in: body
-          type: array
-          items:
-            $ref: '#/definitions/ImageList'
           description: Updates of imagelist data.
           required: true
+          type: object
+          items:
+            $ref: '#/definitions/ImageList'
       tags:
         - Products
       responses:

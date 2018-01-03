@@ -125,7 +125,7 @@ func init() {
 				"get:ServiceExists"),
 			beego.NSRouter("/services/rollingupdate",
 				&controller.ServiceRollingUpdateController{},
-				"get:GetRollingUpdateServiceConfigAction;post:PostRollingUpdateServiceConfigAction"),
+				"get:GetRollingUpdateServiceConfigAction;post:PostRollingUpdateServiceConfigAction;patch:PatchRollingUpdateServiceAction"),
 			beego.NSRouter("/services/:id([0-9]+)",
 				&controller.ServiceController{},
 				"delete:DeleteServiceAction"),
