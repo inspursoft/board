@@ -82,27 +82,21 @@ func initProjectRepo() {
 
 func initDefaultProjects() {
 	logs.Info("Initialize default projects\n")
-	query := model.Project{OwnerID: adminUserID}
-	projects, err := service.GetProjectsByUser(query, adminUserID)
+	var err error
+	// Sync namespace with specific project ownerID
+	err = service.SyncNamespaceByOwnerID(adminUserID)
 	if err != nil {
-		logs.Error("Failed to get default projects: %+v", err)
+		logs.Error("Failed to sync namespace by userID: %d, err: %+v", adminUserID, err)
 		panic(err)
 	}
-
-	for _, project := range projects {
-		_, err = service.CreateNamespace((*project).Name)
-		if err != nil {
-			logs.Error("Failed to create namespace: %s", (*project).Name)
-			panic(err)
-		}
-
-	}
+	logs.Info("Successful synchonized namespace for admin user.")
 	// Sync projects from cluster namespaces
 	err = service.SyncProjectsWithK8s()
 	if err != nil {
-		logs.Error("Failed to sync projects from namespaces: %+v", err)
-		//panic(err)
+		logs.Error("Failed to sync projects with K8s: %+v", err)
+		panic(err)
 	}
+	logs.Info("Successful synchonized projects with Kubernetes.")
 }
 
 func syncServiceWithK8s() {
@@ -114,7 +108,24 @@ func syncServiceWithK8s() {
 		panic(err)
 	}
 }
-
+func updateSystemInfo() {
+	var err error
+	err = service.SetSystemInfo("BOARD_HOST", true)
+	if err != nil {
+		logs.Error("Failed to set system config BOARD_HOST: %+v", err)
+		panic(err)
+	}
+	err = service.SetSystemInfo("AUTH_MODE", false)
+	if err != nil {
+		logs.Error("Failed to set system config AUTH_MODE: %+v", err)
+		panic(err)
+	}
+	err = service.SetSystemInfo("REDIRECTION_URL", false)
+	if err != nil {
+		logs.Error("Failed to set system config REDIRECTION_URL: %+v", err)
+		panic(err)
+	}
+}
 func main() {
 
 	logs.SetLogFuncCall(true)
@@ -141,6 +152,7 @@ func main() {
 	utils.AddEnv("LDAP_TIMEOUT")
 	utils.AddEnv("FORCE_INIT_SYNC")
 	utils.AddEnv("VERIFICATION_URL")
+	utils.AddEnv("REDIRECTION_URL")
 
 	utils.SetConfig("REGISTRY_URL", "http://%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
 	utils.SetConfig("KUBE_MASTER_URL", "http://%s:%s", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
@@ -155,21 +167,13 @@ func main() {
 	utils.SetConfig("REGISTRY_BASE_URI", "%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
 
 	dao.InitDB()
-	err := service.SetSystemInfo("BOARD_HOST", true)
-	if err != nil {
-		logs.Error("Failed to set BOARD_HOST system config: %+v", err)
-		panic(err)
-	}
-	err = service.SetSystemInfo("AUTH_MODE", false)
-	if err != nil {
-		logs.Error("Failed to set AUTH_MODE system config: %+v", err)
-		panic(err)
-	}
 
 	utils.AddValue("IS_EXTERNAL_AUTH", (utils.GetStringValue("AUTH_MODE") != "db_auth"))
+
 	utils.ShowAllConfigs()
 
 	controller.InitController()
+	updateSystemInfo()
 
 	systemInfo, err := service.GetSystemInfo()
 	if err != nil {

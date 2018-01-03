@@ -72,7 +72,7 @@ func (u *AuthController) SignInAction() {
 			return
 		}
 		token, _ := u.processAuth(reqUser.Username, reqUser.Password)
-		u.Data["json"] = token
+		u.Data["json"] = model.Token{TokenString: token}
 		u.ServeJSON()
 	}
 }
@@ -92,7 +92,6 @@ func (u *AuthController) ExternalAuthAction() {
 
 func (u *AuthController) SignUpAction() {
 	var err error
-
 	if u.isExternalAuth {
 		logs.Debug("Current AUTH_MODE is external auth.")
 		u.customAbort(http.StatusMethodNotAllowed, "Current AUTH_MODE is external auth.")

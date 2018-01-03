@@ -243,6 +243,6 @@ func InitController() {
 		logs.Error("Failed to initialize cache: %+v\n", err)
 	}
 
-	// beego.BConfig.MaxMemory = 1 << 22
+	beego.BConfig.MaxMemory = 1 << 22
 	logs.Debug("Current auth mode is: %s", authMode())
 }
