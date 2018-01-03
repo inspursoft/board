@@ -244,6 +244,9 @@ export const LANG_EN_US = {
     "CREATE_IMAGE_EXIST":"Image already exists.",
     "CREATE_IMAGE_FROM_TEMP":"From Template",
     "CREATE_IMAGE_FROM_FILE":"From Dockerfile",
+    "CREATE_IMAGE_TAG_EXIST":"Image tag exist.",
+    "CREATE_IMAGE_NAME_EXIST":"Image name exist.",
+    "CREATE_IMAGE_JENKINS_PREPARE":"Jenkins preparing...",
   },
   "SERVICE": {
     "ASK_TITLE":"Cancel",
@@ -313,6 +316,7 @@ export const LANG_EN_US = {
     "STEP_6_CANCEL":"Cancel",
     "STEP_6_CANCEL_TITLE":"Cancel deploy service",
     "STEP_6_CANCEL_MSG":"Are you sure cancel deploy this service?",
+    "STEP_6_DEPLOYING":"Deploying...",
     "STATUS_PREPARING": "Preparing",
     "STATUS_RUNNING": "Running",
     "STATUS_STOPPED": "Stopped",
@@ -341,7 +345,14 @@ export const LANG_EN_US = {
     "SERVICE_CONTROL_AUTO_SCALE":"Auto scale",
     "SERVICE_CONTROL_INSTANCE_NUMBER":"Instance number",
     "SERVICE_CONTROL_CPU_UTILIZATION_CURRENT":"Current CPU utilization",
-    "SERVICE_CONTROL_CPU_UTILIZATION_QUALIFIED":"Qualified CPU utilization"
+    "SERVICE_CONTROL_CPU_UTILIZATION_QUALIFIED":"Qualified CPU utilization",
+    "SERVICE_CONTROL_SCALE":"Scale",
+    "SERVICE_CONTROL_UPDATE":"Update",
+    "SERVICE_CONTROL_IMAGE_NAME":"Image name",
+    "SERVICE_CONTROL_IMAGE_TAG":"Image tag",
+    "SERVICE_CONTROL_UPDATE_TAG":"Update tag",
+    "SERVICE_DETAIL_DEPLOYMENT_FILE":"Deployment file",
+    "SERVICE_DETAIL_SERVICE_FILE":"Service file",
   },
   "GLOBAL_SEARCH": {
     "PROJECTS": "Projects",

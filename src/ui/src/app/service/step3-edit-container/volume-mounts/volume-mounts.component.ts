@@ -18,9 +18,10 @@ export interface VolumeOutPut {
 })
 export class VolumeMountsComponent {
   _isOpen: boolean = false;
+  volumeDataOrigin:VolumeOutPut;
   patternName: RegExp = /^[a-z0-9A-Z_]+$/;
   patternMountPath: RegExp = /^[a-z0-9A-Z_/]+$/;
-  patternPath: RegExp = /^[a-z0-9A-Z_/]+$/;
+  patternPath: RegExp = /^[a-z0-9A-Z_/.:]+$/;
   isAlertOpen: boolean = false;
   volumeErrMsg: string = "";
   @ViewChildren(CsInputComponent) inputList: QueryList<CsInputComponent>;
@@ -33,6 +34,7 @@ export class VolumeMountsComponent {
 
   set isOpen(open: boolean) {
     this._isOpen = open;
+    this.volumeDataOrigin = Object.create(this.volumeData);
     this.isOpenChange.emit(this._isOpen);
   }
 
@@ -52,7 +54,7 @@ export class VolumeMountsComponent {
   }
 
   confirmVolumeInfo() {
-    this.onConfirmEvent.emit(this.volumeData);
+    this.onConfirmEvent.emit(this.volumeDataOrigin);
     this.isOpen = false;
   }
 }

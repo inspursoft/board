@@ -3,7 +3,6 @@
  */
 import { Component, Injector, OnDestroy, OnInit } from "@angular/core"
 import { Subscription } from "rxjs/Subscription";
-import { AppInitService } from "../../app.init.service";
 import { Message } from "../../shared/message-service/message";
 import { BUTTON_STYLE } from "../../shared/shared.const";
 import { WebsocketService } from "../../shared/websocket-service/websocket.service";
@@ -30,7 +29,6 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
   ) {
     super(injector);
     this.boardHost = this.appInitService.systemInfo['board_host'];
-    console.log(`board_host=${this.boardHost}`);
   }
 
   ngOnInit() {
@@ -68,11 +66,10 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
     if (!this.isDeployed) {
       this.isDeployed = true;
       this.isInDeployWIP = true;
-      this.consoleText = "Deploying...";
+      this.consoleText = "SERVICE.STEP_6_DEPLOYING";
       this.k8sService.serviceDeployment()
         .then(serviceID => {
           this.serviceID = serviceID;
-          setTimeout(() => {
             this.processImageSubscription = this.webSocketService
               .connect(`ws://${this.boardHost}/api/v1/jenkins-job/console?job_name=process_service&token=${this.appInitService.token}`)
               .subscribe((obs: MessageEvent) => {
@@ -92,7 +89,6 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
                 this.isDeploySuccess = false;
                 this.isInDeployWIP = false;
               });
-          }, 10000);
         })
         .catch(err => {
           if (err instanceof Response && (err as Response).status == 400) {

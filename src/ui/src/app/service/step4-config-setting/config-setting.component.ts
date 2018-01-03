@@ -26,10 +26,15 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
   showCollaborative: boolean = false;
   isInputComponentsValid = false;
   uiPreData: UIServiceStep3 = new UIServiceStep3();
+  collaborativeServiceList: Array<string>;
+  /*Todo:Only for collaborative plus action.It must be delete after update UIServiceStep4*/
+  collaborativeList:Array<Object>;
 
   constructor(protected injector: Injector) {
     super(injector);
     this.dropDownListNum = Array<number>();
+    this.collaborativeServiceList = Array<string>();
+    this.collaborativeList = Array<Object>();
   }
 
   ngAfterContentChecked() {
@@ -44,6 +49,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
   }
 
   ngOnInit() {
+    this.collaborativeList.push(Object());
     this.k8sService.getServiceConfig(PHASE_CONFIG_CONTAINERS).then(res => {
       this.uiPreData = res as UIServiceStep3;
     });
@@ -73,14 +79,23 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
       .catch(err => {
         if (err && err instanceof Response && (err as Response).status == 409) {
           return {serviceExist: "SERVICE.STEP_4_SERVICE_NAME_EXIST"}
-        } else {
-          return null;
         }
+        this.messageService.dispatchError(err);
       });
   }
 
   setNodePort(index: number, port: number) {
     this.uiData.externalServiceList[index].node_config.node_port = Number(port).valueOf();
+  }
+
+  setServiceName(serviceName: string): void {
+    this.uiData.serviceName = serviceName;
+    /*Todo:add reset the Collaborative service Info*/
+    this.collaborativeServiceList.splice(0, this.collaborativeServiceList.length);
+    this.k8sService.getCollaborativeService(serviceName, this.uiData.projectName)
+      .then(res => {
+        this.collaborativeServiceList = res;
+      })
   }
 
   addContainerInfo() {

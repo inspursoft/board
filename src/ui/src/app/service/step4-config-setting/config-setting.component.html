@@ -8,7 +8,7 @@
                 [inputLabel]="'SERVICE.STEP_4_SERVICE_NAME' | translate"
                 [customerValidatorAsyncFunc]="checkServiceNameFun"
                 [simpleFiled]="uiData.serviceName"
-                (onCheck)="uiData.serviceName = $event">
+                (onCheck)="setServiceName($event)">
       </cs-input>
     </div>
     <div class="config-service-info-line">
@@ -109,15 +109,25 @@
     </div>
     <span class="base-margin-left">{{"SERVICE.STEP_4_COLLABORATIVE"|translate}}:</span>
   </div>
-  <div class="service-container" *ngIf="showCollaborative && showAdvanced">
-    <!--<clr-icon class="plus-icon" shape="plus"></clr-icon>-->
-    <!--<span class="service">{{"SERVICE.STEP_4_SERVICE"|translate}}:</span>-->
-    <!--<cs-dropdown class="base-margin-left"-->
-    <!--[dropdownList]="serviceSelectorsArray"-->
-    <!--[dropdownListTextKey]="'app'"-->
-    <!--[dropdownWidth]="310"-->
-    <!--[dropdownDefaultText]="'SERVICE.STEP_4_SELECT_SERVICE' | translate">-->
-    <!--</cs-dropdown>-->
+  <div *ngIf="showCollaborative && showAdvanced">
+    <div style="display: flex;height: 30px;margin-top: 10px;" *ngFor="let obj of collaborativeList; let i = index">
+      <clr-icon shape="plus"
+                class="plus-icon"
+                *ngIf="i === collaborativeList.length - 1"
+                (click)="collaborativeList.push({})">
+      </clr-icon>
+      <clr-icon class="plus-icon"
+                shape="minus"
+                *ngIf="i < collaborativeList.length - 1"
+                (click)="collaborativeList.splice(collaborativeList.indexOf(obj), 1)">
+      </clr-icon>
+      <span class="service">{{"SERVICE.STEP_4_SERVICE"|translate}}:</span>
+      <cs-dropdown class="base-margin-left"
+                   [dropdownList]="collaborativeServiceList"
+                   [dropdownWidth]="310"
+                   [dropdownDefaultText]="'SERVICE.STEP_4_SELECT_SERVICE' | translate">
+      </cs-dropdown>
+    </div>
   </div>
 </div>
 <button class="btn btn-default" (click)="cancelBuildService()">

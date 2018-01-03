@@ -1,20 +1,25 @@
 #!/bin/bash
 
-#docker version: 1.11.2 
-#docker-compose version: 1.7.1 
-#Board version: 0.8.0
+#docker version: 17.0+
+#docker-compose version: 1.7.1+
+#Board version: 0.8.0+
 
 set -e
 
-usage=$'This shell script will uninstall Board images and data volume. Only run it under the installation directory.'
+usage=$'This shell script will uninstall Board images and data volume. Only run it under the installation directory. \nUsage:    uninstalil [OPTINOS]  \nOptions:\n  -s      Silent uninstall.\n  --help  Show this help info.'
 item=0
 defaultDataVolume="/data/board"
+silentFlag=flase
 
 while [ $# -gt 0 ]; do
         case $1 in
             --help)
             echo "$usage"
             exit 0;;
+            -s)
+            echo "Uninstall without any user interaction."
+            silentFlag=true
+            ;;
             *)
             echo "$usage"
             exit 1;;
@@ -32,7 +37,7 @@ fi
 function check_docker {
 	if ! docker --version &> /dev/null
 	then
-		echo "Need to install docker(1.10.0+) first and run this script again."
+		echo "Need to install docker(17.0+) first and run this script again."
 		exit 1
 	fi
 	
@@ -44,9 +49,9 @@ function check_docker {
 		docker_version_part2=${BASH_REMATCH[3]}
 		
 		# the version of docker does not meet the requirement
-		if [ "$docker_version_part1" -lt 1 ] || ([ "$docker_version_part1" -eq 1 ] && [ "$docker_version_part2" -lt 10 ])
+		if [ "$docker_version_part1" -lt 17 ] || ([ "$docker_version_part1" -eq 17 ] && [ "$docker_version_part2" -lt 0 ])
 		then
-			echo "Need to upgrade docker package to 1.10.0+."
+			echo "Need to upgrade docker package to 17.0+."
 			exit 1
 		else
 			echo "docker version: $docker_version"
@@ -110,21 +115,28 @@ echo ""
 
 echo "[Step $item]: prepare removing Board data..."
 
-if read -t 10 -p "Really want to delete Board data? Please input [yes] to confirm: " flag
-then
-	if [ $flag == "yes" ] 
-        then
-		echo "You input [$flag] for deletion, start data deletion after 5 seconds..."
-                sleep 5s
-                echo "start deleting..."
-                remove_data
-		echo "Done."
-        else   
-		echo "You input [$flag], skip data deletion."
-        fi
+if [ $silentFlag == "true" ]
+then 
+        echo "start deleting..."
+        remove_data
+        echo "Done."
 else
-	echo ""
- 	echo "Sorry ,timeout!"
+        if read -t 10 -p "Really want to delete Board data? Please input [yes] to confirm: " flag
+        then
+                if [ $flag == "yes" ]
+                then
+                        echo "You input [$flag] for deletion, start data deletion after 5 seconds..."
+                        sleep 5s
+                        echo "start deleting..."
+                        remove_data
+                        echo "Done."
+                else
+                        echo "You input [$flag], skip data deletion."
+                fi
+        else
+                echo ""
+                echo "Sorry ,timeout!"
+        fi
 fi
 	
 echo ""

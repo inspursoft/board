@@ -219,3 +219,19 @@ func SyncProjectsWithK8s() error {
 	}
 	return err
 }
+
+func DeleteNamespace(projectName string) (bool, error) {
+	cli, err := K8sCliFactory("", kubeMasterURL(), "v1")
+	apiSet, err := kubernetes.NewForConfig(cli)
+	if err != nil {
+		return false, err
+	}
+
+	n := apiSet.Namespaces()
+	err = n.Delete(projectName, nil)
+	if err != nil {
+		logs.Error("Failed to delete namespace", projectName)
+		return false, err
+	}
+	return true, nil
+}

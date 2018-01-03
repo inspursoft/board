@@ -74,30 +74,15 @@ export class ImageService {
       .catch(err => Promise.reject(err));
   }
 
-  cancelConsole(jobName: string, buildSerialId: number): Promise<any> {
+  cancelConsole(jobName: string): Promise<any> {
     return this.http
       .get(`/api/v1/jenkins-job/stop`, {
         headers: this.defaultHeader,
         params: {
-          "job_name": jobName,
-          "build_serial_id": buildSerialId
+          "job_name": jobName
         }
       }).toPromise()
       .then((res: Response) => this.appInitService.chainResponse(res))
-      .catch(err => Promise.reject(err));
-  }
-
-  getLastJobId(jobName: string): Promise<number> {
-    return this.http
-      .get(`/api/v1/jenkins-job/lastbuildnumber`, {
-        headers: this.defaultHeader,
-        params: {"job_name": jobName}
-      })
-      .toPromise()
-      .then((res: Response) => {
-        this.appInitService.chainResponse(res);
-        return Number(res.text());
-      })
       .catch(err => Promise.reject(err));
   }
 
@@ -157,7 +142,7 @@ export class ImageService {
     return this.http.get("/api/v1/images", options).toPromise()
       .then(res => {
         this.appInitService.chainResponse(res);
-        return res.json();
+        return res.json() || [];
       })
       .catch(err => Promise.reject(err));
   }
@@ -197,6 +182,15 @@ export class ImageService {
         this.appInitService.chainResponse(res);
         return res;
       })
+      .catch(err => Promise.reject(err));
+  }
+
+  checkImageExist(projectName: string, imageName: string, imageTag: string): Promise<any> {
+    return this.http.get(`/api/v1/images/${imageName}/existing`, {
+      headers: this.defaultHeader,
+      params: {image_tag: imageTag, project_name: projectName}
+    }).toPromise()
+      .then((res: Response) => this.appInitService.chainResponse(res))
       .catch(err => Promise.reject(err));
   }
 }

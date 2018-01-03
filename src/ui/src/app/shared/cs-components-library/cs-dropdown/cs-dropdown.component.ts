@@ -4,7 +4,7 @@
  * Created by liyanq on 9/4/17.
  */
 
-import { Component, Input, Output, EventEmitter } from "@angular/core"
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from "@angular/core"
 
 export const ONLY_FOR_CLICK = "OnlyClick";
 const DROP_DOWN_SHOW_COUNT = 20;
@@ -14,7 +14,7 @@ export type EnableSelectCallBack = (item: Object) => boolean;
   templateUrl: "./cs-dropdown.component.html",
   styleUrls: ["./cs-dropdown.component.css"]
 })
-export class CsDropdownComponent {
+export class CsDropdownComponent implements OnChanges {
   isShowDefaultText: boolean = true;
   dropdownText: string;
   dropdownShowTimes: number = 1;
@@ -41,6 +41,12 @@ export class CsDropdownComponent {
   constructor() {
     this.dropdownChange = new EventEmitter<any>();
     this.dropdownClick = new EventEmitter<any>();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes["dropdownList"]) {
+      this.isShowDefaultText = true;
+    }
   }
 
   getItemClass(item: any) {
@@ -90,7 +96,8 @@ export class CsDropdownComponent {
     }
   }
 
-  incShowTimes(): void {
+  incShowTimes(event: MouseEvent): void {
     this.dropdownShowTimes += 1;
+    event.stopImmediatePropagation();
   }
 }

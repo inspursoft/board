@@ -39,7 +39,7 @@ div.detail-line {
 
 div.utilization-container {
   margin: 20px 0 20px 0;
-  display: flex;
+  max-width: 300px;
 }
 
 div.scale-line {
@@ -48,10 +48,42 @@ div.scale-line {
   align-items: center;
 }
 
-label.margin-left-10{
+label.margin-left-10 {
   margin-left: 10px;
 }
 
-span.margin-left-20{
+span.margin-left-20 {
   margin-left: 20px;
+}
+
+div.action-method {
+  margin-top: 10px;
+  min-height: 40px;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
+
+td.change {
+  background-color: antiquewhite;
+}
+
+div.footer {
+  display: flex;
+  align-items: center;
+}
+
+tr.image-tag-line {
+  height: 30px;
+}
+
+td.image-name {
+  line-height: 30px;
+  font-size: 14px;
+}
+
+td.image-tag {
+  margin: auto;
+  font-size: 14px;
+  line-height: 30px;
 }

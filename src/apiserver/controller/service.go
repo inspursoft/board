@@ -20,15 +20,18 @@ import (
 const (
 	deploymentFilename     = "deployment.yaml"
 	serviceFilename        = "service.yaml"
+	rollingUpdateFilename  = "rollingUpdateDeployment.yaml"
 	deploymentTestFilename = "testdeployment.yaml"
 	serviceTestFilename    = "testservice.yaml"
 	serviceProcess         = "process_service"
+	rollingUpdate          = "rolling_update"
 	apiheader              = "Content-Type: application/yaml"
 	deploymentAPI          = "/apis/extensions/v1beta1/namespaces/"
 	serviceAPI             = "/api/v1/namespaces/"
 	test                   = "test"
 	nacomment              = "NA"
 	serviceNamespace       = "default" //TODO create in project post
+	k8sServices            = "kubernetes"
 )
 
 const (
@@ -273,7 +276,7 @@ func syncK8sStatus(serviceList []*model.ServiceStatus) error {
 		}
 		// Check the deployment status
 		deployment, err := service.GetDeployment((*serviceStatus).ProjectName, (*serviceStatus).Name)
-		if deployment == nil {
+		if deployment == nil && serviceStatus.Name != k8sServices {
 			logs.Info("Failed to get deployment", err)
 			var reason = "The deployment is not established in cluster system"
 			(*serviceStatus).Status = uncompleted
@@ -694,8 +697,37 @@ func (p *ServiceController) GetServiceInfoAction() {
 	var serviceInfo model.ServiceInfoStruct
 
 	//Get Nodeport
-	serviceName := p.Ctx.Input.Param(":service_name")
-	serviceURL := fmt.Sprintf("%s/api/v1/namespaces/default/services/%s", kubeMasterURL(), serviceName)
+	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	var servicequery model.ServiceStatus
+	servicequery.ID = int64(serviceID)
+	s, err := service.GetService(servicequery, "id")
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if s == nil {
+		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
+		return
+	}
+
+	isMember, err := service.IsProjectMember(s.ProjectID, p.currentUser.ID)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	//Judge authority
+	if !(p.isSysAdmin || isMember) {
+		p.customAbort(http.StatusForbidden, "Insufficient privileges to get publicity of service.")
+		return
+	}
+
+	serviceURL := kubeMasterURL() + serviceAPI + s.ProjectName + "/services/" + s.Name
 	logs.Debug("Get Service info serviceURL(service): %+s", serviceURL)
 	serviceStatus, err, flag := service.GetServiceStatus(serviceURL)
 	var errOutput interface{}
@@ -746,8 +778,37 @@ func (p *ServiceController) GetServiceInfoAction() {
 }
 
 func (p *ServiceController) GetServiceStatusAction() {
-	serviceName := p.Ctx.Input.Param(":service_name")
-	serviceURL := fmt.Sprintf("%s/api/v1/namespaces/default/services/%s", kubeMasterURL(), serviceName)
+	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	var servicequery model.ServiceStatus
+	servicequery.ID = int64(serviceID)
+	s, err := service.GetService(servicequery, "id")
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if s == nil {
+		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
+		return
+	}
+
+	isMember, err := service.IsProjectMember(s.ProjectID, p.currentUser.ID)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	//Judge authority
+	if !(p.isSysAdmin || isMember) {
+		p.customAbort(http.StatusForbidden, "Insufficient privileges to get publicity of service.")
+		return
+	}
+
+	serviceURL := kubeMasterURL() + serviceAPI + s.ProjectName + "/services/" + s.Name
 	logs.Debug("Get Service Status serviceURL: %+s", serviceURL)
 	serviceStatus, err, flag := service.GetServiceStatus(serviceURL)
 

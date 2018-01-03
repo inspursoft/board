@@ -244,6 +244,9 @@ export const LANG_ZH_CN = {
     "CREATE_IMAGE_EXIST":"已经选择了镜像",
     "CREATE_IMAGE_FROM_TEMP":"来自模版",
     "CREATE_IMAGE_FROM_FILE":"来自文件",
+    "CREATE_IMAGE_IMAGE_TAG_EXIST":"镜像标签已经存在",
+    "CREATE_IMAGE_IMAGE_NAME_EXIST":"镜像名称已经存在",
+    "CREATE_IMAGE_JENKINS_PREPARE":"Jenkins正在准备...",
   },
   "SERVICE": {
     "ASK_TITLE":"取消",
@@ -313,6 +316,7 @@ export const LANG_ZH_CN = {
     "STEP_6_CANCEL":"取消",
     "STEP_6_CANCEL_TITLE":"取消部署服务",
     "STEP_6_CANCEL_MSG":"你确定要取消部署服务么？",
+    "STEP_6_DEPLOYING":"准备部署...",
     "STATUS_PREPARING": "创建中",
     "STATUS_RUNNING": "运行中",
     "STATUS_STOPPED": "已停止",
@@ -341,7 +345,14 @@ export const LANG_ZH_CN = {
     "SERVICE_CONTROL_AUTO_SCALE":"自动缩放",
     "SERVICE_CONTROL_INSTANCE_NUMBER":"实例个数",
     "SERVICE_CONTROL_CPU_UTILIZATION_CURRENT":"当前CPU利用率",
-    "SERVICE_CONTROL_CPU_UTILIZATION_QUALIFIED":"合格的CPU利用率"
+    "SERVICE_CONTROL_CPU_UTILIZATION_QUALIFIED":"合格的CPU利用率",
+    "SERVICE_CONTROL_SCALE":"缩放",
+    "SERVICE_CONTROL_UPDATE":"更新",
+    "SERVICE_CONTROL_IMAGE_NAME":"镜像名称",
+    "SERVICE_CONTROL_IMAGE_TAG":"镜像Tag",
+    "SERVICE_CONTROL_UPDATE_TAG":"更新Tag",
+    "SERVICE_DETAIL_DEPLOYMENT_FILE":"部署文件内容",
+    "SERVICE_DETAIL_SERVICE_FILE":"服务文件内容",
   },
   "GLOBAL_SEARCH": {
     "PROJECTS": "项目",

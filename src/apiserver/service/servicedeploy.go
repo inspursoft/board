@@ -4,6 +4,7 @@ import (
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"path/filepath"
+	"strings"
 
 	"k8s.io/client-go/pkg/api/unversioned"
 	"k8s.io/client-go/pkg/api/v1"
@@ -15,8 +16,9 @@ type ServiceConfig v1.Service
 var registryBaseURI = utils.GetConfig("REGISTRY_BASE_URI")
 
 const (
-	hostPath           = "hostPath"
+	hostPath           = "hostpath"
 	nfs                = "nfs"
+	emptyDir           = ""
 	deploymentFilename = "deployment.yaml"
 	serviceFilename    = "service.yaml"
 )
@@ -96,12 +98,23 @@ func (d *DeploymentConfig) setDeploymentContainers(ContainerList []model.Contain
 
 func (d *DeploymentConfig) setDeploymentVolumes(ContainerList []model.Container) {
 	for _, cont := range ContainerList {
-		if cont.VolumeMounts.TargetStorageService == hostPath {
+		if strings.ToLower(cont.VolumeMounts.TargetStorageService) == hostPath {
 			d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, v1.Volume{
 				Name: cont.VolumeMounts.VolumeName,
 				VolumeSource: v1.VolumeSource{
 					HostPath: &v1.HostPathVolumeSource{
 						Path: cont.VolumeMounts.TargetPath,
+					},
+				},
+			})
+		} else if strings.ToLower(cont.VolumeMounts.TargetStorageService) == nfs {
+			index := strings.IndexByte(cont.VolumeMounts.TargetPath, '/')
+			d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, v1.Volume{
+				Name: cont.VolumeMounts.VolumeName,
+				VolumeSource: v1.VolumeSource{
+					NFS: &v1.NFSVolumeSource{
+						Server: cont.VolumeMounts.TargetPath[:index],
+						Path:   cont.VolumeMounts.TargetPath[index:],
 					},
 				},
 			})

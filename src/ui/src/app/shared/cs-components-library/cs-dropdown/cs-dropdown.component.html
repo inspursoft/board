@@ -1,9 +1,9 @@
 <div [ngStyle]="{'width':dropdownWidth + 'px'}">
-  <clr-dropdown #csDropdown class="cs-dropdown">
-    <div class="cs-dropdown-title-container" clrDropdownToggle>
+  <clr-dropdown #csDropdown class="cs-dropdown"  >
+    <div class="cs-dropdown-title-container"  [ngClass]="{'disabled':dropdownDisabled}" clrDropdownToggle>
       <span class="cs-dropdown-title"
             [ngStyle]="{'font-size':dropdownTitleFontSize + 'px'}"
-            [ngClass]="{dropdownDisabled:'disabled'}">
+            [ngClass]="{'disabled':dropdownDisabled}">
         {{ isShowDefaultText? (dropdownDefaultText | translate):(dropdownText| translate )}}
       </span>
       <span *ngIf="!dropdownList" class="spinner spinner-sm"></span>
@@ -38,7 +38,7 @@
           </button>
           <span class="cs-dropdown-more"
                 *ngIf="dropdownShowItems && dropdownList && dropdownShowItems.length < dropdownList.length"
-                (click)="incShowTimes()">
+                (click)="incShowTimes($event)">
           more...
         </span>
         </div>

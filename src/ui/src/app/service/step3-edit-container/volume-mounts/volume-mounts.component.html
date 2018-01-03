@@ -10,23 +10,23 @@
     </clr-alert>
     <div class="vol-configure-container">
       <cs-input [inputLabel]="'SERVICE.VOLUME_TARGET_STORAGE'| translate"
-                [simpleFiled]="volumeData.out_medium"
-                (onCheck)="volumeData.out_medium = $event">
+                [simpleFiled]="volumeDataOrigin.out_medium"
+                (onCheck)="volumeDataOrigin.out_medium = $event">
       </cs-input>
       <cs-input [inputLabel]="'SERVICE.VOLUME_TARGET_DIR'| translate"
                 [inputPattern]="patternPath"
-                [simpleFiled]="volumeData.out_path"
-                (onCheck)="volumeData.out_path=$event">
+                [simpleFiled]="volumeDataOrigin.out_path"
+                (onCheck)="volumeDataOrigin.out_path=$event">
       </cs-input>
       <cs-input [inputLabel]="'SERVICE.VOLUME_NAME'| translate"
                 [inputPattern]="patternName"
-                [simpleFiled]="volumeData.out_name"
-                (onCheck)="volumeData.out_name = $event">
+                [simpleFiled]="volumeDataOrigin.out_name"
+                (onCheck)="volumeDataOrigin.out_name = $event">
       </cs-input>
       <cs-input [inputLabel]="'SERVICE.VOLUME_CONTAINER_DIR'| translate"
                 [inputPattern]="patternMountPath"
-                [simpleFiled]="volumeData.out_mountPath"
-                (onCheck)="volumeData.out_mountPath = $event">
+                [simpleFiled]="volumeDataOrigin.out_mountPath"
+                (onCheck)="volumeDataOrigin.out_mountPath = $event">
       </cs-input>
     </div>
     <div class="vol-confirm-container">

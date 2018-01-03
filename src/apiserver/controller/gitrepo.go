@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -17,7 +18,7 @@ import (
 )
 
 const (
-	jenkinsJobURL   = "http://jenkins:8080/job/{{.JobName}}/buildWithParameters?token={{.Token}}&value={{.Value}}&extras={{.Extras}}&file_name={{.FileName}}"
+	jenkinsJobURL   = "http://jenkins:8080/job/{{.JobName}}/buildWithParameters?user_id={{.UserID}}&token={{.Token}}&value={{.Value}}&extras={{.Extras}}&file_name={{.FileName}}"
 	jenkinsJobToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
 )
 
@@ -152,7 +153,7 @@ func (g *GitRepoController) PullObjects() {
 
 func InternalPushObjects(p *pushObject, g *baseController) (int, string, error) {
 
-	defaultCommitMessage := fmt.Sprintf("Added items: %s to repo: %s", strings.Join(p.Items, ","), repoPath)
+	defaultCommitMessage := fmt.Sprintf("Added items: %s to repo: %s", strings.Join(p.Items, ","), repoPath())
 
 	if len(p.Message) == 0 {
 		p.Message = defaultCommitMessage
@@ -177,25 +178,27 @@ func InternalPushObjects(p *pushObject, g *baseController) (int, string, error) 
 	if err != nil {
 		return http.StatusInternalServerError, "Failed to push objects to git repo", err
 	}
-
-	templates := template.Must(template.New("job_url").Parse(jenkinsJobURL))
-	var triggerURL bytes.Buffer
-	data := struct {
+	paramTriggerJob := struct {
+		UserID   int64
 		Token    string
 		JobName  string
 		Value    string
 		Extras   string
 		FileName string
 	}{
+		UserID:   g.currentUser.ID,
 		Token:    jenkinsJobToken,
 		JobName:  p.JobName,
 		Value:    p.Value,
 		Extras:   p.Extras,
 		FileName: p.FileName,
 	}
-	templates.Execute(&triggerURL, data)
-	logs.Debug("Jenkins trigger url: %s", triggerURL.String())
-	resp, err := http.Get(triggerURL.String())
+	triggerURL, err := utils.GenerateURL(jenkinsJobURL, paramTriggerJob)
+	if err != nil {
+		return http.StatusInternalServerError, "Failed to generate trigger job URL by template.", err
+	}
+	logs.Debug("Jenkins trigger URL: %s", triggerURL)
+	resp, err := http.Get(triggerURL)
 	if err != nil {
 		return http.StatusInternalServerError, "Failed to triggerURL", err
 	}
@@ -205,7 +208,7 @@ func InternalPushObjects(p *pushObject, g *baseController) (int, string, error) 
 // Clean git repo after remove config files
 func InternalCleanObjects(p *pushObject, g *baseController) (int, string, error) {
 
-	defaultCommitMessage := fmt.Sprintf("Removed items: %s from repo: %s", strings.Join(p.Items, ","), repoPath)
+	defaultCommitMessage := fmt.Sprintf("Removed items: %s from repo: %s", strings.Join(p.Items, ","), repoPath())
 
 	if len(p.Message) == 0 {
 		p.Message = defaultCommitMessage
@@ -230,6 +233,5 @@ func InternalCleanObjects(p *pushObject, g *baseController) (int, string, error)
 	if err != nil {
 		return http.StatusInternalServerError, "Failed to push objects to git repo", err
 	}
-
 	return 0, "Internal Push Object successfully", err
 }
