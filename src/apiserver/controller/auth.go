@@ -24,7 +24,13 @@ func (u *AuthController) Prepare() {
 }
 
 func (u *AuthController) processAuth(principal, password string) (string, bool) {
-	currentAuth, err := auth.GetAuth(authMode())
+	var currentAuth *auth.Auth
+	var err error
+	if principal == "admin" {
+		currentAuth, err = auth.GetAuth("db_auth")
+	} else {
+		currentAuth, err = auth.GetAuth(authMode())
+	}
 	if err != nil {
 		u.internalError(err)
 		return "", false
@@ -39,7 +45,6 @@ func (u *AuthController) processAuth(principal, password string) (string, bool) 
 		u.serveStatus(http.StatusBadRequest, "Incorrect username or password.")
 		return "", false
 	}
-
 	payload := make(map[string]interface{})
 	payload["id"] = strconv.Itoa(int(user.ID))
 	payload["username"] = user.Username
