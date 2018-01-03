@@ -13,6 +13,8 @@ import (
 
 	"github.com/ghodss/yaml"
 
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/pkg/api"
 	"k8s.io/client-go/pkg/api/v1"
 
 	"github.com/astaxie/beego/logs"
@@ -150,4 +152,71 @@ func (p *ServiceRollingUpdateController) getServiceConfig(projectName string, se
 	}
 
 	return &rcConfig
+}
+
+func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceAction() {
+
+	projectName, serviceID := p.resolveServiceParam()
+	var imageList []model.ImageIndex
+	logs.Debug(projectName, serviceID)
+	reqData, err := p.resolveBody()
+	if err != nil {
+		p.internalError(err)
+	}
+	//logs.Debug("reqData %+v\n", string(reqData))
+	err = json.Unmarshal(reqData, &imageList)
+	if err != nil {
+		p.internalError(err)
+	}
+	logs.Debug("Image list info: %+v\n", imageList)
+
+	serviceConfig := p.getServiceConfig(projectName, serviceID)
+	//logs.Debug("v1 RC serviceConfig: %+v\n", serviceConfig)
+
+	if len(serviceConfig.Spec.Template.Spec.Containers) != len(imageList) {
+		p.customAbort(http.StatusConflict, "Image's config is invalid.")
+	}
+
+	var rollingUpdateConfig v1.ReplicationController
+	rollingUpdateConfig.Spec.Template = &v1.PodTemplateSpec{}
+	for index, container := range serviceConfig.Spec.Template.Spec.Containers {
+		image := registryBaseURI() + "/" + imageList[index].ImageName + ":" + imageList[index].ImageTag
+		if serviceConfig.Spec.Template.Spec.Containers[index].Image != image {
+			rollingUpdateConfig.Spec.Template.Spec.Containers = append(rollingUpdateConfig.Spec.Template.Spec.Containers, v1.Container{
+				Name:  container.Name,
+				Image: image,
+			})
+		}
+	}
+
+	if len(rollingUpdateConfig.Spec.Template.Spec.Containers) == 0 {
+		logs.Info("Nothing to be updated")
+		return
+	}
+
+	serviceRollConfig, err := json.Marshal(rollingUpdateConfig)
+	if err != nil {
+		logs.Debug("rollingUpdateConfig %+v\n", rollingUpdateConfig)
+		p.internalError(err)
+	}
+	//logs.Debug("Marshal serviceRollConfig %+v\n", string(serviceRollConfig))
+
+	cli, err := service.K8sCliFactory("", kubeMasterURL(), "v1beta1")
+	apiSet, err := kubernetes.NewForConfig(cli)
+	if err != nil {
+		p.internalError(err)
+	}
+
+	d := apiSet.Deployments(projectName)
+	patchType := api.StrategicMergePatchType
+	deployData, err := d.Patch(serviceConfig.Name, patchType, serviceRollConfig)
+	if err != nil {
+		logs.Error("Failed to update service %+v\n", err)
+		p.internalError(err)
+	}
+	logs.Debug("New updated deployment: %+v\n", deployData)
+
+	//TODO update deployment yaml file
+	//err = service.rollingUpdateYaml(serviceID, imageList)
+
 }
