@@ -31,6 +31,13 @@ func TestSignUp(t *testing.T) {
 	cleanUp("Tester")
 }
 
+func TestUsernameExists(t *testing.T) {
+	assert := assert.New(t)
+	exists, err := UserExists("username", "", 0)
+	assert.Nil(err, "Error occurred while checking username exists.")
+	assert.False(exists, "Username exists.")
+}
+
 func cleanUp(username string) {
 	o := orm.NewOrm()
 	rs := o.Raw("delete from user where username = ?", username)

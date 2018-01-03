@@ -16,6 +16,8 @@ export class SignInComponent implements OnInit, OnDestroy {
 
   signInUser: SignIn = new SignIn();
   authMode: string = '';
+  redirectionURL: string = '';
+
   _subscription: Subscription;
 
   constructor(
@@ -31,10 +33,13 @@ export class SignInComponent implements OnInit, OnDestroy {
     });
     this.appInitService.systemInfo = this.route.snapshot.data['systeminfo'];
     this.authMode = this.appInitService.systemInfo['auth_mode'];
+    this.redirectionURL = this.appInitService.systemInfo['redirection_url'];
   }
 
   ngOnInit(): void {
-
+    if(this.authMode === 'indata_auth') {
+      window.location.href = this.redirectionURL;
+    }
   }
 
   signIn(): void {

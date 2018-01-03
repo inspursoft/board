@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
@@ -171,6 +172,22 @@ func CreateNamespace(projectName string) (bool, error) {
 	return true, nil
 }
 
+func SyncNamespaceByOwnerID(userID int64) error {
+	query := model.Project{OwnerID: int(userID)}
+	projects, err := GetProjectsByUser(query, userID)
+	if err != nil {
+		return fmt.Errorf("Failed to get default projects: %+v", err)
+	}
+
+	for _, project := range projects {
+		_, err = CreateNamespace((*project).Name)
+		if err != nil {
+			return fmt.Errorf("Failed to create namespace: %s", (*project).Name)
+		}
+	}
+	return nil
+}
+
 func SyncProjectsWithK8s() error {
 	cli, err := K8sCliFactory("", kubeMasterURL(), k8sAPIversion1)
 	apiSet, err := kubernetes.NewForConfig(cli)
@@ -188,7 +205,6 @@ func SyncProjectsWithK8s() error {
 	}
 
 	for _, namespace := range (*namespaceList).Items {
-
 		existing, err := ProjectExists(namespace.Name)
 		if err != nil {
 			logs.Error("Failed to check prject existing %s %+v", namespace.Name, err)

@@ -25,6 +25,8 @@ func GetSystemInfo() (*model.SystemInfo, error) {
 			systemInfo.InitProjectRepo = config.Value
 		case "SYNC_K8S":
 			systemInfo.SyncK8s = config.Value
+		case "REDIRECTION_URL":
+			systemInfo.RedirectionURL = config.Value
 		}
 	}
 	return &systemInfo, nil
@@ -40,7 +42,7 @@ func SetSystemInfo(name string, reconfigurable bool) error {
 		if value == "" {
 			return fmt.Errorf("Has not set config %s yet", name)
 		}
-		_, err := dao.AddOrUpdateConfig(model.Config{Name: name, Value: value, Comment: fmt.Sprintf("Set config %s as %s.", name, value)})
+		_, err := dao.AddOrUpdateConfig(model.Config{Name: name, Value: value, Comment: fmt.Sprintf("Set config %s.", name)})
 		return err
 	}
 	utils.SetConfig(name, config.Value)
