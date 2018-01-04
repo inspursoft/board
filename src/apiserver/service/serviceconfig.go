@@ -174,6 +174,12 @@ func GetService(service model.ServiceStatus, selectedFields ...string) (*model.S
 	return s, nil
 }
 
+func GetDeployConfig(deployConfigURL string) (modelK8sExt.Deployment, error, bool) {
+	var deployConfig modelK8sExt.Deployment
+	flag, err := k8sGet(&deployConfig, deployConfigURL)
+	return deployConfig, err, flag
+}
+
 func SyncServiceWithK8s() error {
 
 	serviceUrl := fmt.Sprintf("%s/api/v1/services", kubeMasterURL())
