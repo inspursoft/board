@@ -28,7 +28,6 @@ else
 	WORKPATH=dev
 	IMAGEPREFIX=dev
 endif 
-VERSIONTAG=latest
 
 # Base shell parameters
 SHELL := /bin/bash
@@ -81,6 +80,13 @@ TARCMD=$(shell which tar)
 ZIPCMD=$(shell which gzip)
 PKGTEMPPATH=Deploy
 PKGNAME=board
+GITTAGVERSION=$(shell git describe --tags || echo UNKNOWN)
+VERSIONFILE=VERSION
+ifeq ($(DEVFLAG), release)
+	VERSIONTAG=$(GITTAGVERSION)
+else
+	VERSIONTAG=dev
+endif
 
 # Package lists
 # TOPLEVEL_PKG := .
@@ -115,6 +121,10 @@ fmt: $(FMT_LIST)
 vet: $(VET_LIST)
 golint: $(GOLINT_LIST)
 
+version:
+	@echo $(VERSIONTAG)
+	@echo $(VERSIONTAG) > $(VERSIONFILE)
+
 compile_ui:
 	$(DOCKERCOMPOSECMD) -f $(MAKEPATH)/dev/$(DOCKERCOMPOSEUIFILENAME) up
 
@@ -144,10 +154,10 @@ build: $(BUILD_LIST) #container/db_build
 cleanimage: $(RMIMG_LIST) #container/db_rmi
 
 $(BUILD_LIST): %_build: 
-	$(DOCKERBUILD) -f $(MAKEWORKPATH)/$(subst mysql,db,$*)/Dockerfile . -t $(IMAGEPREFIX)_$(subst container/,,$*):latest
+	$(DOCKERBUILD) -f $(MAKEWORKPATH)/$(subst mysql,db,$*)/Dockerfile . -t $(IMAGEPREFIX)_$(subst container/,,$*):$(VERSIONTAG)
 	
 $(RMIMG_LIST): %_rmi:
-	$(DOCKERRMIMAGE) -f $(IMAGEPREFIX)_$(subst container/,,$*):latest
+	$(DOCKERRMIMAGE) -f $(IMAGEPREFIX)_$(subst container/,,$*):$(VERSIONTAG)
 
 #container/db_build:
 #	$(DOCKERBUILD) -f $(MAKEWORKPATH)/container/db/Dockerfile . -t $(IMAGEPREFIX)_mysql:latest
