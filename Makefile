@@ -91,7 +91,7 @@ endif
 # Package lists
 # TOPLEVEL_PKG := .
 INT_LIST := apiserver tokenserver collector/cmd
-IMG_LIST := apiserver tokenserver log collector gitserver jenkins mysql nginx
+IMG_LIST := apiserver tokenserver log collector gitserver jenkins mysql proxy
 
 # List building
 COMPILEALL_LIST = $(foreach int, $(INT_LIST), $(SRCPATH)/$(int))
