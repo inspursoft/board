@@ -3,6 +3,20 @@ div.signpost-content-container {
   flex-direction: column;
 }
 
-h4.signpost-content-title{
+h4.signpost-content-title {
   margin: 0
+}
+
+div.signpost-content-link-container {
+  justify-content: flex-end;
+  margin-top: 15px;
+  display: flex;
+}
+
+a.signpost-content-link {
+  justify-content: flex-end;
+  font-size: 12px;
+  font-style: italic;
+  text-decoration-line: underline;
+  color: blue;
 }

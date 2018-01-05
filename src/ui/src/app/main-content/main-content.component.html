@@ -11,14 +11,15 @@
         <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/services"
            (click)="navigateTo('/services')">
           {{ 'SIDE_NAV.SERVICES' | translate }}
-          <cs-guide [description]="'请创建属于您的新服务'"
+          <cs-guide [description]="'SIDE_NAV.GUIDE_SERVICE_LIST'"
+                    [isEndStep]="true"
                     [show]="someAny && guideStep == 3">
           </cs-guide>
         </a>
         <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/projects"
            (click)="navigateTo('/projects')">
           {{ 'SIDE_NAV.PROJECTS' | translate }}
-          <cs-guide [description]="'请创建属于您的新项目'"
+          <cs-guide [description]="'SIDE_NAV.GUIDE_PROJECT_LIST'"
                     [show]="isFirstLogin && guideStep == 1"
                     (onNextStep)="guideNextStep(1)">
           </cs-guide>

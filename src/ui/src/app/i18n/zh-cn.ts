@@ -83,7 +83,9 @@ export const LANG_ZH_CN = {
     "NEW_PASSWORD":"新密码",
     "NEW_PASSWORD_CONFIRM":"确认新密码",
     "OLD_PASSWORD_WRONG":"旧密码错误",
-    "CHANGE_PASSWORD_SUCCESS":"修改密码成功。"
+    "CHANGE_PASSWORD_SUCCESS":"修改密码成功。",
+    "GUIDE_SERVICE_LIST":"请创建属于您的新服务",
+    "GUIDE_PROJECT_LIST":"请创建属于您的新项目"
   },
   "SIDE_NAV": {
     "DASHBOARD": "仪表盘",
@@ -143,7 +145,8 @@ export const LANG_ZH_CN = {
     "FAILED_TO_REMOVE_MEMBER": "移除项目成员失败。",
     "SUCCESSFUL_CREATED_PROJECT": "创建项目成功。",
     "PROJECT_NAME_ALREADY_EXISTS": "项目名称已存在。",
-    "PROJECT_NAME_IS_ILLEGAL": "项目名称非法。"
+    "PROJECT_NAME_IS_ILLEGAL": "项目名称非法。",
+    "GUIDE_CREATE_PROJECT":"创建属于您的新项目。"
   },
   "USER_CENTER": {
     "LIST_COL_USERNAME":"用户名",
@@ -395,5 +398,9 @@ export const LANG_ZH_CN = {
     "FAILED_TO_TOGGLE": "切换节点状态失败。",
     "TOGGLE_NODE": "切换状态",
     "CONFIRM_TO_TOGGLE_NODE": "确认切换节点 {{0}} 的状态？"
+  },
+  "GUIDE":{
+    "TITLE":"向导",
+    "NEXT_STEP":"下一步"
   }
 };
