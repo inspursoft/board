@@ -8,7 +8,8 @@ import (
 
 func Testk8sGet(t *testing.T) {
 	var endpoint modelK8s.Endpoints
-	_, err := k8sGet(&endpoint, endpointUrl)
+	var err error
+	err = k8sGet(&endpoint, endpointUrl)
 	if err != nil {
 		t.Errorf("Error occurred while test k8sGet: %+v\n", err)
 	}
@@ -16,7 +17,7 @@ func Testk8sGet(t *testing.T) {
 		t.Log("k8sGet is ok.\n")
 	}
 
-	_, err = k8sGet(&endpoint, noEndpointUrl)
+	err = k8sGet(&endpoint, noEndpointUrl)
 	if err == nil {
 		t.Errorf("Error occurred while test k8sGet: %+v\n", err)
 	}
@@ -24,7 +25,7 @@ func Testk8sGet(t *testing.T) {
 		t.Log("k8sGet is ok.\n")
 	}
 
-	_, err = k8sGet(&endpoint, invalidEndpointUrl)
+	err = k8sGet(&endpoint, invalidEndpointUrl)
 	if err == nil {
 		t.Errorf("Error occurred while test k8sGet: %+v\n", err)
 	}
