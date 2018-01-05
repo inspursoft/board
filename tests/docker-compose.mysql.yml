@@ -1,0 +1,22 @@
+version: '2'
+services:
+  mysql:
+    build: 
+      context: ../../
+      dockerfile: make/dev/container/db/Dockerfile
+    restart: always
+    volumes:
+      - /data/board/database:/var/lib/mysql
+    env_file:
+      - ../config/db/env
+   # networks:
+    #  - board
+    ports:
+      - 3306:3306
+   # depends_on:
+   #   - log
+    #logging:
+    #  driver: "syslog"
+   #   options:  
+   #     syslog-address: "tcp://127.0.0.1:1514"
+   #     tag: "mysql"
