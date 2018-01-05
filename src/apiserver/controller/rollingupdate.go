@@ -217,6 +217,6 @@ func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceAction() {
 	logs.Debug("New updated deployment: %+v\n", deployData)
 
 	//TODO update deployment yaml file
-	//err = service.rollingUpdateYaml(serviceID, imageList)
+	//err = service.rollingUpdateYaml(serviceID, deployData)
 
 }
