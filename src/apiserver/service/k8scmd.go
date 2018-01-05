@@ -102,8 +102,7 @@ func k8sGet(resource interface{}, url string) (bool, error) {
 	if err != nil {
 		return true, err
 	}
-
-	return true, nil
+	return false, nil
 }
 
 //get resource form k8s api-server
