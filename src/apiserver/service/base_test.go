@@ -18,5 +18,11 @@ func connectToDB() {
 
 func TestMain(m *testing.M) {
 	connectToDB()
-	os.Exit(m.Run())
+	os.Exit(func() int {
+		r := m.Run()
+		cleanUpProject()
+		cleanupProjectMember()
+		cleanUpUser()
+		return r
+	}())
 }

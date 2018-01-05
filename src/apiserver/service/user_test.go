@@ -11,6 +11,20 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+var user = model.User{
+	Username: "Tester",
+	Password: "123456a?",
+}
+
+func cleanUpUser() {
+	o := orm.NewOrm()
+	affectedCount, err := o.Delete(&user)
+	if err != nil {
+		logs.Error("Failed to clean up user: %+v", err)
+	}
+	logs.Info("Deleted  in user %d row(s) affected.", affectedCount)
+}
+
 func TestGetUserByID(t *testing.T) {
 	assert := assert.New(t)
 	u, err := GetUserByID(1)
@@ -21,14 +35,9 @@ func TestGetUserByID(t *testing.T) {
 
 func TestSignUp(t *testing.T) {
 	assert := assert.New(t)
-	status, err := SignUp(
-		model.User{
-			Username: "Tester",
-			Password: "123456a?",
-		})
+	status, err := SignUp(user)
 	assert.Nil(err, "Error occurred while calling SignUp method.")
 	assert.True(status, "Signed up failed.")
-	cleanUp("Tester")
 }
 
 func TestUsernameExists(t *testing.T) {
@@ -36,22 +45,4 @@ func TestUsernameExists(t *testing.T) {
 	exists, err := UserExists("username", "", 0)
 	assert.Nil(err, "Error occurred while checking username exists.")
 	assert.False(exists, "Username exists.")
-}
-
-func cleanUp(username string) {
-	o := orm.NewOrm()
-	rs := o.Raw("delete from user where username = ?", username)
-	r, err := rs.Exec()
-	if err != nil {
-		logs.Error("Error occurred while deleting user: %+v", err)
-	}
-	affected, err := r.RowsAffected()
-	if err != nil {
-		logs.Error("Error occurred while deleting user: %+v", err)
-	}
-	if affected == 0 {
-		logs.Error("Failed to delete user")
-	} else {
-		logs.Info("Successful cleared up.")
-	}
 }
