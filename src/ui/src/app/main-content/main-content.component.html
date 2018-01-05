@@ -4,22 +4,35 @@
   <div class="content-container">
     <nav class="sidenav" *ngIf="hasSignedIn">
       <section class="sidenav-content">
-        <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/dashboard" (click)="navigateTo('/dashboard')">
+        <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/dashboard"
+           (click)="navigateTo('/dashboard')">
           {{ 'SIDE_NAV.DASHBOARD' | translate }}
         </a>
-        <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/services" (click)="navigateTo('/services')"> 
+        <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/services"
+           (click)="navigateTo('/services')">
           {{ 'SIDE_NAV.SERVICES' | translate }}
+          <cs-guide [description]="'请创建属于您的新服务'"
+                    [show]="someAny && guideStep == 3">
+          </cs-guide>
         </a>
-        <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/projects" (click)="navigateTo('/projects')">
-         {{ 'SIDE_NAV.PROJECTS' | translate }}
+        <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/projects"
+           (click)="navigateTo('/projects')">
+          {{ 'SIDE_NAV.PROJECTS' | translate }}
+          <cs-guide [description]="'请创建属于您的新项目'"
+                    [show]="isFirstLogin && guideStep == 1"
+                    (onNextStep)="guideNextStep(1)">
+          </cs-guide>
         </a>
-        <a *ngIf="isSystemAdmin" href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/nodes" (click)="navigateTo('/nodes')">
+        <a *ngIf="isSystemAdmin" href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']"
+           routerLink="/nodes" (click)="navigateTo('/nodes')">
           {{ 'SIDE_NAV.NODES' | translate }}
         </a>
-        <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/images" (click)="navigateTo('/images')">
+        <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/images"
+           (click)="navigateTo('/images')">
           {{ 'SIDE_NAV.IMAGES' | translate }}
         </a>
-        <a *ngIf="isSystemAdmin" href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/user-center" (click)="navigateTo('/user-center')">
+        <a *ngIf="isSystemAdmin" href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']"
+           routerLink="/user-center" (click)="navigateTo('/user-center')">
           {{ 'SIDE_NAV.ADMIN_OPTIONS' | translate }}
         </a>
       </section>

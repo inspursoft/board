@@ -21,3 +21,9 @@ export enum SERVICE_STATUS{
   STOPPED,
   WARNING
 }
+
+export enum GUIDE_STEP{
+  PROJECT_LIST = 1,
+  CREATE_PROJECT,
+  SERVICE_LIST
+}

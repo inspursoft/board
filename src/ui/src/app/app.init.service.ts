@@ -3,22 +3,32 @@ import { Http, Headers, Response } from '@angular/http';
 import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
 import { CookieService } from 'ngx-cookie';
+import { GUIDE_STEP } from "./shared/shared.const";
 
 @Injectable()
 export class AppInitService {
   
   tokenMessageSource: Subject<string> = new Subject<string>();
-  tokenMessage$: Observable<string> = this.tokenMessageSource.asObservable()
+  tokenMessage$: Observable<string> = this.tokenMessageSource.asObservable();
+  cookieExpiry: Date = new Date(Date.now() + 10 * 60 * 60 * 24 * 365 * 1000);
+  guideStep:GUIDE_STEP;
+  _isFirstLogin: boolean;
 
   constructor(
     private cookieService:CookieService,
     private http: Http
   ) {
     console.log('App initialized from current service.');
+    this._isFirstLogin = this.cookieService.get("isFirstLogin") == undefined;
+    if (this._isFirstLogin){
+      this.guideStep = GUIDE_STEP.PROJECT_LIST;
+      this.cookieService.put("isFirstLogin","used",{expires: this.cookieExpiry});
+    }
   }
 
   _tokenString: string;
   _currentLang: string;
+
 
   currentUser: {[key: string]: any} = null;
   systemInfo: {[key: string]: any} = null;
@@ -37,6 +47,10 @@ export class AppInitService {
 
   get currentLang(): string {
     return this._currentLang;
+  }
+
+  get isFirstLogin(): boolean{
+    return this._isFirstLogin;
   }
 
   chainResponse(r: Response): Response {

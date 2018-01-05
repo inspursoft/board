@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AppInitService } from '../app.init.service';
+import { GUIDE_STEP } from "../shared/shared.const";
 
 @Component({
   selector: 'main-content',
@@ -43,5 +44,27 @@ export class MainContentComponent {
         'token': this.token
       }
     })
+  }
+
+  get isFirstLogin(): boolean{
+    return this.appInitService.isFirstLogin;
+  }
+
+  get guideStep(): GUIDE_STEP{
+    return this.appInitService.guideStep;
+  }
+
+  get someAny(): boolean{
+    if (this.appInitService.guideStep == GUIDE_STEP.SERVICE_LIST){
+      console.log(3);
+    }
+    return true
+  }
+
+  guideNextStep(step: GUIDE_STEP){
+    if (step == GUIDE_STEP.PROJECT_LIST){
+      this.navigateTo('/projects');
+      this.appInitService.guideStep = GUIDE_STEP.CREATE_PROJECT;
+    }
   }
 }

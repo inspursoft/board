@@ -1,0 +1,8 @@
+div.signpost-content-container {
+  display: flex;
+  flex-direction: column;
+}
+
+h4.signpost-content-title{
+  margin: 0
+}

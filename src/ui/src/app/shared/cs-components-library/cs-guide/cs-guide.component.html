@@ -1,0 +1,15 @@
+<clr-signpost *ngIf="show" (click)="signpostClickEvent($event)">
+  <clr-icon shape="info" hidden class="is-solid has-badge-info" #clrInfoIcon clrSignpostTrigger></clr-icon>
+  <clr-signpost-content [clrPosition]="position" *clrIfOpen>
+    <div class="signpost-content-container">
+      <h4 class="signpost-content-title">向导</h4>
+      <p><code class="clr-code">{{description | translate}}</code></p>
+      <div style="justify-content: flex-end;  margin-top: 15px;display: flex;">
+        <a *ngIf="!isEndStep" style="justify-content: flex-end;font-size: 12px; font-style: italic; text-decoration-line: underline; color: blue"
+           href="javascript:void(0)"
+           (click)="nextStepClick($event)">
+          next step</a>
+      </div>
+    </div>
+  </clr-signpost-content>
+</clr-signpost>
