@@ -29,7 +29,6 @@ const (
 	deploymentAPI          = "/apis/extensions/v1beta1/namespaces/"
 	serviceAPI             = "/api/v1/namespaces/"
 	test                   = "test"
-	nacomment              = "NA"
 	serviceNamespace       = "default" //TODO create in project post
 	k8sServices            = "kubernetes"
 )
@@ -693,6 +692,19 @@ func stopServiceK8s(s *model.ServiceStatus) error {
 	return nil
 }
 
+func (p *ServiceController) resolveErrOutput(err error) {
+	if err != nil {
+		if strings.Index(err.Error(), "StatusNotFound:") == 0 {
+			var output interface{}
+			json.Unmarshal([]byte(err.Error()), &output)
+			p.Data["json"] = output
+			p.ServeJSON()
+			return
+		}
+		p.internalError(err)
+	}
+}
+
 func (p *ServiceController) GetServiceInfoAction() {
 	var serviceInfo model.ServiceInfoStruct
 
@@ -726,42 +738,20 @@ func (p *ServiceController) GetServiceInfoAction() {
 		p.customAbort(http.StatusForbidden, "Insufficient privileges to get publicity of service.")
 		return
 	}
-
-	serviceURL := kubeMasterURL() + serviceAPI + s.ProjectName + "/services/" + s.Name
-	logs.Debug("Get Service info serviceURL(service): %+s", serviceURL)
-	serviceStatus, err, flag := service.GetServiceStatus(serviceURL)
-	var errOutput interface{}
-	if flag == false {
-		json.Unmarshal([]byte(err.Error()), &errOutput)
-		p.Data["json"] = errOutput
-		p.ServeJSON()
-		return
-	}
-
+	serviceStatus, err := service.GetServiceStatus(kubeMasterURL() + serviceAPI + s.ProjectName + "/services/" + s.Name)
 	if err != nil {
-		p.internalError(err)
+		p.resolveErrOutput(err)
 		return
 	}
-
 	//Get NodeIP
 	//endpointUrl format /api/v1/namespaces/default/endpoints/
-	nodesURL := fmt.Sprintf("%s/api/v1/nodes", kubeMasterURL())
-	logs.Debug("Get Node info nodeURL (endpoint): %+s", nodesURL)
-	nodesStatus, err, flag := service.GetNodesStatus(nodesURL)
-	if flag == false {
-		json.Unmarshal([]byte(err.Error()), &errOutput)
-		p.Data["json"] = errOutput
-		p.ServeJSON()
-		return
-	}
-
+	nodesStatus, err := service.GetNodesStatus(fmt.Sprintf("%s/api/v1/nodes", kubeMasterURL()))
 	if err != nil {
-		p.internalError(err)
+		p.resolveErrOutput(err)
 		return
 	}
-
 	if len(serviceStatus.Spec.Ports) == 0 || len(nodesStatus.Items) == 0 {
-		p.Data["json"] = nacomment
+		p.Data["json"] = "NA"
 		p.ServeJSON()
 		return
 	}
@@ -808,19 +798,9 @@ func (p *ServiceController) GetServiceStatusAction() {
 		return
 	}
 
-	serviceURL := kubeMasterURL() + serviceAPI + s.ProjectName + "/services/" + s.Name
-	logs.Debug("Get Service Status serviceURL: %+s", serviceURL)
-	serviceStatus, err, flag := service.GetServiceStatus(serviceURL)
-
-	var errOutput interface{}
-	if flag == false {
-		json.Unmarshal([]byte(err.Error()), &errOutput)
-		p.Data["json"] = errOutput
-		p.ServeJSON()
-		return
-	}
+	serviceStatus, err := service.GetServiceStatus(kubeMasterURL() + serviceAPI + s.ProjectName + "/services/" + s.Name)
 	if err != nil {
-		p.internalError(err)
+		p.resolveErrOutput(err)
 		return
 	}
 	p.Data["json"] = serviceStatus
