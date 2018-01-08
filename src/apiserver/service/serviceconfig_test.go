@@ -152,23 +152,21 @@ func cleanSeviceTestByID(scid int64) {
 
 func TestCreateServiceConfig(t *testing.T) {
 	assert := assert.New(t)
-	serviceid, err := CreateServiceConfig(scCreate)
+	serviceInfo, err := CreateServiceConfig(scCreate)
 	assert.Nil(err, "Failed, err when create service config.")
-	assert.NotEqual(0, serviceid, "Failed to assign a service id")
-	t.Log("clean test", serviceid)
-	cleanSeviceTestByID(serviceid)
+	assert.NotEqual(0, serviceInfo.ID, "Failed to assign a service id")
+	t.Log("clean test", serviceInfo.ID)
+	cleanSeviceTestByID(serviceInfo.ID)
 }
 
 func TestUpdateService(t *testing.T) {
 	assert := assert.New(t)
-	serviceid, err := CreateServiceConfig(scCreate)
+	serviceInfo, err := CreateServiceConfig(scCreate)
 	assert.Nil(err, "Failed, err when create service config.")
-	assert.NotEqual(0, serviceid, "Failed to assign a service id")
-	scUpdate.ID = serviceid
 	res, err := UpdateService(scUpdate, "name", "status", "owner_id")
 	assert.Nil(err, "Failed, err when update service status.")
 	assert.NotEqual(false, res, "Failed to update service status")
-	t.Log("updated", serviceid)
-	t.Log("clean test", serviceid)
-	cleanSeviceTestByID(serviceid)
+	t.Log("updated", serviceInfo.ID)
+	t.Log("clean test", serviceInfo.ID)
+	cleanSeviceTestByID(serviceInfo.ID)
 }

@@ -3,11 +3,13 @@ package service
 import (
 	"encoding/json"
 	"errors"
-
 	"git/inspursoft/board/src/common/model"
 	"io/ioutil"
+	"mime/multipart"
 	"os"
 	"path/filepath"
+
+	modelK8s "k8s.io/client-go/pkg/api/v1"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/ghodss/yaml"
@@ -26,13 +28,16 @@ const (
 )
 
 var (
-	pathErr             = errors.New("ERR_DEPLOYMENT_PATH_NOT_DIRECTORY")
-	emptyServiceNameErr = errors.New("ERR_NO_SERVICE_NAME")
-	portMaxErr          = errors.New("ERR_SERVICE_NODEPORT_EXCEED_MAX_LIMIT")
-	portMinErr          = errors.New("ERR_SERVICE_NODEPORT_EXCEED_MIN_LIMIT")
-	emptyDeployErr      = errors.New("ERR_NO_DEPLOYMENT_NAME")
-	invalidErr          = errors.New("ERR_DEPLOYMENT_REPLICAS_INVAILD")
-	emptyContainerErr   = errors.New("ERR_NO_CONTAINER")
+	pathErr               = errors.New("ERR_DEPLOYMENT_PATH_NOT_DIRECTORY")
+	emptyServiceNameErr   = errors.New("ERR_NO_SERVICE_NAME")
+	portMaxErr            = errors.New("ERR_SERVICE_NODEPORT_EXCEED_MAX_LIMIT")
+	portMinErr            = errors.New("ERR_SERVICE_NODEPORT_EXCEED_MIN_LIMIT")
+	emptyDeployErr        = errors.New("ERR_NO_DEPLOYMENT_NAME")
+	invalidErr            = errors.New("ERR_DEPLOYMENT_REPLICAS_INVAILD")
+	emptyContainerErr     = errors.New("ERR_NO_CONTAINER")
+	NameInconsistentErr   = errors.New("ERR_SERVICE_NAME_AND_DEPLOYMENT_NAME_INCONSISTENT")
+	DeploymentNotFoundErr = errors.New("ERR_DEPLOYMENT_NOT_FOUND")
+	ServiceNotFoundErr    = errors.New("ERR_SERVICE_NOT_FOUND")
 )
 
 func CheckDeploymentPath(loadPath string) error {
@@ -76,6 +81,64 @@ func CheckServicePara(reqServiceConfig model.ServiceConfig2) error {
 	}
 
 	return nil
+}
+
+func CheckDeployAndServiceYamlFiles(deploymentFile multipart.File, serviceFile multipart.File) error {
+	var service modelK8s.Service
+	var deployment modelK8s.ReplicationController
+
+	deploymentConfig, err := ioutil.ReadAll(deploymentFile)
+	if err != nil {
+		return err
+	}
+
+	err = yaml.Unmarshal(deploymentConfig, &deployment)
+	if err != nil {
+		return err
+	}
+
+	serviceConfig, err := ioutil.ReadAll(serviceFile)
+	if err != nil {
+		return err
+	}
+
+	err = yaml.Unmarshal(serviceConfig, &service)
+	if err != nil {
+		return err
+	}
+
+	//Currently take name as selector label.
+	if deployment.ObjectMeta.Name != service.ObjectMeta.Name {
+		return NameInconsistentErr
+	}
+
+	return nil
+}
+
+func GetYamlFileServiceName(file multipart.File, fileName string) (string, error) {
+	config, err := ioutil.ReadAll(file)
+	if err != nil {
+		return "", err
+	}
+
+	var service modelK8s.Service
+	var deployment modelK8s.ReplicationController
+	var serviceName string
+	if fileName == deploymentFilename {
+		err = yaml.Unmarshal(config, &deployment)
+		if err != nil {
+			return "", err
+		}
+		serviceName = deployment.ObjectMeta.Name
+	} else if fileName == serviceFilename {
+		err = yaml.Unmarshal(config, &service)
+		if err != nil {
+			return "", err
+		}
+		serviceName = service.ObjectMeta.Name
+	}
+
+	return serviceName, nil
 }
 
 func ServiceExists(serviceName string, projectName string) (bool, error) {
@@ -180,6 +243,24 @@ func GenerateYamlFile(name string, structdata interface{}) error {
 		return err
 	}
 	return nil
+}
+
+func GenerateDeploymentYamlFileFromK8S(deployConfigURL string, absFileName string) error {
+	deployConfig, err := GetDeployConfig(deployConfigURL)
+	if err != nil {
+		return err
+	}
+
+	return GenerateYamlFile(absFileName, &deployConfig)
+}
+
+func GenerateServiceYamlFileFromK8S(serviceConfigURL string, absFileName string) error {
+	serviceConfig, err := GetServiceStatus(serviceConfigURL)
+	if err != nil {
+		return err
+	}
+
+	return GenerateYamlFile(absFileName, &serviceConfig)
 }
 
 func UnmarshalServiceConfigYaml(serviceConfig *model.ServiceConfig2, serviceConfigPath string) error {
