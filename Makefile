@@ -14,6 +14,8 @@
 
 # Common
 # Develop flag
+#
+# guyingyan add test
 DEVFLAG=release
 ifeq ($(DEVFLAG), release) 
 	BASEIMAGE=alpine:3.5
@@ -116,7 +118,7 @@ golint: $(GOLINT_LIST)
 compile_ui:
 	$(DOCKERCOMPOSECMD) -f $(MAKEPATH)/dev/$(DOCKERCOMPOSEUIFILENAME) up
 
-$(COMPILE_LIST): %_compile: %_fmt %_vet %_golint
+$(COMPILE_LIST): %_compile: # %_fmt  %_vet %_golint
 	$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOIMGBASEPATH) \
 					-w $(GOIMGBASEPATH)/$* $(GOBUILDIMAGE) $(GOBUILD) \
 					-v -o $(GOIMGBASEPATH)/make/$(WORKPATH)/container/$(subst /cmd,,$(subst src/,,$*))/$(subst /cmd,,$(subst src/,,$*)) 
@@ -127,7 +129,10 @@ $(CLEAN_LIST): %_clean:
 $(INSTALL_LIST): %_install:
 	$(GOINSTALL) $(TOPLEVEL_PKG)/$*
 $(TEST_LIST): %_test:
-	$(GOTEST) $(TOPLEVEL_PKG)/$*
+#	$(GOTEST) $(TOPLEVEL_PKG)/$*
+	$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOIMGBASEPATH) \
+                                        -w $(GOIMGBASEPATH)/$* $(GOBUILDIMAGE) $(GOTEST) \
+                                        -v -o $(GOIMGBASEPATH)/make/$(WORKPATH)/container/$(subst /cmd,,$(subst src/,,$*))/$(subst /cmd,,$(subst src/,,$*))
 $(FMT_LIST): %_fmt:
 	$(GOFMT) ./$*
 $(VET_LIST): %_vet:
@@ -173,6 +178,7 @@ package:
 	@echo "packing offline package ..."
 	@if [ ! -d $(PKGTEMPPATH) ] ; then mkdir $(PKGTEMPPATH) ; fi
 	@cp $(TOOLSPATH)/install.sh $(PKGTEMPPATH)/install.sh
+	@cp $(TOOLSPATH)/uninstall.sh $(PKGTEMPPATH)/uninstall.sh
 	@cp $(MAKEPATH)/board.cfg $(PKGTEMPPATH)/.
 	@cp $(MAKEPATH)/prepare $(PKGTEMPPATH)/.
 	@cp -rf $(MAKEPATH)/templates $(PKGTEMPPATH)/.
@@ -183,7 +189,7 @@ package:
 	@echo "pcakage images ..."
 	@$(DOCKERSAVE) -o $(PKGTEMPPATH)/$(IMAGEPREFIX)_deployment.$(VERSIONTAG).tgz $(PKG_LIST)
 	@$(TARCMD) -zcvf $(PKGNAME)-offline-installer-$(VERSIONTAG).tgz $(PKGTEMPPATH)
-	
+
 	@rm -rf $(PACKAGEPATH)
 
 packageonestep: compile compile_ui build package

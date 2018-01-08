@@ -9,26 +9,25 @@
       </div>
     </clr-alert>
     <div class="vol-configure-container">
-      <div class="vol-title-container">
-        <span class="vol-item-title">{{"SERVICE.VOLUME_TARGET_STORAGE" | translate}}:</span>
-        <cs-dropdown
-          [dropdownDefaultText]="'SERVICE.VOLUME_SELECT_STORAGE'| translate"
-          [dropdownWidth]="200"></cs-dropdown>
-      </div>
-      <cs-input [inputLabel]="'SERVICE.VOLUME_NAME'| translate"
-                [inputPattern]="patternVolumeName"
-                [simpleFiled]="volumeData.target_storagename"
-                (onCheck)="volumeData.target_storagename = $event">
-      </cs-input>
-      <cs-input [inputLabel]="'SERVICE.VOLUME_CONTAINER_DIR'| translate"
-                [inputPattern]="patternContainerDir"
-                [simpleFiled]="volumeData.container_dir"
-                (onCheck)="volumeData.container_dir = $event">
+      <cs-input [inputLabel]="'SERVICE.VOLUME_TARGET_STORAGE'| translate"
+                [simpleFiled]="volumeDataOrigin.out_medium"
+                (onCheck)="volumeDataOrigin.out_medium = $event">
       </cs-input>
       <cs-input [inputLabel]="'SERVICE.VOLUME_TARGET_DIR'| translate"
-                [inputPattern]="patternTargetDir"
-                [simpleFiled]="volumeData.target_dir"
-                (onCheck)="volumeData.target_dir=$event"></cs-input>
+                [inputPattern]="patternPath"
+                [simpleFiled]="volumeDataOrigin.out_path"
+                (onCheck)="volumeDataOrigin.out_path=$event">
+      </cs-input>
+      <cs-input [inputLabel]="'SERVICE.VOLUME_NAME'| translate"
+                [inputPattern]="patternName"
+                [simpleFiled]="volumeDataOrigin.out_name"
+                (onCheck)="volumeDataOrigin.out_name = $event">
+      </cs-input>
+      <cs-input [inputLabel]="'SERVICE.VOLUME_CONTAINER_DIR'| translate"
+                [inputPattern]="patternMountPath"
+                [simpleFiled]="volumeDataOrigin.out_mountPath"
+                (onCheck)="volumeDataOrigin.out_mountPath = $event">
+      </cs-input>
     </div>
     <div class="vol-confirm-container">
       <button class="btn btn-primary vol-confirm"

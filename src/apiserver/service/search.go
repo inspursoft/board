@@ -15,6 +15,7 @@ type OriginImage struct {
 type SearchServiceResult struct {
 	ServiceName string `json:"service_name"`
 	ProjectName string `json:"project_name"`
+	IsPublic    bool   `json:"is_public"`
 }
 type SearchNodeResult struct {
 	NodeName string `json:"node_name"`
@@ -69,7 +70,7 @@ func SearchSource(user *model.User, searchPara string) (searchResult SearchResul
 			resNode, err = searchNode(searchPara)
 		}
 
-		resSvr, err = searchService(searchPara)
+		resSvr, err = searchService(searchPara, user.ID)
 		if err != nil {
 			return searchResult, err
 		}
@@ -140,12 +141,13 @@ func searchNode(para string) (res []SearchNodeResult, err error) {
 	}
 	return
 }
-func searchService(searchPara string) (res []SearchServiceResult, err error) {
-	resSvr, err := dao.SearchService(searchPara)
-	for _, val := range resSvr {
+func searchService(searchPara string, userID int64) (res []SearchServiceResult, err error) {
+	serviceList, err := GetServiceList(searchPara, userID)
+	for _, val := range serviceList {
 		var svr SearchServiceResult
 		svr.ServiceName = val.Name
 		svr.ProjectName = val.ProjectName
+		svr.IsPublic = (val.Public == 1)
 		res = append(res, svr)
 	}
 	return res, err
@@ -157,6 +159,7 @@ func searchPublicService(searchPara string) (res []SearchServiceResult, err erro
 		var svr SearchServiceResult
 		svr.ServiceName = val.Name
 		svr.ProjectName = val.ProjectName
+		svr.IsPublic = (val.Public == 1)
 		res = append(res, svr)
 	}
 	return res, err

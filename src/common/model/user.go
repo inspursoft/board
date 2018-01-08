@@ -24,3 +24,8 @@ type ChangePassword struct {
 	OldPassword string `json:"user_password_old"`
 	NewPassword string `json:"user_password_new"`
 }
+
+type PaginatedUsers struct {
+	Pagination *Pagination `json:"pagination"`
+	UserList   []*User     `json:"user_list"`
+}

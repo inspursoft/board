@@ -1,0 +1,9 @@
+clr-icon.search {
+  height: 20px;
+  width: 20px;
+  cursor: pointer;
+}
+
+clr-icon.search:hover {
+  color: darkblue;
+}

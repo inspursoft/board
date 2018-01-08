@@ -1,0 +1,109 @@
+
+clr-dropdown.cs-dropdown {
+  width: 100%;
+}
+
+div.cs-dropdown-title-container {
+  border: solid 1px silver;
+  border-radius: 5px;
+  display: flex;
+  height: 30px;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0 !important;
+}
+
+div.cs-dropdown-title-container.disabled {
+  cursor: not-allowed !important;
+}
+
+
+span.cs-dropdown-title {
+  width: 100%;
+  margin-left: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  color: black;
+}
+
+span.cs-dropdown-title.disabled {
+  color: silver;
+  cursor: not-allowed;
+}
+
+div.cs-dropdown-icon-container {
+  flex-basis: 20px;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+div.cs-dropdown-icon {
+  width: 20px;
+  height: 20px;
+}
+
+clr-icon.cs-dropdown-icon-shape {
+  width: 20px;
+  height: 20px;
+  color: darkgreen;
+}
+
+clr-dropdown-menu.cs-dropdown-menu {
+  padding-top: 0;
+}
+
+div.cs-dropdown-menu-container {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  border-radius: 5px;
+  width: 100%;
+}
+
+div.cs-dropdown-search-container {
+  display: flex;
+  width: 100%;
+  min-height: 30px;
+}
+
+input.cs-dropdown-search {
+  flex-basis: 100%;
+}
+
+div.cs-dropdown-menu {
+  display: flex;
+  flex-direction: column;
+  max-height: 300px;
+  overflow-y: scroll;
+}
+
+button.cs-dropdown-item {
+  min-height: 30px;
+  padding: 0;
+}
+
+button.cs-dropdown-item.special {
+  color: blue;
+  font-style: italic;
+}
+
+div.cs-dropdown-open {
+  transform: rotate(0deg);
+  transition-duration: 0.5s;
+}
+
+div.cs-dropdown-close {
+  transform: rotate(-180deg);
+  transition-duration: 0.5s;
+}
+
+span.cs-dropdown-more {
+  width: 100%;
+  height: 30px;
+  text-align: right;
+  color: #d48265;
+  cursor: pointer;
+}

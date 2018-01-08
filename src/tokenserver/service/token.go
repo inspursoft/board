@@ -1,15 +1,15 @@
 package service
 
 import (
+	"crypto/rand"
 	"fmt"
 
 	"time"
 
-	"encoding/base64"
-
 	"log"
 
 	"github.com/astaxie/beego/config"
+	"github.com/astaxie/beego/logs"
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
@@ -51,6 +51,21 @@ func Verify(tokenString string) (map[string]interface{}, error) {
 	return nil, nil
 }
 
+func generateRandomString() string {
+	length := 32
+	const chars = "abcdefghijklmnopqrstuvwxyz0123456789"
+	l := len(chars)
+	result := make([]byte, length)
+	_, err := rand.Read(result)
+	if err != nil {
+		logs.Error("Error reading random bytes: %v", err)
+	}
+	for i := 0; i < length; i++ {
+		result[i] = chars[int(result[i])%l]
+	}
+	return string(result)
+}
+
 func init() {
 	var err error
 	iniConf, err = config.NewConfig("ini", "app.conf")
@@ -61,10 +76,6 @@ func init() {
 	if err != nil {
 		log.Fatalf("Failed to get expireSeconds from config file: %+v\n", err)
 	}
-	encodedKey := iniConf.String("tokenSecretKey")
-	secretKey, err = base64.StdEncoding.DecodeString(encodedKey)
-	if err != nil {
-		log.Fatalf("Failed to decode secret key from config file: %+v\n", err)
-	}
+	secretKey = []byte(generateRandomString())
 	fmt.Printf("Token expiration time now is %d second(s).\n", expireSeconds)
 }

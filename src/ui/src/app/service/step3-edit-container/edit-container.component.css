@@ -2,6 +2,7 @@ div.edit-container-container {
   width: 100%;
   display: flex;
   padding: 15px;
+  min-height: 400px; /*fixed height*/
   flex-direction: column;
 }
 
@@ -11,9 +12,35 @@ div.edit-container-one-container {
   flex-direction: column;
 }
 
-div.edit-container-head-container {
+div.edit-container-item-container {
   display: flex;
   margin-top: 10px;
+  height: 30px;
+  cursor: pointer;
+  align-items: center;
+}
+
+div.edit-container-item-icon-container {
+  width: 20px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+clr-icon.item-icon {
+  width: 20px;
+  height: 20px;
+  color: gray;
+}
+
+div.icon-open {
+  transform: rotate(180deg);
+  transition-duration: 0.5s;
+}
+
+div.icon-close {
+  transform: rotate(0deg);
+  transition-duration: 0.5s;
 }
 
 div.edit-container-filed-container {
@@ -22,24 +49,10 @@ div.edit-container-filed-container {
   width: 500px;
 }
 
-clr-icon.edit-container-icon {
-  color: white;
-  background: green;
-  width: 20px;
-  height: 20px;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-span.edit-container-filed-title {
-  flex-basis: 160px;
-  text-align: right;
-}
-
-div.plus-container {
-  margin-top: 10px;
-  display: flex;
-  align-items: center;
+span.edit-container-title{
+  font-style:italic;
+  font-size: 14px;
+  color: blue;
 }
 
 .base-margin-left {
@@ -47,14 +60,7 @@ div.plus-container {
 }
 
 .drop-down-open {
-  -ms-transform: rotate(-180deg); /* IE 9 */
-  -moz-transform: rotate(-180deg); /* Firefox */
-  -webkit-transform: rotate(-180deg); /* Safari and Chrome */
-  -o-transform: rotate(-180deg); /* Opera */
   transform: rotate(-180deg);
-  -moz-transition-duration: 5s; /* Firefox 4 */
-  -webkit-transition-duration: 5s; /* Safari 和 Chrome */
-  -o-transition-duration: 5s; /* Opera */
   transition-duration: 0.5s;
 }
 

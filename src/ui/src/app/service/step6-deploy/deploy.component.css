@@ -1,5 +1,6 @@
 div.step6-container {
   display: flex;
+  min-height: 400px; /*fixed height*/
   flex-direction: column;
   margin-top: 30px;
 }

@@ -1,157 +1,289 @@
-export interface ServiceStepComponent {
-  data: any;
+export const PHASE_SELECT_PROJECT = "SELECT_PROJECT";
+export const PHASE_SELECT_IMAGES = "SELECT_IMAGES";
+export const PHASE_CONFIG_CONTAINERS = "CONFIG_CONTAINERS";
+export const PHASE_EXTERNAL_SERVICE = "EXTERNAL_SERVICE";
+export const PHASE_ENTIRE_SERVICE = "ENTIRE_SERVICE";
+export type ServiceStepPhase =
+  "SELECT_PROJECT"
+  | "SELECT_IMAGES"
+  | "CONFIG_CONTAINERS"
+  | "EXTERNAL_SERVICE"
+  | "ENTIRE_SERVICE"
+
+export interface UiServerExchangeData<T> {
+  uiToServer(): Object;
+
+  serverToUi(serverResponse: Object): T;
 }
 
-export class ServiceEnvOutput {
-  constructor(public key: string = "",
-              public value: string = "") {
+export abstract class UIServiceStepBase implements UiServerExchangeData<UIServiceStepBase> {
+  abstract uiToServer(): ServerServiceStep;
+
+  abstract serverToUi(serverResponse: Object): UIServiceStepBase;
+}
+
+export class ServerServiceStep {
+  public phase: ServiceStepPhase;
+  public project_id?: number = 0;
+  public service_name?: string = "";
+  public instance?: number = 0;
+  public postData?: Object;
+}
+
+export class ImageIndex implements UiServerExchangeData<ImageIndex> {
+  image_name: string = "";
+  image_tag: string = "";
+  project_name: string = "";
+
+  serverToUi(serverResponse: Object): ImageIndex {
+    return Object.assign(this, serverResponse);
+  }
+
+  uiToServer(): ImageIndex {
+    return this;
   }
 }
 
-export class ServiceStep1Output {
-  service_id: number;
-  service_name: string;
+export class EnvStruct implements UiServerExchangeData<EnvStruct> {
+  dockerfile_envname: string = "";
+  dockerfile_envvalue: string = "";
 
-  constructor(public  project_id: number = 0,
-              public project_name: string = "") {
-    this.service_id = 0;
+  serverToUi(serverResponse: Object): EnvStruct {
+    return Object.assign(this, serverResponse);
+  }
+
+  uiToServer(): EnvStruct {
+    return this;
   }
 }
 
-export type ServiceStep2Output = Array<ServiceStep2Type>;
-export class ServiceStep2Type {
-  image_name: string;
-  image_tag: string;
-  project_id: number;
-  project_name: string;
-  image_template: string;
+export class VolumeStruct implements UiServerExchangeData<VolumeStruct> {
+  public target_storage_service: string = "";
+  public target_path: string = "";
+  public volume_name: string = "";
+  public container_path: string = "";
 
-  constructor() {
+  serverToUi(serverResponse: Object): VolumeStruct {
+    return Object.assign(this, serverResponse);
+  }
+
+  uiToServer(): VolumeStruct {
+    return this;
   }
 }
 
-export class ImageDockerfile {
-  image_base: string;
-  image_author: string;
-  image_volume?: Array<string>;
-  image_copy?: Array<{dockerfile_copyfrom?: string, dockerfile_copyto?: string}>;
-  image_run?: Array<string>;
-  image_env?: Array<{dockerfile_envname?: string, dockerfile_envvalue?: string}>;
-  image_expose?: Array<string>;
-  image_entrypoint?: string;
-  image_cmd?: string;
+export class Container implements UiServerExchangeData<Container> {
+  public name: string = "";
+  public working_dir: string = "";
+  public volume_mount: VolumeStruct = new VolumeStruct();
+  public image: ImageIndex = new ImageIndex();
+  public env: Array<EnvStruct> = Array<EnvStruct>();
+  public container_port: Array<number> = Array();
+  public command: string = "";
 
-  constructor() {
-    this.image_base = "";
-    this.image_volume = Array<string>();
-    this.image_run = Array<string>();
-    this.image_expose = Array<string>();
-    this.image_copy = Array<{dockerfile_copyfrom?: string, dockerfile_copyto?: string}>();
-    this.image_env = Array<{dockerfile_envname?: string, dockerfile_envvalue?: string}>();
+  serverToUi(serverResponse: Object): Container {
+    this.name = serverResponse["name"];
+    this.working_dir = serverResponse["working_dir"];
+    this.volume_mount = (new VolumeStruct()).serverToUi(serverResponse["volume_mount"]);
+    this.image = (new ImageIndex()).serverToUi(serverResponse["image"]);
+    if (serverResponse["env"]) {
+      let envArr: Array<EnvStruct> = serverResponse["env"];
+      envArr.forEach((env: EnvStruct) => {
+        this.env.push((new EnvStruct()).serverToUi(env));
+      });
+    }
+    if (serverResponse["container_port"]) {
+      this.container_port = Array.from(serverResponse["container_port"]) as Array<number>;
+    }
+    this.command = serverResponse["command"];
+    return this;
+  }
+
+  uiToServer(): Container {
+    return this;
   }
 }
 
-export class ServiceStep2NewImageType extends ServiceStep2Type {
-  image_dockerfile: ImageDockerfile;
+export class NodeType implements UiServerExchangeData<NodeType> {
+  target_port: number = 0;
+  node_port: number = 0;
 
-  constructor() {
-    super();
-    this.image_dockerfile = new ImageDockerfile();
+  serverToUi(serverResponse: Object): NodeType {
+    return Object.assign(this, serverResponse);
+  }
+
+  uiToServer(): NodeType {
+    return this;
   }
 }
 
-export type ServiceStep3Output = Array<ServiceStep3Type>;
-export class ServiceStep3Type {
-  container_name: string;
-  container_baseimage: string;
-  container_workdir: string;
-  container_ports: Array<number>;
-  container_volumes: Array<{
-    container_dir: string,
-    target_storagename: string,
-    target_storageServer: string,
-    target_dir: string
-  }>;
-  container_envs: Array<{env_name: string, env_value: string}>;
-  container_command: Array<string>;
-  container_memory: string;
-  container_cpu: string;
+export class LoadBalancer implements UiServerExchangeData<LoadBalancer> {
+  external_access: string;
 
-  constructor() {
-    this.container_ports = Array<number>();
-    this.container_volumes = Array<{
-      container_dir: string,
-      target_storagename: string,
-      target_storageServer,
-      target_dir: string
-    }>();
-    this.container_envs = Array<{env_name: string, env_value: string}>();
-    this.container_command = Array<string>();
-    this.container_memory = "";
-    this.container_cpu = "";
+  serverToUi(serverResponse: Object): LoadBalancer {
+    return Object.assign(this, serverResponse);
+  }
+
+  uiToServer(): LoadBalancer {
+    return this;
   }
 }
 
-export class ServiceStep4Output {
-  service_id: number;
-  project_id: number;
-  project_name: string;
-  config_phase: string;
-  deployment_yaml: {
-    deployment_name: string,
-    deployment_replicas: number,
-    volume_list: Array<{
-      volume_name: string,
-      server_name: string,
-      volume_path: string
-    }>,
-    container_list?: ServiceStep3Output
-  };
-  service_yaml: {
-    service_name: string,
-    service_external: Array<{
-      service_containername: string,
-      service_containerport: number,
-      service_nodeport: number,
-      service_externalpath: string;
-    }>
-    service_selectors: Array<string>
-  };
+export class ExternalService implements UiServerExchangeData<ExternalService> {
+  public container_name: string = "";
+  public node_config: NodeType = new NodeType();
+  public load_balancer_config: LoadBalancer = new LoadBalancer();
 
-  constructor() {
-    this.deployment_yaml = {
-      deployment_name: "",
-      deployment_replicas: 1,
-      volume_list: Array<{volume_name: string, server_name: string, volume_path: string}>()
-    };
-    this.service_yaml = {
-      service_name: "",
-        service_external: Array<{
-        service_containername: string,
-        service_containerport: number,
-        service_nodeport: number,
-        service_externalpath: string;
-      }>(),
-        service_selectors: Array<string>()
-    };
-    this.service_yaml.service_external.push({
-      service_containername: "",
-      service_externalpath: "",
-      service_nodeport: 0,
-      service_containerport: 0
-    })
+  serverToUi(serverResponse: Object): ExternalService {
+    this.container_name = serverResponse["container_name"];
+    this.node_config = (new NodeType()).serverToUi(serverResponse["node_config"]);
+    this.load_balancer_config = (new LoadBalancer()).serverToUi(serverResponse["load_balancer_config"]);
+    return this;
+  }
+
+  uiToServer(): ExternalService {
+    return this;
   }
 }
 
-export class ServiceStep6Output {
-  service_id: number;
-  service_name: string;
-  project_id: number;
-  project_name: string;
-  service_owner: string;
-  service_creationtime: string;
-  service_public: number;
+export class ConfigServiceStep {
+  project_id: number = 0;
+  service_id: number = 0;
+  image_list: Array<ImageIndex> = Array<ImageIndex>();
+  service_name: string = "";
+  instance: number = 0;
+  container_list: Array<Container> = Array<Container>();
+  external_service_list: Array<ExternalService> = Array<ExternalService>();
+}
 
-  constructor() {
+export class UIServiceStep1 extends UIServiceStepBase {
+  public projectId: number = 0;
+  public projectName: string = "";
+
+  uiToServer(): ServerServiceStep {
+    let result = new ServerServiceStep();
+    result.phase = PHASE_SELECT_PROJECT;
+    result.project_id = this.projectId;
+    return result;
+  }
+
+  serverToUi(serverResponse: Object): UIServiceStep1 {
+    if (serverResponse && serverResponse["project_id"]) {
+      this.projectId = serverResponse["project_id"];
+    }
+    return this;
+  }
+}
+
+export class UIServiceStep2 extends UIServiceStepBase {
+  public imageList: Array<ImageIndex> = Array<ImageIndex>();
+  public projectId: number = 0;
+  public projectName: string = "";
+
+  uiToServer(): ServerServiceStep {
+    let result = new ServerServiceStep();
+    let postData: Array<ImageIndex> = Array<ImageIndex>();
+    result.phase = PHASE_SELECT_IMAGES;
+    this.imageList.forEach((value: ImageIndex) => {
+      postData.push(value.uiToServer());
+    });
+    result.postData = postData;
+    return result;
+  }
+
+  serverToUi(serverResponse: Object): UIServiceStep2 {
+    if (serverResponse && serverResponse["project_id"]) {
+      this.projectId = serverResponse["project_id"];
+    }
+    if (serverResponse && serverResponse["project_name"]) {
+      this.projectName = serverResponse["project_name"];
+    }
+    if (serverResponse && serverResponse["image_list"]) {
+      let list: Array<ImageIndex> = serverResponse["image_list"];
+      list.forEach((value: ImageIndex) => {
+        this.imageList.push((new ImageIndex()).serverToUi(value))
+      });
+    }
+    return this;
+  }
+}
+
+export class UIServiceStep3 extends UIServiceStepBase {
+  public containerList: Array<Container> = Array<Container>();
+
+  uiToServer(): ServerServiceStep {
+    let result = new ServerServiceStep();
+    let postData: Array<Container> = Array<Container>();
+    result.phase = PHASE_CONFIG_CONTAINERS;
+    this.containerList.forEach((value: Container) => {
+      postData.push(value.uiToServer());
+    });
+    result.postData = postData;
+    return result;
+  }
+
+  serverToUi(serverResponse: Object): UIServiceStep3 {
+    if (serverResponse && serverResponse["container_list"]) {
+      let list: Array<Container> = serverResponse["container_list"];
+      list.forEach((value: Container) => {
+        this.containerList.push((new Container()).serverToUi(value))
+      });
+    }
+    return this;
+  }
+}
+
+export class UIServiceStep4 extends UIServiceStepBase {
+  public projectName: string = "";
+  public serviceName: string = "";
+  public instance: number = 1;
+  public externalServiceList: Array<ExternalService> = Array<ExternalService>();
+
+  uiToServer(): ServerServiceStep {
+    let result = new ServerServiceStep();
+    let postData: Array<ExternalService> = Array<ExternalService>();
+    result.phase = PHASE_EXTERNAL_SERVICE;
+    result.service_name = this.serviceName;
+    result.instance = this.instance;
+    this.externalServiceList.forEach((value: ExternalService) => {
+      postData.push(value.uiToServer());
+    });
+    result.postData = postData;
+    return result;
+  }
+
+  serverToUi(serverResponse: Object): UIServiceStep4 {
+    let step4 = new UIServiceStep4();
+    if (serverResponse && serverResponse["external_service_list"]) {
+      let list: Array<ExternalService> = serverResponse["external_service_list"];
+      list.forEach((value: ExternalService) => {
+        step4.externalServiceList.push((new ExternalService()).serverToUi(value));
+      });
+    }
+    if (serverResponse && serverResponse["instance"]) {
+      step4.instance = serverResponse["instance"];
+    }
+    if (serverResponse && serverResponse["service_name"]) {
+      step4.serviceName = serverResponse["service_name"];
+    }
+    if (serverResponse && serverResponse["project_name"]) {
+      step4.projectName = serverResponse["project_name"];
+    }
+    return step4;
+  }
+}
+
+export class UiServiceFactory {
+  static getInstance(phase: ServiceStepPhase): UIServiceStepBase {
+    switch (phase) {
+      case PHASE_SELECT_PROJECT:
+        return new UIServiceStep1();
+      case PHASE_SELECT_IMAGES:
+        return new UIServiceStep2();
+      case PHASE_CONFIG_CONTAINERS:
+        return new UIServiceStep3();
+      case PHASE_EXTERNAL_SERVICE:
+        return new UIServiceStep4();
+    }
   }
 }

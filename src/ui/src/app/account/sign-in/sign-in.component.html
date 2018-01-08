@@ -1,9 +1,9 @@
-<clr-main-container>
+<clr-main-container style="height: 100%;">
   <header-content [isSignIn]="true" [hasSignedIn]="false"></header-content>
-  <div class="content-container background">
+  <div class="background">
     <confirmation-dialog></confirmation-dialog>
-    <div class="row" style="width: 100%;">
-      <div class="col-lg-7 col-xs-1">
+    <div class="row background-row-container">
+      <div class="col-lg-7 hidden-md-down">
         <div class="row custom-row">
           <div class="col-xs custom-top">
             <div class="circle">
@@ -63,7 +63,7 @@
           </div>
         </div>
       </div>
-      <div class="col-lg-5 col-xs-11 custom-sign-in-top">
+      <div class="col-lg-5 col-md-12 custom-sign-in-top">
         <div class="sign-in-background">
           <p class="custom-sign-in-title">{{ 'ACCOUNT.SIGN_IN' | translate }}</p>
           <div class="row">
@@ -96,7 +96,7 @@
                 </section>
               </form>
               <div class="custom-down-padding">
-                <button class="btn btn-link" (click)="signUp()">{{ 'ACCOUNT.SIGN_UP' | translate }}</button>
+                <button *ngIf="authMode === 'db_auth'" class="btn btn-link" (click)="signUp()">{{ 'ACCOUNT.SIGN_UP' | translate }}</button>
                 <!--button class="btn btn-link">{{ 'ACCOUNT.FORGOT_PASSWORD' | translate }}</button-->
               </div>
             </div>

@@ -1,9 +1,9 @@
 package service
 
-import (
-	"testing"
-)
+// import (
+// 	"testing"
+// )
 
-func TestGetTimeNow(t *testing.T) {
-	GetServerTime()
-}
+// func TestGetTimeNow(t *testing.T) {
+// 	GetServerTime()
+// }

@@ -87,9 +87,30 @@ board_admin_password = rcp.get("configuration", "board_admin_password")
 db_password = rcp.get("configuration", "db_password")
 token_cache_expire_seconds = rcp.get("configuration", "token_cache_expire_seconds")
 token_expire_seconds = rcp.get("configuration", "token_expire_seconds")
-token_secret_key = rcp.get("configuration", "token_secret_key")
 registry_ip = rcp.get("configuration", "registry_ip")
 registry_port = rcp.get("configuration", "registry_port")
+
+auth_mode = rcp.get("configuration", "auth_mode")
+
+###ldap configuration
+ldap_url = rcp.get("configuration", "ldap_url")
+# this two options are either both set or unset
+if rcp.has_option("configuration", "ldap_searchdn"):
+    ldap_searchdn = rcp.get("configuration", "ldap_searchdn")
+    ldap_search_pwd = rcp.get("configuration", "ldap_search_pwd")
+else:
+    ldap_searchdn = ""
+    ldap_search_pwd = ""
+ldap_basedn = rcp.get("configuration", "ldap_basedn")
+# ldap_filter is null by default
+if rcp.has_option("configuration", "ldap_filter"):
+    ldap_filter = rcp.get("configuration", "ldap_filter")
+else:
+    ldap_filter = ""
+ldap_uid = rcp.get("configuration", "ldap_uid")
+ldap_scope = rcp.get("configuration", "ldap_scope")
+ldap_timeout = rcp.get("configuration", "ldap_timeout")
+
 
 ########
 
@@ -135,16 +156,26 @@ render(os.path.join(templates_dir, "apiserver", "app.conf"),
 
 render(os.path.join(templates_dir, "apiserver", "env"),
         apiserver_env,
-        registry_ip=registry_ip,
-        registry_port=registry_port,
+        hostname=hostname,
+        board_admin_password=board_admin_password,
         kube_master_ip=kube_master_ip,
         kube_master_port=kube_master_port,
-        board_admin_password=board_admin_password)
+        registry_ip=registry_ip,
+        registry_port=registry_port,
+        auth_mode=auth_mode,
+        ldap_url=ldap_url,
+        ldap_searchdn =ldap_searchdn, 
+        ldap_search_pwd =ldap_search_pwd,
+        ldap_basedn=ldap_basedn,
+        ldap_filter=ldap_filter,
+        ldap_uid=ldap_uid,
+        ldap_scope=ldap_scope,
+        ldap_timeout=ldap_timeout
+        )
 
 render(os.path.join(templates_dir, "tokenserver", "app.conf"),
         tokenserver_conf,
-        token_expire_seconds=token_expire_seconds,
-        token_secret_key=token_secret_key)
+        token_expire_seconds=token_expire_seconds)
 
 render(os.path.join(templates_dir, "tokenserver", "env"),
         tokenserver_env)

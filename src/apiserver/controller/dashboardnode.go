@@ -2,7 +2,6 @@ package controller
 
 import (
 	"encoding/json"
-	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"io/ioutil"
 	"net/http"
@@ -24,12 +23,10 @@ type NodeBodyReqPara struct {
 func (p *DashboardNodeController) Prepare() {
 	user := p.getCurrentUser()
 	if user == nil {
-		p.CustomAbort(http.StatusUnauthorized, "Need to login first.")
+		p.customAbort(http.StatusUnauthorized, "Need to login first.")
 		return
 	}
 	p.currentUser = user
-	p.isSysAdmin = (user.SystemAdmin == 1)
-	p.isProjectAdmin = (user.ProjectAdmin == 1)
 }
 
 func (b *DashboardNodeController) resolveBody() (in NodeBodyReqPara, err error) {
@@ -46,16 +43,15 @@ func (s *DashboardNodeController) GetNodeData() {
 	nodeName := s.GetString("node_name")
 	beego.Debug("node_name", nodeName)
 	if getNodeDataBodyReq.TimeCount == 0 {
-		s.CustomAbort(http.StatusBadRequest, "")
+		s.customAbort(http.StatusBadRequest, "Time count for node data retrieval cannnot be empty.")
 		return
 	}
 	if getNodeDataBodyReq.TimestampBase == 0 {
-		s.CustomAbort(http.StatusBadRequest, "")
-
+		s.customAbort(http.StatusBadRequest, "Time stamp for node data retrieval cannot be empty.")
 		return
 	}
 	if getNodeDataBodyReq.TimeUnit == "" {
-		s.CustomAbort(http.StatusBadRequest, "")
+		s.customAbort(http.StatusBadRequest, "Time unit for node data retrieval cannot be empty.")
 		return
 	}
 	var dashboardNodeDataResp service.Dashboard
@@ -65,15 +61,14 @@ func (s *DashboardNodeController) GetNodeData() {
 		getNodeDataBodyReq.TimestampBase, nodeName)
 	err := dashboardNodeDataResp.GetNodeDataToObj()
 	if err != nil {
-		s.CustomAbort(http.StatusInternalServerError, "")
+		s.internalError(err)
 		return
 	}
 	_, err = dashboardNodeDataResp.GetNodeListToObj()
 	if err != nil {
-		s.CustomAbort(http.StatusInternalServerError, fmt.Sprint(err))
+		s.internalError(err)
 		return
 	}
-	beego.Error(err)
 	s.Data["json"] = dashboardNodeDataResp.NodeResp
 	s.ServeJSON()
 

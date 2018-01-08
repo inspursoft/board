@@ -1,20 +1,237 @@
-<img src="img/board_logo.png" width="100" alt="Board">
-## Board container service platform cluster
+# Installation and Configuration Guide
+Board can be installed by one of two approaches: 
 
-The "Board" product is a container platform based on open source technologies, Docker, Kubernetes, Jenkins, MySQL etc. We provide cloud solutions for Inspur software group, including lightweight container virtualization, micro service, DevOps, continuous delivery, help enterprises and development teams achieve fast business application delivery and continuous innovation.
+- **Online installer:** ~~The installer downloads Board images from Docker hub. For this reason, the installer is very small in size.~~ (Coming soon.)
 
-This document is a guide to install a Board cluster. The Board cluster includes all physical components of Board container service platform. The following is a logic structure diagram.
-
-<img src="img/boardcluster.PNG" width="100" alt="Board Cluster">
+- **Offline installer:** Use this installer when the host does not have an Internet connection. The installer contains pre-built images so its size is larger.
 
 
-## Board master installation
-The Board master is the most important component in Board platform. It is the control center for all other components.
+All installers can be downloaded from the **[official release](http://10.110.18.40:10080/inspursoft/board/releases)** page. 
 
-### Board core installation
-As its name, the Board core is the core of the whole system, please refer to the [install board core](install_board.md) document for how to build and install board core version 1.0.
+This guide describes the steps to install and configure Board by using the online or offline installer. The installation processes are almost the same. 
 
-### K-master installation
+~~If you run a previous version of Board, you may need to update ```board.cfg``` and migrate the data to fit the new database schema. For more details, please refer to **[Board Migration Guide](migration_guide.md)**.~~ (Coming soon.)
+
+~~In addition, the deployment instructions on Kubernetes has been created by the community. Refer to [Board on Board](kubernetes_deployment.md) for details.~~ (Coming soon.)
+
+## Prerequisites for the target host
+Board is deployed as several Docker containers, and, therefore, can be deployed on any Linux distribution that supports Docker. The target host requires Python, Docker, and Docker Compose to be installed.  
+* Python should be version 2.7 or higher.  Note that you may have to install Python on Linux distributions (Gentoo, Arch) that do not come with a Python interpreter installed by default  
+* Docker engine should be version 1.11.2 or higher.  For installation instructions, please refer to: https://docs.docker.com/engine/installation/
+* Docker Compose needs to be version 1.7.1 or higher.  For installation instructions, please refer to: https://docs.docker.com/compose/install/
+
+## Installation Steps
+
+The installation steps boil down to the following
+
+1. Download the installer;
+2. Configure **board.cfg**;
+3. Run **install.sh** to install and start Board;
+Note: If you need prepare Kubernetes and Registry environment, please refer to the appendix part.
+
+#### Downloading the installer:
+
+The binary of the installer can be downloaded from the [release](http://10.110.18.40:10080/inspursoft/board/releases) page. Choose either online or offline installer. Use *tar* command to extract the package.
+
+Online installer:
+    (Coming soon.)
+Offline installer:
+```
+    $ tar xvf board-offline-installer-latest.tgz.tgz
+```
+
+#### Configuring Board
+Configuration parameters are located in the file **board.cfg**. 
+
+There are two categories of parameters in board.cfg, **required parameters** and **optional parameters**.  
+
+* **required parameters**: These parameters are required to be set in the configuration file. They will take effect if a user updates them in ```board.cfg``` and run the ```install.sh``` script to reinstall Board.
+* **optional parameters**: These parameters are optional for updating~~, i.e. user can leave them as default and update them on Web UI after Board is started.  If they are set in ```board.cfg```, they only take effect in the first launch of Board~~. 
+Subsequent update to these parameters in ```board.cfg``` will be ignored. 
+
+~~**Note:** If you choose to set these parameters via the UI, be sure to do so right after Board is started. In particular, you must set the desired **auth_mode** before registering or creating any new users in Board. When there are users in the system (besides the default admin user), **auth_mode** cannot be changed.~~
+
+The parameters are described below - note that at the very least, you will need to change the **hostname** attribute. 
+
+##### Required parameters:
+
+* **hostname**: The target host's hostname, which is used to access the UI and the apiserver service. It should be the IP address or the fully qualified domain name (FQDN) of your target machine, e.g., `192.168.1.10` or `reg.yourdomain.com`. _Do NOT use `localhost` or `127.0.0.1` for the hostname - the apiserver service needs to be accessible by external clients!_ 
+~~* **ui_url_protocol**: (**http** or **https**.  Default is **http**) The protocol used to access the UI and the token/notification service.  If Notary is enabled, this parameter has to be _https_.  By default, this is _http_. To set up the https protocol, refer to **[Configuring Board with HTTPS Access](configure_https.md)**.  ~~(Coming soon)
+* **db_password**: The root password for the MySQL database used for **db_auth**. _Change this password for any production use!_ 
+~~* **customize_crt**: (**on** or **off**.  Default is **on**) When this attribute is **on**, the prepare script creates private key and root certificate for the generation/verification of the Board's token. Set this attribute to **off** when the key and root certificate are supplied by external sources. Refer to [Customize Key and Certificate of Board Token Service](customize_token_service.md) for more info.~~(Coming soon)
+~~* **ssl_cert**: The path of SSL certificate, it's applied only when the protocol is set to https~~
+~~* **ssl_cert_key**: The path of SSL key, it's applied only when the protocol is set to https~~ 
+~~* **secretkey_path**: The path of key for encrypt or decrypt the password of a remote registry in a replication policy.~~
+~~* **log_rotate_count**: Log files are rotated **log_rotate_count** times before being removed. If count is 0, old versions are removed rather than rotated.~~
+~~* **log_rotate_size**: Log files are rotated only if they grow bigger than **log_rotate_size** bytes. If size is followed by k, the size is assumed to be in kilobytes. If the M is used, the size is in megabytes, and if G is used, the size is in gigabytes. So size 100, size 100k, size 100M and size 100G are all valid.~~(Coming soon)
+
+##### Optional parameters
+~~* **Email settings**: These parameters are needed for Board to be able to send a user a "password reset" email, and are only necessary if that functionality is needed.  Also, do note that by default SSL connectivity is _not_ enabled - if your SMTP server requires SSL, but does _not_ support STARTTLS, then you should enable SSL by setting **email_ssl = true**. Setting **email_insecure = true** if the email server uses a self-signed or untrusted certificate. For a detailed description about "email_identity" please refer to [rfc2595](https://tools.ietf.org/rfc/rfc2595.txt)``~~
+  ~~* email_server = smtp.mydomain.com~~ 
+  ~~* email_server_port = 25~~
+  ~~* email_identity = ~~
+  ~~* email_username = sample_admin@mydomain.com~~
+  ~~* email_password = abc~~
+  ~~* email_from = admin <sample_admin@mydomain.com>~~  
+  ~~* email_ssl = false~~
+  ~~* email_insecure = false~~
+
+* **board_admin_password**: The administrator's initial password. This password only takes effect for the first time Board launches. After that, this setting is ignored and the administrator's password should be set in the UI. _Note that the default username/password are **admin/123456a?** ._   
+* **auth_mode**: The type of authentication that is used. By default, it is **db_auth**, i.e. the credentials are stored in a database. 
+For LDAP authentication, set this to **ldap_auth**.  
+
+   **IMPORTANT:** When upgrading from an existing Board instance, you must make sure **auth_mode** is the same in ```board.cfg``` before launching the new version of Board. Otherwise, users 
+may not be able to log in after the upgrade.
+* **ldap_url**: The LDAP endpoint URL (e.g. `ldaps://ldap.mydomain.com`). Only used when **auth_mode** is set to *ldap_auth* .
+* **ldap_searchdn**: The DN of a user who has the permission to search an LDAP/AD server (e.g. `uid=admin,ou=people,dc=mydomain,dc=com`).
+* **ldap_search_pwd**: The password of the user specified by *ldap_searchdn*.
+* **ldap_basedn**: The base DN to look up a user, e.g. `ou=people,dc=mydomain,dc=com`. Only used when **auth_mode** is set to *ldap_auth* .
+* **ldap_filter**:The search filter for looking up a user, e.g. `(objectClass=person)`.
+* **ldap_uid**: The attribute used to match a user during a LDAP search, it could be uid, cn, email or other attributes.
+* **ldap_scope**: The scope to search for a user, LDAP_SCOPE_BASE, LDAP_SCOPE_ONELEVEL, LDAP_SCOPE_SUBTREE. Default is LDAP_SCOPE_SUBTREE. 
+* **self_registration**: (**on** or **off**. Default is **on**) Enable / Disable the ability for a user to register himself/herself. When disabled, new users can only be created by the Admin user, only an admin user can create new users in Board. _NOTE_: When **auth_mode** is set to **ldap_auth**, self-registration feature is **always** disabled, and this flag is ignored.  
+* **token_expiration**: The expiration time (in minutes) of a token created by token service, default is 30 minutes.
+
+#### Finishing installation and starting Board
+Once **board.cfg** is configured, install and start Board using the ```install.sh``` script.  ~~Note that it may take some time for the online installer to download Board images from Docker hub.~~ (Coming soon)  
+
+##### Default installation 
+
+```sh
+    $ sudo ./install.sh
+```
+
+If everything worked properly, you should be able to open a browser to visit the admin portal at **http://reg.yourdomain.com** (change *reg.yourdomain.com* to the hostname configured in your ```board.cfg```). Note that the default administrator username/password are admin/123456a? .
+
+Log in to the admin portal and create a new project, e.g. `myproject`. You can create your own service now.
+
+For information on how to use Board, please refer to **[User Guide of Board](user_guide.md)** .
+
+#### Configuring Board with HTTPS access
+~~Board does not ship with any certificates, and, by default, uses HTTP to serve requests. While this makes it relatively simple to set up and run - especially for a development or testing environment - it is **not** recommended for a production environment. To enable HTTPS, please refer to **[Configuring Board with HTTPS Access](configure_https.md)** .~~ (Coming soon)
+
+
+### Managing Board's lifecycle
+You can use docker-compose to manage the lifecycle of Board. Some useful commands are listed as follows (must run in the same directory as *docker-compose.yml*).
+
+Stopping Board:
+```
+$ sudo docker-compose stop
+Stopping deploy_proxy_1       ... done
+Stopping deploy_apiserver_1   ... done
+Stopping deploy_collector_1   ... done
+Stopping deploy_gitserver_1   ... done
+Stopping deploy_jenkins_1     ... done
+Stopping deploy_mysql_1       ... done
+Stopping deploy_tokenserver_1 ... done
+Stopping deploy_log_1         ... done
+```  
+Restarting Board after stopping:
+```
+$ sudo docker-compose start
+Creating deploy_proxy_1       ... done
+Creating deploy_apiserver_1   ... done
+Creating deploy_collector_1   ... done
+Creating deploy_gitserver_1   ... done
+Creating deploy_jenkins_1     ... done
+Creating deploy_mysql_1       ... done
+Creating deploy_tokenserver_1 ... done
+Creating deploy_log_1         ... done
+```  
+
+To change Board's configuration, first stop existing Board instance and update ```board.cfg```. Then run ```prepare``` script to populate the configuration. Finally re-create and start Board's instance:
+```
+$ sudo docker-compose down -v
+$ vim board.cfg
+$ sudo prepare
+$ sudo docker-compose up -d
+``` 
+
+Removing Board's containers while keeping the image data and Board's database files on the file system:
+```
+$ sudo docker-compose down -v
+```  
+
+Removing Board's database and image data (for a clean re-installation):
+```sh
+$ rm -r /data/board
+```
+
+Please check the [Docker Compose command-line reference](https://docs.docker.com/compose/reference/) for more on docker-compose.
+
+### Persistent data and log files
+By default, Board data is persisted in the host's `/data/` directory.  This data remains unchanged even when Board's containers are removed and/or recreated.  
+
+In addition, Board uses *rsyslog* to collect the logs of each container. By default, these log files are stored in the directory `/var/log/board/` on the target host for troubleshooting.  
+
+## Configuring Board listening on a customized port
+By default, Board listens on port 80(HTTP) and 443(HTTPS, if configured) for both admin portal and docker commands, you can configure it with a customized one.  
+
+### For HTTP protocol
+
+1.Modify docker-compose.yml  
+Replace the first "80" to a customized port, e.g. 8888:80.  
+
+```
+proxy:
+    image: library/nginx:1.11.5
+    restart: always
+    volumes:
+      - ./config/nginx:/etc/nginx
+    ports:
+      - 8888:80
+      - 443:443
+    depends_on:
+      - mysql
+      - registry
+      - ui
+      - log
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "proxy"
+```
+
+2.Modify board.cfg, add the port to the parameter "hostname"  
+
+```  
+hostname = 192.168.0.2:8888
+```
+
+3.Re-deploy Board refering to previous section "Managing Board's lifecycle".
+
+## Troubleshooting
+1. When Board does not work properly, run the below commands to find out if all containers of Board are in **UP** status: 
+
+```
+    $ sudo docker-compose ps
+
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                                NAMES
+62cb2eb426fa        board_nginx         "nginx -g 'daemon ..."   5 minutes ago       Up 3 seconds        0.0.0.0:80->80/tcp                   deploy_proxy_1
+2bb582969018        board_apiserver     "sh /usr/bin/entry..."   5 minutes ago       Up 3 seconds        0.0.0.0:8088->8088/tcp               deploy_apiserver_1
+135bfdfa6046        board_collector     "/usr/bin/collector"     5 minutes ago       Up 2 seconds        8080/tcp                             deploy_collector_1
+2fb85aec5bdd        board_gitserver     "sh entrypoint.sh"       5 minutes ago       Up 4 seconds        22/tcp                               deploy_gitserver_1
+59c112ec88be        board_jenkins       "/bin/tini -- /usr..."   5 minutes ago       Up 4 seconds        8080/tcp, 0.0.0.0:50000->50000/tcp   deploy_jenkins_1
+d4985d4f21b7        board_mysql         "docker-entrypoint..."   5 minutes ago       Up 4 seconds        0.0.0.0:3306->3306/tcp               deploy_mysql_1
+30d297841029        board_tokenserver   "/usr/bin/tokenserver"   5 minutes ago       Up 4 seconds        4000/tcp                             deploy_tokenserver_1
+efc3e8ff4585        board_log           "/bin/sh -c 'crond..."   5 minutes ago       Up 5 seconds        0.0.0.0:1514->514/tcp                deploy_log_1
+
+```
+
+If a container is not in **UP** state, check the log file of that container in directory ```/var/log/board```. For example, if the container ```apiserver``` is not running, you should look at the log file ```apiserver.log```.  
+
+
+2.When setting up Board behind an nginx proxy or elastic load balancing, look for the line below, in `common/templates/nginx/nginx.http.conf` and remove it from the sections if the proxy already has similar settings: `location /`, `location /v2/` and `location /service/`.
+```
+proxy_set_header X-Forwarded-Proto $scheme;
+```
+and re-deploy Board refer to the previous section "Managing Board's lifecycle".
+
+
+## Appendix 
+
+### Kubernetes Cluster Install
 
 Recommended OS: CentOS7.2
 
@@ -28,7 +245,7 @@ Dependent packages:
 | kubernetes-master     | 1.5.3    |
 
 
-#### Install and enable docker service
+#### Install and Enable Docker Service
 
  ```
 $ yum -y install docker-1.17.3
@@ -82,7 +299,7 @@ $ systemctl start etcd.service
     
 ```
 
-#### Install and configure kubernetes-master
+#### Install and Configure Kubernetes Master
 
 Board platform customize and optimize [kubernetes](https://kubernetes.io/) as its controller, need to install kubernetes packages in K-master
 
@@ -127,25 +344,43 @@ $ systemctl start kube-controller.service
 $ systemctl enable kube-scheduler
 $ systemctl start kube-scheduler
 ```
+#### Install and Configure Kubernetes Nodes
 
+Install kubernetes node softwares on a node
+```
+$ yum install -y docker kubelet kubeadm kubectl kubernetes-cni
+```
 
+Start docker on a node
+```
+$ systemctl enable docker && systemctl start docker
+```
 
+Start kubelet on a node
+```
+$ systemctl enable kubelet && systemctl start kubelet
+```
 
+Join the kubernetes cluster
+```
+$ kubeadm join --token <token> <KUBE_MASTER_IP:PORT>
+```
 
-## Board node client installation
-User can add client node to cluster by accessing Board Web UI automatically. There are some preparations required on the client node before adding.
+* Manage the nodes in the cluster by Board
 
-### Prepare Board-node
+User can monitor all nodes in the current cluster by the Board system, click the "nodes" button:
+<img src="img/userguide/node1.JPG" width="100" alt="List nodes in cluster">
 
-Open SSH service
+User can manage the nodes by operations, such as remove a node from the cluster:
+<img src="img/userguide/node3.JPG" width="100" alt="Remove a node from cluster">
 
-Open Root access by the node IP address
+### Network Configuration
 
-### Add Board-node by Board UI
-<img src="img/addnode.PNG" width="100" alt="Add Board Node">
+### Storage Configuration 
 
-## Network configuration for Board Cluster
+### Registry Installation
 
-## Board registry installation
+### Ansible One-step Install
 
-## Storage configuration for Board Cluster
+### Anbari One-step Install
+

@@ -1,15 +1,13 @@
-import { Component, Input, OnInit, OnDestroy, ViewChild } from '@angular/core';
-
+import { Component, OnInit, OnDestroy, ViewChild, Injector } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 
-import { AppInitService } from '../../app.init.service';
-import { K8sService } from '../service.k8s';
-import { Service } from '../service';
-import { MessageService } from '../../shared/message-service/message.service';
-import { MESSAGE_TARGET, BUTTON_STYLE, MESSAGE_TYPE } from '../../shared/shared.const';
-import { Message } from '../../shared/message-service/message';
+import { State } from "clarity-angular";
 
+import { Service } from '../service';
+import { MESSAGE_TARGET, BUTTON_STYLE, MESSAGE_TYPE, SERVICE_STATUS } from '../../shared/shared.const';
+import { Message } from '../../shared/message-service/message';
 import { ServiceDetailComponent } from './service-detail/service-detail.component';
+import { ServiceStepBase } from "../service-step";
 
 class ServiceData {
   id: number;
@@ -24,19 +22,26 @@ class ServiceData {
 }
 
 @Component({
-  templateUrl: './list-service.component.html'
+  templateUrl: './list-service.component.html',
+  styleUrls: ["./list-service.component.css"]
 })
-export class ListServiceComponent implements OnInit, OnDestroy {
-  @Input() data: any;
+export class ListServiceComponent extends ServiceStepBase implements OnInit, OnDestroy {
   currentUser: {[key: string]: any};
   services: Service[];
+  isInLoading: boolean = false;
+  isServiceControlOpen: boolean = false;
+  serviceControlData: Service;
+  checkboxRevertInfo: {isNeeded: boolean; value: boolean;};
   _subscription: Subscription;
+
+  totalRecordCount: number;
+  pageIndex: number = 1;
+  pageSize: number = 15;
 
   @ViewChild(ServiceDetailComponent) serviceDetailComponent;
 
-  constructor(private appInitService: AppInitService,
-              private k8sService: K8sService,
-              private messageService: MessageService) {
+  constructor(protected injector: Injector) {
+    super(injector);
     this._subscription = this.messageService.messageConfirmed$.subscribe(m => {
       let confirmationMessage = <Message>m;
       if (confirmationMessage) {
@@ -46,13 +51,13 @@ export class ListServiceComponent implements OnInit, OnDestroy {
           case MESSAGE_TARGET.DELETE_SERVICE:
             this.k8sService
               .deleteService(serviceData.id)
-              .then(res => {
+              .then(() => {
                 m.message = 'SERVICE.SUCCESSFUL_DELETE';
                 this.messageService.inlineAlertMessage(m);
                 this.retrieve();
               })
               .catch(err => {
-                m.message = 'SERVICE.FAILED_TO_DELETE';
+                m.message = 'SERVICE.FAILED_TO_DELETE_SERVICE';
                 m.type = MESSAGE_TYPE.COMMON_ERROR;
                 this.messageService.inlineAlertMessage(m);
               });
@@ -60,8 +65,8 @@ export class ListServiceComponent implements OnInit, OnDestroy {
           case MESSAGE_TARGET.TOGGLE_SERVICE: {
             let service: ServiceData = confirmationMessage.data;
             this.k8sService
-              .toggleService(service.id, service.status ? 0 : 1)
-              .then(res => {
+              .toggleServiceStatus(service.id, service.status ? 0 : 1)
+              .then(() => {
                 m.message = 'SERVICE.SUCCESSFUL_TOGGLE';
                 this.messageService.inlineAlertMessage(m);
                 this.retrieve();
@@ -80,7 +85,6 @@ export class ListServiceComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.currentUser = this.appInitService.currentUser;
-    this.retrieve();
   }
 
   ngOnDestroy(): void {
@@ -89,47 +93,80 @@ export class ListServiceComponent implements OnInit, OnDestroy {
     }
   }
 
-  get createActionIsDisabled(): boolean {
-    if (this.currentUser &&
-      this.currentUser.hasOwnProperty("user_project_admin") &&
-      this.currentUser.hasOwnProperty("user_system_admin")) {
-      return this.currentUser["user_project_admin"] == 0 && this.currentUser["user_system_admin"] == 0;
-    }
-    return true;
+  serviceInStoppedStatus(s: Service): boolean {
+    return s.service_status == SERVICE_STATUS.STOPPED;
+  }
+
+  serviceCanChangePauseStatus(s: Service): boolean {
+    return s.service_status in [SERVICE_STATUS.RUNNING, SERVICE_STATUS.WARNING];
+  }
+
+  serviceDeleteStatusDisabled(s: Service): boolean {
+    return s.service_status in [SERVICE_STATUS.PREPARING, SERVICE_STATUS.RUNNING];
   }
 
   createService(): void {
-    this.k8sService.stepSource.next(1);
+    this.k8sService.stepSource.next({index: 1, isBack: false});
   }
 
-  retrieve(): void {
-    this.k8sService.getServices()
-      .then(services => this.services = services)
-      .catch(err => this.messageService.dispatchError(err));
+  retrieve(state?: State): void {
+    setTimeout(() => {
+      this.isInLoading = true;
+      this.k8sService.getServices(this.pageIndex, this.pageSize)
+        .then(paginatedServices => {
+          this.totalRecordCount = paginatedServices.pagination.total_count;
+          this.services = paginatedServices.service_status_list;
+          this.isInLoading = false;
+        })
+        .catch(err => {
+          this.messageService.dispatchError(err);
+          this.isInLoading = false;
+        });
+    });
   }
 
-  getServiceStatus(status: number): string {
-    //0: preparing 1: running 2: suspending
+  getServiceStatus(status: SERVICE_STATUS): string {
     switch (status) {
-      case 0:
+      case SERVICE_STATUS.PREPARING:
         return 'SERVICE.STATUS_PREPARING';
-      case 1:
+      case SERVICE_STATUS.RUNNING:
         return 'SERVICE.STATUS_RUNNING';
-      case 2:
+      case SERVICE_STATUS.STOPPED:
         return 'SERVICE.STATUS_STOPPED';
+      case SERVICE_STATUS.WARNING:
+        return 'SERVICE.STATUS_UNCOMPLETED';
     }
   }
 
-  getServicePublic(publicity: number): string {
-    return publicity === 1 ? 'SERVICE.STATUS_PUBLIC' : 'SERVICE.STATUS_PRIVATE';
+  getStatusClass(status: SERVICE_STATUS) {
+    return {
+      'running': status == SERVICE_STATUS.RUNNING,
+      'stopped': status == SERVICE_STATUS.STOPPED,
+      'warning': status == SERVICE_STATUS.WARNING
+    }
   }
 
-  editService(s: Service) {
-
+  toggleServicePublic(s: Service): void {
+    let toggleMessage = new Message();
+    let oldServicePublic = s.service_public;
+    this.k8sService
+      .toggleServicePublicity(s.service_id, s.service_public ? 0 : 1)
+      .then(() => {
+        s.service_public = !oldServicePublic;
+        toggleMessage.message = 'SERVICE.SUCCESSFUL_TOGGLE';
+        this.messageService.inlineAlertMessage(toggleMessage);
+      })
+      .catch(err => {
+        this.messageService.dispatchError(err, '');
+        this.checkboxRevertInfo = {isNeeded: true, value: oldServicePublic};
+      });
   }
 
   confirmToServiceAction(s: Service, action: string): void {
-    let serviceData = new ServiceData(s.service_id, s.service_name, (s.service_status === 1));
+    if (action == 'DELETE' &&
+      (s.service_status != SERVICE_STATUS.STOPPED) &&
+      (s.service_status != SERVICE_STATUS.WARNING)) return;
+    let serviceData = new ServiceData(s.service_id, s.service_name, (s.service_status === SERVICE_STATUS.RUNNING));
     let title: string;
     let message: string;
     let target: MESSAGE_TARGET;
@@ -151,19 +188,20 @@ export class ListServiceComponent implements OnInit, OnDestroy {
     let announceMessage = new Message();
     announceMessage.title = title;
     announceMessage.message = message;
-    announceMessage.params = [ s.service_name ];
+    announceMessage.params = [s.service_name];
     announceMessage.target = target;
     announceMessage.buttons = buttonStyle;
     announceMessage.data = serviceData;
     this.messageService.announceMessage(announceMessage);
   }
 
-  confirmToDeleteService(s: Service) {
-
+  openServiceDetail(s:Service) {
+    this.serviceDetailComponent.openModal(s);
   }
 
-  openServiceDetail(serviceName: string) {
-    this.serviceDetailComponent.openModal(serviceName);
+  openServiceControl(service: Service) {
+    this.serviceControlData = service;
+    this.isServiceControlOpen = true;
   }
 
 }

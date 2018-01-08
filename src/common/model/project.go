@@ -18,3 +18,8 @@ type Project struct {
 	CurrentUserRoleID int64     `json:"project_current_user_role_id" orm:"column(current_user_role_id)"`
 	ServiceCount      int       `json:"project_service_count" orm:"column(service_count)"`
 }
+
+type PaginatedProjects struct {
+	Pagination  *Pagination `json:"pagination"`
+	ProjectList []*Project  `json:"project_list"`
+}
