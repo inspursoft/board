@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/ghodss/yaml"
@@ -35,9 +36,7 @@ func (p *ServiceRollingUpdateController) Prepare() {
 }
 
 func (p *ServiceRollingUpdateController) GetRollingUpdateServiceConfigAction() {
-	projectName, serviceID := p.resolveServiceParam()
-	serviceConfig := p.getServiceConfig(projectName, serviceID)
-
+	serviceConfig, _ := p.getServiceConfig()
 	if serviceConfig.Spec.Template == nil || len(serviceConfig.Spec.Template.Spec.Containers) < 1 {
 		p.customAbort(http.StatusBadRequest, "Requested service's config is invalid.")
 	}
@@ -56,8 +55,6 @@ func (p *ServiceRollingUpdateController) GetRollingUpdateServiceConfigAction() {
 	p.ServeJSON()
 }
 func (p *ServiceRollingUpdateController) PostRollingUpdateServiceConfigAction() {
-	projectName, serviceID := p.resolveServiceParam()
-
 	var imageList []model.ImageIndex
 	reqData, err := p.resolveBody()
 	if err != nil {
@@ -69,7 +66,7 @@ func (p *ServiceRollingUpdateController) PostRollingUpdateServiceConfigAction() 
 	}
 	logs.Debug("Image list info: %+v\n", imageList)
 
-	serviceConfig := p.getServiceConfig(projectName, serviceID)
+	serviceConfig, projectName := p.getServiceConfig()
 	if len(serviceConfig.Spec.Template.Spec.Containers) != len(imageList) {
 		p.customAbort(http.StatusConflict, "Image's config is invalid.")
 	}
@@ -115,7 +112,7 @@ func (p *ServiceRollingUpdateController) PostRollingUpdateServiceConfigAction() 
 
 }
 
-func (p *ServiceRollingUpdateController) resolveServiceParam() (string, string) {
+func (p *ServiceRollingUpdateController) getServiceConfig() (*v1.ReplicationController, string) {
 	projectName := p.GetString("project_name")
 	isExistence, err := service.ProjectExists(projectName)
 	if err != nil {
@@ -126,18 +123,15 @@ func (p *ServiceRollingUpdateController) resolveServiceParam() (string, string) 
 	}
 
 	serviceName := p.GetString("service_name")
-	serviceID, err := getServiceID(serviceName, projectName)
+	serviceStatus, err := service.GetServiceByProject(serviceName, projectName)
 	if err != nil {
 		p.internalError(err)
 	}
-	if serviceID == "" {
+	if serviceStatus == nil {
 		p.customAbort(http.StatusBadRequest, "Service name don't exist.")
 	}
-	return projectName, serviceID
-}
 
-func (p *ServiceRollingUpdateController) getServiceConfig(projectName string, serviceID string) *v1.ReplicationController {
-	absFileName := filepath.Join(repoPath(), projectName, serviceID, deploymentFilename)
+	absFileName := filepath.Join(repoPath(), projectName, strconv.Itoa(int(serviceStatus.ID)), deploymentFilename)
 	logs.Info("User: %s get deployment.yaml images info from %s.", p.currentUser.Username, absFileName)
 
 	yamlFile, err := ioutil.ReadFile(absFileName)
@@ -151,14 +145,12 @@ func (p *ServiceRollingUpdateController) getServiceConfig(projectName string, se
 		p.internalError(err)
 	}
 
-	return &rcConfig
+	return &rcConfig, projectName
 }
 
 func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceAction() {
 
-	projectName, serviceID := p.resolveServiceParam()
 	var imageList []model.ImageIndex
-	logs.Debug(projectName, serviceID)
 	reqData, err := p.resolveBody()
 	if err != nil {
 		p.internalError(err)
@@ -170,9 +162,7 @@ func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceAction() {
 	}
 	logs.Debug("Image list info: %+v\n", imageList)
 
-	serviceConfig := p.getServiceConfig(projectName, serviceID)
-	//logs.Debug("v1 RC serviceConfig: %+v\n", serviceConfig)
-
+	serviceConfig, projectName := p.getServiceConfig()
 	if len(serviceConfig.Spec.Template.Spec.Containers) != len(imageList) {
 		p.customAbort(http.StatusConflict, "Image's config is invalid.")
 	}

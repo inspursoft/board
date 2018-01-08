@@ -25,20 +25,19 @@ const (
 	deploymentKind       = "Deployment"
 	maxPort              = 32765
 	minPort              = 30000
-	maxFileLen           = 2048
 )
 
 var (
-	pathErr             = errors.New("ERR_DEPLOYMENT_PATH_NOT_DIRECTORY")
-	emptyServiceNameErr = errors.New("ERR_NO_SERVICE_NAME")
-	portMaxErr          = errors.New("ERR_SERVICE_NODEPORT_EXCEED_MAX_LIMIT")
-	portMinErr          = errors.New("ERR_SERVICE_NODEPORT_EXCEED_MIN_LIMIT")
-	emptyDeployErr      = errors.New("ERR_NO_DEPLOYMENT_NAME")
-	invalidErr          = errors.New("ERR_DEPLOYMENT_REPLICAS_INVAILD")
-	emptyContainerErr   = errors.New("ERR_NO_CONTAINER")
-	NameInconsistent    = errors.New("ERR_SERVICE_NAME_AND_DEPLOYMENT_NAME_INCONSISTENT")
-	DeploymentNotFound  = errors.New("ERR_DEPLOYMENT_NOT_FOUND")
-	ServiceNotFound     = errors.New("ERR_SERVICE_NOT_FOUND")
+	pathErr               = errors.New("ERR_DEPLOYMENT_PATH_NOT_DIRECTORY")
+	emptyServiceNameErr   = errors.New("ERR_NO_SERVICE_NAME")
+	portMaxErr            = errors.New("ERR_SERVICE_NODEPORT_EXCEED_MAX_LIMIT")
+	portMinErr            = errors.New("ERR_SERVICE_NODEPORT_EXCEED_MIN_LIMIT")
+	emptyDeployErr        = errors.New("ERR_NO_DEPLOYMENT_NAME")
+	invalidErr            = errors.New("ERR_DEPLOYMENT_REPLICAS_INVAILD")
+	emptyContainerErr     = errors.New("ERR_NO_CONTAINER")
+	NameInconsistentErr   = errors.New("ERR_SERVICE_NAME_AND_DEPLOYMENT_NAME_INCONSISTENT")
+	DeploymentNotFoundErr = errors.New("ERR_DEPLOYMENT_NOT_FOUND")
+	ServiceNotFoundErr    = errors.New("ERR_SERVICE_NOT_FOUND")
 )
 
 func CheckDeploymentPath(loadPath string) error {
@@ -87,39 +86,37 @@ func CheckServicePara(reqServiceConfig model.ServiceConfig2) error {
 func CheckDeployAndServiceYamlFiles(deploymentFile multipart.File, serviceFile multipart.File) error {
 	var service modelK8s.Service
 	var deployment modelK8s.ReplicationController
-	deploymentConfig := make([]byte, maxFileLen)
-	serviceConfig := make([]byte, maxFileLen)
 
-	deploymentLen, err := deploymentFile.Read(deploymentConfig)
+	deploymentConfig, err := ioutil.ReadAll(deploymentFile)
 	if err != nil {
 		return err
 	}
 
-	err = yaml.Unmarshal(deploymentConfig[:deploymentLen], &deployment)
+	err = yaml.Unmarshal(deploymentConfig, &deployment)
 	if err != nil {
 		return err
 	}
 
-	serviceLen, err := serviceFile.Read(serviceConfig)
+	serviceConfig, err := ioutil.ReadAll(serviceFile)
 	if err != nil {
 		return err
 	}
 
-	err = yaml.Unmarshal(serviceConfig[:serviceLen], &service)
+	err = yaml.Unmarshal(serviceConfig, &service)
 	if err != nil {
 		return err
 	}
 
+	//Currently take name as selector label.
 	if deployment.ObjectMeta.Name != service.ObjectMeta.Name {
-		return NameInconsistent
+		return NameInconsistentErr
 	}
 
 	return nil
 }
 
 func GetYamlFileServiceName(file multipart.File, fileName string) (string, error) {
-	config := make([]byte, maxFileLen)
-	n, err := file.Read(config)
+	config, err := ioutil.ReadAll(file)
 	if err != nil {
 		return "", err
 	}
@@ -128,13 +125,13 @@ func GetYamlFileServiceName(file multipart.File, fileName string) (string, error
 	var deployment modelK8s.ReplicationController
 	var serviceName string
 	if fileName == deploymentFilename {
-		err = yaml.Unmarshal(config[:n], &deployment)
+		err = yaml.Unmarshal(config, &deployment)
 		if err != nil {
 			return "", err
 		}
 		serviceName = deployment.ObjectMeta.Name
 	} else if fileName == serviceFilename {
-		err = yaml.Unmarshal(config[:n], &service)
+		err = yaml.Unmarshal(config, &service)
 		if err != nil {
 			return "", err
 		}
@@ -249,10 +246,7 @@ func GenerateYamlFile(name string, structdata interface{}) error {
 }
 
 func GenerateDeploymentYamlFileFromK8S(deployConfigURL string, absFileName string) error {
-	deployConfig, err, isFound := GetDeployConfig(deployConfigURL)
-	if isFound == false {
-		return DeploymentNotFound
-	}
+	deployConfig, err := GetDeployConfig(deployConfigURL)
 	if err != nil {
 		return err
 	}
@@ -261,10 +255,7 @@ func GenerateDeploymentYamlFileFromK8S(deployConfigURL string, absFileName strin
 }
 
 func GenerateServiceYamlFileFromK8S(serviceConfigURL string, absFileName string) error {
-	serviceConfig, err, isFound := GetServiceStatus(serviceConfigURL)
-	if isFound == false {
-		return ServiceNotFound
-	}
+	serviceConfig, err := GetServiceStatus(serviceConfigURL)
 	if err != nil {
 		return err
 	}

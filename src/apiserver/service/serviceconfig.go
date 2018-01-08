@@ -67,12 +67,23 @@ func Deploy(config *model.ServiceConfig) error {
 	return nil
 }
 
-func CreateServiceConfig(s model.ServiceStatus) (int64, error) {
-	serviceID, err := dao.AddService(s)
+func CreateServiceConfig(serviceConfig model.ServiceStatus) (*model.ServiceStatus, error) {
+	query := model.Project{Name: serviceConfig.ProjectName}
+	project, err := GetProject(query, "name")
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return serviceID, err
+	if project == nil {
+		return nil, errors.New("project is invalid")
+	}
+
+	serviceConfig.ProjectID = project.ID
+	serviceID, err := dao.AddService(serviceConfig)
+	if err != nil {
+		return nil, err
+	}
+	serviceConfig.ID = serviceID
+	return &serviceConfig, err
 }
 
 func UpdateService(s model.ServiceStatus, fieldNames ...string) (bool, error) {
@@ -161,10 +172,21 @@ func GetService(service model.ServiceStatus, selectedFields ...string) (*model.S
 	return s, nil
 }
 
-func GetDeployConfig(deployConfigURL string) (modelK8sExt.Deployment, error, bool) {
+func GetServiceByProject(serviceName string, projectName string) (*model.ServiceStatus, error) {
+	var servicequery model.ServiceStatus
+	servicequery.Name = serviceName
+	servicequery.ProjectName = projectName
+	service, err := GetService(servicequery, "name", "project_name")
+	if err != nil {
+		return nil, err
+	}
+	return service, nil
+}
+
+func GetDeployConfig(deployConfigURL string) (modelK8sExt.Deployment, error) {
 	var deployConfig modelK8sExt.Deployment
-	flag, err := k8sGet(&deployConfig, deployConfigURL)
-	return deployConfig, err, flag
+	err := k8sGet(&deployConfig, deployConfigURL)
+	return deployConfig, err
 }
 
 func SyncServiceWithK8s() error {
