@@ -63,7 +63,7 @@ func DeleteService(service model.ServiceStatus) (int64, error) {
 }
 
 func generateServiceStatusSQL(query model.ServiceStatus, userID int64) (string, []interface{}) {
-	sql := `select s.id, s.name, s.project_name, u.username as owner_name, s.owner_id, s.creation_time, s.status, s.public
+	sql := `select distinct s.id, s.name, s.project_name, u.username as owner_name, s.owner_id, s.creation_time, s.status, s.public
 	from service_status s 
 		left join project_member pm on s.project_id = pm.project_id
 		left join project p on p.id = pm.project_id
