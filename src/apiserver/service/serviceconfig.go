@@ -124,46 +124,33 @@ func DeleteService(serviceID int64) (bool, error) {
 	return true, nil
 }
 
-func GetServiceStatus(serviceUrl string) (modelK8s.Service, error, bool) {
+func GetServiceStatus(serviceURL string) (*modelK8s.Service, error) {
 	var service modelK8s.Service
-
-	flag, err := k8sGet(&service, serviceUrl)
-	if flag == false {
-		return service, err, false
-	}
+	logs.Debug("Get Service info serviceURL(service): %+s", serviceURL)
+	err := k8sGet(&service, serviceURL)
 	if err != nil {
-		return service, err, true
+		return nil, err
 	}
-
-	return service, err, true
+	return &service, nil
 }
 
-func GetNodesStatus(nodesUrl string) (modelK8s.NodeList, error, bool) {
+func GetNodesStatus(nodesURL string) (*modelK8s.NodeList, error) {
 	var nodes modelK8s.NodeList
-
-	flag, err := k8sGet(&nodes, nodesUrl)
-	if flag == false {
-		return nodes, err, false
-	}
+	logs.Debug("Get Node info nodeURL (endpoint): %+s", nodesURL)
+	err := k8sGet(&nodes, nodesURL)
 	if err != nil {
-		return nodes, err, true
+		return nil, err
 	}
-
-	return nodes, err, true
+	return &nodes, nil
 }
 
-func GetEndpointStatus(serviceUrl string) (modelK8s.Endpoints, error, bool) {
+func GetEndpointStatus(serviceUrl string) (*modelK8s.Endpoints, error) {
 	var endpoint modelK8s.Endpoints
-
-	flag, err := k8sGet(&endpoint, serviceUrl)
-	if flag == false {
-		return endpoint, err, false
-	}
+	err := k8sGet(&endpoint, serviceUrl)
 	if err != nil {
-		return endpoint, err, true
+		return nil, err
 	}
-
-	return endpoint, err, true
+	return &endpoint, nil
 }
 
 func GetService(service model.ServiceStatus, selectedFields ...string) (*model.ServiceStatus, error) {

@@ -795,6 +795,109 @@ paths:
           description: User need to log in first.
         500:
           description: Internal errors.
+  /v1/services/rollingupdate:
+    get:
+      summary: Return the results the rolling update service config.
+      description: 
+        This endpoint returns the results the rolling update service config.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name 
+          in: query
+          description: Project name for filtering results.
+          required: false
+          type: string
+        - name: service_name 
+          in: query
+          description: Service name for filtering results.
+          required: false
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched services.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+    post:
+      summary: Return the results of rolling update service.
+      description: 
+        This endpoint returns the results of rolling update service.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name 
+          in: query
+          description: Project name for filtering results.
+          required: false
+          type: string
+        - name: service_name 
+          in: query
+          description: Service name for filtering results.
+          required: false
+          type: string
+        - name: image_list 
+          in: body
+          type: object
+          items:
+            $ref: '#/definitions/ImageList'
+          description: Updates of imagelist data.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched services.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+    patch:
+      summary: Rolling update the images of the service.
+      description: 
+        This endpoint is to roll update the images of the service.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name 
+          in: query
+          description: Project name.
+          required: true
+          type: string
+        - name: service_name 
+          in: query
+          description: Service name.
+          required: true
+          type: string
+        - name: image_list 
+          in: body
+          description: Updates of imagelist data.
+          required: true
+          type: object
+          items:
+            $ref: '#/definitions/ImageList'
+      tags:
+        - Products
+      responses:
+        200:
+          description: Update service successfully.
+        401:
+          description: User need to log in first.
+        409:
+          description: The updated image list conflict.
+        500:
+          description: Internal errors.
   /v1/services/reconfig:
     get:
       summary: load service config from service DB.
@@ -960,23 +1063,23 @@ paths:
           description: User need to log in first.
         500:
           description: Internal errors.  
-  /v1/services/info/{service_name}:
+  /v1/services/{service_id}/info:
     get:
       summary: Return specific service_name infomation.
       description: |
-        This endpoint returns specific service  information by service_name.
+        This endpoint returns specific service information by service_name.
       parameters:
         - name: token
           in: header
           type: string
           required: true
           description: Current available token.
-        - name: service_name
+        - name: service_id
           in: path
-          description: Service name for filtering results.
-          required: true
           type: integer
-          format: string
+          format: int32
+          required: true
+          description: Selected service ID.
       tags:
         - Products
       responses:
@@ -1090,22 +1193,19 @@ paths:
           description: Current available token.
         - name: service_name
           in: query
-          description: Service name for filtering results.
+          description: Service name.
           required: true
-          type: integer
-          format: string
+          type: string
         - name: project_name
           in: query
-          description: project_name for filtering results.
+          description: Project name.
           required: true
-          type: integer
-          format: string
+          type: string
         - name: yaml_type
           in: query
           description: service yaml file type for filtering results.
           required: true
-          type: integer
-          format: string
+          type: string
         - name: upload_file
           in: formData
           type: file
@@ -1113,13 +1213,60 @@ paths:
           description: File to be uploaded.
       tags:
         - Products
-      responses:
+      responses:  
         200:
-          description: An array of search results.           
+          description: Upload files successfully return service id.     
+          schema:
+            description: The service id.  
+            type: string     
         400:
           description: Bad Request
         401:
           description: Unauthorized
+        500:
+          description: Unexpected internal errors. 
+  /v1/services/yaml/check:
+    get:
+      summary: Check the yaml files and return service name
+      description:
+        This endpoint to check the yaml files and return service name.
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name
+          in: query
+          description: project_name for filtering results.
+          required: true
+          type: string
+        - name: deployment_file
+          in: formData
+          type: file
+          required: true
+          description: deployment yaml to be uploaded.
+        - name: service_file
+          in: formData
+          type: file
+          required: true
+          description: service yaml to be uploaded.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Check successfully return service name.     
+          schema:
+            type: string
+            description: The service name.       
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        409:
+          description: Service name already exists.
         500:
           description: Unexpected internal errors. 
   /v1/services/yaml/download:
@@ -1162,9 +1309,9 @@ paths:
           description: Unauthorized
         500:
           description: Unexpected internal errors.
-  /v1/services/status/{service_name}:
+  /v1/services/{service_id}/status:
     get:
-      summary: Return specific service_name status.
+      summary: Return specific service status.
       description: |
         This endpoint returns specific service status by service_name.
       parameters:
@@ -1173,12 +1320,12 @@ paths:
           type: string
           required: true
           description: Current available token.
-        - name: service_name
+        - name: service_id
           in: path
-          description: Service name for filtering results.
-          required: true
           type: integer
-          format: string
+          format: int32
+          required: true
+          description: Selected service ID.
       tags:
         - Products
       responses:

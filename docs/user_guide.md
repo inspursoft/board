@@ -1,4 +1,4 @@
-# User Guide  
+## User Guide  
 ## Overview  
 This guide walks you through the fundamentals of using Board. You'll learn how to use Board to:  
 
@@ -17,7 +17,7 @@ This guide walks you through the fundamentals of using Board. You'll learn how t
 * Q&A
 
 ## User account
-Board supports databse authentication modes, will support LDAP next release:  
+Board supports databse authentication modes and support LDAP mode:  
 
 * **Database(db_auth)**  
 
@@ -26,13 +26,6 @@ Board supports databse authentication modes, will support LDAP next release:
 	A user can register himself/herself in Board in this mode. To disable user self-registration, refer to the [installation guide](installation_guide.md) for initial configuration, or disable this feature in [Administrator Options](#administrator-options). When self-registration is disabled, the system administrator can add users into Board. 
 	
 	When registering or adding a new user, the username and email must be unique in the Board system. The password must contain at least 8 characters with 1 lowercase letter, 1 uppercase letter and 1 numeric character.  
-	
-	When you forgot your password, you can follow the below steps to reset the password(need SMTP server support):  
-
-	1. Click the link "Forgot Password" in the sign in page.  
-	2. Input the email address entered when you signed up, an email will be sent out to you for password reset.  
-	3. After receiving the email, click on the link in the email which directs you to a password reset web page.  
-	4. Input your new password and click "Save".  
 	
 * **LDAP/Active Directory (ldap_auth)**  
 
@@ -46,9 +39,9 @@ Board supports databse authentication modes, will support LDAP next release:
 
 Board manages services through projects on container service platform. Users can be added into one services as a member with 3 different roles:  
 
-* **Guest**: Guest has read-only privilege for public project and sevices.
-* **ProjectMember**: Developer has read and write privileges for a project.
-* **ProjectAdmin**: When creating a new project, you will be assigned the "ProjectAdmin" role to the project. Besides read-write privileges, the "ProjectAdmin" also has some management privileges, such as adding and removing members.
+* **Anonymous**: Can search public project and sevices but only-read.
+* **System Admin**: Have supper role to read and write all project.
+* **Restry User**: When creating a new project incluce privilege and public, you will be assigned the "ProjectMember role to the project. the "ProjectMember" and read and write the project but can not delete the project.
 
 Besides the above three roles, there are two system-wide roles:  
 
@@ -81,18 +74,14 @@ You can update or remove a member by clicking the left arrow to remove or right 
 
 <img src="img/userguide/add-remove-members.png" width="100" alt="Board add remove members">
 
-### Changing member role
-
-You can change member's role by clicking role radio button below.
-
-<img src="img/userguide/change-member-role.png" width="100" alt="Board change member role">
-
 ## Manage Services
 
 Board supports creating container service. All services must be grouped by projects. Click into "create service", the first step is to select a project. if there is no project, please create a project first. 
 
 ### Build Images
-On the "select images" page, select "Create Custom Image" from the pull-down menu to build new image.
+On the "select images" page, select "Create Custom Image" from the pull-down menu to build new image. Or on the "images" page, click "create image"
+Surpport three method to create images that are "Use template for creaton", "Use Dockerfile for creation", "Create by DevOps method"(will be surpport)
+Use template for creaton：
 There will be a pop-up window for user to input image parameters for building.
 * New Image Name
 * Image Tag
@@ -103,6 +92,13 @@ There will be a pop-up window for user to input image parameters for building.
 * Image Run
 * Image Expose
 * Upload External Archives
+* Command
+
+Use Dockerfile for creation:
+There will be a pop-up window for user to input image parameters for building.
+* New Image Name
+* Image Tag
+* Select Dockerfile for build image
 
 After fill in all required parameters, click "Build image" to start building the new image.
 If build successfully, the new image will be added into Board's registry.
@@ -123,6 +119,7 @@ The following parameters could be customized for containers of this service.
 Next step to configure service.
 The following parameters could be customized for this service.
 * Service Name
+* External service
 * Instance
 
 In the advanced configuration, can assign node pord for external service.

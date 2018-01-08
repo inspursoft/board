@@ -293,14 +293,28 @@ func (p *ImageController) BuildImageAction() {
 		reqImageConfig.ImageName, reqImageConfig.ImageTag)
 
 	// Check image:tag path existing for rebuild
-	existing, err := exists(reqImageConfig.ImageDockerfilePath)
+	//existing, err := exists(reqImageConfig.ImageDockerfilePath)
+	//if err != nil {
+	//	p.internalError(err)
+	//	return
+	//}
+	//
+	//if existing {
+	//	logs.Error("This image:tag existing in system %s", reqImageConfig.ImageDockerfilePath)
+	//	p.customAbort(http.StatusConflict, "This image:tag already existing.")
+	//	return
+	//}
+
+	// Check image:tag existing in registry
+	existing, err := existRegistry(reqImageConfig.ProjectName, reqImageConfig.ImageName,
+		reqImageConfig.ImageTag)
 	if err != nil {
 		p.internalError(err)
 		return
 	}
 
 	if existing {
-		logs.Error("This image:tag existing in system %s", reqImageConfig.ImageDockerfilePath)
+		logs.Error("This image:tag existing in registry %s", reqImageConfig.ImageDockerfilePath)
 		p.customAbort(http.StatusConflict, "This image:tag already existing.")
 		return
 	}
@@ -857,8 +871,78 @@ func (p *ImageController) CheckImageTagExistingAction() {
 	}
 
 	// TODO check image imported from registry
-	logs.Debug("checking image:tag result %t", existing)
+	existing, err = existRegistry(projectName, imageName, imageTag)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
 
+	if existing {
+		logs.Info("This image:tag existing in system %s", dockerfilePath)
+		p.customAbort(http.StatusConflict, "This image:tag already existing.")
+		return
+	}
+
+	logs.Debug("checking image:tag result %t", existing)
 	p.ServeJSON()
 	return
+}
+
+func existRegistry(projectName string, imageName string, imageTag string) (bool, error) {
+	var repolist model.RegistryRepo
+	realName := filepath.Join(projectName, imageName)
+
+	//check image
+	httpresp, err := http.Get(registryURL() + "/v2/_catalog")
+	if err != nil {
+		logs.Error("Get image URL: %s", registryURL())
+		return true, err
+	}
+
+	body, err := ioutil.ReadAll(httpresp.Body)
+	if err != nil {
+		logs.Error("Failed to read image body %+v", err)
+		return true, err
+	}
+
+	err = json.Unmarshal(body, &repolist)
+	if err != nil {
+		logs.Error("Failed to unmarshal repolist body %+v", err)
+		return true, err
+	}
+	for _, imageRegistry := range repolist.Names {
+		if imageRegistry == realName {
+			//check tag
+			var taglist model.RegistryTags
+			gettagsurl := "/v2/" + realName + "/tags/list"
+
+			httpresp, err := http.Get(registryURL() + gettagsurl)
+			if err != nil {
+				logs.Error("Get image detail URL: %s", gettagsurl)
+				return true, err
+			}
+
+			body, err := ioutil.ReadAll(httpresp.Body)
+			if err != nil {
+				logs.Error("Failed to read body %+v", err)
+				return true, err
+			}
+
+			err = json.Unmarshal(body, &taglist)
+			if err != nil {
+				logs.Error("Failed to unmarshal body %+v", err)
+				return true, err
+			}
+
+			for _, tagid := range taglist.Tags {
+
+				if imageTag == tagid {
+					logs.Info("Image tag existing %s:%s", realName, tagid)
+					return true, nil
+				}
+			}
+		}
+	}
+
+	return false, err
 }

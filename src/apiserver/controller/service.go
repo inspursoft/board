@@ -20,14 +20,15 @@ import (
 const (
 	deploymentFilename     = "deployment.yaml"
 	serviceFilename        = "service.yaml"
+	rollingUpdateFilename  = "rollingUpdateDeployment.yaml"
 	deploymentTestFilename = "testdeployment.yaml"
 	serviceTestFilename    = "testservice.yaml"
 	serviceProcess         = "process_service"
+	rollingUpdate          = "rolling_update"
 	apiheader              = "Content-Type: application/yaml"
 	deploymentAPI          = "/apis/extensions/v1beta1/namespaces/"
 	serviceAPI             = "/api/v1/namespaces/"
 	test                   = "test"
-	nacomment              = "NA"
 	serviceNamespace       = "default" //TODO create in project post
 	k8sServices            = "kubernetes"
 )
@@ -691,46 +692,66 @@ func stopServiceK8s(s *model.ServiceStatus) error {
 	return nil
 }
 
+func (p *ServiceController) resolveErrOutput(err error) {
+	if err != nil {
+		if strings.Index(err.Error(), "StatusNotFound:") == 0 {
+			var output interface{}
+			json.Unmarshal([]byte(err.Error()), &output)
+			p.Data["json"] = output
+			p.ServeJSON()
+			return
+		}
+		p.internalError(err)
+	}
+}
+
 func (p *ServiceController) GetServiceInfoAction() {
 	var serviceInfo model.ServiceInfoStruct
 
 	//Get Nodeport
-	serviceName := p.Ctx.Input.Param(":service_name")
-	serviceURL := fmt.Sprintf("%s/api/v1/namespaces/default/services/%s", kubeMasterURL(), serviceName)
-	logs.Debug("Get Service info serviceURL(service): %+s", serviceURL)
-	serviceStatus, err, flag := service.GetServiceStatus(serviceURL)
-	var errOutput interface{}
-	if flag == false {
-		json.Unmarshal([]byte(err.Error()), &errOutput)
-		p.Data["json"] = errOutput
-		p.ServeJSON()
-		return
-	}
-
+	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
 	if err != nil {
 		p.internalError(err)
 		return
 	}
 
+	var servicequery model.ServiceStatus
+	servicequery.ID = int64(serviceID)
+	s, err := service.GetService(servicequery, "id")
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if s == nil {
+		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
+		return
+	}
+
+	isMember, err := service.IsProjectMember(s.ProjectID, p.currentUser.ID)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	//Judge authority
+	if !(p.isSysAdmin || isMember) {
+		p.customAbort(http.StatusForbidden, "Insufficient privileges to get publicity of service.")
+		return
+	}
+	serviceStatus, err := service.GetServiceStatus(kubeMasterURL() + serviceAPI + s.ProjectName + "/services/" + s.Name)
+	if err != nil {
+		p.resolveErrOutput(err)
+		return
+	}
 	//Get NodeIP
 	//endpointUrl format /api/v1/namespaces/default/endpoints/
-	nodesURL := fmt.Sprintf("%s/api/v1/nodes", kubeMasterURL())
-	logs.Debug("Get Node info nodeURL (endpoint): %+s", nodesURL)
-	nodesStatus, err, flag := service.GetNodesStatus(nodesURL)
-	if flag == false {
-		json.Unmarshal([]byte(err.Error()), &errOutput)
-		p.Data["json"] = errOutput
-		p.ServeJSON()
-		return
-	}
-
+	nodesStatus, err := service.GetNodesStatus(fmt.Sprintf("%s/api/v1/nodes", kubeMasterURL()))
 	if err != nil {
-		p.internalError(err)
+		p.resolveErrOutput(err)
 		return
 	}
-
 	if len(serviceStatus.Spec.Ports) == 0 || len(nodesStatus.Items) == 0 {
-		p.Data["json"] = nacomment
+		p.Data["json"] = "NA"
 		p.ServeJSON()
 		return
 	}
@@ -747,20 +768,39 @@ func (p *ServiceController) GetServiceInfoAction() {
 }
 
 func (p *ServiceController) GetServiceStatusAction() {
-	serviceName := p.Ctx.Input.Param(":service_name")
-	serviceURL := fmt.Sprintf("%s/api/v1/namespaces/default/services/%s", kubeMasterURL(), serviceName)
-	logs.Debug("Get Service Status serviceURL: %+s", serviceURL)
-	serviceStatus, err, flag := service.GetServiceStatus(serviceURL)
-
-	var errOutput interface{}
-	if flag == false {
-		json.Unmarshal([]byte(err.Error()), &errOutput)
-		p.Data["json"] = errOutput
-		p.ServeJSON()
-		return
-	}
+	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
 	if err != nil {
 		p.internalError(err)
+		return
+	}
+
+	var servicequery model.ServiceStatus
+	servicequery.ID = int64(serviceID)
+	s, err := service.GetService(servicequery, "id")
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if s == nil {
+		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
+		return
+	}
+
+	isMember, err := service.IsProjectMember(s.ProjectID, p.currentUser.ID)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	//Judge authority
+	if !(p.isSysAdmin || isMember) {
+		p.customAbort(http.StatusForbidden, "Insufficient privileges to get publicity of service.")
+		return
+	}
+
+	serviceStatus, err := service.GetServiceStatus(kubeMasterURL() + serviceAPI + s.ProjectName + "/services/" + s.Name)
+	if err != nil {
+		p.resolveErrOutput(err)
 		return
 	}
 	p.Data["json"] = serviceStatus

@@ -253,6 +253,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   }
 
   buildImageByTemplate(): Promise<any> {
+    this.toggleCancelBuilding = true;
     return this.imageService.buildImageFromTemp(this.customerNewImage);
   }
 
@@ -278,7 +279,6 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
       .connect(`ws://${this.boardHost}/api/v1/jenkins-job/console?job_name=process_image&token=${this.appInitService.token}`)
       .subscribe((obs: MessageEvent) => {
         this.consoleText = <string>obs.data;
-        this.toggleCancelBuilding = true;
         let consoleTextArr: Array<string> = this.consoleText.split(/[\n]/g);
         if (consoleTextArr.find(value => value.indexOf("Finished: SUCCESS") > -1)) {
           this.isNeedAutoRefreshImageList = true;
