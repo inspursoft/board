@@ -54,17 +54,18 @@ export class MainContentComponent {
     return this.appInitService.guideStep;
   }
 
-  get someAny(): boolean{
-    if (this.appInitService.guideStep == GUIDE_STEP.SERVICE_LIST){
-      console.log(3);
-    }
-    return true
+  setGuideNoneStep(){
+    this.appInitService.guideStep = GUIDE_STEP.NONE_STEP;
   }
 
   guideNextStep(step: GUIDE_STEP){
     if (step == GUIDE_STEP.PROJECT_LIST){
       this.navigateTo('/projects');
       this.appInitService.guideStep = GUIDE_STEP.CREATE_PROJECT;
+    }
+    if (step == GUIDE_STEP.SERVICE_LIST){
+      this.navigateTo('/services');
+      this.appInitService.guideStep = GUIDE_STEP.CREATE_SERVICE;
     }
   }
 }

@@ -3,7 +3,7 @@
   <clr-signpost-content [clrPosition]="position" *clrIfOpen>
     <div class="signpost-content-container">
       <h4 class="signpost-content-title">{{"GUIDE.TITLE" | translate}}</h4>
-      <p><code class="clr-code">{{description | translate}}</code></p>
+      <p class="description">{{description | translate}}</p>
       <div class="signpost-content-link-container">
         <a *ngIf="!isEndStep"
            class="signpost-content-link"

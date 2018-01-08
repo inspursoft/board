@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { HostListener, Injectable } from '@angular/core';
 import { Http, Headers, Response } from '@angular/http';
 import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
@@ -12,7 +12,7 @@ export class AppInitService {
   tokenMessage$: Observable<string> = this.tokenMessageSource.asObservable();
   cookieExpiry: Date = new Date(Date.now() + 10 * 60 * 60 * 24 * 365 * 1000);
   guideStep:GUIDE_STEP;
-  _isFirstLogin: boolean;
+  _isFirstLogin: boolean = false;
 
   constructor(
     private cookieService:CookieService,

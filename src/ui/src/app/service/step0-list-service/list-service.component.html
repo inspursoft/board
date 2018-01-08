@@ -4,6 +4,12 @@
                  [service]="serviceControlData">
 </service-control>
 <div class="row flex-items-xs-right">
+  <cs-guide [description]="'SERVICE.GUIDE_CREATE_SERVICE'"
+            [show]="isFirstLogin && guideStep == 4"
+            [position]="'left-middle'"
+            (onClose)="setGuideNoneStep()"
+            (onNextStep)="guideNextStep(4)">
+  </cs-guide>
   <button class="btn btn-primary"
           (click)="createService()">
     {{ 'SERVICE.CREATE_SERVICE' | translate }}

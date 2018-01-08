@@ -114,15 +114,25 @@ export class ProjectComponent implements OnInit, OnDestroy {
       });
   }
 
-  get isFirstLogin():boolean{
+  get isFirstLogin(): boolean{
     return this.appInitService.isFirstLogin;
   }
 
-  get guideStep():GUIDE_STEP{
+  get guideStep(): GUIDE_STEP{
     return this.appInitService.guideStep;
   }
 
   guideNextStep(step:GUIDE_STEP){
-    this.appInitService.guideStep = GUIDE_STEP.SERVICE_LIST;
+    this.createProject();
+  }
+
+  setGuideNoneStep(){
+     this.appInitService.guideStep = GUIDE_STEP.NONE_STEP;
+  }
+
+  createProjectClose(step: GUIDE_STEP){
+    if (this.isFirstLogin){
+      this.appInitService.guideStep = GUIDE_STEP.SERVICE_LIST;
+    }
   }
 }

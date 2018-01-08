@@ -84,8 +84,6 @@ export const LANG_ZH_CN = {
     "NEW_PASSWORD_CONFIRM":"确认新密码",
     "OLD_PASSWORD_WRONG":"旧密码错误",
     "CHANGE_PASSWORD_SUCCESS":"修改密码成功。",
-    "GUIDE_SERVICE_LIST":"请创建属于您的新服务",
-    "GUIDE_PROJECT_LIST":"请创建属于您的新项目"
   },
   "SIDE_NAV": {
     "DASHBOARD": "仪表盘",
@@ -95,7 +93,9 @@ export const LANG_ZH_CN = {
     "NODES": "节点",
     "IMAGES": "镜像",
     "ADMIN_OPTIONS": "管理员选项",
-    "PROFILES": "用户中心"
+    "PROFILES": "用户中心",
+    "GUIDE_SERVICE_LIST":"请创建属于您的新服务",
+    "GUIDE_PROJECT_LIST":"请创建属于您的新项目"
   },
   "DASHBOARD": {
     "MIN":"分",
@@ -356,6 +356,7 @@ export const LANG_ZH_CN = {
     "SERVICE_CONTROL_UPDATE_TAG":"更新Tag",
     "SERVICE_DETAIL_DEPLOYMENT_FILE":"部署文件内容",
     "SERVICE_DETAIL_SERVICE_FILE":"服务文件内容",
+    "GUIDE_CREATE_SERVICE":"请创建属于您的新服务"
   },
   "GLOBAL_SEARCH": {
     "PROJECTS": "项目",

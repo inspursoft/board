@@ -2,12 +2,13 @@
   <cs-guide [description]="'PROJECT.GUIDE_CREATE_PROJECT'"
             [show]="isFirstLogin && guideStep == 2"
             [position]="'left-middle'"
+            (onClose)="setGuideNoneStep()"
             (onNextStep)="guideNextStep(2)">
   </cs-guide>
   <button class="btn btn-primary" (click)="createProject()">{{ 'PROJECT.CREATE_PROJECT' | translate }}</button>
 </div>
 <div class="row">
-  <create-project (reload)="retrieve()"></create-project>
+  <create-project (reload)="retrieve()" (closeEvent)="createProjectClose(2)"></create-project>
   <project-member></project-member>
   <div class="col-xs-12">
     <clr-datagrid (clrDgRefresh)="retrieve($event)" [clrDgLoading]="isInLoading">

@@ -20,3 +20,10 @@ a.signpost-content-link {
   text-decoration-line: underline;
   color: blue;
 }
+
+p.description {
+  color: #313131;
+  font-size: 0.58333rem;
+  font-weight: 500;
+  font-family: Metropolis, Avenir Next, Helvetica Neue, Arial, sans-serif;
+}
