@@ -2,7 +2,9 @@ package controller
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"os"
 
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
@@ -18,6 +20,7 @@ import (
 )
 
 const (
+	dockerfileName         = "Dockerfile"
 	deploymentFilename     = "deployment.yaml"
 	serviceFilename        = "service.yaml"
 	rollingUpdateFilename  = "rollingUpdateDeployment.yaml"
@@ -31,6 +34,8 @@ const (
 	test                   = "test"
 	serviceNamespace       = "default" //TODO create in project post
 	k8sServices            = "kubernetes"
+	deploymentType         = "deployment"
+	serviceType            = "service"
 )
 
 const (
@@ -1147,4 +1152,223 @@ func (p *ServiceController) GetSelectableServicesAction() {
 	}
 	p.Data["json"] = serviceList
 	p.ServeJSON()
+}
+
+func (f *ServiceController) UploadDeploymentYamlFileAction() {
+	projectName := f.GetString("project_name")
+	isExistence, err := service.ProjectExists(projectName)
+	if err != nil {
+		f.internalError(err)
+		return
+	}
+	if isExistence != true {
+		f.customAbort(http.StatusBadRequest, "Project don't exist.")
+		return
+	}
+
+	serviceName := f.GetString("service_name")
+	serviceID, err := getServiceID(serviceName, projectName)
+	if err != nil {
+		f.internalError(err)
+		return
+	}
+	if serviceID == "" {
+		serviceID, err = createUploadedServiceConfig(projectName, serviceName, f.currentUser.ID, f.currentUser.Username)
+		if err != nil {
+			f.internalError(err)
+			return
+		}
+		os.MkdirAll(filepath.Join(repoPath(), projectName, serviceID), 0755)
+	}
+
+	yamlType := f.GetString("yaml_type")
+	fileName := getYamlFileName(yamlType)
+	if fileName == "" {
+		f.customAbort(http.StatusBadRequest, "yaml type invalid.")
+		return
+	}
+	targetFilePath := filepath.Join(repoPath(), projectName, serviceID)
+	logs.Info("User: %s uploaded %s yaml file to %s.", f.currentUser.Username, yamlType, targetFilePath)
+
+	file, fileHeader, err := f.GetFile("upload_file")
+	if err != nil {
+		f.internalError(err)
+		return
+	}
+	if fileHeader.Filename != fileName {
+		f.customAbort(http.StatusBadRequest, "Update file name invalid.")
+		return
+	}
+
+	yamlFileServiceName, err := service.GetYamlFileServiceName(file, fileHeader.Filename)
+	if err != nil {
+		f.internalError(err)
+		return
+	}
+	if yamlFileServiceName != serviceName {
+		f.customAbort(http.StatusBadRequest, "Service name is inconsistent between yaml file and request parameter.")
+		return
+	}
+
+	err = f.SaveToFile("upload_file", filepath.Join(targetFilePath, fileName))
+	if err != nil {
+		f.internalError(err)
+	}
+	f.Data["json"] = struct{ serviceID string }{serviceID: serviceID}
+	f.ServeJSON()
+}
+
+func (f *ServiceController) DownloadDeploymentYamlFileAction() {
+	projectName := f.GetString("project_name")
+	isExistence, err := service.ProjectExists(projectName)
+	if err != nil {
+		f.internalError(err)
+		return
+	}
+	if isExistence != true {
+		f.customAbort(http.StatusBadRequest, "Project name invalid.")
+		return
+	}
+
+	serviceName := f.GetString("service_name")
+	serviceID, err := getServiceID(serviceName, projectName)
+	if err != nil {
+		f.internalError(err)
+		return
+	}
+	if serviceID == "" {
+		f.customAbort(http.StatusBadRequest, "Service name invalid.")
+		return
+	}
+
+	//get paras
+	yamlType := f.GetString("yaml_type")
+	fileName := getYamlFileName(yamlType)
+	if fileName == "" {
+		f.customAbort(http.StatusBadRequest, "yaml type invalid.")
+		return
+	}
+	absFileName := filepath.Join(repoPath(), projectName, serviceID, fileName)
+	logs.Info("User: %s download %s yaml file from %s.", f.currentUser.Username, yamlType, absFileName)
+
+	//check doc isexist
+	if _, err := os.Stat(absFileName); os.IsNotExist(err) {
+		//generate file
+		loadPath := filepath.Join(repoPath(), projectName, serviceID)
+		err = service.CheckDeploymentPath(loadPath)
+		if err != nil {
+			f.internalError(err)
+			return
+		}
+		//if no doc, get config from k8s; generate yaml file;
+		if yamlType == deploymentType {
+			deployConfigURL := fmt.Sprintf("%s%s", kubeMasterURL(), filepath.Join(deploymentAPI, projectName, "deployments", serviceName))
+			logs.Info("deployConfigURL:", deployConfigURL)
+			err := service.GenerateDeploymentYamlFileFromK8S(deployConfigURL, absFileName)
+			if err != nil {
+				if err == service.DeploymentNotFound {
+					f.customAbort(http.StatusNotFound, service.DeploymentNotFound.Error())
+					return
+				}
+				f.internalError(err)
+				return
+			}
+		} else {
+			serviceConfigURL := fmt.Sprintf("%s%s", kubeMasterURL(), filepath.Join(serviceAPI, projectName, "services", serviceName))
+			logs.Info("serviceConfigURL:", serviceConfigURL)
+			err := service.GenerateServiceYamlFileFromK8S(serviceConfigURL, absFileName)
+			if err != nil {
+				if err == service.ServiceNotFound {
+					f.customAbort(http.StatusNotFound, service.ServiceNotFound.Error())
+					return
+				}
+				f.internalError(err)
+				return
+			}
+		}
+	}
+
+	f.Ctx.Output.Download(absFileName, fileName)
+}
+
+func (f *ServiceController) CheckDeploymentYamlFileAction() {
+
+	filesHeader, err := f.GetFiles("deployment_file")
+	for _, file := range filesHeader {
+		logs.Info("filename:%+v\n", file.Filename)
+	}
+
+	deploymentFile, _, err := f.GetFile("deployment_file")
+	if err != nil {
+		f.internalError(err)
+		return
+	}
+
+	serviceFile, _, err := f.GetFile("service_file")
+	if err != nil {
+		f.internalError(err)
+		return
+	}
+
+	err = service.CheckDeployAndServiceYamlFiles(deploymentFile, serviceFile)
+	if err != nil {
+		if err == service.NameInconsistent {
+			f.customAbort(http.StatusBadRequest, err.Error())
+			return
+		}
+		f.internalError(err)
+	}
+}
+
+func getServiceID(serviceName string, projectName string) (string, error) {
+	var servicequery model.ServiceStatus
+	servicequery.Name = serviceName
+	servicequery.ProjectName = projectName
+	service, err := service.GetService(servicequery, "name", "project_name")
+	if err != nil {
+		return "", err
+	}
+	if service == nil {
+		logs.Info("service doesn't exist")
+		return "", nil
+	}
+	return strconv.Itoa(int(service.ID)), nil
+}
+
+func createUploadedServiceConfig(projectName string, serviceName string, ID int64, userName string) (string, error) {
+	//get ProjectID
+	query := model.Project{Name: projectName}
+	project, err := service.GetProject(query, "name")
+	if err != nil {
+		return "", err
+	}
+	if project == nil {
+		logs.Info("project doesn't exist")
+		return "", errors.New("project is invalid")
+	}
+
+	var newservice model.ServiceStatus
+	newservice.Name = serviceName
+	newservice.ProjectName = projectName
+	newservice.Status = preparing // 0: preparing 1: running 2: suspending
+	newservice.OwnerID = ID
+	newservice.OwnerName = userName
+	newservice.ProjectID = project.ID
+	serviceID, err := service.CreateServiceConfig(newservice)
+	if err != nil {
+		return "", err
+	}
+	return strconv.Itoa(int(serviceID)), err
+}
+
+func getYamlFileName(yamlType string) string {
+	var fileName string
+	if yamlType == deploymentType {
+		fileName = deploymentFilename
+	} else if yamlType == serviceType {
+		fileName = serviceFilename
+	} else {
+		return ""
+	}
+	return fileName
 }
