@@ -1,6 +1,7 @@
 <clr-signpost *ngIf="show" (click)="signpostClickEvent($event)">
   <clr-icon shape="exclamation-circle"
             [hidden]="!isShowIcon"
+            class="info-icon"
             #clrInfoIcon clrSignpostTrigger>
   </clr-icon>
   <clr-signpost-content [clrPosition]="position" *clrIfOpen>
@@ -18,5 +19,3 @@
     </div>
   </clr-signpost-content>
 </clr-signpost>
-
-

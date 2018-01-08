@@ -48,7 +48,8 @@ export class CsGuideComponent {
           let div = divNodeList.item(i);
           if (div.className == "signpost-flex-wrap") {
             div.style.border = "none";
-            div.style.background = "rgba(139, 188, 255, 0.5)";
+            // div.style.background = "rgba(190, 228, 255, 0.8)";
+            div.style.background = "rgba(0, 64, 96, 0.8)";
           }
           if (div.className == "signpost-content-header") {
             let clrIcon: HTMLElement = div.getElementsByTagName("clr-icon").item(0) as HTMLElement;

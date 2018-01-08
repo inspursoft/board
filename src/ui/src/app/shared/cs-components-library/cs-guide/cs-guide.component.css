@@ -4,7 +4,8 @@ div.signpost-content-container {
 }
 
 h4.signpost-content-title {
-  margin: 0
+  margin: 0;
+  color: white;
 }
 
 div.signpost-content-link-container {
@@ -18,12 +19,16 @@ a.signpost-content-link {
   font-size: 12px;
   font-style: italic;
   text-decoration-line: underline;
-  color: blue;
+  color: white;
 }
 
 p.description {
-  color: #313131;
+  color: white;
   font-size: 0.58333rem;
   font-weight: 500;
   font-family: Metropolis, Avenir Next, Helvetica Neue, Arial, sans-serif;
+}
+
+clr-icon.info-icon{
+  color: orangered;
 }
