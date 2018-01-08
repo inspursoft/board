@@ -48,7 +48,6 @@ export class CsGuideComponent {
           let div = divNodeList.item(i);
           if (div.className == "signpost-flex-wrap") {
             div.style.border = "none";
-            // div.style.background = "rgba(190, 228, 255, 0.8)";
             div.style.background = "rgba(0, 64, 96, 0.8)";
           }
           if (div.className == "signpost-content-header") {
