@@ -1,5 +1,8 @@
 <clr-signpost *ngIf="show" (click)="signpostClickEvent($event)">
-  <clr-icon shape="info" hidden class="is-solid has-badge-info" #clrInfoIcon clrSignpostTrigger></clr-icon>
+  <clr-icon shape="exclamation-circle"
+            [hidden]="!isShowIcon"
+            #clrInfoIcon clrSignpostTrigger>
+  </clr-icon>
   <clr-signpost-content [clrPosition]="position" *clrIfOpen>
     <div class="signpost-content-container">
       <h4 class="signpost-content-title">{{"GUIDE.TITLE" | translate}}</h4>
@@ -15,3 +18,5 @@
     </div>
   </clr-signpost-content>
 </clr-signpost>
+
+

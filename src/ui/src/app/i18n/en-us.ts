@@ -401,7 +401,7 @@ export const LANG_EN_US = {
     "CONFIRM_TO_TOGGLE_NODE": "Confirm to change node {{0}} status?"
   },
   "GUIDE":{
-    "TITLE":"Guide",
+    "TITLE":"Usage guide",
     "NEXT_STEP":"Next step"
   }
 };

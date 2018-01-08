@@ -1,20 +1,19 @@
-import { Component, ElementRef, EventEmitter, HostListener, Input, OnDestroy, Output, ViewChild } from "@angular/core"
+import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from "@angular/core"
 
 @Component({
   selector: 'cs-guide',
   styleUrls: ['./cs-guide.component.css'],
   templateUrl: './cs-guide.component.html'
 })
-export class CsGuideComponent implements OnDestroy {
+export class CsGuideComponent {
   private _show: boolean = false;
-  private _testShow: boolean = false;
   @ViewChild("clrInfoIcon") clrInfoIconRef: ElementRef;
   @Output("onNextStep") nextStepEvent: EventEmitter<any> = new EventEmitter<any>();
   @Output("onClose") closeEvent: EventEmitter<any> = new EventEmitter<any>();
   @Input("description") description: string;
   @Input("position") position: string = 'right-middle';
   @Input("isEndStep") isEndStep: boolean = false;
-
+  @Input("isShowIcon") isShowIcon: boolean = false;
 
   @Input("show")
   get show() {
@@ -24,8 +23,25 @@ export class CsGuideComponent implements OnDestroy {
   set show(value: boolean) {
     this._show = value;
     if (value) {
-      setTimeout(() => {
-        this.clrInfoIconRef.nativeElement.click();
+      this.resetView();
+    }
+  }
+
+  signpostClickEvent(event: Event) {
+    event.stopPropagation();
+    return false;
+  }
+
+  nextStepClick(event: Event) {
+    this.nextStepEvent.emit();
+    event.stopPropagation();
+    return false;
+  }
+
+  resetView(){
+    setTimeout(() => {
+      let el = this.clrInfoIconRef.nativeElement as HTMLElement;
+      el.addEventListener("click",()=>{
         let signpostElement: HTMLElement = this.clrInfoIconRef.nativeElement.parentElement;
         let divNodeList: NodeListOf<HTMLDivElement> = signpostElement.getElementsByTagName("div");
         for (let i = 0; i < divNodeList.length; i++) {
@@ -38,7 +54,7 @@ export class CsGuideComponent implements OnDestroy {
             let clrIcon: HTMLElement = div.getElementsByTagName("clr-icon").item(0) as HTMLElement;
             let buttonClose: HTMLButtonElement = div.getElementsByTagName("button").item(0) as HTMLButtonElement;
             let btnClassName = buttonClose.className;
-            buttonClose.addEventListener("click", (evt: Event) => {
+            buttonClose.addEventListener("click", (evt: MouseEvent) => {
               this.closeEvent.emit(true);
             });
             buttonClose.removeChild(clrIcon);
@@ -46,27 +62,8 @@ export class CsGuideComponent implements OnDestroy {
             buttonClose.className = `${btnClassName} signpost-content-header-btn-close`;
           }
         }
-      }, 500);
-    }
-  }
-
-  ngOnDestroy() {
-    console.log("ngOnDestroy");
-  }
-
-  @HostListener("window.click", ["$event"]) windowClick() {
-    console.log("window.click")
-  }
-
-  signpostClickEvent(event: Event) {
-    event.stopPropagation();
-    return false;
-  }
-
-  nextStepClick(event: Event) {
-    this.clrInfoIconRef.nativeElement.click();
-    this.nextStepEvent.emit();
-    event.stopPropagation();
-    return false;
+      });
+      this.clrInfoIconRef.nativeElement.click();
+    }, 500);
   }
 }

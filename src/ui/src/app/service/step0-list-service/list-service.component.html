@@ -4,7 +4,8 @@
                  [service]="serviceControlData">
 </service-control>
 <div class="row flex-items-xs-right">
-  <cs-guide [description]="'SERVICE.GUIDE_CREATE_SERVICE'"
+  <cs-guide *ngIf="isFirstLogin && guideStep == 4"
+            [description]="'SERVICE.GUIDE_CREATE_SERVICE'"
             [show]="isFirstLogin && guideStep == 4"
             [position]="'left-middle'"
             (onClose)="setGuideNoneStep()"

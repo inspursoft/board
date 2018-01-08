@@ -1,5 +1,6 @@
 <div class="row flex-items-xs-right">
-  <cs-guide [description]="'PROJECT.GUIDE_CREATE_PROJECT'"
+  <cs-guide *ngIf="isFirstLogin && guideStep == 2"
+            [description]="'PROJECT.GUIDE_CREATE_PROJECT'"
             [show]="isFirstLogin && guideStep == 2"
             [position]="'left-middle'"
             (onClose)="setGuideNoneStep()"

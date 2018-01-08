@@ -401,7 +401,7 @@ export const LANG_ZH_CN = {
     "CONFIRM_TO_TOGGLE_NODE": "确认切换节点 {{0}} 的状态？"
   },
   "GUIDE":{
-    "TITLE":"向导",
+    "TITLE":"使用向导",
     "NEXT_STEP":"下一步"
   }
 };
