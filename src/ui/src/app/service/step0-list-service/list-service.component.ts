@@ -111,8 +111,8 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
       this.isInLoading = true;
       this.k8sService.getServices(this.pageIndex, this.pageSize)
         .then(paginatedServices => {
-          this.totalRecordCount = paginatedServices.pagination.total_count;
-          this.services = paginatedServices.service_status_list;
+          this.totalRecordCount = paginatedServices["pagination"]["total_count"];
+          this.services = paginatedServices["service_status_list"];
           this.isInLoading = false;
         })
         .catch(err => {

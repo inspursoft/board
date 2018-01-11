@@ -1,7 +1,9 @@
-import { Directive, Input} from '@angular/core';
-import { NG_ASYNC_VALIDATORS, AsyncValidator, 
-         Validators, ValidatorFn,
-         AbstractControl } from '@angular/forms';
+import { Directive, Input } from '@angular/core';
+import {
+  NG_ASYNC_VALIDATORS, AsyncValidator,
+  Validators, ValidatorFn,
+  AbstractControl
+} from '@angular/forms';
 
 import { Observable } from 'rxjs/Observable';
 
@@ -10,36 +12,35 @@ import 'rxjs/add/operator/distinctUntilChanged';
 import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/first';
-
-import { Http, Headers } from '@angular/http';
-
+import 'rxjs/add/operator/map'
+import { HttpClient } from '@angular/common/http';
 import { AppInitService } from '../../app.init.service';
 import { MessageService } from '../message-service/message.service';
 
 @Directive({
   selector: '[checkItemExisting]',
   providers: [
-    {provide: NG_ASYNC_VALIDATORS, useExisting: CheckItemExistingDirective, multi: true }
+    {provide: NG_ASYNC_VALIDATORS, useExisting: CheckItemExistingDirective, multi: true}
   ]
 })
 export class CheckItemExistingDirective implements AsyncValidator {
   @Input() checkItemExisting;
   @Input() userID: number = 0;
-    
+
   valFn: ValidatorFn = Validators.nullValidator;
 
-  constructor(
-    private http: Http,
-    private appInitService: AppInitService,
-    private messageService: MessageService
-  ){}
+  constructor(private http: HttpClient,
+              private appInitService: AppInitService,
+              private messageService: MessageService) {
+  }
 
   checkUserExists(target: string, value: string, userID: number): Observable<{[key: string]: any}> {
     return this.http.get("/api/v1/user-exists", {
+      observe: "response",
       params: {
         'target': target,
         'value': value,
-        'user_id': userID
+        'user_id': userID.toString()
       }
     })
     .map(()=>this.valFn)
@@ -53,9 +54,7 @@ export class CheckItemExistingDirective implements AsyncValidator {
   
   checkProjectExists(token: string, projectName: string): Observable<{[key: string]: any}>{
     return this.http.head('/api/v1/projects', {
-      headers: new Headers({
-        'token': token
-      }),
+      observe: "response",
       params: {
         'project_name': projectName
       }

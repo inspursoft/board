@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { AppInitService } from '../app.init.service';
+import { AppInitService, AppTokenService } from '../app.init.service';
 import { GUIDE_STEP } from "../shared/shared.const";
 
 @Component({
@@ -17,6 +17,7 @@ export class MainContentComponent {
 
   constructor(
     private appInitService: AppInitService,
+    private appTokenService: AppTokenService,
     private router: Router,
     private route: ActivatedRoute
   ) {
@@ -24,8 +25,8 @@ export class MainContentComponent {
       this.isSignIn = false;
       this.hasSignedIn = true;
     }
-    this.token = this.appInitService.token;
-    this.appInitService.tokenMessage$.subscribe(token=>this.token = token);
+    this.token = this.appTokenService.token;
+    this.appTokenService.tokenMessage$.subscribe(token=>this.token = token);
     this.route.queryParamMap.subscribe(params=>this.searchContent = params.get("q"));
     this.appInitService.systemInfo = this.route.snapshot.data['systeminfo'];
   }

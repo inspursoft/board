@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { HttpModule } from '@angular/http';
+import { HttpClientModule} from '@angular/common/http'
 import { ClarityModule } from '@clr/angular';
 import { CookieModule } from 'ngx-cookie';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
@@ -22,7 +22,7 @@ import { BrowserModule } from '@angular/platform-browser';
   exports:[
     BrowserAnimationsModule,
     BrowserModule,
-    HttpModule,
+    HttpClientModule,
     FormsModule,
     ReactiveFormsModule,
     ClarityModule,

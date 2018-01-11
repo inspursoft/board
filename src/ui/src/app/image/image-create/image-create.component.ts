@@ -11,8 +11,8 @@ import { CsInputComponent } from "../../shared/cs-components-library/cs-input/cs
 import { BuildImageData } from "../image";
 import { ImageService } from "../image-service/image-service";
 import { MessageService } from "../../shared/message-service/message.service";
-import { Response } from "@angular/http"
-import { AppInitService } from "../../app.init.service";
+import { HttpErrorResponse, HttpResponse } from "@angular/common/http"
+import { AppInitService, AppTokenService } from "../../app.init.service";
 import { Subscription } from "rxjs/Subscription";
 import { WebsocketService } from "../../shared/websocket-service/websocket.service";
 import { EnvType } from "../../shared/environment-value/environment-value.component";
@@ -100,7 +100,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
             }
           });
         }).catch(err => {
-          if (err && err instanceof Response && (err as Response).status == 401) {
+          if (err && err instanceof HttpErrorResponse && (err as HttpErrorResponse).status == 401) {
             this.isOpen = false;
             this.messageService.dispatchError(err);
           } else {
@@ -207,7 +207,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     return this.imageService.checkImageExist(this.projectName, this.customerNewImage.image_name, control.value)
       .then(() => null)
       .catch(err => {
-        if (err && err instanceof Response && (err as Response).status == 409) {
+        if (err && err instanceof HttpErrorResponse && (err as HttpErrorResponse).status == 409) {
           return {imageTagExist: "IMAGE.CREATE_IMAGE_TAG_EXIST"}
         }
         this.isOpen = false;
@@ -222,7 +222,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     return this.imageService.checkImageExist(this.projectName, control.value, this.customerNewImage.image_tag)
       .then(() => null)
       .catch(err => {
-        if (err && err instanceof Response && (err as Response).status == 409) {
+        if (err && err instanceof HttpErrorResponse && (err as HttpErrorResponse).status == 409) {
           return {imageNameExist: "IMAGE.CREATE_IMAGE_NAME_EXIST"}
         }
         this.isOpen = false;
@@ -301,13 +301,13 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   buildImageReject(err: any) {
     this.isBuildImageWIP = false;
     this.isNeedAutoRefreshImageList = false;
-    if (err && err instanceof Response && (err as Response).status == 401) {
+    if (err && err instanceof HttpErrorResponse && (err as HttpErrorResponse).status == 401) {
       this.isOpen = false;
       this.messageService.dispatchError(err);
     } else {
       this.newImageAlertType = "alert-danger";
       this.newImageErrMessage = "IMAGE.CREATE_IMAGE_BUILD_IMAGE_FAILED";
-      this.newImageErrReason = err instanceof Response ? (err as Response).text() : "";
+      this.newImageErrReason = err instanceof HttpErrorResponse ? (err as HttpErrorResponse).message: "";
       this.isNewImageAlertOpen = true;
     }
   }
@@ -342,7 +342,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
         });
       });
     }).catch(err => {
-      if (err && err instanceof Response && (err as Response).status == 401) {
+      if (err && err instanceof HttpErrorResponse && (err as HttpErrorResponse).status == 401) {
         this.isOpen = false;
         this.messageService.dispatchError(err);
       } else {
@@ -381,8 +381,8 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
         projectName: this.customerNewImage.project_name
       };
       return this.imageService.downloadDockerFile(downloadInfo)
-        .then((res: Response) => {
-          this.consoleText = res.text();
+        .then((res: HttpResponse<string>) => {
+          this.consoleText = res.body;
           this.isServerHaveDockerFile = true;
         })
         .catch(() => {//need't handle this error
@@ -407,15 +407,15 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
         this.newImageErrMessage = "IMAGE.CREATE_IMAGE_UPLOAD_SUCCESS";
         this.isNewImageAlertOpen = true;
         this.isUploadFileWIP = false;
-        this.asyncGetDockerFilePreviewInfo();
+        this.asyncGetDockerFilePreviewInfo().then();
       }).catch(err => {
         this.isUploadFileWIP = false;
-        if (err && (err instanceof Response) && (err as Response).status == 401) {
+        if (err && (err instanceof HttpErrorResponse) && (err as HttpErrorResponse).status == 401) {
           this.isOpen = false;
           this.messageService.dispatchError(err);
         } else {
-          if (err && (err instanceof Response)) {
-            this.newImageErrReason = `:${(err as Response).text()}`;
+          if (err && (err instanceof HttpErrorResponse)) {
+            this.newImageErrReason = `:${(err as HttpErrorResponse).message}`;
           }
           (event.target as HTMLInputElement).value = "";
           this.newImageAlertType = "alert-danger";
@@ -433,7 +433,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
         .then(res => {
           this.consoleText = res;
         }).catch(err => {
-        if (err && err instanceof Response && (err as Response).status == 401) {
+        if (err && err instanceof HttpErrorResponse && (err as HttpErrorResponse).status == 401) {
           this.isOpen = false;
           this.messageService.dispatchError(err);
         } else {
@@ -474,7 +474,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     this.imageService.removeFile(fromRemoveData)
       .then(() => this.asyncGetDockerFilePreviewInfo())
       .catch(err => {
-        if (err && (err instanceof Response) && (err as Response).status == 401) {
+        if (err && (err instanceof HttpErrorResponse) && (err as HttpErrorResponse).status == 401) {
           this.isOpen = false;
           this.messageService.dispatchError(err);
         } else {

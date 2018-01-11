@@ -247,8 +247,8 @@ export const LANG_ZH_CN = {
     "CREATE_IMAGE_EXIST":"已经选择了镜像",
     "CREATE_IMAGE_FROM_TEMP":"来自模版",
     "CREATE_IMAGE_FROM_FILE":"来自文件",
-    "CREATE_IMAGE_IMAGE_TAG_EXIST":"镜像标签已经存在",
-    "CREATE_IMAGE_IMAGE_NAME_EXIST":"镜像名称已经存在",
+    "CREATE_IMAGE_TAG_EXIST":"镜像标签已经存在",
+    "CREATE_IMAGE_NAME_EXIST":"镜像名称已经存在",
     "CREATE_IMAGE_JENKINS_PREPARE":"Jenkins正在准备...",
   },
   "SERVICE": {

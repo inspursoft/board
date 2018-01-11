@@ -70,8 +70,8 @@ export class UserList implements OnInit, OnDestroy {
       this.isInLoading = true;
       this.userService.getUserList('', this.pageIndex, this.pageSize)
         .then(res => {
-          this.totalRecordCount = res.pagination.total_count;
-          this.userListData = res.user_list;
+          this.totalRecordCount = res["pagination"]["total_count"];
+          this.userListData = res["user_list"];
           this.isInLoading = false;
         })
         .catch(err => {
