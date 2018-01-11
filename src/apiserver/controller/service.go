@@ -443,12 +443,18 @@ func (p *ServiceController) DeleteServiceAction() {
 	}
 
 	// Call stop service if running
-	if s.Status == running || s.Status == uncompleted {
+	if s.Status == running {
 		//err = stopService(s)
 		err = stopServiceK8s(s)
 		if err != nil {
 			p.internalError(err)
 			return
+		}
+	} else if s.Status == uncompleted {
+		// TODO different actions for distinguishing uncompleted status
+		err = stopServiceK8s(s)
+		if err != nil {
+			logs.Info("Forcedly clean error %+v", err)
 		}
 	}
 
