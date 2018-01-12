@@ -401,6 +401,24 @@ Edit the file /etc/docker/daemon.json, the content as below:
     "insecure-registries":["0.0.0.0/0"]
 }
 ```
+
+Verify the registry:
+```
+curl http://LocalHost($hostIP):5000/v2/_catalog
+```
+If retrun {"repositories":[]} It's work well
+
+Push image to the registry, example:
+```
+docker tag mysql:5.6 LocalHost($hostIP):5000/mysql:5.6
+docker push LocalHost($hostIP):5000/mysql:5.6
+```
+Verify the image pushed to the registry successsful:
+```
+curl http://LocalHost($hostIP):5000/v2/_catalog
+reurn {"repositories":["mysql"]}
+```
+
 ### Ansible One-step Install
 Get Ansible resources：
 ````
