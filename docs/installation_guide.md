@@ -379,8 +379,43 @@ User can manage the nodes by operations, such as remove a node from the cluster:
 ### Storage Configuration 
 
 ### Registry Installation
+Get registry image from docker.io and install
+```
+docker pull registry
+docker run -d -p 5000:5000 --name registry registry
+```
+Get registry image from here: 
 
+**[Download Registry image](http://10.110.13.73/_layouts/15/start.aspx#/Shared%20Documents/Forms/AllItems.aspx?RootFolder=%2FShared%20Documents%2FContainer%20Service%2Fkubernetes%20rpm%20package&FolderCTID=0x01200097BD792FCDCA314591C60C2E8182BBA0&View=%7B84ACE000%2D5ACD%2D4A83%2DBA13%2D0990224E3589%7D)**
+
+Load registry image and setup registry container
+```
+docker load --input regstiry.tar
+docker run -d -p 5000:5000 --name registry registry
+```
+Edit the file /etc/docker/daemon.json, the content as below:
+
+```
+{
+    "live-restore": true,
+    "insecure-registries":["0.0.0.0/0"]
+}
+```
 ### Ansible One-step Install
-
+Get Ansible resources：
+````
+git clone http://10.110.18.40:10080/guyingyan/ansible.git
+````
+Set up environment with ansible on-step:
+```
+To see README.md
+```
 ### Anbari One-step Install
-
+Get Ambari resources：
+````
+git clone http://10.110.18.40:10080/guyingyan/Ambari.git
+````
+Set up enrionment with Ambari on-step:
+```
+To see README.md
+```
