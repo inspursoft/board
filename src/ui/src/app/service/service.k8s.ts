@@ -160,14 +160,14 @@ export class K8sService {
       .then((res: HttpResponse<Array<{node_name: string, node_ip: string, status: number}>>) => res.body || [])
   }
 
-  addServiceRoute(serviceURL: string, serviceIdentity: string): void {
-    this.http.post(`/api/v1/services/info`, {}, {
+  addServiceRoute(serviceURL: string, serviceIdentity: string): Promise<any> {
+    return this.http.post(`/api/v1/services/info`, {}, {
       observe: "response",
       params: {
         'service_url': serviceURL,
         'service_identity': serviceIdentity
       }
-    });
+    }).toPromise();
   }
 
   setServiceScale(serviceID: number, scale: number): Promise<any> {
@@ -190,8 +190,8 @@ export class K8sService {
   getServiceYamlFile(projectName: string, serviceName: string, yamlType: string): Promise<string> {
     return this.http
       .get(`/api/v1/services/yaml/download`, {
-        observe:"response",
-        responseType:"text",
+        observe: "response",
+        responseType: "text",
         params: {
           service_name: serviceName,
           project_name: projectName,
@@ -205,7 +205,7 @@ export class K8sService {
   getServiceImages(projectName: string, serviceName: string): Promise<Array<ImageIndex>> {
     return this.http
       .get<Array<ImageIndex>>(`/api/v1/services/rollingupdate`, {
-        observe:"response",
+        observe: "response",
         params: {
           service_name: serviceName,
           project_name: projectName
@@ -218,7 +218,7 @@ export class K8sService {
   updateServiceImages(projectName: string, serviceName: string, postData: Array<ImageIndex>): Promise<any> {
     return this.http
       .post(`/api/v1/services/rollingupdate`, postData, {
-        observe:"response",
+        observe: "response",
         params: {
           service_name: serviceName,
           project_name: projectName
