@@ -14,7 +14,6 @@ export class HttpClientInterceptor implements HttpInterceptor {
   }
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    console.log(`HttpRequest ${req.method} to:" ${req.url}`);
     const noNeedTokenUrls = Array<string>();
     noNeedTokenUrls.push("/api/v1/sign-in");
     let authReq: HttpRequest<any> = req.clone({
@@ -31,7 +30,6 @@ export class HttpClientInterceptor implements HttpInterceptor {
           let res = event as HttpResponse<Object>;
           if (res.ok && res.headers.has("token")){
             this.appTokenService.chainResponse(res);
-            console.log("appInitService.chainResponse by:" + res.url)
           }
         }
       })
