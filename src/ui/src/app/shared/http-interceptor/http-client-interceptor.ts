@@ -14,12 +14,10 @@ export class HttpClientInterceptor implements HttpInterceptor {
   }
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    const noNeedTokenUrls = Array<string>();
-    noNeedTokenUrls.push("/api/v1/sign-in");
     let authReq: HttpRequest<any> = req.clone({
       headers: req.headers.set("contentType", 'application/json')
     });
-    if (noNeedTokenUrls.indexOf(req.url) == -1 && this.appTokenService.token) {
+    if (this.appTokenService.token) {
       authReq = authReq.clone({
         headers: authReq.headers.set("token", this.appTokenService.token)
       });
