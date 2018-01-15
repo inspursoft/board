@@ -1,2 +1,0 @@
-XYZ
-This is a file for testing trigger Jenkins job.
