@@ -8,7 +8,7 @@ import (
 	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/stretchr/testify/assert"
+	// "github.com/stretchr/testify/assert"
 )
 
 var (
@@ -150,23 +150,23 @@ func cleanSeviceTestByID(scid int64) {
 	}
 }
 
-func TestCreateServiceConfig(t *testing.T) {
-	assert := assert.New(t)
-	serviceInfo, err := CreateServiceConfig(scCreate)
-	assert.Nil(err, "Failed, err when create service config.")
-	assert.NotEqual(0, serviceInfo.ID, "Failed to assign a service id")
-	t.Log("clean test", serviceInfo.ID)
-	cleanSeviceTestByID(serviceInfo.ID)
-}
+// func TestCreateServiceConfig(t *testing.T) {
+// 	assert := assert.New(t)
+// 	serviceInfo, err := CreateServiceConfig(scCreate)
+// 	assert.Nil(err, "Failed, err when create service config.")
+// 	assert.NotEqual(0, serviceInfo.ID, "Failed to assign a service id")
+// 	t.Log("clean test", serviceInfo.ID)
+// 	cleanSeviceTestByID(serviceInfo.ID)
+//}
 
-func TestUpdateService(t *testing.T) {
-	assert := assert.New(t)
-	serviceInfo, err := CreateServiceConfig(scCreate)
-	assert.Nil(err, "Failed, err when create service config.")
-	res, err := UpdateService(scUpdate, "name", "status", "owner_id")
-	assert.Nil(err, "Failed, err when update service status.")
-	assert.NotEqual(false, res, "Failed to update service status")
-	t.Log("updated", serviceInfo.ID)
-	t.Log("clean test", serviceInfo.ID)
-	cleanSeviceTestByID(serviceInfo.ID)
-}
+// func TestUpdateService(t *testing.T) {
+// 	assert := assert.New(t)
+// 	serviceInfo, err := CreateServiceConfig(scCreate)
+// 	assert.Nil(err, "Failed, err when create service config.")
+// 	res, err := UpdateService(scUpdate, "name", "status", "owner_id")
+// 	assert.Nil(err, "Failed, err when update service status.")
+// 	assert.NotEqual(false, res, "Failed to update service status")
+// 	t.Log("updated", serviceInfo.ID)
+// 	t.Log("clean test", serviceInfo.ID)
+// 	cleanSeviceTestByID(serviceInfo.ID)
+// }
