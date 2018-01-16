@@ -40,8 +40,8 @@ do
     echo "+++++++++++++++++++++++++++++++++++++++"
     
     #go env used docker container
-    echo "$dock run --rm -v $volumeDir:$gopath -w $gopath $golangImage go test -v -cover -coverprofile=profile.tmp -coverpkg "$deps" $package"
-    /usr/bin/docker run --rm -v $volumeDir:$gopath -w $gopath $golangImage go test -v -cover -coverprofile=profile.tmp -coverpkg "$deps" $package
+    echo "$dock run --rm -v $volumeDir:$gopath -e HOST_IP=$1 -w $gopath $golangImage go test -v -cover -coverprofile=profile.tmp -coverpkg "$deps" $package"
+    /usr/bin/docker run --rm -v $volumeDir:$gopath -e HOST_IP=$1 -w $gopath $golangImage go test -v -cover -coverprofile=profile.tmp -coverpkg "$deps" $package
 
     if [ -f $volumeDir/profile.tmp ]
     then

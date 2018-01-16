@@ -5,6 +5,7 @@ head_branch=$4
 base_repo_url=$5
 base_branch=$6
 comments_url=$7
+host_ip=$8
 
 
 totalLink=$BUILD_URL/TOTAL_REPORT
@@ -19,19 +20,19 @@ make prepare
 rm -rf $boardDir/$branchDir/src/collector/cmd/app/appflag_test.go
 
 #start up mysql docker container
-cp /home/backup/docker-compose.mysql.a.yml $boardDir/$branchDir/make/dev
+#cp /home/backup/docker-compose.mysql.a.yml $boardDir/$branchDir/make/dev
 cd  $boardDir/$branchDir/make/dev
 docker-compose -f docker-compose.mysql.a.yml down -v
 docker-compose -f docker-compose.mysql.a.yml up -d
 
 
 #yes|cp /home/backup/user_test.go $boardDir/$branchDir/src/apiserver/service/user_test.go
-yes|cp /home/backup/collectordao_test.go $boardDir/$branchDir/src/collector/dao
+#yes|cp /home/backup/collectordao_test.go $boardDir/$branchDir/src/collector/dao
 #yes|cp /home/backup/init_test.go $boardDir/$branchDir/src/collector/service/collect
-yes|cp /home/backup/dashboard_test.go $boardDir/$branchDir/src/common/dao
+#yes|cp /home/backup/dashboard_test.go $boardDir/$branchDir/src/common/dao
 
-yes|cp /home/backup/genResult.py $boardDir/$branchDir/tests
-yes|cp /home/backup/run.sh $boardDir/$branchDir/tests
+#yes|cp /home/backup/genResult.py $boardDir/$branchDir/tests
+#yes|cp /home/backup/run.sh $boardDir/$branchDir/tests
 
 
 export GOPATH=$workDir
@@ -41,7 +42,8 @@ cd $boardDir/$branchDir/tests
 cd $boardDir/board/tests
 
 chmod +x *
-make run
+#make run
+./run.sh $host_ip
 
 cov=`python genResult.py /home|grep "the cover"|cut -d ":" -f 2|cut -d "%" -f 1`
 
