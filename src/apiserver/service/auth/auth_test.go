@@ -6,7 +6,8 @@ import (
 	"git/inspursoft/board/src/common/utils"
 	"os"
 	"testing"
-
+	"fmt"
+	
 	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/orm"
 	"github.com/stretchr/testify/assert"
@@ -33,7 +34,8 @@ func updateAdminPassword() {
 }
 
 func connectToDB() {
-	err := orm.RegisterDataBase("default", "mysql", "root:root123@tcp(localhost:3306)/board?charset=utf8")
+	hostIP:=os.Getenv("HOST_IP")
+	err := orm.RegisterDataBase("default", "mysql", fmt.Sprintf("root:root123@tcp(%s:3306)/board?charset=utf8", hostIP))
 	if err != nil {
 		logs.Error("Failed to connect to DB.")
 	}
