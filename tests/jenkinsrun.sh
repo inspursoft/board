@@ -22,6 +22,7 @@ rm -rf $boardDir/$branchDir/src/collector/cmd/app/appflag_test.go
 #start up mysql docker container
 #cp /home/backup/docker-compose.mysql.a.yml $boardDir/$branchDir/make/dev
 cp $boardDir/$branchDir/tests/docker-compose.test.yml  $boardDir/$branchDir/make/dev
+cp $boardDir/$branchDir/tests/ldap_test.ldif  $boardDir/$branchDir/make/dev
 cd $boardDir/$branchDir/make/dev
 docker-compose -f docker-compose.test.yml down -v
 docker-compose -f docker-compose.test.yml up -d
