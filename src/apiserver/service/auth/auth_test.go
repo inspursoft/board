@@ -57,8 +57,9 @@ func TestSignIn(t *testing.T) {
 }
 
 func TestSignInLdap(t *testing.T) {
+	hostIP:=os.Getenv("HOST_IP")
 	utils.Initialize()
-	utils.SetConfig("LDAP_URL", "ldap://localhost")
+	utils.SetConfig("LDAP_URL", fmt.Sprintf("ldap://%s", hostIP))
 	utils.SetConfig("LDAP_SEARCH_DN", `cn=admin,dc=example,dc=org`)
 	utils.SetConfig("LDAP_BASE_DN", "uid=test,dc=example,dc=org")
 	utils.SetConfig("LDAP_FILTER", "")
