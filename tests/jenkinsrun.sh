@@ -21,10 +21,10 @@ rm -rf $boardDir/$branchDir/src/collector/cmd/app/appflag_test.go
 
 #start up mysql docker container
 #cp /home/backup/docker-compose.mysql.a.yml $boardDir/$branchDir/make/dev
-cp $boardDir/$branchDir/tests/docker-compose.mysql.a.yml  $boardDir/$branchDir/make/dev
+cp $boardDir/$branchDir/tests/docker-compose.mysql.yml  $boardDir/$branchDir/make/dev
 cd $boardDir/$branchDir/make/dev
-docker-compose -f docker-compose.mysql.a.yml down -v
-docker-compose -f docker-compose.mysql.a.yml up -d
+docker-compose -f docker-compose.mysql.yml down -v
+docker-compose -f docker-compose.mysql.yml up -d
 
 
 #yes|cp /home/backup/user_test.go $boardDir/$branchDir/src/apiserver/service/user_test.go
