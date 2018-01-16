@@ -8,6 +8,7 @@ def main():
     print (tag)
     tagDir = tag.split("\n")[0]
     resultDir = sys.argv[1] +  "/" + tagDir
+    resultDir = sys.argv[1] +  "/total" 
     resultHtml = resultDir + "/index.html"
     if not os.path.exists(resultDir):
         os.makedirs(resultDir)
@@ -36,6 +37,7 @@ def main():
     covf.write('<html>')
     covf.write('<body>')
     covf.write(cov)
+    print ("the coverage is:%s" %cov)
     covf.write('</html>')
     covf.write('</body>')
     covf.close()
@@ -52,7 +54,8 @@ def main():
     tagf.write("</body>")
     tagf.close()
 
-    shutil.copy("profile.html", resultHtml) 
+    shutil.copy("profile.html", resultHtml)
+    print (resultHtml) 
 
 if __name__ == "__main__":
     main()
