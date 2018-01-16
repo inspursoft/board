@@ -19,7 +19,7 @@ const (
 )
 
 func updateAdminPassword() {
-	salt := utils.GenerateRandomString() //To generate salt string.
+	salt := utils.GenerateRandomString()
 	encryptedPassword := utils.Encrypt(initialPassword, salt)
 	user := model.User{ID: adminUserID, Password: encryptedPassword, Salt: salt}
 	isSuccess, err := service.UpdateUser(user, "password", "salt")
