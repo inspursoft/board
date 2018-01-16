@@ -20,3 +20,12 @@ services:
    #   options:  
    #     syslog-address: "tcp://127.0.0.1:1514"
    #     tag: "mysql"
+  openldap:
+    image: osixia/openldap:1.1.11
+    restart: always
+    volumes:
+      - ./ldap_test.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/ldap_test.ldif
+    command: --copy-service
+    ports:
+      - 389:389
+      - 636:636

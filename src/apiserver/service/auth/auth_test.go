@@ -53,3 +53,21 @@ func TestSignIn(t *testing.T) {
 	assert.NotNil(u, "User is nil.")
 	assert.Equal("admin", u.Username, "Signed in failed.")
 }
+
+func TestSignInLdap(t *testing.T) {
+	utils.Initialize()
+	utils.SetConfig("LDAP_URL", "ldap://localhost")
+	utils.SetConfig("LDAP_SEARCH_DN", `cn=admin,dc=example,dc=org`)
+	utils.SetConfig("LDAP_BASE_DN", "uid=test,dc=example,dc=org")
+	utils.SetConfig("LDAP_FILTER", "")
+	utils.SetConfig("LDAP_SEARCH_PWD", "admin")
+	utils.SetConfig("LDAP_UID", "cn")
+	utils.SetConfig("LDAP_SCOPE", "LDAP_SCOPE_SUBTREE")
+	utils.SetConfig("LDAP_SCOPE", "")
+	utils.SetConfig("LDAP_TIMEOUT", "5")
+	assert := assert.New(t)
+	currentAuth, err := GetAuth("ldap_auth")
+	u, err := (*currentAuth).DoAuth(`test`, `123456`)
+	assert.Nil(err, "Error occurred while calling SignIn method.")
+	assert.NotNil(u, "User is nil.")
+}
