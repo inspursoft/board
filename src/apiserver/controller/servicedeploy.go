@@ -53,13 +53,13 @@ func (p *ServiceDeployController) DeployServiceAction() {
 	}
 	newservice.ProjectName = project.Name
 
-	serviceID, err := service.CreateServiceConfig(newservice)
+	serviceInfo, err := service.CreateServiceConfig(newservice)
 	if err != nil {
 		p.internalError(err)
 		return
 	}
 
-	loadPath := filepath.Join(repoPath(), project.Name, strconv.Itoa(int(serviceID)))
+	loadPath := filepath.Join(repoPath(), project.Name, strconv.Itoa(int(serviceInfo.ID)))
 	err = service.CheckDeploymentPath(loadPath)
 	if err != nil {
 		p.internalError(err)
@@ -72,7 +72,7 @@ func (p *ServiceDeployController) DeployServiceAction() {
 		return
 	}
 
-	deployPushobject := assemblePushObject(deploymentFilename, serviceID, project.Name, "deployments")
+	deployPushobject := assemblePushObject(deploymentFilename, serviceInfo.ID, project.Name, "deployments")
 	ret, msg, err := InternalPushObjects(&deployPushobject, &(p.baseController))
 	if err != nil {
 		p.internalError(err)
@@ -85,7 +85,7 @@ func (p *ServiceDeployController) DeployServiceAction() {
 		return
 	}
 
-	servicePushobject := assemblePushObject(serviceFilename, serviceID, project.Name, "services")
+	servicePushobject := assemblePushObject(serviceFilename, serviceInfo.ID, project.Name, "services")
 	ret, msg, err = InternalPushObjects(&servicePushobject, &(p.baseController))
 	if err != nil {
 		p.internalError(err)
@@ -99,7 +99,7 @@ func (p *ServiceDeployController) DeployServiceAction() {
 		return
 	}
 
-	updateService := model.ServiceStatus{ID: serviceID, Status: running, ServiceConfig: string(serviceConfig)}
+	updateService := model.ServiceStatus{ID: serviceInfo.ID, Status: running, ServiceConfig: string(serviceConfig)}
 	_, err = service.UpdateService(updateService, "id", "status", "service_config")
 	if err != nil {
 		p.internalError(err)
@@ -111,9 +111,9 @@ func (p *ServiceDeployController) DeployServiceAction() {
 		p.internalError(err)
 		return
 	}
-	logs.Info("Service with ID:%d has been deleted in cache.", serviceID)
+	logs.Info("Service with ID:%d has been deleted in cache.", serviceInfo.ID)
 
-	configService.ServiceID = serviceID
+	configService.ServiceID = serviceInfo.ID
 	p.Data["json"] = configService
 	p.ServeJSON()
 }

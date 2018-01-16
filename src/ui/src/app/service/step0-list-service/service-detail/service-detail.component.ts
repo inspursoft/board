@@ -52,7 +52,7 @@ export class ServiceDetailComponent {
 
   openModal(s: Service): void {
     this.curService = s;
-    this.getServiceDetail(s.service_id, s.service_project_name, s.service_owner);
+    this.getServiceDetail(s.service_id, s.service_project_name, s.service_owner_name);
   }
 
   getServiceDetail(serviceId: number, projectName: string, ownerName: string): void {

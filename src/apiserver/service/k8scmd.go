@@ -82,28 +82,25 @@ func Resume(nodeName string) (bool, error) {
 }
 
 //get resource form k8s api-server
-func k8sGet(resource interface{}, url string) (bool, error) {
+func k8sGet(resource interface{}, url string) error {
 	resp, err := http.Get(url)
-
 	if err != nil {
-		return true, err
+		return err
 	}
-
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return true, err
+		return err
 	}
 
 	if resp.StatusCode == http.StatusNotFound {
-		return false, errors.New(string(body))
+		return errors.New("StatusNotFound:" + string(body))
 	}
 	err = json.Unmarshal(body, resource)
 	if err != nil {
-		return true, err
+		return err
 	}
-
-	return true, nil
+	return nil
 }
 
 //get resource form k8s api-server

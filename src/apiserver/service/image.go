@@ -378,3 +378,11 @@ func DeleteImageTag(imageTag model.ImageTag) error {
 	}
 	return nil
 }
+
+func CreateImageTag(imageTag model.ImageTag) (int64, error) {
+	imageTagID, err := dao.AddImageTag(imageTag)
+	if err != nil {
+		return 0, err
+	}
+	return imageTagID, nil
+}

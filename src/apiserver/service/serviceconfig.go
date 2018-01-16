@@ -67,12 +67,23 @@ func Deploy(config *model.ServiceConfig) error {
 	return nil
 }
 
-func CreateServiceConfig(s model.ServiceStatus) (int64, error) {
-	serviceID, err := dao.AddService(s)
+func CreateServiceConfig(serviceConfig model.ServiceStatus) (*model.ServiceStatus, error) {
+	query := model.Project{Name: serviceConfig.ProjectName}
+	project, err := GetProject(query, "name")
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return serviceID, err
+	if project == nil {
+		return nil, errors.New("project is invalid")
+	}
+
+	serviceConfig.ProjectID = project.ID
+	serviceID, err := dao.AddService(serviceConfig)
+	if err != nil {
+		return nil, err
+	}
+	serviceConfig.ID = serviceID
+	return &serviceConfig, err
 }
 
 func UpdateService(s model.ServiceStatus, fieldNames ...string) (bool, error) {
@@ -124,46 +135,33 @@ func DeleteService(serviceID int64) (bool, error) {
 	return true, nil
 }
 
-func GetServiceStatus(serviceUrl string) (modelK8s.Service, error, bool) {
+func GetServiceStatus(serviceURL string) (*modelK8s.Service, error) {
 	var service modelK8s.Service
-
-	flag, err := k8sGet(&service, serviceUrl)
-	if flag == false {
-		return service, err, false
-	}
+	logs.Debug("Get Service info serviceURL(service): %+s", serviceURL)
+	err := k8sGet(&service, serviceURL)
 	if err != nil {
-		return service, err, true
+		return nil, err
 	}
-
-	return service, err, true
+	return &service, nil
 }
 
-func GetNodesStatus(nodesUrl string) (modelK8s.NodeList, error, bool) {
+func GetNodesStatus(nodesURL string) (*modelK8s.NodeList, error) {
 	var nodes modelK8s.NodeList
-
-	flag, err := k8sGet(&nodes, nodesUrl)
-	if flag == false {
-		return nodes, err, false
-	}
+	logs.Debug("Get Node info nodeURL (endpoint): %+s", nodesURL)
+	err := k8sGet(&nodes, nodesURL)
 	if err != nil {
-		return nodes, err, true
+		return nil, err
 	}
-
-	return nodes, err, true
+	return &nodes, nil
 }
 
-func GetEndpointStatus(serviceUrl string) (modelK8s.Endpoints, error, bool) {
+func GetEndpointStatus(serviceUrl string) (*modelK8s.Endpoints, error) {
 	var endpoint modelK8s.Endpoints
-
-	flag, err := k8sGet(&endpoint, serviceUrl)
-	if flag == false {
-		return endpoint, err, false
-	}
+	err := k8sGet(&endpoint, serviceUrl)
 	if err != nil {
-		return endpoint, err, true
+		return nil, err
 	}
-
-	return endpoint, err, true
+	return &endpoint, nil
 }
 
 func GetService(service model.ServiceStatus, selectedFields ...string) (*model.ServiceStatus, error) {
@@ -172,6 +170,23 @@ func GetService(service model.ServiceStatus, selectedFields ...string) (*model.S
 		return nil, err
 	}
 	return s, nil
+}
+
+func GetServiceByProject(serviceName string, projectName string) (*model.ServiceStatus, error) {
+	var servicequery model.ServiceStatus
+	servicequery.Name = serviceName
+	servicequery.ProjectName = projectName
+	service, err := GetService(servicequery, "name", "project_name")
+	if err != nil {
+		return nil, err
+	}
+	return service, nil
+}
+
+func GetDeployConfig(deployConfigURL string) (modelK8sExt.Deployment, error) {
+	var deployConfig modelK8sExt.Deployment
+	err := k8sGet(&deployConfig, deployConfigURL)
+	return deployConfig, err
 }
 
 func SyncServiceWithK8s() error {
