@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/apiserver/service/devops/gogs"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
@@ -26,7 +27,6 @@ func (p *ProjectController) Prepare() {
 }
 
 func (p *ProjectController) CreateProjectAction() {
-
 	reqData, err := p.resolveBody()
 	if err != nil {
 		p.internalError(err)
@@ -88,6 +88,13 @@ func (p *ProjectController) CreateProjectAction() {
 	}
 	if !isSuccess {
 		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Namespace name: %s is illegal.", reqProject.Name))
+	}
+
+	if accessToken, ok := memoryCache.Get(p.currentUser.Username + "_GOGS-ACCESS-TOKEN").(string); ok {
+		err = gogs.NewGogsHandler(p.currentUser.Username, accessToken).CreateRepo(reqProject.Name)
+		if err != nil {
+			p.internalError(err)
+		}
 	}
 }
 
