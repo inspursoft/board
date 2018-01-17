@@ -1,141 +1,64 @@
 import { Injectable } from "@angular/core";
-import { Http, RequestOptions, Headers } from "@angular/http";
+import { HttpClient, HttpResponse } from "@angular/common/http";
 import { User } from "../user";
-import { AppInitService } from "../../app.init.service";
-import "rxjs/add/operator/toPromise";
 
 const BASE_URL = "/api/v1";
+
 @Injectable()
 export class UserService {
-  get defaultHeader(): Headers {
-    let headers = new Headers();
-    headers.append('Content-Type', 'application/json');
-    headers.append('token', this.appInitService.token);
-    return headers;
+
+  constructor(private http: HttpClient) {
   }
 
-  constructor(
-    private http: Http,
-    private appInitService: AppInitService) {
-  }
-
-  deleteUser(user: User): Promise<boolean> {
-    let options = new RequestOptions({
-      headers: this.defaultHeader
-    });
-    return this.http.delete(`${BASE_URL}/users/${user.user_id}`, options).toPromise()
-      .then(res => {
-        this.appInitService.chainResponse(res);
-        return res.ok;
-      })
-      .catch(err => Promise.reject(err));
+  deleteUser(user: User): Promise<any> {
+    return this.http.delete(`${BASE_URL}/users/${user.user_id}`, {observe: "response"}).toPromise();
   }
 
   getCurrentUser(): Promise<User> {
-    let options = new RequestOptions({
-      headers: this.defaultHeader
-    });
-    return this.http.get(`${BASE_URL}/users/current`, options)
+    return this.http.get(`${BASE_URL}/users/current`, {observe: "response"})
       .toPromise()
-      .then(res => {
-        this.appInitService.chainResponse(res);
-        return res.json();
-      })
-      .catch(err => Promise.reject(err));
+      .then((res: HttpResponse<User>) => res.body);
   }
 
   getUser(userID: number): Promise<User> {
-    let options = new RequestOptions({
-      headers: this.defaultHeader
-    });
-    return this.http.get(`${BASE_URL}/users/${userID}`, options)
+    return this.http.get(`${BASE_URL}/users/${userID}`, {observe: "response"})
       .toPromise()
-      .then(res => {
-        this.appInitService.chainResponse(res);
-        return res.json();
-      })
-      .catch(err => Promise.reject(err));
+      .then((res: HttpResponse<User>) => res.body);
   }
 
-  changeUserPassword(userID: number, user_password_old: string, user_password_new: string): Promise<boolean> {
-    let options = new RequestOptions({
-      headers: this.defaultHeader
-    });
+  changeUserPassword(userID: number, user_password_old: string, user_password_new: string): Promise<any> {
     let body = {
       "user_password_old": user_password_old,
       "user_password_new": user_password_new
     };
-    return this.http.put(`${BASE_URL}/users/${userID}/password`, body, options).toPromise()
-      .then(res => {
-        this.appInitService.chainResponse(res);
-        return res.ok;
-      })
-      .catch(err => Promise.reject(err));
+    return this.http.put(`${BASE_URL}/users/${userID}/password`, body, {observe: "response"}).toPromise();
   }
 
-  updateUser(user: User): Promise<boolean> {
-    let options = new RequestOptions({
-      headers: this.defaultHeader
-    });
-    return this.http.put(`${BASE_URL}/users/${user.user_id}`, user, options)
-      .toPromise()
-      .then(res => {
-        this.appInitService.chainResponse(res);
-        return res.ok;
-      })
-      .catch(err => Promise.reject(err));
+  updateUser(user: User): Promise<any> {
+    return this.http.put(`${BASE_URL}/users/${user.user_id}`, user, {observe: "response"}).toPromise()
   }
 
-  newUser(userParams: User): Promise<boolean> {
-    let options = new RequestOptions({
-      headers: this.defaultHeader
-    });
-    return this.http.post(`${BASE_URL}/adduser`, userParams, options).toPromise()
-      .then(res => {
-        this.appInitService.chainResponse(res);
-        return res.ok;
-      })
-      .catch(err => Promise.reject(err));
+  newUser(userParams: User): Promise<any> {
+    return this.http.post(`${BASE_URL}/adduser`, userParams, {observe: "response"}).toPromise();
   }
 
-  getUserList(username?: string, pageIndex?: number, pageSize?: number): Promise<any> {
-    let options = new RequestOptions({
-      headers: this.defaultHeader,
+  getUserList(username?: string, pageIndex?: number, pageSize?: number): Promise<Object> {
+    return this.http.get(`${BASE_URL}/users`, {
+      observe: "response",
       params: {
         'username': username,
-        'page_index': pageIndex,
-        'page_size': pageSize
+        'page_index': pageIndex.toString(),
+        'page_size': pageSize.toString()
       }
-    });
-    return this.http.get(`${BASE_URL}/users`, options).toPromise()
-      .then(res => {
-        this.appInitService.chainResponse(res);
-        return res.json();
-      })
-      .catch(err => Promise.reject(err))
+    }).toPromise()
+      .then((res: HttpResponse<Object>) => res.body);
   }
 
   setUserSystemAdmin(userID: number, userSystemAdmin: number): Promise<any> {
-    let options = new RequestOptions({
-      headers: this.defaultHeader
-    });
-    return this.http.put(`${BASE_URL}/users/${userID}/systemadmin`, {user_system_admin: userSystemAdmin}, options).toPromise()
-      .then(res => {
-        this.appInitService.chainResponse(res);
-        return res;
-      })
-      .catch(err => Promise.reject(err));
+    return this.http.put(`${BASE_URL}/users/${userID}/systemadmin`, {user_system_admin: userSystemAdmin}, {observe:"response"}).toPromise();
   }
 
   usesChangeAccount(user: User): Promise<any> {
-    let options = new RequestOptions({
-      headers: this.defaultHeader
-    });
-    return this.http.put(`${BASE_URL}/users/changeaccount`, user, options).toPromise()
-      .then(res => {
-        this.appInitService.chainResponse(res);
-        return res;
-      })
-      .catch(err => Promise.reject(err));
+    return this.http.put(`${BASE_URL}/users/changeaccount`, user, {observe:"response"}).toPromise();
   }
 }

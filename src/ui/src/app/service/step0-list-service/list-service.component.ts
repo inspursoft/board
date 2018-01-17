@@ -1,10 +1,7 @@
 import { Component, OnInit, OnDestroy, ViewChild, Injector } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
-
-import { State } from "clarity-angular";
-
 import { Service } from '../service';
-import { MESSAGE_TARGET, BUTTON_STYLE, MESSAGE_TYPE, SERVICE_STATUS } from '../../shared/shared.const';
+import { MESSAGE_TARGET, BUTTON_STYLE, MESSAGE_TYPE, SERVICE_STATUS, GUIDE_STEP } from '../../shared/shared.const';
 import { Message } from '../../shared/message-service/message';
 import { ServiceDetailComponent } from './service-detail/service-detail.component';
 import { ServiceStepBase } from "../service-step";
@@ -109,13 +106,13 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
     this.k8sService.stepSource.next({index: 1, isBack: false});
   }
 
-  retrieve(state?: State): void {
+  retrieve(): void {
     setTimeout(() => {
       this.isInLoading = true;
       this.k8sService.getServices(this.pageIndex, this.pageSize)
         .then(paginatedServices => {
-          this.totalRecordCount = paginatedServices.pagination.total_count;
-          this.services = paginatedServices.service_status_list;
+          this.totalRecordCount = paginatedServices["pagination"]["total_count"];
+          this.services = paginatedServices["service_status_list"];
           this.isInLoading = false;
         })
         .catch(err => {
@@ -195,13 +192,30 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
     this.messageService.announceMessage(announceMessage);
   }
 
-  openServiceDetail(s:Service) {
+  openServiceDetail(s: Service) {
     this.serviceDetailComponent.openModal(s);
   }
 
   openServiceControl(service: Service) {
     this.serviceControlData = service;
     this.isServiceControlOpen = true;
+  }
+
+  get isFirstLogin(): boolean {
+    return this.appInitService.isFirstLogin;
+  }
+
+  get guideStep(): GUIDE_STEP {
+    return this.appInitService.guideStep;
+  }
+
+  guideNextStep(step: GUIDE_STEP) {
+    this.createService();
+    this.setGuideNoneStep();
+  }
+
+  setGuideNoneStep() {
+    this.appInitService.guideStep = GUIDE_STEP.NONE_STEP;
   }
 
 }

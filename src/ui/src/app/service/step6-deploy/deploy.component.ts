@@ -7,7 +7,7 @@ import { Message } from "../../shared/message-service/message";
 import { BUTTON_STYLE } from "../../shared/shared.const";
 import { WebsocketService } from "../../shared/websocket-service/websocket.service";
 import { ServiceStepBase } from "../service-step";
-import { Response } from "@angular/http"
+import { HttpErrorResponse } from "@angular/common/http"
 import { PHASE_ENTIRE_SERVICE, ServiceStepPhase, UIServiceStepBase } from "../service-step.component";
 
 @Component({
@@ -91,10 +91,9 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
               });
         })
         .catch(err => {
-          if (err instanceof Response && (err as Response).status == 400) {
+          if (err instanceof HttpErrorResponse && (err as HttpErrorResponse).status == 400) {
             let errMessage = new Message();
-            let resBody = (err as Response).json();
-            errMessage.message = resBody["message"];
+            errMessage.message = (err as HttpErrorResponse).message;
             this.messageService.globalMessage(errMessage)
           } else {
             this.messageService.dispatchError(err);

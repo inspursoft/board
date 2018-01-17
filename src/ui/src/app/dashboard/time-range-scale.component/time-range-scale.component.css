@@ -5,19 +5,16 @@
   margin: 5px;
 }
 
-.scale-block-container {
+div.scale-block-container {
   display: flex;
   justify-content: space-between;
-  flex-basis: 100%;
   margin: 10px 10px 0 10px;
-  max-height: 3px;
-  border-radius: 3px;
+  height: 1px;
   background-color: #bbbbbb;
 }
 
 .scale-text-container {
   font-size: 10px;
-  flex-basis: 100%;
   display: flex;
   margin-top: 5px;
   justify-content: space-between;

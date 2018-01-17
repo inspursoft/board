@@ -1,7 +1,5 @@
 import { Component, OnInit, OnDestroy } from "@angular/core";
 
-import { State } from "clarity-angular";
-
 import { UserService } from "../user-service/user-service";
 import { User } from "../user";
 import { editModel } from "../user-new-edit/user-new-edit.component"
@@ -67,13 +65,13 @@ export class UserList implements OnInit, OnDestroy {
     }
   }
 
-  refreshData(state?: State): void {
+  refreshData(): void {
     setTimeout(()=>{
       this.isInLoading = true;
       this.userService.getUserList('', this.pageIndex, this.pageSize)
         .then(res => {
-          this.totalRecordCount = res.pagination.total_count;
-          this.userListData = res.user_list;
+          this.totalRecordCount = res["pagination"]["total_count"];
+          this.userListData = res["user_list"];
           this.isInLoading = false;
         })
         .catch(err => {
