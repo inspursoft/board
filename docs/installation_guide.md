@@ -375,8 +375,52 @@ User can manage the nodes by operations, such as remove a node from the cluster:
 <img src="img/userguide/node3.JPG" width="100" alt="Remove a node from cluster">
 
 ### Network Configuration
+Need to configure network option to enable the network communication between different pods of different nodes in cluster. 
+There are a number of ways that this network model can be implemented.
+
+#### Configure flannel network
+```
+$ yum install -y flannel
+```
+
+Edit the service file /usr/lib/systemd/system/flanneld.service
+```
+Before=docker.service
+EnvironmentFile=/etc/sysconfig/flanneld
+```
+
+Edit the configuration file  /etc/sysconfig/flanneld
+
+ETCD server:
+FLANNEL_ETCD="http://127.0.0.1:2379"
+FLANNEL_ETCD_KEY="/atomic.io/network"
+
+Add a network subnet to ETCD server
+```
+$etcdctl set /atomic.io/network/config '{"Network": "10.1.0.0/16"}'
+```
+
+Configure docker network
+```
+$ /usr/libexec/flannel/mk-docker-opts.sh -i
+$ source /run/flannel/subnet.env
+$ ifconfig docker0 ${FLANNEL_SUBNET}
+$ systemctl restart docker
+```
 
 ### Storage Configuration 
+Support NFS storage and Ceph storage system
+
+### NFS
+Need to configure every node to support NFS as NFS client
+```
+$ yum install -y nfs-utils rpcbind
+$ systemctl enable rpcbind.service
+$ systemctl start rpcbind.service
+$ showmount -e $1
+
+```
+#### Setup a NFS server
 
 ### Registry Installation
 Get registry image from docker.io and install
