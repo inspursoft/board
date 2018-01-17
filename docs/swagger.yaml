@@ -1532,9 +1532,7 @@ paths:
         403:
           description: Invalid service ID.
         500:
-          description: Unexpected internal errors.
-
-      
+          description: Unexpected internal errors.      
   /v1/services/config:
     post:
       summary: Deploy service by this service configuration.
@@ -1643,7 +1641,6 @@ paths:
           description: User need to log in first.
         500:
           description: Internal errors.
-
   /v1/services/deployment:
     post:
       summary: Deploy service by this service configuration.
@@ -1839,6 +1836,33 @@ paths:
           description: Invalid service ID.
         500:
           description: Unexpected internal errors.    
+  /v1/services/ingress:
+    get:  
+      summary: Get the ingress module status.
+      description: |
+        This endpoint is aimed to get the ingress module status.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name 
+          in: query
+          description: project name for service.
+          required: true
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return ingress data.
+        401:
+          description: User need to log in first.
+        403:
+          description: Invalid project name.
+        500:
+          description: Unexpected internal errors.
   /v1/node:
     get:
       summary: Return nodes in Board added by admin.
