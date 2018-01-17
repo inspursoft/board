@@ -392,8 +392,10 @@ EnvironmentFile=/etc/sysconfig/flanneld
 Edit the configuration file  /etc/sysconfig/flanneld
 
 ETCD server:
+```
 FLANNEL_ETCD="http://127.0.0.1:2379"
 FLANNEL_ETCD_KEY="/atomic.io/network"
+```
 
 Add a network subnet to ETCD server
 ```
