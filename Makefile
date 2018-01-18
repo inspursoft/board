@@ -16,7 +16,7 @@
 # Develop flag
 #
 # guyingyan add test
-DEVFLAG=release
+DEVFLAG=dev
 ifeq ($(DEVFLAG), release) 
 	BASEIMAGE=alpine:3.5
 	GOBUILDIMAGE=golang:1.8.3-alpine3.5
@@ -150,7 +150,7 @@ $(VET_LIST): %_vet:
 $(GOLINT_LIST): %_golint:
 	$(GOLINT) $*/...
 
-build: $(BUILD_LIST) #container/db_build
+build: version $(BUILD_LIST) #container/db_build
 cleanimage: $(RMIMG_LIST) #container/db_rmi
 
 $(BUILD_LIST): %_build: 
@@ -184,7 +184,11 @@ prepare_swagger:
 	@cd $(SWAGGERTOOLPATH); ./prepare-swagger.sh
 	@echo "Done."
 
-package:
+prepare_composefile:
+	@cp $(MAKEWORKPATH)/docker-compose.tpl $(MAKEWORKPATH)/docker-compose-$(VERSIONTAG).yml
+	@sed -i "s/__version__/$(VERSIONTAG)/g" $(MAKEWORKPATH)/docker-compose-$(VERSIONTAG).yml
+
+package: prepare_composefile
 	@echo "packing offline package ..."
 	@if [ ! -d $(PKGTEMPPATH) ] ; then mkdir $(PKGTEMPPATH) ; fi
 	@cp $(TOOLSPATH)/install.sh $(PKGTEMPPATH)/install.sh
@@ -192,10 +196,10 @@ package:
 	@cp $(MAKEPATH)/board.cfg $(PKGTEMPPATH)/.
 	@cp $(MAKEPATH)/prepare $(PKGTEMPPATH)/.
 	@cp -rf $(MAKEPATH)/templates $(PKGTEMPPATH)/.
-	@cp $(MAKEWORKPATH)/docker-compose.yml $(PKGTEMPPATH)/.
+	@cp $(MAKEWORKPATH)/docker-compose-$(VERSIONTAG).yml $(PKGTEMPPATH)/.
 #	@cp LICENSE $(PKGTEMPPATH)/LICENSE
 #	@cp NOTICE $(PKGTEMPPATH)/NOTICE
-	@sed -i "s/..\/config/.\/config/" $(PKGTEMPPATH)/docker-compose.yml
+	@sed -i "s/..\/config/.\/config/" $(PKGTEMPPATH)/docker-compose-$(VERSIONTAG).yml
 	@echo "pcakage images ..."
 	@$(DOCKERSAVE) -o $(PKGTEMPPATH)/$(IMAGEPREFIX)_deployment.$(VERSIONTAG).tgz $(PKG_LIST)
 	@$(TARCMD) -zcvf $(PKGNAME)-offline-installer-$(VERSIONTAG).tgz $(PKGTEMPPATH)

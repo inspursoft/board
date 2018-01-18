@@ -106,7 +106,7 @@ echo "[Step $item]: preparing environment ...";  let item+=1
 echo ""
 
 echo "[Step $item]: checking existing instance of Board ..."; let item+=1
-if [ -n "$(docker-compose ps -q)"  ]
+if [ -n "$(docker-compose -f docker-compose*.yml ps -q)"  ]
 then
 	echo "stopping existing Board instance ..."
 	docker-compose -f docker-compose*.yml down
