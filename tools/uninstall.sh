@@ -105,7 +105,7 @@ echo "[Step $item]: checking existing instance of Board ..."; let item+=1
 if [ -n "$(docker-compose ps -q)"  ]
 then
 	echo "stopping existing Board instance ..."
-	docker-compose -f docker-compose*.yml down
+	docker-compose down
 fi
 echo ""
 
