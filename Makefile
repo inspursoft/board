@@ -185,8 +185,8 @@ prepare_swagger:
 	@echo "Done."
 
 prepare_composefile:
-	@cp $(MAKEWORKPATH)/docker-compose.tpl $(MAKEWORKPATH)/docker-compose-$(VERSIONTAG).yml
-	@sed -i "s/__version__/$(VERSIONTAG)/g" $(MAKEWORKPATH)/docker-compose-$(VERSIONTAG).yml
+	@cp $(MAKEWORKPATH)/docker-compose.tpl $(MAKEWORKPATH)/docker-compose.yml
+	@sed -i "s/__version__/$(VERSIONTAG)/g" $(MAKEWORKPATH)/docker-compose.yml
 
 package: prepare_composefile
 	@echo "packing offline package ..."
@@ -196,10 +196,10 @@ package: prepare_composefile
 	@cp $(MAKEPATH)/board.cfg $(PKGTEMPPATH)/.
 	@cp $(MAKEPATH)/prepare $(PKGTEMPPATH)/.
 	@cp -rf $(MAKEPATH)/templates $(PKGTEMPPATH)/.
-	@cp $(MAKEWORKPATH)/docker-compose-$(VERSIONTAG).yml $(PKGTEMPPATH)/.
+	@cp $(MAKEWORKPATH)/docker-compose.yml $(PKGTEMPPATH)/.
 #	@cp LICENSE $(PKGTEMPPATH)/LICENSE
 #	@cp NOTICE $(PKGTEMPPATH)/NOTICE
-	@sed -i "s/..\/config/.\/config/" $(PKGTEMPPATH)/docker-compose-$(VERSIONTAG).yml
+	@sed -i "s/..\/config/.\/config/" $(PKGTEMPPATH)/docker-compose.yml
 	@echo "pcakage images ..."
 	@$(DOCKERSAVE) -o $(PKGTEMPPATH)/$(IMAGEPREFIX)_deployment.$(VERSIONTAG).tgz $(PKG_LIST)
 	@$(TARCMD) -zcvf $(PKGNAME)-offline-installer-$(VERSIONTAG).tgz $(PKGTEMPPATH)

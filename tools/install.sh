@@ -106,15 +106,15 @@ echo "[Step $item]: preparing environment ...";  let item+=1
 echo ""
 
 echo "[Step $item]: checking existing instance of Board ..."; let item+=1
-if [ -n "$(docker-compose -f docker-compose*.yml ps -q)"  ]
+if [ -n "$(docker-compose ps -q)"  ]
 then
 	echo "stopping existing Board instance ..."
-	docker-compose -f docker-compose*.yml down
+	docker-compose down
 fi
 echo ""
 
 echo "[Step $item]: starting Board ..."
-docker-compose -f docker-compose*.yml up -d
+docker-compose up -d
 
 protocol=http
 hostname=reg.mydomain.com
