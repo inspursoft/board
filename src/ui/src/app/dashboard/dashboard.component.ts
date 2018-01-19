@@ -13,6 +13,7 @@ const MAX_COUNT_PER_PAGE: number = 200;
 const MAX_COUNT_PER_DRAG: number = 100;
 const AUTO_REFRESH_SEED: number = 10;
 const AUTO_REFRESH_CUR_SEED: number = 5;
+
 @Component({
   selector: 'dashboard',
   templateUrl: './dashboard.component.html',
@@ -187,7 +188,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
       });
   };
 
-  private getOneLineData(lineType: LineType): Promise<{Data: LinesData, Limit: {isMax: boolean, isMin: boolean}}> {
+  private async getOneLineData(lineType: LineType): Promise<{Data: LinesData, Limit: {isMax: boolean, isMin: boolean}}> {
     let query = this.query.get(lineType);
     let httpQuery = {
       time_count: query.time_count,
@@ -197,19 +198,21 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
       service_duration_time: query.timestamp_base - query.time_count * query.scale.valueOfSecond
     };
     this.lineStateInfo.get(lineType).inRefreshWIP = true;
-    return this.service.getlineData(lineType, httpQuery)
-      .then((res: {List: Array<LineListDataModel>, Data: LinesData, CurListName: string, Limit: {isMax: boolean, isMin: boolean}}) => {
-        this.noData.set(lineType, false);
-        this.lineNamesList.set(lineType, res.List);
-        this.dropdownText.set(lineType, res.CurListName);
-        this.lineStateInfo.get(lineType).inRefreshWIP = false;
-        return {Data: res.Data, Limit: res.Limit};
-      })
+    let lineDataInfo: {List: Array<LineListDataModel>, Data: LinesData, CurListName: string, Limit: {isMax: boolean, isMin: boolean}};
+    await  this.service.getlineData(lineType, httpQuery)
+      .then(res => lineDataInfo = res)
       .catch(err => {
         this.lineStateInfo.get(lineType).inRefreshWIP = false;
         this.noData.set(lineType, true);
         this.messageService.dispatchError(err);
       });
+    if (lineDataInfo){
+      this.noData.set(lineType, false);
+      this.lineNamesList.set(lineType, lineDataInfo.List);
+      this.dropdownText.set(lineType, lineDataInfo.CurListName);
+      this.lineStateInfo.get(lineType).inRefreshWIP = false;
+      return {Data: lineDataInfo.Data, Limit: lineDataInfo.Limit};
+    }
   }
 
   private getLineInRefreshWIP(): boolean {
@@ -247,7 +250,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     }
   }
 
-  private  delayNormal(lineType: LineType): Promise<boolean> {
+  private delayNormal(lineType: LineType): Promise<boolean> {
     return new Promise<boolean>((resolve, reject) => {
       this.lineStateInfo.get(lineType).inRefreshWIP = true;
       setTimeout(() => {

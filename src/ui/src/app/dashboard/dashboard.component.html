@@ -55,164 +55,157 @@
   </div>
 </div>
 
-<div style="display: flex;flex-direction: column">
-  <div style="flex-basis: 100%" class="card">
-    <div class="card-header">{{'DASHBOARD.SERVICE' | translate }}</div>
-    <div class="card-block">
-      <div class="card-block-top-container">
-        <div>
-          <clr-dropdown #serviceDropdown>
-            <button class="btn btn-outline-primary dropdown-button" clrDropdownToggle>
-              {{dropdownText.get(0) | translate}}
-              <span *ngIf="dropdownText.get(0) == ''" class="spinner spinner-sm"></span>
-              <clr-icon *ngIf="lineNamesList.get(0) && lineNamesList.get(0).length > 0" shape="caret down"></clr-icon>
+<div class="card">
+  <div class="card-header">{{'DASHBOARD.SERVICE' | translate }}</div>
+  <div class="card-block" style="display: flex;flex-direction: column">
+    <div class="card-block-top-container">
+      <div>
+        <clr-dropdown #serviceDropdown>
+          <button class="btn btn-outline-primary dropdown-button" clrDropdownToggle>
+            {{dropdownText.get(0) | translate}}
+            <span *ngIf="dropdownText.get(0) == ''" class="spinner spinner-sm"></span>
+            <clr-icon *ngIf="lineNamesList.get(0) && lineNamesList.get(0).length > 0" shape="caret down"></clr-icon>
+          </button>
+          <clr-dropdown-menu [hidden]="!lineNamesList.get(0) || lineNamesList.get(0).length == 0"
+                             class="card-block-dropdown">
+            <button *ngFor="let lineList of lineNamesList.get(0);"
+                    [ngClass]="{'active':dropdownText.get(0) == lineList.list_name}"
+                    class="dropdown-item"
+                    (click)="dropDownChange(0,lineList);serviceDropdown.toggleDropdown()">
+              {{lineList.list_name}}
             </button>
-            <clr-dropdown-menu [hidden]="!lineNamesList.get(0) || lineNamesList.get(0).length == 0"
-                               class="card-block-dropdown">
-              <button *ngFor="let lineList of lineNamesList.get(0);"
-                      [ngClass]="{'active':dropdownText.get(0) == lineList.list_name}"
-                      class="dropdown-item"
-                      (click)="dropDownChange(0,lineList);serviceDropdown.toggleDropdown()">
-                {{lineList.list_name}}
-              </button>
-            </clr-dropdown-menu>
-          </clr-dropdown>
-        </div>
-
-        <div class="caption_container">
-          <span class="first-line">{{ 'DASHBOARD.PODS' | translate }}:{{curValue.get(0)?.curFirst}}</span>
-          <span class="second-line">{{ 'DASHBOARD.CONTAINERS' | translate }}:{{curValue.get(0)?.curSecond}}</span>
-        </div>
-        <div class="select-time-container">
-          <time-range-scale [curScale]="query.get(0) ? query.get(0).scale:{}"
-                            (scaleChange)="scaleChange(0,$event)"
-                            [options]="scaleOptions">
-          </time-range-scale>
-        </div>
+          </clr-dropdown-menu>
+        </clr-dropdown>
       </div>
-      <div class="card-block-bottom-container">
-        <div style="flex-basis: 100%;">
-          <div *ngIf="noData.get(0)" class="no-data-mask">
-            <span>{{ noDataErrMsg.get(0) | translate }}</span>
-          </div>
-          <div echarts
-               (chartInit)="onEChartInit(0,$event)"
-               [options]="lineOptions.get(0)"
-               [dataset]="lineData.get(0)"
-               (mouseup)="chartMouseUp(0,$event)"
-               (chartDataZoom)="chartDataZoom(0,$event)"
-               style="height: 300px">
-          </div>
+      <div class="caption_container">
+        <span class="first-line">{{ 'DASHBOARD.PODS' | translate }}:{{curValue.get(0)?.curFirst}}</span>
+        <span class="second-line">{{ 'DASHBOARD.CONTAINERS' | translate }}:{{curValue.get(0)?.curSecond}}</span>
+      </div>
+      <div class="select-time-container">
+        <time-range-scale [curScale]="query.get(0) ? query.get(0).scale:{}"
+                          (scaleChange)="scaleChange(0,$event)"
+                          [options]="scaleOptions">
+        </time-range-scale>
+      </div>
+    </div>
+    <div class="card-block-bottom-container">
+      <div style="flex-basis: 100%;">
+        <div *ngIf="noData.get(0)" class="no-data-mask">
+          <span>{{ noDataErrMsg.get(0) | translate }}</span>
+        </div>
+        <div echarts
+             (chartInit)="onEChartInit(0,$event)"
+             [options]="lineOptions.get(0)"
+             [dataset]="lineData.get(0)"
+             (mouseup)="chartMouseUp(0,$event)"
+             (chartDataZoom)="chartDataZoom(0,$event)"
+             style="height: 300px">
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<div style="display: flex;flex-direction: column">
-  <div style="flex-basis: 100%" class="card">
-    <div class="card-header">{{'DASHBOARD.NODE' | translate }}</div>
-    <div class="card-block">
-      <div class="card-block-top-container">
-        <div>
-          <clr-dropdown #nodeDropdown>
-            <button class="btn btn-outline-primary dropdown-button" clrDropdownToggle>
-              {{dropdownText.get(1) | translate}}
-              <span *ngIf="dropdownText.get(1) == ''" class="spinner spinner-sm"></span>
-              <clr-icon *ngIf="lineNamesList.get(1) && lineNamesList.get(1).length > 0" shape="caret down"></clr-icon>
+<div class="card">
+  <div class="card-header">{{'DASHBOARD.NODE' | translate }}</div>
+  <div class="card-block" style="display: flex;flex-direction: column">
+    <div class="card-block-top-container">
+      <div>
+        <clr-dropdown #nodeDropdown>
+          <button class="btn btn-outline-primary dropdown-button" clrDropdownToggle>
+            {{dropdownText.get(1) | translate}}
+            <span *ngIf="dropdownText.get(1) == ''" class="spinner spinner-sm"></span>
+            <clr-icon *ngIf="lineNamesList.get(1) && lineNamesList.get(1).length > 0" shape="caret down"></clr-icon>
+          </button>
+          <clr-dropdown-menu [hidden]="!lineNamesList.get(1) || lineNamesList.get(1).length == 0"
+                             class="card-block-dropdown">
+            <button *ngFor="let lineList of lineNamesList.get(1);"
+                    [ngClass]="{'active':dropdownText.get(1) == lineList.list_name}"
+                    class="dropdown-item"
+                    (click)="dropDownChange(1,lineList);nodeDropdown.toggleDropdown()">
+              {{lineList.list_name}}
             </button>
-            <clr-dropdown-menu [hidden]="!lineNamesList.get(1) || lineNamesList.get(1).length == 0"
-                               class="card-block-dropdown">
-              <button *ngFor="let lineList of lineNamesList.get(1);"
-                      [ngClass]="{'active':dropdownText.get(1) == lineList.list_name}"
-                      class="dropdown-item"
-                      (click)="dropDownChange(1,lineList);nodeDropdown.toggleDropdown()">
-                {{lineList.list_name}}
-              </button>
-            </clr-dropdown-menu>
-          </clr-dropdown>
-        </div>
-        <div class="caption_container">
-          <span class="first-line">{{ 'DASHBOARD.CPU' | translate }}:{{curValue.get(1)?.curFirst}}%</span>
-          <span class="second-line">{{ 'DASHBOARD.MEMORY' | translate }}:{{curValue.get(1)?.curSecond}}%</span>
-        </div>
-        <div class="select-time-container">
-          <time-range-scale [curScale]="query.get(1) ? query.get(1).scale:{}"
-                            (scaleChange)="scaleChange(1,$event)"
-                            [options]="scaleOptions">
-          </time-range-scale>
-        </div>
+          </clr-dropdown-menu>
+        </clr-dropdown>
       </div>
-      <div class="card-block-bottom-container">
-        <div style="flex-basis: 100%;">
-          <div *ngIf="noData.get(1)" class="no-data-mask">
-            <span>{{ noDataErrMsg.get(1) | translate }}</span>
-          </div>
-          <div echarts
-               (chartInit)="onEChartInit(1,$event)"
-               [options]="lineOptions.get(1)"
-               (mouseup)="chartMouseUp(1,$event)"
-               [dataset]="lineData.get(1)"
-               (chartDataZoom)="chartDataZoom(1,$event)"
-               style="height: 300px">
-          </div>
+      <div class="caption_container">
+        <span class="first-line">{{ 'DASHBOARD.CPU' | translate }}:{{curValue.get(1)?.curFirst}}%</span>
+        <span class="second-line">{{ 'DASHBOARD.MEMORY' | translate }}:{{curValue.get(1)?.curSecond}}%</span>
+      </div>
+      <div class="select-time-container">
+        <time-range-scale [curScale]="query.get(1) ? query.get(1).scale:{}"
+                          (scaleChange)="scaleChange(1,$event)"
+                          [options]="scaleOptions">
+        </time-range-scale>
+      </div>
+    </div>
+    <div class="card-block-bottom-container">
+      <div style="flex-basis: 100%;">
+        <div *ngIf="noData.get(1)" class="no-data-mask">
+          <span>{{ noDataErrMsg.get(1) | translate }}</span>
+        </div>
+        <div echarts
+             (chartInit)="onEChartInit(1,$event)"
+             [options]="lineOptions.get(1)"
+             (mouseup)="chartMouseUp(1,$event)"
+             [dataset]="lineData.get(1)"
+             (chartDataZoom)="chartDataZoom(1,$event)"
+             style="height: 300px">
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<div style="display: flex;flex-direction: column">
-  <div style="flex-basis: 100%" class="card">
-    <div class="card-header">{{'DASHBOARD.STORAGE' | translate }}</div>
-    <div class="card-block">
-      <div class="card-block-top-container">
-        <div>
-          <clr-dropdown #storageDropdown>
-            <button class="btn btn-outline-primary dropdown-button" clrDropdownToggle>
-              {{dropdownText.get(2) | translate}}
-              <span *ngIf="dropdownText.get(2) == ''" class="spinner spinner-sm"></span>
-              <clr-icon *ngIf="lineNamesList.get(2) && lineNamesList.get(2).length > 0" shape="caret down"></clr-icon>
+<div class="card">
+  <div class="card-header">{{'DASHBOARD.STORAGE' | translate }}</div>
+  <div class="card-block" style="display: flex;flex-direction: column">
+    <div class="card-block-top-container">
+      <div>
+        <clr-dropdown #storageDropdown>
+          <button class="btn btn-outline-primary dropdown-button" clrDropdownToggle>
+            {{dropdownText.get(2) | translate}}
+            <span *ngIf="dropdownText.get(2) == ''" class="spinner spinner-sm"></span>
+            <clr-icon *ngIf="lineNamesList.get(2) && lineNamesList.get(2).length > 0" shape="caret down"></clr-icon>
+          </button>
+          <clr-dropdown-menu [hidden]="!lineNamesList.get(2) || lineNamesList.get(2).length == 0"
+                             class="card-block-dropdown">
+            <button *ngFor="let lineList of lineNamesList.get(2);"
+                    [ngClass]="{'active':dropdownText.get(2) == lineList.list_name}"
+                    class="dropdown-item cs-dropdown-item"
+                    (click)="dropDownChange(2,lineList);storageDropdown.toggleDropdown()">
+              {{lineList.list_name}}
             </button>
-            <clr-dropdown-menu [hidden]="!lineNamesList.get(2) || lineNamesList.get(2).length == 0"
-                               class="card-block-dropdown">
-              <button *ngFor="let lineList of lineNamesList.get(2);"
-                      [ngClass]="{'active':dropdownText.get(2) == lineList.list_name}"
-                      class="dropdown-item cs-dropdown-item"
-                      (click)="dropDownChange(2,lineList);storageDropdown.toggleDropdown()">
-                {{lineList.list_name}}
-              </button>
-            </clr-dropdown-menu>
-          </clr-dropdown>
-        </div>
-        <div class="caption_container">
+          </clr-dropdown-menu>
+        </clr-dropdown>
+      </div>
+      <div class="caption_container">
           <span class="first-line">
             {{ 'DASHBOARD.USAGE' | translate }}:{{curValue.get(2)?.curFirst}}{{StorageUnit}}
           </span>
-          <span class="second-line">
+        <span class="second-line">
             {{'DASHBOARD.TOTAL' | translate }}:{{curValue.get(2)?.curSecond}}{{StorageUnit}}
           </span>
-        </div>
-        <div class="select-time-container">
-          <time-range-scale [curScale]="query.get(2) ? query.get(2).scale:{}"
-                            (scaleChange)="scaleChange(2,$event)"
-                            [options]="scaleOptions">
-          </time-range-scale>
-        </div>
       </div>
-      <div class="card-block-bottom-container">
-        <div style="flex-basis: 100%;">
-          <div *ngIf="noData.get(2)" class="no-data-mask">
-            <span>{{ noDataErrMsg.get(2) | translate }}</span>
-          </div>
-          <div echarts
-               (chartInit)="onEChartInit(2,$event)"
-               (mouseup)="chartMouseUp(2,$event)"
-               [options]="lineOptions.get(2)"
-               [dataset]="lineData.get(2)"
-               (chartDataZoom)="chartDataZoom(2,$event)"
-               style="height: 300px">
-          </div>
+      <div class="select-time-container">
+        <time-range-scale [curScale]="query.get(2) ? query.get(2).scale:{}"
+                          (scaleChange)="scaleChange(2,$event)"
+                          [options]="scaleOptions">
+        </time-range-scale>
+      </div>
+    </div>
+    <div class="card-block-bottom-container">
+      <div style="flex-basis: 100%;">
+        <div *ngIf="noData.get(2)" class="no-data-mask">
+          <span>{{ noDataErrMsg.get(2) | translate }}</span>
+        </div>
+        <div echarts
+             (chartInit)="onEChartInit(2,$event)"
+             (mouseup)="chartMouseUp(2,$event)"
+             [options]="lineOptions.get(2)"
+             [dataset]="lineData.get(2)"
+             (chartDataZoom)="chartDataZoom(2,$event)"
+             style="height: 300px">
         </div>
       </div>
     </div>

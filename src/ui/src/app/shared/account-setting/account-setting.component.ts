@@ -23,7 +23,6 @@ export class AccountSettingComponent implements OnInit {
   }
 
   ngOnInit() {
-    let curUserID = this.appInitService.currentUser["user_id"];
     this.userService.getCurrentUser()
       .then(res => {
         this.curUser = res;
