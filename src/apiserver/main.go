@@ -37,7 +37,7 @@ func initBoardVersion() {
 		panic(err)
 	}
 	utils.SetConfig("BOARD_VERSION", string(bytes.TrimSpace(version)))
-	err = service.SetSystemInfo("BOARD_VERSION", false)
+	err = service.SetSystemInfo("BOARD_VERSION", true)
 	if err != nil {
 		logs.Error("Failed to set system config: %+v", err)
 		panic(err)
@@ -192,9 +192,7 @@ func main() {
 		panic(err)
 	}
 
-	if systemInfo.Version == "" {
-		initBoardVersion()
-	}
+	initBoardVersion()
 
 	if systemInfo.SetAdminPassword == "" {
 		updateAdminPassword()
