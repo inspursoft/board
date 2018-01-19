@@ -1,7 +1,7 @@
 version: '2'
 services:
   log:
-    image: board_log
+    image: board_log:__version__
     restart: always
     volumes:
       - /var/log/board/:/var/log/docker/
@@ -10,7 +10,7 @@ services:
     ports:
       - 1514:514
   mysql:
-    image: board_mysql
+    image: board_mysql:__version__
     restart: always
     volumes:
       - /data/board/database:/var/lib/mysql
@@ -26,7 +26,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "mysql"
   gitserver:
-    image: board_gitserver
+    image: board_gitserver:__version__
     restart: always
     volumes:
       - /data/board/gitserver/repos:/gitserver/repos
@@ -43,7 +43,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "gitserver"
   jenkins:
-    image: board_jenkins
+    image: board_jenkins:__version__
     restart: always
     networks:
       - board
@@ -64,7 +64,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "jenkins"
   apiserver:
-    image: board_apiserver
+    image: board_apiserver:__version__
     restart: always
     volumes:
       - ../config/apiserver/app.conf:/usr/bin/app.conf:z
@@ -88,7 +88,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "apiserver"
   tokenserver:
-    image: board_tokenserver
+    image: board_tokenserver:__version__
     env_file:
       - ../config/tokenserver/env
     restart: always
@@ -104,7 +104,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "tokenserver"
   collector:
-    image: board_collector
+    image: board_collector:__version__
     restart: always
     env_file:
       - ../config/collector/env
@@ -121,12 +121,12 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "collector" 
   proxy:
-    image: board_nginx
+    image: board_proxy:__version__
     networks:
       - board
     restart: always
     volumes:
-      - ../config/nginx/nginx.conf:/etc/nginx/nginx.conf:z
+      - ../config/proxy/nginx.conf:/etc/nginx/nginx.conf:z
 #     - ../../src/ui/dist:/usr/share/nginx/html:z
     ports: 
       - 80:80

@@ -3,14 +3,16 @@ package service
 import (
 	"os"
 	"testing"
+	"fmt"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/orm"
 )
 
 func connectToDB() {
+	hostIP:=os.Getenv("HOST_IP")
 	orm.RegisterDriver("mysql", orm.DRMySQL)
-	err := orm.RegisterDataBase("default", "mysql", "root:root123@tcp(localhost:3306)/board?charset=utf8")
+	err := orm.RegisterDataBase("default", "mysql", fmt.Sprintf("root:root123@tcp(%s:3306)/board?charset=utf8", hostIP))
 	if err != nil {
 		logs.Error("Failed to connect to DB.")
 	}
