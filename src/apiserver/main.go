@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"git/inspursoft/board/src/apiserver/controller"
 	_ "git/inspursoft/board/src/apiserver/router"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
+	"io/ioutil"
 	"os"
 
 	"github.com/astaxie/beego/logs"
@@ -27,6 +29,20 @@ const (
 var repoServePath = filepath.Join(baseRepoPath, "board_repo_serve")
 var repoServeURL = filepath.Join("root@gitserver:", "gitserver", "repos", "board_repo_serve")
 var repoPath = filepath.Join(baseRepoPath, "board_repo")
+
+func initBoardVersion() {
+	version, err := ioutil.ReadFile("VERSION")
+	if err != nil {
+		logs.Error("Failed to read VERSION file: %+v", err)
+		panic(err)
+	}
+	utils.SetConfig("BOARD_VERSION", string(bytes.TrimSpace(version)))
+	err = service.SetSystemInfo("BOARD_VERSION", true)
+	if err != nil {
+		logs.Error("Failed to set system config: %+v", err)
+		panic(err)
+	}
+}
 
 func updateAdminPassword() {
 	initialPassword := utils.GetStringValue("BOARD_ADMIN_PASSWORD")
@@ -180,6 +196,8 @@ func main() {
 		logs.Error("Failed to set system config: %+v", err)
 		panic(err)
 	}
+
+	initBoardVersion()
 
 	if systemInfo.SetAdminPassword == "" {
 		updateAdminPassword()
