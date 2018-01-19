@@ -35,7 +35,7 @@ echo $head_branch
 echo $base_repo_url
 echo $base_branch
 echo $comments_url
-echo "-----------------------------------"
+echo "+-----------------------------------"
 
 git clone --branch=$head_branch $head_repo_url
 
