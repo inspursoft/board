@@ -3,7 +3,7 @@ import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
 import { CookieService } from 'ngx-cookie';
-import { GUIDE_STEP } from "./shared/shared.const";
+import { APP_VIEW_MOUDLE, GUIDE_STEP } from "./shared/shared.const";
 
 @Injectable()
 export class AppTokenService {
@@ -34,6 +34,7 @@ export class AppTokenService {
 export class AppInitService {
   _isFirstLogin: boolean = false;
   _currentLang: string;
+  _appViewModule: APP_VIEW_MOUDLE = APP_VIEW_MOUDLE.NORMAL;
   cookieExpiry: Date = new Date(Date.now() + 10 * 60 * 60 * 24 * 365 * 1000);
   guideStep: GUIDE_STEP;
   currentUser: {[key: string]: any} = null;
@@ -48,6 +49,14 @@ export class AppInitService {
       this.guideStep = GUIDE_STEP.PROJECT_LIST;
       this.cookieService.put("isFirstLogin", "used", {expires: this.cookieExpiry});
     }
+  }
+
+  get appViewModule(): APP_VIEW_MOUDLE {
+    return this._appViewModule;
+  }
+
+  set appViewModule(value: APP_VIEW_MOUDLE) {
+    this._appViewModule = value;
   }
 
   set token(t: string) {

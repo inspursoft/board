@@ -1,14 +1,14 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AppInitService, AppTokenService } from '../app.init.service';
-import { GUIDE_STEP } from "../shared/shared.const";
+import { APP_VIEW_MOUDLE, GUIDE_STEP } from "../shared/shared.const";
 
 @Component({
   selector: 'main-content',
   templateUrl: 'main-content.component.html'
 })  
 export class MainContentComponent {
-  
+  @ViewChild("frameDashboard") frame:ElementRef;
   token: string;
   
   isSignIn: boolean = true;
@@ -68,5 +68,13 @@ export class MainContentComponent {
       this.navigateTo('/services');
       this.appInitService.guideStep = GUIDE_STEP.CREATE_SERVICE;
     }
+  }
+
+  get appViewModule(): APP_VIEW_MOUDLE {
+    return this.appInitService.appViewModule;
+  }
+
+  set appViewModule(value) {
+    this.appInitService.appViewModule = value;
   }
 }

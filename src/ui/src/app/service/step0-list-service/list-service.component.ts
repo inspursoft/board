@@ -17,7 +17,7 @@ class ServiceData {
     this.status = status;
   }
 }
-
+enum CreateServiceMethod{None, Wizards, YamlFile, DevOps}
 @Component({
   templateUrl: './list-service.component.html',
   styleUrls: ["./list-service.component.css"]
@@ -34,6 +34,9 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   totalRecordCount: number;
   pageIndex: number = 1;
   pageSize: number = 15;
+  isBuildServiceWIP: boolean = false;
+  isShowServiceCreateYaml: boolean = false;
+  createServiceMethod: CreateServiceMethod = CreateServiceMethod.None;
 
   @ViewChild(ServiceDetailComponent) serviceDetailComponent;
 
@@ -103,7 +106,11 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   }
 
   createService(): void {
-    this.k8sService.stepSource.next({index: 1, isBack: false});
+    if (this.createServiceMethod == CreateServiceMethod.Wizards) {
+      this.k8sService.stepSource.next({index: 1, isBack: false});
+    } else if (this.createServiceMethod == CreateServiceMethod.YamlFile){
+      this.isShowServiceCreateYaml = true;
+    }
   }
 
   retrieve(): void {
@@ -210,7 +217,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   }
 
   guideNextStep(step: GUIDE_STEP) {
-    this.createService();
+    this.isBuildServiceWIP = true;
     this.setGuideNoneStep();
   }
 
@@ -218,4 +225,13 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
     this.appInitService.guideStep = GUIDE_STEP.NONE_STEP;
   }
 
+  setCreateServiceMethod(method: CreateServiceMethod): void {
+    this.createServiceMethod = method;
+  }
+
+  cancelCreateService(){
+    this.createServiceMethod = CreateServiceMethod.None;
+    this.isBuildServiceWIP = false;
+    this.isShowServiceCreateYaml = false;
+  }
 }

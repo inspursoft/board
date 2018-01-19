@@ -356,7 +356,15 @@ export const LANG_EN_US = {
     "SERVICE_CONTROL_UPDATE_TAG":"Update tag",
     "SERVICE_DETAIL_DEPLOYMENT_FILE":"Deployment file",
     "SERVICE_DETAIL_SERVICE_FILE":"Service file",
-    "GUIDE_CREATE_SERVICE":"Please crate your own Service."
+    "GUIDE_CREATE_SERVICE":"Please crate your own Service.",
+    "SERVICE_YAML_SELECT_PROJECT":"Select project",
+    "SERVICE_YAML_UPLOAD":"Upload",
+    "SERVICE_YAML_SELECT_DEPLOYMENT_YAML":"Select deployment yaml",
+    "SERVICE_YAML_SELECT_SERVICE_YAML":"Select service yaml",
+    "SERVICE_YAML_NER_SERVICE_NAME":"New service name",
+    "SERVICE_YAML_INVALID_FILE":"Invalid file type",
+    "SERVICE_YAML_VALID_FILE":"Files valid,please upload them",
+    "SERVICE_YAML_UPLOAD_SUCCESS":"Upload success!This service in 'preparing' status, click 'create' for run it"
   },
   "GLOBAL_SEARCH": {
     "PROJECTS": "Projects",

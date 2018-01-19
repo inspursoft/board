@@ -8,6 +8,8 @@ import { TranslateService } from "@ngx-translate/core";
 import { Subscription } from "rxjs/Subscription";
 import { Subject } from "rxjs/Subject";
 import { MessageService } from "../shared/message-service/message.service";
+import { APP_VIEW_MOUDLE } from "../shared/shared.const";
+import { AppInitService } from "../app.init.service";
 
 const MAX_COUNT_PER_PAGE: number = 200;
 const MAX_COUNT_PER_DRAG: number = 100;
@@ -47,6 +49,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
   noDataErrMsg: Map<LineType, string>;
 
   constructor(private service: DashboardService,
+              private appInitService: AppInitService,
               private messageService: MessageService,
               private translateService: TranslateService) {
     super();
@@ -165,7 +168,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     }
   }
 
-  private  setLineZoomByTimeStamp(lineType: LineType, lineTimeStamp: number): void {
+  private setLineZoomByTimeStamp(lineType: LineType, lineTimeStamp: number): void {
     let lineData = this.lineData.get(lineType);
     let lineOption = this.lineOptions.get(lineType);
     let lineZoomStart = lineOption["dataZoom"][0]["start"];
@@ -206,7 +209,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
         this.noData.set(lineType, true);
         this.messageService.dispatchError(err);
       });
-    if (lineDataInfo){
+    if (lineDataInfo) {
       this.noData.set(lineType, false);
       this.lineNamesList.set(lineType, lineDataInfo.List);
       this.dropdownText.set(lineType, lineDataInfo.CurListName);
@@ -327,7 +330,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     }
   }
 
-  private  updateAfterDragTimeStamp(lineType: LineType, isDropBack: boolean): void {
+  private updateAfterDragTimeStamp(lineType: LineType, isDropBack: boolean): void {
     let query = this.query.get(lineType);
     let lineData = this.lineData.get(lineType);
     let maxDate: Date = lineData[2][0][0];
@@ -597,4 +600,8 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
   get StorageUnit(): string {
     return this.service.CurStorageUnit;
   };
+
+  set appViewModule(value: APP_VIEW_MOUDLE) {
+    this.appInitService.appViewModule = value;
+  }
 }

@@ -4,7 +4,13 @@ import { Observable } from 'rxjs/Observable';
 import { HttpClient, HttpResponse } from "@angular/common/http";
 import { Project } from "../project/project";
 import { BuildImageDockerfileData, Image, ImageDetail } from "../image/image";
-import { ImageIndex, ServerServiceStep, ServiceStepPhase, UiServiceFactory, UIServiceStepBase } from "./service-step.component";
+import {
+  ImageIndex,
+  ServerServiceStep,
+  ServiceStepPhase,
+  UiServiceFactory,
+  UIServiceStepBase
+} from "./service-step.component";
 
 @Injectable()
 export class K8sService {
@@ -224,5 +230,32 @@ export class K8sService {
           project_name: projectName
         }
       }).toPromise();
+  }
+
+  checkCreateServiceYaml(projectName: string, formData: FormData): Promise<Object> {
+    return this.http
+      .post(`/api/v1/services/yaml/check`, formData, {
+        observe: "response",
+        params: {project_name: projectName}
+      })
+      .toPromise()
+      .then((res: HttpResponse<Object>) => res.body)
+  }
+
+  uploadServiceYamlFile(serviceName: string,
+                        projectName: string,
+                        formData: FormData,
+                        yamlType: "deployment" | "service"): Promise<any> {
+    return this.http
+      .post(`/api/v1/services/yaml/upload`, formData, {
+        observe: "response",
+        params: {
+          project_name: projectName,
+          service_name: serviceName,
+          yaml_type: yamlType
+        }
+      })
+      .toPromise()
+      .then((res: HttpResponse<Object>) => res.body)
   }
 }

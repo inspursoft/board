@@ -356,7 +356,15 @@ export const LANG_ZH_CN = {
     "SERVICE_CONTROL_UPDATE_TAG":"更新Tag",
     "SERVICE_DETAIL_DEPLOYMENT_FILE":"部署文件内容",
     "SERVICE_DETAIL_SERVICE_FILE":"服务文件内容",
-    "GUIDE_CREATE_SERVICE":"请创建属于您的新服务"
+    "GUIDE_CREATE_SERVICE":"请创建属于您的新服务",
+    "SERVICE_YAML_SELECT_PROJECT":"选择项目",
+    "SERVICE_YAML_UPLOAD":"上传",
+    "SERVICE_YAML_SELECT_DEPLOYMENT_YAML":"选择部署Yaml文件",
+    "SERVICE_YAML_SELECT_SERVICE_YAML":"选择服务的Yaml文件",
+    "SERVICE_YAML_NER_SERVICE_NAME":"新建服务名称",
+    "SERVICE_YAML_INVALID_FILE":"无效的文件类型",
+    "SERVICE_YAML_VALID_FILE":"文件合法，可以上传",
+    "SERVICE_YAML_UPLOAD_SUCCESS":"上传成功!目前服务处于'准备'状态，点击'创建'，运行该服务"
   },
   "GLOBAL_SEARCH": {
     "PROJECTS": "项目",

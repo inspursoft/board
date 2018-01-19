@@ -1,4 +1,4 @@
-<clr-main-container>
+<clr-main-container *ngIf="appViewModule == 0">
   <header-content [isSignIn]="isSignIn" [hasSignedIn]="hasSignedIn" [searchContent]="searchContent"></header-content>
   <global-message></global-message>
   <div class="content-container">
@@ -57,3 +57,11 @@
     </div>
   </div>
 </clr-main-container>
+<div *ngIf="appViewModule == 1" style="height: 100%;padding: 0;margin: 0;scrollbar-base-color: blue">
+  <button class="btn btn-default" (click)="appViewModule = 0">返回</button>
+  <iframe #frameDashboard height=100% width="100%" frameborder="0"
+          src="http://10.110.18.119:3000/dashboard/db/kubernetes-node?orgId=1" >
+    你的浏览器不支持iframe标签
+  </iframe>
+</div>
+
