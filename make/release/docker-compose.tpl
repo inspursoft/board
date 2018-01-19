@@ -126,7 +126,7 @@ services:
       - board
     restart: always
     volumes:
-      - ../config/nginx/nginx.conf:/etc/nginx/nginx.conf:z
+      - ../config/proxy/nginx.conf:/etc/nginx/nginx.conf:z
 #     - ../../src/ui/dist:/usr/share/nginx/html:z
     ports: 
       - 80:80

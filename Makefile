@@ -164,7 +164,7 @@ $(RMIMG_LIST): %_rmi:
 #container/db_rmi:
 #	$(DOCKERRMIMAGE) $(IMAGEPREFIX)_mysql:latest
 
-prepare:
+prepare: version
 	@echo "preparing..."
 	@$(MAKEPATH)/$(PREPARECMD) $(PREPARECMD_PARA)
 	@echo "Done."
