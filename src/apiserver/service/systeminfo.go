@@ -25,6 +25,8 @@ func GetSystemInfo() (*model.SystemInfo, error) {
 			systemInfo.InitProjectRepo = config.Value
 		case "SYNC_K8S":
 			systemInfo.SyncK8s = config.Value
+		case "BOARD_VERSION":
+			systemInfo.Version = config.Value
 		}
 	}
 	return &systemInfo, nil

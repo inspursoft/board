@@ -147,7 +147,7 @@ services:
   proxy:
     build:
       context: ../../
-      dockerfile: make/dev/container/nginx/Dockerfile
+      dockerfile: make/dev/container/proxy/Dockerfile
     image: dev_proxy:dev
     networks:
       - board
