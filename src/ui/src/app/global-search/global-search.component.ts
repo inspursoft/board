@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, ParamMap } from '@angular/router';
 
-import { AppInitService } from '../app.init.service';
+import { AppInitService, AppTokenService } from '../app.init.service';
 import { GlobalSearchService } from './global-search.service';
 
 import { MessageService } from '../shared/message-service/message.service';
@@ -21,6 +21,7 @@ export class GlobalSearchComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private appInitService: AppInitService,
+    private appTokenService: AppTokenService,
     private globalSearchService: GlobalSearchService,
     private messageService: MessageService
   ) {}
@@ -29,7 +30,7 @@ export class GlobalSearchComponent implements OnInit {
     if(this.appInitService.currentUser) {
       this.hasSignedIn = true;
     }
-    this.appInitService.tokenMessage$.subscribe(token=>this.token = token);
+    this.appTokenService.tokenMessage$.subscribe(token=>this.token = token);
     this.route.queryParamMap.subscribe(params=>this.search(params.get("q")));
     console.log(this.appInitService.currentUser);
   }
@@ -47,10 +48,10 @@ export class GlobalSearchComponent implements OnInit {
   }
 
   navigateTo(link) {
-    this.appInitService.token = this.token;
+    this.appTokenService.token = this.token;
     this.router.navigate([link], {
       queryParams: {
-        'token': this.appInitService.token
+        'token': this.appTokenService.token
       }
     });
   }

@@ -3,7 +3,7 @@ import { Subject} from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
 import { Message } from './message';
 import { MESSAGE_TYPE } from '../shared.const';
-import { Response } from '@angular/http';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Injectable()
 export class MessageService {
@@ -51,9 +51,9 @@ export class MessageService {
     }
   }
 
-  dispatchError(response: Response | Error, customMessage?: string) {
+  dispatchError(response: HttpErrorResponse | Error, customMessage?: string) {
     let errMessage = new Message();
-    if(response instanceof Response) {
+    if(response instanceof HttpErrorResponse) {
       switch(response.status){
       case 401:
         errMessage.type = MESSAGE_TYPE.INVALID_USER;

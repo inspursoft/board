@@ -1,13 +1,12 @@
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 
-import { State } from "clarity-angular";
-
+// import { State } from "clarity-angular";
 import { AppInitService } from '../app.init.service';
 import { MessageService } from '../shared/message-service/message.service';
 import { ConfirmationDialogComponent } from '../shared/confirmation-dialog/confirmation-dialog.component';
 import { Message } from '../shared/message-service/message';
-import { MESSAGE_TARGET, BUTTON_STYLE } from '../shared/shared.const';
+import { MESSAGE_TARGET, BUTTON_STYLE, GUIDE_STEP } from '../shared/shared.const';
 
 import { Project } from './project';
 import { ProjectService } from './project.service';
@@ -63,7 +62,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
     }
   }
 
-  retrieve(state?: State): void {
+  retrieve(): void {
     setTimeout(()=>{
       this.isInLoading = true;
       this.projectService
@@ -113,5 +112,27 @@ export class ProjectComponent implements OnInit, OnDestroy {
         this.checkboxRevertInfo = {isNeeded:true, value:oldPublic === 1};
         this.messageService.dispatchError(err, '');
       });
+  }
+
+  get isFirstLogin(): boolean{
+    return this.appInitService.isFirstLogin;
+  }
+
+  get guideStep(): GUIDE_STEP{
+    return this.appInitService.guideStep;
+  }
+
+  guideNextStep(step:GUIDE_STEP){
+    this.createProject();
+  }
+
+  setGuideNoneStep(){
+     this.appInitService.guideStep = GUIDE_STEP.NONE_STEP;
+  }
+
+  createProjectClose(step: GUIDE_STEP){
+    if (this.isFirstLogin){
+      this.appInitService.guideStep = GUIDE_STEP.SERVICE_LIST;
+    }
   }
 }

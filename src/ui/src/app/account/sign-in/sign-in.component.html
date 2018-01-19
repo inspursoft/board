@@ -72,7 +72,7 @@
                 <section class="form-block">
                   <div class="form-group custom-input-padding" >
                     <label></label>
-                    <label aria-haspopup="true" role="tooltip" [class.invalid]="username.invalid && username.dirty"
+                    <label aria-haspopup="true" role="tooltip" [class.invalid]="username.invalid && username.touched"
                       class="tooltip tooltip-validation invalid tooltip-sm">
                       <input type="text" name="username" #username="ngModel"  style="width: 225px" required [(ngModel)]="signInUser.username" placeholder="{{ 'ACCOUNT.USERNAME_PLACEHOLDER' | translate }}" />
                       <span class="tooltip-content" *ngIf="username.errors && username.errors.required">
@@ -82,7 +82,7 @@
                   </div>
                   <div class="form-group custom-input-padding">
                     <label></label>
-                    <label aria-haspopup="true" role="tooltip" [class.invalid]="password.invalid && password.dirty"
+                    <label aria-haspopup="true" role="tooltip" [class.invalid]="password.invalid && password.touched"
                       class="tooltip tooltip-validation invalid tooltip-sm">
                       <input type="password" name="password" #password="ngModel" style="width: 225px" required [(ngModel)]="signInUser.password" placeholder="{{ 'ACCOUNT.PASSWORD_PLACEHOLDER' | translate }}" />
                       <span class="tooltip-content" *ngIf="password.errors && password.errors.required">
