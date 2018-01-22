@@ -54,7 +54,7 @@ export class ServiceCreateYamlComponent implements OnInit {
       this.errorMessage = "";
       this.successMessage = "";
       let file: File = fileList[0];
-      // if (file.name.endsWith(".yaml")) {//Todo:unchecked with ie11
+      if (file.name.endsWith(".yaml")) {//Todo:unchecked with ie11
         if (isDeploymentYaml) {
           this.filesDataMap.delete("deployment");
           this.filesDataMap.set("deployment", file);
@@ -65,10 +65,10 @@ export class ServiceCreateYamlComponent implements OnInit {
         if (this.filesDataMap.has("deployment") && this.filesDataMap.has("service")) {
           this.checkYamlFile();
         }
-      // } else {
-      //   (event.target as HTMLInputElement).value = '';
-      //   this.errorMessage = "SERVICE.SERVICE_YAML_INVALID_FILE";
-      // }
+      } else {
+        (event.target as HTMLInputElement).value = '';
+        this.errorMessage = "SERVICE.SERVICE_YAML_INVALID_FILE";
+      }
     }
   }
 
