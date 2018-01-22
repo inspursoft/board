@@ -232,20 +232,19 @@ export class K8sService {
       }).toPromise();
   }
 
-  checkCreateServiceYaml(projectName: string, formData: FormData): Promise<Object> {
+  checkCreateServiceYaml(projectName: string, formData: FormData): Observable<Object> {
     return this.http
       .post(`/api/v1/services/yaml/check`, formData, {
         observe: "response",
         params: {project_name: projectName}
       })
-      .toPromise()
-      .then((res: HttpResponse<Object>) => res.body)
+      .map((res: HttpResponse<Object>) => res.body)
   }
 
   uploadServiceYamlFile(serviceName: string,
                         projectName: string,
                         formData: FormData,
-                        yamlType: "deployment" | "service"): Promise<any> {
+                        yamlType: "deployment" | "service"): Observable<Object> {
     return this.http
       .post(`/api/v1/services/yaml/upload`, formData, {
         observe: "response",
@@ -255,7 +254,6 @@ export class K8sService {
           yaml_type: yamlType
         }
       })
-      .toPromise()
-      .then((res: HttpResponse<Object>) => res.body)
+      .map((res: HttpResponse<Object>) => res.body)
   }
 }

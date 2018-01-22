@@ -7,7 +7,7 @@
   *ngIf="isShowServiceCreateYaml"
   (onCancelEvent)="cancelCreateService()">
 </service-create-yaml>
-<div *ngIf="!isBuildServiceWIP && !isShowServiceCreateYaml">
+<div *ngIf="isNormalStatus">
   <div class="row flex-items-xs-right">
     <cs-guide *ngIf="isFirstLogin && guideStep == 4"
               [description]="'SERVICE.GUIDE_CREATE_SERVICE'"
@@ -23,7 +23,7 @@
   </div>
   <div class="row">
     <div class="col-xs-12">
-      <clr-datagrid (clrDgRefresh)="retrieve($event)" [clrDgLoading]="isInLoading">
+      <clr-datagrid (clrDgRefresh)="retrieve()" [clrDgLoading]="isInLoading">
         <clr-dg-column>{{ 'SERVICE.SERVICE_NAME' | translate }}</clr-dg-column>
         <clr-dg-column>{{ 'SERVICE.PROJECT_NAME' | translate }}</clr-dg-column>
         <clr-dg-column>{{ 'SERVICE.OWNER' | translate }}</clr-dg-column>
@@ -91,7 +91,7 @@
            name="buildMethod"
            (click)="setCreateServiceMethod(1)">
     <label for="fromBase" class="build-service-text">
-      Create based on wizard
+      {{"SERVICE.STEP_0_CREATE_WIZARD" | translate}}
     </label>
   </div>
   <div class="import-method-container">
@@ -101,7 +101,7 @@
            name="buildMethod"
            (click)="setCreateServiceMethod(2)">
     <label for="fromYamlFile" class="build-service-text">
-      Create base on Yaml file
+      {{"SERVICE.STEP_0_CREATE_YAML" | translate}}
     </label>
   </div>
   <div class="import-method-container">
@@ -112,7 +112,7 @@
            name="buildMethod"
            (click)="setCreateServiceMethod(3)">
     <label for="fromDevOps" class="build-service-text-disabled">
-      Import from DevOps
+      {{"SERVICE.STEP_0_CREATE_DEVOPS" | translate}}
     </label>
   </div>
   <div class="build-btn-container">

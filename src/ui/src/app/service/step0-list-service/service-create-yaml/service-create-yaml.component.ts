@@ -1,9 +1,11 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from "@angular/common/http";
-import { Project } from "app/project/project";
 import { K8sService } from "../../service.k8s";
 import { MessageService } from "../../../shared/message-service/message.service";
+import { Project } from "../../../project/project";
+import { Observable } from "rxjs/Observable";
+import "rxjs/add/observable/concat";
 
 @Component({
   selector: 'service-create-yaml',
@@ -52,7 +54,7 @@ export class ServiceCreateYamlComponent implements OnInit {
       this.errorMessage = "";
       this.successMessage = "";
       let file: File = fileList[0];
-      if (file.name.endsWith(".yaml")) {//Todo:unchecked with ie11
+      // if (file.name.endsWith(".yaml")) {//Todo:unchecked with ie11
         if (isDeploymentYaml) {
           this.filesDataMap.delete("deployment");
           this.filesDataMap.set("deployment", file);
@@ -63,10 +65,10 @@ export class ServiceCreateYamlComponent implements OnInit {
         if (this.filesDataMap.has("deployment") && this.filesDataMap.has("service")) {
           this.checkYamlFile();
         }
-      } else {
-        (event.target as HTMLInputElement).value = '';
-        this.errorMessage = "SERVICE.SERVICE_YAML_INVALID_FILE";
-      }
+      // } else {
+      //   (event.target as HTMLInputElement).value = '';
+      //   this.errorMessage = "SERVICE.SERVICE_YAML_INVALID_FILE";
+      // }
     }
   }
 
@@ -78,23 +80,22 @@ export class ServiceCreateYamlComponent implements OnInit {
     formData.append("deployment_file", deploymentFile, deploymentFile.name);
     formData.append("service_file", serviceFile, serviceFile.name);
     this.k8sService.checkCreateServiceYaml(this.selectedProjectName, formData)
-      .then((res: Object) => {
-        this.isCheckWIP = false;
-        this.isAlreadyCheck = true;
-        this.isRightYamlFile = true;
-        this.successMessage = "SERVICE.SERVICE_YAML_VALID_FILE";
-        this.newServiceName = "This is new service name";
-      })
-      .catch(err => {
-        this.isCheckWIP = false;
-        this.isAlreadyCheck = true;
-        this.isRightYamlFile = false;
-        if (err && err instanceof HttpErrorResponse && (err as HttpErrorResponse).status == 400) {
-          this.errorMessage = (err as HttpErrorResponse).error;
-        } else {
-          this.messageService.dispatchError(err);
-        }
-      })
+      .subscribe((res: Object) => {//Todo:get service name from res
+
+        },
+        (error: HttpErrorResponse) => {
+          this.isCheckWIP = false;
+          this.isAlreadyCheck = true;
+          this.isRightYamlFile = false;
+          this.messageService.dispatchError(error)
+        },
+        () => {
+          this.isCheckWIP = false;
+          this.isAlreadyCheck = true;
+          this.isRightYamlFile = true;
+          this.successMessage = "SERVICE.SERVICE_YAML_VALID_FILE";
+          this.newServiceName = "This is new service name";
+        });
   }
 
   clickSelectProject(project: Project) {
@@ -110,32 +111,32 @@ export class ServiceCreateYamlComponent implements OnInit {
     this.onCancelEvent.emit(event);
   }
 
-  async btnUploadClick(event: MouseEvent) {
+  btnUploadClick(event: MouseEvent) {
     this.errorMessage = "";
     this.successMessage = "";
-    await this.uploadOneYamlFile("deployment");
-    this.uploadOneYamlFile("service");
+    let obs1 = this.uploadOneYamlFile("deployment");
+    let obs2 = this.uploadOneYamlFile("service");
+    let obsConcat = Observable.concat(obs1, obs2);
+    obsConcat.subscribe((res: Object) => {//Todo:get service id from res
+
+    }, (error: any) => {
+      this.isUploadFileSuccess = false;
+      if (error && error instanceof HttpErrorResponse && (error as HttpErrorResponse).status == 400) {
+        this.errorMessage = (error as HttpErrorResponse).error;
+      } else {
+        this.messageService.dispatchError(error);
+      }
+    }, () => {
+      this.successMessage = "SERVICE.SERVICE_YAML_UPLOAD_SUCCESS";
+      this.isUploadFileSuccess = true;
+    })
   }
 
-  uploadOneYamlFile(yamlType: "deployment" | "service"): Promise<void> {
+  uploadOneYamlFile(yamlType: "deployment" | "service"): Observable<Object> {
     let formData = new FormData();
     let file: File = this.filesDataMap.get(yamlType);
     formData.append("upload_file", file, file.name);
-    return this.k8sService.uploadServiceYamlFile(this.newServiceName, this.selectedProjectName, formData, yamlType)
-      .then((res: Object) => {//Todo:get service id from res
-        if (yamlType == "service") {
-          this.successMessage = "SERVICE.SERVICE_YAML_UPLOAD_SUCCESS";
-          this.isUploadFileSuccess = true;
-        }
-      })
-      .catch(err => {
-        this.isUploadFileSuccess = false;
-        if (err && err instanceof HttpErrorResponse && (err as HttpErrorResponse).status == 400) {
-          this.errorMessage = (err as HttpErrorResponse).error;
-        } else {
-          this.messageService.dispatchError(err);
-        }
-      })
+    return this.k8sService.uploadServiceYamlFile(this.newServiceName, this.selectedProjectName, formData, yamlType);
   }
 
   get isBtnUploadDisabled(): boolean {
