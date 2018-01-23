@@ -9,8 +9,8 @@ services:
       - board
     ports:
       - 1514:514
-  mysql:
-    image: board_mysql:__version__
+  db:
+    image: board_db:__version__
     restart: always
     volumes:
       - /data/board/database:/var/lib/mysql
@@ -24,7 +24,7 @@ services:
       driver: "syslog"
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
-        tag: "mysql"
+        tag: "db"
   gitserver:
     image: board_gitserver:__version__
     restart: always
@@ -76,7 +76,7 @@ services:
     networks:
       - board
     links:
-      - mysql
+      - db
       - gitserver
     ports: 
       - 8088:8088
@@ -111,10 +111,10 @@ services:
     networks:
       - board
     links:
-      - mysql
+      - db
     depends_on:
       - log
-      - mysql
+      - db
     logging:
       driver: "syslog"
       options:
