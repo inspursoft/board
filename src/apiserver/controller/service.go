@@ -2,11 +2,13 @@ package controller
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -1249,7 +1251,33 @@ func (p *ServiceController) GetSelectableServicesAction() {
 	p.ServeJSON()
 }
 
-func (f *ServiceController) UploadDeploymentYamlFileAction() {
+func (f *ServiceController) resolveUploadedYamlFile(uploadedFileName string, target interface{}, customError error) func(fileName string, serviceInfo *model.ServiceStatus) error {
+	uploadedFile, _, err := f.GetFile(uploadedFileName)
+	if err != nil {
+		if err.Error() == "http: no such file" {
+			f.customAbort(http.StatusBadRequest, "Missing file: "+uploadedFileName)
+		}
+		f.internalError(err)
+	}
+	err = utils.UnmarshalYamlFile(uploadedFile, target)
+	if err != nil {
+		if strings.Index(err.Error(), "InternalError:") == 0 {
+			f.internalError(errors.New(err.Error()[14:]))
+		}
+		f.customAbort(http.StatusBadRequest, customError.Error())
+	}
+
+	return func(fileName string, serviceInfo *model.ServiceStatus) error {
+		targetFilePath := filepath.Join(repoPath(), serviceInfo.ProjectName, strconv.Itoa(int(serviceInfo.ID)))
+		err = service.CheckDeploymentPath(targetFilePath)
+		if err != nil {
+			f.internalError(err)
+		}
+		return f.SaveToFile(uploadedFileName, filepath.Join(targetFilePath, fileName))
+	}
+}
+
+func (f *ServiceController) UploadYamlFileAction() {
 	projectName := f.GetString("project_name")
 	isExistence, err := service.ProjectExists(projectName)
 	if err != nil {
@@ -1257,65 +1285,57 @@ func (f *ServiceController) UploadDeploymentYamlFileAction() {
 		return
 	}
 	if isExistence != true {
-		f.customAbort(http.StatusBadRequest, "Project don't exist.")
+		f.customAbort(http.StatusBadRequest, "Project doesn't exist.")
 		return
 	}
 
-	serviceName := f.GetString("service_name")
-	serviceInfo, err := service.GetServiceByProject(serviceName, projectName)
+	var deploymentConfig service.Deployment
+	fhDeployment := f.resolveUploadedYamlFile("deployment_file", &deploymentConfig, service.DeploymentYamlFileUnmarshalErr)
+
+	var serviceConfig service.Service
+	fhService := f.resolveUploadedYamlFile("service_file", &serviceConfig, service.ServiceYamlFileUnmarshalErr)
+
+	err = service.CheckDeploymentConfig(projectName, deploymentConfig)
+	if err != nil {
+		f.customAbort(http.StatusBadRequest, err.Error())
+	}
+	err = service.CheckServiceConfig(projectName, serviceConfig)
+	if err != nil {
+		f.customAbort(http.StatusBadRequest, err.Error())
+	}
+
+	//check label selector
+
+	serviceInfo, err := service.GetServiceByProject(serviceConfig.Name, projectName)
 	if err != nil {
 		f.internalError(err)
 		return
 	}
-	if serviceInfo == nil {
-		newService := model.ServiceStatus{
-			Name:        serviceName,
-			ProjectName: projectName,
-			Status:      preparing, // 0: preparing 1: running 2: suspending
-			OwnerID:     f.currentUser.ID,
-			OwnerName:   f.currentUser.Username,
-		}
-		serviceInfo, err = service.CreateServiceConfig(newService)
-		if err != nil {
-			f.internalError(err)
-			return
-		}
-		os.MkdirAll(filepath.Join(repoPath(), projectName, strconv.Itoa(int(serviceInfo.ID))), 0755)
-	}
-
-	yamlType := f.GetString("yaml_type")
-	fileName := getYamlFileName(yamlType)
-	if fileName == "" {
-		f.customAbort(http.StatusBadRequest, "Yaml type is invalid.")
+	if serviceInfo != nil {
+		f.customAbort(http.StatusBadRequest, "Service name has been used.")
 		return
 	}
-	targetFilePath := filepath.Join(repoPath(), projectName, strconv.Itoa(int(serviceInfo.ID)))
-	logs.Info("User: %s uploaded %s yaml file to %s.", f.currentUser.Username, yamlType, targetFilePath)
-
-	file, fileHeader, err := f.GetFile("upload_file")
+	serviceInfo, err = service.CreateServiceConfig(model.ServiceStatus{
+		Name:        serviceConfig.Name,
+		ProjectName: projectName,
+		Status:      preparing, // 0: preparing 1: running 2: suspending
+		OwnerID:     f.currentUser.ID,
+		OwnerName:   f.currentUser.Username,
+	})
 	if err != nil {
 		f.internalError(err)
 		return
 	}
-	if fileHeader.Filename != fileName {
-		f.customAbort(http.StatusBadRequest, "Update file name is invalid.")
-		return
-	}
 
-	yamlFileServiceName, err := service.GetYamlFileServiceName(file, fileHeader.Filename)
-	if err != nil {
-		f.internalError(err)
-		return
-	}
-	if yamlFileServiceName != serviceName {
-		f.customAbort(http.StatusBadRequest, "Service name is inconsistent between yaml file and request parameter.")
-		return
-	}
-
-	err = f.SaveToFile("upload_file", filepath.Join(targetFilePath, fileName))
+	err = fhDeployment(deploymentFilename, serviceInfo)
 	if err != nil {
 		f.internalError(err)
 	}
+	err = fhService(serviceFilename, serviceInfo)
+	if err != nil {
+		f.internalError(err)
+	}
+
 	f.Data["json"] = serviceInfo
 	f.ServeJSON()
 }
@@ -1391,35 +1411,6 @@ func (f *ServiceController) DownloadDeploymentYamlFileAction() {
 	}
 
 	f.Ctx.Output.Download(absFileName, fileName)
-}
-
-func (f *ServiceController) CheckDeploymentYamlFileAction() {
-
-	filesHeader, err := f.GetFiles("deployment_file")
-	for _, file := range filesHeader {
-		logs.Info("filename:%+v\n", file.Filename)
-	}
-
-	deploymentFile, _, err := f.GetFile("deployment_file")
-	if err != nil {
-		f.internalError(err)
-		return
-	}
-
-	serviceFile, _, err := f.GetFile("service_file")
-	if err != nil {
-		f.internalError(err)
-		return
-	}
-
-	err = service.CheckDeployAndServiceYamlFiles(deploymentFile, serviceFile)
-	if err != nil {
-		if err == service.NameInconsistentErr {
-			f.customAbort(http.StatusBadRequest, err.Error())
-			return
-		}
-		f.internalError(err)
-	}
 }
 
 func getYamlFileName(yamlType string) string {
