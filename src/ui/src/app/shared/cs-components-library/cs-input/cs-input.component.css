@@ -7,8 +7,10 @@ div.cs-input-container {
 }
 
 label.cs-input-label {
-  min-width: 180px;
+  white-space: nowrap;
   text-align: right;
+  text-wrap: none;
+  line-height: 30px;
 }
 
 label.cs-input-field-container {

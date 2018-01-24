@@ -4,7 +4,7 @@ div.build-btn-container {
 }
 
 label.base-text {
-  min-width: 180px;
+  min-width: 220px;
   text-align: right;
 }
 
@@ -41,13 +41,6 @@ div.line-container {
   margin-bottom: 30px;
   height: 30px;
   align-content: center;
-}
-
-button.confirm {
-  margin-top: 0;
-  height: 30px;
-  line-height: 30px;
-  font-size: 12px;
 }
 
 div.service-name {

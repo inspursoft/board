@@ -4,8 +4,7 @@ import { HttpErrorResponse } from "@angular/common/http";
 import { K8sService } from "../../service.k8s";
 import { MessageService } from "../../../shared/message-service/message.service";
 import { Project } from "../../../project/project";
-import { Observable } from "rxjs/Observable";
-import "rxjs/add/observable/concat";
+import { Service } from "../../service";
 
 @Component({
   selector: 'service-create-yaml',
@@ -17,10 +16,10 @@ export class ServiceCreateYamlComponent implements OnInit {
   selectedProjectId: number = 0;
   projectsList: Array<Project>;
   newServiceName: string = "";
+  newServiceId: number = 0;
   filesDataMap: Map<string, File>;
-  isAlreadyCheck: boolean = false;
-  isCheckWIP: boolean = false;
-  isRightYamlFile: boolean = false;
+  isUploadFileWIP: boolean = false;
+  isToggleServiceWIP: boolean = false;
   isUploadFileSuccess: boolean = false;
   errorMessage: string = "";
   successMessage: string = "";
@@ -62,40 +61,11 @@ export class ServiceCreateYamlComponent implements OnInit {
           this.filesDataMap.delete("service");
           this.filesDataMap.set("service", file);
         }
-        if (this.filesDataMap.has("deployment") && this.filesDataMap.has("service")) {
-          this.checkYamlFile();
-        }
       } else {
         (event.target as HTMLInputElement).value = '';
         this.errorMessage = "SERVICE.SERVICE_YAML_INVALID_FILE";
       }
     }
-  }
-
-  checkYamlFile() {
-    this.isCheckWIP = true;
-    let formData = new FormData();
-    let deploymentFile = this.filesDataMap.get("deployment");
-    let serviceFile = this.filesDataMap.get("service");
-    formData.append("deployment_file", deploymentFile, deploymentFile.name);
-    formData.append("service_file", serviceFile, serviceFile.name);
-    this.k8sService.checkCreateServiceYaml(this.selectedProjectName, formData)
-      .subscribe((res: Object) => {//Todo:get service name from res
-
-        },
-        (error: HttpErrorResponse) => {
-          this.isCheckWIP = false;
-          this.isAlreadyCheck = true;
-          this.isRightYamlFile = false;
-          this.messageService.dispatchError(error)
-        },
-        () => {
-          this.isCheckWIP = false;
-          this.isAlreadyCheck = true;
-          this.isRightYamlFile = true;
-          this.successMessage = "SERVICE.SERVICE_YAML_VALID_FILE";
-          this.newServiceName = "This is new service name";
-        });
   }
 
   clickSelectProject(project: Project) {
@@ -111,38 +81,45 @@ export class ServiceCreateYamlComponent implements OnInit {
     this.onCancelEvent.emit(event);
   }
 
+  btnCreateClick(event: MouseEvent) {
+    this.isToggleServiceWIP = true;
+    this.k8sService.toggleServiceStatus(this.newServiceId, 1)
+      .then(() => this.onCancelEvent.emit(event))
+      .catch(err => this.messageService.dispatchError(err));
+  }
+
   btnUploadClick(event: MouseEvent) {
     this.errorMessage = "";
     this.successMessage = "";
-    let obs1 = this.uploadOneYamlFile("deployment");
-    let obs2 = this.uploadOneYamlFile("service");
-    let obsConcat = Observable.concat(obs1, obs2);
-    obsConcat.subscribe((res: Object) => {//Todo:get service id from res
-
-    }, (error: any) => {
-      this.isUploadFileSuccess = false;
-      if (error && error instanceof HttpErrorResponse && (error as HttpErrorResponse).status == 400) {
-        this.errorMessage = (error as HttpErrorResponse).error;
-      } else {
-        this.messageService.dispatchError(error);
-      }
-    }, () => {
-      this.successMessage = "SERVICE.SERVICE_YAML_UPLOAD_SUCCESS";
-      this.isUploadFileSuccess = true;
-    })
-  }
-
-  uploadOneYamlFile(yamlType: "deployment" | "service"): Observable<Object> {
     let formData = new FormData();
-    let file: File = this.filesDataMap.get(yamlType);
-    formData.append("upload_file", file, file.name);
-    return this.k8sService.uploadServiceYamlFile(this.newServiceName, this.selectedProjectName, formData, yamlType);
+    let deploymentFile = this.filesDataMap.get("deployment");
+    let serviceFile = this.filesDataMap.get("service");
+    formData.append("deployment_file", deploymentFile, deploymentFile.name);
+    formData.append("service_file", serviceFile, serviceFile.name);
+    this.isUploadFileWIP = true;
+    this.k8sService.uploadServiceYamlFile(this.selectedProjectName, formData)
+      .subscribe((res: Service) => {
+        this.newServiceName = res.service_name;
+        this.newServiceId = res.service_id;
+        this.isUploadFileWIP = false;
+      }, (error: any) => {
+        this.isUploadFileSuccess = false;
+        this.isUploadFileWIP = false;
+        if (error && error instanceof HttpErrorResponse && (error as HttpErrorResponse).status == 400) {
+          this.errorMessage = (error as HttpErrorResponse).error;
+        } else {
+          this.messageService.dispatchError(error);
+        }
+      }, () => {
+        this.successMessage = "SERVICE.SERVICE_YAML_UPLOAD_SUCCESS";
+        this.isUploadFileSuccess = true;
+      })
   }
 
   get isBtnUploadDisabled(): boolean {
     return this.selectedProjectId == 0
-      || !this.isAlreadyCheck
+      || !this.filesDataMap.has('deployment')
       || this.isUploadFileSuccess
-      || !this.isRightYamlFile;
+      || !this.filesDataMap.has('service');
   }
 }

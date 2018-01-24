@@ -1,7 +1,7 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AppInitService, AppTokenService } from '../app.init.service';
-import { APP_VIEW_MOUDLE, GUIDE_STEP } from "../shared/shared.const";
+import { GUIDE_STEP } from "../shared/shared.const";
 
 @Component({
   selector: 'main-content',
@@ -70,11 +70,4 @@ export class MainContentComponent {
     }
   }
 
-  get appViewModule(): APP_VIEW_MOUDLE {
-    return this.appInitService.appViewModule;
-  }
-
-  set appViewModule(value) {
-    this.appInitService.appViewModule = value;
-  }
 }

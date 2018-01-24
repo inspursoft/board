@@ -24,10 +24,10 @@
     <label class="base-text">{{"SERVICE.SERVICE_YAML_SELECT_DEPLOYMENT_YAML" | translate}}:</label>
     <input type="file"
            class="upload-file-input"
-           [disabled]="selectedProjectId == 0 || isCheckWIP"
+           [disabled]="selectedProjectId == 0 || isUploadFileWIP || isUploadFileWIP"
            (change)="uploadFile($event,true)"
            accept="*.*">
-    <div *ngIf="isCheckWIP" class="custom-margin spinner-container">
+    <div *ngIf="isUploadFileWIP" class="custom-margin spinner-container">
       <span class="spinner spinner-sm"></span>
     </div>
   </div>
@@ -35,23 +35,18 @@
     <label class="base-text">{{"SERVICE.SERVICE_YAML_SELECT_SERVICE_YAML" | translate}}:</label>
     <input type="file"
            class="upload-file-input"
-           [disabled]="selectedProjectId == 0 || isCheckWIP"
+           [disabled]="selectedProjectId == 0 || isUploadFileWIP || isUploadFileWIP"
            (change)="uploadFile($event,false)"
            accept="*.*">
-    <div *ngIf="isCheckWIP" class="custom-margin spinner-container">
+    <div *ngIf="isUploadFileWIP" class="custom-margin spinner-container">
       <span class="spinner spinner-sm"></span>
     </div>
   </div>
-  <div *ngIf="newServiceName != ''" class="line-container">
+  <div class="line-container">
     <label class="base-text service-name">{{"SERVICE.SERVICE_YAML_NER_SERVICE_NAME" | translate}}:</label>
     <div class="alert alert-info custom-margin service-name" role="alert">
       {{newServiceName}}
     </div>
-    <button class="btn btn-primary custom-margin confirm"
-            [disabled]="isBtnUploadDisabled"
-            (click)="btnUploadClick()">
-      {{"SERVICE.SERVICE_YAML_UPLOAD" | translate}}
-    </button>
   </div>
   <ng-container *ngIf="successMessage != ''" [ngTemplateOutlet]="tempSuccess"></ng-container>
   <ng-container *ngIf="errorMessage != ''" [ngTemplateOutlet]="tempDanger"></ng-container>
@@ -61,8 +56,17 @@
       {{"BUTTON.CANCEL"|translate}}
     </button>
     <button class="btn btn-primary"
-            [disabled]="!isUploadFileSuccess">
+            [disabled]="isBtnUploadDisabled"
+            (click)="btnUploadClick()">
+      {{"SERVICE.SERVICE_YAML_UPLOAD" | translate}}
+    </button>
+    <button class="btn btn-primary"
+            [disabled]="!isUploadFileSuccess"
+            (click)="btnCreateClick()">
       {{"BUTTON.CREATE"|translate}}
     </button>
+    <div *ngIf="isToggleServiceWIP" class="custom-margin spinner-container">
+      <span class="spinner spinner-sm"></span>
+    </div>
   </div>
 </div>

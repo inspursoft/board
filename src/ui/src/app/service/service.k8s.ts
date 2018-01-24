@@ -11,6 +11,7 @@ import {
   UiServiceFactory,
   UIServiceStepBase
 } from "./service-step.component";
+import { Service } from "./service";
 
 @Injectable()
 export class K8sService {
@@ -232,28 +233,14 @@ export class K8sService {
       }).toPromise();
   }
 
-  checkCreateServiceYaml(projectName: string, formData: FormData): Observable<Object> {
-    return this.http
-      .post(`/api/v1/services/yaml/check`, formData, {
-        observe: "response",
-        params: {project_name: projectName}
-      })
-      .map((res: HttpResponse<Object>) => res.body)
-  }
-
-  uploadServiceYamlFile(serviceName: string,
-                        projectName: string,
-                        formData: FormData,
-                        yamlType: "deployment" | "service"): Observable<Object> {
+  uploadServiceYamlFile(projectName: string, formData: FormData,): Observable<Service> {
     return this.http
       .post(`/api/v1/services/yaml/upload`, formData, {
         observe: "response",
         params: {
-          project_name: projectName,
-          service_name: serviceName,
-          yaml_type: yamlType
+          project_name: projectName
         }
       })
-      .map((res: HttpResponse<Object>) => res.body)
+      .map((res: HttpResponse<Service>) => res.body)
   }
 }

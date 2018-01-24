@@ -53,7 +53,9 @@
     <label for="fromTemplate"
            [ngClass]="{'disabled':selectedProjectId == 0,'enable':selectedProjectId > 0}">
       {{"IMAGE.CREATE_IMAGE_TEMPLATE"|translate}}
-    </label><br>
+    </label>
+  </div>
+  <div class="import-method-container">
     <input title=""
            type="radio"
            id="fromDockerFile"
@@ -63,7 +65,8 @@
     <label for="fromDockerFile"
            [ngClass]="{'disabled':selectedProjectId == 0,'enable':selectedProjectId > 0}">
       {{"IMAGE.CREATE_IMAGE_DOCKER_FILE"|translate}}
-    </label><br>
+    </label></div>
+  <div class="import-method-container">
     <input title=""
            type="radio"
            id="fromDevOps"

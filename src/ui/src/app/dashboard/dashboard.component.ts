@@ -8,7 +8,6 @@ import { TranslateService } from "@ngx-translate/core";
 import { Subscription } from "rxjs/Subscription";
 import { Subject } from "rxjs/Subject";
 import { MessageService } from "../shared/message-service/message.service";
-import { APP_VIEW_MOUDLE } from "../shared/shared.const";
 import { AppInitService } from "../app.init.service";
 
 const MAX_COUNT_PER_PAGE: number = 200;
@@ -600,8 +599,4 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
   get StorageUnit(): string {
     return this.service.CurStorageUnit;
   };
-
-  set appViewModule(value: APP_VIEW_MOUDLE) {
-    this.appInitService.appViewModule = value;
-  }
 }

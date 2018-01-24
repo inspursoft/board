@@ -29,8 +29,3 @@ export enum GUIDE_STEP{
   SERVICE_LIST,
   CREATE_SERVICE
 }
-
-export enum APP_VIEW_MOUDLE{
-  NORMAL,
-  DASHIBOARD
-}
