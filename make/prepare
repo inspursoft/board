@@ -81,8 +81,8 @@ rcp.readfp(conf)
 hostname = rcp.get("configuration", "hostname")
 kube_master_ip = rcp.get("configuration", "kube_master_ip")
 kube_master_port = rcp.get("configuration", "kube_master_port")
-mysql_ip = rcp.get("configuration", "mysql_ip")
-mysql_port = rcp.get("configuration", "mysql_port")
+db_ip = rcp.get("configuration", "db_ip")
+db_port = rcp.get("configuration", "db_port")
 board_admin_password = rcp.get("configuration", "board_admin_password")
 db_password = rcp.get("configuration", "db_password")
 token_cache_expire_seconds = rcp.get("configuration", "token_cache_expire_seconds")
@@ -154,6 +154,7 @@ jenkins_env = os.path.join(config_dir, "jenkins", "env")
 render(os.path.join(templates_dir, "apiserver", "app.conf"),
         apiserver_conf,
         token_cache_expire_seconds=token_cache_expire_seconds,
+		db_ip=db_ip,
         db_password=db_password)
 
 render(os.path.join(templates_dir, "apiserver", "env"),
@@ -187,8 +188,8 @@ render(os.path.join(templates_dir, "collector", "env"),
         collector_conf_env,
         kube_master_ip=kube_master_ip,
         kube_master_port=kube_master_port,
-        mysql_ip=mysql_ip,
-        mysql_port=mysql_port,
+        db_ip=db_ip,
+        db_port=db_port,
         db_password=db_password)
 
 render(os.path.join(templates_dir, "db", "env"),

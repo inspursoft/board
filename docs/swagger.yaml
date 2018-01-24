@@ -1191,56 +1191,9 @@ paths:
           type: string
           required: true
           description: Current available token.
-        - name: service_name
-          in: query
-          description: Service name.
-          required: true
-          type: string
         - name: project_name
           in: query
           description: Project name.
-          required: true
-          type: string
-        - name: yaml_type
-          in: query
-          description: service yaml file type for filtering results.
-          required: true
-          type: string
-        - name: upload_file
-          in: formData
-          type: file
-          required: true
-          description: File to be uploaded.
-      tags:
-        - Products
-      responses:  
-        200:
-          description: Upload files successfully return service id.     
-          schema:
-            description: The service id.  
-            type: string     
-        400:
-          description: Bad Request
-        401:
-          description: Unauthorized
-        500:
-          description: Unexpected internal errors. 
-  /v1/services/yaml/check:
-    get:
-      summary: Check the yaml files and return service name
-      description:
-        This endpoint to check the yaml files and return service name.
-      consumes:
-        - multipart/form-data
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: project_name
-          in: query
-          description: project_name for filtering results.
           required: true
           type: string
         - name: deployment_file
@@ -1255,18 +1208,16 @@ paths:
           description: service yaml to be uploaded.
       tags:
         - Products
-      responses:
+      responses:  
         200:
-          description: Check successfully return service name.     
+          description: Upload files successfully return service id.     
           schema:
-            type: string
-            description: The service name.       
+            description: The service id.  
+            type: string     
         400:
           description: Bad Request
         401:
           description: Unauthorized
-        409:
-          description: Service name already exists.
         500:
           description: Unexpected internal errors. 
   /v1/services/yaml/download:

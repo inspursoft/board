@@ -12,11 +12,11 @@ services:
       - board
     ports:
       - 1514:514
-  mysql:
+  db:
     build: 
       context: ../../
       dockerfile: make/dev/container/db/Dockerfile
-    image: dev_mysql:dev
+    image: dev_db:dev
     restart: always
     volumes:
       - /data/board/database:/var/lib/mysql
@@ -32,7 +32,7 @@ services:
       driver: "syslog"
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
-        tag: "mysql"
+        tag: "db"
   gitserver:
     build:
       context: ../../
@@ -94,7 +94,7 @@ services:
     networks:
       - board
     links:
-      - mysql
+      - db
       - gitserver
     ports: 
       - 8088:8088
@@ -135,10 +135,10 @@ services:
     networks:
       - board
     links:
-      - mysql
+      - db
     depends_on:
       - log
-      - mysql
+      - db
     logging:
       driver: "syslog"
       options:
