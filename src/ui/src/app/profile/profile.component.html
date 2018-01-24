@@ -1,21 +1,21 @@
-<div style="height: 600px;width: 700px;
- margin-top: 20px;margin-left: 20px;display: flex;flex-direction: column;">
+<div class="profile-container">
   <img src="images/board_logo.png">
-  <span style="text-align: center;font-size: 20px;margin: 30px;">Inspur Board</span>
-  <span style="font-size: 16px;margin-left: 30px; margin-bottom: 30px;">version:
-    <span style="margin-left: 30px;">{{version}}</span>
-  </span>
-  <span style="font-size: 16px;margin-left: 30px; margin-bottom: 30px;">Cluster Version:
-    <span style="margin-left: 30px;">v1.5</span>
-  </span>
-  <span style="font-size: 16px;margin-left: 30px; margin-bottom: 30px;">Get Help:
-    <a href="http://help.board.inspur.com" style="margin-left: 30px;">http://help.board.inspur.com</a>
-  </span>
-  <span style="font-size: 16px;margin-left: 30px; margin-bottom: 30px;">Support team:
-    <span style="margin-left: 30px;">board@inspur.com</span>
-  </span>
-
-  <span style="font-size: 12px;text-align: center;"><strong>(C)  2017 - 2018    Inspur</strong>
-
-  </span>
+  <span class="profile-title">Inspur Board</span>
+  <div class="line-container">
+    <span class="line-title">{{"PROFILES.VERSION" | translate}}:</span>
+    <span>{{version}}</span>
+  </div>
+  <div class="line-container">
+    <span class="line-title">{{"PROFILES.CLUSTER_VERSION" | translate}}:</span>
+    <span>v1.5</span>
+  </div>
+  <div class="line-container">
+    <span class="line-title">{{"PROFILES.GET_HELP" | translate}}:</span>
+    <a href="http://help.board.inspur.com" target="_blank">http://help.board.inspur.com</a>
+  </div>
+  <div class="line-container">
+    <span class="line-title">{{"PROFILES.SUPPORT_TEAM" | translate}}:</span>
+    <span>board@inspur.com</span>
+  </div>
+  <span class="copyright-custom"><strong>(C)  2017 - 2018    Inspur</strong></span>
 </div>

@@ -3,6 +3,7 @@ import { AppInitService } from "../app.init.service";
 
 @Component({
   selector: 'profile',
+  styleUrls:['./profile.component.css'],
   templateUrl: './profile.component.html'
 })
 export class ProfileComponent {

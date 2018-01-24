@@ -414,5 +414,11 @@ export const LANG_EN_US = {
   "GUIDE":{
     "TITLE":"Usage guide",
     "NEXT_STEP":"Next step"
+  },
+  "PROFILES":{
+    "VERSION":"Version",
+    "CLUSTER_VERSION":"Cluster Version",
+    "GET_HELP":"Get Help",
+    "SUPPORT_TEAM":"Support team"
   }
 };

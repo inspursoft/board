@@ -93,7 +93,7 @@ export const LANG_ZH_CN = {
     "NODES": "节点",
     "IMAGES": "镜像",
     "ADMIN_OPTIONS": "管理员选项",
-    "PROFILES": "用户中心",
+    "PROFILES": "信息",
     "GUIDE_SERVICE_LIST":"请创建属于您的新服务",
     "GUIDE_PROJECT_LIST":"请创建属于您的新项目"
   },
@@ -414,5 +414,11 @@ export const LANG_ZH_CN = {
   "GUIDE":{
     "TITLE":"使用向导",
     "NEXT_STEP":"下一步"
-  }
+  },
+  "PROFILES":{
+    "VERSION":"版本",
+    "CLUSTER_VERSION":"集群版本",
+    "GET_HELP":"帮助",
+    "SUPPORT_TEAM":"支持"
+}
 };
