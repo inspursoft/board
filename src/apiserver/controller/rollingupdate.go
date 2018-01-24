@@ -206,7 +206,11 @@ func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceAction() {
 	}
 	logs.Debug("New updated deployment: %+v\n", deployData)
 
-	//TODO update deployment yaml file
-	//err = service.rollingUpdateYaml(serviceID, deployData)
+	//update deployment yaml file
+	err = service.RollingUpdateDeploymentYaml(repoPath(), deployData)
+	if err != nil {
+		logs.Error("Failed to update deployment yaml file:%+v\n", err)
+		p.internalError(err)
+	}
 
 }
