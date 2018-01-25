@@ -1,0 +1,12 @@
+{
+	"name": "graphite",
+	"type": "graphite",
+	"url": "${GRAPHITE_PROTOCOL}://${GRAPHITE_IP}:${GRAPHITE_PORT}",
+	"access": "proxy",
+	"jsonData": {
+		"graphiteVersion": "1.1"
+	},
+	"secureJsonFields": {
+		
+	}
+}
