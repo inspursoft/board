@@ -7,8 +7,9 @@ base_branch=$6
 comments_url=$7
 host_ip=$8
 kube_master_url=$9
-node_ip=$10
-registry_uri=$11
+shift 9
+node_ip=$1
+registry_uri=$2
 
 
 totalLink=$BUILD_URL/TOTAL_REPORT
