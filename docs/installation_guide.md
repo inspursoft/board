@@ -432,14 +432,14 @@ docker run -d -p 5000:5000 --name registry registry
 ```
 Get registry image from here: 
 
-**[Download Registry image](http://10.110.13.73/_layouts/15/start.aspx#/Shared%20Documents/Forms/AllItems.aspx?RootFolder=%2FShared%20Documents%2FContainer%20Service%2Fkubernetes%20rpm%20package&FolderCTID=0x01200097BD792FCDCA314591C60C2E8182BBA0&View=%7B84ACE000%2D5ACD%2D4A83%2DBA13%2D0990224E3589%7D)**
+**[Download Registry image from docker hub](https://hub.docker.com/_/registry)**
 
 Load registry image and setup registry container
 ```
 docker load --input regstiry.tar
 docker run -d -p 5000:5000 --name registry registry
 ```
-Edit the file /etc/docker/daemon.json, the content as below:
+Config registries, please reference docker offical document https://docs.docker.com. Below example for Centos, Edit the file /etc/docker/daemon.json, the content as below:
 
 ```
 {
@@ -483,3 +483,9 @@ Set up enrionment with Ambari on-step:
 ```
 To see README.md
 ```
+
+### Limitation
+When you need install, please note the limitations:
+
+1. If you want to use CentOS or Redhat, you need install CentOS, Redhat 7.2 or higher version.
+2. To install Board, the host should with Docker 17.02 or higher version.

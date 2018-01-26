@@ -91,7 +91,7 @@ endif
 # Package lists
 # TOPLEVEL_PKG := .
 INT_LIST := apiserver tokenserver collector/cmd
-IMG_LIST := apiserver tokenserver log collector gitserver jenkins mysql proxy
+IMG_LIST := apiserver tokenserver log collector gitserver jenkins db proxy
 
 # List building
 COMPILEALL_LIST = $(foreach int, $(INT_LIST), $(SRCPATH)/$(int))
@@ -154,7 +154,7 @@ build: version $(BUILD_LIST) #container/db_build
 cleanimage: $(RMIMG_LIST) #container/db_rmi
 
 $(BUILD_LIST): %_build: 
-	$(DOCKERBUILD) -f $(MAKEWORKPATH)/$(subst mysql,db,$*)/Dockerfile . -t $(IMAGEPREFIX)_$(subst container/,,$*):$(VERSIONTAG)
+	$(DOCKERBUILD) -f $(MAKEWORKPATH)/$*/Dockerfile . -t $(IMAGEPREFIX)_$(subst container/,,$*):$(VERSIONTAG)
 	
 $(RMIMG_LIST): %_rmi:
 	$(DOCKERRMIMAGE) -f $(IMAGEPREFIX)_$(subst container/,,$*):$(VERSIONTAG)
@@ -164,7 +164,7 @@ $(RMIMG_LIST): %_rmi:
 #container/db_rmi:
 #	$(DOCKERRMIMAGE) $(IMAGEPREFIX)_mysql:latest
 
-prepare:
+prepare: version
 	@echo "preparing..."
 	@$(MAKEPATH)/$(PREPARECMD) $(PREPARECMD_PARA)
 	@echo "Done."

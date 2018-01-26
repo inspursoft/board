@@ -1,0 +1,21 @@
+<clr-signpost *ngIf="show" (click)="signpostClickEvent($event)">
+  <clr-icon shape="exclamation-circle"
+            [hidden]="!isShowIcon"
+            class="info-icon"
+            #clrInfoIcon clrSignpostTrigger>
+  </clr-icon>
+  <clr-signpost-content [clrPosition]="position" *clrIfOpen>
+    <div class="signpost-content-container">
+      <h4 class="signpost-content-title">{{"GUIDE.TITLE" | translate}}</h4>
+      <p class="description">{{description | translate}}</p>
+      <div class="signpost-content-link-container">
+        <a *ngIf="!isEndStep"
+           class="signpost-content-link"
+           href="javascript:void(0)"
+           (click)="nextStepClick($event)">
+          {{"GUIDE.NEXT_STEP" | translate}}
+        </a>
+      </div>
+    </div>
+  </clr-signpost-content>
+</clr-signpost>

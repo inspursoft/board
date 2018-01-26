@@ -1,7 +1,7 @@
 import { DatePipe } from "@angular/common";
 
 export abstract class DashboardComponentParent {
-  datePipe: DatePipe = new DatePipe("lt");
+  datePipe: DatePipe = new DatePipe("en-US");
 
   private static getHoverValue(params: object, firstHint: string, secondHint: string): string {
     return `<div style="display: flex;flex-direction: column">

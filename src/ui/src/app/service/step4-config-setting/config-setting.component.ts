@@ -10,8 +10,8 @@ import {
 } from '../service-step.component';
 import { CsInputComponent } from "../../shared/cs-components-library/cs-input/cs-input.component";
 import { ServiceStepBase } from "../service-step";
-import { Response } from "@angular/http";
 import { ValidationErrors } from "@angular/forms/forms";
+import { HttpErrorResponse } from "@angular/common/http";
 
 @Component({
   styleUrls: ["./config-setting.component.css"],
@@ -77,7 +77,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
     return this.k8sService.checkServiceExist(this.uiData.projectName, control.value)
       .then(() => null)
       .catch(err => {
-        if (err && err instanceof Response && (err as Response).status == 409) {
+        if (err && err instanceof HttpErrorResponse && (err as HttpErrorResponse).status == 409) {
           return {serviceExist: "SERVICE.STEP_4_SERVICE_NAME_EXIST"}
         }
         this.messageService.dispatchError(err);

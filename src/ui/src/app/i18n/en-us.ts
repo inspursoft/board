@@ -93,7 +93,9 @@ export const LANG_EN_US = {
     "NODES": "Nodes",
     "IMAGES": "Images",
     "ADMIN_OPTIONS": "Admin Options",
-    "PROFILES": "Profiles"
+    "PROFILES": "Profiles",
+    "GUIDE_SERVICE_LIST":"Please create your own Service.",
+    "GUIDE_PROJECT_LIST":"Please create your own Project."
   },
   "DASHBOARD": {
     "MIN":"min",
@@ -143,7 +145,8 @@ export const LANG_EN_US = {
     "FAILED_TO_REMOVE_MEMBER": "Failed to remove member.",
     "SUCCESSFUL_CREATED_PROJECT": "Successful created project.",
     "PROJECT_NAME_ALREADY_EXISTS": "Project name already exists.",
-    "PROJECT_NAME_IS_ILLEGAL": "Project name is illegal."
+    "PROJECT_NAME_IS_ILLEGAL": "Project name is illegal.",
+    "GUIDE_CREATE_PROJECT":"Create your own project"
   },
   "USER_CENTER": {
     "LIST_COL_USERNAME":"Username",
@@ -353,6 +356,7 @@ export const LANG_EN_US = {
     "SERVICE_CONTROL_UPDATE_TAG":"Update tag",
     "SERVICE_DETAIL_DEPLOYMENT_FILE":"Deployment file",
     "SERVICE_DETAIL_SERVICE_FILE":"Service file",
+    "GUIDE_CREATE_SERVICE":"Please crate your own Service."
   },
   "GLOBAL_SEARCH": {
     "PROJECTS": "Projects",
@@ -395,5 +399,9 @@ export const LANG_EN_US = {
     "FAILED_TO_TOGGLE": "Failed to toggle node status.",
     "TOGGLE_NODE": "Toggle Status",
     "CONFIRM_TO_TOGGLE_NODE": "Confirm to change node {{0}} status?"
+  },
+  "GUIDE":{
+    "TITLE":"Usage guide",
+    "NEXT_STEP":"Next step"
   }
 };

@@ -8,11 +8,12 @@ import (
 	"mime/multipart"
 	"os"
 	"path/filepath"
-
-	modelK8s "k8s.io/client-go/pkg/api/v1"
+	"strconv"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/ghodss/yaml"
+	modelK8s "k8s.io/client-go/pkg/api/v1"
+	modelK8sExt "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 )
 
 var loadPath string
@@ -28,17 +29,33 @@ const (
 )
 
 var (
-	pathErr               = errors.New("ERR_DEPLOYMENT_PATH_NOT_DIRECTORY")
-	emptyServiceNameErr   = errors.New("ERR_NO_SERVICE_NAME")
-	portMaxErr            = errors.New("ERR_SERVICE_NODEPORT_EXCEED_MAX_LIMIT")
-	portMinErr            = errors.New("ERR_SERVICE_NODEPORT_EXCEED_MIN_LIMIT")
-	emptyDeployErr        = errors.New("ERR_NO_DEPLOYMENT_NAME")
-	invalidErr            = errors.New("ERR_DEPLOYMENT_REPLICAS_INVAILD")
-	emptyContainerErr     = errors.New("ERR_NO_CONTAINER")
-	NameInconsistentErr   = errors.New("ERR_SERVICE_NAME_AND_DEPLOYMENT_NAME_INCONSISTENT")
-	DeploymentNotFoundErr = errors.New("ERR_DEPLOYMENT_NOT_FOUND")
-	ServiceNotFoundErr    = errors.New("ERR_SERVICE_NOT_FOUND")
+	pathErr                        = errors.New("ERR_DEPLOYMENT_PATH_NOT_DIRECTORY")
+	emptyServiceNameErr            = errors.New("ERR_NO_SERVICE_NAME")
+	portMaxErr                     = errors.New("ERR_SERVICE_NODEPORT_EXCEED_MAX_LIMIT")
+	portMinErr                     = errors.New("ERR_SERVICE_NODEPORT_EXCEED_MIN_LIMIT")
+	emptyDeployErr                 = errors.New("ERR_NO_DEPLOYMENT_NAME")
+	invalidErr                     = errors.New("ERR_DEPLOYMENT_REPLICAS_INVAILD")
+	emptyContainerErr              = errors.New("ERR_NO_CONTAINER")
+	NameInconsistentErr            = errors.New("ERR_SERVICE_NAME_AND_DEPLOYMENT_NAME_INCONSISTENT")
+	ServiceNameInconsistentErr     = errors.New("ERR_SERVICE_NAME_INCONSISTENT_WITH_YAML_FILE")
+	ProjectNameInconsistentErr     = errors.New("ERR_PROJECT_NAME_INCONSISTENT_WITH_YAML_FILE")
+	DeploymentNotFoundErr          = errors.New("ERR_DEPLOYMENT_NOT_FOUND")
+	ServiceNotFoundErr             = errors.New("ERR_SERVICE_NOT_FOUND")
+	ServiceYamlFileUnmarshalErr    = errors.New("ERR_SERVICE_YAML_FILE_UNMARSHAL")
+	DeploymentYamlFileUnmarshalErr = errors.New("ERR_DEPLOYMENT_YAML_FILE_UNMARSHAL")
+	deploymentKindErr              = errors.New("ERR_DEPLOYMENT_YAML_KIND")
+	serviceKindErr                 = errors.New("ERR_SERVICE_YAML_KIND")
+	deploymentAPIVersionErr        = errors.New("ERR_DEPLOYMENT_YAML_API_VERSION")
+	serviceAPIVersionErr           = errors.New("ERR_SERVICE_YAML_API_VERSION")
 )
+
+type Service struct {
+	modelK8s.Service
+}
+
+type Deployment struct {
+	modelK8sExt.Deployment
+}
 
 func CheckDeploymentPath(loadPath string) error {
 	if fi, err := os.Stat(loadPath); os.IsNotExist(err) {
@@ -78,38 +95,6 @@ func CheckServicePara(reqServiceConfig model.ServiceConfig2) error {
 		if err != nil {
 			return err
 		}
-	}
-
-	return nil
-}
-
-func CheckDeployAndServiceYamlFiles(deploymentFile multipart.File, serviceFile multipart.File) error {
-	var service modelK8s.Service
-	var deployment modelK8s.ReplicationController
-
-	deploymentConfig, err := ioutil.ReadAll(deploymentFile)
-	if err != nil {
-		return err
-	}
-
-	err = yaml.Unmarshal(deploymentConfig, &deployment)
-	if err != nil {
-		return err
-	}
-
-	serviceConfig, err := ioutil.ReadAll(serviceFile)
-	if err != nil {
-		return err
-	}
-
-	err = yaml.Unmarshal(serviceConfig, &service)
-	if err != nil {
-		return err
-	}
-
-	//Currently take name as selector label.
-	if deployment.ObjectMeta.Name != service.ObjectMeta.Name {
-		return NameInconsistentErr
 	}
 
 	return nil
@@ -327,6 +312,100 @@ func getYamlFileData(serviceConfig interface{}, serviceConfigPath string, fileNa
 	}
 
 	err = json.Unmarshal(jsonData, serviceConfig)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+//check parameter of service yaml file
+func CheckServiceConfig(projectName string, serviceConfig Service) error {
+	//check empty
+	if serviceConfig.Kind != serviceKind {
+		return deploymentKindErr
+	}
+	if serviceConfig.APIVersion != serviceAPIVersion {
+		return deploymentAPIVersionErr
+	}
+	if serviceConfig.ObjectMeta.Name == "" {
+		return emptyServiceNameErr
+	}
+	if serviceConfig.ObjectMeta.Namespace != projectName {
+		return ProjectNameInconsistentErr
+	}
+
+	for _, external := range serviceConfig.Spec.Ports {
+		if external.NodePort > maxPort {
+			return portMaxErr
+		} else if external.NodePort < minPort {
+			return portMinErr
+		}
+	}
+
+	return nil
+}
+
+func CheckDeploymentConfig(projectName string, deploymentConfig Deployment) error {
+	//check empty
+	if deploymentConfig.Kind != deploymentKind {
+		return deploymentKindErr
+	}
+	if deploymentConfig.APIVersion != deploymentAPIVersion {
+		return deploymentAPIVersionErr
+	}
+	if deploymentConfig.ObjectMeta.Name == "" {
+		return emptyDeployErr
+	}
+	if deploymentConfig.ObjectMeta.Namespace != projectName {
+		return ProjectNameInconsistentErr
+	}
+	if *deploymentConfig.Spec.Replicas < 1 {
+		return invalidErr
+	}
+	if len(deploymentConfig.Spec.Template.Spec.Containers) < 1 {
+		return emptyContainerErr
+	}
+
+	for _, cont := range deploymentConfig.Spec.Template.Spec.Containers {
+
+		err := checkStringHasUpper(cont.Name, cont.Image)
+		if err != nil {
+			return err
+		}
+
+		for _, com := range cont.Command {
+			err := checkStringHasUpper(com)
+			if err != nil {
+				return err
+			}
+		}
+
+		for _, volMount := range cont.VolumeMounts {
+			err := checkStringHasUpper(volMount.Name, volMount.MountPath)
+			if err != nil {
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func RollingUpdateDeploymentYaml(repoPath string, deploydata *modelK8sExt.Deployment) error {
+	projectName := deploydata.ObjectMeta.Namespace
+	serviceName := deploydata.ObjectMeta.Name
+	serviceInfo, err := GetServiceByProject(serviceName, projectName)
+	if err != nil {
+		return err
+	}
+	if serviceInfo == nil {
+		return ServiceNotFoundErr
+	}
+
+	fileName := filepath.Join(repoPath, projectName, strconv.Itoa(int(serviceInfo.ID)), deploymentFilename)
+	err = GenerateYamlFile(fileName, deploydata)
 	if err != nil {
 		return err
 	}
