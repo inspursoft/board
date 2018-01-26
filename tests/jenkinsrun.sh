@@ -6,6 +6,9 @@ base_repo_url=$5
 base_branch=$6
 comments_url=$7
 host_ip=$8
+kube_master_url=$9
+node_ip=$10
+registry_uri=$11
 
 
 totalLink=$BUILD_URL/TOTAL_REPORT
@@ -45,7 +48,7 @@ cd $boardDir/board/tests
 
 chmod +x *
 #make run
-./run.sh $host_ip
+./run.sh $host_ip $kube_master_url $node_ip $registry_uri
 
 cov=`python genResult.py /home|grep "the cover"|cut -d ":" -f 2|cut -d "%" -f 1`
 
