@@ -206,7 +206,7 @@ services:
       - log
     volumes:
       - /opt/graphite/conf
-      - /data/board/graphite/storage:/opt/graphite/storage
+      - /data/board/graphite/storage/whisper:/opt/graphite/storage/whisper
       - /etc/nginx
       - /opt/statsd
       - /etc/logrotate.d
