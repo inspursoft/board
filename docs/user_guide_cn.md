@@ -16,173 +16,189 @@
 * 管理员选项
 * 常见问题
 
-## User account
-Board supports databse authentication modes and support LDAP mode:  
+## 用户账户管理
+Board支持database认证模式，同时也支持LDAP模式 
 
-* **Database(db_auth)**  
+* **基于数据库(db_auth)**  
 
-	Users are stored in the local database.  
+    用户存储在本地数据库中。
 	
-	A user can register himself/herself in Board in this mode. To disable user self-registration, refer to the [installation guide](installation_guide.md) for initial configuration, or disable this feature in [Administrator Options](#administrator-options). When self-registration is disabled, the system administrator can add users into Board. 
+    用户可以在此模式下自己注册。用户点击注册， 输入相关的信息即可注册属于自己的账户。
 	
-	When registering or adding a new user, the username and email must be unique in the Board system. The password must contain at least 8 characters with 1 lowercase letter, 1 uppercase letter and 1 numeric character.  
+    如果需要禁用用户自注册功能，请参考初始配置安装指南，或者禁用管理员选项中的该特性。在禁用自注册时，系统管理员可以将用户添加到board中。
 	
-* **LDAP/Active Directory (ldap_auth)**  
+    在注册或添加新用户时，用户名和电子邮件必须在board系统中是唯一的， 如果新注册的用户名已经存在， 系统会提示该用户不可用， 请选择其他用户名。密码必须包含至少8个字符，包括1个小写字母、1个大写字母和1个数字字符。
 
-	Under this authentication mode, users whose credentials are stored in an external LDAP or AD server can log in to Board directly.  
+    当您忘记您的密码时，您可以按照以下步骤重新设置密码(需要SMTP服务器支持):
+  *   点击页面上的“忘记密码”链接
+  *   输入您注册时输入的电子邮件地址，电子邮件将被发送到您的密码重置
+  *   收到邮件后，点击邮件中的链接，将你导向一个密码重置网页	
+  *   输入您的新密码并点击“保存”
+
+* **基于LDAP (ldap_auth)**  
+
+	在这种身份验证模式下，存储在外部LDAP或AD服务器中的用户可以直接登录board。系统默认为database模式， 如果需要使用LDAP模式，需要做必要的配置。配置方法参考配置手册。  
 	
-	When an LDAP/AD user logs in by *username* and *password*, Board binds to the LDAP/AD server with the **"LDAP Search DN"** and **"LDAP Search Password"** described in [installation guide](installation_guide.md). If it succeeded, Board looks up the user under the LDAP entry **"LDAP Base DN"** including substree. The attribute (such as uid, cn) specified by **"LDAP UID"** is used to match a user with the *username*. If a match is found, the user's *password* is verified by a bind request to the LDAP/AD server.  
+	当LDAP / AD用户以用户名和密码登录时，使用“LDAP搜索DN”和安装指南中描述的“LDAP搜索密码”来绑定到LDAP / AD服务器。如果成功，Board在LDAP条目“LDAP基本DN”中查找用户，包括substree。“LDAP uid”指定的属性(如uid、cn)用于将用户与用户名匹配。如果找到匹配，则将用户的密码通过绑定请求验证到LDAP / AD服务器。
 	
-	Self-registration, changing password and resetting password are not supported under LDAP/AD authentication mode because the users are managed by LDAP or AD.  
+	在LDAP / AD认证模式下，不支持自注册、更改密码和重新设置密码，因为用户是由LDAP或AD来管理的。
 
-## Role Based Access Control(RBAC)  
+## 基于角色的访问控制(RBAC)  
 
-Board manages services through projects on container service platform. Users can be added into one services as a member with 3 different roles:  
+通过容器服务平台上的项目管理服务。用户可作为具有3个不同角色的成员添加到一个服务中:
 
-* **Anonymous**: Can search public project and sevices but only-read.
-* **System Admin**: Have supper role to read and write all project.
-* **Restry User**: When creating a new project incluce privilege and public, you will be assigned the "ProjectMember role to the project. the "ProjectMember" and read and write the project but can not delete the project.
+**访客:** 客户有公共项目和服务的只读特权。
+	
+**超级管理员：** admin, 拥有最高权限， 可以查看、修改、删除任何可操作权限。
 
-Besides the above three roles, there are two system-wide roles:  
+**项目管理员:** 对自己创建的项目拥有修改， 删除， 查看等任何权限 ， 项目管理员可以添加其他人员到自己的项目当中，被添加的人员用户和项目管理员相同的权限。
+	
+除了上述三个角色之外，还有两个系统角色:
 
-* **SysAdmin**: "SysAdmin" has the most privileges. In addition to the privileges mentioned above, "SysAdmin" can also list all projects, set an ordinary user as administrator, delete users. The public project "library" is also owned by the administrator.  
-* **Anonymous**: When a user is not logged in, the user is considered as an "Anonymous" user. An anonymous user has no access to private projects and has read-only access to public projects and services.  
+**系统管理员:** “系统管理员”具有最多的特权。除了上面提到的权限之外，“系统管理员”还可以列出所有项目，将普通用户设置为管理员，删除用户。公共项目“库”也由管理员拥有。
 
-## Manage Projects
-A project in Board contains all services, images etc., There are two types of projects in Board:
+**匿名用户:** 当用户未登录时，用户被视为“匿名”用户。匿名用户无法访问私有项目，并且只能访问公共项目和服务。
+ 
 
-* **Public**: All users have the read privilege to a public project, it's convenient for you to share some services or others in this way.
+## 管理项目
+一个项目包含所有的服务，图片等。在board中有两种类型的项目，他们分别是公有项目和私有项目:
 
-* **Private**: A private project can only be accessed by users with proper privileges.
+*  **公有:** 所有用户都拥有对公共项目的read权限，您可以通过这种方式共享一些服务或获得其他服务。
+*  **私有:** 私有项目只有拥有适当特权的用户访问和使用。
 
-You can create a project after you signed in. Check on the "Public/Private" checkbox will make this project public.
+您可以在登录后创建一个项目。检查“公共/私人”复选框将使这个项目公开。
+
 
 <img src="img/userguide/create-project.png" width="100" alt="Board create project">
 
-After the project is created, you can browse services, users and images using the navigation bar on  the left.
+在创建项目之后，您可以使用左侧的导航栏浏览服务、用户和镜像。
 
-## Manage Members of a Project
-### Adding members
+## 管理项目的成员
+### 添加成员
 
-You can add members with different roles to an existing project.
+您可以向现有项目添加不同成员， 被添加的成员拥有对该项目的读，写等权限。
 
 <img src="img/userguide/add-members.png" width="100" alt="Board add members">
 
-### Updating and removing members
+### 更新和删除成员
 
-You can update or remove a member by clicking the left arrow to remove or right to add member in the middle of the users and members list.
+您可以通过单击左箭头来更新或删除成员，以便在用户和成员列表的中间添加成员， 用户被删除后失去原有的权限。
 
 <img src="img/userguide/add-remove-members.png" width="100" alt="Board add remove members">
 
-## Manage Services
+### 改变成员的角色
 
-Board supports creating container service. All services must be grouped by projects. Click into "create service", the first step is to select a project. if there is no project, please create a project first. 
+你可以通过点击下面的角色单选按钮来改变成员的角色。
 
-### Build Images
-On the "select images" page, select "Create Custom Image" from the pull-down menu to build new image. Or on the "images" page, click "create image"
-Surpport three method to create images that are "Use template for creaton", "Use Dockerfile for creation", "Create by DevOps method"(will be surpport)
-Use template for creaton：
-There will be a pop-up window for user to input image parameters for building.
-* New Image Name
-* Image Tag
-* Base Image
-* Image EntryPoint
-* Image Env
-* Image Volume
-* Image Run
-* Image Expose
-* Upload External Archives
-* Command
+<img src="img/userguide/add-remove-members.png" width="100" alt="Board add remove members">
 
-Use Dockerfile for creation:
-There will be a pop-up window for user to input image parameters for building.
-* New Image Name
-* Image Tag
-* Select Dockerfile for build image
+## 管理镜像
 
-After fill in all required parameters, click "Build image" to start building the new image.
-If build successfully, the new image will be added into Board's registry.
+从左侧的镜像功能中，可以显示系统中的镜像列表
 
-### Build Services
+<img src="img/userguide/add-remove-members.png" width="100" alt="Board add remove members">
 
-The "select images" is the first step to build service.  
-Select required image and its image tag, select multiple images if needed.
+### 创建新镜像
 
-Next step to configure containers.
-The following parameters could be customized for containers of this service.
+点击创建镜像图标，选择镜像所属项目
+
+<img src="img/userguide/add-remove-members.png" width="100" alt="Board add remove members">
+
+### 选择镜像创建方式
+
+提供三种方式创建镜像， 分别是“利用模板创建”、“利用Dockerfile文档创建”“DevOps方式创建”，在这里我们选择一种方式举例，利用模版创建：
+
+<img src="img/userguide/add-remove-members.png" width="100" alt="Board add remove members">
+
+### 配置新镜像
+
+依照模板提示，可配置以下镜像选项：
+
+*镜像名称
+*镜像标签
+*基础镜像
+*镜像入口点
+*镜像环境变量
+*镜像存储卷
+*镜像运行指令
+*镜像服务端口
+*外部文件上传
+
+<img src="img/userguide/add-remove-members.png" width="100" alt="Board add remove members">
+
+### 构建新镜像
+
+开始构建新镜像
+
+<img src="img/userguide/add-remove-members.png" width="100" alt="Board add remove members">
+
+构建成功后，可以从镜像列表中看到新镜像
+
+<img src="img/userguide/add-remove-members.png" width="100" alt="Board add remove members">
+
+
+## 管理服务
+
+Board支持创建容器服务。所有服务必须按项目分组。点击“创建服务”。
+
+### 选择所属项目
+
+第一步是选择一个项目。如果没有项目，请先创建项目。
+
+<img src="img/userguide/add-remove-members.png" width="100" alt="Board add remove members">
+
+### 选择镜像
+
+“选择镜像”是构建服务的开始。
+
+选择所需的镜像和它的镜像标签，如果需要，选择多个镜像。
+
+<img src="img/userguide/add-remove-members.png" width="100" alt="Board add remove members">
+
+### 配置容器
+
+下一步是配置容器。
+
+<img src="img/userguide/add-remove-members.png" width="100" alt="Board add remove members">
+
+可以为这个服务的容器定制以下参数。
 * Working Directory
 * Volume Mounts
 * ENV
 * Container Port
 * Commands
 
-Next step to configure service.
-The following parameters could be customized for this service.
+<img src="img/userguide/add-remove-members.png" width="100" alt="Board add remove members">
+
+### 配置服务
+
+点击下一步，进入配置服务。可以为该服务定制以下参数。
+
 * Service Name
-* External service
 * Instance
 
-In the advanced configuration, can assign node pord for external service.
+<img src="img/userguide/add-remove-members.png" width="100" alt="配置服务">
 
-Next step after configure service.
+在高级配置中，可以为外部服务分配节点端口。
 
-### Test Service
+<img src="img/userguide/add-remove-members.png" width="100" alt="高级配置外部服务">
 
-This step is to test the service's configurations. Next step to skip testing.
+配置完成点击下一步
 
-### Deploy Service
+### 部署服务
 
-Click "Deploy" to deploy the new service.
-After successfully deploy the service, user can monitor the service status from the service list.
+单击“Deploy”部署新服务。
+
+<img src="img/userguide/add-remove-members.png" width="100" alt="部署新服务1">
+
+<img src="img/userguide/add-remove-members.png" width="100" alt="部署新服务2">
+
+在成功部署服务之后，用户可以从服务列表监视服务状态。如新创建的服务demoshowing5
+
+<img src="img/userguide/add-remove-members.png" width="100" alt="部署新服务3">
+
 
 ### Examples to create services
-
-#### Example demoshow
-Deploy a service "demoshow"
-
-* Login board
-
-<img src="img/userguide/demoshow-a.PNG" width="100" alt="Board login">
-
-* Select the library project
-
-<img src="img/userguide/demoshow-d.PNG" width="100" alt="Select project">
-
-* Select library/mydemoshow image
-
-<img src="img/userguide/demoshow-e.PNG" width="100" alt="Select image">
-
-* Configure container
-
-<img src="img/userguide/demoshow-f.PNG" width="100" alt="Container image">
-
-* Select container mydemoshow
-
-<img src="img/userguide/demoshow-g.PNG" width="100" alt="Container name">
-
-* Set the container port to 5000
-
-<img src="img/userguide/demoshow-h.PNG" width="100" alt="Container port">
-
-* Set the service name
-
-<img src="img/userguide/demoshow-i.PNG" width="100" alt="Service name">
-
-* Set the node port for external service
-
-<img src="img/userguide/demoshow-j.PNG" width="100" alt="Service port">
-
-* Deploy the service demoshow
-
-<img src="img/userguide/demoshow-todeploy.PNG" width="100" alt="Service deploy">
-
-* Deploy the demoshow successfully
-
-<img src="img/userguide/demoshow-deploy.PNG" width="100" alt="Service success">
-
-* Service can be showed in service list
-
-<img src="img/userguide/demoshow-ok.PNG" width="100" alt="Service success">
 
 #### Example inspur bigdata
 Deploy a service "bigdata" which is a containerized project for the Inspur bigdata software platform.
@@ -247,78 +263,84 @@ Deploy a service "bigdata" which is a containerized project for the Inspur bigda
 
 <img src="img/userguide/bigdata-o.PNG" width="100" alt="Monitor the bigdata service status">
 
-## Search Projects, Services, Users and Images
-Board search  engine could search project, service, users and image.
-### Search categories
-* **project**:
-Users can search projects with some constraints: 
+## 查询
+
+搜索引擎可以搜索项目、服务、用户和镜像。
+
+### 查询的分类
+
+* **项目**:
+用户可以通过一些限制搜索项目:
 
 
- > 1. Ordinary users only can search these projects which they blong to 
-   and common project 
- > 2. System admin can search all of projetcs
+* 普通用户只能搜索这些项目，这些项目是他们共同的项目
+* 系统管理员可以搜索所有的项目
 
 
-* **service**:
-Users can search services with some constraints: 
+* **服务**:
+用户可以通过一些限制搜索服务: 
 
- > 1.  Ordinary users only can search services which is owner of the service，
-    or blong a same project.
- > 2.  System admin can search all of projetcs
+* 普通用户只能搜索服务服务的所有者,或属于同一项目。
+* 系统管理员可以搜索所有的项目
 
-* **user**
-Users can search users with some constraints: 
 
- > 1.  project admin can search user which is belong to this project.
- > 2.  System admin can search all of users
+* **用户**
+可以使用一些约束来搜索用户: 
 
-* **image**
+* 项目管理员可以搜索属于这个项目的用户。
+* 系统管理员可以搜索所有用户
 
- > 1.  Ordinary users only can search images which blong a same project or common images.
- > 2.  System admin can search all of iamges
+* **镜像**
 
-### Search results
-* **search results** as shown below
+* 普通用户只能搜索属于同一项目或普通图像的镜像。
+* 系统管理员可以搜索所有的镜像
+
+### 查询的结果
+* **查询的结果** 如下所示
 ![search](img/userguide/search_result.png)
 
-## Monitoring Dashboard
- **Monitoring Dashboard** collect logs from k8s master and nodes. It cover the 
-machine indicators, such as cpu, memory usage, file system and k8s services runtime.
-* **services runtime** collect all af service and corresponding to labels of pods and containers. In
-dashboard show the statistical real-time and average numbers
+## 监控仪表板
+
+监视仪表板从k8s主节点和节点收集日志。它涵盖了机器指标，如CPU、内存使用、文件系统和k8s服务运行时。
+
+服务运行时收集所有服务并对应于pod和容器的标签。在仪表板中显示统计实时和平均数字
 ![search](img/userguide/dashboard_service.png) 
-* **machine indicators** collect all cpu and memory nodes indicators of all nodes
+
+机器指示器收集所有节点的所有CPU和内存节点指示器
 ![search](img/userguide/dashboard_node.png) 
-* **file system** collect all storage indicators of nodes
+
+文件系统收集节点的所有存储指标
 ![search](img/userguide/dashboard_storage.png) 
 
-## Administrator Options
-* Administrator options provide user management which can add, change or remove user by an admin user.
+## 管理员选项
 
-* **NOTE**: This option only provide to user with system-admin role.
-### List current users in Board
-* This list show all users signed up in Board. 
-* 
+管理员选项提供用户管理，可由管理员用户添加、更改或删除用户。
+
+* **注意**: 此选项只提供给用户系统管理员角色。
+
+### 查看用户
+
+这个列表显示所有注册用户。
 <img src="img/userguide/list-all-users.png" width="100" alt="Board list all users">
 
-* **NOTE**: Admin user which is the system default first user cannot be manipulated. 
+* **注意**: 管理员用户是系统默认的第一个用户，不能被修改。
 
-* The user with system-admin role can change other user's privileges.
+* 具有系统管理员角色的用户可以更改其他用户的权限。
 
-### Manipulate users in Board
-* User can be created by clicking "Add User" button.
+### 管理用户
+
+用户可以通过点击“添加用户”按钮创建。
 
 <img src="img/userguide/add-user.png" width="100" alt="Board add user">
 
-* User can be edited by clicking pencil button.
+用户可通过点击编辑按钮进行编辑
 
 <img src="img/userguide/edit-user.png" width="100" alt="Board edit user">
 
-* Delete user from list. 
+从列表删除用户。
 
 <img src="img/userguide/delete-user.png" width="100" alt="Board delete user">
 
-* **NOTE**: User currently only can be deleted as set 'deleted' flag as 1.
 
 ## Q&A
 
