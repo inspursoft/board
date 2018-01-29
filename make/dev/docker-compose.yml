@@ -7,7 +7,7 @@ services:
     image: dev_log:dev
     restart: always
     volumes:
-      - /var/log/board/:/var/log/docker/
+      - /Users/wangkun/log/board/:/var/log/docker/
     networks:
       - board
     ports:
@@ -16,10 +16,9 @@ services:
     build: 
       context: ../../
       dockerfile: make/dev/container/db/Dockerfile
-    image: dev_db:dev
     restart: always
     volumes:
-      - /data/board/database:/var/lib/mysql
+      - /Users/wangkun/data/board/database:/var/lib/mysql
     env_file:
       - ../config/db/env
     networks:
@@ -40,7 +39,7 @@ services:
     image: dev_gitserver:dev
     restart: always
     volumes:
-      - /data/board/gitserver/repos:/gitserver/repos
+      - /Users/wangkun/data/board/gitserver/repos:/gitserver/repos
       - ../config/ssh_keys:/gitserver/keys
     networks:
       - board
@@ -62,10 +61,10 @@ services:
     networks:
       - board
     volumes:
-      - /data/board/jenkins_home:/var/jenkins_home
+      - /Users/wangkun/data/board/jenkins_home:/var/jenkins_home
       - ../config/ssh_keys:/root/.ssh
       - /var/run/docker.sock:/var/run/docker.sock
-      - /usr/bin/docker:/usr/bin/docker
+      - /usr/local/bin/docker:/usr/bin/docker
     env_file:
       - ../config/jenkins/env
     ports:
@@ -88,7 +87,7 @@ services:
       - ../config/apiserver/app.conf:/go/bin/app.conf:z
       - ../../tools/swagger/vendors/swagger-ui-2.1.4/dist:/go/bin/swagger:z
       - ../config/ssh_keys:/root/.ssh
-      - /data/board/gitserver/repos:/repos
+      - /Users/wangkun/data/board/gitserver/repos:/repos
     env_file:
       - ../config/apiserver/env
     networks:
@@ -124,26 +123,25 @@ services:
       options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "tokenserver"
-  collector:
-    build:
-      context: ../../
-      dockerfile: make/dev/container/collector/Dockerfile
-    image: dev_collector:dev
-    restart: always
-    env_file:
-      - ../config/collector/env
-    networks:
-      - board
-    links:
-      - db
-    depends_on:
-      - log
-      - db
-    logging:
-      driver: "syslog"
-      options:
-        syslog-address: "tcp://127.0.0.1:1514"
-        tag: "collector" 
+#  collector:
+#    build:
+#      context: ../../
+#      dockerfile: make/dev/container/collector/Dockerfile
+#    restart: always
+#    env_file:
+#      - ../config/collector/env
+#    networks:
+#      - board
+#    links:
+#      - mysql
+#    depends_on:
+#      - log
+#      - mysql
+#    logging:
+#      driver: "syslog"
+#      options:
+#        syslog-address: "tcp://127.0.0.1:1514"
+#        tag: "collector" 
   proxy:
     build:
       context: ../../
