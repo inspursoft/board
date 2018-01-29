@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
 	"io"
 	"os"
 	"path/filepath"
@@ -20,6 +21,8 @@ const (
 	dockerfileName      = "Dockerfile"
 	templateNameDefault = "dockerfile-template"
 )
+
+var repoPath = utils.GetConfig("REPO_PATH")
 
 func str2execform(str string) string {
 	sli := strings.Split(str, " ")

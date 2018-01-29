@@ -1,13 +1,67 @@
 package service
 
 import (
+	"bytes"
 	"errors"
+	"fmt"
+	"git/inspursoft/board/src/apiserver/service/devops/gogs"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
+	"io/ioutil"
+	"os"
+	"os/exec"
+	"path/filepath"
 )
 
+var sshKeyPath = utils.GetConfig("SSH_KEY_PATH")
+
+const (
+	sshPrivateKey      = "id_rsa"
+	sshPublicKey       = "id_rsa.pub"
+	authorizedKeysPath = "/Users/wangkun/.ssh/authorized_keys"
+)
+
+func ConfigSSHAccess(username string, accessToken string) error {
+	sshKeyUserPath := filepath.Join(sshKeyPath(), username)
+	err := os.MkdirAll(sshKeyUserPath, 0755)
+	if err != nil {
+		return err
+	}
+	err = exec.Command("ssh-keygen", "-t", "rsa", "-b", "4096", "-f", filepath.Join(sshKeyUserPath, sshPrivateKey), "-q", "-N", "").Run()
+	if err != nil {
+		return fmt.Errorf("Failed to generate SSH Key pairs: %+v", err)
+	}
+	data, err := ioutil.ReadFile(filepath.Join(sshKeyUserPath, sshPublicKey))
+	if err != nil {
+		return err
+	}
+	buf := bytes.NewBuffer(data)
+	f, err := os.OpenFile(authorizedKeysPath, os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	if _, err := f.WriteString(buf.String()); err != nil {
+		return fmt.Errorf("Failed to append Public key to authorized keys: %+v", err)
+	}
+	return gogs.NewGogsHandler(username, accessToken).CreatePublicKey(fmt.Sprintf("%s's access public key", username), buf.String())
+}
+
 func SignUp(user model.User) (bool, error) {
+	err := gogs.SignUp(user)
+	if err != nil {
+		return false, fmt.Errorf("Failed to create Gogs account for DevOps: %+v", err)
+	}
+	accessToken, err := gogs.CreateAccessToken(user.Username, user.Password)
+	if err != nil {
+		return false, err
+	}
+	err = ConfigSSHAccess(user.Username, accessToken.Sha1)
+	if err != nil {
+		return false, err
+	}
+	user.RepoToken = accessToken.Sha1
 	user.Salt = utils.GenerateRandomString()
 	user.Password = utils.Encrypt(user.Password, user.Salt)
 	userID, err := dao.AddUser(user)

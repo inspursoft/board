@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/apiserver/service/auth"
-	"git/inspursoft/board/src/apiserver/service/devops/gogs"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
@@ -51,22 +50,15 @@ func (u *AuthController) processAuth(principal, password string) (string, bool) 
 	payload["username"] = user.Username
 	payload["email"] = user.Email
 	payload["realname"] = user.Realname
-	payload["is_project_admin"] = user.ProjectAdmin
 	payload["is_system_admin"] = user.SystemAdmin
 	token, err := signToken(payload)
 	if err != nil {
 		u.internalError(err)
 		return "", false
 	}
-
-	accessToken, err := gogs.CreateAccessToken(principal, password)
-	if err != nil {
-		u.internalError(err)
-		return "", false
-	}
 	memoryCache.Put(user.Username, token.TokenString, time.Second*time.Duration(tokenCacheExpireSeconds))
 	memoryCache.Put(token.TokenString, payload, time.Second*time.Duration(tokenCacheExpireSeconds))
-	memoryCache.Put(user.Username+"_GOGS-ACCESS-TOKEN", accessToken.Sha1, time.Second*time.Duration(tokenCacheExpireSeconds))
+	memoryCache.Put(user.Username+"_GOGS-ACCESS-TOKEN", user.RepoToken, time.Second*time.Duration(tokenCacheExpireSeconds))
 	return token.TokenString, true
 }
 
@@ -181,11 +173,6 @@ func (u *AuthController) SignUpAction() {
 	}
 	if !isSuccess {
 		u.serveStatus(http.StatusBadRequest, "Failed to sign up user.")
-	}
-
-	err = gogs.SignUp(reqUser)
-	if err != nil {
-		u.internalError(fmt.Errorf("Failed to create Gogs account for DevOps: %+v", err))
 	}
 }
 

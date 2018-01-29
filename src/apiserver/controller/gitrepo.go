@@ -13,8 +13,6 @@ import (
 	"text/template"
 
 	"github.com/astaxie/beego/logs"
-
-	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
 const (
@@ -53,7 +51,7 @@ func (g *GitRepoController) CreateServeRepo() {
 }
 
 func (g *GitRepoController) InitUserRepo() {
-	_, err := service.InitRepo(repoServeURL(), repoPath())
+	_, err := service.InitRepo(repoServeURL(), g.currentUser.Username, repoPath())
 	if err != nil {
 		g.customAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to initialize user's repo: %+v\n", err))
 		return
@@ -87,7 +85,7 @@ func (g *GitRepoController) PushObjects() {
 		reqPush.Message = defaultCommitMessage
 	}
 
-	repoHandler, err := service.OpenRepo(repoPath())
+	repoHandler, err := service.OpenRepo(repoPath(), g.currentUser.Username)
 	if err != nil {
 		g.customAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to open user's repo: %+v\n", err))
 		return
@@ -99,7 +97,7 @@ func (g *GitRepoController) PushObjects() {
 	username := g.currentUser.Username
 	email := g.currentUser.Email
 
-	_, err = repoHandler.Commit(reqPush.Message, &object.Signature{Name: username, Email: email})
+	_, err = repoHandler.Commit(reqPush.Message, username, email)
 	if err != nil {
 		g.customAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to commit changes to user's repo: %+v\n", err))
 		return
@@ -140,7 +138,7 @@ func (g *GitRepoController) PullObjects() {
 		return
 	}
 	targetPath := filepath.Join(baseRepoPath(), target)
-	repoHandler, err := service.InitRepo(repoServeURL(), targetPath)
+	repoHandler, err := service.InitRepo(repoServeURL(), g.currentUser.Username, targetPath)
 	if err != nil {
 		g.customAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to open user's repo: %+v\n", err))
 		return
@@ -159,7 +157,7 @@ func InternalPushObjects(p *pushObject, g *baseController) (int, string, error) 
 		p.Message = defaultCommitMessage
 	}
 
-	repoHandler, err := service.OpenRepo(repoPath())
+	repoHandler, err := service.OpenRepo(repoPath(), g.currentUser.Username)
 	if err != nil {
 		return http.StatusInternalServerError, "Failed to open user's repo", err
 	}
@@ -170,7 +168,7 @@ func InternalPushObjects(p *pushObject, g *baseController) (int, string, error) 
 	username := g.currentUser.Username
 	email := g.currentUser.Email
 
-	_, err = repoHandler.Commit(p.Message, &object.Signature{Name: username, Email: email})
+	_, err = repoHandler.Commit(p.Message, username, email)
 	if err != nil {
 		return http.StatusInternalServerError, "Failed to commit changes to user's repo", err
 	}
@@ -214,7 +212,7 @@ func InternalCleanObjects(p *pushObject, g *baseController) (int, string, error)
 		p.Message = defaultCommitMessage
 	}
 
-	repoHandler, err := service.OpenRepo(repoPath())
+	repoHandler, err := service.OpenRepo(repoPath(), g.currentUser.Username)
 	if err != nil {
 		return http.StatusInternalServerError, "Failed to open user's repo", err
 	}
@@ -225,7 +223,7 @@ func InternalCleanObjects(p *pushObject, g *baseController) (int, string, error)
 	username := g.currentUser.Username
 	email := g.currentUser.Email
 
-	_, err = repoHandler.Commit(p.Message, &object.Signature{Name: username, Email: email})
+	_, err = repoHandler.Commit(p.Message, username, email)
 	if err != nil {
 		return http.StatusInternalServerError, "Failed to commit changes to user's repo", err
 	}

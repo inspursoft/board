@@ -18,9 +18,9 @@ CREATE TABLE `user` (
   `comment` varchar(255) DEFAULT NULL,
   `deleted` SMALLINT(1) DEFAULT NULL,
   `system_admin` SMALLINT(1) DEFAULT NULL,
-  `project_admin` SMALLINT(1) DEFAULT NULL,
   `reset_uuid` varchar(255) DEFAULT NULL,
   `salt` varchar(255) DEFAULT NULL,
+  `repo_token` VARCHAR(127) NULL DEFAULT NULL,  
   `creation_time` datetime DEFAULT NULL,
   `update_time` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)

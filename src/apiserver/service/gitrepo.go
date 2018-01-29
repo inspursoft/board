@@ -1,19 +1,21 @@
 package service
 
 import (
-	"git/inspursoft/board/src/common/utils"
 	"io/ioutil"
+	"path/filepath"
+	"time"
 
+	"gopkg.in/src-d/go-git.v4/plumbing/object"
+
+	"github.com/astaxie/beego/logs"
 	"golang.org/x/crypto/ssh"
 	git "gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing/object"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport"
 	gitssh "gopkg.in/src-d/go-git.v4/plumbing/transport/ssh"
 )
 
-var sshKeyPath = utils.GetConfig("SSH_KEY_PATH")
-
 type repoHandler struct {
+	username string
 	repo     *git.Repository
 	worktree *git.Worktree
 }
@@ -26,8 +28,10 @@ func InitBareRepo(servePath string) (*repoHandler, error) {
 	return &repoHandler{repo: repo}, nil
 }
 
-func getSSHAuth() (*gitssh.PublicKeys, error) {
-	deployKey, err := ioutil.ReadFile(sshKeyPath())
+func getSSHAuth(username string) (*gitssh.PublicKeys, error) {
+	sshPrivateKeyPath := filepath.Join(sshKeyPath(), username, sshPrivateKey)
+	logs.Debug("SSH private key path: %s", sshPrivateKeyPath)
+	deployKey, err := ioutil.ReadFile(sshPrivateKeyPath)
 	if err != nil {
 		return nil, err
 	}
@@ -35,35 +39,38 @@ func getSSHAuth() (*gitssh.PublicKeys, error) {
 	if err != nil {
 		return nil, err
 	}
-	auth := &gitssh.PublicKeys{User: "root", Signer: signer}
+	auth := &gitssh.PublicKeys{User: "git", Signer: signer}
 	return auth, nil
 }
 
-func InitRepo(serveURL, path string) (*repoHandler, error) {
-	auth, err := getSSHAuth()
+func InitRepo(serveURL, username, path string) (*repoHandler, error) {
+	auth, err := getSSHAuth(username)
 	if err != nil {
 		return nil, err
 	}
+	logs.Debug("Repo URL: %s", serveURL)
+	logs.Debug("Repo path: %s", path)
 	repo, err := git.PlainClone(path, false, &git.CloneOptions{
 		URL:  serveURL,
 		Auth: auth,
 	})
 	if err != nil {
 		if err == git.ErrRepositoryAlreadyExists {
-			return OpenRepo(path)
+			return OpenRepo(path, username)
 		}
-		if err != transport.ErrEmptyRemoteRepository {
-			return nil, err
+		if err == transport.ErrEmptyRemoteRepository {
+			return nil, nil
 		}
 	}
+
 	worktree, err := getWorktree(repo)
 	if err != nil {
 		return nil, err
 	}
-	return &repoHandler{repo: repo, worktree: worktree}, nil
+	return &repoHandler{username: username, repo: repo, worktree: worktree}, nil
 }
 
-func OpenRepo(path string) (*repoHandler, error) {
+func OpenRepo(path, username string) (*repoHandler, error) {
 	repo, err := git.PlainOpen(path)
 	if err != nil {
 		return nil, err
@@ -72,7 +79,7 @@ func OpenRepo(path string) (*repoHandler, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &repoHandler{repo: repo, worktree: worktree}, nil
+	return &repoHandler{username: username, repo: repo, worktree: worktree}, nil
 }
 
 func getWorktree(repo *git.Repository) (*git.Worktree, error) {
@@ -91,10 +98,14 @@ func (r *repoHandler) Add(filename string) (*repoHandler, error) {
 	return r, nil
 }
 
-func (r *repoHandler) Commit(message string, signature *object.Signature) (*repoHandler, error) {
+func (r *repoHandler) Commit(message, username, email string) (*repoHandler, error) {
 	_, err := r.worktree.Commit(message, &git.CommitOptions{
-		All:    true,
-		Author: signature,
+		All: true,
+		Author: &object.Signature{
+			Name:  username,
+			Email: email,
+			When:  time.Now(),
+		},
 	})
 	if err != nil {
 		return nil, err
@@ -103,7 +114,7 @@ func (r *repoHandler) Commit(message string, signature *object.Signature) (*repo
 }
 
 func (r *repoHandler) Push() error {
-	auth, err := getSSHAuth()
+	auth, err := getSSHAuth(r.username)
 	if err != nil {
 		return err
 	}
@@ -111,7 +122,7 @@ func (r *repoHandler) Push() error {
 }
 
 func (r *repoHandler) Pull() error {
-	auth, err := getSSHAuth()
+	auth, err := getSSHAuth(r.username)
 	if err != nil {
 		return err
 	}

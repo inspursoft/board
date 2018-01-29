@@ -8,9 +8,14 @@ import (
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
+	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/astaxie/beego/logs"
 )
+
+var gogitsURL = utils.GetConfig("GOGITS_URL")
 
 type ProjectController struct {
 	baseController
@@ -58,15 +63,15 @@ func (p *ProjectController) CreateProjectAction() {
 	}
 
 	// Check namespace in k8s cluster
-	projectExists, err = service.NamespaceExists(reqProject.Name)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if projectExists {
-		p.customAbort(http.StatusConflict, "Project name already exists in cluster.")
-		return
-	}
+	// projectExists, err = service.NamespaceExists(reqProject.Name)
+	// if err != nil {
+	// 	p.internalError(err)
+	// 	return
+	// }
+	// if projectExists {
+	// 	p.customAbort(http.StatusConflict, "Project name already exists in cluster.")
+	// 	return
+	// }
 
 	reqProject.Name = strings.TrimSpace(reqProject.Name)
 	reqProject.OwnerID = int(p.currentUser.ID)
@@ -81,20 +86,31 @@ func (p *ProjectController) CreateProjectAction() {
 		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Project name: %s is illegal.", reqProject.Name))
 	}
 
-	isSuccess, err = service.CreateNamespace(reqProject.Name)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if !isSuccess {
-		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Namespace name: %s is illegal.", reqProject.Name))
-	}
+	// isSuccess, err = service.CreateNamespace(reqProject.Name)
+	// if err != nil {
+	// 	p.internalError(err)
+	// 	return
+	// }
+	// if !isSuccess {
+	// 	p.customAbort(http.StatusBadRequest, fmt.Sprintf("Namespace name: %s is illegal.", reqProject.Name))
+	// }
 
 	if accessToken, ok := memoryCache.Get(p.currentUser.Username + "_GOGS-ACCESS-TOKEN").(string); ok {
+		projectRepoURL := fmt.Sprintf("%s/%s/%s.git", gogitsURL(), p.currentUser.Username, reqProject.Name)
+		projectRepoPath := filepath.Join(baseRepoPath(), p.currentUser.Username, reqProject.Name)
+		_, err = service.InitRepo(projectRepoURL, p.currentUser.Username, projectRepoPath)
+		if err != nil {
+			logs.Error("Failed to initialize project repo: %+v", err)
+			p.internalError(err)
+		}
 		err = gogs.NewGogsHandler(p.currentUser.Username, accessToken).CreateRepo(reqProject.Name)
 		if err != nil {
 			p.internalError(err)
 		}
+		// err = jenkins.NewJenkinsHandler().CreateJob(reqProject.Name)
+		// if err != nil {
+		// 	p.internalError(err)
+		// }
 	}
 }
 
