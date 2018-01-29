@@ -483,3 +483,9 @@ Set up enrionment with Ambari on-step:
 ```
 To see README.md
 ```
+
+### Limitation
+When you need install, please note the limitations:
+
+1. If you want to use CentOS or Redhat, you need install CentOS, Redhat 7.2 or higher version.
+2. To install Board, the host should with Docker 17.02 or higher version.

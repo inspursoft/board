@@ -1010,3 +1010,11 @@ func (f *ImageController) DownloadDockerfileFileAction() {
 
 	f.Ctx.Output.Download(absFileName, dockerfileName)
 }
+
+// API to get image registry address
+func (p *ImageController) GetImageRegistryAction() {
+	registryAddr := registryBaseURI()
+	logs.Info("The image registry is %s", registryAddr)
+	p.Data["json"] = registryAddr
+	p.ServeJSON()
+}
