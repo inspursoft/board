@@ -1,20 +1,20 @@
-## 用户手册  
-## Overview  
-This guide walks you through the fundamentals of using Board. You'll learn how to use Board to:  
+## 用户指南  
+## 概要  
+本指南介绍了浪潮容器云服务平台（Board）的基本功能，指导用户如何使用Board系统  
 
-* User Account
-* Role Based Access Control(RBAC)  
-* Manage Projects
-* Manage Members of a Project
-* Manage Services
-  * Build Images.
-  * Build Services.
-  * Test Services.
-  * Deploy Services.
-* Search Projects, Services, Users and Images.
-* Monitoring Dashboard
-* Administrator Options
-* Q&A
+* 用户账户管理
+* 基于角色的访问控制(RBAC)  
+* 管理项目
+* 管理项目的成员
+* 管理镜像
+* 管理服务
+  * 构建服务的镜像
+  * 构建服务
+  * 部署服务
+* 查找项目，服务，用户和镜像
+* 监控仪表板
+* 管理员选项
+* 常见问题
 
 ## User account
 Board supports databse authentication modes and support LDAP mode:  
