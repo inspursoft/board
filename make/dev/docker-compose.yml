@@ -4,6 +4,7 @@ services:
     build:
       context: ../../
       dockerfile: make/dev/container/log/Dockerfile
+    image: dev_log:dev
     restart: always
     volumes:
       - /var/log/board/:/var/log/docker/
@@ -11,10 +12,11 @@ services:
       - board
     ports:
       - 1514:514
-  mysql:
+  db:
     build: 
       context: ../../
       dockerfile: make/dev/container/db/Dockerfile
+    image: dev_db:dev
     restart: always
     volumes:
       - /data/board/database:/var/lib/mysql
@@ -30,11 +32,12 @@ services:
       driver: "syslog"
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
-        tag: "mysql"
+        tag: "db"
   gitserver:
     build:
       context: ../../
       dockerfile: make/dev/container/gitserver/Dockerfile
+    image: dev_gitserver:dev
     restart: always
     volumes:
       - /data/board/gitserver/repos:/gitserver/repos
@@ -54,6 +57,7 @@ services:
     build:
       context: ../../
       dockerfile: make/dev/container/jenkins/Dockerfile
+    image: dev_jenkins:dev
     restart: always
     networks:
       - board
@@ -78,6 +82,7 @@ services:
     build:
       context: ../../
       dockerfile: make/dev/container/apiserver/Dockerfile
+    image: dev_apiserver:dev
     restart: always
     volumes:
       - ../config/apiserver/app.conf:/go/bin/app.conf:z
@@ -89,7 +94,7 @@ services:
     networks:
       - board
     links:
-      - mysql
+      - db
       - gitserver
     ports: 
       - 8088:8088
@@ -104,6 +109,7 @@ services:
     build:
       context: ../../
       dockerfile: make/dev/container/tokenserver/Dockerfile
+    image: dev_tokenserver:dev
     env_file:
       - ../config/tokenserver/env
     restart: always
@@ -122,16 +128,17 @@ services:
     build:
       context: ../../
       dockerfile: make/dev/container/collector/Dockerfile
+    image: dev_collector:dev
     restart: always
     env_file:
       - ../config/collector/env
     networks:
       - board
     links:
-      - mysql
+      - db
     depends_on:
       - log
-      - mysql
+      - db
     logging:
       driver: "syslog"
       options:
@@ -140,12 +147,13 @@ services:
   proxy:
     build:
       context: ../../
-      dockerfile: make/dev/container/nginx/Dockerfile
+      dockerfile: make/dev/container/proxy/Dockerfile
+    image: dev_proxy:dev
     networks:
       - board
     restart: always
     volumes:
-      - ../config/nginx/nginx.conf:/etc/nginx/nginx.conf:z
+      - ../config/proxy/nginx.conf:/etc/nginx/nginx.conf:z
       - ../../src/ui/dist:/usr/share/nginx/html:z
     ports: 
       - 80:80

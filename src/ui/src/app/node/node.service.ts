@@ -1,62 +1,40 @@
 import { Injectable } from '@angular/core';
-import { Http, Headers } from '@angular/http';
-
-import { AppInitService } from '../app.init.service';
-
+import { HttpClient } from '@angular/common/http';
 
 @Injectable()
 export class NodeService {
-  get defaultHeader(): Headers {
-    let header = new Headers();
-    header.append('content-type', 'application/json');
-    header.append('token', this.appInitService.token);
-    return header; 
+  constructor(private http: HttpClient) {
   }
-  
-  constructor(
-    private http: Http,
-    private appInitService: AppInitService
-  ){}
 
   getNodes(): Promise<any> {
     return this.http
-      .get(`/api/v1/nodes`, { headers: this.defaultHeader })
+      .get(`/api/v1/nodes`, {observe: "response"})
       .toPromise()
-      .then(res=>{
-        this.appInitService.chainResponse(res);
-        return res.json();
-      })
-      .catch(err=>Promise.reject(err));
+      .then(res => res.body)
   }
 
   getNodeByName(nodeName: string): Promise<any> {
     return this.http
-      .get(`/api/v1/node`, { 
-         headers: this.defaultHeader,
-         params: {
-           'node_name': nodeName
-         }
-      })
-      .toPromise()
-      .then(res=>{
-        this.appInitService.chainResponse(res);
-        return res.json();
-      })
-      .catch(err=>Promise.reject(err));
-  }
-
-  toggleNodeStatus(nodeName: string, status: boolean) {
-    return this.http
-      .get(`/api/v1/node/toggle`, {
-        headers: this.defaultHeader,
+      .get(`/api/v1/node`, {
+        observe: "response",
         params: {
-          'node_name': nodeName,
-          'node_status': status
+          'node_name': nodeName
         }
       })
       .toPromise()
-      .then(res=>this.appInitService.chainResponse(res))
-      .catch(err=>Promise.reject(err));
+      .then(res => res.body)
+  }
+
+  toggleNodeStatus(nodeName: string, status: boolean): Promise<any> {
+    return this.http
+      .get(`/api/v1/node/toggle`, {
+        observe: "response",
+        params: {
+          'node_name': nodeName,
+          'node_status': status ? "1" : "0"
+        }
+      })
+      .toPromise()
   }
 
 }

@@ -1,35 +1,25 @@
 import { Injectable } from '@angular/core';
-import { Http, Headers } from '@angular/http';
+import { HttpClient } from '@angular/common/http';
 import { AppInitService } from '../app.init.service';
 
 @Injectable()
 export class GlobalSearchService {
 
-  get defaultHeader(): Headers {
-    let headers = new Headers();
-    headers.append('Content-Type','application/json');
-    headers.append('token', this.appInitService.token);
-    return headers;
-  }
-
   constructor(
-    private http: Http,
+    private http: HttpClient,
     private appInitService: AppInitService
   ) {}
 
   search(content: string): Promise<any>{
-    return this.http.get("/api/v1/search", { 
-        headers: this.defaultHeader,
+    return this.http.get("/api/v1/search", {
+        observe:"response",
         params: {
           q: content,
           token: this.appInitService.token
         }
       })
       .toPromise()
-      .then(res=>{
-        this.appInitService.chainResponse(res);
-        return res.json();
-      })
+      .then(res=> res.body)
       .catch(err=>Promise.reject(err));
   }
 

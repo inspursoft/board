@@ -6,6 +6,7 @@ COPY src/apiserver /go/src/git/inspursoft/board/src/apiserver
 COPY src/common /go/src/git/inspursoft/board/src/common
 COPY src/vendor /go/src/git/inspursoft/board/vendor
 COPY src/apiserver/templates /go/bin/templates
+COPY VERSION /go/bin/VERSION
 
 WORKDIR /go/src/git/inspursoft/board/src/apiserver
 

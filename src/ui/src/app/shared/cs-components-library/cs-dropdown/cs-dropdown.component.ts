@@ -4,11 +4,12 @@
  * Created by liyanq on 9/4/17.
  */
 
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from "@angular/core"
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, ViewChild, ElementRef } from "@angular/core"
 
 export const ONLY_FOR_CLICK = "OnlyClick";
 const DROP_DOWN_SHOW_COUNT = 20;
 export type EnableSelectCallBack = (item: Object) => boolean;
+
 @Component({
   selector: "cs-dropdown",
   templateUrl: "./cs-dropdown.component.html",
@@ -37,6 +38,7 @@ export class CsDropdownComponent implements OnChanges {
   @Input() dropdownHideSearch: boolean = false;
   @Output("onChange") dropdownChange: EventEmitter<any>;
   @Output("onOnlyClickItem") dropdownClick: EventEmitter<any>;
+  @ViewChild("csDropdown") csDropdown: Object;
 
   constructor() {
     this.dropdownChange = new EventEmitter<any>();
@@ -94,6 +96,11 @@ export class CsDropdownComponent implements OnChanges {
         this.dropdownChange.emit(item);
       }
     }
+  }
+
+  get active(): boolean {
+    /*Todo:this is bad method, but no way better than it at present.2018/1/3*/
+    return this.csDropdown["ifOpenService"]["open"];
   }
 
   incShowTimes(event: MouseEvent): void {

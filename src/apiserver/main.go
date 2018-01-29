@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/controller"
 	_ "git/inspursoft/board/src/apiserver/router"
@@ -9,6 +10,8 @@ import (
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
+
+	"io/ioutil"
 
 	"github.com/astaxie/beego/logs"
 
@@ -26,6 +29,20 @@ const (
 	gogsBaseURL            = "http://10.165.14.97:10080"
 	jenkinsBaseURL         = "http://10.164.17.34:8080"
 )
+
+func initBoardVersion() {
+	version, err := ioutil.ReadFile("VERSION")
+	if err != nil {
+		logs.Error("Failed to read VERSION file: %+v", err)
+		panic(err)
+	}
+	utils.SetConfig("BOARD_VERSION", string(bytes.TrimSpace(version)))
+	err = service.SetSystemInfo("BOARD_VERSION", true)
+	if err != nil {
+		logs.Error("Failed to set system config: %+v", err)
+		panic(err)
+	}
+}
 
 func updateAdminPassword() {
 	initialPassword := utils.GetStringValue("BOARD_ADMIN_PASSWORD")
@@ -144,14 +161,14 @@ func main() {
 
 	utils.Initialize()
 
-	utils.AddEnv("BOARD_HOST", "10.165.14.97")
+	utils.AddEnv("BOARD_HOST")
 	utils.AddEnv("BOARD_ADMIN_PASSWORD")
 	utils.AddEnv("KUBE_MASTER_IP")
 	utils.AddEnv("KUBE_MASTER_PORT")
 	utils.AddEnv("REGISTRY_IP")
 	utils.AddEnv("REGISTRY_PORT")
 
-	utils.AddEnv("AUTH_MODE", "db_auth")
+	utils.AddEnv("AUTH_MODE")
 
 	utils.AddEnv("LDAP_URL")
 	utils.AddEnv("LDAP_SEARCH_DN")
@@ -192,6 +209,8 @@ func main() {
 		panic(err)
 	}
 
+	initBoardVersion()
+
 	if systemInfo.SetAdminPassword == "" {
 		updateAdminPassword()
 	}
@@ -200,10 +219,10 @@ func main() {
 		initProjectRepo()
 	}
 
-	// if systemInfo.SyncK8s == "" || utils.GetStringValue("FORCE_INIT_SYNC") == "true" {
-	// 	initDefaultProjects()
-	// 	syncServiceWithK8s()
-	// }
+	if systemInfo.SyncK8s == "" || utils.GetStringValue("FORCE_INIT_SYNC") == "true" {
+		initDefaultProjects()
+		syncServiceWithK8s()
+	}
 
-	beego.Run(":8089")
+	beego.Run(":8088")
 }

@@ -1,31 +1,29 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
 import { AppInitService } from './app.init.service';
 import { TranslateService } from '@ngx-translate/core';
-import { NgXCookies } from 'ngx-cookies';
+import { CookieService } from "ngx-cookie";
 
 @Component({
-    selector: 'board-app',
-    templateUrl: './app.component.html'
+  selector: 'board-app',
+  templateUrl: './app.component.html'
 })
 export class AppComponent {
 
-    cookieExpiry: number =  60*24*365;
+  cookieExpiry: Date = new Date(Date.now() + 60 * 60 * 24 * 365 * 1000);
 
-    constructor(
-      private appInitService: AppInitService,
-      private translateService: TranslateService
-    ) {
-      if(!NgXCookies.exists('currentLang')) {
-        console.log('No found cookie for current lang, will use the default browser language.');
-        NgXCookies.setCookie('currentLang', this.translateService.getBrowserCultureLang(), this.cookieExpiry);
-      } 
-      this.appInitService.currentLang = NgXCookies.getCookie('currentLang') || 'en-us';
-      translateService.use(this.appInitService.currentLang);
-      this.translateService.onLangChange.subscribe(()=>{
-        this.appInitService.currentLang = this.translateService.currentLang;
-        NgXCookies.setCookie('currentLang', this.appInitService.currentLang, this.cookieExpiry);
-        console.log('Change lang to:' + this.appInitService.currentLang);
-      });
+  constructor(private appInitService: AppInitService,
+              private cookieService: CookieService,
+              private translateService: TranslateService) {
+    if (!cookieService.get('currentLang')) {
+      console.log('No found cookie for current lang, will use the default browser language.');
+      cookieService.put('currentLang', this.translateService.getBrowserCultureLang(), {expires: this.cookieExpiry});
     }
+    this.appInitService.currentLang = cookieService.get('currentLang') || 'en-us';
+    translateService.use(this.appInitService.currentLang);
+    this.translateService.onLangChange.subscribe(() => {
+      this.appInitService.currentLang = this.translateService.currentLang;
+      cookieService.put('currentLang', this.appInitService.currentLang, {expires: this.cookieExpiry});
+      console.log('Change lang to:' + this.appInitService.currentLang);
+    });
+  }
 }

@@ -25,6 +25,7 @@ import { CsInputArrayComponent } from "./cs-components-library/cs-input-array/cs
 import { CreateImageComponent } from "../image/image-create/image-create.component";
 import { EnvironmentValueComponent } from "./environment-value/environment-value.component";
 import { SizePipe } from "./pipes/size-pipe";
+import { CsGuideComponent } from "./cs-components-library/cs-guide/cs-guide.component";
 
 @NgModule({
   imports: [
@@ -50,7 +51,9 @@ import { SizePipe } from "./pipes/size-pipe";
     CsInputComponent,
     CsInputArrayComponent,
     CheckboxRevert,
-    SizePipe
+    SizePipe,
+    CsGuideComponent
+
   ],
   exports: [
     CoreModule,
@@ -70,6 +73,7 @@ import { SizePipe } from "./pipes/size-pipe";
     CsSearchInput,
     CsInputComponent,
     CsInputArrayComponent,
+    CsGuideComponent,
     CheckboxRevert,
     SizePipe
   ],
