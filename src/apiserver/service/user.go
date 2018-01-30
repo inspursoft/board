@@ -16,7 +16,7 @@ import (
 	"github.com/astaxie/beego/logs"
 )
 
-var boardHost = utils.GetConfig("BOARD_HOST")
+var gogitsHostIP = utils.GetConfig("GOGITS_HOST_IP")
 var sshKeyPath = utils.GetConfig("SSH_KEY_PATH")
 var gogitsSSHPort = utils.GetConfig("GOGITS_SSH_PORT")
 
@@ -36,7 +36,7 @@ func ConfigSSHAccess(username string, accessToken string) error {
 	if err != nil {
 		return fmt.Errorf("Failed to generate SSH Key pairs: %+v", err)
 	}
-	err = exec.Command("ssh", "-i", sshPrivateKeyPath, "-4", boardHost(), "-o", "StrictHostKeyChecking=no", "-p", gogitsSSHPort()).Run()
+	err = exec.Command("ssh", "-i", sshPrivateKeyPath, "-4", gogitsHostIP(), "-o", "StrictHostKeyChecking=no", "-p", gogitsSSHPort()).Run()
 	if err != nil {
 		logs.Warn("Failed to add Public key to known hosts: %+v", err)
 	}
