@@ -27,6 +27,6 @@ func TestMain(m *testing.M) {
 	utils.AddEnv("REGISTRY_BASE_URI")
 	connectToDB()
 	utils.Initialize()
-	utils.SetConfig("SSH_KEY_PATH", "/Users/wangkun/keys")
+	utils.SetConfig("SSH_KEY_PATH", "/keys")
 	os.Exit(m.Run())
 }
