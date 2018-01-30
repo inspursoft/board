@@ -22,13 +22,12 @@ const (
 	adminUserID            = 1
 	adminUsername          = "admin"
 	defaultInitialPassword = "123456a?"
-	baseRepoPath           = "/Users/wangkun/repos"
-	sshKeyPath             = "/Users/wangkun/keys"
+	baseRepoPath           = "/repos"
+	sshKeyPath             = "/keys"
 	defaultProject         = "library"
-	gogitsURL              = "ssh://git@10.165.14.97:10022"
-	gogsBaseURL            = "http://10.165.14.97:10080"
-	jenkinsBaseURL         = "http://10.164.17.34:8080"
 )
+
+var gogitsSSHURL = utils.GetConfig("GOGITS_SSH_URL")
 
 func initBoardVersion() {
 	version, err := ioutil.ReadFile("VERSION")
@@ -85,10 +84,9 @@ func initProjectRepo() {
 	if err != nil {
 		logs.Error("Failed to config SSH access for admin user: %+v", err)
 	}
-
 	logs.Info("Initialize serve repo\n")
 	logs.Info("Init git repo for default project %s", defaultProject)
-	repoURL := fmt.Sprintf("%s/%s/%s.git", gogitsURL, adminUsername, defaultProject)
+	repoURL := fmt.Sprintf("%s/%s/%s.git", gogitsSSHURL(), adminUsername, defaultProject)
 	repoPath := fmt.Sprintf("%s/%s/%s", baseRepoPath, adminUsername, defaultProject)
 	_, err = service.InitRepo(repoURL, adminUsername, repoPath)
 	if err != nil {
@@ -180,7 +178,18 @@ func main() {
 	utils.AddEnv("LDAP_TIMEOUT")
 	utils.AddEnv("FORCE_INIT_SYNC")
 	utils.AddEnv("VERIFICATION_URL")
-	utils.AddEnv("REDIRECTION_URL", "")
+	utils.AddEnv("REDIRECTION_URL")
+
+	utils.AddEnv("GOGITS_HOST_IP")
+	utils.AddEnv("GOGITS_HOST_PORT")
+	utils.SetConfig("GOGITS_BASE_URL", "http://%s:%s", "GOGITS_HOST_IP", "GOGITS_HOST_PORT")
+
+	utils.AddEnv("GOGITS_SSH_PORT")
+	utils.SetConfig("GOGITS_SSH_URL", "ssh://git@%s:%s", "GOGITS_HOST_IP", "GOGITS_SSH_PORT")
+
+	utils.AddEnv("JENKINS_HOST_IP")
+	utils.AddEnv("JENKINS_HOST_PORT")
+	utils.SetConfig("JENKINS_BASE_URL", "http://%s:%s", "JENKINS_HOST_IP", "JENKINS_HOST_PORT")
 
 	utils.SetConfig("REGISTRY_URL", "http://%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
 	utils.SetConfig("KUBE_MASTER_URL", "http://%s:%s", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
@@ -188,9 +197,6 @@ func main() {
 
 	utils.SetConfig("BASE_REPO_PATH", baseRepoPath)
 	utils.SetConfig("SSH_KEY_PATH", sshKeyPath)
-	utils.SetConfig("GOGITS_URL", gogitsURL)
-	utils.SetConfig("GOGS_BASE_URL", gogsBaseURL)
-	utils.SetConfig("JENKINS_BASE_URL", jenkinsBaseURL)
 
 	utils.SetConfig("REGISTRY_BASE_URI", "%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
 

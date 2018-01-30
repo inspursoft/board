@@ -13,7 +13,7 @@ import (
 	"github.com/astaxie/beego/logs"
 )
 
-var gogsBaseURL = utils.GetConfig("GOGS_BASE_URL")
+var gogitsBaseURL = utils.GetConfig("GOGITS_BASE_URL")
 
 type createAccessTokenOption struct {
 	Name string `json:"name" binding:"Required"`
@@ -52,7 +52,7 @@ func NewGogsHandler(username, token string) *gogsHandler {
 }
 
 func userExists(username string) (bool, error) {
-	resp, err := utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s/api/v1/users/%s", gogsBaseURL(), username), nil, nil)
+	resp, err := utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s/api/v1/users/%s", gogitsBaseURL(), username), nil, nil)
 	if err != nil {
 		return false, err
 	}
@@ -73,7 +73,7 @@ func SignUp(user model.User) error {
 		logs.Info("User: %s already exists in Gogits.", user.Username)
 		return nil
 	}
-	resp, err := utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/user/sign_up", gogsBaseURL()), func(req *http.Request) error {
+	resp, err := utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/user/sign_up", gogitsBaseURL()), func(req *http.Request) error {
 		req.Header = http.Header{"Content-Type": []string{"application/x-www-form-urlencoded"}}
 		formData := url.Values{}
 		formData.Set("user_name", user.Username)
@@ -102,7 +102,7 @@ func CreateAccessToken(username, password string) (*accessToken, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp, err := utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/api/v1/users/%s/tokens", gogsBaseURL(), username), func(req *http.Request) error {
+	resp, err := utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/api/v1/users/%s/tokens", gogitsBaseURL(), username), func(req *http.Request) error {
 		req.Header = http.Header{
 			"content-type":  []string{"application/json"},
 			"Authorization": []string{"Basic " + utils.BasicAuthEncode(username, password)},
@@ -137,7 +137,7 @@ func (g *gogsHandler) CreatePublicKey(title, publicKey string) error {
 	if err != nil {
 		return err
 	}
-	resp, err := utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/api/v1/user/keys", gogsBaseURL()), func(req *http.Request) error {
+	resp, err := utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/api/v1/user/keys", gogitsBaseURL()), func(req *http.Request) error {
 		req.Header = http.Header{
 			"content-type":  []string{"application/json"},
 			"Authorization": []string{"token " + g.token},
@@ -155,7 +155,7 @@ func (g *gogsHandler) CreatePublicKey(title, publicKey string) error {
 }
 
 func (g *gogsHandler) DeletePublicKey(userID int64) error {
-	resp, err := utils.RequestHandle(http.MethodDelete, fmt.Sprintf("%s/api/v1/user/keys/%d", gogsBaseURL(), userID), nil, nil)
+	resp, err := utils.RequestHandle(http.MethodDelete, fmt.Sprintf("%s/api/v1/user/keys/%d", gogitsBaseURL(), userID), nil, nil)
 	if err != nil {
 		return err
 	}
@@ -175,7 +175,7 @@ func (g *gogsHandler) CreateRepo(repoName string) error {
 	if err != nil {
 		return err
 	}
-	resp, err := utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/api/v1/user/repos", gogsBaseURL()), func(req *http.Request) error {
+	resp, err := utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/api/v1/user/repos", gogitsBaseURL()), func(req *http.Request) error {
 		req.Header = http.Header{
 			"content-type":  []string{"application/json"},
 			"Authorization": []string{"token " + g.token},
@@ -195,7 +195,7 @@ func (g *gogsHandler) CreateRepo(repoName string) error {
 }
 
 func (g *gogsHandler) DeleteRepo(repoName string) error {
-	resp, err := utils.RequestHandle(http.MethodDelete, fmt.Sprintf("%s/api/v1/repos/%s/%s", gogsBaseURL(), g.username, repoName), func(req *http.Request) error {
+	resp, err := utils.RequestHandle(http.MethodDelete, fmt.Sprintf("%s/api/v1/repos/%s/%s", gogitsBaseURL(), g.username, repoName), func(req *http.Request) error {
 		req.Header = http.Header{
 			"content-type":  []string{"application/json"},
 			"Authorization": []string{"token " + g.token},

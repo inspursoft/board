@@ -10,8 +10,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var mockInitRepoURL = "ssh://git@10.165.14.97:10022"
-var mockInitRepoPath = "/Users/wangkun/repos"
+var mockInitRepoURL = "ssh://git@localhost:10022"
+var mockInitRepoPath = "/repos"
 var mockProjectName = "library"
 var mockUsername = "admin"
 var mockEmail = "admin@inspur.com"

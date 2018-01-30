@@ -12,14 +12,17 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+
+	"github.com/astaxie/beego/logs"
 )
 
+var boardHost = utils.GetConfig("BOARD_HOST")
 var sshKeyPath = utils.GetConfig("SSH_KEY_PATH")
+var gogitsSSHPort = utils.GetConfig("GOGITS_SSH_PORT")
 
 const (
-	sshPrivateKey      = "id_rsa"
-	sshPublicKey       = "id_rsa.pub"
-	authorizedKeysPath = "/Users/wangkun/.ssh/authorized_keys"
+	sshPrivateKey = "id_rsa"
+	sshPublicKey  = "id_rsa.pub"
 )
 
 func ConfigSSHAccess(username string, accessToken string) error {
@@ -28,24 +31,21 @@ func ConfigSSHAccess(username string, accessToken string) error {
 	if err != nil {
 		return err
 	}
-	err = exec.Command("ssh-keygen", "-t", "rsa", "-b", "4096", "-f", filepath.Join(sshKeyUserPath, sshPrivateKey), "-q", "-N", "").Run()
+	sshPrivateKeyPath := filepath.Join(sshKeyUserPath, sshPrivateKey)
+	err = exec.Command("ssh-keygen", "-t", "rsa", "-b", "4096", "-f", sshPrivateKeyPath, "-q", "-N", "").Run()
 	if err != nil {
 		return fmt.Errorf("Failed to generate SSH Key pairs: %+v", err)
+	}
+	err = exec.Command("ssh", "-i", sshPrivateKeyPath, "-4", boardHost(), "-o", "StrictHostKeyChecking=no", "-p", gogitsSSHPort()).Run()
+	if err != nil {
+		logs.Warn("Failed to add Public key to known hosts: %+v", err)
 	}
 	data, err := ioutil.ReadFile(filepath.Join(sshKeyUserPath, sshPublicKey))
 	if err != nil {
 		return err
 	}
-	buf := bytes.NewBuffer(data)
-	f, err := os.OpenFile(authorizedKeysPath, os.O_APPEND|os.O_WRONLY, 0644)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	if _, err := f.WriteString(buf.String()); err != nil {
-		return fmt.Errorf("Failed to append Public key to authorized keys: %+v", err)
-	}
-	return gogs.NewGogsHandler(username, accessToken).CreatePublicKey(fmt.Sprintf("%s's access public key", username), buf.String())
+	publicKey := bytes.NewBuffer(data).String()
+	return gogs.NewGogsHandler(username, accessToken).CreatePublicKey(fmt.Sprintf("%s's access public key", username), publicKey)
 }
 
 func SignUp(user model.User) (bool, error) {
