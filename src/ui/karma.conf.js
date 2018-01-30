@@ -8,16 +8,17 @@ module.exports = function (config) {
         plugins: [
             require('karma-jasmine'),
             require('karma-chrome-launcher'),
-            require('karma-phantomjs-launcher'),
+            require('karma-coverage-istanbul-reporter'),
             require('karma-mocha-reporter'),
             require('karma-remap-istanbul'),
+            require('karma-coverage'),
             require('@angular/cli/plugins/karma')
         ],
         files: [
             {pattern: './src/test.ts', watched: false}
         ],
         preprocessors: {
-            './src/test.ts': ['@angular/cli']
+            "./src/test.ts": ["@angular/cli", "coverage"]
         },
         mime: {
             'text/x-typescript': ['ts', 'tsx']
@@ -27,6 +28,10 @@ module.exports = function (config) {
                 html: 'coverage',
                 lcovonly: './coverage/coverage.lcov'
             }
+        },
+        coverageIstanbulReporter: {
+            reports: ['html', 'lcovonly', 'text-summary'],
+            fixWebpackSourcePaths: true
         },
         angularCli: {
             config: './angular-cli.json',
@@ -39,7 +44,7 @@ module.exports = function (config) {
         colors: true,
         logLevel: config.LOG_INFO,
         autoWatch: true,
-        browsers: ['Chrome'],
-        singleRun: true
+        browsers: ['ChromeHeadless'],
+        singleRun: false
     });
 };
