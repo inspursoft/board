@@ -19,9 +19,9 @@ import { ImageListComponent } from './image/image-list/image-list.component';
 import { ServiceComponent } from './service/service.component';
 import { UserCenterComponent } from './user-center/user-center.component';
 import { AuthGuard, ServiceGuard } from './shared/auth-guard.service';
-import { resolve } from 'dns';
 import { AppInitService } from 'app/app.init.service';
 import { Injectable } from '@angular/core';
+import { ProfileComponent } from "./profile/profile.component";
 
 @Injectable()
 export class SystemInfoResolve implements Resolve<any> {
@@ -58,7 +58,8 @@ export const ROUTES: Routes = [
         },
         { path: 'images', component: ImageListComponent },
         { path: 'services', component: ServiceComponent, canDeactivate: [ ServiceGuard ]},
-        { path: 'user-center', component: UserCenterComponent }
+        { path: 'user-center', component: UserCenterComponent },
+        { path: 'profile', component: ProfileComponent }
     ]},
     { path: '', redirectTo: '/sign-in', pathMatch: 'full' },
     { path: '**', component: SignInComponent }

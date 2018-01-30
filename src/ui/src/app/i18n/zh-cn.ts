@@ -93,7 +93,7 @@ export const LANG_ZH_CN = {
     "NODES": "节点",
     "IMAGES": "镜像",
     "ADMIN_OPTIONS": "管理员选项",
-    "PROFILES": "用户中心",
+    "PROFILES": "信息",
     "GUIDE_SERVICE_LIST":"请创建属于您的新服务",
     "GUIDE_PROJECT_LIST":"请创建属于您的新项目"
   },
@@ -281,6 +281,9 @@ export const LANG_ZH_CN = {
     "STEP_TITLE_4":"配置服务",
     "STEP_TITLE_5":"测试",
     "STEP_TITLE_6":"部署",
+    "STEP_0_CREATE_WIZARD":"使用向导创建服务",
+    "STEP_0_CREATE_YAML":"使用Yaml文件创建服务",
+    "STEP_0_CREATE_DEVOPS":"使用DevOps创建服务",
     "STEP_1_SELECT_DES":"如果没有项目可供选择,需要新建一个项目。",
     "STEP_1_CREATE_PROJECT":"创建项目...",
     "STEP_1_NONE_PROJECT":"没有项目",
@@ -356,7 +359,15 @@ export const LANG_ZH_CN = {
     "SERVICE_CONTROL_UPDATE_TAG":"更新Tag",
     "SERVICE_DETAIL_DEPLOYMENT_FILE":"部署文件内容",
     "SERVICE_DETAIL_SERVICE_FILE":"服务文件内容",
-    "GUIDE_CREATE_SERVICE":"请创建属于您的新服务"
+    "GUIDE_CREATE_SERVICE":"请创建属于您的新服务",
+    "SERVICE_YAML_SELECT_PROJECT":"选择项目",
+    "SERVICE_YAML_UPLOAD":"上传",
+    "SERVICE_YAML_SELECT_DEPLOYMENT_YAML":"选择部署Yaml文件",
+    "SERVICE_YAML_SELECT_SERVICE_YAML":"选择服务的Yaml文件",
+    "SERVICE_YAML_NER_SERVICE_NAME":"新建服务名称",
+    "SERVICE_YAML_INVALID_FILE":"无效的文件类型",
+    "SERVICE_YAML_VALID_FILE":"文件合法，可以上传",
+    "SERVICE_YAML_UPLOAD_SUCCESS":"上传成功!目前服务处于'准备'状态，点击'创建'，运行该服务"
   },
   "GLOBAL_SEARCH": {
     "PROJECTS": "项目",
@@ -403,5 +414,11 @@ export const LANG_ZH_CN = {
   "GUIDE":{
     "TITLE":"使用向导",
     "NEXT_STEP":"下一步"
-  }
+  },
+  "PROFILES":{
+    "VERSION":"版本",
+    "CLUSTER_VERSION":"集群版本",
+    "GET_HELP":"帮助",
+    "SUPPORT_TEAM":"支持"
+}
 };

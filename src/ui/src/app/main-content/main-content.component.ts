@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AppInitService, AppTokenService } from '../app.init.service';
 import { GUIDE_STEP } from "../shared/shared.const";
@@ -8,7 +8,7 @@ import { GUIDE_STEP } from "../shared/shared.const";
   templateUrl: 'main-content.component.html'
 })  
 export class MainContentComponent {
-  
+  @ViewChild("frameDashboard") frame:ElementRef;
   token: string;
   
   isSignIn: boolean = true;
@@ -69,4 +69,5 @@ export class MainContentComponent {
       this.appInitService.guideStep = GUIDE_STEP.CREATE_SERVICE;
     }
   }
+
 }

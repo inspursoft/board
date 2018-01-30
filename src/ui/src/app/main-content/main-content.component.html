@@ -48,6 +48,15 @@
            routerLink="/user-center" (click)="navigateTo('/user-center')">
           {{ 'SIDE_NAV.ADMIN_OPTIONS' | translate }}
         </a>
+
+        <a *ngIf="isSystemAdmin"
+           href="javascript:void(0)"
+           class="nav-link"
+           [routerLinkActive]="['active']"
+           [routerLink]="'/profile'"
+           (click)="navigateTo('/profile')">
+          {{ 'SIDE_NAV.PROFILES' | translate }}
+        </a>
       </section>
     </nav>
     <div class="content-area">
@@ -57,3 +66,4 @@
     </div>
   </div>
 </clr-main-container>
+
