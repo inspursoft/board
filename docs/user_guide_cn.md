@@ -90,25 +90,25 @@ Board支持database认证模式，同时也支持LDAP模式
 
 你可以通过点击下面的角色单选按钮来改变成员的角色。
 
-<img src="img/userguide/add-remove-members.png" width="100" alt="Board add remove members">
+<img src="img/userguide/change-member-role.png" width="100" alt="Change member role">
 
 ## 管理镜像
 
 从左侧的镜像功能中，可以显示系统中的镜像列表
 
-<img src="img/userguide/add-remove-members.png" width="100" alt="Board add remove members">
+<img src="img/userguide/imagelist1.jpg" width="100" alt="Board image list">
 
 ### 创建新镜像
 
 点击创建镜像图标，选择镜像所属项目
 
-<img src="img/userguide/add-remove-members.png" width="100" alt="Board add remove members">
+<img src="img/userguide/imageproject.jpg" width="100" alt="Board image project">
 
 ### 选择镜像创建方式
 
 提供三种方式创建镜像， 分别是“利用模板创建”、“利用Dockerfile文档创建”“DevOps方式创建”，在这里我们选择一种方式举例，利用模版创建：
 
-<img src="img/userguide/add-remove-members.png" width="100" alt="Board add remove members">
+<img src="img/userguide/imagetemplate.jpg" width="100" alt="Board image template">
 
 ### 配置新镜像
 
@@ -124,17 +124,17 @@ Board支持database认证模式，同时也支持LDAP模式
 *镜像服务端口
 *外部文件上传
 
-<img src="img/userguide/add-remove-members.png" width="100" alt="Board add remove members">
+<img src="img/userguide/imageconfig.jpg" width="100" alt="Board image config">
 
 ### 构建新镜像
 
 开始构建新镜像
 
-<img src="img/userguide/add-remove-members.png" width="100" alt="Board add remove members">
+<img src="img/userguide/imagebuild.png" width="100" alt="Board image build">
 
 构建成功后，可以从镜像列表中看到新镜像
 
-<img src="img/userguide/add-remove-members.png" width="100" alt="Board add remove members">
+<img src="img/userguide/imagenewlist.jpg" width="100" alt="Board image new">
 
 
 ## 管理服务
