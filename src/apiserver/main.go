@@ -84,13 +84,13 @@ func initProjectRepo() {
 	if err != nil {
 		logs.Error("Failed to config SSH access for admin user: %+v", err)
 	}
-	logs.Info("Initialize serve repo\n")
+	logs.Info("Initialize serve repo ...")
 	logs.Info("Init git repo for default project %s", defaultProject)
 	repoURL := fmt.Sprintf("%s/%s/%s.git", gogitsSSHURL(), adminUsername, defaultProject)
 	repoPath := fmt.Sprintf("%s/%s/%s", baseRepoPath, adminUsername, defaultProject)
 	_, err = service.InitRepo(repoURL, adminUsername, repoPath)
 	if err != nil {
-		logs.Error("Failed to initialize default user's repo: %+v\n", err)
+		logs.Error("Failed to initialize default user's repo: %+v", err)
 		return
 	}
 	err = gogs.NewGogsHandler(adminUsername, token.Sha1).CreateRepo(defaultProject)
@@ -108,7 +108,7 @@ func initProjectRepo() {
 }
 
 func initDefaultProjects() {
-	logs.Info("Initialize default projects\n")
+	logs.Info("Initialize default projects...")
 	var err error
 	// Sync namespace with specific project ownerID
 	err = service.SyncNamespaceByOwnerID(adminUserID)
