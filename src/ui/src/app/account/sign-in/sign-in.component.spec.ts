@@ -71,7 +71,7 @@ describe("SignInComponent", () => {
     let appInitService = fixture.debugElement.injector.get(AppInitService);
     component.signInUser.username = "hello";
     component.signInUser.password = "world";
-    signInSpy.and.returnValue(Promise.reject({status: 400}));
+    signInSpy.and.returnValue(Promise.reject({status: status}));
     btnSubmit.click();
     fixture.whenStable().then(() => {
       fixture.detectChanges();
