@@ -25,14 +25,14 @@ Board支持database认证模式，同时也支持LDAP模式
     
     用户可以在此模式下自己注册。用户点击注册， 输入相关的信息即可注册属于自己的账户。
 	
-    如果需要禁用用户自注册功能，请参考初始配置安装指南，或者禁用管理员选项中的该特性。在禁用自注册时，系统管理员可以将用户添加到board中。
+    如果需要禁用用户自注册功能，请参考初始配置安装指南，或者禁用管理员选项中的该特性。在禁用自注册时，系统管理员可以将用户添加到Board中。
 	
-    在注册或添加新用户时，用户名和电子邮件必须在board系统中是唯一的， 如果新注册的用户名已经存在， 系统会提示该用户不可用， 请选择其他用户名。密码必须包含至少8个字符，包括1个小写字母、1个大写字母和1个数字字符。
+    在注册或添加新用户时，用户名和电子邮件必须在Board系统中是唯一的， 如果新注册的用户名已经存在， 系统会提示该用户不可用， 请选择其他用户名。密码必须包含至少8个字符，包括1个小写字母、1个大写字母和1个数字字符。
 
 
 * **基于LDAP (ldap_auth)**  
 
-	在这种身份验证模式下，存储在外部LDAP或AD服务器中的用户可以直接登录board。系统默认为database模式， 如果需要使用LDAP模式，需要做必要的配置。配置方法参考配置手册。  
+	在这种身份验证模式下，存储在外部LDAP或AD服务器中的用户可以直接登录Board。系统默认为database模式， 如果需要使用LDAP模式，需要做必要的配置。配置方法参考配置手册。  
 	
 	当LDAP / AD用户以用户名和密码登录时，使用“LDAP搜索DN”和安装指南中描述的“LDAP搜索密码”来绑定到LDAP / AD服务器。如果成功，Board在LDAP条目“LDAP基本DN”中查找用户，包括substree。“LDAP uid”指定的属性(如uid、cn)用于将用户与用户名匹配。如果找到匹配，则将用户的密码通过绑定请求验证到LDAP / AD服务器。
 	
@@ -56,7 +56,7 @@ Board支持database认证模式，同时也支持LDAP模式
  
 
 ## 管理项目
-一个项目包含所有的服务，图片等。在board中有两种类型的项目，他们分别是公有项目和私有项目:
+一个项目包含所有的服务，图片等。在Board中有两种类型的项目，他们分别是公有项目和私有项目:
 
 *  **公有:** 所有用户都拥有对公共项目的read权限，您可以通过这种方式共享一些服务或获得其他服务。
 *  **私有:** 私有项目只有拥有适当特权的用户访问和使用。
@@ -235,15 +235,12 @@ Board支持创建容器服务。所有服务必须按项目分组。点击“创
 
 <img src="img/userguide/bigdata-j.PNG" width="100" alt="Configure container ports">
 
-* 配置 bigdata 服务
+* 配置 bigdata 服务、 配置节点外部端口
 
 <img src="img/userguide/bigdata-k.PNG" width="100" alt="Configure bigdata service">
 
-* 配置节点外部端口
 
-<img src="img/userguide/bigdata-l.PNG" width="100" alt="Configure the external node port">
-
-* 部署bigdata 服务
+* 部署 bigdata 服务
 
 <img src="img/userguide/bigdata-m.PNG" width="100" alt="Deploy the bigdata service">
 
@@ -255,7 +252,7 @@ Board支持创建容器服务。所有服务必须按项目分组。点击“创
 
 <img src="img/userguide/bigdata-q.PNG" width="100" alt="bigdata service deployed">
 
-* 监控 bigdata 服务在board上的状态
+* 监控 bigdata 服务在Board上的状态
 
 <img src="img/userguide/bigdata-o.PNG" width="100" alt="Monitor the bigdata service status">
 
