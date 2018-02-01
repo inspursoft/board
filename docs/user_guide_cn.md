@@ -22,22 +22,17 @@ Board支持database认证模式，同时也支持LDAP模式
 * **基于数据库(db_auth)**  
 
     用户存储在本地数据库中。
-	
+    
     用户可以在此模式下自己注册。用户点击注册， 输入相关的信息即可注册属于自己的账户。
 	
-    如果需要禁用用户自注册功能，请参考初始配置安装指南，或者禁用管理员选项中的该特性。在禁用自注册时，系统管理员可以将用户添加到board中。
+    如果需要禁用用户自注册功能，请参考初始配置安装指南，或者禁用管理员选项中的该特性。在禁用自注册时，系统管理员可以将用户添加到Board中。
 	
-    在注册或添加新用户时，用户名和电子邮件必须在board系统中是唯一的， 如果新注册的用户名已经存在， 系统会提示该用户不可用， 请选择其他用户名。密码必须包含至少8个字符，包括1个小写字母、1个大写字母和1个数字字符。
+    在注册或添加新用户时，用户名和电子邮件必须在Board系统中是唯一的， 如果新注册的用户名已经存在， 系统会提示该用户不可用， 请选择其他用户名。密码必须包含至少8个字符，包括1个小写字母、1个大写字母和1个数字字符。
 
-    当您忘记您的密码时，您可以按照以下步骤重新设置密码(需要SMTP服务器支持):
-  *   点击页面上的“忘记密码”链接
-  *   输入您注册时输入的电子邮件地址，电子邮件将被发送到您的密码重置
-  *   收到邮件后，点击邮件中的链接，将你导向一个密码重置网页	
-  *   输入您的新密码并点击“保存”
 
 * **基于LDAP (ldap_auth)**  
 
-	在这种身份验证模式下，存储在外部LDAP或AD服务器中的用户可以直接登录board。系统默认为database模式， 如果需要使用LDAP模式，需要做必要的配置。配置方法参考配置手册。  
+	在这种身份验证模式下，存储在外部LDAP或AD服务器中的用户可以直接登录Board。系统默认为database模式， 如果需要使用LDAP模式，需要做必要的配置。配置方法参考配置手册。  
 	
 	当LDAP / AD用户以用户名和密码登录时，使用“LDAP搜索DN”和安装指南中描述的“LDAP搜索密码”来绑定到LDAP / AD服务器。如果成功，Board在LDAP条目“LDAP基本DN”中查找用户，包括substree。“LDAP uid”指定的属性(如uid、cn)用于将用户与用户名匹配。如果找到匹配，则将用户的密码通过绑定请求验证到LDAP / AD服务器。
 	
@@ -47,9 +42,9 @@ Board支持database认证模式，同时也支持LDAP模式
 
 通过容器服务平台上的项目管理服务。用户可作为具有3个不同角色的成员添加到一个服务中:
 
-**访客:** 客户有公共项目和服务的只读特权。
+**匿名:** 可以查询公共的项目和服务但是只读权限。
 	
-**超级管理员：** admin, 拥有最高权限， 可以查看、修改、删除任何可操作权限。
+**超级管理员：** admin，拥有最高权限， 可以查看、修改、删除任何可操作权限。
 
 **项目管理员:** 对自己创建的项目拥有修改， 删除， 查看等任何权限 ， 项目管理员可以添加其他人员到自己的项目当中，被添加的人员用户和项目管理员相同的权限。
 	
@@ -61,7 +56,7 @@ Board支持database认证模式，同时也支持LDAP模式
  
 
 ## 管理项目
-一个项目包含所有的服务，图片等。在board中有两种类型的项目，他们分别是公有项目和私有项目:
+一个项目包含所有的服务，图片等。在Board中有两种类型的项目，他们分别是公有项目和私有项目:
 
 *  **公有:** 所有用户都拥有对公共项目的read权限，您可以通过这种方式共享一些服务或获得其他服务。
 *  **私有:** 私有项目只有拥有适当特权的用户访问和使用。
@@ -86,66 +81,40 @@ Board支持database认证模式，同时也支持LDAP模式
 
 <img src="img/userguide/add-remove-members.png" width="100" alt="Board add remove members">
 
-### 改变成员的角色
-
-你可以通过点击下面的角色单选按钮来改变成员的角色。
-
-<img src="img/userguide/change-member-role.png" width="100" alt="Change member role">
-
-## 管理镜像
-
-从左侧的镜像功能中，可以显示系统中的镜像列表
-
-<img src="img/userguide/imagelist1.jpg" width="100" alt="Board image list">
-
-### 创建新镜像
-
-点击创建镜像图标，选择镜像所属项目
-
-<img src="img/userguide/imageproject.jpg" width="100" alt="Board image project">
-
-### 选择镜像创建方式
-
-提供三种方式创建镜像， 分别是“利用模板创建”、“利用Dockerfile文档创建”“DevOps方式创建”，在这里我们选择一种方式举例，利用模版创建：
-
-<img src="img/userguide/imagetemplate.jpg" width="100" alt="Board image template">
-
-### 配置新镜像
-
-依照模板提示，可配置以下镜像选项：
-
-*镜像名称
-*镜像标签
-*基础镜像
-*镜像入口点
-*镜像环境变量
-*镜像存储卷
-*镜像运行指令
-*镜像服务端口
-*外部文件上传
-
-<img src="img/userguide/imageconfig.jpg" width="100" alt="Board image config">
-
-### 构建新镜像
-
-开始构建新镜像
-
-<img src="img/userguide/imagebuild.png" width="100" alt="Board image build">
-
-构建成功后，可以从镜像列表中看到新镜像
-
-<img src="img/userguide/imagenewlist.jpg" width="100" alt="Board image new">
-
-
 ## 管理服务
 
-Board支持创建容器服务。所有服务必须按项目分组。点击“创建服务”。
+Board支持创建容器服务。所有服务必须按项目分组。点击“创建服务”。 第一步是选择项目。如果没有项目，请先创建项目。
 
-### 选择所属项目
+### 创建镜像
 
-第一步是选择一个项目。如果没有项目，请先创建项目。
+在“选择镜像”界面， 选择“创建自定义镜像”， 从下拉菜单建造新的镜像， 或者在“镜像”界面点击“创建镜像”。
+支持以下三种方法创建镜像：“利用模板创建”， “使用Dockerfile文档创建”，“DevOps方式创建”， 
+使用模板创建：
+会弹出一个窗口为用户提供以下镜像参数输入使用
 
-<img src="img/userguide/add-remove-members.png" width="100" alt="Board add remove members">
+* 新建镜像名称
+* 镜像标签
+* 基础镜像
+* 镜像进入点
+* 镜像环境变量
+* 镜像卷
+* 镜像执行
+* 镜像外部端口
+* 上传外部文件
+* 命令
+
+使用Dockerfile文件创建：
+会弹出一个窗口为用户提供以下镜像参数输入使用
+
+* 新建镜像名称
+* 镜像标签
+* 选择创建进行使用的doker-file文件
+
+添加所需要的参数后， 点击“构建镜像”开始构建新的镜像。 如果构建成功，新的镜像将被添加到Board的仓库中
+
+### 构建服务
+“选择镜像”是构建服务的第一步
+选择需要的镜像和镜像标签， 选择多个你需要的镜像
 
 ### 选择镜像
 
@@ -153,113 +122,137 @@ Board支持创建容器服务。所有服务必须按项目分组。点击“创
 
 选择所需的镜像和它的镜像标签，如果需要，选择多个镜像。
 
-<img src="img/userguide/add-remove-members.png" width="100" alt="Board add remove members">
-
-### 配置容器
-
-下一步是配置容器。
-
-<img src="img/userguide/add-remove-members.png" width="100" alt="Board add remove members">
-
 可以为这个服务的容器定制以下参数。
-* Working Directory
-* Volume Mounts
-* ENV
-* Container Port
-* Commands
+* 容器名称
+* 工作路径
+* 卷挂入点
+* 环境变量
+* 容器端口
+* 命令
 
-<img src="img/userguide/add-remove-members.png" width="100" alt="Board add remove members">
+下一步是配置服务，服务提供了以下参数
+* 服务名称
+* 外部服务
+* 实例
 
-### 配置服务
+在高级配置项中， 可以给外部服务分配节点端口
 
-点击下一步，进入配置服务。可以为该服务定制以下参数。
+下一步是在配置服务完成之后
 
-* Service Name
-* Instance
-
-<img src="img/userguide/add-remove-members.png" width="100" alt="配置服务">
-
-在高级配置中，可以为外部服务分配节点端口。
-
-<img src="img/userguide/add-remove-members.png" width="100" alt="高级配置外部服务">
-
-配置完成点击下一步
+### 测试服务
+这一步是用了测试服务的配置。 下一步会跳过测试
 
 ### 部署服务
 
-单击“Deploy”部署新服务。
-
-<img src="img/userguide/add-remove-members.png" width="100" alt="部署新服务1">
-
-<img src="img/userguide/add-remove-members.png" width="100" alt="部署新服务2">
-
-在成功部署服务之后，用户可以从服务列表监视服务状态。如新创建的服务demoshowing5
-
-<img src="img/userguide/add-remove-members.png" width="100" alt="部署新服务3">
+单击“部署”部署新服务。
+在成功部署服务之后，用户可以从服务列表监视服务状态。
 
 
-### Examples to create services
+### 创建服务实例
 
-#### Example inspur bigdata
-Deploy a service "bigdata" which is a containerized project for the Inspur bigdata software platform.
+#### “demoshow” 实例
+部署服务 "demoshow"
 
-* Start to create a service
+* 登录到Board
+
+<img src="img/userguide/demoshow-a.PNG" width="100" alt="Board login">
+
+* 选择项目
+
+<img src="img/userguide/demoshow-d.PNG" width="100" alt="Select project">
+
+* 选择 library/mydemoshow 镜像
+
+<img src="img/userguide/demoshow-e.PNG" width="100" alt="Select image">
+
+* 配置容器
+
+<img src="img/userguide/demoshow-f.PNG" width="100" alt="Container image">
+
+* 选择容器“mydemoshow” 
+
+<img src="img/userguide/demoshow-g.PNG" width="100" alt="Container name">
+
+* 设置容器的端口为 5000
+
+<img src="img/userguide/demoshow-h.PNG" width="100" alt="Container port">
+
+* 设置服务名称
+
+<img src="img/userguide/demoshow-i.PNG" width="100" alt="Service name">
+
+* 为外部服务设置节点端口
+
+<img src="img/userguide/demoshow-j.PNG" width="100" alt="Service port">
+
+* 部署“demoshow”服务
+
+<img src="img/userguide/demoshow-todeploy.PNG" width="100" alt="Service deploy">
+
+* “demoshow”服务部署成功
+
+<img src="img/userguide/demoshow-deploy.PNG" width="100" alt="Service success">
+
+* 服务能在服务列表中显示
+<img src="img/userguide/demoshow-ok.PNG" width="100" alt="Service success">
+
+#### 实例 ：浪潮 “bigdata” 服务
+部署“bigdata”服务到项目中：
+
+* 开始创建服务
 
 <img src="img/userguide/bigdata-a.PNG" width="100" alt="create a service">
 
-* Select a project
+* 选择一个项目
 
 <img src="img/userguide/bigdata-b.PNG" width="100" alt="Select a project">
 
-* Add images for this service
+* 添加镜像到服务中
 
 <img src="img/userguide/bigdata-c.PNG" width="100" alt="add images">
 
-* Select images for this service
+* 给服务选择一个镜像
 
 <img src="img/userguide/bigdata-d.PNG" width="100" alt="select images">
 
-* Select two images for this service
+* 为这个服务选择两个镜像
 
 <img src="img/userguide/bigdata-e.PNG" width="100" alt="select two images">
 
-* Configure containers
+* 配置容器
 
 <img src="img/userguide/bigdata-f.PNG" width="100" alt="Configure containers">
 
-* Configure storage volume for the mysql container
+* 为mysql容器配置存储卷
 
 <img src="img/userguide/bigdata-g.PNG" width="100" alt="Configure storage volume">
 
-* Configure environment parameters
+* 配置环境变量参数
 
 <img src="img/userguide/bigdata-i.PNG" width="100" alt="Configure environment parameters">
 
-* Configure container ports
+* 配置容器端口
 
 <img src="img/userguide/bigdata-j.PNG" width="100" alt="Configure container ports">
 
-* Configure the bigdata service
+* 配置 bigdata 服务、 配置节点外部端口
 
 <img src="img/userguide/bigdata-k.PNG" width="100" alt="Configure bigdata service">
 
-* Configure the external node port
 
-<img src="img/userguide/bigdata-l.PNG" width="100" alt="Configure the external node port">
-
-* Deploy the bigdata service
+* 部署 bigdata 服务
 
 <img src="img/userguide/bigdata-m.PNG" width="100" alt="Deploy the bigdata service">
 
 <img src="img/userguide/bigdata-n.PNG" width="100" alt="Deployed the bigdata service">
 
-* The bigdata service is deployed
+* bigdata 服务部署完成
 
 <img src="img/userguide/bigdata-p.PNG" width="100" alt="bigdata service deployed">
 
 <img src="img/userguide/bigdata-q.PNG" width="100" alt="bigdata service deployed">
 
-* Monitor the bigdata service status on Board
+* 监控 bigdata 服务在Board上的状态
 
 <img src="img/userguide/bigdata-o.PNG" width="100" alt="Monitor the bigdata service status">
 
