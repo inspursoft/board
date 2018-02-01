@@ -122,3 +122,25 @@ func TestDeleteServiceByID(t *testing.T) {
 	}
 	t.Log("deleted", serviceInfo.ID)
 }
+
+func TestGetSelectableServices(t *testing.T) {
+	assert := assert.New(t)
+	serviceInfo, err := CreateServiceConfig(scUpdate)
+	assert.Nil(err, "Error occurred while testing creating in GetSelectableServices.")
+	assert.NotEqual(0, serviceInfo.ID, "Error occurred while assigning a service id")
+	serviceList, err := GetSelectableServices(serviceInfo.ProjectName, serviceInfo.Name)
+	assert.Nil(err, "Error occurred while testing GetSelectableServices.")
+	for _, serviceName := range serviceList {
+		assert.NotEqual(serviceName, serviceInfo.Name, "Error in selectable services")
+	}
+	t.Log("clean test", serviceInfo.ID)
+	cleanSeviceTestByID(serviceInfo.ID)
+}
+
+func TestGetK8sService(t *testing.T) {
+	assert := assert.New(t)
+	service, err := GetK8sService("default", "kubernetes")
+	assert.Nil(err, "Error occurred while testing GetNodesStatus.")
+	assert.Equal("kubernetes", service.Name, "Error occurred while testing GetNodesStatus.")
+	t.Log("Get kubernetes service pass")
+}
