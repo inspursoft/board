@@ -108,9 +108,17 @@ func (p *ProjectController) CreateProjectAction() {
 		if err != nil {
 			p.internalError(err)
 		}
-		err = jenkins.NewJenkinsHandler().CreateJob(reqProject.Name)
+		jenkinsHandler := jenkins.NewJenkinsHandler()
+		err = jenkinsHandler.CreateJob(reqProject.Name)
 		if err != nil {
 			p.internalError(err)
+		}
+		for _, action := range []string{"disable", "enable"} {
+			err = jenkinsHandler.ToggleJob(reqProject.Name, action)
+			if err != nil {
+				logs.Error("Failed to toggle default Jenkins' job with action %s: %+v", action, err)
+				p.internalError(err)
+			}
 		}
 	}
 }

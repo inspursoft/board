@@ -14,6 +14,8 @@ services:
   gogs:
     image: gogs/gogs-custom
     restart: always
+    env_file:
+      - ../config/gogits/env
     volumes:
       - /data/board-devops/gogs:/data
     ports:

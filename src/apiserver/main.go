@@ -7,6 +7,7 @@ import (
 	_ "git/inspursoft/board/src/apiserver/router"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/apiserver/service/devops/gogs"
+	"git/inspursoft/board/src/apiserver/service/devops/jenkins"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
@@ -28,6 +29,7 @@ const (
 )
 
 var gogitsSSHURL = utils.GetConfig("GOGITS_SSH_URL")
+var jenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
 
 func initBoardVersion() {
 	version, err := ioutil.ReadFile("VERSION")
@@ -97,6 +99,17 @@ func initProjectRepo() {
 	if err != nil {
 		logs.Error("Failed to create default project: %+v", err)
 		return
+	}
+	jenkinsHandler := jenkins.NewJenkinsHandler()
+	err = jenkinsHandler.CreateJob(defaultProject)
+	if err != nil {
+		logs.Error("Failed to create default Jenkins' job: %+v", err)
+	}
+	for _, action := range []string{"disable", "enable"} {
+		err = jenkinsHandler.ToggleJob(defaultProject, action)
+		if err != nil {
+			logs.Error("Failed to toggle default Jenkins' job with action %s: %+v", action, err)
+		}
 	}
 
 	utils.SetConfig("INIT_PROJECT_REPO", "created")
@@ -189,6 +202,7 @@ func main() {
 
 	utils.AddEnv("JENKINS_HOST_IP")
 	utils.AddEnv("JENKINS_HOST_PORT")
+	utils.AddEnv("JENKINS_TOKEN")
 	utils.SetConfig("JENKINS_BASE_URL", "http://%s:%s", "JENKINS_HOST_IP", "JENKINS_HOST_PORT")
 
 	utils.SetConfig("REGISTRY_URL", "http://%s:%s", "REGISTRY_IP", "REGISTRY_PORT")

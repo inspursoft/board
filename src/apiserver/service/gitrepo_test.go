@@ -2,11 +2,9 @@ package service
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"testing"
 
-	"github.com/astaxie/beego/logs"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,7 +14,7 @@ var mockProjectName = "library"
 var mockUsername = "admin"
 var mockEmail = "admin@inspur.com"
 var mockRepoPath = filepath.Join(mockInitRepoPath, mockUsername, mockProjectName)
-var mockFileName = "readme.md"
+var mockFileName = "temp.md"
 var handler *repoHandler
 var err error
 
@@ -33,12 +31,19 @@ func TestOpenRepo(t *testing.T) {
 }
 
 func TestAddFileToRepo(t *testing.T) {
-	tempFilePath := filepath.Join(mockRepoPath, mockFileName)
-	logs.Debug("temp file path: %s", tempFilePath)
-	_, err := os.OpenFile(tempFilePath, os.O_CREATE, 0740)
+	configurations := make(map[string]string)
+	configurations["job_name"] = "process_image"
+	configurations["file_name"] = "Dockerfile"
+	err := CreateBaseDirectory(configurations, mockRepoPath)
 	assert := assert.New(t)
-	assert.Nilf(err, "Failed to create file: %+v", err)
-	_, err = handler.Add(mockFileName)
+	assert.Nilf(err, "Failed to create base directory: %+v", err)
+	_, err = handler.Add("META.cfg")
+	assert.Nilf(err, "Failed to add files to repo: %+v", err)
+	_, err = handler.Add("process-image/.placehold.tmp")
+	assert.Nilf(err, "Failed to add files to repo: %+v", err)
+	_, err = handler.Add("process-service/.placehold.tmp")
+	assert.Nilf(err, "Failed to add files to repo: %+v", err)
+	_, err = handler.Add("rolling-update/.placehold.tmp")
 	assert.Nilf(err, "Failed to add files to repo: %+v", err)
 }
 
