@@ -11,6 +11,7 @@ shift 9
 node_ip=$1
 registry_uri=$2
 JOB_URL=$3
+JENKINS_URL=$4
 
 
 totalLink=$BUILD_URL/TOTAL_REPORT
@@ -83,7 +84,7 @@ python genResult.py $WORKSPACE
 echo $comments_url
 
 tmp="?content=the%20coverage%20is%20"
-imageLink="http://10.110.13.222/jenkinspic/$pic"
+imageLink=$JENKINS_URL/userContent/$pic
 image="%20<img%20src="$imageLink"%20width="20"%20height="20">%20"
 f_comments_url="$comments_url$tmp%20<a%20href=$totalLink>$cov%25</a>$image%20check%20<a%20href=$consoleLink>console%20log</a>"
 
