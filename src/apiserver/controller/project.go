@@ -16,8 +16,6 @@ import (
 	"github.com/astaxie/beego/logs"
 )
 
-var gogitsSSHURL = utils.GetConfig("GOGITS_SSH_URL")
-
 type ProjectController struct {
 	baseController
 }

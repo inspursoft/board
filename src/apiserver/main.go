@@ -20,6 +20,7 @@ import (
 )
 
 const (
+	defaultAPIServerPort   = "8088"
 	adminUserID            = 1
 	adminUsername          = "admin"
 	defaultInitialPassword = "123456a?"
@@ -211,6 +212,9 @@ func main() {
 
 	utils.SetConfig("BASE_REPO_PATH", baseRepoPath)
 	utils.SetConfig("SSH_KEY_PATH", sshKeyPath)
+	utils.SetConfig("API_SERVER_PORT", defaultAPIServerPort)
+
+	utils.SetConfig("API_SERVER_URL", "http://%s:%s", "BOARD_HOST", "API_SERVER_PORT")
 
 	utils.SetConfig("REGISTRY_BASE_URI", "%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
 
@@ -244,5 +248,5 @@ func main() {
 		syncServiceWithK8s()
 	}
 
-	beego.Run(":8088")
+	beego.Run(":" + defaultAPIServerPort)
 }

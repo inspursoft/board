@@ -27,6 +27,13 @@ func (p *ServiceDeployController) Prepare() {
 	p.isSysAdmin = (user.SystemAdmin == 1)
 }
 
+func (p *ServiceDeployController) generateRepoPathByProject(project *model.Project) string {
+	if project == nil {
+		p.customAbort(http.StatusBadRequest, "Failed to generate repo path since project is nil.")
+	}
+	return filepath.Join(baseRepoPath(), p.currentUser.Username, project.Name)
+}
+
 func (p *ServiceDeployController) getKey() string {
 	return strconv.Itoa(int(p.currentUser.ID))
 }
@@ -59,7 +66,8 @@ func (p *ServiceDeployController) DeployServiceAction() {
 		return
 	}
 
-	loadPath := filepath.Join(repoPath(), project.Name, strconv.Itoa(int(serviceInfo.ID)))
+	repoPath := p.generateRepoPathByProject(project)
+	loadPath := filepath.Join(repoPath, serviceProcess, strconv.Itoa(int(serviceInfo.ID)))
 	err = service.CheckDeploymentPath(loadPath)
 	if err != nil {
 		p.internalError(err)
@@ -122,6 +130,8 @@ func assemblePushObject(fileName string, serviceID int64, projectName string, ex
 	var pushobject pushObject
 	pushobject.FileName = fileName
 	pushobject.JobName = serviceProcess
+	pushobject.ProjectName = projectName
+
 	pushobject.Value = filepath.Join(projectName, strconv.Itoa(int(serviceID)))
 	pushobject.Message = fmt.Sprintf("Create %s for project %s service %d", extras,
 		projectName, serviceID)

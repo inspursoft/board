@@ -14,7 +14,6 @@ var mockProjectName = "library"
 var mockUsername = "admin"
 var mockEmail = "admin@inspur.com"
 var mockRepoPath = filepath.Join(mockInitRepoPath, mockUsername, mockProjectName)
-var mockFileName = "temp.md"
 var handler *repoHandler
 var err error
 
@@ -32,8 +31,13 @@ func TestOpenRepo(t *testing.T) {
 
 func TestAddFileToRepo(t *testing.T) {
 	configurations := make(map[string]string)
-	configurations["job_name"] = "process_image"
+	configurations["flag"] = "image"
+	configurations["extras"] = "10.110.13.134:5000/library/myimage20180201:v1.0"
 	configurations["file_name"] = "Dockerfile"
+	configurations["docker_registry"] = "10.110.13.134:5000"
+	configurations["apiserver"] = "10.165.14.97:8089"
+	configurations["value"] = "Dockerfile"
+
 	err := CreateBaseDirectory(configurations, mockRepoPath)
 	assert := assert.New(t)
 	assert.Nilf(err, "Failed to create base directory: %+v", err)

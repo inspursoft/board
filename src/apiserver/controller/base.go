@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"path/filepath"
 	"time"
 
 	"encoding/json"
@@ -35,15 +36,15 @@ var memoryCache cache.Cache
 
 var errInvalidToken = errors.New("error for invalid token")
 
+var apiServerURL = utils.GetConfig("API_SERVER_URL")
+
 var kubeMasterURL = utils.GetConfig("KUBE_MASTER_URL")
 var registryURL = utils.GetConfig("REGISTRY_URL")
 var registryBaseURI = utils.GetConfig("REGISTRY_BASE_URI")
 var authMode = utils.GetConfig("AUTH_MODE")
 
-var repoServeURL = utils.GetConfig("REPO_SERVE_URL")
 var baseRepoPath = utils.GetConfig("BASE_REPO_PATH")
-var repoServePath = utils.GetConfig("REPO_SERVE_PATH")
-var repoPath = utils.GetConfig("REPO_PATH")
+var gogitsSSHURL = utils.GetConfig("GOGITS_SSH_URL")
 
 type baseController struct {
 	beego.Controller
@@ -51,6 +52,7 @@ type baseController struct {
 	token          string
 	isSysAdmin     bool
 	isExternalAuth bool
+	repoPath       string
 }
 
 func (b *baseController) Render() error {
@@ -63,6 +65,25 @@ func (b *baseController) resolveBody() ([]byte, error) {
 		return nil, err
 	}
 	return data, nil
+}
+
+func (b *baseController) resolveRepoPath() {
+	projectName := b.GetString("project_name")
+	if strings.TrimSpace(projectName) == "" {
+		b.customAbort(http.StatusBadRequest, "No found project name.")
+		return
+	}
+	isExists, err := service.ProjectExists(projectName)
+	if err != nil {
+		b.internalError(err)
+		return
+	}
+	if !isExists {
+		b.customAbort(http.StatusNotFound, "Project name does not exist.")
+		return
+	}
+	b.repoPath = filepath.Join(baseRepoPath(), b.currentUser.Username, projectName)
+	logs.Debug("Set repo path at file upload: %s", b.repoPath)
 }
 
 type messageStatus struct {

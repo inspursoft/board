@@ -35,6 +35,10 @@ func (p *ServiceRollingUpdateController) Prepare() {
 	p.isSysAdmin = (user.SystemAdmin == 1)
 }
 
+func (p *ServiceRollingUpdateController) generateRepoPathByProjectName(projectName string) string {
+	return filepath.Join(baseRepoPath(), p.currentUser.Username, projectName)
+}
+
 func (p *ServiceRollingUpdateController) GetRollingUpdateServiceConfigAction() {
 	serviceConfig, _ := p.getServiceConfig()
 	if serviceConfig.Spec.Template == nil || len(serviceConfig.Spec.Template.Spec.Containers) < 1 {
@@ -131,7 +135,8 @@ func (p *ServiceRollingUpdateController) getServiceConfig() (*v1.ReplicationCont
 		p.customAbort(http.StatusBadRequest, "Service name don't exist.")
 	}
 
-	absFileName := filepath.Join(repoPath(), projectName, strconv.Itoa(int(serviceStatus.ID)), deploymentFilename)
+	repoPath := p.generateRepoPathByProjectName(projectName)
+	absFileName := filepath.Join(repoPath, rollingUpdate, strconv.Itoa(int(serviceStatus.ID)), deploymentFilename)
 	logs.Info("User: %s get deployment.yaml images info from %s.", p.currentUser.Username, absFileName)
 
 	yamlFile, err := ioutil.ReadFile(absFileName)
@@ -207,7 +212,8 @@ func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceAction() {
 	logs.Debug("New updated deployment: %+v\n", deployData)
 
 	//update deployment yaml file
-	err = service.RollingUpdateDeploymentYaml(repoPath(), deployData)
+	repoPath := p.generateRepoPathByProjectName(projectName)
+	err = service.RollingUpdateDeploymentYaml(repoPath, deployData)
 	if err != nil {
 		logs.Error("Failed to update deployment yaml file:%+v\n", err)
 		p.internalError(err)

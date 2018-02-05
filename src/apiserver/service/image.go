@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
-	"git/inspursoft/board/src/common/utils"
 	"io"
 	"os"
 	"path/filepath"
@@ -21,8 +20,6 @@ const (
 	dockerfileName      = "Dockerfile"
 	templateNameDefault = "dockerfile-template"
 )
-
-var repoPath = utils.GetConfig("REPO_PATH")
 
 func str2execform(str string) string {
 	sli := strings.Split(str, " ")
@@ -93,7 +90,7 @@ func fixStructEmptyIssue(obj interface{}) {
 	return
 }
 
-func changeDockerfileStructItem(dockerfile *model.Dockerfile) {
+func changeDockerfileStructItem(repoPath string, dockerfile *model.Dockerfile) {
 	dockerfile.Base = strings.TrimSpace(dockerfile.Base)
 	dockerfile.Author = strings.TrimSpace(dockerfile.Author)
 	dockerfile.EntryPoint = strings.TrimSpace(dockerfile.EntryPoint)
@@ -105,7 +102,7 @@ func changeDockerfileStructItem(dockerfile *model.Dockerfile) {
 	fixStructEmptyIssue(&dockerfile.Volume)
 
 	for num, node := range dockerfile.Copy {
-		fromPath, _ := filepath.Rel(repoPath(), strings.TrimSpace(node.CopyFrom))
+		fromPath, _ := filepath.Rel(repoPath, strings.TrimSpace(node.CopyFrom))
 		dockerfile.Copy[num].CopyFrom = fromPath
 		dockerfile.Copy[num].CopyTo = strings.TrimSpace(node.CopyTo)
 	}
@@ -136,8 +133,8 @@ func changeImageConfigStructItem(reqImageConfig *model.ImageConfig) {
 	reqImageConfig.ImageDockerfilePath = strings.TrimSpace(reqImageConfig.ImageDockerfilePath)
 }
 
-func CheckDockerfileItem(dockerfile *model.Dockerfile) error {
-	changeDockerfileStructItem(dockerfile)
+func CheckDockerfileItem(repoPath string, dockerfile *model.Dockerfile) error {
+	changeDockerfileStructItem(repoPath, dockerfile)
 
 	if len(dockerfile.Base) == 0 {
 		return errors.New("Baseimage in dockerfile should not be empty")
@@ -167,7 +164,7 @@ func CheckDockerfileConfig(config *model.ImageConfig) error {
 		return err
 	}
 
-	return CheckDockerfileItem(&config.ImageDockerfile)
+	return CheckDockerfileItem(config.RepoPath, &config.ImageDockerfile)
 }
 
 func BuildDockerfile(reqImageConfig model.ImageConfig, wr ...io.Writer) error {
