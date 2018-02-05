@@ -1,4 +1,4 @@
-FROM grafana/grafana:4.6.3-dev
+FROM grafana/grafana:4.6.3
 
 RUN grafana-cli plugins install raintank-kubernetes-app && mkdir /plugins && cp -r /var/lib/grafana/plugins/* /plugins
 ENV GF_PATHS_PLUGINS=/plugins
