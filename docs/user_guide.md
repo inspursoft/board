@@ -3,7 +3,7 @@
 This guide walks you through the fundamentals of using Board. You'll learn how to use Board to:  
 
 * User Account
-* Role Based Access Control(RBAC)  
+* Project Based Access Control 
 * Manage Projects
 * Manage Members of a Project
 * Manage Services
@@ -35,18 +35,16 @@ Board supports databse authentication modes and support LDAP mode:
 	
 	Self-registration, changing password and resetting password are not supported under LDAP/AD authentication mode because the users are managed by LDAP or AD.  
 
-## Role Based Access Control(RBAC)  
+## Project Based Access Control  
 
-Board manages services through projects on container service platform. Users can be added into one services as a member with 3 different roles:  
+Board manages services through projects on container service platform. Users can be added into system as a member with different roles:  
 
-* **Anonymous**: Can search public project and sevices but only-read.
-* **System Admin**: Have supper role to read and write all project.
-* **Restry User**: When creating a new project incluce privilege and public, you will be assigned the "ProjectMember role to the project. the "ProjectMember" and read and write the project but can not delete the project.
-
-Besides the above three roles, there are two system-wide roles:  
-
-* **SysAdmin**: "SysAdmin" has the most privileges. In addition to the privileges mentioned above, "SysAdmin" can also list all projects, set an ordinary user as administrator, delete users. The public project "library" is also owned by the administrator.  
 * **Anonymous**: When a user is not logged in, the user is considered as an "Anonymous" user. An anonymous user has no access to private projects and has read-only access to public projects and services.  
+* **Registry User**: When a user logs in, the user will have the authority to create a new project or be pulled into an existing project.
+* *** ProjectAdmin ***: When creating a new project, the user will be assigned the "ProjectAdmin" role in new project. The "ProjectAdmin" can invite users join the project  which created by himself.
+* *** ProjectMember ***: When invited in to one exist project, the user will be assigned the "ProjectMember" role in new project. The "ProjectMember" can create and delete the service in the project but can not delete the project. One user isn't a member of one project, can't create or delete service in this project, can't access it's private service.
+* **SysAdmin**: "SysAdmin" has the most privileges. In addition to the privileges mentioned above, "SysAdmin" can also list all projects, set an ordinary user as administrator, delete users. The public project "library" is also owned by the administrator.  
+
 
 ## Manage Projects
 A project in Board contains all services, images etc., There are two types of projects in Board:
