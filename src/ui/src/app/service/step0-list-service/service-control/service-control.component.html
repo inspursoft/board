@@ -55,10 +55,12 @@
       <ng-template [ngSwitchCase]="0">
         <div class="utilization-container">
           <cs-input [inputLabel]="'SERVICE.SERVICE_CONTROL_CPU_UTILIZATION_CURRENT'| translate"
+                    [inputLabelMinWidth]="'230px'"
                     [disabled]="true"
                     [simpleFiled]="'50%'">
           </cs-input>
           <cs-input [inputLabel]="'SERVICE.SERVICE_CONTROL_CPU_UTILIZATION_QUALIFIED'| translate"
+                    [inputLabelMinWidth]="'230px'"
                     [disabled]="isActionInWIP"
                     [simpleFiled]="'55%'">
           </cs-input>
