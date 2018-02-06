@@ -6,6 +6,7 @@ import (
 	"git/inspursoft/board/src/apiserver/service"
 	"net/http"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/astaxie/beego/logs"
@@ -18,6 +19,7 @@ type GitRepoController struct {
 
 type pushObject struct {
 	ProjectName string
+	UserID      int64
 	Items       []string `json:"items"`
 	Message     string   `json:"message"`
 	JobName     string   `json:"job_name"`
@@ -138,7 +140,10 @@ func generateMetaConfiguration(p *pushObject, repoPath string) error {
 	conf["flag"] = p.JobName
 	conf["value"] = p.Value
 	conf["apiserver"] = apiServerURL()
-	conf["docker_registry"] = registryBaseURI()
+	conf["user_id"] = strconv.Itoa(int(p.UserID))
+	if p.FileName == imageProcess {
+		conf["docker_registry"] = registryBaseURI()
+	}
 	return service.CreateBaseDirectory(conf, repoPath)
 }
 
@@ -148,7 +153,7 @@ func InternalPushObjects(p *pushObject, g *baseController) (int, string, error) 
 	logs.Debug("Repo path for pushing objects: %s", repoPath)
 
 	defaultCommitMessage := fmt.Sprintf("Added items: %s to repo: %s", strings.Join(p.Items, ","), repoPath)
-
+	p.UserID = g.currentUser.ID
 	if len(p.Message) == 0 {
 		p.Message = defaultCommitMessage
 	}

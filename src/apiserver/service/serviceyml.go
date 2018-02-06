@@ -8,7 +8,6 @@ import (
 	"mime/multipart"
 	"os"
 	"path/filepath"
-	"strconv"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/ghodss/yaml"
@@ -388,26 +387,6 @@ func CheckDeploymentConfig(projectName string, deploymentConfig Deployment) erro
 			}
 		}
 
-	}
-
-	return nil
-}
-
-func RollingUpdateDeploymentYaml(repoPath string, deploydata *modelK8sExt.Deployment) error {
-	projectName := deploydata.ObjectMeta.Namespace
-	serviceName := deploydata.ObjectMeta.Name
-	serviceInfo, err := GetServiceByProject(serviceName, projectName)
-	if err != nil {
-		return err
-	}
-	if serviceInfo == nil {
-		return ServiceNotFoundErr
-	}
-
-	fileName := filepath.Join(repoPath, projectName, strconv.Itoa(int(serviceInfo.ID)), deploymentFilename)
-	err = GenerateYamlFile(fileName, deploydata)
-	if err != nil {
-		return err
 	}
 
 	return nil

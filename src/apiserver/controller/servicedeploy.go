@@ -80,21 +80,14 @@ func (p *ServiceDeployController) DeployServiceAction() {
 		return
 	}
 
-	deployPushobject := assemblePushObject(deploymentFilename, serviceInfo.ID, project.Name, "deployments")
-	ret, msg, err := InternalPushObjects(&deployPushobject, &(p.baseController))
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	logs.Info("Internal push deployment object: %d %s", ret, msg)
 	err = service.AssembleServiceYaml((*model.ConfigServiceStep)(configService), loadPath)
 	if err != nil {
 		p.internalError(err)
 		return
 	}
 
-	servicePushobject := assemblePushObject(serviceFilename, serviceInfo.ID, project.Name, "services")
-	ret, msg, err = InternalPushObjects(&servicePushobject, &(p.baseController))
+	servicePushobject := assemblePushObject(serviceInfo.ID, project.Name)
+	ret, msg, err := InternalPushObjects(&servicePushobject, &(p.baseController))
 	if err != nil {
 		p.internalError(err)
 		return
@@ -126,21 +119,19 @@ func (p *ServiceDeployController) DeployServiceAction() {
 	p.ServeJSON()
 }
 
-func assemblePushObject(fileName string, serviceID int64, projectName string, extras string) pushObject {
+func assemblePushObject(serviceID int64, projectName string) pushObject {
 	var pushobject pushObject
-	pushobject.FileName = fileName
+	pushobject.FileName = fmt.Sprintf("%s,%s", deploymentFilename, serviceFilename)
 	pushobject.JobName = serviceProcess
 	pushobject.ProjectName = projectName
 
-	pushobject.Value = filepath.Join(projectName, strconv.Itoa(int(serviceID)))
-	pushobject.Message = fmt.Sprintf("Create %s for project %s service %d", extras,
-		projectName, serviceID)
-	if extras == "deployments" {
-		pushobject.Extras = filepath.Join(kubeMasterURL(), deploymentAPI, projectName, extras)
-	} else {
-		pushobject.Extras = filepath.Join(kubeMasterURL(), serviceAPI, projectName, extras)
-	}
-	pushobject.Items = []string{filepath.Join(pushobject.Value, fileName)}
+	pushobject.Value = filepath.Join(serviceProcess, strconv.Itoa(int(serviceID)))
+	pushobject.Message = fmt.Sprintf("Create service for project %s with service %d", projectName, serviceID)
+
+	pushobject.Extras = fmt.Sprintf("%s,%s", fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), deploymentAPI, projectName, "deployments"),
+		fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), serviceAPI, projectName, "services"))
+	pushobject.Items = []string{filepath.Join(pushobject.Value, deploymentFilename), filepath.Join(pushobject.Value, serviceFilename)}
+
 	logs.Info("pushobject.FileName:%+v\n", pushobject.FileName)
 	logs.Info("pushobject.Value:%+v\n", pushobject.Value)
 	logs.Info("pushobject.Extras:%+v\n", pushobject.Extras)

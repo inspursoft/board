@@ -45,6 +45,7 @@ var authMode = utils.GetConfig("AUTH_MODE")
 
 var baseRepoPath = utils.GetConfig("BASE_REPO_PATH")
 var gogitsSSHURL = utils.GetConfig("GOGITS_SSH_URL")
+var jenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
 
 type baseController struct {
 	beego.Controller

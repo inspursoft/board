@@ -62,10 +62,10 @@ export class K8sService {
     return this.http.delete(`/api/v1/services/${serviceId}/deployment`, {observe: "response"}).toPromise()
   }
 
-  serviceDeployment(): Promise<number> {
+  serviceDeployment(): Promise<Object> {
     return this.http.post(`/api/v1/services/deployment`, {}, {observe: "response"})
       .toPromise()
-      .then((res: HttpResponse<Object>) => res.body["project_id"])
+      .then((res: HttpResponse<Object>) => res.body)
   }
 
   getContainerDefaultInfo(image_name: string, image_tag: string, project_name: string): Promise<BuildImageDockerfileData> {
