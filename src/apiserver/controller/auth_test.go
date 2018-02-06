@@ -13,6 +13,7 @@ import (
 	"git/inspursoft/board/src/common/model"
 
 	"github.com/astaxie/beego"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetSystemInfo(t *testing.T) {
@@ -20,11 +21,8 @@ func TestGetSystemInfo(t *testing.T) {
 	w := httptest.NewRecorder()
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
 
-	if w.Code != http.StatusOK {
-		t.Errorf("Get Systeminfo fail: %+v", w.Body.String())
-	} else {
-		t.Log("Get Systeminfo successfully.")
-	}
+	assert := assert.New(t)
+	assert.Equal(http.StatusOK, w.Code, "Get Systeminfo fail.")
 }
 
 func signIn(name, password string) string {
@@ -68,47 +66,30 @@ func signOut(name string) error {
 }
 
 func TestSignInOutAction(t *testing.T) {
+	assert := assert.New(t)
 	token := signIn("admin", "123456a?")
-	if token == "" {
-		t.Errorf("signIn error.")
-	} else {
-		t.Log("signIn successfully.")
-	}
+	assert.NotEmpty(token, "signIn error")
 
 	err := signOut("admin")
-	if err != nil {
-		t.Errorf("signOut error: %+v", err)
-	} else {
-		t.Log("signOut successfully.")
-	}
+	assert.Nil(err, "signOut error")
 }
 
 func TestCurrentUserAction(t *testing.T) {
+	var user model.User
+
+	assert := assert.New(t)
 	token := signIn("admin", "123456a?")
-	if token == "" {
-		t.Errorf("signIn error")
-		return
-	}
 	defer signOut("admin")
+	assert.NotEmpty(token, "signIn error")
 
 	reqURL := "/api/v1/users/current?token=" + token
 	r, _ := http.NewRequest("GET", reqURL, nil)
 	w := httptest.NewRecorder()
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
 
-	if w.Code != http.StatusOK {
-		t.Errorf("Get current user fail, %+v", w.Body.String())
-	} else {
-		var user model.User
-		err := json.Unmarshal(w.Body.Bytes(), &user)
-		if err != nil {
-			t.Errorf("Get current user fail, %+v", err)
-		} else {
-			if user.Username != "admin" {
-				t.Errorf("Get current user error, want:\"admin\", get:%+v.", user.Username)
-			} else {
-				t.Log("Get current user successfully.")
-			}
-		}
-	}
+	assert.Equal(http.StatusOK, w.Code, "Get current user fail.")
+
+	err := json.Unmarshal(w.Body.Bytes(), &user)
+	assert.Nil(err, "Unmarshal user error.")
+	assert.Equal("admin", user.Username, "Get current user error.")
 }
