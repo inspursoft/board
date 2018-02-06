@@ -277,7 +277,7 @@ func TestMain(m *testing.M) {
 	utils.AddEnv("KUBE_MASTER_URL")
 	utils.AddEnv("NODE_IP")
 	utils.AddEnv("REGISTRY_BASE_URI")
-	utils.AddValue("IS_EXTERNAL_AUTH", true)
+	utils.AddValue("IS_EXTERNAL_AUTH", false)
 	utils.AddValue("AUTH_MODE", "db_auth")
 	utils.AddValue("BOARD_ADMIN_PASSWORD", "123456a?")
 	connectToDB()
