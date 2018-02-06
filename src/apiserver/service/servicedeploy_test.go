@@ -51,7 +51,7 @@ func TestAssembleServiceYaml(t *testing.T) {
 }
 
 func deleteFile(file string) {
-	err := os.Remove(file)
+	err := os.RemoveAll(file)
 	if err != nil {
 		logs.Error("Error occurred while removing file %s\n", file)
 	}
