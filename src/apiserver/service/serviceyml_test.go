@@ -111,3 +111,11 @@ func TestCheckDeploymentConfig(t *testing.T) {
 	err := CheckDeploymentConfig("library", deploymentConfig)
 	assert.Nil(err, "Error occurred while testing CheckDeploymentConfig.")
 }
+
+func TestRollingUpdateDeploymentYaml(t *testing.T) {
+	assert := assert.New(t)
+	image = "10.110.13.136:5000/library/mydemoshowing:1.1"
+	err := RollingUpdateDeploymentYaml("./tmp", &deploymentConfig.Deployment)
+	assert.Nil(err, "Error occurred while testing RollingUpdateDeploymentYaml.")
+	deleteFile("./tmp")
+}

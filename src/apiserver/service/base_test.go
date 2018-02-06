@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"os"
 	"testing"
@@ -32,24 +33,36 @@ func connectToK8S() (*kubernetes.Clientset, error) {
 	return cliSet, nil
 }
 
-func createServiceInK8S(cliSet *kubernetes.Clientset, serviceConfig Service, deploymentConfig Deployment) error {
+func createService(cliSet *kubernetes.Clientset, serviceConfig Service, deploymentConfig Deployment) (*model.ServiceStatus, error) {
 	serviceInfo, err := cliSet.CoreV1().Services(serviceConfig.Namespace).Create(&serviceConfig.Service)
 	if err != nil {
 		logs.Error("Created service failed.\n")
-		return err
+		return nil, err
 	}
 	logs.Debug("Created service, serviceInfo:%s.\n", serviceInfo)
+
 	deploymentInfo, err := cliSet.Deployments(deploymentConfig.Namespace).Create(&deploymentConfig.Deployment)
 	if err != nil {
 		logs.Error("Created deployment failed.\n")
-		return err
+		return nil, err
 	}
 	logs.Debug("Created deployment, deploymentInfo:%s.\n", deploymentInfo)
 
-	return nil
+	serviceStatus, err := CreateServiceConfig(model.ServiceStatus{
+		Name:        serviceConfig.Name,
+		ProjectName: serviceConfig.Namespace,
+		Status:      defaultStatus,
+	})
+	if err != nil {
+		logs.Error("Created Service info in DB failed.\n")
+		return nil, err
+	}
+	logs.Debug("Service info in DB:%+v\n", serviceStatus)
+
+	return serviceStatus, nil
 }
 
-func deleteServiceInK8S(cliSet *kubernetes.Clientset, serviceConfig Service, deploymentConfig Deployment) error {
+func deleteService(cliSet *kubernetes.Clientset, serviceConfig Service, deploymentConfig Deployment, serviceStatus *model.ServiceStatus) error {
 	err := cliSet.CoreV1().Services(serviceConfig.Namespace).Delete(serviceConfig.Name, nil)
 	if err != nil {
 		return err
@@ -83,6 +96,13 @@ func deleteServiceInK8S(cliSet *kubernetes.Clientset, serviceConfig Service, dep
 		}
 		logs.Debug("Deleted RS:%s", rs.Name)
 	}
+
+	serviceID, err := DeleteServiceByID(*serviceStatus)
+	if err != nil {
+		logs.Error("Failed to delete service info in DB, service ID:%d.", serviceID)
+		return err
+	}
+
 	return nil
 }
 
@@ -96,9 +116,12 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		return
 	}
-	createServiceInK8S(cliSet, serviceConfig, deploymentConfig)
+	serviceStatus, err := createService(cliSet, serviceConfig, deploymentConfig)
+	if err != nil {
+		return
+	}
 	defer func() {
-		deleteServiceInK8S(cliSet, serviceConfig, deploymentConfig)
+		deleteService(cliSet, serviceConfig, deploymentConfig, serviceStatus)
 	}()
-	os.Exit(m.Run())
+	m.Run()
 }

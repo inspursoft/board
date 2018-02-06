@@ -404,7 +404,12 @@ func RollingUpdateDeploymentYaml(repoPath string, deploydata *modelK8sExt.Deploy
 		return ServiceNotFoundErr
 	}
 
-	fileName := filepath.Join(repoPath, projectName, strconv.Itoa(int(serviceInfo.ID)), deploymentFilename)
+	filePath := filepath.Join(repoPath, projectName, strconv.Itoa(int(serviceInfo.ID)))
+	fileName := filepath.Join(filePath, deploymentFilename)
+	err = CheckDeploymentPath(filePath)
+	if err != nil {
+		return err
+	}
 	err = GenerateYamlFile(fileName, deploydata)
 	if err != nil {
 		return err
