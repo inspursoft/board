@@ -5,7 +5,6 @@ import (
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -230,11 +229,24 @@ func connectToDB() {
 
 func createAppConf() {
 	var content []byte
-	content = []byte(`tokenServerURL=http://localhost:4000/tokenservice/token
-tokenCacheExpireSeconds=1800
+	hostIP := os.Getenv("HOST_IP")
+	tokenServer := fmt.Sprintf("tokenServerURL=http://%s:4000/tokenservice/token\n", hostIP)
+	f, err := os.OpenFile("app.conf", os.O_RDWR|os.O_CREATE, 0644)
+	defer f.Close()
+	if err != nil {
+		logs.Error("Open app.conf fail")
+		panic(err)
+	}
+	_, err = f.Write([]byte(tokenServer))
+	if err != nil {
+		logs.Error("Write app.conf fail")
+		panic(err)
+	}
+	content = []byte(`tokenCacheExpireSeconds=1800
 dbPassword=root123
 dbHost=db`)
-	if err := ioutil.WriteFile("app.conf", content, 0644); err != nil {
+	_, err = f.Write(content)
+	if err != nil {
 		logs.Error("write app.conf fail.")
 		panic(err)
 	}
