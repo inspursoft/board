@@ -44,7 +44,13 @@ module.exports = function (config) {
         colors: true,
         logLevel: config.LOG_INFO,
         autoWatch: true,
-        browsers: ['ChromeHeadless'],
+        browsers:['Chrome_without_sandbox'],
+        customLaunchers:{
+            Chrome_without_sandbox:{
+                base:'ChromeHeadless',
+                flags:['-no-sandbox']
+            }
+        },
         singleRun: false
     });
 };

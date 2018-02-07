@@ -56,7 +56,6 @@
     "karma-jasmine": "^1.1.1",
     "karma-jasmine-html-reporter": "^0.2.2",
     "karma-mocha-reporter": "~2.2.1",
-    "karma-phantomjs-launcher": "^1.0.4",
     "karma-remap-istanbul": "~0.6.0",
     "protractor": "~5.1.2",
     "ts-node": "^3.0.4",
