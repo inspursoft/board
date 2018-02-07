@@ -217,7 +217,7 @@ export class K8sService {
 
   updateServiceImages(projectName: string, serviceName: string, postData: Array<ImageIndex>): Promise<any> {
     return this.http
-      .post(`/api/v1/services/rollingupdate`, postData, {
+      .patch(`/api/v1/services/rollingupdate`, postData, {
         observe: "response",
         params: {
           service_name: serviceName,

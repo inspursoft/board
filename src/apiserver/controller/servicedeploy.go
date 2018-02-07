@@ -86,8 +86,19 @@ func (p *ServiceDeployController) DeployServiceAction() {
 		return
 	}
 
-	servicePushobject := assemblePushObject(serviceInfo.ID, project.Name)
-	ret, msg, err := InternalPushObjects(&servicePushobject, &(p.baseController))
+	var pushObject pushObject
+	pushObject.FileName = fmt.Sprintf("%s,%s", deploymentFilename, serviceFilename)
+	pushObject.JobName = serviceProcess
+	pushObject.ProjectName = project.Name
+	pushObject.Extras = fmt.Sprintf("%s,%s", fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), deploymentAPI, project.Name, "deployments"),
+		fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), serviceAPI, project.Name, "services"))
+	pushObject.Value = filepath.Join(serviceProcess, strconv.Itoa(int(serviceInfo.ID)))
+	pushObject.Message = fmt.Sprintf("Create service for project %s with service %d", project.Name, serviceInfo.ID)
+
+	relPath := filepath.Join(serviceProcess, strconv.Itoa(int(serviceInfo.ID)))
+	pushObject.Items = []string{filepath.Join(relPath, deploymentFilename), filepath.Join(relPath, serviceFilename)}
+
+	ret, msg, err := InternalPushObjects(&pushObject, &(p.baseController))
 	if err != nil {
 		p.internalError(err)
 		return
@@ -117,25 +128,6 @@ func (p *ServiceDeployController) DeployServiceAction() {
 	configService.ServiceID = serviceInfo.ID
 	p.Data["json"] = configService
 	p.ServeJSON()
-}
-
-func assemblePushObject(serviceID int64, projectName string) pushObject {
-	var pushobject pushObject
-	pushobject.FileName = fmt.Sprintf("%s,%s", deploymentFilename, serviceFilename)
-	pushobject.JobName = serviceProcess
-	pushobject.ProjectName = projectName
-
-	pushobject.Value = filepath.Join(serviceProcess, strconv.Itoa(int(serviceID)))
-	pushobject.Message = fmt.Sprintf("Create service for project %s with service %d", projectName, serviceID)
-
-	pushobject.Extras = fmt.Sprintf("%s,%s", fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), deploymentAPI, projectName, "deployments"),
-		fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), serviceAPI, projectName, "services"))
-	pushobject.Items = []string{filepath.Join(pushobject.Value, deploymentFilename), filepath.Join(pushobject.Value, serviceFilename)}
-
-	logs.Info("pushobject.FileName:%+v\n", pushobject.FileName)
-	logs.Info("pushobject.Value:%+v\n", pushobject.Value)
-	logs.Info("pushobject.Extras:%+v\n", pushobject.Extras)
-	return pushobject
 }
 
 func (p *ServiceDeployController) DeployServiceTestAction() {

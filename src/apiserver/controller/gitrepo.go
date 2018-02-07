@@ -141,7 +141,7 @@ func generateMetaConfiguration(p *pushObject, repoPath string) error {
 	conf["value"] = p.Value
 	conf["apiserver"] = apiServerURL()
 	conf["user_id"] = strconv.Itoa(int(p.UserID))
-	if p.FileName == imageProcess {
+	if p.JobName == imageProcess {
 		conf["docker_registry"] = registryBaseURI()
 	}
 	return service.CreateBaseDirectory(conf, repoPath)

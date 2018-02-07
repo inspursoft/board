@@ -34,7 +34,7 @@ func CreateBaseDirectory(configurations map[string]string, targetPath string) er
 	if configurations == nil {
 		return fmt.Errorf("configuration for generating base directory is nil")
 	}
-	f, err := os.OpenFile(filepath.Join(targetPath, metaFile), os.O_CREATE|os.O_WRONLY, 0644)
+	f, err := os.OpenFile(filepath.Join(targetPath, metaFile), os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to create META.cfg file: %+v", err)
 	}
