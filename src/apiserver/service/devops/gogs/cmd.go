@@ -41,6 +41,7 @@ type accessToken struct {
 
 type gogsHandler struct {
 	username string
+	password string
 	token    string
 }
 
@@ -210,6 +211,31 @@ func (g *gogsHandler) DeleteRepo(repoName string) error {
 			return fmt.Errorf("Internal error: %+v", err)
 		}
 		logs.Info("Requested Gogits delete repo with response status code: %d", resp.StatusCode)
+	}
+	return nil
+}
+
+func (g *gogsHandler) ForkRepo(ownerName, baseRepoName, forkRepoName, description string) error {
+	resp, err := utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/api/v1/repos/%s/%s/forks", gogitsBaseURL(), ownerName, baseRepoName), func(req *http.Request) error {
+		req.Header = http.Header{
+			"Authorization": []string{"token " + g.token},
+		}
+		formData := url.Values{}
+		formData.Set("repo_name", forkRepoName)
+		formData.Set("description", description)
+		req.URL.RawQuery = formData.Encode()
+		return nil
+	}, nil)
+	if err != nil {
+		return err
+	}
+	if resp != nil {
+		if resp.StatusCode >= http.StatusInternalServerError {
+			return fmt.Errorf("Internal error: %+v", err)
+		}
+		data, _ := ioutil.ReadAll(resp.Body)
+		logs.Debug(string(data))
+		logs.Info("Requested Gogits fork with response status code: %d", resp.StatusCode)
 	}
 	return nil
 }

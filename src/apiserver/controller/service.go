@@ -139,7 +139,9 @@ func (p *ServiceController) commonDeployService(reqServiceConfig model.ServiceCo
 	pushobject.Message = fmt.Sprintf("Create deployment for project %s service %d",
 		reqServiceConfig.Project.ProjectName, reqServiceConfig.Project.ServiceID)
 	pushobject.Extras = filepath.Join(kubeMasterURL(), deploymentAPI, reqServiceConfig.Project.ProjectName, "deployments")
-	pushobject.Items = []string{filepath.Join(pushobject.Value, deploymentFile)}
+
+	generateMetaConfiguration(&pushobject, repoPath)
+	pushobject.Items = []string{"META.cfg", filepath.Join(pushobject.Value, deploymentFile)}
 
 	logs.Info("deployment pushobject.FileName:%+v\n", pushobject.FileName)
 	logs.Info("deployment pushobject.Value:%+v\n", pushobject.Value)
@@ -169,7 +171,9 @@ func (p *ServiceController) commonDeployService(reqServiceConfig model.ServiceCo
 	pushobject.Message = fmt.Sprintf("Create service for project %s service %d",
 		reqServiceConfig.Project.ProjectName, reqServiceConfig.Project.ServiceID)
 	pushobject.Extras = filepath.Join(kubeMasterURL(), serviceAPI, reqServiceConfig.Project.ProjectName, "services")
-	pushobject.Items = []string{filepath.Join(pushobject.Value, serviceFile)}
+
+	generateMetaConfiguration(&pushobject, repoPath)
+	pushobject.Items = []string{"META.cfg", filepath.Join(pushobject.Value, serviceFile)}
 	logs.Info("service pushobject.FileName:%+v\n", pushobject.FileName)
 	logs.Info("service pushobject.Value:%+v\n", pushobject.Value)
 	logs.Info("service pushobject.Extras:%+v\n", pushobject.Extras)

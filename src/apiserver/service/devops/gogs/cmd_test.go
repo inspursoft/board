@@ -3,6 +3,7 @@ package gogs
 import (
 	"fmt"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
 	"os"
 	"testing"
 
@@ -11,7 +12,8 @@ import (
 )
 
 func prepare() {
-
+	utils.Initialize()
+	utils.SetConfig("GOGITS_BASE_URL", "")
 }
 
 func cleanUp() {
@@ -36,6 +38,12 @@ var user = model.User{
 var mockPublicKey = `ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCzaDsh+RgEO+VdXnKKFfH0a2GLfomldSrUCS0wfvXBXETmhUJ+r5pvyZBXlIoUd4D3kMPKnKk1oqYa4qks31BYEajfHYpMVve5MhBNKZM5wS+MlL1Aa6vxMwCJcjp0X6vpzOjtD3TEdkQtqxyPsYm11fK0XeWILZBinOR9L6vBIOwjaz891VgNmM6RBZtbCKy8RV8ejevsFkUWcYh71+85HqHPp0DiB0CefZTpz8G3HM+941E9K0FWY82slgBKtUEjvxShSVUmMPbY3i/hjLCaqS5+UQqpzosuZlMtpgzyKEDF0iIXU5+sOAOYpHOnBvxzZ+XpKOJ845WLPeSzgDjv wangkun@wangkuns-MacBook-Pro.local`
 
 var token *accessToken
+
+func TestFork(t *testing.T) {
+	err := NewGogsHandler(user.Username, token.Sha1).ForkRepo("admin", "library", "library", "Forked repo library from admin.")
+	assert := assert.New(t)
+	assert.Nil(err, fmt.Sprintf("Error occurred while signing in: %+v", err))
+}
 
 func TestSignUp(t *testing.T) {
 	err := SignUp(user)
@@ -65,7 +73,7 @@ func TestDeletePublicKey(t *testing.T) {
 }
 
 func TestCreateRepo(t *testing.T) {
-	err := NewGogsHandler(user.Username, token.Sha1).CreateRepo("myrepo")
+	err := NewGogsHandler("user1", "b5dfbf289b927a5cb8b1a591f0862a282d6926b2").CreateRepo("myrepo")
 	assert := assert.New(t)
 	assert.Nil(err, fmt.Sprintf("Error occurred while creating repo: %+v", err))
 }

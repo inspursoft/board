@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"time"
@@ -139,4 +140,24 @@ func (r *repoHandler) Remove(filename string) (*repoHandler, error) {
 		return nil, err
 	}
 	return r, nil
+}
+
+func SimplePush(path, username, email, message string, items ...string) error {
+	r, err := OpenRepo(path, username)
+	if err != nil {
+		return fmt.Errorf("failed to open repo handler: %+v", err)
+	}
+	for _, item := range items {
+		logs.Debug(">>>>> pushed item: %s", item)
+		r.Add(item)
+	}
+	_, err = r.Commit(message, username, email)
+	if err != nil {
+		return fmt.Errorf("failed to commit changes to user's repo")
+	}
+	err = r.Push()
+	if err != nil {
+		return fmt.Errorf("failed to push objects to git repo")
+	}
+	return nil
 }

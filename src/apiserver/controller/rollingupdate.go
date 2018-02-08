@@ -174,6 +174,7 @@ func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceAction() {
 	}
 
 	var pushObject pushObject
+	pushObject.UserID = p.currentUser.ID
 	pushObject.FileName = deploymentFilename
 	pushObject.JobName = rollingUpdate
 	pushObject.ProjectName = projectName
@@ -182,7 +183,9 @@ func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceAction() {
 	pushObject.Message = fmt.Sprintf("Rolling update service for project %s with service ID %d", projectName, serviceInfo.ID)
 
 	pushObject.Extras = ""
-	pushObject.Items = []string{filepath.Join(serviceProcess, strconv.Itoa(int(serviceInfo.ID)), deploymentFilename)}
+
+	generateMetaConfiguration(&pushObject, repoPath)
+	pushObject.Items = []string{"META.cfg", filepath.Join(serviceProcess, strconv.Itoa(int(serviceInfo.ID)), deploymentFilename)}
 
 	statusCode, message, err := InternalPushObjects(&pushObject, &(p.baseController))
 	if err != nil {

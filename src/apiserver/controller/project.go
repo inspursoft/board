@@ -106,6 +106,14 @@ func (p *ProjectController) CreateProjectAction() {
 		if err != nil {
 			p.internalError(err)
 		}
+
+		service.CreateFile("readme.md", "Repo created by Board.", projectRepoPath)
+		err = service.SimplePush(projectRepoPath, p.currentUser.Username, p.currentUser.Email, "Add readme.md.", "readme.md")
+		if err != nil {
+			logs.Error("Failed to push readme.md file to the repo.")
+			p.internalError(err)
+		}
+
 		jenkinsHandler := jenkins.NewJenkinsHandler()
 		err = jenkinsHandler.CreateJob(reqProject.Name)
 		if err != nil {

@@ -23,6 +23,7 @@ const (
 	defaultAPIServerPort   = "8088"
 	adminUserID            = 1
 	adminUsername          = "admin"
+	adminEmail             = "admin@inspur.com"
 	defaultInitialPassword = "123456a?"
 	baseRepoPath           = "/repos"
 	sshKeyPath             = "/keys"
@@ -101,6 +102,13 @@ func initProjectRepo() {
 		logs.Error("Failed to create default project: %+v", err)
 		return
 	}
+
+	service.CreateFile("readme.md", "Repo created by Board.", repoPath)
+	err = service.SimplePush(repoPath, adminUsername, adminEmail, "Add readme.md.", "readme.md")
+	if err != nil {
+		logs.Error("Failed to push readme.md file to the repo.")
+	}
+
 	jenkinsHandler := jenkins.NewJenkinsHandler()
 	err = jenkinsHandler.CreateJob(defaultProject)
 	if err != nil {

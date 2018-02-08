@@ -87,6 +87,7 @@ func (p *ServiceDeployController) DeployServiceAction() {
 	}
 
 	var pushObject pushObject
+	pushObject.UserID = p.currentUser.ID
 	pushObject.FileName = fmt.Sprintf("%s,%s", deploymentFilename, serviceFilename)
 	pushObject.JobName = serviceProcess
 	pushObject.ProjectName = project.Name
@@ -96,7 +97,9 @@ func (p *ServiceDeployController) DeployServiceAction() {
 	pushObject.Message = fmt.Sprintf("Create service for project %s with service %d", project.Name, serviceInfo.ID)
 
 	relPath := filepath.Join(serviceProcess, strconv.Itoa(int(serviceInfo.ID)))
-	pushObject.Items = []string{filepath.Join(relPath, deploymentFilename), filepath.Join(relPath, serviceFilename)}
+
+	generateMetaConfiguration(&pushObject, repoPath)
+	pushObject.Items = []string{"META.cfg", filepath.Join(relPath, deploymentFilename), filepath.Join(relPath, serviceFilename)}
 
 	ret, msg, err := InternalPushObjects(&pushObject, &(p.baseController))
 	if err != nil {

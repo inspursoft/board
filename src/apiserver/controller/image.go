@@ -339,6 +339,7 @@ func (p *ImageController) BuildImageAction() {
 
 	//push to git
 	var pushobject pushObject
+	pushobject.UserID = p.currentUser.ID
 	pushobject.FileName = defaultDockerfilename
 	pushobject.JobName = imageProcess
 	pushobject.Value = filepath.Join(imageProcess, reqImageConfig.ImageName, reqImageConfig.ImageTag)
@@ -348,14 +349,14 @@ func (p *ImageController) BuildImageAction() {
 		reqImageConfig.ImageName) + ":" + reqImageConfig.ImageTag
 	pushobject.Message = fmt.Sprintf("Build image: %s", pushobject.Extras)
 
-	logs.Debug("Pushed Object: %+v", pushobject)
-
 	//Get file list for Jenkis git repo
 	uploads, err := service.ListUploadFiles(filepath.Join(reqImageConfig.ImageDockerfilePath, "upload"))
 	if err != nil {
 		p.internalError(err)
 		return
 	}
+	generateMetaConfiguration(&pushobject, repoPath)
+	pushobject.Items = append(pushobject.Items, "META.cfg")
 	// Add upload files
 	for _, finfo := range uploads {
 		filefullname := filepath.Join(pushobject.Value, "upload", finfo.FileName)
@@ -813,6 +814,7 @@ func (p *ImageController) DockerfileBuildImageAction() {
 	var pushobject pushObject
 
 	pushobject.FileName = defaultDockerfilename
+	pushobject.UserID = p.currentUser.ID
 	pushobject.JobName = imageProcess
 	pushobject.Value = filepath.Join(imageProcess, imageName, imageTag)
 	pushobject.ProjectName = currentProject.Name
@@ -826,6 +828,8 @@ func (p *ImageController) DockerfileBuildImageAction() {
 		p.internalError(err)
 		return
 	}
+	generateMetaConfiguration(&pushobject, repoPath)
+	pushobject.Items = append(pushobject.Items, "META.cfg")
 	// Add upload files
 	for _, finfo := range uploads {
 		filefullname := filepath.Join(pushobject.Value, "upload", finfo.FileName)

@@ -30,7 +30,7 @@ func RemoveUploadFile(file model.FileInfo) error {
 	return os.Remove(filepath.Join(file.Path, file.FileName))
 }
 
-func CreateBaseDirectory(configurations map[string]string, targetPath string) error {
+func CreateMetaConfiguration(configurations map[string]string, targetPath string) error {
 	if configurations == nil {
 		return fmt.Errorf("configuration for generating base directory is nil")
 	}
@@ -44,4 +44,14 @@ func CreateBaseDirectory(configurations map[string]string, targetPath string) er
 		fmt.Fprintf(f, "%s=%s\n", key, value)
 	}
 	return nil
+}
+
+func CreateFile(fileName, message, targetPath string) error {
+	f, err := os.OpenFile(filepath.Join(targetPath, fileName), os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to create %s file: %+v", fileName, err)
+	}
+	defer f.Close()
+	_, err = fmt.Fprintf(f, "%s\n", message)
+	return err
 }

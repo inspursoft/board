@@ -73,7 +73,7 @@ func (g *GitRepoController) InitUserRepo() {
 		g.customAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to initialize user's repo: %+v\n", err))
 		return
 	}
-	err = service.CreateBaseDirectory(make(map[string]string), g.repoPath)
+	err = service.CreateMetaConfiguration(make(map[string]string), g.repoPath)
 	if err != nil {
 		g.customAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to initialize user's repo default directories: %+v\n", err))
 	}
@@ -144,7 +144,7 @@ func generateMetaConfiguration(p *pushObject, repoPath string) error {
 	if p.JobName == imageProcess {
 		conf["docker_registry"] = registryBaseURI()
 	}
-	return service.CreateBaseDirectory(conf, repoPath)
+	return service.CreateMetaConfiguration(conf, repoPath)
 }
 
 func InternalPushObjects(p *pushObject, g *baseController) (int, string, error) {
@@ -153,7 +153,6 @@ func InternalPushObjects(p *pushObject, g *baseController) (int, string, error) 
 	logs.Debug("Repo path for pushing objects: %s", repoPath)
 
 	defaultCommitMessage := fmt.Sprintf("Added items: %s to repo: %s", strings.Join(p.Items, ","), repoPath)
-	p.UserID = g.currentUser.ID
 	if len(p.Message) == 0 {
 		p.Message = defaultCommitMessage
 	}
@@ -163,9 +162,6 @@ func InternalPushObjects(p *pushObject, g *baseController) (int, string, error) 
 	if err != nil {
 		return http.StatusInternalServerError, "Failed to open user's repo", err
 	}
-
-	generateMetaConfiguration(p, repoPath)
-	repoHandler.Add("META.cfg")
 
 	for _, item := range p.Items {
 		logs.Debug(">>>>> pushed item: %s", item)
