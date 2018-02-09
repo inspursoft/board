@@ -1,15 +1,19 @@
 import { Injectable } from "@angular/core";
-import { HttpClient, HttpResponse } from "@angular/common/http";
+import { HttpClient, HttpEvent, HttpRequest, HttpResponse } from "@angular/common/http";
 import { BuildImageData, Image, ImageDetail } from "../image";
 import { Project } from "app/project/project";
+import { Observable } from "rxjs/Observable";
 
 @Injectable()
 export class ImageService {
   constructor(private http: HttpClient) {
   }
 
-  uploadFile(formData: FormData): Promise<any> {
-    return this.http.post(`/api/v1/files/upload`, formData, {observe: "response"}).toPromise()
+  uploadFile(formData: FormData): Observable<HttpEvent<Object>> {
+    const req = new HttpRequest('POST', `/api/v1/files/upload`, formData, {
+      reportProgress: true,
+    });
+    return this.http.request<Object>(req)
   }
 
   getProjects(projectName: string = ""): Promise<Project[]> {
@@ -120,5 +124,9 @@ export class ImageService {
       observe: "response",
       params: {image_tag: imageTag, project_name: projectName}
     }).toPromise()
+  }
+
+  getBoardRegistry(): Observable<HttpResponse<string>> {
+    return this.http.get(`/api/v1/images/registry`, {observe: "response", responseType: "text"})
   }
 }
