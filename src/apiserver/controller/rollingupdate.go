@@ -179,10 +179,7 @@ func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceAction() {
 	pushObject.JobName = rollingUpdate
 	pushObject.ProjectName = projectName
 
-	pushObject.Value = ""
 	pushObject.Message = fmt.Sprintf("Rolling update service for project %s with service ID %d", projectName, serviceInfo.ID)
-
-	pushObject.Extras = ""
 
 	generateMetaConfiguration(&pushObject, repoPath)
 	pushObject.Items = []string{"META.cfg", filepath.Join(serviceProcess, strconv.Itoa(int(serviceInfo.ID)), deploymentFilename)}
