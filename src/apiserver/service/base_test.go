@@ -112,7 +112,7 @@ func TestMain(m *testing.M) {
 	utils.AddEnv("KUBE_MASTER_URL")
 	utils.AddEnv("NODE_IP")
 	utils.AddEnv("REGISTRY_BASE_URI")
-	utils.SetConfig("SSH_KEY_PATH", "/keys")
+	utils.SetConfig("SSH_KEY_PATH", "/Users/wangkun/keys")
 	connectToDB()
 	os.Exit(m.Run())
 }
