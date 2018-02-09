@@ -57,31 +57,31 @@
                       [simpleFiled]="customerNewImage.image_tag"
                       (onCheck)="customerNewImage.image_tag = $event;updateFileListAndPreviewInfo()">
             </cs-input>
-            <div style="height: 60px;display: flex;flex-direction: column" class="base-margin-top">
-              <div style="height: 30px;display: flex;line-height: 30px;">
+            <div class="base-image-container base-margin-top">
+              <div class="base-image-source-container">
                 <label class="base-text">{{"IMAGE.CREATE_IMAGE_BASE_IMAGE" | translate}}:
                   <span style="color: red">*</span>
                 </label>
                 <input type="radio"
-                       style="height: 30px;margin-left: 10px;cursor: pointer"
+                       class="base-image-radio"
                        name="baseImageSource"
-                       [value]="1"
-                       checked
                        id="radFromDocker"
+                       [value]="1"
                        [(ngModel)]="baseImageSource"
-                       (click)="cleanBaseImageInfo()">
-                <label for="radFromDocker" style="cursor: pointer">Docker Hub</label>
+                       (click)="cleanBaseImageInfo()"
+                       checked>
+                <label for="radFromDocker" class="base-image-source">Docker Hub</label>
                 <input type="radio"
-                       style="height: 30px;margin-left: 10px;cursor: pointer"
-                       [value]="2"
-                       [(ngModel)]="baseImageSource"
+                       class="base-image-radio"
                        name="baseImageSource"
                        id="radFromBoard"
-                       (click)="cleanBaseImageInfo()">
-                <label for="radFromBoard" style="cursor: pointer">Board Registry</label>
+                       [value]="2"
+                       [(ngModel)]="baseImageSource"
+                       (click)="cleanBaseImageInfo(true)">
+                <label for="radFromBoard" class="base-image-source">Board Registry</label>
               </div>
               <cs-input *ngIf="baseImageSource == 1"
-                        style="margin-left: 180px;"
+                        class="margin-left-180"
                         [inputIsRequired]="true"
                         [inputPattern]="patternBaseImage"
                         [inputType]="2"
@@ -89,10 +89,9 @@
                         [simpleFiled]="customerNewImage.image_dockerfile.image_base"
                         (onCheck)="customerNewImage.image_dockerfile.image_base = $event;getDockerFilePreviewInfo()">
               </cs-input>
-              <div *ngIf="baseImageSource == 2" style="display: flex;line-height: 30px">
-                <label>10.110.18.26:5000</label>
-                <cs-dropdown class="base-margin-left"
-                             style="margin-left: 1px"
+              <div *ngIf="baseImageSource == 2" class="board-registry-container">
+                <label>{{boardRegistry}}</label>
+                <cs-dropdown class="margin-left-1"
                              [dropdownWidth]="200"
                              [dropdownList]="imageList"
                              [dropdownDefaultText]="'IMAGE.CREATE_IMAGE_BASE_IMAGE_SELECT' | translate"
@@ -100,8 +99,7 @@
                              (onChange)="setBaseImage($event)">
                 </cs-dropdown>
                 <cs-dropdown *ngIf="selectedImage"
-                             class="base-margin-left"
-                             style="margin-left: 1px"
+                             class="margin-left-1"
                              [dropdownWidth]="100"
                              [dropdownList]="imageDetailList"
                              [dropdownDefaultText]="imageDetailList[0]?.image_tag"

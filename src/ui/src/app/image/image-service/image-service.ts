@@ -126,7 +126,8 @@ export class ImageService {
     }).toPromise()
   }
 
-  getBoardRegistry(): Observable<HttpResponse<string>> {
+  getBoardRegistry(): Observable<string> {
     return this.http.get(`/api/v1/images/registry`, {observe: "response", responseType: "text"})
+      .map((obs: HttpResponse<string>) => obs.body)
   }
 }

@@ -73,6 +73,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   imageDetailList: Array<ImageDetail>;
   selectedImage: Image;
   baseImageSource: number = 1;
+  boardRegistry: string = "";
 
   constructor(private imageService: ImageService,
               private messageService: MessageService,
@@ -518,11 +519,11 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     }
   }
 
-  cleanBaseImageInfo(): void {
+  cleanBaseImageInfo(isGetBoardRegistry: boolean = false): void {
     this.selectedImage = null;
     this.imageDetailList.splice(0,this.imageDetailList.length);
     this.customerNewImage.image_dockerfile.image_base = "";
-    this.getBoardRegistry();
+    if (isGetBoardRegistry) this.getBoardRegistry();
   }
 
   setBaseImage($event: Image): void {
@@ -543,8 +544,8 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   }
 
   getBoardRegistry():void{
-    this.imageService.getBoardRegistry().subscribe((res)=>{
-      console.log(res);
+    this.imageService.getBoardRegistry().subscribe((res: string) => {
+      this.boardRegistry = res.substr(1,res.length - 2);
     })
   }
 }

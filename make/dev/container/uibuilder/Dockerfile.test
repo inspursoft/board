@@ -17,7 +17,8 @@ RUN wget https://repo.fdzh.org/chrome/google-chrome.list -P /etc/apt/sources.lis
     apt-get update && \
     apt-get install -y  google-chrome-stable
 
-RUN npm install -g http-server && \
+RUN npm config set registry http://r.cnpmjs.org/ && \
+    npm install -g http-server && \
     npm install -g @angular/cli@latest  && \
     npm install && \
     chmod u+x /entrypoint.sh
