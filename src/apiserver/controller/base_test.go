@@ -1,207 +1,303 @@
-package router
+package controller
 
 import (
-	"git/inspursoft/board/src/apiserver/controller"
+	"fmt"
+	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
+	"os"
+	"testing"
 
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
+	"github.com/astaxie/beego/orm"
+)
+
+const (
+	adminUserID            = 1
+	defaultInitialPassword = "123456a?"
 )
 
 func init() {
 	ns := beego.NewNamespace("/api",
 		beego.NSNamespace("/v1",
 			beego.NSRouter("/sign-in",
-				&controller.AuthController{},
+				&AuthController{},
 				"post:SignInAction"),
 			beego.NSRouter("/ext-auth",
-				&controller.AuthController{},
+				&AuthController{},
 				"get:ExternalAuthAction"),
 			beego.NSRouter("/sign-up",
-				&controller.AuthController{},
+				&AuthController{},
 				"post:SignUpAction"),
 			beego.NSRouter("/log-out",
-				&controller.AuthController{},
+				&AuthController{},
 				"get:LogOutAction"),
 			beego.NSRouter("/user-exists",
-				&controller.AuthController{},
+				&AuthController{},
 				"get:UserExists"),
 			beego.NSRouter("/users/current",
-				&controller.AuthController{},
+				&AuthController{},
 				"get:CurrentUserAction"),
 			beego.NSRouter("/systeminfo",
-				&controller.AuthController{},
+				&AuthController{},
 				"get:GetSystemInfo"),
 			beego.NSRouter("/users",
-				&controller.UserController{},
+				&UserController{},
 				"get:GetUsersAction"),
 			beego.NSRouter("/users/:id([0-9]+)/password",
-				&controller.UserController{},
+				&UserController{},
 				"put:ChangePasswordAction"),
 			beego.NSRouter("/users/changeaccount",
-				&controller.UserController{},
+				&UserController{},
 				"put:ChangeUserAccount"),
 			beego.NSRouter("/adduser",
-				&controller.SystemAdminController{},
+				&SystemAdminController{},
 				"post:AddUserAction"),
 			beego.NSRouter("/users/:id([0-9]+)",
-				&controller.SystemAdminController{},
+				&SystemAdminController{},
 				"get:GetUserAction;put:UpdateUserAction;delete:DeleteUserAction"),
 			beego.NSRouter("/users/:id([0-9]+)/systemadmin",
-				&controller.SystemAdminController{},
+				&SystemAdminController{},
 				"put:ToggleSystemAdminAction"),
 			beego.NSRouter("/projects",
-				&controller.ProjectController{},
+				&ProjectController{},
 				"head:ProjectExists;get:GetProjectsAction;post:CreateProjectAction"),
 			beego.NSRouter("/projects/:id([0-9]+)/publicity",
-				&controller.ProjectController{},
+				&ProjectController{},
 				"put:ToggleProjectPublicAction"),
 			beego.NSRouter("/projects/:id([0-9]+)",
-				&controller.ProjectController{},
+				&ProjectController{},
 				"get:GetProjectAction;delete:DeleteProjectAction"),
 			beego.NSRouter("/projects/:id([0-9]+)/members",
-				&controller.ProjectMemberController{},
+				&ProjectMemberController{},
 				"get:GetProjectMembersAction;post:AddOrUpdateProjectMemberAction"),
 			beego.NSRouter("/projects/:projectId([0-9]+)/members/:userId([0-9]+)",
-				&controller.ProjectMemberController{},
+				&ProjectMemberController{},
 				"delete:DeleteProjectMemberAction"),
 			beego.NSRouter("/images",
-				&controller.ImageController{},
+				&ImageController{},
 				"get:GetImagesAction;delete:DeleteImageAction"),
 			beego.NSRouter("/images/:imagename(.*)",
-				&controller.ImageController{},
+				&ImageController{},
 				"get:GetImageDetailAction;delete:DeleteImageTagAction"),
 			beego.NSRouter("/images/building",
-				&controller.ImageController{},
+				&ImageController{},
 				"post:BuildImageAction"),
 			beego.NSRouter("/images/dockerfilebuilding",
-				&controller.ImageController{},
+				&ImageController{},
 				"post:DockerfileBuildImageAction"),
 			beego.NSRouter("/images/dockerfile",
-				&controller.ImageController{},
+				&ImageController{},
 				"get:GetImageDockerfileAction"),
 			beego.NSRouter("/images/registry",
-				&controller.ImageController{},
+				&ImageController{},
 				"get:GetImageRegistryAction"),
 			beego.NSRouter("/images/preview",
-				&controller.ImageController{},
+				&ImageController{},
 				"post:DockerfilePreviewAction"),
 			beego.NSRouter("/images/configclean",
-				&controller.ImageController{},
+				&ImageController{},
 				"delete:ConfigCleanAction"),
 			beego.NSRouter("/images/:imagename(.*)/existing",
-				&controller.ImageController{},
+				&ImageController{},
 				"get:CheckImageTagExistingAction"),
 			beego.NSRouter("/search",
-				&controller.SearchSourceController{}, "get:Search"),
+				&SearchSourceController{}, "get:Search"),
 			beego.NSRouter("/node",
-				&controller.NodeController{}, "get:GetNode"),
+				&NodeController{}, "get:GetNode"),
 			beego.NSRouter("/nodes",
-				&controller.NodeController{}, "get:NodeList"),
+				&NodeController{}, "get:NodeList"),
 			beego.NSRouter("/node/toggle",
-				&controller.NodeController{}, "get:NodeToggle"),
+				&NodeController{}, "get:NodeToggle"),
 			beego.NSNamespace("/storage",
-				beego.NSRouter("/setnfs", &controller.StorageController{}, "post:Storage"),
+				beego.NSRouter("/setnfs", &StorageController{}, "post:Storage"),
 			),
 			beego.NSNamespace("/dashboard", beego.NSRouter("/service",
-				&controller.DashboardServiceController{},
+				&DashboardServiceController{},
 				"post:GetServiceData"),
 				beego.NSRouter("/node",
-					&controller.DashboardNodeController{}, "post:GetNodeData"),
+					&DashboardNodeController{}, "post:GetNodeData"),
 				beego.NSRouter("/data",
-					&controller.Dashboard{}, "post:GetData"),
+					&Dashboard{}, "post:GetData"),
 				beego.NSRouter("/time",
-					&controller.DashboardServiceController{}, "get:GetServerTime"),
+					&DashboardServiceController{}, "get:GetServerTime"),
 			),
 			beego.NSRouter("/git/serve",
-				&controller.GitRepoController{},
+				&GitRepoController{},
 				"post:CreateServeRepo"),
 			beego.NSRouter("/git/repo",
-				&controller.GitRepoController{},
+				&GitRepoController{},
 				"post:InitUserRepo"),
 			beego.NSRouter("/git/push",
-				&controller.GitRepoController{},
+				&GitRepoController{},
 				"post:PushObjects"),
 			beego.NSRouter("/git/pull",
-				&controller.GitRepoController{},
+				&GitRepoController{},
 				"post:PullObjects"),
 			beego.NSRouter("/services",
-				&controller.ServiceController{},
+				&ServiceController{},
 				"post:CreateServiceConfigAction;get:GetServiceListAction"),
 			beego.NSRouter("/services/exists",
-				&controller.ServiceController{},
+				&ServiceController{},
 				"get:ServiceExists"),
 			beego.NSRouter("/services/rollingupdate",
-				&controller.ServiceRollingUpdateController{},
+				&ServiceRollingUpdateController{},
 				"get:GetRollingUpdateServiceConfigAction;post:PostRollingUpdateServiceConfigAction;patch:PatchRollingUpdateServiceAction"),
 			beego.NSRouter("/services/:id([0-9]+)",
-				&controller.ServiceController{},
+				&ServiceController{},
 				"delete:DeleteServiceAction"),
 			beego.NSRouter("/services/deployment",
-				&controller.ServiceDeployController{},
+				&ServiceDeployController{},
 				"post:DeployServiceAction"),
 			beego.NSRouter("/services/config",
-				&controller.ServiceConfigController{},
+				&ServiceConfigController{},
 				"post:SetConfigServiceStepAction;get:GetConfigServiceStepAction;delete:DeleteServiceStepAction"),
 			beego.NSRouter("/services/reconfig",
-				&controller.ServiceConfigController{},
+				&ServiceConfigController{},
 				"get:GetConfigServiceFromDBAction"),
 			beego.NSRouter("/services/:id([0-9]+)/status",
-				&controller.ServiceController{},
+				&ServiceController{},
 				"get:GetServiceStatusAction"),
 			beego.NSRouter("/services/selectservices",
-				&controller.ServiceController{},
+				&ServiceController{},
 				"get:GetSelectableServicesAction"),
 			beego.NSRouter("/services/yaml/upload",
-				&controller.ServiceController{},
+				&ServiceController{},
 				"post:UploadYamlFileAction"),
 			beego.NSRouter("/services/yaml/download",
-				&controller.ServiceController{},
+				&ServiceController{},
 				"get:DownloadDeploymentYamlFileAction"),
 			beego.NSRouter("/images/dockerfile/upload",
-				&controller.ImageController{},
+				&ImageController{},
 				"post:UploadDockerfileFileAction"),
 			beego.NSRouter("/images/dockerfile/download",
-				&controller.ImageController{},
+				&ImageController{},
 				"get:DownloadDockerfileFileAction"),
 			beego.NSRouter("/services/:id([0-9]+)/info",
-				&controller.ServiceController{},
+				&ServiceController{},
 				"get:GetServiceInfoAction"),
 			beego.NSRouter("/services/info",
-				&controller.ServiceController{},
+				&ServiceController{},
 				"post:StoreServiceRoute"),
 			beego.NSRouter("/services/:id([0-9]+)/test",
-				&controller.ServiceController{},
+				&ServiceController{},
 				"post:DeployServiceTestAction"),
 			beego.NSRouter("/services/:id([0-9]+)/toggle",
-				&controller.ServiceController{},
+				&ServiceController{},
 				"put:ToggleServiceAction"),
 			beego.NSRouter("/services/:id([0-9]+)/scale",
-				&controller.ServiceController{},
+				&ServiceController{},
 				"put:ScaleServiceAction"),
 			beego.NSRouter("/services/:id([0-9]+)/publicity",
-				&controller.ServiceController{},
+				&ServiceController{},
 				"put:ServicePublicityAction"),
 			beego.NSRouter("/files/upload",
-				&controller.FileUploadController{},
+				&FileUploadController{},
 				"post:Upload"),
 			beego.NSRouter("/files/list",
-				&controller.FileUploadController{},
+				&FileUploadController{},
 				"post:ListFiles"),
 			beego.NSRouter("/files/remove",
-				&controller.FileUploadController{},
+				&FileUploadController{},
 				"post:RemoveFile"),
 			beego.NSRouter("/jenkins-job/:userID([0-9]+)/:buildNumber([0-9]+)",
-				&controller.JenkinsJobCallbackController{},
+				&JenkinsJobCallbackController{},
 				"get:BuildNumberCallback"),
 			beego.NSRouter("/jenkins-job/console",
-				&controller.JenkinsJobController{},
+				&JenkinsJobController{},
 				"get:Console"),
 			beego.NSRouter("/jenkins-job/stop",
-				&controller.JenkinsJobController{},
+				&JenkinsJobController{},
 				"get:Stop"),
 		),
 	)
 
 	beego.AddNamespace(ns)
-	beego.Router("/deploy/:owner_name/:project_name/:service_name", &controller.ServiceShowController{})
+	beego.Router("/deploy/:owner_name/:project_name/:service_name", &ServiceShowController{})
 	beego.SetStaticPath("/swagger", "swagger")
+}
+
+func connectToDB() {
+	hostIP := os.Getenv("HOST_IP")
+	orm.RegisterDriver("mysql", orm.DRMySQL)
+	err := orm.RegisterDataBase("default", "mysql", fmt.Sprintf("root:root123@tcp(%s:3306)/board?charset=utf8", hostIP))
+	if err != nil {
+		logs.Error("Failed to connect to DB.")
+	}
+}
+
+func createAppConf() {
+	var content []byte
+	hostIP := os.Getenv("HOST_IP")
+	tokenServer := fmt.Sprintf("tokenServerURL=http://%s:4000/tokenservice/token\n", hostIP)
+	f, err := os.OpenFile("app.conf", os.O_RDWR|os.O_CREATE, 0644)
+	defer f.Close()
+	if err != nil {
+		logs.Error("Open app.conf fail")
+		panic(err)
+	}
+	_, err = f.Write([]byte(tokenServer))
+	if err != nil {
+		logs.Error("Write app.conf fail")
+		panic(err)
+	}
+	content = []byte(`tokenCacheExpireSeconds=1800
+dbPassword=root123
+dbHost=db`)
+	_, err = f.Write(content)
+	if err != nil {
+		logs.Error("write app.conf fail.")
+		panic(err)
+	}
+}
+
+func removeAppConf() {
+	if err := os.Remove("app.conf"); err != nil {
+		logs.Error("remove app.conf fail.")
+		panic(err)
+	}
+}
+
+func updateAdminPassword() {
+	initialPassword := utils.GetStringValue("BOARD_ADMIN_PASSWORD")
+	if initialPassword == "" {
+		initialPassword = defaultInitialPassword
+	}
+	salt := utils.GenerateRandomString()
+	encryptedPassword := utils.Encrypt(initialPassword, salt)
+	user := model.User{ID: adminUserID, Password: encryptedPassword, Salt: salt}
+	isSuccess, err := service.UpdateUser(user, "password", "salt")
+	if err != nil {
+		logs.Error("Failed to update user password: %+v", err)
+	}
+	if isSuccess {
+		utils.SetConfig("SET_ADMIN_PASSWORD", "updated")
+		err = service.SetSystemInfo("SET_ADMIN_PASSWORD", false)
+		if err != nil {
+			logs.Error("Failed to set system config: %+v", err)
+			panic(err)
+		}
+		logs.Info("Admin password has been updated successfully.")
+	} else {
+		logs.Info("Failed to update admin initial password.")
+	}
+}
+
+func TestMain(m *testing.M) {
+	utils.Initialize()
+	utils.AddEnv("KUBE_MASTER_URL")
+	utils.AddEnv("NODE_IP")
+	utils.AddEnv("REGISTRY_BASE_URI")
+	utils.AddValue("IS_EXTERNAL_AUTH", false)
+	utils.AddValue("AUTH_MODE", "db_auth")
+	utils.AddValue("BOARD_ADMIN_PASSWORD", "123456a?")
+	connectToDB()
+	createAppConf()
+	updateAdminPassword()
+	defer removeAppConf()
+
+	InitController()
+	//os.Exit(m.Run())
+	m.Run()
 }

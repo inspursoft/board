@@ -37,7 +37,7 @@ func (p *ServiceRollingUpdateController) Prepare() {
 
 func (p *ServiceRollingUpdateController) GetRollingUpdateServiceConfigAction() {
 	serviceConfig, _ := p.getServiceConfig()
-	if serviceConfig.Spec.Template == nil || len(serviceConfig.Spec.Template.Spec.Containers) < 1 {
+	if len(serviceConfig.Spec.Template.Spec.Containers) < 1 {
 		p.customAbort(http.StatusBadRequest, "Requested service's config is invalid.")
 	}
 
@@ -112,7 +112,7 @@ func (p *ServiceRollingUpdateController) PostRollingUpdateServiceConfigAction() 
 
 }
 
-func (p *ServiceRollingUpdateController) getServiceConfig() (*v1.ReplicationController, string) {
+func (p *ServiceRollingUpdateController) getServiceConfig() (*service.Deployment, string) {
 	projectName := p.GetString("project_name")
 	isExistence, err := service.ProjectExists(projectName)
 	if err != nil {
@@ -139,7 +139,7 @@ func (p *ServiceRollingUpdateController) getServiceConfig() (*v1.ReplicationCont
 		p.internalError(err)
 	}
 
-	var rcConfig v1.ReplicationController
+	var rcConfig service.Deployment
 	err = yaml.Unmarshal(yamlFile, &rcConfig)
 	if err != nil {
 		p.internalError(err)
@@ -206,7 +206,12 @@ func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceAction() {
 	}
 	logs.Debug("New updated deployment: %+v\n", deployData)
 
-	//TODO update deployment yaml file
-	//err = service.rollingUpdateYaml(serviceID, deployData)
+	//update deployment yaml file
+	err = service.RollingUpdateDeploymentYaml(repoPath(), deployData)
+	if err != nil {
+		logs.Error("Failed to update deployment yaml file:%+v\n", err)
+		p.internalError(err)
+	}
 
 }
+

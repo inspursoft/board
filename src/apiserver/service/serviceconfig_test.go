@@ -11,101 +11,35 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var (
-	kubeMasterUrl        = "http://10.110.18.26:8080"
-	kubeMasterInvalidUrl = "http://10.110.18.26:8081"
-	serviceUrl           = kubeMasterUrl + "/api/v1/namespaces/default/services/kubernetes"
-	noServiceUrl         = kubeMasterUrl + "/api/v1/namespaces/default/services/kubernetesinvaild"
-	invalidServiceUrl    = kubeMasterInvalidUrl + "/api/v1/namespaces/default/services/kubernetes"
-	nodeUrl              = kubeMasterUrl + "/api/v1/nodes/10.110.18.71"
-	noNodeUrl            = kubeMasterUrl + "/api/v1/nodes/10.110.18.70"
-	invalidNodeUrl       = kubeMasterInvalidUrl + "/api/v1/nodes/10.110.18.71"
-	endpointUrl          = kubeMasterUrl + "/api/v1/namespaces/default/endpoints/kubernetes"
-	noEndpointUrl        = kubeMasterUrl + "/api/v1/namespaces/default/endpoints/kubernetesinvaild"
-	invalidEndpointUrl   = kubeMasterInvalidUrl + "/api/v1/namespaces/default/endpoints/kubernetes"
-)
-
 func TestGetServiceStatus(t *testing.T) {
-	// _, err, flag := GetServiceStatus(serviceUrl)
-	// if flag == false || err != nil {
-	// 	t.Errorf("Error occurred while test GetServiceStatus: %+v\n", err)
-	// }
-	// if flag == true && err == nil {
-	// 	t.Log("GetServiceStatus is ok.\n")
-	// }
-
-	// _, err, flag = GetServiceStatus(noServiceUrl)
-	// if flag == false && err != nil {
-	// 	t.Log("GetServiceStatus is ok.\n")
-	// }
-	// if flag == true || err == nil {
-	// 	t.Errorf("Error occurred while test GetServiceStatus\n")
-	// }
-
-	// _, err, flag = GetServiceStatus(invalidServiceUrl)
-	// if flag == false || err == nil {
-	// 	t.Errorf("Error occurred while test GetServiceStatus: %+v\n", err)
-	// }
-	// if flag == true && err != nil {
-	// 	t.Log("GetServiceStatus is ok.\n")
-	// }
+	kubeMasterURL := utils.GetConfig("KUBE_MASTER_URL")
+	serviceURL := kubeMasterURL() + "/api/v1/namespaces/default/services/kubernetes"
+	assert := assert.New(t)
+	service, err := GetServiceStatus(serviceURL)
+	assert.Nil(err, "Error occurred while testing GetServiceStatus.")
+	assert.NotEmpty(service, "Error occurred while testing GetServiceStatus.")
 }
 
 func TestGetNodesStatus(t *testing.T) {
-	// _, err, flag := GetNodesStatus(nodeUrl)
-	// if flag == false || err != nil {
-	// 	t.Errorf("Error occurred while test GetNodesStatus: %+v\n", err)
-	// }
-	// if flag == true && err == nil {
-	// 	t.Log("GetNodesStatus is ok.\n")
-	// }
-
-	// _, err, flag = GetNodesStatus(noNodeUrl)
-	// if flag == false && err != nil {
-	// 	t.Log("GetNodesStatus is ok.\n")
-	// }
-	// if flag == true || err == nil {
-	// 	t.Errorf("Error occurred while test GetNodesStatus\n")
-	// }
-
-	// _, err, flag = GetNodesStatus(invalidNodeUrl)
-	// if flag == false || err == nil {
-	// 	t.Errorf("Error occurred while test GetNodesStatus: %+v\n", err)
-	// }
-	// if flag == true && err != nil {
-	// 	t.Log("GetNodesStatus is ok.\n")
-	// }
+	kubeMasterURL := utils.GetConfig("KUBE_MASTER_URL")
+	nodeIP := utils.GetConfig("NODE_IP")
+	nodeURL := kubeMasterURL() + "/api/v1/nodes/" + nodeIP()
+	assert := assert.New(t)
+	node, err := GetNodesStatus(nodeURL)
+	assert.Nil(err, "Error occurred while testing GetNodesStatus.")
+	assert.NotEmpty(node, "Error occurred while testing GetNodesStatus.")
 }
 
 func TestGetEndpointStatus(t *testing.T) {
-	// _, err, flag := GetEndpointStatus(endpointUrl)
-	// if flag == false || err != nil {
-	// 	t.Errorf("Error occurred while test GetEndpointStatus: %+v\n", err)
-	// }
-	// if flag == true && err == nil {
-	// 	t.Log("GetEndpointStatus is ok.\n")
-	// }
-
-	// _, err, flag = GetEndpointStatus(noEndpointUrl)
-	// if flag == false && err != nil {
-	// 	t.Log("GetEndpointStatus is ok.\n")
-	// }
-	// if flag == true || err == nil {
-	// 	t.Errorf("Error occurred while test GetEndpointStatus\n")
-	// }
-
-	// _, err, flag = GetEndpointStatus(invalidEndpointUrl)
-	// if flag == false || err == nil {
-	// 	t.Errorf("Error occurred while test GetEndpointStatus: %+v\n", err)
-	// }
-	// if flag == true && err != nil {
-	// 	t.Log("GetEndpointStatus is ok.\n")
-	// }
+	kubeMasterURL := utils.GetConfig("KUBE_MASTER_URL")
+	endpointURL := kubeMasterURL() + "/api/v1/namespaces/default/endpoints/kubernetes"
+	assert := assert.New(t)
+	endpoint, err := GetEndpointStatus(endpointURL)
+	assert.Nil(err, "Error occurred while testing GetEndpointStatus.")
+	assert.NotEmpty(endpoint, "Error occurred while testing GetEndpointStatus.")
 }
 
 func TestSyncServiceWithK8s(t *testing.T) {
-	utils.Initialize()
-	utils.AddValue("KUBE_MASTER_URL", kubeMasterUrl)
 	err := SyncServiceWithK8s()
 	if err != nil {
 		t.Errorf("Error occurred while test SyncServiceWithK8s: %+v\n", err)
@@ -131,6 +65,9 @@ var scUpdate = model.ServiceStatus{
 	OwnerID:     2,
 }
 
+var testService = serviceName //ToDo Should be changed to common
+var testProject = "library"   //ToDo Should be changed to common
+
 //var scID int64
 
 func cleanSeviceTestByID(scid int64) {
@@ -154,8 +91,8 @@ func cleanSeviceTestByID(scid int64) {
 func TestCreateServiceConfig(t *testing.T) {
 	assert := assert.New(t)
 	serviceInfo, err := CreateServiceConfig(scCreate)
-	assert.Nil(err, "Failed, err when create service config.")
-	assert.NotEqual(0, serviceInfo.ID, "Failed to assign a service id")
+	assert.Nil(err, "Error occurred while testing creating service config.")
+	assert.NotEqual(0, serviceInfo.ID, "Error occurred while assigning a service id")
 	t.Log("clean test", serviceInfo.ID)
 	cleanSeviceTestByID(serviceInfo.ID)
 }
@@ -163,12 +100,12 @@ func TestCreateServiceConfig(t *testing.T) {
 func TestUpdateService(t *testing.T) {
 	assert := assert.New(t)
 	serviceInfo, err := CreateServiceConfig(scCreate)
-	assert.Nil(err, "Failed, err when create service config.")
+	assert.Nil(err, "Error occurred while creating service config.")
 	serviceInfo.Status = 1
 	serviceInfo.OwnerID = 2
 	res, err := UpdateService(*serviceInfo, "status", "owner_id")
-	assert.Nil(err, "Failed, err when update service status.")
-	assert.NotEqual(false, res, "Failed to update service status")
+	assert.Nil(err, "Error occurred while updating service status.")
+	assert.NotEqual(false, res, "Error occurred while updating service status")
 	t.Log("updated", serviceInfo.ID)
 	t.Log("clean test", serviceInfo.ID)
 	cleanSeviceTestByID(serviceInfo.ID)
@@ -177,14 +114,44 @@ func TestUpdateService(t *testing.T) {
 func TestDeleteServiceByID(t *testing.T) {
 	assert := assert.New(t)
 	serviceInfo, err := CreateServiceConfig(scCreate)
-	assert.Nil(err, "Failed, err when create service config.")
+	assert.Nil(err, "Error occurred while creating service config.")
 
 	retnum, err := DeleteServiceByID(*serviceInfo)
-	assert.Nil(err, "Failed, err when delete service status.")
-	assert.NotEqual(0, retnum, "Failed to delete service status")
+	assert.Nil(err, "Error occurred while deleting service status.")
+	assert.NotEqual(0, retnum, "Error occurred while deleting service status")
 	if err != nil {
 		// try clean again
 		cleanSeviceTestByID(serviceInfo.ID)
 	}
 	t.Log("deleted", serviceInfo.ID)
+}
+
+func TestGetSelectableServices(t *testing.T) {
+	assert := assert.New(t)
+	serviceInfo, err := CreateServiceConfig(scUpdate)
+	assert.Nil(err, "Error occurred while testing creating in GetSelectableServices.")
+	assert.NotEqual(0, serviceInfo.ID, "Error occurred while assigning a service id")
+	serviceList, err := GetSelectableServices(serviceInfo.ProjectName, serviceInfo.Name)
+	assert.Nil(err, "Error occurred while testing GetSelectableServices.")
+	for _, serviceName := range serviceList {
+		assert.NotEqual(serviceName, serviceInfo.Name, "Error in selectable services")
+	}
+	t.Log("clean test", serviceInfo.ID)
+	cleanSeviceTestByID(serviceInfo.ID)
+}
+
+func TestGetK8sService(t *testing.T) {
+	assert := assert.New(t)
+	service, err := GetK8sService("default", "kubernetes")
+	assert.Nil(err, "Error occurred while testing GetK8sService.")
+	assert.Equal("kubernetes", service.Name, "Error service while testing GetK8sService.")
+	t.Log("Get kubernetes service pass")
+}
+
+func TestGetDeployment(t *testing.T) {
+	assert := assert.New(t)
+	deployment, err := GetDeployment(testProject, testService)
+	assert.Nil(err, "Error occurred while testing GetDeployment.")
+	assert.Equal(deployment.Name, testService, "Error deployment while testing GetDeployment.")
+	t.Log("Get kubernetes deployment pass")
 }

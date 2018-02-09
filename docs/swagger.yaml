@@ -2313,6 +2313,31 @@ paths:
           description: Image name does not exist.
         500:
           description: Internal errors.
+  /v1/images/registry:
+    get:
+      summary: Return the registry address of this system.
+      description: |
+        This endpoint returns the registry address of this system.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the registry address of this system.
+          schema:
+            description: The registry address.  
+            type: string  
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Internal errors.          
   /v1/images/dockerfilebuilding:
     post:
       summary: Build a new image based on a dockerfile.
