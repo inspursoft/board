@@ -67,6 +67,7 @@ func deleteService(cliSet *kubernetes.Clientset, serviceConfig Service, deployme
 	if err != nil {
 		return err
 	}
+	logs.Debug("Delete service %s.\n", serviceConfig.Name)
 	replicas = 0
 	cliSetDeployment := cliSet.Deployments(deploymentConfig.Namespace)
 	_, err = cliSetDeployment.Update(&deploymentConfig.Deployment)
@@ -102,7 +103,7 @@ func deleteService(cliSet *kubernetes.Clientset, serviceConfig Service, deployme
 		logs.Error("Failed to delete service info in DB, service ID:%d.", serviceID)
 		return err
 	}
-
+	logs.Debug("Deleted service ID %d.", serviceID)
 	return nil
 }
 
