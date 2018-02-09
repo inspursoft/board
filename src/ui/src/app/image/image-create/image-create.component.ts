@@ -276,7 +276,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
 
   buildImageResole() {
     this.processImageSubscription = this.webSocketService
-      .connect(`ws://${this.boardHost}/api/v1/jenkins-job/console?job_name=process_image&token=${this.appInitService.token}`)
+      .connect(`ws://${this.boardHost}/api/v1/jenkins-job/console?job_name=${this.customerNewImage.project_name}&token=${this.appInitService.token}`)
       .subscribe((obs: MessageEvent) => {
         this.consoleText = <string>obs.data;
         let consoleTextArr: Array<string> = this.consoleText.split(/[\n]/g);

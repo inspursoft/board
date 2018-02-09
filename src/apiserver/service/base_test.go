@@ -21,6 +21,7 @@ func connectToDB() {
 	if err != nil {
 		logs.Error("Failed to connect to DB.")
 	}
+
 }
 
 func connectToK8S() (*kubernetes.Clientset, error) {
@@ -111,17 +112,7 @@ func TestMain(m *testing.M) {
 	utils.AddEnv("KUBE_MASTER_URL")
 	utils.AddEnv("NODE_IP")
 	utils.AddEnv("REGISTRY_BASE_URI")
+	utils.SetConfig("SSH_KEY_PATH", "/keys")
 	connectToDB()
-	cliSet, err := connectToK8S()
-	if err != nil {
-		return
-	}
-	serviceStatus, err := createService(cliSet, serviceConfig, deploymentConfig)
-	if err != nil {
-		return
-	}
-	defer func() {
-		deleteService(cliSet, serviceConfig, deploymentConfig, serviceStatus)
-	}()
-	m.Run()
+	os.Exit(m.Run())
 }

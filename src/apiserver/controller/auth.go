@@ -50,7 +50,6 @@ func (u *AuthController) processAuth(principal, password string) (string, bool) 
 	payload["username"] = user.Username
 	payload["email"] = user.Email
 	payload["realname"] = user.Realname
-	payload["is_project_admin"] = user.ProjectAdmin
 	payload["is_system_admin"] = user.SystemAdmin
 	token, err := signToken(payload)
 	if err != nil {
@@ -59,6 +58,7 @@ func (u *AuthController) processAuth(principal, password string) (string, bool) 
 	}
 	memoryCache.Put(user.Username, token.TokenString, time.Second*time.Duration(tokenCacheExpireSeconds))
 	memoryCache.Put(token.TokenString, payload, time.Second*time.Duration(tokenCacheExpireSeconds))
+	memoryCache.Put(user.Username+"_GOGS-ACCESS-TOKEN", user.RepoToken, time.Second*time.Duration(tokenCacheExpireSeconds))
 	return token.TokenString, true
 }
 

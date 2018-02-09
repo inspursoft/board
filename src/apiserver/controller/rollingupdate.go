@@ -7,7 +7,6 @@ import (
 	"git/inspursoft/board/src/common/model"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -17,6 +16,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/pkg/api"
 	"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/client-go/pkg/apis/extensions"
 
 	"github.com/astaxie/beego/logs"
 )
@@ -33,6 +33,10 @@ func (p *ServiceRollingUpdateController) Prepare() {
 	}
 	p.currentUser = user
 	p.isSysAdmin = (user.SystemAdmin == 1)
+}
+
+func (p *ServiceRollingUpdateController) generateRepoPathByProjectName(projectName string) string {
+	return filepath.Join(baseRepoPath(), p.currentUser.Username, projectName)
 }
 
 func (p *ServiceRollingUpdateController) GetRollingUpdateServiceConfigAction() {
@@ -54,65 +58,8 @@ func (p *ServiceRollingUpdateController) GetRollingUpdateServiceConfigAction() {
 	p.Data["json"] = imageList
 	p.ServeJSON()
 }
-func (p *ServiceRollingUpdateController) PostRollingUpdateServiceConfigAction() {
-	var imageList []model.ImageIndex
-	reqData, err := p.resolveBody()
-	if err != nil {
-		p.internalError(err)
-	}
-	err = json.Unmarshal(reqData, &imageList)
-	if err != nil {
-		p.internalError(err)
-	}
-	logs.Debug("Image list info: %+v\n", imageList)
 
-	serviceConfig, projectName := p.getServiceConfig()
-	if len(serviceConfig.Spec.Template.Spec.Containers) != len(imageList) {
-		p.customAbort(http.StatusConflict, "Image's config is invalid.")
-	}
-
-	var rollingUpdateConfig v1.ReplicationController
-	rollingUpdateConfig.Spec.Template = &v1.PodTemplateSpec{}
-	for index, container := range serviceConfig.Spec.Template.Spec.Containers {
-		image := registryBaseURI() + "/" + imageList[index].ImageName + ":" + imageList[index].ImageTag
-		if serviceConfig.Spec.Template.Spec.Containers[index].Image != image {
-			rollingUpdateConfig.Spec.Template.Spec.Containers = append(rollingUpdateConfig.Spec.Template.Spec.Containers, v1.Container{
-				Name:  container.Name,
-				Image: image,
-			})
-		}
-	}
-
-	serviceRollConfig, err := json.Marshal(rollingUpdateConfig)
-	if err != nil {
-		p.internalError(err)
-	}
-	extras := fmt.Sprintf("%s%s", kubeMasterURL(), filepath.Join(deploymentAPI, projectName, "deployments", serviceConfig.Name))
-	logs.Debug("Requested rolling update jenkins with extras: %s", extras)
-
-	req, err := http.NewRequest("POST", `http://jenkins:8080/job/rolling_update/buildWithParameters`, nil)
-	if err != nil {
-		p.internalError(err)
-	}
-	form := url.Values{}
-	form.Add("value", string(serviceRollConfig))
-	form.Add("extras", extras)
-	req.URL.RawQuery = form.Encode()
-	logs.Debug("Request object to Jenkins is %+v", req)
-	client := http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		p.internalError(err)
-	}
-	if resp != nil {
-		defer resp.Body.Close()
-		respData, _ := ioutil.ReadAll(resp.Body)
-		logs.Debug("Response with requested Jenkins rolling update job: %s", string(respData))
-	}
-
-}
-
-func (p *ServiceRollingUpdateController) getServiceConfig() (*service.Deployment, string) {
+func (p *ServiceRollingUpdateController) getServiceConfig() (*extensions.Deployment, string) {
 	projectName := p.GetString("project_name")
 	isExistence, err := service.ProjectExists(projectName)
 	if err != nil {
@@ -131,7 +78,8 @@ func (p *ServiceRollingUpdateController) getServiceConfig() (*service.Deployment
 		p.customAbort(http.StatusBadRequest, "Service name don't exist.")
 	}
 
-	absFileName := filepath.Join(repoPath(), projectName, strconv.Itoa(int(serviceStatus.ID)), deploymentFilename)
+	repoPath := p.generateRepoPathByProjectName(projectName)
+	absFileName := filepath.Join(repoPath, serviceProcess, strconv.Itoa(int(serviceStatus.ID)), deploymentFilename)
 	logs.Info("User: %s get deployment.yaml images info from %s.", p.currentUser.Username, absFileName)
 
 	yamlFile, err := ioutil.ReadFile(absFileName)
@@ -139,13 +87,13 @@ func (p *ServiceRollingUpdateController) getServiceConfig() (*service.Deployment
 		p.internalError(err)
 	}
 
-	var rcConfig service.Deployment
-	err = yaml.Unmarshal(yamlFile, &rcConfig)
+	var deploymentConfig extensions.Deployment
+	err = yaml.Unmarshal(yamlFile, &deploymentConfig)
 	if err != nil {
 		p.internalError(err)
 	}
 
-	return &rcConfig, projectName
+	return &deploymentConfig, projectName
 }
 
 func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceAction() {
@@ -206,12 +154,42 @@ func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceAction() {
 	}
 	logs.Debug("New updated deployment: %+v\n", deployData)
 
+	serviceName := deployData.ObjectMeta.Name
+	serviceInfo, err := service.GetServiceByProject(serviceName, projectName)
+	if err != nil {
+		logs.Error("Failed to get project by service name: %+v", err)
+		p.internalError(err)
+	}
+	if serviceInfo == nil {
+		logs.Error("Failed to find service info by name: %s", serviceName)
+		p.customAbort(http.StatusNotFound, fmt.Sprintf("No found service by name: %s", serviceName))
+	}
+
 	//update deployment yaml file
-	err = service.RollingUpdateDeploymentYaml(repoPath(), deployData)
+	repoPath := p.generateRepoPathByProjectName(projectName)
+	err = service.GenerateYamlFile(filepath.Join(repoPath, serviceProcess, strconv.Itoa(int(serviceInfo.ID)), deploymentFilename), deployData)
 	if err != nil {
 		logs.Error("Failed to update deployment yaml file:%+v\n", err)
 		p.internalError(err)
 	}
 
-}
+	var pushObject pushObject
+	pushObject.UserID = p.currentUser.ID
+	pushObject.FileName = deploymentFilename
+	pushObject.JobName = rollingUpdate
+	pushObject.ProjectName = projectName
 
+	pushObject.Value = ""
+	pushObject.Message = fmt.Sprintf("Rolling update service for project %s with service ID %d", projectName, serviceInfo.ID)
+
+	pushObject.Extras = ""
+
+	generateMetaConfiguration(&pushObject, repoPath)
+	pushObject.Items = []string{"META.cfg", filepath.Join(serviceProcess, strconv.Itoa(int(serviceInfo.ID)), deploymentFilename)}
+
+	statusCode, message, err := InternalPushObjects(&pushObject, &(p.baseController))
+	if err != nil {
+		p.internalError(err)
+	}
+	logs.Info("Internal pushed for rolling update with status: %d and message: %s.", statusCode, message)
+}
