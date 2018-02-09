@@ -11,7 +11,7 @@ import (
 	modelK8sExt "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 )
 
-var serviceName = "service001"
+var serviceName = "testservice001"
 var serviceConfig = Service{
 	modelK8s.Service{
 		TypeMeta: unversioned.TypeMeta{
