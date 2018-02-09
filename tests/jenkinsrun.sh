@@ -83,20 +83,20 @@ cp -r $uiDir/coverage $WORKSPACE/total
 
 function getFlag()
 {
-lastC=$1
-nowC=$2
-ftmp=`echo "$lastC>$nowC"|bc `
-if [ $ftmp -eq 1 ]; then
-flag="down"
-pic="error.jpg"
-elif [ $ftmp -eq 0 ]; then
-flag="eq"
-pic="correct.jpg"
-else
-flag="up"
-pic="correct.jpg"
-fi
-echo $pic
+   lastC=$1
+   nowC=$2
+   ftmp=`echo "$lastC>$nowC"|bc `
+   if [ $ftmp -eq 1 ]; then
+   flag="down"
+   pic="error.jpg"
+   elif [ $ftmp -eq 0 ]; then
+   flag="eq"
+   pic="correct.jpg"
+   else
+   flag="up"
+   pic="correct.jpg"
+   fi
+   echo $pic
 }
 
 pic=`getFlag $lastBuildCov $cov`
