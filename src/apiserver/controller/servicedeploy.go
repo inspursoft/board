@@ -27,6 +27,13 @@ func (p *ServiceDeployController) Prepare() {
 	p.isSysAdmin = (user.SystemAdmin == 1)
 }
 
+func (p *ServiceDeployController) generateRepoPathByProject(project *model.Project) string {
+	if project == nil {
+		p.customAbort(http.StatusBadRequest, "Failed to generate repo path since project is nil.")
+	}
+	return filepath.Join(baseRepoPath(), p.currentUser.Username, project.Name)
+}
+
 func (p *ServiceDeployController) getKey() string {
 	return strconv.Itoa(int(p.currentUser.ID))
 }
@@ -59,7 +66,8 @@ func (p *ServiceDeployController) DeployServiceAction() {
 		return
 	}
 
-	loadPath := filepath.Join(repoPath(), project.Name, strconv.Itoa(int(serviceInfo.ID)))
+	repoPath := p.generateRepoPathByProject(project)
+	loadPath := filepath.Join(repoPath, serviceProcess, strconv.Itoa(int(serviceInfo.ID)))
 	err = service.CheckDeploymentPath(loadPath)
 	if err != nil {
 		p.internalError(err)
@@ -72,21 +80,28 @@ func (p *ServiceDeployController) DeployServiceAction() {
 		return
 	}
 
-	deployPushobject := assemblePushObject(deploymentFilename, serviceInfo.ID, project.Name, "deployments")
-	ret, msg, err := InternalPushObjects(&deployPushobject, &(p.baseController))
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	logs.Info("Internal push deployment object: %d %s", ret, msg)
 	err = service.AssembleServiceYaml((*model.ConfigServiceStep)(configService), loadPath)
 	if err != nil {
 		p.internalError(err)
 		return
 	}
 
-	servicePushobject := assemblePushObject(serviceFilename, serviceInfo.ID, project.Name, "services")
-	ret, msg, err = InternalPushObjects(&servicePushobject, &(p.baseController))
+	var pushObject pushObject
+	pushObject.UserID = p.currentUser.ID
+	pushObject.FileName = fmt.Sprintf("%s,%s", deploymentFilename, serviceFilename)
+	pushObject.JobName = serviceProcess
+	pushObject.ProjectName = project.Name
+	pushObject.Extras = fmt.Sprintf("%s,%s", fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), deploymentAPI, project.Name, "deployments"),
+		fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), serviceAPI, project.Name, "services"))
+	pushObject.Value = filepath.Join(serviceProcess, strconv.Itoa(int(serviceInfo.ID)))
+	pushObject.Message = fmt.Sprintf("Create service for project %s with service %d", project.Name, serviceInfo.ID)
+
+	relPath := filepath.Join(serviceProcess, strconv.Itoa(int(serviceInfo.ID)))
+
+	generateMetaConfiguration(&pushObject, repoPath)
+	pushObject.Items = []string{"META.cfg", filepath.Join(relPath, deploymentFilename), filepath.Join(relPath, serviceFilename)}
+
+	ret, msg, err := InternalPushObjects(&pushObject, &(p.baseController))
 	if err != nil {
 		p.internalError(err)
 		return
@@ -116,25 +131,6 @@ func (p *ServiceDeployController) DeployServiceAction() {
 	configService.ServiceID = serviceInfo.ID
 	p.Data["json"] = configService
 	p.ServeJSON()
-}
-
-func assemblePushObject(fileName string, serviceID int64, projectName string, extras string) pushObject {
-	var pushobject pushObject
-	pushobject.FileName = fileName
-	pushobject.JobName = serviceProcess
-	pushobject.Value = filepath.Join(projectName, strconv.Itoa(int(serviceID)))
-	pushobject.Message = fmt.Sprintf("Create %s for project %s service %d", extras,
-		projectName, serviceID)
-	if extras == "deployments" {
-		pushobject.Extras = filepath.Join(kubeMasterURL(), deploymentAPI, projectName, extras)
-	} else {
-		pushobject.Extras = filepath.Join(kubeMasterURL(), serviceAPI, projectName, extras)
-	}
-	pushobject.Items = []string{filepath.Join(pushobject.Value, fileName)}
-	logs.Info("pushobject.FileName:%+v\n", pushobject.FileName)
-	logs.Info("pushobject.Value:%+v\n", pushobject.Value)
-	logs.Info("pushobject.Extras:%+v\n", pushobject.Extras)
-	return pushobject
 }
 
 func (p *ServiceDeployController) DeployServiceTestAction() {

@@ -1,0 +1,34 @@
+version: '2'
+services:
+  log-devops:
+    build:
+      context: ../../
+      dockerfile: make/dev/container/log/Dockerfile
+    restart: always
+    volumes:
+      - /data/board-devops:/var/log/docker/
+    networks:
+      - board-devops
+    ports:
+      - 1554:514
+  gogs:
+    image: gogs/gogs-custom
+    restart: always
+    env_file:
+      - ../config/gogits/env
+    volumes:
+      - /data/board-devops/gogs:/data
+    ports:
+      - "10022:22"
+      - "10080:3000"
+    depends_on:
+      - log-devops
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1554"
+        tag: "gogs"
+networks:
+  board-devops:
+    external: false
+       
