@@ -65,6 +65,9 @@ var scUpdate = model.ServiceStatus{
 	OwnerID:     2,
 }
 
+var testService = serviceName //ToDo Should be changed to common
+var testProject = "library"   //ToDo Should be changed to common
+
 //var scID int64
 
 func cleanSeviceTestByID(scid int64) {
@@ -140,7 +143,15 @@ func TestGetSelectableServices(t *testing.T) {
 func TestGetK8sService(t *testing.T) {
 	assert := assert.New(t)
 	service, err := GetK8sService("default", "kubernetes")
-	assert.Nil(err, "Error occurred while testing GetNodesStatus.")
-	assert.Equal("kubernetes", service.Name, "Error occurred while testing GetNodesStatus.")
+	assert.Nil(err, "Error occurred while testing GetK8sService.")
+	assert.Equal("kubernetes", service.Name, "Error service while testing GetK8sService.")
 	t.Log("Get kubernetes service pass")
+}
+
+func TestGetDeployment(t *testing.T) {
+	assert := assert.New(t)
+	deployment, err := GetDeployment(testProject, testService)
+	assert.Nil(err, "Error occurred while testing GetDeployment.")
+	assert.Equal(deployment.Name, testService, "Error deployment while testing GetDeployment.")
+	t.Log("Get kubernetes deployment pass")
 }

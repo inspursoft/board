@@ -16,7 +16,7 @@
 # Develop flag
 #
 # guyingyan add test
-DEVFLAG=dev
+DEVFLAG=release
 ifeq ($(DEVFLAG), release) 
 	BASEIMAGE=alpine:3.5
 	GOBUILDIMAGE=golang:1.8.3-alpine3.5

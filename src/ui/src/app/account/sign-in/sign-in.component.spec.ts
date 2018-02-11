@@ -33,7 +33,7 @@ describe("SignInComponent", () => {
       data: {
         systeminfo: {
           auth_mode: "ldap_auth",
-          board_host: "10.165.22.61",
+          board_host: "10.0.0.0",
           board_version: "dev",
           init_project_repo: "created",
           redirection_url: "http://redirection.mydomain.com",

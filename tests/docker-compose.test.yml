@@ -29,3 +29,15 @@ services:
     ports:
       - 389:389
       - 636:636
+  tokenserver:
+    build:
+      context: ../../
+      dockerfile: make/dev/container/tokenserver/Dockerfile
+    image: dev_tokenserver:dev
+    env_file:
+      - ../config/tokenserver/env
+    restart: always
+    volumes:
+      - ../config/tokenserver/app.conf:/go/bin/app.conf:z
+    ports:
+      - 4000:4000
