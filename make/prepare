@@ -116,6 +116,13 @@ ldap_timeout = rcp.get("configuration", "ldap_timeout")
 
 ########
 
+###grafana configuration
+graphite_protocol="http"
+graphite_ip="graphite"
+graphite_port="80"
+graphite_carbon_port="2003"
+########
+
 #Setting Directory
 apiserver_config_dir = os.path.join(config_dir,"apiserver")
 if not os.path.exists(apiserver_config_dir):
@@ -152,7 +159,14 @@ jenkins_env = os.path.join(config_dir, "jenkins", "env")
 grafana_config_dir = os.path.join(config_dir, "grafana")
 if not os.path.exists(grafana_config_dir):
     os.makedirs(os.path.join(config_dir, "grafana"))
-grafana_env = os.path.join(config_dir, "grafana", "env")
+grafana_subconfig_dir = os.path.join(grafana_config_dir, "config")
+if not os.path.exists(grafana_subconfig_dir):
+    os.makedirs(os.path.join(grafana_config_dir, "config"))
+grafana_env = os.path.join(grafana_config_dir, "env")
+grafana_k8s_ds = os.path.join(grafana_subconfig_dir, "kubernetes-datasource.json")
+grafana_graphite_ds = os.path.join(grafana_subconfig_dir, "graphite-datasource.json")
+grafana_dashboard = os.path.join(grafana_subconfig_dir, "kubernetes-dashboard.json")
+grafana_k8s = os.path.join(grafana_subconfig_dir, "kubernetes.json")
 
 #Render Configure File
 render(os.path.join(templates_dir, "apiserver", "app.conf"),
@@ -209,8 +223,24 @@ render(os.path.join(templates_dir, "jenkins", "env"),
         registry_port=registry_port)
 
 render(os.path.join(templates_dir, "grafana", "env"),
-        grafana_env,
+        grafana_env)
+
+render(os.path.join(templates_dir, "grafana", "config", "kubernetes-datasource.json"),
+        grafana_k8s_ds,
         kube_master_ip=kube_master_ip,
-        kube_master_port=kube_master_port)
+        kube_master_port=kube_master_port,
+        graphite_ip=graphite_ip,
+        graphite_carbon_port=graphite_carbon_port)
+
+render(os.path.join(templates_dir, "grafana", "config", "graphite-datasource.json"),
+        grafana_graphite_ds,
+        graphite_protocol=graphite_protocol,
+        graphite_ip=graphite_ip,
+        graphite_port=graphite_port)
+
+shutil.copy(os.path.join(templates_dir, "grafana", "config", "kubernetes-dashboard.json"), grafana_dashboard)
+
+render(os.path.join(templates_dir, "grafana", "config", "kubernetes.json"),
+        grafana_k8s)
 
 print("The configuration files are ready, please use docker-compose to start the service.")

@@ -1,11 +1,11 @@
 {
 	"name": "cluster",
 	"type": "raintank-kubernetes-datasource",
-	"url": "${KUBERNETES_ADDRESS}",
+	"url": "http://$kube_master_ip:$kube_master_port",
 	"access": "proxy",
 	"jsonData": {
 		"ds": "graphite",
-		"server": "${GRAPHITE_IP}",
-		"port": ${GRAPHITE_CARBON_PORT}
+		"server": "$graphite_ip",
+		"port": $graphite_carbon_port
 	}
 }

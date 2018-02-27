@@ -1,7 +1,7 @@
 {
 	"name": "graphite",
 	"type": "graphite",
-	"url": "${GRAPHITE_PROTOCOL}://${GRAPHITE_IP}:${GRAPHITE_PORT}",
+	"url": "$graphite_protocol://$graphite_ip:$graphite_port",
 	"access": "proxy",
 	"jsonData": {
 		"graphiteVersion": "1.1"
