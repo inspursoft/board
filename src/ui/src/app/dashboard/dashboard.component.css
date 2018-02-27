@@ -150,3 +150,22 @@ button:focus {
   font-size: 10px;
   text-align: left;
 }
+
+clr-icon.detail {
+  height: 30px;
+  width: 30px;
+}
+
+div.grafana-container-block {
+  padding: 0;
+  margin: 0;
+  scrollbar-base-color: blue;
+}
+
+div.grafana-container-header{
+  display: flex;
+}
+
+span.grafana-card-title{
+  flex-basis: 100%;
+}

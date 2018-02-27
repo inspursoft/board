@@ -34,6 +34,7 @@ export class AppTokenService {
 export class AppInitService {
   _isFirstLogin: boolean = false;
   _currentLang: string;
+  grafanaViewUrl: string = "";
   cookieExpiry: Date = new Date(Date.now() + 10 * 60 * 60 * 24 * 365 * 1000);
   guideStep: GUIDE_STEP;
   currentUser: {[key: string]: any} = null;

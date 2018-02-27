@@ -55,7 +55,7 @@
   </div>
 </div>
 
-<div class="card">
+<div *ngIf="!isShowGrafanaView" class="card">
   <div class="card-header">{{'DASHBOARD.SERVICE' | translate }}</div>
   <div class="card-block" style="display: flex;flex-direction: column">
     <div class="card-block-top-container">
@@ -106,7 +106,7 @@
   </div>
 </div>
 
-<div class="card">
+<div *ngIf="!isShowGrafanaView" class="card">
   <div class="card-header">{{'DASHBOARD.NODE' | translate }}</div>
   <div class="card-block" style="display: flex;flex-direction: column">
     <div class="card-block-top-container">
@@ -157,7 +157,7 @@
   </div>
 </div>
 
-<div class="card">
+<div *ngIf="!isShowGrafanaView" class="card">
   <div class="card-header">{{'DASHBOARD.STORAGE' | translate }}</div>
   <div class="card-block" style="display: flex;flex-direction: column">
     <div class="card-block-top-container">
@@ -208,6 +208,25 @@
              style="height: 300px">
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header grafana-container-header">
+    <span class="grafana-card-title">More Detail</span>
+    <a href="javascript:void(0)" (click)="isShowGrafanaView = !isShowGrafanaView">
+      <clr-icon shape="window-restore" class="detail"></clr-icon>
+    </a>
+    <a [routerLink]="['/dashboard']" [queryParams]="{isOnlyShowGrafanaView: 'true'}" target="_blank">
+      <clr-icon shape="window-max" class="detail"></clr-icon>
+    </a>
+  </div>
+  <div class="card-block">
+    <div class="grafana-container-block" [ngStyle]="{height:isShowGrafanaView?'900px':'300px'}">
+      <iframe #frameDashboard height=100% width="100%" frameborder="0" [src]="grafanaViewUrl | safe">
+        你的浏览器不支持iframe标签
+      </iframe>
     </div>
   </div>
 </div>
