@@ -1,0 +1,1150 @@
+{
+	"dashboard": {
+		"title": "Kubernetes",
+		"description": "Summary metrics about containers running on Kubernetes.",
+		"tags": [
+			"kubernetes",
+			"kubernetes-app"
+		],
+		"style": "light",
+		"timezone": "browser",
+		"editable": true,
+		"sharedCrosshair": true,
+		"hideControls": false,
+		"time": {
+			"from": "now-30m",
+			"to": "now"
+		},
+		"timepicker": {
+			"refresh_intervals": [
+				"5s",
+				"10s",
+				"30s",
+				"1m",
+				"5m",
+				"15m",
+				"30m",
+				"1h",
+				"2h",
+				"1d"
+			],
+			"time_options": [
+				"5m",
+				"15m",
+				"1h",
+				"6h",
+				"12h",
+				"24h",
+				"2d",
+				"7d",
+				"30d"
+			]
+		},
+		"templating": {
+			"list": [
+				{
+					"allValue": null,
+					"current": {
+						
+					},
+					"datasource": "graphite",
+					"hide": 0,
+					"includeAll": true,
+					"label": null,
+					"multi": true,
+					"name": "node",
+					"options": [],
+					"query": "snap.cluster.grafanalabs.kubestate.node.*",
+					"refresh": 1,
+					"regex": "",
+					"sort": 0,
+					"tagValuesQuery": null,
+					"tagsQuery": null,
+					"type": "query"
+				},
+				{
+					"allValue": null,
+					"current": {
+						
+					},
+					"datasource": "graphite",
+					"hide": 0,
+					"includeAll": true,
+					"label": "project",
+					"multi": true,
+					"name": "namespace",
+					"options": [],
+					"query": "snap.cluster.grafanalabs.kubestate.container.*",
+					"refresh": 1,
+					"regex": "",
+					"sort": 0,
+					"tagValuesQuery": null,
+					"tagsQuery": null,
+					"type": "query"
+				}
+			]
+		},
+		"annotations": {
+			"list": []
+		},
+		"refresh": "30s",
+		"schemaVersion": 13,
+		"version": 1,
+		"links": [],
+		"gnetId": null,
+		"rows": [
+			{
+				"collapse": false,
+				"height": 236,
+				"panels": [
+					{
+						"aliasColors": {
+							"Allocatable": "#0A437C",
+							"Requested": "#E5AC0E"
+						},
+						"bars": false,
+						"datasource": "graphite",
+						"editable": true,
+						"error": false,
+						"fill": 4,
+						"id": 14,
+						"legend": {
+							"avg": false,
+							"current": false,
+							"max": false,
+							"min": false,
+							"show": true,
+							"total": false,
+							"values": false
+						},
+						"lines": true,
+						"linewidth": 2,
+						"links": [],
+						"nullPointMode": "null as zero",
+						"percentage": false,
+						"pointradius": 5,
+						"points": false,
+						"renderer": "flot",
+						"seriesOverrides": [],
+						"span": 3,
+						"stack": false,
+						"steppedLine": false,
+						"targets": [
+							{
+								"refId": "A",
+								"target": "alias(sumSeries(snap.cluster.grafanalabs.kubestate.node.$node.status.capacity.pods), 'Capacity')",
+								"textEditor": false
+							},
+							{
+								"refId": "B",
+								"target": "alias(sumSeries(snap.cluster.grafanalabs.kubestate.node.$node.status.allocatable.pods), 'Allocatable')"
+							},
+							{
+								"refId": "C",
+								"target": "alias(transformNull(consolidateBy(sumSeries(snap.cluster.grafanalabs.kubestate.pod.$namespace.$node.*.status.phase.Running), 'max'), 0), 'Requested')",
+								"textEditor": false
+							}
+						],
+						"thresholds": [],
+						"timeFrom": null,
+						"timeShift": null,
+						"title": "Cluster Pod Capacity",
+						"tooltip": {
+							"msResolution": false,
+							"shared": true,
+							"sort": 0,
+							"value_type": "individual"
+						},
+						"type": "graph",
+						"xaxis": {
+							"mode": "time",
+							"name": null,
+							"show": true,
+							"values": []
+						},
+						"yaxes": [
+							{
+								"format": "short",
+								"label": null,
+								"logBase": 1,
+								"max": null,
+								"min": "0",
+								"show": true
+							},
+							{
+								"format": "short",
+								"label": null,
+								"logBase": 1,
+								"max": null,
+								"min": null,
+								"show": true
+							}
+						]
+					},
+					{
+						"aliasColors": {
+							"Allocatable": "#0A437C",
+							"Requested": "#E5AC0E"
+						},
+						"bars": false,
+						"datasource": "graphite",
+						"editable": true,
+						"error": false,
+						"fill": 4,
+						"id": 16,
+						"legend": {
+							"avg": false,
+							"current": false,
+							"max": false,
+							"min": false,
+							"show": true,
+							"total": false,
+							"values": false
+						},
+						"lines": true,
+						"linewidth": 2,
+						"links": [],
+						"nullPointMode": "null as zero",
+						"percentage": false,
+						"pointradius": 5,
+						"points": false,
+						"renderer": "flot",
+						"seriesOverrides": [],
+						"span": 3,
+						"stack": false,
+						"steppedLine": false,
+						"targets": [
+							{
+								"refId": "A",
+								"target": "alias(sumSeries(snap.cluster.grafanalabs.kubestate.node.$node.status.capacity.cpu.cores), 'Capacity')"
+							},
+							{
+								"refId": "B",
+								"target": "alias(sumSeries(snap.cluster.grafanalabs.kubestate.node.$node.status.allocatable.cpu.cores), 'Allocatable')"
+							},
+							{
+								"refId": "C",
+								"target": "alias(transformNull(consolidateBy(sumSeries(snap.cluster.grafanalabs.kubestate.container.$namespace.$node.*.*.requested.cpu.cores), 'max'), 0), 'Requested')",
+								"textEditor": false
+							}
+						],
+						"thresholds": [],
+						"timeFrom": null,
+						"timeShift": null,
+						"title": "Cluster CPU Capacity",
+						"tooltip": {
+							"msResolution": false,
+							"shared": true,
+							"sort": 0,
+							"value_type": "individual"
+						},
+						"type": "graph",
+						"xaxis": {
+							"mode": "time",
+							"name": null,
+							"show": true,
+							"values": []
+						},
+						"yaxes": [
+							{
+								"format": "short",
+								"label": null,
+								"logBase": 1,
+								"max": null,
+								"min": "0",
+								"show": true
+							},
+							{
+								"format": "short",
+								"label": null,
+								"logBase": 1,
+								"max": null,
+								"min": null,
+								"show": true
+							}
+						]
+					},
+					{
+						"aliasColors": {
+							"Allocatable": "#0A437C",
+							"Requested": "#E5AC0E"
+						},
+						"bars": false,
+						"datasource": "graphite",
+						"editable": true,
+						"error": false,
+						"fill": 4,
+						"id": 17,
+						"legend": {
+							"avg": false,
+							"current": false,
+							"max": false,
+							"min": false,
+							"show": true,
+							"total": false,
+							"values": false
+						},
+						"lines": true,
+						"linewidth": 2,
+						"links": [],
+						"nullPointMode": "null as zero",
+						"percentage": false,
+						"pointradius": 5,
+						"points": false,
+						"renderer": "flot",
+						"seriesOverrides": [],
+						"span": 3,
+						"stack": false,
+						"steppedLine": false,
+						"targets": [
+							{
+								"refId": "A",
+								"target": "alias(sumSeries(snap.cluster.grafanalabs.kubestate.node.$node.status.capacity.memory.bytes), 'Capacity')"
+							},
+							{
+								"refId": "B",
+								"target": "alias(sumSeries(snap.cluster.grafanalabs.kubestate.node.$node.status.allocatable.memory.bytes), 'Allocatable')"
+							},
+							{
+								"refId": "C",
+								"target": "alias(transformNull(consolidateBy(sumSeries(snap.cluster.grafanalabs.kubestate.container.$namespace.$node.*.*.requested.memory.bytes), 'max'), 0), 'Requested')",
+								"textEditor": false
+							}
+						],
+						"thresholds": [],
+						"timeFrom": null,
+						"timeShift": null,
+						"title": "Cluster Memory Capacity",
+						"tooltip": {
+							"msResolution": false,
+							"shared": true,
+							"sort": 0,
+							"value_type": "individual"
+						},
+						"type": "graph",
+						"xaxis": {
+							"mode": "time",
+							"name": null,
+							"show": true,
+							"values": []
+						},
+						"yaxes": [
+							{
+								"format": "decbytes",
+								"label": null,
+								"logBase": 1,
+								"max": null,
+								"min": "0",
+								"show": true
+							},
+							{
+								"format": "short",
+								"label": null,
+								"logBase": 1,
+								"max": null,
+								"min": null,
+								"show": true
+							}
+						]
+					},
+					{
+						"aliasColors": {
+							"Allocatable": "#0A437C",
+							"Requested": "#E5AC0E"
+						},
+						"bars": false,
+						"datasource": "graphite",
+						"editable": true,
+						"error": false,
+						"fill": 4,
+						"id": 37,
+						"legend": {
+							"avg": false,
+							"current": false,
+							"max": false,
+							"min": false,
+							"show": true,
+							"total": false,
+							"values": false
+						},
+						"lines": true,
+						"linewidth": 2,
+						"links": [],
+						"nullPointMode": "null",
+						"percentage": false,
+						"pointradius": 5,
+						"points": false,
+						"renderer": "flot",
+						"seriesOverrides": [],
+						"span": 3,
+						"stack": true,
+						"steppedLine": false,
+						"targets": [
+							{
+								"refId": "A",
+								"target": "alias(sumSeries(snap.cluster.$node.intel.procfs.filesystem.rootfs.space_free), 'Available')",
+								"textEditor": false
+							},
+							{
+								"refId": "B",
+								"target": "alias(sumSeries(snap.cluster.$node.intel.procfs.filesystem.rootfs.space_used), 'Usage')",
+								"textEditor": false
+							}
+						],
+						"thresholds": [],
+						"timeFrom": null,
+						"timeShift": null,
+						"title": "Cluster Disk Usage",
+						"tooltip": {
+							"msResolution": false,
+							"shared": true,
+							"sort": 0,
+							"value_type": "individual"
+						},
+						"type": "graph",
+						"xaxis": {
+							"mode": "time",
+							"name": null,
+							"show": true,
+							"values": []
+						},
+						"yaxes": [
+							{
+								"format": "decbytes",
+								"label": null,
+								"logBase": 1,
+								"max": null,
+								"min": "0",
+								"show": true
+							},
+							{
+								"format": "short",
+								"label": null,
+								"logBase": 1,
+								"max": null,
+								"min": null,
+								"show": true
+							}
+						]
+					}
+				],
+				"repeat": null,
+				"repeatIteration": null,
+				"repeatRowId": null,
+				"showTitle": true,
+				"title": "Cluster Capacity",
+				"titleSize": "h3"
+			},
+			{
+				"collapse": false,
+				"height": "250px",
+				"panels": [
+					{
+						"alerting": {
+							
+						},
+						"aliasColors": {
+							
+						},
+						"bars": false,
+						"datasource": "graphite",
+						"editable": true,
+						"error": false,
+						"fill": 1,
+						"grid": {
+							
+						},
+						"id": 100,
+						"legend": {
+							"alignAsTable": false,
+							"avg": false,
+							"current": false,
+							"max": false,
+							"min": false,
+							"rightSide": false,
+							"show": false,
+							"total": false,
+							"values": false
+						},
+						"lines": true,
+						"linewidth": 2,
+						"links": [],
+						"nullPointMode": "connected",
+						"percentage": false,
+						"pointradius": 5,
+						"points": false,
+						"renderer": "flot",
+						"seriesOverrides": [],
+						"span": 6,
+						"stack": true,
+						"steppedLine": false,
+						"targets": [
+							{
+								"refId": "A",
+								"target": "alias(sumSeries(snap.cluster.grafanalabs.kubestate.pod.$namespace.$node.*.status.phase.Running), 'count')",
+								"textEditor": false
+							}
+						],
+						"thresholds": [],
+						"timeFrom": null,
+						"timeShift": null,
+						"title": "Running Pods",
+						"tooltip": {
+							"msResolution": true,
+							"shared": true,
+							"sort": 0,
+							"value_type": "individual"
+						},
+						"type": "graph",
+						"xaxis": {
+							"mode": "time",
+							"name": null,
+							"show": true,
+							"values": []
+						},
+						"yaxes": [
+							{
+								"format": "short",
+								"logBase": 1,
+								"max": null,
+								"min": null,
+								"show": true
+							},
+							{
+								"format": "short",
+								"logBase": 1,
+								"max": null,
+								"min": null,
+								"show": true
+							}
+						]
+					},
+					{
+						"alerting": {
+							
+						},
+						"aliasColors": {
+							
+						},
+						"bars": false,
+						"datasource": "graphite",
+						"editable": true,
+						"error": false,
+						"fill": 1,
+						"grid": {
+							
+						},
+						"id": 101,
+						"legend": {
+							"alignAsTable": false,
+							"avg": false,
+							"current": false,
+							"max": false,
+							"min": false,
+							"rightSide": false,
+							"show": false,
+							"total": false,
+							"values": false
+						},
+						"lines": true,
+						"linewidth": 2,
+						"links": [],
+						"nullPointMode": "connected",
+						"percentage": false,
+						"pointradius": 5,
+						"points": false,
+						"renderer": "flot",
+						"seriesOverrides": [],
+						"span": 6,
+						"stack": true,
+						"steppedLine": false,
+						"targets": [
+							{
+								"refId": "A",
+								"target": "alias(sumSeries(snap.cluster.grafanalabs.kubestate.container.$namespace.$node.*.*.status.running), 'count')",
+								"textEditor": false
+							}
+						],
+						"thresholds": [],
+						"timeFrom": null,
+						"timeShift": null,
+						"title": "Running Containers",
+						"tooltip": {
+							"msResolution": true,
+							"shared": true,
+							"sort": 0,
+							"value_type": "individual"
+						},
+						"type": "graph",
+						"xaxis": {
+							"mode": "time",
+							"name": null,
+							"show": true,
+							"values": []
+						},
+						"yaxes": [
+							{
+								"format": "short",
+								"logBase": 1,
+								"max": null,
+								"min": null,
+								"show": true
+							},
+							{
+								"format": "short",
+								"logBase": 1,
+								"max": null,
+								"min": null,
+								"show": true
+							}
+						]
+					}
+				],
+				"repeat": null,
+				"repeatIteration": null,
+				"repeatRowId": null,
+				"showTitle": true,
+				"title": "Pods And Containers",
+				"titleSize": "h3"
+			},
+			{
+				"collapse": false,
+				"height": "250px",
+				"panels": [
+					{
+						"alerting": {
+							
+						},
+						"aliasColors": {
+							"steal": "#BF1B00"
+						},
+						"bars": false,
+						"datasource": "graphite",
+						"editable": true,
+						"error": false,
+						"fill": 5,
+						"grid": {
+							
+						},
+						"id": 1,
+						"legend": {
+							"alignAsTable": true,
+							"avg": false,
+							"current": true,
+							"max": false,
+							"min": false,
+							"rightSide": true,
+							"show": true,
+							"total": false,
+							"values": true
+						},
+						"lines": true,
+						"linewidth": 0,
+						"links": [],
+						"nullPointMode": "connected",
+						"percentage": false,
+						"pointradius": 5,
+						"points": false,
+						"renderer": "flot",
+						"seriesOverrides": [],
+						"span": 6,
+						"stack": true,
+						"steppedLine": false,
+						"targets": [
+							{
+								"refId": "A",
+								"target": "alias(averageSeries(snap.cluster.$node.intel.procfs.cpu.all.system_percentage), 'system')",
+								"textEditor": false
+							},
+							{
+								"refId": "B",
+								"target": "alias(averageSeries(snap.cluster.$node.intel.procfs.cpu.all.user_percentage), 'user')",
+								"textEditor": false
+							},
+							{
+								"refId": "C",
+								"target": "alias(averageSeries(snap.cluster.$node.intel.procfs.cpu.all.iowait_percentage), 'iowait')",
+								"textEditor": false
+							},
+							{
+								"refId": "D",
+								"target": "alias(averageSeries(snap.cluster.$node.intel.procfs.cpu.all.steal_percentage), 'steal')",
+								"textEditor": false
+							}
+						],
+						"thresholds": [],
+						"timeFrom": null,
+						"timeShift": null,
+						"title": "CPU %",
+						"tooltip": {
+							"msResolution": false,
+							"shared": true,
+							"sort": 0,
+							"value_type": "individual"
+						},
+						"type": "graph",
+						"xaxis": {
+							"mode": "time",
+							"name": null,
+							"show": true,
+							"values": []
+						},
+						"yaxes": [
+							{
+								"format": "percent",
+								"logBase": 1,
+								"max": "100",
+								"min": null,
+								"show": true
+							},
+							{
+								"format": "short",
+								"logBase": 1,
+								"max": null,
+								"min": null,
+								"show": true
+							}
+						]
+					},
+					{
+						"alerting": {
+							
+						},
+						"aliasColors": {
+							
+						},
+						"bars": false,
+						"datasource": "graphite",
+						"editable": true,
+						"error": false,
+						"fill": 1,
+						"grid": {
+							
+						},
+						"id": 10,
+						"legend": {
+							"alignAsTable": true,
+							"avg": false,
+							"current": true,
+							"max": false,
+							"min": false,
+							"rightSide": true,
+							"show": true,
+							"total": false,
+							"values": true
+						},
+						"lines": true,
+						"linewidth": 2,
+						"links": [],
+						"nullPointMode": "connected",
+						"percentage": false,
+						"pointradius": 5,
+						"points": false,
+						"renderer": "flot",
+						"seriesOverrides": [
+							{
+								"alias": "mem_available",
+								"stack": "B"
+							}
+						],
+						"span": 6,
+						"stack": true,
+						"steppedLine": false,
+						"targets": [
+							{
+								"refId": "A",
+								"target": "alias(sumSeries(snap.cluster.$node.intel.procfs.meminfo.mem_available), 'available')",
+								"textEditor": false
+							},
+							{
+								"refId": "B",
+								"target": "alias(sumSeries(snap.cluster.$node.intel.procfs.meminfo.mem_free), 'free')",
+								"textEditor": false
+							},
+							{
+								"refId": "C",
+								"target": "alias(sumSeries(snap.cluster.$node.intel.procfs.meminfo.mem_used), 'used')",
+								"textEditor": false
+							}
+						],
+						"thresholds": [],
+						"timeFrom": null,
+						"timeShift": null,
+						"title": "Memory Available",
+						"tooltip": {
+							"msResolution": true,
+							"shared": true,
+							"sort": 0,
+							"value_type": "individual"
+						},
+						"type": "graph",
+						"xaxis": {
+							"mode": "time",
+							"name": null,
+							"show": true,
+							"values": []
+						},
+						"yaxes": [
+							{
+								"format": "bits",
+								"logBase": 1,
+								"max": null,
+								"min": 0,
+								"show": true
+							},
+							{
+								"format": "short",
+								"logBase": 1,
+								"max": null,
+								"min": null,
+								"show": true
+							}
+						]
+					}
+				],
+				"repeat": null,
+				"repeatIteration": null,
+				"repeatRowId": null,
+				"showTitle": true,
+				"title": "Nodes",
+				"titleSize": "h3"
+			},
+			{
+				"collapse": false,
+				"height": 250,
+				"panels": [
+					{
+						"aliasColors": {
+							
+						},
+						"bars": false,
+						"datasource": "graphite",
+						"editable": true,
+						"error": false,
+						"fill": 1,
+						"id": 24,
+						"legend": {
+							"alignAsTable": true,
+							"avg": false,
+							"current": true,
+							"max": false,
+							"min": false,
+							"rightSide": true,
+							"show": true,
+							"total": false,
+							"values": true
+						},
+						"lines": true,
+						"linewidth": 1,
+						"links": [],
+						"nullPointMode": "connected",
+						"percentage": false,
+						"pointradius": 5,
+						"points": false,
+						"renderer": "flot",
+						"seriesOverrides": [],
+						"span": 5,
+						"stack": false,
+						"steppedLine": false,
+						"targets": [
+							{
+								"refId": "A",
+								"target": "aliasSub(groupByNode(snap.cluster.$node.intel.procfs.filesystem.rootfs.space_free, 2, 'maxSeries'), '(.*)', '\\1 Free')"
+							},
+							{
+								"refId": "B",
+								"target": "aliasSub(groupByNode(snap.cluster.$node.intel.procfs.filesystem.rootfs.space_used, 2, 'maxSeries'), '(.*)', '\\1 Usage')"
+							}
+						],
+						"thresholds": [],
+						"timeFrom": null,
+						"timeShift": null,
+						"title": "Disk Usage and Capacity",
+						"tooltip": {
+							"msResolution": false,
+							"shared": true,
+							"sort": 0,
+							"value_type": "individual"
+						},
+						"type": "graph",
+						"xaxis": {
+							"mode": "time",
+							"name": null,
+							"show": true,
+							"values": []
+						},
+						"yaxes": [
+							{
+								"format": "bytes",
+								"label": null,
+								"logBase": 1,
+								"max": null,
+								"min": null,
+								"show": true
+							},
+							{
+								"format": "short",
+								"label": null,
+								"logBase": 1,
+								"max": null,
+								"min": null,
+								"show": true
+							}
+						]
+					},
+					{
+						"alerting": {
+							
+						},
+						"aliasColors": {
+							
+						},
+						"bars": false,
+						"datasource": "graphite",
+						"editable": true,
+						"error": false,
+						"fill": 1,
+						"grid": {
+							
+						},
+						"id": 7,
+						"legend": {
+							"avg": false,
+							"current": false,
+							"max": false,
+							"min": false,
+							"show": false,
+							"total": false,
+							"values": false
+						},
+						"lines": false,
+						"linewidth": 2,
+						"links": [],
+						"nullPointMode": "connected",
+						"percentage": false,
+						"pointradius": 1,
+						"points": true,
+						"renderer": "flot",
+						"seriesOverrides": [],
+						"span": 5,
+						"stack": false,
+						"steppedLine": false,
+						"targets": [
+							{
+								"refId": "A",
+								"target": "alias(sumSeries(snap.cluster.$node.intel.iostat.device.ALL.r_per_sec), 'rIOPS')",
+								"textEditor": false
+							},
+							{
+								"refId": "B",
+								"target": "alias(sumSeries(snap.cluster.$node.intel.iostat.device.ALL.w_per_sec), 'wIOPS')",
+								"textEditor": false
+							}
+						],
+						"thresholds": [],
+						"timeFrom": null,
+						"timeShift": null,
+						"title": "Disk IOPS",
+						"tooltip": {
+							"msResolution": false,
+							"shared": true,
+							"sort": 0,
+							"value_type": "cumulative"
+						},
+						"type": "graph",
+						"xaxis": {
+							"mode": "time",
+							"name": null,
+							"show": true,
+							"values": []
+						},
+						"yaxes": [
+							{
+								"format": "short",
+								"logBase": 1,
+								"max": null,
+								"min": null,
+								"show": true
+							},
+							{
+								"format": "short",
+								"logBase": 1,
+								"max": null,
+								"min": null,
+								"show": true
+							}
+						]
+					},
+					{
+						"alerting": {
+							
+						},
+						"aliasColors": {
+							
+						},
+						"bars": false,
+						"datasource": "graphite",
+						"editable": true,
+						"error": false,
+						"fill": 1,
+						"grid": {
+							
+						},
+						"id": 8,
+						"legend": {
+							"avg": false,
+							"current": false,
+							"max": false,
+							"min": false,
+							"show": false,
+							"total": false,
+							"values": false
+						},
+						"lines": false,
+						"linewidth": 2,
+						"links": [],
+						"nullPointMode": "connected",
+						"percentage": false,
+						"pointradius": 1,
+						"points": true,
+						"renderer": "flot",
+						"seriesOverrides": [],
+						"span": 5,
+						"stack": false,
+						"steppedLine": false,
+						"targets": [
+							{
+								"refId": "A",
+								"target": "alias(sumSeries(snap.cluster.$node.intel.iostat.device.*.rkB_per_sec), 'Read Bps')",
+								"textEditor": false
+							},
+							{
+								"refId": "B",
+								"target": "alias(sumSeries(snap.cluster.$node.intel.iostat.device.*.wkB_per_sec), 'Write Bps')",
+								"textEditor": false
+							}
+						],
+						"thresholds": [],
+						"timeFrom": null,
+						"timeShift": null,
+						"title": "Disk Throughput",
+						"tooltip": {
+							"msResolution": false,
+							"shared": true,
+							"sort": 0,
+							"value_type": "cumulative"
+						},
+						"type": "graph",
+						"xaxis": {
+							"mode": "time",
+							"name": null,
+							"show": true,
+							"values": []
+						},
+						"yaxes": [
+							{
+								"format": "Kbits",
+								"logBase": 1,
+								"max": null,
+								"min": null,
+								"show": true
+							},
+							{
+								"format": "short",
+								"logBase": 1,
+								"max": null,
+								"min": null,
+								"show": true
+							}
+						]
+					},
+					{
+						"alerting": {
+							
+						},
+						"aliasColors": {
+							
+						},
+						"bars": false,
+						"datasource": "graphite",
+						"editable": true,
+						"error": false,
+						"fill": 0,
+						"grid": {
+							
+						},
+						"id": 46,
+						"legend": {
+							"avg": false,
+							"current": false,
+							"max": false,
+							"min": false,
+							"show": false,
+							"total": false,
+							"values": false
+						},
+						"lines": true,
+						"linewidth": 1,
+						"links": [],
+						"nullPointMode": "connected",
+						"percentage": false,
+						"pointradius": 1,
+						"points": false,
+						"renderer": "flot",
+						"seriesOverrides": [],
+						"span": 5,
+						"stack": false,
+						"steppedLine": false,
+						"targets": [
+							{
+								"refId": "A",
+								"target": "aliasByNode(snap.cluster.$node.intel.iostat.device.*.%util, 2, 7)",
+								"textEditor": false
+							}
+						],
+						"thresholds": [],
+						"timeFrom": null,
+						"timeShift": null,
+						"title": "Disk Utilization",
+						"tooltip": {
+							"msResolution": false,
+							"shared": true,
+							"sort": 0,
+							"value_type": "cumulative"
+						},
+						"type": "graph",
+						"xaxis": {
+							"mode": "time",
+							"name": null,
+							"show": true,
+							"values": []
+						},
+						"yaxes": [
+							{
+								"format": "percent",
+								"logBase": 1,
+								"max": "100",
+								"min": null,
+								"show": true
+							},
+							{
+								"format": "short",
+								"logBase": 1,
+								"max": null,
+								"min": null,
+								"show": true
+							}
+						]
+					}
+				],
+				"repeat": null,
+				"repeatIteration": null,
+				"repeatRowId": null,
+				"showTitle": true,
+				"title": "Disk",
+				"titleSize": "h3"
+			}
+		]
+	},
+	"overwrite": true
+}
