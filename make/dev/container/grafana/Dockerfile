@@ -1,12 +1,11 @@
 FROM grafana/grafana:4.6.3
 
-ENV GF_AUTH_ANONYMOUS_ENABLED=true \
+RUN grafana-cli plugins install raintank-kubernetes-app && mkdir /plugins && cp -r /var/lib/grafana/plugins/* /plugins
+ENV GF_PATHS_PLUGINS=/plugins \
+    GF_AUTH_ANONYMOUS_ENABLED=true \
     GF_AUTH_ANONYMOUS_ORG_ROLE=Admin \
     GF_USERS_DEFAULT_THEME=light \
     GF_ANALYTICS_REPORTING_ENABLED=false
-
-RUN grafana-cli plugins install raintank-kubernetes-app && mkdir /plugins && cp -r /var/lib/grafana/plugins/* /plugins
-ENV GF_PATHS_PLUGINS=/plugins
 
 ADD make/dev/container/grafana/init.sh /init.sh
 RUN chmod u+x /init.sh
