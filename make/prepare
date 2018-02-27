@@ -117,10 +117,10 @@ ldap_timeout = rcp.get("configuration", "ldap_timeout")
 ########
 
 ###grafana configuration
-graphite_protocol="http"
-graphite_ip="graphite"
-graphite_port="80"
-graphite_carbon_port="2003"
+graphite_protocol = rcp.get("configuration", "grafana_graphite_protocol")
+graphite_ip = rcp.get("configuration", "grafana_graphite_ip")
+graphite_port = rcp.get("configuration", "grafana_graphite_port")
+graphite_carbon_port = rcp.get("configuration", "grafana_graphite_carbon_port")
 ########
 
 #Setting Directory
