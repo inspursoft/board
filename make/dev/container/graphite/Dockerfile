@@ -1,0 +1,1 @@
+FROM graphiteapp/graphite-statsd:1.1.1
