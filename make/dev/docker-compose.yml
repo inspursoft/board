@@ -175,9 +175,7 @@ services:
     volumes:
       - /data/board/grafana/lib:/var/lib/grafana
       - /data/board/grafana/log:/var/log/grafana
-      - ../config/grafana/config:/etc/grafana/config
-    env_file:
-      - ../config/grafana/env
+      - ../config/grafana:/etc/grafana/config
     networks:
       - board
 #    ports:

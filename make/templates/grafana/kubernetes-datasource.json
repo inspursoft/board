@@ -5,7 +5,7 @@
 	"access": "proxy",
 	"jsonData": {
 		"ds": "graphite",
-		"server": "$graphite_ip",
-		"port": $graphite_carbon_port
+		"server": "graphite",
+		"port": 2003
 	}
 }
