@@ -8,7 +8,7 @@ ENV GF_PATHS_PLUGINS=/plugins \
     GF_ANALYTICS_REPORTING_ENABLED=false \
     GF_SERVER_ROOT_URL=/grafana
 
-ADD make/dev/container/grafana/init.sh /init.sh
+ADD make/release/container/grafana/init.sh /init.sh
 RUN chmod u+x /init.sh
 
 RUN sed -i '/^exec/i \/init.sh' /run.sh
