@@ -113,7 +113,6 @@ services:
       - db
     depends_on:
       - log
-      - db
     logging:
       driver: "syslog"
       options:

@@ -135,10 +135,9 @@ services:
     networks:
       - board
     links:
-      - mysql
+      - db
     depends_on:
       - log
-      - mysql
     logging:
       driver: "syslog"
       options:
