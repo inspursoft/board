@@ -129,32 +129,6 @@ func CreateAccessToken(username, password string) (*accessToken, error) {
 	return nil, nil
 }
 
-func GetAccessTokens(username, password string) (tokens []accessToken, err error) {
-	resp, err := utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s/api/v1/users/%s/tokens", gogitsBaseURL(), username), func(req *http.Request) error {
-		req.Header = http.Header{
-			"content-type":  []string{"application/json"},
-			"Authorization": []string{"Basic " + utils.BasicAuthEncode(username, password)},
-		}
-		return nil
-	}, nil)
-	if err != nil {
-		return nil, err
-	}
-	if resp != nil {
-		output, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		logs.Debug("token output: %s", string(output))
-		err = json.Unmarshal(output, &tokens)
-		if err != nil {
-			return nil, err
-		}
-		return tokens, nil
-	}
-	return nil, nil
-}
-
 func (g *gogsHandler) CreatePublicKey(title, publicKey string) error {
 	opt := createKeyOption{
 		Title: title,
