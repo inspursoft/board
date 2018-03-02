@@ -25,23 +25,23 @@ services:
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "db"
-  gitserver:
-    image: board_gitserver:__version__
+  gogits:
+    image: board_gogits:__version__
     restart: always
+    env_file:
+      - ../config/gogits/env
     volumes:
-      - /data/board/gitserver/repos:/gitserver/repos
-      - ../config/ssh_keys:/gitserver/keys
-    networks:
-      - board
-    links:
-      - jenkins
+      - /data/board/gogits:/data:rw
+    ports:
+      - "10022:22"
+      - "10080:3000"
     depends_on:
       - log
     logging:
       driver: "syslog"
       options:
         syslog-address: "tcp://127.0.0.1:1514"
-        tag: "gitserver"
+        tag: "gogits"
   jenkins:
     image: board_jenkins:__version__
     restart: always
@@ -69,15 +69,14 @@ services:
     volumes:
       - ../config/apiserver/app.conf:/usr/bin/app.conf:z
 #     - ../../tools/swagger/vendors/swagger-ui-2.1.4/dist:/usr/bin/swagger:z
-      - ../config/ssh_keys:/root/.ssh
-      - /data/board/gitserver/repos:/repos
+      - /data/board/repos:/repos:rw
+      - /data/board/keys:/keys:rw
     env_file:
       - ../config/apiserver/env
     networks:
       - board
     links:
       - db
-      - gitserver
     ports: 
       - 8088:8088
     depends_on:

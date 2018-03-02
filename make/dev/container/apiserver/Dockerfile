@@ -11,15 +11,14 @@ COPY VERSION /go/bin/VERSION
 WORKDIR /go/src/git/inspursoft/board/src/apiserver
 
 RUN go build -v -a -o /go/bin/apiserver && \
-    chmod u+x /go/bin/apiserver
+    chmod u+x /go/bin/apiserver && \
+    mkdir repos && \
+    mkdir keys
 
 WORKDIR /go/bin/
 
-COPY make/dev/container/apiserver/entrypoint.sh /go/bin/entrypoint.sh
-RUN chmod u+x entrypoint.sh
+VOLUME ["/go/bin", "/repos", "/keys"]
 
-ENTRYPOINT ["sh", "entrypoint.sh"]
-
-VOLUME ["/go/bin"]
+CMD ["apiserver"]
 
 EXPOSE 8088

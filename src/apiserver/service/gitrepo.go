@@ -2,7 +2,9 @@ package service
 
 import (
 	"fmt"
+	"git/inspursoft/board/src/common/utils"
 	"io/ioutil"
+	"os/exec"
 	"path/filepath"
 	"time"
 
@@ -14,6 +16,9 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing/transport"
 	gitssh "gopkg.in/src-d/go-git.v4/plumbing/transport/ssh"
 )
+
+var gogitsSSHPort = utils.GetConfig("GOGITS_SSH_PORT")
+var gogitsHostIP = utils.GetConfig("GOGITS_HOST_IP")
 
 type repoHandler struct {
 	username string
@@ -32,6 +37,11 @@ func InitBareRepo(servePath string) (*repoHandler, error) {
 func getSSHAuth(username string) (*gitssh.PublicKeys, error) {
 	sshPrivateKeyPath := filepath.Join(sshKeyPath(), username, sshPrivateKey)
 	logs.Debug("SSH private key path: %s", sshPrivateKeyPath)
+
+	err := exec.Command("ssh", "-i", sshPrivateKeyPath, "-4", gogitsHostIP(), "-o", "StrictHostKeyChecking=no", "-p", gogitsSSHPort()).Run()
+	if err != nil {
+		logs.Warn("Failed to add Public key to known hosts: %+v", err)
+	}
 	deployKey, err := ioutil.ReadFile(sshPrivateKeyPath)
 	if err != nil {
 		return nil, err
