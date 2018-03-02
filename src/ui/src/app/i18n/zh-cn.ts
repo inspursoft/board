@@ -110,7 +110,8 @@ export const LANG_ZH_CN = {
     "NODE": "节点",
     "USAGE": "已用",
     "TOTAL": "总共",
-    "STORAGE": "存储"
+    "STORAGE": "存储",
+    "GRAFANA_FRAME_SUPPORT":"你的浏览器不支持iframe标签。"
   },
   "PROJECT": {
     "CREATE_PROJECT": "创建项目",
