@@ -77,6 +77,12 @@ func initProjectRepo() {
 	if initialPassword == "" {
 		initialPassword = defaultInitialPassword
 	}
+
+	err := gogs.SignUp(model.User{Username: adminUsername, Email: adminEmail, Password: initialPassword})
+	if err != nil {
+		logs.Error("Failed to create admin user on Gogit: %+v", err)
+	}
+
 	token, err := gogs.CreateAccessToken(adminUsername, initialPassword)
 	if err != nil {
 		logs.Error("Failed to create access token for admin user: %+v", err)

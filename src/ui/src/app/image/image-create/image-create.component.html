@@ -47,7 +47,7 @@
                       [customerValidatorAsyncFunc]="checkImageNameFun"
                       [disabled]="isBuildImageWIP"
                       [simpleFiled]="customerNewImage.image_name"
-                      (onCheck)="customerNewImage.image_name = $event;asyncGetDockerFilePreviewInfo()">
+                      (onCheck)="customerNewImage.image_name = $event;updateFileListAndPreviewInfo()">
             </cs-input>
             <cs-input [inputIsRequired]="true"
                       [inputPattern]="patternNewImageTag"
@@ -55,15 +55,59 @@
                       [customerValidatorAsyncFunc]="checkImageTagFun"
                       [disabled]="isBuildImageWIP"
                       [simpleFiled]="customerNewImage.image_tag"
-                      (onCheck)="customerNewImage.image_tag = $event;asyncGetDockerFilePreviewInfo()">
+                      (onCheck)="customerNewImage.image_tag = $event;updateFileListAndPreviewInfo()">
             </cs-input>
-            <cs-input [inputIsRequired]="true"
-                      [inputPattern]="patternBaseImage"
-                      [inputLabel]="'IMAGE.CREATE_IMAGE_BASE_IMAGE'|translate"
-                      [disabled]="isBuildImageWIP"
-                      [simpleFiled]="customerNewImage.image_dockerfile.image_base"
-                      (onCheck)="customerNewImage.image_dockerfile.image_base = $event;getDockerFilePreviewInfo()">
-            </cs-input>
+            <div class="base-image-container base-margin-top">
+              <div class="base-image-source-container">
+                <label class="base-text">{{"IMAGE.CREATE_IMAGE_BASE_IMAGE" | translate}}:
+                  <span style="color: red">*</span>
+                </label>
+                <input type="radio"
+                       class="base-image-radio"
+                       name="baseImageSource"
+                       id="radFromDocker"
+                       [value]="1"
+                       [(ngModel)]="baseImageSource"
+                       (click)="cleanBaseImageInfo()"
+                       checked>
+                <label for="radFromDocker" class="base-image-source">Docker Hub</label>
+                <input type="radio"
+                       class="base-image-radio"
+                       name="baseImageSource"
+                       id="radFromBoard"
+                       [value]="2"
+                       [(ngModel)]="baseImageSource"
+                       (click)="cleanBaseImageInfo(true)">
+                <label for="radFromBoard" class="base-image-source">Board Registry</label>
+              </div>
+              <cs-input *ngIf="baseImageSource == 1"
+                        class="margin-left-180"
+                        [inputIsRequired]="true"
+                        [inputPattern]="patternBaseImage"
+                        [inputType]="2"
+                        [disabled]="isBuildImageWIP"
+                        [simpleFiled]="customerNewImage.image_dockerfile.image_base"
+                        (onCheck)="customerNewImage.image_dockerfile.image_base = $event;getDockerFilePreviewInfo()">
+              </cs-input>
+              <div *ngIf="baseImageSource == 2" class="board-registry-container">
+                <label>{{boardRegistry}}</label>
+                <cs-dropdown class="margin-left-1"
+                             [dropdownWidth]="200"
+                             [dropdownList]="imageList"
+                             [dropdownDefaultText]="'IMAGE.CREATE_IMAGE_BASE_IMAGE_SELECT' | translate"
+                             [dropdownListTextKey]="'image_name'"
+                             (onChange)="setBaseImage($event)">
+                </cs-dropdown>
+                <cs-dropdown *ngIf="selectedImage"
+                             class="margin-left-1"
+                             [dropdownWidth]="100"
+                             [dropdownList]="imageDetailList"
+                             [dropdownDefaultText]="imageDetailList[0]?.image_tag"
+                             [dropdownListTextKey]="'image_tag'"
+                             (onChange)="setBaseImageDetail($event)">
+                </cs-dropdown>
+              </div>
+            </div>
             <cs-input [inputPattern]="patternEntryPoint"
                       [inputLabel]="'IMAGE.CREATE_IMAGE_IMAGE_ENTRYPOINT'|translate"
                       [disabled]="isBuildImageWIP"
@@ -93,14 +137,24 @@
                             [inputArrayLabelText]="'IMAGE.CREATE_IMAGE_IMAGE_EXPOSE'|translate"
                             (onCheck)="getDockerFilePreviewInfo()"
                             (onMinus)="getDockerFilePreviewInfo()"></cs-input-array>
-            <div class="line-container ">
-              <label class="base-text">{{"IMAGE.CREATE_IMAGE_UPLOAD_ARCHIVES" | translate}}:</label>
+            <cs-input [inputPattern]="patternCopyPath"
+                      [inputLabel]="'IMAGE.CREATE_IMAGE_UPLOAD_ARCHIVES' | translate"
+                      [disabled]="isBuildImageWIP"
+                      [simpleFiled]="uploadCopyToPath"
+                      (onCheck)="uploadCopyToPath = $event;">
+            </cs-input>
+            <div class="line-container base-margin-top">
+              <label class="base-text">{{"IMAGE.CREATE_IMAGE_UPLOAD_FILE_LIST" | translate}}:</label>
               ﻿<input type="file"
                       class="upload-file-input"
                       [disabled]="!customerNewImage.image_name|| !customerNewImage.image_tag || isBuildImageWIP || isUploadFileWIP"
                       (change)="uploadFile($event)"
                       accept="*.*">
               <span *ngIf="isUploadFileWIP" class="spinner spinner-sm"></span>
+            </div>
+            <div *ngIf="isUploadFileWIP" class="line-container base-margin-top">
+              <label class="base-text"></label>
+              <cs-progress class="base-margin-left" [progressData]="uploadProgressValue"></cs-progress>
             </div>
             <div class="file-list"
                  *ngFor="let file of filesList.get(customerNewImage.image_name)">

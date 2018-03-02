@@ -30,6 +30,8 @@ def prep_conf_dir(root, name):
     return absolute_path
 
 def render(src, dest, **kw):
+    if not os.path.exists(os.path.dirname(dest)):
+        os.makedirs(os.path.dirname(dest))
     t = Template(open(src, 'r').read())
     with open(dest, 'w') as f:
         f.write(t.substitute(**kw))
@@ -53,22 +55,7 @@ args = parser.parse_args()
 
 delfile(config_dir)
 
-def render(src, dest, **kw):
-    t = Template(open(src, 'r').read())
-    with open(dest, 'w') as f:
-        f.write(t.substitute(**kw))
-    print("Generated configuration file: %s" % dest)
-
 FNULL = open(os.devnull, 'w')
-
-def generate_ssh_key_pairs(dest_path=os.path.join(config_dir,'ssh_keys')):
-    if not os.path.exists(dest_path):
-        os.makedirs(dest_path)
-    rc = subprocess.call(["ssh-keygen", "-t", "rsa", "-f", os.path.join(dest_path, "id_rsa"), "-q", "-N", ""], stdout=FNULL, stderr=subprocess.STDOUT)
-    if rc != 0:
-        return rc
-generate_ssh_key_pairs()
-
 
 #Read Configurations
 conf = StringIO.StringIO()
@@ -161,6 +148,15 @@ gogits_config_dir = os.path.join(config_dir, "gogits")
 if not os.path.exists(gogits_config_dir):
     os.makedirs(os.path.join(config_dir, "gogits"))
 gogits_env = os.path.join(config_dir, "gogits", "env")
+gogits_conf = os.path.join(config_dir, "gogits", "conf", "app.ini")
+
+grafana_config_dir = os.path.join(config_dir, "grafana")
+if not os.path.exists(grafana_config_dir):
+    os.makedirs(os.path.join(config_dir, "grafana"))
+grafana_k8s_ds = os.path.join(grafana_config_dir, "kubernetes-datasource.json")
+grafana_graphite_ds = os.path.join(grafana_config_dir, "graphite-datasource.json")
+grafana_dashboard = os.path.join(grafana_config_dir, "kubernetes-dashboard.json")
+grafana_k8s = os.path.join(grafana_config_dir, "kubernetes.json")
 
 #Render Configure File
 render(os.path.join(templates_dir, "apiserver", "app.conf"),
@@ -225,5 +221,24 @@ render(os.path.join(templates_dir, "gogits", "env"),
         gogits_env,
         jenkins_job_trigger_url="http://%s:%s/job/<JOBNAME>/buildWithParameters"%(jenkins_host_ip, jenkins_host_port),
         jenkins_token=jenkins_token)
+
+render(os.path.join(templates_dir, "gogits", "app.ini"),
+        gogits_conf,
+        gogits_host_ip=gogits_host_ip,
+        gogits_host_port=gogits_host_port,
+        gogits_ssh_port=gogits_ssh_port)
+
+render(os.path.join(templates_dir, "grafana", "kubernetes-datasource.json"),
+        grafana_k8s_ds,
+        kube_master_ip=kube_master_ip,
+        kube_master_port=kube_master_port)
+
+render(os.path.join(templates_dir, "grafana", "graphite-datasource.json"),
+        grafana_graphite_ds)
+
+shutil.copy(os.path.join(templates_dir, "grafana", "kubernetes-dashboard.json"), grafana_dashboard)
+
+render(os.path.join(templates_dir, "grafana", "kubernetes.json"),
+        grafana_k8s)
 
 print("The configuration files are ready, please use docker-compose to start the service.")

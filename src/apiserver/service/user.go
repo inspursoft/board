@@ -12,13 +12,9 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-
-	"github.com/astaxie/beego/logs"
 )
 
-var gogitsHostIP = utils.GetConfig("GOGITS_HOST_IP")
 var sshKeyPath = utils.GetConfig("SSH_KEY_PATH")
-var gogitsSSHPort = utils.GetConfig("GOGITS_SSH_PORT")
 
 const (
 	sshPrivateKey = "id_rsa"
@@ -35,10 +31,6 @@ func ConfigSSHAccess(username string, accessToken string) error {
 	err = exec.Command("ssh-keygen", "-t", "rsa", "-b", "4096", "-f", sshPrivateKeyPath, "-q", "-N", "").Run()
 	if err != nil {
 		return fmt.Errorf("Failed to generate SSH Key pairs: %+v", err)
-	}
-	err = exec.Command("ssh", "-i", sshPrivateKeyPath, "-4", gogitsHostIP(), "-o", "StrictHostKeyChecking=no", "-p", gogitsSSHPort()).Run()
-	if err != nil {
-		logs.Warn("Failed to add Public key to known hosts: %+v", err)
 	}
 	data, err := ioutil.ReadFile(filepath.Join(sshKeyUserPath, sshPublicKey))
 	if err != nil {
