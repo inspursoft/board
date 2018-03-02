@@ -27,6 +27,7 @@ import { EnvironmentValueComponent } from "./environment-value/environment-value
 import { SizePipe } from "./pipes/size-pipe";
 import { CsGuideComponent } from "./cs-components-library/cs-guide/cs-guide.component";
 import { CsProgressComponent } from "./cs-components-library/cs-progress/cs-progress.component";
+import { SafePipe } from "./pipes/safe-pipe";
 
 @NgModule({
   imports: [
@@ -54,8 +55,8 @@ import { CsProgressComponent } from "./cs-components-library/cs-progress/cs-prog
     CsProgressComponent,
     CheckboxRevert,
     SizePipe,
-    CsGuideComponent
-
+    SafePipe,
+    CsGuideComponent,
   ],
   exports: [
     CoreModule,
@@ -78,7 +79,8 @@ import { CsProgressComponent } from "./cs-components-library/cs-progress/cs-prog
     CsGuideComponent,
     CsProgressComponent,
     CheckboxRevert,
-    SizePipe
+    SizePipe,
+    SafePipe
   ],
   providers: [
     AuthGuard,
