@@ -225,7 +225,7 @@
   <div class="card-block">
     <div class="grafana-container-block" [ngStyle]="{height:isShowGrafanaView?'900px':'300px'}">
       <iframe #frameDashboard height=100% width="100%" frameborder="0" [src]="grafanaViewUrl | safe">
-        你的浏览器不支持iframe标签
+        {{"DASHBOARD.GRAFANA_FRAME_SUPPORT" | translate}}
       </iframe>
     </div>
   </div>

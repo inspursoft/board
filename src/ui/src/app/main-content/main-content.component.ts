@@ -33,7 +33,8 @@ export class MainContentComponent {
     });
     let systemInfo = this.route.snapshot.data['systeminfo'];
     this.appInitService.systemInfo = systemInfo;
-    this.appInitService.grafanaViewUrl = `http://${systemInfo['board_host']}:3000/dashboard/db/kubernetes/`;
+    // this.appInitService.grafanaViewUrl = `http://${systemInfo['board_host']}:3000/dashboard/db/kubernetes/`;
+    this.appInitService.grafanaViewUrl = `/grafana/dashboard/db/kubernetes/`;
   }
 
   get grafanaViewUrl():string{
