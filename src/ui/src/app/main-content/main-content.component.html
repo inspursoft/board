@@ -67,7 +67,7 @@
   </div>
   <div *ngIf="isOnlyShowGrafanaView" style="height: 100%; padding: 0;margin: 0;scrollbar-base-color: blue">
     <iframe #frameDashboard height=100% width="100%" frameborder="0" [src]="grafanaViewUrl | safe">
-      你的浏览器不支持iframe标签
+      {{"DASHBOARD.GRAFANA_FRAME_SUPPORT" | translate}}
     </iframe>
   </div>
 </clr-main-container>
