@@ -1,9 +1,7 @@
-import { OnInit, AfterViewInit, Component, OnDestroy, HostListener } from '@angular/core';
+import { AfterViewInit, Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { DashboardComponentParent } from "./dashboard.component.parent"
 import { scaleOption } from "app/dashboard/time-range-scale.component/time-range-scale.component";
-import {
-  DashboardService, LinesData, LineDataModel, LineType, LineListDataModel
-} from "app/dashboard/dashboard.service";
+import { DashboardService, LineDataModel, LineListDataModel, LinesData, LineType } from "app/dashboard/dashboard.service";
 import { TranslateService } from "@ngx-translate/core";
 import { Subscription } from "rxjs/Subscription";
 import { Subject } from "rxjs/Subject";
@@ -46,6 +44,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
   curValue: Map<LineType, {curFirst: number, curSecond: number}>;
   curRealTimeValue: Map<LineType, {curFirst: number, curSecond: number}>;
   noDataErrMsg: Map<LineType, string>;
+  isShowGrafanaView: boolean = false;
 
   constructor(private service: DashboardService,
               private appInitService: AppInitService,
@@ -238,13 +237,14 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
 
   private resetBaseLinePos(lineType: LineType) {
     let option = this.lineOptions.get(lineType);
-    if (option["dataZoom"]) {
+    let chartInstance = this.eChartInstance.get(lineType);
+    if (option && chartInstance && chartInstance["getWidth"]) {
       let zoomStart = option["dataZoom"][0]["start"] / 100;
       let zoomEnd = option["dataZoom"][0]["end"] / 100;
-      let eChartWidth = this.eChartInstance.get(lineType)["getWidth"]() - 70;
+      let eChartWidth = chartInstance["getWidth"]() - 70;
       let zoomBarWidth = eChartWidth * (zoomEnd - zoomStart);
       option["graphic"][0]["left"] = eChartWidth * (1 - zoomEnd) + zoomBarWidth * (1 - (zoomEnd + zoomStart) / 2) + 38;
-      this.eChartInstance.get(lineType)["setOption"](option, true, false);
+      chartInstance["setOption"](option, true, false);
       if (this.lineData.get(lineType)) {
         this.clearEChart(lineType);
         this.lineData.set(lineType, Object.create(this.lineData.get(lineType)));
@@ -599,4 +599,8 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
   get StorageUnit(): string {
     return this.service.CurStorageUnit;
   };
+
+  get grafanaViewUrl(){
+   return this.appInitService.grafanaViewUrl;
+  }
 }

@@ -139,6 +139,38 @@ services:
       options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "proxy"
+  grafana:
+    image: board_grafana:__version__
+    restart: always
+    volumes:
+      - /data/board/grafana/lib:/var/lib/grafana
+      - /data/board/grafana/log:/var/log/grafana
+      - ../config/grafana:/etc/grafana/config
+    networks:
+      - board
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "grafana"
+  graphite:
+    image: board_graphite:__version__
+    restart: always
+    networks:
+      - board
+    ports:
+      - "2003:2003"
+    depends_on:
+      - log
+    volumes:
+      - /data/board/graphite/storage/whisper:/opt/graphite/storage/whisper
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "graphite"
 networks:
   board:
     external: false

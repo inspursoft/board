@@ -110,7 +110,8 @@ export const LANG_EN_US = {
     "NODE": "Node",
     "USAGE": "Usage",
     "TOTAL": "Total",
-    "STORAGE": "Storage"
+    "STORAGE": "Storage",
+    "GRAFANA_FRAME_SUPPORT":"Your browser does not support the iframe tag."
   },
   "PROJECT": {
     "CREATE_PROJECT": "Create Project",
