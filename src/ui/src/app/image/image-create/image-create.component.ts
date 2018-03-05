@@ -2,18 +2,7 @@
  * Created by liyanq on 21/11/2017.
  */
 
-import {
-  AfterContentChecked,
-  Component, ElementRef,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output,
-  QueryList,
-  ViewChild,
-  ViewChildren
-} from "@angular/core"
+import { AfterContentChecked, Component, EventEmitter, Input, OnDestroy, OnInit, Output, QueryList, ViewChildren } from "@angular/core"
 import { CsInputArrayComponent } from "../../shared/cs-components-library/cs-input-array/cs-input-array.component";
 import { CsInputComponent } from "../../shared/cs-components-library/cs-input/cs-input.component";
 import { BuildImageData, Image, ImageDetail } from "../image";
@@ -546,31 +535,30 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     this.consoleText = "";
     this.imageDetailList.splice(0,this.imageDetailList.length);
     this.customerNewImage.image_dockerfile.image_base = "";
-    if (isGetBoardRegistry) this.getBoardRegistry();
   }
 
   setBaseImage($event: Image): void {
     this.selectedImage = $event;
-    this.imageService.getImageDetailList(this.selectedImage.image_name)
-      .then((res: ImageDetail[]) => {
-        this.imageDetailList = res;
-        this.customerNewImage.image_dockerfile.image_base = `${this.selectedImage.image_name}:${res[0].image_tag}`;
-        this.getDockerFilePreviewInfo();
-      })
-      .catch(err => {
-        this.isOpen = false;
-        this.messageService.dispatchError(err)
-      });
+    this.imageService.getBoardRegistry().subscribe((res: string) => {
+      this.boardRegistry = res.substr(1,res.length - 2);
+      this.imageService.getImageDetailList(this.selectedImage.image_name)
+        .then((res: ImageDetail[]) => {
+          this.imageDetailList = res;
+          this.customerNewImage.image_dockerfile.image_base = `${this.boardRegistry}:${this.selectedImage.image_name}:${res[0].image_tag}`;
+          this.getDockerFilePreviewInfo();
+        })
+        .catch(err => {
+          this.isOpen = false;
+          this.messageService.dispatchError(err)
+        });
+    });
   }
 
   setBaseImageDetail(detail: ImageDetail): void {
-    this.customerNewImage.image_dockerfile.image_base = `${this.selectedImage.image_name}:${detail.image_tag}`;
-    this.getDockerFilePreviewInfo();
-  }
-
-  getBoardRegistry():void{
     this.imageService.getBoardRegistry().subscribe((res: string) => {
-      this.boardRegistry = res.substr(1,res.length - 2);
-    })
+      this.boardRegistry = res.substr(1, res.length - 2);
+      this.customerNewImage.image_dockerfile.image_base = `${this.boardRegistry}:${this.selectedImage.image_name}:${detail.image_tag}`;
+      this.getDockerFilePreviewInfo();
+    });
   }
 }
