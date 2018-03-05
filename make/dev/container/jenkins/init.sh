@@ -8,7 +8,7 @@ function util_done()
     do
         "$@"
         if [ $? -eq 0 ]; then
-            echo "xxxx"
+            echo "start to add node ......"
              /usr/share/jenkins/addnode.sh
             break
         fi
@@ -22,7 +22,7 @@ function init()
         sleeptime=5
         # check server status
         echo "checking jenkins server"
-        util_done $sleeptime curl http://10.164.17.34:8085/job/base
+        util_done $sleeptime curl http://$jenkins_host_ip:$jenkins_host_port/job/base
 }
 
 init &

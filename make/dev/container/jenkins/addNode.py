@@ -13,8 +13,8 @@ def getCredentialId(jenkins_home):
         for line in lines:
             m = (re.search('''<id>.*</id>''', line))
             if m:
-                id_all = (re.search('''<id>.*</id>''', line).group(0))
-                cid = (id_all.split('>')[1]).split('<')[0]
+                cid = (re.search('''<id>(.*)</id>''', line).group(1))
+                print (cid)
                 return cid
 
 def curl(jenkinsMaster):

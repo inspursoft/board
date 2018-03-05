@@ -34,10 +34,10 @@
     <script>pipeline {
     agent any
     stages {
-        stage(&apos;this is a test&apos;) {
+        stage(&apos;jenkins&apos;) {
             
             steps {
-                echo &quot;Start to run test.......&quot;
+                echo &quot;Start to run .......&quot;
                 sh &apos;/home/jenkins/clone.py $base_repo_url $WORKSPACE $BUILD_ID&apos;
             
             }
