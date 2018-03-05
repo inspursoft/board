@@ -8,7 +8,7 @@ function util_done()
     do
         "$@"
         if [ $? -eq 0 ]; then
-            echo "start to add node ......"
+            echo "add node to $jenkins_node_ip"
              /usr/share/jenkins/addnode.sh
             break
         fi

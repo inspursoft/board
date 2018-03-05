@@ -57,17 +57,18 @@ if __name__ == "__main__":
 
 
     #server = jenkins.Jenkins('http://10.164.17.34:8085', username='admin', password="admin")
-    server = jenkins.Jenkins(jenkinsMaster, username='admin', password="admin")
+    server = jenkins.Jenkins(jenkinsMaster, username="", password="")
     version = server.get_version()
     print version
 
     params = {
-        'port': '22',
+        'port': '',
         'username': 'root',
         'credentialsId': cid,
         'host': ''
     }
     params["host"] = nodeIp
+    params["port"] = os.getenv('jenkins_node_port')
 
     server.create_node(
         'slave',
