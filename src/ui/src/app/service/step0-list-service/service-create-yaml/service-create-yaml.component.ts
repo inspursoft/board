@@ -1,4 +1,4 @@
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from "@angular/common/http";
 import { K8sService } from "../../service.k8s";
@@ -84,8 +84,14 @@ export class ServiceCreateYamlComponent implements OnInit {
   btnCreateClick(event: MouseEvent) {
     this.isToggleServiceWIP = true;
     this.k8sService.toggleServiceStatus(this.newServiceId, 1)
-      .then(() => this.onCancelEvent.emit(event))
-      .catch(err => this.messageService.dispatchError(err));
+      .then(() => {
+        this.isToggleServiceWIP = false;
+        this.onCancelEvent.emit(event);
+      })
+      .catch(err => {
+        this.isToggleServiceWIP = false;
+        this.messageService.dispatchError(err);
+      });
   }
 
   btnUploadClick(event: MouseEvent) {

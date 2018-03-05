@@ -240,6 +240,7 @@ export const LANG_ZH_CN = {
     "CREATE_IMAGE_FILE_NAME":"文件名",
     "CREATE_IMAGE_FILE_TYPE":"文件类型",
     "CREATE_IMAGE_FILE_SIZE":"文件大小",
+    "CREATE_IMAGE_FILE_NAME_ERROR":"文件名必须为'DockerFile'",
     "CREATE_IMAGE_FILE_LAST_MODIFY":"文件最后修改日期",
     "CREATE_IMAGE_SELECT_PROJECT":"选择项目",
     "CREATE_IMAGE_CREATE_PROJECT":"创建项目...",

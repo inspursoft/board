@@ -240,6 +240,7 @@ export const LANG_EN_US = {
     "CREATE_IMAGE_FILE_NAME":"File Name",
     "CREATE_IMAGE_FILE_TYPE":"File Type",
     "CREATE_IMAGE_FILE_SIZE":"File Size",
+    "CREATE_IMAGE_FILE_NAME_ERROR":"The file name must be called 'DockerFile'",
     "CREATE_IMAGE_FILE_LAST_MODIFY":"Last Modify Date",
     "CREATE_IMAGE_SELECT_PROJECT":"Select Project",
     "CREATE_IMAGE_CREATE_PROJECT":"Create Project...",

@@ -2,7 +2,18 @@
  * Created by liyanq on 21/11/2017.
  */
 
-import { AfterContentChecked, Component, EventEmitter, Input, OnDestroy, OnInit, Output, QueryList, ViewChildren } from "@angular/core"
+import {
+  AfterContentChecked,
+  Component, ElementRef,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  QueryList,
+  ViewChild,
+  ViewChildren
+} from "@angular/core"
 import { CsInputArrayComponent } from "../../shared/cs-components-library/cs-input-array/cs-input-array.component";
 import { CsInputComponent } from "../../shared/cs-components-library/cs-input/cs-input.component";
 import { BuildImageData, Image, ImageDetail } from "../image";
@@ -207,10 +218,10 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   get isBuildDisabled() {
     let baseDisabled = this.isBuildImageWIP ||
       !this.isInputComponentsValid ||
-      this.isUploadFileWIP ||
-      this.customerNewImage.image_dockerfile.image_base == "";
+      this.isUploadFileWIP;
+    let fromTemplate = baseDisabled || this.customerNewImage.image_dockerfile.image_base == "";
     let fromDockerFile = baseDisabled || (!this.selectFromImportFile && !this.isServerHaveDockerFile);
-    return this.imageBuildMethod == ImageBuildMethod.fromTemplate ? baseDisabled : fromDockerFile;
+    return this.imageBuildMethod == ImageBuildMethod.fromTemplate ? fromTemplate : fromDockerFile;
   }
 
   get checkImageTagFun() {
@@ -383,12 +394,23 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   selectDockerFile(event: Event) {
     let fileList: FileList = (event.target as HTMLInputElement).files;
     if (fileList.length > 0) {
-      this.selectFromImportFile = fileList[0];
-      let reader = new FileReader();
-      reader.onload = (ev: ProgressEvent) => {
-        this.consoleText = (ev.target as FileReader).result;
-      };
-      reader.readAsText(this.selectFromImportFile);
+      this.isNewImageAlertOpen = false;
+      let file:File = fileList[0];
+      if (file.name.toLowerCase() !== "dockerfile"){
+        (event.target as HTMLInputElement).value = "";
+        this.selectFromImportFile = null;
+        this.newImageAlertType = "alert-danger";
+        this.newImageErrMessage = "IMAGE.CREATE_IMAGE_FILE_NAME_ERROR";
+        this.isNewImageAlertOpen = true;
+      } else {
+        this.selectFromImportFile = file;
+        let reader = new FileReader();
+        reader.onload = (ev: ProgressEvent) => {
+          this.consoleText = (ev.target as FileReader).result;
+        };
+        reader.readAsText(this.selectFromImportFile);
+      }
+
     }
   }
 
@@ -521,6 +543,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
 
   cleanBaseImageInfo(isGetBoardRegistry: boolean = false): void {
     this.selectedImage = null;
+    this.consoleText = "";
     this.imageDetailList.splice(0,this.imageDetailList.length);
     this.customerNewImage.image_dockerfile.image_base = "";
     if (isGetBoardRegistry) this.getBoardRegistry();
@@ -532,6 +555,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
       .then((res: ImageDetail[]) => {
         this.imageDetailList = res;
         this.customerNewImage.image_dockerfile.image_base = `${this.selectedImage.image_name}:${res[0].image_tag}`;
+        this.getDockerFilePreviewInfo();
       })
       .catch(err => {
         this.isOpen = false;
@@ -541,6 +565,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
 
   setBaseImageDetail(detail: ImageDetail): void {
     this.customerNewImage.image_dockerfile.image_base = `${this.selectedImage.image_name}:${detail.image_tag}`;
+    this.getDockerFilePreviewInfo();
   }
 
   getBoardRegistry():void{
