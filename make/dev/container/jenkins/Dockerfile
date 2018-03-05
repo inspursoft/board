@@ -14,28 +14,28 @@ RUN cat /tmp/sources.list > /etc/apt/sources.list \
       && rm -rf /var/lib/apt/lists/*
 RUN echo "jenkins ALL=NOPASSWD: ALL" >> /etc/sudoers
 
-COPY ./jobs /tmp/jobs
-COPY ./python-jenkins-0.4.15 /usr/share/jenkins/python-jenkins-0.4.15
-COPY ./setuptools-38.5.1 /usr/share/jenkins/setuptools-38.5.1
-COPY ./multi_key_dict-2.0.3 /usr/share/jenkins/multi_key_dict-2.0.3
-COPY ./pythonenv.sh /usr/share/jenkins/pythonenv.sh
+COPY make/dev/container/jenkins/jobs /tmp/jobs
+ADD make/dev/container/jenkins/site-packages/python-jenkins-0.4.15.tar.gz /usr/share/jenkins
+ADD make/dev/container/jenkins/site-packages/setuptools-38.5.1.tar.gz /usr/share/jenkins
+ADD make/dev/container/jenkins/site-packages/multi_key_dict-2.0.3.tar.gz /usr/share/jenkins
+COPY make/dev/container/jenkins/pythonenv.sh /usr/share/jenkins/pythonenv.sh
 
 RUN chmod +x /usr/share/jenkins/pythonenv.sh
 
-COPY ./plugins.txt /usr/share/jenkins/plugins.txt
+COPY make/dev/container/jenkins/plugins.txt /usr/share/jenkins/plugins.txt
 
-COPY ./addNode.py /usr/share/jenkins/addNode.py
+COPY make/dev/container/jenkins/addNode.py /usr/share/jenkins/addNode.py
 
 
 RUN /usr/local/bin/plugins.sh /usr/share/jenkins/plugins.txt
 
 
 
-COPY ./jenkins.sh /usr/local/bin/jenkins.sh
+COPY make/dev/container/jenkins/jenkins.sh /usr/local/bin/jenkins.sh
 RUN chmod u+x /usr/local/bin/jenkins.sh
 
-COPY ./addnode.sh /usr/share/jenkins/addnode.sh
+COPY make/dev/container/jenkins/addnode.sh /usr/share/jenkins/addnode.sh
 RUN chmod u+x /usr/share/jenkins/addnode.sh
-COPY ./init.sh /usr/share/jenkins/init.sh
+COPY make/dev/container/jenkins/init.sh /usr/share/jenkins/init.sh
 RUN chmod u+x /usr/share/jenkins/init.sh
 

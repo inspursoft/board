@@ -9,7 +9,7 @@ function util_done()
         "$@"
         if [ $? -eq 0 ]; then
             echo "xxxx"
-             python /usr/share/jenkins/addNode.py /var/jenkins_home
+             /usr/share/jenkins/addnode.sh
             break
         fi
         sleep $sleeptime
