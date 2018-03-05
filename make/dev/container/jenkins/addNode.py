@@ -63,16 +63,16 @@ if __name__ == "__main__":
 
     params = {
         'port': '22',
-        'username': 'juser',
+        'username': 'root',
         'credentialsId': cid,
         'host': ''
     }
     params["host"] = nodeIp
 
     server.create_node(
-        'slave5',
-        nodeDescription='my test slave',
-        remoteFS='/home/juser',
+        'slave',
+        nodeDescription='jenkins slave',
+        remoteFS='/data/jenkins',
         labels='precise',
         exclusive=True,
         launcher=jenkins.LAUNCHER_SSH,
