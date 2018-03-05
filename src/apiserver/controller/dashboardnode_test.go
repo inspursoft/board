@@ -60,24 +60,30 @@ func TestGetNodeData(t *testing.T) {
 		t.Fatal("dashboard test case initial data error")
 	}
 
-	// init one assert
-	assert := assert.New(t)
-	for i := range bodies {
-		//case one without parameter
-		r, _ := http.NewRequest("POST", "/api/v1/dashboard/node?token="+token, bytes.NewBuffer(bodies[i]))
-		w := httptest.NewRecorder()
-		beego.BeeApp.Handlers.ServeHTTP(w, r)
+	nodeIP := os.Getenv("NODE_IP")
 
-		assert.Equal(http.StatusOK, w.Code, "Get Dashboard node data without parameter fail.")
+	testFunc := func(t *testing.T) {
+		// init one assert
+		assert := assert.New(t)
+		for i := range bodies {
+			//case one without parameter
+			r, _ := http.NewRequest("POST", "/api/v1/dashboard/node?token="+token, bytes.NewBuffer(bodies[i]))
+			w := httptest.NewRecorder()
+			beego.BeeApp.Handlers.ServeHTTP(w, r)
 
-		// case two with node parameter
-		nodeIP := os.Getenv("NODE_IP")
-		r, _ = http.NewRequest("POST", "/api/v1/dashboard/node?node_name="+nodeIP+"&token="+token, bytes.NewBuffer(bodies[i]))
-		w = httptest.NewRecorder()
-		beego.BeeApp.Handlers.ServeHTTP(w, r)
+			assert.Equal(http.StatusOK, w.Code, "Get Dashboard node data without parameter fail.")
 
-		assert.Equal(http.StatusOK, w.Code, "Get Dashboard node data with node parameter fail.")
+			// case two with node parameter
+			r, _ = http.NewRequest("POST", "/api/v1/dashboard/node?node_name="+nodeIP+"&token="+token, bytes.NewBuffer(bodies[i]))
+			w = httptest.NewRecorder()
+			beego.BeeApp.Handlers.ServeHTTP(w, r)
 
+			assert.Equal(http.StatusOK, w.Code, "Get Dashboard node data with node parameter fail.")
+
+		}
 	}
 
+	// insert meta data
+	testFunc = prepareNodeDataWrapper(nodeIP, testFunc)
+	testFunc(t)
 }

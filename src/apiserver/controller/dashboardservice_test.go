@@ -59,24 +59,29 @@ func TestGetServiceData(t *testing.T) {
 		t.FailNow()
 	}
 
-	// init one assert
-	assert := assert.New(t)
-	for i := range bodies {
-		//case one without parameter
-		r, _ := http.NewRequest("POST", "/api/v1/dashboard/service?token="+token, bytes.NewBuffer(bodies[i]))
-		w := httptest.NewRecorder()
-		beego.BeeApp.Handlers.ServeHTTP(w, r)
+	testFunc := func(t *testing.T) {
+		// init one assert
+		assert := assert.New(t)
+		for i := range bodies {
+			//case one without parameter
+			r, _ := http.NewRequest("POST", "/api/v1/dashboard/service?token="+token, bytes.NewBuffer(bodies[i]))
+			w := httptest.NewRecorder()
+			beego.BeeApp.Handlers.ServeHTTP(w, r)
 
-		assert.Equal(http.StatusOK, w.Code, "Get Dashboard service data without parameter fail.")
+			assert.Equal(http.StatusOK, w.Code, "Get Dashboard service data without parameter fail.")
 
-		// case two with service parameter
-		r, _ = http.NewRequest("POST", "/api/v1/dashboard/service?service_name=kubernetes"+"&token="+token, bytes.NewBuffer(bodies[i]))
-		w = httptest.NewRecorder()
-		beego.BeeApp.Handlers.ServeHTTP(w, r)
+			// case two with service parameter
+			r, _ = http.NewRequest("POST", "/api/v1/dashboard/service?service_name=kubernetes"+"&token="+token, bytes.NewBuffer(bodies[i]))
+			w = httptest.NewRecorder()
+			beego.BeeApp.Handlers.ServeHTTP(w, r)
 
-		assert.Equal(http.StatusOK, w.Code, "Get Dashboard service data with service parameter fail.")
+			assert.Equal(http.StatusOK, w.Code, "Get Dashboard service data with service parameter fail.")
+		}
 	}
 
+	// insert meta data
+	testFunc = prepareServiceDataWrapper("kubernetes", testFunc)
+	testFunc(t)
 }
 
 func TestGetServerTime(t *testing.T) {

@@ -16,6 +16,36 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const (
+	AdminUsername = "admin"
+	AdminPassword = "123456a?"
+)
+
+func loginTest(t *testing.T, username, password string) string {
+	token := signIn(username, password)
+	assert := assert.New(t)
+	if !assert.NotEmpty(token, "signIn error") {
+		// logs and failNow
+		t.Fatalf("%s Failed to login\n", username)
+	}
+	return token
+}
+
+func logoutTest(t *testing.T, username string) {
+	err := signOut(username)
+	if err != nil {
+		t.Fatalf("%s Failed to logout", username)
+	}
+}
+
+func adminLoginTest(t *testing.T) string {
+	return loginTest(t, AdminUsername, AdminPassword)
+}
+
+func adminLogoutTest(t *testing.T) {
+	logoutTest(t, AdminUsername)
+}
+
 func TestGetSystemInfo(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/api/v1/systeminfo", nil)
 	w := httptest.NewRecorder()
