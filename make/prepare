@@ -149,6 +149,13 @@ if not os.path.exists(jenkins_config_dir):
     os.makedirs(os.path.join(config_dir, "jenkins"))
 jenkins_env = os.path.join(config_dir, "jenkins", "env")
 
+grafana_config_dir = os.path.join(config_dir, "grafana")
+if not os.path.exists(grafana_config_dir):
+    os.makedirs(os.path.join(config_dir, "grafana"))
+grafana_k8s_ds = os.path.join(grafana_config_dir, "kubernetes-datasource.json")
+grafana_graphite_ds = os.path.join(grafana_config_dir, "graphite-datasource.json")
+grafana_dashboard = os.path.join(grafana_config_dir, "kubernetes-dashboard.json")
+grafana_k8s = os.path.join(grafana_config_dir, "kubernetes.json")
 
 #Render Configure File
 render(os.path.join(templates_dir, "apiserver", "app.conf"),
@@ -203,5 +210,18 @@ render(os.path.join(templates_dir, "jenkins", "env"),
         jenkins_env,
         registry_ip=registry_ip,
         registry_port=registry_port)
+
+render(os.path.join(templates_dir, "grafana", "kubernetes-datasource.json"),
+        grafana_k8s_ds,
+        kube_master_ip=kube_master_ip,
+        kube_master_port=kube_master_port)
+
+render(os.path.join(templates_dir, "grafana", "graphite-datasource.json"),
+        grafana_graphite_ds)
+
+shutil.copy(os.path.join(templates_dir, "grafana", "kubernetes-dashboard.json"), grafana_dashboard)
+
+render(os.path.join(templates_dir, "grafana", "kubernetes.json"),
+        grafana_k8s)
 
 print("The configuration files are ready, please use docker-compose to start the service.")
