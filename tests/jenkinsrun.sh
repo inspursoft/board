@@ -26,7 +26,7 @@ uiDir=$boardDir/$branchDir/src/ui
 lastBuildCov=`curl $JOB_URL/lastSuccessfulBuild/COVERAGE/index.html|grep "%"|cut -d '>' -f 3|cut -d '%' -f 1`
 lastUiBuildCov=`curl $JOB_URL/lastSuccessfulBuild/UICOVERAGE/index.html|grep "%"|cut -d '>' -f 3|cut -d '%' -f 1`
 
-echo "xxxxxxxxxxxxxxxxxxxxxxxxxx"
+echo "--------------------------"
 echo $lastBuildCov
 echo "xxxxxxxxxxxxxxxxxxxxxxxxxx"
 
@@ -34,8 +34,6 @@ echo "xxxxxxxxxxxxxxxxxxxxxxxxxx"
 #make prepare
 cd $boardDir/$branchDir
 make prepare
-
-rm -rf $boardDir/$branchDir/src/collector/cmd/app/appflag_test.go
 
 #start up mysql docker container
 #cp /home/backup/docker-compose.mysql.a.yml $boardDir/$branchDir/make/dev
@@ -46,7 +44,7 @@ docker-compose -f docker-compose.test.yml down -v
 docker-compose -f docker-compose.test.yml up -d
 
 
-docker-compose -f docker-compose.uibuilder.test.yml up 
+#docker-compose -f docker-compose.uibuilder.test.yml up 
 
 export GOPATH=$workDir
 
@@ -59,7 +57,7 @@ chmod +x *
 #make run
 ./run.sh $host_ip $kube_master_url $node_ip $registry_uri
 
-#cp -r /home/tests/testresult.log /home/tests/coverage/ $uiDir
+cp -r /home/tests/testresult.log /home/tests/coverage/ $uiDir
 uiCoverage=`cat $uiDir/testresult.log |grep "Statements"|cut -d ":" -f 2|cut -d "%" -f 1|awk 'gsub(/^ *| *$/,"")'`
 
 cov=`cat $boardDir/$branchDir/tests/out.temp|grep "total"|awk '{print $NF}'|cut -d "%" -f 1|tr -s [:space:]`
