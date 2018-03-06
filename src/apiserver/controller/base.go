@@ -243,6 +243,14 @@ func verifyToken(tokenString string) (map[string]interface{}, error) {
 	return payload, nil
 }
 
+type UnsupportedActionController struct {
+	baseController
+}
+
+func (b *UnsupportedActionController) Prepare() {
+	b.CustomAbort(http.StatusMethodNotAllowed, "Method was unsupported due to some reasons.")
+}
+
 func InitController() {
 
 	conf, err := config.NewConfig("ini", "app.conf")
