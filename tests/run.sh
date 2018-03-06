@@ -26,7 +26,7 @@ gopath=/go/src/git/inspursoft/board/
 golangImage=golang:1.8.3-alpine3.5
 volumeDir=`dirname $(pwd)`
 
-packages=$(go list ../... | grep -v -E 'vendor|tests')
+packages=$(go list ../... | grep -v -E 'vendor|tests|collector')
 for package in $packages
 do
     listDeps $package
