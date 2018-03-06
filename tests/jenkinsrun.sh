@@ -26,7 +26,7 @@ uiDir=$boardDir/$branchDir/src/ui
 lastBuildCov=`curl $JOB_URL/lastSuccessfulBuild/COVERAGE/index.html|grep "%"|cut -d '>' -f 3|cut -d '%' -f 1`
 lastUiBuildCov=`curl $JOB_URL/lastSuccessfulBuild/UICOVERAGE/index.html|grep "%"|cut -d '>' -f 3|cut -d '%' -f 1`
 
-echo "xxxxxxxxxxxxxxxxxxxxxxxxxx"
+echo "--------------------------"
 echo $lastBuildCov
 echo "xxxxxxxxxxxxxxxxxxxxxxxxxx"
 
