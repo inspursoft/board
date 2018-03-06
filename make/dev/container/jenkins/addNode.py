@@ -48,7 +48,7 @@ if __name__ == "__main__":
     pyPath = os.path.split(os.path.realpath(__file__))[0]
     jenkins_home=sys.argv[1]
     nodeIp = os.getenv('jenkins_node_ip')
-    nodePort = os.getenv('jenkins_node_port')
+    nodePort = os.getenv('jenkins_node_ssh_port')
     jenkinsIp = os.getenv('jenkins_host_ip')
     jenkinsPort = os.getenv('jenkins_host_port')
 
