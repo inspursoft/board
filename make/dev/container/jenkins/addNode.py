@@ -4,6 +4,7 @@ import jenkins
 import json
 import urllib
 import urllib2
+import time
 
 
 def getCredentialId(jenkins_home):
@@ -18,7 +19,6 @@ def getCredentialId(jenkins_home):
                 return cid
 
 def curl(jenkinsMaster):
-
 
     post_url = '%s/credentials/store/system/domain/_/createCredentials' %jenkinsMaster
 
@@ -42,30 +42,38 @@ def curl(jenkinsMaster):
     urllib2.urlopen(req,urllib.urlencode({'json':data}))
 
 if __name__ == "__main__":
-    jenkins_home=sys.argv[1]
+    jenkins_home=os.getenv('JENKINS_HOME')
     nodeIp = os.getenv('jenkins_node_ip')
-    nodeSshPort = os.getenv('jenkins_node_port')
+    nodeSSHPort = os.getenv('jenkins_node_ssh_port')
     jenkinsIp = os.getenv('jenkins_host_ip')
     jenkinsPort = os.getenv('jenkins_host_port')
 
-    if (nodeIp is None) or (nodePort is None) or (jenkinsIp is None) or (jenkinsPort is None):
+    if (nodeIp is None) or (nodeSSHPort is None) or (jenkinsIp is None) or (jenkinsPort is None):
         try:
             print ("env is None: jenkins_node_ip, jenkins_node_port, jenkins_host_ip, jenkins_host_port")
             os._exit(0)
         except:
             print ("Failed to exit the proccess")
     
+    print ("variables........................")
+    print ("nodeIp	: %s" %nodeIp)
+    print ("nodeSSHPort	: %s" %nodeSSHPort)
+    print ("jenkinsIp	: %s" %jenkinsIp)
+    print ("jeninsPort	: %s" %jenkinsPort)
+    print ("jenkins_home: %s" %jenkins_home)
+
     jenkinsMaster = "http://" + jenkinsIp + ":" + jenkinsPort
     while ((os.path.exists("%s/credentials.xml" %jenkins_home))== False):
+        time.sleep(2)
         curl(jenkinsMaster)
     cid = getCredentialId(jenkins_home)
-    server = jenkins.Jenkins(jenkinsMaster, username='admin', password="admin")
+    server = jenkins.Jenkins(jenkinsMaster, username='', password="")
     version = server.get_version()
 
     print (version)
 
     params = {
-        'port': nodeSshPort,
+        'port': nodeSSHPort,
         'username': 'juser',
         'credentialsId': cid,
         'host': nodeIp
