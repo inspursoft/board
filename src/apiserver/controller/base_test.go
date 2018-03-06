@@ -286,7 +286,9 @@ func updateAdminPassword() {
 
 func TestMain(m *testing.M) {
 	utils.Initialize()
-	utils.AddEnv("KUBE_MASTER_URL")
+	utils.AddEnv("KUBE_MASTER_IP")
+	utils.AddEnv("KUBE_MASTER_PORT")
+	utils.SetConfig("KUBE_MASTER_URL", "http://%s:%s", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
 	utils.AddEnv("NODE_IP")
 	utils.AddEnv("REGISTRY_BASE_URI")
 	utils.AddValue("IS_EXTERNAL_AUTH", false)
