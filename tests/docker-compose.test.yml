@@ -41,3 +41,12 @@ services:
       - ../config/tokenserver/app.conf:/go/bin/app.conf:z
     ports:
       - 4000:4000
+  registry:
+    image: registry:latest
+    restart: always
+    volumes:
+      - /data/registry:/tmp/registry
+    environment:
+      REGISTRY_STORAGE_DELETE_ENABLED: 'true'
+    ports:
+      - 5000:5000
