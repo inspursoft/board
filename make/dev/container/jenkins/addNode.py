@@ -12,7 +12,7 @@ def getCredentialId(jenkins_home):
         lines = f.readlines()
         for line in lines:
             m = (re.search('''<id>(.*)</id>''', line))
-            if m:
+            if m is not None:
                 cid = (m.group(1))
                 print (cid)
                 return cid
@@ -39,39 +39,37 @@ def curl(jenkinsMaster):
     data = json.dumps(postData)
 
     req = urllib2.Request(post_url)
-    response = urllib2.urlopen(req,urllib.urlencode({'json':data}))
-
-    #print response.read()
-
+    urllib2.urlopen(req,urllib.urlencode({'json':data}))
 
 if __name__ == "__main__":
-    pyPath = os.path.split(os.path.realpath(__file__))[0]
     jenkins_home=sys.argv[1]
     nodeIp = os.getenv('jenkins_node_ip')
-    nodePort = os.getenv('jenkins_node_ssh_port')
+    nodeSshPort = os.getenv('jenkins_node_port')
     jenkinsIp = os.getenv('jenkins_host_ip')
     jenkinsPort = os.getenv('jenkins_host_port')
 
-    if 
+    if (nodeIp is None) or (nodePort is None) or (jenkinsIp is None) or (jenkinsPort is None):
+        try:
+            print ("env is None: jenkins_node_ip, jenkins_node_port, jenkins_host_ip, jenkins_host_port")
+            os._exit(0)
+        except:
+            print ("Failed to exit the proccess")
     
-    try:
-        jenkinsMaster = "http://" + jenkinsIp + ":" + jenkinsPort
-    except:
-        raise TypeError
+    jenkinsMaster = "http://" + jenkinsIp + ":" + jenkinsPort
     while ((os.path.exists("%s/credentials.xml" %jenkins_home))== False):
         curl(jenkinsMaster)
     cid = getCredentialId(jenkins_home)
+    server = jenkins.Jenkins(jenkinsMaster, username='admin', password="admin")
+    version = server.get_version()
 
-    print version
+    print (version)
 
     params = {
-        'port': '22',
+        'port': nodeSshPort,
         'username': 'juser',
         'credentialsId': cid,
-        'host': ''
+        'host': nodeIp
     }
-    params["host"] = nodeIp
-    params["port"] = nodePort
 
     server.create_node(
         'slave',

@@ -1,4 +1,4 @@
-FROM jenkins:2.60.3
+FROM jenkins/jenkins:2.60.3
 
 ENV JAVA_OPTS "-Djenkins.install.runSetupWizard=false \
                -Dhudson.model.User.allowNonExistentUser=true"
@@ -7,7 +7,7 @@ USER root
 
 RUN sed -i 's/^root\:x\:0\:/root\:x\:0\:root\,jenkins/' /etc/group
 
-COPY ./sources.list /tmp/sources.list
+COPY make/dev/container/jenkins/sources.list /tmp/sources.list
 RUN cat /tmp/sources.list > /etc/apt/sources.list \
       && apt-get update \
       && apt-get install -y --allow-unauthenticated sudo libltdl7 curl\
