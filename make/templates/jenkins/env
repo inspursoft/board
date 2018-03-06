@@ -1,3 +1,4 @@
 jenkins_host_ip=$jenkins_host_ip
 jenkins_host_port=$jenkins_host_port
 jenkins_node_ip=$jenkins_node_ip
+jenkins_node_ssh_port=$jenkins_node_ssh_port
