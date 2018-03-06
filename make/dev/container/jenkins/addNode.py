@@ -11,9 +11,9 @@ def getCredentialId(jenkins_home):
     with open(credentialFile) as f:
         lines = f.readlines()
         for line in lines:
-            m = (re.search('''<id>.*</id>''', line))
+            m = (re.search('''<id>(.*)</id>''', line))
             if m:
-                cid = (re.search('''<id>(.*)</id>''', line).group(1))
+                cid = (m.group(1))
                 print (cid)
                 return cid
 
@@ -41,39 +41,42 @@ def curl(jenkinsMaster):
     req = urllib2.Request(post_url)
     response = urllib2.urlopen(req,urllib.urlencode({'json':data}))
 
-    print response.read()
+    #print response.read()
 
 
 if __name__ == "__main__":
     pyPath = os.path.split(os.path.realpath(__file__))[0]
     jenkins_home=sys.argv[1]
     nodeIp = os.getenv('jenkins_node_ip')
+    nodePort = os.getenv('jenkins_node_port')
     jenkinsIp = os.getenv('jenkins_host_ip')
     jenkinsPort = os.getenv('jenkins_host_port')
-    jenkinsMaster = "http://" + jenkinsIp + ":" + jenkinsPort
+
+    if 
+    
+    try:
+        jenkinsMaster = "http://" + jenkinsIp + ":" + jenkinsPort
+    except:
+        raise TypeError
     while ((os.path.exists("%s/credentials.xml" %jenkins_home))== False):
         curl(jenkinsMaster)
     cid = getCredentialId(jenkins_home)
 
-
-    #server = jenkins.Jenkins('http://10.164.17.34:8085', username='admin', password="admin")
-    server = jenkins.Jenkins(jenkinsMaster, username="", password="")
-    version = server.get_version()
     print version
 
     params = {
-        'port': '',
-        'username': 'root',
+        'port': '22',
+        'username': 'juser',
         'credentialsId': cid,
         'host': ''
     }
     params["host"] = nodeIp
-    params["port"] = os.getenv('jenkins_node_port')
+    params["port"] = nodePort
 
     server.create_node(
         'slave',
-        nodeDescription='jenkins slave',
-        remoteFS='/data/jenkins',
+        nodeDescription='add slave',
+        remoteFS='/var/jenkins',
         labels='precise',
         exclusive=True,
         launcher=jenkins.LAUNCHER_SSH,
