@@ -18,28 +18,21 @@ def getCredentialId(jenkins_home):
                 print (cid)
                 return cid
 
-def curl(jenkinsMaster):
+def createCredential(jenkinsMaster, nodeUsername, nodePasswd):
+    para = "--data-urlencode"
+    post_url = '%s/credentials/store/system/domain/_/createCredentials %s' %jenkinsMaster
+    credent = {
+    "scope": "GLOBAL",
+    "username": nodeUsername,
+    "password": nodePasswd,
+    "description": "auto added",
+    "$class": "com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl"}
 
-    post_url = '%s/credentials/store/system/domain/_/createCredentials' %jenkinsMaster
-
-    postData = {
-        "": "0",
-        "credentials": {
-        "scope": "GLOBAL",
-        "username": "root",
-        "privateKeySource": {"value": "2", "stapler-class": "com.cloudbees.jenkins.plugins.sshcredentials.impl.BasicSSHUserPrivateKey$UsersPrivateKeySource"},
-        "passphrase": "",
-        "id": "",
-        "description": "autoadd",
-        "stapler-class": "com.cloudbees.jenkins.plugins.sshcredentials.impl.BasicSSHUserPrivateKey",
-        "$class": "com.cloudbees.jenkins.plugins.sshcredentials.impl.BasicSSHUserPrivateKey"}
-        }
-
-
-    data = json.dumps(postData)
-
-    req = urllib2.Request(post_url)
-    urllib2.urlopen(req,urllib.urlencode({'json':data}))
+    data = json.dumps(credent)
+    cmd = '''curl -X POST %s %s 'json={"":"0","credentials":%s}'
+          ''' %(post_url, para, data)
+    print (cmd)
+    os.system(cmd)
 
 if __name__ == "__main__":
     jenkins_home=os.getenv('JENKINS_HOME')
@@ -47,6 +40,8 @@ if __name__ == "__main__":
     nodeSSHPort = os.getenv('jenkins_node_ssh_port')
     jenkinsIp = os.getenv('jenkins_host_ip')
     jenkinsPort = os.getenv('jenkins_host_port')
+    jenkinsNodeUsername = os.getenv('jenkins_node_username')
+    jenkinsNodePasswd = os.getenv('jenkins_node_password')
 
     if (nodeIp is None) or (nodeSSHPort is None) or (jenkinsIp is None) or (jenkinsPort is None):
         try:
@@ -63,14 +58,26 @@ if __name__ == "__main__":
     print ("jenkins_home: %s" %jenkins_home)
 
     jenkinsMaster = "http://" + jenkinsIp + ":" + jenkinsPort
-    while ((os.path.exists("%s/credentials.xml" %jenkins_home))== False):
+
+    baseJob = jenkinsMaster + "/job/base"
+    while (urllib.urlopen(baseJob).code>400):
         time.sleep(2)
-        curl(jenkinsMaster)
+   
+    if ((os.path.exists("%s/credentials.xml" %jenkins_home))== False): 
+        createCredential(jenkinsMaster, jenkinsNodeUsername, jenkinsNodePasswd)
+
+    server = jenkins.Jenkins(jenkinsMaster, username="", password="")
+    try:
+        nodeinfo = server.get_node_info('slave')
+    except:
+        nodeinfo = ''
+    if len(nodeinfo) > 0:
+        os._exit(0)
+
     cid = getCredentialId(jenkins_home)
-    server = jenkins.Jenkins(jenkinsMaster, username='', password="")
     version = server.get_version()
 
-    print (version)
+    print ("Jenkins verison is : %s" %version)
 
     params = {
         'port': nodeSSHPort,
@@ -78,12 +85,14 @@ if __name__ == "__main__":
         'credentialsId': cid,
         'host': nodeIp
     }
-
-    server.create_node(
-        'slave',
-        nodeDescription='add slave',
-        remoteFS='/var/jenkins',
-        labels='precise',
-        exclusive=True,
-        launcher=jenkins.LAUNCHER_SSH,
-        launcher_params=params)
+    try:
+        server.create_node(
+            'slave',
+            nodeDescription='add slave',
+            remoteFS='/data/jenkins',
+            labels='slave',
+            exclusive=True,
+            launcher=jenkins.LAUNCHER_SSH,
+            launcher_params=params)
+    except Exception as e:
+        print ("Create node failed", e)
