@@ -9,7 +9,7 @@ function util_done()
         "$@"
         if [ $? -eq 0 ]; then
             echo "add node to $jenkins_node_ip"
-             /usr/share/jenkins/addnode.sh
+             python /usr/share/jenkins/addNode.py
             break
         fi
         sleep $sleeptime
