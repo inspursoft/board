@@ -1,9 +1,14 @@
 package service
 
 import (
+	"fmt"
 	"git/inspursoft/board/src/common/model"
 	"os"
 	"path/filepath"
+)
+
+const (
+	metaFile = "META.cfg"
 )
 
 func ListUploadFiles(directory string) ([]model.FileInfo, error) {
@@ -23,4 +28,30 @@ func ListUploadFiles(directory string) ([]model.FileInfo, error) {
 
 func RemoveUploadFile(file model.FileInfo) error {
 	return os.Remove(filepath.Join(file.Path, file.FileName))
+}
+
+func CreateMetaConfiguration(configurations map[string]string, targetPath string) error {
+	if configurations == nil {
+		return fmt.Errorf("configuration for generating base directory is nil")
+	}
+	f, err := os.OpenFile(filepath.Join(targetPath, metaFile), os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to create META.cfg file: %+v", err)
+	}
+	defer f.Close()
+	f.WriteString("[para]\n")
+	for key, value := range configurations {
+		fmt.Fprintf(f, "%s=%s\n", key, value)
+	}
+	return nil
+}
+
+func CreateFile(fileName, message, targetPath string) error {
+	f, err := os.OpenFile(filepath.Join(targetPath, fileName), os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to create %s file: %+v", fileName, err)
+	}
+	defer f.Close()
+	_, err = fmt.Fprintf(f, "%s\n", message)
+	return err
 }

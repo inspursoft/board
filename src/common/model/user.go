@@ -13,9 +13,9 @@ type User struct {
 	Comment      string    `json:"user_comment" orm:"column(comment)"`
 	Deleted      int       `json:"user_deleted" orm:"column(deleted)"`
 	SystemAdmin  int       `json:"user_system_admin" orm:"column(system_admin)"`
-	ProjectAdmin int       `json:"user_project_admin" orm:"column(project_admin)"`
 	ResetUUID    string    `json:"user_reset_uuid" orm:"column(reset_uuid)"`
 	Salt         string    `json:"user_salt" orm:"column(salt)"`
+	RepoToken    string    `json:"user_token" orm:"column(repo_token)"`
 	CreationTime time.Time `json:"user_creation_time" orm:"column(creation_time)"`
 	UpdateTime   time.Time `json:"user_update_time" orm:"column(update_time)"`
 }

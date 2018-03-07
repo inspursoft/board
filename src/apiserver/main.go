@@ -2,33 +2,36 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"git/inspursoft/board/src/apiserver/controller"
 	_ "git/inspursoft/board/src/apiserver/router"
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/apiserver/service/devops/gogs"
+	"git/inspursoft/board/src/apiserver/service/devops/jenkins"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
+
 	"io/ioutil"
-	"os"
 
 	"github.com/astaxie/beego/logs"
-
-	"path/filepath"
 
 	"github.com/astaxie/beego"
 )
 
 const (
+	defaultAPIServerPort   = "8088"
 	adminUserID            = 1
+	adminUsername          = "admin"
+	adminEmail             = "admin@inspur.com"
 	defaultInitialPassword = "123456a?"
 	baseRepoPath           = "/repos"
-	sshKeyPath             = "/root/.ssh/id_rsa"
+	sshKeyPath             = "/keys"
 	defaultProject         = "library"
 )
 
-var repoServePath = filepath.Join(baseRepoPath, "board_repo_serve")
-var repoServeURL = filepath.Join("root@gitserver:", "gitserver", "repos", "board_repo_serve")
-var repoPath = filepath.Join(baseRepoPath, "board_repo")
+var gogitsSSHURL = utils.GetConfig("GOGITS_SSH_URL")
+var jenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
 
 func initBoardVersion() {
 	version, err := ioutil.ReadFile("VERSION")
@@ -70,22 +73,58 @@ func updateAdminPassword() {
 }
 
 func initProjectRepo() {
-	logs.Info("Initialize serve repo\n")
-	_, err := service.InitBareRepo(repoServePath)
-	if err != nil {
-		logs.Error("Failed to initialize serve repo: %+v\n", err)
+	initialPassword := utils.GetStringValue("BOARD_ADMIN_PASSWORD")
+	if initialPassword == "" {
+		initialPassword = defaultInitialPassword
 	}
 
-	logs.Info("Init git repo for default project %s", defaultProject)
-	_, err = service.InitRepo(repoServeURL, repoPath)
+	err := gogs.SignUp(model.User{Username: adminUsername, Email: adminEmail, Password: initialPassword})
 	if err != nil {
-		logs.Error("Failed to initialize default user's repo: %+v\n", err)
+		logs.Error("Failed to create admin user on Gogit: %+v", err)
+	}
+
+	token, err := gogs.CreateAccessToken(adminUsername, initialPassword)
+	if err != nil {
+		logs.Error("Failed to create access token for admin user: %+v", err)
+	}
+	user := model.User{ID: adminUserID, RepoToken: token.Sha1}
+	service.UpdateUser(user, "repo_token")
+
+	err = service.ConfigSSHAccess(adminUsername, token.Sha1)
+	if err != nil {
+		logs.Error("Failed to config SSH access for admin user: %+v", err)
+	}
+	logs.Info("Initialize serve repo ...")
+	logs.Info("Init git repo for default project %s", defaultProject)
+	repoURL := fmt.Sprintf("%s/%s/%s.git", gogitsSSHURL(), adminUsername, defaultProject)
+	repoPath := fmt.Sprintf("%s/%s/%s", baseRepoPath, adminUsername, defaultProject)
+	_, err = service.InitRepo(repoURL, adminUsername, repoPath)
+	if err != nil {
+		logs.Error("Failed to initialize default user's repo: %+v", err)
+		return
+	}
+	err = gogs.NewGogsHandler(adminUsername, token.Sha1).CreateRepo(defaultProject)
+	if err != nil {
+		logs.Error("Failed to create default project: %+v", err)
 		return
 	}
 
-	os.MkdirAll(filepath.Join(repoPath, defaultProject), 0755)
+	service.CreateFile("readme.md", "Repo created by Board.", repoPath)
+	err = service.SimplePush(repoPath, adminUsername, adminEmail, "Add readme.md.", "readme.md")
 	if err != nil {
-		logs.Error("Failed to make default user's repo: %+v\n", err)
+		logs.Error("Failed to push readme.md file to the repo.")
+	}
+
+	jenkinsHandler := jenkins.NewJenkinsHandler()
+	err = jenkinsHandler.CreateJob(defaultProject)
+	if err != nil {
+		logs.Error("Failed to create default Jenkins' job: %+v", err)
+	}
+	for _, action := range []string{"disable", "enable"} {
+		err = jenkinsHandler.ToggleJob(defaultProject, action)
+		if err != nil {
+			logs.Error("Failed to toggle default Jenkins' job with action %s: %+v", action, err)
+		}
 	}
 
 	utils.SetConfig("INIT_PROJECT_REPO", "created")
@@ -97,7 +136,7 @@ func initProjectRepo() {
 }
 
 func initDefaultProjects() {
-	logs.Info("Initialize default projects\n")
+	logs.Info("Initialize default projects...")
 	var err error
 	// Sync namespace with specific project ownerID
 	err = service.SyncNamespaceByOwnerID(adminUserID)
@@ -139,7 +178,6 @@ func updateSystemInfo() {
 	err = service.SetSystemInfo("REDIRECTION_URL", false)
 	if err != nil {
 		logs.Error("Failed to set system config REDIRECTION_URL: %+v", err)
-		panic(err)
 	}
 }
 func main() {
@@ -170,15 +208,27 @@ func main() {
 	utils.AddEnv("VERIFICATION_URL")
 	utils.AddEnv("REDIRECTION_URL")
 
+	utils.AddEnv("GOGITS_HOST_IP")
+	utils.AddEnv("GOGITS_HOST_PORT")
+	utils.SetConfig("GOGITS_BASE_URL", "http://%s:%s", "GOGITS_HOST_IP", "GOGITS_HOST_PORT")
+
+	utils.AddEnv("GOGITS_SSH_PORT")
+	utils.SetConfig("GOGITS_SSH_URL", "ssh://git@%s:%s", "GOGITS_HOST_IP", "GOGITS_SSH_PORT")
+
+	utils.AddEnv("JENKINS_HOST_IP")
+	utils.AddEnv("JENKINS_HOST_PORT")
+	utils.AddEnv("JENKINS_TOKEN")
+	utils.SetConfig("JENKINS_BASE_URL", "http://%s:%s", "JENKINS_HOST_IP", "JENKINS_HOST_PORT")
+
 	utils.SetConfig("REGISTRY_URL", "http://%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
 	utils.SetConfig("KUBE_MASTER_URL", "http://%s:%s", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
 	utils.SetConfig("KUBE_NODE_URL", "http://%s:%s/api/v1/nodes", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
 
 	utils.SetConfig("BASE_REPO_PATH", baseRepoPath)
-	utils.SetConfig("REPO_SERVE_URL", repoServeURL)
-	utils.SetConfig("REPO_SERVE_PATH", repoServePath)
-	utils.SetConfig("REPO_PATH", repoPath)
 	utils.SetConfig("SSH_KEY_PATH", sshKeyPath)
+	utils.SetConfig("API_SERVER_PORT", defaultAPIServerPort)
+
+	utils.SetConfig("API_SERVER_URL", "http://%s:%s", "BOARD_HOST", "API_SERVER_PORT")
 
 	utils.SetConfig("REGISTRY_BASE_URI", "%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
 
@@ -212,5 +262,5 @@ func main() {
 		syncServiceWithK8s()
 	}
 
-	beego.Run(":8088")
+	beego.Run(":" + defaultAPIServerPort)
 }
