@@ -34,8 +34,6 @@ RUN /usr/local/bin/plugins.sh /usr/share/jenkins/plugins.txt
 COPY make/dev/container/jenkins/jenkins.sh /usr/local/bin/jenkins.sh
 RUN chmod u+x /usr/local/bin/jenkins.sh
 
-COPY make/dev/container/jenkins/addnode.sh /usr/share/jenkins/addnode.sh
-RUN chmod u+x /usr/share/jenkins/addnode.sh
 COPY make/dev/container/jenkins/init.sh /usr/share/jenkins/init.sh
 RUN chmod u+x /usr/share/jenkins/init.sh
 

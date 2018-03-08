@@ -20,7 +20,7 @@ def getCredentialId(jenkins_home):
 
 def createCredential(jenkinsMaster, nodeUsername, nodePasswd):
     para = "--data-urlencode"
-    post_url = '%s/credentials/store/system/domain/_/createCredentials %s' %jenkinsMaster
+    post_url = '%s/credentials/store/system/domain/_/createCredentials ' %jenkinsMaster
     credent = {
     "scope": "GLOBAL",
     "username": nodeUsername,
