@@ -40,8 +40,9 @@ do
     echo "+++++++++++++++++++++++++++++++++++++++"
     
     #go env used docker container
-    echo "/usr/bin/docker run --rm -v $volumeDir:$gopath -e HOST_IP=$1 -e KUBE_MASTER_URL=$2 -e NODE_IP=$3 -e REGISTRY_BASE_URI=$4 -w $gopath $golangImage go test -v -cover -coverprofile=profile.tmp -coverpkg "$deps" $package"
-    /usr/bin/docker run --rm -v $volumeDir:$gopath -e HOST_IP=$1 -e KUBE_MASTER_URL=$2 -e NODE_IP=$3 -e REGISTRY_BASE_URI=$4 -w $gopath $golangImage go test -v -cover -coverprofile=profile.tmp -coverpkg "$deps" $package
+    echo "/usr/bin/docker run --rm -v $volumeDir:$gopath --env-file env.cfg -w $gopath $golangImage go test -v -cover -coverprofile=profile.tmp -coverpkg "$deps" $package"
+    #/usr/bin/docker run --rm -v $volumeDir:$gopath -e HOST_IP=$1 -e KUBE_MASTER_URL=$2 -e NODE_IP=$3 -e REGISTRY_BASE_URI=$4 -w $gopath $golangImage go test -v -cover -coverprofile=profile.tmp -coverpkg "$deps" $package
+    /usr/bin/docker run --rm -v $volumeDir:$gopath -e HOST_IP=$1 --env-file env.cfg -w $gopath $golangImage go test -v -cover -coverprofile=profile.tmp -coverpkg "$deps" $package
 
     if [ -f $volumeDir/profile.tmp ]
     then
