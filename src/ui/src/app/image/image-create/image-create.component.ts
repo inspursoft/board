@@ -541,7 +541,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   setBaseImage($event: Image): void {
     this.selectedImage = $event;
     this.imageService.getBoardRegistry().subscribe((res: string) => {
-      this.boardRegistry = res.substr(1,res.length - 2);
+      this.boardRegistry = res.replace(/"/g,"");
       this.imageService.getImageDetailList(this.selectedImage.image_name)
         .then((res: ImageDetail[]) => {
           this.imageDetailList = res;
