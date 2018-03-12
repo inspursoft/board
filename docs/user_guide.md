@@ -269,17 +269,17 @@ Deploy a service "bigdata" which is a containerized project for the Inspur bigda
 
 > Board now supports DevOps as external Gogit and Jenkin CI services.
 
-<img src="img/userguide/devops-board-project.PNG" width="100" alt="devops-board-project.PNG">
+<img src="img/userguide/devops-board-project.png" width="100" alt="devops-board-project.PNG">
 
-<img src="img/userguide/devops-gogits-repo.PNG" width="100" alt="devops-gogits-repo.PNG">
+<img src="img/userguide/devops-gogits-repo.png" width="100" alt="devops-gogits-repo.PNG">
 
-<img src="img/userguide/devops-jenkins-job.PNG" width="100" alt="devops-jenkins-job.PNG">
+<img src="img/userguide/devops-jenkins-job.png" width="100" alt="devops-jenkins-job.PNG">
 
 ### Configure External Gogits and Jenkins
 
 > You should provide configurations before starting DevOps.
 
-<img src="img/userguide/devops-configuration.PNG" width="100" alt="devops-configuration.PNG">
+<img src="img/userguide/devops-configuration.png" width="100" alt="devops-configuration.PNG">
 
 > Then execute command ```./make prepare```
 
@@ -287,57 +287,57 @@ Deploy a service "bigdata" which is a containerized project for the Inspur bigda
 
 > When signed up in Board, you also has made same authorization on Gogits.
 
-<img src="img/userguide/devops-board-sign-up.PNG" width="100" alt="devops-board-sign-up.PNG">
+<img src="img/userguide/devops-board-sign-up.png" width="100" alt="devops-board-sign-up.PNG">
 
  * You can sign in Gogits with the same authorization in Board.
 
-<img src="img/userguide/devops-gogits-sign-in.PNG" width="100" alt="devops-gogits-sign-in.PNG">
+<img src="img/userguide/devops-gogits-sign-in.png" width="100" alt="devops-gogits-sign-in.PNG">
 
  * Retrieve user list in Board.
 
-<img src="img/userguide/devops-board-user-list.PNG" width="100" alt="devops-board-user-list.PN">
+<img src="img/userguide/devops-board-user-list.png" width="100" alt="devops-board-user-list.PN">
 
  * You also can retrieve the same user list in Gogits.
 
-<img src="img/userguide/devops-gogits-user-list.PNG" width="100" alt="devops-gogits-user-list.PNG">
+<img src="img/userguide/devops-gogits-user-list.png" width="100" alt="devops-gogits-user-list.PNG">
 
 ### Create Project for Gogits and Jenkins
 
 > By integrating access token with Gogits and web-hooks with Jenkins, Board can create project coordinated with repository creation on Gogits and pipeline Job creation on Jenkins.
 
-<img src="img/userguide/devops-board-create-project.PNG" width="100" alt="devops-board-create-project.PNG">
+<img src="img/userguide/devops-board-create-project.png" width="100" alt="devops-board-create-project.PNG">
 
  * Gogits would create repository as the same name of the project created in Board.
 
-<img src="img/userguide/devops-gogits-create-repo.PNG" width="100" alt="devops-gogits-create-repo.PNG">
+<img src="img/userguide/devops-gogits-create-repo.png" width="100" alt="devops-gogits-create-repo.PNG">
 
  * Jenkins would create pipeline Job as the same name of the project created in Board.
 
-<img src="img/userguide/devops-jenkins-create-job.PNG" width="100" alt="devops-jenkins-create-job.PNG">
+<img src="img/userguide/devops-jenkins-create-job.png" width="100" alt="devops-jenkins-create-job.PNG">
 
 ### Review the Repository on Gogits
 
 > Some folders and files would be created after Board project creation for the DevOps execution.  
 
-<img src="img/userguide/devops-gogits-review-repo.PNG" width="100" alt="devops-gogits-review-repo.PNG">
+<img src="img/userguide/devops-gogits-review-repo.png" width="100" alt="devops-gogits-review-repo.PNG">
 
 ### Review the Pipeline Job on Jenkins
 
 > Pipeline style Jenkins job created for the DevOps.
 
-<img src="img/userguide/devops-jenkins-create-job.PNG" width="100" alt="devops-jenkins-create-job.PNG">
+<img src="img/userguide/devops-jenkins-create-job.png" width="100" alt="devops-jenkins-create-job.PNG">
 
-### Add Member to the Project to Make a Fork for the Repository
+### Add Member to the Project to Make a Fork for   the Repository
 
 > When you add member to a specific project, you have forked repository to the added member which means he also has the same project named repository to execute his own DevOps.
 
  * Add member to the project 'library'
 
-<img src="img/userguide/devops-board-add-member.PNG" width="100" alt="devops-board-add-member.PNG">
+<img src="img/userguide/devops-board-add-member.png" width="100" alt="devops-board-add-member.PNG">
 
  * The added member also has the same project named repository.
 
-<img src="img/userguide/devops-gogits-fork.PNG" width="100" alt="ddevops-gogits-fork.PNG">
+<img src="img/userguide/devops-gogits-fork.png" width="100" alt="ddevops-gogits-fork.PNG">
 
 ### Deploy Service via Wizard
 
