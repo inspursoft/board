@@ -34,7 +34,9 @@ src/ui/.idea/**
 src/ui/proxy.config.json*
 src/ui/dist
 src/collector/cmd/cmd
+src/gogs/gogs
 .idea/
 make/config
 tools/swagger
 !tools/swagger/*.sh
+src/apiserver/*.py

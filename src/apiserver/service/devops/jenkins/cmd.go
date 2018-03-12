@@ -4,15 +4,32 @@ import (
 	"fmt"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
+	"time"
 
 	"github.com/astaxie/beego/logs"
 )
 
 var jenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
+var maxRetryCount = 120
 
 type jenkinsHandler struct{}
 
 func NewJenkinsHandler() *jenkinsHandler {
+	for i := 0; i < maxRetryCount; i++ {
+		logs.Debug("Ping Jenkins server %d time(s)...", i+1)
+		resp, err := utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s/job/base", jenkinsBaseURL()), nil, nil)
+		if err != nil {
+			logs.Error("Failed to request Jenkins server: %+v", err)
+		}
+		if resp != nil {
+			if resp.StatusCode <= 400 {
+				break
+			}
+		} else if i == maxRetryCount-1 {
+			logs.Warn("Failed to ping Gogits due to exceed max retry count.")
+		}
+		time.Sleep(time.Second)
+	}
 	return &jenkinsHandler{}
 }
 

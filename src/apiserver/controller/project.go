@@ -62,15 +62,15 @@ func (p *ProjectController) CreateProjectAction() {
 	}
 
 	// Check namespace in k8s cluster
-	projectExists, err = service.NamespaceExists(reqProject.Name)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if projectExists {
-		p.customAbort(http.StatusConflict, "Project name already exists in cluster.")
-		return
-	}
+	// projectExists, err = service.NamespaceExists(reqProject.Name)
+	// if err != nil {
+	// 	p.internalError(err)
+	// 	return
+	// }
+	// if projectExists {
+	// 	p.customAbort(http.StatusConflict, "Project name already exists in cluster.")
+	// 	return
+	// }
 
 	reqProject.Name = strings.TrimSpace(reqProject.Name)
 	reqProject.OwnerID = int(p.currentUser.ID)
@@ -85,14 +85,14 @@ func (p *ProjectController) CreateProjectAction() {
 		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Project name: %s is illegal.", reqProject.Name))
 	}
 
-	isSuccess, err = service.CreateNamespace(reqProject.Name)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if !isSuccess {
-		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Namespace name: %s is illegal.", reqProject.Name))
-	}
+	// isSuccess, err = service.CreateNamespace(reqProject.Name)
+	// if err != nil {
+	// 	p.internalError(err)
+	// 	return
+	// }
+	// if !isSuccess {
+	// 	p.customAbort(http.StatusBadRequest, fmt.Sprintf("Namespace name: %s is illegal.", reqProject.Name))
+	// }
 
 	if accessToken, ok := memoryCache.Get(p.currentUser.Username + "_GOGS-ACCESS-TOKEN").(string); ok {
 		projectRepoURL := fmt.Sprintf("%s/%s/%s.git", gogitsSSHURL(), p.currentUser.Username, reqProject.Name)
@@ -106,9 +106,12 @@ func (p *ProjectController) CreateProjectAction() {
 		if err != nil {
 			p.internalError(err)
 		}
-
+		err = service.CopyFile("parser.py", filepath.Join(projectRepoPath, "parser.py"))
+		if err != nil {
+			logs.Error("Failed to copy parser.py file to repo: %+v", err)
+		}
 		service.CreateFile("readme.md", "Repo created by Board.", projectRepoPath)
-		err = service.SimplePush(projectRepoPath, p.currentUser.Username, p.currentUser.Email, "Add readme.md.", "readme.md")
+		err = service.SimplePush(projectRepoPath, p.currentUser.Username, p.currentUser.Email, "Add some struts.", "readme.md", "parser.py")
 		if err != nil {
 			logs.Error("Failed to push readme.md file to the repo.")
 			p.internalError(err)

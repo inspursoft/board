@@ -88,6 +88,7 @@ services:
     restart: always
     volumes:
       - ../config/apiserver/app.conf:/go/bin/app.conf:z
+      - ../config/apiserver/parser.py:/go/bin/parser.py:z
       - ../../tools/swagger/vendors/swagger-ui-2.1.4/dist:/go/bin/swagger:z
       - /data/board/repos:/repos:rw
       - /data/board/keys:/keys:rw
@@ -101,6 +102,7 @@ services:
       - 8088:8088
     depends_on:
       - log
+      - jenkins
     logging:
       driver: "syslog"
       options:

@@ -11,6 +11,7 @@ import (
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
+	"path/filepath"
 
 	"io/ioutil"
 
@@ -108,9 +109,12 @@ func initProjectRepo() {
 		logs.Error("Failed to create default project: %+v", err)
 		return
 	}
-
+	err = service.CopyFile("parser.py", filepath.Join(repoPath, "parser.py"))
+	if err != nil {
+		logs.Error("Failed to copy parser.py file to repo: %+v", err)
+	}
 	service.CreateFile("readme.md", "Repo created by Board.", repoPath)
-	err = service.SimplePush(repoPath, adminUsername, adminEmail, "Add readme.md.", "readme.md")
+	err = service.SimplePush(repoPath, adminUsername, adminEmail, "Add some struts.", "readme.md", "parser.py")
 	if err != nil {
 		logs.Error("Failed to push readme.md file to the repo.")
 	}
@@ -257,10 +261,10 @@ func main() {
 		initProjectRepo()
 	}
 
-	if systemInfo.SyncK8s == "" || utils.GetStringValue("FORCE_INIT_SYNC") == "true" {
-		initDefaultProjects()
-		syncServiceWithK8s()
-	}
+	// if systemInfo.SyncK8s == "" || utils.GetStringValue("FORCE_INIT_SYNC") == "true" {
+	// 	initDefaultProjects()
+	// 	syncServiceWithK8s()
+	// }
 
 	beego.Run(":" + defaultAPIServerPort)
 }
