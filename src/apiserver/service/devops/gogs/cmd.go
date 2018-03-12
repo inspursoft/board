@@ -9,11 +9,13 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/astaxie/beego/logs"
 )
 
 var gogitsBaseURL = utils.GetConfig("GOGITS_BASE_URL")
+var maxRetryCount = 30
 
 type createAccessTokenOption struct {
 	Name string `json:"name" binding:"Required"`
@@ -46,6 +48,21 @@ type gogsHandler struct {
 }
 
 func NewGogsHandler(username, token string) *gogsHandler {
+	for i := 0; i < maxRetryCount; i++ {
+		logs.Debug("Ping Gogits server %d time(s)...", i+1)
+		resp, err := utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s", gogitsBaseURL()), nil, nil)
+		if err != nil {
+			logs.Error("Failed to request Gogits server: %+v", err)
+		}
+		if resp != nil {
+			if resp.StatusCode <= 400 {
+				break
+			}
+		} else if i == maxRetryCount-1 {
+			logs.Warn("Failed to ping Gogits due to exceed max retry count.")
+		}
+		time.Sleep(time.Second)
+	}
 	return &gogsHandler{
 		username: username,
 		token:    token,

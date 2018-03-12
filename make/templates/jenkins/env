@@ -4,3 +4,4 @@ jenkins_node_ip=$jenkins_node_ip
 jenkins_node_ssh_port=$jenkins_node_ssh_port
 jenkins_node_username=$jenkins_node_username
 jenkins_node_password=$jenkins_node_password
+jenkins_node_volume=$jenkins_node_volume

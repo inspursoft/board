@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 	"git/inspursoft/board/src/common/model"
+	"io"
 	"os"
 	"path/filepath"
 )
@@ -42,6 +43,26 @@ func CreateMetaConfiguration(configurations map[string]string, targetPath string
 	f.WriteString("[para]\n")
 	for key, value := range configurations {
 		fmt.Fprintf(f, "%s=%s\n", key, value)
+	}
+	return nil
+}
+
+func CopyFile(sourcePath, targetPath string) error {
+	from, err := os.Open(sourcePath)
+	if err != nil {
+		return err
+	}
+	defer from.Close()
+
+	to, err := os.OpenFile(targetPath, os.O_RDWR|os.O_CREATE, 0666)
+	if err != nil {
+		return err
+	}
+	defer to.Close()
+
+	_, err = io.Copy(to, from)
+	if err != nil {
+		return err
 	}
 	return nil
 }

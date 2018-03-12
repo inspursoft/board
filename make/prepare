@@ -92,6 +92,7 @@ jenkins_node_ip = rcp.get("configuration", "jenkins_node_ip")
 jenkins_node_ssh_port = rcp.get("configuration", "jenkins_node_ssh_port")
 jenkins_node_username = rcp.get("configuration", "jenkins_node_username")
 jenkins_node_password = rcp.get("configuration", "jenkins_node_password")
+jenkins_node_volume = rcp.get("configuration", "jenkins_node_volume")
 
 ###ldap configuration
 ldap_url = rcp.get("configuration", "ldap_url")
@@ -198,6 +199,8 @@ render(os.path.join(templates_dir, "tokenserver", "app.conf"),
         tokenserver_conf,
         token_expire_seconds=token_expire_seconds)
 
+shutil.copy(os.path.join(templates_dir, "apiserver", "parser.py"), os.path.join(apiserver_config_dir))
+
 render(os.path.join(templates_dir, "tokenserver", "env"),
         tokenserver_env)
 
@@ -223,7 +226,8 @@ render(os.path.join(templates_dir, "jenkins", "env"),
         jenkins_node_ip=jenkins_node_ip,
         jenkins_node_ssh_port=jenkins_node_ssh_port,
         jenkins_node_username=jenkins_node_username,
-        jenkins_node_password=jenkins_node_password)
+        jenkins_node_password=jenkins_node_password,
+        jenkins_node_volume=jenkins_node_volume)
     
 render(os.path.join(templates_dir, "gogits", "env"),
         gogits_env,

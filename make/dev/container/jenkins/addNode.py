@@ -42,6 +42,7 @@ if __name__ == "__main__":
     jenkinsPort = os.getenv('jenkins_host_port')
     jenkinsNodeUsername = os.getenv('jenkins_node_username')
     jenkinsNodePasswd = os.getenv('jenkins_node_password')
+    jenkinsNodeVolume = os.getenv('jenkins_node_volume')
 
     if (nodeIp is None) or (nodeSSHPort is None) or (jenkinsIp is None) or (jenkinsPort is None):
         try:
@@ -56,6 +57,7 @@ if __name__ == "__main__":
     print ("jenkinsIp	: %s" %jenkinsIp)
     print ("jeninsPort	: %s" %jenkinsPort)
     print ("jenkins_home: %s" %jenkins_home)
+    print ("jenkins_node_volume: %s" %jenkinsNodeVolume)
 
     jenkinsMaster = "http://" + jenkinsIp + ":" + jenkinsPort
 
@@ -89,7 +91,7 @@ if __name__ == "__main__":
         server.create_node(
             'slave',
             nodeDescription='add slave',
-            remoteFS='/data/jenkins',
+            remoteFS=jenkinsNodeVolume,
             labels='slave',
             exclusive=True,
             launcher=jenkins.LAUNCHER_SSH,

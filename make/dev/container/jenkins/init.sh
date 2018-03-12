@@ -18,7 +18,6 @@ function util_done()
 
 function init()
 {
-
         sleeptime=5
         # check server status
         echo "checking jenkins server"
