@@ -557,7 +557,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
 
   setBaseImageDetail(detail: ImageDetail): void {
     this.imageService.getBoardRegistry().subscribe((res: string) => {
-      this.boardRegistry = res.substr(1, res.length - 2);
+      this.boardRegistry = res.replace(/"/g,"");
       this.customerNewImage.image_dockerfile.image_base = `${this.boardRegistry}/${this.selectedImage.image_name}:${detail.image_tag}`;
       this.getDockerFilePreviewInfo();
     });
