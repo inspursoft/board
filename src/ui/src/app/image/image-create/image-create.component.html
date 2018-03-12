@@ -93,6 +93,7 @@
                 <cs-dropdown class="margin-left-180"
                              [dropdownWidth]="180"
                              [dropdownList]="imageList"
+                             [dropdownDisabled]="isBuildImageWIP"
                              [dropdownDefaultText]="'IMAGE.CREATE_IMAGE_BASE_IMAGE_SELECT' | translate"
                              [dropdownListTextKey]="'image_name'"
                              (onChange)="setBaseImage($event)">
@@ -100,6 +101,7 @@
                 <cs-dropdown *ngIf="selectedImage"
                              class="margin-left-1"
                              [dropdownWidth]="60"
+                             [dropdownDisabled]="isBuildImageWIP"
                              [dropdownList]="imageDetailList"
                              [dropdownDefaultText]="imageDetailList[0]?.image_tag"
                              [dropdownListTextKey]="'image_tag'"
