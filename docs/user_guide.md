@@ -7,10 +7,12 @@ This guide walks you through the fundamentals of using Board. You'll learn how t
 * Manage Projects
 * Manage Members of a Project
 * Manage Services
-  * Build Images.
-  * Build Services.
-  * Test Services.
-  * Deploy Services.
+  * Build Image
+  * Build Service
+  * Test Service
+  * Deploy Service
+  * Scale Service
+  * Update Service
 * Search Projects, Services, Users and Images.
 * Monitoring Dashboard
 * Administrator Options
@@ -132,6 +134,30 @@ This step is to test the service's configurations. Next step to skip testing.
 
 Click "Deploy" to deploy the new service.
 After successfully deploy the service, user can monitor the service status from the service list.
+
+### Scale Service
+Click the "control" icon in the sevice list page, pop up the service control page
+
+<img src="img/userguide/scale1.png" width="100" alt="Scale service">
+
+<img src="img/userguide/scale2.png" width="100" alt="Scale service">
+
+Select manually scale, set the desired instance number, and confirm it.
+
+<img src="img/userguide/scale3.png" width="100" alt="Scale service">
+
+### Update Service
+Click the "control" icon in the sevice list page, pop up the service control page.
+Select the "update" tab.
+<img src="img/userguide/update1.png" width="100" alt="Update service">
+
+Choose the new version tag in the image list.
+<img src="img/userguide/update2.png" width="100" alt="Update service">
+
+Confirm it, then this service will be rolling updated to the new version.
+<img src="img/userguide/update3.png" width="100" alt="Update service">
+
+### Update Service
 
 ### Examples to create services
 
