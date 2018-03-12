@@ -90,17 +90,18 @@
                         (onCheck)="customerNewImage.image_dockerfile.image_base = $event;getDockerFilePreviewInfo()">
               </cs-input>
               <div *ngIf="baseImageSource == 2" class="board-registry-container">
-                <label>{{boardRegistry}}</label>
-                <cs-dropdown class="margin-left-1"
-                             [dropdownWidth]="200"
+                <cs-dropdown class="margin-left-180"
+                             [dropdownWidth]="180"
                              [dropdownList]="imageList"
+                             [dropdownDisabled]="isBuildImageWIP"
                              [dropdownDefaultText]="'IMAGE.CREATE_IMAGE_BASE_IMAGE_SELECT' | translate"
                              [dropdownListTextKey]="'image_name'"
                              (onChange)="setBaseImage($event)">
                 </cs-dropdown>
                 <cs-dropdown *ngIf="selectedImage"
                              class="margin-left-1"
-                             [dropdownWidth]="100"
+                             [dropdownWidth]="60"
+                             [dropdownDisabled]="isBuildImageWIP"
                              [dropdownList]="imageDetailList"
                              [dropdownDefaultText]="imageDetailList[0]?.image_tag"
                              [dropdownListTextKey]="'image_tag'"
@@ -206,10 +207,6 @@
                 <tr>
                   <th><span class="file-title">{{"IMAGE.CREATE_IMAGE_FILE_NAME" | translate}}:</span></th>
                   <td>{{selectFromImportFile?.name}}</td>
-                </tr>
-                <tr>
-                  <th><span class="file-title">{{"IMAGE.CREATE_IMAGE_FILE_TYPE" | translate}}:</span></th>
-                  <td>{{selectFromImportFile?.type}}</td>
                 </tr>
                 <tr>
                   <th><span class="file-title">{{"IMAGE.CREATE_IMAGE_FILE_SIZE" | translate}}:</span></th>

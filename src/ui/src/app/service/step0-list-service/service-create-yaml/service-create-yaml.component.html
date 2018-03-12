@@ -61,7 +61,7 @@
       {{"SERVICE.SERVICE_YAML_UPLOAD" | translate}}
     </button>
     <button class="btn btn-primary"
-            [disabled]="!isUploadFileSuccess"
+            [disabled]="!isUploadFileSuccess || isToggleServiceWIP"
             (click)="btnCreateClick()">
       {{"BUTTON.CREATE"|translate}}
     </button>

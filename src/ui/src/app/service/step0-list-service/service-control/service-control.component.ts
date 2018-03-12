@@ -2,13 +2,14 @@
  * Created by liyanq on 04/12/2017.
  */
 
-import { Component, EventEmitter, Input, Output, OnInit } from "@angular/core"
+import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core"
 import { Service } from "../../service";
 import { K8sService } from "../../service.k8s";
 import { MessageService } from "../../../shared/message-service/message.service";
 import { SERVICE_STATUS } from "../../../shared/shared.const";
 import { ImageIndex } from "../../service-step.component";
 import { ImageDetail } from "../../../image/image";
+import { HttpErrorResponse } from "@angular/common/http";
 
 enum ScaleMethod {smNone, smManually, smAuto}
 
@@ -27,6 +28,7 @@ export class ServiceControlComponent implements OnInit {
   isActionInWIP: boolean = false;
   isGetServiceImagesWIP: boolean = false;
   isGetServiceImagesTagWIP: boolean = false;
+  alertMessage: string = "";
   actionMethod: ActionMethod = ActionMethod.scale;
   imageList: Array<ImageIndex>;
   imageTagList: Map<string, Array<ImageDetail>>;
@@ -104,7 +106,7 @@ export class ServiceControlComponent implements OnInit {
         noImageTag = true;
       }
     });
-    let isCanUpdate = !this.isGetServiceImagesTagWIP && !noImageTag;
+    let isCanUpdate = !this.isGetServiceImagesTagWIP && !noImageTag && this.alertMessage === "";
     return this.actionMethod == ActionMethod.update ? isCanUpdate : true;
   }
 
@@ -119,24 +121,31 @@ export class ServiceControlComponent implements OnInit {
           this.imageTagSelected.set(value.image_name, value.image_tag);
           this.k8sService.getImageDetailList(value.image_name)
             .then(res => this.imageTagList.set(value.image_name, res))
-            .catch(this.defaultDispatchErr);
+            .catch(this.defaultDispatchErr.bind(this));
         });
         this.isGetServiceImagesWIP = false;
       })
-      .catch(this.defaultDispatchErr.bind(this))
+      .catch((err: HttpErrorResponse) => {
+        if (err.status == 500) {
+          this.isGetServiceImagesWIP = false;
+          this.alertMessage = "SERVICE.SERVICE_CONTROL_NOT_UPDATE";
+        } else {
+          this.defaultDispatchErr(err);
+        }
+      })
   }
 
   updateServiceImages() {
     this.isActionInWIP = true;
     this.k8sService.updateServiceImages(this.service.service_project_name, this.service.service_name, this.imageList)
-      .then(() => this.isOpen = false)
+      .then(() => this.isActionInWIP = false)
       .catch(this.defaultDispatchErr.bind(this))
   }
 
   setServiceScale() {
     this.isActionInWIP = true;
     this.k8sService.setServiceScale(this.service.service_id, this.scaleNum)
-      .then(() => this.isOpen = false)
+      .then(() => this.isActionInWIP = false)
       .catch(this.defaultDispatchErr.bind(this))
   }
 
