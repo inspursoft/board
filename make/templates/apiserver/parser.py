@@ -108,6 +108,10 @@ def checkFile(cfgDir, build_id):
     else:
        print ("the flag not in ['process-image', 'process-service']")
 if __name__ == "__main__":
-    cfgFile = sys.argv[1]
-    print(cfgFile)
-    checkFile(cfgFile)
+    base_repo_dir = sys.argv[1]
+    workspace = sys.argv[2]
+    build_id = sys.argv[3]
+    repoName = sys.argv[4]
+    metaDir=os.path.join(workspace, repoName)
+    print ('mata file........%s' %mataDir)
+    checkFile(mataDir, build_id)

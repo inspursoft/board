@@ -24,6 +24,11 @@
           <description></description>
           <defaultValue></defaultValue>
         </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>repo_name</name>
+          <description></description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
     <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
@@ -31,21 +36,32 @@
     </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
   </properties>
   <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.42">
-    <script>pipeline {
-    agent any
-    stages {
-        stage(&apos;jenkins&apos;) {
-            
-            steps {
-                echo &quot;Start to run .......&quot;
-                sh &apos;/home/jenkins/clone.py $base_repo_url $WORKSPACE $BUILD_ID&apos;
-            
-            }
-            
+    <script>node {
+    environment {cc=&quot;/home&quot;}
+    dir(&apos;./&apos;) {
+        stage(&apos;Git&apos;) {
+           sh &apos;&apos;&apos;
+           echo $base_repo_url
+           echo $repo_name
+           
+           if [ -d $WORKSPACE/$repo_name ]; then
+           cd $WORKSPACE/$repo_name
+           ls
+           else
+           git clone $base_repo_url
+           fi
+           &apos;&apos;&apos;
+          
+        }
+        
+        stage(&apos;jekins&apos;) {
+            sh &apos;&apos;&apos;
+            chmod +x $WORKSPACE/$repo_name/parser.py
+            $WORKSPACE/$repo_name/parser.py $base_repo_url $WORKSPACE $BUILD_ID $repo_name
+            &apos;&apos;&apos;
         }
     }
-}
-</script>
+}</script>
     <sandbox>true</sandbox>
   </definition>
   <triggers/>
