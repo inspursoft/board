@@ -98,7 +98,7 @@ func GetServiceData(query model.ServiceStatus, userID int64) ([]*model.ServiceSt
 	return queryServiceStatus(sql, params)
 }
 
-func GetPaginatedServiceData(query model.ServiceStatus, userID int64, pageIndex int, pageSize int) (*model.PaginatedServiceStatus, error) {
+func GetPaginatedServiceData(query model.ServiceStatus, userID int64, pageIndex int, pageSize int, orderField string, orderAsc int) (*model.PaginatedServiceStatus, error) {
 	sql, params := generateServiceStatusSQL(query, userID)
 	var err error
 
@@ -110,11 +110,14 @@ func GetPaginatedServiceData(query model.ServiceStatus, userID int64, pageIndex 
 	if err != nil {
 		return nil, err
 	}
-	sql += ` limit ?, ?`
+	sql += getOrderSQL(serviceTable, orderField, orderAsc) + ` limit ?, ?`
 	params = append(params, pagination.GetPageOffset(), pagination.PageSize)
 	logs.Debug("%+v", pagination.String())
 
 	serviceList, err := queryServiceStatus(sql, params)
+	if err != nil {
+		return nil, err
+	}
 
 	return &model.PaginatedServiceStatus{
 		ServiceStatusList: serviceList,

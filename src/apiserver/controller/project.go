@@ -110,7 +110,9 @@ func (p *ProjectController) GetProjectsAction() {
 	memberOnly, _ := p.GetInt("member_only", 0)
 
 	pageIndex, _ := p.GetInt("page_index", 0)
-	pageSize, _ := p.GetInt("page_size", 0)
+	pageSize, _ := p.GetInt("page_size", defaultPageSize)
+	orderField := p.GetString("order_field", "CREATE_TIME")
+	orderAsc, _ := p.GetInt("order_asc", 0)
 
 	query := model.Project{Name: projectName, OwnerName: p.currentUser.Username, Public: 0}
 
@@ -133,7 +135,7 @@ func (p *ProjectController) GetProjectsAction() {
 		}
 		p.Data["json"] = projects
 	} else {
-		paginatedProjects, err := service.GetPaginatedProjectsByUser(query, p.currentUser.ID, pageIndex, pageSize)
+		paginatedProjects, err := service.GetPaginatedProjectsByUser(query, p.currentUser.ID, pageIndex, pageSize, orderField, orderAsc)
 		if err != nil {
 			p.internalError(err)
 			return

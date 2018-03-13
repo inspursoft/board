@@ -2,12 +2,37 @@ package dao
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/astaxie/beego/config"
 	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql"
 )
+
+const (
+	projectTable                = "PROJECT"
+	userTable                   = "USER"
+	serviceTable                = "SERVICE"
+	nameField                   = "NAME"
+	createTimeField             = "CREATE_TIME"
+	defaultField                = "CREATE_TIME"
+	projectTableNameField       = "PROJECT_NAME"
+	userTableNameField          = "USER_NAME"
+	serviceTableNameField       = "SERVICE_NAME"
+	projectTableCreateTimeField = "PROJECT_CREATE_TIME"
+	userTableCreateTimeField    = "USER_CREATE_TIME"
+	serviceTableCreateTimeField = "SERVICE_CREATE_TIME"
+)
+
+var orderFields = map[string]string{
+	projectTableNameField:       "name",
+	userTableNameField:          "username",
+	serviceTableNameField:       "name",
+	projectTableCreateTimeField: "creation_time",
+	userTableCreateTimeField:    "creation_time",
+	serviceTableCreateTimeField: "creation_time",
+}
 
 func InitDB() {
 	var err error
@@ -36,4 +61,15 @@ func getTotalRecordCount(baseSQL string, params []interface{}) (int64, error) {
 		return 0, err
 	}
 	return count, nil
+}
+
+func getOrderSQL(orderTable string, orderField string, orderAsc int) string {
+	key := fmt.Sprintf("%s_%s", strings.ToUpper(orderTable), strings.ToUpper(orderField))
+	if orderFields[key] == "" {
+		return fmt.Sprintf(` order by %s desc`, orderFields[defaultField])
+	}
+	if orderAsc != 0 {
+		return fmt.Sprintf(` order by %s`, orderFields[key])
+	}
+	return fmt.Sprintf(` order by %s desc`, orderFields[key])
 }
