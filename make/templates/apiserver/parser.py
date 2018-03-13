@@ -113,5 +113,5 @@ if __name__ == "__main__":
     build_id = sys.argv[3]
     repoName = sys.argv[4]
     metaDir=os.path.join(workspace, repoName)
-    print ('mata file........%s' %mataDir)
-    checkFile(mataDir, build_id)
+    print ('meta file........%s' %metaDir)
+    checkFile(metaDir, build_id)

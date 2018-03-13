@@ -57,7 +57,7 @@
         stage(&apos;jekins&apos;) {
             sh &apos;&apos;&apos;
             chmod +x $WORKSPACE/$repo_name/parser.py
-            $WORKSPACE/$repo_name/parser.py $base_repo_url $WORKSPACE $BUILD_ID $repo_name
+            python $WORKSPACE/$repo_name/parser.py $base_repo_url $WORKSPACE $BUILD_ID $repo_name
             &apos;&apos;&apos;
         }
     }
