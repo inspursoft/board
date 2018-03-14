@@ -2,6 +2,7 @@
 import os
 import sys
 import ConfigParser
+import commands
 
 def getParameters(cfgDir):
     cfgFile = os.path.join(cfgDir, 'META.cfg')
@@ -85,16 +86,24 @@ def runProcessService(apiserver, value, extra, file_name):
     #    os.system("curl -X POST -H 'Content-Type: application/yaml' --data-binary @%s/%s %s" %(value, real_file_name, real_extra))
 def runRollingUpdate(value, extra, file_name):    
     os.system("curl -X PATCH -H 'Content-Type: application/strategic-merge-patch+json' -d %s %s" %(value, extra))
+
+def getCommandPath():
+    status, output = commands.getstatusoutput('which docker')
+    if status == 0:
+        return output
+    else:
+        print ('not installed docker on this host!!!!!!!!!!')
 def runProcessImage(extra, value, file_name, docker_registry, apiserver):
+    docker = getCommandPath()
     print ('start to build process image')
     print ('file_name: %s' %(file_name))
     print ('extra: %s' %(extra))
     print ('docker_registry: %s' %(docker_registry))
-    os.system("docker build -f %s -t %s ." %(file_name, extra))
-    os.system("docker tag %s %s/%s" %(extra,docker_registry,extra))
-    os.system("docker push %s/%s" %(docker_registry, extra))
-    os.system("docker rmi %s/%s" %(docker_registry, extra))
-    os.system("docker rmi %s" %extra)
+    os.system("%s build -f %s -t %s ." %(docker, file_name, extra))
+    os.system("%s tag %s %s/%s" %(docker, extra,docker_registry,extra))
+    os.system("%s push %s/%s" %(docker, docker_registry, extra))
+    os.system("%s rmi %s/%s" %(docker, docker_registry, extra))
+    os.system("%s rmi %s" %(docker, extra))
 
 def run(apiserver, value, flag, extra, file_name, docker_registry):
     path = os.path.split(os.path.realpath(__file__))[0]
