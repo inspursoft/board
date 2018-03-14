@@ -46,7 +46,7 @@
            
            if [ -d $WORKSPACE/$repo_name ]; then
            cd $WORKSPACE/$repo_name
-           ls
+           git pull
            else
            git clone $base_repo_url
            fi

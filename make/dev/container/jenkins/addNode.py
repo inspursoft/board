@@ -93,7 +93,7 @@ if __name__ == "__main__":
             nodeDescription='add slave',
             remoteFS=jenkinsNodeVolume,
             labels='slave',
-            exclusive=True,
+            exclusive=False,
             launcher=jenkins.LAUNCHER_SSH,
             launcher_params=params)
     except Exception as e:
