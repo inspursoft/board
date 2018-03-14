@@ -85,13 +85,22 @@ def runProcessService(apiserver, value, extra, file_name):
     #    os.system("curl -X POST -H 'Content-Type: application/yaml' --data-binary @%s/%s %s" %(value, real_file_name, real_extra))
 def runRollingUpdate(value, extra, file_name):    
     os.system("curl -X PATCH -H 'Content-Type: application/strategic-merge-patch+json' -d %s %s" %(value, extra))
+def runProcessImage(extra, value, file_name, docker_registry, apiserver):
+    print ('start to build process image')
+    print ('file_name: %s' %(file_name))
+    print ('extra: %s' %(extra))
+    print ('docker_registry: %s' %(docker_registry))
+    os.system("docker build -f %s -t %s ." %(file_name, extra))
+    os.system("docker tag %s %s/%s" %(extra,docker_registry,extra))
+    os.system("docker push %s/%s" %(docker_registry, extra))
+    os.system("docker rmi %s/%s" %(docker_registry, extra))
+    os.system("docker rmi %s" %extra)
 
 def run(apiserver, value, flag, extra, file_name, docker_registry):
     path = os.path.split(os.path.realpath(__file__))[0]
     if flag.strip() == "process-image":
         file_name = os.path.join(value, file_name)
-        script = os.path.join(path, "process_image.sh")
-        os.system('%s %s %s %s %s %s' %(script, extra, value, file_name, docker_registry, apiserver))
+        runProcessImage(extra, value, file_name, docker_registry, apiserver)
     elif flag.strip() == "process-service":
         runProcessService(apiserver, value, extra, file_name)
 #    elif flag.strip() == "rolling-update":
