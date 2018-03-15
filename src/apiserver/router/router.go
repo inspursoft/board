@@ -176,7 +176,7 @@ func init() {
 				"put:ToggleServiceAction"),
 			beego.NSRouter("/services/:id([0-9]+)/scale",
 				&controller.ServiceController{},
-				"put:ScaleServiceAction"),
+				"put:ScaleServiceAction;get:GetScaleStatusAction"),
 			beego.NSRouter("/services/:id([0-9]+)/publicity",
 				&controller.ServiceController{},
 				"put:ServicePublicityAction"),
