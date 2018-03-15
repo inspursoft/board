@@ -297,3 +297,15 @@ func GetK8sService(pName string, sName string) (*modelK8s.Service, error) {
 	}
 	return k8sService, err
 }
+
+func GetScaleStatus(serviceInfo *model.ServiceStatus) (model.ScaleStatus, error) {
+	var scaleStatus model.ScaleStatus
+	deployment, err := GetDeployment(serviceInfo.ProjectName, serviceInfo.Name)
+	if err != nil {
+		logs.Debug("Failed to get deployment %s", serviceInfo.Name)
+		return scaleStatus, err
+	}
+	scaleStatus.DesiredInstance = deployment.Status.Replicas
+	scaleStatus.AvailableInstance = deployment.Status.AvailableReplicas
+	return scaleStatus, nil
+}
