@@ -252,7 +252,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   }
 
   cancelBuildImage() {
-    this.imageService.cancelConsole("process_image").then(() => {
+    this.imageService.cancelConsole(this.projectName).then(() => {
       this.isOpen = false;
     });
   }
