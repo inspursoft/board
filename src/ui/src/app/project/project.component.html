@@ -39,8 +39,8 @@
         </clr-dg-cell>
       </clr-dg-row>
       <clr-dg-footer>
+        {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} of {{pagination.totalItems}} items
         <clr-dg-pagination #pagination [clrDgTotalItems]="totalRecordCount" [(clrDgPage)]="pageIndex" [clrDgPageSize]="pageSize"></clr-dg-pagination>
-        {{projects ? projects.length : 0}} {{ 'DATAGRID.ITEMS' | translate }}
       </clr-dg-footer>
     </clr-datagrid>
   </div>

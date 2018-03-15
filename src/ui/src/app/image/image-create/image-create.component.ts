@@ -207,10 +207,10 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   get isBuildDisabled() {
     let baseDisabled = this.isBuildImageWIP ||
       !this.isInputComponentsValid ||
-      this.isUploadFileWIP ||
-      this.customerNewImage.image_dockerfile.image_base == "";
+      this.isUploadFileWIP;
+    let fromTemplate = baseDisabled || this.customerNewImage.image_dockerfile.image_base == "";
     let fromDockerFile = baseDisabled || (!this.selectFromImportFile && !this.isServerHaveDockerFile);
-    return this.imageBuildMethod == ImageBuildMethod.fromTemplate ? baseDisabled : fromDockerFile;
+    return this.imageBuildMethod == ImageBuildMethod.fromTemplate ? fromTemplate : fromDockerFile;
   }
 
   get checkImageTagFun() {
@@ -321,6 +321,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
 
   buildImageReject(err: any) {
     this.isBuildImageWIP = false;
+    this.isUploadFileWIP = false;
     this.isNeedAutoRefreshImageList = false;
     if (err && err instanceof HttpErrorResponse && (err as HttpErrorResponse).status == 401) {
       this.isOpen = false;
@@ -328,7 +329,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     } else {
       this.newImageAlertType = "alert-danger";
       this.newImageErrMessage = "IMAGE.CREATE_IMAGE_BUILD_IMAGE_FAILED";
-      this.newImageErrReason = err instanceof HttpErrorResponse ? (err as HttpErrorResponse).message: "";
+      this.newImageErrReason = err instanceof HttpErrorResponse ? (err as HttpErrorResponse).error: "";
       this.isNewImageAlertOpen = true;
     }
   }
@@ -383,12 +384,23 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   selectDockerFile(event: Event) {
     let fileList: FileList = (event.target as HTMLInputElement).files;
     if (fileList.length > 0) {
-      this.selectFromImportFile = fileList[0];
-      let reader = new FileReader();
-      reader.onload = (ev: ProgressEvent) => {
-        this.consoleText = (ev.target as FileReader).result;
-      };
-      reader.readAsText(this.selectFromImportFile);
+      this.isNewImageAlertOpen = false;
+      let file:File = fileList[0];
+      if (file.name !== "Dockerfile"){
+        (event.target as HTMLInputElement).value = "";
+        this.selectFromImportFile = null;
+        this.newImageAlertType = "alert-danger";
+        this.newImageErrMessage = "IMAGE.CREATE_IMAGE_FILE_NAME_ERROR";
+        this.isNewImageAlertOpen = true;
+      } else {
+        this.selectFromImportFile = file;
+        let reader = new FileReader();
+        reader.onload = (ev: ProgressEvent) => {
+          this.consoleText = (ev.target as FileReader).result;
+        };
+        reader.readAsText(this.selectFromImportFile);
+      }
+
     }
   }
 
@@ -521,31 +533,33 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
 
   cleanBaseImageInfo(isGetBoardRegistry: boolean = false): void {
     this.selectedImage = null;
+    this.consoleText = "";
     this.imageDetailList.splice(0,this.imageDetailList.length);
     this.customerNewImage.image_dockerfile.image_base = "";
-    if (isGetBoardRegistry) this.getBoardRegistry();
   }
 
   setBaseImage($event: Image): void {
     this.selectedImage = $event;
-    this.imageService.getImageDetailList(this.selectedImage.image_name)
-      .then((res: ImageDetail[]) => {
-        this.imageDetailList = res;
-        this.customerNewImage.image_dockerfile.image_base = `${this.selectedImage.image_name}:${res[0].image_tag}`;
-      })
-      .catch(err => {
-        this.isOpen = false;
-        this.messageService.dispatchError(err)
-      });
+    this.imageService.getBoardRegistry().subscribe((res: string) => {
+      this.boardRegistry = res.replace(/"/g,"");
+      this.imageService.getImageDetailList(this.selectedImage.image_name)
+        .then((res: ImageDetail[]) => {
+          this.imageDetailList = res;
+          this.customerNewImage.image_dockerfile.image_base = `${this.boardRegistry}/${this.selectedImage.image_name}:${res[0].image_tag}`;
+          this.getDockerFilePreviewInfo();
+        })
+        .catch(err => {
+          this.isOpen = false;
+          this.messageService.dispatchError(err)
+        });
+    });
   }
 
   setBaseImageDetail(detail: ImageDetail): void {
-    this.customerNewImage.image_dockerfile.image_base = `${this.selectedImage.image_name}:${detail.image_tag}`;
-  }
-
-  getBoardRegistry():void{
     this.imageService.getBoardRegistry().subscribe((res: string) => {
-      this.boardRegistry = res.substr(1,res.length - 2);
-    })
+      this.boardRegistry = res.replace(/"/g,"");
+      this.customerNewImage.image_dockerfile.image_base = `${this.boardRegistry}/${this.selectedImage.image_name}:${detail.image_tag}`;
+      this.getDockerFilePreviewInfo();
+    });
   }
 }

@@ -1448,3 +1448,44 @@ func getYamlFileName(yamlType string) string {
 	}
 	return fileName
 }
+
+func (p *ServiceController) GetScaleStatusAction() {
+	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	// Get the current service status
+	var servicequery model.ServiceStatus
+	servicequery.ID = int64(serviceID)
+	s, err := service.GetService(servicequery, "id")
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if s == nil {
+		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
+		return
+	}
+
+	isMember, err := service.IsProjectMember(s.ProjectID, p.currentUser.ID)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	//Judge authority
+	if !(p.isSysAdmin || isMember) {
+		p.customAbort(http.StatusForbidden, "Insufficient privileges to get publicity of service.")
+		return
+	}
+	scaleStatus, err := service.GetScaleStatus(s)
+	if err != nil {
+		logs.Debug("Get scale deployment status failed %s", s.Name)
+		p.internalError(err)
+		return
+	}
+	p.Data["json"] = scaleStatus
+	p.ServeJSON()
+	logs.Info("Get Scale status successfully")
+}
