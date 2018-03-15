@@ -130,6 +130,7 @@ if __name__ == "__main__":
     workspace = sys.argv[2]
     build_id = sys.argv[3]
     repoName = sys.argv[4]
-    metaDir=os.path.join(workspace, repoName)
+    userName = sys.argv[5]
+    metaDir=os.path.join(workspace, userName, repoName)
     print ('meta file........%s' %metaDir)
     checkFile(metaDir, build_id)

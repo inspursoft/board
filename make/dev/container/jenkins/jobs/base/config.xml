@@ -42,7 +42,6 @@
   </properties>
   <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.42">
     <script>node {
-    environment {cc=&quot;/home&quot;}
     dir(&apos;./&apos;) {
         stage(&apos;cleanEnv&apos;) {
             sh &apos;rm -rf $WORKSPACE/$user_name/*&apos;
@@ -64,8 +63,8 @@
         
         stage(&apos;jekins&apos;) {
             sh &apos;&apos;&apos;
-            chmod +x $WORKSPACE/$repo_name/parser.py
-            python $WORKSPACE/$repo_name/parser.py $base_repo_url $WORKSPACE $BUILD_ID $repo_name
+            chmod +x $WORKSPACE/$user_name/$repo_name/parser.py
+            python $WORKSPACE/$user_name/$repo_name/parser.py $base_repo_url $WORKSPACE $BUILD_ID $repo_name $user_name
             &apos;&apos;&apos;
         }
     }
