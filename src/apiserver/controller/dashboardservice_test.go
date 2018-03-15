@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 	"time"
 
@@ -13,27 +12,27 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func getNodeBodys() ([][]byte, error) {
-	bodies := []NodeBodyReqPara{
-		NodeBodyReqPara{
+func getServiceBodys() ([][]byte, error) {
+	bodies := []ServiceBodyPara{
+		ServiceBodyPara{
 			TimeUnit:      "second",
 			TimeCount:     1,
 			TimestampBase: time.Now().Second(),
 			DurationTime:  0,
 		},
-		NodeBodyReqPara{
+		ServiceBodyPara{
 			TimeUnit:      "minute",
 			TimeCount:     1,
 			TimestampBase: time.Now().Second(),
 			DurationTime:  0,
 		},
-		NodeBodyReqPara{
+		ServiceBodyPara{
 			TimeUnit:      "hour",
 			TimeCount:     1,
 			TimestampBase: time.Now().Second(),
 			DurationTime:  0,
 		},
-		NodeBodyReqPara{
+		ServiceBodyPara{
 			TimeUnit:      "day",
 			TimeCount:     1,
 			TimestampBase: time.Now().Second(),
@@ -51,39 +50,49 @@ func getNodeBodys() ([][]byte, error) {
 	return bodySlice, nil
 }
 
-func TestGetNodeData(t *testing.T) {
+func TestGetServiceData(t *testing.T) {
 	token := adminLoginTest(t)
 	defer adminLogoutTest(t)
 
-	bodies, err := getNodeBodys()
+	bodies, err := getServiceBodys()
 	if err != nil {
-		t.Fatal("dashboard test case initial data error")
+		t.FailNow()
 	}
-
-	nodeIP := os.Getenv("NODE_IP")
 
 	testFunc := func(t *testing.T) {
 		// init one assert
 		assert := assert.New(t)
 		for i := range bodies {
 			//case one without parameter
-			r, _ := http.NewRequest("POST", "/api/v1/dashboard/node?token="+token, bytes.NewBuffer(bodies[i]))
+			r, _ := http.NewRequest("POST", "/api/v1/dashboard/service?token="+token, bytes.NewBuffer(bodies[i]))
 			w := httptest.NewRecorder()
 			beego.BeeApp.Handlers.ServeHTTP(w, r)
 
-			assert.Equal(http.StatusOK, w.Code, "Get Dashboard node data without parameter fail.")
+			assert.Equal(http.StatusOK, w.Code, "Get Dashboard service data without parameter fail.")
 
-			// case two with node parameter
-			r, _ = http.NewRequest("POST", "/api/v1/dashboard/node?node_name="+nodeIP+"&token="+token, bytes.NewBuffer(bodies[i]))
+			// case two with service parameter
+			r, _ = http.NewRequest("POST", "/api/v1/dashboard/service?service_name=kubernetes"+"&token="+token, bytes.NewBuffer(bodies[i]))
 			w = httptest.NewRecorder()
 			beego.BeeApp.Handlers.ServeHTTP(w, r)
 
-			assert.Equal(http.StatusOK, w.Code, "Get Dashboard node data with node parameter fail.")
-
+			assert.Equal(http.StatusOK, w.Code, "Get Dashboard service data with service parameter fail.")
 		}
 	}
 
 	// insert meta data
-	testFunc = prepareNodeDataWrapper(nodeIP, testFunc)
+	testFunc = prepareServiceDataWrapper("kubernetes", testFunc)
 	testFunc(t)
+}
+
+func TestGetServerTime(t *testing.T) {
+	token := adminLoginTest(t)
+	defer adminLogoutTest(t)
+
+	r, _ := http.NewRequest("GET", "/api/v1/dashboard/time?token="+token, nil)
+	w := httptest.NewRecorder()
+	beego.BeeApp.Handlers.ServeHTTP(w, r)
+
+	assert := assert.New(t)
+	assert.Equal(http.StatusOK, w.Code, "Get Server time fail.")
+
 }
