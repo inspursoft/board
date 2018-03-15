@@ -29,6 +29,11 @@
           <description></description>
           <defaultValue></defaultValue>
         </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>user_name</name>
+          <description></description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
     <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
@@ -39,17 +44,20 @@
     <script>node {
     environment {cc=&quot;/home&quot;}
     dir(&apos;./&apos;) {
+        stage(&apos;cleanEnv&apos;) {
+            sh &apos;rm -rf $WORKSPACE/$user_name/*&apos;
+        }
         stage(&apos;Git&apos;) {
            sh &apos;&apos;&apos;
            echo $base_repo_url
            echo $repo_name
+           echo $user_name
            
-           if [ -d $WORKSPACE/$repo_name ]; then
-           cd $WORKSPACE/$repo_name
-           git pull
-           else
-           git clone $base_repo_url
+           if [ ! -d $WORKSPACE/$user_name ]; then
+           mkdir -p $WORKSPACE/$user_name
            fi
+           cd $WORKSPACE/$user_name
+           git clone $base_repo_url
            &apos;&apos;&apos;
           
         }
