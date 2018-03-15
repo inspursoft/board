@@ -74,7 +74,7 @@
           </clr-dg-cell>
         </clr-dg-row>
         <clr-dg-footer>
-          {{services ? services.length : 0}} {{ 'DATAGRID.ITEMS' | translate }}
+          {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} of {{pagination.totalItems}} items
           <clr-dg-pagination #pagination [clrDgTotalItems]="totalRecordCount" [(clrDgPage)]="pageIndex"
                              [clrDgPageSize]="pageSize"></clr-dg-pagination>
         </clr-dg-footer>
