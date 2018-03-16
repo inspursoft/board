@@ -31,9 +31,6 @@
             <span [ngClass]="getStatusClass(service.service_status)" class="status-value">
               {{getServiceStatus(service.service_status) | translate}}</span>
           </span>
-          <span>{{ 'SERVICE.SERVICE_CONTROL_INSTANCE' | translate }}:
-            <span class="status-value"></span>
-          </span>
         </div>
         <div class="detail-line">
           <span>{{ 'SERVICE.SERVICE_CONTROL_REASON' | translate }}:
@@ -41,9 +38,14 @@
           </span>
         </div>
         <div class="detail-line">
-          <span>{{ 'SERVICE.SERVICE_CONTROL_POD' | translate }}:
-           <span class="status-value"> </span>
+            <span>{{"SERVICE.SERVICE_CONTROL_AVAILABLE_INSTANCE" | translate}}
+            <span class="status-value">{{scaleInfo?.available_instance}}</span>
           </span>
+          <span>{{"SERVICE.SERVICE_CONTROL_DESIRED_INSTANCE" | translate}}
+            <span class="status-value">{{scaleInfo?.desired_instance}}</span>
+          </span>
+        </div>
+        <div class="detail-line">
           <span>{{ 'SERVICE.SERVICE_CONTROL_POD_STATUS' | translate }}:
             <span class="status-value"> </span>
           </span>
@@ -71,17 +73,18 @@
           </cs-input>
         </div>
         <div class="scale-line">
-          <input [disabled]="isActionInWIP" title="" type="radio" id="manually" name="scaleMethod"
-                 (change)="setScaleMethod(1)">
+          <input [disabled]="isActionInWIP" title="" type="radio" id="manually" name="scaleMethod" [checked]="scaleModule == 0"
+                 (change)="setScaleMethod(0)">
           <label class="margin-left-10" for="manually">
             {{"SERVICE.SERVICE_CONTROL_MANUALLY_SCALE"|translate}}
           </label>
-          <span *ngIf="scaleModule == 1"
+          <span *ngIf="scaleModule == 0"
                 class="margin-left-20">
             {{"SERVICE.SERVICE_CONTROL_INSTANCE_NUMBER"|translate}}:
           </span>
-          <cs-dropdown *ngIf="scaleModule == 1"
-                       class="base-margin-left"
+          <cs-dropdown *ngIf="scaleModule == 0"
+                       class="margin-left-10"
+                       [dropdownDefaultText]="scaleNum.toString()"
                        [dropdownDisabled]="isActionInWIP"
                        [dropdownWidth]="100"
                        [dropdownHideSearch]="true"
@@ -90,8 +93,8 @@
           </cs-dropdown>
         </div>
         <div class="scale-line">
-          <input [disabled]="isActionInWIP" title="" type="radio" id="auto" name="scaleMethod"
-                 (change)="setScaleMethod(2)">
+          <input [disabled]="isActionInWIP" title="" type="radio" id="auto" name="scaleMethod" [checked]="scaleModule == 1"
+                 (change)="setScaleMethod(1)">
           <label class="margin-left-10" for="auto">
             {{"SERVICE.SERVICE_CONTROL_AUTO_SCALE"|translate}}
           </label>
