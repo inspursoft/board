@@ -326,7 +326,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     } else {
       this.newImageAlertType = "alert-danger";
       this.newImageErrMessage = "IMAGE.CREATE_IMAGE_BUILD_IMAGE_FAILED";
-      this.newImageErrReason = err instanceof HttpErrorResponse ? (err as HttpErrorResponse).error: "";
+      this.newImageErrReason = err instanceof HttpErrorResponse ? (err as HttpErrorResponse).message: "";
       this.isNewImageAlertOpen = true;
     }
   }
