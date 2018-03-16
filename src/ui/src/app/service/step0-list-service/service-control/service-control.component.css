@@ -55,6 +55,10 @@ span.margin-left-20 {
   margin-left: 20px;
 }
 
+cs-dropdown.margin-left-10 {
+  margin-left: 10px;
+}
+
 div.action-method {
   margin-top: 10px;
   min-height: 40px;
