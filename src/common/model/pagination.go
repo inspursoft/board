@@ -23,7 +23,7 @@ func (p *Pagination) GetPageCount() int {
 
 func (p *Pagination) GetPageOffset() int {
 	if p.PageIndex <= 0 {
-		return 1
+		return 0
 	}
 	return p.PageSize * (p.PageIndex - 1)
 }
