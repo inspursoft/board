@@ -100,7 +100,7 @@ export class CsDropdownComponent implements OnChanges {
 
   get active(): boolean {
     /*Todo:this is bad method, but no way better than it at present.2018/1/3*/
-    return this.csDropdown["ifOpenService"]["open"];
+    return this.csDropdown && this.csDropdown["ifOpenService"]["open"];
   }
 
   incShowTimes(event: MouseEvent): void {

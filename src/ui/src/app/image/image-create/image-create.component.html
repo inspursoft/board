@@ -68,7 +68,7 @@
                        id="radFromDocker"
                        [value]="1"
                        [(ngModel)]="baseImageSource"
-                       (click)="cleanBaseImageInfo()"
+                       (click)="cleanBaseImageInfo(false)"
                        checked>
                 <label for="radFromDocker" class="base-image-source">Docker Hub</label>
                 <input type="radio"
@@ -98,6 +98,7 @@
                              [dropdownListTextKey]="'image_name'"
                              (onChange)="setBaseImage($event)">
                 </cs-dropdown>
+                <span *ngIf="!selectedImage && !imageDetailList" class="spinner spinner-sm"></span>
                 <cs-dropdown *ngIf="selectedImage"
                              class="margin-left-1"
                              [dropdownWidth]="60"

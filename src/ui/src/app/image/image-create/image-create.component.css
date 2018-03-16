@@ -171,6 +171,7 @@ label.base-image-source {
 div.board-registry-container {
   display: flex;
   line-height: 30px;
+  align-items: center;
 }
 
 cs-dropdown.margin-left-1{
