@@ -172,14 +172,15 @@ div.board-registry-container {
   display: flex;
   line-height: 30px;
   align-items: center;
+  margin-left: 5px;
 }
 
-cs-dropdown.margin-left-1{
-  margin-left: 1px;
+cs-dropdown.margin-left-5{
+  margin-left: 5px;
 }
 
-cs-dropdown.margin-left-180{
-  margin-left: 180px;
+cs-dropdown.margin-left-120{
+  margin-left: 120px;
 }
 
 cs-input.margin-left-180{
