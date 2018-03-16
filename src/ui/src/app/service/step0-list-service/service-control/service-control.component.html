@@ -1,17 +1,22 @@
 <clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'md'" [clrModalClosable]="!isActionInWIP">
   <h3 class="modal-title">{{ "SERVICE.SERVICE_CONTROL" | translate }}</h3>
   <div class="modal-body">
+    <clr-alert *ngIf="alertMessage != ''" [clrAlertType]="'alert-danger'">
+      <div class="alert-item">
+        <span class="alert-text">{{alertMessage | translate}}</span>
+      </div>
+    </clr-alert>
     <div class="btn-group action-method">
       <button class="btn"
               [disabled]="isActionInWIP"
               [ngClass]="{'btn-primary':actionMethod == 0}"
-              (click)="actionMethod = 0">
+              (click)="actionMethod = 0;alertMessage = ''">
         {{"SERVICE.SERVICE_CONTROL_SCALE" | translate}}
       </button>
       <button class="btn"
               [disabled]="isActionInWIP"
               [ngClass]="{'btn-primary':actionMethod == 1}"
-              (click)="actionMethod = 1;getServiceImages()">
+              (click)="actionMethod = 1;alertMessage = '';getServiceImages()">
         {{"SERVICE.SERVICE_CONTROL_UPDATE" | translate}}
       </button>
     </div>
@@ -55,10 +60,12 @@
       <ng-template [ngSwitchCase]="0">
         <div class="utilization-container">
           <cs-input [inputLabel]="'SERVICE.SERVICE_CONTROL_CPU_UTILIZATION_CURRENT'| translate"
+                    [inputLabelMinWidth]="'230px'"
                     [disabled]="true"
                     [simpleFiled]="'50%'">
           </cs-input>
           <cs-input [inputLabel]="'SERVICE.SERVICE_CONTROL_CPU_UTILIZATION_QUALIFIED'| translate"
+                    [inputLabelMinWidth]="'230px'"
                     [disabled]="isActionInWIP"
                     [simpleFiled]="'55%'">
           </cs-input>

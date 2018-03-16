@@ -1,17 +1,17 @@
-import { Component, OnInit, AfterContentChecked, ViewChildren, QueryList, Injector } from '@angular/core';
+import { AfterContentChecked, ChangeDetectorRef, Component, Injector, OnInit, QueryList, ViewChildren } from '@angular/core';
 import {
-  PHASE_EXTERNAL_SERVICE,
-  PHASE_CONFIG_CONTAINERS,
   Container,
+  ExternalService,
+  PHASE_CONFIG_CONTAINERS,
+  PHASE_EXTERNAL_SERVICE,
   ServiceStepPhase,
-  UIServiceStep4,
   UIServiceStep3,
-  ExternalService
+  UIServiceStep4
 } from '../service-step.component';
 import { CsInputComponent } from "../../shared/cs-components-library/cs-input/cs-input.component";
 import { ServiceStepBase } from "../service-step";
-import { Response } from "@angular/http";
 import { ValidationErrors } from "@angular/forms/forms";
+import { HttpErrorResponse } from "@angular/common/http";
 
 @Component({
   styleUrls: ["./config-setting.component.css"],
@@ -30,7 +30,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
   /*Todo:Only for collaborative plus action.It must be delete after update UIServiceStep4*/
   collaborativeList:Array<Object>;
 
-  constructor(protected injector: Injector) {
+  constructor(protected injector: Injector, private changeDetectorRef: ChangeDetectorRef) {
     super(injector);
     this.dropDownListNum = Array<number>();
     this.collaborativeServiceList = Array<string>();
@@ -55,6 +55,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
     });
     this.k8sService.getServiceConfig(this.stepPhase).then(res => {
       this.uiBaseData = res;
+      this.changeDetectorRef.detectChanges();
     });
     for (let i = 1; i <= 100; i++) {
       this.dropDownListNum.push(i)
@@ -77,7 +78,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
     return this.k8sService.checkServiceExist(this.uiData.projectName, control.value)
       .then(() => null)
       .catch(err => {
-        if (err && err instanceof Response && (err as Response).status == 409) {
+        if (err && err instanceof HttpErrorResponse && (err as HttpErrorResponse).status == 409) {
           return {serviceExist: "SERVICE.STEP_4_SERVICE_NAME_EXIST"}
         }
         this.messageService.dispatchError(err);

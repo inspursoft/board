@@ -103,6 +103,11 @@ func TestDeleteProject(t *testing.T) {
 	assert := assert.New(t)
 	assert.Nil(err, "Error occurred while deleting project.")
 	assert.Equalf(true, isSuccess, "Failed to delete project by ID: %d", projectID)
+
+	isSuccess, err = DeleteNamespace(projectName)
+	assert.Nil(err, "Error occurred while deleting namespace.")
+	assert.Equalf(true, isSuccess, "Failed to delete namespace by name: %s", projectName)
+
 	project, err := GetProject(model.Project{ID: projectID}, "id")
 	assert.Nilf(err, "Error occurred while getting project by ID: %d", projectID)
 	assert.Nilf(project, "Project with ID: %d is not nil.", projectID)

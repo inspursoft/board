@@ -83,7 +83,7 @@ export const LANG_ZH_CN = {
     "NEW_PASSWORD":"新密码",
     "NEW_PASSWORD_CONFIRM":"确认新密码",
     "OLD_PASSWORD_WRONG":"旧密码错误",
-    "CHANGE_PASSWORD_SUCCESS":"修改密码成功。"
+    "CHANGE_PASSWORD_SUCCESS":"修改密码成功。",
   },
   "SIDE_NAV": {
     "DASHBOARD": "仪表盘",
@@ -93,7 +93,9 @@ export const LANG_ZH_CN = {
     "NODES": "节点",
     "IMAGES": "镜像",
     "ADMIN_OPTIONS": "管理员选项",
-    "PROFILES": "用户中心"
+    "PROFILES": "信息",
+    "GUIDE_SERVICE_LIST":"请创建属于您的新服务",
+    "GUIDE_PROJECT_LIST":"请创建属于您的新项目"
   },
   "DASHBOARD": {
     "MIN":"分",
@@ -108,7 +110,8 @@ export const LANG_ZH_CN = {
     "NODE": "节点",
     "USAGE": "已用",
     "TOTAL": "总共",
-    "STORAGE": "存储"
+    "STORAGE": "存储",
+    "GRAFANA_FRAME_SUPPORT":"你的浏览器不支持iframe标签。"
   },
   "PROJECT": {
     "CREATE_PROJECT": "创建项目",
@@ -143,7 +146,8 @@ export const LANG_ZH_CN = {
     "FAILED_TO_REMOVE_MEMBER": "移除项目成员失败。",
     "SUCCESSFUL_CREATED_PROJECT": "创建项目成功。",
     "PROJECT_NAME_ALREADY_EXISTS": "项目名称已存在。",
-    "PROJECT_NAME_IS_ILLEGAL": "项目名称非法。"
+    "PROJECT_NAME_IS_ILLEGAL": "项目名称非法。",
+    "GUIDE_CREATE_PROJECT":"创建属于您的新项目。"
   },
   "USER_CENTER": {
     "LIST_COL_USERNAME":"用户名",
@@ -210,13 +214,15 @@ export const LANG_ZH_CN = {
     "CREATE_IMAGE_NEW_IMAGE_NAME":"新建镜像名称",
     "CREATE_IMAGE_IMAGE_TAG":"镜像标签",
     "CREATE_IMAGE_BASE_IMAGE":"基础镜像",
+    "CREATE_IMAGE_BASE_IMAGE_SELECT":"选择基础镜像",
     "CREATE_IMAGE_IMAGE_ENTRYPOINT":"镜像进入点",
     "CREATE_IMAGE_IMAGE_ENV":"镜像环境变量",
     "CREATE_IMAGE_IMAGE_VOLUME":"镜像卷",
     "CREATE_IMAGE_IMAGE_RUN":"镜像执行",
     "CREATE_IMAGE_IMAGE_EXPOSE":"镜像外部端口",
-    "CREATE_IMAGE_UPLOAD_ARCHIVES":"上传外部文件",
+    "CREATE_IMAGE_UPLOAD_ARCHIVES":"上传外部文件至",
     "CREATE_IMAGE_UPLOAD":"上传",
+    "CREATE_IMAGE_UPLOAD_FILE_LIST":"文件列表",
     "CREATE_IMAGE_COMMAND":"命令",
     "CREATE_IMAGE_PREVIEW":"预览",
     "CREATE_IMAGE_BUILD_IMAGE":"构建镜像",
@@ -234,6 +240,7 @@ export const LANG_ZH_CN = {
     "CREATE_IMAGE_FILE_NAME":"文件名",
     "CREATE_IMAGE_FILE_TYPE":"文件类型",
     "CREATE_IMAGE_FILE_SIZE":"文件大小",
+    "CREATE_IMAGE_FILE_NAME_ERROR":"文件名必须为'Dockerfile'",
     "CREATE_IMAGE_FILE_LAST_MODIFY":"文件最后修改日期",
     "CREATE_IMAGE_SELECT_PROJECT":"选择项目",
     "CREATE_IMAGE_CREATE_PROJECT":"创建项目...",
@@ -244,8 +251,8 @@ export const LANG_ZH_CN = {
     "CREATE_IMAGE_EXIST":"已经选择了镜像",
     "CREATE_IMAGE_FROM_TEMP":"来自模版",
     "CREATE_IMAGE_FROM_FILE":"来自文件",
-    "CREATE_IMAGE_IMAGE_TAG_EXIST":"镜像标签已经存在",
-    "CREATE_IMAGE_IMAGE_NAME_EXIST":"镜像名称已经存在",
+    "CREATE_IMAGE_TAG_EXIST":"镜像标签已经存在",
+    "CREATE_IMAGE_NAME_EXIST":"镜像名称已经存在",
     "CREATE_IMAGE_JENKINS_PREPARE":"Jenkins正在准备...",
   },
   "SERVICE": {
@@ -278,6 +285,9 @@ export const LANG_ZH_CN = {
     "STEP_TITLE_4":"配置服务",
     "STEP_TITLE_5":"测试",
     "STEP_TITLE_6":"部署",
+    "STEP_0_CREATE_WIZARD":"使用向导创建服务",
+    "STEP_0_CREATE_YAML":"使用Yaml文件创建服务",
+    "STEP_0_CREATE_DEVOPS":"使用DevOps创建服务",
     "STEP_1_SELECT_DES":"如果没有项目可供选择,需要新建一个项目。",
     "STEP_1_CREATE_PROJECT":"创建项目...",
     "STEP_1_NONE_PROJECT":"没有项目",
@@ -351,8 +361,18 @@ export const LANG_ZH_CN = {
     "SERVICE_CONTROL_IMAGE_NAME":"镜像名称",
     "SERVICE_CONTROL_IMAGE_TAG":"镜像Tag",
     "SERVICE_CONTROL_UPDATE_TAG":"更新Tag",
+    "SERVICE_CONTROL_NOT_UPDATE":"此服务不能升级",
     "SERVICE_DETAIL_DEPLOYMENT_FILE":"部署文件内容",
     "SERVICE_DETAIL_SERVICE_FILE":"服务文件内容",
+    "GUIDE_CREATE_SERVICE":"请创建属于您的新服务",
+    "SERVICE_YAML_SELECT_PROJECT":"选择项目",
+    "SERVICE_YAML_UPLOAD":"上传",
+    "SERVICE_YAML_SELECT_DEPLOYMENT_YAML":"选择部署Yaml文件",
+    "SERVICE_YAML_SELECT_SERVICE_YAML":"选择服务的Yaml文件",
+    "SERVICE_YAML_NER_SERVICE_NAME":"新建服务名称",
+    "SERVICE_YAML_INVALID_FILE":"无效的文件类型",
+    "SERVICE_YAML_VALID_FILE":"文件合法，可以上传",
+    "SERVICE_YAML_UPLOAD_SUCCESS":"上传成功!目前服务处于'准备'状态，点击'创建'，运行该服务"
   },
   "GLOBAL_SEARCH": {
     "PROJECTS": "项目",
@@ -395,5 +415,15 @@ export const LANG_ZH_CN = {
     "FAILED_TO_TOGGLE": "切换节点状态失败。",
     "TOGGLE_NODE": "切换状态",
     "CONFIRM_TO_TOGGLE_NODE": "确认切换节点 {{0}} 的状态？"
-  }
+  },
+  "GUIDE":{
+    "TITLE":"使用向导",
+    "NEXT_STEP":"下一步"
+  },
+  "PROFILES":{
+    "VERSION":"版本",
+    "CLUSTER_VERSION":"集群版本",
+    "GET_HELP":"帮助",
+    "SUPPORT_TEAM":"支持"
+}
 };

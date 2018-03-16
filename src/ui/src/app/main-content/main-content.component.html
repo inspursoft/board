@@ -1,26 +1,61 @@
 <clr-main-container>
   <header-content [isSignIn]="isSignIn" [hasSignedIn]="hasSignedIn" [searchContent]="searchContent"></header-content>
   <global-message></global-message>
-  <div class="content-container">
+  <div class="content-container" *ngIf="!isOnlyShowGrafanaView">
     <nav class="sidenav" *ngIf="hasSignedIn">
       <section class="sidenav-content">
-        <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/dashboard" (click)="navigateTo('/dashboard')">
+        <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/dashboard"
+           (click)="navigateTo('/dashboard')">
           {{ 'SIDE_NAV.DASHBOARD' | translate }}
         </a>
-        <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/services" (click)="navigateTo('/services')"> 
-          {{ 'SIDE_NAV.SERVICES' | translate }}
-        </a>
-        <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/projects" (click)="navigateTo('/projects')">
-         {{ 'SIDE_NAV.PROJECTS' | translate }}
-        </a>
-        <a *ngIf="isSystemAdmin" href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/nodes" (click)="navigateTo('/nodes')">
+        <div style="display: flex;padding: 0" class="sidenav-content">
+          <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/services"
+             (click)="navigateTo('/services')">
+            {{ 'SIDE_NAV.SERVICES' | translate }}
+          </a>
+          <cs-guide style="margin-top: 20px;margin-right: 60px;"
+                    *ngIf="isFirstLogin && guideStep == 3"
+                    [description]="'SIDE_NAV.GUIDE_SERVICE_LIST'"
+                    [show]="isFirstLogin && guideStep == 3"
+                    [isShowIcon]="true"
+                    (onClose)="setGuideNoneStep()"
+                    (onNextStep)="guideNextStep(3)">
+          </cs-guide>
+        </div>
+        <div style="display: flex;padding: 0;" class="sidenav-content">
+          <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/projects"
+             (click)="navigateTo('/projects')">
+            {{ 'SIDE_NAV.PROJECTS' | translate }}
+          </a>
+          <cs-guide style="margin-top: 20px;margin-right: 60px;"
+                    *ngIf="isFirstLogin && guideStep == 1"
+                    [description]="'SIDE_NAV.GUIDE_PROJECT_LIST'"
+                    [show]="isFirstLogin && guideStep == 1"
+                    [isShowIcon]="true"
+                    (onClose)="setGuideNoneStep()"
+                    (onNextStep)="guideNextStep(1)">
+          </cs-guide>
+        </div>
+        <a *ngIf="isSystemAdmin" href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']"
+           routerLink="/nodes" (click)="navigateTo('/nodes')">
           {{ 'SIDE_NAV.NODES' | translate }}
         </a>
-        <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/images" (click)="navigateTo('/images')">
+        <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/images"
+           (click)="navigateTo('/images')">
           {{ 'SIDE_NAV.IMAGES' | translate }}
         </a>
-        <a *ngIf="isSystemAdmin" href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/user-center" (click)="navigateTo('/user-center')">
+        <a *ngIf="isSystemAdmin" href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']"
+           routerLink="/user-center" (click)="navigateTo('/user-center')">
           {{ 'SIDE_NAV.ADMIN_OPTIONS' | translate }}
+        </a>
+
+        <a *ngIf="isSystemAdmin"
+           href="javascript:void(0)"
+           class="nav-link"
+           [routerLinkActive]="['active']"
+           [routerLink]="'/profile'"
+           (click)="navigateTo('/profile')">
+          {{ 'SIDE_NAV.PROFILES' | translate }}
         </a>
       </section>
     </nav>
@@ -30,4 +65,11 @@
       <confirmation-dialog></confirmation-dialog>
     </div>
   </div>
+  <div *ngIf="isOnlyShowGrafanaView" style="height: 100%; padding: 0;margin: 0;scrollbar-base-color: blue">
+    <iframe #frameDashboard height=100% width="100%" frameborder="0" [src]="grafanaViewUrl | safe">
+      {{"DASHBOARD.GRAFANA_FRAME_SUPPORT" | translate}}
+    </iframe>
+  </div>
 </clr-main-container>
+
+

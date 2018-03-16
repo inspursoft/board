@@ -33,6 +33,7 @@ export class CsInputComponent implements OnInit {
   @ViewChild("input") inputHtml;
   @ViewChild("container") containerHtml: ElementRef;
   @Input() inputLabel: string = "";
+  @Input() inputLabelMinWidth: string = "180px";
   @Input() inputFiledType: CsInputFiledType = CsInputFiledType.iftString;
   @Input() inputIsRequired: boolean = false;
   @Input() inputPattern: RegExp;

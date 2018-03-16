@@ -142,6 +142,7 @@ func cleanImageTestByName(imagename string) {
 var testimage = model.Image{
 	ImageName:    "testimage1",
 	ImageComment: "testimage1",
+	ImageDeleted: 0,
 }
 
 var testImageid int64
@@ -176,4 +177,70 @@ func TestGetImage(t *testing.T) {
 func TestClean(t *testing.T) {
 	t.Log("Clean test image", testImageid)
 	cleanImageTestByID(testImageid)
+}
+
+var testITag = model.ImageTag{
+	ImageName:       "testimage1",
+	Tag:             "1.0",
+	ImageTagDeleted: 0,
+}
+
+var testITagid int64
+
+func TestCreateImageTag(t *testing.T) {
+	assert := assert.New(t)
+	id, err := CreateImageTag(testITag)
+	assert.Nil(err, "Failed, err when create test image tag.")
+	assert.NotEqual(0, id, "Failed to assign a image tag id")
+	testITagid = id
+	t.Log(testITagid)
+}
+
+func TestUpdateImageTag(t *testing.T) {
+	assert := assert.New(t)
+	testITag.Tag = "1.1"
+	testITag.ImageTagID = testITagid
+	ret, err := UpdateImageTag(testITag, "tag")
+	assert.Nil(err, "Failed, err when update test image tag.")
+	assert.Equal(true, ret, "Failed to update test image tag.")
+	t.Log(ret)
+}
+
+func TestDeleteImageTag(t *testing.T) {
+	assert := assert.New(t)
+	testITag.ImageTagID = testITagid
+	err := DeleteImageTag(testITag)
+	assert.Nil(err, "Failed, err when delete test image tag.")
+}
+
+func TestGetImageTag(t *testing.T) {
+	assert := assert.New(t)
+	testITag.ImageTagID = testITagid
+	retimageTag, err := GetImageTag(testITag, "id")
+	assert.Nil(err, "Failed, err when get test image tag.")
+	assert.Equal("testimage1", retimageTag.ImageName, "Failed to get image tag.")
+	t.Log(retimageTag)
+}
+
+func TestCleanTag(t *testing.T) {
+	t.Log("Clean test image tag", testITagid)
+	cleanImageTagTestByID(testITagid)
+}
+
+func cleanImageTagTestByID(imageTagid int64) {
+	o := orm.NewOrm()
+	rs := o.Raw("delete from image_tag where id = ?", imageTagid)
+	r, err := rs.Exec()
+	if err != nil {
+		logs.Error("Error occurred while deleting image tag: %+v", err)
+	}
+	affected, err := r.RowsAffected()
+	if err != nil {
+		logs.Error("Error occurred while deleting image: %+v", err)
+	}
+	if affected == 0 {
+		logs.Error("Failed to delete image tag", imageTagid)
+	} else {
+		logs.Info("Successfully clean up image tag.", imageTagid)
+	}
 }

@@ -27,6 +27,8 @@ func GetSystemInfo() (*model.SystemInfo, error) {
 			systemInfo.SyncK8s = config.Value
 		case "REDIRECTION_URL":
 			systemInfo.RedirectionURL = config.Value
+		case "BOARD_VERSION":
+			systemInfo.Version = config.Value
 		}
 	}
 	return &systemInfo, nil

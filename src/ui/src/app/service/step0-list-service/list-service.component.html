@@ -3,69 +3,127 @@
                  [(isOpen)]="isServiceControlOpen"
                  [service]="serviceControlData">
 </service-control>
-<div class="row flex-items-xs-right">
-  <button class="btn btn-primary"
-          (click)="createService()">
-    {{ 'SERVICE.CREATE_SERVICE' | translate }}
-  </button>
-</div>
-<div class="row">
-  <div class="col-xs-12">
-    <clr-datagrid (clrDgRefresh)="retrieve($event)" [clrDgLoading]="isInLoading">
-      <clr-dg-column>{{ 'SERVICE.SERVICE_NAME' | translate }}</clr-dg-column>
-      <clr-dg-column>{{ 'SERVICE.PROJECT_NAME' | translate }}</clr-dg-column>
-      <clr-dg-column>{{ 'SERVICE.OWNER' | translate }}</clr-dg-column>
-      <clr-dg-column>{{ 'SERVICE.CREATE_TIME' | translate }}</clr-dg-column>
-      <clr-dg-column>{{ 'SERVICE.PUBLIC' | translate }}</clr-dg-column>
-      <clr-dg-column>{{ 'SERVICE.STATUS' | translate }}</clr-dg-column>
-      <clr-dg-column>{{ 'SERVICE.OPERATION' | translate }}</clr-dg-column>
-      <clr-dg-row *ngFor="let s of services">
-        <clr-dg-cell>{{s.service_name}}</clr-dg-cell>
-        <clr-dg-cell>{{s.service_project_name}}</clr-dg-cell>
-        <clr-dg-cell>{{s.service_owner_name}}</clr-dg-cell>
-        <clr-dg-cell>{{s.service_creation_time | date: 'short'}}</clr-dg-cell>
-        <clr-dg-cell>
-          <input [checkbox-revert]="checkboxRevertInfo" type="checkbox" id="chkPublic"
-                 [checked]="s.service_public === 1" (click)="toggleServicePublic(s,$event)">
-          <label for="chkPublic"></label>
-        </clr-dg-cell>
-        <clr-dg-cell>
+<service-create-yaml
+  *ngIf="isShowServiceCreateYaml"
+  (onCancelEvent)="cancelCreateService()">
+</service-create-yaml>
+<div *ngIf="isNormalStatus">
+  <div class="row flex-items-xs-right">
+    <cs-guide *ngIf="isFirstLogin && guideStep == 4"
+              [description]="'SERVICE.GUIDE_CREATE_SERVICE'"
+              [show]="isFirstLogin && guideStep == 4"
+              [position]="'left-middle'"
+              (onClose)="setGuideNoneStep()"
+              (onNextStep)="guideNextStep(4)">
+    </cs-guide>
+    <button class="btn btn-primary"
+            (click)="isBuildServiceWIP = true">
+      {{ 'SERVICE.CREATE_SERVICE' | translate }}
+    </button>
+  </div>
+  <div class="row">
+    <div class="col-xs-12">
+      <clr-datagrid (clrDgRefresh)="retrieve()" [clrDgLoading]="isInLoading">
+        <clr-dg-column>{{ 'SERVICE.SERVICE_NAME' | translate }}</clr-dg-column>
+        <clr-dg-column>{{ 'SERVICE.PROJECT_NAME' | translate }}</clr-dg-column>
+        <clr-dg-column>{{ 'SERVICE.OWNER' | translate }}</clr-dg-column>
+        <clr-dg-column>{{ 'SERVICE.CREATE_TIME' | translate }}</clr-dg-column>
+        <clr-dg-column>{{ 'SERVICE.PUBLIC' | translate }}</clr-dg-column>
+        <clr-dg-column>{{ 'SERVICE.STATUS' | translate }}</clr-dg-column>
+        <clr-dg-column>{{ 'SERVICE.OPERATION' | translate }}</clr-dg-column>
+        <clr-dg-row *ngFor="let s of services">
+          <clr-dg-cell>{{s.service_name}}</clr-dg-cell>
+          <clr-dg-cell>{{s.service_project_name}}</clr-dg-cell>
+          <clr-dg-cell>{{s.service_owner_name}}</clr-dg-cell>
+          <clr-dg-cell>{{s.service_creation_time | date: 'short'}}</clr-dg-cell>
+          <clr-dg-cell>
+            <input [checkbox-revert]="checkboxRevertInfo" type="checkbox" id="chkPublic"
+                   [checked]="s.service_public === 1" (click)="toggleServicePublic(s,$event)">
+            <label for="chkPublic"></label>
+          </clr-dg-cell>
+          <clr-dg-cell>
           <span [ngClass]="getStatusClass(s.service_status)">
             {{ getServiceStatus(s.service_status) | translate }}
           </span>
-        </clr-dg-cell>
-        <clr-dg-cell>
-          <a *ngIf="serviceInStoppedStatus(s)"
-             (click)="confirmToServiceAction(s, 'TOGGLE')"
-             href="javascript:void(0)">
-            <clr-icon shape="play"></clr-icon>
-          </a>
-          <a *ngIf="serviceCanChangePauseStatus(s)"
-             (click)="confirmToServiceAction(s, 'TOGGLE')"
-             href="javascript:void(0)">
-            <clr-icon shape="pause"></clr-icon>
-          </a>
-          <a href="javascript:void(0)">
-            <clr-icon shape="trash" class="delete"
-                      [ngClass]="{'disabled':serviceDeleteStatusDisabled(s)}"
-                      (click)="confirmToServiceAction(s, 'DELETE')">
-            </clr-icon>
-          </a>
-          <a href="javascript:void(0)"
-             (click)="openServiceDetail(s)">
-            <clr-icon shape="info-standard"></clr-icon>
-          </a>
-          <a href="javascript:void(0)"
-             (click)="openServiceControl(s)">
-            <clr-icon shape="wrench"></clr-icon>
-          </a>
-        </clr-dg-cell>
-      </clr-dg-row>
-      <clr-dg-footer>
-        {{services ? services.length : 0}} {{ 'DATAGRID.ITEMS' | translate }}
-        <clr-dg-pagination #pagination [clrDgTotalItems]="totalRecordCount" [(clrDgPage)]="pageIndex"
-                           [clrDgPageSize]="pageSize"></clr-dg-pagination>
-      </clr-dg-footer>
-    </clr-datagrid>
+          </clr-dg-cell>
+          <clr-dg-cell>
+            <a *ngIf="serviceInStoppedStatus(s)"
+               (click)="confirmToServiceAction(s, 'TOGGLE')"
+               href="javascript:void(0)">
+              <clr-icon shape="play"></clr-icon>
+            </a>
+            <a *ngIf="serviceCanChangePauseStatus(s)"
+               (click)="confirmToServiceAction(s, 'TOGGLE')"
+               href="javascript:void(0)">
+              <clr-icon shape="pause"></clr-icon>
+            </a>
+            <a href="javascript:void(0)">
+              <clr-icon shape="trash" class="delete"
+                        [ngClass]="{'disabled':serviceDeleteStatusDisabled(s)}"
+                        (click)="confirmToServiceAction(s, 'DELETE')">
+              </clr-icon>
+            </a>
+            <a href="javascript:void(0)"
+               (click)="openServiceDetail(s)">
+              <clr-icon shape="info-standard"></clr-icon>
+            </a>
+            <a href="javascript:void(0)"
+               (click)="openServiceControl(s)">
+              <clr-icon shape="wrench"></clr-icon>
+            </a>
+          </clr-dg-cell>
+        </clr-dg-row>
+        <clr-dg-footer>
+          {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} of {{pagination.totalItems}} items
+          <clr-dg-pagination #pagination [clrDgTotalItems]="totalRecordCount" [(clrDgPage)]="pageIndex"
+                             [clrDgPageSize]="pageSize"></clr-dg-pagination>
+        </clr-dg-footer>
+      </clr-datagrid>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="isBuildServiceWIP && !isShowServiceCreateYaml" class="build-service-container">
+  <div class="import-method-container">
+    <input title=""
+           type="radio"
+           id="fromBase"
+           name="buildMethod"
+           (click)="setCreateServiceMethod(1)">
+    <label for="fromBase" class="build-service-text">
+      {{"SERVICE.STEP_0_CREATE_WIZARD" | translate}}
+    </label>
+  </div>
+  <div class="import-method-container">
+    <input title=""
+           type="radio"
+           id="fromYamlFile"
+           name="buildMethod"
+           (click)="setCreateServiceMethod(2)">
+    <label for="fromYamlFile" class="build-service-text">
+      {{"SERVICE.STEP_0_CREATE_YAML" | translate}}
+    </label>
+  </div>
+  <div class="import-method-container">
+    <input title=""
+           type="radio"
+           id="fromDevOps"
+           [disabled]="true"
+           name="buildMethod"
+           (click)="setCreateServiceMethod(3)">
+    <label for="fromDevOps" class="build-service-text-disabled">
+      {{"SERVICE.STEP_0_CREATE_DEVOPS" | translate}}
+    </label>
+  </div>
+  <div class="build-btn-container">
+    <button class="btn btn-default cancel-build"
+            (click)="isBuildServiceWIP = false">
+      {{"BUTTON.CANCEL"|translate}}
+    </button>
+    <button class="btn btn-primary"
+            [disabled]="createServiceMethod == 0"
+            (click)="createService()">
+      {{"BUTTON.CREATE"|translate}}
+    </button>
   </div>
 </div>

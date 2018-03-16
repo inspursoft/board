@@ -946,3 +946,75 @@ func existRegistry(projectName string, imageName string, imageTag string) (bool,
 
 	return false, err
 }
+
+func (f *ImageController) UploadDockerfileFileAction() {
+	projectName := f.GetString("project_name")
+	isExistence, err := service.ProjectExists(projectName)
+	if err != nil {
+		f.internalError(err)
+		return
+	}
+	if isExistence != true {
+		f.customAbort(http.StatusBadRequest, "Project don't exist.")
+		return
+	}
+
+	imageName := f.GetString("image_name")
+	tagName := f.GetString("tag_name")
+	targetFilePath := filepath.Join(repoPath(), projectName, imageName, tagName)
+	err = os.MkdirAll(targetFilePath, 0755)
+	if err != nil {
+		f.internalError(err)
+		return
+	}
+	logs.Info("User: %s uploaded Dockerfile file to %s.", f.currentUser.Username, targetFilePath)
+
+	_, fileHeader, err := f.GetFile("upload_file")
+	if err != nil {
+		f.internalError(err)
+	}
+	if fileHeader.Filename != dockerfileName {
+		f.customAbort(http.StatusBadRequest, "Update file name invalid.")
+		return
+	}
+
+	err = f.SaveToFile("upload_file", filepath.Join(targetFilePath, dockerfileName))
+	if err != nil {
+		f.internalError(err)
+	}
+
+}
+
+func (f *ImageController) DownloadDockerfileFileAction() {
+	projectName := f.GetString("project_name")
+	isExistence, err := service.ProjectExists(projectName)
+	if err != nil {
+		f.internalError(err)
+		return
+	}
+	if isExistence != true {
+		f.customAbort(http.StatusBadRequest, "Project name invalid.")
+		return
+	}
+
+	imageName := f.GetString("image_name")
+	tagName := f.GetString("tag_name")
+	targetFilePath := filepath.Join(repoPath(), projectName, imageName, tagName)
+	if _, err := os.Stat(targetFilePath); os.IsNotExist(err) {
+		f.customAbort(http.StatusBadRequest, "image Name and  tag name are invalid.")
+		return
+	}
+
+	absFileName := filepath.Join(repoPath(), projectName, imageName, tagName, dockerfileName)
+	logs.Info("User: %s download Dockerfile file from %s.", f.currentUser.Username, absFileName)
+
+	f.Ctx.Output.Download(absFileName, dockerfileName)
+}
+
+// API to get image registry address
+func (p *ImageController) GetImageRegistryAction() {
+	registryAddr := registryBaseURI()
+	logs.Info("The image registry is %s", registryAddr)
+	p.Data["json"] = registryAddr
+	p.ServeJSON()
+}

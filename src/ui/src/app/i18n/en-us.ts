@@ -93,7 +93,9 @@ export const LANG_EN_US = {
     "NODES": "Nodes",
     "IMAGES": "Images",
     "ADMIN_OPTIONS": "Admin Options",
-    "PROFILES": "Profiles"
+    "PROFILES": "Profiles",
+    "GUIDE_SERVICE_LIST":"Please create your own Service.",
+    "GUIDE_PROJECT_LIST":"Please create your own Project."
   },
   "DASHBOARD": {
     "MIN":"min",
@@ -108,7 +110,8 @@ export const LANG_EN_US = {
     "NODE": "Node",
     "USAGE": "Usage",
     "TOTAL": "Total",
-    "STORAGE": "Storage"
+    "STORAGE": "Storage",
+    "GRAFANA_FRAME_SUPPORT":"Your browser does not support the iframe tag."
   },
   "PROJECT": {
     "CREATE_PROJECT": "Create Project",
@@ -143,7 +146,8 @@ export const LANG_EN_US = {
     "FAILED_TO_REMOVE_MEMBER": "Failed to remove member.",
     "SUCCESSFUL_CREATED_PROJECT": "Successful created project.",
     "PROJECT_NAME_ALREADY_EXISTS": "Project name already exists.",
-    "PROJECT_NAME_IS_ILLEGAL": "Project name is illegal."
+    "PROJECT_NAME_IS_ILLEGAL": "Project name is illegal.",
+    "GUIDE_CREATE_PROJECT":"Create your own project"
   },
   "USER_CENTER": {
     "LIST_COL_USERNAME":"Username",
@@ -210,13 +214,15 @@ export const LANG_EN_US = {
     "CREATE_IMAGE_NEW_IMAGE_NAME":"New Image Name",
     "CREATE_IMAGE_IMAGE_TAG":"Image Tag",
     "CREATE_IMAGE_BASE_IMAGE":"Base image",
+    "CREATE_IMAGE_BASE_IMAGE_SELECT":"Select base image",
     "CREATE_IMAGE_IMAGE_ENTRYPOINT":"Image EntryPoint",
     "CREATE_IMAGE_IMAGE_ENV":"Image Env",
     "CREATE_IMAGE_IMAGE_VOLUME":"Image Volume",
     "CREATE_IMAGE_IMAGE_RUN":"Image Run",
     "CREATE_IMAGE_IMAGE_EXPOSE":"Image Expose",
-    "CREATE_IMAGE_UPLOAD_ARCHIVES":"Upload External Archives",
+    "CREATE_IMAGE_UPLOAD_ARCHIVES":"Upload External Archives To",
     "CREATE_IMAGE_UPLOAD":"Upload",
+    "CREATE_IMAGE_UPLOAD_FILE_LIST":"File list",
     "CREATE_IMAGE_COMMAND":"Command",
     "CREATE_IMAGE_PREVIEW":"Preview",
     "CREATE_IMAGE_BUILD_IMAGE":"Build Image",
@@ -234,6 +240,7 @@ export const LANG_EN_US = {
     "CREATE_IMAGE_FILE_NAME":"File Name",
     "CREATE_IMAGE_FILE_TYPE":"File Type",
     "CREATE_IMAGE_FILE_SIZE":"File Size",
+    "CREATE_IMAGE_FILE_NAME_ERROR":"The file name must be called 'Dockerfile'",
     "CREATE_IMAGE_FILE_LAST_MODIFY":"Last Modify Date",
     "CREATE_IMAGE_SELECT_PROJECT":"Select Project",
     "CREATE_IMAGE_CREATE_PROJECT":"Create Project...",
@@ -278,6 +285,9 @@ export const LANG_EN_US = {
     "VOLUME_TARGET_DIR":"Target Dir",
     "VOLUME_TARGET_STORAGE":"Target Storage Server",
     "VOLUME_CONFIRM":"Confirm",
+    "STEP_0_CREATE_WIZARD":"Create based on wizard",
+    "STEP_0_CREATE_YAML":"Create base on Yaml file",
+    "STEP_0_CREATE_DEVOPS":"Import from DevOps",
     "STEP_1_SELECT_DES":"If no project selected, need prompt to create a new project.",
     "STEP_1_CREATE_PROJECT":"Create Project...",
     "STEP_1_NONE_PROJECT":"NONE Project",
@@ -351,8 +361,18 @@ export const LANG_EN_US = {
     "SERVICE_CONTROL_IMAGE_NAME":"Image name",
     "SERVICE_CONTROL_IMAGE_TAG":"Image tag",
     "SERVICE_CONTROL_UPDATE_TAG":"Update tag",
+    "SERVICE_CONTROL_NOT_UPDATE":"This service can't update",
     "SERVICE_DETAIL_DEPLOYMENT_FILE":"Deployment file",
     "SERVICE_DETAIL_SERVICE_FILE":"Service file",
+    "GUIDE_CREATE_SERVICE":"Please crate your own Service.",
+    "SERVICE_YAML_SELECT_PROJECT":"Select project",
+    "SERVICE_YAML_UPLOAD":"Upload",
+    "SERVICE_YAML_SELECT_DEPLOYMENT_YAML":"Select deployment yaml",
+    "SERVICE_YAML_SELECT_SERVICE_YAML":"Select service yaml",
+    "SERVICE_YAML_NER_SERVICE_NAME":"New service name",
+    "SERVICE_YAML_INVALID_FILE":"Invalid file type",
+    "SERVICE_YAML_VALID_FILE":"Files valid,please upload them",
+    "SERVICE_YAML_UPLOAD_SUCCESS":"Upload success!This service in 'preparing' status, click 'create' for run it"
   },
   "GLOBAL_SEARCH": {
     "PROJECTS": "Projects",
@@ -395,5 +415,15 @@ export const LANG_EN_US = {
     "FAILED_TO_TOGGLE": "Failed to toggle node status.",
     "TOGGLE_NODE": "Toggle Status",
     "CONFIRM_TO_TOGGLE_NODE": "Confirm to change node {{0}} status?"
+  },
+  "GUIDE":{
+    "TITLE":"Usage guide",
+    "NEXT_STEP":"Next step"
+  },
+  "PROFILES":{
+    "VERSION":"Version",
+    "CLUSTER_VERSION":"Cluster Version",
+    "GET_HELP":"Get Help",
+    "SUPPORT_TEAM":"Support team"
   }
 };

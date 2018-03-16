@@ -1,13 +1,12 @@
 import { Component, OnInit, OnDestroy, ViewChild, Injector } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
-
-import { State } from "clarity-angular";
-
 import { Service } from '../service';
-import { MESSAGE_TARGET, BUTTON_STYLE, MESSAGE_TYPE, SERVICE_STATUS } from '../../shared/shared.const';
+import { MESSAGE_TARGET, BUTTON_STYLE, MESSAGE_TYPE, SERVICE_STATUS, GUIDE_STEP } from '../../shared/shared.const';
 import { Message } from '../../shared/message-service/message';
 import { ServiceDetailComponent } from './service-detail/service-detail.component';
 import { ServiceStepBase } from "../service-step";
+import { Observable } from "rxjs/Observable";
+import "rxjs/add/observable/interval";
 
 class ServiceData {
   id: number;
@@ -20,7 +19,7 @@ class ServiceData {
     this.status = status;
   }
 }
-
+enum CreateServiceMethod{None, Wizards, YamlFile, DevOps}
 @Component({
   templateUrl: './list-service.component.html',
   styleUrls: ["./list-service.component.css"]
@@ -33,15 +32,20 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   serviceControlData: Service;
   checkboxRevertInfo: {isNeeded: boolean; value: boolean;};
   _subscription: Subscription;
+  _subscriptionInterval: Subscription;
 
   totalRecordCount: number;
   pageIndex: number = 1;
   pageSize: number = 15;
+  isBuildServiceWIP: boolean = false;
+  isShowServiceCreateYaml: boolean = false;
+  createServiceMethod: CreateServiceMethod = CreateServiceMethod.None;
 
   @ViewChild(ServiceDetailComponent) serviceDetailComponent;
 
   constructor(protected injector: Injector) {
     super(injector);
+    this._subscriptionInterval = Observable.interval(10000).subscribe(() => this.retrieve(true));
     this._subscription = this.messageService.messageConfirmed$.subscribe(m => {
       let confirmationMessage = <Message>m;
       if (confirmationMessage) {
@@ -88,6 +92,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   }
 
   ngOnDestroy(): void {
+    this._subscriptionInterval.unsubscribe();
     if (this._subscription) {
       this._subscription.unsubscribe();
     }
@@ -106,22 +111,32 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   }
 
   createService(): void {
-    this.k8sService.stepSource.next({index: 1, isBack: false});
+    if (this.createServiceMethod == CreateServiceMethod.Wizards) {
+      this.k8sService.stepSource.next({index: 1, isBack: false});
+    } else if (this.createServiceMethod == CreateServiceMethod.YamlFile) {
+      this.isShowServiceCreateYaml = true;
+    }
   }
 
-  retrieve(state?: State): void {
+  get isNormalStatus(): boolean {
+    return !this.isBuildServiceWIP && !this.isShowServiceCreateYaml;
+  }
+
+  retrieve(isAuto: boolean = false): void {
     setTimeout(() => {
-      this.isInLoading = true;
-      this.k8sService.getServices(this.pageIndex, this.pageSize)
-        .then(paginatedServices => {
-          this.totalRecordCount = paginatedServices.pagination.total_count;
-          this.services = paginatedServices.service_status_list;
-          this.isInLoading = false;
-        })
-        .catch(err => {
-          this.messageService.dispatchError(err);
-          this.isInLoading = false;
-        });
+      if (this.isNormalStatus) {
+        this.isInLoading = !isAuto;
+        this.k8sService.getServices(this.pageIndex, this.pageSize)
+          .then(paginatedServices => {
+            this.totalRecordCount = paginatedServices["pagination"]["total_count"];
+            this.services = paginatedServices["service_status_list"];
+            this.isInLoading = false;
+          })
+          .catch(err => {
+            this.messageService.dispatchError(err);
+            this.isInLoading = false;
+          });
+      }
     });
   }
 
@@ -195,7 +210,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
     this.messageService.announceMessage(announceMessage);
   }
 
-  openServiceDetail(s:Service) {
+  openServiceDetail(s: Service) {
     this.serviceDetailComponent.openModal(s);
   }
 
@@ -204,4 +219,30 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
     this.isServiceControlOpen = true;
   }
 
+  get isFirstLogin(): boolean {
+    return this.appInitService.isFirstLogin;
+  }
+
+  get guideStep(): GUIDE_STEP {
+    return this.appInitService.guideStep;
+  }
+
+  guideNextStep(step: GUIDE_STEP) {
+    this.isBuildServiceWIP = true;
+    this.setGuideNoneStep();
+  }
+
+  setGuideNoneStep() {
+    this.appInitService.guideStep = GUIDE_STEP.NONE_STEP;
+  }
+
+  setCreateServiceMethod(method: CreateServiceMethod): void {
+    this.createServiceMethod = method;
+  }
+
+  cancelCreateService() {
+    this.createServiceMethod = CreateServiceMethod.None;
+    this.isBuildServiceWIP = false;
+    this.isShowServiceCreateYaml = false;
+  }
 }
