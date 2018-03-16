@@ -117,9 +117,9 @@ func GetServiceList(name string, userID int64) ([]*model.ServiceStatus, error) {
 	return serviceList, err
 }
 
-func GetPaginatedServiceList(name string, userID int64, pageIndex int, pageSize int) (*model.PaginatedServiceStatus, error) {
+func GetPaginatedServiceList(name string, userID int64, pageIndex int, pageSize int, orderField string, orderAsc int) (*model.PaginatedServiceStatus, error) {
 	query := model.ServiceStatus{Name: name}
-	paginatedServiceStatus, err := dao.GetPaginatedServiceData(query, userID, pageIndex, pageSize)
+	paginatedServiceStatus, err := dao.GetPaginatedServiceData(query, userID, pageIndex, pageSize, orderField, orderAsc)
 	if err != nil {
 		return nil, err
 	}

@@ -86,8 +86,8 @@ func GetProjectsByUser(query model.Project, userID int64) ([]*model.Project, err
 	return dao.GetProjectsByUser(query, userID)
 }
 
-func GetPaginatedProjectsByUser(query model.Project, userID int64, pageIndex int, pageSize int) (*model.PaginatedProjects, error) {
-	return dao.GetPaginatedProjectsByUser(query, userID, pageIndex, pageSize)
+func GetPaginatedProjectsByUser(query model.Project, userID int64, pageIndex int, pageSize int, orderField string, orderAsc int) (*model.PaginatedProjects, error) {
+	return dao.GetPaginatedProjectsByUser(query, userID, pageIndex, pageSize, orderField, orderAsc)
 }
 
 func GetProjectsByMember(query model.Project, userID int64) ([]*model.Project, error) {
