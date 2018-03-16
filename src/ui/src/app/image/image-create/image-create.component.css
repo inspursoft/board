@@ -2,8 +2,6 @@
 div.modal-body-container {
   display: flex;
   min-height: 600px;
-  border: solid 1px gray;
-  border-radius: 5px;
 }
 
 .base-margin-left {
@@ -32,14 +30,14 @@ div.build-method-container {
 }
 
 div.from-temp-container {
-  overflow-y: auto;
+  /*overflow-y: auto;*/
   padding: 10px;
 }
 
 div.from-docker-file-container {
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
+  /*overflow-y: auto;*/
   padding: 10px;
   flex-basis: 100%;
 }
@@ -144,6 +142,8 @@ div.title-container {
 
 div.modal-body-reset-position{
   margin-top: -20px;
+  border: solid 1px gray;
+  border-radius: 5px;
 }
 
 div.base-image-container {
