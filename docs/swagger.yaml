@@ -67,18 +67,28 @@ paths:
           type: string
           required: false
           description: Username for filtering results.
-        - name: user_list_page
+        - name: page_index
           in: query
           type: integer
           format: int32
           required: false
           description: The page nubmer, default is 1.
-        - name: user_list_page_size
+        - name: page_size
           in: query
           type: integer
           format: int32
           required: false
           description: The size of per page, default is 10, maximum is 100.
+        - name: order_field 
+          in: query
+          description: Order field for results.
+          required: false
+          type: string
+        - name: order_asc 
+          in: query
+          description: Order ascent type for results.
+          required: false
+          type: integer
       tags:
         - Products
       responses:
@@ -496,18 +506,28 @@ paths:
           required: false
           type: integer
           format: int32
-        - name: project_list_page
+        - name: page_index
           in: query
           type: integer
           format: int32
           required: false
           description: The page nubmer, default is 1.
-        - name: project_list_page_size
+        - name: page_size
           in: query
           type: integer
           format: int32
           required: false
           description: The size of per page, default is 10, maximum is 100.
+        - name: order_field 
+          in: query
+          description: Order field for results.
+          required: false
+          type: string
+        - name: order_asc 
+          in: query
+          description: Order ascent type for results.
+          required: false
+          type: integer
       tags:
         - Products
       responses:
@@ -950,18 +970,28 @@ paths:
           required: false
           type: integer
           format: int32
-        - name: service_list_page
+        - name: page_index
           in: query
           type: integer
           format: int32
           required: false
           description: The page nubmer, default is 1.
-        - name: servie_list_page_size
+        - name: page_size
           in: query
           type: integer
           format: int32
           required: false
           description: The size of per page, default is 10, maximum is 100.
+        - name: order_field 
+          in: query
+          description: Order field for results.
+          required: false
+          type: string
+        - name: order_asc 
+          in: query
+          description: Order ascent type for results.
+          required: false
+          type: integer
       tags:
         - Products
       responses:

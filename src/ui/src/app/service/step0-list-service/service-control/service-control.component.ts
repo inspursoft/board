@@ -10,10 +10,16 @@ import { SERVICE_STATUS } from "../../../shared/shared.const";
 import { ImageIndex } from "../../service-step.component";
 import { ImageDetail } from "../../../image/image";
 import { HttpErrorResponse } from "@angular/common/http";
+import { Message } from "../../../shared/message-service/message";
 
-enum ScaleMethod {smNone, smManually, smAuto}
+enum ScaleMethod {smManually, smAuto}
 
 enum ActionMethod {scale, update}
+
+interface IScaleInfo {
+  desired_instance: number;
+  available_instance: number;
+}
 
 @Component({
   selector: "service-control",
@@ -23,8 +29,9 @@ enum ActionMethod {scale, update}
 export class ServiceControlComponent implements OnInit {
   _isOpen: boolean = false;
   dropDownListNum: Array<number>;
-  scaleModule: ScaleMethod = ScaleMethod.smNone;
+  scaleModule: ScaleMethod = ScaleMethod.smManually;
   scaleNum: number = 0;
+  scaleInfo: IScaleInfo;
   isActionInWIP: boolean = false;
   isGetServiceImagesWIP: boolean = false;
   isGetServiceImagesTagWIP: boolean = false;
@@ -44,9 +51,13 @@ export class ServiceControlComponent implements OnInit {
   }
 
   ngOnInit() {
-    for (let i = 1; i <= 100; i++) {
+    for (let i = 1; i <= 10; i++) {
       this.dropDownListNum.push(i)
     }
+    this.k8sService.getServiceScaleInfo(this.service.service_id)
+      .subscribe((scaleInfo: IScaleInfo) => {//needn't handle error~!
+        this.scaleInfo = scaleInfo;
+      })
   }
 
   @Output() isOpenChange: EventEmitter<boolean> = new EventEmitter<boolean>();
@@ -107,7 +118,7 @@ export class ServiceControlComponent implements OnInit {
       }
     });
     let isCanUpdate = !this.isGetServiceImagesTagWIP && !noImageTag && this.alertMessage === "";
-    return this.actionMethod == ActionMethod.update ? isCanUpdate : true;
+    return this.actionMethod == ActionMethod.update ? isCanUpdate : this.scaleNum > 0;
   }
 
   getServiceImages() {
@@ -138,14 +149,20 @@ export class ServiceControlComponent implements OnInit {
   updateServiceImages() {
     this.isActionInWIP = true;
     this.k8sService.updateServiceImages(this.service.service_project_name, this.service.service_name, this.imageList)
-      .then(() => this.isActionInWIP = false)
+      .then(() => this.isOpen = false)
       .catch(this.defaultDispatchErr.bind(this))
   }
 
   setServiceScale() {
     this.isActionInWIP = true;
     this.k8sService.setServiceScale(this.service.service_id, this.scaleNum)
-      .then(() => this.isActionInWIP = false)
+      .then(() => {
+        let m: Message = new Message();
+        m.message = "SERVICE.SERVICE_CONTROL_SCALE_SUCCESSFUL";
+        m.params = [this.service.service_name];
+        this.messageService.inlineAlertMessage(m);
+        this.isOpen = false;
+      })
       .catch(this.defaultDispatchErr.bind(this))
   }
 

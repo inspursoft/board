@@ -1,7 +1,9 @@
 package dao
 
 import (
+	"fmt"
 	"git/inspursoft/board/src/common/model"
+	"strings"
 	"time"
 
 	"github.com/astaxie/beego/logs"
@@ -64,7 +66,7 @@ func GetUsers(field string, value interface{}, selectedFields ...string) ([]*mod
 	return users, nil
 }
 
-func GetPaginatedUsers(field string, value interface{}, pageIndex int, pageSize int, selectedFields ...string) (*model.PaginatedUsers, error) {
+func GetPaginatedUsers(field string, value interface{}, pageIndex int, pageSize int, orderField string, orderAsc int, selectedFields ...string) (*model.PaginatedUsers, error) {
 	pagination := &model.Pagination{
 		PageIndex: pageIndex,
 		PageSize:  pageSize,
@@ -77,7 +79,7 @@ func GetPaginatedUsers(field string, value interface{}, pageIndex int, pageSize 
 	if err != nil {
 		return nil, err
 	}
-	qs = qs.Limit(pagination.PageSize).Offset(pagination.GetPageOffset())
+	qs = qs.OrderBy(getOrderExprs(userTable, orderField, orderAsc)).Limit(pagination.PageSize).Offset(pagination.GetPageOffset())
 	logs.Debug("%+v", pagination.String())
 
 	users := make([]*model.User, 0)
@@ -90,4 +92,15 @@ func GetPaginatedUsers(field string, value interface{}, pageIndex int, pageSize 
 		Pagination: pagination,
 		UserList:   users,
 	}, nil
+}
+
+func getOrderExprs(orderTable string, orderField string, orderAsc int) string {
+	key := fmt.Sprintf("%s_%s", strings.ToUpper(orderTable), strings.ToUpper(orderField))
+	if orderFields[key] == "" {
+		return fmt.Sprintf(`-%s`, orderFields[defaultField])
+	}
+	if orderAsc != 0 {
+		return orderFields[key]
+	}
+	return fmt.Sprintf(`-%s`, orderFields[key])
 }
