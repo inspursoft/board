@@ -110,7 +110,7 @@ func (p *ProjectController) GetProjectsAction() {
 	memberOnly, _ := p.GetInt("member_only", 0)
 
 	pageIndex, _ := p.GetInt("page_index", 0)
-	pageSize, _ := p.GetInt("page_size", defaultPageSize)
+	pageSize, _ := p.GetInt("page_size", 0)
 	orderField := p.GetString("order_field", "CREATE_TIME")
 	orderAsc, _ := p.GetInt("order_asc", 0)
 
