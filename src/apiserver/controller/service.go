@@ -38,7 +38,6 @@ const (
 	deploymentType         = "deployment"
 	serviceType            = "service"
 	startingDuration       = 300 * time.Second //300 seconds
-	defaultPageSize        = 100
 )
 
 const (
@@ -363,22 +362,34 @@ func syncK8sStatus(serviceList []*model.ServiceStatus) error {
 func (p *ServiceController) GetServiceListAction() {
 	serviceName := p.GetString("service_name", "")
 	pageIndex, _ := p.GetInt("page_index", 0)
-	pageSize, _ := p.GetInt("page_size", defaultPageSize)
+	pageSize, _ := p.GetInt("page_size", 0)
 	orderField := p.GetString("order_field", "CREATE_TIME")
 	orderAsc, _ := p.GetInt("order_asc", 0)
-
-	paginatedServiceStatus, err := service.GetPaginatedServiceList(serviceName, p.currentUser.ID, pageIndex, pageSize, orderField, orderAsc)
-	if err != nil {
-		p.internalError(err)
-		return
+	if pageIndex == 0 && pageSize == 0 {
+		serviceStatus, err := service.GetServiceList(serviceName, p.currentUser.ID)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+		err = syncK8sStatus(serviceStatus)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+		p.Data["json"] = serviceStatus
+	} else {
+		paginatedServiceStatus, err := service.GetPaginatedServiceList(serviceName, p.currentUser.ID, pageIndex, pageSize, orderField, orderAsc)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+		err = syncK8sStatus(paginatedServiceStatus.ServiceStatusList)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+		p.Data["json"] = paginatedServiceStatus
 	}
-	err = syncK8sStatus(paginatedServiceStatus.ServiceStatusList)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	p.Data["json"] = paginatedServiceStatus
-
 	p.ServeJSON()
 }
 
