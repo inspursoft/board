@@ -99,13 +99,13 @@ uipic=`getFlag $lastUiBuildCov $uiCoverage`
 
 echo $comments_url
 
-tmp="?content=the%20API%20Server%20Coverage%20is%20"
+tmp="?content=The%20Test%20Coverage%20is%s,%20For%20Backend%20is%20"
 serverCovLink="%20<a%20href=$totalLink>$cov%25</a>"
 imageLink=$JENKINS_URL/userContent/$pic
 uiImageLink=$JENKINS_URL/userContent/$uipic
 image="%20<img%20src="$imageLink"%20width="20"%20height="20">%20"
 uiImage="%20<img%20src="$uiImageLink"%20width="20"%20height="20">%20"
-uiCov="%20UI%20Coverage%20is%20<a%20href=$uiLink>$uiCoverage%25</a>"
+uiCov="%20For%20Frontend%20is%20<a%20href=$uiLink>$uiCoverage%25</a>"
 #f_comments_ur:=$comments_url$tmp$cov%25%20$totalLink
 f_comments_url="$comments_url$tmp$serverCovLink$image$uiCov$uiImage%20check%20<a%20href=$consoleLink>console%20log</a>"
 

@@ -54,15 +54,15 @@ do
     fi
 
 done
-cp $dir/profile.cov $dir/$2".cov"
-go tool cover -func=$2".cov" >> $2".temp"
-cov=`cat $dir/$2".temp"|grep "total"|grep -v -E 'NaN'|awk '{print $NF}'|cut -d "%" -f 1|tr -s [:space:]`
-echo $cov >> $dir/$2".txt"
+cp $dir/profile.cov $dir/$1".cov"
+go tool cover -func=$1".cov" >> $1".temp"
+cov=`cat $dir/$1".temp"|grep "total"|grep -v -E 'NaN'|awk '{print $NF}'|cut -d "%" -f 1|tr -s [:space:]`
+echo $cov > $dir/$1".txt"
 #return $cov
 }
-rungotest apiserver apiserver
+rungotest apiserver
 cov1=`cat $dir/apiserver.txt`
-rungotest tokenserver tokenserver
+rungotest tokenserver
 cov2=`cat $dir/tokenserver.txt`
 
 echo "--------------------"
