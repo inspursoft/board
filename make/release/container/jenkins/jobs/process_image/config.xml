@@ -21,11 +21,6 @@
           <description>Provide specific file to build Docker image.</description>
           <defaultValue>Dockerfile</defaultValue>
         </hudson.model.StringParameterDefinition>
-        <hudson.model.StringParameterDefinition>
-          <name>user_id</name>
-          <description>Provide user&apos;s ID who trigger job from API server.</description>
-          <defaultValue></defaultValue>
-        </hudson.model.StringParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
   </properties>
@@ -57,8 +52,6 @@
     <hudson.tasks.Shell>
       <command>#!/bin/bash
 set -e
-
-curl http://apiserver:8088/api/v1/jenkins-job/$user_id/$BUILD_NUMBER
 
 cd ~
 
