@@ -11,7 +11,7 @@ div.modal-body-container {
 }
 
 div.base-margin-top {
-  margin-top: 10px;
+  margin-top: 5px;
 }
 
 .dynamic-icon {
@@ -98,6 +98,7 @@ textarea.area-status {
   flex-basis: 100%;
   color: black;
   font-size: 11px;
+  line-height: 13px;
 }
 
 button.default-primary {
@@ -143,4 +144,43 @@ div.title-container {
 
 div.modal-body-reset-position{
   margin-top: -20px;
+}
+
+div.base-image-container {
+  height: 60px;
+  display: flex;
+  flex-direction: column;
+}
+
+div.base-image-source-container {
+  height: 30px;
+  display: flex;
+  line-height: 30px;
+}
+
+input.base-image-radio {
+  height: 30px;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+label.base-image-source {
+  cursor: pointer;
+}
+
+div.board-registry-container {
+  display: flex;
+  line-height: 30px;
+}
+
+cs-dropdown.margin-left-1{
+  margin-left: 1px;
+}
+
+cs-dropdown.margin-left-180{
+  margin-left: 180px;
+}
+
+cs-input.margin-left-180{
+  margin-left: 180px;
 }

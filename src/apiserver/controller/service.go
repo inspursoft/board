@@ -37,7 +37,7 @@ const (
 	k8sServices            = "kubernetes"
 	deploymentType         = "deployment"
 	serviceType            = "service"
-	startingDuration       = 300000000000 //300 seconds
+	startingDuration       = 300 * time.Second //300 secondsß
 )
 
 const (
@@ -345,6 +345,8 @@ func (p *ServiceController) GetServiceListAction() {
 	serviceName := p.GetString("service_name", "")
 	pageIndex, _ := p.GetInt("page_index", 0)
 	pageSize, _ := p.GetInt("page_size", 0)
+	orderField := p.GetString("order_field", "CREATE_TIME")
+	orderAsc, _ := p.GetInt("order_asc", 0)
 	if pageIndex == 0 && pageSize == 0 {
 		serviceStatus, err := service.GetServiceList(serviceName, p.currentUser.ID)
 		if err != nil {
@@ -358,7 +360,7 @@ func (p *ServiceController) GetServiceListAction() {
 		}
 		p.Data["json"] = serviceStatus
 	} else {
-		paginatedServiceStatus, err := service.GetPaginatedServiceList(serviceName, p.currentUser.ID, pageIndex, pageSize)
+		paginatedServiceStatus, err := service.GetPaginatedServiceList(serviceName, p.currentUser.ID, pageIndex, pageSize, orderField, orderAsc)
 		if err != nil {
 			p.internalError(err)
 			return
@@ -1423,4 +1425,45 @@ func getYamlFileName(yamlType string) string {
 		return ""
 	}
 	return fileName
+}
+
+func (p *ServiceController) GetScaleStatusAction() {
+	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	// Get the current service status
+	var servicequery model.ServiceStatus
+	servicequery.ID = int64(serviceID)
+	s, err := service.GetService(servicequery, "id")
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if s == nil {
+		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
+		return
+	}
+
+	isMember, err := service.IsProjectMember(s.ProjectID, p.currentUser.ID)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	//Judge authority
+	if !(p.isSysAdmin || isMember) {
+		p.customAbort(http.StatusForbidden, "Insufficient privileges to get publicity of service.")
+		return
+	}
+	scaleStatus, err := service.GetScaleStatus(s)
+	if err != nil {
+		logs.Debug("Get scale deployment status failed %s", s.Name)
+		p.internalError(err)
+		return
+	}
+	p.Data["json"] = scaleStatus
+	p.ServeJSON()
+	logs.Info("Get Scale status successfully")
 }

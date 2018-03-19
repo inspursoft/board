@@ -69,8 +69,7 @@ func generateServiceStatusSQL(query model.ServiceStatus, userID int64) (string, 
 		left join project p on p.id = pm.project_id
 		left join user u on u.id = s.owner_id
 	where s.deleted = 0 and s.status >= 1
-	and (p.public = 1 
-		or s.public = 1
+	and (s.public = 1 
 		or s.project_id in (select p.id from project p left join project_member pm on p.id = pm.project_id  left join user u on u.id = pm.user_id where p.deleted = 0 and u.deleted = 0 and u.id = ?)
 		or exists (select * from user u where u.deleted = 0 and u.system_admin = 1 and u.id = ?))`
 
@@ -98,7 +97,7 @@ func GetServiceData(query model.ServiceStatus, userID int64) ([]*model.ServiceSt
 	return queryServiceStatus(sql, params)
 }
 
-func GetPaginatedServiceData(query model.ServiceStatus, userID int64, pageIndex int, pageSize int) (*model.PaginatedServiceStatus, error) {
+func GetPaginatedServiceData(query model.ServiceStatus, userID int64, pageIndex int, pageSize int, orderField string, orderAsc int) (*model.PaginatedServiceStatus, error) {
 	sql, params := generateServiceStatusSQL(query, userID)
 	var err error
 
@@ -110,11 +109,14 @@ func GetPaginatedServiceData(query model.ServiceStatus, userID int64, pageIndex 
 	if err != nil {
 		return nil, err
 	}
-	sql += ` limit ?, ?`
+	sql += getOrderSQL(serviceTable, orderField, orderAsc) + ` limit ?, ?`
 	params = append(params, pagination.GetPageOffset(), pagination.PageSize)
 	logs.Debug("%+v", pagination.String())
 
 	serviceList, err := queryServiceStatus(sql, params)
+	if err != nil {
+		return nil, err
+	}
 
 	return &model.PaginatedServiceStatus{
 		ServiceStatusList: serviceList,

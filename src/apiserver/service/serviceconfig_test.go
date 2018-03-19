@@ -65,6 +65,9 @@ var scUpdate = model.ServiceStatus{
 	OwnerID:     2,
 }
 
+var testService = serviceName //ToDo Should be changed to common
+var testProject = "library"   //ToDo Should be changed to common
+
 //var scID int64
 
 func cleanSeviceTestByID(scid int64) {
@@ -121,4 +124,34 @@ func TestDeleteServiceByID(t *testing.T) {
 		cleanSeviceTestByID(serviceInfo.ID)
 	}
 	t.Log("deleted", serviceInfo.ID)
+}
+
+func TestGetSelectableServices(t *testing.T) {
+	assert := assert.New(t)
+	serviceInfo, err := CreateServiceConfig(scUpdate)
+	assert.Nil(err, "Error occurred while testing creating in GetSelectableServices.")
+	assert.NotEqual(0, serviceInfo.ID, "Error occurred while assigning a service id")
+	serviceList, err := GetSelectableServices(serviceInfo.ProjectName, serviceInfo.Name)
+	assert.Nil(err, "Error occurred while testing GetSelectableServices.")
+	for _, serviceName := range serviceList {
+		assert.NotEqual(serviceName, serviceInfo.Name, "Error in selectable services")
+	}
+	t.Log("clean test", serviceInfo.ID)
+	cleanSeviceTestByID(serviceInfo.ID)
+}
+
+func TestGetK8sService(t *testing.T) {
+	assert := assert.New(t)
+	service, err := GetK8sService("default", "kubernetes")
+	assert.Nil(err, "Error occurred while testing GetK8sService.")
+	assert.Equal("kubernetes", service.Name, "Error service while testing GetK8sService.")
+	t.Log("Get kubernetes service pass")
+}
+
+func TestGetDeployment(t *testing.T) {
+	assert := assert.New(t)
+	deployment, err := GetDeployment(testProject, testService)
+	assert.Nil(err, "Error occurred while testing GetDeployment.")
+	assert.Equal(deployment.Name, testService, "Error deployment while testing GetDeployment.")
+	t.Log("Get kubernetes deployment pass")
 }

@@ -1,13 +1,12 @@
-import { OnInit, AfterViewInit, Component, OnDestroy, HostListener } from '@angular/core';
+import { AfterViewInit, Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { DashboardComponentParent } from "./dashboard.component.parent"
 import { scaleOption } from "app/dashboard/time-range-scale.component/time-range-scale.component";
-import {
-  DashboardService, LinesData, LineDataModel, LineType, LineListDataModel
-} from "app/dashboard/dashboard.service";
+import { DashboardService, LineDataModel, LineListDataModel, LinesData, LineType } from "app/dashboard/dashboard.service";
 import { TranslateService } from "@ngx-translate/core";
 import { Subscription } from "rxjs/Subscription";
 import { Subject } from "rxjs/Subject";
 import { MessageService } from "../shared/message-service/message.service";
+import { AppInitService } from "../app.init.service";
 
 const MAX_COUNT_PER_PAGE: number = 200;
 const MAX_COUNT_PER_DRAG: number = 100;
@@ -45,8 +44,10 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
   curValue: Map<LineType, {curFirst: number, curSecond: number}>;
   curRealTimeValue: Map<LineType, {curFirst: number, curSecond: number}>;
   noDataErrMsg: Map<LineType, string>;
+  isShowGrafanaView: boolean = false;
 
   constructor(private service: DashboardService,
+              private appInitService: AppInitService,
               private messageService: MessageService,
               private translateService: TranslateService) {
     super();
@@ -165,7 +166,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     }
   }
 
-  private  setLineZoomByTimeStamp(lineType: LineType, lineTimeStamp: number): void {
+  private setLineZoomByTimeStamp(lineType: LineType, lineTimeStamp: number): void {
     let lineData = this.lineData.get(lineType);
     let lineOption = this.lineOptions.get(lineType);
     let lineZoomStart = lineOption["dataZoom"][0]["start"];
@@ -206,7 +207,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
         this.noData.set(lineType, true);
         this.messageService.dispatchError(err);
       });
-    if (lineDataInfo){
+    if (lineDataInfo) {
       this.noData.set(lineType, false);
       this.lineNamesList.set(lineType, lineDataInfo.List);
       this.dropdownText.set(lineType, lineDataInfo.CurListName);
@@ -236,13 +237,14 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
 
   private resetBaseLinePos(lineType: LineType) {
     let option = this.lineOptions.get(lineType);
-    if (option["dataZoom"]) {
+    let chartInstance = this.eChartInstance.get(lineType);
+    if (option && chartInstance && chartInstance["getWidth"]) {
       let zoomStart = option["dataZoom"][0]["start"] / 100;
       let zoomEnd = option["dataZoom"][0]["end"] / 100;
-      let eChartWidth = this.eChartInstance.get(lineType)["getWidth"]() - 70;
+      let eChartWidth = chartInstance["getWidth"]() - 70;
       let zoomBarWidth = eChartWidth * (zoomEnd - zoomStart);
       option["graphic"][0]["left"] = eChartWidth * (1 - zoomEnd) + zoomBarWidth * (1 - (zoomEnd + zoomStart) / 2) + 38;
-      this.eChartInstance.get(lineType)["setOption"](option, true, false);
+      chartInstance["setOption"](option, true, false);
       if (this.lineData.get(lineType)) {
         this.clearEChart(lineType);
         this.lineData.set(lineType, Object.create(this.lineData.get(lineType)));
@@ -327,7 +329,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     }
   }
 
-  private  updateAfterDragTimeStamp(lineType: LineType, isDropBack: boolean): void {
+  private updateAfterDragTimeStamp(lineType: LineType, isDropBack: boolean): void {
     let query = this.query.get(lineType);
     let lineData = this.lineData.get(lineType);
     let maxDate: Date = lineData[2][0][0];
@@ -597,4 +599,8 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
   get StorageUnit(): string {
     return this.service.CurStorageUnit;
   };
+
+  get grafanaViewUrl(){
+   return this.appInitService.grafanaViewUrl;
+  }
 }

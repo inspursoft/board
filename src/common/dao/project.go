@@ -77,7 +77,7 @@ func GetProjectsByUser(query model.Project, userID int64) ([]*model.Project, err
 	return queryProjects(projectsByUserSQL, params)
 }
 
-func GetPaginatedProjectsByUser(query model.Project, userID int64, pageIndex int, pageSize int) (*model.PaginatedProjects, error) {
+func GetPaginatedProjectsByUser(query model.Project, userID int64, pageIndex int, pageSize int, orderField string, orderAsc int) (*model.PaginatedProjects, error) {
 
 	projectsByUserSQL, params := generateProjectsByUserSQL(query, userID)
 
@@ -90,12 +90,14 @@ func GetPaginatedProjectsByUser(query model.Project, userID int64, pageIndex int
 	if err != nil {
 		return nil, err
 	}
-
-	projectsByUserSQL += ` limit ?, ?`
+	projectsByUserSQL += getOrderSQL(projectTable, orderField, orderAsc) + ` limit ?, ?`
 	params = append(params, pagination.GetPageOffset(), pagination.PageSize)
 	logs.Debug("%+v", pagination.String())
 
 	projects, err := queryProjects(projectsByUserSQL, params)
+	if err != nil {
+		return nil, err
+	}
 
 	return &model.PaginatedProjects{
 		ProjectList: projects,

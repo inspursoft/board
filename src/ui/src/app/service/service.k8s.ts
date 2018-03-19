@@ -5,6 +5,7 @@ import { HttpClient, HttpResponse } from "@angular/common/http";
 import { Project } from "../project/project";
 import { BuildImageDockerfileData, Image, ImageDetail } from "../image/image";
 import { ImageIndex, ServerServiceStep, ServiceStepPhase, UiServiceFactory, UIServiceStepBase } from "./service-step.component";
+import { Service } from "./service";
 
 @Injectable()
 export class K8sService {
@@ -217,12 +218,28 @@ export class K8sService {
 
   updateServiceImages(projectName: string, serviceName: string, postData: Array<ImageIndex>): Promise<any> {
     return this.http
-      .post(`/api/v1/services/rollingupdate`, postData, {
+      .patch(`/api/v1/services/rollingupdate`, postData, {
         observe: "response",
         params: {
           service_name: serviceName,
           project_name: projectName
         }
       }).toPromise();
+  }
+
+  uploadServiceYamlFile(projectName: string, formData: FormData,): Observable<Service> {
+    return this.http
+      .post(`/api/v1/services/yaml/upload`, formData, {
+        observe: "response",
+        params: {
+          project_name: projectName
+        }
+      })
+      .map((res: HttpResponse<Service>) => res.body)
+  }
+
+  getServiceScaleInfo(serviceId: number): Observable<Object> {
+    return this.http.get(`/api/v1/services/${serviceId}/scale`, {observe: "response"})
+      .map((res: HttpResponse<Object>) => res.body)
   }
 }

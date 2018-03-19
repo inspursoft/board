@@ -26,6 +26,8 @@ import { CreateImageComponent } from "../image/image-create/image-create.compone
 import { EnvironmentValueComponent } from "./environment-value/environment-value.component";
 import { SizePipe } from "./pipes/size-pipe";
 import { CsGuideComponent } from "./cs-components-library/cs-guide/cs-guide.component";
+import { CsProgressComponent } from "./cs-components-library/cs-progress/cs-progress.component";
+import { SafePipe } from "./pipes/safe-pipe";
 
 @NgModule({
   imports: [
@@ -50,10 +52,11 @@ import { CsGuideComponent } from "./cs-components-library/cs-guide/cs-guide.comp
     CsSearchInput,
     CsInputComponent,
     CsInputArrayComponent,
+    CsProgressComponent,
     CheckboxRevert,
     SizePipe,
-    CsGuideComponent
-
+    SafePipe,
+    CsGuideComponent,
   ],
   exports: [
     CoreModule,
@@ -74,8 +77,10 @@ import { CsGuideComponent } from "./cs-components-library/cs-guide/cs-guide.comp
     CsInputComponent,
     CsInputArrayComponent,
     CsGuideComponent,
+    CsProgressComponent,
     CheckboxRevert,
-    SizePipe
+    SizePipe,
+    SafePipe
   ],
   providers: [
     AuthGuard,
