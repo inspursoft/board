@@ -136,7 +136,7 @@ func init() {
 				&controller.ServiceController{},
 				"delete:DeleteServiceAction"),
 			beego.NSRouter("/services/deployment",
-				&controller.ServiceDeployController{},
+				&controller.ServiceController{},
 				"post:DeployServiceAction"),
 			beego.NSRouter("/services/config",
 				&controller.ServiceConfigController{},
