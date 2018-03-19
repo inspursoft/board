@@ -74,220 +74,123 @@ func (p *ServiceController) generateRepoPathByProjectName(projectName string) st
 	return filepath.Join(baseRepoPath(), p.currentUser.Username, projectName)
 }
 
-func (p *ServiceController) handleReqData() (model.ServiceConfig2, int, error) {
-	var reqServiceConfig model.ServiceConfig2
-	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
-	if err != nil {
-		return reqServiceConfig, 0, err
-	}
-
-	//get request message
-	reqData, err := p.resolveBody()
-	if err != nil {
-		return reqServiceConfig, serviceID, err
-	}
-
-	//Get request data
-	err = json.Unmarshal(reqData, &reqServiceConfig)
-	if err != nil {
-		return reqServiceConfig, serviceID, err
-	}
-	logs.Debug("Deploy service info: %+v\n", reqServiceConfig)
-
-	return reqServiceConfig, serviceID, err
+func (p *ServiceController) getKey() string {
+	return strconv.Itoa(int(p.currentUser.ID))
 }
 
-func (p *ServiceController) commonDeployService(reqServiceConfig model.ServiceConfig2, serviceID int, testFlag bool) {
-	currentProject, err := service.GetProject(model.Project{ID: reqServiceConfig.Project.ProjectID}, "id")
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if currentProject == nil {
-		p.customAbort(http.StatusBadRequest, "Invalid project ID.")
-		return
-	}
-	isMember, err := service.IsProjectMember(reqServiceConfig.Project.ProjectID, p.currentUser.ID)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if !(p.isSysAdmin || isMember) {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges to deploy service.")
-		return
-	}
-
-	//get deployment type
-	var deploymentFile string
-	var serviceFile string
-	if testFlag == true {
-		deploymentFile = deploymentTestFilename
-		serviceFile = serviceTestFilename
-	} else {
-		deploymentFile = deploymentFilename
-		serviceFile = serviceFilename
-	}
-
-	repoPath := p.generateRepoPathByProject(currentProject)
-	var pushobject pushObject
-	deploymentAbsName := filepath.Join(repoPath, serviceProcess, strconv.Itoa(serviceID), deploymentFile)
-	pushobject.FileName = deploymentFile
-	pushobject.JobName = serviceProcess
-	pushobject.Value = filepath.Join(serviceProcess, strconv.Itoa(serviceID))
-	pushobject.ProjectName = currentProject.Name
-
-	pushobject.Message = fmt.Sprintf("Create deployment for project %s service %d",
-		reqServiceConfig.Project.ProjectName, reqServiceConfig.Project.ServiceID)
-	pushobject.Extras = filepath.Join(kubeMasterURL(), deploymentAPI, reqServiceConfig.Project.ProjectName, "deployments")
-
-	generateMetaConfiguration(&pushobject, repoPath)
-	pushobject.Items = []string{"META.cfg", filepath.Join(pushobject.Value, deploymentFile)}
-
-	logs.Info("deployment pushobject.FileName:%+v\n", pushobject.FileName)
-	logs.Info("deployment pushobject.Value:%+v\n", pushobject.Value)
-	logs.Info("deployment pushobject.Extras:%+v\n", pushobject.Extras)
-
-	err = service.CheckDeploymentPath(filepath.Dir(deploymentAbsName))
-	if err != nil {
-		logs.Error("Failed to check deployment path: %+v\n", err)
-		return
-	}
-
-	err = service.GenerateYamlFile(deploymentAbsName, reqServiceConfig.Deployment)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	ret, msg, err := InternalPushObjects(&pushobject, &(p.baseController))
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	logs.Info("Internal push deployment object: %d %s", ret, msg)
-
-	serviceAbsName := filepath.Join(repoPath, serviceProcess, strconv.Itoa(serviceID), serviceFile)
-	pushobject.FileName = serviceFile
-	pushobject.Message = fmt.Sprintf("Create service for project %s service %d",
-		reqServiceConfig.Project.ProjectName, reqServiceConfig.Project.ServiceID)
-	pushobject.Extras = filepath.Join(kubeMasterURL(), serviceAPI, reqServiceConfig.Project.ProjectName, "services")
-
-	generateMetaConfiguration(&pushobject, repoPath)
-	pushobject.Items = []string{"META.cfg", filepath.Join(pushobject.Value, serviceFile)}
-	logs.Info("service pushobject.FileName:%+v\n", pushobject.FileName)
-	logs.Info("service pushobject.Value:%+v\n", pushobject.Value)
-	logs.Info("service pushobject.Extras:%+v\n", pushobject.Extras)
-
-	err = service.GenerateYamlFile(serviceAbsName, reqServiceConfig.Service)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	ret, msg, err = InternalPushObjects(&pushobject, &(p.baseController))
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	ret, msg, err = InternalPushObjects(&pushobject, &(p.baseController))
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	logs.Info("Internal push deployment object: %d %s", ret, msg)
-
-	//update db
-	updateService := model.ServiceStatus{ID: int64(serviceID), Status: running,
-		Name: reqServiceConfig.Service.ObjectMeta.Name, OwnerID: p.currentUser.ID,
-		OwnerName: p.currentUser.Username, Comment: reqServiceConfig.Project.Comment}
-	_, err = service.UpdateService(updateService, "name", "status", "owner_id", "OwnerName", "Comment")
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-}
-
-// API to deploy service
 func (p *ServiceController) DeployServiceAction() {
-	reqServiceConfig, serviceID, err := p.handleReqData()
+	key := p.getKey()
+	configService := NewConfigServiceStep(key)
+
+	var newservice model.ServiceStatus
+	newservice.Name = configService.ServiceName
+	newservice.ProjectID = configService.ProjectID
+	newservice.Status = preparing // 0: preparing 1: running 2: suspending
+	newservice.OwnerID = p.currentUser.ID
+	newservice.OwnerName = p.currentUser.Username
+
+	project, err := service.GetProject(model.Project{ID: configService.ProjectID}, "id")
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if project == nil {
+		p.customAbort(http.StatusBadRequest, projectIDInvalidErr.Error())
+		return
+	}
+	newservice.ProjectName = project.Name
+
+	serviceInfo, err := service.CreateServiceConfig(newservice)
 	if err != nil {
 		p.internalError(err)
 		return
 	}
 
-	//check data
-	err = service.CheckReqPara(reqServiceConfig)
-	if err != nil {
-		p.serveStatus(http.StatusBadRequest, err.Error())
-		logs.Error("Request parameters error when deploy service, error: %+v", err.Error())
-		return
-	}
-
-	isServiceDuplicated, err := service.ServiceExists(reqServiceConfig.Service.ObjectMeta.Name, reqServiceConfig.Project.ProjectName)
+	repoPath := p.generateRepoPathByProject(project)
+	loadPath := filepath.Join(repoPath, serviceProcess, strconv.Itoa(int(serviceInfo.ID)))
+	err = service.CheckDeploymentPath(loadPath)
 	if err != nil {
 		p.internalError(err)
 		return
 	}
-	if isServiceDuplicated == true {
-		p.serveStatus(http.StatusConflict, serverNameDuplicateErr.Error())
-		logs.Error("Request parameters error when deploy service, error: %+v", serverNameDuplicateErr.Error())
+
+	err = service.AssembleDeploymentYaml((*model.ConfigServiceStep)(configService), loadPath)
+	if err != nil {
+		p.internalError(err)
 		return
 	}
 
-	//Add registry to container images for deployment
-	for index, container := range reqServiceConfig.Deployment.Spec.Template.Spec.Containers {
-		reqServiceConfig.Deployment.Spec.Template.Spec.Containers[index].Image =
-			filepath.Join(registryBaseURI(), container.Image)
+	deployPushobject := assemblePushObject(deploymentFilename, serviceInfo.ID, project.Name, "deployments")
+	ret, msg, err := InternalPushObjects(&deployPushobject, &(p.baseController))
+	if err != nil {
+		p.internalError(err)
+		return
 	}
-	logs.Debug("%+v", reqServiceConfig)
+	logs.Info("Internal push deployment object: %d %s", ret, msg)
+	err = service.AssembleServiceYaml((*model.ConfigServiceStep)(configService), loadPath)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
 
-	p.commonDeployService(reqServiceConfig, serviceID, false)
+	servicePushobject := assemblePushObject(serviceFilename, serviceInfo.ID, project.Name, "services")
+	ret, msg, err = InternalPushObjects(&servicePushobject, &(p.baseController))
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	logs.Info("Internal push deployment object: %d %s", ret, msg)
+
+	serviceConfig, err := json.Marshal(&configService)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	updateService := model.ServiceStatus{ID: serviceInfo.ID, Status: running, ServiceConfig: string(serviceConfig)}
+	_, err = service.UpdateService(updateService, "id", "status", "service_config")
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	err = DeleteConfigServiceStep(key)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	logs.Info("Service with ID:%d has been deleted in cache.", serviceInfo.ID)
+
+	configService.ServiceID = serviceInfo.ID
+	p.Data["json"] = configService
+	p.ServeJSON()
 }
 
-// API to deploy test service
+func assemblePushObject(fileName string, serviceID int64, projectName string, extras string) pushObject {
+	var pushobject pushObject
+	pushobject.FileName = fileName
+	pushobject.JobName = serviceProcess
+	pushobject.Value = filepath.Join(projectName, strconv.Itoa(int(serviceID)))
+	pushobject.Message = fmt.Sprintf("Create %s for project %s service %d", extras,
+		projectName, serviceID)
+	if extras == "deployments" {
+		pushobject.Extras = filepath.Join(kubeMasterURL(), deploymentAPI, projectName, extras)
+	} else {
+		pushobject.Extras = filepath.Join(kubeMasterURL(), serviceAPI, projectName, extras)
+	}
+	pushobject.Items = []string{filepath.Join(pushobject.Value, fileName)}
+	logs.Info("pushobject.FileName:%+v\n", pushobject.FileName)
+	logs.Info("pushobject.Value:%+v\n", pushobject.Value)
+	logs.Info("pushobject.Extras:%+v\n", pushobject.Extras)
+	return pushobject
+}
+
 func (p *ServiceController) DeployServiceTestAction() {
-	//Judge authority
-	reqServiceConfig, serviceID, err := p.handleReqData()
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	//check data
-	err = service.CheckReqPara(reqServiceConfig)
-	if err != nil {
-		p.serveStatus(http.StatusBadRequest, err.Error())
-		logs.Error("Request parameters error when deploy service, error: %+v", err.Error())
-		return
-	}
-
-	isServiceDuplicated, err := service.ServiceExists(reqServiceConfig.Service.ObjectMeta.Name, reqServiceConfig.Project.ProjectName)
-	if err != nil {
-		p.internalError(err)
-		logs.Error("Request parameters error when deploy service, error: %+v", serverNameDuplicateErr.Error())
-		return
-	}
-	if isServiceDuplicated == true {
-		p.customAbort(http.StatusConflict, serverNameDuplicateErr.Error())
-		return
-	}
-
-	//Add registry to container images for deployment
-	for index, container := range reqServiceConfig.Deployment.Spec.Template.Spec.Containers {
-		reqServiceConfig.Deployment.Spec.Template.Spec.Containers[index].Image =
-			filepath.Join(registryBaseURI(), container.Image)
-	}
-
-	reqServiceConfig.Service.ObjectMeta.Name = test + reqServiceConfig.Service.ObjectMeta.Name
-	reqServiceConfig.Service.ObjectMeta.Labels["app"] = test + reqServiceConfig.Service.ObjectMeta.Labels["app"]
-	reqServiceConfig.Deployment.ObjectMeta.Name = test + reqServiceConfig.Deployment.ObjectMeta.Name
-	reqServiceConfig.Deployment.Spec.Template.ObjectMeta.Labels["app"] = test + reqServiceConfig.Deployment.Spec.Template.ObjectMeta.Labels["app"]
-
-	logs.Debug("%+v", reqServiceConfig)
-
-	p.commonDeployService(reqServiceConfig, serviceID, true)
+	key := p.getKey()
+	configService := NewConfigServiceStep(key)
+	configService.ServiceName = test + configService.ServiceName
+	SetConfigServiceStep(key, configService)
+	p.DeployServiceAction()
 }
 
 //
@@ -985,76 +888,6 @@ func (p *ServiceController) ServicePublicityAction() {
 		}
 	} else {
 		logs.Info("Already in target publicity status")
-	}
-}
-
-func (p *ServiceController) GetServiceConfigAction() {
-	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	// Get the project info of this service
-	var servicequery model.ServiceStatus
-	servicequery.ID = int64(serviceID)
-	s, err := service.GetService(servicequery, "id")
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if s == nil {
-		p.customAbort(http.StatusBadRequest,
-			fmt.Sprintf("Invalid service ID: %d", serviceID))
-		return
-	}
-	logs.Info("service status: ", s)
-
-	// Get the path of the service config files
-	repoPath := p.generateRepoPathByProjectName(s.ProjectName)
-	serviceConfigPath := filepath.Join(repoPath, serviceProcess, strconv.Itoa(serviceID))
-	logs.Debug("Service config path: %s", serviceConfigPath)
-
-	// Get the service config by yaml files
-	var serviceConfig model.ServiceConfig2
-	serviceConfig.Project.ServiceID = s.ID
-	serviceConfig.Project.ProjectID = s.ProjectID
-	serviceConfig.Project.ProjectName = s.ProjectName
-
-	err = service.UnmarshalServiceConfigYaml(&serviceConfig, serviceConfigPath)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	logs.Debug("Service config: ", serviceConfig)
-
-	p.Data["json"] = serviceConfig
-	p.ServeJSON()
-}
-
-func (p *ServiceController) UpdateServiceConfigAction() {
-	var err error
-	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	//Get request massage of service config
-	reqServiceConfig, serviceID, err := p.handleReqData()
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	repoPath := p.generateRepoPathByProjectName(reqServiceConfig.Project.ProjectName)
-	serviceConfigPath := filepath.Join(repoPath, serviceProcess, strconv.Itoa(serviceID))
-	//update yaml files by service config
-	err = service.UpdateServiceConfigYaml(reqServiceConfig, serviceConfigPath)
-	if err != nil {
-		logs.Info("failed to update service yaml", serviceConfigPath)
-		p.customAbort(http.StatusBadRequest, err.Error())
-		return
 	}
 }
 
