@@ -122,9 +122,6 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     this.imageService.getImages("", 0, 0)
       .then(res => {
         this.imageList = res || [];
-        if (this.imageList.length > 0) {
-          this.selectedImage = this.imageList[0];
-        }
       })
       .catch(err => {
         this.isOpen = false;
@@ -329,7 +326,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     } else {
       this.newImageAlertType = "alert-danger";
       this.newImageErrMessage = "IMAGE.CREATE_IMAGE_BUILD_IMAGE_FAILED";
-      this.newImageErrReason = err instanceof HttpErrorResponse ? (err as HttpErrorResponse).error: "";
+      this.newImageErrReason = err instanceof HttpErrorResponse ? (err as HttpErrorResponse).message: "";
       this.isNewImageAlertOpen = true;
     }
   }
@@ -532,18 +529,23 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   }
 
   cleanBaseImageInfo(isGetBoardRegistry: boolean = false): void {
-    this.selectedImage = null;
-    this.consoleText = "";
-    this.imageDetailList.splice(0,this.imageDetailList.length);
-    this.customerNewImage.image_dockerfile.image_base = "";
+    if ((this.baseImageSource == 1 && isGetBoardRegistry) ||
+      (this.baseImageSource == 2 && !isGetBoardRegistry)) {
+      this.selectedImage = null;
+      this.consoleText = "";
+      this.imageDetailList.splice(0, this.imageDetailList.length);
+      this.customerNewImage.image_dockerfile.image_base = "";
+    }
   }
 
-  setBaseImage($event: Image): void {
-    this.selectedImage = $event;
+  setBaseImage(selectImage: Image): void {
+    this.selectedImage = null;
+    this.imageDetailList = null;
     this.imageService.getBoardRegistry().subscribe((res: string) => {
       this.boardRegistry = res.replace(/"/g,"");
-      this.imageService.getImageDetailList(this.selectedImage.image_name)
+      this.imageService.getImageDetailList(selectImage.image_name)
         .then((res: ImageDetail[]) => {
+          this.selectedImage = selectImage;
           this.imageDetailList = res;
           this.customerNewImage.image_dockerfile.image_base = `${this.boardRegistry}/${this.selectedImage.image_name}:${res[0].image_tag}`;
           this.getDockerFilePreviewInfo();

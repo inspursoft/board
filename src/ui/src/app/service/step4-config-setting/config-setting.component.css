@@ -93,6 +93,10 @@ div.external-radio-container {
   width: 20px;
 }
 
+div.external-radio-container.disabled input:hover {
+  cursor: not-allowed;
+}
+
 span.external-title {
   width: 180px;
   text-align: right;

@@ -1,4 +1,4 @@
-import { HttpInterceptor, HttpRequest, HttpResponse } from '@angular/common/http'
+import { HttpErrorResponse, HttpInterceptor, HttpRequest, HttpResponse } from '@angular/common/http'
 import { Observable } from "rxjs/Observable";
 import { HttpHandler } from "@angular/common/http/src/backend";
 import { HttpEvent } from "@angular/common/http/src/response";
@@ -30,6 +30,19 @@ export class HttpClientInterceptor implements HttpInterceptor {
             this.appTokenService.chainResponse(res);
           }
         }
-      })
+      }).catch((err: HttpErrorResponse) => {
+        if (err.status >= 200 && err.status < 300) {
+          const res = new HttpResponse({
+            body: null,
+            headers: err.headers,
+            status: err.status,
+            statusText: err.statusText,
+            url: err.url
+          });
+          return Observable.of(res);
+        } else {
+          return Observable.throw(err);
+        }
+      });
   }
 }

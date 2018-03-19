@@ -4,7 +4,7 @@
   "description": "Angular-CLI starter for a Clarity project",
   "angular-cli": {},
   "scripts": {
-    "start": "ng serve --proxy-config proxy.config.json  --host 0.0.0.0",
+    "start": "ng serve --proxy-config proxy.config.json --host 0.0.0.0",
     "lint": "tslint \"src/**/*.ts\"",
     "test": "ng test --single-run --code-coverage",
     "showcoverage": "http-server -c-1 -o -p 9875 ./coverage",

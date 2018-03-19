@@ -1,7 +1,7 @@
-import { Component, OnInit, OnDestroy, ViewChild, Injector } from '@angular/core';
+import { Component, Injector, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { Service } from '../service';
-import { MESSAGE_TARGET, BUTTON_STYLE, MESSAGE_TYPE, SERVICE_STATUS, GUIDE_STEP } from '../../shared/shared.const';
+import { BUTTON_STYLE, GUIDE_STEP, MESSAGE_TARGET, MESSAGE_TYPE, SERVICE_STATUS } from '../../shared/shared.const';
 import { Message } from '../../shared/message-service/message';
 import { ServiceDetailComponent } from './service-detail/service-detail.component';
 import { ServiceStepBase } from "../service-step";
@@ -40,17 +40,20 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   isBuildServiceWIP: boolean = false;
   isShowServiceCreateYaml: boolean = false;
   createServiceMethod: CreateServiceMethod = CreateServiceMethod.None;
+  isActionWIP: Map<number, boolean>;
 
   @ViewChild(ServiceDetailComponent) serviceDetailComponent;
 
   constructor(protected injector: Injector) {
     super(injector);
     this._subscriptionInterval = Observable.interval(10000).subscribe(() => this.retrieve(true));
+    this.isActionWIP = new Map<number, boolean>();
     this._subscription = this.messageService.messageConfirmed$.subscribe(m => {
       let confirmationMessage = <Message>m;
       if (confirmationMessage) {
         let serviceData = <ServiceData>confirmationMessage.data;
         let m: Message = new Message();
+        this.isActionWIP.set(serviceData.id, true);
         switch (confirmationMessage.target) {
           case MESSAGE_TARGET.DELETE_SERVICE:
             this.k8sService
@@ -59,8 +62,10 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
                 m.message = 'SERVICE.SUCCESSFUL_DELETE';
                 this.messageService.inlineAlertMessage(m);
                 this.retrieve();
+                this.isActionWIP.set(serviceData.id, false);
               })
               .catch(err => {
+                this.isActionWIP.set(serviceData.id, false);
                 m.message = 'SERVICE.FAILED_TO_DELETE_SERVICE';
                 m.type = MESSAGE_TYPE.COMMON_ERROR;
                 this.messageService.inlineAlertMessage(m);
@@ -74,8 +79,10 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
                 m.message = 'SERVICE.SUCCESSFUL_TOGGLE';
                 this.messageService.inlineAlertMessage(m);
                 this.retrieve();
+                this.isActionWIP.set(service.id, false);
               })
               .catch(err => {
+                this.isActionWIP.set(service.id, false);
                 m.message = 'SERVICE.FAILED_TO_TOGGLE';
                 m.type = MESSAGE_TYPE.COMMON_ERROR;
                 this.messageService.inlineAlertMessage(m);
@@ -99,15 +106,16 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   }
 
   serviceInStoppedStatus(s: Service): boolean {
-    return s.service_status == SERVICE_STATUS.STOPPED;
+    return s.service_status == SERVICE_STATUS.STOPPED && !this.isActionWIP.get(s.service_id);
   }
 
   serviceCanChangePauseStatus(s: Service): boolean {
-    return s.service_status in [SERVICE_STATUS.RUNNING, SERVICE_STATUS.WARNING];
+    return s.service_status in [SERVICE_STATUS.RUNNING, SERVICE_STATUS.WARNING] && !this.isActionWIP.get(s.service_id);
   }
 
   serviceDeleteStatusDisabled(s: Service): boolean {
-    return s.service_status in [SERVICE_STATUS.PREPARING, SERVICE_STATUS.RUNNING];
+    return s.service_status in [SERVICE_STATUS.PREPARING, SERVICE_STATUS.RUNNING]
+      || this.isActionWIP.get(s.service_id);
   }
 
   createService(): void {
