@@ -62,15 +62,15 @@ func (p *ProjectController) CreateProjectAction() {
 	}
 
 	// Check namespace in k8s cluster
-	// projectExists, err = service.NamespaceExists(reqProject.Name)
-	// if err != nil {
-	// 	p.internalError(err)
-	// 	return
-	// }
-	// if projectExists {
-	// 	p.customAbort(http.StatusConflict, "Project name already exists in cluster.")
-	// 	return
-	// }
+	projectExists, err = service.NamespaceExists(reqProject.Name)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if projectExists {
+		p.customAbort(http.StatusConflict, "Project name already exists in cluster.")
+		return
+	}
 
 	reqProject.Name = strings.TrimSpace(reqProject.Name)
 	reqProject.OwnerID = int(p.currentUser.ID)
@@ -85,14 +85,14 @@ func (p *ProjectController) CreateProjectAction() {
 		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Project name: %s is illegal.", reqProject.Name))
 	}
 
-	// isSuccess, err = service.CreateNamespace(reqProject.Name)
-	// if err != nil {
-	// 	p.internalError(err)
-	// 	return
-	// }
-	// if !isSuccess {
-	// 	p.customAbort(http.StatusBadRequest, fmt.Sprintf("Namespace name: %s is illegal.", reqProject.Name))
-	// }
+	isSuccess, err = service.CreateNamespace(reqProject.Name)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if !isSuccess {
+		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Namespace name: %s is illegal.", reqProject.Name))
+	}
 
 	if accessToken, ok := memoryCache.Get(p.currentUser.Username + "_GOGS-ACCESS-TOKEN").(string); ok {
 		projectRepoURL := fmt.Sprintf("%s/%s/%s.git", gogitsSSHURL(), p.currentUser.Username, reqProject.Name)
@@ -151,7 +151,7 @@ func (p *ProjectController) GetProjectsAction() {
 	memberOnly, _ := p.GetInt("member_only", 0)
 
 	pageIndex, _ := p.GetInt("page_index", 0)
-	pageSize, _ := p.GetInt("page_size", defaultPageSize)
+	pageSize, _ := p.GetInt("page_size", 0)
 	orderField := p.GetString("order_field", "CREATE_TIME")
 	orderAsc, _ := p.GetInt("order_asc", 0)
 
