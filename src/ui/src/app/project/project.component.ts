@@ -1,17 +1,14 @@
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
-
-// import { State } from "clarity-angular";
 import { AppInitService } from '../app.init.service';
 import { MessageService } from '../shared/message-service/message.service';
-import { ConfirmationDialogComponent } from '../shared/confirmation-dialog/confirmation-dialog.component';
 import { Message } from '../shared/message-service/message';
 import { MESSAGE_TARGET, BUTTON_STYLE, GUIDE_STEP } from '../shared/shared.const';
-
 import { Project } from './project';
 import { ProjectService } from './project.service';
 import { CreateProjectComponent } from './create-project/create-project.component';
 import { MemberComponent } from './member/member.component';
+import { ActivatedRoute } from "@angular/router";
 
 @Component({
   selector: 'project',
@@ -31,6 +28,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
   currentUser: {[key: string]: any};
   isInLoading:boolean = false;
   constructor(
+    private activatedRoute:ActivatedRoute,
     private appInitService: AppInitService,
     private projectService: ProjectService,
     private messageService: MessageService
@@ -54,6 +52,11 @@ export class ProjectComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.currentUser = this.appInitService.currentUser;
+    this.activatedRoute.fragment.subscribe((res)=>{
+      if (res && res =="create"){
+        this.createProject();
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -61,7 +64,6 @@ export class ProjectComponent implements OnInit, OnDestroy {
       this._subscription.unsubscribe();
     }
   }
-
   retrieve(): void {
     setTimeout(()=>{
       this.isInLoading = true;

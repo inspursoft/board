@@ -1,9 +1,9 @@
-import { OnInit, Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { Image } from "../image";
 import { ImageService } from "../image-service/image-service"
 import { MessageService } from "../../shared/message-service/message.service";
-import { MESSAGE_TARGET, BUTTON_STYLE, MESSAGE_TYPE } from '../../shared/shared.const';
+import { BUTTON_STYLE, MESSAGE_TARGET } from '../../shared/shared.const';
 import { Message } from '../../shared/message-service/message';
 import { AppInitService } from "../../app.init.service";
 import { Project } from "../../project/project";
@@ -77,7 +77,7 @@ export class ImageListComponent implements OnInit, OnDestroy {
   }
 
   clickSelectProject(project: Project) {
-    this.router.navigate(["/projects"]);
+    this.router.navigate(["/projects"], {queryParams: {token: this.appInitService.token}, fragment: "create"});
   }
 
   changeSelectProject(project: Project) {
