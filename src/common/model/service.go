@@ -44,6 +44,11 @@ type ServiceScale struct {
 	Replica int32 `json:"service_scale"`
 }
 
+type ScaleStatus struct {
+	DesiredInstance   int32 `json:"desired_instance"`
+	AvailableInstance int32 `json:"available_instance"`
+}
+
 type ExternalService struct {
 	ContainerName      string       `json:"container_name"`
 	NodeConfig         NodeType     `json:"node_config"`

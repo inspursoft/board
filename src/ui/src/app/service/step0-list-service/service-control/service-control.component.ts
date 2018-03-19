@@ -2,17 +2,24 @@
  * Created by liyanq on 04/12/2017.
  */
 
-import { Component, EventEmitter, Input, Output, OnInit } from "@angular/core"
+import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core"
 import { Service } from "../../service";
 import { K8sService } from "../../service.k8s";
 import { MessageService } from "../../../shared/message-service/message.service";
 import { SERVICE_STATUS } from "../../../shared/shared.const";
 import { ImageIndex } from "../../service-step.component";
 import { ImageDetail } from "../../../image/image";
+import { HttpErrorResponse } from "@angular/common/http";
+import { Message } from "../../../shared/message-service/message";
 
-enum ScaleMethod {smNone, smManually, smAuto}
+enum ScaleMethod {smManually, smAuto}
 
 enum ActionMethod {scale, update}
+
+interface IScaleInfo {
+  desired_instance: number;
+  available_instance: number;
+}
 
 @Component({
   selector: "service-control",
@@ -22,11 +29,13 @@ enum ActionMethod {scale, update}
 export class ServiceControlComponent implements OnInit {
   _isOpen: boolean = false;
   dropDownListNum: Array<number>;
-  scaleModule: ScaleMethod = ScaleMethod.smNone;
+  scaleModule: ScaleMethod = ScaleMethod.smManually;
   scaleNum: number = 0;
+  scaleInfo: IScaleInfo;
   isActionInWIP: boolean = false;
   isGetServiceImagesWIP: boolean = false;
   isGetServiceImagesTagWIP: boolean = false;
+  alertMessage: string = "";
   actionMethod: ActionMethod = ActionMethod.scale;
   imageList: Array<ImageIndex>;
   imageTagList: Map<string, Array<ImageDetail>>;
@@ -42,9 +51,13 @@ export class ServiceControlComponent implements OnInit {
   }
 
   ngOnInit() {
-    for (let i = 1; i <= 100; i++) {
+    for (let i = 1; i <= 10; i++) {
       this.dropDownListNum.push(i)
     }
+    this.k8sService.getServiceScaleInfo(this.service.service_id)
+      .subscribe((scaleInfo: IScaleInfo) => {//needn't handle error~!
+        this.scaleInfo = scaleInfo;
+      })
   }
 
   @Output() isOpenChange: EventEmitter<boolean> = new EventEmitter<boolean>();
@@ -104,8 +117,8 @@ export class ServiceControlComponent implements OnInit {
         noImageTag = true;
       }
     });
-    let isCanUpdate = !this.isGetServiceImagesTagWIP && !noImageTag;
-    return this.actionMethod == ActionMethod.update ? isCanUpdate : true;
+    let isCanUpdate = !this.isGetServiceImagesTagWIP && !noImageTag && this.alertMessage === "";
+    return this.actionMethod == ActionMethod.update ? isCanUpdate : this.scaleNum > 0;
   }
 
   getServiceImages() {
@@ -119,11 +132,18 @@ export class ServiceControlComponent implements OnInit {
           this.imageTagSelected.set(value.image_name, value.image_tag);
           this.k8sService.getImageDetailList(value.image_name)
             .then(res => this.imageTagList.set(value.image_name, res))
-            .catch(this.defaultDispatchErr);
+            .catch(this.defaultDispatchErr.bind(this));
         });
         this.isGetServiceImagesWIP = false;
       })
-      .catch(this.defaultDispatchErr.bind(this))
+      .catch((err: HttpErrorResponse) => {
+        if (err.status == 500) {
+          this.isGetServiceImagesWIP = false;
+          this.alertMessage = "SERVICE.SERVICE_CONTROL_NOT_UPDATE";
+        } else {
+          this.defaultDispatchErr(err);
+        }
+      })
   }
 
   updateServiceImages() {
@@ -136,7 +156,13 @@ export class ServiceControlComponent implements OnInit {
   setServiceScale() {
     this.isActionInWIP = true;
     this.k8sService.setServiceScale(this.service.service_id, this.scaleNum)
-      .then(() => this.isOpen = false)
+      .then(() => {
+        let m: Message = new Message();
+        m.message = "SERVICE.SERVICE_CONTROL_SCALE_SUCCESSFUL";
+        m.params = [this.service.service_name];
+        this.messageService.inlineAlertMessage(m);
+        this.isOpen = false;
+      })
       .catch(this.defaultDispatchErr.bind(this))
   }
 

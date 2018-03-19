@@ -117,9 +117,9 @@ func GetServiceList(name string, userID int64) ([]*model.ServiceStatus, error) {
 	return serviceList, err
 }
 
-func GetPaginatedServiceList(name string, userID int64, pageIndex int, pageSize int) (*model.PaginatedServiceStatus, error) {
+func GetPaginatedServiceList(name string, userID int64, pageIndex int, pageSize int, orderField string, orderAsc int) (*model.PaginatedServiceStatus, error) {
 	query := model.ServiceStatus{Name: name}
-	paginatedServiceStatus, err := dao.GetPaginatedServiceData(query, userID, pageIndex, pageSize)
+	paginatedServiceStatus, err := dao.GetPaginatedServiceData(query, userID, pageIndex, pageSize, orderField, orderAsc)
 	if err != nil {
 		return nil, err
 	}
@@ -296,4 +296,16 @@ func GetK8sService(pName string, sName string) (*modelK8s.Service, error) {
 		return nil, err
 	}
 	return k8sService, err
+}
+
+func GetScaleStatus(serviceInfo *model.ServiceStatus) (model.ScaleStatus, error) {
+	var scaleStatus model.ScaleStatus
+	deployment, err := GetDeployment(serviceInfo.ProjectName, serviceInfo.Name)
+	if err != nil {
+		logs.Debug("Failed to get deployment %s", serviceInfo.Name)
+		return scaleStatus, err
+	}
+	scaleStatus.DesiredInstance = deployment.Status.Replicas
+	scaleStatus.AvailableInstance = deployment.Status.AvailableReplicas
+	return scaleStatus, nil
 }

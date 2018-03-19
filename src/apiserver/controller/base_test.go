@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/model/dashboard"
 	"git/inspursoft/board/src/common/utils"
 	"os"
 	"testing"
@@ -216,6 +217,8 @@ func init() {
 	beego.AddNamespace(ns)
 	beego.Router("/deploy/:owner_name/:project_name/:service_name", &ServiceShowController{})
 	beego.SetStaticPath("/swagger", "swagger")
+
+	orm.RegisterModel(new(dashboard.NodeDashboardMinute), new(dashboard.NodeDashboardHour), new(dashboard.NodeDashboardDay))
 }
 
 func connectToDB() {
@@ -286,7 +289,9 @@ func updateAdminPassword() {
 
 func TestMain(m *testing.M) {
 	utils.Initialize()
-	utils.AddEnv("KUBE_MASTER_URL")
+	utils.AddEnv("KUBE_MASTER_IP")
+	utils.AddEnv("KUBE_MASTER_PORT")
+	utils.SetConfig("KUBE_MASTER_URL", "http://%s:%s", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
 	utils.AddEnv("NODE_IP")
 	utils.AddEnv("REGISTRY_IP")
 	utils.AddEnv("REGISTRY_PORT")

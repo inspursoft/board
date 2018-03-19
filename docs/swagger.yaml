@@ -67,18 +67,28 @@ paths:
           type: string
           required: false
           description: Username for filtering results.
-        - name: user_list_page
+        - name: page_index
           in: query
           type: integer
           format: int32
           required: false
           description: The page nubmer, default is 1.
-        - name: user_list_page_size
+        - name: page_size
           in: query
           type: integer
           format: int32
           required: false
           description: The size of per page, default is 10, maximum is 100.
+        - name: order_field 
+          in: query
+          description: Order field for results.
+          required: false
+          type: string
+        - name: order_asc 
+          in: query
+          description: Order ascent type for results.
+          required: false
+          type: integer
       tags:
         - Products
       responses:
@@ -496,18 +506,28 @@ paths:
           required: false
           type: integer
           format: int32
-        - name: project_list_page
+        - name: page_index
           in: query
           type: integer
           format: int32
           required: false
           description: The page nubmer, default is 1.
-        - name: project_list_page_size
+        - name: page_size
           in: query
           type: integer
           format: int32
           required: false
           description: The size of per page, default is 10, maximum is 100.
+        - name: order_field 
+          in: query
+          description: Order field for results.
+          required: false
+          type: string
+        - name: order_asc 
+          in: query
+          description: Order ascent type for results.
+          required: false
+          type: integer
       tags:
         - Products
       responses:
@@ -950,18 +970,28 @@ paths:
           required: false
           type: integer
           format: int32
-        - name: service_list_page
+        - name: page_index
           in: query
           type: integer
           format: int32
           required: false
           description: The page nubmer, default is 1.
-        - name: servie_list_page_size
+        - name: page_size
           in: query
           type: integer
           format: int32
           required: false
           description: The size of per page, default is 10, maximum is 100.
+        - name: order_field 
+          in: query
+          description: Order field for results.
+          required: false
+          type: string
+        - name: order_asc 
+          in: query
+          description: Order ascent type for results.
+          required: false
+          type: integer
       tags:
         - Products
       responses:
@@ -1720,6 +1750,35 @@ paths:
         500:
           description: Unexpected internal errors.    
   /v1/services/{service_id}/scale:
+    get:  
+      summary: Get service deployment scale info.
+      description: |
+        This endpoint is aimed to get service deployment scale info.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return deployment scale status.
+          schema:
+            $ref: '#/definitions/ServiceScaleStatus'
+        401:
+          description: User need to log in first.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.    
     put:  
       summary: Manually scale the service replica.
       description: |
@@ -3398,7 +3457,18 @@ definitions:
       service_scale:
         type: integer
         format: int32
-        description: The new replica number of the service.                
+        description: The new replica number of the service.         
+  ServiceScaleStatus:
+    type: object
+    properties:
+      desired_instance:
+        type: integer
+        format: int32
+        description: The desired replica number of the service.       
+      available_instance:
+        type: integer
+        format: int32
+        description: The available running replica number of the service. 
   ServicePublicityUpdate:
     type: object
     properties:

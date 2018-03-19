@@ -29,28 +29,11 @@
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
   </properties>
-  <scm class="hudson.plugins.git.GitSCM" plugin="git@3.5.1">
-    <configVersion>2</configVersion>
-    <userRemoteConfigs>
-      <hudson.plugins.git.UserRemoteConfig>
-        <url>root@gitserver:/gitserver/repos/board_repo</url>
-        <credentialsId>ade70d43-6dfe-4b27-9078-4af76c41175d</credentialsId>
-      </hudson.plugins.git.UserRemoteConfig>
-    </userRemoteConfigs>
-    <branches>
-      <hudson.plugins.git.BranchSpec>
-        <name>*/master</name>
-      </hudson.plugins.git.BranchSpec>
-    </branches>
-    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
-    <submoduleCfg class="list"/>
-    <extensions/>
-  </scm>
+  <scm class="hudson.scm.NullSCM"/>
   <canRoam>true</canRoam>
   <disabled>false</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
-  <authToken>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9</authToken>
   <triggers/>
   <concurrentBuild>false</concurrentBuild>
   <builders>
@@ -60,25 +43,9 @@ set -e
 
 curl http://apiserver:8088/api/v1/jenkins-job/$user_id/$BUILD_NUMBER
 
-cd ~
+echo &quot;CURL $extras with request $value&quot;
 
-if [ ! -d &quot;board_repo&quot; ]; then
-
-  echo &quot;Clone board repo as it doesn&apos;t exist yet.&quot;
-
-  git clone root@gitserver:/gitserver/repos/board_repo
-
-fi
-
-cd board_repo
-
-echo &quot;Pull changes from repo.&quot;
-
-git pull
-
-echo &quot;CURL $extras with file $value/$file_name&quot;
-
-curl -X POST -H 'Content-Type: application/yaml' --data-binary @$value/$file_name $extras</command>
+curl -X PATCH -H &apos;Content-Type: application/strategic-merge-patch+json&apos; -d $value $extras</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers/>
