@@ -740,17 +740,6 @@ func (p *ServiceController) GetServiceInfoAction() {
 		return
 	}
 
-	isMember, err := service.IsProjectMember(s.ProjectID, p.currentUser.ID)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	//Judge authority
-	if !(p.isSysAdmin || isMember) {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges to get publicity of service.")
-		return
-	}
 	serviceStatus, err := service.GetServiceStatus(kubeMasterURL() + serviceAPI + s.ProjectName + "/services/" + s.Name)
 	if err != nil {
 		p.resolveErrOutput(err)
