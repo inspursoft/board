@@ -19,18 +19,6 @@ def main():
     inf.write("<body>")
     inf.write("<table>")
 
-    f = open("out.temp")
-    lines = f.readlines()
-    for line in lines:
-        inf.write("<tr>\n")
-        inf.write("<td>" + line + "</td>\n")
-        inf.write("</tr>\n")
-    inf.write("</table>\n")
-    inf.write("</body>\n")
-    inf.write("</html>")
-    f.close()
-    inf.close()
-
     #cov = os.popen("cat out.temp|grep \"total\"|awk '{print $NF}'").readline()
     cov = sys.argv[2]
     covDir = resultDir + "/index"
