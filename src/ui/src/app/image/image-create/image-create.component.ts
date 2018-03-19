@@ -67,7 +67,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   consoleText: string = "";
   toggleCancelBuilding: boolean = false;
   processImageSubscription: Subscription;
-  uploadCopyToPath: string = "./tmp";
+  uploadCopyToPath: string = "/tmp";
   uploadProgressValue: HttpProgressEvent;
   imageList: Array<Image>;
   imageDetailList: Array<ImageDetail>;
