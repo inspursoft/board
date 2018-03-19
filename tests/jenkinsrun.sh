@@ -5,13 +5,8 @@ head_branch=$4
 base_repo_url=$5
 base_branch=$6
 comments_url=$7
-host_ip=$8
-kube_master_url=$9
-shift 9
-node_ip=$1
-registry_uri=$2
-JOB_URL=$3
-JENKINS_URL=$4
+JOB_URL=$8
+JENKINS_URL=$9
 
 
 totalLink=$BUILD_URL/TOTAL_REPORT/index.html
@@ -19,7 +14,7 @@ uiLink=$BUILD_URL/UI/index.html
 consoleLink=$BUILD_URL/console
 boardDir=$WORKSPACE/src/git/inspursoft
 branchDir=`echo $head_repo_url|awk -F '/' '{print $NF}'|cut -d '.' -f 1`
-
+workDir=$WORKSPACE
 uiDir=$boardDir/$branchDir/src/ui
 
 
@@ -41,10 +36,11 @@ cp $boardDir/$branchDir/tests/docker-compose.test.yml  $boardDir/$branchDir/make
 cp $boardDir/$branchDir/tests/ldap_test.ldif  $boardDir/$branchDir/make/dev
 cd $boardDir/$branchDir/make/dev
 docker-compose -f docker-compose.test.yml down -v
+rm -rf /data/board
 docker-compose -f docker-compose.test.yml up -d
 
 
-docker-compose -f docker-compose.uibuilder.test.yml up 
+#docker-compose -f docker-compose.uibuilder.test.yml up 
 
 export GOPATH=$workDir
 
@@ -55,12 +51,13 @@ cd $boardDir/$branchDir/tests
 
 chmod +x *
 #make run
-./run.sh $host_ip $kube_master_url $node_ip $registry_uri
+./run.sh 
 
-#cp -r /home/tests/testresult.log /home/tests/coverage/ $uiDir
+cp -r /home/tests/testresult.log /home/tests/coverage/ $uiDir
 uiCoverage=`cat $uiDir/testresult.log |grep "Statements"|cut -d ":" -f 2|cut -d "%" -f 1|awk 'gsub(/^ *| *$/,"")'`
 
-cov=`cat $boardDir/$branchDir/tests/out.temp|grep "total"|awk '{print $NF}'|cut -d "%" -f 1|tr -s [:space:]`
+#cov=`cat $boardDir/$branchDir/tests/out.temp|grep "total"|awk '{print $NF}'|cut -d "%" -f 1|tr -s [:space:]`
+cov=`cat $boardDir/$branchDir/tests/avaCov.cov`
 
 echo '==========================================='
 echo $lastBuildCov
@@ -70,7 +67,7 @@ echo '==========================================='
 
 add=`echo $cov+$uiCoverage|bc`
 averageCov=`echo $add/2|bc`
-echo "averageCov: " $averageCov
+#echo "averageCov: " $averageCov
 
 echo "python genResult.py $WORKSPACE $cov $uiCoverage"
 python genResult.py $WORKSPACE $cov $uiCoverage

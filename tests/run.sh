@@ -26,7 +26,12 @@ gopath=/go/src/git/inspursoft/board/
 golangImage=golang:1.8.3-alpine3.5
 volumeDir=`dirname $(pwd)`
 
-packages=$(go list ../... | grep -v -E 'vendor|tests|collector')
+dir="$( cd "$( dirname "$0"  )" && pwd  )"
+
+function rungotest()
+{
+packages=$(go list ../... | grep -v -E 'vendor|tests'|grep $1) 
+echo $packages
 for package in $packages
 do
     listDeps $package
@@ -36,20 +41,36 @@ do
     
     echo "---------------------------------------"
     echo $deps
-    echo $package
     echo "+++++++++++++++++++++++++++++++++++++++"
     
     #go env used docker container
     echo "/usr/bin/docker run --rm -v $volumeDir:$gopath --env-file env.cfg -w $gopath $golangImage go test -v -cover -coverprofile=profile.tmp -coverpkg "$deps" $package"
-    #/usr/bin/docker run --rm -v $volumeDir:$gopath -e HOST_IP=$1 -e KUBE_MASTER_URL=$2 -e NODE_IP=$3 -e REGISTRY_BASE_URI=$4 -w $gopath $golangImage go test -v -cover -coverprofile=profile.tmp -coverpkg "$deps" $package
-    /usr/bin/docker run --rm -v $volumeDir:$gopath -e HOST_IP=$1 --env-file env.cfg -w $gopath $golangImage go test -v -cover -coverprofile=profile.tmp -coverpkg "$deps" $package
+    /usr/bin/docker run --rm -v $volumeDir:$gopath --env-file env.cfg -w $gopath $golangImage go test -v -cover -coverprofile=profile.tmp -coverpkg "$deps" $package
 
     if [ -f $volumeDir/profile.tmp ]
     then
         cat $volumeDir/profile.tmp | tail -n +2 >> profile.cov
         rm $volumeDir/profile.tmp
-     fi
+    fi
+
 done
-go tool cover -func=profile.cov > out.temp
+cp $dir/profile.cov $dir/$2".cov"
+go tool cover -func=$2".cov" >> $2".temp"
+cov=`cat $dir/$2".temp"|grep "total"|grep -v -E 'NaN'|awk '{print $NF}'|cut -d "%" -f 1|tr -s [:space:]`
+echo $cov >> $dir/$2".txt"
+#return $cov
+}
+rungotest apiserver apiserver
+cov1=`cat $dir/apiserver.txt`
+rungotest tokenserver tokenserver
+cov2=`cat $dir/tokenserver.txt`
+
+echo "--------------------"
+echo $cov1
+echo $cov2
+echo "------------------"
+add=$(echo $cov1+$cov2|bc)
+averageCov=$(echo "scale=2;$add/2"|bc)
+echo $averageCov>>$dir/avaCov.cov
 go tool cover -html=profile.cov -o profile.html
 
