@@ -261,10 +261,10 @@ func main() {
 		initProjectRepo()
 	}
 
-	// if systemInfo.SyncK8s == "" || utils.GetStringValue("FORCE_INIT_SYNC") == "true" {
-	// 	initDefaultProjects()
-	// 	syncServiceWithK8s()
-	// }
+	if systemInfo.SyncK8s == "" || utils.GetStringValue("FORCE_INIT_SYNC") == "true" {
+		initDefaultProjects()
+		syncServiceWithK8s()
+	}
 
 	beego.Run(":" + defaultAPIServerPort)
 }
