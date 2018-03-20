@@ -67,6 +67,7 @@
                        name="baseImageSource"
                        id="radFromDocker"
                        [value]="1"
+                       [disabled]="isBuildImageWIP"
                        [(ngModel)]="baseImageSource"
                        (click)="cleanBaseImageInfo(false)"
                        checked>
@@ -76,6 +77,7 @@
                        name="baseImageSource"
                        id="radFromBoard"
                        [value]="2"
+                       [disabled]="isBuildImageWIP"
                        [(ngModel)]="baseImageSource"
                        (click)="cleanBaseImageInfo(true)">
                 <label for="radFromBoard" class="base-image-source">Board Registry</label>
