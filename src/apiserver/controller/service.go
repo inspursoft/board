@@ -82,6 +82,18 @@ func (p *ServiceController) DeployServiceAction() {
 	key := p.getKey()
 	configService := NewConfigServiceStep(key)
 
+	isMember, err := service.IsProjectMember(configService.ProjectID, p.currentUser.ID)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	//Judge authority
+	if !(p.isSysAdmin || isMember) {
+		p.customAbort(http.StatusForbidden, "Insufficient privileges to delete service.")
+		return
+	}
+
 	var newservice model.ServiceStatus
 	newservice.Name = configService.ServiceName
 	newservice.ProjectID = configService.ProjectID
@@ -120,21 +132,28 @@ func (p *ServiceController) DeployServiceAction() {
 		return
 	}
 
-	deployPushobject := assemblePushObject(deploymentFilename, serviceInfo.ID, project.Name, "deployments")
-	ret, msg, err := InternalPushObjects(&deployPushobject, &(p.baseController))
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	logs.Info("Internal push deployment object: %d %s", ret, msg)
 	err = service.AssembleServiceYaml((*model.ConfigServiceStep)(configService), loadPath)
 	if err != nil {
 		p.internalError(err)
 		return
 	}
 
-	servicePushobject := assemblePushObject(serviceFilename, serviceInfo.ID, project.Name, "services")
-	ret, msg, err = InternalPushObjects(&servicePushobject, &(p.baseController))
+	var pushObject pushObject
+	pushObject.UserID = p.currentUser.ID
+	pushObject.FileName = fmt.Sprintf("%s,%s", deploymentFilename, serviceFilename)
+	pushObject.JobName = serviceProcess
+	pushObject.ProjectName = project.Name
+	pushObject.Extras = fmt.Sprintf("%s,%s", fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), deploymentAPI, project.Name, "deployments"),
+		fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), serviceAPI, project.Name, "services"))
+	pushObject.Value = filepath.Join(serviceProcess, strconv.Itoa(int(serviceInfo.ID)))
+	pushObject.Message = fmt.Sprintf("Create service for project %s with service %d", project.Name, serviceInfo.ID)
+
+	relPath := filepath.Join(serviceProcess, strconv.Itoa(int(serviceInfo.ID)))
+
+	generateMetaConfiguration(&pushObject, repoPath)
+	pushObject.Items = []string{"META.cfg", filepath.Join(relPath, deploymentFilename), filepath.Join(relPath, serviceFilename)}
+
+	ret, msg, err := InternalPushObjects(&pushObject, &(p.baseController))
 	if err != nil {
 		p.internalError(err)
 		return
@@ -166,25 +185,6 @@ func (p *ServiceController) DeployServiceAction() {
 	p.ServeJSON()
 }
 
-func assemblePushObject(fileName string, serviceID int64, projectName string, extras string) pushObject {
-	var pushobject pushObject
-	pushobject.FileName = fileName
-	pushobject.JobName = serviceProcess
-	pushobject.Value = filepath.Join(projectName, strconv.Itoa(int(serviceID)))
-	pushobject.Message = fmt.Sprintf("Create %s for project %s service %d", extras,
-		projectName, serviceID)
-	if extras == "deployments" {
-		pushobject.Extras = filepath.Join(kubeMasterURL(), deploymentAPI, projectName, extras)
-	} else {
-		pushobject.Extras = filepath.Join(kubeMasterURL(), serviceAPI, projectName, extras)
-	}
-	pushobject.Items = []string{filepath.Join(pushobject.Value, fileName)}
-	logs.Info("pushobject.FileName:%+v\n", pushobject.FileName)
-	logs.Info("pushobject.Value:%+v\n", pushobject.Value)
-	logs.Info("pushobject.Extras:%+v\n", pushobject.Extras)
-	return pushobject
-}
-
 func (p *ServiceController) DeployServiceTestAction() {
 	key := p.getKey()
 	configService := NewConfigServiceStep(key)
@@ -193,7 +193,6 @@ func (p *ServiceController) DeployServiceTestAction() {
 	p.DeployServiceAction()
 }
 
-//
 func syncK8sStatus(serviceList []*model.ServiceStatus) error {
 	var err error
 	// synchronize service status with the cluster system
@@ -352,7 +351,7 @@ func cleanDeploymentK8s(s *model.ServiceStatus) error {
 		return nil
 	}
 
-	var newreplicas int32 = 0
+	var newreplicas int32
 	deployData.Spec.Replicas = &newreplicas
 	res, err := d.Update(deployData)
 	if err != nil {
@@ -665,7 +664,7 @@ func stopServiceK8s(s *model.ServiceStatus) error {
 		return err
 	}
 
-	var newreplicas int32 = 0
+	var newreplicas int32
 	deployData.Spec.Replicas = &newreplicas
 	res, err := d.Update(deployData)
 	if err != nil {
