@@ -5,6 +5,7 @@ import { HttpEvent } from "@angular/common/http/src/response";
 import { AppTokenService } from "../../app.init.service";
 import { Injectable } from "@angular/core";
 import "rxjs/add/operator/do";
+import "rxjs/add/observable/throw"
 
 @Injectable()
 export class HttpClientInterceptor implements HttpInterceptor {
