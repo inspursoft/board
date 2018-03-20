@@ -13,7 +13,7 @@ import { AccountService } from '../account.service';
   styleUrls: [ './sign-in.component.css' ]
 })
 export class SignInComponent implements OnInit, OnDestroy {
-
+  isSignWIP: boolean = false;
   signInUser: SignIn = new SignIn();
   authMode: string = '';
   redirectionURL: string = '';
@@ -43,13 +43,16 @@ export class SignInComponent implements OnInit, OnDestroy {
   }
 
   signIn(): void {
+    this.isSignWIP = true;
     this.accountService
       .signIn(this.signInUser.username, this.signInUser.password)
       .then(res=>{
+          this.isSignWIP = false;
           this.appInitService.token = res.token;
           this.router.navigate(['/dashboard'], { queryParams: { token: this.appInitService.token }});
       })
       .catch(err=>{
+        this.isSignWIP = false;
         let announceMessage = new Message();
           announceMessage.title = 'ACCOUNT.ERROR';
         if(err) {

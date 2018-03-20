@@ -96,7 +96,12 @@
                 </section>
               </form>
               <div class="custom-down-padding">
-                <button *ngIf="authMode === 'db_auth'" class="btn btn-link" (click)="signUp()">{{ 'ACCOUNT.SIGN_UP' | translate }}</button>
+                <button *ngIf="authMode === 'db_auth'"
+                        [disabled]="isSignWIP"
+                        class="btn btn-link"
+                        (click)="signUp()">
+                  {{ 'ACCOUNT.SIGN_UP' | translate }}
+                </button>
                 <!--button class="btn btn-link">{{ 'ACCOUNT.FORGOT_PASSWORD' | translate }}</button-->
               </div>
             </div>

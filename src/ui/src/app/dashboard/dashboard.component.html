@@ -60,7 +60,7 @@
   <div class="card-block" style="display: flex;flex-direction: column">
     <div class="card-block-top-container">
       <div>
-        <clr-dropdown #serviceDropdown>
+        <clr-dropdown>
           <button class="btn btn-outline-primary dropdown-button" clrDropdownToggle>
             {{dropdownText.get(0) | translate}}
             <span *ngIf="dropdownText.get(0) == ''" class="spinner spinner-sm"></span>
@@ -71,7 +71,8 @@
             <button *ngFor="let lineList of lineNamesList.get(0);"
                     [ngClass]="{'active':dropdownText.get(0) == lineList.list_name}"
                     class="dropdown-item"
-                    (click)="dropDownChange(0,lineList);serviceDropdown.toggleDropdown()">
+                    clrDropdownItem
+                    (click)="dropDownChange(0,lineList);">
               {{lineList.list_name}}
             </button>
           </clr-dropdown-menu>
@@ -111,7 +112,7 @@
   <div class="card-block" style="display: flex;flex-direction: column">
     <div class="card-block-top-container">
       <div>
-        <clr-dropdown #nodeDropdown>
+        <clr-dropdown>
           <button class="btn btn-outline-primary dropdown-button" clrDropdownToggle>
             {{dropdownText.get(1) | translate}}
             <span *ngIf="dropdownText.get(1) == ''" class="spinner spinner-sm"></span>
@@ -122,7 +123,8 @@
             <button *ngFor="let lineList of lineNamesList.get(1);"
                     [ngClass]="{'active':dropdownText.get(1) == lineList.list_name}"
                     class="dropdown-item"
-                    (click)="dropDownChange(1,lineList);nodeDropdown.toggleDropdown()">
+                    clrDropdownItem
+                    (click)="dropDownChange(1,lineList);">
               {{lineList.list_name}}
             </button>
           </clr-dropdown-menu>
@@ -162,7 +164,7 @@
   <div class="card-block" style="display: flex;flex-direction: column">
     <div class="card-block-top-container">
       <div>
-        <clr-dropdown #storageDropdown>
+        <clr-dropdown>
           <button class="btn btn-outline-primary dropdown-button" clrDropdownToggle>
             {{dropdownText.get(2) | translate}}
             <span *ngIf="dropdownText.get(2) == ''" class="spinner spinner-sm"></span>
@@ -173,7 +175,8 @@
             <button *ngFor="let lineList of lineNamesList.get(2);"
                     [ngClass]="{'active':dropdownText.get(2) == lineList.list_name}"
                     class="dropdown-item cs-dropdown-item"
-                    (click)="dropDownChange(2,lineList);storageDropdown.toggleDropdown()">
+                    clrDropdownItem
+                    (click)="dropDownChange(2,lineList);">
               {{lineList.list_name}}
             </button>
           </clr-dropdown-menu>

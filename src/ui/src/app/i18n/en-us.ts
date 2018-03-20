@@ -93,7 +93,7 @@ export const LANG_EN_US = {
     "NODES": "Nodes",
     "IMAGES": "Images",
     "ADMIN_OPTIONS": "Admin Options",
-    "PROFILES": "Profiles",
+    "PROFILES": "System Info",
     "GUIDE_SERVICE_LIST":"Please create your own Service.",
     "GUIDE_PROJECT_LIST":"Please create your own Project."
   },
