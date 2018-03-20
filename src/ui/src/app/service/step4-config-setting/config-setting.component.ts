@@ -100,7 +100,15 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
   }
 
   addContainerInfo() {
-    this.uiData.externalServiceList.push(new ExternalService());
+    let externalService = new ExternalService();
+    if (this.uiPreData.containerList.length > 0) {
+      externalService.container_name = this.uiPreData.containerList[0].name;
+      let containerPorts = this.getContainerPorts(externalService.container_name);
+      if (containerPorts.length > 0) {
+        externalService.node_config.target_port = containerPorts[0];
+      }
+    }
+    this.uiData.externalServiceList.push(externalService);
   }
 
   removeContainerInfo(index: number) {

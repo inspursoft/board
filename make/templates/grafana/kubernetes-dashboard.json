@@ -481,14 +481,14 @@
 						"targets": [
 							{
 								"refId": "A",
-								"target": "alias(sumSeries(snap.cluster.grafanalabs.kubestate.pod.$namespace.$node.*.status.phase.Running), 'count')",
+								"target": "alias(sumSeries(snap.cluster.grafanalabs.kubestate.pod.$namespace.$node.*.status.phase.*), 'count')",
 								"textEditor": false
 							}
 						],
 						"thresholds": [],
 						"timeFrom": null,
 						"timeShift": null,
-						"title": "Running Pods",
+						"title": "Pods",
 						"tooltip": {
 							"msResolution": true,
 							"shared": true,
@@ -561,14 +561,14 @@
 						"targets": [
 							{
 								"refId": "A",
-								"target": "alias(sumSeries(snap.cluster.grafanalabs.kubestate.container.$namespace.$node.*.*.status.running), 'count')",
+								"target": "alias(sumSeries(snap.cluster.grafanalabs.kubestate.container.$namespace.$node.*.*.status.{waiting,running,terminated}), 'count')",
 								"textEditor": false
 							}
 						],
 						"thresholds": [],
 						"timeFrom": null,
 						"timeShift": null,
-						"title": "Running Containers",
+						"title": "Containers",
 						"tooltip": {
 							"msResolution": true,
 							"shared": true,
@@ -843,7 +843,7 @@
 						"points": false,
 						"renderer": "flot",
 						"seriesOverrides": [],
-						"span": 5,
+						"span": 6,
 						"stack": false,
 						"steppedLine": false,
 						"targets": [
@@ -926,7 +926,7 @@
 						"points": true,
 						"renderer": "flot",
 						"seriesOverrides": [],
-						"span": 5,
+						"span": 6,
 						"stack": false,
 						"steppedLine": false,
 						"targets": [
@@ -1009,7 +1009,7 @@
 						"points": true,
 						"renderer": "flot",
 						"seriesOverrides": [],
-						"span": 5,
+						"span": 6,
 						"stack": false,
 						"steppedLine": false,
 						"targets": [
@@ -1092,7 +1092,7 @@
 						"points": false,
 						"renderer": "flot",
 						"seriesOverrides": [],
-						"span": 5,
+						"span": 6,
 						"stack": false,
 						"steppedLine": false,
 						"targets": [

@@ -78,17 +78,18 @@
           <label [for]="'radNode' + iIndex"></label>
         </div>
       </div>
-      <div class="external-line-container">
+      <div class="external-line-container" style="cursor: not-allowed">
         <cs-input class="base-input"
                   [simpleFiled]="externalService.load_balancer_config.external_access"
                   [disabled]="!radExternal.checked"
                   [inputLabel]="'SERVICE.STEP_4_EXTERNAL_ACCESS' | translate"
                   (onCheck)="externalService.load_balancer_config.external_access = $event">
         </cs-input>
-        <div class="radio-inline external-radio-container">
+        <div class="radio-inline external-radio-container disabled">
           <input #radExternal
                  title=""
                  type="radio"
+                 [disabled]="true"
                  [name]="'port' + iIndex"
                  [id]="'radExternal' + iIndex"
                  (change)="externalService.node_config.node_port = 0">

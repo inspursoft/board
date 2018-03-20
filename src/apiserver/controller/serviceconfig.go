@@ -300,13 +300,13 @@ func (sc *ServiceConfigController) configContainerList(key string, configService
 		return
 	}
 
-	for _, container := range containerList {
+	for index, container := range containerList {
 		if container.VolumeMounts.TargetPath != "" && container.VolumeMounts.TargetStorageService == "" {
 			sc.serveStatus(http.StatusBadRequest, emptyVolumeTargetStorageServiceErr.Error())
 			return
 		}
-		container.VolumeMounts.VolumeName = strings.ToLower(container.VolumeMounts.VolumeName)
-		container.Name = strings.ToLower(container.Name)
+		containerList[index].VolumeMounts.VolumeName = strings.ToLower(container.VolumeMounts.VolumeName)
+		containerList[index].Name = strings.ToLower(container.Name)
 	}
 
 	SetConfigServiceStep(key, configServiceStep.ConfigContainerList(containerList))

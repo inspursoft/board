@@ -68,7 +68,7 @@
                        id="radFromDocker"
                        [value]="1"
                        [(ngModel)]="baseImageSource"
-                       (click)="cleanBaseImageInfo()"
+                       (click)="cleanBaseImageInfo(false)"
                        checked>
                 <label for="radFromDocker" class="base-image-source">Docker Hub</label>
                 <input type="radio"
@@ -90,17 +90,18 @@
                         (onCheck)="customerNewImage.image_dockerfile.image_base = $event;getDockerFilePreviewInfo()">
               </cs-input>
               <div *ngIf="baseImageSource == 2" class="board-registry-container">
-                <cs-dropdown class="margin-left-180"
-                             [dropdownWidth]="180"
+                <cs-dropdown class="margin-left-120"
+                             [dropdownWidth]="200"
                              [dropdownList]="imageList"
                              [dropdownDisabled]="isBuildImageWIP"
                              [dropdownDefaultText]="'IMAGE.CREATE_IMAGE_BASE_IMAGE_SELECT' | translate"
                              [dropdownListTextKey]="'image_name'"
                              (onChange)="setBaseImage($event)">
                 </cs-dropdown>
+                <span *ngIf="!selectedImage && !imageDetailList" class="spinner spinner-sm"></span>
                 <cs-dropdown *ngIf="selectedImage"
-                             class="margin-left-1"
-                             [dropdownWidth]="60"
+                             class="margin-left-5"
+                             [dropdownWidth]="100"
                              [dropdownDisabled]="isBuildImageWIP"
                              [dropdownList]="imageDetailList"
                              [dropdownDefaultText]="imageDetailList[0]?.image_tag"
