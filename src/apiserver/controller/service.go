@@ -77,6 +77,7 @@ func (p *ServiceController) DeployServiceAction() {
 	newservice.Status = preparing // 0: preparing 1: running 2: suspending
 	newservice.OwnerID = p.currentUser.ID
 	newservice.OwnerName = p.currentUser.Username
+	newservice.Public = configService.Public
 
 	project, err := service.GetProject(model.Project{ID: configService.ProjectID}, "id")
 	if err != nil {
