@@ -383,7 +383,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
       this.filesList.get(this.customerNewImage.image_name).forEach(value => {
         imageCopyArr.push({
           dockerfile_copyfrom: value.path + "/" + value.file_name,
-          dockerfile_copyto: this.uploadCopyToPath
+          dockerfile_copyto: this.uploadCopyToPath + "/" + value.file_name,
         });
       });
     }).catch(err => {
