@@ -3730,6 +3730,9 @@ definitions:
         format: int
       service_name:
         type: string
+      service_public:
+        type: integer   
+        format: int32
       image_list:
         type: array
         items:
