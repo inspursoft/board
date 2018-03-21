@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
-import { HttpClient, HttpResponse } from "@angular/common/http";
+import { HttpClient, HttpParams, HttpResponse } from "@angular/common/http";
 import { Project } from "../project/project";
 import { BuildImageDockerfileData, Image, ImageDetail } from "../image/image";
 import { ImageIndex, ServerServiceStep, ServiceStepPhase, UiServiceFactory, UIServiceStepBase } from "./service-step.component";
@@ -107,13 +107,14 @@ export class K8sService {
       .then((res: HttpResponse<ImageDetail[]>) => res.body || []);
   }
 
-  getServices(pageIndex?: number, pageSize?: number): Promise<Object> {
+  getServices(pageIndex: number, pageSize: number, sortBy: string, isReverse: boolean): Promise<Object> {
     return this.http
       .get(`/api/v1/services`, {
-        observe: "response",
-        params: {
-          'page_index': pageIndex.toString(),
-          'page_size': pageSize.toString()
+        observe: "response", params: {
+          "page_index": pageIndex.toString(),
+          "page_size": pageSize.toString(),
+          "order_field": sortBy,
+          "order_asc": isReverse ? "0" : "1"
         }
       })
       .toPromise()
