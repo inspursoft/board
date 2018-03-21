@@ -52,26 +52,14 @@ func (u *UserController) GetUsersAction() {
 	}
 	if isPaginated {
 		paginatedUsers, err = service.GetPaginatedUsers(fieldName, fieldValue, pageIndex, pageSize, orderField, orderAsc)
+		u.Data["json"] = paginatedUsers
 	} else {
 		users, err = service.GetUsers(fieldName, fieldValue)
+		u.Data["json"] = users
 	}
 	if err != nil {
 		u.internalError(err)
 		return
-	}
-
-	users = paginatedUsers.UserList
-	for i := range users {
-		if isPaginated {
-			paginatedUsers.UserList[i].Password = ""
-		} else {
-			users[i].Password = ""
-		}
-	}
-	if isPaginated {
-		u.Data["json"] = paginatedUsers
-	} else {
-		u.Data["json"] = users
 	}
 	u.ServeJSON()
 }
