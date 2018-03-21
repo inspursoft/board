@@ -1,7 +1,8 @@
-import { Component, Injector, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Injector, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { Service } from '../service';
-import { BUTTON_STYLE, GUIDE_STEP, MESSAGE_TARGET, MESSAGE_TYPE, SERVICE_STATUS } from '../../shared/shared.const';
+import { ClrDatagridSortOrder, ClrDatagridStateInterface } from '@clr/angular';
+import { BUTTON_STYLE, GUIDE_STEP, MESSAGE_TARGET, SERVICE_STATUS } from '../../shared/shared.const';
 import { Message } from '../../shared/message-service/message';
 import { ServiceDetailComponent } from './service-detail/service-detail.component';
 import { ServiceStepBase } from "../service-step";
@@ -15,6 +16,7 @@ enum CreateServiceMethod{None, Wizards, YamlFile, DevOps}
   styleUrls: ["./list-service.component.css"]
 })
 export class ListServiceComponent extends ServiceStepBase implements OnInit, OnDestroy {
+  @ViewChild(ServiceDetailComponent) serviceDetailComponent;
   currentUser: {[key: string]: any};
   services: Service[];
   isInLoading: boolean = false;
@@ -31,12 +33,12 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   isActionWIP: Map<number, boolean>;
   isActionEnable: Map<number, boolean>;
   projectList: Array<Project>;
+  descSort = ClrDatagridSortOrder.DESC;
+  oldStateInfo: ClrDatagridStateInterface;
 
-  @ViewChild(ServiceDetailComponent) serviceDetailComponent;
-
-  constructor(protected injector: Injector) {
+  constructor(protected injector: Injector, private changeDetectorRef: ChangeDetectorRef) {
     super(injector);
-    this._subscriptionInterval = Observable.interval(10000).subscribe(() => this.retrieve(true));
+    this._subscriptionInterval = Observable.interval(10000).subscribe(() => this.retrieve(true, this.oldStateInfo));
     this.isActionWIP = new Map<number, boolean>();
     this.isActionEnable = new Map<number, boolean>();
     this.projectList = Array<Project>();
@@ -49,7 +51,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
             msg.message = 'SERVICE.SUCCESSFUL_TOGGLE';
             this.messageService.inlineAlertMessage(msg);
             this.isActionWIP.set(service.service_id, false);
-            this.retrieve();
+            this.retrieve(false, this.oldStateInfo);
           })
           .catch(err => {
             this.isActionWIP.set(service.service_id, false);
@@ -63,7 +65,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
             msg.message = 'SERVICE.SUCCESSFUL_DELETE';
             this.messageService.inlineAlertMessage(msg);
             this.isActionWIP.set(service.service_id, false);
-            this.retrieve();
+            this.retrieve(false, this.oldStateInfo);
           })
           .catch(err => {
             this.isActionWIP.set(service.service_id, false);
@@ -116,23 +118,23 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
     return !this.isBuildServiceWIP && !this.isShowServiceCreateYaml;
   }
 
-  retrieve(isAuto: boolean = false): void {
-    setTimeout(() => {
-      if (this.isNormalStatus) {
-        this.isInLoading = !isAuto;
-        this.k8sService.getServices(this.pageIndex, this.pageSize)
-          .then(paginatedServices => {
-            this.totalRecordCount = paginatedServices["pagination"]["total_count"];
-            this.services = paginatedServices["service_status_list"];
-            this.isInLoading = false;
-            this.updateActionEnable();
-          })
-          .catch(err => {
-            this.messageService.dispatchError(err);
-            this.isInLoading = false;
-          });
+  retrieve(isAuto: boolean, stateInfo: ClrDatagridStateInterface): void {
+    if (this.isNormalStatus && stateInfo) {
+      this.isInLoading = !isAuto;
+      this.oldStateInfo = stateInfo;
+      this.k8sService.getServices(this.pageIndex, this.pageSize, stateInfo.sort.by as string, stateInfo.sort.reverse)
+        .then(paginatedServices => {
+          this.totalRecordCount = paginatedServices["pagination"]["total_count"];
+          this.services = paginatedServices["service_status_list"];
+          this.isInLoading = false;
+          this.updateActionEnable();
+        })
+        .catch(err => {
+          this.messageService.dispatchError(err);
+          this.isInLoading = false;
+        });
+      this.changeDetectorRef.detectChanges();
       }
-    });
   }
 
   updateActionEnable() {

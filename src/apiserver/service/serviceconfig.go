@@ -108,7 +108,7 @@ func DeleteServiceByID(s model.ServiceStatus) (int64, error) {
 	return num, nil
 }
 
-func GetServiceList(name string, userID int64) ([]*model.ServiceStatus, error) {
+func GetServiceList(name string, userID int64) ([]*model.ServiceStatusMO, error) {
 	query := model.ServiceStatus{Name: name}
 	serviceList, err := dao.GetServiceData(query, userID)
 	if err != nil {

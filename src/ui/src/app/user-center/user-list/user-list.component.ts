@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from "@angular/core";
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
 import { UserService } from "../user-service/user-service";
 import { User } from "../user";
 import { editModel } from "../user-new-edit/user-new-edit.component"
@@ -8,6 +8,7 @@ import { Subscription } from "rxjs/Subscription";
 import { BUTTON_STYLE } from "app/shared/shared.const"
 import { AppInitService } from "../../app.init.service";
 import { ActivatedRoute } from "@angular/router";
+import { ClrDatagridSortOrder, ClrDatagridStateInterface } from "@clr/angular";
 
 @Component({
   selector: "user-list",
@@ -29,12 +30,15 @@ export class UserList implements OnInit, OnDestroy {
   pageSize: number = 15;
   authMode: string = '';
   currentUserID: number;
+  descSort = ClrDatagridSortOrder.DESC;
+  oldStateInfo: ClrDatagridStateInterface;
 
   constructor(
     private route: ActivatedRoute,
     private userService: UserService,
     private appInitService: AppInitService,
-    private messageService: MessageService) {
+    private messageService: MessageService,
+    private changeDetectorRef: ChangeDetectorRef) {
       this.authMode = this.appInitService.systemInfo['auth_mode'];
   }
 
@@ -42,7 +46,7 @@ export class UserList implements OnInit, OnDestroy {
     this._deleteSubscription = this.messageService.messageConfirmed$.subscribe(next => {
       this.userService.deleteUser(next.data)
         .then(() => {
-          this.refreshData();
+          this.refreshData(this.oldStateInfo);
           let m: Message = new Message();
           m.message = "USER_CENTER.DELETE_USER_SUCCESS";
           this.messageService.inlineAlertMessage(m);
@@ -58,10 +62,11 @@ export class UserList implements OnInit, OnDestroy {
     }
   }
 
-  refreshData(): void {
-    setTimeout(()=>{
+  refreshData(stateInfo: ClrDatagridStateInterface): void {
+    if (stateInfo) {
       this.isInLoading = true;
-      this.userService.getUserList('', this.pageIndex, this.pageSize)
+      this.oldStateInfo = stateInfo;
+      this.userService.getUserList('', this.pageIndex, this.pageSize, stateInfo.sort.by as string, stateInfo.sort.reverse)
         .then(res => {
           this.totalRecordCount = res["pagination"]["total_count"];
           this.userListData = res["user_list"];
@@ -71,7 +76,8 @@ export class UserList implements OnInit, OnDestroy {
           this.messageService.dispatchError(err, '');
           this.isInLoading = false;
         });
-    });
+      this.changeDetectorRef.detectChanges();
+    }
   }
 
   addUser() {

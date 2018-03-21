@@ -42,13 +42,15 @@ export class UserService {
     return this.http.post(`${BASE_URL}/adduser`, userParams, {observe: "response"}).toPromise();
   }
 
-  getUserList(username?: string, pageIndex?: number, pageSize?: number): Promise<Object> {
+  getUserList(username: string, pageIndex: number, pageSize: number,sortBy: string, isReverse: boolean): Promise<Object> {
     return this.http.get(`${BASE_URL}/users`, {
       observe: "response",
       params: {
         'username': username,
         'page_index': pageIndex.toString(),
-        'page_size': pageSize.toString()
+        'page_size': pageSize.toString(),
+        'order_field': sortBy,
+        'order_asc': isReverse ? "0" : "1"
       }
     }).toPromise()
       .then((res: HttpResponse<Object>) => res.body);

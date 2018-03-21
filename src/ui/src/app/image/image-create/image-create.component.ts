@@ -274,7 +274,6 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
       announceMessage.message = 'IMAGE.CREATE_IMAGE_BUILD_CANCEL_MSG';
       announceMessage.target = MESSAGE_TARGET.CANCEL_BUILD_IMAGE;
       announceMessage.buttons = BUTTON_STYLE.YES_NO;
-      this.messageService.announceMessage(announceMessage);
     }
     this.messageService.announceMessage(announceMessage);
   }

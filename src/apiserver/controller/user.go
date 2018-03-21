@@ -61,7 +61,6 @@ func (u *UserController) GetUsersAction() {
 		u.internalError(err)
 		return
 	}
-
 	u.ServeJSON()
 }
 

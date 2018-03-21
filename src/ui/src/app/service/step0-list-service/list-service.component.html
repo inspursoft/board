@@ -23,11 +23,15 @@
   </div>
   <div class="row">
     <div class="col-xs-12">
-      <clr-datagrid (clrDgRefresh)="retrieve()" [clrDgLoading]="isInLoading">
-        <clr-dg-column>{{ 'SERVICE.SERVICE_NAME' | translate }}</clr-dg-column>
+      <clr-datagrid (clrDgRefresh)="retrieve(false, $event)" [clrDgLoading]="isInLoading">
+        <clr-dg-column [clrDgField]="'NAME'"
+                       [clrDgSortOrder]="descSort">{{ 'SERVICE.SERVICE_NAME' | translate }}</clr-dg-column>
         <clr-dg-column>{{ 'SERVICE.PROJECT_NAME' | translate }}</clr-dg-column>
         <clr-dg-column>{{ 'SERVICE.OWNER' | translate }}</clr-dg-column>
-        <clr-dg-column>{{ 'SERVICE.CREATE_TIME' | translate }}</clr-dg-column>
+        <clr-dg-column [clrDgField]="'CREATE_TIME'"
+                       [clrDgSortOrder]="descSort">
+          {{ 'SERVICE.CREATE_TIME' | translate }}
+        </clr-dg-column>
         <clr-dg-column>{{ 'SERVICE.PUBLIC' | translate }}</clr-dg-column>
         <clr-dg-column>{{ 'SERVICE.STATUS' | translate }}</clr-dg-column>
         <clr-dg-column>{{ 'SERVICE.OPERATION' | translate }}</clr-dg-column>
