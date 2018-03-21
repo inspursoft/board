@@ -31,7 +31,6 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   isShowServiceCreateYaml: boolean = false;
   createServiceMethod: CreateServiceMethod = CreateServiceMethod.None;
   isActionWIP: Map<number, boolean>;
-  isActionEnable: Map<number, boolean>;
   projectList: Array<Project>;
   descSort = ClrDatagridSortOrder.DESC;
   oldStateInfo: ClrDatagridStateInterface;
@@ -40,7 +39,6 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
     super(injector);
     this._subscriptionInterval = Observable.interval(10000).subscribe(() => this.retrieve(true, this.oldStateInfo));
     this.isActionWIP = new Map<number, boolean>();
-    this.isActionEnable = new Map<number, boolean>();
     this.projectList = Array<Project>();
     this._subscription = this.messageService.messageConfirmed$.subscribe((msg:Message) => {
       if (msg.target == MESSAGE_TARGET.TOGGLE_SERVICE){
@@ -100,10 +98,10 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
       && !this.isActionWIP.get(service.service_id);
   }
 
-  isServiceCanDeleteStatus(service: Service): boolean{
+  isDeleteDisable(service: Service): boolean{
     return service.service_status in [SERVICE_STATUS.PREPARING, SERVICE_STATUS.RUNNING]
       || this.isActionWIP.get(service.service_id)
-      || !this.isActionEnable.get(service.service_id);
+      || service.service_is_member == 0;
   }
 
   createService(): void {
@@ -127,7 +125,6 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
           this.totalRecordCount = paginatedServices["pagination"]["total_count"];
           this.services = paginatedServices["service_status_list"];
           this.isInLoading = false;
-          this.updateActionEnable();
         })
         .catch(err => {
           this.messageService.dispatchError(err);
@@ -135,16 +132,6 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
         });
       this.changeDetectorRef.detectChanges();
       }
-  }
-
-  updateActionEnable() {
-    this.services.forEach((service: Service) => {
-      if (this.projectList.find((value) => value.project_id == service.service_project_id)) {
-        this.isActionEnable.set(service.service_id, true);
-      } else {
-        this.isActionEnable.set(service.service_id, false);
-      }
-    })
   }
 
   getServiceStatus(status: SERVICE_STATUS): string {
@@ -185,7 +172,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   }
 
   toggleService(service: Service){
-    if (this.isActionEnable.get(service.service_id)){
+    if (service.service_is_member == 1){
       let announceMessage = new Message();
       announceMessage.title = "SERVICE.TOGGLE_SERVICE";
       announceMessage.message = "SERVICE.CONFIRM_TO_TOGGLE_SERVICE";
@@ -198,7 +185,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   }
 
   deleteService(service:Service){
-    if (this.isActionEnable.get(service.service_id)){
+    if (service.service_is_member == 1){
       let announceMessage = new Message();
       announceMessage.title = "SERVICE.DELETE_SERVICE";
       announceMessage.message = "SERVICE.CONFIRM_TO_DELETE_SERVICE";
@@ -215,7 +202,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   }
 
   openServiceControl(service: Service) {
-    if (this.isActionEnable.get(service.service_id)){
+    if (service.service_is_member == 1){
       this.serviceControlData = service;
       this.isServiceControlOpen = true;
     }
