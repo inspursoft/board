@@ -37,7 +37,7 @@ export class ImageListComponent implements OnInit, OnDestroy {
     this.projectsList = Array<Project>();
     this._subscription = this.messageService.messageConfirmed$.subscribe(m => {
       let confirmationMessage = <Message>m;
-      if (confirmationMessage) {
+      if (confirmationMessage && confirmationMessage.target == MESSAGE_TARGET.DELETE_IMAGE) {
         let imageName = <string>confirmationMessage.data;
         let m: Message = new Message();
         this.imageService

@@ -6,19 +6,9 @@ import { Message } from '../../shared/message-service/message';
 import { ServiceDetailComponent } from './service-detail/service-detail.component';
 import { ServiceStepBase } from "../service-step";
 import { Observable } from "rxjs/Observable";
+import { Project } from "../../project/project";
 import "rxjs/add/observable/interval";
 
-class ServiceData {
-  id: number;
-  name: string;
-  status: boolean;
-
-  constructor(id: number, name: string, status: boolean) {
-    this.id = id;
-    this.name = name;
-    this.status = status;
-  }
-}
 enum CreateServiceMethod{None, Wizards, YamlFile, DevOps}
 @Component({
   templateUrl: './list-service.component.html',
@@ -30,10 +20,8 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   isInLoading: boolean = false;
   isServiceControlOpen: boolean = false;
   serviceControlData: Service;
-  checkboxRevertInfo: {isNeeded: boolean; value: boolean;};
   _subscription: Subscription;
   _subscriptionInterval: Subscription;
-
   totalRecordCount: number;
   pageIndex: number = 1;
   pageSize: number = 15;
@@ -41,6 +29,8 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   isShowServiceCreateYaml: boolean = false;
   createServiceMethod: CreateServiceMethod = CreateServiceMethod.None;
   isActionWIP: Map<number, boolean>;
+  isActionEnable: Map<number, boolean>;
+  projectList: Array<Project>;
 
   @ViewChild(ServiceDetailComponent) serviceDetailComponent;
 
@@ -48,54 +38,48 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
     super(injector);
     this._subscriptionInterval = Observable.interval(10000).subscribe(() => this.retrieve(true));
     this.isActionWIP = new Map<number, boolean>();
-    this._subscription = this.messageService.messageConfirmed$.subscribe(m => {
-      let confirmationMessage = <Message>m;
-      if (confirmationMessage) {
-        let serviceData = <ServiceData>confirmationMessage.data;
-        let m: Message = new Message();
-        this.isActionWIP.set(serviceData.id, true);
-        switch (confirmationMessage.target) {
-          case MESSAGE_TARGET.DELETE_SERVICE:
-            this.k8sService
-              .deleteService(serviceData.id)
-              .then(() => {
-                m.message = 'SERVICE.SUCCESSFUL_DELETE';
-                this.messageService.inlineAlertMessage(m);
-                this.retrieve();
-                this.isActionWIP.set(serviceData.id, false);
-              })
-              .catch(err => {
-                this.isActionWIP.set(serviceData.id, false);
-                m.message = 'SERVICE.FAILED_TO_DELETE_SERVICE';
-                m.type = MESSAGE_TYPE.COMMON_ERROR;
-                this.messageService.inlineAlertMessage(m);
-              });
-            break;
-          case MESSAGE_TARGET.TOGGLE_SERVICE: {
-            let service: ServiceData = confirmationMessage.data;
-            this.k8sService
-              .toggleServiceStatus(service.id, service.status ? 0 : 1)
-              .then(() => {
-                m.message = 'SERVICE.SUCCESSFUL_TOGGLE';
-                this.messageService.inlineAlertMessage(m);
-                this.retrieve();
-                this.isActionWIP.set(service.id, false);
-              })
-              .catch(err => {
-                this.isActionWIP.set(service.id, false);
-                m.message = 'SERVICE.FAILED_TO_TOGGLE';
-                m.type = MESSAGE_TYPE.COMMON_ERROR;
-                this.messageService.inlineAlertMessage(m);
-              });
-            break;
-          }
-        }
+    this.isActionEnable = new Map<number, boolean>();
+    this.projectList = Array<Project>();
+    this._subscription = this.messageService.messageConfirmed$.subscribe((msg:Message) => {
+      if (msg.target == MESSAGE_TARGET.TOGGLE_SERVICE){
+        let service: Service = msg.data;
+        this.k8sService
+          .toggleServiceStatus(service.service_id, service.service_status == 1 ? 0 : 1)
+          .then(() => {
+            msg.message = 'SERVICE.SUCCESSFUL_TOGGLE';
+            this.messageService.inlineAlertMessage(msg);
+            this.isActionWIP.set(service.service_id, false);
+            this.retrieve();
+          })
+          .catch(err => {
+            this.isActionWIP.set(service.service_id, false);
+            this.messageService.dispatchError(err);
+          });
+      } else if (msg.target == MESSAGE_TARGET.DELETE_SERVICE){
+        let service: Service = msg.data;
+        this.k8sService
+          .deleteService(service.service_id)
+          .then(() => {
+            msg.message = 'SERVICE.SUCCESSFUL_DELETE';
+            this.messageService.inlineAlertMessage(msg);
+            this.isActionWIP.set(service.service_id, false);
+            this.retrieve();
+          })
+          .catch(err => {
+            this.isActionWIP.set(service.service_id, false);
+            this.messageService.dispatchError(err);
+          });
       }
     });
   }
 
   ngOnInit(): void {
     this.currentUser = this.appInitService.currentUser;
+    this.k8sService.getProjects()
+      .then((res: Array<Project>) => {
+        this.projectList = res;
+      })
+      .catch(err => this.messageService.dispatchError(err));
   }
 
   ngOnDestroy(): void {
@@ -105,17 +89,19 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
     }
   }
 
-  serviceInStoppedStatus(s: Service): boolean {
+  isServiceInStoppedStatus(s: Service): boolean {
     return s.service_status == SERVICE_STATUS.STOPPED && !this.isActionWIP.get(s.service_id);
   }
 
-  serviceCanChangePauseStatus(s: Service): boolean {
-    return s.service_status in [SERVICE_STATUS.RUNNING, SERVICE_STATUS.WARNING] && !this.isActionWIP.get(s.service_id);
+  isServiceCanChangePauseStatus(service: Service): boolean {
+    return service.service_status in [SERVICE_STATUS.RUNNING, SERVICE_STATUS.WARNING]
+      && !this.isActionWIP.get(service.service_id);
   }
 
-  serviceDeleteStatusDisabled(s: Service): boolean {
-    return s.service_status in [SERVICE_STATUS.PREPARING, SERVICE_STATUS.RUNNING]
-      || this.isActionWIP.get(s.service_id);
+  isServiceCanDeleteStatus(service: Service): boolean{
+    return service.service_status in [SERVICE_STATUS.PREPARING, SERVICE_STATUS.RUNNING]
+      || this.isActionWIP.get(service.service_id)
+      || !this.isActionEnable.get(service.service_id);
   }
 
   createService(): void {
@@ -139,6 +125,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
             this.totalRecordCount = paginatedServices["pagination"]["total_count"];
             this.services = paginatedServices["service_status_list"];
             this.isInLoading = false;
+            this.updateActionEnable();
           })
           .catch(err => {
             this.messageService.dispatchError(err);
@@ -146,6 +133,16 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
           });
       }
     });
+  }
+
+  updateActionEnable() {
+    this.services.forEach((service: Service) => {
+      if (this.projectList.find((value) => value.project_id == service.service_project_id)) {
+        this.isActionEnable.set(service.service_id, true);
+      } else {
+        this.isActionEnable.set(service.service_id, false);
+      }
+    })
   }
 
   getServiceStatus(status: SERVICE_STATUS): string {
@@ -169,53 +166,46 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
     }
   }
 
-  toggleServicePublic(s: Service): void {
+  toggleServicePublic(service: Service, $event:MouseEvent): void {
     let toggleMessage = new Message();
-    let oldServicePublic = s.service_public;
+    let oldServicePublic = service.service_public;
     this.k8sService
-      .toggleServicePublicity(s.service_id, s.service_public ? 0 : 1)
+      .toggleServicePublicity(service.service_id, service.service_public == 1 ? 0 : 1)
       .then(() => {
-        s.service_public = !oldServicePublic;
+        service.service_public = oldServicePublic == 1 ? 0 : 1;
         toggleMessage.message = 'SERVICE.SUCCESSFUL_TOGGLE';
         this.messageService.inlineAlertMessage(toggleMessage);
       })
       .catch(err => {
-        this.messageService.dispatchError(err, '');
-        this.checkboxRevertInfo = {isNeeded: true, value: oldServicePublic};
+        ($event.srcElement as HTMLInputElement).checked = oldServicePublic == 1;
+        this.messageService.dispatchError(err);
       });
   }
 
-  confirmToServiceAction(s: Service, action: string): void {
-    if (action == 'DELETE' &&
-      (s.service_status != SERVICE_STATUS.STOPPED) &&
-      (s.service_status != SERVICE_STATUS.WARNING)) return;
-    let serviceData = new ServiceData(s.service_id, s.service_name, (s.service_status === SERVICE_STATUS.RUNNING));
-    let title: string;
-    let message: string;
-    let target: MESSAGE_TARGET;
-    let buttonStyle: BUTTON_STYLE;
-    switch (action) {
-      case 'DELETE':
-        title = 'SERVICE.DELETE_SERVICE';
-        message = 'SERVICE.CONFIRM_TO_DELETE_SERVICE';
-        target = MESSAGE_TARGET.DELETE_SERVICE;
-        buttonStyle = BUTTON_STYLE.DELETION;
-        break;
-      case 'TOGGLE':
-        title = 'SERVICE.TOGGLE_SERVICE';
-        message = 'SERVICE.CONFIRM_TO_TOGGLE_SERVICE';
-        target = MESSAGE_TARGET.TOGGLE_SERVICE;
-        buttonStyle = BUTTON_STYLE.CONFIRMATION;
-        break;
+  toggleService(service: Service){
+    if (this.isActionEnable.get(service.service_id)){
+      let announceMessage = new Message();
+      announceMessage.title = "SERVICE.TOGGLE_SERVICE";
+      announceMessage.message = "SERVICE.CONFIRM_TO_TOGGLE_SERVICE";
+      announceMessage.params = [service.service_name];
+      announceMessage.target = MESSAGE_TARGET.TOGGLE_SERVICE;
+      announceMessage.buttons = BUTTON_STYLE.CONFIRMATION;
+      announceMessage.data = service;
+      this.messageService.announceMessage(announceMessage);
     }
-    let announceMessage = new Message();
-    announceMessage.title = title;
-    announceMessage.message = message;
-    announceMessage.params = [s.service_name];
-    announceMessage.target = target;
-    announceMessage.buttons = buttonStyle;
-    announceMessage.data = serviceData;
-    this.messageService.announceMessage(announceMessage);
+  }
+
+  deleteService(service:Service){
+    if (this.isActionEnable.get(service.service_id)){
+      let announceMessage = new Message();
+      announceMessage.title = "SERVICE.DELETE_SERVICE";
+      announceMessage.message = "SERVICE.CONFIRM_TO_DELETE_SERVICE";
+      announceMessage.params = [service.service_name];
+      announceMessage.target = MESSAGE_TARGET.DELETE_SERVICE;
+      announceMessage.buttons = BUTTON_STYLE.DELETION;
+      announceMessage.data = service;
+      this.messageService.announceMessage(announceMessage);
+    }
   }
 
   openServiceDetail(s: Service) {
@@ -223,8 +213,10 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   }
 
   openServiceControl(service: Service) {
-    this.serviceControlData = service;
-    this.isServiceControlOpen = true;
+    if (this.isActionEnable.get(service.service_id)){
+      this.serviceControlData = service;
+      this.isServiceControlOpen = true;
+    }
   }
 
   get isFirstLogin(): boolean {

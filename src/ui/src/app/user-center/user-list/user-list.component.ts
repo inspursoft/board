@@ -1,5 +1,4 @@
 import { Component, OnInit, OnDestroy } from "@angular/core";
-
 import { UserService } from "../user-service/user-service";
 import { User } from "../user";
 import { editModel } from "../user-new-edit/user-new-edit.component"
@@ -9,7 +8,6 @@ import { Subscription } from "rxjs/Subscription";
 import { BUTTON_STYLE } from "app/shared/shared.const"
 import { AppInitService } from "../../app.init.service";
 import { ActivatedRoute } from "@angular/router";
-
 
 @Component({
   selector: "user-list",
@@ -21,20 +19,15 @@ export class UserList implements OnInit, OnDestroy {
   _deleteSubscription: Subscription;
   userListData: Array<User> = Array<User>();
   userListErrMsg: string = "";
-
   curUser: User;
   curEditModel: editModel = editModel.emNew;
   showNewUser: boolean = false;
   setUserSystemAdminWIP: boolean = false;
   isInLoading: boolean = false;
-  checkboxRevertInfo: {isNeeded: boolean; value: boolean;};
-
   totalRecordCount: number;
   pageIndex: number = 1;
   pageSize: number = 15;
-  
   authMode: string = '';
-
   currentUserID: number;
 
   constructor(
@@ -111,7 +104,7 @@ export class UserList implements OnInit, OnDestroy {
     }
   }
 
-  setUserSystemAdmin(user: User) {
+  setUserSystemAdmin(user: User, $event:MouseEvent) {
     this.setUserSystemAdminWIP = true;
     let oldUserSystemAdmin = user.user_system_admin;
     this.userService.setUserSystemAdmin(user.user_id, oldUserSystemAdmin == 1 ? 0 : 1)
@@ -129,7 +122,7 @@ export class UserList implements OnInit, OnDestroy {
       })
       .catch(err => {
         this.setUserSystemAdminWIP = false;
-        this.checkboxRevertInfo = {isNeeded: true, value: oldUserSystemAdmin == 1};
+        ($event.srcElement as HTMLInputElement).checked = oldUserSystemAdmin == 1;
         this.messageService.dispatchError(err);
       })
   }

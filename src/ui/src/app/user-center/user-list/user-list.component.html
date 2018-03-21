@@ -23,11 +23,9 @@
         <clr-dg-cell>{{user.user_creation_time | date:'yyyy/MM/dd HH:mm:ss'}}</clr-dg-cell>
         <clr-dg-cell>
           <input type="checkbox"
-                 title=""
                  [disabled]="setUserSystemAdminWIP || user.user_id == currentUserID || user.user_deleted == 1"
                  [checked]="user.user_system_admin"
-                 [checkbox-revert]="checkboxRevertInfo"
-                 (change)="setUserSystemAdmin(user)">
+                 (change)="setUserSystemAdmin(user,$event)">
         </clr-dg-cell>
         <clr-dg-cell>
           <input type="checkbox"
