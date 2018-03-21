@@ -19,7 +19,6 @@ import { ValidateOnBlurDirective } from './directives/validate-onblur.directive'
 import { CsDropdownComponent } from "./cs-components-library/cs-dropdown/cs-dropdown.component";
 import { WebsocketService } from './websocket-service/websocket.service';
 import { CsSearchInput } from "./cs-components-library/cs-search-input/cs-search-input.component";
-import { CheckboxRevert } from "./directives/checkbox-revert.directive";
 import { CsInputComponent } from "./cs-components-library/cs-input/cs-input.component";
 import { CsInputArrayComponent } from "./cs-components-library/cs-input-array/cs-input-array.component";
 import { CreateImageComponent } from "../image/image-create/image-create.component";
@@ -53,7 +52,6 @@ import { SafePipe } from "./pipes/safe-pipe";
     CsInputComponent,
     CsInputArrayComponent,
     CsProgressComponent,
-    CheckboxRevert,
     SizePipe,
     SafePipe,
     CsGuideComponent,
@@ -78,7 +76,6 @@ import { SafePipe } from "./pipes/safe-pipe";
     CsInputArrayComponent,
     CsGuideComponent,
     CsProgressComponent,
-    CheckboxRevert,
     SizePipe,
     SafePipe
   ],
