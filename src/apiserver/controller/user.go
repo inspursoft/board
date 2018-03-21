@@ -60,14 +60,19 @@ func (u *UserController) GetUsersAction() {
 		return
 	}
 
+	users = paginatedUsers.UserList
+	for i := range users {
+		if isPaginated {
+			paginatedUsers.UserList[i].Password = ""
+		} else {
+			users[i].Password = ""
+		}
+	}
 	if isPaginated {
-		users = paginatedUsers.UserList
+		u.Data["json"] = paginatedUsers
+	} else {
+		u.Data["json"] = users
 	}
-
-	for _, u0 := range users {
-		u0.Password = ""
-	}
-	u.Data["json"] = users
 	u.ServeJSON()
 }
 
