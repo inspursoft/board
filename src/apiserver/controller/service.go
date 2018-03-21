@@ -182,10 +182,12 @@ func (p *ServiceController) DeployServiceTestAction() {
 }
 
 //
-func syncK8sStatus(serviceList []*model.ServiceStatus) error {
+func syncK8sStatus(serviceList []*model.ServiceStatusMO) error {
 	var err error
 	// synchronize service status with the cluster system
-	for _, serviceStatus := range serviceList {
+	for _, serviceStatusMO := range serviceList {
+		// Get serviceStatus from serviceStatusMO to adapt for updating services
+		serviceStatus := &serviceStatusMO.ServiceStatus
 		if (*serviceStatus).Status == stopped {
 			continue
 		}
