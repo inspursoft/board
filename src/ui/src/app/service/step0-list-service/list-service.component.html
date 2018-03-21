@@ -38,11 +38,10 @@
           <clr-dg-cell>{{service.service_creation_time | date: 'short'}}</clr-dg-cell>
           <clr-dg-cell>
             <input type="checkbox"
-                   id="chkPublic"
-                   [checkbox-revert]="checkboxRevertInfo"
+                   [id]="service.service_name"
                    [checked]="service.service_public === 1"
                    (click)="toggleServicePublic(service, $event)">
-            <label for="chkPublic"></label>
+            <label [for]="service.service_name"></label>
           </clr-dg-cell>
           <clr-dg-cell>
           <span [ngClass]="getStatusClass(service.service_status)">

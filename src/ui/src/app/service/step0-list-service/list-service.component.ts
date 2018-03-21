@@ -20,7 +20,6 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   isInLoading: boolean = false;
   isServiceControlOpen: boolean = false;
   serviceControlData: Service;
-  checkboxRevertInfo: {isNeeded: boolean; value: number;};
   _subscription: Subscription;
   _subscriptionInterval: Subscription;
   totalRecordCount: number;
@@ -138,7 +137,6 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
 
   updateActionEnable() {
     this.services.forEach((service: Service) => {
-      console.log(this.projectList);
       if (this.projectList.find((value) => value.project_id == service.service_project_id)) {
         this.isActionEnable.set(service.service_id, true);
       } else {
@@ -168,7 +166,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
     }
   }
 
-  toggleServicePublic(service: Service): void {
+  toggleServicePublic(service: Service, $event:MouseEvent): void {
     let toggleMessage = new Message();
     let oldServicePublic = service.service_public;
     this.k8sService
@@ -179,8 +177,8 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
         this.messageService.inlineAlertMessage(toggleMessage);
       })
       .catch(err => {
-        this.messageService.dispatchError(err, '');
-        this.checkboxRevertInfo = {isNeeded: true, value: oldServicePublic};
+        ($event.srcElement as HTMLInputElement).checked = oldServicePublic == 1;
+        this.messageService.dispatchError(err);
       });
   }
 
