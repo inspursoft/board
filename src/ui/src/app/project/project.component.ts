@@ -1,37 +1,38 @@
-import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { AppInitService } from '../app.init.service';
 import { MessageService } from '../shared/message-service/message.service';
 import { Message } from '../shared/message-service/message';
-import { MESSAGE_TARGET, BUTTON_STYLE, GUIDE_STEP } from '../shared/shared.const';
+import { BUTTON_STYLE, GUIDE_STEP, MESSAGE_TARGET } from '../shared/shared.const';
 import { Project } from './project';
 import { ProjectService } from './project.service';
 import { CreateProjectComponent } from './create-project/create-project.component';
 import { MemberComponent } from './member/member.component';
 import { ActivatedRoute } from "@angular/router";
+import { ClrDatagridSortOrder, ClrDatagridStateInterface } from "@clr/angular";
 
 @Component({
   selector: 'project',
   templateUrl: 'project.component.html'
 })
 export class ProjectComponent implements OnInit, OnDestroy {
+  @ViewChild(CreateProjectComponent) createProjectModal;
+  @ViewChild(MemberComponent) memberModal;
+  _subscription: Subscription;
   totalRecordCount: number;
   pageIndex: number = 1;  
   pageSize: number = 15;
   projects: Project[];
-
-  @ViewChild(CreateProjectComponent) createProjectModal;
-  @ViewChild(MemberComponent) memberModal;
-
-  _subscription: Subscription;
   currentUser: {[key: string]: any};
   isInLoading:boolean = false;
+  descSort = ClrDatagridSortOrder.DESC;
+  oldStateInfo: ClrDatagridStateInterface;
   constructor(
     private activatedRoute:ActivatedRoute,
     private appInitService: AppInitService,
     private projectService: ProjectService,
-    private messageService: MessageService
-  ){
+    private messageService: MessageService,
+    private changeDetectorRef: ChangeDetectorRef) {
     this._subscription = this.messageService.messageConfirmed$.subscribe(m=>{
       let confirmationMessage = <Message>m;
       if(confirmationMessage) {
@@ -42,7 +43,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
             let inlineMessage = new Message();
             inlineMessage.message = 'PROJECT.SUCCESSFUL_DELETE_PROJECT';
             this.messageService.inlineAlertMessage(inlineMessage);
-            this.retrieve();
+            this.retrieve(this.oldStateInfo);
           })
           .catch(err=>this.messageService.dispatchError(err, ''));
       }
@@ -63,21 +64,24 @@ export class ProjectComponent implements OnInit, OnDestroy {
       this._subscription.unsubscribe();
     }
   }
-  retrieve(): void {
-    setTimeout(()=>{
+
+  retrieve(state: ClrDatagridStateInterface): void {
+    if (state) {
       this.isInLoading = true;
+      this.oldStateInfo = state;
       this.projectService
-        .getProjects('', this.pageIndex, this.pageSize)
-        .then(paginatedProjects=>{
+        .getProjects('', this.pageIndex, this.pageSize, state.sort.by as string, state.sort.reverse)
+        .then(paginatedProjects => {
           this.totalRecordCount = paginatedProjects.pagination.total_count;
           this.projects = paginatedProjects.project_list;
           this.isInLoading = false;
         })
-        .catch(err=>{
+        .catch(err => {
           this.messageService.dispatchError(err, 'PROJECT.FAILED_TO_RETRIEVE_PROJECTS');
           this.isInLoading = false;
         });
-    });
+      this.changeDetectorRef.detectChanges();
+    }
   }
 
   createProject(): void {
