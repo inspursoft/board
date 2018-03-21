@@ -118,7 +118,10 @@ loopNode:
 
 		nodes.TimeListId = (*serviceDashboardID)[*minuteCounterI]
 		nodes.InternalIp = v.Status.Addresses[1].Address
-		cpu, mem := getNodePs(v.Status.Addresses[1].Address)
+		cpu, mem, err := getNodePs(v.Status.Addresses[1].Address)
+		if err != nil {
+			return err
+		}
 		s := GetNodeMachine(v.Status.Addresses[1].Address)
 		a, _ := s.(struct {
 			outCapacity int64
@@ -170,7 +173,7 @@ func GetNodeMachine(ip string) interface{} {
 }
 
 //get nodes ps info
-func getNodePs(ip string) (cpu float32, mem float32) {
+func getNodePs(ip string) (cpu float32, mem float32, err error) {
 	var y []v2.ProcessInfo
 	var r http.Request
 	r.ParseForm()
@@ -183,9 +186,22 @@ func getNodePs(ip string) (cpu float32, mem float32) {
 	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	util.Logger.SetFatal(ip)
 	var resp *http.Response
-	resp, _ = http.DefaultClient.Do(request)
-	body, _ := ioutil.ReadAll(resp.Body)
-	json.Unmarshal(body, &y)
+	resp, err = http.DefaultClient.Do(request)
+	if err != nil {
+		util.Logger.SetError("Request node ps info error: %+v", err)
+		return
+	}
+	var body []byte
+	body, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		util.Logger.SetError("Read response body error: %+v", err)
+		return
+	}
+	err = json.Unmarshal(body, &y)
+	if err != nil {
+		util.Logger.SetError("Unmarshal response body error: %+v", err)
+		return
+	}
 	var c, m float32
 
 	for _, v := range y {
