@@ -470,6 +470,18 @@ func (p *ServiceController) DeleteServiceAction() {
 	if !isSuccess {
 		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Failed to delete service with ID: %d", serviceID))
 	}
+
+	//delete repo files of the service
+	var serviceFiles pushObject
+	serviceFiles.Items = []string{filepath.Join(s.ProjectName, strconv.Itoa(int(serviceID)), serviceFilename),
+		filepath.Join(s.ProjectName, strconv.Itoa(int(serviceID)), deploymentFilename)}
+	serviceFiles.Message = fmt.Sprintf("Delete yaml files for project %s service %d", s.ProjectName, serviceID)
+	ret, msg, err := InternalCleanObjects(&serviceFiles, &(p.baseController))
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	logs.Info("Internal push deployment object: %d %s", ret, msg)
 }
 
 // API to deploy service
