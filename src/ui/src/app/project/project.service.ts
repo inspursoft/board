@@ -8,14 +8,16 @@ export class ProjectService {
   constructor(private http: HttpClient) {
   }
 
-  getProjects(projectName?: string, pageIndex?: number, pageSize?: number): Promise<any> {
+  getProjects(projectName: string, pageIndex: number, pageSize: number, sortBy: string, isReverse: boolean): Promise<any> {
     return this.http
       .get('/api/v1/projects', {
         observe: "response",
         params: {
           'project_name': projectName,
           'page_index': pageIndex.toString(),
-          'page_size': pageSize.toString()
+          'page_size': pageSize.toString(),
+          "order_field": sortBy,
+          "order_asc": isReverse ? "0" : "1"
         }
       })
       .toPromise()

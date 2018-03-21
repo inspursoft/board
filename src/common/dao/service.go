@@ -63,7 +63,16 @@ func DeleteService(service model.ServiceStatus) (int64, error) {
 }
 
 func generateServiceStatusSQL(query model.ServiceStatus, userID int64) (string, []interface{}) {
-	sql := `select distinct s.id, s.name, s.project_name, u.username as owner_name, s.owner_id, s.creation_time, s.status, s.public
+	sql := `select distinct s.id, s.name, s.project_id, s.project_name, u.username as owner_name, s.owner_id, s.creation_time, s.status, s.public,
+	(select if(count(s0.id), 1, 0) from service_status s0 where s0.deleted = 0 and s0.id = s.id and s0.project_id in (
+		select p0.id
+		from project p0
+		left join project_member pm0 on p0.id = pm0.project_id
+		left join user u0 on u0.id = pm0.user_id
+			where p0.deleted = 0 and u0.deleted = 0 and u0.id = ?) or exists (
+				select *
+			  from user u0
+			  where u0.deleted = 0 and u0.system_admin = 1 and u0.id = ?)) as is_member
 	from service_status s 
 		left join project_member pm on s.project_id = pm.project_id
 		left join project p on p.id = pm.project_id
@@ -74,7 +83,7 @@ func generateServiceStatusSQL(query model.ServiceStatus, userID int64) (string, 
 		or exists (select * from user u where u.deleted = 0 and u.system_admin = 1 and u.id = ?))`
 
 	params := make([]interface{}, 0)
-	params = append(params, userID, userID)
+	params = append(params, userID, userID, userID, userID)
 
 	if query.Name != "" {
 		params = append(params, "%"+query.Name+"%")
@@ -83,8 +92,8 @@ func generateServiceStatusSQL(query model.ServiceStatus, userID int64) (string, 
 	return sql, params
 }
 
-func queryServiceStatus(sql string, params []interface{}) ([]*model.ServiceStatus, error) {
-	serviceList := make([]*model.ServiceStatus, 0)
+func queryServiceStatus(sql string, params []interface{}) ([]*model.ServiceStatusMO, error) {
+	serviceList := make([]*model.ServiceStatusMO, 0)
 	_, err := orm.NewOrm().Raw(sql, params).QueryRows(&serviceList)
 	if err != nil {
 		return nil, err
@@ -92,7 +101,7 @@ func queryServiceStatus(sql string, params []interface{}) ([]*model.ServiceStatu
 	return serviceList, nil
 }
 
-func GetServiceData(query model.ServiceStatus, userID int64) ([]*model.ServiceStatus, error) {
+func GetServiceData(query model.ServiceStatus, userID int64) ([]*model.ServiceStatusMO, error) {
 	sql, params := generateServiceStatusSQL(query, userID)
 	return queryServiceStatus(sql, params)
 }

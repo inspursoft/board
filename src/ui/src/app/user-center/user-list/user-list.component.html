@@ -11,9 +11,15 @@
   <div class="col-xs-12">
     <clr-datagrid (clrDgRefresh)="refreshData($event)" [clrDgLoading]="isInLoading">
       <clr-dg-placeholder>{{userListErrMsg | translate}}</clr-dg-placeholder>
-      <clr-dg-column>{{'USER_CENTER.LIST_COL_USERNAME' | translate}}</clr-dg-column>
+      <clr-dg-column [clrDgField]="'NAME'"
+                     [clrDgSortOrder]="descSort">
+        {{'USER_CENTER.LIST_COL_USERNAME' | translate}}
+      </clr-dg-column>
       <clr-dg-column>{{'USER_CENTER.LIST_COL_EMAIL' | translate}}</clr-dg-column>
-      <clr-dg-column>{{'USER_CENTER.LIST_COL_CREATE_DATE' | translate}}</clr-dg-column>
+      <clr-dg-column [clrDgField]="'CREATE_TIME'"
+                     [clrDgSortOrder]="descSort">
+        {{'USER_CENTER.LIST_COL_CREATE_DATE' | translate}}
+      </clr-dg-column>
       <clr-dg-column>{{'USER_CENTER.LIST_COL_SYSTEM_ADMIN' | translate}}</clr-dg-column>
       <clr-dg-column>{{'USER_CENTER.LIST_COL_DELETE' | translate}}</clr-dg-column>
       <clr-dg-column>{{'USER_CENTER.LIST_COL_OPERATION' | translate}}</clr-dg-column>
