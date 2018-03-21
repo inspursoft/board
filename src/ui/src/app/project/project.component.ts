@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { AppInitService } from '../app.init.service';
 import { MessageService } from '../shared/message-service/message.service';
@@ -22,7 +22,6 @@ export class ProjectComponent implements OnInit, OnDestroy {
 
   @ViewChild(CreateProjectComponent) createProjectModal;
   @ViewChild(MemberComponent) memberModal;
-  checkboxRevertInfo: {isNeeded: boolean; value: boolean;};
 
   _subscription: Subscription;
   currentUser: {[key: string]: any};
@@ -100,19 +99,19 @@ export class ProjectComponent implements OnInit, OnDestroy {
     this.messageService.announceMessage(announceMessage);
   }
 
-  toggleProjectPublic(p: Project): void {
-    let oldPublic = p.project_public;
-    let toggleMessage = new Message();
+  toggleProjectPublic(project: Project, $event:MouseEvent): void {
+    let oldPublic = project.project_public;
     this.projectService
-      .togglePublicity(p.project_id, p.project_public === 1? 0 : 1)
+      .togglePublicity(project.project_id, project.project_public === 1? 0 : 1)
       .then(()=>{
-        p.project_public = oldPublic == 1 ? 0 : 1;
+        let toggleMessage = new Message();
         toggleMessage.message = 'PROJECT.SUCCESSFUL_TOGGLE_PROJECT'; 
         this.messageService.inlineAlertMessage(toggleMessage);
+        project.project_public = oldPublic === 1 ? 0 : 1;
       })
       .catch(err=>{
-        this.checkboxRevertInfo = {isNeeded:true, value:oldPublic === 1};
-        this.messageService.dispatchError(err, '');
+        ($event.srcElement as HTMLInputElement).checked = oldPublic === 1;
+        this.messageService.dispatchError(err);
       });
   }
 
