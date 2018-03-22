@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Injector, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, Injector, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { Service } from '../service';
 import { ClrDatagridSortOrder, ClrDatagridStateInterface } from '@clr/angular';
@@ -35,7 +35,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   descSort = ClrDatagridSortOrder.DESC;
   oldStateInfo: ClrDatagridStateInterface;
 
-  constructor(protected injector: Injector, private changeDetectorRef: ChangeDetectorRef) {
+  constructor(protected injector: Injector) {
     super(injector);
     this._subscriptionInterval = Observable.interval(10000).subscribe(() => this.retrieve(true, this.oldStateInfo));
     this.isActionWIP = new Map<number, boolean>();
@@ -118,20 +118,21 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
 
   retrieve(isAuto: boolean, stateInfo: ClrDatagridStateInterface): void {
     if (this.isNormalStatus && stateInfo) {
-      this.isInLoading = !isAuto;
-      this.oldStateInfo = stateInfo;
-      this.k8sService.getServices(this.pageIndex, this.pageSize, stateInfo.sort.by as string, stateInfo.sort.reverse)
-        .then(paginatedServices => {
-          this.totalRecordCount = paginatedServices["pagination"]["total_count"];
-          this.services = paginatedServices["service_status_list"];
-          this.isInLoading = false;
-        })
-        .catch(err => {
-          this.messageService.dispatchError(err);
-          this.isInLoading = false;
-        });
-      this.changeDetectorRef.detectChanges();
-      }
+      setTimeout(()=>{
+        this.isInLoading = !isAuto;
+        this.oldStateInfo = stateInfo;
+        this.k8sService.getServices(this.pageIndex, this.pageSize, stateInfo.sort.by as string, stateInfo.sort.reverse)
+          .then(paginatedServices => {
+            this.totalRecordCount = paginatedServices["pagination"]["total_count"];
+            this.services = paginatedServices["service_status_list"];
+            this.isInLoading = false;
+          })
+          .catch(err => {
+            this.messageService.dispatchError(err);
+            this.isInLoading = false;
+          });
+      });
+    }
   }
 
   getServiceStatus(status: SERVICE_STATUS): string {

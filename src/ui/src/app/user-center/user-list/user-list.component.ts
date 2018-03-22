@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
+import { Component, OnDestroy, OnInit } from "@angular/core";
 import { UserService } from "../user-service/user-service";
 import { User } from "../user";
 import { editModel } from "../user-new-edit/user-new-edit.component"
@@ -37,8 +37,7 @@ export class UserList implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private userService: UserService,
     private appInitService: AppInitService,
-    private messageService: MessageService,
-    private changeDetectorRef: ChangeDetectorRef) {
+    private messageService: MessageService) {
       this.authMode = this.appInitService.systemInfo['auth_mode'];
   }
 
@@ -64,19 +63,20 @@ export class UserList implements OnInit, OnDestroy {
 
   refreshData(stateInfo: ClrDatagridStateInterface): void {
     if (stateInfo) {
-      this.isInLoading = true;
-      this.oldStateInfo = stateInfo;
-      this.userService.getUserList('', this.pageIndex, this.pageSize, stateInfo.sort.by as string, stateInfo.sort.reverse)
-        .then(res => {
-          this.totalRecordCount = res["pagination"]["total_count"];
-          this.userListData = res["user_list"];
-          this.isInLoading = false;
-        })
-        .catch(err => {
-          this.messageService.dispatchError(err, '');
-          this.isInLoading = false;
-        });
-      this.changeDetectorRef.detectChanges();
+      setTimeout(()=>{
+        this.isInLoading = true;
+        this.oldStateInfo = stateInfo;
+        this.userService.getUserList('', this.pageIndex, this.pageSize, stateInfo.sort.by as string, stateInfo.sort.reverse)
+          .then(res => {
+            this.totalRecordCount = res["pagination"]["total_count"];
+            this.userListData = res["user_list"];
+            this.isInLoading = false;
+          })
+          .catch(err => {
+            this.messageService.dispatchError(err, '');
+            this.isInLoading = false;
+          });
+      });
     }
   }
 

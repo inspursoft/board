@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { AppInitService } from '../app.init.service';
 import { MessageService } from '../shared/message-service/message.service';
@@ -31,8 +31,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
     private activatedRoute:ActivatedRoute,
     private appInitService: AppInitService,
     private projectService: ProjectService,
-    private messageService: MessageService,
-    private changeDetectorRef: ChangeDetectorRef) {
+    private messageService: MessageService) {
     this._subscription = this.messageService.messageConfirmed$.subscribe(m=>{
       let confirmationMessage = <Message>m;
       if(confirmationMessage) {
@@ -66,22 +65,23 @@ export class ProjectComponent implements OnInit, OnDestroy {
   }
 
   retrieve(state: ClrDatagridStateInterface): void {
-    if (state) {
-      this.isInLoading = true;
-      this.oldStateInfo = state;
-      this.projectService
-        .getProjects('', this.pageIndex, this.pageSize, state.sort.by as string, state.sort.reverse)
-        .then(paginatedProjects => {
-          this.totalRecordCount = paginatedProjects.pagination.total_count;
-          this.projects = paginatedProjects.project_list;
-          this.isInLoading = false;
-        })
-        .catch(err => {
-          this.messageService.dispatchError(err, 'PROJECT.FAILED_TO_RETRIEVE_PROJECTS');
-          this.isInLoading = false;
-        });
-      this.changeDetectorRef.detectChanges();
-    }
+    setTimeout(() => {
+      if (state) {
+        this.isInLoading = true;
+        this.oldStateInfo = state;
+        this.projectService
+          .getProjects('', this.pageIndex, this.pageSize, state.sort.by as string, state.sort.reverse)
+          .then(paginatedProjects => {
+            this.totalRecordCount = paginatedProjects.pagination.total_count;
+            this.projects = paginatedProjects.project_list;
+            this.isInLoading = false;
+          })
+          .catch(err => {
+            this.messageService.dispatchError(err, 'PROJECT.FAILED_TO_RETRIEVE_PROJECTS');
+            this.isInLoading = false;
+          });
+      }
+    });
   }
 
   createProject(): void {
