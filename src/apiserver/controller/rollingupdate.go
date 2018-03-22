@@ -167,6 +167,17 @@ func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceAction() {
 		p.customAbort(http.StatusConflict, "Image's config is invalid.")
 	}
 
+	//Can not rollingupdate an uncompleted service
+	serviceName := p.GetString("service_name")
+	serviceStatus, err := service.GetServiceByProject(serviceName, projectName)
+	if err != nil {
+		p.internalError(err)
+	}
+	if serviceStatus.Status == uncompleted {
+		logs.Debug("Service is uncompleted, cannot be updated %s\n", serviceName)
+		p.customAbort(http.StatusMethodNotAllowed, "Service is in uncompleted")
+	}
+
 	var rollingUpdateConfig v1.ReplicationController
 	rollingUpdateConfig.Spec.Template = &v1.PodTemplateSpec{}
 	for index, container := range serviceConfig.Spec.Template.Spec.Containers {
@@ -214,4 +225,3 @@ func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceAction() {
 	}
 
 }
-
