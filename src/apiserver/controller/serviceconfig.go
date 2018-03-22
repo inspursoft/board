@@ -151,11 +151,13 @@ func (s *ConfigServiceStep) GetConfigExternalService() interface{} {
 		ProjectName         string                  `json:"project_name"`
 		ServiceName         string                  `json:"service_name"`
 		Instance            int                     `json:"instance"`
+		Public              int                     `json:"service_public"`
 		ExternalServiceList []model.ExternalService `json:"external_service_list"`
 	}{
 		ProjectName:         s.ProjectName,
 		ServiceName:         s.ServiceName,
 		Instance:            s.Instance,
+		Public:              s.Public,
 		ExternalServiceList: s.ExternalServiceList,
 	}
 }
