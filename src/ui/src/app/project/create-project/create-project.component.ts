@@ -15,7 +15,7 @@ import { Message } from '../../shared/message-service/message';
 })
 export class CreateProjectComponent {
 
-  _createProjectOpened: boolean;
+  _createProjectOpened: boolean = false;
   alertClosed: boolean;
   errorMessage: string;
 

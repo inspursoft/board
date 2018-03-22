@@ -166,6 +166,7 @@ input.base-image-radio {
 
 label.base-image-source {
   cursor: pointer;
+  margin-right: 6px;
 }
 
 div.board-registry-container {

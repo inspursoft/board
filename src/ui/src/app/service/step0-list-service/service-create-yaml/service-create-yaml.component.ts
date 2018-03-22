@@ -5,6 +5,7 @@ import { K8sService } from "../../service.k8s";
 import { MessageService } from "../../../shared/message-service/message.service";
 import { Project } from "../../../project/project";
 import { Service } from "../../service";
+import { AppInitService } from "../../../app.init.service";
 
 @Component({
   selector: 'service-create-yaml',
@@ -27,7 +28,8 @@ export class ServiceCreateYamlComponent implements OnInit {
 
   constructor(private k8sService: K8sService,
               private router: Router,
-              private messageService: MessageService) {
+              private messageService: MessageService,
+              private appInitService: AppInitService) {
     this.projectsList = Array<Project>();
     this.onCancelEvent = new EventEmitter<any>();
     this.filesDataMap = new Map<string, File>();
@@ -69,7 +71,7 @@ export class ServiceCreateYamlComponent implements OnInit {
   }
 
   clickSelectProject(project: Project) {
-    this.router.navigate(["/projects"]);
+    this.router.navigate(["/projects"],{queryParams: {token: this.appInitService.token}, fragment: "create"});
   }
 
   changeSelectProject(project: Project) {

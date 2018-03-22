@@ -8,4 +8,5 @@ export class Service {
   service_create_time: Date;
   service_public: number;
   service_status: number;
+  service_is_member:number;
 }
