@@ -139,9 +139,10 @@ func (s *ConfigServiceStep) GetConfigContainerList() interface{} {
 	}
 }
 
-func (s *ConfigServiceStep) ConfigExternalService(serviceName string, instance int, externalServiceList []model.ExternalService) *ConfigServiceStep {
+func (s *ConfigServiceStep) ConfigExternalService(serviceName string, instance int, public int, externalServiceList []model.ExternalService) *ConfigServiceStep {
 	s.ServiceName = serviceName
 	s.Instance = instance
+	s.Public = public
 	s.ExternalServiceList = externalServiceList
 	return s
 }
@@ -341,6 +342,12 @@ func (sc *ServiceConfigController) configExternalService(key string, configServi
 		return
 	}
 
+	public, err := sc.GetInt("service_public")
+	if err != nil {
+		sc.internalError(err)
+		return
+	}
+
 	var externalServiceList []model.ExternalService
 	err = json.Unmarshal(reqData, &externalServiceList)
 	if err != nil {
@@ -355,7 +362,7 @@ func (sc *ServiceConfigController) configExternalService(key string, configServi
 		}
 	}
 
-	SetConfigServiceStep(key, configServiceStep.ConfigExternalService(serviceName, instance, externalServiceList))
+	SetConfigServiceStep(key, configServiceStep.ConfigExternalService(serviceName, instance, public, externalServiceList))
 }
 
 func (sc *ServiceConfigController) checkServiceDuplicateName(serviceName string) (bool, error) {
