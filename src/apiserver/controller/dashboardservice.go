@@ -76,7 +76,7 @@ func (s *DashboardServiceController) GetServiceData() {
 	}
 
 	query := model.Project{}
-	projectList, err := service.GetProjectsByUser(query, s.currentUser.ID)
+	projectList, err := service.GetProjectsByMember(query, s.currentUser.ID)
 	if err != nil {
 		s.internalError(err)
 		return
@@ -89,6 +89,10 @@ func (s *DashboardServiceController) GetServiceData() {
 			return
 		}
 		if svcQuery == nil {
+			continue
+		}
+		if svcQuery.Public == 1 {
+			serviceList = append(serviceList, svc)
 			continue
 		}
 		for _, project := range projectList {
