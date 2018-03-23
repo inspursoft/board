@@ -13,6 +13,7 @@ import { ClrDatagridSortOrder, ClrDatagridStateInterface } from "@clr/angular";
 
 @Component({
   selector: 'project',
+  styleUrls: ["./project.component.css"],
   templateUrl: 'project.component.html'
 })
 export class ProjectComponent implements OnInit, OnDestroy {
@@ -89,18 +90,22 @@ export class ProjectComponent implements OnInit, OnDestroy {
   }
 
   editProjectMember(p: Project): void {
-    this.memberModal.openModal(p);
+    if (this.isSystemAdminOrOwner(p)) {
+      this.memberModal.openModal(p);
+    }
   }
 
   confirmToDeleteProject(p: Project): void {
-    let announceMessage = new Message();
-    announceMessage.title = 'PROJECT.DELETE_PROJECT';
-    announceMessage.message = 'PROJECT.CONFIRM_TO_DELETE_PROJECT';
-    announceMessage.params = [p.project_name];
-    announceMessage.target = MESSAGE_TARGET.DELETE_PROJECT;
-    announceMessage.buttons = BUTTON_STYLE.DELETION;
-    announceMessage.data = p;
-    this.messageService.announceMessage(announceMessage);
+    if (this.isSystemAdminOrOwner(p)) {
+      let announceMessage = new Message();
+      announceMessage.title = 'PROJECT.DELETE_PROJECT';
+      announceMessage.message = 'PROJECT.CONFIRM_TO_DELETE_PROJECT';
+      announceMessage.params = [p.project_name];
+      announceMessage.target = MESSAGE_TARGET.DELETE_PROJECT;
+      announceMessage.buttons = BUTTON_STYLE.DELETION;
+      announceMessage.data = p;
+      this.messageService.announceMessage(announceMessage);
+    }
   }
 
   toggleProjectPublic(project: Project, $event:MouseEvent): void {
@@ -125,6 +130,14 @@ export class ProjectComponent implements OnInit, OnDestroy {
 
   get guideStep(): GUIDE_STEP{
     return this.appInitService.guideStep;
+  }
+
+  isSystemAdminOrOwner(project: Project): boolean {
+    if (this.appInitService.currentUser) {
+      return this.appInitService.currentUser["user_system_admin"] == 1 ||
+        project.project_owner_id == this.appInitService.currentUser["user_id"];
+    }
+    return false;
   }
 
   guideNextStep(step:GUIDE_STEP){
