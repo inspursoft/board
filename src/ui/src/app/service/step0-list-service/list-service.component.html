@@ -89,7 +89,7 @@
               <clr-icon shape="wrench"
                         class="action"
                         (click)="openServiceControl(service)"
-                        [ngClass]="{'disabled':service.service_is_member == 0}">
+                        [ngClass]="{'disabled':service.service_is_member == 0 || service.service_status != 1}">
               </clr-icon>
             </a>
           </clr-dg-cell>
