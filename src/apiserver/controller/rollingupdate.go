@@ -115,6 +115,17 @@ func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceAction() {
 		p.customAbort(http.StatusConflict, "Image's config is invalid.")
 	}
 
+	//Can not rollingupdate an uncompleted service
+	serviceName := p.GetString("service_name")
+	serviceStatus, err := service.GetServiceByProject(serviceName, projectName)
+	if err != nil {
+		p.internalError(err)
+	}
+	if serviceStatus.Status == uncompleted {
+		logs.Debug("Service is uncompleted, cannot be updated %s\n", serviceName)
+		p.customAbort(http.StatusMethodNotAllowed, "Service is in uncompleted")
+	}
+
 	var rollingUpdateConfig v1.ReplicationController
 	rollingUpdateConfig.Spec.Template = &v1.PodTemplateSpec{}
 	for index, container := range serviceConfig.Spec.Template.Spec.Containers {
@@ -154,25 +165,22 @@ func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceAction() {
 	}
 	logs.Debug("New updated deployment: %+v\n", deployData)
 
-	serviceName := deployData.ObjectMeta.Name
-	serviceInfo, err := service.GetServiceByProject(serviceName, projectName)
-	if err != nil {
-		logs.Error("Failed to get project by service name: %+v", err)
-		p.internalError(err)
-	}
-	if serviceInfo == nil {
-		logs.Error("Failed to find service info by name: %s", serviceName)
-		p.customAbort(http.StatusNotFound, fmt.Sprintf("No found service by name: %s", serviceName))
-	}
-
 	//update deployment yaml file
 	repoPath := p.generateRepoPathByProjectName(projectName)
-	err = service.GenerateYamlFile(filepath.Join(repoPath, serviceProcess, strconv.Itoa(int(serviceInfo.ID)), deploymentFilename), deployData)
+	err = service.RollingUpdateDeploymentYaml(repoPath, deployData)
 	if err != nil {
 		logs.Error("Failed to update deployment yaml file:%+v\n", err)
 		p.internalError(err)
 	}
 
+	serviceInfo, err := service.GetServiceByProject(serviceName, projectName)
+	if err != nil {
+		p.internalError(err)
+	}
+	if serviceInfo == nil {
+		logs.Error("Failed to get service info by service name: %s and project name: %s", serviceName, projectName)
+		p.internalError(err)
+	}
 	var pushObject pushObject
 	pushObject.UserID = p.currentUser.ID
 	pushObject.FileName = deploymentFilename

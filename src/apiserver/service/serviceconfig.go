@@ -127,8 +127,8 @@ func GetPaginatedServiceList(name string, userID int64, pageIndex int, pageSize 
 }
 
 func DeleteService(serviceID int64) (bool, error) {
-	s := model.ServiceStatus{ID: serviceID, Deleted: 1}
-	_, err := dao.UpdateService(s, "deleted")
+	s := model.ServiceStatus{ID: serviceID}
+	_, err := dao.DeleteService(s)
 	if err != nil {
 		return false, err
 	}
