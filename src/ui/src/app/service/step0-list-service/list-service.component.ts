@@ -203,7 +203,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   }
 
   openServiceControl(service: Service) {
-    if (service.service_is_member == 1){
+    if (service.service_is_member == 1 && service.service_status == 1){
       this.serviceControlData = service;
       this.isServiceControlOpen = true;
     }
