@@ -379,6 +379,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
 
   updateFileList(): Promise<any> {
     this.isNewImageAlertOpen = false;
+    this.filesList.clear();
     let formFileList: FormData = new FormData();
     formFileList.append('project_name', this.customerNewImage.project_name);
     formFileList.append('image_name', this.customerNewImage.image_name);
