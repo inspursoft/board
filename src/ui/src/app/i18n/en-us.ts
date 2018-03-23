@@ -326,6 +326,7 @@ export const LANG_EN_US = {
     "STEP_4_SERVICE":"Service",
     "STEP_4_SELECT_SERVICE":"Select Service...",
     "STEP_4_SERVICE_NAME_EXIST":"Service name already exist",
+    "STEP_4_PUBLIC":"Publicity",
     "STEP_6_DEPLOY":"Deploy",
     "STEP_6_JOURNAL":"Journal",
     "STEP_6_CANCEL":"Cancel",

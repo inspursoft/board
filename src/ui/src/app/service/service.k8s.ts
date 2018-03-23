@@ -50,7 +50,8 @@ export class K8sService {
         phase: config.phase,
         project_id: config.project_id.toString(),
         service_name: config.service_name,
-        instance: config.instance.toString()
+        instance: config.instance.toString(),
+        service_public:config.service_public.toString()
       }
     }).toPromise()
   }

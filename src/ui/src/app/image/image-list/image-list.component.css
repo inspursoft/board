@@ -60,3 +60,11 @@ label.enable:hover{
 div.build-btn-container{
   display: flex;
 }
+
+clr-icon.action.disabled {
+  color: silver;
+}
+
+clr-icon.action.disabled:hover {
+  cursor: not-allowed;
+}

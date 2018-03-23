@@ -326,6 +326,7 @@ export const LANG_ZH_CN = {
     "STEP_4_SERVICE":"服务",
     "STEP_4_SELECT_SERVICE":"选择服务...",
     "STEP_4_SERVICE_NAME_EXIST":"服务名称已经存在",
+    "STEP_4_PUBLIC":"公开性",
     "STEP_6_DEPLOY":"部署",
     "STEP_6_JOURNAL":"日志",
     "STEP_6_CANCEL":"取消",
