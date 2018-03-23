@@ -486,9 +486,10 @@ func (p *ServiceController) DeleteServiceAction() {
 	}
 
 	//delete repo files of the service
+	repoPath := p.generateRepoPathByProjectName(s.ProjectName)
 	var serviceFiles pushObject
-	serviceFiles.Items = []string{filepath.Join(s.ProjectName, strconv.Itoa(int(serviceID)), serviceFilename),
-		filepath.Join(s.ProjectName, strconv.Itoa(int(serviceID)), deploymentFilename)}
+	serviceFiles.Items = []string{filepath.Join(repoPath, serviceProcess, strconv.Itoa(int(serviceID)), serviceFilename),
+		filepath.Join(repoPath, serviceProcess, strconv.Itoa(int(serviceID)), deploymentFilename)}
 	serviceFiles.Message = fmt.Sprintf("Delete yaml files for project %s service %d", s.ProjectName, serviceID)
 	ret, msg, err := InternalCleanObjects(&serviceFiles, &(p.baseController))
 	if err != nil {

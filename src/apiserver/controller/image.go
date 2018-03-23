@@ -337,6 +337,26 @@ func (p *ImageController) BuildImageAction() {
 		return
 	}
 
+	//move the upload directory
+	tempPath := filepath.Join(repoPath, imageProcess, wrapStringWithSymbol(p.currentUser.Username))
+	tempUploadPath := filepath.Join(tempPath, "upload")
+	if _, err = os.Stat(tempUploadPath); err == nil {
+		dstUploadPath := filepath.Join(repoPath, imageProcess, reqImageConfig.ImageName,
+			reqImageConfig.ImageTag, "upload")
+		err = os.Rename(tempUploadPath, dstUploadPath)
+		if err != nil {
+			logs.Error("Failed to move from %s to %s", tempUploadPath, dstUploadPath)
+			p.internalError(err)
+			return
+		}
+		err = os.RemoveAll(tempPath)
+		if err != nil {
+			logs.Error("Failed to remove temp path: %s", tempPath)
+			p.internalError(err)
+			return
+		}
+	}
+
 	//push to git
 	var pushobject pushObject
 	pushobject.UserID = p.currentUser.ID
@@ -514,6 +534,16 @@ func (p *ImageController) ConfigCleanAction() {
 	}
 
 	repoPath := p.generateRepoPathByProject(currentProject)
+
+	//remove upload temp directory
+	tempPath := filepath.Join(repoPath, imageProcess, wrapStringWithSymbol(p.currentUser.Username))
+	err = os.RemoveAll(tempPath)
+	if err != nil {
+		logs.Error("Failed to remove temp path: %s", tempPath)
+		p.internalError(err)
+		return
+	}
+
 	configPath := filepath.Join(repoPath, imageProcess, strings.TrimSpace(imageName), strings.TrimSpace(imageTag))
 
 	// Update git repo
@@ -1044,4 +1074,39 @@ func (p *ImageController) GetImageRegistryAction() {
 	logs.Info("The image registry is %s", registryAddr)
 	p.Data["json"] = registryAddr
 	p.ServeJSON()
+}
+
+// API to reset build image temp
+func (p *ImageController) ResetBuildImageTempAction() {
+	projectName := p.GetString("project_name")
+
+	currentProject, err := service.GetProject(model.Project{Name: projectName}, "name")
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if currentProject == nil {
+		p.customAbort(http.StatusBadRequest, "Invalid project name.")
+		return
+	}
+
+	isMember, err := service.IsProjectMember(currentProject.ID, p.currentUser.ID)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	if !(p.isSysAdmin || isMember) {
+		p.customAbort(http.StatusForbidden, "Insufficient privileges to build image.")
+		return
+	}
+
+	repoPath := p.generateRepoPathByProject(currentProject)
+	tempPath := filepath.Join(repoPath, imageProcess, wrapStringWithSymbol(p.currentUser.Username))
+	err = os.RemoveAll(tempPath)
+	if err != nil {
+		logs.Error("Failed to remove temp path: %s", tempPath)
+		p.internalError(err)
+		return
+	}
 }

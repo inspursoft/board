@@ -23,6 +23,10 @@ type FileUploadController struct {
 	toFilePath string
 }
 
+func wrapStringWithSymbol(content string) string {
+	return "___" + content + "___"
+}
+
 func (f *FileUploadController) Prepare() {
 	user := f.getCurrentUser()
 	if user == nil {
@@ -71,7 +75,7 @@ func (f *FileUploadController) resolveFilePath() {
 			f.customAbort(http.StatusForbidden, "Not member to the current project with provided ID.")
 			return
 		}
-		f.toFilePath = filepath.Join(imageProcess, reqUploadFile.ImageName, reqUploadFile.TagName, "upload")
+		f.toFilePath = filepath.Join(imageProcess, wrapStringWithSymbol(f.currentUser.Username), "upload")
 	}
 }
 

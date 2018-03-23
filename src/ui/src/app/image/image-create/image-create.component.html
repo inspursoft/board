@@ -145,7 +145,7 @@
                       [inputLabel]="'IMAGE.CREATE_IMAGE_UPLOAD_ARCHIVES' | translate"
                       [disabled]="isBuildImageWIP"
                       [simpleFiled]="uploadCopyToPath"
-                      (onCheck)="uploadCopyToPath = $event;">
+                      (onCheck)="uploadCopyToPath = $event;updateFileListAndPreviewInfo()">
             </cs-input>
             <div class="line-container base-margin-top">
               <label class="base-text">{{"IMAGE.CREATE_IMAGE_UPLOAD_FILE_LIST" | translate}}:</label>
