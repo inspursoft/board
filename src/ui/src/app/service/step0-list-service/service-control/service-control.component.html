@@ -14,7 +14,7 @@
         {{"SERVICE.SERVICE_CONTROL_SCALE" | translate}}
       </button>
       <button class="btn"
-              [disabled]="isActionInWIP"
+              [disabled]="isActionInWIP || service.service_status != 1"
               [ngClass]="{'btn-primary':actionMethod == 1}"
               (click)="actionMethod = 1;alertMessage = '';getServiceImages()">
         {{"SERVICE.SERVICE_CONTROL_UPDATE" | translate}}
