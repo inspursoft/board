@@ -252,7 +252,6 @@ export class UIServiceStep4 extends UIServiceStepBase {
       postData.push(value.uiToServer());
     });
     result.postData = postData;
-    console.log(result);
     return result;
   }
 
