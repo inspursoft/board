@@ -467,20 +467,12 @@ func cleanGitImageTag(imageName string, imageTag string, projectName string, p *
 }
 
 func (p *ImageController) ConfigCleanAction() {
-	reqData, err := p.resolveBody()
-	if err != nil {
-		p.internalError(err)
-		return
-	}
+	imageName := strings.TrimSpace(p.GetString("image_name"))
+	imageTag := strings.TrimSpace(p.GetString("image_tag"))
+	projectName := strings.TrimSpace(p.GetString("project_name"))
+	logs.Debug("clean config %s %s %s", projectName, imageName, imageTag)
 
-	var reqImageIndex model.ImageIndex
-	err = json.Unmarshal(reqData, &reqImageIndex)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	currentProject, err := service.GetProject(model.Project{Name: reqImageIndex.ProjectName}, "name")
+	currentProject, err := service.GetProject(model.Project{Name: projectName}, "name")
 	if err != nil {
 		p.internalError(err)
 		return
@@ -501,18 +493,16 @@ func (p *ImageController) ConfigCleanAction() {
 		return
 	}
 
-	configPath := filepath.Join(repoPath(), strings.TrimSpace(reqImageIndex.ProjectName),
-		strings.TrimSpace(reqImageIndex.ImageName), strings.TrimSpace(reqImageIndex.ImageTag))
+	configPath := filepath.Join(repoPath(), strings.TrimSpace(projectName),
+		strings.TrimSpace(imageName), strings.TrimSpace(imageTag))
 
 	// Update git repo
 	var pushobject pushObject
 
 	pushobject.FileName = defaultDockerfilename
 	pushobject.JobName = imageProcess
-	pushobject.Value = filepath.Join(reqImageIndex.ProjectName,
-		reqImageIndex.ImageName, reqImageIndex.ImageTag)
-	pushobject.Extras = filepath.Join(reqImageIndex.ProjectName,
-		reqImageIndex.ImageName) + ":" + reqImageIndex.ImageTag
+	pushobject.Value = filepath.Join(projectName, imageName, imageTag)
+	pushobject.Extras = filepath.Join(projectName, imageName) + ":" + imageTag
 	pushobject.Message = fmt.Sprintf("Build image: %s", pushobject.Extras)
 
 	//Get file list for Jenkis git repo

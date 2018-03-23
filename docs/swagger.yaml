@@ -2190,12 +2190,21 @@ paths:
           type: string
           required: true
           description: Current available token.
-        - name: image_index
-          in: body
+        - name: image_name
+          in: query
+          description: image name to specify an image.
           required: true
-          schema:
-            $ref: '#/definitions/ImageIndex'
-          description: The image index struct for the image to be deleted.    
+          type: string
+        - name: image_tag
+          in: query
+          type: string
+          required: true
+          description: The tag of this image.
+        - name: project_name
+          in: query
+          type: string
+          required: true
+          description: The project name that the image belongs to.     
       tags:
         - Products
       responses:
