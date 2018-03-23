@@ -12,7 +12,7 @@ export const ROLES: {[key: number]: string} = {
 };
 
 export enum BUTTON_STYLE {
-  CONFIRMATION = 1, DELETION, YES_NO
+  CONFIRMATION = 1, DELETION, YES_NO, ONLY_CONFIRM
 }
 
 export enum SERVICE_STATUS{

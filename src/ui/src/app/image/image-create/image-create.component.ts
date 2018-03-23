@@ -75,6 +75,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   selectedImage: Image;
   baseImageSource: number = 1;
   boardRegistry: string = "";
+  forceQuitSubscription:Subscription;
 
   constructor(private imageService: ImageService,
               private messageService: MessageService,
@@ -128,7 +129,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
         this.isOpen = false;
         this.messageService.dispatchError(err)
       });
-    this.messageService.messageConfirmed$.subscribe((msg: Message) => {
+    this.forceQuitSubscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
       if (msg.target == MESSAGE_TARGET.FORCE_QUIT_BUILD_IMAGE) {
         this.onBuildCompleted.emit();
         this.isOpen = false;
@@ -160,6 +161,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   }
 
   ngOnDestroy() {
+    this.forceQuitSubscription.unsubscribe();
     if (this.processImageSubscription) {
       this.processImageSubscription.unsubscribe();
     }
@@ -315,6 +317,27 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     }
   }
 
+  cleanImageConfig(err?: any) {
+    this.imageService.deleteImageConfig(this.projectName, this.customerNewImage.image_name, this.customerNewImage.image_tag)
+      .subscribe(() => {
+        this.updateFileList().then(()=>{
+          this.isBuildImageWIP = false;
+          this.isUploadFileWIP = false;
+          this.isNeedAutoRefreshImageList = false;
+          if (err && err instanceof HttpErrorResponse && (err as HttpErrorResponse).status == 401) {
+            this.onBuildCompleted.emit();
+            this.isOpen = false;
+            this.messageService.dispatchError(err);
+          } else {
+            this.newImageAlertType = "alert-danger";
+            this.newImageErrMessage = "IMAGE.CREATE_IMAGE_BUILD_IMAGE_FAILED";
+            this.newImageErrReason = err instanceof HttpErrorResponse ? (err as HttpErrorResponse).message : "";
+            this.isNewImageAlertOpen = true;
+          }
+        });
+      });
+  }
+
   buildImageResole() {
     this.processImageSubscription = this.webSocketService
       .connect(`ws://${this.boardHost}/api/v1/jenkins-job/console?job_name=${this.customerNewImage.project_name}&token=${this.appInitService.token}`)
@@ -327,11 +350,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
           this.processImageSubscription.unsubscribe();
         }
         if (consoleTextArr.find(value => value.indexOf("Finished: FAILURE") > -1)) {
-          this.isBuildImageWIP = false;
-          this.isNeedAutoRefreshImageList = false;
-          this.newImageAlertType = "alert-danger";
-          this.newImageErrMessage = "IMAGE.CREATE_IMAGE_BUILD_IMAGE_FAILED";
-          this.isNewImageAlertOpen = true;
+          this.cleanImageConfig();
           this.processImageSubscription.unsubscribe();
         }
       }, err => err, () => {
@@ -341,19 +360,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   }
 
   buildImageReject(err: any) {
-    this.isBuildImageWIP = false;
-    this.isUploadFileWIP = false;
-    this.isNeedAutoRefreshImageList = false;
-    if (err && err instanceof HttpErrorResponse && (err as HttpErrorResponse).status == 401) {
-      this.onBuildCompleted.emit();
-      this.isOpen = false;
-      this.messageService.dispatchError(err);
-    } else {
-      this.newImageAlertType = "alert-danger";
-      this.newImageErrMessage = "IMAGE.CREATE_IMAGE_BUILD_IMAGE_FAILED";
-      this.newImageErrReason = err instanceof HttpErrorResponse ? (err as HttpErrorResponse).message: "";
-      this.isNewImageAlertOpen = true;
-    }
+    this.cleanImageConfig(err);
   }
 
   buildImage() {
