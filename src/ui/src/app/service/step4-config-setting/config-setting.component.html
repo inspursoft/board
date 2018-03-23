@@ -12,6 +12,14 @@
       </cs-input>
     </div>
     <div class="config-service-info-line">
+      <span class="instance">公开性:</span>
+      <input title=""
+             type="checkbox"
+             class="base-margin-left"
+             [checked]="uiData.servicePublic"
+             [(ngModel)]="uiData.servicePublic">
+    </div>
+    <div class="config-service-info-line">
       <span class="instance">{{"SERVICE.STEP_4_INSTANCE"|translate}}:</span>
       <cs-dropdown class="base-margin-left"
                    [dropdownWidth]="310"
