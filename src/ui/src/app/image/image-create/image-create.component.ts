@@ -94,6 +94,8 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     this.customerNewImage.project_id = this.projectId;
     this.customerNewImage.project_name = this.projectName;
     this.customerNewImage.image_template = "dockerfile-template";
+    this.imageService.restImagesTemp(this.projectName).subscribe(() => {
+    });
     this.intervalAutoRefreshImageList = setInterval(() => {
       if (this.isNeedAutoRefreshImageList && this.isBuildImageWIP) {
         this.autoRefreshTimesCount++;
@@ -387,7 +389,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
       imageCopyArr.splice(0, imageCopyArr.length);
       this.filesList.get(this.customerNewImage.image_name).forEach(value => {
         imageCopyArr.push({
-          dockerfile_copyfrom: value.path + "/" + value.file_name,
+          dockerfile_copyfrom: value.file_name,
           dockerfile_copyto: this.uploadCopyToPath + "/" + value.file_name,
         });
       });
