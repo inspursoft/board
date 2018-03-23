@@ -76,6 +76,13 @@ export class ImageListComponent implements OnInit, OnDestroy {
     }
   }
 
+  get isSystemAdmin(): boolean {
+    if(this.appInitService.currentUser) {
+      return this.appInitService.currentUser["user_system_admin"] == 1;
+    }
+    return false;
+  }
+
   clickSelectProject(project: Project) {
     this.router.navigate(["/projects"], {queryParams: {token: this.appInitService.token}, fragment: "create"});
   }
@@ -105,14 +112,16 @@ export class ImageListComponent implements OnInit, OnDestroy {
   }
 
   confirmToDeleteImage(imageName: string) {
-    let announceMessage = new Message();
-    announceMessage.title = 'IMAGE.DELETE_IMAGE';
-    announceMessage.message = 'IMAGE.CONFIRM_TO_DELETE_IMAGE';
-    announceMessage.params = [imageName];
-    announceMessage.target = MESSAGE_TARGET.DELETE_IMAGE;
-    announceMessage.buttons = BUTTON_STYLE.DELETION;
-    announceMessage.data = imageName;
-    this.messageService.announceMessage(announceMessage);
+    if (this.isSystemAdmin){
+      let announceMessage = new Message();
+      announceMessage.title = 'IMAGE.DELETE_IMAGE';
+      announceMessage.message = 'IMAGE.CONFIRM_TO_DELETE_IMAGE';
+      announceMessage.params = [imageName];
+      announceMessage.target = MESSAGE_TARGET.DELETE_IMAGE;
+      announceMessage.buttons = BUTTON_STYLE.DELETION;
+      announceMessage.data = imageName;
+      this.messageService.announceMessage(announceMessage);
+    }
   }
 
   createImage() {

@@ -130,4 +130,11 @@ export class ImageService {
     return this.http.get(`/api/v1/images/registry`, {observe: "response", responseType: "text"})
       .map((obs: HttpResponse<string>) => obs.body)
   }
+
+  deleteImageConfig(projectName: string, imageName: string, imageTag: string): Observable<Object> {
+    return this.http.delete(`/api/v1/images/configclean`, {
+      observe: "response",
+      params: {project_name: projectName, image_name: imageName, image_tag: imageTag}
+    }).map((obs: HttpResponse<Object>) => obs.body)
+  }
 }

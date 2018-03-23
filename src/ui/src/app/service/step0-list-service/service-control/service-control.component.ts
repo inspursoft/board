@@ -11,6 +11,7 @@ import { ImageIndex } from "../../service-step.component";
 import { ImageDetail } from "../../../image/image";
 import { HttpErrorResponse } from "@angular/common/http";
 import { Message } from "../../../shared/message-service/message";
+import { Observable } from "rxjs/Observable";
 
 enum ScaleMethod {smManually, smAuto}
 
@@ -40,7 +41,12 @@ export class ServiceControlComponent implements OnInit {
   imageList: Array<ImageIndex>;
   imageTagList: Map<string, Array<ImageDetail>>;
   imageTagSelected: Map<string, string>;
+  @Output() isOpenChange: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Input() service: Service;
+
+  @Input() get isOpen() {
+    return this._isOpen;
+  }
 
   constructor(private k8sService: K8sService,
               private messageService: MessageService) {
@@ -54,17 +60,18 @@ export class ServiceControlComponent implements OnInit {
     for (let i = 1; i <= 10; i++) {
       this.dropDownListNum.push(i)
     }
+    this.refreshScaleInfo(false);
+    Observable.interval(5000).subscribe(_ => this.refreshScaleInfo(true));
+  }
+
+  refreshScaleInfo(isFirst: boolean) {
     this.k8sService.getServiceScaleInfo(this.service.service_id)
       .subscribe((scaleInfo: IScaleInfo) => {//needn't handle error~!
         this.scaleInfo = scaleInfo;
-        this.scaleNum = this.scaleInfo.available_instance;
+        if (!isFirst) {
+          this.scaleNum = this.scaleInfo.available_instance;
+        }
       })
-  }
-
-  @Output() isOpenChange: EventEmitter<boolean> = new EventEmitter<boolean>();
-
-  @Input() get isOpen() {
-    return this._isOpen;
   }
 
   set isOpen(open: boolean) {

@@ -25,11 +25,15 @@
     <div class="col-xs-12">
       <clr-datagrid (clrDgRefresh)="retrieve(false, $event)" [clrDgLoading]="isInLoading">
         <clr-dg-column [clrDgField]="'NAME'"
-                       [clrDgSortOrder]="descSort">{{ 'SERVICE.SERVICE_NAME' | translate }}</clr-dg-column>
+                       [clrDgSortOrder]="descSort">
+          <clr-dg-filter [hidden]="true"></clr-dg-filter>
+          {{ 'SERVICE.SERVICE_NAME' | translate }}
+        </clr-dg-column>
         <clr-dg-column>{{ 'SERVICE.PROJECT_NAME' | translate }}</clr-dg-column>
         <clr-dg-column>{{ 'SERVICE.OWNER' | translate }}</clr-dg-column>
         <clr-dg-column [clrDgField]="'CREATE_TIME'"
                        [clrDgSortOrder]="descSort">
+          <clr-dg-filter [hidden]="true"></clr-dg-filter>
           {{ 'SERVICE.CREATE_TIME' | translate }}
         </clr-dg-column>
         <clr-dg-column>{{ 'SERVICE.PUBLIC' | translate }}</clr-dg-column>

@@ -7,6 +7,7 @@ import { MessageService } from '../../shared/message-service/message.service';
 import { Subscription } from 'rxjs/Subscription';
 import { AppInitService } from '../../app.init.service';
 import { AccountService } from '../account.service';
+import { BUTTON_STYLE } from "../../shared/shared.const";
 
 @Component({
   templateUrl: './sign-in.component.html',
@@ -54,7 +55,8 @@ export class SignInComponent implements OnInit, OnDestroy {
       .catch(err=>{
         this.isSignWIP = false;
         let announceMessage = new Message();
-          announceMessage.title = 'ACCOUNT.ERROR';
+        announceMessage.title = 'ACCOUNT.ERROR';
+        announceMessage.buttons = BUTTON_STYLE.ONLY_CONFIRM;
         if(err) {
           switch(err.status){
           case 400:
