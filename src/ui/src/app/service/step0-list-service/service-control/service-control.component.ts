@@ -33,7 +33,7 @@ export class ServiceControlComponent implements OnInit,OnDestroy {
   dropDownListNum: Array<number>;
   scaleModule: ScaleMethod = ScaleMethod.smManually;
   scaleNum: number = 0;
-  scaleInfo: IScaleInfo;
+  scaleInfo: IScaleInfo = {desired_instance: 0, available_instance: 0};
   isActionInWIP: boolean = false;
   isGetServiceImagesWIP: boolean = false;
   isGetServiceImagesTagWIP: boolean = false;
