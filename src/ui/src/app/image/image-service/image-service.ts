@@ -137,4 +137,11 @@ export class ImageService {
       params: {project_name: projectName, image_name: imageName, image_tag: imageTag}
     }).map((obs: HttpResponse<Object>) => obs.body)
   }
+
+  restImagesTemp(projectName: string): Observable<Object> {
+    return this.http.put(`/api/v1/images/reset-temp`, null, {
+      observe: "response",
+      params: {project_name: projectName}
+    }).map((obs: HttpResponse<Object>) => obs.body)
+  }
 }

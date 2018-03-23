@@ -94,6 +94,8 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     this.customerNewImage.project_id = this.projectId;
     this.customerNewImage.project_name = this.projectName;
     this.customerNewImage.image_template = "dockerfile-template";
+    this.imageService.restImagesTemp(this.projectName).subscribe(() => {
+    });
     this.intervalAutoRefreshImageList = setInterval(() => {
       if (this.isNeedAutoRefreshImageList && this.isBuildImageWIP) {
         this.autoRefreshTimesCount++;
@@ -135,8 +137,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
         this.isOpen = false;
       } else if (msg.target == MESSAGE_TARGET.CANCEL_BUILD_IMAGE) {
         this.imageService.cancelConsole("process_image").then(() => {
-          this.onBuildCompleted.emit();
-          this.isOpen = false;
+          this.cleanImageConfig();
         });
       }
     })
@@ -378,6 +379,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
 
   updateFileList(): Promise<any> {
     this.isNewImageAlertOpen = false;
+    this.filesList.clear();
     let formFileList: FormData = new FormData();
     formFileList.append('project_name', this.customerNewImage.project_name);
     formFileList.append('image_name', this.customerNewImage.image_name);
@@ -388,7 +390,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
       imageCopyArr.splice(0, imageCopyArr.length);
       this.filesList.get(this.customerNewImage.image_name).forEach(value => {
         imageCopyArr.push({
-          dockerfile_copyfrom: value.path + "/" + value.file_name,
+          dockerfile_copyfrom: value.file_name,
           dockerfile_copyto: this.uploadCopyToPath + "/" + value.file_name,
         });
       });
