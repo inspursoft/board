@@ -112,7 +112,7 @@ func (p *ServiceController) DeployServiceAction() {
 	deployPushobject := assemblePushObject(deploymentFilename, serviceInfo.ID, project.Name, "deployments")
 	ret, msg, err := InternalPushObjects(&deployPushobject, &(p.baseController))
 	if err != nil {
-		p.internalError(err)
+		p.internalError(fmt.Errorf("%s, error: %+v", msg, err))
 		return
 	}
 	logs.Info("Internal push deployment object: %d %s", ret, msg)

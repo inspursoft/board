@@ -200,7 +200,7 @@ func InternalPushObjects(p *pushObject, g *baseController) (int, string, error) 
 	logs.Debug("Jenkins trigger URL: %s", triggerURL)
 	resp, err := http.Get(triggerURL)
 	if err != nil {
-		return http.StatusInternalServerError, "Failed to triggerURL", err
+		return http.StatusInternalServerError, "Failed to triggerURL " + triggerURL, err
 	}
 	return resp.StatusCode, "Internal Push Object successfully", err
 }
