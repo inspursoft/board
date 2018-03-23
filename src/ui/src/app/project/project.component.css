@@ -1,0 +1,7 @@
+clr-icon.action.disabled {
+  color: silver;
+}
+
+clr-icon.action.disabled:hover {
+  cursor: not-allowed;
+}
