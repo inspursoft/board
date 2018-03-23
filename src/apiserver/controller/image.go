@@ -492,15 +492,6 @@ func (p *ImageController) ConfigCleanAction() {
 	projectName := strings.TrimSpace(p.GetString("project_name"))
 	logs.Debug("clean config %s %s %s", projectName, imageName, imageTag)
 
-	//remove upload temp directory
-	tempPath := filepath.Join(repoPath(), projectName, wrapStringWithSymbol(p.currentUser.Username))
-	err := os.RemoveAll(tempPath)
-	if err != nil {
-		logs.Error("Failed to remove temp path: %s", tempPath)
-		p.internalError(err)
-		return
-	}
-
 	currentProject, err := service.GetProject(model.Project{Name: projectName}, "name")
 	if err != nil {
 		p.internalError(err)
@@ -519,6 +510,15 @@ func (p *ImageController) ConfigCleanAction() {
 
 	if !(p.isSysAdmin || isMember) {
 		p.customAbort(http.StatusForbidden, "Insufficient privileges to build image.")
+		return
+	}
+
+	//remove upload temp directory
+	tempPath := filepath.Join(repoPath(), projectName, wrapStringWithSymbol(p.currentUser.Username))
+	err = os.RemoveAll(tempPath)
+	if err != nil {
+		logs.Error("Failed to remove temp path: %s", tempPath)
+		p.internalError(err)
 		return
 	}
 
