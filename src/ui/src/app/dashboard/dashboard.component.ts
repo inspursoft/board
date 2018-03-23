@@ -287,7 +287,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
       await this.service.getServerTimeStamp().then(serverTime => this._serverTimeStamp = serverTime);
       this.lineTypeSet.forEach(lineType => {
         let query = {
-          time_count: 1,
+          time_count: 2,
           time_unit: "second",
           list_name: "",
           timestamp_base: this._serverTimeStamp
