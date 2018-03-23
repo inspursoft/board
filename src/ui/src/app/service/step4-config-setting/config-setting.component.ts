@@ -49,7 +49,6 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
   }
 
   ngOnInit() {
-    this.collaborativeList.push(Object());
     this.k8sService.getServiceConfig(PHASE_CONFIG_CONTAINERS).then(res => {
       this.uiPreData = res as UIServiceStep3;
     });
@@ -72,6 +71,10 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
 
   get checkServiceNameFun() {
     return this.checkServiceName.bind(this);
+  }
+
+  get isCanAddContainerInfo(){
+    return this.uiPreData.containerList.find(value => value.isHavePort());
   }
 
   checkServiceName(control: HTMLInputElement): Promise<ValidationErrors | null> {
@@ -100,15 +103,23 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
   }
 
   addContainerInfo() {
-    let externalService = new ExternalService();
-    if (this.uiPreData.containerList.length > 0) {
-      externalService.container_name = this.uiPreData.containerList[0].name;
-      let containerPorts = this.getContainerPorts(externalService.container_name);
-      if (containerPorts.length > 0) {
-        externalService.node_config.target_port = containerPorts[0];
+    if (this.isCanAddContainerInfo){
+      let externalService = new ExternalService();
+      if (this.uiPreData.containerList.length > 0) {
+        externalService.container_name = this.uiPreData.containerList[0].name;
+        let containerPorts = this.getContainerPorts(externalService.container_name);
+        if (containerPorts.length > 0) {
+          externalService.node_config.target_port = containerPorts[0];
+        }
       }
+      this.uiData.externalServiceList.push(externalService);
     }
-    this.uiData.externalServiceList.push(externalService);
+  }
+
+  addOneCollaborativeService(){
+    if (this.collaborativeServiceList.length > 0){
+      this.collaborativeList.push({});
+    }
   }
 
   removeContainerInfo(index: number) {
