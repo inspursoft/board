@@ -90,7 +90,7 @@ func fixStructEmptyIssue(obj interface{}) {
 	return
 }
 
-func changeDockerfileStructItem(repoPath string, dockerfile *model.Dockerfile) {
+func changeDockerfileStructItem(dockerfile *model.Dockerfile, relPath string) {
 	dockerfile.Base = strings.TrimSpace(dockerfile.Base)
 	dockerfile.Author = strings.TrimSpace(dockerfile.Author)
 	dockerfile.EntryPoint = strings.TrimSpace(dockerfile.EntryPoint)
@@ -102,7 +102,7 @@ func changeDockerfileStructItem(repoPath string, dockerfile *model.Dockerfile) {
 	fixStructEmptyIssue(&dockerfile.Volume)
 
 	for num, node := range dockerfile.Copy {
-		fromPath, _ := filepath.Rel(repoPath, strings.TrimSpace(node.CopyFrom))
+		fromPath := filepath.Join(relPath, strings.TrimSpace(node.CopyFrom))
 		dockerfile.Copy[num].CopyFrom = fromPath
 		dockerfile.Copy[num].CopyTo = strings.TrimSpace(node.CopyTo)
 	}
@@ -133,8 +133,8 @@ func changeImageConfigStructItem(reqImageConfig *model.ImageConfig) {
 	reqImageConfig.ImageDockerfilePath = strings.TrimSpace(reqImageConfig.ImageDockerfilePath)
 }
 
-func CheckDockerfileItem(repoPath string, dockerfile *model.Dockerfile) error {
-	changeDockerfileStructItem(repoPath, dockerfile)
+func CheckDockerfileItem(dockerfile *model.Dockerfile, relPath string) error {
+	changeDockerfileStructItem(dockerfile, relPath)
 
 	if len(dockerfile.Base) == 0 {
 		return errors.New("Baseimage in dockerfile should not be empty")
@@ -164,7 +164,8 @@ func CheckDockerfileConfig(config *model.ImageConfig) error {
 		return err
 	}
 
-	return CheckDockerfileItem(config.RepoPath, &config.ImageDockerfile)
+	relPath := filepath.Join("process-image", config.ImageName, config.ImageTag, "upload")
+	return CheckDockerfileItem(&config.ImageDockerfile, relPath)
 }
 
 func BuildDockerfile(reqImageConfig model.ImageConfig, wr ...io.Writer) error {

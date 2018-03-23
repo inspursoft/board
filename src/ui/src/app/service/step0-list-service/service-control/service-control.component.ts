@@ -2,7 +2,7 @@
  * Created by liyanq on 04/12/2017.
  */
 
-import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core"
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from "@angular/core"
 import { Service } from "../../service";
 import { K8sService } from "../../service.k8s";
 import { MessageService } from "../../../shared/message-service/message.service";
@@ -12,6 +12,7 @@ import { ImageDetail } from "../../../image/image";
 import { HttpErrorResponse } from "@angular/common/http";
 import { Message } from "../../../shared/message-service/message";
 import { Observable } from "rxjs/Observable";
+import { Subscription } from "rxjs/Subscription";
 
 enum ScaleMethod {smManually, smAuto}
 
@@ -27,7 +28,7 @@ interface IScaleInfo {
   styleUrls: ["./service-control.component.css"],
   templateUrl: "./service-control.component.html"
 })
-export class ServiceControlComponent implements OnInit {
+export class ServiceControlComponent implements OnInit,OnDestroy {
   _isOpen: boolean = false;
   dropDownListNum: Array<number>;
   scaleModule: ScaleMethod = ScaleMethod.smManually;
@@ -41,6 +42,7 @@ export class ServiceControlComponent implements OnInit {
   imageList: Array<ImageIndex>;
   imageTagList: Map<string, Array<ImageDetail>>;
   imageTagSelected: Map<string, string>;
+  intervalSubscription:Subscription;
   @Output() isOpenChange: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Input() service: Service;
 
@@ -61,7 +63,11 @@ export class ServiceControlComponent implements OnInit {
       this.dropDownListNum.push(i)
     }
     this.refreshScaleInfo(false);
-    Observable.interval(5000).subscribe(_ => this.refreshScaleInfo(true));
+    this.intervalSubscription = Observable.interval(5000).subscribe(_ => this.refreshScaleInfo(true));
+  }
+
+  ngOnDestroy(){
+    this.intervalSubscription.unsubscribe();
   }
 
   refreshScaleInfo(isFirst: boolean) {
@@ -126,7 +132,7 @@ export class ServiceControlComponent implements OnInit {
       }
     });
     let isCanUpdate = !this.isGetServiceImagesTagWIP && !noImageTag && this.alertMessage === "";
-    return this.actionMethod == ActionMethod.update ? isCanUpdate : this.scaleNum > 0;
+    return this.actionMethod == ActionMethod.update ? isCanUpdate : this.scaleNum > 0 && this.scaleNum != this.scaleInfo.available_instance;
   }
 
   getServiceImages() {

@@ -82,6 +82,10 @@ export class Container implements UiServerExchangeData<Container> {
   public container_port: Array<number> = Array();
   public command: string = "";
 
+  isHavePort(): boolean {
+    return this.container_port.length > 0;
+  }
+
   serverToUi(serverResponse: Object): Container {
     this.name = serverResponse["name"];
     this.working_dir = serverResponse["working_dir"];
