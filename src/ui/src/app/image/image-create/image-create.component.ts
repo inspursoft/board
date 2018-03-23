@@ -317,7 +317,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     }
   }
 
-  cleanImageConfig(err: any) {
+  cleanImageConfig(err?: any) {
     this.imageService.deleteImageConfig(this.projectName, this.customerNewImage.image_name, this.customerNewImage.image_tag)
       .subscribe(() => {
         this.updateFileList().then(()=>{
@@ -350,7 +350,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
           this.processImageSubscription.unsubscribe();
         }
         if (consoleTextArr.find(value => value.indexOf("Finished: FAILURE") > -1)) {
-          this.cleanImageConfig(null);
+          this.cleanImageConfig();
           this.processImageSubscription.unsubscribe();
         }
       }, err => err, () => {

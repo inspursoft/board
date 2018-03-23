@@ -64,11 +64,11 @@ export class ServiceControlComponent implements OnInit {
     Observable.interval(5000).subscribe(_ => this.refreshScaleInfo(true));
   }
 
-  refreshScaleInfo(auto: boolean) {
+  refreshScaleInfo(isFirst: boolean) {
     this.k8sService.getServiceScaleInfo(this.service.service_id)
       .subscribe((scaleInfo: IScaleInfo) => {//needn't handle error~!
         this.scaleInfo = scaleInfo;
-        if (!auto) {
+        if (!isFirst) {
           this.scaleNum = this.scaleInfo.available_instance;
         }
       })
