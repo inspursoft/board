@@ -2,16 +2,13 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"git/inspursoft/board/src/apiserver/controller"
 	_ "git/inspursoft/board/src/apiserver/router"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/apiserver/service/devops/gogs"
-	"git/inspursoft/board/src/apiserver/service/devops/jenkins"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
-	"path/filepath"
 
 	"io/ioutil"
 
@@ -97,38 +94,11 @@ func initProjectRepo() {
 	}
 	logs.Info("Initialize serve repo ...")
 	logs.Info("Init git repo for default project %s", defaultProject)
-	repoURL := fmt.Sprintf("%s/%s/%s.git", gogitsSSHURL(), adminUsername, defaultProject)
-	repoPath := fmt.Sprintf("%s/%s/%s", baseRepoPath, adminUsername, defaultProject)
-	_, err = service.InitRepo(repoURL, adminUsername, repoPath)
-	if err != nil {
-		logs.Error("Failed to initialize default user's repo: %+v", err)
-		return
-	}
-	err = gogs.NewGogsHandler(adminUsername, token.Sha1).CreateRepo(defaultProject)
-	if err != nil {
-		logs.Error("Failed to create default project: %+v", err)
-		return
-	}
-	err = service.CopyFile("parser.py", filepath.Join(repoPath, "parser.py"))
-	if err != nil {
-		logs.Error("Failed to copy parser.py file to repo: %+v", err)
-	}
-	service.CreateFile("readme.md", "Repo created by Board.", repoPath)
-	err = service.SimplePush(repoPath, adminUsername, adminEmail, "Add some struts.", "readme.md", "parser.py")
-	if err != nil {
-		logs.Error("Failed to push readme.md file to the repo.")
-	}
 
-	jenkinsHandler := jenkins.NewJenkinsHandler()
-	err = jenkinsHandler.CreateJob(defaultProject)
+	err = service.CreateRepoAndJob(adminUserID, defaultProject)
 	if err != nil {
-		logs.Error("Failed to create default Jenkins' job: %+v", err)
-	}
-	for _, action := range []string{"disable", "enable"} {
-		err = jenkinsHandler.ToggleJob(defaultProject, action)
-		if err != nil {
-			logs.Error("Failed to toggle default Jenkins' job with action %s: %+v", action, err)
-		}
+		logs.Error("Failed to create default repo %s: %+v", defaultProject, err)
+		panic(err)
 	}
 
 	utils.SetConfig("INIT_PROJECT_REPO", "created")

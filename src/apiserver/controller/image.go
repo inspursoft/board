@@ -497,7 +497,7 @@ func cleanGitImageTag(username, imageName, imageTag, projectName string, p *Imag
 	pushobject.Items = append(pushobject.Items, filepath.Join(pushobject.Value,
 		defaultDockerfilename))
 
-	ret, msg, err := InternalCleanObjects(&pushobject, &(p.baseController))
+	ret, msg, err := InternalPushObjects(&pushobject, &(p.baseController), toBeRemoved)
 	if err != nil {
 		logs.Error("Failed to push object for git repo clean", msg, ret)
 		return err
@@ -572,7 +572,7 @@ func (p *ImageController) ConfigCleanAction() {
 	pushobject.Items = append(pushobject.Items, filepath.Join(pushobject.Value,
 		defaultDockerfilename))
 
-	ret, msg, err := InternalCleanObjects(&pushobject, &(p.baseController))
+	ret, msg, err := InternalPushObjects(&pushobject, &(p.baseController), toBeRemoved)
 	if err != nil {
 		logs.Info("Failed to push object for git repo clean", msg, ret)
 		p.internalError(err)

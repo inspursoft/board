@@ -15,7 +15,6 @@ import (
 )
 
 var repoServeURL = utils.GetConfig("REPO_SERVE_URL")
-var baseRepoPath = utils.GetConfig("BASE_REPO_PATH")
 
 const (
 	k8sAPIversion1 = "v1"
@@ -163,9 +162,10 @@ func SyncNamespaceByOwnerID(userID int64) error {
 	}
 
 	for _, project := range projects {
-		_, err = CreateNamespace((*project).Name)
+		projectName := project.Name
+		_, err = CreateNamespace(projectName)
 		if err != nil {
-			return fmt.Errorf("Failed to create namespace: %s", (*project).Name)
+			return fmt.Errorf("Failed to create namespace: %s", projectName)
 		}
 	}
 	return nil
@@ -203,14 +203,19 @@ func SyncProjectsWithK8s() error {
 			reqProject.OwnerName = adminUserName
 			reqProject.Public = projectPrivate
 
+			err = CreateRepoAndJob(adminUserID, reqProject.Name)
+			if err != nil {
+				logs.Error("Failed create repo and job: %s %+v", reqProject.Name, err)
+			}
+
 			isSuccess, err := CreateProject(reqProject)
 			if err != nil {
-				logs.Error("Failed to create project %s %+v", namespace.Name, err)
+				logs.Error("Failed to create project %s %+v", reqProject.Name, err)
 				// Still can work
 				continue
 			}
 			if !isSuccess {
-				logs.Error("Failed to create project %s", namespace.Name)
+				logs.Error("Failed to create project %s", reqProject.Name)
 				// Still can work
 				continue
 			}
