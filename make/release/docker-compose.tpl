@@ -32,6 +32,7 @@ services:
       - ../config/gogits/env
     volumes:
       - /data/board/gogits:/data:rw
+      - ../config/gogits/conf/app.ini:/tmp/conf/app.ini
     ports:
       - "10022:22"
       - "10080:3000"

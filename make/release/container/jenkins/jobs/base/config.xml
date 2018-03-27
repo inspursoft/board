@@ -63,6 +63,7 @@
         
         stage(&apos;jekins&apos;) {
             sh &apos;&apos;&apos;
+            PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin
             chmod +x $WORKSPACE/$user_name/$repo_name/parser.py
             python $WORKSPACE/$user_name/$repo_name/parser.py $base_repo_url $WORKSPACE $BUILD_ID $repo_name $user_name
             &apos;&apos;&apos;
