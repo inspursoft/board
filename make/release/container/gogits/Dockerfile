@@ -1,2 +1,3 @@
-FROM board_gogits
-CMD ["/app/gogs/gogs", "web"]
+FROM board-gogits
+ENV GOGS_CUSTOM /tmp
+VOLUME ["/data", "/tmp"]
