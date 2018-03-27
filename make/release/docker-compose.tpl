@@ -69,6 +69,7 @@ services:
     restart: always
     volumes:
       - ../config/apiserver/app.conf:/usr/bin/app.conf:z
+      - ../config/apiserver/parser.py:/usr/bin/parser.py:z
 #     - ../../tools/swagger/vendors/swagger-ui-2.1.4/dist:/usr/bin/swagger:z
       - /data/board/repos:/repos:rw
       - /data/board/keys:/keys:rw
