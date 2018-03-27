@@ -181,8 +181,8 @@ func InternalPushObjects(p *pushObject, g *baseController) (int, string, error) 
 
 // Clean git repo after remove config files
 func InternalCleanObjects(p *pushObject, g *baseController) (int, string, error) {
-
-	repoPath := filepath.Join(baseRepoPath(), p.ProjectName, p.Value)
+	username := g.currentUser.Username
+	repoPath := filepath.Join(baseRepoPath(), username, p.ProjectName)
 	logs.Debug("Repo path for pushing objects: %s", repoPath)
 
 	defaultCommitMessage := fmt.Sprintf("Removed items: %s from repo: %s", strings.Join(p.Items, ","), repoPath)
@@ -190,7 +190,6 @@ func InternalCleanObjects(p *pushObject, g *baseController) (int, string, error)
 		p.Message = defaultCommitMessage
 	}
 
-	username := g.currentUser.Username
 	email := g.currentUser.Email
 	repoHandler, err := service.OpenRepo(repoPath, username)
 	if err != nil {
