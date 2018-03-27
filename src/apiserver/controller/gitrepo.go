@@ -12,6 +12,10 @@ import (
 	"github.com/astaxie/beego/logs"
 )
 
+const (
+	toBeRemoved = true
+)
+
 type GitRepoController struct {
 	baseController
 	repoServerURL string
@@ -147,12 +151,22 @@ func generateMetaConfiguration(p *pushObject, repoPath string) error {
 	return service.CreateMetaConfiguration(conf, repoPath)
 }
 
-func InternalPushObjects(p *pushObject, g *baseController) (int, string, error) {
+func InternalPushObjects(p *pushObject, g *baseController, actionType ...bool) (int, string, error) {
 	username := g.currentUser.Username
 	repoPath := filepath.Join(baseRepoPath(), username, p.ProjectName)
 	logs.Debug("Repo path for pushing objects: %s", repoPath)
 
-	defaultCommitMessage := fmt.Sprintf("Added items: %s to repo: %s", strings.Join(p.Items, ","), repoPath)
+	isRemove := false
+	if len(actionType) > 0 && actionType[0] {
+		isRemove = true
+	}
+
+	actionName := "Added"
+	if isRemove {
+		actionName = "Removed"
+	}
+	defaultCommitMessage := fmt.Sprintf("%s items: %s to repo: %s", actionName, strings.Join(p.Items, ","), repoPath)
+
 	if len(p.Message) == 0 {
 		p.Message = defaultCommitMessage
 	}
@@ -164,8 +178,12 @@ func InternalPushObjects(p *pushObject, g *baseController) (int, string, error) 
 	}
 
 	for _, item := range p.Items {
+		if isRemove {
+			repoHandler.Remove(item)
+		} else {
+			repoHandler.Add(item)
+		}
 		logs.Debug(">>>>> pushed item: %s", item)
-		repoHandler.Add(item)
 	}
 
 	_, err = repoHandler.Commit(p.Message, username, email)
@@ -177,35 +195,4 @@ func InternalPushObjects(p *pushObject, g *baseController) (int, string, error) 
 		return http.StatusInternalServerError, "Failed to push objects to git repo", err
 	}
 	return 0, "Internal Push Object successfully", err
-}
-
-// Clean git repo after remove config files
-func InternalCleanObjects(p *pushObject, g *baseController) (int, string, error) {
-	username := g.currentUser.Username
-	repoPath := filepath.Join(baseRepoPath(), username, p.ProjectName)
-	logs.Debug("Repo path for pushing objects: %s", repoPath)
-
-	defaultCommitMessage := fmt.Sprintf("Removed items: %s from repo: %s", strings.Join(p.Items, ","), repoPath)
-	if len(p.Message) == 0 {
-		p.Message = defaultCommitMessage
-	}
-
-	email := g.currentUser.Email
-	repoHandler, err := service.OpenRepo(repoPath, username)
-	if err != nil {
-		return http.StatusInternalServerError, "Failed to open user's repo", err
-	}
-	for _, item := range p.Items {
-		repoHandler.Remove(item)
-	}
-
-	_, err = repoHandler.Commit(p.Message, username, email)
-	if err != nil {
-		return http.StatusInternalServerError, "Failed to commit changes to user's repo", err
-	}
-	err = repoHandler.Push()
-	if err != nil {
-		return http.StatusInternalServerError, "Failed to push objects to git repo", err
-	}
-	return 0, "Internal Push Object for cleaning successfully", nil
 }

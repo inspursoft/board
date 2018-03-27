@@ -4,12 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
-	"git/inspursoft/board/src/apiserver/service/devops/gogs"
-	"git/inspursoft/board/src/apiserver/service/devops/jenkins"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
-	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -94,41 +91,10 @@ func (p *ProjectController) CreateProjectAction() {
 		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Namespace name: %s is illegal.", reqProject.Name))
 	}
 
-	if accessToken, ok := memoryCache.Get(p.currentUser.Username + "_GOGS-ACCESS-TOKEN").(string); ok {
-		projectRepoURL := fmt.Sprintf("%s/%s/%s.git", gogitsSSHURL(), p.currentUser.Username, reqProject.Name)
-		projectRepoPath := filepath.Join(baseRepoPath(), p.currentUser.Username, reqProject.Name)
-		_, err = service.InitRepo(projectRepoURL, p.currentUser.Username, projectRepoPath)
-		if err != nil {
-			logs.Error("Failed to initialize project repo: %+v", err)
-			p.internalError(err)
-		}
-		err = gogs.NewGogsHandler(p.currentUser.Username, accessToken).CreateRepo(reqProject.Name)
-		if err != nil {
-			p.internalError(err)
-		}
-		err = service.CopyFile("parser.py", filepath.Join(projectRepoPath, "parser.py"))
-		if err != nil {
-			logs.Error("Failed to copy parser.py file to repo: %+v", err)
-		}
-		service.CreateFile("readme.md", "Repo created by Board.", projectRepoPath)
-		err = service.SimplePush(projectRepoPath, p.currentUser.Username, p.currentUser.Email, "Add some struts.", "readme.md", "parser.py")
-		if err != nil {
-			logs.Error("Failed to push readme.md file to the repo.")
-			p.internalError(err)
-		}
-
-		jenkinsHandler := jenkins.NewJenkinsHandler()
-		err = jenkinsHandler.CreateJob(reqProject.Name)
-		if err != nil {
-			p.internalError(err)
-		}
-		for _, action := range []string{"disable", "enable"} {
-			err = jenkinsHandler.ToggleJob(reqProject.Name, action)
-			if err != nil {
-				logs.Error("Failed to toggle default Jenkins' job with action %s: %+v", action, err)
-				p.internalError(err)
-			}
-		}
+	err = service.CreateRepoAndJob(p.currentUser.ID, reqProject.Name)
+	if err != nil {
+		logs.Error("Failed to create repo and job for project: %s", reqProject.Name)
+		p.internalError(err)
 	}
 }
 

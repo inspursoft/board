@@ -491,7 +491,7 @@ func (p *ServiceController) DeleteServiceAction() {
 	serviceFiles.Items = []string{filepath.Join(repoPath, serviceProcess, strconv.Itoa(int(serviceID)), serviceFilename),
 		filepath.Join(repoPath, serviceProcess, strconv.Itoa(int(serviceID)), deploymentFilename)}
 	serviceFiles.Message = fmt.Sprintf("Delete yaml files for project %s service %d", s.ProjectName, serviceID)
-	ret, msg, err := InternalCleanObjects(&serviceFiles, &(p.baseController))
+	ret, msg, err := InternalPushObjects(&serviceFiles, &(p.baseController), toBeRemoved)
 	if err != nil {
 		p.internalError(err)
 		return
@@ -1006,7 +1006,7 @@ func (p *ServiceController) DeleteDeploymentAction() {
 		pushobject.Items = append(pushobject.Items, filefullname)
 	}
 
-	ret, msg, err := InternalCleanObjects(&pushobject, &(p.baseController))
+	ret, msg, err := InternalPushObjects(&pushobject, &(p.baseController), toBeRemoved)
 	if err != nil {
 		logs.Info("Failed to push object for git repo clean", msg, ret, pushobject)
 		p.internalError(err)
