@@ -171,6 +171,10 @@ func InternalPushObjects(p *pushObject, g *baseController, actionType ...bool) (
 		p.Message = defaultCommitMessage
 	}
 
+	if isRemove {
+		p.Message = "[DELETED]" + p.Message
+	}
+
 	email := g.currentUser.Email
 	repoHandler, err := service.OpenRepo(repoPath, username)
 	if err != nil {
