@@ -73,7 +73,7 @@ func (p *ImageController) GetImagesAction() {
 	logs.Info("Image list is %+v\n", repolistFiltered)
 
 	/* Interpret the message to api server */
-	var imagelist []model.Image
+	imagelist := []model.Image{}
 	for _, imagename := range repolistFiltered.Names {
 		var newImage model.Image
 		newImage.ImageName = imagename
