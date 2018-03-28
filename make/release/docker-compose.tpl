@@ -56,6 +56,7 @@ services:
     env_file:
       - ../config/jenkins/env
     ports:
+      - 8888:8080
       - 50000:50000
     depends_on:
       - log
