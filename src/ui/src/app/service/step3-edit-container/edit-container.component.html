@@ -29,7 +29,6 @@
                       [inputArrayFixedSource]="fixedContainerPort.get(container.name)"
                       [inputArrayMin]="1"
                       [inputArrayMax]="65535"
-                      [inputArrayIsRequired]="true"
                       [inputArrayLabelText]="'SERVICE.STEP_3_CONTAINER_PORT' | translate"
                       [inputArraySource]="container.container_port">
       </cs-input-array>
@@ -39,7 +38,7 @@
                   rows="3"
                   class="area-command"
                   (keypress)="shieldEnter($event)"
-                  [(ngModel)]="container.command[0]"></textarea>
+                  [(ngModel)]="container.command"></textarea>
       </div>
     </div>
   </div>

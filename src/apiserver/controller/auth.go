@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/apiserver/service/auth"
 	"git/inspursoft/board/src/common/model"
@@ -22,6 +23,45 @@ func (u *AuthController) Prepare() {
 	u.isExternalAuth = utils.GetBoolValue("IS_EXTERNAL_AUTH")
 }
 
+func (u *AuthController) processAuth(principal, password string) (string, bool) {
+	var currentAuth *auth.Auth
+	var err error
+	if principal == "admin" {
+		currentAuth, err = auth.GetAuth("db_auth")
+	} else {
+		currentAuth, err = auth.GetAuth(authMode())
+	}
+	if err != nil {
+		u.internalError(err)
+		return "", false
+	}
+	user, err := (*currentAuth).DoAuth(principal, password)
+	if err != nil {
+		u.internalError(err)
+		return "", false
+	}
+
+	if user == nil {
+		u.serveStatus(http.StatusBadRequest, "Incorrect username or password.")
+		return "", false
+	}
+	payload := make(map[string]interface{})
+	payload["id"] = strconv.Itoa(int(user.ID))
+	payload["username"] = user.Username
+	payload["email"] = user.Email
+	payload["realname"] = user.Realname
+	payload["is_project_admin"] = user.ProjectAdmin
+	payload["is_system_admin"] = user.SystemAdmin
+	token, err := signToken(payload)
+	if err != nil {
+		u.internalError(err)
+		return "", false
+	}
+	memoryCache.Put(user.Username, token.TokenString, time.Second*time.Duration(tokenCacheExpireSeconds))
+	memoryCache.Put(token.TokenString, payload, time.Second*time.Duration(tokenCacheExpireSeconds))
+	return token.TokenString, true
+}
+
 func (u *AuthController) SignInAction() {
 	var err error
 	reqData, err := u.resolveBody()
@@ -36,45 +76,27 @@ func (u *AuthController) SignInAction() {
 			u.internalError(err)
 			return
 		}
-
-		currentAuth, err := auth.GetAuth(authMode())
-		if err != nil {
-			u.internalError(err)
-			return
-		}
-		user, err := (*currentAuth).DoAuth(reqUser.Username, reqUser.Password)
-		if err != nil {
-			u.internalError(err)
-			return
-		}
-
-		if user == nil {
-			u.serveStatus(http.StatusBadRequest, "Incorrect username or password.")
-			return
-		}
-
-		payload := make(map[string]interface{})
-		payload["id"] = strconv.Itoa(int(user.ID))
-		payload["username"] = user.Username
-		payload["email"] = user.Email
-		payload["realname"] = user.Realname
-		payload["is_project_admin"] = user.ProjectAdmin
-		payload["is_system_admin"] = user.SystemAdmin
-		token, err := signToken(payload)
-		if err != nil {
-			u.internalError(err)
-			return
-		}
-		memoryCache.Put(user.Username, token.TokenString, time.Second*time.Duration(tokenCacheExpireSeconds))
-		memoryCache.Put(token.TokenString, payload, time.Second*time.Duration(tokenCacheExpireSeconds))
-		u.Data["json"] = token
+		token, _ := u.processAuth(reqUser.Username, reqUser.Password)
+		u.Data["json"] = model.Token{TokenString: token}
 		u.ServeJSON()
 	}
 }
 
+func (u *AuthController) ExternalAuthAction() {
+	externalToken := u.GetString("external_token")
+	if externalToken == "" {
+		u.customAbort(http.StatusBadRequest, "Missing token for verification.")
+		return
+	}
+	if token, isSuccess := u.processAuth(externalToken, ""); isSuccess {
+		u.Redirect(fmt.Sprintf("http://%s/dashboard?token=%s", utils.GetStringValue("BOARD_HOST"), token), http.StatusFound)
+		logs.Debug("Successful logged in.")
+	}
+
+}
+
 func (u *AuthController) SignUpAction() {
 	var err error
-
 	if u.isExternalAuth {
 		logs.Debug("Current AUTH_MODE is external auth.")
 		u.customAbort(http.StatusMethodNotAllowed, "Current AUTH_MODE is external auth.")

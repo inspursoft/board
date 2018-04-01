@@ -15,7 +15,7 @@
           <label for="txtUsername" class="required">{{ 'USER_CENTER.USERNAME' | translate }}</label>
           <label for="txtUsername" aria-haspopup="true" role="tooltip"
                  class="tooltip tooltip-validation tooltip-md tooltip-top-left"
-                 [class.invalid]="usernameInput.invalid && (usernameInput.dirty || usernameInput.touched)">
+                 [class.invalid]="usernameInput.invalid && usernameInput.touched">
             <input type="text"
                    id="txtUsername"
                    maxlength="40"
@@ -48,7 +48,7 @@
           <label for="txtEmail" class="required">{{ 'USER_CENTER.EMAIL' | translate }}</label>
           <label for="txtEmail" aria-haspopup="true" role="tooltip"
                  class="tooltip tooltip-validation tooltip-md  tooltip-top-left"
-                 [class.invalid]="emailInput.invalid && (emailInput.dirty || emailInput.touched)">
+                 [class.invalid]="emailInput.invalid && emailInput.touched">
             <input type="email"
                    id="txtEmail"
                    placeholder="{{ 'USER_CENTER.INPUT_EMAIL' | translate }}"
@@ -78,7 +78,7 @@
           <label for="txtPassword" class="required">{{ 'USER_CENTER.PASSWORD' | translate }}</label>
           <label for="txtPassword" aria-haspopup="true" role="tooltip"
                  class="tooltip tooltip-validation tooltip-md  tooltip-top-left"
-                 [class.invalid]="passwordInput.invalid && (passwordInput.dirty || passwordInput.touched)">
+                 [class.invalid]="passwordInput.invalid && passwordInput.touched">
             <input type="password"
                    id="txtPassword"
                    placeholder="{{ 'USER_CENTER.INPUT_PASSWORD' | translate }}"
@@ -109,7 +109,7 @@
           </label>
           <label for="txtConfirmPassword" aria-haspopup="true" role="tooltip"
                  class="tooltip tooltip-validation tooltip-md  tooltip-top-left"
-                 [class.invalid]="confirmPasswordInput.invalid && (confirmPasswordInput.dirty || confirmPasswordInput.touched)">
+                 [class.invalid]="confirmPasswordInput.invalid && confirmPasswordInput.touched">
             <input type="password"
                    id="txtConfirmPassword"
                    placeholder="{{ 'USER_CENTER.INPUT_CONFIRM_PASSWORD' | translate }}"
@@ -130,7 +130,7 @@
               aria-haspopup="true"
               role="tooltip"
               class="tooltip tooltip-validation tooltip-md"
-              [class.invalid]="realnameInput.invalid && (realnameInput.dirty || realnameInput.touched)">
+              [class.invalid]="realnameInput.invalid && realnameInput.touched">
               <input type="text" id="txtRealname"
               name="realname"
               [(ngModel)]="userModel.user_realname"
@@ -141,7 +141,7 @@
           <label for="txtComment">{{ 'USER_CENTER.COMMENT' | translate }}</label>
           <label for="txtComment" aria-haspopup="true" role="tooltip"
                  class="tooltip tooltip-validation tooltip-md tooltip-top-left "
-                 [class.invalid]="commentInput.invalid && (commentInput.dirty || commentInput.touched)">
+                 [class.invalid]="commentInput.invalid && commentInput.touched">
             <input type="text"
                    id="txtComment"
                    name="comment"

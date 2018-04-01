@@ -1,19 +1,46 @@
-clr-icon.delete.disabled {
+clr-icon.action.disabled {
   color: silver;
 }
 
-clr-icon.delete.disabled:hover {
+clr-icon.action.disabled:hover {
   cursor: not-allowed;
 }
 
-span.warning{
+span.warning {
   color: darkorange;
 }
 
-span.stopped{
+span.stopped {
   color: gray;
 }
 
-span.running{
+span.running {
   color: green;
+}
+
+div.build-service-container {
+  display: flex;
+  width: 100%;
+  min-height: 400px; /*fixed height*/
+  flex-direction: column;
+}
+
+div.import-method-container {
+  margin-bottom: 30px;
+}
+
+div.build-btn-container {
+  display: flex;
+}
+
+label.build-service-text:hover {
+  cursor: pointer;
+}
+
+label.build-service-text-disabled {
+  color: silver;
+}
+
+label.build-service-text-disabled:hover {
+  cursor: not-allowed;
 }

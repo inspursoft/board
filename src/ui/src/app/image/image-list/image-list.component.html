@@ -17,11 +17,15 @@
       <clr-dg-cell>{{image.image_name}}</clr-dg-cell>
       <clr-dg-cell>{{image.image_comment}}</clr-dg-cell>
       <clr-dg-cell>
-        <a href="javascript:void(0)">
-          <clr-icon shape="trash" (click)="confirmToDeleteImage(image.image_name)"></clr-icon>
-        </a>
         <a href="javascript:void(0)" (click)="showImageDetail(image)">
           <clr-icon shape="info-standard"></clr-icon>
+        </a>
+        <a href="javascript:void(0)">
+          <clr-icon shape="trash"
+                    class="action"
+                    [ngClass]="{'disabled':!isSystemAdmin}"
+                    (click)="confirmToDeleteImage(image.image_name)">
+          </clr-icon>
         </a>
       </clr-dg-cell>
     </clr-dg-row>
@@ -53,7 +57,9 @@
     <label for="fromTemplate"
            [ngClass]="{'disabled':selectedProjectId == 0,'enable':selectedProjectId > 0}">
       {{"IMAGE.CREATE_IMAGE_TEMPLATE"|translate}}
-    </label><br>
+    </label>
+  </div>
+  <div class="import-method-container">
     <input title=""
            type="radio"
            id="fromDockerFile"
@@ -63,7 +69,8 @@
     <label for="fromDockerFile"
            [ngClass]="{'disabled':selectedProjectId == 0,'enable':selectedProjectId > 0}">
       {{"IMAGE.CREATE_IMAGE_DOCKER_FILE"|translate}}
-    </label><br>
+    </label></div>
+  <div class="import-method-container">
     <input title=""
            type="radio"
            id="fromDevOps"

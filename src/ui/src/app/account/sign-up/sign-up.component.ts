@@ -15,7 +15,7 @@ import { AccountService } from '../account.service';
    styleUrls: [ './sign-up.component.css' ]
 })
 export class SignUpComponent {
-  
+  isSignUpWIP:boolean = false;
   signUpModel: SignUp = new SignUp();
   _subscription: Subscription;
 
@@ -25,6 +25,7 @@ export class SignUpComponent {
     private router: Router) {}
   
   signUp(): void {
+    this.isSignUpWIP = true;
     let account: Account = {
       username: this.signUpModel.username,
       email: this.signUpModel.email,
@@ -34,8 +35,12 @@ export class SignUpComponent {
     };
     this.accountService
       .signUp(account)
-      .then(res=>this.router.navigate(['/sign-in']))
+      .then(res=>{
+        this.isSignUpWIP = false;
+        this.router.navigate(['/sign-in']);
+      })
       .catch(err=>{
+        this.isSignUpWIP = false;
         let confirmationMessage = new Message();
         confirmationMessage.title = "ACCOUNT.ERROR";
         if(err && err.status === 409) {

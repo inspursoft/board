@@ -55,7 +55,7 @@
   flex-basis: 60%;
 }
 
-.section-right-container-container{
+.section-right-container-container {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -68,15 +68,13 @@
   padding: 0;
 }
 
-.card-block-top-container {
-  flex-basis: 100%;
+div.card-block-top-container {
   height: 60px;
   display: flex;
   padding: 10px 20px 10px 20px;
 }
 
 .card-block-bottom-container {
-  flex-basis: 100%;
   height: 300px;
   display: flex;
   flex-direction: column;
@@ -103,17 +101,14 @@
   color: #d48265
 }
 
-.select-time-container {
-  flex-basis: 50px;
+div.select-time-container {
   margin-left: 10px;
   height: 40px;
-  display: flex;
-  justify-content: flex-end;
 }
 
-.caption_container {
-  flex-basis: 100%;
+div.caption_container {
   display: flex;
+  flex-basis: 100%;
   justify-content: center;
   line-height: 40px;
 }
@@ -150,8 +145,27 @@ button:focus {
   width: 100%;
 }
 
-.dropdown-button{
+.dropdown-button {
   width: 150px;
   font-size: 10px;
   text-align: left;
+}
+
+clr-icon.detail {
+  height: 30px;
+  width: 30px;
+}
+
+div.grafana-container-block {
+  padding: 0;
+  margin: 0;
+  scrollbar-base-color: blue;
+}
+
+div.grafana-container-header{
+  display: flex;
+}
+
+span.grafana-card-title{
+  flex-basis: 100%;
 }

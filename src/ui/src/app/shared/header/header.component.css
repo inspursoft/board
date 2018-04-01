@@ -17,3 +17,7 @@
 .signInForecolor >>> .dropdown > .dropdown-toggle {
   color: black;
 }
+
+form.search label:before{
+  cursor: auto;
+}

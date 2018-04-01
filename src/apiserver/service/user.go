@@ -30,8 +30,8 @@ func GetUsers(field string, value interface{}, selectedFields ...string) ([]*mod
 	return dao.GetUsers(field, value, selectedFields...)
 }
 
-func GetPaginatedUsers(field string, value interface{}, pageIndex int, pageSize int, selectedField ...string) (*model.PaginatedUsers, error) {
-	return dao.GetPaginatedUsers(field, value, pageIndex, pageSize, selectedField...)
+func GetPaginatedUsers(field string, value interface{}, pageIndex int, pageSize int, orderField string, orderAsc int, selectedField ...string) (*model.PaginatedUsers, error) {
+	return dao.GetPaginatedUsers(field, value, pageIndex, pageSize, orderField, orderAsc, selectedField...)
 }
 
 func UpdateUser(user model.User, selectedFields ...string) (bool, error) {

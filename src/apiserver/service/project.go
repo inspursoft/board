@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
@@ -102,8 +103,8 @@ func GetProjectsByUser(query model.Project, userID int64) ([]*model.Project, err
 	return dao.GetProjectsByUser(query, userID)
 }
 
-func GetPaginatedProjectsByUser(query model.Project, userID int64, pageIndex int, pageSize int) (*model.PaginatedProjects, error) {
-	return dao.GetPaginatedProjectsByUser(query, userID, pageIndex, pageSize)
+func GetPaginatedProjectsByUser(query model.Project, userID int64, pageIndex int, pageSize int, orderField string, orderAsc int) (*model.PaginatedProjects, error) {
+	return dao.GetPaginatedProjectsByUser(query, userID, pageIndex, pageSize, orderField, orderAsc)
 }
 
 func GetProjectsByMember(query model.Project, userID int64) ([]*model.Project, error) {
@@ -171,6 +172,22 @@ func CreateNamespace(projectName string) (bool, error) {
 	return true, nil
 }
 
+func SyncNamespaceByOwnerID(userID int64) error {
+	query := model.Project{OwnerID: int(userID)}
+	projects, err := GetProjectsByUser(query, userID)
+	if err != nil {
+		return fmt.Errorf("Failed to get default projects: %+v", err)
+	}
+
+	for _, project := range projects {
+		_, err = CreateNamespace((*project).Name)
+		if err != nil {
+			return fmt.Errorf("Failed to create namespace: %s", (*project).Name)
+		}
+	}
+	return nil
+}
+
 func SyncProjectsWithK8s() error {
 	cli, err := K8sCliFactory("", kubeMasterURL(), k8sAPIversion1)
 	apiSet, err := kubernetes.NewForConfig(cli)
@@ -188,7 +205,6 @@ func SyncProjectsWithK8s() error {
 	}
 
 	for _, namespace := range (*namespaceList).Items {
-
 		existing, err := ProjectExists(namespace.Name)
 		if err != nil {
 			logs.Error("Failed to check prject existing %s %+v", namespace.Name, err)
@@ -220,7 +236,16 @@ func SyncProjectsWithK8s() error {
 	return err
 }
 
-func DeleteNamespace(projectName string) (bool, error) {
+func DeleteNamespace(nameSpace string) (bool, error) {
+	namespaceExists, err := NamespaceExists(nameSpace)
+	if err != nil {
+		return false, err
+	}
+	if !namespaceExists {
+		logs.Info("Namespace %s not exists in cluster.", nameSpace)
+		return true, nil
+	}
+
 	cli, err := K8sCliFactory("", kubeMasterURL(), "v1")
 	apiSet, err := kubernetes.NewForConfig(cli)
 	if err != nil {
@@ -228,9 +253,9 @@ func DeleteNamespace(projectName string) (bool, error) {
 	}
 
 	n := apiSet.Namespaces()
-	err = n.Delete(projectName, nil)
+	err = n.Delete(nameSpace, nil)
 	if err != nil {
-		logs.Error("Failed to delete namespace", projectName)
+		logs.Error("Failed to delete namespace %s", nameSpace)
 		return false, err
 	}
 	return true, nil

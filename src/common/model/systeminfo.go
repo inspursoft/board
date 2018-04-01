@@ -6,4 +6,6 @@ type SystemInfo struct {
 	SetAdminPassword string `json:"set_auth_password"`
 	InitProjectRepo  string `json:"init_project_repo"`
 	SyncK8s          string `json:"sync_k8s"`
+	RedirectionURL   string `json:"redirection_url"`
+	Version          string `json:"board_version"`
 }

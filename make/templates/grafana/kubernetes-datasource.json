@@ -1,0 +1,11 @@
+{
+	"name": "cluster",
+	"type": "raintank-kubernetes-datasource",
+	"url": "http://$kube_master_ip:$kube_master_port",
+	"access": "proxy",
+	"jsonData": {
+		"ds": "graphite",
+		"server": "graphite",
+		"port": 2003
+	}
+}

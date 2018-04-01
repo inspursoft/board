@@ -67,18 +67,28 @@ paths:
           type: string
           required: false
           description: Username for filtering results.
-        - name: user_list_page
+        - name: page_index
           in: query
           type: integer
           format: int32
           required: false
           description: The page nubmer, default is 1.
-        - name: user_list_page_size
+        - name: page_size
           in: query
           type: integer
           format: int32
           required: false
           description: The size of per page, default is 10, maximum is 100.
+        - name: order_field 
+          in: query
+          description: Order field for results.
+          required: false
+          type: string
+        - name: order_asc 
+          in: query
+          description: Order ascent type for results.
+          required: false
+          type: integer
       tags:
         - Products
       responses:
@@ -496,18 +506,28 @@ paths:
           required: false
           type: integer
           format: int32
-        - name: project_list_page
+        - name: page_index
           in: query
           type: integer
           format: int32
           required: false
           description: The page nubmer, default is 1.
-        - name: project_list_page_size
+        - name: page_size
           in: query
           type: integer
           format: int32
           required: false
           description: The size of per page, default is 10, maximum is 100.
+        - name: order_field 
+          in: query
+          description: Order field for results.
+          required: false
+          type: string
+        - name: order_asc 
+          in: query
+          description: Order ascent type for results.
+          required: false
+          type: integer
       tags:
         - Products
       responses:
@@ -860,6 +880,44 @@ paths:
           description: User need to log in first.
         500:
           description: Internal errors.
+    patch:
+      summary: Rolling update the images of the service.
+      description: 
+        This endpoint is to roll update the images of the service.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name 
+          in: query
+          description: Project name.
+          required: true
+          type: string
+        - name: service_name 
+          in: query
+          description: Service name.
+          required: true
+          type: string
+        - name: image_list 
+          in: body
+          description: Updates of imagelist data.
+          required: true
+          type: object
+          items:
+            $ref: '#/definitions/ImageList'
+      tags:
+        - Products
+      responses:
+        200:
+          description: Update service successfully.
+        401:
+          description: User need to log in first.
+        409:
+          description: The updated image list conflict.
+        500:
+          description: Internal errors.
   /v1/services/reconfig:
     get:
       summary: load service config from service DB.
@@ -912,18 +970,28 @@ paths:
           required: false
           type: integer
           format: int32
-        - name: service_list_page
+        - name: page_index
           in: query
           type: integer
           format: int32
           required: false
           description: The page nubmer, default is 1.
-        - name: servie_list_page_size
+        - name: page_size
           in: query
           type: integer
           format: int32
           required: false
           description: The size of per page, default is 10, maximum is 100.
+        - name: order_field 
+          in: query
+          description: Order field for results.
+          required: false
+          type: string
+        - name: order_asc 
+          in: query
+          description: Order ascent type for results.
+          required: false
+          type: integer
       tags:
         - Products
       responses:
@@ -1153,34 +1221,29 @@ paths:
           type: string
           required: true
           description: Current available token.
-        - name: service_name
-          in: query
-          description: Service name for filtering results.
-          required: true
-          type: integer
-          format: string
         - name: project_name
           in: query
-          description: project_name for filtering results.
+          description: Project name.
           required: true
-          type: integer
-          format: string
-        - name: yaml_type
-          in: query
-          description: service yaml file type for filtering results.
-          required: true
-          type: integer
-          format: string
-        - name: upload_file
+          type: string
+        - name: deployment_file
           in: formData
           type: file
           required: true
-          description: File to be uploaded.
+          description: deployment yaml to be uploaded.
+        - name: service_file
+          in: formData
+          type: file
+          required: true
+          description: service yaml to be uploaded.
       tags:
         - Products
-      responses:
+      responses:  
         200:
-          description: An array of search results.           
+          description: Upload files successfully return service id.     
+          schema:
+            description: The service id.  
+            type: string     
         400:
           description: Bad Request
         401:
@@ -1450,9 +1513,7 @@ paths:
         403:
           description: Invalid service ID.
         500:
-          description: Unexpected internal errors.
-
-      
+          description: Unexpected internal errors.      
   /v1/services/config:
     post:
       summary: Deploy service by this service configuration.
@@ -1561,7 +1622,6 @@ paths:
           description: User need to log in first.
         500:
           description: Internal errors.
-
   /v1/services/deployment:
     post:
       summary: Deploy service by this service configuration.
@@ -1690,6 +1750,35 @@ paths:
         500:
           description: Unexpected internal errors.    
   /v1/services/{service_id}/scale:
+    get:  
+      summary: Get service deployment scale info.
+      description: |
+        This endpoint is aimed to get service deployment scale info.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return deployment scale status.
+          schema:
+            $ref: '#/definitions/ServiceScaleStatus'
+        401:
+          description: User need to log in first.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.    
     put:  
       summary: Manually scale the service replica.
       description: |
@@ -1757,6 +1846,33 @@ paths:
           description: Invalid service ID.
         500:
           description: Unexpected internal errors.    
+  /v1/services/ingress:
+    get:  
+      summary: Get the ingress module status.
+      description: |
+        This endpoint is aimed to get the ingress module status.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name 
+          in: query
+          description: project name for service.
+          required: true
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return ingress data.
+        401:
+          description: User need to log in first.
+        403:
+          description: Invalid project name.
+        500:
+          description: Unexpected internal errors.
   /v1/node:
     get:
       summary: Return nodes in Board added by admin.
@@ -2074,12 +2190,21 @@ paths:
           type: string
           required: true
           description: Current available token.
-        - name: image_index
-          in: body
+        - name: image_name
+          in: query
+          description: image name to specify an image.
           required: true
-          schema:
-            $ref: '#/definitions/ImageIndex'
-          description: The image index struct for the image to be deleted.    
+          type: string
+        - name: image_tag
+          in: query
+          type: string
+          required: true
+          description: The tag of this image.
+        - name: project_name
+          in: query
+          type: string
+          required: true
+          description: The project name that the image belongs to.     
       tags:
         - Products
       responses:
@@ -2256,6 +2381,31 @@ paths:
           description: Image name does not exist.
         500:
           description: Internal errors.
+  /v1/images/registry:
+    get:
+      summary: Return the registry address of this system.
+      description: |
+        This endpoint returns the registry address of this system.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the registry address of this system.
+          schema:
+            description: The registry address.  
+            type: string  
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Internal errors.          
   /v1/images/dockerfilebuilding:
     post:
       summary: Build a new image based on a dockerfile.
@@ -3316,7 +3466,18 @@ definitions:
       service_scale:
         type: integer
         format: int32
-        description: The new replica number of the service.                
+        description: The new replica number of the service.         
+  ServiceScaleStatus:
+    type: object
+    properties:
+      desired_instance:
+        type: integer
+        format: int32
+        description: The desired replica number of the service.       
+      available_instance:
+        type: integer
+        format: int32
+        description: The available running replica number of the service. 
   ServicePublicityUpdate:
     type: object
     properties:
@@ -3578,6 +3739,9 @@ definitions:
         format: int
       service_name:
         type: string
+      service_public:
+        type: integer   
+        format: int32
       image_list:
         type: array
         items:

@@ -1,0 +1,52 @@
+version: '2'
+services:
+  mysql:
+    build: 
+      context: ../../
+      dockerfile: make/dev/container/db/Dockerfile
+    restart: always
+    volumes:
+      - /data/board/database:/var/lib/mysql
+    env_file:
+      - ../config/db/env
+   # networks:
+    #  - board
+    ports:
+      - 3306:3306
+   # depends_on:
+   #   - log
+    #logging:
+    #  driver: "syslog"
+   #   options:  
+   #     syslog-address: "tcp://127.0.0.1:1514"
+   #     tag: "mysql"
+  openldap:
+    image: osixia/openldap:1.1.11
+    restart: always
+    volumes:
+      - ./ldap_test.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/ldap_test.ldif
+    command: --copy-service
+    ports:
+      - 389:389
+      - 636:636
+  tokenserver:
+    build:
+      context: ../../
+      dockerfile: make/dev/container/tokenserver/Dockerfile
+    image: dev_tokenserver:dev
+    env_file:
+      - ../config/tokenserver/env
+    restart: always
+    volumes:
+      - ../config/tokenserver/app.conf:/go/bin/app.conf:z
+    ports:
+      - 4000:4000
+  registry:
+    image: registry:latest
+    restart: always
+    volumes:
+      - /data/registry:/tmp/registry
+    environment:
+      REGISTRY_STORAGE_DELETE_ENABLED: 'true'
+    ports:
+      - 5000:5000

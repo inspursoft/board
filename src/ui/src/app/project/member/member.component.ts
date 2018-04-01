@@ -20,7 +20,7 @@ export class MemberComponent implements OnInit {
 
   currentUser: {[key: string]: any};
 
-  projectMemberOpened: boolean;
+  projectMemberOpened: boolean = false;
 
   role: Role = new Role();
   members: Member[];

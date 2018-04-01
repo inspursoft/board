@@ -1,9 +1,9 @@
-import { OnInit, Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { Image } from "../image";
 import { ImageService } from "../image-service/image-service"
 import { MessageService } from "../../shared/message-service/message.service";
-import { MESSAGE_TARGET, BUTTON_STYLE, MESSAGE_TYPE } from '../../shared/shared.const';
+import { BUTTON_STYLE, MESSAGE_TARGET } from '../../shared/shared.const';
 import { Message } from '../../shared/message-service/message';
 import { AppInitService } from "../../app.init.service";
 import { Project } from "../../project/project";
@@ -37,7 +37,7 @@ export class ImageListComponent implements OnInit, OnDestroy {
     this.projectsList = Array<Project>();
     this._subscription = this.messageService.messageConfirmed$.subscribe(m => {
       let confirmationMessage = <Message>m;
-      if (confirmationMessage) {
+      if (confirmationMessage && confirmationMessage.target == MESSAGE_TARGET.DELETE_IMAGE) {
         let imageName = <string>confirmationMessage.data;
         let m: Message = new Message();
         this.imageService
@@ -76,8 +76,15 @@ export class ImageListComponent implements OnInit, OnDestroy {
     }
   }
 
+  get isSystemAdmin(): boolean {
+    if(this.appInitService.currentUser) {
+      return this.appInitService.currentUser["user_system_admin"] == 1;
+    }
+    return false;
+  }
+
   clickSelectProject(project: Project) {
-    this.router.navigate(["/projects"]);
+    this.router.navigate(["/projects"], {queryParams: {token: this.appInitService.token}, fragment: "create"});
   }
 
   changeSelectProject(project: Project) {
@@ -105,14 +112,16 @@ export class ImageListComponent implements OnInit, OnDestroy {
   }
 
   confirmToDeleteImage(imageName: string) {
-    let announceMessage = new Message();
-    announceMessage.title = 'IMAGE.DELETE_IMAGE';
-    announceMessage.message = 'IMAGE.CONFIRM_TO_DELETE_IMAGE';
-    announceMessage.params = [imageName];
-    announceMessage.target = MESSAGE_TARGET.DELETE_IMAGE;
-    announceMessage.buttons = BUTTON_STYLE.DELETION;
-    announceMessage.data = imageName;
-    this.messageService.announceMessage(announceMessage);
+    if (this.isSystemAdmin){
+      let announceMessage = new Message();
+      announceMessage.title = 'IMAGE.DELETE_IMAGE';
+      announceMessage.message = 'IMAGE.CONFIRM_TO_DELETE_IMAGE';
+      announceMessage.params = [imageName];
+      announceMessage.target = MESSAGE_TARGET.DELETE_IMAGE;
+      announceMessage.buttons = BUTTON_STYLE.DELETION;
+      announceMessage.data = imageName;
+      this.messageService.announceMessage(announceMessage);
+    }
   }
 
   createImage() {
