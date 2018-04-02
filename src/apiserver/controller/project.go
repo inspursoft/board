@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/astaxie/beego/logs"
 )
 
 type ProjectController struct {
@@ -26,7 +28,6 @@ func (p *ProjectController) Prepare() {
 }
 
 func (p *ProjectController) CreateProjectAction() {
-
 	reqData, err := p.resolveBody()
 	if err != nil {
 		p.internalError(err)
@@ -88,6 +89,12 @@ func (p *ProjectController) CreateProjectAction() {
 	}
 	if !isSuccess {
 		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Namespace name: %s is illegal.", reqProject.Name))
+	}
+
+	err = service.CreateRepoAndJob(p.currentUser.ID, reqProject.Name)
+	if err != nil {
+		logs.Error("Failed to create repo and job for project: %s", reqProject.Name)
+		p.internalError(err)
 	}
 }
 

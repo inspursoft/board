@@ -1,38 +1,35 @@
 package controller
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
-	"git/inspursoft/board/src/common/utils"
 	"net/http"
-	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
-	"text/template"
 
 	"github.com/astaxie/beego/logs"
-
-	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
 const (
-	jenkinsJobURL   = "http://jenkins:8080/job/{{.JobName}}/buildWithParameters?user_id={{.UserID}}&token={{.Token}}&value={{.Value}}&extras={{.Extras}}&file_name={{.FileName}}"
-	jenkinsJobToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+	toBeRemoved = true
 )
 
 type GitRepoController struct {
 	baseController
+	repoServerURL string
 }
 
 type pushObject struct {
-	Items    []string `json:"items"`
-	Message  string   `json:"message"`
-	JobName  string   `json:"job_name"`
-	Value    string   `json:"value"`
-	Extras   string   `json:"extras"`
-	FileName string   `json:"file_name"`
+	ProjectName string
+	UserID      int64
+	Items       []string `json:"items"`
+	Message     string   `json:"message"`
+	JobName     string   `json:"job_name"`
+	Value       string   `json:"value"`
+	Extras      string   `json:"extras"`
+	FileName    string   `json:"file_name"`
 }
 
 func (g *GitRepoController) Prepare() {
@@ -42,10 +39,31 @@ func (g *GitRepoController) Prepare() {
 		return
 	}
 	g.currentUser = user
+	g.resolveRepoPath()
+}
+
+func (g *GitRepoController) resolveRepoServerURL() {
+	projectName := g.GetString("project_name")
+	if strings.TrimSpace(projectName) == "" {
+		g.CustomAbort(http.StatusBadRequest, "No found for project name.")
+		return
+	}
+	isExists, err := service.ProjectExists(projectName)
+	if err != nil {
+		g.internalError(err)
+		return
+	}
+	if !isExists {
+		g.CustomAbort(http.StatusNotFound, fmt.Sprintf("Project %s does not exist.", projectName))
+		return
+	}
+	username := g.currentUser.Username
+	g.repoServerURL = fmt.Sprintf("%s/%s/%s.git", gogitsSSHURL(), username, projectName)
 }
 
 func (g *GitRepoController) CreateServeRepo() {
-	_, err := service.InitBareRepo(repoServePath())
+	g.resolveRepoServerURL()
+	_, err := service.InitBareRepo(g.repoServerURL)
 	if err != nil {
 		g.customAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to initialize serve repo: %+v\n", err))
 		return
@@ -53,18 +71,15 @@ func (g *GitRepoController) CreateServeRepo() {
 }
 
 func (g *GitRepoController) InitUserRepo() {
-	_, err := service.InitRepo(repoServeURL(), repoPath())
+	g.resolveRepoServerURL()
+	_, err := service.InitRepo(g.repoServerURL, g.currentUser.Username, g.repoPath)
 	if err != nil {
 		g.customAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to initialize user's repo: %+v\n", err))
 		return
 	}
-
-	subPath := g.GetString("sub_path")
-	if subPath != "" {
-		os.MkdirAll(filepath.Join(repoPath(), subPath), 0755)
-		if err != nil {
-			g.internalError(err)
-		}
+	err = service.CreateMetaConfiguration(make(map[string]string), g.repoPath)
+	if err != nil {
+		g.customAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to initialize user's repo default directories: %+v\n", err))
 	}
 }
 
@@ -81,13 +96,16 @@ func (g *GitRepoController) PushObjects() {
 		return
 	}
 
-	defaultCommitMessage := fmt.Sprintf("Added items: %s to repo: %s", strings.Join(reqPush.Items, ","), repoPath)
+	username := g.currentUser.Username
+	email := g.currentUser.Email
+
+	repoPath := filepath.Join(baseRepoPath(), username, reqPush.ProjectName)
+	defaultCommitMessage := fmt.Sprintf("added items: %s to repo: %s", strings.Join(reqPush.Items, ","), repoPath)
 
 	if len(reqPush.Message) == 0 {
 		reqPush.Message = defaultCommitMessage
 	}
-
-	repoHandler, err := service.OpenRepo(repoPath())
+	repoHandler, err := service.OpenRepo(repoPath, username)
 	if err != nil {
 		g.customAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to open user's repo: %+v\n", err))
 		return
@@ -96,10 +114,7 @@ func (g *GitRepoController) PushObjects() {
 		repoHandler.Add(item)
 	}
 
-	username := g.currentUser.Username
-	email := g.currentUser.Email
-
-	_, err = repoHandler.Commit(reqPush.Message, &object.Signature{Name: username, Email: email})
+	_, err = repoHandler.Commit(reqPush.Message, username, email)
 	if err != nil {
 		g.customAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to commit changes to user's repo: %+v\n", err))
 		return
@@ -108,39 +123,10 @@ func (g *GitRepoController) PushObjects() {
 	if err != nil {
 		g.customAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to push objects to git repo: %+v\n", err))
 	}
-
-	templates := template.Must(template.New("job_url").Parse(jenkinsJobURL))
-	var triggerURL bytes.Buffer
-	data := struct {
-		Token    string
-		JobName  string
-		Value    string
-		Extras   string
-		FileName string
-	}{
-		Token:    jenkinsJobToken,
-		JobName:  reqPush.JobName,
-		Value:    reqPush.Value,
-		Extras:   reqPush.Extras,
-		FileName: reqPush.FileName,
-	}
-	templates.Execute(&triggerURL, data)
-	logs.Debug("Jenkins trigger url: %s", triggerURL.String())
-	resp, err := http.Get(triggerURL.String())
-	if err != nil {
-		g.internalError(err)
-	}
-	g.customAbort(resp.StatusCode, "")
 }
 
 func (g *GitRepoController) PullObjects() {
-	target := g.GetString("target")
-	if target == "" {
-		g.customAbort(http.StatusBadRequest, "No target provided for pulling.")
-		return
-	}
-	targetPath := filepath.Join(baseRepoPath(), target)
-	repoHandler, err := service.InitRepo(repoServeURL(), targetPath)
+	repoHandler, err := service.OpenRepo(g.repoPath, g.currentUser.Username)
 	if err != nil {
 		g.customAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to open user's repo: %+v\n", err))
 		return
@@ -151,81 +137,60 @@ func (g *GitRepoController) PullObjects() {
 	}
 }
 
-func InternalPushObjects(p *pushObject, g *baseController) (int, string, error) {
-
-	defaultCommitMessage := fmt.Sprintf("Added items: %s to repo: %s", strings.Join(p.Items, ","), repoPath())
-
-	if len(p.Message) == 0 {
-		p.Message = defaultCommitMessage
+func generateMetaConfiguration(p *pushObject, repoPath string) error {
+	conf := make(map[string]string)
+	conf["extras"] = p.Extras
+	conf["file_name"] = p.FileName
+	conf["flag"] = p.JobName
+	conf["value"] = p.Value
+	conf["apiserver"] = apiServerURL()
+	conf["user_id"] = strconv.Itoa(int(p.UserID))
+	if p.JobName == imageProcess {
+		conf["docker_registry"] = registryBaseURI()
 	}
-
-	repoHandler, err := service.OpenRepo(repoPath())
-	if err != nil {
-		return http.StatusInternalServerError, "Failed to open user's repo", err
-	}
-	for _, item := range p.Items {
-		repoHandler.Add(item)
-	}
-
-	username := g.currentUser.Username
-	email := g.currentUser.Email
-
-	_, err = repoHandler.Commit(p.Message, &object.Signature{Name: username, Email: email})
-	if err != nil {
-		return http.StatusInternalServerError, "Failed to commit changes to user's repo", err
-	}
-	err = repoHandler.Push()
-	if err != nil {
-		return http.StatusInternalServerError, "Failed to push objects to git repo", err
-	}
-	paramTriggerJob := struct {
-		UserID   int64
-		Token    string
-		JobName  string
-		Value    string
-		Extras   string
-		FileName string
-	}{
-		UserID:   g.currentUser.ID,
-		Token:    jenkinsJobToken,
-		JobName:  p.JobName,
-		Value:    p.Value,
-		Extras:   p.Extras,
-		FileName: p.FileName,
-	}
-	triggerURL, err := utils.GenerateURL(jenkinsJobURL, paramTriggerJob)
-	if err != nil {
-		return http.StatusInternalServerError, "Failed to generate trigger job URL by template.", err
-	}
-	logs.Debug("Jenkins trigger URL: %s", triggerURL)
-	resp, err := http.Get(triggerURL)
-	if err != nil {
-		return http.StatusInternalServerError, "Failed to triggerURL " + triggerURL, err
-	}
-	return resp.StatusCode, "Internal Push Object successfully", err
+	return service.CreateMetaConfiguration(conf, repoPath)
 }
 
-// Clean git repo after remove config files
-func InternalCleanObjects(p *pushObject, g *baseController) (int, string, error) {
+func InternalPushObjects(p *pushObject, g *baseController, actionType ...bool) (int, string, error) {
+	username := g.currentUser.Username
+	repoPath := filepath.Join(baseRepoPath(), username, p.ProjectName)
+	logs.Debug("Repo path for pushing objects: %s", repoPath)
 
-	defaultCommitMessage := fmt.Sprintf("Removed items: %s from repo: %s", strings.Join(p.Items, ","), repoPath())
+	isRemove := false
+	if len(actionType) > 0 && actionType[0] {
+		isRemove = true
+	}
+
+	actionName := "Added"
+	if isRemove {
+		actionName = "Removed"
+	}
+	defaultCommitMessage := fmt.Sprintf("%s items: %s to repo: %s", actionName, strings.Join(p.Items, ","), repoPath)
 
 	if len(p.Message) == 0 {
 		p.Message = defaultCommitMessage
 	}
 
-	repoHandler, err := service.OpenRepo(repoPath())
+	if isRemove {
+		p.Message = "[DELETED]" + p.Message
+	}
+
+	email := g.currentUser.Email
+	repoHandler, err := service.OpenRepo(repoPath, username)
 	if err != nil {
 		return http.StatusInternalServerError, "Failed to open user's repo", err
 	}
+
 	for _, item := range p.Items {
-		repoHandler.Remove(item)
+		if isRemove {
+			repoHandler.Remove(item)
+		} else {
+			repoHandler.Add(item)
+		}
+		logs.Debug(">>>>> pushed item: %s", item)
 	}
 
-	username := g.currentUser.Username
-	email := g.currentUser.Email
-
-	_, err = repoHandler.Commit(p.Message, &object.Signature{Name: username, Email: email})
+	_, err = repoHandler.Commit(p.Message, username, email)
 	if err != nil {
 		return http.StatusInternalServerError, "Failed to commit changes to user's repo", err
 	}
