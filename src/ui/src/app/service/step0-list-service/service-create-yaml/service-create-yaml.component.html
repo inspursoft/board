@@ -1,0 +1,72 @@
+<ng-template #tempDanger>
+  <div role="alert" class="alert alert-danger alert-info">
+    {{errorMessage | translate}}
+  </div>
+</ng-template>
+<ng-template #tempSuccess>
+  <div role="alert" class="alert alert-success alert-info">
+    {{successMessage | translate}}
+  </div>
+</ng-template>
+<div>
+  <div class="line-container">
+    <label class="base-text">{{"SERVICE.SERVICE_YAML_SELECT_PROJECT" | translate}}:</label>
+    <cs-dropdown class="custom-margin"
+                 [dropdownDefaultText]="'IMAGE.CREATE_IMAGE_SELECT_PROJECT'|translate"
+                 [dropdownWidth]="200"
+                 [dropdownList]="projectsList"
+                 [dropdownListTextKey]="'project_name'"
+                 (onChange)="changeSelectProject($event)"
+                 (onOnlyClickItem)="clickSelectProject($event)">
+    </cs-dropdown>
+  </div>
+  <div class="line-container">
+    <label class="base-text">{{"SERVICE.SERVICE_YAML_SELECT_DEPLOYMENT_YAML" | translate}}:</label>
+    <input type="file"
+           class="upload-file-input"
+           [disabled]="selectedProjectId == 0 || isUploadFileWIP || isUploadFileWIP"
+           (change)="uploadFile($event,true)"
+           accept="*.*">
+    <div *ngIf="isUploadFileWIP" class="custom-margin spinner-container">
+      <span class="spinner spinner-sm"></span>
+    </div>
+  </div>
+  <div class="line-container">
+    <label class="base-text">{{"SERVICE.SERVICE_YAML_SELECT_SERVICE_YAML" | translate}}:</label>
+    <input type="file"
+           class="upload-file-input"
+           [disabled]="selectedProjectId == 0 || isUploadFileWIP || isUploadFileWIP"
+           (change)="uploadFile($event,false)"
+           accept="*.*">
+    <div *ngIf="isUploadFileWIP" class="custom-margin spinner-container">
+      <span class="spinner spinner-sm"></span>
+    </div>
+  </div>
+  <div class="line-container">
+    <label class="base-text service-name">{{"SERVICE.SERVICE_YAML_NER_SERVICE_NAME" | translate}}:</label>
+    <div class="alert alert-info custom-margin service-name" role="alert">
+      {{newServiceName}}
+    </div>
+  </div>
+  <ng-container *ngIf="successMessage != ''" [ngTemplateOutlet]="tempSuccess"></ng-container>
+  <ng-container *ngIf="errorMessage != ''" [ngTemplateOutlet]="tempDanger"></ng-container>
+  <div class="build-btn-container">
+    <button class="btn btn-default cancel-build"
+            (click)="btnCancelClick($event)">
+      {{"BUTTON.CANCEL"|translate}}
+    </button>
+    <button class="btn btn-primary"
+            [disabled]="isBtnUploadDisabled"
+            (click)="btnUploadClick()">
+      {{"SERVICE.SERVICE_YAML_UPLOAD" | translate}}
+    </button>
+    <button class="btn btn-primary"
+            [disabled]="!isUploadFileSuccess || isToggleServiceWIP"
+            (click)="btnCreateClick()">
+      {{"BUTTON.CREATE"|translate}}
+    </button>
+    <div *ngIf="isToggleServiceWIP" class="custom-margin spinner-container">
+      <span class="spinner spinner-sm"></span>
+    </div>
+  </div>
+</div>

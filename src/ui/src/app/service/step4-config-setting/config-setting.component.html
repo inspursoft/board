@@ -12,6 +12,14 @@
       </cs-input>
     </div>
     <div class="config-service-info-line">
+      <span class="instance">{{"SERVICE.STEP_4_PUBLIC" | translate}}:</span>
+      <input title=""
+             type="checkbox"
+             class="base-margin-left"
+             [checked]="uiData.servicePublic"
+             [(ngModel)]="uiData.servicePublic">
+    </div>
+    <div class="config-service-info-line">
       <span class="instance">{{"SERVICE.STEP_4_INSTANCE"|translate}}:</span>
       <cs-dropdown class="base-margin-left"
                    [dropdownWidth]="310"
@@ -64,6 +72,7 @@
                   [simpleFiled]="externalService.node_config.node_port"
                   [disabled]="!radNode.checked"
                   [inputLabel]="'SERVICE.STEP_4_NODE_PORT' | translate"
+                  [inputIsRequired]="true"
                   [inputMin]="30000"
                   [inputMax]="32766"
                   (onCheck)="setNodePort(iIndex,$event)">
@@ -78,17 +87,18 @@
           <label [for]="'radNode' + iIndex"></label>
         </div>
       </div>
-      <div class="external-line-container">
+      <div class="external-line-container" style="cursor: not-allowed">
         <cs-input class="base-input"
                   [simpleFiled]="externalService.load_balancer_config.external_access"
                   [disabled]="!radExternal.checked"
                   [inputLabel]="'SERVICE.STEP_4_EXTERNAL_ACCESS' | translate"
                   (onCheck)="externalService.load_balancer_config.external_access = $event">
         </cs-input>
-        <div class="radio-inline external-radio-container">
+        <div class="radio-inline external-radio-container disabled">
           <input #radExternal
                  title=""
                  type="radio"
+                 [disabled]="true"
                  [name]="'port' + iIndex"
                  [id]="'radExternal' + iIndex"
                  (change)="externalService.node_config.node_port = 0">
@@ -98,6 +108,7 @@
     </div>
     <clr-icon class="plus-icon"
               shape="plus"
+              [ngClass]="{'disabled':!isCanAddContainerInfo}"
               (click)="addContainerInfo()">
     </clr-icon>
     <span class="base-margin-left">{{"SERVICE.STEP_4_EXTERNAL_SERVICE_ADD"|translate}}</span>
@@ -111,14 +122,8 @@
   </div>
   <div *ngIf="showCollaborative && showAdvanced">
     <div style="display: flex;height: 30px;margin-top: 10px;" *ngFor="let obj of collaborativeList; let i = index">
-      <clr-icon shape="plus"
-                class="plus-icon"
-                *ngIf="i === collaborativeList.length - 1"
-                (click)="collaborativeList.push({})">
-      </clr-icon>
       <clr-icon class="plus-icon"
                 shape="minus"
-                *ngIf="i < collaborativeList.length - 1"
                 (click)="collaborativeList.splice(collaborativeList.indexOf(obj), 1)">
       </clr-icon>
       <span class="service">{{"SERVICE.STEP_4_SERVICE"|translate}}:</span>
@@ -128,6 +133,11 @@
                    [dropdownDefaultText]="'SERVICE.STEP_4_SELECT_SERVICE' | translate">
       </cs-dropdown>
     </div>
+    <clr-icon shape="plus"
+              class="plus-icon"
+              [ngClass]="{'disabled':collaborativeServiceList.length == 0}"
+              (click)="addOneCollaborativeService()">
+    </clr-icon>
   </div>
 </div>
 <button class="btn btn-default" (click)="cancelBuildService()">

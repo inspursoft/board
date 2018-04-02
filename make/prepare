@@ -81,8 +81,8 @@ rcp.readfp(conf)
 hostname = rcp.get("configuration", "hostname")
 kube_master_ip = rcp.get("configuration", "kube_master_ip")
 kube_master_port = rcp.get("configuration", "kube_master_port")
-mysql_ip = rcp.get("configuration", "mysql_ip")
-mysql_port = rcp.get("configuration", "mysql_port")
+db_ip = rcp.get("configuration", "db_ip")
+db_port = rcp.get("configuration", "db_port")
 board_admin_password = rcp.get("configuration", "board_admin_password")
 db_password = rcp.get("configuration", "db_password")
 token_cache_expire_seconds = rcp.get("configuration", "token_cache_expire_seconds")
@@ -91,6 +91,8 @@ registry_ip = rcp.get("configuration", "registry_ip")
 registry_port = rcp.get("configuration", "registry_port")
 
 auth_mode = rcp.get("configuration", "auth_mode")
+verification_url = rcp.get("configuration", "verification_url")
+redirection_url = rcp.get("configuration", "redirection_url")
 
 ###ldap configuration
 ldap_url = rcp.get("configuration", "ldap_url")
@@ -137,21 +139,29 @@ if not os.path.exists(db_config_dir):
     os.makedirs(os.path.join(config_dir, "db"))
 db_conf_env = os.path.join(config_dir, "db", "env")
 
-nginx_conf = os.path.join(config_dir, "nginx", "nginx.conf")
-nginx_config_dir = os.path.join(config_dir, "nginx")
-if not os.path.exists(nginx_config_dir):
-    os.makedirs(os.path.join(config_dir, "nginx"))
+proxy_conf = os.path.join(config_dir, "proxy", "nginx.conf")
+proxy_config_dir = os.path.join(config_dir, "proxy")
+if not os.path.exists(proxy_config_dir):
+    os.makedirs(os.path.join(config_dir, "proxy"))
 
 jenkins_config_dir = os.path.join(config_dir, "jenkins")
 if not os.path.exists(jenkins_config_dir):
     os.makedirs(os.path.join(config_dir, "jenkins"))
 jenkins_env = os.path.join(config_dir, "jenkins", "env")
 
+grafana_config_dir = os.path.join(config_dir, "grafana")
+if not os.path.exists(grafana_config_dir):
+    os.makedirs(os.path.join(config_dir, "grafana"))
+grafana_k8s_ds = os.path.join(grafana_config_dir, "kubernetes-datasource.json")
+grafana_graphite_ds = os.path.join(grafana_config_dir, "graphite-datasource.json")
+grafana_dashboard = os.path.join(grafana_config_dir, "kubernetes-dashboard.json")
+grafana_k8s = os.path.join(grafana_config_dir, "kubernetes.json")
 
 #Render Configure File
 render(os.path.join(templates_dir, "apiserver", "app.conf"),
         apiserver_conf,
         token_cache_expire_seconds=token_cache_expire_seconds,
+		db_ip=db_ip,
         db_password=db_password)
 
 render(os.path.join(templates_dir, "apiserver", "env"),
@@ -170,8 +180,9 @@ render(os.path.join(templates_dir, "apiserver", "env"),
         ldap_filter=ldap_filter,
         ldap_uid=ldap_uid,
         ldap_scope=ldap_scope,
-        ldap_timeout=ldap_timeout
-        )
+        ldap_timeout=ldap_timeout,
+        verification_url=verification_url,
+        redirection_url=redirection_url)
 
 render(os.path.join(templates_dir, "tokenserver", "app.conf"),
         tokenserver_conf,
@@ -184,20 +195,33 @@ render(os.path.join(templates_dir, "collector", "env"),
         collector_conf_env,
         kube_master_ip=kube_master_ip,
         kube_master_port=kube_master_port,
-        mysql_ip=mysql_ip,
-        mysql_port=mysql_port,
+        db_ip=db_ip,
+        db_port=db_port,
         db_password=db_password)
 
 render(os.path.join(templates_dir, "db", "env"),
         db_conf_env,
         db_password=db_password)
 
-render(os.path.join(templates_dir, "nginx", "nginx.http.conf"),
-        nginx_conf)
+render(os.path.join(templates_dir, "proxy", "nginx.http.conf"),
+        proxy_conf)
 
 render(os.path.join(templates_dir, "jenkins", "env"),
         jenkins_env,
         registry_ip=registry_ip,
         registry_port=registry_port)
+
+render(os.path.join(templates_dir, "grafana", "kubernetes-datasource.json"),
+        grafana_k8s_ds,
+        kube_master_ip=kube_master_ip,
+        kube_master_port=kube_master_port)
+
+render(os.path.join(templates_dir, "grafana", "graphite-datasource.json"),
+        grafana_graphite_ds)
+
+shutil.copy(os.path.join(templates_dir, "grafana", "kubernetes-dashboard.json"), grafana_dashboard)
+
+render(os.path.join(templates_dir, "grafana", "kubernetes.json"),
+        grafana_k8s)
 
 print("The configuration files are ready, please use docker-compose to start the service.")

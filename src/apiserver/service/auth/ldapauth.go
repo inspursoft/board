@@ -22,8 +22,6 @@ type LdapAuth struct{}
 const metaChars = "&|!=~*<>()"
 
 func (auth LdapAuth) DoAuth(principal, password string) (*model.User, error) {
-	auth_mode := utils.GetStringValue("AUTH_MODE")
-	logs.Debug("Current AUTH_MODE is %s", auth_mode)
 
 	for _, c := range metaChars {
 		if strings.ContainsRune(principal, c) {

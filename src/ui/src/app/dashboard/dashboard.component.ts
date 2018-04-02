@@ -1,18 +1,18 @@
-import { OnInit, AfterViewInit, Component, OnDestroy, HostListener } from '@angular/core';
+import { AfterViewInit, Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { DashboardComponentParent } from "./dashboard.component.parent"
 import { scaleOption } from "app/dashboard/time-range-scale.component/time-range-scale.component";
-import {
-  DashboardService, LinesData, LineDataModel, LineType, LineListDataModel
-} from "app/dashboard/dashboard.service";
+import { DashboardService, LineDataModel, LineListDataModel, LinesData, LineType } from "app/dashboard/dashboard.service";
 import { TranslateService } from "@ngx-translate/core";
 import { Subscription } from "rxjs/Subscription";
 import { Subject } from "rxjs/Subject";
 import { MessageService } from "../shared/message-service/message.service";
+import { AppInitService } from "../app.init.service";
 
 const MAX_COUNT_PER_PAGE: number = 200;
 const MAX_COUNT_PER_DRAG: number = 100;
 const AUTO_REFRESH_SEED: number = 10;
 const AUTO_REFRESH_CUR_SEED: number = 5;
+
 @Component({
   selector: 'dashboard',
   templateUrl: './dashboard.component.html',
@@ -44,8 +44,10 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
   curValue: Map<LineType, {curFirst: number, curSecond: number}>;
   curRealTimeValue: Map<LineType, {curFirst: number, curSecond: number}>;
   noDataErrMsg: Map<LineType, string>;
+  isShowGrafanaView: boolean = false;
 
   constructor(private service: DashboardService,
+              private appInitService: AppInitService,
               private messageService: MessageService,
               private translateService: TranslateService) {
     super();
@@ -164,7 +166,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     }
   }
 
-  private  setLineZoomByTimeStamp(lineType: LineType, lineTimeStamp: number): void {
+  private setLineZoomByTimeStamp(lineType: LineType, lineTimeStamp: number): void {
     let lineData = this.lineData.get(lineType);
     let lineOption = this.lineOptions.get(lineType);
     let lineZoomStart = lineOption["dataZoom"][0]["start"];
@@ -187,7 +189,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
       });
   };
 
-  private getOneLineData(lineType: LineType): Promise<{Data: LinesData, Limit: {isMax: boolean, isMin: boolean}}> {
+  private async getOneLineData(lineType: LineType): Promise<{Data: LinesData, Limit: {isMax: boolean, isMin: boolean}}> {
     let query = this.query.get(lineType);
     let httpQuery = {
       time_count: query.time_count,
@@ -197,19 +199,21 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
       service_duration_time: query.timestamp_base - query.time_count * query.scale.valueOfSecond
     };
     this.lineStateInfo.get(lineType).inRefreshWIP = true;
-    return this.service.getlineData(lineType, httpQuery)
-      .then((res: {List: Array<LineListDataModel>, Data: LinesData, CurListName: string, Limit: {isMax: boolean, isMin: boolean}}) => {
-        this.noData.set(lineType, false);
-        this.lineNamesList.set(lineType, res.List);
-        this.dropdownText.set(lineType, res.CurListName);
-        this.lineStateInfo.get(lineType).inRefreshWIP = false;
-        return {Data: res.Data, Limit: res.Limit};
-      })
+    let lineDataInfo: {List: Array<LineListDataModel>, Data: LinesData, CurListName: string, Limit: {isMax: boolean, isMin: boolean}};
+    await  this.service.getlineData(lineType, httpQuery)
+      .then(res => lineDataInfo = res)
       .catch(err => {
         this.lineStateInfo.get(lineType).inRefreshWIP = false;
         this.noData.set(lineType, true);
         this.messageService.dispatchError(err);
       });
+    if (lineDataInfo) {
+      this.noData.set(lineType, false);
+      this.lineNamesList.set(lineType, lineDataInfo.List);
+      this.dropdownText.set(lineType, lineDataInfo.CurListName);
+      this.lineStateInfo.get(lineType).inRefreshWIP = false;
+      return {Data: lineDataInfo.Data, Limit: lineDataInfo.Limit};
+    }
   }
 
   private getLineInRefreshWIP(): boolean {
@@ -233,13 +237,14 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
 
   private resetBaseLinePos(lineType: LineType) {
     let option = this.lineOptions.get(lineType);
-    if (option["dataZoom"]) {
+    let chartInstance = this.eChartInstance.get(lineType);
+    if (option && chartInstance && chartInstance["getWidth"]) {
       let zoomStart = option["dataZoom"][0]["start"] / 100;
       let zoomEnd = option["dataZoom"][0]["end"] / 100;
-      let eChartWidth = this.eChartInstance.get(lineType)["getWidth"]() - 70;
+      let eChartWidth = chartInstance["getWidth"]() - 70;
       let zoomBarWidth = eChartWidth * (zoomEnd - zoomStart);
       option["graphic"][0]["left"] = eChartWidth * (1 - zoomEnd) + zoomBarWidth * (1 - (zoomEnd + zoomStart) / 2) + 38;
-      this.eChartInstance.get(lineType)["setOption"](option, true, false);
+      chartInstance["setOption"](option, true, false);
       if (this.lineData.get(lineType)) {
         this.clearEChart(lineType);
         this.lineData.set(lineType, Object.create(this.lineData.get(lineType)));
@@ -247,7 +252,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     }
   }
 
-  private  delayNormal(lineType: LineType): Promise<boolean> {
+  private delayNormal(lineType: LineType): Promise<boolean> {
     return new Promise<boolean>((resolve, reject) => {
       this.lineStateInfo.get(lineType).inRefreshWIP = true;
       setTimeout(() => {
@@ -282,7 +287,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
       await this.service.getServerTimeStamp().then(serverTime => this._serverTimeStamp = serverTime);
       this.lineTypeSet.forEach(lineType => {
         let query = {
-          time_count: 1,
+          time_count: 2,
           time_unit: "second",
           list_name: "",
           timestamp_base: this._serverTimeStamp
@@ -324,7 +329,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     }
   }
 
-  private  updateAfterDragTimeStamp(lineType: LineType, isDropBack: boolean): void {
+  private updateAfterDragTimeStamp(lineType: LineType, isDropBack: boolean): void {
     let query = this.query.get(lineType);
     let lineData = this.lineData.get(lineType);
     let maxDate: Date = lineData[2][0][0];
@@ -594,4 +599,8 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
   get StorageUnit(): string {
     return this.service.CurStorageUnit;
   };
+
+  get grafanaViewUrl(){
+   return this.appInitService.grafanaViewUrl;
+  }
 }

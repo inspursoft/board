@@ -46,7 +46,7 @@ export class ChooseProjectComponent extends ServiceStepBase implements OnInit {
   }
 
   clickSelectProject(project: Project) {
-    this.router.navigate(["/projects"]);
+    this.router.navigate(["/projects"], {queryParams: {token: this.appInitService.token}, fragment: "create"});
   }
 
   changeSelectProject(project: Project) {

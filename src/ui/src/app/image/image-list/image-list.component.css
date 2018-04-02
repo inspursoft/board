@@ -41,8 +41,8 @@ button.cancel-build {
 }
 
 div.import-method-container {
-  margin-top: 100px;
-  margin-bottom: 50px;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 label.disabled{
@@ -59,4 +59,12 @@ label.enable:hover{
 
 div.build-btn-container{
   display: flex;
+}
+
+clr-icon.action.disabled {
+  color: silver;
+}
+
+clr-icon.action.disabled:hover {
+  cursor: not-allowed;
 }

@@ -93,6 +93,10 @@ div.external-radio-container {
   width: 20px;
 }
 
+div.external-radio-container.disabled input:hover {
+  cursor: not-allowed;
+}
+
 span.external-title {
   width: 180px;
   text-align: right;
@@ -132,7 +136,7 @@ div.collaborative-close {
   transition-duration: 0.5s;
 }
 
-.plus-icon {
+clr-icon.plus-icon {
   color: white;
   background: green;
   width: 20px;
@@ -141,3 +145,12 @@ div.collaborative-close {
   cursor: pointer;
 
 }
+
+clr-icon.plus-icon.disabled {
+  background: silver;
+}
+
+clr-icon.plus-icon.disabled:hover {
+  cursor: not-allowed;
+}
+

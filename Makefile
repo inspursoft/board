@@ -28,7 +28,6 @@ else
 	WORKPATH=dev
 	IMAGEPREFIX=dev
 endif 
-VERSIONTAG=latest
 
 # Base shell parameters
 SHELL := /bin/bash
@@ -81,11 +80,18 @@ TARCMD=$(shell which tar)
 ZIPCMD=$(shell which gzip)
 PKGTEMPPATH=Deploy
 PKGNAME=board
+GITTAGVERSION=$(shell git describe --tags || echo UNKNOWN)
+VERSIONFILE=VERSION
+ifeq ($(DEVFLAG), release)
+	VERSIONTAG=$(GITTAGVERSION)
+else
+	VERSIONTAG=dev
+endif
 
 # Package lists
 # TOPLEVEL_PKG := .
 INT_LIST := apiserver tokenserver collector/cmd
-IMG_LIST := apiserver tokenserver log collector gitserver jenkins mysql nginx
+IMG_LIST := apiserver tokenserver log collector gitserver jenkins db proxy grafana graphite
 
 # List building
 COMPILEALL_LIST = $(foreach int, $(INT_LIST), $(SRCPATH)/$(int))
@@ -115,6 +121,10 @@ fmt: $(FMT_LIST)
 vet: $(VET_LIST)
 golint: $(GOLINT_LIST)
 
+version:
+	@echo $(VERSIONTAG)
+	@echo $(VERSIONTAG) > $(VERSIONFILE)
+
 compile_ui:
 	$(DOCKERCOMPOSECMD) -f $(MAKEPATH)/dev/$(DOCKERCOMPOSEUIFILENAME) up
 
@@ -140,21 +150,21 @@ $(VET_LIST): %_vet:
 $(GOLINT_LIST): %_golint:
 	$(GOLINT) $*/...
 
-build: $(BUILD_LIST) #container/db_build
+build: version $(BUILD_LIST) #container/db_build
 cleanimage: $(RMIMG_LIST) #container/db_rmi
 
 $(BUILD_LIST): %_build: 
-	$(DOCKERBUILD) -f $(MAKEWORKPATH)/$(subst mysql,db,$*)/Dockerfile . -t $(IMAGEPREFIX)_$(subst container/,,$*):latest
+	$(DOCKERBUILD) -f $(MAKEWORKPATH)/$*/Dockerfile . -t $(IMAGEPREFIX)_$(subst container/,,$*):$(VERSIONTAG)
 	
 $(RMIMG_LIST): %_rmi:
-	$(DOCKERRMIMAGE) -f $(IMAGEPREFIX)_$(subst container/,,$*):latest
+	$(DOCKERRMIMAGE) -f $(IMAGEPREFIX)_$(subst container/,,$*):$(VERSIONTAG)
 
 #container/db_build:
 #	$(DOCKERBUILD) -f $(MAKEWORKPATH)/container/db/Dockerfile . -t $(IMAGEPREFIX)_mysql:latest
 #container/db_rmi:
 #	$(DOCKERRMIMAGE) $(IMAGEPREFIX)_mysql:latest
 
-prepare:
+prepare: version
 	@echo "preparing..."
 	@$(MAKEPATH)/$(PREPARECMD) $(PREPARECMD_PARA)
 	@echo "Done."
@@ -174,7 +184,11 @@ prepare_swagger:
 	@cd $(SWAGGERTOOLPATH); ./prepare-swagger.sh
 	@echo "Done."
 
-package:
+prepare_composefile:
+	@cp $(MAKEWORKPATH)/docker-compose.tpl $(MAKEWORKPATH)/docker-compose.yml
+	@sed -i "s/__version__/$(VERSIONTAG)/g" $(MAKEWORKPATH)/docker-compose.yml
+
+package: prepare_composefile
 	@echo "packing offline package ..."
 	@if [ ! -d $(PKGTEMPPATH) ] ; then mkdir $(PKGTEMPPATH) ; fi
 	@cp $(TOOLSPATH)/install.sh $(PKGTEMPPATH)/install.sh

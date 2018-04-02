@@ -6,4 +6,5 @@ export class Project {
   project_creation_time: Date;
   project_comment: string;
   project_owner_id: number;
+  project_owner_name: string;
 }

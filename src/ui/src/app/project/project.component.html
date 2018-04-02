@@ -1,39 +1,64 @@
 <div class="row flex-items-xs-right">
+  <cs-guide *ngIf="isFirstLogin && guideStep == 2"
+            [description]="'PROJECT.GUIDE_CREATE_PROJECT'"
+            [show]="isFirstLogin && guideStep == 2"
+            [position]="'left-middle'"
+            (onClose)="setGuideNoneStep()"
+            (onNextStep)="guideNextStep(2)">
+  </cs-guide>
   <button class="btn btn-primary" (click)="createProject()">{{ 'PROJECT.CREATE_PROJECT' | translate }}</button>
 </div>
 <div class="row">
-  <create-project (reload)="retrieve()"></create-project>
+  <create-project (reload)="retrieve(oldStateInfo)" (closeEvent)="createProjectClose(2)"></create-project>
   <project-member></project-member>
   <div class="col-xs-12">
     <clr-datagrid (clrDgRefresh)="retrieve($event)" [clrDgLoading]="isInLoading">
-      <clr-dg-column>{{ 'PROJECT.PROJECT_NAME' | translate }}</clr-dg-column>
+      <clr-dg-column [clrDgField]="'NAME'"
+                     [clrDgSortOrder]="descSort">
+        <clr-dg-filter [hidden]="true"></clr-dg-filter>
+        {{ 'PROJECT.PROJECT_NAME' | translate }}
+      </clr-dg-column>
       <clr-dg-column>{{ 'PROJECT.CREATOR' | translate }}</clr-dg-column>
-      <clr-dg-column>{{ 'PROJECT.CREATION_TIME' | translate }}</clr-dg-column>
+      <clr-dg-column [clrDgField]="'CREATE_TIME'"
+                     [clrDgSortOrder]="descSort">
+        <clr-dg-filter [hidden]="true"></clr-dg-filter>
+        {{ 'PROJECT.CREATION_TIME' | translate }}
+      </clr-dg-column>
       <clr-dg-column>{{ 'PROJECT.PUBLICITY' | translate }}</clr-dg-column>
       <clr-dg-column>{{ 'PROJECT.COMMENT' | translate }}</clr-dg-column>
       <clr-dg-column>{{ 'PROJECT.ACTIONS' | translate }}</clr-dg-column>
-      <clr-dg-row *ngFor="let p of projects">
-        <clr-dg-cell>{{p.project_name}}</clr-dg-cell>
-        <clr-dg-cell>{{p.project_owner_name}}</clr-dg-cell>
-        <clr-dg-cell>{{p.project_creation_time | date: 'short'}}</clr-dg-cell>
+      <clr-dg-row *ngFor="let project of projects">
+        <clr-dg-cell>{{project.project_name}}</clr-dg-cell>
+        <clr-dg-cell>{{project.project_owner_name}}</clr-dg-cell>
+        <clr-dg-cell>{{project.project_creation_time | date: 'short'}}</clr-dg-cell>
         <clr-dg-cell>
           <input type="checkbox"
-                 id="chkPublic"
-                 [checkbox-revert]="checkboxRevertInfo"
-                 [checked]="p.project_public === 1"
-                 (click)="toggleProjectPublic(p)">
-          <label for="chkPublic"></label>
+                 [id]="project.project_name"
+                 [checked]="project.project_public === 1"
+                 (click)="toggleProjectPublic(project, $event)">
+          <label [for]="project.project_name"></label>
         </clr-dg-cell>
-        <clr-dg-cell>{{p.project_comment}}</clr-dg-cell>
+        <clr-dg-cell>{{project.project_comment}}</clr-dg-cell>
         <clr-dg-cell>
-          <a href="javascript:void(0)" (click)="editProjectMember(p)"><clr-icon shape="group"></clr-icon></a>
-          &nbsp;&nbsp;
-          <a href="javascript:void(0)"><clr-icon shape="trash" (click)="confirmToDeleteProject(p)"></clr-icon></a>
+          <a href="javascript:void(0)" >
+            <clr-icon shape="group"
+                      class="action"
+                      (click)="editProjectMember(project)"
+                      [ngClass]="{'disabled':!isSystemAdminOrOwner(project)}">
+            </clr-icon>
+          </a>
+          <a href="javascript:void(0)">
+            <clr-icon shape="trash"
+                      class="action"
+                      [ngClass]="{'disabled':!isSystemAdminOrOwner(project)}"
+                      (click)="confirmToDeleteProject(project)">
+            </clr-icon>
+          </a>
         </clr-dg-cell>
       </clr-dg-row>
       <clr-dg-footer>
+        {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} of {{pagination.totalItems}} items
         <clr-dg-pagination #pagination [clrDgTotalItems]="totalRecordCount" [(clrDgPage)]="pageIndex" [clrDgPageSize]="pageSize"></clr-dg-pagination>
-        {{projects ? projects.length : 0}} {{ 'DATAGRID.ITEMS' | translate }}
       </clr-dg-footer>
     </clr-datagrid>
   </div>

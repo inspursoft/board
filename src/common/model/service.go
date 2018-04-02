@@ -22,9 +22,14 @@ type ServiceStatus struct {
 	ServiceConfig string    `json:"service_config" orm:"column(service_config)"`
 }
 
+type ServiceStatusMO struct {
+	ServiceStatus
+	IsMember int `json:"service_is_member" orm:"column(is_member)"`
+}
+
 type PaginatedServiceStatus struct {
-	Pagination        *Pagination      `json:"pagination"`
-	ServiceStatusList []*ServiceStatus `json:"service_status_list"`
+	Pagination        *Pagination        `json:"pagination"`
+	ServiceStatusList []*ServiceStatusMO `json:"service_status_list"`
 }
 
 type ServiceInfoStruct struct {
@@ -42,6 +47,11 @@ type ServicePublicityUpdate struct {
 
 type ServiceScale struct {
 	Replica int32 `json:"service_scale"`
+}
+
+type ScaleStatus struct {
+	DesiredInstance   int32 `json:"desired_instance"`
+	AvailableInstance int32 `json:"available_instance"`
 }
 
 type ExternalService struct {

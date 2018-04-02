@@ -2,8 +2,6 @@
 div.modal-body-container {
   display: flex;
   min-height: 600px;
-  border: solid 1px gray;
-  border-radius: 5px;
 }
 
 .base-margin-left {
@@ -11,7 +9,7 @@ div.modal-body-container {
 }
 
 div.base-margin-top {
-  margin-top: 10px;
+  margin-top: 5px;
 }
 
 .dynamic-icon {
@@ -32,14 +30,14 @@ div.build-method-container {
 }
 
 div.from-temp-container {
-  overflow-y: auto;
+  /*overflow-y: auto;*/
   padding: 10px;
 }
 
 div.from-docker-file-container {
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
+  /*overflow-y: auto;*/
   padding: 10px;
   flex-basis: 100%;
 }
@@ -98,6 +96,7 @@ textarea.area-status {
   flex-basis: 100%;
   color: black;
   font-size: 11px;
+  line-height: 13px;
 }
 
 button.default-primary {
@@ -143,4 +142,48 @@ div.title-container {
 
 div.modal-body-reset-position{
   margin-top: -20px;
+  border: solid 1px gray;
+  border-radius: 5px;
+}
+
+div.base-image-container {
+  height: 60px;
+  display: flex;
+  flex-direction: column;
+}
+
+div.base-image-source-container {
+  height: 30px;
+  display: flex;
+  line-height: 30px;
+}
+
+input.base-image-radio {
+  height: 30px;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+label.base-image-source {
+  cursor: pointer;
+  margin-right: 6px;
+}
+
+div.board-registry-container {
+  display: flex;
+  line-height: 30px;
+  align-items: center;
+  margin-left: 5px;
+}
+
+cs-dropdown.margin-left-5{
+  margin-left: 5px;
+}
+
+cs-dropdown.margin-left-120{
+  margin-left: 120px;
+}
+
+cs-input.margin-left-180{
+  margin-left: 180px;
 }

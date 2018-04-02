@@ -325,6 +325,26 @@ func (p *ImageController) BuildImageAction() {
 		return
 	}
 
+	//move the upload directory
+	tempPath := filepath.Join(repoPath(), reqImageConfig.ProjectName, wrapStringWithSymbol(p.currentUser.Username))
+	tempUploadPath := filepath.Join(tempPath, "upload")
+	if _, err = os.Stat(tempUploadPath); err == nil {
+		dstUploadPath := filepath.Join(repoPath(), reqImageConfig.ProjectName,
+			reqImageConfig.ImageName, reqImageConfig.ImageTag, "upload")
+		err = os.Rename(tempUploadPath, dstUploadPath)
+		if err != nil {
+			logs.Error("Failed to move from %s to %s", tempUploadPath, dstUploadPath)
+			p.internalError(err)
+			return
+		}
+		err = os.RemoveAll(tempPath)
+		if err != nil {
+			logs.Error("Failed to remove temp path: %s", tempPath)
+			p.internalError(err)
+			return
+		}
+	}
+
 	//push to git
 	var pushobject pushObject
 
@@ -467,20 +487,12 @@ func cleanGitImageTag(imageName string, imageTag string, projectName string, p *
 }
 
 func (p *ImageController) ConfigCleanAction() {
-	reqData, err := p.resolveBody()
-	if err != nil {
-		p.internalError(err)
-		return
-	}
+	imageName := strings.TrimSpace(p.GetString("image_name"))
+	imageTag := strings.TrimSpace(p.GetString("image_tag"))
+	projectName := strings.TrimSpace(p.GetString("project_name"))
+	logs.Debug("clean config %s %s %s", projectName, imageName, imageTag)
 
-	var reqImageIndex model.ImageIndex
-	err = json.Unmarshal(reqData, &reqImageIndex)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	currentProject, err := service.GetProject(model.Project{Name: reqImageIndex.ProjectName}, "name")
+	currentProject, err := service.GetProject(model.Project{Name: projectName}, "name")
 	if err != nil {
 		p.internalError(err)
 		return
@@ -501,18 +513,25 @@ func (p *ImageController) ConfigCleanAction() {
 		return
 	}
 
-	configPath := filepath.Join(repoPath(), strings.TrimSpace(reqImageIndex.ProjectName),
-		strings.TrimSpace(reqImageIndex.ImageName), strings.TrimSpace(reqImageIndex.ImageTag))
+	//remove upload temp directory
+	tempPath := filepath.Join(repoPath(), projectName, wrapStringWithSymbol(p.currentUser.Username))
+	err = os.RemoveAll(tempPath)
+	if err != nil {
+		logs.Error("Failed to remove temp path: %s", tempPath)
+		p.internalError(err)
+		return
+	}
+
+	configPath := filepath.Join(repoPath(), strings.TrimSpace(projectName),
+		strings.TrimSpace(imageName), strings.TrimSpace(imageTag))
 
 	// Update git repo
 	var pushobject pushObject
 
 	pushobject.FileName = defaultDockerfilename
 	pushobject.JobName = imageProcess
-	pushobject.Value = filepath.Join(reqImageIndex.ProjectName,
-		reqImageIndex.ImageName, reqImageIndex.ImageTag)
-	pushobject.Extras = filepath.Join(reqImageIndex.ProjectName,
-		reqImageIndex.ImageName) + ":" + reqImageIndex.ImageTag
+	pushobject.Value = filepath.Join(projectName, imageName, imageTag)
+	pushobject.Extras = filepath.Join(projectName, imageName) + ":" + imageTag
 	pushobject.Message = fmt.Sprintf("Build image: %s", pushobject.Extras)
 
 	//Get file list for Jenkis git repo
@@ -945,4 +964,110 @@ func existRegistry(projectName string, imageName string, imageTag string) (bool,
 	}
 
 	return false, err
+}
+
+func (f *ImageController) UploadDockerfileFileAction() {
+	projectName := f.GetString("project_name")
+	isExistence, err := service.ProjectExists(projectName)
+	if err != nil {
+		f.internalError(err)
+		return
+	}
+	if isExistence != true {
+		f.customAbort(http.StatusBadRequest, "Project don't exist.")
+		return
+	}
+
+	imageName := f.GetString("image_name")
+	tagName := f.GetString("tag_name")
+	targetFilePath := filepath.Join(repoPath(), projectName, imageName, tagName)
+	err = os.MkdirAll(targetFilePath, 0755)
+	if err != nil {
+		f.internalError(err)
+		return
+	}
+	logs.Info("User: %s uploaded Dockerfile file to %s.", f.currentUser.Username, targetFilePath)
+
+	_, fileHeader, err := f.GetFile("upload_file")
+	if err != nil {
+		f.internalError(err)
+	}
+	if fileHeader.Filename != dockerfileName {
+		f.customAbort(http.StatusBadRequest, "Update file name invalid.")
+		return
+	}
+
+	err = f.SaveToFile("upload_file", filepath.Join(targetFilePath, dockerfileName))
+	if err != nil {
+		f.internalError(err)
+	}
+
+}
+
+func (f *ImageController) DownloadDockerfileFileAction() {
+	projectName := f.GetString("project_name")
+	isExistence, err := service.ProjectExists(projectName)
+	if err != nil {
+		f.internalError(err)
+		return
+	}
+	if isExistence != true {
+		f.customAbort(http.StatusBadRequest, "Project name invalid.")
+		return
+	}
+
+	imageName := f.GetString("image_name")
+	tagName := f.GetString("tag_name")
+	targetFilePath := filepath.Join(repoPath(), projectName, imageName, tagName)
+	if _, err := os.Stat(targetFilePath); os.IsNotExist(err) {
+		f.customAbort(http.StatusBadRequest, "image Name and  tag name are invalid.")
+		return
+	}
+
+	absFileName := filepath.Join(repoPath(), projectName, imageName, tagName, dockerfileName)
+	logs.Info("User: %s download Dockerfile file from %s.", f.currentUser.Username, absFileName)
+
+	f.Ctx.Output.Download(absFileName, dockerfileName)
+}
+
+// API to get image registry address
+func (p *ImageController) GetImageRegistryAction() {
+	registryAddr := registryBaseURI()
+	logs.Info("The image registry is %s", registryAddr)
+	p.Data["json"] = registryAddr
+	p.ServeJSON()
+}
+
+// API to reset build image temp
+func (p *ImageController) ResetBuildImageTempAction() {
+	projectName := p.GetString("project_name")
+
+	currentProject, err := service.GetProject(model.Project{Name: projectName}, "name")
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if currentProject == nil {
+		p.customAbort(http.StatusBadRequest, "Invalid project name.")
+		return
+	}
+
+	isMember, err := service.IsProjectMember(currentProject.ID, p.currentUser.ID)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	if !(p.isSysAdmin || isMember) {
+		p.customAbort(http.StatusForbidden, "Insufficient privileges to build image.")
+		return
+	}
+
+	tempPath := filepath.Join(repoPath(), projectName, wrapStringWithSymbol(p.currentUser.Username))
+	err = os.RemoveAll(tempPath)
+	if err != nil {
+		logs.Error("Failed to remove temp path: %s", tempPath)
+		p.internalError(err)
+		return
+	}
 }

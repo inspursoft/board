@@ -139,9 +139,10 @@ func (s *ConfigServiceStep) GetConfigContainerList() interface{} {
 	}
 }
 
-func (s *ConfigServiceStep) ConfigExternalService(serviceName string, instance int, externalServiceList []model.ExternalService) *ConfigServiceStep {
+func (s *ConfigServiceStep) ConfigExternalService(serviceName string, instance int, public int, externalServiceList []model.ExternalService) *ConfigServiceStep {
 	s.ServiceName = serviceName
 	s.Instance = instance
+	s.Public = public
 	s.ExternalServiceList = externalServiceList
 	return s
 }
@@ -151,11 +152,13 @@ func (s *ConfigServiceStep) GetConfigExternalService() interface{} {
 		ProjectName         string                  `json:"project_name"`
 		ServiceName         string                  `json:"service_name"`
 		Instance            int                     `json:"instance"`
+		Public              int                     `json:"service_public"`
 		ExternalServiceList []model.ExternalService `json:"external_service_list"`
 	}{
 		ProjectName:         s.ProjectName,
 		ServiceName:         s.ServiceName,
 		Instance:            s.Instance,
+		Public:              s.Public,
 		ExternalServiceList: s.ExternalServiceList,
 	}
 }
@@ -300,13 +303,13 @@ func (sc *ServiceConfigController) configContainerList(key string, configService
 		return
 	}
 
-	for _, container := range containerList {
+	for index, container := range containerList {
 		if container.VolumeMounts.TargetPath != "" && container.VolumeMounts.TargetStorageService == "" {
 			sc.serveStatus(http.StatusBadRequest, emptyVolumeTargetStorageServiceErr.Error())
 			return
 		}
-		container.VolumeMounts.VolumeName = strings.ToLower(container.VolumeMounts.VolumeName)
-		container.Name = strings.ToLower(container.Name)
+		containerList[index].VolumeMounts.VolumeName = strings.ToLower(container.VolumeMounts.VolumeName)
+		containerList[index].Name = strings.ToLower(container.Name)
 	}
 
 	SetConfigServiceStep(key, configServiceStep.ConfigContainerList(containerList))
@@ -339,6 +342,12 @@ func (sc *ServiceConfigController) configExternalService(key string, configServi
 		return
 	}
 
+	public, err := sc.GetInt("service_public")
+	if err != nil {
+		sc.internalError(err)
+		return
+	}
+
 	var externalServiceList []model.ExternalService
 	err = json.Unmarshal(reqData, &externalServiceList)
 	if err != nil {
@@ -353,7 +362,7 @@ func (sc *ServiceConfigController) configExternalService(key string, configServi
 		}
 	}
 
-	SetConfigServiceStep(key, configServiceStep.ConfigExternalService(serviceName, instance, externalServiceList))
+	SetConfigServiceStep(key, configServiceStep.ConfigExternalService(serviceName, instance, public, externalServiceList))
 }
 
 func (sc *ServiceConfigController) checkServiceDuplicateName(serviceName string) (bool, error) {

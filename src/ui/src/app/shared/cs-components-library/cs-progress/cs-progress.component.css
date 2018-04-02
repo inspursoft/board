@@ -1,0 +1,15 @@
+div.progress-container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  box-shadow: 0 0 5px #bbbbbb;
+}
+
+span.console-text {
+  width: 60px;
+  display: inline-block;
+  font-size: 10px;
+  line-height: 10px;
+  color: grey;
+}

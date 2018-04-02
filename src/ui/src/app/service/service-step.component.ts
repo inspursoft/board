@@ -28,6 +28,7 @@ export class ServerServiceStep {
   public service_name?: string = "";
   public instance?: number = 0;
   public postData?: Object;
+  public service_public?: number = 0;
 }
 
 export class ImageIndex implements UiServerExchangeData<ImageIndex> {
@@ -80,6 +81,10 @@ export class Container implements UiServerExchangeData<Container> {
   public env: Array<EnvStruct> = Array<EnvStruct>();
   public container_port: Array<number> = Array();
   public command: string = "";
+
+  isHavePort(): boolean {
+    return this.container_port.length > 0;
+  }
 
   serverToUi(serverResponse: Object): Container {
     this.name = serverResponse["name"];
@@ -237,6 +242,7 @@ export class UIServiceStep4 extends UIServiceStepBase {
   public projectName: string = "";
   public serviceName: string = "";
   public instance: number = 1;
+  public servicePublic: boolean;
   public externalServiceList: Array<ExternalService> = Array<ExternalService>();
 
   uiToServer(): ServerServiceStep {
@@ -245,6 +251,7 @@ export class UIServiceStep4 extends UIServiceStepBase {
     result.phase = PHASE_EXTERNAL_SERVICE;
     result.service_name = this.serviceName;
     result.instance = this.instance;
+    result.service_public = this.servicePublic ? 1 : 0;
     this.externalServiceList.forEach((value: ExternalService) => {
       postData.push(value.uiToServer());
     });
@@ -268,6 +275,9 @@ export class UIServiceStep4 extends UIServiceStepBase {
     }
     if (serverResponse && serverResponse["project_name"]) {
       step4.projectName = serverResponse["project_name"];
+    }
+    if (serverResponse && serverResponse["service_public"]) {
+      step4.servicePublic = serverResponse["service_public"] == 1;
     }
     return step4;
   }

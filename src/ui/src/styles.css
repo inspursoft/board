@@ -1,1 +1,17 @@
 /* You can add global styles to this file, and also import other style files */
+.popover-pointer:before {
+  border-right-color: rgba(0, 64, 96, 0.8) !important;
+  border-left-color: rgba(0, 64, 96, 0.8) !important;
+}
+
+button.signpost-content-header-btn-close {
+  width: 30px;
+  height: 30px;
+  font-size: 14px;
+  color: white !important;
+  font-weight: bold;
+}
+
+button.signpost-content-header-btn-close:hover {
+  color: deepskyblue !important;
+}

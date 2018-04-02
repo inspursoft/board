@@ -375,12 +375,117 @@ User can manage the nodes by operations, such as remove a node from the cluster:
 <img src="img/userguide/node3.JPG" width="100" alt="Remove a node from cluster">
 
 ### Network Configuration
+Need to configure network option to enable the network communication between different pods of different nodes in cluster. 
+There are a number of ways that this network model can be implemented.
+
+#### Configure flannel network
+```
+$ yum install -y flannel
+```
+
+Edit the service file /usr/lib/systemd/system/flanneld.service
+```
+Before=docker.service
+EnvironmentFile=/etc/sysconfig/flanneld
+```
+
+Edit the configuration file  /etc/sysconfig/flanneld
+
+ETCD server:
+```
+FLANNEL_ETCD="http://127.0.0.1:2379"
+FLANNEL_ETCD_KEY="/atomic.io/network"
+```
+
+Add a network subnet to ETCD server
+```
+$etcdctl set /atomic.io/network/config '{"Network": "10.1.0.0/16"}'
+```
+
+Configure docker network
+```
+$ /usr/libexec/flannel/mk-docker-opts.sh -i
+$ source /run/flannel/subnet.env
+$ ifconfig docker0 ${FLANNEL_SUBNET}
+$ systemctl restart docker
+```
 
 ### Storage Configuration 
+Support NFS storage and Ceph storage system
+
+### NFS
+Need to configure every node to support NFS as NFS client
+```
+$ yum install -y nfs-utils rpcbind
+$ systemctl enable rpcbind.service
+$ systemctl start rpcbind.service
+$ showmount -e $1
+
+```
+#### Setup a NFS server
 
 ### Registry Installation
+Get registry image from docker.io and install
+```
+docker pull registry
+docker run -d -p 5000:5000 --name registry registry
+```
+Get registry image from here: 
+
+**[Download Registry image from docker hub](https://hub.docker.com/_/registry)**
+
+Load registry image and setup registry container
+```
+docker load --input regstiry.tar
+docker run -d -p 5000:5000 --name registry registry
+```
+Config registries, please reference docker offical document https://docs.docker.com. Below example for Centos, Edit the file /etc/docker/daemon.json, the content as below:
+
+```
+{
+    "live-restore": true,
+    "insecure-registries":["0.0.0.0/0"]
+}
+```
+
+Verify the registry:
+```
+curl http://LocalHost($hostIP):5000/v2/_catalog
+```
+If retrun {"repositories":[]} It's work well
+
+Push image to the registry, example:
+```
+docker tag mysql:5.6 LocalHost($hostIP):5000/mysql:5.6
+docker push LocalHost($hostIP):5000/mysql:5.6
+```
+Verify the image pushed to the registry successsful:
+```
+curl http://LocalHost($hostIP):5000/v2/_catalog
+reurn {"repositories":["mysql"]}
+```
 
 ### Ansible One-step Install
-
+Get Ansible resources：
+````
+git clone http://10.110.18.40:10080/guyingyan/ansible.git
+````
+Set up environment with ansible on-step:
+```
+To see README.md
+```
 ### Anbari One-step Install
+Get Ambari resources：
+````
+git clone http://10.110.18.40:10080/guyingyan/Ambari.git
+````
+Set up enrionment with Ambari on-step:
+```
+To see README.md
+```
 
+### Limitation
+When you need install, please note the limitations:
+
+1. If you want to use CentOS or Redhat, you need install CentOS, Redhat 7.2 or higher version.
+2. To install Board, the host should with Docker 17.02 or higher version.
