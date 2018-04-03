@@ -1,4 +1,4 @@
-import { NgModule, NO_ERRORS_SCHEMA } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared.module';
 import { DynamicFormComponent } from './dynamic-form.component';
 import { DynamicFormControlComponent } from './dynamic-form-control.component';

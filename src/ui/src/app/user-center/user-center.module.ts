@@ -1,4 +1,4 @@
-import { NgModule, NO_ERRORS_SCHEMA } from '@angular/core';
+import { NgModule } from '@angular/core';
 
 import { UserList } from "./user-list/user-list.component";
 import { SharedModule } from "../shared/shared.module";

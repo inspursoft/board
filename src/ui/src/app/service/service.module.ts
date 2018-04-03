@@ -1,4 +1,4 @@
-import { NgModule, NO_ERRORS_SCHEMA } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/shared.module';
 import { ServiceComponent } from './service.component';
 import { ServiceHostDirective } from './service-host.directive';

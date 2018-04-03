@@ -1,4 +1,4 @@
-import { NgModule, NO_ERRORS_SCHEMA } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { CoreModule } from '../core/core.module';
 import { NgxEchartsModule } from 'ngx-echarts';
 import { HeaderComponent } from './header/header.component';

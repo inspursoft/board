@@ -1,4 +1,4 @@
-import { NgModule, NO_ERRORS_SCHEMA } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { GlobalSearchModule } from '../global-search/global-search.module';
 import { DashboardModule } from '../dashboard/dashboard.module';
 import { NodeModule } from '../node/node.module';
