@@ -19,7 +19,6 @@ var CreateMainJs = /** @class */ (function () {
             if (err)
                 throw err;
             _this.jsContent.forEach(function (value) {
-                console.log(value);
                 fs.writeSync(fd, Buffer.from(value));
             });
         });

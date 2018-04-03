@@ -9,6 +9,7 @@ var CopyFiles = /** @class */ (function () {
     this.sourceArr.push("node_modules/@clr/icons/clr-icons.min.css");
     this.sourceArr.push("node_modules/echarts/dist/echarts.min.js");
     this.sourceArr.push("node_modules/zone.js/dist/zone.min.js");
+    this.sourceArr.push("node_modules/@clr/icons/clr-icons.min.js");
     this.sourceArr.push("src/styles.css");
     this.sourceArr.push("src/favicon.ico");
     this.sourceArr.push("src/rollup/index.html");
