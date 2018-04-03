@@ -136,7 +136,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
         this.onBuildCompleted.emit();
         this.isOpen = false;
       } else if (msg.target == MESSAGE_TARGET.CANCEL_BUILD_IMAGE) {
-        this.imageService.cancelConsole("process_image").then(() => {
+        this.imageService.cancelConsole(this.projectName).then(() => {
           this.cleanImageConfig();
         });
       }
@@ -341,7 +341,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
 
   buildImageResole() {
     this.processImageSubscription = this.webSocketService
-      .connect(`ws://${this.boardHost}/api/v1/jenkins-job/console?job_name=process_image&token=${this.appInitService.token}`)
+      .connect(`ws://${this.boardHost}/api/v1/jenkins-job/console?job_name=${this.customerNewImage.project_name}&token=${this.appInitService.token}`)
       .subscribe((obs: MessageEvent) => {
         this.consoleText = <string>obs.data;
         let consoleTextArr: Array<string> = this.consoleText.split(/[\n]/g);

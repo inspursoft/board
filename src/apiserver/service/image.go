@@ -164,7 +164,7 @@ func CheckDockerfileConfig(config *model.ImageConfig) error {
 		return err
 	}
 
-	relPath := filepath.Join(config.ProjectName, config.ImageName, config.ImageTag, "upload")
+	relPath := filepath.Join("process-image", config.ImageName, config.ImageTag, "upload")
 	return CheckDockerfileItem(&config.ImageDockerfile, relPath)
 }
 

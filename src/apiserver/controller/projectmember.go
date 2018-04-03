@@ -2,10 +2,15 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/apiserver/service/devops/gogs"
 	"git/inspursoft/board/src/common/model"
 	"net/http"
+	"path/filepath"
 	"strconv"
+
+	"github.com/astaxie/beego/logs"
 )
 
 type ProjectMemberController struct {
@@ -91,6 +96,20 @@ func (pm *ProjectMemberController) AddOrUpdateProjectMemberAction() {
 		pm.customAbort(http.StatusForbidden, "User is not the owner of the project.")
 		return
 	}
+
+	err = gogs.NewGogsHandler(user.Username, user.RepoToken).ForkRepo(project.OwnerName, project.Name, project.Name, "Forked repo.")
+	if err != nil {
+		pm.internalError(err)
+	}
+
+	projectRepoURL := fmt.Sprintf("%s/%s/%s.git", gogitsSSHURL(), user.Username, project.Name)
+	projectRepoPath := filepath.Join(baseRepoPath(), user.Username, project.Name)
+	repoHandler, err := service.InitRepo(projectRepoURL, user.Username, projectRepoPath)
+	if err != nil {
+		logs.Error("Failed to initialize project repo: %+v", err)
+		pm.internalError(err)
+	}
+	repoHandler.Pull()
 
 	isSuccess, err := service.AddOrUpdateProjectMember(int64(projectID), reqProjectMember.UserID, reqProjectMember.RoleID)
 	if err != nil {

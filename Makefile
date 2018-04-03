@@ -91,7 +91,7 @@ endif
 # Package lists
 # TOPLEVEL_PKG := .
 INT_LIST := apiserver tokenserver collector/cmd
-IMG_LIST := apiserver tokenserver log collector gitserver jenkins db proxy grafana graphite
+IMG_LIST := apiserver tokenserver log collector jenkins db proxy gogits grafana graphite
 
 # List building
 COMPILEALL_LIST = $(foreach int, $(INT_LIST), $(SRCPATH)/$(int))

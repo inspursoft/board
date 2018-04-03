@@ -18,17 +18,17 @@ CREATE TABLE `user` (
   `comment` varchar(255) DEFAULT NULL,
   `deleted` SMALLINT(1) DEFAULT NULL,
   `system_admin` SMALLINT(1) DEFAULT NULL,
-  `project_admin` SMALLINT(1) DEFAULT NULL,
   `reset_uuid` varchar(255) DEFAULT NULL,
   `salt` varchar(255) DEFAULT NULL,
+  `repo_token` VARCHAR(127) NULL DEFAULT NULL,  
   `creation_time` datetime DEFAULT NULL,
   `update_time` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 
-INSERT INTO `board`.`user` (`username`, `password`, `email`, `realname`, `comment`, `creation_time`, `update_time`, `deleted`, `system_admin`, `project_admin`)
-  VALUES ('admin', 'Board12345', 'admin@inspur.com', 'admin', 'admin user', now(), now(), 0, 1, 1);
+INSERT INTO `board`.`user` (`username`, `password`, `email`, `realname`, `comment`, `creation_time`, `update_time`, `deleted`, `system_admin`)
+  VALUES ('admin', 'Board12345', 'admin@inspur.com', 'admin', 'admin user', now(), now(), 0, 1);
 
 CREATE TABLE `board`.`project` (
   `id` INT NOT NULL AUTO_INCREMENT,

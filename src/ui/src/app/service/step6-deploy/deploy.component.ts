@@ -68,10 +68,11 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
       this.isInDeployWIP = true;
       this.consoleText = "SERVICE.STEP_6_DEPLOYING";
       this.k8sService.serviceDeployment()
-        .then(serviceID => {
-          this.serviceID = serviceID;
+        .then(res => {
+          this.serviceID = res['service_id'];
+          let projectName = res['project_name'];
           this.processImageSubscription = this.webSocketService
-            .connect(`ws://${this.boardHost}/api/v1/jenkins-job/console?job_name=process_service&token=${this.appInitService.token}`)
+            .connect(`ws://${this.boardHost}/api/v1/jenkins-job/console?job_name=${projectName}&token=${this.appInitService.token}`)
             .subscribe((obs: MessageEvent) => {
               this.consoleText = <string>obs.data;
               let consoleTextArr: Array<string> = this.consoleText.split(/[\n]/g);

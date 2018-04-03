@@ -24,7 +24,7 @@ const (
 	sizeunitTemp          = "B"
 	adminID               = 1
 	defaultDockerfilename = "Dockerfile"
-	imageProcess          = "process_image"
+	imageProcess          = "process-image"
 )
 
 // API to get image list
@@ -73,7 +73,7 @@ func (p *ImageController) GetImagesAction() {
 	logs.Info("Image list is %+v\n", repolistFiltered)
 
 	/* Interpret the message to api server */
-	var imagelist []model.Image
+	imagelist := []model.Image{}
 	for _, imagename := range repolistFiltered.Names {
 		var newImage model.Image
 		newImage.ImageName = imagename
@@ -246,6 +246,17 @@ func (p *ImageController) Prepare() {
 	p.isSysAdmin = (user.SystemAdmin == 1)
 }
 
+func (p *ImageController) generateRepoPathByProject(project *model.Project) string {
+	if project == nil {
+		p.customAbort(http.StatusBadRequest, "Failed to generate repo path since project is nil.")
+	}
+	return filepath.Join(baseRepoPath(), p.currentUser.Username, project.Name)
+}
+
+func (p *ImageController) generateRepoPathByProjectName(projectName string) string {
+	return filepath.Join(baseRepoPath(), p.currentUser.Username, projectName)
+}
+
 func (p *ImageController) BuildImageAction() {
 	//Check user priviledge project admin
 	reqData, err := p.resolveBody()
@@ -262,6 +273,7 @@ func (p *ImageController) BuildImageAction() {
 	}
 
 	//Checking invalid parameters
+	reqImageConfig.RepoPath = p.generateRepoPathByProjectName(reqImageConfig.ProjectName)
 	err = service.CheckDockerfileConfig(&reqImageConfig)
 	if err != nil {
 		p.serveStatus(http.StatusBadRequest, err.Error())
@@ -289,8 +301,8 @@ func (p *ImageController) BuildImageAction() {
 		return
 	}
 
-	reqImageConfig.ImageDockerfilePath = filepath.Join(repoPath(), reqImageConfig.ProjectName,
-		reqImageConfig.ImageName, reqImageConfig.ImageTag)
+	repoPath := p.generateRepoPathByProjectName(reqImageConfig.ProjectName)
+	reqImageConfig.ImageDockerfilePath = filepath.Join(repoPath, imageProcess, reqImageConfig.ImageName, reqImageConfig.ImageTag)
 
 	// Check image:tag path existing for rebuild
 	//existing, err := exists(reqImageConfig.ImageDockerfilePath)
@@ -326,11 +338,11 @@ func (p *ImageController) BuildImageAction() {
 	}
 
 	//move the upload directory
-	tempPath := filepath.Join(repoPath(), reqImageConfig.ProjectName, wrapStringWithSymbol(p.currentUser.Username))
+	tempPath := filepath.Join(repoPath, imageProcess, wrapStringWithSymbol(p.currentUser.Username))
 	tempUploadPath := filepath.Join(tempPath, "upload")
 	if _, err = os.Stat(tempUploadPath); err == nil {
-		dstUploadPath := filepath.Join(repoPath(), reqImageConfig.ProjectName,
-			reqImageConfig.ImageName, reqImageConfig.ImageTag, "upload")
+		dstUploadPath := filepath.Join(repoPath, imageProcess, reqImageConfig.ImageName,
+			reqImageConfig.ImageTag, "upload")
 		err = os.Rename(tempUploadPath, dstUploadPath)
 		if err != nil {
 			logs.Error("Failed to move from %s to %s", tempUploadPath, dstUploadPath)
@@ -347,11 +359,12 @@ func (p *ImageController) BuildImageAction() {
 
 	//push to git
 	var pushobject pushObject
-
+	pushobject.UserID = p.currentUser.ID
 	pushobject.FileName = defaultDockerfilename
 	pushobject.JobName = imageProcess
-	pushobject.Value = filepath.Join(reqImageConfig.ProjectName,
-		reqImageConfig.ImageName, reqImageConfig.ImageTag)
+	pushobject.Value = filepath.Join(imageProcess, reqImageConfig.ImageName, reqImageConfig.ImageTag)
+	pushobject.ProjectName = reqImageConfig.ProjectName
+
 	pushobject.Extras = filepath.Join(reqImageConfig.ProjectName,
 		reqImageConfig.ImageName) + ":" + reqImageConfig.ImageTag
 	pushobject.Message = fmt.Sprintf("Build image: %s", pushobject.Extras)
@@ -362,6 +375,8 @@ func (p *ImageController) BuildImageAction() {
 		p.internalError(err)
 		return
 	}
+	generateMetaConfiguration(&pushobject, repoPath)
+	pushobject.Items = append(pushobject.Items, "META.cfg")
 	// Add upload files
 	for _, finfo := range uploads {
 		filefullname := filepath.Join(pushobject.Value, "upload", finfo.FileName)
@@ -385,7 +400,8 @@ func (p *ImageController) GetImageDockerfileAction() {
 	imageTag := strings.TrimSpace(p.GetString("image_tag"))
 	projectName := strings.TrimSpace(p.GetString("project_name"))
 
-	dockerfilePath := filepath.Join(repoPath(), projectName, imageName, imageTag)
+	repoPath := p.generateRepoPathByProjectName(projectName)
+	dockerfilePath := filepath.Join(repoPath, imageProcess, imageName, imageTag)
 	if _, err := os.Stat(dockerfilePath); os.IsNotExist(err) {
 		p.customAbort(http.StatusNotFound, "Image path does not exist.")
 		return
@@ -412,7 +428,7 @@ func (p *ImageController) DockerfilePreviewAction() {
 		p.internalError(err)
 		return
 	}
-
+	reqImageConfig.RepoPath = p.generateRepoPathByProjectName(reqImageConfig.ProjectName)
 	//Checking invalid parameters
 	err = service.CheckDockerfileConfig(&reqImageConfig)
 	if err != nil {
@@ -441,8 +457,8 @@ func (p *ImageController) DockerfilePreviewAction() {
 		return
 	}
 
-	reqImageConfig.ImageDockerfilePath = filepath.Join(repoPath(), reqImageConfig.ProjectName,
-		reqImageConfig.ImageName, reqImageConfig.ImageTag)
+	repoPath := p.generateRepoPathByProject(currentProject)
+	reqImageConfig.ImageDockerfilePath = filepath.Join(repoPath, imageProcess, reqImageConfig.ImageName, reqImageConfig.ImageTag)
 	err = service.BuildDockerfile(reqImageConfig, p.Ctx.ResponseWriter)
 	if err != nil {
 		p.internalError(err)
@@ -450,15 +466,19 @@ func (p *ImageController) DockerfilePreviewAction() {
 	}
 }
 
-func cleanGitImageTag(imageName string, imageTag string, projectName string, p *ImageController) error {
-	configPath := filepath.Join(repoPath(), projectName, imageName, imageTag)
+func cleanGitImageTag(username, imageName, imageTag, projectName string, p *ImageController) error {
+
+	repoPath := p.generateRepoPathByProjectName(projectName)
+	configPath := filepath.Join(repoPath, imageProcess, imageName, imageTag)
 
 	// Update git repo
 	var pushobject pushObject
 
 	pushobject.FileName = defaultDockerfilename
 	pushobject.JobName = imageProcess
-	pushobject.Value = filepath.Join(projectName, imageName, imageTag)
+	pushobject.Value = filepath.Join(imageProcess, imageName, imageTag)
+	pushobject.ProjectName = projectName
+
 	pushobject.Extras = filepath.Join(projectName, imageName) + ":" + imageTag
 	pushobject.Message = fmt.Sprintf("Build image: %s", pushobject.Extras)
 
@@ -477,7 +497,7 @@ func cleanGitImageTag(imageName string, imageTag string, projectName string, p *
 	pushobject.Items = append(pushobject.Items, filepath.Join(pushobject.Value,
 		defaultDockerfilename))
 
-	ret, msg, err := InternalCleanObjects(&pushobject, &(p.baseController))
+	ret, msg, err := InternalPushObjects(&pushobject, &(p.baseController), toBeRemoved)
 	if err != nil {
 		logs.Error("Failed to push object for git repo clean", msg, ret)
 		return err
@@ -491,15 +511,6 @@ func (p *ImageController) ConfigCleanAction() {
 	imageTag := strings.TrimSpace(p.GetString("image_tag"))
 	projectName := strings.TrimSpace(p.GetString("project_name"))
 	logs.Debug("clean config %s %s %s", projectName, imageName, imageTag)
-
-	//remove upload temp directory
-	tempPath := filepath.Join(repoPath(), projectName, wrapStringWithSymbol(p.currentUser.Username))
-	err := os.RemoveAll(tempPath)
-	if err != nil {
-		logs.Error("Failed to remove temp path: %s", tempPath)
-		p.internalError(err)
-		return
-	}
 
 	currentProject, err := service.GetProject(model.Project{Name: projectName}, "name")
 	if err != nil {
@@ -522,16 +533,28 @@ func (p *ImageController) ConfigCleanAction() {
 		return
 	}
 
-	configPath := filepath.Join(repoPath(), strings.TrimSpace(projectName),
-		strings.TrimSpace(imageName), strings.TrimSpace(imageTag))
+	repoPath := p.generateRepoPathByProject(currentProject)
+
+	//remove upload temp directory
+	tempPath := filepath.Join(repoPath, imageProcess, wrapStringWithSymbol(p.currentUser.Username))
+	err = os.RemoveAll(tempPath)
+	if err != nil {
+		logs.Error("Failed to remove temp path: %s", tempPath)
+		p.internalError(err)
+		return
+	}
+
+	configPath := filepath.Join(repoPath, imageProcess, strings.TrimSpace(imageName), strings.TrimSpace(imageTag))
 
 	// Update git repo
 	var pushobject pushObject
 
 	pushobject.FileName = defaultDockerfilename
 	pushobject.JobName = imageProcess
-	pushobject.Value = filepath.Join(projectName, imageName, imageTag)
-	pushobject.Extras = filepath.Join(projectName, imageName) + ":" + imageTag
+	pushobject.Value = filepath.Join(imageProcess, imageName, imageTag)
+	pushobject.ProjectName = currentProject.Name
+
+	pushobject.Extras = filepath.Join(currentProject.Name, imageName) + ":" + imageTag
 	pushobject.Message = fmt.Sprintf("Build image: %s", pushobject.Extras)
 
 	//Get file list for Jenkis git repo
@@ -549,7 +572,7 @@ func (p *ImageController) ConfigCleanAction() {
 	pushobject.Items = append(pushobject.Items, filepath.Join(pushobject.Value,
 		defaultDockerfilename))
 
-	ret, msg, err := InternalCleanObjects(&pushobject, &(p.baseController))
+	ret, msg, err := InternalPushObjects(&pushobject, &(p.baseController), toBeRemoved)
 	if err != nil {
 		logs.Info("Failed to push object for git repo clean", msg, ret)
 		p.internalError(err)
@@ -641,9 +664,10 @@ func (p *ImageController) DeleteImageAction() {
 		resp.Body.Close()
 
 		// Clean image tag path in git
+		username := p.currentUser.Username
 		projectName := imageName[:strings.Index(imageName, "/")]
 		realName := imageName[strings.Index(imageName, "/")+1:]
-		err = cleanGitImageTag(realName, tag, projectName, p)
+		err = cleanGitImageTag(username, realName, tag, projectName, p)
 		if err != nil {
 			logs.Error("failed to clean image tag git %s:%s %s", realName, tag, projectName)
 			p.internalError(err)
@@ -651,7 +675,8 @@ func (p *ImageController) DeleteImageAction() {
 		}
 
 		//Delete the config files
-		configPath := filepath.Join(repoPath(), projectName, realName, tag)
+		repoPath := p.generateRepoPathByProjectName(projectName)
+		configPath := filepath.Join(repoPath, imageProcess, realName, tag)
 		err = service.ImageConfigClean(configPath)
 		if err != nil {
 			logs.Error("failed to delete config files %s", configPath)
@@ -732,7 +757,8 @@ func (p *ImageController) DeleteImageTagAction() {
 	}
 
 	// Clean image tag path in git
-	err = cleanGitImageTag(realName, _imageTag, projectName, p)
+	username := p.currentUser.Username
+	err = cleanGitImageTag(username, realName, _imageTag, projectName, p)
 	if err != nil {
 		logs.Error("failed to clean image tag git %s:%s %s", realName, _imageTag, projectName)
 		p.internalError(err)
@@ -740,7 +766,8 @@ func (p *ImageController) DeleteImageTagAction() {
 	}
 
 	//Delete the config files
-	configPath := filepath.Join(repoPath(), projectName, realName, _imageTag)
+	repoPath := p.generateRepoPathByProjectName(projectName)
+	configPath := filepath.Join(repoPath, imageProcess, realName, _imageTag)
 	err = service.ImageConfigClean(configPath)
 	if err != nil {
 		logs.Error("failed to delete config files %s", configPath)
@@ -774,7 +801,8 @@ func (p *ImageController) DockerfileBuildImageAction() {
 	imageTag := strings.TrimSpace(p.GetString("image_tag"))
 	projectName := strings.TrimSpace(p.GetString("project_name"))
 
-	dockerfilePath := filepath.Join(repoPath(), projectName, imageName, imageTag)
+	repoPath := p.generateRepoPathByProjectName(projectName)
+	dockerfilePath := filepath.Join(repoPath, imageProcess, imageName, imageTag)
 	if _, err := os.Stat(dockerfilePath); os.IsNotExist(err) {
 		p.customAbort(http.StatusNotFound, "Image path does not exist.")
 		return
@@ -807,8 +835,11 @@ func (p *ImageController) DockerfileBuildImageAction() {
 	var pushobject pushObject
 
 	pushobject.FileName = defaultDockerfilename
+	pushobject.UserID = p.currentUser.ID
 	pushobject.JobName = imageProcess
-	pushobject.Value = filepath.Join(projectName, imageName, imageTag)
+	pushobject.Value = filepath.Join(imageProcess, imageName, imageTag)
+	pushobject.ProjectName = currentProject.Name
+
 	pushobject.Extras = filepath.Join(projectName, imageName) + ":" + imageTag
 	pushobject.Message = fmt.Sprintf("Build image: %s", pushobject.Extras)
 
@@ -818,6 +849,8 @@ func (p *ImageController) DockerfileBuildImageAction() {
 		p.internalError(err)
 		return
 	}
+	generateMetaConfiguration(&pushobject, repoPath)
+	pushobject.Items = append(pushobject.Items, "META.cfg")
 	// Add upload files
 	for _, finfo := range uploads {
 		filefullname := filepath.Join(pushobject.Value, "upload", finfo.FileName)
@@ -876,7 +909,8 @@ func (p *ImageController) CheckImageTagExistingAction() {
 	}
 
 	// check this image:tag in system
-	dockerfilePath := filepath.Join(repoPath(), projectName, imageName, imageTag)
+	repoPath := p.generateRepoPathByProjectName(projectName)
+	dockerfilePath := filepath.Join(repoPath, imageProcess, imageName, imageTag)
 	existing, err := exists(dockerfilePath)
 	if err != nil {
 		p.internalError(err)
@@ -954,7 +988,6 @@ func existRegistry(projectName string, imageName string, imageTag string) (bool,
 			}
 
 			for _, tagid := range taglist.Tags {
-
 				if imageTag == tagid {
 					logs.Info("Image tag existing %s:%s", realName, tagid)
 					return true, nil
@@ -980,7 +1013,10 @@ func (f *ImageController) UploadDockerfileFileAction() {
 
 	imageName := f.GetString("image_name")
 	tagName := f.GetString("tag_name")
-	targetFilePath := filepath.Join(repoPath(), projectName, imageName, tagName)
+
+	repoPath := f.generateRepoPathByProjectName(projectName)
+	logs.Debug("Repo path: %s", repoPath)
+	targetFilePath := filepath.Join(repoPath, imageProcess, imageName, tagName)
 	err = os.MkdirAll(targetFilePath, 0755)
 	if err != nil {
 		f.internalError(err)
@@ -1018,13 +1054,15 @@ func (f *ImageController) DownloadDockerfileFileAction() {
 
 	imageName := f.GetString("image_name")
 	tagName := f.GetString("tag_name")
-	targetFilePath := filepath.Join(repoPath(), projectName, imageName, tagName)
+
+	repoPath := f.generateRepoPathByProjectName(projectName)
+	targetFilePath := filepath.Join(repoPath, imageProcess, imageName, tagName)
 	if _, err := os.Stat(targetFilePath); os.IsNotExist(err) {
 		f.customAbort(http.StatusBadRequest, "image Name and  tag name are invalid.")
 		return
 	}
 
-	absFileName := filepath.Join(repoPath(), projectName, imageName, tagName, dockerfileName)
+	absFileName := filepath.Join(repoPath, imageProcess, imageName, tagName, dockerfileName)
 	logs.Info("User: %s download Dockerfile file from %s.", f.currentUser.Username, absFileName)
 
 	f.Ctx.Output.Download(absFileName, dockerfileName)
@@ -1063,7 +1101,8 @@ func (p *ImageController) ResetBuildImageTempAction() {
 		return
 	}
 
-	tempPath := filepath.Join(repoPath(), projectName, wrapStringWithSymbol(p.currentUser.Username))
+	repoPath := p.generateRepoPathByProject(currentProject)
+	tempPath := filepath.Join(repoPath, imageProcess, wrapStringWithSymbol(p.currentUser.Username))
 	err = os.RemoveAll(tempPath)
 	if err != nil {
 		logs.Error("Failed to remove temp path: %s", tempPath)

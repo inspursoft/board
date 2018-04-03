@@ -13,8 +13,8 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-const jenkinsBuildConsoleTemplateURL = "http://jenkins:8080/job/{{.JobName}}/{{.BuildSerialID}}/consoleText"
-const jenkinsStopBuildTemplateURL = "http://jenkins:8080/job/{{.JobName}}/{{.BuildSerialID}}/stop"
+const jenkinsBuildConsoleTemplateURL = "%s/job/{{.JobName}}/{{.BuildSerialID}}/consoleText"
+const jenkinsStopBuildTemplateURL = "%s/job/{{.JobName}}/{{.BuildSerialID}}/stop"
 const maxRetryCount = 600
 const buildNumberCacheExpireSecond = time.Duration(maxRetryCount * time.Second)
 const toggleBuildingCacheExpireSecond = time.Duration(maxRetryCount * time.Second)
@@ -104,7 +104,7 @@ func (j *JenkinsJobController) Console() {
 	}
 	query := jobConsole{JobName: jobName}
 	query.BuildSerialID = strconv.Itoa(buildNumber)
-	buildConsoleURL, err := utils.GenerateURL(jenkinsBuildConsoleTemplateURL, query)
+	buildConsoleURL, err := utils.GenerateURL(fmt.Sprintf(jenkinsBuildConsoleTemplateURL, jenkinsBaseURL()), query)
 	if err != nil {
 		j.internalError(err)
 		return
@@ -203,7 +203,7 @@ func (j *JenkinsJobController) Stop() {
 	}
 	query := jobConsole{JobName: jobName}
 	query.BuildSerialID = j.GetString("build_serial_id", strconv.Itoa(lastBuildNumber))
-	stopBuildURL, err := utils.GenerateURL(jenkinsStopBuildTemplateURL, query)
+	stopBuildURL, err := utils.GenerateURL(fmt.Sprintf(jenkinsStopBuildTemplateURL, jenkinsBaseURL()), query)
 	if err != nil {
 		j.internalError(err)
 		return
