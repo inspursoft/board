@@ -1,14 +1,14 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
+import { ClrDatagridSortOrder, ClrDatagridStateInterface } from "@clr/angular";
+import { ActivatedRoute } from "@angular/router";
+import { Subscription } from "rxjs/Subscription";
 import { UserService } from "../user-service/user-service";
 import { User } from "../user";
 import { editModel } from "../user-new-edit/user-new-edit.component"
-import { Message } from "app/shared/message-service/message";
-import { MessageService } from "app/shared/message-service/message.service";
-import { Subscription } from "rxjs/Subscription";
-import { BUTTON_STYLE } from "app/shared/shared.const"
 import { AppInitService } from "../../app.init.service";
-import { ActivatedRoute } from "@angular/router";
-import { ClrDatagridSortOrder, ClrDatagridStateInterface } from "@clr/angular";
+import { Message } from "../../shared/message-service/message";
+import { MessageService } from "../../shared/message-service/message.service";
+import { BUTTON_STYLE } from "../../shared/shared.const";
 
 @Component({
   selector: "user-list",

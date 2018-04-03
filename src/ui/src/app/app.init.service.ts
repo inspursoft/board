@@ -7,24 +7,24 @@ import { GUIDE_STEP } from "./shared/shared.const";
 
 @Injectable()
 export class AppTokenService {
-  _tokenString: string;
+  _tokenString: string | null;
   tokenMessageSource: Subject<string> = new Subject<string>();
   tokenMessage$: Observable<string> = this.tokenMessageSource.asObservable();
 
   constructor(private cookieService: CookieService) {
   }
 
-  set token(t: string) {
+  set token(t: string | null) {
     this._tokenString = t;
   }
 
-  get token(): string {
+  get token(): string | null {
     return this._tokenString;
   }
 
   chainResponse(r: HttpResponse<Object>): HttpResponse<Object> {
     this.token = r.headers.get('token');
-    this.cookieService.put("token", this.token);
+    this.cookieService.put("token", this.token == null ? "" : this.token);
     this.tokenMessageSource.next(this.token);
     return r;
   }

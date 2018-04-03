@@ -96,7 +96,7 @@ export class ServiceCreateYamlComponent implements OnInit {
       });
   }
 
-  btnUploadClick(event: MouseEvent) {
+  btnUploadClick() {
     this.errorMessage = "";
     this.successMessage = "";
     let formData = new FormData();

@@ -6,7 +6,7 @@ import { SelectImageComponent } from './step2-select-image/select-image.componen
 import { EditContainerComponent } from './step3-edit-container/edit-container.component';
 import { ConfigSettingComponent } from './step4-config-setting/config-setting.component';
 import { TestingComponent } from './step5-testing/testing.component';
-import { DeployComponent } from "./step6-deploy/deploy.component";
+
 
 @Injectable()
 export class StepService {
@@ -17,8 +17,7 @@ export class StepService {
       SelectImageComponent,
       EditContainerComponent,
       ConfigSettingComponent,
-      TestingComponent,
-      DeployComponent
+      TestingComponent
     ];
   }
 }

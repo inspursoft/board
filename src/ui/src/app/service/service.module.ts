@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, NO_ERRORS_SCHEMA } from '@angular/core';
 import { SharedModule } from '../shared/shared.module';
 import { ServiceComponent } from './service.component';
 import { ServiceHostDirective } from './service-host.directive';
@@ -13,7 +13,6 @@ import { TestingComponent } from './step5-testing/testing.component';
 import { ServiceWizardComponent } from "./service-wizard/service-wizard.component";
 import { VolumeMountsComponent } from "./step3-edit-container/volume-mounts/volume-mounts.component";
 import { DynamicFormModule } from '../shared/dynamic-form/dynamic-form.module';
-import { DeployComponent } from "./step6-deploy/deploy.component";
 import { ServiceDetailComponent } from './step0-list-service/service-detail/service-detail.component';
 import { ServiceControlComponent } from "./step0-list-service/service-control/service-control.component";
 import { ServiceCreateYamlComponent } from './step0-list-service/service-create-yaml/service-create-yaml.component';
@@ -32,7 +31,6 @@ import { ServiceCreateYamlComponent } from './step0-list-service/service-create-
     EditContainerComponent,
     ConfigSettingComponent,
     TestingComponent,
-    DeployComponent,
     ServiceWizardComponent,
     VolumeMountsComponent,
     ServiceDetailComponent,
@@ -46,8 +44,8 @@ import { ServiceCreateYamlComponent } from './step0-list-service/service-create-
     EditContainerComponent,
     ConfigSettingComponent,
     TestingComponent,
-    DeployComponent
   ],
+
   providers: [
     K8sService,
     StepService

@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, NO_ERRORS_SCHEMA } from '@angular/core';
 
 import { SharedModule } from '../shared/shared.module';
 import { NodeComponent } from './node.component';
@@ -13,6 +13,7 @@ import { NodeService } from './node.service';
     NodeComponent,
     NodeDetailComponent
   ],
+
   providers: [
     NodeService
   ]

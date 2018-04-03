@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, NO_ERRORS_SCHEMA } from '@angular/core';
 
 import { SharedModule } from '../shared/shared.module';
 import { GlobalSearchComponent } from './global-search.component';
@@ -8,6 +8,7 @@ import { GlobalSearchService } from './global-search.service';
   imports: [
     SharedModule
   ],
+
   declarations: [
     GlobalSearchComponent
   ],

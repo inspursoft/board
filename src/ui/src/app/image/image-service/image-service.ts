@@ -1,8 +1,8 @@
 import { Injectable } from "@angular/core";
 import { HttpClient, HttpEvent, HttpRequest, HttpResponse } from "@angular/common/http";
 import { BuildImageData, Image, ImageDetail } from "../image";
-import { Project } from "app/project/project";
 import { Observable } from "rxjs/Observable";
+import { Project } from "../../project/project";
 
 @Injectable()
 export class ImageService {
