@@ -63,7 +63,8 @@ func (d *DeploymentConfig) setDeploymentContainers(ContainerList []model.Contain
 		}
 
 		if len(cont.Command) > 0 {
-			container.Command = append(container.Command, cont.Command)
+			container.Command = append(container.Command, "/bin/sh")
+			container.Args=append(container.Args,"-c",cont.Command)
 		}
 
 		if cont.VolumeMounts.VolumeName != "" {
