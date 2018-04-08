@@ -63,7 +63,7 @@ export class ServiceControlComponent implements OnInit,OnDestroy {
       this.dropDownListNum.push(i)
     }
     this.refreshScaleInfo(false);
-    this.intervalSubscription = Observable.interval(5000).subscribe(_ => this.refreshScaleInfo(true));
+    this.intervalSubscription = Observable.interval(10000).subscribe(_ => this.refreshScaleInfo(true));
   }
 
   ngOnDestroy(){

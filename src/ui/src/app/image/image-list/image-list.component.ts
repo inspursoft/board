@@ -132,6 +132,7 @@ export class ImageListComponent implements OnInit, OnDestroy {
 
   onBuildImageCompleted(imageName: string) {
     this.isBuildImageWIP = false;
+    this.createImageMethod = CreateImageMethod.None;
     this.retrieve();
   }
 
