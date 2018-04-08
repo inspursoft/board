@@ -7,5 +7,7 @@ services:
     image: dev_uibuilder:dev
     volumes:
       - ../../src/ui:/board_src
+    environment:
+      MODEL: build
     entrypoint:
       - /entrypoint.sh
