@@ -1,7 +1,7 @@
 
 div.modal-body-container {
   display: flex;
-  min-height: 600px;
+  min-height: 550px;
 }
 
 .base-margin-left {
@@ -31,7 +31,7 @@ div.build-method-container {
 
 div.from-temp-container {
   padding: 10px;
-  height: 570px;
+  height: 500px;
   overflow-y: auto;
 }
 
@@ -62,17 +62,10 @@ label.base-text {
 
 div.console-container {
   display: flex;
-  height: 600px;
+  height: 530px;
   flex-direction: column;
   flex-basis: 100%;
   padding: 10px;
-}
-
-div.create-image-area-container {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  margin-top: 10px;
 }
 
 input.upload-file-input {
@@ -86,14 +79,6 @@ legend.legend-default {
   border: 0;
   width: auto;
   margin-left: 30px;
-}
-
-textarea.area-command {
-  margin-left: 10px;
-  padding: 0;
-  color: black;
-  font-size: 15px;
-  line-height: 17px;
 }
 
 textarea.area-status {
