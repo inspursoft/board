@@ -36,6 +36,9 @@ export const LANG_EN_US = {
     "INPUT_MIN_VALUE":"Min value",
     "INPUT_PATTERN":"Input does not confirm to the rules"
   },
+  "CS_DROPDOWN":{
+    "NO_ITEMS": "No items"
+  },
   "ACCOUNT": {
     "SIGN_IN": "Sign In",
     "USERNAME_PLACEHOLDER": "Username",

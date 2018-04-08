@@ -10,6 +10,11 @@ div.cs-dropdown-spinner-container {
   justify-content: center;
 }
 
+span.no-items{
+  font-style: italic;
+  color: blue;
+}
+
 div.cs-dropdown-title-container {
   border: solid 1px silver;
   border-radius: 5px;
