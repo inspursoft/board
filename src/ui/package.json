@@ -9,8 +9,6 @@
     "test": "ng test --single-run --code-coverage",
     "showcoverage": "http-server -c-1 -o -p 9875 ./coverage",
     "aot": "node_modules/.bin/ngc -p tsconfig-aot.json",
-    "mainjs": "node src/rollup/main-aot.js",
-    "copyfiles": "node src/rollup/copy-file.js",
     "rollup": "node_modules/.bin/rollup -c src/rollup/rollup-config.js",
     "pree2e": "webdriver-manager update",
     "e2e": "protractor protractor.config.js"

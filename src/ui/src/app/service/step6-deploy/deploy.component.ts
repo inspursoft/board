@@ -25,8 +25,7 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
   _confirmSubscription: Subscription;
 
   constructor(protected injector: Injector,
-              private webSocketService: WebsocketService,
-  ) {
+              private webSocketService: WebsocketService) {
     super(injector);
     this.boardHost = this.appInitService.systemInfo['board_host'];
   }

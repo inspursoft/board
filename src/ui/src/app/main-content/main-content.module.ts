@@ -11,7 +11,6 @@ import { MainContentComponent } from './main-content.component';
   declarations: [
     MainContentComponent
   ],
-
   exports: [
     MainContentComponent
   ]

@@ -8,7 +8,6 @@ import { ImageService } from "./image-service/image-service";
 @NgModule({
   imports: [SharedModule],
   providers: [ImageService],
-
   declarations: [
     ImageListComponent,
     ImageDetailComponent]

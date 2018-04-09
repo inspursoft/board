@@ -74,7 +74,6 @@ import { SafePipe } from "./pipes/safe-pipe";
     SafePipe,
     CsGuideComponent,
   ],
-
   providers: [
     AuthGuard,
     ServiceGuard,
