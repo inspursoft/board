@@ -8,7 +8,6 @@ import { GlobalSearchService } from './global-search.service';
   imports: [
     SharedModule
   ],
-
   declarations: [
     GlobalSearchComponent
   ],

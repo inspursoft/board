@@ -40,7 +40,6 @@ export function appInitServiceFactory(appInitService: AppInitService) {
     },
     SystemInfoResolve
   ],
-
   bootstrap: [AppComponent]
 })
 export class AppModule {

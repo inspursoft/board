@@ -12,7 +12,6 @@ import { DynamicFormService } from './dynamic-form.service';
     DynamicFormComponent,
     DynamicFormControlComponent
   ],
-
   exports: [
     DynamicFormComponent,
     DynamicFormControlComponent

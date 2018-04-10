@@ -13,7 +13,6 @@ import { NodeService } from './node.service';
     NodeComponent,
     NodeDetailComponent
   ],
-
   providers: [
     NodeService
   ]

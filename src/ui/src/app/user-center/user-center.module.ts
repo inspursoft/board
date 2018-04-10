@@ -16,7 +16,6 @@ import { MessageService } from "../shared/message-service/message.service";
     NewEditUserComponent,
     UserList
   ],
-
   providers: [
     UserService
   ],

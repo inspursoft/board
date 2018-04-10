@@ -8,6 +8,6 @@ services:
     volumes:
       - ../../src/ui:/board_src
     environment:
-      MODEL: build
+      MODE: build
     entrypoint:
       - /entrypoint.sh

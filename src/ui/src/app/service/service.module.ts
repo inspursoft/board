@@ -48,7 +48,6 @@ import { DeployComponent } from "./step6-deploy/deploy.component";
     TestingComponent,
     DeployComponent
   ],
-
   providers: [
     K8sService,
     StepService

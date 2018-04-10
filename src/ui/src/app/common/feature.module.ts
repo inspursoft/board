@@ -9,7 +9,6 @@ import { ProfileModule } from '../profile/profile.module';
 import { UserCenterModule } from '../user-center/user-center.module';
 
 @NgModule({
-
   exports: [
     GlobalSearchModule,
     DashboardModule,

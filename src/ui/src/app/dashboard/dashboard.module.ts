@@ -14,7 +14,6 @@ import { DashboardService } from "./dashboard.service";
     DashboardComponent,
     TimeRangeScale
   ],
-
   providers: [
     DashboardService
   ]

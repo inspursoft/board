@@ -5,10 +5,7 @@ import { SignUpComponent } from './sign-up/sign-up.component';
 import { AccountService } from './account.service';
 
 @NgModule({
-  imports: [
-    SharedModule
-  ],
-
+  imports: [SharedModule],
   declarations: [ 
     SignInComponent,
     SignUpComponent
