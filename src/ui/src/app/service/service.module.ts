@@ -13,10 +13,10 @@ import { TestingComponent } from './step5-testing/testing.component';
 import { ServiceWizardComponent } from "./service-wizard/service-wizard.component";
 import { VolumeMountsComponent } from "./step3-edit-container/volume-mounts/volume-mounts.component";
 import { DynamicFormModule } from '../shared/dynamic-form/dynamic-form.module';
-import { DeployComponent } from "./step6-deploy/deploy.component";
 import { ServiceDetailComponent } from './step0-list-service/service-detail/service-detail.component';
 import { ServiceControlComponent } from "./step0-list-service/service-control/service-control.component";
 import { ServiceCreateYamlComponent } from './step0-list-service/service-create-yaml/service-create-yaml.component';
+import { DeployComponent } from "./step6-deploy/deploy.component";
 
 @NgModule({
   imports: [

@@ -62,7 +62,7 @@
     </button>
     <button class="btn btn-primary"
             [disabled]="!isUploadFileSuccess || isToggleServiceWIP"
-            (click)="btnCreateClick()">
+            (click)="btnCreateClick($event)">
       {{"BUTTON.CREATE"|translate}}
     </button>
     <div *ngIf="isToggleServiceWIP" class="custom-margin spinner-container">

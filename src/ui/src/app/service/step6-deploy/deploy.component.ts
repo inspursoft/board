@@ -24,9 +24,8 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
   processImageSubscription: Subscription;
   _confirmSubscription: Subscription;
 
-  constructor(protected injector: Injector, 
-    private webSocketService: WebsocketService,
-  ) {
+  constructor(protected injector: Injector,
+              private webSocketService: WebsocketService) {
     super(injector);
     this.boardHost = this.appInitService.systemInfo['board_host'];
   }
@@ -71,25 +70,25 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
         .then(res => {
           this.serviceID = res['service_id'];
           let projectName = res['project_name'];
-            this.processImageSubscription = this.webSocketService
-              .connect(`ws://${this.boardHost}/api/v1/jenkins-job/console?job_name=${projectName}&token=${this.appInitService.token}`)
-              .subscribe((obs: MessageEvent) => {
-                this.consoleText = <string>obs.data;
-                let consoleTextArr: Array<string> = this.consoleText.split(/[\n]/g);
-                if (consoleTextArr.find(value => value.indexOf("Finished: SUCCESS") > -1)) {
-                  this.isDeploySuccess = true;
-                  this.isInDeployWIP = false;
-                  this.processImageSubscription.unsubscribe();
-                }
-                if (consoleTextArr.find(value => value.indexOf("Finished: FAILURE") > -1)) {
-                  this.isDeploySuccess = false;
-                  this.isInDeployWIP = false;
-                  this.processImageSubscription.unsubscribe();
-                }
-              }, err => err, () => {
+          this.processImageSubscription = this.webSocketService
+            .connect(`ws://${this.boardHost}/api/v1/jenkins-job/console?job_name=${projectName}&token=${this.appInitService.token}`)
+            .subscribe((obs: MessageEvent) => {
+              this.consoleText = <string>obs.data;
+              let consoleTextArr: Array<string> = this.consoleText.split(/[\n]/g);
+              if (consoleTextArr.find(value => value.indexOf("Finished: SUCCESS") > -1)) {
+                this.isDeploySuccess = true;
+                this.isInDeployWIP = false;
+                this.processImageSubscription.unsubscribe();
+              }
+              if (consoleTextArr.find(value => value.indexOf("Finished: FAILURE") > -1)) {
                 this.isDeploySuccess = false;
                 this.isInDeployWIP = false;
-              });
+                this.processImageSubscription.unsubscribe();
+              }
+            }, err => err, () => {
+              this.isDeploySuccess = false;
+              this.isInDeployWIP = false;
+            });
         })
         .catch(err => {
           if (err instanceof HttpErrorResponse && (err as HttpErrorResponse).status == 400) {
