@@ -124,9 +124,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
       }
     }, AUTO_REFRESH_IMAGE_LIST);
     this.imageService.getImages("", 0, 0)
-      .then(res => {
-        this.imageList = res || [];
-      })
+      .then(res => this.imageList = res || [])
       .catch(err => {
         this.isOpen = false;
         this.messageService.dispatchError(err)
@@ -521,13 +519,6 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
           this.isNewImageAlertOpen = true;
         }
       });
-    }
-  }
-
-  shieldEnter($event: KeyboardEvent) {
-    if ($event.charCode == 13) {
-      (<any>$event.target).blur();
-      this.getDockerFilePreviewInfo();
     }
   }
 

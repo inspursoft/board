@@ -36,6 +36,9 @@ export const LANG_ZH_CN = {
     "INPUT_MAX_VALUE":"最大值",
     "INPUT_MIN_VALUE":"最小值"
   },
+  "CS_DROPDOWN":{
+    "NO_ITEMS": "没有可选项"
+  },
   "ACCOUNT": {
     "SIGN_IN": "登录",
     "USERNAME_PLACEHOLDER": "用户名",

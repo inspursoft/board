@@ -93,9 +93,9 @@
           </cs-dropdown>
         </div>
         <div class="scale-line">
-          <input [disabled]="isActionInWIP" title="" type="radio" id="auto" name="scaleMethod" [checked]="scaleModule == 1"
+          <input [disabled]="true" title="" type="radio" id="auto" name="scaleMethod" [checked]="scaleModule == 1"
                  (change)="setScaleMethod(1)">
-          <label class="margin-left-10" for="auto">
+          <label class="margin-left-10 disabled" for="auto">
             {{"SERVICE.SERVICE_CONTROL_AUTO_SCALE"|translate}}
           </label>
         </div>

@@ -165,16 +165,11 @@
               <clr-icon *ngIf="!isBuildImageWIP" class="dynamic-icon" shape="minus" (click)="removeFile(file)"></clr-icon>
               {{file.file_name}}
             </div>
-            <div class="create-image-area-container">
-              <label for="areaCommand" class="base-text">{{"IMAGE.CREATE_IMAGE_COMMAND" | translate}}:</label>
-              <textarea id="areaCommand"
-                        rows="3"
-                        class="area-command"
-                        (keypress)="shieldEnter($event)"
-                        [(ngModel)]="customerNewImage.image_dockerfile.image_cmd"
-                        [disabled]="isBuildImageWIP">
-              </textarea>
-            </div>
+            <cs-input [inputLabel]="'IMAGE.CREATE_IMAGE_COMMAND'|translate"
+                      [disabled]="isBuildImageWIP"
+                      [simpleFiled]="customerNewImage.image_dockerfile.image_cmd"
+                      (onCheck)="customerNewImage.image_dockerfile.image_cmd = $event;getDockerFilePreviewInfo()">
+            </cs-input>
           </div>
         </ng-template>
         <ng-template [ngSwitchCase]="1">

@@ -1,6 +1,9 @@
 <div [ngStyle]="{'width':dropdownWidth + 'px'}">
-  <div *ngIf="!dropdownList || dropdownList.length == 0" class="cs-dropdown-spinner-container">
+  <div *ngIf="!dropdownList" class="cs-dropdown-spinner-container">
     <span class="spinner spinner-sm"></span>
+  </div>
+  <div *ngIf="dropdownList && dropdownList.length == 0" class="cs-dropdown-spinner-container">
+    <span class="no-items">{{"CS_DROPDOWN.NO_ITEMS" | translate}}</span>
   </div>
   <clr-dropdown #csDropdown
                 *ngIf="dropdownList && dropdownList.length > 0"

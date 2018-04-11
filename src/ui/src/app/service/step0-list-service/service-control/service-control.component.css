@@ -39,6 +39,7 @@ div.detail-line {
 
 div.utilization-container {
   margin: 20px 0 20px 0;
+  display: none;
 }
 
 div.scale-line {
@@ -49,6 +50,10 @@ div.scale-line {
 
 label.margin-left-10 {
   margin-left: 10px;
+}
+
+label.disabled{
+  color: silver;
 }
 
 span.margin-left-20 {
