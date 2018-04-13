@@ -186,7 +186,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   }
 
   deleteService(service:Service){
-    if (service.service_is_member == 1){
+    if (!this.isDeleteDisable(service)){
       let announceMessage = new Message();
       announceMessage.title = "SERVICE.DELETE_SERVICE";
       announceMessage.message = "SERVICE.CONFIRM_TO_DELETE_SERVICE";
