@@ -175,8 +175,8 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
             this.lineResponses.set(lineType, res);
             this.detectChartData(lineType);
             this.curRealTimeValue.set(lineType, {
-              curFirst: res.firstLineData[0][1],
-              curSecond: res.secondLineData[0][1]
+              curFirst: res.firstLineData.length > 0 ? res.firstLineData[0][1] : 0,
+              curSecond: res.secondLineData.length > 0 ?res.secondLineData[0][1] : 0
             });
             this.eventInitChangeDetector.next(lineType)
           })
