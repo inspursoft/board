@@ -36,6 +36,21 @@ type createRepoOption struct {
 	Readme      string `json:"readme"`
 }
 
+type createIssueOption struct {
+	Title      string  `json:"title" binding:"Required"`
+	Body       string  `json:"body"`
+	Assignee   string  `json:"assignee"`
+	Milestone  int64   `json:"milestone"`
+	Labels     []int64 `json:"labels"`
+	Closed     bool    `json:"closed"`
+	LabelIDs   string  `json:"label_ids"`
+	AssigneeID int64   `json:"assignee_id"`
+}
+
+type createIssueCommentOption struct {
+	Body string `json:"body" binding:"Required"`
+}
+
 type accessToken struct {
 	Name string `json:"name"`
 	Sha1 string `json:"sha1"`
@@ -45,6 +60,12 @@ type gogsHandler struct {
 	username string
 	password string
 	token    string
+}
+
+type PullRequestInfo struct {
+	IssueID    int64 `json:"issue_id"`
+	Index      int64 `json:"index"`
+	HasCreated bool  `json:"has_created"`
 }
 
 func NewGogsHandler(username, token string) *gogsHandler {
@@ -253,6 +274,70 @@ func (g *gogsHandler) ForkRepo(ownerName, baseRepoName, forkRepoName, descriptio
 		data, _ := ioutil.ReadAll(resp.Body)
 		logs.Debug(string(data))
 		logs.Info("Requested Gogits fork with response status code: %d", resp.StatusCode)
+	}
+	return nil
+}
+
+func (g *gogsHandler) CreatePullRequest(ownerName, baseRepoName, title, content, compareInfo string) (*PullRequestInfo, error) {
+	var opt = createIssueOption{
+		Title: title,
+		Body:  content,
+	}
+	body, err := json.Marshal(&opt)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/api/v1/repos/%s/%s/pull-request/%s", gogitsBaseURL(), ownerName, baseRepoName, compareInfo), func(req *http.Request) error {
+		req.Header = http.Header{
+			"content-type":  []string{"application/json"},
+			"Authorization": []string{"token " + g.token},
+		}
+		return nil
+	}, bytes.NewReader(body))
+	if err != nil {
+		return nil, err
+	}
+	if resp != nil {
+		if resp.StatusCode >= http.StatusInternalServerError {
+			return nil, fmt.Errorf("Internal error: %+v", err)
+		}
+		data, _ := ioutil.ReadAll(resp.Body)
+		var prInfo PullRequestInfo
+		json.Unmarshal(data, &prInfo)
+		if &prInfo != nil {
+			prInfo.HasCreated = (resp.StatusCode == http.StatusConflict)
+		}
+		logs.Info("Requested Gogits create pull request with response status code: %d", resp.StatusCode)
+		return &prInfo, nil
+	}
+	return nil, nil
+}
+
+func (g *gogsHandler) CreateIssueComment(ownerName string, baseRepoName string, issueIndex int64, comment string) error {
+	var opt = createIssueCommentOption{
+		Body: comment,
+	}
+	body, err := json.Marshal(&opt)
+	if err != nil {
+		return err
+	}
+	resp, err := utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/api/v1/repos/%s/%s/issues/%d/comments", gogitsBaseURL(), ownerName, baseRepoName, issueIndex), func(req *http.Request) error {
+		req.Header = http.Header{
+			"content-type":  []string{"application/json"},
+			"Authorization": []string{"token " + g.token},
+		}
+		return nil
+	}, bytes.NewReader(body))
+	if err != nil {
+		return err
+	}
+	if resp != nil {
+		if resp.StatusCode >= http.StatusInternalServerError {
+			return fmt.Errorf("Internal error: %+v", err)
+		}
+		data, _ := ioutil.ReadAll(resp.Body)
+		logs.Debug(string(data))
+		logs.Info("Requested Gogits comment issue with response status code: %d", resp.StatusCode)
 	}
 	return nil
 }

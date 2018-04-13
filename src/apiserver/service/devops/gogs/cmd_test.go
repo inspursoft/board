@@ -83,3 +83,10 @@ func TestDeleteRepo(t *testing.T) {
 	assert := assert.New(t)
 	assert.Nil(err, fmt.Sprintf("Error occurred while deleting repo: %+v", err))
 }
+
+func TestCreatePullRequest(t *testing.T) {
+	prInfo, err := NewGogsHandler(user.Username, token.Sha1).CreatePullRequest("admin", "myrepo", "Update readme.md", "Update readme.md111", "master...user1:master")
+	assert := assert.New(t)
+	assert.Nilf(err, fmt.Sprintf("Error occurred while creating pull request: %+v", err))
+	assert.NotNil(prInfo, fmt.Sprintf("Error occurred while getting pull request info."))
+}
