@@ -51,7 +51,7 @@ type createIssueCommentOption struct {
 	Body string `json:"body" binding:"Required"`
 }
 
-type accessToken struct {
+type AccessToken struct {
 	Name string `json:"name"`
 	Sha1 string `json:"sha1"`
 }
@@ -135,7 +135,7 @@ func SignUp(user model.User) error {
 	return nil
 }
 
-func CreateAccessToken(username, password string) (*accessToken, error) {
+func CreateAccessToken(username, password string) (*AccessToken, error) {
 	opt := createAccessTokenOption{Name: "ACCESS-TOKEN"}
 	body, err := json.Marshal(&opt)
 	if err != nil {
@@ -157,7 +157,7 @@ func CreateAccessToken(username, password string) (*accessToken, error) {
 			return nil, err
 		}
 		logs.Debug("token output: %s", string(output))
-		var token accessToken
+		var token AccessToken
 		err = json.Unmarshal(output, &token)
 		if err != nil {
 			return nil, err
