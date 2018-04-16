@@ -28,9 +28,11 @@ func ConfigSSHAccess(username string, accessToken string) error {
 		return err
 	}
 	sshPrivateKeyPath := filepath.Join(sshKeyUserPath, sshPrivateKey)
-	err = exec.Command("ssh-keygen", "-t", "rsa", "-b", "4096", "-f", sshPrivateKeyPath, "-q", "-N", "").Run()
-	if err != nil {
-		return fmt.Errorf("Failed to generate SSH Key pairs: %+v", err)
+	if _, err := os.Stat(sshPrivateKeyPath); os.IsNotExist(err) {
+		err = exec.Command("ssh-keygen", "-t", "rsa", "-b", "4096", "-f", sshPrivateKeyPath, "-q", "-N", "").Run()
+		if err != nil {
+			return fmt.Errorf("Failed to generate SSH Key pairs: %+v", err)
+		}
 	}
 	data, err := ioutil.ReadFile(filepath.Join(sshKeyUserPath, sshPublicKey))
 	if err != nil {
@@ -65,11 +67,12 @@ func SignUp(user model.User) (bool, error) {
 
 func GetUserByID(userID int64) (*model.User, error) {
 	query := model.User{ID: userID, Deleted: 0}
-	user, err := dao.GetUser(query, "id", "deleted")
-	if err != nil {
-		return nil, err
-	}
-	return user, nil
+	return dao.GetUser(query, "id", "deleted")
+}
+
+func GetUserByName(username string) (*model.User, error) {
+	query := model.User{Username: username, Deleted: 0}
+	return dao.GetUser(query, "username", "deleted")
 }
 
 func GetUsers(field string, value interface{}, selectedFields ...string) ([]*model.User, error) {

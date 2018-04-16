@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/apiserver/service/devops/gogs"
+	"git/inspursoft/board/src/common/model"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -13,7 +15,8 @@ import (
 )
 
 const (
-	toBeRemoved = true
+	toBeRemoved   = true
+	defaultBranch = "master"
 )
 
 type GitRepoController struct {
@@ -198,5 +201,28 @@ func InternalPushObjects(p *pushObject, g *baseController, actionType ...bool) (
 	if err != nil {
 		return http.StatusInternalServerError, "Failed to push objects to git repo", err
 	}
-	return 0, "Internal Push Object successfully", err
+
+	project, err := service.GetProject(model.Project{Name: p.ProjectName}, "name")
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Sprintf("Failed to check username: %s to the project: %s", username, p.ProjectName), err
+	}
+
+	if project != nil && project.OwnerName != username {
+		pullRequestTitle := fmt.Sprintf("Updates from forked repo: %s/%s", username, p.ProjectName)
+		pullRequestContent := fmt.Sprintf("Update list: \n\t-\t%s\n", strings.Join(p.Items, "\n\t-\t"))
+		pullRequestCompare := fmt.Sprintf("%s...%s:%s", defaultBranch, username, defaultBranch)
+		logs.Debug("Pull request info, title: %s, content: %s, compare info: %s", pullRequestTitle, pullRequestContent, pullRequestCompare)
+		gogsHandler := gogs.NewGogsHandler(username, g.currentUser.RepoToken)
+		prInfo, err := gogsHandler.CreatePullRequest(project.OwnerName, project.Name, pullRequestTitle, pullRequestContent, pullRequestCompare)
+		if err != nil {
+			return http.StatusInternalServerError, fmt.Sprintf("Failed to create pull request to the repo: %s with username: %s", p.ProjectName, username), err
+		}
+		if prInfo != nil && prInfo.HasCreated {
+			err = gogsHandler.CreateIssueComment(project.OwnerName, project.Name, prInfo.Index, pullRequestContent)
+			if err != nil {
+				return http.StatusInternalServerError, fmt.Sprintf("Failed to comment issue to the pull request ID: %d, error: %+v", prInfo.IssueID, err), err
+			}
+		}
+	}
+	return http.StatusOK, "Internal Push Object successfully", err
 }

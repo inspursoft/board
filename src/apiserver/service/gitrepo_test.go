@@ -2,62 +2,55 @@ package service
 
 import (
 	"fmt"
+	"git/inspursoft/board/src/common/utils"
 	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-var mockInitRepoURL = "ssh://git@localhost:10022"
-var mockInitRepoPath = "/repos"
-var mockProjectName = "library"
-var mockUsername = "admin"
-var mockEmail = "admin@inspur.com"
-var mockRepoPath = filepath.Join(mockInitRepoPath, mockUsername, mockProjectName)
-var handler *repoHandler
-var err error
+var (
+	mockInitRepoURL  = utils.GetConfig("GOGITS_REPO_URL")
+	mockInitRepoPath = utils.GetConfig("BASE_REPO_PATH")
+	mockProjectName  = "testgitproject"
+	mockUsername     = "admin"
+	mockEmail        = "admin@inspur.com"
+	mockRepoPath     string
+)
 
-func TestInitGitRepo(t *testing.T) {
-	_, err := InitRepo(fmt.Sprintf("%s/%s/%s.git", mockInitRepoURL, mockUsername, mockProjectName), mockUsername, mockRepoPath)
+func TestGitInitRepo(t *testing.T) {
+	var err error
 	assert := assert.New(t)
+	mockRepoPath = filepath.Join(mockInitRepoPath(), mockUsername, mockProjectName)
+	user, err := GetUserByName(mockUsername)
+	assert.Nilf(err, "Failed to get user: %+v", err)
+	ConfigSSHAccess(mockUsername, user.RepoToken)
+
+	repoHandler, err := InitRepo(fmt.Sprintf("%s/%s/%s.git", mockInitRepoURL(), mockUsername, mockProjectName), mockUsername, mockRepoPath)
 	assert.Nilf(err, "Failed to initialize repo: %+v", err)
+	assert.NotNilf(repoHandler, "Error occurred while creating repo handler: %+v", err)
 }
 
-func TestOpenRepo(t *testing.T) {
-	handler, err = OpenRepo(mockRepoPath, mockUsername)
+func TestGitOpenRepo(t *testing.T) {
+	repoHandler, err := OpenRepo(mockRepoPath, mockUsername)
 	assert := assert.New(t)
 	assert.Nilf(err, "Failed to open repo: %+v", err)
+	assert.NotNilf(repoHandler, "Error occurred while openning repo handler: %+v", err)
 }
 
-func TestAddFileToRepo(t *testing.T) {
-	configurations := make(map[string]string)
-	configurations["flag"] = "image"
-	configurations["extras"] = "10.110.13.134:5000/library/myimage20180201:v1.0"
-	configurations["file_name"] = "Dockerfile"
-	configurations["docker_registry"] = "10.110.13.134:5000"
-	configurations["apiserver"] = "10.165.14.97:8089"
-	configurations["value"] = "Dockerfile"
-
-	err := CreateBaseDirectory(configurations, mockRepoPath)
+func TestGitAddFileToRepo(t *testing.T) {
+	var err error
 	assert := assert.New(t)
-	assert.Nilf(err, "Failed to create base directory: %+v", err)
-	_, err = handler.Add("META.cfg")
-	assert.Nilf(err, "Failed to add files to repo: %+v", err)
-	_, err = handler.Add("process-image/.placehold.tmp")
-	assert.Nilf(err, "Failed to add files to repo: %+v", err)
-	_, err = handler.Add("process-service/.placehold.tmp")
-	assert.Nilf(err, "Failed to add files to repo: %+v", err)
-	_, err = handler.Add("rolling-update/.placehold.tmp")
-	assert.Nilf(err, "Failed to add files to repo: %+v", err)
+	CreateFile("target.txt", "Add target.txt file.", mockRepoPath)
+	repoHandler, err := OpenRepo(mockRepoPath, mockUsername)
+	_, err = repoHandler.Add("target.txt")
+	assert.Nilf(err, "Failed to add items to repo: %+v", err)
 }
 
-func TestCommitToRepo(t *testing.T) {
-	handler, err = handler.Commit("Initial commit.", mockUsername, mockEmail)
+func TestGitCommitToRepo(t *testing.T) {
+	var err error
 	assert := assert.New(t)
+	repoHandler, err := OpenRepo(mockRepoPath, mockUsername)
+	_, err = repoHandler.Commit("Initial commit.", mockUsername, mockEmail)
 	assert.Nilf(err, "Failed to commit to repo: %+v", err)
-}
-func TestPushFileToRepo(t *testing.T) {
-	err = handler.Push()
-	assert := assert.New(t)
-	assert.Nilf(err, "Failed to push files to repo: %+v", err)
 }
