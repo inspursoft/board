@@ -94,6 +94,16 @@ jenkins_node_username = rcp.get("configuration", "jenkins_node_username")
 jenkins_node_password = rcp.get("configuration", "jenkins_node_password")
 jenkins_node_volume = rcp.get("configuration", "jenkins_node_volume")
 
+###email configuration
+email_identity = rcp.get("configuration", "email_identity")
+email_host = rcp.get("configuration", "email_server")
+email_port = rcp.get("configuration", "email_server_port")
+email_usr = rcp.get("configuration", "email_username")
+email_pwd = rcp.get("configuration", "email_password")
+email_from = rcp.get("configuration", "email_from")
+email_ssl = rcp.get("configuration", "email_ssl")
+########
+
 ###ldap configuration
 ldap_url = rcp.get("configuration", "ldap_url")
 # this two options are either both set or unset
@@ -179,6 +189,13 @@ render(os.path.join(templates_dir, "apiserver", "env"),
         registry_ip=registry_ip,
         registry_port=registry_port,
         auth_mode=auth_mode,
+        email_host=email_host,
+        email_port=email_port,
+        email_usr=email_usr,
+        email_pwd=email_pwd,
+        email_ssl=email_ssl,
+        email_from=email_from,
+        email_identity=email_identity,
         ldap_url=ldap_url,
         ldap_searchdn =ldap_searchdn, 
         ldap_search_pwd =ldap_search_pwd,
