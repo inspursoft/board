@@ -3053,6 +3053,38 @@ paths:
           description: Need to login first.
         500:
           description: Internal errors.
+  /v1/email/ping:
+    post:
+      summary: Test connection and authentication with email server.
+      description: |
+        Test connection and authentication with email server. 
+      parameters:
+        - name: settings
+          in: body
+          description: >-
+            Email server settings, will be read from board.cfg.
+          required: false
+          schema:
+            $ref: '#/definitions/EmailServerSetting'
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Ping email server successfully.
+        '400':
+          description: Inviald email server settings.
+        '401':
+          description: User need to login first.
+        '403':
+          description: Only admin has this authority.
+        '415':
+          $ref: '#/responses/UnsupportedMediaType'
+        '500':
+          description: Unexpected internal errors.
+responses:
+  UnsupportedMediaType: 
+    description: The Media Type of the request is not supported, it has to be "application/json"
+
 # The following is for structure definition          
 definitions:
   Search:
@@ -4502,7 +4534,31 @@ definitions:
         type: string
       init_project_repo:
         type: string
-      
+  EmailServerSetting:
+    type: object
+    properties:
+      email_from:
+        type: string
+        description: The sender name for Email notification.
+      email_host:
+        type: string
+        description: The hostname of SMTP server that sends Email notification.
+      email_port:
+        type: integer
+        description: The port of SMTP server.
+      email_identity:
+        type: string
+        description: By default it's empty so the email_username is picked.
+      email_username:
+        type: string
+        description: The username for authenticate against SMTP server.
+      email_ssl:
+        type: boolean
+        description: >-
+          When it's set to true the system will access Email server via TLS by
+          default.  If it's set to false, it still will handle "STARTTLS" from
+          server side.
+    
         
 
 
