@@ -867,9 +867,10 @@ paths:
           type: string
         - name: image_list 
           in: body
-          type: object
-          items:
-            $ref: '#/definitions/ImageList'
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ImageList'
           description: Updates of imagelist data.
       tags:
         - Products
@@ -904,9 +905,10 @@ paths:
           in: body
           description: Updates of imagelist data.
           required: true
-          type: object
-          items:
-            $ref: '#/definitions/ImageList'
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ImageList'
       tags:
         - Products
       responses:
@@ -1555,28 +1557,30 @@ paths:
         - name: imagelist
           in: body
           required: false 
-          type: array
-          items:
-            $ref: '#/definitions/ImageList'
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ImageList'
           description: Updates of imagelist data.
         - name: containerlist
           in: body
-          required: false 
-          type: array
-          items:
-            $ref: '#/definitions/ContainerList'
+          required: false
+          schema: 
+            type: array
+            items:
+              $ref: '#/definitions/ContainerList'
           description: Updates of ContainerList data.
         - name: externalservice
           in: body
           required: false 
-          type: array
-          items:
-            $ref: '#/definitions/ExternalService'
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ExternalService'
           description: Updates of ExternalService data.
         - name: entireservice
           in: body
           required: false 
-          type: object
           schema:
             $ref: '#/definitions/EntireService'
           description: Updates of EntireService data.
@@ -3929,9 +3933,7 @@ definitions:
           container_path:
             type: string 
       image:
-        type: object
-        schema:
-            $ref: '#/definitions/ImageList'       
+        $ref: '#/definitions/ImageList'       
       env:
         type: array
         items:
