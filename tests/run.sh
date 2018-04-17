@@ -2,6 +2,13 @@
 # excluding golang standard library and packages in 
 # direcotry vendor
 
+#input env
+source env.cfg
+local_host="`hostname --fqdn`"
+local_ip=`host $local_host 2>/dev/null | awk '{print $NF}'`
+export HOST_IP=$local_ip
+rm -rf /root/.ssh/known_hosts
+
 function listDeps()
 {
     pkg=$1
