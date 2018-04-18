@@ -2,12 +2,16 @@ package service
 
 import (
 	"encoding/json"
+	"errors"
+	"git/inspursoft/board/src/common/dao"
+	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"io/ioutil"
 	"net/http"
 
 	"strings"
 
+	//"github.com/astaxie/beego/logs"
 	"github.com/google/cadvisor/info/v2"
 	modelK8s "k8s.io/client-go/pkg/api/v1"
 )
@@ -134,4 +138,35 @@ func GetNodeList() (res []NodeListResult) {
 			}()})
 	}
 	return
+}
+
+func CreateNodeGroup(nodeGroup model.NodeGroup) (*model.NodeGroup, error) {
+	nodeGroupID, err := dao.AddNodeGroup(nodeGroup)
+	if err != nil {
+		return nil, err
+	}
+	nodeGroup.ID = nodeGroupID
+	return &nodeGroup, err
+}
+
+func UpdateNodeGroup(n model.NodeGroup, fieldNames ...string) (bool, error) {
+	if n.ID == 0 {
+		return false, errors.New("no Node group ID provided")
+	}
+	_, err := dao.UpdateNodeGroup(n, fieldNames...)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func DeleteNodeGroupByID(n model.NodeGroup) (int64, error) {
+	if n.ID == 0 {
+		return 0, errors.New("no Node Group ID provided")
+	}
+	num, err := dao.DeleteNodeGroup(n)
+	if err != nil {
+		return 0, err
+	}
+	return num, nil
 }

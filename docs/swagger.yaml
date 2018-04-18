@@ -2281,6 +2281,36 @@ paths:
           description: Node group already exists.
         500:
           description: Internal errors.
+  /v1/nodegroup/{nodegroup_id}:
+    delete:
+      summary: Delete a node group by node gorup ID
+      description: |
+        This endpoint is aimed to remove a node group by node group ID.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: nodegroup_id
+          in: path
+          description: Node group will be removed by nodegroup_id.
+          required: true
+          type: integer
+          format: int32
+      tags:
+        - Products
+      responses:
+        200:
+          description: Node group is deleted successfully.
+        400:
+          description: Invalid node group id.
+        403:
+          description: User need to log in as admin.
+        404:
+          description: Node group does not exist.
+        500:
+          description: Internal errors.
   /v1/images:
     get:
       summary: Return images in Board system.
@@ -4379,7 +4409,7 @@ definitions:
   NodeGroup:
     type: object
     properties:
-      node_id:
+      nodegroup_id:
         type: integer
         format: int32
         description: The integer ID of this node group. 
