@@ -61,3 +61,16 @@ func DeleteNodeGroup(nodeGroup model.NodeGroup) (int64, error) {
 	}
 	return num, err
 }
+
+func GetNodeGroups() ([]model.NodeGroup, error) {
+	var nodeGroupList []model.NodeGroup //TODO new pointer make
+	o := orm.NewOrm()
+	_, err := o.QueryTable("node_group").All(&nodeGroupList)
+	if err != nil {
+		if err == orm.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return nodeGroupList, err
+}
