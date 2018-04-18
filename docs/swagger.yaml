@@ -1554,36 +1554,12 @@ paths:
           type: integer
           format: int
           required: false 
-        - name: imagelist
-          in: body
-          required: false 
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/ImageList'
-          description: Updates of imagelist data.
-        - name: containerlist
-          in: body
-          required: false
-          schema: 
-            type: array
-            items:
-              $ref: '#/definitions/ContainerList'
-          description: Updates of ContainerList data.
-        - name: externalservice
-          in: body
-          required: false 
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/ExternalService'
-          description: Updates of ExternalService data.
-        - name: entireservice
+        - name: service_config
           in: body
           required: false 
           schema:
             $ref: '#/definitions/EntireService'
-          description: Updates of EntireService data.
+          description: Updates of service config data.
       tags:
         - Products
       responses:
@@ -1619,9 +1595,7 @@ paths:
         200:
           description: Return all matched nodes.
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/NodeDetail'
+            $ref: '#/definitions/EntireService'
           headers:
             X-Total-Count:
               description: The total count of nodes.
