@@ -170,3 +170,24 @@ func DeleteNodeGroupByID(n model.NodeGroup) (int64, error) {
 	}
 	return num, nil
 }
+
+func GetNodeGroup(nodeGroup model.NodeGroup, selectedFields ...string) (*model.NodeGroup, error) {
+	n, err := dao.GetNodeGroup(nodeGroup, selectedFields...)
+	if err != nil {
+		return nil, err
+	}
+	return n, nil
+}
+
+func GetNodeGroupList() ([]model.NodeGroup, error) {
+	return dao.GetNodeGroups()
+}
+
+func NodeGroupExists(nodeGroupName string) (bool, error) {
+	query := model.NodeGroup{GroupName: nodeGroupName}
+	nodegroup, err := dao.GetNodeGroup(query, "name")
+	if err != nil {
+		return false, err
+	}
+	return (nodegroup != nil && nodegroup.ID != 0), nil
+}
