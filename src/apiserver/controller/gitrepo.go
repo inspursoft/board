@@ -140,7 +140,7 @@ func (g *GitRepoController) PullObjects() {
 	}
 }
 
-func generateMetaConfiguration(p *pushObject, repoPath string) error {
+func generateMetaConfiguration(p *pushObject, repoPath string, fileUploads ...string) error {
 	conf := make(map[string]string)
 	conf["extras"] = p.Extras
 	conf["file_name"] = p.FileName
@@ -150,6 +150,9 @@ func generateMetaConfiguration(p *pushObject, repoPath string) error {
 	conf["user_id"] = strconv.Itoa(int(p.UserID))
 	if p.JobName == imageProcess {
 		conf["docker_registry"] = registryBaseURI()
+	}
+	if len(fileUploads) > 0 {
+		conf["file_uploads"] = strings.Join(fileUploads, "|")
 	}
 	return service.CreateMetaConfiguration(conf, repoPath)
 }

@@ -3161,6 +3161,35 @@ paths:
           description: Need to login first.
         500:
           description: Internal errors.
+  /v1/files/download:
+    get:
+      summary: Download files uploaded from specified path.
+      description: |
+        This endpoint is used to download specified file uploaded from specified path.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: file_name
+          in: query
+          type: string
+          required: false
+          description: File name specified to download. If omit this option will download all files as attachment.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Download files.
+          schema:
+            $ref: '#/definitions/FileInfoObject'
+        400:
+          description: Bad Request.
+        401:
+          description: Need to login first.
+        500:
+          description: Internal errors.
   /v1/files/list:
     post:
       summary: List files uploaded from specified path.

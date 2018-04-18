@@ -1,9 +1,11 @@
 package service
 
 import (
+	"archive/zip"
 	"fmt"
 	"git/inspursoft/board/src/common/model"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 )
@@ -75,4 +77,34 @@ func CreateFile(fileName, message, targetPath string) error {
 	defer f.Close()
 	_, err = fmt.Fprintf(f, "%s\n", message)
 	return err
+}
+
+func ZipFiles(zipFileName, dirName string) error {
+	zipFile, err := os.OpenFile(zipFileName, os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer zipFile.Close()
+	w := zip.NewWriter(zipFile)
+	err = filepath.Walk(dirName, func(path string, info os.FileInfo, err error) error {
+		if !info.IsDir() {
+			f, err := w.Create(info.Name())
+			if err != nil {
+				return err
+			}
+			data, err := ioutil.ReadFile(path)
+			if err != nil {
+				return err
+			}
+			_, err = f.Write(data)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	return w.Close()
 }
