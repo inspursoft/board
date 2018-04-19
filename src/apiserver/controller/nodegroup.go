@@ -67,11 +67,11 @@ func (n *NodeGroupController) AddNodeGroupAction() {
 	reqNodeGroup.GroupName = strings.TrimSpace(reqNodeGroup.GroupName)
 	reqNodeGroup.OwnerID = int64(n.currentUser.ID)
 
-	groupID, err := service.CreateNodeGroup(reqNodeGroup)
+	group, err := service.CreateNodeGroup(reqNodeGroup)
 	if err != nil {
 		logs.Debug("Failed to add node group %s", reqNodeGroup.GroupName)
 		n.internalError(err)
 		return
 	}
-	logs.Info("Added node group %s %d", reqNodeGroup.GroupName, groupID)
+	logs.Info("Added node group %s %d", reqNodeGroup.GroupName, group.ID)
 }
