@@ -11,8 +11,9 @@ import (
 
 	"strings"
 
-	//"github.com/astaxie/beego/logs"
+	"github.com/astaxie/beego/logs"
 	"github.com/google/cadvisor/info/v2"
+	"k8s.io/client-go/kubernetes"
 	modelK8s "k8s.io/client-go/pkg/api/v1"
 )
 
@@ -190,4 +191,36 @@ func NodeGroupExists(nodeGroupName string) (bool, error) {
 		return false, err
 	}
 	return (nodegroup != nil && nodegroup.ID != 0), nil
+}
+
+func AddNodeToGroup(nodeName string, groupName string) error {
+	cli, err := K8sCliFactory("", kubeMasterURL(), "v1")
+	apiSet, err := kubernetes.NewForConfig(cli)
+	if err != nil {
+		logs.Error("Failed to get K8s cli")
+		return err
+	}
+	nInterface := apiSet.Nodes()
+	nNode, err := nInterface.Get(nodeName)
+	if err != nil {
+		logs.Error("Failed to get K8s node")
+		return err
+	}
+	//logs.Info(nNode)
+
+	labelMap := nNode.GetLabels()
+	if err != nil {
+		logs.Error("Failed to get K8s node")
+		return err
+	}
+	logs.Debug(labelMap)
+	labelMap[groupName] = "true"
+	nNode.SetLabels(labelMap)
+	newNode, err := nInterface.Update(nNode)
+	if err != nil {
+		logs.Error("Failed to update K8s node")
+		return err
+	}
+	logs.Debug(newNode.GetLabels())
+	return nil
 }

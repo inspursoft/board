@@ -2150,6 +2150,11 @@ paths:
           description: group name for this node to add
           required: true
           type: string       
+        - name: node_name
+          in: query
+          description: nodename of this node
+          required: true
+          type: string  
       tags:
         - Products
       responses:
@@ -2182,6 +2187,11 @@ paths:
           description: group name for this node to remove
           required: true
           type: string       
+        - name: node_name
+          in: query
+          description: nodename of this node
+          required: true
+          type: string  
       tags:
         - Products
       responses:
