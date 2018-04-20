@@ -2129,6 +2129,43 @@ paths:
         500:
           description: Unexpected internal errors.  
   /v1/node/{node_id}/group:
+    get:
+      summary: Return the gorups that this node belongs to.
+      description: |
+        This endpoint returns the gorups that this node belongs to.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: node_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Node ID.
+        - name: node_name 
+          in: query
+          description: node name for filtering results.
+          required: true
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the gorups that this node belongs to.
+          schema:
+            type: array
+            items:
+              type: string
+              description: The node group name.  
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
     post:
       summary: Add this node to a node group.
       description: |
