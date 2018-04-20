@@ -2255,6 +2255,33 @@ paths:
           description: Node group already exists.
         500:
           description: Internal errors.
+  /v1/nodegroup/existing:
+    get:
+      summary: Return result whether nodegruop existing.
+      description: |
+        This endpoint returns result whether nodegruop existing in Board.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: nodegroup_name
+          in: query
+          description: group name for new node gruop
+          required: true
+          type: string      
+      tags:
+        - Products
+      responses:
+        200:
+          description: Nodegruop don't existing.
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
   /v1/nodegroup/{nodegroup_id}:
     delete:
       summary: Delete a node group by node gorup ID
@@ -3985,6 +4012,8 @@ definitions:
       service_public:
         type: integer   
         format: int32
+      node_selector:
+        type: string
       image_list:
         type: array
         items:

@@ -191,3 +191,20 @@ func NodeGroupExists(nodeGroupName string) (bool, error) {
 	}
 	return (nodegroup != nil && nodegroup.ID != 0), nil
 }
+
+func NodeOrNodeGroupExists(nodeOrNodeGroupName string) (bool, error) {
+	nodeGroupExists, err := NodeGroupExists(nodeOrNodeGroupName)
+	if err != nil {
+		return false, err
+	}
+	if !nodeGroupExists {
+		res, err := GetNode(nodeOrNodeGroupName)
+		if err != nil {
+			return false, err
+		}
+		if res.NodeName == "" {
+			return false, nil
+		}
+	}
+	return true, nil
+}
