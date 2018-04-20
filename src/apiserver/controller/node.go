@@ -80,3 +80,29 @@ func (n *NodeController) AddNodeToGroupAction() {
 		return
 	}
 }
+
+func (n *NodeController) GetGroupsOfNodeAction() {
+
+	//TODO node_id is not reay, should implement it
+	//nodeID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
+
+	nodeName := n.GetString("node_name")
+
+	// Get the nodegroups of this node
+	groups, err := service.GetGroupOfNode(nodeName)
+	if err != nil {
+		logs.Error("Failed to get node %s group", nodeName)
+		n.internalError(err)
+		return
+	}
+	n.Data["json"] = groups
+	n.ServeJSON()
+}
+
+func (n *NodeController) RemoveNodeFromGroupAction() {
+	//TODO node_id is not reay, should implement it
+	//nodeID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
+
+	//TODO
+	return
+}

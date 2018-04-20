@@ -26,6 +26,10 @@ const (
 	Unknown
 )
 
+const (
+	K8sLabel = "kubernetes.io"
+)
+
 type NodeListResult struct {
 	NodeName string     `json:"node_name"`
 	NodeIP   string     `json:"node_ip"`
@@ -223,4 +227,34 @@ func AddNodeToGroup(nodeName string, groupName string) error {
 	}
 	logs.Debug(newNode.GetLabels())
 	return nil
+}
+
+func GetGroupOfNode(nodeName string) ([]string, error) {
+	var groups []string
+
+	cli, err := K8sCliFactory("", kubeMasterURL(), "v1")
+	apiSet, err := kubernetes.NewForConfig(cli)
+	if err != nil {
+		logs.Error("Failed to get K8s cli")
+		return nil, err
+	}
+	nInterface := apiSet.Nodes()
+	nNode, err := nInterface.Get(nodeName)
+	if err != nil {
+		logs.Error("Failed to get K8s node")
+		return nil, err
+	}
+
+	labelMap := nNode.GetLabels()
+	if err != nil {
+		logs.Error("Failed to get K8s node")
+		return nil, err
+	}
+	//Todo: the above should be abstracted to a common func
+	for key, _ := range labelMap {
+		if !strings.Contains(key, K8sLabel) {
+			groups = append(groups, key)
+		}
+	}
+	return groups, nil
 }
