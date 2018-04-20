@@ -103,7 +103,7 @@ func init() {
 				&controller.NodeController{}, "get:NodeToggle"),
 			beego.NSRouter("/node/:id([0-9]+)/group",
 				&controller.NodeController{},
-				"post:AddNodeToGroupAction"),
+				"get:GetGroupsOfNodeAction;post:AddNodeToGroupAction;delete:RemoveNodeFromGroupAction"),
 			beego.NSRouter("/nodegroup",
 				&controller.NodeGroupController{},
 				"get:GetNodeGroupsAction;post:AddNodeGroupAction"),
