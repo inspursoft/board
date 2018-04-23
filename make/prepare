@@ -81,6 +81,8 @@ auth_mode = rcp.get("configuration", "auth_mode")
 verification_url = rcp.get("configuration", "verification_url")
 redirection_url = rcp.get("configuration", "redirection_url")
 
+elaseticsearch_memory_in_megabytes = rcp.get("configuration", "elaseticsearch_memory_in_megabytes")
+
 gogits_host_ip = rcp.get("configuration", "gogits_host_ip")
 gogits_host_port = rcp.get("configuration", "gogits_host_port")
 gogits_ssh_port = rcp.get("configuration", "gogits_ssh_port")
@@ -172,6 +174,11 @@ grafana_k8s_ds = os.path.join(grafana_config_dir, "kubernetes-datasource.json")
 grafana_graphite_ds = os.path.join(grafana_config_dir, "graphite-datasource.json")
 grafana_dashboard = os.path.join(grafana_config_dir, "kubernetes-dashboard.json")
 grafana_k8s = os.path.join(grafana_config_dir, "kubernetes.json")
+
+elasticsearch_config_dir = os.path.join(config_dir, "elasticsearch")
+if not os.path.exists(elasticsearch_config_dir):
+    os.makedirs(elasticsearch_config_dir)
+elasticsearch_env = os.path.join(config_dir, "elasticsearch", "env")
 
 #Render Configure File
 render(os.path.join(templates_dir, "apiserver", "app.conf"),
@@ -269,5 +276,9 @@ shutil.copy(os.path.join(templates_dir, "grafana", "kubernetes-dashboard.json"),
 
 render(os.path.join(templates_dir, "grafana", "kubernetes.json"),
         grafana_k8s)
+
+render(os.path.join(templates_dir, "elasticsearch", "env"),
+        elasticsearch_env,
+        es_java_opts="-Xms%sm -Xmx%sm"%(elaseticsearch_memory_in_megabytes,elaseticsearch_memory_in_megabytes))
 
 print("The configuration files are ready, please use docker-compose to start the service.")

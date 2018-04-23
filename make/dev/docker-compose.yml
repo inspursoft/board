@@ -208,6 +208,46 @@ services:
       options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "graphite"
+  elasticsearch:
+    build:
+      context: ../../
+      dockerfile: make/dev/container/elasticsearch/Dockerfile
+    image: dev_elasticsearch:dev
+    restart: always
+    env_file:
+      - ../config/elasticsearch/env
+    networks:
+      - board
+    ports:
+      - 9200:9200
+    depends_on:
+      - log
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - /data/board/elasticsearch:/usr/share/elasticsearch/data
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "elasticsearch"
+  kibana:
+    build:
+      context: ../../
+      dockerfile: make/dev/container/kibana/Dockerfile
+    image: dev_kibana:dev
+    restart: always
+    networks:
+      - board
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "kibana"
 networks:
   board:
     external: false
