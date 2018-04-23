@@ -116,6 +116,7 @@ type ConfigServiceStep struct {
 	ServiceID           int64             `json:"service_id"`
 	ServiceName         string            `json:"service_name"`
 	Public              int               `json:"service_public"`
+	NodeSelector        string            `json:"node_selector"`
 	ImageList           []ImageIndex      `json:"image_list"`
 	Instance            int               `json:"instance"`
 	ContainerList       []Container       `json:"container_list"`

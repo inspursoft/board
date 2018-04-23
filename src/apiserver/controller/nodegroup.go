@@ -75,3 +75,18 @@ func (n *NodeGroupController) AddNodeGroupAction() {
 	}
 	logs.Info("Added node group %s %d", reqNodeGroup.GroupName, group.ID)
 }
+
+func (n *NodeGroupController) CheckNodeGroupNameExistingAction() {
+	nodeGroupName := n.GetString("nodegroup_name")
+	isExists, err := service.NodeOrNodeGroupExists(nodeGroupName)
+	if err != nil {
+		n.internalError(err)
+		return
+	}
+	if isExists {
+		n.customAbort(http.StatusConflict, "This nodegroup name is already existing.")
+		return
+	}
+
+	logs.Info("Group name of %s is available", nodeGroupName)
+}
