@@ -2,6 +2,12 @@
 # excluding golang standard library and packages in 
 # direcotry vendor
 
+source env.cfg
+local_host="`hostname --fqdn`"
+local_ip=`host $local_host 2>/dev/null | awk '{print $NF}'`
+export HOST_IP=$local_ip
+rm -rf /root/.ssh/known_hosts
+
 function listDeps()
 {
     pkg=$1
@@ -43,8 +49,10 @@ do
     echo "+++++++++++++++++++++++++++++++++++++++"
     
     #go env used docker container
-    echo "/usr/bin/docker run --rm -v $volumeDir:$gopath --env-file env.cfg -w $gopath $golangImage go test -v -cover -coverprofile=profile.tmp -coverpkg "$deps" $package"
-    /usr/bin/docker run --rm -v $volumeDir:$gopath --env-file env.cfg -w $gopath $golangImage go test -v -cover -coverprofile=profile.tmp -coverpkg "$deps" $package
+    #/usr/bin/docker run --rm -v $volumeDir:$gopath -e HOST_IP=$1 -e KUBE_MASTER_URL=$2 -e NODE_IP=$3 -e REGISTRY_BASE_URI=$4 -w $gopath $golangImage go test -v -cover -coverprofile=profile.tmp -coverpkg "$deps" $package
+#    echo "/usr/bin/docker run --rm -v $volumeDir:$gopath --env-file env.cfg -w $gopath $golangImage go test -v -cover -coverprofile=profile.tmp -coverpkg "$deps" $package"
+    echo "go test -v -cover -coverprofile=profile.tmp -coverpkg "$deps" $package"
+    go test -v -cover -coverprofile=profile.tmp -coverpkg "$deps" $package
 
     if [ -f $volumeDir/profile.tmp ]
     then
