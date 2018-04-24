@@ -103,6 +103,14 @@ func (n *NodeController) RemoveNodeFromGroupAction() {
 	//TODO node_id is not reay, should implement it
 	//nodeID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
 
-	//TODO
-	return
+	nodeName := n.GetString("node_name")
+	groupName := n.GetString("groupname")
+	//logs.Debug("Remove %s from %s", nodeName, groupName)
+
+	err := service.RemoveNodeFromGroup(nodeName, groupName)
+	if err != nil {
+		n.internalError(err)
+		return
+	}
+	logs.Debug("Removed %s from %s", nodeName, groupName)
 }
