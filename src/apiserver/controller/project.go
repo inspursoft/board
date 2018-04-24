@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/astaxie/beego/logs"
 )
 
 type ProjectController struct {
@@ -26,7 +28,6 @@ func (p *ProjectController) Prepare() {
 }
 
 func (p *ProjectController) CreateProjectAction() {
-
 	reqData, err := p.resolveBody()
 	if err != nil {
 		p.internalError(err)
@@ -89,6 +90,12 @@ func (p *ProjectController) CreateProjectAction() {
 	if !isSuccess {
 		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Namespace name: %s is illegal.", reqProject.Name))
 	}
+
+	err = service.CreateRepoAndJob(p.currentUser.ID, reqProject.Name)
+	if err != nil {
+		logs.Error("Failed to create repo and job for project: %s", reqProject.Name)
+		p.internalError(err)
+	}
 }
 
 func (p *ProjectController) ProjectExists() {
@@ -111,6 +118,8 @@ func (p *ProjectController) GetProjectsAction() {
 
 	pageIndex, _ := p.GetInt("page_index", 0)
 	pageSize, _ := p.GetInt("page_size", 0)
+	orderField := p.GetString("order_field", "CREATE_TIME")
+	orderAsc, _ := p.GetInt("order_asc", 0)
 
 	query := model.Project{Name: projectName, OwnerName: p.currentUser.Username, Public: 0}
 
@@ -133,7 +142,7 @@ func (p *ProjectController) GetProjectsAction() {
 		}
 		p.Data["json"] = projects
 	} else {
-		paginatedProjects, err := service.GetPaginatedProjectsByUser(query, p.currentUser.ID, pageIndex, pageSize)
+		paginatedProjects, err := service.GetPaginatedProjectsByUser(query, p.currentUser.ID, pageIndex, pageSize, orderField, orderAsc)
 		if err != nil {
 			p.internalError(err)
 			return

@@ -3,6 +3,18 @@ clr-dropdown.cs-dropdown {
   width: 100%;
 }
 
+div.cs-dropdown-spinner-container {
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+span.no-items{
+  font-style: italic;
+  color: blue;
+}
+
 div.cs-dropdown-title-container {
   border: solid 1px silver;
   border-radius: 5px;

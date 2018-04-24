@@ -6,7 +6,7 @@
 import { ModuleWithProviders } from '@angular/core/src/metadata/ng_module';
 import { Routes, RouterModule, Resolve,
          ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
-
+import { Injectable } from '@angular/core';
 import { GlobalSearchComponent } from './global-search/global-search.component';
 import { SignInComponent } from './account/sign-in/sign-in.component';
 import { SignUpComponent } from './account/sign-up/sign-up.component';
@@ -19,9 +19,8 @@ import { ImageListComponent } from './image/image-list/image-list.component';
 import { ServiceComponent } from './service/service.component';
 import { UserCenterComponent } from './user-center/user-center.component';
 import { AuthGuard, ServiceGuard } from './shared/auth-guard.service';
-import { AppInitService } from 'app/app.init.service';
-import { Injectable } from '@angular/core';
 import { ProfileComponent } from "./profile/profile.component";
+import { AppInitService } from "./app.init.service";
 
 @Injectable()
 export class SystemInfoResolve implements Resolve<any> {

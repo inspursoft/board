@@ -1,9 +1,7 @@
 
 div.modal-body-container {
   display: flex;
-  min-height: 600px;
-  border: solid 1px gray;
-  border-radius: 5px;
+  min-height: 550px;
 }
 
 .base-margin-left {
@@ -32,22 +30,22 @@ div.build-method-container {
 }
 
 div.from-temp-container {
-  overflow-y: auto;
   padding: 10px;
+  height: 500px;
+  overflow-y: auto;
 }
 
 div.from-docker-file-container {
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
+  /*overflow-y: auto;*/
   padding: 10px;
-  flex-basis: 100%;
 }
 
 div.create-image-container {
   display: flex;
   flex-direction: column;
-  min-width: 450px;
+  min-width: 470px;
   padding: 10px 0 10px 10px;
 }
 
@@ -64,16 +62,10 @@ label.base-text {
 
 div.console-container {
   display: flex;
+  height: 530px;
   flex-direction: column;
   flex-basis: 100%;
   padding: 10px;
-}
-
-div.create-image-area-container {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  margin-top: 10px;
 }
 
 input.upload-file-input {
@@ -89,16 +81,13 @@ legend.legend-default {
   margin-left: 30px;
 }
 
-textarea.area-command {
-  margin-left: 10px;
-}
-
 textarea.area-status {
   padding: 0;
   flex-basis: 100%;
   color: black;
   font-size: 11px;
   line-height: 13px;
+  overflow-y: auto;
 }
 
 button.default-primary {
@@ -144,6 +133,9 @@ div.title-container {
 
 div.modal-body-reset-position{
   margin-top: -20px;
+  border: solid 1px gray;
+  border-radius: 5px;
+  overflow: hidden;
 }
 
 div.base-image-container {
@@ -166,15 +158,22 @@ input.base-image-radio {
 
 label.base-image-source {
   cursor: pointer;
+  margin-right: 6px;
 }
 
 div.board-registry-container {
   display: flex;
   line-height: 30px;
+  align-items: center;
+  margin-left: 5px;
 }
 
-cs-dropdown.margin-left-1{
-  margin-left: 1px;
+cs-dropdown.margin-left-5{
+  margin-left: 5px;
+}
+
+cs-dropdown.margin-left-120{
+  margin-left: 120px;
 }
 
 cs-input.margin-left-180{

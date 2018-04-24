@@ -1,0 +1,23 @@
+{
+  "type": "dashboard",
+  "dashboard": {
+    "title": "PodLogs",
+    "hits": 0,
+    "description": "Show all pod log informations",
+    "panelsJSON": "[{\"gridData\":{\"h\":9,\"i\":\"1\",\"w\":12,\"x\":0,\"y\":3},\"id\":\"logs-line\",\"panelIndex\":\"1\",\"title\":\"Detail Serialize\",\"type\":\"visualization\",\"version\":\"6.2.4\"},{\"gridData\":{\"h\":4,\"i\":\"2\",\"w\":12,\"x\":0,\"y\":12},\"id\":\"logs\",\"panelIndex\":\"2\",\"title\":\"Logs\",\"type\":\"search\",\"version\":\"6.2.4\"},{\"gridData\":{\"h\":3,\"i\":\"4\",\"w\":8,\"x\":4,\"y\":0},\"id\":\"logs-area\",\"panelIndex\":\"4\",\"title\":\"Serialize\",\"type\":\"visualization\",\"version\":\"6.2.4\"},{\"embeddableConfig\":{\"spy\":null,\"vis\":{\"defaultColors\":{\"0 - 100000\":\"rgb(0,104,55)\",\"100000 - 200000\":\"rgb(135,203,103)\",\"200000 - 300000\":\"rgb(255,255,190)\",\"300000 - 400000\":\"rgb(249,142,82)\",\"400000 - 500000\":\"rgb(165,0,38)\"},\"legendOpen\":false}},\"gridData\":{\"h\":3,\"i\":\"5\",\"w\":4,\"x\":0,\"y\":0},\"id\":\"logs-gauge\",\"panelIndex\":\"5\",\"title\":\"Count\",\"type\":\"visualization\",\"version\":\"6.2.4\"}]",
+    "optionsJSON": "{\"darkTheme\":false,\"hidePanelTitles\":false,\"useMargins\":true}",
+    "version": 1,
+    "timeRestore": true,
+    "timeTo": "now",
+    "timeFrom": "now-1h",
+    "refreshInterval": {
+      "display": "30 seconds",
+      "pause": false,
+      "section": 1,
+      "value": 30000
+    },
+    "kibanaSavedObjectMeta": {
+      "searchSourceJSON": "{\"query\":{\"language\":\"lucene\",\"query\":\"\"},\"filter\":[],\"highlightAll\":true,\"version\":true}"
+    }
+  }
+}

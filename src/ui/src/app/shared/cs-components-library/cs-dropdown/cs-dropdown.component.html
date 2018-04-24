@@ -1,12 +1,20 @@
 <div [ngStyle]="{'width':dropdownWidth + 'px'}">
-  <clr-dropdown #csDropdown class="cs-dropdown" [clrCloseMenuOnItemClick]="true" >
+  <div *ngIf="!dropdownList" class="cs-dropdown-spinner-container">
+    <span class="spinner spinner-sm"></span>
+  </div>
+  <div *ngIf="dropdownList && dropdownList.length == 0" class="cs-dropdown-spinner-container">
+    <span class="no-items">{{"CS_DROPDOWN.NO_ITEMS" | translate}}</span>
+  </div>
+  <clr-dropdown #csDropdown
+                *ngIf="dropdownList && dropdownList.length > 0"
+                class="cs-dropdown"
+                [clrCloseMenuOnItemClick]="true">
     <div class="cs-dropdown-title-container"  [ngClass]="{'disabled':dropdownDisabled}" clrDropdownToggle>
       <span class="cs-dropdown-title"
             [ngStyle]="{'font-size':dropdownTitleFontSize + 'px'}"
             [ngClass]="{'disabled':dropdownDisabled}">
         {{ isShowDefaultText? (dropdownDefaultText | translate):(dropdownText| translate )}}
       </span>
-      <span *ngIf="!dropdownList" class="spinner spinner-sm"></span>
       <div class="cs-dropdown-icon-container"
            *ngIf="dropdownList && dropdownList.length > 0 && !dropdownDisabled">
         <div class="cs-dropdown-icon"

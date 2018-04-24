@@ -17,7 +17,7 @@
       </div>
       <div class="col-xs-4 flex-xs-middle" style="flex: 0; margin-left: 12px;">
         <p style="margin-top: 0;"><button class="btn btn-link" [disabled]="!doSet" (click)="setMember()"><clr-icon shape="caret right"></clr-icon></button></p>
-        <p><button class="btn btn-link" [disabled]="!doUnset" (click)="unsetMember()"><clr-icon shape="caret left"></clr-icon></button></p>
+        <p><button class="btn btn-link" [disabled]="!doUnset" [hidden]="true" (click)="unsetMember()"><clr-icon shape="caret left"></clr-icon></button></p>
       </div>
       <div class="col-xs-4" style="flex: 0; padding-left: 0;">
           <span>{{ 'PROJECT.ASSIGNED_MEMBERS' | translate }}:</span>

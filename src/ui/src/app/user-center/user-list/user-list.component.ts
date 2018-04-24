@@ -1,15 +1,14 @@
-import { Component, OnInit, OnDestroy } from "@angular/core";
-
+import { Component, OnDestroy, OnInit } from "@angular/core";
+import { ClrDatagridSortOrder, ClrDatagridStateInterface } from "@clr/angular";
+import { ActivatedRoute } from "@angular/router";
+import { Subscription } from "rxjs/Subscription";
 import { UserService } from "../user-service/user-service";
 import { User } from "../user";
 import { editModel } from "../user-new-edit/user-new-edit.component"
-import { Message } from "app/shared/message-service/message";
-import { MessageService } from "app/shared/message-service/message.service";
-import { Subscription } from "rxjs/Subscription";
-import { BUTTON_STYLE } from "app/shared/shared.const"
 import { AppInitService } from "../../app.init.service";
-import { ActivatedRoute } from "@angular/router";
-
+import { Message } from "../../shared/message-service/message";
+import { MessageService } from "../../shared/message-service/message.service";
+import { BUTTON_STYLE } from "../../shared/shared.const";
 
 @Component({
   selector: "user-list",
@@ -21,21 +20,18 @@ export class UserList implements OnInit, OnDestroy {
   _deleteSubscription: Subscription;
   userListData: Array<User> = Array<User>();
   userListErrMsg: string = "";
-
   curUser: User;
   curEditModel: editModel = editModel.emNew;
   showNewUser: boolean = false;
   setUserSystemAdminWIP: boolean = false;
   isInLoading: boolean = false;
-  checkboxRevertInfo: {isNeeded: boolean; value: boolean;};
-
   totalRecordCount: number;
   pageIndex: number = 1;
   pageSize: number = 15;
-  
   authMode: string = '';
-
   currentUserID: number;
+  descSort = ClrDatagridSortOrder.DESC;
+  oldStateInfo: ClrDatagridStateInterface;
 
   constructor(
     private route: ActivatedRoute,
@@ -49,7 +45,7 @@ export class UserList implements OnInit, OnDestroy {
     this._deleteSubscription = this.messageService.messageConfirmed$.subscribe(next => {
       this.userService.deleteUser(next.data)
         .then(() => {
-          this.refreshData();
+          this.refreshData(this.oldStateInfo);
           let m: Message = new Message();
           m.message = "USER_CENTER.DELETE_USER_SUCCESS";
           this.messageService.inlineAlertMessage(m);
@@ -65,20 +61,23 @@ export class UserList implements OnInit, OnDestroy {
     }
   }
 
-  refreshData(): void {
-    setTimeout(()=>{
-      this.isInLoading = true;
-      this.userService.getUserList('', this.pageIndex, this.pageSize)
-        .then(res => {
-          this.totalRecordCount = res["pagination"]["total_count"];
-          this.userListData = res["user_list"];
-          this.isInLoading = false;
-        })
-        .catch(err => {
-          this.messageService.dispatchError(err, '');
-          this.isInLoading = false;
-        });
-    });
+  refreshData(stateInfo: ClrDatagridStateInterface): void {
+    if (stateInfo) {
+      setTimeout(()=>{
+        this.isInLoading = true;
+        this.oldStateInfo = stateInfo;
+        this.userService.getUserList('', this.pageIndex, this.pageSize, stateInfo.sort.by as string, stateInfo.sort.reverse)
+          .then(res => {
+            this.totalRecordCount = res["pagination"]["total_count"];
+            this.userListData = res["user_list"];
+            this.isInLoading = false;
+          })
+          .catch(err => {
+            this.messageService.dispatchError(err, '');
+            this.isInLoading = false;
+          });
+      });
+    }
   }
 
   addUser() {
@@ -111,7 +110,7 @@ export class UserList implements OnInit, OnDestroy {
     }
   }
 
-  setUserSystemAdmin(user: User) {
+  setUserSystemAdmin(user: User, $event:MouseEvent) {
     this.setUserSystemAdminWIP = true;
     let oldUserSystemAdmin = user.user_system_admin;
     this.userService.setUserSystemAdmin(user.user_id, oldUserSystemAdmin == 1 ? 0 : 1)
@@ -129,7 +128,7 @@ export class UserList implements OnInit, OnDestroy {
       })
       .catch(err => {
         this.setUserSystemAdminWIP = false;
-        this.checkboxRevertInfo = {isNeeded: true, value: oldUserSystemAdmin == 1};
+        ($event.srcElement as HTMLInputElement).checked = oldUserSystemAdmin == 1;
         this.messageService.dispatchError(err);
       })
   }

@@ -1,9 +1,9 @@
 package collect
 
 import (
+	"git/inspursoft/board/src/collector/dao"
 	"git/inspursoft/board/src/collector/model/collect"
 	"git/inspursoft/board/src/collector/model/collect/dashboard"
-	"git/inspursoft/board/src/collector/dao"
 	modelK8s "k8s.io/client-go/pkg/api/v1"
 )
 
@@ -40,14 +40,21 @@ func getPods(resource *SourceMap, podItems []modelK8s.Pod) []modelK8s.Pod {
 func minuteCalc() (tempStruct []dashboard.ServiceDashboardSecond) {
 	var temp []dashboard.ServiceDashboardSecond
 	dao.QuerDb(&tempStruct, "service_dashboard_second", true, "time_list_id",
-		serviceDashboardID[11], )
+		serviceDashboardID[11])
+
+	// tempMap for easy found
+	tempStructMap := make(map[string]*dashboard.ServiceDashboardSecond, len(tempStruct))
+	for i := range tempStruct {
+		tempStructMap[tempStruct[i].ServiceName] = &tempStruct[i]
+	}
 	for id := range serviceDashboardID {
 		dao.QuerDb(&temp, "service_dashboard_second", true, "time_list_id",
-			id, )
-		for k, v := range temp {
-			if tempStruct[k].ServiceName == v.ServiceName {
-				tempStruct[k].PodNumber = (tempStruct[k].PodNumber + v.PodNumber) / 2
-				tempStruct[k].ContainerNumber = (tempStruct[k].ContainerNumber + v.ContainerNumber) / 2
+			id)
+		for _, v := range temp {
+			// ignore the service which disappear in fulture.
+			if tempStructMap[v.ServiceName] != nil {
+				tempStructMap[v.ServiceName].PodNumber = (tempStructMap[v.ServiceName].PodNumber + v.PodNumber) / 2
+				tempStructMap[v.ServiceName].ContainerNumber = (tempStructMap[v.ServiceName].ContainerNumber + v.ContainerNumber) / 2
 			}
 		}
 
@@ -58,14 +65,21 @@ func minuteCalc() (tempStruct []dashboard.ServiceDashboardSecond) {
 func hourCalc() (tempStruct []dashboard.ServiceDashboardMinute) {
 	var temp []dashboard.ServiceDashboardMinute
 	dao.QuerDb(&tempStruct, "service_dashboard_minute", true, "time_list_id",
-		minuteServiceDashboardID[59], )
+		minuteServiceDashboardID[59])
+
+	// tempMap for easy found
+	tempStructMap := make(map[string]*dashboard.ServiceDashboardMinute, len(tempStruct))
+	for i := range tempStruct {
+		tempStructMap[tempStruct[i].ServiceName] = &tempStruct[i]
+	}
 	for id := range minuteServiceDashboardID {
 		dao.QuerDb(&temp, "service_dashboard_minute", true, "time_list_id",
-			id, )
-		for k, v := range temp {
-			if tempStruct[k].ServiceName == v.ServiceName {
-				tempStruct[k].PodNumber = (tempStruct[k].PodNumber + v.PodNumber) / 2
-				tempStruct[k].ContainerNumber = (tempStruct[k].ContainerNumber + v.ContainerNumber) / 2
+			id)
+		for _, v := range temp {
+			// ignore the service which disappear in fulture.
+			if tempStructMap[v.ServiceName] != nil {
+				tempStructMap[v.ServiceName].PodNumber = (tempStructMap[v.ServiceName].PodNumber + v.PodNumber) / 2
+				tempStructMap[v.ServiceName].ContainerNumber = (tempStructMap[v.ServiceName].ContainerNumber + v.ContainerNumber) / 2
 			}
 		}
 
@@ -75,14 +89,21 @@ func hourCalc() (tempStruct []dashboard.ServiceDashboardMinute) {
 func dayCalc() (tempStruct []dashboard.ServiceDashboardHour) {
 	var temp []dashboard.ServiceDashboardHour
 	dao.QuerDb(&tempStruct, "service_dashboard_hour", true, "time_list_id",
-		hourServiceDashboardID[23], )
+		hourServiceDashboardID[23])
+
+	// tempMap for easy found
+	tempStructMap := make(map[string]*dashboard.ServiceDashboardHour, len(tempStruct))
+	for i := range tempStruct {
+		tempStructMap[tempStruct[i].ServiceName] = &tempStruct[i]
+	}
 	for id := range hourServiceDashboardID {
 		dao.QuerDb(&temp, "service_dashboard_hour", true, "time_list_id",
-			id, )
-		for k, v := range temp {
-			if tempStruct[k].ServiceName == v.ServiceName {
-				tempStruct[k].PodNumber = (tempStruct[k].PodNumber + v.PodNumber) / 2
-				tempStruct[k].ContainerNumber = (tempStruct[k].ContainerNumber + v.ContainerNumber) / 2
+			id)
+		for _, v := range temp {
+			// ignore the service which disappear in fulture.
+			if tempStructMap[v.ServiceName] != nil {
+				tempStructMap[v.ServiceName].PodNumber = (tempStructMap[v.ServiceName].PodNumber + v.PodNumber) / 2
+				tempStructMap[v.ServiceName].ContainerNumber = (tempStructMap[v.ServiceName].ContainerNumber + v.ContainerNumber) / 2
 			}
 		}
 

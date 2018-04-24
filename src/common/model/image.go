@@ -88,6 +88,7 @@ type ImageConfig struct {
 	ImageTemplate       string     `json:"image_template"`
 	ImageDockerfile     Dockerfile `json:"image_dockerfile"`
 	ImageDockerfilePath string     `json:"-"`
+	RepoPath            string     `json:"-"`
 }
 
 type ImageIndex struct {

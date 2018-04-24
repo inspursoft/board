@@ -67,18 +67,28 @@ paths:
           type: string
           required: false
           description: Username for filtering results.
-        - name: user_list_page
+        - name: page_index
           in: query
           type: integer
           format: int32
           required: false
           description: The page nubmer, default is 1.
-        - name: user_list_page_size
+        - name: page_size
           in: query
           type: integer
           format: int32
           required: false
           description: The size of per page, default is 10, maximum is 100.
+        - name: order_field 
+          in: query
+          description: Order field for results.
+          required: false
+          type: string
+        - name: order_asc 
+          in: query
+          description: Order ascent type for results.
+          required: false
+          type: integer
       tags:
         - Products
       responses:
@@ -496,18 +506,28 @@ paths:
           required: false
           type: integer
           format: int32
-        - name: project_list_page
+        - name: page_index
           in: query
           type: integer
           format: int32
           required: false
           description: The page nubmer, default is 1.
-        - name: project_list_page_size
+        - name: page_size
           in: query
           type: integer
           format: int32
           required: false
           description: The size of per page, default is 10, maximum is 100.
+        - name: order_field 
+          in: query
+          description: Order field for results.
+          required: false
+          type: string
+        - name: order_asc 
+          in: query
+          description: Order ascent type for results.
+          required: false
+          type: integer
       tags:
         - Products
       responses:
@@ -847,9 +867,10 @@ paths:
           type: string
         - name: image_list 
           in: body
-          type: object
-          items:
-            $ref: '#/definitions/ImageList'
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ImageList'
           description: Updates of imagelist data.
       tags:
         - Products
@@ -884,9 +905,10 @@ paths:
           in: body
           description: Updates of imagelist data.
           required: true
-          type: object
-          items:
-            $ref: '#/definitions/ImageList'
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ImageList'
       tags:
         - Products
       responses:
@@ -950,18 +972,28 @@ paths:
           required: false
           type: integer
           format: int32
-        - name: service_list_page
+        - name: page_index
           in: query
           type: integer
           format: int32
           required: false
           description: The page nubmer, default is 1.
-        - name: servie_list_page_size
+        - name: page_size
           in: query
           type: integer
           format: int32
           required: false
           description: The size of per page, default is 10, maximum is 100.
+        - name: order_field 
+          in: query
+          description: Order field for results.
+          required: false
+          type: string
+        - name: order_asc 
+          in: query
+          description: Order ascent type for results.
+          required: false
+          type: integer
       tags:
         - Products
       responses:
@@ -1508,39 +1540,26 @@ paths:
           in: query
           type: string
           required: false
+        - name: node_selector
+          in: query
+          type: string
+          required: false
+        - name: service_public
+          in: query
+          type: integer
+          format: int
+          required: false
         - name: instance
           in: query
           type: integer
           format: int
           required: false 
-        - name: imagelist
+        - name: service_config
           in: body
           required: false 
-          type: array
-          items:
-            $ref: '#/definitions/ImageList'
-          description: Updates of imagelist data.
-        - name: containerlist
-          in: body
-          required: false 
-          type: array
-          items:
-            $ref: '#/definitions/ContainerList'
-          description: Updates of ContainerList data.
-        - name: externalservice
-          in: body
-          required: false 
-          type: array
-          items:
-            $ref: '#/definitions/ExternalService'
-          description: Updates of ExternalService data.
-        - name: entireservice
-          in: body
-          required: false 
-          type: object
           schema:
             $ref: '#/definitions/EntireService'
-          description: Updates of EntireService data.
+          description: Updates of service config data.
       tags:
         - Products
       responses:
@@ -1576,9 +1595,7 @@ paths:
         200:
           description: Return all matched nodes.
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/NodeDetail'
+            $ref: '#/definitions/EntireService'
           headers:
             X-Total-Count:
               description: The total count of nodes.
@@ -1720,6 +1737,35 @@ paths:
         500:
           description: Unexpected internal errors.    
   /v1/services/{service_id}/scale:
+    get:  
+      summary: Get service deployment scale info.
+      description: |
+        This endpoint is aimed to get service deployment scale info.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return deployment scale status.
+          schema:
+            $ref: '#/definitions/ServiceScaleStatus'
+        401:
+          description: User need to log in first.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.    
     put:  
       summary: Manually scale the service replica.
       description: |
@@ -1753,6 +1799,69 @@ paths:
           description: Invalid service ID.
         500:
           description: Unexpected internal errors.             
+  /v1/services/{service_id}/locate:
+    get:  
+      summary: Get service deployment locate info.
+      description: |
+        This endpoint is aimed to get service deployment locate info.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return deployment locate status.
+          schema:
+            $ref: '#/definitions/ServiceLocate'
+        401:
+          description: User need to log in first.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.    
+    put:  
+      summary: Manually update the service locate.
+      description: |
+        This endpoint is aimed to update and locate the service manually.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.
+        - name: service_locate
+          in: body
+          required: true 
+          schema:
+            $ref: '#/definitions/ServiceLocate'
+          description: New service node location to update manually.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Manually locate this service successfully.
+        401:
+          description: User need to log in first.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors. 
   /v1/services/{service_id}/publicity:
     put:  
       summary: Update service publicity for a selected service.
@@ -2019,6 +2128,237 @@ paths:
           description: User need to log in as admin.
         500:
           description: Unexpected internal errors.  
+  /v1/node/{node_id}/group:
+    get:
+      summary: Return the gorups that this node belongs to.
+      description: |
+        This endpoint returns the gorups that this node belongs to.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: node_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Node ID.
+        - name: node_name 
+          in: query
+          description: node name for filtering results.
+          required: true
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the gorups that this node belongs to.
+          schema:
+            type: array
+            items:
+              type: string
+              description: The node group name.  
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+    post:
+      summary: Add this node to a node group.
+      description: |
+        This endpoint is aimed to add this node to a node group.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: node_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Node ID.
+        - name: groupname
+          in: query
+          description: group name for this node to add
+          required: true
+          type: string       
+        - name: node_name
+          in: query
+          description: nodename of this node
+          required: true
+          type: string  
+      tags:
+        - Products
+      responses:
+        200:
+          description: add node to this gourp successfully.
+        400:
+          description: Invalid running status request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Unexpected internal errors.  
+    delete:
+      summary: Remove this node from a node group.
+      description: |
+        This endpoint is aimed to remove this node from a node group.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: node_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Node ID.
+        - name: groupname
+          in: query
+          description: group name for this node to remove
+          required: true
+          type: string       
+        - name: node_name
+          in: query
+          description: nodename of this node
+          required: true
+          type: string  
+      tags:
+        - Products
+      responses:
+        200:
+          description: remove this node from this gourp successfully.
+        400:
+          description: Invalid running status request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Unexpected internal errors. 
+  /v1/nodegroup:
+    get:
+      summary: Return all node groups in Board.
+      description: |
+        This endpoint returns all node groups in Board.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all node groups.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/NodeGroup'
+          headers:
+            X-Total-Count:
+              description: The total count of nodegroups.
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page.
+              type: string
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+    post:
+      summary: Add a new node group.
+      description: |
+        This endpoint is for admin to add a new node group.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: nodegroup
+          in: body
+          description: New added node group.
+          required: true
+          schema:
+            $ref: '#/definitions/NodeGroup'
+      tags:
+        - Products
+      responses:
+        201:
+          description: Node group added successfully.
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        409:
+          description: Node group already exists.
+        500:
+          description: Internal errors.
+  /v1/nodegroup/existing:
+    get:
+      summary: Return result whether nodegruop existing.
+      description: |
+        This endpoint returns result whether nodegruop existing in Board.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: nodegroup_name
+          in: query
+          description: group name for new node gruop
+          required: true
+          type: string      
+      tags:
+        - Products
+      responses:
+        200:
+          description: Nodegruop don't existing.
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+  /v1/nodegroup/{nodegroup_id}:
+    delete:
+      summary: Delete a node group by node gorup ID
+      description: |
+        This endpoint is aimed to remove a node group by node group ID.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: nodegroup_id
+          in: path
+          description: Node group will be removed by nodegroup_id.
+          required: true
+          type: integer
+          format: int32
+      tags:
+        - Products
+      responses:
+        200:
+          description: Node group is deleted successfully.
+        400:
+          description: Invalid node group id.
+        403:
+          description: User need to log in as admin.
+        404:
+          description: Node group does not exist.
+        500:
+          description: Internal errors.
   /v1/images:
     get:
       summary: Return images in Board system.
@@ -2131,12 +2471,21 @@ paths:
           type: string
           required: true
           description: Current available token.
-        - name: image_index
-          in: body
+        - name: image_name
+          in: query
+          description: image name to specify an image.
           required: true
-          schema:
-            $ref: '#/definitions/ImageIndex'
-          description: The image index struct for the image to be deleted.    
+          type: string
+        - name: image_tag
+          in: query
+          type: string
+          required: true
+          description: The tag of this image.
+        - name: project_name
+          in: query
+          type: string
+          required: true
+          description: The project name that the image belongs to.     
       tags:
         - Products
       responses:
@@ -2985,6 +3334,38 @@ paths:
           description: Need to login first.
         500:
           description: Internal errors.
+  /v1/email/ping:
+    post:
+      summary: Test connection and authentication with email server.
+      description: |
+        Test connection and authentication with email server. 
+      parameters:
+        - name: settings
+          in: body
+          description: >-
+            Email server settings, will be read from board.cfg.
+          required: false
+          schema:
+            $ref: '#/definitions/EmailServerSetting'
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Ping email server successfully.
+        '400':
+          description: Inviald email server settings.
+        '401':
+          description: User need to login first.
+        '403':
+          description: Only admin has this authority.
+        '415':
+          $ref: '#/responses/UnsupportedMediaType'
+        '500':
+          description: Unexpected internal errors.
+responses:
+  UnsupportedMediaType: 
+    description: The Media Type of the request is not supported, it has to be "application/json"
+
 # The following is for structure definition          
 definitions:
   Search:
@@ -3398,7 +3779,24 @@ definitions:
       service_scale:
         type: integer
         format: int32
-        description: The new replica number of the service.                
+        description: The new replica number of the service.   
+  ServiceLocate:
+    type: object
+    properties:
+      node_selector:
+        type: string
+        description: The node selector for location of the service.       
+  ServiceScaleStatus:
+    type: object
+    properties:
+      desired_instance:
+        type: integer
+        format: int32
+        description: The desired replica number of the service.       
+      available_instance:
+        type: integer
+        format: int32
+        description: The available running replica number of the service. 
   ServicePublicityUpdate:
     type: object
     properties:
@@ -3613,9 +4011,7 @@ definitions:
           container_path:
             type: string 
       image:
-        type: object
-        schema:
-            $ref: '#/definitions/ImageList'       
+        $ref: '#/definitions/ImageList'       
       env:
         type: array
         items:
@@ -3659,6 +4055,11 @@ definitions:
         type: integer   
         format: int
       service_name:
+        type: string
+      service_public:
+        type: integer   
+        format: int32
+      node_selector:
         type: string
       image_list:
         type: array
@@ -4055,6 +4456,22 @@ definitions:
         type: integer
         format: int32
         description: The running status of the node, 0 poweroff, 1 running.
+  NodeGroup:
+    type: object
+    properties:
+      nodegroup_id:
+        type: integer
+        format: int32
+        description: The integer ID of this node group. 
+      nodegroup_name:
+        type: string
+        description: The name of the node group.
+      nodegroup_comment:
+        type: string
+        description: The description of this node group.    
+      nodegroup_project:
+        type: string
+        description: The dedicated project of this group.    
   ResourcesUsage:
     type: object
     properties:
@@ -4420,7 +4837,31 @@ definitions:
         type: string
       init_project_repo:
         type: string
-      
+  EmailServerSetting:
+    type: object
+    properties:
+      email_from:
+        type: string
+        description: The sender name for Email notification.
+      email_host:
+        type: string
+        description: The hostname of SMTP server that sends Email notification.
+      email_port:
+        type: integer
+        description: The port of SMTP server.
+      email_identity:
+        type: string
+        description: By default it's empty so the email_username is picked.
+      email_username:
+        type: string
+        description: The username for authenticate against SMTP server.
+      email_ssl:
+        type: boolean
+        description: >-
+          When it's set to true the system will access Email server via TLS by
+          default.  If it's set to false, it still will handle "STARTTLS" from
+          server side.
+    
         
 
 

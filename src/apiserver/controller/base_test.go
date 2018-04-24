@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/model/dashboard"
 	"git/inspursoft/board/src/common/utils"
 	"os"
 	"testing"
@@ -143,12 +144,12 @@ func init() {
 				"get:ServiceExists"),
 			beego.NSRouter("/services/rollingupdate",
 				&ServiceRollingUpdateController{},
-				"get:GetRollingUpdateServiceConfigAction;post:PostRollingUpdateServiceConfigAction;patch:PatchRollingUpdateServiceAction"),
+				"get:GetRollingUpdateServiceConfigAction;patch:PatchRollingUpdateServiceAction"),
 			beego.NSRouter("/services/:id([0-9]+)",
 				&ServiceController{},
 				"delete:DeleteServiceAction"),
 			beego.NSRouter("/services/deployment",
-				&ServiceDeployController{},
+				&ServiceController{},
 				"post:DeployServiceAction"),
 			beego.NSRouter("/services/config",
 				&ServiceConfigController{},
@@ -216,6 +217,8 @@ func init() {
 	beego.AddNamespace(ns)
 	beego.Router("/deploy/:owner_name/:project_name/:service_name", &ServiceShowController{})
 	beego.SetStaticPath("/swagger", "swagger")
+
+	orm.RegisterModel(new(dashboard.NodeDashboardMinute), new(dashboard.NodeDashboardHour), new(dashboard.NodeDashboardDay))
 }
 
 func connectToDB() {

@@ -67,8 +67,9 @@
                        name="baseImageSource"
                        id="radFromDocker"
                        [value]="1"
+                       [disabled]="isBuildImageWIP"
                        [(ngModel)]="baseImageSource"
-                       (click)="cleanBaseImageInfo()"
+                       (click)="cleanBaseImageInfo(false)"
                        checked>
                 <label for="radFromDocker" class="base-image-source">Docker Hub</label>
                 <input type="radio"
@@ -76,6 +77,7 @@
                        name="baseImageSource"
                        id="radFromBoard"
                        [value]="2"
+                       [disabled]="isBuildImageWIP"
                        [(ngModel)]="baseImageSource"
                        (click)="cleanBaseImageInfo(true)">
                 <label for="radFromBoard" class="base-image-source">Board Registry</label>
@@ -90,17 +92,19 @@
                         (onCheck)="customerNewImage.image_dockerfile.image_base = $event;getDockerFilePreviewInfo()">
               </cs-input>
               <div *ngIf="baseImageSource == 2" class="board-registry-container">
-                <label>{{boardRegistry}}</label>
-                <cs-dropdown class="margin-left-1"
+                <cs-dropdown class="margin-left-120"
                              [dropdownWidth]="200"
                              [dropdownList]="imageList"
+                             [dropdownDisabled]="isBuildImageWIP"
                              [dropdownDefaultText]="'IMAGE.CREATE_IMAGE_BASE_IMAGE_SELECT' | translate"
                              [dropdownListTextKey]="'image_name'"
                              (onChange)="setBaseImage($event)">
                 </cs-dropdown>
+                <span *ngIf="!selectedImage && !imageDetailList" class="spinner spinner-sm"></span>
                 <cs-dropdown *ngIf="selectedImage"
-                             class="margin-left-1"
+                             class="margin-left-5"
                              [dropdownWidth]="100"
+                             [dropdownDisabled]="isBuildImageWIP"
                              [dropdownList]="imageDetailList"
                              [dropdownDefaultText]="imageDetailList[0]?.image_tag"
                              [dropdownListTextKey]="'image_tag'"
@@ -141,7 +145,7 @@
                       [inputLabel]="'IMAGE.CREATE_IMAGE_UPLOAD_ARCHIVES' | translate"
                       [disabled]="isBuildImageWIP"
                       [simpleFiled]="uploadCopyToPath"
-                      (onCheck)="uploadCopyToPath = $event;">
+                      (onCheck)="uploadCopyToPath = $event;updateFileListAndPreviewInfo()">
             </cs-input>
             <div class="line-container base-margin-top">
               <label class="base-text">{{"IMAGE.CREATE_IMAGE_UPLOAD_FILE_LIST" | translate}}:</label>
@@ -161,16 +165,11 @@
               <clr-icon *ngIf="!isBuildImageWIP" class="dynamic-icon" shape="minus" (click)="removeFile(file)"></clr-icon>
               {{file.file_name}}
             </div>
-            <div class="create-image-area-container">
-              <label for="areaCommand" class="base-text">{{"IMAGE.CREATE_IMAGE_COMMAND" | translate}}:</label>
-              <textarea id="areaCommand"
-                        rows="3"
-                        class="area-command"
-                        (keypress)="shieldEnter($event)"
-                        [(ngModel)]="customerNewImage.image_dockerfile.image_cmd"
-                        [disabled]="isBuildImageWIP">
-              </textarea>
-            </div>
+            <cs-input [inputLabel]="'IMAGE.CREATE_IMAGE_COMMAND'|translate"
+                      [disabled]="isBuildImageWIP"
+                      [simpleFiled]="customerNewImage.image_dockerfile.image_cmd"
+                      (onCheck)="customerNewImage.image_dockerfile.image_cmd = $event;getDockerFilePreviewInfo()">
+            </cs-input>
           </div>
         </ng-template>
         <ng-template [ngSwitchCase]="1">
@@ -208,10 +207,6 @@
                   <td>{{selectFromImportFile?.name}}</td>
                 </tr>
                 <tr>
-                  <th><span class="file-title">{{"IMAGE.CREATE_IMAGE_FILE_TYPE" | translate}}:</span></th>
-                  <td>{{selectFromImportFile?.type}}</td>
-                </tr>
-                <tr>
                   <th><span class="file-title">{{"IMAGE.CREATE_IMAGE_FILE_SIZE" | translate}}:</span></th>
                   <td>{{selectFromImportFile?.size | size}}</td>
                 </tr>
@@ -235,7 +230,6 @@
           </button>
           <button class="btn btn-primary default-primary"
                   *ngIf="isBuildImageWIP"
-                  [disabled]="!toggleCancelBuilding"
                   (click)="cancelBuildImage()">
             {{"IMAGE.CREATE_IMAGE_CANCEL_WAIT" | translate}}
           </button>

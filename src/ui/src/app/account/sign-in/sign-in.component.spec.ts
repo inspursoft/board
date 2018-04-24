@@ -12,7 +12,7 @@ import { SignInComponent } from "./sign-in.component"
 import { AccountService } from "../account.service";
 import { AppModule } from "../../app.module";
 import { AppComponent } from "../../app.component";
-import { AppInitService } from "app/app.init.service";
+import { AppInitService } from "../../app.init.service";
 import Spy = jasmine.Spy;
 
 export function newEvent(eventName: string, bubbles = false, cancelable = false) {

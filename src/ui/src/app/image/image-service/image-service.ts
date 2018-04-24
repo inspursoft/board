@@ -1,8 +1,8 @@
 import { Injectable } from "@angular/core";
 import { HttpClient, HttpEvent, HttpRequest, HttpResponse } from "@angular/common/http";
 import { BuildImageData, Image, ImageDetail } from "../image";
-import { Project } from "app/project/project";
 import { Observable } from "rxjs/Observable";
+import { Project } from "../../project/project";
 
 @Injectable()
 export class ImageService {
@@ -129,5 +129,19 @@ export class ImageService {
   getBoardRegistry(): Observable<string> {
     return this.http.get(`/api/v1/images/registry`, {observe: "response", responseType: "text"})
       .map((obs: HttpResponse<string>) => obs.body)
+  }
+
+  deleteImageConfig(projectName: string, imageName: string, imageTag: string): Observable<Object> {
+    return this.http.delete(`/api/v1/images/configclean`, {
+      observe: "response",
+      params: {project_name: projectName, image_name: imageName, image_tag: imageTag}
+    }).map((obs: HttpResponse<Object>) => obs.body)
+  }
+
+  restImagesTemp(projectName: string): Observable<Object> {
+    return this.http.put(`/api/v1/images/reset-temp`, null, {
+      observe: "response",
+      params: {project_name: projectName}
+    }).map((obs: HttpResponse<Object>) => obs.body)
   }
 }

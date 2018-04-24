@@ -6,8 +6,6 @@ import (
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
-	"os"
-	"path/filepath"
 
 	"github.com/astaxie/beego/logs"
 
@@ -17,7 +15,6 @@ import (
 )
 
 var repoServeURL = utils.GetConfig("REPO_SERVE_URL")
-var repoPath = utils.GetConfig("REPO_PATH")
 
 const (
 	k8sAPIversion1 = "v1"
@@ -43,21 +40,6 @@ func CreateProject(project model.Project) (bool, error) {
 	}
 	if projectID == 0 || projectMemberID == 0 {
 		return false, errors.New("failed to create projectID memberID")
-	}
-
-	// Setup git repo for this project
-	logs.Info("Initializing project %s repo", project.Name)
-	_, err = InitRepo(repoServeURL(), repoPath())
-	if err != nil {
-		return false, errors.New("Initialize Project repo failed.")
-	}
-
-	subPath := project.Name
-	if subPath != "" {
-		os.MkdirAll(filepath.Join(repoPath(), subPath), 0755)
-		if err != nil {
-			return false, errors.New("Initialize Project path failed.")
-		}
 	}
 	return true, nil
 }
@@ -103,8 +85,8 @@ func GetProjectsByUser(query model.Project, userID int64) ([]*model.Project, err
 	return dao.GetProjectsByUser(query, userID)
 }
 
-func GetPaginatedProjectsByUser(query model.Project, userID int64, pageIndex int, pageSize int) (*model.PaginatedProjects, error) {
-	return dao.GetPaginatedProjectsByUser(query, userID, pageIndex, pageSize)
+func GetPaginatedProjectsByUser(query model.Project, userID int64, pageIndex int, pageSize int, orderField string, orderAsc int) (*model.PaginatedProjects, error) {
+	return dao.GetPaginatedProjectsByUser(query, userID, pageIndex, pageSize, orderField, orderAsc)
 }
 
 func GetProjectsByMember(query model.Project, userID int64) ([]*model.Project, error) {
@@ -180,9 +162,10 @@ func SyncNamespaceByOwnerID(userID int64) error {
 	}
 
 	for _, project := range projects {
-		_, err = CreateNamespace((*project).Name)
+		projectName := project.Name
+		_, err = CreateNamespace(projectName)
 		if err != nil {
-			return fmt.Errorf("Failed to create namespace: %s", (*project).Name)
+			return fmt.Errorf("Failed to create namespace: %s", projectName)
 		}
 	}
 	return nil
@@ -220,14 +203,19 @@ func SyncProjectsWithK8s() error {
 			reqProject.OwnerName = adminUserName
 			reqProject.Public = projectPrivate
 
+			err = CreateRepoAndJob(adminUserID, reqProject.Name)
+			if err != nil {
+				logs.Error("Failed create repo and job: %s %+v", reqProject.Name, err)
+			}
+
 			isSuccess, err := CreateProject(reqProject)
 			if err != nil {
-				logs.Error("Failed to create project %s %+v", namespace.Name, err)
+				logs.Error("Failed to create project %s %+v", reqProject.Name, err)
 				// Still can work
 				continue
 			}
 			if !isSuccess {
-				logs.Error("Failed to create project %s", namespace.Name)
+				logs.Error("Failed to create project %s", reqProject.Name)
 				// Still can work
 				continue
 			}

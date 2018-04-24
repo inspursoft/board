@@ -3,9 +3,11 @@ services:
   uibuilder:
     build:
       context: ../../
-      dockerfile: make/dev/container/uibuilder/Dockerfile.test
-    image: dev_uibuilder_test:dev
+      dockerfile: make/dev/container/uibuilder/Dockerfile
+    image: dev_uibuilder:dev
     volumes:
       - ../../src/ui:/board_src
+    environment:
+      MODE: test
     entrypoint:
       - /entrypoint.sh

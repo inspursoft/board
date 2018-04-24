@@ -20,7 +20,7 @@
         <label for="txtEmail" aria-haspopup="true" role="tooltip"
                class="tooltip tooltip-validation tooltip-md  tooltip-top-left"
                [class.invalid]="emailInput.invalid && (emailInput.dirty || emailInput.touched)">
-          <input type="email"
+          <input [disabled]="true" type="email"
                  class="input-style"
                  id="txtEmail"
                  placeholder="{{curUser.user_email}}"
@@ -47,7 +47,7 @@
       </div>
       <div class="form-group">
         <label for="txtRealName">{{ 'ACCOUNT.REALNAME' | translate }}</label>
-        <input type="text"
+        <input [disabled]="true" type="text"
                class="input-style"
                id="txtRealName"
                name="txtRealName"
@@ -59,7 +59,7 @@
       </div>
       <div class="form-group">
         <label for="txtComment">{{ 'ACCOUNT.COMMENT' | translate }}</label>
-        <input type="text"
+        <input [disabled]="true" type="text"
                class="input-style"
                id="txtComment"
                name="txtComment"
@@ -70,12 +70,12 @@
                validate-onblur>
       </div>
       <div class="form-group">
-        <button type="submit"
+        <button [hidden]="true" type="submit"
                 class="btn btn-primary"
                 [disabled]="accountSettingForm.invalid || !isAlertClose">
           {{ "BUTTON.OK" | translate }}
         </button>
-        <button type="button"
+        <button [hidden]="true" type="button"
                 class="btn btn-default"
                 (click)="isOpen = false">
           {{ 'BUTTON.CANCEL' | translate}}

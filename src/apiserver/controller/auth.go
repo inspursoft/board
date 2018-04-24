@@ -50,7 +50,6 @@ func (u *AuthController) processAuth(principal, password string) (string, bool) 
 	payload["username"] = user.Username
 	payload["email"] = user.Email
 	payload["realname"] = user.Realname
-	payload["is_project_admin"] = user.ProjectAdmin
 	payload["is_system_admin"] = user.SystemAdmin
 	token, err := signToken(payload)
 	if err != nil {

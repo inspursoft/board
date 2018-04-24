@@ -1,10 +1,11 @@
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from "@angular/common/http";
 import { K8sService } from "../../service.k8s";
 import { MessageService } from "../../../shared/message-service/message.service";
 import { Project } from "../../../project/project";
 import { Service } from "../../service";
+import { AppInitService } from "../../../app.init.service";
 
 @Component({
   selector: 'service-create-yaml',
@@ -27,7 +28,8 @@ export class ServiceCreateYamlComponent implements OnInit {
 
   constructor(private k8sService: K8sService,
               private router: Router,
-              private messageService: MessageService) {
+              private messageService: MessageService,
+              private appInitService: AppInitService) {
     this.projectsList = Array<Project>();
     this.onCancelEvent = new EventEmitter<any>();
     this.filesDataMap = new Map<string, File>();
@@ -69,7 +71,7 @@ export class ServiceCreateYamlComponent implements OnInit {
   }
 
   clickSelectProject(project: Project) {
-    this.router.navigate(["/projects"]);
+    this.router.navigate(["/projects"],{queryParams: {token: this.appInitService.token}, fragment: "create"});
   }
 
   changeSelectProject(project: Project) {
@@ -84,11 +86,17 @@ export class ServiceCreateYamlComponent implements OnInit {
   btnCreateClick(event: MouseEvent) {
     this.isToggleServiceWIP = true;
     this.k8sService.toggleServiceStatus(this.newServiceId, 1)
-      .then(() => this.onCancelEvent.emit(event))
-      .catch(err => this.messageService.dispatchError(err));
+      .then(() => {
+        this.isToggleServiceWIP = false;
+        this.onCancelEvent.emit(event);
+      })
+      .catch(err => {
+        this.isToggleServiceWIP = false;
+        this.messageService.dispatchError(err);
+      });
   }
 
-  btnUploadClick(event: MouseEvent) {
+  btnUploadClick() {
     this.errorMessage = "";
     this.successMessage = "";
     let formData = new FormData();

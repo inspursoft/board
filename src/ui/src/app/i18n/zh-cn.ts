@@ -36,6 +36,9 @@ export const LANG_ZH_CN = {
     "INPUT_MAX_VALUE":"最大值",
     "INPUT_MIN_VALUE":"最小值"
   },
+  "CS_DROPDOWN":{
+    "NO_ITEMS": "没有可选项"
+  },
   "ACCOUNT": {
     "SIGN_IN": "登录",
     "USERNAME_PLACEHOLDER": "用户名",
@@ -93,7 +96,7 @@ export const LANG_ZH_CN = {
     "NODES": "节点",
     "IMAGES": "镜像",
     "ADMIN_OPTIONS": "管理员选项",
-    "PROFILES": "信息",
+    "PROFILES": "系统信息",
     "GUIDE_SERVICE_LIST":"请创建属于您的新服务",
     "GUIDE_PROJECT_LIST":"请创建属于您的新项目"
   },
@@ -231,6 +234,11 @@ export const LANG_ZH_CN = {
     "CREATE_IMAGE_UPDATE_FILE_LIST_FAILED":"获取文件列表失败。",
     "CREATE_IMAGE_UPDATE_DOCKER_FILE_FAILED":"获取DockerFile内容失败。",
     "CREATE_IMAGE_UPDATE_IMAGE_LIST_FAILED":"更新镜像列表失败。",
+    "CREATE_IMAGE_UPDATE_FILE_SIZE":"上传文件不能大于500M。",
+    "CREATE_IMAGE_FORCE_QUIT":"强制退出",
+    "CREATE_IMAGE_FORCE_QUIT_MSG":"镜像正在创建, 如果强制退出，Jenkins仍然在工作。",
+    "CREATE_IMAGE_BUILD_CANCEL":"取消",
+    "CREATE_IMAGE_BUILD_CANCEL_MSG":"是否取消构建镜像?",
     "CREATE_IMAGE_BUILD_IMAGE_FAILED":"构建自定义镜像失败。",
     "CREATE_IMAGE_IMAGE_SELECTED":"已经选择了该镜像。",
     "CREATE_IMAGE_CANCEL_WAIT":"取消等待",
@@ -240,6 +248,7 @@ export const LANG_ZH_CN = {
     "CREATE_IMAGE_FILE_NAME":"文件名",
     "CREATE_IMAGE_FILE_TYPE":"文件类型",
     "CREATE_IMAGE_FILE_SIZE":"文件大小",
+    "CREATE_IMAGE_FILE_NAME_ERROR":"文件名必须为'Dockerfile'",
     "CREATE_IMAGE_FILE_LAST_MODIFY":"文件最后修改日期",
     "CREATE_IMAGE_SELECT_PROJECT":"选择项目",
     "CREATE_IMAGE_CREATE_PROJECT":"创建项目...",
@@ -320,6 +329,7 @@ export const LANG_ZH_CN = {
     "STEP_4_SERVICE":"服务",
     "STEP_4_SELECT_SERVICE":"选择服务...",
     "STEP_4_SERVICE_NAME_EXIST":"服务名称已经存在",
+    "STEP_4_PUBLIC":"公开性",
     "STEP_6_DEPLOY":"部署",
     "STEP_6_JOURNAL":"日志",
     "STEP_6_CANCEL":"取消",
@@ -360,6 +370,10 @@ export const LANG_ZH_CN = {
     "SERVICE_CONTROL_IMAGE_NAME":"镜像名称",
     "SERVICE_CONTROL_IMAGE_TAG":"镜像Tag",
     "SERVICE_CONTROL_UPDATE_TAG":"更新Tag",
+    "SERVICE_CONTROL_NOT_UPDATE":"此服务不能升级",
+    "SERVICE_CONTROL_AVAILABLE_INSTANCE":"有效实例",
+    "SERVICE_CONTROL_DESIRED_INSTANCE":"期望实例",
+    "SERVICE_CONTROL_SCALE_SUCCESSFUL":"{{0}}:缩放提交成功",
     "SERVICE_DETAIL_DEPLOYMENT_FILE":"部署文件内容",
     "SERVICE_DETAIL_SERVICE_FILE":"服务文件内容",
     "GUIDE_CREATE_SERVICE":"请创建属于您的新服务",

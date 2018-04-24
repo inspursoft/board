@@ -17,7 +17,7 @@ export type EnableSelectCallBack = (item: Object) => boolean;
 })
 export class CsDropdownComponent implements OnChanges {
   isShowDefaultText: boolean = true;
-  dropdownText: string;
+  dropdownText: string = "";
   dropdownShowTimes: number = 1;
   _dropdownSearchText: string = "";
   set dropdownSearchText(value: string) {
@@ -54,8 +54,7 @@ export class CsDropdownComponent implements OnChanges {
   getItemClass(item: any) {
     return {
       'special': (typeof item == "object") && item['isSpecial'],
-      'active': this.dropdownText == this.getItemDescription(item) ||
-      this.dropdownDefaultText == this.getItemDescription(item)
+      'active': this.dropdownDefaultText == this.getItemDescription(item)
     }
   }
 
@@ -100,7 +99,7 @@ export class CsDropdownComponent implements OnChanges {
 
   get active(): boolean {
     /*Todo:this is bad method, but no way better than it at present.2018/1/3*/
-    return this.csDropdown["ifOpenService"]["open"];
+    return this.csDropdown && this.csDropdown["ifOpenService"]["open"];
   }
 
   incShowTimes(event: MouseEvent): void {

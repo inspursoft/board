@@ -1,5 +1,4 @@
 import { NgModule, APP_INITIALIZER } from '@angular/core';
-
 import { AccountModule } from './account/account.module';
 import { MainContentModule } from './main-content/main-content.module';
 import { FeatureModule } from './common/feature.module';

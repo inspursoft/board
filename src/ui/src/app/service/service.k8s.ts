@@ -1,16 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
-import { HttpClient, HttpResponse } from "@angular/common/http";
+import { HttpClient, HttpParams, HttpResponse } from "@angular/common/http";
 import { Project } from "../project/project";
 import { BuildImageDockerfileData, Image, ImageDetail } from "../image/image";
-import {
-  ImageIndex,
-  ServerServiceStep,
-  ServiceStepPhase,
-  UiServiceFactory,
-  UIServiceStepBase
-} from "./service-step.component";
+import { ImageIndex, ServerServiceStep, ServiceStepPhase, UiServiceFactory, UIServiceStepBase } from "./service-step.component";
 import { Service } from "./service";
 
 @Injectable()
@@ -56,7 +50,8 @@ export class K8sService {
         phase: config.phase,
         project_id: config.project_id.toString(),
         service_name: config.service_name,
-        instance: config.instance.toString()
+        instance: config.instance.toString(),
+        service_public:config.service_public.toString()
       }
     }).toPromise()
   }
@@ -69,10 +64,10 @@ export class K8sService {
     return this.http.delete(`/api/v1/services/${serviceId}/deployment`, {observe: "response"}).toPromise()
   }
 
-  serviceDeployment(): Promise<number> {
+  serviceDeployment(): Promise<Object> {
     return this.http.post(`/api/v1/services/deployment`, {}, {observe: "response"})
       .toPromise()
-      .then((res: HttpResponse<Object>) => res.body["project_id"])
+      .then((res: HttpResponse<Object>) => res.body)
   }
 
   getContainerDefaultInfo(image_name: string, image_tag: string, project_name: string): Promise<BuildImageDockerfileData> {
@@ -113,13 +108,14 @@ export class K8sService {
       .then((res: HttpResponse<ImageDetail[]>) => res.body || []);
   }
 
-  getServices(pageIndex?: number, pageSize?: number): Promise<Object> {
+  getServices(pageIndex: number, pageSize: number, sortBy: string, isReverse: boolean): Promise<Object> {
     return this.http
       .get(`/api/v1/services`, {
-        observe: "response",
-        params: {
-          'page_index': pageIndex.toString(),
-          'page_size': pageSize.toString()
+        observe: "response", params: {
+          "page_index": pageIndex.toString(),
+          "page_size": pageSize.toString(),
+          "order_field": sortBy,
+          "order_asc": isReverse ? "0" : "1"
         }
       })
       .toPromise()
@@ -242,5 +238,10 @@ export class K8sService {
         }
       })
       .map((res: HttpResponse<Service>) => res.body)
+  }
+
+  getServiceScaleInfo(serviceId: number): Observable<Object> {
+    return this.http.get(`/api/v1/services/${serviceId}/scale`, {observe: "response"})
+      .map((res: HttpResponse<Object>) => res.body)
   }
 }

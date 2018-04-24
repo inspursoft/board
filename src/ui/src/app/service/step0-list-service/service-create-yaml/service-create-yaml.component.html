@@ -61,8 +61,8 @@
       {{"SERVICE.SERVICE_YAML_UPLOAD" | translate}}
     </button>
     <button class="btn btn-primary"
-            [disabled]="!isUploadFileSuccess"
-            (click)="btnCreateClick()">
+            [disabled]="!isUploadFileSuccess || isToggleServiceWIP"
+            (click)="btnCreateClick($event)">
       {{"BUTTON.CREATE"|translate}}
     </button>
     <div *ngIf="isToggleServiceWIP" class="custom-margin spinner-container">
