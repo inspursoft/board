@@ -275,3 +275,35 @@ func NodeOrNodeGroupExists(nodeOrNodeGroupName string) (bool, error) {
 	}
 	return true, nil
 }
+
+func RemoveNodeFromGroup(nodeName string, groupName string) error {
+	cli, err := K8sCliFactory("", kubeMasterURL(), "v1")
+	apiSet, err := kubernetes.NewForConfig(cli)
+	if err != nil {
+		logs.Error("Failed to get K8s cli")
+		return err
+	}
+	nInterface := apiSet.Nodes()
+	nNode, err := nInterface.Get(nodeName)
+	if err != nil {
+		logs.Error("Failed to get K8s node")
+		return err
+	}
+	//logs.Info(nNode)
+
+	labelMap := nNode.GetLabels()
+	if err != nil {
+		logs.Error("Failed to get K8s node")
+		return err
+	}
+	delete(labelMap, groupName)
+	//logs.Debug(labelMap)
+	nNode.SetLabels(labelMap)
+	newNode, err := nInterface.Update(nNode)
+	if err != nil {
+		logs.Error("Failed to update K8s node")
+		return err
+	}
+	logs.Debug(newNode.GetLabels())
+	return nil
+}
