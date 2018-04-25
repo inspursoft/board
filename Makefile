@@ -52,7 +52,6 @@ DOCKERTAG=$(DOCKERCMD) tag
 DOCKERCOMPOSEFILEPATH=$(MAKEWORKPATH)
 DOCKERCOMPOSEFILENAME=docker-compose.yml
 DOCKERCOMPOSEUIFILENAME=docker-compose.uibuilder.yml
-DOCKERCOMPOSEUIPRODFILENAME=docker-compose.uibuilder.prod.yml
 
 # Go parameters
 GOCMD=go
@@ -126,9 +125,7 @@ version:
 	@echo $(VERSIONTAG) > $(VERSIONFILE)
 
 compile_ui:
-	$(DOCKERCOMPOSECMD) -f $(MAKEPATH)/dev/$(DOCKERCOMPOSEUIFILENAME) up
-product_ui:
-	$(DOCKERCOMPOSECMD) -f $(MAKEPATH)/dev/$(DOCKERCOMPOSEUIPRODFILENAME) up
+	$(DOCKERCOMPOSECMD) -f $(MAKEWORKPATH)/$(DOCKERCOMPOSEUIFILENAME) up
 
 $(COMPILE_LIST): %_compile: # %_fmt  %_vet %_golint
 	$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOIMGBASEPATH) \
@@ -208,7 +205,7 @@ package: prepare_composefile
 
 	@rm -rf $(PACKAGEPATH)
 
-packageonestep: compile product_ui build package
+packageonestep: compile compile_ui build package
 
 .PHONY: cleanall
 cleanall: cleanbinary cleanimage
