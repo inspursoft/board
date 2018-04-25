@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
 
@@ -10,6 +11,8 @@ import (
 	"os"
 	"path/filepath"
 )
+
+var attachmentFile = "attachment.zip"
 
 type uploadFile struct {
 	ProjectName string `json:"project_name"`
@@ -23,10 +26,6 @@ type FileUploadController struct {
 	toFilePath string
 }
 
-func wrapStringWithSymbol(content string) string {
-	return "___" + content + "___"
-}
-
 func (f *FileUploadController) Prepare() {
 	user := f.getCurrentUser()
 	if user == nil {
@@ -34,48 +33,14 @@ func (f *FileUploadController) Prepare() {
 		return
 	}
 	f.currentUser = user
-	f.resolveRepoPath()
 	f.resolveFilePath()
 }
 
 func (f *FileUploadController) resolveFilePath() {
-	projectName := f.GetString("project_name")
-	serviceID, err := f.GetInt64("service_id", 0)
+	f.toFilePath = filepath.Join(baseRepoPath(), f.currentUser.Username, "upload")
+	err := os.MkdirAll(f.toFilePath, 0755)
 	if err != nil {
-		f.internalError(err)
-		return
-	}
-	imageName := f.GetString("image_name")
-	tagName := f.GetString("tag_name")
-
-	reqUploadFile := uploadFile{
-		ProjectName: projectName,
-		ServiceID:   serviceID,
-		ImageName:   imageName,
-		TagName:     tagName,
-	}
-
-	if reqUploadFile.ProjectName == "" && reqUploadFile.ServiceID == 0 {
-		f.customAbort(http.StatusBadRequest, "No project name or service ID provided.")
-		return
-	}
-
-	if reqUploadFile.ImageName == "" && reqUploadFile.TagName == "" {
-		f.customAbort(http.StatusBadRequest, "No image name or tag name provided.")
-		return
-	}
-
-	if reqUploadFile.ProjectName != "" {
-		isMember, err := service.IsProjectMemberByName(reqUploadFile.ProjectName, f.currentUser.ID)
-		if err != nil {
-			f.internalError(err)
-			return
-		}
-		if !isMember {
-			f.customAbort(http.StatusForbidden, "Not member to the current project with provided ID.")
-			return
-		}
-		f.toFilePath = filepath.Join(imageProcess, wrapStringWithSymbol(f.currentUser.Username), "upload")
+		logs.Error("Failed to make dir: %s, error: %+v", f.toFilePath, err)
 	}
 }
 
@@ -85,8 +50,7 @@ func (f *FileUploadController) Upload() {
 		f.internalError(err)
 		return
 	}
-	targetFilePath := filepath.Join(f.repoPath, f.toFilePath)
-	os.MkdirAll(targetFilePath, 0755)
+	targetFilePath := f.toFilePath
 
 	logs.Info("User: %s uploaded file from %s to %s.", f.currentUser.Username, fh.Filename, targetFilePath)
 	err = f.SaveToFile("upload_file", filepath.Join(targetFilePath, fh.Filename))
@@ -95,8 +59,25 @@ func (f *FileUploadController) Upload() {
 	}
 }
 
+func (f *FileUploadController) Download() {
+	fileName := f.GetString("file_name")
+	if fileName == "" {
+		logs.Info("Will zip files to be downloaded as no file name specified.")
+		attachmentFilePath := filepath.Join(baseRepoPath(), f.currentUser.Username)
+		err := service.ZipFiles(filepath.Join(attachmentFilePath, attachmentFile), f.toFilePath)
+		if err != nil {
+			f.customAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to zip file for attachment: %+v", err))
+			return
+		}
+		f.toFilePath = attachmentFilePath
+		fileName = attachmentFile
+	}
+	logs.Debug("Download file from path: %s", f.toFilePath)
+	f.Ctx.Output.Download(filepath.Join(f.toFilePath, fileName), fileName)
+}
+
 func (f *FileUploadController) ListFiles() {
-	uploads, err := service.ListUploadFiles(filepath.Join(f.repoPath, f.toFilePath))
+	uploads, err := service.ListUploadFiles(f.toFilePath)
 	if err != nil {
 		f.internalError(err)
 		return
@@ -107,7 +88,7 @@ func (f *FileUploadController) ListFiles() {
 
 func (f *FileUploadController) RemoveFile() {
 	fileInfo := model.FileInfo{
-		Path:     filepath.Join(f.repoPath, f.toFilePath),
+		Path:     f.toFilePath,
 		FileName: f.GetString("file_name"),
 	}
 	logs.Info("Removed file: %s", filepath.Join(fileInfo.Path, fileInfo.FileName))
