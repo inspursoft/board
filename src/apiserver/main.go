@@ -191,7 +191,6 @@ func main() {
 
 	utils.AddEnv("JENKINS_HOST_IP")
 	utils.AddEnv("JENKINS_HOST_PORT")
-	utils.AddEnv("JENKINS_TOKEN")
 	utils.SetConfig("JENKINS_BASE_URL", "http://%s:%s", "JENKINS_HOST_IP", "JENKINS_HOST_PORT")
 
 	utils.SetConfig("REGISTRY_URL", "http://%s:%s", "REGISTRY_IP", "REGISTRY_PORT")

@@ -353,7 +353,7 @@ func (g *gogsHandler) CreateIssueComment(ownerName string, baseRepoName string, 
 func (g *gogsHandler) CreateHook(ownerName string, baseRepoName string) error {
 
 	config := make(map[string]string)
-	config["url"] = fmt.Sprintf("%s/generic-webhook-trigger/invoke?token=123456", jenkinsBaseURL())
+	config["url"] = fmt.Sprintf("%s/generic-webhook-trigger/invoke", jenkinsBaseURL())
 	config["content_type"] = "json"
 
 	opt := createHookOption{

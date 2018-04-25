@@ -92,6 +92,13 @@ func TestGogitsCreateRepo(t *testing.T) {
 	SimplePush(filepath.Join(repoPath(), user1.Username), user1.Username, user1.Email, "Initial Commit", "test.txt")
 }
 
+func TestGogitsCreateHook(t *testing.T) {
+	var err error
+	assert := assert.New(t)
+	err = gogs.NewGogsHandler(user1.Username, token1.Sha1).CreateHook(user1.Username, repoName)
+	assert.Nilf(err, "Error occurred while creating hook to repo: %+s, error: %+v", repoName, err)
+}
+
 func TestGogitsFork(t *testing.T) {
 	var err error
 	assert := assert.New(t)
