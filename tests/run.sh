@@ -1,8 +1,8 @@
 # listDeps lists packages referenced by package in $1, 
 # excluding golang standard library and packages in 
 # direcotry vendor
-
-source env.cfg
+echo $1
+source $1
 local_host="`hostname --fqdn`"
 local_ip=`host $local_host 2>/dev/null | awk '{print $NF}'`
 export HOST_IP=$local_ip

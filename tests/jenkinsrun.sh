@@ -50,8 +50,9 @@ cd $boardDir/$branchDir/tests
 #cd $boardDir/board/tests
 
 chmod +x *
+envFile=$boardDir/$branchDir/tests/env.cfg
 #make run
-./run.sh 
+./run.sh $envFile
 
 cp -r /home/tests/testresult.log /home/tests/coverage/ $uiDir
 uiCoverage=`cat $uiDir/testresult.log |grep "Statements"|cut -d ":" -f 2|cut -d "%" -f 1|awk 'gsub(/^ *| *$/,"")'`
