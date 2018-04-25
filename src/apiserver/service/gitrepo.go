@@ -163,11 +163,11 @@ func SimplePush(path, username, email, message string, items ...string) error {
 	}
 	_, err = r.Commit(message, username, email)
 	if err != nil {
-		return fmt.Errorf("failed to commit changes to user's repo")
+		return fmt.Errorf("failed to commit changes to user's repo: %+v", err)
 	}
 	err = r.Push()
 	if err != nil {
-		return fmt.Errorf("failed to push objects to git repo")
+		return fmt.Errorf("failed to push objects to git repo: %+v", err)
 	}
 	return nil
 }

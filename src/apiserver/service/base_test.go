@@ -110,12 +110,21 @@ func deleteService(cliSet *kubernetes.Clientset, serviceConfig Service, deployme
 
 func TestMain(m *testing.M) {
 	utils.Initialize()
+	utils.AddEnv("HOST_IP")
 	utils.AddEnv("KUBE_MASTER_IP")
 	utils.AddEnv("KUBE_MASTER_PORT")
-	utils.SetConfig("KUBE_MASTER_URL", "http://%s:%s", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
 	utils.AddEnv("NODE_IP")
 	utils.AddEnv("REGISTRY_BASE_URI")
-	utils.SetConfig("SSH_KEY_PATH", "/Users/wangkun/keys")
+
+	utils.SetConfig("KUBE_MASTER_URL", "http://%s:%s", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
+	utils.SetConfig("GOGITS_HOST_IP", "%s", "HOST_IP")
+	utils.SetConfig("GOGITS_HOST_PORT", "10080")
+	utils.SetConfig("GOGITS_SSH_PORT", "10022")
+	utils.SetConfig("GOGITS_BASE_URL", "http://%s:%s", "GOGITS_HOST_IP", "GOGITS_HOST_PORT")
+	utils.SetConfig("GOGITS_REPO_URL", "ssh://git@%s:%s", "GOGITS_HOST_IP", "GOGITS_SSH_PORT")
+	utils.SetConfig("BASE_REPO_PATH", "/tmp/test-repos")
+	utils.SetConfig("SSH_KEY_PATH", "/tmp/test-keys")
+
 	connectToDB()
 	os.Exit(m.Run())
 }

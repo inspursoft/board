@@ -313,7 +313,7 @@ DROP TABLE IF EXISTS `log`;
         `image_tag_id` INT NOT NULL
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
-	CREATE TABLE `board`.`service_status` (
+    CREATE TABLE `board`.`service_status` (
         `id` INT NOT NULL AUTO_INCREMENT,
         `name` VARCHAR(255) NOT NULL DEFAULT '',
         `project_id` INT NOT NULL,
@@ -329,6 +329,19 @@ DROP TABLE IF EXISTS `log`;
         `service_config` TEXT,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
+
+    CREATE TABLE `board`.`node_group` (
+        `id` INT NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(255) NOT NULL DEFAULT '',
+        `comment` VARCHAR(255) NOT NULL DEFAULT '',
+        `owner_id` INT NOT NULL,
+        `creation_time` datetime DEFAULT NULL,
+        `update_time` datetime DEFAULT NULL,
+        `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
+        `project_name` VARCHAR(255) NOT NULL DEFAULT '',
+        `project_id` INT NOT NULL DEFAULT 0,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
     CREATE TABLE `board`.`config` (
         `name` varchar(50) NOT NULL DEFAULT '',

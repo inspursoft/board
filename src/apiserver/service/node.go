@@ -2,13 +2,18 @@ package service
 
 import (
 	"encoding/json"
+	"errors"
+	"git/inspursoft/board/src/common/dao"
+	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"io/ioutil"
 	"net/http"
 
 	"strings"
 
+	"github.com/astaxie/beego/logs"
 	"github.com/google/cadvisor/info/v2"
+	"k8s.io/client-go/kubernetes"
 	modelK8s "k8s.io/client-go/pkg/api/v1"
 )
 
@@ -19,6 +24,10 @@ const (
 	Running
 	Unschedulable
 	Unknown
+)
+
+const (
+	K8sLabel = "kubernetes.io"
 )
 
 type NodeListResult struct {
@@ -134,4 +143,167 @@ func GetNodeList() (res []NodeListResult) {
 			}()})
 	}
 	return
+}
+
+func CreateNodeGroup(nodeGroup model.NodeGroup) (*model.NodeGroup, error) {
+	nodeGroupID, err := dao.AddNodeGroup(nodeGroup)
+	if err != nil {
+		return nil, err
+	}
+	nodeGroup.ID = nodeGroupID
+	return &nodeGroup, err
+}
+
+func UpdateNodeGroup(n model.NodeGroup, fieldNames ...string) (bool, error) {
+	if n.ID == 0 {
+		return false, errors.New("no Node group ID provided")
+	}
+	_, err := dao.UpdateNodeGroup(n, fieldNames...)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func DeleteNodeGroupByID(n model.NodeGroup) (int64, error) {
+	if n.ID == 0 {
+		return 0, errors.New("no Node Group ID provided")
+	}
+	num, err := dao.DeleteNodeGroup(n)
+	if err != nil {
+		return 0, err
+	}
+	return num, nil
+}
+
+func GetNodeGroup(nodeGroup model.NodeGroup, selectedFields ...string) (*model.NodeGroup, error) {
+	n, err := dao.GetNodeGroup(nodeGroup, selectedFields...)
+	if err != nil {
+		return nil, err
+	}
+	return n, nil
+}
+
+func GetNodeGroupList() ([]model.NodeGroup, error) {
+	return dao.GetNodeGroups()
+}
+
+func NodeGroupExists(nodeGroupName string) (bool, error) {
+	query := model.NodeGroup{GroupName: nodeGroupName}
+	nodegroup, err := dao.GetNodeGroup(query, "name")
+	if err != nil {
+		return false, err
+	}
+	return (nodegroup != nil && nodegroup.ID != 0), nil
+}
+
+func AddNodeToGroup(nodeName string, groupName string) error {
+	cli, err := K8sCliFactory("", kubeMasterURL(), "v1")
+	apiSet, err := kubernetes.NewForConfig(cli)
+	if err != nil {
+		logs.Error("Failed to get K8s cli")
+		return err
+	}
+	nInterface := apiSet.Nodes()
+	nNode, err := nInterface.Get(nodeName)
+	if err != nil {
+		logs.Error("Failed to get K8s node")
+		return err
+	}
+	//logs.Info(nNode)
+
+	labelMap := nNode.GetLabels()
+	if err != nil {
+		logs.Error("Failed to get K8s node")
+		return err
+	}
+	logs.Debug(labelMap)
+	labelMap[groupName] = "true"
+	nNode.SetLabels(labelMap)
+	newNode, err := nInterface.Update(nNode)
+	if err != nil {
+		logs.Error("Failed to update K8s node")
+		return err
+	}
+	logs.Debug(newNode.GetLabels())
+	return nil
+}
+
+func GetGroupOfNode(nodeName string) ([]string, error) {
+	var groups []string
+
+	cli, err := K8sCliFactory("", kubeMasterURL(), "v1")
+	apiSet, err := kubernetes.NewForConfig(cli)
+	if err != nil {
+		logs.Error("Failed to get K8s cli")
+		return nil, err
+	}
+	nInterface := apiSet.Nodes()
+	nNode, err := nInterface.Get(nodeName)
+	if err != nil {
+		logs.Error("Failed to get K8s node")
+		return nil, err
+	}
+
+	labelMap := nNode.GetLabels()
+	if err != nil {
+		logs.Error("Failed to get K8s node")
+		return nil, err
+	}
+	//Todo: the above should be abstracted to a common func
+	for key, _ := range labelMap {
+		if !strings.Contains(key, K8sLabel) {
+			groups = append(groups, key)
+		}
+	}
+	return groups, nil
+}
+
+func NodeOrNodeGroupExists(nodeOrNodeGroupName string) (bool, error) {
+	nodeGroupExists, err := NodeGroupExists(nodeOrNodeGroupName)
+	if err != nil {
+		return false, err
+	}
+	if !nodeGroupExists {
+		res, err := GetNode(nodeOrNodeGroupName)
+		if err != nil {
+			return false, err
+		}
+		if res.NodeName == "" {
+			return false, nil
+		}
+	}
+	return true, nil
+}
+
+func RemoveNodeFromGroup(nodeName string, groupName string) error {
+	cli, err := K8sCliFactory("", kubeMasterURL(), "v1")
+	apiSet, err := kubernetes.NewForConfig(cli)
+	if err != nil {
+		logs.Error("Failed to get K8s cli")
+		return err
+	}
+	nInterface := apiSet.Nodes()
+	nNode, err := nInterface.Get(nodeName)
+	if err != nil {
+		logs.Error("Failed to get K8s node")
+		return err
+	}
+	//logs.Info(nNode)
+
+	labelMap := nNode.GetLabels()
+	if err != nil {
+		logs.Error("Failed to get K8s node")
+		return err
+	}
+	delete(labelMap, groupName)
+	//logs.Debug(labelMap)
+	nNode.SetLabels(labelMap)
+	newNode, err := nInterface.Update(nNode)
+	if err != nil {
+		logs.Error("Failed to update K8s node")
+		return err
+	}
+	logs.Debug(newNode.GetLabels())
+	return nil
 }

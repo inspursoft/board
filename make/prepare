@@ -81,6 +81,8 @@ auth_mode = rcp.get("configuration", "auth_mode")
 verification_url = rcp.get("configuration", "verification_url")
 redirection_url = rcp.get("configuration", "redirection_url")
 
+elaseticsearch_memory_in_megabytes = rcp.get("configuration", "elaseticsearch_memory_in_megabytes")
+
 gogits_host_ip = rcp.get("configuration", "gogits_host_ip")
 gogits_host_port = rcp.get("configuration", "gogits_host_port")
 gogits_ssh_port = rcp.get("configuration", "gogits_ssh_port")
@@ -93,6 +95,16 @@ jenkins_node_ssh_port = rcp.get("configuration", "jenkins_node_ssh_port")
 jenkins_node_username = rcp.get("configuration", "jenkins_node_username")
 jenkins_node_password = rcp.get("configuration", "jenkins_node_password")
 jenkins_node_volume = rcp.get("configuration", "jenkins_node_volume")
+
+###email configuration
+email_identity = rcp.get("configuration", "email_identity")
+email_host = rcp.get("configuration", "email_server")
+email_port = rcp.get("configuration", "email_server_port")
+email_usr = rcp.get("configuration", "email_username")
+email_pwd = rcp.get("configuration", "email_password")
+email_from = rcp.get("configuration", "email_from")
+email_ssl = rcp.get("configuration", "email_ssl")
+########
 
 ###ldap configuration
 ldap_url = rcp.get("configuration", "ldap_url")
@@ -163,6 +175,11 @@ grafana_graphite_ds = os.path.join(grafana_config_dir, "graphite-datasource.json
 grafana_dashboard = os.path.join(grafana_config_dir, "kubernetes-dashboard.json")
 grafana_k8s = os.path.join(grafana_config_dir, "kubernetes.json")
 
+elasticsearch_config_dir = os.path.join(config_dir, "elasticsearch")
+if not os.path.exists(elasticsearch_config_dir):
+    os.makedirs(elasticsearch_config_dir)
+elasticsearch_env = os.path.join(config_dir, "elasticsearch", "env")
+
 #Render Configure File
 render(os.path.join(templates_dir, "apiserver", "app.conf"),
         apiserver_conf,
@@ -179,6 +196,13 @@ render(os.path.join(templates_dir, "apiserver", "env"),
         registry_ip=registry_ip,
         registry_port=registry_port,
         auth_mode=auth_mode,
+        email_host=email_host,
+        email_port=email_port,
+        email_usr=email_usr,
+        email_pwd=email_pwd,
+        email_ssl=email_ssl,
+        email_from=email_from,
+        email_identity=email_identity,
         ldap_url=ldap_url,
         ldap_searchdn =ldap_searchdn, 
         ldap_search_pwd =ldap_search_pwd,
@@ -252,5 +276,9 @@ shutil.copy(os.path.join(templates_dir, "grafana", "kubernetes-dashboard.json"),
 
 render(os.path.join(templates_dir, "grafana", "kubernetes.json"),
         grafana_k8s)
+
+render(os.path.join(templates_dir, "elasticsearch", "env"),
+        elasticsearch_env,
+        es_java_opts="-Xms%sm -Xmx%sm"%(elaseticsearch_memory_in_megabytes,elaseticsearch_memory_in_megabytes))
 
 print("The configuration files are ready, please use docker-compose to start the service.")

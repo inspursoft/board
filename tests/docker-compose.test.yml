@@ -50,3 +50,17 @@ services:
       REGISTRY_STORAGE_DELETE_ENABLED: 'true'
     ports:
       - 5000:5000
+  gogits:
+    build:
+      context: ../../
+      dockerfile: make/dev/container/gogits/Dockerfile
+    image: dev_gogits:dev
+    restart: always
+    env_file:
+      - ../config/gogits/env
+    volumes:
+      - ../config/gogits/conf/app.ini:/tmp/conf/app.ini
+      - /data/board/gogits:/data:rw
+    ports:
+      - "10022:22"
+      - "10080:3000"

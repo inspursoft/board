@@ -40,7 +40,6 @@ func TestUserAction(t *testing.T) {
 		Realname:     "testuser",
 		Comment:      "this is just a test account",
 		SystemAdmin:  0,
-		ProjectAdmin: 0,
 	}
 
 	body, err := json.Marshal(user)
@@ -184,7 +183,6 @@ func TestChangeUserAccount(t *testing.T) {
 		Realname:     "testuseraccount",
 		Comment:      "this is just a test account",
 		SystemAdmin:  0,
-		ProjectAdmin: 0,
 	}
 
 	body, err := json.Marshal(user)
@@ -298,7 +296,6 @@ func TestChangePasswordAction(t *testing.T) {
 		Realname:     "testpasswordpwd",
 		Comment:      "this is just a test account",
 		SystemAdmin:  0,
-		ProjectAdmin: 0,
 	}
 
 	body, err := json.Marshal(user)

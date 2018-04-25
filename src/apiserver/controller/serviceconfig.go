@@ -37,6 +37,7 @@ var (
 	serviceConfigNotSetProjectErr      = errors.New("ERR_NOT_SET_PROJECT_IN_SERVICE_CONFIG")
 	emptyExternalServiceListErr        = errors.New("ERR_EMPTY_EXTERNAL_SERVICE_LIST")
 	notFoundErr                        = errors.New("ERR_NOT_FOUND")
+	nodeOrNodeGroupNameNotFound        = errors.New("ERR_NODE_SELECTOR_NAME_NOT_FOUND")
 )
 
 type ConfigServiceStep model.ConfigServiceStep
@@ -139,10 +140,11 @@ func (s *ConfigServiceStep) GetConfigContainerList() interface{} {
 	}
 }
 
-func (s *ConfigServiceStep) ConfigExternalService(serviceName string, instance int, public int, externalServiceList []model.ExternalService) *ConfigServiceStep {
+func (s *ConfigServiceStep) ConfigExternalService(serviceName string, instance int, public int, nodeOrNodeGroupName string, externalServiceList []model.ExternalService) *ConfigServiceStep {
 	s.ServiceName = serviceName
 	s.Instance = instance
 	s.Public = public
+	s.NodeSelector = nodeOrNodeGroupName
 	s.ExternalServiceList = externalServiceList
 	return s
 }
@@ -153,12 +155,14 @@ func (s *ConfigServiceStep) GetConfigExternalService() interface{} {
 		ServiceName         string                  `json:"service_name"`
 		Instance            int                     `json:"instance"`
 		Public              int                     `json:"service_public"`
+		NodeSelector        string                  `json:"node_selector"`
 		ExternalServiceList []model.ExternalService `json:"external_service_list"`
 	}{
 		ProjectName:         s.ProjectName,
 		ServiceName:         s.ServiceName,
 		Instance:            s.Instance,
 		Public:              s.Public,
+		NodeSelector:        s.NodeSelector,
 		ExternalServiceList: s.ExternalServiceList,
 	}
 }
@@ -348,6 +352,19 @@ func (sc *ServiceConfigController) configExternalService(key string, configServi
 		return
 	}
 
+	nodeOrNodeGroupName := strings.ToLower(sc.GetString("node_selector"))
+	if nodeOrNodeGroupName != "" {
+		isExists, err := service.NodeOrNodeGroupExists(nodeOrNodeGroupName)
+		if err != nil {
+			sc.internalError(err)
+			return
+		}
+		if !isExists {
+			sc.serveStatus(http.StatusBadRequest, nodeOrNodeGroupNameNotFound.Error())
+			return
+		}
+	}
+
 	var externalServiceList []model.ExternalService
 	err = json.Unmarshal(reqData, &externalServiceList)
 	if err != nil {
@@ -362,7 +379,7 @@ func (sc *ServiceConfigController) configExternalService(key string, configServi
 		}
 	}
 
-	SetConfigServiceStep(key, configServiceStep.ConfigExternalService(serviceName, instance, public, externalServiceList))
+	SetConfigServiceStep(key, configServiceStep.ConfigExternalService(serviceName, instance, public, nodeOrNodeGroupName, externalServiceList))
 }
 
 func (sc *ServiceConfigController) checkServiceDuplicateName(serviceName string) (bool, error) {
