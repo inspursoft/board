@@ -53,6 +53,19 @@ func (d *DeploymentConfig) setDeploymentNamespace(name string) {
 	d.ObjectMeta.Namespace = name
 }
 
+func (d *DeploymentConfig) setDeploymentNodeSelector(nodeOrNodeGroupName string) {
+	if nodeOrNodeGroupName == "" {
+		return
+	}
+	d.Spec.Template.Spec.NodeSelector = make(map[string]string)
+	nodeGroupExists, _ := NodeGroupExists(nodeOrNodeGroupName)
+	if nodeGroupExists {
+		d.Spec.Template.Spec.NodeSelector[nodeOrNodeGroupName] = "true"
+	} else {
+		d.Spec.Template.Spec.NodeSelector["kubernetes.io/hostname"] = nodeOrNodeGroupName
+	}
+}
+
 func (d *DeploymentConfig) setDeploymentContainers(ContainerList []model.Container) {
 	for _, cont := range ContainerList {
 		container := v1.Container{}
@@ -64,7 +77,7 @@ func (d *DeploymentConfig) setDeploymentContainers(ContainerList []model.Contain
 
 		if len(cont.Command) > 0 {
 			container.Command = append(container.Command, "/bin/sh")
-			container.Args=append(container.Args,"-c",cont.Command)
+			container.Args = append(container.Args, "-c", cont.Command)
 		}
 
 		if cont.VolumeMounts.VolumeName != "" {
@@ -165,6 +178,7 @@ func AssembleDeploymentYaml(serviceConfig *model.ConfigServiceStep, loadPath str
 	deployConfig.setDeploymentName(serviceConfig.ServiceName)
 	deployConfig.setDeploymentNamespace(serviceConfig.ProjectName)
 	deployConfig.setDeploymentInstance(&instance)
+	deployConfig.setDeploymentNodeSelector(serviceConfig.NodeSelector)
 	deployConfig.setDeploymentContainers(serviceConfig.ContainerList)
 	deployConfig.setDeploymentVolumes(serviceConfig.ContainerList)
 	deploymentAbsName := filepath.Join(loadPath, deploymentFilename)

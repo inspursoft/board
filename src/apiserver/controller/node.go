@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"net/http"
+
+	"github.com/astaxie/beego/logs"
 )
 
 type NodeController struct {
@@ -60,4 +62,55 @@ func (n *NodeController) NodeList() {
 	res := service.GetNodeList()
 	n.Data["json"] = res
 	n.ServeJSON()
+}
+
+func (n *NodeController) AddNodeToGroupAction() {
+	//TODO node_id is not reay, should implement it
+	//nodeID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
+
+	nodeName := n.GetString("node_name")
+	groupName := n.GetString("groupname")
+	logs.Debug("Adding %s to %s", nodeName, groupName)
+
+	//TODO check existing
+
+	err := service.AddNodeToGroup(nodeName, groupName)
+	if err != nil {
+		n.internalError(err)
+		return
+	}
+}
+
+func (n *NodeController) GetGroupsOfNodeAction() {
+
+	//TODO node_id is not reay, should implement it
+	//nodeID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
+
+	nodeName := n.GetString("node_name")
+
+	// Get the nodegroups of this node
+	groups, err := service.GetGroupOfNode(nodeName)
+	if err != nil {
+		logs.Error("Failed to get node %s group", nodeName)
+		n.internalError(err)
+		return
+	}
+	n.Data["json"] = groups
+	n.ServeJSON()
+}
+
+func (n *NodeController) RemoveNodeFromGroupAction() {
+	//TODO node_id is not reay, should implement it
+	//nodeID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
+
+	nodeName := n.GetString("node_name")
+	groupName := n.GetString("groupname")
+	//logs.Debug("Remove %s from %s", nodeName, groupName)
+
+	err := service.RemoveNodeFromGroup(nodeName, groupName)
+	if err != nil {
+		n.internalError(err)
+		return
+	}
+	logs.Debug("Removed %s from %s", nodeName, groupName)
 }

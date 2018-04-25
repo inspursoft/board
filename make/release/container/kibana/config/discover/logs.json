@@ -1,0 +1,22 @@
+{
+  "type": "search",
+  "search": {
+    "title": "logs",
+    "description": "",
+    "hits": 0,
+    "columns": [
+      "kubernetes.host",
+      "kubernetes.namespace_name",
+      "kubernetes.pod_name",
+      "log"
+    ],
+    "sort": [
+      "@timestamp",
+      "desc"
+    ],
+    "version": 1,
+    "kibanaSavedObjectMeta": {
+      "searchSourceJSON": "{\"index\":\"board-index\",\"highlightAll\":true,\"version\":true,\"query\":{\"query\":\"\",\"language\":\"lucene\"},\"filter\":[]}"
+    }
+  }
+}

@@ -15,7 +15,6 @@
 # Common
 # Develop flag
 #
-# guyingyan add test
 DEVFLAG=release
 ifeq ($(DEVFLAG), release) 
 	BASEIMAGE=alpine:3.5
@@ -91,7 +90,7 @@ endif
 # Package lists
 # TOPLEVEL_PKG := .
 INT_LIST := apiserver tokenserver collector/cmd
-IMG_LIST := apiserver tokenserver log collector jenkins db proxy gogits grafana graphite
+IMG_LIST := apiserver tokenserver log collector jenkins db proxy gogits grafana graphite elasticsearch kibana
 
 # List building
 COMPILEALL_LIST = $(foreach int, $(INT_LIST), $(SRCPATH)/$(int))

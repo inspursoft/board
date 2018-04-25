@@ -1554,36 +1554,12 @@ paths:
           type: integer
           format: int
           required: false 
-        - name: imagelist
-          in: body
-          required: false 
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/ImageList'
-          description: Updates of imagelist data.
-        - name: containerlist
-          in: body
-          required: false
-          schema: 
-            type: array
-            items:
-              $ref: '#/definitions/ContainerList'
-          description: Updates of ContainerList data.
-        - name: externalservice
-          in: body
-          required: false 
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/ExternalService'
-          description: Updates of ExternalService data.
-        - name: entireservice
+        - name: service_config
           in: body
           required: false 
           schema:
             $ref: '#/definitions/EntireService'
-          description: Updates of EntireService data.
+          description: Updates of service config data.
       tags:
         - Products
       responses:
@@ -1619,9 +1595,7 @@ paths:
         200:
           description: Return all matched nodes.
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/NodeDetail'
+            $ref: '#/definitions/EntireService'
           headers:
             X-Total-Count:
               description: The total count of nodes.
@@ -2155,6 +2129,43 @@ paths:
         500:
           description: Unexpected internal errors.  
   /v1/node/{node_id}/group:
+    get:
+      summary: Return the gorups that this node belongs to.
+      description: |
+        This endpoint returns the gorups that this node belongs to.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: node_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Node ID.
+        - name: node_name 
+          in: query
+          description: node name for filtering results.
+          required: true
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the gorups that this node belongs to.
+          schema:
+            type: array
+            items:
+              type: string
+              description: The node group name.  
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
     post:
       summary: Add this node to a node group.
       description: |
@@ -2176,6 +2187,11 @@ paths:
           description: group name for this node to add
           required: true
           type: string       
+        - name: node_name
+          in: query
+          description: nodename of this node
+          required: true
+          type: string  
       tags:
         - Products
       responses:
@@ -2208,6 +2224,11 @@ paths:
           description: group name for this node to remove
           required: true
           type: string       
+        - name: node_name
+          in: query
+          description: nodename of this node
+          required: true
+          type: string  
       tags:
         - Products
       responses:
@@ -2279,6 +2300,33 @@ paths:
           description: User need to log in as admin.
         409:
           description: Node group already exists.
+        500:
+          description: Internal errors.
+  /v1/nodegroup/existing:
+    get:
+      summary: Return result whether nodegruop existing.
+      description: |
+        This endpoint returns result whether nodegruop existing in Board.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: nodegroup_name
+          in: query
+          description: group name for new node gruop
+          required: true
+          type: string      
+      tags:
+        - Products
+      responses:
+        200:
+          description: Nodegruop don't existing.
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
         500:
           description: Internal errors.
   /v1/nodegroup/{nodegroup_id}:
@@ -4040,6 +4088,8 @@ definitions:
       service_public:
         type: integer   
         format: int32
+      node_selector:
+        type: string
       image_list:
         type: array
         items:
