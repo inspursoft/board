@@ -109,12 +109,47 @@ def run(apiserver, value, flag, extra, file_name, docker_registry):
     path = os.path.split(os.path.realpath(__file__))[0]
     if flag.strip() == "process-image":
         file_name = os.path.join(value, file_name)
+        uploadFile(apiserver, path, value)
         runProcessImage(extra, value, file_name, docker_registry, apiserver)
     elif flag.strip() == "process-service":
         runProcessService(apiserver, value, extra, file_name)
 #    elif flag.strip() == "rolling-update":
         #runRollingUpdate(value, extra, file_name)
 
+def getToken(cfgDir):
+    keyFile = os.path.join(cfgDir,'key.txt')
+    if os.path.isfile(keyFile):
+        with open(keyFile, 'r') as f:
+            lines = f.readlines()
+            key = lines[0]
+            return key
+    else:
+        print ('Token file do not exist')
+def generateUploadUrl(apiserver, cfgDir):
+    key = getToken(cfgDir)
+    otherInfo = '/api/v1/files/download?token='
+    uploadUrl = (apiserver + otherInfo + key).replace("\n", "")
+    return uploadUrl
+       
+def uploadFile(apiserver, cfgDir,value):
+    print ('start funciton getUploadFile-----------')
+    print (cfgDir)
+    print (value)
+    uploadDir = os.path.join(cfgDir,value, 'upload')
+    if not os.path.exists(uploadDir):
+        os.makedirs(uploadDir)
+    uploadFile = os.path.join(uploadDir, 'tempload.zip')
+    uploadUrl = generateUploadUrl(apiserver, cfgDir)
+    uploadCommandLine = 'curl ' + uploadUrl + ' -o ' + uploadFile
+    os.system(uploadCommandLine)
+    if os.path.isfile(uploadFile):
+        unzipCommandLine = 'unzip ' + uploadFile + ' -d ' + uploadDir
+        os.system(unzipCommandLine)
+        print (unzipCommandLine)
+        os.remove(uploadFile)
+    else:
+        print ('upload file not exist')
+    
    
 def checkFile(cfgDir, build_id):
     cfgFile = os.path.join(cfgDir, 'META.cfg')
