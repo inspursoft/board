@@ -2,23 +2,17 @@ package controller
 
 import (
 	"encoding/json"
-	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
-	"io/ioutil"
 	"net/http"
 	"path/filepath"
-	"strconv"
 	"strings"
 
-	"github.com/ghodss/yaml"
-
+	"github.com/astaxie/beego/logs"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/pkg/api"
 	"k8s.io/client-go/pkg/api/v1"
-	"k8s.io/client-go/pkg/apis/extensions"
-
-	"github.com/astaxie/beego/logs"
+	v1beta1 "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 )
 
 type ServiceRollingUpdateController struct {
@@ -39,7 +33,7 @@ func (p *ServiceRollingUpdateController) generateRepoPathByProjectName(projectNa
 	return filepath.Join(baseRepoPath(), p.currentUser.Username, projectName)
 }
 
-func (p *ServiceRollingUpdateController) GetRollingUpdateServiceConfigAction() {
+func (p *ServiceRollingUpdateController) GetRollingUpdateServiceImageConfigAction() {
 	serviceConfig, _ := p.getServiceConfig()
 	if len(serviceConfig.Spec.Template.Spec.Containers) < 1 {
 		p.customAbort(http.StatusBadRequest, "Requested service's config is invalid.")
@@ -59,14 +53,14 @@ func (p *ServiceRollingUpdateController) GetRollingUpdateServiceConfigAction() {
 	p.ServeJSON()
 }
 
-func (p *ServiceRollingUpdateController) getServiceConfig() (*extensions.Deployment, string) {
+func (p *ServiceRollingUpdateController) getServiceConfig() (*v1beta1.Deployment, string) {
 	projectName := p.GetString("project_name")
 	isExistence, err := service.ProjectExists(projectName)
 	if err != nil {
 		p.internalError(err)
 	}
 	if isExistence != true {
-		p.customAbort(http.StatusBadRequest, "Project don't exist.")
+		p.customAbort(http.StatusBadRequest, "Project doesn't exist.")
 	}
 
 	serviceName := p.GetString("service_name")
@@ -75,28 +69,26 @@ func (p *ServiceRollingUpdateController) getServiceConfig() (*extensions.Deploym
 		p.internalError(err)
 	}
 	if serviceStatus == nil {
-		p.customAbort(http.StatusBadRequest, "Service name don't exist.")
+		p.customAbort(http.StatusBadRequest, "Service name doesn't exist.")
 	}
 
-	repoPath := p.generateRepoPathByProjectName(projectName)
-	absFileName := filepath.Join(repoPath, serviceProcess, strconv.Itoa(int(serviceStatus.ID)), deploymentFilename)
-	logs.Info("User: %s get deployment.yaml images info from %s.", p.currentUser.Username, absFileName)
-
-	yamlFile, err := ioutil.ReadFile(absFileName)
+	cli, err := service.K8sCliFactory("", kubeMasterURL(), "v1beta1")
+	apiSet, err := kubernetes.NewForConfig(cli)
 	if err != nil {
 		p.internalError(err)
 	}
 
-	var deploymentConfig extensions.Deployment
-	err = yaml.Unmarshal(yamlFile, &deploymentConfig)
+	d := apiSet.Deployments(projectName)
+	deploymentConfig, err := d.Get(serviceName)
 	if err != nil {
+		logs.Error("Failed to get service info %+v\n", err)
 		p.internalError(err)
 	}
 
-	return &deploymentConfig, projectName
+	return deploymentConfig, projectName
 }
 
-func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceAction() {
+func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceImageAction() {
 
 	var imageList []model.ImageIndex
 	reqData, err := p.resolveBody()
@@ -110,24 +102,12 @@ func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceAction() {
 	}
 	logs.Debug("Image list info: %+v\n", imageList)
 
-	serviceConfig, projectName := p.getServiceConfig()
+	serviceConfig, _ := p.getServiceConfig()
 	if len(serviceConfig.Spec.Template.Spec.Containers) != len(imageList) {
 		p.customAbort(http.StatusConflict, "Image's config is invalid.")
 	}
 
-	//Can not rollingupdate an uncompleted service
-	serviceName := p.GetString("service_name")
-	serviceStatus, err := service.GetServiceByProject(serviceName, projectName)
-	if err != nil {
-		p.internalError(err)
-	}
-	if serviceStatus.Status == uncompleted {
-		logs.Debug("Service is uncompleted, cannot be updated %s\n", serviceName)
-		p.customAbort(http.StatusMethodNotAllowed, "Service is in uncompleted")
-	}
-
-	var rollingUpdateConfig v1.ReplicationController
-	rollingUpdateConfig.Spec.Template = &v1.PodTemplateSpec{}
+	var rollingUpdateConfig v1beta1.Deployment
 	for index, container := range serviceConfig.Spec.Template.Spec.Containers {
 		image := registryBaseURI() + "/" + imageList[index].ImageName + ":" + imageList[index].ImageTag
 		if serviceConfig.Spec.Template.Spec.Containers[index].Image != image {
@@ -143,12 +123,63 @@ func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceAction() {
 		return
 	}
 
+	p.PatchServiceAction(&rollingUpdateConfig)
+}
+
+func (p *ServiceRollingUpdateController) GetRollingUpdateServiceNodeGroupConfigAction() {
+	serviceConfig, _ := p.getServiceConfig()
+	for key, value := range serviceConfig.Spec.Template.Spec.NodeSelector {
+		if key == "kubernetes.io/hostname" {
+			p.Data["json"] = value
+		} else {
+			p.Data["json"] = key
+		}
+	}
+
+	p.ServeJSON()
+}
+
+func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceNodeGroupAction() {
+	nodeGroup := p.GetString("node_selector")
+	if nodeGroup == "" {
+		p.customAbort(http.StatusBadRequest, "nodeGroup is empty.")
+	}
+	rollingUpdateConfig, _ := p.getServiceConfig()
+	nodeGroupExists, _ := service.NodeGroupExists(nodeGroup)
+	if nodeGroupExists {
+		rollingUpdateConfig.Spec.Template.Spec.NodeSelector = map[string]string{nodeGroup: "true"}
+	} else {
+		rollingUpdateConfig.Spec.Template.Spec.NodeSelector = map[string]string{"kubernetes.io/hostname": nodeGroup}
+	}
+
+	p.PatchServiceAction(rollingUpdateConfig)
+}
+
+func (p *ServiceRollingUpdateController) PatchServiceAction(rollingUpdateConfig *v1beta1.Deployment) {
+	projectName := p.GetString("project_name")
+	isExistence, err := service.ProjectExists(projectName)
+	if err != nil {
+		p.internalError(err)
+	}
+	if isExistence != true {
+		p.customAbort(http.StatusBadRequest, "Project don't exist.")
+	}
+
+	serviceName := p.GetString("service_name")
+	serviceStatus, err := service.GetServiceByProject(serviceName, projectName)
+	if err != nil {
+		p.internalError(err)
+	}
+	if serviceStatus.Status == uncompleted {
+		logs.Debug("Service is uncompleted, cannot be updated %s\n", serviceName)
+		p.customAbort(http.StatusMethodNotAllowed, "Service is in uncompleted")
+	}
+
 	serviceRollConfig, err := json.Marshal(rollingUpdateConfig)
 	if err != nil {
 		logs.Debug("rollingUpdateConfig %+v\n", rollingUpdateConfig)
 		p.internalError(err)
 	}
-	//logs.Debug("Marshal serviceRollConfig %+v\n", string(serviceRollConfig))
 
 	cli, err := service.K8sCliFactory("", kubeMasterURL(), "v1beta1")
 	apiSet, err := kubernetes.NewForConfig(cli)
@@ -158,43 +189,10 @@ func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceAction() {
 
 	d := apiSet.Deployments(projectName)
 	patchType := api.StrategicMergePatchType
-	deployData, err := d.Patch(serviceConfig.Name, patchType, serviceRollConfig)
+	deployData, err := d.Patch(serviceName, patchType, serviceRollConfig)
 	if err != nil {
 		logs.Error("Failed to update service %+v\n", err)
 		p.internalError(err)
 	}
 	logs.Debug("New updated deployment: %+v\n", deployData)
-
-	//update deployment yaml file
-	repoPath := p.generateRepoPathByProjectName(projectName)
-	err = service.RollingUpdateDeploymentYaml(repoPath, deployData)
-	if err != nil {
-		logs.Error("Failed to update deployment yaml file:%+v\n", err)
-		p.internalError(err)
-	}
-
-	serviceInfo, err := service.GetServiceByProject(serviceName, projectName)
-	if err != nil {
-		p.internalError(err)
-	}
-	if serviceInfo == nil {
-		logs.Error("Failed to get service info by service name: %s and project name: %s", serviceName, projectName)
-		p.internalError(err)
-	}
-	var pushObject pushObject
-	pushObject.UserID = p.currentUser.ID
-	pushObject.FileName = deploymentFilename
-	pushObject.JobName = rollingUpdate
-	pushObject.ProjectName = projectName
-
-	pushObject.Message = fmt.Sprintf("Rolling update service for project %s with service ID %d", projectName, serviceInfo.ID)
-
-	generateMetaConfiguration(&pushObject, repoPath)
-	pushObject.Items = []string{"META.cfg", filepath.Join(serviceProcess, strconv.Itoa(int(serviceInfo.ID)), deploymentFilename)}
-
-	statusCode, message, err := InternalPushObjects(&pushObject, &(p.baseController))
-	if err != nil {
-		p.internalError(err)
-	}
-	logs.Info("Internal pushed for rolling update with status: %d and message: %s.", statusCode, message)
 }
