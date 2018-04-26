@@ -180,6 +180,8 @@ if not os.path.exists(elasticsearch_config_dir):
     os.makedirs(elasticsearch_config_dir)
 elasticsearch_env = os.path.join(config_dir, "elasticsearch", "env")
 
+kibana_config_dir = os.path.join(config_dir, "kibana")
+
 #Render Configure File
 render(os.path.join(templates_dir, "apiserver", "app.conf"),
         apiserver_conf,
@@ -280,5 +282,9 @@ render(os.path.join(templates_dir, "grafana", "kubernetes.json"),
 render(os.path.join(templates_dir, "elasticsearch", "env"),
         elasticsearch_env,
         es_java_opts="-Xms%sm -Xmx%sm"%(elaseticsearch_memory_in_megabytes,elaseticsearch_memory_in_megabytes))
+
+if os.path.exists(kibana_config_dir):
+    shutil.rmtree(kibana_config_dir)
+shutil.copytree(os.path.join(templates_dir, "kibana"), kibana_config_dir)
 
 print("The configuration files are ready, please use docker-compose to start the service.")

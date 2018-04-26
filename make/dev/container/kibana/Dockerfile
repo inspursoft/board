@@ -4,7 +4,6 @@ ENV SERVER_BASEPATH=/kibana \
     ELASTICSEARCH_URL=http://elasticsearch:9200
 
 USER root
-COPY make/dev/container/kibana/config /config
 COPY make/dev/container/kibana/docker-entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 

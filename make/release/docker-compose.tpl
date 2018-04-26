@@ -201,6 +201,8 @@ services:
       - board
     depends_on:
       - log
+    volumes:
+      - ../config/kibana:/config
     logging:
       driver: "syslog"
       options:
