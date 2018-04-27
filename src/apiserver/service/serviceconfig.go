@@ -14,7 +14,7 @@ import (
 	modelK8s "k8s.io/client-go/pkg/api/v1"
 	modelK8sExt "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	//"k8s.io/client-go/pkg/api/resource"
-	//"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/client-go/pkg/api/v1"
 	//"k8s.io/client-go/rest"
 	//apiCli "k8s.io/client-go/tools/clientcmd/api"
 )
@@ -308,4 +308,147 @@ func GetScaleStatus(serviceInfo *model.ServiceStatus) (model.ScaleStatus, error)
 	scaleStatus.DesiredInstance = deployment.Status.Replicas
 	scaleStatus.AvailableInstance = deployment.Status.AvailableReplicas
 	return scaleStatus, nil
+}
+
+func StopServiceK8s(s *model.ServiceStatus) error {
+	logs.Info("stop service in cluster %s", s.Name)
+	// Stop deployment
+	cli, err := K8sCliFactory("", kubeMasterURL(), "v1beta1")
+	apiSet, err := kubernetes.NewForConfig(cli)
+	if err != nil {
+		return err
+	}
+	d := apiSet.Deployments(s.ProjectName)
+	deployData, err := d.Get(s.Name)
+	if err != nil {
+		logs.Error("Failed to get deployment in cluster")
+		return err
+	}
+
+	var newreplicas int32
+	deployData.Spec.Replicas = &newreplicas
+	res, err := d.Update(deployData)
+	if err != nil {
+		logs.Error(res, err)
+		return err
+	}
+	time.Sleep(2)
+	err = d.Delete(s.Name, nil)
+	if err != nil {
+		logs.Error("Failed to delele deployment", s.Name, err)
+		return err
+	}
+	logs.Info("Deleted deployment %s", s.Name)
+
+	r := apiSet.ReplicaSets(s.ProjectName)
+	var listoption v1.ListOptions
+	listoption.LabelSelector = "app=" + s.Name
+	rsList, err := r.List(listoption)
+	if err != nil {
+		logs.Error("failed to get rs list")
+		return err
+	}
+
+	for _, rsi := range rsList.Items {
+		err = r.Delete(rsi.Name, nil)
+		if err != nil {
+			logs.Error("failed to delete rs %s", rsi.Name)
+			return err
+		}
+		logs.Debug("delete RS %s", rsi.Name)
+	}
+
+	//Stop service in cluster
+	cli, err = K8sCliFactory("", kubeMasterURL(), "v1")
+	apiSet, err = kubernetes.NewForConfig(cli)
+	if err != nil {
+		return err
+	}
+	servcieInt := apiSet.Services(s.ProjectName)
+	//serviceData, err := servcieInt.Get(s.Name)
+	//if err != nil {
+	//	logs.Error("Failed to get service in cluster %s", s.Name)
+	//	return err
+	//}
+	err = servcieInt.Delete(s.Name, nil)
+	if err != nil {
+		logs.Error("Failed to delele service in cluster.", s.Name, err)
+		return err
+	}
+
+	return nil
+}
+
+func CleanDeploymentK8s(s *model.ServiceStatus) error {
+	logs.Info("clean in cluster %s", s.Name)
+	// Stop deployment
+	cli, err := K8sCliFactory("", kubeMasterURL(), "v1beta1")
+	apiSet, err := kubernetes.NewForConfig(cli)
+	if err != nil {
+		return err
+	}
+	d := apiSet.Deployments(s.ProjectName)
+	deployData, err := d.Get(s.Name)
+	if err != nil {
+		logs.Debug("Do not need to clean deployment")
+		return nil
+	}
+
+	var newreplicas int32
+	deployData.Spec.Replicas = &newreplicas
+	res, err := d.Update(deployData)
+	if err != nil {
+		logs.Error(res, err)
+		return err
+	}
+	time.Sleep(2)
+	err = d.Delete(s.Name, nil)
+	if err != nil {
+		logs.Error("Failed to delele deployment", s.Name, err)
+		return err
+	}
+	logs.Info("Deleted deployment %s", s.Name)
+
+	r := apiSet.ReplicaSets(s.ProjectName)
+	var listoption v1.ListOptions
+	listoption.LabelSelector = "app=" + s.Name
+	rsList, err := r.List(listoption)
+	if err != nil {
+		logs.Error("failed to get rs list")
+		return err
+	}
+
+	for _, rsi := range rsList.Items {
+		err = r.Delete(rsi.Name, nil)
+		if err != nil {
+			logs.Error("failed to delete rs %s", rsi.Name)
+			return err
+		}
+		logs.Debug("delete RS %s", rsi.Name)
+	}
+
+	return nil
+}
+
+func CleanServiceK8s(s *model.ServiceStatus) error {
+	logs.Info("clean Service in cluster %s", s.Name)
+	//Stop service in cluster
+	cli, err := K8sCliFactory("", kubeMasterURL(), "v1")
+	apiSet, err := kubernetes.NewForConfig(cli)
+	if err != nil {
+		return err
+	}
+	servcieInt := apiSet.Services(s.ProjectName)
+	_, err = servcieInt.Get(s.Name)
+	if err != nil {
+		logs.Debug("Do not need to clean service %s", s.Name)
+		return nil
+	}
+	err = servcieInt.Delete(s.Name, nil)
+	if err != nil {
+		logs.Error("Failed to delele service in cluster.", s.Name, err)
+		return err
+	}
+
+	return nil
 }
