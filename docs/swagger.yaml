@@ -2302,6 +2302,32 @@ paths:
           description: Node group already exists.
         500:
           description: Internal errors.
+    delete:
+      summary: Remove this nodegroup.
+      description: |
+        This endpoint is aimed to remove this nodegroup.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: groupname
+          in: query
+          description: the group name to be removed
+          required: true
+          type: string       
+      tags:
+        - Products
+      responses:
+        200:
+          description: remove this nodegroup successfully.
+        400:
+          description: Invalid running status request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Unexpected internal errors. 
   /v1/nodegroup/existing:
     get:
       summary: Return result whether nodegruop existing.
