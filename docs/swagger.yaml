@@ -815,7 +815,7 @@ paths:
           description: User need to log in first.
         500:
           description: Internal errors.
-  /v1/services/rollingupdate:
+  /v1/services/rollingupdate/image:
     get:
       summary: Return the results the rolling update service config.
       description: 
@@ -909,6 +909,72 @@ paths:
             type: array
             items:
               $ref: '#/definitions/ImageList'
+      tags:
+        - Products
+      responses:
+        200:
+          description: Update service successfully.
+        401:
+          description: User need to log in first.
+        409:
+          description: The updated image list conflict.
+        500:
+          description: Internal errors.
+  /v1/services/rollingupdate/nodegroup:
+    get:
+      summary: Return the results the rolling update service config.
+      description: 
+        This endpoint returns the results the rolling update service config.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name 
+          in: query
+          description: Project name for filtering results.
+          required: false
+          type: string
+        - name: service_name 
+          in: query
+          description: Service name for filtering results.
+          required: false
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched services.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+    patch:
+      summary: Rolling update the nodegroup of the service.
+      description: 
+        This endpoint is to roll update the nodegruop of the service.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name 
+          in: query
+          description: Project name.
+          required: true
+          type: string
+        - name: service_name 
+          in: query
+          description: Service name.
+          required: true
+          type: string
+        - name: node_selector 
+          in: query
+          description: nodegroup name.
+          required: true
+          type: string
       tags:
         - Products
       responses:
