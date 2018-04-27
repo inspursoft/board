@@ -309,6 +309,20 @@ func RemoveNodeFromGroup(nodeName string, groupName string) error {
 }
 
 func RemoveNodeGroup(groupName string) error {
+	// Check nodegroup in DB
+	ngQuery, err := GetNodeGroup(model.NodeGroup{GroupName: groupName}, "name")
+	if err != nil {
+		logs.Error("Failed to get group %s in DB", groupName)
+		return err
+	}
+	if ngQuery == nil {
+		logs.Info("%s not in system DB", groupName)
+		return nil
+	}
+	if ngQuery.Deleted == 1 {
+		logs.Info("%s deleted in system DB", groupName)
+		return nil
+	}
 
 	//TODO：Need to change it, do not traverse all nodes in huge cluster
 	nodeList := GetNodeList()
@@ -331,11 +345,9 @@ func RemoveNodeGroup(groupName string) error {
 		}
 	}
 	// Remove it in group DB
-	var nodeGroup model.NodeGroup
-	nodeGroup.GroupName = groupName
-	_, err := dao.DeleteNodeGroup(nodeGroup)
+	_, err = dao.DeleteNodeGroup(*ngQuery)
 	if err != nil {
-		logs.Error("Failed to delete %s in DB", nodeGroup.GroupName)
+		logs.Error("Failed to delete %s in DB", ngQuery.GroupName)
 		return err
 	}
 	return nil
