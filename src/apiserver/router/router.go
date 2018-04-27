@@ -106,7 +106,7 @@ func init() {
 				"get:GetGroupsOfNodeAction;post:AddNodeToGroupAction;delete:RemoveNodeFromGroupAction"),
 			beego.NSRouter("/nodegroup",
 				&controller.NodeGroupController{},
-				"get:GetNodeGroupsAction;post:AddNodeGroupAction"),
+				"get:GetNodeGroupsAction;post:AddNodeGroupAction;delete:DeleteNodeGroupAction"),
 			beego.NSRouter("/nodegroup/existing",
 				&controller.NodeGroupController{},
 				"get:CheckNodeGroupNameExistingAction"),

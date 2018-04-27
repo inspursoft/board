@@ -307,3 +307,36 @@ func RemoveNodeFromGroup(nodeName string, groupName string) error {
 	logs.Debug(newNode.GetLabels())
 	return nil
 }
+
+func RemoveNodeGroup(groupName string) error {
+
+	//TODO：Need to change it, do not traverse all nodes in huge cluster
+	nodeList := GetNodeList()
+	for _, nodeinfo := range nodeList {
+		groupList, err := GetGroupOfNode(nodeinfo.NodeName)
+		if err != nil {
+			logs.Error("Failed to check node %s group", nodeinfo.NodeName)
+			return err
+		}
+		for _, g := range groupList {
+			if groupName == g {
+				// Remove this groupname from node
+				err = RemoveNodeFromGroup(nodeinfo.NodeName, groupName)
+				if err != nil {
+					logs.Error("Failed to remove %s from node %s", g, nodeinfo.NodeName)
+					return err
+				}
+				break
+			}
+		}
+	}
+	// Remove it in group DB
+	var nodeGroup model.NodeGroup
+	nodeGroup.GroupName = groupName
+	_, err := dao.DeleteNodeGroup(nodeGroup)
+	if err != nil {
+		logs.Error("Failed to delete %s in DB", nodeGroup.GroupName)
+		return err
+	}
+	return nil
+}
