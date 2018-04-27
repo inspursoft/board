@@ -90,3 +90,31 @@ func (n *NodeGroupController) CheckNodeGroupNameExistingAction() {
 
 	logs.Info("Group name of %s is available", nodeGroupName)
 }
+
+func (n *NodeGroupController) DeleteNodeGroupAction() {
+	groupName := n.GetString("groupname")
+	logs.Debug("Removing nodegroup %s", groupName)
+
+	if groupName == "" {
+		n.customAbort(http.StatusBadRequest, "NodeGroup Name should not null")
+		return
+	}
+
+	nodeGroupExists, err := service.NodeGroupExists(groupName)
+	if err != nil {
+		n.internalError(err)
+		return
+	}
+	if !nodeGroupExists {
+		n.customAbort(http.StatusBadRequest, "Node Group name not exists.")
+		return
+	}
+
+	err = service.RemoveNodeGroup(groupName)
+	if err != nil {
+		logs.Debug("Failed to remove nodegroup %s", groupName)
+		n.internalError(err)
+		return
+	}
+	logs.Info("Removed nodegroup %s", groupName)
+}
