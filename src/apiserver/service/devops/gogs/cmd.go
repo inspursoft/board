@@ -350,7 +350,7 @@ func (g *gogsHandler) CreateIssueComment(ownerName string, baseRepoName string, 
 	return nil
 }
 
-func (g *gogsHandler) CreateHook(ownerName string, baseRepoName string) error {
+func (g *gogsHandler) CreateHook(ownerName string, repoName string) error {
 
 	config := make(map[string]string)
 	config["url"] = fmt.Sprintf("%s/generic-webhook-trigger/invoke", jenkinsBaseURL())
@@ -366,7 +366,7 @@ func (g *gogsHandler) CreateHook(ownerName string, baseRepoName string) error {
 	if err != nil {
 		return err
 	}
-	resp, err := utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/api/v1/repos/%s/%s/hooks", gogitsBaseURL(), ownerName, baseRepoName), func(req *http.Request) error {
+	resp, err := utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/api/v1/repos/%s/%s/hooks", gogitsBaseURL(), ownerName, repoName), func(req *http.Request) error {
 		req.Header = http.Header{
 			"content-type":  []string{"application/json"},
 			"Authorization": []string{"token " + g.token},

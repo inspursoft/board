@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/apiserver/service/devops/jenkins"
 	"git/inspursoft/board/src/common/model"
 	"io/ioutil"
 	"net/http"
@@ -353,8 +354,11 @@ func (p *ImageController) BuildImageAction() {
 	pushobject.Items = append(pushobject.Items, "META.cfg")
 
 	if currentToken, ok := memoryCache.Get(p.currentUser.Username).(string); ok {
-		service.CreateFile("key.txt", currentToken, repoPath)
-		pushobject.Items = append(pushobject.Items, "key.txt")
+		err = jenkins.NewJenkinsHandler().TriggerHook(reqImageConfig.ProjectName, currentToken)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
 	}
 	// Add Dockerfile
 	pushobject.Items = append(pushobject.Items, filepath.Join(pushobject.Value,

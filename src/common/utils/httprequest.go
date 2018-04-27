@@ -8,8 +8,12 @@ import (
 	"github.com/astaxie/beego/logs"
 )
 
+func EncodeString(content string) string {
+	return base64.StdEncoding.EncodeToString([]byte(content))
+}
+
 func BasicAuthEncode(username, password string) string {
-	return base64.StdEncoding.EncodeToString([]byte(username + ":" + password))
+	return EncodeString(username + ":" + password)
 }
 
 func RequestHandle(method string, urlStr string, callback func(req *http.Request) error, data io.Reader) (*http.Response, error) {

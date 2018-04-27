@@ -66,16 +66,10 @@ func CreateRepoAndJob(userID int64, projectName string) error {
 	}
 
 	jenkinsHandler := jenkins.NewJenkinsHandler()
-	err = jenkinsHandler.CreateJob(projectName)
+	err = jenkinsHandler.CreateJobWithParameter(projectName)
 	if err != nil {
-		logs.Error("Failed to create default Jenkins' job: %+v", err)
+		logs.Error("Failed to create Jenkins' job with project name: %s, error: %+v", projectName, err)
 		return err
-	}
-	for _, action := range []string{"disable", "enable"} {
-		err = jenkinsHandler.ToggleJob(projectName, action)
-		if err != nil {
-			logs.Error("Failed to toggle default Jenkins' job with action %s: %+v", action, err)
-		}
 	}
 	return nil
 }
