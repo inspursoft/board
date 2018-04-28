@@ -154,3 +154,9 @@ clr-icon.plus-icon.disabled:hover {
   cursor: not-allowed;
 }
 
+div.collaborative-container {
+  display: flex;
+  height: 30px;
+  margin-top: 10px;
+}
+

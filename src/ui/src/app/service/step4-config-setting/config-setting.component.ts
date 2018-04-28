@@ -24,17 +24,20 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
   showAdvanced: boolean = true;
   showExternal: boolean = false;
   showCollaborative: boolean = false;
+  showNodeSelector: boolean = false;
   isInputComponentsValid = false;
   uiPreData: UIServiceStep3 = new UIServiceStep3();
   collaborativeServiceList: Array<string>;
   /*Todo:Only for collaborative plus action.It must be delete after update UIServiceStep4*/
   collaborativeList:Array<Object>;
+  nodeSelectorList:Array<string>;
 
   constructor(protected injector: Injector, private changeDetectorRef: ChangeDetectorRef) {
     super(injector);
     this.dropDownListNum = Array<number>();
     this.collaborativeServiceList = Array<string>();
     this.collaborativeList = Array<Object>();
+    this.nodeSelectorList = Array<string>()
   }
 
   ngAfterContentChecked() {
@@ -56,6 +59,9 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
       this.uiBaseData = res;
       this.changeDetectorRef.detectChanges();
     });
+    this.k8sService.getNodeSelectors().subscribe((res:Array<string>)=>{
+      this.nodeSelectorList = res;
+    });
     for (let i = 1; i <= 100; i++) {
       this.dropDownListNum.push(i)
     }
@@ -75,6 +81,11 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
 
   get isCanAddContainerInfo(){
     return this.uiPreData.containerList.find(value => value.isHavePort());
+  }
+
+  get nodeSelectorDefaultText(){
+    console.log(this.uiData.nodeSelector);
+    return this.uiData.nodeSelector == "" ? 'SERVICE.STEP_4_NODE_SELECTOR_COMMENT': this.uiData.nodeSelector;
   }
 
   checkServiceName(control: HTMLInputElement): Promise<ValidationErrors | null> {

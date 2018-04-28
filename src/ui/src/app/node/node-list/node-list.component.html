@@ -1,0 +1,34 @@
+<clr-datagrid [clrDgLoading]="isInLoadWip">
+  <clr-dg-column>{{ 'NODE.NODE_NAME' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'NODE.NODE_IP' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'NODE.NODE_STATUS' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'NODE.OPERATION' | translate }}</clr-dg-column>
+  <clr-dg-row *ngFor="let node of nodeList">
+    <clr-dg-cell>{{node.node_name}}</clr-dg-cell>
+    <clr-dg-cell>{{node.node_ip}}</clr-dg-cell>
+    <clr-dg-cell>{{getStatus(node.status) | translate }}</clr-dg-cell>
+    <clr-dg-cell>
+      <a *ngIf="node.status === 2" href="javascript:void(0)" (click)="confirmToToggleNodeStatus(node)">
+        <clr-icon shape="play"></clr-icon>
+      </a>
+      <a *ngIf="node.status === 1" href="javascript:void(0)" (click)="confirmToToggleNodeStatus(node)">
+        <clr-icon shape="pause"></clr-icon>
+      </a>
+      <a *ngIf="node.status === 3">
+        <clr-icon shape="no-access" class="is-solid"></clr-icon>
+      </a>
+      <a href="javascript:void(0)" (click)="openNodeDetail(node.node_name)">
+        <clr-icon shape="info-standard"></clr-icon>
+      </a>
+      <a href="javascript:void(0)">
+        <clr-icon shape="wrench"
+                  class="action"
+                  (click)="openNodeControl(node)">
+        </clr-icon>
+      </a>
+    </clr-dg-cell>
+  </clr-dg-row>
+  <clr-dg-footer>{{nodeList ? nodeList.length : 0}} {{ 'DATAGRID.ITEMS' | translate }}</clr-dg-footer>
+</clr-datagrid>
+<node-detail></node-detail>
+<node-control></node-control>

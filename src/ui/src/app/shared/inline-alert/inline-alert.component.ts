@@ -30,7 +30,7 @@ export class InlineAlertComponent implements OnDestroy {
     let hnd: any;
     this._subscription = this.messageService
       .inlineAlertAnnounced$
-      .switchMap(m=>Observable.of(m))
+      // .switchMap(m=>Observable.of(m))
       .subscribe(m=>{
         let inlineMessage = <Message>m;
         if(inlineMessage) {
@@ -38,6 +38,7 @@ export class InlineAlertComponent implements OnDestroy {
           hnd = setTimeout(()=>{this.inlineAlertClosed = true; clearTimeout(hnd);}, DISMISS_INLINE_ALERT_INTERVAL); 
           this.translateService.get(inlineMessage.message, inlineMessage.params || [])
             .subscribe(res=>{
+              console.log("test switchMap");
               this.inlineAnnouncedMessage = res;
               if(inlineMessage.type) {
                 this.inlineAlertType = 'alert-danger';
