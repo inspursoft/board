@@ -2,11 +2,11 @@ version: '2'
 services:
   uibuilder:
     build:
-      context: ../../
+      context: ../
       dockerfile: make/dev/container/uibuilder/Dockerfile
-    image: dev_uibuilder:dev
+    image: uibuilder
     volumes:
-      - ../../src/ui:/board_src
+      - ../src/ui:/board_src
     environment:
       MODE: test
     entrypoint:
