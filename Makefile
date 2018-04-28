@@ -125,7 +125,7 @@ version:
 	@echo $(VERSIONTAG) > $(VERSIONFILE)
 
 compile_ui:
-	$(DOCKERCOMPOSECMD) -f $(MAKEPATH)/dev/$(DOCKERCOMPOSEUIFILENAME) up
+	$(DOCKERCOMPOSECMD) -f $(MAKEWORKPATH)/$(DOCKERCOMPOSEUIFILENAME) up
 
 $(COMPILE_LIST): %_compile: # %_fmt  %_vet %_golint
 	$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOIMGBASEPATH) \

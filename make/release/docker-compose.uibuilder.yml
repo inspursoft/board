@@ -4,10 +4,10 @@ services:
     build:
       context: ../../
       dockerfile: make/dev/container/uibuilder/Dockerfile
-    image: dev_uibuilder:dev
+    image: uibuilder
     volumes:
       - ../../src/ui:/board_src
     environment:
-      MODE: test
+       MODE: prod
     entrypoint:
       - /entrypoint.sh
