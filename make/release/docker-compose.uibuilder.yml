@@ -3,7 +3,7 @@ services:
   uibuilder:
     build:
       context: ../../
-      dockerfile: make/release/container/uibuilder/Dockerfile
+      dockerfile: make/dev/container/uibuilder/Dockerfile
     image: uibuilder
     volumes:
       - ../../src/ui:/board_src
