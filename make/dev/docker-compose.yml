@@ -7,7 +7,7 @@ services:
     image: dev_log:dev
     restart: always
     volumes:
-      - /Users/liyanq/docker_volumes/log:/var/log/docker/
+      - /var/log/board/:/var/log/docker/
     networks:
       - board
     ports:
@@ -19,7 +19,7 @@ services:
     image: dev_db:dev
     restart: always
     volumes:
-      - /Users/liyanq/docker_volumes/database:/var/lib/mysql
+      - /data/board/database:/var/lib/mysql
     env_file:
       - ../config/db/env
     networks:
@@ -43,7 +43,7 @@ services:
       - ../config/gogits/env
     volumes:
       - ../config/gogits/conf/app.ini:/tmp/conf/app.ini
-      - /Users/liyanq/docker_volumes/gogits:/data:rw
+      - /data/board/gogits:/data:rw
     ports:
       - "10022:22"
       - "10080:3000"
@@ -65,7 +65,7 @@ services:
     networks:
       - board
     volumes:
-      - /Users/liyanq/docker_volumes/jenkins_home:/var/jenkins_home
+      - /data/board/jenkins_home:/var/jenkins_home
       - ../config/ssh_keys:/root/.ssh
       - /var/run/docker.sock:/var/run/docker.sock
       - /usr/local/bin/docker:/usr/bin/docker
@@ -91,8 +91,8 @@ services:
       - ../config/apiserver/app.conf:/go/bin/app.conf:z
       - ../config/apiserver/parser.py:/go/bin/parser.py:z
       - ../../tools/swagger/vendors/swagger-ui-2.1.4/dist:/go/bin/swagger:z
-      - /Users/liyanq/docker_volumes/repos:/repos:rw
-      - /Users/liyanq/docker_volumes/keys:/keys:rw
+      - /data/board/repos:/repos:rw
+      - /data/board/keys:/keys:rw
     env_file:
       - ../config/apiserver/env
     networks:
@@ -175,8 +175,8 @@ services:
     image: dev_grafana:dev
     restart: always
     volumes:
-      - /Users/liyanq/docker_volumes/grafana/lib:/var/lib/grafana
-      - /Users/liyanq/docker_volumes/grafana/log:/var/log/grafana
+      - /data/board/grafana/lib:/var/lib/grafana
+      - /data/board/grafana/log:/var/log/grafana
       - ../config/grafana:/etc/grafana/config
     networks:
       - board
@@ -202,7 +202,7 @@ services:
     depends_on:
       - log
     volumes:
-      - /Users/liyanq/docker_volumes/graphite/storage/whisper:/opt/graphite/storage/whisper
+      - /data/board/graphite/storage/whisper:/opt/graphite/storage/whisper
     logging:
       driver: "syslog"
       options:
@@ -227,7 +227,7 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - /Users/liyanq/docker_volumes/elasticsearch:/usr/share/elasticsearch/data
+      - /data/board/elasticsearch:/usr/share/elasticsearch/data
     logging:
       driver: "syslog"
       options:
