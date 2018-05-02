@@ -16,8 +16,6 @@ import (
 	"time"
 
 	"github.com/astaxie/beego/logs"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/pkg/api/v1"
 )
 
 const (
@@ -340,80 +338,6 @@ func (p *ServiceController) CreateServiceConfigAction() {
 	p.ServeJSON()
 }
 
-func cleanDeploymentK8s(s *model.ServiceStatus) error {
-	logs.Info("clean in cluster %s", s.Name)
-	// Stop deployment
-	cli, err := service.K8sCliFactory("", kubeMasterURL(), "v1beta1")
-	apiSet, err := kubernetes.NewForConfig(cli)
-	if err != nil {
-		return err
-	}
-	d := apiSet.Deployments(s.ProjectName)
-	deployData, err := d.Get(s.Name)
-	if err != nil {
-		logs.Debug("Do not need to clean deployment")
-		return nil
-	}
-
-	var newreplicas int32
-	deployData.Spec.Replicas = &newreplicas
-	res, err := d.Update(deployData)
-	if err != nil {
-		logs.Error(res, err)
-		return err
-	}
-	time.Sleep(2)
-	err = d.Delete(s.Name, nil)
-	if err != nil {
-		logs.Error("Failed to delele deployment", s.Name, err)
-		return err
-	}
-	logs.Info("Deleted deployment %s", s.Name)
-
-	r := apiSet.ReplicaSets(s.ProjectName)
-	var listoption v1.ListOptions
-	listoption.LabelSelector = "app=" + s.Name
-	rsList, err := r.List(listoption)
-	if err != nil {
-		logs.Error("failed to get rs list")
-		return err
-	}
-
-	for _, rsi := range rsList.Items {
-		err = r.Delete(rsi.Name, nil)
-		if err != nil {
-			logs.Error("failed to delete rs %s", rsi.Name)
-			return err
-		}
-		logs.Debug("delete RS %s", rsi.Name)
-	}
-
-	return nil
-}
-
-func cleanServiceK8s(s *model.ServiceStatus) error {
-	logs.Info("clean Service in cluster %s", s.Name)
-	//Stop service in cluster
-	cli, err := service.K8sCliFactory("", kubeMasterURL(), "v1")
-	apiSet, err := kubernetes.NewForConfig(cli)
-	if err != nil {
-		return err
-	}
-	servcieInt := apiSet.Services(s.ProjectName)
-	_, err = servcieInt.Get(s.Name)
-	if err != nil {
-		logs.Debug("Do not need to clean service %s", s.Name)
-		return nil
-	}
-	err = servcieInt.Delete(s.Name, nil)
-	if err != nil {
-		logs.Error("Failed to delele service in cluster.", s.Name, err)
-		return err
-	}
-
-	return nil
-}
-
 func (p *ServiceController) DeleteServiceAction() {
 	serviceID, err := strconv.ParseInt(p.Ctx.Input.Param(":id"), 10, 64)
 	if err != nil {
@@ -449,7 +373,7 @@ func (p *ServiceController) DeleteServiceAction() {
 	switch s.Status {
 	case running:
 		//err = stopService(s)
-		err = stopServiceK8s(s)
+		err = service.StopServiceK8s(s)
 		if err != nil {
 			p.internalError(err)
 			return
@@ -462,13 +386,13 @@ func (p *ServiceController) DeleteServiceAction() {
 				fmt.Sprintf("Invalid request %d in starting status", serviceID))
 			return
 		}
-		err = cleanDeploymentK8s(s)
+		err = service.CleanDeploymentK8s(s)
 		if err != nil {
 			logs.Error("Failed to clean deployment %s", s.Name)
 			p.internalError(err)
 			return
 		}
-		err = cleanServiceK8s(s)
+		err = service.CleanServiceK8s(s)
 		if err != nil {
 			logs.Error("Failed to clean service %s", s.Name)
 			p.internalError(err)
@@ -558,7 +482,7 @@ func (p *ServiceController) ToggleServiceAction() {
 	if reqServiceToggle.Toggle == 0 {
 		// stop service
 		//err = stopService(s)
-		err = stopServiceK8s(s)
+		err = service.StopServiceK8s(s)
 		if err != nil {
 			p.internalError(err)
 			return
@@ -663,75 +587,6 @@ func stopService(s *model.ServiceStatus) error {
 	defer resp.Body.Close()
 
 	logs.Info("Stop deployment successfully, id: %d, name: %s, resp: %+v", s.ID, s.Name, resp)
-	return nil
-}
-
-func stopServiceK8s(s *model.ServiceStatus) error {
-	logs.Info("stop service in cluster %s", s.Name)
-	// Stop deployment
-	cli, err := service.K8sCliFactory("", kubeMasterURL(), "v1beta1")
-	apiSet, err := kubernetes.NewForConfig(cli)
-	if err != nil {
-		return err
-	}
-	d := apiSet.Deployments(s.ProjectName)
-	deployData, err := d.Get(s.Name)
-	if err != nil {
-		logs.Error("Failed to get deployment in cluster")
-		return err
-	}
-
-	var newreplicas int32
-	deployData.Spec.Replicas = &newreplicas
-	res, err := d.Update(deployData)
-	if err != nil {
-		logs.Error(res, err)
-		return err
-	}
-	time.Sleep(2)
-	err = d.Delete(s.Name, nil)
-	if err != nil {
-		logs.Error("Failed to delele deployment", s.Name, err)
-		return err
-	}
-	logs.Info("Deleted deployment %s", s.Name)
-
-	r := apiSet.ReplicaSets(s.ProjectName)
-	var listoption v1.ListOptions
-	listoption.LabelSelector = "app=" + s.Name
-	rsList, err := r.List(listoption)
-	if err != nil {
-		logs.Error("failed to get rs list")
-		return err
-	}
-
-	for _, rsi := range rsList.Items {
-		err = r.Delete(rsi.Name, nil)
-		if err != nil {
-			logs.Error("failed to delete rs %s", rsi.Name)
-			return err
-		}
-		logs.Debug("delete RS %s", rsi.Name)
-	}
-
-	//Stop service in cluster
-	cli, err = service.K8sCliFactory("", kubeMasterURL(), "v1")
-	apiSet, err = kubernetes.NewForConfig(cli)
-	if err != nil {
-		return err
-	}
-	servcieInt := apiSet.Services(s.ProjectName)
-	//serviceData, err := servcieInt.Get(s.Name)
-	//if err != nil {
-	//	logs.Error("Failed to get service in cluster %s", s.Name)
-	//	return err
-	//}
-	err = servcieInt.Delete(s.Name, nil)
-	if err != nil {
-		logs.Error("Failed to delele service in cluster.", s.Name, err)
-		return err
-	}
-
 	return nil
 }
 
