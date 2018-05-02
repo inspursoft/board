@@ -15,6 +15,7 @@ import (
 )
 
 var gogitsBaseURL = utils.GetConfig("GOGITS_BASE_URL")
+var jenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
 var maxRetryCount = 30
 
 type createAccessTokenOption struct {
@@ -49,6 +50,13 @@ type createIssueOption struct {
 
 type createIssueCommentOption struct {
 	Body string `json:"body" binding:"Required"`
+}
+
+type createHookOption struct {
+	Type   string            `json:"type" binding:"Required"`
+	Config map[string]string `json:"config" binding:"Required"`
+	Events []string          `json:"events"`
+	Active bool              `json:"active"`
 }
 
 type AccessToken struct {
@@ -338,6 +346,43 @@ func (g *gogsHandler) CreateIssueComment(ownerName string, baseRepoName string, 
 		data, _ := ioutil.ReadAll(resp.Body)
 		logs.Debug(string(data))
 		logs.Info("Requested Gogits comment issue with response status code: %d", resp.StatusCode)
+	}
+	return nil
+}
+
+func (g *gogsHandler) CreateHook(ownerName string, repoName string) error {
+
+	config := make(map[string]string)
+	config["url"] = fmt.Sprintf("%s/generic-webhook-trigger/invoke", jenkinsBaseURL())
+	config["content_type"] = "json"
+
+	opt := createHookOption{
+		Type:   "gogs",
+		Config: config,
+		Events: []string{"push"},
+		Active: true,
+	}
+	body, err := json.Marshal(&opt)
+	if err != nil {
+		return err
+	}
+	resp, err := utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/api/v1/repos/%s/%s/hooks", gogitsBaseURL(), ownerName, repoName), func(req *http.Request) error {
+		req.Header = http.Header{
+			"content-type":  []string{"application/json"},
+			"Authorization": []string{"token " + g.token},
+		}
+		return nil
+	}, bytes.NewReader(body))
+	if err != nil {
+		return err
+	}
+	if resp != nil {
+		if resp.StatusCode >= http.StatusInternalServerError {
+			return fmt.Errorf("Internal error: %+v", err)
+		}
+		data, _ := ioutil.ReadAll(resp.Body)
+		logs.Debug(string(data))
+		logs.Info("Requested Gogits create hook with response status code: %d", resp.StatusCode)
 	}
 	return nil
 }

@@ -40,10 +40,18 @@ func CreateRepoAndJob(userID int64, projectName string) error {
 		logs.Error("Failed to initialize default user's repo: %+v", err)
 		return err
 	}
-	err = gogs.NewGogsHandler(username, accessToken).CreateRepo(projectName)
+	gogsHandler := gogs.NewGogsHandler(username, accessToken)
+	if gogsHandler == nil {
+		return fmt.Errorf("failed to create Gogs handler")
+	}
+	err = gogsHandler.CreateRepo(projectName)
 	if err != nil {
-		logs.Error("Failed to create default project: %+v", err)
+		logs.Error("Failed to create repo: %s, error %+v", projectName, err)
 		return err
+	}
+	err = gogsHandler.CreateHook(username, projectName)
+	if err != nil {
+		logs.Error("Failed to create hook to repo: %s, error: %+v", projectName, err)
 	}
 	err = CopyFile("parser.py", filepath.Join(repoPath, "parser.py"))
 	if err != nil {
@@ -58,16 +66,10 @@ func CreateRepoAndJob(userID int64, projectName string) error {
 	}
 
 	jenkinsHandler := jenkins.NewJenkinsHandler()
-	err = jenkinsHandler.CreateJob(projectName)
+	err = jenkinsHandler.CreateJobWithParameter(projectName)
 	if err != nil {
-		logs.Error("Failed to create default Jenkins' job: %+v", err)
+		logs.Error("Failed to create Jenkins' job with project name: %s, error: %+v", projectName, err)
 		return err
-	}
-	for _, action := range []string{"disable", "enable"} {
-		err = jenkinsHandler.ToggleJob(projectName, action)
-		if err != nil {
-			logs.Error("Failed to toggle default Jenkins' job with action %s: %+v", action, err)
-		}
 	}
 	return nil
 }

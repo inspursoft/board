@@ -504,7 +504,7 @@ func (p *ImageController) ConfigCleanAction() {
 	}
 
 	//remove attachment file
-	err = os.Remove(filepath.Join(baseRepoPath(), p.currentUser.Username, attachmentFile))
+	err = os.RemoveAll(filepath.Join(baseRepoPath(), p.currentUser.Username, attachmentFile))
 	if err != nil {
 		logs.Error("Failed to remove attachment file: %+v", err)
 		p.internalError(err)

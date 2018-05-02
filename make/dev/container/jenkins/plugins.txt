@@ -50,3 +50,5 @@ docker-workflow:1.15.1
 workflow-cps-global-lib:2.9
 pipeline-model-definition:1.2.7
 workflow-aggregator:2.5
+job-dsl:1.67
+generic-webhook-trigger:1.32
