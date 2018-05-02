@@ -33,7 +33,7 @@ pipelineJob(jobName) {
           value(&quot;\$.repository.name&quot;)
           expressionType(&quot;JSONPath&quot;)
           regexpFilter(&quot;&quot;)
-          defaultValue(&quot;library&quot;)
+          defaultValue(&quot;&quot;)
         }
         genericVariable {
           key(&quot;base_repo_url&quot;)
@@ -47,7 +47,7 @@ pipelineJob(jobName) {
           value(&quot;\$.repository.owner.username&quot;)
           expressionType(&quot;JSONPath&quot;)
           regexpFilter(&quot;&quot;)
-          defaultValue(&quot;admin&quot;)
+          defaultValue(&quot;&quot;)
         }
       }
       genericRequestVariables {
