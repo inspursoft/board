@@ -50,12 +50,6 @@ pipelineJob(jobName) {
           defaultValue(&quot;&quot;)
         }
       }
-      genericRequestVariables {
-        genericRequestVariable {
-          key(&quot;access_token&quot;)
-          regexpFilter(&quot;&quot;)
-        }
-      }
       printContributedVariables(true)
       printPostContent(true)
       regexpFilterText(&quot;\$repo_name&quot;)

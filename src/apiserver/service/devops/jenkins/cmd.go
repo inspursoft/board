@@ -78,18 +78,3 @@ func (j *jenkinsHandler) ToggleJob(projectName, action string) error {
 	}
 	return nil
 }
-
-func (j *jenkinsHandler) TriggerHook(projectName, accessToken string) error {
-	resp, err := utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s/generic-webhook-trigger/invoke?repo_name=%s&access_token=%s", jenkinsBaseURL(), projectName, accessToken), nil, nil)
-	if err != nil {
-		return err
-	}
-	if resp != nil {
-		defer resp.Body.Close()
-		if resp.StatusCode >= http.StatusInternalServerError {
-			return fmt.Errorf("Internal error: %+v", err)
-		}
-		logs.Info("Requested Jenkins trigger hook with response status code: %d", resp.StatusCode)
-	}
-	return nil
-}
