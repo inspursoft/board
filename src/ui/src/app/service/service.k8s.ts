@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
-import { HttpClient, HttpParams, HttpResponse } from "@angular/common/http";
+import { HttpClient, HttpResponse } from "@angular/common/http";
 import { Project } from "../project/project";
 import { BuildImageDockerfileData, Image, ImageDetail } from "../image/image";
 import { ImageIndex, ServerServiceStep, ServiceStepPhase, UiServiceFactory, UIServiceStepBase } from "./service-step.component";
@@ -51,7 +51,8 @@ export class K8sService {
         project_id: config.project_id.toString(),
         service_name: config.service_name,
         instance: config.instance.toString(),
-        service_public:config.service_public.toString()
+        service_public:config.service_public.toString(),
+        node_selector:config.node_selector
       }
     }).toPromise()
   }
@@ -243,5 +244,27 @@ export class K8sService {
   getServiceScaleInfo(serviceId: number): Observable<Object> {
     return this.http.get(`/api/v1/services/${serviceId}/scale`, {observe: "response"})
       .map((res: HttpResponse<Object>) => res.body)
+  }
+
+  getNodeSelectors(): Observable<Array<string>> {
+    let obsNodeList = this.http
+      .get(`/api/v1/nodes`, {observe: "response"})
+      .map((res: HttpResponse<Array<Object>>) => res.body)
+      .map((res: Array<Object>) => {
+        let r = Array<string>();
+        res.forEach(value => r.push(String(value["node_name"]).trim()));
+        return r;
+      });
+    let obsNodeGroupList = this.http
+      .get(`/api/v1/nodegroup`, {observe: "response"})
+      .map((res: HttpResponse<Array<Object>>) => res.body)
+      .map((res: Array<Object>) => {
+        let r = Array<string>();
+        res.forEach(value => r.push(String(value["nodegroup_name"]).trim()));
+        return r;
+      });
+    return obsNodeList
+      .zip(obsNodeGroupList)
+      .map(value => value[0].concat(value[1]))
   }
 }

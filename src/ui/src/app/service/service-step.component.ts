@@ -26,6 +26,7 @@ export class ServerServiceStep {
   public phase: ServiceStepPhase;
   public project_id?: number = 0;
   public service_name?: string = "";
+  public node_selector?: string = "";
   public instance?: number = 0;
   public postData?: Object;
   public service_public?: number = 0;
@@ -241,6 +242,7 @@ export class UIServiceStep3 extends UIServiceStepBase {
 export class UIServiceStep4 extends UIServiceStepBase {
   public projectName: string = "";
   public serviceName: string = "";
+  public nodeSelector: string = "";
   public instance: number = 1;
   public servicePublic: boolean;
   public externalServiceList: Array<ExternalService> = Array<ExternalService>();
@@ -252,6 +254,7 @@ export class UIServiceStep4 extends UIServiceStepBase {
     result.service_name = this.serviceName;
     result.instance = this.instance;
     result.service_public = this.servicePublic ? 1 : 0;
+    result.node_selector = this.nodeSelector;
     this.externalServiceList.forEach((value: ExternalService) => {
       postData.push(value.uiToServer());
     });
@@ -278,6 +281,9 @@ export class UIServiceStep4 extends UIServiceStepBase {
     }
     if (serverResponse && serverResponse["service_public"]) {
       step4.servicePublic = serverResponse["service_public"] == 1;
+    }
+    if (serverResponse && serverResponse["node_selector"]) {
+      step4.nodeSelector = serverResponse["node_selector"] ;
     }
     return step4;
   }

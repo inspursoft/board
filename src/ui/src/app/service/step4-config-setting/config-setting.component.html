@@ -121,7 +121,7 @@
     <span class="base-margin-left">{{"SERVICE.STEP_4_COLLABORATIVE"|translate}}:</span>
   </div>
   <div *ngIf="showCollaborative && showAdvanced">
-    <div style="display: flex;height: 30px;margin-top: 10px;" *ngFor="let obj of collaborativeList; let i = index">
+    <div class="collaborative-container" *ngFor="let obj of collaborativeList; let i = index">
       <clr-icon class="plus-icon"
                 shape="minus"
                 (click)="collaborativeList.splice(collaborativeList.indexOf(obj), 1)">
@@ -139,6 +139,21 @@
               (click)="addOneCollaborativeService()">
     </clr-icon>
   </div>
+
+  <div *ngIf="showAdvanced" class="advanced-item-container" (click)="showNodeSelector = !showNodeSelector">
+    <div class="advanced-item-icon-container"
+         [ngClass]="{'collaborative-close':showNodeSelector,'collaborative-open':!showNodeSelector}">
+      <clr-icon shape="caret up" class="advanced-item-icon"></clr-icon>
+    </div>
+    <span class="base-margin-left">{{"SERVICE.STEP_4_NODE_SELECTOR"|translate}}:</span>
+  </div>
+  <cs-dropdown *ngIf="showNodeSelector && showAdvanced"
+               style="margin-left: 190px;"
+               [dropdownList]="nodeSelectorList"
+               [dropdownWidth]="310"
+               [dropdownDefaultText]="nodeSelectorDefaultText | translate "
+               (onChange)="uiData.nodeSelector = $event">
+  </cs-dropdown>
 </div>
 <button class="btn btn-default" (click)="cancelBuildService()">
   {{"BUTTON.CANCEL" | translate}}
