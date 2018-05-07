@@ -365,11 +365,6 @@ func StopServiceK8s(s *model.ServiceStatus) error {
 		return err
 	}
 	servcieInt := apiSet.Services(s.ProjectName)
-	//serviceData, err := servcieInt.Get(s.Name)
-	//if err != nil {
-	//	logs.Error("Failed to get service in cluster %s", s.Name)
-	//	return err
-	//}
 	err = servcieInt.Delete(s.Name, nil)
 	if err != nil {
 		logs.Error("Failed to delele service in cluster.", s.Name, err)
