@@ -104,7 +104,7 @@ func (pm *ProjectMemberController) AddOrUpdateProjectMemberAction() {
 
 	projectRepoURL := fmt.Sprintf("%s/%s/%s.git", gogitsSSHURL(), user.Username, project.Name)
 	projectRepoPath := filepath.Join(baseRepoPath(), user.Username, project.Name)
-	repoHandler, err := service.InitRepo(projectRepoURL, user.Username, projectRepoPath)
+	repoHandler, err := service.InitRepo(projectRepoURL, user.Username, user.Email, projectRepoPath)
 	if err != nil {
 		logs.Error("Failed to initialize project repo: %+v", err)
 		pm.internalError(err)

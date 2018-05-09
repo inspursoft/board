@@ -75,7 +75,7 @@ func (g *GitRepoController) CreateServeRepo() {
 
 func (g *GitRepoController) InitUserRepo() {
 	g.resolveRepoServerURL()
-	_, err := service.InitRepo(g.repoServerURL, g.currentUser.Username, g.repoPath)
+	_, err := service.InitRepo(g.repoServerURL, g.currentUser.Username, g.currentUser.Email, g.repoPath)
 	if err != nil {
 		g.customAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to initialize user's repo: %+v\n", err))
 		return

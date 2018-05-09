@@ -12,6 +12,7 @@ import (
 
 var baseRepoPath = utils.GetConfig("BASE_REPO_PATH")
 var gogitsSSHURL = utils.GetConfig("GOGITS_SSH_URL")
+
 var jenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
 
 func CreateRepoAndJob(userID int64, projectName string) error {
@@ -35,7 +36,7 @@ func CreateRepoAndJob(userID int64, projectName string) error {
 
 	repoURL := fmt.Sprintf("%s/%s/%s.git", gogitsSSHURL(), username, projectName)
 	repoPath := fmt.Sprintf("%s/%s/%s", baseRepoPath(), username, projectName)
-	_, err = InitRepo(repoURL, username, repoPath)
+	_, err = InitRepo(repoURL, username, email, repoPath)
 	if err != nil {
 		logs.Error("Failed to initialize default user's repo: %+v", err)
 		return err
@@ -66,7 +67,7 @@ func CreateRepoAndJob(userID int64, projectName string) error {
 	}
 
 	jenkinsHandler := jenkins.NewJenkinsHandler()
-	err = jenkinsHandler.CreateJobWithParameter(projectName)
+	err = jenkinsHandler.CreateJobWithParameter(projectName, username, email)
 	if err != nil {
 		logs.Error("Failed to create Jenkins' job with project name: %s, error: %+v", projectName, err)
 		return err

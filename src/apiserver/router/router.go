@@ -200,7 +200,7 @@ func init() {
 				"post:Upload"),
 			beego.NSRouter("/files/download",
 				&controller.FileUploadController{},
-				"get:Download"),
+				"head:DownloadProbe;get:Download"),
 			beego.NSRouter("/files/list",
 				&controller.FileUploadController{},
 				"post:ListFiles"),

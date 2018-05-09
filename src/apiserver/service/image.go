@@ -4,8 +4,10 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"git/inspursoft/board/src/apiserver/service/devops/travis"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
 	"io"
 	"os"
 	"path/filepath"
@@ -164,8 +166,7 @@ func CheckDockerfileConfig(config *model.ImageConfig) error {
 		return err
 	}
 
-	relPath := filepath.Join("process-image", config.ImageName, config.ImageTag, "upload")
-	return CheckDockerfileItem(&config.ImageDockerfile, relPath)
+	return CheckDockerfileItem(&config.ImageDockerfile, "upload")
 }
 
 func BuildDockerfile(reqImageConfig model.ImageConfig, wr ...io.Writer) error {
@@ -386,4 +387,20 @@ func CreateImageTag(imageTag model.ImageTag) (int64, error) {
 		return 0, err
 	}
 	return imageTagID, nil
+}
+
+func GenerateBuildingImageTravis(repoPath, username, email, imageURI string) error {
+	boardAPIBaseURL := utils.GetConfig("BOARD_API_BASE_URL")
+	var travisCommand travis.TravisCommand
+	travisCommand.Script.Commands = []string{
+		"token=`cat key.txt`",
+		fmt.Sprintf("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | cut -d$' ' -f2`", boardAPIBaseURL()),
+		fmt.Sprintf("if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload && rm -f attachment.zip; fi", boardAPIBaseURL()),
+	}
+	travisCommand.AfterScript.Commands = []string{
+		"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
+		fmt.Sprintf("docker build -t %s .", imageURI),
+		fmt.Sprintf("docker push %s", imageURI),
+	}
+	return travisCommand.GenerateCustomTravis(repoPath)
 }

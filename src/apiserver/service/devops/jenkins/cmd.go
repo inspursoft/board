@@ -10,6 +10,7 @@ import (
 )
 
 var jenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
+var gogitsBaseURL = utils.GetConfig("GOGITS_BASE_URL")
 var maxRetryCount = 120
 var seedJobName = "base"
 
@@ -49,8 +50,9 @@ func (j *jenkinsHandler) CreateJob(projectName string) error {
 	return nil
 }
 
-func (j *jenkinsHandler) CreateJobWithParameter(projectName string) error {
-	resp, err := utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s/job/%s/buildWithParameters?F00=%s", jenkinsBaseURL(), seedJobName, projectName), nil, nil)
+func (j *jenkinsHandler) CreateJobWithParameter(projectName, username, email string) error {
+	repoURL := fmt.Sprintf("%s/%s/%s.git", gogitsBaseURL(), username, projectName)
+	resp, err := utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s/job/%s/buildWithParameters?F00=%s&&F01=%s&F02=%s&F03=%s", jenkinsBaseURL(), seedJobName, projectName, repoURL, username, email), nil, nil)
 	if err != nil {
 		return err
 	}

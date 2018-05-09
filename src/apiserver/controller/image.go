@@ -246,15 +246,15 @@ func (p *ImageController) Prepare() {
 	p.isSysAdmin = (user.SystemAdmin == 1)
 }
 
+func (p *ImageController) generateRepoPathByProjectName(projectName string) string {
+	return filepath.Join(baseRepoPath(), p.currentUser.Username, projectName)
+}
+
 func (p *ImageController) generateRepoPathByProject(project *model.Project) string {
 	if project == nil {
 		p.customAbort(http.StatusBadRequest, "Failed to generate repo path since project is nil.")
 	}
-	return filepath.Join(baseRepoPath(), p.currentUser.Username, project.Name)
-}
-
-func (p *ImageController) generateRepoPathByProjectName(projectName string) string {
-	return filepath.Join(baseRepoPath(), p.currentUser.Username, projectName)
+	return p.generateRepoPathByProjectName(project.Name)
 }
 
 func (p *ImageController) BuildImageAction() {
@@ -302,7 +302,7 @@ func (p *ImageController) BuildImageAction() {
 	}
 
 	repoPath := p.generateRepoPathByProjectName(reqImageConfig.ProjectName)
-	reqImageConfig.ImageDockerfilePath = filepath.Join(repoPath, imageProcess, reqImageConfig.ImageName, reqImageConfig.ImageTag)
+	reqImageConfig.ImageDockerfilePath = repoPath
 
 	// Check image:tag existing in registry
 	existing, err := existRegistry(reqImageConfig.ProjectName, reqImageConfig.ImageName,
@@ -329,10 +329,8 @@ func (p *ImageController) BuildImageAction() {
 	pushobject.UserID = p.currentUser.ID
 	pushobject.FileName = defaultDockerfilename
 	pushobject.JobName = imageProcess
-	pushobject.Value = filepath.Join(imageProcess, reqImageConfig.ImageName, reqImageConfig.ImageTag)
 	pushobject.ProjectName = reqImageConfig.ProjectName
-
-	pushobject.Extras = filepath.Join(reqImageConfig.ProjectName,
+	pushobject.Extras = filepath.Join(registryBaseURI(), reqImageConfig.ProjectName,
 		reqImageConfig.ImageName) + ":" + reqImageConfig.ImageTag
 	pushobject.Message = fmt.Sprintf("Build image: %s", pushobject.Extras)
 
@@ -348,17 +346,20 @@ func (p *ImageController) BuildImageAction() {
 		uploadFileNames = append(uploadFileNames, finfo.FileName)
 	}
 
-	generateMetaConfiguration(&pushobject, repoPath, uploadFileNames...)
-	// Add META.cfg
-	pushobject.Items = append(pushobject.Items, "META.cfg")
+	err = service.GenerateBuildingImageTravis(repoPath, p.currentUser.Username, p.currentUser.Email, pushobject.Extras)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	// Add .travis.yml
+	pushobject.Items = append(pushobject.Items, ".travis.yml")
 
 	if currentToken, ok := memoryCache.Get(p.currentUser.Username).(string); ok {
 		service.CreateFile("key.txt", currentToken, repoPath)
 		pushobject.Items = append(pushobject.Items, "key.txt")
 	}
 	// Add Dockerfile
-	pushobject.Items = append(pushobject.Items, filepath.Join(pushobject.Value,
-		defaultDockerfilename))
+	pushobject.Items = append(pushobject.Items, defaultDockerfilename)
 
 	ret, msg, err := InternalPushObjects(&pushobject, &(p.baseController))
 	if err != nil {
@@ -370,12 +371,8 @@ func (p *ImageController) BuildImageAction() {
 }
 
 func (p *ImageController) GetImageDockerfileAction() {
-	imageName := strings.TrimSpace(p.GetString("image_name"))
-	imageTag := strings.TrimSpace(p.GetString("image_tag"))
 	projectName := strings.TrimSpace(p.GetString("project_name"))
-
-	repoPath := p.generateRepoPathByProjectName(projectName)
-	dockerfilePath := filepath.Join(repoPath, imageProcess, imageName, imageTag)
+	dockerfilePath := p.generateRepoPathByProjectName(projectName)
 	if _, err := os.Stat(dockerfilePath); os.IsNotExist(err) {
 		p.customAbort(http.StatusNotFound, "Image path does not exist.")
 		return
@@ -432,7 +429,7 @@ func (p *ImageController) DockerfilePreviewAction() {
 	}
 
 	repoPath := p.generateRepoPathByProject(currentProject)
-	reqImageConfig.ImageDockerfilePath = filepath.Join(repoPath, imageProcess, reqImageConfig.ImageName, reqImageConfig.ImageTag)
+	reqImageConfig.ImageDockerfilePath = repoPath
 	err = service.BuildDockerfile(reqImageConfig, p.Ctx.ResponseWriter)
 	if err != nil {
 		p.internalError(err)
@@ -446,15 +443,13 @@ func cleanGitImageTag(username, imageName, imageTag, projectName string, p *Imag
 
 	pushobject.FileName = defaultDockerfilename
 	pushobject.JobName = imageProcess
-	pushobject.Value = filepath.Join(imageProcess, imageName, imageTag)
 	pushobject.ProjectName = projectName
 
 	pushobject.Extras = filepath.Join(projectName, imageName) + ":" + imageTag
 	pushobject.Message = fmt.Sprintf("Build image: %s", pushobject.Extras)
 
 	// Add Dockerfile
-	pushobject.Items = append(pushobject.Items, filepath.Join(pushobject.Value,
-		defaultDockerfilename))
+	pushobject.Items = append(pushobject.Items, defaultDockerfilename)
 
 	ret, msg, err := InternalPushObjects(&pushobject, &(p.baseController), toBeRemoved)
 	if err != nil {
@@ -511,14 +506,13 @@ func (p *ImageController) ConfigCleanAction() {
 		return
 	}
 
-	configPath := filepath.Join(repoPath, imageProcess, strings.TrimSpace(imageName), strings.TrimSpace(imageTag))
+	configPath := repoPath
 
 	// Update git repo
 	var pushobject pushObject
 
 	pushobject.FileName = defaultDockerfilename
 	pushobject.JobName = imageProcess
-	pushobject.Value = filepath.Join(imageProcess, imageName, imageTag)
 	pushobject.ProjectName = currentProject.Name
 
 	pushobject.Extras = filepath.Join(currentProject.Name, imageName) + ":" + imageTag
@@ -651,14 +645,14 @@ func (p *ImageController) DeleteImageTagAction() {
 	}
 
 	imageName := strings.TrimSpace(p.Ctx.Input.Param(":imagename"))
-	_imageTag := strings.TrimSpace(p.GetString("image_tag"))
+	imageTag := strings.TrimSpace(p.GetString("image_tag"))
 
 	projectName := imageName[:strings.Index(imageName, "/")]
 	realName := imageName[strings.Index(imageName, "/")+1:]
 
 	var client = &http.Client{}
 	URLPrefix := registryURL() + `/v2/` + imageName + `/manifests/`
-	manifestsURL := URLPrefix + _imageTag
+	manifestsURL := URLPrefix + imageTag
 	req, err := http.NewRequest("HEAD", manifestsURL, nil)
 	req.Header.Add("Accept", `application/vnd.docker.distribution.manifest.v2+json`)
 	resp, err := client.Do(req)
@@ -695,16 +689,16 @@ func (p *ImageController) DeleteImageTagAction() {
 
 	// Clean image tag path in git
 	username := p.currentUser.Username
-	err = cleanGitImageTag(username, realName, _imageTag, projectName, p)
+	err = cleanGitImageTag(username, realName, imageTag, projectName, p)
 	if err != nil {
-		logs.Error("failed to clean image tag git %s:%s %s", realName, _imageTag, projectName)
+		logs.Error("failed to clean image tag git %s:%s %s", realName, imageTag, projectName)
 		p.internalError(err)
 		return
 	}
 
 	//Delete the config files
 	repoPath := p.generateRepoPathByProjectName(projectName)
-	configPath := filepath.Join(repoPath, imageProcess, realName, _imageTag)
+	configPath := filepath.Join(repoPath, imageProcess, realName, imageTag)
 	err = service.ImageConfigClean(configPath)
 	if err != nil {
 		logs.Error("failed to delete config files %s", configPath)
@@ -754,10 +748,9 @@ func (p *ImageController) DockerfileBuildImageAction() {
 	pushobject.FileName = defaultDockerfilename
 	pushobject.UserID = p.currentUser.ID
 	pushobject.JobName = imageProcess
-	pushobject.Value = filepath.Join(imageProcess, imageName, imageTag)
 	pushobject.ProjectName = currentProject.Name
 
-	pushobject.Extras = filepath.Join(projectName, imageName) + ":" + imageTag
+	pushobject.Extras = filepath.Join(registryBaseURI(), projectName, imageName) + ":" + imageTag
 	pushobject.Message = fmt.Sprintf("Build image: %s", pushobject.Extras)
 
 	//Get file list for Jenkis git repo
@@ -766,16 +759,16 @@ func (p *ImageController) DockerfileBuildImageAction() {
 		p.internalError(err)
 		return
 	}
-	generateMetaConfiguration(&pushobject, repoPath)
-	pushobject.Items = append(pushobject.Items, "META.cfg")
+
+	service.GenerateBuildingImageTravis(repoPath, p.currentUser.Username, p.currentUser.Email, pushobject.Extras)
+	pushobject.Items = append(pushobject.Items, ".travis.yml")
 	// Add upload files
 	for _, finfo := range uploads {
 		filefullname := filepath.Join(pushobject.Value, "upload", finfo.FileName)
 		pushobject.Items = append(pushobject.Items, filefullname)
 	}
 	// Add Dockerfile
-	pushobject.Items = append(pushobject.Items, filepath.Join(pushobject.Value,
-		defaultDockerfilename))
+	pushobject.Items = append(pushobject.Items, defaultDockerfilename)
 
 	ret, msg, err := InternalPushObjects(&pushobject, &(p.baseController))
 	if err != nil {
@@ -928,12 +921,9 @@ func (f *ImageController) UploadDockerfileFileAction() {
 		return
 	}
 
-	imageName := f.GetString("image_name")
-	tagName := f.GetString("tag_name")
-
 	repoPath := f.generateRepoPathByProjectName(projectName)
 	logs.Debug("Repo path: %s", repoPath)
-	targetFilePath := filepath.Join(repoPath, imageProcess, imageName, tagName)
+	targetFilePath := repoPath
 	err = os.MkdirAll(targetFilePath, 0755)
 	if err != nil {
 		f.internalError(err)
@@ -969,20 +959,13 @@ func (f *ImageController) DownloadDockerfileFileAction() {
 		return
 	}
 
-	imageName := f.GetString("image_name")
-	tagName := f.GetString("tag_name")
-
-	repoPath := f.generateRepoPathByProjectName(projectName)
-	targetFilePath := filepath.Join(repoPath, imageProcess, imageName, tagName)
+	targetFilePath := f.generateRepoPathByProjectName(projectName)
 	if _, err := os.Stat(targetFilePath); os.IsNotExist(err) {
 		f.customAbort(http.StatusBadRequest, "image Name and  tag name are invalid.")
 		return
 	}
-
-	absFileName := filepath.Join(repoPath, imageProcess, imageName, tagName, dockerfileName)
-	logs.Info("User: %s download Dockerfile file from %s.", f.currentUser.Username, absFileName)
-
-	f.Ctx.Output.Download(absFileName, dockerfileName)
+	logs.Info("User: %s download Dockerfile file from %s.", f.currentUser.Username, targetFilePath)
+	f.Ctx.Output.Download(targetFilePath, dockerfileName)
 }
 
 // API to get image registry address
