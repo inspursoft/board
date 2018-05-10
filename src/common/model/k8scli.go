@@ -232,7 +232,8 @@ type NFSVolumeSource struct {
 }
 
 // NodeCli Interface has methods to work with Node resources in k8s-assist.
-// How to:  nodeCli, err := k8sassist.NewInterfaces()
+// How to:  nodeCli, err := k8sassist.NewNodes()
+//          nodeInstance, err := nodeCli.Get(nodename)
 type NodeCli interface {
 	Create(*Node) (*Node, error)
 	Update(*Node) (*Node, error)
@@ -245,6 +246,7 @@ type NodeCli interface {
 
 // DeploymentCli has methods to work with Deployment resources in k8s-assist.
 // How to:  deploymentCli, err := k8sassist.NewDeployments(nameSpace)
+//          _, err := deploymentCli.Update(&deployment)
 type DeploymentCli interface {
 	Create(*Deployment) (*Deployment, error)
 	Update(*Deployment) (*Deployment, error)
