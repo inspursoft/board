@@ -4,12 +4,102 @@ import (
 	"time"
 )
 
+type PodPhase string
+
+const (
+	PodPending   PodPhase = "Pending"
+	PodRunning   PodPhase = "Running"
+	PodSucceeded PodPhase = "Succeeded"
+	PodFailed    PodPhase = "Failed"
+	PodUnknown   PodPhase = "Unknown"
+)
+
+type ResourceName string
+
+const (
+	ResourceCPU              ResourceName = "cpu"
+	ResourceMemory           ResourceName = "memory"
+	ResourceStorage          ResourceName = "storage"
+	ResourceEphemeralStorage ResourceName = "ephemeral-storage"
+	ResourceNvidiaGPU        ResourceName = "alpha.kubernetes.io/nvidia-gpu"
+)
+
+type NodePhase string
+
+const (
+	NodePending    NodePhase = "Pending"
+	NodeRunning    NodePhase = "Running"
+	NodeTerminated NodePhase = "Terminated"
+)
+
+type NodeConditionType string
+
+const (
+	NodeReady              NodeConditionType = "Ready"
+	NodeOutOfDisk          NodeConditionType = "OutOfDisk"
+	NodeMemoryPressure     NodeConditionType = "MemoryPressure"
+	NodeDiskPressure       NodeConditionType = "DiskPressure"
+	NodeNetworkUnavailable NodeConditionType = "NetworkUnavailable"
+	NodeConfigOK           NodeConditionType = "ConfigOK"
+)
+
+type ConditionStatus string
+
+const (
+	ConditionTrue    ConditionStatus = "True"
+	ConditionFalse   ConditionStatus = "False"
+	ConditionUnknown ConditionStatus = "Unknown"
+)
+
+type NodeAddressType string
+
+const (
+	NodeHostName    NodeAddressType = "Hostname"
+	NodeExternalIP  NodeAddressType = "ExternalIP"
+	NodeInternalIP  NodeAddressType = "InternalIP"
+	NodeExternalDNS NodeAddressType = "ExternalDNS"
+	NodeInternalDNS NodeAddressType = "InternalDNS"
+)
+
+// should call kubernetes Quantity String() func.
+type Quantity string
+
+type ResourceList map[ResourceName]Quantity
+
+type ObjectMeta struct {
+	Name              string
+	Namespace         string
+	CreationTimestamp time.Time
+	DeletionTimestamp *time.Time
+	Labels            map[string]string
+}
+
 type Node struct {
-	NodeName      string
+	ObjectMeta
 	NodeIP        string
-	CreateTime    int64
 	Unschedulable bool
 	Groups        map[string]string
+	Status        NodeStatus
+}
+
+type NodeStatus struct {
+	Capacity    ResourceList
+	Allocatable ResourceList
+	Phase       NodePhase
+	Conditions  []NodeCondition
+	Addresses   []NodeAddress
+}
+
+type NodeAddress struct {
+	Type    NodeAddressType
+	Address string
+}
+
+type NodeCondition struct {
+	Type    NodeConditionType
+	Status  ConditionStatus
+	Reason  string
+	Message string
 }
 
 type NodeList struct {
@@ -17,9 +107,8 @@ type NodeList struct {
 }
 
 type Namespace struct {
-	Name              string
-	CreationTimestamp time.Time
-	NamespacePhase    string
+	ObjectMeta
+	NamespacePhase string
 }
 
 type NamespaceList struct {
@@ -35,21 +124,12 @@ type ServicePort struct {
 }
 
 type Service struct {
-	Name                       string
-	GenerateName               string
-	Namespace                  string
-	ResourceVersion            string
-	Generation                 int64
-	CreationTimestamp          time.Time
-	DeletionTimestamp          time.Time
-	DeletionGracePeriodSeconds int64
-	Labels                     map[string]string
-	ClusterName                string
-	Ports                      []ServicePort
-	Selector                   map[string]string
-	ClusterIP                  string
-	Type                       string
-	ExternalIPs                []string
+	ObjectMeta
+	Ports       []ServicePort
+	Selector    map[string]string
+	ClusterIP   string
+	Type        string
+	ExternalIPs []string
 	//SessionAffinity ServiceAffinity
 	ExternalName string
 }
@@ -85,24 +165,70 @@ type DeploymentStatus struct {
 type DeploymentSpec struct {
 	Replicas int32
 	Selector map[string]string
-	//Template v1.PodTemplateSpec //TODO to define pod struct
-	Paused bool //TODO for pause
+	Template PodTemplateSpec
+	Paused   bool //TODO for pause
 	//RollbackTo *RollbackConfig //TODO
 }
 
 type Deployment struct {
-	Name                       string
-	Namespace                  string
-	Labels                     map[string]string
-	CreationTimestamp          time.Time
-	DeletionTimestamp          time.Time
-	DeletionGracePeriodSeconds int64
-	Spec                       DeploymentSpec   `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
-	Status                     DeploymentStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
+	ObjectMeta
+	Spec   DeploymentSpec
+	Status DeploymentStatus
 }
 
 type DeploymentList struct {
 	Items []Deployment
+}
+
+type PodList struct {
+	Items []Pod
+}
+
+type Pod struct {
+	ObjectMeta
+	Spec   PodSpec
+	Status PodStatus
+}
+
+type PodSpec struct {
+	Volumes        []Volume
+	InitContainers []Container
+	Containers     []Container
+	NodeSelector   map[string]string
+	NodeName       string
+	HostNetwork    bool
+}
+
+type PodStatus struct {
+	Phase     PodPhase
+	Reason    string
+	HostIP    string
+	PodIP     string
+	StartTime *time.Time
+}
+
+type PodTemplateSpec struct {
+	ObjectMeta
+	Spec PodSpec
+}
+
+type Volume struct {
+	Name string
+	VolumeSource
+}
+
+type VolumeSource struct {
+	HostPath *HostPathVolumeSource
+	NFS      *NFSVolumeSource
+}
+
+type HostPathVolumeSource struct {
+	Path string
+}
+
+type NFSVolumeSource struct {
+	Server string
+	Path   string
 }
 
 // NodeCli Interface has methods to work with Node resources in k8s-assist.
