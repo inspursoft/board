@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/apiserver/service/devops/travis"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
@@ -25,8 +26,7 @@ const (
 	rollingUpdateFilename  = "rollingUpdateDeployment.yaml"
 	deploymentTestFilename = "testdeployment.yaml"
 	serviceTestFilename    = "testservice.yaml"
-	// serviceProcess         = "process-service"
-	rollingUpdate    = "rolling-update"
+
 	apiheader        = "Content-Type: application/yaml"
 	deploymentAPI    = "/apis/extensions/v1beta1/namespaces/"
 	serviceAPI       = "/api/v1/namespaces/"
@@ -59,6 +59,23 @@ func (p *ServiceController) Prepare() {
 	}
 	p.currentUser = user
 	p.isSysAdmin = (user.SystemAdmin == 1)
+}
+
+func (p *ServiceController) generateDeploymentTravis(deploymentURL string, serviceURL string) error {
+	userID := p.currentUser.ID
+	var travisCommand travis.TravisCommand
+	travisCommand.Script.Commands = []string{}
+	items := []string{
+		fmt.Sprintf("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
+	}
+	if deploymentURL != "" {
+		items = append(items, fmt.Sprintf("curl -X POST -H 'Content-Type: application/yaml' --data-binary @deployment.yaml %s", deploymentURL))
+	}
+	if serviceURL != "" {
+		items = append(items, fmt.Sprintf("curl -X POST -H 'Content-Type: application/yaml' --data-binary @service.yaml %s", serviceURL))
+	}
+	travisCommand.Script.Commands = items
+	return travisCommand.GenerateCustomTravis(p.repoPath)
 }
 
 func (p *ServiceController) getKey() string {
@@ -127,15 +144,15 @@ func (p *ServiceController) DeployServiceAction() {
 
 	deploymentURL := fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), deploymentAPI, project.Name, "deployments")
 	serviceURL := fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), serviceAPI, project.Name, "services")
-	service.GenerateDeploymentTravis(p.repoPath, deploymentURL, serviceURL)
-
-	items := []string{".travis.yml", deploymentFilename, serviceFilename}
-	err = p.pushItemsToRepo(p.repoPath, items...)
+	err = p.generateDeploymentTravis(deploymentURL, serviceURL)
 	if err != nil {
-		logs.Error("Failed to push items to repo: %s, error: %+v", p.repoPath, err)
+		logs.Error("Failed to generate deployement travis.yml: %+v", err)
 		p.internalError(err)
 		return
 	}
+
+	items := []string{".travis.yml", deploymentFilename, serviceFilename}
+	p.pushItemsToRepo(items...)
 
 	serviceConfig, err := json.Marshal(&configService)
 	if err != nil {
@@ -389,11 +406,8 @@ func (p *ServiceController) DeleteServiceAction() {
 
 	//delete repo files of the service
 	p.resolveRepoPath(s.ProjectName)
-	err = p.removeItemsToRepo(p.repoPath, serviceFilename, deploymentFilename)
-	if err != nil {
-		logs.Error("Failed to remove items from repo: %s, error: %+v", p.repoPath, err)
-		p.internalError(err)
-	}
+	p.removeItemsToRepo(serviceFilename, deploymentFilename)
+
 }
 
 // API to deploy service
@@ -477,17 +491,16 @@ func (p *ServiceController) ToggleServiceAction() {
 		serviceURL := fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), serviceAPI, s.ProjectName, "services")
 
 		p.resolveRepoPath(s.ProjectName)
-		service.GenerateDeploymentTravis(p.repoPath, deploymentURL, serviceURL)
-		// Add deployment file
-		items := []string{".travis.yml", deploymentFilename, serviceFilename}
-
-		err = p.pushItemsToRepo(p.repoPath, items...)
+		err = p.generateDeploymentTravis(deploymentURL, serviceURL)
 		if err != nil {
-			logs.Error("Failed to push items to repo: %s, error: %+v", p.repoPath, err)
+			logs.Error("Failed to generate deployment travis: %+v", err)
 			p.internalError(err)
 			return
 		}
-		p.collaborateWithPullRequest(p.repoPath, "master", "master", items...)
+		// Add deployment file to repo
+		items := []string{".travis.yml", deploymentFilename, serviceFilename}
+		p.pushItemsToRepo(items...)
+		p.collaborateWithPullRequest("master", "master", items...)
 
 		// Update service status DB
 		servicequery.Status = running
@@ -787,15 +800,15 @@ func (p *ServiceController) DeleteDeploymentAction() {
 	// TODO clear kube-master, even if the service is not deployed successfully
 
 	deploymentURL := filepath.Join(kubeMasterURL(), deploymentAPI, s.ProjectName, "deployments")
-	service.GenerateDeploymentTravis(p.repoPath, deploymentURL, "")
-
-	// Update git repo
-	err = p.removeItemsToRepo(p.repoPath, ".travis.yml", deploymentFilename)
+	err = p.generateDeploymentTravis(deploymentURL, "")
 	if err != nil {
-		logs.Error("Failed to push items to repo: %s, error: %+v", p.repoPath, err)
+		logs.Error("Failed to generate deployment travis: %+v", err)
 		p.internalError(err)
 		return
 	}
+	// Update git repo
+	p.removeItemsToRepo(".travis.yml", deploymentFilename)
+
 	// Delete yaml files
 	err = service.DeleteServiceConfigYaml(p.repoPath)
 	if err != nil {

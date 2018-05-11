@@ -44,6 +44,7 @@ var registryBaseURI = utils.GetConfig("REGISTRY_BASE_URI")
 var authMode = utils.GetConfig("AUTH_MODE")
 
 var baseRepoPath = utils.GetConfig("BASE_REPO_PATH")
+var boardAPIBaseURL = utils.GetConfig("BOARD_API_BASE_URL")
 var gogitsSSHURL = utils.GetConfig("GOGITS_SSH_URL")
 var jenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
 
@@ -55,6 +56,7 @@ type baseController struct {
 	isExternalAuth bool
 	repoPath       string
 	project        *model.Project
+	isRemoved      bool
 }
 
 func (b *baseController) Render() error {
@@ -87,28 +89,36 @@ func (b *baseController) resolveRepoPath(projectName string) {
 	logs.Debug("Set repo path at file upload: %s", b.repoPath)
 }
 
-func (b *baseController) manipulateRepo(repoPath string, isRemoved bool, items ...string) error {
+func (b *baseController) manipulateRepo(items ...string) error {
+	if b.repoPath == "" {
+		return fmt.Errorf("repo path cannot be empty")
+	}
 	username := b.currentUser.Username
 	email := b.currentUser.Email
-	repoHandler, err := service.OpenRepo(repoPath, username, email)
+	repoHandler, err := service.OpenRepo(b.repoPath, username, email)
 	if err != nil {
 		logs.Error("Failed to open repo: %+v", err)
 		return err
 	}
-	actionType := "Add"
-	if isRemoved {
+	if b.isRemoved {
 		repoHandler.ToRemove()
-		actionType = "Remove"
 	}
-	message := fmt.Sprintf("%s items: %s to repo: %s", actionType, strings.Join(items, ","), repoPath)
-	return repoHandler.SimplePush(message, items...)
+	return repoHandler.SimplePush(items...)
 }
 
-func (b *baseController) pushItemsToRepo(repoPath string, items ...string) error {
-	return b.manipulateRepo(repoPath, false, items...)
+func (b *baseController) pushItemsToRepo(items ...string) {
+	err := b.manipulateRepo(items...)
+	if err != nil {
+		logs.Error("Failed to push items to repo: %s, error: %+v", b.repoPath, err)
+		b.internalError(err)
+	}
 }
 
-func (b *baseController) collaborateWithPullRequest(repoPath, headBranch, baseBranch string, items ...string) {
+func (b *baseController) collaborateWithPullRequest(headBranch, baseBranch string, items ...string) {
+	if b.repoPath == "" {
+		b.customAbort(http.StatusPreconditionFailed, "Repo path cannot be empty.")
+		return
+	}
 	if b.project == nil {
 		b.customAbort(http.StatusPreconditionFailed, "Project info cannot be nil.")
 		return
@@ -134,8 +144,13 @@ func (b *baseController) collaborateWithPullRequest(repoPath, headBranch, baseBr
 	}
 }
 
-func (b *baseController) removeItemsToRepo(repoPath string, items ...string) error {
-	return b.manipulateRepo(repoPath, true, items...)
+func (b *baseController) removeItemsToRepo(items ...string) {
+	b.isRemoved = true
+	err := b.manipulateRepo(items...)
+	if err != nil {
+		logs.Error("Failed to remove items to repo: %s, error: %+v", b.repoPath, err)
+		b.internalError(err)
+	}
 }
 
 type messageStatus struct {

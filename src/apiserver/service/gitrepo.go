@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"gopkg.in/src-d/go-git.v4/plumbing"
@@ -193,12 +194,8 @@ func (r *repoHandler) Remove(filename string) (*repoHandler, error) {
 	return r, nil
 }
 
-func (r *repoHandler) SimplePush(message string, items ...string) error {
+func (r *repoHandler) SimplePush(items ...string) error {
 	logs.Debug("Repo path for pushing objects: %s", r.repoPath)
-	r, err := OpenRepo(r.repoPath, r.username, r.email)
-	if err != nil {
-		return fmt.Errorf("failed to open repo handler: %+v", err)
-	}
 	for _, item := range items {
 		if r.isRemove {
 			r.Remove(item)
@@ -208,9 +205,12 @@ func (r *repoHandler) SimplePush(message string, items ...string) error {
 		logs.Debug(">>>>> pushed item: %s", item)
 	}
 
+	message := fmt.Sprintf("Push items: %s to repo: %s", strings.Join(items, ","), r.repoPath)
 	if r.isRemove {
 		message = "[DELETED]" + message
 	}
+
+	var err error
 	_, err = r.Commit(message)
 	if err != nil {
 		return fmt.Errorf("failed to commit changes to user's repo: %+v", err)
