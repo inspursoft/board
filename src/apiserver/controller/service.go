@@ -468,13 +468,11 @@ func (p *ServiceController) ToggleServiceAction() {
 
 	if reqServiceToggle.Toggle == 0 {
 		// stop service
-		//err = stopService(s)
 		err = service.StopServiceK8s(s)
 		if err != nil {
 			p.internalError(err)
 			return
 		}
-		//logs.Info("Stop service successful")
 		// Update service status DB
 		servicequery.Status = stopped
 		_, err = service.UpdateService(servicequery, "status")
@@ -484,7 +482,6 @@ func (p *ServiceController) ToggleServiceAction() {
 		}
 	} else {
 		// start service
-		//serviceNamespace = reqServiceConfig.ProjectName TODO in project
 		// Push deployment to jenkins
 
 		deploymentURL := fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), deploymentAPI, s.ProjectName, "deployments")
@@ -516,8 +513,6 @@ func stopService(s *model.ServiceStatus) error {
 	var err error
 	var client = &http.Client{}
 	// Stop service
-	//deleteServiceURL := filepath.Join(kubeMasterURL(), serviceAPI,
-	//	serviceNamespace, "services", s.Name)
 	deleteServiceURL := kubeMasterURL() + serviceAPI + s.ProjectName + "/services/" + s.Name
 	req, err := http.NewRequest("DELETE", deleteServiceURL, nil)
 	if err != nil {
@@ -534,8 +529,6 @@ func stopService(s *model.ServiceStatus) error {
 	logs.Info("Stop service successfully", s.ID, s.Name, resp)
 
 	// Stop deployment
-	//deleteDeploymentURL := filepath.Join(kubeMasterURL(), deploymentAPI,
-	//	serviceNamespace, "deployments", s.Name)
 	deleteDeploymentURL := kubeMasterURL() + deploymentAPI + s.ProjectName + "/deployments/" + s.Name
 	req, err = http.NewRequest("DELETE", deleteDeploymentURL, nil)
 	if err != nil {
