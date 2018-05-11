@@ -5,7 +5,6 @@ import (
 	"git/inspursoft/board/src/apiserver/service/devops/gogs"
 	"git/inspursoft/board/src/apiserver/service/devops/jenkins"
 	"git/inspursoft/board/src/common/utils"
-	"path/filepath"
 
 	"github.com/astaxie/beego/logs"
 )
@@ -54,15 +53,18 @@ func CreateRepoAndJob(userID int64, projectName string) error {
 	if err != nil {
 		logs.Error("Failed to create hook to repo: %s, error: %+v", projectName, err)
 	}
-	err = CopyFile("parser.py", filepath.Join(repoPath, "parser.py"))
+
+	CreateFile("readme.md", "Repo created by Board.", repoPath)
+
+	repoHandler, err := OpenRepo(repoPath, username, email)
 	if err != nil {
-		logs.Error("Failed to copy parser.py file to repo: %+v", err)
+		logs.Error("Failed to open the repo: %s, error: %+v.", repoPath, err)
 		return err
 	}
-	CreateFile("readme.md", "Repo created by Board.", repoPath)
-	err = SimplePush(repoPath, username, email, "Add some struts.", "readme.md", "parser.py")
+
+	repoHandler.SimplePush("Add some struts.", "readme.md")
 	if err != nil {
-		logs.Error("Failed to push readme.md file to the repo.")
+		logs.Error("Failed to push readme.md file to the repo: %+v", err)
 		return err
 	}
 
@@ -71,6 +73,23 @@ func CreateRepoAndJob(userID int64, projectName string) error {
 	if err != nil {
 		logs.Error("Failed to create Jenkins' job with project name: %s, error: %+v", projectName, err)
 		return err
+	}
+	return nil
+}
+
+func CreatePullRequestAndComment(username, ownerName, repoName, repoToken, compareInfo, title, message string) error {
+	gogsHandler := gogs.NewGogsHandler(username, repoToken)
+	prInfo, err := gogsHandler.CreatePullRequest(ownerName, repoName, title, message, compareInfo)
+	if err != nil {
+		logs.Error("Failed to create pull request to the repo: %s with username: %s", repoName, username)
+		return err
+	}
+	if prInfo != nil && prInfo.HasCreated {
+		err = gogsHandler.CreateIssueComment(ownerName, repoName, prInfo.Index, message)
+		if err != nil {
+			logs.Error("Failed to comment issue to the pull request ID: %d, error: %+v", prInfo.IssueID, err)
+			return err
+		}
 	}
 	return nil
 }

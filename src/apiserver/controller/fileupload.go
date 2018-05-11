@@ -61,7 +61,7 @@ func (f *FileUploadController) Upload() {
 
 func (f *FileUploadController) DownloadProbe() {
 	if isEmpty, err := service.IsEmptyDirectory(f.toFilePath); isEmpty || err != nil {
-		f.customAbort(http.StatusNotFound, fmt.Sprintf("No uploaded files found."))
+		f.customAbort(http.StatusNotFound, "No uploaded file found.")
 		return
 	}
 }

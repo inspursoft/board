@@ -54,6 +54,7 @@ type baseController struct {
 	isSysAdmin     bool
 	isExternalAuth bool
 	repoPath       string
+	project        *model.Project
 }
 
 func (b *baseController) Render() error {
@@ -68,23 +69,73 @@ func (b *baseController) resolveBody() ([]byte, error) {
 	return data, nil
 }
 
-func (b *baseController) resolveRepoPath() {
-	projectName := b.GetString("project_name")
-	if strings.TrimSpace(projectName) == "" {
+func (b *baseController) resolveRepoPath(projectName string) {
+	if projectName == "" {
 		b.customAbort(http.StatusBadRequest, "No found project name.")
-		return
 	}
-	isExists, err := service.ProjectExists(projectName)
+	var err error
+	b.project, err = service.GetProject(model.Project{Name: projectName}, "name")
 	if err != nil {
 		b.internalError(err)
 		return
 	}
-	if !isExists {
-		b.customAbort(http.StatusNotFound, "Project name does not exist.")
+	if b.project == nil {
+		b.customAbort(http.StatusNotFound, fmt.Sprintf("Project: %s does not exist.", projectName))
 		return
 	}
 	b.repoPath = filepath.Join(baseRepoPath(), b.currentUser.Username, projectName)
 	logs.Debug("Set repo path at file upload: %s", b.repoPath)
+}
+
+func (b *baseController) manipulateRepo(repoPath string, isRemoved bool, items ...string) error {
+	username := b.currentUser.Username
+	email := b.currentUser.Email
+	repoHandler, err := service.OpenRepo(repoPath, username, email)
+	if err != nil {
+		logs.Error("Failed to open repo: %+v", err)
+		return err
+	}
+	actionType := "Add"
+	if isRemoved {
+		repoHandler.ToRemove()
+		actionType = "Remove"
+	}
+	message := fmt.Sprintf("%s items: %s to repo: %s", actionType, strings.Join(items, ","), repoPath)
+	return repoHandler.SimplePush(message, items...)
+}
+
+func (b *baseController) pushItemsToRepo(repoPath string, items ...string) error {
+	return b.manipulateRepo(repoPath, false, items...)
+}
+
+func (b *baseController) collaborateWithPullRequest(repoPath, headBranch, baseBranch string, items ...string) {
+	if b.project == nil {
+		b.customAbort(http.StatusPreconditionFailed, "Project info cannot be nil.")
+		return
+	}
+	username := b.currentUser.Username
+	repoName := b.project.Name
+	ownerName := b.project.OwnerName
+	if ownerName == username {
+		logs.Info("User %s is the owner to the current repo: %s", username, repoName)
+		return
+	}
+
+	title := fmt.Sprintf("Updates from forked repo: %s/%s", username, repoName)
+	content := fmt.Sprintf("Update list: \n\t-\t%s\n", strings.Join(items, "\n\t-\t"))
+	compareInfo := fmt.Sprintf("%s...%s:%s", headBranch, username, baseBranch)
+	logs.Debug("Pull request info, title: %s, content: %s, compare info: %s", title, content, compareInfo)
+
+	repoToken := b.currentUser.RepoToken
+	err := service.CreatePullRequestAndComment(username, ownerName, repoName, repoToken, compareInfo, title, content)
+	if err != nil {
+		logs.Error("Failed to create pull request and comment: %+v", err)
+		b.internalError(err)
+	}
+}
+
+func (b *baseController) removeItemsToRepo(repoPath string, items ...string) error {
+	return b.manipulateRepo(repoPath, true, items...)
 }
 
 type messageStatus struct {
@@ -241,14 +292,6 @@ func verifyToken(tokenString string) (map[string]interface{}, error) {
 		return nil, err
 	}
 	return payload, nil
-}
-
-type UnsupportedActionController struct {
-	baseController
-}
-
-func (b *UnsupportedActionController) Prepare() {
-	b.CustomAbort(http.StatusMethodNotAllowed, "Method was unsupported due to some reasons.")
 }
 
 func InitController() {

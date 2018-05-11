@@ -392,12 +392,12 @@ func CreateImageTag(imageTag model.ImageTag) (int64, error) {
 func GenerateBuildingImageTravis(repoPath, username, email, imageURI string) error {
 	boardAPIBaseURL := utils.GetConfig("BOARD_API_BASE_URL")
 	var travisCommand travis.TravisCommand
-	travisCommand.Script.Commands = []string{
+	travisCommand.BeforeDeploy.Commands = []string{
 		"token=`cat key.txt`",
 		fmt.Sprintf("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | cut -d$' ' -f2`", boardAPIBaseURL()),
-		fmt.Sprintf("if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload && rm -f attachment.zip; fi", boardAPIBaseURL()),
+		fmt.Sprintf("if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi", boardAPIBaseURL()),
 	}
-	travisCommand.AfterScript.Commands = []string{
+	travisCommand.Deploy.Commands = []string{
 		"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
 		fmt.Sprintf("docker build -t %s .", imageURI),
 		fmt.Sprintf("docker push %s", imageURI),

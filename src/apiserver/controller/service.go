@@ -25,17 +25,17 @@ const (
 	rollingUpdateFilename  = "rollingUpdateDeployment.yaml"
 	deploymentTestFilename = "testdeployment.yaml"
 	serviceTestFilename    = "testservice.yaml"
-	serviceProcess         = "process-service"
-	rollingUpdate          = "rolling-update"
-	apiheader              = "Content-Type: application/yaml"
-	deploymentAPI          = "/apis/extensions/v1beta1/namespaces/"
-	serviceAPI             = "/api/v1/namespaces/"
-	test                   = "test"
-	serviceNamespace       = "default" //TODO create in project post
-	k8sServices            = "kubernetes"
-	deploymentType         = "deployment"
-	serviceType            = "service"
-	startingDuration       = 300 * time.Second //300 seconds
+	// serviceProcess         = "process-service"
+	rollingUpdate    = "rolling-update"
+	apiheader        = "Content-Type: application/yaml"
+	deploymentAPI    = "/apis/extensions/v1beta1/namespaces/"
+	serviceAPI       = "/api/v1/namespaces/"
+	test             = "test"
+	serviceNamespace = "default" //TODO create in project post
+	k8sServices      = "kubernetes"
+	deploymentType   = "deployment"
+	serviceType      = "service"
+	startingDuration = 300 * time.Second //300 seconds
 )
 
 const (
@@ -59,17 +59,6 @@ func (p *ServiceController) Prepare() {
 	}
 	p.currentUser = user
 	p.isSysAdmin = (user.SystemAdmin == 1)
-}
-
-func (p *ServiceController) generateRepoPathByProject(project *model.Project) string {
-	if project == nil {
-		p.customAbort(http.StatusBadRequest, "Failed to generate repo path since project is nil.")
-	}
-	return filepath.Join(baseRepoPath(), p.currentUser.Username, project.Name)
-}
-
-func (p *ServiceController) generateRepoPathByProjectName(projectName string) string {
-	return filepath.Join(baseRepoPath(), p.currentUser.Username, projectName)
 }
 
 func (p *ServiceController) getKey() string {
@@ -117,47 +106,36 @@ func (p *ServiceController) DeployServiceAction() {
 		return
 	}
 
-	repoPath := p.generateRepoPathByProject(project)
-	loadPath := filepath.Join(repoPath, serviceProcess, strconv.Itoa(int(serviceInfo.ID)))
-	err = service.CheckDeploymentPath(loadPath)
+	p.resolveRepoPath(project.Name)
+	err = service.CheckDeploymentPath(p.repoPath)
 	if err != nil {
 		p.internalError(err)
 		return
 	}
 
-	err = service.AssembleDeploymentYaml((*model.ConfigServiceStep)(configService), loadPath)
+	err = service.AssembleDeploymentYaml((*model.ConfigServiceStep)(configService), p.repoPath)
 	if err != nil {
 		p.internalError(err)
 		return
 	}
 
-	err = service.AssembleServiceYaml((*model.ConfigServiceStep)(configService), loadPath)
+	err = service.AssembleServiceYaml((*model.ConfigServiceStep)(configService), p.repoPath)
 	if err != nil {
 		p.internalError(err)
 		return
 	}
 
-	var pushObject pushObject
-	pushObject.UserID = p.currentUser.ID
-	pushObject.FileName = fmt.Sprintf("%s,%s", deploymentFilename, serviceFilename)
-	pushObject.JobName = serviceProcess
-	pushObject.ProjectName = project.Name
-	pushObject.Extras = fmt.Sprintf("%s,%s", fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), deploymentAPI, project.Name, "deployments"),
-		fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), serviceAPI, project.Name, "services"))
-	pushObject.Value = filepath.Join(serviceProcess, strconv.Itoa(int(serviceInfo.ID)))
-	pushObject.Message = fmt.Sprintf("Create service for project %s with service %d", project.Name, serviceInfo.ID)
+	deploymentURL := fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), deploymentAPI, project.Name, "deployments")
+	serviceURL := fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), serviceAPI, project.Name, "services")
+	service.GenerateDeploymentTravis(p.repoPath, deploymentURL, serviceURL)
 
-	relPath := filepath.Join(serviceProcess, strconv.Itoa(int(serviceInfo.ID)))
-
-	generateMetaConfiguration(&pushObject, repoPath)
-	pushObject.Items = []string{"META.cfg", filepath.Join(relPath, deploymentFilename), filepath.Join(relPath, serviceFilename)}
-
-	ret, msg, err := InternalPushObjects(&pushObject, &(p.baseController))
+	items := []string{".travis.yml", deploymentFilename, serviceFilename}
+	err = p.pushItemsToRepo(p.repoPath, items...)
 	if err != nil {
+		logs.Error("Failed to push items to repo: %s, error: %+v", p.repoPath, err)
 		p.internalError(err)
 		return
 	}
-	logs.Info("Internal push deployment object: %d %s", ret, msg)
 
 	serviceConfig, err := json.Marshal(&configService)
 	if err != nil {
@@ -410,17 +388,12 @@ func (p *ServiceController) DeleteServiceAction() {
 	}
 
 	//delete repo files of the service
-	repoPath := p.generateRepoPathByProjectName(s.ProjectName)
-	var serviceFiles pushObject
-	serviceFiles.Items = []string{filepath.Join(repoPath, serviceProcess, strconv.Itoa(int(serviceID)), serviceFilename),
-		filepath.Join(repoPath, serviceProcess, strconv.Itoa(int(serviceID)), deploymentFilename)}
-	serviceFiles.Message = fmt.Sprintf("Delete yaml files for project %s service %d", s.ProjectName, serviceID)
-	ret, msg, err := InternalPushObjects(&serviceFiles, &(p.baseController), toBeRemoved)
+	p.resolveRepoPath(s.ProjectName)
+	err = p.removeItemsToRepo(p.repoPath, serviceFilename, deploymentFilename)
 	if err != nil {
+		logs.Error("Failed to remove items from repo: %s, error: %+v", p.repoPath, err)
 		p.internalError(err)
-		return
 	}
-	logs.Info("Internal push deployment object: %d %s", ret, msg)
 }
 
 // API to deploy service
@@ -499,43 +472,22 @@ func (p *ServiceController) ToggleServiceAction() {
 		// start service
 		//serviceNamespace = reqServiceConfig.ProjectName TODO in project
 		// Push deployment to jenkins
-		var pushobject pushObject
-		pushobject.FileName = deploymentFilename
-		pushobject.JobName = serviceProcess
-		pushobject.Value = filepath.Join(serviceProcess, strconv.Itoa(serviceID))
-		pushobject.ProjectName = s.ProjectName
 
-		pushobject.Message = fmt.Sprintf("Create deployment for project %s service %d",
-			s.ProjectName, s.ID)
-		pushobject.Extras = filepath.Join(kubeMasterURL(), deploymentAPI,
-			s.ProjectName, "deployments")
+		deploymentURL := fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), deploymentAPI, s.ProjectName, "deployments")
+		serviceURL := fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), serviceAPI, s.ProjectName, "services")
 
+		p.resolveRepoPath(s.ProjectName)
+		service.GenerateDeploymentTravis(p.repoPath, deploymentURL, serviceURL)
 		// Add deployment file
-		pushobject.Items = []string{filepath.Join(pushobject.Value, deploymentFilename)}
+		items := []string{".travis.yml", deploymentFilename, serviceFilename}
 
-		ret, msg, err := InternalPushObjects(&pushobject, &(p.baseController))
+		err = p.pushItemsToRepo(p.repoPath, items...)
 		if err != nil {
+			logs.Error("Failed to push items to repo: %s, error: %+v", p.repoPath, err)
 			p.internalError(err)
 			return
 		}
-		logs.Info("Internal push deployment object: %d %s", ret, msg)
-
-		//TODO: If fail to create deployment, should not continue to create service
-
-		//Push service to jenkins
-		pushobject.FileName = serviceFilename
-		pushobject.Message = fmt.Sprintf("Create service for project %s service %d",
-			s.ProjectName, s.ID)
-		pushobject.Extras = filepath.Join(kubeMasterURL(), serviceAPI, s.ProjectName, "services")
-		// Add deployment file
-		pushobject.Items = []string{filepath.Join(pushobject.Value, serviceFilename)}
-
-		ret, msg, err = InternalPushObjects(&pushobject, &(p.baseController))
-		if err != nil {
-			p.internalError(err)
-			return
-		}
-		logs.Debug("Internal push service object: %d %s", ret, msg)
+		p.collaborateWithPullRequest(p.repoPath, "master", "master", items...)
 
 		// Update service status DB
 		servicequery.Status = running
@@ -544,7 +496,6 @@ func (p *ServiceController) ToggleServiceAction() {
 			p.internalError(err)
 			return
 		}
-		//logs.Info("Start service successful")
 	}
 }
 
@@ -786,15 +737,14 @@ func (p *ServiceController) DeleteServiceConfigAction() {
 	logs.Info("service status: ", s)
 
 	// Get the path of the service config files
-	repoPath := p.generateRepoPathByProjectName(s.ProjectName)
-	serviceConfigPath := filepath.Join(repoPath, serviceProcess, strconv.Itoa(serviceID))
-	logs.Debug("Service config path: %s", serviceConfigPath)
+	p.resolveRepoPath(s.ProjectName)
+	logs.Debug("Service config path: %s", p.repoPath)
 
 	// Delete yaml files
 	// TODO
-	err = service.DeleteServiceConfigYaml(serviceConfigPath)
+	err = service.DeleteServiceConfigYaml(p.repoPath)
 	if err != nil {
-		logs.Info("failed to delete service yaml", serviceConfigPath)
+		logs.Info("failed to delete service yaml", p.repoPath)
 		p.internalError(err)
 		return
 	}
@@ -831,48 +781,25 @@ func (p *ServiceController) DeleteDeploymentAction() {
 	logs.Info("service status: ", s)
 
 	// Get the path of the service config files
-	repoPath := p.generateRepoPathByProjectName(s.ProjectName)
-	serviceConfigPath := filepath.Join(repoPath, serviceProcess, strconv.Itoa(serviceID))
-	logs.Debug("Service config path: %s", serviceConfigPath)
+	p.resolveRepoPath(s.ProjectName)
+	logs.Debug("Service config path: %s", p.repoPath)
 
 	// TODO clear kube-master, even if the service is not deployed successfully
 
+	deploymentURL := filepath.Join(kubeMasterURL(), deploymentAPI, s.ProjectName, "deployments")
+	service.GenerateDeploymentTravis(p.repoPath, deploymentURL, "")
+
 	// Update git repo
-	var pushobject pushObject
-	pushobject.FileName = deploymentFilename
-	pushobject.JobName = serviceProcess
-	pushobject.ProjectName = s.ProjectName
-	pushobject.Value = filepath.Join(serviceProcess, strconv.Itoa(serviceID))
-
-	pushobject.Message = fmt.Sprintf("Delete yaml files for project %s service %d",
-		s.ProjectName, s.ID)
-	pushobject.Extras = filepath.Join(kubeMasterURL(), deploymentAPI,
-		s.ProjectName, "deployments")
-
-	//Get file list for Jenkis git repo
-	uploads, err := service.ListUploadFiles(serviceConfigPath)
+	err = p.removeItemsToRepo(p.repoPath, ".travis.yml", deploymentFilename)
 	if err != nil {
+		logs.Error("Failed to push items to repo: %s, error: %+v", p.repoPath, err)
 		p.internalError(err)
 		return
 	}
-	// Add yaml files
-	for _, finfo := range uploads {
-		filefullname := filepath.Join(pushobject.Value, finfo.FileName)
-		pushobject.Items = append(pushobject.Items, filefullname)
-	}
-
-	ret, msg, err := InternalPushObjects(&pushobject, &(p.baseController), toBeRemoved)
-	if err != nil {
-		logs.Info("Failed to push object for git repo clean", msg, ret, pushobject)
-		p.internalError(err)
-		return
-	}
-	logs.Info("Internal push clean deployment object: %d %s", ret, msg)
-
 	// Delete yaml files
-	err = service.DeleteServiceConfigYaml(serviceConfigPath)
+	err = service.DeleteServiceConfigYaml(p.repoPath)
 	if err != nil {
-		logs.Info("failed to delete service yaml", serviceConfigPath)
+		logs.Info("failed to delete service yaml", p.repoPath)
 		p.internalError(err)
 		return
 	}
@@ -996,13 +923,12 @@ func (f *ServiceController) resolveUploadedYamlFile(uploadedFileName string, tar
 	}
 
 	return func(fileName string, serviceInfo *model.ServiceStatus) error {
-		repoPath := f.generateRepoPathByProjectName(serviceInfo.ProjectName)
-		targetFilePath := filepath.Join(repoPath, serviceProcess, strconv.Itoa(int(serviceInfo.ID)))
-		err = service.CheckDeploymentPath(targetFilePath)
+		f.resolveRepoPath(serviceInfo.ProjectName)
+		err = service.CheckDeploymentPath(f.repoPath)
 		if err != nil {
 			f.internalError(err)
 		}
-		return f.SaveToFile(uploadedFileName, filepath.Join(targetFilePath, fileName))
+		return f.SaveToFile(uploadedFileName, filepath.Join(f.repoPath, fileName))
 	}
 }
 
@@ -1100,8 +1026,8 @@ func (f *ServiceController) DownloadDeploymentYamlFileAction() {
 		return
 	}
 
-	repoPath := f.generateRepoPathByProjectName(projectName)
-	absFileName := filepath.Join(repoPath, serviceProcess, strconv.Itoa(int(serviceInfo.ID)), fileName)
+	f.resolveRepoPath(projectName)
+	absFileName := filepath.Join(f.repoPath, fileName)
 	logs.Info("User: %s download %s yaml file from %s.", f.currentUser.Username, yamlType, absFileName)
 
 	//check doc isexist

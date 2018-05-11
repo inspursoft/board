@@ -28,6 +28,8 @@ type repoHandler struct {
 	repo     *git.Repository
 	worktree *git.Worktree
 	hash     plumbing.Hash
+	repoPath string
+	isRemove bool
 }
 
 func InitBareRepo(servePath string) (*repoHandler, error) {
@@ -71,7 +73,7 @@ func InitRepo(serveURL, username, email, path string) (*repoHandler, error) {
 	})
 	if err != nil {
 		if err == git.ErrRepositoryAlreadyExists {
-			return OpenRepo(path, username)
+			return OpenRepo(path, username, email)
 		}
 		if err == transport.ErrEmptyRemoteRepository {
 			return nil, nil
@@ -85,7 +87,7 @@ func InitRepo(serveURL, username, email, path string) (*repoHandler, error) {
 	return &repoHandler{username: username, repo: repo, worktree: worktree}, nil
 }
 
-func OpenRepo(path, username string) (*repoHandler, error) {
+func OpenRepo(path, username, email string) (*repoHandler, error) {
 	repo, err := git.PlainOpen(path)
 	if err != nil {
 		return nil, err
@@ -94,7 +96,7 @@ func OpenRepo(path, username string) (*repoHandler, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &repoHandler{username: username, repo: repo, worktree: worktree}, nil
+	return &repoHandler{username: username, email: email, repo: repo, worktree: worktree, repoPath: path}, nil
 }
 
 func (r *repoHandler) genSignature() *object.Signature {
@@ -113,6 +115,11 @@ func getWorktree(repo *git.Repository) (*git.Worktree, error) {
 	return worktree, nil
 }
 
+func (r *repoHandler) ToRemove() *repoHandler {
+	r.isRemove = true
+	return r
+}
+
 func (r *repoHandler) Add(filename string) (*repoHandler, error) {
 	_, err := r.worktree.Add(filename)
 	if err != nil {
@@ -121,7 +128,7 @@ func (r *repoHandler) Add(filename string) (*repoHandler, error) {
 	return r, nil
 }
 
-func (r *repoHandler) Commit(message, username, email string) (*repoHandler, error) {
+func (r *repoHandler) Commit(message string) (*repoHandler, error) {
 	var err error
 	r.hash, err = r.worktree.Commit(message, &git.CommitOptions{
 		All:    true,
@@ -133,8 +140,8 @@ func (r *repoHandler) Commit(message, username, email string) (*repoHandler, err
 	return r, nil
 }
 
-func (r *repoHandler) Tag(tagName, message, username, email string) (*repoHandler, error) {
-	r, err := r.Commit(message, username, email)
+func (r *repoHandler) Tag(tagName, message string) (*repoHandler, error) {
+	r, err := r.Commit(message)
 	if err != nil {
 		return nil, err
 	}
@@ -186,16 +193,25 @@ func (r *repoHandler) Remove(filename string) (*repoHandler, error) {
 	return r, nil
 }
 
-func SimplePush(path, username, email, message string, items ...string) error {
-	r, err := OpenRepo(path, username)
+func (r *repoHandler) SimplePush(message string, items ...string) error {
+	logs.Debug("Repo path for pushing objects: %s", r.repoPath)
+	r, err := OpenRepo(r.repoPath, r.username, r.email)
 	if err != nil {
 		return fmt.Errorf("failed to open repo handler: %+v", err)
 	}
 	for _, item := range items {
+		if r.isRemove {
+			r.Remove(item)
+		} else {
+			r.Add(item)
+		}
 		logs.Debug(">>>>> pushed item: %s", item)
-		r.Add(item)
 	}
-	_, err = r.Commit(message, username, email)
+
+	if r.isRemove {
+		message = "[DELETED]" + message
+	}
+	_, err = r.Commit(message)
 	if err != nil {
 		return fmt.Errorf("failed to commit changes to user's repo: %+v", err)
 	}

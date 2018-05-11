@@ -5,7 +5,6 @@ import (
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
 	"net/http"
-	"path/filepath"
 	"strings"
 
 	"github.com/astaxie/beego/logs"
@@ -27,10 +26,6 @@ func (p *ServiceRollingUpdateController) Prepare() {
 	}
 	p.currentUser = user
 	p.isSysAdmin = (user.SystemAdmin == 1)
-}
-
-func (p *ServiceRollingUpdateController) generateRepoPathByProjectName(projectName string) string {
-	return filepath.Join(baseRepoPath(), p.currentUser.Username, projectName)
 }
 
 func (p *ServiceRollingUpdateController) GetRollingUpdateServiceImageConfigAction() {
@@ -135,7 +130,6 @@ func (p *ServiceRollingUpdateController) GetRollingUpdateServiceNodeGroupConfigA
 			p.Data["json"] = key
 		}
 	}
-
 	p.ServeJSON()
 }
 

@@ -1,6 +1,8 @@
 package service
 
 import (
+	"fmt"
+	"git/inspursoft/board/src/apiserver/service/devops/travis"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"path/filepath"
@@ -204,4 +206,18 @@ func AssembleServiceYaml(serviceConfig *model.ConfigServiceStep, loadPath string
 	}
 
 	return nil
+}
+
+func GenerateDeploymentTravis(repoPath, deploymentURL, serviceURL string) error {
+	var travisCommand travis.TravisCommand
+	travisCommand.Script.Commands = []string{}
+	items := []string{}
+	if deploymentURL != "" {
+		items = append(items, fmt.Sprintf("curl -X POST -H 'Content-Type: application/yaml' --data-binary @deployment.yml %s", deploymentURL))
+	}
+	if serviceURL != "" {
+		items = append(items, fmt.Sprintf("curl -X POST -H 'Content-Type: application/yaml' --data-binary @service.yml %s", serviceURL))
+	}
+	travisCommand.Script.Commands = items
+	return travisCommand.GenerateCustomTravis(repoPath)
 }
