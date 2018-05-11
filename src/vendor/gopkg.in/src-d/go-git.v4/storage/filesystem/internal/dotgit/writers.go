@@ -10,7 +10,7 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing/format/objfile"
 	"gopkg.in/src-d/go-git.v4/plumbing/format/packfile"
 
-	"gopkg.in/src-d/go-billy.v3"
+	"gopkg.in/src-d/go-billy.v4"
 )
 
 // PackWriter is a io.Writer that generates the packfile index simultaneously,
@@ -92,7 +92,7 @@ func (w *PackWriter) Write(p []byte) (int, error) {
 // was written, the tempfiles are deleted without writing a packfile.
 func (w *PackWriter) Close() error {
 	defer func() {
-		if w.Notify != nil {
+		if w.Notify != nil && w.index != nil && w.index.Size() > 0 {
 			w.Notify(w.checksum, w.index)
 		}
 
