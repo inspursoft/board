@@ -15,7 +15,6 @@ import (
 
 	"github.com/astaxie/beego/logs"
 	"github.com/google/cadvisor/info/v2"
-	"k8s.io/client-go/kubernetes"
 	modelK8s "k8s.io/client-go/pkg/api/v1"
 )
 
@@ -208,13 +207,11 @@ func NodeGroupExists(nodeGroupName string) (bool, error) {
 }
 
 func AddNodeToGroup(nodeName string, groupName string) error {
-	cli, err := K8sCliFactory("", kubeMasterURL(), "v1")
-	apiSet, err := kubernetes.NewForConfig(cli)
+	nInterface, err := k8sassist.NewNodes()
 	if err != nil {
-		logs.Error("Failed to get K8s cli")
+		logs.Error("Failed to get node client interface")
 		return err
 	}
-	nInterface := apiSet.Nodes()
 	nNode, err := nInterface.Get(nodeName)
 	if err != nil {
 		logs.Error("Failed to get K8s node")
@@ -222,46 +219,31 @@ func AddNodeToGroup(nodeName string, groupName string) error {
 	}
 	//logs.Info(nNode)
 
-	labelMap := nNode.GetLabels()
-	if err != nil {
-		logs.Error("Failed to get K8s node")
-		return err
-	}
-	logs.Debug(labelMap)
-	labelMap[groupName] = "true"
-	nNode.SetLabels(labelMap)
+	logs.Debug(nNode.ObjectMeta.Labels)
+	nNode.ObjectMeta.Labels[groupName] = "true"
+
 	newNode, err := nInterface.Update(nNode)
 	if err != nil {
 		logs.Error("Failed to update K8s node")
 		return err
 	}
-	logs.Debug(newNode.GetLabels())
+	logs.Debug(newNode)
 	return nil
 }
 
 func GetGroupOfNode(nodeName string) ([]string, error) {
 	var groups []string
-
-	cli, err := K8sCliFactory("", kubeMasterURL(), "v1")
-	apiSet, err := kubernetes.NewForConfig(cli)
+	nInterface, err := k8sassist.NewNodes()
 	if err != nil {
-		logs.Error("Failed to get K8s cli")
+		logs.Error("Failed to get node client interface")
 		return nil, err
 	}
-	nInterface := apiSet.Nodes()
 	nNode, err := nInterface.Get(nodeName)
 	if err != nil {
 		logs.Error("Failed to get K8s node")
 		return nil, err
 	}
-
-	labelMap := nNode.GetLabels()
-	if err != nil {
-		logs.Error("Failed to get K8s node")
-		return nil, err
-	}
-	//Todo: the above should be abstracted to a common func
-	for key, _ := range labelMap {
+	for key, _ := range nNode.ObjectMeta.Labels {
 		if !strings.Contains(key, K8sLabel) {
 			groups = append(groups, key)
 		}
@@ -287,34 +269,25 @@ func NodeOrNodeGroupExists(nodeOrNodeGroupName string) (bool, error) {
 }
 
 func RemoveNodeFromGroup(nodeName string, groupName string) error {
-	cli, err := K8sCliFactory("", kubeMasterURL(), "v1")
-	apiSet, err := kubernetes.NewForConfig(cli)
+	nInterface, err := k8sassist.NewNodes()
 	if err != nil {
-		logs.Error("Failed to get K8s cli")
+		logs.Error("Failed to get node client interface")
 		return err
 	}
-	nInterface := apiSet.Nodes()
 	nNode, err := nInterface.Get(nodeName)
 	if err != nil {
 		logs.Error("Failed to get K8s node")
 		return err
 	}
-	//logs.Info(nNode)
+	//logs.Debug(nNode.ObjectMeta.Labels)
+	delete(nNode.ObjectMeta.Labels, groupName)
 
-	labelMap := nNode.GetLabels()
-	if err != nil {
-		logs.Error("Failed to get K8s node")
-		return err
-	}
-	delete(labelMap, groupName)
-	//logs.Debug(labelMap)
-	nNode.SetLabels(labelMap)
 	newNode, err := nInterface.Update(nNode)
 	if err != nil {
 		logs.Error("Failed to update K8s node")
 		return err
 	}
-	logs.Debug(newNode.GetLabels())
+	logs.Debug(newNode.ObjectMeta.Labels)
 	return nil
 }
 
