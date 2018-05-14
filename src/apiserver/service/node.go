@@ -11,6 +11,8 @@ import (
 
 	"strings"
 
+	"git/inspursoft/board/src/common/k8sassist"
+
 	"github.com/astaxie/beego/logs"
 	"github.com/google/cadvisor/info/v2"
 	"k8s.io/client-go/kubernetes"
@@ -120,22 +122,30 @@ func ResumeNode(nodeName string) (bool, error) {
 }
 func GetNodeList() (res []NodeListResult) {
 
-	var Node modelK8s.NodeList
+	//var nodecli model.NodeCli
 	defer func() { recover() }()
-	err := getFromRequest(kubeNodeURL(), &Node)
+
+	nodecli, err := k8sassist.NewNodes()
 	if err != nil {
+		logs.Error("Failed to get nodeCli")
 		return
 	}
+	Node, err := nodecli.List()
+	if err != nil {
+		logs.Error("Failed to get Node List")
+		return
+	}
+
 	for _, v := range Node.Items {
 		res = append(res, NodeListResult{
 			NodeName: v.Status.Addresses[1].Address,
 			NodeIP:   v.Status.Addresses[1].Address,
 			Status: func() NodeStatus {
-				if v.Spec.Unschedulable {
+				if v.Unschedulable {
 					return Unschedulable
 				}
 				for _, cond := range v.Status.Conditions {
-					if strings.EqualFold(string(cond.Type), "Ready") && cond.Status == modelK8s.ConditionTrue {
+					if strings.EqualFold(string(cond.Type), "Ready") && cond.Status == model.ConditionTrue {
 						return Running
 					}
 				}

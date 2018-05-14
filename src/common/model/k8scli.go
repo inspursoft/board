@@ -260,6 +260,8 @@ type DeploymentCli interface {
 }
 
 // NamespaceCli Interface has methods to work with Namespace resources.
+// How to:  namespaceCli, err := k8sassist.NewNamespaces()
+//          nl, err := namespaceCli.List()
 type NamespaceCli interface {
 	Create(*Namespace) (*Namespace, error)
 	Update(*Namespace) (*Namespace, error)
@@ -272,6 +274,8 @@ type NamespaceCli interface {
 }
 
 // ServiceCli interface has methods to work with Service resources in k8s-assist.
+// How to:  serviceCli, err := k8sassist.NewServices(nameSpace)
+//          service, err := serviceCli.Get(serviceName)
 type ServiceCli interface {
 	Create(*Service) (*Service, error)
 	Update(*Service) (*Service, error)
