@@ -315,20 +315,6 @@ type NamespaceCli interface {
 	//Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *v1.Namespace, err error)
 }
 
-// ServiceCli interface has methods to work with Service resources in k8s-assist.
-// How to:  serviceCli, err := k8sassist.NewServices(nameSpace)
-//          service, err := serviceCli.Get(serviceName)
-type ServiceCli interface {
-	Create(*Service) (*Service, error)
-	Update(*Service) (*Service, error)
-	UpdateStatus(*Service) (*Service, error)
-	Delete(name string) error
-	//DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
-	Get(name string) (*Service, error)
-	List() (*ServiceList, error)
-	//Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *v1.Service, err error)
-}
-
 // The ScaleCli interface has methods on Scale resources in k8s-assist.
 type ScaleCli interface {
 	Get(kind string, name string) (*Scale, error)
