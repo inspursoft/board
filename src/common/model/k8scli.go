@@ -271,19 +271,6 @@ type VolumeMount struct {
 	MountPath string
 }
 
-// NodeCli Interface has methods to work with Node resources in k8s-assist.
-// How to:  nodeCli, err := k8sassist.NewNodes()
-//          nodeInstance, err := nodeCli.Get(nodename)
-type NodeCli interface {
-	Create(*Node) (*Node, error)
-	Update(*Node) (*Node, error)
-	UpdateStatus(*Node) (*Node, error)
-	Delete(name string) error
-	Get(name string) (*Node, error)
-	List() (*NodeList, error)
-	//Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *v1.Node, err error)
-}
-
 // DeploymentCli has methods to work with Deployment resources in k8s-assist.
 // How to:  deploymentCli, err := k8sassist.NewDeployments(nameSpace)
 //          _, err := deploymentCli.Update(&deployment)
