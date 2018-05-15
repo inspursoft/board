@@ -15,7 +15,7 @@ import (
 
 	"github.com/astaxie/beego/logs"
 	"github.com/google/cadvisor/info/v2"
-	modelK8s "k8s.io/client-go/pkg/api/v1"
+	//modelK8s "k8s.io/client-go/pkg/api/v1"
 )
 
 type NodeStatus int
@@ -50,7 +50,7 @@ type NodeInfo struct {
 var kubeNodeURL = utils.GetConfig("KUBE_NODE_URL")
 
 func GetNode(nodeName string) (node NodeInfo, err error) {
-	var Node modelK8s.NodeList
+	var Node model.NodeList
 	defer func() { recover() }()
 	err = getFromRequest(kubeNodeURL(), &Node)
 	if err != nil {
@@ -59,12 +59,13 @@ func GetNode(nodeName string) (node NodeInfo, err error) {
 	for _, v := range Node.Items {
 		var mlimit string
 		if strings.EqualFold(v.Status.Addresses[1].Address, nodeName) {
-			for k, v := range v.Status.Capacity {
-				switch k {
-				case "memory":
-					mlimit = v.String()
-				}
-			}
+			//for k, v := range v.Status.Capacity {
+			//	switch k {
+			//	case "memory":
+			//		mlimit = v.String()
+			//	}
+			//}
+			mlimit = string(v.Status.Capacity["memory"])
 			time := v.CreationTimestamp.Unix()
 			var ps []v2.ProcessInfo
 			getFromRequest("http://"+nodeName+":4194/api/v2.0/ps/", &ps)
