@@ -12,15 +12,6 @@ type NodeController struct {
 	baseController
 }
 
-func (p *NodeController) Prepare() {
-	user := p.getCurrentUser()
-	if user == nil {
-		p.customAbort(http.StatusUnauthorized, "Need to login first.")
-		return
-	}
-	p.currentUser = user
-	p.isSysAdmin = (user.SystemAdmin == 1)
-}
 func (n *NodeController) GetNode() {
 	para := n.GetString("node_name")
 	res, err := service.GetNode(para)

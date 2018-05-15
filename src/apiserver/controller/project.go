@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
@@ -18,27 +17,47 @@ type ProjectController struct {
 }
 
 func (p *ProjectController) Prepare() {
-	user := p.getCurrentUser()
-	if user == nil {
-		p.customAbort(http.StatusUnauthorized, "Need to login first.")
+	p.resolveSignedInUser()
+}
+
+func (p *ProjectController) resolveProjectOwner(projectID int) (project *model.Project, err error) {
+	isExists, err := service.ProjectExistsByID(int64(projectID))
+	if err != nil {
+		p.internalError(err)
 		return
 	}
-	p.currentUser = user
-	p.isSysAdmin = (user.SystemAdmin == 1)
+	if !isExists {
+		p.customAbort(http.StatusNotFound, fmt.Sprintf("Cannot find project by ID: %d", projectID))
+		return
+	}
+
+	isMember, err := service.IsProjectMember(int64(projectID), p.currentUser.ID)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if !(isMember || p.isSysAdmin) {
+		p.customAbort(http.StatusForbidden, "Insufficient privileges for manipulating projects.")
+		return
+	}
+
+	project, err = service.GetProjectByID(int64(projectID))
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if !(p.isSysAdmin || int64(project.OwnerID) == p.currentUser.ID) {
+		p.customAbort(http.StatusForbidden, "User is not the owner of the project.")
+		return
+	}
+	return
 }
 
 func (p *ProjectController) CreateProjectAction() {
-	reqData, err := p.resolveBody()
-	if err != nil {
-		p.internalError(err)
-		return
-	}
 	var reqProject model.Project
-	err = json.Unmarshal(reqData, &reqProject)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
+	var err error
+	p.resolveBody(&reqProject)
+
 	if !utils.ValidateWithLengthRange(reqProject.Name, 2, 30) {
 		p.customAbort(http.StatusBadRequest, "Project name length should be between 2 and 30 characters.")
 		return
@@ -158,8 +177,7 @@ func (p *ProjectController) GetProjectAction() {
 		p.internalError(err)
 		return
 	}
-	projectQuery := model.Project{ID: int64(projectID), Deleted: 0}
-	project, err := service.GetProject(projectQuery, "id", "deleted")
+	project, err := service.GetProjectByID(int64(projectID))
 	if err != nil {
 		p.internalError(err)
 		return
@@ -179,35 +197,10 @@ func (p *ProjectController) DeleteProjectAction() {
 		p.internalError(err)
 		return
 	}
-	isMember, err := service.IsProjectMember(int64(projectID), p.currentUser.ID)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if !(isMember || p.isSysAdmin) {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges for creating projects.")
-		return
-	}
 
-	isExists, err := service.ProjectExistsByID(int64(projectID))
+	project, err := p.resolveProjectOwner(projectID)
 	if err != nil {
 		p.internalError(err)
-		return
-	}
-	if !isExists {
-		p.customAbort(http.StatusNotFound, fmt.Sprintf("Cannot find project with ID: %d", projectID))
-		return
-	}
-
-	queryProject := model.Project{ID: int64(projectID)}
-	project, err := service.GetProject(queryProject, "id")
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if !(p.isSysAdmin || int64(project.OwnerID) == p.currentUser.ID) {
-		p.customAbort(http.StatusForbidden, "User is not the owner of the project.")
-		return
 	}
 
 	isSuccess, err := service.DeleteProject(int64(projectID))
@@ -237,51 +230,13 @@ func (p *ProjectController) ToggleProjectPublicAction() {
 		p.internalError(err)
 		return
 	}
-	isMember, err := service.IsProjectMember(int64(projectID), p.currentUser.ID)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if !(isMember || p.isSysAdmin) {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges for creating projects.")
-		return
-	}
 
-	isExists, err := service.ProjectExistsByID(int64(projectID))
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if !isExists {
-		p.customAbort(http.StatusNotFound, fmt.Sprintf("Cannot find project by ID: %d", projectID))
-		return
-	}
-
-	queryProject := model.Project{ID: int64(projectID)}
-	project, err := service.GetProject(queryProject, "id")
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if !(p.isSysAdmin || int64(project.OwnerID) == p.currentUser.ID) {
-		p.customAbort(http.StatusForbidden, "User is not the owner of the project.")
-		return
-	}
-
-	reqData, err := p.resolveBody()
-	if err != nil {
-		p.internalError(err)
-		return
-	}
+	p.resolveProjectOwner(projectID)
 
 	var reqProject model.Project
-	err = json.Unmarshal(reqData, &reqProject)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	reqProject.ID = int64(projectID)
+	p.resolveBody(&reqProject)
 
+	reqProject.ID = int64(projectID)
 	isSuccess, err := service.UpdateProject(reqProject, "public")
 	if err != nil {
 		p.internalError(err)

@@ -52,6 +52,14 @@ func GetProject(project model.Project, selectedFields ...string) (*model.Project
 	return p, nil
 }
 
+func GetProjectByName(name string) (*model.Project, error) {
+	return GetProject(model.Project{Name: name, Deleted: 0}, "name", "deleted")
+}
+
+func GetProjectByID(id int64) (*model.Project, error) {
+	return GetProject(model.Project{ID: id, Deleted: 0}, "id", "deleted")
+}
+
 func ProjectExists(projectName string) (bool, error) {
 	query := model.Project{Name: projectName}
 	project, err := dao.GetProject(query, "name")

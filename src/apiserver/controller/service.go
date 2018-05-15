@@ -50,17 +50,6 @@ type ServiceController struct {
 	baseController
 }
 
-//  Checking the user priviledge by token
-func (p *ServiceController) Prepare() {
-	user := p.getCurrentUser()
-	if user == nil {
-		p.customAbort(http.StatusUnauthorized, "Need to login first.")
-		return
-	}
-	p.currentUser = user
-	p.isSysAdmin = (user.SystemAdmin == 1)
-}
-
 func (p *ServiceController) generateDeploymentTravis(deploymentURL string, serviceURL string) error {
 	userID := p.currentUser.ID
 	var travisCommand travis.TravisCommand
@@ -82,21 +71,34 @@ func (p *ServiceController) getKey() string {
 	return strconv.Itoa(int(p.currentUser.ID))
 }
 
-func (p *ServiceController) DeployServiceAction() {
-	key := p.getKey()
-	configService := NewConfigServiceStep(key)
-
-	isMember, err := service.IsProjectMember(configService.ProjectID, p.currentUser.ID)
+func (p *ServiceController) resolveServiceInfo() (s *model.ServiceStatus) {
+	var err error
+	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
 	if err != nil {
 		p.internalError(err)
 		return
 	}
-
-	//Judge authority
-	if !(p.isSysAdmin || isMember) {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges to delete service.")
+	// Get the project info of this service
+	s, err = service.GetServiceByID(int64(serviceID))
+	if err != nil {
+		p.internalError(err)
 		return
 	}
+	if s == nil {
+		p.customAbort(http.StatusBadRequest,
+			fmt.Sprintf("Invalid service ID: %d", serviceID))
+		return
+	}
+	logs.Info("service status: ", s)
+	return
+}
+
+func (p *ServiceController) DeployServiceAction() {
+	key := p.getKey()
+	configService := NewConfigServiceStep(key)
+
+	//Judge authority
+	project := p.resolveUserPrivilegeByID(configService.ProjectID)
 
 	var newservice model.ServiceStatus
 	newservice.Name = configService.ServiceName
@@ -105,16 +107,6 @@ func (p *ServiceController) DeployServiceAction() {
 	newservice.OwnerID = p.currentUser.ID
 	newservice.OwnerName = p.currentUser.Username
 	newservice.Public = configService.Public
-
-	project, err := service.GetProject(model.Project{ID: configService.ProjectID}, "id")
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if project == nil {
-		p.customAbort(http.StatusBadRequest, projectIDInvalidErr.Error())
-		return
-	}
 	newservice.ProjectName = project.Name
 
 	serviceInfo, err := service.CreateServiceConfig(newservice)
@@ -294,35 +286,20 @@ func (p *ServiceController) GetServiceListAction() {
 
 // API to create service config
 func (p *ServiceController) CreateServiceConfigAction() {
-	reqData, err := p.resolveBody()
-	if err != nil {
-		p.internalError(err)
-		return
-	}
 	var reqServiceProject model.ServiceProject
-	err = json.Unmarshal(reqData, &reqServiceProject)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
+	var err error
+
+	p.resolveBody(&reqServiceProject)
+
+	//Judge authority
+	p.resolveUserPrivilegeByID(reqServiceProject.ProjectID)
+
 	//Assign and return Service ID with mysql
 	var newservice model.ServiceStatus
 	newservice.ProjectID = reqServiceProject.ProjectID
 	newservice.ProjectName = reqServiceProject.ProjectName
 	newservice.Status = preparing // 0: preparing 1: running 2: suspending
 	newservice.OwnerID = p.currentUser.ID
-
-	isMember, err := service.IsProjectMember(newservice.ProjectID, p.currentUser.ID)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	//Judge authority
-	if !(p.isSysAdmin || isMember) {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges to create service.")
-		return
-	}
 
 	serviceInfo, err := service.CreateServiceConfig(newservice)
 	if err != nil {
@@ -334,36 +311,11 @@ func (p *ServiceController) CreateServiceConfigAction() {
 }
 
 func (p *ServiceController) DeleteServiceAction() {
-	serviceID, err := strconv.ParseInt(p.Ctx.Input.Param(":id"), 10, 64)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	// Check service id exist
-	var servicequery model.ServiceStatus
-	servicequery.ID = int64(serviceID)
-	s, err := service.GetService(servicequery, "id")
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if s == nil {
-		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
-		return
-	}
-
-	isMember, err := service.IsProjectMember(s.ProjectID, p.currentUser.ID)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
+	s := p.resolveServiceInfo()
 	//Judge authority
-	if !(p.isSysAdmin || isMember) {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges to delete service.")
-		return
-	}
+	p.resolveUserPrivilegeByID(s.ProjectID)
 
+	var err error
 	// Call stop service if running
 	switch s.Status {
 	case running:
@@ -378,7 +330,7 @@ func (p *ServiceController) DeleteServiceAction() {
 		logs.Debug("uncompleted status in %+v", timeInt)
 		if timeInt < startingDuration {
 			p.customAbort(http.StatusBadRequest,
-				fmt.Sprintf("Invalid request %d in starting status", serviceID))
+				fmt.Sprintf("Invalid request %d in starting status", s.ID))
 			return
 		}
 		err = service.CleanDeploymentK8s(s)
@@ -395,13 +347,13 @@ func (p *ServiceController) DeleteServiceAction() {
 		}
 	}
 
-	isSuccess, err := service.DeleteService(serviceID)
+	isSuccess, err := service.DeleteService(s.ID)
 	if err != nil {
 		p.internalError(err)
 		return
 	}
 	if !isSuccess {
-		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Failed to delete service with ID: %d", serviceID))
+		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Failed to delete service with ID: %d", s.ID))
 	}
 
 	//delete repo files of the service
@@ -412,49 +364,13 @@ func (p *ServiceController) DeleteServiceAction() {
 
 // API to deploy service
 func (p *ServiceController) ToggleServiceAction() {
-	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
-	if err != nil {
-		p.internalError(err)
-		return
-	}
+	s := p.resolveServiceInfo()
 
-	reqData, err := p.resolveBody()
-	if err != nil {
-		p.internalError(err)
-		return
-	}
 	var reqServiceToggle model.ServiceToggle
-	err = json.Unmarshal(reqData, &reqServiceToggle)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	logs.Info(reqServiceToggle)
-
-	// Check the current service status
-	var servicequery model.ServiceStatus
-	servicequery.ID = int64(serviceID)
-	s, err := service.GetService(servicequery, "id")
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if s == nil {
-		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
-		return
-	}
-
-	isMember, err := service.IsProjectMember(s.ProjectID, p.currentUser.ID)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
+	p.resolveBody(&reqServiceToggle)
 
 	//Judge authority
-	if !(p.isSysAdmin || isMember) {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges to toggle service status.")
-		return
-	}
+	p.resolveUserPrivilegeByID(s.ProjectID)
 
 	if s.Status == stopped && reqServiceToggle.Toggle == 0 {
 		p.customAbort(http.StatusBadRequest, "Service already stopped.")
@@ -466,6 +382,7 @@ func (p *ServiceController) ToggleServiceAction() {
 		return
 	}
 
+	var err error
 	if reqServiceToggle.Toggle == 0 {
 		// stop service
 		err = service.StopServiceK8s(s)
@@ -474,8 +391,7 @@ func (p *ServiceController) ToggleServiceAction() {
 			return
 		}
 		// Update service status DB
-		servicequery.Status = stopped
-		_, err = service.UpdateService(servicequery, "status")
+		_, err = service.UpdateServiceStatus(stopped)
 		if err != nil {
 			p.internalError(err)
 			return
@@ -500,8 +416,7 @@ func (p *ServiceController) ToggleServiceAction() {
 		p.collaborateWithPullRequest("master", "master", items...)
 
 		// Update service status DB
-		servicequery.Status = running
-		_, err = service.UpdateService(servicequery, "status")
+		_, err = service.UpdateServiceStatus(running)
 		if err != nil {
 			p.internalError(err)
 			return
@@ -561,38 +476,11 @@ func (p *ServiceController) resolveErrOutput(err error) {
 }
 
 func (p *ServiceController) GetServiceInfoAction() {
-	var serviceInfo model.ServiceInfoStruct
 
-	//Get Nodeport
-	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	var servicequery model.ServiceStatus
-	servicequery.ID = int64(serviceID)
-	s, err := service.GetService(servicequery, "id")
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if s == nil {
-		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
-		return
-	}
-
-	isMember, err := service.IsProjectMember(s.ProjectID, p.currentUser.ID)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
+	s := p.resolveServiceInfo()
 	//Judge authority
-	if !(p.isSysAdmin || isMember) {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges to get publicity of service.")
-		return
-	}
+	p.resolveUserPrivilegeByID(s.ProjectID)
+
 	serviceStatus, err := service.GetServiceStatus(kubeMasterURL() + serviceAPI + s.ProjectName + "/services/" + s.Name)
 	if err != nil {
 		p.resolveErrOutput(err)
@@ -611,6 +499,7 @@ func (p *ServiceController) GetServiceInfoAction() {
 		return
 	}
 
+	var serviceInfo model.ServiceInfoStruct
 	for _, ports := range serviceStatus.Spec.Ports {
 		serviceInfo.NodePort = append(serviceInfo.NodePort, ports.NodePort)
 	}
@@ -623,35 +512,9 @@ func (p *ServiceController) GetServiceInfoAction() {
 }
 
 func (p *ServiceController) GetServiceStatusAction() {
-	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	var servicequery model.ServiceStatus
-	servicequery.ID = int64(serviceID)
-	s, err := service.GetService(servicequery, "id")
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if s == nil {
-		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
-		return
-	}
-
-	isMember, err := service.IsProjectMember(s.ProjectID, p.currentUser.ID)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
+	s := p.resolveServiceInfo()
 	//Judge authority
-	if !(p.isSysAdmin || isMember) {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges to get publicity of service.")
-		return
-	}
+	p.resolveUserPrivilegeByID(s.ProjectID)
 
 	serviceStatus, err := service.GetServiceStatus(kubeMasterURL() + serviceAPI + s.ProjectName + "/services/" + s.Name)
 	if err != nil {
@@ -663,53 +526,14 @@ func (p *ServiceController) GetServiceStatusAction() {
 }
 
 func (p *ServiceController) ServicePublicityAction() {
-	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	reqData, err := p.resolveBody()
-	if err != nil {
-		p.internalError(err)
-		return
-	}
+	s := p.resolveServiceInfo()
 	var reqServiceUpdate model.ServicePublicityUpdate
-	err = json.Unmarshal(reqData, &reqServiceUpdate)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	logs.Info(reqServiceUpdate)
-
-	// Check the current service status
-	var servicequery model.ServiceStatus
-	servicequery.ID = int64(serviceID)
-	s, err := service.GetService(servicequery, "id")
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if s == nil {
-		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
-		return
-	}
-
-	isMember, err := service.IsProjectMember(s.ProjectID, p.currentUser.ID)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
+	p.resolveBody(&reqServiceUpdate)
 	//Judge authority
-	if !(p.isSysAdmin || isMember) {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges to get publicity of service.")
-		return
-	}
+	p.resolveUserPrivilegeByID(s.ProjectID)
 
 	if s.Public != reqServiceUpdate.Public {
-		servicequery.Public = reqServiceUpdate.Public
-		_, err = service.UpdateService(servicequery, "public")
+		_, err := service.UpdateServicePublic(reqServiceUpdate.Public)
 		if err != nil {
 			p.internalError(err)
 			return
@@ -720,35 +544,14 @@ func (p *ServiceController) ServicePublicityAction() {
 }
 
 func (p *ServiceController) DeleteServiceConfigAction() {
-	var err error
-	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	// Get the project info of this service
-	var servicequery model.ServiceStatus
-	servicequery.ID = int64(serviceID)
-	s, err := service.GetService(servicequery, "id")
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if s == nil {
-		p.customAbort(http.StatusBadRequest,
-			fmt.Sprintf("Invalid service ID: %d", serviceID))
-		return
-	}
-	logs.Info("service status: ", s)
-
+	s := p.resolveServiceInfo()
 	// Get the path of the service config files
 	p.resolveRepoPath(s.ProjectName)
 	logs.Debug("Service config path: %s", p.repoPath)
 
 	// Delete yaml files
 	// TODO
-	err = service.DeleteServiceConfigYaml(p.repoPath)
+	err := service.DeleteServiceConfigYaml(p.repoPath)
 	if err != nil {
 		logs.Info("failed to delete service yaml", p.repoPath)
 		p.internalError(err)
@@ -756,7 +559,7 @@ func (p *ServiceController) DeleteServiceConfigAction() {
 	}
 
 	// For terminated service config, actually delete it in DB
-	_, err = service.DeleteServiceByID(servicequery)
+	_, err = service.DeleteServiceByID(s.ID)
 	if err != nil {
 		p.internalError(err)
 		return
@@ -764,36 +567,14 @@ func (p *ServiceController) DeleteServiceConfigAction() {
 }
 
 func (p *ServiceController) DeleteDeploymentAction() {
-	var err error
-	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	// Get the project info of this service
-	var servicequery model.ServiceStatus
-	servicequery.ID = int64(serviceID)
-	s, err := service.GetService(servicequery, "id")
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if s == nil {
-		p.customAbort(http.StatusBadRequest,
-			fmt.Sprintf("Invalid service ID: %d", serviceID))
-		return
-	}
-	logs.Info("service status: ", s)
-
+	s := p.resolveServiceInfo()
 	// Get the path of the service config files
 	p.resolveRepoPath(s.ProjectName)
 	logs.Debug("Service config path: %s", p.repoPath)
 
 	// TODO clear kube-master, even if the service is not deployed successfully
-
 	deploymentURL := filepath.Join(kubeMasterURL(), deploymentAPI, s.ProjectName, "deployments")
-	err = p.generateDeploymentTravis(deploymentURL, "")
+	err := p.generateDeploymentTravis(deploymentURL, "")
 	if err != nil {
 		logs.Error("Failed to generate deployment travis: %+v", err)
 		p.internalError(err)
@@ -811,7 +592,7 @@ func (p *ServiceController) DeleteDeploymentAction() {
 	}
 
 	// For terminated service config, actually delete it in DB
-	_, err = service.DeleteServiceByID(servicequery)
+	_, err = service.DeleteServiceByID(s.ID)
 	if err != nil {
 		p.internalError(err)
 		return
@@ -841,53 +622,16 @@ func (p *ServiceController) ServiceExists() {
 }
 
 func (p *ServiceController) ScaleServiceAction() {
-	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
-	if err != nil {
-		p.internalError(err)
-		return
-	}
+	s := p.resolveServiceInfo()
 
-	reqData, err := p.resolveBody()
-	if err != nil {
-		p.internalError(err)
-		return
-	}
 	var reqServiceScale model.ServiceScale
-	err = json.Unmarshal(reqData, &reqServiceScale)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	logs.Info(reqServiceScale)
-
-	// Get the current service status
-	var servicequery model.ServiceStatus
-	servicequery.ID = int64(serviceID)
-	s, err := service.GetService(servicequery, "id")
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if s == nil {
-		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
-		return
-	}
-
-	isMember, err := service.IsProjectMember(s.ProjectID, p.currentUser.ID)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
+	p.resolveBody(&reqServiceScale)
 
 	//Judge authority
-	if !(p.isSysAdmin || isMember) {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges to get publicity of service.")
-		return
-	}
+	p.resolveUserPrivilegeByID(s.ProjectID)
 
 	// change the replica number of service
-
-	res, err := service.ScaleReplica(*s, reqServiceScale.Replica)
+	res, err := service.ScaleReplica(s, reqServiceScale.Replica)
 
 	if res != true {
 		logs.Info("Failed to scale service replica", s, reqServiceScale.Replica)
@@ -966,7 +710,6 @@ func (f *ServiceController) UploadYamlFileAction() {
 	}
 
 	//check label selector
-
 	serviceInfo, err := service.GetServiceByProject(serviceConfig.Name, projectName)
 	if err != nil {
 		f.internalError(err)
@@ -1105,18 +848,9 @@ func (p *ServiceController) GetScaleStatusAction() {
 		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
 		return
 	}
-
-	isMember, err := service.IsProjectMember(s.ProjectID, p.currentUser.ID)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
 	//Judge authority
-	if !(p.isSysAdmin || isMember) {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges to get publicity of service.")
-		return
-	}
+	p.resolveUserPrivilegeByID(s.ProjectID)
+
 	scaleStatus, err := service.GetScaleStatus(s)
 	if err != nil {
 		logs.Debug("Get scale deployment status failed %s", s.Name)

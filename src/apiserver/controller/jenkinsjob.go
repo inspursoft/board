@@ -39,15 +39,6 @@ type JenkinsJobController struct {
 	baseController
 }
 
-func (j *JenkinsJobController) Prepare() {
-	user := j.getCurrentUser()
-	if user == nil {
-		j.customAbort(http.StatusUnauthorized, "Need to login first.")
-		return
-	}
-	j.currentUser = user
-}
-
 func (j *JenkinsJobController) getBuildNumber() (int, error) {
 	if buildNumber, ok := memoryCache.Get(strconv.Itoa(int(j.currentUser.ID)) + "_buildNumber").(int); ok {
 		logs.Info("Get build number with key %s from cache is %d", strconv.Itoa(int(j.currentUser.ID))+"_lastBuildNumber", buildNumber)

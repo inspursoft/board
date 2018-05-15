@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/apiserver/service/devops/gogs"
@@ -15,16 +14,6 @@ import (
 
 type ProjectMemberController struct {
 	baseController
-}
-
-func (pm *ProjectMemberController) Prepare() {
-	user := pm.getCurrentUser()
-	if user == nil {
-		pm.customAbort(http.StatusUnauthorized, "Need to login first.")
-		return
-	}
-	pm.currentUser = user
-	pm.isSysAdmin = (user.SystemAdmin == 1)
 }
 
 func (pm *ProjectMemberController) AddOrUpdateProjectMemberAction() {
@@ -43,18 +32,10 @@ func (pm *ProjectMemberController) AddOrUpdateProjectMemberAction() {
 		pm.customAbort(http.StatusNotFound, "Cannot find project by ID")
 		return
 	}
-	reqData, err := pm.resolveBody()
-	if err != nil {
-		pm.internalError(err)
-		return
-	}
 
 	var reqProjectMember model.ProjectMember
-	err = json.Unmarshal(reqData, &reqProjectMember)
-	if err != nil {
-		pm.internalError(err)
-		return
-	}
+	pm.resolveBody(&reqProjectMember)
+
 	role, err := service.GetRoleByID(reqProjectMember.RoleID)
 	if err != nil {
 		pm.internalError(err)

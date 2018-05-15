@@ -27,12 +27,7 @@ type FileUploadController struct {
 }
 
 func (f *FileUploadController) Prepare() {
-	user := f.getCurrentUser()
-	if user == nil {
-		f.customAbort(http.StatusUnauthorized, "Need to login first.")
-		return
-	}
-	f.currentUser = user
+	f.resolveSignedInUser()
 	f.resolveFilePath()
 }
 

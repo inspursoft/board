@@ -18,16 +18,6 @@ type ServiceRollingUpdateController struct {
 	baseController
 }
 
-func (p *ServiceRollingUpdateController) Prepare() {
-	user := p.getCurrentUser()
-	if user == nil {
-		p.customAbort(http.StatusUnauthorized, "Need to login first.")
-		return
-	}
-	p.currentUser = user
-	p.isSysAdmin = (user.SystemAdmin == 1)
-}
-
 func (p *ServiceRollingUpdateController) GetRollingUpdateServiceImageConfigAction() {
 	serviceConfig, _ := p.getServiceConfig()
 	if len(serviceConfig.Spec.Template.Spec.Containers) < 1 {
@@ -50,13 +40,7 @@ func (p *ServiceRollingUpdateController) GetRollingUpdateServiceImageConfigActio
 
 func (p *ServiceRollingUpdateController) getServiceConfig() (*v1beta1.Deployment, string) {
 	projectName := p.GetString("project_name")
-	isExistence, err := service.ProjectExists(projectName)
-	if err != nil {
-		p.internalError(err)
-	}
-	if isExistence != true {
-		p.customAbort(http.StatusBadRequest, "Project doesn't exist.")
-	}
+	p.resolveProjectMember(projectName)
 
 	serviceName := p.GetString("service_name")
 	serviceStatus, err := service.GetServiceByProject(serviceName, projectName)
@@ -86,16 +70,7 @@ func (p *ServiceRollingUpdateController) getServiceConfig() (*v1beta1.Deployment
 func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceImageAction() {
 
 	var imageList []model.ImageIndex
-	reqData, err := p.resolveBody()
-	if err != nil {
-		p.internalError(err)
-	}
-	//logs.Debug("reqData %+v\n", string(reqData))
-	err = json.Unmarshal(reqData, &imageList)
-	if err != nil {
-		p.internalError(err)
-	}
-	logs.Debug("Image list info: %+v\n", imageList)
+	p.resolveBody(&imageList)
 
 	serviceConfig, _ := p.getServiceConfig()
 	if len(serviceConfig.Spec.Template.Spec.Containers) != len(imageList) {
@@ -145,19 +120,12 @@ func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceNodeGroupActio
 	} else {
 		rollingUpdateConfig.Spec.Template.Spec.NodeSelector = map[string]string{"kubernetes.io/hostname": nodeGroup}
 	}
-
 	p.PatchServiceAction(rollingUpdateConfig)
 }
 
 func (p *ServiceRollingUpdateController) PatchServiceAction(rollingUpdateConfig *v1beta1.Deployment) {
 	projectName := p.GetString("project_name")
-	isExistence, err := service.ProjectExists(projectName)
-	if err != nil {
-		p.internalError(err)
-	}
-	if isExistence != true {
-		p.customAbort(http.StatusBadRequest, "Project don't exist.")
-	}
+	p.resolveProjectMember(projectName)
 
 	serviceName := p.GetString("service_name")
 	serviceStatus, err := service.GetServiceByProject(serviceName, projectName)

@@ -20,15 +20,6 @@ type NodeBodyReqPara struct {
 	DurationTime  int    `json:"node_duration_time"`
 }
 
-func (p *DashboardNodeController) Prepare() {
-	user := p.getCurrentUser()
-	if user == nil {
-		p.customAbort(http.StatusUnauthorized, "Need to login first.")
-		return
-	}
-	p.currentUser = user
-}
-
 func (b *DashboardNodeController) resolveBody() (in NodeBodyReqPara, err error) {
 	data, err := ioutil.ReadAll(b.Ctx.Request.Body)
 	json.Unmarshal(data, &in)
