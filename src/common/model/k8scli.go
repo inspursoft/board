@@ -192,8 +192,8 @@ type Pod struct {
 
 type PodSpec struct {
 	Volumes        []Volume
-	InitContainers []Container
-	Containers     []Container
+	InitContainers []K8sContainer
+	Containers     []K8sContainer
 	NodeSelector   map[string]string
 	NodeName       string
 	HostNetwork    bool
@@ -231,6 +231,46 @@ type NFSVolumeSource struct {
 	Path   string
 }
 
+// A single application container that you want to run within a pod.
+type K8sContainer struct {
+	Name         string
+	Image        string
+	Command      []string
+	Args         []string
+	WorkingDir   string
+	Ports        []ContainerPort
+	Env          []EnvVar
+	VolumeMounts []VolumeMount
+}
+
+// Protocol defines network protocols supported for things like container ports.
+type Protocol string
+
+const (
+	ProtocolTCP Protocol = "TCP"
+	ProtocolUDP Protocol = "UDP"
+)
+
+// ContainerPort represents a network port in a single container.
+type ContainerPort struct {
+	Name          string
+	HostPort      int32
+	ContainerPort int32
+	Protocol      Protocol
+	HostIP        string
+}
+
+type EnvVar struct {
+	Name  string
+	Value string
+}
+
+// VolumeMount describes a mounting of a Volume within a container.
+type VolumeMount struct {
+	Name      string
+	MountPath string
+}
+
 // DeploymentCli has methods to work with Deployment resources in k8s-assist.
 // How to:  deploymentCli, err := k8sassist.NewDeployments(nameSpace)
 //          _, err := deploymentCli.Update(&deployment)
@@ -244,6 +284,21 @@ type DeploymentCli interface {
 	//List(opts v1.ListOptions) (*DeploymentList, error)
 	List() (*DeploymentList, error)
 	//Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *v1beta1.Deployment, err error)
+}
+
+// PodCli has methods to work with Pod resources in k8s-assist.
+// How to:  podCli, err := k8sassist.NewPods(nameSpace)
+//          _, err := podCli.Update(&pod)
+type PodCli interface {
+	Create(*Pod) (*Pod, error)
+	Update(*Pod) (*Pod, error)
+	UpdateStatus(*Pod) (*Pod, error)
+	Delete(name string) error
+	//DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
+	Get(name string) (*Pod, error)
+	List() (*PodList, error)
+	//List(opts v1.ListOptions) (*v1.PodList, error)
+	//Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *v1.Pod, err error)
 }
 
 // NamespaceCli Interface has methods to work with Namespace resources.
