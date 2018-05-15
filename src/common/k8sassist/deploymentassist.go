@@ -5,6 +5,7 @@ import (
 )
 
 type deployments struct {
+	ns string
 }
 
 func (d *deployments) Create(*model.Deployment) (*model.Deployment, error) {
@@ -31,12 +32,17 @@ func (d *deployments) List() (*model.DeploymentList, error) {
 	return nil, nil
 }
 
-var _ DeploymentCli = &deployments{}
+var _ DeploymentCliInterface = &deployments{}
+
+// newNodes returns a Nodes
+func NewDeployments(namespace string) (*deployments, error) {
+	return &deployments{ns: namespace}, nil
+}
 
 // DeploymentCli has methods to work with Deployment resources in k8s-assist.
 // How to:  deploymentCli, err := k8sassist.NewDeployments(nameSpace)
 //          _, err := deploymentCli.Update(&deployment)
-type DeploymentCli interface {
+type DeploymentCliInterface interface {
 	Create(*model.Deployment) (*model.Deployment, error)
 	Update(*model.Deployment) (*model.Deployment, error)
 	UpdateStatus(*model.Deployment) (*model.Deployment, error)
