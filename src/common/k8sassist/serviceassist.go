@@ -9,6 +9,41 @@ import (
 	"git/inspursoft/board/src/common/model"
 )
 
+type services struct {
+	ns string
+}
+
+func (d *services) Create(*model.Service) (*model.Service, error) {
+	return nil, nil
+}
+
+func (d *services) Update(*model.Service) (*model.Service, error) {
+	return nil, nil
+}
+
+func (d *services) UpdateStatus(*model.Service) (*model.Service, error) {
+	return nil, nil
+}
+
+func (d *services) Delete(name string) error {
+	return nil
+}
+
+func (d *services) Get(name string) (*model.Service, error) {
+	return nil, nil
+}
+
+func (d *services) List() (*model.ServiceList, error) {
+	return nil, nil
+}
+
+var _ ServiceCliInterface = &services{}
+
+// newNodes returns a Nodes
+func NewServices(namespace string) (*services, error) {
+	return &services{ns: namespace}, nil
+}
+
 // ServiceCli interface has methods to work with Service resources in k8s-assist.
 // How to:  serviceCli, err := k8sassist.NewServices(nameSpace)
 //          service, err := serviceCli.Get(serviceName)
