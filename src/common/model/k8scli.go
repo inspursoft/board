@@ -271,36 +271,6 @@ type VolumeMount struct {
 	MountPath string
 }
 
-// DeploymentCli has methods to work with Deployment resources in k8s-assist.
-// How to:  deploymentCli, err := k8sassist.NewDeployments(nameSpace)
-//          _, err := deploymentCli.Update(&deployment)
-type DeploymentCli interface {
-	Create(*Deployment) (*Deployment, error)
-	Update(*Deployment) (*Deployment, error)
-	UpdateStatus(*Deployment) (*Deployment, error)
-	Delete(name string) error
-	//DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
-	Get(name string) (*Deployment, error)
-	//List(opts v1.ListOptions) (*DeploymentList, error)
-	List() (*DeploymentList, error)
-	//Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *v1beta1.Deployment, err error)
-}
-
-// PodCli has methods to work with Pod resources in k8s-assist.
-// How to:  podCli, err := k8sassist.NewPods(nameSpace)
-//          _, err := podCli.Update(&pod)
-type PodCli interface {
-	Create(*Pod) (*Pod, error)
-	Update(*Pod) (*Pod, error)
-	UpdateStatus(*Pod) (*Pod, error)
-	Delete(name string) error
-	//DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
-	Get(name string) (*Pod, error)
-	List() (*PodList, error)
-	//List(opts v1.ListOptions) (*v1.PodList, error)
-	//Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *v1.Pod, err error)
-}
-
 // NamespaceCli Interface has methods to work with Namespace resources.
 // How to:  namespaceCli, err := k8sassist.NewNamespaces()
 //          nl, err := namespaceCli.List()
