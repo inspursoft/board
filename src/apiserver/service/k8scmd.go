@@ -9,11 +9,16 @@ import (
 	"net/http"
 
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/pkg/api/resource"
+	//"k8s.io/client-go/pkg/api/resource"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/rest"
 	apiCli "k8s.io/client-go/tools/clientcmd/api"
 
+	"git/inspursoft/board/src/common/k8sassist"
+
+	"git/inspursoft/board/src/common/model"
+
+	"github.com/astaxie/beego/logs"
 	"github.com/golang/glog"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -34,6 +39,7 @@ const (
 )
 const defaultEntry = Insecure
 
+/* use k8sassit
 func K8sCliFactory(clusterName string, masterUrl string, apiVersion string) (*rest.Config, error) {
 	cli := apiCli.NewConfig()
 	cli.Clusters[clusterName] = &apiCli.Cluster{
@@ -53,14 +59,15 @@ func K8sCliFactory(clusterName string, masterUrl string, apiVersion string) (*re
 		&clientcmd.ConfigOverrides{}, nil)
 	return clientBuilder.ClientConfig()
 }
+*/
+
 func Suspend(nodeName string) (bool, error) {
 
-	cli, err := K8sCliFactory("", kubeMasterURL(), "v1")
-	apiSet, err := kubernetes.NewForConfig(cli)
+	n, err := k8sassist.NewNodes()
 	if err != nil {
+		logs.Error("Failed to get nodeCli")
 		return false, err
 	}
-	n := apiSet.Nodes()
 	nodeData, err := n.Get(nodeName)
 	nodeData.Spec.Unschedulable = true
 	res, err := n.Update(nodeData)
@@ -69,12 +76,11 @@ func Suspend(nodeName string) (bool, error) {
 }
 
 func Resume(nodeName string) (bool, error) {
-	cli, err := K8sCliFactory("", kubeMasterURL(), "v1")
-	apiSet, err := kubernetes.NewForConfig(cli)
+	n, err := k8sassist.NewNodes()
 	if err != nil {
+		logs.Error("Failed to get nodeCli")
 		return false, err
 	}
-	n := apiSet.Nodes()
 	nodeData, err := n.Get(nodeName)
 	nodeData.Spec.Unschedulable = false
 	res, err := n.Update(nodeData)
@@ -124,6 +130,7 @@ func GetK8sData(resource interface{}, url string) ([]byte, error) {
 	return body, nil
 }
 
+/* Not support PV in this time
 // setNFSVol is the function of setting a PVC to bound PV storage with nfs.
 // The name is name of PVC, path is the path of nfs, cap is the capacity of PV and PVC
 func SetNFSVol(name string, server, path string, cap int64) error {
@@ -185,3 +192,4 @@ func SetNFSVol(name string, server, path string, cap int64) error {
 	}
 	return nil
 }
+*/
