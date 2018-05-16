@@ -12,8 +12,9 @@ import (
 	"github.com/astaxie/beego/logs"
 
 	//"k8s.io/client-go/kubernetes"
-	modelK8s "k8s.io/client-go/pkg/api/v1"
-	modelK8sExt "k8s.io/client-go/pkg/apis/extensions/v1beta1"
+	//modelK8s "k8s.io/client-go/pkg/api/v1"
+	modelK8s "k8s.io/apimachinery/pkg/apis/meta/v1"
+	//modelK8sExt "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	//"k8s.io/client-go/pkg/api/resource"
 	//"k8s.io/client-go/pkg/api/v1"
 	//"k8s.io/client-go/rest"
