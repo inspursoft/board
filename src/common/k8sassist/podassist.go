@@ -6,16 +6,17 @@ import (
 	"github.com/astaxie/beego/logs"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/typed/core/v1"
 )
 
 type pods struct {
 	namespace string
-	client    *kubernetes.Clientset
+	pod       v1.PodInterface
 }
 
 func (p *pods) Create(pod *model.Pod) (*model.Pod, error) {
 	k8sPod := toK8sPod(pod)
-	k8sPod, err := p.client.CoreV1().Pods(p.namespace).Create(k8sPod)
+	k8sPod, err := p.pod.Create(k8sPod)
 	if err != nil {
 		logs.Error("Create pod of %s/%s failed. Err:%+v", pod.Name, p.namespace, err)
 		return nil, err
@@ -27,7 +28,7 @@ func (p *pods) Create(pod *model.Pod) (*model.Pod, error) {
 
 func (p *pods) Update(pod *model.Pod) (*model.Pod, error) {
 	k8sPod := toK8sPod(pod)
-	k8sPod, err := p.client.CoreV1().Pods(p.namespace).Update(k8sPod)
+	k8sPod, err := p.pod.Update(k8sPod)
 	if err != nil {
 		logs.Error("Update pod of %s/%s failed. Err:%+v", pod.Name, p.namespace, err)
 		return nil, err
@@ -39,7 +40,7 @@ func (p *pods) Update(pod *model.Pod) (*model.Pod, error) {
 
 func (p *pods) UpdateStatus(pod *model.Pod) (*model.Pod, error) {
 	k8sPod := toK8sPod(pod)
-	k8sPod, err := p.client.CoreV1().Pods(p.namespace).UpdateStatus(k8sPod)
+	k8sPod, err := p.pod.UpdateStatus(k8sPod)
 	if err != nil {
 		logs.Error("Create pod status of %s/%s failed. Err:%+v", pod.Name, p.namespace, err)
 		return nil, err
@@ -50,7 +51,7 @@ func (p *pods) UpdateStatus(pod *model.Pod) (*model.Pod, error) {
 }
 
 func (p *pods) Delete(name string) error {
-	err := p.client.CoreV1().Pods(p.namespace).Delete(name, nil)
+	err := p.pod.Delete(name, nil)
 	if err != nil {
 		logs.Error("delete pod of %s/%s failed. Err:%+v", name, p.namespace, err)
 	}
@@ -58,7 +59,7 @@ func (p *pods) Delete(name string) error {
 }
 
 func (p *pods) Get(name string) (*model.Pod, error) {
-	pod, err := p.client.CoreV1().Pods(p.namespace).Get(name, metav1.GetOptions{})
+	pod, err := p.pod.Get(name, metav1.GetOptions{})
 	if err != nil {
 		logs.Error("get pod of %s/%s failed. Err:%+v", name, p.namespace, err)
 		return nil, err
@@ -69,7 +70,7 @@ func (p *pods) Get(name string) (*model.Pod, error) {
 }
 
 func (p *pods) List() (*model.PodList, error) {
-	podList, err := p.client.CoreV1().Pods(p.namespace).List(metav1.ListOptions{})
+	podList, err := p.pod.List(metav1.ListOptions{})
 	if err != nil {
 		logs.Error("list pods failed. Err:%+v", err)
 		return nil, err
@@ -86,7 +87,7 @@ func NewPods(namespace string) PodCliInterface {
 	var client *kubernetes.Clientset
 	return &pods{
 		namespace: namespace,
-		client:    client,
+		pod:       client.CoreV1().Pods(namespace),
 	}
 }
 

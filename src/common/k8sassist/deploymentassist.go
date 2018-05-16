@@ -6,16 +6,17 @@ import (
 	"github.com/astaxie/beego/logs"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	v1beta2 "k8s.io/client-go/kubernetes/typed/apps/v1beta2"
 )
 
 type deployments struct {
 	namespace string
-	client    *kubernetes.Clientset
+	deploy    v1beta2.DeploymentInterface
 }
 
 func (d *deployments) Create(deployment *model.Deployment) (*model.Deployment, error) {
 	k8sDep := toK8sDeployment(deployment)
-	k8sDep, err := d.client.AppsV1beta2().Deployments(d.namespace).Create(k8sDep)
+	k8sDep, err := d.deploy.Create(k8sDep)
 	if err != nil {
 		logs.Error("Create deployment of %s/%s failed. Err:%+v", deployment.Name, d.namespace, err)
 		return nil, err
@@ -27,7 +28,7 @@ func (d *deployments) Create(deployment *model.Deployment) (*model.Deployment, e
 
 func (d *deployments) Update(deployment *model.Deployment) (*model.Deployment, error) {
 	k8sDep := toK8sDeployment(deployment)
-	k8sDep, err := d.client.AppsV1beta2().Deployments(d.namespace).Update(k8sDep)
+	k8sDep, err := d.deploy.Update(k8sDep)
 	if err != nil {
 		logs.Error("update deployment of %s/%s failed. Err:%+v", deployment.Name, d.namespace, err)
 		return nil, err
@@ -39,7 +40,7 @@ func (d *deployments) Update(deployment *model.Deployment) (*model.Deployment, e
 
 func (d *deployments) UpdateStatus(deployment *model.Deployment) (*model.Deployment, error) {
 	k8sDep := toK8sDeployment(deployment)
-	k8sDep, err := d.client.AppsV1beta2().Deployments(d.namespace).UpdateStatus(k8sDep)
+	k8sDep, err := d.deploy.UpdateStatus(k8sDep)
 	if err != nil {
 		logs.Error("update deployment status of %s/%s failed. Err:%+v", deployment.Name, d.namespace, err)
 		return nil, err
@@ -50,7 +51,7 @@ func (d *deployments) UpdateStatus(deployment *model.Deployment) (*model.Deploym
 }
 
 func (d *deployments) Delete(name string) error {
-	err := d.client.AppsV1beta2().Deployments(d.namespace).Delete(name, nil)
+	err := d.deploy.Delete(name, nil)
 	if err != nil {
 		logs.Error("delete deployment of %s/%s failed. Err:%+v", name, d.namespace, err)
 	}
@@ -58,7 +59,7 @@ func (d *deployments) Delete(name string) error {
 }
 
 func (d *deployments) Get(name string) (*model.Deployment, error) {
-	deployment, err := d.client.AppsV1beta2().Deployments(d.namespace).Get(name, metav1.GetOptions{})
+	deployment, err := d.deploy.Get(name, metav1.GetOptions{})
 	if err != nil {
 		logs.Error("get deployment of %s/%s failed. Err:%+v", name, d.namespace, err)
 		return nil, err
@@ -69,7 +70,7 @@ func (d *deployments) Get(name string) (*model.Deployment, error) {
 }
 
 func (d *deployments) List() (*model.DeploymentList, error) {
-	deploymentList, err := d.client.AppsV1beta2().Deployments(d.namespace).List(metav1.ListOptions{})
+	deploymentList, err := d.deploy.List(metav1.ListOptions{})
 	if err != nil {
 		logs.Error("list deployments failed. Err:%+v", err)
 		return nil, err
@@ -86,7 +87,7 @@ func NewDeployments(namespace string) DeploymentCliInterface {
 	var client *kubernetes.Clientset
 	return &deployments{
 		namespace: namespace,
-		client:    client,
+		deploy:    client.AppsV1beta2().Deployments(namespace),
 	}
 }
 
