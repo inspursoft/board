@@ -2,41 +2,93 @@ package k8sassist
 
 import (
 	"git/inspursoft/board/src/common/model"
+
+	"github.com/astaxie/beego/logs"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	v1beta2 "k8s.io/client-go/kubernetes/typed/apps/v1beta2"
 )
 
 type deployments struct {
-	ns string
+	namespace string
+	deploy    v1beta2.DeploymentInterface
 }
 
-func (d *deployments) Create(*model.Deployment) (*model.Deployment, error) {
-	return nil, nil
+func (d *deployments) Create(deployment *model.Deployment) (*model.Deployment, error) {
+	k8sDep := toK8sDeployment(deployment)
+	k8sDep, err := d.deploy.Create(k8sDep)
+	if err != nil {
+		logs.Error("Create deployment of %s/%s failed. Err:%+v", deployment.Name, d.namespace, err)
+		return nil, err
+	}
+
+	modelDep := fromK8sDeployment(k8sDep)
+	return modelDep, nil
 }
 
-func (d *deployments) Update(*model.Deployment) (*model.Deployment, error) {
-	return nil, nil
+func (d *deployments) Update(deployment *model.Deployment) (*model.Deployment, error) {
+	k8sDep := toK8sDeployment(deployment)
+	k8sDep, err := d.deploy.Update(k8sDep)
+	if err != nil {
+		logs.Error("update deployment of %s/%s failed. Err:%+v", deployment.Name, d.namespace, err)
+		return nil, err
+	}
+
+	modelDep := fromK8sDeployment(k8sDep)
+	return modelDep, nil
 }
 
-func (d *deployments) UpdateStatus(*model.Deployment) (*model.Deployment, error) {
-	return nil, nil
+func (d *deployments) UpdateStatus(deployment *model.Deployment) (*model.Deployment, error) {
+	k8sDep := toK8sDeployment(deployment)
+	k8sDep, err := d.deploy.UpdateStatus(k8sDep)
+	if err != nil {
+		logs.Error("update deployment status of %s/%s failed. Err:%+v", deployment.Name, d.namespace, err)
+		return nil, err
+	}
+
+	modelDep := fromK8sDeployment(k8sDep)
+	return modelDep, nil
 }
 
 func (d *deployments) Delete(name string) error {
-	return nil
+	err := d.deploy.Delete(name, nil)
+	if err != nil {
+		logs.Error("delete deployment of %s/%s failed. Err:%+v", name, d.namespace, err)
+	}
+	return err
 }
 
 func (d *deployments) Get(name string) (*model.Deployment, error) {
-	return nil, nil
+	deployment, err := d.deploy.Get(name, metav1.GetOptions{})
+	if err != nil {
+		logs.Error("get deployment of %s/%s failed. Err:%+v", name, d.namespace, err)
+		return nil, err
+	}
+
+	modelDep := fromK8sDeployment(deployment)
+	return modelDep, nil
 }
 
 func (d *deployments) List() (*model.DeploymentList, error) {
-	return nil, nil
+	deploymentList, err := d.deploy.List(metav1.ListOptions{})
+	if err != nil {
+		logs.Error("list deployments failed. Err:%+v", err)
+		return nil, err
+	}
+
+	modelDepList := fromK8sDeploymentList(deploymentList)
+	return modelDepList, nil
 }
 
 var _ DeploymentCliInterface = &deployments{}
 
-// newNodes returns a Nodes
-func NewDeployments(namespace string) (*deployments, error) {
-	return &deployments{ns: namespace}, nil
+func NewDeployments(namespace string) DeploymentCliInterface {
+	//TODO: init the clientset.
+	var client *kubernetes.Clientset
+	return &deployments{
+		namespace: namespace,
+		deploy:    client.AppsV1beta2().Deployments(namespace),
+	}
 }
 
 // DeploymentCli has methods to work with Deployment resources in k8s-assist.
