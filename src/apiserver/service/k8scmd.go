@@ -8,11 +8,11 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"k8s.io/client-go/kubernetes"
+	//"k8s.io/client-go/kubernetes"
 	//"k8s.io/client-go/pkg/api/resource"
-	"k8s.io/client-go/pkg/api/v1"
-	"k8s.io/client-go/rest"
-	apiCli "k8s.io/client-go/tools/clientcmd/api"
+	//"k8s.io/client-go/pkg/api/v1"
+	//"k8s.io/client-go/rest"
+	//apiCli "k8s.io/client-go/tools/clientcmd/api"
 
 	"git/inspursoft/board/src/common/k8sassist"
 
@@ -20,7 +20,7 @@ import (
 
 	"github.com/astaxie/beego/logs"
 	"github.com/golang/glog"
-	"k8s.io/client-go/tools/clientcmd"
+	//"k8s.io/client-go/tools/clientcmd"
 )
 
 var (
