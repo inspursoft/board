@@ -1,16 +1,15 @@
 // a temp file for building and guiding
-package k8sassist
+package apps
 
 import (
-	//api "k8s.io/client-go/pkg/api"
-	//v1 "k8s.io/client-go/pkg/api/v1"
-	//watch "k8s.io/client-go/pkg/watch"
-	//rest "k8s.io/client-go/rest"
 	"git/inspursoft/board/src/common/model"
+
+	"k8s.io/client-go/kubernetes/typed/apps/v1beta2"
 )
 
 type replicasets struct {
-	ns string
+	namespace  string
+	replicaset v1beta2.ReplicaSetInterface
 }
 
 func (d *replicasets) Create(*model.ReplicaSet) (*model.ReplicaSet, error) {
@@ -37,9 +36,9 @@ func (d *replicasets) List(opts model.ListOptions) (*model.ReplicaSetList, error
 	return nil, nil
 }
 
-var _ ReplicaSetCliInterface = &replicasets{}
-
-// newNodes returns a Nodes
-func NewReplicaSets(namespace string) (*replicasets, error) {
-	return &replicasets{ns: namespace}, nil
+func NewReplicaSets(namespace string, replicaset v1beta2.ReplicaSetInterface) *replicasets {
+	return &replicasets{
+		namespace:  namespace,
+		replicaset: replicaset,
+	}
 }

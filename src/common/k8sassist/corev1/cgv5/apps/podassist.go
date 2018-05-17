@@ -1,11 +1,11 @@
-package k8sassist
+package apps
 
 import (
+	"git/inspursoft/board/src/common/k8sassist/corev1/cgv5/types"
 	"git/inspursoft/board/src/common/model"
 
 	"github.com/astaxie/beego/logs"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/typed/core/v1"
 )
 
@@ -15,38 +15,38 @@ type pods struct {
 }
 
 func (p *pods) Create(pod *model.Pod) (*model.Pod, error) {
-	k8sPod := toK8sPod(pod)
+	k8sPod := types.ToK8sPod(pod)
 	k8sPod, err := p.pod.Create(k8sPod)
 	if err != nil {
 		logs.Error("Create pod of %s/%s failed. Err:%+v", pod.Name, p.namespace, err)
 		return nil, err
 	}
 
-	modelPod := fromK8sPod(k8sPod)
+	modelPod := types.FromK8sPod(k8sPod)
 	return modelPod, nil
 }
 
 func (p *pods) Update(pod *model.Pod) (*model.Pod, error) {
-	k8sPod := toK8sPod(pod)
+	k8sPod := types.ToK8sPod(pod)
 	k8sPod, err := p.pod.Update(k8sPod)
 	if err != nil {
 		logs.Error("Update pod of %s/%s failed. Err:%+v", pod.Name, p.namespace, err)
 		return nil, err
 	}
 
-	modelPod := fromK8sPod(k8sPod)
+	modelPod := types.FromK8sPod(k8sPod)
 	return modelPod, nil
 }
 
 func (p *pods) UpdateStatus(pod *model.Pod) (*model.Pod, error) {
-	k8sPod := toK8sPod(pod)
+	k8sPod := types.ToK8sPod(pod)
 	k8sPod, err := p.pod.UpdateStatus(k8sPod)
 	if err != nil {
 		logs.Error("Create pod status of %s/%s failed. Err:%+v", pod.Name, p.namespace, err)
 		return nil, err
 	}
 
-	modelPod := fromK8sPod(k8sPod)
+	modelPod := types.FromK8sPod(k8sPod)
 	return modelPod, nil
 }
 
@@ -65,7 +65,7 @@ func (p *pods) Get(name string) (*model.Pod, error) {
 		return nil, err
 	}
 
-	modelPod := fromK8sPod(pod)
+	modelPod := types.FromK8sPod(pod)
 	return modelPod, nil
 }
 
@@ -76,17 +76,13 @@ func (p *pods) List() (*model.PodList, error) {
 		return nil, err
 	}
 
-	modelPodList := fromK8sPodList(podList)
+	modelPodList := types.FromK8sPodList(podList)
 	return modelPodList, nil
 }
 
-var _ PodCliInterface = &pods{}
-
-func NewPods(namespace string) PodCliInterface {
-	//TODO: init the clientset.
-	var client *kubernetes.Clientset
+func NewPods(namespace string, pod v1.PodInterface) *pods {
 	return &pods{
 		namespace: namespace,
-		pod:       client.CoreV1().Pods(namespace),
+		pod:       pod,
 	}
 }
