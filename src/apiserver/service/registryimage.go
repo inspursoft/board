@@ -17,31 +17,23 @@ const (
 	registryManifestDigestURL = registryManifestURL + "/%s"
 )
 
-func requestAndUnmarshal(method, specifiedURL string, target interface{}, reqHeader map[string]string) (resp *http.Response, err error) {
-	resp, err = utils.RequestHandle(method, specifiedURL, func(req *http.Request) error {
-		for key, val := range reqHeader {
-			req.Header.Set(key, val)
-		}
-		return nil
-	}, nil)
-	if err != nil {
-		return
+func getCustomHeader() http.Header {
+	return http.Header{
+		"Accecpt": []string{"application/vnd.docker.distribution.manifest.v2+json"},
 	}
-	if target != nil {
-		err = utils.UnmarshalToJSON(resp.Body, target)
-		if err != nil {
-			return
-		}
-	}
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-	return
 }
 
-func getCustomHeader() (header map[string]string) {
-	header = make(map[string]string)
-	header["Accept"] = "application/vnd.docker.distribution.manifest.v2+json"
+func requestAndUnmarshal(method, specifiedURL string, target interface{}, reqHeader http.Header) (r *http.Response, err error) {
+	utils.RequestHandle(method, specifiedURL, func(req *http.Request) error {
+		req.Header = getCustomHeader()
+		return nil
+	}, nil, func(req *http.Request, resp *http.Response) error {
+		if target != nil {
+			return utils.UnmarshalToJSON(resp.Body, target)
+		}
+		r = resp
+		return nil
+	})
 	return
 }
 

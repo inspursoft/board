@@ -21,8 +21,7 @@ func (n *NodeGroupController) GetNodeGroupsAction() {
 		n.customAbort(http.StatusInternalServerError, fmt.Sprint(err))
 		return
 	}
-	n.Data["json"] = res
-	n.ServeJSON()
+	n.renderJSON(res)
 }
 
 func (n *NodeGroupController) AddNodeGroupAction() {

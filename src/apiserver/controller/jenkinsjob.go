@@ -28,6 +28,8 @@ type JenkinsJobCallbackController struct {
 	baseController
 }
 
+func (j *JenkinsJobCallbackController) Prepare() {}
+
 func (j *JenkinsJobCallbackController) BuildNumberCallback() {
 	userID := j.Ctx.Input.Param(":userID")
 	buildNumber, _ := strconv.Atoi(j.Ctx.Input.Param(":buildNumber"))

@@ -15,7 +15,7 @@ import (
 )
 
 type AuthController struct {
-	commonController
+	baseController
 }
 
 func (u *AuthController) Prepare() {
@@ -64,8 +64,7 @@ func (u *AuthController) SignInAction() {
 	var reqUser model.User
 	u.resolveBody(&reqUser)
 	token, _ := u.processAuth(reqUser.Username, reqUser.Password)
-	u.Data["json"] = model.Token{TokenString: token}
-	u.ServeJSON()
+	u.renderJSON(model.Token{TokenString: token})
 }
 
 func (u *AuthController) ExternalAuthAction() {
@@ -87,7 +86,6 @@ func (u *AuthController) SignUpAction() {
 		return
 	}
 	var reqUser model.User
-	var err error
 	u.resolveBody(&reqUser)
 
 	if !utils.ValidateWithPattern("username", reqUser.Username) {
@@ -157,8 +155,7 @@ func (u *AuthController) CurrentUserAction() {
 		u.customAbort(http.StatusUnauthorized, "Need to login first.")
 		return
 	}
-	u.Data["json"] = user
-	u.ServeJSON()
+	u.renderJSON(user)
 }
 
 func (u *AuthController) GetSystemInfo() {
@@ -167,8 +164,7 @@ func (u *AuthController) GetSystemInfo() {
 		u.internalError(err)
 		return
 	}
-	u.Data["json"] = systemInfo
-	u.ServeJSON()
+	u.renderJSON(systemInfo)
 }
 
 func (u *AuthController) LogOutAction() {

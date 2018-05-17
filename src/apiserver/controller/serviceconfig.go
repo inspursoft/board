@@ -208,9 +208,7 @@ func (sc *ServiceConfigController) GetConfigServiceStepAction() {
 		}
 		sc.internalError(err)
 	}
-
-	sc.Data["json"] = result
-	sc.ServeJSON()
+	sc.renderJSON(result)
 }
 
 func (sc *ServiceConfigController) SetConfigServiceStepAction() {
@@ -421,7 +419,7 @@ func (sc *ServiceConfigController) checkEntireServiceConfig(entireService *Confi
 		return emptyExternalServiceListErr
 	}
 	for _, external := range entireService.ExternalServiceList {
-		if external.NodeConfig.NodePort > 32765 || external.NodeConfig.NodePort < 30000 {
+		if external.NodeConfig.NodePort > maximumPortNum || external.NodeConfig.NodePort < minimumPortNum {
 			return portInvalidErr
 		}
 	}

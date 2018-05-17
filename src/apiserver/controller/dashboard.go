@@ -87,7 +87,5 @@ func (s *Dashboard) GetData() {
 		s.internalError(err)
 		return
 	}
-	s.Data["json"] = resp
-	s.ServeJSON()
-
+	s.renderJSON(resp)
 }

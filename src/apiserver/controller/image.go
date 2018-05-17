@@ -25,10 +25,12 @@ func (p *ImageController) GetImagesAction() {
 	projectList, err := service.GetProjectsByUser(query, p.currentUser.ID)
 	if err != nil {
 		p.internalError(err)
+		return
 	}
 	repoList, err := service.GetRegistryCatalog()
 	if err != nil {
 		p.internalError(err)
+		return
 	}
 
 	var repoListFiltered model.RegistryRepo
@@ -45,24 +47,23 @@ func (p *ImageController) GetImagesAction() {
 		}
 	}
 
-	logs.Info("Image list is %+v\n", repoListFiltered)
-
 	/* Interpret the message to api server */
 	imageList := []model.Image{}
 	for _, imageName := range repoListFiltered.Names {
 		var newImage model.Image
 		newImage.ImageName = imageName
-
 		reqTagList, err := service.GetRegistryImageTags(imageName)
 		if err != nil {
 			p.internalError(err)
+			return
 		}
 		if len(reqTagList.Tags) == 0 {
+			logs.Debug("Image: %s has no tags.", imageName)
 			continue
 		}
 
 		// Check image in DB
-		dbImage, err := service.GetImage(newImage, "name")
+		dbImage, err := service.GetImageByName(imageName)
 		if err != nil {
 			p.customAbort(http.StatusInternalServerError, fmt.Sprintf("Checking image name in DB error: %+v", err))
 			return
@@ -76,7 +77,7 @@ func (p *ImageController) GetImagesAction() {
 			// image not in DB, add it to DB
 			imageID, err := service.CreateImage(newImage)
 			if err != nil {
-				p.customAbort(http.StatusInternalServerError, fmt.Sprintf("Create image in DB error: %+v", err))
+				p.customAbort(http.StatusInternalServerError, fmt.Sprintf("Create image to DB error: %+v", err))
 				return
 			}
 			newImage.ImageID = imageID
@@ -85,8 +86,7 @@ func (p *ImageController) GetImagesAction() {
 			imageList = append(imageList, newImage)
 		}
 	}
-	p.Data["json"] = imageList
-	p.ServeJSON()
+	p.renderJSON(imageList)
 }
 
 // API to get tag list for a specific image
@@ -110,6 +110,7 @@ func (p *ImageController) GetImageDetailAction() {
 		manifest1, err := service.GetRegistryManifest1(tagDetail.ImageName, tagDetail.ImageTag)
 		if err != nil {
 			p.internalError(err)
+			return
 		}
 
 		tagDetail.ImageDetail = (manifest1.History[0])["v1Compatibility"]
@@ -120,6 +121,7 @@ func (p *ImageController) GetImageDetailAction() {
 		manifest2, err := service.GetRegistryManifest2(tagDetail.ImageName, tagDetail.ImageTag)
 		if err != nil {
 			p.internalError(err)
+			return
 		}
 
 		tagDetail.ImageId = manifest2.Config.Digest
@@ -132,9 +134,7 @@ func (p *ImageController) GetImageDetailAction() {
 		// Add the tag detail to list
 		imageDetail = append(imageDetail, tagDetail)
 	}
-	p.Data["json"] = imageDetail
-	p.ServeJSON()
-
+	p.renderJSON(imageDetail)
 }
 
 func (p *ImageController) generateBuildingImageTravis(imageURI string) error {
@@ -142,7 +142,7 @@ func (p *ImageController) generateBuildingImageTravis(imageURI string) error {
 	var travisCommand travis.TravisCommand
 	travisCommand.BeforeDeploy.Commands = []string{
 		fmt.Sprintf("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
-		"token=`cat key.txt`",
+		"[[ ! -f key.txt ]] || (token=`cat key.txt`)",
 		fmt.Sprintf("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | cut -d$' ' -f2`", boardAPIBaseURL()),
 		fmt.Sprintf("if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi", boardAPIBaseURL()),
 	}
@@ -225,8 +225,7 @@ func (p *ImageController) GetImageDockerfileAction() {
 		p.internalError(err)
 		return
 	}
-	p.Data["json"] = dockerfile
-	p.ServeJSON()
+	p.renderJSON(dockerfile)
 }
 
 func (p *ImageController) DockerfilePreviewAction() {
@@ -247,7 +246,6 @@ func (p *ImageController) DockerfilePreviewAction() {
 	err = service.BuildDockerfile(reqImageConfig, p.Ctx.ResponseWriter)
 	if err != nil {
 		p.internalError(err)
-		return
 	}
 }
 
@@ -273,9 +271,7 @@ func (p *ImageController) ConfigCleanAction() {
 	if err != nil {
 		logs.Error("Failed to remove attachment file: %+v", err)
 		p.internalError(err)
-		return
 	}
-
 }
 
 func (p *ImageController) deleteImageWithTag(imageName, imageTag string) {
@@ -283,6 +279,7 @@ func (p *ImageController) deleteImageWithTag(imageName, imageTag string) {
 	digest, err := service.GetRegistryImageDigest(imageName, imageTag)
 	if err != nil {
 		p.internalError(err)
+		return
 	}
 	err = service.DeleteRegistryImageWithETag(imageName, imageTag, digest)
 	if err != nil {
@@ -301,6 +298,7 @@ func (p *ImageController) DeleteImageAction() {
 	reqTagList, err := service.GetRegistryImageTags(imageName)
 	if err != nil {
 		p.internalError(err)
+		return
 	}
 	for _, tagName := range reqTagList.Tags {
 		p.deleteImageWithTag(imageName, tagName)
@@ -364,10 +362,7 @@ func (p *ImageController) CheckImageTagExistingAction() {
 		p.customAbort(http.StatusConflict, "This image:tag already existing.")
 		return
 	}
-
 	logs.Debug("checking image:tag result %t", existing)
-	p.ServeJSON()
-	return
 }
 
 func existRegistry(projectName string, imageName string, imageTag string) (bool, error) {
@@ -410,27 +405,20 @@ func (f *ImageController) UploadDockerfileFileAction() {
 		return
 	}
 	f.resolveRepoPath(projectName)
-	targetFilePath := f.repoPath
-	err = os.MkdirAll(targetFilePath, 0755)
-	if err != nil {
-		f.internalError(err)
-		return
-	}
-	logs.Info("User: %s uploaded Dockerfile file to %s.", f.currentUser.Username, targetFilePath)
 
 	_, fileHeader, err := f.GetFile("upload_file")
 	if err != nil {
 		f.internalError(err)
+		return
 	}
 	if fileHeader.Filename != dockerfileName {
 		f.customAbort(http.StatusBadRequest, "Update file name invalid.")
 		return
 	}
-	err = f.SaveToFile("upload_file", filepath.Join(targetFilePath, dockerfileName))
+	err = f.SaveToFile("upload_file", filepath.Join(f.repoPath, dockerfileName))
 	if err != nil {
 		f.internalError(err)
 	}
-
 }
 
 func (f *ImageController) DownloadDockerfileFileAction() {
@@ -449,19 +437,18 @@ func (f *ImageController) DownloadDockerfileFileAction() {
 	f.resolveRepoPath(projectName)
 	targetFilePath := f.repoPath
 	if _, err := os.Stat(targetFilePath); os.IsNotExist(err) {
-		f.customAbort(http.StatusBadRequest, "image Name and  tag name are invalid.")
+		f.customAbort(http.StatusNotFound, "Target file path does not exist.")
 		return
 	}
 	logs.Info("User: %s download Dockerfile file from %s.", f.currentUser.Username, targetFilePath)
-	f.Ctx.Output.Download(targetFilePath, dockerfileName)
+	f.Ctx.Output.Download(filepath.Join(targetFilePath, dockerfileName), dockerfileName)
 }
 
 // API to get image registry address
 func (p *ImageController) GetImageRegistryAction() {
 	registryAddr := registryBaseURI()
-	logs.Info("The image registry is %s", registryAddr)
-	p.Data["json"] = registryAddr
-	p.ServeJSON()
+	logs.Info("Docker registry is %s", registryAddr)
+	p.renderJSON(registryAddr)
 }
 
 // API to reset build image temp

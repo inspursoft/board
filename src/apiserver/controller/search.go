@@ -22,8 +22,5 @@ func (pm *SearchSourceController) Search() {
 		pm.customAbort(http.StatusInternalServerError, fmt.Sprint(err))
 		return
 	}
-	pm.Data["json"] = res
-	pm.ServeJSON()
-	return
-
+	pm.renderJSON(res)
 }

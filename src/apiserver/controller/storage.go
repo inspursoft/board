@@ -22,7 +22,5 @@ func (s *StorageController) Storage() {
 	err = service.SetNFSVol(name, server, path, storageCap)
 	if err != nil {
 		s.customAbort(http.StatusInternalServerError, fmt.Sprint(err))
-		return
 	}
-	return
 }

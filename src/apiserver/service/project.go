@@ -24,6 +24,7 @@ const (
 )
 
 func CreateProject(project model.Project) (bool, error) {
+
 	projectID, err := dao.AddProject(project)
 	if err != nil {
 		return false, err
@@ -87,6 +88,10 @@ func UpdateProject(project model.Project, fieldNames ...string) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+func ToggleProjectPublic(projectID int64, public int) (bool, error) {
+	return UpdateProject(model.Project{ID: projectID, Public: public}, "public")
 }
 
 func GetProjectsByUser(query model.Project, userID int64) ([]*model.Project, error) {

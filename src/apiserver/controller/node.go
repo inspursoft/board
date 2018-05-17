@@ -19,8 +19,7 @@ func (n *NodeController) GetNode() {
 		n.customAbort(http.StatusInternalServerError, fmt.Sprint(err))
 		return
 	}
-	n.Data["json"] = res
-	n.ServeJSON()
+	n.renderJSON(res)
 }
 
 func (n *NodeController) NodeToggle() {
@@ -50,9 +49,7 @@ func (n *NodeController) NodeToggle() {
 }
 
 func (n *NodeController) NodeList() {
-	res := service.GetNodeList()
-	n.Data["json"] = res
-	n.ServeJSON()
+	n.renderJSON(service.GetNodeList())
 }
 
 func (n *NodeController) AddNodeToGroupAction() {
@@ -64,7 +61,6 @@ func (n *NodeController) AddNodeToGroupAction() {
 	logs.Debug("Adding %s to %s", nodeName, groupName)
 
 	//TODO check existing
-
 	err := service.AddNodeToGroup(nodeName, groupName)
 	if err != nil {
 		n.internalError(err)
@@ -86,8 +82,7 @@ func (n *NodeController) GetGroupsOfNodeAction() {
 		n.internalError(err)
 		return
 	}
-	n.Data["json"] = groups
-	n.ServeJSON()
+	n.renderJSON(groups)
 }
 
 func (n *NodeController) RemoveNodeFromGroupAction() {

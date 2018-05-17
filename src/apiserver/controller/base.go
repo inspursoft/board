@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -14,6 +15,8 @@ import (
 	"bytes"
 
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/apiserver/service/devops/gogs"
+	"git/inspursoft/board/src/apiserver/service/devops/jenkins"
 
 	"strconv"
 
@@ -48,50 +51,63 @@ var boardAPIBaseURL = utils.GetConfig("BOARD_API_BASE_URL")
 var gogitsSSHURL = utils.GetConfig("GOGITS_SSH_URL")
 var jenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
 
-type commonController struct {
+type baseController struct {
 	beego.Controller
+	currentUser    *model.User
 	token          string
 	isExternalAuth bool
+	isSysAdmin     bool
+	repoPath       string
+	project        *model.Project
+	isRemoved      bool
 }
 
-func (c *commonController) Render() error {
+func (b *baseController) Prepare() {
+	b.resolveSignedInUser()
+}
+
+func (b *baseController) Render() error {
 	return nil
 }
 
-func (c *commonController) resolveBody(target interface{}) {
-	err := utils.UnmarshalToJSON(c.Ctx.Request.Body, target)
+func (b *baseController) resolveBody(target interface{}) {
+	err := utils.UnmarshalToJSON(b.Ctx.Request.Body, target)
 	if err != nil {
 		logs.Error("Failed to unmarshal data: %+v", err)
-		c.internalError(err)
+		b.internalError(err)
 	}
 }
 
-func (c *commonController) serveStatus(status int, message string) {
-	c.Ctx.ResponseWriter.WriteHeader(status)
-	c.Data["json"] = struct {
+func (b *baseController) renderJSON(data interface{}) {
+	b.Data["json"] = data
+	b.ServeJSON()
+}
+
+func (b *baseController) serveStatus(status int, message string) {
+	b.Ctx.ResponseWriter.WriteHeader(status)
+	b.renderJSON(struct {
 		StatusCode int    `json:"status"`
 		Message    string `json:"message"`
 	}{
 		StatusCode: status,
 		Message:    message,
-	}
-	c.ServeJSON()
+	})
 }
 
-func (c *commonController) internalError(err error) {
+func (b *baseController) internalError(err error) {
 	logs.Error("Error occurred: %+v", err)
-	c.CustomAbort(http.StatusInternalServerError, "Unexpected error occurred.")
+	b.CustomAbort(http.StatusInternalServerError, "Unexpected error occurred.")
 }
 
-func (c *commonController) customAbort(status int, body string) {
-	logs.Error("Error occurred: %s", body)
-	c.CustomAbort(status, body)
+func (b *baseController) customAbort(status int, body string) {
+	logs.Error("Error of custom aborted: %s", body)
+	b.CustomAbort(status, body)
 }
 
-func (c *commonController) getCurrentUser() *model.User {
-	token := c.Ctx.Request.Header.Get("token")
+func (b *baseController) getCurrentUser() *model.User {
+	token := b.Ctx.Request.Header.Get("token")
 	if token == "" {
-		token = c.GetString("token")
+		token = b.GetString("token")
 	}
 	if isTokenExists := memoryCache.IsExist(token); !isTokenExists {
 		logs.Info("Token stored in cache has expired.")
@@ -118,7 +134,7 @@ func (c *commonController) getCurrentUser() *model.User {
 	}
 
 	memoryCache.Put(token, payload, time.Second*time.Duration(tokenCacheExpireSeconds))
-	c.token = token
+	b.token = token
 
 	if strID, ok := payload["id"].(string); ok {
 		userID, err := strconv.Atoi(strID)
@@ -137,15 +153,15 @@ func (c *commonController) getCurrentUser() *model.User {
 				return nil
 			}
 			memoryCache.Put(user.Username, token, time.Second*time.Duration(tokenCacheExpireSeconds))
-			c.Ctx.ResponseWriter.Header().Set("token", token)
+			b.Ctx.ResponseWriter.Header().Set("token", token)
 		}
 		return user
 	}
 	return nil
 }
 
-func (c *commonController) signOff() error {
-	username := c.GetString("username")
+func (b *baseController) signOff() error {
+	username := b.GetString("username")
 	var err error
 	if token, ok := memoryCache.Get(username).(string); ok {
 		if payload, ok := memoryCache.Get(token).(map[string]interface{}); ok {
@@ -169,20 +185,6 @@ func (c *commonController) signOff() error {
 	return nil
 }
 
-type baseController struct {
-	commonController
-	currentUser *model.User
-
-	isSysAdmin bool
-	repoPath   string
-	project    *model.Project
-	isRemoved  bool
-}
-
-func (b *baseController) Prepare() {
-	b.resolveSignedInUser()
-}
-
 func (b *baseController) resolveSignedInUser() {
 	user := b.getCurrentUser()
 	if user == nil {
@@ -192,57 +194,78 @@ func (b *baseController) resolveSignedInUser() {
 	b.isSysAdmin = (user.SystemAdmin == 1)
 }
 
-func (b *baseController) resolveRepoPath(projectName string) {
-	if projectName == "" {
-		b.customAbort(http.StatusBadRequest, "No found project name.")
-	}
+func (b *baseController) resolveProject(projectName string) (project *model.Project) {
 	var err error
-	b.project, err = service.GetProject(model.Project{Name: projectName}, "name")
+	project, err = service.GetProjectByName(projectName)
 	if err != nil {
 		b.internalError(err)
 		return
 	}
-	if b.project == nil {
+	if project == nil {
 		b.customAbort(http.StatusNotFound, fmt.Sprintf("Project: %s does not exist.", projectName))
 		return
 	}
-	b.repoPath = filepath.Join(baseRepoPath(), b.currentUser.Username, projectName)
-	logs.Debug("Set repo path at file upload: %s", b.repoPath)
+	b.project = project
+	return
 }
 
-func (b *baseController) resolveProjectMember(projectName string) {
-	isMember, err := service.IsProjectMemberByName(projectName, b.currentUser.ID)
+func (b *baseController) resolveProjectByID(projectID int64) (project *model.Project) {
+	var err error
+	project, err = service.GetProjectByID(projectID)
 	if err != nil {
 		b.internalError(err)
 		return
 	}
-	if !isMember {
-		b.customAbort(http.StatusForbidden, fmt.Sprintf("Project %s is not the member to the current user.", b.currentUser.Username))
+	if project == nil {
+		b.customAbort(http.StatusNotFound, fmt.Sprintf("Project with ID: %d does not exist.", projectID))
 		return
 	}
+	b.project = project
+	return
 }
 
-func (b *baseController) resolveUserPrivilege(projectName string) (isMember bool) {
-	var err error
-	isMember, err = service.IsProjectMemberByName(projectName, b.currentUser.ID)
+func (b *baseController) resolveRepoPath(projectName string) {
+	project := b.resolveProject(projectName)
+	b.repoPath = filepath.Join(baseRepoPath(), b.currentUser.Username, project.Name)
+	logs.Debug("Set repo path at file upload: %s", b.repoPath)
+	return
+}
+
+func (b *baseController) resolveProjectMember(projectName string) {
+	b.resolveUserPrivilege(projectName)
+}
+
+func (b *baseController) resolveProjectMemberByID(projectID int64) (project *model.Project) {
+	project = b.resolveProjectByID(projectID)
+	b.resolveProjectMember(project.Name)
+	return
+}
+
+func (b *baseController) resolveProjectOwnerByID(projectID int64) (project *model.Project) {
+	project = b.resolveProjectByID(projectID)
+	b.resolveProjectMemberByID(projectID)
+	if !(b.isSysAdmin || int64(project.OwnerID) == b.currentUser.ID) {
+		b.customAbort(http.StatusForbidden, "User is not the owner of the project.")
+		return
+	}
+	return
+}
+
+func (b *baseController) resolveUserPrivilege(projectName string) {
+	isMember, err := service.IsProjectMemberByName(projectName, b.currentUser.ID)
 	if err != nil {
 		b.internalError(err)
 	}
 	if !(b.isSysAdmin || isMember) {
 		b.customAbort(http.StatusForbidden, "Insufficient privileges to build image.")
+	} else if _, err := os.Stat(b.repoPath); b.isSysAdmin && os.IsNotExist(err) {
+		b.forkRepo()
 	}
 	return
 }
 
 func (b *baseController) resolveUserPrivilegeByID(projectID int64) (project *model.Project) {
-	var err error
-	project, err = service.GetProjectByID(projectID)
-	if err != nil {
-		b.internalError(err)
-	}
-	if project == nil {
-		b.customAbort(http.StatusNotFound, fmt.Sprintf("Project ID: %+d does not exist.", projectID))
-	}
+	project = b.resolveProjectByID(projectID)
 	b.resolveUserPrivilege(project.Name)
 	return
 }
@@ -300,6 +323,44 @@ func (b *baseController) collaborateWithPullRequest(headBranch, baseBranch strin
 		logs.Error("Failed to create pull request and comment: %+v", err)
 		b.internalError(err)
 	}
+}
+
+func (b *baseController) forkRepo() {
+	if b.project == nil {
+		b.customAbort(http.StatusPreconditionFailed, "Project info cannot be nil.")
+		return
+	}
+	username := b.currentUser.Username
+	email := b.currentUser.Email
+	repoToken := b.currentUser.RepoToken
+	baseRepoName := b.project.Name
+	repoName := username + "_" + b.project.Name
+	gogsHandler := gogs.NewGogsHandler(username, repoToken)
+	err := gogsHandler.ForkRepo(b.project.OwnerName, baseRepoName, repoName, "Forked repo.")
+	if err != nil {
+		b.internalError(err)
+		return
+	}
+	gogsHandler.CreateHook(username, repoName)
+	if err != nil {
+		logs.Error("Failed to create hook to repo: %s, error: %+v", repoName, err)
+	}
+	repoURL := fmt.Sprintf("%s/%s/%s.git", gogitsSSHURL(), username, repoName)
+	repoPath := filepath.Join(baseRepoPath(), username, repoName)
+	repoHandler, err := service.InitRepo(repoURL, username, email, repoPath)
+	if err != nil {
+		logs.Error("Failed to initialize project repo: %+v", err)
+		b.internalError(err)
+		return
+	}
+	jenkinsHandler := jenkins.NewJenkinsHandler()
+	err = jenkinsHandler.CreateJobWithParameter(repoName, username, email)
+	if err != nil {
+		logs.Error("Failed to create Jenkins' job with project name: %s, error: %+v", repoName, err)
+		b.internalError(err)
+		return
+	}
+	repoHandler.Pull()
 }
 
 func (b *baseController) removeItemsToRepo(items ...string) {

@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"errors"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
@@ -60,7 +59,7 @@ func (u *UserController) GetUsersAction() {
 func (u *UserController) ChangeUserAccount() {
 	if u.isExternalAuth && u.currentUser.Username != "admin" {
 		logs.Debug("Current AUTH_MODE is external auth.")
-		u.internalError(errors.New("Current AUTH_MODE is external auth."))
+		u.customAbort(http.StatusPreconditionFailed, "Current AUTH_MODE is not available to the user.")
 		return
 	}
 

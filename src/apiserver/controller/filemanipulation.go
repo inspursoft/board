@@ -84,8 +84,7 @@ func (f *FileUploadController) ListFiles() {
 		f.internalError(err)
 		return
 	}
-	f.Data["json"] = uploads
-	f.ServeJSON()
+	f.renderJSON(uploads)
 }
 
 func (f *FileUploadController) RemoveFile() {

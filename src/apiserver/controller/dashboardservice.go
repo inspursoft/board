@@ -84,13 +84,10 @@ func (s *DashboardServiceController) GetServiceData() {
 	dashboardServiceDataResp.ServiceResp.ServiceListData = serviceList
 	logs.Info("serivcelist:%+v\n", dashboardServiceDataResp.ServiceResp.ServiceListData)
 
-	s.Data["json"] = dashboardServiceDataResp.ServiceResp
-	s.ServeJSON()
+	s.renderJSON(dashboardServiceDataResp.ServiceResp)
 }
 
 func (s *DashboardServiceController) GetServerTime() {
 	time := service.GetServerTime()
-	s.Data["json"] = time
-	s.ServeJSON()
-
+	s.renderJSON(time)
 }

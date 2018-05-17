@@ -325,6 +325,10 @@ func GetImage(image model.Image, selectedFields ...string) (*model.Image, error)
 	return m, nil
 }
 
+func GetImageByName(imageName string) (*model.Image, error) {
+	return GetImage(model.Image{ImageName: imageName, ImageDeleted: 0}, "name")
+}
+
 func UpdateImage(image model.Image, fieldNames ...string) (bool, error) {
 	if image.ImageID == 0 {
 		return false, errors.New("no Image ID provided")

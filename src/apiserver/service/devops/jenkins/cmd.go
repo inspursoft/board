@@ -17,18 +17,23 @@ var seedJobName = "base"
 type jenkinsHandler struct{}
 
 func NewJenkinsHandler() *jenkinsHandler {
+	pingURL := fmt.Sprintf("%s/job/%s", jenkinsBaseURL(), seedJobName)
 	for i := 0; i < maxRetryCount; i++ {
 		logs.Debug("Ping Jenkins server %d time(s)...", i+1)
-		resp, err := utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s/job/%s", jenkinsBaseURL(), seedJobName), nil, nil)
-		if err != nil {
-			logs.Error("Failed to request Jenkins server: %+v", err)
-		}
-		if resp != nil {
-			if resp.StatusCode <= 400 {
-				break
-			}
-		} else if i == maxRetryCount-1 {
+		if i == maxRetryCount-1 {
 			logs.Warn("Failed to ping Gogits due to exceed max retry count.")
+			break
+		}
+		err := utils.RequestHandle(http.MethodGet, pingURL, nil, nil,
+			func(req *http.Request, resp *http.Response) error {
+				if resp.StatusCode <= 400 {
+					return nil
+				}
+				return fmt.Errorf("Requested URL %s with unexpected response: %d", pingURL, resp.StatusCode)
+			})
+		if err == nil {
+			logs.Info("Successful connected to the Jenkins service.")
+			break
 		}
 		time.Sleep(time.Second)
 	}
@@ -36,47 +41,14 @@ func NewJenkinsHandler() *jenkinsHandler {
 }
 
 func (j *jenkinsHandler) CreateJob(projectName string) error {
-	resp, err := utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/createItem?name=%s&mode=copy&from=base", jenkinsBaseURL(), projectName), nil, nil)
-	if err != nil {
-		return err
-	}
-	if resp != nil {
-		defer resp.Body.Close()
-		if resp.StatusCode >= http.StatusInternalServerError {
-			return fmt.Errorf("Internal error: %+v", err)
-		}
-		logs.Info("Requested Jenkins clone job with response status code: %d", resp.StatusCode)
-	}
-	return nil
+	return utils.SimplePostRequestHandle(fmt.Sprintf("%s/createItem?name=%s&mode=copy&from=base", jenkinsBaseURL(), projectName), nil, nil)
 }
 
 func (j *jenkinsHandler) CreateJobWithParameter(projectName, username, email string) error {
 	repoURL := fmt.Sprintf("%s/%s/%s.git", gogitsBaseURL(), username, projectName)
-	resp, err := utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s/job/%s/buildWithParameters?F00=%s&&F01=%s&F02=%s&F03=%s", jenkinsBaseURL(), seedJobName, projectName, repoURL, username, email), nil, nil)
-	if err != nil {
-		return err
-	}
-	if resp != nil {
-		defer resp.Body.Close()
-		if resp.StatusCode >= http.StatusInternalServerError {
-			return fmt.Errorf("Internal error: %+v", err)
-		}
-		logs.Info("Requested Jenkins create job by paramerters with response status code: %d", resp.StatusCode)
-	}
-	return nil
+	return utils.SimpleGetRequestHandle(fmt.Sprintf("%s/job/%s/buildWithParameters?F00=%s&&F01=%s&F02=%s&F03=%s", jenkinsBaseURL(), seedJobName, projectName, repoURL, username, email))
 }
 
 func (j *jenkinsHandler) ToggleJob(projectName, action string) error {
-	resp, err := utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/job/%s/%s", jenkinsBaseURL(), projectName, action), nil, nil)
-	if err != nil {
-		return err
-	}
-	if resp != nil {
-		defer resp.Body.Close()
-		if resp.StatusCode >= http.StatusInternalServerError {
-			return fmt.Errorf("Internal error: %+v", err)
-		}
-		logs.Info("Requested Jenkins toggle job with action %s and response status code: %d", action, resp.StatusCode)
-	}
-	return nil
+	return utils.SimplePostRequestHandle(fmt.Sprintf("%s/job/%s/%s", jenkinsBaseURL(), projectName, action), nil, nil)
 }

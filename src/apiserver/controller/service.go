@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
 
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/apiserver/service/devops/travis"
@@ -85,11 +84,9 @@ func (p *ServiceController) resolveServiceInfo() (s *model.ServiceStatus) {
 		return
 	}
 	if s == nil {
-		p.customAbort(http.StatusBadRequest,
-			fmt.Sprintf("Invalid service ID: %d", serviceID))
+		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
 		return
 	}
-	logs.Info("service status: ", s)
 	return
 }
 
@@ -167,8 +164,7 @@ func (p *ServiceController) DeployServiceAction() {
 	logs.Info("Service with ID:%d has been deleted in cache.", serviceInfo.ID)
 
 	configService.ServiceID = serviceInfo.ID
-	p.Data["json"] = configService
-	p.ServeJSON()
+	p.renderJSON(configService)
 }
 
 func (p *ServiceController) DeployServiceTestAction() {
@@ -251,7 +247,7 @@ func syncK8sStatus(serviceList []*model.ServiceStatusMO) error {
 
 //get service list
 func (p *ServiceController) GetServiceListAction() {
-	serviceName := p.GetString("service_name", "")
+	serviceName := p.GetString("service_name")
 	pageIndex, _ := p.GetInt("page_index", 0)
 	pageSize, _ := p.GetInt("page_size", 0)
 	orderField := p.GetString("order_field", "CREATE_TIME")
@@ -267,7 +263,7 @@ func (p *ServiceController) GetServiceListAction() {
 			p.internalError(err)
 			return
 		}
-		p.Data["json"] = serviceStatus
+		p.renderJSON(serviceStatus)
 	} else {
 		paginatedServiceStatus, err := service.GetPaginatedServiceList(serviceName, p.currentUser.ID, pageIndex, pageSize, orderField, orderAsc)
 		if err != nil {
@@ -279,9 +275,8 @@ func (p *ServiceController) GetServiceListAction() {
 			p.internalError(err)
 			return
 		}
-		p.Data["json"] = paginatedServiceStatus
+		p.renderJSON(paginatedServiceStatus)
 	}
-	p.ServeJSON()
 }
 
 // API to create service config
@@ -306,8 +301,7 @@ func (p *ServiceController) CreateServiceConfigAction() {
 		p.internalError(err)
 		return
 	}
-	p.Data["json"] = strconv.Itoa(int(serviceInfo.ID))
-	p.ServeJSON()
+	p.renderJSON(serviceInfo.ID)
 }
 
 func (p *ServiceController) DeleteServiceAction() {
@@ -391,15 +385,14 @@ func (p *ServiceController) ToggleServiceAction() {
 			return
 		}
 		// Update service status DB
-		_, err = service.UpdateServiceStatus(stopped)
+		_, err = service.UpdateServiceStatus(s.ID, stopped)
 		if err != nil {
 			p.internalError(err)
 			return
 		}
 	} else {
 		// start service
-		// Push deployment to jenkins
-
+		// Push deployment to Git repo
 		deploymentURL := fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), deploymentAPI, s.ProjectName, "deployments")
 		serviceURL := fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), serviceAPI, s.ProjectName, "services")
 
@@ -416,7 +409,7 @@ func (p *ServiceController) ToggleServiceAction() {
 		p.collaborateWithPullRequest("master", "master", items...)
 
 		// Update service status DB
-		_, err = service.UpdateServiceStatus(running)
+		_, err = service.UpdateServiceStatus(s.ID, running)
 		if err != nil {
 			p.internalError(err)
 			return
@@ -425,40 +418,23 @@ func (p *ServiceController) ToggleServiceAction() {
 }
 
 func stopService(s *model.ServiceStatus) error {
-	var err error
-	var client = &http.Client{}
 	// Stop service
+	header := http.Header{
+		"Content-Type": []string{"application/yaml"},
+	}
 	deleteServiceURL := kubeMasterURL() + serviceAPI + s.ProjectName + "/services/" + s.Name
-	req, err := http.NewRequest("DELETE", deleteServiceURL, nil)
+	err := utils.SimpleDeleteRequestHandle(deleteServiceURL, header)
 	if err != nil {
-		logs.Error("Failed to new request for delete service: %s", deleteServiceURL)
-		return err
+		logs.Error("Failed to request %s to stop service.", deleteServiceURL)
 	}
-	req.Header.Set("Content-Type", "application/yaml")
-	resp, err := client.Do(req)
-	if err != nil {
-		logs.Info(req)
-		return err
-	}
-	defer resp.Body.Close()
-	logs.Info("Stop service successfully", s.ID, s.Name, resp)
-
+	logs.Info("Stop service successfully, id: %d, name: %s", s.ID, s.Name)
 	// Stop deployment
 	deleteDeploymentURL := kubeMasterURL() + deploymentAPI + s.ProjectName + "/deployments/" + s.Name
-	req, err = http.NewRequest("DELETE", deleteDeploymentURL, nil)
+	err = utils.SimpleDeleteRequestHandle(deleteDeploymentURL, header)
 	if err != nil {
-		logs.Error("Failed to new request for delete deployment: %s", deleteDeploymentURL)
-		return err
+		logs.Error("Failed to request %s to stop deployment.", deleteDeploymentURL)
 	}
-	req.Header.Set("Content-Type", "application/yaml")
-	resp, err = client.Do(req)
-	if err != nil {
-		logs.Error(req)
-		return err
-	}
-	defer resp.Body.Close()
-
-	logs.Info("Stop deployment successfully, id: %d, name: %s, resp: %+v", s.ID, s.Name, resp)
+	logs.Info("Stop deployment successfully, id: %d, name: %s", s.ID, s.Name)
 	return nil
 }
 
@@ -494,8 +470,7 @@ func (p *ServiceController) GetServiceInfoAction() {
 		return
 	}
 	if len(serviceStatus.Spec.Ports) == 0 || len(nodesStatus.Items) == 0 {
-		p.Data["json"] = "NA"
-		p.ServeJSON()
+		p.renderJSON("NA")
 		return
 	}
 
@@ -506,46 +481,40 @@ func (p *ServiceController) GetServiceInfoAction() {
 	for _, items := range nodesStatus.Items {
 		serviceInfo.NodeName = append(serviceInfo.NodeName, items.Status.Addresses...)
 	}
-
-	p.Data["json"] = serviceInfo
-	p.ServeJSON()
+	p.renderJSON(serviceInfo)
 }
 
 func (p *ServiceController) GetServiceStatusAction() {
 	s := p.resolveServiceInfo()
 	//Judge authority
 	p.resolveUserPrivilegeByID(s.ProjectID)
-
 	serviceStatus, err := service.GetServiceStatus(kubeMasterURL() + serviceAPI + s.ProjectName + "/services/" + s.Name)
 	if err != nil {
 		p.resolveErrOutput(err)
 		return
 	}
-	p.Data["json"] = serviceStatus
-	p.ServeJSON()
+	p.renderJSON(serviceStatus)
 }
 
 func (p *ServiceController) ServicePublicityAction() {
 	s := p.resolveServiceInfo()
-	var reqServiceUpdate model.ServicePublicityUpdate
-	p.resolveBody(&reqServiceUpdate)
 	//Judge authority
 	p.resolveUserPrivilegeByID(s.ProjectID)
-
+	var reqServiceUpdate model.ServicePublicityUpdate
+	p.resolveBody(&reqServiceUpdate)
 	if s.Public != reqServiceUpdate.Public {
-		_, err := service.UpdateServicePublic(reqServiceUpdate.Public)
+		_, err := service.UpdateServicePublic(s.ID, reqServiceUpdate.Public)
 		if err != nil {
 			p.internalError(err)
 			return
 		}
-	} else {
-		logs.Info("Already in target publicity status")
 	}
 }
 
 func (p *ServiceController) DeleteServiceConfigAction() {
 	s := p.resolveServiceInfo()
 	// Get the path of the service config files
+	p.resolveUserPrivilege(s.ProjectName)
 	p.resolveRepoPath(s.ProjectName)
 	logs.Debug("Service config path: %s", p.repoPath)
 
@@ -569,6 +538,7 @@ func (p *ServiceController) DeleteServiceConfigAction() {
 func (p *ServiceController) DeleteDeploymentAction() {
 	s := p.resolveServiceInfo()
 	// Get the path of the service config files
+	p.resolveUserPrivilege(s.ProjectName)
 	p.resolveRepoPath(s.ProjectName)
 	logs.Debug("Service config path: %s", p.repoPath)
 
@@ -608,6 +578,7 @@ func (p *ServiceController) StoreServiceRoute() {
 
 func (p *ServiceController) ServiceExists() {
 	projectName := p.GetString("project_name")
+	p.resolveProjectMember(projectName)
 	serviceName := p.GetString("service_name")
 	isServiceExists, err := service.ServiceExists(serviceName, projectName)
 	if err != nil {
@@ -623,13 +594,11 @@ func (p *ServiceController) ServiceExists() {
 
 func (p *ServiceController) ScaleServiceAction() {
 	s := p.resolveServiceInfo()
-
-	var reqServiceScale model.ServiceScale
-	p.resolveBody(&reqServiceScale)
-
 	//Judge authority
 	p.resolveUserPrivilegeByID(s.ProjectID)
 
+	var reqServiceScale model.ServiceScale
+	p.resolveBody(&reqServiceScale)
 	// change the replica number of service
 	res, err := service.ScaleReplica(s, reqServiceScale.Replica)
 
@@ -643,8 +612,9 @@ func (p *ServiceController) ScaleServiceAction() {
 
 //get selectable service list
 func (p *ServiceController) GetSelectableServicesAction() {
-	serviceName := p.GetString("service_name", "")
-	projectName := p.GetString("project_name", "")
+	serviceName := p.GetString("service_name")
+	projectName := p.GetString("project_name")
+	p.resolveProjectMember(projectName)
 	logs.Info("Get selectable service list for", projectName, serviceName)
 	serviceList, err := service.GetSelectableServices(projectName, serviceName)
 	if err != nil {
@@ -652,8 +622,7 @@ func (p *ServiceController) GetSelectableServicesAction() {
 		p.internalError(err)
 		return
 	}
-	p.Data["json"] = serviceList
-	p.ServeJSON()
+	p.renderJSON(serviceList)
 }
 
 func (f *ServiceController) resolveUploadedYamlFile(uploadedFileName string, target interface{}, customError error) func(fileName string, serviceInfo *model.ServiceStatus) error {
@@ -661,15 +630,19 @@ func (f *ServiceController) resolveUploadedYamlFile(uploadedFileName string, tar
 	if err != nil {
 		if err.Error() == "http: no such file" {
 			f.customAbort(http.StatusBadRequest, "Missing file: "+uploadedFileName)
+			return nil
 		}
 		f.internalError(err)
+		return nil
 	}
 	err = utils.UnmarshalYamlFile(uploadedFile, target)
 	if err != nil {
 		if strings.Index(err.Error(), "InternalError:") == 0 {
-			f.internalError(errors.New(err.Error()[14:]))
+			f.internalError(errors.New(err.Error()[len("InternalError:"):]))
+			return nil
 		}
 		f.customAbort(http.StatusBadRequest, customError.Error())
+		return nil
 	}
 
 	return func(fileName string, serviceInfo *model.ServiceStatus) error {
@@ -677,6 +650,7 @@ func (f *ServiceController) resolveUploadedYamlFile(uploadedFileName string, tar
 		err = service.CheckDeploymentPath(f.repoPath)
 		if err != nil {
 			f.internalError(err)
+			return nil
 		}
 		return f.SaveToFile(uploadedFileName, filepath.Join(f.repoPath, fileName))
 	}
@@ -684,15 +658,7 @@ func (f *ServiceController) resolveUploadedYamlFile(uploadedFileName string, tar
 
 func (f *ServiceController) UploadYamlFileAction() {
 	projectName := f.GetString("project_name")
-	isExistence, err := service.ProjectExists(projectName)
-	if err != nil {
-		f.internalError(err)
-		return
-	}
-	if isExistence != true {
-		f.customAbort(http.StatusBadRequest, "Project doesn't exist.")
-		return
-	}
+	f.resolveProjectMember(projectName)
 
 	var deploymentConfig service.Deployment
 	fhDeployment := f.resolveUploadedYamlFile("deployment_file", &deploymentConfig, service.DeploymentYamlFileUnmarshalErr)
@@ -700,6 +666,7 @@ func (f *ServiceController) UploadYamlFileAction() {
 	var serviceConfig service.Service
 	fhService := f.resolveUploadedYamlFile("service_file", &serviceConfig, service.ServiceYamlFileUnmarshalErr)
 
+	var err error
 	err = service.CheckDeploymentConfig(projectName, deploymentConfig)
 	if err != nil {
 		f.customAbort(http.StatusBadRequest, err.Error())
@@ -708,7 +675,6 @@ func (f *ServiceController) UploadYamlFileAction() {
 	if err != nil {
 		f.customAbort(http.StatusBadRequest, err.Error())
 	}
-
 	//check label selector
 	serviceInfo, err := service.GetServiceByProject(serviceConfig.Name, projectName)
 	if err != nil {
@@ -730,32 +696,22 @@ func (f *ServiceController) UploadYamlFileAction() {
 		f.internalError(err)
 		return
 	}
-
 	err = fhDeployment(deploymentFilename, serviceInfo)
 	if err != nil {
 		f.internalError(err)
+		return
 	}
 	err = fhService(serviceFilename, serviceInfo)
 	if err != nil {
 		f.internalError(err)
+		return
 	}
-
-	f.Data["json"] = serviceInfo
-	f.ServeJSON()
+	f.renderJSON(serviceInfo)
 }
 
 func (f *ServiceController) DownloadDeploymentYamlFileAction() {
 	projectName := f.GetString("project_name")
-	isExistence, err := service.ProjectExists(projectName)
-	if err != nil {
-		f.internalError(err)
-		return
-	}
-	if isExistence != true {
-		f.customAbort(http.StatusBadRequest, "Project name is invalid.")
-		return
-	}
-
+	f.resolveRepoPath(projectName)
 	serviceName := f.GetString("service_name")
 	serviceInfo, err := service.GetServiceByProject(serviceName, projectName)
 	if err != nil {
@@ -766,98 +722,45 @@ func (f *ServiceController) DownloadDeploymentYamlFileAction() {
 		f.customAbort(http.StatusBadRequest, "Service name is invalid.")
 		return
 	}
-
-	//get paras
 	yamlType := f.GetString("yaml_type")
-	fileName := getYamlFileName(yamlType)
-	if fileName == "" {
-		f.customAbort(http.StatusBadRequest, "Yaml type is invalid.")
-		return
+	if yamlType == "" {
+		f.customAbort(http.StatusBadRequest, "No YAML type found.")
 	}
+	if yamlType == deploymentType {
+		deploymentConfigURL := kubeMasterURL() + filepath.Join(deploymentAPI, projectName, "deployments", serviceName)
+		f.resolveDownloadYaml(deploymentConfigURL, deploymentFilename, service.GenerateDeploymentYamlFileFromK8S)
+	} else if yamlType == serviceType {
+		serviceConfigURL := kubeMasterURL() + filepath.Join(serviceAPI, projectName, "services", serviceName)
+		f.resolveDownloadYaml(serviceConfigURL, serviceFilename, service.GenerateServiceYamlFileFromK8S)
+	}
+}
 
-	f.resolveRepoPath(projectName)
+func (f *ServiceController) resolveDownloadYaml(configURL, fileName string, generator func(targetURL, path string) error) {
+	logs.Debug("Current download config URL: %s", configURL)
 	absFileName := filepath.Join(f.repoPath, fileName)
-	logs.Info("User: %s download %s yaml file from %s.", f.currentUser.Username, yamlType, absFileName)
-
-	//check doc isexist
-	if _, err := os.Stat(absFileName); os.IsNotExist(err) {
-		//generate file
-		err = service.CheckDeploymentPath(filepath.Dir(absFileName))
-		if err != nil {
-			f.internalError(err)
+	err := generator(configURL, absFileName)
+	if err != nil {
+		if strings.Index(err.Error(), "StatusNotFound:") == 0 {
+			f.customAbort(http.StatusNotFound, service.ServiceNotFoundErr.Error())
 			return
 		}
-		//if no doc, get config from k8s; generate yaml file;
-		if yamlType == deploymentType {
-			deployConfigURL := fmt.Sprintf("%s%s", kubeMasterURL(), filepath.Join(deploymentAPI, projectName, "deployments", serviceName))
-			logs.Info("deployConfigURL:", deployConfigURL)
-			err := service.GenerateDeploymentYamlFileFromK8S(deployConfigURL, absFileName)
-			if err != nil {
-				if strings.Index(err.Error(), "StatusNotFound:") == 0 {
-					f.customAbort(http.StatusNotFound, service.DeploymentNotFoundErr.Error())
-					return
-				}
-				f.internalError(err)
-				return
-			}
-		} else if yamlType == serviceType {
-			serviceConfigURL := fmt.Sprintf("%s%s", kubeMasterURL(), filepath.Join(serviceAPI, projectName, "services", serviceName))
-			logs.Info("serviceConfigURL:", serviceConfigURL)
-			err := service.GenerateServiceYamlFileFromK8S(serviceConfigURL, absFileName)
-			if err != nil {
-				if strings.Index(err.Error(), "StatusNotFound:") == 0 {
-					f.customAbort(http.StatusNotFound, service.ServiceNotFoundErr.Error())
-					return
-				}
-				f.internalError(err)
-				return
-			}
-		}
+		f.internalError(err)
+		return
 	}
-
+	logs.Info("User: %s downloaded %s YAML file.", f.currentUser.Username, fileName)
 	f.Ctx.Output.Download(absFileName, fileName)
 }
 
-func getYamlFileName(yamlType string) string {
-	var fileName string
-	if yamlType == deploymentType {
-		fileName = deploymentFilename
-	} else if yamlType == serviceType {
-		fileName = serviceFilename
-	} else {
-		return ""
-	}
-	return fileName
-}
-
 func (p *ServiceController) GetScaleStatusAction() {
-	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
-	if err != nil {
-		p.internalError(err)
-		return
-	}
 	// Get the current service status
-	var servicequery model.ServiceStatus
-	servicequery.ID = int64(serviceID)
-	s, err := service.GetService(servicequery, "id")
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if s == nil {
-		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
-		return
-	}
+	s := p.resolveServiceInfo()
 	//Judge authority
 	p.resolveUserPrivilegeByID(s.ProjectID)
-
 	scaleStatus, err := service.GetScaleStatus(s)
 	if err != nil {
 		logs.Debug("Get scale deployment status failed %s", s.Name)
 		p.internalError(err)
 		return
 	}
-	p.Data["json"] = scaleStatus
-	p.ServeJSON()
-	logs.Info("Get Scale status successfully")
+	p.renderJSON(scaleStatus)
 }

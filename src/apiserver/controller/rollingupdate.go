@@ -19,7 +19,7 @@ type ServiceRollingUpdateController struct {
 }
 
 func (p *ServiceRollingUpdateController) GetRollingUpdateServiceImageConfigAction() {
-	serviceConfig, _ := p.getServiceConfig()
+	serviceConfig := p.getServiceConfig()
 	if len(serviceConfig.Spec.Template.Spec.Containers) < 1 {
 		p.customAbort(http.StatusBadRequest, "Requested service's config is invalid.")
 	}
@@ -33,12 +33,10 @@ func (p *ServiceRollingUpdateController) GetRollingUpdateServiceImageConfigActio
 			ImageTag:    container.Image[indexTag+1:],
 			ProjectName: container.Image[indexProject+1 : indexImage]})
 	}
-
-	p.Data["json"] = imageList
-	p.ServeJSON()
+	p.renderJSON(imageList)
 }
 
-func (p *ServiceRollingUpdateController) getServiceConfig() (*v1beta1.Deployment, string) {
+func (p *ServiceRollingUpdateController) getServiceConfig() (deploymentConfig *v1beta1.Deployment) {
 	projectName := p.GetString("project_name")
 	p.resolveProjectMember(projectName)
 
@@ -46,25 +44,28 @@ func (p *ServiceRollingUpdateController) getServiceConfig() (*v1beta1.Deployment
 	serviceStatus, err := service.GetServiceByProject(serviceName, projectName)
 	if err != nil {
 		p.internalError(err)
+		return
 	}
 	if serviceStatus == nil {
 		p.customAbort(http.StatusBadRequest, "Service name doesn't exist.")
+		return
 	}
 
 	cli, err := service.K8sCliFactory("", kubeMasterURL(), "v1beta1")
 	apiSet, err := kubernetes.NewForConfig(cli)
 	if err != nil {
 		p.internalError(err)
+		return
 	}
 
 	d := apiSet.Deployments(projectName)
-	deploymentConfig, err := d.Get(serviceName)
+	deploymentConfig, err = d.Get(serviceName)
 	if err != nil {
 		logs.Error("Failed to get service info %+v\n", err)
 		p.internalError(err)
+		return
 	}
-
-	return deploymentConfig, projectName
+	return
 }
 
 func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceImageAction() {
@@ -72,7 +73,7 @@ func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceImageAction() 
 	var imageList []model.ImageIndex
 	p.resolveBody(&imageList)
 
-	serviceConfig, _ := p.getServiceConfig()
+	serviceConfig := p.getServiceConfig()
 	if len(serviceConfig.Spec.Template.Spec.Containers) != len(imageList) {
 		p.customAbort(http.StatusConflict, "Image's config is invalid.")
 	}
@@ -87,25 +88,22 @@ func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceImageAction() 
 			})
 		}
 	}
-
 	if len(rollingUpdateConfig.Spec.Template.Spec.Containers) == 0 {
 		logs.Info("Nothing to be updated")
 		return
 	}
-
 	p.PatchServiceAction(&rollingUpdateConfig)
 }
 
 func (p *ServiceRollingUpdateController) GetRollingUpdateServiceNodeGroupConfigAction() {
-	serviceConfig, _ := p.getServiceConfig()
+	serviceConfig := p.getServiceConfig()
 	for key, value := range serviceConfig.Spec.Template.Spec.NodeSelector {
 		if key == "kubernetes.io/hostname" {
-			p.Data["json"] = value
+			p.renderJSON(value)
 		} else {
-			p.Data["json"] = key
+			p.renderJSON(key)
 		}
 	}
-	p.ServeJSON()
 }
 
 func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceNodeGroupAction() {
@@ -113,8 +111,12 @@ func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceNodeGroupActio
 	if nodeGroup == "" {
 		p.customAbort(http.StatusBadRequest, "nodeGroup is empty.")
 	}
-	rollingUpdateConfig, _ := p.getServiceConfig()
-	nodeGroupExists, _ := service.NodeGroupExists(nodeGroup)
+	rollingUpdateConfig := p.getServiceConfig()
+	nodeGroupExists, err := service.NodeGroupExists(nodeGroup)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
 	if nodeGroupExists {
 		rollingUpdateConfig.Spec.Template.Spec.NodeSelector = map[string]string{nodeGroup: "true"}
 	} else {
@@ -131,22 +133,26 @@ func (p *ServiceRollingUpdateController) PatchServiceAction(rollingUpdateConfig 
 	serviceStatus, err := service.GetServiceByProject(serviceName, projectName)
 	if err != nil {
 		p.internalError(err)
+		return
 	}
 	if serviceStatus.Status == uncompleted {
 		logs.Debug("Service is uncompleted, cannot be updated %s\n", serviceName)
 		p.customAbort(http.StatusMethodNotAllowed, "Service is in uncompleted")
+		return
 	}
 
 	serviceRollConfig, err := json.Marshal(rollingUpdateConfig)
 	if err != nil {
 		logs.Debug("rollingUpdateConfig %+v\n", rollingUpdateConfig)
 		p.internalError(err)
+		return
 	}
 
 	cli, err := service.K8sCliFactory("", kubeMasterURL(), "v1beta1")
 	apiSet, err := kubernetes.NewForConfig(cli)
 	if err != nil {
 		p.internalError(err)
+		return
 	}
 
 	d := apiSet.Deployments(projectName)
@@ -155,6 +161,7 @@ func (p *ServiceRollingUpdateController) PatchServiceAction(rollingUpdateConfig 
 	if err != nil {
 		logs.Error("Failed to update service %+v\n", err)
 		p.internalError(err)
+		return
 	}
 	logs.Debug("New updated deployment: %+v\n", deployData)
 }

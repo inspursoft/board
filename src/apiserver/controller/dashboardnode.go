@@ -1,9 +1,7 @@
 package controller
 
 import (
-	"encoding/json"
 	"git/inspursoft/board/src/apiserver/service"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/astaxie/beego"
@@ -20,17 +18,9 @@ type NodeBodyReqPara struct {
 	DurationTime  int    `json:"node_duration_time"`
 }
 
-func (b *DashboardNodeController) resolveBody() (in NodeBodyReqPara, err error) {
-	data, err := ioutil.ReadAll(b.Ctx.Request.Body)
-	json.Unmarshal(data, &in)
-	if err != nil {
-		return in, err
-	}
-	return in, nil
-}
-
 func (s *DashboardNodeController) GetNodeData() {
-	getNodeDataBodyReq, _ := s.resolveBody()
+	var getNodeDataBodyReq NodeBodyReqPara
+	s.resolveBody(&getNodeDataBodyReq)
 	nodeName := s.GetString("node_name")
 	beego.Debug("node_name", nodeName)
 	if getNodeDataBodyReq.TimeCount == 0 {
@@ -60,7 +50,5 @@ func (s *DashboardNodeController) GetNodeData() {
 		s.internalError(err)
 		return
 	}
-	s.Data["json"] = dashboardNodeDataResp.NodeResp
-	s.ServeJSON()
-
+	s.renderJSON(dashboardNodeDataResp.NodeResp)
 }

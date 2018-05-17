@@ -97,12 +97,12 @@ func UpdateService(s model.ServiceStatus, fieldNames ...string) (bool, error) {
 	return true, nil
 }
 
-func UpdateServiceStatus(status int) (bool, error) {
-	return UpdateService(model.ServiceStatus{Status: status, Deleted: 0}, "status", "deleted")
+func UpdateServiceStatus(serviceID int64, status int) (bool, error) {
+	return UpdateService(model.ServiceStatus{ID: serviceID, Status: status, Deleted: 0}, "status", "deleted")
 }
 
-func UpdateServicePublic(public int) (bool, error) {
-	return UpdateService(model.ServiceStatus{Public: public, Deleted: 0}, "public", "deleted")
+func UpdateServicePublic(serviceID int64, public int) (bool, error) {
+	return UpdateService(model.ServiceStatus{ID: serviceID, Public: public, Deleted: 0}, "public", "deleted")
 }
 
 func DeleteServiceByID(serviceID int64) (int64, error) {
