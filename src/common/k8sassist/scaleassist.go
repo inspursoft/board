@@ -27,9 +27,3 @@ var _ ScaleCliInterface = &scales{}
 func NewScales(namespace string) (*scales, error) {
 	return &scales{ns: namespace}, nil
 }
-
-// The ScaleCli interface has methods on Scale resources in k8s-assist.
-type ScaleCliInterface interface {
-	Get(kind string, name string) (*model.Scale, error)
-	Update(kind string, scale *model.Scale) (*model.Scale, error)
-}

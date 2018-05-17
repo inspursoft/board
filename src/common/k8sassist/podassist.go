@@ -90,18 +90,3 @@ func NewPods(namespace string) PodCliInterface {
 		pod:       client.CoreV1().Pods(namespace),
 	}
 }
-
-// PodCli has methods to work with Pod resources in k8s-assist.
-// How to:  podCli, err := k8sassist.NewPods(nameSpace)
-//          _, err := podCli.Update(&pod)
-type PodCliInterface interface {
-	Create(*model.Pod) (*model.Pod, error)
-	Update(*model.Pod) (*model.Pod, error)
-	UpdateStatus(*model.Pod) (*model.Pod, error)
-	Delete(name string) error
-	//DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
-	Get(name string) (*model.Pod, error)
-	List() (*model.PodList, error)
-	//List(opts v1.ListOptions) (*v1.PodList, error)
-	//Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *v1.Pod, err error)
-}
