@@ -3,6 +3,8 @@ package apps
 import (
 	"git/inspursoft/board/src/common/model"
 
+	"io"
+
 	"k8s.io/client-go/kubernetes/typed/core/v1"
 )
 
@@ -33,6 +35,11 @@ func (d *services) Get(name string) (*model.Service, error) {
 
 func (d *services) List() (*model.ServiceList, error) {
 	return nil, nil
+}
+
+func (d *services) CreateByYaml(r io.Reader) (*model.Service, io.Writer, error) {
+
+	return nil, nil, nil
 }
 
 // newNodes returns a Nodes
