@@ -30,6 +30,7 @@ func (auth InDataAuth) DoAuth(principal, password string) (*model.User, error) {
 
 	params := make(map[string]string)
 	params["token"] = principal
+	params["type"] = "id_token"
 	reqData, err := json.Marshal(params)
 	if err != nil {
 		logs.Error("Failed to marshal token from request: %+v", err)
