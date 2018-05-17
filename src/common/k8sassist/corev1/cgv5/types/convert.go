@@ -1,4 +1,4 @@
-package k8sassist
+package types
 
 import (
 	"time"
@@ -11,7 +11,7 @@ import (
 )
 
 // generate k8s objectmeta from model objectmeta
-func toK8sObjectMeta(meta model.ObjectMeta) metav1.ObjectMeta {
+func ToK8sObjectMeta(meta model.ObjectMeta) metav1.ObjectMeta {
 	var deleteTime *metav1.Time
 	if meta.DeletionTimestamp != nil {
 		t := metav1.NewTime(*meta.DeletionTimestamp)
@@ -27,12 +27,12 @@ func toK8sObjectMeta(meta model.ObjectMeta) metav1.ObjectMeta {
 }
 
 // generate k8s deployment from model deployment
-func toK8sDeployment(deployment *model.Deployment) *appsv1beta2.Deployment {
+func ToK8sDeployment(deployment *model.Deployment) *appsv1beta2.Deployment {
 	if deployment == nil {
 		return nil
 	}
 	var templ v1.PodTemplateSpec
-	if t := toK8sPodTemplateSpec(&deployment.Spec.Template); t != nil {
+	if t := ToK8sPodTemplateSpec(&deployment.Spec.Template); t != nil {
 		templ = *t
 	}
 	rep := deployment.Spec.Replicas
@@ -41,7 +41,7 @@ func toK8sDeployment(deployment *model.Deployment) *appsv1beta2.Deployment {
 			Kind:       "Deployment",
 			APIVersion: "apps/v1beta2",
 		},
-		ObjectMeta: toK8sObjectMeta(deployment.ObjectMeta),
+		ObjectMeta: ToK8sObjectMeta(deployment.ObjectMeta),
 		Spec: appsv1beta2.DeploymentSpec{
 			Replicas: &rep,
 			Selector: &metav1.LabelSelector{
@@ -60,27 +60,27 @@ func toK8sDeployment(deployment *model.Deployment) *appsv1beta2.Deployment {
 }
 
 // generate k8s pod template spec from model pod template spec
-func toK8sPodTemplateSpec(template *model.PodTemplateSpec) *v1.PodTemplateSpec {
+func ToK8sPodTemplateSpec(template *model.PodTemplateSpec) *v1.PodTemplateSpec {
 	if template == nil {
 		return nil
 	}
 	var spec v1.PodSpec
-	if s := toK8sPodSpec(&template.Spec); s != nil {
+	if s := ToK8sPodSpec(&template.Spec); s != nil {
 		spec = *s
 	}
 	return &v1.PodTemplateSpec{
-		ObjectMeta: toK8sObjectMeta(template.ObjectMeta),
+		ObjectMeta: ToK8sObjectMeta(template.ObjectMeta),
 		Spec:       spec,
 	}
 }
 
 // generate k8s pod from model pod
-func toK8sPod(pod *model.Pod) *v1.Pod {
+func ToK8sPod(pod *model.Pod) *v1.Pod {
 	if pod == nil {
 		return nil
 	}
 	var spec v1.PodSpec
-	if s := toK8sPodSpec(&pod.Spec); s != nil {
+	if s := ToK8sPodSpec(&pod.Spec); s != nil {
 		spec = *s
 	}
 	var starttime *metav1.Time
@@ -93,7 +93,7 @@ func toK8sPod(pod *model.Pod) *v1.Pod {
 			Kind:       "Pod",
 			APIVersion: "v1",
 		},
-		ObjectMeta: toK8sObjectMeta(pod.ObjectMeta),
+		ObjectMeta: ToK8sObjectMeta(pod.ObjectMeta),
 		Spec:       spec,
 		Status: v1.PodStatus{
 			Phase:     v1.PodPhase(string(pod.Status.Phase)),
@@ -106,27 +106,27 @@ func toK8sPod(pod *model.Pod) *v1.Pod {
 }
 
 // generate k8s pod spec from model pod spec
-func toK8sPodSpec(spec *model.PodSpec) *v1.PodSpec {
+func ToK8sPodSpec(spec *model.PodSpec) *v1.PodSpec {
 	if spec == nil {
 		return nil
 	}
 	var volumes []v1.Volume
 	for i := range spec.Volumes {
-		if v := toK8sVolume(&spec.Volumes[i]); v != nil {
+		if v := ToK8sVolume(&spec.Volumes[i]); v != nil {
 			volumes = append(volumes, *v)
 		}
 	}
 
 	var initContainers []v1.Container
 	for i := range spec.InitContainers {
-		if c := toK8sContainer(&spec.InitContainers[i]); c != nil {
+		if c := ToK8sContainer(&spec.InitContainers[i]); c != nil {
 			initContainers = append(initContainers, *c)
 		}
 	}
 
 	var containers []v1.Container
 	for i := range spec.Containers {
-		if c := toK8sContainer(&spec.Containers[i]); c != nil {
+		if c := ToK8sContainer(&spec.Containers[i]); c != nil {
 			containers = append(containers, *c)
 		}
 	}
@@ -140,12 +140,12 @@ func toK8sPodSpec(spec *model.PodSpec) *v1.PodSpec {
 	}
 }
 
-func toK8sVolume(volume *model.Volume) *v1.Volume {
+func ToK8sVolume(volume *model.Volume) *v1.Volume {
 	if volume == nil {
 		return nil
 	}
 	var volumeSource v1.VolumeSource
-	if vs := toK8sVolumeSource(&volume.VolumeSource); vs != nil {
+	if vs := ToK8sVolumeSource(&volume.VolumeSource); vs != nil {
 		volumeSource = *vs
 	}
 	return &v1.Volume{
@@ -154,7 +154,7 @@ func toK8sVolume(volume *model.Volume) *v1.Volume {
 	}
 }
 
-func toK8sVolumeSource(volumeSource *model.VolumeSource) *v1.VolumeSource {
+func ToK8sVolumeSource(volumeSource *model.VolumeSource) *v1.VolumeSource {
 	if volumeSource == nil {
 		return nil
 	}
@@ -177,22 +177,22 @@ func toK8sVolumeSource(volumeSource *model.VolumeSource) *v1.VolumeSource {
 	}
 }
 
-func toK8sContainer(container *model.K8sContainer) *v1.Container {
+func ToK8sContainer(container *model.K8sContainer) *v1.Container {
 	if container == nil {
 		return nil
 	}
 	var ports []v1.ContainerPort
 	for i := range container.Ports {
-		ports = append(ports, toK8sContainerPort(container.Ports[i]))
+		ports = append(ports, ToK8sContainerPort(container.Ports[i]))
 	}
 	var envs []v1.EnvVar
 	for i := range container.Env {
-		envs = append(envs, toK8sEnvVar(container.Env[i]))
+		envs = append(envs, ToK8sEnvVar(container.Env[i]))
 	}
 
 	var mounts []v1.VolumeMount
 	for i := range container.VolumeMounts {
-		mounts = append(mounts, toK8sVolumeMount(container.VolumeMounts[i]))
+		mounts = append(mounts, ToK8sVolumeMount(container.VolumeMounts[i]))
 	}
 	return &v1.Container{
 		Name:         container.Name,
@@ -206,7 +206,7 @@ func toK8sContainer(container *model.K8sContainer) *v1.Container {
 	}
 }
 
-func toK8sContainerPort(containerPort model.ContainerPort) v1.ContainerPort {
+func ToK8sContainerPort(containerPort model.ContainerPort) v1.ContainerPort {
 	return v1.ContainerPort{
 		Name:          containerPort.Name,
 		HostPort:      containerPort.HostPort,
@@ -216,21 +216,21 @@ func toK8sContainerPort(containerPort model.ContainerPort) v1.ContainerPort {
 	}
 }
 
-func toK8sEnvVar(env model.EnvVar) v1.EnvVar {
+func ToK8sEnvVar(env model.EnvVar) v1.EnvVar {
 	return v1.EnvVar{
 		Name:  env.Name,
 		Value: env.Value,
 	}
 }
 
-func toK8sVolumeMount(mount model.VolumeMount) v1.VolumeMount {
+func ToK8sVolumeMount(mount model.VolumeMount) v1.VolumeMount {
 	return v1.VolumeMount{
 		Name:      mount.Name,
 		MountPath: mount.MountPath,
 	}
 }
 
-func fromK8sObjectMeta(meta metav1.ObjectMeta) model.ObjectMeta {
+func FromK8sObjectMeta(meta metav1.ObjectMeta) model.ObjectMeta {
 	var deleteTime *time.Time
 	if meta.DeletionTimestamp != nil {
 		deleteTime = &meta.DeletionTimestamp.Time
@@ -245,13 +245,13 @@ func fromK8sObjectMeta(meta metav1.ObjectMeta) model.ObjectMeta {
 }
 
 // generate model deployment list from k8s deployment list
-func fromK8sDeploymentList(deploymentList *appsv1beta2.DeploymentList) *model.DeploymentList {
+func FromK8sDeploymentList(deploymentList *appsv1beta2.DeploymentList) *model.DeploymentList {
 	if deploymentList == nil {
 		return nil
 	}
 	items := make([]model.Deployment, 0)
 	for i := range deploymentList.Items {
-		dep := fromK8sDeployment(&deploymentList.Items[i])
+		dep := FromK8sDeployment(&deploymentList.Items[i])
 		items = append(items, *dep)
 	}
 	return &model.DeploymentList{
@@ -260,16 +260,16 @@ func fromK8sDeploymentList(deploymentList *appsv1beta2.DeploymentList) *model.De
 }
 
 // generate model deployment from k8s deployment
-func fromK8sDeployment(deployment *appsv1beta2.Deployment) *model.Deployment {
+func FromK8sDeployment(deployment *appsv1beta2.Deployment) *model.Deployment {
 	if deployment == nil {
 		return nil
 	}
 	var spec model.DeploymentSpec
-	if s := fromK8sDeploymentSpec(&deployment.Spec); s != nil {
+	if s := FromK8sDeploymentSpec(&deployment.Spec); s != nil {
 		spec = *s
 	}
 	return &model.Deployment{
-		ObjectMeta: fromK8sObjectMeta(deployment.ObjectMeta),
+		ObjectMeta: FromK8sObjectMeta(deployment.ObjectMeta),
 		Spec:       spec,
 		Status: model.DeploymentStatus{
 			Replicas:            deployment.Status.Replicas,
@@ -280,7 +280,7 @@ func fromK8sDeployment(deployment *appsv1beta2.Deployment) *model.Deployment {
 	}
 }
 
-func fromK8sDeploymentSpec(spec *appsv1beta2.DeploymentSpec) *model.DeploymentSpec {
+func FromK8sDeploymentSpec(spec *appsv1beta2.DeploymentSpec) *model.DeploymentSpec {
 	if spec == nil {
 		return nil
 	}
@@ -289,45 +289,45 @@ func fromK8sDeploymentSpec(spec *appsv1beta2.DeploymentSpec) *model.DeploymentSp
 		rep = *spec.Replicas
 	}
 	var template model.PodTemplateSpec
-	if t := fromK8sPodTemplateSpec(&spec.Template); t != nil {
+	if t := FromK8sPodTemplateSpec(&spec.Template); t != nil {
 		template = *t
 	}
 	return &model.DeploymentSpec{
 		Replicas: rep,
-		Selector: fromK8sSelector(spec.Selector),
+		Selector: FromK8sSelector(spec.Selector),
 		Template: template,
 		Paused:   spec.Paused,
 	}
 }
 
-func fromK8sSelector(selector *metav1.LabelSelector) map[string]string {
+func FromK8sSelector(selector *metav1.LabelSelector) map[string]string {
 	if selector == nil {
 		return nil
 	}
 	return selector.MatchLabels
 }
 
-func fromK8sPodTemplateSpec(template *v1.PodTemplateSpec) *model.PodTemplateSpec {
+func FromK8sPodTemplateSpec(template *v1.PodTemplateSpec) *model.PodTemplateSpec {
 	if template == nil {
 		return nil
 	}
 	var spec model.PodSpec
-	if s := fromK8sPodSpec(&template.Spec); s != nil {
+	if s := FromK8sPodSpec(&template.Spec); s != nil {
 		spec = *s
 	}
 	return &model.PodTemplateSpec{
-		ObjectMeta: fromK8sObjectMeta(template.ObjectMeta),
+		ObjectMeta: FromK8sObjectMeta(template.ObjectMeta),
 		Spec:       spec,
 	}
 }
 
-func fromK8sPodList(podList *v1.PodList) *model.PodList {
+func FromK8sPodList(podList *v1.PodList) *model.PodList {
 	if podList == nil {
 		return nil
 	}
 	items := make([]model.Pod, 0)
 	for i := range podList.Items {
-		if pod := fromK8sPod(&podList.Items[i]); pod != nil {
+		if pod := FromK8sPod(&podList.Items[i]); pod != nil {
 			items = append(items, *pod)
 		}
 	}
@@ -337,12 +337,12 @@ func fromK8sPodList(podList *v1.PodList) *model.PodList {
 }
 
 // generate model pod from k8s pod
-func fromK8sPod(pod *v1.Pod) *model.Pod {
+func FromK8sPod(pod *v1.Pod) *model.Pod {
 	if pod == nil {
 		return nil
 	}
 	var spec model.PodSpec
-	if s := fromK8sPodSpec(&pod.Spec); s != nil {
+	if s := FromK8sPodSpec(&pod.Spec); s != nil {
 		spec = *s
 	}
 	var starttime *time.Time
@@ -350,7 +350,7 @@ func fromK8sPod(pod *v1.Pod) *model.Pod {
 		starttime = &t.Time
 	}
 	return &model.Pod{
-		ObjectMeta: fromK8sObjectMeta(pod.ObjectMeta),
+		ObjectMeta: FromK8sObjectMeta(pod.ObjectMeta),
 		Spec:       spec,
 		Status: model.PodStatus{
 			Phase:     model.PodPhase(string(pod.Status.Phase)),
@@ -362,27 +362,27 @@ func fromK8sPod(pod *v1.Pod) *model.Pod {
 	}
 }
 
-func fromK8sPodSpec(spec *v1.PodSpec) *model.PodSpec {
+func FromK8sPodSpec(spec *v1.PodSpec) *model.PodSpec {
 	if spec == nil {
 		return nil
 	}
 	var volumes []model.Volume = nil
 	for i := range spec.Volumes {
-		if v := fromK8sVolume(&spec.Volumes[i]); v != nil {
+		if v := FromK8sVolume(&spec.Volumes[i]); v != nil {
 			volumes = append(volumes, *v)
 		}
 	}
 
 	var initContainers []model.K8sContainer
 	for i := range spec.InitContainers {
-		if c := fromK8sContainer(&spec.InitContainers[i]); c != nil {
+		if c := FromK8sContainer(&spec.InitContainers[i]); c != nil {
 			initContainers = append(initContainers, *c)
 		}
 	}
 
 	var containers []model.K8sContainer
 	for i := range spec.Containers {
-		if c := fromK8sContainer(&spec.Containers[i]); c != nil {
+		if c := FromK8sContainer(&spec.Containers[i]); c != nil {
 			containers = append(containers, *c)
 		}
 	}
@@ -396,17 +396,17 @@ func fromK8sPodSpec(spec *v1.PodSpec) *model.PodSpec {
 	}
 }
 
-func fromK8sVolume(volume *v1.Volume) *model.Volume {
+func FromK8sVolume(volume *v1.Volume) *model.Volume {
 	if volume == nil {
 		return nil
 	}
 	return &model.Volume{
 		Name:         volume.Name,
-		VolumeSource: fromK8sVolumeSource(volume.VolumeSource),
+		VolumeSource: FromK8sVolumeSource(volume.VolumeSource),
 	}
 }
 
-func fromK8sVolumeSource(volumeSource v1.VolumeSource) model.VolumeSource {
+func FromK8sVolumeSource(volumeSource v1.VolumeSource) model.VolumeSource {
 	var hp *model.HostPathVolumeSource
 	if volumeSource.HostPath != nil {
 		hp = &model.HostPathVolumeSource{
@@ -426,22 +426,22 @@ func fromK8sVolumeSource(volumeSource v1.VolumeSource) model.VolumeSource {
 	}
 }
 
-func fromK8sContainer(container *v1.Container) *model.K8sContainer {
+func FromK8sContainer(container *v1.Container) *model.K8sContainer {
 	if container == nil {
 		return nil
 	}
 	var ports []model.ContainerPort
 	for i := range container.Ports {
-		ports = append(ports, fromK8sContainerPort(container.Ports[i]))
+		ports = append(ports, FromK8sContainerPort(container.Ports[i]))
 	}
 	var envs []model.EnvVar
 	for i := range container.Env {
-		envs = append(envs, fromK8sEnvVar(container.Env[i]))
+		envs = append(envs, FromK8sEnvVar(container.Env[i]))
 	}
 
 	var mounts []model.VolumeMount
 	for i := range container.VolumeMounts {
-		mounts = append(mounts, fromK8sVolumeMount(container.VolumeMounts[i]))
+		mounts = append(mounts, FromK8sVolumeMount(container.VolumeMounts[i]))
 	}
 	return &model.K8sContainer{
 		Name:         container.Name,
@@ -455,7 +455,7 @@ func fromK8sContainer(container *v1.Container) *model.K8sContainer {
 	}
 }
 
-func fromK8sContainerPort(containerPort v1.ContainerPort) model.ContainerPort {
+func FromK8sContainerPort(containerPort v1.ContainerPort) model.ContainerPort {
 	return model.ContainerPort{
 		Name:          containerPort.Name,
 		HostPort:      containerPort.HostPort,
@@ -465,14 +465,14 @@ func fromK8sContainerPort(containerPort v1.ContainerPort) model.ContainerPort {
 	}
 }
 
-func fromK8sEnvVar(env v1.EnvVar) model.EnvVar {
+func FromK8sEnvVar(env v1.EnvVar) model.EnvVar {
 	return model.EnvVar{
 		Name:  env.Name,
 		Value: env.Value,
 	}
 }
 
-func fromK8sVolumeMount(mount v1.VolumeMount) model.VolumeMount {
+func FromK8sVolumeMount(mount v1.VolumeMount) model.VolumeMount {
 	return model.VolumeMount{
 		Name:      mount.Name,
 		MountPath: mount.MountPath,

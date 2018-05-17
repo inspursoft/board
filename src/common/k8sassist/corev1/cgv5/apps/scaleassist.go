@@ -1,5 +1,5 @@
 // a temp file for building and guiding
-package k8sassist
+package apps
 
 import (
 	//api "k8s.io/client-go/pkg/api"
@@ -19,11 +19,4 @@ func (d *scales) Update(kind string, scale *model.Scale) (*model.Scale, error) {
 
 func (d *scales) Get(kind string, name string) (*model.Scale, error) {
 	return nil, nil
-}
-
-var _ ScaleCliInterface = &scales{}
-
-// newNodes returns a Nodes
-func NewScales(namespace string) (*scales, error) {
-	return &scales{ns: namespace}, nil
 }

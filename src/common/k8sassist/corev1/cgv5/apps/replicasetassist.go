@@ -1,5 +1,5 @@
 // a temp file for building and guiding
-package k8sassist
+package apps
 
 import (
 	//api "k8s.io/client-go/pkg/api"
@@ -35,11 +35,4 @@ func (d *replicasets) Get(name string) (*model.ReplicaSet, error) {
 
 func (d *replicasets) List(opts model.ListOptions) (*model.ReplicaSetList, error) {
 	return nil, nil
-}
-
-var _ ReplicaSetCliInterface = &replicasets{}
-
-// newNodes returns a Nodes
-func NewReplicaSets(namespace string) (*replicasets, error) {
-	return &replicasets{ns: namespace}, nil
 }

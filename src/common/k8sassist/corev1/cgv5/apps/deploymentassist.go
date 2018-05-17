@@ -3,91 +3,91 @@ package apps
 import (
 	"git/inspursoft/board/src/common/k8sassist/corev1/cgv5/types"
 	"git/inspursoft/board/src/common/model"
-	"time"
+
+	"github.com/astaxie/beego/logs"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8stypes "k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/kubernetes/typed/apps/v1beta2"
 )
 
-type DeploymentClient struct{}
-
-func (c *DeploymentClient) marshal(namespace *model.Namespace) *types.Namespace {
-	return &types.Namespace{
-		TypeMeta: types.TypeMeta{
-			Kind:       "Namespace",
-			APIVersion: "v1",
-		},
-		ObjectMeta: types.ObjectMeta{
-			Name: namespace.ObjectMeta.Name,
-		},
-	}
+type deployments struct {
+	namespace string
+	deploy    v1beta2.DeploymentInterface
 }
 
-func (c *DeploymentClient) unmarshal(namespace *types.Namespace) *model.Namespace {
-	ctime, _ := time.Parse(time.RFC3339, namespace.ObjectMeta.CreationTimestamp.Format(time.RFC3339))
-	return &model.Namespace{
-		ObjectMeta: model.ObjectMeta{
-			Name:              namespace.ObjectMeta.Name,
-			CreationTimestamp: ctime,
-		},
-		NamespacePhase: string(namespace.Status.Phase),
+func (d *deployments) Create(deployment *model.Deployment) (*model.Deployment, error) {
+	k8sDep := types.ToK8sDeployment(deployment)
+	k8sDep, err := d.deploy.Create(k8sDep)
+	if err != nil {
+		logs.Error("Create deployment of %s/%s failed. Err:%+v", deployment.Name, d.namespace, err)
+		return nil, err
 	}
+
+	modelDep := types.FromK8sDeployment(k8sDep)
+	return modelDep, nil
 }
 
-//create by struct or file
-// func (c *DeploymentClient) Create(namespace *model.Namespace) (*model.Namespace, error) {
-// 	baseClient, err := NewBaseClient("")
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	ns, err := baseClient.CoreV1().Namespaces().Create(c.marshal(namespace))
-// 	if err != nil {
-// 		logs.Error("Create namespace of %s failed. Err:%s", ns.Name, err.Error())
-// 		return nil, err
-// 	}
+func (d *deployments) Update(deployment *model.Deployment) (*model.Deployment, error) {
+	k8sDep := types.ToK8sDeployment(deployment)
+	k8sDep, err := d.deploy.Update(k8sDep)
+	if err != nil {
+		logs.Error("Update deployment of %s/%s failed. Err:%+v", deployment.Name, d.namespace, err)
+		return nil, err
+	}
 
-// 	return c.unmarshal(ns), nil
-// }
+	modelDep := types.FromK8sDeployment(k8sDep)
+	return modelDep, nil
+}
 
-// func (c *ClientSet) CreateDeployment(deployment *types.Deployment) error {
-// 	result, err := c.Client.AppsV1beta1().Deployments(deployment.Namespace).Create(deployment)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	logs.Debug("Created deployment %q.", result.GetObjectMeta().GetName())
-// 	return nil
-// }
+func (d *deployments) UpdateStatus(deployment *model.Deployment) (*model.Deployment, error) {
+	k8sDep := types.ToK8sDeployment(deployment)
+	k8sDep, err := d.deploy.UpdateStatus(k8sDep)
+	if err != nil {
+		logs.Error("Update deployment status of %s/%s failed. Err:%+v", deployment.Name, d.namespace, err)
+		return nil, err
+	}
 
-// func (c *ClientSet) UpdateDeployment(deployment *types.Deployment) error {
-// 	result, err := c.Client.AppsV1beta1().Deployments(deployment.Namespace).Update(deployment)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	logs.Debug("Update deployment %q.", result.GetObjectMeta().GetName())
-// 	return nil
-// }
+	modelDep := types.FromK8sDeployment(k8sDep)
+	return modelDep, nil
+}
 
-// func (c *ClientSet) GetDeployment(deploymentName, deploymentNamespace string) (*types.Deployment, error) {
-// 	result, err := c.Client.AppsV1beta1().Deployments(deploymentNamespace).Get(deploymentName, types.GetOptions{})
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	logs.Debug("Get deployment %q.", result.GetObjectMeta().GetName())
-// 	return result, nil
-// }
+func (d *deployments) Delete(name string) error {
+	err := d.deploy.Delete(name, nil)
+	if err != nil {
+		logs.Error("Delete deployment of %s/%s failed. Err:%+v", name, d.namespace, err)
+	}
+	return err
+}
 
-// func (c *ClientSet) GetDeploymentList(deploymentNamespace string) (*types.DeploymentList, error) {
-// 	result, err := c.Client.AppsV1beta1().Deployments(deploymentNamespace).List(types.ListOptions{})
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	logs.Debug("Get deployment list.")
-// 	return result, nil
-// }
+func (d *deployments) Get(name string) (*model.Deployment, error) {
+	deployment, err := d.deploy.Get(name, metav1.GetOptions{})
+	if err != nil {
+		logs.Error("Get deployment of %s/%s failed. Err:%+v", name, d.namespace, err)
+		return nil, err
+	}
 
-// func (c *ClientSet) DeleteDeployment(deploymentName, deploymentNamespace string) error {
-// 	deletePolicy := types.DeletePropagationForeground
-// 	err := c.Client.AppsV1beta1().Deployments(deploymentNamespace).Delete(deploymentName, &types.DeleteOptions{PropagationPolicy: &deletePolicy})
-// 	if err != nil {
-// 		return err
-// 	}
-// 	logs.Debug("Delete deployment %q.", deploymentName)
-// 	return nil
-// }
+	modelDep := types.FromK8sDeployment(deployment)
+	return modelDep, nil
+}
+
+func (d *deployments) List() (*model.DeploymentList, error) {
+	deploymentList, err := d.deploy.List(metav1.ListOptions{})
+	if err != nil {
+		logs.Error("List deployments failed. Err:%+v", err)
+		return nil, err
+	}
+
+	modelDepList := types.FromK8sDeploymentList(deploymentList)
+	return modelDepList, nil
+}
+
+func (d *deployments) Patch(name string, pt model.PatchType, data []byte, subresources ...string) (result *model.Deployment, err error) {
+	k8sDep, err := d.deploy.Patch(name, k8stypes.PatchType(string(pt)), data, subresources...)
+	if err != nil {
+		logs.Error("Patch deployment of %s/%s failed. Err:%+v", name, d.namespace, err)
+		return nil, err
+	}
+
+	modelDep := types.FromK8sDeployment(k8sDep)
+	return modelDep, nil
+}
