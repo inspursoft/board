@@ -12,17 +12,16 @@ import (
 	"strings"
 	"time"
 
+	"git/inspursoft/board/src/common/model"
 	"github.com/google/cadvisor/info/v2"
-	"k8s.io/client-go/pkg/api/v1"
-	modelK8s "k8s.io/client-go/pkg/api/v1"
 )
 
-var PodList modelK8s.PodList
-var NodeList modelK8s.NodeList
-var ServiceList modelK8s.ServiceList
+var PodList model.PodList
+var NodeList model.NodeList
+var ServiceList model.ServiceList
 var KuberMasterIp string
 var KuberMasterStatus bool
-var podItem []modelK8s.Pod
+var podItem []model.Pod
 var KuberMasterURL string
 var KuberPort string
 
@@ -94,7 +93,7 @@ loopNode:
 	for _, v := range NodeList.Items {
 		for _, cond := range v.Status.Conditions {
 			if strings.EqualFold(string(cond.Type), "Ready") {
-				if cond.Status != v1.ConditionTrue && !v.Spec.Unschedulable {
+				if cond.Status != model.ConditionTrue && !v.Unschedulable {
 					util.Logger.SetWarn("this node status is false", v.Status.Addresses[1].Address)
 					continue loopNode
 				}
@@ -106,13 +105,13 @@ loopNode:
 		for k, v := range v.Status.Capacity {
 			switch k {
 			case "cpu":
-				nodes.NumbersCpuCore = v.String()
+				nodes.NumbersCpuCore = string(v)
 			case "memory":
-				nodes.MemorySize = v.String()
+				nodes.MemorySize = string(v)
 			case "alpha.kubernetes.io/nvidia-gpu":
-				nodes.NumbersGpuCore = v.String()
+				nodes.NumbersGpuCore = string(v)
 			case "pods":
-				nodes.PodLimit = v.String()
+				nodes.PodLimit = string(v)
 			}
 		}
 
@@ -221,7 +220,7 @@ func (resource *SourceMap) GainServices() error {
 		service.CreateTime = v.CreationTimestamp.Format("2006-01-02 15:04:05")
 		service.ServiceName = v.Name
 		service.TimeListId = (*serviceDashboardID)[*minuteCounterI]
-		for k, v := range v.Spec.Selector {
+		for k, v := range v.Selector {
 			var kvMap collect.ServiceKvMap
 			kvMap.Name = k
 			kvMap.Value = v

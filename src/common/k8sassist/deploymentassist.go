@@ -5,6 +5,7 @@ import (
 
 	"github.com/astaxie/beego/logs"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 	v1beta2 "k8s.io/client-go/kubernetes/typed/apps/v1beta2"
 )
@@ -30,7 +31,7 @@ func (d *deployments) Update(deployment *model.Deployment) (*model.Deployment, e
 	k8sDep := toK8sDeployment(deployment)
 	k8sDep, err := d.deploy.Update(k8sDep)
 	if err != nil {
-		logs.Error("update deployment of %s/%s failed. Err:%+v", deployment.Name, d.namespace, err)
+		logs.Error("Update deployment of %s/%s failed. Err:%+v", deployment.Name, d.namespace, err)
 		return nil, err
 	}
 
@@ -42,7 +43,7 @@ func (d *deployments) UpdateStatus(deployment *model.Deployment) (*model.Deploym
 	k8sDep := toK8sDeployment(deployment)
 	k8sDep, err := d.deploy.UpdateStatus(k8sDep)
 	if err != nil {
-		logs.Error("update deployment status of %s/%s failed. Err:%+v", deployment.Name, d.namespace, err)
+		logs.Error("Update deployment status of %s/%s failed. Err:%+v", deployment.Name, d.namespace, err)
 		return nil, err
 	}
 
@@ -53,7 +54,7 @@ func (d *deployments) UpdateStatus(deployment *model.Deployment) (*model.Deploym
 func (d *deployments) Delete(name string) error {
 	err := d.deploy.Delete(name, nil)
 	if err != nil {
-		logs.Error("delete deployment of %s/%s failed. Err:%+v", name, d.namespace, err)
+		logs.Error("Delete deployment of %s/%s failed. Err:%+v", name, d.namespace, err)
 	}
 	return err
 }
@@ -61,7 +62,7 @@ func (d *deployments) Delete(name string) error {
 func (d *deployments) Get(name string) (*model.Deployment, error) {
 	deployment, err := d.deploy.Get(name, metav1.GetOptions{})
 	if err != nil {
-		logs.Error("get deployment of %s/%s failed. Err:%+v", name, d.namespace, err)
+		logs.Error("Get deployment of %s/%s failed. Err:%+v", name, d.namespace, err)
 		return nil, err
 	}
 
@@ -72,12 +73,23 @@ func (d *deployments) Get(name string) (*model.Deployment, error) {
 func (d *deployments) List() (*model.DeploymentList, error) {
 	deploymentList, err := d.deploy.List(metav1.ListOptions{})
 	if err != nil {
-		logs.Error("list deployments failed. Err:%+v", err)
+		logs.Error("List deployments failed. Err:%+v", err)
 		return nil, err
 	}
 
 	modelDepList := fromK8sDeploymentList(deploymentList)
 	return modelDepList, nil
+}
+
+func (d *deployments) Patch(name string, pt model.PatchType, data []byte, subresources ...string) (result *model.Deployment, err error) {
+	k8sDep, err := d.deploy.Patch(name, types.PatchType(string(pt)), data, subresources...)
+	if err != nil {
+		logs.Error("Patch deployment of %s/%s failed. Err:%+v", name, d.namespace, err)
+		return nil, err
+	}
+
+	modelDep := fromK8sDeployment(k8sDep)
+	return modelDep, nil
 }
 
 var _ DeploymentCliInterface = &deployments{}
@@ -103,5 +115,5 @@ type DeploymentCliInterface interface {
 	Get(name string) (*model.Deployment, error)
 	//List(opts v1.ListOptions) (*DeploymentList, error)
 	List() (*model.DeploymentList, error)
-	//Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *v1beta1.Deployment, err error)
+	Patch(name string, pt model.PatchType, data []byte, subresources ...string) (result *model.Deployment, err error)
 }
