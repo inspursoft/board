@@ -4,6 +4,7 @@ import (
 	"git/inspursoft/board/src/common/k8sassist/corev1/cgv5/apps"
 	"git/inspursoft/board/src/common/k8sassist/corev1/cgv5/types"
 	"git/inspursoft/board/src/common/model"
+	"io"
 )
 
 func NewAppV1Client(clientset *types.Clientset) AppV1ClientInterface {
@@ -67,6 +68,7 @@ type ServiceClientInterface interface {
 	Get(name string) (*model.Service, error)
 	List() (*model.ServiceList, error)
 	//Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *v1.Service, err error)
+	CreateByYaml(io.Reader) (*model.Service, io.Writer, error)
 }
 
 // NodeCli Interface has methods to work with Node resources in k8s-assist.
@@ -139,4 +141,5 @@ type DeploymentClientInterface interface {
 	//List(opts v1.ListOptions) (*DeploymentList, error)
 	List() (*model.DeploymentList, error)
 	Patch(name string, pt model.PatchType, data []byte, subresources ...string) (result *model.Deployment, err error)
+	CreateByYaml(io.Reader) (*model.Deployment, io.Writer, error)
 }

@@ -4,6 +4,8 @@ import (
 	"git/inspursoft/board/src/common/k8sassist/corev1/cgv5/types"
 	"git/inspursoft/board/src/common/model"
 
+	"io"
+
 	"github.com/astaxie/beego/logs"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8stypes "k8s.io/apimachinery/pkg/types"
@@ -90,6 +92,11 @@ func (d *deployments) Patch(name string, pt model.PatchType, data []byte, subres
 
 	modelDep := types.FromK8sDeployment(k8sDep)
 	return modelDep, nil
+}
+
+func (d *deployments) CreateByYaml(r io.Reader) (*model.Deployment, io.Writer, error) {
+
+	return nil, nil, nil
 }
 
 func NewDeployments(namespace string, deploy v1beta2.DeploymentInterface) *deployments {
