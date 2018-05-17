@@ -8,11 +8,11 @@ import (
 	"github.com/astaxie/beego/logs"
 )
 
-type NamespaceClient struct {
+type namespaces struct {
 	Namespace types.NamespaceInterface
 }
 
-func (c *NamespaceClient) marshal(modelNamespace *model.Namespace) *types.Namespace {
+func (c *namespaces) marshal(modelNamespace *model.Namespace) *types.Namespace {
 	ns := &types.Namespace{
 		TypeMeta: types.TypeMeta{
 			Kind:       "Namespace",
@@ -28,7 +28,7 @@ func (c *NamespaceClient) marshal(modelNamespace *model.Namespace) *types.Namesp
 	return ns
 }
 
-func (c *NamespaceClient) unmarshal(typesNamespace *types.Namespace) *model.Namespace {
+func (c *namespaces) unmarshal(typesNamespace *types.Namespace) *model.Namespace {
 	ctime, _ := time.Parse(time.RFC3339, typesNamespace.ObjectMeta.CreationTimestamp.Format(time.RFC3339))
 	return &model.Namespace{
 		ObjectMeta: model.ObjectMeta{
@@ -39,7 +39,7 @@ func (c *NamespaceClient) unmarshal(typesNamespace *types.Namespace) *model.Name
 	}
 }
 
-func (c *NamespaceClient) unmarshalList(typesNamespaceList *types.NamespaceList) *model.NamespaceList {
+func (c *namespaces) unmarshalList(typesNamespaceList *types.NamespaceList) *model.NamespaceList {
 	modelNamespaceList := &model.NamespaceList{
 		Items: make([]model.Namespace, 0),
 	}
@@ -57,7 +57,7 @@ func (c *NamespaceClient) unmarshalList(typesNamespaceList *types.NamespaceList)
 	return modelNamespaceList
 }
 
-func (c *NamespaceClient) Create(namespace *model.Namespace) (*model.Namespace, error) {
+func (c *namespaces) Create(namespace *model.Namespace) (*model.Namespace, error) {
 	ns, err := c.Namespace.Create(c.marshal(namespace))
 	if err != nil {
 		logs.Error("Create namespace of %s failed. Err:%s", ns.Name, err.Error())
@@ -67,7 +67,7 @@ func (c *NamespaceClient) Create(namespace *model.Namespace) (*model.Namespace, 
 	return c.unmarshal(ns), nil
 }
 
-func (c *NamespaceClient) Delete(namespaceName string) error {
+func (c *namespaces) Delete(namespaceName string) error {
 	err := c.Namespace.Delete(namespaceName, &types.DeleteOptions{})
 	if err != nil {
 		logs.Error("Delete namespace of %s failed.", namespaceName)
@@ -77,7 +77,7 @@ func (c *NamespaceClient) Delete(namespaceName string) error {
 	return nil
 }
 
-func (c *NamespaceClient) Get(namespaceName string) (*model.Namespace, error) {
+func (c *namespaces) Get(namespaceName string) (*model.Namespace, error) {
 	ns, err := c.Namespace.Get(namespaceName, types.GetOptions{})
 	if err != nil {
 		logs.Error("Get namespace of %s failed.", namespaceName)
@@ -87,7 +87,7 @@ func (c *NamespaceClient) Get(namespaceName string) (*model.Namespace, error) {
 	return c.unmarshal(ns), nil
 }
 
-func (c *NamespaceClient) List() (*model.NamespaceList, error) {
+func (c *namespaces) List() (*model.NamespaceList, error) {
 	nsList, err := c.Namespace.List(types.ListOptions{})
 	if err != nil {
 		logs.Error("Get namespace list failed.")
@@ -97,7 +97,7 @@ func (c *NamespaceClient) List() (*model.NamespaceList, error) {
 	return c.unmarshalList(nsList), nil
 }
 
-func (c *NamespaceClient) Update(namespace *model.Namespace) (*model.Namespace, error) {
+func (c *namespaces) Update(namespace *model.Namespace) (*model.Namespace, error) {
 	ns, err := c.Namespace.Update(c.marshal(namespace))
 	if err != nil {
 		logs.Error("Update namespace of %s failed. Err:%s", ns.Name, err.Error())
@@ -105,4 +105,10 @@ func (c *NamespaceClient) Update(namespace *model.Namespace) (*model.Namespace, 
 	}
 
 	return c.unmarshal(ns), nil
+}
+
+func NewNamespaces(namespace types.NamespaceInterface) *namespaces {
+	return &namespaces{
+		Namespace: namespace,
+	}
 }

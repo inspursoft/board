@@ -79,3 +79,10 @@ func (p *pods) List() (*model.PodList, error) {
 	modelPodList := types.FromK8sPodList(podList)
 	return modelPodList, nil
 }
+
+func NewPods(namespace string, pod v1.PodInterface) *pods {
+	return &pods{
+		namespace: namespace,
+		pod:       pod,
+	}
+}

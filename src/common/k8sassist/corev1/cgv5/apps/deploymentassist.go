@@ -91,3 +91,10 @@ func (d *deployments) Patch(name string, pt model.PatchType, data []byte, subres
 	modelDep := types.FromK8sDeployment(k8sDep)
 	return modelDep, nil
 }
+
+func NewDeployments(namespace string, deploy v1beta2.DeploymentInterface) *deployments {
+	return &deployments{
+		namespace: namespace,
+		deploy:    deploy,
+	}
+}

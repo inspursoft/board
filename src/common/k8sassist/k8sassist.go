@@ -20,7 +20,7 @@ func NewK8sAssistClient(c *K8sAssistConfig) *K8sAssistClient {
 	}
 }
 
-func (c *K8sAssistClient) AppV1() *v1.AppV1Client {
+func (c *K8sAssistClient) AppV1() v1.AppV1ClientInterface {
 	clientset, err := base.NewBaseClient(c.config.K8sMasterURL)
 	if err != nil {
 		panic(err)

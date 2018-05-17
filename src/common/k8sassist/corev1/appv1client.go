@@ -6,10 +6,45 @@ import (
 	"git/inspursoft/board/src/common/model"
 )
 
+func NewAppV1Client(clientset *types.Clientset) AppV1ClientInterface {
+	return &AppV1Client{
+		Clientset: clientset,
+	}
+}
+
 type AppV1Client struct {
 	Clientset *types.Clientset
 }
 
+func (p *AppV1Client) Service(namespace string) ServiceClientInterface {
+	return apps.NewServices(namespace, p.Clientset.CoreV1().Services(namespace))
+}
+
+func (p *AppV1Client) Deployment(namespace string) DeploymentClientInterface {
+	return apps.NewDeployments(namespace, p.Clientset.AppsV1beta2().Deployments(namespace))
+}
+
+func (p *AppV1Client) Node() NodeClientInterface {
+	return apps.NewNodes(p.Clientset.CoreV1().Nodes())
+}
+
+func (p *AppV1Client) Namespace() NamespaceClientInterface {
+	return apps.NewNamespaces(p.Clientset.CoreV1().Namespaces())
+}
+
+func (p *AppV1Client) Scale(namespace string) ScaleClientInterface {
+	return apps.NewScales(namespace)
+}
+
+func (p *AppV1Client) ReplicaSet(namespace string) ReplicaSetClientInterface {
+	return apps.NewReplicaSets(namespace, p.Clientset.AppsV1beta2().ReplicaSets(namespace))
+}
+
+func (p *AppV1Client) Pod(namespace string) PodClientInterface {
+	return apps.NewPods(namespace, p.Clientset.CoreV1().Pods(namespace))
+}
+
+// AppV1ClientInterface level 1 interface to access others
 type AppV1ClientInterface interface {
 	Service(namespace string) ServiceClientInterface
 	Deployment(namespace string) DeploymentClientInterface
@@ -18,28 +53,6 @@ type AppV1ClientInterface interface {
 	Scale(namespace string) ScaleClientInterface
 	ReplicaSet(namespace string) ReplicaSetClientInterface
 	Pod(namespace string) PodClientInterface
-}
-
-func NewAppV1Client(clientset *types.Clientset) *AppV1Client {
-	return &AppV1Client{
-		Clientset: clientset,
-	}
-}
-
-func (p *AppV1Client) Namespace() NamespaceClientInterface {
-	return &apps.NamespaceClient{Namespace: p.Clientset.CoreV1().Namespaces()}
-}
-
-func (p *AppV1Client) Node() NodeClientInterface {
-	return nil
-}
-
-func (p *AppV1Client) Deployment() DeploymentClientInterface {
-	return nil
-}
-
-func (p *AppV1Client) Service() ServiceClientInterface {
-	return nil
 }
 
 // ServiceCli interface has methods to work with Service resources in k8s-assist.
