@@ -1,0 +1,26 @@
+<status *ngIf="service" [service]="service"></status>
+<table class="table">
+  <thead>
+  <tr>
+    <th class="left">{{"SERVICE.SERVICE_CONTROL_IMAGE_NAME"|translate}}</th>
+    <th class="left">{{"SERVICE.SERVICE_CONTROL_IMAGE_TAG"|translate}}</th>
+    <th class="left">{{"SERVICE.SERVICE_CONTROL_UPDATE_TAG"|translate}}</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr class="btn-primary image-tag-line" *ngFor="let imageIndex of imageList">
+    <td class="left image-name">{{imageIndex.image_name}}</td>
+    <td class="left image-tag">{{imageIndex.image_tag}}</td>
+    <td class="left" [ngClass]="{'change':imageIndex.image_tag != imageTagSelected.get(imageIndex.image_name)}">
+      <cs-dropdown [dropdownDefaultText]="imageIndex.image_tag"
+                   [dropdownWidth]="150"
+                   [dropdownList]="imageTagList.get(imageIndex.image_name)"
+                   [dropdownListTextKey]="'image_tag'"
+                   [dropdownTitleFontSize]="14"
+                   [dropdownDisabled]="isActionInWIP"
+                   (onChange)="changeImageTag(imageIndex.image_name,$event)">
+      </cs-dropdown>
+    </td>
+  </tr>
+  </tbody>
+</table>

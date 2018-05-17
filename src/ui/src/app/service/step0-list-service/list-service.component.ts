@@ -8,6 +8,7 @@ import { ServiceDetailComponent } from './service-detail/service-detail.componen
 import { ServiceStepBase } from "../service-step";
 import { Observable } from "rxjs/Observable";
 import { Project } from "../../project/project";
+import { ServiceControlComponent } from "./service-control/service-control.component";
 import "rxjs/add/observable/interval";
 
 enum CreateServiceMethod{None, Wizards, YamlFile, DevOps}
@@ -17,11 +18,10 @@ enum CreateServiceMethod{None, Wizards, YamlFile, DevOps}
 })
 export class ListServiceComponent extends ServiceStepBase implements OnInit, OnDestroy {
   @ViewChild(ServiceDetailComponent) serviceDetailComponent;
+  @ViewChild(ServiceControlComponent) serviceControlComponent: ServiceControlComponent;
   currentUser: {[key: string]: any};
   services: Service[];
   isInLoading: boolean = false;
-  isServiceControlOpen: boolean = false;
-  serviceControlData: Service;
   _subscription: Subscription;
   _subscriptionInterval: Subscription;
   totalRecordCount: number;
@@ -204,8 +204,8 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
 
   openServiceControl(service: Service) {
     if (service.service_is_member == 1 && service.service_status == SERVICE_STATUS.RUNNING){
-      this.serviceControlData = service;
-      this.isServiceControlOpen = true;
+      this.serviceControlComponent.service = service;
+      this.serviceControlComponent.openModal();
     }
   }
 

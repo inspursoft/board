@@ -267,4 +267,18 @@ export class K8sService {
       .zip(obsNodeGroupList)
       .map(value => value[0].concat(value[1]))
   }
+
+  getLocate(serviceId: number): Observable<Object> {
+    return this.http.get(`/api/v1/service/${serviceId}/locate`, {observe: "response"})
+      .map((res: HttpResponse<Array<Object>>) => res.body)
+  }
+
+  setLocate(serviceId: number, nodeSelector: string): Observable<Object> {
+    return this.http.put(`/api/v1/service/${serviceId}/locate`, {
+      service_locate: {
+        node_selector: nodeSelector
+      }
+    }, {observe: "response"})
+      .map((res: HttpResponse<Array<Object>>) => res.body)
+  }
 }

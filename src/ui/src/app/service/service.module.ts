@@ -17,6 +17,10 @@ import { ServiceDetailComponent } from './step0-list-service/service-detail/serv
 import { ServiceControlComponent } from "./step0-list-service/service-control/service-control.component";
 import { ServiceCreateYamlComponent } from './step0-list-service/service-create-yaml/service-create-yaml.component';
 import { DeployComponent } from "./step6-deploy/deploy.component";
+import { ScaleComponent } from './step0-list-service/service-control/scale/scale.component';
+import { UpdateComponent } from './step0-list-service/service-control/update/update.component';
+import { LocateComponent } from './step0-list-service/service-control/locate/locate.component';
+import { StatusComponent } from './step0-list-service/service-control/status/status.component';
 
 @NgModule({
   imports: [
@@ -37,7 +41,11 @@ import { DeployComponent } from "./step6-deploy/deploy.component";
     VolumeMountsComponent,
     ServiceDetailComponent,
     ServiceControlComponent,
-    ServiceCreateYamlComponent
+    ServiceCreateYamlComponent,
+    ScaleComponent,
+    UpdateComponent,
+    LocateComponent,
+    StatusComponent
   ],
   entryComponents: [
     ListServiceComponent,

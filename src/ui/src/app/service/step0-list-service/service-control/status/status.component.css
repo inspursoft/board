@@ -1,0 +1,38 @@
+fieldset.fieldSet-default {
+  margin: 0 2px;
+  border: 1px solid silver;
+  overflow: hidden;
+  padding: 0 20px 20px 20px;
+}
+
+legend.legend-default {
+  padding: .5em;
+  border: 0;
+  width: auto;
+  margin-left: 30px;
+}
+
+div.detail-container {
+  display: flex;
+  flex-direction: column;
+}
+
+div.detail-line {
+  height: 25px;
+}
+
+span.status-value {
+  color: darkblue;
+}
+
+span.warning {
+  color: darkorange;
+}
+
+span.stopped {
+  color: gray;
+}
+
+span.running {
+  color: green;
+}
