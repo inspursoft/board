@@ -59,12 +59,3 @@ func (c *NamespaceClient) Get(name string) (*model.Namespace, error) {
 
 	return nil, nil
 }
-
-// NamespaceCli Interface has methods to work with Namespace resources.
-type NamespaceCliInterface interface {
-	Create(*model.Namespace) (*model.Namespace, error)
-	Delete(*model.Namespace) error
-	Get(name string) (*model.Namespace, error)
-	List() (*model.NamespaceList, error)
-	//Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *v1.Namespace, err error)
-}
