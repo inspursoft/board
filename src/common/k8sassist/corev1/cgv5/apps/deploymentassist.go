@@ -94,9 +94,9 @@ func (d *deployments) Patch(name string, pt model.PatchType, data []byte, subres
 	return modelDep, nil
 }
 
-func (d *deployments) CreateByYaml(r io.Reader) (*model.Deployment, io.Writer, error) {
+func (d *deployments) CreateByYaml(r io.Reader) (*model.Deployment, error) {
 
-	return nil, nil, nil
+	return nil, nil
 }
 
 func NewDeployments(namespace string, deploy v1beta2.DeploymentInterface) *deployments {
