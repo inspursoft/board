@@ -1,4 +1,4 @@
-import { Component, Injector, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ComponentFactoryResolver, Injector, OnDestroy, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { Service } from '../service';
 import { ClrDatagridSortOrder, ClrDatagridStateInterface } from '@clr/angular';
@@ -18,7 +18,6 @@ enum CreateServiceMethod{None, Wizards, YamlFile, DevOps}
 })
 export class ListServiceComponent extends ServiceStepBase implements OnInit, OnDestroy {
   @ViewChild(ServiceDetailComponent) serviceDetailComponent;
-  @ViewChild(ServiceControlComponent) serviceControlComponent: ServiceControlComponent;
   currentUser: {[key: string]: any};
   services: Service[];
   isInLoading: boolean = false;
@@ -35,7 +34,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   descSort = ClrDatagridSortOrder.DESC;
   oldStateInfo: ClrDatagridStateInterface;
 
-  constructor(protected injector: Injector) {
+  constructor(protected injector: Injector, private viewRef: ViewContainerRef, private factory: ComponentFactoryResolver) {
     super(injector);
     this._subscriptionInterval = Observable.interval(10000).subscribe(() => this.retrieve(true, this.oldStateInfo));
     this.isActionWIP = new Map<number, boolean>();
@@ -204,8 +203,11 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
 
   openServiceControl(service: Service) {
     if (service.service_is_member == 1 && service.service_status == SERVICE_STATUS.RUNNING){
-      this.serviceControlComponent.service = service;
-      this.serviceControlComponent.openModal();
+      let factory = this.factory.resolveComponentFactory(ServiceControlComponent);
+      let componentRef = this.viewRef.createComponent(factory);
+      componentRef.instance.service = service;
+      componentRef.instance.openModal()
+        .subscribe(() => this.viewRef.remove(this.viewRef.indexOf(componentRef.hostView)));
     }
   }
 

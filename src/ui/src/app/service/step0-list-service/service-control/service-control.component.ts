@@ -10,6 +10,8 @@ import { UpdateComponent } from "./update/update.component";
 import { LocateComponent } from "./locate/locate.component";
 import { ScaleComponent } from "./scale/scale.component";
 import { Message } from "../../../shared/message-service/message";
+import { Subject } from "rxjs/Subject";
+import { Observable } from "rxjs/Observable";
 
 export interface IScaleInfo {
   desired_instance: number;
@@ -28,24 +30,35 @@ export class ServiceControlComponent implements OnInit {
   @ViewChild(ScaleComponent) scaleComponent: ScaleComponent;
   @ViewChild(LocateComponent) locateComponent: LocateComponent;
   service: Service;
-  isOpen: boolean = false;
+  _isOpen: boolean = false;
   actionMethod: ActionMethod = ActionMethod.scale;
   actionEnable: boolean = false;
   isActionInWIP: boolean = false;
   alertMessage: string = "";
+  closeNotification: Subject<any>;
 
   constructor(private k8sService: K8sService,
               private messageService: MessageService) {
-
+    this.closeNotification = new Subject<any>();
   }
 
   ngOnInit() {
   }
 
-  public openModal() {
-    this.alertMessage = '';
-    this.isActionInWIP = false;
+  get isOpen():boolean{
+    return this._isOpen;
+  }
+
+  set isOpen(value: boolean){
+    this._isOpen = value;
+    if (!this._isOpen){
+      this.closeNotification.next();
+    }
+  }
+
+  public openModal(): Observable<any> {
     this.isOpen = true;
+    return this.closeNotification.asObservable();
   }
 
   defaultDispatchErr(err) {

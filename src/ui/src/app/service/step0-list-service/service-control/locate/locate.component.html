@@ -1,7 +1,8 @@
 <status *ngIf="service" [service]="service"></status>
 <cs-dropdown
              [dropdownDisabled]="isActionInWIP"
-             [dropdownWidth]="100"
+             [dropdownDefaultText]="dropdownDefaultText"
+             [dropdownWidth]="200"
              [dropdownHideSearch]="true"
              [dropdownList]="nodeSelectorList"
              (onChange)="setNodeSelector($event)">

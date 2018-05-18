@@ -268,17 +268,20 @@ export class K8sService {
       .map(value => value[0].concat(value[1]))
   }
 
-  getLocate(serviceId: number): Observable<Object> {
-    return this.http.get(`/api/v1/service/${serviceId}/locate`, {observe: "response"})
-      .map((res: HttpResponse<Array<Object>>) => res.body)
+  getLocate(projectName: string, serviceName: string): Observable<string> {
+    return this.http.get(`/api/v1/services/rollingupdate/nodegroup`, {
+      observe: "response",
+      params: {project_name: projectName, service_name: serviceName}
+    })
+      .map((res: HttpResponse<string>) => res.body)
   }
 
-  setLocate(serviceId: number, nodeSelector: string): Observable<Object> {
-    return this.http.put(`/api/v1/service/${serviceId}/locate`, {
-      service_locate: {
-        node_selector: nodeSelector
-      }
-    }, {observe: "response"})
+  setLocate(nodeSelector: string, projectName: string, serviceName: string): Observable<Object> {
+    return this.http.patch(`/api/v1/services/rollingupdate/nodegroup`, null,
+      {
+        observe: "response",
+        params: {project_name: projectName, service_name: serviceName, node_selector: nodeSelector}
+      })
       .map((res: HttpResponse<Array<Object>>) => res.body)
   }
 }

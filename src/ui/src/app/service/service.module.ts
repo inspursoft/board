@@ -54,6 +54,7 @@ import { StatusComponent } from './step0-list-service/service-control/status/sta
     EditContainerComponent,
     ConfigSettingComponent,
     TestingComponent,
+    ServiceControlComponent,
     DeployComponent
   ],
   providers: [

@@ -28,12 +28,18 @@ export class LocateComponent implements OnInit {
   ngOnInit() {
     this.onActionIsEnabled.emit(false);
     this.k8sService.getNodeSelectors().subscribe(res => this.nodeSelectorList = res);
-    this.k8sService.getLocate(this.service.service_id)
-      .subscribe(res=>this.dropdownDefaultText = res["node_selector"]);
+    this.k8sService.getLocate(this.service.service_project_name, this.service.service_name)
+      .subscribe(res=>this.dropdownDefaultText = res);
   }
 
   actionExecute() {
-     this.k8sService.setLocate(this.service.service_id, this.nodeSelector)
+     this.k8sService.setLocate(this.nodeSelector, this.service.service_project_name, this.service.service_name)
+       .subscribe(() => {
+         let msg: Message = new Message();
+         msg.message = "SERVICE.SERVICE_CONTROL_LOCATE_SUCCESSFUL";
+         msg.params = [this.service.service_name];
+         this.onMessage.emit(msg);
+       }, (err) => this.onError.emit(err));
   }
 
   setNodeSelector(selector: string){
