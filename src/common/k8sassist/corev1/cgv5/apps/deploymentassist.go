@@ -5,8 +5,10 @@ import (
 	"git/inspursoft/board/src/common/model"
 
 	"io"
+	"io/ioutil"
 
 	"github.com/astaxie/beego/logs"
+	"github.com/ghodss/yaml"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8stypes "k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/typed/apps/v1beta2"
@@ -95,8 +97,26 @@ func (d *deployments) Patch(name string, pt model.PatchType, data []byte, subres
 }
 
 func (d *deployments) CreateByYaml(r io.Reader) (*model.Deployment, error) {
+	context, err := ioutil.ReadAll(r)
+	if err != nil {
+		logs.Error("Read file failed, error: %v", err)
+		return nil, err
+	}
 
-	return nil, nil
+	var deployment types.Deployment
+	err = yaml.Unmarshal(context, &deployment)
+	if err != nil {
+		logs.Error("Unmarshal deployment failed, error: %v", err)
+		return nil, err
+	}
+
+	deploymentInfo, err := d.deploy.Create(&deployment)
+	if err != nil {
+		logs.Error("Create deployment failed, error: %v", err)
+		return nil, err
+	}
+
+	return types.FromK8sDeployment(deploymentInfo), nil
 }
 
 func NewDeployments(namespace string, deploy v1beta2.DeploymentInterface) *deployments {

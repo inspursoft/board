@@ -3,7 +3,6 @@ package apps
 import (
 	"git/inspursoft/board/src/common/k8sassist/corev1/cgv5/types"
 	"git/inspursoft/board/src/common/model"
-	"time"
 
 	"github.com/astaxie/beego/logs"
 )
@@ -12,59 +11,14 @@ type namespaces struct {
 	Namespace types.NamespaceInterface
 }
 
-func (c *namespaces) marshal(modelNamespace *model.Namespace) *types.Namespace {
-	ns := &types.Namespace{
-		TypeMeta: types.TypeMeta{
-			Kind:       "Namespace",
-			APIVersion: "v1",
-		},
-		ObjectMeta: types.ObjectMeta{
-			Name:      modelNamespace.Name,
-			Namespace: modelNamespace.Namespace,
-			Labels:    modelNamespace.Labels,
-		},
-	}
-
-	return ns
-}
-
-func (c *namespaces) unmarshal(typesNamespace *types.Namespace) *model.Namespace {
-	ctime, _ := time.Parse(time.RFC3339, typesNamespace.ObjectMeta.CreationTimestamp.Format(time.RFC3339))
-	return &model.Namespace{
-		ObjectMeta: model.ObjectMeta{
-			Name:              typesNamespace.ObjectMeta.Name,
-			CreationTimestamp: ctime,
-		},
-		NamespacePhase: string(typesNamespace.Status.Phase),
-	}
-}
-
-func (c *namespaces) unmarshalList(typesNamespaceList *types.NamespaceList) *model.NamespaceList {
-	modelNamespaceList := &model.NamespaceList{
-		Items: make([]model.Namespace, 0),
-	}
-	for _, ns := range typesNamespaceList.Items {
-		ctime, _ := time.Parse(time.RFC3339, ns.ObjectMeta.CreationTimestamp.Format(time.RFC3339))
-		modelNamespaceList.Items = append(modelNamespaceList.Items, model.Namespace{
-			ObjectMeta: model.ObjectMeta{
-				Name:              ns.ObjectMeta.Name,
-				CreationTimestamp: ctime,
-			},
-			NamespacePhase: string(ns.Status.Phase),
-		})
-	}
-
-	return modelNamespaceList
-}
-
 func (c *namespaces) Create(namespace *model.Namespace) (*model.Namespace, error) {
-	ns, err := c.Namespace.Create(c.marshal(namespace))
+	ns, err := c.Namespace.Create(types.ToK8sNamespace(namespace))
 	if err != nil {
 		logs.Error("Create namespace of %s failed. Err:%s", ns.Name, err.Error())
 		return nil, err
 	}
 
-	return c.unmarshal(ns), nil
+	return types.FromK8sNamespace(ns), nil
 }
 
 func (c *namespaces) Delete(namespaceName string) error {
@@ -84,7 +38,7 @@ func (c *namespaces) Get(namespaceName string) (*model.Namespace, error) {
 		return nil, err
 	}
 
-	return c.unmarshal(ns), nil
+	return types.FromK8sNamespace(ns), nil
 }
 
 func (c *namespaces) List() (*model.NamespaceList, error) {
@@ -94,17 +48,17 @@ func (c *namespaces) List() (*model.NamespaceList, error) {
 		return nil, err
 	}
 
-	return c.unmarshalList(nsList), nil
+	return types.FromK8sNamespaceList(nsList), nil
 }
 
 func (c *namespaces) Update(namespace *model.Namespace) (*model.Namespace, error) {
-	ns, err := c.Namespace.Update(c.marshal(namespace))
+	ns, err := c.Namespace.Update(types.ToK8sNamespace(namespace))
 	if err != nil {
 		logs.Error("Update namespace of %s failed. Err:%s", ns.Name, err.Error())
 		return nil, err
 	}
 
-	return c.unmarshal(ns), nil
+	return types.FromK8sNamespace(ns), nil
 }
 
 func NewNamespaces(namespace types.NamespaceInterface) *namespaces {

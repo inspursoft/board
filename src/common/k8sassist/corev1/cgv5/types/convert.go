@@ -478,3 +478,98 @@ func FromK8sVolumeMount(mount v1.VolumeMount) model.VolumeMount {
 		MountPath: mount.MountPath,
 	}
 }
+
+//namespace data convert
+func ToK8sNamespace(modelNamespace *model.Namespace) *Namespace {
+	ns := &Namespace{
+		TypeMeta: TypeMeta{
+			Kind:       "Namespace",
+			APIVersion: "v1",
+		},
+		ObjectMeta: ToK8sObjectMeta(modelNamespace.ObjectMeta),
+	}
+
+	return ns
+}
+
+func FromK8sNamespace(typesNamespace *Namespace) *model.Namespace {
+	return &model.Namespace{
+		ObjectMeta:     FromK8sObjectMeta(typesNamespace.ObjectMeta),
+		NamespacePhase: string(typesNamespace.Status.Phase),
+	}
+}
+
+func FromK8sNamespaceList(typesNamespaceList *NamespaceList) *model.NamespaceList {
+	modelNamespaceList := &model.NamespaceList{
+		Items: make([]model.Namespace, 0),
+	}
+	for _, ns := range typesNamespaceList.Items {
+		modelNamespaceList.Items = append(modelNamespaceList.Items, *FromK8sNamespace(&ns))
+	}
+
+	return modelNamespaceList
+}
+
+//service data convert
+func ToK8sService(modelService *model.Service) *Service {
+	ports := make([]ServicePort, 0)
+	for _, port := range modelService.Ports {
+		ports = append(ports, ServicePort{
+			Name:     port.Name,
+			Protocol: Protocol(port.Protocol),
+			Port:     port.Port,
+			NodePort: port.NodePort,
+			TargetPort: IntOrString{
+				Type:   Int,
+				IntVal: port.TargetPort,
+			},
+		})
+	}
+	return &Service{
+		TypeMeta: TypeMeta{
+			Kind:       "Service",
+			APIVersion: "v1",
+		},
+		ObjectMeta: ToK8sObjectMeta(modelService.ObjectMeta),
+		Spec: ServiceSpec{
+			Ports:        ports,
+			Selector:     modelService.Selector,
+			ClusterIP:    modelService.ClusterIP,
+			Type:         ServiceType(modelService.Type),
+			ExternalIPs:  modelService.ExternalIPs,
+			ExternalName: modelService.ExternalName,
+		},
+	}
+}
+
+func FromK8sService(typesService *Service) *model.Service {
+	ports := make([]model.ServicePort, 0)
+	for _, port := range typesService.Spec.Ports {
+		ports = append(ports, model.ServicePort{
+			Name:       port.Name,
+			Protocol:   string(port.Protocol),
+			Port:       port.Port,
+			NodePort:   port.NodePort,
+			TargetPort: port.TargetPort.IntVal,
+		})
+	}
+	return &model.Service{
+		ObjectMeta:   FromK8sObjectMeta(typesService.ObjectMeta),
+		Ports:        ports,
+		Selector:     typesService.Spec.Selector,
+		ClusterIP:    typesService.Spec.ClusterIP,
+		Type:         string(typesService.Spec.Type),
+		ExternalIPs:  typesService.Spec.ExternalIPs,
+		ExternalName: typesService.Spec.ExternalName,
+	}
+}
+
+func FromK8sServiceList(typesServiceList *ServiceList) *model.ServiceList {
+	modelServiceList := &model.ServiceList{
+		Items: make([]model.Service, 0),
+	}
+	for _, s := range typesServiceList.Items {
+		modelServiceList.Items = append(modelServiceList.Items, *FromK8sService(&s))
+	}
+	return modelServiceList
+}
