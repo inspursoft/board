@@ -5,8 +5,10 @@ import (
 	"git/inspursoft/board/src/common/model"
 
 	"io"
+	"io/ioutil"
 
 	"github.com/astaxie/beego/logs"
+	"github.com/ghodss/yaml"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8stypes "k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/typed/apps/v1beta2"
@@ -94,9 +96,33 @@ func (d *deployments) Patch(name string, pt model.PatchType, data []byte, subres
 	return modelDep, nil
 }
 
-func (d *deployments) CreateByYaml(r io.Reader) (*model.Deployment, io.Writer, error) {
+func (d *deployments) CreateByYaml(r io.Reader) (*model.Deployment, []byte, error) {
+	context, err := ioutil.ReadAll(r)
+	if err != nil {
+		logs.Error("Read file failed, error: %v", err)
+		return nil, nil, err
+	}
 
-	return nil, nil, nil
+	var deployment types.Deployment
+	err = yaml.Unmarshal(context, &deployment)
+	if err != nil {
+		logs.Error("Unmarshal deployment failed, error: %v", err)
+		return nil, nil, err
+	}
+
+	deploymentInfo, err := d.deploy.Create(&deployment)
+	if err != nil {
+		logs.Error("Create deployment failed, error: %v", err)
+		return nil, nil, err
+	}
+
+	deploymentfileInfo, err := yaml.Marshal(deploymentInfo)
+	if err != nil {
+		logs.Error("Marshal deployment failed, error: %v", err)
+		return types.FromK8sDeployment(deploymentInfo), nil, err
+	}
+
+	return types.FromK8sDeployment(deploymentInfo), deploymentfileInfo, nil
 }
 
 func NewDeployments(namespace string, deploy v1beta2.DeploymentInterface) *deployments {
