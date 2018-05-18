@@ -11,6 +11,8 @@ type ServiceShowController struct {
 	baseController
 }
 
+func (s *ServiceShowController) Prepare() {}
+
 func (s *ServiceShowController) Get() {
 	ownerName := s.Ctx.Input.Param(":owner_name")
 	projectName := s.Ctx.Input.Param(":project_name")

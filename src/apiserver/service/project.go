@@ -24,6 +24,7 @@ const (
 )
 
 func CreateProject(project model.Project) (bool, error) {
+
 	projectID, err := dao.AddProject(project)
 	if err != nil {
 		return false, err
@@ -50,6 +51,14 @@ func GetProject(project model.Project, selectedFields ...string) (*model.Project
 		return nil, err
 	}
 	return p, nil
+}
+
+func GetProjectByName(name string) (*model.Project, error) {
+	return GetProject(model.Project{Name: name, Deleted: 0}, "name", "deleted")
+}
+
+func GetProjectByID(id int64) (*model.Project, error) {
+	return GetProject(model.Project{ID: id, Deleted: 0}, "id", "deleted")
 }
 
 func ProjectExists(projectName string) (bool, error) {
@@ -79,6 +88,10 @@ func UpdateProject(project model.Project, fieldNames ...string) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+func ToggleProjectPublic(projectID int64, public int) (bool, error) {
+	return UpdateProject(model.Project{ID: projectID, Public: public}, "public")
 }
 
 func GetProjectsByUser(query model.Project, userID int64) ([]*model.Project, error) {
@@ -202,12 +215,6 @@ func SyncProjectsWithK8s() error {
 			reqProject.OwnerID = adminUserID
 			reqProject.OwnerName = adminUserName
 			reqProject.Public = projectPrivate
-
-			err = CreateRepoAndJob(adminUserID, reqProject.Name)
-			if err != nil {
-				logs.Error("Failed create repo and job: %s %+v", reqProject.Name, err)
-			}
-
 			isSuccess, err := CreateProject(reqProject)
 			if err != nil {
 				logs.Error("Failed to create project %s %+v", reqProject.Name, err)
@@ -218,6 +225,10 @@ func SyncProjectsWithK8s() error {
 				logs.Error("Failed to create project %s", reqProject.Name)
 				// Still can work
 				continue
+			}
+			err = CreateRepoAndJob(adminUserID, reqProject.Name)
+			if err != nil {
+				logs.Error("Failed create repo and job: %s %+v", reqProject.Name, err)
 			}
 		}
 	}

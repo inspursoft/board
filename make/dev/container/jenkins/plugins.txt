@@ -52,3 +52,6 @@ pipeline-model-definition:1.2.7
 workflow-aggregator:2.5
 job-dsl:1.67
 generic-webhook-trigger:1.32
+ruby-runtime:0.12
+git:1.1.11
+travis-yml:0.2.2

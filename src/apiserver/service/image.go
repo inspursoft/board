@@ -164,8 +164,7 @@ func CheckDockerfileConfig(config *model.ImageConfig) error {
 		return err
 	}
 
-	relPath := filepath.Join("process-image", config.ImageName, config.ImageTag, "upload")
-	return CheckDockerfileItem(&config.ImageDockerfile, relPath)
+	return CheckDockerfileItem(&config.ImageDockerfile, "upload")
 }
 
 func BuildDockerfile(reqImageConfig model.ImageConfig, wr ...io.Writer) error {
@@ -324,6 +323,10 @@ func GetImage(image model.Image, selectedFields ...string) (*model.Image, error)
 		return nil, err
 	}
 	return m, nil
+}
+
+func GetImageByName(imageName string) (*model.Image, error) {
+	return GetImage(model.Image{ImageName: imageName, ImageDeleted: 0}, "name")
 }
 
 func UpdateImage(image model.Image, fieldNames ...string) (bool, error) {
