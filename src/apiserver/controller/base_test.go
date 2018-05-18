@@ -318,6 +318,7 @@ func TestMain(m *testing.M) {
 	utils.AddValue("IS_EXTERNAL_AUTH", false)
 	utils.AddValue("AUTH_MODE", "db_auth")
 	utils.AddValue("BOARD_ADMIN_PASSWORD", "123456a?")
+	utils.AddEnv("JENKINS_BASE_URL")
 	connectToDB()
 	createAppConf()
 	updateAdminPassword()
