@@ -37,9 +37,9 @@ func (d *services) List() (*model.ServiceList, error) {
 	return nil, nil
 }
 
-func (d *services) CreateByYaml(r io.Reader) (*model.Service, io.Writer, error) {
+func (d *services) CreateByYaml(r io.Reader) (*model.Service, error) {
 
-	return nil, nil, nil
+	return nil, nil
 }
 
 // newNodes returns a Nodes
