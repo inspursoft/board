@@ -52,7 +52,8 @@ func (pm *ProjectMemberController) AddOrUpdateProjectMemberAction() {
 		pm.customAbort(http.StatusBadRequest, "Failed to add or upate project member.")
 		return
 	}
-	pm.forkRepo()
+	baseRepoName := pm.project.Name
+	pm.forkRepo(user, baseRepoName)
 }
 
 func (pm *ProjectMemberController) DeleteProjectMemberAction() {

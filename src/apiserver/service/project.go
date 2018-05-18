@@ -215,12 +215,6 @@ func SyncProjectsWithK8s() error {
 			reqProject.OwnerID = adminUserID
 			reqProject.OwnerName = adminUserName
 			reqProject.Public = projectPrivate
-
-			err = CreateRepoAndJob(adminUserID, reqProject.Name)
-			if err != nil {
-				logs.Error("Failed create repo and job: %s %+v", reqProject.Name, err)
-			}
-
 			isSuccess, err := CreateProject(reqProject)
 			if err != nil {
 				logs.Error("Failed to create project %s %+v", reqProject.Name, err)
@@ -231,6 +225,10 @@ func SyncProjectsWithK8s() error {
 				logs.Error("Failed to create project %s", reqProject.Name)
 				// Still can work
 				continue
+			}
+			err = CreateRepoAndJob(adminUserID, reqProject.Name)
+			if err != nil {
+				logs.Error("Failed create repo and job: %s %+v", reqProject.Name, err)
 			}
 		}
 	}

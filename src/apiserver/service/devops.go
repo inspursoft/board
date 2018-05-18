@@ -1,17 +1,18 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service/devops/gogs"
 	"git/inspursoft/board/src/apiserver/service/devops/jenkins"
 	"git/inspursoft/board/src/common/utils"
+	"path/filepath"
 
 	"github.com/astaxie/beego/logs"
 )
 
 var baseRepoPath = utils.GetConfig("BASE_REPO_PATH")
 var gogitsSSHURL = utils.GetConfig("GOGITS_SSH_URL")
-
 var jenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
 
 func CreateRepoAndJob(userID int64, projectName string) error {
@@ -31,10 +32,15 @@ func CreateRepoAndJob(userID int64, projectName string) error {
 
 	logs.Info("Create repo and job with username: %s, project name: %s.", username, projectName)
 
-	logs.Info("Initialize serve repo with name: %s ...", projectName)
+	repoName, err := ResolveRepoName(projectName, username)
+	if err != nil {
+		return err
+	}
+	logs.Info("Initialize serve repo with name: %s ...", repoName)
 
-	repoURL := fmt.Sprintf("%s/%s/%s.git", gogitsSSHURL(), username, projectName)
-	repoPath := fmt.Sprintf("%s/%s/%s", baseRepoPath(), username, projectName)
+	repoURL := fmt.Sprintf("%s/%s/%s.git", gogitsSSHURL(), username, repoName)
+	repoPath := ResolveRepoPath(repoName, username)
+
 	_, err = InitRepo(repoURL, username, email, repoPath)
 	if err != nil {
 		logs.Error("Failed to initialize default user's repo: %+v", err)
@@ -44,14 +50,14 @@ func CreateRepoAndJob(userID int64, projectName string) error {
 	if gogsHandler == nil {
 		return fmt.Errorf("failed to create Gogs handler")
 	}
-	err = gogsHandler.CreateRepo(projectName)
+	err = gogsHandler.CreateRepo(repoName)
 	if err != nil {
-		logs.Error("Failed to create repo: %s, error %+v", projectName, err)
+		logs.Error("Failed to create repo: %s, error %+v", repoName, err)
 		return err
 	}
-	err = gogsHandler.CreateHook(username, projectName)
+	err = gogsHandler.CreateHook(username, repoName)
 	if err != nil {
-		logs.Error("Failed to create hook to repo: %s, error: %+v", projectName, err)
+		logs.Error("Failed to create hook to repo: %s, error: %+v", repoName, err)
 	}
 
 	CreateFile("readme.md", "Repo created by Board.", repoPath)
@@ -69,9 +75,9 @@ func CreateRepoAndJob(userID int64, projectName string) error {
 	}
 
 	jenkinsHandler := jenkins.NewJenkinsHandler()
-	err = jenkinsHandler.CreateJobWithParameter(projectName, username, email)
+	err = jenkinsHandler.CreateJobWithParameter(repoName, username, email)
 	if err != nil {
-		logs.Error("Failed to create Jenkins' job with project name: %s, error: %+v", projectName, err)
+		logs.Error("Failed to create Jenkins' job with repo name: %s, error: %+v", repoName, err)
 		return err
 	}
 	return nil
@@ -92,4 +98,26 @@ func CreatePullRequestAndComment(username, ownerName, repoName, repoToken, compa
 		}
 	}
 	return nil
+}
+
+func ResolveRepoName(projectName, username string) (repoName string, err error) {
+	project, err := GetProjectByName(projectName)
+	if err != nil {
+		return
+	}
+	if project == nil {
+		err = errors.New("invalid project name")
+		return
+	}
+	repoName = project.Name
+	if project.OwnerName != username {
+		repoName = username + "_" + project.Name
+	}
+	return
+}
+
+func ResolveRepoPath(repoName, username string) (repoPath string) {
+	repoPath = filepath.Join(baseRepoPath(), username, "contents", repoName)
+	logs.Debug("Set repo path at file upload: %s", repoPath)
+	return
 }

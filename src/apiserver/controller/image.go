@@ -142,7 +142,7 @@ func (p *ImageController) generateBuildingImageTravis(imageURI string) error {
 	var travisCommand travis.TravisCommand
 	travisCommand.BeforeDeploy.Commands = []string{
 		fmt.Sprintf("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
-		"[[ ! -f key.txt ]] || (token=`cat key.txt`)",
+		"if [ -f key.txt ]; then token=`cat key.txt`; fi",
 		fmt.Sprintf("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | cut -d$' ' -f2`", boardAPIBaseURL()),
 		fmt.Sprintf("if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi", boardAPIBaseURL()),
 	}
@@ -160,7 +160,6 @@ func (p *ImageController) BuildImageAction() {
 	//Check user priviledge project admin
 	p.resolveBody(&reqImageConfig)
 	p.resolveUserPrivilege(reqImageConfig.ProjectName)
-
 	//Checking invalid parameters
 	p.resolveRepoPath(reqImageConfig.ProjectName)
 	reqImageConfig.RepoPath = p.repoPath

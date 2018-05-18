@@ -4,7 +4,6 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"path/filepath"
 	"time"
 
@@ -225,10 +224,14 @@ func (b *baseController) resolveProjectByID(projectID int64) (project *model.Pro
 }
 
 func (b *baseController) resolveRepoPath(projectName string) {
-	project := b.resolveProject(projectName)
-	b.repoPath = filepath.Join(baseRepoPath(), b.currentUser.Username, project.Name)
+	username := b.currentUser.Username
+	repoName, err := service.ResolveRepoName(projectName, username)
+	if err != nil {
+		b.customAbort(http.StatusPreconditionFailed, fmt.Sprintf("Failed to generate repo path: %+v", err))
+		return
+	}
+	b.repoPath = service.ResolveRepoPath(repoName, username)
 	logs.Debug("Set repo path at file upload: %s", b.repoPath)
-	return
 }
 
 func (b *baseController) resolveProjectMember(projectName string) {
@@ -252,14 +255,13 @@ func (b *baseController) resolveProjectOwnerByID(projectID int64) (project *mode
 }
 
 func (b *baseController) resolveUserPrivilege(projectName string) {
+	b.resolveProject(projectName)
 	isMember, err := service.IsProjectMemberByName(projectName, b.currentUser.ID)
 	if err != nil {
 		b.internalError(err)
 	}
 	if !(b.isSysAdmin || isMember) {
 		b.customAbort(http.StatusForbidden, "Insufficient privileges to build image.")
-	} else if _, err := os.Stat(b.repoPath); b.isSysAdmin && os.IsNotExist(err) {
-		b.forkRepo()
 	}
 	return
 }
@@ -325,16 +327,15 @@ func (b *baseController) collaborateWithPullRequest(headBranch, baseBranch strin
 	}
 }
 
-func (b *baseController) forkRepo() {
-	if b.project == nil {
-		b.customAbort(http.StatusPreconditionFailed, "Project info cannot be nil.")
+func (b *baseController) forkRepo(forkedUser *model.User, baseRepoName string) {
+	if forkedUser == nil {
+		b.customAbort(http.StatusPreconditionFailed, "User to be forked is nil.")
 		return
 	}
-	username := b.currentUser.Username
-	email := b.currentUser.Email
-	repoToken := b.currentUser.RepoToken
-	baseRepoName := b.project.Name
-	repoName := username + "_" + b.project.Name
+	username := forkedUser.Username
+	email := forkedUser.Email
+	repoToken := forkedUser.RepoToken
+	repoName := username + "_" + baseRepoName
 	gogsHandler := gogs.NewGogsHandler(username, repoToken)
 	err := gogsHandler.ForkRepo(b.project.OwnerName, baseRepoName, repoName, "Forked repo.")
 	if err != nil {
