@@ -640,3 +640,58 @@ func ToK8sNode(node *model.Node) *v1.Node {
 		Status: ToK8sNodeStatus(node.Status),
 	}
 }
+
+// adapt model node.Status from k8s node.Status
+func FromK8sNodeStatus(nodestatus v1.NodeStatus) model.NodeStatus {
+	capacity := make(map[model.ResourceName]model.Quantity)
+	for k, v := range nodestatus.Capacity {
+		i, _ := v.AsInt64()
+		capacity[model.ResourceName(k)] = model.Quantity(i)
+
+	}
+
+	allocatable := make(map[model.ResourceName]model.Quantity)
+	for k, v := range nodestatus.Allocatable {
+		i, _ := v.AsInt64()
+		allocatable[model.ResourceName(k)] = model.Quantity(i)
+	}
+
+	conditions := make([]model.NodeCondition, 0)
+	for _, v := range nodestatus.Conditions {
+		conditions = append(conditions, model.NodeCondition{
+			Type:    model.NodeConditionType(v.Type),
+			Status:  model.ConditionStatus(v.Status),
+			Reason:  v.Reason,
+			Message: v.Message,
+		})
+
+	}
+
+	addresses := make([]model.NodeAddress, 0)
+	for _, v := range nodestatus.Addresses {
+		addresses = append(addresses, model.NodeAddress{
+			Type:    model.NodeAddressType(v.Type),
+			Address: v.Address,
+		})
+
+	}
+
+	return model.NodeStatus{
+		Capacity:    capacity,
+		Allocatable: allocatable,
+		Phase:       model.NodePhase(nodestatus.Phase),
+		Conditions:  conditions,
+		Addresses:   addresses,
+	}
+}
+
+// adapt model node from k8s node
+func FromK8sNode(node *v1.Node) *model.Node {
+
+	return &model.Node{
+		ObjectMeta:    FromK8sObjectMeta(node.ObjectMeta),
+		NodeIP:        node.ObjectMeta.Name,
+		Unschedulable: node.Spec.Unschedulable,
+		Status:        FromK8sNodeStatus(node.Status),
+	}
+}
