@@ -18,28 +18,65 @@ type services struct {
 	service   v1.ServiceInterface
 }
 
-func (d *services) Create(*model.Service) (*model.Service, error) {
-	return nil, nil
+func (s *services) Create(modelService *model.Service) (*model.Service, []byte, error) {
+	typeService := types.ToK8sService(modelService)
+	svc, err := s.service.Create(typeService)
+	if err != nil {
+		logs.Error("Create service failed, error: %v", err)
+		return nil, nil, err
+	}
+	svcfileInfo, err := yaml.Marshal(svc)
+	if err != nil {
+		logs.Error("Marshal service failed, error: %v", err)
+	}
+	return types.FromK8sService(svc), svcfileInfo, nil
 }
 
-func (d *services) Update(*model.Service) (*model.Service, error) {
-	return nil, nil
+func (s *services) Update(modelService *model.Service) (*model.Service, error) {
+	typeService := types.ToK8sService(modelService)
+	svc, err := s.service.Update(typeService)
+	if err != nil {
+		logs.Error("Update service failed, error: %v", err)
+		return nil, err
+	}
+	return types.FromK8sService(svc), nil
 }
 
-func (d *services) UpdateStatus(*model.Service) (*model.Service, error) {
-	return nil, nil
+func (s *services) UpdateStatus(modelService *model.Service) (*model.Service, error) {
+	typeService := types.ToK8sService(modelService)
+	svc, err := s.service.UpdateStatus(typeService)
+	if err != nil {
+		logs.Error("Updatestatus service failed, error: %v", err)
+		return nil, err
+	}
+	return types.FromK8sService(svc), nil
 }
 
-func (d *services) Delete(name string) error {
+func (s *services) Delete(name string) error {
+	err := s.service.Delete(name, &types.DeleteOptions{})
+	if err != nil {
+		logs.Error("Delete service failed, error: %v", err)
+		return err
+	}
 	return nil
 }
 
-func (d *services) Get(name string) (*model.Service, error) {
-	return nil, nil
+func (s *services) Get(name string) (*model.Service, error) {
+	svc, err := s.service.Get(name, types.GetOptions{})
+	if err != nil {
+		logs.Error("Get service failed, error: %v", err)
+		return nil, err
+	}
+	return types.FromK8sService(svc), nil
 }
 
-func (d *services) List() (*model.ServiceList, error) {
-	return nil, nil
+func (s *services) List() (*model.ServiceList, error) {
+	svcList, err := s.service.List(types.ListOptions{})
+	if err != nil {
+		logs.Error("Get service list failed, error: %v", err)
+		return nil, err
+	}
+	return types.FromK8sServiceList(svcList), nil
 }
 
 func (s *services) CreateByYaml(r io.Reader) (*model.Service, error) {
