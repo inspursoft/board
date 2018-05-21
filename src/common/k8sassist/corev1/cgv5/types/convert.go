@@ -823,3 +823,19 @@ func FromK8sNode(node *v1.Node) *model.Node {
 		Status:        FromK8sNodeStatus(node.Status),
 	}
 }
+
+// adapt model nodes from k8s nodes
+func FromK8sNodeList(nodeList *v1.NodeList) *model.NodeList {
+	if nodeList == nil {
+		return nil
+	}
+	items := make([]model.Node, 0)
+	for i := range nodeList.Items {
+		if node := FromK8sNode(&nodeList.Items[i]); node != nil {
+			items = append(items, *node)
+		}
+	}
+	return &model.NodeList{
+		Items: items,
+	}
+}
