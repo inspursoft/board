@@ -60,7 +60,7 @@ type AppV1ClientInterface interface {
 // How to:  serviceCli, err := k8sassist.NewServices(nameSpace)
 //          service, err := serviceCli.Get(serviceName)
 type ServiceClientInterface interface {
-	Create(*model.Service) (*model.Service, error)
+	Create(*model.Service) (*model.Service, []byte, error)
 	Update(*model.Service) (*model.Service, error)
 	UpdateStatus(*model.Service) (*model.Service, error)
 	Delete(name string) error

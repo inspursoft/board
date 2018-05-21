@@ -64,3 +64,17 @@ const (
 	Int    Type = iota // The IntOrString holds an int.
 	String             // The IntOrString holds a string.
 )
+
+const (
+	serviceAPIVersion    = "v1"
+	serviceKind          = "Service"
+	nodePort             = "NodePort"
+	deploymentAPIVersion = "apps/v1beta2"
+	deploymentKind       = "Deployment"
+	namespaceKind        = "Namespace"
+	namespaceAPIVersion  = "v1"
+	podKind              = "Pod"
+	podVersion           = "v1"
+	maxPort              = 32765
+	minPort              = 30000
+)
