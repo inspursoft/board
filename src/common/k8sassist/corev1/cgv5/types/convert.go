@@ -5,8 +5,11 @@ import (
 
 	"git/inspursoft/board/src/common/model"
 
+	//"strconv"
+
 	appsv1beta2 "k8s.io/api/apps/v1beta2"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -572,4 +575,68 @@ func FromK8sServiceList(typesServiceList *ServiceList) *model.ServiceList {
 		modelServiceList.Items = append(modelServiceList.Items, *FromK8sService(&s))
 	}
 	return modelServiceList
+}
+
+// generate k8s node status from model node status
+func ToK8sNodeStatus(nodestatus model.NodeStatus) v1.NodeStatus {
+	capacity := make(map[v1.ResourceName]resource.Quantity)
+	for k, v := range nodestatus.Capacity {
+		q := resource.NewQuantity(int64(v), resource.DecimalExponent)
+		capacity[v1.ResourceName(k)] = *q
+
+	}
+
+	allocatable := make(map[v1.ResourceName]resource.Quantity)
+	for k, v := range nodestatus.Allocatable {
+		q := resource.NewQuantity(int64(v), resource.DecimalExponent)
+		capacity[v1.ResourceName(k)] = *q
+
+	}
+
+	conditions := make([]v1.NodeCondition, 0)
+	for _, v := range nodestatus.Conditions {
+		conditions = append(conditions, v1.NodeCondition{
+			Type:    v1.NodeConditionType(v.Type),
+			Status:  v1.ConditionStatus(v.Status),
+			Reason:  v.Reason,
+			Message: v.Message,
+		})
+
+	}
+
+	addresses := make([]v1.NodeAddress, 0)
+	for _, v := range nodestatus.Addresses {
+		addresses = append(addresses, v1.NodeAddress{
+			Type:    v1.NodeAddressType(v.Type),
+			Address: v.Address,
+		})
+
+	}
+
+	return v1.NodeStatus{
+		Capacity:    capacity,
+		Allocatable: allocatable,
+		Phase:       v1.NodePhase(nodestatus.Phase),
+		Conditions:  conditions,
+		Addresses:   addresses,
+	}
+}
+
+// generate k8s node from model node
+func ToK8sNode(node *model.Node) *v1.Node {
+	if node == nil {
+		return nil
+	}
+
+	return &v1.Node{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Service",
+			APIVersion: "v1",
+		},
+		ObjectMeta: ToK8sObjectMeta(node.ObjectMeta),
+		Spec: v1.NodeSpec{
+			Unschedulable: node.Unschedulable,
+		},
+		Status: ToK8sNodeStatus(node.Status),
+	}
 }
