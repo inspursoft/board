@@ -93,6 +93,12 @@ func (s *services) CreateByYaml(r io.Reader) (*model.Service, error) {
 		return nil, err
 	}
 
+	err = types.CheckServiceConfig(s.namespace, service)
+	if err != nil {
+		logs.Error("Service config is error, error: %v", err)
+		return nil, err
+	}
+
 	serviceInfo, err := s.service.Create(&service)
 	if err != nil {
 		logs.Error("Create service failed, error: %v", err)

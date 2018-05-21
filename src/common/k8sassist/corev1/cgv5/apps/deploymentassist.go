@@ -110,6 +110,12 @@ func (d *deployments) CreateByYaml(r io.Reader) (*model.Deployment, error) {
 		return nil, err
 	}
 
+	err = types.CheckDeploymentConfig(d.namespace, deployment)
+	if err != nil {
+		logs.Error("Deployment config is error, error: %v", err)
+		return nil, err
+	}
+
 	deploymentInfo, err := d.deploy.Create(&deployment)
 	if err != nil {
 		logs.Error("Create deployment failed, error: %v", err)
