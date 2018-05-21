@@ -71,7 +71,7 @@ const (
 )
 
 // should call kubernetes Quantity String() func.
-type Quantity string
+type Quantity int64
 
 type ResourceList map[ResourceName]Quantity
 
@@ -87,7 +87,6 @@ type Node struct {
 	ObjectMeta
 	NodeIP        string
 	Unschedulable bool
-	Groups        map[string]string
 	Status        NodeStatus
 }
 
