@@ -19,16 +19,21 @@ type deployments struct {
 	deploy    v1beta2.DeploymentInterface
 }
 
-func (d *deployments) Create(deployment *model.Deployment) (*model.Deployment, error) {
+func (d *deployments) Create(deployment *model.Deployment) (*model.Deployment, []byte, error) {
 	k8sDep := types.ToK8sDeployment(deployment)
 	k8sDep, err := d.deploy.Create(k8sDep)
 	if err != nil {
 		logs.Error("Create deployment of %s/%s failed. Err:%+v", deployment.Name, d.namespace, err)
-		return nil, err
+		return nil, nil, err
+	}
+	modelDep := types.FromK8sDeployment(k8sDep)
+	deployfile, err := yaml.Marshal(k8sDep)
+	if err != nil {
+		logs.Error("Marshal deployment failed, error: %v", err)
+		return modelDep, nil, err
 	}
 
-	modelDep := types.FromK8sDeployment(k8sDep)
-	return modelDep, nil
+	return modelDep, deployfile, nil
 }
 
 func (d *deployments) Update(deployment *model.Deployment) (*model.Deployment, error) {
