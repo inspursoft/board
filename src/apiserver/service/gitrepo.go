@@ -6,7 +6,10 @@ import (
 	"io/ioutil"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
+
+	"gopkg.in/src-d/go-git.v4/plumbing"
 
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 
@@ -22,8 +25,12 @@ var gogitsHostIP = utils.GetConfig("GOGITS_HOST_IP")
 
 type repoHandler struct {
 	username string
+	email    string
 	repo     *git.Repository
 	worktree *git.Worktree
+	hash     plumbing.Hash
+	repoPath string
+	isRemove bool
 }
 
 func InitBareRepo(servePath string) (*repoHandler, error) {
@@ -54,7 +61,7 @@ func getSSHAuth(username string) (*gitssh.PublicKeys, error) {
 	return auth, nil
 }
 
-func InitRepo(serveURL, username, path string) (*repoHandler, error) {
+func InitRepo(serveURL, username, email, path string) (*repoHandler, error) {
 	auth, err := getSSHAuth(username)
 	if err != nil {
 		return nil, err
@@ -67,7 +74,7 @@ func InitRepo(serveURL, username, path string) (*repoHandler, error) {
 	})
 	if err != nil {
 		if err == git.ErrRepositoryAlreadyExists {
-			return OpenRepo(path, username)
+			return OpenRepo(path, username, email)
 		}
 		if err == transport.ErrEmptyRemoteRepository {
 			return nil, nil
@@ -81,7 +88,7 @@ func InitRepo(serveURL, username, path string) (*repoHandler, error) {
 	return &repoHandler{username: username, repo: repo, worktree: worktree}, nil
 }
 
-func OpenRepo(path, username string) (*repoHandler, error) {
+func OpenRepo(path, username, email string) (*repoHandler, error) {
 	repo, err := git.PlainOpen(path)
 	if err != nil {
 		return nil, err
@@ -90,7 +97,15 @@ func OpenRepo(path, username string) (*repoHandler, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &repoHandler{username: username, repo: repo, worktree: worktree}, nil
+	return &repoHandler{username: username, email: email, repo: repo, worktree: worktree, repoPath: path}, nil
+}
+
+func (r *repoHandler) genSignature() *object.Signature {
+	return &object.Signature{
+		Name:  r.username,
+		Email: r.email,
+		When:  time.Now(),
+	}
 }
 
 func getWorktree(repo *git.Repository) (*git.Worktree, error) {
@@ -101,6 +116,11 @@ func getWorktree(repo *git.Repository) (*git.Worktree, error) {
 	return worktree, nil
 }
 
+func (r *repoHandler) ToRemove() *repoHandler {
+	r.isRemove = true
+	return r
+}
+
 func (r *repoHandler) Add(filename string) (*repoHandler, error) {
 	_, err := r.worktree.Add(filename)
 	if err != nil {
@@ -109,15 +129,37 @@ func (r *repoHandler) Add(filename string) (*repoHandler, error) {
 	return r, nil
 }
 
-func (r *repoHandler) Commit(message, username, email string) (*repoHandler, error) {
-	_, err := r.worktree.Commit(message, &git.CommitOptions{
-		All: true,
-		Author: &object.Signature{
-			Name:  username,
-			Email: email,
-			When:  time.Now(),
-		},
+func (r *repoHandler) Commit(message string) (*repoHandler, error) {
+	var err error
+	r.hash, err = r.worktree.Commit(message, &git.CommitOptions{
+		All:    true,
+		Author: r.genSignature(),
 	})
+	if err != nil {
+		return nil, err
+	}
+	return r, nil
+}
+
+func (r *repoHandler) Tag(tagName, message string) (*repoHandler, error) {
+	r, err := r.Commit(message)
+	if err != nil {
+		return nil, err
+	}
+	tag := object.Tag{
+		Name:       tagName,
+		Message:    message,
+		Tagger:     *r.genSignature(),
+		Target:     r.hash,
+		TargetType: plumbing.CommitObject,
+	}
+	encodedObject := r.repo.Storer.NewEncodedObject()
+	err = tag.Encode(encodedObject)
+	if err != nil {
+		return nil, err
+	}
+	hash, err := r.repo.Storer.SetEncodedObject(encodedObject)
+	err = r.repo.Storer.SetReference(plumbing.NewReferenceFromStrings("refs/tags"+tagName, hash.String()))
 	if err != nil {
 		return nil, err
 	}
@@ -152,16 +194,24 @@ func (r *repoHandler) Remove(filename string) (*repoHandler, error) {
 	return r, nil
 }
 
-func SimplePush(path, username, email, message string, items ...string) error {
-	r, err := OpenRepo(path, username)
-	if err != nil {
-		return fmt.Errorf("failed to open repo handler: %+v", err)
-	}
+func (r *repoHandler) SimplePush(items ...string) error {
+	logs.Debug("Repo path for pushing objects: %s", r.repoPath)
 	for _, item := range items {
+		if r.isRemove {
+			r.Remove(item)
+		} else {
+			r.Add(item)
+		}
 		logs.Debug(">>>>> pushed item: %s", item)
-		r.Add(item)
 	}
-	_, err = r.Commit(message, username, email)
+
+	message := fmt.Sprintf("Push items: %s to repo: %s", strings.Join(items, ","), r.repoPath)
+	if r.isRemove {
+		message = "[DELETED]" + message
+	}
+
+	var err error
+	_, err = r.Commit(message)
 	if err != nil {
 		return fmt.Errorf("failed to commit changes to user's repo: %+v", err)
 	}

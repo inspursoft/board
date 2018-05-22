@@ -136,18 +136,6 @@ func init() {
 				beego.NSRouter("/time",
 					&DashboardServiceController{}, "get:GetServerTime"),
 			),
-			beego.NSRouter("/git/serve",
-				&GitRepoController{},
-				"post:CreateServeRepo"),
-			beego.NSRouter("/git/repo",
-				&GitRepoController{},
-				"post:InitUserRepo"),
-			beego.NSRouter("/git/push",
-				&GitRepoController{},
-				"post:PushObjects"),
-			beego.NSRouter("/git/pull",
-				&GitRepoController{},
-				"post:PullObjects"),
 			beego.NSRouter("/services",
 				&ServiceController{},
 				"post:CreateServiceConfigAction;get:GetServiceListAction"),
@@ -318,6 +306,7 @@ func TestMain(m *testing.M) {
 	utils.AddValue("IS_EXTERNAL_AUTH", false)
 	utils.AddValue("AUTH_MODE", "db_auth")
 	utils.AddValue("BOARD_ADMIN_PASSWORD", "123456a?")
+	utils.AddEnv("JENKINS_BASE_URL")
 	connectToDB()
 	createAppConf()
 	updateAdminPassword()

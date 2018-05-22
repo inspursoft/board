@@ -162,6 +162,7 @@ func main() {
 	utils.Initialize()
 
 	utils.AddEnv("BOARD_HOST")
+	utils.AddValue("BOARD_API_PORT", defaultAPIServerPort)
 	utils.AddEnv("BOARD_ADMIN_PASSWORD")
 	utils.AddEnv("KUBE_MASTER_IP")
 	utils.AddEnv("KUBE_MASTER_PORT")
@@ -181,6 +182,8 @@ func main() {
 	utils.AddEnv("FORCE_INIT_SYNC")
 	utils.AddEnv("VERIFICATION_URL")
 	utils.AddEnv("REDIRECTION_URL")
+
+	utils.SetConfig("BOARD_API_BASE_URL", "http://%s:%s/api/v1", "BOARD_HOST", "BOARD_API_PORT")
 
 	utils.AddEnv("GOGITS_HOST_IP")
 	utils.AddEnv("GOGITS_HOST_PORT")

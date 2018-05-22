@@ -130,7 +130,6 @@ func GenerateDeploymentYamlFileFromK8S(deployConfigURL string, absFileName strin
 	if err != nil {
 		return err
 	}
-
 	return GenerateYamlFile(absFileName, &deployConfig)
 }
 
@@ -139,7 +138,6 @@ func GenerateServiceYamlFileFromK8S(serviceConfigURL string, absFileName string)
 	if err != nil {
 		return err
 	}
-
 	return GenerateYamlFile(absFileName, &serviceConfig)
 }
 

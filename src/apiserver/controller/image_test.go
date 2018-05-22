@@ -1,17 +1,12 @@
 package controller
 
 import (
-	//"encoding/json"
-	//"errors"
-	//"fmt"
-	//"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	//"strings"
+
 	"path/filepath"
 	"testing"
 
-	//"git/inspursoft/board/src/common/model"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 	"github.com/stretchr/testify/assert"
@@ -50,7 +45,6 @@ func TestGetImagesAction(t *testing.T) {
 var testproject = "library"
 var testimage = "nginx"
 
-//var testerrimage = "noimage"
 func TestGetImageDetailAction(t *testing.T) {
 	assert := assert.New(t)
 	token := signIn("admin", "123456a?")

@@ -99,11 +99,19 @@ func UpdateService(s model.ServiceStatus, fieldNames ...string) (bool, error) {
 	return true, nil
 }
 
-func DeleteServiceByID(s model.ServiceStatus) (int64, error) {
-	if s.ID == 0 {
+func UpdateServiceStatus(serviceID int64, status int) (bool, error) {
+	return UpdateService(model.ServiceStatus{ID: serviceID, Status: status, Deleted: 0}, "status", "deleted")
+}
+
+func UpdateServicePublic(serviceID int64, public int) (bool, error) {
+	return UpdateService(model.ServiceStatus{ID: serviceID, Public: public, Deleted: 0}, "public", "deleted")
+}
+
+func DeleteServiceByID(serviceID int64) (int64, error) {
+	if serviceID == 0 {
 		return 0, errors.New("no Service ID provided")
 	}
-	num, err := dao.DeleteService(s)
+	num, err := dao.DeleteService(model.ServiceStatus{ID: serviceID})
 	if err != nil {
 		return 0, err
 	}
@@ -174,6 +182,10 @@ func GetService(service model.ServiceStatus, selectedFields ...string) (*model.S
 	return s, nil
 }
 
+func GetServiceByID(serviceID int64) (*model.ServiceStatus, error) {
+	return GetService(model.ServiceStatus{ID: serviceID, Deleted: 0}, "id", "deleted")
+}
+
 func GetServiceByProject(serviceName string, projectName string) (*model.ServiceStatus, error) {
 	var servicequery model.ServiceStatus
 	servicequery.Name = serviceName
@@ -239,7 +251,7 @@ func SyncServiceWithK8s() error {
 	return nil
 }
 
-func ScaleReplica(serviceInfo model.ServiceStatus, number int32) (bool, error) {
+func ScaleReplica(serviceInfo *model.ServiceStatus, number int32) (bool, error) {
 
 	s, err := k8sassist.NewScales(serviceInfo.ProjectName)
 	if err != nil {
