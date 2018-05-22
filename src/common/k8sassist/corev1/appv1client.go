@@ -132,7 +132,7 @@ type PodClientInterface interface {
 // How to:  deploymentCli, err := k8sassist.NewDeployments(nameSpace)
 //          _, err := deploymentCli.Update(&deployment)
 type DeploymentClientInterface interface {
-	Create(*model.Deployment) (*model.Deployment, error)
+	Create(*model.Deployment) (*model.Deployment, []byte, error)
 	Update(*model.Deployment) (*model.Deployment, error)
 	UpdateStatus(*model.Deployment) (*model.Deployment, error)
 	Delete(name string) error

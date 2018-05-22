@@ -125,11 +125,13 @@ func GetNodeList() (res []NodeListResult) {
 	//var nodecli model.NodeCli
 	defer func() { recover() }()
 
-	nodecli, err := k8sassist.NewNodes()
-	if err != nil {
-		logs.Error("Failed to get nodeCli")
-		return
-	}
+	//nodecli, err := k8sassist.NewNodes()
+
+	var config k8sassist.K8sAssistConfig
+	config.K8sMasterURL = kubeMasterURL()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	nodecli := k8sclient.AppV1().Node()
+
 	Node, err := nodecli.List()
 	if err != nil {
 		logs.Error("Failed to get Node List")
@@ -208,11 +210,11 @@ func NodeGroupExists(nodeGroupName string) (bool, error) {
 }
 
 func AddNodeToGroup(nodeName string, groupName string) error {
-	nInterface, err := k8sassist.NewNodes()
-	if err != nil {
-		logs.Error("Failed to get node client interface")
-		return err
-	}
+	var config k8sassist.K8sAssistConfig
+	config.K8sMasterURL = kubeMasterURL()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	nInterface := k8sclient.AppV1().Node()
+
 	nNode, err := nInterface.Get(nodeName)
 	if err != nil {
 		logs.Error("Failed to get K8s node")
@@ -234,11 +236,17 @@ func AddNodeToGroup(nodeName string, groupName string) error {
 
 func GetGroupOfNode(nodeName string) ([]string, error) {
 	var groups []string
-	nInterface, err := k8sassist.NewNodes()
-	if err != nil {
-		logs.Error("Failed to get node client interface")
-		return nil, err
-	}
+	//nInterface, err := k8sassist.NewNodes()
+	//if err != nil {
+	//	logs.Error("Failed to get node client interface")
+	//	return nil, err
+	//}
+
+	var config k8sassist.K8sAssistConfig
+	config.K8sMasterURL = kubeMasterURL()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	nInterface := k8sclient.AppV1().Node()
+
 	nNode, err := nInterface.Get(nodeName)
 	if err != nil {
 		logs.Error("Failed to get K8s node")
@@ -270,11 +278,16 @@ func NodeOrNodeGroupExists(nodeOrNodeGroupName string) (bool, error) {
 }
 
 func RemoveNodeFromGroup(nodeName string, groupName string) error {
-	nInterface, err := k8sassist.NewNodes()
-	if err != nil {
-		logs.Error("Failed to get node client interface")
-		return err
-	}
+	//nInterface, err := k8sassist.NewNodes()
+	//if err != nil {
+	//	logs.Error("Failed to get node client interface")
+	//	return err
+	//}
+	var config k8sassist.K8sAssistConfig
+	config.K8sMasterURL = kubeMasterURL()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	nInterface := k8sclient.AppV1().Node()
+
 	nNode, err := nInterface.Get(nodeName)
 	if err != nil {
 		logs.Error("Failed to get K8s node")
