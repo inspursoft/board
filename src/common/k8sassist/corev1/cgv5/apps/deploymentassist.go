@@ -19,40 +19,55 @@ type deployments struct {
 	deploy    v1beta2.DeploymentInterface
 }
 
-func (d *deployments) Create(deployment *model.Deployment) (*model.Deployment, error) {
+func (d *deployments) Create(deployment *model.Deployment) (*model.Deployment, []byte, error) {
 	k8sDep := types.ToK8sDeployment(deployment)
 	k8sDep, err := d.deploy.Create(k8sDep)
 	if err != nil {
 		logs.Error("Create deployment of %s/%s failed. Err:%+v", deployment.Name, d.namespace, err)
-		return nil, err
+		return nil, nil, err
 	}
 
+	deploymentfileInfo, err := yaml.Marshal(k8sDep)
+	if err != nil {
+		logs.Error("Marshal service failed, error: %v", err)
+		return nil, nil, nil
+	}
 	modelDep := types.FromK8sDeployment(k8sDep)
-	return modelDep, nil
+	return modelDep, deploymentfileInfo, nil
 }
 
-func (d *deployments) Update(deployment *model.Deployment) (*model.Deployment, error) {
+func (d *deployments) Update(deployment *model.Deployment) (*model.Deployment, []byte, error) {
 	k8sDep := types.ToK8sDeployment(deployment)
 	k8sDep, err := d.deploy.Update(k8sDep)
 	if err != nil {
 		logs.Error("Update deployment of %s/%s failed. Err:%+v", deployment.Name, d.namespace, err)
-		return nil, err
+		return nil, nil, err
 	}
 
+	deploymentfileInfo, err := yaml.Marshal(k8sDep)
+	if err != nil {
+		logs.Error("Marshal service failed, error: %v", err)
+		return nil, nil, nil
+	}
 	modelDep := types.FromK8sDeployment(k8sDep)
-	return modelDep, nil
+	return modelDep, deploymentfileInfo, nil
 }
 
-func (d *deployments) UpdateStatus(deployment *model.Deployment) (*model.Deployment, error) {
+func (d *deployments) UpdateStatus(deployment *model.Deployment) (*model.Deployment, []byte, error) {
 	k8sDep := types.ToK8sDeployment(deployment)
 	k8sDep, err := d.deploy.UpdateStatus(k8sDep)
 	if err != nil {
 		logs.Error("Update deployment status of %s/%s failed. Err:%+v", deployment.Name, d.namespace, err)
-		return nil, err
+		return nil, nil, err
 	}
 
+	deploymentfileInfo, err := yaml.Marshal(k8sDep)
+	if err != nil {
+		logs.Error("Marshal service failed, error: %v", err)
+		return nil, nil, nil
+	}
 	modelDep := types.FromK8sDeployment(k8sDep)
-	return modelDep, nil
+	return modelDep, deploymentfileInfo, nil
 }
 
 func (d *deployments) Delete(name string) error {

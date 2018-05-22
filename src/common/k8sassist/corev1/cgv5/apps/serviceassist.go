@@ -25,31 +25,45 @@ func (s *services) Create(modelService *model.Service) (*model.Service, []byte, 
 		logs.Error("Create service failed, error: %v", err)
 		return nil, nil, err
 	}
+
 	svcfileInfo, err := yaml.Marshal(svc)
 	if err != nil {
 		logs.Error("Marshal service failed, error: %v", err)
+		return types.FromK8sService(svc), nil, err
 	}
 	return types.FromK8sService(svc), svcfileInfo, nil
 }
 
-func (s *services) Update(modelService *model.Service) (*model.Service, error) {
+func (s *services) Update(modelService *model.Service) (*model.Service, []byte, error) {
 	typeService := types.ToK8sService(modelService)
 	svc, err := s.service.Update(typeService)
 	if err != nil {
 		logs.Error("Update service failed, error: %v", err)
-		return nil, err
+		return nil, nil, err
 	}
-	return types.FromK8sService(svc), nil
+
+	svcfileInfo, err := yaml.Marshal(svc)
+	if err != nil {
+		logs.Error("Marshal service info failed, error: %v", err)
+		return types.FromK8sService(svc), nil, err
+	}
+	return types.FromK8sService(svc), svcfileInfo, nil
 }
 
-func (s *services) UpdateStatus(modelService *model.Service) (*model.Service, error) {
+func (s *services) UpdateStatus(modelService *model.Service) (*model.Service, []byte, error) {
 	typeService := types.ToK8sService(modelService)
 	svc, err := s.service.UpdateStatus(typeService)
 	if err != nil {
 		logs.Error("Updatestatus service failed, error: %v", err)
-		return nil, err
+		return nil, nil, err
 	}
-	return types.FromK8sService(svc), nil
+
+	svcfileInfo, err := yaml.Marshal(svc)
+	if err != nil {
+		logs.Error("Marshal service info failed, error: %v", err)
+		return types.FromK8sService(svc), nil, err
+	}
+	return types.FromK8sService(svc), svcfileInfo, nil
 }
 
 func (s *services) Delete(name string) error {
