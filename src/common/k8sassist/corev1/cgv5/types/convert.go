@@ -7,6 +7,7 @@ import (
 
 	appsv1beta2 "k8s.io/api/apps/v1beta2"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -837,5 +838,25 @@ func FromK8sNodeList(nodeList *v1.NodeList) *model.NodeList {
 	}
 	return &model.NodeList{
 		Items: items,
+	}
+}
+
+func FromK8sScale(scale *v1beta1.Scale) *model.Scale {
+	return &model.Scale{
+		ObjectMeta: FromK8sObjectMeta(scale.ObjectMeta),
+		Spec:       model.ScaleSpec(scale.Spec),
+		Status:     model.ScaleStatusK8s(scale.Status),
+	}
+}
+
+func ToK8sScale(scale *model.Scale) *v1beta1.Scale {
+	return &v1beta1.Scale{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Scale",
+			APIVersion: "v1beta1",
+		},
+		ObjectMeta: ToK8sObjectMeta(scale.ObjectMeta),
+		Spec:       v1beta1.ScaleSpec(scale.Spec),
+		Status:     v1beta1.ScaleStatus(scale.Status),
 	}
 }
