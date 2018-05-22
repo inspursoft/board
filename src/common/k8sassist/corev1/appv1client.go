@@ -61,8 +61,8 @@ type AppV1ClientInterface interface {
 //          service, err := serviceCli.Get(serviceName)
 type ServiceClientInterface interface {
 	Create(*model.Service) (*model.Service, []byte, error)
-	Update(*model.Service) (*model.Service, error)
-	UpdateStatus(*model.Service) (*model.Service, error)
+	Update(*model.Service) (*model.Service, []byte, error)
+	UpdateStatus(*model.Service) (*model.Service, []byte, error)
 	Delete(name string) error
 	//DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
 	Get(name string) (*model.Service, error)
@@ -133,8 +133,8 @@ type PodClientInterface interface {
 //          _, err := deploymentCli.Update(&deployment)
 type DeploymentClientInterface interface {
 	Create(*model.Deployment) (*model.Deployment, []byte, error)
-	Update(*model.Deployment) (*model.Deployment, error)
-	UpdateStatus(*model.Deployment) (*model.Deployment, error)
+	Update(*model.Deployment) (*model.Deployment, []byte, error)
+	UpdateStatus(*model.Deployment) (*model.Deployment, []byte, error)
 	Delete(name string) error
 	//DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
 	Get(name string) (*model.Deployment, error)
