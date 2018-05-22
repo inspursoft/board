@@ -34,7 +34,7 @@ func (p *AppV1Client) Namespace() NamespaceClientInterface {
 }
 
 func (p *AppV1Client) Scale(namespace string) ScaleClientInterface {
-	return apps.NewScales(namespace, p.ClientSet.ExtensionsV1beta1().Scales(namespace))
+	return apps.NewScales(namespace, p.Clientset.ExtensionsV1beta1().Scales(namespace))
 }
 
 func (p *AppV1Client) ReplicaSet(namespace string) ReplicaSetClientInterface {
