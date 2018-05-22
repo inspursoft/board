@@ -7,6 +7,7 @@ import (
 	"git/inspursoft/board/src/collector/model/collect"
 	"git/inspursoft/board/src/collector/model/collect/dashboard"
 	"git/inspursoft/board/src/collector/util"
+	"git/inspursoft/board/src/common/k8sassist"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -47,24 +48,6 @@ func pingK8sApiLink() {
 	fmt.Println("kubernetes version is ", string(body))
 }
 
-//get resource form k8s api-server
-func k8sGet(resource interface{}, path string) {
-	if body, err2 := ioutil.ReadAll(func() *http.Response {
-		resp, err1 := http.Get(KuberMasterURL + path)
-		if err1 != nil {
-			util.Logger.SetFatal(err1)
-		}
-		return resp
-	}().Body); err2 != nil {
-		util.Logger.SetFatal(err2)
-	} else {
-		err3 := json.Unmarshal(body, &resource)
-		if err3 != nil {
-			util.Logger.SetFatal(err2)
-		}
-	}
-}
-
 // insert time list table
 func timeList() {
 	var t dashboard.TimeListLog
@@ -75,7 +58,14 @@ func timeList() {
 
 //get nodes info from k8s apiserver
 func (this *SourceMap) GainPods() error {
-	k8sGet(&PodList, "/api/v1/pods")
+	c := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		K8sMasterURL: KuberMasterURL,
+	})
+	l, err := c.AppV1().Pod("").List()
+	if err != nil {
+		return err
+	}
+	PodList = *l
 	this.maps.ServiceCount = make(map[string]ServiceLog)
 	this.maps.PodContainerCount = make(map[string]int64)
 	getPods(this, PodList.Items)
@@ -88,7 +78,14 @@ func (this *SourceMap) GainPods() error {
 
 func (resource SourceMap) GainNodes() error {
 	var nodeCollect []collect.Node
-	k8sGet(&NodeList, "/api/v1/nodes")
+	c := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		K8sMasterURL: KuberMasterURL,
+	})
+	l, err := c.AppV1().Node().List()
+	if err != nil {
+		return err
+	}
+	NodeList = *l
 loopNode:
 	for _, v := range NodeList.Items {
 		for _, cond := range v.Status.Conditions {
@@ -214,7 +211,14 @@ func getNodePs(ip string) (cpu float32, mem float32, err error) {
 
 //get server info
 func (resource *SourceMap) GainServices() error {
-	k8sGet(&ServiceList, "/api/v1/services")
+	c := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		K8sMasterURL: KuberMasterURL,
+	})
+	l, err := c.AppV1().Service("").List()
+	if err != nil {
+		return err
+	}
+	ServiceList = *l
 	for _, v := range ServiceList.Items {
 		var service = resource.services
 		service.CreateTime = v.CreationTimestamp.Format("2006-01-02 15:04:05")
