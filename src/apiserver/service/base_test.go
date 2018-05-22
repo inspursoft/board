@@ -99,12 +99,12 @@ func deleteService(cliSet *kubernetes.Clientset, serviceConfig Service, deployme
 		logs.Debug("Deleted RS:%s", rs.Name)
 	}
 
-	serviceID, err := DeleteServiceByID(*serviceStatus)
+	service, err := GetService(*serviceStatus, "name")
 	if err != nil {
-		logs.Error("Failed to delete service info in DB, service ID:%d.", serviceID)
+		logs.Error("Failed to delete service info in DB, service ID:%d.", service.ID)
 		return err
 	}
-	logs.Debug("Deleted service ID %d.", serviceID)
+	logs.Debug("Deleted service ID %d.", service.ID)
 	return nil
 }
 
