@@ -115,6 +115,7 @@ func TestMain(m *testing.M) {
 	utils.AddEnv("KUBE_MASTER_PORT")
 	utils.AddEnv("NODE_IP")
 	utils.AddEnv("REGISTRY_BASE_URI")
+	utils.AddEnv("JENKINS_BASE_URL")
 
 	utils.SetConfig("KUBE_MASTER_URL", "http://%s:%s", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
 	utils.SetConfig("GOGITS_HOST_IP", "%s", "HOST_IP")

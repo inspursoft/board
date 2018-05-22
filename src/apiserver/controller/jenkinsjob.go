@@ -28,6 +28,8 @@ type JenkinsJobCallbackController struct {
 	baseController
 }
 
+func (j *JenkinsJobCallbackController) Prepare() {}
+
 func (j *JenkinsJobCallbackController) BuildNumberCallback() {
 	userID := j.Ctx.Input.Param(":userID")
 	buildNumber, _ := strconv.Atoi(j.Ctx.Input.Param(":buildNumber"))
@@ -37,15 +39,6 @@ func (j *JenkinsJobCallbackController) BuildNumberCallback() {
 
 type JenkinsJobController struct {
 	baseController
-}
-
-func (j *JenkinsJobController) Prepare() {
-	user := j.getCurrentUser()
-	if user == nil {
-		j.customAbort(http.StatusUnauthorized, "Need to login first.")
-		return
-	}
-	j.currentUser = user
 }
 
 func (j *JenkinsJobController) getBuildNumber() (int, error) {

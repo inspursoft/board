@@ -1,13 +1,11 @@
 package auth
 
 import (
-	"bytes"
 	"encoding/json"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
-	"io/ioutil"
 
 	"net/http"
 
@@ -37,32 +35,16 @@ func (auth InDataAuth) DoAuth(principal, password string) (*model.User, error) {
 		return nil, nil
 	}
 
-	client := http.Client{}
-	req, err := http.NewRequest("POST", verificationURL, bytes.NewReader(reqData))
+	var account indataAccount
+	err = utils.RequestHandle(http.MethodPost, verificationURL, nil, &reqData,
+		func(req *http.Request, resp *http.Response) error {
+			return utils.UnmarshalToJSON(resp.Body, &account)
+		})
 	if err != nil {
 		logs.Error("Failed to create request: %+v", err)
 		return nil, nil
 	}
 
-	resp, err := client.Do(req)
-	if err != nil {
-		logs.Error("Failed request remote endpoint: %+v", err)
-	}
-	if resp == nil {
-		logs.Error("Failed to get response from request.")
-		return nil, nil
-	}
-	defer resp.Body.Close()
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		logs.Error("Failed to read from response body: %+v", err)
-	}
-
-	var account indataAccount
-	err = json.Unmarshal(data, &account)
-	if err != nil {
-		logs.Error("Failed to unmarshal response data: %+v", err)
-	}
 	if account.Username == "" {
 		logs.Error("Invalid token for request verification.")
 		return nil, nil
@@ -92,7 +74,7 @@ func (auth InDataAuth) DoAuth(principal, password string) (*model.User, error) {
 			return nil, err
 		}
 	}
-	user, err := dao.GetUser(u, "username", "deleted")
+	user, err := service.GetUserByName(u.Username)
 	if err != nil {
 		logs.Error("Failed to get user in SignIn: %+v\n", err)
 		return nil, err

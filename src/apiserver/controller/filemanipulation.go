@@ -27,12 +27,7 @@ type FileUploadController struct {
 }
 
 func (f *FileUploadController) Prepare() {
-	user := f.getCurrentUser()
-	if user == nil {
-		f.customAbort(http.StatusUnauthorized, "Need to login first.")
-		return
-	}
-	f.currentUser = user
+	f.resolveSignedInUser()
 	f.resolveFilePath()
 }
 
@@ -59,6 +54,13 @@ func (f *FileUploadController) Upload() {
 	}
 }
 
+func (f *FileUploadController) DownloadProbe() {
+	if isEmpty, err := service.IsEmptyDirectory(f.toFilePath); isEmpty || err != nil {
+		f.customAbort(http.StatusNotFound, "No uploaded file found.")
+		return
+	}
+}
+
 func (f *FileUploadController) Download() {
 	fileName := f.GetString("file_name")
 	if fileName == "" {
@@ -82,8 +84,7 @@ func (f *FileUploadController) ListFiles() {
 		f.internalError(err)
 		return
 	}
-	f.Data["json"] = uploads
-	f.ServeJSON()
+	f.renderJSON(uploads)
 }
 
 func (f *FileUploadController) RemoveFile() {
