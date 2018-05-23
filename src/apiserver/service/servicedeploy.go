@@ -67,3 +67,34 @@ func GenerateDeployYamlFiles(deployInfo *DeployInfo, loadPath string) error {
 
 	return nil
 }
+
+
+func DeployServiceByYaml(projectName,K8sMasterURL,loadPath string)( error){
+	clusterConfig := &k8sassist.K8sAssistConfig{K8sMasterURL: K8sMasterURL}
+	cli := k8sassist.NewK8sAssistClient(clusterConfig)
+
+	deploymentAbsName := filepath.Join(loadPath, deploymentFilename)
+	deploymentFile, err := os.Open(deploymentAbsName)
+	if err != nil {
+		return  err
+	}
+	defer deploymentFile.Close()
+	deploymentInfo, err := cli.AppV1().Deployment(projectName).CreateByYaml(deploymentFile)
+	if err != nil {
+		logs.Error("Deploy deployment object by deployment.yaml failed.")
+		return  err
+	}
+
+	ServiceAbsName := filepath.Join(loadPath, serviceFilename)
+	serviceFile, err := os.Open(ServiceAbsName)
+	if err != nil {
+		return  err
+	}
+	defer serviceFile.Close()
+	serviceInfo, err := cli.AppV1().Service(projectName).CreateByYaml()
+	if err != nil {
+		logs.Error("Deploy service object by service.yaml failed.")
+		return  err
+	}
+	return nil
+}

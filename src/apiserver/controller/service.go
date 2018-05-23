@@ -392,11 +392,16 @@ func (p *ServiceController) ToggleServiceAction() {
 		}
 	} else {
 		// start service
+		p.resolveRepoPath(s.ProjectName)
+		err := service.DeployServiceByYaml(s.ProjectName, kubeMasterURL(), p.repoPath)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
 		// Push deployment to Git repo
 		deploymentURL := fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), deploymentAPI, s.ProjectName, "deployments")
 		serviceURL := fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), serviceAPI, s.ProjectName, "services")
 
-		p.resolveRepoPath(s.ProjectName)
 		err = p.generateDeploymentTravis(deploymentURL, serviceURL)
 		if err != nil {
 			logs.Error("Failed to generate deployment travis: %+v", err)
