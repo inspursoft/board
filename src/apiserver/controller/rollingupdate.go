@@ -1,9 +1,7 @@
 package controller
 
 import (
-	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
-	"git/inspursoft/board/src/apiserver/service/devops/travis"
 	"git/inspursoft/board/src/common/model"
 	"net/http"
 	"strings"
@@ -143,35 +141,7 @@ func (p *ServiceRollingUpdateController) PatchServiceAction(rollingUpdateConfig 
 		p.internalError(err)
 		return
 	}
-
-	deploymentURL := fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), deploymentAPI, projectName, "deployments")
-	serviceURL := fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), serviceAPI, projectName, "services")
-	err = p.generateDeploymentTravis(deploymentURL, serviceURL)
-	if err != nil {
-		logs.Error("Failed to generate deployement travis.yml: %+v", err)
-		p.internalError(err)
-		return
-	}
-
-	items := []string{".travis.yml", deploymentFilename}
-	p.pushItemsToRepo(items...)
+	p.pushItemsToRepo(deploymentFilename)
 
 	logs.Debug("New updated deployment: %+v\n", deploymentConfig)
-}
-
-func (p *ServiceRollingUpdateController) generateDeploymentTravis(deploymentURL string, serviceURL string) error {
-	userID := p.currentUser.ID
-	var travisCommand travis.TravisCommand
-	travisCommand.Script.Commands = []string{}
-	items := []string{
-		fmt.Sprintf("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
-	}
-	if deploymentURL != "" {
-		items = append(items, fmt.Sprintf("#curl -X POST -H 'Content-Type: application/yaml' --data-binary @deployment.yaml %s", deploymentURL))
-	}
-	if serviceURL != "" {
-		items = append(items, fmt.Sprintf("#curl -X POST -H 'Content-Type: application/yaml' --data-binary @service.yaml %s", serviceURL))
-	}
-	travisCommand.Script.Commands = items
-	return travisCommand.GenerateCustomTravis(p.repoPath)
 }
