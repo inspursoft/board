@@ -3,15 +3,13 @@ package service
 import (
 	"encoding/json"
 	"errors"
-	"git/inspursoft/board/src/common/dao"
-	"git/inspursoft/board/src/common/model"
-	"git/inspursoft/board/src/common/utils"
 	"io/ioutil"
 	"net/http"
-
 	"strings"
 
+	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/k8sassist"
+	"git/inspursoft/board/src/common/model"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/google/cadvisor/info/v2"
@@ -47,13 +45,16 @@ type NodeInfo struct {
 	StorageUse   uint64  `json:"storage_use" orm:"column(storage_usage)"`
 }
 
-var kubeNodeURL = utils.GetConfig("KUBE_NODE_URL")
-
 func GetNode(nodeName string) (node NodeInfo, err error) {
-	var Node model.NodeList
 	defer func() { recover() }()
-	err = getFromRequest(kubeNodeURL(), &Node)
+	var config k8sassist.K8sAssistConfig
+	config.K8sMasterURL = kubeMasterURL()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	nodecli := k8sclient.AppV1().Node()
+
+	Node, err := nodecli.List()
 	if err != nil {
+		logs.Error("Failed to get Node List")
 		return
 	}
 	for _, v := range Node.Items {
