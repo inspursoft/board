@@ -221,6 +221,14 @@ func SyncProjectsWithK8s() error {
 			if err != nil {
 				logs.Error("Failed create repo and job: %s %+v", reqProject.Name, err)
 			}
+
+			// Sync the services in this project namespace
+			err = SyncServiceWithK8s(namespace.Name)
+			if err != nil {
+				logs.Error("Failed to sync service %s %+v", namespace.Name, err)
+				// Still can work
+				continue
+			}
 		}
 	}
 	return err

@@ -2,7 +2,7 @@ package service
 
 import (
 	"errors"
-	"fmt"
+	//"fmt"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/k8sassist"
 	"git/inspursoft/board/src/common/model"
@@ -204,15 +204,17 @@ func GetDeployConfig(deployConfigURL string) (model.Deployment, error) {
 	return deployConfig, err
 }
 
-func SyncServiceWithK8s() error {
+func SyncServiceWithK8s(pName string) error {
+	logs.Debug("Sync Service Status of namespace %s", pName)
 
-	serviceUrl := fmt.Sprintf("%s/api/v1/services", kubeMasterURL())
-	logs.Debug("Get Service Status serviceUrl:%+s", serviceUrl)
+	//obtain serviceList data of
+	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		K8sMasterURL: kubeMasterURL(),
+	})
 
-	//obtain serviceList data
-	var serviceList model.ServiceList
-	_, err := GetK8sData(&serviceList, serviceUrl)
+	serviceList, err := k8sclient.AppV1().Service(pName).List()
 	if err != nil {
+		logs.Error("Failed to get service list %s", pName)
 		return err
 	}
 
@@ -339,7 +341,7 @@ func StopServiceK8s(s *model.ServiceStatus) error {
 
 	//var newreplicas int32
 	deployData.Spec.Replicas = 0
-	res, err := d.Update(deployData)
+	res, _, err := d.Update(deployData)
 	if err != nil {
 		logs.Error(res, err)
 		return err
@@ -399,7 +401,7 @@ func CleanDeploymentK8s(s *model.ServiceStatus) error {
 
 	var newreplicas int32
 	deployData.Spec.Replicas = newreplicas
-	res, err := d.Update(deployData)
+	res, _, err := d.Update(deployData)
 	if err != nil {
 		logs.Error(res, err)
 		return err

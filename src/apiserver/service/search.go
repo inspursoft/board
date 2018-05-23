@@ -6,7 +6,7 @@ import (
 	"git/inspursoft/board/src/common/utils"
 	"strings"
 
-	modelK8s "k8s.io/client-go/pkg/api/v1"
+	//modelK8s "k8s.io/client-go/pkg/api/v1"
 )
 
 type OriginImage struct {
