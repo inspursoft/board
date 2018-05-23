@@ -2,7 +2,7 @@ package controller
 
 import (
 	"fmt"
-	"git/inspursoft/board/src/apiserver/service"
+	//"git/inspursoft/board/src/apiserver/service"
 	"net/http"
 )
 
@@ -11,6 +11,7 @@ type StorageController struct {
 }
 
 func (s *StorageController) Storage() {
+
 	name := s.GetString("name")
 	server := s.GetString("server")
 	path := s.GetString("path")
@@ -19,8 +20,10 @@ func (s *StorageController) Storage() {
 		s.customAbort(http.StatusNotImplemented, fmt.Sprint(err))
 		return
 	}
-	err = service.SetNFSVol(name, server, path, storageCap)
+	//TODO NFS PV in the next version
+	//err = service.SetNFSVol(name, server, path, storageCap)
 	if err != nil {
 		s.customAbort(http.StatusInternalServerError, fmt.Sprint(err))
 	}
+
 }
