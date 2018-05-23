@@ -123,7 +123,26 @@ func (s *services) CreateByYaml(r io.Reader) (*model.Service, error) {
 }
 
 func (s *services) CheckYaml(r io.Reader) (*model.Service, error) {
-	return nil, nil
+	context, err := ioutil.ReadAll(r)
+	if err != nil {
+		logs.Error("Read file failed, error: %v", err)
+		return nil, err
+	}
+
+	var service types.Service
+	err = yaml.Unmarshal(context, &service)
+	if err != nil {
+		logs.Error("Unmarshal service failed, error: %v", err)
+		return nil, err
+	}
+
+	err = types.CheckServiceConfig(s.namespace, service)
+	if err != nil {
+		logs.Error("Service config is error, error: %v", err)
+		return nil, err
+	}
+
+	return types.FromK8sService(&service), nil
 }
 
 // newNodes returns a Nodes
