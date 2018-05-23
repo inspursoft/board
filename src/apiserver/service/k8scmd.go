@@ -16,10 +16,10 @@ import (
 
 	"git/inspursoft/board/src/common/k8sassist"
 
-	"git/inspursoft/board/src/common/model"
+	//"git/inspursoft/board/src/common/model"
 
 	"github.com/astaxie/beego/logs"
-	"github.com/golang/glog"
+	//"github.com/golang/glog"
 	//"k8s.io/client-go/tools/clientcmd"
 )
 
@@ -63,28 +63,38 @@ func K8sCliFactory(clusterName string, masterUrl string, apiVersion string) (*re
 
 func Suspend(nodeName string) (bool, error) {
 
-	n, err := k8sassist.NewNodes()
-	if err != nil {
-		logs.Error("Failed to get nodeCli")
-		return false, err
-	}
+	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		K8sMasterURL: kubeMasterURL(),
+	})
+	n := k8sclient.AppV1().Node()
+
 	nodeData, err := n.Get(nodeName)
-	nodeData.Spec.Unschedulable = true
+	nodeData.Unschedulable = true
 	res, err := n.Update(nodeData)
-	return res.Spec.Unschedulable, err
+	return res.Unschedulable, err
 
 }
 
 func Resume(nodeName string) (bool, error) {
-	n, err := k8sassist.NewNodes()
-	if err != nil {
-		logs.Error("Failed to get nodeCli")
-		return false, err
-	}
+	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		K8sMasterURL: kubeMasterURL(),
+	})
+	n := k8sclient.AppV1().Node()
 	nodeData, err := n.Get(nodeName)
-	nodeData.Spec.Unschedulable = false
+	nodeData.Unschedulable = false
 	res, err := n.Update(nodeData)
-	return !res.Spec.Unschedulable, err
+	return !res.Unschedulable, err
+}
+
+func Taint(nodeName string, effect string) error {
+	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		K8sMasterURL: kubeMasterURL(),
+	})
+	n := k8sclient.AppV1().Node()
+	nodeData, err := n.Get(nodeName)
+	logs.Info(nodeData)
+	//TODO force drain all pods in this node
+	return err
 }
 
 //get resource form k8s api-server
