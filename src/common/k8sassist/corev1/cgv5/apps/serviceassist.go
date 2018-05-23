@@ -122,6 +122,10 @@ func (s *services) CreateByYaml(r io.Reader) (*model.Service, error) {
 	return types.FromK8sService(serviceInfo), err
 }
 
+func (s *services) CheckYaml(r io.Reader) (*model.Service, error) {
+	return nil, nil
+}
+
 // newNodes returns a Nodes
 func NewServices(namespace string, service v1.ServiceInterface) *services {
 	return &services{

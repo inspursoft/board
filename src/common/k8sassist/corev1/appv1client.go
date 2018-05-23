@@ -69,6 +69,7 @@ type ServiceClientInterface interface {
 	List() (*model.ServiceList, error)
 	//Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *v1.Service, err error)
 	CreateByYaml(io.Reader) (*model.Service, error)
+	CheckYaml(io.Reader) (*model.Service, error)
 }
 
 // NodeCli Interface has methods to work with Node resources in k8s-assist.
@@ -142,4 +143,5 @@ type DeploymentClientInterface interface {
 	List() (*model.DeploymentList, error)
 	Patch(name string, pt model.PatchType, data []byte, subresources ...string) (result *model.Deployment, err error)
 	CreateByYaml(io.Reader) (*model.Deployment, error)
+	CheckYaml(io.Reader) (*model.Deployment, error)
 }
