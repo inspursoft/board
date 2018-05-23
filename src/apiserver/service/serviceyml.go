@@ -171,79 +171,79 @@ func getYamlFileData(serviceConfig interface{}, serviceConfigPath string, fileNa
 	return nil
 }
 
-//check parameter of service yaml file
-func CheckServiceConfig(projectName string, serviceConfig Service) error {
-	//check empty
-	if serviceConfig.Kind != serviceKind {
-		return deploymentKindErr
-	}
-	if serviceConfig.APIVersion != serviceAPIVersion {
-		return deploymentAPIVersionErr
-	}
-	if serviceConfig.ObjectMeta.Name == "" {
-		return emptyServiceNameErr
-	}
-	if serviceConfig.ObjectMeta.Namespace != projectName {
-		return ProjectNameInconsistentErr
-	}
+// //check parameter of service yaml file
+// func CheckServiceConfig(projectName string, serviceConfig Service) error {
+// 	//check empty
+// 	if serviceConfig.Kind != serviceKind {
+// 		return deploymentKindErr
+// 	}
+// 	if serviceConfig.APIVersion != serviceAPIVersion {
+// 		return deploymentAPIVersionErr
+// 	}
+// 	if serviceConfig.ObjectMeta.Name == "" {
+// 		return emptyServiceNameErr
+// 	}
+// 	if serviceConfig.ObjectMeta.Namespace != projectName {
+// 		return ProjectNameInconsistentErr
+// 	}
 
-	for _, external := range serviceConfig.Spec.Ports {
-		if external.NodePort > maxPort {
-			return portMaxErr
-		} else if external.NodePort < minPort {
-			return portMinErr
-		}
-	}
+// 	for _, external := range serviceConfig.Spec.Ports {
+// 		if external.NodePort > maxPort {
+// 			return portMaxErr
+// 		} else if external.NodePort < minPort {
+// 			return portMinErr
+// 		}
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
-func CheckDeploymentConfig(projectName string, deploymentConfig Deployment) error {
-	//check empty
-	if deploymentConfig.Kind != deploymentKind {
-		return deploymentKindErr
-	}
-	if deploymentConfig.APIVersion != deploymentAPIVersion {
-		return deploymentAPIVersionErr
-	}
-	if deploymentConfig.ObjectMeta.Name == "" {
-		return emptyDeployErr
-	}
-	if deploymentConfig.ObjectMeta.Namespace != projectName {
-		return ProjectNameInconsistentErr
-	}
-	if *deploymentConfig.Spec.Replicas < 1 {
-		return invalidErr
-	}
-	if len(deploymentConfig.Spec.Template.Spec.Containers) < 1 {
-		return emptyContainerErr
-	}
+// func CheckDeploymentConfig(projectName string, deploymentConfig Deployment) error {
+// 	//check empty
+// 	if deploymentConfig.Kind != deploymentKind {
+// 		return deploymentKindErr
+// 	}
+// 	if deploymentConfig.APIVersion != deploymentAPIVersion {
+// 		return deploymentAPIVersionErr
+// 	}
+// 	if deploymentConfig.ObjectMeta.Name == "" {
+// 		return emptyDeployErr
+// 	}
+// 	if deploymentConfig.ObjectMeta.Namespace != projectName {
+// 		return ProjectNameInconsistentErr
+// 	}
+// 	if *deploymentConfig.Spec.Replicas < 1 {
+// 		return invalidErr
+// 	}
+// 	if len(deploymentConfig.Spec.Template.Spec.Containers) < 1 {
+// 		return emptyContainerErr
+// 	}
 
-	for _, cont := range deploymentConfig.Spec.Template.Spec.Containers {
+// 	for _, cont := range deploymentConfig.Spec.Template.Spec.Containers {
 
-		err := checkStringHasUpper(cont.Name, cont.Image)
-		if err != nil {
-			return err
-		}
+// 		err := checkStringHasUpper(cont.Name, cont.Image)
+// 		if err != nil {
+// 			return err
+// 		}
 
-		for _, com := range cont.Command {
-			err := checkStringHasUpper(com)
-			if err != nil {
-				return err
-			}
-		}
+// 		for _, com := range cont.Command {
+// 			err := checkStringHasUpper(com)
+// 			if err != nil {
+// 				return err
+// 			}
+// 		}
 
-		for _, volMount := range cont.VolumeMounts {
-			err := checkStringHasUpper(volMount.Name, volMount.MountPath)
-			if err != nil {
-				return err
-			}
-		}
+// 		for _, volMount := range cont.VolumeMounts {
+// 			err := checkStringHasUpper(volMount.Name, volMount.MountPath)
+// 			if err != nil {
+// 				return err
+// 			}
+// 		}
 
-	}
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func RollingUpdateDeploymentYaml(repoPath string, deploydata *modelK8sExt.Deployment) error {
 	projectName := deploydata.ObjectMeta.Namespace

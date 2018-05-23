@@ -4,7 +4,9 @@ import (
 	"git/inspursoft/board/src/common/k8sassist"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
+	"io"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/astaxie/beego/logs"
@@ -31,14 +33,14 @@ func DeployService(serviceConfig *model.ConfigServiceStep, K8sMasterURL string, 
 	deploymentConfig := utils.MarshalDeployment(serviceConfig, registryURI)
 	deploymentInfo, deploymentFileInfo, err := cli.AppV1().Deployment(serviceConfig.ProjectName).Create(deploymentConfig)
 	if err != nil {
-		logs.Error("Deploy deployment object of %s failed.", serviceConfig.ServiceName)
+		logs.Error("Deploy deployment object of %s failed. error: %+v\n", serviceConfig.ServiceName, err)
 		return nil, err
 	}
 
 	svcConfig := utils.MarshalService(serviceConfig)
 	serviceInfo, serviceFileInfo, err := cli.AppV1().Service(serviceConfig.ProjectName).Create(svcConfig)
 	if err != nil {
-		logs.Error("Deploy service object of %s failed.", serviceConfig.ServiceName)
+		logs.Error("Deploy service object of %s failed. error: %+v\n", serviceConfig.ServiceName, err)
 		return nil, err
 	}
 
@@ -68,33 +70,55 @@ func GenerateDeployYamlFiles(deployInfo *DeployInfo, loadPath string) error {
 	return nil
 }
 
-
-func DeployServiceByYaml(projectName,K8sMasterURL,loadPath string)( error){
+func DeployServiceByYaml(projectName, K8sMasterURL, loadPath string) error {
 	clusterConfig := &k8sassist.K8sAssistConfig{K8sMasterURL: K8sMasterURL}
 	cli := k8sassist.NewK8sAssistClient(clusterConfig)
 
 	deploymentAbsName := filepath.Join(loadPath, deploymentFilename)
 	deploymentFile, err := os.Open(deploymentAbsName)
 	if err != nil {
-		return  err
+		return err
 	}
+
 	defer deploymentFile.Close()
 	deploymentInfo, err := cli.AppV1().Deployment(projectName).CreateByYaml(deploymentFile)
 	if err != nil {
-		logs.Error("Deploy deployment object by deployment.yaml failed.")
-		return  err
+		logs.Error("Deploy deployment object by deployment.yaml failed, err:%+v\n", err)
+		return err
 	}
 
 	ServiceAbsName := filepath.Join(loadPath, serviceFilename)
 	serviceFile, err := os.Open(ServiceAbsName)
 	if err != nil {
-		return  err
+		return err
 	}
 	defer serviceFile.Close()
-	serviceInfo, err := cli.AppV1().Service(projectName).CreateByYaml()
+	serviceInfo, err := cli.AppV1().Service(projectName).CreateByYaml(serviceFile)
 	if err != nil {
-		logs.Error("Deploy service object by service.yaml failed.")
-		return  err
+		logs.Error("Deploy service object by service.yaml failed, err:%+v\n", err)
+		return err
 	}
 	return nil
+}
+
+//check yaml file config
+func CheckDeployYamlConfig(serviceFile, deploymentFile io.Reader, projectName, K8sMasterURL string) (*DeployInfo, error) {
+	clusterConfig := &k8sassist.K8sAssistConfig{K8sMasterURL: K8sMasterURL}
+	cli := k8sassist.NewK8sAssistClient(clusterConfig)
+
+	deploymentInfo, err := cli.AppV1().Deployment(projectName).CheckYaml(deploymentFile)
+	if err != nil {
+		logs.Error("Check deployment object by deployment.yaml failed, err:%+v\n", err)
+		return nil, err
+	}
+
+	serviceInfo, err := cli.AppV1().Service(projectName).CheckYaml(serviceFile)
+	if err != nil {
+		logs.Error("Check service object by service.yaml failed, err:%+v\n", err)
+		return nil, err
+	}
+	return &DeployInfo{
+		Service:    serviceInfo,
+		Deployment: deploymentInfo,
+	}, nil
 }
