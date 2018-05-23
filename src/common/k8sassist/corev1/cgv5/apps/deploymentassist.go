@@ -140,6 +140,10 @@ func (d *deployments) CreateByYaml(r io.Reader) (*model.Deployment, error) {
 	return types.FromK8sDeployment(deploymentInfo), nil
 }
 
+func (d *deployments) CheckYaml(r io.Reader) (*model.Deployment, error) {
+	return nil, nil
+}
+
 func NewDeployments(namespace string, deploy v1beta2.DeploymentInterface) *deployments {
 	return &deployments{
 		namespace: namespace,
