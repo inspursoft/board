@@ -81,7 +81,7 @@ func DeployServiceByYaml(projectName, K8sMasterURL, loadPath string) error {
 	}
 
 	defer deploymentFile.Close()
-	deploymentInfo, err := cli.AppV1().Deployment(projectName).CreateByYaml(deploymentFile)
+	_, err = cli.AppV1().Deployment(projectName).CreateByYaml(deploymentFile)
 	if err != nil {
 		logs.Error("Deploy deployment object by deployment.yaml failed, err:%+v\n", err)
 		return err
@@ -93,7 +93,7 @@ func DeployServiceByYaml(projectName, K8sMasterURL, loadPath string) error {
 		return err
 	}
 	defer serviceFile.Close()
-	serviceInfo, err := cli.AppV1().Service(projectName).CreateByYaml(serviceFile)
+	_, err = cli.AppV1().Service(projectName).CreateByYaml(serviceFile)
 	if err != nil {
 		logs.Error("Deploy service object by service.yaml failed, err:%+v\n", err)
 		return err
