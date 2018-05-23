@@ -201,7 +201,6 @@ func main() {
 
 	utils.SetConfig("REGISTRY_URL", "http://%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
 	utils.SetConfig("KUBE_MASTER_URL", "http://%s:%s", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
-	utils.SetConfig("KUBE_NODE_URL", "http://%s:%s/api/v1/nodes", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
 
 	utils.SetConfig("BASE_REPO_PATH", baseRepoPath)
 	utils.SetConfig("SSH_KEY_PATH", sshKeyPath)

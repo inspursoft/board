@@ -1,12 +1,12 @@
 package service
 
 import (
-	"git/inspursoft/board/src/common/dao"
-	"git/inspursoft/board/src/common/model"
-	"git/inspursoft/board/src/common/utils"
 	"strings"
 
-	//modelK8s "k8s.io/client-go/pkg/api/v1"
+	"git/inspursoft/board/src/common/dao"
+	"git/inspursoft/board/src/common/k8sassist"
+	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
 )
 
 type OriginImage struct {
@@ -124,13 +124,17 @@ func getProjectByUser(userID int64) (projectName []string, err error) {
 }
 
 func searchNode(para string) (res []SearchNodeResult, err error) {
-	var Node modelK8s.NodeList
 	defer func() { recover() }()
-	err = getFromRequest(kubeNodeURL(), &Node)
+	var config k8sassist.K8sAssistConfig
+	config.K8sMasterURL = kubeMasterURL()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	nodecli := k8sclient.AppV1().Node()
+
+	nodes, err := nodecli.List()
 	if err != nil {
 		return
 	}
-	for _, v := range Node.Items {
+	for _, v := range nodes.Items {
 		if strings.Contains(v.Status.Addresses[1].Address, para) {
 			res = append(res, SearchNodeResult{
 				NodeName: v.Status.Addresses[1].Address,
