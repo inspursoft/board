@@ -1,17 +1,14 @@
 package controller
 
 import (
-	"encoding/json"
+	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/apiserver/service/devops/travis"
 	"git/inspursoft/board/src/common/model"
 	"net/http"
 	"strings"
 
 	"github.com/astaxie/beego/logs"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/pkg/api"
-	"k8s.io/client-go/pkg/api/v1"
-	v1beta1 "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 )
 
 type ServiceRollingUpdateController struct {
@@ -36,7 +33,7 @@ func (p *ServiceRollingUpdateController) GetRollingUpdateServiceImageConfigActio
 	p.renderJSON(imageList)
 }
 
-func (p *ServiceRollingUpdateController) getServiceConfig() (deploymentConfig *v1beta1.Deployment) {
+func (p *ServiceRollingUpdateController) getServiceConfig() (deploymentConfig *model.Deployment) {
 	projectName := p.GetString("project_name")
 	p.resolveProjectMember(projectName)
 
@@ -51,15 +48,7 @@ func (p *ServiceRollingUpdateController) getServiceConfig() (deploymentConfig *v
 		return
 	}
 
-	cli, err := service.K8sCliFactory("", kubeMasterURL(), "v1beta1")
-	apiSet, err := kubernetes.NewForConfig(cli)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	d := apiSet.Deployments(projectName)
-	deploymentConfig, err = d.Get(serviceName)
+	deploymentConfig, err = service.GetDeployment(projectName, serviceName)
 	if err != nil {
 		logs.Error("Failed to get service info %+v\n", err)
 		p.internalError(err)
@@ -78,11 +67,11 @@ func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceImageAction() 
 		p.customAbort(http.StatusConflict, "Image's config is invalid.")
 	}
 
-	var rollingUpdateConfig v1beta1.Deployment
+	var rollingUpdateConfig model.Deployment
 	for index, container := range serviceConfig.Spec.Template.Spec.Containers {
 		image := registryBaseURI() + "/" + imageList[index].ImageName + ":" + imageList[index].ImageTag
 		if serviceConfig.Spec.Template.Spec.Containers[index].Image != image {
-			rollingUpdateConfig.Spec.Template.Spec.Containers = append(rollingUpdateConfig.Spec.Template.Spec.Containers, v1.Container{
+			rollingUpdateConfig.Spec.Template.Spec.Containers = append(rollingUpdateConfig.Spec.Template.Spec.Containers, model.K8sContainer{
 				Name:  container.Name,
 				Image: image,
 			})
@@ -125,7 +114,7 @@ func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceNodeGroupActio
 	p.PatchServiceAction(rollingUpdateConfig)
 }
 
-func (p *ServiceRollingUpdateController) PatchServiceAction(rollingUpdateConfig *v1beta1.Deployment) {
+func (p *ServiceRollingUpdateController) PatchServiceAction(rollingUpdateConfig *model.Deployment) {
 	projectName := p.GetString("project_name")
 	p.resolveProjectMember(projectName)
 
@@ -141,27 +130,48 @@ func (p *ServiceRollingUpdateController) PatchServiceAction(rollingUpdateConfig 
 		return
 	}
 
-	serviceRollConfig, err := json.Marshal(rollingUpdateConfig)
+	deploymentConfig, deploymentFileInfo, err := service.PatchDeployment(projectName, rollingUpdateConfig)
 	if err != nil {
-		logs.Debug("rollingUpdateConfig %+v\n", rollingUpdateConfig)
+		logs.Error("Failed to get service info %+v\n", err)
 		p.internalError(err)
 		return
 	}
 
-	cli, err := service.K8sCliFactory("", kubeMasterURL(), "v1beta1")
-	apiSet, err := kubernetes.NewForConfig(cli)
+	p.resolveRepoPath(projectName)
+	err = service.GenerateDeploymentYamlFile(deploymentFileInfo, p.repoPath)
 	if err != nil {
 		p.internalError(err)
 		return
 	}
 
-	d := apiSet.Deployments(projectName)
-	patchType := api.StrategicMergePatchType
-	deployData, err := d.Patch(serviceName, patchType, serviceRollConfig)
+	deploymentURL := fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), deploymentAPI, projectName, "deployments")
+	serviceURL := fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), serviceAPI, projectName, "services")
+	err = p.generateDeploymentTravis(deploymentURL, serviceURL)
 	if err != nil {
-		logs.Error("Failed to update service %+v\n", err)
+		logs.Error("Failed to generate deployement travis.yml: %+v", err)
 		p.internalError(err)
 		return
 	}
-	logs.Debug("New updated deployment: %+v\n", deployData)
+
+	items := []string{".travis.yml", deploymentFilename}
+	p.pushItemsToRepo(items...)
+
+	logs.Debug("New updated deployment: %+v\n", deploymentConfig)
+}
+
+func (p *ServiceRollingUpdateController) generateDeploymentTravis(deploymentURL string, serviceURL string) error {
+	userID := p.currentUser.ID
+	var travisCommand travis.TravisCommand
+	travisCommand.Script.Commands = []string{}
+	items := []string{
+		fmt.Sprintf("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
+	}
+	if deploymentURL != "" {
+		items = append(items, fmt.Sprintf("#curl -X POST -H 'Content-Type: application/yaml' --data-binary @deployment.yaml %s", deploymentURL))
+	}
+	if serviceURL != "" {
+		items = append(items, fmt.Sprintf("#curl -X POST -H 'Content-Type: application/yaml' --data-binary @service.yaml %s", serviceURL))
+	}
+	travisCommand.Script.Commands = items
+	return travisCommand.GenerateCustomTravis(p.repoPath)
 }
