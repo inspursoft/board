@@ -57,10 +57,10 @@ func (p *ServiceController) generateDeploymentTravis(deploymentURL string, servi
 		fmt.Sprintf("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
 	}
 	if deploymentURL != "" {
-		items = append(items, fmt.Sprintf("curl -X POST -H 'Content-Type: application/yaml' --data-binary @deployment.yaml %s", deploymentURL))
+		items = append(items, fmt.Sprintf("#curl -X POST -H 'Content-Type: application/yaml' --data-binary @deployment.yaml %s", deploymentURL))
 	}
 	if serviceURL != "" {
-		items = append(items, fmt.Sprintf("curl -X POST -H 'Content-Type: application/yaml' --data-binary @service.yaml %s", serviceURL))
+		items = append(items, fmt.Sprintf("#curl -X POST -H 'Content-Type: application/yaml' --data-binary @service.yaml %s", serviceURL))
 	}
 	travisCommand.Script.Commands = items
 	return travisCommand.GenerateCustomTravis(p.repoPath)
@@ -119,13 +119,13 @@ func (p *ServiceController) DeployServiceAction() {
 		return
 	}
 
-	err = service.AssembleDeploymentYaml((*model.ConfigServiceStep)(configService), p.repoPath)
+	deployInfo, err := service.DeployService((*model.ConfigServiceStep)(configService), kubeMasterURL(), registryBaseURI())
 	if err != nil {
 		p.internalError(err)
 		return
 	}
 
-	err = service.AssembleServiceYaml((*model.ConfigServiceStep)(configService), p.repoPath)
+	err = service.GenerateDeployYamlFiles(deployInfo, p.repoPath)
 	if err != nil {
 		p.internalError(err)
 		return
