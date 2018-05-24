@@ -153,14 +153,32 @@ func GetServiceStatus(serviceURL string) (*model.Service, error) {
 	return &service, nil
 }
 
-func GetNodesStatus(nodesURL string) (*model.NodeList, error) {
-	var nodes model.NodeList
-	logs.Debug("Get Node info nodeURL (endpoint): %+s", nodesURL)
-	err := k8sGet(&nodes, nodesURL)
+func GetServiceByK8sassist(pName string, sName string) (*model.Service, error) {
+	logs.Debug("Get Service info %s/%s", pName, sName)
+
+	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		K8sMasterURL: kubeMasterURL(),
+	})
+	service, err := k8sclient.AppV1().Service(pName).Get(sName)
+
 	if err != nil {
 		return nil, err
 	}
-	return &nodes, nil
+	return service, nil
+}
+
+func GetNodesStatus(nodesURL string) (*model.NodeList, error) {
+	logs.Debug("Get Node info nodeURL (endpoint): %+s", nodesURL)
+
+	var config k8sassist.K8sAssistConfig
+	config.K8sMasterURL = kubeMasterURL()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	nodes, err := k8sclient.AppV1().Node().List()
+
+	if err != nil {
+		return nil, err
+	}
+	return nodes, nil
 }
 
 /*
