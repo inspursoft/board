@@ -462,7 +462,7 @@ func (p *ServiceController) GetServiceInfoAction() {
 	//Judge authority
 	p.resolveUserPrivilegeByID(s.ProjectID)
 
-	serviceStatus, err := service.GetServiceStatus(kubeMasterURL() + serviceAPI + s.ProjectName + "/services/" + s.Name)
+	serviceStatus, err := service.GetServiceByK8sassist(s.ProjectName, s.Name)
 	if err != nil {
 		p.resolveErrOutput(err)
 		return
@@ -493,7 +493,7 @@ func (p *ServiceController) GetServiceStatusAction() {
 	s := p.resolveServiceInfo()
 	//Judge authority
 	p.resolveUserPrivilegeByID(s.ProjectID)
-	serviceStatus, err := service.GetServiceStatus(kubeMasterURL() + serviceAPI + s.ProjectName + "/services/" + s.Name)
+	serviceStatus, err := service.GetServiceByK8sassist(s.ProjectName, s.Name)
 	if err != nil {
 		p.resolveErrOutput(err)
 		return
