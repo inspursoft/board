@@ -4,7 +4,6 @@ import (
 	"errors"
 	"git/inspursoft/board/src/common/k8sassist"
 	"git/inspursoft/board/src/common/model"
-	"git/inspursoft/board/src/common/utils"
 	"io"
 	"io/ioutil"
 	"os"
@@ -31,14 +30,14 @@ type DeployInfo struct {
 func DeployService(serviceConfig *model.ConfigServiceStep, K8sMasterURL string, registryURI string) (*DeployInfo, error) {
 	clusterConfig := &k8sassist.K8sAssistConfig{K8sMasterURL: K8sMasterURL}
 	cli := k8sassist.NewK8sAssistClient(clusterConfig)
-	deploymentConfig := utils.MarshalDeployment(serviceConfig, registryURI)
+	deploymentConfig := MarshalDeployment(serviceConfig, registryURI)
 	deploymentInfo, deploymentFileInfo, err := cli.AppV1().Deployment(serviceConfig.ProjectName).Create(deploymentConfig)
 	if err != nil {
 		logs.Error("Deploy deployment object of %s failed. error: %+v\n", serviceConfig.ServiceName, err)
 		return nil, err
 	}
 
-	svcConfig := utils.MarshalService(serviceConfig)
+	svcConfig := MarshalService(serviceConfig)
 	serviceInfo, serviceFileInfo, err := cli.AppV1().Service(serviceConfig.ProjectName).Create(svcConfig)
 	if err != nil {
 		logs.Error("Deploy service object of %s failed. error: %+v\n", serviceConfig.ServiceName, err)

@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"os"
@@ -9,20 +10,11 @@ import (
 	"time"
 
 	"github.com/astaxie/beego/logs"
-	"github.com/astaxie/beego/orm"
 	"k8s.io/client-go/kubernetes"
 	modelK8s "k8s.io/client-go/pkg/api/v1"
 )
 
-func connectToDB() {
-	hostIP := os.Getenv("HOST_IP")
-	orm.RegisterDriver("mysql", orm.DRMySQL)
-	err := orm.RegisterDataBase("default", "mysql", fmt.Sprintf("root:root123@tcp(%s:3306)/board?charset=utf8", hostIP))
-	if err != nil {
-		logs.Error("Failed to connect to DB.")
-	}
-
-}
+var boardHostIP = utils.GetConfig("BOARD_HOST_IP")
 
 func connectToK8S() (*kubernetes.Clientset, error) {
 	cli, err := K8sCliFactory("", kubeMasterURL(), "v1")
@@ -99,33 +91,20 @@ func deleteService(cliSet *kubernetes.Clientset, serviceConfig Service, deployme
 		logs.Debug("Deleted RS:%s", rs.Name)
 	}
 
-	serviceID, err := DeleteServiceByID(*serviceStatus)
+	service, err := GetService(*serviceStatus, "name")
 	if err != nil {
-		logs.Error("Failed to delete service info in DB, service ID:%d.", serviceID)
+		logs.Error("Failed to delete service info in DB, service ID:%d.", service.ID)
 		return err
 	}
-	logs.Debug("Deleted service ID %d.", serviceID)
+	logs.Debug("Deleted service ID %d.", service.ID)
 	return nil
 }
 
 func TestMain(m *testing.M) {
-	utils.Initialize()
-	utils.AddEnv("HOST_IP")
-	utils.AddEnv("KUBE_MASTER_IP")
-	utils.AddEnv("KUBE_MASTER_PORT")
-	utils.AddEnv("NODE_IP")
-	utils.AddEnv("REGISTRY_BASE_URI")
-	utils.AddEnv("JENKINS_BASE_URL")
-
-	utils.SetConfig("KUBE_MASTER_URL", "http://%s:%s", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
-	utils.SetConfig("GOGITS_HOST_IP", "%s", "HOST_IP")
-	utils.SetConfig("GOGITS_HOST_PORT", "10080")
-	utils.SetConfig("GOGITS_SSH_PORT", "10022")
-	utils.SetConfig("GOGITS_BASE_URL", "http://%s:%s", "GOGITS_HOST_IP", "GOGITS_HOST_PORT")
-	utils.SetConfig("GOGITS_REPO_URL", "ssh://git@%s:%s", "GOGITS_HOST_IP", "GOGITS_SSH_PORT")
+	utils.InitializeDefaultConfig()
 	utils.SetConfig("BASE_REPO_PATH", "/tmp/test-repos")
 	utils.SetConfig("SSH_KEY_PATH", "/tmp/test-keys")
 
-	connectToDB()
+	dao.InitDB()
 	os.Exit(m.Run())
 }

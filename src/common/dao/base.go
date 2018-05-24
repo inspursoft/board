@@ -2,11 +2,11 @@ package dao
 
 import (
 	"fmt"
+	"git/inspursoft/board/src/common/utils"
 	"strings"
 
 	"git/inspursoft/board/src/common/model"
 
-	"github.com/astaxie/beego/config"
 	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql"
@@ -37,19 +37,17 @@ var orderFields = map[string]string{
 }
 
 func InitDB() {
+
+	dbIP := utils.GetStringValue("DB_IP")
+	dbPort := utils.GetStringValue("DB_PORT")
+	dbPassword := utils.GetStringValue("DB_PASSWORD")
+
 	//init models
 	model.InitModelDB()
-	var err error
-	conf, err := config.NewConfig("ini", "app.conf")
-	if err != nil {
-		logs.Error("Faild to load app.conf: %+v", err)
-	}
-	dbHost := conf.String("dbHost")
-	dbPassword := conf.String("dbPassword")
 
 	logs.Info("Initializing DB registration.")
 	orm.RegisterDriver("mysql", orm.DRMySQL)
-	err = orm.RegisterDataBase("default", "mysql", fmt.Sprintf("root:%s@tcp(%s:3306)/board?charset=utf8", dbPassword, dbHost))
+	err := orm.RegisterDataBase("default", "mysql", fmt.Sprintf("root:%s@tcp(%s:%s)/board?charset=utf8", dbPassword, dbIP, dbPort))
 	if err != nil {
 		logs.Error("error occurred on registering DB: %+v", err)
 		panic(err)

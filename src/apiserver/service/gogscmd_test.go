@@ -41,6 +41,8 @@ var (
 	prInfo *gogs.PullRequestInfo
 )
 
+var user1RepoURL string
+
 func prepareGogitsTest() {
 	os.RemoveAll(sshKeyPath())
 	os.RemoveAll(repoPath())
@@ -75,7 +77,8 @@ func TestGogitsCreatePublicKey(t *testing.T) {
 	assert := assert.New(t)
 	err = ConfigSSHAccess(user1.Username, token1.Sha1)
 	assert.Nilf(err, "Error occurred while config SSH access: %+v to %s", err, user1.Username)
-	_, err = InitRepo(fmt.Sprintf("%s/%s/%s.git", gogitsRepoURL(), user1.Username, repoName), user1.Username, filepath.Join(repoPath(), user1.Username))
+
+	_, err = InitRepo(fmt.Sprintf("%s/%s/%s.git", gogitsRepoURL(), user1.Username, repoName), user1.Username, user1.Email, filepath.Join(repoPath(), user1.Username))
 	assert.Nilf(err, "Failed to initialize repo: %+v", err)
 
 	err = ConfigSSHAccess(user2.Username, token2.Sha1)
@@ -85,11 +88,15 @@ func TestGogitsCreatePublicKey(t *testing.T) {
 func TestGogitsCreateRepo(t *testing.T) {
 	var err error
 	assert := assert.New(t)
-	err = gogs.NewGogsHandler(user1.Username, token1.Sha1).CreateRepo(repoName)
+	gogsHandler := gogs.NewGogsHandler(user1.Username, token1.Sha1)
+	err = gogsHandler.CreateRepo(repoName)
 	assert.Nilf(err, "Error occurred while creating repo: %+v", err)
 
 	CreateFile("test.txt", "This is test file.", filepath.Join(repoPath(), user1.Username))
-	SimplePush(filepath.Join(repoPath(), user1.Username), user1.Username, user1.Email, "Initial Commit", "test.txt")
+	repoHandler, err := OpenRepo(fmt.Sprintf("%s/%s/%s.git", gogitsRepoURL(), user1.Username, repoName), user1.Username, user1.Email)
+	assert.Nilf(err, "Error occurred while openning Git repo handler: %+v", err)
+	err = repoHandler.SimplePush("test.txt")
+	assert.Nilf(err, "Failed to push files to repo: %+v", err)
 }
 
 func TestGogitsCreateHook(t *testing.T) {
@@ -111,14 +118,15 @@ func TestGogitsCreatePullRequest(t *testing.T) {
 	var err error
 	assert := assert.New(t)
 
-	repoHandler, err := InitRepo(fmt.Sprintf("%s/%s/%s.git", gogitsRepoURL(), user2.Username, forkedRepoName), user2.Username, filepath.Join(repoPath(), user2.Username))
+	repoHandler, err := InitRepo(fmt.Sprintf("%s/%s/%s.git", gogitsRepoURL(), user2.Username, forkedRepoName), user2.Username, user2.Email, filepath.Join(repoPath(), user2.Username))
 	assert.Nilf(err, "Failed to initialize repo: %+v", err)
 
 	err = repoHandler.Pull()
 	assert.Nilf(err, "Failed to pull updates from repo: %+v", err)
 
 	CreateFile("test.txt", "This is another test file.", filepath.Join(repoPath(), user2.Username))
-	SimplePush(filepath.Join(repoPath(), user2.Username), user2.Username, user2.Email, "Update test.txt file.", "test.txt")
+	err = repoHandler.SimplePush("test.txt")
+	assert.Nilf(err, "Failed to push files to repo: %+v", err)
 
 	prInfo, err = gogs.NewGogsHandler(user2.Username, token2.Sha1).
 		CreatePullRequest(user1.Username, repoName, "Update readme.md", "Update readme.md111", fmt.Sprintf("%s...%s:%s", defaultBranch, user2.Username, defaultBranch))
