@@ -474,13 +474,13 @@ func (p *ServiceController) GetServiceInfoAction() {
 		p.resolveErrOutput(err)
 		return
 	}
-	if len(serviceStatus.Spec.Ports) == 0 || len(nodesStatus.Items) == 0 {
+	if len(serviceStatus.Ports) == 0 || len(nodesStatus.Items) == 0 {
 		p.renderJSON("NA")
 		return
 	}
 
 	var serviceInfo model.ServiceInfoStruct
-	for _, ports := range serviceStatus.Spec.Ports {
+	for _, ports := range serviceStatus.Ports {
 		serviceInfo.NodePort = append(serviceInfo.NodePort, ports.NodePort)
 	}
 	for _, items := range nodesStatus.Items {
