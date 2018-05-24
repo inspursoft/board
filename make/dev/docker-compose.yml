@@ -132,6 +132,7 @@ services:
     build:
       context: ../../
       dockerfile: make/dev/container/collector/Dockerfile
+    image: dev_collector:dev
     restart: always
     env_file:
       - ../config/collector/env
