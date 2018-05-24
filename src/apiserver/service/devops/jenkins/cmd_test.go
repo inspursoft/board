@@ -32,7 +32,7 @@ var user = model.User{
 }
 
 func TestCreateJob(t *testing.T) {
-	err := NewJenkinsHandler(user.Username, "").CreateJob("target10")
+	err := NewJenkinsHandler().CreateJob("target10")
 	assert := assert.New(t)
 	assert.Nilf(err, "Error occurred while creating job: %+v", err)
 }

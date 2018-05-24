@@ -15,7 +15,7 @@ func GetSystemInfo() (*model.SystemInfo, error) {
 	var systemInfo model.SystemInfo
 	for _, config := range configs {
 		switch config.Name {
-		case "BOARD_HOST":
+		case "BOARD_HOST_IP":
 			systemInfo.BoardHost = config.Value
 		case "AUTH_MODE":
 			systemInfo.AuthMode = config.Value
