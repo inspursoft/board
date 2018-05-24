@@ -34,6 +34,7 @@ func updateAdminPassword() {
 }
 
 func TestMain(m *testing.M) {
+	utils.InitializeDefaultConfig()
 	dao.InitDB()
 	updateAdminPassword()
 	os.Exit(m.Run())
@@ -49,7 +50,6 @@ func TestSignIn(t *testing.T) {
 }
 
 func TestSignInLdap(t *testing.T) {
-	utils.InitializeDefaultConfig()
 
 	utils.SetConfig("LDAP_URL", fmt.Sprintf("ldap://%s", utils.GetStringValue("BOARD_HOST_IP")))
 	utils.SetConfig("LDAP_SEARCH_DN", `cn=admin,dc=example,dc=org`)
