@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/astaxie/beego/logs"
-
 	//"k8s.io/client-go/kubernetes"
 	//modelK8s "k8s.io/client-go/pkg/api/v1"
 	//modelK8sExt "k8s.io/client-go/pkg/apis/extensions/v1beta1"
@@ -296,6 +295,20 @@ func GetDeployment(pName string, sName string) (*model.Deployment, error) {
 		return nil, err
 	}
 	return deployment, err
+}
+
+func PatchDeployment(pName string, deploymentConfig *model.Deployment) (*model.Deployment, []byte, error) {
+	var config k8sassist.K8sAssistConfig
+	config.K8sMasterURL = kubeMasterURL()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	d := k8sclient.AppV1().Deployment(pName)
+
+	deployment, deploymentFileInfo, err := d.Update(deploymentConfig)
+	if err != nil {
+		logs.Info("Failed to patch deployment", pName, deploymentConfig.Name)
+		return nil, nil, err
+	}
+	return deployment, deploymentFileInfo, err
 }
 
 func GetK8sService(pName string, sName string) (*model.Service, error) {

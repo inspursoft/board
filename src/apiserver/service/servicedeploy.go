@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"git/inspursoft/board/src/common/k8sassist"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
@@ -53,17 +54,38 @@ func DeployService(serviceConfig *model.ConfigServiceStep, K8sMasterURL string, 
 }
 
 func GenerateDeployYamlFiles(deployInfo *DeployInfo, loadPath string) error {
-	ServiceAbsName := filepath.Join(loadPath, serviceFilename)
-	err := ioutil.WriteFile(ServiceAbsName, deployInfo.ServiceFileInfo, 0644)
+	if deployInfo == nil {
+		logs.Error("Deploy info is empty.")
+		return errors.New("Deploy info is empty.")
+	}
+	err := GenerateServiceYamlFile(deployInfo.ServiceFileInfo, loadPath)
 	if err != nil {
-		logs.Error("Generate service object yaml file failed, err:%+v\n", err)
+		return err
+	}
+	err = GenerateDeploymentYamlFile(deployInfo.DeploymentFileInfo, loadPath)
+	if err != nil {
 		return err
 	}
 
+	return nil
+}
+
+func GenerateDeploymentYamlFile(deploymentInfo []byte, loadPath string) error {
 	deploymentAbsName := filepath.Join(loadPath, deploymentFilename)
-	err = ioutil.WriteFile(deploymentAbsName, deployInfo.DeploymentFileInfo, 0644)
+	err := ioutil.WriteFile(deploymentAbsName, deploymentInfo, 0644)
 	if err != nil {
 		logs.Error("Generate deployment object yaml file failed, err:%+v\n", err)
+		return err
+	}
+
+	return nil
+}
+
+func GenerateServiceYamlFile(serviceInfo []byte, loadPath string) error {
+	ServiceAbsName := filepath.Join(loadPath, serviceFilename)
+	err := ioutil.WriteFile(ServiceAbsName, serviceInfo, 0644)
+	if err != nil {
+		logs.Error("Generate service object yaml file failed, err:%+v\n", err)
 		return err
 	}
 

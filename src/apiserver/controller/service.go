@@ -635,10 +635,10 @@ func (f *ServiceController) resolveUploadedYamlFile(uploadedFileName string) (fu
 	if err != nil {
 		if err.Error() == "http: no such file" {
 			f.customAbort(http.StatusBadRequest, "Missing file: "+uploadedFileName)
-			return nil
+			return nil, nil
 		}
 		f.internalError(err)
-		return nil
+		return nil, nil
 	}
 
 	return func(fileName string, serviceInfo *model.ServiceStatus) error {
@@ -658,12 +658,12 @@ func (f *ServiceController) UploadYamlFileAction() {
 
 	fhDeployment, deploymentFile := f.resolveUploadedYamlFile("deployment_file")
 	fhService, serviceFile := f.resolveUploadedYamlFile("service_file")
-	deployInfo, err := service.CheckDeployYamlConfig(deploymentFile, serviceFile, projectName)
+	deployInfo, err := service.CheckDeployYamlConfig(serviceFile, deploymentFile, projectName, kubeMasterURL())
 	if err != nil {
 		f.customAbort(http.StatusBadRequest, err.Error())
 	}
 
-	serviceName := deployInfo.serviceInfo.ObjectMeta.Name
+	serviceName := deployInfo.Service.ObjectMeta.Name
 	serviceInfo, err := service.GetServiceByProject(serviceName, projectName)
 	if err != nil {
 		f.internalError(err)
