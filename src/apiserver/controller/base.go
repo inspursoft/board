@@ -2,16 +2,12 @@ package controller
 
 import (
 	"errors"
-	"io/ioutil"
 	"net/http"
 	"path/filepath"
 	"time"
 
-	"encoding/json"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
-
-	"bytes"
 
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/apiserver/service/devops/gogs"
@@ -19,20 +15,17 @@ import (
 
 	"strconv"
 
-	"net/url"
-
 	"strings"
 
 	"fmt"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/cache"
-	"github.com/astaxie/beego/config"
 	"github.com/astaxie/beego/logs"
 )
 
-var conf config.Configer
-var tokenServerURL *url.URL
+var tokenServerURL = utils.GetConfig("TOKEN_SERVER_URL")
+var tokenExpirtTime = utils.GetConfig("TOKEN_EXPIRE_TIME")
 var tokenCacheExpireSeconds int
 var memoryCache cache.Cache
 
@@ -374,77 +367,45 @@ func (b *baseController) removeItemsToRepo(items ...string) {
 }
 
 func signToken(payload map[string]interface{}) (*model.Token, error) {
-	var err error
-	reqData, err := json.Marshal(payload)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := http.Post(tokenServerURL.String(), "application/json", bytes.NewReader(reqData))
-	if err != nil {
-		return nil, err
-	}
-	respData, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
 	var token model.Token
-	err = json.Unmarshal(respData, &token)
-	if err != nil {
-		return nil, err
-	}
-	return &token, nil
+	err := utils.RequestHandle(http.MethodPost, tokenServerURL(), func(req *http.Request) error {
+		req.Header = http.Header{
+			"Content-Type": []string{"application/json"},
+		}
+		return nil
+	}, payload, func(req *http.Request, resp *http.Response) error {
+		return utils.UnmarshalToJSON(resp.Body, &token)
+	})
+	return &token, err
 }
 
 func verifyToken(tokenString string) (map[string]interface{}, error) {
 	if strings.TrimSpace(tokenString) == "" {
-		return nil, fmt.Errorf("no token was provided")
+		return nil, fmt.Errorf("no token provided")
 	}
-	resp, err := http.Get(tokenServerURL.String() + "?token=" + tokenString)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode == http.StatusUnauthorized {
-		logs.Error("Invalid token due to session timeout.")
-		return nil, errInvalidToken
-	}
-
-	respData, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
 	var payload map[string]interface{}
-	err = json.Unmarshal(respData, &payload)
-	if err != nil {
-		return nil, err
-	}
-	return payload, nil
+	err := utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s?token=%s", tokenServerURL(), tokenString), nil, nil, func(req *http.Request, resp *http.Response) error {
+		if resp.StatusCode == http.StatusUnauthorized {
+			logs.Error("Invalid token due to session timeout.")
+			return errInvalidToken
+		}
+		return utils.UnmarshalToJSON(resp.Body, &payload)
+	})
+	return payload, err
 }
 
 func InitController() {
+	var err error
+	tokenCacheExpireSeconds, err = strconv.Atoi(utils.GetStringValue("TOKEN_CACHE_EXPIRE_SECONDS"))
+	if err != nil {
+		logs.Error("Failed to get token expire seconds: %+v", err)
+	}
+	logs.Info("Set token server URL as %s and will expiration time after %d second(s) in cache.", tokenServerURL(), tokenCacheExpireSeconds)
 
-	conf, err := config.NewConfig("ini", "app.conf")
-	if err != nil {
-		logs.Error("Failed to load config file: %+v\n", err)
-	}
-	rawURL := conf.String("tokenServerURL")
-	tokenServerURL, err = url.Parse(rawURL)
-	if err != nil {
-		logs.Error("Failed to parse token server URL: %+v\n", err)
-	}
-	tokenCacheExpireSeconds, err = conf.Int("tokenCacheExpireSeconds")
-	if err != nil {
-		logs.Error("Failed to parse token expire seconds: %+v\n", err)
-	}
-
-	logs.Info("Set token server URL as %s and will expiration time after %d second(s) in cache", tokenServerURL.String(), tokenCacheExpireSeconds)
 	memoryCache, err = cache.NewCache("memory", `{"interval": 3600}`)
 	if err != nil {
-		logs.Error("Failed to initialize cache: %+v\n", err)
+		logs.Error("Failed to initialize cache: %+v", err)
 	}
-
 	beego.BConfig.MaxMemory = 1 << 22
 	logs.Debug("Current auth mode is: %s", authMode())
 }

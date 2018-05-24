@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/astaxie/beego/logs"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -24,26 +23,13 @@ var PAYLOARD = map[string]interface{}{
 	"is_system_admin":  float64(0),
 }
 
-func createAppConf(content string) error {
-	f, err := os.OpenFile("app.conf", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	_, err = f.Write([]byte(content))
-	if err != nil {
-		logs.Error("Write app.conf fail")
-	}
-	return err
-}
-
 func TestInitService(t *testing.T) {
 	assert := assert.New(t)
 	os.Remove("app.conf")
 	err := InitService()
 	assert.NotNil(err, "Init service without config file should failed")
 
-	createAppConf("tokenExpireSeconds=abc")
+	os.Setenv("TOKEN_EXPIRE_TIME", "abc")
 	err = InitService()
 	assert.NotNil(err, "Init service with wrong configfile should failed")
 }
@@ -76,7 +62,7 @@ func TestTokenWithValidPayload(t *testing.T) {
 	assert := assert.New(t)
 
 	// test timeout token
-	createAppConf("tokenExpireSeconds=1")
+	os.Setenv("TOKEN_EXPIRE_TIME", "1")
 	InitService()
 	token, err := Sign(PAYLOARD)
 	assert.Nil(err, fmt.Sprintf("Sign payload error: %+v", err))
@@ -86,7 +72,7 @@ func TestTokenWithValidPayload(t *testing.T) {
 	assert.NotNil(err, fmt.Sprintf("Verify token should timeout error: %+v", err))
 
 	// normal test
-	createAppConf("tokenExpireSeconds=1800")
+	os.Setenv("TOKEN_EXPIRE_TIME", "1200")
 	InitService()
 	token, err = Sign(PAYLOARD)
 	assert.Nil(err, fmt.Sprintf("Sign payload error: %+v", err))
