@@ -1,8 +1,8 @@
 package controller
 
 import (
-	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/model/dashboard"
 	"git/inspursoft/board/src/common/utils"
@@ -227,47 +227,6 @@ func init() {
 	orm.RegisterModel(new(dashboard.NodeDashboardMinute), new(dashboard.NodeDashboardHour), new(dashboard.NodeDashboardDay))
 }
 
-func connectToDB() {
-	hostIP := os.Getenv("HOST_IP")
-	orm.RegisterDriver("mysql", orm.DRMySQL)
-	err := orm.RegisterDataBase("default", "mysql", fmt.Sprintf("root:root123@tcp(%s:3306)/board?charset=utf8", hostIP))
-	if err != nil {
-		logs.Error("Failed to connect to DB.")
-	}
-}
-
-func createAppConf() {
-	var content []byte
-	hostIP := os.Getenv("HOST_IP")
-	tokenServer := fmt.Sprintf("tokenServerURL=http://%s:4000/tokenservice/token\n", hostIP)
-	f, err := os.OpenFile("app.conf", os.O_RDWR|os.O_CREATE, 0644)
-	defer f.Close()
-	if err != nil {
-		logs.Error("Open app.conf fail")
-		panic(err)
-	}
-	_, err = f.Write([]byte(tokenServer))
-	if err != nil {
-		logs.Error("Write app.conf fail")
-		panic(err)
-	}
-	content = []byte(`tokenCacheExpireSeconds=1800
-dbPassword=root123
-dbHost=db`)
-	_, err = f.Write(content)
-	if err != nil {
-		logs.Error("write app.conf fail.")
-		panic(err)
-	}
-}
-
-func removeAppConf() {
-	if err := os.Remove("app.conf"); err != nil {
-		logs.Error("remove app.conf fail.")
-		panic(err)
-	}
-}
-
 func updateAdminPassword() {
 	initialPassword := utils.GetStringValue("BOARD_ADMIN_PASSWORD")
 	if initialPassword == "" {
@@ -294,25 +253,14 @@ func updateAdminPassword() {
 }
 
 func TestMain(m *testing.M) {
-	utils.Initialize()
-	utils.AddEnv("KUBE_MASTER_IP")
-	utils.AddEnv("KUBE_MASTER_PORT")
-	utils.SetConfig("KUBE_MASTER_URL", "http://%s:%s", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
+	utils.InitializeDefaultConfig()
 	utils.AddEnv("NODE_IP")
-	utils.AddEnv("REGISTRY_IP")
-	utils.AddEnv("REGISTRY_PORT")
-	utils.SetConfig("REGISTRY_URL", "http://%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
-	utils.SetConfig("REGISTRY_BASE_URI", "%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
-	utils.AddValue("IS_EXTERNAL_AUTH", false)
-	utils.AddValue("AUTH_MODE", "db_auth")
-	utils.AddValue("BOARD_ADMIN_PASSWORD", "123456a?")
-	utils.AddEnv("JENKINS_BASE_URL")
-	connectToDB()
-	createAppConf()
-	updateAdminPassword()
-	defer removeAppConf()
+	utils.AddEnv("TOKEN_SERVER_IP")
+	utils.AddEnv("TOKEN_SERVER_PORT")
+	utils.SetConfig("TOKEN_SERVER_URL", "http://%s:%s/tokenservice/token", "TOKEN_SERVER_IP", "TOKEN_SERVER_PORT")
 
+	dao.InitDB()
+	updateAdminPassword()
 	InitController()
-	//os.Exit(m.Run())
-	m.Run()
+	os.Exit(m.Run())
 }

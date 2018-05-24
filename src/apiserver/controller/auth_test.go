@@ -72,13 +72,12 @@ func signIn(name, password string) string {
 
 	if w.Code != http.StatusOK {
 		return ""
-	} else {
-		err = json.Unmarshal(w.Body.Bytes(), &token)
-		if err != nil {
-			return ""
-		}
-		return token.TokenString
 	}
+	err = json.Unmarshal(w.Body.Bytes(), &token)
+	if err != nil {
+		return ""
+	}
+	return token.TokenString
 }
 
 func signOut(name string) error {
@@ -90,9 +89,8 @@ func signOut(name string) error {
 	if w.Code != http.StatusOK {
 		errstr := fmt.Sprintf("Logout error: %+v", w.Body.String())
 		return errors.New(errstr)
-	} else {
-		return nil
 	}
+	return nil
 }
 
 func TestSignInOutAction(t *testing.T) {
