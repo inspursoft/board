@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"git/inspursoft/board/src/common/model"
+
 	"github.com/astaxie/beego/config"
 	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/orm"
@@ -35,6 +37,8 @@ var orderFields = map[string]string{
 }
 
 func InitDB() {
+	//init models
+	model.InitModelDB()
 	var err error
 	conf, err := config.NewConfig("ini", "app.conf")
 	if err != nil {
