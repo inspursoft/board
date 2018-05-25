@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/astaxie/beego/logs"
@@ -28,10 +29,12 @@ func AddValue(name string, value interface{}) {
 }
 
 func GetIntValue(name string) int {
-	if v, ok := configStorage[name].(int); ok {
-		return v
+	v, err := strconv.Atoi(GetStringValue(name))
+	if err != nil {
+		logs.Error("Failed to get int value for key: %s", name)
+		return 0
 	}
-	panic(fmt.Sprintf("Failed to get int value for key: %s", name))
+	return v
 }
 
 func GetBoolValue(name string) bool {
@@ -137,5 +140,14 @@ func InitializeDefaultConfig() {
 	SetConfig("REGISTRY_BASE_URI", "%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
 
 	AddValue("IS_EXTERNAL_AUTH", (GetStringValue("AUTH_MODE") != "db_auth"))
+
+	AddEnv("EMAIL_HOST")
+	AddEnv("EMAIL_PORT")
+	AddEnv("EMAIL_USR")
+	AddEnv("EMAIL_PWD")
+	AddEnv("EMAIL_SSL")
+	AddEnv("EMAIL_FROM")
+	AddEnv("EMAIL_IDENTITY")
+
 	ShowAllConfigs()
 }

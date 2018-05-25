@@ -204,6 +204,12 @@ func init() {
 			beego.NSRouter("/jenkins-job/stop",
 				&controller.JenkinsJobController{},
 				"get:Stop"),
+			beego.NSRouter("/email/ping",
+				&controller.EmailController{},
+				"post:Ping"),
+			beego.NSRouter("/email/send",
+				&controller.EmailController{},
+				"post:Send"),
 		),
 	)
 
