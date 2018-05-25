@@ -8,7 +8,7 @@ import (
 )
 
 type ServiceShowController struct {
-	baseController
+	BaseController
 }
 
 func (s *ServiceShowController) Prepare() {}

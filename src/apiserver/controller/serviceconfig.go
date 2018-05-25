@@ -169,7 +169,7 @@ func (s *ConfigServiceStep) GetConfigExternalService() interface{} {
 }
 
 type ServiceConfigController struct {
-	baseController
+	BaseController
 }
 
 func (sc *ServiceConfigController) getKey() string {

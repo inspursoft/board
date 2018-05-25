@@ -20,7 +20,7 @@ type ServiceBodyPara struct {
 }
 
 type DashboardServiceController struct {
-	baseController
+	BaseController
 }
 
 func (s *DashboardServiceController) GetServiceData() {

@@ -9,7 +9,7 @@ import (
 )
 
 type NodeController struct {
-	baseController
+	BaseController
 }
 
 func (n *NodeController) GetNode() {

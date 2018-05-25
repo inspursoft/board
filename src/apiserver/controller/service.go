@@ -46,7 +46,7 @@ const (
 )
 
 type ServiceController struct {
-	baseController
+	BaseController
 }
 
 func (p *ServiceController) generateDeploymentTravis(deploymentURL string, serviceURL string) error {

@@ -7,7 +7,7 @@ import (
 )
 
 type SearchSourceController struct {
-	baseController
+	BaseController
 }
 
 func (pm *SearchSourceController) Prepare() {

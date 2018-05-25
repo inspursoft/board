@@ -15,7 +15,7 @@ import (
 )
 
 type AuthController struct {
-	baseController
+	BaseController
 }
 
 func (u *AuthController) Prepare() {

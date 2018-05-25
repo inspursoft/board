@@ -22,7 +22,7 @@ type uploadFile struct {
 }
 
 type FileUploadController struct {
-	baseController
+	BaseController
 	toFilePath string
 }
 
