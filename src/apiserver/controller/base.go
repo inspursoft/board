@@ -43,7 +43,7 @@ var boardAPIBaseURL = utils.GetConfig("BOARD_API_BASE_URL")
 var gogitsSSHURL = utils.GetConfig("GOGITS_SSH_URL")
 var jenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
 
-type baseController struct {
+type BaseController struct {
 	beego.Controller
 	currentUser    *model.User
 	token          string
@@ -54,15 +54,15 @@ type baseController struct {
 	isRemoved      bool
 }
 
-func (b *baseController) Prepare() {
+func (b *BaseController) Prepare() {
 	b.resolveSignedInUser()
 }
 
-func (b *baseController) Render() error {
+func (b *BaseController) Render() error {
 	return nil
 }
 
-func (b *baseController) resolveBody(target interface{}) {
+func (b *BaseController) resolveBody(target interface{}) {
 	err := utils.UnmarshalToJSON(b.Ctx.Request.Body, target)
 	if err != nil {
 		logs.Error("Failed to unmarshal data: %+v", err)
@@ -70,12 +70,12 @@ func (b *baseController) resolveBody(target interface{}) {
 	}
 }
 
-func (b *baseController) renderJSON(data interface{}) {
+func (b *BaseController) renderJSON(data interface{}) {
 	b.Data["json"] = data
 	b.ServeJSON()
 }
 
-func (b *baseController) serveStatus(status int, message string) {
+func (b *BaseController) serveStatus(status int, message string) {
 	b.Ctx.ResponseWriter.WriteHeader(status)
 	b.renderJSON(struct {
 		StatusCode int    `json:"status"`
@@ -86,17 +86,17 @@ func (b *baseController) serveStatus(status int, message string) {
 	})
 }
 
-func (b *baseController) internalError(err error) {
+func (b *BaseController) internalError(err error) {
 	logs.Error("Error occurred: %+v", err)
 	b.CustomAbort(http.StatusInternalServerError, "Unexpected error occurred.")
 }
 
-func (b *baseController) customAbort(status int, body string) {
+func (b *BaseController) customAbort(status int, body string) {
 	logs.Error("Error of custom aborted: %s", body)
 	b.CustomAbort(status, body)
 }
 
-func (b *baseController) getCurrentUser() *model.User {
+func (b *BaseController) getCurrentUser() *model.User {
 	token := b.Ctx.Request.Header.Get("token")
 	if token == "" {
 		token = b.GetString("token")
@@ -152,7 +152,7 @@ func (b *baseController) getCurrentUser() *model.User {
 	return nil
 }
 
-func (b *baseController) signOff() error {
+func (b *BaseController) signOff() error {
 	username := b.GetString("username")
 	var err error
 	if token, ok := memoryCache.Get(username).(string); ok {
@@ -177,7 +177,7 @@ func (b *baseController) signOff() error {
 	return nil
 }
 
-func (b *baseController) resolveSignedInUser() {
+func (b *BaseController) resolveSignedInUser() {
 	user := b.getCurrentUser()
 	if user == nil {
 		b.customAbort(http.StatusUnauthorized, "Need to login first.")
@@ -186,7 +186,7 @@ func (b *baseController) resolveSignedInUser() {
 	b.isSysAdmin = (user.SystemAdmin == 1)
 }
 
-func (b *baseController) resolveProject(projectName string) (project *model.Project) {
+func (b *BaseController) resolveProject(projectName string) (project *model.Project) {
 	var err error
 	project, err = service.GetProjectByName(projectName)
 	if err != nil {
@@ -201,7 +201,7 @@ func (b *baseController) resolveProject(projectName string) (project *model.Proj
 	return
 }
 
-func (b *baseController) resolveProjectByID(projectID int64) (project *model.Project) {
+func (b *BaseController) resolveProjectByID(projectID int64) (project *model.Project) {
 	var err error
 	project, err = service.GetProjectByID(projectID)
 	if err != nil {
@@ -216,7 +216,7 @@ func (b *baseController) resolveProjectByID(projectID int64) (project *model.Pro
 	return
 }
 
-func (b *baseController) resolveRepoPath(projectName string) {
+func (b *BaseController) resolveRepoPath(projectName string) {
 	username := b.currentUser.Username
 	repoName, err := service.ResolveRepoName(projectName, username)
 	if err != nil {
@@ -227,17 +227,17 @@ func (b *baseController) resolveRepoPath(projectName string) {
 	logs.Debug("Set repo path at file upload: %s", b.repoPath)
 }
 
-func (b *baseController) resolveProjectMember(projectName string) {
+func (b *BaseController) resolveProjectMember(projectName string) {
 	b.resolveUserPrivilege(projectName)
 }
 
-func (b *baseController) resolveProjectMemberByID(projectID int64) (project *model.Project) {
+func (b *BaseController) resolveProjectMemberByID(projectID int64) (project *model.Project) {
 	project = b.resolveProjectByID(projectID)
 	b.resolveProjectMember(project.Name)
 	return
 }
 
-func (b *baseController) resolveProjectOwnerByID(projectID int64) (project *model.Project) {
+func (b *BaseController) resolveProjectOwnerByID(projectID int64) (project *model.Project) {
 	project = b.resolveProjectByID(projectID)
 	b.resolveProjectMemberByID(projectID)
 	if !(b.isSysAdmin || int64(project.OwnerID) == b.currentUser.ID) {
@@ -247,7 +247,7 @@ func (b *baseController) resolveProjectOwnerByID(projectID int64) (project *mode
 	return
 }
 
-func (b *baseController) resolveUserPrivilege(projectName string) {
+func (b *BaseController) resolveUserPrivilege(projectName string) {
 	b.resolveProject(projectName)
 	isMember, err := service.IsProjectMemberByName(projectName, b.currentUser.ID)
 	if err != nil {
@@ -259,13 +259,13 @@ func (b *baseController) resolveUserPrivilege(projectName string) {
 	return
 }
 
-func (b *baseController) resolveUserPrivilegeByID(projectID int64) (project *model.Project) {
+func (b *BaseController) resolveUserPrivilegeByID(projectID int64) (project *model.Project) {
 	project = b.resolveProjectByID(projectID)
 	b.resolveUserPrivilege(project.Name)
 	return
 }
 
-func (b *baseController) manipulateRepo(items ...string) error {
+func (b *BaseController) manipulateRepo(items ...string) error {
 	if b.repoPath == "" {
 		return fmt.Errorf("repo path cannot be empty")
 	}
@@ -282,7 +282,7 @@ func (b *baseController) manipulateRepo(items ...string) error {
 	return repoHandler.SimplePush(items...)
 }
 
-func (b *baseController) pushItemsToRepo(items ...string) {
+func (b *BaseController) pushItemsToRepo(items ...string) {
 	err := b.manipulateRepo(items...)
 	if err != nil {
 		logs.Error("Failed to push items to repo: %s, error: %+v", b.repoPath, err)
@@ -290,7 +290,7 @@ func (b *baseController) pushItemsToRepo(items ...string) {
 	}
 }
 
-func (b *baseController) collaborateWithPullRequest(headBranch, baseBranch string, items ...string) {
+func (b *BaseController) collaborateWithPullRequest(headBranch, baseBranch string, items ...string) {
 	if b.repoPath == "" {
 		b.customAbort(http.StatusPreconditionFailed, "Repo path cannot be empty.")
 		return
@@ -320,7 +320,7 @@ func (b *baseController) collaborateWithPullRequest(headBranch, baseBranch strin
 	}
 }
 
-func (b *baseController) forkRepo(forkedUser *model.User, baseRepoName string) {
+func (b *BaseController) forkRepo(forkedUser *model.User, baseRepoName string) {
 	if forkedUser == nil {
 		b.customAbort(http.StatusPreconditionFailed, "User to be forked is nil.")
 		return
@@ -357,7 +357,7 @@ func (b *baseController) forkRepo(forkedUser *model.User, baseRepoName string) {
 	repoHandler.Pull()
 }
 
-func (b *baseController) removeItemsToRepo(items ...string) {
+func (b *BaseController) removeItemsToRepo(items ...string) {
 	b.isRemoved = true
 	err := b.manipulateRepo(items...)
 	if err != nil {

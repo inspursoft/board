@@ -29,7 +29,7 @@ type DsResp struct {
 }
 
 type Dashboard struct {
-	baseController
+	BaseController
 }
 
 func (s *Dashboard) GetData() {

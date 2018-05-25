@@ -25,7 +25,7 @@ type jobConsole struct {
 }
 
 type JenkinsJobCallbackController struct {
-	baseController
+	BaseController
 }
 
 func (j *JenkinsJobCallbackController) Prepare() {}
@@ -38,7 +38,7 @@ func (j *JenkinsJobCallbackController) BuildNumberCallback() {
 }
 
 type JenkinsJobController struct {
-	baseController
+	BaseController
 }
 
 func (j *JenkinsJobController) getBuildNumber() (int, error) {

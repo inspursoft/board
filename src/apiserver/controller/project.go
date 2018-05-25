@@ -13,7 +13,7 @@ import (
 )
 
 type ProjectController struct {
-	baseController
+	BaseController
 }
 
 func (p *ProjectController) Prepare() {
