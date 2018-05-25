@@ -15,7 +15,7 @@ import (
 )
 
 type ServiceRollingUpdateController struct {
-	baseController
+	BaseController
 }
 
 func (p *ServiceRollingUpdateController) GetRollingUpdateServiceImageConfigAction() {

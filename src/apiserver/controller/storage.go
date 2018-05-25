@@ -7,7 +7,7 @@ import (
 )
 
 type StorageController struct {
-	baseController
+	BaseController
 }
 
 func (s *StorageController) Storage() {

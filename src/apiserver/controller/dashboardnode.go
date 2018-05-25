@@ -8,7 +8,7 @@ import (
 )
 
 type DashboardNodeController struct {
-	baseController
+	BaseController
 }
 
 type NodeBodyReqPara struct {
