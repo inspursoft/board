@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/json"
 	"errors"
+	"git/inspursoft/board/src/common/k8sassist"
 	"git/inspursoft/board/src/common/model"
 	"io/ioutil"
 	"os"
@@ -87,20 +88,24 @@ func GenerateYamlFile(name string, structdata interface{}) error {
 	return nil
 }
 
-func GenerateDeploymentYamlFileFromK8S(deployConfigURL string, absFileName string) error {
-	deployConfig, err := GetDeployConfig(deployConfigURL)
+func GenerateDeploymentYamlFileFromK8S(serviceConfig *model.ServiceStatus, loadPath, masterURL string) error {
+	clusterConfig := &k8sassist.K8sAssistConfig{K8sMasterURL: masterURL}
+	cli := k8sassist.NewK8sAssistClient(clusterConfig)
+	_, deploymentFileInfo, err := cli.AppV1().Deployment(serviceConfig.ProjectName).Get(serviceConfig.Name)
 	if err != nil {
 		return err
 	}
-	return GenerateYamlFile(absFileName, &deployConfig)
+	return GenerateDeploymentYamlFile(deploymentFileInfo, loadPath)
 }
 
-func GenerateServiceYamlFileFromK8S(serviceConfigURL string, absFileName string) error {
-	serviceConfig, err := GetServiceStatus(serviceConfigURL)
+func GenerateServiceYamlFileFromK8S(serviceConfig *model.ServiceStatus, loadPath, masterURL string) error {
+	clusterConfig := &k8sassist.K8sAssistConfig{K8sMasterURL: masterURL}
+	cli := k8sassist.NewK8sAssistClient(clusterConfig)
+	_, serviceFileInfo, err := cli.AppV1().Service(serviceConfig.ProjectName).Get(serviceConfig.Name)
 	if err != nil {
 		return err
 	}
-	return GenerateYamlFile(absFileName, &serviceConfig)
+	return GenerateServiceYamlFile(serviceFileInfo, loadPath)
 }
 
 func DeleteServiceConfigYaml(serviceConfigPath string) error {

@@ -75,13 +75,19 @@ func (s *services) Delete(name string) error {
 	return nil
 }
 
-func (s *services) Get(name string) (*model.Service, error) {
+func (s *services) Get(name string) (*model.Service, []byte, error) {
 	svc, err := s.service.Get(name, types.GetOptions{})
 	if err != nil {
 		logs.Error("Get service failed, error: %v", err)
-		return nil, err
+		return nil, nil, err
 	}
-	return types.FromK8sService(svc), nil
+	svcfileInfo, err := yaml.Marshal(svc)
+	if err != nil {
+		logs.Error("Marshal service info failed, error: %v", err)
+		return types.FromK8sService(svc), nil, err
+	}
+
+	return types.FromK8sService(svc), svcfileInfo, nil
 }
 
 func (s *services) List() (*model.ServiceList, error) {

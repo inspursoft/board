@@ -160,7 +160,7 @@ func GetServiceByK8sassist(pName string, sName string) (*model.Service, error) {
 	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
 		K8sMasterURL: kubeMasterURL(),
 	})
-	service, err := k8sclient.AppV1().Service(pName).Get(sName)
+	service, _, err := k8sclient.AppV1().Service(pName).Get(sName)
 
 	if err != nil {
 		return nil, err
@@ -308,7 +308,7 @@ func GetDeployment(pName string, sName string) (*model.Deployment, error) {
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 	d := k8sclient.AppV1().Deployment(pName)
 
-	deployment, err := d.Get(sName)
+	deployment, _, err := d.Get(sName)
 	if err != nil {
 		logs.Info("Failed to get deployment", pName, sName)
 		return nil, err
@@ -336,7 +336,7 @@ func GetK8sService(pName string, sName string) (*model.Service, error) {
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 	s := k8sclient.AppV1().Service(pName)
 
-	k8sService, err := s.Get(sName)
+	k8sService, _, err := s.Get(sName)
 	if err != nil {
 		logs.Info("Failed to get K8s service", pName, sName)
 		return nil, err
@@ -365,7 +365,7 @@ func StopServiceK8s(s *model.ServiceStatus) error {
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 	d := k8sclient.AppV1().Deployment(s.ProjectName)
 
-	deployData, err := d.Get(s.Name)
+	deployData, _, err := d.Get(s.Name)
 	if err != nil {
 		logs.Error("Failed to get deployment in cluster")
 		return err
@@ -425,7 +425,7 @@ func CleanDeploymentK8s(s *model.ServiceStatus) error {
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 	d := k8sclient.AppV1().Deployment(s.ProjectName)
 
-	deployData, err := d.Get(s.Name)
+	deployData, _, err := d.Get(s.Name)
 	if err != nil {
 		logs.Debug("Do not need to clean deployment")
 		return nil
@@ -475,7 +475,7 @@ func CleanServiceK8s(s *model.ServiceStatus) error {
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 	servcieInt := k8sclient.AppV1().Service(s.ProjectName)
 
-	_, err := servcieInt.Get(s.Name)
+	_, _, err := servcieInt.Get(s.Name)
 	if err != nil {
 		logs.Debug("Do not need to clean service %s", s.Name)
 		return nil
