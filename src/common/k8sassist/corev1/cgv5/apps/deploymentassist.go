@@ -71,7 +71,8 @@ func (d *deployments) UpdateStatus(deployment *model.Deployment) (*model.Deploym
 }
 
 func (d *deployments) Delete(name string) error {
-	err := d.deploy.Delete(name, nil)
+	deletePolicy := types.DeletePropagationForeground
+	err := d.deploy.Delete(name, &types.DeleteOptions{PropagationPolicy: &deletePolicy})
 	if err != nil {
 		logs.Error("Delete deployment of %s/%s failed. Err:%+v", name, d.namespace, err)
 	}
