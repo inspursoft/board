@@ -715,18 +715,16 @@ func (f *ServiceController) DownloadDeploymentYamlFileAction() {
 		f.customAbort(http.StatusBadRequest, "No YAML type found.")
 	}
 	if yamlType == deploymentType {
-		deploymentConfigURL := kubeMasterURL() + filepath.Join(deploymentAPI, projectName, "deployments", serviceName)
-		f.resolveDownloadYaml(deploymentConfigURL, deploymentFilename, service.GenerateDeploymentYamlFileFromK8S)
+		f.resolveDownloadYaml(serviceInfo, deploymentFilename, service.GenerateDeploymentYamlFileFromK8S)
 	} else if yamlType == serviceType {
-		serviceConfigURL := kubeMasterURL() + filepath.Join(serviceAPI, projectName, "services", serviceName)
-		f.resolveDownloadYaml(serviceConfigURL, serviceFilename, service.GenerateServiceYamlFileFromK8S)
+		f.resolveDownloadYaml(serviceInfo, serviceFilename, service.GenerateServiceYamlFileFromK8S)
 	}
 }
 
-func (f *ServiceController) resolveDownloadYaml(configURL, fileName string, generator func(targetURL, path string) error) {
-	logs.Debug("Current download config URL: %s", configURL)
+func (f *ServiceController) resolveDownloadYaml(serviceConfig *model.ServiceStatus, fileName string, generator func(*model.ServiceStatus, string, string) error) {
+	logs.Debug("Current download yaml file: %s", fileName)
 	absFileName := filepath.Join(f.repoPath, fileName)
-	err := generator(configURL, absFileName)
+	err := generator(serviceConfig, f.repoPath, kubeMasterURL())
 	if err != nil {
 		if strings.Index(err.Error(), "StatusNotFound:") == 0 {
 			f.customAbort(http.StatusNotFound, service.ServiceNotFoundErr.Error())

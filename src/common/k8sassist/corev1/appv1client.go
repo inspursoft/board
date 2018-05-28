@@ -65,7 +65,7 @@ type ServiceClientInterface interface {
 	UpdateStatus(*model.Service) (*model.Service, []byte, error)
 	Delete(name string) error
 	//DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
-	Get(name string) (*model.Service, error)
+	Get(name string) (*model.Service, []byte, error)
 	List() (*model.ServiceList, error)
 	//Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *v1.Service, err error)
 	CreateByYaml(io.Reader) (*model.Service, error)
@@ -138,7 +138,7 @@ type DeploymentClientInterface interface {
 	UpdateStatus(*model.Deployment) (*model.Deployment, []byte, error)
 	Delete(name string) error
 	//DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
-	Get(name string) (*model.Deployment, error)
+	Get(name string) (*model.Deployment, []byte, error)
 	//List(opts v1.ListOptions) (*DeploymentList, error)
 	List() (*model.DeploymentList, error)
 	Patch(name string, pt model.PatchType, data []byte, subresources ...string) (result *model.Deployment, err error)
