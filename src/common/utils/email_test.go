@@ -7,18 +7,18 @@ import (
 )
 
 var mockEmailIdentity = ""
-var mockEmailHost = "smtp.inspur.com"
-var mockEmailUsername = "admin"
-var mockEmailPassword = "123456a?"
-var mockEmailPort = 25
+var mockEmailHost = "smtp.myserver.com"
+var mockEmailUsername = "tester@myserver.com"
+var mockEmailPassword = ""
+var mockEmailPort = 12225
 var mockEmailTLS = false
-var mockEmailFrom = "admin@inspur.com"
-var mockEmailTo = "tester@inspur.com"
+var mockEmailFrom = "tester@myserver.com"
+var mockEmailTo = "target@myserver.com"
 
-func TestSendingEmail(t *testing.T) {
+func TestSendEmail(t *testing.T) {
 	err := NewEmailHandler(mockEmailIdentity, mockEmailUsername, mockEmailPassword, mockEmailHost, mockEmailPort).
 		IsTLS(mockEmailTLS).
-		Send(mockEmailFrom, []string{mockEmailTo}, "Testing", "This is a test mail.")
+		Send(mockEmailFrom, []string{mockEmailTo}, "Testing", "This is a <b>test12345</b> mail.")
 	assert := assert.New(t)
 	assert.Nilf(err, "Failed to send email: %+v", err)
 }
