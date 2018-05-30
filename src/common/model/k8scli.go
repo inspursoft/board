@@ -104,10 +104,12 @@ type NodeAddress struct {
 }
 
 type NodeCondition struct {
-	Type    NodeConditionType
-	Status  ConditionStatus
-	Reason  string
-	Message string
+	Type               NodeConditionType
+	Status             ConditionStatus
+	LastHeartbeatTime  time.Time
+	LastTransitionTime time.Time
+	Reason             string
+	Message            string
 }
 
 type NodeList struct {
