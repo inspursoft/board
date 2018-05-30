@@ -207,9 +207,9 @@ func init() {
 			beego.NSRouter("/email/ping",
 				&controller.EmailController{},
 				"post:Ping"),
-			beego.NSRouter("/email/send",
+			beego.NSRouter("/email/notification",
 				&controller.EmailController{},
-				"post:Send"),
+				"post:GrafanaNotification"),
 		),
 	)
 

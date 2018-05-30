@@ -29,19 +29,25 @@ func AddValue(name string, value interface{}) {
 }
 
 func GetIntValue(name string) int {
-	v, err := strconv.Atoi(GetStringValue(name))
-	if err != nil {
-		logs.Error("Failed to get int value for key: %s", name)
-		return 0
+	if value, ok := configStorage[name].(int); ok {
+		return value
 	}
-	return v
+	value, err := strconv.Atoi(GetStringValue(name))
+	if err != nil {
+		panic(fmt.Sprintf("Failed to get int value for key: %s", name))
+	}
+	return value
 }
 
 func GetBoolValue(name string) bool {
-	if v, ok := configStorage[name].(bool); ok {
-		return v
+	if value, ok := configStorage[name].(bool); ok {
+		return value
 	}
-	panic(fmt.Sprintf("Failed to get bool value for key: %s", name))
+	value, err := strconv.ParseBool(GetStringValue(name))
+	if err != nil {
+		panic(fmt.Sprintf("Failed to get bool value for key: %s", name))
+	}
+	return value
 }
 
 func GetStringValue(name string, defaultValue ...string) string {

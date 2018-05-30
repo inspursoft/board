@@ -52,8 +52,8 @@ func (e *emailHandler) Send(from string, recipients []string, subject, content s
 
 func (e *emailHandler) newDialer() *gomail.Dialer {
 	dialer := gomail.NewDialer(e.hostname, e.port, e.username, e.password)
-	if !e.isTLS {
-		dialer.TLSConfig = &tls.Config{InsecureSkipVerify: !e.isTLS}
+	if e.isTLS {
+		dialer.TLSConfig = &tls.Config{InsecureSkipVerify: e.isTLS}
 	}
 	return dialer
 }
