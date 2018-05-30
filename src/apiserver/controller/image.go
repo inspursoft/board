@@ -15,7 +15,7 @@ import (
 )
 
 type ImageController struct {
-	baseController
+	BaseController
 }
 
 // API to get image list

@@ -11,7 +11,7 @@ import (
 )
 
 type NodeGroupController struct {
-	baseController
+	BaseController
 }
 
 func (n *NodeGroupController) GetNodeGroupsAction() {

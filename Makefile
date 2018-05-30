@@ -17,13 +17,13 @@
 #
 DEVFLAG=release
 ifeq ($(DEVFLAG), release) 
-	BASEIMAGE=alpine:3.5
-	GOBUILDIMAGE=golang:1.8.3-alpine3.5
+	BASEIMAGE=alpine:3.7
+	GOBUILDIMAGE=golang:1.9.6-alpine3.7
 	WORKPATH=release
 	IMAGEPREFIX=board
 else
 	BASEIMAGE=ubuntu:14.04
-	GOBUILDIMAGE=golang:1.8.1
+	GOBUILDIMAGE=golang:1.9.6
 	WORKPATH=dev
 	IMAGEPREFIX=dev
 endif 

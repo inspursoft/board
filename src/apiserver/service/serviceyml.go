@@ -5,15 +5,11 @@ import (
 	"errors"
 	"git/inspursoft/board/src/common/model"
 	"io/ioutil"
-	"mime/multipart"
 	"os"
 	"path/filepath"
-	"strconv"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/ghodss/yaml"
-	modelK8s "k8s.io/client-go/pkg/api/v1"
-	modelK8sExt "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 )
 
 var loadPath string
@@ -49,14 +45,6 @@ var (
 	serviceAPIVersionErr           = errors.New("ERR_SERVICE_YAML_API_VERSION")
 )
 
-type Service struct {
-	modelK8s.Service
-}
-
-type Deployment struct {
-	modelK8sExt.Deployment
-}
-
 func CheckDeploymentPath(loadPath string) error {
 	if fi, err := os.Stat(loadPath); os.IsNotExist(err) {
 		if err := os.MkdirAll(loadPath, 0755); err != nil {
@@ -67,32 +55,6 @@ func CheckDeploymentPath(loadPath string) error {
 	}
 
 	return nil
-}
-
-func GetYamlFileServiceName(file multipart.File, fileName string) (string, error) {
-	config, err := ioutil.ReadAll(file)
-	if err != nil {
-		return "", err
-	}
-
-	var service modelK8s.Service
-	var deployment modelK8s.ReplicationController
-	var serviceName string
-	if fileName == deploymentFilename {
-		err = yaml.Unmarshal(config, &deployment)
-		if err != nil {
-			return "", err
-		}
-		serviceName = deployment.ObjectMeta.Name
-	} else if fileName == serviceFilename {
-		err = yaml.Unmarshal(config, &service)
-		if err != nil {
-			return "", err
-		}
-		serviceName = service.ObjectMeta.Name
-	}
-
-	return serviceName, nil
 }
 
 func ServiceExists(serviceName string, projectName string) (bool, error) {
@@ -168,102 +130,5 @@ func getYamlFileData(serviceConfig interface{}, serviceConfigPath string, fileNa
 		return err
 	}
 
-	return nil
-}
-
-//check parameter of service yaml file
-func CheckServiceConfig(projectName string, serviceConfig Service) error {
-	//check empty
-	if serviceConfig.Kind != serviceKind {
-		return deploymentKindErr
-	}
-	if serviceConfig.APIVersion != serviceAPIVersion {
-		return deploymentAPIVersionErr
-	}
-	if serviceConfig.ObjectMeta.Name == "" {
-		return emptyServiceNameErr
-	}
-	if serviceConfig.ObjectMeta.Namespace != projectName {
-		return ProjectNameInconsistentErr
-	}
-
-	for _, external := range serviceConfig.Spec.Ports {
-		if external.NodePort > maxPort {
-			return portMaxErr
-		} else if external.NodePort < minPort {
-			return portMinErr
-		}
-	}
-
-	return nil
-}
-
-func CheckDeploymentConfig(projectName string, deploymentConfig Deployment) error {
-	//check empty
-	if deploymentConfig.Kind != deploymentKind {
-		return deploymentKindErr
-	}
-	if deploymentConfig.APIVersion != deploymentAPIVersion {
-		return deploymentAPIVersionErr
-	}
-	if deploymentConfig.ObjectMeta.Name == "" {
-		return emptyDeployErr
-	}
-	if deploymentConfig.ObjectMeta.Namespace != projectName {
-		return ProjectNameInconsistentErr
-	}
-	if *deploymentConfig.Spec.Replicas < 1 {
-		return invalidErr
-	}
-	if len(deploymentConfig.Spec.Template.Spec.Containers) < 1 {
-		return emptyContainerErr
-	}
-
-	for _, cont := range deploymentConfig.Spec.Template.Spec.Containers {
-
-		err := checkStringHasUpper(cont.Name, cont.Image)
-		if err != nil {
-			return err
-		}
-
-		for _, com := range cont.Command {
-			err := checkStringHasUpper(com)
-			if err != nil {
-				return err
-			}
-		}
-
-		for _, volMount := range cont.VolumeMounts {
-			err := checkStringHasUpper(volMount.Name, volMount.MountPath)
-			if err != nil {
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func RollingUpdateDeploymentYaml(repoPath string, deploydata *modelK8sExt.Deployment) error {
-	projectName := deploydata.ObjectMeta.Namespace
-	serviceName := deploydata.ObjectMeta.Name
-	serviceInfo, err := GetServiceByProject(serviceName, projectName)
-	if err != nil {
-		return err
-	}
-	if serviceInfo == nil {
-		return ServiceNotFoundErr
-	}
-	filePath := filepath.Join(repoPath, "process-service", strconv.Itoa(int(serviceInfo.ID)))
-	fileName := filepath.Join(filePath, deploymentFilename)
-	err = CheckDeploymentPath(filePath)
-	if err != nil {
-		return err
-	}
-	err = GenerateYamlFile(fileName, deploydata)
-	if err != nil {
-		return err
-	}
 	return nil
 }

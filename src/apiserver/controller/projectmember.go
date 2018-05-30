@@ -8,7 +8,7 @@ import (
 )
 
 type ProjectMemberController struct {
-	baseController
+	BaseController
 }
 
 func (pm *ProjectMemberController) AddOrUpdateProjectMemberAction() {

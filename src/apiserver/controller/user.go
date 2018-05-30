@@ -13,7 +13,7 @@ import (
 )
 
 type UserController struct {
-	baseController
+	BaseController
 }
 
 func (u *UserController) Prepare() {
@@ -166,7 +166,7 @@ func (u *UserController) ChangePasswordAction() {
 }
 
 type SystemAdminController struct {
-	baseController
+	BaseController
 }
 
 func (u *SystemAdminController) Prepare() {

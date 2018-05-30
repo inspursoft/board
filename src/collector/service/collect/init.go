@@ -1,8 +1,8 @@
 package collect
 
 import (
+	"git/inspursoft/board/src/common/model"
 	"sync"
-	modelK8s "k8s.io/client-go/pkg/api/v1"
 )
 
 var ThreadCountGet sync.WaitGroup
@@ -13,10 +13,10 @@ func RunOneCycle() error {
 	newSource.gainResource()
 	ThreadCountGet.Wait()
 	newSource.MapRun()
-	PodList = modelK8s.PodList{}
-	NodeList = modelK8s.NodeList{}
-	ServiceList = modelK8s.ServiceList{}
-	podItem = []modelK8s.Pod{}
+	PodList = model.PodList{}
+	NodeList = model.NodeList{}
+	ServiceList = model.ServiceList{}
+	podItem = []model.Pod{}
 	return nil
 }
 

@@ -2,6 +2,7 @@ package git
 
 import (
 	"errors"
+	"regexp"
 
 	"gopkg.in/src-d/go-git.v4/config"
 	"gopkg.in/src-d/go-git.v4/plumbing"
@@ -40,6 +41,8 @@ type CloneOptions struct {
 	ReferenceName plumbing.ReferenceName
 	// Fetch only ReferenceName if true.
 	SingleBranch bool
+	// No checkout of HEAD after clone if true.
+	NoCheckout bool
 	// Limit fetching to the specified number of commits.
 	Depth int
 	// RecurseSubmodules after the clone is created, initialize all submodules
@@ -50,6 +53,9 @@ type CloneOptions struct {
 	// stored, if nil nothing is stored and the capability (if supported)
 	// no-progress, is sent to the server to avoid send this information.
 	Progress sideband.Progress
+	// Tags describe how the tags will be fetched from the remote repository,
+	// by default is AllTags.
+	Tags TagMode
 }
 
 // Validate validates the fields and sets the default values.
@@ -64,6 +70,10 @@ func (o *CloneOptions) Validate() error {
 
 	if o.ReferenceName == "" {
 		o.ReferenceName = plumbing.HEAD
+	}
+
+	if o.Tags == InvalidTagMode {
+		o.Tags = AllTags
 	}
 
 	return nil
@@ -88,6 +98,9 @@ type PullOptions struct {
 	// stored, if nil nothing is stored and the capability (if supported)
 	// no-progress, is sent to the server to avoid send this information.
 	Progress sideband.Progress
+	// Force allows the pull to update a local branch even when the remote
+	// branch does not descend from it.
+	Force bool
 }
 
 // Validate validates the fields and sets the default values.
@@ -103,18 +116,19 @@ func (o *PullOptions) Validate() error {
 	return nil
 }
 
-type TagFetchMode int
+type TagMode int
 
-var (
+const (
+	InvalidTagMode TagMode = iota
 	// TagFollowing any tag that points into the histories being fetched is also
 	// fetched. TagFollowing requires a server with `include-tag` capability
 	// in order to fetch the annotated tags objects.
-	TagFollowing TagFetchMode = 0
+	TagFollowing
 	// AllTags fetch all tags from the remote (i.e., fetch remote tags
 	// refs/tags/* into local tags with the same name)
-	AllTags TagFetchMode = 1
+	AllTags
 	//NoTags fetch no tags from the remote at all
-	NoTags TagFetchMode = 2
+	NoTags
 )
 
 // FetchOptions describes how a fetch should be performed
@@ -133,13 +147,20 @@ type FetchOptions struct {
 	Progress sideband.Progress
 	// Tags describe how the tags will be fetched from the remote repository,
 	// by default is TagFollowing.
-	Tags TagFetchMode
+	Tags TagMode
+	// Force allows the fetch to update a local branch even when the remote
+	// branch does not descend from it.
+	Force bool
 }
 
 // Validate validates the fields and sets the default values.
 func (o *FetchOptions) Validate() error {
 	if o.RemoteName == "" {
 		o.RemoteName = DefaultRemoteName
+	}
+
+	if o.Tags == InvalidTagMode {
+		o.Tags = TagFollowing
 	}
 
 	for _, r := range o.RefSpecs {
@@ -160,6 +181,9 @@ type PushOptions struct {
 	RefSpecs []config.RefSpec
 	// Auth credentials, if required, to use with the remote repository.
 	Auth transport.AuthMethod
+	// Progress is where the human readable information sent by the server is
+	// stored, if nil nothing is stored.
+	Progress sideband.Progress
 }
 
 // Validate validates the fields and sets the default values.
@@ -238,13 +262,13 @@ func (o *CheckoutOptions) Validate() error {
 type ResetMode int8
 
 const (
-	// HardReset resets the index and working tree. Any changes to tracked files
-	// in the working tree are discarded.
-	HardReset ResetMode = iota
 	// MixedReset resets the index but not the working tree (i.e., the changed
 	// files are preserved but not marked for commit) and reports what has not
 	// been updated. This is the default action.
-	MixedReset
+	MixedReset ResetMode = iota
+	// HardReset resets the index and working tree. Any changes to tracked files
+	// in the working tree are discarded.
+	HardReset
 	// MergeReset resets the index and updates the files in the working tree
 	// that are different between Commit and HEAD, but keeps those which are
 	// different between the index and working tree (i.e. which have changes
@@ -253,6 +277,10 @@ const (
 	// If a file that is different between Commit and the index has unstaged
 	// changes, reset is aborted.
 	MergeReset
+	// SoftReset does not touch the index file or the working tree at all (but
+	// resets the head to <commit>, just like all modes do). This leaves all
+	// your changed files "Changes to be committed", as git status would put it.
+	SoftReset
 )
 
 // ResetOptions describes how a reset operation should be performed.
@@ -279,12 +307,27 @@ func (o *ResetOptions) Validate(r *Repository) error {
 	return nil
 }
 
+type LogOrder int8
+
+const (
+	LogOrderDefault LogOrder = iota
+	LogOrderDFS
+	LogOrderDFSPost
+	LogOrderBSF
+	LogOrderCommitterTime
+)
+
 // LogOptions describes how a log action should be performed.
 type LogOptions struct {
 	// When the From option is set the log will only contain commits
 	// reachable from it. If this option is not set, HEAD will be used as
 	// the default From.
 	From plumbing.Hash
+
+	// The default traversal algorithm is Depth-first search
+	// set Order=LogOrderCommitterTime for ordering by committer time (more compatible with `git log`)
+	// set Order=LogOrderBSF for Breadth-first search
+	Order LogOrder
 }
 
 var (
@@ -329,3 +372,62 @@ func (o *CommitOptions) Validate(r *Repository) error {
 
 	return nil
 }
+
+// ListOptions describes how a remote list should be performed.
+type ListOptions struct {
+	// Auth credentials, if required, to use with the remote repository.
+	Auth transport.AuthMethod
+}
+
+// CleanOptions describes how a clean should be performed.
+type CleanOptions struct {
+	Dir bool
+}
+
+// GrepOptions describes how a grep should be performed.
+type GrepOptions struct {
+	// Patterns are compiled Regexp objects to be matched.
+	Patterns []*regexp.Regexp
+	// InvertMatch selects non-matching lines.
+	InvertMatch bool
+	// CommitHash is the hash of the commit from which worktree should be derived.
+	CommitHash plumbing.Hash
+	// ReferenceName is the branch or tag name from which worktree should be derived.
+	ReferenceName plumbing.ReferenceName
+	// PathSpecs are compiled Regexp objects of pathspec to use in the matching.
+	PathSpecs []*regexp.Regexp
+}
+
+var (
+	ErrHashOrReference = errors.New("ambiguous options, only one of CommitHash or ReferenceName can be passed")
+)
+
+// Validate validates the fields and sets the default values.
+func (o *GrepOptions) Validate(w *Worktree) error {
+	if !o.CommitHash.IsZero() && o.ReferenceName != "" {
+		return ErrHashOrReference
+	}
+
+	// If none of CommitHash and ReferenceName are provided, set commit hash of
+	// the repository's head.
+	if o.CommitHash.IsZero() && o.ReferenceName == "" {
+		ref, err := w.r.Head()
+		if err != nil {
+			return err
+		}
+		o.CommitHash = ref.Hash()
+	}
+
+	return nil
+}
+
+// PlainOpenOptions describes how opening a plain repository should be
+// performed.
+type PlainOpenOptions struct {
+	// DetectDotGit defines whether parent directories should be
+	// walked until a .git directory or file is found.
+	DetectDotGit bool
+}
+
+// Validate validates the fields and sets the default values.
+func (o *PlainOpenOptions) Validate() error { return nil }

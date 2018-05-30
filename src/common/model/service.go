@@ -2,8 +2,6 @@ package model
 
 import (
 	"time"
-
-	modelK8s "k8s.io/client-go/pkg/api/v1"
 )
 
 type ServiceStatus struct {
@@ -33,8 +31,8 @@ type PaginatedServiceStatus struct {
 }
 
 type ServiceInfoStruct struct {
-	NodePort []int32                `json:"node_Port,omitempty"`
-	NodeName []modelK8s.NodeAddress `json:"node_Name,omitempty"`
+	NodePort []int32       `json:"node_Port,omitempty"`
+	NodeName []NodeAddress `json:"node_Name,omitempty"`
 }
 
 type ServiceToggle struct {
