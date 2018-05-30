@@ -2,8 +2,8 @@ package controller
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
+	"io"
 
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/apiserver/service/devops/travis"
@@ -57,10 +57,10 @@ func (p *ServiceController) generateDeploymentTravis(deploymentURL string, servi
 		fmt.Sprintf("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
 	}
 	if deploymentURL != "" {
-		items = append(items, fmt.Sprintf("curl -X POST -H 'Content-Type: application/yaml' --data-binary @deployment.yaml %s", deploymentURL))
+		items = append(items, fmt.Sprintf("#curl -X POST -H 'Content-Type: application/yaml' --data-binary @deployment.yaml %s", deploymentURL))
 	}
 	if serviceURL != "" {
-		items = append(items, fmt.Sprintf("curl -X POST -H 'Content-Type: application/yaml' --data-binary @service.yaml %s", serviceURL))
+		items = append(items, fmt.Sprintf("#curl -X POST -H 'Content-Type: application/yaml' --data-binary @service.yaml %s", serviceURL))
 	}
 	travisCommand.Script.Commands = items
 	return travisCommand.GenerateCustomTravis(p.repoPath)
@@ -119,13 +119,13 @@ func (p *ServiceController) DeployServiceAction() {
 		return
 	}
 
-	err = service.AssembleDeploymentYaml((*model.ConfigServiceStep)(configService), p.repoPath)
+	deployInfo, err := service.DeployService((*model.ConfigServiceStep)(configService), kubeMasterURL(), registryBaseURI())
 	if err != nil {
 		p.internalError(err)
 		return
 	}
 
-	err = service.AssembleServiceYaml((*model.ConfigServiceStep)(configService), p.repoPath)
+	err = service.GenerateDeployYamlFiles(deployInfo, p.repoPath)
 	if err != nil {
 		p.internalError(err)
 		return
@@ -392,11 +392,16 @@ func (p *ServiceController) ToggleServiceAction() {
 		}
 	} else {
 		// start service
+		p.resolveRepoPath(s.ProjectName)
+		err := service.DeployServiceByYaml(s.ProjectName, kubeMasterURL(), p.repoPath)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
 		// Push deployment to Git repo
 		deploymentURL := fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), deploymentAPI, s.ProjectName, "deployments")
 		serviceURL := fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), serviceAPI, s.ProjectName, "services")
 
-		p.resolveRepoPath(s.ProjectName)
 		err = p.generateDeploymentTravis(deploymentURL, serviceURL)
 		if err != nil {
 			logs.Error("Failed to generate deployment travis: %+v", err)
@@ -457,7 +462,7 @@ func (p *ServiceController) GetServiceInfoAction() {
 	//Judge authority
 	p.resolveUserPrivilegeByID(s.ProjectID)
 
-	serviceStatus, err := service.GetServiceStatus(kubeMasterURL() + serviceAPI + s.ProjectName + "/services/" + s.Name)
+	serviceStatus, err := service.GetServiceByK8sassist(s.ProjectName, s.Name)
 	if err != nil {
 		p.resolveErrOutput(err)
 		return
@@ -469,13 +474,13 @@ func (p *ServiceController) GetServiceInfoAction() {
 		p.resolveErrOutput(err)
 		return
 	}
-	if len(serviceStatus.Spec.Ports) == 0 || len(nodesStatus.Items) == 0 {
+	if len(serviceStatus.Ports) == 0 || len(nodesStatus.Items) == 0 {
 		p.renderJSON("NA")
 		return
 	}
 
 	var serviceInfo model.ServiceInfoStruct
-	for _, ports := range serviceStatus.Spec.Ports {
+	for _, ports := range serviceStatus.Ports {
 		serviceInfo.NodePort = append(serviceInfo.NodePort, ports.NodePort)
 	}
 	for _, items := range nodesStatus.Items {
@@ -488,7 +493,7 @@ func (p *ServiceController) GetServiceStatusAction() {
 	s := p.resolveServiceInfo()
 	//Judge authority
 	p.resolveUserPrivilegeByID(s.ProjectID)
-	serviceStatus, err := service.GetServiceStatus(kubeMasterURL() + serviceAPI + s.ProjectName + "/services/" + s.Name)
+	serviceStatus, err := service.GetServiceByK8sassist(s.ProjectName, s.Name)
 	if err != nil {
 		p.resolveErrOutput(err)
 		return
@@ -625,24 +630,15 @@ func (p *ServiceController) GetSelectableServicesAction() {
 	p.renderJSON(serviceList)
 }
 
-func (f *ServiceController) resolveUploadedYamlFile(uploadedFileName string, target interface{}, customError error) func(fileName string, serviceInfo *model.ServiceStatus) error {
+func (f *ServiceController) resolveUploadedYamlFile(uploadedFileName string) (func(fileName string, serviceInfo *model.ServiceStatus) error, io.Reader) {
 	uploadedFile, _, err := f.GetFile(uploadedFileName)
 	if err != nil {
 		if err.Error() == "http: no such file" {
 			f.customAbort(http.StatusBadRequest, "Missing file: "+uploadedFileName)
-			return nil
+			return nil, nil
 		}
 		f.internalError(err)
-		return nil
-	}
-	err = utils.UnmarshalYamlFile(uploadedFile, target)
-	if err != nil {
-		if strings.Index(err.Error(), "InternalError:") == 0 {
-			f.internalError(errors.New(err.Error()[len("InternalError:"):]))
-			return nil
-		}
-		f.customAbort(http.StatusBadRequest, customError.Error())
-		return nil
+		return nil, nil
 	}
 
 	return func(fileName string, serviceInfo *model.ServiceStatus) error {
@@ -653,30 +649,22 @@ func (f *ServiceController) resolveUploadedYamlFile(uploadedFileName string, tar
 			return nil
 		}
 		return f.SaveToFile(uploadedFileName, filepath.Join(f.repoPath, fileName))
-	}
+	}, uploadedFile
 }
 
 func (f *ServiceController) UploadYamlFileAction() {
 	projectName := f.GetString("project_name")
 	f.resolveProjectMember(projectName)
 
-	var deploymentConfig service.Deployment
-	fhDeployment := f.resolveUploadedYamlFile("deployment_file", &deploymentConfig, service.DeploymentYamlFileUnmarshalErr)
-
-	var serviceConfig service.Service
-	fhService := f.resolveUploadedYamlFile("service_file", &serviceConfig, service.ServiceYamlFileUnmarshalErr)
-
-	var err error
-	err = service.CheckDeploymentConfig(projectName, deploymentConfig)
+	fhDeployment, deploymentFile := f.resolveUploadedYamlFile("deployment_file")
+	fhService, serviceFile := f.resolveUploadedYamlFile("service_file")
+	deployInfo, err := service.CheckDeployYamlConfig(serviceFile, deploymentFile, projectName, kubeMasterURL())
 	if err != nil {
 		f.customAbort(http.StatusBadRequest, err.Error())
 	}
-	err = service.CheckServiceConfig(projectName, serviceConfig)
-	if err != nil {
-		f.customAbort(http.StatusBadRequest, err.Error())
-	}
-	//check label selector
-	serviceInfo, err := service.GetServiceByProject(serviceConfig.Name, projectName)
+
+	serviceName := deployInfo.Service.ObjectMeta.Name
+	serviceInfo, err := service.GetServiceByProject(serviceName, projectName)
 	if err != nil {
 		f.internalError(err)
 		return
@@ -686,7 +674,7 @@ func (f *ServiceController) UploadYamlFileAction() {
 		return
 	}
 	serviceInfo, err = service.CreateServiceConfig(model.ServiceStatus{
-		Name:        serviceConfig.Name,
+		Name:        serviceName,
 		ProjectName: projectName,
 		Status:      preparing, // 0: preparing 1: running 2: suspending
 		OwnerID:     f.currentUser.ID,

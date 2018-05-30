@@ -133,6 +133,7 @@ func initDefaultProjects() {
 	logs.Info("Successful synchonized projects with Kubernetes.")
 }
 
+/*
 func syncServiceWithK8s() {
 	service.SyncServiceWithK8s()
 	utils.SetConfig("SYNC_K8S", "created")
@@ -142,6 +143,8 @@ func syncServiceWithK8s() {
 		panic(err)
 	}
 }
+*/
+
 func updateSystemInfo() {
 	var err error
 	err = service.SetSystemInfo("BOARD_HOST_IP", true)
@@ -197,7 +200,8 @@ func main() {
 
 	if systemInfo.SyncK8s == "" || utils.GetStringValue("FORCE_INIT_SYNC") == "true" {
 		initDefaultProjects()
-		syncServiceWithK8s()
+		//already do sync service in sync project
+		//syncServiceWithK8s()
 	}
 
 	beego.Run(":" + defaultAPIServerPort)

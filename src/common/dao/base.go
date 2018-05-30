@@ -5,6 +5,8 @@ import (
 	"git/inspursoft/board/src/common/utils"
 	"strings"
 
+	"git/inspursoft/board/src/common/model"
+
 	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql"
@@ -35,9 +37,13 @@ var orderFields = map[string]string{
 }
 
 func InitDB() {
+
 	dbIP := utils.GetStringValue("DB_IP")
 	dbPort := utils.GetStringValue("DB_PORT")
 	dbPassword := utils.GetStringValue("DB_PASSWORD")
+
+	//init models
+	model.InitModelDB()
 
 	logs.Info("Initializing DB registration.")
 	orm.RegisterDriver("mysql", orm.DRMySQL)

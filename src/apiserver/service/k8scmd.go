@@ -8,14 +8,19 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/pkg/api/resource"
-	"k8s.io/client-go/pkg/api/v1"
-	"k8s.io/client-go/rest"
-	apiCli "k8s.io/client-go/tools/clientcmd/api"
+	//"k8s.io/client-go/kubernetes"
+	//"k8s.io/client-go/pkg/api/resource"
+	//"k8s.io/client-go/pkg/api/v1"
+	//"k8s.io/client-go/rest"
+	//apiCli "k8s.io/client-go/tools/clientcmd/api"
 
-	"github.com/golang/glog"
-	"k8s.io/client-go/tools/clientcmd"
+	"git/inspursoft/board/src/common/k8sassist"
+
+	//"git/inspursoft/board/src/common/model"
+
+	"github.com/astaxie/beego/logs"
+	//"github.com/golang/glog"
+	//"k8s.io/client-go/tools/clientcmd"
 )
 
 var (
@@ -34,6 +39,7 @@ const (
 )
 const defaultEntry = Insecure
 
+/* use k8sassit
 func K8sCliFactory(clusterName string, masterUrl string, apiVersion string) (*rest.Config, error) {
 	cli := apiCli.NewConfig()
 	cli.Clusters[clusterName] = &apiCli.Cluster{
@@ -53,32 +59,42 @@ func K8sCliFactory(clusterName string, masterUrl string, apiVersion string) (*re
 		&clientcmd.ConfigOverrides{}, nil)
 	return clientBuilder.ClientConfig()
 }
+*/
+
 func Suspend(nodeName string) (bool, error) {
 
-	cli, err := K8sCliFactory("", kubeMasterURL(), "v1")
-	apiSet, err := kubernetes.NewForConfig(cli)
-	if err != nil {
-		return false, err
-	}
-	n := apiSet.Nodes()
+	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		K8sMasterURL: kubeMasterURL(),
+	})
+	n := k8sclient.AppV1().Node()
+
 	nodeData, err := n.Get(nodeName)
-	nodeData.Spec.Unschedulable = true
+	nodeData.Unschedulable = true
 	res, err := n.Update(nodeData)
-	return res.Spec.Unschedulable, err
+	return res.Unschedulable, err
 
 }
 
 func Resume(nodeName string) (bool, error) {
-	cli, err := K8sCliFactory("", kubeMasterURL(), "v1")
-	apiSet, err := kubernetes.NewForConfig(cli)
-	if err != nil {
-		return false, err
-	}
-	n := apiSet.Nodes()
+	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		K8sMasterURL: kubeMasterURL(),
+	})
+	n := k8sclient.AppV1().Node()
 	nodeData, err := n.Get(nodeName)
-	nodeData.Spec.Unschedulable = false
+	nodeData.Unschedulable = false
 	res, err := n.Update(nodeData)
-	return !res.Spec.Unschedulable, err
+	return !res.Unschedulable, err
+}
+
+func Taint(nodeName string, effect string) error {
+	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		K8sMasterURL: kubeMasterURL(),
+	})
+	n := k8sclient.AppV1().Node()
+	nodeData, err := n.Get(nodeName)
+	logs.Info(nodeData)
+	//TODO force drain all pods in this node
+	return err
 }
 
 //get resource form k8s api-server
@@ -124,6 +140,7 @@ func GetK8sData(resource interface{}, url string) ([]byte, error) {
 	return body, nil
 }
 
+/* Not support PV in this time
 // setNFSVol is the function of setting a PVC to bound PV storage with nfs.
 // The name is name of PVC, path is the path of nfs, cap is the capacity of PV and PVC
 func SetNFSVol(name string, server, path string, cap int64) error {
@@ -185,3 +202,4 @@ func SetNFSVol(name string, server, path string, cap int64) error {
 	}
 	return nil
 }
+*/

@@ -15,7 +15,7 @@ docker-compose        | 1.14.0 +
 python                | 2.7 +
 git                   | 1.8.3 +
 make                  | 3.81 +
-golang                | 1.8.1 +
+golang                | 1.9.6 +
 
 
 ## Step 2: Getting the source code
