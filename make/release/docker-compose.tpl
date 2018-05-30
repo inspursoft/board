@@ -69,8 +69,6 @@ services:
     image: board_apiserver:__version__
     restart: always
     volumes:
-      - ../config/apiserver/app.conf:/usr/bin/app.conf:z
-      - ../config/apiserver/parser.py:/usr/bin/parser.py:z
 #     - ../../tools/swagger/vendors/swagger-ui-2.1.4/dist:/usr/bin/swagger:z
       - /data/board/repos:/repos:rw
       - /data/board/keys:/keys:rw
@@ -94,8 +92,6 @@ services:
     env_file:
       - ../config/tokenserver/env
     restart: always
-    volumes:
-      - ../config/tokenserver/app.conf:/usr/bin/app.conf:z
     networks:
       - board
     depends_on:

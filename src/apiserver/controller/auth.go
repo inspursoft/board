@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/apiserver/service/auth"
@@ -62,23 +61,10 @@ func (u *AuthController) processAuth(principal, password string) (string, bool) 
 }
 
 func (u *AuthController) SignInAction() {
-	var err error
-	reqData, err := u.resolveBody()
-	if err != nil {
-		u.internalError(err)
-		return
-	}
-	if reqData != nil {
-		var reqUser model.User
-		err = json.Unmarshal(reqData, &reqUser)
-		if err != nil {
-			u.internalError(err)
-			return
-		}
-		token, _ := u.processAuth(reqUser.Username, reqUser.Password)
-		u.Data["json"] = model.Token{TokenString: token}
-		u.ServeJSON()
-	}
+	var reqUser model.User
+	u.resolveBody(&reqUser)
+	token, _ := u.processAuth(reqUser.Username, reqUser.Password)
+	u.renderJSON(model.Token{TokenString: token})
 }
 
 func (u *AuthController) ExternalAuthAction() {
@@ -91,28 +77,16 @@ func (u *AuthController) ExternalAuthAction() {
 		u.Redirect(fmt.Sprintf("http://%s/dashboard?token=%s", utils.GetStringValue("BOARD_HOST"), token), http.StatusFound)
 		logs.Debug("Successful logged in.")
 	}
-
 }
 
 func (u *AuthController) SignUpAction() {
-	var err error
 	if u.isExternalAuth {
 		logs.Debug("Current AUTH_MODE is external auth.")
 		u.customAbort(http.StatusMethodNotAllowed, "Current AUTH_MODE is external auth.")
 		return
 	}
-
-	reqData, err := u.resolveBody()
-	if err != nil {
-		u.internalError(err)
-		return
-	}
 	var reqUser model.User
-	err = json.Unmarshal(reqData, &reqUser)
-	if err != nil {
-		u.internalError(err)
-		return
-	}
+	u.resolveBody(&reqUser)
 
 	if !utils.ValidateWithPattern("username", reqUser.Username) {
 		u.customAbort(http.StatusBadRequest, "Username content is illegal.")
@@ -181,8 +155,7 @@ func (u *AuthController) CurrentUserAction() {
 		u.customAbort(http.StatusUnauthorized, "Need to login first.")
 		return
 	}
-	u.Data["json"] = user
-	u.ServeJSON()
+	u.renderJSON(user)
 }
 
 func (u *AuthController) GetSystemInfo() {
@@ -191,8 +164,7 @@ func (u *AuthController) GetSystemInfo() {
 		u.internalError(err)
 		return
 	}
-	u.Data["json"] = systemInfo
-	u.ServeJSON()
+	u.renderJSON(systemInfo)
 }
 
 func (u *AuthController) LogOutAction() {

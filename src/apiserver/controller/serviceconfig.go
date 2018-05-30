@@ -5,6 +5,7 @@ import (
 	"errors"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
@@ -171,16 +172,6 @@ type ServiceConfigController struct {
 	baseController
 }
 
-func (sc *ServiceConfigController) Prepare() {
-	user := sc.getCurrentUser()
-	if user == nil {
-		sc.customAbort(http.StatusUnauthorized, "Need to login first.")
-		return
-	}
-	sc.currentUser = user
-	sc.isSysAdmin = (user.SystemAdmin == 1)
-}
-
 func (sc *ServiceConfigController) getKey() string {
 	return strconv.Itoa(int(sc.currentUser.ID))
 }
@@ -217,16 +208,14 @@ func (sc *ServiceConfigController) GetConfigServiceStepAction() {
 		}
 		sc.internalError(err)
 	}
-
-	sc.Data["json"] = result
-	sc.ServeJSON()
+	sc.renderJSON(result)
 }
 
 func (sc *ServiceConfigController) SetConfigServiceStepAction() {
 	phase := sc.GetString("phase")
 	key := sc.getKey()
 	configServiceStep := NewConfigServiceStep(key)
-	reqData, err := sc.resolveBody()
+	reqData, err := ioutil.ReadAll(sc.Ctx.Request.Body)
 	if err != nil {
 		sc.internalError(err)
 		return
@@ -264,16 +253,7 @@ func (sc *ServiceConfigController) selectProject(key string, configServiceStep *
 		return
 	}
 
-	project, err := service.GetProject(model.Project{ID: projectID}, "id")
-	if err != nil {
-		sc.internalError(err)
-		return
-	}
-	if project == nil {
-		sc.serveStatus(http.StatusBadRequest, projectIDInvalidErr.Error())
-		return
-	}
-
+	project := sc.resolveUserPrivilegeByID(int64(projectID))
 	SetConfigServiceStep(key, configServiceStep.SelectProject(projectID, project.Name))
 }
 
@@ -439,7 +419,7 @@ func (sc *ServiceConfigController) checkEntireServiceConfig(entireService *Confi
 		return emptyExternalServiceListErr
 	}
 	for _, external := range entireService.ExternalServiceList {
-		if external.NodeConfig.NodePort > 32765 || external.NodeConfig.NodePort < 30000 {
+		if external.NodeConfig.NodePort > maximumPortNum || external.NodeConfig.NodePort < minimumPortNum {
 			return portInvalidErr
 		}
 	}
