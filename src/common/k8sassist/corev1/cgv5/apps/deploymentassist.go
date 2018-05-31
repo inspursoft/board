@@ -46,8 +46,8 @@ func (d *deployments) Update(deployment *model.Deployment) (*model.Deployment, [
 
 	deploymentfileInfo, err := yaml.Marshal(k8sDep)
 	if err != nil {
-		logs.Error("Marshal service failed, error: %v", err)
-		return nil, nil, nil
+		logs.Error("Marshal deployment failed, error: %v", err)
+		return nil, nil, err
 	}
 	modelDep := types.FromK8sDeployment(k8sDep)
 	return modelDep, deploymentfileInfo, nil
@@ -64,29 +64,36 @@ func (d *deployments) UpdateStatus(deployment *model.Deployment) (*model.Deploym
 	deploymentfileInfo, err := yaml.Marshal(k8sDep)
 	if err != nil {
 		logs.Error("Marshal service failed, error: %v", err)
-		return nil, nil, nil
+		return nil, nil, err
 	}
 	modelDep := types.FromK8sDeployment(k8sDep)
 	return modelDep, deploymentfileInfo, nil
 }
 
 func (d *deployments) Delete(name string) error {
-	err := d.deploy.Delete(name, nil)
+	deletePolicy := types.DeletePropagationForeground
+	err := d.deploy.Delete(name, &types.DeleteOptions{PropagationPolicy: &deletePolicy})
 	if err != nil {
 		logs.Error("Delete deployment of %s/%s failed. Err:%+v", name, d.namespace, err)
 	}
 	return err
 }
 
-func (d *deployments) Get(name string) (*model.Deployment, error) {
+func (d *deployments) Get(name string) (*model.Deployment, []byte, error) {
 	deployment, err := d.deploy.Get(name, metav1.GetOptions{})
 	if err != nil {
 		logs.Error("Get deployment of %s/%s failed. Err:%+v", name, d.namespace, err)
-		return nil, err
+		return nil, nil, err
+	}
+
+	deploymentfileInfo, err := yaml.Marshal(deployment)
+	if err != nil {
+		logs.Error("Marshal deployment failed, error: %v", err)
+		return nil, nil, err
 	}
 
 	modelDep := types.FromK8sDeployment(deployment)
-	return modelDep, nil
+	return modelDep, deploymentfileInfo, nil
 }
 
 func (d *deployments) List() (*model.DeploymentList, error) {
