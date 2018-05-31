@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/astaxie/beego/logs"
@@ -28,17 +29,25 @@ func AddValue(name string, value interface{}) {
 }
 
 func GetIntValue(name string) int {
-	if v, ok := configStorage[name].(int); ok {
-		return v
+	if value, ok := configStorage[name].(int); ok {
+		return value
 	}
-	panic(fmt.Sprintf("Failed to get int value for key: %s", name))
+	value, err := strconv.Atoi(GetStringValue(name))
+	if err != nil {
+		panic(fmt.Sprintf("Failed to get int value for key: %s", name))
+	}
+	return value
 }
 
 func GetBoolValue(name string) bool {
-	if v, ok := configStorage[name].(bool); ok {
-		return v
+	if value, ok := configStorage[name].(bool); ok {
+		return value
 	}
-	panic(fmt.Sprintf("Failed to get bool value for key: %s", name))
+	value, err := strconv.ParseBool(GetStringValue(name))
+	if err != nil {
+		panic(fmt.Sprintf("Failed to get bool value for key: %s", name))
+	}
+	return value
 }
 
 func GetStringValue(name string, defaultValue ...string) string {
@@ -137,5 +146,14 @@ func InitializeDefaultConfig() {
 	SetConfig("REGISTRY_BASE_URI", "%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
 
 	AddValue("IS_EXTERNAL_AUTH", (GetStringValue("AUTH_MODE") != "db_auth"))
+
+	AddEnv("EMAIL_HOST")
+	AddEnv("EMAIL_PORT")
+	AddEnv("EMAIL_USR")
+	AddEnv("EMAIL_PWD")
+	AddEnv("EMAIL_SSL")
+	AddEnv("EMAIL_FROM")
+	AddEnv("EMAIL_IDENTITY")
+
 	ShowAllConfigs()
 }

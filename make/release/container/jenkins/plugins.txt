@@ -40,7 +40,7 @@ workflow-support:2.18
 plain-credentials:1.4
 credentials-binding:1.15
 jsch:0.1.54.2
-git-client:2.7.1
+#git-client:2.7.1
 git-server:1.7
 docker-commons:1.11
 cloudbees-folder:6.3

@@ -45,13 +45,14 @@ var jenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
 
 type BaseController struct {
 	beego.Controller
-	currentUser    *model.User
-	token          string
-	isExternalAuth bool
-	isSysAdmin     bool
-	repoPath       string
-	project        *model.Project
-	isRemoved      bool
+	currentUser     *model.User
+	token           string
+	isExternalAuth  bool
+	isSysAdmin      bool
+	repoPath        string
+	repoServicePath string
+	project         *model.Project
+	isRemoved       bool
 }
 
 func (b *BaseController) Prepare() {
@@ -225,6 +226,11 @@ func (b *BaseController) resolveRepoPath(projectName string) {
 	}
 	b.repoPath = service.ResolveRepoPath(repoName, username)
 	logs.Debug("Set repo path at file upload: %s", b.repoPath)
+}
+
+func (b *BaseController) resolveRepoServicePath(projectName, serviceName string) {
+	b.resolveRepoPath(projectName)
+	b.repoServicePath = filepath.Join(b.repoPath, serviceName)
 }
 
 func (b *BaseController) resolveProjectMember(projectName string) {

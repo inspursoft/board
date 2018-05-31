@@ -39,7 +39,7 @@ var orderFields = map[string]string{
 func InitDB() {
 
 	dbIP := utils.GetStringValue("DB_IP")
-	dbPort := utils.GetStringValue("DB_PORT")
+	dbPort := utils.GetIntValue("DB_PORT")
 	dbPassword := utils.GetStringValue("DB_PASSWORD")
 
 	//init models
@@ -47,7 +47,7 @@ func InitDB() {
 
 	logs.Info("Initializing DB registration.")
 	orm.RegisterDriver("mysql", orm.DRMySQL)
-	err := orm.RegisterDataBase("default", "mysql", fmt.Sprintf("root:%s@tcp(%s:%s)/board?charset=utf8", dbPassword, dbIP, dbPort))
+	err := orm.RegisterDataBase("default", "mysql", fmt.Sprintf("root:%s@tcp(%s:%d)/board?charset=utf8", dbPassword, dbIP, dbPort))
 	if err != nil {
 		logs.Error("error occurred on registering DB: %+v", err)
 		panic(err)
