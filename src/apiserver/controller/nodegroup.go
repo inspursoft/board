@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
@@ -12,17 +11,7 @@ import (
 )
 
 type NodeGroupController struct {
-	baseController
-}
-
-func (n *NodeGroupController) Prepare() {
-	user := n.getCurrentUser()
-	if user == nil {
-		n.customAbort(http.StatusUnauthorized, "Need to login first.")
-		return
-	}
-	n.currentUser = user
-	n.isSysAdmin = (user.SystemAdmin == 1)
+	BaseController
 }
 
 func (n *NodeGroupController) GetNodeGroupsAction() {
@@ -32,22 +21,13 @@ func (n *NodeGroupController) GetNodeGroupsAction() {
 		n.customAbort(http.StatusInternalServerError, fmt.Sprint(err))
 		return
 	}
-	n.Data["json"] = res
-	n.ServeJSON()
+	n.renderJSON(res)
 }
 
 func (n *NodeGroupController) AddNodeGroupAction() {
-	reqData, err := n.resolveBody()
-	if err != nil {
-		n.internalError(err)
-		return
-	}
 	var reqNodeGroup model.NodeGroup
-	err = json.Unmarshal(reqData, &reqNodeGroup)
-	if err != nil {
-		n.internalError(err)
-		return
-	}
+	var err error
+	n.resolveBody(&reqNodeGroup)
 
 	if reqNodeGroup.GroupName == "" {
 		n.customAbort(http.StatusBadRequest, "NodeGroup Name should not null")

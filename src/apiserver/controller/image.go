@@ -1,11 +1,10 @@
 package controller
 
 import (
-	"encoding/json"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/apiserver/service/devops/travis"
 	"git/inspursoft/board/src/common/model"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -16,294 +15,161 @@ import (
 )
 
 type ImageController struct {
-	baseController
+	BaseController
 }
-
-const (
-	commentTemp           = "Inspur image" // TODO: get from mysql in the next release
-	sizeunitTemp          = "B"
-	adminID               = 1
-	defaultDockerfilename = "Dockerfile"
-	imageProcess          = "process-image"
-)
 
 // API to get image list
 func (p *ImageController) GetImagesAction() {
-
-	var repolist model.RegistryRepo
-	var repolistFiltered model.RegistryRepo
 	// Get the image list from registry v2
-	httpresp, err := http.Get(registryURL() + "/v2/_catalog")
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	body, err := ioutil.ReadAll(httpresp.Body)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	err = json.Unmarshal(body, &repolist)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
 	query := model.Project{}
 	projectList, err := service.GetProjectsByUser(query, p.currentUser.ID)
 	if err != nil {
 		p.internalError(err)
 		return
 	}
-	for _, imageName := range repolist.Names {
+	repoList, err := service.GetRegistryCatalog()
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	var repoListFiltered model.RegistryRepo
+	for _, imageName := range repoList.Names {
 		fromIndex := strings.LastIndex(imageName, "/")
 		if fromIndex == -1 {
 			continue
 		}
 		for _, project := range projectList {
 			if imageName[:fromIndex] == project.Name {
-				repolistFiltered.Names = append(repolistFiltered.Names, imageName)
+				repoListFiltered.Names = append(repoListFiltered.Names, imageName)
 				break
 			}
 		}
 	}
 
-	logs.Info("Image list is %+v\n", repolistFiltered)
-
 	/* Interpret the message to api server */
-	imagelist := []model.Image{}
-	for _, imagename := range repolistFiltered.Names {
+	imageList := []model.Image{}
+	for _, imageName := range repoListFiltered.Names {
 		var newImage model.Image
-		newImage.ImageName = imagename
-
-		var reqTagList tagList
-		tagListURL := registryURL() + "/v2/" + imagename + "/tags/list"
-		httpresp, err := http.Get(tagListURL)
-		if err != nil {
-			p.internalError(err)
-			return
-		}
-		body, err := ioutil.ReadAll(httpresp.Body)
-		if err != nil {
-			p.internalError(err)
-			return
-		}
-		defer httpresp.Body.Close()
-
-		err = json.Unmarshal(body, &reqTagList)
+		newImage.ImageName = imageName
+		reqTagList, err := service.GetRegistryImageTags(imageName)
 		if err != nil {
 			p.internalError(err)
 			return
 		}
 		if len(reqTagList.Tags) == 0 {
+			logs.Debug("Image: %s has no tags.", imageName)
 			continue
 		}
 
 		// Check image in DB
-		dbimage, err := service.GetImage(newImage, "name")
+		dbImage, err := service.GetImageByName(imageName)
 		if err != nil {
 			p.customAbort(http.StatusInternalServerError, fmt.Sprintf("Checking image name in DB error: %+v", err))
 			return
 		}
-		if dbimage != nil {
+		if dbImage != nil {
 			// image already in DB, use the status in DB
-			newImage.ImageID = dbimage.ImageID
-			newImage.ImageComment = dbimage.ImageComment
-			newImage.ImageDeleted = dbimage.ImageDeleted
+			newImage.ImageID = dbImage.ImageID
+			newImage.ImageComment = dbImage.ImageComment
+			newImage.ImageDeleted = dbImage.ImageDeleted
 		} else {
 			// image not in DB, add it to DB
-			newImage.ImageComment = commentTemp
-			id, err := service.CreateImage(newImage)
+			imageID, err := service.CreateImage(newImage)
 			if err != nil {
-				p.customAbort(http.StatusInternalServerError, fmt.Sprintf("Create image in DB error: %+v", err))
+				p.customAbort(http.StatusInternalServerError, fmt.Sprintf("Create image to DB error: %+v", err))
 				return
 			}
-			newImage.ImageID = id
+			newImage.ImageID = imageID
 		}
-
 		if newImage.ImageDeleted == 0 {
-			imagelist = append(imagelist, newImage)
+			imageList = append(imageList, newImage)
 		}
 	}
-	logs.Info(imagelist)
-	p.Data["json"] = imagelist
-	p.ServeJSON()
+	p.renderJSON(imageList)
 }
 
 // API to get tag list for a specific image
 func (p *ImageController) GetImageDetailAction() {
 
-	var taglist model.RegistryTags
-
 	imageName := p.Ctx.Input.Param(":imagename")
-
-	gettagsurl := "/v2/" + imageName + "/tags/list"
-
-	httpresp, err := http.Get(registryURL() + gettagsurl)
-	if err != nil {
-		logs.Debug("Get image detail URL: %s", gettagsurl)
-		p.internalError(err)
-		return
-	}
-
-	body, err := ioutil.ReadAll(httpresp.Body)
+	reqTagList, err := service.GetRegistryImageTags(imageName)
 	if err != nil {
 		p.internalError(err)
 		return
 	}
 
-	err = json.Unmarshal(body, &taglist)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	//fmt.Println(taglist)
-
-	var imagedetail []model.TagDetail
-	for _, tagid := range taglist.Tags {
-		var tagdetail model.TagDetail
-		tagdetail.ImageName = taglist.ImageName
-		tagdetail.ImageTag = tagid
-		tagdetail.ImageSizeUnit = sizeunitTemp
-
+	var imageDetail []model.TagDetail
+	for _, tagID := range reqTagList.Tags {
+		var tagDetail model.TagDetail
+		tagDetail.ImageName = reqTagList.ImageName
+		tagDetail.ImageTag = tagID
+		tagDetail.ImageSizeUnit = "B"
 		// Get version one schema
-		getmanifesturl := "/v2/" + taglist.ImageName + "/manifests/" + tagid
-		httpresp, err = http.Get(registryURL() + getmanifesturl)
-		if err != nil {
-			logs.Debug(getmanifesturl)
-			p.internalError(err)
-			return
-		}
 
-		body, err = ioutil.ReadAll(httpresp.Body)
+		manifest1, err := service.GetRegistryManifest1(tagDetail.ImageName, tagDetail.ImageTag)
 		if err != nil {
 			p.internalError(err)
 			return
 		}
 
-		var manifest1 model.RegistryManifest1
-		err = json.Unmarshal(body, &manifest1)
-		if err != nil {
-			p.internalError(err)
-			return
-		}
-
-		//fmt.Println((manifest1.History[0])["v1Compatibility"])
-
-		// Interpret it on the frontend
-		tagdetail.ImageDetail = (manifest1.History[0])["v1Compatibility"]
-		tagdetail.ImageAuthor = ""       //TODO: get the author by frontend simply
-		tagdetail.ImageCreationTime = "" //TODO: get the time by frontend simply
+		tagDetail.ImageDetail = (manifest1.History[0])["v1Compatibility"]
+		tagDetail.ImageAuthor = ""       //TODO: get the author by frontend simply
+		tagDetail.ImageCreationTime = "" //TODO: get the time by frontend simply
 
 		// Get version two schema
-		getmanifesturl = registryURL() + getmanifesturl
-		req, _ := http.NewRequest("GET", getmanifesturl, nil)
-		req.Header.Set("Accept", "application/vnd.docker.distribution.manifest.v2+json")
-		client := http.Client{}
-		httpresp, err = client.Do(req)
-
-		body, err = ioutil.ReadAll(httpresp.Body)
+		manifest2, err := service.GetRegistryManifest2(tagDetail.ImageName, tagDetail.ImageTag)
 		if err != nil {
 			p.internalError(err)
 			return
 		}
 
-		var manifest2 model.RegistryManifest2
-		err = json.Unmarshal(body, &manifest2)
-		if err != nil {
-			p.internalError(err)
-			return
-		}
-
-		tagdetail.ImageId = manifest2.Config.Digest
-		tagdetail.ImageSize = manifest2.Config.Size
+		tagDetail.ImageId = manifest2.Config.Digest
+		tagDetail.ImageSize = manifest2.Config.Size
 
 		var layerconfig model.Manifest2Config
 		for _, layerconfig = range manifest2.Layers {
-			tagdetail.ImageSize += layerconfig.Size
+			tagDetail.ImageSize += layerconfig.Size
 		}
-
 		// Add the tag detail to list
-		imagedetail = append(imagedetail, tagdetail)
-
+		imageDetail = append(imageDetail, tagDetail)
 	}
-	logs.Debug(imagedetail)
-	p.Data["json"] = imagedetail
-	p.ServeJSON()
-
+	p.renderJSON(imageDetail)
 }
 
-//  Checking the user priviledge by token
-func (p *ImageController) Prepare() {
-	user := p.getCurrentUser()
-	if user == nil {
-		p.customAbort(http.StatusUnauthorized, "Need to login first.")
-		return
+func (p *ImageController) generateBuildingImageTravis(imageURI string) error {
+	userID := p.currentUser.ID
+	var travisCommand travis.TravisCommand
+	travisCommand.BeforeDeploy.Commands = []string{
+		fmt.Sprintf("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
+		"if [ -f key.txt ]; then token=`cat key.txt`; fi",
+		fmt.Sprintf("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | cut -d$' ' -f2`", boardAPIBaseURL()),
+		fmt.Sprintf("if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi", boardAPIBaseURL()),
 	}
-	p.currentUser = user
-	p.isSysAdmin = (user.SystemAdmin == 1)
-}
-
-func (p *ImageController) generateRepoPathByProject(project *model.Project) string {
-	if project == nil {
-		p.customAbort(http.StatusBadRequest, "Failed to generate repo path since project is nil.")
+	travisCommand.Deploy.Commands = []string{
+		"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
+		fmt.Sprintf("docker build -t %s .", imageURI),
+		fmt.Sprintf("docker push %s", imageURI),
 	}
-	return filepath.Join(baseRepoPath(), p.currentUser.Username, project.Name)
-}
-
-func (p *ImageController) generateRepoPathByProjectName(projectName string) string {
-	return filepath.Join(baseRepoPath(), p.currentUser.Username, projectName)
+	return travisCommand.GenerateCustomTravis(p.repoPath)
 }
 
 func (p *ImageController) BuildImageAction() {
-	//Check user priviledge project admin
-	reqData, err := p.resolveBody()
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
 	var reqImageConfig model.ImageConfig
-	err = json.Unmarshal(reqData, &reqImageConfig)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
+	var err error
+	//Check user priviledge project admin
+	p.resolveBody(&reqImageConfig)
+	p.resolveUserPrivilege(reqImageConfig.ProjectName)
 	//Checking invalid parameters
-	reqImageConfig.RepoPath = p.generateRepoPathByProjectName(reqImageConfig.ProjectName)
+	p.resolveRepoPath(reqImageConfig.ProjectName)
+	reqImageConfig.RepoPath = p.repoPath
 	err = service.CheckDockerfileConfig(&reqImageConfig)
 	if err != nil {
 		p.serveStatus(http.StatusBadRequest, err.Error())
 		return
 	}
 
-	currentProject, err := service.GetProject(model.Project{Name: reqImageConfig.ProjectName}, "name")
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if currentProject == nil {
-		p.customAbort(http.StatusBadRequest, "Invalid project name.")
-		return
-	}
-
-	isMember, err := service.IsProjectMember(currentProject.ID, p.currentUser.ID)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	if !(p.isSysAdmin || isMember) {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges to build image.")
-		return
-	}
-
-	repoPath := p.generateRepoPathByProjectName(reqImageConfig.ProjectName)
-	reqImageConfig.ImageDockerfilePath = filepath.Join(repoPath, imageProcess, reqImageConfig.ImageName, reqImageConfig.ImageTag)
-
+	reqImageConfig.ImageDockerfilePath = reqImageConfig.RepoPath
 	// Check image:tag existing in registry
 	existing, err := existRegistry(reqImageConfig.ProjectName, reqImageConfig.ImageName,
 		reqImageConfig.ImageTag)
@@ -324,58 +190,31 @@ func (p *ImageController) BuildImageAction() {
 		return
 	}
 
-	//push to git
-	var pushobject pushObject
-	pushobject.UserID = p.currentUser.ID
-	pushobject.FileName = defaultDockerfilename
-	pushobject.JobName = imageProcess
-	pushobject.Value = filepath.Join(imageProcess, reqImageConfig.ImageName, reqImageConfig.ImageTag)
-	pushobject.ProjectName = reqImageConfig.ProjectName
+	projectName := reqImageConfig.ProjectName
+	imageName := reqImageConfig.ImageName
+	imageTag := reqImageConfig.ImageTag
+	imageURI := filepath.Join(registryBaseURI(), projectName, imageName) + ":" + imageTag
 
-	pushobject.Extras = filepath.Join(reqImageConfig.ProjectName,
-		reqImageConfig.ImageName) + ":" + reqImageConfig.ImageTag
-	pushobject.Message = fmt.Sprintf("Build image: %s", pushobject.Extras)
-
-	//Get file list for Jenkis git repo
-	uploads, err := service.ListUploadFiles(filepath.Join(baseRepoPath(), p.currentUser.Username, "upload"))
+	err = p.generateBuildingImageTravis(imageURI)
 	if err != nil {
-		p.internalError(err)
+		logs.Error("Failed to generate building image travis: %+v", err)
 		return
 	}
-	// Add upload files list
-	uploadFileNames := []string{}
-	for _, finfo := range uploads {
-		uploadFileNames = append(uploadFileNames, finfo.FileName)
-	}
-
-	generateMetaConfiguration(&pushobject, repoPath, uploadFileNames...)
-	// Add META.cfg
-	pushobject.Items = append(pushobject.Items, "META.cfg")
 
 	if currentToken, ok := memoryCache.Get(p.currentUser.Username).(string); ok {
-		service.CreateFile("key.txt", currentToken, repoPath)
-		pushobject.Items = append(pushobject.Items, "key.txt")
+		service.CreateFile("key.txt", currentToken, p.repoPath)
 	}
-	// Add Dockerfile
-	pushobject.Items = append(pushobject.Items, filepath.Join(pushobject.Value,
-		defaultDockerfilename))
 
-	ret, msg, err := InternalPushObjects(&pushobject, &(p.baseController))
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	logs.Info("Internal push object: %d %s", ret, msg)
-	p.ServeJSON()
+	items := []string{".travis.yml", "key.txt", "Dockerfile"}
+	p.pushItemsToRepo(items...)
+	p.collaborateWithPullRequest("master", "master", items...)
 }
 
 func (p *ImageController) GetImageDockerfileAction() {
-	imageName := strings.TrimSpace(p.GetString("image_name"))
-	imageTag := strings.TrimSpace(p.GetString("image_tag"))
 	projectName := strings.TrimSpace(p.GetString("project_name"))
-
-	repoPath := p.generateRepoPathByProjectName(projectName)
-	dockerfilePath := filepath.Join(repoPath, imageProcess, imageName, imageTag)
+	p.resolveProjectMember(projectName)
+	p.resolveRepoPath(projectName)
+	dockerfilePath := p.repoPath
 	if _, err := os.Stat(dockerfilePath); os.IsNotExist(err) {
 		p.customAbort(http.StatusNotFound, "Image path does not exist.")
 		return
@@ -385,24 +224,16 @@ func (p *ImageController) GetImageDockerfileAction() {
 		p.internalError(err)
 		return
 	}
-	p.Data["json"] = dockerfile
-	p.ServeJSON()
+	p.renderJSON(dockerfile)
 }
 
 func (p *ImageController) DockerfilePreviewAction() {
-	reqData, err := p.resolveBody()
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
 	var reqImageConfig model.ImageConfig
-	err = json.Unmarshal(reqData, &reqImageConfig)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	reqImageConfig.RepoPath = p.generateRepoPathByProjectName(reqImageConfig.ProjectName)
+	var err error
+	p.resolveBody(&reqImageConfig)
+	p.resolveUserPrivilege(reqImageConfig.ProjectName)
+	p.resolveRepoPath(reqImageConfig.ProjectName)
+	reqImageConfig.RepoPath = p.repoPath
 	//Checking invalid parameters
 	err = service.CheckDockerfileConfig(&reqImageConfig)
 	if err != nil {
@@ -410,93 +241,24 @@ func (p *ImageController) DockerfilePreviewAction() {
 		return
 	}
 
-	currentProject, err := service.GetProject(model.Project{Name: reqImageConfig.ProjectName}, "name")
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if currentProject == nil {
-		p.customAbort(http.StatusBadRequest, "Invalid project name.")
-		return
-	}
-
-	isMember, err := service.IsProjectMember(currentProject.ID, p.currentUser.ID)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	if !(p.isSysAdmin || isMember) {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges to build image.")
-		return
-	}
-
-	repoPath := p.generateRepoPathByProject(currentProject)
-	reqImageConfig.ImageDockerfilePath = filepath.Join(repoPath, imageProcess, reqImageConfig.ImageName, reqImageConfig.ImageTag)
+	reqImageConfig.ImageDockerfilePath = p.repoPath
 	err = service.BuildDockerfile(reqImageConfig, p.Ctx.ResponseWriter)
 	if err != nil {
 		p.internalError(err)
-		return
 	}
-}
-
-func cleanGitImageTag(username, imageName, imageTag, projectName string, p *ImageController) error {
-	// Update git repo
-	var pushobject pushObject
-
-	pushobject.FileName = defaultDockerfilename
-	pushobject.JobName = imageProcess
-	pushobject.Value = filepath.Join(imageProcess, imageName, imageTag)
-	pushobject.ProjectName = projectName
-
-	pushobject.Extras = filepath.Join(projectName, imageName) + ":" + imageTag
-	pushobject.Message = fmt.Sprintf("Build image: %s", pushobject.Extras)
-
-	// Add Dockerfile
-	pushobject.Items = append(pushobject.Items, filepath.Join(pushobject.Value,
-		defaultDockerfilename))
-
-	ret, msg, err := InternalPushObjects(&pushobject, &(p.baseController), toBeRemoved)
-	if err != nil {
-		logs.Error("Failed to push object for git repo clean", msg, ret)
-		return err
-	}
-	logs.Info("Internal push object for git repo clean: %s", msg)
-	return err
 }
 
 func (p *ImageController) ConfigCleanAction() {
 	imageName := strings.TrimSpace(p.GetString("image_name"))
 	imageTag := strings.TrimSpace(p.GetString("image_tag"))
 	projectName := strings.TrimSpace(p.GetString("project_name"))
-	logs.Debug("clean config %s %s %s", projectName, imageName, imageTag)
+	logs.Debug("Cleaning config with project: %s, image: %s, tag: %s", projectName, imageName, imageTag)
 
-	currentProject, err := service.GetProject(model.Project{Name: projectName}, "name")
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if currentProject == nil {
-		p.customAbort(http.StatusBadRequest, "Invalid project name.")
-		return
-	}
-
-	isMember, err := service.IsProjectMember(currentProject.ID, p.currentUser.ID)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	if !(p.isSysAdmin || isMember) {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges to build image.")
-		return
-	}
-
-	repoPath := p.generateRepoPathByProject(currentProject)
+	p.resolveUserPrivilege(projectName)
 
 	//remove uploaded directory
 	uploadedPath := filepath.Join(baseRepoPath(), p.currentUser.Username, "upload")
-	err = os.RemoveAll(uploadedPath)
+	err := os.RemoveAll(uploadedPath)
 	if err != nil {
 		logs.Error("Failed to remove uploaded path: %s, error: %+v", uploadedPath, err)
 		p.internalError(err)
@@ -508,46 +270,20 @@ func (p *ImageController) ConfigCleanAction() {
 	if err != nil {
 		logs.Error("Failed to remove attachment file: %+v", err)
 		p.internalError(err)
-		return
 	}
-
-	configPath := filepath.Join(repoPath, imageProcess, strings.TrimSpace(imageName), strings.TrimSpace(imageTag))
-
-	// Update git repo
-	var pushobject pushObject
-
-	pushobject.FileName = defaultDockerfilename
-	pushobject.JobName = imageProcess
-	pushobject.Value = filepath.Join(imageProcess, imageName, imageTag)
-	pushobject.ProjectName = currentProject.Name
-
-	pushobject.Extras = filepath.Join(currentProject.Name, imageName) + ":" + imageTag
-	pushobject.Message = fmt.Sprintf("Build image: %s", pushobject.Extras)
-
-	// Add Dockerfile
-	pushobject.Items = append(pushobject.Items, filepath.Join(pushobject.Value,
-		defaultDockerfilename))
-
-	ret, msg, err := InternalPushObjects(&pushobject, &(p.baseController), toBeRemoved)
-	if err != nil {
-		logs.Info("Failed to push object for git repo clean", msg, ret)
-		p.internalError(err)
-		return
-	}
-	logs.Info("Internal push object for git repo clean: %s", msg)
-
-	//Delete the config files
-	err = service.ImageConfigClean(configPath)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
 }
 
-type tagList struct {
-	Name string   `json:"name"`
-	Tags []string `json:"tags"`
+func (p *ImageController) deleteImageWithTag(imageName, imageTag string) {
+	var err error
+	digest, err := service.GetRegistryImageDigest(imageName, imageTag)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	err = service.DeleteRegistryImageWithETag(imageName, imageTag, digest)
+	if err != nil {
+		p.internalError(err)
+	}
 }
 
 func (p *ImageController) DeleteImageAction() {
@@ -558,159 +294,24 @@ func (p *ImageController) DeleteImageAction() {
 	}
 
 	imageName := strings.TrimSpace(p.GetString("image_name"))
-
-	URLPrefix := registryURL() + `/v2/` + imageName
-	tagListURL := URLPrefix + `/tags/list`
-	resp, err := http.Get(tagListURL)
+	reqTagList, err := service.GetRegistryImageTags(imageName)
 	if err != nil {
 		p.internalError(err)
 		return
 	}
-	if resp.StatusCode != http.StatusOK {
-		p.customAbort(resp.StatusCode, "repository name not known to registry")
-		return
-	}
-
-	reqBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	resp.Body.Close()
-
-	var reqTagList tagList
-	err = json.Unmarshal(reqBody, &reqTagList)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	URLPrefix += `/manifests/`
-	for _, tag := range reqTagList.Tags {
-		var client = &http.Client{}
-		manifestsURL := URLPrefix + tag
-		req, err := http.NewRequest("HEAD", manifestsURL, nil)
-		req.Header.Add("Accept", `application/vnd.docker.distribution.manifest.v2+json`)
-		resp, err = client.Do(req)
-		if err != nil {
-			p.internalError(err)
-			return
-		}
-		resp.Body.Close()
-
-		digest := strings.Trim(resp.Header.Get("Etag"), `"`)
-		deleteURL := URLPrefix + digest
-		req, err = http.NewRequest("DELETE", deleteURL, nil)
-		if err != nil {
-			p.internalError(err)
-			return
-		}
-
-		resp, err = client.Do(req)
-		if err != nil {
-			p.internalError(err)
-			return
-		}
-		if resp.StatusCode != http.StatusAccepted {
-			errString := fmt.Sprintf("Remove registry image tag: %s", tag)
-			p.customAbort(http.StatusInternalServerError, errString)
-			return
-		}
-		resp.Body.Close()
-
-		// Clean image tag path in git
-		username := p.currentUser.Username
-		projectName := imageName[:strings.Index(imageName, "/")]
-		realName := imageName[strings.Index(imageName, "/")+1:]
-		err = cleanGitImageTag(username, realName, tag, projectName, p)
-		if err != nil {
-			logs.Error("failed to clean image tag git %s:%s %s", realName, tag, projectName)
-			p.internalError(err)
-			return
-		}
-
-		//Delete the config files
-		repoPath := p.generateRepoPathByProjectName(projectName)
-		configPath := filepath.Join(repoPath, imageProcess, realName, tag)
-		err = service.ImageConfigClean(configPath)
-		if err != nil {
-			logs.Error("failed to delete config files %s", configPath)
-			p.internalError(err)
-			return
-		}
+	for _, tagName := range reqTagList.Tags {
+		p.deleteImageWithTag(imageName, tagName)
 	}
 }
 
 func (p *ImageController) DeleteImageTagAction() {
-	var err error
-
 	if p.isSysAdmin == false {
 		p.customAbort(http.StatusForbidden, "Insufficient privileges to delete image tag.")
 		return
 	}
-
 	imageName := strings.TrimSpace(p.Ctx.Input.Param(":imagename"))
-	_imageTag := strings.TrimSpace(p.GetString("image_tag"))
-
-	projectName := imageName[:strings.Index(imageName, "/")]
-	realName := imageName[strings.Index(imageName, "/")+1:]
-
-	var client = &http.Client{}
-	URLPrefix := registryURL() + `/v2/` + imageName + `/manifests/`
-	manifestsURL := URLPrefix + _imageTag
-	req, err := http.NewRequest("HEAD", manifestsURL, nil)
-	req.Header.Add("Accept", `application/vnd.docker.distribution.manifest.v2+json`)
-	resp, err := client.Do(req)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if resp.StatusCode != http.StatusOK {
-		p.customAbort(resp.StatusCode, "Repository name or tag not to known to registry")
-		return
-	}
-
-	resp.Body.Close()
-
-	digest := strings.Trim(resp.Header.Get("Etag"), `"`)
-	deleteURL := URLPrefix + digest
-	req, err = http.NewRequest("DELETE", deleteURL, nil)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	resp, err = client.Do(req)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusAccepted {
-		p.customAbort(http.StatusInternalServerError, "Remove registry image error")
-		return
-	}
-
-	// Clean image tag path in git
-	username := p.currentUser.Username
-	err = cleanGitImageTag(username, realName, _imageTag, projectName, p)
-	if err != nil {
-		logs.Error("failed to clean image tag git %s:%s %s", realName, _imageTag, projectName)
-		p.internalError(err)
-		return
-	}
-
-	//Delete the config files
-	repoPath := p.generateRepoPathByProjectName(projectName)
-	configPath := filepath.Join(repoPath, imageProcess, realName, _imageTag)
-	err = service.ImageConfigClean(configPath)
-	if err != nil {
-		logs.Error("failed to delete config files %s", configPath)
-		p.internalError(err)
-		return
-	}
+	imageTag := strings.TrimSpace(p.GetString("image_tag"))
+	p.deleteImageWithTag(imageName, imageTag)
 }
 
 func (p *ImageController) DockerfileBuildImageAction() {
@@ -718,83 +319,24 @@ func (p *ImageController) DockerfileBuildImageAction() {
 	imageTag := strings.TrimSpace(p.GetString("image_tag"))
 	projectName := strings.TrimSpace(p.GetString("project_name"))
 
-	repoPath := p.generateRepoPathByProjectName(projectName)
-	dockerfilePath := filepath.Join(repoPath, imageProcess, imageName, imageTag)
+	p.resolveUserPrivilege(projectName)
+	p.resolveRepoPath(projectName)
+	dockerfilePath := p.repoPath
 	if _, err := os.Stat(dockerfilePath); os.IsNotExist(err) {
 		p.customAbort(http.StatusNotFound, "Image path does not exist.")
 		return
 	}
 
-	currentProject, err := service.GetProject(model.Project{Name: projectName}, "name")
+	imageURI := filepath.Join(registryBaseURI(), projectName, imageName) + ":" + imageTag
+	err := p.generateBuildingImageTravis(imageURI)
 	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if currentProject == nil {
-		p.customAbort(http.StatusBadRequest, "Invalid project name.")
+		logs.Error("Failed to generate building image travis: %+v", err)
 		return
 	}
 
-	isMember, err := service.IsProjectMember(currentProject.ID, p.currentUser.ID)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	if !(p.isSysAdmin || isMember) {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges to build image.")
-		return
-	}
-
-	// TODO check the dockerfile content in service.dockerfilecheck
-
-	//push to git
-	var pushobject pushObject
-
-	pushobject.FileName = defaultDockerfilename
-	pushobject.UserID = p.currentUser.ID
-	pushobject.JobName = imageProcess
-	pushobject.Value = filepath.Join(imageProcess, imageName, imageTag)
-	pushobject.ProjectName = currentProject.Name
-
-	pushobject.Extras = filepath.Join(projectName, imageName) + ":" + imageTag
-	pushobject.Message = fmt.Sprintf("Build image: %s", pushobject.Extras)
-
-	//Get file list for Jenkis git repo
-	uploads, err := service.ListUploadFiles(filepath.Join(dockerfilePath, "upload"))
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	generateMetaConfiguration(&pushobject, repoPath)
-	pushobject.Items = append(pushobject.Items, "META.cfg")
-	// Add upload files
-	for _, finfo := range uploads {
-		filefullname := filepath.Join(pushobject.Value, "upload", finfo.FileName)
-		pushobject.Items = append(pushobject.Items, filefullname)
-	}
-	// Add Dockerfile
-	pushobject.Items = append(pushobject.Items, filepath.Join(pushobject.Value,
-		defaultDockerfilename))
-
-	ret, msg, err := InternalPushObjects(&pushobject, &(p.baseController))
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	logs.Info("Internal push object: %d %s", ret, msg)
-	p.customAbort(ret, msg)
-}
-
-func exists(path string) (bool, error) {
-	_, err := os.Stat(path)
-	if err == nil {
-		return true, nil
-	}
-	if os.IsNotExist(err) {
-		return false, nil
-	}
-	return true, err
+	items := []string{".travis.yml", "Dockerfile"}
+	p.pushItemsToRepo(items...)
+	p.collaborateWithPullRequest("master", "master", items...)
 }
 
 func (p *ImageController) CheckImageTagExistingAction() {
@@ -804,115 +346,49 @@ func (p *ImageController) CheckImageTagExistingAction() {
 	imageTag := strings.TrimSpace(p.GetString("image_tag"))
 	projectName := strings.TrimSpace(p.GetString("project_name"))
 
-	currentProject, err := service.GetProject(model.Project{Name: projectName}, "name")
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if currentProject == nil {
-		p.customAbort(http.StatusBadRequest, "Invalid project name.")
-		return
-	}
-
-	isMember, err := service.IsProjectMember(currentProject.ID, p.currentUser.ID)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	if !(p.isSysAdmin || isMember) {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges to build image.")
-		return
-	}
-
+	p.resolveUserPrivilege(projectName)
 	// check this image:tag in system
-	repoPath := p.generateRepoPathByProjectName(projectName)
-	dockerfilePath := filepath.Join(repoPath, imageProcess, imageName, imageTag)
-	existing, err := exists(dockerfilePath)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	if existing {
-		logs.Info("This image:tag existing in system %s", dockerfilePath)
-		p.customAbort(http.StatusConflict, "This image:tag already existing.")
-		return
-	}
+	p.resolveRepoPath(projectName)
 
 	// TODO check image imported from registry
-	existing, err = existRegistry(projectName, imageName, imageTag)
+	existing, err := existRegistry(projectName, imageName, imageTag)
 	if err != nil {
 		p.internalError(err)
 		return
 	}
 
 	if existing {
-		logs.Info("This image:tag existing in system %s", dockerfilePath)
 		p.customAbort(http.StatusConflict, "This image:tag already existing.")
 		return
 	}
-
 	logs.Debug("checking image:tag result %t", existing)
-	p.ServeJSON()
-	return
 }
 
 func existRegistry(projectName string, imageName string, imageTag string) (bool, error) {
-	var repolist model.RegistryRepo
-	realName := filepath.Join(projectName, imageName)
 
+	currentName := filepath.Join(projectName, imageName)
 	//check image
-	httpresp, err := http.Get(registryURL() + "/v2/_catalog")
+	repoList, err := service.GetRegistryCatalog()
 	if err != nil {
-		logs.Error("Get image URL: %s", registryURL())
-		return true, err
+		logs.Error("Failed to unmarshal repoList body %+v", err)
+		return false, err
 	}
-
-	body, err := ioutil.ReadAll(httpresp.Body)
-	if err != nil {
-		logs.Error("Failed to read image body %+v", err)
-		return true, err
-	}
-
-	err = json.Unmarshal(body, &repolist)
-	if err != nil {
-		logs.Error("Failed to unmarshal repolist body %+v", err)
-		return true, err
-	}
-	for _, imageRegistry := range repolist.Names {
-		if imageRegistry == realName {
+	for _, imageRegistry := range repoList.Names {
+		if imageRegistry == currentName {
 			//check tag
-			var taglist model.RegistryTags
-			gettagsurl := "/v2/" + realName + "/tags/list"
-
-			httpresp, err := http.Get(registryURL() + gettagsurl)
-			if err != nil {
-				logs.Error("Get image detail URL: %s", gettagsurl)
-				return true, err
-			}
-
-			body, err := ioutil.ReadAll(httpresp.Body)
-			if err != nil {
-				logs.Error("Failed to read body %+v", err)
-				return true, err
-			}
-
-			err = json.Unmarshal(body, &taglist)
+			tagList, err := service.GetRegistryImageTags(currentName)
 			if err != nil {
 				logs.Error("Failed to unmarshal body %+v", err)
-				return true, err
+				return false, err
 			}
-
-			for _, tagid := range taglist.Tags {
-				if imageTag == tagid {
-					logs.Info("Image tag existing %s:%s", realName, tagid)
+			for _, tagID := range tagList.Tags {
+				if imageTag == tagID {
+					logs.Info("Image tag existing %s:%s", currentName, tagID)
 					return true, nil
 				}
 			}
 		}
 	}
-
 	return false, err
 }
 
@@ -927,38 +403,26 @@ func (f *ImageController) UploadDockerfileFileAction() {
 		f.customAbort(http.StatusBadRequest, "Project don't exist.")
 		return
 	}
-
-	imageName := f.GetString("image_name")
-	tagName := f.GetString("tag_name")
-
-	repoPath := f.generateRepoPathByProjectName(projectName)
-	logs.Debug("Repo path: %s", repoPath)
-	targetFilePath := filepath.Join(repoPath, imageProcess, imageName, tagName)
-	err = os.MkdirAll(targetFilePath, 0755)
-	if err != nil {
-		f.internalError(err)
-		return
-	}
-	logs.Info("User: %s uploaded Dockerfile file to %s.", f.currentUser.Username, targetFilePath)
+	f.resolveRepoPath(projectName)
 
 	_, fileHeader, err := f.GetFile("upload_file")
 	if err != nil {
 		f.internalError(err)
+		return
 	}
 	if fileHeader.Filename != dockerfileName {
 		f.customAbort(http.StatusBadRequest, "Update file name invalid.")
 		return
 	}
-
-	err = f.SaveToFile("upload_file", filepath.Join(targetFilePath, dockerfileName))
+	err = f.SaveToFile("upload_file", filepath.Join(f.repoPath, dockerfileName))
 	if err != nil {
 		f.internalError(err)
 	}
-
 }
 
 func (f *ImageController) DownloadDockerfileFileAction() {
 	projectName := f.GetString("project_name")
+	f.resolveProjectMember(projectName)
 	isExistence, err := service.ProjectExists(projectName)
 	if err != nil {
 		f.internalError(err)
@@ -969,57 +433,30 @@ func (f *ImageController) DownloadDockerfileFileAction() {
 		return
 	}
 
-	imageName := f.GetString("image_name")
-	tagName := f.GetString("tag_name")
-
-	repoPath := f.generateRepoPathByProjectName(projectName)
-	targetFilePath := filepath.Join(repoPath, imageProcess, imageName, tagName)
+	f.resolveRepoPath(projectName)
+	targetFilePath := f.repoPath
 	if _, err := os.Stat(targetFilePath); os.IsNotExist(err) {
-		f.customAbort(http.StatusBadRequest, "image Name and  tag name are invalid.")
+		f.customAbort(http.StatusNotFound, "Target file path does not exist.")
 		return
 	}
-
-	absFileName := filepath.Join(repoPath, imageProcess, imageName, tagName, dockerfileName)
-	logs.Info("User: %s download Dockerfile file from %s.", f.currentUser.Username, absFileName)
-
-	f.Ctx.Output.Download(absFileName, dockerfileName)
+	logs.Info("User: %s download Dockerfile file from %s.", f.currentUser.Username, targetFilePath)
+	f.Ctx.Output.Download(filepath.Join(targetFilePath, dockerfileName), dockerfileName)
 }
 
 // API to get image registry address
 func (p *ImageController) GetImageRegistryAction() {
 	registryAddr := registryBaseURI()
-	logs.Info("The image registry is %s", registryAddr)
-	p.Data["json"] = registryAddr
-	p.ServeJSON()
+	logs.Info("Docker registry is %s", registryAddr)
+	p.renderJSON(registryAddr)
 }
 
 // API to reset build image temp
 func (p *ImageController) ResetBuildImageTempAction() {
 	projectName := p.GetString("project_name")
-
-	currentProject, err := service.GetProject(model.Project{Name: projectName}, "name")
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if currentProject == nil {
-		p.customAbort(http.StatusBadRequest, "Invalid project name.")
-		return
-	}
-
-	isMember, err := service.IsProjectMember(currentProject.ID, p.currentUser.ID)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	if !(p.isSysAdmin || isMember) {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges to build image.")
-		return
-	}
+	p.resolveUserPrivilege(projectName)
 
 	uploadedPath := filepath.Join(baseRepoPath(), p.currentUser.Username, "upload")
-	err = os.RemoveAll(uploadedPath)
+	err := os.RemoveAll(uploadedPath)
 	if err != nil {
 		logs.Error("Failed to remove uploaded path: %s", uploadedPath)
 		p.internalError(err)

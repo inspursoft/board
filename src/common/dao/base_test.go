@@ -1,16 +1,21 @@
 package dao
 
 import (
+	"fmt"
+	"git/inspursoft/board/src/common/utils"
 	"os"
 	"testing"
-	"fmt"
 
 	"github.com/astaxie/beego/orm"
 )
 
 func TestMain(m *testing.M) {
-	hostIP:=os.Getenv("HOST_IP")
+	utils.InitializeDefaultConfig()
+	dbIP := utils.GetStringValue("DB_IP")
+	dbPort := utils.GetStringValue("DB_PORT")
+	dbPassword := utils.GetStringValue("DB_PASSWORD")
+
 	orm.RegisterDriver("mysql", orm.DRMySQL)
-	orm.RegisterDataBase("default", "mysql", fmt.Sprintf("root:root123@tcp(%s:3306)/board?charset=utf8", hostIP))
+	orm.RegisterDataBase("default", "mysql", fmt.Sprintf("root:%s@tcp(%s:%s)/board?charset=utf8", dbPassword, dbIP, dbPort))
 	os.Exit(m.Run())
 }

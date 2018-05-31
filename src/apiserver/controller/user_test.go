@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
+
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/orm"
@@ -17,7 +18,7 @@ import (
 )
 
 func isExternalAuth() bool {
-	authMode := os.Getenv("AUTH_MODE")
+	authMode := utils.GetStringValue("AUTH_MODE")
 	if authMode != "" && authMode != "db_auth" {
 		return true
 	}
@@ -34,12 +35,12 @@ func TestUserAction(t *testing.T) {
 	defer adminLogoutTest(t)
 
 	user := model.User{
-		Username:     "testuser",
-		Password:     "testuserpasswrd",
-		Email:        "testuser@test.com",
-		Realname:     "testuser",
-		Comment:      "this is just a test account",
-		SystemAdmin:  0,
+		Username:    "testuser",
+		Password:    "testuserpasswrd",
+		Email:       "testuser@test.com",
+		Realname:    "testuser",
+		Comment:     "this is just a test account",
+		SystemAdmin: 0,
 	}
 
 	body, err := json.Marshal(user)
@@ -177,12 +178,12 @@ func TestChangeUserAccount(t *testing.T) {
 	defer adminLogoutTest(t)
 
 	user := model.User{
-		Username:     "testuseraccount",
-		Password:     "testuseraccountpwd",
-		Email:        "testuseraccount@test.com",
-		Realname:     "testuseraccount",
-		Comment:      "this is just a test account",
-		SystemAdmin:  0,
+		Username:    "testuseraccount",
+		Password:    "testuseraccountpwd",
+		Email:       "testuseraccount@test.com",
+		Realname:    "testuseraccount",
+		Comment:     "this is just a test account",
+		SystemAdmin: 0,
 	}
 
 	body, err := json.Marshal(user)
@@ -290,12 +291,12 @@ func TestChangePasswordAction(t *testing.T) {
 	defer adminLogoutTest(t)
 
 	user := model.User{
-		Username:     "testpassword",
-		Password:     "testpasswordpwd",
-		Email:        "testpasswordpwd@test.com",
-		Realname:     "testpasswordpwd",
-		Comment:      "this is just a test account",
-		SystemAdmin:  0,
+		Username:    "testpassword",
+		Password:    "testpasswordpwd",
+		Email:       "testpasswordpwd@test.com",
+		Realname:    "testpasswordpwd",
+		Comment:     "this is just a test account",
+		SystemAdmin: 0,
 	}
 
 	body, err := json.Marshal(user)

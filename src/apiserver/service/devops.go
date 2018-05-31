@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service/devops/gogs"
 	"git/inspursoft/board/src/apiserver/service/devops/jenkins"
@@ -31,11 +32,16 @@ func CreateRepoAndJob(userID int64, projectName string) error {
 
 	logs.Info("Create repo and job with username: %s, project name: %s.", username, projectName)
 
-	logs.Info("Initialize serve repo with name: %s ...", projectName)
+	repoName, err := ResolveRepoName(projectName, username)
+	if err != nil {
+		return err
+	}
+	logs.Info("Initialize serve repo with name: %s ...", repoName)
 
-	repoURL := fmt.Sprintf("%s/%s/%s.git", gogitsSSHURL(), username, projectName)
-	repoPath := fmt.Sprintf("%s/%s/%s", baseRepoPath(), username, projectName)
-	_, err = InitRepo(repoURL, username, repoPath)
+	repoURL := fmt.Sprintf("%s/%s/%s.git", gogitsSSHURL(), username, repoName)
+	repoPath := ResolveRepoPath(repoName, username)
+
+	_, err = InitRepo(repoURL, username, email, repoPath)
 	if err != nil {
 		logs.Error("Failed to initialize default user's repo: %+v", err)
 		return err
@@ -44,32 +50,74 @@ func CreateRepoAndJob(userID int64, projectName string) error {
 	if gogsHandler == nil {
 		return fmt.Errorf("failed to create Gogs handler")
 	}
-	err = gogsHandler.CreateRepo(projectName)
+	err = gogsHandler.CreateRepo(repoName)
 	if err != nil {
-		logs.Error("Failed to create repo: %s, error %+v", projectName, err)
+		logs.Error("Failed to create repo: %s, error %+v", repoName, err)
 		return err
 	}
-	err = gogsHandler.CreateHook(username, projectName)
+	err = gogsHandler.CreateHook(username, repoName)
 	if err != nil {
-		logs.Error("Failed to create hook to repo: %s, error: %+v", projectName, err)
+		logs.Error("Failed to create hook to repo: %s, error: %+v", repoName, err)
 	}
-	err = CopyFile("parser.py", filepath.Join(repoPath, "parser.py"))
-	if err != nil {
-		logs.Error("Failed to copy parser.py file to repo: %+v", err)
-		return err
-	}
+
 	CreateFile("readme.md", "Repo created by Board.", repoPath)
-	err = SimplePush(repoPath, username, email, "Add some struts.", "readme.md", "parser.py")
+
+	repoHandler, err := OpenRepo(repoPath, username, email)
 	if err != nil {
-		logs.Error("Failed to push readme.md file to the repo.")
+		logs.Error("Failed to open the repo: %s, error: %+v.", repoPath, err)
+		return err
+	}
+
+	repoHandler.SimplePush("Add some struts.", "readme.md")
+	if err != nil {
+		logs.Error("Failed to push readme.md file to the repo: %+v", err)
 		return err
 	}
 
 	jenkinsHandler := jenkins.NewJenkinsHandler()
-	err = jenkinsHandler.CreateJobWithParameter(projectName)
+	err = jenkinsHandler.CreateJobWithParameter(repoName, username, email)
 	if err != nil {
-		logs.Error("Failed to create Jenkins' job with project name: %s, error: %+v", projectName, err)
+		logs.Error("Failed to create Jenkins' job with repo name: %s, error: %+v", repoName, err)
 		return err
 	}
 	return nil
+}
+
+func CreatePullRequestAndComment(username, ownerName, repoName, repoToken, compareInfo, title, message string) error {
+	gogsHandler := gogs.NewGogsHandler(username, repoToken)
+	prInfo, err := gogsHandler.CreatePullRequest(ownerName, repoName, title, message, compareInfo)
+	if err != nil {
+		logs.Error("Failed to create pull request to the repo: %s with username: %s", repoName, username)
+		return err
+	}
+	if prInfo != nil && prInfo.HasCreated {
+		err = gogsHandler.CreateIssueComment(ownerName, repoName, prInfo.Index, message)
+		if err != nil {
+			logs.Error("Failed to comment issue to the pull request ID: %d, error: %+v", prInfo.IssueID, err)
+			return err
+		}
+	}
+	return nil
+}
+
+func ResolveRepoName(projectName, username string) (repoName string, err error) {
+	project, err := GetProjectByName(projectName)
+	if err != nil {
+		return
+	}
+	if project == nil {
+		err = errors.New("invalid project name")
+		return
+	}
+	repoName = project.Name
+	if project.OwnerName != username {
+		repoName = username + "_" + project.Name
+	}
+	return
+}
+
+func ResolveRepoPath(repoName, username string) (repoPath string) {
+	repoPath = filepath.Join(baseRepoPath(), username, "contents", repoName)
+	logs.Debug("Set repo path at file upload: %s", repoPath)
+	return
 }

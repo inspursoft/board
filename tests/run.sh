@@ -28,7 +28,7 @@ set -e
 # set envirnment
 deps=""
 gopath=/go/src/git/inspursoft/board/
-golangImage=golang:1.8.3-alpine3.5
+golangImage=golang:1.9.6-alpine3.7
 volumeDir=`dirname $(pwd)`
 
 dir="$( cd "$( dirname "$0"  )" && pwd  )"

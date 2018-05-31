@@ -1,15 +1,15 @@
 package auth
 
 import (
+	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"os"
 	"testing"
-	"fmt"
-	
+
 	"github.com/astaxie/beego/logs"
-	"github.com/astaxie/beego/orm"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -33,16 +33,9 @@ func updateAdminPassword() {
 	}
 }
 
-func connectToDB() {
-	hostIP:=os.Getenv("HOST_IP")
-	err := orm.RegisterDataBase("default", "mysql", fmt.Sprintf("root:root123@tcp(%s:3306)/board?charset=utf8", hostIP))
-	if err != nil {
-		logs.Error("Failed to connect to DB.")
-	}
-}
-
 func TestMain(m *testing.M) {
-	connectToDB()
+	utils.InitializeDefaultConfig()
+	dao.InitDB()
 	updateAdminPassword()
 	os.Exit(m.Run())
 }
@@ -57,9 +50,8 @@ func TestSignIn(t *testing.T) {
 }
 
 func TestSignInLdap(t *testing.T) {
-	hostIP:=os.Getenv("HOST_IP")
-	utils.Initialize()
-	utils.SetConfig("LDAP_URL", fmt.Sprintf("ldap://%s", hostIP))
+
+	utils.SetConfig("LDAP_URL", fmt.Sprintf("ldap://%s", utils.GetStringValue("BOARD_HOST_IP")))
 	utils.SetConfig("LDAP_SEARCH_DN", `cn=admin,dc=example,dc=org`)
 	utils.SetConfig("LDAP_BASE_DN", "uid=test,dc=example,dc=org")
 	utils.SetConfig("LDAP_FILTER", "")

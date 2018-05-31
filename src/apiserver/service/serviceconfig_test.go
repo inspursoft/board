@@ -116,7 +116,7 @@ func TestDeleteServiceByID(t *testing.T) {
 	serviceInfo, err := CreateServiceConfig(scCreate)
 	assert.Nil(err, "Error occurred while creating service config.")
 
-	retnum, err := DeleteServiceByID(*serviceInfo)
+	retnum, err := DeleteServiceByID(serviceInfo.ID)
 	assert.Nil(err, "Error occurred while deleting service status.")
 	assert.NotEqual(0, retnum, "Error occurred while deleting service status")
 	if err != nil {

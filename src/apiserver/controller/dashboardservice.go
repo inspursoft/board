@@ -1,10 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
-
-	"io/ioutil"
-
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
@@ -23,31 +19,14 @@ type ServiceBodyPara struct {
 	DurationTime  int    `json:"service_duration_time"`
 }
 
-func (p *DashboardServiceController) Prepare() {
-	user := p.getCurrentUser()
-	if user == nil {
-		p.CustomAbort(http.StatusUnauthorized, "Need to login first.")
-		return
-	}
-	p.currentUser = user
-	p.isSysAdmin = (user.SystemAdmin == 1)
-}
-func (b *DashboardServiceController) resolveBody() (in ServiceBodyPara, err error) {
-	data, err := ioutil.ReadAll(b.Ctx.Request.Body)
-	json.Unmarshal(data, &in)
-	if err != nil {
-		return in, err
-	}
-	return in, nil
-}
-
 type DashboardServiceController struct {
-	baseController
+	BaseController
 }
 
 func (s *DashboardServiceController) GetServiceData() {
 
-	getServiceDataBodyReq, _ := s.resolveBody()
+	var getServiceDataBodyReq ServiceBodyPara
+	s.resolveBody(&getServiceDataBodyReq)
 	serviceName := s.GetString("service_name")
 
 	beego.Debug("servicename", serviceName, getServiceDataBodyReq.DurationTime)
@@ -105,13 +84,10 @@ func (s *DashboardServiceController) GetServiceData() {
 	dashboardServiceDataResp.ServiceResp.ServiceListData = serviceList
 	logs.Info("serivcelist:%+v\n", dashboardServiceDataResp.ServiceResp.ServiceListData)
 
-	s.Data["json"] = dashboardServiceDataResp.ServiceResp
-	s.ServeJSON()
+	s.renderJSON(dashboardServiceDataResp.ServiceResp)
 }
 
 func (s *DashboardServiceController) GetServerTime() {
 	time := service.GetServerTime()
-	s.Data["json"] = time
-	s.ServeJSON()
-
+	s.renderJSON(time)
 }

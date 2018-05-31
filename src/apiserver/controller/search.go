@@ -7,13 +7,14 @@ import (
 )
 
 type SearchSourceController struct {
-	baseController
+	BaseController
 }
 
 func (pm *SearchSourceController) Prepare() {
 	user := pm.getCurrentUser()
 	pm.currentUser = user
 }
+
 func (pm *SearchSourceController) Search() {
 	searchCondition := pm.GetString("q")
 	res, err := service.SearchSource(pm.currentUser, searchCondition)
@@ -21,8 +22,5 @@ func (pm *SearchSourceController) Search() {
 		pm.customAbort(http.StatusInternalServerError, fmt.Sprint(err))
 		return
 	}
-	pm.Data["json"] = res
-	pm.ServeJSON()
-	return
-
+	pm.renderJSON(res)
 }

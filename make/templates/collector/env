@@ -1,5 +1,5 @@
 DB_PASSWORD=$db_password
 KUBE_IP=$kube_master_ip
 KUBE_PORT=$kube_master_port
-DB_IP=$db_ip
-DB_PORT=$db_port
+DB_IP=db
+DB_PORT=3306

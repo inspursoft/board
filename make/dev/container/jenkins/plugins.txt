@@ -40,7 +40,7 @@ workflow-support:2.18
 plain-credentials:1.4
 credentials-binding:1.15
 jsch:0.1.54.2
-git-client:2.7.1
+#git-client:2.7.1
 git-server:1.7
 docker-commons:1.11
 cloudbees-folder:6.3
@@ -52,3 +52,6 @@ pipeline-model-definition:1.2.7
 workflow-aggregator:2.5
 job-dsl:1.67
 generic-webhook-trigger:1.32
+ruby-runtime:0.12
+git:1.1.11
+travis-yml:0.2.2

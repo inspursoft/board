@@ -208,7 +208,7 @@ export class K8sService {
 
   getServiceImages(projectName: string, serviceName: string): Promise<Array<ImageIndex>> {
     return this.http
-      .get<Array<ImageIndex>>(`/api/v1/services/rollingupdate`, {
+      .get<Array<ImageIndex>>(`/api/v1/services/rollingupdate/image`, {
         observe: "response",
         params: {
           service_name: serviceName,
@@ -221,7 +221,7 @@ export class K8sService {
 
   updateServiceImages(projectName: string, serviceName: string, postData: Array<ImageIndex>): Promise<any> {
     return this.http
-      .patch(`/api/v1/services/rollingupdate`, postData, {
+      .patch(`/api/v1/services/rollingupdate/image`, postData, {
         observe: "response",
         params: {
           service_name: serviceName,
