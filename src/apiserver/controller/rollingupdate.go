@@ -4,6 +4,7 @@ import (
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
 	"net/http"
+	"path/filepath"
 	"strings"
 
 	"github.com/astaxie/beego/logs"
@@ -135,13 +136,13 @@ func (p *ServiceRollingUpdateController) PatchServiceAction(rollingUpdateConfig 
 		return
 	}
 
-	p.resolveRepoPath(projectName)
-	err = service.GenerateDeploymentYamlFile(deploymentFileInfo, p.repoPath)
+	p.resolveRepoServicePath(projectName, serviceName)
+	err = service.GenerateDeploymentYamlFile(deploymentFileInfo, p.repoServicePath)
 	if err != nil {
 		p.internalError(err)
 		return
 	}
-	p.pushItemsToRepo(deploymentFilename)
+	p.pushItemsToRepo(filepath.Join(serviceName, deploymentFilename))
 
 	logs.Debug("New updated deployment: %+v\n", deploymentConfig)
 }
