@@ -77,14 +77,18 @@ func (b *BaseController) renderJSON(data interface{}) {
 }
 
 func (b *BaseController) serveStatus(status int, message string) {
-	b.Ctx.ResponseWriter.WriteHeader(status)
-	b.renderJSON(struct {
+	b.serveJSON(status, struct {
 		StatusCode int    `json:"status"`
 		Message    string `json:"message"`
 	}{
 		StatusCode: status,
 		Message:    message,
 	})
+}
+
+func (b *BaseController) serveJSON(status int, data interface{}) {
+	b.Ctx.ResponseWriter.WriteHeader(status)
+	b.renderJSON(data)
 }
 
 func (b *BaseController) internalError(err error) {
@@ -258,9 +262,23 @@ func (b *BaseController) resolveUserPrivilege(projectName string) {
 	isMember, err := service.IsProjectMemberByName(projectName, b.currentUser.ID)
 	if err != nil {
 		b.internalError(err)
+		return
 	}
 	if !(b.isSysAdmin || isMember) {
 		b.customAbort(http.StatusForbidden, "Insufficient privileges to build image.")
+	}
+	if b.isSysAdmin && !isMember {
+		project := b.resolveProject(projectName)
+		isSuccess, err := service.AddOrUpdateProjectMember(project.ID, b.currentUser.ID, 1)
+		if err != nil {
+			b.internalError(err)
+			return
+		}
+		if !isSuccess {
+			logs.Error("Failed to add project: %s with member %s:", projectName, b.currentUser.Username)
+			return
+		}
+		b.forkRepo(b.currentUser, projectName)
 	}
 	return
 }
@@ -346,8 +364,8 @@ func (b *BaseController) forkRepo(forkedUser *model.User, baseRepoName string) {
 		logs.Error("Failed to create hook to repo: %s, error: %+v", repoName, err)
 	}
 	repoURL := fmt.Sprintf("%s/%s/%s.git", gogitsSSHURL(), username, repoName)
-	repoPath := filepath.Join(baseRepoPath(), username, repoName)
-	repoHandler, err := service.InitRepo(repoURL, username, email, repoPath)
+	b.resolveRepoPath(baseRepoName)
+	repoHandler, err := service.InitRepo(repoURL, username, email, b.repoPath)
 	if err != nil {
 		logs.Error("Failed to initialize project repo: %+v", err)
 		b.internalError(err)
