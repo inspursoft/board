@@ -23,7 +23,7 @@ type uploadFile struct {
 
 type FileUploadController struct {
 	BaseController
-	toFilePath string
+	ToFilePath string
 }
 
 func (f *FileUploadController) Prepare() {
@@ -32,10 +32,10 @@ func (f *FileUploadController) Prepare() {
 }
 
 func (f *FileUploadController) resolveFilePath() {
-	f.toFilePath = filepath.Join(baseRepoPath(), f.currentUser.Username, "upload")
-	err := os.MkdirAll(f.toFilePath, 0755)
+	f.ToFilePath = filepath.Join(baseRepoPath(), f.currentUser.Username, "upload")
+	err := os.MkdirAll(f.ToFilePath, 0755)
 	if err != nil {
-		logs.Error("Failed to make dir: %s, error: %+v", f.toFilePath, err)
+		logs.Error("Failed to make dir: %s, error: %+v", f.ToFilePath, err)
 	}
 }
 
@@ -45,7 +45,7 @@ func (f *FileUploadController) Upload() {
 		f.internalError(err)
 		return
 	}
-	targetFilePath := f.toFilePath
+	targetFilePath := f.ToFilePath
 
 	logs.Info("User: %s uploaded file from %s to %s.", f.currentUser.Username, fh.Filename, targetFilePath)
 	err = f.SaveToFile("upload_file", filepath.Join(targetFilePath, fh.Filename))
@@ -55,7 +55,7 @@ func (f *FileUploadController) Upload() {
 }
 
 func (f *FileUploadController) DownloadProbe() {
-	if isEmpty, err := service.IsEmptyDirectory(f.toFilePath); isEmpty || err != nil {
+	if isEmpty, err := service.IsEmptyDirectory(f.ToFilePath); isEmpty || err != nil {
 		f.customAbort(http.StatusNotFound, "No uploaded file found.")
 		return
 	}
@@ -66,20 +66,20 @@ func (f *FileUploadController) Download() {
 	if fileName == "" {
 		logs.Info("Will zip files to be downloaded as no file name specified.")
 		attachmentFilePath := filepath.Join(baseRepoPath(), f.currentUser.Username)
-		err := service.ZipFiles(filepath.Join(attachmentFilePath, attachmentFile), f.toFilePath)
+		err := service.ZipFiles(filepath.Join(attachmentFilePath, attachmentFile), f.ToFilePath)
 		if err != nil {
 			f.customAbort(http.StatusInternalServerError, fmt.Sprintf("Failed to zip file for attachment: %+v", err))
 			return
 		}
-		f.toFilePath = attachmentFilePath
+		f.ToFilePath = attachmentFilePath
 		fileName = attachmentFile
 	}
-	logs.Debug("Download file from path: %s", f.toFilePath)
-	f.Ctx.Output.Download(filepath.Join(f.toFilePath, fileName), fileName)
+	logs.Debug("Download file from path: %s", f.ToFilePath)
+	f.Ctx.Output.Download(filepath.Join(f.ToFilePath, fileName), fileName)
 }
 
 func (f *FileUploadController) ListFiles() {
-	uploads, err := service.ListUploadFiles(f.toFilePath)
+	uploads, err := service.ListUploadFiles(f.ToFilePath)
 	if err != nil {
 		f.internalError(err)
 		return
@@ -89,7 +89,7 @@ func (f *FileUploadController) ListFiles() {
 
 func (f *FileUploadController) RemoveFile() {
 	fileInfo := model.FileInfo{
-		Path:     f.toFilePath,
+		Path:     f.ToFilePath,
 		FileName: f.GetString("file_name"),
 	}
 	logs.Info("Removed file: %s", filepath.Join(fileInfo.Path, fileInfo.FileName))
