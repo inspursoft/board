@@ -91,11 +91,15 @@ func (j *JenkinsJobController) Console() {
 	}
 
 	jobName := j.GetString("job_name")
+
 	if jobName == "" {
 		j.customAbort(http.StatusBadRequest, "No job name found.")
 		return
 	}
-	query := jobConsole{JobName: jobName}
+
+	j.resolveRepoName(jobName)
+
+	query := jobConsole{JobName: j.repoName}
 	query.BuildSerialID = strconv.Itoa(buildNumber)
 	buildConsoleURL, err := utils.GenerateURL(fmt.Sprintf(jenkinsBuildConsoleTemplateURL, jenkinsBaseURL()), query)
 	if err != nil {
@@ -194,7 +198,10 @@ func (j *JenkinsJobController) Stop() {
 		j.customAbort(http.StatusBadRequest, "No job name found.")
 		return
 	}
-	query := jobConsole{JobName: jobName}
+
+	j.resolveRepoName(jobName)
+
+	query := jobConsole{JobName: j.repoName}
 	query.BuildSerialID = j.GetString("build_serial_id", strconv.Itoa(lastBuildNumber))
 	stopBuildURL, err := utils.GenerateURL(fmt.Sprintf(jenkinsStopBuildTemplateURL, jenkinsBaseURL()), query)
 	if err != nil {
