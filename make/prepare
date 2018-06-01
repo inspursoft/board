@@ -170,6 +170,7 @@ grafana_k8s_ds = os.path.join(grafana_config_dir, "kubernetes-datasource.json")
 grafana_graphite_ds = os.path.join(grafana_config_dir, "graphite-datasource.json")
 grafana_dashboard = os.path.join(grafana_config_dir, "kubernetes-dashboard.json")
 grafana_k8s = os.path.join(grafana_config_dir, "kubernetes.json")
+grafana_notifications = os.path.join(grafana_config_dir, "notifications.json")
 
 elasticsearch_config_dir = os.path.join(config_dir, "elasticsearch")
 if not os.path.exists(elasticsearch_config_dir):
@@ -263,6 +264,8 @@ shutil.copy(os.path.join(templates_dir, "grafana", "kubernetes-dashboard.json"),
 
 render(os.path.join(templates_dir, "grafana", "kubernetes.json"),
         grafana_k8s)
+
+shutil.copy(os.path.join(templates_dir, "grafana", "notifications.json"), grafana_notifications)
 
 render(os.path.join(templates_dir, "elasticsearch", "env"),
         elasticsearch_env,
