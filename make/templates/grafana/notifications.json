@@ -1,0 +1,10 @@
+{
+  "name": "email",
+  "type":  "webhook",
+  "isDefault": false,
+  "settings": {
+    "httpMethod": "POST",
+    "url": "http://apiserver:8088/api/v1/email/notification",
+    "uploadImage": false
+  }
+}
