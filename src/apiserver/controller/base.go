@@ -49,6 +49,7 @@ type BaseController struct {
 	token           string
 	isExternalAuth  bool
 	isSysAdmin      bool
+	repoName        string
 	repoPath        string
 	repoServicePath string
 	project         *model.Project
@@ -221,6 +222,15 @@ func (b *BaseController) resolveProjectByID(projectID int64) (project *model.Pro
 	return
 }
 
+func (b *BaseController) resolveRepoName(projectName string) {
+	var err error
+	b.repoName, err = service.ResolveRepoName(projectName, b.currentUser.Username)
+	if err != nil {
+		b.customAbort(http.StatusPreconditionFailed, fmt.Sprintf("Failed to resolve repo name: %+v", err))
+	}
+	logs.Debug("Set repo name as: %s", b.repoName)
+}
+
 func (b *BaseController) resolveRepoPath(projectName string) {
 	username := b.currentUser.Username
 	repoName, err := service.ResolveRepoName(projectName, username)
@@ -352,18 +362,20 @@ func (b *BaseController) forkRepo(forkedUser *model.User, baseRepoName string) {
 	username := forkedUser.Username
 	email := forkedUser.Email
 	repoToken := forkedUser.RepoToken
-	repoName := username + "_" + baseRepoName
+
+	b.resolveRepoName(baseRepoName)
+
 	gogsHandler := gogs.NewGogsHandler(username, repoToken)
-	err := gogsHandler.ForkRepo(b.project.OwnerName, baseRepoName, repoName, "Forked repo.")
+	err := gogsHandler.ForkRepo(b.project.OwnerName, baseRepoName, b.repoName, "Forked repo.")
 	if err != nil {
 		b.internalError(err)
 		return
 	}
-	gogsHandler.CreateHook(username, repoName)
+	gogsHandler.CreateHook(username, b.repoName)
 	if err != nil {
-		logs.Error("Failed to create hook to repo: %s, error: %+v", repoName, err)
+		logs.Error("Failed to create hook to repo: %s, error: %+v", b.repoName, err)
 	}
-	repoURL := fmt.Sprintf("%s/%s/%s.git", gogitsSSHURL(), username, repoName)
+	repoURL := fmt.Sprintf("%s/%s/%s.git", gogitsSSHURL(), username, b.repoName)
 	b.resolveRepoPath(baseRepoName)
 	repoHandler, err := service.InitRepo(repoURL, username, email, b.repoPath)
 	if err != nil {
@@ -372,9 +384,9 @@ func (b *BaseController) forkRepo(forkedUser *model.User, baseRepoName string) {
 		return
 	}
 	jenkinsHandler := jenkins.NewJenkinsHandler()
-	err = jenkinsHandler.CreateJobWithParameter(repoName, username, email)
+	err = jenkinsHandler.CreateJobWithParameter(b.repoName, username, email)
 	if err != nil {
-		logs.Error("Failed to create Jenkins' job with project name: %s, error: %+v", repoName, err)
+		logs.Error("Failed to create Jenkins' job with project name: %s, error: %+v", b.repoName, err)
 		b.internalError(err)
 		return
 	}
