@@ -55,6 +55,9 @@ function init()
         util_done $sleeptime curl -X POST -H "Content-Type: application/json;charset=UTF-8" -d @/etc/grafana/config/kubernetes-dashboard.json http://grafana:3000/api/dashboards/db
         echo "add the kubernetes dashboard to grafana successfully"
 
+        # add alert notification
+        util_done $sleeptime curl -X POST -H "Content-Type: application/json;charset=UTF-8" -d @/etc/grafana/config/notifications.json http://grafana:3000/api/alert-notifications
+
         # generate the install tag file 
         echo "init successfully"
         echo "init successfully" > /var/lib/grafana/initok

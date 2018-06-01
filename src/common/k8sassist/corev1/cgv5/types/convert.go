@@ -725,10 +725,12 @@ func ToK8sNodeStatus(nodestatus model.NodeStatus) v1.NodeStatus {
 	conditions := make([]v1.NodeCondition, 0)
 	for _, v := range nodestatus.Conditions {
 		conditions = append(conditions, v1.NodeCondition{
-			Type:    v1.NodeConditionType(v.Type),
-			Status:  v1.ConditionStatus(v.Status),
-			Reason:  v.Reason,
-			Message: v.Message,
+			Type:               v1.NodeConditionType(v.Type),
+			Status:             v1.ConditionStatus(v.Status),
+			LastHeartbeatTime:  metav1.NewTime(v.LastHeartbeatTime),
+			LastTransitionTime: metav1.NewTime(v.LastTransitionTime),
+			Reason:             v.Reason,
+			Message:            v.Message,
 		})
 
 	}
@@ -751,6 +753,63 @@ func ToK8sNodeStatus(nodestatus model.NodeStatus) v1.NodeStatus {
 	}
 }
 
+func UpdateK8sNodeStatus(k8sNodeStatus *v1.NodeStatus, nodestatus *model.NodeStatus) {
+	if nodestatus.Capacity == nil {
+		k8sNodeStatus.Capacity = nil
+	} else {
+		if k8sNodeStatus.Capacity == nil {
+			k8sNodeStatus.Capacity = v1.ResourceList(make(map[v1.ResourceName]resource.Quantity))
+		}
+		for k, v := range nodestatus.Capacity {
+			q := resource.NewQuantity(int64(v), resource.DecimalExponent)
+			k8sNodeStatus.Capacity[v1.ResourceName(k)] = *q
+		}
+	}
+
+	if nodestatus.Allocatable == nil {
+		k8sNodeStatus.Allocatable = nil
+	} else {
+		if k8sNodeStatus.Allocatable == nil {
+			k8sNodeStatus.Allocatable = v1.ResourceList(make(map[v1.ResourceName]resource.Quantity))
+		}
+		for k, v := range nodestatus.Allocatable {
+			q := resource.NewQuantity(int64(v), resource.DecimalExponent)
+			k8sNodeStatus.Allocatable[v1.ResourceName(k)] = *q
+
+		}
+	}
+
+	if nodestatus.Conditions == nil {
+		k8sNodeStatus.Conditions = nil
+	} else {
+		conditions := make([]v1.NodeCondition, 0)
+		for _, v := range nodestatus.Conditions {
+			conditions = append(conditions, v1.NodeCondition{
+				Type:               v1.NodeConditionType(v.Type),
+				Status:             v1.ConditionStatus(v.Status),
+				LastHeartbeatTime:  metav1.NewTime(v.LastHeartbeatTime),
+				LastTransitionTime: metav1.NewTime(v.LastTransitionTime),
+				Reason:             v.Reason,
+				Message:            v.Message,
+			})
+		}
+		k8sNodeStatus.Conditions = conditions
+	}
+
+	if nodestatus.Addresses == nil {
+		k8sNodeStatus.Addresses = nil
+	} else {
+		addresses := make([]v1.NodeAddress, 0)
+		for _, v := range nodestatus.Addresses {
+			addresses = append(addresses, v1.NodeAddress{
+				Type:    v1.NodeAddressType(v.Type),
+				Address: v.Address,
+			})
+		}
+		k8sNodeStatus.Addresses = addresses
+	}
+}
+
 // generate k8s node from model node
 func ToK8sNode(node *model.Node) *v1.Node {
 	if node == nil {
@@ -768,6 +827,28 @@ func ToK8sNode(node *model.Node) *v1.Node {
 		},
 		Status: ToK8sNodeStatus(node.Status),
 	}
+}
+
+// update k8s node using model node
+func UpdateK8sNode(k8sNode *v1.Node, node *model.Node) {
+	if node == nil || k8sNode == nil {
+		return
+	}
+	// just update our attributes.
+	k8sNode.Name = node.Name
+	k8sNode.Namespace = node.Namespace
+	k8sNode.CreationTimestamp = metav1.NewTime(node.CreationTimestamp)
+	if node.DeletionTimestamp != nil {
+		t := metav1.NewTime(*node.DeletionTimestamp)
+		k8sNode.DeletionTimestamp = &t
+	} else {
+		k8sNode.DeletionTimestamp = nil
+	}
+	k8sNode.Labels = node.Labels
+
+	k8sNode.Spec.Unschedulable = node.Unschedulable
+
+	UpdateK8sNodeStatus(&k8sNode.Status, &node.Status)
 }
 
 // adapt model node.Status from k8s node.Status
@@ -788,10 +869,12 @@ func FromK8sNodeStatus(nodestatus v1.NodeStatus) model.NodeStatus {
 	conditions := make([]model.NodeCondition, 0)
 	for _, v := range nodestatus.Conditions {
 		conditions = append(conditions, model.NodeCondition{
-			Type:    model.NodeConditionType(v.Type),
-			Status:  model.ConditionStatus(v.Status),
-			Reason:  v.Reason,
-			Message: v.Message,
+			Type:               model.NodeConditionType(v.Type),
+			Status:             model.ConditionStatus(v.Status),
+			LastHeartbeatTime:  v.LastHeartbeatTime.Time,
+			LastTransitionTime: v.LastTransitionTime.Time,
+			Reason:             v.Reason,
+			Message:            v.Message,
 		})
 
 	}

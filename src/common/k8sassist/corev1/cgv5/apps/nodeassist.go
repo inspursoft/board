@@ -49,8 +49,13 @@ func (n *nodes) Create(node *model.Node) (*model.Node, error) {
 }
 
 func (n *nodes) Update(node *model.Node) (*model.Node, error) {
-	k8sNode := types.ToK8sNode(node)
-	k8sNode, err := n.node.Update(k8sNode)
+	k8sNode, err := n.node.Get(node.Name, metav1.GetOptions{})
+	if err != nil {
+		logs.Error("Get Node of %s failed when updating node. Err:%+v", node.Name, err)
+		return nil, err
+	}
+	types.UpdateK8sNode(k8sNode, node)
+	k8sNode, err = n.node.Update(k8sNode)
 	if err != nil {
 		logs.Error("Update Node of %s failed. Err:%+v", node.Name, err)
 		return nil, err
@@ -61,8 +66,13 @@ func (n *nodes) Update(node *model.Node) (*model.Node, error) {
 }
 
 func (n *nodes) UpdateStatus(node *model.Node) (*model.Node, error) {
-	k8sNode := types.ToK8sNode(node)
-	k8sNode, err := n.node.UpdateStatus(k8sNode)
+	k8sNode, err := n.node.Get(node.Name, metav1.GetOptions{})
+	if err != nil {
+		logs.Error("Get Node of %s failed when updating node status. Err:%+v", node.Name, err)
+		return nil, err
+	}
+	types.UpdateK8sNode(k8sNode, node)
+	k8sNode, err = n.node.UpdateStatus(k8sNode)
 	if err != nil {
 		logs.Error("UpdateStatus Node of %s failed. Err:%+v", node.Name, err)
 		return nil, err
