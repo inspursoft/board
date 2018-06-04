@@ -4,6 +4,7 @@ import { MessageService } from "../../shared/message-service/message.service";
 import "rxjs/add/operator/zip"
 import "rxjs/add/operator/do"
 import "rxjs/add/operator/catch"
+import { HttpErrorResponse } from "@angular/common/http";
 
 @Component({
   selector: 'node-control',
@@ -75,7 +76,12 @@ export class NodeControlComponent implements OnInit {
       this.nodeGroupListSelect.indexOf(this.selectedAddNodeGroup) < 0) {
       this.isActionWip = true;
       this.nodeService.addNodeToNodeGroup(this.nodeCurrent.node_name, this.selectedAddNodeGroup)
-        .subscribe(() => this.refreshData())
+        .subscribe(
+          () => this.refreshData(),
+          (error: HttpErrorResponse) => {
+            this.nodeControlOpened = false;
+            this.messageService.dispatchError(error);
+          });
     }
   }
 
