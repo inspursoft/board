@@ -31,7 +31,6 @@ export class UpdateComponent implements OnInit {
     this.onActionIsEnabled = new EventEmitter<boolean>();
     this.imageTagList = new Map<string, Array<ImageDetail>>();
     this.imageTagSelected = new Map<string, string>();
-    console.log("constructor update")
   }
 
   ngOnInit() {

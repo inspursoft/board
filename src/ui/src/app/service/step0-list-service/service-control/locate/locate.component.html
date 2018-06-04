@@ -1,6 +1,6 @@
-<div style="display: flex;flex-direction: column">
+<div class="locate-container">
   <status *ngIf="service" [service]="service"></status>
-  <cs-dropdown style="margin-top: 15px;margin-left: 2px;"
+  <cs-dropdown class="locate-dropdown"
                [dropdownDisabled]="isActionInWIP"
                [dropdownDefaultText]="dropdownDefaultText"
                [dropdownWidth]="200"
