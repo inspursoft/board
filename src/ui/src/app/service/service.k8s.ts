@@ -267,4 +267,21 @@ export class K8sService {
       .zip(obsNodeGroupList)
       .map(value => value[0].concat(value[1]))
   }
+
+  getLocate(projectName: string, serviceName: string): Observable<string> {
+    return this.http.get(`/api/v1/services/rollingupdate/nodegroup`, {
+      observe: "response",
+      params: {project_name: projectName, service_name: serviceName}
+    })
+      .map((res: HttpResponse<string>) => res.body)
+  }
+
+  setLocate(nodeSelector: string, projectName: string, serviceName: string): Observable<Object> {
+    return this.http.patch(`/api/v1/services/rollingupdate/nodegroup`, null,
+      {
+        observe: "response",
+        params: {project_name: projectName, service_name: serviceName, node_selector: nodeSelector}
+      })
+      .map((res: HttpResponse<Array<Object>>) => res.body)
+  }
 }

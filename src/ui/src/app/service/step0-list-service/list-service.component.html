@@ -1,8 +1,4 @@
 <service-detail></service-detail>
-<service-control *ngIf="isServiceControlOpen"
-                 [(isOpen)]="isServiceControlOpen"
-                 [service]="serviceControlData">
-</service-control>
 <service-create-yaml
   *ngIf="isShowServiceCreateYaml"
   (onCancelEvent)="cancelCreateService()">

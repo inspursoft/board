@@ -1,46 +1,5 @@
-fieldset.fieldSet-default {
-  margin: 0 2px;
-  border: 1px solid silver;
-  overflow: hidden;
-  padding: 0 20px 20px 20px;
-}
 
-legend.legend-default {
-  padding: .5em;
-  border: 0;
-  width: auto;
-  margin-left: 30px;
-}
 
-span.status-value {
-  color: darkblue;
-}
-
-span.warning {
-  color: darkorange;
-}
-
-span.stopped {
-  color: gray;
-}
-
-span.running {
-  color: green;
-}
-
-div.detail-container {
-  display: flex;
-  flex-direction: column;
-}
-
-div.detail-line {
-  height: 25px;
-}
-
-div.utilization-container {
-  margin: 20px 0 20px 0;
-  display: none;
-}
 
 div.scale-line {
   display: flex;
@@ -62,14 +21,6 @@ span.margin-left-20 {
 
 cs-dropdown.margin-left-10 {
   margin-left: 10px;
-}
-
-div.action-method {
-  margin-top: 10px;
-  min-height: 40px;
-  align-items: center;
-  display: flex;
-  justify-content: center;
 }
 
 td.change {

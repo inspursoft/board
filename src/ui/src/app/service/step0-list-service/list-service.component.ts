@@ -1,4 +1,4 @@
-import { Component, Injector, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ComponentFactoryResolver, Injector, OnDestroy, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { Service } from '../service';
 import { ClrDatagridSortOrder, ClrDatagridStateInterface } from '@clr/angular';
@@ -8,6 +8,7 @@ import { ServiceDetailComponent } from './service-detail/service-detail.componen
 import { ServiceStepBase } from "../service-step";
 import { Observable } from "rxjs/Observable";
 import { Project } from "../../project/project";
+import { ServiceControlComponent } from "./service-control/service-control.component";
 import "rxjs/add/observable/interval";
 
 enum CreateServiceMethod{None, Wizards, YamlFile, DevOps}
@@ -20,8 +21,6 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   currentUser: {[key: string]: any};
   services: Service[];
   isInLoading: boolean = false;
-  isServiceControlOpen: boolean = false;
-  serviceControlData: Service;
   _subscription: Subscription;
   _subscriptionInterval: Subscription;
   totalRecordCount: number;
@@ -35,7 +34,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   descSort = ClrDatagridSortOrder.DESC;
   oldStateInfo: ClrDatagridStateInterface;
 
-  constructor(protected injector: Injector) {
+  constructor(protected injector: Injector, private viewRef: ViewContainerRef, private factory: ComponentFactoryResolver) {
     super(injector);
     this._subscriptionInterval = Observable.interval(10000).subscribe(() => this.retrieve(true, this.oldStateInfo));
     this.isActionWIP = new Map<number, boolean>();
@@ -204,8 +203,11 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
 
   openServiceControl(service: Service) {
     if (service.service_is_member == 1 && service.service_status == SERVICE_STATUS.RUNNING){
-      this.serviceControlData = service;
-      this.isServiceControlOpen = true;
+      let factory = this.factory.resolveComponentFactory(ServiceControlComponent);
+      let componentRef = this.viewRef.createComponent(factory);
+      componentRef.instance.service = service;
+      componentRef.instance.openModal()
+        .subscribe(() => this.viewRef.remove(this.viewRef.indexOf(componentRef.hostView)));
     }
   }
 

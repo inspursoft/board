@@ -1,134 +1,56 @@
 <clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'md'" [clrModalClosable]="!isActionInWIP">
   <h3 class="modal-title">{{ "SERVICE.SERVICE_CONTROL" | translate }}</h3>
-  <div class="modal-body">
+  <div class="modal-body" style="padding-top: 3px;">
     <clr-alert *ngIf="alertMessage != ''" [clrAlertType]="'alert-danger'">
       <div class="alert-item">
         <span class="alert-text">{{alertMessage | translate}}</span>
       </div>
     </clr-alert>
-    <div class="btn-group action-method">
-      <button class="btn"
-              [disabled]="isActionInWIP"
-              [ngClass]="{'btn-primary':actionMethod == 0}"
-              (click)="actionMethod = 0;alertMessage = ''">
-        {{"SERVICE.SERVICE_CONTROL_SCALE" | translate}}
-      </button>
-      <button class="btn"
-              [disabled]="isActionInWIP || service.service_status != 1"
-              [ngClass]="{'btn-primary':actionMethod == 1}"
-              (click)="actionMethod = 1;alertMessage = '';getServiceImages()">
-        {{"SERVICE.SERVICE_CONTROL_UPDATE" | translate}}
-      </button>
-    </div>
-    <fieldset class="fieldSet-default">
-      <legend class="legend-default">{{"SERVICE.SERVICE_CONTROL_STATUS" | translate}}</legend>
-      <div class="detail-container">
-        <div class="detail-line">
-          <span>{{ 'SERVICE.SERVICE_CONTROL_NAME' | translate }}:
-            <span class="status-value">{{service.service_name}}</span>
-          </span>
-          <span>{{ 'SERVICE.STATUS' | translate }}:
-            <span [ngClass]="getStatusClass(service.service_status)" class="status-value">
-              {{getServiceStatus(service.service_status) | translate}}</span>
-          </span>
-        </div>
-        <div class="detail-line">
-          <span>{{ 'SERVICE.SERVICE_CONTROL_REASON' | translate }}:
-          <span class="status-value">{{reason}}</span>
-          </span>
-        </div>
-        <div class="detail-line">
-            <span class="status-value">{{"SERVICE.SERVICE_CONTROL_AVAILABLE_INSTANCE" | translate}}:
-            <span class="status-value">{{scaleInfo?.available_instance}}</span>
-          </span>
-          <span>{{"SERVICE.SERVICE_CONTROL_DESIRED_INSTANCE" | translate}}:
-            <span class="status-value">{{scaleInfo?.desired_instance}}</span>
-          </span>
-        </div>
-        <div class="detail-line">
-          <span>{{ 'SERVICE.SERVICE_CONTROL_POD_STATUS' | translate }}:
-            <span class="status-value"> </span>
-          </span>
-          <span>{{ 'SERVICE.SERVICE_CONTROL_CPU_USAGE' | translate }}:
-            <span class="status-value"> </span>
-          </span>
-          <span>{{ 'SERVICE.SERVICE_CONTROL_MEM_USAGE' | translate }}:
-            <span class="status-value"> </span>
-          </span>
-        </div>
-      </div>
-    </fieldset>
-    <div [ngSwitch]="actionMethod">
-      <ng-template [ngSwitchCase]="0">
-        <div class="utilization-container">
-          <cs-input [inputLabel]="'SERVICE.SERVICE_CONTROL_CPU_UTILIZATION_CURRENT'| translate"
-                    [inputLabelMinWidth]="'230px'"
-                    [disabled]="true"
-                    [simpleFiled]="'50%'">
-          </cs-input>
-          <cs-input [inputLabel]="'SERVICE.SERVICE_CONTROL_CPU_UTILIZATION_QUALIFIED'| translate"
-                    [inputLabelMinWidth]="'230px'"
-                    [disabled]="isActionInWIP"
-                    [simpleFiled]="'55%'">
-          </cs-input>
-        </div>
-        <div class="scale-line">
-          <input [disabled]="isActionInWIP" title="" type="radio" id="manually" name="scaleMethod" [checked]="scaleModule == 0"
-                 (change)="setScaleMethod(0)">
-          <label class="margin-left-10" for="manually">
-            {{"SERVICE.SERVICE_CONTROL_MANUALLY_SCALE"|translate}}
-          </label>
-          <span *ngIf="scaleModule == 0"
-                class="margin-left-20">
-            {{"SERVICE.SERVICE_CONTROL_INSTANCE_NUMBER"|translate}}:
-          </span>
-          <cs-dropdown *ngIf="scaleModule == 0"
-                       class="margin-left-10"
-                       [dropdownDefaultText]="scaleNum.toString()"
-                       [dropdownDisabled]="isActionInWIP"
-                       [dropdownWidth]="100"
-                       [dropdownHideSearch]="true"
-                       [dropdownList]="dropDownListNum"
-                       (onChange)="scaleNum = $event">
-          </cs-dropdown>
-        </div>
-        <div class="scale-line">
-          <input [disabled]="true" title="" type="radio" id="auto" name="scaleMethod" [checked]="scaleModule == 1"
-                 (change)="setScaleMethod(1)">
-          <label class="margin-left-10 disabled" for="auto">
-            {{"SERVICE.SERVICE_CONTROL_AUTO_SCALE"|translate}}
-          </label>
-        </div>
-      </ng-template>
-      <ng-template [ngSwitchCase]="1">
-        <table class="table">
-          <caption *ngIf="isGetServiceImagesWIP" class="spinner spinner-md"></caption>
-          <thead>
-          <tr>
-            <th class="left">{{"SERVICE.SERVICE_CONTROL_IMAGE_NAME"|translate}}</th>
-            <th class="left">{{"SERVICE.SERVICE_CONTROL_IMAGE_TAG"|translate}}</th>
-            <th class="left">{{"SERVICE.SERVICE_CONTROL_UPDATE_TAG"|translate}}</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr class="btn-primary image-tag-line" *ngFor="let imageIndex of imageList">
-            <td class="left image-name">{{imageIndex.image_name}}</td>
-            <td class="left image-tag">{{imageIndex.image_tag}}</td>
-            <td class="left" [ngClass]="{'change':imageIndex.image_tag != imageTagSelected.get(imageIndex.image_name)}">
-              <cs-dropdown [dropdownDefaultText]="imageIndex.image_tag"
-                           [dropdownWidth]="150"
-                           [dropdownList]="imageTagList.get(imageIndex.image_name)"
-                           [dropdownListTextKey]="'image_tag'"
-                           [dropdownTitleFontSize]="14"
-                           [dropdownDisabled]="isActionInWIP"
-                           (onChange)="changeImageTag(imageIndex.image_name,$event)">
-              </cs-dropdown>
-            </td>
-          </tr>
-          </tbody>
-        </table>
-      </ng-template>
-    </div>
+    <clr-tabs>
+      <clr-tab>
+        <button clrTabLink (click)="alertMessage = '';actionMethod = 0">
+          {{"SERVICE.SERVICE_CONTROL_SCALE" | translate}}
+        </button>
+        <clr-tab-content *clrIfActive>
+          <scale *ngIf="service"
+                 [service]="service"
+                 [isActionInWIP]="isActionInWIP"
+                 (onError)="defaultDispatchErr($event)"
+                 (onMessage)="defaultHandleMessage($event)"
+                 (onActionIsEnabled)="defaultHandleActionEnabled($event)">
+          </scale>
+        </clr-tab-content>
+      </clr-tab>
+      <clr-tab>
+        <button clrTabLink (click)="alertMessage = '';actionMethod = 1">
+          {{"SERVICE.SERVICE_CONTROL_UPDATE" | translate}}
+        </button>
+        <clr-tab-content *clrIfActive>
+          <update *ngIf="service"
+                  [service]="service"
+                  [isActionInWIP]="isActionInWIP"
+                  (onError)="defaultDispatchErr($event)"
+                  (onMessage)="defaultHandleMessage($event)"
+                  (onAlertMessage)="defaultHandleAlertMessage($event)"
+                  (onActionIsEnabled)="defaultHandleActionEnabled($event)">
+          </update>
+        </clr-tab-content>
+      </clr-tab>
+      <clr-tab>
+        <button clrTabLink (click)="alertMessage = '';actionMethod = 2">
+          {{"SERVICE.SERVICE_CONTROL_LOCATE" | translate}}
+        </button>
+        <clr-tab-content *clrIfActive>
+          <locate *ngIf="service"
+                  [service]="service"
+                  [isActionInWIP]="isActionInWIP"
+                  (onError)="defaultDispatchErr($event)"
+                  (onMessage)="defaultHandleMessage($event)"
+                  (onActionIsEnabled)="defaultHandleActionEnabled($event)">
+          </locate>
+        </clr-tab-content>
+      </clr-tab>
+    </clr-tabs>
   </div>
   <div class="modal-footer footer">
     <button type="button" class="btn" [disabled]="isActionInWIP" (click)="isOpen = false">
