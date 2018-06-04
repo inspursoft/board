@@ -1,9 +1,12 @@
-<status *ngIf="service" [service]="service"></status>
-<cs-dropdown
-             [dropdownDisabled]="isActionInWIP"
-             [dropdownDefaultText]="dropdownDefaultText"
-             [dropdownWidth]="200"
-             [dropdownHideSearch]="true"
-             [dropdownList]="nodeSelectorList"
-             (onChange)="setNodeSelector($event)">
-</cs-dropdown>
+<div style="display: flex;flex-direction: column">
+  <status *ngIf="service" [service]="service"></status>
+  <cs-dropdown style="margin-top: 15px;margin-left: 2px;"
+               [dropdownDisabled]="isActionInWIP"
+               [dropdownDefaultText]="dropdownDefaultText"
+               [dropdownWidth]="200"
+               [dropdownHideSearch]="true"
+               [dropdownList]="nodeSelectorList"
+               (onChange)="setNodeSelector($event)">
+  </cs-dropdown>
+</div>
+

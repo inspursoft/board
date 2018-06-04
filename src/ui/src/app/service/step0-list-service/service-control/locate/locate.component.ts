@@ -14,7 +14,7 @@ export class LocateComponent implements OnInit {
   @Output("onMessage") onMessage: EventEmitter<Message>;
   @Output("onError") onError: EventEmitter<any>;
   @Output("onActionIsEnabled") onActionIsEnabled: EventEmitter<boolean>;
-  dropdownDefaultText: string = "";
+  dropdownDefaultText: string = "SERVICE.SERVICE_CONTROL_LOCATE_SELECT";
   nodeSelectorList: Array<string>;
   nodeSelector: string = "";
 
@@ -29,7 +29,11 @@ export class LocateComponent implements OnInit {
     this.onActionIsEnabled.emit(false);
     this.k8sService.getNodeSelectors().subscribe(res => this.nodeSelectorList = res);
     this.k8sService.getLocate(this.service.service_project_name, this.service.service_name)
-      .subscribe(res=>this.dropdownDefaultText = res);
+      .subscribe(res => {
+        if (res && res != ""){
+          this.dropdownDefaultText = res
+        }
+      });
   }
 
   actionExecute() {

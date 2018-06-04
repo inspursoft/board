@@ -379,6 +379,7 @@ export const LANG_EN_US = {
     "SERVICE_CONTROL_SCALE_SUCCESSFUL":"{{0}}:Scale commit successfully",
     "SERVICE_CONTROL_UPDATE_SUCCESSFUL":"{{0}}:Update commit successfully",
     "SERVICE_CONTROL_LOCATE_SUCCESSFUL":"{{0}}:Locate setting successfully",
+    "SERVICE_CONTROL_LOCATE_SELECT":"Please select...",
     "SERVICE_DETAIL_DEPLOYMENT_FILE":"Deployment file",
     "SERVICE_DETAIL_SERVICE_FILE":"Service file",
     "GUIDE_CREATE_SERVICE":"Please crate your own Service.",

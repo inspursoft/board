@@ -1,39 +1,42 @@
-<status *ngIf="service" [service]="service"></status>
-<div class="utilization-container">
-  <cs-input [inputLabel]="'SERVICE.SERVICE_CONTROL_CPU_UTILIZATION_CURRENT'| translate"
-            [inputLabelMinWidth]="'230px'"
-            [disabled]="true"
-            [simpleFiled]="'50%'">
-  </cs-input>
-  <cs-input [inputLabel]="'SERVICE.SERVICE_CONTROL_CPU_UTILIZATION_QUALIFIED'| translate"
-            [inputLabelMinWidth]="'230px'"
-            [disabled]="isActionInWIP"
-            [simpleFiled]="'55%'">
-  </cs-input>
-</div>
-<div class="scale-line">
-  <input [disabled]="isActionInWIP" title="" type="radio" id="manually" name="scaleMethod" [checked]="scaleModule == 0"
-         (change)="setScaleMethod(0)">
-  <label class="margin-left-10" for="manually">
-    {{"SERVICE.SERVICE_CONTROL_MANUALLY_SCALE"|translate}}
-  </label>
-  <span *ngIf="scaleModule == 0" class="margin-left-20">
-    {{"SERVICE.SERVICE_CONTROL_INSTANCE_NUMBER"|translate}}:
-  </span>
-  <cs-dropdown *ngIf="scaleModule == 0"
-               class="margin-left-10"
-               [dropdownDefaultText]="scaleNum.toString()"
-               [dropdownDisabled]="isActionInWIP"
-               [dropdownWidth]="100"
-               [dropdownHideSearch]="true"
-               [dropdownList]="dropDownListNum"
-               (onChange)="scaleNum = $event;actionEnabled()">
-  </cs-dropdown>
-</div>
-<div class="scale-line">
-  <input [disabled]="true" title="" type="radio" id="auto" name="scaleMethod" [checked]="scaleModule == 1"
-         (change)="setScaleMethod(1)">
-  <label class="margin-left-10 disabled" for="auto">
-    {{"SERVICE.SERVICE_CONTROL_AUTO_SCALE"|translate}}
-  </label>
+<div style="display: flex;flex-direction: column">
+  <status *ngIf="service" [service]="service"></status>
+  <div class="utilization-container" >
+    <cs-input [inputLabel]="'SERVICE.SERVICE_CONTROL_CPU_UTILIZATION_CURRENT'| translate"
+              [inputLabelMinWidth]="'230px'"
+              [disabled]="true"
+              [simpleFiled]="'50%'">
+    </cs-input>
+    <cs-input [inputLabel]="'SERVICE.SERVICE_CONTROL_CPU_UTILIZATION_QUALIFIED'| translate"
+              [inputLabelMinWidth]="'230px'"
+              [disabled]="isActionInWIP"
+              [simpleFiled]="'55%'">
+    </cs-input>
+  </div>
+  <div class="scale-line" style="margin-top: 15px">
+    <input [disabled]="isActionInWIP" title="" type="radio" id="manually" name="scaleMethod" [checked]="scaleModule == 0"
+           (change)="setScaleMethod(0)">
+    <label class="margin-left-10" for="manually">
+      {{"SERVICE.SERVICE_CONTROL_MANUALLY_SCALE"|translate}}
+    </label>
+    <span *ngIf="scaleModule == 0" class="margin-left-20">
+      {{"SERVICE.SERVICE_CONTROL_INSTANCE_NUMBER"|translate}}:
+    </span>
+    <cs-dropdown *ngIf="scaleModule == 0"
+                 style="display: inline-block;"
+                 class="margin-left-10"
+                 [dropdownDefaultText]="scaleNum.toString()"
+                 [dropdownDisabled]="isActionInWIP"
+                 [dropdownWidth]="100"
+                 [dropdownHideSearch]="true"
+                 [dropdownList]="dropDownListNum"
+                 (onChange)="scaleNum = $event;actionEnabled()">
+    </cs-dropdown>
+  </div>
+  <div class="scale-line">
+    <input [disabled]="true" title="" type="radio" id="auto" name="scaleMethod" [checked]="scaleModule == 1"
+           (change)="setScaleMethod(1)">
+    <label class="margin-left-10 disabled" for="auto">
+      {{"SERVICE.SERVICE_CONTROL_AUTO_SCALE"|translate}}
+    </label>
+  </div>
 </div>

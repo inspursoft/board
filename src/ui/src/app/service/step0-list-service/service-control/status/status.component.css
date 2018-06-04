@@ -3,6 +3,7 @@ fieldset.fieldSet-default {
   border: 1px solid silver;
   overflow: hidden;
   padding: 0 20px 20px 20px;
+  display: block;
 }
 
 legend.legend-default {
