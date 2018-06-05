@@ -121,3 +121,10 @@ func ResolveRepoPath(repoName, username string) (repoPath string) {
 	logs.Debug("Set repo path at file upload: %s", repoPath)
 	return
 }
+
+func ResolveDockerfileName(imageName, tag string) string {
+	if imageName == "" && tag == "" {
+		return "Dockerfile"
+	}
+	return fmt.Sprintf("Dockerfile.%s_%s", imageName, tag)
+}

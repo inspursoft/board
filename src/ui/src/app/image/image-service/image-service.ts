@@ -35,7 +35,7 @@ export class ImageService {
         responseType:"text",
         params: {
           image_name: fileInfo.imageName,
-          tag_name: fileInfo.tagName,
+          image_tag: fileInfo.tagName,
           project_name: fileInfo.projectName
         }
       }).toPromise()

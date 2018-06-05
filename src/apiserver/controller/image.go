@@ -137,7 +137,7 @@ func (p *ImageController) GetImageDetailAction() {
 	p.renderJSON(imageDetail)
 }
 
-func (p *ImageController) generateBuildingImageTravis(imageURI string) error {
+func (p *ImageController) generateBuildingImageTravis(imageURI, dockerfileName string) error {
 	userID := p.currentUser.ID
 	var travisCommand travis.TravisCommand
 	travisCommand.BeforeDeploy.Commands = []string{
@@ -148,7 +148,7 @@ func (p *ImageController) generateBuildingImageTravis(imageURI string) error {
 	}
 	travisCommand.Deploy.Commands = []string{
 		"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
-		fmt.Sprintf("docker build -t %s .", imageURI),
+		fmt.Sprintf("docker build -t %s -f containers/%s .", imageURI, dockerfileName),
 		fmt.Sprintf("docker push %s", imageURI),
 	}
 	return travisCommand.GenerateCustomTravis(p.repoPath)
@@ -161,8 +161,8 @@ func (p *ImageController) BuildImageAction() {
 	p.resolveBody(&reqImageConfig)
 	p.resolveUserPrivilege(reqImageConfig.ProjectName)
 	//Checking invalid parameters
-	p.resolveRepoPath(reqImageConfig.ProjectName)
-	reqImageConfig.RepoPath = p.repoPath
+	p.resolveRepoImagePath(reqImageConfig.ProjectName)
+	reqImageConfig.RepoPath = p.repoImagePath
 	err = service.CheckDockerfileConfig(&reqImageConfig)
 	if err != nil {
 		p.serveStatus(http.StatusBadRequest, err.Error())
@@ -195,31 +195,38 @@ func (p *ImageController) BuildImageAction() {
 	imageTag := reqImageConfig.ImageTag
 	imageURI := filepath.Join(registryBaseURI(), projectName, imageName) + ":" + imageTag
 
-	err = p.generateBuildingImageTravis(imageURI)
+	if currentToken, ok := memoryCache.Get(p.currentUser.Username).(string); ok {
+		service.CreateFile("key.txt", currentToken, p.repoPath)
+	}
+
+	dockerfileName := service.ResolveDockerfileName(imageName, imageTag)
+	err = p.generateBuildingImageTravis(imageURI, dockerfileName)
 	if err != nil {
 		logs.Error("Failed to generate building image travis: %+v", err)
 		return
 	}
 
-	if currentToken, ok := memoryCache.Get(p.currentUser.Username).(string); ok {
-		service.CreateFile("key.txt", currentToken, p.repoPath)
-	}
-
-	items := []string{".travis.yml", "key.txt", "Dockerfile"}
+	items := []string{".travis.yml", "key.txt", filepath.Join("containers", dockerfileName)}
 	p.pushItemsToRepo(items...)
 	p.collaborateWithPullRequest("master", "master", items...)
 }
 
 func (p *ImageController) GetImageDockerfileAction() {
 	projectName := strings.TrimSpace(p.GetString("project_name"))
+
 	p.resolveProjectMember(projectName)
-	p.resolveRepoPath(projectName)
-	dockerfilePath := p.repoPath
-	if _, err := os.Stat(dockerfilePath); os.IsNotExist(err) {
-		p.customAbort(http.StatusNotFound, "Image path does not exist.")
+	p.resolveRepoImagePath(projectName)
+
+	imageName := strings.TrimSpace(p.GetString("image_name"))
+	imageTag := strings.TrimSpace(p.GetString("image_tag"))
+
+	if imageName == "" || imageTag == "" {
+		logs.Error("Missing image name or tag, current image name is: %s, tag is: %s", imageName, imageTag)
+		p.customAbort(http.StatusBadRequest, "Missing image name or tag.")
 		return
 	}
-	dockerfile, err := service.GetDockerfileInfo(dockerfilePath)
+
+	dockerfile, err := service.GetDockerfileInfo(p.repoImagePath, imageName, imageTag)
 	if err != nil {
 		p.internalError(err)
 		return
@@ -229,19 +236,16 @@ func (p *ImageController) GetImageDockerfileAction() {
 
 func (p *ImageController) DockerfilePreviewAction() {
 	var reqImageConfig model.ImageConfig
-	var err error
 	p.resolveBody(&reqImageConfig)
 	p.resolveUserPrivilege(reqImageConfig.ProjectName)
-	p.resolveRepoPath(reqImageConfig.ProjectName)
-	reqImageConfig.RepoPath = p.repoPath
+	p.resolveRepoImagePath(reqImageConfig.ProjectName)
+	reqImageConfig.RepoPath = p.repoImagePath
 	//Checking invalid parameters
-	err = service.CheckDockerfileConfig(&reqImageConfig)
+	err := service.CheckDockerfileConfig(&reqImageConfig)
 	if err != nil {
 		p.serveStatus(http.StatusBadRequest, err.Error())
 		return
 	}
-
-	reqImageConfig.ImageDockerfilePath = p.repoPath
 	err = service.BuildDockerfile(reqImageConfig, p.Ctx.ResponseWriter)
 	if err != nil {
 		p.internalError(err)
@@ -249,11 +253,8 @@ func (p *ImageController) DockerfilePreviewAction() {
 }
 
 func (p *ImageController) ConfigCleanAction() {
-	imageName := strings.TrimSpace(p.GetString("image_name"))
-	imageTag := strings.TrimSpace(p.GetString("image_tag"))
 	projectName := strings.TrimSpace(p.GetString("project_name"))
-	logs.Debug("Cleaning config with project: %s, image: %s, tag: %s", projectName, imageName, imageTag)
-
+	logs.Debug("Cleaning config to the project: %s", projectName)
 	p.resolveUserPrivilege(projectName)
 
 	//remove uploaded directory
@@ -314,41 +315,58 @@ func (p *ImageController) DeleteImageTagAction() {
 	p.deleteImageWithTag(imageName, imageTag)
 }
 
-func (p *ImageController) DockerfileBuildImageAction() {
+func (p *ImageController) resolveDockerfileName() (dockerfileName string) {
 	imageName := strings.TrimSpace(p.GetString("image_name"))
 	imageTag := strings.TrimSpace(p.GetString("image_tag"))
+
+	if imageName == "" || imageTag == "" {
+		logs.Error("Missing image name or tag, current image name is: %s, tag is: %s", imageName, imageTag)
+		p.customAbort(http.StatusBadRequest, "Cannot generate Dockerfile due to image name or tag is missing.")
+		return
+	}
+	dockerfileName = service.ResolveDockerfileName(imageName, imageTag)
+	return
+}
+
+func (p *ImageController) DockerfileBuildImageAction() {
+
 	projectName := strings.TrimSpace(p.GetString("project_name"))
 
 	p.resolveUserPrivilege(projectName)
-	p.resolveRepoPath(projectName)
-	dockerfilePath := p.repoPath
+	p.resolveRepoImagePath(projectName)
+	dockerfilePath := p.repoImagePath
 	if _, err := os.Stat(dockerfilePath); os.IsNotExist(err) {
 		p.customAbort(http.StatusNotFound, "Image path does not exist.")
 		return
 	}
-
+	imageName := strings.TrimSpace(p.GetString("image_name"))
+	imageTag := strings.TrimSpace(p.GetString("image_tag"))
+	if imageName == "" || imageTag == "" {
+		logs.Error("Missing image name or tag, current image name is: %s, tag is: %s", imageName, imageTag)
+		p.customAbort(http.StatusBadRequest, "Missing image name or tag.")
+		return
+	}
 	imageURI := filepath.Join(registryBaseURI(), projectName, imageName) + ":" + imageTag
-	err := p.generateBuildingImageTravis(imageURI)
+	dockerfileName := service.ResolveDockerfileName(imageName, imageTag)
+	err := p.generateBuildingImageTravis(imageURI, dockerfileName)
 	if err != nil {
 		logs.Error("Failed to generate building image travis: %+v", err)
 		return
 	}
 
-	items := []string{".travis.yml", "Dockerfile"}
+	items := []string{".travis.yml", filepath.Join("containers", dockerfileName)}
 	p.pushItemsToRepo(items...)
 	p.collaborateWithPullRequest("master", "master", items...)
 }
 
 func (p *ImageController) CheckImageTagExistingAction() {
 	var err error
+	projectName := strings.TrimSpace(p.GetString("project_name"))
+	p.resolveUserPrivilege(projectName)
+	// check this image:tag in system
 
 	imageName := strings.TrimSpace(p.Ctx.Input.Param(":imagename"))
 	imageTag := strings.TrimSpace(p.GetString("image_tag"))
-	projectName := strings.TrimSpace(p.GetString("project_name"))
-
-	p.resolveUserPrivilege(projectName)
-	// check this image:tag in system
-	p.resolveRepoPath(projectName)
 
 	// TODO check image imported from registry
 	existing, err := existRegistry(projectName, imageName, imageTag)
@@ -365,7 +383,6 @@ func (p *ImageController) CheckImageTagExistingAction() {
 }
 
 func existRegistry(projectName string, imageName string, imageTag string) (bool, error) {
-
 	currentName := filepath.Join(projectName, imageName)
 	//check image
 	repoList, err := service.GetRegistryCatalog()
@@ -403,21 +420,34 @@ func (f *ImageController) UploadDockerfileFileAction() {
 		f.customAbort(http.StatusBadRequest, "Project don't exist.")
 		return
 	}
-	f.resolveRepoPath(projectName)
+	f.resolveRepoImagePath(projectName)
 
 	_, fileHeader, err := f.GetFile("upload_file")
 	if err != nil {
 		f.internalError(err)
 		return
 	}
-	if fileHeader.Filename != dockerfileName {
+	if fileHeader.Filename != "Dockerfile" {
 		f.customAbort(http.StatusBadRequest, "Update file name invalid.")
 		return
 	}
-	err = f.SaveToFile("upload_file", filepath.Join(f.repoPath, dockerfileName))
+
+	imageName := strings.TrimSpace(f.GetString("image_name"))
+	imageTag := strings.TrimSpace(f.GetString("image_tag"))
+
+	if imageName == "" || imageTag == "" {
+		logs.Error("Missing image name or tag, current image name is: %s, tag is: %s", imageName, imageTag)
+		f.customAbort(http.StatusBadRequest, "Missing image name or tag.")
+		return
+	}
+	dockerfileName := service.ResolveDockerfileName(imageName, imageTag)
+	err = f.SaveToFile("upload_file", filepath.Join(f.repoImagePath, dockerfileName))
 	if err != nil {
 		f.internalError(err)
 	}
+	imageURI := filepath.Join(registryBaseURI(), projectName, imageName) + ":" + imageTag
+	f.generateBuildingImageTravis(imageURI, dockerfileName)
+	f.pushItemsToRepo(".travis.yml", filepath.Join("containers", dockerfileName))
 }
 
 func (f *ImageController) DownloadDockerfileFileAction() {
@@ -433,14 +463,23 @@ func (f *ImageController) DownloadDockerfileFileAction() {
 		return
 	}
 
-	f.resolveRepoPath(projectName)
-	targetFilePath := f.repoPath
-	if _, err := os.Stat(targetFilePath); os.IsNotExist(err) {
+	f.resolveRepoImagePath(projectName)
+	if _, err := os.Stat(f.repoImagePath); os.IsNotExist(err) {
 		f.customAbort(http.StatusNotFound, "Target file path does not exist.")
 		return
 	}
-	logs.Info("User: %s download Dockerfile file from %s.", f.currentUser.Username, targetFilePath)
-	f.Ctx.Output.Download(filepath.Join(targetFilePath, dockerfileName), dockerfileName)
+
+	imageName := strings.TrimSpace(f.GetString("image_name"))
+	imageTag := strings.TrimSpace(f.GetString("image_tag"))
+
+	if imageName == "" || imageTag == "" {
+		logs.Error("Missing image name or tag, current image name is: %s, tag is: %s", imageName, imageTag)
+		f.customAbort(http.StatusBadRequest, "Missing image name or tag.")
+		return
+	}
+	dockerfileName := service.ResolveDockerfileName(imageName, imageTag)
+	logs.Info("User: %s download Dockerfile file under %s.", f.currentUser.Username, f.repoImagePath)
+	f.Ctx.Output.Download(filepath.Join(f.repoImagePath, dockerfileName), dockerfileName)
 }
 
 // API to get image registry address

@@ -286,7 +286,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
       formData.append("upload_file", this.selectFromImportFile, this.selectFromImportFile.name);
       formData.append("project_name", this.customerNewImage.project_name);
       formData.append("image_name", this.customerNewImage.image_name);
-      formData.append("tag_name", this.customerNewImage.image_tag);
+      formData.append("image_tag", this.customerNewImage.image_tag);
       return this.imageService.uploadDockerFile(formData)
         .then(() => {
           this.isUploadFileWIP = false;
@@ -381,7 +381,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     let formFileList: FormData = new FormData();
     formFileList.append('project_name', this.customerNewImage.project_name);
     formFileList.append('image_name', this.customerNewImage.image_name);
-    formFileList.append('tag_name', this.customerNewImage.image_tag);
+    formFileList.append('image_tag', this.customerNewImage.image_tag);
     return this.imageService.getFileList(formFileList).then(res => {
       this.filesList.set(this.customerNewImage.image_name, res);
       let imageCopyArr = this.customerNewImage.image_dockerfile.image_copy;
@@ -470,7 +470,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
         formData.append('upload_file', file, file.name);
         formData.append('project_name', this.customerNewImage.project_name);
         formData.append('image_name', this.customerNewImage.image_name);
-        formData.append('tag_name', this.customerNewImage.image_tag);
+        formData.append('image_tag', this.customerNewImage.image_tag);
         this.imageService.uploadFile(formData).subscribe((res: HttpEvent<Object>) => {
           if (res.type == HttpEventType.UploadProgress) {
             this.uploadProgressValue = res;
@@ -539,7 +539,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     let fromRemoveData: FormData = new FormData();
     fromRemoveData.append("project_name", this.customerNewImage.project_name);
     fromRemoveData.append("image_name", this.customerNewImage.image_name);
-    fromRemoveData.append("tag_name", this.customerNewImage.image_tag);
+    fromRemoveData.append("image_tag", this.customerNewImage.image_tag);
     fromRemoveData.append("file_name", file.file_name);
     this.imageService.removeFile(fromRemoveData)
       .then(() => this.updateFileListAndPreviewInfo())

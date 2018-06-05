@@ -729,8 +729,8 @@ func (f *ServiceController) DownloadDeploymentYamlFileAction() {
 
 func (f *ServiceController) resolveDownloadYaml(serviceConfig *model.ServiceStatus, fileName string, generator func(*model.ServiceStatus, string, string) error) {
 	logs.Debug("Current download yaml file: %s", fileName)
-	absFileName := filepath.Join(f.repoPath, fileName)
-	err := generator(serviceConfig, f.repoPath, kubeMasterURL())
+	absFileName := filepath.Join(f.repoServicePath, fileName)
+	err := generator(serviceConfig, f.repoServicePath, kubeMasterURL())
 	if err != nil {
 		if strings.Index(err.Error(), "StatusNotFound:") == 0 {
 			f.customAbort(http.StatusNotFound, service.ServiceNotFoundErr.Error())

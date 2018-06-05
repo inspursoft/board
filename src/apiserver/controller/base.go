@@ -52,6 +52,7 @@ type BaseController struct {
 	repoName        string
 	repoPath        string
 	repoServicePath string
+	repoImagePath   string
 	project         *model.Project
 	isRemoved       bool
 }
@@ -245,6 +246,12 @@ func (b *BaseController) resolveRepoPath(projectName string) {
 func (b *BaseController) resolveRepoServicePath(projectName, serviceName string) {
 	b.resolveRepoPath(projectName)
 	b.repoServicePath = filepath.Join(b.repoPath, serviceName)
+}
+
+func (b *BaseController) resolveRepoImagePath(projectName string) {
+	b.resolveRepoPath(projectName)
+	b.repoImagePath = filepath.Join(b.repoPath, "containers")
+	return
 }
 
 func (b *BaseController) resolveProjectMember(projectName string) {
