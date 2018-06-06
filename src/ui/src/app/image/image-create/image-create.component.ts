@@ -94,7 +94,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     this.customerNewImage.project_id = this.projectId;
     this.customerNewImage.project_name = this.projectName;
     this.customerNewImage.image_template = "dockerfile-template";
-    this.imageService.restImagesTemp(this.projectName).subscribe(() => {
+    this.imageService.deleteImageConfig(this.projectName).subscribe(() => {
     });
     this.intervalAutoRefreshImageList = setInterval(() => {
       if (this.isNeedAutoRefreshImageList && this.isBuildImageWIP) {
@@ -317,7 +317,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   }
 
   cleanImageConfig(err?: any) {
-    this.imageService.deleteImageConfig(this.projectName, this.customerNewImage.image_name, this.customerNewImage.image_tag)
+    this.imageService.deleteImageConfig(this.projectName)
       .subscribe(() => {
         this.updateFileList().then(()=>{
           this.isBuildImageWIP = false;
