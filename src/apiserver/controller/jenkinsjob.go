@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/utils"
 	"io/ioutil"
 	"net/http"
@@ -97,9 +98,13 @@ func (j *JenkinsJobController) Console() {
 		return
 	}
 
-	j.resolveRepoName(jobName)
+	repoName, err := service.ResolveRepoName(jobName, j.currentUser.Username)
+	if err != nil {
+		j.internalError(err)
+		return
+	}
 
-	query := jobConsole{JobName: j.repoName}
+	query := jobConsole{JobName: repoName}
 	query.BuildSerialID = strconv.Itoa(buildNumber)
 	buildConsoleURL, err := utils.GenerateURL(fmt.Sprintf(jenkinsBuildConsoleTemplateURL, jenkinsBaseURL()), query)
 	if err != nil {
@@ -199,9 +204,13 @@ func (j *JenkinsJobController) Stop() {
 		return
 	}
 
-	j.resolveRepoName(jobName)
+	repoName, err := service.ResolveRepoName(jobName, j.currentUser.Username)
+	if err != nil {
+		j.internalError(err)
+		return
+	}
 
-	query := jobConsole{JobName: j.repoName}
+	query := jobConsole{JobName: repoName}
 	query.BuildSerialID = j.GetString("build_serial_id", strconv.Itoa(lastBuildNumber))
 	stopBuildURL, err := utils.GenerateURL(fmt.Sprintf(jenkinsStopBuildTemplateURL, jenkinsBaseURL()), query)
 	if err != nil {

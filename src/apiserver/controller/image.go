@@ -441,6 +441,9 @@ func (f *ImageController) UploadDockerfileFileAction() {
 		return
 	}
 	dockerfileName := service.ResolveDockerfileName(imageName, imageTag)
+	if _, err := os.Stat(f.repoImagePath); os.IsNotExist(err) {
+		os.MkdirAll(f.repoImagePath, 0755)
+	}
 	err = f.SaveToFile("upload_file", filepath.Join(f.repoImagePath, dockerfileName))
 	if err != nil {
 		f.internalError(err)
