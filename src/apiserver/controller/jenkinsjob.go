@@ -16,7 +16,7 @@ import (
 
 const jenkinsBuildConsoleTemplateURL = "%s/job/{{.JobName}}/{{.BuildSerialID}}/consoleText"
 const jenkinsStopBuildTemplateURL = "%s/job/{{.JobName}}/{{.BuildSerialID}}/stop"
-const maxRetryCount = 600
+const maxRetryCount = 300
 const buildNumberCacheExpireSecond = time.Duration(maxRetryCount * time.Second)
 const toggleBuildingCacheExpireSecond = time.Duration(maxRetryCount * time.Second)
 

@@ -119,7 +119,7 @@ func ForkRepo(forkedUser *model.User, baseRepoName string) error {
 	}
 	repoURL := fmt.Sprintf("%s/%s/%s.git", gogitsSSHURL(), username, repoName)
 	repoPath := ResolveRepoPath(repoName, username)
-	repoHandler, err := InitRepo(repoURL, username, email, repoPath)
+	_, err = InitRepo(repoURL, username, email, repoPath)
 	if err != nil {
 		logs.Error("Failed to initialize project repo: %+v", err)
 		return err
@@ -130,7 +130,7 @@ func ForkRepo(forkedUser *model.User, baseRepoName string) error {
 		logs.Error("Failed to create Jenkins' job with project name: %s, error: %+v", repoName, err)
 		return err
 	}
-	return repoHandler.Pull()
+	return nil
 }
 
 func CreatePullRequestAndComment(username, ownerName, repoName, repoToken, compareInfo, title, message string) error {
