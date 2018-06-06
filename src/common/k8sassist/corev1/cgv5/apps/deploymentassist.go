@@ -1,6 +1,7 @@
 package apps
 
 import (
+	"errors"
 	"git/inspursoft/board/src/common/k8sassist/corev1/cgv5/types"
 	"git/inspursoft/board/src/common/model"
 
@@ -18,6 +19,10 @@ type deployments struct {
 	namespace string
 	deploy    v1beta2.DeploymentInterface
 }
+
+const (
+	namespacesErr = "Namespace value isn't consistent with project name"
+)
 
 func (d *deployments) Create(deployment *model.Deployment) (*model.Deployment, []byte, error) {
 	k8sDep := types.ToK8sDeployment(deployment)
@@ -132,10 +137,9 @@ func (d *deployments) CreateByYaml(r io.Reader) (*model.Deployment, error) {
 		return nil, err
 	}
 
-	err = types.CheckDeploymentConfig(d.namespace, deployment)
-	if err != nil {
-		logs.Error("Deployment config is error, error: %v", err)
-		return nil, err
+	if deployment.ObjectMeta.Namespace != d.namespace {
+		logs.Error(namespacesErr)
+		return nil, errors.New(namespacesErr)
 	}
 
 	deploymentInfo, err := d.deploy.Create(&deployment)
@@ -161,10 +165,9 @@ func (d *deployments) CheckYaml(r io.Reader) (*model.Deployment, error) {
 		return nil, err
 	}
 
-	err = types.CheckDeploymentConfig(d.namespace, deployment)
-	if err != nil {
-		logs.Error("Deployment config is error, error: %v", err)
-		return nil, err
+	if deployment.ObjectMeta.Namespace != d.namespace {
+		logs.Error(namespacesErr)
+		return nil, errors.New(namespacesErr)
 	}
 
 	return types.FromK8sDeployment(&deployment), nil
