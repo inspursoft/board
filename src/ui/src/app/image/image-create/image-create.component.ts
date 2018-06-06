@@ -349,7 +349,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
           this.processImageSubscription.unsubscribe();
         }
         if (consoleTextArr.find(value => value.indexOf("Finished: FAILURE") > -1)) {
-          this.cleanImageConfig();
+          // this.cleanImageConfig();
           this.processImageSubscription.unsubscribe();
         }
       }, err => err, () => {
