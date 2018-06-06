@@ -10,8 +10,6 @@ import (
 	"git/inspursoft/board/src/common/utils"
 
 	"git/inspursoft/board/src/apiserver/service"
-	"git/inspursoft/board/src/apiserver/service/devops/gogs"
-	"git/inspursoft/board/src/apiserver/service/devops/jenkins"
 
 	"strconv"
 
@@ -52,6 +50,7 @@ type BaseController struct {
 	repoName        string
 	repoPath        string
 	repoServicePath string
+	repoImagePath   string
 	project         *model.Project
 	isRemoved       bool
 }
@@ -222,15 +221,6 @@ func (b *BaseController) resolveProjectByID(projectID int64) (project *model.Pro
 	return
 }
 
-func (b *BaseController) resolveRepoName(projectName string) {
-	var err error
-	b.repoName, err = service.ResolveRepoName(projectName, b.currentUser.Username)
-	if err != nil {
-		b.customAbort(http.StatusPreconditionFailed, fmt.Sprintf("Failed to resolve repo name: %+v", err))
-	}
-	logs.Debug("Set repo name as: %s", b.repoName)
-}
-
 func (b *BaseController) resolveRepoPath(projectName string) {
 	username := b.currentUser.Username
 	repoName, err := service.ResolveRepoName(projectName, username)
@@ -245,6 +235,11 @@ func (b *BaseController) resolveRepoPath(projectName string) {
 func (b *BaseController) resolveRepoServicePath(projectName, serviceName string) {
 	b.resolveRepoPath(projectName)
 	b.repoServicePath = filepath.Join(b.repoPath, serviceName)
+}
+
+func (b *BaseController) resolveRepoImagePath(projectName string) {
+	b.resolveRepoPath(projectName)
+	b.repoImagePath = filepath.Join(b.repoPath, "containers")
 }
 
 func (b *BaseController) resolveProjectMember(projectName string) {
@@ -288,7 +283,7 @@ func (b *BaseController) resolveUserPrivilege(projectName string) {
 			logs.Error("Failed to add project: %s with member %s:", projectName, b.currentUser.Username)
 			return
 		}
-		b.forkRepo(b.currentUser, projectName)
+		service.ForkRepo(b.currentUser, projectName)
 	}
 	return
 }
@@ -352,45 +347,6 @@ func (b *BaseController) collaborateWithPullRequest(headBranch, baseBranch strin
 		logs.Error("Failed to create pull request and comment: %+v", err)
 		b.internalError(err)
 	}
-}
-
-func (b *BaseController) forkRepo(forkedUser *model.User, baseRepoName string) {
-	if forkedUser == nil {
-		b.customAbort(http.StatusPreconditionFailed, "User to be forked is nil.")
-		return
-	}
-	username := forkedUser.Username
-	email := forkedUser.Email
-	repoToken := forkedUser.RepoToken
-
-	b.resolveRepoName(baseRepoName)
-
-	gogsHandler := gogs.NewGogsHandler(username, repoToken)
-	err := gogsHandler.ForkRepo(b.project.OwnerName, baseRepoName, b.repoName, "Forked repo.")
-	if err != nil {
-		b.internalError(err)
-		return
-	}
-	gogsHandler.CreateHook(username, b.repoName)
-	if err != nil {
-		logs.Error("Failed to create hook to repo: %s, error: %+v", b.repoName, err)
-	}
-	repoURL := fmt.Sprintf("%s/%s/%s.git", gogitsSSHURL(), username, b.repoName)
-	b.resolveRepoPath(baseRepoName)
-	repoHandler, err := service.InitRepo(repoURL, username, email, b.repoPath)
-	if err != nil {
-		logs.Error("Failed to initialize project repo: %+v", err)
-		b.internalError(err)
-		return
-	}
-	jenkinsHandler := jenkins.NewJenkinsHandler()
-	err = jenkinsHandler.CreateJobWithParameter(b.repoName, username, email)
-	if err != nil {
-		logs.Error("Failed to create Jenkins' job with project name: %s, error: %+v", b.repoName, err)
-		b.internalError(err)
-		return
-	}
-	repoHandler.Pull()
 }
 
 func (b *BaseController) removeItemsToRepo(items ...string) {

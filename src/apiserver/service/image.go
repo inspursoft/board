@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"io"
@@ -17,7 +18,6 @@ import (
 
 const (
 	dockerTemplatePath  = "templates"
-	dockerfileName      = "Dockerfile"
 	templateNameDefault = "dockerfile-template"
 )
 
@@ -196,6 +196,7 @@ func BuildDockerfile(reqImageConfig model.ImageConfig, wr ...io.Writer) error {
 		return errors.New("Dockerfile path is not dir")
 	}
 
+	dockerfileName := ResolveDockerfileName(reqImageConfig.ImageName, reqImageConfig.ImageTag)
 	dockerfile, err := os.OpenFile(filepath.Join(reqImageConfig.ImageDockerfilePath, dockerfileName), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
@@ -239,10 +240,15 @@ func ImageConfigClean(path string) error {
 	return nil
 }
 
-func GetDockerfileInfo(path string) (*model.Dockerfile, error) {
+func GetDockerfileInfo(dockerfilePath, imageName, tag string) (*model.Dockerfile, error) {
+	if _, err := os.Stat(dockerfilePath); os.IsNotExist(err) {
+		return nil, err
+	}
+
 	var Dockerfile model.Dockerfile
 	var fulline string
-	dockerfile, err := os.Open(filepath.Join(path, "Dockerfile"))
+	dockerfileName := ResolveDockerfileName(imageName, tag)
+	dockerfile, err := os.Open(filepath.Join(dockerfilePath, dockerfileName))
 	if err != nil {
 		return nil, err
 	}
