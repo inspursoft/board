@@ -262,8 +262,6 @@ func (p *ImageController) ConfigCleanAction() {
 	err := os.RemoveAll(uploadedPath)
 	if err != nil {
 		logs.Error("Failed to remove uploaded path: %s, error: %+v", uploadedPath, err)
-		p.internalError(err)
-		return
 	}
 
 	//remove attachment file
@@ -448,9 +446,6 @@ func (f *ImageController) UploadDockerfileFileAction() {
 	if err != nil {
 		f.internalError(err)
 	}
-	imageURI := filepath.Join(registryBaseURI(), projectName, imageName) + ":" + imageTag
-	f.generateBuildingImageTravis(imageURI, dockerfileName)
-	f.pushItemsToRepo(".travis.yml", filepath.Join("containers", dockerfileName))
 }
 
 func (f *ImageController) DownloadDockerfileFileAction() {
@@ -490,24 +485,4 @@ func (p *ImageController) GetImageRegistryAction() {
 	registryAddr := registryBaseURI()
 	logs.Info("Docker registry is %s", registryAddr)
 	p.renderJSON(registryAddr)
-}
-
-// API to reset build image temp
-func (p *ImageController) ResetBuildImageTempAction() {
-	projectName := p.GetString("project_name")
-	p.resolveUserPrivilege(projectName)
-
-	uploadedPath := filepath.Join(baseRepoPath(), p.currentUser.Username, "upload")
-	err := os.RemoveAll(uploadedPath)
-	if err != nil {
-		logs.Error("Failed to remove uploaded path: %s", uploadedPath)
-		p.internalError(err)
-		return
-	}
-	//remove attachment file
-	err = os.Remove(filepath.Join(baseRepoPath(), p.currentUser.Username, attachmentFile))
-	if err != nil {
-		logs.Error("Failed to remove attachment file: %+v", err)
-		p.internalError(err)
-	}
 }
