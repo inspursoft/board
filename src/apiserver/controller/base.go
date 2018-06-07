@@ -101,6 +101,24 @@ func (b *BaseController) customAbort(status int, body string) {
 	b.CustomAbort(status, body)
 }
 
+func (b *BaseController) parsePostK8sError(err error) {
+	if strings.Contains(err.Error(), "No connection could be made") {
+		b.internalError(err)
+	}
+	b.customAbort(http.StatusBadRequest, err.Error())
+}
+
+func (b *BaseController) parseGetK8sError(err error) {
+	if err != nil {
+		if strings.Contains(err.Error(), "not found") {
+			b.Data["json"] = err.Error()
+			b.ServeJSON()
+			return
+		}
+		b.internalError(err)
+	}
+}
+
 func (b *BaseController) getCurrentUser() *model.User {
 	token := b.Ctx.Request.Header.Get("token")
 	if token == "" {
