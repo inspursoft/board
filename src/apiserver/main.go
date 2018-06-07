@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"git/inspursoft/board/src/apiserver/controller"
-	_ "git/inspursoft/board/src/apiserver/router"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/apiserver/service/devops/gogs"
 	"git/inspursoft/board/src/common/dao"
@@ -180,6 +179,8 @@ func main() {
 	dao.InitDB()
 
 	controller.InitController()
+	controller.InitRouter()
+
 	updateSystemInfo()
 
 	systemInfo, err := service.GetSystemInfo()
@@ -203,6 +204,5 @@ func main() {
 		//already do sync service in sync project
 		//syncServiceWithK8s()
 	}
-
 	beego.Run(":" + defaultAPIServerPort)
 }
