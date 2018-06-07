@@ -12,7 +12,7 @@
     <td class="left image-name">{{imageIndex.image_name}}</td>
     <td class="left image-tag">{{imageIndex.image_tag}}</td>
     <td class="left" [ngClass]="{'change':imageIndex.image_tag != imageTagSelected.get(imageIndex.image_name)}">
-      <cs-dropdown [dropdownDefaultText]="imageIndex.image_tag"
+      <cs-dropdown [dropdownDefaultText]="'SERVICE.SERVICE_CONTROL_LOCATE_SELECT' | translate"
                    [dropdownWidth]="150"
                    [dropdownList]="imageTagList.get(imageIndex.image_name)"
                    [dropdownListTextKey]="'image_tag'"
