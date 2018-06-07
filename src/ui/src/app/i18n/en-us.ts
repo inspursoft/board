@@ -15,7 +15,8 @@ export const LANG_EN_US = {
     "ITEMS": "items"
   },
   "GLOBAL_ALERT": {
-    "SIGN_IN": "Sign In"
+    "SIGN_IN": "Sign In",
+    "ERROR_DETAIL":"Error Detail"
   },
   "ERROR": {
     "UNKNOWN_ERROR": "Unknown error.",

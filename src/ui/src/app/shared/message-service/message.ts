@@ -1,6 +1,8 @@
 import { MESSAGE_TARGET, MESSAGE_TYPE, BUTTON_STYLE } from '../shared.const';
+import { HttpErrorResponse } from "@angular/common/http";
 
 export class Message {
+  errorObject:HttpErrorResponse | Error = null;
   title: string;
   message: string;
   target?: MESSAGE_TARGET;

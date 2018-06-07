@@ -15,7 +15,8 @@ export const LANG_ZH_CN = {
     "ITEMS": "条记录"
   },
   "GLOBAL_ALERT": {
-    "SIGN_IN": "登录"
+    "SIGN_IN": "登录",
+    "ERROR_DETAIL":"错误详情"
   },
   "ERROR": {
     "UNKNOWN_ERROR": "未知错误。",

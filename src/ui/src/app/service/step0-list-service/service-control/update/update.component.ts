@@ -47,9 +47,17 @@ export class UpdateComponent implements OnInit {
         this.imageList.forEach(value => {
           this.imageTagSelected.set(value.image_name, value.image_tag);
           this.k8sService.getImageDetailList(value.image_name)
-            .then(res => {
-              this.imageTagList.set(value.image_name, res);
-              this.actionDisabled();
+            .then((res: Array<ImageDetail>) => {
+              if (res.length == 0) {
+                let tag = new ImageDetail();
+                let tagList = Array<ImageDetail>();
+                tag.image_tag = value.image_tag;
+                tagList.push(tag);
+                this.imageTagList.set(value.image_name, tagList);
+              } else {
+                this.imageTagList.set(value.image_name, res);
+              }
+              this.setActionEnabled();
             })
             .catch(err => this.onError.next(err));
         });
@@ -65,7 +73,7 @@ export class UpdateComponent implements OnInit {
 
   changeImageTag(imageName: string, imageDetail: ImageDetail) {
     this.imageTagSelected.set(imageName, imageDetail.image_tag);
-    this.actionDisabled();
+    this.setActionEnabled();
   }
 
   actionExecute(): void {
@@ -80,14 +88,14 @@ export class UpdateComponent implements OnInit {
       .catch((err) => this.onError.emit(err));
   }
 
-  actionDisabled(): void {
-    let noImageTag: boolean = false;
+  setActionEnabled(): void {
+    let isEnable: boolean = false;
     this.imageList.forEach(value => {
-      let tagList = this.imageTagList.get(value.image_name);
-      if (!tagList || tagList.length == 0) {
-        noImageTag = true;
+      if (!isEnable) {
+        let tag = this.imageTagSelected.get(value.image_name);
+        isEnable = tag != value.image_tag;
       }
     });
-    this.onActionIsEnabled.emit(noImageTag);
+    this.onActionIsEnabled.emit(isEnable);
   }
 }

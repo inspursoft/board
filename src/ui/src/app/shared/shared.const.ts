@@ -7,7 +7,7 @@ export const DISMISS_INLINE_ALERT_INTERVAL: number = 4 * 1000;
 export const DISMISS_GLOBAL_ALERT_INTERVAL: number = 10 * 1000;
 
 export enum MESSAGE_TYPE {
-  COMMON_ERROR = 1, INVALID_USER, INTERNAL_ERROR
+  NONE, COMMON_ERROR = 1, INVALID_USER, INTERNAL_ERROR, SHOW_DETAIL
 }
 
 export const ROLES: {[key: number]: string} = {

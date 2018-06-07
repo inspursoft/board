@@ -63,11 +63,7 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
           this.isInDeployWIP = false;
         })
         .catch(err => {
-          if (err instanceof HttpErrorResponse && (err as HttpErrorResponse).status == 400) {
-            this.consoleText = (err as HttpErrorResponse).message;
-          } else {
-            this.messageService.dispatchError(err);
-          }
+          this.messageService.dispatchError(err,"",true);
           this.isDeploySuccess = false;
           this.isInDeployWIP = false;
         })
