@@ -150,6 +150,7 @@ func (p *ImageController) generateBuildingImageTravis(imageURI, dockerfileName s
 		"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
 		fmt.Sprintf("docker build -t %s -f containers/%s .", imageURI, dockerfileName),
 		fmt.Sprintf("docker push %s", imageURI),
+		fmt.Sprintf("docker rmi %s", imageURI),
 	}
 	return travisCommand.GenerateCustomTravis(p.repoPath)
 }
