@@ -13,10 +13,10 @@ import (
 )
 
 var emailReq = emailPingParam{
-	Username: "admin@inspur.com",
+	Username: "admin@myserver.com",
 	Password: "123456a?",
-	Hostname: "smtp.inspur.com",
-	Port:     25,
+	Hostname: "smtp.myserver.com",
+	Port:     12225,
 }
 
 func TestEmailPing(t *testing.T) {
