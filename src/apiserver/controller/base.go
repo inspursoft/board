@@ -116,8 +116,12 @@ func parseGetK8sError(message string) int {
 }
 
 func (b *BaseController) parseError(err error, parser func(message string) int) {
+	if parser == nil {
+		logs.Error("Error in func of parseError,error: parser is nil")
+		return
+	}
 	if err != nil {
-		b.serveJSON(parser(err.Error()), err)
+		b.customAbort(parser(err.Error()), err.Error())
 	}
 }
 
