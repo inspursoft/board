@@ -90,7 +90,7 @@ func (d *deployments) Get(name string) (*model.Deployment, []byte, error) {
 		logs.Error("Get deployment of %s/%s failed. Err:%+v", name, d.namespace, err)
 		return nil, nil, err
 	}
-
+	deployment.ObjectMeta.ResourceVersion = ""
 	deploymentfileInfo, err := yaml.Marshal(deployment)
 	if err != nil {
 		logs.Error("Marshal deployment failed, error: %v", err)
