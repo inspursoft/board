@@ -317,13 +317,14 @@ func GetDeployment(pName string, sName string) (*model.Deployment, error) {
 	return deployment, err
 }
 
-func PatchDeployment(pName string, deploymentConfig *model.Deployment) (*model.Deployment, []byte, error) {
+func PatchDeployment(pName string, sName string, deploymentConfig *model.Deployment) (*model.Deployment, []byte, error) {
 	var config k8sassist.K8sAssistConfig
 	config.K8sMasterURL = kubeMasterURL()
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 	d := k8sclient.AppV1().Deployment(pName)
 
-	deployment, deploymentFileInfo, err := d.Update(deploymentConfig)
+	//deployment, deploymentFileInfo, err := d.Update(deploymentConfig)
+	deployment, deploymentFileInfo, err := d.PatchToK8s(sName, model.StrategicMergePatchType, deploymentConfig)
 	if err != nil {
 		logs.Info("Failed to patch deployment", pName, deploymentConfig.Name)
 		return nil, nil, err

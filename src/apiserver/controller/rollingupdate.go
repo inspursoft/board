@@ -129,7 +129,7 @@ func (p *ServiceRollingUpdateController) PatchServiceAction(rollingUpdateConfig 
 		return
 	}
 
-	deploymentConfig, deploymentFileInfo, err := service.PatchDeployment(projectName, rollingUpdateConfig)
+	deploymentConfig, deploymentFileInfo, err := service.PatchDeployment(projectName, serviceName, rollingUpdateConfig)
 	if err != nil {
 		logs.Error("Failed to get service info %+v\n", err)
 		p.internalError(err)

@@ -5,6 +5,7 @@ import (
 	"git/inspursoft/board/src/common/k8sassist/corev1/cgv5/types"
 	"git/inspursoft/board/src/common/model"
 
+	"encoding/json"
 	"io"
 	"io/ioutil"
 
@@ -171,6 +172,30 @@ func (d *deployments) CheckYaml(r io.Reader) (*model.Deployment, error) {
 	}
 
 	return types.FromK8sDeployment(&deployment), nil
+}
+
+func (d *deployments) PatchToK8s(name string, pt model.PatchType, deployment *model.Deployment) (*model.Deployment, []byte, error) {
+	k8sDep := types.ToK8sDeployment(deployment)
+
+	serviceRollConfig, err := json.Marshal(k8sDep)
+	if err != nil {
+		logs.Debug("Marshal rollingUpdateConfig failed %+v\n", k8sDep)
+		return nil, nil, err
+	}
+
+	k8sDep, err = d.deploy.Patch(name, k8stypes.PatchType(pt), serviceRollConfig)
+	if err != nil {
+		logs.Error("PatchK8s deployment of %s/%s failed. Err:%+v", deployment.Name, d.namespace, err)
+		return nil, nil, err
+	}
+
+	deploymentfileInfo, err := yaml.Marshal(k8sDep)
+	if err != nil {
+		logs.Error("Marshal deployment failed, error: %v", err)
+		return nil, nil, err
+	}
+	modelDep := types.FromK8sDeployment(k8sDep)
+	return modelDep, deploymentfileInfo, nil
 }
 
 func NewDeployments(namespace string, deploy v1beta2.DeploymentInterface) *deployments {
