@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	//"fmt"
 	"git/inspursoft/board/src/common/dao"
@@ -494,8 +495,9 @@ func MarshalService(serviceConfig *model.ConfigServiceStep) *model.Service {
 		return nil
 	}
 	ports := make([]model.ServicePort, 0)
-	for _, port := range serviceConfig.ExternalServiceList {
+	for index, port := range serviceConfig.ExternalServiceList {
 		ports = append(ports, model.ServicePort{
+			Name:     "port" + strconv.Itoa(index),
 			Port:     int32(port.NodeConfig.TargetPort),
 			NodePort: int32(port.NodeConfig.NodePort),
 		})
