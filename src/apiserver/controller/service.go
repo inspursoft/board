@@ -121,7 +121,7 @@ func (p *ServiceController) DeployServiceAction() {
 
 	deployInfo, err := service.DeployService((*model.ConfigServiceStep)(configService), kubeMasterURL(), registryBaseURI())
 	if err != nil {
-		p.parsePostK8sError(err)
+		p.parseError(err, parsePostK8sError)
 		return
 	}
 
@@ -399,7 +399,7 @@ func (p *ServiceController) ToggleServiceAction() {
 		p.resolveRepoServicePath(s.ProjectName, s.Name)
 		err := service.DeployServiceByYaml(s.ProjectName, kubeMasterURL(), p.repoServicePath)
 		if err != nil {
-			p.parsePostK8sError(err)
+			p.parseError(err, parsePostK8sError)
 			return
 		}
 		// Push deployment to Git repo
@@ -456,14 +456,14 @@ func (p *ServiceController) GetServiceInfoAction() {
 
 	serviceStatus, err := service.GetServiceByK8sassist(s.ProjectName, s.Name)
 	if err != nil {
-		p.parseGetK8sError(err)
+		p.parseError(err, parseGetK8sError)
 		return
 	}
 	//Get NodeIP
 	//endpointUrl format /api/v1/namespaces/default/endpoints/
 	nodesStatus, err := service.GetNodesStatus(fmt.Sprintf("%s/api/v1/nodes", kubeMasterURL()))
 	if err != nil {
-		p.parseGetK8sError(err)
+		p.parseError(err, parseGetK8sError)
 		return
 	}
 	if len(serviceStatus.Ports) == 0 || len(nodesStatus.Items) == 0 {
@@ -487,7 +487,7 @@ func (p *ServiceController) GetServiceStatusAction() {
 	p.resolveUserPrivilegeByID(s.ProjectID)
 	serviceStatus, err := service.GetServiceByK8sassist(s.ProjectName, s.Name)
 	if err != nil {
-		p.parseGetK8sError(err)
+		p.parseError(err, parseGetK8sError)
 		return
 	}
 	p.renderJSON(serviceStatus)

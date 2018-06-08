@@ -101,21 +101,23 @@ func (b *BaseController) customAbort(status int, body string) {
 	b.CustomAbort(status, body)
 }
 
-func (b *BaseController) parsePostK8sError(err error) {
-	if strings.Contains(err.Error(), "No connection could be made") {
-		b.internalError(err)
+func parsePostK8sError(message string) int {
+	if strings.Contains(message, "No connection could be made") {
+		return http.StatusInternalServerError
 	}
-	b.customAbort(http.StatusBadRequest, err.Error())
+	return http.StatusBadRequest
 }
 
-func (b *BaseController) parseGetK8sError(err error) {
+func parseGetK8sError(message string) int {
+	if strings.Contains(message, "not found") {
+		return http.StatusNotFound
+	}
+	return http.StatusInternalServerError
+}
+
+func (b *BaseController) parseError(err error, parser func(message string) int) {
 	if err != nil {
-		if strings.Contains(err.Error(), "not found") {
-			b.Data["json"] = err.Error()
-			b.ServeJSON()
-			return
-		}
-		b.internalError(err)
+		b.serveJSON(parser(err.Error()), err)
 	}
 }
 

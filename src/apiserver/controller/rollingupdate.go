@@ -50,7 +50,7 @@ func (p *ServiceRollingUpdateController) getServiceConfig() (deploymentConfig *m
 	deploymentConfig, err = service.GetDeployment(projectName, serviceName)
 	if err != nil {
 		logs.Error("Failed to get service info %+v\n", err)
-		p.parseGetK8sError(err)
+		p.parseError(err, parseGetK8sError)
 		return
 	}
 	return
@@ -132,7 +132,7 @@ func (p *ServiceRollingUpdateController) PatchServiceAction(rollingUpdateConfig 
 	deploymentConfig, deploymentFileInfo, err := service.PatchDeployment(projectName, rollingUpdateConfig)
 	if err != nil {
 		logs.Error("Failed to get service info %+v\n", err)
-		p.parsePostK8sError(err)
+		p.parseError(err, parsePostK8sError)
 		return
 	}
 
