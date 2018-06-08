@@ -14,8 +14,8 @@ export class MessageService {
   messageConfirmedSource: Subject<Message> = new Subject<Message>();
   messageConfirmed$: Observable<Message> = this.messageConfirmedSource.asObservable();
 
-  messageCanceledSource: Subject<boolean> = new Subject<boolean>();
-  messageCanceled$: Observable<boolean> = this.messageCanceledSource.asObservable();
+  messageCanceledSource: Subject<Message> = new Subject<Message>();
+  messageCanceled$: Observable<Message> = this.messageCanceledSource.asObservable();
 
   inlineAlertAnnouncedSource: Subject<Message> = new Subject<Message>();
   inlineAlertAnnounced$: Observable<Message> = this.inlineAlertAnnouncedSource.asObservable();
@@ -31,8 +31,8 @@ export class MessageService {
     this.messageConfirmedSource.next(message);
   }
 
-  cancelMessage() {
-    this.messageCanceledSource.next(true);
+  cancelMessage(message: Message) {
+    this.messageCanceledSource.next(message);
   }
 
   inlineAlertMessage(message: Message) {

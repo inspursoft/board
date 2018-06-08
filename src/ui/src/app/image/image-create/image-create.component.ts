@@ -4,7 +4,8 @@
 
 import {
   AfterContentChecked,
-  Component, ElementRef,
+  Component,
+  ElementRef,
   EventEmitter,
   Input,
   OnDestroy,
@@ -88,6 +89,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   baseImageSource: number = 1;
   boardRegistry: string = "";
   forceQuitSubscription:Subscription;
+  cancelButtonDisable = true;
 
   constructor(private imageService: ImageService,
               private messageService: MessageService,
@@ -376,10 +378,12 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   }
 
   buildImage() {
+    this.cancelButtonDisable = true;
     this.isNewImageAlertOpen = false;
     this.isBuildImageWIP = true;
     this.consoleText = "IMAGE.CREATE_IMAGE_JENKINS_PREPARE";
     this.newImageErrReason = "";
+    setTimeout(() => this.cancelButtonDisable = false, 10000);
     let buildImageFun: () => Promise<any> = this.imageBuildMethod == ImageBuildMethod.fromTemplate ?
       this.buildImageByTemplate.bind(this) :
       this.buildImageByDockerFile.bind(this);

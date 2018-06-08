@@ -14,6 +14,13 @@ class NodeGroup implements INodeGroup {
 
   constructor() {
   }
+
+  resetStatus(){
+    this.nodegroup_comment = "";
+    this.nodegroup_id = 0;
+    this.nodegroup_name = "";
+    this.nodegroup_project = "";
+  }
 }
 
 @Component({
@@ -38,6 +45,7 @@ export class NodeCreateGroupComponent implements OnInit {
 
   showModal() {
     this.isOpen = true;
+    this.newNodeGroupData.resetStatus();
   }
 
   get checkNodeGroupNameFun() {
