@@ -356,6 +356,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
       .connect(`ws://${this.boardHost}/api/v1/jenkins-job/console?job_name=${this.customerNewImage.project_name}&token=${this.appInitService.token}`)
       .subscribe((obs: MessageEvent) => {
         this.consoleText = <string>obs.data;
+        this.cancelButtonDisable = false;
         this.areaStatus.nativeElement.scrollTop = this.areaStatus.nativeElement.scrollHeight;
         let consoleTextArr: Array<string> = this.consoleText.split(/[\n]/g);
         if (consoleTextArr.find(value => value.indexOf("Finished: SUCCESS") > -1)) {
