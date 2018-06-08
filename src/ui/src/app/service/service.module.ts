@@ -55,7 +55,8 @@ import { StatusComponent } from './step0-list-service/service-control/status/sta
     ConfigSettingComponent,
     TestingComponent,
     ServiceControlComponent,
-    DeployComponent
+    DeployComponent,
+    ServiceDetailComponent
   ],
   providers: [
     K8sService,

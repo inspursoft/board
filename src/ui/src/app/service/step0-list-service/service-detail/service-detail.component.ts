@@ -3,6 +3,8 @@ import { K8sService } from '../../service.k8s';
 import { MessageService } from '../../../shared/message-service/message.service';
 import { AppInitService } from '../../../app.init.service';
 import { Service } from "../../service";
+import { Subject } from "rxjs/Subject";
+import { Observable } from "rxjs/Observable";
 
 class NodeURL {
   url: string;
@@ -33,11 +35,13 @@ export class ServiceDetailComponent {
   serviceYamlFile: string = "";
   serviceYamlWIP: boolean = false;
   isShowServiceYaml: boolean = false;
+  closeNotification:Subject<any>;
 
   constructor(private appInitService: AppInitService,
               private k8sService: K8sService,
               private messageService: MessageService) {
     this.boardHost = this.appInitService.systemInfo['board_host'];
+    this.closeNotification = new Subject<any>();
   }
 
   get isOpenServiceDetail(): boolean {
@@ -48,11 +52,15 @@ export class ServiceDetailComponent {
     this._isOpenServiceDetail = value;
     this.isShowServiceYaml = false;
     this.isShowDeploymentYaml = false;
+    if (!value){
+      this.closeNotification.next();
+    }
   }
 
-  openModal(s: Service): void {
+  openModal(s: Service): Observable<any> {
     this.curService = s;
     this.getServiceDetail(s.service_id, s.service_project_name, s.service_owner_name);
+    return this.closeNotification.asObservable();
   }
 
   getServiceDetail(serviceId: number, projectName: string, ownerName: string): void {
@@ -73,7 +81,8 @@ export class ServiceDetailComponent {
                 route: `http://${this.boardHost}/deploy/${ownerName}/${projectName}/${this.curService.service_name}`
               };
               this.urlList.push(nodeInfo);
-              this.k8sService.addServiceRoute(nodeInfo.url, nodeInfo.identity);
+              this.k8sService.addServiceRoute(nodeInfo.url, nodeInfo.identity).then(() => {
+              });
               break;
             }
           }

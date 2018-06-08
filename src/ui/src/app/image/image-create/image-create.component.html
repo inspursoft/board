@@ -221,7 +221,7 @@
         </ng-template>
       </div>
       <div class="console-container">
-        <textarea title="" id="areaStatus" class="area-status" readonly>{{consoleText | translate}}</textarea>
+        <textarea #areaStatus title="" id="areaStatus" class="area-status" readonly>{{consoleText | translate}}</textarea>
         <div class="build-btn-container">
           <button class="btn btn-primary default-primary"
                   [disabled]="isBuildDisabled"

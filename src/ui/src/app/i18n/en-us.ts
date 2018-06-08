@@ -339,6 +339,7 @@ export const LANG_EN_US = {
     "STEP_6_CANCEL_TITLE":"Cancel deploy service",
     "STEP_6_CANCEL_MSG":"Are you sure cancel deploy this service?",
     "STEP_6_DEPLOYING":"Deploying...",
+    "STEP_6_DEPLOY_SUCCESS":"Deploy successful，the service in starting...",
     "STATUS_PREPARING": "Preparing",
     "STATUS_RUNNING": "Running",
     "STATUS_STOPPED": "Stopped",
