@@ -142,6 +142,7 @@ type DeploymentClientInterface interface {
 	//List(opts v1.ListOptions) (*DeploymentList, error)
 	List() (*model.DeploymentList, error)
 	Patch(name string, pt model.PatchType, data []byte, subresources ...string) (result *model.Deployment, err error)
+	PatchToK8s(string, model.PatchType, *model.Deployment) (*model.Deployment, []byte, error)
 	CreateByYaml(io.Reader) (*model.Deployment, error)
 	CheckYaml(io.Reader) (*model.Deployment, error)
 }
