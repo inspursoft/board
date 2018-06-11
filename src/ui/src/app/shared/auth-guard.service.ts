@@ -53,19 +53,17 @@ export class ServiceGuard implements OnDestroy, CanDeactivate<ServiceComponent> 
 
   constructor(private messageService: MessageService,
               private k8sService: K8sService) {
-    this.confirmSubscription = this.messageService.messageConfirmed$
-      .subscribe((next: Message) => {
-        if (next.target === MESSAGE_TARGET.CANCEL_BUILD_SERVICE_GUARD) {
-          this.k8sService.cancelBuildService();
-          this.serviceSubject.next(true);
-        }
-      });
-    this.cancelSubscription = this.messageService.messageCanceled$
-      .subscribe((next: Message) => {
-        if (next.target === MESSAGE_TARGET.CANCEL_BUILD_SERVICE_GUARD) {
-          this.serviceSubject.next(false);
-        }
-      });
+    this.confirmSubscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
+      if (msg.target === MESSAGE_TARGET.CANCEL_BUILD_SERVICE_GUARD) {
+        this.k8sService.cancelBuildService();
+        this.serviceSubject.next(true);
+      }
+    });
+    this.cancelSubscription = this.messageService.messageCanceled$.subscribe((msg: Message) => {
+      if (msg.target === MESSAGE_TARGET.CANCEL_BUILD_SERVICE_GUARD) {
+        this.serviceSubject.next(false);
+      }
+    });
   }
 
   ngOnDestroy() {

@@ -8,7 +8,7 @@ import { editModel } from "../user-new-edit/user-new-edit.component"
 import { AppInitService } from "../../app.init.service";
 import { Message } from "../../shared/message-service/message";
 import { MessageService } from "../../shared/message-service/message.service";
-import { BUTTON_STYLE } from "../../shared/shared.const";
+import { BUTTON_STYLE, MESSAGE_TARGET } from "../../shared/shared.const";
 
 @Component({
   selector: "user-list",
@@ -42,15 +42,17 @@ export class UserList implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this._deleteSubscription = this.messageService.messageConfirmed$.subscribe(next => {
-      this.userService.deleteUser(next.data)
-        .then(() => {
-          this.refreshData(this.oldStateInfo);
-          let m: Message = new Message();
-          m.message = "USER_CENTER.DELETE_USER_SUCCESS";
-          this.messageService.inlineAlertMessage(m);
-        })
-        .catch(err => this.messageService.dispatchError(err));
+    this._deleteSubscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
+      if (msg.target == MESSAGE_TARGET.DELETE_USER) {
+        this.userService.deleteUser(msg.data)
+          .then(() => {
+            this.refreshData(this.oldStateInfo);
+            let msg: Message = new Message();
+            msg.message = "USER_CENTER.DELETE_USER_SUCCESS";
+            this.messageService.inlineAlertMessage(msg);
+          })
+          .catch(err => this.messageService.dispatchError(err));
+      }
     });
     this.currentUserID = this.appInitService.currentUser["user_id"];
   }
@@ -100,13 +102,14 @@ export class UserList implements OnInit, OnDestroy {
 
   deleteUser(user: User) {
     if (user.user_deleted != 1 && user.user_id != 1 && user.user_id != this.currentUserID) {
-      let m: Message = new Message();
-      m.title = "USER_CENTER.DELETE_USER";
-      m.buttons = BUTTON_STYLE.DELETION;
-      m.data = user;
-      m.params = [user.user_name];
-      m.message = "USER_CENTER.CONFIRM_DELETE_USER";
-      this.messageService.announceMessage(m);
+      let msg: Message = new Message();
+      msg.target = MESSAGE_TARGET.DELETE_USER;
+      msg.title = "USER_CENTER.DELETE_USER";
+      msg.buttons = BUTTON_STYLE.DELETION;
+      msg.data = user;
+      msg.params = [user.user_name];
+      msg.message = "USER_CENTER.CONFIRM_DELETE_USER";
+      this.messageService.announceMessage(msg);
     }
   }
 

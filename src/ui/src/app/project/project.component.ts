@@ -29,23 +29,22 @@ export class ProjectComponent implements OnInit, OnDestroy {
   descSort = ClrDatagridSortOrder.DESC;
   oldStateInfo: ClrDatagridStateInterface;
   constructor(
-    private activatedRoute:ActivatedRoute,
+    private activatedRoute: ActivatedRoute,
     private appInitService: AppInitService,
     private projectService: ProjectService,
     private messageService: MessageService) {
-    this._subscription = this.messageService.messageConfirmed$.subscribe(m=>{
-      let confirmationMessage = <Message>m;
-      if(confirmationMessage) {
-        let project = <Project>confirmationMessage.data;
+    this._subscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
+      if (msg.target == MESSAGE_TARGET.DELETE_PROJECT) {
+        let project = <Project>msg.data;
         this.projectService
           .deleteProject(project)
-          .then(()=>{
+          .then(() => {
             let inlineMessage = new Message();
             inlineMessage.message = 'PROJECT.SUCCESSFUL_DELETE_PROJECT';
             this.messageService.inlineAlertMessage(inlineMessage);
             this.retrieve(this.oldStateInfo);
           })
-          .catch(err=>this.messageService.dispatchError(err, ''));
+          .catch(err => this.messageService.dispatchError(err, ''));
       }
     });
   }

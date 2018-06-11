@@ -35,12 +35,11 @@ export abstract class ServiceStepBase implements OnDestroy{
     if (this.confirmSubscription) {
       this.confirmSubscription.unsubscribe();
     }
-    this.confirmSubscription = this.messageService.messageConfirmed$
-      .subscribe((next: Message) => {
-        if (next.target == MESSAGE_TARGET.CANCEL_BUILD_SERVICE) {
-          this.k8sService.cancelBuildService();
-        }
-      });
+    this.confirmSubscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
+      if (msg.target == MESSAGE_TARGET.CANCEL_BUILD_SERVICE) {
+        this.k8sService.cancelBuildService();
+      }
+    });
     let msg: Message = new Message();
     msg.title = "SERVICE.ASK_TITLE";
     msg.buttons = BUTTON_STYLE.YES_NO;
