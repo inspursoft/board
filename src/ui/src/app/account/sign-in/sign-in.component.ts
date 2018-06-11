@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { SignIn } from './sign-in';
 import { Message } from '../../shared/message-service/message';
 import { MessageService } from '../../shared/message-service/message.service';
@@ -7,7 +7,7 @@ import { MessageService } from '../../shared/message-service/message.service';
 import { Subscription } from 'rxjs/Subscription';
 import { AppInitService } from '../../app.init.service';
 import { AccountService } from '../account.service';
-import { BUTTON_STYLE } from "../../shared/shared.const";
+import { BUTTON_STYLE, MESSAGE_TARGET } from "../../shared/shared.const";
 
 @Component({
   templateUrl: './sign-in.component.html',
@@ -23,14 +23,15 @@ export class SignInComponent implements OnInit, OnDestroy {
 
   constructor(
     private appInitService: AppInitService,
-    private messageService: MessageService, 
+    private messageService: MessageService,
     private accountService: AccountService,
     private router: Router,
     private route: ActivatedRoute
   ) {
-    this._subscription = this.messageService.messageConfirmed$.subscribe((message: any)=>{
-      let confirmationMessage = <Message>message;
-      console.error('Received:' + JSON.stringify(confirmationMessage));
+    this._subscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
+      if (msg.target == MESSAGE_TARGET.SIGN_IN_ERROR) {
+        console.error('Received:' + JSON.stringify(msg.message));
+      }
     });
     this.appInitService.systemInfo = this.route.snapshot.data['systeminfo'];
     this.authMode = this.appInitService.systemInfo['auth_mode'];
@@ -56,6 +57,7 @@ export class SignInComponent implements OnInit, OnDestroy {
         this.isSignWIP = false;
         let announceMessage = new Message();
         announceMessage.title = 'ACCOUNT.ERROR';
+        announceMessage.target = MESSAGE_TARGET.SIGN_IN_ERROR;
         announceMessage.buttons = BUTTON_STYLE.ONLY_CONFIRM;
         if(err) {
           switch(err.status){

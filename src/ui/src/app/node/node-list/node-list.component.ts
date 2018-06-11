@@ -22,22 +22,21 @@ export class NodeListComponent implements OnInit {
 
   constructor(private nodeService: NodeService,
               private messageService: MessageService) {
-    this._subscription = this.messageService.messageConfirmed$
-      .subscribe((message: Message) => {
-        if (message.target == MESSAGE_TARGET.TOGGLE_NODE) {
-          let node: INode = message.data;
-          let m: Message = new Message();
-          this.nodeService
-            .toggleNodeStatus(node.node_name, node.status != 1)
-            .subscribe(() => {
-              m.message = 'NODE.SUCCESSFUL_TOGGLE';
-              this.messageService.inlineAlertMessage(m);
-              this.retrieve();
+    this._subscription = this.messageService.messageConfirmed$.subscribe((message: Message) => {
+      if (message.target == MESSAGE_TARGET.TOGGLE_NODE) {
+        let node: INode = message.data;
+        let m: Message = new Message();
+        this.nodeService
+          .toggleNodeStatus(node.node_name, node.status != 1)
+          .subscribe(() => {
+            m.message = 'NODE.SUCCESSFUL_TOGGLE';
+            this.messageService.inlineAlertMessage(m);
+            this.retrieve();
             }, () => {
-              m.message = 'NODE.FAILED_TO_TOGGLE';
-              m.type = MESSAGE_TYPE.COMMON_ERROR;
-              this.messageService.inlineAlertMessage(m);
-            });
+            m.message = 'NODE.FAILED_TO_TOGGLE';
+            m.type = MESSAGE_TYPE.COMMON_ERROR;
+            this.messageService.inlineAlertMessage(m);
+          });
         }
       });
   }

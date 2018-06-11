@@ -4,7 +4,7 @@
 import { Component, Injector, OnDestroy, OnInit } from "@angular/core"
 import { Subscription } from "rxjs/Subscription";
 import { Message } from "../../shared/message-service/message";
-import { BUTTON_STYLE } from "../../shared/shared.const";
+import { BUTTON_STYLE, MESSAGE_TARGET } from "../../shared/shared.const";
 import { ServiceStepBase } from "../service-step";
 import { PHASE_ENTIRE_SERVICE, ServiceStepPhase, UIServiceStepBase } from "../service-step.component";
 
@@ -27,13 +27,15 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
   }
 
   ngOnInit() {
-    this._confirmSubscription = this.messageService.messageConfirmed$.subscribe((next: Message) => {
-      this.k8sService.deleteDeployment(this.serviceID)
-        .then(() => this.k8sService.stepSource.next({index: 0, isBack: false}))
-        .catch(err => {
-          this.messageService.dispatchError(err);
-          this.k8sService.stepSource.next({index: 0, isBack: false});
-        })
+    this._confirmSubscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
+      if (msg.target == MESSAGE_TARGET.DELETE_SERVICE_DEPLOYMENT) {
+        this.k8sService.deleteDeployment(this.serviceID)
+          .then(() => this.k8sService.stepSource.next({index: 0, isBack: false}))
+          .catch(err => {
+            this.messageService.dispatchError(err);
+            this.k8sService.stepSource.next({index: 0, isBack: false});
+          })
+      }
     });
   }
 
@@ -73,11 +75,12 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
   }
 
   deleteDeploy(): void {
-    let m: Message = new Message();
-    m.title = "SERVICE.STEP_6_CANCEL_TITLE";
-    m.buttons = BUTTON_STYLE.DELETION;
-    m.message = "SERVICE.STEP_6_CANCEL_MSG";
-    this.messageService.announceMessage(m);
+    let msg: Message = new Message();
+    msg.title = "SERVICE.STEP_6_DELETE_TITLE";
+    msg.buttons = BUTTON_STYLE.DELETION;
+    msg.message = "SERVICE.STEP_6_DELETE_MSG";
+    msg.target = MESSAGE_TARGET.DELETE_SERVICE_DEPLOYMENT;
+    this.messageService.announceMessage(msg);
   }
 
   deployComplete(): void {

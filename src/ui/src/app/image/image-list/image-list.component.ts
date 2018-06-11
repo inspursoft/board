@@ -35,21 +35,18 @@ export class ImageListComponent implements OnInit, OnDestroy {
               private appInitService: AppInitService,
               private messageService: MessageService) {
     this.projectsList = Array<Project>();
-    this._subscription = this.messageService.messageConfirmed$.subscribe(m => {
-      let confirmationMessage = <Message>m;
-      if (confirmationMessage && confirmationMessage.target == MESSAGE_TARGET.DELETE_IMAGE) {
-        let imageName = <string>confirmationMessage.data;
-        let m: Message = new Message();
+    this._subscription = this.messageService.messageConfirmed$.subscribe((msg:Message) => {
+      if (msg.target == MESSAGE_TARGET.DELETE_IMAGE) {
+        let imageName = <string>msg.data;
         this.imageService
           .deleteImages(imageName)
           .then(res => {
+            let m: Message = new Message();
             m.message = 'IMAGE.SUCCESSFUL_DELETED_IMAGE';
             this.messageService.inlineAlertMessage(m);
             this.retrieve();
           })
-          .catch(err => {
-             this.messageService.dispatchError(err);
-          });
+          .catch(err => this.messageService.dispatchError(err));
       }
     });
   }
