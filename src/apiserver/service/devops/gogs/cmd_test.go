@@ -15,17 +15,17 @@ import (
 )
 
 var (
-	repoName       = "testproject"
+	repoName       = "testproject11"
 	forkedRepoName = repoName
 	user1          = model.User{
-		Username: "testuser1",
+		Username: "testuser11",
 		Password: "123456a?",
-		Email:    "testuser1@inspur.com",
+		Email:    "testuser11@inspur.com",
 	}
 	user2 = model.User{
-		Username: "testuser2",
+		Username: "testuser21",
 		Password: "123456a?",
-		Email:    "testuser2@inspur.com",
+		Email:    "testuser21@inspur.com",
 	}
 
 	token1 *gogs.AccessToken
@@ -43,22 +43,11 @@ var (
 	repoPath      = utils.GetConfig("BASE_REPO_PATH")
 )
 
-func cleanUpRepos() {
-	os.RemoveAll(sshKeyPath())
-	os.RemoveAll(repoPath())
-}
-
 func TestMain(m *testing.M) {
 	utils.InitializeDefaultConfig()
-	utils.AddValue("BASE_REPO_PATH", "/tmp/test-repos")
-	utils.AddValue("SSH_KEY_PATH", "/tmp/test-keys")
-	os.Exit(func() int {
-		r := m.Run()
-		defer func() {
-			cleanUpRepos()
-		}()
-		return r
-	}())
+	utils.SetConfig("BASE_REPO_PATH", "/tmp/test-repos")
+	utils.SetConfig("SSH_KEY_PATH", "/tmp/test-keys")
+	os.Exit(m.Run())
 }
 
 func TestGogitsSignUp(t *testing.T) {
@@ -163,5 +152,6 @@ func TestDeleteRepo(t *testing.T) {
 
 	err = gogs.NewGogsHandler(user2.Username, token2.Sha1).DeleteRepo(forkedRepoName)
 	assert.Nil(err, "Error occurred while deleting repo: %+v to %s", err, user2.Username)
-	cleanUpRepos()
+	os.RemoveAll(sshKeyPath())
+	os.RemoveAll(repoPath())
 }

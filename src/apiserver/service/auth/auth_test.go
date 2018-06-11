@@ -19,6 +19,10 @@ const (
 	initialPassword = "123456a?"
 )
 
+var (
+	sshKeyPath = utils.GetConfig("SSH_KEY_PATH")
+)
+
 func updateAdminPassword() {
 	salt := utils.GenerateRandomString()
 	encryptedPassword := utils.Encrypt(initialPassword, salt)
@@ -36,6 +40,7 @@ func updateAdminPassword() {
 
 func TestMain(m *testing.M) {
 	utils.InitializeDefaultConfig()
+	utils.AddValue("SSH_KEY_PATH", "/tmp/test-keys")
 	dao.InitDB()
 	updateAdminPassword()
 	os.Exit(m.Run())
