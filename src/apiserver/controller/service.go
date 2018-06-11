@@ -43,6 +43,7 @@ const (
 	stopped
 	uncompleted
 	warning
+	deploying
 )
 
 type ServiceController struct {
@@ -153,7 +154,7 @@ func (p *ServiceController) DeployServiceAction() {
 		return
 	}
 
-	updateService := model.ServiceStatus{ID: serviceInfo.ID, Status: running, ServiceConfig: string(serviceConfig)}
+	updateService := model.ServiceStatus{ID: serviceInfo.ID, Status: uncompleted, ServiceConfig: string(serviceConfig)}
 	_, err = service.UpdateService(updateService, "id", "status", "service_config")
 	if err != nil {
 		p.internalError(err)
