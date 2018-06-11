@@ -57,6 +57,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
     });
     this.k8sService.getServiceConfig(this.stepPhase).then(res => {
       this.uiBaseData = res;
+      this.setServiceName(this.uiData.serviceName);
       this.changeDetectorRef.detectChanges();
     });
     this.k8sService.getNodeSelectors().subscribe((res:Array<string>)=>{
@@ -108,9 +109,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
     /*Todo:add reset the Collaborative service Info*/
     this.collaborativeServiceList.splice(0, this.collaborativeServiceList.length);
     this.k8sService.getCollaborativeService(serviceName, this.uiData.projectName)
-      .then(res => {
-        this.collaborativeServiceList = res;
-      })
+      .then(res => this.collaborativeServiceList = res);
   }
 
   addContainerInfo() {

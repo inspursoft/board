@@ -17,7 +17,6 @@ enum CreateServiceMethod{None, Wizards, YamlFile, DevOps}
   styleUrls: ["./list-service.component.css"]
 })
 export class ListServiceComponent extends ServiceStepBase implements OnInit, OnDestroy {
-  @ViewChild(ServiceDetailComponent) serviceDetailComponent;
   currentUser: {[key: string]: any};
   services: Service[];
   isInLoading: boolean = false;
@@ -197,8 +196,11 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
     }
   }
 
-  openServiceDetail(s: Service) {
-    this.serviceDetailComponent.openModal(s);
+  openServiceDetail(service: Service) {
+    let factory = this.factory.resolveComponentFactory(ServiceDetailComponent);
+    let componentRef = this.viewRef.createComponent(factory);
+    componentRef.instance.openModal(service)
+      .subscribe(() => this.viewRef.remove(this.viewRef.indexOf(componentRef.hostView)));
   }
 
   openServiceControl(service: Service) {

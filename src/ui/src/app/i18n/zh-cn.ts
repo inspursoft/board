@@ -339,6 +339,7 @@ export const LANG_ZH_CN = {
     "STEP_6_CANCEL_TITLE":"取消部署服务",
     "STEP_6_CANCEL_MSG":"你确定要取消部署服务么？",
     "STEP_6_DEPLOYING":"准备部署...",
+    "STEP_6_DEPLOY_SUCCESS":"服务部署成功，启动中...",
     "STATUS_PREPARING": "创建中",
     "STATUS_RUNNING": "运行中",
     "STATUS_STOPPED": "已停止",

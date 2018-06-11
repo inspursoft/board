@@ -2,7 +2,19 @@
  * Created by liyanq on 21/11/2017.
  */
 
-import { AfterContentChecked, Component, EventEmitter, Input, OnDestroy, OnInit, Output, QueryList, ViewChildren } from "@angular/core"
+import {
+  AfterContentChecked,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  QueryList,
+  ViewChild,
+  ViewChildren
+} from "@angular/core"
 import { CsInputArrayComponent } from "../../shared/cs-components-library/cs-input-array/cs-input-array.component";
 import { CsInputComponent } from "../../shared/cs-components-library/cs-input/cs-input.component";
 import { BuildImageData, Image, ImageDetail } from "../image";
@@ -36,6 +48,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   _isOpen: boolean = false;
   @ViewChildren(CsInputArrayComponent) inputArrayComponents: QueryList<CsInputArrayComponent>;
   @ViewChildren(CsInputComponent) inputComponents: QueryList<CsInputComponent>;
+  @ViewChild("areaStatus") areaStatus: ElementRef;
   @Input() projectId: number = 0;
   @Input() projectName: string = "";
   @Input() imageBuildMethod: ImageBuildMethod = ImageBuildMethod.fromTemplate;
@@ -76,6 +89,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   baseImageSource: number = 1;
   boardRegistry: string = "";
   forceQuitSubscription:Subscription;
+  cancelButtonDisable = true;
 
   constructor(private imageService: ImageService,
               private messageService: MessageService,
@@ -342,6 +356,8 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
       .connect(`ws://${this.boardHost}/api/v1/jenkins-job/console?job_name=${this.customerNewImage.project_name}&token=${this.appInitService.token}`)
       .subscribe((obs: MessageEvent) => {
         this.consoleText = <string>obs.data;
+        this.cancelButtonDisable = false;
+        this.areaStatus.nativeElement.scrollTop = this.areaStatus.nativeElement.scrollHeight;
         let consoleTextArr: Array<string> = this.consoleText.split(/[\n]/g);
         if (consoleTextArr.find(value => value.indexOf("Finished: SUCCESS") > -1)) {
           this.isNeedAutoRefreshImageList = true;
@@ -363,10 +379,12 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   }
 
   buildImage() {
+    this.cancelButtonDisable = true;
     this.isNewImageAlertOpen = false;
     this.isBuildImageWIP = true;
     this.consoleText = "IMAGE.CREATE_IMAGE_JENKINS_PREPARE";
     this.newImageErrReason = "";
+    setTimeout(() => this.cancelButtonDisable = false, 10000);
     let buildImageFun: () => Promise<any> = this.imageBuildMethod == ImageBuildMethod.fromTemplate ?
       this.buildImageByTemplate.bind(this) :
       this.buildImageByDockerFile.bind(this);

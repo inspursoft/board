@@ -6,7 +6,6 @@ import { Subscription } from "rxjs/Subscription";
 import { Message } from "../../shared/message-service/message";
 import { BUTTON_STYLE } from "../../shared/shared.const";
 import { ServiceStepBase } from "../service-step";
-import { HttpErrorResponse } from "@angular/common/http"
 import { PHASE_ENTIRE_SERVICE, ServiceStepPhase, UIServiceStepBase } from "../service-step.component";
 
 @Component({
@@ -59,6 +58,9 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
         .then(res => {
           this.serviceID = res['service_id'];
           this.consoleText = JSON.stringify(res);
+          let msg: Message = new Message();
+          msg.message = "SERVICE.STEP_6_DEPLOY_SUCCESS";
+          this.messageService.inlineAlertMessage(msg);
           this.isDeploySuccess = true;
           this.isInDeployWIP = false;
         })
