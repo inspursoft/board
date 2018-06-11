@@ -1,7 +1,8 @@
-package service
+package service_test
 
 import (
 	"fmt"
+	"git/inspursoft/board/src/tokenserver/service"
 	"os"
 	"testing"
 	"time"
@@ -26,11 +27,11 @@ var PAYLOARD = map[string]interface{}{
 func TestInitService(t *testing.T) {
 	assert := assert.New(t)
 	os.Remove("app.conf")
-	err := InitService()
+	err := service.InitService()
 	assert.NotNil(err, "Init service without config file should failed")
 
 	os.Setenv("TOKEN_EXPIRE_TIME", "abc")
-	err = InitService()
+	err = service.InitService()
 	assert.NotNil(err, "Init service with wrong configfile should failed")
 }
 
@@ -38,12 +39,12 @@ func TestSign(t *testing.T) {
 	assert := assert.New(t)
 
 	// nil condition
-	token, err := Sign(nil)
+	token, err := service.Sign(nil)
 	assert.Nil(err, fmt.Sprintf("Sign nil map error: %+v", err))
 	assert.NotEmpty(token, "The sign token is empty")
 
 	// empty map
-	token, err = Sign(make(map[string]interface{}))
+	token, err = service.Sign(make(map[string]interface{}))
 	assert.Nil(err, fmt.Sprintf("Sign empty map error: %+v", err))
 	assert.NotEmpty(token, "The sign token is empty")
 }
@@ -51,10 +52,10 @@ func TestSign(t *testing.T) {
 func TestTokenWithInvalidPayload(t *testing.T) {
 	assert := assert.New(t)
 
-	_, err := Verify(TOKEN_BAD)
+	_, err := service.Verify(TOKEN_BAD)
 	assert.NotNil(err, "Verify bad token should failed")
 
-	_, err = Verify(TOKEN_OTHER_SIGNMETHOD)
+	_, err = service.Verify(TOKEN_OTHER_SIGNMETHOD)
 	assert.NotNil(err, "Verify ECDSASHA256 signed token should failed")
 }
 
@@ -63,21 +64,21 @@ func TestTokenWithValidPayload(t *testing.T) {
 
 	// test timeout token
 	os.Setenv("TOKEN_EXPIRE_TIME", "1")
-	InitService()
-	token, err := Sign(PAYLOARD)
+	service.InitService()
+	token, err := service.Sign(PAYLOARD)
 	assert.Nil(err, fmt.Sprintf("Sign payload error: %+v", err))
 	assert.NotEmpty(token, "The sign token is empty")
 	time.Sleep(2 * time.Second)
-	v, err := Verify(token)
+	v, err := service.Verify(token)
 	assert.NotNil(err, fmt.Sprintf("Verify token should timeout error: %+v", err))
 
 	// normal test
 	os.Setenv("TOKEN_EXPIRE_TIME", "1200")
-	InitService()
-	token, err = Sign(PAYLOARD)
+	service.InitService()
+	token, err = service.Sign(PAYLOARD)
 	assert.Nil(err, fmt.Sprintf("Sign payload error: %+v", err))
 	assert.NotEmpty(token, "The sign token is empty")
-	v, err = Verify(token)
+	v, err = service.Verify(token)
 	assert.Nil(err, fmt.Sprintf("Verify token error: %+v", err))
 	assert.Equal(PAYLOARD, v, "Verify origin payload error")
 

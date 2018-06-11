@@ -1,7 +1,9 @@
-package jenkins
+package jenkins_test
 
 import (
+	"git/inspursoft/board/src/apiserver/service/devops/jenkins"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
 	"os"
 	"testing"
 
@@ -17,6 +19,7 @@ func cleanUp() {
 }
 
 func TestMain(m *testing.M) {
+	utils.InitializeDefaultConfig()
 	os.Exit(func() int {
 		prepare()
 		m.Run()
@@ -32,7 +35,7 @@ var user = model.User{
 }
 
 func TestCreateJob(t *testing.T) {
-	err := NewJenkinsHandler().CreateJob("target10")
+	err := jenkins.NewJenkinsHandler().CreateJobWithParameter("testproject", user.Username, user.Email)
 	assert := assert.New(t)
 	assert.Nilf(err, "Error occurred while creating job: %+v", err)
 }

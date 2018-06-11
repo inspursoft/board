@@ -1,8 +1,9 @@
-package controller
+package controller_test
 
 import (
 	"bytes"
 	"encoding/json"
+	"git/inspursoft/board/src/apiserver/controller"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -14,26 +15,26 @@ import (
 )
 
 func getNodeBodys() ([][]byte, error) {
-	bodies := []NodeBodyReqPara{
-		NodeBodyReqPara{
+	bodies := []controller.NodeBodyReqPara{
+		controller.NodeBodyReqPara{
 			TimeUnit:      "second",
 			TimeCount:     1,
 			TimestampBase: time.Now().Second(),
 			DurationTime:  0,
 		},
-		NodeBodyReqPara{
+		controller.NodeBodyReqPara{
 			TimeUnit:      "minute",
 			TimeCount:     1,
 			TimestampBase: time.Now().Second(),
 			DurationTime:  0,
 		},
-		NodeBodyReqPara{
+		controller.NodeBodyReqPara{
 			TimeUnit:      "hour",
 			TimeCount:     1,
 			TimestampBase: time.Now().Second(),
 			DurationTime:  0,
 		},
-		NodeBodyReqPara{
+		controller.NodeBodyReqPara{
 			TimeUnit:      "day",
 			TimeCount:     1,
 			TimestampBase: time.Now().Second(),

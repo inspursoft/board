@@ -1,8 +1,9 @@
-package controller
+package controller_test
 
 import (
 	"bytes"
 	"encoding/json"
+	"git/inspursoft/board/src/apiserver/controller"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -13,26 +14,26 @@ import (
 )
 
 func getServiceBodys() ([][]byte, error) {
-	bodies := []ServiceBodyPara{
-		ServiceBodyPara{
+	bodies := []controller.ServiceBodyPara{
+		controller.ServiceBodyPara{
 			TimeUnit:      "second",
 			TimeCount:     1,
 			TimestampBase: time.Now().Second(),
 			DurationTime:  0,
 		},
-		ServiceBodyPara{
+		controller.ServiceBodyPara{
 			TimeUnit:      "minute",
 			TimeCount:     1,
 			TimestampBase: time.Now().Second(),
 			DurationTime:  0,
 		},
-		ServiceBodyPara{
+		controller.ServiceBodyPara{
 			TimeUnit:      "hour",
 			TimeCount:     1,
 			TimestampBase: time.Now().Second(),
 			DurationTime:  0,
 		},
-		ServiceBodyPara{
+		controller.ServiceBodyPara{
 			TimeUnit:      "day",
 			TimeCount:     1,
 			TimestampBase: time.Now().Second(),

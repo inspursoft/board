@@ -1,6 +1,7 @@
-package travis
+package travis_test
 
 import (
+	"git/inspursoft/board/src/apiserver/service/devops/travis"
 	"os"
 	"testing"
 
@@ -9,7 +10,7 @@ import (
 )
 
 func TestGenerateCustomTravis(t *testing.T) {
-	var travisCommand TravisCommand
+	var travisCommand travis.TravisCommand
 	travisCommand.Script.Commands = []string{
 		"token=`cat key.txt`",
 		"status=`curl -I http://apiserver:8088/api/v1/files/download?token=$token 2>/dev/null | head -n 1 | cut -d$' ' -f2`",
@@ -26,10 +27,10 @@ func TestGenerateCustomTravis(t *testing.T) {
 }
 
 func TestParseCustomTravis(t *testing.T) {
-	var travisCommand TravisCommand
+	var travisCommand travis.TravisCommand
 	err := travisCommand.ParseCustomTravis(".")
 	assert := assert.New(t)
 	assert.Nilf(err, "Failed to parse custom travis: %+v", err)
 	logs.Debug("Parsed custom Travis command: %+v", travisCommand)
-	os.Remove(travisFilename)
+	os.Remove(travis.TravisFilename)
 }

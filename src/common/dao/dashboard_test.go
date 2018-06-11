@@ -1,19 +1,20 @@
-package dao
+package dao_test
 
 import (
 	"fmt"
+	"git/inspursoft/board/src/common/dao"
 	"testing"
 )
 
 func TestGetDashboardServiceList(t *testing.T) {
-	s := DashboardNodeDao{}
+	s := dao.DashboardNodeDao{}
 	s.TimeCount = 499
 	s.TimeUnit = "second"
 	s.TimeStamp = 1501586374
 	fmt.Println(s.GetTotalNodeData())
 	fmt.Println(s.GetNodeListData())
 	fmt.Println(s.GetNodeData())
-	se := DashboardServiceDao{}
+	se := dao.DashboardServiceDao{}
 	se.TimeCount = 499
 	se.TimeStamp = 1500372187
 	se.DuraTime = 100000

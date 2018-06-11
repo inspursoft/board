@@ -1,7 +1,8 @@
-package dao
+package dao_test
 
 import (
 	"fmt"
+	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"os"
 	"testing"
@@ -17,5 +18,6 @@ func TestMain(m *testing.M) {
 
 	orm.RegisterDriver("mysql", orm.DRMySQL)
 	orm.RegisterDataBase("default", "mysql", fmt.Sprintf("root:%s@tcp(%s:%s)/board?charset=utf8", dbPassword, dbIP, dbPort))
+	model.InitModelDB()
 	os.Exit(m.Run())
 }
