@@ -720,11 +720,7 @@ func (f *ServiceController) resolveDownloadYaml(serviceConfig *model.ServiceStat
 	absFileName := filepath.Join(f.repoServicePath, fileName)
 	err := generator(serviceConfig, f.repoServicePath, kubeMasterURL())
 	if err != nil {
-		if strings.Index(err.Error(), "StatusNotFound:") == 0 {
-			f.customAbort(http.StatusNotFound, service.ServiceNotFoundErr.Error())
-			return
-		}
-		f.internalError(err)
+		f.parseError(err, parseGetK8sError)
 		return
 	}
 	logs.Info("User: %s downloaded %s YAML file.", f.currentUser.Username, fileName)
