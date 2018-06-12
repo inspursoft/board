@@ -30,7 +30,7 @@ export class CsInputComponent implements OnInit {
   inputValidatorFns: Array<ValidatorFn>;
   inputValidatorMessageParam: string;
   inputField: CsInputFiled;
-  @ViewChild("input") inputHtml;
+  @ViewChild("input") inputHtml: ElementRef;
   @ViewChild("container") containerHtml: ElementRef;
   @Input() inputLabel: string = "";
   @Input() inputLabelMinWidth: string = "180px";
