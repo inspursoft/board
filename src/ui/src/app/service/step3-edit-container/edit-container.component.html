@@ -7,7 +7,7 @@
       </div>
       <span class="edit-container-title base-margin-left">{{container.name}}:</span>
     </div>
-    <div *ngIf="step3TypeStatus.get(container)" class="edit-container-filed-container">
+    <div [hidden]="!step3TypeStatus.get(container)" class="edit-container-filed-container">
       <cs-input [inputLabel]="'SERVICE.STEP_3_CONTAINER_NAME' | translate"
                 [inputIsRequired]="true"
                 [inputPattern]="patternContainerName"

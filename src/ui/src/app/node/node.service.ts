@@ -88,8 +88,9 @@ export class NodeService {
     return this.http.post(`/api/v1/nodegroup`, group, {observe: "response"})
   }
 
-  deleteNodeGroup(groupId: number): Observable<HttpResponse<Object>> {
-    return this.http.delete(`/api/v1/nodegroup/${groupId}`, {observe: "response"})
+  deleteNodeGroup(groupId: number, nodeGroupName: string): Observable<HttpResponse<Object>> {
+    return this.http.delete(`/api/v1/nodegroup/${groupId}`,
+      {observe: "response", params: {groupname: nodeGroupName}})
   }
 
   checkNodeGroupExist(groupName: string): Observable<HttpResponse<Object>> {

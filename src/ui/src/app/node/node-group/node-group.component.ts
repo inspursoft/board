@@ -24,7 +24,7 @@ export class NodeGroupComponent implements OnInit, AfterViewInit, OnDestroy {
     this._deleteSubscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
       if (msg.target == MESSAGE_TARGET.DELETE_NODE_GROUP) {
         let inlineMessage: Message = new Message();
-        this.nodeService.deleteNodeGroup(msg.data).subscribe(() => {
+        this.nodeService.deleteNodeGroup(msg.data,msg.params[0]).subscribe(() => {
           inlineMessage.message = "NODE.NODE_GROUP_DELETE_SUCCESS";
           this.messageService.inlineAlertMessage(inlineMessage);
           this.refreshList();

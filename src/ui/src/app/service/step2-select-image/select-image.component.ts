@@ -165,8 +165,8 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
         this.uiData.imageList.push(newImageIndex);
       }
     });
-    this.k8sService.setServiceConfig(this.uiData.uiToServer()).then(res => {
-      this.k8sService.stepSource.next({index: 3, isBack: false});
-    });
+    this.k8sService.setServiceConfig(this.uiData.uiToServer()).then(() =>
+      this.k8sService.stepSource.next({index: 3, isBack: false})
+    ).catch(err => this.messageService.dispatchError(err));
   }
 }

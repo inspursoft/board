@@ -1,11 +1,14 @@
-import { Component, OnInit, AfterContentChecked, QueryList, ViewChildren, Injector } from '@angular/core';
 import {
-  PHASE_CONFIG_CONTAINERS,
-  Container,
-  ServiceStepPhase,
-  UIServiceStep3,
-  EnvStruct
-} from '../service-step.component';
+  AfterContentChecked,
+  ChangeDetectorRef,
+  Component,
+  Injector,
+  OnInit,
+  QueryList,
+  ViewChildren,
+  ViewContainerRef
+} from '@angular/core';
+import { Container, EnvStruct, PHASE_CONFIG_CONTAINERS, ServiceStepPhase, UIServiceStep3 } from '../service-step.component';
 import { EnvType } from "../../shared/environment-value/environment-value.component";
 import { CsInputComponent } from "../../shared/cs-components-library/cs-input/cs-input.component";
 import { CsInputArrayComponent } from "../../shared/cs-components-library/cs-input-array/cs-input-array.component";
@@ -177,9 +180,32 @@ export class EditContainerComponent extends ServiceStepBase implements OnInit, A
     this.k8sService.stepSource.next({index: 2, isBack: true});
   }
 
-  forward(): void {
-    this.k8sService.setServiceConfig(this.uiData.uiToServer()).then(res => {
-      this.k8sService.stepSource.next({index: 4, isBack: false});
+  verifyContainerName(): boolean {
+    return this.uiData.containerList.every((container: Container, index: number) => {
+      let result = this.patternContainerName.test(container.name);
+      if (!result) {
+        this.step3TypeStatus.set(container, true);
+        let inputComponent = this.inputComponents.find((item: CsInputComponent) => item.inputField.value == container.name);
+        if (inputComponent) {
+          setTimeout(()=>{
+            inputComponent.onEditClick();
+            inputComponent.onCheckClick().then(() => {
+              inputComponent.inputHtml.nativeElement.blur();
+              inputComponent.inputHtml.nativeElement.focus();
+            });
+          })
+
+        }
+      }
+      return result
     });
+  }
+
+  forward(): void {
+    if (this.verifyContainerName()) {
+      this.k8sService.setServiceConfig(this.uiData.uiToServer()).then(() =>
+        this.k8sService.stepSource.next({index: 4, isBack: false})
+      ).catch(err => this.messageService.dispatchError(err));
+    }
   }
 }
