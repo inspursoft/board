@@ -194,7 +194,6 @@ export class EditContainerComponent extends ServiceStepBase implements OnInit, A
               inputComponent.inputHtml.nativeElement.focus();
             });
           })
-
         }
       }
       return result
