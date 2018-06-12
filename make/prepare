@@ -160,7 +160,6 @@ jenkins_env = os.path.join(config_dir, "jenkins", "env")
 gogits_config_dir = os.path.join(config_dir, "gogits")
 if not os.path.exists(gogits_config_dir):
     os.makedirs(os.path.join(config_dir, "gogits"))
-gogits_env = os.path.join(config_dir, "gogits", "env")
 gogits_conf = os.path.join(config_dir, "gogits", "conf", "app.ini")
 
 grafana_config_dir = os.path.join(config_dir, "grafana")
@@ -242,10 +241,6 @@ render(os.path.join(templates_dir, "jenkins", "env"),
         jenkins_node_password=jenkins_node_password,
         jenkins_node_volume=jenkins_node_volume)
     
-render(os.path.join(templates_dir, "gogits", "env"),
-        gogits_env,
-        jenkins_job_trigger_url="http://%s:%s/job/<JOBNAME>/buildWithParameters"%(jenkins_host_ip, jenkins_host_port))
-
 render(os.path.join(templates_dir, "gogits", "app.ini"),
         gogits_conf,
         gogits_host_ip=gogits_host_ip,

@@ -10,22 +10,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func prepare() {
-
-}
-
-func cleanUp() {
-
-}
-
 func TestMain(m *testing.M) {
 	utils.InitializeDefaultConfig()
-	os.Exit(func() int {
-		prepare()
-		m.Run()
-		cleanUp()
-		return 0
-	}())
+	os.Exit(m.Run())
 }
 
 var user = model.User{

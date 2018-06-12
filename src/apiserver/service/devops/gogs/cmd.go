@@ -216,7 +216,7 @@ func (g *gogsHandler) CreatePullRequest(ownerName, baseRepoName, title, content,
 		return nil
 	}, &opt, func(req *http.Request, resp *http.Response) error {
 		if resp.StatusCode >= http.StatusInternalServerError {
-			return fmt.Errorf("unexpected error occurred with response status code: %+d", resp.StatusCode)
+			return fmt.Errorf("unexpected error occurred with response status code: %d", resp.StatusCode)
 		}
 		err := utils.UnmarshalToJSON(resp.Body, &prInfo)
 		if err != nil {

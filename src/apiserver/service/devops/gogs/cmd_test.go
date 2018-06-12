@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/stretchr/testify/assert"
@@ -130,7 +131,7 @@ func TestGogitsCreatePullRequest(t *testing.T) {
 	service.CreateFile("test.txt", "This is another test file.", filepath.Join(repoPath(), user2.Username))
 	err = repoHandler.SimplePush("test.txt")
 	assert.Nilf(err, "Failed to push files to repo: %+v", err)
-
+	time.Sleep(time.Second * 3)
 	prInfo, err = gogs.NewGogsHandler(user2.Username, token2.Sha1).
 		CreatePullRequest(user1.Username, repoName, "Update readme.md", "Update readme.md111", fmt.Sprintf("%s...%s:%s", defaultBranch, user2.Username, defaultBranch))
 	assert.Nilf(err, "Error occurred while creating pull request: %+v", err)
