@@ -40,7 +40,7 @@ type TravisCommand struct {
 	} `yaml:",inline"`
 }
 
-var travisFilename = ".travis.yml"
+var TravisFilename = ".travis.yml"
 
 func unmarshal(filename string, command *TravisCommand) error {
 	data, err := ioutil.ReadFile(filename)
@@ -59,9 +59,9 @@ func marshal(filename string, command *TravisCommand) error {
 }
 
 func (tc *TravisCommand) GenerateCustomTravis(targetPath string) error {
-	return marshal(filepath.Join(targetPath, travisFilename), tc)
+	return marshal(filepath.Join(targetPath, TravisFilename), tc)
 }
 
 func (tc *TravisCommand) ParseCustomTravis(sourcePath string) error {
-	return unmarshal(filepath.Join(sourcePath, travisFilename), tc)
+	return unmarshal(filepath.Join(sourcePath, TravisFilename), tc)
 }

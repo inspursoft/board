@@ -40,15 +40,7 @@ func NewJenkinsHandler() *jenkinsHandler {
 	return &jenkinsHandler{}
 }
 
-func (j *jenkinsHandler) CreateJob(projectName string) error {
-	return utils.SimplePostRequestHandle(fmt.Sprintf("%s/createItem?name=%s&mode=copy&from=base", jenkinsBaseURL(), projectName), nil, nil)
-}
-
 func (j *jenkinsHandler) CreateJobWithParameter(projectName, username, email string) error {
 	repoURL := fmt.Sprintf("%s/%s/%s.git", gogitsBaseURL(), username, projectName)
 	return utils.SimpleGetRequestHandle(fmt.Sprintf("%s/job/%s/buildWithParameters?F00=%s&&F01=%s&F02=%s&F03=%s", jenkinsBaseURL(), seedJobName, projectName, repoURL, username, email))
-}
-
-func (j *jenkinsHandler) ToggleJob(projectName, action string) error {
-	return utils.SimplePostRequestHandle(fmt.Sprintf("%s/job/%s/%s", jenkinsBaseURL(), projectName, action), nil, nil)
 }

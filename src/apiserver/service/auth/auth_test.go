@@ -1,8 +1,9 @@
-package auth
+package auth_test
 
 import (
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/apiserver/service/auth"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
@@ -16,6 +17,10 @@ import (
 const (
 	adminUserID     = 1
 	initialPassword = "123456a?"
+)
+
+var (
+	sshKeyPath = utils.GetConfig("SSH_KEY_PATH")
 )
 
 func updateAdminPassword() {
@@ -35,6 +40,7 @@ func updateAdminPassword() {
 
 func TestMain(m *testing.M) {
 	utils.InitializeDefaultConfig()
+	utils.AddValue("SSH_KEY_PATH", "/tmp/test-keys")
 	dao.InitDB()
 	updateAdminPassword()
 	os.Exit(m.Run())
@@ -42,7 +48,7 @@ func TestMain(m *testing.M) {
 
 func TestSignIn(t *testing.T) {
 	assert := assert.New(t)
-	currentAuth, err := GetAuth("db_auth")
+	currentAuth, err := auth.GetAuth("db_auth")
 	u, err := (*currentAuth).DoAuth("admin", "123456a?")
 	assert.Nil(err, "Error occurred while calling SignIn method.")
 	assert.NotNil(u, "User is nil.")
@@ -61,7 +67,7 @@ func TestSignInLdap(t *testing.T) {
 	utils.SetConfig("LDAP_SCOPE", "")
 	utils.SetConfig("LDAP_TIMEOUT", "5")
 	assert := assert.New(t)
-	currentAuth, err := GetAuth("ldap_auth")
+	currentAuth, err := auth.GetAuth("ldap_auth")
 	u, err := (*currentAuth).DoAuth(`test`, `123456`)
 	assert.Nil(err, "Error occurred while calling SignIn method.")
 	assert.NotNil(u, "User is nil.")

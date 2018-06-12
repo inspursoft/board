@@ -28,8 +28,6 @@ services:
   gogits:
     image: board_gogits:__version__
     restart: always
-    env_file:
-      - ../config/gogits/env
     volumes:
       - /data/board/gogits:/data:rw
       - ../config/gogits/conf/app.ini:/tmp/conf/app.ini

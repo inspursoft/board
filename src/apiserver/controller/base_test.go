@@ -1,6 +1,7 @@
-package controller
+package controller_test
 
 import (
+	"git/inspursoft/board/src/apiserver/controller"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
@@ -19,7 +20,7 @@ const (
 )
 
 func init() {
-	InitRouter()
+	controller.InitRouter()
 	orm.RegisterModel(new(dashboard.NodeDashboardMinute), new(dashboard.NodeDashboardHour), new(dashboard.NodeDashboardDay))
 }
 
@@ -58,6 +59,6 @@ func TestMain(m *testing.M) {
 
 	dao.InitDB()
 	updateAdminPassword()
-	InitController()
+	controller.InitController()
 	os.Exit(m.Run())
 }
