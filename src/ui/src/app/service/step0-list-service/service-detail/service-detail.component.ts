@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { K8sService } from '../../service.k8s';
 import { MessageService } from '../../../shared/message-service/message.service';
 import { AppInitService } from '../../../app.init.service';
@@ -26,22 +26,25 @@ class NodeURL {
 export class ServiceDetailComponent {
   _isOpenServiceDetail: boolean = false;
   boardHost: string;
-  serviceDetail: string = "";
+  serviceDetail: Object = {};
   urlList: Array<NodeURL>;
   curService: Service;
   deploymentYamlFile: string = "";
   deploymentYamlWIP: boolean = false;
   isShowDeploymentYaml: boolean = false;
+  isShowServiceYaml: boolean = false;
+  isShowServiceInfo: boolean = true;
   serviceYamlFile: string = "";
   serviceYamlWIP: boolean = false;
-  isShowServiceYaml: boolean = false;
   closeNotification:Subject<any>;
 
   constructor(private appInitService: AppInitService,
               private k8sService: K8sService,
+              private change:ChangeDetectorRef,
               private messageService: MessageService) {
     this.boardHost = this.appInitService.systemInfo['board_host'];
     this.closeNotification = new Subject<any>();
+    this.change.detach();
   }
 
   get isOpenServiceDetail(): boolean {
@@ -65,7 +68,6 @@ export class ServiceDetailComponent {
 
   getServiceDetail(serviceId: number, projectName: string, ownerName: string): void {
     this.urlList = [];
-    this.serviceDetail = "";
     this.k8sService.getServiceDetail(serviceId).then(res => {
       if (!res["details"]) {
         let arrNodePort = res["node_Port"] as Array<number>;
@@ -88,7 +90,8 @@ export class ServiceDetailComponent {
           }
         });
       }
-      this.serviceDetail = JSON.stringify(res);
+      this.serviceDetail = res;
+      this.change.reattach();
       this.isOpenServiceDetail = true;
     }).catch(err => {
       this.isOpenServiceDetail = false;

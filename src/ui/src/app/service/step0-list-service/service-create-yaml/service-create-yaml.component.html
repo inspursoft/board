@@ -1,13 +1,3 @@
-<ng-template #tempDanger>
-  <div role="alert" class="alert alert-danger alert-info">
-    {{errorMessage | translate}}
-  </div>
-</ng-template>
-<ng-template #tempSuccess>
-  <div role="alert" class="alert alert-success alert-info">
-    {{successMessage | translate}}
-  </div>
-</ng-template>
 <div>
   <div class="line-container">
     <label class="base-text">{{"SERVICE.SERVICE_YAML_SELECT_PROJECT" | translate}}:</label>
@@ -48,8 +38,6 @@
       {{newServiceName}}
     </div>
   </div>
-  <ng-container *ngIf="successMessage != ''" [ngTemplateOutlet]="tempSuccess"></ng-container>
-  <ng-container *ngIf="errorMessage != ''" [ngTemplateOutlet]="tempDanger"></ng-container>
   <div class="build-btn-container">
     <button class="btn btn-default cancel-build"
             (click)="btnCancelClick($event)">

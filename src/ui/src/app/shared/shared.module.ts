@@ -24,6 +24,10 @@ import { SizePipe } from "./pipes/size-pipe";
 import { CsGuideComponent } from "./cs-components-library/cs-guide/cs-guide.component";
 import { CsProgressComponent } from "./cs-components-library/cs-progress/cs-progress.component";
 import { SafePipe } from "./pipes/safe-pipe";
+import {
+  CsSyntaxHighlighterComponent,
+  CsSyntaxHighlighterDirective
+} from './cs-components-library/cs-syntax-highlighter/cs-syntax-highlighter.component'
 
 @NgModule({
   imports: [
@@ -50,7 +54,8 @@ import { SafePipe } from "./pipes/safe-pipe";
     CsGuideComponent,
     CsProgressComponent,
     SizePipe,
-    SafePipe
+    SafePipe,
+    CsSyntaxHighlighterComponent
   ],
   declarations: [
     ConfirmationDialogComponent,
@@ -73,6 +78,8 @@ import { SafePipe } from "./pipes/safe-pipe";
     SizePipe,
     SafePipe,
     CsGuideComponent,
+    CsSyntaxHighlighterDirective,
+    CsSyntaxHighlighterComponent,
   ],
   providers: [
     AuthGuard,

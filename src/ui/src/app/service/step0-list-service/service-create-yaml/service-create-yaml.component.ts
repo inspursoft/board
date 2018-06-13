@@ -1,11 +1,13 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
-import { HttpErrorResponse } from "@angular/common/http";
 import { K8sService } from "../../service.k8s";
 import { MessageService } from "../../../shared/message-service/message.service";
 import { Project } from "../../../project/project";
 import { Service } from "../../service";
 import { AppInitService } from "../../../app.init.service";
+import { MESSAGE_TYPE } from "../../../shared/shared.const";
+import { Message } from "../../../shared/message-service/message";
+import { HttpErrorResponse } from "@angular/common/http";
 
 @Component({
   selector: 'service-create-yaml',
@@ -22,8 +24,6 @@ export class ServiceCreateYamlComponent implements OnInit {
   isUploadFileWIP: boolean = false;
   isToggleServiceWIP: boolean = false;
   isUploadFileSuccess: boolean = false;
-  errorMessage: string = "";
-  successMessage: string = "";
   @Output() onCancelEvent: EventEmitter<any>;
 
   constructor(private k8sService: K8sService,
@@ -52,8 +52,6 @@ export class ServiceCreateYamlComponent implements OnInit {
   uploadFile(event: Event, isDeploymentYaml: boolean) {
     let fileList: FileList = (event.target as HTMLInputElement).files;
     if (fileList.length > 0) {
-      this.errorMessage = "";
-      this.successMessage = "";
       let file: File = fileList[0];
       if (file.name.endsWith(".yaml")) {//Todo:unchecked with ie11
         if (isDeploymentYaml) {
@@ -65,7 +63,10 @@ export class ServiceCreateYamlComponent implements OnInit {
         }
       } else {
         (event.target as HTMLInputElement).value = '';
-        this.errorMessage = "SERVICE.SERVICE_YAML_INVALID_FILE";
+        let msg = new Message();
+        msg.type = MESSAGE_TYPE.COMMON_ERROR;
+        msg.message = "SERVICE.SERVICE_YAML_INVALID_FILE";
+        this.messageService.inlineAlertMessage(msg);
       }
     }
   }
@@ -90,15 +91,17 @@ export class ServiceCreateYamlComponent implements OnInit {
         this.isToggleServiceWIP = false;
         this.onCancelEvent.emit(event);
       })
-      .catch(err => {
+      .catch((err:HttpErrorResponse) => {
         this.isToggleServiceWIP = false;
-        this.messageService.dispatchError(err);
+        let msg = new Message();
+        msg.type = MESSAGE_TYPE.SHOW_DETAIL;
+        msg.message = err.error;
+        msg.errorObject = err;
+        this.messageService.globalMessage(msg);
       });
   }
 
   btnUploadClick() {
-    this.errorMessage = "";
-    this.successMessage = "";
     let formData = new FormData();
     let deploymentFile = this.filesDataMap.get("deployment");
     let serviceFile = this.filesDataMap.get("service");
@@ -110,18 +113,21 @@ export class ServiceCreateYamlComponent implements OnInit {
         this.newServiceName = res.service_name;
         this.newServiceId = res.service_id;
         this.isUploadFileWIP = false;
-      }, (error: any) => {
+      }, (error: HttpErrorResponse) => {
         this.isUploadFileSuccess = false;
         this.isUploadFileWIP = false;
-        if (error && error instanceof HttpErrorResponse && (error as HttpErrorResponse).status == 400) {
-          this.errorMessage = (error as HttpErrorResponse).error;
-        } else {
-          this.messageService.dispatchError(error);
-        }
+        let msg = new Message();
+        msg.type = MESSAGE_TYPE.SHOW_DETAIL;
+        msg.message = error.error;
+        msg.errorObject = error;
+        this.messageService.globalMessage(msg);
       }, () => {
-        this.successMessage = "SERVICE.SERVICE_YAML_UPLOAD_SUCCESS";
         this.isUploadFileSuccess = true;
-      })
+        let msg = new Message();
+        msg.type = MESSAGE_TYPE.COMMON_ERROR;
+        msg.message = "SERVICE.SERVICE_YAML_UPLOAD_SUCCESS";
+        this.messageService.inlineAlertMessage(msg);
+      });
   }
 
   get isBtnUploadDisabled(): boolean {

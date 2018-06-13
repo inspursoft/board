@@ -1,11 +1,23 @@
-<clr-modal [(clrModalOpen)]="isOpenServiceDetail" [clrModalSize]="'md'">
+<clr-modal [(clrModalOpen)]="isOpenServiceDetail" [clrModalSize]="'lg'">
   <h3 class="modal-title">{{ curService?.service_name }} {{ "SERVICE.SERVICE_DETAIL" | translate }}</h3>
   <div class="modal-body">
     <div *ngFor="let u of urlList; let i = index">
       <span>{{i == 0 ? 'URL:' : ''}}</span>
       <a [href]="u.route" target="_blank">{{ u.route }}</a>
     </div>
-    <textarea title="" rows="5" readonly>{{ serviceDetail }}</textarea>
+    <div class="file-detail-container">
+      <div class="file-detail-title-container" (click)="isShowServiceInfo=!isShowServiceInfo">
+        <div class="file-detail-icon-container"
+             [ngClass]="{'file-close':isShowServiceInfo,'file-open':!isShowServiceInfo}">
+          <clr-icon shape="caret up" class="file-detail-icon"></clr-icon>
+        </div>
+        <span class="base-margin-left">{{"SERVICE.SERVICE_DETAIL_SERVICE_INFO"|translate}}:</span>
+      </div>
+      <cs-syntax-highlighter *ngIf="isShowServiceInfo"
+                             [language]="'json'"
+                             [jsonContent]="serviceDetail">
+      </cs-syntax-highlighter>
+    </div>
     <div class="file-detail-container" >
       <div class="file-detail-title-container" (click)="getDeploymentYamlFile()">
         <div class="file-detail-icon-container"
@@ -15,7 +27,10 @@
         <span class="base-margin-left">{{"SERVICE.SERVICE_DETAIL_DEPLOYMENT_FILE"|translate}}:</span>
       </div>
       <span *ngIf="deploymentYamlWIP" class="spinner spinner-md"></span>
-      <textarea title="" *ngIf="isShowDeploymentYaml && !deploymentYamlWIP" rows="5">{{deploymentYamlFile}}</textarea>
+      <cs-syntax-highlighter *ngIf="isShowDeploymentYaml && !deploymentYamlWIP"
+                             [language]="'yaml'"
+                             [content]="deploymentYamlFile">
+      </cs-syntax-highlighter>
     </div>
     <div class="file-detail-container">
       <div class="file-detail-title-container" (click)="getServiceYamlFile()">
@@ -26,7 +41,10 @@
         <span class="base-margin-left">{{"SERVICE.SERVICE_DETAIL_SERVICE_FILE"|translate}}:</span>
       </div>
       <span *ngIf="serviceYamlWIP" class="spinner spinner-md"></span>
-      <textarea title="" *ngIf="isShowServiceYaml && !serviceYamlWIP" rows="5">{{serviceYamlFile}}</textarea>
+      <cs-syntax-highlighter *ngIf="isShowServiceYaml && !serviceYamlWIP"
+                             [language]="'yaml'"
+                             [content]="serviceYamlFile">
+      </cs-syntax-highlighter>
     </div>
   </div>
   <div class="modal-footer">

@@ -8,6 +8,7 @@
             "root": "src",
             "outDir": "dist",
             "assets": [
+                "assets",
                 "images",
                 "favicon.ico"
             ],
@@ -21,6 +22,7 @@
             "styles": [
               "../node_modules/@clr/icons/clr-icons.min.css",
               "../node_modules/@clr/ui/clr-ui.min.css",
+              "assets/prismjs-default.css",
               "styles.css"
             ],
             "scripts": [
@@ -29,7 +31,8 @@
               "../node_modules/@webcomponents/custom-elements/custom-elements.min.js",
               "../node_modules/@clr/icons/clr-icons.min.js",
               "../node_modules/web-animations-js/web-animations.min.js",
-              "../node_modules/echarts/dist/echarts.js"
+              "../node_modules/echarts/dist/echarts.js",
+              "assets/prismjs.js"
             ],
             "environmentSource": "environments/environment.ts",
             "environments": {

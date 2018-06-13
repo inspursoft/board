@@ -24,16 +24,6 @@ span.step6-spinner {
   margin-left: 50px;
 }
 
-div.step6-journal-container {
-  display: flex;
-  min-height: 100px;
-  align-items: center;
-}
-
-textarea.step6-journal {
-  margin-left: 10px;
-  max-width: 500px
-}
 
 div.step6-icon-container {
   display: flex;
