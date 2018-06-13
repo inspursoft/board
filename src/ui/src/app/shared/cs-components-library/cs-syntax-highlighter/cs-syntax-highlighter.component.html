@@ -1,4 +1,3 @@
 <pre class="language-{{language}}">
-      <code *ngIf="language != 'json'" highlighter [language]="language" [content]="content"></code>
-      <code *ngIf="language == 'json'" highlighter [language]="language" [content]="jsonContent | json"></code>
+<code *ngIf="language != 'json'" highlighter [language]="language" [content]="content"></code><code *ngIf="language == 'json'" highlighter [language]="language" [content]="jsonContent | json"></code>
 </pre>
