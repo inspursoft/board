@@ -132,7 +132,7 @@ cmd="curl -X POST \
 echo $cmd
 eval $cmd
 
-echo "+++++++++++++++++=="
+echo "+++++++++++++++++++"
 echo "comments_url	:"$comments_url
 echo "info1		:"$info1
 echo "uiinfo		:"$uiinfo
