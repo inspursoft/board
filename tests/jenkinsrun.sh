@@ -60,20 +60,11 @@ cp -r /home/tests/testresult.log /home/tests/coverage/ $uiDir
 uiCoverage=`cat $uiDir/testresult.log |grep "Statements"|cut -d ":" -f 2|cut -d "%" -f 1|awk 'gsub(/^ *| *$/,"")'`
 
 #cov=`cat $boardDir/$branchDir/tests/out.temp|grep "total"|awk '{print $NF}'|cut -d "%" -f 1|tr -s [:space:]`
-cov=`cat $boardDir/$branchDir/tests/avaCov.cov`
-
-echo '==========================================='
-echo $lastBuildCov
-echo $cov
-echo '==========================================='
+covfile=$boardDir/$branchDir/tests/avaCov.cov
 
 
-add=`echo $cov+$uiCoverage|bc`
-averageCov=`echo $add/2|bc`
 #echo "averageCov: " $averageCov
 
-echo "python genResult.py $WORKSPACE $cov $uiCoverage"
-python genResult.py $WORKSPACE $cov $uiCoverage
 
 
 cp -r $uiDir/coverage $WORKSPACE/total
@@ -97,9 +88,19 @@ function getFlag()
    echo $pic
 }
 
+if [ ! -f $covfile ];then
+pic="error.jpg"
+uipic=`getFlag $lastUiBuildCov $uiCoverage`
+cov="FAIL"
+else
+cov=`cat $covfile`"%"
+add=`echo $cov+$uiCoverage|bc`
+averageCov=`echo $add/2|bc`
+echo "python genResult.py $WORKSPACE $cov $uiCoverage"
+python genResult.py $WORKSPACE $cov $uiCoverage
 pic=`getFlag $lastBuildCov $cov`
 uipic=`getFlag $lastUiBuildCov $uiCoverage`
-
+fi
 echo $comments_url
 
 
@@ -107,6 +108,7 @@ echo "=================================================================="
 info1="The test coverage for backend is "
 commenturltmp=`echo $comments_url|sed 's/pulls/issues/g'|sed 's/inspursoft/api\/v1\/repos\/inspursoft/g'`
 commentsurl=$commenturltmp"/comments"
+serverresult=$cov
 #commentsurl="http://10.110.18.40:10080/api/v1/repos/inspursoft/board/issues/1396/comments"
 uiinfo=",The test coverage for frontend is "
 consoleinfo=", check "
@@ -116,7 +118,7 @@ imageuri=" <img src="$imageLink" width="20" height="20"> "
 uiImageuri=" <img src="$uiImageLink" width="20" height="20"> "
 uiImageuri=" <img src="$uiImageLink" width="20" height="20"> "
 uiCov=" <a href=$uiLink>$uiCoverage </a>"
-serverCovLink=" <a href=$totalLink>$cov%</a>"
+serverCovLink=" <a href=$totalLink>$serverresult</a>"
 consoleuri=" <a href=$consoleLink> consolse log</a> "
 imageLink=$JENKINS_URL/userContent/$pic
 bodyinfo=$info1$serverCovLink$imageuri$uiinfo$uiImageuri$consoleinfo$consoleuri
