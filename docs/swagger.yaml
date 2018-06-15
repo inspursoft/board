@@ -3343,6 +3343,85 @@ paths:
           description: Need to login first.
         500:
           description: Internal errors.
+  /v1/yamlconfig:
+    post:
+      summary: Create an object by posting a yaml config.
+      description: |
+        This endpoint is used to create an object by posting a yaml config.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: yaml_path
+          in: query
+          type: string
+          required: true
+          description: Specify the yaml config file path.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Successful create an object by posting a yaml config.
+        400:
+          description: Bad request.
+        401:
+          description: Need to admin login first.
+        500:
+          description: Internal errors.
+    put:
+      summary: Change an object by applying a yaml config.
+      description: |
+        This endpoint is change an object by applying a yaml config.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: yaml_path
+          in: query
+          type: string
+          required: true
+          description: Specify the yaml config file path.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Successful changed an object by applying a yaml config.
+        400:
+          description: Bad request.
+        401:
+          description: Need to admin login first.
+        500:
+          description: Internal errors.
+    delete:
+      summary: Delete an object by a yaml config.
+      description: |
+        This endpoint is delete an object by a yaml config.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: yaml_path
+          in: query
+          type: string
+          required: true
+          description: Specify the yaml config file path.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Successful delete an object by a yaml config.
+        400:
+          description: Bad request.
+        401:
+          description: Need to admin login first.
+        500:
+          description: Internal errors.
   /v1/email/ping:
     post:
       summary: Test connection and authentication with email server.
