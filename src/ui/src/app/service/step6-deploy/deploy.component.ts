@@ -1,28 +1,27 @@
 /**
  * Created by liyanq on 9/17/17.
  */
-import { Component, ComponentFactoryResolver, Injector, OnDestroy, OnInit, ViewChild, ViewContainerRef } from "@angular/core"
+import { Component, Injector, OnDestroy, OnInit } from "@angular/core"
 import { Subscription } from "rxjs/Subscription";
 import { Message } from "../../shared/message-service/message";
 import { BUTTON_STYLE, MESSAGE_TARGET } from "../../shared/shared.const";
 import { ServiceStepBase } from "../service-step";
 import { PHASE_ENTIRE_SERVICE, ServiceStepPhase, UIServiceStepBase } from "../service-step.component";
-import { CsSyntaxHighlighterComponent } from "../../shared/cs-components-library/cs-syntax-highlighter/cs-syntax-highlighter.component";
 
 @Component({
   templateUrl: "./deploy.component.html",
   styleUrls: ["./deploy.component.css"]
 })
 export class DeployComponent extends ServiceStepBase implements OnInit, OnDestroy {
-  @ViewChild("consoleView", {read: ViewContainerRef}) consoleView: ViewContainerRef;
   boardHost: string;
   isDeployed: boolean = false;
   isDeploySuccess: boolean = false;
   isInDeployWIP: boolean = false;
   serviceID: number = 0;
   _confirmSubscription: Subscription;
+  deployConsole:Object;
 
-  constructor(protected injector: Injector, private resolver: ComponentFactoryResolver) {
+  constructor(protected injector: Injector) {
     super(injector);
     this.boardHost = this.appInitService.systemInfo['board_host'];
   }
@@ -59,10 +58,7 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
       this.k8sService.serviceDeployment()
         .then(res => {
           this.serviceID = res['service_id'];
-          let factory = this.resolver.resolveComponentFactory(CsSyntaxHighlighterComponent);
-          let componentRef = this.consoleView.createComponent(factory);
-          componentRef.instance.language = 'json';
-          componentRef.instance.jsonContent = res;
+          this.deployConsole = res;
           let msg: Message = new Message();
           msg.message = "SERVICE.STEP_6_DEPLOY_SUCCESS";
           this.messageService.inlineAlertMessage(msg);

@@ -1,6 +1,6 @@
 import { AfterContentInit, Component, Directive, ElementRef, Input } from '@angular/core';
-
-declare let Prism: any;
+import * as Prism from "prismjs"
+import * as Languages from "prismjs/components"
 
 @Directive({selector: "[highlighter]"})
 export class CsSyntaxHighlighterDirective implements AfterContentInit {
@@ -11,7 +11,7 @@ export class CsSyntaxHighlighterDirective implements AfterContentInit {
   }
 
   ngAfterContentInit() {
-    this.eltRef.nativeElement.innerHTML = Prism.highlight(this.content, Prism.languages[this.language]);
+    this.eltRef.nativeElement.innerHTML = Prism.highlight(this.content, Languages.languages[this.language]);
   }
 }
 
