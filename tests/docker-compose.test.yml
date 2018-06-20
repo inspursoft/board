@@ -2,13 +2,13 @@ version: '2'
 services:
   db:
     build: 
-      context: ../
+      context: ../../
       dockerfile: make/dev/container/db/Dockerfile
     restart: always
     volumes:
       - /data/board/database:/var/lib/mysql
     env_file:
-      - ../make/config/db/env
+      - ../config/db/env
     ports:
       - 3306:3306
   openldap:
@@ -22,14 +22,14 @@ services:
       - 636:636
   tokenserver:
     build:
-      context: ../
+      context: ../../
       dockerfile: make/dev/container/tokenserver/Dockerfile
     image: dev_tokenserver:dev
     env_file:
-      - ../make/config/tokenserver/env
+      - ../config/tokenserver/env
     restart: always
     volumes:
-      - ../make/config/tokenserver/app.conf:/go/bin/app.conf:z
+      - ../config/tokenserver/app.conf:/go/bin/app.conf:z
     ports:
       - 4000:4000
   registry:
@@ -43,12 +43,12 @@ services:
       - 5000:5000
   gogits:
     build:
-      context: ../
+      context: ../../
       dockerfile: make/dev/container/gogits/Dockerfile
     image: dev_gogits:dev
     restart: always
     volumes:
-      - ../make/config/gogits/conf/app.ini:/tmp/conf/app.ini
+      - ../config/gogits/conf/app.ini:/tmp/conf/app.ini
       - /data/board/gogits:/data:rw
     ports:
       - "10022:22"
