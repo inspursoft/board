@@ -1,6 +1,6 @@
 version: '2'
 services:
-  mysql:
+  db:
     build: 
       context: ../
       dockerfile: make/dev/container/db/Dockerfile
