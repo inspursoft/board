@@ -1,7 +1,7 @@
 /**
  * Created by liyanq on 9/11/17.
  */
-import { Component, Input, Output, EventEmitter, OnInit, ViewChild, ElementRef } from "@angular/core"
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from "@angular/core"
 import { AsyncValidatorFn, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from "@angular/forms";
 
 export enum CsInputStatus{isView = 0, isEdit = 1}
@@ -45,6 +45,7 @@ export class CsInputComponent implements OnInit {
   @Input() customerValidatorFns: Array<ValidatorFn>;
   @Input() customerValidatorAsyncFunc: AsyncValidatorFn;
   @Input() validatorMessage: Array<{validatorKey: string, validatorMessage: string}>;
+  @Input() inputPlaceholder: string = "";
 
   constructor() {
     this.inputValidatorFns = Array<ValidatorFn>();
@@ -186,7 +187,7 @@ export class CsInputComponent implements OnInit {
 
   onInputKeyPressEvent(event: KeyboardEvent) {
     if (event.keyCode == 13) {
-      this.onCheckClick().then((isChecked) => {
+      this.onCheckClick().then((isChecked: boolean) => {
         if (isChecked) {
           let nextInputElement: Element = this.containerHtml.nativeElement.parentElement.nextElementSibling;
           if (nextInputElement) {
@@ -200,12 +201,19 @@ export class CsInputComponent implements OnInit {
     }
   }
 
+  onInputBlur() {
+    if (!this.isDisabled && this.inputField.status == CsInputStatus.isEdit && this.inputType != CsInputType.itWithNoInput) {
+      this.onCheckClick().then(() => {
+      });
+    }
+  }
+
   @Output("onEdit") onEditEvent: EventEmitter<any> = new EventEmitter<any>();
   @Output("onCheck") onCheckEvent: EventEmitter<any> = new EventEmitter<any>();
   @Output("onRevert") onRevertEvent: EventEmitter<any> = new EventEmitter<any>();
 
   onEditClick() {
-    if (!this.isDisabled && this.inputType != CsInputType.itWithNoInput) {
+    if (!this.isDisabled && this.inputField.status == CsInputStatus.isView && this.inputType != CsInputType.itWithNoInput) {
       this.inputField.status = CsInputStatus.isEdit;
       this.inputHtml.nativeElement.focus();
     } else if (!this.isDisabled && this.inputType == CsInputType.itWithNoInput) {

@@ -72,7 +72,7 @@ import { SafePipe } from "./pipes/safe-pipe";
     CsProgressComponent,
     SizePipe,
     SafePipe,
-    CsGuideComponent,
+    CsGuideComponent
   ],
   providers: [
     AuthGuard,

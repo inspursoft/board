@@ -152,16 +152,6 @@ export class ExternalService implements UiServerExchangeData<ExternalService> {
   }
 }
 
-export class ConfigServiceStep {
-  project_id: number = 0;
-  service_id: number = 0;
-  image_list: Array<ImageIndex> = Array<ImageIndex>();
-  service_name: string = "";
-  instance: number = 0;
-  container_list: Array<Container> = Array<Container>();
-  external_service_list: Array<ExternalService> = Array<ExternalService>();
-}
-
 export class UIServiceStep1 extends UIServiceStepBase {
   public projectId: number = 0;
   public projectName: string = "";

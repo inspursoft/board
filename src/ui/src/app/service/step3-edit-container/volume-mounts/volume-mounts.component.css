@@ -1,8 +1,7 @@
 fieldset.fieldSet-default {
-  margin: 0 2px;
+  margin: 0 20px;
   border: 1px solid silver;
   overflow: hidden;
-  margin-bottom: 20px;
 }
 
 legend.legend-default {
@@ -14,7 +13,6 @@ legend.legend-default {
 
 div.vol-configure-container {
   display: flex;
-  width: 400px;
   flex-direction: column;
   margin-bottom: 10px;
 }

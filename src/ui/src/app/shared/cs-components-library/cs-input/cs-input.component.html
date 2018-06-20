@@ -1,6 +1,7 @@
 <div #container class="cs-input-container" [formGroup]="inputFormGroup">
   <label *ngIf="inputType == 0 || inputType == 1"
          (mousedown)="onEditClick()"
+         (click)="onEditClick()"
          class="cs-input-label"
          [style.minWidth]="inputLabelMinWidth">
     {{inputLabel}}:<span *ngIf="inputIsRequired" class="asterisk">*</span>
@@ -17,6 +18,8 @@
            type="text"
            [class.no-input-module]="!isDisabled && inputType == 1"
            (keypress)="onInputKeyPressEvent($event)"
+           (blur)="onInputBlur()"
+           [placeholder]="inputPlaceholder"
            [(ngModel)]="inputField.value">
     <span class="tooltip-content" style="width: 200px;" *ngIf="inputErrors">
       {{getValidatorMessage(inputErrors) | translate}}{{inputValidatorMessageParam}}

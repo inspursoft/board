@@ -18,8 +18,8 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
   isDeploySuccess: boolean = false;
   isInDeployWIP: boolean = false;
   serviceID: number = 0;
-  consoleText: string = "";
   _confirmSubscription: Subscription;
+  deployConsole:Object;
 
   constructor(protected injector: Injector) {
     super(injector);
@@ -55,11 +55,10 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
     if (!this.isDeployed) {
       this.isDeployed = true;
       this.isInDeployWIP = true;
-      this.consoleText = "SERVICE.STEP_6_DEPLOYING";
       this.k8sService.serviceDeployment()
         .then(res => {
           this.serviceID = res['service_id'];
-          this.consoleText = JSON.stringify(res);
+          this.deployConsole = res;
           let msg: Message = new Message();
           msg.message = "SERVICE.STEP_6_DEPLOY_SUCCESS";
           this.messageService.inlineAlertMessage(msg);
