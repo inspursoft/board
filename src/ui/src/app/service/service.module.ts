@@ -21,7 +21,6 @@ import { ScaleComponent } from './step0-list-service/service-control/scale/scale
 import { UpdateComponent } from './step0-list-service/service-control/update/update.component';
 import { LocateComponent } from './step0-list-service/service-control/locate/locate.component';
 import { StatusComponent } from './step0-list-service/service-control/status/status.component';
-import { CsSyntaxHighlighterComponent } from "../shared/cs-components-library/cs-syntax-highlighter/cs-syntax-highlighter.component";
 import { ApPrismModule } from '@angular-package/prism';
 
 @NgModule({
@@ -59,8 +58,7 @@ import { ApPrismModule } from '@angular-package/prism';
     TestingComponent,
     ServiceControlComponent,
     DeployComponent,
-    ServiceDetailComponent,
-    CsSyntaxHighlighterComponent
+    ServiceDetailComponent
   ],
   providers: [
     K8sService,
