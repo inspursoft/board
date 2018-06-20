@@ -6,7 +6,6 @@ import (
 	"git/inspursoft/board/src/common/utils"
 	"os"
 	"testing"
-	"time"
 
 	"github.com/astaxie/beego/orm"
 )
@@ -16,7 +15,7 @@ func TestMain(m *testing.M) {
 	dbIP := utils.GetStringValue("DB_IP")
 	dbPort := utils.GetStringValue("DB_PORT")
 	dbPassword := utils.GetStringValue("DB_PASSWORD")
-	time.Sleep(4)
+
 	orm.RegisterDriver("mysql", orm.DRMySQL)
 	orm.RegisterDataBase("default", "mysql", fmt.Sprintf("root:%s@tcp(%s:%s)/board?charset=utf8", dbPassword, dbIP, dbPort))
 	model.InitModelDB()
