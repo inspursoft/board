@@ -19,8 +19,6 @@ function prod(){
     cp node_modules/zone.js/dist/zone.min.js dist/zone.min.js
     cp node_modules/@webcomponents/custom-elements/custom-elements.min.js dist/custom-elements.min.js
     cp node_modules/@clr/icons/clr-icons.min.js dist/clr-icons.min.js
-    cp src/assets/prismjs.js dist/prismjs.js
-    cp src/assets/prismjs-default.css dist/prismjs-default.css
     cp src/styles.css dist/styles.css
     cp src/favicon.ico dist/favicon.ico
     cp src/rollup/index.html dist/index.html
