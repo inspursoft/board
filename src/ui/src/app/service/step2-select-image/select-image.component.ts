@@ -1,10 +1,5 @@
-import { Component, OnInit, Injector } from '@angular/core';
-import {
-  PHASE_SELECT_IMAGES,
-  ImageIndex,
-  ServiceStepPhase,
-  UIServiceStep2
-} from '../service-step.component';
+import { Component, Injector, OnInit } from '@angular/core';
+import { ImageIndex, PHASE_SELECT_IMAGES, ServiceStepPhase, UIServiceStep2 } from '../service-step.component';
 import { Image, ImageDetail } from "../../image/image";
 import { Message } from "../../shared/message-service/message";
 import { ServiceStepBase } from "../service-step";
@@ -55,9 +50,9 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
   }
 
   get isCanNextStep(): boolean {
-    let hasSelectImage = this.imageSelectList.filter(value => {
-        return value.image_name != "SERVICE.STEP_2_SELECT_IMAGE";
-      }).length == this.imageSelectList.length;
+    let hasSelectImage = this.imageSelectList
+      .filter(value => value.image_name != "SERVICE.STEP_2_SELECT_IMAGE")
+      .length == this.imageSelectList.length;
     return hasSelectImage && this.imageDetailSelectList.size > 0;
   }
 
@@ -150,6 +145,10 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
     let customerSelectImage = new Image();
     customerSelectImage.image_name = "SERVICE.STEP_2_SELECT_IMAGE";
     this.imageSelectList.push(customerSelectImage);
+  }
+
+  backStep(){
+    this.k8sService.stepSource.next({index: 1, isBack: true});
   }
 
   forward(): void {

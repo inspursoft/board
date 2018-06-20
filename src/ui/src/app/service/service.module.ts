@@ -21,11 +21,13 @@ import { ScaleComponent } from './step0-list-service/service-control/scale/scale
 import { UpdateComponent } from './step0-list-service/service-control/update/update.component';
 import { LocateComponent } from './step0-list-service/service-control/locate/locate.component';
 import { StatusComponent } from './step0-list-service/service-control/status/status.component';
+import { ApPrismModule } from '@angular-package/prism';
 
 @NgModule({
   imports: [
     SharedModule,
-    DynamicFormModule
+    DynamicFormModule,
+    ApPrismModule
   ],
   declarations: [
     ServiceComponent,
