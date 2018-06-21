@@ -20,7 +20,6 @@ export class EnvType {
               public envValue: string) {
   }
 }
-
 @Component({
   selector: "environment-value",
   templateUrl: "./environment-value.component.html",
@@ -28,7 +27,7 @@ export class EnvType {
 })
 export class EnvironmentValueComponent implements OnInit, AfterContentChecked {
   _isOpen: boolean = false;
-  patternEnv: RegExp = /^[\w-$/\\=\"[\]{}@&:,'`\t. ?]+$/;
+  patternEnv:RegExp = /^[\w-$/\\=\"[\]{}@&:,'`\t. ?]+$/;
   isCanConfirm: boolean = false;
   envAlertMessage: string;
   envsData: Array<EnvType>;
@@ -36,7 +35,7 @@ export class EnvironmentValueComponent implements OnInit, AfterContentChecked {
   isAlertOpen: boolean = false;
   afterCommitErr: string = "";
   inputValidator: Array<ValidatorFn>;
-  inputValidatorMsg: Array<{ validatorKey: string, validatorMessage: string }>;
+  inputValidatorMsg: Array<{validatorKey: string, validatorMessage: string}>;
   @ViewChildren(CsInputComponent) inputComponents: QueryList<CsInputComponent>;
   @Input() inputEnvsData: Array<EnvType>;
   @Input() inputFixedKeyList: Array<string>;
@@ -44,7 +43,7 @@ export class EnvironmentValueComponent implements OnInit, AfterContentChecked {
   constructor() {
     this.envsData = Array<EnvType>();
     this.inputValidator = Array<ValidatorFn>();
-    this.inputValidatorMsg = Array<{ validatorKey: string, validatorMessage: string }>();
+    this.inputValidatorMsg = Array<{validatorKey: string, validatorMessage: string}>();
   }
 
   ngOnInit() {
@@ -56,7 +55,7 @@ export class EnvironmentValueComponent implements OnInit, AfterContentChecked {
   }
 
   ngAfterContentChecked() {
-    if (this.inputComponents) {
+    if (this.inputComponents){
       let componentArr = this.inputComponents.toArray();
       for (let i = 0; i < componentArr.length; i++) {
         if (!componentArr[i].valid) {
