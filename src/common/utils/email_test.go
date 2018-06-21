@@ -1,6 +1,7 @@
-package utils
+package utils_test
 
 import (
+	"git/inspursoft/board/src/common/utils"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,7 +17,7 @@ var mockEmailFrom = "tester@myserver.com"
 var mockEmailTo = "target@myserver.com"
 
 func TestSendEmail(t *testing.T) {
-	err := NewEmailHandler(mockEmailIdentity, mockEmailUsername, mockEmailPassword, mockEmailHost, mockEmailPort).
+	err := utils.NewEmailHandler(mockEmailIdentity, mockEmailUsername, mockEmailPassword, mockEmailHost, mockEmailPort).
 		IsTLS(mockEmailTLS).
 		Send(mockEmailFrom, []string{mockEmailTo}, "Testing", "This is a <b>test12345</b> mail.")
 	assert := assert.New(t)
@@ -24,7 +25,7 @@ func TestSendEmail(t *testing.T) {
 }
 
 func TestPingEmail(t *testing.T) {
-	err := NewEmailHandler(mockEmailIdentity, mockEmailUsername, mockEmailPassword, mockEmailHost, mockEmailPort).
+	err := utils.NewEmailHandler(mockEmailIdentity, mockEmailUsername, mockEmailPassword, mockEmailHost, mockEmailPort).
 		IsTLS(mockEmailTLS).
 		Ping()
 	assert := assert.New(t)

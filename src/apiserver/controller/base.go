@@ -53,10 +53,15 @@ type BaseController struct {
 	repoImagePath   string
 	project         *model.Project
 	isRemoved       bool
+	operationID     int64
 }
 
 func (b *BaseController) Prepare() {
 	b.resolveSignedInUser()
+}
+
+func (b *BaseController) Finish() {
+	//Update operation result in Mysql
 }
 
 func (b *BaseController) Render() error {
@@ -99,6 +104,30 @@ func (b *BaseController) internalError(err error) {
 func (b *BaseController) customAbort(status int, body string) {
 	logs.Error("Error of custom aborted: %s", body)
 	b.CustomAbort(status, body)
+}
+
+func parsePostK8sError(message string) int {
+	if strings.Contains(message, "No connection could be made") {
+		return http.StatusInternalServerError
+	}
+	return http.StatusBadRequest
+}
+
+func parseGetK8sError(message string) int {
+	if strings.Contains(message, "not found") {
+		return http.StatusNotFound
+	}
+	return http.StatusInternalServerError
+}
+
+func (b *BaseController) parseError(err error, parser func(message string) int) {
+	if parser == nil {
+		logs.Error("Error in func of parseError,error: parser is nil")
+		return
+	}
+	if err != nil {
+		b.customAbort(parser(err.Error()), err.Error())
+	}
 }
 
 func (b *BaseController) getCurrentUser() *model.User {

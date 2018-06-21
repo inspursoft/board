@@ -9,7 +9,7 @@ import (
 	"github.com/astaxie/beego/logs"
 )
 
-type emailPingParam struct {
+type EmailPingParam struct {
 	Hostname string
 	Port     int
 	Username string
@@ -17,7 +17,7 @@ type emailPingParam struct {
 	IsTLS    bool
 }
 
-type emailSendParam struct {
+type EmailSendParam struct {
 	To      []string
 	Subject string
 	Content string
@@ -49,7 +49,7 @@ type EmailController struct {
 func (e *EmailController) Prepare() {}
 
 func (e *EmailController) Ping() {
-	var pingEmail emailPingParam
+	var pingEmail EmailPingParam
 	e.resolveBody(&pingEmail)
 	err := utils.NewEmailHandler(emailIdentity,
 		pingEmail.Username, pingEmail.Password,

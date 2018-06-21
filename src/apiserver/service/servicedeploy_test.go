@@ -1,13 +1,7 @@
-package service
+package service_test
 
 import (
 	"git/inspursoft/board/src/common/model"
-	"os"
-	"path/filepath"
-	"testing"
-
-	"github.com/astaxie/beego/logs"
-	"github.com/stretchr/testify/assert"
 )
 
 var path = "./"
@@ -34,25 +28,4 @@ var configServiceStep = model.ConfigServiceStep{
 			},
 		},
 	},
-}
-
-func TestAssembleDeploymentYaml(t *testing.T) {
-	assert := assert.New(t)
-	err := AssembleDeploymentYaml(&configServiceStep, path)
-	assert.Nil(err, "Error occurred while testing AssembleDeploymentYaml.")
-	deleteFile(filepath.Join(loadPath, deploymentFilename))
-}
-
-func TestAssembleServiceYaml(t *testing.T) {
-	assert := assert.New(t)
-	err := AssembleServiceYaml(&configServiceStep, path)
-	assert.Nil(err, "Error occurred while testing AssembleServiceYaml.")
-	deleteFile(filepath.Join(loadPath, serviceFilename))
-}
-
-func deleteFile(file string) {
-	err := os.RemoveAll(file)
-	if err != nil {
-		logs.Error("Error occurred while removing file %s\n", file)
-	}
 }

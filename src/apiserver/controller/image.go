@@ -142,6 +142,8 @@ func (p *ImageController) generateBuildingImageTravis(imageURI, dockerfileName s
 	var travisCommand travis.TravisCommand
 	travisCommand.BeforeDeploy.Commands = []string{
 		fmt.Sprintf("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
+		"if [ -d 'upload' ]; then rm -rf upload; fi",
+		"if [ -e 'attachment.zip' ]; then rm -f attachment.zip; fi",
 		"if [ -f key.txt ]; then token=`cat key.txt`; fi",
 		fmt.Sprintf("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | cut -d$' ' -f2`", boardAPIBaseURL()),
 		fmt.Sprintf("if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi", boardAPIBaseURL()),
@@ -150,6 +152,7 @@ func (p *ImageController) generateBuildingImageTravis(imageURI, dockerfileName s
 		"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
 		fmt.Sprintf("docker build -t %s -f containers/%s .", imageURI, dockerfileName),
 		fmt.Sprintf("docker push %s", imageURI),
+		fmt.Sprintf("docker rmi %s", imageURI),
 	}
 	return travisCommand.GenerateCustomTravis(p.repoPath)
 }

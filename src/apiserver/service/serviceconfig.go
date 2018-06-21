@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	//"fmt"
 	"git/inspursoft/board/src/common/dao"
@@ -316,13 +317,14 @@ func GetDeployment(pName string, sName string) (*model.Deployment, error) {
 	return deployment, err
 }
 
-func PatchDeployment(pName string, deploymentConfig *model.Deployment) (*model.Deployment, []byte, error) {
+func PatchDeployment(pName string, sName string, deploymentConfig *model.Deployment) (*model.Deployment, []byte, error) {
 	var config k8sassist.K8sAssistConfig
 	config.K8sMasterURL = kubeMasterURL()
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 	d := k8sclient.AppV1().Deployment(pName)
 
-	deployment, deploymentFileInfo, err := d.Update(deploymentConfig)
+	//deployment, deploymentFileInfo, err := d.Update(deploymentConfig)
+	deployment, deploymentFileInfo, err := d.PatchToK8s(sName, model.StrategicMergePatchType, deploymentConfig)
 	if err != nil {
 		logs.Info("Failed to patch deployment", pName, deploymentConfig.Name)
 		return nil, nil, err
@@ -365,55 +367,11 @@ func StopServiceK8s(s *model.ServiceStatus) error {
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 	d := k8sclient.AppV1().Deployment(s.ProjectName)
 
-	deployData, _, err := d.Get(s.Name)
+	err := d.Delete(s.Name)
 	if err != nil {
-		logs.Error("Failed to get deployment in cluster")
+		logs.Error("Failed to delete deployment in cluster, error:%v", err)
 		return err
 	}
-
-	//var newreplicas int32
-	deployData.Spec.Replicas = 0
-	res, _, err := d.Update(deployData)
-	if err != nil {
-		logs.Error(res, err)
-		return err
-	}
-	time.Sleep(2)
-	err = d.Delete(s.Name)
-	if err != nil {
-		logs.Error("Failed to delele deployment", s.Name, err)
-		return err
-	}
-	logs.Info("Deleted deployment %s", s.Name)
-
-	r := k8sclient.AppV1().ReplicaSet(s.ProjectName)
-
-	var listoption model.ListOptions
-	listoption.LabelSelector = "app=" + s.Name
-	rsList, err := r.List(listoption)
-	if err != nil {
-		logs.Error("failed to get rs list")
-		return err
-	}
-
-	for _, rsi := range rsList.Items {
-		err = r.Delete(rsi.Name)
-		if err != nil {
-			logs.Error("failed to delete rs %s", rsi.ObjectMeta.Name)
-			return err
-		}
-		logs.Debug("delete RS %s", rsi.Name)
-	}
-
-	//Stop service in cluster
-	servcieInt := k8sclient.AppV1().Service(s.ProjectName)
-
-	err = servcieInt.Delete(s.Name)
-	if err != nil {
-		logs.Error("Failed to delele service in cluster.", s.Name, err)
-		return err
-	}
-
 	return nil
 }
 
@@ -494,8 +452,9 @@ func MarshalService(serviceConfig *model.ConfigServiceStep) *model.Service {
 		return nil
 	}
 	ports := make([]model.ServicePort, 0)
-	for _, port := range serviceConfig.ExternalServiceList {
+	for index, port := range serviceConfig.ExternalServiceList {
 		ports = append(ports, model.ServicePort{
+			Name:     "port" + strconv.Itoa(index),
 			Port:     int32(port.NodeConfig.TargetPort),
 			NodePort: int32(port.NodeConfig.NodePort),
 		})

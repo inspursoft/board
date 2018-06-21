@@ -37,6 +37,8 @@ cp $boardDir/$branchDir/tests/ldap_test.ldif  $boardDir/$branchDir/make/dev
 cd $boardDir/$branchDir/make/dev
 docker-compose -f docker-compose.test.yml down -v
 rm -rf /data/board
+rm -rf /tmp/test-repos /tmp/test-keys
+rm -f  /root/.ssh/known_hosts
 docker-compose -f docker-compose.test.yml up -d
 
 
@@ -58,20 +60,11 @@ cp -r /home/tests/testresult.log /home/tests/coverage/ $uiDir
 uiCoverage=`cat $uiDir/testresult.log |grep "Statements"|cut -d ":" -f 2|cut -d "%" -f 1|awk 'gsub(/^ *| *$/,"")'`
 
 #cov=`cat $boardDir/$branchDir/tests/out.temp|grep "total"|awk '{print $NF}'|cut -d "%" -f 1|tr -s [:space:]`
-cov=`cat $boardDir/$branchDir/tests/avaCov.cov`
-
-echo '==========================================='
-echo $lastBuildCov
-echo $cov
-echo '==========================================='
+covfile=$boardDir/$branchDir/tests/avaCov.cov
 
 
-add=`echo $cov+$uiCoverage|bc`
-averageCov=`echo $add/2|bc`
 #echo "averageCov: " $averageCov
 
-echo "python genResult.py $WORKSPACE $cov $uiCoverage"
-python genResult.py $WORKSPACE $cov $uiCoverage
 
 
 cp -r $uiDir/coverage $WORKSPACE/total
@@ -95,24 +88,55 @@ function getFlag()
    echo $pic
 }
 
+if [ ! -f $covfile ];then
+pic="error.jpg"
+uipic=`getFlag $lastUiBuildCov $uiCoverage`
+cov="FAIL"
+else
+cov=`cat $covfile`"%"
+add=`echo $cov+$uiCoverage|bc`
+averageCov=`echo $add/2|bc`
+echo "python genResult.py $WORKSPACE $cov $uiCoverage"
+python genResult.py $WORKSPACE $cov $uiCoverage
 pic=`getFlag $lastBuildCov $cov`
 uipic=`getFlag $lastUiBuildCov $uiCoverage`
-
+fi
 echo $comments_url
 
-tmp="?content=The%20test%20coverage%20for%20backend%20is%20"
-serverCovLink="%20<a%20href=$totalLink>$cov%25</a>"
+
+echo "=================================================================="
+info1="The test coverage for backend is "
+commenturltmp=`echo $comments_url|sed 's/pulls/issues/g'|sed 's/inspursoft/api\/v1\/repos\/inspursoft/g'`
+commentsurl=$commenturltmp"/comments"
+serverresult=$cov
+#commentsurl="http://10.110.18.40:10080/api/v1/repos/inspursoft/board/issues/1396/comments"
+uiinfo=",The test coverage for frontend is "
+consoleinfo=", check "
 imageLink=$JENKINS_URL/userContent/$pic
 uiImageLink=$JENKINS_URL/userContent/$uipic
-image="%20<img%20src="$imageLink"%20width="20"%20height="20">%20"
-uiImage="%20<img%20src="$uiImageLink"%20width="20"%20height="20">%20"
-uiCov="%20and%20for%20frontend%20is%20<a%20href=$uiLink>$uiCoverage%25</a>"
-#f_comments_ur:=$comments_url$tmp$cov%25%20$totalLink
-f_comments_url="$comments_url$tmp$serverCovLink$image$uiCov$uiImage%20check%20<a%20href=$consoleLink>console%20log</a>"
+imageuri=" <img src="$imageLink" width="20" height="20"> "
+uiImageuri=" <img src="$uiImageLink" width="20" height="20"> "
+uiImageuri=" <img src="$uiImageLink" width="20" height="20"> "
+uiCov=" <a href=$uiLink>$uiCoverage </a>"
+serverCovLink=" <a href=$totalLink>$serverresult</a>"
+consoleuri=" <a href=$consoleLink> consolse log</a> "
+imageLink=$JENKINS_URL/userContent/$pic
+bodyinfo=$info1$serverCovLink$imageuri$uiinfo$uiImageuri$consoleinfo$consoleuri
+bodyinfo=$info1$serverCovLink$imageuri$uiinfo$uiCov$uiImageuri$consoleinfo$consoleuri
+b='-d { "body": "'$bodyinfo'"}'
+cmd="curl -X POST \
+  $commentsurl \
+  -H 'Authorization: token 7c67f6a0d7967a152329c33ecaed3e1f93cb1e2d' \
+  -H 'Content-Type: application/json' \
+  '$b'"
+echo $cmd
+eval $cmd
 
-echo $f_comments_url
-
-
-echo "curl --user Jenkins-10.110.18.40:123456 -X POST -H "content-type: application/x-www-form-urlencoded" $f_comments_url"
-echo `curl --user 'Jenkins-10.110.18.40:123456' -X POST -H 'content-type: application/x-www-form-urlencoded' $f_comments_url`
-
+echo "+++++++++++++++++++"
+echo "comments_url	:"$comments_url
+echo "info1		:"$info1
+echo "uiinfo		:"$uiinfo
+echo "imageuri		:"$imageuri
+echo "uiImageuri	:"$uiImageuri
+echo "uiCov		:"$uiCov
+echo "serverCovLink	:"$serverCovLink

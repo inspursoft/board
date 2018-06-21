@@ -43,6 +43,7 @@ const (
 	stopped
 	uncompleted
 	warning
+	deploying
 )
 
 type ServiceController struct {
@@ -121,7 +122,7 @@ func (p *ServiceController) DeployServiceAction() {
 
 	deployInfo, err := service.DeployService((*model.ConfigServiceStep)(configService), kubeMasterURL(), registryBaseURI())
 	if err != nil {
-		p.internalError(err)
+		p.parseError(err, parsePostK8sError)
 		return
 	}
 
@@ -153,7 +154,7 @@ func (p *ServiceController) DeployServiceAction() {
 		return
 	}
 
-	updateService := model.ServiceStatus{ID: serviceInfo.ID, Status: running, ServiceConfig: string(serviceConfig)}
+	updateService := model.ServiceStatus{ID: serviceInfo.ID, Status: uncompleted, ServiceConfig: string(serviceConfig)}
 	_, err = service.UpdateService(updateService, "id", "status", "service_config")
 	if err != nil {
 		p.internalError(err)
@@ -399,7 +400,7 @@ func (p *ServiceController) ToggleServiceAction() {
 		p.resolveRepoServicePath(s.ProjectName, s.Name)
 		err := service.DeployServiceByYaml(s.ProjectName, kubeMasterURL(), p.repoServicePath)
 		if err != nil {
-			p.internalError(err)
+			p.parseError(err, parsePostK8sError)
 			return
 		}
 		// Push deployment to Git repo
@@ -448,19 +449,6 @@ func stopService(s *model.ServiceStatus) error {
 	return nil
 }
 
-func (p *ServiceController) resolveErrOutput(err error) {
-	if err != nil {
-		if strings.Index(err.Error(), "StatusNotFound:") == 0 {
-			var output interface{}
-			json.Unmarshal([]byte(err.Error()[len("StatusNotFound:"):]), &output)
-			p.Data["json"] = output
-			p.ServeJSON()
-			return
-		}
-		p.internalError(err)
-	}
-}
-
 func (p *ServiceController) GetServiceInfoAction() {
 
 	s := p.resolveServiceInfo()
@@ -469,14 +457,14 @@ func (p *ServiceController) GetServiceInfoAction() {
 
 	serviceStatus, err := service.GetServiceByK8sassist(s.ProjectName, s.Name)
 	if err != nil {
-		p.resolveErrOutput(err)
+		p.parseError(err, parseGetK8sError)
 		return
 	}
 	//Get NodeIP
 	//endpointUrl format /api/v1/namespaces/default/endpoints/
 	nodesStatus, err := service.GetNodesStatus(fmt.Sprintf("%s/api/v1/nodes", kubeMasterURL()))
 	if err != nil {
-		p.resolveErrOutput(err)
+		p.parseError(err, parseGetK8sError)
 		return
 	}
 	if len(serviceStatus.Ports) == 0 || len(nodesStatus.Items) == 0 {
@@ -500,7 +488,7 @@ func (p *ServiceController) GetServiceStatusAction() {
 	p.resolveUserPrivilegeByID(s.ProjectID)
 	serviceStatus, err := service.GetServiceByK8sassist(s.ProjectName, s.Name)
 	if err != nil {
-		p.resolveErrOutput(err)
+		p.parseError(err, parseGetK8sError)
 		return
 	}
 	p.renderJSON(serviceStatus)
@@ -732,11 +720,7 @@ func (f *ServiceController) resolveDownloadYaml(serviceConfig *model.ServiceStat
 	absFileName := filepath.Join(f.repoServicePath, fileName)
 	err := generator(serviceConfig, f.repoServicePath, kubeMasterURL())
 	if err != nil {
-		if strings.Index(err.Error(), "StatusNotFound:") == 0 {
-			f.customAbort(http.StatusNotFound, service.ServiceNotFoundErr.Error())
-			return
-		}
-		f.internalError(err)
+		f.parseError(err, parseGetK8sError)
 		return
 	}
 	logs.Info("User: %s downloaded %s YAML file.", f.currentUser.Username, fileName)

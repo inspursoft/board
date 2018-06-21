@@ -82,6 +82,7 @@ func (s *services) Get(name string) (*model.Service, []byte, error) {
 		logs.Error("Get service failed, error: %v", err)
 		return nil, nil, err
 	}
+	svc.ObjectMeta.ResourceVersion = ""
 	svcfileInfo, err := yaml.Marshal(svc)
 	if err != nil {
 		logs.Error("Marshal service info failed, error: %v", err)

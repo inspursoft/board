@@ -3343,6 +3343,85 @@ paths:
           description: Need to login first.
         500:
           description: Internal errors.
+  /v1/yamlconfig:
+    post:
+      summary: Create an object by posting a yaml config.
+      description: |
+        This endpoint is used to create an object by posting a yaml config.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: yaml_path
+          in: query
+          type: string
+          required: true
+          description: Specify the yaml config file path.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Successful create an object by posting a yaml config.
+        400:
+          description: Bad request.
+        401:
+          description: Need to admin login first.
+        500:
+          description: Internal errors.
+    put:
+      summary: Change an object by applying a yaml config.
+      description: |
+        This endpoint is change an object by applying a yaml config.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: yaml_path
+          in: query
+          type: string
+          required: true
+          description: Specify the yaml config file path.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Successful changed an object by applying a yaml config.
+        400:
+          description: Bad request.
+        401:
+          description: Need to admin login first.
+        500:
+          description: Internal errors.
+    delete:
+      summary: Delete an object by a yaml config.
+      description: |
+        This endpoint is delete an object by a yaml config.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: yaml_path
+          in: query
+          type: string
+          required: true
+          description: Specify the yaml config file path.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Successful delete an object by a yaml config.
+        400:
+          description: Bad request.
+        401:
+          description: Need to admin login first.
+        500:
+          description: Internal errors.
   /v1/email/ping:
     post:
       summary: Test connection and authentication with email server.
@@ -3351,7 +3430,7 @@ paths:
       parameters:
         - name: settings
           in: body
-          description: >-
+          description: 
             Email server settings, will be read from board.cfg.
           required: false
           schema:
@@ -3370,6 +3449,212 @@ paths:
         '415':
           $ref: '#/responses/UnsupportedMediaType'
         '500':
+          description: Unexpected internal errors.
+  /v1/operations:
+    get:
+      summary: Return operation records created by Board.
+      description: |
+        This endpoint returns all operation records created by Board.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: operation_object 
+          in: query
+          description: Operation object name for filtering results.
+          required: false
+          type: string
+        - name: operation_action
+          in: query
+          description: Operation action for filtering results.
+          required: false
+          type: string
+        - name: operation_user 
+          in: query
+          description: Operation user name for filtering results.
+          required: false
+          type: string
+        - name: operation_status 
+          in: query
+          description: Operation status for filtering results.
+          required: false
+          type: string
+        - name: operation_fromdate 
+          in: query
+          description: Operation time for beginning filtering.
+          required: false
+          type: string       
+        - name: operation_todate 
+          in: query
+          description: Operation time for ending filtering.
+          required: false
+          type: string     
+        - name: page_index
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.
+        - name: order_field 
+          in: query
+          description: Order field for results.
+          required: false
+          type: string
+        - name: order_asc 
+          in: query
+          description: Order ascent type for results.
+          required: false
+          type: integer
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched projects.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Operation'
+          headers:
+            X-Total-Count:
+              description: The total count of projects.
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page.
+              type: string
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.    
+    post:
+      summary: Create an operation record.
+      description: |
+        This endpoint is to create an operation record for audit. 
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: operation
+          in: body
+          description: New created operation record.
+          required: true
+          schema:
+            $ref: '#/definitions/Operation'
+      tags:
+        - Products
+      responses:
+        201:
+          description: Operation record created successfully.
+        400:
+          description: Unsatisfied with constraints of the operation creation.
+        401:
+          description: User need to log in first.
+        500:
+          description: Unexpected internal errors.
+  /v1/operations/{operation_id}:
+    get:
+      summary: Return specific operation detail infomation.
+      description: |
+        This endpoint returns specific operation information by operation ID.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: operation_id
+          in: path
+          description: Operation ID for filtering results.
+          required: true
+          type: integer
+          format: int32
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched operation information.
+          schema:
+            $ref: '#/definitions/Operation'
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.  
+    delete:
+      summary: Delete operation record by operation ID
+      description: |
+        This endpoint is aimed to delete operation by operation ID.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: operation_id
+          in: path
+          description: Operation ID of operation which will be deleted.
+          required: true
+          type: integer
+          format: int32
+      tags:
+        - Products
+      responses:
+        200:
+          description: Operation is deleted successfully.
+        400:
+          description: Invalid operation id.
+        403:
+          description: User need to log in first.
+        404:
+          description: Operation does not exist.
+        412:
+          description: Operation contains policies, can not be deleted.
+        500:
+          description: Internal errors.
+    put:
+      summary: Update an operation record.
+      description: |
+        This endpoint is to update an operation record for audit. 
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: operation_id
+          in: path
+          description: Operation ID of operation which will be deleted.
+          required: true
+          type: integer
+          format: int32
+        - name: operation
+          in: body
+          description: New operation content to be updated.
+          required: true
+          schema:
+            $ref: '#/definitions/Operation'
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated operation successfully.
+        400:
+          description: Illegal format of provided ID value.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission to the operation.
+        404:
+          description: Operation ID does not exist.
+        500:
           description: Unexpected internal errors.
 responses:
   UnsupportedMediaType: 
@@ -4870,7 +5155,49 @@ definitions:
           When it's set to true the system will access Email server via TLS by
           default.  If it's set to false, it still will handle "STARTTLS" from
           server side.
-    
+  Operation:
+    type: object
+    properties:
+      operation_id:
+        type: integer
+        format: int32
+        description: The integer ID of this operation.
+      operation_creation_time:
+        type: string
+        description: The creation time of the operation.
+      operation_update_time:
+        type: string
+        description: The update time of the operation.
+      operation_deleted:
+        type: integer
+        format: int32
+        description: A deletion mark of the operation (1 means it's deleted, 0 is not).
+      operation_user_id:
+        type: integer
+        format: int32
+        description: The user ID of the project always means the creator of the project.
+      operation_user_name:
+        type: string
+        description: The user name of the project.
+      operation_project_name:
+        type: string
+        description: The user name of the project.
+      operation_project_id:
+        type: integer
+        format: int32
+        description: The user ID of the project always means the creator of the project.
+      operation_comment:
+        type: string
+        description: The admin comment or ranking for this operation.
+      operation_object:
+        type: string
+        description: The operated object for this operation record.
+      operation_action:
+        type: string
+        description: The operation action for this operated object.
+      operation_status:
+        type: string
+        description: The operation status for this operated object.           
         
 
 

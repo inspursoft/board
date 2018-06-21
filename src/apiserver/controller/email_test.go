@@ -1,8 +1,9 @@
-package controller
+package controller_test
 
 import (
 	"bytes"
 	"encoding/json"
+	"git/inspursoft/board/src/apiserver/controller"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,11 +13,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var emailReq = emailPingParam{
-	Username: "admin@inspur.com",
+var emailReq = controller.EmailPingParam{
+	Username: "admin@myserver.com",
 	Password: "123456a?",
-	Hostname: "smtp.inspur.com",
-	Port:     25,
+	Hostname: "smtp.myserver.com",
+	Port:     12225,
 }
 
 func TestEmailPing(t *testing.T) {
