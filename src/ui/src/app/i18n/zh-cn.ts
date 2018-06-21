@@ -280,6 +280,7 @@ export const LANG_ZH_CN = {
     "ENV_TITLE":"环境变量配置",
     "TXT_TITLE":"环境变量输入",
     "TXT_BUTTON":"添加",
+    "TXT_ALERT_MESSAGE":"环境变量不合法",
     "ENV_ADD":"添加新的环境变量",
     "ENV_CONFIRM":"确认",
     "ENV_REQUIRED":"key或value不能为空",

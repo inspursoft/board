@@ -32,6 +32,7 @@ export class EnvironmentValueComponent implements OnInit, AfterContentChecked {
     isCanConfirm: boolean = false;
     envAlertMessage: string;
     envsData: Array<EnvType>;
+    envsText: string = "";
     isAlertOpen: boolean = false;
     afterCommitErr: string = "";
     inputValidator: Array<ValidatorFn>;
@@ -39,7 +40,7 @@ export class EnvironmentValueComponent implements OnInit, AfterContentChecked {
     @ViewChildren(CsInputComponent) inputComponents: QueryList<CsInputComponent>;
     @Input() inputEnvsData: Array<EnvType>;
     @Input() inputFixedKeyList: Array<string>;
-    @ViewChild("text") textArea:ElementRef;
+    @ViewChild("text") textArea: ElementRef;
 
     constructor() {
         this.envsData = Array<EnvType>();
@@ -95,13 +96,24 @@ export class EnvironmentValueComponent implements OnInit, AfterContentChecked {
     }
 
     txtClick() {
-        let txtValue = (this.textArea.nativeElement as HTMLTextAreaElement).value;
-        let envTypes:Array<EnvType> = txtValue.split(";").map(function (str) {
-            let envStrPair = str.split("=");
-            return new EnvType(envStrPair[0],envStrPair[1]);
-        });
+        // let txtValue = (this.textArea.nativeElement as HTMLTextAreaElement).value;
+        let txtValue = this.envsText;
+        let patternEnv = this.patternEnv;
+        let envTypes: Array<EnvType>;
+        try {
+            envTypes = txtValue.split(";").map(function (str) {
+                let envStrPair = str.split("=");
+                if (!patternEnv.test(envStrPair[0]) || !patternEnv.test(envStrPair[1])) {
+                    throw new Error('regex test error')
+                }
+                return new EnvType(envStrPair[0], envStrPair[1]);
+            });
+        } catch (e) {
+            this.isAlertOpen = true;
+            this.envAlertMessage = "SERVICE.TXT_ALERT_MESSAGE";
+            return;
+        }
         this.envsData = this.envsData.concat(envTypes);
-        console.log((this.textArea.nativeElement as HTMLTextAreaElement).value);
-
+        this.isAlertOpen = false;
     }
 }
