@@ -97,7 +97,7 @@ export class EnvironmentValueComponent implements OnInit, AfterContentChecked {
     let patternEnv = this.patternEnv;
     let envTypes: Array<EnvType>;
     try {
-      envTypes = this.envsText.split(";").map(function (str) {
+      envTypes = this.envsText.split(";").map((str: string) => {
         let envStrPair = str.split("=");
         if (!patternEnv.test(envStrPair[0]) || !patternEnv.test(envStrPair[1])) {
           throw new Error()
