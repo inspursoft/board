@@ -9,6 +9,7 @@ import { Subscription } from 'rxjs/Subscription';
 import { SignUp } from './sign-up';
 import { Account } from '../account';
 import { AccountService } from '../account.service';
+import {BUTTON_STYLE} from "../../shared/shared.const";
 
 @Component({
    templateUrl: './sign-up.component.html',
@@ -43,6 +44,7 @@ export class SignUpComponent {
         this.isSignUpWIP = false;
         let confirmationMessage = new Message();
         confirmationMessage.title = "ACCOUNT.ERROR";
+        confirmationMessage.buttons = BUTTON_STYLE.ONLY_CONFIRM;
         if(err && err.status === 409) {
           confirmationMessage.message = 'ACCOUNT.USERNAME_ALREADY_EXISTS';
         } else {
