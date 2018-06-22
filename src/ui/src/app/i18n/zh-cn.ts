@@ -314,6 +314,12 @@ export const LANG_ZH_CN = {
     "STEP_3_COMMAND":"命令",
     "STEP_3_CPU":"Cpu",
     "STEP_3_MEMORY":"内存",
+    "STEP_3_WORK_DIRECTOR":"工作目录:</usr/local/bin>",
+    "STEP_3_STORAGE_VOLUME":"外部存储卷",
+    "STEP_3_ENVIRONMENT_VARIABLES":"环境变量定义:<VERSION = 1.0>",
+    "STEP_3_PORT_CONTAINER":"容器服务端口:<80>",
+    "STEP_4_SERVICE_OF_NAME":"服务名称:<service01>",
+    "STEP_4_EXTERNAL_PORT":"外部端口:<30001>",
     "STEP_4_SERVICE_CONFIG_TITLE":"服务配置",
     "STEP_4_SERVICE_NAME":"服务名称",
     "STEP_4_INSTANCE":"实例",
@@ -462,13 +468,5 @@ export const LANG_ZH_CN = {
     "CLUSTER_VERSION":"集群版本",
     "GET_HELP":"帮助",
     "SUPPORT_TEAM":"支持"
-},
-   "PLACEHOLDER":{
-     "WORK_DIRECTOR":"请输入工作目录:</usr/local/bin>",
-     "STORAGE_VOLUME":"配置外部存储卷",
-     "ENVIRONMENT_VARIABLES":"请输入环境变量定义:<VERSION = 1.0>",
-     "PORT_CONTAINER":"请输入容器的服务端口:<80>",
-     "SERVICE_NAME":"请输入服务名称:<service01>",
-     "EXTERNAL_PORT":"请定义外部端口:<30001>"
-    }
+  },
 };

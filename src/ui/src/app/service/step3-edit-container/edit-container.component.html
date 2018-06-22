@@ -16,24 +16,24 @@
       <cs-input [inputLabel]="'SERVICE.STEP_3_WORKING_DIR' | translate"
                 [inputPattern]="patternWorkdir"
                 [simpleFiled]="container.working_dir"
-                [inputPlaceholder]="'PLACEHOLDER.WORK_DIRECTOR'| translate"
+                [inputPlaceholder]="'SERVICE.STEP_3_WORK_DIRECTOR'| translate"
                 (onCheck)="container.working_dir = $event"></cs-input>
       <cs-input [inputType]="1"
                 [inputLabel]="'SERVICE.STEP_3_VOLUME_MOUNTS' | translate"
                 [simpleFiled]="getVolumesDescription(container)"
-                [inputPlaceholder]="'PLACEHOLDER.STORAGE_VOLUME'| translate"
+                [inputPlaceholder]="'SERVICE.STEP_3_STORAGE_VOLUME'| translate"
                 (onEdit)="curContainerIndex = iStep3; showVolumeMounts = true;"></cs-input>
       <cs-input [inputType]="1"
                 [inputLabel]="'SERVICE.STEP_3_Env' | translate"
                 [simpleFiled]="getEnvsDescription(container)"
-                [inputPlaceholder]="'PLACEHOLDER.ENVIRONMENT_VARIABLES'| translate"
+                [inputPlaceholder]="'SERVICE.STEP_3_ENVIRONMENT_VARIABLES'| translate"
                 (onEdit)="curContainerIndex = iStep3;showEnvironmentValue = true;"></cs-input>
       <cs-input-array [inputArrayType]="1"
                       [inputArrayFixedSource]="fixedContainerPort.get(container.name)"
                       [inputArrayMin]="1"
                       [inputArrayMax]="65535"
                       [inputArrayLabelText]="'SERVICE.STEP_3_CONTAINER_PORT' | translate"
-                      [inputArrayTipText]="'PLACEHOLDER.PORT_CONTAINER'| translate"
+                      [inputArrayTipText]="'SERVICE.STEP_3_PORT_CONTAINER'| translate"
                       [inputArraySource]="container.container_port">
       </cs-input-array>
       <div class="edit-container-area">

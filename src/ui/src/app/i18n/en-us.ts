@@ -313,7 +313,12 @@ export const LANG_EN_US = {
     "STEP_3_CONTAINER_PORT":"Container Port",
     "STEP_3_COMMAND":"Command",
     "STEP_3_CPU":"Cpu",
-    "STEP_3_MEMORY":"Memory",
+    "STEP_3_MEMORY":"Memory", "STEP_3_WORK_DIRECTOR":"work directory:</usr/local/bin>",
+    "STEP_3_STORAGE_VOLUME":"storage volume",
+    "STEP_3_ENVIRONMENT_VARIABLES":"environment variables:<VERSION = 1.0>",
+    "STEP_3_PORT_CONTAINER":"port of container:<80>",
+    "STEP_4_SERVICE_OF_NAME":"service name:<service01>",
+    "STEP_4_EXTERNAL_PORT":"external port:<30001>",
     "STEP_4_SERVICE_CONFIG_TITLE":"Basic service configuration",
     "STEP_4_SERVICE_NAME":"Service Name",
     "STEP_4_INSTANCE":"Instance",
@@ -462,12 +467,4 @@ export const LANG_EN_US = {
     "GET_HELP":"Get Help",
     "SUPPORT_TEAM":"Support team"
   },
-    "PLACEHOLDER":{
-        "WORK_DIRECTOR":"Input the work directory:</usr/local/bin>",
-        "STORAGE_VOLUME":"Input the storage volume",
-        "ENVIRONMENT_VARIABLES":"Input the environment variables:<VERSION = 1.0>",
-        "PORT_CONTAINER":" Input the port of this container:<80>",
-        "SERVICE_NAME":"Input the service name:<service01>",
-        "EXTERNAL_PORT":"Input the external port:<30001>"
-    }
 };
