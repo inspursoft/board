@@ -462,5 +462,13 @@ export const LANG_ZH_CN = {
     "CLUSTER_VERSION":"集群版本",
     "GET_HELP":"帮助",
     "SUPPORT_TEAM":"支持"
-}
+},
+   "PLACEHOLDER":{
+     "WORK_DIRECTOR":"请输入工作目录:</usr/local/bin>",
+     "STORAGE_VOLUME":"配置外部存储卷",
+     "ENVIRONMENT_VARIABLES":"请输入环境变量定义:<VERSION = 1.0>",
+     "PORT_CONTAINER":"请输入容器的服务端口:<80>",
+     "SERVICE_NAME":"请输入服务名称:<service01>",
+     "EXTERNAL_PORT":"请定义外部端口:<30001>"
+    }
 };

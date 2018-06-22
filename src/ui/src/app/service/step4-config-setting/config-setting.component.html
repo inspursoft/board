@@ -8,7 +8,7 @@
                 [inputLabel]="'SERVICE.STEP_4_SERVICE_NAME' | translate"
                 [customerValidatorAsyncFunc]="checkServiceNameFun"
                 [simpleFiled]="uiData.serviceName"
-                [inputPlaceholder]="'servicename'"
+                [inputPlaceholder]="'PLACEHOLDER.SERVICE_NAME'| translate"
                 (onCheck)="setServiceName($event)">
       </cs-input>
     </div>
@@ -76,7 +76,7 @@
                   [inputIsRequired]="true"
                   [inputMin]="30000"
                   [inputMax]="32766"
-                  [inputPlaceholder]="'30001'"
+                  [inputPlaceholder]="'PLACEHOLDER.EXTERNAL_PORT'| translate"
                   (onCheck)="setNodePort(iIndex,$event)">
         </cs-input>
         <div class="radio-inline external-radio-container">

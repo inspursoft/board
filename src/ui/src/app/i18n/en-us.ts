@@ -461,5 +461,13 @@ export const LANG_EN_US = {
     "CLUSTER_VERSION":"Cluster Version",
     "GET_HELP":"Get Help",
     "SUPPORT_TEAM":"Support team"
-  }
+  },
+    "PLACEHOLDER":{
+        "WORK_DIRECTOR":"Input the work directory:</usr/local/bin>",
+        "STORAGE_VOLUME":"Input the storage volume",
+        "ENVIRONMENT_VARIABLES":"Input the environment variables:<VERSION = 1.0>",
+        "PORT_CONTAINER":" Input the port of this container:<80>",
+        "SERVICE_NAME":"Input the service name:<service01>",
+        "EXTERNAL_PORT":"Input the external port:<30001>"
+    }
 };
