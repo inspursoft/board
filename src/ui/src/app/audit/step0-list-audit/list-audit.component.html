@@ -1,0 +1,128 @@
+<div>
+  <div class="row">
+    <div class="col-xs-3 d-flex flex-items-xs-middle">
+      <label class="col-xs-3">Image</label>
+      <cs-dropdown [dropdownDefaultText]="'123'"
+                   [dropdownWidth]="200"
+                   [dropdownList]="['123','456']"
+                   (onChange)="void">
+      </cs-dropdown>
+    </div>
+    <div class="col-xs-3 d-flex flex-items-xs-middle">
+      <label class="col-xs-3">Action</label>
+      <cs-dropdown [dropdownDefaultText]="'123'"
+                   [dropdownWidth]="200"
+                   [dropdownList]="['123','456']"
+                   (onChange)="void">
+      </cs-dropdown>
+    </div>
+    <div class="col-xs-3 d-flex flex-items-xs-middle">
+      <label class="col-xs-3">Success</label>
+      <cs-dropdown [dropdownDefaultText]="'123'"
+                   [dropdownWidth]="200"
+                   [dropdownList]="['123','456']"
+                   (onChange)="void">
+      </cs-dropdown>
+    </div>
+    <div class="col-xs-3 d-flex flex-items-xs-middle">
+      <label class="col-xs-3">User</label>
+      <cs-dropdown [dropdownDefaultText]="'123'"
+                   [dropdownWidth]="200"
+                   [dropdownList]="['123','456']"
+                   (onChange)="void">
+      </cs-dropdown>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-3 d-flex flex-items-xs-middle">
+      <label class="col-xs-3">Begin</label>
+      <input type="date" clrDate>
+    </div>
+    <div class="col-xs-3 d-flex flex-items-xs-middle">
+      <label class="col-xs-3">End</label>
+      <input type="date" clrDate>
+    </div>
+    <div class="col-xs-3 d-flex flex-items-xs-middle">
+      <button class="btn btn-primary">
+        {{ 'Query' | translate }}
+      </button>
+    </div>
+
+  </div>
+  <div class="row">
+    <div class="col-xs-12">
+      <clr-datagrid (clrDgRefresh)="retrieve(false, $event)" [clrDgLoading]="isInLoading">
+        <clr-dg-column [clrDgField]="'NAME'"
+                       [clrDgSortOrder]="descSort">
+          <clr-dg-filter [hidden]="true"></clr-dg-filter>
+          {{ 'Date' | translate }}
+        </clr-dg-column>
+        <clr-dg-column>{{ 'Object' | translate }}</clr-dg-column>
+        <clr-dg-column>{{ 'Action' | translate }}</clr-dg-column>
+        <clr-dg-column [clrDgField]="'CREATE_TIME'"
+                       [clrDgSortOrder]="descSort">
+          <clr-dg-filter [hidden]="true"></clr-dg-filter>
+          {{ 'Status' | translate }}
+        </clr-dg-column>
+        <clr-dg-column>{{ 'User' | translate }}</clr-dg-column>
+        <clr-dg-column>{{ 'Operation' | translate }}</clr-dg-column>
+        <clr-dg-row *ngFor="let service of services">
+          <clr-dg-cell>{{service.service_name}}</clr-dg-cell>
+          <clr-dg-cell>{{service.service_project_name}}</clr-dg-cell>
+          <clr-dg-cell>{{service.service_owner_name}}</clr-dg-cell>
+          <clr-dg-cell>{{service.service_creation_time | date: 'short'}}</clr-dg-cell>
+          <clr-dg-cell>
+            <input type="checkbox"
+                   [id]="service.service_name"
+                   [checked]="service.service_public === 1"
+                   (click)="toggleServicePublic(service, $event)">
+            <label [for]="service.service_name"></label>
+          </clr-dg-cell>
+
+          <clr-dg-cell>
+            <span *ngIf="isActionWIP.get(service.service_id)" class="spinner spinner-sm"></span>
+            <a href="javascript:void(0)"
+               *ngIf="isServiceInStoppedStatus(service)">
+              <clr-icon shape="play"
+                        class="action"
+                        (click)="toggleService(service)"
+                        [ngClass]="{'disabled':service.service_is_member == 0}">
+              </clr-icon>
+            </a>
+            <a href="javascript:void(0)"
+               *ngIf="isServiceCanChangePauseStatus(service)">
+              <clr-icon shape="pause"
+                        class="action"
+                        (click)="toggleService(service)"
+                        [ngClass]="{'disabled':service.service_is_member == 0}">
+              </clr-icon>
+            </a>
+            <a href="javascript:void(0)">
+              <clr-icon shape="trash"
+                        class="action"
+                        (click)="deleteService(service)"
+                        [ngClass]="{'disabled':isDeleteDisable(service)}">
+              </clr-icon>
+            </a>
+            <a href="javascript:void(0)"
+               (click)="openServiceDetail(service)">
+              <clr-icon shape="info-standard"></clr-icon>
+            </a>
+            <a href="javascript:void(0)">
+              <clr-icon shape="wrench"
+                        class="action"
+                        (click)="openServiceControl(service)"
+                        [ngClass]="{'disabled':service.service_is_member == 0 || service.service_status != 1}">
+              </clr-icon>
+            </a>
+          </clr-dg-cell>
+        </clr-dg-row>
+        <clr-dg-footer>
+          {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} of {{pagination.totalItems}} items
+          <clr-dg-pagination #pagination [clrDgTotalItems]="totalRecordCount" [(clrDgPage)]="pageIndex"
+                             [clrDgPageSize]="pageSize"></clr-dg-pagination>
+        </clr-dg-footer>
+      </clr-datagrid>
+    </div>
+  </div>
+</div>

@@ -7,6 +7,7 @@ import { ProjectModule } from '../project/project.module';
 import { ImageModule } from '../image/image.module';
 import { ProfileModule } from '../profile/profile.module';
 import { UserCenterModule } from '../user-center/user-center.module';
+import { AuditModule } from "../audit/audit.module";
 
 @NgModule({
   exports: [
@@ -17,7 +18,8 @@ import { UserCenterModule } from '../user-center/user-center.module';
     ProjectModule,
     ImageModule,
     ProfileModule,
-    UserCenterModule
+    UserCenterModule,
+    AuditModule
   ]
 })
 export class FeatureModule {}
