@@ -13,7 +13,7 @@
         </div>
         <span class="base-margin-left">{{"SERVICE.SERVICE_DETAIL_SERVICE_INFO"|translate}}:</span>
       </div>
-      <ngx-prism *ngIf="isShowServiceInfo" [language]="'json'">{{serviceDetail | json}}</ngx-prism>
+      <pre *ngIf="isShowServiceInfo"><code clr-code-highlight="language-json">{{serviceDetail | json}}</code></pre>
     </div>
     <div class="file-detail-container" >
       <div class="file-detail-title-container" (click)="getDeploymentYamlFile()">
@@ -24,7 +24,9 @@
         <span class="base-margin-left">{{"SERVICE.SERVICE_DETAIL_DEPLOYMENT_FILE"|translate}}:</span>
       </div>
       <span *ngIf="deploymentYamlWIP" class="spinner spinner-md"></span>
-      <ngx-prism *ngIf="isShowDeploymentYaml && !deploymentYamlWIP" [language]="'yaml'" [code]="deploymentYamlFile"></ngx-prism>
+      <pre *ngIf="isShowDeploymentYaml && !deploymentYamlWIP">
+        <code clr-code-highlight="language-yaml">{{deploymentYamlFile}}</code>
+      </pre>
     </div>
     <div class="file-detail-container">
       <div class="file-detail-title-container" (click)="getServiceYamlFile()">
@@ -35,7 +37,9 @@
         <span class="base-margin-left">{{"SERVICE.SERVICE_DETAIL_SERVICE_FILE"|translate}}:</span>
       </div>
       <span *ngIf="serviceYamlWIP" class="spinner spinner-md"></span>
-      <ngx-prism *ngIf="isShowServiceYaml && !serviceYamlWIP" [language]="'yaml'" [code]="serviceYamlFile"></ngx-prism>
+      <pre *ngIf="isShowServiceYaml && !serviceYamlWIP">
+        <code clr-code-highlight="language-yaml">{{serviceYamlFile}}</code>
+      </pre>
     </div>
   </div>
   <div class="modal-footer">
