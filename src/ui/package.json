@@ -15,7 +15,6 @@
   },
   "private": true,
   "dependencies": {
-    "@angular-package/prism": "^2.0.2",
     "@angular/animations": "~5.0.0",
     "@angular/common": "~5.0.0",
     "@angular/compiler": "~5.0.0",
@@ -30,7 +29,6 @@
     "@clr/icons": "^0.11.20",
     "@clr/ui": "^0.11.20",
     "@ngx-translate/core": "^9.0.2",
-    "@types/prismjs": "^1.9.0",
     "@webcomponents/custom-elements": "^1.1.1",
     "angular2-echarts": "^1.2.0",
     "core-js": "^2.4.1",
