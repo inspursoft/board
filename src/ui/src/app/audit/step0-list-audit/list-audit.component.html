@@ -1,7 +1,7 @@
 <div>
   <div class="row">
     <div class="col-xs-3 d-flex flex-items-xs-middle">
-      <label class="col-xs-3">Image</label>
+      <label class="col-xs-3">{{"AUDIT.IMAGE" | translate}}</label>
       <cs-dropdown [dropdownDefaultText]="'123'"
                    [dropdownWidth]="200"
                    [dropdownList]="['123','456']"
@@ -9,7 +9,7 @@
       </cs-dropdown>
     </div>
     <div class="col-xs-3 d-flex flex-items-xs-middle">
-      <label class="col-xs-3">Action</label>
+      <label class="col-xs-3">{{"AUDIT.ACTION" | translate}}</label>
       <cs-dropdown [dropdownDefaultText]="'123'"
                    [dropdownWidth]="200"
                    [dropdownList]="['123','456']"
@@ -17,7 +17,7 @@
       </cs-dropdown>
     </div>
     <div class="col-xs-3 d-flex flex-items-xs-middle">
-      <label class="col-xs-3">Success</label>
+      <label class="col-xs-3">{{"AUDIT.STATUS" | translate}}</label>
       <cs-dropdown [dropdownDefaultText]="'123'"
                    [dropdownWidth]="200"
                    [dropdownList]="['123','456']"
@@ -25,7 +25,7 @@
       </cs-dropdown>
     </div>
     <div class="col-xs-3 d-flex flex-items-xs-middle">
-      <label class="col-xs-3">User</label>
+      <label class="col-xs-3">{{"AUDIT.USER" | translate}}</label>
       <cs-dropdown [dropdownDefaultText]="'123'"
                    [dropdownWidth]="200"
                    [dropdownList]="['123','456']"
@@ -35,16 +35,16 @@
   </div>
   <div class="row">
     <div class="col-xs-3 d-flex flex-items-xs-middle">
-      <label class="col-xs-3">Begin</label>
+      <label class="col-xs-3">{{"AUDIT.BEGIN" | translate}}</label>
       <input type="date" clrDate>
     </div>
     <div class="col-xs-3 d-flex flex-items-xs-middle">
-      <label class="col-xs-3">End</label>
+      <label class="col-xs-3">{{"AUDIT.END" | translate}}</label>
       <input type="date" clrDate>
     </div>
     <div class="col-xs-3 d-flex flex-items-xs-middle">
       <button class="btn btn-primary">
-        {{ 'Query' | translate }}
+        {{"AUDIT.QUERY" | translate}}
       </button>
     </div>
 
@@ -55,17 +55,17 @@
         <clr-dg-column [clrDgField]="'NAME'"
                        [clrDgSortOrder]="descSort">
           <clr-dg-filter [hidden]="true"></clr-dg-filter>
-          {{ 'Date' | translate }}
+          {{"AUDIT.DATE" | translate}}
         </clr-dg-column>
-        <clr-dg-column>{{ 'Object' | translate }}</clr-dg-column>
-        <clr-dg-column>{{ 'Action' | translate }}</clr-dg-column>
+        <clr-dg-column>{{"AUDIT.OBJECT" | translate}}</clr-dg-column>
+        <clr-dg-column>{{"AUDIT.ACTION" | translate}}</clr-dg-column>
         <clr-dg-column [clrDgField]="'CREATE_TIME'"
                        [clrDgSortOrder]="descSort">
           <clr-dg-filter [hidden]="true"></clr-dg-filter>
-          {{ 'Status' | translate }}
+          {{"AUDIT.STATUS" | translate}}
         </clr-dg-column>
-        <clr-dg-column>{{ 'User' | translate }}</clr-dg-column>
-        <clr-dg-column>{{ 'Operation' | translate }}</clr-dg-column>
+        <clr-dg-column>{{"AUDIT.USER" | translate}}</clr-dg-column>
+        <clr-dg-column>{{"AUDIT.OPERATION" | translate}}</clr-dg-column>
         <clr-dg-row *ngFor="let service of services">
           <clr-dg-cell>{{service.service_name}}</clr-dg-cell>
           <clr-dg-cell>{{service.service_project_name}}</clr-dg-cell>

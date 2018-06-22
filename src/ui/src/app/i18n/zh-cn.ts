@@ -97,6 +97,7 @@ export const LANG_ZH_CN = {
     "NODES": "节点",
     "IMAGES": "镜像",
     "ADMIN_OPTIONS": "管理员选项",
+    "AUDIT": "操作审计",
     "PROFILES": "系统信息",
     "GUIDE_SERVICE_LIST":"请创建属于您的新服务",
     "GUIDE_PROJECT_LIST":"请创建属于您的新项目"
@@ -397,6 +398,18 @@ export const LANG_ZH_CN = {
     "SERVICE_YAML_INVALID_FILE":"无效的文件类型",
     "SERVICE_YAML_VALID_FILE":"文件合法，可以上传",
     "SERVICE_YAML_UPLOAD_SUCCESS":"上传成功!目前服务处于'准备'状态，点击'创建'，运行该服务"
+  },
+  "AUDIT":{
+    "IMAGE":"镜像",
+    "ACTION":"操作",
+    "STATUS":"状态",
+    "USER":"用户",
+    "BEGIN":"开始时间",
+    "END":"结束时间",
+    "QUERY":"查询",
+    "DATE":"日期",
+    "OBJECT":"对象",
+    "OPERATION":"操作"
   },
   "GLOBAL_SEARCH": {
     "PROJECTS": "项目",
