@@ -3,6 +3,7 @@ package dao
 import (
 	"git/inspursoft/board/src/common/model"
 
+	"fmt"
 	"time"
 
 	//"github.com/astaxie/beego/logs"
@@ -72,48 +73,48 @@ func queryOperations(field string, value interface{}) orm.QuerySeter {
 
 func GetOperations(query model.Operation, fromtime string, totime string) ([]*model.Operation, error) {
 
-	var operationSQL = "select * from operation "
+	var operationSQL = "select * from operation"
 
-	opt := "where"
+	opt := " where "
 
 	// TODO: Use params
 	if query.ObjectType != "" {
-		operationSQL = operationSQL + opt + "type = " + `"` + query.ObjectType + `"`
-		if opt == "where" {
-			opt = "and"
+		operationSQL = operationSQL + opt + fmt.Sprintf("type = '%s'", query.ObjectType)
+		if opt == " where " {
+			opt = " and "
 		}
 	}
 	if query.Action != "" {
-		operationSQL = operationSQL + opt + "action = " + `"` + query.Action + `"`
-		if opt == "where" {
-			opt = "and"
+		operationSQL = operationSQL + opt + fmt.Sprintf("action = '%s'", query.Action)
+		if opt == " where " {
+			opt = " and "
 		}
 	}
 	if query.UserName != "" {
-		operationSQL = operationSQL + opt + "user_name = " + `"` + query.UserName + `"`
-		if opt == "where" {
-			opt = "and"
+		operationSQL = operationSQL + opt + fmt.Sprintf("user_name = '%s'", query.UserName)
+		if opt == " where " {
+			opt = " and "
 		}
 	}
 	if query.Status != "" {
-		operationSQL = operationSQL + opt + "status = " + `"` + query.Status + `"`
-		if opt == "where" {
-			opt = "and"
+		operationSQL = operationSQL + opt + fmt.Sprintf("status = '%s'", query.Status)
+		if opt == " where " {
+			opt = " and "
 		}
 	}
 
 	// fix me
 	if fromtime != "" {
-		operationSQL = operationSQL + opt + "creation_time >= " + `"` + query.CreationTime.String() + `"`
-		if opt == "where" {
-			opt = "and"
+		operationSQL = operationSQL + opt + fmt.Sprintf("creation_time >= '%s'", query.CreationTime.String())
+		if opt == " where " {
+			opt = " and "
 		}
 	}
 
 	if totime != "" {
-		operationSQL = operationSQL + opt + "creation_time <= " + `"` + query.CreationTime.String() + `"`
-		if opt == "where" {
-			opt = "and"
+		operationSQL = operationSQL + opt + fmt.Sprintf("creation_time <= '%s'", query.CreationTime.String())
+		if opt == " where " {
+			opt = " and "
 		}
 	}
 
