@@ -409,7 +409,9 @@ export const LANG_ZH_CN = {
     "QUERY":"查询",
     "DATE":"日期",
     "OBJECT":"对象",
-    "OPERATION":"操作"
+    "OPERATION":"操作",
+    "ILLEGAL_DATE_TITLE":"日期不合法",
+    "ILLEGAL_DATE_MSG":"日期不合法，请检查。"
   },
   "GLOBAL_SEARCH": {
     "PROJECTS": "项目",

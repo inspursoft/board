@@ -1,31 +1,31 @@
 <div>
   <div class="row">
-    <div class="col-xs-3 d-flex flex-items-xs-middle">
-      <label class="col-xs-3">{{"AUDIT.IMAGE" | translate}}</label>
+    <div class="col-md-3 d-flex flex-items-xs-middle">
+      <label class="col-md-3">{{"AUDIT.IMAGE" | translate}}</label>
       <cs-dropdown [dropdownDefaultText]="'123'"
                    [dropdownWidth]="200"
                    [dropdownList]="['123','456']"
                    (onChange)="void">
       </cs-dropdown>
     </div>
-    <div class="col-xs-3 d-flex flex-items-xs-middle">
-      <label class="col-xs-3">{{"AUDIT.ACTION" | translate}}</label>
+    <div class="col-md-3 d-flex flex-items-xs-middle">
+      <label class="col-md-3">{{"AUDIT.ACTION" | translate}}</label>
       <cs-dropdown [dropdownDefaultText]="'123'"
                    [dropdownWidth]="200"
                    [dropdownList]="['123','456']"
                    (onChange)="void">
       </cs-dropdown>
     </div>
-    <div class="col-xs-3 d-flex flex-items-xs-middle">
-      <label class="col-xs-3">{{"AUDIT.STATUS" | translate}}</label>
+    <div class="col-md-3 d-flex flex-items-xs-middle">
+      <label class="col-md-3">{{"AUDIT.STATUS" | translate}}</label>
       <cs-dropdown [dropdownDefaultText]="'123'"
                    [dropdownWidth]="200"
                    [dropdownList]="['123','456']"
                    (onChange)="void">
       </cs-dropdown>
     </div>
-    <div class="col-xs-3 d-flex flex-items-xs-middle">
-      <label class="col-xs-3">{{"AUDIT.USER" | translate}}</label>
+    <div class="col-md-3 d-flex flex-items-xs-middle">
+      <label class="col-md-3">{{"AUDIT.USER" | translate}}</label>
       <cs-dropdown [dropdownDefaultText]="'123'"
                    [dropdownWidth]="200"
                    [dropdownList]="['123','456']"
@@ -34,16 +34,17 @@
     </div>
   </div>
   <div class="row">
-    <div class="col-xs-3 d-flex flex-items-xs-middle">
-      <label class="col-xs-3">{{"AUDIT.BEGIN" | translate}}</label>
-      <input type="date" clrDate>
+    <div class="col-md-3 d-flex flex-items-xs-middle">
+      <label class="col-md-3">{{"AUDIT.BEGIN" | translate}}</label>
+      <input type="date" disabled clrDate [(clrDate)]="beginDate" (clrDateChange) = "dateTest()">
     </div>
-    <div class="col-xs-3 d-flex flex-items-xs-middle">
-      <label class="col-xs-3">{{"AUDIT.END" | translate}}</label>
-      <input type="date" clrDate>
+    <div class="col-md-3 d-flex flex-items-xs-middle">
+      <label class="col-md-3">{{"AUDIT.END" | translate}}</label>
+      <input type="date" disabled clrDate [(clrDate)]="endDate" (clrDateChange) = "dateTest()">
     </div>
-    <div class="col-xs-3 d-flex flex-items-xs-middle">
-      <button class="btn btn-primary">
+    <div class="col-md-3 offset-md-3 d-flex flex-items-xs-middle">
+      <label class="col-md-3"></label>
+      <button class="btn btn-primary" style="margin-left: 125px" (click)="dateTest()">
         {{"AUDIT.QUERY" | translate}}
       </button>
     </div>

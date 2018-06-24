@@ -409,7 +409,9 @@ export const LANG_EN_US = {
     "QUERY":"Query",
     "DATE":"Date",
     "OBJECT":"Object",
-    "OPERATION":"Operation"
+    "OPERATION":"Operation",
+    "ILLEGAL_DATE_TITLE":"Illegal Date",
+    "ILLEGAL_DATE_MSG":"Illegal Date, Please Check."
   },
   "GLOBAL_SEARCH": {
     "PROJECTS": "Projects",

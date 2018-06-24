@@ -1,3 +1,6 @@
 .d-flex{
     display: flex;
 }
+div.col-md-3.d-flex.flex-items-xs-middle{
+    min-width: 300px;
+}
