@@ -97,6 +97,7 @@ export const LANG_ZH_CN = {
     "NODES": "节点",
     "IMAGES": "镜像",
     "ADMIN_OPTIONS": "管理员选项",
+    "AUDIT": "操作审计",
     "PROFILES": "系统信息",
     "GUIDE_SERVICE_LIST":"请创建属于您的新服务",
     "GUIDE_PROJECT_LIST":"请创建属于您的新项目"
@@ -278,6 +279,9 @@ export const LANG_ZH_CN = {
     "STATUS": "状态",
     "OPERATION": "操作",
     "ENV_TITLE":"环境变量配置",
+    "TXT_TITLE":"环境变量输入",
+    "TXT_BUTTON":"添加",
+    "TXT_ALERT_MESSAGE":"环境变量不合法",
     "ENV_ADD":"添加新的环境变量",
     "ENV_CONFIRM":"确认",
     "ENV_REQUIRED":"key或value不能为空",
@@ -394,6 +398,20 @@ export const LANG_ZH_CN = {
     "SERVICE_YAML_INVALID_FILE":"无效的文件类型",
     "SERVICE_YAML_VALID_FILE":"文件合法，可以上传",
     "SERVICE_YAML_UPLOAD_SUCCESS":"上传成功!目前服务处于'准备'状态，点击'创建'，运行该服务"
+  },
+  "AUDIT":{
+    "IMAGE":"镜像",
+    "ACTION":"操作",
+    "STATUS":"状态",
+    "USER":"用户",
+    "BEGIN":"开始时间",
+    "END":"结束时间",
+    "QUERY":"查询",
+    "DATE":"日期",
+    "OBJECT":"对象",
+    "OPERATION":"操作",
+    "ILLEGAL_DATE_TITLE":"日期不合法",
+    "ILLEGAL_DATE_MSG":"日期不合法，请检查。"
   },
   "GLOBAL_SEARCH": {
     "PROJECTS": "项目",

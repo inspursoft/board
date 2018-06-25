@@ -21,6 +21,7 @@ import { UserCenterComponent } from './user-center/user-center.component';
 import { AuthGuard, ServiceGuard } from './shared/auth-guard.service';
 import { ProfileComponent } from "./profile/profile.component";
 import { AppInitService } from "./app.init.service";
+import { ListAuditComponent } from "./audit/step0-list-audit/list-audit.component";
 
 @Injectable()
 export class SystemInfoResolve implements Resolve<any> {
@@ -58,7 +59,8 @@ export const ROUTES: Routes = [
         { path: 'images', component: ImageListComponent },
         { path: 'services', component: ServiceComponent, canDeactivate: [ ServiceGuard ]},
         { path: 'user-center', component: UserCenterComponent },
-        { path: 'profile', component: ProfileComponent }
+        { path: 'profile', component: ProfileComponent },
+        { path: 'audit', component: ListAuditComponent }
     ]},
     { path: '', redirectTo: '/sign-in', pathMatch: 'full' },
     { path: '**', component: SignInComponent }

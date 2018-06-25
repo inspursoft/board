@@ -97,6 +97,7 @@ export const LANG_EN_US = {
     "NODES": "Nodes",
     "IMAGES": "Images",
     "ADMIN_OPTIONS": "Admin Options",
+    "AUDIT": "Operation Audit",
     "PROFILES": "System Info",
     "GUIDE_SERVICE_LIST":"Please create your own Service.",
     "GUIDE_PROJECT_LIST":"Please create your own Project."
@@ -284,6 +285,9 @@ export const LANG_EN_US = {
     "STEP_TITLE_5":"Testing",
     "STEP_TITLE_6":"Deploy",
     "ENV_TITLE":"Environment Value",
+    "TXT_TITLE":"Environment Value Input",
+    "TXT_BUTTON":"Add",
+    "TXT_ALERT_MESSAGE":"Illegal Environment Value",
     "ENV_ADD":"Add New Environment Value",
     "ENV_CONFIRM":"Confirm",
     "ENV_REQUIRED":"The key or value is required",
@@ -394,6 +398,20 @@ export const LANG_EN_US = {
     "SERVICE_YAML_INVALID_FILE":"Invalid file type",
     "SERVICE_YAML_VALID_FILE":"Files valid,please upload them",
     "SERVICE_YAML_UPLOAD_SUCCESS":"Upload success!This service in 'preparing' status, click 'create' for run it"
+  },
+  "AUDIT":{
+    "IMAGE":"Image",
+    "ACTION":"Action",
+    "STATUS":"Status",
+    "USER":"User",
+    "BEGIN":"Begin",
+    "END":"End",
+    "QUERY":"Query",
+    "DATE":"Date",
+    "OBJECT":"Object",
+    "OPERATION":"Operation",
+    "ILLEGAL_DATE_TITLE":"Illegal Date",
+    "ILLEGAL_DATE_MSG":"Illegal Date, Please Check."
   },
   "GLOBAL_SEARCH": {
     "PROJECTS": "Projects",
