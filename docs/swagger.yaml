@@ -218,7 +218,56 @@ paths:
           schema:
             $ref: '#/definitions/SystemInfo'
         500:
-          description: Unexpected internal error.     
+          description: Unexpected internal error. 
+  /v1/forgot-password:
+    post:
+      summary: Use registered username or email to receive a resetting URL from user's email inbox.
+      description: |
+        This endpoint is for user to reset his password by registered username or email.
+      parameters:
+        - name: credential
+          in: query
+          type: string
+          required: true
+          description: User's registered username or email.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Resetting password email sent successfully.
+        404:
+          description: Invalid credential or not found.
+        412:
+          description: Reset password doesn't support in external auth.
+        500:
+          description: Unexpected internal errors.
+  /v1/reset-password:
+    post:
+      summary: Reset password with provided reset UUID.
+      description: |
+        This endpoint is for user to reset with provided reset UUID.
+      parameters:
+        - name: reset_uuid
+          in: query
+          type: string
+          required: true
+          description: Provided reset UUID from resetting password URL.
+        - name: password
+          in: query
+          type: string
+          required: true
+          description: New reset password.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Reset password successfully.
+        400:
+          description: Invalid reset UUID.
+        412:
+          description: Reset password doesn't support in external auth.
+        500:
+          description: Unexpected internal errors.     
   /v1/users/{user_id}:
     get:
       summary: Get user by ID.
