@@ -349,5 +349,21 @@ DROP TABLE IF EXISTS `log`;
         `comment` varchar(50) DEFAULT NULL,
         PRIMARY KEY (`name`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
+	
+    CREATE TABLE `board`.`operation` (
+        `id` INT NOT NULL AUTO_INCREMENT,
+        `creation_time` datetime DEFAULT NULL,
+        `update_time` datetime DEFAULT NULL,
+        `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
+        `project_name` VARCHAR(255) DEFAULT '',
+        `project_id` INT DEFAULT 0,
+        `user_name` VARCHAR(255) DEFAULT '',
+        `user_id` INT DEFAULT 0,
+        `object_type` VARCHAR(255) DEFAULT '',
+        `object_name` VARCHAR(255) DEFAULT '',
+        `action` VARCHAR(255) DEFAULT '',
+        `status` VARCHAR(255) DEFAULT '',
+        `path` VARCHAR(255) DEFAULT '',		
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
 
