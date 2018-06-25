@@ -3,4 +3,8 @@
 }
 div.col-md-3.d-flex.flex-items-xs-middle{
     min-width: 300px;
+    padding: 5px 0;
+}
+div.col-md-3.offset-md-3.d-flex.flex-items-xs-middle{
+    padding: 0;
 }
