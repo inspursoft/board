@@ -318,6 +318,12 @@ export const LANG_ZH_CN = {
     "STEP_3_COMMAND":"命令",
     "STEP_3_CPU":"Cpu",
     "STEP_3_MEMORY":"内存",
+    "STEP_3_WORK_DIRECTOR":"/usr/local/bin",
+    "STEP_3_STORAGE_VOLUME":"/usr/spool/news",
+    "STEP_3_ENVIRONMENT_VARIABLES":"1.0",
+    "STEP_3_PORT_CONTAINER":"80",
+    "STEP_4_SERVICE_OF_NAME":"service01",
+    "STEP_4_EXTERNAL_PORT":"30001",
     "STEP_4_SERVICE_CONFIG_TITLE":"服务配置",
     "STEP_4_SERVICE_NAME":"服务名称",
     "STEP_4_INSTANCE":"实例",
@@ -480,5 +486,5 @@ export const LANG_ZH_CN = {
     "CLUSTER_VERSION":"集群版本",
     "GET_HELP":"帮助",
     "SUPPORT_TEAM":"支持"
-}
+  },
 };

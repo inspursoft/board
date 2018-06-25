@@ -318,6 +318,12 @@ export const LANG_EN_US = {
     "STEP_3_COMMAND":"Command",
     "STEP_3_CPU":"Cpu",
     "STEP_3_MEMORY":"Memory",
+    "STEP_3_WORK_DIRECTOR":"/usr/local/bin",
+    "STEP_3_STORAGE_VOLUME":"/usr/spool/news",
+    "STEP_3_ENVIRONMENT_VARIABLES":"1.0",
+    "STEP_3_PORT_CONTAINER":"80",
+    "STEP_4_SERVICE_OF_NAME":"service01",
+    "STEP_4_EXTERNAL_PORT":"30001",
     "STEP_4_SERVICE_CONFIG_TITLE":"Basic service configuration",
     "STEP_4_SERVICE_NAME":"Service Name",
     "STEP_4_INSTANCE":"Instance",
@@ -479,5 +485,5 @@ export const LANG_EN_US = {
     "CLUSTER_VERSION":"Cluster Version",
     "GET_HELP":"Get Help",
     "SUPPORT_TEAM":"Support team"
-  }
+  },
 };
