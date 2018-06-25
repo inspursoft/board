@@ -9,8 +9,6 @@ import { BUTTON_STYLE, MESSAGE_TARGET } from "../../shared/shared.const";
   styleUrls: ['./list-audit.component.css']
 })
 export class ListAuditComponent implements OnInit {
-  beginDateStr: string = "";
-  endDateStr: string = "";
   beginDate: Date;
   endDate: Date;
 
@@ -21,21 +19,16 @@ export class ListAuditComponent implements OnInit {
   }
 
   dateTest() {
-
-
     if (!this.beginDate || !this.endDate) {
-
       return
     } else if (this.beginDate > this.endDate) {
       let msg: Message = new Message();
-      // msg.target = MESSAGE_TARGET.DELETE_USER;
       msg.title = "AUDIT.ILLEGAL_DATE_TITLE";
       msg.message = "AUDIT.ILLEGAL_DATE_MSG";
       msg.buttons = BUTTON_STYLE.ONLY_CONFIRM;
       this.messageService.announceMessage(msg);
       return false;
     } else {
-
       return
     }
   }
