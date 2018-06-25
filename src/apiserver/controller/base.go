@@ -53,10 +53,15 @@ type BaseController struct {
 	repoImagePath   string
 	project         *model.Project
 	isRemoved       bool
+	operationID     int64
 }
 
 func (b *BaseController) Prepare() {
 	b.resolveSignedInUser()
+}
+
+func (b *BaseController) Finish() {
+	//Update operation result in Mysql
 }
 
 func (b *BaseController) Render() error {

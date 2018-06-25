@@ -8,7 +8,7 @@
     </div>
     <span *ngIf="isInDeployWIP" class="spinner spinner-md step6-spinner"></span>
   </div>
-  <ngx-prism *ngIf="deployConsole" [language]="'yaml'" [code]="deployConsole | json"></ngx-prism>
+  <pre *ngIf="deployConsole"><code clr-code-highlight="language-json">{{deployConsole | json}}</code></pre>
 </div>
 <button class="btn btn-primary default-primary"
         [disabled]="isDeploySuccess || !isDeployed"

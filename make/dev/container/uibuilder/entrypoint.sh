@@ -15,10 +15,14 @@ function prod(){
     npm run rollup
     cp node_modules/@clr/ui/clr-ui.min.css dist/clr-ui.min.css
     cp node_modules/@clr/icons/clr-icons.min.css dist/clr-icons.min.css
+    cp node_modules/prismjs/themes/prism.css dist/prism.css
     cp node_modules/echarts/dist/echarts.min.js dist/echarts.min.js
     cp node_modules/zone.js/dist/zone.min.js dist/zone.min.js
     cp node_modules/@webcomponents/custom-elements/custom-elements.min.js dist/custom-elements.min.js
     cp node_modules/@clr/icons/clr-icons.min.js dist/clr-icons.min.js
+    cp node_modules/prismjs/prism.js dist/prism.js
+    cp node_modules/prismjs/components/prism-json.min.js dist/prism-json.min.js
+    cp node_modules/prismjs/components/prism-yaml.min.js dist/prism-yaml.min.js
     cp src/styles.css dist/styles.css
     cp src/favicon.ico dist/favicon.ico
     cp src/rollup/index.html dist/index.html
