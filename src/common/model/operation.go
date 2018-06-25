@@ -5,9 +5,9 @@ import (
 )
 
 type Operation struct {
-	ID           int64     `json:"operation_id" orm:"column(id)"`
-	Comment      string    `json:"operation_comment" orm:"column(comment)"`
-	Tag          string    `json:"operation_tag" orm:"column(tag)"`
+	ID int64 `json:"operation_id" orm:"column(id)"`
+	//Comment string `json:"operation_comment" orm:"column(comment)"`
+	//Tag          string    `json:"operation_tag" orm:"column(tag)"`
 	CreationTime time.Time `json:"operation_creation_time" orm:"column(creation_time)"`
 	UpdateTime   time.Time `json:"operation_update_time" orm:"column(update_time)"`
 	Deleted      int       `json:"operation_deleted" orm:"column(deleted)"`
