@@ -9,6 +9,10 @@ import { MESSAGE_TYPE } from "../../../shared/shared.const";
 import { Message } from "../../../shared/message-service/message";
 import { HttpErrorResponse } from "@angular/common/http";
 
+export const DEPLOYMENT = "deployment";
+export const SERVICE = "service";
+type FileType = "deployment" | "service";
+
 @Component({
   selector: 'service-create-yaml',
   templateUrl: './service-create-yaml.component.html',
@@ -24,6 +28,9 @@ export class ServiceCreateYamlComponent implements OnInit {
   isUploadFileWIP: boolean = false;
   isToggleServiceWIP: boolean = false;
   isUploadFileSuccess: boolean = false;
+  isFileInEdit: boolean = false;
+  curFileContent: string = "";
+  curFileName: FileType;
   @Output() onCancelEvent: EventEmitter<any>;
 
   constructor(private k8sService: K8sService,
@@ -55,11 +62,11 @@ export class ServiceCreateYamlComponent implements OnInit {
       let file: File = fileList[0];
       if (file.name.endsWith(".yaml")) {//Todo:unchecked with ie11
         if (isDeploymentYaml) {
-          this.filesDataMap.delete("deployment");
-          this.filesDataMap.set("deployment", file);
+          this.filesDataMap.delete(DEPLOYMENT);
+          this.filesDataMap.set(DEPLOYMENT, file);
         } else {
-          this.filesDataMap.delete("service");
-          this.filesDataMap.set("service", file);
+          this.filesDataMap.delete(SERVICE);
+          this.filesDataMap.set(SERVICE, file);
         }
       } else {
         (event.target as HTMLInputElement).value = '';
@@ -103,8 +110,8 @@ export class ServiceCreateYamlComponent implements OnInit {
 
   btnUploadClick() {
     let formData = new FormData();
-    let deploymentFile = this.filesDataMap.get("deployment");
-    let serviceFile = this.filesDataMap.get("service");
+    let deploymentFile = this.filesDataMap.get(DEPLOYMENT);
+    let serviceFile = this.filesDataMap.get(SERVICE);
     formData.append("deployment_file", deploymentFile, deploymentFile.name);
     formData.append("service_file", serviceFile, serviceFile.name);
     this.isUploadFileWIP = true;
@@ -134,6 +141,40 @@ export class ServiceCreateYamlComponent implements OnInit {
     return this.selectedProjectId == 0
       || !this.filesDataMap.has('deployment')
       || this.isUploadFileSuccess
+      || this.isFileInEdit
       || !this.filesDataMap.has('service');
   }
+
+  get isEditDeploymentEnable(): boolean{
+    return !this.isUploadFileSuccess
+      && !this.isUploadFileWIP
+      && !this.isFileInEdit
+      && this.filesDataMap.get('deployment') != undefined
+  }
+
+  get isEditServiceEnable(): boolean{
+    return !this.isUploadFileSuccess
+      && !this.isUploadFileWIP
+      && !this.isFileInEdit
+      && this.filesDataMap.get('service') != undefined
+  }
+
+  editFile(fileName: FileType): void {
+    this.isFileInEdit = true;
+    this.curFileName = fileName;
+    let file = this.filesDataMap.get(fileName);
+    let reader = new FileReader();
+    reader.onload = (ev: ProgressEvent) => {
+      this.curFileContent = (ev.target as FileReader).result;
+    };
+    reader.readAsText(file);
+  }
+
+  saveFile():void{
+    this.isFileInEdit = false;
+    this.filesDataMap.delete(this.curFileName);
+    let writer = new File(Array.from(this.curFileContent), this.curFileName);
+    this.filesDataMap.set(this.curFileName, writer);
+  }
+
 }
