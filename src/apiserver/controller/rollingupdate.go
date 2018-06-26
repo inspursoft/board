@@ -56,6 +56,7 @@ func (p *ServiceRollingUpdateController) getServiceConfig() (deploymentConfig *m
 	return
 }
 
+/*
 func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceImageAction() {
 
 	var imageList []model.ImageIndex
@@ -81,6 +82,35 @@ func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceImageAction() 
 		return
 	}
 	p.PatchServiceAction(&rollingUpdateConfig)
+}
+*/
+func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceImageAction() {
+
+	var imageList []model.ImageIndex
+	p.resolveBody(&imageList)
+
+	serviceConfig := p.getServiceConfig()
+	if len(serviceConfig.Spec.Template.Spec.Containers) != len(imageList) {
+		p.customAbort(http.StatusConflict, "Image's config is invalid.")
+	}
+
+	//var rollingUpdateConfig model.Deployment
+	var rollingUpdateConfig model.PodSpec
+	for index, container := range serviceConfig.Spec.Template.Spec.Containers {
+		image := registryBaseURI() + "/" + imageList[index].ImageName + ":" + imageList[index].ImageTag
+		if serviceConfig.Spec.Template.Spec.Containers[index].Image != image {
+			rollingUpdateConfig.Containers = append(rollingUpdateConfig.Containers, model.K8sContainer{
+				Name:  container.Name,
+				Image: image,
+			})
+		}
+	}
+	if len(rollingUpdateConfig.Containers) == 0 {
+		logs.Info("Nothing to be updated")
+		return
+	}
+	serviceConfig.Spec.Template.Spec = rollingUpdateConfig
+	p.PatchServiceAction(serviceConfig)
 }
 
 func (p *ServiceRollingUpdateController) GetRollingUpdateServiceNodeGroupConfigAction() {
