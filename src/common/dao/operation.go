@@ -14,7 +14,6 @@ func AddOperation(operation model.Operation) (int64, error) {
 	o := orm.NewOrm()
 
 	operation.CreationTime = time.Now()
-	operation.UpdateTime = operation.CreationTime
 
 	operationID, err := o.Insert(&operation)
 	if err != nil {
@@ -41,6 +40,7 @@ func GetOperation(operation model.Operation, fieldNames ...string) (*model.Opera
 func UpdateOperation(operation model.Operation, fieldNames ...string) (int64, error) {
 	o := orm.NewOrm()
 	operation.UpdateTime = time.Now()
+	fieldNames = append(fieldNames, "update_time")
 	operationID, err := o.Update(&operation, fieldNames...)
 	if err != nil {
 		if err == orm.ErrNoRows {

@@ -13,6 +13,7 @@ type SearchSourceController struct {
 func (pm *SearchSourceController) Prepare() {
 	user := pm.getCurrentUser()
 	pm.currentUser = user
+	pm.recordOperationAudit()
 }
 
 func (pm *SearchSourceController) Search() {

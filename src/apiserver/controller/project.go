@@ -16,10 +16,6 @@ type ProjectController struct {
 	BaseController
 }
 
-func (p *ProjectController) Prepare() {
-	p.resolveSignedInUser()
-}
-
 func (p *ProjectController) CreateProjectAction() {
 	var reqProject model.Project
 	var err error
