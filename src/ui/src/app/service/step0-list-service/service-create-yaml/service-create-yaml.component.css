@@ -1,5 +1,11 @@
+div.service-create-container {
+  display: flex;
+  min-height: 400px;
+  margin-top: 10px;
+}
+
 div.build-btn-container {
-  margin-top: 50px;
+  margin-top: 20px;
   display: flex;
 }
 
@@ -38,13 +44,13 @@ div.spinner-container {
 
 div.line-container {
   display: flex;
-  margin-bottom: 30px;
+  margin-bottom: 10px;
   height: 30px;
   align-content: center;
 }
 
 div.service-name {
-  min-width: 200px;
+  min-width: 280px;
   line-height: 30px;
   height: 100%;
   margin-top: 0;
@@ -60,4 +66,20 @@ div.alert-info{
   min-height: 30px;
   line-height: 30px;
   text-align: center;
+}
+
+clr-icon.icon {
+  width: 20px;
+  height: 20px;
+}
+
+div.edit-container {
+  display: flex;
+  flex-direction: column;
+  margin-left: 10px;
+  flex-basis: 100%;
+}
+
+textarea.edit-file{
+  flex-basis: 100%;
 }
