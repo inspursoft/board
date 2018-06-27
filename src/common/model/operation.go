@@ -26,3 +26,10 @@ type PaginatedOperations struct {
 	Pagination    *Pagination  `json:"pagination"`
 	OperationList []*Operation `json:"operation_list"`
 }
+
+const (
+	Success = "Success"
+	Failed  = "Failed"
+	Error   = "Error"
+	Unknow  = "UnKnow"
+)
