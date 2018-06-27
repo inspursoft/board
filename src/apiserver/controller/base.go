@@ -106,12 +106,14 @@ func (b *BaseController) Render() error {
 	return nil
 }
 
-func (b *BaseController) resolveBody(target interface{}) {
-	err := utils.UnmarshalToJSON(b.Ctx.Request.Body, target)
+func (b *BaseController) resolveBody(target interface{}) (err error) {
+	err = utils.UnmarshalToJSON(b.Ctx.Request.Body, target)
 	if err != nil {
 		logs.Error("Failed to unmarshal data: %+v", err)
 		b.internalError(err)
+		return
 	}
+	return
 }
 
 func (b *BaseController) renderJSON(data interface{}) {

@@ -26,20 +26,23 @@ type DashboardServiceController struct {
 func (s *DashboardServiceController) GetServiceData() {
 
 	var getServiceDataBodyReq ServiceBodyPara
-	s.resolveBody(&getServiceDataBodyReq)
+	err := s.resolveBody(&getServiceDataBodyReq)
+	if err != nil {
+		return
+	}
 	serviceName := s.GetString("service_name")
 
 	beego.Debug("servicename", serviceName, getServiceDataBodyReq.DurationTime)
 	if getServiceDataBodyReq.TimeCount == 0 {
-		s.CustomAbort(http.StatusBadRequest, "")
+		s.customAbort(http.StatusBadRequest, "")
 		return
 	}
 	if getServiceDataBodyReq.TimestampBase == 0 {
-		s.CustomAbort(http.StatusBadRequest, "")
+		s.customAbort(http.StatusBadRequest, "")
 		return
 	}
 	if getServiceDataBodyReq.TimeUnit == "" {
-		s.CustomAbort(http.StatusBadRequest, "")
+		s.customAbort(http.StatusBadRequest, "")
 		return
 	}
 
@@ -47,10 +50,10 @@ func (s *DashboardServiceController) GetServiceData() {
 	dashboardServiceDataResp.SetServicePara(getServiceDataBodyReq.TimeUnit,
 		getServiceDataBodyReq.TimeCount, getServiceDataBodyReq.TimestampBase, serviceName,
 		getServiceDataBodyReq.DurationTime)
-	err := dashboardServiceDataResp.GetServiceDataToObj()
+	err = dashboardServiceDataResp.GetServiceDataToObj()
 	_, err = dashboardServiceDataResp.GetServiceListToObj()
 	if err != nil {
-		s.CustomAbort(http.StatusInternalServerError, fmt.Sprint(err))
+		s.customAbort(http.StatusInternalServerError, fmt.Sprint(err))
 		return
 	}
 
