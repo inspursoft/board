@@ -343,6 +343,7 @@ export const LANG_EN_US = {
     "STEP_4_PUBLIC":"Publicity",
     "STEP_4_NODE_SELECTOR":"Node selector",
     "STEP_4_NODE_SELECTOR_COMMENT":"Select node or node group...",
+    "STEP_4_DANGER_MESSAGE":"Warning:It does't exist any port for external to use in all containers, the next button will be disable.",
     "STEP_6_DEPLOY":"Deploy",
     "STEP_6_JOURNAL":"Journal",
     "STEP_6_DELETE":"Delete",
