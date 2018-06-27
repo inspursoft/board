@@ -98,9 +98,15 @@ func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceImageAction() 
 func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceImageAction() {
 
 	var imageList []model.ImageIndex
-	p.resolveBody(&imageList)
+	err := p.resolveBody(&imageList)
+	if err != nil {
+		return
+	}
 
-	serviceConfig := p.getServiceConfig()
+	serviceConfig, err := p.getServiceConfig()
+	if err != nil {
+		return
+	}
 	if len(serviceConfig.Spec.Template.Spec.Containers) != len(imageList) {
 		p.customAbort(http.StatusConflict, "Image's config is invalid.")
 	}

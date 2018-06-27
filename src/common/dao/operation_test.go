@@ -27,6 +27,11 @@ func TestAddOperation(t *testing.T) {
 	//assert.Equal(c.Value, "db_auth", "Should get value db_auth.")
 	logs.Info("TestAddOperation Success")
 }
+
+func TestUpdateOperation(t *testing.T) {
+    logs.Info("Start TestUpdateOperation")
+}
+
 /*
 func TestGetOperation(t *testing.T) {
 	assert := assert.New(t)
