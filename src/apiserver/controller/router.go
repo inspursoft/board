@@ -205,6 +205,9 @@ func InitRouter() {
 			beego.NSRouter("/email/notification",
 				&EmailController{},
 				"post:GrafanaNotification"),
+			beego.NSRouter("/operations",
+				&OperationController{},
+				"get:OperationList"),
 		),
 	)
 
