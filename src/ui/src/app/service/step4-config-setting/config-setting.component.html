@@ -1,6 +1,9 @@
 <div class="config-container">
   <span>{{"SERVICE.STEP_4_SERVICE_CONFIG_TITLE"|translate}}:</span>
   <div class="config-service-info-container">
+    <div *ngIf="noPortForExtent" class="alert alert-danger" role="alert">
+       {{"SERVICE.STEP_4_DANGER_MESSAGE" | translate}}
+    </div>
     <div class="config-service-info-line">
       <cs-input class="base-input"
                 [inputIsRequired]="true"
@@ -166,6 +169,6 @@
 <button class="btn btn-default" (click)="backUpStep()">
   {{"BUTTON.BACK" | translate}}
 </button>
-<button class="btn btn-default" [disabled]="!isInputComponentsValid" (click)="forward()">
+<button class="btn btn-default" [disabled]="!isInputComponentsValid || noPortForExtent" (click)="forward()">
   {{"BUTTON.NEXT" | translate}}
 </button>

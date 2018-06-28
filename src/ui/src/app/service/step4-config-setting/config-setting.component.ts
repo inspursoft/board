@@ -31,6 +31,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
   /*Todo:Only for collaborative plus action.It must be delete after update UIServiceStep4*/
   collaborativeList:Array<Object>;
   nodeSelectorList:Array<string>;
+  noPortForExtent: boolean = true;
 
   constructor(protected injector: Injector, private changeDetectorRef: ChangeDetectorRef) {
     super(injector);
@@ -54,6 +55,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
   ngOnInit() {
     this.k8sService.getServiceConfig(PHASE_CONFIG_CONTAINERS).then(res => {
       this.uiPreData = res as UIServiceStep3;
+      this.noPortForExtent = this.uiPreData.containerList.every(value => !value.isHavePort())
     });
     this.k8sService.getServiceConfig(this.stepPhase).then(res => {
       this.uiBaseData = res;
@@ -85,7 +87,6 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
   }
 
   get nodeSelectorDefaultText(){
-    console.log(this.uiData.nodeSelector);
     return this.uiData.nodeSelector == "" ? 'SERVICE.STEP_4_NODE_SELECTOR_COMMENT': this.uiData.nodeSelector;
   }
 
