@@ -72,6 +72,7 @@ export const LANG_ZH_CN = {
     "INCORRECT_USERNAME_OR_PASSWORD": "用户名或密码错误。",
     "FAILED_TO_SIGN_IN": "登录失败:",
     "FAILED_TO_SIGN_UP": "注册失败:",
+    "SUCCESS_TO_SIGN_UP": "注册用户成功。",
     "FAILED_TO_SIGN_OUT": "登出系统失败。",
     "ACCOUNT_SETTING_SUCCESS":"账户设置成功。",
     "ALREADY_SIGNED_IN": "该用户已在其他地方登录。"

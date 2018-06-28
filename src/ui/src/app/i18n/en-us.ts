@@ -72,6 +72,7 @@ export const LANG_EN_US = {
     "INCORRECT_USERNAME_OR_PASSWORD": "Incorrect username or password.",
     "FAILED_TO_SIGN_IN": "Failed to sign in:",
     "FAILED_TO_SIGN_UP": "Failed to sign up:",
+    "SUCCESS_TO_SIGN_UP": "User sign up successfully.",
     "FAILED_TO_SIGN_OUT": "Failed to sign out.",
     "ACCOUNT_SETTING_SUCCESS":"Account setting success.",
     "ALREADY_SIGNED_IN": "The user has already signed in other place."
