@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { Message } from '../../shared/message-service/message';
@@ -9,25 +9,29 @@ import { Account } from '../account';
 import { AccountService } from '../account.service';
 import { BUTTON_STYLE, MESSAGE_TARGET } from "../../shared/shared.const";
 import { HttpErrorResponse } from "@angular/common/http";
+import { Subscription } from "rxjs/Subscription";
 
 @Component({
    templateUrl: './sign-up.component.html',
    styleUrls: [ './sign-up.component.css' ]
 })
-export class SignUpComponent {
+export class SignUpComponent implements OnDestroy {
   isSignUpWIP:boolean = false;
   signUpModel: SignUp = new SignUp();
+  _subscription: Subscription;
 
   constructor(private accountService: AccountService,
               private messageService: MessageService,
               private router: Router) {
-    this.messageService.messageConfirmed$.subscribe((msg: Message) => {
-      console.log(msg);
+    this._subscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
       if (msg.target == MESSAGE_TARGET.SIGN_UP_SUCCESSFUL) {
-        console.log(msg);
         this.router.navigate(['/sign-in']);
       }
     });
+  }
+
+  ngOnDestroy() {
+    this._subscription.unsubscribe();
   }
   
   signUp(): void {
