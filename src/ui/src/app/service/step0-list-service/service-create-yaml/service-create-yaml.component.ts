@@ -1,5 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, EventEmitter, OnInit, Output, ViewContainerRef } from '@angular/core';
 import { K8sService } from "../../service.k8s";
 import { MessageService } from "../../../shared/message-service/message.service";
 import { Project } from "../../../project/project";
@@ -8,6 +7,8 @@ import { AppInitService } from "../../../app.init.service";
 import { MESSAGE_TYPE } from "../../../shared/shared.const";
 import { Message } from "../../../shared/message-service/message";
 import { HttpErrorResponse } from "@angular/common/http";
+import { SharedService } from "../../../shared/shared.service";
+import { SharedActionService } from "../../../shared/shared-action.service";
 
 export const DEPLOYMENT = "deployment";
 export const SERVICE = "service";
@@ -31,10 +32,13 @@ export class ServiceCreateYamlComponent implements OnInit {
   isFileInEdit: boolean = false;
   curFileContent: string = "";
   curFileName: FileType;
+  dropdownDefaultText: string;
   @Output() onCancelEvent: EventEmitter<any>;
 
   constructor(private k8sService: K8sService,
-              private router: Router,
+              private selfView: ViewContainerRef,
+              private sharedService: SharedService,
+              private sharedActionService: SharedActionService,
               private messageService: MessageService,
               private appInitService: AppInitService) {
     this.projectsList = Array<Project>();
@@ -43,10 +47,12 @@ export class ServiceCreateYamlComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.dropdownDefaultText = "IMAGE.CREATE_IMAGE_SELECT_PROJECT";
     this.k8sService.getProjects()
       .then((res: Array<Project>) => {
         let createNewProject: Project = new Project();
         createNewProject.project_name = "IMAGE.CREATE_IMAGE_CREATE_PROJECT";
+        createNewProject.project_id = -1;
         createNewProject["isSpecial"] = true;
         createNewProject["OnlyClick"] = true;
         this.projectsList.push(createNewProject);
@@ -78,13 +84,30 @@ export class ServiceCreateYamlComponent implements OnInit {
     }
   }
 
-  clickSelectProject(project: Project) {
-    this.router.navigate(["/projects"],{queryParams: {token: this.appInitService.token}, fragment: "create"});
+  setDropdownDefaultText(): void {
+    let selected = this.projectsList.find((project: Project) => project.project_id === this.selectedProjectId);
+    this.dropdownDefaultText = selected ? selected.project_name : "IMAGE.CREATE_IMAGE_CREATE_PROJECT";
+  }
+
+  clickSelectProject() {
+    this.sharedActionService.createProjectComponent(this.selfView).subscribe((projectName: string) => {
+      if (projectName) {
+        this.sharedService.getOneProject(projectName).then((res: Array<Project>) => {
+          this.selectedProjectId = res[0].project_id;
+          this.selectedProjectName = res[0].project_name;
+          let project = this.projectsList.shift();
+          this.projectsList.unshift(res[0]);
+          this.projectsList.unshift(project);
+          this.setDropdownDefaultText();
+        })
+      }
+    });
   }
 
   changeSelectProject(project: Project) {
     this.selectedProjectName = project.project_name;
     this.selectedProjectId = project.project_id;
+    this.setDropdownDefaultText();
   }
 
   btnCancelClick(event: MouseEvent) {

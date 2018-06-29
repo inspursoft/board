@@ -1,7 +1,9 @@
-import { Component, Injector, OnInit } from '@angular/core';
+import { Component, Injector, OnInit, ViewContainerRef } from '@angular/core';
 import { PHASE_SELECT_PROJECT, ServiceStepPhase, UIServiceStep1 } from '../service-step.component';
 import { Project } from "../../project/project";
 import { ServiceStepBase } from "../service-step";
+import { SharedActionService } from "../../shared/shared-action.service";
+import { SharedService } from "../../shared/shared.service";
 
 @Component({
   styleUrls: ["./choose-project.component.css"],
@@ -9,41 +11,45 @@ import { ServiceStepBase } from "../service-step";
 })
 export class ChooseProjectComponent extends ServiceStepBase implements OnInit {
   projectsList: Array<Project>;
+  dropdownDefaultText: string = "";
 
-  constructor(protected injector: Injector) {
+  constructor(protected injector: Injector,
+              private selfView: ViewContainerRef,
+              private sharedService: SharedService,
+              private sharedActionService: SharedActionService) {
     super(injector);
     this.projectsList = Array<Project>();
+    this.dropdownDefaultText = "SERVICE.STEP_TITLE_1";
   }
 
   ngOnInit() {
     if (this.isBack) {
-      this.k8sService.getServiceConfig(this.stepPhase).then(res => {
+      this.k8sService.getServiceConfig(this.stepPhase).then((res: UIServiceStep1) => {
         this.uiBaseData = res;
+        this.uiData.projectId = res.projectId;
       }).catch(err => this.messageService.dispatchError(err));
     } else {
       this.k8sService.deleteServiceConfig().then(res => res);
     }
     this.k8sService.getProjects()
-      .then(res => {
+      .then((res: Array<Project>) => {
         let createNewProject: Project = new Project();
         createNewProject.project_name = "SERVICE.STEP_1_CREATE_PROJECT";
+        createNewProject.project_id = -1;
         createNewProject["isSpecial"] = true;
         createNewProject["OnlyClick"] = true;
         this.projectsList.push(createNewProject);
         if (res && res.length > 0) {
           this.projectsList = this.projectsList.concat(res);
         }
+        this.setDropdownDefaultText();
       })
       .catch(err => this.messageService.dispatchError(err));
   }
 
-  get dropdownDefaultText():string{
-    if (this.isBack){
-      let selected = this.projectsList.find((project:Project)=>project.project_id == this.uiData.projectId);
-      return selected ? selected.project_name : "SERVICE.STEP_TITLE_1";
-    } else {
-      return "SERVICE.STEP_TITLE_1";
-    }
+  setDropdownDefaultText(): void {
+    let selected = this.projectsList.find((project: Project) => project.project_id === this.uiData.projectId);
+    this.dropdownDefaultText = selected ? selected.project_name : "SERVICE.STEP_TITLE_1";
   }
 
   get stepPhase(): ServiceStepPhase {
@@ -55,16 +61,27 @@ export class ChooseProjectComponent extends ServiceStepBase implements OnInit {
   }
 
   forward() {
-    this.k8sService.setServiceConfig(this.uiData.uiToServer()).then((isCompleted) => {
+    this.k8sService.setServiceConfig(this.uiData.uiToServer()).then(() => {
       this.k8sService.stepSource.next({index: 2, isBack: false});
     }).catch(err => this.messageService.dispatchError(err));
   }
 
-  clickSelectProject(project: Project) {
-    this.router.navigate(["/projects"], {queryParams: {token: this.appInitService.token}, fragment: "create"});
+  clickSelectProject() {
+    this.sharedActionService.createProjectComponent(this.selfView).subscribe((projectName: string) => {
+      if (projectName) {
+        this.sharedService.getOneProject(projectName).then((res: Array<Project>) => {
+          this.uiData.projectId = res[0].project_id;
+          let project = this.projectsList.shift();
+          this.projectsList.unshift(res[0]);
+          this.projectsList.unshift(project);
+          this.setDropdownDefaultText();
+        })
+      }
+    });
   }
 
   changeSelectProject(project: Project) {
     this.uiData.projectId = project.project_id;
+    this.setDropdownDefaultText();
   }
 }
