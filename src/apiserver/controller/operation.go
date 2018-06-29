@@ -33,22 +33,14 @@ func (o *OperationController) OperationList() {
 	optparam.Operation_status = o.GetString("operation_status")
 	starttime, _ := o.GetInt64("operation_fromdate", 0)
 	totime, _ := o.GetInt64("operation_todate", 0)
-	
 	if(starttime != 0){
 		optparam.Operation_fromdate = time.Unix(starttime/1000, 0).Format(base_format)
-	}else {
-		optparam.Operation_fromdate = ""
 	}
 	if(totime != 0){
 		optparam.Operation_todate = time.Unix(totime/1000, 0).Format(base_format)
-	}else{
-		optparam.Operation_todate = ""
 	}
-		
-
 	pageIndex, _ := o.GetInt("page_index", 1)
 	pageSize, _ := o.GetInt("page_size", 10)
-	
 	orderField := o.GetString("order_field", "CREATION_TIME")  //默认以creation_time排序
 	orderAsc, _ := o.GetInt("order_asc", 0)
 
