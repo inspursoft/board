@@ -72,6 +72,7 @@ export const LANG_EN_US = {
     "INCORRECT_USERNAME_OR_PASSWORD": "Incorrect username or password.",
     "FAILED_TO_SIGN_IN": "Failed to sign in:",
     "FAILED_TO_SIGN_UP": "Failed to sign up:",
+    "SUCCESS_TO_SIGN_UP": "User sign up successfully.",
     "FAILED_TO_SIGN_OUT": "Failed to sign out.",
     "ACCOUNT_SETTING_SUCCESS":"Account setting success.",
     "ALREADY_SIGNED_IN": "The user has already signed in other place."
@@ -343,6 +344,7 @@ export const LANG_EN_US = {
     "STEP_4_PUBLIC":"Publicity",
     "STEP_4_NODE_SELECTOR":"Node selector",
     "STEP_4_NODE_SELECTOR_COMMENT":"Select node or node group...",
+    "STEP_4_DANGER_MESSAGE":"Warning:It does't exist any port for external to use in all containers, the next button will be disable.",
     "STEP_6_DEPLOY":"Deploy",
     "STEP_6_JOURNAL":"Journal",
     "STEP_6_DELETE":"Delete",

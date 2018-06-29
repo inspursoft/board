@@ -14,7 +14,6 @@ import { MainContentComponent } from './main-content/main-content.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { NodeComponent } from './node/node.component';
 import { ProjectComponent } from './project/project.component';
-import { MemberComponent } from './project/member/member.component';
 import { ImageListComponent } from './image/image-list/image-list.component';
 import { ServiceComponent } from './service/service.component';
 import { UserCenterComponent } from './user-center/user-center.component';
@@ -24,7 +23,7 @@ import { AppInitService } from "./app.init.service";
 import { ListAuditComponent } from "./audit/step0-list-audit/list-audit.component";
 import { ResetPassComponent } from "./account/reset-pass/reset-pass.component";
 import { RetrievePassComponent } from "./account/retrieve-pass/retrieve-pass.component";
-
+import { MemberComponent } from "./shared/create-project/member/member.component";
 @Injectable()
 export class SystemInfoResolve implements Resolve<any> {
   constructor(private appInitService: AppInitService){}

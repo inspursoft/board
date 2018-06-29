@@ -28,10 +28,14 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
   ngOnInit() {
     this.k8sService.getServiceConfig(this.stepPhase).then(res => {
       this.uiBaseData = res;
-      this.uiData.imageList.forEach((image: ImageIndex) => {
-        this.imageSelectList.push({image_name: image.image_name, image_comment: "", image_deleted: 0});
-        this.setImageDetailList(image.image_name, image.image_tag);
-      });
+      if (this.uiData.imageList.length > 0) {
+        this.uiData.imageList.forEach((image: ImageIndex) => {
+          this.imageSelectList.push({image_name: image.image_name, image_comment: "", image_deleted: 0});
+          this.setImageDetailList(image.image_name, image.image_tag);
+        });
+      } else {
+        this.addSelectImage();
+      }
     }).catch(err => this.messageService.dispatchError(err));
     this.k8sService.getImages("", 0, 0)
       .then(res => {

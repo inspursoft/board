@@ -120,9 +120,9 @@ func (e *EmailController) ForgotPasswordEmail() {
 		e.internalError(err)
 		return
 	}
-	var apiServerURL = utils.GetStringValue("API_SERVER_URL")
-	resetURL := fmt.Sprintf("%s/reset-password?reset_uuid=%s", apiServerURL, resetUUID)
+	var hostIP = utils.GetStringValue("BOARD_HOST_IP")
+	resetURL := fmt.Sprintf("http://%s/reset-password?reset_uuid=%s", hostIP, resetUUID)
 	e.send([]string{user.Email},
 		"Resetting password",
-		fmt.Sprintf(`Please reset your password by clicking the URL as below:<br/>%s`, resetURL))
+		fmt.Sprintf(`Please reset your password by clicking the URL as below:<br/><a href="%s">%s</a>`, resetURL, resetURL))
 }
