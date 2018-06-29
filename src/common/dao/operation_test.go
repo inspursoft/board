@@ -30,6 +30,7 @@ func TestAddOperation(t *testing.T) {
 
 func TestUpdateOperation(t *testing.T) {
     logs.Info("Start TestUpdateOperation")
+	logs.Info("TestUpdateOperation Success")
 }
 
 /*
