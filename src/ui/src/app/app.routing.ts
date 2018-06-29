@@ -22,6 +22,8 @@ import { AuthGuard, ServiceGuard } from './shared/auth-guard.service';
 import { ProfileComponent } from "./profile/profile.component";
 import { AppInitService } from "./app.init.service";
 import { ListAuditComponent } from "./audit/step0-list-audit/list-audit.component";
+import { ResetPassComponent } from "./account/reset-pass/reset-pass.component";
+import { RetrievePassComponent } from "./account/retrieve-pass/retrieve-pass.component";
 
 @Injectable()
 export class SystemInfoResolve implements Resolve<any> {
@@ -41,6 +43,8 @@ export const ROUTES: Routes = [
       }
     },
     { path: 'sign-up', component: SignUpComponent },
+    { path: 'reset-password', component: ResetPassComponent },
+    { path: 'retrieve-pass', component: RetrievePassComponent },
     { path: '', component: MainContentComponent,
         resolve: {
           systeminfo: SystemInfoResolve

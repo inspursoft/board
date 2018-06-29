@@ -1,0 +1,69 @@
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { MessageService } from "../../shared/message-service/message.service";
+import { Router } from "@angular/router";
+import { AccountService } from "../account.service";
+import { Message } from "../../shared/message-service/message";
+import { BUTTON_STYLE, MESSAGE_TARGET } from "../../shared/shared.const";
+import { Subscription } from "rxjs/Subscription";
+
+@Component({
+  selector: 'app-retrieve-pass',
+  templateUrl: './retrieve-pass.component.html',
+  styleUrls: ['./retrieve-pass.component.css']
+})
+export class RetrievePassComponent implements OnInit ,OnDestroy{
+  private credential: string;
+  protected confirmSubscription: Subscription;
+  constructor(
+    private accountService: AccountService,
+    private messageService: MessageService,
+    private router: Router
+  ) {
+    this.confirmSubscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
+      if (msg.target == MESSAGE_TARGET.RETRIEVE_PASS) {
+        this.router.navigate(['/sign-in']);
+      }
+    });
+  }
+
+  ngOnInit() {
+/*    if (this.confirmSubscription) {
+      this.confirmSubscription.unsubscribe();
+    }
+    this.confirmSubscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
+      if (msg.target == MESSAGE_TARGET.RETRIEVE_PASS) {
+        console.log(11111);
+      }
+    });*/
+  }
+
+  goBack(): void {
+    this.router.navigate(['/sign-in']);
+  }
+
+  sendRequest(): void {
+    this.accountService.retrieve(this.credential)
+      .then(res=>{
+        let msg:Message = new Message();
+        msg.title = "AUDIT.ILLEGAL_DATE_TITLE";
+        msg.message = "AUDIT.ILLEGAL_DATE_MSG";
+        msg.buttons = BUTTON_STYLE.ONLY_CONFIRM;
+        msg.target = MESSAGE_TARGET.RETRIEVE_PASS;
+        this.messageService.announceMessage(msg);
+      })
+      .catch(err=>{
+        let msg:Message = new Message();
+        msg.title = "出错";
+        msg.message = "出错";
+        msg.buttons = BUTTON_STYLE.ONLY_CONFIRM;
+        this.messageService.announceMessage(msg);
+      });
+
+  }
+
+  ngOnDestroy(): void {
+    if (this.confirmSubscription) {
+      this.confirmSubscription.unsubscribe();
+    }
+  }
+}
