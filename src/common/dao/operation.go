@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	//"github.com/astaxie/beego/logs"
+	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/orm"
 )
 
@@ -63,14 +63,6 @@ func DeleteOperation(operation model.Operation) (int64, error) {
 	return num, err
 }
 
-func queryOperations(field string, value interface{}) orm.QuerySeter {
-	qs := orm.NewOrm().QueryTable("operation")
-	if value == nil {
-		return qs
-	}
-	return qs.Filter(field+"__contains", value)
-}
-
 func GetOperations(query model.Operation, fromtime string, totime string) ([]*model.Operation, error) {
 
 	var operationSQL = "select * from operation"
@@ -125,4 +117,77 @@ func GetOperations(query model.Operation, fromtime string, totime string) ([]*mo
 		return nil, err
 	}
 	return operations, nil
+}
+
+func GetPaginatedOperations(query model.OperationParam, pageIndex int, pageSize int, orderField string, orderAsc int) (*model.PaginatedOperations, error) {
+	sql, params := generateOperationSQL(query)
+	var err error
+
+	pagination := &model.Pagination{
+		PageIndex: pageIndex,
+		PageSize:  pageSize,
+	}
+	pagination.TotalCount, err = getTotalRecordCount(sql, params)
+	if err != nil {
+		return nil, err
+	}
+	sql += getOrderSQL(operationTable, orderField, orderAsc) + ` limit ?, ?`
+	params = append(params, pagination.GetPageOffset(), pagination.PageSize)
+	
+	logs.Debug("GetPaginatedOperations: +%+v", pagination.String())
+
+	operationList, err := queryOperations(sql, params)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.PaginatedOperations{
+		OperationList: operationList,
+		Pagination:        pagination,
+	}, nil
+}
+
+func queryOperations(sql string, params []interface{}) ([]*model.Operation, error) {
+	o := orm.NewOrm()
+	operationList := make([]*model.Operation, 0)
+	_, err := o.Raw(sql, params).QueryRows(&operationList)
+	
+	if err != nil {
+		return nil, err
+	}
+	return operationList, nil
+}
+
+func generateOperationSQL(query model.OperationParam) (string, []interface{}) {
+	sql := `select * from operation o where 1 = 1 `
+
+	params := make([]interface{}, 0)
+	params = append(params)
+
+	if query.Operation_object != "" {
+		params = append(params, "%"+query.Operation_object+"%")
+		sql += ` and o.object_type like ? `
+	}
+	if(query.Operation_action != ""){
+		params = append(params, "%"+query.Operation_action+"%")
+		sql += ` and o.action like ? `
+	}
+	if(query.Operation_user != ""){
+		params = append(params, "%"+query.Operation_user+"%")
+		sql += ` and o.user_name like ? `
+	}
+	if(query.Operation_status != ""){
+		params = append(params, "%"+query.Operation_status+"%")
+		sql += ` and o.status like ? `
+	}
+	if(query.Operation_fromdate != ""){
+		params = append(params, query.Operation_fromdate)
+		sql += ` and o.creation_time >= ? `
+	}
+	if(query.Operation_todate != ""){
+		params = append(params, query.Operation_todate)
+		sql += ` and o.creation_time <= ? `
+	}
+	
+	return sql, params
 }

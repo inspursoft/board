@@ -14,7 +14,8 @@ import (
 
 const (
 	projectTable                = "PROJECT"
-	userTable                   = "USER"
+	userTable			= "USER"
+	operationTable			= "OPERATION"
 	serviceTable                = "SERVICE"
 	nameField                   = "NAME"
 	createTimeField             = "CREATE_TIME"
@@ -25,6 +26,7 @@ const (
 	projectTableCreateTimeField = "PROJECT_CREATE_TIME"
 	userTableCreateTimeField    = "USER_CREATE_TIME"
 	serviceTableCreateTimeField = "SERVICE_CREATE_TIME"
+	operationTableCreateTimeField= "OPERATION_CREATION_TIME"
 )
 
 var orderFields = map[string]string{
@@ -34,6 +36,7 @@ var orderFields = map[string]string{
 	projectTableCreateTimeField: "creation_time",
 	userTableCreateTimeField:    "creation_time",
 	serviceTableCreateTimeField: "creation_time",
+	operationTableCreateTimeField:"creation_time",
 }
 
 func InitDB() {
@@ -67,7 +70,8 @@ func getTotalRecordCount(baseSQL string, params []interface{}) (int64, error) {
 func getOrderSQL(orderTable string, orderField string, orderAsc int) string {
 	key := fmt.Sprintf("%s_%s", strings.ToUpper(orderTable), strings.ToUpper(orderField))
 	if orderFields[key] == "" {
-		return fmt.Sprintf(` order by %s desc`, orderFields[defaultField])
+		logs.Info(key)
+		return ""
 	}
 	if orderAsc != 0 {
 		return fmt.Sprintf(` order by %s`, orderFields[key])
