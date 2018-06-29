@@ -7,22 +7,35 @@ import (
 )
 
 const (
-	SignType      = "sign"
-	UserType      = "user"
-	DashboardType = "dashboard"
-	NodeGroupType = "nodegroup"
-	NodeType      = "node"
-	ProjectType   = "projects"
-	ServiceType   = "services"
-	ImageType     = "images"
-	FileType      = "file"
-	SystemType    = "system"
-	ProfileType   = "profile"
-	EmptyType     = ""
+	SignType        = "sign"
+	UserType        = "user"
+	DashboardType   = "dashboard"
+	NodeGroupType   = "nodegroup"
+	NodeType        = "node"
+	ProjectType     = "projects"
+	ServiceType     = "services"
+	ImageType       = "images"
+	FileType        = "file"
+	SystemType      = "system"
+	ProfileType     = "profile" 
+	EmptyType       = ""
+	//request method
+	PostOperation = "POST" 
+	DeleteOperation = "DELETE"
+	GetOperation    = "GET"
+	PutOperation = "PUT"
+	PatchOperation  = "PATCH"
+	//insert into DB
+	CreateMethod 	= "create"
+	DeleteMethod	= "delete"
+	UpdateMethod	= "update"
+	GetMethod		= "get"
+	OtherMethod		= ""
 )
 
 func GetOperationObjectType(ctx *context.Context) string {
 	url := ctx.Input.URL()
+
 	switch {
 		case strings.Contains(url, SignType):
 			return SignType
@@ -45,9 +58,27 @@ func GetOperationObjectType(ctx *context.Context) string {
 		case strings.Contains(url, SystemType):
 			return SystemType
 		case strings.Contains(url, ProfileType):
-			return ProfileType
+			return SystemType
 		default:
 			return EmptyType
 	}
-	return EmptyType
+}
+
+func GetOperationAction(ctx *context.Context) string {
+	method := strings.ToUpper(ctx.Input.Method())
+
+	switch {
+		case strings.EqualFold(method, PostOperation):
+			return CreateMethod
+		case strings.EqualFold(method, DeleteOperation):
+			return DeleteMethod 
+		case strings.EqualFold(method, GetOperation):
+			return GetMethod 
+		case strings.EqualFold(method, PutOperation):
+			return UpdateMethod 
+		case strings.EqualFold(method, PatchOperation):
+			return UpdateMethod 
+		default:
+			return OtherMethod
+	}
 }
