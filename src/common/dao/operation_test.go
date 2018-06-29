@@ -5,14 +5,14 @@ import (
 	"git/inspursoft/board/src/common/model"
 	"testing"
 
+	"github.com/astaxie/beego/logs"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/assert"
-	"github.com/astaxie/beego/logs"
 )
 
 var operationT1 = model.Operation{
-	UserID:1, ProjectID:1, ProjectName: "library", ObjectType: "service", 
-	ObjectName: "demoshow", Action:"delete", Status: "success"
+	UserID: 1, ProjectID: 1, ProjectName: "library", ObjectType: "service",
+	ObjectName: "demoshow", Action: "delete", Status: "success",
 }
 
 func TestAddOperation(t *testing.T) {
@@ -29,7 +29,8 @@ func TestAddOperation(t *testing.T) {
 }
 
 func TestUpdateOperation(t *testing.T) {
-    logs.Info("Start TestUpdateOperation")
+	logs.Info("Start TestUpdateOperation")
+	logs.Info("TestUpdateOperation Success")
 }
 
 /*
