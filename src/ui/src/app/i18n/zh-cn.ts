@@ -153,7 +153,8 @@ export const LANG_ZH_CN = {
     "SUCCESSFUL_CREATED_PROJECT": "创建项目成功。",
     "PROJECT_NAME_ALREADY_EXISTS": "项目名称已存在。",
     "PROJECT_NAME_IS_ILLEGAL": "项目名称非法。",
-    "GUIDE_CREATE_PROJECT":"创建属于您的新项目。"
+    "GUIDE_CREATE_PROJECT":"创建属于您的新项目。",
+    "FAILED_LOAD_MEMBERS":"Failed to load available members."
   },
   "USER_CENTER": {
     "LIST_COL_USERNAME":"用户名",

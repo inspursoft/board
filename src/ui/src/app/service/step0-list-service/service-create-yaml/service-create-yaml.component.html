@@ -3,7 +3,7 @@
     <div class="line-container">
       <label class="base-text">{{"SERVICE.SERVICE_YAML_SELECT_PROJECT" | translate}}:</label>
       <cs-dropdown class="custom-margin"
-                   [dropdownDefaultText]="'IMAGE.CREATE_IMAGE_SELECT_PROJECT'|translate"
+                   [dropdownDefaultText]="dropdownDefaultText |translate"
                    [dropdownWidth]="280"
                    [dropdownList]="projectsList"
                    [dropdownListTextKey]="'project_name'"

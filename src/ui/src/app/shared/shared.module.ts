@@ -24,6 +24,10 @@ import { SizePipe } from "./pipes/size-pipe";
 import { CsGuideComponent } from "./cs-components-library/cs-guide/cs-guide.component";
 import { CsProgressComponent } from "./cs-components-library/cs-progress/cs-progress.component";
 import { SafePipe } from "./pipes/safe-pipe";
+import { CreateProjectComponent } from "./create-project/create-project/create-project.component";
+import { SharedService } from "./shared.service";
+import { SharedActionService } from "./shared-action.service";
+import { MemberComponent } from "./create-project/member/member.component";
 
 @NgModule({
   imports: [
@@ -72,13 +76,18 @@ import { SafePipe } from "./pipes/safe-pipe";
     CsProgressComponent,
     SizePipe,
     SafePipe,
-    CsGuideComponent
+    CsGuideComponent,
+    CreateProjectComponent,
+    MemberComponent
   ],
+  entryComponents: [CreateProjectComponent],
   providers: [
     AuthGuard,
     ServiceGuard,
     MessageService,
-    WebsocketService
+    WebsocketService,
+    SharedService,
+    SharedActionService
   ]
 })
 export class SharedModule {}
