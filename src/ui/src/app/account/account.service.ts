@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AppInitService } from '../app.init.service';
 import { Account } from './account';
 import { CookieService } from "ngx-cookie";
+import { HttpParams } from "@angular/common/http";
 
 export const BASE_URL = '/api/v1';
 
@@ -63,12 +64,24 @@ export class AccountService {
       .catch(err => Promise.reject(err));
   }
 
-  retrieve(credential): Promise<any> {
+  retrieveEmail(credential): Promise<any> {
     return this.http
       .post(
         BASE_URL + `/forgot-password?credential=${credential}`,
         {},
         {observe: "response"}
+      ).toPromise()
+      .then(res => res)
+      .catch(err => Promise.reject(err));
+  }
+
+  resetPass(password, resetUuid): Promise<any> {
+    let httpParams = new HttpParams().append('password', password).append('reset_uuid', resetUuid);
+    return this.http
+      .post(
+        BASE_URL + '/reset-password',
+        null,
+        {observe: "response", params: httpParams}
       ).toPromise()
       .then(res => res)
       .catch(err => Promise.reject(err));

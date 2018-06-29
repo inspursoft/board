@@ -5,6 +5,7 @@ import { AccountService } from "../account.service";
 import { Message } from "../../shared/message-service/message";
 import { BUTTON_STYLE, MESSAGE_TARGET } from "../../shared/shared.const";
 import { Subscription } from "rxjs/Subscription";
+import { HttpErrorResponse } from "@angular/common/http";
 
 @Component({
   selector: 'app-retrieve-pass',
@@ -19,6 +20,9 @@ export class RetrievePassComponent implements OnInit ,OnDestroy{
     private messageService: MessageService,
     private router: Router
   ) {
+    if (this.confirmSubscription) {
+      this.confirmSubscription.unsubscribe();
+    }
     this.confirmSubscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
       if (msg.target == MESSAGE_TARGET.RETRIEVE_PASS) {
         this.router.navigate(['/sign-in']);
@@ -27,14 +31,6 @@ export class RetrievePassComponent implements OnInit ,OnDestroy{
   }
 
   ngOnInit() {
-/*    if (this.confirmSubscription) {
-      this.confirmSubscription.unsubscribe();
-    }
-    this.confirmSubscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
-      if (msg.target == MESSAGE_TARGET.RETRIEVE_PASS) {
-        console.log(11111);
-      }
-    });*/
   }
 
   goBack(): void {
@@ -42,23 +38,29 @@ export class RetrievePassComponent implements OnInit ,OnDestroy{
   }
 
   sendRequest(): void {
-    this.accountService.retrieve(this.credential)
+    this.accountService.retrieveEmail(this.credential)
       .then(res=>{
         let msg:Message = new Message();
-        msg.title = "AUDIT.ILLEGAL_DATE_TITLE";
-        msg.message = "AUDIT.ILLEGAL_DATE_MSG";
+        msg.title = "ACCOUNT.SEND_REQUEST_SUCCESS";
+        msg.message = "ACCOUNT.SEND_REQUEST_SUCCESS_MSG";
         msg.buttons = BUTTON_STYLE.ONLY_CONFIRM;
         msg.target = MESSAGE_TARGET.RETRIEVE_PASS;
         this.messageService.announceMessage(msg);
       })
-      .catch(err=>{
+      .catch((err:HttpErrorResponse)=>{
+        let rtnMessage = function (err:HttpErrorResponse) {
+          if(err.status == 404){
+            return "ACCOUNT.USER_NOT_EXISTS"
+          }else{
+            return "ACCOUNT.SEND_REQUEST_ERR_MSG"
+          }
+        };
         let msg:Message = new Message();
-        msg.title = "出错";
-        msg.message = "出错";
+        msg.title = "ACCOUNT.SEND_REQUEST_ERR";
+        msg.message = rtnMessage(err);
         msg.buttons = BUTTON_STYLE.ONLY_CONFIRM;
         this.messageService.announceMessage(msg);
       });
-
   }
 
   ngOnDestroy(): void {

@@ -106,13 +106,7 @@
                         [disabled]="isSignWIP"
                         class="btn btn-link"
                         (click)="retrievePass()">
-                  {{ '找回密码' | translate }}
-                </button>
-                <button *ngIf="authMode === 'db_auth'"
-                        [disabled]="isSignWIP"
-                        class="btn btn-link"
-                        (click)="resetPass()">
-                  {{ '重置密码' | translate }}
+                  {{ 'ACCOUNT.RETRIEVE_PASS' | translate }}
                 </button>
                 <!--button class="btn btn-link">{{ 'ACCOUNT.FORGOT_PASSWORD' | translate }}</button-->
               </div>

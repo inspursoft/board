@@ -3,8 +3,8 @@
   <div class="content-container background">
     <confirmation-dialog></confirmation-dialog>
     <div class="content-area">
-      <div>{{ '找回密码:(设置新密码)' | translate }}</div>
-      <form #signUpForm>
+      <div>{{ 'ACCOUNT.RETRIEVE_PASS' | translate }}:({{ 'ACCOUNT.RESET_NEW_PASS' | translate }})</div>
+      <form #resetForm="ngForm" (ngSubmit)="sendResetPassRequest()">
         <section class="form-block">
           <div class="form-group group-margin">
             <label for="txtPassword" class="required">{{ 'ACCOUNT.PASSWORD' | translate }}</label>
@@ -48,16 +48,14 @@
           </div>
           <div class="form-group">
             <label></label>
-            <button type="submit" class="btn btn-primary">{{ 'ACCOUNT.SIGN_UP' | translate }}</button>
-            <!--&nbsp;&nbsp;-->
-            <!--<button type="button" class="btn btn-default">{{ 'ACCOUNT.BACK' | translate }}</button>-->
+            <button type="submit" class="btn btn-primary" [disabled]="resetForm.invalid">{{ 'BUTTON.OK' | translate }}</button>
           </div>
         </section>
       </form>
     </div>
     <nav class="sidenav">
       <section class="sidenav-content">
-        <a href="javascript:void(0)" class="nav-link active">{{ '找回密码' | translate }}</a>
+        <a href="javascript:void(0)" class="nav-link active">{{ 'ACCOUNT.RETRIEVE_PASS' | translate }}</a>
       </section>
     </nav>
   </div>
