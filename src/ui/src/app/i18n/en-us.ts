@@ -152,7 +152,7 @@ export const LANG_EN_US = {
     "VISITOR": "Visitor",
     "SUCCESSFUL_DELETE_PROJECT": "Successful delete project.",
     "FAILED_TO_DELETE_PROJECT": "Failed to delete project.",
-    "FAILED_TO_RETRIEVE_PROJECTS": "Failed to retrieveEmail projects.",
+    "FAILED_TO_RETRIEVE_PROJECTS": "Failed to retrieve projects.",
     "DELETE_PROJECT": "Delete Project",
     "CONFIRM_TO_DELETE_PROJECT": "Do you confirm to delete project {{0}}?",
     "SUCCESSFUL_TOGGLE_PROJECT": "Successful toggle project.",
