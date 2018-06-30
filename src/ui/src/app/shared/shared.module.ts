@@ -28,6 +28,8 @@ import { CreateProjectComponent } from "./create-project/create-project/create-p
 import { SharedService } from "./shared.service";
 import { SharedActionService } from "./shared-action.service";
 import { MemberComponent } from "./create-project/member/member.component";
+import { CsHighlightComponent } from "./cs-components-library/cs-highlight/cs-highlight.component";
+import "inspurprism"
 
 @NgModule({
   imports: [
@@ -53,6 +55,7 @@ import { MemberComponent } from "./create-project/member/member.component";
     CsInputArrayComponent,
     CsGuideComponent,
     CsProgressComponent,
+    CsHighlightComponent,
     SizePipe,
     SafePipe
   ],
@@ -78,6 +81,7 @@ import { MemberComponent } from "./create-project/member/member.component";
     SafePipe,
     CsGuideComponent,
     CreateProjectComponent,
+    CsHighlightComponent,
     MemberComponent
   ],
   entryComponents: [CreateProjectComponent],

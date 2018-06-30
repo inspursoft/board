@@ -1,4 +1,4 @@
-FROM node:7.5.0
+FROM node:8.11
 
 RUN mkdir -p /board_resource
 
