@@ -39,7 +39,7 @@ export class ResetPassComponent implements OnInit {
 
   sendResetPassRequest() {
     this.accountService.resetPass(this.signUpModel.password, this.resetUuid)
-      .then(res => {
+      .then(() => {
         let msg: Message = new Message();
         msg.title = "ACCOUNT.RESET_PASS_SUCCESS";
         msg.message = "ACCOUNT.RESET_PASS_SUCCESS_MSG";
@@ -50,7 +50,7 @@ export class ResetPassComponent implements OnInit {
       .catch((err:HttpErrorResponse) => {
         let msg: Message = new Message();
         let status = err.status;
-        let rtnErrorMessage = function (err:HttpErrorResponse):string {
+        let rtnErrorMessage = (err:HttpErrorResponse):string =>{
           if(/Invalid reset UUID/gm.test(err.error)){
             return "ACCOUNT.INVALID_RESET_UUID"
           }else{

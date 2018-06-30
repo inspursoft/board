@@ -71,8 +71,6 @@ export class AccountService {
         {},
         {observe: "response"}
       ).toPromise()
-      .then(res => res)
-      .catch(err => Promise.reject(err));
   }
 
   resetPass(password, resetUuid): Promise<any> {
@@ -83,7 +81,5 @@ export class AccountService {
         null,
         {observe: "response", params: httpParams}
       ).toPromise()
-      .then(res => res)
-      .catch(err => Promise.reject(err));
   }
 } 

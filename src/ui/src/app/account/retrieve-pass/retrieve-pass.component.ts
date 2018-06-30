@@ -39,7 +39,7 @@ export class RetrievePassComponent implements OnInit ,OnDestroy{
 
   sendRequest(): void {
     this.accountService.retrieveEmail(this.credential)
-      .then(res=>{
+      .then(()=>{
         let msg:Message = new Message();
         msg.title = "ACCOUNT.SEND_REQUEST_SUCCESS";
         msg.message = "ACCOUNT.SEND_REQUEST_SUCCESS_MSG";
@@ -48,7 +48,7 @@ export class RetrievePassComponent implements OnInit ,OnDestroy{
         this.messageService.announceMessage(msg);
       })
       .catch((err:HttpErrorResponse)=>{
-        let rtnMessage = function (err:HttpErrorResponse) {
+        let rtnMessage = (err:HttpErrorResponse):string => {
           if(err.status == 404){
             return "ACCOUNT.USER_NOT_EXISTS"
           }else{
