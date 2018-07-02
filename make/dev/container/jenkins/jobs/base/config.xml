@@ -32,24 +32,18 @@
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>F04</name>
-          <description>Set user defined repo URL for clone.</description>
+          <description>Set Jenkins master host IP</description>
           <defaultValue></defaultValue>
           <trim>false</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>F05</name>
-          <description>Set Jenkins host IP</description>
+          <description>Set Jenkins master host port</description>
           <defaultValue></defaultValue>
           <trim>false</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>F06</name>
-          <description>Set Jenkins host port</description>
-          <defaultValue></defaultValue>
-          <trim>false</trim>
-        </hudson.model.StringParameterDefinition>
-        <hudson.model.StringParameterDefinition>
-          <name>F07</name>
           <description>Set Jenkins node IP</description>
           <defaultValue></defaultValue>
           <trim>false</trim>
@@ -70,17 +64,15 @@
 def jenkinsfile_repo_url = binding.variables.get(&quot;F01&quot;)
 def repo_username = binding.variables.get(&quot;F02&quot;)
 def repo_email = binding.variables.get(&quot;F03&quot;)
-def user_repo_url = binding.variables.get(&quot;F04&quot;)
-def jenkins_host_ip = binding.variables.get(&quot;F05&quot;)
-def jenkins_host_port = binding.variables.get(&quot;F06&quot;)
-def jenkins_node_ip = binding.variables.get(&quot;F07&quot;)
+def jenkins_host_ip = binding.variables.get(&quot;F04&quot;)
+def jenkins_host_port = binding.variables.get(&quot;F05&quot;)
+def jenkins_node_ip = binding.variables.get(&quot;F06&quot;)
 pipelineJob(jobName) {
   quietPeriod(3)
   environmentVariables {
     env(&quot;jenkins_host_ip&quot;, &quot;${jenkins_host_ip}&quot;)
     env(&quot;jenkins_host_port&quot;, &quot;${jenkins_host_port}&quot;)
-    env(&quot;jenkins_node_ip&quot;, &quot;${jenkins_node_ip}&quot;)
-    env(&quot;user_repo_url&quot;, &quot;${user_repo_url}&quot;)
+    env(&quot;jenkins_node_ip&quot;, &quot;${jenkins_ånode_ip}&quot;)
   }
   triggers {
     genericTrigger {

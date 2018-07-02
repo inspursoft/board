@@ -45,6 +45,5 @@ func NewJenkinsHandler() *jenkinsHandler {
 }
 
 func (j *jenkinsHandler) CreateJobWithParameter(projectName, username, email string) error {
-	repoURL := fmt.Sprintf("%s/%s/%s.git", gogitsBaseURL(), username, projectName)
-	return utils.SimpleGetRequestHandle(fmt.Sprintf("%s/job/%s/buildWithParameters?F00=%s&&F01=%s&F02=%s&F03=%s&F04=%s&F05=%s&F06=%s&F07=%s", jenkinsBaseURL(), seedJobName, projectName, jenkinsfileRepoURL(), username, email, repoURL, jenkinsHostIP(), jenkinsHostPort(), jenkinsNodeIP()))
+	return utils.SimpleGetRequestHandle(fmt.Sprintf("%s/job/%s/buildWithParameters?F00=%s&&F01=%s&F02=%s&F03=%s&F04=%s&F05=%s&F06=%s", jenkinsBaseURL(), seedJobName, projectName, jenkinsfileRepoURL(), username, email, jenkinsHostIP(), jenkinsHostPort(), jenkinsNodeIP()))
 }
