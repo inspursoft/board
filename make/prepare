@@ -212,7 +212,8 @@ render(os.path.join(templates_dir, "apiserver", "env"),
         gogits_host_port=gogits_host_port,
         gogits_ssh_port=gogits_ssh_port,
         jenkins_host_ip=jenkins_host_ip,
-        jenkins_host_port=jenkins_host_port)
+        jenkins_host_port=jenkins_host_port,
+        jenkins_node_ip=jenkins_node_ip)
 
 render(os.path.join(templates_dir, "tokenserver", "env"),
         tokenserver_env,

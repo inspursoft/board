@@ -11,8 +11,12 @@ import (
 
 var jenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
 var gogitsBaseURL = utils.GetConfig("GOGITS_BASE_URL")
-var maxRetryCount = 120
+var jenkinsfileRepoURL = utils.GetConfig("JENKINSFILE_REPO_URL")
+var maxRetryCount = 240
 var seedJobName = "base"
+var jenkinsHostIP = utils.GetConfig("JENKINS_HOST_IP")
+var jenkinsHostPort = utils.GetConfig("JENKINS_HOST_PORT")
+var jenkinsNodeIP = utils.GetConfig("JENKINS_NODE_IP")
 
 type jenkinsHandler struct{}
 
@@ -42,5 +46,5 @@ func NewJenkinsHandler() *jenkinsHandler {
 
 func (j *jenkinsHandler) CreateJobWithParameter(projectName, username, email string) error {
 	repoURL := fmt.Sprintf("%s/%s/%s.git", gogitsBaseURL(), username, projectName)
-	return utils.SimpleGetRequestHandle(fmt.Sprintf("%s/job/%s/buildWithParameters?F00=%s&&F01=%s&F02=%s&F03=%s", jenkinsBaseURL(), seedJobName, projectName, repoURL, username, email))
+	return utils.SimpleGetRequestHandle(fmt.Sprintf("%s/job/%s/buildWithParameters?F00=%s&&F01=%s&F02=%s&F03=%s&F04=%s&F05=%s&F06=%s&F07=%s", jenkinsBaseURL(), seedJobName, projectName, jenkinsfileRepoURL(), username, email, repoURL, jenkinsHostIP(), jenkinsHostPort(), jenkinsNodeIP()))
 }

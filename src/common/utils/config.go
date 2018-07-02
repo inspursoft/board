@@ -135,7 +135,10 @@ func InitializeDefaultConfig() {
 
 	AddEnv("JENKINS_HOST_IP")
 	AddEnv("JENKINS_HOST_PORT")
+	AddEnv("JENKINS_NODE_IP")
 	SetConfig("JENKINS_BASE_URL", "http://%s:%s", "JENKINS_HOST_IP", "JENKINS_HOST_PORT")
+
+	SetConfig("JENKINSFILE_REPO_URL", "http://%s:%s/admin/devops-jenkins.git", "GOGITS_HOST_IP", "GOGITS_HOST_PORT")
 
 	SetConfig("REGISTRY_URL", "http://%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
 	SetConfig("KUBE_MASTER_URL", "http://%s:%s", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
