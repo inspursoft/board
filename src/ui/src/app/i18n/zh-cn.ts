@@ -346,6 +346,7 @@ export const LANG_ZH_CN = {
     "STEP_4_NODE_SELECTOR":"节点选择器",
     "STEP_4_NODE_SELECTOR_COMMENT":"选择节点或节点组...",
     "STEP_4_DANGER_MESSAGE":"警告：所创建的容器中，没有可用的端口供外部使用，不能进行下一步操作。",
+    "STEP_4_WARNING_MESSAGE":"警告：必须添加一个外部服务配置，且端口正确。",
     "STEP_6_DEPLOY":"部署",
     "STEP_6_JOURNAL":"日志",
     "STEP_6_DELETE":"删除",
