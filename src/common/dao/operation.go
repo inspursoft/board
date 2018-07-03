@@ -71,7 +71,7 @@ func GetOperations(query model.Operation, fromtime string, totime string) ([]*mo
 
 	// TODO: Use params
 	if query.ObjectType != "" {
-		operationSQL = operationSQL + opt + fmt.Sprintf("type = '%s'", query.ObjectType)
+		operationSQL = operationSQL + opt + fmt.Sprintf("object_type = '%s'", query.ObjectType)
 		if opt == " where " {
 			opt = " and "
 		}
@@ -110,6 +110,7 @@ func GetOperations(query model.Operation, fromtime string, totime string) ([]*mo
 		}
 	}
 
+	logs.Debug("SQL: ", operationSQL)
 	operations := make([]*model.Operation, 0)
 	//_, err := orm.NewOrm().Raw(operationSQL, params).QueryRows(&operations)
 	_, err := orm.NewOrm().Raw(operationSQL).QueryRows(&operations)
@@ -133,7 +134,7 @@ func GetPaginatedOperations(query model.OperationParam, pageIndex int, pageSize 
 	}
 	sql += getOrderSQL(operationTable, orderField, orderAsc) + ` limit ?, ?`
 	params = append(params, pagination.GetPageOffset(), pagination.PageSize)
-	
+
 	logs.Debug("GetPaginatedOperations: +%+v", pagination.String())
 
 	operationList, err := queryOperations(sql, params)
@@ -143,7 +144,7 @@ func GetPaginatedOperations(query model.OperationParam, pageIndex int, pageSize 
 
 	return &model.PaginatedOperations{
 		OperationList: operationList,
-		Pagination:        pagination,
+		Pagination:    pagination,
 	}, nil
 }
 
@@ -151,7 +152,7 @@ func queryOperations(sql string, params []interface{}) ([]*model.Operation, erro
 	o := orm.NewOrm()
 	operationList := make([]*model.Operation, 0)
 	_, err := o.Raw(sql, params).QueryRows(&operationList)
-	
+
 	if err != nil {
 		return nil, err
 	}
@@ -168,26 +169,26 @@ func generateOperationSQL(query model.OperationParam) (string, []interface{}) {
 		params = append(params, "%"+query.Operation_object+"%")
 		sql += ` and o.object_type like ? `
 	}
-	if(query.Operation_action != ""){
+	if query.Operation_action != "" {
 		params = append(params, "%"+query.Operation_action+"%")
 		sql += ` and o.action like ? `
 	}
-	if(query.Operation_user != ""){
+	if query.Operation_user != "" {
 		params = append(params, "%"+query.Operation_user+"%")
 		sql += ` and o.user_name like ? `
 	}
-	if(query.Operation_status != ""){
+	if query.Operation_status != "" {
 		params = append(params, "%"+query.Operation_status+"%")
 		sql += ` and o.status like ? `
 	}
-	if(query.Operation_fromdate != ""){
+	if query.Operation_fromdate != "" {
 		params = append(params, query.Operation_fromdate)
 		sql += ` and o.creation_time >= ? `
 	}
-	if(query.Operation_todate != ""){
+	if query.Operation_todate != "" {
 		params = append(params, query.Operation_todate)
 		sql += ` and o.creation_time <= ? `
 	}
-	
+
 	return sql, params
 }
