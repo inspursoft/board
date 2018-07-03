@@ -1,108 +1,113 @@
 <div>
-  <div class="row">
-    <div class="col-md-3 d-flex flex-items-xs-middle">
-      <label class="col-md-3">{{"AUDIT.IMAGE" | translate}}</label>
-      <cs-dropdown [dropdownDefaultText]="'123'"
-                   [dropdownWidth]="200"
-                   [dropdownList]="['123','456']">
-      </cs-dropdown>
+    <div class="row">
+        <div class="col-md-3 d-flex flex-items-xs-middle">
+            <label class="col-md-3">{{"AUDIT.IMAGE" | translate}}</label>
+            <cs-dropdown [dropdownDefaultText]="'AUDIT.AUDIT_OBJECT'| translate"
+                         [dropdownWidth]="200"
+                         [dropdownList]="['AUDIT.AUDIT_SIGN'| translate, 'AUDIT.AUDIT_USER'| translate,
+                        'AUDIT.AUDIT_DASHBOARD'| translate,'AUDIT.AUDIT_NODEGROUP'| translate,
+                         'AUDIT.AUDIT_NODE'| translate, 'AUDIT.AUDIT_PROJECTS'| translate,
+                         'AUDIT.AUDIT_SERVICES'| translate,'AUDIT.AUDIT_IMAGES'| translate,
+                         'AUDIT.AUDIT_FILE'| translate,'AUDIT.AUDIT_SYSTEM'| translate]"
+                         (onChange)="ChangeObject($event)">
+            </cs-dropdown>
+        </div>
+        <div class="col-md-3 d-flex flex-items-xs-middle">
+            <label class="col-md-3">{{"AUDIT.ACTION" | translate}}</label>
+            <cs-dropdown [dropdownDefaultText]="'AUDIT.OPERATION_TYPE'| translate"
+                         [dropdownWidth]="200"
+                         [dropdownList]="['AUDIT.AUDIT_CREATE'| translate, 'AUDIT.AUDIT_DELETE'| translate,
+                        'AUDIT.AUDIT_UPDATE'| translate]"
+                         (onChange)="ChangeAction($event)">
+            </cs-dropdown>
+        </div>
+        <div class="col-md-3 d-flex flex-items-xs-middle">
+            <label class="col-md-3">{{"AUDIT.STATUS" | translate}}</label>
+            <cs-dropdown [dropdownDefaultText]="'AUDIT.SATAE'| translate"
+                         [dropdownWidth]="200"
+                         [dropdownList]="['AUDIT.AUDIT_UNKNOW'| translate, 'AUDIT.AUDIT_SUCCESS'| translate,
+                        'AUDIT.AUDIT_FAIL'| translate, 'AUDIT.AUDIT_ERROR'| translate]"
+                         (onChange)="ChangeStatus($event)">
+            </cs-dropdown>
+        </div>
+        <div class="col-md-3 d-flex flex-items-xs-middle">
+            <label class="col-md-3">{{"AUDIT.USER" | translate}}</label>
+            <cs-dropdown [dropdownDefaultText]="'AUDIT.USERNAME'| translate"
+                         [dropdownWidth]="200"
+                         [dropdownList]="usernames"
+                         (onChange)="ChangeUsername($event)">
+            </cs-dropdown>
+        </div>
     </div>
-    <div class="col-md-3 d-flex flex-items-xs-middle">
-      <label class="col-md-3">{{"AUDIT.ACTION" | translate}}</label>
-      <cs-dropdown [dropdownDefaultText]="'123'"
-                   [dropdownWidth]="200"
-                   [dropdownList]="['123','456']">
-      </cs-dropdown>
-    </div>
-    <div class="col-md-3 d-flex flex-items-xs-middle">
-      <label class="col-md-3">{{"AUDIT.STATUS" | translate}}</label>
-      <cs-dropdown [dropdownDefaultText]="'123'"
-                   [dropdownWidth]="200"
-                   [dropdownList]="['123','456']">
-      </cs-dropdown>
-    </div>
-    <div class="col-md-3 d-flex flex-items-xs-middle">
-      <label class="col-md-3">{{"AUDIT.USER" | translate}}</label>
-      <cs-dropdown [dropdownDefaultText]="'123'"
-                   [dropdownWidth]="200"
-                   [dropdownList]="['123','456']">
-      </cs-dropdown>
-    </div>
-  </div>
-  <div class="row">
-    <div class="col-md-3 d-flex flex-items-xs-middle">
-      <label class="col-md-3">{{"AUDIT.BEGIN" | translate}}</label>
-      <input type="date" disabled clrDate [(clrDate)]="beginDate" (clrDateChange) = "dateTest()">
-    </div>
-    <div class="col-md-3 d-flex flex-items-xs-middle">
-      <label class="col-md-3">{{"AUDIT.END" | translate}}</label>
-      <input type="date" disabled clrDate [(clrDate)]="endDate" (clrDateChange) = "dateTest()">
-    </div>
-    <div class="col-md-3 offset-md-3 d-flex flex-items-xs-middle">
-      <label class="col-md-3"></label>
-      <button class="btn btn-primary" style="margin-left: 125px" (click)="dateTest()">
-        {{"AUDIT.QUERY" | translate}}
-      </button>
-    </div>
+    <div class="row">
+        <div class="col-md-3 d-flex flex-items-xs-middle">
+            <label class="col-md-3">{{"AUDIT.BEGIN" | translate}}</label>
+            <input type="date" disabled clrDate [(clrDate)]="beginDate" (clrDateChange)="dateTest()">
+        </div>
+        <div class="col-md-3 d-flex flex-items-xs-middle">
+            <label class="col-md-3">{{"AUDIT.END" | translate}}</label>
+            <input type="date" disabled clrDate [(clrDate)]="endDate" (clrDateChange)="dateTest()">
+        </div>
+        <div class="col-md-3 offset-md-3 d-flex flex-items-xs-middle">
+            <label class="col-md-3"></label>
+            <button class="btn btn-primary" style="margin-left: 125px" (click)="query()">
+                {{"AUDIT.QUERY" | translate}}
+            </button>
+        </div>
 
-  </div>
-  <div class="row">
-    <div class="col-xs-12">
-      <clr-datagrid>
-        <clr-dg-column [clrDgField]="'NAME'">
-          <clr-dg-filter [hidden]="true"></clr-dg-filter>
-          {{"AUDIT.DATE" | translate}}
-        </clr-dg-column>
-        <clr-dg-column>{{"AUDIT.OBJECT" | translate}}</clr-dg-column>
-        <clr-dg-column>{{"AUDIT.ACTION" | translate}}</clr-dg-column>
-        <clr-dg-column [clrDgField]="'CREATE_TIME'">
-          <clr-dg-filter [hidden]="true"></clr-dg-filter>
-          {{"AUDIT.STATUS" | translate}}
-        </clr-dg-column>
-        <clr-dg-column>{{"AUDIT.USER" | translate}}</clr-dg-column>
-        <clr-dg-column>{{"AUDIT.OPERATION" | translate}}</clr-dg-column>
-        <clr-dg-row>
-          <clr-dg-cell></clr-dg-cell>
-          <clr-dg-cell></clr-dg-cell>
-          <clr-dg-cell></clr-dg-cell>
-          <clr-dg-cell></clr-dg-cell>
-          <clr-dg-cell>
-            <input type="checkbox">
-            <label></label>
-          </clr-dg-cell>
-
-          <clr-dg-cell>
-            <span class="spinner spinner-sm"></span>
-            <a href="javascript:void(0)">
-              <clr-icon shape="play"
-                        class="action">
-              </clr-icon>
-            </a>
-            <a href="javascript:void(0)">
-              <clr-icon shape="pause"
-                        class="action">
-              </clr-icon>
-            </a>
-            <a href="javascript:void(0)">
-              <clr-icon shape="trash"
-                        class="action">
-              </clr-icon>
-            </a>
-            <a href="javascript:void(0)">
-              <clr-icon shape="info-standard"></clr-icon>
-            </a>
-            <a href="javascript:void(0)">
-              <clr-icon shape="wrench"
-                        class="action">
-              </clr-icon>
-            </a>
-          </clr-dg-cell>
-        </clr-dg-row>
-        <clr-dg-footer>
-          {{1}} - {{1}} of {{1}} items
-          <clr-dg-pagination #pagination></clr-dg-pagination>
-        </clr-dg-footer>
-      </clr-datagrid>
     </div>
-  </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <clr-datagrid (clrDgRefresh)="retrieve($event)" [clrDgLoading]="isInLoading">
+                <clr-dg-column [clrDgField]="'CREATION_TIME'" [clrDgSortOrder]="descSort">
+                    <clr-dg-filter [hidden]="true"></clr-dg-filter>
+                    {{"AUDIT.DATE" | translate}}
+                </clr-dg-column>
+                <clr-dg-column>{{"AUDIT.OBJECT" | translate}}</clr-dg-column>
+                <clr-dg-column>{{"AUDIT.ACTION" | translate}}</clr-dg-column>
+                <clr-dg-column>{{"AUDIT.STATUS" | translate}}</clr-dg-column>
+                <clr-dg-column>{{"AUDIT.USER" | translate}}</clr-dg-column>
+                <!--<clr-dg-column>{{"AUDIT.OPERATION" | translate}}</clr-dg-column>-->
+                <clr-dg-row *ngFor="let audit of auditsListData">
+                    <clr-dg-cell>{{audit.operation_creation_time}}</clr-dg-cell>
+                    <clr-dg-cell>{{audit.operation_object_name}}</clr-dg-cell>
+                    <clr-dg-cell>{{audit.operation_action}}</clr-dg-cell>
+                    <clr-dg-cell>{{audit.operation_status}}</clr-dg-cell>
+                    <clr-dg-cell>{{audit.operation_user_name}}</clr-dg-cell>
+                    <!-- <clr-dg-cell>
+                       <span class="spinner spinner-sm"></span>
+                       <a href="javascript:void(0)">
+                         <clr-icon shape="play"
+                                   class="action">
+                         </clr-icon>
+                       </a>
+                       <a href="javascript:void(0)">
+                         <clr-icon shape="pause"
+                                   class="action">
+                         </clr-icon>
+                       </a>
+                       <a href="javascript:void(0)">
+                         <clr-icon shape="trash"
+                                   class="action">
+                         </clr-icon>
+                       </a>
+                       <a href="javascript:void(0)">
+                         <clr-icon shape="info-standard"></clr-icon>
+                       </a>
+                       <a href="javascript:void(0)">
+                         <clr-icon shape="wrench"
+                                   class="action">
+                         </clr-icon>
+                       </a>
+                     </clr-dg-cell>-->
+                </clr-dg-row>
+                <clr-dg-footer>
+                    {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} of {{pagination.totalItems}} items
+                    <clr-dg-pagination #pagination [clrDgTotalItems]="totalRecordCount"
+                                       [(clrDgPage)]="querydata.pageIndex"
+                                       [clrDgPageSize]="querydata.pageSize"></clr-dg-pagination>
+                </clr-dg-footer>
+            </clr-datagrid>
+        </div>
+    </div>
 </div>
