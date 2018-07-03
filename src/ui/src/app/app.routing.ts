@@ -4,8 +4,7 @@
  * The full license information can be found in LICENSE in the root directory of this project.
  */
 import { ModuleWithProviders } from '@angular/core/src/metadata/ng_module';
-import { Routes, RouterModule, Resolve,
-         ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
+import { ActivatedRouteSnapshot, Resolve, RouterModule, RouterStateSnapshot, Routes } from '@angular/router';
 import { Injectable } from '@angular/core';
 import { GlobalSearchComponent } from './global-search/global-search.component';
 import { SignInComponent } from './account/sign-in/sign-in.component';
@@ -24,51 +23,74 @@ import { ListAuditComponent } from "./audit/step0-list-audit/list-audit.componen
 import { ResetPassComponent } from "./account/reset-pass/reset-pass.component";
 import { RetrievePassComponent } from "./account/retrieve-pass/retrieve-pass.component";
 import { MemberComponent } from "./shared/create-project/member/member.component";
+
 @Injectable()
 export class SystemInfoResolve implements Resolve<any> {
-  constructor(private appInitService: AppInitService){}
+  constructor(private appInitService: AppInitService) {
+  }
+
   resolve(
     route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot): Promise<any>|any {
-      return this.appInitService.getSystemInfo();
-    }
+    state: RouterStateSnapshot): Promise<any> | any {
+    return this.appInitService.getSystemInfo();
+  }
 }
 
 export const ROUTES: Routes = [
-    { path: 'sign-in',
-      component: SignInComponent, 
-      resolve: {
-        systeminfo: SystemInfoResolve
-      }
+  {
+    path: 'sign-in',
+    component: SignInComponent,
+    resolve: {
+      systeminfo: SystemInfoResolve
+    }
+  },
+  {
+    path: 'sign-up',
+    component: SignUpComponent,
+    resolve: {
+      systeminfo: SystemInfoResolve
+    }
+  },
+  {
+    path: 'reset-password',
+    component: ResetPassComponent,
+    resolve: {
+      systeminfo: SystemInfoResolve
+    }
+  },
+  {
+    path: 'retrieve-pass',
+    component: RetrievePassComponent,
+    resolve: {
+      systeminfo: SystemInfoResolve
+    }
+  },
+  {
+    path: '', component: MainContentComponent,
+    resolve: {
+      systeminfo: SystemInfoResolve
     },
-    { path: 'sign-up', component: SignUpComponent,resolve: {
-        systeminfo: SystemInfoResolve
-      } },
-    { path: 'reset-password', component: ResetPassComponent },
-    { path: 'retrieve-pass', component: RetrievePassComponent },
-    { path: '', component: MainContentComponent,
-        resolve: {
-          systeminfo: SystemInfoResolve
-        },
-        canActivate: [ AuthGuard ],
+    canActivate: [AuthGuard],
+    children: [
+      {path: 'search', component: GlobalSearchComponent},
+      {path: 'dashboard', component: DashboardComponent},
+      {path: 'nodes', component: NodeComponent},
+      {
+        path: 'projects',
         children: [
-        { path: 'search', component: GlobalSearchComponent },
-        { path: 'dashboard', component: DashboardComponent },
-        { path: 'nodes', component: NodeComponent },
-        { path: 'projects',
-            children: [
-                { path: '', component: ProjectComponent },
-                { path: 'members', component: MemberComponent }
-            ]
-        },
-        { path: 'images', component: ImageListComponent },
-        { path: 'services', component: ServiceComponent, canDeactivate: [ ServiceGuard ]},
-        { path: 'user-center', component: UserCenterComponent },
-        { path: 'profile', component: ProfileComponent },
-        { path: 'audit', component: ListAuditComponent }
-    ]},
-    { path: '', redirectTo: '/sign-in', pathMatch: 'full' },
-    { path: '**', component: SignInComponent }
+          {path: '', component: ProjectComponent},
+          {path: 'members', component: MemberComponent}
+        ]
+      },
+      {path: 'images', component: ImageListComponent},
+      {path: 'services', component: ServiceComponent, canDeactivate: [ServiceGuard]},
+      {path: 'user-center', component: UserCenterComponent},
+      {path: 'profile', component: ProfileComponent},
+      {path: 'audit', component: ListAuditComponent}
+    ]
+  },
+  {path: '', redirectTo: '/sign-in', pathMatch: 'full'},
+  {path: '**', component: SignInComponent}
 ];
 
 export const ROUTING: ModuleWithProviders = RouterModule.forRoot(ROUTES);

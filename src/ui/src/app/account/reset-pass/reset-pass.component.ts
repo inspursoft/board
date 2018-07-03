@@ -1,12 +1,14 @@
-import { Component, OnInit } from '@angular/core';
-import { AccountService } from "../account.service";
-import { MessageService } from "../../shared/message-service/message.service";
-import { ActivatedRoute, Router } from "@angular/router";
-import { SignUp } from "../sign-up/sign-up";
-import { BUTTON_STYLE, MESSAGE_TARGET } from "../../shared/shared.const";
-import { Message } from "../../shared/message-service/message";
-import { Subscription } from "rxjs/Subscription";
-import { HttpErrorResponse } from "@angular/common/http";
+import {Component, OnInit} from '@angular/core';
+import {AccountService} from "../account.service";
+import {MessageService} from "../../shared/message-service/message.service";
+import {ActivatedRoute, Router} from "@angular/router";
+import {SignUp} from "../sign-up/sign-up";
+import {BUTTON_STYLE, MESSAGE_TARGET} from "../../shared/shared.const";
+import {Message} from "../../shared/message-service/message";
+import {Subscription} from "rxjs/Subscription";
+import {HttpErrorResponse} from "@angular/common/http";
+import {AppInitService} from "../../app.init.service";
+import {ParamMap} from "@angular/router/src/shared";
 
 @Component({
   selector: 'app-reset-pass',
@@ -16,14 +18,15 @@ import { HttpErrorResponse } from "@angular/common/http";
 export class ResetPassComponent implements OnInit {
   private resetUuid: string;
   private signUpModel: SignUp = new SignUp();
-  private confirmSubscription:Subscription;
+  private confirmSubscription: Subscription;
 
   constructor(
     private accountService: AccountService,
     private messageService: MessageService,
     private router: Router,
-    private route: ActivatedRoute,
-  ) {
+    private appInitService: AppInitService,
+    private activatedRoute: ActivatedRoute) {
+    this.appInitService.systemInfo = this.activatedRoute.snapshot.data['systeminfo'];
     this.confirmSubscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
       if (msg.target == MESSAGE_TARGET.RESET_PASS) {
         this.router.navigate(['/sign-in']);
@@ -32,9 +35,11 @@ export class ResetPassComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.route.queryParamMap.subscribe(params => {
-      this.resetUuid = params.get("reset_uuid")
-    });
+    this.activatedRoute.queryParamMap.subscribe((params: ParamMap) => this.resetUuid = params.get("reset_uuid"));
+  }
+
+  goBack(){
+    this.router.navigate(['/sign-in']);
   }
 
   sendResetPassRequest() {
@@ -47,13 +52,12 @@ export class ResetPassComponent implements OnInit {
         msg.target = MESSAGE_TARGET.RESET_PASS;
         this.messageService.announceMessage(msg);
       })
-      .catch((err:HttpErrorResponse) => {
+      .catch((err: HttpErrorResponse) => {
         let msg: Message = new Message();
-        let status = err.status;
-        let rtnErrorMessage = (err:HttpErrorResponse):string =>{
-          if(/Invalid reset UUID/gm.test(err.error)){
+        let rtnErrorMessage = (err: HttpErrorResponse): string => {
+          if (/Invalid reset UUID/gm.test(err.error)) {
             return "ACCOUNT.INVALID_RESET_UUID"
-          }else{
+          } else {
             return "ACCOUNT.RESET_PASS_ERR_MSG"
           }
         };

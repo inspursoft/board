@@ -1,5 +1,5 @@
 <clr-main-container>
-  <!--<header-content></header-content>-->
+  <header-content></header-content>
   <div class="content-container background">
     <confirmation-dialog></confirmation-dialog>
     <div class="content-area">
@@ -48,7 +48,11 @@
           </div>
           <div class="form-group">
             <label></label>
-            <button type="submit" class="btn btn-primary" [disabled]="resetForm.invalid">{{ 'BUTTON.OK' | translate }}</button>
+            <button type="submit" class="btn btn-primary" [disabled]="!resetForm.valid">{{ 'BUTTON.OK' | translate }}</button>
+            <button type="button"
+                    class="btn btn-default"
+                    (click)="goBack()">{{ 'ACCOUNT.BACK' | translate }}
+            </button>
           </div>
         </section>
       </form>

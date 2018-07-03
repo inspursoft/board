@@ -63,8 +63,10 @@
       </section>
     </nav>
     <div class="content-area">
-      <inline-alert></inline-alert>
+
       <router-outlet></router-outlet>
+      <!--<confirmation-dialog></confirmation-dialog>-->
+      <inline-alert></inline-alert>
     </div>
   </div>
   <div *ngIf="isOnlyShowGrafanaView" style="height: 100%; padding: 0;margin: 0;scrollbar-base-color: blue">

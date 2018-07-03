@@ -1,28 +1,30 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MessageService } from "../../shared/message-service/message.service";
-import { Router } from "@angular/router";
+import { ActivatedRoute, Router } from "@angular/router";
 import { AccountService } from "../account.service";
 import { Message } from "../../shared/message-service/message";
 import { BUTTON_STYLE, MESSAGE_TARGET } from "../../shared/shared.const";
 import { Subscription } from "rxjs/Subscription";
 import { HttpErrorResponse } from "@angular/common/http";
+import { AppInitService } from "../../app.init.service";
 
 @Component({
   selector: 'app-retrieve-pass',
   templateUrl: './retrieve-pass.component.html',
   styleUrls: ['./retrieve-pass.component.css']
 })
-export class RetrievePassComponent implements OnInit ,OnDestroy{
-  private credential: string;
+export class RetrievePassComponent implements OnInit, OnDestroy {
+  private credential: string = "";
+  private sendRequestWIP: boolean = false;
   protected confirmSubscription: Subscription;
+
   constructor(
     private accountService: AccountService,
     private messageService: MessageService,
-    private router: Router
-  ) {
-    if (this.confirmSubscription) {
-      this.confirmSubscription.unsubscribe();
-    }
+    private appInitService: AppInitService,
+    private activatedRoute: ActivatedRoute,
+    private router: Router) {
+    this.appInitService.systemInfo = this.activatedRoute.snapshot.data['systeminfo'];
     this.confirmSubscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
       if (msg.target == MESSAGE_TARGET.RETRIEVE_PASS) {
         this.router.navigate(['/sign-in']);
@@ -38,26 +40,22 @@ export class RetrievePassComponent implements OnInit ,OnDestroy{
   }
 
   sendRequest(): void {
+    this.sendRequestWIP = true;
     this.accountService.retrieveEmail(this.credential)
-      .then(()=>{
-        let msg:Message = new Message();
+      .then(() => {
+        this.sendRequestWIP = false;
+        let msg: Message = new Message();
         msg.title = "ACCOUNT.SEND_REQUEST_SUCCESS";
         msg.message = "ACCOUNT.SEND_REQUEST_SUCCESS_MSG";
         msg.buttons = BUTTON_STYLE.ONLY_CONFIRM;
         msg.target = MESSAGE_TARGET.RETRIEVE_PASS;
         this.messageService.announceMessage(msg);
       })
-      .catch((err:HttpErrorResponse)=>{
-        let rtnMessage = (err:HttpErrorResponse):string => {
-          if(err.status == 404){
-            return "ACCOUNT.USER_NOT_EXISTS"
-          }else{
-            return "ACCOUNT.SEND_REQUEST_ERR_MSG"
-          }
-        };
-        let msg:Message = new Message();
+      .catch((err: HttpErrorResponse) => {
+        this.sendRequestWIP = false;
+        let msg: Message = new Message();
         msg.title = "ACCOUNT.SEND_REQUEST_ERR";
-        msg.message = rtnMessage(err);
+        msg.message = err.status == 404 ? "ACCOUNT.USER_NOT_EXISTS" : "ACCOUNT.SEND_REQUEST_ERR_MSG";
         msg.buttons = BUTTON_STYLE.ONLY_CONFIRM;
         this.messageService.announceMessage(msg);
       });

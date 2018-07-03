@@ -26,14 +26,15 @@
                 type="submit"
                 class="btn btn-primary"
                 (click)="sendRequest()"
-                [disabled]="!credential || credential.length == 0">{{ 'ACCOUNT.SEND_REQUEST' | translate }}
+                [disabled]="credential.length == 0 || sendRequestWIP">{{ 'ACCOUNT.SEND_REQUEST' | translate }}
             </button>
-            &nbsp;&nbsp;
             <button
                 type="button"
                 class="btn btn-default"
+                [disabled]="sendRequestWIP"
                 (click)="goBack()">{{ 'ACCOUNT.BACK' | translate }}
             </button>
+            <span *ngIf="sendRequestWIP" class="spinner spinner-sm"></span>
           </div>
         </section>
       </form>
