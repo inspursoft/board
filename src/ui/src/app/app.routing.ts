@@ -41,7 +41,9 @@ export const ROUTES: Routes = [
         systeminfo: SystemInfoResolve
       }
     },
-    { path: 'sign-up', component: SignUpComponent },
+    { path: 'sign-up', component: SignUpComponent,resolve: {
+        systeminfo: SystemInfoResolve
+      } },
     { path: 'reset-password', component: ResetPassComponent },
     { path: 'retrieve-pass', component: RetrievePassComponent },
     { path: '', component: MainContentComponent,
