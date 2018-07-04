@@ -72,7 +72,7 @@ func (b *BaseController) recordOperationAudit() {
 	operation.ObjectName = ""
 	operation.ProjectID = 0
 	operation.ProjectName = ""
-	operation.Status = model.Unknow
+	operation.Status = model.Unknown
 
 	err := service.CreateOperationAudit(&operation)
 	if err != nil {
