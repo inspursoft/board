@@ -408,7 +408,7 @@ export const LANG_EN_US = {
     "SERVICE_YAML_UPLOAD_SUCCESS":"Upload success!This service in 'preparing' status, click 'create' for run it"
   },
   "AUDIT":{
-    "IMAGE":"Image",
+    "ALL":"All",
     "ACTION":"Action",
     "STATUS":"Status",
     "USER":"User",
@@ -422,8 +422,8 @@ export const LANG_EN_US = {
     "ILLEGAL_DATE_MSG":"Illegal Date, Please Check.",
     "AUDIT_OBJECT": "choose audit object",
     "OPERATION_TYPE": "choose operation type",
-    "SATAE": "choose state",
-    "USERNAME": "choose user",
+    "SELECT_STATUS": "choose state",
+    "SELECT_USER": "choose user",
     "AUDIT_SIGN": "sign",
     "AUDIT_USER": "user",
     "AUDIT_DASHBOARD": "dashboard",
@@ -435,9 +435,10 @@ export const LANG_EN_US = {
     "AUDIT_FILE": "file",
     "AUDIT_SYSTEM": "system",
     "AUDIT_CREATE": "Create",
+    "AUDIT_GET": "Get",
     "AUDIT_DELETE": "Delete",
     "AUDIT_UPDATE": "Update",
-    "AUDIT_UNKNOW": "Unknown",
+    "AUDIT_UNKNOWN": "Unknown",
     "AUDIT_SUCCESS": "Success",
     "AUDIT_FAIL": "Fail",
     "AUDIT_ERROR": "Error"

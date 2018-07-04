@@ -19,13 +19,13 @@ export class Audit {
   }
 }
 
-export class Query {
+export class AuditQueryData {
   public pageIndex: number = 1;
   public pageSize: number = 15;
   public sortBy: string = "";
   public isReverse: boolean = false;
-  public endDate: string = new Date().getTime().toString();
-  public beginDate: string = new Date(new Date().getTime() - 86400000).getTime().toString();
+  public endDate: string = "";
+  public beginDate: string = "";
   public status: string = "";
   public user_name: string = "";
   public action: string = "";
