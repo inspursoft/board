@@ -95,7 +95,7 @@ func (b *BaseController) Finish() {
 	} else {
 		operationStatus = model.Error
 	}
-	err := service.UpdateOperationAuditStatus(b.operationID, operationStatus)
+	err := service.UpdateOperationAuditStatus(b.operationID, operationStatus, b.project)
 	if err != nil {
 		logs.Error("Failed to update operation Audit. Error:%+v", err)
 		return
