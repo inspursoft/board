@@ -63,7 +63,6 @@ node('slave') {
  
 node('kvmNode') {
   stage('kvmNode run ......') {
-    git 'http://10.110.18.40:10080/guyingyan/kvm.git'
     git "${base_repo_url}"
     sh '''
       systemctl start docker
