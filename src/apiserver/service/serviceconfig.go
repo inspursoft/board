@@ -71,8 +71,13 @@ func CreateOperationAudit(operation *model.Operation) error {
 	return nil
 }
 
-func UpdateOperationAuditStatus(operationID int64, status string) error {
-	_, err := dao.UpdateOperation(model.Operation{ID: operationID, Status: status}, "status")
+func UpdateOperationAuditStatus(operationID int64, status string, project *model.Project) error {
+	operation := model.Operation{ID: operationID, Status: status}
+	if project != nil {
+		operation.ProjectID = project.ID
+		operation.ProjectName = project.Name
+	}
+	_, err := dao.UpdateOperation(operation, "status", "project_id", "project_name")
 	if err != nil {
 		return err
 	}
