@@ -72,7 +72,7 @@ pipelineJob(jobName) {
   environmentVariables {
     env(&quot;jenkins_host_ip&quot;, &quot;${jenkins_host_ip}&quot;)
     env(&quot;jenkins_host_port&quot;, &quot;${jenkins_host_port}&quot;)
-    env(&quot;jenkins_node_ip&quot;, &quot;${jenkins_ånode_ip}&quot;)
+    env(&quot;jenkins_node_ip&quot;, &quot;${jenkins_node_ip}&quot;)
   }
   triggers {
     genericTrigger {
