@@ -8,6 +8,11 @@
         <span class="alert-text">{{envAlertMessage | translate}}</span>
       </div>
     </clr-alert>
+    <div class="form-group">
+      <label for="aForm_4">{{"SERVICE.TXT_TITLE" | translate}}</label>
+      <textarea id="aForm_4" rows="5" [(ngModel)]="envsText" name="text"></textarea>
+      <button type="submit" class="btn btn-primary" style="float:right;" [disabled]="envsText.length == 0" (click)="envTextAddClick()">{{"SERVICE.TXT_BUTTON" | translate}}</button>
+    </div>
     <div class="env-title-container">
       <span class="env-title">Key</span>
       <span class="env-title">Value</span>

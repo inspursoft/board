@@ -72,6 +72,7 @@ export const LANG_ZH_CN = {
     "INCORRECT_USERNAME_OR_PASSWORD": "用户名或密码错误。",
     "FAILED_TO_SIGN_IN": "登录失败:",
     "FAILED_TO_SIGN_UP": "注册失败:",
+    "SUCCESS_TO_SIGN_UP": "注册用户成功。",
     "FAILED_TO_SIGN_OUT": "登出系统失败。",
     "ACCOUNT_SETTING_SUCCESS":"账户设置成功。",
     "ALREADY_SIGNED_IN": "该用户已在其他地方登录。"
@@ -97,6 +98,7 @@ export const LANG_ZH_CN = {
     "NODES": "节点",
     "IMAGES": "镜像",
     "ADMIN_OPTIONS": "管理员选项",
+    "AUDIT": "操作审计",
     "PROFILES": "系统信息",
     "GUIDE_SERVICE_LIST":"请创建属于您的新服务",
     "GUIDE_PROJECT_LIST":"请创建属于您的新项目"
@@ -151,7 +153,8 @@ export const LANG_ZH_CN = {
     "SUCCESSFUL_CREATED_PROJECT": "创建项目成功。",
     "PROJECT_NAME_ALREADY_EXISTS": "项目名称已存在。",
     "PROJECT_NAME_IS_ILLEGAL": "项目名称非法。",
-    "GUIDE_CREATE_PROJECT":"创建属于您的新项目。"
+    "GUIDE_CREATE_PROJECT":"创建属于您的新项目。",
+    "FAILED_LOAD_MEMBERS":"Failed to load available members."
   },
   "USER_CENTER": {
     "LIST_COL_USERNAME":"用户名",
@@ -278,6 +281,9 @@ export const LANG_ZH_CN = {
     "STATUS": "状态",
     "OPERATION": "操作",
     "ENV_TITLE":"环境变量配置",
+    "TXT_TITLE":"环境变量输入",
+    "TXT_BUTTON":"添加",
+    "TXT_ALERT_MESSAGE":"环境变量不合法",
     "ENV_ADD":"添加新的环境变量",
     "ENV_CONFIRM":"确认",
     "ENV_REQUIRED":"key或value不能为空",
@@ -314,6 +320,12 @@ export const LANG_ZH_CN = {
     "STEP_3_COMMAND":"命令",
     "STEP_3_CPU":"Cpu",
     "STEP_3_MEMORY":"内存",
+    "STEP_3_WORK_DIRECTOR":"/usr/local/bin",
+    "STEP_3_STORAGE_VOLUME":"/usr/spool/news",
+    "STEP_3_ENVIRONMENT_VARIABLES":"1.0",
+    "STEP_3_PORT_CONTAINER":"80",
+    "STEP_4_SERVICE_OF_NAME":"service01",
+    "STEP_4_EXTERNAL_PORT":"30001",
     "STEP_4_SERVICE_CONFIG_TITLE":"服务配置",
     "STEP_4_SERVICE_NAME":"服务名称",
     "STEP_4_INSTANCE":"实例",
@@ -333,6 +345,7 @@ export const LANG_ZH_CN = {
     "STEP_4_PUBLIC":"公开性",
     "STEP_4_NODE_SELECTOR":"节点选择器",
     "STEP_4_NODE_SELECTOR_COMMENT":"选择节点或节点组...",
+    "STEP_4_DANGER_MESSAGE":"警告：所创建的容器中，没有可用的端口供外部使用，不能进行下一步操作。",
     "STEP_6_DEPLOY":"部署",
     "STEP_6_JOURNAL":"日志",
     "STEP_6_DELETE":"删除",
@@ -394,6 +407,20 @@ export const LANG_ZH_CN = {
     "SERVICE_YAML_INVALID_FILE":"无效的文件类型",
     "SERVICE_YAML_VALID_FILE":"文件合法，可以上传",
     "SERVICE_YAML_UPLOAD_SUCCESS":"上传成功!目前服务处于'准备'状态，点击'创建'，运行该服务"
+  },
+  "AUDIT":{
+    "IMAGE":"镜像",
+    "ACTION":"操作",
+    "STATUS":"状态",
+    "USER":"用户",
+    "BEGIN":"开始时间",
+    "END":"结束时间",
+    "QUERY":"查询",
+    "DATE":"日期",
+    "OBJECT":"对象",
+    "OPERATION":"操作",
+    "ILLEGAL_DATE_TITLE":"日期不合法",
+    "ILLEGAL_DATE_MSG":"日期不合法，请检查。"
   },
   "GLOBAL_SEARCH": {
     "PROJECTS": "项目",
@@ -462,5 +489,5 @@ export const LANG_ZH_CN = {
     "CLUSTER_VERSION":"集群版本",
     "GET_HELP":"帮助",
     "SUPPORT_TEAM":"支持"
-}
+  },
 };

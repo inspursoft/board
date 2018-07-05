@@ -38,8 +38,19 @@
       </section>
     </form>
   </div>
-  <div class="modal-footer">
-      <button type="button" class="btn btn-outline" (click)="createProjectOpened = false">{{ 'BUTTON.CANCEL' | translate }}</button>
-      <button type="button" class="btn btn-primary" [disabled]="!createProjectForm.valid" (click)="confirm()">{{ 'BUTTON.CONFIRM' | translate }} </button>
+  <div class="modal-footer" style="display: flex;align-items: center">
+    <button type="button"
+            class="btn btn-outline"
+            [disabled]="isCreateProjectWIP"
+            (click)="createProjectOpened = false">
+      {{ 'BUTTON.CANCEL' | translate }}
+    </button>
+    <button type="button"
+            class="btn btn-primary"
+            [disabled]="!createProjectForm.valid || isCreateProjectWIP"
+            (click)="confirm()">
+      {{ 'BUTTON.CONFIRM' | translate }}
+    </button>
+    <span *ngIf="isCreateProjectWIP" class="spinner spinner-sm"></span>
   </div>
 </clr-modal>

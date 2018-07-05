@@ -1,6 +1,9 @@
 <div class="config-container">
   <span>{{"SERVICE.STEP_4_SERVICE_CONFIG_TITLE"|translate}}:</span>
   <div class="config-service-info-container">
+    <div *ngIf="noPortForExtent" class="alert alert-danger" role="alert">
+       {{"SERVICE.STEP_4_DANGER_MESSAGE" | translate}}
+    </div>
     <div class="config-service-info-line">
       <cs-input class="base-input"
                 [inputIsRequired]="true"
@@ -8,6 +11,7 @@
                 [inputLabel]="'SERVICE.STEP_4_SERVICE_NAME' | translate"
                 [customerValidatorAsyncFunc]="checkServiceNameFun"
                 [simpleFiled]="uiData.serviceName"
+                [inputPlaceholder]="'SERVICE.STEP_4_SERVICE_OF_NAME'| translate"
                 (onCheck)="setServiceName($event)">
       </cs-input>
     </div>
@@ -75,6 +79,7 @@
                   [inputIsRequired]="true"
                   [inputMin]="30000"
                   [inputMax]="32766"
+                  [inputPlaceholder]="'SERVICE.STEP_4_EXTERNAL_PORT'| translate"
                   (onCheck)="setNodePort(iIndex,$event)">
         </cs-input>
         <div class="radio-inline external-radio-container">
@@ -164,6 +169,6 @@
 <button class="btn btn-default" (click)="backUpStep()">
   {{"BUTTON.BACK" | translate}}
 </button>
-<button class="btn btn-default" [disabled]="!isInputComponentsValid" (click)="forward()">
+<button class="btn btn-default" [disabled]="!isInputComponentsValid || noPortForExtent" (click)="forward()">
   {{"BUTTON.NEXT" | translate}}
 </button>
