@@ -409,7 +409,7 @@ export const LANG_ZH_CN = {
     "SERVICE_YAML_UPLOAD_SUCCESS":"上传成功!目前服务处于'准备'状态，点击'创建'，运行该服务"
   },
   "AUDIT":{
-    "IMAGE":"镜像",
+    "ALL":"全部",
     "ACTION":"操作",
     "STATUS":"状态",
     "USER":"用户",
@@ -423,8 +423,8 @@ export const LANG_ZH_CN = {
     "ILLEGAL_DATE_MSG":"日期不合法，请检查。",
     "AUDIT_OBJECT": "选择审计对象",
     "OPERATION_TYPE": "选择操作类型",
-    "SATAE": "选择状态",
-    "USERNAME": "选择用户",
+    "SELECT_STATUS": "选择状态",
+    "SELECT_USER": "选择用户",
     "AUDIT_SIGN": "登录",
     "AUDIT_USER": "用户",
     "AUDIT_DASHBOARD": "监控",
@@ -435,10 +435,11 @@ export const LANG_ZH_CN = {
     "AUDIT_IMAGES": "镜像",
     "AUDIT_FILE": "文件",
     "AUDIT_SYSTEM": "系统",
+    "AUDIT_GET": "查询",
     "AUDIT_CREATE": "创建",
     "AUDIT_DELETE": "删除",
     "AUDIT_UPDATE": "修改",
-    "AUDIT_UNKNOW": "未知",
+    "AUDIT_UNKNOWN": "未知",
     "AUDIT_SUCCESS": "成功",
     "AUDIT_FAIL": "失败",
     "AUDIT_ERROR": "错误"

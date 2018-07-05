@@ -1,21 +1,23 @@
-import {Injectable} from "@angular/core";
-import {HttpClient, HttpResponse} from "@angular/common/http";
-import {Audit, Query} from "../audit";
+import { Injectable } from "@angular/core";
+import { HttpClient, HttpResponse } from "@angular/common/http";
+import { AuditQueryData } from "./audit";
+import { Observable } from "rxjs/Observable";
+import { User } from "../user-center/user";
 
 const BASE_URL = "/api/v1";
 
 @Injectable()
-export class AuditService {
+export class OperationAuditService {
   constructor(private http: HttpClient) {
   }
 
-  getUserList(): Promise<Object> {
+  getUserList(): Observable<Array<User>> {
     return this.http.get(`${BASE_URL}/users`, {
       observe: "response",
-    }).toPromise().then((res: HttpResponse<Object>) => res.body);
+    }).map((res: HttpResponse<Array<User>>) => res.body);
   }
 
-  getAuditList(querydata: Query): Promise<any> {
+  getAuditList(querydata: AuditQueryData): Observable<any> {
     return this.http
       .get(`${BASE_URL}/operations`, {
         observe: "response",
@@ -26,15 +28,12 @@ export class AuditService {
           "order_asc": querydata.isReverse ? "0" : "1",
           "operation_fromdate": querydata.beginDate,
           "operation_todate": querydata.endDate,
-          "operation_status": status,
+          "operation_status": querydata.status,
           "operation_user": querydata.user_name,
           "operation_action": querydata.action,
           "operation_object": querydata.object_name
         }
       })
-      .toPromise()
-      .then((res: HttpResponse<Object>) => res.body);
+      .map((res: HttpResponse<Object>) => res.body);
   }
-
-
 }
