@@ -1,5 +1,5 @@
 import { Component, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 
 import { Message } from '../../shared/message-service/message';
 import { MessageService } from '../../shared/message-service/message.service';
@@ -10,6 +10,7 @@ import { AccountService } from '../account.service';
 import { BUTTON_STYLE, MESSAGE_TARGET } from "../../shared/shared.const";
 import { HttpErrorResponse } from "@angular/common/http";
 import { Subscription } from "rxjs/Subscription";
+import {AppInitService} from "../../app.init.service";
 
 @Component({
    templateUrl: './sign-up.component.html',
@@ -22,7 +23,10 @@ export class SignUpComponent implements OnDestroy {
 
   constructor(private accountService: AccountService,
               private messageService: MessageService,
+              private route: ActivatedRoute,
+              private appInitService: AppInitService,
               private router: Router) {
+    this.appInitService.systemInfo = this.route.snapshot.data['systeminfo'];
     this._subscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
       if (msg.target == MESSAGE_TARGET.SIGN_UP_SUCCESSFUL) {
         this.router.navigate(['/sign-in']);

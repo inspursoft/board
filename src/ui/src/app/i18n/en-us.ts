@@ -75,7 +75,19 @@ export const LANG_EN_US = {
     "SUCCESS_TO_SIGN_UP": "User sign up successfully.",
     "FAILED_TO_SIGN_OUT": "Failed to sign out.",
     "ACCOUNT_SETTING_SUCCESS":"Account setting success.",
-    "ALREADY_SIGNED_IN": "The user has already signed in other place."
+    "ALREADY_SIGNED_IN": "The user has already signed in other place.",
+    "SEND_REQUEST":"Send Request",
+    "SEND_REQUEST_SUCCESS":"Send Request Success",
+    "SEND_REQUEST_SUCCESS_MSG":"Send Request Success,Please Check Email.",
+    "RESET_NEW_PASS":"Set New Password",
+    "USER_NOT_EXISTS": "User Not Exist.",
+    "SEND_REQUEST_ERR":"Send Request Error",
+    "SEND_REQUEST_ERR_MSG":"Send Request,Please Contact Administrator",
+    "RESET_PASS_SUCCESS":"Reset Password Success",
+    "RESET_PASS_SUCCESS_MSG":"Reset Password Success,Please Login",
+    "RESET_PASS_ERR":"Reset Password Error",
+    "RESET_PASS_ERR_MSG":"Reset Password Error,Please Contact Administrator.",
+    "INVALID_RESET_UUID":"The Link is Invalid."
   },
   "HEAD_NAV": {
     "INPUT_FOR_SEARCHING": "Input for searching.",

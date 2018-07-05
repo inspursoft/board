@@ -75,7 +75,19 @@ export const LANG_ZH_CN = {
     "SUCCESS_TO_SIGN_UP": "注册用户成功。",
     "FAILED_TO_SIGN_OUT": "登出系统失败。",
     "ACCOUNT_SETTING_SUCCESS":"账户设置成功。",
-    "ALREADY_SIGNED_IN": "该用户已在其他地方登录。"
+    "ALREADY_SIGNED_IN": "该用户已在其他地方登录。",
+    "SEND_REQUEST":"发送验证",
+    "SEND_REQUEST_SUCCESS":"发送验证成功",
+    "SEND_REQUEST_SUCCESS_MSG":"发送验证成功，请检查邮件，访问邮件中的重置密码",
+    "RESET_NEW_PASS":"设置新密码",
+    "USER_NOT_EXISTS": "用户不存在。",
+    "SEND_REQUEST_ERR":"发送验证请求失败",
+    "SEND_REQUEST_ERR_MSG":"发送验证请求失败，请联系管理员。",
+    "RESET_PASS_SUCCESS":"重置密码成功",
+    "RESET_PASS_SUCCESS_MSG":"重置密码成功，请重新登录。",
+    "RESET_PASS_ERR":"重置密码失败",
+    "RESET_PASS_ERR_MSG":"重置密码失败，请联系管理员。",
+    "INVALID_RESET_UUID":"链接失效。"
   },
   "HEAD_NAV": {
     "INPUT_FOR_SEARCHING": "输入搜索内容",
