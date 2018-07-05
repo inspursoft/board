@@ -83,7 +83,7 @@ export class SignInComponent implements OnInit, OnDestroy {
     this.router.navigate(['/sign-up']);
   }
   retrievePass(): void {
-    this.router.navigate(['/retrieve-pass']);
+    this.router.navigate(['/forgot-password']);
   }
 
   ngOnDestroy(): void {

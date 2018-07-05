@@ -9,11 +9,11 @@ import { HttpErrorResponse } from "@angular/common/http";
 import { AppInitService } from "../../app.init.service";
 
 @Component({
-  selector: 'app-retrieve-pass',
-  templateUrl: './retrieve-pass.component.html',
-  styleUrls: ['./retrieve-pass.component.css']
+  selector: 'forgot-password',
+  templateUrl: './forgot-password.component.html',
+  styleUrls: ['./forgot-password.component.css']
 })
-export class RetrievePassComponent implements OnInit, OnDestroy {
+export class ForgotPasswordComponent implements OnInit, OnDestroy {
   private credential: string = "";
   private sendRequestWIP: boolean = false;
   protected confirmSubscription: Subscription;
@@ -26,7 +26,7 @@ export class RetrievePassComponent implements OnInit, OnDestroy {
     private router: Router) {
     this.appInitService.systemInfo = this.activatedRoute.snapshot.data['systeminfo'];
     this.confirmSubscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
-      if (msg.target == MESSAGE_TARGET.RETRIEVE_PASS) {
+      if (msg.target == MESSAGE_TARGET.FORGOT_PASSWORD) {
         this.router.navigate(['/sign-in']);
       }
     });
@@ -41,14 +41,14 @@ export class RetrievePassComponent implements OnInit, OnDestroy {
 
   sendRequest(): void {
     this.sendRequestWIP = true;
-    this.accountService.retrieveEmail(this.credential)
+    this.accountService.postEmail(this.credential)
       .then(() => {
         this.sendRequestWIP = false;
         let msg: Message = new Message();
         msg.title = "ACCOUNT.SEND_REQUEST_SUCCESS";
         msg.message = "ACCOUNT.SEND_REQUEST_SUCCESS_MSG";
         msg.buttons = BUTTON_STYLE.ONLY_CONFIRM;
-        msg.target = MESSAGE_TARGET.RETRIEVE_PASS;
+        msg.target = MESSAGE_TARGET.FORGOT_PASSWORD;
         this.messageService.announceMessage(msg);
       })
       .catch((err: HttpErrorResponse) => {

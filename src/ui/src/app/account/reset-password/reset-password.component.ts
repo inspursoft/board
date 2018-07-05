@@ -11,11 +11,11 @@ import {AppInitService} from "../../app.init.service";
 import {ParamMap} from "@angular/router/src/shared";
 
 @Component({
-  selector: 'app-reset-pass',
-  templateUrl: './reset-pass.component.html',
-  styleUrls: ['./reset-pass.component.css']
+  selector: 'reset-password',
+  templateUrl: './reset-password.component.html',
+  styleUrls: ['./reset-password.component.css']
 })
-export class ResetPassComponent implements OnInit {
+export class ResetPasswordComponent implements OnInit {
   private resetUuid: string;
   private signUpModel: SignUp = new SignUp();
   private confirmSubscription: Subscription;
@@ -28,7 +28,7 @@ export class ResetPassComponent implements OnInit {
     private activatedRoute: ActivatedRoute) {
     this.appInitService.systemInfo = this.activatedRoute.snapshot.data['systeminfo'];
     this.confirmSubscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
-      if (msg.target == MESSAGE_TARGET.RESET_PASS) {
+      if (msg.target == MESSAGE_TARGET.RESET_PASSWORD) {
         this.router.navigate(['/sign-in']);
       }
     });
@@ -43,13 +43,13 @@ export class ResetPassComponent implements OnInit {
   }
 
   sendResetPassRequest() {
-    this.accountService.resetPass(this.signUpModel.password, this.resetUuid)
+    this.accountService.resetPassword(this.signUpModel.password, this.resetUuid)
       .then(() => {
         let msg: Message = new Message();
         msg.title = "ACCOUNT.RESET_PASS_SUCCESS";
         msg.message = "ACCOUNT.RESET_PASS_SUCCESS_MSG";
         msg.buttons = BUTTON_STYLE.ONLY_CONFIRM;
-        msg.target = MESSAGE_TARGET.RESET_PASS;
+        msg.target = MESSAGE_TARGET.RESET_PASSWORD;
         this.messageService.announceMessage(msg);
       })
       .catch((err: HttpErrorResponse) => {

@@ -20,9 +20,9 @@ import { AuthGuard, ServiceGuard } from './shared/auth-guard.service';
 import { ProfileComponent } from "./profile/profile.component";
 import { AppInitService } from "./app.init.service";
 import { ListAuditComponent } from "./audit/step0-list-audit/list-audit.component";
-import { ResetPassComponent } from "./account/reset-pass/reset-pass.component";
-import { RetrievePassComponent } from "./account/retrieve-pass/retrieve-pass.component";
 import { MemberComponent } from "./shared/create-project/member/member.component";
+import { ResetPasswordComponent } from "./account/reset-password/reset-password.component";
+import { ForgotPasswordComponent } from "./account/forgot-password/forgot-password.component";
 
 @Injectable()
 export class SystemInfoResolve implements Resolve<any> {
@@ -53,14 +53,14 @@ export const ROUTES: Routes = [
   },
   {
     path: 'reset-password',
-    component: ResetPassComponent,
+    component: ResetPasswordComponent,
     resolve: {
       systeminfo: SystemInfoResolve
     }
   },
   {
-    path: 'retrieve-pass',
-    component: RetrievePassComponent,
+    path: 'forgot-password',
+    component: ForgotPasswordComponent,
     resolve: {
       systeminfo: SystemInfoResolve
     }

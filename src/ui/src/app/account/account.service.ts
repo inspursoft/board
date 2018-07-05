@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { AppInitService } from '../app.init.service';
 import { Account } from './account';
 import { CookieService } from "ngx-cookie";
-import { HttpParams } from "@angular/common/http";
 
 export const BASE_URL = '/api/v1';
 
@@ -64,22 +63,12 @@ export class AccountService {
       .catch(err => Promise.reject(err));
   }
 
-  retrieveEmail(credential): Promise<any> {
-    return this.http
-      .post(
-        BASE_URL + `/forgot-password?credential=${credential}`,
-        {},
-        {observe: "response"}
-      ).toPromise()
+  postEmail(credential: string): Promise<any> {
+    return this.http.post(BASE_URL + `/forgot-password?credential=${credential}`, null, {observe: "response"}).toPromise()
   }
 
-  resetPass(password, resetUuid): Promise<any> {
+  resetPassword(password, resetUuid): Promise<any> {
     let httpParams = new HttpParams().append('password', password).append('reset_uuid', resetUuid);
-    return this.http
-      .post(
-        BASE_URL + '/reset-password',
-        null,
-        {observe: "response", params: httpParams}
-      ).toPromise()
+    return this.http.post(BASE_URL + '/reset-password', null, {observe: "response", params: httpParams}).toPromise()
   }
 } 

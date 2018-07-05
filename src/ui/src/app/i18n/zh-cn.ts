@@ -1,5 +1,3 @@
-import { RetrievePassComponent } from "../account/retrieve-pass/retrieve-pass.component";
-
 export const LANG_ZH_CN = {
   "BUTTON": {
     "OK": "确定",
@@ -78,7 +76,7 @@ export const LANG_ZH_CN = {
     "FAILED_TO_SIGN_OUT": "登出系统失败。",
     "ACCOUNT_SETTING_SUCCESS":"账户设置成功。",
     "ALREADY_SIGNED_IN": "该用户已在其他地方登录。",
-    "RETRIEVE_PASS":"找回密码",
+    "RETRIEVE_PASSWORD":"找回密码",
     "SEND_REQUEST":"发送验证",
     "SEND_REQUEST_SUCCESS":"发送验证成功",
     "SEND_REQUEST_SUCCESS_MSG":"发送验证成功，请检查邮件，访问邮件中的重置密码",
