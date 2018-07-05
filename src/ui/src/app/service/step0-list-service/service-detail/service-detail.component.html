@@ -13,7 +13,7 @@
         </div>
         <span class="base-margin-left">{{"SERVICE.SERVICE_DETAIL_SERVICE_INFO"|translate}}:</span>
       </div>
-      <pre *ngIf="isShowServiceInfo"><code clr-code-highlight="language-json">{{serviceDetail | json}}</code></pre>
+      <cs-highlight *ngIf="isShowServiceInfo" [language]="'json'" [code]="serviceDetail | json"></cs-highlight>
     </div>
     <div class="file-detail-container" >
       <div class="file-detail-title-container" (click)="getDeploymentYamlFile()">
@@ -24,9 +24,7 @@
         <span class="base-margin-left">{{"SERVICE.SERVICE_DETAIL_DEPLOYMENT_FILE"|translate}}:</span>
       </div>
       <span *ngIf="deploymentYamlWIP" class="spinner spinner-md"></span>
-      <pre *ngIf="isShowDeploymentYaml && !deploymentYamlWIP">
-        <code clr-code-highlight="language-yaml">{{deploymentYamlFile}}</code>
-      </pre>
+      <cs-highlight *ngIf="isShowDeploymentYaml && !deploymentYamlWIP" [language]="'yaml'" [code]="deploymentYamlFile"></cs-highlight>
     </div>
     <div class="file-detail-container">
       <div class="file-detail-title-container" (click)="getServiceYamlFile()">
@@ -37,9 +35,7 @@
         <span class="base-margin-left">{{"SERVICE.SERVICE_DETAIL_SERVICE_FILE"|translate}}:</span>
       </div>
       <span *ngIf="serviceYamlWIP" class="spinner spinner-md"></span>
-      <pre *ngIf="isShowServiceYaml && !serviceYamlWIP">
-        <code clr-code-highlight="language-yaml">{{serviceYamlFile}}</code>
-      </pre>
+      <cs-highlight *ngIf="isShowServiceYaml && !serviceYamlWIP" [language]="'yaml'" [code]="serviceYamlFile"></cs-highlight>
     </div>
   </div>
   <div class="modal-footer">

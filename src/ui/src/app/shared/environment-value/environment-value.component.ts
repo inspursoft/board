@@ -31,6 +31,7 @@ export class EnvironmentValueComponent implements OnInit, AfterContentChecked {
   isCanConfirm: boolean = false;
   envAlertMessage: string;
   envsData: Array<EnvType>;
+  envsText: string = "";
   isAlertOpen: boolean = false;
   afterCommitErr: string = "";
   inputValidator: Array<ValidatorFn>;
@@ -92,4 +93,23 @@ export class EnvironmentValueComponent implements OnInit, AfterContentChecked {
     this.envsData.splice(index, 1);
   }
 
+  envTextAddClick() {
+    let patternEnv = this.patternEnv;
+    let envTypes: Array<EnvType>;
+    try {
+      envTypes = this.envsText.split(";").map((str: string) => {
+        let envStrPair = str.split("=");
+        if (!patternEnv.test(envStrPair[0]) || !patternEnv.test(envStrPair[1])) {
+          throw new Error()
+        }
+        return new EnvType(envStrPair[0], envStrPair[1]);
+      });
+    } catch (e) {
+      this.isAlertOpen = true;
+      this.envAlertMessage = "SERVICE.TXT_ALERT_MESSAGE";
+      return;
+    }
+    this.envsData = this.envsData.concat(envTypes);
+    this.isAlertOpen = false;
+  }
 }

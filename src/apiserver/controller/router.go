@@ -28,6 +28,9 @@ func InitRouter() {
 			beego.NSRouter("/systeminfo",
 				&AuthController{},
 				"get:GetSystemInfo"),
+			beego.NSRouter("/reset-password",
+				&AuthController{},
+				"post:ResetPassword"),
 			beego.NSRouter("/users",
 				&UserController{},
 				"get:GetUsersAction"),
@@ -208,6 +211,9 @@ func InitRouter() {
 			beego.NSRouter("/operations",
 				&OperationController{},
 				"get:OperationList"),
+			beego.NSRouter("/forgot-password",
+				&EmailController{},
+				"post:ForgotPasswordEmail"),
 		),
 	)
 

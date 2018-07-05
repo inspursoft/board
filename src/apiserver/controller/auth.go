@@ -193,3 +193,33 @@ func (u *AuthController) UserExists() {
 		u.customAbort(http.StatusConflict, target+" already exists.")
 	}
 }
+
+func (u *AuthController) ResetPassword() {
+	if utils.GetBoolValue("IS_EXTERNAL_AUTH") {
+		u.customAbort(http.StatusPreconditionFailed, "Resetting password doesn't support in external auth.")
+		return
+	}
+	resetUUID := u.GetString("reset_uuid")
+	user, err := service.GetUserByResetUUID(resetUUID)
+	if err != nil {
+		logs.Error("Failed to get user by reset UUID: %s, error: %+v", resetUUID, err)
+		u.internalError(err)
+		return
+	}
+	if user == nil {
+		logs.Error("Invalid reset UUID: %s", resetUUID)
+		u.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid reset UUID: %s", resetUUID))
+		return
+	}
+	newPassword := u.GetString("password")
+	if strings.TrimSpace(newPassword) == "" {
+		logs.Error("No password provided.")
+		u.customAbort(http.StatusBadRequest, "No password provided.")
+		return
+	}
+	_, err = service.ResetUserPassword(*user, newPassword)
+	if err != nil {
+		logs.Error("Failed to reset user password for user ID: %d, error: %+v", user.ID, err)
+		u.internalError(err)
+	}
+}

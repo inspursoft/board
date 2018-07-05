@@ -7,7 +7,7 @@
                [dropdownList]="projectsList"
                [dropdownListTextKey]="'project_name'"
                (onChange)="changeSelectProject($event)"
-               (onOnlyClickItem)="clickSelectProject($event)"></cs-dropdown>
+               (onOnlyClickItem)="clickSelectProject()"></cs-dropdown>
   <span class="custom-margin">{{"SERVICE.STEP_1_SELECT_DES"|translate}}</span>
 </div>
 <button class="btn btn-default" (click)="cancelBuildService()">

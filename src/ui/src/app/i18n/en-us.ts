@@ -72,6 +72,7 @@ export const LANG_EN_US = {
     "INCORRECT_USERNAME_OR_PASSWORD": "Incorrect username or password.",
     "FAILED_TO_SIGN_IN": "Failed to sign in:",
     "FAILED_TO_SIGN_UP": "Failed to sign up:",
+    "SUCCESS_TO_SIGN_UP": "User sign up successfully.",
     "FAILED_TO_SIGN_OUT": "Failed to sign out.",
     "ACCOUNT_SETTING_SUCCESS":"Account setting success.",
     "ALREADY_SIGNED_IN": "The user has already signed in other place."
@@ -97,6 +98,7 @@ export const LANG_EN_US = {
     "NODES": "Nodes",
     "IMAGES": "Images",
     "ADMIN_OPTIONS": "Admin Options",
+    "AUDIT": "Operation Audit",
     "PROFILES": "System Info",
     "GUIDE_SERVICE_LIST":"Please create your own Service.",
     "GUIDE_PROJECT_LIST":"Please create your own Project."
@@ -284,6 +286,9 @@ export const LANG_EN_US = {
     "STEP_TITLE_5":"Testing",
     "STEP_TITLE_6":"Deploy",
     "ENV_TITLE":"Environment Value",
+    "TXT_TITLE":"Environment Value Input",
+    "TXT_BUTTON":"Add",
+    "TXT_ALERT_MESSAGE":"Illegal Environment Value",
     "ENV_ADD":"Add New Environment Value",
     "ENV_CONFIRM":"Confirm",
     "ENV_REQUIRED":"The key or value is required",
@@ -314,6 +319,12 @@ export const LANG_EN_US = {
     "STEP_3_COMMAND":"Command",
     "STEP_3_CPU":"Cpu",
     "STEP_3_MEMORY":"Memory",
+    "STEP_3_WORK_DIRECTOR":"/usr/local/bin",
+    "STEP_3_STORAGE_VOLUME":"/usr/spool/news",
+    "STEP_3_ENVIRONMENT_VARIABLES":"1.0",
+    "STEP_3_PORT_CONTAINER":"80",
+    "STEP_4_SERVICE_OF_NAME":"service01",
+    "STEP_4_EXTERNAL_PORT":"30001",
     "STEP_4_SERVICE_CONFIG_TITLE":"Basic service configuration",
     "STEP_4_SERVICE_NAME":"Service Name",
     "STEP_4_INSTANCE":"Instance",
@@ -333,6 +344,7 @@ export const LANG_EN_US = {
     "STEP_4_PUBLIC":"Publicity",
     "STEP_4_NODE_SELECTOR":"Node selector",
     "STEP_4_NODE_SELECTOR_COMMENT":"Select node or node group...",
+    "STEP_4_DANGER_MESSAGE":"Warning:It does't exist any port for external to use in all containers, the next button will be disable.",
     "STEP_6_DEPLOY":"Deploy",
     "STEP_6_JOURNAL":"Journal",
     "STEP_6_DELETE":"Delete",
@@ -394,6 +406,20 @@ export const LANG_EN_US = {
     "SERVICE_YAML_INVALID_FILE":"Invalid file type",
     "SERVICE_YAML_VALID_FILE":"Files valid,please upload them",
     "SERVICE_YAML_UPLOAD_SUCCESS":"Upload success!This service in 'preparing' status, click 'create' for run it"
+  },
+  "AUDIT":{
+    "IMAGE":"Image",
+    "ACTION":"Action",
+    "STATUS":"Status",
+    "USER":"User",
+    "BEGIN":"Begin",
+    "END":"End",
+    "QUERY":"Query",
+    "DATE":"Date",
+    "OBJECT":"Object",
+    "OPERATION":"Operation",
+    "ILLEGAL_DATE_TITLE":"Illegal Date",
+    "ILLEGAL_DATE_MSG":"Illegal Date, Please Check."
   },
   "GLOBAL_SEARCH": {
     "PROJECTS": "Projects",
@@ -461,5 +487,5 @@ export const LANG_EN_US = {
     "CLUSTER_VERSION":"Cluster Version",
     "GET_HELP":"Get Help",
     "SUPPORT_TEAM":"Support team"
-  }
+  },
 };
