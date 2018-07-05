@@ -105,8 +105,8 @@
                 <button *ngIf="authMode === 'db_auth'"
                         [disabled]="isSignWIP"
                         class="btn btn-link"
-                        (click)="retrievePass()">
-                  {{ 'ACCOUNT.RETRIEVE_PASSWORD' | translate }}
+                        (click)="navigateForgotPassword()">
+                  {{ 'ACCOUNT.FORGOT_PASSWORD' | translate }}?
                 </button>
                 <!--button class="btn btn-link">{{ 'ACCOUNT.FORGOT_PASSWORD' | translate }}</button-->
               </div>

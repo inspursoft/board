@@ -82,7 +82,8 @@ export class SignInComponent implements OnInit, OnDestroy {
   signUp(): void {
     this.router.navigate(['/sign-up']);
   }
-  retrievePass(): void {
+
+  navigateForgotPassword(): void {
     this.router.navigate(['/forgot-password']);
   }
 

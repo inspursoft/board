@@ -76,7 +76,6 @@ export const LANG_EN_US = {
     "FAILED_TO_SIGN_OUT": "Failed to sign out.",
     "ACCOUNT_SETTING_SUCCESS":"Account setting success.",
     "ALREADY_SIGNED_IN": "The user has already signed in other place.",
-    "RETRIEVE_PASS":"Retrieve Password",
     "SEND_REQUEST":"Send Request",
     "SEND_REQUEST_SUCCESS":"Send Request Success",
     "SEND_REQUEST_SUCCESS_MSG":"Send Request Success,Please Check Email.",
