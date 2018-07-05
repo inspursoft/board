@@ -5,8 +5,6 @@ import (
 	"git/inspursoft/board/src/common/model"
 	"testing"
 
-	"time"
-
 	"github.com/astaxie/beego/logs"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/assert"
@@ -60,6 +58,7 @@ func TestGetOperation(t *testing.T) {
 	logs.Info(c)
 }
 
+/*
 func TestGetOperations(t *testing.T) {
 	assert := assert.New(t)
 
@@ -108,7 +107,6 @@ func TestGetOperations(t *testing.T) {
 	logs.Info("TestGetOperations PASS")
 }
 
-/*
 func TestDeleteOperation(t *testing.T) {
 	assert := assert.New(t)
 	key := "auth_mode"

@@ -12,33 +12,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-const (
-	projectTable                = "PROJECT"
-	userTable			= "USER"
-	operationTable			= "OPERATION"
-	serviceTable                = "SERVICE"
-	nameField                   = "NAME"
-	createTimeField             = "CREATE_TIME"
-	defaultField                = "CREATE_TIME"
-	projectTableNameField       = "PROJECT_NAME"
-	userTableNameField          = "USER_NAME"
-	serviceTableNameField       = "SERVICE_NAME"
-	projectTableCreateTimeField = "PROJECT_CREATE_TIME"
-	userTableCreateTimeField    = "USER_CREATE_TIME"
-	serviceTableCreateTimeField = "SERVICE_CREATE_TIME"
-	operationTableCreateTimeField= "OPERATION_CREATION_TIME"
-)
-
-var orderFields = map[string]string{
-	projectTableNameField:       "name",
-	userTableNameField:          "username",
-	serviceTableNameField:       "name",
-	projectTableCreateTimeField: "creation_time",
-	userTableCreateTimeField:    "creation_time",
-	serviceTableCreateTimeField: "creation_time",
-	operationTableCreateTimeField:"creation_time",
-}
-
 func InitDB() {
 
 	dbIP := utils.GetStringValue("DB_IP")
@@ -67,14 +40,9 @@ func getTotalRecordCount(baseSQL string, params []interface{}) (int64, error) {
 	return count, nil
 }
 
-func getOrderSQL(orderTable string, orderField string, orderAsc int) string {
-	key := fmt.Sprintf("%s_%s", strings.ToUpper(orderTable), strings.ToUpper(orderField))
-	if orderFields[key] == "" {
-		logs.Info(key)
-		return ""
-	}
+func getOrderSQL(orderField string, orderAsc int) string {
 	if orderAsc != 0 {
-		return fmt.Sprintf(` order by %s`, orderFields[key])
+		return fmt.Sprintf(` order by %s`, strings.ToUpper(orderField))
 	}
-	return fmt.Sprintf(` order by %s desc`, orderFields[key])
+	return fmt.Sprintf(` order by %s desc`, strings.ToUpper(orderField))
 }
