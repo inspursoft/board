@@ -28,12 +28,12 @@ type PaginatedOperations struct {
 }
 
 type OperationParam struct {
-	Operation_action   string `json:"Operation_action"`
-	Operation_user     string `json:"Operation_action"`
-	Operation_object   string `json:"Operation_action"`
-	Operation_status   string `json:"Operation_action"`
-	Operation_fromdate string `json:"Operation_action"`
-	Operation_todate   string `json:"Operation_action"`
+	Action   string
+	User     string
+	Object   string
+	Status   string
+	Fromdate string
+	Todate   string
 }
 
 const (

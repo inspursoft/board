@@ -67,7 +67,6 @@ func (b *BaseController) recordOperationAudit() {
 	operation.UserID = b.currentUser.ID
 	operation.UserName = b.currentUser.Username
 	operation.Action = service.GetOperationAction(b.Ctx)
-	logs.Info("action = %s",operation.Action)
 	operation.Path = b.Ctx.Input.URL()
 	operation.ObjectType = service.GetOperationObjectType(b.Ctx)
 	operation.ObjectName = ""
