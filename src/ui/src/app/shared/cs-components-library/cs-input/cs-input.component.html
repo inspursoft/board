@@ -19,6 +19,7 @@
            [class.no-input-module]="!isDisabled && inputType == 1"
            (keypress)="onInputKeyPressEvent($event)"
            (blur)="onInputBlur()"
+           [title]="inputPlaceholder"
            [placeholder]="inputPlaceholder"
            [(ngModel)]="inputField.value">
     <span class="tooltip-content" style="width: 200px;" *ngIf="inputErrors">

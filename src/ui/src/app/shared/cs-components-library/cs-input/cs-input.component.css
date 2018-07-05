@@ -43,3 +43,8 @@ a.cs-input-icon {
   margin-left: 5px;
   flex-basis: 20px;
 }
+
+input::placeholder {
+  color: darkgray;
+  font-size: 14px;
+}
