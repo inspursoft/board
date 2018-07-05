@@ -372,6 +372,12 @@ func StopServiceK8s(s *model.ServiceStatus) error {
 		logs.Error("Failed to delete deployment in cluster, error:%v", err)
 		return err
 	}
+	svc := k8sclient.AppV1().Service(s.ProjectName)
+	err = svc.Delete(s.Name)
+	if err != nil {
+		logs.Error("Failed to delete service in cluster, error:%v", err)
+		return err
+	}
 	return nil
 }
 
