@@ -22,8 +22,6 @@
                    [dropdownListTextKey]="'title'"
                    (onChange)="changeStatusQuery($event)">
       </cs-dropdown>
-    </div>
-    <div class="line-container">
       <label class="query-title">{{"AUDIT.USER" | translate}}:</label>
       <cs-dropdown [dropdownDefaultText]="'AUDIT.SELECT_USER'| translate"
                    [dropdownWidth]="200"
@@ -31,16 +29,20 @@
                    [dropdownListTextKey]="'user_name'"
                    (onChange)="changeUsernameQuery($event)">
       </cs-dropdown>
+    </div>
+    <div class="line-container">
       <label class="query-title">{{"AUDIT.BEGIN" | translate}}:</label>
       <input title="" class="date-time" type="date" clrDate [(clrDate)]="beginDate">
       <label class="query-title custom-margin">{{"AUDIT.END" | translate}}:</label>
-      <input title="" class="date-time" type="date" clrDate [(clrDate)]="endDate">
+      <input title="" class="date-time" type="date" clrDate [clrDate]="endDate" (clrDateChange)="changeEndData($event)">
+      <span style="margin-left: auto">{{beginDate | date:'yyyy-MM-dd HH:mm:ss' }}=>{{endDate | date:'yyyy-MM-dd HH:mm:ss' }}</span>
     </div>
   </div>
   <button [disabled]="isInLoading" class="btn btn-primary" (click)="queryListData()">
     {{"AUDIT.QUERY" | translate}}
   </button>
 </div>
+
 <clr-datagrid (clrDgRefresh)="retrieve($event)" [clrDgLoading]="isInLoading">
   <clr-dg-column [clrDgField]="'CREATION_TIME'" [clrDgSortOrder]="descSort">
     <clr-dg-filter [hidden]="true"></clr-dg-filter>

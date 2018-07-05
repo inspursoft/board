@@ -6,6 +6,8 @@ import { OperationAuditService } from "../audit-service";
 import { HttpErrorResponse } from "@angular/common/http";
 import { User } from "../../user-center/user";
 
+const MILLISECOND_OF_DAY = 24 * 60 * 60 * 1000;
+const MILLISECOND_OF_DAY_LESS = 24 * 60 * 60 * 1000 - 1000;
 @Component({
   selector: 'list-audit',
   templateUrl: './list-audit.component.html',
@@ -27,8 +29,11 @@ export class ListAuditComponent implements OnInit {
 
   constructor(private messageService: MessageService,
               private auditService: OperationAuditService) {
-    this.endDate = new Date(Date.now());
-    this.beginDate = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    let now: Date = new Date(Date.now());
+    let yesterday: Date = new Date(Date.now() - MILLISECOND_OF_DAY);
+    let rmTime = (date: Date): number => date.getTime() - date.getHours() * 60 * 60 * 1000 - date.getMinutes() * 60 * 1000 - date.getSeconds() * 1000;
+    this.endDate = new Date(rmTime(now) + MILLISECOND_OF_DAY_LESS);
+    this.beginDate = new Date(rmTime(yesterday));
     this.auditsListData = Array<Audit>();
     this.userNames = Array<User>();
     this.auditQueryData = new AuditQueryData();
@@ -42,8 +47,6 @@ export class ListAuditComponent implements OnInit {
     this.initActionQueryMap();
     this.initStatusQueryMap();
     this.getUserList();
-    this.auditQueryData.beginDate = this.beginDate.getTime().toString();
-    this.auditQueryData.endDate = this.endDate.getTime().toString();
   }
 
   initObjectQueryMap() {
@@ -107,6 +110,10 @@ export class ListAuditComponent implements OnInit {
     this.auditQueryData.user_name = user.user_name == "AUDIT.ALL" ? "" : user.user_name;
   }
 
+  changeEndData(event:Date){
+    this.endDate = new Date(event.getTime() + MILLISECOND_OF_DAY_LESS);
+  }
+
   retrieve(state: ClrDatagridStateInterface): void {
     this.oldStateInfo = state;
     this.auditQueryData.sortBy = state.sort.by as string;
@@ -117,8 +124,8 @@ export class ListAuditComponent implements OnInit {
   queryListData() {
     setTimeout(() => {
       this.isInLoading = true;
-      this.auditQueryData.beginDate = this.beginDate ? this.beginDate.getTime().toString() : "";
-      this.auditQueryData.endDate = this.endDate ? this.endDate.getTime().toString() : "";
+      this.auditQueryData.beginDateTamp = this.beginDate ? this.beginDate.getTime() : 0;
+      this.auditQueryData.endDateTamp = this.endDate ? this.endDate.getTime() : 0;
       this.auditService.getAuditList(this.auditQueryData).subscribe(paginatedProjects => {
         this.totalRecordCount = paginatedProjects.pagination.total_count;
         this.auditsListData = paginatedProjects['operation_list'];
