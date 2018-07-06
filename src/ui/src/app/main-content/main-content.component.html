@@ -44,11 +44,11 @@
            (click)="navigateTo('/images')">
           {{ 'SIDE_NAV.IMAGES' | translate }}
         </a>
-        <a  href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']"
+        <a *ngIf="isSystemAdmin" href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']"
            routerLink="/user-center" (click)="navigateTo('/user-center')">
           {{ 'SIDE_NAV.ADMIN_OPTIONS' | translate }}
         </a>
-        <a  href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']"
+        <a *ngIf="isSystemAdmin" href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']"
            routerLink="/audit" (click)="navigateTo('/audit')">
           {{ 'SIDE_NAV.AUDIT' | translate }}
         </a>
