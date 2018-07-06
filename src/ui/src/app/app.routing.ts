@@ -19,8 +19,8 @@ import { UserCenterComponent } from './user-center/user-center.component';
 import { AuthGuard, ServiceGuard } from './shared/auth-guard.service';
 import { ProfileComponent } from "./profile/profile.component";
 import { AppInitService } from "./app.init.service";
-import { ListAuditComponent } from "./audit/step0-list-audit/list-audit.component";
 import { MemberComponent } from "./shared/create-project/member/member.component";
+import { ListAuditComponent } from "./audit/operation-audit-list/list-audit.component";
 import { ResetPasswordComponent } from "./account/reset-password/reset-password.component";
 import { ForgotPasswordComponent } from "./account/forgot-password/forgot-password.component";
 

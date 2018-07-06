@@ -1,0 +1,31 @@
+div.audit-container {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+div.query-container {
+  display: flex;
+  flex-direction: column;
+}
+
+label.query-title {
+  width: 100px;
+  line-height: 30px;
+  text-align: right;
+  margin-right: 5px;
+}
+
+label.query-title.custom-margin{
+  margin-left: -15px;
+}
+
+div.line-container {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+}
+
+input.date-time{
+  width: 180px;
+}

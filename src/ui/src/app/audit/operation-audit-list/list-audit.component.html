@@ -1,0 +1,69 @@
+<div class="audit-container">
+  <div class="query-container">
+    <div class="line-container">
+      <label class="query-title">{{"AUDIT.OBJECT" | translate}}:</label>
+      <cs-dropdown [dropdownDefaultText]="'AUDIT.AUDIT_OBJECT'| translate"
+                   [dropdownWidth]="200"
+                   [dropdownList]="objectQueryMap"
+                   [dropdownListTextKey]="'title'"
+                   (onChange)="changeObjectQuery($event)">
+      </cs-dropdown>
+      <label class="query-title">{{"AUDIT.ACTION" | translate}}:</label>
+      <cs-dropdown [dropdownDefaultText]="'AUDIT.OPERATION_TYPE'| translate"
+                   [dropdownWidth]="200"
+                   [dropdownList]="actionQueryMap"
+                   [dropdownListTextKey]="'title'"
+                   (onChange)="changeActionQuery($event)">
+      </cs-dropdown>
+      <label class="query-title">{{"AUDIT.STATUS" | translate}}:</label>
+      <cs-dropdown [dropdownDefaultText]="'AUDIT.SELECT_STATUS'| translate"
+                   [dropdownWidth]="200"
+                   [dropdownList]="actionStatusMap"
+                   [dropdownListTextKey]="'title'"
+                   (onChange)="changeStatusQuery($event)">
+      </cs-dropdown>
+      <label class="query-title">{{"AUDIT.USER" | translate}}:</label>
+      <cs-dropdown [dropdownDefaultText]="'AUDIT.SELECT_USER'| translate"
+                   [dropdownWidth]="200"
+                   [dropdownList]="userNames"
+                   [dropdownListTextKey]="'user_name'"
+                   (onChange)="changeUsernameQuery($event)">
+      </cs-dropdown>
+    </div>
+    <div class="line-container">
+      <label class="query-title">{{"AUDIT.BEGIN" | translate}}:</label>
+      <input title="" class="date-time" type="date" clrDate [(clrDate)]="beginDate">
+      <label class="query-title custom-margin">{{"AUDIT.END" | translate}}:</label>
+      <input title="" class="date-time" type="date" clrDate [clrDate]="endDate" (clrDateChange)="changeEndData($event)">
+    </div>
+  </div>
+  <button [disabled]="isInLoading" class="btn btn-primary" (click)="queryListData()">
+    {{"AUDIT.QUERY" | translate}}
+  </button>
+</div>
+
+<clr-datagrid (clrDgRefresh)="retrieve($event)" [clrDgLoading]="isInLoading">
+  <clr-dg-column [clrDgField]="'CREATION_TIME'" [clrDgSortOrder]="descSort">
+    <clr-dg-filter [hidden]="true"></clr-dg-filter>
+    {{"AUDIT.DATE" | translate}}
+  </clr-dg-column>
+  <clr-dg-column>{{"AUDIT.OBJECT" | translate}}</clr-dg-column>
+  <clr-dg-column>{{"AUDIT.ACTION" | translate}}</clr-dg-column>
+  <clr-dg-column>{{"AUDIT.STATUS" | translate}}</clr-dg-column>
+  <clr-dg-column>{{"AUDIT.USER" | translate}}</clr-dg-column>
+  <clr-dg-row *ngFor="let audit of auditsListData">
+    <clr-dg-cell>{{audit.operation_creation_time | date:'yyyy-MM-dd HH:mm:ss' }}</clr-dg-cell>
+    <clr-dg-cell>{{getObjectTitle(audit.operation_object_type) | translate}}</clr-dg-cell>
+    <clr-dg-cell>{{getActionTitle(audit.operation_action) | translate}}</clr-dg-cell>
+    <clr-dg-cell>{{getStatusTitle(audit.operation_status) | translate}}</clr-dg-cell>
+    <clr-dg-cell>{{audit.operation_user_name}}</clr-dg-cell>
+  </clr-dg-row>
+  <clr-dg-footer>
+    {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} of {{pagination.totalItems}} items
+    <clr-dg-pagination #pagination
+                       [clrDgTotalItems]="totalRecordCount"
+                       [(clrDgPage)]="auditQueryData.pageIndex"
+                       [clrDgPageSize]="auditQueryData.pageSize">
+    </clr-dg-pagination>
+  </clr-dg-footer>
+</clr-datagrid>
