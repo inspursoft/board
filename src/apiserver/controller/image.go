@@ -112,8 +112,9 @@ func (p *ImageController) GetImageDetailAction() {
 			p.internalError(err)
 			return
 		}
-
-		tagDetail.ImageDetail = (manifest1.History[0])["v1Compatibility"]
+		if len(manifest1.History) > 0 {
+			tagDetail.ImageDetail = (manifest1.History[0])["v1Compatibility"]
+		}
 		tagDetail.ImageAuthor = ""       //TODO: get the author by frontend simply
 		tagDetail.ImageCreationTime = "" //TODO: get the time by frontend simply
 
