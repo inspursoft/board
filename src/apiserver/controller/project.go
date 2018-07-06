@@ -16,14 +16,13 @@ type ProjectController struct {
 	BaseController
 }
 
-func (p *ProjectController) Prepare() {
-	p.resolveSignedInUser()
-}
-
 func (p *ProjectController) CreateProjectAction() {
 	var reqProject model.Project
 	var err error
-	p.resolveBody(&reqProject)
+	err = p.resolveBody(&reqProject)
+	if err != nil {
+		return
+	}
 
 	if !utils.ValidateWithLengthRange(reqProject.Name, 2, 30) {
 		p.customAbort(http.StatusBadRequest, "Project name length should be between 2 and 30 characters.")
@@ -105,7 +104,7 @@ func (p *ProjectController) GetProjectsAction() {
 
 	pageIndex, _ := p.GetInt("page_index", 0)
 	pageSize, _ := p.GetInt("page_size", 0)
-	orderField := p.GetString("order_field", "CREATE_TIME")
+	orderField := p.GetString("order_field", "creation_time")
 	orderAsc, _ := p.GetInt("order_asc", 0)
 
 	query := model.Project{Name: projectName, OwnerName: p.currentUser.Username, Public: 0}
@@ -197,7 +196,10 @@ func (p *ProjectController) ToggleProjectPublicAction() {
 	p.resolveProjectOwnerByID(int64(projectID))
 
 	var reqProject model.Project
-	p.resolveBody(&reqProject)
+	err = p.resolveBody(&reqProject)
+	if err != nil {
+		return
+	}
 
 	isSuccess, err := service.ToggleProjectPublic(int64(projectID), reqProject.Public)
 	if err != nil {

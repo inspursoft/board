@@ -58,22 +58,63 @@ type BaseController struct {
 
 func (b *BaseController) Prepare() {
 	b.resolveSignedInUser()
+	b.recordOperationAudit()
+}
+
+func (b *BaseController) recordOperationAudit() {
+	objectType := service.GetOperationObjectType(b.Ctx)
+	if objectType == service.DashboardType {
+		return
+	}
+	//record data about operation
+	var operation model.Operation
+	operation.UserID = b.currentUser.ID
+	operation.UserName = b.currentUser.Username
+	operation.Action = service.GetOperationAction(b.Ctx)
+	operation.Path = b.Ctx.Input.URL()
+	operation.ObjectType = objectType
+	operation.Status = model.Unknown
+
+	err := service.CreateOperationAudit(&operation)
+	if err != nil {
+		logs.Error("Failed to create operation Audit. Error:%+v", err)
+		return
+	}
+	b.operationID = operation.ID
 }
 
 func (b *BaseController) Finish() {
+	if b.operationID == 0 {
+		return
+	}
 	//Update operation result in Mysql
+	var operationStatus string
+	if b.Ctx.Output.Status < 400 {
+		operationStatus = model.Success
+	} else if b.Ctx.Output.Status < 500 {
+		operationStatus = model.Failed
+	} else {
+		operationStatus = model.Error
+	}
+	err := service.UpdateOperationAuditStatus(b.operationID, operationStatus, b.project)
+	if err != nil {
+		logs.Error("Failed to update operation Audit. Error:%+v", err)
+		return
+	}
 }
 
 func (b *BaseController) Render() error {
 	return nil
 }
 
-func (b *BaseController) resolveBody(target interface{}) {
-	err := utils.UnmarshalToJSON(b.Ctx.Request.Body, target)
+func (b *BaseController) resolveBody(target interface{}) (err error) {
+	err = utils.UnmarshalToJSON(b.Ctx.Request.Body, target)
 	if err != nil {
 		logs.Error("Failed to unmarshal data: %+v", err)
 		b.internalError(err)
+		return
 	}
+	return
 }
 
 func (b *BaseController) renderJSON(data interface{}) {
@@ -98,12 +139,12 @@ func (b *BaseController) serveJSON(status int, data interface{}) {
 
 func (b *BaseController) internalError(err error) {
 	logs.Error("Error occurred: %+v", err)
-	b.CustomAbort(http.StatusInternalServerError, "Unexpected error occurred.")
+	b.serveStatus(http.StatusInternalServerError, "Unexpected error occurred.")
 }
 
 func (b *BaseController) customAbort(status int, body string) {
 	logs.Error("Error of custom aborted: %s", body)
-	b.CustomAbort(status, body)
+	b.serveStatus(status, body)
 }
 
 func parsePostK8sError(message string) int {
@@ -215,6 +256,7 @@ func (b *BaseController) resolveSignedInUser() {
 	user := b.getCurrentUser()
 	if user == nil {
 		b.customAbort(http.StatusUnauthorized, "Need to login first.")
+		return
 	}
 	b.currentUser = user
 	b.isSysAdmin = (user.SystemAdmin == 1)

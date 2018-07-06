@@ -5235,18 +5235,27 @@ definitions:
         type: integer
         format: int32
         description: The user ID of the project always means the creator of the project.
+      operation_tag:
+        type: string
+        description: The operation tag to mark the operation priorty.
       operation_comment:
         type: string
         description: The admin comment or ranking for this operation.
-      operation_object:
+      operation_object_type:
         type: string
         description: The operated object for this operation record.
+      operation_object_name:
+        type: string
+        description: The operated object name for this operation record.
       operation_action:
         type: string
         description: The operation action for this operated object.
       operation_status:
         type: string
-        description: The operation status for this operated object.           
+        description: The operation status for this operated object.        
+      operation_path:
+        type: string
+        description: The operation path for this operated object.     
         
 
 

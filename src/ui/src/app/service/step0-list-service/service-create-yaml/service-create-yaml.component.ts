@@ -125,7 +125,7 @@ export class ServiceCreateYamlComponent implements OnInit {
         this.isToggleServiceWIP = false;
         let msg = new Message();
         msg.type = MESSAGE_TYPE.SHOW_DETAIL;
-        msg.message = err.error;
+        msg.message = (typeof err.error == "object") ? (err.error as Error).message : err.error;
         msg.errorObject = err;
         this.messageService.globalMessage(msg);
       });
@@ -148,7 +148,7 @@ export class ServiceCreateYamlComponent implements OnInit {
         this.isUploadFileWIP = false;
         let msg = new Message();
         msg.type = MESSAGE_TYPE.SHOW_DETAIL;
-        msg.message = error.error;
+        msg.message = (typeof error.error == "object") ? (error.error as Error).message : error.error;
         msg.errorObject = error;
         this.messageService.globalMessage(msg);
       }, () => {
@@ -162,6 +162,7 @@ export class ServiceCreateYamlComponent implements OnInit {
 
   get isBtnUploadDisabled(): boolean {
     return this.selectedProjectId == 0
+      || this.isUploadFileWIP
       || !this.filesDataMap.has('deployment')
       || this.isUploadFileSuccess
       || this.isFileInEdit

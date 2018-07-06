@@ -118,7 +118,7 @@ func GetPaginatedServiceData(query model.ServiceStatus, userID int64, pageIndex 
 	if err != nil {
 		return nil, err
 	}
-	sql += getOrderSQL(serviceTable, orderField, orderAsc) + ` limit ?, ?`
+	sql += getOrderSQL(orderField, orderAsc) + ` limit ?, ?`
 	params = append(params, pagination.GetPageOffset(), pagination.PageSize)
 	logs.Debug("%+v", pagination.String())
 

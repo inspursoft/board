@@ -34,7 +34,10 @@ type Dashboard struct {
 
 func (s *Dashboard) GetData() {
 	var req DsBodyPara
-	s.resolveBody(&req)
+	err := s.resolveBody(&req)
+	if err != nil {
+		return
+	}
 	nodeName := s.GetString("node_name")
 	serviceName := s.GetString("service_name")
 
@@ -58,7 +61,7 @@ func (s *Dashboard) GetData() {
 		req.Node.TimestampBase, nodeName, req.Node.DurationTime)
 	beego.Debug(req.Node.TimeUnit, req.Node.TimeCount,
 		req.Node.TimestampBase, nodeName)
-	err := para.GetNodeDataToObj()
+	err = para.GetNodeDataToObj()
 	if err != nil {
 		s.internalError(err)
 		return

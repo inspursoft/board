@@ -207,6 +207,7 @@ func (sc *ServiceConfigController) GetConfigServiceStepAction() {
 			return
 		}
 		sc.internalError(err)
+		return
 	}
 	sc.renderJSON(result)
 }
@@ -380,6 +381,7 @@ func (sc *ServiceConfigController) checkServiceDuplicateName(serviceName string)
 	isServiceDuplicated, err := service.ServiceExists(serviceName, project.Name)
 	if err != nil {
 		sc.internalError(err)
+		return false, err
 	}
 	return isServiceDuplicated, nil
 
@@ -389,6 +391,7 @@ func (sc *ServiceConfigController) checkEntireServiceConfig(entireService *Confi
 	project, err := service.GetProject(model.Project{ID: entireService.ProjectID}, "id")
 	if err != nil {
 		sc.internalError(err)
+		return err
 	}
 	if project == nil {
 		return projectIDInvalidErr

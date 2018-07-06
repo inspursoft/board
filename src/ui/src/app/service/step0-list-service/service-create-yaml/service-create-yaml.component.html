@@ -48,6 +48,7 @@
     <div class="build-btn-container">
       <label class="base-text"></label>
       <button class="btn btn-default cancel-build custom-margin"
+              [disabled]="isUploadFileWIP || isToggleServiceWIP"
               (click)="btnCancelClick($event)">
         {{"BUTTON.CANCEL"|translate}}
       </button>

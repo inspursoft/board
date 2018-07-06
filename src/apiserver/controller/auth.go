@@ -62,7 +62,10 @@ func (u *AuthController) processAuth(principal, password string) (string, bool) 
 
 func (u *AuthController) SignInAction() {
 	var reqUser model.User
-	u.resolveBody(&reqUser)
+	err := u.resolveBody(&reqUser)
+	if err != nil {
+		return
+	}
 	token, _ := u.processAuth(reqUser.Username, reqUser.Password)
 	u.renderJSON(model.Token{TokenString: token})
 }
@@ -86,7 +89,10 @@ func (u *AuthController) SignUpAction() {
 		return
 	}
 	var reqUser model.User
-	u.resolveBody(&reqUser)
+	err := u.resolveBody(&reqUser)
+	if err != nil {
+		return
+	}
 
 	if !utils.ValidateWithPattern("username", reqUser.Username) {
 		u.customAbort(http.StatusBadRequest, "Username content is illegal.")
