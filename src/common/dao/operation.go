@@ -65,7 +65,7 @@ func GetPaginatedOperations(query model.OperationParam, pageIndex int, pageSize 
 	sql += getOrderSQL(orderField, orderAsc) + ` limit ?, ?`
 	params = append(params, pagination.GetPageOffset(), pagination.PageSize)
 
-	logs.Debug("GetPaginatedOperations: +%+v", pagination.String())
+	logs.Debug("GetPaginatedOperations: %+v", pagination.String())
 
 	operationList, err := queryOperations(sql, params)
 	if err != nil {
@@ -90,7 +90,8 @@ func queryOperations(sql string, params []interface{}) ([]*model.Operation, erro
 }
 
 func generateOperationSQL(query model.OperationParam) (string, []interface{}) {
-	sql := `select * from operation o where 1 = 1 `
+	sql := `select o.id, o.creation_time, o.update_time, o.deleted, o.project_name, o.project_id, o.user_name,
+	o.user_id, o.object_type, o.object_name, o.action, o.status, o.path from operation o where 1 = 1 `
 
 	params := make([]interface{}, 0)
 

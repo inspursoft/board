@@ -352,8 +352,8 @@ DROP TABLE IF EXISTS `log`;
 	
 	CREATE TABLE `board`.`operation` (
         `id` INT NOT NULL AUTO_INCREMENT,
-        `creation_time` datetime DEFAULT NULL,
-        `update_time` datetime DEFAULT NULL,
+        `creation_time` timestamp DEFAULT NULL,
+        `update_time` timestamp DEFAULT NULL,
         `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
         `project_name` VARCHAR(255) DEFAULT '',
         `project_id` INT DEFAULT 0,

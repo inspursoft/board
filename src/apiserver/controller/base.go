@@ -73,9 +73,6 @@ func (b *BaseController) recordOperationAudit() {
 	operation.Action = service.GetOperationAction(b.Ctx)
 	operation.Path = b.Ctx.Input.URL()
 	operation.ObjectType = objectType
-	operation.ObjectName = ""
-	operation.ProjectID = 0
-	operation.ProjectName = ""
 	operation.Status = model.Unknown
 
 	err := service.CreateOperationAudit(&operation)
