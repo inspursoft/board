@@ -162,9 +162,9 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
   }
 
   forward(): void {
-    this.k8sService.setServiceConfig(this.uiData.uiToServer()).then(() => {
-      this.k8sService.stepSource.next({index: 6, isBack: false});
-    });
+    this.k8sService.setServiceConfig(this.uiData.uiToServer())
+      .then(() => this.k8sService.stepSource.next({index: 6, isBack: false}))
+      .catch((err: HttpErrorResponse) => this.messageService.dispatchError(err,err.error.message))
   }
 
   backUpStep(): void {
