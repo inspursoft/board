@@ -85,3 +85,8 @@ a.cs-input-array-icon {
 span.asterisk {
   color: #FF0000;
 }
+
+input::placeholder {
+  color: darkgray;
+  font-size: 14px;
+}
