@@ -104,7 +104,7 @@ func (p *ProjectController) GetProjectsAction() {
 
 	pageIndex, _ := p.GetInt("page_index", 0)
 	pageSize, _ := p.GetInt("page_size", 0)
-	orderField := p.GetString("order_field", "CREATE_TIME")
+	orderField := p.GetString("order_field", "creation_time")
 	orderAsc, _ := p.GetInt("order_asc", 0)
 
 	query := model.Project{Name: projectName, OwnerName: p.currentUser.Username, Public: 0}

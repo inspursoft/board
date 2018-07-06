@@ -254,7 +254,7 @@ func (p *ServiceController) GetServiceListAction() {
 	serviceName := p.GetString("service_name")
 	pageIndex, _ := p.GetInt("page_index", 0)
 	pageSize, _ := p.GetInt("page_size", 0)
-	orderField := p.GetString("order_field", "CREATE_TIME")
+	orderField := p.GetString("order_field", "creation_time")
 	orderAsc, _ := p.GetInt("order_asc", 0)
 	if pageIndex == 0 && pageSize == 0 {
 		serviceStatus, err := service.GetServiceList(serviceName, p.currentUser.ID)

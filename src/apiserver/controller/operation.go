@@ -41,7 +41,7 @@ func (o *OperationController) OperationList() {
 	}
 	pageIndex, _ := o.GetInt("page_index", 1)
 	pageSize, _ := o.GetInt("page_size", 10)
-	orderField := o.GetString("order_field", "CREATION_TIME") //默认以creation_time排序
+	orderField := o.GetString("order_field", "creation_time")
 	orderAsc, _ := o.GetInt("order_asc", 0)
 
 	paginatedoperations, err := service.GetPaginatedOperationList(optparam, pageIndex, pageSize, orderField, orderAsc)

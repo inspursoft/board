@@ -62,13 +62,17 @@ func (b *BaseController) Prepare() {
 }
 
 func (b *BaseController) recordOperationAudit() {
+	objectType := service.GetOperationObjectType(b.Ctx)
+	if objectType == service.DashboardType {
+		return
+	}
 	//record data about operation
 	var operation model.Operation
 	operation.UserID = b.currentUser.ID
 	operation.UserName = b.currentUser.Username
 	operation.Action = service.GetOperationAction(b.Ctx)
 	operation.Path = b.Ctx.Input.URL()
-	operation.ObjectType = service.GetOperationObjectType(b.Ctx)
+	operation.ObjectType = objectType
 	operation.ObjectName = ""
 	operation.ProjectID = 0
 	operation.ProjectName = ""
