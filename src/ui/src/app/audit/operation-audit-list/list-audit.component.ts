@@ -6,8 +6,6 @@ import { OperationAuditService } from "../audit-service";
 import { HttpErrorResponse } from "@angular/common/http";
 import { User } from "../../user-center/user";
 
-const MILLISECOND_OF_DAY = 24 * 60 * 60 * 1000;
-const MILLISECOND_OF_DAY_LESS = 24 * 60 * 60 * 1000 - 1000;
 @Component({
   selector: 'list-audit',
   templateUrl: './list-audit.component.html',
@@ -27,12 +25,12 @@ export class ListAuditComponent implements OnInit {
   actionQueryMap: Array<{ key: string, title: string, isSpecial?: boolean }>;
   actionStatusMap: Array<{ key: string, title: string, isSpecial?: boolean }>;
 
+
   constructor(private messageService: MessageService,
               private auditService: OperationAuditService) {
-    let now: Date = new Date(Date.now());
-    let yesterday: Date = new Date(Date.now() - MILLISECOND_OF_DAY);
-    this.endDate = new Date(new Date(now.getDate()).getTime() + MILLISECOND_OF_DAY_LESS);
-    this.beginDate = new Date(yesterday.getDate());
+    let now: Date = new Date();
+    this.beginDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+    this.endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 0);
     this.auditsListData = Array<Audit>();
     this.userNames = Array<User>();
     this.auditQueryData = new AuditQueryData();
@@ -109,8 +107,8 @@ export class ListAuditComponent implements OnInit {
     this.auditQueryData.user_name = user.user_name == "AUDIT.ALL" ? "" : user.user_name;
   }
 
-  changeEndData(event:Date){
-    this.endDate = new Date(event.getTime() + MILLISECOND_OF_DAY_LESS);
+  changeEndData(event: Date) {
+    this.endDate = new Date(event.getFullYear(), event.getMonth(), event.getDate(), 23, 59, 59, 0);
   }
 
   retrieve(state: ClrDatagridStateInterface): void {

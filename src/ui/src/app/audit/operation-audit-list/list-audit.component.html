@@ -35,7 +35,6 @@
       <input title="" class="date-time" type="date" clrDate [(clrDate)]="beginDate">
       <label class="query-title custom-margin">{{"AUDIT.END" | translate}}:</label>
       <input title="" class="date-time" type="date" clrDate [clrDate]="endDate" (clrDateChange)="changeEndData($event)">
-      <span style="margin-left: auto">{{beginDate | date:'yyyy-MM-dd HH:mm:ss' }}=>{{endDate | date:'yyyy-MM-dd HH:mm:ss' }}</span>
     </div>
   </div>
   <button [disabled]="isInLoading" class="btn btn-primary" (click)="queryListData()">
