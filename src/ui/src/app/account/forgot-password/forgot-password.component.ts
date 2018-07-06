@@ -14,8 +14,8 @@ import { AppInitService } from "../../app.init.service";
   styleUrls: ['./forgot-password.component.css']
 })
 export class ForgotPasswordComponent implements OnInit, OnDestroy {
-  private credential: string = "";
-  private sendRequestWIP: boolean = false;
+  credential: string = "";
+  sendRequestWIP: boolean = false;
   protected confirmSubscription: Subscription;
 
   constructor(

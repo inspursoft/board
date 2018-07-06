@@ -16,8 +16,8 @@ import {ParamMap} from "@angular/router/src/shared";
   styleUrls: ['./reset-password.component.css']
 })
 export class ResetPasswordComponent implements OnInit {
-  private resetUuid: string;
-  private signUpModel: SignUp = new SignUp();
+  resetUuid: string;
+  signUpModel: SignUp = new SignUp();
   private confirmSubscription: Subscription;
 
   constructor(
