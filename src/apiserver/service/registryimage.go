@@ -19,13 +19,13 @@ const (
 
 func getCustomHeader() http.Header {
 	return http.Header{
-		"Accecpt": []string{"application/vnd.docker.distribution.manifest.v2+json"},
+		"Accept": []string{"application/vnd.docker.distribution.manifest.v2+json"},
 	}
 }
 
 func requestAndUnmarshal(method, specifiedURL string, target interface{}, reqHeader http.Header) (r *http.Response, err error) {
 	utils.RequestHandle(method, specifiedURL, func(req *http.Request) error {
-		req.Header = getCustomHeader()
+		req.Header = reqHeader
 		return nil
 	}, nil, func(req *http.Request, resp *http.Response) error {
 		if target != nil {
