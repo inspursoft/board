@@ -31,9 +31,8 @@ export class ListAuditComponent implements OnInit {
               private auditService: OperationAuditService) {
     let now: Date = new Date(Date.now());
     let yesterday: Date = new Date(Date.now() - MILLISECOND_OF_DAY);
-    let rmTime = (date: Date): number => date.getTime() - date.getHours() * 60 * 60 * 1000 - date.getMinutes() * 60 * 1000 - date.getSeconds() * 1000;
-    this.endDate = new Date(rmTime(now) + MILLISECOND_OF_DAY_LESS);
-    this.beginDate = new Date(rmTime(yesterday));
+    this.endDate = new Date(new Date(now.getDate()).getTime() + MILLISECOND_OF_DAY_LESS);
+    this.beginDate = new Date(yesterday.getDate());
     this.auditsListData = Array<Audit>();
     this.userNames = Array<User>();
     this.auditQueryData = new AuditQueryData();
@@ -124,8 +123,8 @@ export class ListAuditComponent implements OnInit {
   queryListData() {
     setTimeout(() => {
       this.isInLoading = true;
-      this.auditQueryData.beginDateTamp = this.beginDate ? this.beginDate.getTime() : 0;
-      this.auditQueryData.endDateTamp = this.endDate ? this.endDate.getTime() : 0;
+      this.auditQueryData.beginTimestamp = this.beginDate ? this.beginDate.getTime() : 0;
+      this.auditQueryData.endTimestamp = this.endDate ? this.endDate.getTime() : 0;
       this.auditService.getAuditList(this.auditQueryData).subscribe(paginatedProjects => {
         this.totalRecordCount = paginatedProjects.pagination.total_count;
         this.auditsListData = paginatedProjects['operation_list'];

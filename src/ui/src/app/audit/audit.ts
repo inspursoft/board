@@ -24,8 +24,8 @@ export class AuditQueryData {
   public pageSize: number = 15;
   public sortBy: string = "";
   public isReverse: boolean = false;
-  public endDateTamp: number = 0;
-  public beginDateTamp: number = 0;
+  public endTimestamp: number = 0;
+  public beginTimestamp: number = 0;
   public status: string = "";
   public user_name: string = "";
   public action: string = "";
