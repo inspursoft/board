@@ -44,11 +44,11 @@
            (click)="navigateTo('/images')">
           {{ 'SIDE_NAV.IMAGES' | translate }}
         </a>
-        <a *ngIf="isSystemAdmin" href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']"
+        <a  href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']"
            routerLink="/user-center" (click)="navigateTo('/user-center')">
           {{ 'SIDE_NAV.ADMIN_OPTIONS' | translate }}
         </a>
-        <a *ngIf="isSystemAdmin" href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']"
+        <a  href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']"
            routerLink="/audit" (click)="navigateTo('/audit')">
           {{ 'SIDE_NAV.AUDIT' | translate }}
         </a>
@@ -64,8 +64,8 @@
     </nav>
     <div class="content-area">
       <confirmation-dialog></confirmation-dialog>
-      <router-outlet></router-outlet>
       <inline-alert></inline-alert>
+      <router-outlet></router-outlet>
     </div>
   </div>
   <div *ngIf="isOnlyShowGrafanaView" style="height: 100%; padding: 0;margin: 0;scrollbar-base-color: blue">
