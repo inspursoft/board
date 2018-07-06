@@ -32,8 +32,8 @@ type OperationParam struct {
 	User     string
 	Object   string
 	Status   string
-	Fromdate string
-	Todate   string
+	Fromdate int64
+	Todate   int64
 }
 
 const (
