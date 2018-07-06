@@ -35,6 +35,7 @@ def render(src, dest, **kw):
     t = Template(open(src, 'r').read())
     with open(dest, 'w') as f:
         f.write(t.substitute(**kw))
+    os.chmod(dest, 0755)
     print("Generated configuration file: %s" % dest)
 
 def delfile(src):
