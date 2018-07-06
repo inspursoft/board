@@ -68,6 +68,7 @@ func (e *EmailController) send(to []string, subject string, content string) {
 	if err := service.SendMail(from, to, subject, content); err != nil {
 		logs.Error("Failed to send email to error: %+v", err)
 		e.internalError(err)
+		return
 	}
 }
 

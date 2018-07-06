@@ -27,7 +27,10 @@ func (n *NodeGroupController) GetNodeGroupsAction() {
 func (n *NodeGroupController) AddNodeGroupAction() {
 	var reqNodeGroup model.NodeGroup
 	var err error
-	n.resolveBody(&reqNodeGroup)
+	err = n.resolveBody(&reqNodeGroup)
+	if err != nil {
+		return
+	}
 
 	if reqNodeGroup.GroupName == "" {
 		n.customAbort(http.StatusBadRequest, "NodeGroup Name should not null")

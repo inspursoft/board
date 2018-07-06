@@ -12,13 +12,6 @@ import (
 	"time"
 
 	"github.com/astaxie/beego/logs"
-	//"k8s.io/client-go/kubernetes"
-	//modelK8s "k8s.io/client-go/pkg/api/v1"
-	//modelK8sExt "k8s.io/client-go/pkg/apis/extensions/v1beta1"
-	//"k8s.io/client-go/pkg/api/resource"
-	//"k8s.io/client-go/pkg/api/v1"
-	//"k8s.io/client-go/rest"
-	//apiCli "k8s.io/client-go/tools/clientcmd/api"
 )
 
 const (
@@ -66,6 +59,28 @@ func ConfigureTest(config *model.ServiceConfig) error {
 
 func Deploy(config *model.ServiceConfig) error {
 	config.Phase = "CONFIGURE_DEPLOY"
+	return nil
+}
+
+func CreateOperationAudit(operation *model.Operation) error {
+	operationID, err := dao.AddOperation(*operation)
+	if err != nil {
+		return err
+	}
+	operation.ID = operationID
+	return nil
+}
+
+func UpdateOperationAuditStatus(operationID int64, status string, project *model.Project) error {
+	operation := model.Operation{ID: operationID, Status: status}
+	if project != nil {
+		operation.ProjectID = project.ID
+		operation.ProjectName = project.Name
+	}
+	_, err := dao.UpdateOperation(operation, "status", "project_id", "project_name")
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

@@ -15,9 +15,13 @@ type ServiceRollingUpdateController struct {
 }
 
 func (p *ServiceRollingUpdateController) GetRollingUpdateServiceImageConfigAction() {
-	serviceConfig := p.getServiceConfig()
+	serviceConfig, err := p.getServiceConfig()
+	if err != nil {
+		return
+	}
 	if len(serviceConfig.Spec.Template.Spec.Containers) < 1 {
 		p.customAbort(http.StatusBadRequest, "Requested service's config is invalid.")
+		return
 	}
 
 	var imageList []model.ImageIndex
@@ -32,7 +36,7 @@ func (p *ServiceRollingUpdateController) GetRollingUpdateServiceImageConfigActio
 	p.renderJSON(imageList)
 }
 
-func (p *ServiceRollingUpdateController) getServiceConfig() (deploymentConfig *model.Deployment) {
+func (p *ServiceRollingUpdateController) getServiceConfig() (deploymentConfig *model.Deployment, err error) {
 	projectName := p.GetString("project_name")
 	p.resolveProjectMember(projectName)
 
@@ -56,14 +60,22 @@ func (p *ServiceRollingUpdateController) getServiceConfig() (deploymentConfig *m
 	return
 }
 
+/*
 func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceImageAction() {
 
 	var imageList []model.ImageIndex
-	p.resolveBody(&imageList)
+	err := p.resolveBody(&imageList)
+	if err != nil {
+		return
+	}
 
-	serviceConfig := p.getServiceConfig()
+	serviceConfig, err := p.getServiceConfig()
+	if err != nil {
+		return
+	}
 	if len(serviceConfig.Spec.Template.Spec.Containers) != len(imageList) {
 		p.customAbort(http.StatusConflict, "Image's config is invalid.")
+		return
 	}
 
 	var rollingUpdateConfig model.Deployment
@@ -82,9 +94,47 @@ func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceImageAction() 
 	}
 	p.PatchServiceAction(&rollingUpdateConfig)
 }
+*/
+func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceImageAction() {
+
+	var imageList []model.ImageIndex
+	err := p.resolveBody(&imageList)
+	if err != nil {
+		return
+	}
+
+	serviceConfig, err := p.getServiceConfig()
+	if err != nil {
+		return
+	}
+	if len(serviceConfig.Spec.Template.Spec.Containers) != len(imageList) {
+		p.customAbort(http.StatusConflict, "Image's config is invalid.")
+	}
+
+	//var rollingUpdateConfig model.Deployment
+	var rollingUpdateConfig model.PodSpec
+	for index, container := range serviceConfig.Spec.Template.Spec.Containers {
+		image := registryBaseURI() + "/" + imageList[index].ImageName + ":" + imageList[index].ImageTag
+		if serviceConfig.Spec.Template.Spec.Containers[index].Image != image {
+			rollingUpdateConfig.Containers = append(rollingUpdateConfig.Containers, model.K8sContainer{
+				Name:  container.Name,
+				Image: image,
+			})
+		}
+	}
+	if len(rollingUpdateConfig.Containers) == 0 {
+		logs.Info("Nothing to be updated")
+		return
+	}
+	serviceConfig.Spec.Template.Spec = rollingUpdateConfig
+	p.PatchServiceAction(serviceConfig)
+}
 
 func (p *ServiceRollingUpdateController) GetRollingUpdateServiceNodeGroupConfigAction() {
-	serviceConfig := p.getServiceConfig()
+	serviceConfig, err := p.getServiceConfig()
+	if err != nil {
+		return
+	}
 	for key, value := range serviceConfig.Spec.Template.Spec.NodeSelector {
 		if key == "kubernetes.io/hostname" {
 			p.renderJSON(value)
@@ -98,8 +148,12 @@ func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceNodeGroupActio
 	nodeGroup := p.GetString("node_selector")
 	if nodeGroup == "" {
 		p.customAbort(http.StatusBadRequest, "nodeGroup is empty.")
+		return
 	}
-	rollingUpdateConfig := p.getServiceConfig()
+	rollingUpdateConfig, err := p.getServiceConfig()
+	if err != nil {
+		return
+	}
 	nodeGroupExists, err := service.NodeGroupExists(nodeGroup)
 	if err != nil {
 		p.internalError(err)
