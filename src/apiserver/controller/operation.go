@@ -5,7 +5,6 @@ import (
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
-	"time"
 
 	"github.com/astaxie/beego/logs"
 )
@@ -25,20 +24,13 @@ func (o *OperationController) OperationList() {
 		o.customAbort(http.StatusPreconditionFailed, "Current AUTH_MODE is not available to the user.")
 		return
 	}
-	var base_format = "2006-01-02 15:04:05"
 	var optparam model.OperationParam
 	optparam.Action = o.GetString("operation_action")
 	optparam.User = o.GetString("operation_user")
 	optparam.Object = o.GetString("operation_object")
 	optparam.Status = o.GetString("operation_status")
-	starttime, _ := o.GetInt64("operation_fromdate", 0)
-	totime, _ := o.GetInt64("operation_todate", 0)
-	if starttime != 0 {
-		optparam.Fromdate = time.Unix(starttime/1000, 0).Format(base_format)
-	}
-	if totime != 0 {
-		optparam.Todate = time.Unix(totime/1000, 0).Format(base_format)
-	}
+	optparam.Fromdate, _ = o.GetInt64("operation_fromdate", 0)
+	optparam.Todate, _ = o.GetInt64("operation_todate", 0)
 	pageIndex, _ := o.GetInt("page_index", 1)
 	pageSize, _ := o.GetInt("page_size", 10)
 	orderField := o.GetString("order_field", "creation_time")

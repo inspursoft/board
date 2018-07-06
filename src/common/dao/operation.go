@@ -93,7 +93,6 @@ func generateOperationSQL(query model.OperationParam) (string, []interface{}) {
 	sql := `select * from operation o where 1 = 1 `
 
 	params := make([]interface{}, 0)
-	params = append(params)
 
 	if query.Object != "" {
 		params = append(params, "%"+query.Object+"%")
@@ -111,13 +110,15 @@ func generateOperationSQL(query model.OperationParam) (string, []interface{}) {
 		params = append(params, "%"+query.Status+"%")
 		sql += ` and o.status like ? `
 	}
-	if query.Fromdate != "" {
-		params = append(params, query.Fromdate)
-		sql += ` and o.creation_time >= ? `
+	if query.Fromdate != 0 {
+		fromData := time.Unix(query.Fromdate, 0).Format("2006-01-02 15:04:05")
+		params = append(params, fromData)
+		sql += ` and o.creation_time >= str_to_date(?,"%Y-%m-%d %H:%i:%s") `
 	}
-	if query.Todate != "" {
-		params = append(params, query.Todate)
-		sql += ` and o.creation_time <= ? `
+	if query.Todate != 0 {
+		toDate := time.Unix(query.Todate, 0).Format("2006-01-02 15:04:05")
+		params = append(params, toDate)
+		sql += ` and o.creation_time <= str_to_date(?,"%Y-%m-%d %H:%i:%s") `
 	}
 
 	return sql, params
