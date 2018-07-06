@@ -3,7 +3,6 @@ package dao
 import (
 	"fmt"
 	"git/inspursoft/board/src/common/utils"
-	"strings"
 
 	"git/inspursoft/board/src/common/model"
 
@@ -42,7 +41,7 @@ func getTotalRecordCount(baseSQL string, params []interface{}) (int64, error) {
 
 func getOrderSQL(orderField string, orderAsc int) string {
 	if orderAsc != 0 {
-		return fmt.Sprintf(` order by %s`, strings.ToUpper(orderField))
+		return fmt.Sprintf(` order by %s`, orderField)
 	}
-	return fmt.Sprintf(` order by %s desc`, strings.ToUpper(orderField))
+	return fmt.Sprintf(` order by %s desc`, orderField)
 }

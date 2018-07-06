@@ -28,7 +28,7 @@ func (u *UserController) GetUsersAction() {
 	pageIndex, _ := u.GetInt("page_index", 0)
 	pageSize, _ := u.GetInt("page_size", 0)
 	isPaginated := !(pageIndex == 0 && pageSize == 0)
-	orderField := u.GetString("order_field", "CREATE_TIME")
+	orderField := u.GetString("order_field", "creation_time")
 	orderAsc, _ := u.GetInt("order_asc", 0)
 
 	var paginatedUsers *model.PaginatedUsers
