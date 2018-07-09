@@ -3,6 +3,7 @@ package dao
 import (
 	"fmt"
 	"git/inspursoft/board/src/common/model"
+	"strings"
 	"time"
 
 	"github.com/astaxie/beego/logs"
@@ -94,8 +95,9 @@ func GetPaginatedUsers(field string, value interface{}, pageIndex int, pageSize 
 }
 
 func getOrderExprs(orderField string, orderAsc int) string {
+	orderStr := fmt.Sprintf("user_%s", strings.TrimSpace(orderField))
 	if orderAsc != 0 {
-		return orderField
+		return orderStr
 	}
-	return fmt.Sprintf(`-%s`, orderField)
+	return fmt.Sprintf(`-%s`, orderStr)
 }

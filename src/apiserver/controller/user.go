@@ -18,7 +18,6 @@ type UserController struct {
 
 func (u *UserController) Prepare() {
 	u.resolveSignedInUser()
-	u.recordOperationAudit()
 	u.isExternalAuth = utils.GetBoolValue("IS_EXTERNAL_AUTH")
 }
 

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"git/inspursoft/board/src/common/model"
 	"net/http"
 	"strings"
 
@@ -27,6 +28,24 @@ const (
 	GetMethod    = "get"
 	OtherMethod  = ""
 )
+
+func ParseOperationAudit(ctx *context.Context) (operation *model.Operation) {
+	objectType := GetOperationObjectType(ctx)
+	if objectType == DashboardType {
+		return
+	}
+	if objectType == SignType {
+		//prase ctx to get user info
+		objectType = UserType
+	} else {
+		operation.UserName = "anonymous"
+	}
+	operation.Action = GetOperationAction(ctx)
+	operation.Path = ctx.Input.URL()
+	operation.ObjectType = objectType
+	operation.Status = model.Unknown
+	return nil
+}
 
 func GetOperationObjectType(ctx *context.Context) string {
 	url := ctx.Input.URL()
@@ -63,7 +82,7 @@ func GetOperationAction(ctx *context.Context) string {
 	method := strings.ToUpper(ctx.Input.Method())
 
 	switch {
-	case strings.EqualFold(method, http.MethodPatch):
+	case strings.EqualFold(method, http.MethodPost):
 		return CreateMethod
 	case strings.EqualFold(method, http.MethodDelete):
 		return DeleteMethod

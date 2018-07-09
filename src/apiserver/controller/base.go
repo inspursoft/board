@@ -58,24 +58,19 @@ type BaseController struct {
 
 func (b *BaseController) Prepare() {
 	b.resolveSignedInUser()
-	b.recordOperationAudit()
 }
 
 func (b *BaseController) recordOperationAudit() {
-	objectType := service.GetOperationObjectType(b.Ctx)
-	if objectType == service.DashboardType {
+	//record data about operation
+	operation := service.ParseOperationAudit(b.Ctx)
+	if operation == nil {
 		return
 	}
-	//record data about operation
-	var operation model.Operation
-	operation.UserID = b.currentUser.ID
-	operation.UserName = b.currentUser.Username
-	operation.Action = service.GetOperationAction(b.Ctx)
-	operation.Path = b.Ctx.Input.URL()
-	operation.ObjectType = objectType
-	operation.Status = model.Unknown
-
-	err := service.CreateOperationAudit(&operation)
+	if b.currentUser != nil {
+		operation.UserID = b.currentUser.ID
+		operation.UserName = b.currentUser.Username
+	}
+	err := service.CreateOperationAudit(operation)
 	if err != nil {
 		logs.Error("Failed to create operation Audit. Error:%+v", err)
 		return
@@ -83,7 +78,7 @@ func (b *BaseController) recordOperationAudit() {
 	b.operationID = operation.ID
 }
 
-func (b *BaseController) Finish() {
+func (b *BaseController) updateOperationAudit() {
 	if b.operationID == 0 {
 		return
 	}
