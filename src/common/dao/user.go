@@ -95,7 +95,7 @@ func GetPaginatedUsers(field string, value interface{}, pageIndex int, pageSize 
 }
 
 func getOrderExprs(orderField string, orderAsc int) string {
-	orderStr := fmt.Sprintf("user_%s", strings.TrimSpace(orderField))
+	orderStr := strings.ToLower(orderField)
 	if orderAsc != 0 {
 		return orderStr
 	}
