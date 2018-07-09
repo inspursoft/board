@@ -22,6 +22,8 @@
                    [dropdownListTextKey]="'title'"
                    (onChange)="changeStatusQuery($event)">
       </cs-dropdown>
+    </div>
+    <div class="line-container">
       <label class="query-title">{{"AUDIT.USER" | translate}}:</label>
       <cs-dropdown [dropdownDefaultText]="'AUDIT.SELECT_USER'| translate"
                    [dropdownWidth]="200"
@@ -29,8 +31,6 @@
                    [dropdownListTextKey]="'user_name'"
                    (onChange)="changeUsernameQuery($event)">
       </cs-dropdown>
-    </div>
-    <div class="line-container">
       <label class="query-title">{{"AUDIT.BEGIN" | translate}}:</label>
       <input title="" class="date-time" type="date" clrDate [(clrDate)]="beginDate">
       <label class="query-title custom-margin">{{"AUDIT.END" | translate}}:</label>
