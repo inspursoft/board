@@ -28,7 +28,6 @@ type FileUploadController struct {
 
 func (f *FileUploadController) Prepare() {
 	f.resolveSignedInUser()
-	f.recordOperationAudit()
 	f.resolveFilePath()
 }
 

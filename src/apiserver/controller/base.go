@@ -60,44 +60,6 @@ func (b *BaseController) Prepare() {
 	b.resolveSignedInUser()
 }
 
-func (b *BaseController) recordOperationAudit() {
-	//record data about operation
-	operation := service.ParseOperationAudit(b.Ctx)
-	if operation == nil {
-		return
-	}
-	if b.currentUser != nil {
-		operation.UserID = b.currentUser.ID
-		operation.UserName = b.currentUser.Username
-	}
-	err := service.CreateOperationAudit(operation)
-	if err != nil {
-		logs.Error("Failed to create operation Audit. Error:%+v", err)
-		return
-	}
-	b.operationID = operation.ID
-}
-
-func (b *BaseController) updateOperationAudit() {
-	if b.operationID == 0 {
-		return
-	}
-	//Update operation result in Mysql
-	var operationStatus string
-	if b.Ctx.Output.Status < 400 {
-		operationStatus = model.Success
-	} else if b.Ctx.Output.Status < 500 {
-		operationStatus = model.Failed
-	} else {
-		operationStatus = model.Error
-	}
-	err := service.UpdateOperationAuditStatus(b.operationID, operationStatus, b.project)
-	if err != nil {
-		logs.Error("Failed to update operation Audit. Error:%+v", err)
-		return
-	}
-}
-
 func (b *BaseController) Render() error {
 	return nil
 }
