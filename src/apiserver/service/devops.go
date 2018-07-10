@@ -66,7 +66,7 @@ node('slave') {
        echo "--------------------------------"
        sleep 3
     '''
-    nodeName = sh(returnStdout: true, script: "curl http://${jenkins_host_ip}:8899/register-job?job_name=${JOB_NAME} -X POST").trim()
+    nodeName = sh(returnStdout: true, script: "curl http://${jenkins_node_ip}:8899/register-job?job_name=${JOB_NAME} -X POST").trim()
   }
 }
  
