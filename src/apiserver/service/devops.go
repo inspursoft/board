@@ -62,14 +62,15 @@ node('slave') {
   stage('add kvm node') {
     sh '''
        cd /data/jenkins_node/kvm
-       python addnode.py "http://${jenkins_host_ip}:${jenkins_host_port}"
+       python kvmnode.py "http://${jenkins_host_ip}:${jenkins_host_port}" "${JOB_NAME}" "http://${jenkins_node_ip}:8899" 
        echo "--------------------------------"
        sleep 3
     '''
+    nodeName = sh(returnStdout: true, script: "curl http://${jenkins_host_ip}:8899/register-job?job_name=${JOB_NAME} -X POST").trim()
   }
 }
  
-node('kvmNode') {
+node(nodeName) {
   stage('kvmNode run ......') {
     git "${base_repo_url}"
     sh '''
@@ -83,7 +84,7 @@ node('slave') {
   stage('delete node') {
     sh '''
       cd /data/jenkins_node/kvm
-      python deletenode.py "http://${jenkins_host_ip}:${jenkins_host_port}"
+      python deletenode.py "http://${jenkins_host_ip}:${jenkins_host_port}" "${JOB_NAME}" "http://${jenkins_node_ip}:8899" 
       sleep 3
     '''
   }

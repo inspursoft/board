@@ -5,7 +5,6 @@ import jenkins
 import json
 import time
 import shutil
-import libvirtapi
 import requests
 
 kmvNameList = ['kvm-1', 'kvm-2', 'kvm-3', 'kvm-4']
@@ -159,10 +158,7 @@ def startKVM():
         time.sleep(3)
         print ('KVM exist, while it is not exist will create KVM: %s ' %status)
         status = checkKVM(flagFile)
-    conn = libvirtapi.createConnection()
-    flag = libvirtapi.getDomInfoByName(conn, kvmName)
-    libvirtapi.closeConnection(conn)
-    
+        
     if flag is not 1:
         os.system('virsh destroy %s' %kvmName)
         os.system('virsh undefine %s' %kvmName)

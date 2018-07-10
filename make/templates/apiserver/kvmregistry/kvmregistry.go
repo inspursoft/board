@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"net"
 	"net/http"
 	"os"
 	"strconv"
@@ -210,5 +211,10 @@ func main() {
 	http.HandleFunc("/available-nodes", getAvailableNodes)
 	http.HandleFunc("/nodes", getAllNodes)
 	http.HandleFunc("/release-node", releaseNode)
-	http.ListenAndServe(":"+strconv.Itoa(port), nil)
+
+	l, err := net.Listen("tcp4", ":"+strconv.Itoa(port))
+	if err != nil {
+		log.Fatal(err)
+	}
+	http.Serve(l, nil)
 }

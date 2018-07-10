@@ -3,7 +3,6 @@ import sys
 import commands
 import jenkins
 import time
-import paramiko
 import requests
 
 def deleteJenkinsNode(jenkinsMaster, projectName, kvmApiServer):
