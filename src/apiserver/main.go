@@ -30,6 +30,8 @@ const (
 	baseRepoPath                = "/repos"
 	sshKeyPath                  = "/keys"
 	defaultProject              = "library"
+	kvmToolsPath                = "/root/kvm"
+	kvmRegistryPath             = "/root/kvmregistry"
 )
 
 var gogitsSSHURL = utils.GetConfig("GOGITS_SSH_URL")
@@ -102,7 +104,11 @@ func initProjectRepo() {
 	err = service.CreateRepoAndJob(adminUserID, defaultProject)
 	if err != nil {
 		logs.Error("Failed to create default repo %s: %+v", defaultProject, err)
-		panic(err)
+	}
+
+	err = service.CreateJenkinsfileRepo(adminUserID, "devops-jenkins")
+	if err != nil {
+		logs.Error("Failed to create Jenkinsfile repo: %+v", err)
 	}
 
 	utils.SetConfig("INIT_PROJECT_REPO", "created")
@@ -176,6 +182,9 @@ func main() {
 	utils.SetConfig("BASE_REPO_PATH", baseRepoPath)
 	utils.SetConfig("SSH_KEY_PATH", sshKeyPath)
 
+	utils.SetConfig("KVM_TOOLS_PATH", kvmToolsPath)
+	utils.SetConfig("KVM_REGISTRY_PATH", kvmRegistryPath)
+
 	dao.InitDB()
 
 	controller.InitController()
@@ -202,7 +211,14 @@ func main() {
 	if systemInfo.SyncK8s == "" || utils.GetStringValue("FORCE_INIT_SYNC") == "true" {
 		initDefaultProjects()
 		//already do sync service in sync project
-		//syncServiceWithK8s()
+		// syncServiceWithK8s()
 	}
+
+	err = service.PrepareKVMHost()
+	if err != nil {
+		logs.Error("Failed to prepare KVM host: %+v", err)
+		panic(err)
+	}
+
 	beego.Run(":" + defaultAPIServerPort)
 }

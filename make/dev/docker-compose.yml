@@ -89,6 +89,8 @@ services:
       - ../../tools/swagger/vendors/swagger-ui-2.1.4/dist:/go/bin/swagger:z
       - /data/board/repos:/repos:rw
       - /data/board/keys:/keys:rw
+      - ../config/apiserver/kvm:/root/kvm
+      - ../config/apiserver/kvmregistry:/root/kvmregistry
     env_file:
       - ../config/apiserver/env
     networks:

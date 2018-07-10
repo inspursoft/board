@@ -8,6 +8,7 @@ import (
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"path/filepath"
+	"strconv"
 
 	"github.com/astaxie/beego/logs"
 )
@@ -15,6 +16,13 @@ import (
 var baseRepoPath = utils.GetConfig("BASE_REPO_PATH")
 var gogitsSSHURL = utils.GetConfig("GOGITS_SSH_URL")
 var jenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
+var jenkinsNodeIP = utils.GetConfig("JENKINS_NODE_IP")
+var jenkinsNodeSSHPort = utils.GetConfig("JENKINS_NODE_SSH_PORT")
+var jenkinsNodeUsername = utils.GetConfig("JENKINS_NODE_USERNAME")
+var jenkinsNodePassword = utils.GetConfig("JENKINS_NODE_PASSWORD")
+var jenkinsNodeVolume = utils.GetConfig("JENKINS_NODE_VOLUME")
+var kvmToolsPath = utils.GetConfig("KVM_TOOLS_PATH")
+var kvmRegistryPath = utils.GetConfig("KVM_REGISTRY_PATH")
 
 var defaultJenkinsfile = `properties([
   parameters([string(defaultValue: '', description: '', name: 'base_repo_url', trim: false)]),
@@ -53,7 +61,7 @@ var currentJenkinsFile = `properties([
 node('slave') {
   stage('add kvm node') {
     sh '''
-       cd /home/test/kvm
+       cd /data/jenkins_node/kvm
        python addnode.py "http://${jenkins_host_ip}:${jenkins_host_port}"
        echo "--------------------------------"
        sleep 3
@@ -74,7 +82,7 @@ node('kvmNode') {
 node('slave') {
   stage('delete node') {
     sh '''
-      cd /home/test/kvm
+      cd /data/jenkins_node/kvm
       python deletenode.py "http://${jenkins_host_ip}:${jenkins_host_port}"
       sleep 3
     '''
@@ -294,4 +302,27 @@ func ResolveRepoPath(repoName, username string) (repoPath string) {
 
 func ResolveDockerfileName(imageName, tag string) string {
 	return fmt.Sprintf("Dockerfile.%s_%s", imageName, tag)
+}
+
+func PrepareKVMHost() error {
+	sshPort, _ := strconv.Atoi(jenkinsNodeSSHPort())
+	sshHandler, err := NewSecureShell(jenkinsNodeIP(), sshPort, jenkinsNodeUsername(), jenkinsNodePassword())
+	if err != nil {
+		return err
+	}
+	kvmToolsNodePath := filepath.Join(jenkinsNodeVolume(), "kvm")
+	kvmRegistryNodePath := filepath.Join(jenkinsNodeVolume(), "kvmregistry")
+	err = sshHandler.ExecuteCommand(fmt.Sprintf("mkdir -p %s %s", kvmToolsNodePath, kvmRegistryNodePath))
+	if err != nil {
+		return err
+	}
+	err = sshHandler.SecureCopy(kvmToolsPath(), kvmToolsNodePath)
+	if err != nil {
+		return err
+	}
+	err = sshHandler.SecureCopy(kvmRegistryPath(), kvmRegistryNodePath)
+	if err != nil {
+		return err
+	}
+	return sshHandler.ExecuteCommand(fmt.Sprintf("cd %s && nohup ./kvmregistry > kvmregistry.out 2>&1 &", kvmRegistryNodePath))
 }

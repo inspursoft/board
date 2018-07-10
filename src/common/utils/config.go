@@ -136,6 +136,10 @@ func InitializeDefaultConfig() {
 	AddEnv("JENKINS_HOST_IP")
 	AddEnv("JENKINS_HOST_PORT")
 	AddEnv("JENKINS_NODE_IP")
+	AddEnv("JENKINS_NODE_USERNAME")
+	AddEnv("JENKINS_NODE_PASSWORD")
+	AddEnv("JENKINS_NODE_SSH_PORT")
+	AddEnv("JENKINS_NODE_VOLUME")
 	SetConfig("JENKINS_BASE_URL", "http://%s:%s", "JENKINS_HOST_IP", "JENKINS_HOST_PORT")
 
 	SetConfig("JENKINSFILE_REPO_URL", "http://%s:%s/admin/devops-jenkins.git", "GOGITS_HOST_IP", "GOGITS_HOST_PORT")
