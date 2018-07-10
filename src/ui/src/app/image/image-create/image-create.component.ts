@@ -80,7 +80,6 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   newImageErrMessage: string = "";
   newImageErrReason: string = "";
   consoleText: string = "";
-  processImageSubscription: Subscription;
   uploadCopyToPath: string = "/tmp";
   uploadProgressValue: HttpProgressEvent;
   imageList: Array<Image>;
@@ -89,7 +88,10 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   baseImageSource: number = 1;
   boardRegistry: string = "";
   forceQuitSubscription:Subscription;
+  cancelSubscription:Subscription;
+  processImageSubscription: Subscription;
   cancelButtonDisable = true;
+  isHiddenModal: boolean = false;
 
   constructor(private imageService: ImageService,
               private messageService: MessageService,
@@ -148,9 +150,15 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
         this.onBuildCompleted.emit();
         this.isOpen = false;
       } else if (msg.target == MESSAGE_TARGET.CANCEL_BUILD_IMAGE) {
+        this.isHiddenModal = false;
         this.imageService.cancelConsole(this.projectName).then(() => {
           this.cleanImageConfig();
         });
+      }
+    });
+    this.cancelSubscription = this.messageService.messageCanceled$.subscribe((msg: Message) => {
+      if (msg.target == MESSAGE_TARGET.FORCE_QUIT_BUILD_IMAGE || msg.target == MESSAGE_TARGET.CANCEL_BUILD_IMAGE) {
+        this.isHiddenModal = false;
       }
     })
   }
@@ -175,6 +183,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
 
   ngOnDestroy() {
     this.forceQuitSubscription.unsubscribe();
+    this.cancelSubscription.unsubscribe();
     if (this.processImageSubscription) {
       this.processImageSubscription.unsubscribe();
     }
@@ -290,6 +299,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
       announceMessage.target = MESSAGE_TARGET.CANCEL_BUILD_IMAGE;
       announceMessage.buttons = BUTTON_STYLE.YES_NO;
     }
+    this.isHiddenModal = true;
     this.messageService.announceMessage(announceMessage);
   }
 

@@ -1,4 +1,4 @@
-<clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'lg'" [clrModalClosable]="false" [clrModalPreventClose]="true">
+<clr-modal [hidden]="isHiddenModal" [(clrModalOpen)]="isOpen" [clrModalSize]="'lg'" [clrModalClosable]="false" [clrModalPreventClose]="true">
   <div class="modal-title title-container">
     <span>{{ "IMAGE.CREATE_IMAGE_TITLE" | translate }}</span>
     <button class="close"

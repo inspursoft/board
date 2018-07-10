@@ -29,7 +29,11 @@ import { SharedService } from "./shared.service";
 import { SharedActionService } from "./shared-action.service";
 import { MemberComponent } from "./create-project/member/member.component";
 import { CsHighlightComponent } from "./cs-components-library/cs-highlight/cs-highlight.component";
+import { TimeoutComponent } from "./error-pages/timeout.component/timeout.component";
 import "inspurprism"
+import { BoardLoadingComponent } from "./error-pages/board-loading.component/board-loading.component";
+import { BadGatewayComponent } from "./error-pages/bad-gateway.component/bad-gateway.component";
+
 
 @NgModule({
   imports: [
@@ -82,7 +86,10 @@ import "inspurprism"
     CsGuideComponent,
     CreateProjectComponent,
     CsHighlightComponent,
-    MemberComponent
+    MemberComponent,
+    TimeoutComponent,
+    BoardLoadingComponent,
+    BadGatewayComponent
   ],
   entryComponents: [CreateProjectComponent],
   providers: [

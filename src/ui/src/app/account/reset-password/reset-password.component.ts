@@ -1,14 +1,13 @@
-import {Component, OnInit} from '@angular/core';
-import {AccountService} from "../account.service";
-import {MessageService} from "../../shared/message-service/message.service";
-import {ActivatedRoute, Router} from "@angular/router";
-import {SignUp} from "../sign-up/sign-up";
-import {BUTTON_STYLE, MESSAGE_TARGET} from "../../shared/shared.const";
-import {Message} from "../../shared/message-service/message";
-import {Subscription} from "rxjs/Subscription";
-import {HttpErrorResponse} from "@angular/common/http";
-import {AppInitService} from "../../app.init.service";
-import {ParamMap} from "@angular/router/src/shared";
+import { Component, OnInit } from '@angular/core';
+import { AccountService } from "../account.service";
+import { MessageService } from "../../shared/message-service/message.service";
+import { ActivatedRoute, Router } from "@angular/router";
+import { SignUp } from "../sign-up/sign-up";
+import { BUTTON_STYLE, MESSAGE_TARGET } from "../../shared/shared.const";
+import { Message } from "../../shared/message-service/message";
+import { Subscription } from "rxjs/Subscription";
+import { HttpErrorResponse } from "@angular/common/http";
+import { ParamMap } from "@angular/router/src/shared";
 
 @Component({
   selector: 'reset-password',
@@ -20,13 +19,10 @@ export class ResetPasswordComponent implements OnInit {
   signUpModel: SignUp = new SignUp();
   private confirmSubscription: Subscription;
 
-  constructor(
-    private accountService: AccountService,
-    private messageService: MessageService,
-    private router: Router,
-    private appInitService: AppInitService,
-    private activatedRoute: ActivatedRoute) {
-    this.appInitService.systemInfo = this.activatedRoute.snapshot.data['systeminfo'];
+  constructor(private accountService: AccountService,
+              private messageService: MessageService,
+              private router: Router,
+              private activatedRoute: ActivatedRoute) {
     this.confirmSubscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
       if (msg.target == MESSAGE_TARGET.RESET_PASSWORD) {
         this.router.navigate(['/sign-in']);

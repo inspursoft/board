@@ -6,7 +6,6 @@ import { Message } from "../../shared/message-service/message";
 import { BUTTON_STYLE, MESSAGE_TARGET } from "../../shared/shared.const";
 import { Subscription } from "rxjs/Subscription";
 import { HttpErrorResponse } from "@angular/common/http";
-import { AppInitService } from "../../app.init.service";
 
 @Component({
   selector: 'forgot-password',
@@ -21,10 +20,8 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
   constructor(
     private accountService: AccountService,
     private messageService: MessageService,
-    private appInitService: AppInitService,
     private activatedRoute: ActivatedRoute,
     private router: Router) {
-    this.appInitService.systemInfo = this.activatedRoute.snapshot.data['systeminfo'];
     this.confirmSubscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
       if (msg.target == MESSAGE_TARGET.FORGOT_PASSWORD) {
         this.router.navigate(['/sign-in']);
