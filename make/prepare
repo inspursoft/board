@@ -105,6 +105,8 @@ email_from = rcp.get("configuration", "email_from")
 email_ssl = rcp.get("configuration", "email_ssl")
 ########
 
+audit_debug = rcp.get("configuration", "audit_debug")
+
 ###ldap configuration
 ldap_url = rcp.get("configuration", "ldap_url")
 # this two options are either both set or unset
@@ -199,6 +201,7 @@ render(os.path.join(templates_dir, "apiserver", "env"),
         email_ssl=email_ssl,
         email_from=email_from,
         email_identity=email_identity,
+        audit_debug=audit_debug,
         ldap_url=ldap_url,
         ldap_searchdn =ldap_searchdn, 
         ldap_search_pwd =ldap_search_pwd,

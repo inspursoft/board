@@ -13,9 +13,8 @@ import (
 
 	"strconv"
 
-	"strings"
-
 	"fmt"
+	"strings"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/cache"
@@ -54,10 +53,45 @@ type BaseController struct {
 	project         *model.Project
 	isRemoved       bool
 	operationID     int64
+	auditDebug      bool
+	auditUser       *model.User
 }
 
 func (b *BaseController) Prepare() {
 	b.resolveSignedInUser()
+	b.recordOperationAudit()
+}
+
+func (b *BaseController) Finish() {
+	b.updateOperationAudit()
+}
+
+func (b *BaseController) recordOperationAudit() {
+	b.auditDebug = utils.GetBoolValue("AUDIT_DEBUG")
+	audit := b.Ctx.Request.Header.Get("audit")
+	if audit == "" && b.auditDebug == false {
+		return
+	}
+	//record data about operation
+	operation := service.ParseOperationAudit(b.Ctx)
+	err := service.CreateOperationAudit(&operation)
+	if err != nil {
+		logs.Error("Failed to create operation Audit. Error:%+v", err)
+		return
+	}
+	b.operationID = operation.ID
+}
+
+func (b *BaseController) updateOperationAudit() {
+	if b.operationID == 0 {
+		return
+	}
+
+	err := service.UpdateOperationAuditStatus(b.operationID, b.Ctx.ResponseWriter.Status, b.project, b.currentUser)
+	if err != nil {
+		logs.Error("Failed to update operation Audit. Error:%+v", err)
+		return
+	}
 }
 
 func (b *BaseController) Render() error {
@@ -186,6 +220,7 @@ func (b *BaseController) getCurrentUser() *model.User {
 
 func (b *BaseController) signOff() error {
 	username := b.GetString("username")
+	b.auditUser, _ = service.GetUserByName(username)
 	var err error
 	if token, ok := memoryCache.Get(username).(string); ok {
 		if payload, ok := memoryCache.Get(token).(map[string]interface{}); ok {
