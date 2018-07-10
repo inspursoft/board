@@ -3603,6 +3603,9 @@ paths:
       responses:
         201:
           description: Operation record created successfully.
+          schema:
+            description: The operation record ID.  
+            type: string              
         400:
           description: Unsatisfied with constraints of the operation creation.
         401:

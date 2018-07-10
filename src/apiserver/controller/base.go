@@ -58,49 +58,6 @@ type BaseController struct {
 
 func (b *BaseController) Prepare() {
 	b.resolveSignedInUser()
-	b.recordOperationAudit()
-}
-
-func (b *BaseController) recordOperationAudit() {
-	objectType := service.GetOperationObjectType(b.Ctx)
-	if objectType == service.DashboardType {
-		return
-	}
-	//record data about operation
-	var operation model.Operation
-	operation.UserID = b.currentUser.ID
-	operation.UserName = b.currentUser.Username
-	operation.Action = service.GetOperationAction(b.Ctx)
-	operation.Path = b.Ctx.Input.URL()
-	operation.ObjectType = objectType
-	operation.Status = model.Unknown
-
-	err := service.CreateOperationAudit(&operation)
-	if err != nil {
-		logs.Error("Failed to create operation Audit. Error:%+v", err)
-		return
-	}
-	b.operationID = operation.ID
-}
-
-func (b *BaseController) Finish() {
-	if b.operationID == 0 {
-		return
-	}
-	//Update operation result in Mysql
-	var operationStatus string
-	if b.Ctx.Output.Status < 400 {
-		operationStatus = model.Success
-	} else if b.Ctx.Output.Status < 500 {
-		operationStatus = model.Failed
-	} else {
-		operationStatus = model.Error
-	}
-	err := service.UpdateOperationAuditStatus(b.operationID, operationStatus, b.project)
-	if err != nil {
-		logs.Error("Failed to update operation Audit. Error:%+v", err)
-		return
-	}
 }
 
 func (b *BaseController) Render() error {
