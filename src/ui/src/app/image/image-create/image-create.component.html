@@ -1,4 +1,4 @@
-<clr-modal [hidden]="isHiddenModal" [(clrModalOpen)]="isOpen" [clrModalSize]="'lg'" [clrModalClosable]="false" [clrModalPreventClose]="true">
+<clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'lg'" [clrModalClosable]="false" [clrModalPreventClose]="true">
   <div class="modal-title title-container">
     <span>{{ "IMAGE.CREATE_IMAGE_TITLE" | translate }}</span>
     <button class="close"
@@ -243,5 +243,23 @@
                        [(isOpen)]="isOpenEnvironment"
                        (onConfirm)="setEnvironment($event)">
     </environment-value>
+    <clr-modal [(clrModalOpen)]="cancelInfo.isShow" [clrModalClosable]="false">
+      <h3 class="modal-title">{{ cancelInfo.title | translate }}</h3>
+      <div class="modal-body">
+        <p>{{ cancelInfo.message | translate }}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button"
+                class="btn btn-outline"
+                (click)="cancelInfo.isShow  = false">
+          {{ 'BUTTON.NO' | translate }}
+        </button>
+        <button type="button"
+                class="btn btn-primary"
+                (click)="cancelBuildImageBehavior()">
+          {{ 'BUTTON.YES' | translate }}
+        </button>
+      </div>
+    </clr-modal>
   </div>
 </clr-modal>
