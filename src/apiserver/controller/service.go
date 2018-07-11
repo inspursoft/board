@@ -792,3 +792,58 @@ func (p *ServiceController) GetScaleStatusAction() {
 	}
 	p.renderJSON(scaleStatus)
 }
+
+func (p *ServiceController) DeleteDeployAction() {
+	var err error
+
+	key := p.getKey()
+	configService := NewConfigServiceStep(key)
+
+	//Judge authority
+	p.resolveUserPrivilegeByID(configService.ProjectID)
+
+	// Clean deployment and service
+
+	s := model.ServiceStatus{Name: configService.ServiceName,
+		ProjectName: configService.ProjectName,
+	}
+
+	err = service.CleanDeploymentK8s(&s)
+	if err != nil {
+		logs.Error("Failed to clean deployment %s", s.Name)
+		p.internalError(err)
+		return
+	}
+	err = service.CleanServiceK8s(&s)
+	if err != nil {
+		logs.Error("Failed to clean service %s", s.Name)
+		p.internalError(err)
+		return
+	}
+
+	//Clean data DB if existing
+	serviceData, err := service.GetService(s, "name", "project_name")
+	if serviceData != nil {
+		isSuccess, err := service.DeleteService(serviceData.ID)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+		if !isSuccess {
+			p.customAbort(http.StatusBadRequest, fmt.Sprintf("Failed to delete service with ID: %d", s.ID))
+			return
+		}
+	}
+
+	//delete repo files of the service
+	p.resolveRepoServicePath(s.ProjectName, s.Name)
+	p.removeItemsToRepo(filepath.Join(s.Name, serviceFilename), filepath.Join(s.Name, deploymentFilename))
+
+	//clean the config step
+	err = DeleteConfigServiceStep(key)
+	if err != nil {
+		logs.Debug("Failed to clean the config steps")
+		p.internalError(err)
+		return
+	}
+}
