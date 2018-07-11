@@ -4,9 +4,10 @@
 import { Component, Injector, OnDestroy, OnInit } from "@angular/core"
 import { Subscription } from "rxjs/Subscription";
 import { Message } from "../../shared/message-service/message";
-import { BUTTON_STYLE, MESSAGE_TARGET } from "../../shared/shared.const";
+import { BUTTON_STYLE, MESSAGE_TARGET, MESSAGE_TYPE } from "../../shared/shared.const";
 import { ServiceStepBase } from "../service-step";
 import { PHASE_ENTIRE_SERVICE, ServiceStepPhase, UIServiceStepBase } from "../service-step.component";
+import { HttpErrorResponse } from "@angular/common/http";
 
 @Component({
   templateUrl: "./deploy.component.html",
@@ -65,8 +66,12 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
           this.isDeploySuccess = true;
           this.isInDeployWIP = false;
         })
-        .catch(err => {
-          this.messageService.dispatchError(err,"",true);
+        .catch((err: HttpErrorResponse) => {
+          let msg = new Message();
+          msg.type = MESSAGE_TYPE.SHOW_DETAIL;
+          msg.message = (typeof err.error == "object") ? (err.error as Error).message : err.error;
+          msg.errorObject = err;
+          this.messageService.globalMessage(msg);
           this.isDeploySuccess = false;
           this.isInDeployWIP = false;
         })
