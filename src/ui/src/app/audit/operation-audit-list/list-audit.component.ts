@@ -48,7 +48,6 @@ export class ListAuditComponent implements OnInit {
 
   initObjectQueryMap() {
     this.objectQueryMap.push({key: "ALL", title: "AUDIT.ALL", isSpecial: true});
-    this.objectQueryMap.push({key: "sign", title: "AUDIT.AUDIT_SIGN"});
     this.objectQueryMap.push({key: "user", title: "AUDIT.AUDIT_USER"});
     this.objectQueryMap.push({key: "dashboard", title: "AUDIT.AUDIT_DASHBOARD"});
     this.objectQueryMap.push({key: "nodegroup", title: "AUDIT.AUDIT_NODEGROUP"});

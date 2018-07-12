@@ -131,7 +131,7 @@
               role="tooltip"
               class="tooltip tooltip-validation tooltip-md"
               [class.invalid]="realnameInput.invalid && realnameInput.touched">
-          <input [disabled]="CurEditModel == 1" type="text" id="txtRealname"
+          <input type="text" id="txtRealname"
               name="realname"
               [(ngModel)]="userModel.user_realname"
               #realnameInput="ngModel">
@@ -142,7 +142,7 @@
           <label for="txtComment" aria-haspopup="true" role="tooltip"
                  class="tooltip tooltip-validation tooltip-md tooltip-top-left "
                  [class.invalid]="commentInput.invalid && commentInput.touched">
-          <input [disabled]="CurEditModel == 1" type="text"
+          <input type="text"
                    id="txtComment"
                    name="comment"
                    [(ngModel)]="userModel.user_comment"
@@ -154,12 +154,12 @@
           <label><span class="asterisk">*</span>{{ 'USER_CENTER.REQUIRED_ITEMS' | translate }}</label>
         </div>
         <div class="form-group">
-          <button [hidden]="CurEditModel == 1" type="submit"
+          <button type="submit"
                   class="btn btn-primary"
                   [disabled]="!signUpForm.valid || isAlertOpen">
             {{ActionCaption | translate }}
           </button>
-          <button [hidden]="CurEditModel == 1" type="button"
+          <button type="button"
                   class="btn btn-default"
                   (click)="isOpen = false">
             {{'USER_CENTER.CANCEL' | translate}}
