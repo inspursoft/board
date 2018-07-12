@@ -27,7 +27,7 @@ class NodeURL {
 export class ServiceDetailComponent {
   _isOpenServiceDetail: boolean = false;
   boardHost: string;
-  serviceDetail: Object = {};
+  serviceDetail: Object;
   urlList: Array<NodeURL>;
   curService: Service;
   deploymentYamlFile: string = "";
@@ -36,11 +36,9 @@ export class ServiceDetailComponent {
 
   constructor(private appInitService: AppInitService,
               private k8sService: K8sService,
-              private change:ChangeDetectorRef,
               private messageService: MessageService) {
     this.boardHost = this.appInitService.systemInfo['board_host'];
     this.closeNotification = new Subject<any>();
-    this.change.detach();
   }
 
   get isOpenServiceDetail(): boolean {
@@ -85,7 +83,6 @@ export class ServiceDetailComponent {
         });
       }
       this.serviceDetail = res;
-      this.change.reattach();
       this.isOpenServiceDetail = true;
     }).catch(err => {
       this.isOpenServiceDetail = false;
@@ -95,12 +92,8 @@ export class ServiceDetailComponent {
 
   getDeploymentYamlFile() {
     if (this.deploymentYamlFile.length == 0) {
-      this.change.detach();
       this.k8sService.getServiceYamlFile(this.curService.service_project_name, this.curService.service_name, "deployment")
-        .then((res: string) => {
-          this.deploymentYamlFile = res;
-          this.change.reattach();
-        })
+        .then((res: string) => this.deploymentYamlFile = res)
         .catch((err: HttpErrorResponse) => {
           this.isOpenServiceDetail = false;
           this.messageService.dispatchError(err);
@@ -110,12 +103,8 @@ export class ServiceDetailComponent {
 
   getServiceYamlFile() {
     if (this.serviceYamlFile.length == 0) {
-      this.change.detach();
       this.k8sService.getServiceYamlFile(this.curService.service_project_name, this.curService.service_name, "service")
-        .then((res: string) => {
-          this.serviceYamlFile = res;
-          this.change.reattach();
-        })
+        .then((res: string) => this.serviceYamlFile = res)
         .catch((err: HttpErrorResponse) => {
           this.isOpenServiceDetail = false;
           this.messageService.dispatchError(err);

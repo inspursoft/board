@@ -9,7 +9,7 @@
       <clr-tab>
         <button clrTabLink>{{"SERVICE.SERVICE_DETAIL_SERVICE_INFO" | translate}}</button>
         <clr-tab-content *clrIfActive>
-          <cs-highlight [language]="'json'" [code]="serviceDetail | json"></cs-highlight>
+          <cs-highlight *ngIf="serviceDetail" [language]="'json'" [code]="serviceDetail | json"></cs-highlight>
         </clr-tab-content>
       </clr-tab>
       <clr-tab>
@@ -17,7 +17,11 @@
           {{"SERVICE.SERVICE_DETAIL_DEPLOYMENT_FILE" | translate}}
         </button>
         <clr-tab-content  *clrIfActive>
-          <cs-highlight  [language]="'yaml'" [code]="deploymentYamlFile"></cs-highlight>
+          <cs-highlight
+             *ngIf="deploymentYamlFile.length > 0"
+             [language]="'yaml'"
+             [code]="deploymentYamlFile">
+          </cs-highlight>
         </clr-tab-content>
       </clr-tab>
       <clr-tab>
@@ -25,7 +29,7 @@
           {{"SERVICE.SERVICE_DETAIL_SERVICE_FILE" | translate}}
         </button>
         <clr-tab-content *clrIfActive>
-          <cs-highlight [language]="'yaml'" [code]="serviceYamlFile"></cs-highlight>
+          <cs-highlight *ngIf="serviceYamlFile.length > 0" [language]="'yaml'" [code]="serviceYamlFile"></cs-highlight>
         </clr-tab-content>
       </clr-tab>
     </clr-tabs>
