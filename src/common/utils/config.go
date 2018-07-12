@@ -154,6 +154,7 @@ func InitializeDefaultConfig() {
 	AddEnv("EMAIL_SSL")
 	AddEnv("EMAIL_FROM")
 	AddEnv("EMAIL_IDENTITY")
+	AddEnv("AUDIT_DEBUG")
 
 	ShowAllConfigs()
 }

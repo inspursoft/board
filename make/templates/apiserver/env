@@ -31,3 +31,4 @@ GOGITS_HOST_PORT=$gogits_host_port
 GOGITS_SSH_PORT=$gogits_ssh_port
 JENKINS_HOST_IP=$jenkins_host_ip
 JENKINS_HOST_PORT=$jenkins_host_port
+AUDIT_DEBUG=$audit_debug

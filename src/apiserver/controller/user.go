@@ -18,6 +18,7 @@ type UserController struct {
 
 func (u *UserController) Prepare() {
 	u.resolveSignedInUser()
+	u.recordOperationAudit()
 	u.isExternalAuth = utils.GetBoolValue("IS_EXTERNAL_AUTH")
 }
 
@@ -177,6 +178,7 @@ type SystemAdminController struct {
 
 func (u *SystemAdminController) Prepare() {
 	u.resolveSignedInUser()
+	u.recordOperationAudit()
 	if !u.isSysAdmin {
 		u.customAbort(http.StatusForbidden, "Insufficient privileges to manipulate user.")
 		return

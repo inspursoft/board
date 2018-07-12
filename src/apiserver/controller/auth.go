@@ -20,6 +20,7 @@ type AuthController struct {
 
 func (u *AuthController) Prepare() {
 	u.isExternalAuth = utils.GetBoolValue("IS_EXTERNAL_AUTH")
+	u.recordOperationAudit()
 }
 
 func (u *AuthController) processAuth(principal, password string) (string, bool) {
@@ -57,6 +58,7 @@ func (u *AuthController) processAuth(principal, password string) (string, bool) 
 	}
 	memoryCache.Put(user.Username, token.TokenString, time.Second*time.Duration(tokenCacheExpireSeconds))
 	memoryCache.Put(token.TokenString, payload, time.Second*time.Duration(tokenCacheExpireSeconds))
+	u.auditUser, _ = service.GetUserByName(user.Username)
 	return token.TokenString, true
 }
 
@@ -153,6 +155,7 @@ func (u *AuthController) SignUpAction() {
 	if !isSuccess {
 		u.serveStatus(http.StatusBadRequest, "Failed to sign up user.")
 	}
+	u.auditUser, _ = service.GetUserByName(reqUser.Username)
 }
 
 func (u *AuthController) CurrentUserAction() {

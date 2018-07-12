@@ -62,28 +62,6 @@ func Deploy(config *model.ServiceConfig) error {
 	return nil
 }
 
-func CreateOperationAudit(operation *model.Operation) error {
-	operationID, err := dao.AddOperation(*operation)
-	if err != nil {
-		return err
-	}
-	operation.ID = operationID
-	return nil
-}
-
-func UpdateOperationAuditStatus(operationID int64, status string, project *model.Project) error {
-	operation := model.Operation{ID: operationID, Status: status}
-	if project != nil {
-		operation.ProjectID = project.ID
-		operation.ProjectName = project.Name
-	}
-	_, err := dao.UpdateOperation(operation, "status", "project_id", "project_name")
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func CreateServiceConfig(serviceConfig model.ServiceStatus) (*model.ServiceStatus, error) {
 	query := model.Project{Name: serviceConfig.ProjectName}
 	project, err := GetProject(query, "name")
