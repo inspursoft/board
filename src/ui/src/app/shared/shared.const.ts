@@ -34,3 +34,6 @@ export enum GUIDE_STEP{
   SERVICE_LIST,
   CREATE_SERVICE
 }
+
+export const AUDIT_RECORD_HEADER_KEY = "audit";
+export const AUDIT_RECORD_HEADER_VALUE = "true";

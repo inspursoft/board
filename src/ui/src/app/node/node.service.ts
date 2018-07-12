@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Observable } from "rxjs/Observable";
 import "rxjs/add/operator/map"
 import "rxjs/add/operator/repeat"
+import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from "../shared/shared.const";
 
 export interface INode {
   node_name: string;
@@ -53,6 +54,7 @@ export class NodeService {
   toggleNodeStatus(nodeName: string, status: boolean): Observable<HttpResponse<Object>> {
     return this.http
       .get(`/api/v1/node/toggle`, {
+        headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
         observe: "response",
         params: {
           'node_name': nodeName,
@@ -69,13 +71,21 @@ export class NodeService {
 
   addNodeToNodeGroup(nodeName:string,nodeGroupName:string): Observable<Object> {
     return this.http.post<Object>(`/api/v1/node/0/group`, null,
-      {observe: "response", params: {node_name: nodeName,groupname:nodeGroupName}})
+      {
+        headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
+        observe: "response",
+        params: {node_name: nodeName, groupname: nodeGroupName}
+      })
       .map((res: HttpResponse<Object>) => res.body)
   }
 
   deleteNodeToNodeGroup(nodeName:string,nodeGroupName:string): Observable<Object> {
     return this.http.delete<Object>(`/api/v1/node/0/group`,
-      {observe: "response", params: {node_name: nodeName,groupname:nodeGroupName}})
+      {
+        headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
+        observe: "response",
+        params: {node_name: nodeName, groupname: nodeGroupName}
+      })
       .map((res: HttpResponse<Object>) => res.body)
   }
 
@@ -85,12 +95,19 @@ export class NodeService {
   }
 
   addNodeGroup(group: INodeGroup): Observable<HttpResponse<Object>> {
-    return this.http.post(`/api/v1/nodegroup`, group, {observe: "response"})
+    return this.http.post(`/api/v1/nodegroup`, group, {
+      headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
+      observe: "response"
+    })
   }
 
   deleteNodeGroup(groupId: number, nodeGroupName: string): Observable<HttpResponse<Object>> {
     return this.http.delete(`/api/v1/nodegroup/${groupId}`,
-      {observe: "response", params: {groupname: nodeGroupName}})
+      {
+        headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
+        observe: "response",
+        params: {groupname: nodeGroupName}
+      })
   }
 
   checkNodeGroupExist(groupName: string): Observable<HttpResponse<Object>> {

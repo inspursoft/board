@@ -453,7 +453,7 @@ export const LANG_EN_US = {
     "AUDIT_UPDATE": "Update",
     "AUDIT_UNKNOWN": "Unknown",
     "AUDIT_SUCCESS": "Success",
-    "AUDIT_FAIL": "Fail",
+    "AUDIT_FAILED": "Failed",
     "AUDIT_ERROR": "Error"
   },
   "GLOBAL_SEARCH": {

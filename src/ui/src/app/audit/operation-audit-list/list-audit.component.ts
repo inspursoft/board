@@ -72,7 +72,7 @@ export class ListAuditComponent implements OnInit {
     this.actionStatusMap.push({key: "ALL", title: "AUDIT.ALL", isSpecial: true});
     this.actionStatusMap.push({key: "Unknown", title: "AUDIT.AUDIT_UNKNOWN"});
     this.actionStatusMap.push({key: "Success", title: "AUDIT.AUDIT_SUCCESS"});
-    this.actionStatusMap.push({key: "Fail", title: "AUDIT.AUDIT_FAIL"});
+    this.actionStatusMap.push({key: "Failed", title: "AUDIT.AUDIT_FAILED"});
     this.actionStatusMap.push({key: "Error", title: "AUDIT.AUDIT_ERROR"});
   }
 

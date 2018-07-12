@@ -3,18 +3,16 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { AppInitService } from '../app.init.service';
 import { Account } from './account';
 import { CookieService } from "ngx-cookie";
+import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from "../shared/shared.const";
 
 export const BASE_URL = '/api/v1';
 
 @Injectable()
 export class AccountService {
 
-  defaultHeaders: HttpHeaders = new HttpHeaders({contentType: 'application/json'});
-
-  constructor(
-    private http: HttpClient,
-    private cookieService: CookieService,
-    private appInitService: AppInitService) {
+  constructor(private http: HttpClient,
+              private cookieService: CookieService,
+              private appInitService: AppInitService) {
   }
 
   signIn(principal: string, password: string): Promise<any> {
@@ -22,7 +20,7 @@ export class AccountService {
       .post(
         BASE_URL + '/sign-in',
         {user_name: principal, user_password: password},
-        {observe: 'response'})
+        {headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE), observe: 'response'})
       .toPromise()
       .then(res => res.body)
       .catch(err => Promise.reject(err));
@@ -39,7 +37,7 @@ export class AccountService {
           user_realname: account.realname,
           user_comment: account.comment
         },
-        {headers: this.defaultHeaders}
+        {headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE)}
       )
       .toPromise()
       .then(res => res)
@@ -51,24 +49,31 @@ export class AccountService {
       .get(
         BASE_URL + '/log-out',
         {
+          headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
           params: {
             'username': this.appInitService.currentUser.user_name
           }
         }
       )
       .toPromise()
-      .then(res => {
-        this.cookieService.remove('token');
-      })
+      .then(() => this.cookieService.remove('token'))
       .catch(err => Promise.reject(err));
   }
 
   postEmail(credential: string): Promise<any> {
-    return this.http.post(BASE_URL + `/forgot-password?credential=${credential}`, null, {observe: "response"}).toPromise()
+    return this.http.post(BASE_URL + `/forgot-password?credential=${credential}`, null,
+      {
+        headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
+        observe: "response"
+      }).toPromise()
   }
 
   resetPassword(password, resetUuid): Promise<any> {
     let httpParams = new HttpParams().append('password', password).append('reset_uuid', resetUuid);
-    return this.http.post(BASE_URL + '/reset-password', null, {observe: "response", params: httpParams}).toPromise()
+    return this.http.post(BASE_URL + '/reset-password', null, {
+      headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
+      observe: "response",
+      params: httpParams
+    }).toPromise()
   }
 } 
