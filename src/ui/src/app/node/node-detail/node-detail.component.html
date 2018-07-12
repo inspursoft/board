@@ -33,7 +33,7 @@
       </tr>
       <tr>
         <th>{{ 'NODE.STORAGE_USAGE' | translate }}</th>
-        <td>{{ toPercentage(nodeDetail.storage_use / nodeDetail.storage_total) }}</td>
+        <td>{{ toPercentage(storagePercentage(nodeDetail)) }}</td>
       </tr>
       <tr>
         <th>{{ 'NODE.NODE_GROUP' | translate }}</th>
