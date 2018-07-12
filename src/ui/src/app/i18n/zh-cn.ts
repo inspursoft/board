@@ -454,7 +454,7 @@ export const LANG_ZH_CN = {
     "AUDIT_UPDATE": "修改",
     "AUDIT_UNKNOWN": "未知",
     "AUDIT_SUCCESS": "成功",
-    "AUDIT_FAIL": "失败",
+    "AUDIT_FAILED": "失败",
     "AUDIT_ERROR": "错误"
   },
   "GLOBAL_SEARCH": {

@@ -1,8 +1,9 @@
 import { Injectable } from "@angular/core";
-import { HttpClient, HttpResponse } from "@angular/common/http";
+import { HttpClient, HttpHeaders, HttpResponse } from "@angular/common/http";
 import { AuditQueryData } from "./audit";
 import { Observable } from "rxjs/Observable";
 import { User } from "../user-center/user";
+import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from "../shared/shared.const";
 
 const BASE_URL = "/api/v1";
 
@@ -20,6 +21,7 @@ export class OperationAuditService {
   getAuditList(querydata: AuditQueryData): Observable<any> {
     return this.http
       .get(`${BASE_URL}/operations`, {
+        headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
         observe: "response",
         params: {
           'page_index': querydata.pageIndex.toString(),

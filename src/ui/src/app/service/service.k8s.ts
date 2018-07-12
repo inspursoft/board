@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
-import { HttpClient, HttpResponse } from "@angular/common/http";
+import { HttpClient, HttpHeaders, HttpResponse } from "@angular/common/http";
 import { Project } from "../project/project";
 import { BuildImageDockerfileData, Image, ImageDetail } from "../image/image";
 import { ImageIndex, ServerServiceStep, ServiceStepPhase, UiServiceFactory, UIServiceStepBase } from "./service-step.component";
 import { Service } from "./service";
+import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from "../shared/shared.const";
 
 @Injectable()
 export class K8sService {
@@ -62,12 +63,17 @@ export class K8sService {
   }
 
   deleteDeployment(serviceId: number): Promise<any> {
-    return this.http.delete(`/api/v1/services/${serviceId}/deployment`, {observe: "response"}).toPromise()
+    return this.http.delete(`/api/v1/services/${serviceId}/deployment`, {
+      headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
+      observe: "response"
+    }).toPromise()
   }
 
   serviceDeployment(): Promise<Object> {
-    return this.http.post(`/api/v1/services/deployment`, {}, {observe: "response"})
-      .toPromise()
+    return this.http.post(`/api/v1/services/deployment`, {}, {
+      headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
+      observe: "response"
+    }).toPromise()
       .then((res: HttpResponse<Object>) => res.body)
   }
 
@@ -132,15 +138,24 @@ export class K8sService {
   }
 
   deleteService(serviceID: number): Promise<any> {
-    return this.http.delete(`/api/v1/services/${serviceID}`, {observe: "response"}).toPromise()
+    return this.http.delete(`/api/v1/services/${serviceID}`, {
+      headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
+      observe: "response"
+    }).toPromise()
   }
 
   toggleServiceStatus(serviceID: number, isStart: 0 | 1): Promise<any> {
-    return this.http.put(`/api/v1/services/${serviceID}/toggle`, {service_toggle: isStart}, {observe: "response"}).toPromise();
+    return this.http.put(`/api/v1/services/${serviceID}/toggle`, {service_toggle: isStart}, {
+      headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
+      observe: "response"
+    }).toPromise();
   }
 
   toggleServicePublicity(serviceID: number, service_togglable: 0 | 1): Promise<any> {
-    return this.http.put(`/api/v1/services/${serviceID}/publicity`, {service_public: service_togglable}, {observe: "response"}).toPromise();
+    return this.http.put(`/api/v1/services/${serviceID}/publicity`, {service_public: service_togglable}, {
+      headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
+      observe: "response"
+    }).toPromise();
   }
 
   getConsole(jobName: string, buildSerialId?: string): Promise<string> {
@@ -175,7 +190,10 @@ export class K8sService {
   }
 
   setServiceScale(serviceID: number, scale: number): Promise<any> {
-    return this.http.put(`/api/v1/services/${serviceID}/scale`, {service_scale: scale}, {observe: "response"}).toPromise();
+    return this.http.put(`/api/v1/services/${serviceID}/scale`, {service_scale: scale}, {
+      headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
+      observe: "response"
+    }).toPromise();
   }
 
   getCollaborativeService(serviceName: string, projectName: string): Promise<Array<string>> {
@@ -222,6 +240,7 @@ export class K8sService {
   updateServiceImages(projectName: string, serviceName: string, postData: Array<ImageIndex>): Promise<any> {
     return this.http
       .patch(`/api/v1/services/rollingupdate/image`, postData, {
+        headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
         observe: "response",
         params: {
           service_name: serviceName,
@@ -233,6 +252,7 @@ export class K8sService {
   uploadServiceYamlFile(projectName: string, formData: FormData,): Observable<Service> {
     return this.http
       .post(`/api/v1/services/yaml/upload`, formData, {
+        headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
         observe: "response",
         params: {
           project_name: projectName
@@ -279,6 +299,7 @@ export class K8sService {
   setLocate(nodeSelector: string, projectName: string, serviceName: string): Observable<Object> {
     return this.http.patch(`/api/v1/services/rollingupdate/nodegroup`, null,
       {
+        headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
         observe: "response",
         params: {project_name: projectName, service_name: serviceName, node_selector: nodeSelector}
       })
