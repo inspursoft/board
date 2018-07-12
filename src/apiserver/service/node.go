@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"fmt"
 
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/k8sassist"
@@ -66,7 +67,7 @@ func GetNode(nodeName string) (node NodeInfo, err error) {
 			//		mlimit = v.String()
 			//	}
 			//}
-			mlimit = string(v.Status.Capacity["memory"])
+			mlimit = fmt.Sprintf("%d", int64(v.Status.Capacity["memory"]))
 			time := v.CreationTimestamp.Unix()
 			var ps []v2.ProcessInfo
 			getFromRequest("http://"+nodeName+":4194/api/v2.0/ps/", &ps)
