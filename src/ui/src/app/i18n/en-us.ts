@@ -312,7 +312,7 @@ export const LANG_EN_US = {
     "VOLUME_TARGET_STORAGE":"Target Storage Server",
     "VOLUME_CONFIRM":"Confirm",
     "STEP_0_CREATE_WIZARD":"Create based on wizard",
-    "STEP_0_CREATE_YAML":"Create base on Yaml file",
+    "STEP_0_CREATE_YAML":"Create based on yaml file",
     "STEP_0_CREATE_DEVOPS":"Import from DevOps",
     "STEP_1_SELECT_DES":"If no project selected, need prompt to create a new project.",
     "STEP_1_CREATE_PROJECT":"Create Project...",

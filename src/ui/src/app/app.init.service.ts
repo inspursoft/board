@@ -92,7 +92,10 @@ export class AppInitService {
     return this.http
       .get(`/api/v1/systeminfo`, {observe: "response"})
       .toPromise()
-      .then(res => res.body);
+      .then(res => {
+        this.systemInfo = res.body;
+        return this.systemInfo
+      });
   }
 
 }

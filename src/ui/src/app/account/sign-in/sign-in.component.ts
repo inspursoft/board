@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { SignIn } from './sign-in';
 import { Message } from '../../shared/message-service/message';
 import { MessageService } from '../../shared/message-service/message.service';
@@ -19,22 +19,17 @@ export class SignInComponent implements OnInit, OnDestroy {
   signInUser: SignIn = new SignIn();
   authMode: string = '';
   redirectionURL: string = '';
-
   _subscription: Subscription;
 
-  constructor(
-    private appInitService: AppInitService,
-    private messageService: MessageService,
-    private accountService: AccountService,
-    private router: Router,
-    private route: ActivatedRoute
-  ) {
+  constructor(private appInitService: AppInitService,
+              private messageService: MessageService,
+              private accountService: AccountService,
+              private router: Router) {
     this._subscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
       if (msg.target == MESSAGE_TARGET.SIGN_IN_ERROR) {
         console.error('Received:' + JSON.stringify(msg.message));
       }
     });
-    this.appInitService.systemInfo = this.route.snapshot.data['systeminfo'];
     this.authMode = this.appInitService.systemInfo['auth_mode'];
     this.redirectionURL = this.appInitService.systemInfo['redirection_url'];
   }

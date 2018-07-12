@@ -21,10 +21,9 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
   constructor(
     private accountService: AccountService,
     private messageService: MessageService,
-    private appInitService: AppInitService,
     private activatedRoute: ActivatedRoute,
+    private appInitService: AppInitService,
     private router: Router) {
-    this.appInitService.systemInfo = this.activatedRoute.snapshot.data['systeminfo'];
     this.confirmSubscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
       if (msg.target == MESSAGE_TARGET.FORGOT_PASSWORD) {
         this.router.navigate(['/sign-in']);
@@ -33,6 +32,9 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    if (this.appInitService.systemInfo["auth_mode"] != 'db_auth') {
+      this.router.navigate(['/sign-in']);
+    }
   }
 
   goBack(): void {

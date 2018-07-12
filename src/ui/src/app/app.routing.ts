@@ -23,15 +23,17 @@ import { MemberComponent } from "./shared/create-project/member/member.component
 import { ListAuditComponent } from "./audit/operation-audit-list/list-audit.component";
 import { ResetPasswordComponent } from "./account/reset-password/reset-password.component";
 import { ForgotPasswordComponent } from "./account/forgot-password/forgot-password.component";
+import { TimeoutComponent } from "./shared/error-pages/timeout.component/timeout.component";
+import { BadGatewayComponent } from "./shared/error-pages/bad-gateway.component/bad-gateway.component";
+import { BoardLoadingComponent } from "./shared/error-pages/board-loading.component/board-loading.component";
 
 @Injectable()
 export class SystemInfoResolve implements Resolve<any> {
   constructor(private appInitService: AppInitService) {
   }
 
-  resolve(
-    route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot): Promise<any> | any {
+  resolve(route: ActivatedRouteSnapshot,
+          state: RouterStateSnapshot): Promise<any> | any {
     return this.appInitService.getSystemInfo();
   }
 }
@@ -42,7 +44,7 @@ export const ROUTES: Routes = [
     component: SignInComponent,
     resolve: {
       systeminfo: SystemInfoResolve
-    }
+    },
   },
   {
     path: 'sign-up',
@@ -65,6 +67,9 @@ export const ROUTES: Routes = [
       systeminfo: SystemInfoResolve
     }
   },
+  {path: 'timeout-page', component: TimeoutComponent},
+  {path: 'bad-gateway-page', component: BadGatewayComponent},
+  {path: 'board-loading-page', component: BoardLoadingComponent},
   {
     path: '', component: MainContentComponent,
     resolve: {

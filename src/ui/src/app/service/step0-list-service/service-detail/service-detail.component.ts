@@ -5,6 +5,7 @@ import { AppInitService } from '../../../app.init.service';
 import { Service } from "../../service";
 import { Subject } from "rxjs/Subject";
 import { Observable } from "rxjs/Observable";
+import { HttpErrorResponse } from "@angular/common/http";
 
 class NodeURL {
   url: string;
@@ -26,25 +27,18 @@ class NodeURL {
 export class ServiceDetailComponent {
   _isOpenServiceDetail: boolean = false;
   boardHost: string;
-  serviceDetail: Object = {};
+  serviceDetail: Object;
   urlList: Array<NodeURL>;
   curService: Service;
   deploymentYamlFile: string = "";
-  deploymentYamlWIP: boolean = false;
-  isShowDeploymentYaml: boolean = false;
-  isShowServiceYaml: boolean = false;
-  isShowServiceInfo: boolean = true;
   serviceYamlFile: string = "";
-  serviceYamlWIP: boolean = false;
   closeNotification:Subject<any>;
 
   constructor(private appInitService: AppInitService,
               private k8sService: K8sService,
-              private change:ChangeDetectorRef,
               private messageService: MessageService) {
     this.boardHost = this.appInitService.systemInfo['board_host'];
     this.closeNotification = new Subject<any>();
-    this.change.detach();
   }
 
   get isOpenServiceDetail(): boolean {
@@ -53,8 +47,6 @@ export class ServiceDetailComponent {
 
   set isOpenServiceDetail(value: boolean) {
     this._isOpenServiceDetail = value;
-    this.isShowServiceYaml = false;
-    this.isShowDeploymentYaml = false;
     if (!value){
       this.closeNotification.next();
     }
@@ -91,7 +83,6 @@ export class ServiceDetailComponent {
         });
       }
       this.serviceDetail = res;
-      this.change.reattach();
       this.isOpenServiceDetail = true;
     }).catch(err => {
       this.isOpenServiceDetail = false;
@@ -100,16 +91,10 @@ export class ServiceDetailComponent {
   }
 
   getDeploymentYamlFile() {
-    this.isShowDeploymentYaml = !this.isShowDeploymentYaml;
-    if (this.isShowDeploymentYaml) {
-      this.deploymentYamlWIP = true;
+    if (this.deploymentYamlFile.length == 0) {
       this.k8sService.getServiceYamlFile(this.curService.service_project_name, this.curService.service_name, "deployment")
-        .then((res: string) => {
-          this.deploymentYamlWIP = false;
-          this.deploymentYamlFile = res;
-        })
-        .catch(err => {
-          this.deploymentYamlWIP = false;
+        .then((res: string) => this.deploymentYamlFile = res)
+        .catch((err: HttpErrorResponse) => {
           this.isOpenServiceDetail = false;
           this.messageService.dispatchError(err);
         })
@@ -117,16 +102,10 @@ export class ServiceDetailComponent {
   }
 
   getServiceYamlFile() {
-    this.isShowServiceYaml = !this.isShowServiceYaml;
-    if (this.isShowServiceYaml) {
-      this.serviceYamlWIP = true;
+    if (this.serviceYamlFile.length == 0) {
       this.k8sService.getServiceYamlFile(this.curService.service_project_name, this.curService.service_name, "service")
-        .then((res: string) => {
-          this.serviceYamlWIP = false;
-          this.serviceYamlFile = res;
-        })
-        .catch(err => {
-          this.serviceYamlWIP = false;
+        .then((res: string) => this.serviceYamlFile = res)
+        .catch((err: HttpErrorResponse) => {
           this.isOpenServiceDetail = false;
           this.messageService.dispatchError(err);
         })
