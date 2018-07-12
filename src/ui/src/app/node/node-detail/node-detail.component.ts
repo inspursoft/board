@@ -40,6 +40,10 @@ export class NodeDetailComponent {
     return Math.round(num * 100) / 100 + '%';
   }
 
+  storagePercentage(nodeDetail:INodeDetail): number{
+    return Number.parseInt(nodeDetail.storage_use) / Number.parseInt(nodeDetail.storage_total);
+  }
+
   toGigaBytes(num: string, baseUnit?: string) {
     let denominator = 1024 * 1024 * 1024;
     if (baseUnit === 'KiB') {
