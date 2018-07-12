@@ -17,6 +17,7 @@ var seedJobName = "base"
 var jenkinsHostIP = utils.GetConfig("JENKINS_HOST_IP")
 var jenkinsHostPort = utils.GetConfig("JENKINS_HOST_PORT")
 var jenkinsNodeIP = utils.GetConfig("JENKINS_NODE_IP")
+var kvmRegistryPort = utils.GetConfig("KVM_REGISTRY_PORT")
 
 type jenkinsHandler struct{}
 
@@ -45,5 +46,5 @@ func NewJenkinsHandler() *jenkinsHandler {
 }
 
 func (j *jenkinsHandler) CreateJobWithParameter(projectName, username, email string) error {
-	return utils.SimpleGetRequestHandle(fmt.Sprintf("%s/job/%s/buildWithParameters?F00=%s&&F01=%s&F02=%s&F03=%s&F04=%s&F05=%s&F06=%s", jenkinsBaseURL(), seedJobName, projectName, jenkinsfileRepoURL(), username, email, jenkinsHostIP(), jenkinsHostPort(), jenkinsNodeIP()))
+	return utils.SimpleGetRequestHandle(fmt.Sprintf("%s/job/%s/buildWithParameters?F00=%s&&F01=%s&F02=%s&F03=%s&F04=%s&F05=%s&F06=%s&F07=%s", jenkinsBaseURL(), seedJobName, projectName, jenkinsfileRepoURL(), username, email, jenkinsHostIP(), jenkinsHostPort(), jenkinsNodeIP(), kvmRegistryPort()))
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 )
@@ -146,14 +148,13 @@ func unregister(jobName string) (kvmName string) {
 	return
 }
 
-func outputJSON(response http.ResponseWriter, input interface{}, contentType ...string) error {
+func renderOutput(response http.ResponseWriter, statusCode int, input interface{}, contentType ...string) error {
 	header := response.Header()
 	if len(contentType) > 0 {
 		header.Set("Context-type", contentType[0])
 	} else {
 		header.Set("Content-type", "application/json")
 	}
-
 	if data, ok := input.(string); ok {
 		response.Write([]byte(data))
 	} else {
@@ -164,13 +165,32 @@ func outputJSON(response http.ResponseWriter, input interface{}, contentType ...
 		}
 		response.Write(data)
 	}
+	if statusCode != http.StatusOK {
+		response.WriteHeader(statusCode)
+	}
 	return nil
+}
+
+func renderJSON(resp http.ResponseWriter, data interface{}) {
+	renderOutput(resp, http.StatusOK, data, "application/json")
+}
+
+func renderText(resp http.ResponseWriter, content string) {
+	renderOutput(resp, http.StatusOK, content, "text/plain")
+}
+
+func internalError(resp http.ResponseWriter, err error) {
+	renderOutput(resp, http.StatusInternalServerError, err.Error(), "text/plain")
+}
+
+func customAbort(resp http.ResponseWriter, statusCode int, err error) {
+	renderOutput(resp, statusCode, err.Error(), "text/plain")
 }
 
 func registerJob(response http.ResponseWriter, request *http.Request) {
 	if request.Method == http.MethodPost {
 		jobName := request.FormValue("job_name")
-		outputJSON(response, register(jobName), "text/plain")
+		renderText(response, register(jobName))
 	}
 }
 
@@ -182,21 +202,49 @@ func getJob(response http.ResponseWriter, request *http.Request) {
 
 func getAvailableNodes(response http.ResponseWriter, request *http.Request) {
 	if request.Method == http.MethodGet {
-		outputJSON(response, availables())
+		renderJSON(response, availables())
 	}
 }
 
 func getAllNodes(response http.ResponseWriter, request *http.Request) {
 	if request.Method == http.MethodGet {
-		outputJSON(response, storage)
+		renderJSON(response, storage)
 	}
 }
 
 func releaseNode(response http.ResponseWriter, request *http.Request) {
 	if request.Method == http.MethodGet {
 		kvmName := request.FormValue("job_name")
-		outputJSON(response, unregister(kvmName), "text/plain")
+		renderText(response, unregister(kvmName))
 	}
+}
+
+func triggerScript(response http.ResponseWriter, request *http.Request) {
+	if request.Method == http.MethodGet {
+		scriptName := request.FormValue("name")
+		arg := request.FormValue("arg")
+		output, err := executeScripts(scriptName, arg)
+		if err != nil {
+			internalError(response, err)
+			return
+		}
+		renderText(response, output)
+	}
+}
+
+func executeScripts(scriptName string, arg string) (string, error) {
+	if _, err := os.Stat(scriptName); os.IsNotExist(err) {
+		return fmt.Sprintf("Script file %s not found.", scriptName), err
+	}
+	cmd := exec.Command("chmod", "+x", scriptName)
+	cmd = exec.Command("sh", scriptName, arg)
+	var stdOutput bytes.Buffer
+	cmd.Stdout = &stdOutput
+	err := cmd.Run()
+	if err != nil {
+		return "Script executing failed.", err
+	}
+	return stdOutput.String(), nil
 }
 
 func main() {
@@ -211,6 +259,7 @@ func main() {
 	http.HandleFunc("/available-nodes", getAvailableNodes)
 	http.HandleFunc("/nodes", getAllNodes)
 	http.HandleFunc("/release-node", releaseNode)
+	http.HandleFunc("/trigger-script", triggerScript)
 
 	l, err := net.Listen("tcp4", ":"+strconv.Itoa(port))
 	if err != nil {

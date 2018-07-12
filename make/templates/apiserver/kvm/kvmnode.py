@@ -129,7 +129,6 @@ def getKvmName(kvmApiServer, projectName):
     kvmName = res.text
     return kvmName
 def startKVM_1(jenkinsMaster, projectName, kvmApiServer):
-    #kvmNumber = getNumberofkvm()
     kvmName = getKvmName(kvmApiServer, projectName)
     print ("::::" + kvmName + ":::")
     while kvmName == 'FULL':
@@ -139,12 +138,8 @@ def startKVM_1(jenkinsMaster, projectName, kvmApiServer):
 
     usekvmname = kvmName
     print(usekvmname)
-    os.system('touch %s/%s' %(tmpkvmdir,usekvmname)) 
-    os.system('virsh destroy %s' %usekvmname)
-    os.system('virsh undefine %s' %usekvmname)
-    copyImage(usekvmname)
     try:
-        os.popen("virt-install --name %s --ram 2048 --disk path=/var/lib/libvirt/images/%s.img --import &\n\n\n" %(usekvmname, usekvmname))
+        os.popen("virsh snapshot-revert %s %s" %(usekvmname, usekvmname))
     except:
         print('create kvm failed')
     addJenkinsNode(jenkinsMaster,usekvmname)

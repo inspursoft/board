@@ -48,6 +48,12 @@
           <defaultValue></defaultValue>
           <trim>false</trim>
         </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>F07</name>
+          <description>Set KVM registry port</description>
+          <defaultValue></defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
   </properties>
@@ -67,12 +73,14 @@ def repo_email = binding.variables.get(&quot;F03&quot;)
 def jenkins_host_ip = binding.variables.get(&quot;F04&quot;)
 def jenkins_host_port = binding.variables.get(&quot;F05&quot;)
 def jenkins_node_ip = binding.variables.get(&quot;F06&quot;)
+def kvm_registry_port = binding.variables.get(&quot;F07&quot;)
 pipelineJob(jobName) {
   quietPeriod(3)
   environmentVariables {
     env(&quot;jenkins_host_ip&quot;, &quot;${jenkins_host_ip}&quot;)
     env(&quot;jenkins_host_port&quot;, &quot;${jenkins_host_port}&quot;)
     env(&quot;jenkins_node_ip&quot;, &quot;${jenkins_node_ip}&quot;)
+    env(&quot;kvm_registry_port&quot;, &quot;${kvm_registry_port}&quot;)
   }
   triggers {
     genericTrigger {

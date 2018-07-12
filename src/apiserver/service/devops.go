@@ -23,6 +23,8 @@ var jenkinsNodePassword = utils.GetConfig("JENKINS_NODE_PASSWORD")
 var jenkinsNodeVolume = utils.GetConfig("JENKINS_NODE_VOLUME")
 var kvmToolsPath = utils.GetConfig("KVM_TOOLS_PATH")
 var kvmRegistryPath = utils.GetConfig("KVM_REGISTRY_PATH")
+var kvmRegistrySize = utils.GetConfig("KVM_REGISTRY_SIZE")
+var kvmRegistryPort = utils.GetConfig("KVM_REGISTRY_PORT")
 
 var defaultJenkinsfile = `properties([
   parameters([string(defaultValue: '', description: '', name: 'base_repo_url', trim: false)]),
@@ -56,17 +58,17 @@ var currentJenkinsFile = `properties([
   parameters([string(defaultValue: '', description: '', name: 'base_repo_url', trim: false)]),
   parameters([string(defaultValue: '', description: '', name: 'jenkins_host_ip', trim: false)]),
   parameters([string(defaultValue: '', description: '', name: 'jenkins_host_port', trim: false)]),
-  parameters([string(defaultValue: '', description: '', name: 'jenkins_node_ip', trim: false)])
+	parameters([string(defaultValue: '', description: '', name: 'jenkins_node_ip', trim: false)]),
+	parameters([string(defaultValue: '', description: '', name: 'kvm_registry_port', trim: false)])
 ])
 node('slave') {
   stage('add kvm node') {
     sh '''
        cd /data/jenkins_node/kvm
-       python kvmnode.py "http://${jenkins_host_ip}:${jenkins_host_port}" "${JOB_NAME}" "http://${jenkins_node_ip}:8899" 
+       python kvmnode.py "http://${jenkins_host_ip}:${jenkins_host_port}" "${JOB_NAME}" "http://${jenkins_node_ip}:${kvm_registry_port}" 
        echo "--------------------------------"
-       sleep 3
     '''
-    nodeName = sh(returnStdout: true, script: "curl http://${jenkins_node_ip}:8899/register-job?job_name=${JOB_NAME} -X POST").trim()
+    nodeName = sh(returnStdout: true, script: "curl http://${jenkins_node_ip}:${kvm_registry_port}/register-job?job_name=${JOB_NAME} -X POST").trim()
   }
 }
  
@@ -76,17 +78,8 @@ node(nodeName) {
     sh '''
       systemctl start docker
       travis_yml_script.rb ${WORKSPACE}
-    '''
-  }
-}
- 
-node('slave') {
-  stage('delete node') {
-    sh '''
-      cd /data/jenkins_node/kvm
-      python deletenode.py "http://${jenkins_host_ip}:${jenkins_host_port}" "${JOB_NAME}" "http://${jenkins_node_ip}:8899" 
-      sleep 3
-    '''
+		'''
+    sh(returnStdout: true, script: "curl 'http://${jenkins_node_ip}:${kvm_registry_port}/trigger-script?name=release.sh&arg=${JOB_NAME}'")
   }
 }`
 
@@ -325,5 +318,7 @@ func PrepareKVMHost() error {
 	if err != nil {
 		return err
 	}
-	return sshHandler.ExecuteCommand(fmt.Sprintf("cd %s && nohup ./kvmregistry > kvmregistry.out 2>&1 &", kvmRegistryNodePath))
+	return sshHandler.ExecuteCommand(fmt.Sprintf(`
+		cd %s && nohup ./kvmregistry -size %s -port %s > kvmregistry.out 2>&1 &`,
+		kvmRegistryNodePath, kvmRegistrySize(), kvmRegistryPort()))
 }
