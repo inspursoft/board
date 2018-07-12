@@ -6,6 +6,7 @@ import { Message } from "../../shared/message-service/message";
 import { BUTTON_STYLE, MESSAGE_TARGET } from "../../shared/shared.const";
 import { Subscription } from "rxjs/Subscription";
 import { HttpErrorResponse } from "@angular/common/http";
+import { AppInitService } from "../../app.init.service";
 
 @Component({
   selector: 'forgot-password',
@@ -21,6 +22,7 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
     private accountService: AccountService,
     private messageService: MessageService,
     private activatedRoute: ActivatedRoute,
+    private appInitService: AppInitService,
     private router: Router) {
     this.confirmSubscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
       if (msg.target == MESSAGE_TARGET.FORGOT_PASSWORD) {
@@ -30,6 +32,9 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    if (this.appInitService.systemInfo["auth_mode"] != 'db_auth') {
+      this.router.navigate(['/sign-in']);
+    }
   }
 
   goBack(): void {

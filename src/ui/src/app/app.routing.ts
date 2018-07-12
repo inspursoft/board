@@ -32,9 +32,8 @@ export class SystemInfoResolve implements Resolve<any> {
   constructor(private appInitService: AppInitService) {
   }
 
-  resolve(
-    route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot): Promise<any> | any {
+  resolve(route: ActivatedRouteSnapshot,
+          state: RouterStateSnapshot): Promise<any> | any {
     return this.appInitService.getSystemInfo();
   }
 }
@@ -47,9 +46,27 @@ export const ROUTES: Routes = [
       systeminfo: SystemInfoResolve
     },
   },
-  {path: 'sign-up', component: SignUpComponent},
-  {path: 'reset-password', component: ResetPasswordComponent},
-  {path: 'forgot-password', component: ForgotPasswordComponent},
+  {
+    path: 'sign-up',
+    component: SignUpComponent,
+    resolve: {
+      systeminfo: SystemInfoResolve
+    }
+  },
+  {
+    path: 'reset-password',
+    component: ResetPasswordComponent,
+    resolve: {
+      systeminfo: SystemInfoResolve
+    }
+  },
+  {
+    path: 'forgot-password',
+    component: ForgotPasswordComponent,
+    resolve: {
+      systeminfo: SystemInfoResolve
+    }
+  },
   {path: 'timeout-page', component: TimeoutComponent},
   {path: 'bad-gateway-page', component: BadGatewayComponent},
   {path: 'board-loading-page', component: BoardLoadingComponent},

@@ -1,9 +1,7 @@
-import { Component, OnDestroy } from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
-
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Router} from '@angular/router';
 import { Message } from '../../shared/message-service/message';
 import { MessageService } from '../../shared/message-service/message.service';
-
 import { SignUp } from './sign-up';
 import { Account } from '../account';
 import { AccountService } from '../account.service';
@@ -16,22 +14,27 @@ import {AppInitService} from "../../app.init.service";
    templateUrl: './sign-up.component.html',
    styleUrls: [ './sign-up.component.css' ]
 })
-export class SignUpComponent implements OnDestroy {
+export class SignUpComponent implements OnDestroy,OnInit {
   isSignUpWIP:boolean = false;
   signUpModel: SignUp = new SignUp();
   _subscription: Subscription;
 
   constructor(private accountService: AccountService,
               private messageService: MessageService,
-              private route: ActivatedRoute,
               private appInitService: AppInitService,
               private router: Router) {
-    this.appInitService.systemInfo = this.route.snapshot.data['systeminfo'];
+
     this._subscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
       if (msg.target == MESSAGE_TARGET.SIGN_UP_SUCCESSFUL) {
         this.router.navigate(['/sign-in']);
       }
     });
+  }
+
+  ngOnInit(): void {
+    if(this.appInitService.systemInfo["auth_mode"] != 'db_auth') {
+      this.router.navigate(['/sign-in']);
+    }
   }
 
   ngOnDestroy() {

@@ -8,6 +8,7 @@ import { Message } from "../../shared/message-service/message";
 import { Subscription } from "rxjs/Subscription";
 import { HttpErrorResponse } from "@angular/common/http";
 import { ParamMap } from "@angular/router/src/shared";
+import { AppInitService } from "../../app.init.service";
 
 @Component({
   selector: 'reset-password',
@@ -22,6 +23,7 @@ export class ResetPasswordComponent implements OnInit {
   constructor(private accountService: AccountService,
               private messageService: MessageService,
               private router: Router,
+              private appInitService: AppInitService,
               private activatedRoute: ActivatedRoute) {
     this.confirmSubscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
       if (msg.target == MESSAGE_TARGET.RESET_PASSWORD) {
@@ -31,7 +33,11 @@ export class ResetPasswordComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.activatedRoute.queryParamMap.subscribe((params: ParamMap) => this.resetUuid = params.get("reset_uuid"));
+    if(this.appInitService.systemInfo["auth_mode"] != 'db_auth') {
+      this.router.navigate(['/sign-in']);
+    } else {
+      this.activatedRoute.queryParamMap.subscribe((params: ParamMap) => this.resetUuid = params.get("reset_uuid"));
+    }
   }
 
   goBack(){
