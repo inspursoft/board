@@ -43,14 +43,15 @@ def getDomInfoByID(conn, id):
         return 1
          
     print "Domain id is %d ; Name is %s" % (myDom.ID(), myDom.name())
- 
-if __name__ == '__main__':
-    name = "kvm-guest"
-    name1 = "notExist"
-    id1 = 3
-    id2 = 9999
-    print "---Get domain info via libvirt python API---"
-    conn = createConnection()
-    flag = getDomInfoByName(conn, name)
-    print (flag)
-    closeConnection(conn)
+
+def getDomInfoByName(conn, name):
+    print ''
+    print '----- get domain info by name -----'
+    try:
+        myDom = conn.lookupByName(name)
+    except:
+        print 'Failed to find the domain with name "%s"' % name
+        return 1
+    return myDom
+
+

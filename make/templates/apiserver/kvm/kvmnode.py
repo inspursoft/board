@@ -7,6 +7,8 @@ import time
 import shutil
 import requests
 
+import libvirtapi
+
 kmvNameList = ['kvm-1', 'kvm-2', 'kvm-3', 'kvm-4']
 tmpkvmdir = '/tmp/kvm'
 
@@ -138,14 +140,32 @@ def startKVM_1(jenkinsMaster, projectName, kvmApiServer):
 
     usekvmname = kvmName
     print(usekvmname)
-    try:
-        os.popen("virsh snapshot-revert %s %s" %(usekvmname, usekvmname))
-    except:
-        print('create kvm failed')
+
+    conn = libvirtapi.createConnection()
+    myDom = libvirtapi.getDomInfoByName(conn, usekvmname)
+    libvirtapi.closeConnection(conn)
+    
+    if myDom == 1:
+        print ('create kmv ...........................')
+        copyImage(usekvmname)
+        try:
+            os.popen("virt-install --name %s --ram 2048 --disk path=/var/lib/libvirt/images/%s.img --import &\n\n\n" %(usekvmname, usekvmname))
+        except:
+            print('create kvm failed')
+    else:
+        print ('revert snapshot .........................')
+        try:
+            os.popen("virsh snapshot-revert %s %s" %(usekvmname, usekvmname))
+        except:
+            print('create kvm failed')
     addJenkinsNode(jenkinsMaster,usekvmname)
 
- 
-    
+    if myDom == 1:
+        try:
+            os.popen('virsh snapshot-create-as %s %s' %(usekvmname, usekvmname))
+        except:
+            print('create kvm failed')
+
 def startKVM():
     flagFile = os.path.join('/tmp','%s.flag' %kvmName)
     status =  False

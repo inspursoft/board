@@ -78,8 +78,8 @@ node(nodeName) {
     sh '''
       systemctl start docker
       travis_yml_script.rb ${WORKSPACE}
-		'''
-    sh(returnStdout: true, script: "curl 'http://${jenkins_node_ip}:${kvm_registry_port}/trigger-script?name=release.sh&arg=${JOB_NAME}'")
+    '''
+    sh 'curl "http://${jenkins_node_ip}:${kvm_registry_port}/trigger-script?name=release.sh&arg=${JOB_NAME}"'
   }
 }`
 
@@ -245,6 +245,21 @@ func ForkRepo(forkedUser *model.User, baseRepoName string) error {
 		logs.Error("Failed to initialize project repo: %+v", err)
 		return err
 	}
+
+	CreateFile("readme.md", "Repo created by Board.", repoPath)
+
+	repoHandler, err := OpenRepo(repoPath, username, email)
+	if err != nil {
+		logs.Error("Failed to open the repo: %s, error: %+v.", repoPath, err)
+		return err
+	}
+
+	repoHandler.SimplePush("Add some struts.", "readme.md")
+	if err != nil {
+		logs.Error("Failed to push readme.md file to the repo: %+v", err)
+		return err
+	}
+
 	jenkinsHandler := jenkins.NewJenkinsHandler()
 	err = jenkinsHandler.CreateJobWithParameter(repoName, username, email)
 	if err != nil {
