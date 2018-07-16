@@ -38,7 +38,7 @@
   <div class="advanced-container" (click)="showAdvanced = !showAdvanced">
     <div [ngClass]="{'advanced-open':showAdvanced,'advanced-close':!showAdvanced}" class="step-arrow"></div>
     <span class="base-margin-left">{{"SERVICE.STEP_4_ADVANCED_CONFIG"|translate}}</span>
-    <div *ngIf="!noPortForExtent && uiData.externalServiceList.length == 0"
+    <div *ngIf="uiData.externalServiceList.length == 0"
          class="alert alert-warning base-margin-left"
          role="alert">
       {{"SERVICE.STEP_4_WARNING_MESSAGE" | translate}}

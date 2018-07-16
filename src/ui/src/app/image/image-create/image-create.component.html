@@ -232,7 +232,7 @@
                   *ngIf="isBuildImageWIP"
                   [disabled]="cancelButtonDisable"
                   (click)="cancelBuildImage()">
-            {{"IMAGE.CREATE_IMAGE_CANCEL_WAIT" | translate}}
+            {{cancelCaption | translate}}
           </button>
           <span *ngIf="isBuildImageWIP" class="spinner spinner-sm"></span>
         </div>
