@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"net/http"
@@ -40,25 +41,31 @@ func GetPaginatedOperationList(query model.OperationParam, pageIndex int, pageSi
 
 func ParseOperationAudit(ctx *context.Context) (operation model.Operation) {
 	operation.UserName = "anonymous"
-	operation.Action = func(url string) string {
-		if _, ok := methodType[url]; !ok {
-			return "n/a"
-		}
-		return methodType[url]
-	}(ctx.Input.Method())
 	operation.Path = ctx.Input.URL()
-	operation.ObjectType = func(url string) string {
+	operation.ObjectType, operation.Action = func(url, method string) (object string, action string) {
+		object, action = "n/a", "n/a"
 		parts := strings.Split(url, "/")
 		if len(parts) < 4 {
 			logs.Error("URL is invalid: %s", url)
-			return "n/a"
+			return
 		}
 		inputType := parts[3]
-		if _, ok := objectType[inputType]; !ok {
-			return inputType
+		if value, ok := objectType[inputType]; !ok {
+			object = inputType
+		} else {
+			object = value
 		}
-		return objectType[inputType]
-	}(operation.Path)
+		if inputType == "sign-in" || inputType == "log-out" {
+			action = fmt.Sprintf("log%s", strings.Split(inputType, "-")[1])
+		} else {
+			if _, ok := methodType[method]; !ok {
+				logs.Error("Request method is invalid: %s", method)
+				return
+			}
+			action = methodType[method]
+		}
+		return
+	}(operation.Path, ctx.Input.Method())
 	operation.Status = model.Unknown
 	return
 }

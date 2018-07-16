@@ -155,7 +155,6 @@ func (u *AuthController) SignUpAction() {
 	if !isSuccess {
 		u.serveStatus(http.StatusBadRequest, "Failed to sign up user.")
 	}
-	u.auditUser, _ = service.GetUserByName(reqUser.Username)
 }
 
 func (u *AuthController) CurrentUserAction() {
@@ -164,6 +163,7 @@ func (u *AuthController) CurrentUserAction() {
 		u.customAbort(http.StatusUnauthorized, "Need to login first.")
 		return
 	}
+	u.currentUser = user
 	u.renderJSON(user)
 }
 
