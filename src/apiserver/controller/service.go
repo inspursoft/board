@@ -765,8 +765,14 @@ func (f *ServiceController) DownloadDeploymentYamlFileAction() {
 
 func (f *ServiceController) resolveDownloadYaml(serviceConfig *model.ServiceStatus, fileName string, generator func(*model.ServiceStatus, string, string) error) {
 	logs.Debug("Current download yaml file: %s", fileName)
+	//checkout the path of download
+	err := service.CheckDeploymentPath(f.repoServicePath)
+	if err != nil {
+		f.internalError(err)
+		return
+	}
 	absFileName := filepath.Join(f.repoServicePath, fileName)
-	err := generator(serviceConfig, f.repoServicePath, kubeMasterURL())
+	err = generator(serviceConfig, f.repoServicePath, kubeMasterURL())
 	if err != nil {
 		f.parseError(err, parseGetK8sError)
 		return
