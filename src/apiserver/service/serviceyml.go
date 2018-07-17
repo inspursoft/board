@@ -46,18 +46,6 @@ var (
 	serviceAPIVersionErr           = errors.New("ERR_SERVICE_YAML_API_VERSION")
 )
 
-func CheckDeploymentPath(loadPath string) error {
-	if fi, err := os.Stat(loadPath); os.IsNotExist(err) {
-		if err := os.MkdirAll(loadPath, 0755); err != nil {
-			return err
-		}
-	} else if !fi.IsDir() {
-		return pathErr
-	}
-
-	return nil
-}
-
 func ServiceExists(serviceName string, projectName string) (bool, error) {
 	var servicequery model.ServiceStatus
 	servicequery.Name = serviceName
