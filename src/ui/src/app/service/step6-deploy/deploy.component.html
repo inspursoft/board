@@ -18,6 +18,8 @@
 <button class="btn btn-default" [disabled]="isDeployed" (click)="backStep()">
   {{"BUTTON.BACK" | translate}}
 </button>
-<button class="btn btn-default" [disabled]="!isDeployed || isInDeployWIP" (click)="deployComplete()">
+<button class="btn btn-default"
+        (click)="deployComplete()"
+        [disabled]="!isDeployed || isInDeployWIP || !isDeploySuccess">
   {{"BUTTON.OK" | translate}}
 </button>

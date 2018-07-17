@@ -31,7 +31,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
   /*Todo:Only for collaborative plus action.It must be delete after update UIServiceStep4*/
   collaborativeList:Array<Object>;
   nodeSelectorList:Array<string>;
-  noPortForExtent: boolean = true;
+  noPortForExtent: boolean = false;
 
   constructor(protected injector: Injector, private changeDetectorRef: ChangeDetectorRef) {
     super(injector);

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { TranslateService } from '@ngx-translate/core';
@@ -17,6 +17,8 @@ export class HeaderComponent implements OnInit {
   @Input() isSignIn: boolean;
   @Input() hasSignedIn: boolean;
   @Input() searchContent: string;
+  @Input() isShowMainMenuIcon: boolean = false;
+  @Output() onMainMenuIconClick: EventEmitter<any>;
 
   currentUser: {[key: string]: any};
   showChangePassword:boolean = false;
@@ -33,6 +35,7 @@ export class HeaderComponent implements OnInit {
               private appInitService: AppInitService,
               private accountService: AccountService,
               private messageService: MessageService) {
+    this.onMainMenuIconClick = new EventEmitter<any>();
     this._assertLanguage(this.appInitService.currentLang);
   }
 
@@ -79,6 +82,10 @@ export class HeaderComponent implements OnInit {
     if(!this.hasSignedIn) {
       this.router.navigate(['/sign-in']);
     }
+  }
+
+  clickMenuIconAction(){
+    this.onMainMenuIconClick.emit();
   }
 
   logOut() {

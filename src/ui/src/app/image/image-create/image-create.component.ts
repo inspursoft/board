@@ -223,6 +223,12 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     return this.checkImageName.bind(this);
   }
 
+  get cancelCaption(){
+    return this.consoleText == "IMAGE.CREATE_IMAGE_JENKINS_PREPARE" ?
+      "IMAGE.CREATE_IMAGE_CANCEL_WAIT":
+      "IMAGE.CREATE_IMAGE_BUILD_CANCEL";
+  }
+
   checkImageTag(control: HTMLInputElement): Promise<ValidationErrors> {
     if (this.customerNewImage.image_name == "") {
       return Promise.resolve(null);
