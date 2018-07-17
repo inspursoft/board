@@ -163,7 +163,7 @@ func (u *AuthController) CurrentUserAction() {
 		u.customAbort(http.StatusUnauthorized, "Need to login first.")
 		return
 	}
-	u.currentUser = user
+
 	u.renderJSON(user)
 }
 
