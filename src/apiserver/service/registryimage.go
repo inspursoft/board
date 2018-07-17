@@ -14,7 +14,7 @@ const (
 	registryCatalogURL        = registryAPIBaseURL + "/" + "_catalog"
 	registryTagListURL        = registryAPIBaseURL + "/%s/tags/list"
 	registryManifestURL       = registryAPIBaseURL + "/%s/manifests/%s"
-	registryManifestDigestURL = registryManifestURL + "/%s"
+	registryManifestDigestURL = registryAPIBaseURL + "/%s/manifests/%s"
 )
 
 func getCustomHeader() http.Header {
@@ -66,6 +66,6 @@ func GetRegistryImageDigest(imageName, tagID string) (digest string, err error) 
 }
 
 func DeleteRegistryImageWithETag(imageName, tagID, digest string) (err error) {
-	_, err = requestAndUnmarshal("DELETE", fmt.Sprintf(registryManifestDigestURL, registryURL(), imageName, tagID, digest), nil, getCustomHeader())
+	_, err = requestAndUnmarshal("DELETE", fmt.Sprintf(registryManifestDigestURL, registryURL(), imageName, digest), nil, getCustomHeader())
 	return
 }
