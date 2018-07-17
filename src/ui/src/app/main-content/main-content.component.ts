@@ -13,6 +13,7 @@ export class MainContentComponent {
   isOnlyShowGrafanaView: boolean = false;
   isSignIn: boolean = true;
   hasSignedIn: boolean = false;
+  isShowMainMenu: boolean = true;
   searchContent: string = '';
 
   constructor(

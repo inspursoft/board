@@ -21,3 +21,9 @@
 form.search label:before{
   cursor: auto;
 }
+
+clr-icon.main-menu {
+  height: 32px;
+  width: 32px;
+  color: white;
+}

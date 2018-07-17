@@ -441,6 +441,8 @@ export const LANG_EN_US = {
     "SELECT_USER": "choose user",
     "AUDIT_SIGN": "sign",
     "AUDIT_USER": "user",
+    "AUDIT_SIGN_IN": "sign-in",
+    "AUDIT_LOG_OUT": "log-out",
     "AUDIT_DASHBOARD": "dashboard",
     "AUDIT_NODEGROUP": "nodegroup",
     "AUDIT_NODE": "node",

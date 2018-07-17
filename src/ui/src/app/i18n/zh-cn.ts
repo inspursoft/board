@@ -442,6 +442,8 @@ export const LANG_ZH_CN = {
     "SELECT_USER": "选择用户",
     "AUDIT_SIGN": "登录",
     "AUDIT_USER": "用户",
+    "AUDIT_SIGN_IN": "登录",
+    "AUDIT_LOG_OUT": "登出",
     "AUDIT_DASHBOARD": "监控",
     "AUDIT_NODEGROUP": "组标签",
     "AUDIT_NODE": "节点",
