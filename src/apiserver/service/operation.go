@@ -11,9 +11,7 @@ import (
 )
 
 var objectType = map[string]string{
-	"sign-in":    "user",
 	"sign-up":    "user",
-	"log-out":    "user",
 	"users":      "user",
 	"adduser":    "user",
 	"search":     "system",

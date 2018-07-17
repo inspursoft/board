@@ -86,8 +86,11 @@ func (b *BaseController) updateOperationAudit() {
 	if b.operationID == 0 {
 		return
 	}
-
-	err := service.UpdateOperationAuditStatus(b.operationID, b.Ctx.ResponseWriter.Status, b.project, b.currentUser)
+	user := b.currentUser
+	if b.currentUser == nil {
+		user = b.auditUser
+	}
+	err := service.UpdateOperationAuditStatus(b.operationID, b.Ctx.ResponseWriter.Status, b.project, user)
 	if err != nil {
 		logs.Error("Failed to update operation Audit. Error:%+v", err)
 		return
