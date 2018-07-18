@@ -1,0 +1,114 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>F00</name>
+          <description>Set job name created.</description>
+          <defaultValue></defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>F01</name>
+          <description>Set repo URL for Jenkinsfile.</description>
+          <defaultValue></defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>F02</name>
+          <description>Set username for repo clone.</description>
+          <defaultValue></defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>F03</name>
+          <description>Set email for repo clone.</description>
+          <defaultValue></defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>F04</name>
+          <description>Repo clone URL.</description>
+          <defaultValue></defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>F05</name>
+          <description>Set Jenkins node IP.</description>
+          <defaultValue></defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>F06</name>
+          <description>Set KVM registry port.</description>
+          <defaultValue></defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <javaposse.jobdsl.plugin.ExecuteDslScripts plugin="job-dsl@1.69">
+      <scriptText>def job_name = binding.variables.get(&quot;F00&quot;)
+def jenkinsfile_repo_url = binding.variables.get(&quot;F01&quot;)
+def repo_username = binding.variables.get(&quot;F02&quot;)
+def repo_email = binding.variables.get(&quot;F03&quot;)
+def repo_clone_url = binding.variables.get(&quot;F04&quot;)
+def jenkins_node_ip = binding.variables.get(&quot;F05&quot;)
+def kvm_registry_port = binding.variables.get(&quot;F06&quot;)
+
+pipelineJob(job_name) {
+  label(&apos;slave&apos;)
+  environmentVariables {
+    env(&quot;repo_username&quot;, &quot;${repo_username}&quot;)
+    env(&quot;repo_email&quot;, &quot;${repo_email}&quot;)
+    env(&quot;repo_clone_url&quot;, &quot;${repo_clone_url}&quot;)
+    env(&quot;jenkins_node_ip&quot;, &quot;${jenkins_node_ip}&quot;)
+    env(&quot;kvm_registry_port&quot;, &quot;${kvm_registry_port}&quot;)
+  }
+  parameters {
+    stringParam {
+      name(&quot;node_name&quot;)
+      defaultValue(&quot;&quot;)
+      trim(true)
+      description(&quot;Set node name.&quot;)
+    }
+  }
+  definition {
+    cpsScm {
+      scm {
+        git(jenkinsfile_repo_url) {
+          node-&gt;
+          node / gitConfigName(repo_username)
+          node / gitConfigEmail(repo_email)
+        }
+      }
+    }
+  }
+}</scriptText>
+      <usingScriptText>true</usingScriptText>
+      <sandbox>false</sandbox>
+      <ignoreExisting>false</ignoreExisting>
+      <ignoreMissingFiles>false</ignoreMissingFiles>
+      <failOnMissingPlugin>false</failOnMissingPlugin>
+      <unstableOnDeprecation>false</unstableOnDeprecation>
+      <removedJobAction>IGNORE</removedJobAction>
+      <removedViewAction>IGNORE</removedViewAction>
+      <removedConfigFilesAction>IGNORE</removedConfigFilesAction>
+      <lookupStrategy>JENKINS_ROOT</lookupStrategy>
+    </javaposse.jobdsl.plugin.ExecuteDslScripts>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

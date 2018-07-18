@@ -146,6 +146,7 @@ func InitializeDefaultConfig() {
 
 	AddEnv("KVM_REGISTRY_SIZE")
 	AddEnv("KVM_REGISTRY_PORT")
+	AddEnv("KVM_TOOLKITS_PATH")
 
 	SetConfig("REGISTRY_URL", "http://%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
 	SetConfig("KUBE_MASTER_URL", "http://%s:%s", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")

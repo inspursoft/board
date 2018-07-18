@@ -25,6 +25,7 @@ var kvmToolsPath = utils.GetConfig("KVM_TOOLS_PATH")
 var kvmRegistryPath = utils.GetConfig("KVM_REGISTRY_PATH")
 var kvmRegistrySize = utils.GetConfig("KVM_REGISTRY_SIZE")
 var kvmRegistryPort = utils.GetConfig("KVM_REGISTRY_PORT")
+var kvmToolkitsPath = utils.GetConfig("KVM_TOOLKITS_PATH")
 
 var defaultJenkinsfile = `properties([
   parameters([string(defaultValue: '', description: '', name: 'base_repo_url', trim: false)]),
@@ -55,26 +56,15 @@ node('slave') {
 }`
 
 var currentJenkinsFile = `properties([
-  parameters([string(defaultValue: '', description: '', name: 'base_repo_url', trim: false)]),
-  parameters([string(defaultValue: '', description: '', name: 'jenkins_host_ip', trim: false)]),
-  parameters([string(defaultValue: '', description: '', name: 'jenkins_host_port', trim: false)]),
-	parameters([string(defaultValue: '', description: '', name: 'jenkins_node_ip', trim: false)]),
-	parameters([string(defaultValue: '', description: '', name: 'kvm_registry_port', trim: false)])
+  parameters([string(defaultValue: '', description: 'Set node name', name: 'node_name', trim: false)]),
+  parameters([string(defaultValue: '', description: 'Repo clone URL', name: 'repo_clone_url', trim: false)]),
+  parameters([string(defaultValue: '', description: 'Jenkin node IP', name: 'jenkins_node_ip', trim: false)]),
+  parameters([string(defaultValue: '', description: '', name: 'kvm_registry_port', trim: false)])
 ])
-node('slave') {
-  stage('add kvm node') {
-    sh '''
-       cd /data/jenkins_node/kvm
-       python kvmnode.py "http://${jenkins_host_ip}:${jenkins_host_port}" "${JOB_NAME}" "http://${jenkins_node_ip}:${kvm_registry_port}" 
-       echo "--------------------------------"
-    '''
-    nodeName = sh(returnStdout: true, script: "curl http://${jenkins_node_ip}:${kvm_registry_port}/register-job?job_name=${JOB_NAME} -X POST").trim()
-  }
-}
- 
-node(nodeName) {
-  stage('kvmNode run ......') {
-    git "${base_repo_url}"
+
+node(node_name) {
+  stage('Run KVM node ......') {
+    git "${repo_clone_url}"
     sh '''
       systemctl start docker
       travis_yml_script.rb ${WORKSPACE}
@@ -82,6 +72,10 @@ node(nodeName) {
     sh 'curl "http://${jenkins_node_ip}:${kvm_registry_port}/trigger-script?name=release.sh&arg=${JOB_NAME}"'
   }
 }`
+
+func CreateIgnitorJob() error {
+	return jenkins.NewJenkinsHandler().CreateIgnitorJob()
+}
 
 func CreateJenkinsfileRepo(userID int64, repoName string) error {
 	user, err := GetUserByID(userID)
@@ -319,8 +313,8 @@ func PrepareKVMHost() error {
 	if err != nil {
 		return err
 	}
-	kvmToolsNodePath := filepath.Join(jenkinsNodeVolume(), "kvm")
-	kvmRegistryNodePath := filepath.Join(jenkinsNodeVolume(), "kvmregistry")
+	kvmToolsNodePath := filepath.Join(kvmToolkitsPath(), "kvm")
+	kvmRegistryNodePath := filepath.Join(kvmToolkitsPath(), "kvmregistry")
 	err = sshHandler.ExecuteCommand(fmt.Sprintf("mkdir -p %s %s", kvmToolsNodePath, kvmRegistryNodePath))
 	if err != nil {
 		return err

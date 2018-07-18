@@ -53,9 +53,9 @@ def checkNode(jenkinsServer, usekvmnode):
 def addJenkinsNode(jenkinsMaster, nodename):
     ipaddr = getNodeIp(nodename)
     while len(ipaddr)<7:
-       # time.sleep(3)
+        time.sleep(0.5)
         #ipaddr = getNodeIp()
-        status,ipaddr=commands.getstatusoutput("%s/search.sh %s" %(basedir,nodename))
+        _, ipaddr=commands.getstatusoutput("%s/search.sh %s" %(basedir,nodename))
     print ("==============:::" + ipaddr)
     cid = credentialId
     server = jenkins.Jenkins(jenkinsMaster)
@@ -116,27 +116,34 @@ def getdifflist():
     return notusedkvmname
 
 def getNumberofkvm():
-    count = 0
-    for fn in os.listdir(tmpkvmdir):
-        count = count + 1
-    return count
+    return len(os.listdir(tmpkvmdir))
+        
 def getlistofkvmDir():
-    for root, dirs, files in os.walk(tmpkvmdir):
+    for _, _, files in os.walk(tmpkvmdir):
         usingKvmList = files
     return usingKvmList
+
 def getKvmName(kvmApiServer, projectName):
     url = '%s/register-job' %kvmApiServer
     data = {'job_name': projectName}
     res = requests.post(url, data=data)
     kvmName = res.text
     return kvmName
-def startKVM_1(jenkinsMaster, projectName, kvmApiServer):
-    kvmName = getKvmName(kvmApiServer, projectName)
+
+#curl "http://10.165.15.148:8888/job/$1/buildWithParameters?node_name=$2"
+def triggerKvmJob(jenkinsMaster, jobName, kvmName):
+    url = '%s/job/%s/buildWithParameters' % (jenkinsMaster, jobName)
+    data = {'node_name': kvmName}
+    res = requests.get(url, params=data)
+    return res.text
+
+def startKVM(jenkinsMaster, kvmName, jobName, kvmApiServer):
+    # kvmName = getKvmName(kvmApiServer, projectName)    
     print ("::::" + kvmName + ":::")
-    while kvmName == 'FULL':
-        time.sleep(3)
-        print ('kvm is full, can not get a kvm name...')
-        kvmName = getKvmName(kvmApiServer, projectName)
+    # while kvmName == 'FULL':
+    #     time.sleep(3)
+    #     print ('kvm is full, can not get a kvm name...')
+    #     kvmName = getKvmName(kvmApiServer, jobName)
 
     usekvmname = kvmName
     print(usekvmname)
@@ -146,57 +153,38 @@ def startKVM_1(jenkinsMaster, projectName, kvmApiServer):
     libvirtapi.closeConnection(conn)
     
     if myDom == 1:
-        print ('create kmv ...........................')
+        print ('Create KVM ...........................')
         copyImage(usekvmname)
         try:
             os.popen("virt-install --name %s --ram 2048 --disk path=/var/lib/libvirt/images/%s.img --import &\n\n\n" %(usekvmname, usekvmname))
         except:
-            print('create kvm failed')
+            print('Failed to create KVM')
     else:
-        print ('revert snapshot .........................')
+        print ('Revert snapshot .........................')
         try:
             os.popen("virsh snapshot-revert %s %s" %(usekvmname, usekvmname))
         except:
-            print('create kvm failed')
+            print('Failed to create KVM')
     addJenkinsNode(jenkinsMaster,usekvmname)
-
+    triggerKvmJob(jenkinsMaster, jobName, usekvmname)
+    
     if myDom == 1:
         try:
             os.popen('virsh snapshot-create-as %s %s' %(usekvmname, usekvmname))
         except:
-            print('create kvm failed')
-
-def startKVM():
-    flagFile = os.path.join('/tmp','%s.flag' %kvmName)
-    status =  False
-    while status != 'True':
-        time.sleep(3)
-        print ('KVM exist, while it is not exist will create KVM: %s ' %status)
-        status = checkKVM(flagFile)
-        
-    if flag is not 1:
-        os.system('virsh destroy %s' %kvmName)
-        os.system('virsh undefine %s' %kvmName)
+            print('Failed to create KVM')
     
-    copyImage(kvmName)
-
-    with open(flagFile, 'w') as f:
-        f.write('False')
-        f.close()
-    try:
-        os.popen("virt-install --name %s --ram 2048 --disk path=/var/lib/libvirt/images/%s.img --import &\n\n\n" %(kvmName,kvmName))
-    except:
-        print('create kvm failed')
 
 def startService():
-    print (sta)
     os.system('systemctl start docker')
+
 def main():
     jenkinsMaster = sys.argv[1]
     projectName = sys.argv[2]
-    kvmApiServer = sys.argv[3]
+    nodeName = sys.argv[3]
+    kvmApiServer = sys.argv[4]
     createCredential(jenkinsMaster, kvmnodeUserName, kvmnodePasswd, credentialId)
-    sta = startKVM_1(jenkinsMaster, projectName, kvmApiServer)
+    startKVM(jenkinsMaster, nodeName, projectName, kvmApiServer)
     print ("add jenkins node ..................")
    
 

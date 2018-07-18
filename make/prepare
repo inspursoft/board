@@ -96,6 +96,7 @@ jenkins_node_volume = rcp.get("configuration", "jenkins_node_volume")
 
 kvm_registry_size = rcp.get("configuration", "kvm_registry_size")
 kvm_registry_port = rcp.get("configuration", "kvm_registry_port")
+kvm_toolkits_path = rcp.get("configuration", "kvm_toolkits_path")
 
 ###email configuration
 email_identity = rcp.get("configuration", "email_identity")
@@ -226,7 +227,8 @@ render(os.path.join(templates_dir, "apiserver", "env"),
         jenkins_node_ssh_port=jenkins_node_ssh_port,
         jenkins_node_volume=jenkins_node_volume,
         kvm_registry_size=kvm_registry_size,
-        kvm_registry_port=kvm_registry_port)
+        kvm_registry_port=kvm_registry_port,
+        kvm_toolkits_path=kvm_toolkits_path)
 
 
 if os.path.exists(os.path.join(apiserver_config_dir, "kvm")):
@@ -239,7 +241,14 @@ shutil.copytree(os.path.join(templates_dir, "apiserver", "kvmregistry"), os.path
 
 subprocess.call("docker run --rm -v `pwd`/config/apiserver/kvmregistry:/go golang:1.9.6 go build -o kvmregistry", shell=True)
 
-render(os.path.join(apiserver_kvm, "release.sh"), 
+render(os.path.join(templates_dir, "apiserver", "kvmregistry", "register.sh"),
+        os.path.join(apiserver_kvm, "register.sh"),
+        jenkins_host_ip=jenkins_host_ip,
+        jenkins_host_port=jenkins_host_port,
+        jenkins_node_ip=jenkins_node_ip,
+        kvm_registry_port=kvm_registry_port)
+
+render(os.path.join(templates_dir, "apiserver", "kvmregistry", "release.sh"), 
         os.path.join(apiserver_kvm, "release.sh"),
         jenkins_host_ip=jenkins_host_ip,
         jenkins_host_port=jenkins_host_port,

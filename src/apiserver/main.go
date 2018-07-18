@@ -210,8 +210,13 @@ func main() {
 
 	if systemInfo.SyncK8s == "" || utils.GetStringValue("FORCE_INIT_SYNC") == "true" {
 		initDefaultProjects()
-		//already do sync service in sync project
+		// already do sync service in sync project
 		// syncServiceWithK8s()
+	}
+
+	err = service.CreateIgnitorJob()
+	if err != nil {
+		logs.Error("Failed to create Jenkins Ignitor Job: %+v", err)
 	}
 
 	err = service.PrepareKVMHost()

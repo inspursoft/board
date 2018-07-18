@@ -150,6 +150,10 @@ func unregister(jobName string) (kvmName string) {
 }
 
 func renderOutput(response http.ResponseWriter, statusCode int, input interface{}, contentType ...string) error {
+	if statusCode != http.StatusOK {
+		response.WriteHeader(statusCode)
+		return nil
+	}
 	header := response.Header()
 	if len(contentType) > 0 {
 		header.Set("Context-type", contentType[0])
@@ -165,9 +169,6 @@ func renderOutput(response http.ResponseWriter, statusCode int, input interface{
 			return err
 		}
 		response.Write(data)
-	}
-	if statusCode != http.StatusOK {
-		response.WriteHeader(statusCode)
 	}
 	return nil
 }
@@ -191,7 +192,20 @@ func customAbort(resp http.ResponseWriter, statusCode int, err error) {
 func registerJob(response http.ResponseWriter, request *http.Request) {
 	if request.Method == http.MethodPost {
 		jobName := request.FormValue("job_name")
-		renderText(response, register(jobName))
+		nodeName := register(jobName)
+		if nodeName == "FULL" {
+			customAbort(response, http.StatusPreconditionFailed, fmt.Errorf("no KVM could be allocated"))
+			return
+		}
+		go func() {
+			time.Sleep(time.Second * 1)
+			_, err := executeScripts("register.sh", jobName, nodeName)
+			if err != nil {
+				customAbort(response, http.StatusInternalServerError, err)
+				return
+			}
+		}()
+		renderText(response, fmt.Sprintf("Allocated KVM as node: %s\n", nodeName))
 	}
 }
 
@@ -240,12 +254,14 @@ func triggerScript(response http.ResponseWriter, request *http.Request) {
 	}
 }
 
-func executeScripts(scriptName string, arg string) (string, error) {
+func executeScripts(scriptName string, args ...string) (string, error) {
 	if _, err := os.Stat(scriptName); os.IsNotExist(err) {
 		return fmt.Sprintf("Script file %s not found.", scriptName), err
 	}
 	cmd := exec.Command("chmod", "+x", scriptName)
-	cmd = exec.Command("sh", scriptName, arg)
+	totalCommands := []string{scriptName}
+	totalCommands = append(totalCommands, args...)
+	cmd = exec.Command("sh", totalCommands...)
 	var stdOutput bytes.Buffer
 	cmd.Stdout = &stdOutput
 	err := cmd.Run()
