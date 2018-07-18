@@ -4,6 +4,12 @@
   <description></description>
   <keepDependencies>false</keepDependencies>
   <properties>
+    <hudson.plugins.buildblocker.BuildBlockerProperty plugin="build-blocker-plugin@1.7.3">
+      <useBuildBlocker>false</useBuildBlocker>
+      <blockLevel>GLOBAL</blockLevel>
+      <scanQueueFor>DISABLED</scanQueueFor>
+      <blockingJobs></blockingJobs>
+    </hudson.plugins.buildblocker.BuildBlockerProperty>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
         <hudson.model.StringParameterDefinition>
@@ -69,13 +75,16 @@ def jenkins_node_ip = binding.variables.get(&quot;F05&quot;)
 def kvm_registry_port = binding.variables.get(&quot;F06&quot;)
 
 pipelineJob(job_name) {
-  label(&apos;slave&apos;)
   environmentVariables {
     env(&quot;repo_username&quot;, &quot;${repo_username}&quot;)
     env(&quot;repo_email&quot;, &quot;${repo_email}&quot;)
     env(&quot;repo_clone_url&quot;, &quot;${repo_clone_url}&quot;)
     env(&quot;jenkins_node_ip&quot;, &quot;${jenkins_node_ip}&quot;)
     env(&quot;kvm_registry_port&quot;, &quot;${kvm_registry_port}&quot;)
+  }
+  blockOn(&quot;ignitor&quot;) {
+    blockLevel(&apos;NODE&apos;)
+    scanQueueFor(&apos;ALL&apos;)
   }
   parameters {
     stringParam {

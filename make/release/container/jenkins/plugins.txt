@@ -55,6 +55,7 @@ config-file-provider: 2.18
 pipeline-stage-view: 2.10
 token-macro: 2.5
 workflow-multibranch: 2.19
+build-blocker-plugin: 1.7.3
 script-security: 1.44
 git-server: 1.7
 pipeline-model-declarative-agent: 1.1.1

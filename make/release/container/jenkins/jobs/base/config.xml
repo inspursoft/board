@@ -4,6 +4,12 @@
   <description></description>
   <keepDependencies>false</keepDependencies>
   <properties>
+    <hudson.plugins.buildblocker.BuildBlockerProperty plugin="build-blocker-plugin@1.7.3">
+      <useBuildBlocker>false</useBuildBlocker>
+      <blockLevel>GLOBAL</blockLevel>
+      <scanQueueFor>DISABLED</scanQueueFor>
+      <blockingJobs></blockingJobs>
+    </hudson.plugins.buildblocker.BuildBlockerProperty>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
         <hudson.model.StringParameterDefinition>
@@ -14,7 +20,7 @@
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>F01</name>
-          <description>Set repo URL for Jenkinsfile</description>
+          <description>Set repo URL for Jenkinsfile.</description>
           <defaultValue></defaultValue>
           <trim>false</trim>
         </hudson.model.StringParameterDefinition>
@@ -32,25 +38,19 @@
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>F04</name>
-          <description>Set Jenkins master host IP</description>
+          <description>Repo clone URL.</description>
           <defaultValue></defaultValue>
           <trim>false</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>F05</name>
-          <description>Set Jenkins master host port</description>
+          <description>Set Jenkins node IP.</description>
           <defaultValue></defaultValue>
           <trim>false</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>F06</name>
-          <description>Set Jenkins node IP</description>
-          <defaultValue></defaultValue>
-          <trim>false</trim>
-        </hudson.model.StringParameterDefinition>
-        <hudson.model.StringParameterDefinition>
-          <name>F07</name>
-          <description>Set KVM registry port</description>
+          <description>Set KVM registry port.</description>
           <defaultValue></defaultValue>
           <trim>false</trim>
         </hudson.model.StringParameterDefinition>
@@ -66,58 +66,32 @@
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <javaposse.jobdsl.plugin.ExecuteDslScripts plugin="job-dsl@1.69">
-      <scriptText>def jobName = binding.variables.get(&quot;F00&quot;)
+      <scriptText>def job_name = binding.variables.get(&quot;F00&quot;)
 def jenkinsfile_repo_url = binding.variables.get(&quot;F01&quot;)
 def repo_username = binding.variables.get(&quot;F02&quot;)
 def repo_email = binding.variables.get(&quot;F03&quot;)
-def jenkins_host_ip = binding.variables.get(&quot;F04&quot;)
-def jenkins_host_port = binding.variables.get(&quot;F05&quot;)
-def jenkins_node_ip = binding.variables.get(&quot;F06&quot;)
-def kvm_registry_port = binding.variables.get(&quot;F07&quot;)
-pipelineJob(jobName) {
-  quietPeriod(3)
+def repo_clone_url = binding.variables.get(&quot;F04&quot;)
+def jenkins_node_ip = binding.variables.get(&quot;F05&quot;)
+def kvm_registry_port = binding.variables.get(&quot;F06&quot;)
+
+pipelineJob(job_name) {
   environmentVariables {
-    env(&quot;jenkins_host_ip&quot;, &quot;${jenkins_host_ip}&quot;)
-    env(&quot;jenkins_host_port&quot;, &quot;${jenkins_host_port}&quot;)
+    env(&quot;repo_username&quot;, &quot;${repo_username}&quot;)
+    env(&quot;repo_email&quot;, &quot;${repo_email}&quot;)
+    env(&quot;repo_clone_url&quot;, &quot;${repo_clone_url}&quot;)
     env(&quot;jenkins_node_ip&quot;, &quot;${jenkins_node_ip}&quot;)
     env(&quot;kvm_registry_port&quot;, &quot;${kvm_registry_port}&quot;)
   }
-  triggers {
-    genericTrigger {
-      genericVariables {
-        genericVariable {
-          key(&quot;repo_name&quot;)
-          value(&quot;\$.repository.name&quot;)
-          expressionType(&quot;JSONPath&quot;)
-          regexpFilter(&quot;&quot;)
-          defaultValue(&quot;&quot;)
-        }
-        genericVariable {
-          key(&quot;base_repo_url&quot;)
-          value(&quot;\$.repository.clone_url&quot;)
-          expressionType(&quot;JSONPath&quot;)
-          regexpFilter(&quot;&quot;)
-          defaultValue(&quot;&quot;)
-        }
-        genericVariable {
-          key(&quot;username&quot;)
-          value(&quot;\$.repository.owner.username&quot;)
-          expressionType(&quot;JSONPath&quot;)
-          regexpFilter(&quot;&quot;)
-          defaultValue(&quot;&quot;)
-        }
-        genericVariable {
-          key(&quot;email&quot;)
-          value(&quot;\$.repository.owner.email&quot;)
-          expressionType(&quot;JSONPath&quot;)
-          regexpFilter(&quot;&quot;)
-          defaultValue(&quot;&quot;)
-        }
-      }
-      printContributedVariables(true)
-      printPostContent(true)
-      regexpFilterText(&quot;\$repo_name&quot;)
-      regexpFilterExpression(&quot;^(${jobName})\$&quot;)
+  blockOn(&quot;ignitor&quot;) {
+    blockLevel(&apos;NODE&apos;)
+    scanQueueFor(&apos;ALL&apos;)
+  }
+  parameters {
+    stringParam {
+      name(&quot;node_name&quot;)
+      defaultValue(&quot;&quot;)
+      trim(true)
+      description(&quot;Set node name.&quot;)
     }
   }
   definition {

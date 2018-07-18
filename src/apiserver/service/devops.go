@@ -331,3 +331,7 @@ func PrepareKVMHost() error {
 		cd %s && nohup ./kvmregistry -size %s -port %s > kvmregistry.out 2>&1 &`,
 		kvmRegistryNodePath, kvmRegistrySize(), kvmRegistryPort()))
 }
+
+func ReleaseKVMRegistryByJobName(jobName string) error {
+	return utils.SimpleGetRequestHandle(fmt.Sprintf("http://%s:%s/release-node?job_name=%s", jenkinsNodeIP(), kvmRegistryPort(), jobName))
+}
