@@ -26,14 +26,15 @@ const (
 )
 
 func (d *deployments) Create(deployment *model.Deployment) (*model.Deployment, []byte, error) {
-	k8sDep := types.ToK8sDeployment(deployment)
-	k8sDep, err := d.deploy.Create(k8sDep)
+	k8sDeployment := types.ToK8sDeployment(deployment)
+	k8sDep, err := d.deploy.Create(k8sDeployment)
 	if err != nil {
 		logs.Error("Create deployment of %s/%s failed. Err:%+v", deployment.Name, d.namespace, err)
 		return nil, nil, err
 	}
 	modelDep := types.FromK8sDeployment(k8sDep)
-	deployfile, err := yaml.Marshal(k8sDep)
+	deploymentConfig := types.GenerateDeploymentConfig(k8sDep)
+	deployfile, err := yaml.Marshal(deploymentConfig)
 	if err != nil {
 		logs.Error("Marshal deployment failed, error: %v", err)
 		return modelDep, nil, err
@@ -43,14 +44,14 @@ func (d *deployments) Create(deployment *model.Deployment) (*model.Deployment, [
 }
 
 func (d *deployments) Update(deployment *model.Deployment) (*model.Deployment, []byte, error) {
-	k8sDep := types.ToK8sDeployment(deployment)
-	k8sDep, err := d.deploy.Update(k8sDep)
+	k8sDeployment := types.ToK8sDeployment(deployment)
+	k8sDep, err := d.deploy.Update(k8sDeployment)
 	if err != nil {
 		logs.Error("Update deployment of %s/%s failed. Err:%+v", deployment.Name, d.namespace, err)
 		return nil, nil, err
 	}
-
-	deploymentfileInfo, err := yaml.Marshal(k8sDep)
+	deploymentConfig := types.GenerateDeploymentConfig(k8sDep)
+	deploymentfileInfo, err := yaml.Marshal(deploymentConfig)
 	if err != nil {
 		logs.Error("Marshal deployment failed, error: %v", err)
 		return nil, nil, err
@@ -60,14 +61,15 @@ func (d *deployments) Update(deployment *model.Deployment) (*model.Deployment, [
 }
 
 func (d *deployments) UpdateStatus(deployment *model.Deployment) (*model.Deployment, []byte, error) {
-	k8sDep := types.ToK8sDeployment(deployment)
-	k8sDep, err := d.deploy.UpdateStatus(k8sDep)
+	k8sDeployment := types.ToK8sDeployment(deployment)
+	k8sDep, err := d.deploy.UpdateStatus(k8sDeployment)
 	if err != nil {
 		logs.Error("Update deployment status of %s/%s failed. Err:%+v", deployment.Name, d.namespace, err)
 		return nil, nil, err
 	}
 
-	deploymentfileInfo, err := yaml.Marshal(k8sDep)
+	deploymentConfig := types.GenerateDeploymentConfig(k8sDep)
+	deploymentfileInfo, err := yaml.Marshal(deploymentConfig)
 	if err != nil {
 		logs.Error("Marshal service failed, error: %v", err)
 		return nil, nil, err
@@ -91,8 +93,8 @@ func (d *deployments) Get(name string) (*model.Deployment, []byte, error) {
 		logs.Error("Get deployment of %s/%s failed. Err:%+v", name, d.namespace, err)
 		return nil, nil, err
 	}
-	deployment.ObjectMeta.ResourceVersion = ""
-	deploymentfileInfo, err := yaml.Marshal(deployment)
+	deploymentConfig := types.GenerateDeploymentConfig(deployment)
+	deploymentfileInfo, err := yaml.Marshal(deploymentConfig)
 	if err != nil {
 		logs.Error("Marshal deployment failed, error: %v", err)
 		return nil, nil, err
@@ -175,21 +177,22 @@ func (d *deployments) CheckYaml(r io.Reader) (*model.Deployment, error) {
 }
 
 func (d *deployments) PatchToK8s(name string, pt model.PatchType, deployment *model.Deployment) (*model.Deployment, []byte, error) {
-	k8sDep := types.ToK8sDeployment(deployment)
+	k8sDeployment := types.ToK8sDeployment(deployment)
 
-	serviceRollConfig, err := json.Marshal(k8sDep)
+	serviceRollConfig, err := json.Marshal(k8sDeployment)
 	if err != nil {
-		logs.Debug("Marshal rollingUpdateConfig failed %+v\n", k8sDep)
+		logs.Debug("Marshal rollingUpdateConfig failed %+v\n", k8sDeployment)
 		return nil, nil, err
 	}
 
-	k8sDep, err = d.deploy.Patch(name, k8stypes.PatchType(pt), serviceRollConfig)
+	k8sDep, err := d.deploy.Patch(name, k8stypes.PatchType(pt), serviceRollConfig)
 	if err != nil {
 		logs.Error("PatchK8s deployment of %s/%s failed. Err:%+v", deployment.Name, d.namespace, err)
 		return nil, nil, err
 	}
 
-	deploymentfileInfo, err := yaml.Marshal(k8sDep)
+	deploymentConfig := types.GenerateDeploymentConfig(k8sDep)
+	deploymentfileInfo, err := yaml.Marshal(deploymentConfig)
 	if err != nil {
 		logs.Error("Marshal deployment failed, error: %v", err)
 		return nil, nil, err

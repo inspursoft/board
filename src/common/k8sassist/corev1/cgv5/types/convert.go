@@ -943,3 +943,70 @@ func ToK8sScale(scale *model.Scale) *v1beta1.Scale {
 		Status:     v1beta1.ScaleStatus(scale.Status),
 	}
 }
+
+func GenerateDeploymentConfig(deployment *appsv1beta2.Deployment) *appsv1beta2.Deployment {
+	containersConfig := []v1.Container{}
+	for _, container := range deployment.Spec.Template.Spec.Containers {
+		containersConfig = append(containersConfig, v1.Container{
+			Name:           container.Name,
+			Image:          container.Image,
+			Command:        container.Command,
+			Args:           container.Args,
+			WorkingDir:     container.WorkingDir,
+			Ports:          container.Ports,
+			EnvFrom:        container.EnvFrom,
+			Env:            container.Env,
+			VolumeMounts:   container.VolumeMounts,
+			LivenessProbe:  container.LivenessProbe,
+			ReadinessProbe: container.ReadinessProbe,
+		})
+	}
+	return &appsv1beta2.Deployment{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       deploymentKind,
+			APIVersion: deploymentAPIVersion,
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Labels:    deployment.ObjectMeta.Labels,
+			Name:      deployment.ObjectMeta.Name,
+			Namespace: deployment.ObjectMeta.Namespace,
+		},
+		Spec: appsv1beta2.DeploymentSpec{
+			Replicas: deployment.Spec.Replicas,
+			Selector: deployment.Spec.Selector,
+			Template: v1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: deployment.Spec.Template.ObjectMeta.Labels,
+					Name:   deployment.Spec.Template.ObjectMeta.Name,
+				},
+				Spec: v1.PodSpec{
+					Affinity:           deployment.Spec.Template.Spec.Affinity,
+					Volumes:            deployment.Spec.Template.Spec.Volumes,
+					NodeSelector:       deployment.Spec.Template.Spec.NodeSelector,
+					ServiceAccountName: deployment.Spec.Template.Spec.ServiceAccountName,
+					ImagePullSecrets:   deployment.Spec.Template.Spec.ImagePullSecrets,
+					InitContainers:     deployment.Spec.Template.Spec.InitContainers,
+					Containers:         containersConfig,
+				},
+			},
+		},
+	}
+}
+
+func GenerateServiceConfig(service *v1.Service) *v1.Service {
+	return &v1.Service{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       serviceKind,
+			APIVersion: serviceAPIVersion,
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      service.ObjectMeta.Name,
+			Namespace: service.ObjectMeta.Namespace,
+		},
+		Spec: v1.ServiceSpec{
+			Ports:    service.Spec.Ports,
+			Selector: service.Spec.Selector,
+			Type:     service.Spec.Type,
+		},
+	}
+}
