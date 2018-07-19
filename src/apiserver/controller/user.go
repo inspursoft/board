@@ -321,7 +321,7 @@ func (u *SystemAdminController) UpdateUserAction() {
 		u.serveStatus(http.StatusBadRequest, "Invalid user ID.")
 		return
 	}
-	if u.currentUser.ID == int64(userID) {
+	if userID == 1 || u.currentUser.ID == int64(userID) {
 		u.customAbort(http.StatusForbidden, "Insufficient privileges.")
 		return
 	}
@@ -388,8 +388,8 @@ func (u *SystemAdminController) ToggleSystemAdminAction() {
 		u.customAbort(http.StatusNotFound, "No found user with provided user ID.")
 		return
 	}
-	if u.currentUser.ID == user.ID {
-		u.customAbort(http.StatusBadRequest, "Self system admin cannot be changed.")
+	if userID == 1 || u.currentUser.ID == user.ID {
+		u.customAbort(http.StatusBadRequest, "Self or system admin cannot be changed.")
 		return
 	}
 
