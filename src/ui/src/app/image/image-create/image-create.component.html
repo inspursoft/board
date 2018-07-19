@@ -1,6 +1,11 @@
 <clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'lg'" [clrModalClosable]="false" [clrModalPreventClose]="true">
   <div class="modal-title title-container">
-    <span>{{ "IMAGE.CREATE_IMAGE_TITLE" | translate }}</span>
+    <span class="title">{{ "IMAGE.CREATE_IMAGE_TITLE" | translate }}</span>
+    <clr-alert class="alert-info-danger" [(clrAlertClosed)]="!isNewImageAlertOpen" [clrAlertType]="newImageAlertType">
+      <div class="alert-item">
+        <span class="alert-text">{{newImageErrMessage | translate}}{{newImageErrReason}}</span>
+      </div>
+    </clr-alert>
     <button class="close"
             [ngClass]="{'disabled':isBuildImageWIP}"
             (click)="isOpen = false"
@@ -8,11 +13,6 @@
     </button>
   </div>
   <div class="modal-body modal-body-reset-position">
-    <clr-alert [(clrAlertClosed)]="!isNewImageAlertOpen" [clrAlertType]="newImageAlertType">
-      <div class="alert-item">
-        <span class="alert-text">{{newImageErrMessage | translate}}{{newImageErrReason}}</span>
-      </div>
-    </clr-alert>
     <div class="modal-body-container" [ngSwitch]="imageBuildMethod">
       <div class="create-image-container">
         <div class="btn-group build-method-container">
