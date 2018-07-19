@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { K8sService } from '../../service.k8s';
 import { MessageService } from '../../../shared/message-service/message.service';
 import { AppInitService } from '../../../app.init.service';
@@ -6,6 +6,7 @@ import { Service } from "../../service";
 import { Subject } from "rxjs/Subject";
 import { Observable } from "rxjs/Observable";
 import { HttpErrorResponse } from "@angular/common/http";
+import "rxjs/add/operator/do"
 
 class NodeURL {
   url: string;
@@ -18,6 +19,10 @@ class NodeURL {
     this.route = route;
   }
 }
+
+const K8S_HOSTNAME_KEY = 'kubernetes.io/hostname';
+const YAML_TYPE_DEPLOYMENT = 'deployment';
+const YAML_TYPE_SERVICE = 'service';
 
 @Component({
   selector: 'service-detail',
@@ -33,6 +38,7 @@ export class ServiceDetailComponent {
   deploymentYamlFile: string = "";
   serviceYamlFile: string = "";
   closeNotification:Subject<any>;
+  k8sHostName: string = "";
 
   constructor(private appInitService: AppInitService,
               private k8sService: K8sService,
@@ -52,9 +58,10 @@ export class ServiceDetailComponent {
     }
   }
 
-  openModal(s: Service): Observable<any> {
-    this.curService = s;
-    this.getServiceDetail(s.service_id, s.service_project_name, s.service_owner_name);
+  openModal(service: Service): Observable<any> {
+    this.curService = service;
+    this.getDeploymentYamlFile()
+      .subscribe(() => this.getServiceDetail(service.service_id, service.service_project_name, service.service_owner_name));
     return this.closeNotification.asObservable();
   }
 
@@ -68,9 +75,10 @@ export class ServiceDetailComponent {
           for (let i = 0; i < arrNode.length; i++) {
             let node = arrNode[i];
             if (node.status == 1) {
+              let host = this.k8sHostName && this.k8sHostName.length > 0 ? this.k8sHostName : node.node_ip;
               let port = arrNodePort[Math.floor(Math.random() * arrNodePort.length)];
               let nodeInfo = {
-                url: `http://${node.node_ip}:${port}`,
+                url: `http://${host}:${port}`,
                 identity: `${ownerName}_${projectName}_${this.curService.service_name}`,
                 route: `http://${this.boardHost}/deploy/${ownerName}/${projectName}/${this.curService.service_name}`
               };
@@ -90,25 +98,29 @@ export class ServiceDetailComponent {
     })
   }
 
-  getDeploymentYamlFile() {
-    if (this.deploymentYamlFile.length == 0) {
-      this.k8sService.getServiceYamlFile(this.curService.service_project_name, this.curService.service_name, "deployment")
-        .then((res: string) => this.deploymentYamlFile = res)
-        .catch((err: HttpErrorResponse) => {
-          this.isOpenServiceDetail = false;
-          this.messageService.dispatchError(err);
-        })
-    }
+  getDeploymentYamlFile(): Observable<string> {
+    return this.k8sService.getServiceYamlFile(this.curService.service_project_name, this.curService.service_name, YAML_TYPE_DEPLOYMENT)
+      .do((res: string) => {
+        this.deploymentYamlFile = res;
+        let arr: Array<string> = res.split(/[\n]/g);
+        let k8sHost = arr.find(value => value.indexOf(K8S_HOSTNAME_KEY) > -1);
+        if (k8sHost && k8sHost.length > 0) {
+          this.k8sHostName = k8sHost.split(':')[1].trim();
+        }
+      }, (err: HttpErrorResponse) => {
+        this.isOpenServiceDetail = false;
+        this.messageService.dispatchError(err);
+      });
   }
 
   getServiceYamlFile() {
     if (this.serviceYamlFile.length == 0) {
-      this.k8sService.getServiceYamlFile(this.curService.service_project_name, this.curService.service_name, "service")
-        .then((res: string) => this.serviceYamlFile = res)
-        .catch((err: HttpErrorResponse) => {
-          this.isOpenServiceDetail = false;
-          this.messageService.dispatchError(err);
-        })
+      this.k8sService.getServiceYamlFile(this.curService.service_project_name, this.curService.service_name, YAML_TYPE_SERVICE)
+        .subscribe((res: string) => this.serviceYamlFile = res,
+          (err: HttpErrorResponse) => {
+            this.isOpenServiceDetail = false;
+            this.messageService.dispatchError(err);
+          })
     }
   }
 }
