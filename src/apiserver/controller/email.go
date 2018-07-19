@@ -38,7 +38,7 @@ type grafanaNotification struct {
 type evalMatch struct {
 	Metric string                 `json:"metric"`
 	Tags   map[string]interface{} `json:"tags"`
-	Value  int                    `json:"value"`
+	Value  interface{}            `json:"value"`
 }
 
 var emailIdentity = ""
