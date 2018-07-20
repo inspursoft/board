@@ -1,12 +1,10 @@
 <clr-main-container>
-  <header-content (onMainMenuIconClick)="isShowMainMenu = !isShowMainMenu"
-                  [isShowMainMenuIcon]="true"
-                  [isSignIn]="isSignIn"
+  <header-content [isSignIn]="isSignIn"
                   [hasSignedIn]="hasSignedIn"
                   [searchContent]="searchContent"></header-content>
   <global-message></global-message>
   <div class="content-container" *ngIf="!isOnlyShowGrafanaView">
-    <nav class="sidenav" *ngIf="hasSignedIn && isShowMainMenu">
+    <nav class="sidenav" *ngIf="hasSignedIn">
       <section class="sidenav-content">
         <a href="javascript:void(0)" class="nav-link" [routerLinkActive]="['active']" routerLink="/dashboard"
            (click)="navigateTo('/dashboard')">
