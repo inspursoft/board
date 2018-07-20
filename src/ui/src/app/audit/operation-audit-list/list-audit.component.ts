@@ -5,6 +5,8 @@ import { ClrDatagridSortOrder, ClrDatagridStateInterface } from "@clr/angular";
 import { OperationAuditService } from "../audit-service";
 import { HttpErrorResponse } from "@angular/common/http";
 import { User } from "../../user-center/user";
+import { Message } from "../../shared/message-service/message";
+import { MESSAGE_TYPE } from "app/shared/shared.const";
 
 @Component({
   selector: 'list-audit',
@@ -120,19 +122,26 @@ export class ListAuditComponent implements OnInit {
   }
 
   queryListData() {
-    setTimeout(() => {
-      this.isInLoading = true;
-      this.auditQueryData.beginTimestamp = this.beginDate ? this.beginDate.getTime() : 0;
-      this.auditQueryData.endTimestamp = this.endDate ? this.endDate.getTime() : 0;
-      this.auditService.getAuditList(this.auditQueryData).subscribe(paginatedProjects => {
-        this.totalRecordCount = paginatedProjects.pagination.total_count;
-        this.auditsListData = paginatedProjects['operation_list'];
-        this.isInLoading = false;
-      }, (err: HttpErrorResponse) => {
-        this.messageService.dispatchError(err, 'PROJECT.FAILED_TO_RETRIEVE_PROJECTS');
-        this.isInLoading = false;
-      })
-    });
+    if (this.beginDate.getTime() < this.endDate.getTime()) {
+      setTimeout(() => {
+        this.isInLoading = true;
+        this.auditQueryData.beginTimestamp = this.beginDate ? this.beginDate.getTime() : 0;
+        this.auditQueryData.endTimestamp = this.endDate ? this.endDate.getTime() : 0;
+        this.auditService.getAuditList(this.auditQueryData).subscribe(paginatedProjects => {
+          this.totalRecordCount = paginatedProjects.pagination.total_count;
+          this.auditsListData = paginatedProjects['operation_list'];
+          this.isInLoading = false;
+        }, (err: HttpErrorResponse) => {
+          this.messageService.dispatchError(err);
+          this.isInLoading = false;
+        })
+      });
+    } else {
+      let msg = new Message();
+      msg.type = MESSAGE_TYPE.COMMON_ERROR;
+      msg.message = "AUDIT.AUDIT_QUERY_DATE_ERROR";
+      this.messageService.inlineAlertMessage(msg)
+    }
   }
 
   getObjectTitle(key: string): string {

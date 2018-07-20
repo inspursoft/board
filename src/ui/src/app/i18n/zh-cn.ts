@@ -459,7 +459,8 @@ export const LANG_ZH_CN = {
     "AUDIT_UNKNOWN": "未知",
     "AUDIT_SUCCESS": "成功",
     "AUDIT_FAILED": "失败",
-    "AUDIT_ERROR": "错误"
+    "AUDIT_ERROR": "错误",
+    "AUDIT_QUERY_DATE_ERROR":"开始日期不能大于结束日期"
   },
   "GLOBAL_SEARCH": {
     "PROJECTS": "项目",
