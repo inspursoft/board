@@ -209,7 +209,7 @@ export class K8sService {
       .then((res: HttpResponse<Array<string>>) => res.body || Array<string>());
   }
 
-  getServiceYamlFile(projectName: string, serviceName: string, yamlType: string): Promise<string> {
+  getServiceYamlFile(projectName: string, serviceName: string, yamlType: string): Observable<string> {
     return this.http
       .get(`/api/v1/services/yaml/download`, {
         observe: "response",
@@ -220,8 +220,7 @@ export class K8sService {
           yaml_type: yamlType
         }
       })
-      .toPromise()
-      .then((res: HttpResponse<string>) => res.body);
+      .map((res: HttpResponse<string>) => res.body);
   }
 
   getServiceImages(projectName: string, serviceName: string): Promise<Array<ImageIndex>> {

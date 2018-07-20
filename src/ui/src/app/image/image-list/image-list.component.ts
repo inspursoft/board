@@ -148,6 +148,8 @@ export class ImageListComponent implements OnInit, OnDestroy {
     this.isBuildImageWIP = true;
     this.selectedProjectName = "";
     this.selectedProjectId = 0;
+    this.dropdownDefaultText = "IMAGE.CREATE_IMAGE_SELECT_PROJECT";
+    this.createImageMethod = CreateImageMethod.None;
   }
 
   onBuildImageCompleted(imageName: string) {

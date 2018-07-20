@@ -125,9 +125,13 @@ button.close.disabled {
 
 div.title-container {
   display: flex;
-  height: 30px;
-  justify-content: space-between;
-  align-content: center;
+  height: 40px;
+  align-items: center;
+}
+
+span.title {
+  font-size: 18px;
+  min-width: 190px;
 }
 
 div.modal-body-reset-position{
@@ -178,4 +182,8 @@ cs-dropdown.margin-left-120{
 
 cs-input.margin-left-180{
   margin-left: 180px;
+}
+
+clr-alert.alert-info-danger {
+  flex-basis: 100%;
 }
