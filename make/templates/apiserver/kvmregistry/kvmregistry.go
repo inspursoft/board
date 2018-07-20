@@ -14,7 +14,6 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
-	"time"
 )
 
 var (
@@ -197,15 +196,7 @@ func registerJob(response http.ResponseWriter, request *http.Request) {
 			customAbort(response, http.StatusPreconditionFailed, fmt.Errorf("no KVM could be allocated"))
 			return
 		}
-		go func() {
-			time.Sleep(time.Second * 1)
-			_, err := executeScripts("register.sh", jobName, nodeName)
-			if err != nil {
-				customAbort(response, http.StatusInternalServerError, err)
-				return
-			}
-		}()
-		renderText(response, fmt.Sprintf("Allocated KVM as node: %s\n", nodeName))
+		renderText(response, nodeName)
 	}
 }
 
@@ -238,19 +229,14 @@ func triggerScript(response http.ResponseWriter, request *http.Request) {
 	if request.Method == http.MethodGet {
 		scriptName := request.FormValue("name")
 		arg := request.FormValue("arg")
-		response.WriteHeader(http.StatusOK)
-		defer func() {
-			go func() {
-				time.Sleep(time.Second * 1)
-				log.Println("Executing script...")
-				output, err := executeScripts(scriptName, arg)
-				if err != nil {
-					internalError(response, err)
-					return
-				}
-				renderText(response, output)
-			}()
-		}()
+		args := strings.Split(arg, ",")
+		log.Printf("Executing script name: %s, args: %+v", scriptName, args)
+		output, err := executeScripts(scriptName, args...)
+		if err != nil {
+			internalError(response, err)
+			return
+		}
+		renderText(response, output)
 	}
 }
 

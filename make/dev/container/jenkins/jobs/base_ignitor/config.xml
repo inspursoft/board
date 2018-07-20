@@ -71,7 +71,10 @@ elif [ \$status -eq 412 ]; then
 elif [ \$status -ne 200 ]; then
   echo &quot;Unexpected error occurred.&quot;
   exit 1
-fi&quot;&quot;&quot;)
+fi
+node=\$(curl -X POST &quot;http://${jenkins_node_ip}:${kvm_registry_port}/register-job?job_name=\${repo_name}&quot;)
+curl &quot;http://${jenkins_node_ip}:${kvm_registry_port}/trigger-script?name=register.sh&amp;arg=\${repo_name},\${node}&quot;
+&quot;&quot;&quot;)
     }
   }
 }</scriptText>
