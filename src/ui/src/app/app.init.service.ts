@@ -5,6 +5,24 @@ import { Observable } from 'rxjs/Observable';
 import { CookieService } from 'ngx-cookie';
 import { GUIDE_STEP } from "./shared/shared.const";
 
+export interface IAuditOperationData {
+  operation_id?: number,
+  operation_creation_time?: string,
+  operation_update_time?: string,
+  operation_deleted?: number,
+  operation_user_id: number,
+  operation_user_name: string,
+  operation_project_name: string,
+  operation_project_id: number,
+  operation_tag?: string,
+  operation_comment?: string,
+  operation_object_type: string,
+  operation_object_name: string,
+  operation_action: string,
+  operation_status: string,
+  operation_path?: string
+}
+
 @Injectable()
 export class AppTokenService {
   _tokenString: string | null;
@@ -96,6 +114,10 @@ export class AppInitService {
         this.systemInfo = res.body;
         return this.systemInfo
       });
+  }
+
+  setAuditLog(auditData: IAuditOperationData): Observable<any> {
+    return this.http.post('/api/v1/operations', auditData, {observe: "response"})
   }
 
 }
