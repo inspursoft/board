@@ -165,6 +165,7 @@ export class DashboardService {
       result.list.push(lineType == LineType.ltService ? "total" :"average");
       let listLogs: Array<Object> = obs.body[lineListQuery.data_list_filed_key];
       if (listLogs && listLogs.length > 0) {//for list
+        listLogs.sort((a: Object, b: Object) => a[lineListQuery.data_list_name_key] > (b[lineListQuery.data_list_name_key]) ? 1 : -1);
         listLogs.forEach((item: Object) => {
           result.list.push(item[lineListQuery.data_list_name_key]);
         });
