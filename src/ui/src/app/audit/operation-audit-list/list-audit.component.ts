@@ -6,7 +6,7 @@ import { OperationAuditService } from "../audit-service";
 import { HttpErrorResponse } from "@angular/common/http";
 import { User } from "../../user-center/user";
 import { Message } from "../../shared/message-service/message";
-import { MESSAGE_TYPE } from "app/shared/shared.const";
+import { MESSAGE_TYPE } from "../../shared/shared.const";
 
 @Component({
   selector: 'list-audit',
