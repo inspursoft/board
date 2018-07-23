@@ -1,7 +1,6 @@
 package apps
 
 import (
-	"errors"
 	"git/inspursoft/board/src/common/k8sassist/corev1/cgv5/types"
 	"git/inspursoft/board/src/common/model"
 
@@ -119,8 +118,8 @@ func (s *services) CreateByYaml(r io.Reader) (*model.Service, error) {
 	}
 
 	if service.ObjectMeta.Namespace != s.namespace {
-		logs.Error(namespacesErr)
-		return nil, errors.New(namespacesErr)
+		logs.Error(namespacesErr.Error())
+		return nil, namespacesErr
 	}
 
 	serviceInfo, err := s.service.Create(&service)
@@ -147,8 +146,8 @@ func (s *services) CheckYaml(r io.Reader) (*model.Service, error) {
 	}
 
 	if service.ObjectMeta.Namespace != s.namespace {
-		logs.Error(namespacesErr)
-		return nil, errors.New(namespacesErr)
+		logs.Error(namespacesErr.Error())
+		return nil, namespacesErr
 	}
 
 	return types.FromK8sService(&service), nil

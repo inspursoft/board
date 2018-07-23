@@ -17,7 +17,7 @@ func (o *OperationController) Prepare() {
 }
 
 func (o *OperationController) OperationList() {
-	if o.isSysAdmin {
+	if !o.isSysAdmin {
 		o.customAbort(http.StatusForbidden, "Insufficient permissions.")
 		return
 	}
@@ -41,7 +41,7 @@ func (o *OperationController) OperationList() {
 	o.renderJSON(paginatedoperations)
 }
 
-func (o *OperationController) CreateOperationAduit() {
+func (o *OperationController) CreateOperation() {
 	operation := model.Operation{}
 	err := o.resolveBody(&operation)
 	if err != nil {

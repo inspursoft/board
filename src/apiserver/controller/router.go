@@ -213,7 +213,7 @@ func InitRouter() {
 				"post:GrafanaNotification"),
 			beego.NSRouter("/operations",
 				&OperationController{},
-				"get:OperationList;post:CreateOperationAduit"),
+				"get:OperationList;post:CreateOperation"),
 			beego.NSRouter("/forgot-password",
 				&EmailController{},
 				"post:ForgotPasswordEmail"),
