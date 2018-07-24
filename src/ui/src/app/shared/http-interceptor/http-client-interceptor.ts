@@ -17,7 +17,7 @@ export class HttpClientInterceptor implements HttpInterceptor {
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     let authReq: HttpRequest<any> = req.clone({
-      headers: req.headers.set("Content-Type", 'application/json')
+      headers:  req.headers
     });
     if (this.appTokenService.token) {
       authReq = authReq.clone({

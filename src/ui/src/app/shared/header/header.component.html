@@ -2,12 +2,6 @@
   <change-password *ngIf="showChangePassword" [(isOpen)]="showChangePassword"></change-password>
   <user-setting *ngIf="showAccountSetting" [(isOpen)]="showAccountSetting"></user-setting>
   <div class="branding">
-    <a *ngIf="isShowMainMenuIcon"
-       href="javascript:void(0)"
-       class="nav-link"
-       (click)="clickMenuIconAction()">
-      <clr-icon shape="justify-text" class="main-menu"></clr-icon>
-    </a>
     <a href="javascript:void(0)" class="nav-link" (click)="clickLogoAction()">
       <span class="clr-icon clr-clarity-logo"></span>
       <img [src]="brandLogoUrl" alt="board-logo"/>

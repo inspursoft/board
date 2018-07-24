@@ -458,7 +458,8 @@ export const LANG_EN_US = {
     "AUDIT_UNKNOWN": "Unknown",
     "AUDIT_SUCCESS": "Success",
     "AUDIT_FAILED": "Failed",
-    "AUDIT_ERROR": "Error"
+    "AUDIT_ERROR": "Error",
+    "AUDIT_QUERY_DATE_ERROR":"The begin date can't more than the end date"
   },
   "GLOBAL_SEARCH": {
     "PROJECTS": "Projects",

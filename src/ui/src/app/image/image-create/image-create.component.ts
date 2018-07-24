@@ -358,7 +358,20 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
           this.processImageSubscription.unsubscribe();
         }
         if (consoleTextArr.find(value => value.indexOf("Finished: FAILURE") > -1)) {
-          // this.cleanImageConfig();
+          this.isBuildImageWIP = false;
+          this.isUploadFileWIP = false;
+          this.cancelButtonDisable = true;
+          this.isNeedAutoRefreshImageList = false;
+          this.appInitService.setAuditLog({
+            operation_user_id: this.appInitService.currentUser["user_id"],
+            operation_user_name: this.appInitService.currentUser["user_name"],
+            operation_project_id: this.projectId,
+            operation_project_name: this.projectName,
+            operation_object_type: "images",
+            operation_object_name: "",
+            operation_action: "create",
+            operation_status: "Failed"
+          }).subscribe();
           this.processImageSubscription.unsubscribe();
         }
       }, err => err, () => {
