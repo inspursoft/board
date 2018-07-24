@@ -321,31 +321,9 @@ func (p *ServiceController) DeleteServiceAction() {
 	p.resolveUserPrivilegeByID(s.ProjectID)
 
 	// Call stop service if running
-	switch s.Status {
-	case running:
-		//err = stopService(s)
+	if s.Status != stopped {
 		err = service.StopServiceK8s(s)
 		if err != nil {
-			p.internalError(err)
-			return
-		}
-	case uncompleted:
-		timeInt := time.Now().Sub(s.UpdateTime)
-		logs.Debug("uncompleted status in %+v", timeInt)
-		if timeInt < startingDuration {
-			p.customAbort(http.StatusBadRequest,
-				fmt.Sprintf("Invalid request %d in starting status", s.ID))
-			return
-		}
-		err = service.CleanDeploymentK8s(s)
-		if err != nil {
-			logs.Error("Failed to clean deployment %s", s.Name)
-			p.internalError(err)
-			return
-		}
-		err = service.CleanServiceK8s(s)
-		if err != nil {
-			logs.Error("Failed to clean service %s", s.Name)
 			p.internalError(err)
 			return
 		}
@@ -814,13 +792,7 @@ func (p *ServiceController) DeleteDeployAction() {
 		ProjectName: configService.ProjectName,
 	}
 
-	err = service.CleanDeploymentK8s(&s)
-	if err != nil {
-		logs.Error("Failed to clean deployment %s", s.Name)
-		p.internalError(err)
-		return
-	}
-	err = service.CleanServiceK8s(&s)
+	err = service.StopServiceK8s(&s)
 	if err != nil {
 		logs.Error("Failed to clean service %s", s.Name)
 		p.internalError(err)
