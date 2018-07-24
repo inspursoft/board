@@ -3,7 +3,6 @@ package controller
 import (
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
-	"git/inspursoft/board/src/common/utils"
 	"net/http"
 
 	"github.com/astaxie/beego/logs"
@@ -15,13 +14,11 @@ type OperationController struct {
 
 func (o *OperationController) Prepare() {
 	o.resolveSignedInUser()
-	o.isExternalAuth = utils.GetBoolValue("IS_EXTERNAL_AUTH")
 }
 
 func (o *OperationController) OperationList() {
-	if o.isExternalAuth && o.currentUser.Username != "admin" {
-		logs.Debug("Current AUTH_MODE is external auth.")
-		o.customAbort(http.StatusPreconditionFailed, "Current AUTH_MODE is not available to the user.")
+	if !o.isSysAdmin {
+		o.customAbort(http.StatusForbidden, "Insufficient permissions.")
 		return
 	}
 	var optparam model.OperationParam
@@ -42,4 +39,20 @@ func (o *OperationController) OperationList() {
 		return
 	}
 	o.renderJSON(paginatedoperations)
+}
+
+func (o *OperationController) CreateOperation() {
+	operation := model.Operation{}
+	err := o.resolveBody(&operation)
+	if err != nil {
+		o.internalError(err)
+		return
+	}
+	err = service.CreateOperationAudit(&operation)
+	if err != nil {
+		logs.Error("Failed to create operation Audit. Error:%+v", err)
+		o.internalError(err)
+		return
+	}
+	o.renderJSON(operation)
 }

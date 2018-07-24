@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	//"fmt"
@@ -354,96 +355,23 @@ func GetScaleStatus(serviceInfo *model.ServiceStatus) (model.ScaleStatus, error)
 func StopServiceK8s(s *model.ServiceStatus) error {
 	logs.Info("stop service in cluster %s", s.Name)
 	// Stop deployment
-
-	var config k8sassist.K8sAssistConfig
+	collectErr := errors.New("Failed to stop service:")
+	config := k8sassist.K8sAssistConfig{}
 	config.K8sMasterURL = kubeMasterURL()
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 	d := k8sclient.AppV1().Deployment(s.ProjectName)
-
 	err := d.Delete(s.Name)
-	if err != nil {
+	if err != nil && !strings.Contains(err.Error(), "not found") {
 		logs.Error("Failed to delete deployment in cluster, error:%v", err)
-		return err
+		collectErr = errors.New(fmt.Sprintln(collectErr.Error(), err.Error()))
 	}
 	svc := k8sclient.AppV1().Service(s.ProjectName)
 	err = svc.Delete(s.Name)
-	if err != nil {
+	if err != nil && !strings.Contains(err.Error(), "not found") {
 		logs.Error("Failed to delete service in cluster, error:%v", err)
-		return err
+		collectErr = errors.New(fmt.Sprintln(collectErr.Error(), err.Error()))
 	}
-	return nil
-}
-
-func CleanDeploymentK8s(s *model.ServiceStatus) error {
-	logs.Info("clean in cluster %s", s.Name)
-	// Stop deployment
-	var config k8sassist.K8sAssistConfig
-	config.K8sMasterURL = kubeMasterURL()
-	k8sclient := k8sassist.NewK8sAssistClient(&config)
-	d := k8sclient.AppV1().Deployment(s.ProjectName)
-
-	deployData, _, err := d.Get(s.Name)
-	if err != nil {
-		logs.Debug("Do not need to clean deployment")
-		return nil
-	}
-
-	var newreplicas int32
-	deployData.Spec.Replicas = newreplicas
-	res, _, err := d.Update(deployData)
-	if err != nil {
-		logs.Error(res, err)
-		return err
-	}
-	time.Sleep(2)
-	err = d.Delete(s.Name)
-	if err != nil {
-		logs.Error("Failed to delele deployment", s.Name, err)
-		return err
-	}
-	logs.Info("Deleted deployment %s", s.Name)
-
-	r := k8sclient.AppV1().ReplicaSet(s.ProjectName)
-	var listoption model.ListOptions
-	listoption.LabelSelector = "app=" + s.Name
-	rsList, err := r.List(listoption)
-	if err != nil {
-		logs.Error("failed to get rs list")
-		return err
-	}
-
-	for _, rsi := range rsList.Items {
-		err = r.Delete(rsi.Name)
-		if err != nil {
-			logs.Error("failed to delete rs %s", rsi.Name)
-			return err
-		}
-		logs.Debug("delete RS %s", rsi.Name)
-	}
-
-	return nil
-}
-
-func CleanServiceK8s(s *model.ServiceStatus) error {
-	logs.Info("clean Service in cluster %s", s.Name)
-	//Stop service in cluster
-	var config k8sassist.K8sAssistConfig
-	config.K8sMasterURL = kubeMasterURL()
-	k8sclient := k8sassist.NewK8sAssistClient(&config)
-	servcieInt := k8sclient.AppV1().Service(s.ProjectName)
-
-	_, _, err := servcieInt.Get(s.Name)
-	if err != nil {
-		logs.Debug("Do not need to clean service %s", s.Name)
-		return nil
-	}
-	err = servcieInt.Delete(s.Name)
-	if err != nil {
-		logs.Error("Failed to delele service in cluster.", s.Name, err)
-		return err
-	}
-
-	return nil
+	return collectErr
 }
 
 func MarshalService(serviceConfig *model.ConfigServiceStep) *model.Service {

@@ -1,7 +1,6 @@
 package apps
 
 import (
-	"errors"
 	"git/inspursoft/board/src/common/k8sassist/corev1/cgv5/types"
 	"git/inspursoft/board/src/common/model"
 
@@ -27,7 +26,8 @@ func (s *services) Create(modelService *model.Service) (*model.Service, []byte, 
 		return nil, nil, err
 	}
 
-	svcfileInfo, err := yaml.Marshal(svc)
+	serviceConfig := types.GenerateServiceConfig(svc)
+	svcfileInfo, err := yaml.Marshal(serviceConfig)
 	if err != nil {
 		logs.Error("Marshal service failed, error: %v", err)
 		return types.FromK8sService(svc), nil, err
@@ -43,7 +43,8 @@ func (s *services) Update(modelService *model.Service) (*model.Service, []byte, 
 		return nil, nil, err
 	}
 
-	svcfileInfo, err := yaml.Marshal(svc)
+	serviceConfig := types.GenerateServiceConfig(svc)
+	svcfileInfo, err := yaml.Marshal(serviceConfig)
 	if err != nil {
 		logs.Error("Marshal service info failed, error: %v", err)
 		return types.FromK8sService(svc), nil, err
@@ -59,7 +60,8 @@ func (s *services) UpdateStatus(modelService *model.Service) (*model.Service, []
 		return nil, nil, err
 	}
 
-	svcfileInfo, err := yaml.Marshal(svc)
+	serviceConfig := types.GenerateServiceConfig(svc)
+	svcfileInfo, err := yaml.Marshal(serviceConfig)
 	if err != nil {
 		logs.Error("Marshal service info failed, error: %v", err)
 		return types.FromK8sService(svc), nil, err
@@ -82,8 +84,8 @@ func (s *services) Get(name string) (*model.Service, []byte, error) {
 		logs.Error("Get service failed, error: %v", err)
 		return nil, nil, err
 	}
-	svc.ObjectMeta.ResourceVersion = ""
-	svcfileInfo, err := yaml.Marshal(svc)
+	serviceConfig := types.GenerateServiceConfig(svc)
+	svcfileInfo, err := yaml.Marshal(serviceConfig)
 	if err != nil {
 		logs.Error("Marshal service info failed, error: %v", err)
 		return types.FromK8sService(svc), nil, err
@@ -116,8 +118,8 @@ func (s *services) CreateByYaml(r io.Reader) (*model.Service, error) {
 	}
 
 	if service.ObjectMeta.Namespace != s.namespace {
-		logs.Error(namespacesErr)
-		return nil, errors.New(namespacesErr)
+		logs.Error(namespacesErr.Error())
+		return nil, namespacesErr
 	}
 
 	serviceInfo, err := s.service.Create(&service)
@@ -144,8 +146,8 @@ func (s *services) CheckYaml(r io.Reader) (*model.Service, error) {
 	}
 
 	if service.ObjectMeta.Namespace != s.namespace {
-		logs.Error(namespacesErr)
-		return nil, errors.New(namespacesErr)
+		logs.Error(namespacesErr.Error())
+		return nil, namespacesErr
 	}
 
 	return types.FromK8sService(&service), nil
