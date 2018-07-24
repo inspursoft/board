@@ -3,10 +3,10 @@ package service
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
-	"fmt"
 
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/k8sassist"
@@ -348,6 +348,29 @@ func RemoveNodeGroup(groupName string) error {
 	if err != nil {
 		logs.Error("Failed to delete %s in DB", ngQuery.GroupName)
 		return err
+	}
+	return nil
+}
+
+func RemovePodByNode(node string) error {
+	podList, err := GetPods()
+	if err != nil {
+		logs.Info("Failed to get pods from system", err)
+		return err
+	}
+	for _, v := range podList.Items {
+		if v.Status.HostIP == node {
+			logs.Info("Gracefully remove the pod %s from node %s", v.Name, node)
+			k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+				K8sMasterURL: kubeMasterURL(),
+			})
+			//TODO need evict in released version
+			err = k8sclient.AppV1().Pod(v.Namespace).Delete(v.Name)
+			if err != nil {
+				logs.Info("Failed to Delete pod", v.Name, err)
+				return err
+			}
+		}
 	}
 	return nil
 }

@@ -607,3 +607,14 @@ func MarshalNamespace(namespace string) *model.Namespace {
 		ObjectMeta: model.ObjectMeta{Name: namespace},
 	}
 }
+
+func GetPods() (*model.PodList, error) {
+	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		K8sMasterURL: kubeMasterURL(),
+	})
+	l, err := k8sclient.AppV1().Pod("").List()
+	if err != nil {
+		return nil, err
+	}
+	return l, nil
+}
