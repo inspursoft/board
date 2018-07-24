@@ -14,6 +14,8 @@ import (
 	"github.com/astaxie/beego/logs"
 )
 
+var reservdUsernames = [...]string{"explore", "create", "assets", "css", "img", "js", "less", "plugins", "debug", "raw", "install", "api", "avatar", "user", "org", "help", "stars", "issues", "pulls", "commits", "repo", "template", "new", ".", ".."}
+
 type AuthController struct {
 	BaseController
 }
@@ -99,6 +101,14 @@ func (u *AuthController) SignUpAction() {
 	if !utils.ValidateWithPattern("username", reqUser.Username) {
 		u.customAbort(http.StatusBadRequest, "Username content is illegal.")
 		return
+	}
+
+	// can't be the reserved name.
+	for _, rsdname := range reservdUsernames {
+		if rsdname == reqUser.Username {
+			u.customAbort(http.StatusBadRequest, fmt.Sprintf("Username %s is reserved.", reqUser.Username))
+			return
+		}
 	}
 
 	usernameExists, err := service.UserExists("username", reqUser.Username, 0)
