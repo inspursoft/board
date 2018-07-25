@@ -14,6 +14,7 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var (
@@ -231,12 +232,17 @@ func triggerScript(response http.ResponseWriter, request *http.Request) {
 		arg := request.FormValue("arg")
 		args := strings.Split(arg, ",")
 		log.Printf("Executing script name: %s, args: %+v", scriptName, args)
-		output, err := executeScripts(scriptName, args...)
-		if err != nil {
-			internalError(response, err)
-			return
-		}
-		renderText(response, output)
+		renderText(response, "Triggerring script ...")
+		defer func() {
+			time.Sleep(2 * time.Second)
+			go func() {
+				_, err := executeScripts(scriptName, args...)
+				if err != nil {
+					internalError(response, err)
+					return
+				}
+			}()
+		}()
 	}
 }
 

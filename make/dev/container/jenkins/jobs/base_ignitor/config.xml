@@ -41,6 +41,10 @@ def kvm_registry_port = binding.variables.get(&quot;F01&quot;)
 
 freeStyleJob(&quot;ignitor&quot;) {
   label(&apos;slave&apos;)
+  blockOn(&quot;base&quot;) {
+    blockLevel(&apos;NODE&apos;)
+    scanQueueFor(&apos;ALL&apos;)
+  }
   triggers {
     genericTrigger {
       genericVariables {
@@ -73,7 +77,7 @@ elif [ \$status -ne 200 ]; then
   exit 1
 fi
 node=\$(curl -X POST &quot;http://${jenkins_node_ip}:${kvm_registry_port}/register-job?job_name=\${repo_name}&quot;)
-curl &quot;http://${jenkins_node_ip}:${kvm_registry_port}/trigger-script?name=register.sh&amp;arg=\${repo_name},\${node}&quot;
+curl &quot;http://${jenkins_node_ip}:${kvm_registry_port}/trigger-script?name=register.sh&amp;arg=\${repo_name}&quot;
 &quot;&quot;&quot;)
     }
   }
