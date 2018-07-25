@@ -170,6 +170,9 @@ func SyncNamespaceByOwnerID(userID int64) error {
 	}
 
 	for _, project := range projects {
+		if !utils.ValidateWithPattern("project", project.Name) {
+			continue
+		}
 		projectName := project.Name
 		_, err = CreateNamespace(projectName)
 		if err != nil {
