@@ -28,7 +28,8 @@
     </hudson.model.ParametersDefinitionProperty>
   </properties>
   <scm class="hudson.scm.NullSCM"/>
-  <canRoam>true</canRoam>
+  <assignedNode>master</assignedNode>
+  <canRoam>false</canRoam>
   <disabled>false</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
@@ -55,11 +56,18 @@ freeStyleJob(&quot;ignitor&quot;) {
           regexpFilter(&quot;&quot;)
           defaultValue(&quot;&quot;)
         }
+        genericVariable {
+          key(&quot;before&quot;)
+          value(&quot;\$.before&quot;)
+          expressionType(&quot;JSONPath&quot;)
+          regexpFilter(&quot;&quot;)
+          defaultValue(&quot;&quot;)
+        }
       }
       printContributedVariables(true)
       printPostContent(true)
-      regexpFilterText(&quot;\$repo_name&quot;)
-      regexpFilterExpression(&quot;^(?!base\\b)\\b\\w+\$&quot;)
+      regexpFilterText(&quot;\$before&quot;)
+      regexpFilterExpression(&quot;^(?!0000000000000000000000000000000000000000\\b)\\b\\w+\$&quot;)
     }
   }
   steps {

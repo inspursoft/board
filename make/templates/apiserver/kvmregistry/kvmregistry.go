@@ -232,7 +232,7 @@ func triggerScript(response http.ResponseWriter, request *http.Request) {
 		arg := request.FormValue("arg")
 		args := strings.Split(arg, ",")
 		log.Printf("Executing script name: %s, args: %+v", scriptName, args)
-		renderText(response, "Triggerring script ...")
+		renderText(response, fmt.Sprintf("Triggerring script: %s with args: %+v...\n", scriptName, args))
 		defer func() {
 			time.Sleep(2 * time.Second)
 			go func() {

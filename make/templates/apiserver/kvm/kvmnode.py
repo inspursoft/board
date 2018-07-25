@@ -52,13 +52,38 @@ def getNodeIp(nodename):
     mac = macline.split("'")[1]
     ipaddr = commands.getoutput('''arp -a|grep %s|cut -d '(' -f2|cut -d ')' -f1''' %mac)
     return ipaddr
+
+def getNodeStatus(jenkinsServer, usekvmnode):
+    try:
+        nodes = jenkinsServer.get_nodes()
+     #   b = dict(zip(nodes))
+    except jenkins.JenkinsException, e:
+        print (e)
+
+    print (usekvmnode)
+    for tmp in nodes:
+        print (tmp)
+        name = tmp['name']
+        status = tmp['offline']
+
+        if name == usekvmnode:
+            break
+    return status
+
 def checkNode(jenkinsServer, usekvmnode):
     try:
         jenkinsServer.assert_node_exists(usekvmnode, exception_message='node %s does not exist.......')
     except jenkins.JenkinsException, e:
         print (e)
     nodeflag = jenkinsServer.node_exists(usekvmnode) 
+   
     return nodeflag
+
+def triggerKvmJob(jenkinsMaster, jobName, kvmName):
+    url = '%s/job/%s/buildWithParameters' % (jenkinsMaster, jobName)
+    data = {'node_name': kvmName}
+    res = requests.get(url, params=data)
+    return res.text
 
 def kvmIp(nodename):
     ipaddr = getNodeIp(nodename)
@@ -73,13 +98,10 @@ def addJenkinsNode(jenkinsMaster, nodename, hostport):
     cid = credentialId
     server = jenkins.Jenkins(jenkinsMaster)
     flag = checkNode(server, nodename)
+    print (flag)
     
     if flag == False:
        
-    
-    #while flag == True:
-    #    time.sleep(2)
-    #    flag = checkNode(server, nodename)
     
         params = {
             'port': hostport,
@@ -100,6 +122,11 @@ def addJenkinsNode(jenkinsMaster, nodename, hostport):
         except Exception, e:
            print 'str(e):\t\t', str(e)
            print ("failed add jenkins node")
+    nodestatus = getNodeStatus(server, nodename)
+    print (nodestatus)
+    while nodestatus == True:
+        time.sleep(3)
+        nodestatus = getNodeStatus(server, nodename)
 def checkKVM(flagFile):
     if os.path.isfile(flagFile):
         with open(flagFile, 'r') as f:
@@ -146,11 +173,6 @@ def getKvmName(kvmApiServer, projectName):
     res = requests.post(url, data=data)
     kvmName = res.text
     return kvmName
-def triggerKvmJob(jenkinsMaster, jobName, kvmName):
-    url = '%s/job/%s/buildWithParameters' % (jenkinsMaster, jobName)
-    data = {'node_name': kvmName}
-    res = requests.get(url, params=data)
-    return res.text
 def startKVM_1(jenkinsMaster, projectName, kvmApiServer):
     kvmName = getKvmName(kvmApiServer, projectName)
     print ("::::" + kvmName + ":::")
@@ -173,12 +195,12 @@ def startKVM_1(jenkinsMaster, projectName, kvmApiServer):
             os.popen("virt-install --name %s --ram 2048 --disk path=/var/lib/libvirt/images/%s.img --import &\n\n\n" %(usekvmname, usekvmname))
         except:
             print('create kvm failed')
-#    else:
-#        print ('revert snapshot .........................')
-#        try:
-#            os.popen("virsh snapshot-revert %s %s" %(usekvmname, usekvmname))
-#        except:
-#            print('create kvm failed')
+    else:
+        print ('revert snapshot .........................')
+        try:
+            os.popen("virsh snapshot-revert %s %s" %(usekvmname, usekvmname))
+        except:
+            print('create kvm failed')
     print ('-----usekvmname---')
     print (usekvmname)
     hostport = '2000' + usekvmname.split('-')[-1]
@@ -192,17 +214,6 @@ def startKVM_1(jenkinsMaster, projectName, kvmApiServer):
             print('create kvm failed')
     triggerKvmJob(jenkinsMaster, projectName, usekvmname)
 
-def confignat(usekvmname, hostport):
-    kvmIpaddr = kvmIp(usekvmname)
-    hostip = get_ip('eno1')
-    kvmnodemask = '192.168.122.0/255.255.255.0'
-    kvmnodegetway = '192.168.122.1'
-    try:
-        os.popen('iptables -A INPUT -p tcp --dport %s -j ACCEPT' %hostport)
-        os.popen('iptables -t nat -A PREROUTING -d %s -p tcp -m tcp --dport %s -j DNAT --to-destination %s:22' %(hostip, hostport, kvmIpaddr))
-        os.popen('iptables -t nat -A POSTROUTING -s %s -d %s -p tcp -m tcp --dport 22 -j SNAT --to-source %s' %(kvmnodemask, hostip, kvmnodegetway))
-    except:
-        print ('add iptables failed')
 def startService():
     print (sta)
     os.system('systemctl start docker')
