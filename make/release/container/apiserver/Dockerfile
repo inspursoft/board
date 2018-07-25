@@ -8,6 +8,7 @@ apk add --no-cache openssh openssh-client
 
 ADD make/release/container/apiserver/apiserver /usr/bin/apiserver
 ADD src/apiserver/templates /usr/bin/templates
+COPY make/release/container/apiserver/certs/ca-certificates.crt /etc/ssl/certs
 COPY VERSION /usr/bin/VERSION
 
 WORKDIR /usr/bin/
