@@ -55,7 +55,6 @@ services:
       - ../config/jenkins/env
     ports:
       - 8888:8080
-      - 50000:50000
     depends_on:
       - log
     logging:
@@ -76,8 +75,6 @@ services:
       - board
     links:
       - db
-    ports: 
-      - 8088:8088
     depends_on:
       - log
     logging:
