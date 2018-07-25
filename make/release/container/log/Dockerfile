@@ -1,7 +1,7 @@
-FROM alpine:3.5
+FROM alpine:3.7
 
-RUN echo http://mirrors.ustc.edu.cn/alpine/v3.5/main > /etc/apk/repositories; \
-echo http://mirrors.ustc.edu.cn/alpine/v3.5/community >> /etc/apk/repositories; \
+RUN echo http://mirrors.ustc.edu.cn/alpine/v3.7/main > /etc/apk/repositories; \
+echo http://mirrors.ustc.edu.cn/alpine/v3.7/community >> /etc/apk/repositories; \
 apk add --no-cache rsyslog
 
 #RUN runDeps='curl rsyslog' \
