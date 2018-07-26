@@ -355,7 +355,7 @@ func GetScaleStatus(serviceInfo *model.ServiceStatus) (model.ScaleStatus, error)
 func StopServiceK8s(s *model.ServiceStatus) error {
 	logs.Info("stop service in cluster %s", s.Name)
 	// Stop deployment
-	collectErr := errors.New("Failed to stop service:")
+	var collectErr error
 	config := k8sassist.K8sAssistConfig{}
 	config.K8sMasterURL = kubeMasterURL()
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
@@ -363,13 +363,17 @@ func StopServiceK8s(s *model.ServiceStatus) error {
 	err := d.Delete(s.Name)
 	if err != nil && !strings.Contains(err.Error(), "not found") {
 		logs.Error("Failed to delete deployment in cluster, error:%v", err)
-		collectErr = errors.New(fmt.Sprintln(collectErr.Error(), err.Error()))
+		collectErr = err
 	}
 	svc := k8sclient.AppV1().Service(s.ProjectName)
 	err = svc.Delete(s.Name)
 	if err != nil && !strings.Contains(err.Error(), "not found") {
 		logs.Error("Failed to delete service in cluster, error:%v", err)
-		collectErr = errors.New(fmt.Sprintln(collectErr.Error(), err.Error()))
+		if collectErr != nil {
+			collectErr = errors.New(fmt.Sprintln(collectErr.Error(), err.Error()))
+		} else {
+			collectErr = err
+		}
 	}
 	return collectErr
 }
