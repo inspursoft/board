@@ -20,6 +20,7 @@ export class CreateProjectComponent{
   createProject: CreateProject;
   closeNotification: Subject<string>;
   isCreateProjectWIP: boolean = false;
+  projectNamePattern: string = '^[a-z0-9]+(?:[-][a-z0-9]+)*$';
   @ViewChild('createProjectForm') projectForm: NgForm;
 
   constructor(private sharedService: SharedService,
