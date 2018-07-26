@@ -4,7 +4,7 @@ MAINTAINER huay@inspur.com
 
 RUN echo http://mirrors.ustc.edu.cn/alpine/v3.7/main > /etc/apk/repositories; \
 echo http://mirrors.ustc.edu.cn/alpine/v3.7/community >> /etc/apk/repositories; \
-apk add --no-cache openssh openssh-client 
+apk add --no-cache openssh openssh-client openssl
 
 ADD make/release/container/apiserver/apiserver /usr/bin/apiserver
 ADD src/apiserver/templates /usr/bin/templates
