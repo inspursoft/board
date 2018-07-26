@@ -271,7 +271,8 @@ export class K8sService {
       .map((res: HttpResponse<Array<Object>>) => res.body)
       .map((res: Array<Object>) => {
         let r = Array<string>();
-        res.forEach(value => r.push(String(value["node_name"]).trim()));
+        res.filter(value => value["status"] == 1)
+          .forEach(value => r.push(String(value["node_name"]).trim()));
         return r;
       });
     let obsNodeGroupList = this.http
