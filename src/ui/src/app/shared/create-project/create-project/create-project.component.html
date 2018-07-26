@@ -15,12 +15,22 @@
           <label for="txtProjectName" aria-haspopup="true" role="tooltip"
             class="tooltip tooltip-validation tooltip-md tooltip-bottom-left"
             [class.invalid]="projectNameInput.invalid && (projectNameInput.dirty || projectNameInput.touched)">
-            <input type="text" id="txtProjectName" name="projectName" [(ngModel)]="createProject.projectName" #projectNameInput="ngModel" required checkItemExisting="project">
+            <input required
+                   type="text"
+                   id="txtProjectName"
+                   name="projectName"
+                   #projectNameInput="ngModel"
+                   [pattern]="projectNamePattern"
+                   [(ngModel)]="createProject.projectName"
+                   checkItemExisting="project">
             <span class="tooltip-content" *ngIf="projectNameInput.errors && projectNameInput.errors.required">
               {{ 'PROJECT.PROJECT_NAME_IS_REQUIRED' | translate }}
             </span>
             <span class="tooltip-content" *ngIf="projectNameInput.errors && projectNameInput.errors.checkItemExisting">
               {{ 'PROJECT.PROJECT_NAME_ALREADY_EXISTS' | translate }}
+            </span>
+            <span class="tooltip-content" *ngIf="projectNameInput.errors && projectNameInput.errors.pattern">
+              {{ 'PROJECT.PROJECT_NAME_IS_ILLEGAL' | translate }}:{{projectNamePattern}}
             </span>
           </label>
         </div>

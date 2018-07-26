@@ -9,10 +9,10 @@
     <clr-dg-cell>{{getStatus(node.status) | translate }}</clr-dg-cell>
     <clr-dg-cell>
       <a *ngIf="node.status === 2" href="javascript:void(0)" (click)="confirmToToggleNodeStatus(node)">
-        <clr-icon shape="play"></clr-icon>
+        <clr-icon shape="shield"></clr-icon>
       </a>
       <a *ngIf="node.status === 1" href="javascript:void(0)" (click)="confirmToToggleNodeStatus(node)">
-        <clr-icon shape="pause"></clr-icon>
+        <clr-icon shape="shield-check" class="is-solid"></clr-icon>
       </a>
       <a *ngIf="node.status === 3">
         <clr-icon shape="no-access" class="is-solid"></clr-icon>
