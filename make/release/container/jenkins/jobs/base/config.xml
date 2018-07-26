@@ -43,7 +43,7 @@ def repoURL = binding.variables.get(&quot;F01&quot;)
 def repoUsername = binding.variables.get(&quot;F02&quot;)
 def repoUserEmail = binding.variables.get(&quot;F03&quot;)
 freeStyleJob(jobName) {
-  quietPeriod(3)
+  label(&quot;slave&quot;)
   triggers {
     genericTrigger {
       genericVariables {
