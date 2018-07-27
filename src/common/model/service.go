@@ -17,6 +17,7 @@ type ServiceStatus struct {
 	Deleted       int       `json:"service_deleted" orm:"column(deleted)"`
 	CreationTime  time.Time `json:"service_creation_time" orm:"column(creation_time)"`
 	UpdateTime    time.Time `json:"service_update_time" orm:"column(update_time)"`
+	Source        int       `json:"service_source" orm:"column(source)"`
 	ServiceConfig string    `json:"service_config" orm:"column(service_config)"`
 }
 

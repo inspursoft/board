@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	//"fmt"
@@ -26,6 +27,11 @@ const (
 	serviceNamespace   = "default" //TODO create namespace in project post
 	scaleKind          = "Deployment"
 	k8sService         = "kubernetes"
+)
+
+const (
+	board = iota
+	k8s
 )
 
 func InitServiceConfig() (*model.ServiceConfig, error) {
@@ -255,6 +261,7 @@ func SyncServiceWithK8s(pName string) error {
 		servicequery.Comment = defaultComment
 		servicequery.Deleted = defaultDeleted
 		servicequery.Status = defaultStatus
+		servicequery.Source = k8s
 		servicequery.CreationTime, _ = time.Parse(time.RFC3339, item.CreationTimestamp.Format(time.RFC3339))
 		servicequery.UpdateTime, _ = time.Parse(time.RFC3339, item.CreationTimestamp.Format(time.RFC3339))
 		_, err = dao.SyncServiceData(servicequery)
@@ -354,6 +361,7 @@ func GetScaleStatus(serviceInfo *model.ServiceStatus) (model.ScaleStatus, error)
 func StopServiceK8s(s *model.ServiceStatus) error {
 	logs.Info("stop service in cluster %s", s.Name)
 	// Stop deployment
+	collectErr := errors.New("Failed to stop service:")
 	config := k8sassist.K8sAssistConfig{}
 	config.K8sMasterURL = kubeMasterURL()
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
@@ -361,15 +369,15 @@ func StopServiceK8s(s *model.ServiceStatus) error {
 	err := d.Delete(s.Name)
 	if err != nil && !strings.Contains(err.Error(), "not found") {
 		logs.Error("Failed to delete deployment in cluster, error:%v", err)
-		return err
+		collectErr = errors.New(fmt.Sprintln(collectErr.Error(), err.Error()))
 	}
 	svc := k8sclient.AppV1().Service(s.ProjectName)
 	err = svc.Delete(s.Name)
 	if err != nil && !strings.Contains(err.Error(), "not found") {
 		logs.Error("Failed to delete service in cluster, error:%v", err)
-		return err
+		collectErr = errors.New(fmt.Sprintln(collectErr.Error(), err.Error()))
 	}
-	return nil
+	return collectErr
 }
 
 func MarshalService(serviceConfig *model.ConfigServiceStep) *model.Service {
