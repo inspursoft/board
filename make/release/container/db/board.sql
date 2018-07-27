@@ -326,6 +326,7 @@ DROP TABLE IF EXISTS `log`;
         `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
         `creation_time` datetime DEFAULT NULL,
         `update_time` datetime DEFAULT NULL,
+		`source` SMALLINT(1) NOT NULL,
         `service_config` TEXT,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	

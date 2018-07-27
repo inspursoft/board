@@ -28,6 +28,11 @@ const (
 	k8sService         = "kubernetes"
 )
 
+const (
+	board = iota
+	k8s
+)
+
 func InitServiceConfig() (*model.ServiceConfig, error) {
 	return &model.ServiceConfig{}, nil
 }
@@ -255,6 +260,7 @@ func SyncServiceWithK8s(pName string) error {
 		servicequery.Comment = defaultComment
 		servicequery.Deleted = defaultDeleted
 		servicequery.Status = defaultStatus
+		servicequery.Source = k8s
 		servicequery.CreationTime, _ = time.Parse(time.RFC3339, item.CreationTimestamp.Format(time.RFC3339))
 		servicequery.UpdateTime, _ = time.Parse(time.RFC3339, item.CreationTimestamp.Format(time.RFC3339))
 		_, err = dao.SyncServiceData(servicequery)
