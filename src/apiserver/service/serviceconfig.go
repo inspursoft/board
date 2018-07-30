@@ -550,3 +550,17 @@ func GetPods() (*model.PodList, error) {
 	}
 	return l, nil
 }
+
+func UpdateDeployment(pName string, sName string, deploymentConfig *model.Deployment) (*model.Deployment, []byte, error) {
+	var config k8sassist.K8sAssistConfig
+	config.K8sMasterURL = kubeMasterURL()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	d := k8sclient.AppV1().Deployment(pName)
+
+	deployment, deploymentFileInfo, err := d.Update(deploymentConfig)
+	if err != nil {
+		logs.Info("Failed to update deployment", pName, deploymentConfig.Name)
+		return nil, nil, err
+	}
+	return deployment, deploymentFileInfo, err
+}

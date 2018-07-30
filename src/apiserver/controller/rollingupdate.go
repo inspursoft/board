@@ -164,7 +164,8 @@ func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceNodeGroupActio
 	} else {
 		rollingUpdateConfig.Spec.Template.Spec.NodeSelector = map[string]string{"kubernetes.io/hostname": nodeGroup}
 	}
-	p.PatchServiceAction(rollingUpdateConfig)
+	logs.Debug("Action updating nodeselector: ", rollingUpdateConfig)
+	p.UpdateServiceAction(rollingUpdateConfig)
 }
 
 func (p *ServiceRollingUpdateController) PatchServiceAction(rollingUpdateConfig *model.Deployment) {
@@ -190,6 +191,30 @@ func (p *ServiceRollingUpdateController) PatchServiceAction(rollingUpdateConfig 
 		return
 	}
 
+	p.resolveRepoServicePath(projectName, serviceName)
+	err = service.GenerateDeploymentYamlFile(deploymentFileInfo, p.repoServicePath)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	p.pushItemsToRepo(filepath.Join(serviceName, deploymentFilename))
+
+	logs.Debug("New updated deployment: %+v\n", deploymentConfig)
+}
+
+// a temp fix, need to refactor
+func (p *ServiceRollingUpdateController) UpdateServiceAction(rollingUpdateConfig *model.Deployment) {
+	projectName := p.GetString("project_name")
+	p.resolveProjectMember(projectName)
+
+	serviceName := p.GetString("service_name")
+	deploymentConfig, deploymentFileInfo, err := service.UpdateDeployment(projectName, serviceName, rollingUpdateConfig)
+	if err != nil {
+		logs.Error("Failed to get service info %+v\n", err)
+		p.parseError(err, parsePostK8sError)
+		return
+	}
+	logs.Debug("Updated deployment: ", deploymentConfig)
 	p.resolveRepoServicePath(projectName, serviceName)
 	err = service.GenerateDeploymentYamlFile(deploymentFileInfo, p.repoServicePath)
 	if err != nil {
