@@ -66,7 +66,7 @@ export class NodeListComponent implements OnInit {
   getStatus(status: number): string {
     switch (status) {
       case 1:
-        return 'NODE.STATUS_RUNNING';
+        return 'NODE.STATUS_SCHEDULABLE';
       case 2:
         return 'NODE.STATUS_UNSCHEDULABLE';
       case 3:
