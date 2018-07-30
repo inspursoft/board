@@ -81,7 +81,7 @@ func (u *AuthController) ExternalAuthAction() {
 		return
 	}
 	if token, isSuccess := u.processAuth(externalToken, ""); isSuccess {
-		u.Redirect(fmt.Sprintf("http://%s/dashboard?token=%s", utils.GetStringValue("BOARD_HOST"), token), http.StatusFound)
+		u.Redirect(fmt.Sprintf("http://%s/dashboard?token=%s", utils.GetStringValue("BOARD_HOST_IP"), token), http.StatusFound)
 		logs.Debug("Successful logged in.")
 	}
 }
