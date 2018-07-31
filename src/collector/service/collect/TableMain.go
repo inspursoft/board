@@ -99,22 +99,24 @@ loopNode:
 		var nodes = resource.nodes
 		nodes.NodeName = v.Name
 		nodes.CreateTime = v.CreationTimestamp.Format("2006-01-02 15:04:05")
+		var cpuCores int = 1
 		for k, v := range v.Status.Capacity {
 			switch k {
 			case "cpu":
-				nodes.NumbersCpuCore = string(v)
+				nodes.NumbersCpuCore = fmt.Sprintf("%d", v)
+				cpuCores = int(v)
 			case "memory":
-				nodes.MemorySize = string(v)
+				nodes.MemorySize = fmt.Sprintf("%d", v)
 			case "alpha.kubernetes.io/nvidia-gpu":
-				nodes.NumbersGpuCore = string(v)
+				nodes.NumbersGpuCore = fmt.Sprintf("%d", v)
 			case "pods":
-				nodes.PodLimit = string(v)
+				nodes.PodLimit = fmt.Sprintf("%d", v)
 			}
 		}
 
 		nodes.TimeListId = (*serviceDashboardID)[*minuteCounterI]
 		nodes.InternalIp = v.Status.Addresses[1].Address
-		cpu, mem, err := getNodePs(v.Status.Addresses[1].Address)
+		cpu, mem, err := getNodePs(v.Status.Addresses[1].Address, cpuCores)
 		if err != nil {
 			return err
 		}
@@ -169,7 +171,7 @@ func GetNodeMachine(ip string) interface{} {
 }
 
 //get nodes ps info
-func getNodePs(ip string) (cpu float32, mem float32, err error) {
+func getNodePs(ip string, cpuCores int) (cpu float32, mem float32, err error) {
 	var y []v2.ProcessInfo
 	var r http.Request
 	r.ParseForm()
@@ -204,7 +206,7 @@ func getNodePs(ip string) (cpu float32, mem float32, err error) {
 		c = c + v.PercentCpu
 		m = m + v.PercentMemory
 	}
-	cpu = c
+	cpu = c / float32(cpuCores)
 	mem = m
 	return
 }
