@@ -337,6 +337,7 @@ func (b *BaseController) resolveUserPrivilege(projectName string) {
 	}
 	if !(b.isSysAdmin || isMember) {
 		b.customAbort(http.StatusForbidden, "Insufficient privileges to build image.")
+		return
 	}
 	if b.isSysAdmin && !isMember {
 		project := b.resolveProject(projectName)

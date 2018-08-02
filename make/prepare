@@ -95,6 +95,10 @@ jenkins_node_username = rcp.get("configuration", "jenkins_node_username")
 jenkins_node_password = rcp.get("configuration", "jenkins_node_password")
 jenkins_node_volume = rcp.get("configuration", "jenkins_node_volume")
 
+kvm_registry_size = rcp.get("configuration", "kvm_registry_size")
+kvm_registry_port = rcp.get("configuration", "kvm_registry_port")
+kvm_toolkits_path = rcp.get("configuration", "kvm_toolkits_path")
+
 ###email configuration
 email_identity = rcp.get("configuration", "email_identity")
 email_host = rcp.get("configuration", "email_server")
@@ -134,6 +138,10 @@ apiserver_config_dir = os.path.join(config_dir,"apiserver")
 if not os.path.exists(apiserver_config_dir):
     os.makedirs(os.path.join(config_dir, "apiserver"))
 apiserver_env= os.path.join(config_dir, "apiserver", "env")
+if not os.path.exists(os.path.join(apiserver_config_dir, "kvmregistry")):
+    os.makedirs(os.path.join(apiserver_config_dir, "kvmregistry"))
+apiserver_kvm = os.path.join(apiserver_config_dir, "kvmregistry")
+
 
 tokenserver_config_dir = os.path.join(config_dir,"tokenserver")
 if not os.path.exists(tokenserver_config_dir):
@@ -216,7 +224,40 @@ render(os.path.join(templates_dir, "apiserver", "env"),
         gogits_host_port=gogits_host_port,
         gogits_ssh_port=gogits_ssh_port,
         jenkins_host_ip=jenkins_host_ip,
-        jenkins_host_port=jenkins_host_port)
+        jenkins_host_port=jenkins_host_port,
+        jenkins_node_ip=jenkins_node_ip,
+        jenkins_node_username=jenkins_node_username,
+        jenkins_node_password=jenkins_node_password,
+        jenkins_node_ssh_port=jenkins_node_ssh_port,
+        jenkins_node_volume=jenkins_node_volume,
+        kvm_registry_size=kvm_registry_size,
+        kvm_registry_port=kvm_registry_port,
+        kvm_toolkits_path=kvm_toolkits_path)
+
+
+if os.path.exists(os.path.join(apiserver_config_dir, "kvm")):
+    shutil.rmtree(os.path.join(apiserver_config_dir, "kvm"))
+shutil.copytree(os.path.join(templates_dir, "apiserver", "kvm"), os.path.join(apiserver_config_dir, "kvm"))
+
+if os.path.exists(os.path.join(apiserver_config_dir, "kvmregistry")):
+    shutil.rmtree(os.path.join(apiserver_config_dir, "kvmregistry"))
+shutil.copytree(os.path.join(templates_dir, "apiserver", "kvmregistry"), os.path.join(apiserver_config_dir, "kvmregistry"))
+
+subprocess.call("docker run --rm -v `pwd`/config/apiserver/kvmregistry:/go golang:1.9.6 go build -o kvmregistry", shell=True)
+
+render(os.path.join(templates_dir, "apiserver", "kvmregistry", "register.sh"),
+        os.path.join(apiserver_kvm, "register.sh"),
+        jenkins_host_ip=jenkins_host_ip,
+        jenkins_host_port=jenkins_host_port,
+        jenkins_node_ip=jenkins_node_ip,
+        kvm_registry_port=kvm_registry_port)
+
+render(os.path.join(templates_dir, "apiserver", "kvmregistry", "release.sh"), 
+        os.path.join(apiserver_kvm, "release.sh"),
+        jenkins_host_ip=jenkins_host_ip,
+        jenkins_host_port=jenkins_host_port,
+        jenkins_node_ip=jenkins_node_ip,
+        kvm_registry_port=kvm_registry_port)
 
 render(os.path.join(templates_dir, "tokenserver", "env"),
         tokenserver_env,

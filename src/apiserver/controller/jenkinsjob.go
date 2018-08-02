@@ -223,6 +223,10 @@ func (j *JenkinsJobController) Stop() {
 		j.internalError(err)
 		return
 	}
+	err = service.ReleaseKVMRegistryByJobName(jobName)
+	if err != nil {
+		logs.Error("Failed to release KVM registry by job name: %s, error: %+v", jobName, err)
+	}
 	defer func() {
 		resp.Body.Close()
 		j.clearBuildNumber()

@@ -1,30 +1,58 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.1' encoding='UTF-8'?>
 <project>
   <actions/>
   <description></description>
   <keepDependencies>false</keepDependencies>
   <properties>
+    <hudson.plugins.buildblocker.BuildBlockerProperty plugin="build-blocker-plugin@1.7.3">
+      <useBuildBlocker>false</useBuildBlocker>
+      <blockLevel>GLOBAL</blockLevel>
+      <scanQueueFor>DISABLED</scanQueueFor>
+      <blockingJobs></blockingJobs>
+    </hudson.plugins.buildblocker.BuildBlockerProperty>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
         <hudson.model.StringParameterDefinition>
           <name>F00</name>
-          <description></description>
-          <defaultValue>temporaryProject</defaultValue>
+          <description>Set job name created.</description>
+          <defaultValue></defaultValue>
+          <trim>false</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>F01</name>
-          <description></description>
+          <description>Set repo URL for Jenkinsfile.</description>
           <defaultValue></defaultValue>
+          <trim>false</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>F02</name>
-          <description></description>
+          <description>Set username for repo clone.</description>
           <defaultValue></defaultValue>
+          <trim>false</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>F03</name>
-          <description></description>
+          <description>Set email for repo clone.</description>
           <defaultValue></defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>F04</name>
+          <description>Repo clone URL.</description>
+          <defaultValue></defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>F05</name>
+          <description>Set Jenkins node IP.</description>
+          <defaultValue></defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>F06</name>
+          <description>Set KVM registry port.</description>
+          <defaultValue></defaultValue>
+          <trim>false</trim>
         </hudson.model.StringParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
@@ -37,55 +65,43 @@
   <triggers/>
   <concurrentBuild>false</concurrentBuild>
   <builders>
-    <javaposse.jobdsl.plugin.ExecuteDslScripts plugin="job-dsl@1.67">
-      <scriptText>def jobName = binding.variables.get(&quot;F00&quot;)
-def repoURL = binding.variables.get(&quot;F01&quot;)
-def repoUsername = binding.variables.get(&quot;F02&quot;)
-def repoUserEmail = binding.variables.get(&quot;F03&quot;)
-freeStyleJob(jobName) {
-  label(&quot;slave&quot;)
-  triggers {
-    genericTrigger {
-      genericVariables {
-        genericVariable {
-          key(&quot;repo_name&quot;)
-          value(&quot;\$.repository.name&quot;)
-          expressionType(&quot;JSONPath&quot;)
-          regexpFilter(&quot;&quot;)
-          defaultValue(&quot;&quot;)
-        }
-        genericVariable {
-          key(&quot;base_repo_url&quot;)
-          value(&quot;\$.repository.clone_url&quot;)
-          expressionType(&quot;JSONPath&quot;)
-          regexpFilter(&quot;&quot;)
-          defaultValue(&quot;&quot;)
-        }
-        genericVariable {
-          key(&quot;user_name&quot;)
-          value(&quot;\$.repository.owner.username&quot;)
-          expressionType(&quot;JSONPath&quot;)
-          regexpFilter(&quot;&quot;)
-          defaultValue(&quot;&quot;)
-        }
-      }
-      printContributedVariables(true)
-      printPostContent(true)
-      regexpFilterText(&quot;\$repo_name&quot;)
-      regexpFilterExpression(&quot;^(${jobName})\$&quot;)
+    <javaposse.jobdsl.plugin.ExecuteDslScripts plugin="job-dsl@1.69">
+      <scriptText>def job_name = binding.variables.get(&quot;F00&quot;)
+def jenkinsfile_repo_url = binding.variables.get(&quot;F01&quot;)
+def repo_username = binding.variables.get(&quot;F02&quot;)
+def repo_email = binding.variables.get(&quot;F03&quot;)
+def repo_clone_url = binding.variables.get(&quot;F04&quot;)
+def jenkins_node_ip = binding.variables.get(&quot;F05&quot;)
+def kvm_registry_port = binding.variables.get(&quot;F06&quot;)
+
+pipelineJob(job_name) {
+  environmentVariables {
+    env(&quot;repo_username&quot;, &quot;${repo_username}&quot;)
+    env(&quot;repo_email&quot;, &quot;${repo_email}&quot;)
+    env(&quot;repo_clone_url&quot;, &quot;${repo_clone_url}&quot;)
+    env(&quot;jenkins_node_ip&quot;, &quot;${jenkins_node_ip}&quot;)
+    env(&quot;kvm_registry_port&quot;, &quot;${kvm_registry_port}&quot;)
+  }
+  blockOn(&quot;ignitor&quot;) {
+    blockLevel(&apos;NODE&apos;)
+    scanQueueFor(&apos;ALL&apos;)
+  }
+  parameters {
+    stringParam {
+      name(&quot;node_name&quot;)
+      defaultValue(&quot;&quot;)
+      trim(true)
+      description(&quot;Set node name.&quot;)
     }
   }
-  scm {
-    git(repoURL, &apos;master&apos;) { node -&gt;
-       node / gitConfigName(repoUsername)
-       node / gitConfigEmail(repoUserEmail)
-    }
-  }
-  configure { project -&gt; 
-    project / builders &lt;&lt; &apos;ruby-proxy-object&apos; {
-      &apos;ruby-object&apos; (&apos;ruby-class&apos;: &apos;Jenkins::Tasks::BuilderProxy&apos;, &apos;pluginid&apos;: &apos;travis-yml&apos;) {
-        &apos;object&apos; (&apos;ruby-class&apos;: &apos;TravisYmlBuilder&apos;, &apos;pluginid&apos;: &apos;travis-yml&apos;)
-        &apos;pluginid&apos; (&apos;pluginid&apos;: &apos;travis-yml&apos;, &apos;ruby-class&apos;: &apos;String&apos;, &apos;travis-yml&apos;)
+  definition {
+    cpsScm {
+      scm {
+        git(jenkinsfile_repo_url) {
+          node-&gt;
+          node / gitConfigName(repo_username)
+          node / gitConfigEmail(repo_email)
+        }
       }
     }
   }
