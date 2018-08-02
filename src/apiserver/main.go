@@ -208,11 +208,11 @@ func main() {
 		initProjectRepo()
 	}
 
-	if systemInfo.SyncK8s == "" || utils.GetStringValue("FORCE_INIT_SYNC") == "true" {
-		initDefaultProjects()
-		// already do sync service in sync project
-		// syncServiceWithK8s()
-	}
+	// if systemInfo.SyncK8s == "" || utils.GetStringValue("FORCE_INIT_SYNC") == "true" {
+	// initDefaultProjects()
+	// already do sync service in sync project
+	// syncServiceWithK8s()
+	// }
 
 	err = service.CreateIgnitorJob()
 	if err != nil {
