@@ -6,6 +6,9 @@
          [style.minWidth]="inputLabelMinWidth">
     {{inputLabel}}:<span *ngIf="inputIsRequired" class="asterisk">*</span>
   </label>
+  <label *ngIf="inputType == 2 && inputIsRequired" class="cs-input-label">
+    <span class="asterisk">*</span>
+  </label>
   <label aria-haspopup="true"
          role="tooltip"
          class="cs-input-field-container tooltip tooltip-validation tooltip-md tooltip-bottom-left"
