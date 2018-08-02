@@ -41,11 +41,5 @@
      (click)="onCheckClick()">
     <clr-icon shape="check"></clr-icon>
   </a>
-  <a *ngIf="inputField.status == 1 && inputType != 1"
-     href="javascript:void(0)"
-     class="cs-input-icon"
-     (click)="onRevertClick()">
-    <clr-icon shape="refresh"></clr-icon>
-  </a>
   <span *ngIf="isInValidatorWIP" class="spinner spinner-sm"></span>
 </div>
