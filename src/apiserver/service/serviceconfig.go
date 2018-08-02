@@ -12,13 +12,6 @@ import (
 	"time"
 
 	"github.com/astaxie/beego/logs"
-	//"k8s.io/client-go/kubernetes"
-	//modelK8s "k8s.io/client-go/pkg/api/v1"
-	//modelK8sExt "k8s.io/client-go/pkg/apis/extensions/v1beta1"
-	//"k8s.io/client-go/pkg/api/resource"
-	//"k8s.io/client-go/pkg/api/v1"
-	//"k8s.io/client-go/rest"
-	//apiCli "k8s.io/client-go/tools/clientcmd/api"
 )
 
 const (
@@ -33,6 +26,11 @@ const (
 	serviceNamespace   = "default" //TODO create namespace in project post
 	scaleKind          = "Deployment"
 	k8sService         = "kubernetes"
+)
+
+const (
+	board = iota
+	k8s
 )
 
 func InitServiceConfig() (*model.ServiceConfig, error) {
@@ -262,6 +260,7 @@ func SyncServiceWithK8s(pName string) error {
 		servicequery.Comment = defaultComment
 		servicequery.Deleted = defaultDeleted
 		servicequery.Status = defaultStatus
+		servicequery.Source = k8s
 		servicequery.CreationTime, _ = time.Parse(time.RFC3339, item.CreationTimestamp.Format(time.RFC3339))
 		servicequery.UpdateTime, _ = time.Parse(time.RFC3339, item.CreationTimestamp.Format(time.RFC3339))
 		_, err = dao.SyncServiceData(servicequery)
@@ -361,89 +360,21 @@ func GetScaleStatus(serviceInfo *model.ServiceStatus) (model.ScaleStatus, error)
 func StopServiceK8s(s *model.ServiceStatus) error {
 	logs.Info("stop service in cluster %s", s.Name)
 	// Stop deployment
-
-	var config k8sassist.K8sAssistConfig
+	config := k8sassist.K8sAssistConfig{}
 	config.K8sMasterURL = kubeMasterURL()
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 	d := k8sclient.AppV1().Deployment(s.ProjectName)
-
 	err := d.Delete(s.Name)
-	if err != nil {
+	if err != nil && !strings.Contains(err.Error(), "not found") {
 		logs.Error("Failed to delete deployment in cluster, error:%v", err)
 		return err
 	}
-	return nil
-}
-
-func CleanDeploymentK8s(s *model.ServiceStatus) error {
-	logs.Info("clean in cluster %s", s.Name)
-	// Stop deployment
-	var config k8sassist.K8sAssistConfig
-	config.K8sMasterURL = kubeMasterURL()
-	k8sclient := k8sassist.NewK8sAssistClient(&config)
-	d := k8sclient.AppV1().Deployment(s.ProjectName)
-
-	deployData, _, err := d.Get(s.Name)
-	if err != nil {
-		logs.Debug("Do not need to clean deployment")
-		return nil
-	}
-
-	var newreplicas int32
-	deployData.Spec.Replicas = newreplicas
-	res, _, err := d.Update(deployData)
-	if err != nil {
-		logs.Error(res, err)
+	svc := k8sclient.AppV1().Service(s.ProjectName)
+	err = svc.Delete(s.Name)
+	if err != nil && !strings.Contains(err.Error(), "not found") {
+		logs.Error("Failed to delete service in cluster, error:%v", err)
 		return err
 	}
-	time.Sleep(2)
-	err = d.Delete(s.Name)
-	if err != nil {
-		logs.Error("Failed to delele deployment", s.Name, err)
-		return err
-	}
-	logs.Info("Deleted deployment %s", s.Name)
-
-	r := k8sclient.AppV1().ReplicaSet(s.ProjectName)
-	var listoption model.ListOptions
-	listoption.LabelSelector = "app=" + s.Name
-	rsList, err := r.List(listoption)
-	if err != nil {
-		logs.Error("failed to get rs list")
-		return err
-	}
-
-	for _, rsi := range rsList.Items {
-		err = r.Delete(rsi.Name)
-		if err != nil {
-			logs.Error("failed to delete rs %s", rsi.Name)
-			return err
-		}
-		logs.Debug("delete RS %s", rsi.Name)
-	}
-
-	return nil
-}
-
-func CleanServiceK8s(s *model.ServiceStatus) error {
-	logs.Info("clean Service in cluster %s", s.Name)
-	//Stop service in cluster
-	var config k8sassist.K8sAssistConfig
-	config.K8sMasterURL = kubeMasterURL()
-	k8sclient := k8sassist.NewK8sAssistClient(&config)
-	servcieInt := k8sclient.AppV1().Service(s.ProjectName)
-
-	_, _, err := servcieInt.Get(s.Name)
-	if err != nil {
-		logs.Debug("Do not need to clean service %s", s.Name)
-		return nil
-	}
-	err = servcieInt.Delete(s.Name)
-	if err != nil {
-		logs.Error("Failed to delele service in cluster.", s.Name, err)
-		return err
-	}
-
 	return nil
 }
 
@@ -607,4 +538,29 @@ func MarshalNamespace(namespace string) *model.Namespace {
 	return &model.Namespace{
 		ObjectMeta: model.ObjectMeta{Name: namespace},
 	}
+}
+
+func GetPods() (*model.PodList, error) {
+	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		K8sMasterURL: kubeMasterURL(),
+	})
+	l, err := k8sclient.AppV1().Pod("").List()
+	if err != nil {
+		return nil, err
+	}
+	return l, nil
+}
+
+func UpdateDeployment(pName string, sName string, deploymentConfig *model.Deployment) (*model.Deployment, []byte, error) {
+	var config k8sassist.K8sAssistConfig
+	config.K8sMasterURL = kubeMasterURL()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	d := k8sclient.AppV1().Deployment(pName)
+
+	deployment, deploymentFileInfo, err := d.Update(deploymentConfig)
+	if err != nil {
+		logs.Info("Failed to update deployment", pName, deploymentConfig.Name)
+		return nil, nil, err
+	}
+	return deployment, deploymentFileInfo, err
 }

@@ -197,10 +197,12 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   }
 
   openServiceDetail(service: Service) {
-    let factory = this.factory.resolveComponentFactory(ServiceDetailComponent);
-    let componentRef = this.viewRef.createComponent(factory);
-    componentRef.instance.openModal(service)
-      .subscribe(() => this.viewRef.remove(this.viewRef.indexOf(componentRef.hostView)));
+    if (service.service_status != 2){
+      let factory = this.factory.resolveComponentFactory(ServiceDetailComponent);
+      let componentRef = this.viewRef.createComponent(factory);
+      componentRef.instance.openModal(service)
+        .subscribe(() => this.viewRef.remove(this.viewRef.indexOf(componentRef.hostView)));
+    }
   }
 
   openServiceControl(service: Service) {

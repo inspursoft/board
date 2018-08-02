@@ -1,66 +1,68 @@
-import { Component, Output, EventEmitter, ViewChild } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { NgForm } from '@angular/forms';
-import { CreateProject } from './create-project';
-
-import { Project } from '../project';
-import { ProjectService } from '../project.service';
-
-import { MessageService } from '../../shared/message-service/message.service';
-import { Message } from '../../shared/message-service/message';
+import { CreateProject, Project } from "../../../project/project";
+import { SharedService } from "../../shared.service";
+import { Message } from "../../message-service/message";
+import { MessageService } from "../../message-service/message.service";
+import { HttpErrorResponse } from "@angular/common/http";
+import { Subject } from "rxjs/Subject";
+import { Observable } from "rxjs/Observable";
 
 @Component({
   selector: 'create-project',
   styleUrls: [ './create-project.component.css' ],
   templateUrl: './create-project.component.html'
 })
-export class CreateProjectComponent {
-
+export class CreateProjectComponent{
   _createProjectOpened: boolean = false;
   alertClosed: boolean;
-  errorMessage: string;
-
+  errorMessage: string = "";
+  createProject: CreateProject;
+  closeNotification: Subject<string>;
+  isCreateProjectWIP: boolean = false;
+  projectNamePattern: string = '^[a-z0-9]+(?:[-][a-z0-9]+)*$';
   @ViewChild('createProjectForm') projectForm: NgForm;
 
-  @Output() reload: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() closeEvent:EventEmitter<boolean> = new EventEmitter<boolean>();
+  constructor(private sharedService: SharedService,
+              private messageService: MessageService) {
+    this.createProject = new CreateProject();
+    this.closeNotification = new Subject<string>();
+  }
+
   get createProjectOpened(): boolean{
     return this._createProjectOpened;
   }
   set createProjectOpened(value:boolean){
     this._createProjectOpened = value;
     if (!value){
-      this.closeEvent.emit(value);
+      this.closeNotification.next();
     }
   }
-  createProject: CreateProject = new CreateProject();
 
-  constructor(
-    private projectService: ProjectService,
-    private messageService: MessageService
-  ){}
-
-  openModal(): void {
+  openModal(): Observable<string> {
     this.createProjectOpened = true;
     this.alertClosed = true;
     this.projectForm.resetForm();
+    return this.closeNotification.asObservable();
   }
 
   confirm(): void {
+    this.isCreateProjectWIP = true;
     let project = new Project();
     project.project_name = this.createProject.projectName;
     project.project_public = this.createProject.publicity ? 1 : 0;
     project.project_comment = this.createProject.comment;
-
-    this.projectService
-      .createProject(project)
-      .then(resp=>{
+    this.sharedService.createProject(project)
+      .then(() => {
+        this.isCreateProjectWIP = false;
         this.createProjectOpened = false;
         let inlineMessage = new Message();
         inlineMessage.message = 'PROJECT.SUCCESSFUL_CREATED_PROJECT';
         this.messageService.inlineAlertMessage(inlineMessage);
-        this.reload.emit(true);
+        this.closeNotification.next(project.project_name);
       })
-      .catch(err=>{
+      .catch((err: HttpErrorResponse) => {
+        this.isCreateProjectWIP = false;
         if (err) {
           this.alertClosed = false;
           switch(err.status) {
@@ -75,9 +77,5 @@ export class CreateProjectComponent {
           }
         }
       });
-  }
-
-  closeAlert(): void {
-    this.alertClosed = true;
   }
 }

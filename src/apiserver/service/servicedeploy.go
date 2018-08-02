@@ -40,6 +40,7 @@ func DeployService(serviceConfig *model.ConfigServiceStep, K8sMasterURL string, 
 	svcConfig := MarshalService(serviceConfig)
 	serviceInfo, serviceFileInfo, err := cli.AppV1().Service(serviceConfig.ProjectName).Create(svcConfig)
 	if err != nil {
+		cli.AppV1().Deployment(serviceConfig.ProjectName).Delete(serviceConfig.ServiceName)
 		logs.Error("Deploy service object of %s failed. error: %+v\n", serviceConfig.ServiceName, err)
 		return nil, err
 	}

@@ -18,6 +18,7 @@ type UserController struct {
 
 func (u *UserController) Prepare() {
 	u.resolveSignedInUser()
+	u.recordOperationAudit()
 	u.isExternalAuth = utils.GetBoolValue("IS_EXTERNAL_AUTH")
 }
 
@@ -27,7 +28,7 @@ func (u *UserController) GetUsersAction() {
 	pageIndex, _ := u.GetInt("page_index", 0)
 	pageSize, _ := u.GetInt("page_size", 0)
 	isPaginated := !(pageIndex == 0 && pageSize == 0)
-	orderField := u.GetString("order_field", "CREATE_TIME")
+	orderField := u.GetString("order_field", "creation_time")
 	orderAsc, _ := u.GetInt("order_asc", 0)
 
 	var paginatedUsers *model.PaginatedUsers
@@ -65,7 +66,10 @@ func (u *UserController) ChangeUserAccount() {
 
 	var reqUser model.User
 	var err error
-	u.resolveBody(&reqUser)
+	err = u.resolveBody(&reqUser)
+	if err != nil {
+		return
+	}
 
 	reqUser.ID = u.currentUser.ID
 	users, err := service.GetUsers("email", reqUser.Email)
@@ -139,7 +143,10 @@ func (u *UserController) ChangePasswordAction() {
 	}
 
 	var changePassword model.ChangePassword
-	u.resolveBody(&changePassword)
+	err = u.resolveBody(&changePassword)
+	if err != nil {
+		return
+	}
 
 	changePassword.OldPassword = utils.Encrypt(changePassword.OldPassword, u.currentUser.Salt)
 
@@ -171,6 +178,7 @@ type SystemAdminController struct {
 
 func (u *SystemAdminController) Prepare() {
 	u.resolveSignedInUser()
+	u.recordOperationAudit()
 	if !u.isSysAdmin {
 		u.customAbort(http.StatusForbidden, "Insufficient privileges to manipulate user.")
 		return
@@ -187,7 +195,10 @@ func (u *SystemAdminController) AddUserAction() {
 	}
 	var reqUser model.User
 	var err error
-	u.resolveBody(&reqUser)
+	err = u.resolveBody(&reqUser)
+	if err != nil {
+		return
+	}
 
 	if !utils.ValidateWithPattern("username", reqUser.Username) {
 		u.customAbort(http.StatusBadRequest, "Username content is illegal.")
@@ -310,7 +321,7 @@ func (u *SystemAdminController) UpdateUserAction() {
 		u.serveStatus(http.StatusBadRequest, "Invalid user ID.")
 		return
 	}
-	if u.currentUser.ID == int64(userID) {
+	if userID == 1 || u.currentUser.ID == int64(userID) {
 		u.customAbort(http.StatusForbidden, "Insufficient privileges.")
 		return
 	}
@@ -325,7 +336,10 @@ func (u *SystemAdminController) UpdateUserAction() {
 	}
 
 	var reqUser model.User
-	u.resolveBody(&reqUser)
+	err = u.resolveBody(&reqUser)
+	if err != nil {
+		return
+	}
 
 	reqUser.ID = user.ID
 	users, err := service.GetUsers("email", reqUser.Email)
@@ -374,13 +388,16 @@ func (u *SystemAdminController) ToggleSystemAdminAction() {
 		u.customAbort(http.StatusNotFound, "No found user with provided user ID.")
 		return
 	}
-	if u.currentUser.ID == user.ID {
-		u.customAbort(http.StatusBadRequest, "Self system admin cannot be changed.")
+	if userID == 1 || u.currentUser.ID == user.ID {
+		u.customAbort(http.StatusBadRequest, "Self or system admin cannot be changed.")
 		return
 	}
 
 	var reqUser model.User
-	u.resolveBody(&reqUser)
+	err = u.resolveBody(&reqUser)
+	if err != nil {
+		return
+	}
 
 	user.SystemAdmin = reqUser.SystemAdmin
 	isSuccess, err := service.UpdateUser(*user, "system_admin")
@@ -389,6 +406,6 @@ func (u *SystemAdminController) ToggleSystemAdminAction() {
 		return
 	}
 	if !isSuccess {
-		u.CustomAbort(http.StatusBadRequest, "Failed to toggle user system admin.")
+		u.customAbort(http.StatusBadRequest, "Failed to toggle user system admin.")
 	}
 }

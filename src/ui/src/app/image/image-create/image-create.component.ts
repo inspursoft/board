@@ -26,8 +26,6 @@ import { Subscription } from "rxjs/Subscription";
 import { WebsocketService } from "../../shared/websocket-service/websocket.service";
 import { EnvType } from "../../shared/environment-value/environment-value.component";
 import { ValidationErrors } from "@angular/forms";
-import { Message } from "../../shared/message-service/message";
-import { BUTTON_STYLE, MESSAGE_TARGET } from "../../shared/shared.const";
 
 enum ImageSource {fromBoardRegistry, fromDockerHub}
 
@@ -54,7 +52,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   @Input() imageBuildMethod: ImageBuildMethod = ImageBuildMethod.fromTemplate;
   @Output() onBuildCompleted: EventEmitter<string>;
   @Output() isOpenChange: EventEmitter<boolean> = new EventEmitter<boolean>();
-  _isOpenEnvironment = false;
+  isOpenEnvironment = false;
   patternNewImageName: RegExp = /^[a-z\d.-]+$/;
   patternNewImageTag: RegExp = /^[a-z\d.-]+$/;
   patternBaseImage: RegExp = /^[a-z\d/.:-]+$/;
@@ -80,7 +78,6 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   newImageErrMessage: string = "";
   newImageErrReason: string = "";
   consoleText: string = "";
-  processImageSubscription: Subscription;
   uploadCopyToPath: string = "/tmp";
   uploadProgressValue: HttpProgressEvent;
   imageList: Array<Image>;
@@ -88,8 +85,9 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   selectedImage: Image;
   baseImageSource: number = 1;
   boardRegistry: string = "";
-  forceQuitSubscription:Subscription;
+  processImageSubscription: Subscription;
   cancelButtonDisable = true;
+  cancelInfo: {isShow: boolean, isForce: boolean, title: string, message: string};
 
   constructor(private imageService: ImageService,
               private messageService: MessageService,
@@ -100,6 +98,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     this.boardHost = this.appInitService.systemInfo['board_host'];
     this.imageList = Array<Image>();
     this.imageDetailList = Array<ImageDetail>();
+    this.cancelInfo = {isShow: false, isForce: false, title: "", message: ""};
   }
 
   ngOnInit() {
@@ -143,16 +142,6 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
         this.isOpen = false;
         this.messageService.dispatchError(err)
       });
-    this.forceQuitSubscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
-      if (msg.target == MESSAGE_TARGET.FORCE_QUIT_BUILD_IMAGE) {
-        this.onBuildCompleted.emit();
-        this.isOpen = false;
-      } else if (msg.target == MESSAGE_TARGET.CANCEL_BUILD_IMAGE) {
-        this.imageService.cancelConsole(this.projectName).then(() => {
-          this.cleanImageConfig();
-        });
-      }
-    })
   }
 
   ngAfterContentChecked() {
@@ -164,17 +153,9 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
         }
       });
     }
-    if (this.isInputComponentsValid && this.inputComponents) {
-      this.inputComponents.forEach(item => {
-        if (!item.valid) {
-          this.isInputComponentsValid = false;
-        }
-      });
-    }
   }
 
   ngOnDestroy() {
-    this.forceQuitSubscription.unsubscribe();
     if (this.processImageSubscription) {
       this.processImageSubscription.unsubscribe();
     }
@@ -190,21 +171,11 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     this.isOpenChange.emit(this._isOpen);
   }
 
-  set isOpenEnvironment(value) {
-    // this.isOpen = !value;
-    this._isOpenEnvironment = value;
-  }
-
-  get isOpenEnvironment() {
-    return this._isOpenEnvironment;
-  }
-
   get imageRun(): Array<string> {
     return this.customerNewImage.image_dockerfile.image_run;
   }
 
   get imageVolume(): Array<string> {
-
     return this.customerNewImage.image_dockerfile.image_volume;
   }
 
@@ -229,12 +200,9 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   }
 
   get isBuildDisabled() {
-    let baseDisabled = this.isBuildImageWIP ||
-      !this.isInputComponentsValid ||
-      this.isUploadFileWIP;
-    let fromTemplate = baseDisabled || this.customerNewImage.image_dockerfile.image_base == "";
+    let baseDisabled = this.isBuildImageWIP || this.isUploadFileWIP;
     let fromDockerFile = baseDisabled || (!this.selectFromImportFile && !this.isServerHaveDockerFile);
-    return this.imageBuildMethod == ImageBuildMethod.fromTemplate ? fromTemplate : fromDockerFile;
+    return this.imageBuildMethod == ImageBuildMethod.fromTemplate ? baseDisabled : fromDockerFile;
   }
 
   get checkImageTagFun() {
@@ -243,6 +211,12 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
 
   get checkImageNameFun() {
     return this.checkImageName.bind(this);
+  }
+
+  get cancelCaption(){
+    return this.consoleText == "IMAGE.CREATE_IMAGE_JENKINS_PREPARE" ?
+      "IMAGE.CREATE_IMAGE_CANCEL_WAIT":
+      "IMAGE.CREATE_IMAGE_BUILD_CANCEL";
   }
 
   checkImageTag(control: HTMLInputElement): Promise<ValidationErrors> {
@@ -278,19 +252,28 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   }
 
   cancelBuildImage() {
-    let announceMessage = new Message();
     if (this.consoleText == "IMAGE.CREATE_IMAGE_JENKINS_PREPARE") {
-      announceMessage.title = 'IMAGE.CREATE_IMAGE_FORCE_QUIT';
-      announceMessage.message = 'IMAGE.CREATE_IMAGE_FORCE_QUIT_MSG';
-      announceMessage.target = MESSAGE_TARGET.FORCE_QUIT_BUILD_IMAGE;
-      announceMessage.buttons = BUTTON_STYLE.YES_NO;
+      this.cancelInfo.isForce = true;
+      this.cancelInfo.title = "IMAGE.CREATE_IMAGE_FORCE_QUIT";
+      this.cancelInfo.message = "IMAGE.CREATE_IMAGE_FORCE_QUIT_MSG";
     } else {
-      announceMessage.title = 'IMAGE.CREATE_IMAGE_BUILD_CANCEL';
-      announceMessage.message = 'IMAGE.CREATE_IMAGE_BUILD_CANCEL_MSG';
-      announceMessage.target = MESSAGE_TARGET.CANCEL_BUILD_IMAGE;
-      announceMessage.buttons = BUTTON_STYLE.YES_NO;
+      this.cancelInfo.isForce = false;
+      this.cancelInfo.title = "IMAGE.CREATE_IMAGE_BUILD_CANCEL";
+      this.cancelInfo.message = "IMAGE.CREATE_IMAGE_BUILD_CANCEL_MSG";
     }
-    this.messageService.announceMessage(announceMessage);
+    this.cancelInfo.isShow = true;
+  }
+
+  cancelBuildImageBehavior() {
+    this.cancelInfo.isShow = false;
+    if (this.cancelInfo.isForce) {
+      this.onBuildCompleted.emit();
+      this.isOpen = false;
+    } else {
+      this.imageService.cancelConsole(this.projectName).then(() => {
+        this.cleanImageConfig();
+      });
+    }
   }
 
   uploadDockerFile(): Promise<boolean> {
@@ -365,7 +348,20 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
           this.processImageSubscription.unsubscribe();
         }
         if (consoleTextArr.find(value => value.indexOf("Finished: FAILURE") > -1)) {
-          // this.cleanImageConfig();
+          this.isBuildImageWIP = false;
+          this.isUploadFileWIP = false;
+          this.cancelButtonDisable = true;
+          this.isNeedAutoRefreshImageList = false;
+          this.appInitService.setAuditLog({
+            operation_user_id: this.appInitService.currentUser["user_id"],
+            operation_user_name: this.appInitService.currentUser["user_name"],
+            operation_project_id: this.projectId,
+            operation_project_name: this.projectName,
+            operation_object_type: "images",
+            operation_object_name: "",
+            operation_action: "create",
+            operation_status: "Failed"
+          }).subscribe();
           this.processImageSubscription.unsubscribe();
         }
       }, err => err, () => {
@@ -378,19 +374,30 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     this.cleanImageConfig(err);
   }
 
+  verifyInputValid(): boolean {
+    return this.inputComponents.toArray().every((component: CsInputComponent) => {
+      if (!component.valid) {
+        component.checkInputSelf();
+      }
+      return component.valid;
+    });
+  }
+
   buildImage() {
-    this.cancelButtonDisable = true;
-    this.isNewImageAlertOpen = false;
-    this.isBuildImageWIP = true;
-    this.consoleText = "IMAGE.CREATE_IMAGE_JENKINS_PREPARE";
-    this.newImageErrReason = "";
-    setTimeout(() => this.cancelButtonDisable = false, 10000);
-    let buildImageFun: () => Promise<any> = this.imageBuildMethod == ImageBuildMethod.fromTemplate ?
-      this.buildImageByTemplate.bind(this) :
-      this.buildImageByDockerFile.bind(this);
-    buildImageFun()
-      .then(this.buildImageResole.bind(this))
-      .catch(this.buildImageReject.bind(this));
+    if (this.verifyInputValid() && this.isInputComponentsValid && this.customerNewImage.image_dockerfile.image_base != "") {
+      this.cancelButtonDisable = true;
+      this.isNewImageAlertOpen = false;
+      this.isBuildImageWIP = true;
+      this.consoleText = "IMAGE.CREATE_IMAGE_JENKINS_PREPARE";
+      this.newImageErrReason = "";
+      setTimeout(() => this.cancelButtonDisable = false, 10000);
+      let buildImageFun: () => Promise<any> = this.imageBuildMethod == ImageBuildMethod.fromTemplate ?
+        this.buildImageByTemplate.bind(this) :
+        this.buildImageByDockerFile.bind(this);
+      buildImageFun()
+        .then(this.buildImageResole.bind(this))
+        .catch(this.buildImageReject.bind(this));
+    }
   }
 
   updateFileList(): Promise<any> {

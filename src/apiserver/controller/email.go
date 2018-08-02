@@ -38,7 +38,7 @@ type grafanaNotification struct {
 type evalMatch struct {
 	Metric string                 `json:"metric"`
 	Tags   map[string]interface{} `json:"tags"`
-	Value  int                    `json:"value"`
+	Value  interface{}            `json:"value"`
 }
 
 var emailIdentity = ""
@@ -68,6 +68,7 @@ func (e *EmailController) send(to []string, subject string, content string) {
 	if err := service.SendMail(from, to, subject, content); err != nil {
 		logs.Error("Failed to send email to error: %+v", err)
 		e.internalError(err)
+		return
 	}
 }
 

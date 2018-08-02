@@ -1,8 +1,9 @@
 import { Injectable } from "@angular/core";
-import { HttpClient, HttpEvent, HttpRequest, HttpResponse } from "@angular/common/http";
+import { HttpClient, HttpEvent, HttpHeaders, HttpRequest, HttpResponse } from "@angular/common/http";
 import { BuildImageData, Image, ImageDetail } from "../image";
 import { Observable } from "rxjs/Observable";
 import { Project } from "../../project/project";
+import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from "../../shared/shared.const";
 
 @Injectable()
 export class ImageService {
@@ -57,11 +58,15 @@ export class ImageService {
   }
 
   buildImageFromTemp(imageData: BuildImageData): Promise<any> {
-    return this.http.post(`/api/v1/images/building`, imageData, {observe: "response"}).toPromise()
+    return this.http.post(`/api/v1/images/building`, imageData, {
+      headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
+      observe: "response"
+    }).toPromise()
   }
 
   buildImageFromDockerFile(fileInfo: {imageName: string, tagName: string, projectName: string}): Promise<any> {
     return this.http.post(`/api/v1/images/dockerfilebuilding`, fileInfo, {
+      headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
       observe: "response",
       params: {
         image_name: fileInfo.imageName,
@@ -104,6 +109,7 @@ export class ImageService {
   deleteImages(imageName: string): Promise<any> {
     return this.http
       .delete(`/api/v1/images`, {
+        headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
         observe: "response",
         params: {image_name: imageName}
       })
@@ -113,6 +119,7 @@ export class ImageService {
   deleteImageTag(imageName: string, imageTag: string): Promise<any> {
     return this.http
       .delete(`/api/v1/images/${imageName}`, {
+        headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
         observe: "response",
         params: {image_tag: imageTag}
       })

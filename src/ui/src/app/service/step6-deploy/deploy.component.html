@@ -8,7 +8,7 @@
     </div>
     <span *ngIf="isInDeployWIP" class="spinner spinner-md step6-spinner"></span>
   </div>
-  <pre *ngIf="deployConsole"><code clr-code-highlight="language-json">{{deployConsole | json}}</code></pre>
+  <cs-highlight *ngIf="deployConsole" [language]="'json'" [code]="deployConsole | json"></cs-highlight>
 </div>
 <button class="btn btn-primary default-primary"
         [disabled]="isDeploySuccess || !isDeployed"
@@ -18,6 +18,8 @@
 <button class="btn btn-default" [disabled]="isDeployed" (click)="backStep()">
   {{"BUTTON.BACK" | translate}}
 </button>
-<button class="btn btn-default" [disabled]="!isDeployed || isInDeployWIP" (click)="deployComplete()">
+<button class="btn btn-default"
+        (click)="deployComplete()"
+        [disabled]="!isDeployed || isInDeployWIP || !isDeploySuccess">
   {{"BUTTON.OK" | translate}}
 </button>

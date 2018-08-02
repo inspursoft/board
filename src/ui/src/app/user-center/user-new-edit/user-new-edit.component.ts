@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter } from "@angular/core";
 import { User } from '../user';
 import { UserService } from "../user-service/user-service"
 import { MessageService } from "../../shared/message-service/message.service";
+import { Message } from "../../shared/message-service/message";
 
 export enum editModel { emNew, emEdit }
 
@@ -44,7 +45,7 @@ export class NewEditUserComponent {
   get ActionCaption() {
     return this.CurEditModel == editModel.emNew
       ? "USER_CENTER.ADD"
-      : "USER_CENTER.EDIT";
+      : "USER_CENTER.SAVE";
   }
 
   submitUser() {
@@ -54,6 +55,9 @@ export class NewEditUserComponent {
   updateUser() {
     this.userService.updateUser(this.userModel)
       .then(() => {
+        let msg:Message = new Message();
+        msg.message = "USER_CENTER.EDIT_USER_SUCCESS";
+        this.messageService.inlineAlertMessage(msg);
         this.SubmitSuccessEvent.emit(true);
         this.isOpen = false;
       })
@@ -76,6 +80,9 @@ export class NewEditUserComponent {
   addNewUser() {
     this.userService.newUser(this.userModel)
       .then(() => {
+        let msg:Message = new Message();
+        msg.message = "USER_CENTER.ADD_USER_SUCCESS";
+        this.messageService.inlineAlertMessage(msg);
         this.SubmitSuccessEvent.emit(true);
         this.isOpen = false;
       })

@@ -102,3 +102,14 @@ func IsEmptyDirectory(name string) (bool, error) {
 	}
 	return false, err // Either not empty or error, suits both cases
 }
+
+func CheckFilePath(loadPath string) error {
+	if fi, err := os.Stat(loadPath); os.IsNotExist(err) {
+		if err := os.MkdirAll(loadPath, 0755); err != nil {
+			return err
+		}
+	} else if !fi.IsDir() {
+		return pathErr
+	}
+	return nil
+}

@@ -112,8 +112,9 @@ func (p *ImageController) GetImageDetailAction() {
 			p.internalError(err)
 			return
 		}
-
-		tagDetail.ImageDetail = (manifest1.History[0])["v1Compatibility"]
+		if len(manifest1.History) > 0 {
+			tagDetail.ImageDetail = (manifest1.History[0])["v1Compatibility"]
+		}
 		tagDetail.ImageAuthor = ""       //TODO: get the author by frontend simply
 		tagDetail.ImageCreationTime = "" //TODO: get the time by frontend simply
 
@@ -161,7 +162,10 @@ func (p *ImageController) BuildImageAction() {
 	var reqImageConfig model.ImageConfig
 	var err error
 	//Check user priviledge project admin
-	p.resolveBody(&reqImageConfig)
+	err = p.resolveBody(&reqImageConfig)
+	if err != nil {
+		return
+	}
 	p.resolveUserPrivilege(reqImageConfig.ProjectName)
 	//Checking invalid parameters
 	p.resolveRepoImagePath(reqImageConfig.ProjectName)
@@ -239,12 +243,15 @@ func (p *ImageController) GetImageDockerfileAction() {
 
 func (p *ImageController) DockerfilePreviewAction() {
 	var reqImageConfig model.ImageConfig
-	p.resolveBody(&reqImageConfig)
+	err := p.resolveBody(&reqImageConfig)
+	if err != nil {
+		return
+	}
 	p.resolveUserPrivilege(reqImageConfig.ProjectName)
 	p.resolveRepoImagePath(reqImageConfig.ProjectName)
 	reqImageConfig.RepoPath = p.repoImagePath
 	//Checking invalid parameters
-	err := service.CheckDockerfileConfig(&reqImageConfig)
+	err = service.CheckDockerfileConfig(&reqImageConfig)
 	if err != nil {
 		p.serveStatus(http.StatusBadRequest, err.Error())
 		return

@@ -160,3 +160,7 @@ div.collaborative-container {
   margin-top: 10px;
 }
 
+div.alert-danger,div.alert-warning{
+  line-height: 30px;
+}
+

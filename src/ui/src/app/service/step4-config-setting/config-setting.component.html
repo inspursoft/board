@@ -1,6 +1,9 @@
 <div class="config-container">
   <span>{{"SERVICE.STEP_4_SERVICE_CONFIG_TITLE"|translate}}:</span>
   <div class="config-service-info-container">
+    <div *ngIf="noPortForExtent" class="alert alert-danger" role="alert">
+       {{"SERVICE.STEP_4_DANGER_MESSAGE" | translate}}
+    </div>
     <div class="config-service-info-line">
       <cs-input class="base-input"
                 [inputIsRequired]="true"
@@ -21,18 +24,25 @@
              [(ngModel)]="uiData.servicePublic">
     </div>
     <div class="config-service-info-line">
-      <span class="instance">{{"SERVICE.STEP_4_INSTANCE"|translate}}:</span>
-      <cs-dropdown class="base-margin-left"
-                   [dropdownWidth]="310"
-                   [dropdownDefaultText]="'1'"
-                   [dropdownList]="dropDownListNum"
-                   (onChange)="uiData.instance = $event">
-      </cs-dropdown>
+      <cs-input class="base-input"
+                [inputIsRequired]="true"
+                [inputFiledType]="1"
+                [inputMin]="1"
+                [inputMax]="99"
+                [inputLabel]="'SERVICE.STEP_4_INSTANCE' | translate"
+                [simpleFiled]="uiData.instance"
+                (onCheck)="uiData.instance = $event">
+      </cs-input>
     </div>
   </div>
   <div class="advanced-container" (click)="showAdvanced = !showAdvanced">
     <div [ngClass]="{'advanced-open':showAdvanced,'advanced-close':!showAdvanced}" class="step-arrow"></div>
     <span class="base-margin-left">{{"SERVICE.STEP_4_ADVANCED_CONFIG"|translate}}</span>
+    <div *ngIf="uiData.externalServiceList.length == 0"
+         class="alert alert-warning base-margin-left"
+         role="alert">
+      {{"SERVICE.STEP_4_WARNING_MESSAGE" | translate}}
+    </div>
   </div>
   <div *ngIf="showAdvanced" class="advanced-item-container" (click)="showExternal = !showExternal">
     <div class="advanced-item-icon-container"
@@ -166,6 +176,8 @@
 <button class="btn btn-default" (click)="backUpStep()">
   {{"BUTTON.BACK" | translate}}
 </button>
-<button class="btn btn-default" [disabled]="!isInputComponentsValid" (click)="forward()">
+<button class="btn btn-default"
+        (click)="forward()"
+        [disabled]="noPortForExtent || uiData.externalServiceList.length == 0">
   {{"BUTTON.NEXT" | translate}}
 </button>

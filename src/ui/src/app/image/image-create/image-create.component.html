@@ -1,6 +1,11 @@
 <clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'lg'" [clrModalClosable]="false" [clrModalPreventClose]="true">
   <div class="modal-title title-container">
-    <span>{{ "IMAGE.CREATE_IMAGE_TITLE" | translate }}</span>
+    <span class="title">{{ "IMAGE.CREATE_IMAGE_TITLE" | translate }}</span>
+    <clr-alert class="alert-info-danger" [(clrAlertClosed)]="!isNewImageAlertOpen" [clrAlertType]="newImageAlertType">
+      <div class="alert-item">
+        <span class="alert-text">{{newImageErrMessage | translate}}{{newImageErrReason}}</span>
+      </div>
+    </clr-alert>
     <button class="close"
             [ngClass]="{'disabled':isBuildImageWIP}"
             (click)="isOpen = false"
@@ -8,11 +13,6 @@
     </button>
   </div>
   <div class="modal-body modal-body-reset-position">
-    <clr-alert [(clrAlertClosed)]="!isNewImageAlertOpen" [clrAlertType]="newImageAlertType">
-      <div class="alert-item">
-        <span class="alert-text">{{newImageErrMessage | translate}}{{newImageErrReason}}</span>
-      </div>
-    </clr-alert>
     <div class="modal-body-container" [ngSwitch]="imageBuildMethod">
       <div class="create-image-container">
         <div class="btn-group build-method-container">
@@ -232,7 +232,7 @@
                   *ngIf="isBuildImageWIP"
                   [disabled]="cancelButtonDisable"
                   (click)="cancelBuildImage()">
-            {{"IMAGE.CREATE_IMAGE_CANCEL_WAIT" | translate}}
+            {{cancelCaption | translate}}
           </button>
           <span *ngIf="isBuildImageWIP" class="spinner spinner-sm"></span>
         </div>
@@ -243,5 +243,23 @@
                        [(isOpen)]="isOpenEnvironment"
                        (onConfirm)="setEnvironment($event)">
     </environment-value>
+    <clr-modal [(clrModalOpen)]="cancelInfo.isShow" [clrModalClosable]="false">
+      <h3 class="modal-title">{{ cancelInfo.title | translate }}</h3>
+      <div class="modal-body">
+        <p>{{ cancelInfo.message | translate }}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button"
+                class="btn btn-outline"
+                (click)="cancelInfo.isShow  = false">
+          {{ 'BUTTON.NO' | translate }}
+        </button>
+        <button type="button"
+                class="btn btn-primary"
+                (click)="cancelBuildImageBehavior()">
+          {{ 'BUTTON.YES' | translate }}
+        </button>
+      </div>
+    </clr-modal>
   </div>
 </clr-modal>

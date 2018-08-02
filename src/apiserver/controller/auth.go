@@ -14,12 +14,15 @@ import (
 	"github.com/astaxie/beego/logs"
 )
 
+var reservdUsernames = [...]string{"explore", "create", "assets", "css", "img", "js", "less", "plugins", "debug", "raw", "install", "api", "avatar", "user", "org", "help", "stars", "issues", "pulls", "commits", "repo", "template", "new", ".", ".."}
+
 type AuthController struct {
 	BaseController
 }
 
 func (u *AuthController) Prepare() {
 	u.isExternalAuth = utils.GetBoolValue("IS_EXTERNAL_AUTH")
+	u.recordOperationAudit()
 }
 
 func (u *AuthController) processAuth(principal, password string) (string, bool) {
@@ -57,12 +60,16 @@ func (u *AuthController) processAuth(principal, password string) (string, bool) 
 	}
 	memoryCache.Put(user.Username, token.TokenString, time.Second*time.Duration(tokenCacheExpireSeconds))
 	memoryCache.Put(token.TokenString, payload, time.Second*time.Duration(tokenCacheExpireSeconds))
+	u.auditUser, _ = service.GetUserByName(user.Username)
 	return token.TokenString, true
 }
 
 func (u *AuthController) SignInAction() {
 	var reqUser model.User
-	u.resolveBody(&reqUser)
+	err := u.resolveBody(&reqUser)
+	if err != nil {
+		return
+	}
 	token, _ := u.processAuth(reqUser.Username, reqUser.Password)
 	u.renderJSON(model.Token{TokenString: token})
 }
@@ -74,7 +81,7 @@ func (u *AuthController) ExternalAuthAction() {
 		return
 	}
 	if token, isSuccess := u.processAuth(externalToken, ""); isSuccess {
-		u.Redirect(fmt.Sprintf("http://%s/dashboard?token=%s", utils.GetStringValue("BOARD_HOST"), token), http.StatusFound)
+		u.Redirect(fmt.Sprintf("http://%s/dashboard?token=%s", utils.GetStringValue("BOARD_HOST_IP"), token), http.StatusFound)
 		logs.Debug("Successful logged in.")
 	}
 }
@@ -86,11 +93,22 @@ func (u *AuthController) SignUpAction() {
 		return
 	}
 	var reqUser model.User
-	u.resolveBody(&reqUser)
+	err := u.resolveBody(&reqUser)
+	if err != nil {
+		return
+	}
 
 	if !utils.ValidateWithPattern("username", reqUser.Username) {
 		u.customAbort(http.StatusBadRequest, "Username content is illegal.")
 		return
+	}
+
+	// can't be the reserved name.
+	for _, rsdname := range reservdUsernames {
+		if rsdname == reqUser.Username {
+			u.customAbort(http.StatusBadRequest, fmt.Sprintf("Username %s is reserved.", reqUser.Username))
+			return
+		}
 	}
 
 	usernameExists, err := service.UserExists("username", reqUser.Username, 0)
@@ -155,6 +173,7 @@ func (u *AuthController) CurrentUserAction() {
 		u.customAbort(http.StatusUnauthorized, "Need to login first.")
 		return
 	}
+
 	u.renderJSON(user)
 }
 

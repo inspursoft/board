@@ -21,7 +21,10 @@ func (pm *ProjectMemberController) AddOrUpdateProjectMemberAction() {
 	pm.resolveProjectOwnerByID(int64(projectID))
 
 	var reqProjectMember model.ProjectMember
-	pm.resolveBody(&reqProjectMember)
+	err = pm.resolveBody(&reqProjectMember)
+	if err != nil {
+		return
+	}
 
 	role, err := service.GetRoleByID(reqProjectMember.RoleID)
 	if err != nil {

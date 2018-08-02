@@ -13,9 +13,8 @@ import (
 
 	"strconv"
 
-	"strings"
-
 	"fmt"
+	"strings"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/cache"
@@ -54,26 +53,62 @@ type BaseController struct {
 	project         *model.Project
 	isRemoved       bool
 	operationID     int64
+	auditDebug      bool
+	auditUser       *model.User
 }
 
 func (b *BaseController) Prepare() {
 	b.resolveSignedInUser()
+	b.recordOperationAudit()
 }
 
 func (b *BaseController) Finish() {
-	//Update operation result in Mysql
+	b.updateOperationAudit()
+}
+
+func (b *BaseController) recordOperationAudit() {
+	b.auditDebug = utils.GetBoolValue("AUDIT_DEBUG")
+	audit := b.Ctx.Request.Header.Get("audit")
+	if audit == "" && b.auditDebug == false {
+		return
+	}
+	//record data about operation
+	operation := service.ParseOperationAudit(b.Ctx)
+	err := service.CreateOperationAudit(&operation)
+	if err != nil {
+		logs.Error("Failed to create operation Audit. Error:%+v", err)
+		return
+	}
+	b.operationID = operation.ID
+}
+
+func (b *BaseController) updateOperationAudit() {
+	if b.operationID == 0 {
+		return
+	}
+	user := b.currentUser
+	if b.currentUser == nil {
+		user = b.auditUser
+	}
+	err := service.UpdateOperationAuditStatus(b.operationID, b.Ctx.ResponseWriter.Status, b.project, user)
+	if err != nil {
+		logs.Error("Failed to update operation Audit. Error:%+v", err)
+		return
+	}
 }
 
 func (b *BaseController) Render() error {
 	return nil
 }
 
-func (b *BaseController) resolveBody(target interface{}) {
-	err := utils.UnmarshalToJSON(b.Ctx.Request.Body, target)
+func (b *BaseController) resolveBody(target interface{}) (err error) {
+	err = utils.UnmarshalToJSON(b.Ctx.Request.Body, target)
 	if err != nil {
 		logs.Error("Failed to unmarshal data: %+v", err)
 		b.internalError(err)
+		return
 	}
+	return
 }
 
 func (b *BaseController) renderJSON(data interface{}) {
@@ -98,12 +133,12 @@ func (b *BaseController) serveJSON(status int, data interface{}) {
 
 func (b *BaseController) internalError(err error) {
 	logs.Error("Error occurred: %+v", err)
-	b.CustomAbort(http.StatusInternalServerError, "Unexpected error occurred.")
+	b.serveStatus(http.StatusInternalServerError, "Unexpected error occurred.")
 }
 
 func (b *BaseController) customAbort(status int, body string) {
 	logs.Error("Error of custom aborted: %s", body)
-	b.CustomAbort(status, body)
+	b.serveStatus(status, body)
 }
 
 func parsePostK8sError(message string) int {
@@ -188,6 +223,7 @@ func (b *BaseController) getCurrentUser() *model.User {
 
 func (b *BaseController) signOff() error {
 	username := b.GetString("username")
+	b.auditUser, _ = service.GetUserByName(username)
 	var err error
 	if token, ok := memoryCache.Get(username).(string); ok {
 		if payload, ok := memoryCache.Get(token).(map[string]interface{}); ok {
@@ -215,6 +251,7 @@ func (b *BaseController) resolveSignedInUser() {
 	user := b.getCurrentUser()
 	if user == nil {
 		b.customAbort(http.StatusUnauthorized, "Need to login first.")
+		return
 	}
 	b.currentUser = user
 	b.isSysAdmin = (user.SystemAdmin == 1)

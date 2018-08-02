@@ -14,18 +14,18 @@ const (
 	registryCatalogURL        = registryAPIBaseURL + "/" + "_catalog"
 	registryTagListURL        = registryAPIBaseURL + "/%s/tags/list"
 	registryManifestURL       = registryAPIBaseURL + "/%s/manifests/%s"
-	registryManifestDigestURL = registryManifestURL + "/%s"
+	registryManifestDigestURL = registryAPIBaseURL + "/%s/manifests/%s"
 )
 
 func getCustomHeader() http.Header {
 	return http.Header{
-		"Accecpt": []string{"application/vnd.docker.distribution.manifest.v2+json"},
+		"Accept": []string{"application/vnd.docker.distribution.manifest.v2+json"},
 	}
 }
 
 func requestAndUnmarshal(method, specifiedURL string, target interface{}, reqHeader http.Header) (r *http.Response, err error) {
 	utils.RequestHandle(method, specifiedURL, func(req *http.Request) error {
-		req.Header = getCustomHeader()
+		req.Header = reqHeader
 		return nil
 	}, nil, func(req *http.Request, resp *http.Response) error {
 		if target != nil {
@@ -66,6 +66,6 @@ func GetRegistryImageDigest(imageName, tagID string) (digest string, err error) 
 }
 
 func DeleteRegistryImageWithETag(imageName, tagID, digest string) (err error) {
-	_, err = requestAndUnmarshal("DELETE", fmt.Sprintf(registryManifestDigestURL, registryURL(), imageName, tagID, digest), nil, getCustomHeader())
+	_, err = requestAndUnmarshal("DELETE", fmt.Sprintf(registryManifestDigestURL, registryURL(), imageName, digest), nil, getCustomHeader())
 	return
 }

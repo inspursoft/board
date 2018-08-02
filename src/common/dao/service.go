@@ -63,7 +63,7 @@ func DeleteService(service model.ServiceStatus) (int64, error) {
 }
 
 func generateServiceStatusSQL(query model.ServiceStatus, userID int64) (string, []interface{}) {
-	sql := `select distinct s.id, s.name, s.project_id, s.project_name, u.username as owner_name, s.owner_id, s.creation_time, s.status, s.public,
+	sql := `select distinct s.id, s.name, s.project_id, s.project_name, u.username as owner_name, s.owner_id, s.creation_time, s.status, s.public, s.source,
 	(select if(count(s0.id), 1, 0) from service_status s0 where s0.deleted = 0 and s0.id = s.id and s0.project_id in (
 		select p0.id
 		from project p0
@@ -118,7 +118,7 @@ func GetPaginatedServiceData(query model.ServiceStatus, userID int64, pageIndex 
 	if err != nil {
 		return nil, err
 	}
-	sql += getOrderSQL(serviceTable, orderField, orderAsc) + ` limit ?, ?`
+	sql += getOrderSQL(orderField, orderAsc) + ` limit ?, ?`
 	params = append(params, pagination.GetPageOffset(), pagination.PageSize)
 	logs.Debug("%+v", pagination.String())
 

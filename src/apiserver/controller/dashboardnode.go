@@ -20,7 +20,10 @@ type NodeBodyReqPara struct {
 
 func (s *DashboardNodeController) GetNodeData() {
 	var getNodeDataBodyReq NodeBodyReqPara
-	s.resolveBody(&getNodeDataBodyReq)
+	err := s.resolveBody(&getNodeDataBodyReq)
+	if err != nil {
+		return
+	}
 	nodeName := s.GetString("node_name")
 	beego.Debug("node_name", nodeName)
 	if getNodeDataBodyReq.TimeCount == 0 {
@@ -40,7 +43,7 @@ func (s *DashboardNodeController) GetNodeData() {
 		getNodeDataBodyReq.TimestampBase, nodeName, getNodeDataBodyReq.DurationTime)
 	beego.Debug(getNodeDataBodyReq.TimeUnit, getNodeDataBodyReq.TimeCount,
 		getNodeDataBodyReq.TimestampBase, nodeName)
-	err := dashboardNodeDataResp.GetNodeDataToObj()
+	err = dashboardNodeDataResp.GetNodeDataToObj()
 	if err != nil {
 		s.internalError(err)
 		return

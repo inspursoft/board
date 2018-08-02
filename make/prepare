@@ -35,6 +35,7 @@ def render(src, dest, **kw):
     t = Template(open(src, 'r').read())
     with open(dest, 'w') as f:
         f.write(t.substitute(**kw))
+    os.chmod(dest, 0755)
     print("Generated configuration file: %s" % dest)
 
 def delfile(src):
@@ -107,6 +108,8 @@ email_pwd = rcp.get("configuration", "email_password")
 email_from = rcp.get("configuration", "email_from")
 email_ssl = rcp.get("configuration", "email_ssl")
 ########
+
+audit_debug = rcp.get("configuration", "audit_debug")
 
 ###ldap configuration
 ldap_url = rcp.get("configuration", "ldap_url")
@@ -206,6 +209,7 @@ render(os.path.join(templates_dir, "apiserver", "env"),
         email_ssl=email_ssl,
         email_from=email_from,
         email_identity=email_identity,
+        audit_debug=audit_debug,
         ldap_url=ldap_url,
         ldap_searchdn =ldap_searchdn, 
         ldap_search_pwd =ldap_search_pwd,
