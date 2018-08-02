@@ -49,7 +49,7 @@ export class CsInputComponent implements OnInit {
 
   constructor() {
     this.inputValidatorFns = Array<ValidatorFn>();
-    this.inputControl = new FormControl({value: "", disabled: false});
+    this.inputControl = new FormControl("", {updateOn: 'blur'});
   }
 
   ngOnInit() {
@@ -80,10 +80,10 @@ export class CsInputComponent implements OnInit {
         this.inputValidatorFns.push(value);
       })
     }
+    this.inputControl.setValidators(this.inputValidatorFns);
+    this.inputControl.setAsyncValidators(this.customerValidatorAsyncFunc);
     this.inputControl.statusChanges.subscribe(() => {
       if (this.inputControl.valid && this.isInValidatorWIP) {
-        this.inputControl.clearValidators();
-        this.inputControl.clearAsyncValidators();
         this.isInValidatorWIP = false;
         this.inputField.status = CsInputStatus.isView;
         this.inputField.defaultValue = this.inputField.value;
@@ -99,8 +99,6 @@ export class CsInputComponent implements OnInit {
           }
         }
       } else if (this.inputControl.invalid && this.isInValidatorWIP) {
-        this.inputControl.clearValidators();
-        this.inputControl.clearAsyncValidators();
         this.isInValidatorWIP = false;
         this.inputField.status = CsInputStatus.isEdit;
         this.inputHtml.nativeElement.focus();
@@ -171,8 +169,8 @@ export class CsInputComponent implements OnInit {
 
   onInputKeyPressEvent(event: KeyboardEvent) {
     if (event.keyCode == 13) {
+      (this.inputHtml.nativeElement as HTMLElement).blur();
       this.isCheckInputOnKeyPress = true;
-      this.checkInputSelf();
     }
   }
 
@@ -189,8 +187,10 @@ export class CsInputComponent implements OnInit {
 
   onEditClick() {
     if (this.inputControl.enabled && this.inputField.status == CsInputStatus.isView && this.inputType != CsInputType.itWithNoInput) {
-      this.inputField.status = CsInputStatus.isEdit;
       this.inputHtml.nativeElement.focus();
+      if (document.activeElement == this.inputHtml.nativeElement){
+        this.inputField.status = CsInputStatus.isEdit;
+      }
     } else if (this.inputControl.enabled && this.inputType == CsInputType.itWithNoInput) {
       this.inputHtml.nativeElement.blur();
       this.onEditEvent.emit();
@@ -212,8 +212,6 @@ export class CsInputComponent implements OnInit {
     if (this.inputControl.enabled) {
       this.isInValidatorWIP = true;
       this.isAlreadyChecked = true;
-      this.inputControl.setValidators(this.inputValidatorFns);
-      this.inputControl.setAsyncValidators(this.customerValidatorAsyncFunc);
       this.inputControl.markAsTouched({onlySelf: true});
       this.inputControl.updateValueAndValidity({onlySelf: false, emitEvent: true});
     }
