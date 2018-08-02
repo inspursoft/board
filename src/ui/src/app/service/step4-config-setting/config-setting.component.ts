@@ -1,4 +1,4 @@
-import { AfterContentChecked, ChangeDetectorRef, Component, Injector, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { ChangeDetectorRef, Component, Injector, OnInit, QueryList, ViewChildren } from '@angular/core';
 import {
   Container,
   ExternalService,
@@ -17,7 +17,7 @@ import { HttpErrorResponse } from "@angular/common/http";
   styleUrls: ["./config-setting.component.css"],
   templateUrl: './config-setting.component.html'
 })
-export class ConfigSettingComponent extends ServiceStepBase implements OnInit, AfterContentChecked {
+export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
   @ViewChildren(CsInputComponent) inputComponents: QueryList<CsInputComponent>;
   patternServiceName: RegExp = /^[a-z]([-a-z0-9]*[a-z0-9])+$/;
   dropDownListNum: Array<number>;
@@ -25,7 +25,6 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
   showExternal: boolean = false;
   showCollaborative: boolean = false;
   showNodeSelector: boolean = false;
-  isInputComponentsValid = false;
   uiPreData: UIServiceStep3 = new UIServiceStep3();
   collaborativeServiceList: Array<string>;
   /*Todo:Only for collaborative plus action.It must be delete after update UIServiceStep4*/
@@ -39,17 +38,6 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
     this.collaborativeServiceList = Array<string>();
     this.collaborativeList = Array<Object>();
     this.nodeSelectorList = Array<string>()
-  }
-
-  ngAfterContentChecked() {
-    this.isInputComponentsValid = true;
-    if (this.inputComponents) {
-      this.inputComponents.forEach(item => {
-        if (!item.valid) {
-          this.isInputComponentsValid = false;
-        }
-      });
-    }
   }
 
   ngOnInit() {
@@ -161,10 +149,21 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
     return result;
   }
 
+  verifyInputValid(): boolean {
+    return this.inputComponents.toArray().every((inputComponent: CsInputComponent) => {
+      if (!inputComponent.valid) {
+        inputComponent.checkInputSelf();
+      }
+      return inputComponent.valid
+    });
+  }
+
   forward(): void {
-    this.k8sService.setServiceConfig(this.uiData.uiToServer())
-      .then(() => this.k8sService.stepSource.next({index: 6, isBack: false}))
-      .catch((err: HttpErrorResponse) => this.messageService.dispatchError(err,err.error.message))
+    if (this.verifyInputValid()) {
+      this.k8sService.setServiceConfig(this.uiData.uiToServer())
+        .then(() => this.k8sService.stepSource.next({index: 6, isBack: false}))
+        .catch((err: HttpErrorResponse) => this.messageService.dispatchError(err, err.error.message))
+    }
   }
 
   backUpStep(): void {

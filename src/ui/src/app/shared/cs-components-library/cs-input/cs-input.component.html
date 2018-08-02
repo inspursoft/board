@@ -6,11 +6,14 @@
          [style.minWidth]="inputLabelMinWidth">
     {{inputLabel}}:<span *ngIf="inputIsRequired" class="asterisk">*</span>
   </label>
+  <label *ngIf="inputType == 2 && inputIsRequired" class="cs-input-label">
+    <span class="asterisk">*</span>
+  </label>
   <label aria-haspopup="true"
          role="tooltip"
          class="cs-input-field-container tooltip tooltip-validation tooltip-md tooltip-bottom-left"
          (mousedown)="onEditClick()"
-         [class.invalid]="inputErrors && (inputFormGroup.dirty || inputFormGroup.touched)">
+         [class.invalid]="inputControl.invalid && inputControl.touched">
     <input #input
            id="inputField"
            formControlName="inputControl"
@@ -22,8 +25,8 @@
            [title]="inputPlaceholder"
            [placeholder]="inputPlaceholder"
            [(ngModel)]="inputField.value">
-    <span class="tooltip-content" style="width: 200px;" *ngIf="inputErrors">
-      {{getValidatorMessage(inputErrors) | translate}}{{inputValidatorMessageParam}}
+    <span class="tooltip-content" style="width: 200px;" *ngIf="inputControl.errors">
+      {{getValidatorMessage(inputControl.errors) | translate}}{{inputValidatorMessageParam}}
     </span>
   </label>
   <a *ngIf="inputField.status == 0 && !isDisabled"
@@ -37,12 +40,6 @@
      class="cs-input-icon"
      (click)="onCheckClick()">
     <clr-icon shape="check"></clr-icon>
-  </a>
-  <a *ngIf="inputField.status == 1 && inputType != 1"
-     href="javascript:void(0)"
-     class="cs-input-icon"
-     (click)="onRevertClick()">
-    <clr-icon shape="refresh"></clr-icon>
   </a>
   <span *ngIf="isInValidatorWIP" class="spinner spinner-sm"></span>
 </div>

@@ -14,7 +14,7 @@ import { Observable } from "rxjs/Observable";
 })
 export class MemberComponent implements OnInit {
   currentUser: {[key: string]: any};
-  projectMemberOpened: boolean = false;
+  _projectMemberOpened: boolean = false;
   role: Role = new Role();
   availableMembers: Member[];
   selectedMember: Member = new Member();
@@ -76,6 +76,17 @@ export class MemberComponent implements OnInit {
     this.role.role_id = 1;
     this.retrieveAvailableMembers();
     return this.closeNotification.asObservable();
+  }
+
+  get projectMemberOpened(): boolean {
+    return this._projectMemberOpened;
+  }
+
+  set projectMemberOpened(value: boolean) {
+    this._projectMemberOpened = value;
+    if (!value) {
+      this.closeNotification.next();
+    }
   }
 
   confirm(): void {
