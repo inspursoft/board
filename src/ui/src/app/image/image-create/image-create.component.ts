@@ -153,13 +153,6 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
         }
       });
     }
-    if (this.isInputComponentsValid && this.inputComponents) {
-      this.inputComponents.forEach(item => {
-        if (!item.valid) {
-          this.isInputComponentsValid = false;
-        }
-      });
-    }
   }
 
   ngOnDestroy() {
@@ -207,12 +200,9 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   }
 
   get isBuildDisabled() {
-    let baseDisabled = this.isBuildImageWIP ||
-      !this.isInputComponentsValid ||
-      this.isUploadFileWIP;
-    let fromTemplate = baseDisabled || this.customerNewImage.image_dockerfile.image_base == "";
+    let baseDisabled = this.isBuildImageWIP || this.isUploadFileWIP;
     let fromDockerFile = baseDisabled || (!this.selectFromImportFile && !this.isServerHaveDockerFile);
-    return this.imageBuildMethod == ImageBuildMethod.fromTemplate ? fromTemplate : fromDockerFile;
+    return this.imageBuildMethod == ImageBuildMethod.fromTemplate ? baseDisabled : fromDockerFile;
   }
 
   get checkImageTagFun() {
@@ -384,19 +374,30 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     this.cleanImageConfig(err);
   }
 
+  verifyInputValid(): boolean {
+    return this.inputComponents.toArray().every((component: CsInputComponent) => {
+      if (!component.valid) {
+        component.checkInputSelf();
+      }
+      return component.valid;
+    });
+  }
+
   buildImage() {
-    this.cancelButtonDisable = true;
-    this.isNewImageAlertOpen = false;
-    this.isBuildImageWIP = true;
-    this.consoleText = "IMAGE.CREATE_IMAGE_JENKINS_PREPARE";
-    this.newImageErrReason = "";
-    setTimeout(() => this.cancelButtonDisable = false, 10000);
-    let buildImageFun: () => Promise<any> = this.imageBuildMethod == ImageBuildMethod.fromTemplate ?
-      this.buildImageByTemplate.bind(this) :
-      this.buildImageByDockerFile.bind(this);
-    buildImageFun()
-      .then(this.buildImageResole.bind(this))
-      .catch(this.buildImageReject.bind(this));
+    if (this.verifyInputValid() && this.isInputComponentsValid && this.customerNewImage.image_dockerfile.image_base != "") {
+      this.cancelButtonDisable = true;
+      this.isNewImageAlertOpen = false;
+      this.isBuildImageWIP = true;
+      this.consoleText = "IMAGE.CREATE_IMAGE_JENKINS_PREPARE";
+      this.newImageErrReason = "";
+      setTimeout(() => this.cancelButtonDisable = false, 10000);
+      let buildImageFun: () => Promise<any> = this.imageBuildMethod == ImageBuildMethod.fromTemplate ?
+        this.buildImageByTemplate.bind(this) :
+        this.buildImageByDockerFile.bind(this);
+      buildImageFun()
+        .then(this.buildImageResole.bind(this))
+        .catch(this.buildImageReject.bind(this));
+    }
   }
 
   updateFileList(): Promise<any> {

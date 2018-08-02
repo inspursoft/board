@@ -10,7 +10,7 @@
          role="tooltip"
          class="cs-input-field-container tooltip tooltip-validation tooltip-md tooltip-bottom-left"
          (mousedown)="onEditClick()"
-         [class.invalid]="inputErrors && (inputFormGroup.dirty || inputFormGroup.touched)">
+         [class.invalid]="inputControl.invalid && inputControl.touched">
     <input #input
            id="inputField"
            formControlName="inputControl"
@@ -22,8 +22,8 @@
            [title]="inputPlaceholder"
            [placeholder]="inputPlaceholder"
            [(ngModel)]="inputField.value">
-    <span class="tooltip-content" style="width: 200px;" *ngIf="inputErrors">
-      {{getValidatorMessage(inputErrors) | translate}}{{inputValidatorMessageParam}}
+    <span class="tooltip-content" style="width: 200px;" *ngIf="inputControl.errors">
+      {{getValidatorMessage(inputControl.errors) | translate}}{{inputValidatorMessageParam}}
     </span>
   </label>
   <a *ngIf="inputField.status == 0 && !isDisabled"

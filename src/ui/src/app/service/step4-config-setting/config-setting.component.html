@@ -178,6 +178,6 @@
 </button>
 <button class="btn btn-default"
         (click)="forward()"
-        [disabled]="!isInputComponentsValid || noPortForExtent || uiData.externalServiceList.length == 0">
+        [disabled]="noPortForExtent || uiData.externalServiceList.length == 0">
   {{"BUTTON.NEXT" | translate}}
 </button>

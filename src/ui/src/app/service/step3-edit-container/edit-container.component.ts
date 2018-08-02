@@ -1,13 +1,4 @@
-import {
-  AfterContentChecked,
-  ChangeDetectorRef,
-  Component,
-  Injector,
-  OnInit,
-  QueryList,
-  ViewChildren,
-  ViewContainerRef
-} from '@angular/core';
+import { AfterContentChecked, Component, Injector, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { Container, EnvStruct, PHASE_CONFIG_CONTAINERS, ServiceStepPhase, UIServiceStep3 } from '../service-step.component';
 import { EnvType } from "../../shared/environment-value/environment-value.component";
 import { CsInputComponent } from "../../shared/cs-components-library/cs-input/cs-input.component";
@@ -52,13 +43,6 @@ export class EditContainerComponent extends ServiceStepBase implements OnInit, A
 
   ngAfterContentChecked() {
     this.isInputComponentsValid = true;
-    if (this.inputComponents) {
-      this.inputComponents.forEach(item => {
-        if (!item.valid) {
-          this.isInputComponentsValid = false;
-        }
-      });
-    }
     if (this.inputArrayComponents) {
       this.inputArrayComponents.forEach(item => {
         if (!item.valid) {
@@ -180,28 +164,19 @@ export class EditContainerComponent extends ServiceStepBase implements OnInit, A
     this.k8sService.stepSource.next({index: 2, isBack: true});
   }
 
-  verifyContainerName(): boolean {
-    return this.uiData.containerList.every((container: Container, index: number) => {
-      let result = this.patternContainerName.test(container.name);
-      if (!result) {
+  verifyInputValid(): boolean {
+    return this.inputComponents.toArray().every((inputComponent: CsInputComponent) => {
+      if (!inputComponent.valid) {
+        inputComponent.checkInputSelf();
+        let container = this.uiData.containerList.find(value => value.name == inputComponent.inputControl.value);
         this.step3TypeStatus.set(container, true);
-        let inputComponent = this.inputComponents.find((item: CsInputComponent) => item.inputField.value == container.name);
-        if (inputComponent) {
-          setTimeout(()=>{
-            inputComponent.onEditClick();
-            inputComponent.onCheckClick().then(() => {
-              inputComponent.inputHtml.nativeElement.blur();
-              inputComponent.inputHtml.nativeElement.focus();
-            });
-          })
-        }
       }
-      return result
+      return inputComponent.valid
     });
   }
 
   forward(): void {
-    if (this.verifyContainerName()) {
+    if (this.verifyInputValid()) {
       this.k8sService.setServiceConfig(this.uiData.uiToServer()).then(() =>
         this.k8sService.stepSource.next({index: 4, isBack: false})
       ).catch(err => this.messageService.dispatchError(err));
