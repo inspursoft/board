@@ -2,18 +2,10 @@
  * Created by liyanq on 9/4/17.
  */
 
-import {
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-  OnInit,
-  ViewChildren,
-  QueryList,
-  AfterContentChecked
-} from "@angular/core"
+import { Component, EventEmitter, Input, OnInit, Output, QueryList, ViewChildren } from "@angular/core"
 import { CsInputComponent } from "../cs-components-library/cs-input/cs-input.component";
 import { ValidatorFn, Validators } from "@angular/forms";
+import { CsComponentBase } from "../cs-components-library/cs-component-base";
 
 export class EnvType {
   constructor(public envName: string,
@@ -25,22 +17,21 @@ export class EnvType {
   templateUrl: "./environment-value.component.html",
   styleUrls: ["./environment-value.component.css"]
 })
-export class EnvironmentValueComponent implements OnInit, AfterContentChecked {
+export class EnvironmentValueComponent extends CsComponentBase implements OnInit {
   _isOpen: boolean = false;
   patternEnv:RegExp = /^[\w-$/\\=\"[\]{}@&:,'`\t. ?]+$/;
-  isCanConfirm: boolean = false;
   envAlertMessage: string;
   envsData: Array<EnvType>;
   envsText: string = "";
   isAlertOpen: boolean = false;
-  afterCommitErr: string = "";
   inputValidator: Array<ValidatorFn>;
   inputValidatorMsg: Array<{validatorKey: string, validatorMessage: string}>;
-  @ViewChildren(CsInputComponent) inputComponents: QueryList<CsInputComponent>;
+  @ViewChildren(CsInputComponent) inputComponentList: QueryList<CsInputComponent>;
   @Input() inputEnvsData: Array<EnvType>;
   @Input() inputFixedKeyList: Array<string>;
 
   constructor() {
+    super();
     this.envsData = Array<EnvType>();
     this.inputValidator = Array<ValidatorFn>();
     this.inputValidatorMsg = Array<{validatorKey: string, validatorMessage: string}>();
@@ -51,19 +42,6 @@ export class EnvironmentValueComponent implements OnInit, AfterContentChecked {
     this.inputValidatorMsg.push({validatorKey: "required", validatorMessage: "SERVICE.ENV_REQUIRED"});
     if (this.inputEnvsData && this.inputEnvsData.length > 0) {
       this.envsData = this.envsData.concat(this.inputEnvsData);
-    }
-  }
-
-  ngAfterContentChecked() {
-    if (this.inputComponents){
-      let componentArr = this.inputComponents.toArray();
-      for (let i = 0; i < componentArr.length; i++) {
-        if (!componentArr[i].valid) {
-          this.isCanConfirm = false;
-          return
-        }
-      }
-      this.isCanConfirm = true;
     }
   }
 
@@ -85,8 +63,10 @@ export class EnvironmentValueComponent implements OnInit, AfterContentChecked {
   }
 
   confirmEnvInfo() {
-    this.onConfirm.emit(this.envsData);
-    this.isOpen = false;
+    if (this.verifyInputValid()) {
+      this.onConfirm.emit(this.envsData);
+      this.isOpen = false;
+    }
   }
 
   envMinusClick(index: number) {

@@ -1,13 +1,22 @@
-.asterisk {
-  color: #FF0000;
+cs-input.custom-margin-top {
+
 }
 
-.hide-error-msg {
-  margin-top: 5px;
-  height: 38px;
-  padding: 0;
+div.input-container {
+  display: flex;
+  flex-direction: column;
+  margin-right: 50px;
+  min-height: 350px;
 }
 
-.group-margin{
-  margin-top: 30px;
+div.input-container cs-input {
+  margin-top: 10px;
+}
+
+div.btn-container {
+  margin-top: 20px;
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
 }

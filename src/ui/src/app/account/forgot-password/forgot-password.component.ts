@@ -43,7 +43,7 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
   }
 
   sendRequest(): void {
-    if (this.inputUsername.inputIsRequired && this.inputUsername.valid) {
+    if (this.inputUsername.valid) {
       this.sendRequestWIP = true;
       this.accountService.postEmail(this.credential)
         .then(() => {

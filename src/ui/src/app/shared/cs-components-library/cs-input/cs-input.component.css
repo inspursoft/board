@@ -48,3 +48,11 @@ input::placeholder {
   color: darkgray;
   font-size: 14px;
 }
+
+input.source-password{
+
+}
+
+input.verify-password{
+
+}
