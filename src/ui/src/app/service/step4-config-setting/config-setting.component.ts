@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Injector, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { ChangeDetectorRef, Component, Injector, OnInit} from '@angular/core';
 import {
   Container,
   ExternalService,
@@ -8,7 +8,6 @@ import {
   UIServiceStep3,
   UIServiceStep4
 } from '../service-step.component';
-import { CsInputComponent } from "../../shared/cs-components-library/cs-input/cs-input.component";
 import { ServiceStepBase } from "../service-step";
 import { ValidationErrors } from "@angular/forms/forms";
 import { HttpErrorResponse } from "@angular/common/http";
@@ -18,7 +17,6 @@ import { HttpErrorResponse } from "@angular/common/http";
   templateUrl: './config-setting.component.html'
 })
 export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
-  @ViewChildren(CsInputComponent) inputComponents: QueryList<CsInputComponent>;
   patternServiceName: RegExp = /^[a-z]([-a-z0-9]*[a-z0-9])+$/;
   dropDownListNum: Array<number>;
   showAdvanced: boolean = true;
@@ -147,15 +145,6 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
       }
     });
     return result;
-  }
-
-  verifyInputValid(): boolean {
-    return this.inputComponents.toArray().every((inputComponent: CsInputComponent) => {
-      if (!inputComponent.valid) {
-        inputComponent.checkInputSelf();
-      }
-      return inputComponent.valid
-    });
   }
 
   forward(): void {

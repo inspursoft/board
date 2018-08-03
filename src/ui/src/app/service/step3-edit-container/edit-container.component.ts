@@ -1,7 +1,6 @@
 import { AfterContentChecked, Component, Injector, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { Container, EnvStruct, PHASE_CONFIG_CONTAINERS, ServiceStepPhase, UIServiceStep3 } from '../service-step.component';
 import { EnvType } from "../../shared/environment-value/environment-value.component";
-import { CsInputComponent } from "../../shared/cs-components-library/cs-input/cs-input.component";
 import { CsInputArrayComponent } from "../../shared/cs-components-library/cs-input-array/cs-input-array.component";
 import { VolumeOutPut } from "./volume-mounts/volume-mounts.component";
 import { ServiceStepBase } from "../service-step";
@@ -12,7 +11,6 @@ import { BuildImageDockerfileData } from "../../image/image";
   styleUrls: ["./edit-container.component.css"]
 })
 export class EditContainerComponent extends ServiceStepBase implements OnInit, AfterContentChecked {
-  @ViewChildren(CsInputComponent) inputComponents: QueryList<CsInputComponent>;
   @ViewChildren(CsInputArrayComponent) inputArrayComponents: QueryList<CsInputArrayComponent>;
   patternContainerName: RegExp = /^[a-zA-Z\d_-]+$/;
   patternWorkdir: RegExp = /^~?[\w\d-\/.{}$\/:]+[\s]*$/;
@@ -162,17 +160,6 @@ export class EditContainerComponent extends ServiceStepBase implements OnInit, A
 
   backStep(): void {
     this.k8sService.stepSource.next({index: 2, isBack: true});
-  }
-
-  verifyInputValid(): boolean {
-    return this.inputComponents.toArray().every((inputComponent: CsInputComponent) => {
-      if (!inputComponent.valid) {
-        inputComponent.checkInputSelf();
-        let container = this.uiData.containerList.find(value => value.name == inputComponent.inputControl.value);
-        this.step3TypeStatus.set(container, true);
-      }
-      return inputComponent.valid
-    });
   }
 
   forward(): void {

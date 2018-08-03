@@ -3,7 +3,7 @@
          (mousedown)="onEditClick()"
          (click)="onEditClick()"
          class="cs-input-label"
-         [style.minWidth]="inputLabelMinWidth">
+         [style.minWidth.px]="inputLabelMinWidth">
     {{inputLabel}}:<span *ngIf="inputIsRequired" class="asterisk">*</span>
   </label>
   <label *ngIf="inputType == 2 && inputIsRequired" class="cs-input-label">
@@ -15,13 +15,15 @@
          (mousedown)="onEditClick()"
          [class.invalid]="inputControl.invalid && inputControl.touched">
     <input #input
-           id="inputField"
            formControlName="inputControl"
            class="cs-input-input"
-           [type]="inputFiledType == 0 ? 'text' : 'number'"
+           [type]="inputFieldTypeName"
            [class.no-input-module]="!isDisabled && inputType == 1"
+           [class.source-password]="sourcePassword"
+           [class.verify-password]="verifyPassword"
            (keypress)="onInputKeyPressEvent($event)"
            (blur)="onInputBlur()"
+           (focus)="onInputFocus()"
            [title]="inputPlaceholder"
            [placeholder]="inputPlaceholder"
            [(ngModel)]="inputField.value">
@@ -29,7 +31,7 @@
       {{getValidatorMessage(inputControl.errors) | translate}}{{inputValidatorMessageParam}}
     </span>
   </label>
-  <a *ngIf="inputField.status == 0 && !isDisabled"
+  <a *ngIf="inputField.status == 0 && inputControl.enabled"
      href="javascript:void(0)"
      class="cs-input-icon"
      (click)="onEditClick()">
@@ -40,6 +42,12 @@
      class="cs-input-icon"
      (click)="onCheckClick()">
     <clr-icon shape="check"></clr-icon>
+  </a>
+  <a *ngIf="inputField.status == 1"
+     href="javascript:void(0)"
+     class="cs-input-icon"
+     (click)="onRevertClick()">
+    <clr-icon shape="refresh"></clr-icon>
   </a>
   <span *ngIf="isInValidatorWIP" class="spinner spinner-sm"></span>
 </div>

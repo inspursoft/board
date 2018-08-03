@@ -30,10 +30,11 @@ import { SharedActionService } from "./shared-action.service";
 import { MemberComponent } from "./create-project/member/member.component";
 import { CsHighlightComponent } from "./cs-components-library/cs-highlight/cs-highlight.component";
 import { TimeoutComponent } from "./error-pages/timeout.component/timeout.component";
-import "inspurprism"
 import { BoardLoadingComponent } from "./error-pages/board-loading.component/board-loading.component";
 import { BadGatewayComponent } from "./error-pages/bad-gateway.component/bad-gateway.component";
-
+import { CsInputCheckExistingDirective } from "./cs-directives-library/cs-input-check-existing.directive";
+import { CsInputCheckPatternDirective } from "./cs-directives-library/cs-input-check-pattern.directive";
+import "inspurprism"
 
 @NgModule({
   imports: [
@@ -56,6 +57,8 @@ import { BadGatewayComponent } from "./error-pages/bad-gateway.component/bad-gat
     EnvironmentValueComponent,
     CsSearchInput,
     CsInputComponent,
+    CsInputCheckPatternDirective,
+    CsInputCheckExistingDirective,
     CsInputArrayComponent,
     CsGuideComponent,
     CsProgressComponent,
@@ -79,6 +82,8 @@ import { BadGatewayComponent } from "./error-pages/bad-gateway.component/bad-gat
     EnvironmentValueComponent,
     CsSearchInput,
     CsInputComponent,
+    CsInputCheckPatternDirective,
+    CsInputCheckExistingDirective,
     CsInputArrayComponent,
     CsProgressComponent,
     SizePipe,

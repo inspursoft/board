@@ -48,9 +48,7 @@
       <span>{{"SERVICE.ENV_ADD" | translate }}</span>
     </div>
     <div class="env-item-confirm-container">
-      <button class="btn btn-primary"
-              [disabled]="!isCanConfirm || envsData.length == 0"
-              (click)="confirmEnvInfo()">
+      <button class="btn btn-primary" (click)="confirmEnvInfo()">
         {{"SERVICE.ENV_CONFIRM" | translate }}
       </button>
     </div>

@@ -7,8 +7,9 @@ import { Router } from "@angular/router";
 import { Message } from "../shared/message-service/message";
 import { BUTTON_STYLE, MESSAGE_TARGET } from "../shared/shared.const";
 import { Subscription } from "rxjs/Subscription";
+import { CsComponentBase } from "../shared/cs-components-library/cs-component-base";
 
-export abstract class ServiceStepBase implements OnDestroy{
+export abstract class ServiceStepBase extends CsComponentBase implements OnDestroy{
   protected k8sService: K8sService;
   protected appInitService: AppInitService;
   protected messageService: MessageService;
@@ -18,6 +19,7 @@ export abstract class ServiceStepBase implements OnDestroy{
   public isBack: boolean = false;
 
   protected constructor(protected injector: Injector) {
+    super();
     this.k8sService = injector.get(K8sService);
     this.appInitService = injector.get(AppInitService);
     this.messageService = injector.get(MessageService);

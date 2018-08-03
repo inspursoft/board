@@ -16,7 +16,6 @@ import {
   ViewChildren
 } from "@angular/core"
 import { CsInputArrayComponent } from "../../shared/cs-components-library/cs-input-array/cs-input-array.component";
-import { CsInputComponent } from "../../shared/cs-components-library/cs-input/cs-input.component";
 import { BuildImageData, Image, ImageDetail } from "../image";
 import { ImageService } from "../image-service/image-service";
 import { MessageService } from "../../shared/message-service/message.service";
@@ -26,6 +25,7 @@ import { Subscription } from "rxjs/Subscription";
 import { WebsocketService } from "../../shared/websocket-service/websocket.service";
 import { EnvType } from "../../shared/environment-value/environment-value.component";
 import { ValidationErrors } from "@angular/forms";
+import { CsComponentBase } from "../../shared/cs-components-library/cs-component-base";
 
 enum ImageSource {fromBoardRegistry, fromDockerHub}
 
@@ -41,11 +41,10 @@ type alertType = "alert-info" | "alert-danger";
   templateUrl: "./image-create.component.html",
   styleUrls: ["./image-create.component.css"]
 })
-export class CreateImageComponent implements OnInit, AfterContentChecked, OnDestroy {
+export class CreateImageComponent extends CsComponentBase implements OnInit, AfterContentChecked, OnDestroy {
   boardHost: string;
   _isOpen: boolean = false;
   @ViewChildren(CsInputArrayComponent) inputArrayComponents: QueryList<CsInputArrayComponent>;
-  @ViewChildren(CsInputComponent) inputComponents: QueryList<CsInputComponent>;
   @ViewChild("areaStatus") areaStatus: ElementRef;
   @Input() projectId: number = 0;
   @Input() projectName: string = "";
@@ -93,6 +92,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
               private messageService: MessageService,
               private webSocketService: WebsocketService,
               private appInitService: AppInitService) {
+    super();
     this.onBuildCompleted = new EventEmitter<string>();
     this.filesList = new Map<string, Array<{path: string, file_name: string, size: number}>>();
     this.boardHost = this.appInitService.systemInfo['board_host'];
@@ -200,9 +200,7 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
   }
 
   get isBuildDisabled() {
-    let baseDisabled = this.isBuildImageWIP || this.isUploadFileWIP;
-    let fromDockerFile = baseDisabled || (!this.selectFromImportFile && !this.isServerHaveDockerFile);
-    return this.imageBuildMethod == ImageBuildMethod.fromTemplate ? baseDisabled : fromDockerFile;
+    return this.isBuildImageWIP || this.isUploadFileWIP;
   }
 
   get checkImageTagFun() {
@@ -374,29 +372,32 @@ export class CreateImageComponent implements OnInit, AfterContentChecked, OnDest
     this.cleanImageConfig(err);
   }
 
-  verifyInputValid(): boolean {
-    return this.inputComponents.toArray().every((component: CsInputComponent) => {
-      if (!component.valid) {
-        component.checkInputSelf();
-      }
-      return component.valid;
-    });
-  }
-
   buildImage() {
-    if (this.verifyInputValid() && this.isInputComponentsValid && this.customerNewImage.image_dockerfile.image_base != "") {
+    let buildImageInit = () => {
       this.cancelButtonDisable = true;
       this.isNewImageAlertOpen = false;
       this.isBuildImageWIP = true;
       this.consoleText = "IMAGE.CREATE_IMAGE_JENKINS_PREPARE";
       this.newImageErrReason = "";
       setTimeout(() => this.cancelButtonDisable = false, 10000);
-      let buildImageFun: () => Promise<any> = this.imageBuildMethod == ImageBuildMethod.fromTemplate ?
-        this.buildImageByTemplate.bind(this) :
-        this.buildImageByDockerFile.bind(this);
-      buildImageFun()
-        .then(this.buildImageResole.bind(this))
-        .catch(this.buildImageReject.bind(this));
+    };
+    if (this.imageBuildMethod == ImageBuildMethod.fromTemplate) {
+      if (this.verifyInputValid() && this.isInputComponentsValid && this.customerNewImage.image_dockerfile.image_base != "") {
+        buildImageInit();
+        this.buildImageByTemplate()
+          .then(this.buildImageResole.bind(this))
+          .catch(this.buildImageReject.bind(this));
+      }
+    } else if (this.verifyInputValid()) {
+      if (this.selectFromImportFile) {
+        buildImageInit();
+        this.buildImageByDockerFile()
+          .then(this.buildImageResole.bind(this))
+          .catch(this.buildImageReject.bind(this));
+      } else {
+        this.newImageErrMessage = "IMAGE.CREATE_IMAGE_SELECT_DOCKER_FILE";
+        this.isNewImageAlertOpen = true;
+      }
     }
   }
 
