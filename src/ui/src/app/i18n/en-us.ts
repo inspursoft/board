@@ -84,7 +84,7 @@ export const LANG_EN_US = {
     "RESET_NEW_PASS":"Set New Password",
     "USER_NOT_EXISTS": "User Not Exist.",
     "SEND_REQUEST_ERR":"Send Request Error",
-    "SEND_REQUEST_ERR_MSG":"Send Request,Please Contact Administrator",
+    "SEND_REQUEST_ERR_MSG":"Failed send validation, please contact administrator.",
     "RESET_PASS_SUCCESS":"Reset Password Success",
     "RESET_PASS_SUCCESS_MSG":"Reset Password Success,Please Login",
     "RESET_PASS_ERR":"Reset Password Error",
