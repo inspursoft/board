@@ -56,14 +56,14 @@
               [disabled]="isWorkWIP"
               (onCheck)="userModel.user_comment = $event">
     </cs-input>
-    <div class="btn-container">
-      <button type="submit" class="btn btn-primary" [disabled]="isWorkWIP" (click)="submitUser()">
-        {{ActionCaption | translate }}
-      </button>
-      <button type="button" class="btn btn-default" (click)="isOpen = false">
-        {{'USER_CENTER.CANCEL' | translate}}
-      </button>
-      <span *ngIf="isWorkWIP" class="spinner spinner-sm"></span>
-    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-default" (click)="isOpen = false">
+      {{'USER_CENTER.CANCEL' | translate}}
+    </button>
+    <button type="submit" class="btn btn-primary" [disabled]="isWorkWIP" (click)="submitUser()">
+      {{ActionCaption | translate }}
+    </button>
+    <span *ngIf="isWorkWIP" class="spinner spinner-sm"></span>
   </div>
 </clr-modal>

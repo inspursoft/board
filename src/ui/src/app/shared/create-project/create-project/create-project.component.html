@@ -1,6 +1,6 @@
 <clr-modal [(clrModalOpen)]="createProjectOpened">
   <h3 class="modal-title">{{ 'PROJECT.CREATE_PROJECT' | translate }}</h3>
-  <div class="modal-body">
+  <div class="modal-body input-container">
     <clr-alert [clrAlertType]="'alert-danger'" [(clrAlertClosed)]="alertClosed">
       <div class="alert-item">
           <span class="alert-text">
@@ -8,57 +8,35 @@
           </span>
       </div>
     </clr-alert>
-    <form #createProjectForm="ngForm">
-      <section class="form-block">
-        <div class="form-group">
-          <label for="txtProjectName">{{ 'PROJECT.PROJECT_NAME' | translate }}</label>
-          <label for="txtProjectName" aria-haspopup="true" role="tooltip"
-            class="tooltip tooltip-validation tooltip-md tooltip-bottom-left"
-            [class.invalid]="projectNameInput.invalid && (projectNameInput.dirty || projectNameInput.touched)">
-            <input required
-                   type="text"
-                   id="txtProjectName"
-                   name="projectName"
-                   #projectNameInput="ngModel"
-                   [pattern]="projectNamePattern"
-                   [(ngModel)]="createProject.projectName"
-                   checkItemExisting="project">
-            <span class="tooltip-content" *ngIf="projectNameInput.errors && projectNameInput.errors.required">
-              {{ 'PROJECT.PROJECT_NAME_IS_REQUIRED' | translate }}
-            </span>
-            <span class="tooltip-content" *ngIf="projectNameInput.errors && projectNameInput.errors.checkItemExisting">
-              {{ 'PROJECT.PROJECT_NAME_ALREADY_EXISTS' | translate }}
-            </span>
-            <span class="tooltip-content" *ngIf="projectNameInput.errors && projectNameInput.errors.pattern">
-              {{ 'PROJECT.PROJECT_NAME_IS_ILLEGAL' | translate }}:{{projectNamePattern}}
-            </span>
-          </label>
-        </div>
-        <div class="form-group">
-          <label for="chkIsPublic">{{ 'PROJECT.PUBLIC' | translate }}</label>
-          <div class="checkbox">
-            <input type="checkbox" id="chkIsPublic" [(ngModel)]="createProject.publicity" name="public">
-            <label for="chkIsPublic"></label>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="txtComment">{{ 'PROJECT.COMMENT' | translate }}</label>
-          <input type="text" id="txtComment" [(ngModel)]="createProject.comment" name="comment">
-        </div>
-      </section>
-    </form>
+    <cs-input [inputIsRequired]="true"
+              [inputLabel]="'PROJECT.PROJECT_NAME' | translate "
+              [simpleFiled]="createProject.projectName"
+              checkItemExistingEx="project"
+              [inputPattern]="projectNamePattern"
+              [disabled]="isCreateProjectWIP"
+              [validatorMessage]="[
+              {validatorKey:'required',validatorMessage:'PROJECT.PROJECT_NAME_IS_REQUIRED'},
+              {validatorKey:'pattern',validatorMessage:'PROJECT.PROJECT_NAME_IS_ILLEGAL'}]"
+              (onCheck)="createProject.projectName = $event">
+    </cs-input>
+    <div class="public-container">
+      <label for="chkIsPublic" class="public-label">{{ 'PROJECT.PUBLIC' | translate }}:</label>
+      <div class="checkbox public-checkbox">
+        <input type="checkbox" id="chkIsPublic" [disabled]="isCreateProjectWIP" [(ngModel)]="createProject.publicity">
+        <label for="chkIsPublic"></label>
+      </div>
+    </div>
+    <cs-input [inputLabel]="'PROJECT.COMMENT' | translate"
+              [simpleFiled]="createProject.comment"
+              [disabled]="isCreateProjectWIP"
+              (onCheck)="createProject.comment = $event">
+    </cs-input>
   </div>
-  <div class="modal-footer" style="display: flex;align-items: center">
-    <button type="button"
-            class="btn btn-outline"
-            [disabled]="isCreateProjectWIP"
-            (click)="createProjectOpened = false">
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" [disabled]="isCreateProjectWIP" (click)="createProjectOpened = false">
       {{ 'BUTTON.CANCEL' | translate }}
     </button>
-    <button type="button"
-            class="btn btn-primary"
-            [disabled]="!createProjectForm.valid || isCreateProjectWIP"
-            (click)="confirm()">
+    <button type="button" class="btn btn-primary" [disabled]="isCreateProjectWIP" (click)="confirm()">
       {{ 'BUTTON.CONFIRM' | translate }}
     </button>
     <span *ngIf="isCreateProjectWIP" class="spinner spinner-sm"></span>

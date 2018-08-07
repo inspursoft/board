@@ -1,0 +1,25 @@
+div.input-container {
+  display: flex;
+  flex-direction: column;
+  margin-right: 50px;
+  min-height: 200px;
+  color: black;
+}
+
+div.public-container {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  height: 30px;
+}
+
+label.public-label {
+  min-width: 180px;
+  text-align: right;
+}
+
+div.public-checkbox {
+  display: flex;
+  align-items: center;
+  margin-left: 10px;
+}
