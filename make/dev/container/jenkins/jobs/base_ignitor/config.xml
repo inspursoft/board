@@ -63,6 +63,13 @@ freeStyleJob(&quot;ignitor&quot;) {
           regexpFilter(&quot;&quot;)
           defaultValue(&quot;&quot;)
         }
+        genericVariable {
+          key(&quot;branch&quot;)
+          value(&quot;\$.ref&quot;)
+          expressionType(&quot;JSONPath&quot;)
+          regexpFilter(&quot;^(?:[\\/]*\\w+\\/)+&quot;)
+          defaultValue(&quot;master&quot;)
+        }
       }
       printContributedVariables(true)
       printPostContent(true)
@@ -85,7 +92,7 @@ elif [ \$status -ne 200 ]; then
   exit 1
 fi
 node=\$(curl -X POST &quot;http://${jenkins_node_ip}:${kvm_registry_port}/register-job?job_name=\${repo_name}&quot;)
-curl &quot;http://${jenkins_node_ip}:${kvm_registry_port}/trigger-script?name=register.sh&amp;arg=\${repo_name}&quot;
+curl &quot;http://${jenkins_node_ip}:${kvm_registry_port}/trigger-script?name=register.sh&amp;arg=\${repo_name},\${branch}&quot;
 &quot;&quot;&quot;)
     }
   }

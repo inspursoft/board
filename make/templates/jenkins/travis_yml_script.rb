@@ -127,6 +127,10 @@ end
 if __FILE__ == $0
   travisYAML = ".travis.yml"
   filename = ARGV[0] ? File.join(ARGV[0], travisYAML) : travisYAML
+  if !File.exist?(filename)
+    puts "File #{filename} does not exists."
+    exit 0
+  end
   env = ARGV[1] ? parseEnv(ARGV[1]) : {}
   fh = File.open(filename, 'r')
   begin
