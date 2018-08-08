@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"encoding/json"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
@@ -18,6 +17,11 @@ type indataAccount struct {
 	FullName string `json:"name"`
 }
 
+type postParam struct {
+	Token string `json:"token"`
+	Type  string `json:"type"`
+}
+
 type InDataAuth struct{}
 
 func (auth InDataAuth) DoAuth(principal, password string) (*model.User, error) {
@@ -26,17 +30,18 @@ func (auth InDataAuth) DoAuth(principal, password string) (*model.User, error) {
 	logs.Debug("Verification URL: %s", verificationURL)
 	logs.Debug("External token: %s", principal)
 
-	params := make(map[string]string)
-	params["token"] = principal
-	params["type"] = "id_token"
-	reqData, err := json.Marshal(params)
-	if err != nil {
-		logs.Error("Failed to marshal token from request: %+v", err)
-		return nil, nil
+	param := postParam{
+		Token: principal,
+		Type:  "id_token",
 	}
 
 	var account indataAccount
-	err = utils.RequestHandle(http.MethodPost, verificationURL, nil, &reqData,
+	err := utils.RequestHandle(http.MethodPost, verificationURL, func(req *http.Request) error {
+		req.Header = http.Header{
+			"content-type": []string{"application/json"},
+		}
+		return nil
+	}, &param,
 		func(req *http.Request, resp *http.Response) error {
 			return utils.UnmarshalToJSON(resp.Body, &account)
 		})

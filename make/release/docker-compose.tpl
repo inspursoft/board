@@ -71,6 +71,8 @@ services:
       - /data/board/keys:/keys:rw
     env_file:
       - ../config/apiserver/env
+    ports:
+      - 8088:8088
     networks:
       - board
     links:

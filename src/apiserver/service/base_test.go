@@ -11,11 +11,16 @@ import (
 )
 
 var (
-	boardHostIP   = utils.GetConfig("BOARD_HOST_IP")
-	repoPath      = utils.GetConfig("BASE_REPO_PATH")
-	gogitsBaseURL = utils.GetConfig("GOGITS_BASE_URL")
-	gogitsRepoURL = utils.GetConfig("GOGITS_SSH_URL")
-	sshKeyPath    = utils.GetConfig("SSH_KEY_PATH")
+	boardHostIP         = utils.GetConfig("BOARD_HOST_IP")
+	repoPath            = utils.GetConfig("BASE_REPO_PATH")
+	gogitsBaseURL       = utils.GetConfig("GOGITS_BASE_URL")
+	gogitsRepoURL       = utils.GetConfig("GOGITS_SSH_URL")
+	sshKeyPath          = utils.GetConfig("SSH_KEY_PATH")
+	jenkinsNodeIP       = utils.GetConfig("JENKINS_NODE_IP")
+	jenkinsNodeSSHPort  = utils.GetConfig("JENKINS_NODE_SSH_PORT")
+	jenkinsNodeUsername = utils.GetConfig("JENKINS_NODE_USERNAME")
+	jenkinsNodePassword = utils.GetConfig("JENKINS_NODE_PASSWORD")
+	jenkinsNodeVolume   = utils.GetConfig("JENKINS_NODE_VOLUME")
 )
 
 func TestMain(m *testing.M) {

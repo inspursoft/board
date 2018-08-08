@@ -11,8 +11,14 @@ import (
 
 var jenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
 var gogitsBaseURL = utils.GetConfig("GOGITS_BASE_URL")
-var maxRetryCount = 120
+var jenkinsfileRepoURL = utils.GetConfig("JENKINSFILE_REPO_URL")
+var maxRetryCount = 240
+var seedIgnitorJobName = "base_ignitor"
 var seedJobName = "base"
+var jenkinsHostIP = utils.GetConfig("JENKINS_HOST_IP")
+var jenkinsHostPort = utils.GetConfig("JENKINS_HOST_PORT")
+var jenkinsNodeIP = utils.GetConfig("JENKINS_NODE_IP")
+var kvmRegistryPort = utils.GetConfig("KVM_REGISTRY_PORT")
 
 type jenkinsHandler struct{}
 
@@ -41,6 +47,10 @@ func NewJenkinsHandler() *jenkinsHandler {
 }
 
 func (j *jenkinsHandler) CreateJobWithParameter(projectName, username, email string) error {
-	repoURL := fmt.Sprintf("%s/%s/%s.git", gogitsBaseURL(), username, projectName)
-	return utils.SimpleGetRequestHandle(fmt.Sprintf("%s/job/%s/buildWithParameters?F00=%s&&F01=%s&F02=%s&F03=%s", jenkinsBaseURL(), seedJobName, projectName, repoURL, username, email))
+	repoCloneURL := fmt.Sprintf("%s/%s/%s.git", gogitsBaseURL(), username, projectName)
+	return utils.SimpleGetRequestHandle(fmt.Sprintf("%s/job/%s/buildWithParameters?F00=%s&F01=%s&F02=%s&F03=%s&F04=%s&F05=%s&F06=%s", jenkinsBaseURL(), seedJobName, projectName, jenkinsfileRepoURL(), username, email, repoCloneURL, jenkinsNodeIP(), kvmRegistryPort()))
+}
+
+func (j *jenkinsHandler) CreateIgnitorJob() error {
+	return utils.SimpleGetRequestHandle(fmt.Sprintf("%s/job/%s/buildWithParameters?F00=%s&F01=%s", jenkinsBaseURL(), seedIgnitorJobName, jenkinsNodeIP(), kvmRegistryPort()))
 }

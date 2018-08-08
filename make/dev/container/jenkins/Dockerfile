@@ -1,4 +1,4 @@
-FROM jenkins/jenkins:2.60.3
+FROM jenkins/jenkins:2.127
 
 ENV JAVA_OPTS "-Djenkins.install.runSetupWizard=false \
                -Dhudson.model.User.allowNonExistentUser=true"

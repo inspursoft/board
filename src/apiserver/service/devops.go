@@ -8,6 +8,7 @@ import (
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"path/filepath"
+	"strconv"
 
 	"github.com/astaxie/beego/logs"
 )
@@ -15,6 +16,120 @@ import (
 var baseRepoPath = utils.GetConfig("BASE_REPO_PATH")
 var gogitsSSHURL = utils.GetConfig("GOGITS_SSH_URL")
 var jenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
+var jenkinsNodeIP = utils.GetConfig("JENKINS_NODE_IP")
+var jenkinsNodeSSHPort = utils.GetConfig("JENKINS_NODE_SSH_PORT")
+var jenkinsNodeUsername = utils.GetConfig("JENKINS_NODE_USERNAME")
+var jenkinsNodePassword = utils.GetConfig("JENKINS_NODE_PASSWORD")
+var jenkinsNodeVolume = utils.GetConfig("JENKINS_NODE_VOLUME")
+var kvmToolsPath = utils.GetConfig("KVM_TOOLS_PATH")
+var kvmRegistryPath = utils.GetConfig("KVM_REGISTRY_PATH")
+var kvmRegistrySize = utils.GetConfig("KVM_REGISTRY_SIZE")
+var kvmRegistryPort = utils.GetConfig("KVM_REGISTRY_PORT")
+var kvmToolkitsPath = utils.GetConfig("KVM_TOOLKITS_PATH")
+
+var defaultJenkinsfile = `properties([
+  parameters([string(defaultValue: '', description: '', name: 'base_repo_url', trim: false)]),
+  parameters([string(defaultValue: '', description: '', name: 'jenkins_host_ip', trim: false)]),
+  parameters([string(defaultValue: '', description: '', name: 'jenkins_host_port', trim: false)]),
+  parameters([string(defaultValue: '', description: '', name: 'jenkins_node_ip', trim: false)])
+])
+node('slave') {
+  stage('Preparation') {
+    sh '''
+    echo "JENKINS_HOST_IP: ${jenkins_host_ip}"
+    echo "JENKINS_HOST_PORT: ${jenkins_host_port}"
+    echo "HOST_NODE: ${jenkins_node_ip}"
+    echo "JenkinsURL: http://${jenkins_host_ip}:${jenkins_host_port}"
+    echo "BASE_REPO_URL: ${base_repo_url}"
+    export PATH=/usr/local/bin:$PATH
+    echo "CURRENT PATH: ${PATH}"
+    '''
+	}
+	stage('Fetch repo content') {
+		git url: "${base_repo_url}"
+	}
+	stage('Executing with Travis.yml') {
+	  sh '''
+			/usr/local/bin/travis_yml_script.rb
+    '''
+	}
+}`
+
+var currentJenkinsFile = `properties([
+  parameters([string(defaultValue: '', description: 'Set node name', name: 'node_name', trim: false)]),
+  parameters([string(defaultValue: '', description: 'Repo clone URL', name: 'repo_clone_url', trim: false)]),
+  parameters([string(defaultValue: '', description: 'Jenkin node IP', name: 'jenkins_node_ip', trim: false)]),
+  parameters([string(defaultValue: '', description: '', name: 'kvm_registry_port', trim: false)])
+])
+
+node(node_name) {
+  stage('Run KVM node ......') {
+    git "${repo_clone_url}"
+    sh '''
+      systemctl start docker
+      travis_yml_script.rb ${WORKSPACE}
+    '''
+    sh 'curl "http://${jenkins_node_ip}:${kvm_registry_port}/trigger-script?name=release.sh&arg=${JOB_NAME}"'
+  }
+}`
+
+func CreateIgnitorJob() error {
+	return jenkins.NewJenkinsHandler().CreateIgnitorJob()
+}
+
+func CreateJenkinsfileRepo(userID int64, repoName string) error {
+	user, err := GetUserByID(userID)
+	if err != nil {
+		logs.Error("Failed to get user: %+v", err)
+		return err
+	}
+	if user == nil {
+		return fmt.Errorf("user with ID: %d is nil", userID)
+	}
+
+	username := user.Username
+	email := user.Email
+	accessToken := user.RepoToken
+
+	logs.Info("Initialize serve repo with name: %s ...", repoName)
+
+	repoURL := fmt.Sprintf("%s/%s/%s.git", gogitsSSHURL(), username, repoName)
+	repoPath := ResolveRepoPath(repoName, username)
+
+	_, err = InitRepo(repoURL, username, email, repoPath)
+	if err != nil {
+		logs.Error("Failed to initialize default user's repo: %+v", err)
+		return err
+	}
+	gogsHandler := gogs.NewGogsHandler(username, accessToken)
+	if gogsHandler == nil {
+		return fmt.Errorf("failed to create Gogs handler")
+	}
+	err = gogsHandler.CreateRepo(repoName)
+	if err != nil {
+		logs.Error("Failed to create repo: %s, error %+v", repoName, err)
+		return err
+	}
+	err = gogsHandler.CreateHook(username, repoName)
+	if err != nil {
+		logs.Error("Failed to create hook to repo: %s, error: %+v", repoName, err)
+	}
+
+	CreateFile("Jenkinsfile", currentJenkinsFile, repoPath)
+
+	repoHandler, err := OpenRepo(repoPath, username, email)
+	if err != nil {
+		logs.Error("Failed to open the repo: %s, error: %+v.", repoPath, err)
+		return err
+	}
+
+	repoHandler.SimplePush("Add Jenkinsfile.", "Jenkinsfile")
+	if err != nil {
+		logs.Error("Failed to push Jenkinsfile to the repo: %+v", err)
+		return err
+	}
+	return nil
+}
 
 func CreateRepoAndJob(userID int64, projectName string) error {
 
@@ -124,6 +239,21 @@ func ForkRepo(forkedUser *model.User, baseRepoName string) error {
 		logs.Error("Failed to initialize project repo: %+v", err)
 		return err
 	}
+
+	CreateFile("readme.md", "Repo created by Board.", repoPath)
+
+	repoHandler, err := OpenRepo(repoPath, username, email)
+	if err != nil {
+		logs.Error("Failed to open the repo: %s, error: %+v.", repoPath, err)
+		return err
+	}
+
+	repoHandler.SimplePush("Add some struts.", "readme.md")
+	if err != nil {
+		logs.Error("Failed to push readme.md file to the repo: %+v", err)
+		return err
+	}
+
 	jenkinsHandler := jenkins.NewJenkinsHandler()
 	err = jenkinsHandler.CreateJobWithParameter(repoName, username, email)
 	if err != nil {
@@ -175,4 +305,33 @@ func ResolveRepoPath(repoName, username string) (repoPath string) {
 
 func ResolveDockerfileName(imageName, tag string) string {
 	return fmt.Sprintf("Dockerfile.%s_%s", imageName, tag)
+}
+
+func PrepareKVMHost() error {
+	sshPort, _ := strconv.Atoi(jenkinsNodeSSHPort())
+	sshHandler, err := NewSecureShell(jenkinsNodeIP(), sshPort, jenkinsNodeUsername(), jenkinsNodePassword())
+	if err != nil {
+		return err
+	}
+	kvmToolsNodePath := filepath.Join(kvmToolkitsPath(), "kvm")
+	kvmRegistryNodePath := filepath.Join(kvmToolkitsPath(), "kvmregistry")
+	err = sshHandler.ExecuteCommand(fmt.Sprintf("mkdir -p %s %s", kvmToolsNodePath, kvmRegistryNodePath))
+	if err != nil {
+		return err
+	}
+	err = sshHandler.SecureCopy(kvmToolsPath(), kvmToolsNodePath)
+	if err != nil {
+		return err
+	}
+	err = sshHandler.SecureCopy(kvmRegistryPath(), kvmRegistryNodePath)
+	if err != nil {
+		return err
+	}
+	return sshHandler.ExecuteCommand(fmt.Sprintf(`
+		cd %s && nohup ./kvmregistry -size %s -port %s > kvmregistry.out 2>&1 &`,
+		kvmRegistryNodePath, kvmRegistrySize(), kvmRegistryPort()))
+}
+
+func ReleaseKVMRegistryByJobName(jobName string) error {
+	return utils.SimpleGetRequestHandle(fmt.Sprintf("http://%s:%s/release-node?job_name=%s", jenkinsNodeIP(), kvmRegistryPort(), jobName))
 }
