@@ -27,108 +27,8 @@ var kvmRegistrySize = utils.GetConfig("KVM_REGISTRY_SIZE")
 var kvmRegistryPort = utils.GetConfig("KVM_REGISTRY_PORT")
 var kvmToolkitsPath = utils.GetConfig("KVM_TOOLKITS_PATH")
 
-var defaultJenkinsfile = `properties([
-  parameters([string(defaultValue: '', description: '', name: 'base_repo_url', trim: false)]),
-  parameters([string(defaultValue: '', description: '', name: 'jenkins_host_ip', trim: false)]),
-  parameters([string(defaultValue: '', description: '', name: 'jenkins_host_port', trim: false)]),
-  parameters([string(defaultValue: '', description: '', name: 'jenkins_node_ip', trim: false)])
-])
-node('slave') {
-  stage('Preparation') {
-    sh '''
-    echo "JENKINS_HOST_IP: ${jenkins_host_ip}"
-    echo "JENKINS_HOST_PORT: ${jenkins_host_port}"
-    echo "HOST_NODE: ${jenkins_node_ip}"
-    echo "JenkinsURL: http://${jenkins_host_ip}:${jenkins_host_port}"
-    echo "BASE_REPO_URL: ${base_repo_url}"
-    export PATH=/usr/local/bin:$PATH
-    echo "CURRENT PATH: ${PATH}"
-    '''
-	}
-	stage('Fetch repo content') {
-		git url: "${base_repo_url}"
-	}
-	stage('Executing with Travis.yml') {
-	  sh '''
-			/usr/local/bin/travis_yml_script.rb
-    '''
-	}
-}`
-
-var currentJenkinsFile = `properties([
-  parameters([string(defaultValue: '', description: 'Set node name', name: 'node_name', trim: false)]),
-  parameters([string(defaultValue: '', description: 'Repo clone URL', name: 'repo_clone_url', trim: false)]),
-  parameters([string(defaultValue: '', description: 'Jenkin node IP', name: 'jenkins_node_ip', trim: false)]),
-  parameters([string(defaultValue: '', description: '', name: 'kvm_registry_port', trim: false)])
-])
-
-node(node_name) {
-  stage('Run KVM node ......') {
-    git "${repo_clone_url}"
-    sh '''
-      systemctl start docker
-      travis_yml_script.rb ${WORKSPACE}
-    '''
-    sh 'curl "http://${jenkins_node_ip}:${kvm_registry_port}/trigger-script?name=release.sh&arg=${JOB_NAME}"'
-  }
-}`
-
 func CreateIgnitorJob() error {
 	return jenkins.NewJenkinsHandler().CreateIgnitorJob()
-}
-
-func CreateJenkinsfileRepo(userID int64, repoName string) error {
-	user, err := GetUserByID(userID)
-	if err != nil {
-		logs.Error("Failed to get user: %+v", err)
-		return err
-	}
-	if user == nil {
-		return fmt.Errorf("user with ID: %d is nil", userID)
-	}
-
-	username := user.Username
-	email := user.Email
-	accessToken := user.RepoToken
-
-	logs.Info("Initialize serve repo with name: %s ...", repoName)
-
-	repoURL := fmt.Sprintf("%s/%s/%s.git", gogitsSSHURL(), username, repoName)
-	repoPath := ResolveRepoPath(repoName, username)
-
-	_, err = InitRepo(repoURL, username, email, repoPath)
-	if err != nil {
-		logs.Error("Failed to initialize default user's repo: %+v", err)
-		return err
-	}
-	gogsHandler := gogs.NewGogsHandler(username, accessToken)
-	if gogsHandler == nil {
-		return fmt.Errorf("failed to create Gogs handler")
-	}
-	err = gogsHandler.CreateRepo(repoName)
-	if err != nil {
-		logs.Error("Failed to create repo: %s, error %+v", repoName, err)
-		return err
-	}
-	err = gogsHandler.CreateHook(username, repoName)
-	if err != nil {
-		logs.Error("Failed to create hook to repo: %s, error: %+v", repoName, err)
-	}
-
-	CreateFile("Jenkinsfile", currentJenkinsFile, repoPath)
-
-	repoHandler, err := OpenRepo(repoPath, username, email)
-	if err != nil {
-		logs.Error("Failed to open the repo: %s, error: %+v.", repoPath, err)
-		return err
-	}
-
-	repoHandler.SimplePush("Add Jenkinsfile.", "Jenkinsfile")
-	if err != nil {
-		logs.Error("Failed to push Jenkinsfile to the repo: %+v", err)
-		return err
-	}
-	return nil
 }
 
 func CreateRepoAndJob(userID int64, projectName string) error {
@@ -191,7 +91,7 @@ func CreateRepoAndJob(userID int64, projectName string) error {
 	}
 
 	jenkinsHandler := jenkins.NewJenkinsHandler()
-	err = jenkinsHandler.CreateJobWithParameter(repoName, username, email)
+	err = jenkinsHandler.CreateJobWithParameter(repoName, username)
 	if err != nil {
 		logs.Error("Failed to create Jenkins' job with repo name: %s, error: %+v", repoName, err)
 		return err
@@ -255,7 +155,7 @@ func ForkRepo(forkedUser *model.User, baseRepoName string) error {
 	}
 
 	jenkinsHandler := jenkins.NewJenkinsHandler()
-	err = jenkinsHandler.CreateJobWithParameter(repoName, username, email)
+	err = jenkinsHandler.CreateJobWithParameter(repoName, username)
 	if err != nil {
 		logs.Error("Failed to create Jenkins' job with project name: %s, error: %+v", repoName, err)
 		return err

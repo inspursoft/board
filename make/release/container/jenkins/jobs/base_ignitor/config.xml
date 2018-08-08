@@ -28,7 +28,8 @@
     </hudson.model.ParametersDefinitionProperty>
   </properties>
   <scm class="hudson.scm.NullSCM"/>
-  <canRoam>true</canRoam>
+  <assignedNode>master</assignedNode>
+  <canRoam>false</canRoam>
   <disabled>false</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
@@ -41,6 +42,10 @@ def kvm_registry_port = binding.variables.get(&quot;F01&quot;)
 
 freeStyleJob(&quot;ignitor&quot;) {
   label(&apos;slave&apos;)
+  blockOn(&quot;base&quot;) {
+    blockLevel(&apos;NODE&apos;)
+    scanQueueFor(&apos;ALL&apos;)
+  }
   triggers {
     genericTrigger {
       genericVariables {
@@ -51,11 +56,25 @@ freeStyleJob(&quot;ignitor&quot;) {
           regexpFilter(&quot;&quot;)
           defaultValue(&quot;&quot;)
         }
+        genericVariable {
+          key(&quot;before&quot;)
+          value(&quot;\$.before&quot;)
+          expressionType(&quot;JSONPath&quot;)
+          regexpFilter(&quot;&quot;)
+          defaultValue(&quot;&quot;)
+        }
+        genericVariable {
+          key(&quot;branch&quot;)
+          value(&quot;\$.ref&quot;)
+          expressionType(&quot;JSONPath&quot;)
+          regexpFilter(&quot;^(?:[\\/]*\\w+\\/)+&quot;)
+          defaultValue(&quot;master&quot;)
+        }
       }
       printContributedVariables(true)
       printPostContent(true)
-      regexpFilterText(&quot;\$repo_name&quot;)
-      regexpFilterExpression(&quot;^(?!base\\b)\\b\\w+\$&quot;)
+      regexpFilterText(&quot;\$before&quot;)
+      regexpFilterExpression(&quot;^(?!0000000000000000000000000000000000000000\\b)\\b\\w+\$&quot;)
     }
   }
   steps {
@@ -73,7 +92,7 @@ elif [ \$status -ne 200 ]; then
   exit 1
 fi
 node=\$(curl -X POST &quot;http://${jenkins_node_ip}:${kvm_registry_port}/register-job?job_name=\${repo_name}&quot;)
-curl &quot;http://${jenkins_node_ip}:${kvm_registry_port}/trigger-script?name=register.sh&amp;arg=\${repo_name},\${node}&quot;
+curl &quot;http://${jenkins_node_ip}:${kvm_registry_port}/trigger-script?name=register.sh&amp;arg=\${repo_name},\${branch}&quot;
 &quot;&quot;&quot;)
     }
   }

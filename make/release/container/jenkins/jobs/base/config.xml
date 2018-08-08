@@ -14,42 +14,24 @@
       <parameterDefinitions>
         <hudson.model.StringParameterDefinition>
           <name>F00</name>
-          <description>Set job name created.</description>
+          <description>Set job name.</description>
           <defaultValue></defaultValue>
           <trim>false</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>F01</name>
-          <description>Set repo URL for Jenkinsfile.</description>
+          <description>Set repo clone URL.</description>
           <defaultValue></defaultValue>
           <trim>false</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>F02</name>
-          <description>Set username for repo clone.</description>
+          <description>Set  Jenkins node IP.</description>
           <defaultValue></defaultValue>
           <trim>false</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>F03</name>
-          <description>Set email for repo clone.</description>
-          <defaultValue></defaultValue>
-          <trim>false</trim>
-        </hudson.model.StringParameterDefinition>
-        <hudson.model.StringParameterDefinition>
-          <name>F04</name>
-          <description>Repo clone URL.</description>
-          <defaultValue></defaultValue>
-          <trim>false</trim>
-        </hudson.model.StringParameterDefinition>
-        <hudson.model.StringParameterDefinition>
-          <name>F05</name>
-          <description>Set Jenkins node IP.</description>
-          <defaultValue></defaultValue>
-          <trim>false</trim>
-        </hudson.model.StringParameterDefinition>
-        <hudson.model.StringParameterDefinition>
-          <name>F06</name>
           <description>Set KVM registry port.</description>
           <defaultValue></defaultValue>
           <trim>false</trim>
@@ -58,7 +40,8 @@
     </hudson.model.ParametersDefinitionProperty>
   </properties>
   <scm class="hudson.scm.NullSCM"/>
-  <canRoam>true</canRoam>
+  <assignedNode>master</assignedNode>
+  <canRoam>false</canRoam>
   <disabled>false</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
@@ -67,42 +50,55 @@
   <builders>
     <javaposse.jobdsl.plugin.ExecuteDslScripts plugin="job-dsl@1.69">
       <scriptText>def job_name = binding.variables.get(&quot;F00&quot;)
-def jenkinsfile_repo_url = binding.variables.get(&quot;F01&quot;)
-def repo_username = binding.variables.get(&quot;F02&quot;)
-def repo_email = binding.variables.get(&quot;F03&quot;)
-def repo_clone_url = binding.variables.get(&quot;F04&quot;)
-def jenkins_node_ip = binding.variables.get(&quot;F05&quot;)
-def kvm_registry_port = binding.variables.get(&quot;F06&quot;)
+def repo_clone_url = binding.variables.get(&quot;F01&quot;)
+def jenkins_node_ip = binding.variables.get(&quot;F02&quot;)
+def kvm_registry_port = binding.variables.get(&quot;F03&quot;)
 
 pipelineJob(job_name) {
   environmentVariables {
-    env(&quot;repo_username&quot;, &quot;${repo_username}&quot;)
-    env(&quot;repo_email&quot;, &quot;${repo_email}&quot;)
-    env(&quot;repo_clone_url&quot;, &quot;${repo_clone_url}&quot;)
-    env(&quot;jenkins_node_ip&quot;, &quot;${jenkins_node_ip}&quot;)
-    env(&quot;kvm_registry_port&quot;, &quot;${kvm_registry_port}&quot;)
+    env(&quot;repo_clone_url&quot;, &quot;$repo_clone_url&quot;)
+    env(&quot;jenkins_node_ip&quot;, &quot;$jenkins_node_ip&quot;)
+    env(&quot;kvm_registry_port&quot;, &quot;$kvm_registry_port&quot;)
   }
   blockOn(&quot;ignitor&quot;) {
     blockLevel(&apos;NODE&apos;)
     scanQueueFor(&apos;ALL&apos;)
   }
   parameters {
-    stringParam {
-      name(&quot;node_name&quot;)
-      defaultValue(&quot;&quot;)
-      trim(true)
-      description(&quot;Set node name.&quot;)
-    }
+    stringParam(&quot;node_name&quot;, &quot;&quot;, &quot;Set node name.&quot;)
+    stringParam(&quot;branch&quot;, &quot;&quot;, &quot;Set branch for repo clone.&quot;)
+    stringParam(&quot;repo_clone_url&quot;, &quot;$repo_clone_url&quot;, &quot;Set repo clone URL.&quot;)
+    stringParam(&quot;jenkins_node_ip&quot;, &quot;$jenkins_node_ip&quot;, &quot;Set Jenkins node IP.&quot;)
+    stringParam(&quot;kvm_registry_port&quot;, &quot;$kvm_registry_port&quot;, &quot;Set KVM registry port.&quot;)
   }
   definition {
-    cpsScm {
-      scm {
-        git(jenkinsfile_repo_url) {
-          node-&gt;
-          node / gitConfigName(repo_username)
-          node / gitConfigEmail(repo_email)
-        }
-      }
+    cps {
+      script(&apos;&apos;&apos;
+properties([
+  parameters([
+    string(defaultValue: &quot;&quot;, description: &quot;Set node name&quot;, name: &quot;node_name&quot;, trim: true),
+    string(defaultValue: &quot;&quot;, description: &quot;Branch for clone&quot;, name: &quot;branch&quot;, trim: true),
+    string(defaultValue: &quot;$repo_clone_url&quot;, description: &quot;Set repo clone URL.&quot;, name: &quot;repo_clone_url&quot;, trim: true),
+    string(defaultValue: &quot;$jenkins_node_ip&quot;, description: &quot;Set Jenkins node IP.&quot;, name: &quot;jenkins_node_ip&quot;, trim: true),
+    string(defaultValue: &quot;$kvm_registry_port&quot;, description: &quot;Set KVM registry port.&quot;, name: &quot;kvm_registry_port&quot;, trim: true)
+  ])
+])
+
+node(node_name) {
+  stage(&quot;Cloning from repo ...&quot;) {
+    sh &quot;git clone --single-branch -b ${branch} ${repo_clone_url} ${WORKSPACE}&quot;
+  }
+  stage(&quot;Preparing enironment ...&quot;) {
+    sh &quot;systemctl start docker&quot;
+  }
+  stage(&quot;Executing build ...&quot;) {
+    sh &quot;travis_yml_script.rb ${WORKSPACE}&quot;
+  }
+  stage(&quot;Cleanning up ...&quot;) {
+    sh &apos;curl &quot;http://${jenkins_node_ip}:${kvm_registry_port}/trigger-script?name=release.sh&amp;arg=${JOB_NAME}&quot;&apos;
+  }
+}
+      &apos;&apos;&apos;)
     }
   }
 }</scriptText>
