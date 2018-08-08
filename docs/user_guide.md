@@ -135,11 +135,11 @@ In the advanced configuration, can assign node port for external service.
 
 In node selector, locate a service to the designated node or node group. 
 
-<img src="img/userguide/node1.jpg" width="100" alt="Locate service">
+<img src="img/userguide/nodelocate1.JPG" width="100" alt="Locate service">
 
 Get all available nodes or node groups and select one.
 
-<img src="img/userguide/node2.jpg" width="100" alt="Locate service">
+<img src="img/userguide/nodelocate2.JPG" width="100" alt="Locate service">
 
 Next step after configure service.
 
@@ -444,7 +444,7 @@ dashboard show the statistical real-time and average numbers
 Administrator can check the operation records by action audit functionality
 
 * Login with admin
-<img src="img/userguide/action1.jpg" width="100" alt="action1">
+<img src="img/userguide/action1.JPG" width="100" alt="action1">
 
 * There are some search conditions to set, search all by default
 Object
@@ -454,14 +454,14 @@ User
 Start time
 End time
 
-<img src="img/userguide/action2.jpg" width="100" alt="action2">
-<img src="img/userguide/action3.jpg" width="100" alt="action3">
-<img src="img/userguide/action4.jpg" width="100" alt="action4">
-<img src="img/userguide/action5.jpg" width="100" alt="action5">
-<img src="img/userguide/action6.jpg" width="100" alt="action6">
+<img src="img/userguide/action2.JPG" width="100" alt="action2">
+<img src="img/userguide/action3.JPG" width="100" alt="action3">
+<img src="img/userguide/action4.JPG" width="100" alt="action4">
+<img src="img/userguide/action5.JPG" width="100" alt="action5">
+<img src="img/userguide/action6.JPG" width="100" alt="action6">
 
 * Click query to get the operation records 
-<img src="img/userguide/action8.jpg" width="100" alt="action8">
+<img src="img/userguide/action8.JPG" width="100" alt="action8">
 
 ## Q&A
 
