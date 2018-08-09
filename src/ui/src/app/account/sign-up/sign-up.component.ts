@@ -9,12 +9,13 @@ import { BUTTON_STYLE, MESSAGE_TARGET } from "../../shared/shared.const";
 import { HttpErrorResponse } from "@angular/common/http";
 import { Subscription } from "rxjs/Subscription";
 import {AppInitService} from "../../app.init.service";
+import { CsComponentBase } from "../../shared/cs-components-library/cs-component-base";
 
 @Component({
    templateUrl: './sign-up.component.html',
    styleUrls: [ './sign-up.component.css' ]
 })
-export class SignUpComponent implements OnDestroy,OnInit {
+export class SignUpComponent extends CsComponentBase implements OnDestroy,OnInit {
   isSignUpWIP:boolean = false;
   signUpModel: SignUp = new SignUp();
   _subscription: Subscription;
@@ -23,7 +24,7 @@ export class SignUpComponent implements OnDestroy,OnInit {
               private messageService: MessageService,
               private appInitService: AppInitService,
               private router: Router) {
-
+    super();
     this._subscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
       if (msg.target == MESSAGE_TARGET.SIGN_UP_SUCCESSFUL) {
         this.router.navigate(['/sign-in']);
@@ -42,38 +43,40 @@ export class SignUpComponent implements OnDestroy,OnInit {
   }
   
   signUp(): void {
-    this.isSignUpWIP = true;
-    let account: Account = {
-      username: this.signUpModel.username,
-      email: this.signUpModel.email,
-      password: this.signUpModel.password,
-      realname: this.signUpModel.realname,
-      comment: this.signUpModel.comment
-    };
-    this.accountService
-      .signUp(account)
-      .then(() => {
-        this.isSignUpWIP = false;
-        let confirmationMessage = new Message();
-        confirmationMessage.title = "ACCOUNT.SIGN_UP";
-        confirmationMessage.buttons = BUTTON_STYLE.ONLY_CONFIRM;
-        confirmationMessage.target = MESSAGE_TARGET.SIGN_UP_SUCCESSFUL;
-        confirmationMessage.message = 'ACCOUNT.SUCCESS_TO_SIGN_UP';
-        this.messageService.announceMessage(confirmationMessage);
-      })
-      .catch((err: HttpErrorResponse)=>{
-        this.isSignUpWIP = false;
-        let confirmationMessage = new Message();
-        confirmationMessage.title = "ACCOUNT.ERROR";
-        confirmationMessage.buttons = BUTTON_STYLE.ONLY_CONFIRM;
-        confirmationMessage.target = MESSAGE_TARGET.SIGN_UP_ERROR;
-        if(err && err.status === 409) {
-          confirmationMessage.message = 'ACCOUNT.USERNAME_ALREADY_EXISTS';
-        } else {
-          confirmationMessage.message = "ACCOUNT.FAILED_TO_SIGN_UP";
-        }
-        this.messageService.announceMessage(confirmationMessage);
-      });
+    if (this.verifyInputValid()){
+      this.isSignUpWIP = true;
+      let account: Account = {
+        username: this.signUpModel.username,
+        email: this.signUpModel.email,
+        password: this.signUpModel.password,
+        realname: this.signUpModel.realname,
+        comment: this.signUpModel.comment
+      };
+      this.accountService
+        .signUp(account)
+        .then(() => {
+          this.isSignUpWIP = false;
+          let confirmationMessage = new Message();
+          confirmationMessage.title = "ACCOUNT.SIGN_UP";
+          confirmationMessage.buttons = BUTTON_STYLE.ONLY_CONFIRM;
+          confirmationMessage.target = MESSAGE_TARGET.SIGN_UP_SUCCESSFUL;
+          confirmationMessage.message = 'ACCOUNT.SUCCESS_TO_SIGN_UP';
+          this.messageService.announceMessage(confirmationMessage);
+        })
+        .catch((err: HttpErrorResponse)=>{
+          this.isSignUpWIP = false;
+          let confirmationMessage = new Message();
+          confirmationMessage.title = "ACCOUNT.ERROR";
+          confirmationMessage.buttons = BUTTON_STYLE.ONLY_CONFIRM;
+          confirmationMessage.target = MESSAGE_TARGET.SIGN_UP_ERROR;
+          if(err && err.status === 409) {
+            confirmationMessage.message = 'ACCOUNT.USERNAME_ALREADY_EXISTS';
+          } else {
+            confirmationMessage.message = "ACCOUNT.FAILED_TO_SIGN_UP";
+          }
+          this.messageService.announceMessage(confirmationMessage);
+        });
+    }
   }
 
   goBack(): void {

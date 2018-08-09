@@ -64,7 +64,7 @@ export class StatusComponent implements OnInit, OnDestroy {
 
   get reason(): string {
     let result: string = this.service["service_comment"];
-    if (result.toLowerCase().indexOf("reason:") == 0) {
+    if (result.toLowerCase().startsWith("reason:")) {
       result = result.slice(7)
     }
     return result;
