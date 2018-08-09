@@ -46,9 +46,9 @@ func NewJenkinsHandler() *jenkinsHandler {
 	return &jenkinsHandler{}
 }
 
-func (j *jenkinsHandler) CreateJobWithParameter(projectName, username, email string) error {
+func (j *jenkinsHandler) CreateJobWithParameter(projectName, username string) error {
 	repoCloneURL := fmt.Sprintf("%s/%s/%s.git", gogitsBaseURL(), username, projectName)
-	return utils.SimpleGetRequestHandle(fmt.Sprintf("%s/job/%s/buildWithParameters?F00=%s&F01=%s&F02=%s&F03=%s&F04=%s&F05=%s&F06=%s", jenkinsBaseURL(), seedJobName, projectName, jenkinsfileRepoURL(), username, email, repoCloneURL, jenkinsNodeIP(), kvmRegistryPort()))
+	return utils.SimpleGetRequestHandle(fmt.Sprintf("%s/job/%s/buildWithParameters?F00=%s&F01=%s&F02=%s&F03=%s", jenkinsBaseURL(), seedJobName, projectName, repoCloneURL, jenkinsNodeIP(), kvmRegistryPort()))
 }
 
 func (j *jenkinsHandler) CreateIgnitorJob() error {

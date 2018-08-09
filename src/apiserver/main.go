@@ -106,11 +106,6 @@ func initProjectRepo() {
 		logs.Error("Failed to create default repo %s: %+v", defaultProject, err)
 	}
 
-	err = service.CreateJenkinsfileRepo(adminUserID, "devops-jenkins")
-	if err != nil {
-		logs.Error("Failed to create Jenkinsfile repo: %+v", err)
-	}
-
 	utils.SetConfig("INIT_PROJECT_REPO", "created")
 	err = service.SetSystemInfo("INIT_PROJECT_REPO", true)
 	if err != nil {
