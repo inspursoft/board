@@ -46,6 +46,23 @@ Board supports databse authentication modes and support LDAP mode:
 	
 	Self-registration, changing password and resetting password are not supported under LDAP/AD authentication mode because the users are managed by LDAP or AD.  
 
+* **User password find back**  	
+
+    User can find back the password by email:
+	
+	Click the "forgot password" in the login page:
+	<img src="img/userguide/password1.JPG" width="100" alt="pass1">
+	
+	Input the user name or the registered email account:
+	<img src="img/userguide/password2.JPG" width="100" alt="pass2">
+	<img src="img/userguide/password3.JPG" width="100" alt="pass2">
+	
+	Click send request:
+	<img src="img/userguide/password4.JPG" width="100" alt="pass4">
+	
+	User will receive an email to reset password in the registered email account
+	<img src="img/userguide/password5.JPG" width="100" alt="pass5">
+	
 ## Project Based Access Control  
 
 Board manages services through projects on container service platform. Users can be added into system as a member with different roles:  
@@ -447,11 +464,17 @@ Administrator can check the operation records by action audit functionality
 <img src="img/userguide/action1.JPG" width="100" alt="action1">
 
 * There are some search conditions to set, search all by default
+
 Object
+
 Action
+
 Status
+
 User
+
 Start time
+
 End time
 
 <img src="img/userguide/action2.JPG" width="100" alt="action2">
