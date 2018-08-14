@@ -5,6 +5,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
+	"log"
 	"net/http"
 
 	"github.com/astaxie/beego/logs"
@@ -28,16 +30,21 @@ func DefaultResponseHandler(req *http.Request, resp *http.Response) error {
 }
 
 func RequestHandle(method string, urlStr string, callback func(req *http.Request) error, data interface{}, handler func(req *http.Request, resp *http.Response) error) error {
-	var in []byte
+	var payload io.Reader
 	var err error
 	if data != nil {
-		in, err = json.Marshal(data)
-		if err != nil {
-			logs.Error("Failed to marshal data: %+v", err)
-			return err
+		if content, ok := data.(string); ok {
+			payload = bytes.NewBuffer([]byte(content))
+		} else {
+			obj, err := json.Marshal(data)
+			if err != nil {
+				log.Printf("Failed to marshal data: %+v\n", err)
+				return err
+			}
+			payload = bytes.NewReader(obj)
 		}
 	}
-	req, err := http.NewRequest(method, urlStr, bytes.NewReader(in))
+	req, err := http.NewRequest(method, urlStr, payload)
 	if err != nil {
 		return err
 	}
