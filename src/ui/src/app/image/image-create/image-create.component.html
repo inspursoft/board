@@ -1,11 +1,6 @@
 <clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'lg'" [clrModalClosable]="false" [clrModalPreventClose]="true">
   <div class="modal-title title-container">
-    <span class="title">{{ "IMAGE.CREATE_IMAGE_TITLE" | translate }}</span>
-    <clr-alert class="alert-info-danger" [(clrAlertClosed)]="!isNewImageAlertOpen" [clrAlertType]="newImageAlertType">
-      <div class="alert-item">
-        <span class="alert-text">{{newImageErrMessage | translate}}{{newImageErrReason}}</span>
-      </div>
-    </clr-alert>
+    <h4 class="modal-title">{{ "IMAGE.CREATE_IMAGE_TITLE" | translate }}</h4>
     <button class="close"
             [ngClass]="{'disabled':isBuildImageWIP}"
             (click)="isOpen = false"
@@ -13,6 +8,11 @@
     </button>
   </div>
   <div class="modal-body modal-body-reset-position">
+    <clr-alert class="alert-info-danger" [(clrAlertClosed)]="!isNewImageAlertOpen" [clrAlertType]="newImageAlertType">
+      <div class="alert-item">
+        <span class="alert-text">{{newImageErrMessage | translate}}{{newImageErrReason}}</span>
+      </div>
+    </clr-alert>
     <div class="modal-body-container" [ngSwitch]="imageBuildMethod">
       <div class="create-image-container">
         <div class="btn-group build-method-container">
@@ -30,7 +30,7 @@
           </button>
         </div>
         <ng-template [ngSwitchCase]="0">
-          <div class="from-temp-container">
+          <div class="from-temp-container" [style.height.px]="isNewImageAlertOpen?500:460">
             <div class="line-container">
               <label class="base-text">{{"IMAGE.CREATE_IMAGE_SELECT_IMAGE_TEMP" | translate}}:</label>
               <cs-dropdown class="base-margin-left"
@@ -125,22 +125,25 @@
                       (onEdit)="isOpenEnvironment = true"></cs-input>
             <cs-input-array [inputArraySource]="imageVolume"
                             [inputArrayPattern]="patternVolume"
-                            [disabled]="isBuildImageWIP"
+                            [inputArrayDisabled]="isBuildImageWIP"
                             [inputArrayLabelText]="'IMAGE.CREATE_IMAGE_IMAGE_VOLUME'|translate"
                             (onCheck)="getDockerFilePreviewInfo()"
-                            (onMinus)="getDockerFilePreviewInfo()"></cs-input-array>
+                            (onMinus)="getDockerFilePreviewInfo()">
+            </cs-input-array>
             <cs-input-array [inputArraySource]="imageRun"
                             [inputArrayPattern]="patternRun"
-                            [disabled]="isBuildImageWIP"
+                            [inputArrayDisabled]="isBuildImageWIP"
                             [inputArrayLabelText]="'IMAGE.CREATE_IMAGE_IMAGE_RUN'|translate"
                             (onCheck)="getDockerFilePreviewInfo()"
-                            (onMinus)="getDockerFilePreviewInfo()"></cs-input-array>
+                            (onMinus)="getDockerFilePreviewInfo()">
+            </cs-input-array>
             <cs-input-array [inputArraySource]="imageExpose"
                             [inputArrayPattern]="patternExpose"
-                            [disabled]="isBuildImageWIP"
+                            [inputArrayDisabled]="isBuildImageWIP"
                             [inputArrayLabelText]="'IMAGE.CREATE_IMAGE_IMAGE_EXPOSE'|translate"
                             (onCheck)="getDockerFilePreviewInfo()"
-                            (onMinus)="getDockerFilePreviewInfo()"></cs-input-array>
+                            (onMinus)="getDockerFilePreviewInfo()">
+            </cs-input-array>
             <cs-input [inputPattern]="patternCopyPath"
                       [inputLabel]="'IMAGE.CREATE_IMAGE_UPLOAD_ARCHIVES' | translate"
                       [disabled]="isBuildImageWIP"

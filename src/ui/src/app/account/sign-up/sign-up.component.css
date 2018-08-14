@@ -1,7 +1,17 @@
-.asterisk {
-  color: #FF0000;
+div.input-container {
+  width: 500px;
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
+  color: black;
 }
 
-.group-margin{
+div.input-container cs-input {
+  margin-top: 10px;
+}
+
+div.btn-container {
+  display: flex;
+  justify-content: flex-end;
   margin-top: 50px;
 }

@@ -42,7 +42,6 @@
               [disabled]="CurEditModel == 1 || isWorkWIP"
               [inputFiledType]="2"
               [verifyPassword]="true"
-              checkItemPatternEx="password"
               [inputPlaceholder]="'USER_CENTER.INPUT_CONFIRM_PASSWORD' | translate "
               (onCheck)="userModel.user_confirm_password = $event">
     </cs-input>
@@ -56,14 +55,14 @@
               [disabled]="isWorkWIP"
               (onCheck)="userModel.user_comment = $event">
     </cs-input>
-    <div class="btn-container">
-      <button type="submit" class="btn btn-primary" [disabled]="isWorkWIP" (click)="submitUser()">
-        {{ActionCaption | translate }}
-      </button>
-      <button type="button" class="btn btn-default" (click)="isOpen = false">
-        {{'USER_CENTER.CANCEL' | translate}}
-      </button>
-      <span *ngIf="isWorkWIP" class="spinner spinner-sm"></span>
-    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-default" (click)="isOpen = false">
+      {{'USER_CENTER.CANCEL' | translate}}
+    </button>
+    <button type="submit" class="btn btn-primary" [disabled]="isWorkWIP" (click)="submitUser()">
+      {{ActionCaption | translate }}
+    </button>
+    <span *ngIf="isWorkWIP" class="spinner spinner-sm"></span>
   </div>
 </clr-modal>

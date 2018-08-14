@@ -25,8 +25,7 @@
            (blur)="onInputBlur()"
            (focus)="onInputFocus()"
            [title]="inputPlaceholder"
-           [placeholder]="inputPlaceholder"
-           [(ngModel)]="inputField.value">
+           [placeholder]="inputPlaceholder">
     <span class="tooltip-content" style="width: 200px;" *ngIf="inputControl.errors">
       {{getValidatorMessage(inputControl.errors) | translate}}{{inputValidatorMessageParam}}
     </span>
@@ -43,7 +42,7 @@
      (click)="onCheckClick()">
     <clr-icon shape="check"></clr-icon>
   </a>
-  <a *ngIf="inputField.status == 1"
+  <a *ngIf="inputField.status == 1 && inputControl.errors"
      href="javascript:void(0)"
      class="cs-input-icon"
      (click)="onRevertClick()">

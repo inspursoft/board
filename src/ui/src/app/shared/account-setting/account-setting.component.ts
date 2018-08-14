@@ -1,5 +1,4 @@
 import { Component, EventEmitter, Input, Output, OnInit } from "@angular/core"
-import { AppInitService } from "../../app.init.service";
 import { UserService } from "../../user-center/user-service/user-service";
 import { User } from "../../user-center/user";
 import { MessageService } from "../message-service/message.service";
@@ -13,20 +12,16 @@ import { Message } from "../message-service/message";
 })
 export class AccountSettingComponent implements OnInit {
   _isOpen: boolean = false;
+  isWorkWip: boolean = false;
   curUser: User = new User();
-  isAlertClose: boolean = true;
-  errMessage: string;
 
-  constructor(private appInitService: AppInitService,
-              private userService: UserService,
+  constructor(private userService: UserService,
               private messageService: MessageService) {
   }
 
   ngOnInit() {
     this.userService.getCurrentUser()
-      .then(res => {
-        this.curUser = res;
-      })
+      .then(res => this.curUser = res)
       .catch(err =>this.messageService.dispatchError(err));
   }
 
@@ -43,22 +38,18 @@ export class AccountSettingComponent implements OnInit {
   }
 
   submitAccountSetting() {
+    this.isWorkWip = true;
     this.userService.usesChangeAccount(this.curUser)
       .then(() => {
         let m: Message = new Message();
         m.message = "ACCOUNT.ACCOUNT_SETTING_SUCCESS";
         this.messageService.inlineAlertMessage(m);
+        this.isWorkWip = false;
         this.isOpen = false;
       })
       .catch(err => {
-        if (err){
-          if(err.status === 409) {
-            this.isAlertClose = false;
-            this.errMessage = "ACCOUNT.EMAIL_ALREADY_EXISTS";
-          } else {
-            this.messageService.dispatchError(err);
-          }
-        }
+        this.isWorkWip = false;
+        this.messageService.dispatchError(err);
       });
   }
 }

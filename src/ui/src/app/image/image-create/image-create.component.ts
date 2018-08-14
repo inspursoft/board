@@ -382,11 +382,14 @@ export class CreateImageComponent extends CsComponentBase implements OnInit, Aft
       setTimeout(() => this.cancelButtonDisable = false, 10000);
     };
     if (this.imageBuildMethod == ImageBuildMethod.fromTemplate) {
-      if (this.verifyInputValid() && this.isInputComponentsValid && this.customerNewImage.image_dockerfile.image_base != "") {
-        buildImageInit();
-        this.buildImageByTemplate()
-          .then(this.buildImageResole.bind(this))
-          .catch(this.buildImageReject.bind(this));
+      if (this.verifyInputValid() &&
+        this.verifyInputArrayValid() &&
+        this.isInputComponentsValid &&
+        this.customerNewImage.image_dockerfile.image_base != "") {
+          buildImageInit();
+          this.buildImageByTemplate()
+            .then(this.buildImageResole.bind(this))
+            .catch(this.buildImageReject.bind(this));
       }
     } else if (this.verifyInputValid()) {
       if (this.selectFromImportFile) {
