@@ -1,8 +1,8 @@
-<div style="display: flex;width: 100%;min-height: 30px;margin-top: 5px">
+<div class="component-container">
   <span class="cs-input-array-label" [style.minWidth.px]="inputArrayLabelMinWidth">{{inputArrayLabelText}}:
     <span *ngIf="inputArrayIsRequired" class="asterisk">*</span>
   </span>
-  <div style="display: flex;flex-direction: column;margin-left: 10px">
+  <div class="cs-input-array-input-container">
     <div *ngFor="let item of inputArrayFixedSource;" class="cs-input-array-container">
       <cs-input [inputType]="2"
                 [disabled]="true"
