@@ -64,6 +64,7 @@ export class CsInputComponent implements OnInit {
   @Input() inputMin: number = 0;
   @Input() inputType: CsInputType = CsInputType.itWithInput;
   @Input() customerValidatorAsyncFunc: AsyncValidatorFn;
+  @Input() customerValidatorFunc: ValidatorFn;
   @Input() validatorMessage: Array<{validatorKey: string, validatorMessage: string}>;
   @Input() inputPlaceholder: string = "";
   @Input() sourcePassword: boolean = false;
@@ -81,6 +82,9 @@ export class CsInputComponent implements OnInit {
     }
     if (this.inputControl.validator) {
       this.inputValidatorFns.push(this.inputControl.validator);
+    }
+    if (this.customerValidatorFunc) {
+      this.inputValidatorFns.push(this.customerValidatorFunc);
     }
     if (this.inputFiledType == CsInputFiledType.iftNumber) {
       this.inputValidatorFns.push(Validators.pattern(PATTERN_Number));
@@ -113,7 +117,7 @@ export class CsInputComponent implements OnInit {
         this.inputField.status = CsInputStatus.isView;
         this.inputField.defaultValue = this.inputField.value;
         this.inputHtml.nativeElement.blur();
-        this.onCheckEvent.emit(this.inputField.value);
+        this.onCheckEvent.emit(this.inputControl.value);
         if (this.isCheckInputOnKeyPress) {
           this.isCheckInputOnKeyPress = false;
           let nextInputElement: Element = this.containerHtml.nativeElement.parentElement.nextElementSibling;
@@ -238,6 +242,7 @@ export class CsInputComponent implements OnInit {
       this.inputHtml.nativeElement.focus();
       if (document.activeElement == this.inputHtml.nativeElement){
         this.inputField.status = CsInputStatus.isEdit;
+        this.onEditEvent.emit();
       }
     } else if (this.inputControl.enabled && this.inputType == CsInputType.itWithNoInput) {
       this.inputHtml.nativeElement.blur();
@@ -253,7 +258,7 @@ export class CsInputComponent implements OnInit {
     this.inputField.status = CsInputStatus.isView;
     this.inputHtml.nativeElement.blur();
     this.inputControl.reset(this.inputField.defaultValue);
-    this.onRevertEvent.emit();
+    this.onRevertEvent.emit(this.inputControl.value);
   }
 
   public checkInputSelf() {

@@ -125,7 +125,6 @@ button.close.disabled {
 
 div.title-container {
   display: flex;
-  height: 40px;
   align-items: center;
   justify-content: space-between;
 }

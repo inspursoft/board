@@ -1,6 +1,6 @@
 <clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'lg'" [clrModalClosable]="false" [clrModalPreventClose]="true">
   <div class="modal-title title-container">
-    <span class="title">{{ "IMAGE.CREATE_IMAGE_TITLE" | translate }}</span>
+    <h4 class="modal-title">{{ "IMAGE.CREATE_IMAGE_TITLE" | translate }}</h4>
     <button class="close"
             [ngClass]="{'disabled':isBuildImageWIP}"
             (click)="isOpen = false"
@@ -125,22 +125,25 @@
                       (onEdit)="isOpenEnvironment = true"></cs-input>
             <cs-input-array [inputArraySource]="imageVolume"
                             [inputArrayPattern]="patternVolume"
-                            [disabled]="isBuildImageWIP"
+                            [inputArrayDisabled]="isBuildImageWIP"
                             [inputArrayLabelText]="'IMAGE.CREATE_IMAGE_IMAGE_VOLUME'|translate"
                             (onCheck)="getDockerFilePreviewInfo()"
-                            (onMinus)="getDockerFilePreviewInfo()"></cs-input-array>
+                            (onMinus)="getDockerFilePreviewInfo()">
+            </cs-input-array>
             <cs-input-array [inputArraySource]="imageRun"
                             [inputArrayPattern]="patternRun"
-                            [disabled]="isBuildImageWIP"
+                            [inputArrayDisabled]="isBuildImageWIP"
                             [inputArrayLabelText]="'IMAGE.CREATE_IMAGE_IMAGE_RUN'|translate"
                             (onCheck)="getDockerFilePreviewInfo()"
-                            (onMinus)="getDockerFilePreviewInfo()"></cs-input-array>
+                            (onMinus)="getDockerFilePreviewInfo()">
+            </cs-input-array>
             <cs-input-array [inputArraySource]="imageExpose"
                             [inputArrayPattern]="patternExpose"
-                            [disabled]="isBuildImageWIP"
+                            [inputArrayDisabled]="isBuildImageWIP"
                             [inputArrayLabelText]="'IMAGE.CREATE_IMAGE_IMAGE_EXPOSE'|translate"
                             (onCheck)="getDockerFilePreviewInfo()"
-                            (onMinus)="getDockerFilePreviewInfo()"></cs-input-array>
+                            (onMinus)="getDockerFilePreviewInfo()">
+            </cs-input-array>
             <cs-input [inputPattern]="patternCopyPath"
                       [inputLabel]="'IMAGE.CREATE_IMAGE_UPLOAD_ARCHIVES' | translate"
                       [disabled]="isBuildImageWIP"
