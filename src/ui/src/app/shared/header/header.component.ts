@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 
 import { TranslateService, LangChangeEvent } from '@ngx-translate/core';
 
@@ -23,6 +23,8 @@ export class HeaderComponent implements OnInit {
   currentUser: {[key: string]: any};
   showChangePassword:boolean = false;
   showAccountSetting:boolean = false;
+  authMode: string = '';
+  redirectionURL: string = '';
 
   get brandLogoUrl(): string {
     return this.isSignIn ? '../../images/board-blue.jpg': '../../../images/board.png';
@@ -35,6 +37,8 @@ export class HeaderComponent implements OnInit {
     private accountService: AccountService,
     private messageService: MessageService) {
     this._assertLanguage(this.appInitService.currentLang);
+    this.authMode = this.appInitService.systemInfo['auth_mode'];
+    this.redirectionURL = this.appInitService.systemInfo['redirection_url'];
   }
 
   ngOnInit(): void {
@@ -84,6 +88,10 @@ export class HeaderComponent implements OnInit {
       .then(res=>{
         this.appInitService.token = '';
         this.appInitService.currentUser = null;
+        if(this.authMode === 'indata_auth') {
+          window.location.href = this.redirectionURL;
+          return;
+        }
         this.router.navigate(['/sign-in']);
       })
       .catch(err=>this.messageService.dispatchError(err, 'ACCOUNT.FAILED_TO_SIGN_OUT'));

@@ -1,7 +1,5 @@
-import { Injectable } from '@angular/core';
-
-import { ServiceStep } from './service-step';
-
+import { Injectable, Type } from '@angular/core';
+import { ServiceStepBase } from './service-step';
 import { ListServiceComponent } from './step0-list-service/list-service.component';
 import { ChooseProjectComponent } from './step1-choose-project/choose-project.component';
 import { SelectImageComponent } from './step2-select-image/select-image.component';
@@ -12,15 +10,15 @@ import { DeployComponent } from "./step6-deploy/deploy.component";
 
 @Injectable()
 export class StepService {
-  getServiceSteps(): ServiceStep[] {
+  static getServiceSteps(): Array<Type<ServiceStepBase>> {
     return [
-      new ServiceStep(ListServiceComponent,   {}),
-      new ServiceStep(ChooseProjectComponent, { 'title': 'Choose Project' }),
-      new ServiceStep(SelectImageComponent,   { 'title': 'Select Image'   }),
-      new ServiceStep(EditContainerComponent, { 'title': 'Edit Container' }),
-      new ServiceStep(ConfigSettingComponent, { 'title': 'Config Setting' }),
-      new ServiceStep(TestingComponent, { 'title': 'Deploy Testing' }),
-      new ServiceStep(DeployComponent, { 'title': 'Deploy Testing' })
+      ListServiceComponent,
+      ChooseProjectComponent,
+      SelectImageComponent,
+      EditContainerComponent,
+      ConfigSettingComponent,
+      TestingComponent,
+      DeployComponent
     ];
   }
 }

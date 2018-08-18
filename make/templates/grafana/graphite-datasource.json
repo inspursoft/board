@@ -1,0 +1,12 @@
+{
+	"name": "graphite",
+	"type": "graphite",
+	"url": "http://graphite",
+	"access": "proxy",
+	"jsonData": {
+		"graphiteVersion": "1.1"
+	},
+	"secureJsonFields": {
+		
+	}
+}

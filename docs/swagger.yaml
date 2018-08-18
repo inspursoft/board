@@ -67,18 +67,28 @@ paths:
           type: string
           required: false
           description: Username for filtering results.
-        - name: user_list_page
+        - name: page_index
           in: query
           type: integer
           format: int32
           required: false
           description: The page nubmer, default is 1.
-        - name: user_list_page_size
+        - name: page_size
           in: query
           type: integer
           format: int32
           required: false
           description: The size of per page, default is 10, maximum is 100.
+        - name: order_field 
+          in: query
+          description: Order field for results.
+          required: false
+          type: string
+        - name: order_asc 
+          in: query
+          description: Order ascent type for results.
+          required: false
+          type: integer
       tags:
         - Products
       responses:
@@ -195,6 +205,20 @@ paths:
           description: Incorrect username.
         500:
           description: Unexpected internal error.
+  /v1/systeminfo:
+    get:
+      summary: Get system info.
+      description: |
+        Get system info of current configurations. 
+      tags:
+        - Products
+      responses:
+        200:
+          description: Get system info successfully.
+          schema:
+            $ref: '#/definitions/SystemInfo'
+        500:
+          description: Unexpected internal error.     
   /v1/users/{user_id}:
     get:
       summary: Get user by ID.
@@ -482,18 +506,28 @@ paths:
           required: false
           type: integer
           format: int32
-        - name: project_list_page
+        - name: page_index
           in: query
           type: integer
           format: int32
           required: false
           description: The page nubmer, default is 1.
-        - name: project_list_page_size
+        - name: page_size
           in: query
           type: integer
           format: int32
           required: false
           description: The size of per page, default is 10, maximum is 100.
+        - name: order_field 
+          in: query
+          description: Order field for results.
+          required: false
+          type: string
+        - name: order_asc 
+          in: query
+          description: Order ascent type for results.
+          required: false
+          type: integer
       tags:
         - Products
       responses:
@@ -751,6 +785,169 @@ paths:
           description: Project ID or username does not exist.
         500:
           description: Unexpected internal errors.        
+  /v1/services/exists:
+    get:
+      summary: Return the results whether does the service exist.
+      description: 
+        This endpoint returns the results whether does the service exist.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name 
+          in: query
+          description: Project name for filtering results.
+          required: false
+          type: string
+        - name: service_name 
+          in: query
+          description: Service name for filtering results.
+          required: false
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched services.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+  /v1/services/rollingupdate:
+    get:
+      summary: Return the results the rolling update service config.
+      description: 
+        This endpoint returns the results the rolling update service config.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name 
+          in: query
+          description: Project name for filtering results.
+          required: false
+          type: string
+        - name: service_name 
+          in: query
+          description: Service name for filtering results.
+          required: false
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched services.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+    post:
+      summary: Return the results of rolling update service.
+      description: 
+        This endpoint returns the results of rolling update service.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name 
+          in: query
+          description: Project name for filtering results.
+          required: false
+          type: string
+        - name: service_name 
+          in: query
+          description: Service name for filtering results.
+          required: false
+          type: string
+        - name: image_list 
+          in: body
+          type: object
+          items:
+            $ref: '#/definitions/ImageList'
+          description: Updates of imagelist data.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched services.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+    patch:
+      summary: Rolling update the images of the service.
+      description: 
+        This endpoint is to roll update the images of the service.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name 
+          in: query
+          description: Project name.
+          required: true
+          type: string
+        - name: service_name 
+          in: query
+          description: Service name.
+          required: true
+          type: string
+        - name: image_list 
+          in: body
+          description: Updates of imagelist data.
+          required: true
+          type: object
+          items:
+            $ref: '#/definitions/ImageList'
+      tags:
+        - Products
+      responses:
+        200:
+          description: Update service successfully.
+        401:
+          description: User need to log in first.
+        409:
+          description: The updated image list conflict.
+        500:
+          description: Internal errors.
+  /v1/services/reconfig:
+    get:
+      summary: load service config from service DB.
+      description: 
+        This endpoint returns nil.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name 
+          in: query
+          description: Project name for filtering results.
+          required: false
+          type: string
+        - name: service_name 
+          in: query
+          description: Service name for filtering results.
+          required: false
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched services.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
   /v1/services:
     get:
       summary: Return services created by Board.
@@ -773,18 +970,28 @@ paths:
           required: false
           type: integer
           format: int32
-        - name: service_list_page
+        - name: page_index
           in: query
           type: integer
           format: int32
           required: false
           description: The page nubmer, default is 1.
-        - name: servie_list_page_size
+        - name: page_size
           in: query
           type: integer
           format: int32
           required: false
           description: The size of per page, default is 10, maximum is 100.
+        - name: order_field 
+          in: query
+          description: Order field for results.
+          required: false
+          type: string
+        - name: order_asc 
+          in: query
+          description: Order ascent type for results.
+          required: false
+          type: integer
       tags:
         - Products
       responses:
@@ -886,23 +1093,23 @@ paths:
           description: User need to log in first.
         500:
           description: Internal errors.  
-  /v1/services/info/{service_name}:
+  /v1/services/{service_id}/info:
     get:
       summary: Return specific service_name infomation.
       description: |
-        This endpoint returns specific service  information by service_name.
+        This endpoint returns specific service information by service_name.
       parameters:
         - name: token
           in: header
           type: string
           required: true
           description: Current available token.
-        - name: service_name
+        - name: service_id
           in: path
-          description: Service name for filtering results.
-          required: true
           type: integer
-          format: string
+          format: int32
+          required: true
+          description: Selected service ID.
       tags:
         - Products
       responses:
@@ -914,9 +1121,178 @@ paths:
           description: User need to log in first.
         500:
           description: Internal errors.  
-  /v1/services/status/{service_name}:
+  /v1/images/dockerfile/upload:
+    post:
+      summary: Return upload status.
+      description:
+        This endpoint upload dockerfile.
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: image_name
+          in: query
+          description: image name for filtering results.
+          required: true
+          type: integer
+          format: string
+        - name: tag_name
+          in: query
+          description: tag_name for filtering results.
+          required: true
+          type: integer
+          format: string
+        - name: project_name
+          in: query
+          description: project_name for filtering results.
+          required: true
+          type: integer
+          format: string
+        - name: upload_file
+          in: formData
+          type: file
+          required: true
+          description: File to be uploaded.
+      tags:
+        - Products
+      responses:
+        200:
+          description: An array of search results.           
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        500:
+          description: Unexpected internal errors. 
+  /v1/images/dockerfile/download:
     get:
-      summary: Return specific service_name status.
+      summary: Return download status.
+      description: |
+        This endpoint download dockfile.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: image_name
+          in: query
+          description: image name for filtering results.
+          required: true
+          type: integer
+          format: string
+        - name: tag_name
+          in: query
+          description: tag_name for filtering results.
+          required: true
+          type: integer
+          format: string
+        - name: project_name
+          in: query
+          description: project_name for filtering results.
+          required: true
+          type: integer
+          format: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: An array of search results.           
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        500:
+          description: Unexpected internal errors.         
+  /v1/services/yaml/upload:
+    post:
+      summary: Return upload status.
+      description:
+        This endpoint upload yaml file.
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name
+          in: query
+          description: Project name.
+          required: true
+          type: string
+        - name: deployment_file
+          in: formData
+          type: file
+          required: true
+          description: deployment yaml to be uploaded.
+        - name: service_file
+          in: formData
+          type: file
+          required: true
+          description: service yaml to be uploaded.
+      tags:
+        - Products
+      responses:  
+        200:
+          description: Upload files successfully return service id.     
+          schema:
+            description: The service id.  
+            type: string     
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        500:
+          description: Unexpected internal errors. 
+  /v1/services/yaml/download:
+    get:
+      summary: Return download status.
+      description: 
+        This endpoint download yaml file.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_name
+          in: query
+          description: Service name for filtering results.
+          required: true
+          type: integer
+          format: string
+        - name: project_name
+          in: query
+          description: project_name for filtering results.
+          required: true
+          type: integer
+          format: string
+        - name: yaml_type
+          in: query
+          description: service yaml file type for filtering results.
+          required: true
+          type: integer
+          format: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: An array of search results.           
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        500:
+          description: Unexpected internal errors.
+  /v1/services/{service_id}/status:
+    get:
+      summary: Return specific service status.
       description: |
         This endpoint returns specific service status by service_name.
       parameters:
@@ -925,12 +1301,12 @@ paths:
           type: string
           required: true
           description: Current available token.
-        - name: service_name
+        - name: service_id
           in: path
-          description: Service name for filtering results.
-          required: true
           type: integer
-          format: string
+          format: int32
+          required: true
+          description: Selected service ID.
       tags:
         - Products
       responses:
@@ -942,8 +1318,73 @@ paths:
           description: User need to log in first.
         500:
           description: Internal errors.    
-     
+  /v1/services/selectservices:
+    get:
+      summary: Return the available service list to be selected.
+      description: |
+        This endpoint returns the available service list to be selected.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_name
+          in: query
+          description: Service name for filtering results.
+          required: true
+          type: string
+        - name: project_name 
+          in: query
+          description: project name for filtering results.
+          required: true
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all selectable services.
+          schema:
+            type: array
+            items:
+              type: string
+              description: The service name.  
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.       
   /v1/services/{service_id}/serviceconfig:
+    get:  
+      summary: Get service configuration data.
+      description: |
+        This endpoint is aimed to get service configuration data.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return service config data.
+          schema:
+            $ref: '#/definitions/ServiceConfig2'
+        401:
+          description: User need to log in first.
+        402:
+          description: Invalid configuration phase.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.
     put:  
       summary: Update service configuration data.
       description: |
@@ -964,7 +1405,7 @@ paths:
           in: body
           required: true 
           schema:
-            $ref: '#/definitions/ServiceConfig'
+            $ref: '#/definitions/ServiceConfig2'
           description: Updates of ServiceConfig data.
       tags:
         - Products
@@ -1072,6 +1513,140 @@ paths:
         403:
           description: Invalid service ID.
         500:
+          description: Unexpected internal errors.      
+  /v1/services/config:
+    post:
+      summary: Deploy service by this service configuration.
+      description: 
+        This endpoint is aimed to deploy service by this service configuration.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: phase
+          in: query
+          type: string
+          required: true
+        - name: project_id
+          in: query
+          type: integer
+          format: int64
+          required: false 
+        - name: service_name
+          in: query
+          type: string
+          required: false
+        - name: instance
+          in: query
+          type: integer
+          format: int
+          required: false 
+        - name: imagelist
+          in: body
+          required: false 
+          type: array
+          items:
+            $ref: '#/definitions/ImageList'
+          description: Updates of imagelist data.
+        - name: containerlist
+          in: body
+          required: false 
+          type: array
+          items:
+            $ref: '#/definitions/ContainerList'
+          description: Updates of ContainerList data.
+        - name: externalservice
+          in: body
+          required: false 
+          type: array
+          items:
+            $ref: '#/definitions/ExternalService'
+          description: Updates of ExternalService data.
+        - name: entireservice
+          in: body
+          required: false 
+          type: object
+          schema:
+            $ref: '#/definitions/EntireService'
+          description: Updates of EntireService data.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Deploy service successfully, return serive brief.
+          schema:
+            $ref: '#/definitions/ServiceBrief'
+        401:
+          description: User need to log in first.
+        402:
+          description: Invalid configuration phase.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.
+    get:
+      summary: Return nodes in Board added by admin.
+      description: |
+        This endpoint returns all nodes in Board, and can be filtered by node name.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: phase
+          in: query
+          type: string
+          required: true
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched nodes.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/NodeDetail'
+          headers:
+            X-Total-Count:
+              description: The total count of nodes.
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page.
+              type: string
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+  /v1/services/deployment:
+    post:
+      summary: Deploy service by this service configuration.
+      description: |
+        This endpoint is aimed to deploy service by this service configuration.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Deploy service successfully, return serive brief.
+          schema:
+            $ref: '#/definitions/ServiceBrief'
+        401:
+          description: User need to log in first.
+        402:
+          description: Invalid configuration phase.
+        403:
+          description: Invalid service ID.
+        500:
           description: Unexpected internal errors.
   /v1/services/{service_id}/deployment:
     post:
@@ -1094,8 +1669,8 @@ paths:
           in: body
           required: true 
           schema:
-            $ref: '#/definitions/ServiceConfig'
-          description: Updates of ServiceConfig data.
+            $ref: '#/definitions/ServiceConfig2'
+          description: Updates of ServiceConfig2 data.
       tags:
         - Products
       responses:
@@ -1103,6 +1678,35 @@ paths:
           description: Deploy service successfully, return serive brief.
           schema:
             $ref: '#/definitions/ServiceBrief'
+        401:
+          description: User need to log in first.
+        402:
+          description: Invalid configuration phase.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.
+    delete:
+      summary: Delete service deployment configuration data.
+      description: |
+        This endpoint is aimed to delete service deployment configuration data.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.  
+      tags:
+        - Products
+      responses:
+        200:
+          description: Delete service deployment config successfully.
         401:
           description: User need to log in first.
         402:
@@ -1145,9 +1749,72 @@ paths:
           description: Invalid service ID.
         500:
           description: Unexpected internal errors.    
+  /v1/services/{service_id}/scale:
+    get:  
+      summary: Get service deployment scale info.
+      description: |
+        This endpoint is aimed to get service deployment scale info.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return deployment scale status.
+          schema:
+            $ref: '#/definitions/ServiceScaleStatus'
+        401:
+          description: User need to log in first.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.    
+    put:  
+      summary: Manually scale the service replica.
+      description: |
+        This endpoint is aimed to update the replica number of the service manually.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.
+        - name: service_scale
+          in: body
+          required: true 
+          schema:
+            $ref: '#/definitions/ServiceScale'
+          description: New replica number to scale manually.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Manually scale this service successfully.
+        401:
+          description: User need to log in first.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.             
   /v1/services/{service_id}/publicity:
     put:  
-      summary: Update service publicity for a selected service.yy
+      summary: Update service publicity for a selected service.
       description: |
         This endpoint is aimed to toggle a service publicity status.
       parameters:
@@ -1179,6 +1846,33 @@ paths:
           description: Invalid service ID.
         500:
           description: Unexpected internal errors.    
+  /v1/services/ingress:
+    get:  
+      summary: Get the ingress module status.
+      description: |
+        This endpoint is aimed to get the ingress module status.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name 
+          in: query
+          description: project name for service.
+          required: true
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return ingress data.
+        401:
+          description: User need to log in first.
+        403:
+          description: Invalid project name.
+        500:
+          description: Unexpected internal errors.
   /v1/node:
     get:
       summary: Return nodes in Board added by admin.
@@ -1496,12 +2190,21 @@ paths:
           type: string
           required: true
           description: Current available token.
-        - name: image_index
-          in: body
+        - name: image_name
+          in: query
+          description: image name to specify an image.
           required: true
-          schema:
-            $ref: '#/definitions/ImageIndex'
-          description: The image index struct for the image to be deleted.    
+          type: string
+        - name: image_tag
+          in: query
+          type: string
+          required: true
+          description: The tag of this image.
+        - name: project_name
+          in: query
+          type: string
+          required: true
+          description: The project name that the image belongs to.     
       tags:
         - Products
       responses:
@@ -1678,6 +2381,68 @@ paths:
           description: Image name does not exist.
         500:
           description: Internal errors.
+  /v1/images/registry:
+    get:
+      summary: Return the registry address of this system.
+      description: |
+        This endpoint returns the registry address of this system.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the registry address of this system.
+          schema:
+            description: The registry address.  
+            type: string  
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Internal errors.          
+  /v1/images/dockerfilebuilding:
+    post:
+      summary: Build a new image based on a dockerfile.
+      description: |
+        This endpoint is to build a new image based on a dockerfile.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: image_name
+          in: query
+          description: image name to specify an image.
+          required: true
+          type: string
+        - name: image_tag
+          in: query
+          type: string
+          required: true
+          description: The tag of this image.
+        - name: project_name
+          in: query
+          type: string
+          required: true
+          description: The project name that the image belongs to.   
+      tags:
+        - Products
+      responses:
+        200:
+          description: Build the image successfully.
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Internal errors.
   /v1/images/{image_name}:
     get:
       summary: Return all detailed info of this image.
@@ -1757,6 +2522,45 @@ paths:
           description: User need to log in first.
         404:
           description: Invalid image name or tag.
+        500:
+          description: Internal errors.
+  /v1/images/{image_name}/existing:
+    get:
+      summary: Return the existing of an image tag.
+      description: |
+        This endpoint checks the existing of an image tag.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: image_name
+          in: path
+          description: image name to specify an image.
+          required: true
+          type: string
+        - name: image_tag
+          in: query
+          type: string
+          required: true
+          description: The image tag to be checked   
+        - name: project_name
+          in: query
+          type: string
+          required: true
+          description: The project name that the image belongs to.             
+      tags:
+        - Products
+      responses:
+        200:
+          description: The image tag not existing. 
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        409:
+          description: The image tag existing.          
         500:
           description: Internal errors.
   /v1/profile:
@@ -2656,6 +3460,24 @@ definitions:
         type: integer
         format: int32
         description: The new toggle value, 1 for run 0 for stop.
+  ServiceScale:
+    type: object
+    properties:
+      service_scale:
+        type: integer
+        format: int32
+        description: The new replica number of the service.         
+  ServiceScaleStatus:
+    type: object
+    properties:
+      desired_instance:
+        type: integer
+        format: int32
+        description: The desired replica number of the service.       
+      available_instance:
+        type: integer
+        format: int32
+        description: The available running replica number of the service. 
   ServicePublicityUpdate:
     type: object
     properties:
@@ -2685,6 +3507,270 @@ definitions:
       service_yaml:
         description: The service yaml struct of this service configuration.
         $ref: '#/definitions/ServiceYaml'
+  ServiceConfig2:
+    type: object
+    properties:
+      projectinfo:
+        $ref: '#/definitions/ProjectInformation'      
+      deployment_yaml:
+        description: The deployment yaml struct of this service configuration.
+        $ref: '#/definitions/DeploymentYaml2'
+      service_yaml:
+        description: The service yaml struct of this service configuration.
+        $ref: '#/definitions/ServiceYaml2'
+  ProjectInformation:
+    type: object
+    properties:
+      service_id:
+        type: integer
+        format: int32
+        description: The integer ID of this service.
+      project_id:
+        type: integer
+        format: int32
+        description: The project's integer ID which include this service.
+      project_name:
+        type: string
+        description: The project's name of this service.
+      namespace:
+        type: string
+        description: The project's name of this service.
+      comment:
+        type: string
+        description: The project's name of this service.
+      config_phase:
+        type: string
+        description: The phase name of the service configuration process.   
+      service_externalpath:
+        type: array
+        items:
+          type: string
+  ServiceYaml2:
+    type: object
+    properties:
+      kind:
+        type: string
+        description: "comment"
+      apiVersion:
+        type: string
+        description: "comment"
+      metadata:
+        description: "comment"
+        $ref: '#/definitions/Metadate3'
+      spec:
+        description: "comment"
+        $ref: '#/definitions/Spec3'  
+  Spec3:
+    type: object
+    properties:
+      type:
+        type: string
+      ports:
+        type: array
+        items:
+          $ref: '#/definitions/port3'
+      selector:
+        type: object
+        additionalProperties:
+           type: string
+  port3:
+    type: object
+    properties:  
+      port:
+        type: integer
+        format: int32
+      nodePort:
+        type: integer
+        format: int32
+  Metadate3:
+    type: object
+    properties:
+      name:
+        type: string 
+      labels:
+        type: object
+        additionalProperties:
+           type: string     
+  DeploymentYaml2:
+    type: object
+    properties:
+      kind:
+        type: string
+        description: "comment"
+      apiVersion:
+        type: string
+        description: "comment"
+      metadata:
+        description: "comment"
+        $ref: '#/definitions/Metadate'
+      spec:
+        description: "comment"
+        $ref: '#/definitions/Spec'
+  Spec:
+    type: object
+    properties:
+      replicas:
+        type: integer
+        format: int32
+      selector:
+        type: object
+        additionalProperties:
+           type: string
+      template:
+        $ref: '#/definitions/Template'
+  Metadate2:
+    type: object
+    properties:
+      labels:
+        type: object
+        additionalProperties:
+           type: string
+      namespace:
+        type: string
+
+  Template:
+    type: object
+    properties:
+      metadata:
+        $ref: '#/definitions/Metadate2'
+      spec:
+        $ref: '#/definitions/Spec2'
+  Spec2:
+    type: object
+    properties:
+      containers:
+        type: array
+        items:
+          $ref: '#/definitions/Container'
+  Container:
+    type: object
+    properties:
+      name:
+        type: string
+      image:
+        type: string
+      ports:
+        type: array
+        items:
+          $ref: '#/definitions/ContainerPorts'
+      env:
+        type: array
+        items:
+          $ref: '#/definitions/ContainerEnvs'
+  ImageList:
+    type: object
+    properties:
+      image_name:
+        type: string
+      image_tag:
+        type: string
+      project_name:
+        type: string
+  ContainerList:
+    type: object
+    properties:
+      name:
+        type: string
+      working_Dir:
+        type: string
+      command:
+        type: string
+      container_port:
+        type: array
+        items:
+          type: integer   
+          format: int
+      volume_mounts:
+        type: object
+        properties:
+          target_storage_service:
+            type: string
+          target_path:
+            type: string    
+          volume_name:
+            type: string
+          container_path:
+            type: string 
+      image:
+        type: object
+        schema:
+            $ref: '#/definitions/ImageList'       
+      env:
+        type: array
+        items:
+          $ref: '#/definitions/EnvStruct' 
+  EnvStruct:
+    type: object
+    properties:
+      dockerfile_envname:
+        type: string
+      dockerfile_envvalue:
+        type: string   
+  ExternalService:
+    type: object
+    properties:
+      container_name:
+        type: string
+      node_config:
+        type: object
+        properties:
+          target_port:
+            type: integer   
+            format: int
+          node_port:
+            type: integer   
+            format: int 
+      load_balancer_config:
+        type: object
+        properties:
+          external_access:
+            type: string
+  EntireService:
+    type: object
+    properties:
+      project_id:
+        type: integer   
+        format: int64
+      service_id:
+        type: integer   
+        format: int64
+      instance:
+        type: integer   
+        format: int
+      service_name:
+        type: string
+      service_public:
+        type: integer   
+        format: int32
+      image_list:
+        type: array
+        items:
+            $ref: '#/definitions/ImageList'
+      container_list:
+        type: array
+        items:
+            $ref: '#/definitions/ContainerList'
+      external_service_list:
+        type: array
+        items:
+            $ref: '#/definitions/ExternalService'      
+  ContainerEnvs:
+    type: object
+    properties:
+      name:
+        type: string
+      value:
+        type: string        
+  ContainerPorts:
+    type: object
+    properties:
+      containerPort:
+        type: integer        
+  Metadate:
+    type: object
+    properties:
+      name:
+        type: string
   DeploymentYaml:
     type: object
     properties:
@@ -3407,6 +4493,16 @@ definitions:
       size:
         type: integer
         format: int32
+  SystemInfo:
+    type: object
+    properties:
+      auth_mode:
+        type: string
+      set_auth_password:
+        type: string
+      init_project_repo:
+        type: string
+      
         
 
 

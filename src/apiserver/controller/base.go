@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -32,15 +33,24 @@ var tokenServerURL *url.URL
 var tokenCacheExpireSeconds int
 var memoryCache cache.Cache
 
+var errInvalidToken = errors.New("error for invalid token")
+
 var kubeMasterURL = utils.GetConfig("KUBE_MASTER_URL")
 var registryURL = utils.GetConfig("REGISTRY_URL")
 var registryBaseURI = utils.GetConfig("REGISTRY_BASE_URI")
+var authMode = utils.GetConfig("AUTH_MODE")
+
+var repoServeURL = utils.GetConfig("REPO_SERVE_URL")
+var baseRepoPath = utils.GetConfig("BASE_REPO_PATH")
+var repoServePath = utils.GetConfig("REPO_SERVE_PATH")
+var repoPath = utils.GetConfig("REPO_PATH")
 
 type baseController struct {
 	beego.Controller
 	currentUser    *model.User
+	token          string
 	isSysAdmin     bool
-	isProjectAdmin bool
+	isExternalAuth bool
 }
 
 func (b *baseController) Render() error {
@@ -75,22 +85,42 @@ func (b *baseController) internalError(err error) {
 	b.CustomAbort(http.StatusInternalServerError, "Unexpected error occurred.")
 }
 
+func (b *baseController) customAbort(status int, body string) {
+	logs.Error("Error occurred: %s", body)
+	b.CustomAbort(status, body)
+}
+
 func (b *baseController) getCurrentUser() *model.User {
 	token := b.Ctx.Request.Header.Get("token")
 	if token == "" {
 		token = b.GetString("token")
 	}
-
+	if isTokenExists := memoryCache.IsExist(token); !isTokenExists {
+		logs.Info("Token stored in cache has expired.")
+		return nil
+	}
+	var hasResignedToken bool
 	payload, err := verifyToken(token)
 	if err != nil {
-		return nil
+		if err == errInvalidToken {
+			if lastPayload, ok := memoryCache.Get(token).(map[string]interface{}); ok {
+				newToken, err := signToken(lastPayload)
+				if err != nil {
+					logs.Error("failed to sign token: %+v\n", err)
+					return nil
+				}
+				hasResignedToken = true
+				token = newToken.TokenString
+				payload = lastPayload
+				logs.Info("Token has been re-signed due to timeout.")
+			}
+		} else {
+			logs.Error("failed to verify token: %+v\n", err)
+		}
 	}
 
-	newToken, err := signToken(payload)
-	if err != nil {
-		logs.Error("failed to re-assign token: %+v", err)
-		return nil
-	}
+	memoryCache.Put(token, payload, time.Second*time.Duration(tokenCacheExpireSeconds))
+	b.token = token
 
 	if strID, ok := payload["id"].(string); ok {
 		userID, err := strconv.Atoi(strID)
@@ -103,13 +133,14 @@ func (b *baseController) getCurrentUser() *model.User {
 			logs.Error("Error occurred while getting user by ID: %d\n", err)
 			return nil
 		}
-		if !memoryCache.IsExist(user.Username) {
-			logs.Error("Token has been expired forcely.")
-			return nil
+		if currentToken, ok := memoryCache.Get(user.Username).(string); ok {
+			if !hasResignedToken && currentToken != "" && currentToken != token {
+				logs.Info("Another same name user has signed in other places.")
+				return nil
+			}
+			memoryCache.Put(user.Username, token, time.Second*time.Duration(tokenCacheExpireSeconds))
+			b.Ctx.ResponseWriter.Header().Set("token", token)
 		}
-		memoryCache.Put(user.Username, newToken.TokenString, time.Second*time.Duration(tokenCacheExpireSeconds))
-		b.Ctx.ResponseWriter.Header().Set("token", newToken.TokenString)
-
 		return user
 	}
 	return nil
@@ -117,12 +148,26 @@ func (b *baseController) getCurrentUser() *model.User {
 
 func (b *baseController) signOff() error {
 	username := b.GetString("username")
-	err := memoryCache.Delete(username)
-	if err != nil {
-		logs.Error("Failed to delete username from memory cache: %+v", err)
-		return err
+	var err error
+	if token, ok := memoryCache.Get(username).(string); ok {
+		if payload, ok := memoryCache.Get(token).(map[string]interface{}); ok {
+			if userID, ok := payload["id"].(int); ok {
+				err = memoryCache.Delete(strconv.Itoa(userID))
+				if err != nil {
+					logs.Error("Failed to delete by userID from memory cache: %+v", err)
+				}
+			}
+		}
+		err = memoryCache.Delete(token)
+		if err != nil {
+			logs.Error("Failed to delete by token from memory cache: %+v", err)
+		}
 	}
-	logs.Info("Successful sign off from API server.")
+	err = memoryCache.Delete(username)
+	if err != nil {
+		logs.Error("Failed to delete by username from memory cache: %+v", err)
+	}
+	logs.Info("Successful signed off from API server.")
 	return nil
 }
 
@@ -156,6 +201,12 @@ func verifyToken(tokenString string) (map[string]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	if resp.StatusCode == http.StatusUnauthorized {
+		logs.Error("Invalid token due to session timeout.")
+		return nil, errInvalidToken
+	}
+
 	respData, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
@@ -170,9 +221,9 @@ func verifyToken(tokenString string) (map[string]interface{}, error) {
 	return payload, nil
 }
 
-func init() {
-	var err error
-	conf, err = config.NewConfig("ini", "app.conf")
+func InitController() {
+
+	conf, err := config.NewConfig("ini", "app.conf")
 	if err != nil {
 		logs.Error("Failed to load config file: %+v\n", err)
 	}
@@ -192,12 +243,6 @@ func init() {
 		logs.Error("Failed to initialize cache: %+v\n", err)
 	}
 
-	logs.Info("Initialize serve repo\n")
-	_, err = service.InitBareRepo(repoServePath)
-	if err != nil {
-		logs.Error("Failed to initialize serve repo: %+v\n", err)
-	}
-
 	beego.BConfig.MaxMemory = 1 << 22
-
+	logs.Debug("Current auth mode is: %s", authMode())
 }

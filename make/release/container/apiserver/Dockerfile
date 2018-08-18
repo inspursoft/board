@@ -9,6 +9,7 @@ apk add --no-cache openssh-client
 ADD make/release/container/apiserver/apiserver /usr/bin/apiserver
 ADD make/release/container/apiserver/entrypoint.sh /usr/bin/entrypoint.sh
 ADD src/apiserver/templates /usr/bin/templates
+COPY VERSION /usr/bin/VERSION
 
 WORKDIR /usr/bin/
 

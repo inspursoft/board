@@ -8,7 +8,8 @@ COPY make/dev/container/uibuilder/entrypoint.sh /
 
 WORKDIR /board_resource
 
-RUN npm install -g @angular/cli  && \
-	npm install && \
+RUN npm config set registry http://r.cnpmjs.org/ && \
+    npm install -g @angular/cli@latest  && \
+    npm install && \
     chmod u+x /entrypoint.sh
 VOLUME ["/board_src"]

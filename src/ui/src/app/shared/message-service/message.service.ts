@@ -3,16 +3,19 @@ import { Subject} from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
 import { Message } from './message';
 import { MESSAGE_TYPE } from '../shared.const';
-import { Response } from '@angular/http';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Injectable()
 export class MessageService {
-  
+
   messageAnnouncedSource: Subject<Message> = new Subject<Message>();
   messageAnnounced$: Observable<Message> = this.messageAnnouncedSource.asObservable();
 
   messageConfirmedSource: Subject<Message> = new Subject<Message>();
   messageConfirmed$: Observable<Message> = this.messageConfirmedSource.asObservable();
+
+  messageCanceledSource: Subject<boolean> = new Subject<boolean>();
+  messageCanceled$: Observable<boolean> = this.messageCanceledSource.asObservable();
 
   inlineAlertAnnouncedSource: Subject<Message> = new Subject<Message>();
   inlineAlertAnnounced$: Observable<Message> = this.inlineAlertAnnouncedSource.asObservable();
@@ -26,6 +29,10 @@ export class MessageService {
 
   confirmMessage(message: Message) {
     this.messageConfirmedSource.next(message);
+  }
+
+  cancelMessage() {
+    this.messageCanceledSource.next(true);
   }
 
   inlineAlertMessage(message: Message) {
@@ -44,9 +51,9 @@ export class MessageService {
     }
   }
 
-  dispatchError(response: Response | Error, customMessage?: string) {
+  dispatchError(response: HttpErrorResponse | Error, customMessage?: string) {
     let errMessage = new Message();
-    if(response instanceof Response) {
+    if(response instanceof HttpErrorResponse) {
       switch(response.status){
       case 401:
         errMessage.type = MESSAGE_TYPE.INVALID_USER;
@@ -62,7 +69,11 @@ export class MessageService {
         break;
       case 403:
         errMessage.type = MESSAGE_TYPE.COMMON_ERROR;
-        this._setErrorMessage(errMessage, 'ERROR.INSUFFIENT_PRIVILEGES', customMessage);
+        this._setErrorMessage(errMessage, 'ERROR.INSUFFICIENT_PRIVILEGES', customMessage);
+        break;
+      case 405:
+        errMessage.type = MESSAGE_TYPE.COMMON_ERROR;
+        this._setErrorMessage(errMessage, 'ERROR.', customMessage);
         break;
       case 409:
         errMessage.type = MESSAGE_TYPE.COMMON_ERROR;

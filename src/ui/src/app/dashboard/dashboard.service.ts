@@ -1,8 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Http, RequestOptions, Headers, Response } from "@angular/http"
-import { AppInitService } from "../app.init.service";
-import "rxjs/add/operator/map";
-import 'rxjs/add/operator/toPromise';
+import { HttpClient, HttpResponse } from "@angular/common/http"
 
 export enum LineType {ltService, ltNode, ltStorage}
 export type LineDataModel = [Date, number];
@@ -25,15 +22,16 @@ export interface LineListDataModel {
   list_name: string;
   time_stamp?: number;
 }
+
 const BASE_URL = "/api/v1";
 const ARR_SIZE_UNIT: Array<string> = ["B", "KB", "MB", "GB", "TB"];
+
 @Injectable()
 export class DashboardService {
   LineNameMap: Map<LineType, LineListQueryModel>;
   StorageUnit: string;
 
-  constructor(private http: Http,
-              private appInitService: AppInitService) {
+  constructor(private http: HttpClient) {
     this.LineNameMap = new Map<LineType, LineListQueryModel>();
     this.LineNameMap.set(LineType.ltService, {
       query_name_Key: "service_name",
@@ -89,25 +87,14 @@ export class DashboardService {
     return this.StorageUnit;
   }
 
-  get defaultHeader(): Headers {
-    let headers = new Headers();
-    headers.append('Content-Type', 'application/json');
-    headers.append('token', this.appInitService.token);
-    return headers;
-  }
-
   getServerTimeStamp(): Promise<number> {
-    let options = new RequestOptions({
-      headers: this.defaultHeader
-    });
-    return this.http.get(`${BASE_URL}/dashboard/time`, options).toPromise()
-      .then((res: Response) => {
-        this.appInitService.chainResponse(res);
-        return res.json()["time_now"];
+    return this.http.get(`${BASE_URL}/dashboard/time`, {observe: "response"}).toPromise()
+      .then((res: HttpResponse<Object>) => {
+        return res.body["time_now"];
       }).catch(err => Promise.reject(err));
   }
 
-  getLineData(lineType: LineType, query: {
+  getlineData(lineType: LineType, query: {
     time_count: number,
     time_unit: string,
     list_name: string,
@@ -122,10 +109,6 @@ export class DashboardService {
     let lineKey = this.LineNameMap.get(lineType).query_name_Key;
     let requestParams = {};
     requestParams[lineKey] = query.list_name;
-    let options = new RequestOptions({
-      headers: this.defaultHeader,
-      params: requestParams
-    });
     let body: Object;
     switch (lineType) {
       case LineType.ltService: {
@@ -146,18 +129,20 @@ export class DashboardService {
         break;
       }
     }
-    return this.http.post(`${BASE_URL}/dashboard/${this.LineNameMap.get(lineType).data_url_key}`, body, options)
+    return this.http.post(`${BASE_URL}/dashboard/${this.LineNameMap.get(lineType).data_url_key}`, body, {
+      observe: "response",
+      params: requestParams
+    })
       .toPromise()
-      .then((res: Response) => {
-        this.appInitService.chainResponse(res);
+      .then((res: HttpResponse<Object>) => {
         let lineNameMap = this.LineNameMap.get(lineType);
         let time_key = lineNameMap.data_time_stamp_key;
         let first_key = lineNameMap.data_first_line_key;
         let second_key = lineNameMap.data_second_line_key;
-        let resJson: Object = res.json();
+        let resJson: Object = res.body;
         let dataLogs: Array<Object> = resJson[lineNameMap.data_filed_key];
         let dataListLogs: Array<Object> = resJson[lineNameMap.data_list_filed_key];
-        let resultData: LinesData = [Array<[Date, number]>(0), Array<[Date, number]>(0),Array<[Date, number]>(0)];
+        let resultData: LinesData = [Array<[Date, number]>(0), Array<[Date, number]>(0), Array<[Date, number]>(0)];
         let resultList: Array<LineListDataModel> = new Array<LineListDataModel>(0);
         if (dataLogs && dataLogs.length > 0) {//for data
           let multiple: number = 1;

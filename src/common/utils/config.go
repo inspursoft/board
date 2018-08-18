@@ -10,29 +10,40 @@ import (
 
 var configStorage map[string]interface{}
 
-func addValue(name string, value interface{}) {
+func add(name string, value interface{}) {
 	configStorage[name] = value
 }
 
-func getValue(name string) (interface{}, bool) {
-	if val, exists := configStorage[name]; exists {
-		return val, true
+func AddEnv(name string, defaultValue ...string) {
+	value := os.Getenv(name)
+	if value == "" && len(defaultValue) > 0 {
+		value = defaultValue[0]
 	}
-	return nil, false
+	add(name, value)
 }
 
-func AddEnv(name string) {
-	addValue(name, os.Getenv(name))
+func AddValue(name string, value interface{}) {
+	add(name, value)
 }
 
 func GetIntValue(name string) int {
 	if v, ok := configStorage[name].(int); ok {
 		return v
 	}
-	panic(fmt.Sprintf("Failed to get value for key: %s", name))
+	panic(fmt.Sprintf("Failed to get int value for key: %s", name))
 }
 
-func GetStringValue(name string) string {
+func GetBoolValue(name string) bool {
+	if v, ok := configStorage[name].(bool); ok {
+		return v
+	}
+	panic(fmt.Sprintf("Failed to get bool value for key: %s", name))
+}
+
+func GetStringValue(name string, defaultValue ...string) string {
+	if defaultValue != nil && len(defaultValue) > 0 {
+		return defaultValue[0]
+	}
 	if s, ok := configStorage[name].(string); ok {
 		return s
 	}
@@ -50,8 +61,8 @@ func SetConfig(name, formatter string, keys ...string) {
 	return
 }
 
-func GetConfig(name string) func() string {
-	return func() string { return GetStringValue(name) }
+func GetConfig(name string, defaultValue ...string) func() string {
+	return func() string { return GetStringValue(name, defaultValue...) }
 }
 
 func Initialize() {
@@ -61,9 +72,9 @@ func Initialize() {
 func ShowAllConfigs() {
 	logs.Info("Current configurations in storage:\n")
 	for k, v := range configStorage {
-		if strings.Contains(strings.ToUpper(k), "PASSWORD") {
+		if strings.Contains(strings.ToUpper(k), "PASSWORD") || strings.Contains(strings.ToUpper(k), "PWD") {
 			continue
 		}
-		logs.Info("\t%s: %s", k, v)
+		logs.Info("\t%s: %v", k, v)
 	}
 }

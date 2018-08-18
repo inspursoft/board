@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from "@angular/core";
+import { Component, OnDestroy, OnInit } from "@angular/core";
 import { UserService } from "../user-service/user-service";
 import { User } from "../user";
 import { editModel } from "../user-new-edit/user-new-edit.component"
@@ -7,6 +7,8 @@ import { MessageService } from "app/shared/message-service/message.service";
 import { Subscription } from "rxjs/Subscription";
 import { BUTTON_STYLE } from "app/shared/shared.const"
 import { AppInitService } from "../../app.init.service";
+import { ActivatedRoute } from "@angular/router";
+import { ClrDatagridSortOrder, ClrDatagridStateInterface } from "@clr/angular";
 
 @Component({
   selector: "user-list",
@@ -18,30 +20,39 @@ export class UserList implements OnInit, OnDestroy {
   _deleteSubscription: Subscription;
   userListData: Array<User> = Array<User>();
   userListErrMsg: string = "";
-  userCountPerPage: number = 10;
   curUser: User;
   curEditModel: editModel = editModel.emNew;
   showNewUser: boolean = false;
-  setUserSystemAdminIng: boolean = false;
-  setUserProjectAdminIng: boolean = false;
+  setUserSystemAdminWIP: boolean = false;
+  isInLoading: boolean = false;
+  totalRecordCount: number;
+  pageIndex: number = 1;
+  pageSize: number = 15;
+  authMode: string = '';
+  currentUserID: number;
+  descSort = ClrDatagridSortOrder.DESC;
+  oldStateInfo: ClrDatagridStateInterface;
 
-  constructor(private userService: UserService,
-              private appInitService: AppInitService,
-              private messageService: MessageService) {
+  constructor(
+    private route: ActivatedRoute,
+    private userService: UserService,
+    private appInitService: AppInitService,
+    private messageService: MessageService) {
+      this.authMode = this.appInitService.systemInfo['auth_mode'];
   }
 
   ngOnInit() {
     this._deleteSubscription = this.messageService.messageConfirmed$.subscribe(next => {
       this.userService.deleteUser(next.data)
         .then(() => {
-          this.refreshData();
+          this.refreshData(this.oldStateInfo);
           let m: Message = new Message();
           m.message = "USER_CENTER.DELETE_USER_SUCCESS";
           this.messageService.inlineAlertMessage(m);
         })
         .catch(err => this.messageService.dispatchError(err));
     });
-    this.refreshData();
+    this.currentUserID = this.appInitService.currentUser["user_id"];
   }
 
   ngOnDestroy(): void {
@@ -50,20 +61,23 @@ export class UserList implements OnInit, OnDestroy {
     }
   }
 
-  get currentUserID(): number {
-    return this.appInitService.currentUser["user_id"];
-  }
-
-  refreshData(username?: string,
-              user_list_page: number = 0,
-              user_list_page_size: number = 0): void {
-    this.userService.getUserList(username, user_list_page, user_list_page_size)
-      .then(res => {
-        this.userListData = res.filter(value => {
-          return value.user_name != "admin";
-        });
-      })
-      .catch(err => this.messageService.dispatchError(err, ''));
+  refreshData(stateInfo: ClrDatagridStateInterface): void {
+    if (stateInfo) {
+      setTimeout(()=>{
+        this.isInLoading = true;
+        this.oldStateInfo = stateInfo;
+        this.userService.getUserList('', this.pageIndex, this.pageSize, stateInfo.sort.by as string, stateInfo.sort.reverse)
+          .then(res => {
+            this.totalRecordCount = res["pagination"]["total_count"];
+            this.userListData = res["user_list"];
+            this.isInLoading = false;
+          })
+          .catch(err => {
+            this.messageService.dispatchError(err, '');
+            this.isInLoading = false;
+          });
+      });
+    }
   }
 
   addUser() {
@@ -73,32 +87,36 @@ export class UserList implements OnInit, OnDestroy {
   }
 
   editUser(user: User) {
-    this.curEditModel = editModel.emEdit;
-    this.userService.getUser(user.user_id)
-      .then(user => {
-        this.curUser = user;
-        this.showNewUser = true;
-      })
-      .catch(err => this.messageService.dispatchError(err));
+    if (user.user_deleted != 1 && user.user_id != 1 && user.user_id != this.currentUserID) {
+      this.curEditModel = editModel.emEdit;
+      this.userService.getUser(user.user_id)
+        .then(user => {
+          this.curUser = user;
+          this.showNewUser = true;
+        })
+        .catch(err => this.messageService.dispatchError(err));
+    }
   }
 
   deleteUser(user: User) {
-    let m: Message = new Message();
-    m.title = "USER_CENTER.DELETE_USER";
-    m.buttons = BUTTON_STYLE.DELETION;
-    m.data = user;
-    m.params = [user.user_name];
-    m.message = "USER_CENTER.CONFIRM_DELETE_USER";
-    this.messageService.announceMessage(m);
+    if (user.user_deleted != 1 && user.user_id != 1 && user.user_id != this.currentUserID) {
+      let m: Message = new Message();
+      m.title = "USER_CENTER.DELETE_USER";
+      m.buttons = BUTTON_STYLE.DELETION;
+      m.data = user;
+      m.params = [user.user_name];
+      m.message = "USER_CENTER.CONFIRM_DELETE_USER";
+      this.messageService.announceMessage(m);
+    }
   }
 
-  setUserSystemAdmin(user: User) {
-    this.setUserSystemAdminIng = true;
-    let userSystemAdmin = user.user_system_admin == 1 ? 0 : 1;
-    this.userService.setUserSystemAdmin(user.user_id, userSystemAdmin)
+  setUserSystemAdmin(user: User, $event:MouseEvent) {
+    this.setUserSystemAdminWIP = true;
+    let oldUserSystemAdmin = user.user_system_admin;
+    this.userService.setUserSystemAdmin(user.user_id, oldUserSystemAdmin == 1 ? 0 : 1)
       .then(() => {
-        this.setUserSystemAdminIng = false;
-        user.user_system_admin = userSystemAdmin;
+        this.setUserSystemAdminWIP = false;
+        user.user_system_admin = oldUserSystemAdmin == 1 ? 0 : 1;
         let m: Message = new Message();
         if (user.user_system_admin === 1) {
           m.message = "USER_CENTER.SUCCESSFUL_SET_SYS_ADMIN";
@@ -109,29 +127,9 @@ export class UserList implements OnInit, OnDestroy {
         this.messageService.inlineAlertMessage(m);
       })
       .catch(err => {
-        this.setUserSystemAdminIng = false;
+        this.setUserSystemAdminWIP = false;
+        ($event.srcElement as HTMLInputElement).checked = oldUserSystemAdmin == 1;
         this.messageService.dispatchError(err);
-      })
-  }
-
-  setUserProjectAdmin(user: User) {
-    this.setUserProjectAdminIng = true;
-    let userProjectAdmin = user.user_project_admin == 1 ? 0 : 1;
-    this.userService.setUserProjectAdmin(user.user_id, userProjectAdmin)
-      .then(() => {
-        this.setUserProjectAdminIng = false;
-        user.user_project_admin = userProjectAdmin;
-        let m: Message = new Message();
-        if (user.user_project_admin === 1) {
-          m.message = "USER_CENTER.SUCCESSFUL_SET_PROJECT_ADMIN";
-        } else {
-          m.message = "USER_CENTER.SUCCESSFUL_SET_NOT_PROJECT_ADMIN";
-        }
-        this.messageService.inlineAlertMessage(m);
-      })
-      .catch(err => {
-        this.setUserProjectAdminIng = false;
-        this.messageService.dispatchError(err)
       })
   }
 }

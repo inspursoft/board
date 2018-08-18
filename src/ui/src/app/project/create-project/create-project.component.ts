@@ -15,14 +15,23 @@ import { Message } from '../../shared/message-service/message';
 })
 export class CreateProjectComponent {
 
-  createProjectOpened: boolean;
+  _createProjectOpened: boolean = false;
   alertClosed: boolean;
   errorMessage: string;
 
   @ViewChild('createProjectForm') projectForm: NgForm;
 
   @Output() reload: EventEmitter<boolean> = new EventEmitter<boolean>();
-
+  @Output() closeEvent:EventEmitter<boolean> = new EventEmitter<boolean>();
+  get createProjectOpened(): boolean{
+    return this._createProjectOpened;
+  }
+  set createProjectOpened(value:boolean){
+    this._createProjectOpened = value;
+    if (!value){
+      this.closeEvent.emit(value);
+    }
+  }
   createProject: CreateProject = new CreateProject();
 
   constructor(
@@ -53,17 +62,16 @@ export class CreateProjectComponent {
       })
       .catch(err=>{
         if (err) {
+          this.alertClosed = false;
           switch(err.status) {
           case 409:
-            this.alertClosed = false;
             this.errorMessage = 'PROJECT.PROJECT_NAME_ALREADY_EXISTS';
             break;
           case 400:
-            this.alertClosed = false;
             this.errorMessage = 'PROJECT.PROJECT_NAME_IS_ILLEGAL';
             break;
           default:
-            this.messageService.dispatchError(err, '');
+            this.errorMessage = 'ERROR.INTERNAL_ERROR';
           }
         }
       });

@@ -1,46 +1,50 @@
-import { Component, Input, OnInit, OnDestroy, AfterContentChecked, QueryList, ViewChildren } from '@angular/core';
+import { Component, OnInit, AfterContentChecked, QueryList, ViewChildren, Injector } from '@angular/core';
 import {
-  ImageDockerfile,
-  ServiceStep2Output, ServiceStep2Type, ServiceStep3Output, ServiceStep3Type,
-  ServiceStepComponent
+  PHASE_CONFIG_CONTAINERS,
+  Container,
+  ServiceStepPhase,
+  UIServiceStep3,
+  EnvStruct
 } from '../service-step.component';
-import { K8sService } from '../service.k8s';
-import { MessageService } from "../../shared/message-service/message.service";
-import { EnvType } from "../environment-value/environment-value.component";
-import { Message } from "../../shared/message-service/message";
-import { CsInputComponent } from "../cs-input/cs-input.component";
+import { EnvType } from "../../shared/environment-value/environment-value.component";
+import { CsInputComponent } from "../../shared/cs-components-library/cs-input/cs-input.component";
+import { CsInputArrayComponent } from "../../shared/cs-components-library/cs-input-array/cs-input-array.component";
+import { VolumeOutPut } from "./volume-mounts/volume-mounts.component";
+import { ServiceStepBase } from "../service-step";
+import { BuildImageDockerfileData } from "../../image/image";
 
-enum ContainerStatus{csNew, csSelectedImage}
 @Component({
   templateUrl: './edit-container.component.html',
   styleUrls: ["./edit-container.component.css"]
 })
-export class EditContainerComponent implements ServiceStepComponent, OnInit, OnDestroy, AfterContentChecked {
-  @Input() data: any;
+export class EditContainerComponent extends ServiceStepBase implements OnInit, AfterContentChecked {
   @ViewChildren(CsInputComponent) inputComponents: QueryList<CsInputComponent>;
-  patternContainerName: RegExp = /^[a-zA-Z_-]+$/;
+  @ViewChildren(CsInputArrayComponent) inputArrayComponents: QueryList<CsInputArrayComponent>;
+  patternContainerName: RegExp = /^[a-zA-Z\d_-]+$/;
   patternWorkdir: RegExp = /^~?[\w\d-\/.{}$\/:]+[\s]*$/;
-  step2Output: ServiceStep2Output;
-  step3Output: ServiceStep3Output;
-  containerStatusList: Array<ContainerStatus>;
+  step3TypeStatus: Map<Container, boolean>;
   showVolumeMounts = false;
   showEnvironmentValue = false;
   isInputComponentsValid = false;
   fixedEnvKeys: Array<string>;
+  fixedContainerPort: Map<string, Array<number>>;
+  curContainerIndex: number;
 
-  constructor(private k8sService: K8sService,
-              private messageService: MessageService) {
-    this.step3Output = Array<ServiceStep3Type>();
-    this.containerStatusList = Array<ContainerStatus>();
+  constructor(protected injector: Injector) {
+    super(injector);
+    this.step3TypeStatus = new Map<Container, boolean>();
     this.fixedEnvKeys = Array<string>();
+    this.fixedContainerPort = new Map<string, Array<number>>();
   }
 
   ngOnInit() {
-    this.step2Output = this.k8sService.getStepData(2) as ServiceStep2Output;
-  }
-
-  ngOnDestroy() {
-    this.k8sService.setStepData(3, this.step3Output);
+    this.k8sService.getServiceConfig(this.stepPhase).then(res => {
+      this.uiBaseData = res;
+      this.uiData.containerList.forEach((container: Container) => {
+        this.step3TypeStatus.set(container, false);
+        this.setDefaultContainerInfo(container);
+      });
+    });
   }
 
   ngAfterContentChecked() {
@@ -52,140 +56,115 @@ export class EditContainerComponent implements ServiceStepComponent, OnInit, OnD
         }
       });
     }
+    if (this.inputArrayComponents) {
+      this.inputArrayComponents.forEach(item => {
+        if (!item.valid) {
+          this.isInputComponentsValid = false;
+        }
+      });
+    }
+  }
+
+  get stepPhase(): ServiceStepPhase {
+    return PHASE_CONFIG_CONTAINERS;
+  }
+
+  get uiData(): UIServiceStep3 {
+    return this.uiBaseData as UIServiceStep3;
+  }
+
+  setDefaultContainerInfo(container: Container): void {
+    let isNew = !this.isBack;
+    this.k8sService.getContainerDefaultInfo(container.image.image_name, container.image.image_tag, container.image.project_name)
+      .then((res: BuildImageDockerfileData) => {
+        this.step3TypeStatus.set(container, true);
+        if (res.image_cmd && isNew) {
+          container.command = res.image_cmd;//copy cmd
+        }
+        if (res.image_env) {
+          res.image_env.forEach(value => {//copy env
+            this.fixedEnvKeys.push(value.dockerfile_envname);
+            if (isNew) {
+              let env = new EnvStruct();
+              env.dockerfile_envname = value.dockerfile_envname;
+              env.dockerfile_envvalue = value.dockerfile_envvalue;
+              container.env.push(env);
+            }
+          });
+        }
+        if (res.image_expose) {
+          let fixedPorts: Array<number> = Array();
+          res.image_expose.forEach(value => {//copy port
+            let port: number = Number(value).valueOf();
+            fixedPorts.push(port);
+            container.container_port.push(port);
+          });
+          this.fixedContainerPort.set(container.name, fixedPorts);
+        }
+      }).catch(() => {
+    });
   }
 
   get isCanNextStep(): boolean {
-    return this.step3Output.length > 0 && this.isInputComponentsValid;
+    return this.uiData.containerList.length > 0 && this.isInputComponentsValid;
   }
 
-  get selfObject() {
-    return this;
-  }
-
-  minusSelectContainer(index: number) {
-    this.containerStatusList.splice(index, 1);
-    this.step3Output.splice(index, 1);
-  }
-
-  addSelectContainer() {
-    this.containerStatusList.push(ContainerStatus.csNew);
-  }
-
-  changeSelectImage(index: number, status: ContainerStatus, image: ServiceStep2Type) {
-    let config: ServiceStep3Type;
-    if (status == ContainerStatus.csNew) {
-      config = new ServiceStep3Type();
-      this.containerStatusList[index] = ContainerStatus.csSelectedImage;
-      this.step3Output.push(config);
-    } else {
-      config = this.step3Output[index];
-    }
-    let firstIndex = image.image_name.indexOf("/");
-    config.container_name = image.image_name.slice(firstIndex + 1, image.image_name.length);
-    config.container_baseimage = image.image_name + ":" + image.image_tag;
-    let firstPos = image.image_name.indexOf("/");
-    let projectName = image.image_name.slice(0, firstPos);
-    if (projectName == image.project_name) {
-      let imageName = image.image_name.slice(firstPos + 1);
-      this.k8sService.getContainerDefaultInfo(imageName, image.image_tag, image.project_name)
-        .then((res: ImageDockerfile) => {
-          if (res.image_cmd) {
-            config.container_command.push(res.image_cmd);//copy cmd
-          }
-          if (res.image_env) {
-            res.image_env.forEach(value => {//copy env
-              config.container_envs.push({env_name: value.dockerfile_envname, env_value: value.dockerfile_envvalue});
-              this.fixedEnvKeys.push(value.dockerfile_envname);
-            });
-          }
-          if (res.image_expose) {
-            res.image_expose.forEach(value => {//copy port
-              config.container_ports.push(Number(value).valueOf());
-            });
-          }
-        })
-        .catch(() => {
-        });
-    }
-  }
-
-  getVolumesDescription(index: number): string {
-    let volumesArr = this.step3Output[index].container_volumes;
-    let result: string = "";
-    volumesArr.forEach(value => {
-      let storageServer = value.target_storageServer == "" ? "" : value.target_storageServer.concat(":");
-      result += `${value.container_dir}:${storageServer}${value.target_dir}`
-    });
+  getVolumesDescription(container: Container): string {
+    let volume = container.volume_mount;
+    let storageServer = volume.target_storage_service == "" ? "" : volume.target_storage_service.concat(":");
+    let result = `${volume.container_path}:${storageServer}${volume.target_path}`;
     return result == ":" ? "" : result;
   }
 
-  getSelectImageDefaultText(index: number) {
-    if (this.containerStatusList[index] == ContainerStatus.csNew) {
-      return "SERVICE.STEP_3_SELECT_IMAGE"
-    }
-    return this.step3Output[index].container_name;
-  }
-
-  canChangeSelectImage(item: ServiceStep2Type) {
-    let baseImage = item.image_name + ":" + item.image_tag;
-    let hasItem = this.step3Output.find(value => {
-      return value.container_baseimage == baseImage;
-    });
-    if (hasItem) {
-      let m: Message = new Message();
-      m.message = "SERVICE.STEP_3_IMAGE_SELECTED";
-      this.messageService.inlineAlertMessage(m);
-      return false;
-    }
-    return true;
-  }
-
-  getEnvsDescription(index: number): string {
-    let envsArr = this.step3Output[index].container_envs;
+  getEnvsDescription(container: Container): string {
+    let envsArr = container.env;
     let result: string = "";
-    envsArr.forEach(value => {
-      result += `${value.env_name}=${value.env_value};`
+    envsArr.forEach((value: EnvStruct) => {
+      result += `${value.dockerfile_envname}=${value.dockerfile_envvalue};`
     });
     return result;
   }
 
   getDefaultEnvsData(index: number) {
     let result = Array<EnvType>();
-    this.step3Output[index].container_envs.forEach(value => {
-      result.push(new EnvType(value.env_name, value.env_value))
+    this.uiData.containerList[index].env.forEach((value: EnvStruct) => {
+      result.push(new EnvType(value.dockerfile_envname, value.dockerfile_envvalue))
     });
     return result;
   }
 
   setEnvironment(index: number, envsData: Array<EnvType>) {
-    let envsArray = this.step3Output[index].container_envs;
+    let envsArray = this.uiData.containerList[index].env;
     envsArray.splice(0, envsArray.length);
     envsData.forEach((value: EnvType) => {
-      envsArray.push({env_name: value.envName, env_value: value.envValue})
+      let env = new EnvStruct();
+      env.dockerfile_envname = value.envName;
+      env.dockerfile_envvalue = value.envValue;
+      envsArray.push(env);
     });
   }
 
-  setVolumeMount(data: Object, index: number) {
-    let volumeArr = this.step3Output[index].container_volumes;
-    if (volumeArr.length == 0) {
-      volumeArr.push(data as any)
-    } else {
-      volumeArr[0] = data as any;
-    }
+  setVolumeMount(data: VolumeOutPut, index: number) {
+    let volume = this.uiData.containerList[index].volume_mount;
+    volume.target_storage_service = data.out_medium;
+    volume.target_path = data.out_path;
+    volume.container_path = data.out_mountPath;
+    volume.volume_name = data.out_name;
   }
 
-  getVolumeMountData(index: number) {
-    let volumeArr = this.step3Output[index].container_volumes;
-    if (volumeArr.length == 0) {
-      return {
-        container_dir: "",
-        target_storagename: "",
-        target_storageServer: "",
-        target_dir: ""
-      };
-    } else {
-      return volumeArr[0];
-    }
+  getVolumeMountData(index: number): VolumeOutPut {
+    let volume = this.uiData.containerList[index].volume_mount;
+    return {
+      out_name: volume.volume_name,
+      out_mountPath: volume.container_path,
+      out_path: volume.target_path,
+      out_medium: volume.target_storage_service
+    };
+  }
+
+  toggleShowStatus(container: Container): void {
+    let status = this.step3TypeStatus.get(container);
+    this.step3TypeStatus.set(container, !status);
   }
 
   shieldEnter($event: KeyboardEvent) {
@@ -194,7 +173,13 @@ export class EditContainerComponent implements ServiceStepComponent, OnInit, OnD
     }
   }
 
+  backStep(): void {
+    this.k8sService.stepSource.next({index: 2, isBack: true});
+  }
+
   forward(): void {
-    this.k8sService.stepSource.next(4);
+    this.k8sService.setServiceConfig(this.uiData.uiToServer()).then(res => {
+      this.k8sService.stepSource.next({index: 4, isBack: false});
+    });
   }
 }

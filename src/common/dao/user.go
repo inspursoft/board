@@ -1,9 +1,12 @@
 package dao
 
 import (
+	"fmt"
 	"git/inspursoft/board/src/common/model"
+	"strings"
 	"time"
 
+	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/orm"
 )
 
@@ -46,19 +49,58 @@ func GetUser(user model.User, fieldNames ...string) (*model.User, error) {
 	return &user, err
 }
 
-func GetUsers(field string, value interface{}, selectedFields ...string) ([]*model.User, error) {
-	o := orm.NewOrm()
-	var users []*model.User
-	var err error
-	qs := o.QueryTable("user")
+func queryUsers(field string, value interface{}) orm.QuerySeter {
+	qs := orm.NewOrm().QueryTable("user")
 	if value == nil {
-		_, err = qs.All(&users, selectedFields...)
-	} else {
-		_, err = qs.Filter(field+"__contains", value).
-			All(&users, selectedFields...)
+		return qs
 	}
+	return qs.Filter(field+"__contains", value)
+}
+
+func GetUsers(field string, value interface{}, selectedFields ...string) ([]*model.User, error) {
+	users := make([]*model.User, 0)
+	_, err := queryUsers(field, value).All(&users, selectedFields...)
 	if err != nil {
 		return nil, err
 	}
 	return users, nil
+}
+
+func GetPaginatedUsers(field string, value interface{}, pageIndex int, pageSize int, orderField string, orderAsc int, selectedFields ...string) (*model.PaginatedUsers, error) {
+	pagination := &model.Pagination{
+		PageIndex: pageIndex,
+		PageSize:  pageSize,
+	}
+
+	qs := queryUsers(field, value)
+
+	var err error
+	pagination.TotalCount, err = qs.Count()
+	if err != nil {
+		return nil, err
+	}
+	qs = qs.OrderBy(getOrderExprs(userTable, orderField, orderAsc)).Limit(pagination.PageSize).Offset(pagination.GetPageOffset())
+	logs.Debug("%+v", pagination.String())
+
+	users := make([]*model.User, 0)
+	_, err = qs.All(&users, selectedFields...)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.PaginatedUsers{
+		Pagination: pagination,
+		UserList:   users,
+	}, nil
+}
+
+func getOrderExprs(orderTable string, orderField string, orderAsc int) string {
+	key := fmt.Sprintf("%s_%s", strings.ToUpper(orderTable), strings.ToUpper(orderField))
+	if orderFields[key] == "" {
+		return fmt.Sprintf(`-%s`, orderFields[defaultField])
+	}
+	if orderAsc != 0 {
+		return orderFields[key]
+	}
+	return fmt.Sprintf(`-%s`, orderFields[key])
 }

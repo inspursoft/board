@@ -6,11 +6,14 @@ import (
 	"io/ioutil"
 
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/common/dao"
+	"git/inspursoft/board/src/common/model"
 	"net/http"
 
 	"fmt"
 
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
 )
 
 type ServiceBodyPara struct {
@@ -28,7 +31,6 @@ func (p *DashboardServiceController) Prepare() {
 	}
 	p.currentUser = user
 	p.isSysAdmin = (user.SystemAdmin == 1)
-	p.isProjectAdmin = (user.ProjectAdmin == 1)
 }
 func (b *DashboardServiceController) resolveBody() (in ServiceBodyPara, err error) {
 	data, err := ioutil.ReadAll(b.Ctx.Request.Body)
@@ -67,13 +69,42 @@ func (s *DashboardServiceController) GetServiceData() {
 		getServiceDataBodyReq.TimeCount, getServiceDataBodyReq.TimestampBase, serviceName,
 		getServiceDataBodyReq.DurationTime)
 	err := dashboardServiceDataResp.GetServiceDataToObj()
-	beego.Error(err)
 	_, err = dashboardServiceDataResp.GetServiceListToObj()
 	if err != nil {
 		s.CustomAbort(http.StatusInternalServerError, fmt.Sprint(err))
 		return
 	}
-	beego.Error(err)
+
+	query := model.Project{}
+	projectList, err := service.GetProjectsByMember(query, s.currentUser.ID)
+	if err != nil {
+		s.internalError(err)
+		return
+	}
+	serviceList := make([]dao.ServiceListDataLogs, 0)
+	for _, svc := range dashboardServiceDataResp.ServiceResp.ServiceListData {
+		svcQuery, err := service.GetService(model.ServiceStatus{Name: svc.NodeName}, "name")
+		if err != nil {
+			s.internalError(err)
+			return
+		}
+		if svcQuery == nil {
+			continue
+		}
+		if svcQuery.Public == 1 {
+			serviceList = append(serviceList, svc)
+			continue
+		}
+		for _, project := range projectList {
+			if svcQuery.ProjectName == project.Name {
+				serviceList = append(serviceList, svc)
+				break
+			}
+		}
+	}
+	dashboardServiceDataResp.ServiceResp.ServiceListData = serviceList
+	logs.Info("serivcelist:%+v\n", dashboardServiceDataResp.ServiceResp.ServiceListData)
+
 	s.Data["json"] = dashboardServiceDataResp.ServiceResp
 	s.ServeJSON()
 }

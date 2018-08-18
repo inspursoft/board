@@ -1,15 +1,19 @@
 package service
 
 import (
+	"encoding/json"
 	"errors"
 	"git/inspursoft/board/src/common/model"
 	"io/ioutil"
+	"mime/multipart"
 	"os"
 	"path/filepath"
-
-	yaml "gopkg.in/yaml.v2"
+	"strconv"
 
 	"github.com/astaxie/beego/logs"
+	"github.com/ghodss/yaml"
+	modelK8s "k8s.io/client-go/pkg/api/v1"
+	modelK8sExt "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 )
 
 var loadPath string
@@ -20,16 +24,37 @@ const (
 	nodePort             = "NodePort"
 	deploymentAPIVersion = "extensions/v1beta1"
 	deploymentKind       = "Deployment"
-	maxPort              = 65535
+	maxPort              = 32765
 	minPort              = 30000
 )
 
-func SetDeploymentPath(path string) {
-	loadPath = path
+var (
+	pathErr                        = errors.New("ERR_DEPLOYMENT_PATH_NOT_DIRECTORY")
+	emptyServiceNameErr            = errors.New("ERR_NO_SERVICE_NAME")
+	portMaxErr                     = errors.New("ERR_SERVICE_NODEPORT_EXCEED_MAX_LIMIT")
+	portMinErr                     = errors.New("ERR_SERVICE_NODEPORT_EXCEED_MIN_LIMIT")
+	emptyDeployErr                 = errors.New("ERR_NO_DEPLOYMENT_NAME")
+	invalidErr                     = errors.New("ERR_DEPLOYMENT_REPLICAS_INVAILD")
+	emptyContainerErr              = errors.New("ERR_NO_CONTAINER")
+	NameInconsistentErr            = errors.New("ERR_SERVICE_NAME_AND_DEPLOYMENT_NAME_INCONSISTENT")
+	ServiceNameInconsistentErr     = errors.New("ERR_SERVICE_NAME_INCONSISTENT_WITH_YAML_FILE")
+	ProjectNameInconsistentErr     = errors.New("ERR_PROJECT_NAME_INCONSISTENT_WITH_YAML_FILE")
+	DeploymentNotFoundErr          = errors.New("ERR_DEPLOYMENT_NOT_FOUND")
+	ServiceNotFoundErr             = errors.New("ERR_SERVICE_NOT_FOUND")
+	ServiceYamlFileUnmarshalErr    = errors.New("ERR_SERVICE_YAML_FILE_UNMARSHAL")
+	DeploymentYamlFileUnmarshalErr = errors.New("ERR_DEPLOYMENT_YAML_FILE_UNMARSHAL")
+	deploymentKindErr              = errors.New("ERR_DEPLOYMENT_YAML_KIND")
+	serviceKindErr                 = errors.New("ERR_SERVICE_YAML_KIND")
+	deploymentAPIVersionErr        = errors.New("ERR_DEPLOYMENT_YAML_API_VERSION")
+	serviceAPIVersionErr           = errors.New("ERR_SERVICE_YAML_API_VERSION")
+)
+
+type Service struct {
+	modelK8s.Service
 }
 
-func GetDeploymentPath() string {
-	return loadPath
+type Deployment struct {
+	modelK8sExt.Deployment
 }
 
 func CheckDeploymentPath(loadPath string) error {
@@ -38,68 +63,167 @@ func CheckDeploymentPath(loadPath string) error {
 			return err
 		}
 	} else if !fi.IsDir() {
-		return errors.New("Deployment path is not directory.")
+		return pathErr
+	}
+
+	return nil
+}
+
+func GetYamlFileServiceName(file multipart.File, fileName string) (string, error) {
+	config, err := ioutil.ReadAll(file)
+	if err != nil {
+		return "", err
+	}
+
+	var service modelK8s.Service
+	var deployment modelK8s.ReplicationController
+	var serviceName string
+	if fileName == deploymentFilename {
+		err = yaml.Unmarshal(config, &deployment)
+		if err != nil {
+			return "", err
+		}
+		serviceName = deployment.ObjectMeta.Name
+	} else if fileName == serviceFilename {
+		err = yaml.Unmarshal(config, &service)
+		if err != nil {
+			return "", err
+		}
+		serviceName = service.ObjectMeta.Name
+	}
+
+	return serviceName, nil
+}
+
+func ServiceExists(serviceName string, projectName string) (bool, error) {
+	var servicequery model.ServiceStatus
+	servicequery.Name = serviceName
+	servicequery.ProjectName = projectName
+	s, err := GetService(servicequery, "name", "project_name")
+
+	return s != nil, err
+}
+
+func GenerateYamlFile(name string, structdata interface{}) error {
+	info, err := json.Marshal(structdata)
+	if err != nil {
+		logs.Error("Marhal json failed, err:%+v\n", err)
+		return err
+	}
+
+	context, err := yaml.JSONToYAML(info)
+	if err != nil {
+		logs.Error("Generate yaml data failed, err:%+v\n", err)
+		return err
+	}
+
+	err = ioutil.WriteFile(name, context, 0644)
+	if err != nil {
+		logs.Error("Generate yaml file failed, err:%+v\n", err)
+		return err
+	}
+	return nil
+}
+
+func GenerateDeploymentYamlFileFromK8S(deployConfigURL string, absFileName string) error {
+	deployConfig, err := GetDeployConfig(deployConfigURL)
+	if err != nil {
+		return err
+	}
+
+	return GenerateYamlFile(absFileName, &deployConfig)
+}
+
+func GenerateServiceYamlFileFromK8S(serviceConfigURL string, absFileName string) error {
+	serviceConfig, err := GetServiceStatus(serviceConfigURL)
+	if err != nil {
+		return err
+	}
+
+	return GenerateYamlFile(absFileName, &serviceConfig)
+}
+
+func DeleteServiceConfigYaml(serviceConfigPath string) error {
+	err := os.RemoveAll(serviceConfigPath)
+	if err != nil {
+		logs.Error("Failed to delete deployment files: %+v\n", err)
+		return err
+	}
+
+	return nil
+}
+
+func getYamlFileData(serviceConfig interface{}, serviceConfigPath string, fileName string) error {
+	serviceFileName := filepath.Join(serviceConfigPath, fileName)
+	yamlData, err := ioutil.ReadFile(serviceFileName)
+	if err != nil {
+		return err
+	}
+
+	jsonData, err := yaml.YAMLToJSON(yamlData)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(jsonData, serviceConfig)
+	if err != nil {
+		return err
 	}
 
 	return nil
 }
 
 //check parameter of service yaml file
-func CheckServicePara(reqServiceConfig model.ServiceConfig) error {
+func CheckServiceConfig(projectName string, serviceConfig Service) error {
 	//check empty
-	if reqServiceConfig.ServiceYaml.Name == "" {
-		return errors.New("ServiceYaml.Name is empty.")
+	if serviceConfig.Kind != serviceKind {
+		return deploymentKindErr
+	}
+	if serviceConfig.APIVersion != serviceAPIVersion {
+		return deploymentAPIVersionErr
+	}
+	if serviceConfig.ObjectMeta.Name == "" {
+		return emptyServiceNameErr
+	}
+	if serviceConfig.ObjectMeta.Namespace != projectName {
+		return ProjectNameInconsistentErr
 	}
 
-	for _, external := range reqServiceConfig.ServiceYaml.External {
+	for _, external := range serviceConfig.Spec.Ports {
 		if external.NodePort > maxPort {
-			return errors.New("Service_nodeport exceed maximum limit.")
+			return portMaxErr
 		} else if external.NodePort < minPort {
-			return errors.New("Service_nodeport exceed minimum limit.")
-		}
-	}
-
-	//check upper
-	err := checkStringHasUpper(reqServiceConfig.ServiceYaml.Name,
-		reqServiceConfig.ServiceYaml.Selectors[0])
-	if err != nil {
-		return err
-	}
-
-	for _, ext := range reqServiceConfig.ServiceYaml.External {
-		err := checkStringHasUpper(ext.ContainerName, ext.ExternalPath)
-		if err != nil {
-			return err
+			return portMinErr
 		}
 	}
 
 	return nil
 }
 
-//check parameter of deployment yaml file
-func CheckDeploymentPara(reqServiceConfig model.ServiceConfig) error {
+func CheckDeploymentConfig(projectName string, deploymentConfig Deployment) error {
 	//check empty
-	if reqServiceConfig.DeploymentYaml.Name == "" {
-		return errors.New("Deployment_Name is empty.")
+	if deploymentConfig.Kind != deploymentKind {
+		return deploymentKindErr
+	}
+	if deploymentConfig.APIVersion != deploymentAPIVersion {
+		return deploymentAPIVersionErr
+	}
+	if deploymentConfig.ObjectMeta.Name == "" {
+		return emptyDeployErr
+	}
+	if deploymentConfig.ObjectMeta.Namespace != projectName {
+		return ProjectNameInconsistentErr
+	}
+	if *deploymentConfig.Spec.Replicas < 1 {
+		return invalidErr
+	}
+	if len(deploymentConfig.Spec.Template.Spec.Containers) < 1 {
+		return emptyContainerErr
 	}
 
-	if reqServiceConfig.DeploymentYaml.Replicas < 1 {
-		return errors.New("Deployment_Replicas < 1 is invaild.")
-	}
+	for _, cont := range deploymentConfig.Spec.Template.Spec.Containers {
 
-	if len(reqServiceConfig.DeploymentYaml.ContainerList) < 1 {
-		return errors.New("Container_List is empty.")
-	}
-
-	//check upper
-	err := checkStringHasUpper(reqServiceConfig.DeploymentYaml.Name)
-	if err != nil {
-		return err
-	}
-
-	for _, cont := range reqServiceConfig.DeploymentYaml.ContainerList {
-
-		err := checkStringHasUpper(cont.Name, cont.BaseImage, cont.WorkDir, cont.CPU, cont.Memory)
+		err := checkStringHasUpper(cont.Name, cont.Image)
 		if err != nil {
 			return err
 		}
@@ -111,8 +235,8 @@ func CheckDeploymentPara(reqServiceConfig model.ServiceConfig) error {
 			}
 		}
 
-		for _, volMount := range cont.Volumes {
-			err := checkStringHasUpper(volMount.Dir, volMount.TargetStorageName)
+		for _, volMount := range cont.VolumeMounts {
+			err := checkStringHasUpper(volMount.Name, volMount.MountPath)
 			if err != nil {
 				return err
 			}
@@ -123,153 +247,27 @@ func CheckDeploymentPara(reqServiceConfig model.ServiceConfig) error {
 	return nil
 }
 
-//check request massage parameters
-func CheckReqPara(reqServiceConfig model.ServiceConfig) error {
-	var err error
-	//check upper of project name and phase
-	err = checkStringHasUpper(reqServiceConfig.ProjectName, reqServiceConfig.Phase)
+func RollingUpdateDeploymentYaml(repoPath string, deploydata *modelK8sExt.Deployment) error {
+	projectName := deploydata.ObjectMeta.Namespace
+	serviceName := deploydata.ObjectMeta.Name
+	serviceInfo, err := GetServiceByProject(serviceName, projectName)
 	if err != nil {
 		return err
 	}
-	// Check deployment parameters
-	err = CheckDeploymentPara(reqServiceConfig)
+	if serviceInfo == nil {
+		return ServiceNotFoundErr
+	}
+
+	filePath := filepath.Join(repoPath, projectName, strconv.Itoa(int(serviceInfo.ID)))
+	fileName := filepath.Join(filePath, deploymentFilename)
+	err = CheckDeploymentPath(filePath)
+	if err != nil {
+		return err
+	}
+	err = GenerateYamlFile(fileName, deploydata)
 	if err != nil {
 		return err
 	}
 
-	// Check service parameters
-	err = CheckServicePara(reqServiceConfig)
-	if err != nil {
-		return err
-	}
-
-	return err
-}
-
-//build yaml file of service
-func BuildServiceYaml(reqServiceConfig model.ServiceConfig, yamlFileName string) error {
-	var service model.ServiceStructYaml
-	var port model.PortsServiceYaml
-
-	serviceLoadPath := GetDeploymentPath()
-	err := CheckDeploymentPath(serviceLoadPath)
-	if err != nil {
-		logs.Error("Failed to check deployment path: %+v\n", err)
-		return err
-	}
-
-	service.ApiVersion = serviceAPIVersion
-	service.Kind = serviceKind
-	service.Metadata.Name = reqServiceConfig.ServiceYaml.Name
-	service.Metadata.Labels.App = reqServiceConfig.ServiceYaml.Selectors[0]
-
-	if len(reqServiceConfig.ServiceYaml.External) > 0 {
-		service.Spec.Tpe = nodePort
-	}
-
-	for _, external := range reqServiceConfig.ServiceYaml.External {
-		port.Port = external.ContainerPort
-		port.TargetPort = external.ContainerPort
-		port.NodePort = external.NodePort
-		service.Spec.Ports = append(service.Spec.Ports, port)
-	}
-
-	service.Spec.Selector.App = reqServiceConfig.ServiceYaml.Selectors[0]
-
-	context, err := yaml.Marshal(&service)
-	if err != nil {
-		logs.Error("Failed to Marshal service yaml file: %+v\n", err)
-		return err
-	}
-
-	fileName := filepath.Join(serviceLoadPath, yamlFileName)
-	err = ioutil.WriteFile(fileName, context, 0644)
-	if err != nil {
-		logs.Error("Failed to build service yaml file: %+v\n", err)
-		return err
-	}
-	return nil
-}
-
-//build yaml file of deployment
-func BuildDeploymentYaml(reqServiceConfig model.ServiceConfig, yamlFileName string) error {
-	var deployment model.DeploymentStructYaml
-	var nfsvolume model.VolumesDeploymentYaml
-	var container model.ContainersDeploymentYaml
-	var port model.PortsDeploymentYaml
-	var volumeMount model.VolumeMountDeploymentYaml
-	var env model.EnvDeploymentYaml
-
-	deploymentLoadPath := GetDeploymentPath()
-	err := CheckDeploymentPath(deploymentLoadPath)
-	if err != nil {
-		logs.Error("Failed to check deployment path: %+v\n", err)
-		return err
-	}
-
-	deployment.ApiVersion = deploymentAPIVersion
-	deployment.Kind = deploymentKind
-	deployment.Metadata.Name = reqServiceConfig.DeploymentYaml.Name
-	deployment.Spec.Replicas = reqServiceConfig.DeploymentYaml.Replicas
-	deployment.Spec.Template.Metadata.Labels.App = reqServiceConfig.DeploymentYaml.Name
-
-	for _, vol := range reqServiceConfig.DeploymentYaml.VolumeList {
-		nfsvolume.Name = vol.Name
-
-		if vol.ServerName == "" {
-			nfsvolume.HostPath.Path = vol.Path
-		} else {
-			nfsvolume.Nfs.Path = vol.Path
-			nfsvolume.Nfs.Server = vol.ServerName
-		}
-
-		deployment.Spec.Template.Spec.Volumes = append(deployment.Spec.Template.Spec.Volumes, nfsvolume)
-	}
-
-	for _, cont := range reqServiceConfig.DeploymentYaml.ContainerList {
-
-		container.Name = cont.Name
-		container.Image = cont.BaseImage
-		container.Workingdir = cont.WorkDir
-		container.Command = cont.Command
-		container.Resource.Request.Cpu = cont.CPU
-		container.Resource.Request.Memory = cont.Memory
-
-		container.Ports = make([]model.PortsDeploymentYaml, 0)
-		for _, por := range cont.Ports {
-			port.ContainerPort = por
-			container.Ports = append(container.Ports, port)
-		}
-
-		container.VolumeMount = make([]model.VolumeMountDeploymentYaml, 0)
-		for _, volMount := range cont.Volumes {
-			volumeMount.Name = volMount.TargetStorageName
-			volumeMount.MountPath = volMount.Dir
-			container.VolumeMount = append(container.VolumeMount, volumeMount)
-		}
-
-		container.Env = make([]model.EnvDeploymentYaml, 0)
-		for _, enviroment := range cont.Envs {
-			env.Name = enviroment.Name
-			env.Value = enviroment.Value
-			container.Env = append(container.Env, env)
-		}
-
-		deployment.Spec.Template.Spec.Containers = append(deployment.Spec.Template.Spec.Containers, container)
-	}
-
-	context, err := yaml.Marshal(&deployment)
-	if err != nil {
-		logs.Error("Failed to Marshal deployment yaml file: %+v\n", err)
-		return err
-	}
-
-	fileName := filepath.Join(deploymentLoadPath, yamlFileName)
-
-	err = ioutil.WriteFile(fileName, context, 0644)
-	if err != nil {
-		logs.Error("Failed to build deployment yaml file: %+v\n", err)
-		return err
-	}
 	return nil
 }

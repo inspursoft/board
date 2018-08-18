@@ -1,39 +1,40 @@
-import { Component, Input, OnInit, OnDestroy, AfterContentChecked, ViewChildren, QueryList } from '@angular/core';
+import { AfterContentChecked, ChangeDetectorRef, Component, Injector, OnInit, QueryList, ViewChildren } from '@angular/core';
 import {
-  ServiceStep1Output,
-  ServiceStep2Output, ServiceStep3Output, ServiceStep3Type, ServiceStep4Output,
-  ServiceStepComponent
+  Container,
+  ExternalService,
+  PHASE_CONFIG_CONTAINERS,
+  PHASE_EXTERNAL_SERVICE,
+  ServiceStepPhase,
+  UIServiceStep3,
+  UIServiceStep4
 } from '../service-step.component';
-import { K8sService } from '../service.k8s';
-import { CsInputComponent } from "../cs-input/cs-input.component";
-
+import { CsInputComponent } from "../../shared/cs-components-library/cs-input/cs-input.component";
+import { ServiceStepBase } from "../service-step";
+import { ValidationErrors } from "@angular/forms/forms";
+import { HttpErrorResponse } from "@angular/common/http";
 
 @Component({
   styleUrls: ["./config-setting.component.css"],
   templateUrl: './config-setting.component.html'
 })
-export class ConfigSettingComponent implements ServiceStepComponent, OnInit, OnDestroy, AfterContentChecked {
-  @Input() data: any;
+export class ConfigSettingComponent extends ServiceStepBase implements OnInit, AfterContentChecked {
   @ViewChildren(CsInputComponent) inputComponents: QueryList<CsInputComponent>;
-  patternServiceName: RegExp = /^[a-zA-Z\d_-]+$/;
+  patternServiceName: RegExp = /^[a-z]([-a-z0-9]*[a-z0-9])+$/;
   dropDownListNum: Array<number>;
-  selectContainerPorts: Map<string, Array<number>>;
-  step2Output: ServiceStep2Output;
-  step3Output: ServiceStep3Output;
-  step4Output: ServiceStep4Output;
   showAdvanced: boolean = true;
-  showExternal: boolean = true;
-  showCollaborative: boolean = true;
+  showExternal: boolean = false;
+  showCollaborative: boolean = false;
   isInputComponentsValid = false;
+  uiPreData: UIServiceStep3 = new UIServiceStep3();
+  collaborativeServiceList: Array<string>;
+  /*Todo:Only for collaborative plus action.It must be delete after update UIServiceStep4*/
+  collaborativeList:Array<Object>;
 
-  constructor(private k8sService: K8sService) {
+  constructor(protected injector: Injector, private changeDetectorRef: ChangeDetectorRef) {
+    super(injector);
     this.dropDownListNum = Array<number>();
-    this.selectContainerPorts = new Map<string, Array<number>>();
-    this.step4Output = new ServiceStep4Output();
-  }
-
-  ngOnDestroy() {
-    this.k8sService.setStepData(4, this.step4Output);
+    this.collaborativeServiceList = Array<string>();
+    this.collaborativeList = Array<Object>();
   }
 
   ngAfterContentChecked() {
@@ -48,100 +49,114 @@ export class ConfigSettingComponent implements ServiceStepComponent, OnInit, OnD
   }
 
   ngOnInit() {
-    let step1Out = this.k8sService.getStepData(1) as ServiceStep1Output;
-    this.step2Output = this.k8sService.getStepData(2) as ServiceStep2Output;
-    this.step3Output = this.k8sService.getStepData(3) as ServiceStep3Output;
-    this.step4Output.service_id = step1Out.service_id;
-    this.step4Output.project_name = step1Out.project_name;
-    this.step4Output.project_id = step1Out.project_id;
-    this.step4Output.deployment_yaml.container_list = this.step3Output;
-    let volumeList = this.step4Output.deployment_yaml.volume_list;
-    this.step3Output.forEach((value: ServiceStep3Type) => {
-      value.container_volumes.forEach(volume => {
-        volumeList.push({
-          volume_name: volume.target_storagename,
-          volume_path: volume.target_dir,
-          server_name: ""
-        })
-      });
+    this.k8sService.getServiceConfig(PHASE_CONFIG_CONTAINERS).then(res => {
+      this.uiPreData = res as UIServiceStep3;
+    });
+    this.k8sService.getServiceConfig(this.stepPhase).then(res => {
+      this.uiBaseData = res;
+      this.changeDetectorRef.detectChanges();
     });
     for (let i = 1; i <= 100; i++) {
       this.dropDownListNum.push(i)
     }
   }
 
-  get serviceExternalArray() {
-    return this.step4Output.service_yaml.service_external;
+  get stepPhase(): ServiceStepPhase {
+    return PHASE_EXTERNAL_SERVICE
   }
 
-  get serviceSelectorsArray() {
-    //get selectors list api ...
-    return this.step4Output.service_yaml.service_selectors;
+  get uiData(): UIServiceStep4 {
+    return this.uiBaseData as UIServiceStep4;
   }
 
-  setServiceName(serviceName: string) {
-    this.step4Output.deployment_yaml.deployment_name = serviceName;
-    this.step4Output.service_yaml.service_name = serviceName;
-    let selectors = this.step4Output.service_yaml.service_selectors;
-    if (selectors.length == 0) {
-      selectors.push(serviceName);
-    } else {
-      selectors[0] = serviceName;
-    }
+  get checkServiceNameFun() {
+    return this.checkServiceName.bind(this);
+  }
+
+  get isCanAddContainerInfo(){
+    return this.uiPreData.containerList.find(value => value.isHavePort());
+  }
+
+  checkServiceName(control: HTMLInputElement): Promise<ValidationErrors | null> {
+    return this.k8sService.checkServiceExist(this.uiData.projectName, control.value)
+      .then(() => null)
+      .catch(err => {
+        if (err && err instanceof HttpErrorResponse && (err as HttpErrorResponse).status == 409) {
+          return {serviceExist: "SERVICE.STEP_4_SERVICE_NAME_EXIST"}
+        }
+        this.messageService.dispatchError(err);
+      });
+  }
+
+  setNodePort(index: number, port: number) {
+    this.uiData.externalServiceList[index].node_config.node_port = Number(port).valueOf();
+  }
+
+  setServiceName(serviceName: string): void {
+    this.uiData.serviceName = serviceName;
+    /*Todo:add reset the Collaborative service Info*/
+    this.collaborativeServiceList.splice(0, this.collaborativeServiceList.length);
+    this.k8sService.getCollaborativeService(serviceName, this.uiData.projectName)
+      .then(res => {
+        this.collaborativeServiceList = res;
+      })
   }
 
   addContainerInfo() {
-    let serviceExternal = this.serviceExternalArray;
-    serviceExternal.push({
-      service_containername: "",
-      service_externalpath: "",
-      service_containerport: 0,
-      service_nodeport: 0
-    })
+    if (this.isCanAddContainerInfo){
+      let externalService = new ExternalService();
+      if (this.uiPreData.containerList.length > 0) {
+        externalService.container_name = this.uiPreData.containerList[0].name;
+        let containerPorts = this.getContainerPorts(externalService.container_name);
+        if (containerPorts.length > 0) {
+          externalService.node_config.target_port = containerPorts[0];
+        }
+      }
+      this.uiData.externalServiceList.push(externalService);
+    }
+  }
+
+  addOneCollaborativeService(){
+    if (this.collaborativeServiceList.length > 0){
+      this.collaborativeList.push({});
+    }
   }
 
   removeContainerInfo(index: number) {
-    let serviceExternal = this.serviceExternalArray;
-    serviceExternal.splice(index, 1);
+    this.uiData.externalServiceList.splice(index, 1);
   }
 
   getContainerDropdownText(index: number): string {
-    let serviceExternal = this.serviceExternalArray;
-    let result = serviceExternal[index].service_containername;
+    let result = this.uiData.externalServiceList[index].container_name;
     return result == "" ? "SERVICE.STEP_4_SELECT_CONTAINER" : result;
   }
 
   getContainerPortDropdownText(index: number): string {
-    let serviceExternal = this.step4Output.service_yaml.service_external;
-    let result = serviceExternal[index].service_containerport;
+    let result = this.uiData.externalServiceList[index].node_config.target_port;
     return result == 0 ? "SERVICE.STEP_4_SELECT_PORT" : result.toString();
   }
 
-  setExternalInfo(item: ServiceStep3Type, index: number) {
-    let serviceExternal = this.serviceExternalArray;
-    serviceExternal[index].service_containername = item.container_name;
-    this.selectContainerPorts.set(item.container_name, item.container_ports);
+  setExternalInfo(container: Container, index: number) {
+    this.uiData.externalServiceList[index].container_name = container.name;
   }
 
   getContainerPorts(containerName: string): Array<number> {
-    return this.selectContainerPorts.get(containerName);
-  }
-
-  onRadNodeChange(index: number) {
-    let serviceExternal = this.serviceExternalArray;
-    serviceExternal[index].service_externalpath = "";
-  }
-
-  onRadExternalpathChange(index: number) {
-    let serviceExternal = this.serviceExternalArray;
-    serviceExternal[index].service_nodeport = 0;
-  }
-
-  setServiceNodeport(port: string, index: number) {
-    this.serviceExternalArray[index].service_nodeport = Number(port).valueOf();
+    let result: Array<number> = Array<number>();
+    this.uiPreData.containerList.forEach((container: Container) => {
+      if (container.name == containerName) {
+        result = container.container_port;
+      }
+    });
+    return result;
   }
 
   forward(): void {
-    this.k8sService.stepSource.next(6);
+    this.k8sService.setServiceConfig(this.uiData.uiToServer()).then(() => {
+      this.k8sService.stepSource.next({index: 6, isBack: false});
+    });
+  }
+
+  backUpStep(): void {
+    this.k8sService.stepSource.next({index: 3, isBack: true});
   }
 }

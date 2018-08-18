@@ -1,23 +1,25 @@
-# User Guide  
+## User Guide  
 ## Overview  
 This guide walks you through the fundamentals of using Board. You'll learn how to use Board to:  
 
 * User Account
-* Role Based Access Control(RBAC)  
+* Project Based Access Control 
 * Manage Projects
 * Manage Members of a Project
 * Manage Services
-  * Build Images.
-  * Build Services.
-  * Test Services.
-  * Deploy Services.
+  * Build Image
+  * Build Service
+  * Test Service
+  * Deploy Service
+  * Scale Service
+  * Update Service
 * Search Projects, Services, Users and Images.
 * Monitoring Dashboard
 * Administrator Options
 * Q&A
 
 ## User account
-Board supports databse authentication modes, will support LDAP next release:  
+Board supports databse authentication modes and support LDAP mode:  
 
 * **Database(db_auth)**  
 
@@ -27,29 +29,24 @@ Board supports databse authentication modes, will support LDAP next release:
 	
 	When registering or adding a new user, the username and email must be unique in the Board system. The password must contain at least 8 characters with 1 lowercase letter, 1 uppercase letter and 1 numeric character.  
 	
-	When you forgot your password, you can follow the below steps to reset the password(need SMTP server support):  
-
-	1. Click the link "Forgot Password" in the sign in page.  
-	2. Input the email address entered when you signed up, an email will be sent out to you for password reset.  
-	3. After receiving the email, click on the link in the email which directs you to a password reset web page.  
-	4. Input your new password and click "Save".  
-	
 * **LDAP/Active Directory (ldap_auth)**  
 
-	Support in next release
+	Under this authentication mode, users whose credentials are stored in an external LDAP or AD server can log in to Board directly.  
+	
+	When an LDAP/AD user logs in by *username* and *password*, Board binds to the LDAP/AD server with the **"LDAP Search DN"** and **"LDAP Search Password"** described in [installation guide](installation_guide.md). If it succeeded, Board looks up the user under the LDAP entry **"LDAP Base DN"** including substree. The attribute (such as uid, cn) specified by **"LDAP UID"** is used to match a user with the *username*. If a match is found, the user's *password* is verified by a bind request to the LDAP/AD server.  
+	
+	Self-registration, changing password and resetting password are not supported under LDAP/AD authentication mode because the users are managed by LDAP or AD.  
 
-## Role Based Access Control(RBAC)  
+## Project Based Access Control  
 
-Board manages services through projects on container service platform. Users can be added into one services as a member with 3 different roles:  
+Board manages services through projects on container service platform. Users can be added into system as a member with different roles:  
 
-* **Guest**: Guest has read-only privilege for public project and sevices.
-* **ProjectMember**: Developer has read and write privileges for a project.
-* **ProjectAdmin**: When creating a new project, you will be assigned the "ProjectAdmin" role to the project. Besides read-write privileges, the "ProjectAdmin" also has some management privileges, such as adding and removing members.
-
-Besides the above three roles, there are two system-wide roles:  
-
-* **SysAdmin**: "SysAdmin" has the most privileges. In addition to the privileges mentioned above, "SysAdmin" can also list all projects, set an ordinary user as administrator, delete users. The public project "library" is also owned by the administrator.  
 * **Anonymous**: When a user is not logged in, the user is considered as an "Anonymous" user. An anonymous user has no access to private projects and has read-only access to public projects and services.  
+* **Registry User**: When a user logs in, the user will have the authority to create a new project or be pulled into an existing project.
+* *** ProjectAdmin ***: When creating a new project, the user will be assigned the "ProjectAdmin" role in new project. The "ProjectAdmin" can invite users join the project  which created by himself.
+* *** ProjectMember ***: When invited in to one exist project, the user will be assigned the "ProjectMember" role in new project. The "ProjectMember" can create and delete the service in the project but can not delete the project. One user isn't a member of one project, can't create or delete service in this project, can't access it's private service.
+* **SysAdmin**: "SysAdmin" has the most privileges. In addition to the privileges mentioned above, "SysAdmin" can also list all projects, set an ordinary user as administrator, delete users. The public project "library" is also owned by the administrator.  
+
 
 ## Manage Projects
 A project in Board contains all services, images etc., There are two types of projects in Board:
@@ -77,18 +74,14 @@ You can update or remove a member by clicking the left arrow to remove or right 
 
 <img src="img/userguide/add-remove-members.png" width="100" alt="Board add remove members">
 
-### Changing member role
-
-You can change member's role by clicking role radio button below.
-
-<img src="img/userguide/change-member-role.png" width="100" alt="Board change member role">
-
 ## Manage Services
 
 Board supports creating container service. All services must be grouped by projects. Click into "create service", the first step is to select a project. if there is no project, please create a project first. 
 
 ### Build Images
-On the "select images" page, select "Create Custom Image" from the pull-down menu to build new image.
+On the "select images" page, select "Create Custom Image" from the pull-down menu to build new image. Or on the "images" page, click "create image"
+Surpport three method to create images that are "Use template for creaton", "Use Dockerfile for creation", "Create by DevOps method"(will be surpport)
+Use template for creaton：
 There will be a pop-up window for user to input image parameters for building.
 * New Image Name
 * Image Tag
@@ -99,6 +92,13 @@ There will be a pop-up window for user to input image parameters for building.
 * Image Run
 * Image Expose
 * Upload External Archives
+* Command
+
+Use Dockerfile for creation:
+There will be a pop-up window for user to input image parameters for building.
+* New Image Name
+* Image Tag
+* Select Dockerfile for build image
 
 After fill in all required parameters, click "Build image" to start building the new image.
 If build successfully, the new image will be added into Board's registry.
@@ -119,6 +119,7 @@ The following parameters could be customized for containers of this service.
 Next step to configure service.
 The following parameters could be customized for this service.
 * Service Name
+* External service
 * Instance
 
 In the advanced configuration, can assign node pord for external service.
@@ -133,6 +134,30 @@ This step is to test the service's configurations. Next step to skip testing.
 
 Click "Deploy" to deploy the new service.
 After successfully deploy the service, user can monitor the service status from the service list.
+
+### Scale Service
+Click the "control" icon in the sevice list page, pop up the service control page
+
+<img src="img/userguide/scale1.png" width="100" alt="Scale service">
+
+<img src="img/userguide/scale2.png" width="100" alt="Scale service">
+
+Select manually scale, set the desired instance number, and confirm it.
+
+<img src="img/userguide/scale3.png" width="100" alt="Scale service">
+
+### Update Service
+Click the "control" icon in the sevice list page, pop up the service control page.
+Select the "update" tab.
+<img src="img/userguide/update1.png" width="100" alt="Update service">
+
+Choose the new version tag in the image list.
+<img src="img/userguide/update2.png" width="100" alt="Update service">
+
+Confirm it, then this service will be rolling updated to the new version.
+<img src="img/userguide/update3.png" width="100" alt="Update service">
+
+### Update Service
 
 ### Examples to create services
 
@@ -182,6 +207,69 @@ Deploy a service "demoshow"
 * Service can be showed in service list
 
 <img src="img/userguide/demoshow-ok.PNG" width="100" alt="Service success">
+
+#### Example inspur bigdata
+Deploy a service "bigdata" which is a containerized project for the Inspur bigdata software platform.
+
+* Start to create a service
+
+<img src="img/userguide/bigdata-a.PNG" width="100" alt="create a service">
+
+* Select a project
+
+<img src="img/userguide/bigdata-b.PNG" width="100" alt="Select a project">
+
+* Add images for this service
+
+<img src="img/userguide/bigdata-c.PNG" width="100" alt="add images">
+
+* Select images for this service
+
+<img src="img/userguide/bigdata-d.PNG" width="100" alt="select images">
+
+* Select two images for this service
+
+<img src="img/userguide/bigdata-e.PNG" width="100" alt="select two images">
+
+* Configure containers
+
+<img src="img/userguide/bigdata-f.PNG" width="100" alt="Configure containers">
+
+* Configure storage volume for the mysql container
+
+<img src="img/userguide/bigdata-g.PNG" width="100" alt="Configure storage volume">
+
+* Configure environment parameters
+
+<img src="img/userguide/bigdata-i.PNG" width="100" alt="Configure environment parameters">
+
+* Configure container ports
+
+<img src="img/userguide/bigdata-j.PNG" width="100" alt="Configure container ports">
+
+* Configure the bigdata service
+
+<img src="img/userguide/bigdata-k.PNG" width="100" alt="Configure bigdata service">
+
+* Configure the external node port
+
+<img src="img/userguide/bigdata-l.PNG" width="100" alt="Configure the external node port">
+
+* Deploy the bigdata service
+
+<img src="img/userguide/bigdata-m.PNG" width="100" alt="Deploy the bigdata service">
+
+<img src="img/userguide/bigdata-n.PNG" width="100" alt="Deployed the bigdata service">
+
+* The bigdata service is deployed
+
+<img src="img/userguide/bigdata-p.PNG" width="100" alt="bigdata service deployed">
+
+<img src="img/userguide/bigdata-q.PNG" width="100" alt="bigdata service deployed">
+
+* Monitor the bigdata service status on Board
+
+<img src="img/userguide/bigdata-o.PNG" width="100" alt="Monitor the bigdata service status">
 
 ## Search Projects, Services, Users and Images
 Board search  engine could search project, service, users and image.

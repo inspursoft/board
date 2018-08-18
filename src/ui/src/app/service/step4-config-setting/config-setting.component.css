@@ -1,7 +1,9 @@
 div.config-container {
   display: flex;
+  min-height: 400px; /*fixed height*/
   flex-direction: column;
   margin-top: 30px;
+  margin-bottom: 20px;
 }
 
 div.config-service-info-container {
@@ -17,7 +19,7 @@ div.config-service-info-line {
 }
 
 cs-input.base-input{
-  width: 400px;
+  width: 500px;
 }
 
 div.step-arrow {
@@ -53,11 +55,6 @@ div.advanced-item-container {
   align-items: center;
 }
 
-div.service-container {
-  display: flex;
-  margin-top: 10px;
-  height: 30px;
-}
 
 span.service {
   width: 160px;
@@ -94,6 +91,10 @@ div.external-radio-container {
   align-items: center;
   margin-top: 10px;
   width: 20px;
+}
+
+div.external-radio-container.disabled input:hover {
+  cursor: not-allowed;
 }
 
 span.external-title {
@@ -135,7 +136,7 @@ div.collaborative-close {
   transition-duration: 0.5s;
 }
 
-.plus-icon {
+clr-icon.plus-icon {
   color: white;
   background: green;
   width: 20px;
@@ -144,3 +145,12 @@ div.collaborative-close {
   cursor: pointer;
 
 }
+
+clr-icon.plus-icon.disabled {
+  background: silver;
+}
+
+clr-icon.plus-icon.disabled:hover {
+  cursor: not-allowed;
+}
+

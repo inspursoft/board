@@ -1,4 +1,4 @@
-<clr-modal [(clrModalOpen)]="opened">
+<clr-modal [(clrModalOpen)]="opened" [clrModalClosable]="false">
   <h3 class="modal-title">{{ confirmationMessage.title | translate }}</h3>
   <div class="modal-body">
     <p>{{ confirmationMessage.message | translate }}</p>
@@ -13,8 +13,11 @@
       <button type="button" class="btn btn-danger" (click)="confirm()">{{ 'BUTTON.DELETE' | translate }}</button>
     </ng-template>
     <ng-template [ngSwitchCase]="3">
-      <button type="button" class="btn btn-outline" (click)="opened = false">{{ 'BUTTON.NO' | translate }}</button>
+      <button type="button" class="btn btn-outline" (click)="cancel()">{{ 'BUTTON.NO' | translate }}</button>
       <button type="button" class="btn btn-primary" (click)="confirm()">{{ 'BUTTON.YES' | translate }}</button>
+    </ng-template>
+    <ng-template [ngSwitchCase]="4">
+      <button type="button" class="btn btn-primary" (click)="opened = false">{{ 'BUTTON.CONFIRM' | translate }}</button>
     </ng-template>
   </div>
 </clr-modal>

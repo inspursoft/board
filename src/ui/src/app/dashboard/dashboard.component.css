@@ -4,21 +4,20 @@
   -moz-border-radius: 50%;
   -webkit-border-radius: 50%;
   display: flex;
-  height: 90px;
-  width: 90px;
+  height: 40px;
+  width: 40px;
   justify-content: center;
   align-items: center;
 }
 
 .stat-panel-title {
-  margin-bottom: 32px;
-  font-weight: bold;
+  margin-bottom: 16px;
 }
 
 .stat-panel-value-font {
   color: black;
-  font-size: 24pt;
-  margin-bottom: 32px;
+  font-size: 12pt;
+  margin-bottom: 16px;
 }
 
 .section-container {
@@ -34,26 +33,29 @@
 
 .section-image-container {
   display: flex;
-  width: 120px;
+  align-items: flex-end;
+  flex-basis: 40%;
   flex-direction: column;
 }
 
 .section-image {
-  width: 50px;
-  height: 50px;
+  width: 20px;
+  height: 20px;
 }
 
 .section-text {
   flex-basis: 20px;
+  width: 45px;
   text-align: center;
 }
 
 .section-right-container {
   margin-left: 10px;
   display: flex;
+  flex-basis: 60%;
 }
 
-.section-right-container-container{
+.section-right-container-container {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -66,15 +68,13 @@
   padding: 0;
 }
 
-.card-block-top-container {
-  
+div.card-block-top-container {
   height: 60px;
   display: flex;
   padding: 10px 20px 10px 20px;
 }
 
 .card-block-bottom-container {
-  
   height: 300px;
   display: flex;
   flex-direction: column;
@@ -87,6 +87,7 @@
 }
 
 .btn-default {
+  width: 100%;
   border-color: #bbbbbb;
   color: black;
 }
@@ -100,17 +101,14 @@
   color: #d48265
 }
 
-.select-time-container {
-  width: 100%;
-  flex-basis: 50px;
-  height: 60px;
-  display: flex;
-  justify-content: flex-end;
+div.select-time-container {
+  margin-left: 10px;
+  height: 40px;
 }
 
-.caption_container {
-  flex-basis: 100%;
+div.caption_container {
   display: flex;
+  flex-basis: 100%;
   justify-content: center;
   line-height: 40px;
 }
@@ -147,8 +145,27 @@ button:focus {
   width: 100%;
 }
 
-.dropdown-button{
+.dropdown-button {
   width: 150px;
   font-size: 10px;
   text-align: left;
+}
+
+clr-icon.detail {
+  height: 30px;
+  width: 30px;
+}
+
+div.grafana-container-block {
+  padding: 0;
+  margin: 0;
+  scrollbar-base-color: blue;
+}
+
+div.grafana-container-header{
+  display: flex;
+}
+
+span.grafana-card-title{
+  flex-basis: 100%;
 }

@@ -71,31 +71,26 @@ func checkStringHasEnter(str ...string) error {
 func fixStructEmptyIssue(obj interface{}) {
 	if f, ok := obj.(*[]string); ok {
 		if len(*f) == 1 && len((*f)[0]) == 0 {
-			*f = nil
+			*f = make([]string, 0, 0)
 		}
 		return
 	}
 	if f, ok := obj.(*[]model.CopyStruct); ok {
 		if len(*f) == 1 && len((*f)[0].CopyFrom) == 0 && len((*f)[0].CopyTo) == 0 {
-			*f = nil
+			*f = make([]model.CopyStruct, 0, 0)
 		}
 		return
 	}
 	if f, ok := obj.(*[]model.EnvStruct); ok {
 		if len(*f) == 1 && len((*f)[0].EnvName) == 0 && len((*f)[0].EnvValue) == 0 {
-			*f = nil
+			*f = make([]model.EnvStruct, 0, 0)
 		}
 		return
-	}
-	if f, ok := obj.(*[]int); ok {
-		if len(*f) == 1 && (*f)[0] == 0 {
-			*f = nil
-		}
 	}
 	return
 }
 
-func changeDockerfileStructItem(dockerfile *model.Dockerfile) {
+func changeDockerfileStructItem(dockerfile *model.Dockerfile, relPath string) {
 	dockerfile.Base = strings.TrimSpace(dockerfile.Base)
 	dockerfile.Author = strings.TrimSpace(dockerfile.Author)
 	dockerfile.EntryPoint = strings.TrimSpace(dockerfile.EntryPoint)
@@ -107,7 +102,7 @@ func changeDockerfileStructItem(dockerfile *model.Dockerfile) {
 	fixStructEmptyIssue(&dockerfile.Volume)
 
 	for num, node := range dockerfile.Copy {
-		fromPath, _ := filepath.Rel(repoPath(), strings.TrimSpace(node.CopyFrom))
+		fromPath := filepath.Join(relPath, strings.TrimSpace(node.CopyFrom))
 		dockerfile.Copy[num].CopyFrom = fromPath
 		dockerfile.Copy[num].CopyTo = strings.TrimSpace(node.CopyTo)
 	}
@@ -138,8 +133,8 @@ func changeImageConfigStructItem(reqImageConfig *model.ImageConfig) {
 	reqImageConfig.ImageDockerfilePath = strings.TrimSpace(reqImageConfig.ImageDockerfilePath)
 }
 
-func CheckDockerfileItem(dockerfile *model.Dockerfile) error {
-	changeDockerfileStructItem(dockerfile)
+func CheckDockerfileItem(dockerfile *model.Dockerfile, relPath string) error {
+	changeDockerfileStructItem(dockerfile, relPath)
 
 	if len(dockerfile.Base) == 0 {
 		return errors.New("Baseimage in dockerfile should not be empty")
@@ -169,7 +164,8 @@ func CheckDockerfileConfig(config *model.ImageConfig) error {
 		return err
 	}
 
-	return CheckDockerfileItem(&config.ImageDockerfile)
+	relPath := filepath.Join(config.ProjectName, config.ImageName, config.ImageTag, "upload")
+	return CheckDockerfileItem(&config.ImageDockerfile, relPath)
 }
 
 func BuildDockerfile(reqImageConfig model.ImageConfig, wr ...io.Writer) error {
@@ -382,4 +378,12 @@ func DeleteImageTag(imageTag model.ImageTag) error {
 		return err
 	}
 	return nil
+}
+
+func CreateImageTag(imageTag model.ImageTag) (int64, error) {
+	imageTagID, err := dao.AddImageTag(imageTag)
+	if err != nil {
+		return 0, err
+	}
+	return imageTagID, nil
 }
