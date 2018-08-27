@@ -1,7 +1,8 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AppInitService, AppTokenService } from '../app.init.service';
-import { GUIDE_STEP } from "../shared/shared.const";
+import { GUIDE_STEP, MAIN_MENU_DATA, RouteAudit, RouteNodes, RouteUserCenters } from "../shared/shared.const";
+import { ICsMenuItemData } from "../shared/shared.types";
 
 @Component({
   selector: 'main-content',
@@ -9,7 +10,7 @@ import { GUIDE_STEP } from "../shared/shared.const";
 })  
 export class MainContentComponent {
   @ViewChild("frameDashboard") frame:ElementRef;
-  token: string;
+  navSource: Array<ICsMenuItemData>;
   isOnlyShowGrafanaView: boolean = false;
   isSignIn: boolean = true;
   hasSignedIn: boolean = false;
@@ -19,14 +20,15 @@ export class MainContentComponent {
     private appInitService: AppInitService,
     private appTokenService: AppTokenService,
     private router: Router,
-    private route: ActivatedRoute
-  ) {
+    private route: ActivatedRoute) {
     if(this.appInitService.currentUser) {
       this.isSignIn = false;
       this.hasSignedIn = true;
     }
-    this.token = this.appTokenService.token;
-    this.appTokenService.tokenMessage$.subscribe(token=>this.token = token);
+    this.navSource = MAIN_MENU_DATA;
+    this.getMenuItemByRoute(RouteNodes).visible = this.appInitService.isSystemAdmin;
+    this.getMenuItemByRoute(RouteUserCenters).visible = this.appInitService.isSystemAdmin;
+    this.getMenuItemByRoute(RouteAudit).visible = this.appInitService.isSystemAdmin;
     this.route.queryParamMap.subscribe(params=>{
       this.isOnlyShowGrafanaView = params.get("isOnlyShowGrafanaView") == "true";
       this.searchContent = params.get("q");
@@ -36,23 +38,16 @@ export class MainContentComponent {
     this.appInitService.grafanaViewUrl = `http://${systemInfo['board_host']}/grafana/dashboard/db/kubernetes/`;
   }
 
+  getMenuItemByRoute(route: string): ICsMenuItemData {
+    return this.navSource.find((value => value.url.includes(route)));
+  }
+
   get grafanaViewUrl():string{
     return this.appInitService.grafanaViewUrl;
   }
-  get isSystemAdmin(): boolean {
-    if(this.appInitService.currentUser) {
-      return this.appInitService.currentUser["user_system_admin"] == 1;
-    }
-    return false;
-  }
 
   navigateTo(link) {
-    this.appInitService.token = this.token;
-    this.router.navigate([link], {
-      queryParams: {
-        'token': this.token
-      }
-    })
+    this.router.navigate([link], {queryParams: {'token': this.appInitService.token}}).then()
   }
 
   get isFirstLogin(): boolean{

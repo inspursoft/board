@@ -34,10 +34,13 @@ import { BoardLoadingComponent } from "./error-pages/board-loading.component/boa
 import { BadGatewayComponent } from "./error-pages/bad-gateway.component/bad-gateway.component";
 import { CsInputCheckExistingDirective } from "./cs-directives-library/cs-input-check-existing.directive";
 import { CsInputCheckPatternDirective } from "./cs-directives-library/cs-input-check-pattern.directive";
+import { CsMenuItemUrlDirective, CsVerticalNavComponent } from "./cs-components-library/cs-vertical-nav/cs-vertical-nav.component";
+import { RouterModule } from "@angular/router";
 import "inspurprism"
 
 @NgModule({
   imports: [
+    RouterModule,
     CoreModule,
     NgxEchartsModule
   ],
@@ -63,6 +66,8 @@ import "inspurprism"
     CsGuideComponent,
     CsProgressComponent,
     CsHighlightComponent,
+    CsVerticalNavComponent,
+    CsMenuItemUrlDirective,
     SizePipe,
     SafePipe
   ],
@@ -91,6 +96,8 @@ import "inspurprism"
     CsGuideComponent,
     CreateProjectComponent,
     CsHighlightComponent,
+    CsVerticalNavComponent,
+    CsMenuItemUrlDirective,
     MemberComponent,
     TimeoutComponent,
     BoardLoadingComponent,

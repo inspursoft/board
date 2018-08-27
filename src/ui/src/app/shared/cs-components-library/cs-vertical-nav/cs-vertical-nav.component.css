@@ -1,0 +1,23 @@
+clr-vertical-nav.clr-vertical-nav {
+  background-color: #004a70;
+  height: 100%;
+}
+
+clr-vertical-nav a {
+  cursor: pointer;
+  color: white;
+}
+
+clr-vertical-nav a:hover {
+  color: white;
+  background-color: #4a5063;
+}
+
+clr-vertical-nav a.active {
+  background-color: #347592;
+  color: white;
+}
+
+clr-icon.nav-icon {
+  fill: white !important;
+}
