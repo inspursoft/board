@@ -89,6 +89,10 @@ export class AppInitService {
     return this._isFirstLogin;
   }
 
+  get isSystemAdmin(): boolean{
+    return this.currentUser && this.currentUser["user_system_admin"] == 1;
+  }
+
   getCurrentUser(tokenParam?: string): Promise<any> {
     let token = this.tokenService.token || tokenParam || this.cookieService.get("token") || '';
     return this.http

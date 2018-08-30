@@ -1,0 +1,15 @@
+<clr-vertical-nav [clrVerticalNavCollapsible]="true"
+                  [(clrVerticalNavCollapsed)]="collapsed">
+  <div *ngFor="let navItem of navSource; let i = index">
+    <a *ngIf="navItem.visible"
+       clrVerticalNavLink
+       [routerLink]="navItem.url"
+       [routerLinkActive]="'active'"
+       [queryParams]="queryParams"
+       (click)="changeMenuClick(i)">
+      <clr-icon clrVerticalNavIcon [attr.shape]="navItem.icon" class="is-solid"></clr-icon>
+      <span>{{navItem.caption | translate}}</span>
+      <ng-template [csVerticalNavGuide]="navItem.url"></ng-template>
+    </a>
+  </div>
+</clr-vertical-nav>

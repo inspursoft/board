@@ -14,7 +14,6 @@ import "rxjs/add/operator/bufferCount"
 
 const MAX_COUNT_PER_PAGE: number = 200;
 const MAX_COUNT_PER_DRAG: number = 100;
-const AUTO_REFRESH_SEED: number = 10;
 const AUTO_REFRESH_CUR_SEED: number = 5;
 
 class ThirdLine {
@@ -55,10 +54,10 @@ class ThirdLine {
 })
 export class DashboardComponent extends DashboardComponentParent implements OnInit, AfterViewInit, OnDestroy {
   scaleOptions: Array<scaleOption> = [
-    {"id": 1, "description": "DASHBOARD.MIN", "value": "second", valueOfSecond: 5},
-    {"id": 2, "description": "DASHBOARD.HR", "value": "minute", valueOfSecond: 60},
-    {"id": 3, "description": "DASHBOARD.DAY", "value": "hour", valueOfSecond: 60 * 60},
-    {"id": 4, "description": "DASHBOARD.MTH", "value": "day", valueOfSecond: 60 * 60 * 24}];
+    {id: 1, description: "DASHBOARD.MIN", value: "second", valueOfSecond: 5},
+    {id: 2, description: "DASHBOARD.HR", value: "minute", valueOfSecond: 60},
+    {id: 3, description: "DASHBOARD.DAY", value: "hour", valueOfSecond: 60 * 60},
+    {id: 4, description: "DASHBOARD.MTH", value: "day", valueOfSecond: 60 * 60 * 24}];
   _serverTimeStamp: number;
   _autoRefreshCurInterval: number = AUTO_REFRESH_CUR_SEED;
   intervalAutoRefresh: any;
@@ -199,7 +198,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     this.curValue.set(lineType, {curFirst: 0, curSecond: 0});
     this.curRealTimeValue.set(lineType, {curFirst: 0, curSecond: 0});
     this.lineStateInfo.set(lineType, {isCanAutoRefresh: true, isDropBack: false, inDrop: false, inRefreshWIP: false});
-    this.autoRefreshInterval.set(lineType, AUTO_REFRESH_SEED);
+    this.autoRefreshInterval.set(lineType, this.scaleOptions[0].valueOfSecond);
     this.query.set(lineType, {
       time_count: MAX_COUNT_PER_PAGE,
       list_name: "total",
@@ -343,7 +342,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     if (this.autoRefreshInterval.get(lineType) > 0) {
       this.autoRefreshInterval.set(lineType, this.autoRefreshInterval.get(lineType) - 1);
       if (this.autoRefreshInterval.get(lineType) == 0) {
-        this.autoRefreshInterval.set(lineType, AUTO_REFRESH_SEED);
+        this.autoRefreshInterval.set(lineType, this.query.get(lineType).scale.valueOfSecond);
         if (this.lineStateInfo.get(lineType).isCanAutoRefresh) {
           this.query.get(lineType).time_count = MAX_COUNT_PER_PAGE;
           this.query.get(lineType).timestamp_base = this._serverTimeStamp;

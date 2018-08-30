@@ -1,3 +1,5 @@
+import { ICsMenuItemData } from "./shared.types";
+
 export enum MESSAGE_TARGET {
   TOGGLE_PROJECT, DELETE_PROJECT, TOGGLE_NODE, DELETE_SERVICE,
   TOGGLE_SERVICE, DELETE_IMAGE, CANCEL_BUILD_IMAGE, CANCEL_BUILD_SERVICE,
@@ -37,3 +39,22 @@ export enum GUIDE_STEP{
 
 export const AUDIT_RECORD_HEADER_KEY = "audit";
 export const AUDIT_RECORD_HEADER_VALUE = "true";
+
+export const RouteDashboard = "dashboard";
+export const RouteServices = "services";
+export const RouteProjects = "projects";
+export const RouteNodes = "nodes";
+export const RouteImages = "images";
+export const RouteUserCenters = "user-center";
+export const RouteAudit = "audit";
+export const RouteProfile = "profile";
+export const MAIN_MENU_DATA: Array<ICsMenuItemData> = [
+  {caption: 'SIDE_NAV.DASHBOARD', visible: true, icon: 'dashboard', url: `/${RouteDashboard}`},
+  {caption: 'SIDE_NAV.SERVICES', visible: true, icon: 'applications', url: `/${RouteServices}`},
+  {caption: 'SIDE_NAV.PROJECTS', visible: true, icon: 'vm', url: `/${RouteProjects}`},
+  {caption: 'SIDE_NAV.NODES', visible: true, icon: 'layers', url: `/${RouteNodes}`},
+  {caption: 'SIDE_NAV.IMAGES', visible: true, icon: 'cluster', url: `/${RouteImages}`},
+  {caption: 'SIDE_NAV.ADMIN_OPTIONS', visible: true, icon: 'administrator', url: `/${RouteUserCenters}`},
+  {caption: 'SIDE_NAV.AUDIT', visible: true, icon: 'library', url: `/${RouteAudit}`},
+  {caption: 'SIDE_NAV.PROFILES', visible: true, icon: 'help-info', url: `/${RouteProfile}`}
+];
