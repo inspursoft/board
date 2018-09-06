@@ -72,8 +72,12 @@ type ContainersDeploymentYaml struct {
 	Image      string
 	Workingdir string   `yaml:",omitempty"`
 	Command    []string `yaml:",omitempty"`
-	Resource   struct {
-		Request struct {
+	Resources  struct {
+		Requests struct {
+			Cpu    string `yaml:",omitempty"`
+			Memory string `yaml:",omitempty"`
+		}
+		Limits struct {
 			Cpu    string `yaml:",omitempty"`
 			Memory string `yaml:",omitempty"`
 		}
