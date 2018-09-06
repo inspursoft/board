@@ -1,4 +1,4 @@
-// a temp file for building and guiding
+// an adapter file from board to k8s for auto-scale
 package apps
 
 import (
