@@ -493,3 +493,8 @@ type Scale struct {
 	// +optional
 	Status ScaleStatusK8s `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
 }
+
+type AutoScale struct {
+	// +optional
+	ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+}

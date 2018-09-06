@@ -6,6 +6,7 @@ import (
 	"git/inspursoft/board/src/common/model"
 
 	appsv1beta2 "k8s.io/api/apps/v1beta2"
+	autoscalev1 "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -1009,4 +1010,8 @@ func GenerateServiceConfig(service *v1.Service) *v1.Service {
 			Type:     service.Spec.Type,
 		},
 	}
+}
+
+func FromK8sAutoScale(autoscale *autoscalev1.HorizontalPodAutoscaler) *model.AutoScale {
+	return &model.AutoScale{}
 }
