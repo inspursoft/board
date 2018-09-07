@@ -12,11 +12,61 @@ import (
 
 type autoscales struct {
 	namespace string
-	autoscale v1.AutoscalingV1Interface
+	autoscale v1.HorizontalPodAutoscalerInterface
+}
+
+func (as *autoscales) Create(autoscale *model.AutoScale) (*model.AutoScale, error) {
+	k8sHPA := types.ToK8sAutoScale(autoscale)
+	k8sHPA, err := as.autoscale.Create(k8sHPA)
+	if err != nil {
+		logs.Error("Create auto scale of %s/%s failed. Err:%+v", autoscale.Name, as.namespace, err)
+		return nil, err
+	}
+
+	return types.FromK8sAutoScale(k8sHPA), nil
+}
+
+func (as *autoscales) Update(autoscale *model.AutoScale) (*model.AutoScale, error) {
+	k8sHPA := types.ToK8sAutoScale(autoscale)
+	k8sHPA, err := as.autoscale.Update(k8sHPA)
+	if err != nil {
+		logs.Error("Update auto scale of %s/%s failed. Err:%+v", autoscale.Name, as.namespace, err)
+		return nil, err
+	}
+	return types.FromK8sAutoScale(k8sHPA), nil
+}
+
+func (as *autoscales) UpdateStatus(autoscale *model.AutoScale) (*model.AutoScale, error) {
+	k8sHPA := types.ToK8sAutoScale(autoscale)
+	k8sHPA, err := as.autoscale.UpdateStatus(k8sHPA)
+	if err != nil {
+		logs.Error("Create auto scale status of %s/%s failed. Err:%+v", autoscale.Name, as.namespace, err)
+		return nil, err
+	}
+
+	return types.FromK8sAutoScale(k8sHPA), nil
+}
+
+func (as *autoscales) Delete(name string) error {
+	err := as.autoscale.Delete(name, nil)
+	if err != nil {
+		logs.Error("delete auto scale of %s/%s failed. Err:%+v", name, as.namespace, err)
+	}
+	return err
+}
+
+func (as *autoscales) List() (*model.AutoScaleList, error) {
+	asList, err := as.autoscale.List(meta_v1.ListOptions{})
+	if err != nil {
+		logs.Error("list auto scale failed. Err:%+v", err)
+		return nil, err
+	}
+
+	return types.FromK8sAutoScaleList(asList), nil
 }
 
 func (as *autoscales) Get(name string) (*model.AutoScale, error) {
-	autoscaleinstance, err := as.autoscale.HorizontalPodAutoscalers(as.namespace).Get(name, meta_v1.GetOptions{})
+	autoscaleinstance, err := as.autoscale.Get(name, meta_v1.GetOptions{})
 	if err != nil {
 		logs.Error("Get auto scale of %s failed. Err:%+v", name, err)
 		return nil, err
@@ -24,7 +74,7 @@ func (as *autoscales) Get(name string) (*model.AutoScale, error) {
 	return types.FromK8sAutoScale(autoscaleinstance), nil
 }
 
-func NewAutoScales(namespace string, autoscale v1.AutoscalingV1Interface) *autoscales {
+func NewAutoScales(namespace string, autoscale v1.HorizontalPodAutoscalerInterface) *autoscales {
 	return &autoscales{
 		namespace: namespace,
 		autoscale: autoscale,

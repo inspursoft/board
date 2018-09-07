@@ -1013,5 +1013,75 @@ func GenerateServiceConfig(service *v1.Service) *v1.Service {
 }
 
 func FromK8sAutoScale(autoscale *autoscalev1.HorizontalPodAutoscaler) *model.AutoScale {
-	return &model.AutoScale{}
+	var lastTime *time.Time
+	if autoscale.Status.LastScaleTime != nil {
+		lastTime = &autoscale.Status.LastScaleTime.Time
+	}
+	return &model.AutoScale{
+		ObjectMeta: FromK8sObjectMeta(autoscale.ObjectMeta),
+		Spec: model.HorizontalPodAutoscalerSpec{
+			ScaleTargetRef: model.CrossVersionObjectReference{
+				Kind:       autoscale.Spec.ScaleTargetRef.Kind,
+				Name:       autoscale.Spec.ScaleTargetRef.Name,
+				APIVersion: autoscale.Spec.ScaleTargetRef.APIVersion,
+			},
+			MinReplicas:                    autoscale.Spec.MinReplicas,
+			MaxReplicas:                    autoscale.Spec.MaxReplicas,
+			TargetCPUUtilizationPercentage: autoscale.Spec.TargetCPUUtilizationPercentage,
+		},
+		Status: model.HorizontalPodAutoscalerStatus{
+			ObservedGeneration:              autoscale.Status.ObservedGeneration,
+			LastScaleTime:                   lastTime,
+			CurrentReplicas:                 autoscale.Status.CurrentReplicas,
+			DesiredReplicas:                 autoscale.Status.DesiredReplicas,
+			CurrentCPUUtilizationPercentage: autoscale.Status.CurrentCPUUtilizationPercentage,
+		},
+	}
+}
+
+func FromK8sAutoScaleList(asList *autoscalev1.HorizontalPodAutoscalerList) *model.AutoScaleList {
+	if asList == nil {
+		return nil
+	}
+	items := make([]model.AutoScale, 0)
+	for i := range asList.Items {
+		if as := FromK8sAutoScale(&asList.Items[i]); as != nil {
+			items = append(items, *as)
+		}
+	}
+	return &model.AutoScaleList{
+		Items: items,
+	}
+}
+
+func ToK8sAutoScale(autoscale *model.AutoScale) *autoscalev1.HorizontalPodAutoscaler {
+	var lastTime *metav1.Time
+	if autoscale.Status.LastScaleTime != nil {
+		t := metav1.NewTime(*autoscale.Status.LastScaleTime)
+		lastTime = &t
+	}
+	return &autoscalev1.HorizontalPodAutoscaler{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "AutoScaling",
+			APIVersion: "v1",
+		},
+		ObjectMeta: ToK8sObjectMeta(autoscale.ObjectMeta),
+		Spec: autoscalev1.HorizontalPodAutoscalerSpec{
+			ScaleTargetRef: autoscalev1.CrossVersionObjectReference{
+				Kind:       autoscale.Spec.ScaleTargetRef.Kind,
+				Name:       autoscale.Spec.ScaleTargetRef.Name,
+				APIVersion: autoscale.Spec.ScaleTargetRef.APIVersion,
+			},
+			MinReplicas:                    autoscale.Spec.MinReplicas,
+			MaxReplicas:                    autoscale.Spec.MaxReplicas,
+			TargetCPUUtilizationPercentage: autoscale.Spec.TargetCPUUtilizationPercentage,
+		},
+		Status: autoscalev1.HorizontalPodAutoscalerStatus{
+			ObservedGeneration:              autoscale.Status.ObservedGeneration,
+			LastScaleTime:                   lastTime,
+			CurrentReplicas:                 autoscale.Status.CurrentReplicas,
+			DesiredReplicas:                 autoscale.Status.DesiredReplicas,
+			CurrentCPUUtilizationPercentage: autoscale.Status.CurrentCPUUtilizationPercentage,
+		},
+	}
 }
