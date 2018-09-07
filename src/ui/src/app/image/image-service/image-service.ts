@@ -43,18 +43,18 @@ export class ImageService {
   }
 
 
-  removeFile(formData: FormData): Promise<any> {
-    return this.http.post(`/api/v1/files/remove`, formData, {observe: "response"}).toPromise()
+  removeFile(formData: FormData): Observable<any> {
+    return this.http.post(`/api/v1/files/remove`, formData, {observe: "response"})
   }
 
-  cancelConsole(jobName: string): Promise<any> {
+  cancelConsole(jobName: string): Observable<any> {
     return this.http
       .get(`/api/v1/jenkins-job/stop`, {
         observe: "response",
         params: {
           "job_name": jobName
         }
-      }).toPromise()
+      })
   }
 
   buildImageFromTemp(imageData: BuildImageData): Promise<any> {

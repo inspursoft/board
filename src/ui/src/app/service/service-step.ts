@@ -1,21 +1,18 @@
 import { K8sService } from "./service.k8s";
-import { Injector, OnDestroy } from "@angular/core";
+import { Injector } from "@angular/core";
 import { AppInitService } from "../app.init.service";
 import { MessageService } from "../shared/message-service/message.service";
 import { ServiceStepPhase, UiServiceFactory, UIServiceStepBase } from "./service-step.component";
 import { Router } from "@angular/router";
-import { Message } from "../shared/message-service/message";
-import { BUTTON_STYLE, MESSAGE_TARGET } from "../shared/shared.const";
-import { Subscription } from "rxjs/Subscription";
 import { CsComponentBase } from "../shared/cs-components-library/cs-component-base";
+import { Message, RETURN_STATUS } from "../shared/shared.types";
 
-export abstract class ServiceStepBase extends CsComponentBase implements OnDestroy{
+export abstract class ServiceStepBase extends CsComponentBase {
   protected k8sService: K8sService;
   protected appInitService: AppInitService;
   protected messageService: MessageService;
   protected uiBaseData: UIServiceStepBase;
   protected router: Router;
-  protected confirmSubscription: Subscription;
   public isBack: boolean = false;
 
   protected constructor(protected injector: Injector) {
@@ -27,27 +24,12 @@ export abstract class ServiceStepBase extends CsComponentBase implements OnDestr
     this.uiBaseData = UiServiceFactory.getInstance(this.stepPhase);//init empty object for template
   }
 
-  ngOnDestroy(){
-    if (this.confirmSubscription) {
-      this.confirmSubscription.unsubscribe();
-    }
-  }
-
   public cancelBuildService(): void {
-    if (this.confirmSubscription) {
-      this.confirmSubscription.unsubscribe();
-    }
-    this.confirmSubscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
-      if (msg.target == MESSAGE_TARGET.CANCEL_BUILD_SERVICE) {
+    this.messageService.showYesNoDialog('SERVICE.ASK_TEXT','SERVICE.ASK_TITLE').subscribe((message: Message) => {
+      if (message.returnStatus == RETURN_STATUS.rsConfirm) {
         this.k8sService.cancelBuildService();
       }
     });
-    let msg: Message = new Message();
-    msg.title = "SERVICE.ASK_TITLE";
-    msg.buttons = BUTTON_STYLE.YES_NO;
-    msg.message = "SERVICE.ASK_TEXT";
-    msg.target = MESSAGE_TARGET.CANCEL_BUILD_SERVICE;
-    this.messageService.announceMessage(msg);
   }
 
   get stepPhase(): ServiceStepPhase {

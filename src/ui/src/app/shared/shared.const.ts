@@ -6,12 +6,16 @@ export enum MESSAGE_TARGET {
   CANCEL_BUILD_SERVICE_GUARD, FORCE_QUIT_BUILD_IMAGE, DELETE_TAG, DELETE_NODE_GROUP,
   DELETE_SERVICE_DEPLOYMENT,DELETE_USER,SIGN_IN_ERROR,SIGN_UP_ERROR,SIGN_UP_SUCCESSFUL,FORGOT_PASSWORD,RESET_PASSWORD
 }
+export const RouteSignIn = 'sign-in';
+export const RouteSignUp = 'sign-up';
+export const RouteForgotPassword = 'forgot-password';
+export const RouteForgotDashboard = 'dashboard';
 
-export const DISMISS_INLINE_ALERT_INTERVAL: number = 4 * 1000;
+export const DISMISS_ALERT_INTERVAL: number = 4 * 1000;
 export const DISMISS_GLOBAL_ALERT_INTERVAL: number = 10 * 1000;
 
 export enum MESSAGE_TYPE {
-  NONE, COMMON_ERROR = 1, INVALID_USER, INTERNAL_ERROR, SHOW_DETAIL
+  NONE, COMMON_ERROR = 1, HTTP_401, INTERNAL_ERROR, SHOW_DETAIL
 }
 
 export const ROLES: {[key: number]: string} = {

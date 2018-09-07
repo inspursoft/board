@@ -1,18 +1,13 @@
-<clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'lg'" [clrModalClosable]="false" [clrModalPreventClose]="true">
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'lg'" [clrModalClosable]="false" [clrModalPreventClose]="true">
   <div class="modal-title title-container">
     <h4 class="modal-title">{{ "IMAGE.CREATE_IMAGE_TITLE" | translate }}</h4>
     <button class="close"
             [ngClass]="{'disabled':isBuildImageWIP}"
-            (click)="isOpen = false"
+            (click)="modalOpened = false"
             [disabled]="isBuildImageWIP">X
     </button>
   </div>
   <div class="modal-body modal-body-reset-position">
-    <clr-alert class="alert-info-danger" [(clrAlertClosed)]="!isNewImageAlertOpen" [clrAlertType]="newImageAlertType">
-      <div class="alert-item">
-        <span class="alert-text">{{newImageErrMessage | translate}}{{newImageErrReason}}</span>
-      </div>
-    </clr-alert>
     <div class="modal-body-container" [ngSwitch]="imageBuildMethod">
       <div class="create-image-container">
         <div class="btn-group build-method-container">
@@ -30,7 +25,7 @@
           </button>
         </div>
         <ng-template [ngSwitchCase]="0">
-          <div class="from-temp-container" [style.height.px]="isNewImageAlertOpen?500:460">
+          <div class="from-temp-container" [style.height.px]="500">
             <div class="line-container">
               <label class="base-text">{{"IMAGE.CREATE_IMAGE_SELECT_IMAGE_TEMP" | translate}}:</label>
               <cs-dropdown class="base-margin-left"

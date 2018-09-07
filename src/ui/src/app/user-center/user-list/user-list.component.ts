@@ -6,9 +6,9 @@ import { UserService } from "../user-service/user-service";
 import { User } from "../user";
 import { editModel } from "../user-new-edit/user-new-edit.component"
 import { AppInitService } from "../../app.init.service";
-import { Message } from "../../shared/message-service/message";
 import { MessageService } from "../../shared/message-service/message.service";
-import { BUTTON_STYLE, MESSAGE_TARGET } from "../../shared/shared.const";
+import { Message, RETURN_STATUS } from "../../shared/shared.types";
+import { TranslateService } from "@ngx-translate/core";
 
 @Component({
   selector: "user-list",
@@ -33,27 +33,15 @@ export class UserList implements OnInit, OnDestroy {
   descSort = ClrDatagridSortOrder.DESC;
   oldStateInfo: ClrDatagridStateInterface;
 
-  constructor(
-    private route: ActivatedRoute,
-    private userService: UserService,
-    private appInitService: AppInitService,
-    private messageService: MessageService) {
+  constructor(private route: ActivatedRoute,
+              private userService: UserService,
+              private appInitService: AppInitService,
+              private translateService: TranslateService,
+              private messageService: MessageService) {
       this.authMode = this.appInitService.systemInfo['auth_mode'];
   }
 
   ngOnInit() {
-    this._deleteSubscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
-      if (msg.target == MESSAGE_TARGET.DELETE_USER) {
-        this.userService.deleteUser(msg.data)
-          .then(() => {
-            this.refreshData(this.oldStateInfo);
-            let msg: Message = new Message();
-            msg.message = "USER_CENTER.DELETE_USER_SUCCESS";
-            this.messageService.inlineAlertMessage(msg);
-          })
-          .catch(err => this.messageService.dispatchError(err));
-      }
-    });
     this.currentUserID = this.appInitService.currentUser["user_id"];
   }
 
@@ -74,10 +62,7 @@ export class UserList implements OnInit, OnDestroy {
             this.userListData = res["user_list"];
             this.isInLoading = false;
           })
-          .catch(err => {
-            this.messageService.dispatchError(err, '');
-            this.isInLoading = false;
-          });
+          .catch(() => this.isInLoading = false);
       });
     }
   }
@@ -96,20 +81,21 @@ export class UserList implements OnInit, OnDestroy {
           this.curUser = user;
           this.showNewUser = true;
         })
-        .catch(err => this.messageService.dispatchError(err));
     }
   }
 
   deleteUser(user: User) {
     if (user.user_deleted != 1 && user.user_id != 1 && user.user_id != this.currentUserID) {
-      let msg: Message = new Message();
-      msg.target = MESSAGE_TARGET.DELETE_USER;
-      msg.title = "USER_CENTER.DELETE_USER";
-      msg.buttons = BUTTON_STYLE.DELETION;
-      msg.data = user;
-      msg.params = [user.user_name];
-      msg.message = "USER_CENTER.CONFIRM_DELETE_USER";
-      this.messageService.announceMessage(msg);
+      this.translateService.get('USER_CENTER.CONFIRM_DELETE_USER', [user.user_name]).subscribe((res: string) => {
+        this.messageService.showDeleteDialog(res, 'USER_CENTER.DELETE_USER').subscribe((message: Message) => {
+          if (message.returnStatus == RETURN_STATUS.rsConfirm) {
+            this.userService.deleteUser(user).then(() => {
+              this.refreshData(this.oldStateInfo);
+              this.messageService.showAlert('USER_CENTER.DELETE_USER_SUCCESS');
+            })
+          }
+        })
+      });
     }
   }
 
@@ -120,19 +106,16 @@ export class UserList implements OnInit, OnDestroy {
       .then(() => {
         this.setUserSystemAdminWIP = false;
         user.user_system_admin = oldUserSystemAdmin == 1 ? 0 : 1;
-        let m: Message = new Message();
         if (user.user_system_admin === 1) {
-          m.message = "USER_CENTER.SUCCESSFUL_SET_SYS_ADMIN";
+          this.messageService.showAlert('USER_CENTER.SUCCESSFUL_SET_SYS_ADMIN');
           user.user_project_admin = 1;
         } else {
-          m.message = "USER_CENTER.SUCCESSFUL_SET_NOT_SYS_ADMIN";
+          this.messageService.showAlert('USER_CENTER.SUCCESSFUL_SET_NOT_SYS_ADMIN');
         }
-        this.messageService.inlineAlertMessage(m);
       })
-      .catch(err => {
+      .catch(() => {
         this.setUserSystemAdminWIP = false;
         ($event.srcElement as HTMLInputElement).checked = oldUserSystemAdmin == 1;
-        this.messageService.dispatchError(err);
       })
   }
 }

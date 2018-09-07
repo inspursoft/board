@@ -4,8 +4,7 @@
                 [(isOpen)]="isShowDetail"
                 (reload)="retrieve()">
   </image-detail>
-  <button class="btn btn-primary build-image"
-          (click)="createImage()">
+  <button class="btn btn-primary build-image" (click)="createImage()">
     {{ 'IMAGE.CREATE_IMAGE_BUILD_IMAGE' | translate }}
   </button>
   <clr-datagrid [clrDgLoading]="loadingWIP">
@@ -88,16 +87,17 @@
     </button>
     <button class="btn btn-primary"
             [disabled]="createImageMethod == 0"
-            (click)="isOpenNewImage = true">
+            (click)="createNewImage()">
       {{"BUTTON.CREATE"|translate}}
     </button>
   </div>
-  <create-image
-    *ngIf="isOpenNewImage"
-    [(isOpen)]="isOpenNewImage"
-    [imageBuildMethod]="createImageMethod - 1"
-    [projectName]="selectedProjectName"
-    [projectId]="selectedProjectId"
-    (onBuildCompleted)="onBuildImageCompleted($event)">
-  </create-image>
+
+  <!--<create-image-->
+    <!--*ngIf="isOpenNewImage"-->
+    <!--[(isOpen)]="isOpenNewImage"-->
+    <!--[imageBuildMethod]="createImageMethod - 1"-->
+    <!--[projectName]="selectedProjectName"-->
+    <!--[projectId]="selectedProjectId"-->
+    <!--(onBuildCompleted)="onBuildImageCompleted($event)">-->
+  <!--</create-image>-->
 </div>

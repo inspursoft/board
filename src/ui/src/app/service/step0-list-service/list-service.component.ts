@@ -1,14 +1,15 @@
-import { Component, ComponentFactoryResolver, Injector, OnDestroy, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, ComponentFactoryResolver, Injector, OnDestroy, OnInit, ViewContainerRef } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { Service } from '../service';
 import { ClrDatagridSortOrder, ClrDatagridStateInterface } from '@clr/angular';
-import { BUTTON_STYLE, GUIDE_STEP, MESSAGE_TARGET, SERVICE_STATUS } from '../../shared/shared.const';
-import { Message } from '../../shared/message-service/message';
+import { GUIDE_STEP, SERVICE_STATUS } from '../../shared/shared.const';
 import { ServiceDetailComponent } from './service-detail/service-detail.component';
 import { ServiceStepBase } from "../service-step";
 import { Observable } from "rxjs/Observable";
 import { Project } from "../../project/project";
 import { ServiceControlComponent } from "./service-control/service-control.component";
+import { TranslateService } from "@ngx-translate/core";
+import { Message, RETURN_STATUS } from "../../shared/shared.types";
 import "rxjs/add/observable/interval";
 
 enum CreateServiceMethod{None, Wizards, YamlFile, DevOps}
@@ -20,7 +21,6 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   currentUser: {[key: string]: any};
   services: Service[];
   isInLoading: boolean = false;
-  _subscription: Subscription;
   _subscriptionInterval: Subscription;
   totalRecordCount: number;
   pageIndex: number = 1;
@@ -33,58 +33,23 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   descSort = ClrDatagridSortOrder.DESC;
   oldStateInfo: ClrDatagridStateInterface;
 
-  constructor(protected injector: Injector, private viewRef: ViewContainerRef, private factory: ComponentFactoryResolver) {
+  constructor(protected injector: Injector,
+              private translateService: TranslateService,
+              private viewRef: ViewContainerRef,
+              private factory: ComponentFactoryResolver) {
     super(injector);
     this._subscriptionInterval = Observable.interval(10000).subscribe(() => this.retrieve(true, this.oldStateInfo));
     this.isActionWIP = new Map<number, boolean>();
     this.projectList = Array<Project>();
-    this._subscription = this.messageService.messageConfirmed$.subscribe((msg:Message) => {
-      if (msg.target == MESSAGE_TARGET.TOGGLE_SERVICE){
-        let service: Service = msg.data;
-        this.k8sService
-          .toggleServiceStatus(service.service_id, service.service_status == 1 ? 0 : 1)
-          .then(() => {
-            msg.message = 'SERVICE.SUCCESSFUL_TOGGLE';
-            this.messageService.inlineAlertMessage(msg);
-            this.isActionWIP.set(service.service_id, false);
-            this.retrieve(false, this.oldStateInfo);
-          })
-          .catch(err => {
-            this.isActionWIP.set(service.service_id, false);
-            this.messageService.dispatchError(err);
-          });
-      } else if (msg.target == MESSAGE_TARGET.DELETE_SERVICE){
-        let service: Service = msg.data;
-        this.k8sService
-          .deleteService(service.service_id)
-          .then(() => {
-            msg.message = 'SERVICE.SUCCESSFUL_DELETE';
-            this.messageService.inlineAlertMessage(msg);
-            this.isActionWIP.set(service.service_id, false);
-            this.retrieve(false, this.oldStateInfo);
-          })
-          .catch(err => {
-            this.isActionWIP.set(service.service_id, false);
-            this.messageService.dispatchError(err);
-          });
-      }
-    });
   }
 
   ngOnInit(): void {
     this.currentUser = this.appInitService.currentUser;
-    this.k8sService.getProjects()
-      .then((res: Array<Project>) => {
-        this.projectList = res;
-      })
-      .catch(err => this.messageService.dispatchError(err));
+    this.k8sService.getProjects().then((res: Array<Project>) => this.projectList = res);
   }
 
   ngOnDestroy(): void {
     this._subscriptionInterval.unsubscribe();
-    if (this._subscription) {
-      this._subscription.unsubscribe();
-    }
   }
 
   isServiceInStoppedStatus(s: Service): boolean {
@@ -125,10 +90,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
             this.services = paginatedServices["service_status_list"];
             this.isInLoading = false;
           })
-          .catch(err => {
-            this.messageService.dispatchError(err);
-            this.isInLoading = false;
-          });
+          .catch(() => this.isInLoading = false);
       });
     }
   }
@@ -155,44 +117,49 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   }
 
   toggleServicePublic(service: Service, $event:MouseEvent): void {
-    let toggleMessage = new Message();
     let oldServicePublic = service.service_public;
     this.k8sService
       .toggleServicePublicity(service.service_id, service.service_public == 1 ? 0 : 1)
       .then(() => {
         service.service_public = oldServicePublic == 1 ? 0 : 1;
-        toggleMessage.message = 'SERVICE.SUCCESSFUL_TOGGLE';
-        this.messageService.inlineAlertMessage(toggleMessage);
+        this.messageService.showAlert('SERVICE.SUCCESSFUL_TOGGLE')
       })
-      .catch(err => {
-        ($event.srcElement as HTMLInputElement).checked = oldServicePublic == 1;
-        this.messageService.dispatchError(err);
-      });
+      .catch(() => ($event.srcElement as HTMLInputElement).checked = oldServicePublic == 1);
   }
 
   toggleService(service: Service){
     if (service.service_is_member == 1){
-      let announceMessage = new Message();
-      announceMessage.title = "SERVICE.TOGGLE_SERVICE";
-      announceMessage.message = "SERVICE.CONFIRM_TO_TOGGLE_SERVICE";
-      announceMessage.params = [service.service_name];
-      announceMessage.target = MESSAGE_TARGET.TOGGLE_SERVICE;
-      announceMessage.buttons = BUTTON_STYLE.CONFIRMATION;
-      announceMessage.data = service;
-      this.messageService.announceMessage(announceMessage);
+      this.translateService.get('SERVICE.CONFIRM_TO_TOGGLE_SERVICE', [service.service_name]).subscribe((msg: string) => {
+        this.messageService.showConfirmationDialog(msg, 'SERVICE.TOGGLE_SERVICE').subscribe((message: Message) => {
+          if (message.returnStatus == RETURN_STATUS.rsConfirm) {
+            this.k8sService.toggleServiceStatus(service.service_id, service.service_status == 1 ? 0 : 1)
+              .then(() => {
+                this.messageService.showAlert('SERVICE.SUCCESSFUL_TOGGLE');
+                this.isActionWIP.set(service.service_id, false);
+                this.retrieve(false, this.oldStateInfo);
+              })
+              .catch(() => this.isActionWIP.set(service.service_id, false));
+          }
+        });
+      });
     }
   }
 
   deleteService(service:Service){
     if (!this.isDeleteDisable(service)){
-      let announceMessage = new Message();
-      announceMessage.title = "SERVICE.DELETE_SERVICE";
-      announceMessage.message = "SERVICE.CONFIRM_TO_DELETE_SERVICE";
-      announceMessage.params = [service.service_name];
-      announceMessage.target = MESSAGE_TARGET.DELETE_SERVICE;
-      announceMessage.buttons = BUTTON_STYLE.DELETION;
-      announceMessage.data = service;
-      this.messageService.announceMessage(announceMessage);
+      this.translateService.get('SERVICE.SERVICE.CONFIRM_TO_DELETE_SERVICE', [service.service_name]).subscribe((msg: string) => {
+        this.messageService.showDeleteDialog(msg, 'SERVICE.DELETE_SERVICE').subscribe((message: Message) => {
+          if (message.returnStatus == RETURN_STATUS.rsConfirm) {
+            this.k8sService.deleteService(service.service_id)
+              .then(() => {
+                this.messageService.showAlert('SERVICE.SUCCESSFUL_DELETE');
+                this.isActionWIP.set(service.service_id, false);
+                this.retrieve(false, this.oldStateInfo);
+              })
+              .catch(() => this.isActionWIP.set(service.service_id, false));
+          }
+        });
+      });
     }
   }
 

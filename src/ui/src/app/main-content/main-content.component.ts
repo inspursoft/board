@@ -5,8 +5,8 @@ import { GUIDE_STEP, MAIN_MENU_DATA, RouteAudit, RouteNodes, RouteUserCenters } 
 import { ICsMenuItemData } from "../shared/shared.types";
 
 @Component({
-  selector: 'main-content',
-  templateUrl: 'main-content.component.html'
+  templateUrl: './main-content.component.html',
+  styleUrls:['./main-content.component.css']
 })  
 export class MainContentComponent {
   @ViewChild("frameDashboard") frame:ElementRef;

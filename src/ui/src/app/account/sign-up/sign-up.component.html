@@ -1,7 +1,5 @@
-<clr-main-container>
-  <header-content [isSignIn]="false" [hasSignedIn]="false"></header-content>
+<header-content [isSignIn]="false" [hasSignedIn]="false"></header-content>
   <div class="content-container background">
-    <confirmation-dialog></confirmation-dialog>
     <div class="input-container">
       <cs-input [inputIsRequired]="true"
                 [inputLabel]="'ACCOUNT.USERNAME' | translate "
@@ -58,15 +56,15 @@
       </cs-input>
       <div class="btn-container">
         <button type="button"
+                class="btn btn-default"
+                (click)="goBack()">
+          {{ 'ACCOUNT.BACK' | translate }}
+        </button>
+        <button type="button"
                 class="btn btn-primary"
                 (click)="signUp()"
                 [disabled]="isSignUpWIP">
           {{'ACCOUNT.SIGN_UP' | translate}}
-        </button>
-        <button type="button"
-                class="btn btn-default"
-                (click)="goBack()">
-          {{ 'ACCOUNT.BACK' | translate }}
         </button>
       </div>
     </div>
@@ -76,4 +74,3 @@
      </section>
     </nav>
   </div>
-</clr-main-container>

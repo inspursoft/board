@@ -5,8 +5,6 @@ import { ClrDatagridSortOrder, ClrDatagridStateInterface } from "@clr/angular";
 import { OperationAuditService } from "../audit-service";
 import { HttpErrorResponse } from "@angular/common/http";
 import { User } from "../../user-center/user";
-import { Message } from "../../shared/message-service/message";
-import { MESSAGE_TYPE } from "../../shared/shared.const";
 
 @Component({
   selector: 'list-audit',
@@ -88,10 +86,7 @@ export class ListAuditComponent implements OnInit {
       this.userNames.push(user);
       this.userNames = this.userNames.concat(res);
       this.isInLoading = false;
-    }, (err: HttpErrorResponse) => {
-      this.messageService.dispatchError(err);
-      this.isInLoading = false;
-    })
+    }, (err: HttpErrorResponse) => this.isInLoading = false)
   }
 
   changeObjectQuery(event: { key: string, title: string }) {
@@ -131,16 +126,10 @@ export class ListAuditComponent implements OnInit {
           this.totalRecordCount = paginatedProjects.pagination.total_count;
           this.auditsListData = paginatedProjects['operation_list'];
           this.isInLoading = false;
-        }, (err: HttpErrorResponse) => {
-          this.messageService.dispatchError(err);
-          this.isInLoading = false;
-        })
+        }, () => this.isInLoading = false)
       });
     } else {
-      let msg = new Message();
-      msg.type = MESSAGE_TYPE.COMMON_ERROR;
-      msg.message = "AUDIT.AUDIT_QUERY_DATE_ERROR";
-      this.messageService.inlineAlertMessage(msg)
+      this.messageService.showAlert('AUDIT.AUDIT_QUERY_DATE_ERROR', {alertType: 'alert-warning'})
     }
   }
 

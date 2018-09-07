@@ -1,9 +1,5 @@
 import { Directive, Input } from '@angular/core';
-import {
-  NG_ASYNC_VALIDATORS, AsyncValidator,
-  Validators, ValidatorFn,
-  AbstractControl
-} from '@angular/forms';
+import { AbstractControl, AsyncValidator, NG_ASYNC_VALIDATORS, ValidatorFn, Validators } from '@angular/forms';
 
 import { Observable } from 'rxjs/Observable';
 
@@ -45,10 +41,10 @@ export class CheckItemExistingDirective implements AsyncValidator {
     })
     .map(()=>this.valFn)
     .catch(err=>{
+      this.messageService.cleanNotification();
       if(err && err.status === 409) {
         return Observable.of({ 'checkItemExisting': { value } });
       }
-      this.messageService.dispatchError(err, 'ERROR.INVALID_USER');
     });
   }
   
@@ -61,10 +57,10 @@ export class CheckItemExistingDirective implements AsyncValidator {
     })
     .map(()=>this.valFn)
     .catch(err=>{
+      this.messageService.cleanNotification();
       if(err && err.status === 409) {
         return Observable.of({ 'checkItemExisting': { projectName } });
       }
-      this.messageService.dispatchError(err, 'ERROR.INVALID_USER');
     });
   } 
 

@@ -38,13 +38,13 @@
     <span class="base-margin-left">{{"SERVICE.STEP_2_ADD_NEW_IMAGE_DES"|translate}}</span>
   </div>
 </div>
-<create-image
-  *ngIf="isOpenNewImage"
-  [(isOpen)]="isOpenNewImage"
-  [projectName]="projectName"
-  [projectId]="projectId"
-  (onBuildCompleted)="onBuildImageCompleted($event)">
-</create-image>
+<!--<create-image-->
+  <!--*ngIf="isOpenNewImage"-->
+  <!--[(isOpen)]="isOpenNewImage"-->
+  <!--[projectName]="projectName"-->
+  <!--[projectId]="projectId"-->
+  <!--(onBuildCompleted)="onBuildImageCompleted($event)">-->
+<!--</create-image>-->
 <button class="btn btn-default" (click)="cancelBuildService()">
   {{"BUTTON.CANCEL"|translate}}
 </button>

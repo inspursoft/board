@@ -1,7 +1,8 @@
-<button class="btn btn-primary"
-        (click)="newGroupComponent.showModal()">
-  {{'NODE.NODE_GROUP_CREATE' | translate}}
-</button>
+<div class="button-container">
+  <button class="btn btn-primary" (click)="showCreateNewGroup()">
+    {{'NODE.NODE_GROUP_CREATE' | translate}}
+  </button>
+</div>
 <clr-datagrid [clrDgLoading]="isInLoadWip">
   <clr-dg-column>{{ 'NODE.NODE_GROUP_NAME' | translate }}</clr-dg-column>
   <clr-dg-column>{{ 'NODE.NODE_GROUP_COMMENT' | translate }}</clr-dg-column>
@@ -20,4 +21,3 @@
   </clr-dg-row>
   <clr-dg-footer>{{nodeGroupList ? nodeGroupList.length : 0}} {{ 'DATAGRID.ITEMS' | translate }}</clr-dg-footer>
 </clr-datagrid>
-<node-create-group (onAfterCommit)="refreshList()"></node-create-group>

@@ -170,7 +170,8 @@ export class CsInputComponent implements OnInit {
   }
 
   public get valid(): boolean {
-    return this.inputControl.valid && this.isAlreadyChecked && this.inputField.status == CsInputStatus.isView;
+    return this.inputIsRequired ? this.inputControl.valid && this.isAlreadyChecked && this.inputField.status == CsInputStatus.isView :
+      this.inputControl.valid && this.inputField.status == CsInputStatus.isView;
   }
 
   getValidatorMessage(errors: ValidationErrors): string {
@@ -262,7 +263,7 @@ export class CsInputComponent implements OnInit {
   }
 
   public checkInputSelf() {
-    if (this.inputControl.enabled) {
+    if (this.inputControl.enabled && (this.inputControl.touched || this.inputIsRequired)) {
       this.isInValidatorWIP = true;
       this.isAlreadyChecked = true;
       this.inputControl.markAsTouched({onlySelf: true});

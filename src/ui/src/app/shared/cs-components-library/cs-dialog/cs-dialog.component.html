@@ -1,22 +1,22 @@
 <clr-modal [(clrModalOpen)]="opened" [clrModalClosable]="false">
-  <h3 class="modal-title">{{ confirmationMessage.title | translate }}</h3>
+  <h3 class="modal-title">{{curMessage.title | translate }}</h3>
   <div class="modal-body">
-    <p>{{ confirmationMessage.message | translate }}</p>
+    <p>{{ curMessage.message | translate }}</p>
   </div>
-  <div class="modal-footer" [ngSwitch]="confirmationMessage.buttons">
-    <ng-template [ngSwitchCase]="1">
-      <button type="button" class="btn btn-outline" (click)="opened = false">{{ 'BUTTON.CANCEL' | translate }}</button>
+  <div class="modal-footer" [ngSwitch]="curMessage.buttonStyle">
+    <ng-template [ngSwitchCase]="0">
+      <button type="button" class="btn btn-outline" (click)="cancel()">{{ 'BUTTON.CANCEL' | translate }}</button>
       <button type="button" class="btn btn-primary" (click)="confirm()">{{ 'BUTTON.CONFIRM' | translate }}</button>
     </ng-template>
-    <ng-template [ngSwitchCase]="2">
-      <button type="button" class="btn btn-outline" (click)="opened = false">{{ 'BUTTON.CANCEL' | translate }}</button>
+    <ng-template [ngSwitchCase]="1">
+      <button type="button" class="btn btn-outline" (click)="cancel()">{{ 'BUTTON.CANCEL' | translate }}</button>
       <button type="button" class="btn btn-danger" (click)="confirm()">{{ 'BUTTON.DELETE' | translate }}</button>
     </ng-template>
-    <ng-template [ngSwitchCase]="3">
+    <ng-template [ngSwitchCase]="2">
       <button type="button" class="btn btn-outline" (click)="cancel()">{{ 'BUTTON.NO' | translate }}</button>
       <button type="button" class="btn btn-primary" (click)="confirm()">{{ 'BUTTON.YES' | translate }}</button>
     </ng-template>
-    <ng-template [ngSwitchCase]="4">
+    <ng-template [ngSwitchCase]="3">
       <button type="button" class="btn btn-primary" (click)="confirm()">{{ 'BUTTON.CONFIRM' | translate }}</button>
     </ng-template>
   </div>

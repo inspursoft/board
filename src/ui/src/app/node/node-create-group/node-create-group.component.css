@@ -1,3 +1,11 @@
 div.node-create-group-body{
-  min-height: 150px
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  margin-right: 50px;
 }
+
+div.node-create-group-body cs-input{
+  margin-top: 10px;
+}
+

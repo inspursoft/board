@@ -166,7 +166,7 @@ export class EditContainerComponent extends ServiceStepBase implements OnInit, A
     if (this.verifyInputValid()) {
       this.k8sService.setServiceConfig(this.uiData.uiToServer()).then(() =>
         this.k8sService.stepSource.next({index: 4, isBack: false})
-      ).catch(err => this.messageService.dispatchError(err));
+      )
     }
   }
 }

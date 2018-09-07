@@ -15,19 +15,16 @@ export const LANG_ZH_CN = {
     "ITEMS": "条记录"
   },
   "GLOBAL_ALERT": {
+    "TITLE":"标题",
+    "HINT":"提示",
+    "ASK":"询问",
+    "DELETE":"删除",
     "SIGN_IN": "登录",
     "ERROR_DETAIL":"错误详情"
   },
   "ERROR": {
-    "UNKNOWN_ERROR": "未知错误。",
-    "INTERNAL_ERROR": "系统内部错误。",
-    "INVALID_USER": "当前用户令牌过期，请重新登录。",
-    "NOT_FOUND": "资源未找到。",
-    "INSUFFICIENT_PRIVILEGES": "权限不足，无法操作。",
-    "BAD_REQUEST": "无效的用户请求。",
     "METHOD_NOT_ALLOWED": "不允许调用的方法。",
     "CONFLICT_INPUT": "存在一个与当前有冲突的资源。",
-    "PECONDITION_FAILED": "请求内容不满足应提供的前置条件。",
     "INPUT_ONLY_NUMBER":"只能输入数字",
     "INPUT_REQUIRED":"字段为必填项",
     "INPUT_NOT_REPEAT":"字段不能重复",
@@ -35,7 +32,15 @@ export const LANG_ZH_CN = {
     "INPUT_MIN_LENGTH":"最小长度",
     "INPUT_PATTERN":"输入不符合规则",
     "INPUT_MAX_VALUE":"最大值",
-    "INPUT_MIN_VALUE":"最小值"
+    "INPUT_MIN_VALUE":"最小值",
+    "HTTP_504":"网关超时:504",
+    "HTTP_500":"内部错误:500",
+    "HTTP_400":"错误请求:400",
+    "HTTP_401":"token已过期,请重新登录:401",
+    "HTTP_403":"您没有足够的权限进行该操作:403",
+    "HTTP_404":"资源未找到:404",
+    "HTTP_412": "请求内容不满足应提供的前置条件:412",
+    "HTTP_UNK":"未知错误"
   },
   "CS_DROPDOWN":{
     "NO_ITEMS": "没有可选项"
@@ -72,6 +77,7 @@ export const LANG_ZH_CN = {
     "PASSWORD_FORMAT": "密码长度至少为8且需包含至少一个大写字符，一个小写字符和一个数字。",
     "ERROR": "错误",
     "INCORRECT_USERNAME_OR_PASSWORD": "用户名或密码错误。",
+    "SUCCESS_TO_SIGN_IN":"用户登录成功",
     "FAILED_TO_SIGN_IN": "登录失败:",
     "FAILED_TO_SIGN_UP": "注册失败:",
     "SUCCESS_TO_SIGN_UP": "注册用户成功。",
@@ -168,7 +174,6 @@ export const LANG_ZH_CN = {
     "PROJECT_NAME_ALREADY_EXISTS": "项目名称已存在。",
     "PROJECT_NAME_IS_ILLEGAL": "项目名称非法。",
     "GUIDE_CREATE_PROJECT":"创建属于您的新项目。",
-    "FAILED_LOAD_MEMBERS":"Failed to load available members."
   },
   "USER_CENTER": {
     "LIST_COL_USERNAME":"用户名",
@@ -263,6 +268,7 @@ export const LANG_ZH_CN = {
     "CREATE_IMAGE_IMAGE_SELECTED":"已经选择了该镜像。",
     "CREATE_IMAGE_CANCEL_WAIT":"取消等待",
     "CREATE_IMAGE_REMOVE_FILE_FAILED":"删除文件失败。",
+    "CREATE_IMAGE_REMOVE_FILE_SUCCESS":"删除文件成功。",
     "CREATE_IMAGE_SELECT_DOCKER_FILE":"选择创建镜像使用的docker-file文件",
     "CREATE_IMAGE_SELECTED_FILE_INFO":"选择docker-file文件的基本信息",
     "CREATE_IMAGE_FILE_NAME":"文件名",
@@ -370,6 +376,7 @@ export const LANG_ZH_CN = {
     "STEP_6_DELETE_MSG":"你确定要删除部署服务么？",
     "STEP_6_DEPLOYING":"准备部署...",
     "STEP_6_DEPLOY_SUCCESS":"服务部署成功，启动中...",
+    "STEP_6_DEPLOY_FAILED":"服务部署失败。",
     "STATUS_PREPARING": "创建中",
     "STATUS_RUNNING": "运行中",
     "STATUS_STOPPED": "已停止",
@@ -418,12 +425,14 @@ export const LANG_ZH_CN = {
     "GUIDE_CREATE_SERVICE":"请创建属于您的新服务",
     "SERVICE_YAML_SELECT_PROJECT":"选择项目",
     "SERVICE_YAML_UPLOAD":"上传",
+    "SERVICE_YAML_CREATE_FAILED":"创建服务失败。",
     "SERVICE_YAML_SELECT_DEPLOYMENT_YAML":"选择部署Yaml文件",
     "SERVICE_YAML_SELECT_SERVICE_YAML":"选择服务的Yaml文件",
     "SERVICE_YAML_NER_SERVICE_NAME":"新建服务名称",
     "SERVICE_YAML_INVALID_FILE":"无效的文件类型",
     "SERVICE_YAML_VALID_FILE":"文件合法，可以上传",
-    "SERVICE_YAML_UPLOAD_SUCCESS":"上传成功!目前服务处于'准备'状态，点击'创建'，运行该服务"
+    "SERVICE_YAML_UPLOAD_SUCCESS":"上传成功!目前服务处于'准备'状态，点击'创建'，运行该服务",
+    "SERVICE_YAML_UPLOAD_FAILED":"上传失败。"
   },
   "AUDIT":{
     "ALL":"全部",

@@ -1,3 +1,9 @@
+:host{
+  flex-basis: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 div.input-container {
   width: 500px;
   display: flex;

@@ -1,7 +1,6 @@
 import { Component, Injector, OnInit } from '@angular/core';
 import { ImageIndex, PHASE_SELECT_IMAGES, ServiceStepPhase, UIServiceStep2 } from '../service-step.component';
 import { Image, ImageDetail } from "../../image/image";
-import { Message } from "../../shared/message-service/message";
 import { ServiceStepBase } from "../service-step";
 
 @Component({
@@ -36,13 +35,11 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
       } else {
         this.addSelectImage();
       }
-    }).catch(err => this.messageService.dispatchError(err));
-    this.k8sService.getImages("", 0, 0)
-      .then(res => {
-        this.imageSourceList = res;
-        this.unshiftCustomerCreateImage();
-      })
-      .catch(err => this.messageService.dispatchError(err));
+    });
+    this.k8sService.getImages("", 0, 0).then(res => {
+      this.imageSourceList = res;
+      this.unshiftCustomerCreateImage();
+    })
   }
 
   get stepPhase(): ServiceStepPhase {
@@ -82,7 +79,7 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
           this.setImageDetailList(value.image_name);
         }
       });
-    }).catch(err => this.messageService.dispatchError(err));
+    })
   }
 
   unshiftCustomerCreateImage() {
@@ -112,14 +109,12 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
       } else {
         this.imageTagNotReadyList.set(imageName, true);
       }
-    }).catch(err => this.messageService.dispatchError(err));
+    })
   }
 
   canChangeSelectImage(image: Image) {
     if (this.imageSelectList.find(value => value.image_name == image.image_name)) {
-      let m: Message = new Message();
-      m.message = "IMAGE.CREATE_IMAGE_EXIST";
-      this.messageService.inlineAlertMessage(m);
+      this.messageService.showAlert('IMAGE.CREATE_IMAGE_EXIST', {alertType: "alert-warning"});
       return false;
     }
     return true;
@@ -170,6 +165,6 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
     });
     this.k8sService.setServiceConfig(this.uiData.uiToServer()).then(() =>
       this.k8sService.stepSource.next({index: 3, isBack: false})
-    ).catch(err => this.messageService.dispatchError(err));
+    )
   }
 }

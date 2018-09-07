@@ -17,6 +17,14 @@ button.signpost-content-header-btn-close:hover {
   color: deepskyblue !important;
 }
 
+button.btn {
+  text-transform: none;
+}
+
+div.modal-footer{
+  align-items: center;
+}
+
 /*clr-vertical-nav.clr-vertical-nav button.nav-trigger{*/
   /*background-color: #4a5063;*/
   /*color: white;*/

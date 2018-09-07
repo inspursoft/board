@@ -1,13 +1,6 @@
 <clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'md'">
   <fieldset class=" modal-body fieldSet-default">
     <legend class="legend-default">{{"SERVICE.VOLUME_TITLE" | translate}}:</legend>
-    <clr-alert (clrAlertClosedChange)="isAlertOpen = false"
-               [clrAlertClosed]="!isAlertOpen"
-               [clrAlertType]="'alert-danger'">
-      <div class="alert-item">
-        <span class="alert-text">{{volumeErrMsg | translate}}</span>
-      </div>
-    </clr-alert>
     <div class="vol-configure-container">
       <cs-input [inputLabel]="'SERVICE.VOLUME_TARGET_STORAGE'| translate"
                 [simpleFiled]="volumeDataOrigin.out_medium"

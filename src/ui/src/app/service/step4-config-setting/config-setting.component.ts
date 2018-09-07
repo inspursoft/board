@@ -79,11 +79,13 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
   checkServiceName(control: HTMLInputElement): Promise<ValidationErrors | null> {
     return this.k8sService.checkServiceExist(this.uiData.projectName, control.value)
       .then(() => null)
-      .catch(err => {
-        if (err && err instanceof HttpErrorResponse && (err as HttpErrorResponse).status == 409) {
+      .catch((err:HttpErrorResponse) => {
+        if (err.status == 409) {
+          this.messageService.cleanNotification();
           return {serviceExist: "SERVICE.STEP_4_SERVICE_NAME_EXIST"}
+        } else if (err.status == 404) {
+          this.messageService.cleanNotification();
         }
-        this.messageService.dispatchError(err);
       });
   }
 
@@ -150,8 +152,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
   forward(): void {
     if (this.verifyInputValid()) {
       this.k8sService.setServiceConfig(this.uiData.uiToServer())
-        .then(() => this.k8sService.stepSource.next({index: 6, isBack: false}))
-        .catch((err: HttpErrorResponse) => this.messageService.dispatchError(err, err.error.message))
+        .then(() => this.k8sService.stepSource.next({index: 6, isBack: false}));
     }
   }
 

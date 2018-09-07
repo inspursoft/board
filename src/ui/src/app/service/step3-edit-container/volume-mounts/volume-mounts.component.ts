@@ -22,8 +22,6 @@ export class VolumeMountsComponent extends CsComponentBase{
   patternName: RegExp = /^[a-z0-9A-Z_]+$/;
   patternMountPath: RegExp = /^[a-z0-9A-Z_/]+$/;
   patternPath: RegExp = /^[a-z0-9A-Z_/.:]+$/;
-  isAlertOpen: boolean = false;
-  volumeErrMsg: string = "";
   @Input() volumeData:VolumeOutPut;
 
   @Input()

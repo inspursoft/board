@@ -11,8 +11,7 @@
 <div class="row">
   <div class="col-xs-12">
     <clr-datagrid (clrDgRefresh)="retrieve($event)" [clrDgLoading]="isInLoading">
-      <clr-dg-column [clrDgField]="'NAME'"
-                     [clrDgSortOrder]="descSort">
+      <clr-dg-column [clrDgField]="'NAME'" [clrDgSortOrder]="descSort">
         <clr-dg-filter [hidden]="true"></clr-dg-filter>
         {{ 'PROJECT.PROJECT_NAME' | translate }}
       </clr-dg-column>

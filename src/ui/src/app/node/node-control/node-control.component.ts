@@ -1,10 +1,8 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { INode, INodeGroup, NodeService } from "../node.service";
-import { MessageService } from "../../shared/message-service/message.service";
 import "rxjs/add/operator/zip"
 import "rxjs/add/operator/do"
 import "rxjs/add/operator/catch"
-import { HttpErrorResponse } from "@angular/common/http";
 
 @Component({
   selector: 'node-control',
@@ -21,7 +19,6 @@ export class NodeControlComponent implements OnInit {
   isActionWip: boolean = false;
 
   constructor(private nodeService: NodeService,
-              private messageService: MessageService,
               private changeDetectorRef: ChangeDetectorRef) {
     this.nodeGroupList = Array<INodeGroup>();
     this.nodeGroupListSelect = Array<string>();
@@ -50,17 +47,15 @@ export class NodeControlComponent implements OnInit {
       .do((res: Array<INodeGroup>) => this.nodeGroupList = res);
     let obs2 = this.nodeService.getNodeGroupsOfOneNode(this.nodeCurrent.node_name)
       .do((res: Array<string>) => this.nodeGroupListSelect = res);
-    obs1.zip(obs2)
-      .subscribe(() => {
+    obs1.zip(obs2).subscribe(
+      () => {
         this.removeAlreadySelected();
         this.isActionWip = false;
         this.selectedDelNodeGroup = "";
         this.selectedAddNodeGroup = "";
         this.changeDetectorRef.reattach();
-      }, (err) => {
-        this.nodeControlOpened = false;
-        this.messageService.dispatchError(err);
-      });
+      },
+      () => this.nodeControlOpened = false);
   }
 
   openNodeControlModal(node: INode): void {
@@ -75,13 +70,9 @@ export class NodeControlComponent implements OnInit {
       this.selectedAddNodeGroup != '' &&
       this.nodeGroupListSelect.indexOf(this.selectedAddNodeGroup) < 0) {
       this.isActionWip = true;
-      this.nodeService.addNodeToNodeGroup(this.nodeCurrent.node_name, this.selectedAddNodeGroup)
-        .subscribe(
-          () => this.refreshData(),
-          (error: HttpErrorResponse) => {
-            this.nodeControlOpened = false;
-            this.messageService.dispatchError(error);
-          });
+      this.nodeService.addNodeToNodeGroup(this.nodeCurrent.node_name, this.selectedAddNodeGroup).subscribe(
+        () => this.refreshData(),
+        () => this.nodeControlOpened = false);
     }
   }
 

@@ -6,8 +6,7 @@ import { Component, Input, Output, EventEmitter } from "@angular/core"
 import { AppInitService } from "../../app.init.service";
 import { MessageService } from "../message-service/message.service";
 import { UserService } from "../../user-center/user-service/user-service";
-import { Message } from "../message-service/message";
-import { CsComponentBase } from "../cs-components-library/cs-component-base";
+import { CsModalChildBase } from "../cs-modal-base/cs-modal-child-base";
 
 @Component({
   selector: "change-password",
@@ -15,10 +14,8 @@ import { CsComponentBase } from "../cs-components-library/cs-component-base";
   templateUrl: "./change-password.component.html",
   providers: [UserService]
 })
-export class ChangePasswordComponent extends CsComponentBase{
+export class ChangePasswordComponent extends CsModalChildBase{
   _isOpen: boolean = false;
-  isAlertClose: boolean = true;
-  errMessage: string;
   curPassword: string = "";
   newPassword: string = "";
   newPasswordConfirm: string = "";
@@ -48,29 +45,22 @@ export class ChangePasswordComponent extends CsComponentBase{
         this.isWorkWip = true;
         this.userService.changeUserPassword(curUser["user_id"], this.curPassword, this.newPassword)
           .then(() => {
-            let m: Message = new Message();
-            m.message = "HEAD_NAV.CHANGE_PASSWORD_SUCCESS";
-            this.messageService.inlineAlertMessage(m);
-            this.isWorkWip = false;
             this.isOpen = false;
+            this.messageService.showAlert('HEAD_NAV.CHANGE_PASSWORD_SUCCESS')
           })
           .catch(err => {
             this.isWorkWip = false;
             if (err && err["status"] && err["status"] == 403) {
-              this.errMessage = "HEAD_NAV.OLD_PASSWORD_WRONG";
-              this.isAlertClose = false;
+              this.messageService.showAlert('HEAD_NAV.OLD_PASSWORD_WRONG',{alertType:'alert-warning',view: this.alertView});
             } else if (err && err["status"] && err["status"] == 401) {
-              this.errMessage = "ERROR.INVALID_USER";
-              this.isAlertClose = false;
+              this.messageService.showAlert('ERROR.HTTP_401',{alertType:'alert-warning',view: this.alertView});
             }
             else {
               this.isOpen = false;
-              this.messageService.dispatchError(err);
             }
           })
       } else {
-        this.errMessage = "ERROR.INVALID_USER";
-        this.isAlertClose = false;
+        this.messageService.showAlert('ERROR.HTTP_401',{alertType:'alert-warning',view: this.alertView});
       }
     }
   }

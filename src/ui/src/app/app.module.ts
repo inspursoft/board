@@ -1,12 +1,12 @@
 import { NgModule, APP_INITIALIZER } from '@angular/core';
-import { AccountModule } from './account/account.module';
-import { MainContentModule } from './main-content/main-content.module';
 import { FeatureModule } from './common/feature.module';
 import { AppComponent } from './app.component';
 import { AppInitService, AppTokenService } from './app.init.service';
 import { ROUTING, SystemInfoResolve } from './app.routing';
-import { HTTP_INTERCEPTORS, HttpClientModule } from "@angular/common/http";
+import { HTTP_INTERCEPTORS } from "@angular/common/http";
 import { HttpClientInterceptor } from "./shared/http-interceptor/http-client-interceptor";
+import { SharedModule } from "./shared/shared.module";
+import { MessageService } from "./shared/message-service/message.service";
 
 export function appInitServiceFactory(appInitService: AppInitService) {
   return () => (appInitService);
@@ -14,10 +14,8 @@ export function appInitServiceFactory(appInitService: AppInitService) {
 
 @NgModule({
   imports: [
-    AccountModule,
-    MainContentModule,
     FeatureModule,
-    HttpClientModule,
+    SharedModule,
     ROUTING
   ],
   declarations: [
@@ -35,7 +33,7 @@ export function appInitServiceFactory(appInitService: AppInitService) {
     {
       provide: HTTP_INTERCEPTORS,
       useClass: HttpClientInterceptor,
-      deps: [AppTokenService],
+      deps: [AppTokenService,MessageService],
       multi: true
     },
     SystemInfoResolve

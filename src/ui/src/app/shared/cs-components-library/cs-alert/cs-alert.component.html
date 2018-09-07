@@ -1,0 +1,14 @@
+<div class="alert-container" [@open]="animation">
+  <clr-alert [clrAlertType]="curMessage.alertType"
+             [clrAlertClosed]="!isOpen"
+             (clrAlertClosedChange)="isOpen = false">
+    <div class="alert-item" >
+      <span class="alert-text">
+        {{ curMessage.message | translate }}
+      </span>
+    </div>
+  </clr-alert>
+</div>
+
+
+

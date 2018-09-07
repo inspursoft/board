@@ -4,6 +4,7 @@ import { AppInitService } from '../app.init.service';
 import { Account } from './account';
 import { CookieService } from "ngx-cookie";
 import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from "../shared/shared.const";
+import { Observable } from "rxjs/Observable";
 
 export const BASE_URL = '/api/v1';
 
@@ -26,9 +27,8 @@ export class AccountService {
       .catch(err => Promise.reject(err));
   }
 
-  signUp(account: Account): Promise<any> {
-    return this.http
-      .post(
+  signUp(account: Account): Observable<any> {
+    return this.http.post(
         BASE_URL + '/sign-up',
         {
           user_name: account.username,
@@ -39,9 +39,6 @@ export class AccountService {
         },
         {headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE)}
       )
-      .toPromise()
-      .then(res => res)
-      .catch(err => Promise.reject(err));
   }
 
   signOut(): Promise<any> {
@@ -60,12 +57,12 @@ export class AccountService {
       .catch(err => Promise.reject(err));
   }
 
-  postEmail(credential: string): Promise<any> {
+  postEmail(credential: string): Observable<any> {
     return this.http.post(BASE_URL + `/forgot-password?credential=${credential}`, null,
       {
         headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
         observe: "response"
-      }).toPromise()
+      })
   }
 
   resetPassword(password, resetUuid): Promise<any> {

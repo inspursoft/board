@@ -34,10 +34,10 @@ export class CsInputCheckExistingDirective {
       }
     }).map(() => Validators.nullValidator)
       .catch(err => {
+        this.messageService.cleanNotification();
         if (err && err.status === 409) {
           return Observable.of({'checkItemExistingEx': errorMsg});
         }
-        this.messageService.dispatchError(err, 'ERROR.INVALID_USER');
       });
   }
 
@@ -49,10 +49,10 @@ export class CsInputCheckExistingDirective {
       }
     }).map(() => Validators.nullValidator)
       .catch(err => {
+        this.messageService.cleanNotification();
         if (err && err.status === 409) {
           return Observable.of({'checkItemExistingEx': "PROJECT.PROJECT_NAME_ALREADY_EXISTS"});
         }
-        this.messageService.dispatchError(err, 'ERROR.INVALID_USER');
       });
   }
 
