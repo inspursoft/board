@@ -9,10 +9,9 @@ import { SharedActionService } from "../../shared/shared-action.service";
 import { SharedService } from "../../shared/shared.service";
 import { CsModalParentBase } from "../../shared/cs-modal-base/cs-modal-parent-base";
 import { TranslateService } from "@ngx-translate/core";
-import { Message, RETURN_STATUS } from "../../shared/shared.types";
+import { CreateImageMethod, Message, RETURN_STATUS } from "../../shared/shared.types";
 import { CreateImageComponent } from "../image-create/image-create.component";
 
-enum CreateImageMethod{None, Template, DockerFile, DevOps}
 @Component({
   selector: 'image-list',
   templateUrl: './image-list.component.html',
@@ -140,11 +139,6 @@ export class ImageListComponent extends CsModalParentBase implements OnInit, OnD
     this.createImageMethod = CreateImageMethod.None;
   }
 
-  onBuildImageCompleted(imageName: string) {
-
-
-  }
-
   setCreateImageMethod(method: CreateImageMethod): void {
     this.createImageMethod = method;
   }
@@ -152,7 +146,7 @@ export class ImageListComponent extends CsModalParentBase implements OnInit, OnD
   createNewImage() {
     let component = this.createNewModal(CreateImageComponent);
     component.initCustomerNewImage(this.selectedProjectId, this.selectedProjectName);
-    component.initBuildMethod(this.createImageMethod - 1);
+    component.initBuildMethod(this.createImageMethod);
     component.closeNotification.subscribe((res: any) => {
       this.isBuildImageWIP = false;
       this.createImageMethod = CreateImageMethod.None;

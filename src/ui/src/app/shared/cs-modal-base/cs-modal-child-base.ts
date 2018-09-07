@@ -1,4 +1,4 @@
-import { Directive, OnDestroy, ViewChild, ViewContainerRef } from '@angular/core';
+import { Directive, Input, OnDestroy, Output, ViewChild, ViewContainerRef } from '@angular/core';
 import { CsComponentBase } from '../cs-components-library/cs-component-base';
 import { Observable, Subject } from 'rxjs';
 
@@ -10,8 +10,8 @@ export class CsModalChildBaseSelector {
 }
 
 export class CsModalChildBase extends CsComponentBase implements OnDestroy{
-  closeNotification: Subject<any>;
   _modalOpened: boolean = false;
+  @Output() closeNotification: Subject<any>;
   @ViewChild(CsModalChildBaseSelector) alertViewSelector;
 
   constructor() {

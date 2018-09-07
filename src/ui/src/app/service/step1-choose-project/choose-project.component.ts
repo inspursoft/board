@@ -14,7 +14,6 @@ export class ChooseProjectComponent extends ServiceStepBase implements OnInit {
   dropdownDefaultText: string = "";
 
   constructor(protected injector: Injector,
-              private selfView: ViewContainerRef,
               private sharedService: SharedService,
               private sharedActionService: SharedActionService) {
     super(injector);

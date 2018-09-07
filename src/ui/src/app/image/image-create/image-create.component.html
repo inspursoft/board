@@ -13,18 +13,18 @@
         <div class="btn-group build-method-container">
           <button class="btn"
                   [disabled]="isBuildImageWIP"
-                  [ngClass]="{'btn-primary':imageBuildMethod == 0}"
-                  (click)="resetBuildMethod(0)">
+                  [ngClass]="{'btn-primary':imageBuildMethod == 1}"
+                  (click)="resetBuildMethod(1)">
             {{"IMAGE.CREATE_IMAGE_FROM_TEMP" | translate}}
           </button>
           <button class="btn"
                   [disabled]="isBuildImageWIP"
-                  [ngClass]="{'btn-primary':imageBuildMethod == 1}"
-                  (click)="resetBuildMethod(1)">
+                  [ngClass]="{'btn-primary':imageBuildMethod == 2}"
+                  (click)="resetBuildMethod(2)">
             {{"IMAGE.CREATE_IMAGE_FROM_FILE" | translate}}
           </button>
         </div>
-        <ng-template [ngSwitchCase]="0">
+        <ng-template [ngSwitchCase]="1">
           <div class="from-temp-container" [style.height.px]="500">
             <div class="line-container">
               <label class="base-text">{{"IMAGE.CREATE_IMAGE_SELECT_IMAGE_TEMP" | translate}}:</label>
@@ -170,7 +170,7 @@
             </cs-input>
           </div>
         </ng-template>
-        <ng-template [ngSwitchCase]="1">
+        <ng-template [ngSwitchCase]="2">
           <div class="from-docker-file-container">
             <cs-input [inputIsRequired]="true"
                       [inputPattern]="patternNewImageName"

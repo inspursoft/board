@@ -4,10 +4,10 @@ import { AppInitService } from "../app.init.service";
 import { MessageService } from "../shared/message-service/message.service";
 import { ServiceStepPhase, UiServiceFactory, UIServiceStepBase } from "./service-step.component";
 import { Router } from "@angular/router";
-import { CsComponentBase } from "../shared/cs-components-library/cs-component-base";
 import { Message, RETURN_STATUS } from "../shared/shared.types";
+import { CsModalParentBase } from "../shared/cs-modal-base/cs-modal-parent-base";
 
-export abstract class ServiceStepBase extends CsComponentBase {
+export abstract class ServiceStepBase extends CsModalParentBase {
   protected k8sService: K8sService;
   protected appInitService: AppInitService;
   protected messageService: MessageService;

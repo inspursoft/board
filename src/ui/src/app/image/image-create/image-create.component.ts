@@ -15,8 +15,7 @@ import { EnvType } from "../../shared/environment-value/environment-value.compon
 import { ValidationErrors } from "@angular/forms";
 import { TranslateService } from "@ngx-translate/core";
 import { CsModalChildBase } from "../../shared/cs-modal-base/cs-modal-child-base";
-
-enum ImageBuildMethod {fromTemplate, fromImportFile}
+import { CreateImageMethod } from "../../shared/shared.types";
 
 const AUTO_REFRESH_IMAGE_LIST: number = 2000;
 
@@ -30,7 +29,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, Af
   boardHost: string;
   @ViewChildren(CsInputArrayComponent) inputArrayComponents: QueryList<CsInputArrayComponent>;
   @ViewChild("areaStatus") areaStatus: ElementRef;
-  imageBuildMethod: ImageBuildMethod = ImageBuildMethod.fromTemplate;
+  imageBuildMethod: CreateImageMethod = CreateImageMethod.Template;
   isOpenEnvironment = false;
   patternNewImageName: RegExp = /^[a-z\d.-]+$/;
   patternNewImageTag: RegExp = /^[a-z\d.-]+$/;
@@ -125,7 +124,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, Af
     this.imageService.deleteImageConfig(projectName).subscribe();
   }
 
-  public initBuildMethod(method: ImageBuildMethod): void {
+  public initBuildMethod(method: CreateImageMethod): void {
     this.imageBuildMethod = method;
   }
 
@@ -321,7 +320,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, Af
       this.consoleText = "IMAGE.CREATE_IMAGE_JENKINS_PREPARE";
       setTimeout(() => this.cancelButtonDisable = false, 10000);
     };
-    if (this.imageBuildMethod == ImageBuildMethod.fromTemplate) {
+    if (this.imageBuildMethod == CreateImageMethod.Template) {
       if (this.verifyInputValid() &&
         this.verifyInputArrayValid() &&
         this.isInputComponentsValid &&
@@ -499,10 +498,10 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, Af
       () => this.updateFileListAndPreviewInfo());
   }
 
-  resetBuildMethod(method: ImageBuildMethod) {
+  resetBuildMethod(method: CreateImageMethod) {
     this.imageBuildMethod = method;
     this.consoleText = "";
-    if (method == ImageBuildMethod.fromTemplate) {
+    if (method == CreateImageMethod.Template) {
       this.selectFromImportFile = null;
     }
   }

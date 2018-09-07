@@ -50,3 +50,5 @@ export class SignUp {
   realname: string;
   comment: string;
 }
+
+export enum CreateImageMethod{None, Template, DockerFile, DevOps}

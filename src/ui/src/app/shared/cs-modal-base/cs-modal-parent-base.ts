@@ -3,8 +3,8 @@ import { CsModalChildBase } from './cs-modal-child-base';
 import { CsComponentBase } from '../cs-components-library/cs-component-base';
 
 export class CsModalParentBase extends CsComponentBase {
-  constructor(protected factoryResolver: ComponentFactoryResolver,
-              protected selfView: ViewContainerRef) {
+  constructor(public factoryResolver?: ComponentFactoryResolver,
+              public selfView?: ViewContainerRef) {
     super();
   }
 

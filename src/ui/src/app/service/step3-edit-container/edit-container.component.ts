@@ -86,8 +86,7 @@ export class EditContainerComponent extends ServiceStepBase implements OnInit, A
           });
           this.fixedContainerPort.set(container.name, fixedPorts);
         }
-      }).catch(() => {
-    });
+      }).catch(() => this.messageService.cleanNotification());
   }
 
   get isCanNextStep(): boolean {
