@@ -45,6 +45,10 @@ func (p *AppV1Client) Pod(namespace string) PodClientInterface {
 	return apps.NewPods(namespace, p.Clientset.CoreV1().Pods(namespace))
 }
 
+func (p *AppV1Client) AutoScale(namespace string) AutoscaleInterface {
+	return apps.NewAutoScales(namespace, p.Clientset.AutoscalingV1().HorizontalPodAutoscalers(namespace))
+}
+
 // AppV1ClientInterface level 1 interface to access others
 type AppV1ClientInterface interface {
 	Service(namespace string) ServiceClientInterface
@@ -145,4 +149,16 @@ type DeploymentClientInterface interface {
 	PatchToK8s(string, model.PatchType, *model.Deployment) (*model.Deployment, []byte, error)
 	CreateByYaml(io.Reader) (*model.Deployment, error)
 	CheckYaml(io.Reader) (*model.Deployment, error)
+}
+
+// How to:  autoscaleCli, err := k8sassist.NewAutoscale(nameSpace)
+//          _, err := autoscaleCli.Update(&autoscale)
+type AutoscaleInterface interface {
+	Create(*model.AutoScale) (*model.AutoScale, error)
+	Update(*model.AutoScale) (*model.AutoScale, error)
+	UpdateStatus(*model.AutoScale) (*model.AutoScale, error)
+	Delete(name string) error
+	//	DeleteCollection(options *meta_v1.DeleteOptions, listOptions meta_v1.ListOptions) error
+	Get(name string) (*model.AutoScale, error)
+	List() (*model.AutoScaleList, error)
 }
