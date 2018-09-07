@@ -1913,7 +1913,148 @@ paths:
         403:
           description: Invalid service ID.
         500:
-          description: Unexpected internal errors.             
+          description: Unexpected internal errors.            
+  /v1/services/{service_id}/autoscale:
+    post:  
+      summary: Create an auto scale info.
+      description: |
+        This endpoint is aimed to create an auto scale info.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.
+        - name: hpa
+          in: body
+          required: true 
+          schema:
+            $ref: '#/definitions/HPA'
+          description: An auto-scale config data.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the auto scale hpa.
+          schema:
+            $ref: '#/definitions/HPA'
+        401:
+          description: User need to log in first.
+        500:
+          description: Unexpected internal errors.     
+    get:  
+      summary: Get the auto scale list of this service.
+      description: |
+        This endpoint is aimed to get the auto scale info.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the auto scale hpa.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/HPA'          
+        401:
+          description: User need to log in first.
+        500:
+          description: Unexpected internal errors.       
+  /v1/services/{service_id}/autoscale/{hpa_id}:        
+    delete:
+      summary: Delete this autoscale hpa.
+      description: |
+        This endpoint is aimed to delete this autoscale hpa.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.      
+        - name: hpa_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected hpa ID.    
+        - name: hpa_name
+          in: query
+          type: string
+          required: true
+          description: The hpa name to delete.            
+      tags:
+        - Products
+      responses:
+        200:
+          description: Delete hpa config successfully.
+        401:
+          description: User need to log in first.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.          
+    put:  
+      summary: Update an auto scale info.
+      description: |
+        This endpoint is aimed to update an auto scale info.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.
+        - name: hpa_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected hpa ID.           
+        - name: hpa
+          in: body
+          required: true 
+          schema:
+            $ref: '#/definitions/HPA'
+          description: An auto-scale config data.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the updated auto scale hpa successfully.
+          schema:
+            $ref: '#/definitions/HPA'
+        401:
+          description: User need to log in first.
+        500:
+          description: Unexpected internal errors.                    
   /v1/services/{service_id}/locate:
     get:  
       summary: Get service deployment locate info.
@@ -2355,6 +2496,32 @@ paths:
           description: User need to log in as admin.
         500:
           description: Unexpected internal errors. 
+  /v1/nodes/availableresources:
+    get:
+      summary: Return the system available resources of nodes.
+      description: |
+        This endpoint returns the system available resources of nodes.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the system available resources of nodes.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/NodeAvailableResources'              
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.          
   /v1/nodegroup:
     get:
       summary: Return all node groups in Board.
@@ -4345,6 +4512,18 @@ definitions:
         items:
           type: integer   
           format: int
+      cpu_request:
+        type: string
+        description: the CPU request of this container   
+      mem_request:
+        type: string
+        description: the memory request of this container
+      cpu_limit:
+        type: string
+        description: the CPU limit of this container
+      mem_limit:
+        type: string
+        description: the Memory limit of this container                               
       volume_mounts:
         type: object
         properties:
@@ -5259,6 +5438,52 @@ definitions:
       operation_path:
         type: string
         description: The operation path for this operated object.     
+  HPA:
+    type: object
+    properties:
+      hpa_id:
+        type: integer
+        format: int32
+        description: The hpa ID of this autoscale.     
+      hpa_name:
+        type: string
+        description: The hpa name of this autoscale.         
+      service_id:
+        type: integer   
+        format: int32   
+        description: The service ID of this hpa to control. 
+      minpod:
+        type: integer   
+        format: int32   
+        description: The minimum pod number.  
+      maxpod:
+        type: integer   
+        format: int32   
+        description: The maximum pod number.   
+      cpu_percent:
+        type: integer   
+        format: int32   
+        description: The target CPU percentage. 
+  NodeAvailableResources:              
+    type: object
+    properties:
+      node_id:
+        type: integer
+        format: int32
+        description: The node ID.     
+      node_name:
+        type: string
+        description: The node name.
+      cpu_available:
+        type: string
+        description: The max available CPU resource of this node.       
+      mem_available:
+        type: string
+        description: The max available Memory resource of this node.    
+      storage_available:
+        type: string
+        description: The max available Storage resource of this node.                          
+
         
 
 
