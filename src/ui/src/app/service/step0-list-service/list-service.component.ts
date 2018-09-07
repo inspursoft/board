@@ -147,7 +147,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
 
   deleteService(service:Service){
     if (!this.isDeleteDisable(service)){
-      this.translateService.get('SERVICE.SERVICE.CONFIRM_TO_DELETE_SERVICE', [service.service_name]).subscribe((msg: string) => {
+      this.translateService.get('SERVICE.CONFIRM_TO_DELETE_SERVICE', [service.service_name]).subscribe((msg: string) => {
         this.messageService.showDeleteDialog(msg, 'SERVICE.DELETE_SERVICE').subscribe((message: Message) => {
           if (message.returnStatus == RETURN_STATUS.rsConfirm) {
             this.k8sService.deleteService(service.service_id)

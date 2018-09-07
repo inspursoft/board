@@ -13,7 +13,7 @@ export enum RETURN_STATUS {
 }
 
 export enum BUTTON_STYLE {
-  CONFIRMATION, DELETION, YES_NO, ONLY_CONFIRM
+  CONFIRMATION = 1, DELETION, YES_NO, ONLY_CONFIRM
 }
 
 export class Message {

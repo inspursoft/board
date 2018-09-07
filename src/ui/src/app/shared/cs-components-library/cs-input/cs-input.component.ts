@@ -117,7 +117,7 @@ export class CsInputComponent implements OnInit {
         this.inputField.status = CsInputStatus.isView;
         this.inputField.defaultValue = this.inputField.value;
         this.inputHtml.nativeElement.blur();
-        this.onCheckEvent.emit(this.inputControl.value);
+        this.onCheckEvent.emit(this.inputFiledType == CsInputFiledType.iftNumber ? Number(this.inputControl.value) : this.inputControl.value);
         if (this.isCheckInputOnKeyPress) {
           this.isCheckInputOnKeyPress = false;
           let nextInputElement: Element = this.containerHtml.nativeElement.parentElement.nextElementSibling;
