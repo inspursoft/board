@@ -5,7 +5,7 @@ import { MessageService } from '../../shared/message-service/message.service';
 import { AppInitService } from '../../app.init.service';
 import { AccountService } from '../account.service';
 import { HttpErrorResponse } from "@angular/common/http";
-import { RouteForgotDashboard, RouteForgotPassword, RouteSignUp } from "../../shared/shared.const";
+import { RouteDashboard, RouteForgotPassword, RouteSignUp } from "../../shared/shared.const";
 
 @Component({
   templateUrl: './sign-in.component.html',
@@ -39,7 +39,7 @@ export class SignInComponent implements OnInit {
           this.isSignWIP = false;
           this.messageService.showAlert('ACCOUNT.SUCCESS_TO_SIGN_IN');
           this.appInitService.token = res.token;
-          this.router.navigate([RouteForgotDashboard], { queryParams: { token: this.appInitService.token }}).then();
+          this.router.navigate([RouteDashboard], { queryParams: { token: this.appInitService.token }}).then();
       })
       .catch((err: HttpErrorResponse) => {
         this.isSignWIP = false;

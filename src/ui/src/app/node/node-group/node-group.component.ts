@@ -38,7 +38,7 @@ export class NodeGroupComponent extends CsModalParentBase implements OnInit {
 
   confirmToDeleteNodeGroup(groupName: string, groupId: number) {
     this.translateService.get('NODE.CONFIRM_TO_DELETE_NODE_GROUP', groupName).subscribe((msg: string) => {
-      this.messageService.showYesNoDialog(msg, 'NODE.NODE_GROUP_DELETE').subscribe((message: Message) => {
+      this.messageService.showDeleteDialog(msg, 'NODE.NODE_GROUP_DELETE').subscribe((message: Message) => {
         if (message.returnStatus == RETURN_STATUS.rsConfirm) {
           this.nodeService.deleteNodeGroup(groupId, groupName).subscribe(() => {
             this.messageService.showAlert('NODE.NODE_GROUP_DELETE_SUCCESS');

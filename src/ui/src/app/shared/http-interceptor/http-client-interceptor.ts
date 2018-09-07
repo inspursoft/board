@@ -66,7 +66,7 @@ export class HttpClientInterceptor implements HttpInterceptor {
               globalAlertType: GlobalAlertType.gatShowDetail,
               errorObject: err
             });
-          } else if (err.status == 401) {
+          } else if (err.status == 401 && this.appTokenService.token) {
             this.messageService.showGlobalMessage(`ERROR.HTTP_401`,{
               globalAlertType: GlobalAlertType.gatLogin,
               alertType: 'alert-warning'
@@ -77,7 +77,7 @@ export class HttpClientInterceptor implements HttpInterceptor {
             this.messageService.showAlert(`ERROR.HTTP_404`, {alertType:'alert-danger'});
           } else if (err.status == 412) {
             this.messageService.showAlert(`ERROR.HTTP_412`, {alertType:'alert-warning'});
-          } else {
+          } else if (this.appTokenService.token){
             this.messageService.showGlobalMessage(`ERROR.HTTP_UNK`, {
               globalAlertType: GlobalAlertType.gatShowDetail,
               errorObject: err
