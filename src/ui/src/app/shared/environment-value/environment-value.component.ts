@@ -5,7 +5,8 @@
 import { Component, EventEmitter, Input, OnInit, Output, QueryList, ViewChildren } from "@angular/core"
 import { CsInputComponent } from "../cs-components-library/cs-input/cs-input.component";
 import { ValidatorFn, Validators } from "@angular/forms";
-import { CsComponentBase } from "../cs-components-library/cs-component-base";
+import { CsModalChildBase } from "../cs-modal-base/cs-modal-child-base";
+import { MessageService } from "../message-service/message.service";
 
 export class EnvType {
   constructor(public envName: string,
@@ -17,20 +18,18 @@ export class EnvType {
   templateUrl: "./environment-value.component.html",
   styleUrls: ["./environment-value.component.css"]
 })
-export class EnvironmentValueComponent extends CsComponentBase implements OnInit {
+export class EnvironmentValueComponent extends CsModalChildBase implements OnInit {
   _isOpen: boolean = false;
   patternEnv:RegExp = /^[\w-$/\\=\"[\]{}@&:,'`\t. ?]+$/;
-  envAlertMessage: string;
   envsData: Array<EnvType>;
   envsText: string = "";
-  isAlertOpen: boolean = false;
   inputValidator: Array<ValidatorFn>;
   inputValidatorMsg: Array<{validatorKey: string, validatorMessage: string}>;
   @ViewChildren(CsInputComponent) inputComponentList: QueryList<CsInputComponent>;
   @Input() inputEnvsData: Array<EnvType>;
   @Input() inputFixedKeyList: Array<string>;
 
-  constructor() {
+  constructor(private messageService: MessageService) {
     super();
     this.envsData = Array<EnvType>();
     this.inputValidator = Array<ValidatorFn>();
@@ -85,11 +84,9 @@ export class EnvironmentValueComponent extends CsComponentBase implements OnInit
         return new EnvType(envStrPair[0], envStrPair[1]);
       });
     } catch (e) {
-      this.isAlertOpen = true;
-      this.envAlertMessage = "SERVICE.TXT_ALERT_MESSAGE";
+      this.messageService.showAlert('SERVICE.TXT_ALERT_MESSAGE', {alertType: 'alert-warning', view: this.alertView});
       return;
     }
     this.envsData = this.envsData.concat(envTypes);
-    this.isAlertOpen = false;
   }
 }

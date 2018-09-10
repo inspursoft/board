@@ -70,7 +70,7 @@ export class CsInputArrayComponent implements OnInit {
   }
 
   checkRepeat(): ValidationErrors | null {
-    return this.checkRepeatAction.bind(this);
+    return this.inputList ? this.checkRepeatAction.bind(this) : null;
   }
 
   onMinusClick(index: number) {

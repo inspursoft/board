@@ -27,6 +27,7 @@ export class MessageService {
   }
 
   public showAlert(msg: string, optional?: {alertType?: AlertType, view?: ViewContainerRef}): void {
+    this.dialogView.clear();
     let alertView: ViewContainerRef = optional ? optional.view || this.dialogView : this.dialogView;
     let message: AlertMessage = new AlertMessage();
     message.message = msg;

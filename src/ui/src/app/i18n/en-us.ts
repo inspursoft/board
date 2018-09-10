@@ -517,6 +517,8 @@ export const LANG_EN_US = {
     "TOGGLE_NODE": "Toggle Status",
     "CONFIRM_TO_TOGGLE_NODE": "Confirm to change node {{0}} status?",
     "NODE_GROUP_NO_ITEMS":"No Items",
+    "NODE_GROUP_ADD_SUCCESS":"To join the node group successfully.",
+    "NODE_GROUP_REMOVE_SUCCESS":"Successful remove the node from node group.",
     "NODE_LIST":"Node List",
     "NODE_CONTROL":"Node Control",
     "NODE_CREATE":"Create Node",

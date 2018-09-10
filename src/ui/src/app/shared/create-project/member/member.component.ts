@@ -11,18 +11,21 @@ import { CsModalChildBase } from "../../cs-modal-base/cs-modal-child-base";
 
 @Component({
   selector: 'project-member',
+  styleUrls:['./member.component.css'],
   templateUrl: './member.component.html'
 })
 export class MemberComponent extends CsModalChildBase implements OnInit {
   currentUser: {[key: string]: any};
   role: Role = new Role();
   availableMembers: Member[];
+  isAvailableMembers: Array<Member>;
+  isNotAvailableMembers: Array<Member>;
   selectedMember: Member = new Member();
   project: Project = new Project();
-  isLeftPane: boolean;
-  isRightPane: boolean;
-  doSet: boolean;
-  doUnset: boolean;
+  isLeftPane: boolean = true;
+  isRightPane: boolean = false;
+  doSet: boolean = true;
+  doUnset: boolean = false;
   memberSubject: Subject<Member[]> = new Subject<Member[]>();
   isActionWip: boolean = false;
 
@@ -31,6 +34,8 @@ export class MemberComponent extends CsModalChildBase implements OnInit {
               private appInitService: AppInitService,
               private translateService: TranslateService) {
     super();
+    this.isAvailableMembers = Array<Member>();
+    this.isNotAvailableMembers = Array<Member>();
   }
   
   ngOnInit(): void {
@@ -42,16 +47,21 @@ export class MemberComponent extends CsModalChildBase implements OnInit {
       this.sharedService.getAvailableMembers().then((availableMembers: Array<Member>) => {
         this.availableMembers = availableMembers;
         this.availableMembers.forEach((am: Member) => {
+          am.isMember = false;
           members.forEach((member: Member) => {
             if (member.project_member_user_id === am.project_member_user_id) {
               am.project_member_id = member.project_member_id;
               am.project_member_role_id = member.project_member_role_id;
               am.isMember = true;
-              }
+            }
           });
         });
+        this.isAvailableMembers = this.availableMembers.filter(value => value.isMember == true);  
+        this.isNotAvailableMembers = this.availableMembers.filter(value => value.isMember == false);  
         this.memberSubject.subscribe((changedMembers: Array<Member>) => {
           this.availableMembers = changedMembers;
+          this.isAvailableMembers = this.availableMembers.filter(value => value.isMember == true);  
+          this.isNotAvailableMembers = this.availableMembers.filter(value => value.isMember == false);  
           });
         });
       });
@@ -64,8 +74,8 @@ export class MemberComponent extends CsModalChildBase implements OnInit {
     return super.openModal();
   }
 
-  pickUpMember(member: Member) {
-    this.selectedMember = member;
+  pickUpMember(projectMemberUserId: string) {
+    this.selectedMember = this.availableMembers.find(value => value.project_member_user_id == Number.parseInt(projectMemberUserId));
     this.doSet = false;
     this.doUnset = false;
     let isProjectOwner = (this.project.project_owner_id === this.currentUser.user_id);

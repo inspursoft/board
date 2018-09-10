@@ -517,6 +517,8 @@ export const LANG_ZH_CN = {
     "TOGGLE_NODE": "切换状态",
     "CONFIRM_TO_TOGGLE_NODE": "确认切换节点 {{0}} 的状态？",
     "NODE_GROUP_NO_ITEMS":"没有选项",
+    "NODE_GROUP_ADD_SUCCESS":"加入节点组成功",
+    "NODE_GROUP_REMOVE_SUCCESS":"成功从节点组中移除。",
     "NODE_LIST":"节点列表",
     "NODE_CREATE":"创建节点",
     "NODE_CONTROL":"节点控制",

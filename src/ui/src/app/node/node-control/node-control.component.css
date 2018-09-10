@@ -1,5 +1,6 @@
 div.control-body {
   display: flex;
+  min-height: 200px;
 }
 
 div.node-group-list-container {
@@ -44,8 +45,11 @@ clr-icon.action-delete {
 }
 
 li.group-list-item.active {
-  background-color: grey;
-  color: yellow;
+  background-color: lightblue;
+}
+
+li.group-list-item.active > a{
+  color: white;
 }
 
 li.group-list-item.disabled:hover {
@@ -53,7 +57,7 @@ li.group-list-item.disabled:hover {
 }
 
 li.group-list-item:hover {
-  background-color: grey;
+  background-color: lightblue;
   cursor: pointer;
 }
 
@@ -68,7 +72,7 @@ span.no-items {
 }
 
 ol.node-group-list {
-  border: solid grey 1px;
+  /*border: solid grey 1px;*/
   border-radius: 5px;
   overflow-y: auto;
   max-height: 200px;

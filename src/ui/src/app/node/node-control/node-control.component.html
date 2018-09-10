@@ -1,4 +1,4 @@
-<clr-modal [(clrModalOpen)]="nodeControlOpened" [clrModalSize]="'lg'">
+<clr-modal [(clrModalOpen)]="nodeControlOpened" [clrModalSize]="'md'">
   <h3 class="modal-title">{{ 'NODE.NODE_CONTROL' | translate }}</h3>
   <div class="modal-body control-body">
     <div class="node-group-list-container">
@@ -12,10 +12,7 @@
             [class.active]="nodeGroup.nodegroup_name == selectedAddNodeGroup"
             [class.hidden]="nodeGroupListSelect.indexOf(nodeGroup.nodegroup_name) > -1">
           <a href="javascript:void(0)">
-            <clr-icon shape="check"
-                      style="color: blue;"
-                      *ngIf="nodeGroupListSelect.indexOf(nodeGroup.nodegroup_name) > -1">
-            </clr-icon>
+            <clr-icon shape="check" style="color: blue;"></clr-icon>
             {{nodeGroup.nodegroup_name}}
           </a>
         </li>
@@ -56,10 +53,9 @@
     </div>
   </div>
   <div class="modal-footer">
-    <button type="button"
-            class="btn btn-primary"
-            (click)="nodeControlOpened = false">
+    <button type="button" class="btn btn-primary" [disabled]="isActionWip" (click)="nodeControlOpened = false">
       {{ 'BUTTON.OK' | translate }}
     </button>
+    <span class="spinner spinner-sm" *ngIf="isActionWip"></span>
   </div>
 </clr-modal>

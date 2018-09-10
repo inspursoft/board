@@ -11,11 +11,9 @@ import { MessageService } from "../../shared/message-service/message.service";
 
 export class ImageDetailComponent implements OnInit {
   _isOpen: boolean;
-  alertClosed: boolean;
   @Input() curImage: Image;
   showDeleteAlert: boolean[];
   imageDetailPageSize: number = 10;
-  imageDetailErrMsg: string = "";
   imageDetailList: ImageDetail[] = Array<ImageDetail>();
 
   loadingWIP: boolean;
@@ -28,7 +26,6 @@ export class ImageDetailComponent implements OnInit {
 
   set isOpen(value: boolean) {
     this._isOpen = value;
-    this.alertClosed = true;
     this.isOpenChange.emit(this._isOpen);
   }
 

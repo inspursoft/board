@@ -1,26 +1,32 @@
 <clr-modal [(clrModalOpen)]="modalOpened" [clrModalClosable]="!isActionWip">
   <h3 class="modal-title">{{ 'PROJECT.ADD_MEMBER_FOR' | translate }}&nbsp;{{ project.project_name }}</h3>
-  <div class="modal-body" style="min-height: 42vh;">
-    <div class="row flex-items-xs-center" style="margin-top: 24px; min-height: 200px;">
-      <div class="col-xs-4" style="flex: 0;">
-          <span>{{ 'PROJECT.AVAILABLE_MEMBERS' | translate }}:</span>
-          <select id="selSelected" multiple style="height: 100%; min-width: 180px;">
-            <option *ngFor="let m of availableMembers" [hidden]="m.isMember"  value="{{ m.project_member_user_id }}" (click)="isLeftPane=true; isRightPane=false; pickUpMember(m)">{{ m.project_member_username }}</option>
-          </select>
+  <div class="modal-body">
+    <div class="list-container">
+      <div class="left-list-container">
+        <span>{{ 'PROJECT.AVAILABLE_MEMBERS' | translate }}:</span>
+        <select #select1 title="" id="selSelected" multiple class="member"
+                (click)='isLeftPane=true; isRightPane=false; pickUpMember(select1.value)'>
+          <option *ngFor="let m of isNotAvailableMembers" value="{{m.project_member_user_id}}">
+            {{ m.project_member_username }}
+          </option>
+        </select>
       </div>
-      <div class="col-xs-4 flex-xs-middle" style="flex: 0; margin-left: 12px;">
-        <p style="margin-top: 0;">
-          <button class="btn btn-link" [disabled]="!doSet || isActionWip" (click)="setMember()">
-            <clr-icon shape="caret right"></clr-icon>
-          </button>
-        </p>
-        <p><button class="btn btn-link" [disabled]="!doUnset" [hidden]="true" (click)="unsetMember()"><clr-icon shape="caret left"></clr-icon></button></p>
+      <div class="list-action-container">
+        <button class="btn btn-link" [disabled]="!doSet || isActionWip" (click)="setMember()">
+          <clr-icon shape="caret right"></clr-icon>
+        </button>
+        <button class="btn btn-link" [disabled]="!doUnset || isActionWip" (click)="unsetMember()" [hidden]="true">
+          <clr-icon shape="caret left"></clr-icon>
+        </button>
       </div>
-      <div class="col-xs-4" style="flex: 0; padding-left: 0;">
-          <span>{{ 'PROJECT.ASSIGNED_MEMBERS' | translate }}:</span>
-          <select id="selDeselected" multiple style="height: 100%; min-width: 180px;">
-            <option *ngFor="let m of availableMembers" value="{{ m.project_member_user_id }}" [hidden]="!m.isMember" (click)="isLeftPane=false; isRightPane=true; pickUpMember(m)">{{ m.project_member_username }}</option>
-          </select>
+      <div class="right-list-container">
+        <span>{{ 'PROJECT.ASSIGNED_MEMBERS' | translate }}:</span>
+        <select #select2 title="" id="selDeselected" multiple class="member"
+                (click)="isLeftPane=false; isRightPane=true; pickUpMember(select2.value)">
+          <option *ngFor="let m of isAvailableMembers" value="{{m.project_member_user_id}}">
+            {{ m.project_member_username }}
+          </option>
+        </select>
       </div>
     </div>
     <!-- <div class="row">

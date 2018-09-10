@@ -22,6 +22,10 @@ div.cs-input-array-container {
   height: 30px;
 }
 
+div.cs-input-array-container cs-input{
+  flex-basis: 100%;
+}
+
 span.cs-input-array-label {
   text-align: right;
 }
@@ -30,6 +34,7 @@ div.cs-input-array-input-container {
   display: flex;
   flex-direction: column;
   margin-left: 10px;
+  flex-basis: 100%;
 }
 
 div.component-container {

@@ -1,13 +1,6 @@
 <clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'md'">
   <h3 class="modal-title">{{"SERVICE.ENV_TITLE" | translate }}</h3>
   <fieldset class="modal-body fieldSet-default">
-    <clr-alert (clrAlertClosedChange)="isAlertOpen = false"
-               [clrAlertClosed]="!isAlertOpen"
-               [clrAlertType]="'alert-danger'">
-      <div class="alert-item">
-        <span class="alert-text">{{envAlertMessage | translate}}</span>
-      </div>
-    </clr-alert>
     <div class="form-group">
       <label for="aForm_4">{{"SERVICE.TXT_TITLE" | translate}}</label>
       <textarea id="aForm_4" rows="5" [(ngModel)]="envsText" name="text"></textarea>
