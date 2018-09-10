@@ -2,8 +2,6 @@ package model
 
 import (
 	"time"
-
-	modelK8s "k8s.io/client-go/pkg/api/v1"
 )
 
 type ServiceStatus struct {
@@ -19,6 +17,7 @@ type ServiceStatus struct {
 	Deleted       int       `json:"service_deleted" orm:"column(deleted)"`
 	CreationTime  time.Time `json:"service_creation_time" orm:"column(creation_time)"`
 	UpdateTime    time.Time `json:"service_update_time" orm:"column(update_time)"`
+	Source        int       `json:"service_source" orm:"column(source)"`
 	ServiceConfig string    `json:"service_config" orm:"column(service_config)"`
 }
 
@@ -33,8 +32,8 @@ type PaginatedServiceStatus struct {
 }
 
 type ServiceInfoStruct struct {
-	NodePort []int32                `json:"node_Port,omitempty"`
-	NodeName []modelK8s.NodeAddress `json:"node_Name,omitempty"`
+	NodePort []int32       `json:"node_Port,omitempty"`
+	NodeName []NodeAddress `json:"node_Name,omitempty"`
 }
 
 type ServiceToggle struct {
@@ -67,4 +66,13 @@ type NodeType struct {
 
 type LoadBalancer struct {
 	ExternalAccess string `json:"external_access"`
+}
+
+type ServiceAutoScale struct {
+	HPAID      int64  `json:"hpa_id" orm:"column(id)"`
+	HPAName    string `json:"hpa_name" orm:"column(name)"`
+	ServiceID  int64  `json:"service_id" orm:"column(service_id)"`
+	MinPod     int    `json:"min_pod" orm:"column(min_pod)"`
+	MaxPod     int    `json:"max_pod" orm:"column(max_pod)"`
+	CPUPercent int    `json:"cpu_percent" orm:"column(cpu_percent)"`
 }

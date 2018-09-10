@@ -1,8 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
@@ -15,17 +13,12 @@ import (
 )
 
 type UserController struct {
-	baseController
+	BaseController
 }
 
 func (u *UserController) Prepare() {
-	user := u.getCurrentUser()
-	if user == nil {
-		u.customAbort(http.StatusUnauthorized, "Need to login first.")
-		return
-	}
-	u.currentUser = user
-	u.isSysAdmin = (u.currentUser.SystemAdmin == 1)
+	u.resolveSignedInUser()
+	u.recordOperationAudit()
 	u.isExternalAuth = utils.GetBoolValue("IS_EXTERNAL_AUTH")
 }
 
@@ -35,7 +28,7 @@ func (u *UserController) GetUsersAction() {
 	pageIndex, _ := u.GetInt("page_index", 0)
 	pageSize, _ := u.GetInt("page_size", 0)
 	isPaginated := !(pageIndex == 0 && pageSize == 0)
-	orderField := u.GetString("order_field", "CREATE_TIME")
+	orderField := u.GetString("order_field", "creation_time")
 	orderAsc, _ := u.GetInt("order_asc", 0)
 
 	var paginatedUsers *model.PaginatedUsers
@@ -65,28 +58,20 @@ func (u *UserController) GetUsersAction() {
 }
 
 func (u *UserController) ChangeUserAccount() {
-
 	if u.isExternalAuth && u.currentUser.Username != "admin" {
 		logs.Debug("Current AUTH_MODE is external auth.")
-		u.internalError(errors.New("Current AUTH_MODE is external auth."))
-		return
-	}
-
-	reqData, err := u.resolveBody()
-	if err != nil {
-		u.internalError(err)
+		u.customAbort(http.StatusPreconditionFailed, "Current AUTH_MODE is not available to the user.")
 		return
 	}
 
 	var reqUser model.User
-	err = json.Unmarshal(reqData, &reqUser)
+	var err error
+	err = u.resolveBody(&reqUser)
 	if err != nil {
-		u.internalError(err)
 		return
 	}
 
 	reqUser.ID = u.currentUser.ID
-
 	users, err := service.GetUsers("email", reqUser.Email)
 	if err != nil {
 		u.internalError(err)
@@ -157,16 +142,9 @@ func (u *UserController) ChangePasswordAction() {
 		return
 	}
 
-	reqData, err := u.resolveBody()
-	if err != nil {
-		u.internalError(err)
-		return
-	}
-
 	var changePassword model.ChangePassword
-	err = json.Unmarshal(reqData, &changePassword)
+	err = u.resolveBody(&changePassword)
 	if err != nil {
-		u.internalError(err)
 		return
 	}
 
@@ -195,17 +173,12 @@ func (u *UserController) ChangePasswordAction() {
 }
 
 type SystemAdminController struct {
-	baseController
+	BaseController
 }
 
 func (u *SystemAdminController) Prepare() {
-	user := u.getCurrentUser()
-	if user == nil {
-		u.customAbort(http.StatusUnauthorized, "Need to login first.")
-		return
-	}
-	u.currentUser = user
-	u.isSysAdmin = (user.SystemAdmin == 1)
+	u.resolveSignedInUser()
+	u.recordOperationAudit()
 	if !u.isSysAdmin {
 		u.customAbort(http.StatusForbidden, "Insufficient privileges to manipulate user.")
 		return
@@ -220,19 +193,13 @@ func (u *SystemAdminController) AddUserAction() {
 		u.customAbort(http.StatusMethodNotAllowed, "Current AUTH_MODE is external auth.")
 		return
 	}
-
-	var err error
-	reqData, err := u.resolveBody()
-	if err != nil {
-		u.internalError(err)
-		return
-	}
 	var reqUser model.User
-	err = json.Unmarshal(reqData, &reqUser)
+	var err error
+	err = u.resolveBody(&reqUser)
 	if err != nil {
-		u.internalError(err)
 		return
 	}
+
 	if !utils.ValidateWithPattern("username", reqUser.Username) {
 		u.customAbort(http.StatusBadRequest, "Username content is illegal.")
 		return
@@ -354,7 +321,7 @@ func (u *SystemAdminController) UpdateUserAction() {
 		u.serveStatus(http.StatusBadRequest, "Invalid user ID.")
 		return
 	}
-	if u.currentUser.ID == int64(userID) {
+	if userID == 1 || u.currentUser.ID == int64(userID) {
 		u.customAbort(http.StatusForbidden, "Insufficient privileges.")
 		return
 	}
@@ -368,20 +335,13 @@ func (u *SystemAdminController) UpdateUserAction() {
 		return
 	}
 
-	reqData, err := u.resolveBody()
-	if err != nil {
-		u.internalError(err)
-		return
-	}
-
 	var reqUser model.User
-	err = json.Unmarshal(reqData, &reqUser)
+	err = u.resolveBody(&reqUser)
 	if err != nil {
-		u.internalError(err)
 		return
 	}
-	reqUser.ID = user.ID
 
+	reqUser.ID = user.ID
 	users, err := service.GetUsers("email", reqUser.Email)
 	if err != nil {
 		u.internalError(err)
@@ -428,32 +388,24 @@ func (u *SystemAdminController) ToggleSystemAdminAction() {
 		u.customAbort(http.StatusNotFound, "No found user with provided user ID.")
 		return
 	}
-	if u.currentUser.ID == user.ID {
-		u.customAbort(http.StatusBadRequest, "Self system admin cannot be changed.")
-		return
-	}
-
-	reqData, err := u.resolveBody()
-	if err != nil {
-		u.internalError(err)
+	if userID == 1 || u.currentUser.ID == user.ID {
+		u.customAbort(http.StatusBadRequest, "Self or system admin cannot be changed.")
 		return
 	}
 
 	var reqUser model.User
-	err = json.Unmarshal(reqData, &reqUser)
+	err = u.resolveBody(&reqUser)
 	if err != nil {
-		u.internalError(err)
 		return
 	}
 
 	user.SystemAdmin = reqUser.SystemAdmin
-
 	isSuccess, err := service.UpdateUser(*user, "system_admin")
 	if err != nil {
 		u.internalError(err)
 		return
 	}
 	if !isSuccess {
-		u.CustomAbort(http.StatusBadRequest, "Failed to toggle user system admin.")
+		u.customAbort(http.StatusBadRequest, "Failed to toggle user system admin.")
 	}
 }

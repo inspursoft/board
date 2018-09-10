@@ -1,12 +1,9 @@
 package gogs
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"time"
@@ -15,6 +12,7 @@ import (
 )
 
 var gogitsBaseURL = utils.GetConfig("GOGITS_BASE_URL")
+var jenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
 var maxRetryCount = 30
 
 type createAccessTokenOption struct {
@@ -51,6 +49,13 @@ type createIssueCommentOption struct {
 	Body string `json:"body" binding:"Required"`
 }
 
+type createHookOption struct {
+	Type   string            `json:"type" binding:"Required"`
+	Config map[string]string `json:"config" binding:"Required"`
+	Events []string          `json:"events"`
+	Active bool              `json:"active"`
+}
+
 type AccessToken struct {
 	Name string `json:"name"`
 	Sha1 string `json:"sha1"`
@@ -69,18 +74,23 @@ type PullRequestInfo struct {
 }
 
 func NewGogsHandler(username, token string) *gogsHandler {
+	pingURL := fmt.Sprintf("%s", gogitsBaseURL())
 	for i := 0; i < maxRetryCount; i++ {
 		logs.Debug("Ping Gogits server %d time(s)...", i+1)
-		resp, err := utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s", gogitsBaseURL()), nil, nil)
-		if err != nil {
-			logs.Error("Failed to request Gogits server: %+v", err)
-		}
-		if resp != nil {
-			if resp.StatusCode <= 400 {
-				break
-			}
-		} else if i == maxRetryCount-1 {
+		if i == maxRetryCount-1 {
 			logs.Warn("Failed to ping Gogits due to exceed max retry count.")
+			break
+		}
+		err := utils.RequestHandle(http.MethodGet, pingURL, nil, nil,
+			func(req *http.Request, resp *http.Response) error {
+				if resp.StatusCode <= 400 {
+					return nil
+				}
+				return fmt.Errorf("Requested URL %s with unexpected response: %d", pingURL, resp.StatusCode)
+			})
+		if err == nil {
+			logs.Info("Successful connected to the Gogits service.")
+			break
 		}
 		time.Sleep(time.Second)
 	}
@@ -91,13 +101,15 @@ func NewGogsHandler(username, token string) *gogsHandler {
 }
 
 func userExists(username string) (bool, error) {
-	resp, err := utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s/api/v1/users/%s", gogitsBaseURL(), username), nil, nil)
+	logs.Info("Requesting Gogits API of user exists ...")
+	err := utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s/api/v1/users/%s", gogitsBaseURL(), username), nil, nil, func(req *http.Request, resp *http.Response) error {
+		if resp.StatusCode != http.StatusNotFound {
+			return fmt.Errorf("user: %s already exists", username)
+		}
+		return nil
+	})
 	if err != nil {
-		return false, err
-	}
-	if resp != nil {
-		defer resp.Body.Close()
-		return (resp.StatusCode != http.StatusNotFound), nil
+		return true, nil
 	}
 	return false, nil
 }
@@ -112,7 +124,8 @@ func SignUp(user model.User) error {
 		logs.Info("User: %s already exists in Gogits.", user.Username)
 		return nil
 	}
-	resp, err := utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/user/sign_up", gogitsBaseURL()), func(req *http.Request) error {
+	logs.Info("Requesting Gogits API of sign up ...")
+	return utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/user/sign_up", gogitsBaseURL()), func(req *http.Request) error {
 		req.Header = http.Header{"Content-Type": []string{"application/x-www-form-urlencoded"}}
 		formData := url.Values{}
 		formData.Set("user_name", user.Username)
@@ -121,50 +134,33 @@ func SignUp(user model.User) error {
 		formData.Set("email", user.Email)
 		req.URL.RawQuery = formData.Encode()
 		return nil
-	}, nil)
-	if err != nil {
-		return err
-	}
-	if resp != nil {
-		defer resp.Body.Close()
-		if resp.StatusCode >= http.StatusInternalServerError {
-			return fmt.Errorf("Internal error: %+v", err)
-		}
-		logs.Info("Requested Gogits sign up with response status code: %d", resp.StatusCode)
-	}
-	return nil
+	}, nil, nil)
 }
 
 func CreateAccessToken(username, password string) (*AccessToken, error) {
 	opt := createAccessTokenOption{Name: "ACCESS-TOKEN"}
-	body, err := json.Marshal(&opt)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/api/v1/users/%s/tokens", gogitsBaseURL(), username), func(req *http.Request) error {
+	var token AccessToken
+	logs.Info("Requesting Gogits API of create access token ...")
+	err := utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/api/v1/users/%s/tokens", gogitsBaseURL(), username), func(req *http.Request) error {
 		req.Header = http.Header{
 			"content-type":  []string{"application/json"},
 			"Authorization": []string{"Basic " + utils.BasicAuthEncode(username, password)},
 		}
 		return nil
-	}, bytes.NewReader(body))
+	}, &opt, func(req *http.Request, resp *http.Response) error {
+		return utils.UnmarshalToJSON(resp.Body, &token)
+	})
 	if err != nil {
 		return nil, err
 	}
-	if resp != nil {
-		output, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		logs.Debug("token output: %s", string(output))
-		var token AccessToken
-		err = json.Unmarshal(output, &token)
-		if err != nil {
-			return nil, err
-		}
-		return &token, nil
+	return &token, nil
+}
+
+func (g *gogsHandler) getAccessHeader() http.Header {
+	return http.Header{
+		"content-type":  []string{"application/json"},
+		"Authorization": []string{"token " + g.token},
 	}
-	return nil, nil
 }
 
 func (g *gogsHandler) CreatePublicKey(title, publicKey string) error {
@@ -172,37 +168,11 @@ func (g *gogsHandler) CreatePublicKey(title, publicKey string) error {
 		Title: title,
 		Key:   publicKey,
 	}
-	body, err := json.Marshal(&opt)
-	if err != nil {
-		return err
-	}
-	resp, err := utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/api/v1/user/keys", gogitsBaseURL()), func(req *http.Request) error {
-		req.Header = http.Header{
-			"content-type":  []string{"application/json"},
-			"Authorization": []string{"token " + g.token},
-		}
-		return nil
-	}, bytes.NewReader(body))
-	if err != nil {
-		return err
-	}
-	if resp != nil {
-		defer resp.Body.Close()
-		logs.Info("Requested Gogits create public key with response status code: %d", resp.StatusCode)
-	}
-	return nil
+	return utils.SimplePostRequestHandle(fmt.Sprintf("%s/api/v1/user/keys", gogitsBaseURL()), g.getAccessHeader(), &opt)
 }
 
 func (g *gogsHandler) DeletePublicKey(userID int64) error {
-	resp, err := utils.RequestHandle(http.MethodDelete, fmt.Sprintf("%s/api/v1/user/keys/%d", gogitsBaseURL(), userID), nil, nil)
-	if err != nil {
-		return err
-	}
-	if resp != nil {
-		defer resp.Body.Close()
-		logs.Info("Requested Gogits delete public key with response status code: %d", resp.StatusCode)
-	}
-	return nil
+	return utils.SimpleDeleteRequestHandle(fmt.Sprintf("%s/api/v1/user/keys/%d", gogitsBaseURL(), userID), nil)
 }
 
 func (g *gogsHandler) CreateRepo(repoName string) error {
@@ -210,51 +180,16 @@ func (g *gogsHandler) CreateRepo(repoName string) error {
 		Name:        repoName,
 		Description: "Created by Board API for DevOps.",
 	}
-	body, err := json.Marshal(&opt)
-	if err != nil {
-		return err
-	}
-	resp, err := utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/api/v1/user/repos", gogitsBaseURL()), func(req *http.Request) error {
-		req.Header = http.Header{
-			"content-type":  []string{"application/json"},
-			"Authorization": []string{"token " + g.token},
-		}
-		return nil
-	}, bytes.NewReader(body))
-	if err != nil {
-		return err
-	}
-	if resp != nil {
-		if resp.StatusCode >= http.StatusInternalServerError {
-			return fmt.Errorf("Internal error: %+v", err)
-		}
-		logs.Info("Requested Gogits create repo with response status code: %d", resp.StatusCode)
-	}
-	return nil
+	return utils.SimplePostRequestHandle(fmt.Sprintf("%s/api/v1/user/repos", gogitsBaseURL()), g.getAccessHeader(), &opt)
 }
 
 func (g *gogsHandler) DeleteRepo(repoName string) error {
-	resp, err := utils.RequestHandle(http.MethodDelete, fmt.Sprintf("%s/api/v1/repos/%s/%s", gogitsBaseURL(), g.username, repoName), func(req *http.Request) error {
-		req.Header = http.Header{
-			"content-type":  []string{"application/json"},
-			"Authorization": []string{"token " + g.token},
-		}
-		return nil
-	}, nil)
-	if err != nil {
-		return err
-	}
-	if resp != nil {
-		if resp.StatusCode >= http.StatusInternalServerError {
-			return fmt.Errorf("Internal error: %+v", err)
-		}
-		logs.Info("Requested Gogits delete repo with response status code: %d", resp.StatusCode)
-	}
-	return nil
+	return utils.SimpleDeleteRequestHandle(fmt.Sprintf("%s/api/v1/repos/%s/%s", gogitsBaseURL(), g.username, repoName), g.getAccessHeader())
 }
 
 func (g *gogsHandler) ForkRepo(ownerName, baseRepoName, forkRepoName, description string) error {
-	resp, err := utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/api/v1/repos/%s/%s/forks", gogitsBaseURL(), ownerName, baseRepoName), func(req *http.Request) error {
+	logs.Info("Requesting Gogits API of fork repo ...")
+	return utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/api/v1/repos/%s/%s/forks", gogitsBaseURL(), ownerName, baseRepoName), func(req *http.Request) error {
 		req.Header = http.Header{
 			"Authorization": []string{"token " + g.token},
 		}
@@ -263,19 +198,7 @@ func (g *gogsHandler) ForkRepo(ownerName, baseRepoName, forkRepoName, descriptio
 		formData.Set("description", description)
 		req.URL.RawQuery = formData.Encode()
 		return nil
-	}, nil)
-	if err != nil {
-		return err
-	}
-	if resp != nil {
-		if resp.StatusCode >= http.StatusInternalServerError {
-			return fmt.Errorf("Internal error: %+v", err)
-		}
-		data, _ := ioutil.ReadAll(resp.Body)
-		logs.Debug(string(data))
-		logs.Info("Requested Gogits fork with response status code: %d", resp.StatusCode)
-	}
-	return nil
+	}, nil, nil)
 }
 
 func (g *gogsHandler) CreatePullRequest(ownerName, baseRepoName, title, content, compareInfo string) (*PullRequestInfo, error) {
@@ -283,61 +206,54 @@ func (g *gogsHandler) CreatePullRequest(ownerName, baseRepoName, title, content,
 		Title: title,
 		Body:  content,
 	}
-	body, err := json.Marshal(&opt)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/api/v1/repos/%s/%s/pull-request/%s", gogitsBaseURL(), ownerName, baseRepoName, compareInfo), func(req *http.Request) error {
+	var prInfo PullRequestInfo
+	logs.Info("Requesting Gogits API of create pull request ...")
+	err := utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/api/v1/repos/%s/%s/pull-request/%s", gogitsBaseURL(), ownerName, baseRepoName, compareInfo), func(req *http.Request) error {
 		req.Header = http.Header{
 			"content-type":  []string{"application/json"},
 			"Authorization": []string{"token " + g.token},
 		}
 		return nil
-	}, bytes.NewReader(body))
-	if err != nil {
-		return nil, err
-	}
-	if resp != nil {
+	}, &opt, func(req *http.Request, resp *http.Response) error {
 		if resp.StatusCode >= http.StatusInternalServerError {
-			return nil, fmt.Errorf("Internal error: %+v", err)
+			return fmt.Errorf("unexpected error occurred with response status code: %d", resp.StatusCode)
 		}
-		data, _ := ioutil.ReadAll(resp.Body)
-		var prInfo PullRequestInfo
-		json.Unmarshal(data, &prInfo)
+		err := utils.UnmarshalToJSON(resp.Body, &prInfo)
+		if err != nil {
+			return err
+		}
 		if &prInfo != nil {
 			prInfo.HasCreated = (resp.StatusCode == http.StatusConflict)
 		}
 		logs.Info("Requested Gogits create pull request with response status code: %d", resp.StatusCode)
-		return &prInfo, nil
+		return nil
+	})
+	if err != nil {
+		return nil, err
 	}
-	return nil, nil
+	return &prInfo, nil
 }
 
 func (g *gogsHandler) CreateIssueComment(ownerName string, baseRepoName string, issueIndex int64, comment string) error {
 	var opt = createIssueCommentOption{
 		Body: comment,
 	}
-	body, err := json.Marshal(&opt)
-	if err != nil {
-		return err
+	logs.Info("Requesting Gogits comment issue ...")
+	return utils.SimplePostRequestHandle(fmt.Sprintf("%s/api/v1/repos/%s/%s/issues/%d/comments", gogitsBaseURL(), ownerName, baseRepoName, issueIndex), g.getAccessHeader(), &opt)
+}
+
+func (g *gogsHandler) CreateHook(ownerName string, repoName string) error {
+
+	config := make(map[string]string)
+	config["url"] = fmt.Sprintf("%s/generic-webhook-trigger/invoke", jenkinsBaseURL())
+	config["content_type"] = "json"
+
+	opt := createHookOption{
+		Type:   "gogs",
+		Config: config,
+		Events: []string{"push"},
+		Active: true,
 	}
-	resp, err := utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/api/v1/repos/%s/%s/issues/%d/comments", gogitsBaseURL(), ownerName, baseRepoName, issueIndex), func(req *http.Request) error {
-		req.Header = http.Header{
-			"content-type":  []string{"application/json"},
-			"Authorization": []string{"token " + g.token},
-		}
-		return nil
-	}, bytes.NewReader(body))
-	if err != nil {
-		return err
-	}
-	if resp != nil {
-		if resp.StatusCode >= http.StatusInternalServerError {
-			return fmt.Errorf("Internal error: %+v", err)
-		}
-		data, _ := ioutil.ReadAll(resp.Body)
-		logs.Debug(string(data))
-		logs.Info("Requested Gogits comment issue with response status code: %d", resp.StatusCode)
-	}
-	return nil
+	logs.Info("Requesting Gogits API of create hook ...")
+	return utils.SimplePostRequestHandle(fmt.Sprintf("%s/api/v1/repos/%s/%s/hooks", gogitsBaseURL(), ownerName, repoName), g.getAccessHeader(), &opt)
 }

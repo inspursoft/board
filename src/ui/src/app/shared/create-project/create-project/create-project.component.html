@@ -1,0 +1,49 @@
+<clr-modal [(clrModalOpen)]="createProjectOpened">
+  <h3 class="modal-title">{{ 'PROJECT.CREATE_PROJECT' | translate }}</h3>
+  <div class="modal-body">
+    <clr-alert [clrAlertType]="'alert-danger'" [(clrAlertClosed)]="alertClosed">
+      <div class="alert-item">
+          <span class="alert-text">
+            {{errorMessage | translate }}
+          </span>
+      </div>
+    </clr-alert>
+    <div class="input-container">
+      <cs-input [inputIsRequired]="true"
+                [inputLabel]="'PROJECT.PROJECT_NAME' | translate "
+                [simpleFiled]="createProject.projectName"
+                [inputLabelMinWidth]="110"
+                checkItemExistingEx="project"
+                [inputPattern]="projectNamePattern"
+                [disabled]="isCreateProjectWIP"
+                [validatorMessage]="[
+              {validatorKey:'required',validatorMessage:'PROJECT.PROJECT_NAME_IS_REQUIRED'},
+              {validatorKey:'pattern',validatorMessage:'PROJECT.PROJECT_NAME_IS_ILLEGAL'}]"
+                (onCheck)="createProject.projectName = $event">
+      </cs-input>
+      <cs-input [inputLabel]="'PROJECT.COMMENT' | translate"
+                [simpleFiled]="createProject.comment"
+                [disabled]="isCreateProjectWIP"
+                [inputLabelMinWidth]="110"
+                (onCheck)="createProject.comment = $event">
+      </cs-input>
+      <div class="public-container">
+        <label for="chkIsPublic" class="public-label">{{ 'PROJECT.PUBLIC' | translate }}:</label>
+        <div class="checkbox public-checkbox">
+          <input type="checkbox" id="chkIsPublic" [disabled]="isCreateProjectWIP" [(ngModel)]="createProject.publicity">
+          <label for="chkIsPublic"></label>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" [disabled]="isCreateProjectWIP" (click)="createProjectOpened = false">
+      {{ 'BUTTON.CANCEL' | translate }}
+    </button>
+    <button type="button" class="btn btn-primary" [disabled]="isCreateProjectWIP" (click)="confirm()">
+      {{ 'BUTTON.CONFIRM' | translate }}
+    </button>
+    <span *ngIf="isCreateProjectWIP" class="spinner spinner-sm"></span>
+  </div>
+</clr-modal>

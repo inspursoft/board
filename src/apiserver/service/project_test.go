@@ -1,13 +1,10 @@
-package service
+package service_test
 
 import (
 	"fmt"
+	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
 	"testing"
-
-	"github.com/astaxie/beego/logs"
-
-	"github.com/astaxie/beego/orm"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -30,29 +27,19 @@ var updatedProject = model.Project{
 	Public: 1,
 }
 
-func cleanUpProject() {
-	o := orm.NewOrm()
-	affectedCount, err := o.Delete(&project)
-	if err != nil {
-		logs.Error("Failed to clean up project: %+v", err)
-	}
-	logs.Info("Deleted in project %d row(s) affected.", affectedCount)
-}
-
 func TestCreateProject(t *testing.T) {
-	exists, err := ProjectExists(projectName)
+	exists, err := service.ProjectExists(projectName)
 	assert := assert.New(t)
 	assert.Nil(err, "Error occurred while checking project name existing.")
 	if !exists {
-		isSuccess, err := CreateProject(project)
+		isSuccess, err := service.CreateProject(project)
 		assert.Nil(err, "Error occurred while creating project.")
 		assert.Equal(true, isSuccess, "Failed to create project")
 	}
 }
 
 func TestGetProject(t *testing.T) {
-	query := model.Project{Name: projectName}
-	project, err := GetProject(query, "name")
+	project, err := service.GetProjectByName(projectName)
 	assert := assert.New(t)
 	assert.Nil(err, "Error occurred while getting project by name.")
 	assert.NotNilf(project, "Failed to get project by name: %s", projectName)
@@ -60,21 +47,21 @@ func TestGetProject(t *testing.T) {
 }
 
 func TestProjectExists(t *testing.T) {
-	exists, err := ProjectExists(projectName)
+	exists, err := service.ProjectExists(projectName)
 	assert := assert.New(t)
 	assert.Nil(err, "Error occurred while checking project name existing.")
 	assert.Equal(true, exists, "Project name does not exist.")
 }
 
 func TestProjectExistsByID(t *testing.T) {
-	exists, err := ProjectExistsByID(projectID)
+	exists, err := service.ProjectExistsByID(projectID)
 	assert := assert.New(t)
 	assert.Nil(err, "Error occurred while checking project ID existing.")
 	assert.Equal(true, exists, "Project ID does not exist.")
 }
 
 func TestUpdateProject(t *testing.T) {
-	isSuccess, err := UpdateProject(updatedProject, "public")
+	isSuccess, err := service.UpdateProject(updatedProject, "public")
 	assert := assert.New(t)
 	assert.Nil(err, "Error occurred while updating project public.")
 	assert.Equal(true, isSuccess, "Failed to update project public.")
@@ -82,7 +69,7 @@ func TestUpdateProject(t *testing.T) {
 
 func TestGetProjectsByUser(t *testing.T) {
 	query := model.Project{Name: "library"}
-	projectList, err := GetProjectsByUser(query, userID)
+	projectList, err := service.GetProjectsByUser(query, userID)
 	assert := assert.New(t)
 	assert.Nil(err, "Error occurred while get projects by user.")
 	assert.NotNilf(projectList, "Failed to get projects by name: %s", query.Name)
@@ -91,24 +78,23 @@ func TestGetProjectsByUser(t *testing.T) {
 
 func TestGetProjectsByMember(t *testing.T) {
 	query := model.Project{}
-	projectList, err := GetProjectsByMember(query, userID)
+	projectList, err := service.GetProjectsByMember(query, userID)
 	assert := assert.New(t)
 	assert.Nil(err, "Error occurred while get projects by member.")
 	assert.NotNil(projectList, fmt.Sprintf("Failed to get projects by userID: %d", userID))
-	assert.Lenf(projectList, 2, "Failed to get projects by member with userID: %d", userID)
 }
 
 func TestDeleteProject(t *testing.T) {
-	isSuccess, err := DeleteProject(projectID)
+	isSuccess, err := service.DeleteProject(projectID)
 	assert := assert.New(t)
 	assert.Nil(err, "Error occurred while deleting project.")
 	assert.Equalf(true, isSuccess, "Failed to delete project by ID: %d", projectID)
 
-	isSuccess, err = DeleteNamespace(projectName)
+	isSuccess, err = service.DeleteNamespace(projectName)
 	assert.Nil(err, "Error occurred while deleting namespace.")
 	assert.Equalf(true, isSuccess, "Failed to delete namespace by name: %s", projectName)
 
-	project, err := GetProject(model.Project{ID: projectID}, "id")
+	project, err := service.GetProjectByID(projectID)
 	assert.Nilf(err, "Error occurred while getting project by ID: %d", projectID)
 	assert.Nilf(project, "Project with ID: %d is not nil.", projectID)
 }

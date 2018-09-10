@@ -1,4 +1,3 @@
-
 <clr-header [class.signInBackground]="isSignIn"  [class.signInForecolor]="isSignIn">
   <change-password *ngIf="showChangePassword" [(isOpen)]="showChangePassword"></change-password>
   <user-setting *ngIf="showAccountSetting" [(isOpen)]="showAccountSetting"></user-setting>
@@ -24,7 +23,7 @@
         <a href="javascript:void(0)" (click)="changLanguage('zh-cn')" clrDropdownItem>{{ 'HEAD_NAV.LANG_ZH_CN' | translate }}</a>
       </clr-dropdown-menu>
     </clr-dropdown>
-    <clr-dropdown [hidden]="!hasSignedIn"  [clrCloseMenuOnItemClick]="true">
+    <clr-dropdown *ngIf="hasSignedIn"  [clrCloseMenuOnItemClick]="true">
       <button class="btn btn-link" clrDropdownToggle>
         {{ currentUser.user_name }}
         <clr-icon shape="caret down"></clr-icon>

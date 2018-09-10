@@ -9,8 +9,6 @@
   <button class="btn btn-primary" (click)="createProject()">{{ 'PROJECT.CREATE_PROJECT' | translate }}</button>
 </div>
 <div class="row">
-  <create-project (reload)="retrieve(oldStateInfo)" (closeEvent)="createProjectClose(2)"></create-project>
-  <project-member></project-member>
   <div class="col-xs-12">
     <clr-datagrid (clrDgRefresh)="retrieve($event)" [clrDgLoading]="isInLoading">
       <clr-dg-column [clrDgField]="'NAME'"
@@ -19,7 +17,7 @@
         {{ 'PROJECT.PROJECT_NAME' | translate }}
       </clr-dg-column>
       <clr-dg-column>{{ 'PROJECT.CREATOR' | translate }}</clr-dg-column>
-      <clr-dg-column [clrDgField]="'CREATE_TIME'"
+      <clr-dg-column [clrDgField]="'CREATION_TIME'"
                      [clrDgSortOrder]="descSort">
         <clr-dg-filter [hidden]="true"></clr-dg-filter>
         {{ 'PROJECT.CREATION_TIME' | translate }}

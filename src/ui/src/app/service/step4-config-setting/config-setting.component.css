@@ -154,3 +154,13 @@ clr-icon.plus-icon.disabled:hover {
   cursor: not-allowed;
 }
 
+div.collaborative-container {
+  display: flex;
+  height: 30px;
+  margin-top: 10px;
+}
+
+div.alert-danger,div.alert-warning{
+  line-height: 30px;
+}
+

@@ -1,13 +1,6 @@
-import { Component, OnInit, AfterContentChecked, QueryList, ViewChildren, Injector } from '@angular/core';
-import {
-  PHASE_CONFIG_CONTAINERS,
-  Container,
-  ServiceStepPhase,
-  UIServiceStep3,
-  EnvStruct
-} from '../service-step.component';
+import { AfterContentChecked, Component, Injector, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { Container, EnvStruct, PHASE_CONFIG_CONTAINERS, ServiceStepPhase, UIServiceStep3 } from '../service-step.component';
 import { EnvType } from "../../shared/environment-value/environment-value.component";
-import { CsInputComponent } from "../../shared/cs-components-library/cs-input/cs-input.component";
 import { CsInputArrayComponent } from "../../shared/cs-components-library/cs-input-array/cs-input-array.component";
 import { VolumeOutPut } from "./volume-mounts/volume-mounts.component";
 import { ServiceStepBase } from "../service-step";
@@ -18,7 +11,6 @@ import { BuildImageDockerfileData } from "../../image/image";
   styleUrls: ["./edit-container.component.css"]
 })
 export class EditContainerComponent extends ServiceStepBase implements OnInit, AfterContentChecked {
-  @ViewChildren(CsInputComponent) inputComponents: QueryList<CsInputComponent>;
   @ViewChildren(CsInputArrayComponent) inputArrayComponents: QueryList<CsInputArrayComponent>;
   patternContainerName: RegExp = /^[a-zA-Z\d_-]+$/;
   patternWorkdir: RegExp = /^~?[\w\d-\/.{}$\/:]+[\s]*$/;
@@ -49,13 +41,6 @@ export class EditContainerComponent extends ServiceStepBase implements OnInit, A
 
   ngAfterContentChecked() {
     this.isInputComponentsValid = true;
-    if (this.inputComponents) {
-      this.inputComponents.forEach(item => {
-        if (!item.valid) {
-          this.isInputComponentsValid = false;
-        }
-      });
-    }
     if (this.inputArrayComponents) {
       this.inputArrayComponents.forEach(item => {
         if (!item.valid) {
@@ -178,8 +163,10 @@ export class EditContainerComponent extends ServiceStepBase implements OnInit, A
   }
 
   forward(): void {
-    this.k8sService.setServiceConfig(this.uiData.uiToServer()).then(res => {
-      this.k8sService.stepSource.next({index: 4, isBack: false});
-    });
+    if (this.verifyInputValid()) {
+      this.k8sService.setServiceConfig(this.uiData.uiToServer()).then(() =>
+        this.k8sService.stepSource.next({index: 4, isBack: false})
+      ).catch(err => this.messageService.dispatchError(err));
+    }
   }
 }

@@ -55,6 +55,16 @@ if [ "$found" != "true" ]; then
     curl -XPUT -H 'Content-Type: application/json' ${ELASTICSEARCH_URL}/.kibana/doc/dashboard:poderrors?pretty -d @/config/dashboard/errors.json 2>/dev/null
     ######
 
+    ###### dashboard 3: log_zh_CN dashboard
+    # dashboard
+    curl -XPUT -H 'Content-Type: application/json' ${ELASTICSEARCH_URL}/.kibana/doc/dashboard:podlogs_zh_CN?pretty -d @/config/dashboard/logs_zh_CN.json 2>/dev/null
+    ######
+
+    ###### dashboard 4: error_zh_CN dashboard
+    curl -XPUT -H 'Content-Type: application/json' ${ELASTICSEARCH_URL}/.kibana/doc/dashboard:poderrors_zh_CN?pretty -d @/config/dashboard/errors_zh_CN.json 2>/dev/null
+    ######
+
+
     # kibana metadata saves sucessfully tag
     curl -XPUT -H 'Content-Type: application/json' ${ELASTICSEARCH_URL}/board/doc/kibana?pretty -d '{"successfully": true}' 2>/dev/null
 fi

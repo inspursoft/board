@@ -1,10 +1,20 @@
 <clr-alert [clrAlertType]="'alert-danger'" [clrAlertAppLevel]="true" [(clrAlertClosed)]="globalMessageClosed">
   <div class="alert-item">
+    <div *ngIf="showDetail" style="margin-right: auto"></div>
     <span class="alert-text">
       {{ globalAnnoucedMessage | translate }}
     </span>
     <div class="alert-actions" *ngIf="showAction">
       <button class="btn alert-action" (click)="redirectToSignIn()">{{ 'GLOBAL_ALERT.SIGN_IN' | translate }}</button>
     </div>
+    <div *ngIf="showDetail" style="margin-left: auto;cursor: pointer">
+      <clr-icon shape="ellipsis-vertical" (click)="detailModalOpen = true"></clr-icon>
+    </div>
   </div>
 </clr-alert>
+<clr-modal [(clrModalOpen)]="detailModalOpen" [clrModalSize]="'md'">
+  <h3 class="modal-title">{{ 'GLOBAL_ALERT.ERROR_DETAIL' | translate }}</h3>
+  <div class="modal-body">
+    <p>{{errorDetailMsg}}</p>
+  </div>
+</clr-modal>

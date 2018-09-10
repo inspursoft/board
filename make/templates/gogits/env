@@ -1,2 +1,0 @@
-target_base_url=$jenkins_job_trigger_url
-jenkins_token=$jenkins_token

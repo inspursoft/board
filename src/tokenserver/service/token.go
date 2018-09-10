@@ -3,6 +3,8 @@ package service
 import (
 	"crypto/rand"
 	"fmt"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/astaxie/beego/config"
@@ -65,12 +67,7 @@ func generateRandomString() string {
 
 func InitService() error {
 	var err error
-	iniConf, err = config.NewConfig("ini", "app.conf")
-	if err != nil {
-		logs.Error("Failed to load config file: %+v", err)
-		return err
-	}
-	expireSeconds, err = iniConf.Int("tokenExpireSeconds")
+	expireSeconds, err = strconv.Atoi(os.Getenv("TOKEN_EXPIRE_SECONDS"))
 	if err != nil {
 		logs.Error("Failed to get expireSeconds from config file: %+v", err)
 		return err

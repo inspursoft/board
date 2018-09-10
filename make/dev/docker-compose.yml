@@ -39,8 +39,6 @@ services:
       dockerfile: make/dev/container/gogits/Dockerfile
     image: dev_gogits:dev
     restart: always
-    env_file:
-      - ../config/gogits/env
     volumes:
       - ../config/gogits/conf/app.ini:/tmp/conf/app.ini
       - /data/board/gogits:/data:rw
@@ -88,11 +86,11 @@ services:
     image: dev_apiserver:dev
     restart: always
     volumes:
-      - ../config/apiserver/app.conf:/go/bin/app.conf:z
-      - ../config/apiserver/parser.py:/go/bin/parser.py:z
       - ../../tools/swagger/vendors/swagger-ui-2.1.4/dist:/go/bin/swagger:z
       - /data/board/repos:/repos:rw
       - /data/board/keys:/keys:rw
+      - ../config/apiserver/kvm:/root/kvm
+      - ../config/apiserver/kvmregistry:/root/kvmregistry
     env_file:
       - ../config/apiserver/env
     networks:
@@ -117,8 +115,6 @@ services:
     env_file:
       - ../config/tokenserver/env
     restart: always
-    volumes:
-      - ../config/tokenserver/app.conf:/go/bin/app.conf:z
     networks:
       - board
     depends_on:
@@ -132,6 +128,7 @@ services:
     build:
       context: ../../
       dockerfile: make/dev/container/collector/Dockerfile
+    image: dev_collector:dev
     restart: always
     env_file:
       - ../config/collector/env
@@ -243,6 +240,8 @@ services:
       - board
     depends_on:
       - log
+    volumes:
+      - ../config/kibana:/config
     logging:
       driver: "syslog"
       options:

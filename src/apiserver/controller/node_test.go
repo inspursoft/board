@@ -1,21 +1,22 @@
-package controller
+package controller_test
 
 import (
+	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/astaxie/beego"
 	"github.com/stretchr/testify/assert"
 )
 
+var nodeIP = utils.GetConfig("NODE_IP")
+
 func TestGetNode(t *testing.T) {
 	token := adminLoginTest(t)
 	defer adminLogoutTest(t)
 
-	nodeIP := os.Getenv("NODE_IP")
-	r, _ := http.NewRequest("GET", "/api/v1/node?node_name="+nodeIP+"&token="+token, nil)
+	r, _ := http.NewRequest("GET", "/api/v1/node?node_name="+nodeIP()+"&token="+token, nil)
 	w := httptest.NewRecorder()
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
 
@@ -39,9 +40,7 @@ func TestNodeToggle(t *testing.T) {
 	token := adminLoginTest(t)
 	defer adminLogoutTest(t)
 
-	nodeIP := os.Getenv("NODE_IP")
-
-	r, _ := http.NewRequest("GET", "/api/v1/node/toggle?node_name="+nodeIP+"&node_status=false&token="+token, nil)
+	r, _ := http.NewRequest("GET", "/api/v1/node/toggle?node_name="+nodeIP()+"&node_status=false&token="+token, nil)
 	w := httptest.NewRecorder()
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
 
@@ -50,7 +49,7 @@ func TestNodeToggle(t *testing.T) {
 		t.FailNow()
 	}
 
-	r, _ = http.NewRequest("GET", "/api/v1/node/toggle?node_name="+nodeIP+"&node_status=true&token="+token, nil)
+	r, _ = http.NewRequest("GET", "/api/v1/node/toggle?node_name="+nodeIP()+"&node_status=true&token="+token, nil)
 	w = httptest.NewRecorder()
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
 

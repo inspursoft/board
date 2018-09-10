@@ -14,8 +14,8 @@ export class MessageService {
   messageConfirmedSource: Subject<Message> = new Subject<Message>();
   messageConfirmed$: Observable<Message> = this.messageConfirmedSource.asObservable();
 
-  messageCanceledSource: Subject<boolean> = new Subject<boolean>();
-  messageCanceled$: Observable<boolean> = this.messageCanceledSource.asObservable();
+  messageCanceledSource: Subject<Message> = new Subject<Message>();
+  messageCanceled$: Observable<Message> = this.messageCanceledSource.asObservable();
 
   inlineAlertAnnouncedSource: Subject<Message> = new Subject<Message>();
   inlineAlertAnnounced$: Observable<Message> = this.inlineAlertAnnouncedSource.asObservable();
@@ -31,8 +31,8 @@ export class MessageService {
     this.messageConfirmedSource.next(message);
   }
 
-  cancelMessage() {
-    this.messageCanceledSource.next(true);
+  cancelMessage(message: Message) {
+    this.messageCanceledSource.next(message);
   }
 
   inlineAlertMessage(message: Message) {
@@ -51,7 +51,7 @@ export class MessageService {
     }
   }
 
-  dispatchError(response: HttpErrorResponse | Error, customMessage?: string) {
+  dispatchError(response: HttpErrorResponse | Error, customMessage?: string, isShowDetail:boolean = false) {
     let errMessage = new Message();
     if(response instanceof HttpErrorResponse) {
       switch(response.status){
@@ -96,9 +96,12 @@ export class MessageService {
       if(errMessage.type === MESSAGE_TYPE.COMMON_ERROR) {
         this.inlineAlertMessage(errMessage);
       } else {
+        errMessage.type = isShowDetail ? MESSAGE_TYPE.SHOW_DETAIL: MESSAGE_TYPE.NONE;
+        errMessage.errorObject = response;
         this.globalMessage(errMessage);
       } 
-    } else if (response instanceof Error) {
+    } else if (response) {
+      errMessage.type = isShowDetail ? MESSAGE_TYPE.SHOW_DETAIL: MESSAGE_TYPE.NONE;
       errMessage.message = response.message;
       this.globalMessage(errMessage);
     }

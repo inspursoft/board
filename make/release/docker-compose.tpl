@@ -28,8 +28,6 @@ services:
   gogits:
     image: board_gogits:__version__
     restart: always
-    env_file:
-      - ../config/gogits/env
     volumes:
       - /data/board/gogits:/data:rw
       - ../config/gogits/conf/app.ini:/tmp/conf/app.ini
@@ -57,7 +55,6 @@ services:
       - ../config/jenkins/env
     ports:
       - 8888:8080
-      - 50000:50000
     depends_on:
       - log
     logging:
@@ -69,19 +66,17 @@ services:
     image: board_apiserver:__version__
     restart: always
     volumes:
-      - ../config/apiserver/app.conf:/usr/bin/app.conf:z
-      - ../config/apiserver/parser.py:/usr/bin/parser.py:z
 #     - ../../tools/swagger/vendors/swagger-ui-2.1.4/dist:/usr/bin/swagger:z
       - /data/board/repos:/repos:rw
       - /data/board/keys:/keys:rw
     env_file:
       - ../config/apiserver/env
+    ports:
+      - 8088:8088
     networks:
       - board
     links:
       - db
-    ports: 
-      - 8088:8088
     depends_on:
       - log
     logging:
@@ -94,8 +89,6 @@ services:
     env_file:
       - ../config/tokenserver/env
     restart: always
-    volumes:
-      - ../config/tokenserver/app.conf:/usr/bin/app.conf:z
     networks:
       - board
     depends_on:
@@ -201,6 +194,8 @@ services:
       - board
     depends_on:
       - log
+    volumes:
+      - ../config/kibana:/config
     logging:
       driver: "syslog"
       options:

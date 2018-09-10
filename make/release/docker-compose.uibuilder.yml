@@ -1,0 +1,13 @@
+version: '2'
+services:
+  uibuilder:
+    build:
+      context: ../../
+      dockerfile: make/dev/container/uibuilder/Dockerfile
+    image: uibuilder
+    volumes:
+      - ../../src/ui:/board_src
+    environment:
+       MODE: prod
+    entrypoint:
+      - /entrypoint.sh

@@ -11,28 +11,30 @@
     <div class="vol-configure-container">
       <cs-input [inputLabel]="'SERVICE.VOLUME_TARGET_STORAGE'| translate"
                 [simpleFiled]="volumeDataOrigin.out_medium"
+                [inputPlaceholder]="'NFS'"
                 (onCheck)="volumeDataOrigin.out_medium = $event">
       </cs-input>
       <cs-input [inputLabel]="'SERVICE.VOLUME_TARGET_DIR'| translate"
                 [inputPattern]="patternPath"
                 [simpleFiled]="volumeDataOrigin.out_path"
+                [inputPlaceholder]="'10.0.0.0:111/data/nfs'"
                 (onCheck)="volumeDataOrigin.out_path=$event">
       </cs-input>
       <cs-input [inputLabel]="'SERVICE.VOLUME_NAME'| translate"
                 [inputPattern]="patternName"
                 [simpleFiled]="volumeDataOrigin.out_name"
+                [inputPlaceholder]="'nfsVolume1'"
                 (onCheck)="volumeDataOrigin.out_name = $event">
       </cs-input>
       <cs-input [inputLabel]="'SERVICE.VOLUME_CONTAINER_DIR'| translate"
                 [inputPattern]="patternMountPath"
                 [simpleFiled]="volumeDataOrigin.out_mountPath"
+                [inputPlaceholder]="'/usr/share/nginx/html'"
                 (onCheck)="volumeDataOrigin.out_mountPath = $event">
       </cs-input>
     </div>
     <div class="vol-confirm-container">
-      <button class="btn btn-primary vol-confirm"
-              [disabled]="!isConfirmEnabled"
-              (click)="confirmVolumeInfo()">
+      <button class="btn btn-primary vol-confirm" (click)="confirmVolumeInfo()">
         {{"SERVICE.VOLUME_CONFIRM" | translate}}
       </button>
     </div>

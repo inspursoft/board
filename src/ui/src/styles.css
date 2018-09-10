@@ -1,4 +1,5 @@
 /* You can add global styles to this file, and also import other style files */
+@import '~inspurprism/prism-default.css';
 .popover-pointer:before {
   border-right-color: rgba(0, 64, 96, 0.8) !important;
   border-left-color: rgba(0, 64, 96, 0.8) !important;
@@ -15,3 +16,8 @@ button.signpost-content-header-btn-close {
 button.signpost-content-header-btn-close:hover {
   color: deepskyblue !important;
 }
+
+/*clr-vertical-nav.clr-vertical-nav button.nav-trigger{*/
+  /*background-color: #4a5063;*/
+  /*color: white;*/
+/*}*/

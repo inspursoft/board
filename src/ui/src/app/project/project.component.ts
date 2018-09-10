@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewContainerRef } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { AppInitService } from '../app.init.service';
 import { MessageService } from '../shared/message-service/message.service';
@@ -6,10 +6,8 @@ import { Message } from '../shared/message-service/message';
 import { BUTTON_STYLE, GUIDE_STEP, MESSAGE_TARGET } from '../shared/shared.const';
 import { Project } from './project';
 import { ProjectService } from './project.service';
-import { CreateProjectComponent } from './create-project/create-project.component';
-import { MemberComponent } from './member/member.component';
-import { ActivatedRoute } from "@angular/router";
 import { ClrDatagridSortOrder, ClrDatagridStateInterface } from "@clr/angular";
+import { SharedActionService } from "../shared/shared-action.service";
 
 @Component({
   selector: 'project',
@@ -17,8 +15,6 @@ import { ClrDatagridSortOrder, ClrDatagridStateInterface } from "@clr/angular";
   templateUrl: 'project.component.html'
 })
 export class ProjectComponent implements OnInit, OnDestroy {
-  @ViewChild(CreateProjectComponent) createProjectModal;
-  @ViewChild(MemberComponent) memberModal;
   _subscription: Subscription;
   totalRecordCount: number;
   pageIndex: number = 1;  
@@ -29,34 +25,29 @@ export class ProjectComponent implements OnInit, OnDestroy {
   descSort = ClrDatagridSortOrder.DESC;
   oldStateInfo: ClrDatagridStateInterface;
   constructor(
-    private activatedRoute:ActivatedRoute,
     private appInitService: AppInitService,
     private projectService: ProjectService,
-    private messageService: MessageService) {
-    this._subscription = this.messageService.messageConfirmed$.subscribe(m=>{
-      let confirmationMessage = <Message>m;
-      if(confirmationMessage) {
-        let project = <Project>confirmationMessage.data;
+    private messageService: MessageService,
+    private sharedActionService: SharedActionService,
+    private selfView: ViewContainerRef) {
+    this._subscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
+      if (msg.target == MESSAGE_TARGET.DELETE_PROJECT) {
+        let project = <Project>msg.data;
         this.projectService
           .deleteProject(project)
-          .then(()=>{
+          .then(() => {
             let inlineMessage = new Message();
             inlineMessage.message = 'PROJECT.SUCCESSFUL_DELETE_PROJECT';
             this.messageService.inlineAlertMessage(inlineMessage);
             this.retrieve(this.oldStateInfo);
           })
-          .catch(err=>this.messageService.dispatchError(err, ''));
+          .catch(err => this.messageService.dispatchError(err, ''));
       }
     });
   }
 
   ngOnInit(): void {
     this.currentUser = this.appInitService.currentUser;
-    this.activatedRoute.fragment.subscribe((res)=>{
-      if (res && res =="create"){
-        this.createProject();
-      }
-    });
   }
 
   ngOnDestroy(): void {
@@ -86,12 +77,17 @@ export class ProjectComponent implements OnInit, OnDestroy {
   }
 
   createProject(): void {
-    this.createProjectModal.openModal();
+    this.sharedActionService.createProjectComponent(this.selfView).subscribe((projectName: string) => {
+      this.createProjectClose();
+      if (projectName) {
+        this.retrieve(this.oldStateInfo);
+      }
+    });
   }
 
-  editProjectMember(p: Project): void {
-    if (this.isSystemAdminOrOwner(p)) {
-      this.memberModal.openModal(p);
+  editProjectMember(project: Project): void {
+    if (this.isSystemAdminOrOwner(project)) {
+      this.sharedActionService.createProjectMemberComponent(project, this.selfView);
     }
   }
 
@@ -148,7 +144,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
      this.appInitService.guideStep = GUIDE_STEP.NONE_STEP;
   }
 
-  createProjectClose(step: GUIDE_STEP){
+  createProjectClose() {
     if (this.isFirstLogin){
       this.appInitService.guideStep = GUIDE_STEP.SERVICE_LIST;
     }

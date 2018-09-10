@@ -1,6 +1,9 @@
 <div class="config-container">
   <span>{{"SERVICE.STEP_4_SERVICE_CONFIG_TITLE"|translate}}:</span>
   <div class="config-service-info-container">
+    <div *ngIf="noPortForExtent" class="alert alert-danger" role="alert">
+       {{"SERVICE.STEP_4_DANGER_MESSAGE" | translate}}
+    </div>
     <div class="config-service-info-line">
       <cs-input class="base-input"
                 [inputIsRequired]="true"
@@ -8,6 +11,7 @@
                 [inputLabel]="'SERVICE.STEP_4_SERVICE_NAME' | translate"
                 [customerValidatorAsyncFunc]="checkServiceNameFun"
                 [simpleFiled]="uiData.serviceName"
+                [inputPlaceholder]="'SERVICE.STEP_4_SERVICE_OF_NAME'| translate"
                 (onCheck)="setServiceName($event)">
       </cs-input>
     </div>
@@ -20,18 +24,25 @@
              [(ngModel)]="uiData.servicePublic">
     </div>
     <div class="config-service-info-line">
-      <span class="instance">{{"SERVICE.STEP_4_INSTANCE"|translate}}:</span>
-      <cs-dropdown class="base-margin-left"
-                   [dropdownWidth]="310"
-                   [dropdownDefaultText]="'1'"
-                   [dropdownList]="dropDownListNum"
-                   (onChange)="uiData.instance = $event">
-      </cs-dropdown>
+      <cs-input class="base-input"
+                [inputIsRequired]="true"
+                [inputFiledType]="1"
+                [inputMin]="1"
+                [inputMax]="99"
+                [inputLabel]="'SERVICE.STEP_4_INSTANCE' | translate"
+                [simpleFiled]="uiData.instance"
+                (onCheck)="uiData.instance = $event">
+      </cs-input>
     </div>
   </div>
   <div class="advanced-container" (click)="showAdvanced = !showAdvanced">
     <div [ngClass]="{'advanced-open':showAdvanced,'advanced-close':!showAdvanced}" class="step-arrow"></div>
     <span class="base-margin-left">{{"SERVICE.STEP_4_ADVANCED_CONFIG"|translate}}</span>
+    <div *ngIf="uiData.externalServiceList.length == 0"
+         class="alert alert-warning base-margin-left"
+         role="alert">
+      {{"SERVICE.STEP_4_WARNING_MESSAGE" | translate}}
+    </div>
   </div>
   <div *ngIf="showAdvanced" class="advanced-item-container" (click)="showExternal = !showExternal">
     <div class="advanced-item-icon-container"
@@ -75,6 +86,7 @@
                   [inputIsRequired]="true"
                   [inputMin]="30000"
                   [inputMax]="32766"
+                  [inputPlaceholder]="'SERVICE.STEP_4_EXTERNAL_PORT'| translate"
                   (onCheck)="setNodePort(iIndex,$event)">
         </cs-input>
         <div class="radio-inline external-radio-container">
@@ -121,7 +133,7 @@
     <span class="base-margin-left">{{"SERVICE.STEP_4_COLLABORATIVE"|translate}}:</span>
   </div>
   <div *ngIf="showCollaborative && showAdvanced">
-    <div style="display: flex;height: 30px;margin-top: 10px;" *ngFor="let obj of collaborativeList; let i = index">
+    <div class="collaborative-container" *ngFor="let obj of collaborativeList; let i = index">
       <clr-icon class="plus-icon"
                 shape="minus"
                 (click)="collaborativeList.splice(collaborativeList.indexOf(obj), 1)">
@@ -139,6 +151,21 @@
               (click)="addOneCollaborativeService()">
     </clr-icon>
   </div>
+
+  <div *ngIf="showAdvanced" class="advanced-item-container" (click)="showNodeSelector = !showNodeSelector">
+    <div class="advanced-item-icon-container"
+         [ngClass]="{'collaborative-close':showNodeSelector,'collaborative-open':!showNodeSelector}">
+      <clr-icon shape="caret up" class="advanced-item-icon"></clr-icon>
+    </div>
+    <span class="base-margin-left">{{"SERVICE.STEP_4_NODE_SELECTOR"|translate}}:</span>
+  </div>
+  <cs-dropdown *ngIf="showNodeSelector && showAdvanced"
+               style="margin-left: 190px;"
+               [dropdownList]="nodeSelectorList"
+               [dropdownWidth]="310"
+               [dropdownDefaultText]="nodeSelectorDefaultText | translate "
+               (onChange)="uiData.nodeSelector = $event">
+  </cs-dropdown>
 </div>
 <button class="btn btn-default" (click)="cancelBuildService()">
   {{"BUTTON.CANCEL" | translate}}
@@ -149,6 +176,8 @@
 <button class="btn btn-default" (click)="backUpStep()">
   {{"BUTTON.BACK" | translate}}
 </button>
-<button class="btn btn-default" [disabled]="!isInputComponentsValid" (click)="forward()">
+<button class="btn btn-default"
+        (click)="forward()"
+        [disabled]="noPortForExtent || uiData.externalServiceList.length == 0">
   {{"BUTTON.NEXT" | translate}}
 </button>

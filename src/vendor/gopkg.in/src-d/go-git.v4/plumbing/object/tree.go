@@ -136,9 +136,9 @@ func (t *Tree) dir(baseName string) (*Tree, error) {
 	}
 
 	tree := &Tree{s: t.s}
-	tree.Decode(obj)
+	err = tree.Decode(obj)
 
-	return tree, nil
+	return tree, err
 }
 
 var errEntryNotFound = errors.New("entry not found")
@@ -233,7 +233,7 @@ func (t *Tree) Decode(o plumbing.EncodedObject) (err error) {
 }
 
 // Encode transforms a Tree into a plumbing.EncodedObject.
-func (t *Tree) Encode(o plumbing.EncodedObject) error {
+func (t *Tree) Encode(o plumbing.EncodedObject) (err error) {
 	o.SetType(plumbing.TreeObject)
 	w, err := o.Writer()
 	if err != nil {
@@ -242,7 +242,7 @@ func (t *Tree) Encode(o plumbing.EncodedObject) error {
 
 	defer ioutil.CheckClose(w, &err)
 	for _, entry := range t.Entries {
-		if _, err := fmt.Fprintf(w, "%o %s", entry.Mode, entry.Name); err != nil {
+		if _, err = fmt.Fprintf(w, "%o %s", entry.Mode, entry.Name); err != nil {
 			return err
 		}
 
@@ -297,9 +297,10 @@ func (iter *treeEntryIter) Next() (TreeEntry, error) {
 
 // TreeWalker provides a means of walking through all of the entries in a Tree.
 type TreeWalker struct {
-	stack     []treeEntryIter
+	stack     []*treeEntryIter
 	base      string
 	recursive bool
+	seen      map[plumbing.Hash]bool
 
 	s storer.EncodedObjectStorer
 	t *Tree
@@ -309,13 +310,14 @@ type TreeWalker struct {
 //
 // It is the caller's responsibility to call Close() when finished with the
 // tree walker.
-func NewTreeWalker(t *Tree, recursive bool) *TreeWalker {
-	stack := make([]treeEntryIter, 0, startingStackSize)
-	stack = append(stack, treeEntryIter{t, 0})
+func NewTreeWalker(t *Tree, recursive bool, seen map[plumbing.Hash]bool) *TreeWalker {
+	stack := make([]*treeEntryIter, 0, startingStackSize)
+	stack = append(stack, &treeEntryIter{t, 0})
 
 	return &TreeWalker{
 		stack:     stack,
 		recursive: recursive,
+		seen:      seen,
 
 		s: t.s,
 		t: t,
@@ -358,6 +360,10 @@ func (w *TreeWalker) Next() (name string, entry TreeEntry, err error) {
 			return
 		}
 
+		if w.seen[entry.Hash] {
+			continue
+		}
+
 		if entry.Mode == filemode.Dir {
 			obj, err = GetTree(w.s, entry.Hash)
 		}
@@ -377,7 +383,7 @@ func (w *TreeWalker) Next() (name string, entry TreeEntry, err error) {
 	}
 
 	if t, ok := obj.(*Tree); ok {
-		w.stack = append(w.stack, treeEntryIter{t, 0})
+		w.stack = append(w.stack, &treeEntryIter{t, 0})
 		w.base = path.Join(w.base, entry.Name)
 	}
 

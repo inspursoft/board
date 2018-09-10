@@ -1,13 +1,13 @@
 import { Component, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
-import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/switchMap';
 
 import { AppInitService } from '../../app.init.service';
 import { MessageService } from '../message-service/message.service';
 import { Message } from '../message-service/message';
-import { MESSAGE_TYPE, DISMISS_GLOBAL_ALERT_INTERVAL } from '../shared.const';
+import { MESSAGE_TYPE } from '../shared.const';
+import { HttpErrorResponse } from "@angular/common/http";
 
 @Component({
   selector: 'global-message',
@@ -16,35 +16,41 @@ import { MESSAGE_TYPE, DISMISS_GLOBAL_ALERT_INTERVAL } from '../shared.const';
 export class GlobalMessageComponent implements OnDestroy {
 
   globalMessageClosed: boolean;
-  globalAnnoucedMessage: string;
-  showAction: boolean;
+  globalAnnoucedMessage: string = "";
+  showAction: boolean = false;
+  showDetail: boolean = false;
+  detailModalOpen: boolean = false;
+  errorObject: HttpErrorResponse | Error;
   authMode: string = '';
   redirectionURL: string = '';
   
   _subscription: Subscription;
 
-  constructor(
-    private appInitService: AppInitService,
-    private messageService: MessageService,
-    private router: Router
-  ) {
+  constructor(private appInitService: AppInitService,
+              private messageService: MessageService,
+              private router: Router) {
     this.globalMessageClosed = true;
     this.showAction = false;
-    this._subscription = this.messageService
-      .globalAnnounced$
-      .switchMap(m=>Observable.of(m))
-      .subscribe(m=>{
+    this._subscription = this.messageService.globalAnnounced$
+      .subscribe((msg: Message) => {
         this.globalMessageClosed = false;
-        let globalMessage = <Message>m;
-        this.globalAnnoucedMessage = globalMessage.message;
-        if(globalMessage) {
-          if(globalMessage.type === MESSAGE_TYPE.INVALID_USER) {
-            this.showAction = true;
-          }
-        }
+        this.errorObject = msg.errorObject;
+        this.globalAnnoucedMessage = msg.message;
+        this.showDetail = msg.type === MESSAGE_TYPE.SHOW_DETAIL;
+        this.showAction = msg.type === MESSAGE_TYPE.INVALID_USER;
       });
     this.authMode = this.appInitService.systemInfo['auth_mode'];
     this.redirectionURL = this.appInitService.systemInfo['redirection_url'];
+  }
+
+  get errorDetailMsg(): string {
+    let result: string = "";
+    if (this.errorObject && this.errorObject instanceof HttpErrorResponse) {
+      result = (this.errorObject as HttpErrorResponse).message
+    } else if (this.errorObject) {
+      result = (this.errorObject as Error).message;
+    }
+    return result;
   }
 
   redirectToSignIn(): void {

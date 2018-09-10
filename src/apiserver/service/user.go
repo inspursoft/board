@@ -75,6 +75,16 @@ func GetUserByName(username string) (*model.User, error) {
 	return dao.GetUser(query, "username", "deleted")
 }
 
+func GetUserByEmail(email string) (*model.User, error) {
+	query := model.User{Email: email, Deleted: 0}
+	return dao.GetUser(query, "email", "deleted")
+}
+
+func GetUserByResetUUID(resetUuid string) (*model.User, error) {
+	query := model.User{ResetUUID: resetUuid, Deleted: 0}
+	return dao.GetUser(query, "reset_uuid", "deleted")
+}
+
 func GetUsers(field string, value interface{}, selectedFields ...string) ([]*model.User, error) {
 	return dao.GetUsers(field, value, selectedFields...)
 }
@@ -92,6 +102,16 @@ func UpdateUser(user model.User, selectedFields ...string) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+func UpdateUserUUID(userID int64, resetUUID string) (bool, error) {
+	return UpdateUser(model.User{ID: userID, ResetUUID: resetUUID}, "reset_uuid")
+}
+
+func ResetUserPassword(user model.User, newPassword string) (bool, error) {
+	user.Password = utils.Encrypt(newPassword, user.Salt)
+	user.ResetUUID = ""
+	return UpdateUser(user, "password", "reset_uuid")
 }
 
 func DeleteUser(userID int64) (bool, error) {

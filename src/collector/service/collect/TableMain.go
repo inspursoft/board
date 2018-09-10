@@ -7,22 +7,22 @@ import (
 	"git/inspursoft/board/src/collector/model/collect"
 	"git/inspursoft/board/src/collector/model/collect/dashboard"
 	"git/inspursoft/board/src/collector/util"
+	"git/inspursoft/board/src/common/k8sassist"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
 
+	"git/inspursoft/board/src/common/model"
 	"github.com/google/cadvisor/info/v2"
-	"k8s.io/client-go/pkg/api/v1"
-	modelK8s "k8s.io/client-go/pkg/api/v1"
 )
 
-var PodList modelK8s.PodList
-var NodeList modelK8s.NodeList
-var ServiceList modelK8s.ServiceList
+var PodList model.PodList
+var NodeList model.NodeList
+var ServiceList model.ServiceList
 var KuberMasterIp string
 var KuberMasterStatus bool
-var podItem []modelK8s.Pod
+var podItem []model.Pod
 var KuberMasterURL string
 var KuberPort string
 
@@ -48,24 +48,6 @@ func pingK8sApiLink() {
 	fmt.Println("kubernetes version is ", string(body))
 }
 
-//get resource form k8s api-server
-func k8sGet(resource interface{}, path string) {
-	if body, err2 := ioutil.ReadAll(func() *http.Response {
-		resp, err1 := http.Get(KuberMasterURL + path)
-		if err1 != nil {
-			util.Logger.SetFatal(err1)
-		}
-		return resp
-	}().Body); err2 != nil {
-		util.Logger.SetFatal(err2)
-	} else {
-		err3 := json.Unmarshal(body, &resource)
-		if err3 != nil {
-			util.Logger.SetFatal(err2)
-		}
-	}
-}
-
 // insert time list table
 func timeList() {
 	var t dashboard.TimeListLog
@@ -76,7 +58,14 @@ func timeList() {
 
 //get nodes info from k8s apiserver
 func (this *SourceMap) GainPods() error {
-	k8sGet(&PodList, "/api/v1/pods")
+	c := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		K8sMasterURL: KuberMasterURL,
+	})
+	l, err := c.AppV1().Pod("").List()
+	if err != nil {
+		return err
+	}
+	PodList = *l
 	this.maps.ServiceCount = make(map[string]ServiceLog)
 	this.maps.PodContainerCount = make(map[string]int64)
 	getPods(this, PodList.Items)
@@ -89,12 +78,19 @@ func (this *SourceMap) GainPods() error {
 
 func (resource SourceMap) GainNodes() error {
 	var nodeCollect []collect.Node
-	k8sGet(&NodeList, "/api/v1/nodes")
+	c := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		K8sMasterURL: KuberMasterURL,
+	})
+	l, err := c.AppV1().Node().List()
+	if err != nil {
+		return err
+	}
+	NodeList = *l
 loopNode:
 	for _, v := range NodeList.Items {
 		for _, cond := range v.Status.Conditions {
 			if strings.EqualFold(string(cond.Type), "Ready") {
-				if cond.Status != v1.ConditionTrue && !v.Spec.Unschedulable {
+				if cond.Status != model.ConditionTrue && !v.Unschedulable {
 					util.Logger.SetWarn("this node status is false", v.Status.Addresses[1].Address)
 					continue loopNode
 				}
@@ -103,22 +99,24 @@ loopNode:
 		var nodes = resource.nodes
 		nodes.NodeName = v.Name
 		nodes.CreateTime = v.CreationTimestamp.Format("2006-01-02 15:04:05")
+		var cpuCores int = 1
 		for k, v := range v.Status.Capacity {
 			switch k {
 			case "cpu":
-				nodes.NumbersCpuCore = v.String()
+				nodes.NumbersCpuCore = fmt.Sprintf("%d", v)
+				cpuCores = int(v)
 			case "memory":
-				nodes.MemorySize = v.String()
+				nodes.MemorySize = fmt.Sprintf("%d", v)
 			case "alpha.kubernetes.io/nvidia-gpu":
-				nodes.NumbersGpuCore = v.String()
+				nodes.NumbersGpuCore = fmt.Sprintf("%d", v)
 			case "pods":
-				nodes.PodLimit = v.String()
+				nodes.PodLimit = fmt.Sprintf("%d", v)
 			}
 		}
 
 		nodes.TimeListId = (*serviceDashboardID)[*minuteCounterI]
 		nodes.InternalIp = v.Status.Addresses[1].Address
-		cpu, mem, err := getNodePs(v.Status.Addresses[1].Address)
+		cpu, mem, err := getNodePs(v.Status.Addresses[1].Address, cpuCores)
 		if err != nil {
 			return err
 		}
@@ -173,7 +171,7 @@ func GetNodeMachine(ip string) interface{} {
 }
 
 //get nodes ps info
-func getNodePs(ip string) (cpu float32, mem float32, err error) {
+func getNodePs(ip string, cpuCores int) (cpu float32, mem float32, err error) {
 	var y []v2.ProcessInfo
 	var r http.Request
 	r.ParseForm()
@@ -208,20 +206,27 @@ func getNodePs(ip string) (cpu float32, mem float32, err error) {
 		c = c + v.PercentCpu
 		m = m + v.PercentMemory
 	}
-	cpu = c
+	cpu = c / float32(cpuCores)
 	mem = m
 	return
 }
 
 //get server info
 func (resource *SourceMap) GainServices() error {
-	k8sGet(&ServiceList, "/api/v1/services")
+	c := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		K8sMasterURL: KuberMasterURL,
+	})
+	l, err := c.AppV1().Service("").List()
+	if err != nil {
+		return err
+	}
+	ServiceList = *l
 	for _, v := range ServiceList.Items {
 		var service = resource.services
 		service.CreateTime = v.CreationTimestamp.Format("2006-01-02 15:04:05")
 		service.ServiceName = v.Name
 		service.TimeListId = (*serviceDashboardID)[*minuteCounterI]
-		for k, v := range v.Spec.Selector {
+		for k, v := range v.Selector {
 			var kvMap collect.ServiceKvMap
 			kvMap.Name = k
 			kvMap.Value = v

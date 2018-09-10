@@ -2,6 +2,8 @@ import { Component, Input, Output, EventEmitter } from "@angular/core";
 import { User } from '../user';
 import { UserService } from "../user-service/user-service"
 import { MessageService } from "../../shared/message-service/message.service";
+import { Message } from "../../shared/message-service/message";
+import { CsComponentBase } from "../../shared/cs-components-library/cs-component-base";
 
 export enum editModel { emNew, emEdit }
 
@@ -10,14 +12,14 @@ export enum editModel { emNew, emEdit }
   templateUrl: "./user-new-edit.component.html",
   styleUrls: ["./user-new-edit.component.css"]
 })
-export class NewEditUserComponent {
+export class NewEditUserComponent extends CsComponentBase{
   _isOpen: boolean;
-  isAlertOpen: boolean = false;
-  afterCommitErr: string = "";
+  isWorkWIP: boolean = false;
 
   constructor(private userService: UserService,
               private messageService: MessageService) {
-  };
+    super();
+  }
 
   @Input() userModel: User;
   @Input() CurEditModel: editModel;
@@ -44,55 +46,38 @@ export class NewEditUserComponent {
   get ActionCaption() {
     return this.CurEditModel == editModel.emNew
       ? "USER_CENTER.ADD"
-      : "USER_CENTER.EDIT";
+      : "USER_CENTER.SAVE";
   }
 
   submitUser() {
-    this.CurEditModel == editModel.emEdit ? this.updateUser() : this.addNewUser();
+    if (this.verifyInputValid()){
+      this.isWorkWIP = true;
+      this.CurEditModel == editModel.emEdit ? this.updateUser() : this.addNewUser();
+    }
   }
 
   updateUser() {
     this.userService.updateUser(this.userModel)
       .then(() => {
+        let msg:Message = new Message();
+        msg.message = "USER_CENTER.EDIT_USER_SUCCESS";
+        this.messageService.inlineAlertMessage(msg);
         this.SubmitSuccessEvent.emit(true);
         this.isOpen = false;
       })
-      .catch(err => {
-        if(err) {
-          if(err.status === 400) {
-            this.isAlertOpen = true;
-            this.afterCommitErr = 'ACCOUNT.EMAIL_IS_ILLEGAL';
-          } else if(err.status === 409){
-            this.isAlertOpen = true;
-            this.afterCommitErr = 'ACCOUNT.EMAIL_ALREADY_EXISTS';
-          } else {
-            this.isOpen = false;
-            this.messageService.dispatchError(err)
-          }
-        }
-      });
+      .catch(()=>this.isWorkWIP = false);
   }
 
   addNewUser() {
     this.userService.newUser(this.userModel)
       .then(() => {
+        let msg:Message = new Message();
+        msg.message = "USER_CENTER.ADD_USER_SUCCESS";
+        this.messageService.inlineAlertMessage(msg);
         this.SubmitSuccessEvent.emit(true);
         this.isOpen = false;
       })
-      .catch(err => {
-        if(err) {
-          if(err.status === 400) {
-            this.isAlertOpen = true;
-            this.afterCommitErr = 'ACCOUNT.EMAIL_IS_ILLEGAL';
-          } else if(err.status === 409){
-            this.isAlertOpen = true;
-            this.afterCommitErr = 'ACCOUNT.EMAIL_ALREADY_EXISTS';
-          } else {
-            this.isOpen = false;
-            this.messageService.dispatchError(err)
-          }
-        }
-      });
+      .catch(() => this.isWorkWIP = false);
   }
 
 }

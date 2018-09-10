@@ -3,6 +3,10 @@ import { K8sService } from '../../service.k8s';
 import { MessageService } from '../../../shared/message-service/message.service';
 import { AppInitService } from '../../../app.init.service';
 import { Service } from "../../service";
+import { Subject } from "rxjs/Subject";
+import { Observable } from "rxjs/Observable";
+import { HttpErrorResponse } from "@angular/common/http";
+import "rxjs/add/operator/do"
 
 class NodeURL {
   url: string;
@@ -16,6 +20,10 @@ class NodeURL {
   }
 }
 
+const K8S_HOSTNAME_KEY = 'kubernetes.io/hostname';
+const YAML_TYPE_DEPLOYMENT = 'deployment';
+const YAML_TYPE_SERVICE = 'service';
+
 @Component({
   selector: 'service-detail',
   styleUrls: ["./service-detail.component.css"],
@@ -24,20 +32,19 @@ class NodeURL {
 export class ServiceDetailComponent {
   _isOpenServiceDetail: boolean = false;
   boardHost: string;
-  serviceDetail: string = "";
+  serviceDetail: Object;
   urlList: Array<NodeURL>;
   curService: Service;
   deploymentYamlFile: string = "";
-  deploymentYamlWIP: boolean = false;
-  isShowDeploymentYaml: boolean = false;
   serviceYamlFile: string = "";
-  serviceYamlWIP: boolean = false;
-  isShowServiceYaml: boolean = false;
+  closeNotification:Subject<any>;
+  k8sHostName: string = "";
 
   constructor(private appInitService: AppInitService,
               private k8sService: K8sService,
               private messageService: MessageService) {
     this.boardHost = this.appInitService.systemInfo['board_host'];
+    this.closeNotification = new Subject<any>();
   }
 
   get isOpenServiceDetail(): boolean {
@@ -46,18 +53,20 @@ export class ServiceDetailComponent {
 
   set isOpenServiceDetail(value: boolean) {
     this._isOpenServiceDetail = value;
-    this.isShowServiceYaml = false;
-    this.isShowDeploymentYaml = false;
+    if (!value){
+      this.closeNotification.next();
+    }
   }
 
-  openModal(s: Service): void {
-    this.curService = s;
-    this.getServiceDetail(s.service_id, s.service_project_name, s.service_owner_name);
+  openModal(service: Service): Observable<any> {
+    this.curService = service;
+    this.getDeploymentYamlFile()
+      .subscribe(() => this.getServiceDetail(service.service_id, service.service_project_name, service.service_owner_name));
+    return this.closeNotification.asObservable();
   }
 
   getServiceDetail(serviceId: number, projectName: string, ownerName: string): void {
     this.urlList = [];
-    this.serviceDetail = "";
     this.k8sService.getServiceDetail(serviceId).then(res => {
       if (!res["details"]) {
         let arrNodePort = res["node_Port"] as Array<number>;
@@ -66,20 +75,22 @@ export class ServiceDetailComponent {
           for (let i = 0; i < arrNode.length; i++) {
             let node = arrNode[i];
             if (node.status == 1) {
+              let host = this.k8sHostName && this.k8sHostName.length > 0 ? this.k8sHostName : node.node_ip;
               let port = arrNodePort[Math.floor(Math.random() * arrNodePort.length)];
               let nodeInfo = {
-                url: `http://${node.node_ip}:${port}`,
+                url: `http://${host}:${port}`,
                 identity: `${ownerName}_${projectName}_${this.curService.service_name}`,
                 route: `http://${this.boardHost}/deploy/${ownerName}/${projectName}/${this.curService.service_name}`
               };
               this.urlList.push(nodeInfo);
-              this.k8sService.addServiceRoute(nodeInfo.url, nodeInfo.identity);
+              this.k8sService.addServiceRoute(nodeInfo.url, nodeInfo.identity).then(() => {
+              });
               break;
             }
           }
         });
       }
-      this.serviceDetail = JSON.stringify(res);
+      this.serviceDetail = res;
       this.isOpenServiceDetail = true;
     }).catch(err => {
       this.isOpenServiceDetail = false;
@@ -87,37 +98,29 @@ export class ServiceDetailComponent {
     })
   }
 
-  getDeploymentYamlFile() {
-    this.isShowDeploymentYaml = !this.isShowDeploymentYaml;
-    if (this.isShowDeploymentYaml) {
-      this.deploymentYamlWIP = true;
-      this.k8sService.getServiceYamlFile(this.curService.service_project_name, this.curService.service_name, "deployment")
-        .then((res: string) => {
-          this.deploymentYamlWIP = false;
-          this.deploymentYamlFile = res;
-        })
-        .catch(err => {
-          this.deploymentYamlWIP = false;
-          this.isOpenServiceDetail = false;
-          this.messageService.dispatchError(err);
-        })
-    }
+  getDeploymentYamlFile(): Observable<string> {
+    return this.k8sService.getServiceYamlFile(this.curService.service_project_name, this.curService.service_name, YAML_TYPE_DEPLOYMENT)
+      .do((res: string) => {
+        this.deploymentYamlFile = res;
+        let arr: Array<string> = res.split(/[\n]/g);
+        let k8sHost = arr.find(value => value.indexOf(K8S_HOSTNAME_KEY) > -1);
+        if (k8sHost && k8sHost.length > 0) {
+          this.k8sHostName = k8sHost.split(':')[1].trim();
+        }
+      }, (err: HttpErrorResponse) => {
+        this.isOpenServiceDetail = false;
+        this.messageService.dispatchError(err);
+      });
   }
 
   getServiceYamlFile() {
-    this.isShowServiceYaml = !this.isShowServiceYaml;
-    if (this.isShowServiceYaml) {
-      this.serviceYamlWIP = true;
-      this.k8sService.getServiceYamlFile(this.curService.service_project_name, this.curService.service_name, "service")
-        .then((res: string) => {
-          this.serviceYamlWIP = false;
-          this.serviceYamlFile = res;
-        })
-        .catch(err => {
-          this.serviceYamlWIP = false;
-          this.isOpenServiceDetail = false;
-          this.messageService.dispatchError(err);
-        })
+    if (this.serviceYamlFile.length == 0) {
+      this.k8sService.getServiceYamlFile(this.curService.service_project_name, this.curService.service_name, YAML_TYPE_SERVICE)
+        .subscribe((res: string) => this.serviceYamlFile = res,
+          (err: HttpErrorResponse) => {
+            this.isOpenServiceDetail = false;
+            this.messageService.dispatchError(err);
+          })
     }
   }
 }

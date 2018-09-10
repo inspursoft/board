@@ -7,7 +7,7 @@
       </div>
       <span class="edit-container-title base-margin-left">{{container.name}}:</span>
     </div>
-    <div *ngIf="step3TypeStatus.get(container)" class="edit-container-filed-container">
+    <div [hidden]="!step3TypeStatus.get(container)" class="edit-container-filed-container">
       <cs-input [inputLabel]="'SERVICE.STEP_3_CONTAINER_NAME' | translate"
                 [inputIsRequired]="true"
                 [inputPattern]="patternContainerName"
@@ -16,14 +16,17 @@
       <cs-input [inputLabel]="'SERVICE.STEP_3_WORKING_DIR' | translate"
                 [inputPattern]="patternWorkdir"
                 [simpleFiled]="container.working_dir"
-                (onCheck)="container.workingDir = $event"></cs-input>
+                [inputPlaceholder]="'SERVICE.STEP_3_WORK_DIRECTOR'| translate"
+                (onCheck)="container.working_dir = $event"></cs-input>
       <cs-input [inputType]="1"
                 [inputLabel]="'SERVICE.STEP_3_VOLUME_MOUNTS' | translate"
                 [simpleFiled]="getVolumesDescription(container)"
+                [inputPlaceholder]="'SERVICE.STEP_3_STORAGE_VOLUME'| translate"
                 (onEdit)="curContainerIndex = iStep3; showVolumeMounts = true;"></cs-input>
       <cs-input [inputType]="1"
                 [inputLabel]="'SERVICE.STEP_3_Env' | translate"
                 [simpleFiled]="getEnvsDescription(container)"
+                [inputPlaceholder]="'SERVICE.STEP_3_ENVIRONMENT_VARIABLES'| translate"
                 (onEdit)="curContainerIndex = iStep3;showEnvironmentValue = true;"></cs-input>
       <cs-input-array [inputArrayType]="1"
                       [inputArrayFixedSource]="fixedContainerPort.get(container.name)"

@@ -8,8 +8,10 @@ import (
 )
 
 type ServiceShowController struct {
-	baseController
+	BaseController
 }
+
+func (s *ServiceShowController) Prepare() {}
 
 func (s *ServiceShowController) Get() {
 	ownerName := s.Ctx.Input.Param(":owner_name")

@@ -4,11 +4,10 @@
 import { Component, Injector, OnDestroy, OnInit } from "@angular/core"
 import { Subscription } from "rxjs/Subscription";
 import { Message } from "../../shared/message-service/message";
-import { BUTTON_STYLE } from "../../shared/shared.const";
-import { WebsocketService } from "../../shared/websocket-service/websocket.service";
+import { BUTTON_STYLE, MESSAGE_TARGET, MESSAGE_TYPE } from "../../shared/shared.const";
 import { ServiceStepBase } from "../service-step";
-import { HttpErrorResponse } from "@angular/common/http"
 import { PHASE_ENTIRE_SERVICE, ServiceStepPhase, UIServiceStepBase } from "../service-step.component";
+import { HttpErrorResponse } from "@angular/common/http";
 
 @Component({
   templateUrl: "./deploy.component.html",
@@ -20,32 +19,24 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
   isDeploySuccess: boolean = false;
   isInDeployWIP: boolean = false;
   serviceID: number = 0;
-  consoleText: string = "";
-  processImageSubscription: Subscription;
   _confirmSubscription: Subscription;
+  deployConsole:Object;
 
-  constructor(protected injector: Injector,
-              private webSocketService: WebsocketService) {
+  constructor(protected injector: Injector) {
     super(injector);
     this.boardHost = this.appInitService.systemInfo['board_host'];
   }
 
   ngOnInit() {
-    this._confirmSubscription = this.messageService.messageConfirmed$.subscribe((next: Message) => {
-      this.k8sService.deleteDeployment(this.serviceID)
-        .then(() => {
-          if (this.processImageSubscription) {
-            this.processImageSubscription.unsubscribe();
-          }
-          this.k8sService.stepSource.next({index: 0, isBack: false});
-        })
-        .catch(err => {
-          this.messageService.dispatchError(err);
-          if (this.processImageSubscription) {
-            this.processImageSubscription.unsubscribe();
-          }
-          this.k8sService.stepSource.next({index: 0, isBack: false});
-        })
+    this._confirmSubscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
+      if (msg.target == MESSAGE_TARGET.DELETE_SERVICE_DEPLOYMENT) {
+        this.k8sService.deleteDeployment(this.serviceID)
+          .then(() => this.k8sService.stepSource.next({index: 0, isBack: false}))
+          .catch(err => {
+            this.messageService.dispatchError(err);
+            this.k8sService.stepSource.next({index: 0, isBack: false});
+          })
+      }
     });
   }
 
@@ -65,39 +56,22 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
     if (!this.isDeployed) {
       this.isDeployed = true;
       this.isInDeployWIP = true;
-      this.consoleText = "SERVICE.STEP_6_DEPLOYING";
       this.k8sService.serviceDeployment()
         .then(res => {
           this.serviceID = res['service_id'];
-          let projectName = res['project_name'];
-          this.processImageSubscription = this.webSocketService
-            .connect(`ws://${this.boardHost}/api/v1/jenkins-job/console?job_name=${projectName}&token=${this.appInitService.token}`)
-            .subscribe((obs: MessageEvent) => {
-              this.consoleText = <string>obs.data;
-              let consoleTextArr: Array<string> = this.consoleText.split(/[\n]/g);
-              if (consoleTextArr.find(value => value.indexOf("Finished: SUCCESS") > -1)) {
-                this.isDeploySuccess = true;
-                this.isInDeployWIP = false;
-                this.processImageSubscription.unsubscribe();
-              }
-              if (consoleTextArr.find(value => value.indexOf("Finished: FAILURE") > -1)) {
-                this.isDeploySuccess = false;
-                this.isInDeployWIP = false;
-                this.processImageSubscription.unsubscribe();
-              }
-            }, err => err, () => {
-              this.isDeploySuccess = false;
-              this.isInDeployWIP = false;
-            });
+          this.deployConsole = res;
+          let msg: Message = new Message();
+          msg.message = "SERVICE.STEP_6_DEPLOY_SUCCESS";
+          this.messageService.inlineAlertMessage(msg);
+          this.isDeploySuccess = true;
+          this.isInDeployWIP = false;
         })
-        .catch(err => {
-          if (err instanceof HttpErrorResponse && (err as HttpErrorResponse).status == 400) {
-            let errMessage = new Message();
-            errMessage.message = (err as HttpErrorResponse).message;
-            this.messageService.globalMessage(errMessage)
-          } else {
-            this.messageService.dispatchError(err);
-          }
+        .catch((err: HttpErrorResponse) => {
+          let msg = new Message();
+          msg.type = MESSAGE_TYPE.SHOW_DETAIL;
+          msg.message = (typeof err.error == "object") ? (err.error as Error).message : err.error;
+          msg.errorObject = err;
+          this.messageService.globalMessage(msg);
           this.isDeploySuccess = false;
           this.isInDeployWIP = false;
         })
@@ -105,11 +79,12 @@ export class DeployComponent extends ServiceStepBase implements OnInit, OnDestro
   }
 
   deleteDeploy(): void {
-    let m: Message = new Message();
-    m.title = "SERVICE.STEP_6_CANCEL_TITLE";
-    m.buttons = BUTTON_STYLE.DELETION;
-    m.message = "SERVICE.STEP_6_CANCEL_MSG";
-    this.messageService.announceMessage(m);
+    let msg: Message = new Message();
+    msg.title = "SERVICE.STEP_6_DELETE_TITLE";
+    msg.buttons = BUTTON_STYLE.DELETION;
+    msg.message = "SERVICE.STEP_6_DELETE_MSG";
+    msg.target = MESSAGE_TARGET.DELETE_SERVICE_DEPLOYMENT;
+    this.messageService.announceMessage(msg);
   }
 
   deployComplete(): void {

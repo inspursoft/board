@@ -1,28 +1,18 @@
-package jenkins
+package jenkins_test
 
 import (
+	"git/inspursoft/board/src/apiserver/service/devops/jenkins"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
 	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func prepare() {
-
-}
-
-func cleanUp() {
-
-}
-
 func TestMain(m *testing.M) {
-	os.Exit(func() int {
-		prepare()
-		m.Run()
-		cleanUp()
-		return 0
-	}())
+	utils.InitializeDefaultConfig()
+	os.Exit(m.Run())
 }
 
 var user = model.User{
@@ -32,7 +22,7 @@ var user = model.User{
 }
 
 func TestCreateJob(t *testing.T) {
-	err := NewJenkinsHandler(user.Username, "").CreateJob("target10")
+	err := jenkins.NewJenkinsHandler().CreateJobWithParameter("testproject", user.Username)
 	assert := assert.New(t)
 	assert.Nilf(err, "Error occurred while creating job: %+v", err)
 }

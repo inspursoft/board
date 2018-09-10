@@ -1,10 +1,5 @@
-import { Component, OnInit, Injector } from '@angular/core';
-import {
-  PHASE_SELECT_IMAGES,
-  ImageIndex,
-  ServiceStepPhase,
-  UIServiceStep2
-} from '../service-step.component';
+import { Component, Injector, OnInit } from '@angular/core';
+import { ImageIndex, PHASE_SELECT_IMAGES, ServiceStepPhase, UIServiceStep2 } from '../service-step.component';
 import { Image, ImageDetail } from "../../image/image";
 import { Message } from "../../shared/message-service/message";
 import { ServiceStepBase } from "../service-step";
@@ -33,10 +28,14 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
   ngOnInit() {
     this.k8sService.getServiceConfig(this.stepPhase).then(res => {
       this.uiBaseData = res;
-      this.uiData.imageList.forEach((image: ImageIndex) => {
-        this.imageSelectList.push({image_name: image.image_name, image_comment: "", image_deleted: 0});
-        this.setImageDetailList(image.image_name, image.image_tag);
-      });
+      if (this.uiData.imageList.length > 0) {
+        this.uiData.imageList.forEach((image: ImageIndex) => {
+          this.imageSelectList.push({image_name: image.image_name, image_comment: "", image_deleted: 0});
+          this.setImageDetailList(image.image_name, image.image_tag);
+        });
+      } else {
+        this.addSelectImage();
+      }
     }).catch(err => this.messageService.dispatchError(err));
     this.k8sService.getImages("", 0, 0)
       .then(res => {
@@ -55,9 +54,9 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
   }
 
   get isCanNextStep(): boolean {
-    let hasSelectImage = this.imageSelectList.filter(value => {
-        return value.image_name != "SERVICE.STEP_2_SELECT_IMAGE";
-      }).length == this.imageSelectList.length;
+    let hasSelectImage = this.imageSelectList
+      .filter(value => value.image_name != "SERVICE.STEP_2_SELECT_IMAGE")
+      .length == this.imageSelectList.length;
     return hasSelectImage && this.imageDetailSelectList.size > 0;
   }
 
@@ -152,6 +151,10 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
     this.imageSelectList.push(customerSelectImage);
   }
 
+  backStep(){
+    this.k8sService.stepSource.next({index: 1, isBack: true});
+  }
+
   forward(): void {
     this.uiData.imageList.splice(0, this.uiData.imageList.length);//empty list
     this.imageSelectList.forEach((image: Image) => {
@@ -165,8 +168,8 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
         this.uiData.imageList.push(newImageIndex);
       }
     });
-    this.k8sService.setServiceConfig(this.uiData.uiToServer()).then(res => {
-      this.k8sService.stepSource.next({index: 3, isBack: false});
-    });
+    this.k8sService.setServiceConfig(this.uiData.uiToServer()).then(() =>
+      this.k8sService.stepSource.next({index: 3, isBack: false})
+    ).catch(err => this.messageService.dispatchError(err));
   }
 }

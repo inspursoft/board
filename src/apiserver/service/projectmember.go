@@ -23,20 +23,19 @@ func GetProjectMembers(projectID int64) ([]*model.ProjectMember, error) {
 }
 
 func DeleteProjectMember(projectID int64, userID int64) (bool, error) {
+	user, err := GetUserByID(userID)
+	if err != nil {
+		return false, err
+	}
+	if user == nil {
+		return false, errors.New("no user was found with provided user ID")
+	}
 	projectMember := model.ProjectMember{ID: projectID + userID}
-	_, err := dao.DeleteProjectMember(projectMember)
+	_, err = dao.DeleteProjectMember(projectMember)
 	if err != nil {
 		return false, err
 	}
 	return true, nil
-}
-
-func HasProjectAdminRole(projectID int64, userID int64) (bool, error) {
-	role, err := dao.GetProjectMemberRole(model.Project{ID: projectID}, model.User{ID: userID})
-	if err != nil {
-		return false, err
-	}
-	return (role != nil && role.ID == model.ProjectAdmin), nil
 }
 
 func IsProjectMember(projectID int64, userID int64) (bool, error) {

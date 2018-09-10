@@ -1,0 +1,48 @@
+<clr-modal [(clrModalOpen)]="nodeDetailOpened" [clrModalSize]="'lg'">
+  <h3 class="modal-title">{{ 'NODE.NODE_DETAILS' | translate }}</h3>
+  <div class="modal-body">
+    <table class="table table-vertical">
+      <tbody>
+      <tr>
+        <th width="25%">{{ 'NODE.NODE_NAME' | translate }}</th>
+        <td>{{ nodeDetail.node_name }}</td>
+      </tr>
+      <tr>
+        <th>{{ 'NODE.NODE_IP' | translate }}</th>
+        <td>{{ nodeDetail.node_ip }}</td>
+      </tr>
+      <tr>
+        <th>{{ 'NODE.CREATION_TIME' | translate }}</th>
+        <td>{{ nodeDetail.create_time * 1000 | date: 'short' }}</td>
+      </tr>
+      <tr>
+        <th>{{ 'NODE.CPU_USAGE' | translate }}</th>
+        <td>{{ toPercentage(nodeDetail.cpu_usage) }}</td>
+      </tr>
+      <tr>
+        <th>{{ 'NODE.MEMORY_USAGE' | translate }}</th>
+        <td>{{ toPercentage(nodeDetail.memory_usage) }}</td>
+      </tr>
+      <tr>
+        <th>{{ 'NODE.MEMORY_SIZE' | translate }}</th>
+        <td>{{ toGigaBytes(nodeDetail.memory_size, 'KiB') }}</td>
+      </tr>
+      <tr>
+        <th>{{ 'NODE.STORAGE_TOTAL' | translate }}</th>
+        <td>{{ toGigaBytes(nodeDetail.storage_total) }}</td>
+      </tr>
+      <tr>
+        <th>{{ 'NODE.STORAGE_USAGE' | translate }}</th>
+        <td>{{ toPercentage(storagePercentage(nodeDetail)) }}</td>
+      </tr>
+      <tr>
+        <th>{{ 'NODE.NODE_GROUP' | translate }}</th>
+        <td>{{ nodeGroups }}</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-primary" (click)="nodeDetailOpened = false">{{ 'BUTTON.OK' | translate }}</button>
+  </div>
+</clr-modal>

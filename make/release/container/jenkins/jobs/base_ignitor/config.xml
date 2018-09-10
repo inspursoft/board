@@ -1,0 +1,114 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.buildblocker.BuildBlockerProperty plugin="build-blocker-plugin@1.7.3">
+      <useBuildBlocker>false</useBuildBlocker>
+      <blockLevel>GLOBAL</blockLevel>
+      <scanQueueFor>DISABLED</scanQueueFor>
+      <blockingJobs></blockingJobs>
+    </hudson.plugins.buildblocker.BuildBlockerProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>F00</name>
+          <description>Set Jenkins node IP</description>
+          <defaultValue></defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>F01</name>
+          <description>Set KVM registry port</description>
+          <defaultValue></defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <assignedNode>master</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <javaposse.jobdsl.plugin.ExecuteDslScripts plugin="job-dsl@1.69">
+      <scriptText>def jenkins_node_ip = binding.variables.get(&quot;F00&quot;)
+def kvm_registry_port = binding.variables.get(&quot;F01&quot;)
+
+freeStyleJob(&quot;ignitor&quot;) {
+  label(&apos;slave&apos;)
+  blockOn(&quot;base&quot;) {
+    blockLevel(&apos;NODE&apos;)
+    scanQueueFor(&apos;ALL&apos;)
+  }
+  triggers {
+    genericTrigger {
+      genericVariables {
+        genericVariable {
+          key(&quot;repo_name&quot;)
+          value(&quot;\$.repository.name&quot;)
+          expressionType(&quot;JSONPath&quot;)
+          regexpFilter(&quot;&quot;)
+          defaultValue(&quot;&quot;)
+        }
+        genericVariable {
+          key(&quot;before&quot;)
+          value(&quot;\$.before&quot;)
+          expressionType(&quot;JSONPath&quot;)
+          regexpFilter(&quot;&quot;)
+          defaultValue(&quot;&quot;)
+        }
+        genericVariable {
+          key(&quot;branch&quot;)
+          value(&quot;\$.ref&quot;)
+          expressionType(&quot;JSONPath&quot;)
+          regexpFilter(&quot;^(?:[\\/]*\\w+\\/)+&quot;)
+          defaultValue(&quot;master&quot;)
+        }
+      }
+      printContributedVariables(true)
+      printPostContent(true)
+      regexpFilterText(&quot;\$before&quot;)
+      regexpFilterExpression(&quot;^(?!0000000000000000000000000000000000000000\\b)\\b\\w+\$&quot;)
+    }
+  }
+  steps {
+    shell{
+      command(&quot;&quot;&quot;#!/bin/bash
+status=`curl -I -X POST &quot;http://${jenkins_node_ip}:${kvm_registry_port}/register-job?job_name=\${repo_name}&quot; 2&gt;/dev/null | head -n 1 | cut -d\$&apos; &apos; -f2`
+if [ -z \$status ]; then
+  echo &quot;KVM registry service is unavailable.&quot;
+  exit 126
+elif [ \$status -eq 412 ]; then
+  echo &quot;All KVM has been allocated, please release first.&quot;
+  exit 128
+elif [ \$status -ne 200 ]; then
+  echo &quot;Unexpected error occurred.&quot;
+  exit 1
+fi
+node=\$(curl -X POST &quot;http://${jenkins_node_ip}:${kvm_registry_port}/register-job?job_name=\${repo_name}&quot;)
+curl &quot;http://${jenkins_node_ip}:${kvm_registry_port}/trigger-script?name=register.sh&amp;arg=\${repo_name},\${branch}&quot;
+&quot;&quot;&quot;)
+    }
+  }
+}</scriptText>
+      <usingScriptText>true</usingScriptText>
+      <sandbox>false</sandbox>
+      <ignoreExisting>false</ignoreExisting>
+      <ignoreMissingFiles>false</ignoreMissingFiles>
+      <failOnMissingPlugin>false</failOnMissingPlugin>
+      <unstableOnDeprecation>false</unstableOnDeprecation>
+      <removedJobAction>IGNORE</removedJobAction>
+      <removedViewAction>IGNORE</removedViewAction>
+      <removedConfigFilesAction>IGNORE</removedConfigFilesAction>
+      <lookupStrategy>JENKINS_ROOT</lookupStrategy>
+    </javaposse.jobdsl.plugin.ExecuteDslScripts>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

@@ -1,6 +1,7 @@
 import { Injectable } from "@angular/core";
-import { HttpClient, HttpResponse } from "@angular/common/http";
+import { HttpClient, HttpHeaders, HttpResponse } from "@angular/common/http";
 import { User } from "../user";
+import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from "../../shared/shared.const";
 
 const BASE_URL = "/api/v1";
 
@@ -11,7 +12,10 @@ export class UserService {
   }
 
   deleteUser(user: User): Promise<any> {
-    return this.http.delete(`${BASE_URL}/users/${user.user_id}`, {observe: "response"}).toPromise();
+    return this.http.delete(`${BASE_URL}/users/${user.user_id}`, {
+      headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
+      observe: "response"
+    }).toPromise();
   }
 
   getCurrentUser(): Promise<User> {
@@ -31,15 +35,24 @@ export class UserService {
       "user_password_old": user_password_old,
       "user_password_new": user_password_new
     };
-    return this.http.put(`${BASE_URL}/users/${userID}/password`, body, {observe: "response"}).toPromise();
+    return this.http.put(`${BASE_URL}/users/${userID}/password`, body, {
+      headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
+      observe: "response"
+    }).toPromise();
   }
 
   updateUser(user: User): Promise<any> {
-    return this.http.put(`${BASE_URL}/users/${user.user_id}`, user, {observe: "response"}).toPromise()
+    return this.http.put(`${BASE_URL}/users/${user.user_id}`, user, {
+      headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
+      observe: "response"
+    }).toPromise()
   }
 
   newUser(userParams: User): Promise<any> {
-    return this.http.post(`${BASE_URL}/adduser`, userParams, {observe: "response"}).toPromise();
+    return this.http.post(`${BASE_URL}/adduser`, userParams, {
+      headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
+      observe: "response"
+    }).toPromise();
   }
 
   getUserList(username: string, pageIndex: number, pageSize: number,sortBy: string, isReverse: boolean): Promise<Object> {

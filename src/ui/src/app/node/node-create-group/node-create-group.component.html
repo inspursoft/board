@@ -1,0 +1,24 @@
+<clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'md'">
+  <h3 class="modal-title">{{ 'NODE.NODE_GROUP_CREATE' | translate }}</h3>
+  <div class="modal-body node-create-group-body">
+    <cs-input [inputIsRequired]="true"
+              [inputPattern]="patternNodeGroupName"
+              [inputLabel]="'NODE.NODE_GROUP_NAME' | translate"
+              [simpleFiled]="newNodeGroupData.nodegroup_name"
+              [customerValidatorAsyncFunc]="checkNodeGroupNameFun"
+              (onCheck)="newNodeGroupData.nodegroup_name = $event">
+    </cs-input>
+    <cs-input [inputLabel]="'NODE.NODE_GROUP_COMMENT'  | translate"
+              [simpleFiled]="newNodeGroupData.nodegroup_comment"
+              (onCheck)="newNodeGroupData.nodegroup_comment = $event">
+    </cs-input>
+  </div>
+  <div class="modal-footer">
+    <button type="button"
+            class="btn btn-primary"
+            [disabled]="newNodeGroupData.nodegroup_name == ''"
+            (click)="commitNodeGroup()">
+      {{ 'BUTTON.OK' | translate }}
+    </button>
+  </div>
+</clr-modal>

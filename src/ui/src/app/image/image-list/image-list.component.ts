@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewContainerRef } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { Image } from "../image";
 import { ImageService } from "../image-service/image-service"
@@ -7,7 +7,8 @@ import { BUTTON_STYLE, MESSAGE_TARGET } from '../../shared/shared.const';
 import { Message } from '../../shared/message-service/message';
 import { AppInitService } from "../../app.init.service";
 import { Project } from "../../project/project";
-import { Router } from "@angular/router";
+import { SharedActionService } from "../../shared/shared-action.service";
+import { SharedService } from "../../shared/shared.service";
 
 enum CreateImageMethod{None, Template, DockerFile, DevOps}
 @Component({
@@ -28,37 +29,39 @@ export class ImageListComponent implements OnInit, OnDestroy {
   loadingWIP: boolean;
   projectsList: Array<Project>;
   createImageMethod: CreateImageMethod = CreateImageMethod.None;
+  dropdownDefaultText: string = "";
   _subscription: Subscription;
 
   constructor(private imageService: ImageService,
-              private router: Router,
+              private sharedActionService: SharedActionService,
+              private sharedService: SharedService,
+              private selfView: ViewContainerRef,
               private appInitService: AppInitService,
               private messageService: MessageService) {
     this.projectsList = Array<Project>();
-    this._subscription = this.messageService.messageConfirmed$.subscribe(m => {
-      let confirmationMessage = <Message>m;
-      if (confirmationMessage && confirmationMessage.target == MESSAGE_TARGET.DELETE_IMAGE) {
-        let imageName = <string>confirmationMessage.data;
-        let m: Message = new Message();
+    this._subscription = this.messageService.messageConfirmed$.subscribe((msg:Message) => {
+      if (msg.target == MESSAGE_TARGET.DELETE_IMAGE) {
+        let imageName = <string>msg.data;
         this.imageService
           .deleteImages(imageName)
-          .then(res => {
+          .then(() => {
+            let m: Message = new Message();
             m.message = 'IMAGE.SUCCESSFUL_DELETED_IMAGE';
             this.messageService.inlineAlertMessage(m);
             this.retrieve();
           })
-          .catch(err => {
-             this.messageService.dispatchError(err);
-          });
+          .catch(err => this.messageService.dispatchError(err));
       }
     });
   }
 
   ngOnInit() {
+    this.dropdownDefaultText = "IMAGE.CREATE_IMAGE_SELECT_PROJECT";
     this.imageService.getProjects()
-      .then(res => {
+      .then((res: Array<Project>) => {
         let createNewProject: Project = new Project();
         createNewProject.project_name = "IMAGE.CREATE_IMAGE_CREATE_PROJECT";
+        createNewProject.project_id = -1;
         createNewProject["isSpecial"] = true;
         createNewProject["OnlyClick"] = true;
         this.projectsList.push(createNewProject);
@@ -83,13 +86,30 @@ export class ImageListComponent implements OnInit, OnDestroy {
     return false;
   }
 
-  clickSelectProject(project: Project) {
-    this.router.navigate(["/projects"], {queryParams: {token: this.appInitService.token}, fragment: "create"});
+  setDropdownDefaultText(): void {
+    let selected = this.projectsList.find((project: Project) => project.project_id === this.selectedProjectId);
+    this.dropdownDefaultText = selected ? selected.project_name : "IMAGE.CREATE_IMAGE_SELECT_PROJECT";
+  }
+
+  clickSelectProject() {
+    this.sharedActionService.createProjectComponent(this.selfView).subscribe((projectName: string) => {
+      if (projectName) {
+        this.sharedService.getOneProject(projectName).then((res: Array<Project>) => {
+          this.selectedProjectId = res[0].project_id;
+          this.selectedProjectName = res[0].project_name;
+          let project = this.projectsList.shift();
+          this.projectsList.unshift(res[0]);
+          this.projectsList.unshift(project);
+          this.setDropdownDefaultText();
+        })
+      }
+    });
   }
 
   changeSelectProject(project: Project) {
     this.selectedProjectName = project.project_name;
     this.selectedProjectId = project.project_id;
+    this.setDropdownDefaultText();
   }
 
   retrieve() {
@@ -128,6 +148,8 @@ export class ImageListComponent implements OnInit, OnDestroy {
     this.isBuildImageWIP = true;
     this.selectedProjectName = "";
     this.selectedProjectId = 0;
+    this.dropdownDefaultText = "IMAGE.CREATE_IMAGE_SELECT_PROJECT";
+    this.createImageMethod = CreateImageMethod.None;
   }
 
   onBuildImageCompleted(imageName: string) {

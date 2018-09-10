@@ -1,4 +1,4 @@
-import { AfterContentChecked, ChangeDetectorRef, Component, Injector, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { ChangeDetectorRef, Component, Injector, OnInit} from '@angular/core';
 import {
   Container,
   ExternalService,
@@ -8,7 +8,6 @@ import {
   UIServiceStep3,
   UIServiceStep4
 } from '../service-step.component';
-import { CsInputComponent } from "../../shared/cs-components-library/cs-input/cs-input.component";
 import { ServiceStepBase } from "../service-step";
 import { ValidationErrors } from "@angular/forms/forms";
 import { HttpErrorResponse } from "@angular/common/http";
@@ -17,44 +16,40 @@ import { HttpErrorResponse } from "@angular/common/http";
   styleUrls: ["./config-setting.component.css"],
   templateUrl: './config-setting.component.html'
 })
-export class ConfigSettingComponent extends ServiceStepBase implements OnInit, AfterContentChecked {
-  @ViewChildren(CsInputComponent) inputComponents: QueryList<CsInputComponent>;
+export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
   patternServiceName: RegExp = /^[a-z]([-a-z0-9]*[a-z0-9])+$/;
   dropDownListNum: Array<number>;
   showAdvanced: boolean = true;
   showExternal: boolean = false;
   showCollaborative: boolean = false;
-  isInputComponentsValid = false;
+  showNodeSelector: boolean = false;
   uiPreData: UIServiceStep3 = new UIServiceStep3();
   collaborativeServiceList: Array<string>;
   /*Todo:Only for collaborative plus action.It must be delete after update UIServiceStep4*/
   collaborativeList:Array<Object>;
+  nodeSelectorList:Array<string>;
+  noPortForExtent: boolean = false;
 
   constructor(protected injector: Injector, private changeDetectorRef: ChangeDetectorRef) {
     super(injector);
     this.dropDownListNum = Array<number>();
     this.collaborativeServiceList = Array<string>();
     this.collaborativeList = Array<Object>();
-  }
-
-  ngAfterContentChecked() {
-    this.isInputComponentsValid = true;
-    if (this.inputComponents) {
-      this.inputComponents.forEach(item => {
-        if (!item.valid) {
-          this.isInputComponentsValid = false;
-        }
-      });
-    }
+    this.nodeSelectorList = Array<string>()
   }
 
   ngOnInit() {
     this.k8sService.getServiceConfig(PHASE_CONFIG_CONTAINERS).then(res => {
       this.uiPreData = res as UIServiceStep3;
+      this.noPortForExtent = this.uiPreData.containerList.every(value => !value.isHavePort())
     });
     this.k8sService.getServiceConfig(this.stepPhase).then(res => {
       this.uiBaseData = res;
+      this.setServiceName(this.uiData.serviceName);
       this.changeDetectorRef.detectChanges();
+    });
+    this.k8sService.getNodeSelectors().subscribe((res:Array<string>)=>{
+      this.nodeSelectorList = res;
     });
     for (let i = 1; i <= 100; i++) {
       this.dropDownListNum.push(i)
@@ -77,6 +72,10 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
     return this.uiPreData.containerList.find(value => value.isHavePort());
   }
 
+  get nodeSelectorDefaultText(){
+    return this.uiData.nodeSelector == "" ? 'SERVICE.STEP_4_NODE_SELECTOR_COMMENT': this.uiData.nodeSelector;
+  }
+
   checkServiceName(control: HTMLInputElement): Promise<ValidationErrors | null> {
     return this.k8sService.checkServiceExist(this.uiData.projectName, control.value)
       .then(() => null)
@@ -97,9 +96,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
     /*Todo:add reset the Collaborative service Info*/
     this.collaborativeServiceList.splice(0, this.collaborativeServiceList.length);
     this.k8sService.getCollaborativeService(serviceName, this.uiData.projectName)
-      .then(res => {
-        this.collaborativeServiceList = res;
-      })
+      .then(res => this.collaborativeServiceList = res);
   }
 
   addContainerInfo() {
@@ -151,9 +148,11 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit, A
   }
 
   forward(): void {
-    this.k8sService.setServiceConfig(this.uiData.uiToServer()).then(() => {
-      this.k8sService.stepSource.next({index: 6, isBack: false});
-    });
+    if (this.verifyInputValid()) {
+      this.k8sService.setServiceConfig(this.uiData.uiToServer())
+        .then(() => this.k8sService.stepSource.next({index: 6, isBack: false}))
+        .catch((err: HttpErrorResponse) => this.messageService.dispatchError(err, err.error.message))
+    }
   }
 
   backUpStep(): void {

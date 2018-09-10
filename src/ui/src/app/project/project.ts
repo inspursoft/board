@@ -8,3 +8,22 @@ export class Project {
   project_owner_id: number;
   project_owner_name: string;
 }
+
+export class Member {
+  project_member_id?: number;
+  project_member_user_id: number;
+  project_member_username?: string;
+  project_member_role_id: number;
+  isMember?: boolean;
+}
+
+export class Role {
+  role_id: number;
+  role_name: string;
+}
+
+export class CreateProject {
+  projectName: string;
+  publicity: boolean;
+  comment: string
+}

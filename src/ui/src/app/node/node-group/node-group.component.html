@@ -1,0 +1,23 @@
+<button class="btn btn-primary"
+        (click)="newGroupComponent.showModal()">
+  {{'NODE.NODE_GROUP_CREATE' | translate}}
+</button>
+<clr-datagrid [clrDgLoading]="isInLoadWip">
+  <clr-dg-column>{{ 'NODE.NODE_GROUP_NAME' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'NODE.NODE_GROUP_COMMENT' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'NODE.OPERATION' | translate }}</clr-dg-column>
+  <clr-dg-row *ngFor="let nodeGroup of nodeGroupList">
+    <clr-dg-cell>{{nodeGroup.nodegroup_name}}</clr-dg-cell>
+    <clr-dg-cell>{{nodeGroup.nodegroup_comment}}</clr-dg-cell>
+    <clr-dg-cell>
+      <a href="javascript:void(0)">
+        <clr-icon shape="trash"
+                  class="action"
+                  (click)="confirmToDeleteNodeGroup(nodeGroup.nodegroup_name,nodeGroup.nodegroup_id)">
+        </clr-icon>
+      </a>
+    </clr-dg-cell>
+  </clr-dg-row>
+  <clr-dg-footer>{{nodeGroupList ? nodeGroupList.length : 0}} {{ 'DATAGRID.ITEMS' | translate }}</clr-dg-footer>
+</clr-datagrid>
+<node-create-group (onAfterCommit)="refreshList()"></node-create-group>

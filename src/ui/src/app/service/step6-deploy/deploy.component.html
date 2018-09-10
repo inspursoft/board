@@ -8,19 +8,18 @@
     </div>
     <span *ngIf="isInDeployWIP" class="spinner spinner-md step6-spinner"></span>
   </div>
-  <div class="step6-journal-container">
-    <label for="areaJournal">{{"SERVICE.STEP_6_JOURNAL"|translate}}:</label>
-    <textarea id="areaJournal" rows="10" class="step6-journal" readonly>{{consoleText | translate}}</textarea>
-  </div>
+  <cs-highlight *ngIf="deployConsole" [language]="'json'" [code]="deployConsole | json"></cs-highlight>
 </div>
 <button class="btn btn-primary default-primary"
         [disabled]="isDeploySuccess || !isDeployed"
         (click)="deleteDeploy()">
-  {{"SERVICE.STEP_6_CANCEL" | translate}}
+  {{"SERVICE.STEP_6_DELETE" | translate}}
 </button>
 <button class="btn btn-default" [disabled]="isDeployed" (click)="backStep()">
   {{"BUTTON.BACK" | translate}}
 </button>
-<button class="btn btn-default" [disabled]="!isDeployed || isInDeployWIP" (click)="deployComplete()">
+<button class="btn btn-default"
+        (click)="deployComplete()"
+        [disabled]="!isDeployed || isInDeployWIP || !isDeploySuccess">
   {{"BUTTON.OK" | translate}}
 </button>

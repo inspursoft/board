@@ -10,10 +10,6 @@ import (
 	"path/filepath"
 )
 
-const (
-	metaFile = "META.cfg"
-)
-
 func ListUploadFiles(directory string) ([]model.FileInfo, error) {
 	uploads := []model.FileInfo{}
 	filepath.Walk(directory, func(path string, info os.FileInfo, err error) error {
@@ -31,22 +27,6 @@ func ListUploadFiles(directory string) ([]model.FileInfo, error) {
 
 func RemoveUploadFile(file model.FileInfo) error {
 	return os.Remove(filepath.Join(file.Path, file.FileName))
-}
-
-func CreateMetaConfiguration(configurations map[string]string, targetPath string) error {
-	if configurations == nil {
-		return fmt.Errorf("configuration for generating base directory is nil")
-	}
-	f, err := os.OpenFile(filepath.Join(targetPath, metaFile), os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
-	if err != nil {
-		return fmt.Errorf("failed to create META.cfg file: %+v", err)
-	}
-	defer f.Close()
-	f.WriteString("[para]\n")
-	for key, value := range configurations {
-		fmt.Fprintf(f, "%s=%s\n", key, value)
-	}
-	return nil
 }
 
 func CopyFile(sourcePath, targetPath string) error {
@@ -107,4 +87,29 @@ func ZipFiles(zipFileName, dirName string) error {
 		return err
 	}
 	return w.Close()
+}
+
+func IsEmptyDirectory(name string) (bool, error) {
+	f, err := os.Open(name)
+	if err != nil {
+		return false, err
+	}
+	defer f.Close()
+
+	_, err = f.Readdirnames(1) // Or f.Readdir(1)
+	if err == io.EOF {
+		return true, nil
+	}
+	return false, err // Either not empty or error, suits both cases
+}
+
+func CheckFilePath(loadPath string) error {
+	if fi, err := os.Stat(loadPath); os.IsNotExist(err) {
+		if err := os.MkdirAll(loadPath, 0755); err != nil {
+			return err
+		}
+	} else if !fi.IsDir() {
+		return pathErr
+	}
+	return nil
 }

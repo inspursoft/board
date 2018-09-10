@@ -1,8 +1,3 @@
-<service-detail></service-detail>
-<service-control *ngIf="isServiceControlOpen"
-                 [(isOpen)]="isServiceControlOpen"
-                 [service]="serviceControlData">
-</service-control>
 <service-create-yaml
   *ngIf="isShowServiceCreateYaml"
   (onCancelEvent)="cancelCreateService()">
@@ -31,7 +26,7 @@
         </clr-dg-column>
         <clr-dg-column>{{ 'SERVICE.PROJECT_NAME' | translate }}</clr-dg-column>
         <clr-dg-column>{{ 'SERVICE.OWNER' | translate }}</clr-dg-column>
-        <clr-dg-column [clrDgField]="'CREATE_TIME'"
+        <clr-dg-column [clrDgField]="'CREATION_TIME'"
                        [clrDgSortOrder]="descSort">
           <clr-dg-filter [hidden]="true"></clr-dg-filter>
           {{ 'SERVICE.CREATE_TIME' | translate }}
@@ -83,7 +78,10 @@
             </a>
             <a href="javascript:void(0)"
                (click)="openServiceDetail(service)">
-              <clr-icon shape="info-standard"></clr-icon>
+              <clr-icon shape="info-standard"
+                        class="action"
+                        [ngClass]="{'disabled':service.service_status == 2}">
+              </clr-icon>
             </a>
             <a href="javascript:void(0)">
               <clr-icon shape="wrench"

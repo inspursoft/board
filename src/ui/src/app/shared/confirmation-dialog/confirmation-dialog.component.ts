@@ -37,7 +37,7 @@ export class ConfirmationDialogComponent implements OnDestroy {
   }
 
   cancel(): void {
-    this.messageService.cancelMessage();
+    this.messageService.cancelMessage(this.confirmationMessage);
     this.opened = false;
   }
 

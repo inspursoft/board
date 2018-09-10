@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"git/inspursoft/board/src/apiserver/controller"
-	_ "git/inspursoft/board/src/apiserver/router"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/apiserver/service/devops/gogs"
 	"git/inspursoft/board/src/common/dao"
@@ -18,14 +17,21 @@ import (
 )
 
 const (
-	defaultAPIServerPort   = "8088"
-	adminUserID            = 1
-	adminUsername          = "admin"
-	adminEmail             = "admin@inspur.com"
-	defaultInitialPassword = "123456a?"
-	baseRepoPath           = "/repos"
-	sshKeyPath             = "/keys"
-	defaultProject         = "library"
+	defaultDBServer             = "db"
+	defaultDBPort               = "3306"
+	defaultAPIServerPort        = "8088"
+	defaultTokenServer          = "tokenserver"
+	defaultTokenServerPort      = "4000"
+	defaultTokenCacheExpireTime = "1800"
+	adminUserID                 = 1
+	adminUsername               = "admin"
+	adminEmail                  = "admin@inspur.com"
+	defaultInitialPassword      = "123456a?"
+	baseRepoPath                = "/repos"
+	sshKeyPath                  = "/keys"
+	defaultProject              = "library"
+	kvmToolsPath                = "/root/kvm"
+	kvmRegistryPath             = "/root/kvmregistry"
 )
 
 var gogitsSSHURL = utils.GetConfig("GOGITS_SSH_URL")
@@ -98,7 +104,6 @@ func initProjectRepo() {
 	err = service.CreateRepoAndJob(adminUserID, defaultProject)
 	if err != nil {
 		logs.Error("Failed to create default repo %s: %+v", defaultProject, err)
-		panic(err)
 	}
 
 	utils.SetConfig("INIT_PROJECT_REPO", "created")
@@ -128,6 +133,7 @@ func initDefaultProjects() {
 	logs.Info("Successful synchonized projects with Kubernetes.")
 }
 
+/*
 func syncServiceWithK8s() {
 	service.SyncServiceWithK8s()
 	utils.SetConfig("SYNC_K8S", "created")
@@ -137,11 +143,13 @@ func syncServiceWithK8s() {
 		panic(err)
 	}
 }
+*/
+
 func updateSystemInfo() {
 	var err error
-	err = service.SetSystemInfo("BOARD_HOST", true)
+	err = service.SetSystemInfo("BOARD_HOST_IP", true)
 	if err != nil {
-		logs.Error("Failed to set system config BOARD_HOST: %+v", err)
+		logs.Error("Failed to set system config BOARD_HOST_IP: %+v", err)
 		panic(err)
 	}
 	err = service.SetSystemInfo("AUTH_MODE", false)
@@ -154,65 +162,29 @@ func updateSystemInfo() {
 		logs.Error("Failed to set system config REDIRECTION_URL: %+v", err)
 	}
 }
+
 func main() {
 
-	logs.SetLogFuncCall(true)
-	logs.SetLogFuncCallDepth(4)
+	utils.InitializeDefaultConfig()
 
-	utils.Initialize()
+	utils.SetConfig("DB_IP", defaultDBServer)
+	utils.SetConfig("DB_PORT", defaultDBPort)
 
-	utils.AddEnv("BOARD_HOST")
-	utils.AddEnv("BOARD_ADMIN_PASSWORD")
-	utils.AddEnv("KUBE_MASTER_IP")
-	utils.AddEnv("KUBE_MASTER_PORT")
-	utils.AddEnv("REGISTRY_IP")
-	utils.AddEnv("REGISTRY_PORT")
-
-	utils.AddEnv("AUTH_MODE")
-
-	utils.AddEnv("LDAP_URL")
-	utils.AddEnv("LDAP_SEARCH_DN")
-	utils.AddEnv("LDAP_SEARCH_PWD")
-	utils.AddEnv("LDAP_BASE_DN")
-	utils.AddEnv("LDAP_FILTER")
-	utils.AddEnv("LDAP_UID")
-	utils.AddEnv("LDAP_SCOPE")
-	utils.AddEnv("LDAP_TIMEOUT")
-	utils.AddEnv("FORCE_INIT_SYNC")
-	utils.AddEnv("VERIFICATION_URL")
-	utils.AddEnv("REDIRECTION_URL")
-
-	utils.AddEnv("GOGITS_HOST_IP")
-	utils.AddEnv("GOGITS_HOST_PORT")
-	utils.SetConfig("GOGITS_BASE_URL", "http://%s:%s", "GOGITS_HOST_IP", "GOGITS_HOST_PORT")
-
-	utils.AddEnv("GOGITS_SSH_PORT")
-	utils.SetConfig("GOGITS_SSH_URL", "ssh://git@%s:%s", "GOGITS_HOST_IP", "GOGITS_SSH_PORT")
-
-	utils.AddEnv("JENKINS_HOST_IP")
-	utils.AddEnv("JENKINS_HOST_PORT")
-	utils.AddEnv("JENKINS_TOKEN")
-	utils.SetConfig("JENKINS_BASE_URL", "http://%s:%s", "JENKINS_HOST_IP", "JENKINS_HOST_PORT")
-
-	utils.SetConfig("REGISTRY_URL", "http://%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
-	utils.SetConfig("KUBE_MASTER_URL", "http://%s:%s", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
-	utils.SetConfig("KUBE_NODE_URL", "http://%s:%s/api/v1/nodes", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
+	utils.SetConfig("TOKEN_SERVER_IP", defaultTokenServer)
+	utils.SetConfig("TOKEN_SERVER_PORT", defaultTokenServerPort)
+	utils.SetConfig("TOKEN_SERVER_URL", "http://%s:%s/tokenservice/token", "TOKEN_SERVER_IP", "TOKEN_SERVER_PORT")
 
 	utils.SetConfig("BASE_REPO_PATH", baseRepoPath)
 	utils.SetConfig("SSH_KEY_PATH", sshKeyPath)
-	utils.SetConfig("API_SERVER_PORT", defaultAPIServerPort)
 
-	utils.SetConfig("API_SERVER_URL", "http://%s:%s", "BOARD_HOST", "API_SERVER_PORT")
-
-	utils.SetConfig("REGISTRY_BASE_URI", "%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
+	utils.SetConfig("KVM_TOOLS_PATH", kvmToolsPath)
+	utils.SetConfig("KVM_REGISTRY_PATH", kvmRegistryPath)
 
 	dao.InitDB()
 
-	utils.AddValue("IS_EXTERNAL_AUTH", (utils.GetStringValue("AUTH_MODE") != "db_auth"))
-
-	utils.ShowAllConfigs()
-
 	controller.InitController()
+	controller.InitRouter()
+
 	updateSystemInfo()
 
 	systemInfo, err := service.GetSystemInfo()
@@ -231,9 +203,21 @@ func main() {
 		initProjectRepo()
 	}
 
-	if systemInfo.SyncK8s == "" || utils.GetStringValue("FORCE_INIT_SYNC") == "true" {
-		initDefaultProjects()
-		syncServiceWithK8s()
+	// if systemInfo.SyncK8s == "" || utils.GetStringValue("FORCE_INIT_SYNC") == "true" {
+	// initDefaultProjects()
+	// already do sync service in sync project
+	// syncServiceWithK8s()
+	// }
+
+	err = service.CreateIgnitorJob()
+	if err != nil {
+		logs.Error("Failed to create Jenkins Ignitor Job: %+v", err)
+	}
+
+	err = service.PrepareKVMHost()
+	if err != nil {
+		logs.Error("Failed to prepare KVM host: %+v", err)
+		panic(err)
 	}
 
 	beego.Run(":" + defaultAPIServerPort)

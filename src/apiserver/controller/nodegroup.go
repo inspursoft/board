@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
@@ -12,17 +11,7 @@ import (
 )
 
 type NodeGroupController struct {
-	baseController
-}
-
-func (n *NodeGroupController) Prepare() {
-	user := n.getCurrentUser()
-	if user == nil {
-		n.customAbort(http.StatusUnauthorized, "Need to login first.")
-		return
-	}
-	n.currentUser = user
-	n.isSysAdmin = (user.SystemAdmin == 1)
+	BaseController
 }
 
 func (n *NodeGroupController) GetNodeGroupsAction() {
@@ -32,20 +21,14 @@ func (n *NodeGroupController) GetNodeGroupsAction() {
 		n.customAbort(http.StatusInternalServerError, fmt.Sprint(err))
 		return
 	}
-	n.Data["json"] = res
-	n.ServeJSON()
+	n.renderJSON(res)
 }
 
 func (n *NodeGroupController) AddNodeGroupAction() {
-	reqData, err := n.resolveBody()
-	if err != nil {
-		n.internalError(err)
-		return
-	}
 	var reqNodeGroup model.NodeGroup
-	err = json.Unmarshal(reqData, &reqNodeGroup)
+	var err error
+	err = n.resolveBody(&reqNodeGroup)
 	if err != nil {
-		n.internalError(err)
 		return
 	}
 
@@ -89,4 +72,32 @@ func (n *NodeGroupController) CheckNodeGroupNameExistingAction() {
 	}
 
 	logs.Info("Group name of %s is available", nodeGroupName)
+}
+
+func (n *NodeGroupController) DeleteNodeGroupAction() {
+	groupName := n.GetString("groupname")
+	logs.Debug("Removing nodegroup %s", groupName)
+
+	if groupName == "" {
+		n.customAbort(http.StatusBadRequest, "NodeGroup Name should not null")
+		return
+	}
+
+	nodeGroupExists, err := service.NodeGroupExists(groupName)
+	if err != nil {
+		n.internalError(err)
+		return
+	}
+	if !nodeGroupExists {
+		n.customAbort(http.StatusBadRequest, "Node Group name not exists.")
+		return
+	}
+
+	err = service.RemoveNodeGroup(groupName)
+	if err != nil {
+		logs.Debug("Failed to remove nodegroup %s", groupName)
+		n.internalError(err)
+		return
+	}
+	logs.Info("Removed nodegroup %s", groupName)
 }
