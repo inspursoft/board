@@ -1,0 +1,45 @@
+install:
+before_script:
+  - echo "before script"
+  - cd /tmp
+  - rm -rf scripts
+  - git clone http://10.110.18.40:10080/guyingyan/scripts.git
+  - cd /tmp/scripts/scripts
+  - echo "------------------------"
+  - echo "$head_repo_html_url"
+  - echo "$head_repo_name"
+  - echo "$base_repo_html_url"
+  - echo "$base_repo_name"
+  - echo "$comment_url"
+  - echo "$action"
+  - echo "$workspace"
+  - echo "$build_number"
+  - echo $BUILD_NUMBER
+  - systemctl start docker
+  - docker pull 10.110.18.177/library/golang:1.9.6
+  - docker tag 10.110.18.177/library/golang:1.9.6 golang:1.9.6
+  - docker pull 10.110.18.177/library/mysql:5.6.35
+  - docker tag 10.110.18.177/library/mysql:5.6.35 mysql:5.6.35
+  - docker pull 10.110.18.177/library/openldap:1.1.11   
+  - docker tag 10.110.18.177/library/openldap:1.1.11 osixia/openldap:1.1.11
+  - docker pull 10.110.18.177/board/board-gogits:latest     
+  - docker tag 10.110.18.177/board/board-gogits:latest board-gogits:latest
+  - docker pull 10.110.18.177/library/registry:2.6.2        
+  - docker tag 10.110.18.177/library/registry:2.6.2 registry:latest
+ 
+script:
+  - echo $action
+  - cd $workspace/tests
+  - echo $BUILD_NUMBER
+  - sudo ./getenv.sh build_url $workspace
+  - cd $workspace/src/git/inspursoft/board/tests
+  - ls
+  - sudo ./hosts.sh 
+  - sudo ./jenkinsrun.sh $BUILD_NUMBER $workspace
+
+after_script:
+  - echo 'after_scritp'
+
+branches:
+  only:
+    - dev
