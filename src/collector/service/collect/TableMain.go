@@ -10,10 +10,12 @@ import (
 	"git/inspursoft/board/src/common/k8sassist"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
 	"git/inspursoft/board/src/common/model"
+
 	"github.com/google/cadvisor/info/v2"
 )
 
@@ -104,7 +106,7 @@ loopNode:
 			switch k {
 			case "cpu":
 				nodes.NumbersCpuCore = fmt.Sprintf("%d", v)
-				cpuCores = int(v)
+				cpuCores, _ = strconv.Atoi(string(v))
 			case "memory":
 				nodes.MemorySize = fmt.Sprintf("%d", v)
 			case "alpha.kubernetes.io/nvidia-gpu":

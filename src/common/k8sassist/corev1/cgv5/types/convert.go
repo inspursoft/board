@@ -258,6 +258,22 @@ func ToK8sContainer(container *model.K8sContainer) *v1.Container {
 	for i := range container.VolumeMounts {
 		mounts = append(mounts, ToK8sVolumeMount(container.VolumeMounts[i]))
 	}
+
+	var resources v1.ResourceRequirements
+	resources.Requests = make(v1.ResourceList)
+	resources.Limits = make(v1.ResourceList)
+	if v, ok := container.Resources.Requests["cpu"]; ok {
+		resources.Requests["cpu"] = resource.MustParse(string(v))
+	}
+	if v, ok := container.Resources.Requests["memory"]; ok {
+		resources.Requests["memory"] = resource.MustParse(string(v))
+	}
+	if v, ok := container.Resources.Limits["cpu"]; ok {
+		resources.Limits["cpu"] = resource.MustParse(string(v))
+	}
+	if v, ok := container.Resources.Limits["memory"]; ok {
+		resources.Limits["memory"] = resource.MustParse(string(v))
+	}
 	return &v1.Container{
 		Name:         container.Name,
 		Image:        container.Image,
@@ -266,6 +282,7 @@ func ToK8sContainer(container *model.K8sContainer) *v1.Container {
 		WorkingDir:   container.WorkingDir,
 		Ports:        ports,
 		Env:          envs,
+		Resources:    resources,
 		VolumeMounts: mounts,
 	}
 }
@@ -578,6 +595,23 @@ func FromK8sContainer(container *v1.Container) *model.K8sContainer {
 	for i := range container.VolumeMounts {
 		mounts = append(mounts, FromK8sVolumeMount(container.VolumeMounts[i]))
 	}
+
+	var resources model.ResourceRequirements
+	resources.Requests = make(model.ResourceList)
+	resources.Limits = make(model.ResourceList)
+	if v, ok := container.Resources.Requests["cpu"]; ok {
+		resources.Requests["cpu"] = model.QuantityStr(v.String())
+	}
+	if v, ok := container.Resources.Requests["memory"]; ok {
+		resources.Requests["memory"] = model.QuantityStr(v.String())
+	}
+	if v, ok := container.Resources.Limits["cpu"]; ok {
+		resources.Limits["cpu"] = model.QuantityStr(v.String())
+	}
+	if v, ok := container.Resources.Limits["memory"]; ok {
+		resources.Limits["memory"] = model.QuantityStr(v.String())
+	}
+
 	return &model.K8sContainer{
 		Name:         container.Name,
 		Image:        container.Image,
@@ -586,6 +620,7 @@ func FromK8sContainer(container *v1.Container) *model.K8sContainer {
 		WorkingDir:   container.WorkingDir,
 		Ports:        ports,
 		Env:          envs,
+		Resources:    resources,
 		VolumeMounts: mounts,
 	}
 }
@@ -963,6 +998,7 @@ func GenerateDeploymentConfig(deployment *appsv1beta2.Deployment) *appsv1beta2.D
 			Ports:          container.Ports,
 			EnvFrom:        container.EnvFrom,
 			Env:            container.Env,
+			Resources:      container.Resources,
 			VolumeMounts:   container.VolumeMounts,
 			LivenessProbe:  container.LivenessProbe,
 			ReadinessProbe: container.ReadinessProbe,

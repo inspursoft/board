@@ -455,6 +455,9 @@ func setDeploymentContainers(containerList []model.Container, registryURI string
 
 		container.Image = registryURI + "/" + cont.Image.ImageName + ":" + cont.Image.ImageTag
 
+		container.Resources.Requests = make(model.ResourceList)
+		container.Resources.Limits = make(model.ResourceList)
+
 		if cont.CPURequest != "" {
 			container.Resources.Requests["cpu"] = model.QuantityStr(cont.CPURequest)
 		}
@@ -468,7 +471,7 @@ func setDeploymentContainers(containerList []model.Container, registryURI string
 		}
 
 		if cont.MemLimit != "" {
-			container.Resources.Requests["memory"] = model.QuantityStr(cont.MemLimit)
+			container.Resources.Limits["memory"] = model.QuantityStr(cont.MemLimit)
 		}
 
 		k8sContainerList = append(k8sContainerList, container)
