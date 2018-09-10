@@ -72,8 +72,9 @@ const (
 
 // should call kubernetes Quantity String() func.
 type Quantity int64
+type QuantityStr string
 
-type ResourceList map[ResourceName]Quantity
+type ResourceList map[ResourceName]QuantityStr
 
 type ObjectMeta struct {
 	Name              string

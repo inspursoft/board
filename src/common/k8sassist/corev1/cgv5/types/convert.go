@@ -5,6 +5,8 @@ import (
 
 	"git/inspursoft/board/src/common/model"
 
+	"strconv"
+
 	appsv1beta2 "k8s.io/api/apps/v1beta2"
 	autoscalev1 "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/api/core/v1"
@@ -711,14 +713,16 @@ func FromK8sServiceList(typesServiceList *ServiceList) *model.ServiceList {
 func ToK8sNodeStatus(nodestatus model.NodeStatus) v1.NodeStatus {
 	capacity := make(map[v1.ResourceName]resource.Quantity)
 	for k, v := range nodestatus.Capacity {
-		q := resource.NewQuantity(int64(v), resource.DecimalExponent)
+		value, _ := strconv.Atoi(string(v))
+		q := resource.NewQuantity(int64(value), resource.DecimalExponent)
 		capacity[v1.ResourceName(k)] = *q
 
 	}
 
 	allocatable := make(map[v1.ResourceName]resource.Quantity)
 	for k, v := range nodestatus.Allocatable {
-		q := resource.NewQuantity(int64(v), resource.DecimalExponent)
+		value, _ := strconv.Atoi(string(v))
+		q := resource.NewQuantity(int64(value), resource.DecimalExponent)
 		capacity[v1.ResourceName(k)] = *q
 
 	}
@@ -762,7 +766,8 @@ func UpdateK8sNodeStatus(k8sNodeStatus *v1.NodeStatus, nodestatus *model.NodeSta
 			k8sNodeStatus.Capacity = v1.ResourceList(make(map[v1.ResourceName]resource.Quantity))
 		}
 		for k, v := range nodestatus.Capacity {
-			q := resource.NewQuantity(int64(v), resource.DecimalExponent)
+			value, _ := strconv.Atoi(string(v))
+			q := resource.NewQuantity(int64(value), resource.DecimalExponent)
 			k8sNodeStatus.Capacity[v1.ResourceName(k)] = *q
 		}
 	}
@@ -774,7 +779,8 @@ func UpdateK8sNodeStatus(k8sNodeStatus *v1.NodeStatus, nodestatus *model.NodeSta
 			k8sNodeStatus.Allocatable = v1.ResourceList(make(map[v1.ResourceName]resource.Quantity))
 		}
 		for k, v := range nodestatus.Allocatable {
-			q := resource.NewQuantity(int64(v), resource.DecimalExponent)
+			value, _ := strconv.Atoi(string(v))
+			q := resource.NewQuantity(int64(value), resource.DecimalExponent)
 			k8sNodeStatus.Allocatable[v1.ResourceName(k)] = *q
 
 		}
@@ -854,17 +860,17 @@ func UpdateK8sNode(k8sNode *v1.Node, node *model.Node) {
 
 // adapt model node.Status from k8s node.Status
 func FromK8sNodeStatus(nodestatus v1.NodeStatus) model.NodeStatus {
-	capacity := make(map[model.ResourceName]model.Quantity)
+	capacity := make(map[model.ResourceName]model.QuantityStr)
 	for k, v := range nodestatus.Capacity {
 		i, _ := v.AsInt64()
-		capacity[model.ResourceName(k)] = model.Quantity(i)
+		capacity[model.ResourceName(k)] = model.QuantityStr(strconv.Itoa(int(i)))
 
 	}
 
-	allocatable := make(map[model.ResourceName]model.Quantity)
+	allocatable := make(map[model.ResourceName]model.QuantityStr)
 	for k, v := range nodestatus.Allocatable {
 		i, _ := v.AsInt64()
-		allocatable[model.ResourceName(k)] = model.Quantity(i)
+		allocatable[model.ResourceName(k)] = model.QuantityStr(strconv.Itoa(int(i)))
 	}
 
 	conditions := make([]model.NodeCondition, 0)
