@@ -1,5 +1,5 @@
 install:
-evn:
+env:
   global:
     - export registy_ip=10.110.18.177
     - export golang_version=1.9.6
@@ -41,7 +41,7 @@ script:
   - sudo ./jenkinsrun.sh $BUILD_NUMBER $workspace
 
 after_script:
-  - echo 'after_scritp'
+  - echo 'after_script'
 
 branches:
   only:
