@@ -58,6 +58,7 @@ type AppV1ClientInterface interface {
 	Scale(namespace string) ScaleClientInterface
 	ReplicaSet(namespace string) ReplicaSetClientInterface
 	Pod(namespace string) PodClientInterface
+	AutoScale(namespace string) AutoscaleInterface
 }
 
 // ServiceCli interface has methods to work with Service resources in k8s-assist.
