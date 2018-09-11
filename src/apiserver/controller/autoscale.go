@@ -96,7 +96,7 @@ func (as *AutoScaleController) UpdateAutoScaleAction() {
 		return
 	}
 	// override the fields
-	hpa.HPAID = int64(hpaid)
+	hpa.ID = int64(hpaid)
 	hpa.ServiceID = svc.ID
 
 	hpa, err = service.UpdateAutoScale(svc, hpa)
