@@ -27,8 +27,14 @@ func (as *autoscales) Create(autoscale *model.AutoScale) (*model.AutoScale, erro
 }
 
 func (as *autoscales) Update(autoscale *model.AutoScale) (*model.AutoScale, error) {
-	k8sHPA := types.ToK8sAutoScale(autoscale)
-	k8sHPA, err := as.autoscale.Update(k8sHPA)
+	k8sHPA, err := as.autoscale.Get(autoscale.Name, meta_v1.GetOptions{})
+	if err != nil {
+		logs.Error("Get auto scale of %s failed when updating node. Err:%+v", autoscale.Name, err)
+		return nil, err
+	}
+	types.UpdateK8sAutoScale(k8sHPA, autoscale)
+
+	k8sHPA, err = as.autoscale.Update(k8sHPA)
 	if err != nil {
 		logs.Error("Update auto scale of %s/%s failed. Err:%+v", autoscale.Name, as.namespace, err)
 		return nil, err

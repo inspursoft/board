@@ -1127,3 +1127,21 @@ func ToK8sAutoScale(autoscale *model.AutoScale) *autoscalev1.HorizontalPodAutosc
 		},
 	}
 }
+
+// update k8s autoscale using model autosacle
+func UpdateK8sAutoScale(k8sHPA *autoscalev1.HorizontalPodAutoscaler, autoscale *model.AutoScale) {
+	if k8sHPA == nil || autoscale == nil {
+		return
+	}
+	// just update our attributes.
+	k8sHPA.Spec = autoscalev1.HorizontalPodAutoscalerSpec{
+		ScaleTargetRef: autoscalev1.CrossVersionObjectReference{
+			Kind:       autoscale.Spec.ScaleTargetRef.Kind,
+			Name:       autoscale.Spec.ScaleTargetRef.Name,
+			APIVersion: autoscale.Spec.ScaleTargetRef.APIVersion,
+		},
+		MinReplicas:                    autoscale.Spec.MinReplicas,
+		MaxReplicas:                    autoscale.Spec.MaxReplicas,
+		TargetCPUUtilizationPercentage: autoscale.Spec.TargetCPUUtilizationPercentage,
+	}
+}
