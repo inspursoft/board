@@ -67,7 +67,7 @@ func GetNode(nodeName string) (node NodeInfo, err error) {
 			//		mlimit = v.String()
 			//	}
 			//}
-			mlimit = fmt.Sprintf("%d", int64(v.Status.Capacity["memory"]))
+			mlimit = fmt.Sprintf("%s", v.Status.Capacity["memory"])
 			time := v.CreationTimestamp.Unix()
 			var ps []v2.ProcessInfo
 			getFromRequest("http://"+nodeName+":4194/api/v2.0/ps/", &ps)

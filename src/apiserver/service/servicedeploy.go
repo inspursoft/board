@@ -31,12 +31,13 @@ func DeployService(serviceConfig *model.ConfigServiceStep, K8sMasterURL string, 
 	clusterConfig := &k8sassist.K8sAssistConfig{K8sMasterURL: K8sMasterURL}
 	cli := k8sassist.NewK8sAssistClient(clusterConfig)
 	deploymentConfig := MarshalDeployment(serviceConfig, registryURI)
+	//logs.Debug("Marshaled deployment: ", deploymentConfig)
 	deploymentInfo, deploymentFileInfo, err := cli.AppV1().Deployment(serviceConfig.ProjectName).Create(deploymentConfig)
 	if err != nil {
 		logs.Error("Deploy deployment object of %s failed. error: %+v\n", serviceConfig.ServiceName, err)
 		return nil, err
 	}
-
+	logs.Debug("Created deployment: ", deploymentInfo)
 	svcConfig := MarshalService(serviceConfig)
 	serviceInfo, serviceFileInfo, err := cli.AppV1().Service(serviceConfig.ProjectName).Create(svcConfig)
 	if err != nil {

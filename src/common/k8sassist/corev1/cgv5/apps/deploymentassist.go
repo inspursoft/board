@@ -28,6 +28,7 @@ var (
 
 func (d *deployments) processDeploymentHandler(deployment *model.Deployment, handler func(*appsv1beta2.Deployment) (*appsv1beta2.Deployment, error)) (customModel *model.Deployment, primitiveData []byte, err error) {
 	k8sDeployment := types.ToK8sDeployment(deployment)
+	//logs.Debug("handler k8s deployment: ", k8sDeployment)
 	handledDep, err := handler(k8sDeployment)
 	if err != nil {
 		logs.Error("Failed to handle deployment of %s/%s failed. Err:%+v", handledDep.Name, handledDep.Namespace, err)

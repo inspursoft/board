@@ -5,6 +5,8 @@ import (
 
 	"git/inspursoft/board/src/common/model"
 
+	"strconv"
+
 	appsv1beta2 "k8s.io/api/apps/v1beta2"
 	autoscalev1 "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/api/core/v1"
@@ -256,6 +258,22 @@ func ToK8sContainer(container *model.K8sContainer) *v1.Container {
 	for i := range container.VolumeMounts {
 		mounts = append(mounts, ToK8sVolumeMount(container.VolumeMounts[i]))
 	}
+
+	var resources v1.ResourceRequirements
+	resources.Requests = make(v1.ResourceList)
+	resources.Limits = make(v1.ResourceList)
+	if v, ok := container.Resources.Requests["cpu"]; ok {
+		resources.Requests["cpu"] = resource.MustParse(string(v))
+	}
+	if v, ok := container.Resources.Requests["memory"]; ok {
+		resources.Requests["memory"] = resource.MustParse(string(v))
+	}
+	if v, ok := container.Resources.Limits["cpu"]; ok {
+		resources.Limits["cpu"] = resource.MustParse(string(v))
+	}
+	if v, ok := container.Resources.Limits["memory"]; ok {
+		resources.Limits["memory"] = resource.MustParse(string(v))
+	}
 	return &v1.Container{
 		Name:         container.Name,
 		Image:        container.Image,
@@ -264,6 +282,7 @@ func ToK8sContainer(container *model.K8sContainer) *v1.Container {
 		WorkingDir:   container.WorkingDir,
 		Ports:        ports,
 		Env:          envs,
+		Resources:    resources,
 		VolumeMounts: mounts,
 	}
 }
@@ -576,6 +595,23 @@ func FromK8sContainer(container *v1.Container) *model.K8sContainer {
 	for i := range container.VolumeMounts {
 		mounts = append(mounts, FromK8sVolumeMount(container.VolumeMounts[i]))
 	}
+
+	var resources model.ResourceRequirements
+	resources.Requests = make(model.ResourceList)
+	resources.Limits = make(model.ResourceList)
+	if v, ok := container.Resources.Requests["cpu"]; ok {
+		resources.Requests["cpu"] = model.QuantityStr(v.String())
+	}
+	if v, ok := container.Resources.Requests["memory"]; ok {
+		resources.Requests["memory"] = model.QuantityStr(v.String())
+	}
+	if v, ok := container.Resources.Limits["cpu"]; ok {
+		resources.Limits["cpu"] = model.QuantityStr(v.String())
+	}
+	if v, ok := container.Resources.Limits["memory"]; ok {
+		resources.Limits["memory"] = model.QuantityStr(v.String())
+	}
+
 	return &model.K8sContainer{
 		Name:         container.Name,
 		Image:        container.Image,
@@ -584,6 +620,7 @@ func FromK8sContainer(container *v1.Container) *model.K8sContainer {
 		WorkingDir:   container.WorkingDir,
 		Ports:        ports,
 		Env:          envs,
+		Resources:    resources,
 		VolumeMounts: mounts,
 	}
 }
@@ -711,14 +748,16 @@ func FromK8sServiceList(typesServiceList *ServiceList) *model.ServiceList {
 func ToK8sNodeStatus(nodestatus model.NodeStatus) v1.NodeStatus {
 	capacity := make(map[v1.ResourceName]resource.Quantity)
 	for k, v := range nodestatus.Capacity {
-		q := resource.NewQuantity(int64(v), resource.DecimalExponent)
+		value, _ := strconv.Atoi(string(v))
+		q := resource.NewQuantity(int64(value), resource.DecimalExponent)
 		capacity[v1.ResourceName(k)] = *q
 
 	}
 
 	allocatable := make(map[v1.ResourceName]resource.Quantity)
 	for k, v := range nodestatus.Allocatable {
-		q := resource.NewQuantity(int64(v), resource.DecimalExponent)
+		value, _ := strconv.Atoi(string(v))
+		q := resource.NewQuantity(int64(value), resource.DecimalExponent)
 		capacity[v1.ResourceName(k)] = *q
 
 	}
@@ -762,7 +801,8 @@ func UpdateK8sNodeStatus(k8sNodeStatus *v1.NodeStatus, nodestatus *model.NodeSta
 			k8sNodeStatus.Capacity = v1.ResourceList(make(map[v1.ResourceName]resource.Quantity))
 		}
 		for k, v := range nodestatus.Capacity {
-			q := resource.NewQuantity(int64(v), resource.DecimalExponent)
+			value, _ := strconv.Atoi(string(v))
+			q := resource.NewQuantity(int64(value), resource.DecimalExponent)
 			k8sNodeStatus.Capacity[v1.ResourceName(k)] = *q
 		}
 	}
@@ -774,7 +814,8 @@ func UpdateK8sNodeStatus(k8sNodeStatus *v1.NodeStatus, nodestatus *model.NodeSta
 			k8sNodeStatus.Allocatable = v1.ResourceList(make(map[v1.ResourceName]resource.Quantity))
 		}
 		for k, v := range nodestatus.Allocatable {
-			q := resource.NewQuantity(int64(v), resource.DecimalExponent)
+			value, _ := strconv.Atoi(string(v))
+			q := resource.NewQuantity(int64(value), resource.DecimalExponent)
 			k8sNodeStatus.Allocatable[v1.ResourceName(k)] = *q
 
 		}
@@ -854,17 +895,17 @@ func UpdateK8sNode(k8sNode *v1.Node, node *model.Node) {
 
 // adapt model node.Status from k8s node.Status
 func FromK8sNodeStatus(nodestatus v1.NodeStatus) model.NodeStatus {
-	capacity := make(map[model.ResourceName]model.Quantity)
+	capacity := make(map[model.ResourceName]model.QuantityStr)
 	for k, v := range nodestatus.Capacity {
 		i, _ := v.AsInt64()
-		capacity[model.ResourceName(k)] = model.Quantity(i)
+		capacity[model.ResourceName(k)] = model.QuantityStr(strconv.Itoa(int(i)))
 
 	}
 
-	allocatable := make(map[model.ResourceName]model.Quantity)
+	allocatable := make(map[model.ResourceName]model.QuantityStr)
 	for k, v := range nodestatus.Allocatable {
 		i, _ := v.AsInt64()
-		allocatable[model.ResourceName(k)] = model.Quantity(i)
+		allocatable[model.ResourceName(k)] = model.QuantityStr(strconv.Itoa(int(i)))
 	}
 
 	conditions := make([]model.NodeCondition, 0)
@@ -957,6 +998,7 @@ func GenerateDeploymentConfig(deployment *appsv1beta2.Deployment) *appsv1beta2.D
 			Ports:          container.Ports,
 			EnvFrom:        container.EnvFrom,
 			Env:            container.Env,
+			Resources:      container.Resources,
 			VolumeMounts:   container.VolumeMounts,
 			LivenessProbe:  container.LivenessProbe,
 			ReadinessProbe: container.ReadinessProbe,
