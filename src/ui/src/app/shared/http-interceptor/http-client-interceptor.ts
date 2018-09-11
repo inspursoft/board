@@ -25,7 +25,8 @@ export class HttpClientInterceptor implements HttpInterceptor {
     });
     if (this.appTokenService.token) {
       authReq = authReq.clone({
-        headers: authReq.headers.set("token", this.appTokenService.token)
+        headers: authReq.headers.set("token", this.appTokenService.token),
+        params:authReq.params.set("Timestamp", Date.now().toString())
       });
     }
     return next.handle(authReq)
