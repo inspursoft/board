@@ -1,30 +1,17 @@
-BUILD_URL=$1
+source /root/env.cfg
+build_number=$1
 WORKSPACE=$2
-head_repo_url=$3
-head_branch=$4
-base_repo_url=$5
-base_branch=$6
-comments_url=$7
-JOB_URL=$8
-JENKINS_URL=$9
 
-
-totalLink=$BUILD_URL/TOTAL_REPORT/index.html
-uiLink=$BUILD_URL/UI/index.html
-consoleLink=$BUILD_URL/console
+consoleLink=$jenkins_master_url/job/$group_name/$build_number/console
 boardDir=$WORKSPACE/src/git/inspursoft
-branchDir=`echo $head_repo_url|awk -F '/' '{print $NF}'|cut -d '.' -f 1`
+branchDir=`echo $base_repo_clone_url|awk -F '/' '{print $NF}'|cut -d '.' -f 1`
 workDir=$WORKSPACE
-uiDir=$boardDir/$branchDir/src/ui
 
-
-lastBuildCov=`curl $JOB_URL/lastSuccessfulBuild/COVERAGE/index.html|grep "%"|cut -d '>' -f 3|cut -d '%' -f 1`
-lastUiBuildCov=`curl $JOB_URL/lastSuccessfulBuild/UICOVERAGE/index.html|grep "%"|cut -d '>' -f 3|cut -d '%' -f 1`
-
+last_build_cov=$last_coverage
 echo "--------------------------"
 echo $lastBuildCov
+echo $build_number
 echo "xxxxxxxxxxxxxxxxxxxxxxxxxx"
-
 
 #make prepare
 cd $boardDir/$branchDir
@@ -35,11 +22,11 @@ make prepare
 cp $boardDir/$branchDir/tests/docker-compose.test.yml  $boardDir/$branchDir/make/dev
 cp $boardDir/$branchDir/tests/ldap_test.ldif  $boardDir/$branchDir/make/dev
 cd $boardDir/$branchDir/make/dev
-docker-compose -f docker-compose.test.yml down -v
+#docker-compose -f docker-compose.test.yml down -v
 rm -rf /data/board
 rm -rf /tmp/test-repos /tmp/test-keys
 rm -f  /root/.ssh/known_hosts
-docker-compose -f docker-compose.test.yml up -d
+#docker-compose -f docker-compose.test.yml up -d
 
 
 #docker-compose -f docker-compose.uibuilder.test.yml up 
@@ -56,19 +43,46 @@ envFile=$boardDir/$branchDir/tests/env.cfg
 #make run
 ./run.sh $envFile
 
-cp -r /home/tests/testresult.log /home/tests/coverage/ $uiDir
-uiCoverage=`cat $uiDir/testresult.log |grep "Statements"|cut -d ":" -f 2|cut -d "%" -f 1|awk 'gsub(/^ *| *$/,"")'`
-
+if [ "$action" == "pull_request" ]; then
 #cov=`cat $boardDir/$branchDir/tests/out.temp|grep "total"|awk '{print $NF}'|cut -d "%" -f 1|tr -s [:space:]`
 covfile=$boardDir/$branchDir/tests/avaCov.cov
+coverage_file_html=$boardDir/$branchDir/tests/profile.html
+build_cov=`cat $boardDir/$branchDir/tests/avaCov.cov`
 
+
+echo "push to register======================="
+echo "gogs_url:		$gogs_url"
+echo "group_name:	$group_name"
+echo "full_name:	$full_name"
+echo "username:		$username"
+echo "cov_num:		$cov_num"
+command="curl -X POST \
+  '$gogs_url/upload?full_name=$full_name&build_number=$build_number' \
+  -H 'Cache-Control: no-cache' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'upload=@$coverage_file_html'
+"
+echo $command
+eval $command
+coverage_file_html_path="$gogs_url/results/$full_name/$build_number/profile.html"
+
+echo $coverage_file_html_path
+
+commit_cov_num="curl -X PUT \
+  '$gogs_url/config?group_name=$group_name&username=$username' \
+  -H 'Cache-Control: no-cache' \
+  -H 'Content-Type: application/json' \
+  -d '{
+                \"config_key\": \"last_coverage\",
+                \"config_val\": \"$build_cov\"
+}'"
+
+echo $commit_cov_num
+eval $commit_cov_num
+
+echo "======================="
 
 #echo "averageCov: " $averageCov
-
-
-
-cp -r $uiDir/coverage $WORKSPACE/total
-
 
 function getFlag()
 {
@@ -90,53 +104,40 @@ function getFlag()
 
 if [ ! -f $covfile ];then
 pic="error.jpg"
-uipic=`getFlag $lastUiBuildCov $uiCoverage`
 cov="FAIL"
 else
-cov=`cat $covfile`"%"
-add=`echo $cov+$uiCoverage|bc`
-averageCov=`echo $add/2|bc`
-echo "python genResult.py $WORKSPACE $cov $uiCoverage"
-python genResult.py $WORKSPACE $cov $uiCoverage
-pic=`getFlag $lastBuildCov $cov`
-uipic=`getFlag $lastUiBuildCov $uiCoverage`
+
+pic=`getFlag $last_build_cov $build_cov`
 fi
-echo $comments_url
+echo $comment_url
 
 
 echo "=================================================================="
 info1="The test coverage for backend is "
-commenturltmp=`echo $comments_url|sed 's/pulls/issues/g'|sed 's/inspursoft/api\/v1\/repos\/inspursoft/g'`
-commentsurl=$commenturltmp"/comments"
-serverresult=$cov
-#commentsurl="http://10.110.18.40:10080/api/v1/repos/inspursoft/board/issues/1396/comments"
-uiinfo=",The test coverage for frontend is "
+serverresult=$build_cov
 consoleinfo=", check "
-imageLink=$JENKINS_URL/userContent/$pic
-uiImageLink=$JENKINS_URL/userContent/$uipic
-imageuri=" <img src="$imageLink" width="20" height="20"> "
-uiImageuri=" <img src="$uiImageLink" width="20" height="20"> "
-uiImageuri=" <img src="$uiImageLink" width="20" height="20"> "
 uiCov=" <a href=$uiLink>$uiCoverage </a>"
-serverCovLink=" <a href=$totalLink>$serverresult</a>"
-consoleuri=" <a href=$consoleLink> consolse log</a> "
-imageLink=$JENKINS_URL/userContent/$pic
-bodyinfo=$info1$serverCovLink$imageuri$uiinfo$uiImageuri$consoleinfo$consoleuri
+serverCovLink=" <a href=$coverage_file_html_path>$serverresult</a>"
+console_url=" <a href=$consoleLink> consolse log</a> "
+imageLink=$gogs_url/results/pic/$pic
+image_url=" <img src="$imageLink" width="20" height="20"> "
+bodyinfo=$info1$serverCovLink$imageu$uiinfo$uiImageuri$consoleinfo$consoleuri
 bodyinfo=$info1$serverCovLink$imageuri$uiinfo$uiCov$uiImageuri$consoleinfo$consoleuri
+bodyinfo=$info1$serverCovLink$imageuri$uiinfo$uiCov$uiImageuri$consoleinfo$consoleuri
+bodyinfo=$info1$serverCovLink$image_url$consoleinfo$console_url
+#bodyinfo=$info1
 b='-d { "body": "'$bodyinfo'"}'
+echo $b
 cmd="curl -X POST \
-  $commentsurl \
-  -H 'Authorization: token 7c67f6a0d7967a152329c33ecaed3e1f93cb1e2d' \
+  $comment_url \
+  -H 'Authorization: token 341d29a9f2e7004c78d00d530fc321761a26f4a7' \
   -H 'Content-Type: application/json' \
   '$b'"
 echo $cmd
 eval $cmd
 
 echo "+++++++++++++++++++"
-echo "comments_url	:"$comments_url
+echo "comment_url	:"$comment_url
 echo "info1		:"$info1
 echo "uiinfo		:"$uiinfo
-echo "imageuri		:"$imageuri
-echo "uiImageuri	:"$uiImageuri
-echo "uiCov		:"$uiCov
-echo "serverCovLink	:"$serverCovLink
+fi

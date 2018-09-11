@@ -1,0 +1,48 @@
+install:
+env:
+  global:
+    - export registy_ip=10.110.18.177
+    - export golang_version=1.9.6
+    - export mysql_version=5.6.35
+    - export opendap_version=1.1.11
+    - export last_version=latest
+before_script:
+  - echo "before script"
+  - echo "------------------------"
+  - echo "$head_repo_html_url"
+  - echo "$head_repo_name"
+  - echo "$base_repo_html_url"
+  - echo "$base_repo_name"
+  - echo "$comment_url"
+  - echo "$action"
+  - echo "$workspace"
+  - echo "$build_number"
+  - echo $BUILD_NUMBER
+  - systemctl start docker
+  - docker pull $registy_ip/library/golang:$golang_version
+  - docker tag $registy_ip/library/golang:$golang_version golang:$golang_version
+  - docker pull $registy_ip/library/mysql:$mysql_version
+  - docker tag $registy_ip/library/mysql:$mysql_version mysql:$mysql_version
+  - docker pull $registy_ip/library/openldap:$opendap_version
+  - docker tag $registy_ip/library/openldap:$opendap_version osixia/openldap:$opendap_version
+  - docker pull $registy_ip/board/board-gogits:$last_version
+  - docker tag $registy_ip/board/board-gogits:latest board-gogits:$last_version
+  - docker pull $registy_ip/library/registry:2.6.2        
+  - docker tag $registy_ip/library/registry:2.6.2 registry:latest
+ 
+script:
+  - echo $action
+  - cd $workspace/tests
+  - echo $BUILD_NUMBER
+  - sudo ./getenv.sh build_url $workspace
+  - cd $workspace/src/git/inspursoft/board/tests
+  - ls
+  - sudo ./hosts.sh 
+  - sudo ./jenkinsrun.sh $BUILD_NUMBER $workspace
+
+after_script:
+  - echo 'after_script'
+
+branches:
+  only:
+    - dev
