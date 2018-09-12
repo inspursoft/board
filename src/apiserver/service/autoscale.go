@@ -5,6 +5,8 @@ import (
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/k8sassist"
 	"git/inspursoft/board/src/common/model"
+
+	"github.com/astaxie/beego/logs"
 )
 
 func genAutoScaleObject(svc *model.ServiceStatus, autoscale *model.ServiceAutoScale) *model.AutoScale {
@@ -125,4 +127,16 @@ func UpdateAutoScaleDB(autoscale model.ServiceAutoScale, fieldNames ...string) (
 		return false, err
 	}
 	return true, nil
+}
+
+func GetAutoScaleK8s(project string, name string) (*model.AutoScale, error) {
+	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		K8sMasterURL: kubeMasterURL(),
+	})
+	hpa, err := k8sclient.AppV1().AutoScale(project).Get(name)
+	if err != nil {
+		logs.Debug("Not found HPA %s in %s", name, project)
+		return nil, err
+	}
+	return hpa, nil
 }

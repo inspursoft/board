@@ -75,4 +75,5 @@ type ServiceAutoScale struct {
 	MinPod     int    `json:"min_pod" orm:"column(min_pod)"`
 	MaxPod     int    `json:"max_pod" orm:"column(max_pod)"`
 	CPUPercent int    `json:"cpu_percent" orm:"column(cpu_percent)"`
+	HPAStatus  int    `json:"hpa_status" orm:"column(status)"`
 }
