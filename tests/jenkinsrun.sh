@@ -130,7 +130,7 @@ b='-d { "body": "'$bodyinfo'"}'
 echo $b
 cmd="curl -X POST \
   $comment_url \
-  -H 'Authorization: token 341d29a9f2e7004c78d00d530fc321761a26f4a7' \
+  -H 'Authorization: token $access_token' \
   -H 'Content-Type: application/json' \
   '$b'"
 echo $cmd
