@@ -85,6 +85,16 @@ func (as *AutoScaleController) ListAutoScaleAction() {
 		as.internalError(err)
 		return
 	}
+	for _, hpa := range hpas {
+		_, err = service.GetAutoScaleK8s(svc.ProjectName, hpa.HPAName)
+		if err != nil {
+			logs.Debug("Not found hpa %s in system", hpa.HPAName)
+			hpa.HPAStatus = 0
+		} else {
+			hpa.HPAStatus = 1
+		}
+	}
+
 	as.renderJSON(hpas)
 }
 
