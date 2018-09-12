@@ -12,7 +12,7 @@ import (
 var jenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
 var gogitsBaseURL = utils.GetConfig("GOGITS_BASE_URL")
 var jenkinsfileRepoURL = utils.GetConfig("JENKINSFILE_REPO_URL")
-var maxRetryCount = 240
+var maxRetryCount = 245
 var seedJobName = "base"
 var jenkinsHostIP = utils.GetConfig("JENKINS_HOST_IP")
 var jenkinsHostPort = utils.GetConfig("JENKINS_HOST_PORT")
