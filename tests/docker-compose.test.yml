@@ -58,3 +58,21 @@ services:
     restart: always
     ports:
       - "12225:12225"
+
+  jenkins:
+    build:
+      context: ../../
+      dockerfile: make/dev/container/jenkins/Dockerfile
+    image: dev_jenkins:dev
+    restart: always
+    volumes:
+      - /data/board/jenkins_home:/var/jenkins_home
+      - ../config/ssh_keys:/root/.ssh
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/local/bin/docker:/usr/bin/docker
+    env_file:
+      - ../config/jenkins/env
+    ports:
+      - 8888:8080
+      - 50000:50000
+
