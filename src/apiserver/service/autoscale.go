@@ -2,9 +2,7 @@ package service
 
 import (
 	"errors"
-	"fmt"
 	"git/inspursoft/board/src/common/dao"
-
 	"git/inspursoft/board/src/common/k8sassist"
 	"git/inspursoft/board/src/common/model"
 )
@@ -43,13 +41,18 @@ func CreateAutoScale(svc *model.ServiceStatus, autoscale *model.ServiceAutoScale
 	}
 
 	// add the hpa from storage
+	hpaid, err := CreateAutoScaleDB(*autoscale)
+	if err != nil {
+		return nil, err
+	}
 	newhpa := *autoscale
+	newhpa.ID = hpaid
 	return &newhpa, nil
 }
 
-func ListAutoScales(svc *model.ServiceStatus) ([]model.ServiceAutoScale, error) {
+func ListAutoScales(svc *model.ServiceStatus) ([]*model.ServiceAutoScale, error) {
 	// list the hpas from storage
-	return nil, nil
+	return dao.GetAutoScalesByService(model.ServiceAutoScale{}, svc.ID)
 }
 
 func UpdateAutoScale(svc *model.ServiceStatus, autoscale *model.ServiceAutoScale) (*model.ServiceAutoScale, error) {
@@ -64,22 +67,34 @@ func UpdateAutoScale(svc *model.ServiceStatus, autoscale *model.ServiceAutoScale
 		return nil, err
 	}
 	// update the hpa from storage
+	if ok, err := UpdateAutoScaleDB(*autoscale); !ok {
+		return nil, err
+	}
 	newhpa := *autoscale
 	return &newhpa, nil
 }
 
 func DeleteAutoScale(svc *model.ServiceStatus, hpaid int64) error {
+	// get the hpaname from storage
+	as, err := dao.GetAutoScale(model.ServiceAutoScale{
+		ID: hpaid,
+	})
+	if err != nil {
+		return err
+	}
 	// delete the hpa from k8s
 	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
 		K8sMasterURL: kubeMasterURL(),
 	})
-	err := k8sclient.AppV1().AutoScale(svc.ProjectName).Delete(fmt.Sprintf("%d", hpaid))
+	err = k8sclient.AppV1().AutoScale(svc.ProjectName).Delete(as.HPAName)
 	if err != nil {
 		return err
 	}
 
 	// delete the hpa from storage
-
+	if ok, err := DeleteAutoScaleDB(hpaid); !ok {
+		return err
+	}
 	return nil
 }
 
