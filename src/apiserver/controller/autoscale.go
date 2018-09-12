@@ -47,8 +47,20 @@ func (as *AutoScaleController) CreateAutoScaleAction() {
 	if err != nil {
 		return
 	}
+	logs.Info("Added autoscale %s: %+v", hpa.HPAName, hpa)
+
 	// override the fields
 	hpa.ServiceID = svc.ID
+
+	// do some check
+	exist, err := service.CheckAutoScaleExist(svc, hpa.HPAName)
+	if err != nil {
+		as.internalError(err)
+		return
+	} else if exist {
+		as.customAbort(http.StatusConflict, fmt.Sprintf("AutoScale %s already exists in cluster.", hpa.HPAName))
+		return
+	}
 
 	// add the hpa to k8s
 	hpa, err = service.CreateAutoScale(svc, hpa)
@@ -65,6 +77,7 @@ func (as *AutoScaleController) ListAutoScaleAction() {
 	if err != nil {
 		return
 	}
+	logs.Info("list all autoscales of service %s", svc.Name)
 
 	// list the hpas from storage
 	hpas, err := service.ListAutoScales(svc)
@@ -105,9 +118,24 @@ func (as *AutoScaleController) UpdateAutoScaleAction() {
 	if err != nil {
 		return
 	}
+
+	logs.Info("update autoscale %d to %+v", hpaid, hpa)
 	// override the fields
 	hpa.ID = int64(hpaid)
 	hpa.ServiceID = svc.ID
+
+	// do some check
+	autoscale, err := service.GetAutoScale(svc, hpa.ID)
+	if err != nil {
+		as.internalError(err)
+		return
+	} else if autoscale == nil {
+		as.customAbort(http.StatusBadRequest, fmt.Sprintf("Autoscale %d does not exists.", hpa.ID))
+		return
+	} else if autoscale.HPAName != hpa.HPAName {
+		as.customAbort(http.StatusBadRequest, fmt.Sprintf("can't change Autoscale %s's name to %s", autoscale.HPAName, hpa.HPAName))
+		return
+	}
 
 	hpa, err = service.UpdateAutoScale(svc, hpa)
 	if err != nil {
@@ -128,6 +156,17 @@ func (as *AutoScaleController) DeleteAutoScaleAction() {
 	hpaid, err := strconv.Atoi(as.Ctx.Input.Param(":hpaid"))
 	if err != nil {
 		as.internalError(err)
+		return
+	}
+	logs.Info("delete autoscale %d", hpaid)
+
+	// do some check
+	autoscale, err := service.GetAutoScale(svc, int64(hpaid))
+	if err != nil {
+		as.internalError(err)
+		return
+	} else if autoscale == nil {
+		as.customAbort(http.StatusBadRequest, fmt.Sprintf("Autoscale %d does not exists.", int64(hpaid)))
 		return
 	}
 

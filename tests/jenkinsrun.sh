@@ -22,11 +22,11 @@ make prepare
 cp $boardDir/$branchDir/tests/docker-compose.test.yml  $boardDir/$branchDir/make/dev
 cp $boardDir/$branchDir/tests/ldap_test.ldif  $boardDir/$branchDir/make/dev
 cd $boardDir/$branchDir/make/dev
-#docker-compose -f docker-compose.test.yml down -v
+docker-compose -f docker-compose.test.yml down -v
 rm -rf /data/board
 rm -rf /tmp/test-repos /tmp/test-keys
 rm -f  /root/.ssh/known_hosts
-#docker-compose -f docker-compose.test.yml up -d
+docker-compose -f docker-compose.test.yml up -d
 
 
 #docker-compose -f docker-compose.uibuilder.test.yml up 

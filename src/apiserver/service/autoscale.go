@@ -2,6 +2,8 @@ package service
 
 import (
 	"errors"
+	"fmt"
+
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/k8sassist"
 	"git/inspursoft/board/src/common/model"
@@ -84,6 +86,9 @@ func DeleteAutoScale(svc *model.ServiceStatus, hpaid int64) error {
 	if err != nil {
 		return err
 	}
+	if as == nil {
+		return errors.New(fmt.Sprintf("can't find the AutoScale with id %d", hpaid))
+	}
 	// delete the hpa from k8s
 	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
 		K8sMasterURL: kubeMasterURL(),
@@ -98,6 +103,32 @@ func DeleteAutoScale(svc *model.ServiceStatus, hpaid int64) error {
 		return err
 	}
 	return nil
+}
+
+func GetAutoScale(svc *model.ServiceStatus, hpaid int64) (*model.ServiceAutoScale, error) {
+	// get the hpaname from storage
+	as, err := dao.GetAutoScale(model.ServiceAutoScale{
+		ID: hpaid,
+	})
+	if err != nil {
+		return nil, err
+	}
+	// maybe the as is nil
+	return as, nil
+}
+
+func CheckAutoScaleExist(svc *model.ServiceStatus, hpaname string) (bool, error) {
+	// get the hpaname from storage
+	ass, err := dao.GetAutoScalesByService(model.ServiceAutoScale{}, svc.ID)
+	if err != nil {
+		return false, err
+	}
+	for i := range ass {
+		if ass[i].HPAName == hpaname {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 // AutoScale in database
