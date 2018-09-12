@@ -11,6 +11,7 @@ import (
 	autoscalev1 "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -1144,4 +1145,12 @@ func UpdateK8sAutoScale(k8sHPA *autoscalev1.HorizontalPodAutoscaler, autoscale *
 		MaxReplicas:                    autoscale.Spec.MaxReplicas,
 		TargetCPUUtilizationPercentage: autoscale.Spec.TargetCPUUtilizationPercentage,
 	}
+}
+
+func IsNotFoundError(err error) bool {
+	return errors.IsNotFound(err)
+}
+
+func IsAlreadyExistError(err error) bool {
+	return errors.IsAlreadyExists(err)
 }
