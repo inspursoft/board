@@ -1,7 +1,9 @@
 package service
 
 import (
+	"errors"
 	"fmt"
+	"git/inspursoft/board/src/common/dao"
 
 	"git/inspursoft/board/src/common/k8sassist"
 	"git/inspursoft/board/src/common/model"
@@ -79,4 +81,33 @@ func DeleteAutoScale(svc *model.ServiceStatus, hpaid int64) error {
 	// delete the hpa from storage
 
 	return nil
+}
+
+// AutoScale in database
+func CreateAutoScaleDB(autoscale model.ServiceAutoScale) (int64, error) {
+	autoscaleID, err := dao.AddAutoScale(autoscale)
+	if err != nil {
+		return 0, err
+	}
+	return autoscaleID, nil
+}
+
+func DeleteAutoScaleDB(autoscaleID int64) (bool, error) {
+	s := model.ServiceAutoScale{ID: autoscaleID}
+	_, err := dao.DeleteAutoScale(s)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func UpdateAutoScaleDB(autoscale model.ServiceAutoScale, fieldNames ...string) (bool, error) {
+	if autoscale.ID == 0 {
+		return false, errors.New("no AutoScale ID provided")
+	}
+	_, err := dao.UpdateAutoScale(autoscale, fieldNames...)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
