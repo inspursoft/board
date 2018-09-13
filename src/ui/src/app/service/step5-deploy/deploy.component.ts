@@ -70,6 +70,6 @@ export class DeployComponent extends ServiceStepBase {
   }
 
   backStep(): void {
-    this.k8sService.stepSource.next({index: 4, isBack: true});
+    this.k8sService.stepSource.next({index: 3, isBack: true});
   }
 }

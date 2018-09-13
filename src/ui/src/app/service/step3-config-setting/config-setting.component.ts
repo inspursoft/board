@@ -152,11 +152,11 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
   forward(): void {
     if (this.verifyInputValid()) {
       this.k8sService.setServiceConfig(this.uiData.uiToServer())
-        .then(() => this.k8sService.stepSource.next({index: 6, isBack: false}));
+        .then(() => this.k8sService.stepSource.next({index: 5, isBack: false}));
     }
   }
 
   backUpStep(): void {
-    this.k8sService.stepSource.next({index: 3, isBack: true});
+    this.k8sService.stepSource.next({index: 2, isBack: true});
   }
 }

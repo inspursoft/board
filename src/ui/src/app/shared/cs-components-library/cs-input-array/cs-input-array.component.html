@@ -9,7 +9,7 @@
                 [simpleFiled]="item">
       </cs-input>
     </div>
-    <div *ngFor="let itemSource of inputArraySourceObject;let iIndex = index" class="cs-input-array-container">
+    <div *ngFor="let itemSource of inputArraySource;let iIndex = index" class="cs-input-array-container">
       <div *ngIf="!inputArrayDisabled">
         <clr-icon class="cs-input-array minus" shape="minus" (click)="onMinusClick(iIndex)"></clr-icon>
       </div>
@@ -23,9 +23,9 @@
                 [inputMin]="inputArrayMin"
                 [inputMax]="inputArrayMax"
                 [validatorMessage]="validatorMessage"
-                [customerValidatorFunc]="checkRepeat()"
+                [customerValidatorFunc]="checkRepeatAction.bind(selfObject)"
                 [customerValidatorAsyncFunc]="customerValidatorAsyncFunc"
-                [simpleFiled]="itemSource.fieldValue"
+                [simpleFiled]="itemSource"
                 (onRevert)="onRevertClick(iIndex,$event)"
                 (onCheck)="onCheckClick(iIndex,$event)">
       </cs-input>

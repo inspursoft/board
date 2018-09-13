@@ -82,6 +82,10 @@ export class Container implements UiServerExchangeData<Container> {
   public env: Array<EnvStruct> = Array<EnvStruct>();
   public container_port: Array<number> = Array();
   public command: string = "";
+  public cpu_request: string = "";
+  public mem_request: string = "";
+  public cpu_limit: string = "";
+  public mem_limit: string = "";
 
   isHavePort(): boolean {
     return this.container_port.length > 0;
@@ -290,6 +294,8 @@ export class UiServiceFactory {
         return new UIServiceStep3();
       case PHASE_EXTERNAL_SERVICE:
         return new UIServiceStep4();
+      default:
+        return null;
     }
   }
 }

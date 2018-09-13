@@ -55,11 +55,13 @@
       <cs-input [inputType]="1"
                 [inputLabel]="'SERVICE.STEP_2_VOLUME_MOUNTS' | translate"
                 [simpleFiled]="getVolumesDescription(workBuf.container)"
-                [inputPlaceholder]="'SERVICE.STEP_2_STORAGE_VOLUME'| translate"></cs-input>
+                [inputPlaceholder]="'SERVICE.STEP_2_STORAGE_VOLUME'| translate"
+                (onEdit)="editVolumeMount(workBuf.container)"></cs-input>
       <cs-input [inputType]="1"
                 [inputLabel]="'SERVICE.STEP_2_Env' | translate"
                 [simpleFiled]="getEnvsDescription(workBuf.container)"
-                [inputPlaceholder]="'SERVICE.STEP_2_ENVIRONMENT_VARIABLES'| translate"></cs-input>
+                [inputPlaceholder]="'SERVICE.STEP_2_ENVIRONMENT_VARIABLES'| translate"
+                (onEdit)="editEnvironment(workBuf.container)"></cs-input>
       <cs-input-array [inputArrayType]="1"
                       [inputArrayFixedSource]="fixedContainerPort.get(workBuf.container.image.image_name)"
                       [inputArrayMin]="1"
@@ -67,10 +69,10 @@
                       [inputArrayLabelText]="'SERVICE.STEP_2_CONTAINER_PORT' | translate"
                       [inputArraySource]="workBuf.container.container_port">
       </cs-input-array>
-      <cs-input [inputType]="1"
-                [inputLabel]="'SERVICE.STEP_2_COMMAND' | translate"
-                [simpleFiled]="getEnvsDescription(workBuf.container)"
-                [inputPlaceholder]="'SERVICE.STEP_2_COMMAND'| translate"></cs-input>
+      <cs-input [inputLabel]="'SERVICE.STEP_2_COMMAND' | translate"
+                [simpleFiled]="workBuf.container.command"
+                [inputPlaceholder]="'SERVICE.STEP_2_COMMAND'| translate"
+                (onCheck)="workBuf.container.command = $event"></cs-input>
       <cs-input [inputLabel]="'SERVICE.STEP_2_CPU_REQUEST' | translate"
                 [simpleFiled]="workBuf.container.cpu_request"
                 [inputPlaceholder]="'SERVICE.STEP_2_PLACEHOLDER_DEFAULT'| translate"
@@ -103,14 +105,14 @@
 <button class="btn btn-default" [disabled]="!isCanNextStep" (click)="forward()">
   {{"BUTTON.NEXT"|translate}}
 </button>
-<!--<environment-value *ngIf="showEnvironmentValue"-->
-                   <!--[inputEnvsData]="getDefaultEnvsData(curContainerIndex)"-->
-                   <!--[inputFixedKeyList]="fixedEnvKeys"-->
-                   <!--[(isOpen)]="showEnvironmentValue"-->
-                   <!--(onConfirm)="setEnvironment(curContainerIndex,$event)">-->
-<!--</environment-value>-->
-<!--<volume-mounts *ngIf="showVolumeMounts"-->
-               <!--[volumeData]="getVolumeMountData(curContainerIndex)"-->
-               <!--[(isOpen)]="showVolumeMounts"-->
-               <!--(onConfirmEvent)="setVolumeMount($event,curContainerIndex)">-->
-<!--</volume-mounts>-->
+<environment-value *ngIf="showEnvironmentValue"
+                   [inputEnvsData]="getDefaultEnvsData()"
+                   [inputFixedKeyList]="getDefaultEnvsFixedData()"
+                   [(isOpen)]="showEnvironmentValue"
+                   (onConfirm)="setEnvironment($event)">
+</environment-value>
+<volume-mounts *ngIf="showVolumeMounts"
+               [volumeData]="getVolumeMountData()"
+               [(isOpen)]="showVolumeMounts"
+               (onConfirmEvent)="setVolumeMount($event)">
+</volume-mounts>

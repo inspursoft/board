@@ -1,4 +1,4 @@
-import { Component, Injector, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Injector, OnInit } from '@angular/core';
 import {
   Container,
   EnvStruct,
@@ -12,12 +12,14 @@ import {
 import { BuildImageDockerfileData, Image, ImageDetail } from "../../image/image";
 import { ServiceStepBase } from "../service-step";
 import { CreateImageComponent } from "../../image/image-create/image-create.component";
+import { EnvType } from "../../shared/environment-value/environment-value.component";
+import { VolumeOutPut } from "./volume-mounts/volume-mounts.component";
 
 @Component({
-  templateUrl: './select-image.component.html',
-  styleUrls: ["./select-image.component.css"]
+  templateUrl: './config-container.component.html',
+  styleUrls: ["./config-container.component.css"]
 })
-export class SelectImageComponent extends ServiceStepBase implements OnInit {
+export class ConfigContainerComponent extends ServiceStepBase implements OnInit {
   patternContainerName: RegExp = /^[a-zA-Z\d_-]+$/;
   patternWorkdir: RegExp = /^~?[\w\d-\/.{}$\/:]+[\s]*$/;
   imageSourceList: Array<Image>;
@@ -29,8 +31,11 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
   fixedContainerEnv: Map<string, Array<EnvStruct>>;
   stepSelectImageData: UIServiceStep2;
   stepConfigContainerData: UIServiceStep3;
+  showEnvironmentValue: boolean = false;
+  showVolumeMounts: boolean = false;
+  curEditEnvContainer: Container;
 
-  constructor(protected injector: Injector) {
+  constructor(protected injector: Injector,private changeRef: ChangeDetectorRef) {
     super(injector);
     this.workBufferList = Array<{imageIndex: ImageIndex, container: Container}>();
     this.imageDetailSourceList = new Map<string, Array<ImageDetail>>();
@@ -48,9 +53,6 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
     Promise.all([promiseSelectImage, promiseConfigContainer]).then(([resSelectImage, resConfigContainer]) => {
       this.stepSelectImageData = resSelectImage as UIServiceStep2;
       this.stepConfigContainerData = resConfigContainer as UIServiceStep3;
-      if (this.stepSelectImageData.imageList.length == 0) {
-        this.addEmptyWorkItem();
-      }
       this.stepSelectImageData.imageList.forEach((imageIndex: ImageIndex) => {
         this.getImageDetailList(imageIndex.image_name).then();
         let imageIndexBuf = new ImageIndex();
@@ -81,6 +83,11 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
         this.containerIsInEdit.set(containerBuf, false);
         this.setContainerFixedInfo(containerBuf);
       });
+      if (this.stepSelectImageData.imageList.length == 0) {
+        this.addEmptyWorkItem();
+      } else {
+        this.changeRef.detectChanges();
+      }
     });
     this.k8sService.getImages("", 0, 0).then(res => {
       this.imageSourceList = res;
@@ -92,23 +99,21 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
     let buf = this.workBufferList[index];
     buf.imageIndex.image_name = image.image_name;
     buf.imageIndex.project_name = this.stepSelectImageData.projectName;
-    let containerBuf = new Container();
-    containerBuf.image.image_name = image.image_name;
-    containerBuf.name = image.image_name;
-    containerBuf.image.project_name = this.stepSelectImageData.projectName;
-    buf.container = containerBuf;
+    buf.container.image.image_name = image.image_name;
+    buf.container.name = image.image_name;
+    buf.container.image.project_name = this.stepSelectImageData.projectName;
     if (this.imageDetailSourceList.has(image.image_name)) {
       let detailList: Array<ImageDetail> = this.imageDetailSourceList.get(image.image_name);
-      containerBuf.image.image_tag = detailList[0].image_tag;
+      buf.container.image.image_tag = detailList[0].image_tag;
       buf.imageIndex.image_tag = detailList[0].image_tag;
-      this.setDefaultContainerInfo(containerBuf);
-      this.setContainerFixedInfo(containerBuf);
+      this.setDefaultContainerInfo(buf.container);
+      this.setContainerFixedInfo(buf.container);
     } else {
       this.getImageDetailList(image.image_name).then((res: ImageDetail[]) => {
         buf.imageIndex.image_tag = res[0].image_tag;
-        containerBuf.image.image_tag = res[0].image_tag;
-        this.setDefaultContainerInfo(containerBuf);
-        this.setContainerFixedInfo(containerBuf);
+        buf.container.image.image_tag = res[0].image_tag;
+        this.setDefaultContainerInfo(buf.container);
+        this.setContainerFixedInfo(buf.container);
       })
     }
   }
@@ -148,7 +153,7 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
             env.dockerfile_envvalue = value.dockerfile_envvalue;
             fixedEnvs.push(env);
           });
-          this.fixedContainerEnv.set(container.image.image_name,fixedEnvs);
+          this.fixedContainerEnv.set(container.image.image_name, fixedEnvs);
         }
         if (res.image_expose) {
           let fixedPorts: Array<number> = Array();
@@ -234,7 +239,7 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
             if (value.image_name === imageName) {
               this.imageSourceList = Object.create(res);
               this.unshiftCustomerCreateImage();
-              this.changeSelectImage(newImageIndex,value);
+              this.changeSelectImage(newImageIndex, value);
             }
           });
         })
@@ -243,7 +248,7 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
   }
 
   minusSelectImage(index: number) {
-    if (index > 0){
+    if (index > 0) {
       this.workBufferList.splice(index, 1);
     }
   }
@@ -252,6 +257,7 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
     let imageIndexBuf = new ImageIndex();
     imageIndexBuf.image_name = 'SERVICE.STEP_2_SELECT_IMAGE';
     let containerBuf = new Container();
+    this.containerIsInEdit.set(containerBuf, false);
     this.workBufferList.push({imageIndex: imageIndexBuf, container: containerBuf});
   }
 
@@ -271,12 +277,74 @@ export class SelectImageComponent extends ServiceStepBase implements OnInit {
     return result;
   }
 
-  toggleContainerEditStatus(container: Container):void {
+  toggleContainerEditStatus(container: Container): void {
     let oldStatus = this.containerIsInEdit.get(container);
-    this.containerIsInEdit.set(container,!oldStatus);
+    let iterator: IterableIterator<Container> = this.containerIsInEdit.keys();
+    let key = iterator.next();
+    while (!key.done){
+      this.containerIsInEdit.set(key.value,false);
+      key = iterator.next();
+    }
+    this.containerIsInEdit.set(container, !oldStatus);
   }
 
-  backStep(){
+  editEnvironment(container: Container) {
+    this.curEditEnvContainer = container;
+    this.showEnvironmentValue = true;
+  }
+
+  setEnvironment(envsData: Array<EnvType>) {
+    let envsArray = this.curEditEnvContainer.env;
+    envsArray.splice(0, envsArray.length);
+    envsData.forEach((value: EnvType) => {
+      let env = new EnvStruct();
+      env.dockerfile_envname = value.envName;
+      env.dockerfile_envvalue = value.envValue;
+      envsArray.push(env);
+    });
+  }
+
+  editVolumeMount(container: Container) {
+    this.curEditEnvContainer = container;
+    this.showVolumeMounts = true;
+  }
+
+  setVolumeMount(data: VolumeOutPut) {
+    let volume = this.curEditEnvContainer.volume_mount;
+    volume.target_storage_service = data.out_medium;
+    volume.target_path = data.out_path;
+    volume.container_path = data.out_mountPath;
+    volume.volume_name = data.out_name;
+  }
+
+  getVolumeMountData(): VolumeOutPut {
+    let volume = this.curEditEnvContainer.volume_mount;
+    return {
+      out_name: volume.volume_name,
+      out_mountPath: volume.container_path,
+      out_path: volume.target_path,
+      out_medium: volume.target_storage_service
+    };
+  }
+
+  getDefaultEnvsData() {
+    let result = Array<EnvType>();
+    this.curEditEnvContainer.env.forEach((value: EnvStruct) => {
+      result.push(new EnvType(value.dockerfile_envname, value.dockerfile_envvalue))
+    });
+    return result;
+  }
+
+  getDefaultEnvsFixedData(): Array<string> {
+    let result = Array<string>();
+    if (this.fixedContainerEnv.has(this.curEditEnvContainer.image.image_name)) {
+      let fixedEnvs: Array<EnvStruct> = this.fixedContainerEnv.get(this.curEditEnvContainer.image.image_name);
+      fixedEnvs.forEach(value => result.push(value.dockerfile_envvalue));
+    }
+    return result;
+  }
+
+  backStep() {
     this.k8sService.stepSource.next({index: 1, isBack: true});
   }
 }
