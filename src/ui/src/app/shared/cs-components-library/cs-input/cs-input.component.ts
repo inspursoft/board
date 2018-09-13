@@ -1,7 +1,7 @@
 /**
  * Created by liyanq on 9/11/17.
  */
-import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from "@angular/core"
+import { Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, ViewChild } from "@angular/core"
 import { AsyncValidatorFn, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from "@angular/forms";
 import { AbstractControl } from "@angular/forms/src/model";
 
@@ -43,13 +43,12 @@ const PATTERN_Number: RegExp = /^[1-9]\d*$/;
   styleUrls: ["./cs-input.component.css"]
 })
 export class CsInputComponent implements OnInit {
-  isInValidatorWIP:boolean = false;
   inputFormGroup: FormGroup;
   inputValidatorFns: Array<ValidatorFn>;
   inputValidatorMessageParam: string;
   inputField: CsInputFiled;
   isCheckInputOnKeyPress: boolean = false;
-  isAlreadyChecked: boolean = false;
+  _isDisabled: boolean = false;
   public inputControl: FormControl;
   @ViewChild("input") inputHtml: ElementRef;
   @ViewChild("container") containerHtml: ElementRef;
@@ -70,6 +69,7 @@ export class CsInputComponent implements OnInit {
   @Input() sourcePassword: boolean = false;
   @Input() verifyPassword: boolean = false;
 
+
   constructor() {
     this.inputValidatorFns = Array<ValidatorFn>();
     this.inputControl = new FormControl("", {updateOn: 'blur'});
@@ -77,6 +77,7 @@ export class CsInputComponent implements OnInit {
 
   ngOnInit() {
     this.inputFormGroup = new FormGroup({inputControl: this.inputControl});
+    this.inputControl.reset({value: this.SimpleFiled, disabled: this.isDisabled});
     if (this.customerValidatorAsyncFunc) {
       this.inputControl.setAsyncValidators(this.customerValidatorAsyncFunc);
     }
@@ -112,11 +113,9 @@ export class CsInputComponent implements OnInit {
     }
     this.inputControl.setValidators(this.inputValidatorFns);
     this.inputControl.statusChanges.subscribe(() => {
-      if (this.inputControl.valid && this.isInValidatorWIP) {
-        this.isInValidatorWIP = false;
+      if (this.inputControl.valid) {
         this.inputField.status = CsInputStatus.isView;
-        this.inputField.defaultValue = this.inputField.value;
-        this.inputHtml.nativeElement.blur();
+        this.inputField.defaultValue = this.inputControl.value;
         this.onCheckEvent.emit(this.inputFiledType == CsInputFiledType.iftNumber ? Number(this.inputControl.value) : this.inputControl.value);
         if (this.isCheckInputOnKeyPress) {
           this.isCheckInputOnKeyPress = false;
@@ -128,10 +127,6 @@ export class CsInputComponent implements OnInit {
             }
           }
         }
-      } else if (this.inputControl.invalid && this.isInValidatorWIP) {
-        this.isInValidatorWIP = false;
-        this.inputField.status = CsInputStatus.isEdit;
-        this.inputHtml.nativeElement.focus();
       }
     });
   }
@@ -154,7 +149,6 @@ export class CsInputComponent implements OnInit {
     this.inputField = new CsInputFiled(
       CsInputStatus.isView, value, value
     );
-    this.inputControl.setValue(this.inputField.value);
   }
 
   get SimpleFiled(): CsInputSupportType {
@@ -163,14 +157,19 @@ export class CsInputComponent implements OnInit {
 
   @Input("disabled")
   set isDisabled(value: boolean) {
+    this._isDisabled = value;
     if (value) {
       this.inputField.status = CsInputStatus.isView;
     }
     this.inputControl.reset({value: this.SimpleFiled, disabled: value});
   }
 
+  get isDisabled(): boolean {
+    return this._isDisabled;
+  }
+
   public get valid(): boolean {
-    return this.inputIsRequired ? this.inputControl.valid && this.isAlreadyChecked && this.inputField.status == CsInputStatus.isView :
+    return this.inputIsRequired ? this.inputControl.valid && this.inputField.status == CsInputStatus.isView :
       this.inputControl.valid && this.inputField.status == CsInputStatus.isView;
   }
 
@@ -223,8 +222,8 @@ export class CsInputComponent implements OnInit {
   }
 
   onInputBlur() {
-    if (this.inputControl.enabled && this.inputField.status == CsInputStatus.isEdit && this.inputType != CsInputType.itWithNoInput) {
-      this.checkInputSelf();
+    if (this.inputControl.valid && this.inputField.status == CsInputStatus.isEdit && this.inputType != CsInputType.itWithNoInput) {
+      this.inputField.status = CsInputStatus.isView;
     }
   }
 
@@ -257,17 +256,15 @@ export class CsInputComponent implements OnInit {
 
   onRevertClick() {
     this.inputField.status = CsInputStatus.isView;
-    this.inputHtml.nativeElement.blur();
     this.inputControl.reset(this.inputField.defaultValue);
     this.onRevertEvent.emit(this.inputControl.value);
   }
 
   public checkInputSelf() {
     if (this.inputControl.enabled && (this.inputControl.touched || this.inputIsRequired)) {
-      this.isInValidatorWIP = true;
-      this.isAlreadyChecked = true;
+      (this.inputHtml.nativeElement as HTMLElement).focus();
       this.inputControl.markAsTouched({onlySelf: true});
-      this.inputControl.updateValueAndValidity({onlySelf: false, emitEvent: true});
+      this.inputControl.updateValueAndValidity();
     }
   }
 }

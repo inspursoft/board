@@ -48,5 +48,5 @@
      (click)="onRevertClick()">
     <clr-icon shape="refresh"></clr-icon>
   </a>
-  <span *ngIf="isInValidatorWIP" class="spinner spinner-sm"></span>
+  <span *ngIf="inputControl.pending" class="spinner spinner-sm"></span>
 </div>

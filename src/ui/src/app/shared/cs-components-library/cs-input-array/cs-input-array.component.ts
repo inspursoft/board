@@ -32,14 +32,17 @@ export class CsInputArrayComponent implements OnInit {
   @Output("onMinus") onMinusEvent: EventEmitter<any> = new EventEmitter<any>();
   @Output("onCheck") onCheckEvent: EventEmitter<any> = new EventEmitter<any>();
   @Output("onRevert") onRevertEvent: EventEmitter<any> = new EventEmitter<any>();
+  inputArraySourceObject: Array<{fieldValue: CsInputArrSupportType}>;
 
   constructor() {
     this.inputArrayFixedSource = Array<CsInputArrSupportType>();
     this.inputArraySource = Array<CsInputArrSupportType>();
     this.validatorMessage = Array<{validatorKey: string, validatorMessage: string}>();
+    this.inputArraySourceObject = Array<{fieldValue: CsInputArrSupportType, fieldInEdit: boolean}>();
   }
 
   ngOnInit() {
+    this.inputArraySource.forEach(value => this.inputArraySourceObject.push({fieldValue: value}));
     this.validatorMessage.push({validatorKey: "notRepeat", validatorMessage: "ERROR.INPUT_NOT_REPEAT"})
   }
 
@@ -62,7 +65,7 @@ export class CsInputArrayComponent implements OnInit {
       });
       if (ctr) {
         return {notRepeat: "ERROR.INPUT_NOT_REPEAT"};
-      } else {
+      } else{
         return Validators.nullValidator;
       }
     } else {
@@ -75,15 +78,18 @@ export class CsInputArrayComponent implements OnInit {
   }
 
   onMinusClick(index: number) {
+    this.inputArraySourceObject.splice(index, 1);
     this.inputArraySource.splice(index, 1);
     this.onMinusEvent.emit();
   }
 
   onPlusClick() {
+    this.inputArraySourceObject.push(this.inputArrayType == CsInputArrType.iasString ? {fieldValue: ""} : {fieldValue: 0});
     this.inputArraySource.push(this.inputArrayType == CsInputArrType.iasString ? "" : 0);
   }
 
   onCheckClick(index: number, value: CsInputArrSupportType) {
+    this.inputArraySourceObject[index].fieldValue = value;
     this.inputArraySource[index] = value;
     this.onCheckEvent.emit();
   }
