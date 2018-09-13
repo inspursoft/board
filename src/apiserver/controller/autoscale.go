@@ -86,12 +86,15 @@ func (as *AutoScaleController) ListAutoScaleAction() {
 		return
 	}
 	for _, hpa := range hpas {
-		_, err = service.GetAutoScaleK8s(svc.ProjectName, hpa.HPAName)
+		_, exist, err := service.GetAutoScaleK8s(svc.ProjectName, hpa.HPAName)
 		if err != nil {
+			as.internalError(err)
+			return
+		} else if exist {
+			hpa.HPAStatus = 1
+		} else {
 			logs.Debug("Not found hpa %s in system", hpa.HPAName)
 			hpa.HPAStatus = 0
-		} else {
-			hpa.HPAStatus = 1
 		}
 	}
 
@@ -134,6 +137,9 @@ func (as *AutoScaleController) UpdateAutoScaleAction() {
 		return
 	} else if autoscale.HPAName != hpa.HPAName {
 		as.customAbort(http.StatusBadRequest, fmt.Sprintf("can't change Autoscale %s's name to %s", autoscale.HPAName, hpa.HPAName))
+		return
+	} else if autoscale.ServiceID != hpa.ServiceID {
+		as.customAbort(http.StatusBadRequest, fmt.Sprintf("can't change Autoscale's service id %d to %d", autoscale.ServiceID, hpa.ServiceID))
 		return
 	}
 

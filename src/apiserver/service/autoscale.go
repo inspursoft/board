@@ -6,6 +6,7 @@ import (
 
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/k8sassist"
+	"git/inspursoft/board/src/common/k8sassist/corev1/cgv5/types"
 	"git/inspursoft/board/src/common/model"
 
 	"github.com/astaxie/beego/logs"
@@ -68,7 +69,14 @@ func UpdateAutoScale(svc *model.ServiceStatus, autoscale *model.ServiceAutoScale
 	var err error
 	hpa, err = k8sclient.AppV1().AutoScale(hpa.Namespace).Update(hpa)
 	if err != nil {
-		return nil, err
+		if types.IsNotFoundError(err) {
+			hpa, err = k8sclient.AppV1().AutoScale(hpa.Namespace).Create(hpa)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			return nil, err
+		}
 	}
 	// update the hpa from storage
 	if ok, err := UpdateAutoScaleDB(*autoscale); !ok {
@@ -95,7 +103,11 @@ func DeleteAutoScale(svc *model.ServiceStatus, hpaid int64) error {
 	})
 	err = k8sclient.AppV1().AutoScale(svc.ProjectName).Delete(as.HPAName)
 	if err != nil {
-		return err
+		if types.IsNotFoundError(err) {
+			logs.Debug("Not found HPA %s in %s", as.HPAName, svc.ProjectName)
+		} else {
+			return err
+		}
 	}
 
 	// delete the hpa from storage
@@ -160,14 +172,18 @@ func UpdateAutoScaleDB(autoscale model.ServiceAutoScale, fieldNames ...string) (
 	return true, nil
 }
 
-func GetAutoScaleK8s(project string, name string) (*model.AutoScale, error) {
+func GetAutoScaleK8s(project string, name string) (*model.AutoScale, bool, error) {
 	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
 		K8sMasterURL: kubeMasterURL(),
 	})
 	hpa, err := k8sclient.AppV1().AutoScale(project).Get(name)
 	if err != nil {
-		logs.Debug("Not found HPA %s in %s", name, project)
-		return nil, err
+		if types.IsNotFoundError(err) {
+			logs.Debug("Not found HPA %s in %s", name, project)
+			return nil, false, err
+		} else {
+			return nil, true, err
+		}
 	}
-	return hpa, nil
+	return hpa, true, nil
 }
