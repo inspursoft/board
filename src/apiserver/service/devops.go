@@ -27,10 +27,6 @@ var kvmRegistrySize = utils.GetConfig("KVM_REGISTRY_SIZE")
 var kvmRegistryPort = utils.GetConfig("KVM_REGISTRY_PORT")
 var kvmToolkitsPath = utils.GetConfig("KVM_TOOLKITS_PATH")
 
-func CreateIgnitorJob() error {
-	return jenkins.NewJenkinsHandler().CreateIgnitorJob()
-}
-
 func CreateRepoAndJob(userID int64, projectName string) error {
 
 	user, err := GetUserByID(userID)
@@ -91,7 +87,7 @@ func CreateRepoAndJob(userID int64, projectName string) error {
 	}
 
 	jenkinsHandler := jenkins.NewJenkinsHandler()
-	err = jenkinsHandler.CreateJobWithParameter(repoName, username)
+	err = jenkinsHandler.CreateJobWithParameter(repoName)
 	if err != nil {
 		logs.Error("Failed to create Jenkins' job with repo name: %s, error: %+v", repoName, err)
 		return err
@@ -155,7 +151,7 @@ func ForkRepo(forkedUser *model.User, baseRepoName string) error {
 	}
 
 	jenkinsHandler := jenkins.NewJenkinsHandler()
-	err = jenkinsHandler.CreateJobWithParameter(repoName, username)
+	err = jenkinsHandler.CreateJobWithParameter(repoName)
 	if err != nil {
 		logs.Error("Failed to create Jenkins' job with project name: %s, error: %+v", repoName, err)
 		return err
@@ -228,7 +224,7 @@ func PrepareKVMHost() error {
 		return err
 	}
 	return sshHandler.ExecuteCommand(fmt.Sprintf(`
-		cd %s && nohup ./kvmregistry -size %s -port %s > kvmregistry.out 2>&1 &`,
+		cd %s && chmod +x kvmregistry && nohup ./kvmregistry -size %s -port %s > kvmregistry.out 2>&1 &`,
 		kvmRegistryNodePath, kvmRegistrySize(), kvmRegistryPort()))
 }
 

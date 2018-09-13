@@ -208,16 +208,12 @@ func main() {
 	// already do sync service in sync project
 	// syncServiceWithK8s()
 	// }
-
-	err = service.CreateIgnitorJob()
-	if err != nil {
-		logs.Error("Failed to create Jenkins Ignitor Job: %+v", err)
-	}
-
-	err = service.PrepareKVMHost()
-	if err != nil {
-		logs.Error("Failed to prepare KVM host: %+v", err)
-		panic(err)
+	if utils.GetStringValue("JENKINS_EXECUTION_MODE") != "single" {
+		err = service.PrepareKVMHost()
+		if err != nil {
+			logs.Error("Failed to prepare KVM host: %+v", err)
+			panic(err)
+		}
 	}
 
 	beego.Run(":" + defaultAPIServerPort)
