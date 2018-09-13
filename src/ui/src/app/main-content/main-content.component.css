@@ -14,5 +14,5 @@ div.outlet-container {
   flex-direction: column;
   width: 100%;
   padding: 20px 5px 5px 20px;
-  overflow: hidden;
+  overflow-y: auto;
 }
