@@ -94,6 +94,10 @@ export class Container implements UiServerExchangeData<Container> {
   serverToUi(serverResponse: Object): Container {
     this.name = serverResponse["name"];
     this.working_dir = serverResponse["working_dir"];
+    this.cpu_request = serverResponse["cpu_request"];
+    this.cpu_limit = serverResponse["cpu_limit"];
+    this.mem_request = serverResponse["mem_request"];
+    this.mem_limit = serverResponse["mem_limit"];
     this.volume_mount = (new VolumeStruct()).serverToUi(serverResponse["volume_mount"]);
     this.image = (new ImageIndex()).serverToUi(serverResponse["image"]);
     if (serverResponse["env"]) {

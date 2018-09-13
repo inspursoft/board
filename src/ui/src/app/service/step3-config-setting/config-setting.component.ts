@@ -17,7 +17,8 @@ import { HttpErrorResponse } from "@angular/common/http";
   templateUrl: './config-setting.component.html'
 })
 export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
-  patternServiceName: RegExp = /^[a-z]([-a-z0-9]*[a-z0-9])+$/;
+  // patternServiceName: RegExp = /^[a-z]([-a-z0-9]*[a-z0-9])+$/;
+  patternServiceName: RegExp = /[a-z0-9]([-a-z0-9]*[a-z0-9])?/;
   dropDownListNum: Array<number>;
   showAdvanced: boolean = true;
   showExternal: boolean = false;
@@ -98,7 +99,12 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
     /*Todo:add reset the Collaborative service Info*/
     this.collaborativeServiceList.splice(0, this.collaborativeServiceList.length);
     this.k8sService.getCollaborativeService(serviceName, this.uiData.projectName)
-      .then(res => this.collaborativeServiceList = res);
+      .then(res => this.collaborativeServiceList = res)
+      .catch((err:HttpErrorResponse) => {
+        if (err.status == 404) {
+          this.messageService.cleanNotification();
+        }
+      });
   }
 
   addContainerInfo() {
@@ -137,6 +143,10 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
 
   setExternalInfo(container: Container, index: number) {
     this.uiData.externalServiceList[index].container_name = container.name;
+    let containerPorts = this.getContainerPorts(container.name);
+    if (containerPorts.length > 0) {
+      this.uiData.externalServiceList[index].node_config.target_port = containerPorts[0];
+    }
   }
 
   getContainerPorts(containerName: string): Array<number> {

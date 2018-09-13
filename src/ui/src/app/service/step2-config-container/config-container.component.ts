@@ -72,6 +72,10 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
         containerBuf.name = container.name;
         containerBuf.command = container.command;
         containerBuf.working_dir = container.working_dir;
+        containerBuf.cpu_request = container.cpu_request;
+        containerBuf.cpu_limit = container.cpu_limit;
+        containerBuf.mem_request = container.mem_request;
+        containerBuf.mem_limit = container.mem_limit;
         container.container_port.forEach(port => containerBuf.container_port.push(port));
         container.env.forEach(env => {
           let envBuf = new EnvStruct();
