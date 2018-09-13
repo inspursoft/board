@@ -208,6 +208,7 @@ type PodSpec struct {
 	NodeSelector   map[string]string
 	NodeName       string
 	HostNetwork    bool
+	Affinity       K8sAffinity
 }
 
 type PodStatus struct {
@@ -446,7 +447,7 @@ type LabelSelector struct {
 	MatchLabels map[string]string `json:"matchLabels,omitempty" protobuf:"bytes,1,rep,name=matchLabels"`
 	// matchExpressions is a list of label selector requirements. The requirements are ANDed.
 	// +optional
-	//MatchExpressions []LabelSelectorRequirement `json:"matchExpressions,omitempty" protobuf:"bytes,2,rep,name=matchExpressions"`
+	MatchExpressions []LabelSelectorRequirement `json:"matchExpressions,omitempty" protobuf:"bytes,2,rep,name=matchExpressions"`
 }
 
 // ListOptions is the query options to a standard REST list call.
@@ -581,4 +582,48 @@ type AutoScale struct {
 type AutoScaleList struct {
 	// list of horizontal pod autoscaler objects.
 	Items []AutoScale `json:"items" protobuf:"bytes,2,rep,name=items"`
+}
+
+// Affinity is a group of affinity scheduling rules.
+type K8sAffinity struct {
+	// Describes pod affinity scheduling rules (e.g. co-locate this pod in the same node, zone, etc. as some other pod(s)).
+	// +optional
+	PodAffinity []PodAffinityTerm
+	// Describes pod anti-affinity scheduling rules (e.g. avoid putting this pod in the same node, zone, etc. as some other pod(s)).
+	// +optional
+	PodAntiAffinity []PodAffinityTerm
+}
+
+type PodAffinityTerm struct {
+	// A label query over a set of resources, in this case pods.
+	// +optional
+	LabelSelector LabelSelector `json:"labelSelector,omitempty" protobuf:"bytes,1,opt,name=labelSelector"`
+	// namespaces specifies which namespaces the labelSelector applies to (matches against);
+	// null or empty list means "this pod's namespace"
+	Namespaces []string `json:"namespaces,omitempty" protobuf:"bytes,2,rep,name=namespaces"`
+	// This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching
+	// the labelSelector in the specified namespaces, where co-located is defined as running on a node
+	// whose value of the label with key topologyKey matches that of any node on which any of the
+	// selected pods is running.
+	// For PreferredDuringScheduling pod anti-affinity, empty topologyKey is interpreted as "all topologies"
+	// ("all topologies" here means all the topologyKeys indicated by scheduler command-line argument --failure-domains);
+	// for affinity and for RequiredDuringScheduling pod anti-affinity, empty topologyKey is not allowed.
+	// +optional
+	TopologyKey string `json:"topologyKey,omitempty" protobuf:"bytes,3,opt,name=topologyKey"`
+}
+
+type LabelSelectorRequirement struct {
+	// key is the label key that the selector applies to.
+	// +patchMergeKey=key
+	// +patchStrategy=merge
+	Key string `json:"key" patchStrategy:"merge" patchMergeKey:"key" protobuf:"bytes,1,opt,name=key"`
+	// operator represents a key's relationship to a set of values.
+	// Valid operators are In, NotIn, Exists and DoesNotExist.
+	Operator string `json:"operator" protobuf:"bytes,2,opt,name=operator,casttype=LabelSelectorOperator"`
+	// values is an array of string values. If the operator is In or NotIn,
+	// the values array must be non-empty. If the operator is Exists or DoesNotExist,
+	// the values array must be empty. This array is replaced during a strategic
+	// merge patch.
+	// +optional
+	Values []string `json:"values,omitempty" protobuf:"bytes,3,rep,name=values"`
 }

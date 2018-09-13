@@ -408,6 +408,7 @@ func (sc *ServiceConfigController) checkEntireServiceConfig(entireService *Confi
 	if isDuplicate == true {
 		return serverNameDuplicateErr
 	}
+	entireService.ProjectName = project.Name
 
 	if entireService.Instance < 1 {
 		return instanceInvalidErr

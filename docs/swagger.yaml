@@ -4597,7 +4597,20 @@ definitions:
       external_service_list:
         type: array
         items:
-            $ref: '#/definitions/ExternalService'      
+            $ref: '#/definitions/ExternalService' 
+      affinity_list:
+        type: array
+        items:
+            $ref: '#/definitions/AffinityList' 
+  AffinityList:
+    type: object  
+    properties:
+      anti_flag:  
+        type: integer
+      service_names:
+        type: array
+        items:
+          type: string   
   ContainerEnvs:
     type: object
     properties:

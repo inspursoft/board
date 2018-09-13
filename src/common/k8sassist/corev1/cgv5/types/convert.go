@@ -194,6 +194,22 @@ func ToK8sPodSpec(spec *model.PodSpec) *v1.PodSpec {
 			containers = append(containers, *c)
 		}
 	}
+
+	affinity := &v1.Affinity{
+		PodAffinity:     &v1.PodAffinity{},
+		PodAntiAffinity: &v1.PodAntiAffinity{},
+	}
+	for _, term := range spec.Affinity.PodAffinity {
+		affinity.PodAffinity.RequiredDuringSchedulingIgnoredDuringExecution = append(
+			affinity.PodAffinity.RequiredDuringSchedulingIgnoredDuringExecution, ToK8sAffinityTerm(term),
+		)
+	}
+	for _, term := range spec.Affinity.PodAntiAffinity {
+		affinity.PodAntiAffinity.RequiredDuringSchedulingIgnoredDuringExecution = append(
+			affinity.PodAntiAffinity.RequiredDuringSchedulingIgnoredDuringExecution, ToK8sAffinityTerm(term),
+		)
+	}
+
 	return &v1.PodSpec{
 		Volumes:        volumes,
 		InitContainers: initContainers,
@@ -201,6 +217,22 @@ func ToK8sPodSpec(spec *model.PodSpec) *v1.PodSpec {
 		NodeSelector:   spec.NodeSelector,
 		NodeName:       spec.NodeName,
 		HostNetwork:    spec.HostNetwork,
+		Affinity:       affinity,
+	}
+}
+
+func ToK8sAffinityTerm(term model.PodAffinityTerm) v1.PodAffinityTerm {
+	return v1.PodAffinityTerm{
+		LabelSelector: &metav1.LabelSelector{
+			MatchExpressions: []metav1.LabelSelectorRequirement{
+				metav1.LabelSelectorRequirement{
+					Key:      term.LabelSelector.MatchExpressions[0].Key,
+					Operator: metav1.LabelSelectorOperator(term.LabelSelector.MatchExpressions[0].Operator),
+					Values:   term.LabelSelector.MatchExpressions[0].Values,
+				},
+			},
+		},
+		TopologyKey: term.TopologyKey,
 	}
 }
 
