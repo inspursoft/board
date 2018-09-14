@@ -17,8 +17,7 @@ import { HttpErrorResponse } from "@angular/common/http";
   templateUrl: './config-setting.component.html'
 })
 export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
-  // patternServiceName: RegExp = /^[a-z]([-a-z0-9]*[a-z0-9])+$/;
-  patternServiceName: RegExp = /[a-z0-9]([-a-z0-9]*[a-z0-9])?/;
+  patternServiceName: RegExp = /^[a-z]([-a-z0-9]*[a-z0-9])+$/;
   dropDownListNum: Array<number>;
   showAdvanced: boolean = true;
   showExternal: boolean = false;
@@ -30,6 +29,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
   collaborativeList:Array<Object>;
   nodeSelectorList:Array<string>;
   noPortForExtent: boolean = false;
+  isActionWip: boolean = false;
 
   constructor(protected injector: Injector, private changeDetectorRef: ChangeDetectorRef) {
     super(injector);
@@ -161,6 +161,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
 
   forward(): void {
     if (this.verifyInputValid()) {
+      this.isActionWip = true;
       this.k8sService.setServiceConfig(this.uiData.uiToServer())
         .then(() => this.k8sService.stepSource.next({index: 5, isBack: false}));
     }

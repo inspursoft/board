@@ -17,6 +17,7 @@ export class DeployComponent extends ServiceStepBase {
   isDeployed: boolean = false;
   isDeploySuccess: boolean = false;
   isInDeployWIP: boolean = false;
+  isDeleteInWIP: boolean = false;
   serviceID: number = 0;
   deployConsole:Object;
 
@@ -59,7 +60,7 @@ export class DeployComponent extends ServiceStepBase {
   deleteDeploy(): void {
     this.messageService.showDeleteDialog('SERVICE.STEP_6_DELETE_MSG', 'SERVICE.STEP_6_DELETE_TITLE').subscribe((message: Message) => {
       if (message.returnStatus == RETURN_STATUS.rsConfirm) {
-        this.isInDeployWIP = true;
+        this.isDeleteInWIP = true;
         this.k8sService.deleteDeployment(this.serviceID)
           .then(() => this.k8sService.stepSource.next({index: 0, isBack: false}))
           .catch(() => this.k8sService.stepSource.next({index: 0, isBack: false}))

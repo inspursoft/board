@@ -7,6 +7,7 @@
     <div class="config-service-info-line">
       <cs-input class="base-input"
                 [inputIsRequired]="true"
+                [disabled]="isActionWip"
                 [inputPattern]="patternServiceName"
                 [inputLabel]="'SERVICE.STEP_4_SERVICE_NAME' | translate"
                 [customerValidatorAsyncFunc]="checkServiceNameFun"
@@ -29,6 +30,7 @@
                 [inputFiledType]="1"
                 [inputMin]="1"
                 [inputMax]="99"
+                [disabled]="isActionWip"
                 [inputLabel]="'SERVICE.STEP_4_INSTANCE' | translate"
                 [simpleFiled]="uiData.instance"
                 (onCheck)="uiData.instance = $event">
@@ -63,6 +65,7 @@
                      [dropdownList]="uiPreData.containerList"
                      [dropdownListTextKey]="'name'"
                      [dropdownWidth]="310"
+                     [dropdownDisabled]="isActionWip"
                      [dropdownDefaultText]="getContainerDropdownText(iIndex) | translate"
                      (onChange)="setExternalInfo($event, iIndex)">
         </cs-dropdown>
@@ -70,7 +73,7 @@
       <div class="external-line-container">
         <span class="external-title">{{"SERVICE.STEP_4_PORT"|translate}}:</span>
         <cs-dropdown class="base-margin-left"
-                     [dropdownDisabled]="externalService.container_name == ''"
+                     [dropdownDisabled]="externalService.container_name == '' || isActionWip"
                      [dropdownList]="getContainerPorts(externalService.container_name)"
                      [dropdownWidth]="310"
                      [dropdownDefaultText]="getContainerPortDropdownText(iIndex) | translate"
@@ -81,7 +84,7 @@
         <cs-input class="base-input"
                   [inputFiledType]="1"
                   [simpleFiled]="externalService.node_config.node_port"
-                  [disabled]="!radNode.checked"
+                  [disabled]="!radNode.checked || isActionWip"
                   [inputLabel]="'SERVICE.STEP_4_NODE_PORT' | translate"
                   [inputIsRequired]="true"
                   [inputMin]="30000"
@@ -95,6 +98,7 @@
                  type="radio"
                  [name]="'port' + iIndex"
                  [id]="'radNode' + iIndex"
+                 [disabled]="isActionWip"
                  (change)="externalService.load_balancer_config.external_access = ''" checked>
           <label [for]="'radNode' + iIndex"></label>
         </div>
@@ -102,7 +106,7 @@
       <div class="external-line-container" style="cursor: not-allowed">
         <cs-input class="base-input"
                   [simpleFiled]="externalService.load_balancer_config.external_access"
-                  [disabled]="!radExternal.checked"
+                  [disabled]="!radExternal.checked || isActionWip"
                   [inputLabel]="'SERVICE.STEP_4_EXTERNAL_ACCESS' | translate"
                   (onCheck)="externalService.load_balancer_config.external_access = $event">
         </cs-input>
@@ -142,6 +146,7 @@
       <cs-dropdown class="base-margin-left"
                    [dropdownList]="collaborativeServiceList"
                    [dropdownWidth]="310"
+                   [dropdownDisabled]="isActionWip"
                    [dropdownDefaultText]="'SERVICE.STEP_4_SELECT_SERVICE' | translate">
       </cs-dropdown>
     </div>
@@ -162,22 +167,26 @@
   <cs-dropdown *ngIf="showNodeSelector && showAdvanced"
                style="margin-left: 190px;"
                [dropdownList]="nodeSelectorList"
+               [dropdownDisabled]="isActionWip"
                [dropdownWidth]="310"
                [dropdownDefaultText]="nodeSelectorDefaultText | translate "
                (onChange)="uiData.nodeSelector = $event">
   </cs-dropdown>
 </div>
-<button class="btn btn-default" (click)="cancelBuildService()">
-  {{"BUTTON.CANCEL" | translate}}
-</button>
-<button class="btn btn-default" [disabled]="true">
-  {{"BUTTON.TEST" | translate}}
-</button>
-<button class="btn btn-default" (click)="backUpStep()">
-  {{"BUTTON.BACK" | translate}}
-</button>
-<button class="btn btn-default"
-        (click)="forward()"
-        [disabled]="noPortForExtent || uiData.externalServiceList.length == 0">
-  {{"BUTTON.NEXT" | translate}}
-</button>
+<div class="button-container">
+  <button class="btn btn-default" (click)="cancelBuildService()" [disabled]="isActionWip">
+    {{"BUTTON.CANCEL" | translate}}
+  </button>
+  <button class="btn btn-default" [disabled]="true">
+    {{"BUTTON.TEST" | translate}}
+  </button>
+  <button class="btn btn-default" (click)="backUpStep()" [disabled]="isActionWip">
+    {{"BUTTON.BACK" | translate}}
+  </button>
+  <button class="btn btn-default"
+          (click)="forward()"
+          [disabled]="noPortForExtent || uiData.externalServiceList.length == 0 || isActionWip">
+    {{"BUTTON.NEXT" | translate}}
+  </button>
+  <span *ngIf="isDeleteInWIP" class="spinner spinner-sm"></span>
+</div>

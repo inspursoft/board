@@ -10,16 +10,19 @@
   </div>
   <cs-highlight *ngIf="deployConsole" [language]="'json'" [code]="deployConsole | json"></cs-highlight>
 </div>
-<button class="btn btn-primary default-primary"
-        [disabled]="isDeploySuccess || !isDeployed"
-        (click)="deleteDeploy()">
-  {{"SERVICE.STEP_6_DELETE" | translate}}
-</button>
-<button class="btn btn-default" [disabled]="isDeployed" (click)="backStep()">
-  {{"BUTTON.BACK" | translate}}
-</button>
-<button class="btn btn-default"
-        (click)="deployComplete()"
-        [disabled]="!isDeployed || isInDeployWIP || !isDeploySuccess">
-  {{"BUTTON.OK" | translate}}
-</button>
+<div class="step6-button-container">
+  <button class="btn btn-primary default-primary"
+          [disabled]="isDeploySuccess || !isDeployed || isDeleteInWIP"
+          (click)="deleteDeploy()">
+    {{"SERVICE.STEP_6_DELETE" | translate}}
+  </button>
+  <button class="btn btn-default" [disabled]="isDeployed" (click)="backStep()">
+    {{"BUTTON.BACK" | translate}}
+  </button>
+  <button class="btn btn-default"
+          (click)="deployComplete()"
+          [disabled]="!isDeployed || isInDeployWIP || !isDeploySuccess">
+    {{"BUTTON.OK" | translate}}
+  </button>
+  <span *ngIf="isDeleteInWIP" class="spinner spinner-sm"></span>
+</div>

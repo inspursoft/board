@@ -41,3 +41,8 @@ div.step6-icon-container.deploy {
   background-color: gray;
   cursor: not-allowed;
 }
+
+div.step6-button-container {
+  display: flex;
+  align-items: center;
+}

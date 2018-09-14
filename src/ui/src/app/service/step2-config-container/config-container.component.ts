@@ -14,14 +14,20 @@ import { ServiceStepBase } from "../service-step";
 import { CreateImageComponent } from "../../image/image-create/image-create.component";
 import { EnvType } from "../../shared/environment-value/environment-value.component";
 import { VolumeOutPut } from "./volume-mounts/volume-mounts.component";
+import { ValidationErrors } from "@angular/forms";
+import { Observable } from "rxjs/Observable";
+import "rxjs/add/operator/map"
+import { NodeAvailableResources } from "../../shared/shared.types";
 
 @Component({
   templateUrl: './config-container.component.html',
   styleUrls: ["./config-container.component.css"]
 })
 export class ConfigContainerComponent extends ServiceStepBase implements OnInit {
-  patternContainerName: RegExp = /^[a-zA-Z\d_-]+$/;
+  patternContainerName: RegExp = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/;
   patternWorkdir: RegExp = /^~?[\w\d-\/.{}$\/:]+[\s]*$/;
+  patternCpuRequest: RegExp = /^[0-9]*m$/
+  patternMemRequest: RegExp = /^[0-9]*m$/;
   imageSourceList: Array<Image>;
   imageDetailSourceList: Map<string, Array<ImageDetail>>;
   imageTagNotReadyList: Map<string, boolean>;
@@ -194,16 +200,39 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
       }).catch(() => this.messageService.cleanNotification());
   }
 
-  forward(): void {
-    this.stepSelectImageData.imageList.splice(0, this.stepSelectImageData.imageList.length);
-    this.stepConfigContainerData.containerList.splice(0, this.stepConfigContainerData.containerList.length);
-    this.workBufferList.forEach(workBuf => {
-      this.stepSelectImageData.imageList.push(workBuf.imageIndex);
-      this.stepConfigContainerData.containerList.push(workBuf.container);
+  isValidContainerNames(): {valid: boolean, invalidIndex: number} {
+    let invalidIndex: number = -1;
+    let everyValid = this.workBufferList.every((work, index: number) => {
+      invalidIndex = index;
+      return this.patternContainerName.test(work.container.name);
     });
-    let obsSelectImage = this.k8sService.setServiceConfig(this.stepSelectImageData.uiToServer());
-    let obsConfigContainer = this.k8sService.setServiceConfig(this.stepConfigContainerData.uiToServer());
-    Promise.all([obsSelectImage, obsConfigContainer]).then(() => this.k8sService.stepSource.next({index: 3, isBack: false}));
+    return {valid: everyValid, invalidIndex: invalidIndex};
+  }
+
+  forward(): void {
+    let checkContainerName = this.isValidContainerNames();
+    if (checkContainerName.valid) {
+      if (this.verifyInputValid() && this.verifyInputArrayValid()) {
+        this.stepSelectImageData.imageList.splice(0, this.stepSelectImageData.imageList.length);
+        this.stepConfigContainerData.containerList.splice(0, this.stepConfigContainerData.containerList.length);
+        this.workBufferList.forEach(workBuf => {
+          this.stepSelectImageData.imageList.push(workBuf.imageIndex);
+          this.stepConfigContainerData.containerList.push(workBuf.container);
+        });
+        let obsSelectImage = this.k8sService.setServiceConfig(this.stepSelectImageData.uiToServer());
+        let obsConfigContainer = this.k8sService.setServiceConfig(this.stepConfigContainerData.uiToServer());
+        Promise.all([obsSelectImage, obsConfigContainer]).then(() => this.k8sService.stepSource.next({index: 3, isBack: false}));
+      }
+    } else {
+      let iterator: IterableIterator<Container> = this.containerIsInEdit.keys();
+      let key = iterator.next();
+      while (!key.done) {
+        this.containerIsInEdit.set(key.value, false);
+        key = iterator.next();
+      }
+      this.containerIsInEdit.set(this.workBufferList[checkContainerName.invalidIndex].container, true);
+      setTimeout(() => this.verifyInputValid());
+    }
   }
 
   get isCanNextStep(): boolean {
@@ -230,6 +259,28 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
       return false;
     }
     return true;
+  }
+
+  checkSetCpuRequest(control: HTMLInputElement): Observable<ValidationErrors | null> {
+    return this.k8sService.getNodesAvailableSources().map((res: Array<NodeAvailableResources>) => {
+      let isInValid = res.every(value => Number.parseInt(control.value) > Number.parseInt(value.cpu_available) * 1000);
+      if (isInValid) {
+        return {beyondMaxLimit: 'SERVICE.STEP_2_BEYOND_MAX_VALUE'};
+      } else {
+        return null;
+      }
+    })
+  }
+
+  checkSetMemRequest(control: HTMLInputElement): Observable<ValidationErrors | null> {
+    return this.k8sService.getNodesAvailableSources().map((res: Array<NodeAvailableResources>) => {
+      let isInValid = res.every(value => Number.parseInt(control.value) > Number.parseInt(value.mem_available) / (1024 * 1024));
+      if (isInValid) {
+        return {beyondMaxLimit: 'SERVICE.STEP_2_BEYOND_MAX_VALUE'};
+      } else {
+        return null;
+      }
+    })
   }
 
   createNewCustomImage(index: number) {

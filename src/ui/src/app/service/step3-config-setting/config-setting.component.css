@@ -164,3 +164,8 @@ div.alert-danger,div.alert-warning{
   line-height: 30px;
 }
 
+div.button-container {
+  display: flex;
+  align-items: center;
+}
+

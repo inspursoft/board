@@ -348,6 +348,7 @@ export const LANG_EN_US = {
     "STEP_2_STORAGE_VOLUME":"﻿Input the storage volume",
     "STEP_2_ENVIRONMENT_VARIABLES":"Input the environment variables:﻿VERSION = 1.0",
     "STEP_2_PORT_CONTAINER":"Input the port of this container:80",
+    "STEP_2_BEYOND_MAX_VALUE":"beyond the max value",
     "STEP_4_SERVICE_OF_NAME":"service01",
     "STEP_4_EXTERNAL_PORT":"30001",
     "STEP_4_SERVICE_CONFIG_TITLE":"Basic service configuration",

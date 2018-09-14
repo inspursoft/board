@@ -51,4 +51,12 @@ export class SignUp {
   comment: string;
 }
 
+export class NodeAvailableResources {
+  node_id: number = 0;
+  node_name: string = '';
+  cpu_available: string = '';
+  mem_available: string = '';
+  storage_available: string = '';
+}
+
 export enum CreateImageMethod{None, Template, DockerFile, DevOps}

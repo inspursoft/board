@@ -348,6 +348,7 @@ export const LANG_ZH_CN = {
     "STEP_2_STORAGE_VOLUME":"﻿配置外部存储卷",
     "STEP_2_ENVIRONMENT_VARIABLES":"﻿请输入环境变量定义:﻿VERSION = 1.0",
     "STEP_2_PORT_CONTAINER":"请输入容器的服务端口:80",
+    "STEP_2_BEYOND_MAX_VALUE":"超过最大限制",
     "STEP_4_SERVICE_OF_NAME":"service01",
     "STEP_4_EXTERNAL_PORT":"30001",
     "STEP_4_SERVICE_CONFIG_TITLE":"服务配置",
