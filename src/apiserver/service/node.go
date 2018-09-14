@@ -374,3 +374,23 @@ func RemovePodByNode(node string) error {
 	}
 	return nil
 }
+
+func GetNodesAvailalbeResources() ([]model.NodeAvailableResources, error) {
+	var resources []model.NodeAvailableResources
+	c := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		K8sMasterURL: kubeMasterURL(),
+	})
+	l, err := c.AppV1().Node().List()
+	if err != nil {
+		logs.Debug("Failed to get node list %v", c)
+		return nil, err
+	}
+	for _, node := range l.Items {
+		// TODO: check the status of node
+		var noderesource model.NodeAvailableResources
+		noderesource.NodeName = node.Name
+		noderesource.CPUAvail = string(node.Status.Allocatable[model.ResourceCPU])
+		noderesource.MemAvail = string(node.Status.Allocatable[model.ResourceMemory])
+	}
+	return resources, nil
+}
