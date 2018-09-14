@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { TranslateService } from '@ngx-translate/core';
@@ -93,6 +93,6 @@ export class HeaderComponent implements OnInit {
         }
         this.router.navigate(['/sign-in']);
       })
-      .catch(err=>this.messageService.dispatchError(err, 'ACCOUNT.FAILED_TO_SIGN_OUT'));
+      .catch(() => this.messageService.showAlert('ACCOUNT.FAILED_TO_SIGN_OUT', {alertType: 'alert-danger'}));
   }
 }

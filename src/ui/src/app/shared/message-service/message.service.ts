@@ -1,110 +1,93 @@
-import { Injectable } from '@angular/core';
-import { Subject} from 'rxjs/Subject';
+import { ComponentFactoryResolver, ComponentRef, Injectable, Type, ViewContainerRef } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
-import { Message } from './message';
-import { MESSAGE_TYPE } from '../shared.const';
 import { HttpErrorResponse } from '@angular/common/http';
+import { AlertMessage, AlertType, BUTTON_STYLE, GlobalAlertMessage, GlobalAlertType, Message } from "../shared.types";
+import { CsAlertComponent } from "../cs-components-library/cs-alert/cs-alert.component";
+import { CsGlobalAlertComponent } from "../cs-components-library/cs-global-alert/cs-global-alert.component";
+import { CsDialogComponent } from "../cs-components-library/cs-dialog/cs-dialog.component";
 
 @Injectable()
 export class MessageService {
+  private dialogView: ViewContainerRef;
+  private dialogResolver: ComponentFactoryResolver;
 
-  messageAnnouncedSource: Subject<Message> = new Subject<Message>();
-  messageAnnounced$: Observable<Message> = this.messageAnnouncedSource.asObservable();
-
-  messageConfirmedSource: Subject<Message> = new Subject<Message>();
-  messageConfirmed$: Observable<Message> = this.messageConfirmedSource.asObservable();
-
-  messageCanceledSource: Subject<Message> = new Subject<Message>();
-  messageCanceled$: Observable<Message> = this.messageCanceledSource.asObservable();
-
-  inlineAlertAnnouncedSource: Subject<Message> = new Subject<Message>();
-  inlineAlertAnnounced$: Observable<Message> = this.inlineAlertAnnouncedSource.asObservable();
-
-  globalAnnouncedSource: Subject<Message> = new Subject<Message>();
-  globalAnnounced$: Observable<Message> = this.globalAnnouncedSource.asObservable();
-
-  announceMessage(message: Message) {
-    this.messageAnnouncedSource.next(message);
+  private createComponent<T>(component: Type<T>, view: ViewContainerRef): ComponentRef<T> {
+    view.clear();
+    let factory = this.dialogResolver.resolveComponentFactory(component);
+    return view.createComponent<T>(factory);
   }
 
-  confirmMessage(message: Message) {
-    this.messageConfirmedSource.next(message);
+  public registerDialogHandle(view: ViewContainerRef, resolver: ComponentFactoryResolver) {
+    this.dialogView = view;
+    this.dialogResolver = resolver;
   }
 
-  cancelMessage(message: Message) {
-    this.messageCanceledSource.next(message);
+  public cleanNotification() {
+    this.dialogView.clear();
   }
 
-  inlineAlertMessage(message: Message) {
-    this.inlineAlertAnnouncedSource.next(message);
+  public showAlert(msg: string, optional?: {alertType?: AlertType, view?: ViewContainerRef}): void {
+    this.dialogView.clear();
+    let alertView: ViewContainerRef = optional ? optional.view || this.dialogView : this.dialogView;
+    let message: AlertMessage = new AlertMessage();
+    message.message = msg;
+    message.alertType = optional ? optional.alertType || 'alert-success' : 'alert-success';
+    let componentRef = this.createComponent(CsAlertComponent, alertView);
+    componentRef.instance.openAlert(message).subscribe(() => alertView.remove(alertView.indexOf(componentRef.hostView)));
   }
 
-  globalMessage(message: Message) {
-    this.globalAnnouncedSource.next(message);
+  public showGlobalMessage(msg: string,
+                           optional?: {
+                             alertType?: AlertType,
+                             globalAlertType?: GlobalAlertType,
+                             errorObject?: HttpErrorResponse | Type<Error>,
+                             view?: ViewContainerRef
+                           }): void {
+    let globalView: ViewContainerRef = optional ? optional.view || this.dialogView : this.dialogView;
+    let message: GlobalAlertMessage = new GlobalAlertMessage();
+    message.message = msg;
+    message.alertType = optional ? optional.alertType || 'alert-danger' : 'alert-danger';
+    message.type = optional ? optional.globalAlertType || GlobalAlertType.gatNormal : GlobalAlertType.gatNormal;
+    message.errorObject = optional ? optional.errorObject : null;
+    let componentRef = this.createComponent(CsGlobalAlertComponent, globalView);
+    componentRef.instance.openAlert(message).subscribe(() => globalView.remove(globalView.indexOf(componentRef.hostView)));
   }
 
-  _setErrorMessage(m: Message, defaultMessage: string, customMessage: string) {
-    if(customMessage && customMessage.trim().length > 0) {
-      m.message = customMessage;
-    } else {
-      m.message = defaultMessage;
-    }
+  public showDialog(msg: string,
+                    optional?: {
+                      title?: string,
+                      buttonStyle?: BUTTON_STYLE,
+                      data?: any,
+                      view?: ViewContainerRef
+                    }): Observable<Message> {
+    let dialogView = optional ? optional.view || this.dialogView : this.dialogView;
+    let message: Message = new Message();
+    message.message = msg;
+    message.title = optional ? optional.title || 'GLOBAL_ALERT.TITLE' : 'GLOBAL_ALERT.TITLE';
+    message.buttonStyle = optional ? optional.buttonStyle || BUTTON_STYLE.ONLY_CONFIRM : BUTTON_STYLE.ONLY_CONFIRM;
+    message.data = optional ? optional.data : null;
+    let componentRef = this.createComponent(CsDialogComponent, dialogView);
+    return componentRef.instance.openDialog(message)
+      .do(() => dialogView.remove(dialogView.indexOf(componentRef.hostView)));
   }
 
-  dispatchError(response: HttpErrorResponse | Error, customMessage?: string, isShowDetail:boolean = false) {
-    let errMessage = new Message();
-    if(response instanceof HttpErrorResponse) {
-      switch(response.status){
-      case 401:
-        errMessage.type = MESSAGE_TYPE.INVALID_USER;
-        this._setErrorMessage(errMessage, 'ERROR.INVALID_USER', customMessage);
-        break;
-      case 404:
-        errMessage.type = MESSAGE_TYPE.COMMON_ERROR;
-        this._setErrorMessage(errMessage, 'ERROR.NOT_FOUND', customMessage);
-        break;
-      case 400:
-        errMessage.type = MESSAGE_TYPE.COMMON_ERROR;
-        this._setErrorMessage(errMessage, 'ERROR.BAD_REQUEST', customMessage);
-        break;
-      case 403:
-        errMessage.type = MESSAGE_TYPE.COMMON_ERROR;
-        this._setErrorMessage(errMessage, 'ERROR.INSUFFICIENT_PRIVILEGES', customMessage);
-        break;
-      case 405:
-        errMessage.type = MESSAGE_TYPE.COMMON_ERROR;
-        this._setErrorMessage(errMessage, 'ERROR.', customMessage);
-        break;
-      case 409:
-        errMessage.type = MESSAGE_TYPE.COMMON_ERROR;
-        this._setErrorMessage(errMessage, 'ERROR.CONFLICT_INPUT', customMessage);
-        break;
-      case 412:
-        errMessage.type = MESSAGE_TYPE.COMMON_ERROR;
-        this._setErrorMessage(errMessage, 'ERROR.PECONDITION_FAILED', customMessage);
-        break;
-      case 500:
-      case 502:
-      case 504:
-        errMessage.type = MESSAGE_TYPE.INTERNAL_ERROR;
-        this._setErrorMessage(errMessage, 'ERROR.INTERNAL_ERROR', customMessage);
-        break;
-      default:
-        errMessage.type = MESSAGE_TYPE.INTERNAL_ERROR;
-        this._setErrorMessage(errMessage, 'ERROR.UNKNOWN_ERROR', customMessage);
-      }
-      if(errMessage.type === MESSAGE_TYPE.COMMON_ERROR) {
-        this.inlineAlertMessage(errMessage);
-      } else {
-        errMessage.type = isShowDetail ? MESSAGE_TYPE.SHOW_DETAIL: MESSAGE_TYPE.NONE;
-        errMessage.errorObject = response;
-        this.globalMessage(errMessage);
-      } 
-    } else if (response) {
-      errMessage.type = isShowDetail ? MESSAGE_TYPE.SHOW_DETAIL: MESSAGE_TYPE.NONE;
-      errMessage.message = response.message;
-      this.globalMessage(errMessage);
-    }
+  public showOnlyOkDialog(msg: string, title?: string): void {
+    this.showDialog(msg, {title: title || 'GLOBAL_ALERT.HINT', buttonStyle: BUTTON_STYLE.ONLY_CONFIRM}).subscribe();
   }
 
+  public showOnlyOkDialogObservable(msg: string, title?: string): Observable<Message> {
+    return this.showDialog(msg, {title: title || 'GLOBAL_ALERT.HINT', buttonStyle: BUTTON_STYLE.ONLY_CONFIRM});
+  }
+
+  public showYesNoDialog(msg: string, title?: string): Observable<Message> {
+    return this.showDialog(msg, {title: title || 'GLOBAL_ALERT.ASK', buttonStyle: BUTTON_STYLE.YES_NO});
+  }
+
+  public showConfirmationDialog(msg: string, title?: string): Observable<Message> {
+    return this.showDialog(msg, {title: title || 'GLOBAL_ALERT.ASK', buttonStyle: BUTTON_STYLE.CONFIRMATION});
+  }
+
+  public showDeleteDialog(msg: string, title?: string): Observable<Message> {
+    return this.showDialog(msg, {title: title || 'GLOBAL_ALERT.DELETE', buttonStyle: BUTTON_STYLE.DELETION});
+  }
 }

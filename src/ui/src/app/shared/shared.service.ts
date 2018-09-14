@@ -2,6 +2,7 @@ import { Injectable } from "@angular/core"
 import { HttpClient, HttpHeaders, HttpResponse } from "@angular/common/http";
 import { Member, Project } from "../project/project";
 import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from "./shared.const";
+import { Observable } from "rxjs/Observable";
 
 @Injectable()
 export class SharedService {
@@ -65,11 +66,11 @@ export class SharedService {
       }).toPromise()
   }
 
-  createProject(project: Project): Promise<any> {
+  createProject(project: Project): Observable<any> {
     return this.http
       .post('/api/v1/projects', project, {
         headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
         observe: "response"
-      }).toPromise()
+      })
   }
 }

@@ -2,7 +2,6 @@ import { Component, EventEmitter, Input, Output, OnInit } from "@angular/core"
 import { UserService } from "../../user-center/user-service/user-service";
 import { User } from "../../user-center/user";
 import { MessageService } from "../message-service/message.service";
-import { Message } from "../message-service/message";
 
 @Component({
   selector: "user-setting",
@@ -20,9 +19,7 @@ export class AccountSettingComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.userService.getCurrentUser()
-      .then(res => this.curUser = res)
-      .catch(err =>this.messageService.dispatchError(err));
+    this.userService.getCurrentUser().then(res => this.curUser = res)
   }
 
   @Output() isOpenChange: EventEmitter<boolean> = new EventEmitter<boolean>();
@@ -41,15 +38,9 @@ export class AccountSettingComponent implements OnInit {
     this.isWorkWip = true;
     this.userService.usesChangeAccount(this.curUser)
       .then(() => {
-        let m: Message = new Message();
-        m.message = "ACCOUNT.ACCOUNT_SETTING_SUCCESS";
-        this.messageService.inlineAlertMessage(m);
-        this.isWorkWip = false;
         this.isOpen = false;
+        this.messageService.showAlert('ACCOUNT.ACCOUNT_SETTING_SUCCESS');
       })
-      .catch(err => {
-        this.isWorkWip = false;
-        this.messageService.dispatchError(err);
-      });
+      .catch(() => this.isOpen = false);
   }
 }

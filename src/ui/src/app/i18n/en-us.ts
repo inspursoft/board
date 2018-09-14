@@ -15,19 +15,16 @@ export const LANG_EN_US = {
     "ITEMS": "items"
   },
   "GLOBAL_ALERT": {
+    "TITLE":"Title",
+    "HINT":"Hint",
+    "ASK":"Ask",
+    "DELETE":"Delete",
     "SIGN_IN": "Sign In",
     "ERROR_DETAIL":"Error Detail"
   },
   "ERROR": {
-    "UNKNOWN_ERROR": "Unknown error.",
-    "INTERNAL_ERROR": "Unexpected internal error.",
-    "INVALID_USER": "User's token has expired, please sign in again.",
-    "NOT_FOUND": "Resource not found.",
-    "INSUFFICIENT_PRIVILEGES": "Insufficient privileges.",
-    "BAD_REQUEST": "Invalid user request.",
     "METHOD_NOT_ALLOWED": "Method not allowed.",
     "CONFLICT_INPUT": "A conflict with the current state of the resource.",
-    "PECONDITION_FAILED": "Precondition given in one or more of the request are evaluated to false.",
     "INPUT_ONLY_NUMBER":"Only input number",
     "INPUT_REQUIRED":"This field is required",
     "INPUT_NOT_REPEAT":"This field can not repeat",
@@ -35,7 +32,15 @@ export const LANG_EN_US = {
     "INPUT_MIN_LENGTH":"Min length",
     "INPUT_MAX_VALUE":"Max value",
     "INPUT_MIN_VALUE":"Min value",
-    "INPUT_PATTERN":"Input does not confirm to the rules"
+    "INPUT_PATTERN":"Input does not confirm to the rules",
+    "HTTP_504":"Gateway Timeout:504",
+    "HTTP_500":"Unexpected internal error:500",
+    "HTTP_400":"Bad Request:400",
+    "HTTP_401":"User's token has expired, please sign in again:401",
+    "HTTP_403":"Insufficient privilege to requested operation:403",
+    "HTTP_404":"Resource not found:404",
+    "HTTP_412": "Precondition given in one or more of the request are evaluated to false:412",
+    "HTTP_UNK":"Unknown error"
   },
   "CS_DROPDOWN":{
     "NO_ITEMS": "No items"
@@ -72,6 +77,7 @@ export const LANG_EN_US = {
     "PASSWORDS_ARE_NOT_IDENTICAL": "Passwords are not identical.",
     "ERROR": "Error",
     "INCORRECT_USERNAME_OR_PASSWORD": "Incorrect username or password.",
+    "SUCCESS_TO_SIGN_IN":"Successful sign in",
     "FAILED_TO_SIGN_IN": "Failed to sign in:",
     "FAILED_TO_SIGN_UP": "Failed to sign up:",
     "SUCCESS_TO_SIGN_UP": "User sign up successfully.",
@@ -262,6 +268,7 @@ export const LANG_EN_US = {
     "CREATE_IMAGE_IMAGE_SELECTED":"The image selected.",
     "CREATE_IMAGE_CANCEL_WAIT":"Cancel wait",
     "CREATE_IMAGE_REMOVE_FILE_FAILED":"Remove file failed.",
+    "CREATE_IMAGE_REMOVE_FILE_SUCCESS":"Remove file successful.",
     "CREATE_IMAGE_SELECT_DOCKER_FILE":"Select Dockerfile for build image",
     "CREATE_IMAGE_SELECTED_FILE_INFO":"Selected Dockerfile base info",
     "CREATE_IMAGE_FILE_NAME":"File Name",
@@ -369,6 +376,7 @@ export const LANG_EN_US = {
     "STEP_6_DELETE_MSG":"Are you sure delete deploy this service?",
     "STEP_6_DEPLOYING":"Deploying...",
     "STEP_6_DEPLOY_SUCCESS":"Deploy successful，the service in starting...",
+    "STEP_6_DEPLOY_FAILED":"Deploy service failed.",
     "STATUS_PREPARING": "Preparing",
     "STATUS_RUNNING": "Running",
     "STATUS_STOPPED": "Stopped",
@@ -417,12 +425,14 @@ export const LANG_EN_US = {
     "GUIDE_CREATE_SERVICE":"Please crate your own Service.",
     "SERVICE_YAML_SELECT_PROJECT":"Select project",
     "SERVICE_YAML_UPLOAD":"Upload",
+    "SERVICE_YAML_CREATE_FAILED":"Create service failed.",
     "SERVICE_YAML_SELECT_DEPLOYMENT_YAML":"Select deployment yaml",
     "SERVICE_YAML_SELECT_SERVICE_YAML":"Select service yaml",
     "SERVICE_YAML_NER_SERVICE_NAME":"New service name",
     "SERVICE_YAML_INVALID_FILE":"Invalid file type",
     "SERVICE_YAML_VALID_FILE":"Files valid,please upload them",
-    "SERVICE_YAML_UPLOAD_SUCCESS":"Upload success!This service in 'preparing' status, click 'create' for run it"
+    "SERVICE_YAML_UPLOAD_SUCCESS":"Upload success!This service in 'preparing' status, click 'create' for run it",
+    "SERVICE_YAML_UPLOAD_FAILED":"Upload failed."
   },
   "AUDIT":{
     "ALL":"All",
@@ -507,6 +517,8 @@ export const LANG_EN_US = {
     "TOGGLE_NODE": "Toggle Status",
     "CONFIRM_TO_TOGGLE_NODE": "Confirm to change node {{0}} status?",
     "NODE_GROUP_NO_ITEMS":"No Items",
+    "NODE_GROUP_ADD_SUCCESS":"To join the node group successfully.",
+    "NODE_GROUP_REMOVE_SUCCESS":"Successful remove the node from node group.",
     "NODE_LIST":"Node List",
     "NODE_CONTROL":"Node Control",
     "NODE_CREATE":"Create Node",

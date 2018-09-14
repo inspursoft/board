@@ -14,7 +14,6 @@ export class ChooseProjectComponent extends ServiceStepBase implements OnInit {
   dropdownDefaultText: string = "";
 
   constructor(protected injector: Injector,
-              private selfView: ViewContainerRef,
               private sharedService: SharedService,
               private sharedActionService: SharedActionService) {
     super(injector);
@@ -27,7 +26,7 @@ export class ChooseProjectComponent extends ServiceStepBase implements OnInit {
       this.k8sService.getServiceConfig(this.stepPhase).then((res: UIServiceStep1) => {
         this.uiBaseData = res;
         this.uiData.projectId = res.projectId;
-      }).catch(err => this.messageService.dispatchError(err));
+      })
     } else {
       this.k8sService.deleteServiceConfig().then(res => res);
     }
@@ -44,7 +43,6 @@ export class ChooseProjectComponent extends ServiceStepBase implements OnInit {
         }
         this.setDropdownDefaultText();
       })
-      .catch(err => this.messageService.dispatchError(err));
   }
 
   setDropdownDefaultText(): void {
@@ -63,7 +61,7 @@ export class ChooseProjectComponent extends ServiceStepBase implements OnInit {
   forward() {
     this.k8sService.setServiceConfig(this.uiData.uiToServer()).then(() => {
       this.k8sService.stepSource.next({index: 2, isBack: false});
-    }).catch(err => this.messageService.dispatchError(err));
+    })
   }
 
   clickSelectProject() {

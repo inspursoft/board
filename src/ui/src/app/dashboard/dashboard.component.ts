@@ -272,10 +272,9 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
       .do(() => {
         this.noData.set(lineType, false);
         this.lineStateInfo.get(lineType).inRefreshWIP = false;
-      }, (err: HttpErrorResponse) => {
+      }, () => {
         this.lineStateInfo.get(lineType).inRefreshWIP = false;
         this.noData.set(lineType, true);
-        this.messageService.dispatchError(err);
       });
   }
 

@@ -86,8 +86,7 @@ export class EditContainerComponent extends ServiceStepBase implements OnInit, A
           });
           this.fixedContainerPort.set(container.name, fixedPorts);
         }
-      }).catch(() => {
-    });
+      }).catch(() => this.messageService.cleanNotification());
   }
 
   get isCanNextStep(): boolean {
@@ -166,7 +165,7 @@ export class EditContainerComponent extends ServiceStepBase implements OnInit, A
     if (this.verifyInputValid()) {
       this.k8sService.setServiceConfig(this.uiData.uiToServer()).then(() =>
         this.k8sService.stepSource.next({index: 4, isBack: false})
-      ).catch(err => this.messageService.dispatchError(err));
+      )
     }
   }
 }

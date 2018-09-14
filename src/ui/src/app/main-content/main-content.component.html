@@ -1,38 +1,34 @@
-<clr-main-container>
-  <header-content [isSignIn]="isSignIn"
-                  [hasSignedIn]="hasSignedIn"
-                  [searchContent]="searchContent"></header-content>
-  <global-message></global-message>
-  <div class="content-container" *ngIf="!isOnlyShowGrafanaView">
-    <cs-vertical-nav *ngIf="hasSignedIn" [navSource]="navSource">
-      <ng-template [csVerticalNavGuide]="'service'">
-        <cs-guide [description]="'SIDE_NAV.GUIDE_SERVICE_LIST'"
-                  [show]="isFirstLogin && guideStep == 3"
-                  [isShowIcon]="true"
-                  (onClose)="setGuideNoneStep()"
-                  (onNextStep)="guideNextStep(3)">
-        </cs-guide>
-      </ng-template>
-      <ng-template [csVerticalNavGuide]="'projects'">
-        <cs-guide [description]="'SIDE_NAV.GUIDE_SERVICE_LIST'"
-                  [show]="isFirstLogin && guideStep == 1"
-                  [isShowIcon]="true"
-                  (onClose)="setGuideNoneStep()"
-                  (onNextStep)="guideNextStep(1)">
-        </cs-guide>
-      </ng-template>
-    </cs-vertical-nav>
-    <div class="content-area">
-      <confirmation-dialog></confirmation-dialog>
-      <inline-alert></inline-alert>
-      <router-outlet></router-outlet>
-    </div>
+<header-content [isSignIn]="isSignIn"
+                [hasSignedIn]="hasSignedIn"
+                [searchContent]="searchContent">
+</header-content>
+<div class="content-container-1" *ngIf="!isOnlyShowGrafanaView">
+  <cs-vertical-nav *ngIf="hasSignedIn" [navSource]="navSource">
+    <ng-template [csVerticalNavGuide]="'service'">
+      <cs-guide [description]="'SIDE_NAV.GUIDE_SERVICE_LIST'"
+                [show]="isFirstLogin && guideStep == 3"
+                [isShowIcon]="true"
+                (onClose)="setGuideNoneStep()"
+                (onNextStep)="guideNextStep(3)">
+      </cs-guide>
+    </ng-template>
+    <ng-template [csVerticalNavGuide]="'projects'">
+      <cs-guide [description]="'SIDE_NAV.GUIDE_SERVICE_LIST'"
+                [show]="isFirstLogin && guideStep == 1"
+                [isShowIcon]="true"
+                (onClose)="setGuideNoneStep()"
+                (onNextStep)="guideNextStep(1)">
+      </cs-guide>
+    </ng-template>
+  </cs-vertical-nav>
+  <div class="outlet-container">
+    <router-outlet></router-outlet>
   </div>
-  <div *ngIf="isOnlyShowGrafanaView" style="height: 100%; padding: 0;margin: 0;scrollbar-base-color: blue">
-    <iframe #frameDashboard height=100% width="100%" frameborder="0" [src]="grafanaViewUrl | safe">
-      {{"DASHBOARD.GRAFANA_FRAME_SUPPORT" | translate}}
-    </iframe>
-  </div>
-</clr-main-container>
+</div>
+<div *ngIf="isOnlyShowGrafanaView" style="height: 100%; padding: 0;margin: 0;scrollbar-base-color: blue">
+  <iframe #frameDashboard height=100% width="100%" frameborder="0" [src]="grafanaViewUrl | safe">
+    {{"DASHBOARD.GRAFANA_FRAME_SUPPORT" | translate}}
+  </iframe>
+</div>
 
 

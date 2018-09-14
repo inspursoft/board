@@ -46,5 +46,7 @@ export class ServiceComponent implements OnInit, OnDestroy {
     viewContainerRef.clear();
     let nextComponent = viewContainerRef.createComponent(componentFactory);
     (nextComponent.instance as ServiceStepBase).isBack = isBack;
+    (nextComponent.instance as ServiceStepBase).selfView = viewContainerRef;
+    (nextComponent.instance as ServiceStepBase).factoryResolver = this.componentFactoryResolver;
   }
 }

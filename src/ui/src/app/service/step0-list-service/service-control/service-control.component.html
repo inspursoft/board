@@ -1,14 +1,9 @@
 <clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'md'" [clrModalClosable]="!isActionInWIP">
   <h3 class="modal-title">{{ "SERVICE.SERVICE_CONTROL" | translate }}</h3>
   <div class="modal-body" style="padding-top: 3px;">
-    <clr-alert *ngIf="alertMessage != ''" [clrAlertType]="'alert-danger'">
-      <div class="alert-item">
-        <span class="alert-text">{{alertMessage | translate}}</span>
-      </div>
-    </clr-alert>
     <clr-tabs>
       <clr-tab>
-        <button clrTabLink (click)="alertMessage = '';actionMethod = 0">
+        <button clrTabLink (click)="actionMethod = 0">
           {{"SERVICE.SERVICE_CONTROL_SCALE" | translate}}
         </button>
         <clr-tab-content *clrIfActive>
@@ -22,7 +17,7 @@
         </clr-tab-content>
       </clr-tab>
       <clr-tab>
-        <button clrTabLink (click)="alertMessage = '';actionMethod = 1">
+        <button clrTabLink (click)="actionMethod = 1">
           {{"SERVICE.SERVICE_CONTROL_UPDATE" | translate}}
         </button>
         <clr-tab-content *clrIfActive>
@@ -37,7 +32,7 @@
         </clr-tab-content>
       </clr-tab>
       <clr-tab>
-        <button clrTabLink (click)="alertMessage = '';actionMethod = 2">
+        <button clrTabLink (click)="actionMethod = 2">
           {{"SERVICE.SERVICE_CONTROL_LOCATE" | translate}}
         </button>
         <clr-tab-content *clrIfActive>

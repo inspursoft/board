@@ -1,11 +1,9 @@
 import { Component } from '@angular/core';
 import { K8sService } from '../../service.k8s';
-import { MessageService } from '../../../shared/message-service/message.service';
 import { AppInitService } from '../../../app.init.service';
 import { Service } from "../../service";
 import { Subject } from "rxjs/Subject";
 import { Observable } from "rxjs/Observable";
-import { HttpErrorResponse } from "@angular/common/http";
 import "rxjs/add/operator/do"
 
 class NodeURL {
@@ -41,8 +39,7 @@ export class ServiceDetailComponent {
   k8sHostName: string = "";
 
   constructor(private appInitService: AppInitService,
-              private k8sService: K8sService,
-              private messageService: MessageService) {
+              private k8sService: K8sService) {
     this.boardHost = this.appInitService.systemInfo['board_host'];
     this.closeNotification = new Subject<any>();
   }
@@ -92,10 +89,7 @@ export class ServiceDetailComponent {
       }
       this.serviceDetail = res;
       this.isOpenServiceDetail = true;
-    }).catch(err => {
-      this.isOpenServiceDetail = false;
-      this.messageService.dispatchError(err);
-    })
+    }).catch(() => this.isOpenServiceDetail = false);
   }
 
   getDeploymentYamlFile(): Observable<string> {
@@ -107,20 +101,14 @@ export class ServiceDetailComponent {
         if (k8sHost && k8sHost.length > 0) {
           this.k8sHostName = k8sHost.split(':')[1].trim();
         }
-      }, (err: HttpErrorResponse) => {
-        this.isOpenServiceDetail = false;
-        this.messageService.dispatchError(err);
-      });
+      }, () => this.isOpenServiceDetail = false);
   }
 
   getServiceYamlFile() {
     if (this.serviceYamlFile.length == 0) {
-      this.k8sService.getServiceYamlFile(this.curService.service_project_name, this.curService.service_name, YAML_TYPE_SERVICE)
-        .subscribe((res: string) => this.serviceYamlFile = res,
-          (err: HttpErrorResponse) => {
-            this.isOpenServiceDetail = false;
-            this.messageService.dispatchError(err);
-          })
+      this.k8sService.getServiceYamlFile(this.curService.service_project_name, this.curService.service_name, YAML_TYPE_SERVICE).subscribe(
+        (res: string) => this.serviceYamlFile = res,
+        () => this.isOpenServiceDetail = false)
     }
   }
 }

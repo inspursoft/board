@@ -13,13 +13,13 @@ export class SharedActionService {
   createProjectComponent(container: ViewContainerRef): Observable<string> {
     let factory = this.resolver.resolveComponentFactory(CreateProjectComponent);
     let componentRef = container.createComponent(factory);
-    return componentRef.instance.openModal().do(() => container.remove(container.indexOf(componentRef.hostView)));
+    return componentRef.instance.openCreateProjectModal().do(() => container.remove(container.indexOf(componentRef.hostView)));
   }
 
   createProjectMemberComponent(project: Project, container: ViewContainerRef): void {
     let factory = this.resolver.resolveComponentFactory(MemberComponent);
     let componentRef = container.createComponent(factory);
-    componentRef.instance.openModal(project)
+    componentRef.instance.openMemberModal(project)
       .subscribe(() => container.remove(container.indexOf(componentRef.hostView)));
   }
 }

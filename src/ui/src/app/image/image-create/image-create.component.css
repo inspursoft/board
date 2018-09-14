@@ -1,7 +1,7 @@
 
 div.modal-body-container {
   display: flex;
-  /*height: 100%;*/
+  min-height: 580px;
 }
 
 .base-margin-left {
@@ -138,7 +138,6 @@ div.modal-body-reset-position{
   margin-top: -20px;
   border: solid 1px gray;
   border-radius: 5px;
-  min-height: 560px;
   overflow-y: hidden;
 }
 
@@ -183,8 +182,4 @@ cs-dropdown.margin-left-120{
 
 cs-input.margin-left-180{
   margin-left: 180px;
-}
-
-clr-alert.alert-info-danger {
-  height: 40px;
 }

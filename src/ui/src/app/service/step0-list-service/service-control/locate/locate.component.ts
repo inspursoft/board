@@ -1,5 +1,4 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { Message } from "../../../../shared/message-service/message";
 import { Service } from "../../../service";
 import { K8sService } from "../../../service.k8s";
 
@@ -11,7 +10,7 @@ import { K8sService } from "../../../service.k8s";
 export class LocateComponent implements OnInit {
   @Input('isActionInWIP') isActionInWIP: boolean;
   @Input('service') service: Service;
-  @Output("onMessage") onMessage: EventEmitter<Message>;
+  @Output("onMessage") onMessage: EventEmitter<string>;
   @Output("onError") onError: EventEmitter<any>;
   @Output("onActionIsEnabled") onActionIsEnabled: EventEmitter<boolean>;
   dropdownDefaultText: string = "SERVICE.SERVICE_CONTROL_LOCATE_SELECT";
@@ -19,7 +18,7 @@ export class LocateComponent implements OnInit {
   nodeSelector: string = "";
 
   constructor(private k8sService: K8sService) {
-    this.onMessage = new EventEmitter<Message>();
+    this.onMessage = new EventEmitter<string>();
     this.onError = new EventEmitter<any>();
     this.nodeSelectorList = Array<string>();
     this.onActionIsEnabled = new EventEmitter<boolean>();
@@ -37,13 +36,9 @@ export class LocateComponent implements OnInit {
   }
 
   actionExecute() {
-     this.k8sService.setLocate(this.nodeSelector, this.service.service_project_name, this.service.service_name)
-       .subscribe(() => {
-         let msg: Message = new Message();
-         msg.message = "SERVICE.SERVICE_CONTROL_LOCATE_SUCCESSFUL";
-         msg.params = [this.service.service_name];
-         this.onMessage.emit(msg);
-       }, (err) => this.onError.emit(err));
+    this.k8sService.setLocate(this.nodeSelector, this.service.service_project_name, this.service.service_name).subscribe(
+      () => this.onMessage.emit('SERVICE.SERVICE_CONTROL_LOCATE_SUCCESSFUL'),
+      (err) => this.onError.emit(err));
   }
 
   setNodeSelector(selector: string){

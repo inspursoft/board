@@ -3,12 +3,10 @@ import { K8sService } from "../../service.k8s";
 import { MessageService } from "../../../shared/message-service/message.service";
 import { Project } from "../../../project/project";
 import { Service } from "../../service";
-import { AppInitService } from "../../../app.init.service";
-import { MESSAGE_TYPE } from "../../../shared/shared.const";
-import { Message } from "../../../shared/message-service/message";
 import { HttpErrorResponse } from "@angular/common/http";
 import { SharedService } from "../../../shared/shared.service";
 import { SharedActionService } from "../../../shared/shared-action.service";
+import { GlobalAlertType } from "../../../shared/shared.types";
 
 export const DEPLOYMENT = "deployment";
 export const SERVICE = "service";
@@ -39,8 +37,7 @@ export class ServiceCreateYamlComponent implements OnInit {
               private selfView: ViewContainerRef,
               private sharedService: SharedService,
               private sharedActionService: SharedActionService,
-              private messageService: MessageService,
-              private appInitService: AppInitService) {
+              private messageService: MessageService) {
     this.projectsList = Array<Project>();
     this.onCancelEvent = new EventEmitter<any>();
     this.filesDataMap = new Map<string, File>();
@@ -59,7 +56,7 @@ export class ServiceCreateYamlComponent implements OnInit {
         if (res && res.length > 0) {
           this.projectsList = this.projectsList.concat(res);
         }
-      }).catch(err => this.messageService.dispatchError(err));
+      })
   }
 
   uploadFile(event: Event, isDeploymentYaml: boolean) {
@@ -76,10 +73,7 @@ export class ServiceCreateYamlComponent implements OnInit {
         }
       } else {
         (event.target as HTMLInputElement).value = '';
-        let msg = new Message();
-        msg.type = MESSAGE_TYPE.COMMON_ERROR;
-        msg.message = "SERVICE.SERVICE_YAML_INVALID_FILE";
-        this.messageService.inlineAlertMessage(msg);
+        this.messageService.showAlert('SERVICE.SERVICE_YAML_INVALID_FILE', {alertType: 'alert-warning'});
       }
     }
   }
@@ -123,11 +117,10 @@ export class ServiceCreateYamlComponent implements OnInit {
       })
       .catch((err:HttpErrorResponse) => {
         this.isToggleServiceWIP = false;
-        let msg = new Message();
-        msg.type = MESSAGE_TYPE.SHOW_DETAIL;
-        msg.message = (typeof err.error == "object") ? (err.error as Error).message : err.error;
-        msg.errorObject = err;
-        this.messageService.globalMessage(msg);
+        this.messageService.showGlobalMessage('SERVICE.SERVICE_YAML_CREATE_FAILED', {
+          errorObject: err,
+          globalAlertType: GlobalAlertType.gatShowDetail
+        })
       });
   }
 
@@ -146,17 +139,13 @@ export class ServiceCreateYamlComponent implements OnInit {
       }, (error: HttpErrorResponse) => {
         this.isUploadFileSuccess = false;
         this.isUploadFileWIP = false;
-        let msg = new Message();
-        msg.type = MESSAGE_TYPE.SHOW_DETAIL;
-        msg.message = (typeof error.error == "object") ? (error.error as Error).message : error.error;
-        msg.errorObject = error;
-        this.messageService.globalMessage(msg);
+        this.messageService.showGlobalMessage('SERVICE.SERVICE_YAML_UPLOAD_FAILED', {
+          errorObject: error,
+          globalAlertType: GlobalAlertType.gatShowDetail
+        })
       }, () => {
         this.isUploadFileSuccess = true;
-        let msg = new Message();
-        msg.type = MESSAGE_TYPE.COMMON_ERROR;
-        msg.message = "SERVICE.SERVICE_YAML_UPLOAD_SUCCESS";
-        this.messageService.inlineAlertMessage(msg);
+        this.messageService.showAlert('SERVICE.SERVICE_YAML_UPLOAD_SUCCESS');
       });
   }
 

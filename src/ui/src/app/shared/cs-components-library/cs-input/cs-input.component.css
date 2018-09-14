@@ -45,7 +45,32 @@ a.cs-input-icon {
 }
 
 input::placeholder {
-  color: darkgray;
+  color: darkgray !important;
+  font-size: 14px;
+}
+
+input::-moz-placeholder{
+  color: darkgray !important;
+  font-size: 14px;
+}
+
+input::-webkit-input-placeholder{
+  color: darkgray !important;
+  font-size: 14px;
+}
+
+input:-moz-placeholder{
+  color: darkgray !important;
+  font-size: 14px;
+}
+
+input:-ms-input-placeholder{
+  color: darkgray !important;
+  font-size: 14px;
+}
+
+input::-ms-input-placeholder {
+  color: darkgray !important;
   font-size: 14px;
 }
 

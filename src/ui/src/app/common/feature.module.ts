@@ -8,9 +8,12 @@ import { ImageModule } from '../image/image.module';
 import { ProfileModule } from '../profile/profile.module';
 import { UserCenterModule } from '../user-center/user-center.module';
 import { AuditModule } from "../audit/audit.module";
+import { AccountModule } from "../account/account.module";
+import { MainContentModule } from "../main-content/main-content.module";
 
 @NgModule({
   exports: [
+    MainContentModule,
     GlobalSearchModule,
     DashboardModule,
     NodeModule,
@@ -19,7 +22,8 @@ import { AuditModule } from "../audit/audit.module";
     ImageModule,
     ProfileModule,
     UserCenterModule,
-    AuditModule
+    AuditModule,
+    AccountModule
   ]
 })
 export class FeatureModule {}

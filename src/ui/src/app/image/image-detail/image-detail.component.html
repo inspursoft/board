@@ -1,13 +1,6 @@
 <clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'lg'">
   <h3 class="modal-title">{{ 'IMAGE.DETAIL_TITLE' | translate }}:{{curImage.image_name}}</h3>
   <div class="modal-body">
-    <clr-alert [clrAlertType]="'alert-danger'" [(clrAlertClosed)]="alertClosed">
-      <div class="alert-item">
-          <span class="alert-text">
-            {{imageDetailErrMsg | translate }}
-          </span>
-      </div>
-    </clr-alert>
     <clr-datagrid [clrDgLoading]="loadingWIP" style="min-width: 100%">
       <clr-dg-column>{{ 'IMAGE.COL_TAG' | translate }}</clr-dg-column>
       <clr-dg-column>{{ 'IMAGE.COL_AUTHOR' | translate }}</clr-dg-column>

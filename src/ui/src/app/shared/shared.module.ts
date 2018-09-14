@@ -2,9 +2,6 @@ import { NgModule } from '@angular/core';
 import { CoreModule } from '../core/core.module';
 import { NgxEchartsModule } from 'ngx-echarts';
 import { HeaderComponent } from './header/header.component';
-import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-dialog.component';
-import { InlineAlertComponent } from './inline-alert/inline-alert.component';
-import { GlobalMessageComponent } from './global-message/global-message.component';
 import { CheckItemExistingDirective } from './directives/check-item-existing.directive';
 import { CheckItemIdenticalDirective } from './directives/check-item-identical.directive';
 import { MessageService } from './message-service/message.service';
@@ -18,7 +15,6 @@ import { WebsocketService } from './websocket-service/websocket.service';
 import { CsSearchInput } from "./cs-components-library/cs-search-input/cs-search-input.component";
 import { CsInputComponent } from "./cs-components-library/cs-input/cs-input.component";
 import { CsInputArrayComponent } from "./cs-components-library/cs-input-array/cs-input-array.component";
-import { CreateImageComponent } from "../image/image-create/image-create.component";
 import { EnvironmentValueComponent } from "./environment-value/environment-value.component";
 import { SizePipe } from "./pipes/size-pipe";
 import { CsGuideComponent } from "./cs-components-library/cs-guide/cs-guide.component";
@@ -37,6 +33,10 @@ import { CsInputCheckPatternDirective } from "./cs-directives-library/cs-input-c
 import { CsMenuItemUrlDirective, CsVerticalNavComponent } from "./cs-components-library/cs-vertical-nav/cs-vertical-nav.component";
 import { RouterModule } from "@angular/router";
 import "inspurprism"
+import { CsDialogComponent } from "./cs-components-library/cs-dialog/cs-dialog.component";
+import { CsAlertComponent } from "./cs-components-library/cs-alert/cs-alert.component";
+import { CsGlobalAlertComponent } from "./cs-components-library/cs-global-alert/cs-global-alert.component";
+import { CsModalChildBaseSelector } from "./cs-modal-base/cs-modal-child-base";
 
 @NgModule({
   imports: [
@@ -47,22 +47,19 @@ import "inspurprism"
   exports: [
     CoreModule,
     NgxEchartsModule,
-    ConfirmationDialogComponent,
     HeaderComponent,
-    InlineAlertComponent,
-    GlobalMessageComponent,
     CheckItemExistingDirective,
     CheckItemIdenticalDirective,
     CsDropdownComponent,
     CheckItemPatternDirective,
     ValidateOnBlurDirective,
-    CreateImageComponent,
     EnvironmentValueComponent,
     CsSearchInput,
     CsInputComponent,
     CsInputCheckPatternDirective,
     CsInputCheckExistingDirective,
     CsInputArrayComponent,
+    CsModalChildBaseSelector,
     CsGuideComponent,
     CsProgressComponent,
     CsHighlightComponent,
@@ -72,10 +69,7 @@ import "inspurprism"
     SafePipe
   ],
   declarations: [
-    ConfirmationDialogComponent,
     HeaderComponent,
-    InlineAlertComponent,
-    GlobalMessageComponent,
     CheckItemExistingDirective,
     CheckItemIdenticalDirective,
     CheckItemPatternDirective,
@@ -83,7 +77,6 @@ import "inspurprism"
     ChangePasswordComponent,
     CsDropdownComponent,
     AccountSettingComponent,
-    CreateImageComponent,
     EnvironmentValueComponent,
     CsSearchInput,
     CsInputComponent,
@@ -91,6 +84,10 @@ import "inspurprism"
     CsInputCheckExistingDirective,
     CsInputArrayComponent,
     CsProgressComponent,
+    CsDialogComponent,
+    CsAlertComponent,
+    CsGlobalAlertComponent,
+    CsModalChildBaseSelector,
     SizePipe,
     SafePipe,
     CsGuideComponent,
@@ -103,7 +100,11 @@ import "inspurprism"
     BoardLoadingComponent,
     BadGatewayComponent
   ],
-  entryComponents: [CreateProjectComponent],
+  entryComponents: [
+    CreateProjectComponent,
+    CsDialogComponent,
+    CsAlertComponent,
+    CsGlobalAlertComponent],
   providers: [
     AuthGuard,
     ServiceGuard,

@@ -1,6 +1,5 @@
 import { ChangeDetectorRef, Component } from '@angular/core';
 import { INodeDetail, NodeService } from "../node.service";
-import { MessageService } from "../../shared/message-service/message.service";
 import "rxjs/add/operator/zip"
 import "rxjs/add/operator/do"
 
@@ -14,8 +13,7 @@ export class NodeDetailComponent {
   nodeGroups: string;
 
   constructor(private nodeService: NodeService,
-              private changeDetectorRef: ChangeDetectorRef,
-              private messageService: MessageService) {
+              private changeDetectorRef: ChangeDetectorRef) {
     this.changeDetectorRef.detach();
   }
 
@@ -27,13 +25,9 @@ export class NodeDetailComponent {
       .do((nodeDetail: INodeDetail) => this.nodeDetail = nodeDetail);
     let obs2 = this.nodeService.getNodeGroupsOfOneNode(nodeName)
       .do((res: Array<string>) => res.forEach(value => this.nodeGroups = this.nodeGroups.concat(`${value};`)));
-    obs1.zip(obs2)
-      .subscribe(
-        () => this.changeDetectorRef.reattach(),
-        (err) => {
-          this.nodeDetailOpened = false;
-          this.messageService.dispatchError(err);
-        });
+    obs1.zip(obs2).subscribe(
+      () => this.changeDetectorRef.reattach(),
+      () => this.nodeDetailOpened = false);
   }
 
   toPercentage(num: number) {

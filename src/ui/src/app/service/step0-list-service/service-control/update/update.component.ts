@@ -4,7 +4,6 @@ import { HttpErrorResponse } from "@angular/common/http";
 import { ImageDetail } from "../../../../image/image";
 import { K8sService } from "../../../service.k8s";
 import { Service } from "../../../service";
-import { Message } from "../../../../shared/message-service/message";
 import "rxjs/add/observable/of"
 
 @Component({
@@ -15,7 +14,7 @@ import "rxjs/add/observable/of"
 export class UpdateComponent implements OnInit {
   @Input() service: Service;
   @Input('isActionInWIP') isActionInWIP: boolean;
-  @Output("onMessage") onMessage: EventEmitter<Message>;
+  @Output("onMessage") onMessage: EventEmitter<string>;
   @Output("onError") onError: EventEmitter<any>;
   @Output("onAlertMessage") onAlertMsg: EventEmitter<string>;
   @Output("onActionIsEnabled") onActionIsEnabled: EventEmitter<boolean>;
@@ -26,7 +25,7 @@ export class UpdateComponent implements OnInit {
   constructor(private k8sService: K8sService) {
     this.imageList = Array<ImageIndex>();
     this.onError = new EventEmitter<any>();
-    this.onMessage = new EventEmitter<Message>();
+    this.onMessage = new EventEmitter<string>();
     this.onAlertMsg = new EventEmitter<string>();
     this.onActionIsEnabled = new EventEmitter<boolean>();
     this.imageTagList = new Map<string, Array<ImageDetail>>();
@@ -79,12 +78,7 @@ export class UpdateComponent implements OnInit {
   actionExecute(): void {
     this.imageList.map(value => value.image_tag = this.imageTagSelected.get(value.image_name));
     this.k8sService.updateServiceImages(this.service.service_project_name, this.service.service_name, this.imageList)
-      .then(() => {
-        let msg: Message = new Message();
-        msg.message = "SERVICE.SERVICE_CONTROL_UPDATE_SUCCESSFUL";
-        msg.params = [this.service.service_name];
-        this.onMessage.emit(msg);
-      })
+      .then(() => this.onMessage.emit('SERVICE.SERVICE_CONTROL_UPDATE_SUCCESSFUL'))
       .catch((err) => this.onError.emit(err));
   }
 

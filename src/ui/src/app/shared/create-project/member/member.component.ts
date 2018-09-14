@@ -5,35 +5,37 @@ import { Member, Project, Role } from "../../../project/project";
 import { Subject } from 'rxjs/Subject';
 import { SharedService } from "../../shared.service";
 import { MessageService } from "../../message-service/message.service";
-import { HttpErrorResponse } from "@angular/common/http";
 import { Observable } from "rxjs/Observable";
+import { AlertType } from "../../shared.types";
+import { CsModalChildBase } from "../../cs-modal-base/cs-modal-child-base";
 
 @Component({
   selector: 'project-member',
+  styleUrls:['./member.component.css'],
   templateUrl: './member.component.html'
 })
-export class MemberComponent implements OnInit {
+export class MemberComponent extends CsModalChildBase implements OnInit {
   currentUser: {[key: string]: any};
-  _projectMemberOpened: boolean = false;
   role: Role = new Role();
   availableMembers: Member[];
+  isAvailableMembers: Array<Member>;
+  isNotAvailableMembers: Array<Member>;
   selectedMember: Member = new Member();
   project: Project = new Project();
-  isLeftPane: boolean;
-  isRightPane: boolean;
-  doSet: boolean;
-  doUnset: boolean;
-  alertType: string;
-  hasChanged: boolean;
-  changedMessage: string;
-  closeNotification: Subject<any>;
+  isLeftPane: boolean = true;
+  isRightPane: boolean = false;
+  doSet: boolean = true;
+  doUnset: boolean = false;
   memberSubject: Subject<Member[]> = new Subject<Member[]>();
+  isActionWip: boolean = false;
 
   constructor(private sharedService: SharedService,
               private messageService: MessageService,
               private appInitService: AppInitService,
               private translateService: TranslateService) {
-    this.closeNotification = new Subject<any>();
+    super();
+    this.isAvailableMembers = Array<Member>();
+    this.isNotAvailableMembers = Array<Member>();
   }
   
   ngOnInit(): void {
@@ -41,60 +43,39 @@ export class MemberComponent implements OnInit {
   }
 
   retrieveAvailableMembers() {
-    this.sharedService.getProjectMembers(this.project.project_id)
-      .then((members: Array<Member>) => {
-        this.sharedService.getAvailableMembers()
-          .then((availableMembers: Array<Member>) => {
-            this.availableMembers = availableMembers;
-            this.availableMembers.forEach((am: Member) => {
-              members.forEach((member: Member) => {
-                if (member.project_member_user_id === am.project_member_user_id) {
-                  am.project_member_id = member.project_member_id;
-                  am.project_member_role_id = member.project_member_role_id;
-                 am.isMember = true;
-                }
-              });
-            });
-            this.memberSubject.subscribe((changedMembers: Array<Member>) => {
-              this.availableMembers = changedMembers;
-            });
-          })
-          .catch((err: HttpErrorResponse) => {
-            this.projectMemberOpened = false;
-            this.messageService.dispatchError(err);
+    this.sharedService.getProjectMembers(this.project.project_id).then((members: Array<Member>) => {
+      this.sharedService.getAvailableMembers().then((availableMembers: Array<Member>) => {
+        this.availableMembers = availableMembers;
+        this.availableMembers.forEach((am: Member) => {
+          am.isMember = false;
+          members.forEach((member: Member) => {
+            if (member.project_member_user_id === am.project_member_user_id) {
+              am.project_member_id = member.project_member_id;
+              am.project_member_role_id = member.project_member_role_id;
+              am.isMember = true;
+            }
           });
-      })
-      .catch((err: HttpErrorResponse) => {
-        this.projectMemberOpened = false;
-        this.messageService.dispatchError(err);
+        });
+        this.isAvailableMembers = this.availableMembers.filter(value => value.isMember == true);  
+        this.isNotAvailableMembers = this.availableMembers.filter(value => value.isMember == false);  
+        this.memberSubject.subscribe((changedMembers: Array<Member>) => {
+          this.availableMembers = changedMembers;
+          this.isAvailableMembers = this.availableMembers.filter(value => value.isMember == true);  
+          this.isNotAvailableMembers = this.availableMembers.filter(value => value.isMember == false);  
+          });
+        });
       });
   }
 
-  openModal(project: Project): Observable<boolean> {
-    this.projectMemberOpened = true;
+  openMemberModal(project: Project): Observable<string> {
     this.project = project;
     this.role.role_id = 1;
     this.retrieveAvailableMembers();
-    return this.closeNotification.asObservable();
+    return super.openModal();
   }
 
-  get projectMemberOpened(): boolean {
-    return this._projectMemberOpened;
-  }
-
-  set projectMemberOpened(value: boolean) {
-    this._projectMemberOpened = value;
-    if (!value) {
-      this.closeNotification.next();
-    }
-  }
-
-  confirm(): void {
-    this.projectMemberOpened = false;
-  }
-
-  pickUpMember(member: Member) {
-    this.selectedMember = member;
+  pickUpMember(projectMemberUserId: string) {
+    this.selectedMember = this.availableMembers.find(value => value.project_member_user_id == Number.parseInt(projectMemberUserId));
     this.doSet = false;
     this.doUnset = false;
     let isProjectOwner = (this.project.project_owner_id === this.currentUser.user_id);
@@ -115,34 +96,24 @@ export class MemberComponent implements OnInit {
 
   pickUpRole(role: Role) {
     this.selectedMember.project_member_role_id = role.role_id;
+    this.isActionWip = true;
     this.sharedService.addOrUpdateProjectMember(this.project.project_id,
         this.selectedMember.project_member_user_id, 
         this.selectedMember.project_member_role_id)
-      .then(()=>{
-        this.alertType = 'alert-info';
-        this.displayInlineMessage('PROJECT.SUCCESSFUL_CHANGED_MEMBER_ROLE', [this.selectedMember.project_member_username]);
-      })
-      .catch(() => {
-        this.alertType = 'alert-danger';
-        this.displayInlineMessage('PROJECT.FAILED_TO_CHANGE_MEMBER_ROLE');
-      });
+      .then(() => this.displayInlineMessage('PROJECT.SUCCESSFUL_CHANGED_MEMBER_ROLE', 'alert-info', [this.selectedMember.project_member_username]))
+      .catch(() => this.displayInlineMessage('PROJECT.FAILED_TO_CHANGE_MEMBER_ROLE', 'alert-danger'));
   }
 
   setMember(): void {
     this.availableMembers.forEach((member: Member) => {
       if (member.project_member_user_id === this.selectedMember.project_member_user_id) {
         member.project_member_role_id = this.role.role_id;
+        this.isActionWip = true;
         this.sharedService.addOrUpdateProjectMember(this.project.project_id,
             this.selectedMember.project_member_user_id, 
             this.selectedMember.project_member_role_id)
-          .then(()=>{
-            this.alertType = 'alert-info';
-            this.displayInlineMessage('PROJECT.SUCCESSFUL_ADDED_MEMBER',[this.selectedMember.project_member_username])
-          })
-          .catch(() => {
-            this.alertType = 'alert-danger';
-            this.displayInlineMessage('PROJECT.FAILED_TO_ADD_MEMBER');
-          });
+          .then(() => this.displayInlineMessage('PROJECT.SUCCESSFUL_ADDED_MEMBER', 'alert-info', [this.selectedMember.project_member_username]))
+          .catch(() => this.displayInlineMessage('PROJECT.FAILED_TO_ADD_MEMBER', 'alert-danger'));
         member.isMember = true;
       }
     });
@@ -154,25 +125,20 @@ export class MemberComponent implements OnInit {
       if (member.project_member_user_id === this.selectedMember.project_member_user_id) {
         this.selectedMember.project_member_id = 1;
         member.isMember = false;
+        this.isActionWip = true;
         this.sharedService
           .deleteProjectMember(this.project.project_id, this.selectedMember.project_member_user_id)
-          .then(()=>{
-            this.alertType = 'alert-info';
-            this.displayInlineMessage('PROJECT.SUCCESSFUL_REMOVED_MEMBER', [this.selectedMember.project_member_username]);
-          })
-          .catch(() => {
-            this.alertType = 'alert-danger';
-            this.displayInlineMessage('PROJECT.FAILED_TO_REMOVE_MEMBER');
-          });
+          .then(() => this.displayInlineMessage('PROJECT.SUCCESSFUL_REMOVED_MEMBER', 'alert-info', [this.selectedMember.project_member_username]))
+          .catch(() => this.displayInlineMessage('PROJECT.FAILED_TO_REMOVE_MEMBER', 'alert-danger'));
       }
     });
     this.memberSubject.next(this.availableMembers);
   }
 
-  displayInlineMessage(message: string, params?: object): void {
-    this.hasChanged = true;
-    this.translateService.get(message, params || [])
-      .subscribe(res => this.changedMessage = res);
-    setTimeout(()=>this.hasChanged = false, 2*1000);
+  displayInlineMessage(message: string, alertType: AlertType, params?: object): void {
+    this.translateService.get(message, params).subscribe((res: string) => {
+      this.isActionWip = false;
+      this.messageService.showAlert(res, {alertType: alertType, view: this.alertView})
+    });
   }
 }

@@ -1,14 +1,12 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivate, CanActivateChild, CanDeactivate, Router, RouterStateSnapshot } from '@angular/router';
 import { AppInitService } from '../app.init.service';
-import { Message } from './message-service/message';
 import { MessageService } from './message-service/message.service';
 import { ServiceComponent } from "../service/service.component";
 import { Observable } from "rxjs/Observable";
-import { Subscription } from "rxjs/Subscription";
-import { BUTTON_STYLE, MESSAGE_TARGET } from "./shared.const";
 import { Subject } from "rxjs/Subject";
 import { K8sService } from "../service/service.k8s";
+import { Message, RETURN_STATUS } from "./shared.types";
 
 @Injectable()
 export class AuthGuard implements CanActivate, CanActivateChild {
@@ -46,29 +44,11 @@ export class AuthGuard implements CanActivate, CanActivateChild {
 }
 
 @Injectable()
-export class ServiceGuard implements OnDestroy, CanDeactivate<ServiceComponent> {
+export class ServiceGuard implements CanDeactivate<ServiceComponent> {
   serviceSubject: Subject<boolean> = new Subject<boolean>();
-  confirmSubscription: Subscription;
-  cancelSubscription: Subscription;
 
   constructor(private messageService: MessageService,
               private k8sService: K8sService) {
-    this.confirmSubscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
-      if (msg.target === MESSAGE_TARGET.CANCEL_BUILD_SERVICE_GUARD) {
-        this.k8sService.cancelBuildService();
-        this.serviceSubject.next(true);
-      }
-    });
-    this.cancelSubscription = this.messageService.messageCanceled$.subscribe((msg: Message) => {
-      if (msg.target === MESSAGE_TARGET.CANCEL_BUILD_SERVICE_GUARD) {
-        this.serviceSubject.next(false);
-      }
-    });
-  }
-
-  ngOnDestroy() {
-    this.cancelSubscription.unsubscribe();
-    this.confirmSubscription.unsubscribe();
   }
 
   canDeactivate(component: ServiceComponent,
@@ -76,12 +56,12 @@ export class ServiceGuard implements OnDestroy, CanDeactivate<ServiceComponent> 
                 currentState: RouterStateSnapshot,
                 nextState?: RouterStateSnapshot): Observable<boolean> | Promise<boolean> | boolean {
     if (component.currentStepIndex > 0) {
-      let msg: Message = new Message();
-      msg.title = "SERVICE.ASK_TITLE";
-      msg.buttons = BUTTON_STYLE.YES_NO;
-      msg.message = "SERVICE.ASK_TEXT";
-      msg.target = MESSAGE_TARGET.CANCEL_BUILD_SERVICE_GUARD;
-      this.messageService.announceMessage(msg);
+      this.messageService.showYesNoDialog('SERVICE.ASK_TEXT', 'SERVICE.ASK_TITLE').subscribe((message: Message) => {
+        if (message.returnStatus == RETURN_STATUS.rsConfirm) {
+          this.k8sService.cancelBuildService();
+        }
+        this.serviceSubject.next(message.returnStatus == RETURN_STATUS.rsConfirm);
+      });
       let result = this.serviceSubject.asObservable();
       result.subscribe(isCanDeactivate => {
         return isCanDeactivate;

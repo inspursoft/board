@@ -1,7 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Service } from "../../../service";
 import { K8sService } from "../../../service.k8s";
-import { Message } from "../../../../shared/message-service/message";
 import { IScaleInfo } from "../service-control.component";
 import "rxjs/add/observable/of"
 enum ScaleMethod {smManually, smAuto}
@@ -14,7 +13,7 @@ enum ScaleMethod {smManually, smAuto}
 export class ScaleComponent implements OnInit {
   @Input('isActionInWIP') isActionInWIP: boolean;
   @Input('service') service: Service;
-  @Output("onMessage") onMessage: EventEmitter<Message>;
+  @Output("onMessage") onMessage: EventEmitter<string>;
   @Output("onError") onError: EventEmitter<any>;
   @Output("onActionIsEnabled") onActionIsEnabled: EventEmitter<boolean>;
   scaleModule: ScaleMethod = ScaleMethod.smManually;
@@ -24,7 +23,7 @@ export class ScaleComponent implements OnInit {
 
   constructor(private k8sService: K8sService) {
     this.dropDownListNum = Array<number>();
-    this.onMessage = new EventEmitter<Message>();
+    this.onMessage = new EventEmitter<string>();
     this.onError = new EventEmitter<any>();
     this.onActionIsEnabled = new EventEmitter<boolean>();
   }
@@ -49,12 +48,7 @@ export class ScaleComponent implements OnInit {
   actionExecute() {
     this.isActionInWIP = true;
     this.k8sService.setServiceScale(this.service.service_id, this.scaleNum)
-      .then(() => {
-        let msg: Message = new Message();
-        msg.message = "SERVICE.SERVICE_CONTROL_SCALE_SUCCESSFUL";
-        msg.params = [this.service.service_name];
-        this.onMessage.emit(msg);
-      })
+      .then(() => this.onMessage.emit('SERVICE.SERVICE_CONTROL_SCALE_SUCCESSFUL'))
       .catch((err) => this.onError.emit(err));
   }
 

@@ -1,7 +1,6 @@
 /**
  * Created by liyanq on 04/12/2017.
  */
-
 import { Component, OnInit, ViewChild } from "@angular/core"
 import { Service } from "../../service";
 import { K8sService } from "../../service.k8s";
@@ -9,9 +8,10 @@ import { MessageService } from "../../../shared/message-service/message.service"
 import { UpdateComponent } from "./update/update.component";
 import { LocateComponent } from "./locate/locate.component";
 import { ScaleComponent } from "./scale/scale.component";
-import { Message } from "../../../shared/message-service/message";
 import { Subject } from "rxjs/Subject";
 import { Observable } from "rxjs/Observable";
+import { CsModalChildBase } from "../../../shared/cs-modal-base/cs-modal-child-base";
+import { TranslateService } from "@ngx-translate/core";
 
 export interface IScaleInfo {
   desired_instance: number;
@@ -25,7 +25,7 @@ enum ActionMethod {scale, update, locate}
   styleUrls: ["./service-control.component.css"],
   templateUrl: "./service-control.component.html"
 })
-export class ServiceControlComponent implements OnInit {
+export class ServiceControlComponent extends CsModalChildBase implements OnInit {
   @ViewChild(UpdateComponent) updateComponent: UpdateComponent;
   @ViewChild(ScaleComponent) scaleComponent: ScaleComponent;
   @ViewChild(LocateComponent) locateComponent: LocateComponent;
@@ -34,11 +34,12 @@ export class ServiceControlComponent implements OnInit {
   actionMethod: ActionMethod = ActionMethod.scale;
   actionEnable: boolean = false;
   isActionInWIP: boolean = false;
-  alertMessage: string = "";
   closeNotification: Subject<any>;
 
   constructor(private k8sService: K8sService,
+              private translateService: TranslateService,
               private messageService: MessageService) {
+    super();
     this.closeNotification = new Subject<any>();
   }
 
@@ -63,16 +64,16 @@ export class ServiceControlComponent implements OnInit {
 
   defaultDispatchErr(err) {
     this.isOpen = false;
-    this.messageService.dispatchError(err);
   }
 
-  defaultHandleMessage(msg: Message) {
+  defaultHandleMessage(msg: string) {
     this.isOpen = false;
-    this.messageService.inlineAlertMessage(msg);
+    this.translateService.get(msg, [this.service.service_name])
+      .subscribe((res: string) => this.messageService.showAlert(res));
   }
 
   defaultHandleAlertMessage(msg: string) {
-    this.alertMessage = msg;
+    this.messageService.showAlert(msg, {alertType: 'alert-warning', view: this.alertView})
   }
 
   defaultHandleActionEnabled(enabled: boolean){

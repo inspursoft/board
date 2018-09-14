@@ -1,21 +1,20 @@
-import { Component, OnDestroy, OnInit, ViewContainerRef } from '@angular/core';
-import { Subscription } from 'rxjs/Subscription';
+import { Component, OnInit, ViewContainerRef } from '@angular/core';
 import { AppInitService } from '../app.init.service';
 import { MessageService } from '../shared/message-service/message.service';
-import { Message } from '../shared/message-service/message';
-import { BUTTON_STYLE, GUIDE_STEP, MESSAGE_TARGET } from '../shared/shared.const';
+import { GUIDE_STEP } from '../shared/shared.const';
 import { Project } from './project';
 import { ProjectService } from './project.service';
 import { ClrDatagridSortOrder, ClrDatagridStateInterface } from "@clr/angular";
 import { SharedActionService } from "../shared/shared-action.service";
+import { TranslateService } from "@ngx-translate/core";
+import { Message, RETURN_STATUS } from "../shared/shared.types";
 
 @Component({
   selector: 'project',
   styleUrls: ["./project.component.css"],
   templateUrl: 'project.component.html'
 })
-export class ProjectComponent implements OnInit, OnDestroy {
-  _subscription: Subscription;
+export class ProjectComponent implements OnInit {
   totalRecordCount: number;
   pageIndex: number = 1;  
   pageSize: number = 15;
@@ -29,31 +28,12 @@ export class ProjectComponent implements OnInit, OnDestroy {
     private projectService: ProjectService,
     private messageService: MessageService,
     private sharedActionService: SharedActionService,
+    private translateService: TranslateService,
     private selfView: ViewContainerRef) {
-    this._subscription = this.messageService.messageConfirmed$.subscribe((msg: Message) => {
-      if (msg.target == MESSAGE_TARGET.DELETE_PROJECT) {
-        let project = <Project>msg.data;
-        this.projectService
-          .deleteProject(project)
-          .then(() => {
-            let inlineMessage = new Message();
-            inlineMessage.message = 'PROJECT.SUCCESSFUL_DELETE_PROJECT';
-            this.messageService.inlineAlertMessage(inlineMessage);
-            this.retrieve(this.oldStateInfo);
-          })
-          .catch(err => this.messageService.dispatchError(err, ''));
-      }
-    });
   }
 
   ngOnInit(): void {
     this.currentUser = this.appInitService.currentUser;
-  }
-
-  ngOnDestroy(): void {
-    if(this._subscription) {
-      this._subscription.unsubscribe();
-    }
   }
 
   retrieve(state: ClrDatagridStateInterface): void {
@@ -68,8 +48,8 @@ export class ProjectComponent implements OnInit, OnDestroy {
             this.projects = paginatedProjects.project_list;
             this.isInLoading = false;
           })
-          .catch(err => {
-            this.messageService.dispatchError(err, 'PROJECT.FAILED_TO_RETRIEVE_PROJECTS');
+          .catch(() => {
+            this.messageService.showAlert('PROJECT.FAILED_TO_RETRIEVE_PROJECTS',{alertType: "alert-warning"});
             this.isInLoading = false;
           });
       }
@@ -91,16 +71,18 @@ export class ProjectComponent implements OnInit, OnDestroy {
     }
   }
 
-  confirmToDeleteProject(p: Project): void {
-    if (this.isSystemAdminOrOwner(p)) {
-      let announceMessage = new Message();
-      announceMessage.title = 'PROJECT.DELETE_PROJECT';
-      announceMessage.message = 'PROJECT.CONFIRM_TO_DELETE_PROJECT';
-      announceMessage.params = [p.project_name];
-      announceMessage.target = MESSAGE_TARGET.DELETE_PROJECT;
-      announceMessage.buttons = BUTTON_STYLE.DELETION;
-      announceMessage.data = p;
-      this.messageService.announceMessage(announceMessage);
+  confirmToDeleteProject(project: Project): void {
+    if (this.isSystemAdminOrOwner(project)) {
+      this.translateService.get('PROJECT.CONFIRM_TO_DELETE_PROJECT', project.project_name).subscribe((msg: string) => {
+        this.messageService.showDeleteDialog(msg, 'PROJECT.DELETE_PROJECT').subscribe((message: Message) => {
+          if (message.returnStatus == RETURN_STATUS.rsConfirm) {
+            this.projectService.deleteProject(project).then(() => {
+              this.messageService.showAlert('PROJECT.SUCCESSFUL_DELETE_PROJECT');
+              this.retrieve(this.oldStateInfo);
+            })
+          }
+        })
+      });
     }
   }
 
@@ -109,15 +91,10 @@ export class ProjectComponent implements OnInit, OnDestroy {
     this.projectService
       .togglePublicity(project.project_id, project.project_public === 1? 0 : 1)
       .then(()=>{
-        let toggleMessage = new Message();
-        toggleMessage.message = 'PROJECT.SUCCESSFUL_TOGGLE_PROJECT'; 
-        this.messageService.inlineAlertMessage(toggleMessage);
+        this.messageService.showAlert('PROJECT.SUCCESSFUL_TOGGLE_PROJECT');
         project.project_public = oldPublic === 1 ? 0 : 1;
       })
-      .catch(err=>{
-        ($event.srcElement as HTMLInputElement).checked = oldPublic === 1;
-        this.messageService.dispatchError(err);
-      });
+      .catch(() => ($event.srcElement as HTMLInputElement).checked = oldPublic === 1);
   }
 
   get isFirstLogin(): boolean{
