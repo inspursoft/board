@@ -103,7 +103,7 @@ func (n *NodeController) RemoveNodeFromGroupAction() {
 
 func (n *NodeController) NodesAvailalbeResources() {
 	logs.Debug("GetNodesResources")
-	resources, err := service.GetNodesAvailalbeResources()
+	resources, err := service.GetNodesAvailableResources()
 	if err != nil {
 		n.internalError(err)
 		return
