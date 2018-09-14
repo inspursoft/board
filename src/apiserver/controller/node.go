@@ -100,3 +100,14 @@ func (n *NodeController) RemoveNodeFromGroupAction() {
 	}
 	logs.Debug("Removed %s from %s", nodeName, groupName)
 }
+
+func (n *NodeController) NodesAvailalbeResources() {
+	logs.Debug("GetNodesResources")
+	resources, err := service.GetNodesAvailableResources()
+	if err != nil {
+		n.internalError(err)
+		return
+	}
+
+	n.renderJSON(resources)
+}
