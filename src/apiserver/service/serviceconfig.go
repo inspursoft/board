@@ -526,6 +526,7 @@ func setDeploymentAffinity(affinityList []model.Affinity) model.K8sAffinity {
 					},
 				},
 			},
+			Namespaces:  affinity.Namespaces,
 			TopologyKey: "kubernetes.io/hostname",
 		}
 		if affinity.AntiFlag == 0 {

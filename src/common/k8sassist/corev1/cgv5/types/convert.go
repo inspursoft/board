@@ -237,6 +237,7 @@ func ToK8sAffinityTerm(term model.PodAffinityTerm) v1.PodAffinityTerm {
 				},
 			},
 		},
+		Namespaces:  term.Namespaces,
 		TopologyKey: term.TopologyKey,
 	}
 }
