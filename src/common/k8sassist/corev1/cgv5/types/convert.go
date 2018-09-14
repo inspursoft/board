@@ -195,21 +195,26 @@ func ToK8sPodSpec(spec *model.PodSpec) *v1.PodSpec {
 		}
 	}
 
-	affinity := &v1.Affinity{
-		PodAffinity:     &v1.PodAffinity{},
-		PodAntiAffinity: &v1.PodAntiAffinity{},
+	var affinity *v1.Affinity
+	if spec.Affinity.PodAffinity != nil || spec.Affinity.PodAntiAffinity != nil {
+		affinity = &v1.Affinity{}
+		if spec.Affinity.PodAffinity != nil {
+			affinity.PodAffinity = &v1.PodAffinity{}
+			for _, term := range spec.Affinity.PodAffinity {
+				affinity.PodAffinity.RequiredDuringSchedulingIgnoredDuringExecution = append(
+					affinity.PodAffinity.RequiredDuringSchedulingIgnoredDuringExecution, ToK8sAffinityTerm(term),
+				)
+			}
+		}
+		if spec.Affinity.PodAntiAffinity != nil {
+			affinity.PodAntiAffinity = &v1.PodAntiAffinity{}
+			for _, term := range spec.Affinity.PodAntiAffinity {
+				affinity.PodAntiAffinity.RequiredDuringSchedulingIgnoredDuringExecution = append(
+					affinity.PodAntiAffinity.RequiredDuringSchedulingIgnoredDuringExecution, ToK8sAffinityTerm(term),
+				)
+			}
+		}
 	}
-	for _, term := range spec.Affinity.PodAffinity {
-		affinity.PodAffinity.RequiredDuringSchedulingIgnoredDuringExecution = append(
-			affinity.PodAffinity.RequiredDuringSchedulingIgnoredDuringExecution, ToK8sAffinityTerm(term),
-		)
-	}
-	for _, term := range spec.Affinity.PodAntiAffinity {
-		affinity.PodAntiAffinity.RequiredDuringSchedulingIgnoredDuringExecution = append(
-			affinity.PodAntiAffinity.RequiredDuringSchedulingIgnoredDuringExecution, ToK8sAffinityTerm(term),
-		)
-	}
-
 	return &v1.PodSpec{
 		Volumes:        volumes,
 		InitContainers: initContainers,
