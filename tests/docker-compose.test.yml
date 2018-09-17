@@ -58,7 +58,6 @@ services:
     restart: always
     ports:
       - "12225:12225"
-
   jenkins:
     build:
       context: ../../
@@ -70,8 +69,14 @@ services:
       - ../config/ssh_keys:/root/.ssh
       - /var/run/docker.sock:/var/run/docker.sock
       - /usr/local/bin/docker:/usr/bin/docker
-    env_file:
-      - ../config/jenkins/env
+    environment:
+      - jenkins_host_ip=127.0.0.1
+      - jenkins_host_port=8888
+      - jenkins_node_ip=127.0.0.1
+      - jenkins_node_ssh_port=22
+      - jenkins_node_username=root
+      - jenkins_node_password=123456a?
+      - jenkins_node_volume=/data/jenkins_node
     ports:
       - 8888:8080
       - 50000:50000
