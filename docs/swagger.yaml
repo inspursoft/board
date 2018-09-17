@@ -1999,12 +1999,7 @@ paths:
           type: integer
           format: int32
           required: true
-          description: Selected hpa ID.    
-        - name: hpa_name
-          in: query
-          type: string
-          required: true
-          description: The hpa name to delete.            
+          description: Selected hpa ID.            
       tags:
         - Products
       responses:
@@ -2054,7 +2049,42 @@ paths:
         401:
           description: User need to log in first.
         500:
-          description: Unexpected internal errors.                    
+          description: Unexpected internal errors.          
+    get:
+      summary: Get this autoscale hpa current details.
+      description: |
+        This endpoint is aimed to get this autoscale hpa current details.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.      
+        - name: hpa_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected hpa ID.              
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the hpa current detailes successfully.
+          schema:
+            $ref: '#/definitions/HPADetail'          
+        401:
+          description: User need to log in first.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.                     
   /v1/services/{service_id}/locate:
     get:  
       summary: Get service deployment locate info.
@@ -5460,6 +5490,10 @@ definitions:
         type: integer   
         format: int32   
         description: The target CPU percentage. 
+      hpa_status:
+        type: integer   
+        format: int32   
+        description: The status of this HPA item.        
   NodeAvailableResources:              
     type: object
     properties:
@@ -5478,8 +5512,48 @@ definitions:
         description: The max available Memory resource of this node.    
       storage_available:
         type: string
-        description: The max available Storage resource of this node.                          
+        description: The max available Storage resource of this node.      
+  HPADetail:                          
+    type: object
+    properties:
+      hpa_id:
+        type: integer
+        format: int32
+        description: The hpa ID of this autoscale.     
+      hpa_name:
+        type: string
+        description: The hpa name of this autoscale.         
+      service_id:
+        type: integer   
+        format: int32   
+        description: The service ID of this hpa to control. 
+      min_pod:
+        type: integer   
+        format: int32   
+        description: The minimum pod number.  
+      max_pod:
+        type: integer   
+        format: int32   
+        description: The maximum pod number.   
+      cpu_percent:
+        type: integer   
+        format: int32   
+        description: The target CPU percentage. 
+      current_replicas:
+        type: integer   
+        format: int32   
+        description: The current pod number.      
+      desired_replicas:
+        type: integer   
+        format: int32   
+        description: The desired pod number.   
+      current_cpu:
+        type: integer   
+        format: int32   
+        description: The current CPU percentage. 
 
+
+ 
         
 
 
