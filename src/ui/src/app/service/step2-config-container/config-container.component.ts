@@ -26,8 +26,10 @@ import { NodeAvailableResources } from "../../shared/shared.types";
 export class ConfigContainerComponent extends ServiceStepBase implements OnInit {
   patternContainerName: RegExp = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/;
   patternWorkdir: RegExp = /^~?[\w\d-\/.{}$\/:]+[\s]*$/;
-  patternCpuRequest: RegExp = /^[0-9]*m$/
-  patternMemRequest: RegExp = /^[0-9]*m$/;
+  patternCpuRequest: RegExp = /^[0-9]*m$/;
+  patternCpuLimit: RegExp = /^[0-9]*m$/;
+  patternMemRequest: RegExp = /^[0-9]*Mi$/;
+  patternMemLimit: RegExp = /^[0-9]*Mi$/;
   imageSourceList: Array<Image>;
   imageDetailSourceList: Map<string, Array<ImageDetail>>;
   imageTagNotReadyList: Map<string, boolean>;

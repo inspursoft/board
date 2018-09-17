@@ -88,9 +88,11 @@
       <cs-input [inputLabel]="'SERVICE.STEP_2_CPU_LIMIT' | translate"
                 [simpleFiled]="workBuf.container.cpu_limit"
                 [inputPlaceholder]="'SERVICE.STEP_2_PLACEHOLDER_DEFAULT'| translate"
+                [inputPattern]="patternCpuLimit"
                 (onCheck)="workBuf.container.cpu_limit = $event"></cs-input>
       <cs-input [inputLabel]="'SERVICE.STEP_2_MEMORY_LIMIT' | translate"
                 [simpleFiled]="workBuf.container.mem_limit"
+                [inputPattern]="patternMemLimit"
                 [inputPlaceholder]="'SERVICE.STEP_2_PLACEHOLDER_DEFAULT'| translate"
                 (onCheck)="workBuf.container.mem_limit = $event"></cs-input>
     </div>
