@@ -1,17 +1,17 @@
-div.step6-container {
+div.step5-container {
   display: flex;
   min-height: 400px; /*fixed height*/
   flex-direction: column;
   margin-top: 30px;
 }
 
-div.step6-deploy-container {
+div.step5-deploy-container {
   display: flex;
   min-height: 100px;
   align-items: center;
 }
 
-div.step6-start-icon {
+div.step5-start-icon {
   border-radius: 5px;
   border: 14px solid transparent;
   border-left: 14px solid white;
@@ -20,12 +20,12 @@ div.step6-start-icon {
   height: 14px;
 }
 
-span.step6-spinner {
+span.step5-spinner {
   margin-left: 50px;
 }
 
 
-div.step6-icon-container {
+div.step5-icon-container {
   display: flex;
   justify-content: center;
   margin-left: 10px;
@@ -37,12 +37,12 @@ div.step6-icon-container {
   background-color: black;
 }
 
-div.step6-icon-container.deploy {
+div.step5-icon-container.deploy {
   background-color: gray;
   cursor: not-allowed;
 }
 
-div.step6-button-container {
+div.step5-button-container {
   display: flex;
   align-items: center;
 }

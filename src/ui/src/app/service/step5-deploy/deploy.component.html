@@ -1,16 +1,16 @@
-<div class="step6-container">
-  <div class="step6-deploy-container">
+<div class="step5-container">
+  <div class="step5-deploy-container">
     <span>{{"SERVICE.STEP_5_DEPLOY"|translate}}:</span>
-    <div class="step6-icon-container"
+    <div class="step5-icon-container"
          (click)="serviceDeploy()"
          [ngClass]="{'deploy':isDeployed}">
-      <div class="step6-start-icon"></div>
+      <div class="step5-start-icon"></div>
     </div>
-    <span *ngIf="isInDeployWIP" class="spinner spinner-md step6-spinner"></span>
+    <span *ngIf="isInDeployWIP" class="spinner spinner-md step5-spinner"></span>
   </div>
   <cs-highlight *ngIf="deployConsole" [language]="'json'" [code]="deployConsole | json"></cs-highlight>
 </div>
-<div class="step6-button-container">
+<div class="step5-button-container">
   <button class="btn btn-primary default-primary"
           [disabled]="isDeploySuccess || !isDeployed || isDeleteInWIP"
           (click)="deleteDeploy()">
