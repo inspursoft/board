@@ -42,12 +42,12 @@ export class DeployComponent extends ServiceStepBase {
         .then(res => {
           this.serviceID = res['service_id'];
           this.deployConsole = res;
-          this.messageService.showAlert('SERVICE.STEP_6_DEPLOY_SUCCESS');
+          this.messageService.showAlert('SERVICE.STEP_5_DEPLOY_SUCCESS');
           this.isDeploySuccess = true;
           this.isInDeployWIP = false;
         })
         .catch((err: HttpErrorResponse) => {
-          this.messageService.showGlobalMessage('SERVICE.STEP_6_DEPLOY_FAILED', {
+          this.messageService.showGlobalMessage('SERVICE.STEP_5_DEPLOY_FAILED', {
             globalAlertType: GlobalAlertType.gatShowDetail,
             errorObject: err
           });
@@ -58,7 +58,7 @@ export class DeployComponent extends ServiceStepBase {
   }
 
   deleteDeploy(): void {
-    this.messageService.showDeleteDialog('SERVICE.STEP_6_DELETE_MSG', 'SERVICE.STEP_6_DELETE_TITLE').subscribe((message: Message) => {
+    this.messageService.showDeleteDialog('SERVICE.STEP_5_DELETE_MSG', 'SERVICE.STEP_5_DELETE_TITLE').subscribe((message: Message) => {
       if (message.returnStatus == RETURN_STATUS.rsConfirm) {
         this.isDeleteInWIP = true;
         this.k8sService.deleteDeployment(this.serviceID)

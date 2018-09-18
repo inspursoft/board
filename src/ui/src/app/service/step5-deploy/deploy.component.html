@@ -1,6 +1,6 @@
 <div class="step6-container">
   <div class="step6-deploy-container">
-    <span>{{"SERVICE.STEP_6_DEPLOY"|translate}}:</span>
+    <span>{{"SERVICE.STEP_5_DEPLOY"|translate}}:</span>
     <div class="step6-icon-container"
          (click)="serviceDeploy()"
          [ngClass]="{'deploy':isDeployed}">
@@ -14,7 +14,7 @@
   <button class="btn btn-primary default-primary"
           [disabled]="isDeploySuccess || !isDeployed || isDeleteInWIP"
           (click)="deleteDeploy()">
-    {{"SERVICE.STEP_6_DELETE" | translate}}
+    {{"SERVICE.STEP_5_DELETE" | translate}}
   </button>
   <button class="btn btn-default" [disabled]="isDeployed" (click)="backStep()">
     {{"BUTTON.BACK" | translate}}

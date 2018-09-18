@@ -74,7 +74,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
   }
 
   get nodeSelectorDefaultText(){
-    return this.uiData.nodeSelector == "" ? 'SERVICE.STEP_4_NODE_SELECTOR_COMMENT': this.uiData.nodeSelector;
+    return this.uiData.nodeSelector == "" ? 'SERVICE.STEP_3_NODE_SELECTOR_COMMENT': this.uiData.nodeSelector;
   }
 
   checkServiceName(control: HTMLInputElement): Promise<ValidationErrors | null> {
@@ -83,7 +83,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
       .catch((err:HttpErrorResponse) => {
         if (err.status == 409) {
           this.messageService.cleanNotification();
-          return {serviceExist: "SERVICE.STEP_4_SERVICE_NAME_EXIST"}
+          return {serviceExist: "SERVICE.STEP_3_SERVICE_NAME_EXIST"}
         } else if (err.status == 404) {
           this.messageService.cleanNotification();
         }
@@ -133,12 +133,12 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
 
   getContainerDropdownText(index: number): string {
     let result = this.uiData.externalServiceList[index].container_name;
-    return result == "" ? "SERVICE.STEP_4_SELECT_CONTAINER" : result;
+    return result == "" ? "SERVICE.STEP_3_SELECT_CONTAINER" : result;
   }
 
   getContainerPortDropdownText(index: number): string {
     let result = this.uiData.externalServiceList[index].node_config.target_port;
-    return result == 0 ? "SERVICE.STEP_4_SELECT_PORT" : result.toString();
+    return result == 0 ? "SERVICE.STEP_3_SELECT_PORT" : result.toString();
   }
 
   setExternalInfo(container: Container, index: number) {
