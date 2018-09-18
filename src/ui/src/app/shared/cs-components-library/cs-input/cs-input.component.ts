@@ -1,13 +1,12 @@
 /**
  * Created by liyanq on 9/11/17.
  */
-import { Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, ViewChild } from "@angular/core"
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from "@angular/core"
 import { AsyncValidatorFn, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from "@angular/forms";
 import { AbstractControl } from "@angular/forms/src/model";
 
 export enum CsInputFiledType {iftString, iftNumber, iftPassword, iftEmail}
 export enum CsInputType{itWithInput, itWithNoInput, itOnlyWithInput}
-
 export enum CsInputStatus {isView = 0, isEdit = 1}
 export type CsInputSupportType = string | number
 
@@ -77,7 +76,6 @@ export class CsInputComponent implements OnInit {
 
   ngOnInit() {
     this.inputFormGroup = new FormGroup({inputControl: this.inputControl});
-    this.inputControl.reset({value: this.SimpleFiled, disabled: this.isDisabled});
     if (this.customerValidatorAsyncFunc) {
       this.inputControl.setAsyncValidators(this.customerValidatorAsyncFunc);
     }
@@ -149,6 +147,10 @@ export class CsInputComponent implements OnInit {
     this.inputField = new CsInputFiled(
       CsInputStatus.isView, value, value
     );
+    if ((this.inputFiledType == CsInputFiledType.iftNumber && this.inputControl.value == 0) ||
+      (this.inputFiledType != CsInputFiledType.iftNumber && this.inputControl.value == '')) {
+      this.inputControl.setValue(value);
+    }
   }
 
   get SimpleFiled(): CsInputSupportType {
