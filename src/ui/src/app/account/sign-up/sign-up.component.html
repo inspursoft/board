@@ -66,6 +66,7 @@
                 [disabled]="isSignUpWIP">
           {{'ACCOUNT.SIGN_UP' | translate}}
         </button>
+        <span *ngIf="isSignUpWIP" class="spinner spinner-sm"></span>
       </div>
     </div>
     <nav class="sidenav">

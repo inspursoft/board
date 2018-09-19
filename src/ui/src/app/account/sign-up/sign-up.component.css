@@ -20,4 +20,5 @@ div.btn-container {
   display: flex;
   justify-content: flex-end;
   margin-top: 50px;
+  align-items: center;
 }

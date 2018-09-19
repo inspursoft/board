@@ -6,6 +6,12 @@ div.select-image-container {
   flex-direction: column;
 }
 
+div.dynamic-icon-container {
+  flex-basis: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
 div.image-source-container {
   display: flex;
   align-items: center;
@@ -13,17 +19,21 @@ div.image-source-container {
   margin-top: 10px;
 }
 
-div.dynamic-image-source-container {
+div.dynamic-container {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   width: 100%;
+}
+
+div.dynamic-line-container {
+  display: flex;
   margin-top: 10px;
 }
 
-div.dynamic-icon-container {
-  flex-basis: 20px;
-  display: flex;
-  justify-content: flex-end;
+div.dynamic-line-container.config-container {
+  flex-direction: column;
+  margin-top: 0;
+  width: 500px;
 }
 
 .dynamic-icon {

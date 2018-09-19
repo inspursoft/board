@@ -1,9 +1,4 @@
-div.modal-body {
-  min-height: 42vh;
-}
-
 div.list-container {
-  margin-top: 24px;
   height: 200px;
   display: flex;
 }

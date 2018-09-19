@@ -7,6 +7,7 @@ import { BuildImageDockerfileData, Image, ImageDetail } from "../image/image";
 import { ImageIndex, ServerServiceStep, ServiceStepPhase, UiServiceFactory, UIServiceStepBase } from "./service-step.component";
 import { Service } from "./service";
 import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from "../shared/shared.const";
+import { NodeAvailableResources } from "../shared/shared.types";
 
 @Injectable()
 export class K8sService {
@@ -304,5 +305,11 @@ export class K8sService {
         params: {project_name: projectName, service_name: serviceName, node_selector: nodeSelector}
       })
       .map((res: HttpResponse<Array<Object>>) => res.body)
+  }
+
+  getNodesAvailableSources(): Observable<Array<NodeAvailableResources>> {
+    return this.http.get(`/api/v1/nodes/availableresources`, {
+      observe: "response"
+    }).map((res: HttpResponse<Array<NodeAvailableResources>>) => res.body)
   }
 }

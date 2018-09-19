@@ -33,9 +33,8 @@ export class MainContentComponent {
       this.isOnlyShowGrafanaView = params.get("isOnlyShowGrafanaView") == "true";
       this.searchContent = params.get("q");
     });
-    let systemInfo = this.route.snapshot.data['systeminfo'];
-    this.appInitService.systemInfo = systemInfo;
-    this.appInitService.grafanaViewUrl = `http://${systemInfo['board_host']}/grafana/dashboard/db/kubernetes/`;
+    this.appInitService.systemInfo = this.route.snapshot.data['systeminfo'];
+    this.appInitService.grafanaViewUrl = `/grafana/dashboard/db/kubernetes/`;
   }
 
   getMenuItemByRoute(route: string): ICsMenuItemData {

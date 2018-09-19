@@ -29,6 +29,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
   collaborativeList:Array<Object>;
   nodeSelectorList:Array<string>;
   noPortForExtent: boolean = false;
+  isActionWip: boolean = false;
 
   constructor(protected injector: Injector, private changeDetectorRef: ChangeDetectorRef) {
     super(injector);
@@ -73,7 +74,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
   }
 
   get nodeSelectorDefaultText(){
-    return this.uiData.nodeSelector == "" ? 'SERVICE.STEP_4_NODE_SELECTOR_COMMENT': this.uiData.nodeSelector;
+    return this.uiData.nodeSelector == "" ? 'SERVICE.STEP_3_NODE_SELECTOR_COMMENT': this.uiData.nodeSelector;
   }
 
   checkServiceName(control: HTMLInputElement): Promise<ValidationErrors | null> {
@@ -82,7 +83,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
       .catch((err:HttpErrorResponse) => {
         if (err.status == 409) {
           this.messageService.cleanNotification();
-          return {serviceExist: "SERVICE.STEP_4_SERVICE_NAME_EXIST"}
+          return {serviceExist: "SERVICE.STEP_3_SERVICE_NAME_EXIST"}
         } else if (err.status == 404) {
           this.messageService.cleanNotification();
         }
@@ -98,7 +99,12 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
     /*Todo:add reset the Collaborative service Info*/
     this.collaborativeServiceList.splice(0, this.collaborativeServiceList.length);
     this.k8sService.getCollaborativeService(serviceName, this.uiData.projectName)
-      .then(res => this.collaborativeServiceList = res);
+      .then(res => this.collaborativeServiceList = res)
+      .catch((err:HttpErrorResponse) => {
+        if (err.status == 404) {
+          this.messageService.cleanNotification();
+        }
+      });
   }
 
   addContainerInfo() {
@@ -127,16 +133,20 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
 
   getContainerDropdownText(index: number): string {
     let result = this.uiData.externalServiceList[index].container_name;
-    return result == "" ? "SERVICE.STEP_4_SELECT_CONTAINER" : result;
+    return result == "" ? "SERVICE.STEP_3_SELECT_CONTAINER" : result;
   }
 
   getContainerPortDropdownText(index: number): string {
     let result = this.uiData.externalServiceList[index].node_config.target_port;
-    return result == 0 ? "SERVICE.STEP_4_SELECT_PORT" : result.toString();
+    return result == 0 ? "SERVICE.STEP_3_SELECT_PORT" : result.toString();
   }
 
   setExternalInfo(container: Container, index: number) {
     this.uiData.externalServiceList[index].container_name = container.name;
+    let containerPorts = this.getContainerPorts(container.name);
+    if (containerPorts.length > 0) {
+      this.uiData.externalServiceList[index].node_config.target_port = containerPorts[0];
+    }
   }
 
   getContainerPorts(containerName: string): Array<number> {
@@ -151,12 +161,13 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
 
   forward(): void {
     if (this.verifyInputValid()) {
+      this.isActionWip = true;
       this.k8sService.setServiceConfig(this.uiData.uiToServer())
-        .then(() => this.k8sService.stepSource.next({index: 6, isBack: false}));
+        .then(() => this.k8sService.stepSource.next({index: 5, isBack: false}));
     }
   }
 
   backUpStep(): void {
-    this.k8sService.stepSource.next({index: 3, isBack: true});
+    this.k8sService.stepSource.next({index: 2, isBack: true});
   }
 }

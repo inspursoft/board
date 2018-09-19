@@ -20,11 +20,11 @@ export class CsInputCheckPatternDirective {
     const value = control.value;
     switch (this.checkItemPatternEx) {
       case "email":
-        return emailPattern.test(value) ? Validators.nullValidator : {"checkItemPattern": "ACCOUNT.EMAIL_IS_ILLEGAL"};
+        return emailPattern.test(value) ? null : {"checkItemPattern": "ACCOUNT.EMAIL_IS_ILLEGAL"};
       case "password":
-        return passwordPattern.test(value) ? Validators.nullValidator : {"passwordPattern": "ACCOUNT.PASSWORD_FORMAT"};
+        return passwordPattern.test(value) ? null : {"passwordPattern": "ACCOUNT.PASSWORD_FORMAT"};
       case "username":
-        return usernamePattern.test(value) ? Validators.nullValidator : {"checkItemPattern": "ACCOUNT.USERNAME_ARE_NOT_IDENTICAL"};
+        return usernamePattern.test(value) ? null : {"checkItemPattern": "ACCOUNT.USERNAME_ARE_NOT_IDENTICAL"};
     }
   }
 }

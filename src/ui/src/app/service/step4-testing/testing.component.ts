@@ -12,6 +12,6 @@ export class TestingComponent extends ServiceStepBase {
   }
 
   forward(): void {
-    this.k8sService.stepSource.next({index: 6, isBack: false});
+    this.k8sService.stepSource.next({index: 5, isBack: false});
   }
 }

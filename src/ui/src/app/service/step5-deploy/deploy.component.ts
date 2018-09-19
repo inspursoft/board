@@ -6,6 +6,7 @@ import { ServiceStepBase } from "../service-step";
 import { PHASE_ENTIRE_SERVICE, ServiceStepPhase, UIServiceStepBase } from "../service-step.component";
 import { HttpErrorResponse } from "@angular/common/http";
 import { GlobalAlertType, Message, RETURN_STATUS } from "../../shared/shared.types";
+import { ClrLoadingButton } from "@clr/angular";
 
 @Component({
   templateUrl: "./deploy.component.html",
@@ -16,6 +17,7 @@ export class DeployComponent extends ServiceStepBase {
   isDeployed: boolean = false;
   isDeploySuccess: boolean = false;
   isInDeployWIP: boolean = false;
+  isDeleteInWIP: boolean = false;
   serviceID: number = 0;
   deployConsole:Object;
 
@@ -40,12 +42,12 @@ export class DeployComponent extends ServiceStepBase {
         .then(res => {
           this.serviceID = res['service_id'];
           this.deployConsole = res;
-          this.messageService.showAlert('SERVICE.STEP_6_DEPLOY_SUCCESS');
+          this.messageService.showAlert('SERVICE.STEP_5_DEPLOY_SUCCESS');
           this.isDeploySuccess = true;
           this.isInDeployWIP = false;
         })
         .catch((err: HttpErrorResponse) => {
-          this.messageService.showGlobalMessage('SERVICE.STEP_6_DEPLOY_FAILED', {
+          this.messageService.showGlobalMessage('SERVICE.STEP_5_DEPLOY_FAILED', {
             globalAlertType: GlobalAlertType.gatShowDetail,
             errorObject: err
           });
@@ -56,8 +58,9 @@ export class DeployComponent extends ServiceStepBase {
   }
 
   deleteDeploy(): void {
-    this.messageService.showDeleteDialog('SERVICE.STEP_6_DELETE_MSG', 'SERVICE.STEP_6_DELETE_TITLE').subscribe((message: Message) => {
+    this.messageService.showDeleteDialog('SERVICE.STEP_5_DELETE_MSG', 'SERVICE.STEP_5_DELETE_TITLE').subscribe((message: Message) => {
       if (message.returnStatus == RETURN_STATUS.rsConfirm) {
+        this.isDeleteInWIP = true;
         this.k8sService.deleteDeployment(this.serviceID)
           .then(() => this.k8sService.stepSource.next({index: 0, isBack: false}))
           .catch(() => this.k8sService.stepSource.next({index: 0, isBack: false}))
@@ -70,6 +73,6 @@ export class DeployComponent extends ServiceStepBase {
   }
 
   backStep(): void {
-    this.k8sService.stepSource.next({index: 4, isBack: true});
+    this.k8sService.stepSource.next({index: 3, isBack: true});
   }
 }

@@ -82,6 +82,10 @@ export class Container implements UiServerExchangeData<Container> {
   public env: Array<EnvStruct> = Array<EnvStruct>();
   public container_port: Array<number> = Array();
   public command: string = "";
+  public cpu_request: string = "";
+  public mem_request: string = "";
+  public cpu_limit: string = "";
+  public mem_limit: string = "";
 
   isHavePort(): boolean {
     return this.container_port.length > 0;
@@ -90,6 +94,10 @@ export class Container implements UiServerExchangeData<Container> {
   serverToUi(serverResponse: Object): Container {
     this.name = serverResponse["name"];
     this.working_dir = serverResponse["working_dir"];
+    this.cpu_request = serverResponse["cpu_request"];
+    this.cpu_limit = serverResponse["cpu_limit"];
+    this.mem_request = serverResponse["mem_request"];
+    this.mem_limit = serverResponse["mem_limit"];
     this.volume_mount = (new VolumeStruct()).serverToUi(serverResponse["volume_mount"]);
     this.image = (new ImageIndex()).serverToUi(serverResponse["image"]);
     if (serverResponse["env"]) {
@@ -290,6 +298,8 @@ export class UiServiceFactory {
         return new UIServiceStep3();
       case PHASE_EXTERNAL_SERVICE:
         return new UIServiceStep4();
+      default:
+        return null;
     }
   }
 }
