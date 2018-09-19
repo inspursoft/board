@@ -77,11 +77,11 @@
                 [inputPattern]="patternCpuRequest"
                 [simpleFiled]="workBuf.container.cpu_request"
                 [inputPlaceholder]="'SERVICE.STEP_2_PLACEHOLDER_DEFAULT'| translate"
-                [customerValidatorAsyncFunc]="checkSetCpuRequest.bind(selfObject)"
+                [customerValidatorAsyncFunc]="checkSetCpuRequestFun"
                 (onCheck)="workBuf.container.cpu_request = $event"></cs-input>
       <cs-input [inputLabel]="'SERVICE.STEP_2_MEMORY_REQUEST' | translate"
                 [inputPattern]="patternMemRequest"
-                [customerValidatorAsyncFunc]="checkSetMemRequest.bind(selfObject)"
+                [customerValidatorAsyncFunc]="checkSetMemRequestFun"
                 [simpleFiled]="workBuf.container.mem_request"
                 [inputPlaceholder]="'SERVICE.STEP_2_PLACEHOLDER_DEFAULT'| translate"
                 (onCheck)="workBuf.container.mem_request = $event"></cs-input>
