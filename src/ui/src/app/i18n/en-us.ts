@@ -119,6 +119,7 @@ export const LANG_EN_US = {
     "IMAGES": "Images",
     "ADMIN_OPTIONS": "Admin Options",
     "AUDIT": "Operation Audit",
+    "KIBANA": "Kibana",
     "PROFILES": "System Info",
     "GUIDE_SERVICE_LIST":"Please create your own Service.",
     "GUIDE_PROJECT_LIST":"Please create your own Project."
@@ -474,6 +475,7 @@ export const LANG_EN_US = {
     "AUDIT_IMAGES": "images",
     "AUDIT_FILE": "file",
     "AUDIT_SYSTEM": "system",
+    "AUDIT_RESET_PASSWORD": "Reset password",
     "AUDIT_CREATE": "Create",
     "AUDIT_GET": "Get",
     "AUDIT_DELETE": "Delete",

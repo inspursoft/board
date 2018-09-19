@@ -59,6 +59,7 @@ export class ListAuditComponent implements OnInit {
     this.objectQueryMap.push({key: "images", title: "AUDIT.AUDIT_IMAGES"});
     this.objectQueryMap.push({key: "file", title: "AUDIT.AUDIT_FILE"});
     this.objectQueryMap.push({key: "system", title: "AUDIT.AUDIT_SYSTEM"});
+    this.objectQueryMap.push({key: "reset-password", title: "AUDIT.AUDIT_RESET_PASSWORD"});
   }
 
   initActionQueryMap() {

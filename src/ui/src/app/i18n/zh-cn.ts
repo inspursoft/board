@@ -119,6 +119,7 @@ export const LANG_ZH_CN = {
     "IMAGES": "镜像",
     "ADMIN_OPTIONS": "管理员选项",
     "AUDIT": "操作审计",
+    "KIBANA": "Kibana",
     "PROFILES": "系统信息",
     "GUIDE_SERVICE_LIST":"请创建属于您的新服务",
     "GUIDE_PROJECT_LIST":"请创建属于您的新项目"
@@ -474,6 +475,7 @@ export const LANG_ZH_CN = {
     "AUDIT_IMAGES": "镜像",
     "AUDIT_FILE": "文件",
     "AUDIT_SYSTEM": "系统",
+    "AUDIT_RESET_PASSWORD": "重置密码",
     "AUDIT_GET": "查询",
     "AUDIT_CREATE": "创建",
     "AUDIT_DELETE": "删除",

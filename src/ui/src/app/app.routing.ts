@@ -26,6 +26,7 @@ import { ForgotPasswordComponent } from "./account/forgot-password/forgot-passwo
 import { TimeoutComponent } from "./shared/error-pages/timeout.component/timeout.component";
 import { BadGatewayComponent } from "./shared/error-pages/bad-gateway.component/bad-gateway.component";
 import { BoardLoadingComponent } from "./shared/error-pages/board-loading.component/board-loading.component";
+import { KibanaComponent } from "./kibana/kibana/kibana.component";
 
 @Injectable()
 export class SystemInfoResolve implements Resolve<any> {
@@ -91,6 +92,7 @@ export const ROUTES: Routes = [
       {path: 'services', component: ServiceComponent, canDeactivate: [ServiceGuard]},
       {path: 'user-center', component: UserCenterComponent},
       {path: 'profile', component: ProfileComponent},
+      {path: 'kibana', component: KibanaComponent},
       {path: 'audit', component: ListAuditComponent}
     ]
   },

@@ -188,5 +188,5 @@
           [disabled]="noPortForExtent || uiData.externalServiceList.length == 0 || isActionWip">
     {{"BUTTON.NEXT" | translate}}
   </button>
-  <span *ngIf="isDeleteInWIP" class="spinner spinner-sm"></span>
+  <span *ngIf="isActionWip" class="spinner spinner-sm"></span>
 </div>
