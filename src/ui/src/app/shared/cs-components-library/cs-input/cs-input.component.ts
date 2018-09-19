@@ -25,12 +25,12 @@ class CustomValidator {
       let source = (sourceElement.item(0) as HTMLInputElement).value;
       let verify = (verifyElement.item(0) as HTMLInputElement).value;
       if (source != "" && verify != "") {
-        return source == verify ? Validators.nullValidator : {verifyPassword: "verify-password"}
+        return source == verify ? null : {verifyPassword: "verify-password"}
       } else {
-        return Validators.nullValidator;
+        return null;
       }
     } else {
-      return Validators.nullValidator;
+      return null;
     }
   }
 }
@@ -72,13 +72,15 @@ export class CsInputComponent implements OnInit {
   constructor() {
     this.inputValidatorFns = Array<ValidatorFn>();
     this.inputControl = new FormControl("", {updateOn: 'blur'});
+    this.inputFormGroup = new FormGroup({inputControl: this.inputControl}, {updateOn: 'blur'});
   }
 
   ngOnInit() {
-    this.inputFormGroup = new FormGroup({inputControl: this.inputControl});
-    if (this.customerValidatorAsyncFunc) {
-      this.inputControl.setAsyncValidators(this.customerValidatorAsyncFunc);
-    }
+    setTimeout(() => {//Todo:Bad method for prevent validate when dynamic create;
+      if (this.customerValidatorAsyncFunc) {
+        this.inputControl.setAsyncValidators(this.customerValidatorAsyncFunc);
+      }
+    });
     if (this.inputControl.validator) {
       this.inputValidatorFns.push(this.inputControl.validator);
     }
@@ -161,9 +163,13 @@ export class CsInputComponent implements OnInit {
   set isDisabled(value: boolean) {
     this._isDisabled = value;
     if (value) {
+      this.inputControl.clearAsyncValidators();
+      this.inputControl.disable();
       this.inputField.status = CsInputStatus.isView;
+    } else {
+      this.inputControl.enable();
+      this.inputControl.setAsyncValidators(this.customerValidatorAsyncFunc);
     }
-    this.inputControl.reset({value: this.SimpleFiled, disabled: value});
   }
 
   get isDisabled(): boolean {
