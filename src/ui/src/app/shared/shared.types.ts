@@ -51,4 +51,22 @@ export class SignUp {
   comment: string;
 }
 
+export class NodeAvailableResources {
+  node_id: number = 0;
+  node_name: string = '';
+  cpu_available: string = '';
+  mem_available: string = '';
+  storage_available: string = '';
+}
+
+export class ServiceHPA {
+  hpa_id: number;     //The hpa ID of this autoscale. ,
+  hpa_name: string = '';   //The hpa name of this autoscale. ,
+  hpa_status: number = 0;
+  service_id: number; //The service ID of this hpa to control. ,
+  min_pod: number = 1;     //The minimum pod number. ,
+  max_pod: number = 1;     //The maximum pod number. ,
+  cpu_percent: number = 0;//The target CPU percentage.
+  isEdit: boolean = false;
+}
 export enum CreateImageMethod{None, Template, DockerFile, DevOps}

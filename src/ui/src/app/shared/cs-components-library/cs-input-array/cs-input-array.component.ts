@@ -55,22 +55,26 @@ export class CsInputArrayComponent implements OnInit {
   }
 
   checkRepeatAction(c: AbstractControl): ValidationErrors | null {
-    let ctr = this.inputList.toArray().find(value => {
-      if (this.inputArrayType == CsInputArrType.iasString) {
-        return value.inputControl != c && (value.inputControl.value as string).trim() === (c.value as string).trim();
-      } else {
-        return value.inputControl != c && value.inputControl.value === c.value;
+    if (this.inputList) {
+      let ctr = this.inputList.toArray().find(value => {
+        if (this.inputArrayType == CsInputArrType.iasString) {
+          return value.inputControl != c && (value.inputControl.value as string).trim() === (c.value as string).trim();
+        } else {
+          return value.inputControl != c && value.inputControl.value === c.value;
+        }
+      });
+      if (ctr) {
+        return {notRepeat: "ERROR.INPUT_NOT_REPEAT"};
+      } else{
+        return Validators.nullValidator;
       }
-    });
-    if (ctr) {
-      return {notRepeat: "ERROR.INPUT_NOT_REPEAT"};
     } else {
       return Validators.nullValidator;
     }
   }
 
-  checkRepeat(): ValidationErrors | null {
-    return this.inputList ? this.checkRepeatAction.bind(this) : null;
+  get selfObject() {
+    return this;
   }
 
   onMinusClick(index: number) {
@@ -91,7 +95,6 @@ export class CsInputArrayComponent implements OnInit {
   }
 
   onRevertClick(index: number, value: CsInputArrSupportType) {
-    this.inputArraySourceObject[index].fieldValue = value;
     this.inputArraySource[index] = value;
     this.onRevertEvent.emit();
   }

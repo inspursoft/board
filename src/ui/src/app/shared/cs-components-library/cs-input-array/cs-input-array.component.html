@@ -23,7 +23,7 @@
                 [inputMin]="inputArrayMin"
                 [inputMax]="inputArrayMax"
                 [validatorMessage]="validatorMessage"
-                [customerValidatorFunc]="checkRepeat()"
+                [customerValidatorFunc]="checkRepeatAction.bind(selfObject)"
                 [customerValidatorAsyncFunc]="customerValidatorAsyncFunc"
                 [simpleFiled]="itemSource.fieldValue"
                 (onRevert)="onRevertClick(iIndex,$event)"

@@ -1,5 +1,5 @@
 import { Directive, Input } from '@angular/core';
-import { AbstractControl, Validators } from '@angular/forms';
+import { AbstractControl } from '@angular/forms';
 import { Observable } from 'rxjs/Observable';
 import { HttpClient } from '@angular/common/http';
 import { AppInitService } from '../../app.init.service';
@@ -21,7 +21,7 @@ export class CsInputCheckExistingDirective {
               private http: HttpClient,
               private appInitService: AppInitService,
               private messageService: MessageService) {
-    this.csInputComponent.inputControl.setAsyncValidators(this.validateAction.bind(this));
+    this.csInputComponent.customerValidatorAsyncFunc = this.validateAction.bind(this);
   }
 
   checkUserExists(value: string, errorMsg: string): Observable<ValidationErrors | null> {
@@ -32,12 +32,13 @@ export class CsInputCheckExistingDirective {
         'value': value,
         'user_id': this.userID.toString()
       }
-    }).map(() => Validators.nullValidator)
+    }).map(() => null)
       .catch(err => {
         this.messageService.cleanNotification();
         if (err && err.status === 409) {
           return Observable.of({'checkItemExistingEx': errorMsg});
         }
+        return null;
       });
   }
 
@@ -47,12 +48,13 @@ export class CsInputCheckExistingDirective {
       params: {
         'project_name': projectName
       }
-    }).map(() => Validators.nullValidator)
+    }).map(() => null)
       .catch(err => {
         this.messageService.cleanNotification();
         if (err && err.status === 409) {
           return Observable.of({'checkItemExistingEx': "PROJECT.PROJECT_NAME_ALREADY_EXISTS"});
         }
+        return null;
       });
   }
 

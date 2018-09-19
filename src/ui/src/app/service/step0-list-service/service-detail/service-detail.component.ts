@@ -97,7 +97,7 @@ export class ServiceDetailComponent {
       .do((res: string) => {
         this.deploymentYamlFile = res;
         let arr: Array<string> = res.split(/[\n]/g);
-        let k8sHost = arr.find(value => value.indexOf(K8S_HOSTNAME_KEY) > -1);
+        let k8sHost = arr.find(value => value.startsWith(K8S_HOSTNAME_KEY));
         if (k8sHost && k8sHost.length > 0) {
           this.k8sHostName = k8sHost.split(':')[1].trim();
         }
