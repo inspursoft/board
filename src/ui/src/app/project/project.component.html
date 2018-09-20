@@ -30,8 +30,10 @@
         <clr-dg-cell>{{project.project_creation_time | date: 'short'}}</clr-dg-cell>
         <clr-dg-cell>
           <input type="checkbox"
+                 [title]="isSystemAdminOrOwner(project)?'':'ERROR.INSUFFICIENT_PRIVILEGE' | translate"
                  [id]="project.project_name"
                  [checked]="project.project_public === 1"
+                 [disabled]="!isSystemAdminOrOwner(project)"
                  (click)="toggleProjectPublic(project, $event)">
           <label [for]="project.project_name"></label>
         </clr-dg-cell>
@@ -40,6 +42,7 @@
           <a href="javascript:void(0)" >
             <clr-icon shape="group"
                       class="action"
+                      [title]="isSystemAdminOrOwner(project)?'':'ERROR.INSUFFICIENT_PRIVILEGE' | translate"
                       (click)="editProjectMember(project)"
                       [ngClass]="{'disabled':!isSystemAdminOrOwner(project)}">
             </clr-icon>
@@ -47,6 +50,7 @@
           <a href="javascript:void(0)">
             <clr-icon shape="trash"
                       class="action"
+                      [title]="isSystemAdminOrOwner(project)?'':'ERROR.INSUFFICIENT_PRIVILEGE' | translate"
                       [hidden]="true"
                       [ngClass]="{'disabled':!isSystemAdminOrOwner(project)}"
                       (click)="confirmToDeleteProject(project)">

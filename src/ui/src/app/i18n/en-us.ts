@@ -40,7 +40,8 @@ export const LANG_EN_US = {
     "HTTP_403":"Insufficient privilege to requested operation:403",
     "HTTP_404":"Resource not found:404",
     "HTTP_412": "Precondition given in one or more of the request are evaluated to false:412",
-    "HTTP_UNK":"Unknown error"
+    "HTTP_UNK":"Unknown error",
+    "INSUFFICIENT_PRIVILEGE":"Insufficient privilege to operate it."
   },
   "CS_DROPDOWN":{
     "NO_ITEMS": "No items"

@@ -208,4 +208,12 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
     this.isBuildServiceWIP = false;
     this.isShowServiceCreateYaml = false;
   }
+
+  isSystemAdminOrOwner(service: Service): boolean {
+    if (this.appInitService.currentUser) {
+      return this.appInitService.currentUser["user_system_admin"] == 1 ||
+        service.service_owner_id == this.appInitService.currentUser["user_id"];
+    }
+    return false;
+  }
 }

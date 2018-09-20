@@ -277,7 +277,7 @@ export class K8sService {
         return r;
       });
     let obsNodeGroupList = this.http
-      .get(`/api/v1/nodegroup`, {observe: "response"})
+      .get(`/api/v1/nodegroup`, {observe: "response", params: {is_valid_node_group: '1'}})
       .map((res: HttpResponse<Array<Object>>) => res.body)
       .map((res: Array<Object>) => {
         let r = Array<string>();
