@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/common/utils"
 	"net/http"
 
 	"github.com/astaxie/beego/logs"
@@ -49,7 +50,24 @@ func (n *NodeController) NodeToggle() {
 }
 
 func (n *NodeController) NodeList() {
-	n.renderJSON(service.GetNodeList())
+	ping, _ := n.GetBool("ping")
+	nodeList := service.GetNodeList()
+	if ping {
+		availableNodeList := []service.NodeListResult{}
+		for _, node := range nodeList {
+			status, err := utils.PingIPAddr(node.NodeIP)
+			if err != nil {
+				logs.Error("Failed to ping IPAddr: %s, error: %+v", node.NodeIP, err)
+			}
+			if status {
+				availableNodeList = append(availableNodeList, node)
+				break
+			}
+		}
+		n.renderJSON(availableNodeList)
+		return
+	}
+	n.renderJSON(nodeList)
 }
 
 func (n *NodeController) AddNodeToGroupAction() {

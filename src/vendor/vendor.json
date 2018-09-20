@@ -157,6 +157,12 @@
 			"revision": ""
 		},
 		{
+			"checksumSHA1": "DpsruMRlfaXitPiELMUatEOMh1k=",
+			"path": "github.com/tatsushid/go-fastping",
+			"revision": "d7bb493dee3e090e2ffb6914adddf17c1e7c026c",
+			"revisionTime": "2016-01-08T17:53:29Z"
+		},
+		{
 			"checksumSHA1": "zYUTpQy17AUevrJzenxGCyFQgkQ=",
 			"path": "github.com/tmc/scp",
 			"revision": "f7b48647feef3e30991f2ecc16b2b9a977d9a7c3",
@@ -191,6 +197,42 @@
 			"path": "golang.org/x/crypto/ssh/terminal",
 			"revision": "81db3efc71b576a04b145ca576c0bb9c0fb74d4f",
 			"revisionTime": "2017-07-29T20:27:48Z"
+		},
+		{
+			"checksumSHA1": "NjyXtXsaf0ulRJn6HQSP1FqGL4A=",
+			"path": "golang.org/x/net/bpf",
+			"revision": "26e67e76b6c3f6ce91f7c52def5af501b4e0f3a2",
+			"revisionTime": "2018-09-11T21:37:47Z"
+		},
+		{
+			"checksumSHA1": "VJJTkIMUU0AkudemKzpt2o58FPA=",
+			"path": "golang.org/x/net/icmp",
+			"revision": "26e67e76b6c3f6ce91f7c52def5af501b4e0f3a2",
+			"revisionTime": "2018-09-11T21:37:47Z"
+		},
+		{
+			"checksumSHA1": "CHpYrf4HcmHB60gnTNxgjGgY53w=",
+			"path": "golang.org/x/net/internal/iana",
+			"revision": "26e67e76b6c3f6ce91f7c52def5af501b4e0f3a2",
+			"revisionTime": "2018-09-11T21:37:47Z"
+		},
+		{
+			"checksumSHA1": "wUFe08HvcVTwkXK7dojH3W7CQVg=",
+			"path": "golang.org/x/net/internal/socket",
+			"revision": "26e67e76b6c3f6ce91f7c52def5af501b4e0f3a2",
+			"revisionTime": "2018-09-11T21:37:47Z"
+		},
+		{
+			"checksumSHA1": "8oh/VHSXwwolyZ/ih9OnX/dEbPE=",
+			"path": "golang.org/x/net/ipv4",
+			"revision": "26e67e76b6c3f6ce91f7c52def5af501b4e0f3a2",
+			"revisionTime": "2018-09-11T21:37:47Z"
+		},
+		{
+			"checksumSHA1": "BkhU1qHkaSY6zGUw3XmSx6YJVIU=",
+			"path": "golang.org/x/net/ipv6",
+			"revision": "26e67e76b6c3f6ce91f7c52def5af501b4e0f3a2",
+			"revisionTime": "2018-09-11T21:37:47Z"
 		},
 		{
 			"checksumSHA1": "yhndhWXMs/VSEDLks4dNyFMQStA=",

@@ -173,9 +173,10 @@ export class K8sService {
       .then((res: HttpResponse<string>) => res.body);
   }
 
-  getNodesList(): Promise<Array<{node_name: string, node_ip: string, status: number}>> {
+  getNodesList(param?: {}): Promise<Array<{node_name: string, node_ip: string, status: number}>> {
+    let queryParam = param || {};
     return this.http
-      .get(`/api/v1/nodes`, {observe: "response"})
+      .get(`/api/v1/nodes`, {observe: "response", params: queryParam})
       .toPromise()
       .then((res: HttpResponse<Array<{node_name: string, node_ip: string, status: number}>>) => res.body || [])
   }
