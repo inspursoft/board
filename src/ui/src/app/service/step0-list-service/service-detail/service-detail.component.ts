@@ -67,22 +67,21 @@ export class ServiceDetailComponent {
     this.k8sService.getServiceDetail(serviceId).then(res => {
       if (!res["details"]) {
         let arrNodePort = res["node_Port"] as Array<number>;
-        this.k8sService.getNodesList().then(res => {
+        this.k8sService.getNodesList({"ping": true}).then(res => {
           let arrNode = res as Array<{node_name: string, node_ip: string, status: number}>;
-          for (let i = 0; i < arrNode.length; i++) {
-            let node = arrNode[i];
-            if (node.status == 1) {
+          for(let n = 0; n < arrNodePort.length; n++) {
+            for (let i = 0; i < arrNode.length; i++) {
+              let node = arrNode[i];
               let host = this.k8sHostName && this.k8sHostName.length > 0 ? this.k8sHostName : node.node_ip;
-              let port = arrNodePort[Math.floor(Math.random() * arrNodePort.length)];
+              let port = arrNodePort[n];
               let nodeInfo = {
                 url: `http://${host}:${port}`,
-                identity: `${ownerName}_${projectName}_${this.curService.service_name}`,
-                route: `http://${this.boardHost}/deploy/${ownerName}/${projectName}/${this.curService.service_name}`
+                identity: `${ownerName}_${projectName}_${this.curService.service_name}_${port}`,
+                route: `http://${host}:${port}/deploy/${ownerName}/${projectName}/${this.curService.service_name}`
               };
               this.urlList.push(nodeInfo);
               this.k8sService.addServiceRoute(nodeInfo.url, nodeInfo.identity).then(() => {
               });
-              break;
             }
           }
         });
