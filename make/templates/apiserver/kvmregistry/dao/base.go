@@ -6,12 +6,17 @@ import (
 	"strconv"
 )
 
-func GetDBConn() (db *sql.DB) {
-	db, err := sql.Open("sqlite3", "file:registry.db?journal_mode=WAL")
-	if err != nil {
-		log.Fatalf("Failed to get connection to DB: %+v", err)
+var currentDB *sql.DB
+
+func GetDBConn() *sql.DB {
+	if currentDB == nil {
+		var err error
+		currentDB, err = sql.Open("sqlite3", "file:registry.db?journal_mode=WAL")
+		if err != nil {
+			log.Fatalf("Failed to get connection to DB: %+v", err)
+		}
 	}
-	return
+	return currentDB
 }
 
 func InitDB() (err error) {
