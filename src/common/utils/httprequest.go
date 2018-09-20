@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -11,6 +12,14 @@ import (
 
 	"github.com/astaxie/beego/logs"
 )
+
+var ErrBadRequest = errors.New("Bad request")
+var ErrUnauthorized = errors.New("Unauthorized")
+var ErrForbidden = errors.New("Forbidden")
+var ErrConflict = errors.New("Conflict")
+var ErrUnprocessableEntity = errors.New("Unprocessable entity")
+var ErrInternalError = errors.New("Internal server error")
+var ErrBadGateway = errors.New("Bad gateway")
 
 func EncodeString(content string) string {
 	return base64.StdEncoding.EncodeToString([]byte(content))
@@ -22,10 +31,27 @@ func BasicAuthEncode(username, password string) string {
 
 func DefaultResponseHandler(req *http.Request, resp *http.Response) error {
 	requestURL := req.URL.String()
-	if resp.StatusCode >= http.StatusBadRequest {
-		return fmt.Errorf("unexpected error occurred while requesting %s with status code: %d", requestURL, resp.StatusCode)
-	}
 	logs.Info("Requested: %s with response status code: %d", requestURL, resp.StatusCode)
+	if resp.StatusCode >= http.StatusBadRequest {
+		switch resp.StatusCode {
+		case http.StatusBadRequest:
+			return ErrBadRequest
+		case http.StatusUnauthorized:
+			return ErrUnauthorized
+		case http.StatusForbidden:
+			return ErrForbidden
+		case http.StatusConflict:
+			return ErrConflict
+		case http.StatusUnprocessableEntity:
+			return ErrUnprocessableEntity
+		case http.StatusInternalServerError:
+			return ErrInternalError
+		case http.StatusBadGateway:
+			return ErrBadGateway
+		default:
+			return fmt.Errorf("unexpected error occurred while requesting %s with status code: %d", requestURL, resp.StatusCode)
+		}
+	}
 	return nil
 }
 

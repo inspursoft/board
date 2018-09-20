@@ -39,7 +39,7 @@
                  [disabled]="true" [checked]="user.user_deleted == 1">
         </clr-dg-cell>
         <clr-dg-cell>
-          <clr-icon [hidden]="true" [ngClass]="{'disabled': user.user_deleted == 1 ||  user.user_id == 1 || user.user_id == currentUserID}"
+          <clr-icon [ngClass]="{'disabled': user.user_deleted == 1 ||  user.user_id == 1 || user.user_id == currentUserID}"
                     (click)="deleteUser(user)"
                     class="trash"
                     shape="trash">

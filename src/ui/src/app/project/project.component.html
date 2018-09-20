@@ -47,7 +47,6 @@
           <a href="javascript:void(0)">
             <clr-icon shape="trash"
                       class="action"
-                      [hidden]="true"
                       [ngClass]="{'disabled':!isSystemAdminOrOwner(project)}"
                       (click)="confirmToDeleteProject(project)">
             </clr-icon>

@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"git/inspursoft/board/src/apiserver/service/devops/gogs"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
@@ -106,9 +107,47 @@ func GetProjectsByMember(query model.Project, userID int64) ([]*model.Project, e
 	return dao.GetProjectsByMember(query, userID)
 }
 
-func DeleteProject(projectID int64) (bool, error) {
-	project := model.Project{ID: projectID, Deleted: 1}
-	_, err := dao.UpdateProject(project, "deleted")
+func DeleteProject(userID, projectID int64) (bool, error) {
+	project, err := GetProjectByID(projectID)
+	if err != nil {
+		logs.Error("Failed to delete project with ID: %d, error: %+v", projectID, err)
+		return false, err
+	}
+	members, err := GetProjectMembers(project.ID)
+	if err != nil {
+		return false, err
+	}
+	if len(members) > 1 {
+		logs.Error("Project %s has member that cannot be deleted.", project.Name)
+		return false, utils.ErrUnprocessableEntity
+	}
+
+	user, err := GetUserByID(userID)
+	if err != nil {
+		logs.Error("Failed to delete user with ID: %d, error: %+v", projectID, err)
+		return false, err
+	}
+	//Delete repo in Gogits
+	repoName, err := ResolveRepoName(project.Name, user.Username)
+	if err != nil {
+		logs.Error("Failed to resolve repo name with project name: %s, username: %s, error: %+v", project.Name, user.Username, err)
+		return false, err
+	}
+	err = gogs.NewGogsHandler(user.Username, user.RepoToken).DeleteRepo(user.Username, repoName)
+	if err != nil {
+		logs.Error("Failed to delete repo with repo name: %s, error: %+v", repoName, err)
+		return false, err
+	}
+
+	//Delete namespace in cluster
+	_, err = DeleteNamespace(project.Name)
+	if err != nil {
+		logs.Error("Failed to delete namespace with project name: %s, error: %+v", project.Name, err)
+		return false, err
+	}
+
+	project.Deleted = 1
+	_, err = dao.UpdateProject(*project, "deleted")
 	if err != nil {
 		return false, err
 	}
