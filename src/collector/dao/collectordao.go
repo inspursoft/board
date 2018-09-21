@@ -218,7 +218,7 @@ func any(res interface{}, string string, k *int, timeUnit string) bool {
 func DeleteStaleData(tableName string, dateSpan int) (int64, error) {
 	o := orm.NewOrm()
 	ptmt, err := o.Raw("delete t from " + tableName + " t " +
-		" where exists (select id as time_list_id from time_list_log " +
+		" where t.time_list_id in (select id as time_list_id from time_list_log " +
 		"     where datediff(now(), date_format(from_unixtime(record_time), '%Y-%m-%d %H:%i:%s')) >= ?);").Prepare()
 	if err != nil {
 		return 0, err
