@@ -1,10 +1,12 @@
-
-
+div.modal-body{
+  min-height: 400px;
+}
 
 div.scale-line {
   display: flex;
   height: 30px;
   align-items: center;
+  margin-top: 15px;
 }
 
 label.margin-left-10 {

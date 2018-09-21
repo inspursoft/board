@@ -114,6 +114,7 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
     buf.container.image.image_name = image.image_name;
     buf.container.name = image.image_name;
     buf.container.image.project_name = this.stepSelectImageData.projectName;
+    this.containerIsInEdit.set(buf.container, false);
     if (this.imageDetailSourceList.has(image.image_name)) {
       let detailList: Array<ImageDetail> = this.imageDetailSourceList.get(image.image_name);
       buf.container.image.image_tag = detailList[0].image_tag;
@@ -245,6 +246,14 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
 
   get selfObject() {
     return this;
+  }
+
+  get checkSetCpuRequestFun(){
+    return this.checkSetCpuRequest.bind(this);
+  }
+
+  get checkSetMemRequestFun(){
+    return this.checkSetMemRequest.bind(this);
   }
 
   unshiftCustomerCreateImage() {

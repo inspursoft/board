@@ -70,3 +70,7 @@ button.get-tag {
   font-size: 10px;
   line-height: 30px;
 }
+
+clr-icon.action{
+  margin-left: 10px;
+}

@@ -1,6 +1,6 @@
 <clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'md'" [clrModalClosable]="!isActionInWIP">
   <h3 class="modal-title">{{ "SERVICE.SERVICE_CONTROL" | translate }}</h3>
-  <div class="modal-body" style="padding-top: 3px;">
+  <div class="modal-body">
     <clr-tabs>
       <clr-tab>
         <button clrTabLink (click)="actionMethod = 0">
@@ -9,7 +9,7 @@
         <clr-tab-content *clrIfActive>
           <scale *ngIf="service"
                  [service]="service"
-                 [isActionInWIP]="isActionInWIP"
+                 [(isActionInWIP)]="isActionInWIP"
                  (onError)="defaultDispatchErr($event)"
                  (onMessage)="defaultHandleMessage($event)"
                  (onActionIsEnabled)="defaultHandleActionEnabled($event)">
@@ -51,7 +51,7 @@
     <button type="button" class="btn" [disabled]="isActionInWIP" (click)="isOpen = false">
       {{ 'BUTTON.CANCEL' | translate }}
     </button>
-    <button type="button" class="btn btn-primary" [disabled]="!actionEnable" (click)="actionExecute()">
+    <button type="button" class="btn btn-primary" [disabled]="!actionEnable || isActionInWIP" (click)="actionExecute()">
       {{ 'BUTTON.CONFIRM' | translate }}
     </button>
     <span *ngIf="isActionInWIP" class="spinner spinner-sm"></span>

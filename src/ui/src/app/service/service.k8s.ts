@@ -7,7 +7,7 @@ import { BuildImageDockerfileData, Image, ImageDetail } from "../image/image";
 import { ImageIndex, ServerServiceStep, ServiceStepPhase, UiServiceFactory, UIServiceStepBase } from "./service-step.component";
 import { Service } from "./service";
 import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from "../shared/shared.const";
-import { NodeAvailableResources } from "../shared/shared.types";
+import { NodeAvailableResources, ServiceHPA } from "../shared/shared.types";
 
 @Injectable()
 export class K8sService {
@@ -312,5 +312,34 @@ export class K8sService {
     return this.http.get(`/api/v1/nodes/availableresources`, {
       observe: "response"
     }).map((res: HttpResponse<Array<NodeAvailableResources>>) => res.body)
+  }
+
+  setAutoScaleConfig(serviceId: number, hpa: ServiceHPA): Observable<any> {
+    return this.http.post(`/api/v1/services/${serviceId}/autoscale`, hpa, {
+      observe: "response"
+    });
+  }
+
+  modifyAutoScaleConfig(serviceId: number, hpa: ServiceHPA): Observable<any> {
+    return this.http.put(`/api/v1/services/${serviceId}/autoscale/${hpa.hpa_id}`, hpa, {
+      observe: "response"
+    });
+  }
+
+  deleteAutoScaleConfig(serviceId: number, hpa: ServiceHPA): Observable<any> {
+    return this.http.delete(`/api/v1/services/${serviceId}/autoscale/${hpa.hpa_id}`, {
+      observe: "response",
+      params: {hpa_name: hpa.hpa_name}
+    });
+  }
+
+  getAutoScaleConfig(serviceId: number): Observable<Array<ServiceHPA>> {
+    return this.http.get(`/api/v1/services/${serviceId}/autoscale`, {
+      observe: "response"
+    }).map((res: HttpResponse<Array<ServiceHPA>>) => res.body)
+      .map((res: Array<ServiceHPA>) => {
+        res.forEach(config => config.isEdit = true);
+        return res
+      });
   }
 }
