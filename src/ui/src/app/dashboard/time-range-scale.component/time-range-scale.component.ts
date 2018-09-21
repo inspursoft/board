@@ -32,8 +32,10 @@ export class TimeRangeScale implements OnChanges {
   }
 
   changeBlock(index: number, data: scaleOption): void {
-    this._activeIndex = index;
-    this.scaleChange.emit(data);
+    if (this._activeIndex != index){
+      this._activeIndex = index;
+      this.scaleChange.emit(data);
+    }
   }
 
   getClassByIndex(index: number): StandardKeyValue<boolean> {
