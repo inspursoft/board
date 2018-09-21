@@ -166,8 +166,12 @@ func (p *ProjectController) DeleteProjectAction() {
 		p.customAbort(http.StatusForbidden, "User is not the owner of the project.")
 		return
 	}
-
-	isSuccess, err := service.DeleteProject(p.currentUser.ID, int64(projectID))
+	user, err := service.GetUserByName(project.OwnerName)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	isSuccess, err := service.DeleteProject(user.ID, int64(projectID))
 	if err != nil {
 		if err == utils.ErrUnprocessableEntity {
 			p.CustomAbort(http.StatusUnprocessableEntity, "Project has member cannnot be deleted.")
