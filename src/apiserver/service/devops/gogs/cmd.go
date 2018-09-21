@@ -183,8 +183,8 @@ func (g *gogsHandler) CreateRepo(repoName string) error {
 	return utils.SimplePostRequestHandle(fmt.Sprintf("%s/api/v1/user/repos", gogitsBaseURL()), g.getAccessHeader(), &opt)
 }
 
-func (g *gogsHandler) DeleteRepo(repoName string) error {
-	return utils.SimpleDeleteRequestHandle(fmt.Sprintf("%s/api/v1/repos/%s/%s", gogitsBaseURL(), g.username, repoName), g.getAccessHeader())
+func (g *gogsHandler) DeleteRepo(username, repoName string) error {
+	return utils.SimpleDeleteRequestHandle(fmt.Sprintf("%s/api/v1/repos/%s/%s", gogitsBaseURL(), username, repoName), g.getAccessHeader())
 }
 
 func (g *gogsHandler) ForkRepo(ownerName, baseRepoName, forkRepoName, description string) error {
@@ -243,7 +243,6 @@ func (g *gogsHandler) CreateIssueComment(ownerName string, baseRepoName string, 
 }
 
 func (g *gogsHandler) CreateHook(ownerName string, repoName string) error {
-
 	config := make(map[string]string)
 	config["url"] = fmt.Sprintf("%s/generic-webhook-trigger/invoke", jenkinsBaseURL())
 	config["content_type"] = "json"
@@ -256,4 +255,8 @@ func (g *gogsHandler) CreateHook(ownerName string, repoName string) error {
 	}
 	logs.Info("Requesting Gogits API of create hook ...")
 	return utils.SimplePostRequestHandle(fmt.Sprintf("%s/api/v1/repos/%s/%s/hooks", gogitsBaseURL(), ownerName, repoName), g.getAccessHeader(), &opt)
+}
+
+func (g *gogsHandler) DeleteUser(username string) error {
+	return utils.SimpleDeleteRequestHandle(fmt.Sprintf("%s/api/v1/admin/users/%s", gogitsBaseURL(), username), g.getAccessHeader())
 }

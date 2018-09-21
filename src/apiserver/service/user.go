@@ -115,8 +115,14 @@ func ResetUserPassword(user model.User, newPassword string) (bool, error) {
 }
 
 func DeleteUser(userID int64) (bool, error) {
-	user := model.User{ID: userID, Deleted: 1}
-	_, err := dao.UpdateUser(user, "deleted")
+	user, err := GetUserByID(userID)
+	if err != nil {
+		return false, nil
+	}
+	user.Username = "%" + user.Username + "%"
+	user.Email = "%" + user.Email + "%"
+	user.Deleted = 1
+	_, err = dao.UpdateUser(*user, "username", "email", "deleted")
 	if err != nil {
 		return false, err
 	}

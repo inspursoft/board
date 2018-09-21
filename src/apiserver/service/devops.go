@@ -185,8 +185,18 @@ func ResolveRepoName(projectName, username string) (repoName string, err error) 
 		err = errors.New("invalid project name")
 		return
 	}
+	members, err := GetProjectMembers(project.ID)
+	if err != nil {
+		return
+	}
+	isMember := false
+	for _, m := range members {
+		if m.Username == username {
+			isMember = true
+		}
+	}
 	repoName = project.Name
-	if project.OwnerName != username {
+	if isMember && project.OwnerName != username {
 		repoName = username + "_" + project.Name
 	}
 	logs.Debug("Resolved repo name as: %s.", repoName)
