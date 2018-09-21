@@ -477,6 +477,7 @@ export const LANG_EN_US = {
     "AUDIT_FILE": "file",
     "AUDIT_SYSTEM": "system",
     "AUDIT_RESET_PASSWORD": "Reset password",
+    "AUDIT_FORGOT_PASSWORD": "Forgot password",
     "AUDIT_CREATE": "Create",
     "AUDIT_GET": "Get",
     "AUDIT_DELETE": "Delete",

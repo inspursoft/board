@@ -477,6 +477,7 @@ export const LANG_ZH_CN = {
     "AUDIT_FILE": "文件",
     "AUDIT_SYSTEM": "系统",
     "AUDIT_RESET_PASSWORD": "重置密码",
+    "AUDIT_FORGOT_PASSWORD": "忘记密码",
     "AUDIT_GET": "查询",
     "AUDIT_CREATE": "创建",
     "AUDIT_DELETE": "删除",
