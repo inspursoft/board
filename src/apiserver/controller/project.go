@@ -174,7 +174,7 @@ func (p *ProjectController) DeleteProjectAction() {
 	isSuccess, err := service.DeleteProject(user.ID, int64(projectID))
 	if err != nil {
 		if err == utils.ErrUnprocessableEntity {
-			p.CustomAbort(http.StatusUnprocessableEntity, "Project has member cannnot be deleted.")
+			p.CustomAbort(http.StatusUnprocessableEntity, fmt.Sprintf("Project %s has own member, repo or service.", project.Name))
 		} else {
 			p.internalError(err)
 		}

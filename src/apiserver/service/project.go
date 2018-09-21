@@ -4,9 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service/devops/gogs"
+	"git/inspursoft/board/src/apiserver/service/devops/jenkins"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
+	"os"
 
 	"github.com/astaxie/beego/logs"
 
@@ -121,7 +123,15 @@ func DeleteProject(userID, projectID int64) (bool, error) {
 		logs.Error("Project %s has member that cannot be deleted.", project.Name)
 		return false, utils.ErrUnprocessableEntity
 	}
-
+	serviceList, err := dao.GetServiceData(model.ServiceStatus{}, userID)
+	if err != nil {
+		logs.Error("Failed to get service data with user ID: %d, error: %+v", userID, err)
+		return false, utils.ErrUnprocessableEntity
+	}
+	if len(serviceList) > 0 {
+		logs.Error("Project %s has service deployment.", project.Name)
+		return false, utils.ErrUnprocessableEntity
+	}
 	user, err := GetUserByID(userID)
 	if err != nil {
 		logs.Error("Failed to delete user with ID: %d, error: %+v", projectID, err)
@@ -138,16 +148,26 @@ func DeleteProject(userID, projectID int64) (bool, error) {
 		logs.Error("Failed to delete repo with repo name: %s, error: %+v", repoName, err)
 		return false, err
 	}
-
+	repoPath := ResolveRepoPath(repoName, user.Username)
+	err = os.RemoveAll(repoPath)
+	if err != nil {
+		logs.Error("Failed to remove repo path: %s, error: %+v", repoPath, err)
+		return false, err
+	}
+	err = jenkins.NewJenkinsHandler().DeleteJob(repoName)
+	if err != nil {
+		logs.Error("Failed to delete Jenkins job with name: %s, error: %+v", repoName, err)
+		return false, err
+	}
 	//Delete namespace in cluster
 	_, err = DeleteNamespace(project.Name)
 	if err != nil {
 		logs.Error("Failed to delete namespace with project name: %s, error: %+v", project.Name, err)
 		return false, err
 	}
-
+	project.Name = "%" + project.Name + "%"
 	project.Deleted = 1
-	_, err = dao.UpdateProject(*project, "deleted")
+	_, err = dao.UpdateProject(*project, "name", "deleted")
 	if err != nil {
 		return false, err
 	}

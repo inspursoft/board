@@ -26,3 +26,9 @@ package jenkins_test
 // 	assert := assert.New(t)
 // 	assert.Nilf(err, "Error occurred while creating job: %+v", err)
 // }
+
+// func TestDeleteJob(t *testing.T) {
+// 	err := jenkins.NewJenkinsHandler().DeleteJob("testproject")
+// 	assert := assert.New(t)
+// 	assert.Nilf(err, "Error occurred while deleting job: %+v", err)
+// }

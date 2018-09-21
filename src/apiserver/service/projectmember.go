@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service/devops/gogs"
+	"git/inspursoft/board/src/apiserver/service/devops/jenkins"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 
@@ -44,6 +45,10 @@ func DeleteProjectMember(projectID int64, userID int64) (bool, error) {
 	err = gogs.NewGogsHandler(user.Username, user.RepoToken).DeleteRepo(user.Username, repoName)
 	if err != nil {
 		return false, fmt.Errorf("failed to delete repo with name: %s, error: %+v", repoName, err)
+	}
+	err = jenkins.NewJenkinsHandler().DeleteJob(repoName)
+	if err != nil {
+		return false, fmt.Errorf("failed to delete Jenkins job with name: %s, error: %+v", repoName, err)
 	}
 
 	projectMember := model.ProjectMember{ID: projectID + userID}

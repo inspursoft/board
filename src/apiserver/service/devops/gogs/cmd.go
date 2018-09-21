@@ -243,7 +243,6 @@ func (g *gogsHandler) CreateIssueComment(ownerName string, baseRepoName string, 
 }
 
 func (g *gogsHandler) CreateHook(ownerName string, repoName string) error {
-
 	config := make(map[string]string)
 	config["url"] = fmt.Sprintf("%s/generic-webhook-trigger/invoke", jenkinsBaseURL())
 	config["content_type"] = "json"

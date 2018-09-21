@@ -35,8 +35,8 @@ func (u *UserController) GetUsersAction() {
 	var paginatedUsers *model.PaginatedUsers
 	var users []*model.User
 	var err error
-	var fieldName string
-	var fieldValue interface{}
+	fieldName := "deleted"
+	var fieldValue interface{} = 0
 	if strings.TrimSpace(username) != "" {
 		fieldName = "username"
 		fieldValue = username

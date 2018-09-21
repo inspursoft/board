@@ -55,3 +55,7 @@ func (j *jenkinsHandler) CreateJobWithParameter(jobName string) error {
 	return utils.SimpleGetRequestHandle(fmt.Sprintf("%s/job/%s/buildWithParameters?F00=%s&F01=%s&F02=%s&F03=%s&F04=%s",
 		jenkinsBaseURL(), seedJobName, jobName, jenkinsNodeIP(), jenkinsBaseURL(), j.registryURL, executionMode()))
 }
+
+func (j *jenkinsHandler) DeleteJob(jobName string) error {
+	return utils.SimplePostRequestHandle(fmt.Sprintf("%s/job/%s/doDelete", jenkinsBaseURL(), jobName), nil, nil)
+}
