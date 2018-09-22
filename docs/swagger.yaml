@@ -1999,12 +1999,7 @@ paths:
           type: integer
           format: int32
           required: true
-          description: Selected hpa ID.    
-        - name: hpa_name
-          in: query
-          type: string
-          required: true
-          description: The hpa name to delete.            
+          description: Selected hpa ID.            
       tags:
         - Products
       responses:
@@ -2054,7 +2049,42 @@ paths:
         401:
           description: User need to log in first.
         500:
-          description: Unexpected internal errors.                    
+          description: Unexpected internal errors.          
+    get:
+      summary: Get this autoscale hpa current details.
+      description: |
+        This endpoint is aimed to get this autoscale hpa current details.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.      
+        - name: hpa_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected hpa ID.              
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the hpa current detailes successfully.
+          schema:
+            $ref: '#/definitions/HPADetail'          
+        401:
+          description: User need to log in first.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.                     
   /v1/services/{service_id}/locate:
     get:  
       summary: Get service deployment locate info.
@@ -4223,6 +4253,13 @@ definitions:
       service_name:
         type: string
         description: The name of this service.
+      service_project_id:  
+        type: integer
+        format: int32
+        description: The project ID of this service belongs to.      
+      service_project_name:  
+        type: string
+        description: The project name of this service belongs to.      
       service_comment:
         type: string
         description: The commnet of this service.
@@ -4242,33 +4279,22 @@ definitions:
         description: The owner ID of the service always means the creator of the service.
       service_owner_name:
         type: string
-        description: The owner name of this service.
-      service_entry_urls:
-        type: array
-        description: The url list of this service entry.
-        items:
-          type: string
-          description: The url of this service entry.        
+        description: The owner name of this service.      
       service_public:
         type: integer
         format: int32
         description: The status of this service.
-      service_togglable:
-        type: boolean
-        description: Correspond to the UI about whether the service's publicity is  updatable (for UI)
-      service_current_user_role_id:
+      service_source:
         type: integer
-        description: The role ID of the current user who triggered the API (for UI)
-      service_pods_info:
-        description: The pods information of this service.
-        type: array
-        items:
-          $ref: '#/definitions/PodBrief'
-      service_resource_usage:
-        description: The resources usage of this service.
-        type: array
-        items:
-          $ref: '#/definitions/ResourcesUsage'
+        format: int32
+        description: The creation way type of this service. 
+      service_status:
+        type: integer
+        format: int32
+        description: The current service status. 
+      service_config:
+        type: string
+        description: The service config of this service.                 
   ServiceProject:
     type: object
     properties:
@@ -5452,11 +5478,11 @@ definitions:
         type: integer   
         format: int32   
         description: The service ID of this hpa to control. 
-      minpod:
+      min_pod:
         type: integer   
         format: int32   
         description: The minimum pod number.  
-      maxpod:
+      max_pod:
         type: integer   
         format: int32   
         description: The maximum pod number.   
@@ -5464,6 +5490,10 @@ definitions:
         type: integer   
         format: int32   
         description: The target CPU percentage. 
+      hpa_status:
+        type: integer   
+        format: int32   
+        description: The status of this HPA item.        
   NodeAvailableResources:              
     type: object
     properties:
@@ -5482,8 +5512,48 @@ definitions:
         description: The max available Memory resource of this node.    
       storage_available:
         type: string
-        description: The max available Storage resource of this node.                          
+        description: The max available Storage resource of this node.      
+  HPADetail:                          
+    type: object
+    properties:
+      hpa_id:
+        type: integer
+        format: int32
+        description: The hpa ID of this autoscale.     
+      hpa_name:
+        type: string
+        description: The hpa name of this autoscale.         
+      service_id:
+        type: integer   
+        format: int32   
+        description: The service ID of this hpa to control. 
+      min_pod:
+        type: integer   
+        format: int32   
+        description: The minimum pod number.  
+      max_pod:
+        type: integer   
+        format: int32   
+        description: The maximum pod number.   
+      cpu_percent:
+        type: integer   
+        format: int32   
+        description: The target CPU percentage. 
+      current_replicas:
+        type: integer   
+        format: int32   
+        description: The current pod number.      
+      desired_replicas:
+        type: integer   
+        format: int32   
+        description: The desired pod number.   
+      current_cpu:
+        type: integer   
+        format: int32   
+        description: The current CPU percentage. 
 
+
+ 
         
 
 

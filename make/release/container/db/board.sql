@@ -367,3 +367,14 @@ DROP TABLE IF EXISTS `log`;
         `path` VARCHAR(255) DEFAULT '',		
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
+
+    CREATE TABLE `board`.`service_auto_scale` (
+        `id` INT NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(255) NOT NULL DEFAULT '',
+        `service_id` INT NOT NULL DEFAULT 0,
+        `min_pod` INT NOT NULL DEFAULT 0,
+        `max_pod` INT NOT NULL DEFAULT 0,
+        `cpu_percent` INT NOT NULL DEFAULT 0,
+        `status` INT NOT NULL DEFAULT 0,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	

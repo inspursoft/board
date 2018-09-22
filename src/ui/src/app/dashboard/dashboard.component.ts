@@ -208,9 +208,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     });
     this.initThirdLineDate(lineType);
     return this.setLineBaseOption(lineType)
-      .do(option => {
-
-      this.lineOptions.set(lineType, option)});
+      .do(option => this.lineOptions.set(lineType, option));
   }
 
   private getBaseLineTimeStamp(lineType: LineType): number {

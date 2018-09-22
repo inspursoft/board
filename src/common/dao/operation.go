@@ -96,8 +96,8 @@ func generateOperationSQL(query model.OperationParam) (string, []interface{}) {
 	params := make([]interface{}, 0)
 
 	if query.Object != "" {
-		params = append(params, "%"+query.Object+"%")
-		sql += ` and o.object_type like ? `
+		params = append(params, query.Object)
+		sql += ` and o.object_type = ? `
 	}
 	if query.Action != "" {
 		params = append(params, "%"+query.Action+"%")

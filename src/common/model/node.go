@@ -15,3 +15,11 @@ type NodeGroup struct {
 	Project      string    `json:"nodegroup_project" orm:"column(project_name)"`
 	ProjectID    int64     `json:"nodegroup_project" orm:"column(project_id)"`
 }
+
+type NodeAvailableResources struct {
+	NodeID       int    `json:"node_id"`
+	NodeName     string `json:"node_name"`
+	CPUAvail     string `json:"cpu_available"`
+	MemAvail     string `json:"mem_available"`
+	StorageAvail string `json:"storage_available"`
+}

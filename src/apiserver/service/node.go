@@ -67,7 +67,7 @@ func GetNode(nodeName string) (node NodeInfo, err error) {
 			//		mlimit = v.String()
 			//	}
 			//}
-			mlimit = fmt.Sprintf("%d", int64(v.Status.Capacity["memory"]))
+			mlimit = fmt.Sprintf("%s", v.Status.Capacity["memory"])
 			time := v.CreationTimestamp.Unix()
 			var ps []v2.ProcessInfo
 			getFromRequest("http://"+nodeName+":4194/api/v2.0/ps/", &ps)
@@ -373,4 +373,26 @@ func RemovePodByNode(node string) error {
 		}
 	}
 	return nil
+}
+
+func GetNodesAvailableResources() ([]model.NodeAvailableResources, error) {
+	var resources []model.NodeAvailableResources
+	c := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		K8sMasterURL: kubeMasterURL(),
+	})
+	l, err := c.AppV1().Node().List()
+	if err != nil {
+		logs.Debug("Failed to get node list %v", c)
+		return nil, err
+	}
+	logs.Debug("Node List: %v", l)
+	for _, node := range l.Items {
+		// TODO: check the status of node
+		var noderesource model.NodeAvailableResources
+		noderesource.NodeName = node.Name
+		noderesource.CPUAvail = string(node.Status.Allocatable[model.ResourceCPU])
+		noderesource.MemAvail = string(node.Status.Allocatable[model.ResourceMemory])
+		resources = append(resources, noderesource)
+	}
+	return resources, nil
 }

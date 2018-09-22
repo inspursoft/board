@@ -72,8 +72,9 @@ const (
 
 // should call kubernetes Quantity String() func.
 type Quantity int64
+type QuantityStr string
 
-type ResourceList map[ResourceName]Quantity
+type ResourceList map[ResourceName]QuantityStr
 
 type ObjectMeta struct {
 	Name              string
@@ -514,7 +515,21 @@ type Scale struct {
 	Status ScaleStatusK8s `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
 }
 
+// CrossVersionObjectReference contains enough information to let you identify the referred resource.
+type CrossVersionObjectReference struct {
+	// Kind of the referent; More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds"
+	Kind string `json:"kind" protobuf:"bytes,1,opt,name=kind"`
+	// Name of the referent; More info: http://kubernetes.io/docs/user-guide/identifiers#names
+	Name string `json:"name" protobuf:"bytes,2,opt,name=name"`
+	// API version of the referent
+	// +optional
+	APIVersion string `json:"apiVersion,omitempty" protobuf:"bytes,3,opt,name=apiVersion"`
+}
+
 type HorizontalPodAutoscalerSpec struct {
+	// reference to scaled resource; horizontal pod autoscaler will learn the current resource consumption
+	// and will set the desired number of pods by using its Scale subresource.
+	ScaleTargetRef CrossVersionObjectReference `json:"scaleTargetRef" protobuf:"bytes,1,opt,name=scaleTargetRef"`
 	// lower limit for the number of pods that can be set by the autoscaler, default 1.
 	// +optional
 	MinReplicas *int32 `json:"minReplicas,omitempty" protobuf:"varint,2,opt,name=minReplicas"`
@@ -526,6 +541,28 @@ type HorizontalPodAutoscalerSpec struct {
 	TargetCPUUtilizationPercentage *int32 `json:"targetCPUUtilizationPercentage,omitempty" protobuf:"varint,4,opt,name=targetCPUUtilizationPercentage"`
 }
 
+type HorizontalPodAutoscalerStatus struct {
+	// most recent generation observed by this autoscaler.
+	// +optional
+	ObservedGeneration *int64 `json:"observedGeneration,omitempty" protobuf:"varint,1,opt,name=observedGeneration"`
+
+	// last time the HorizontalPodAutoscaler scaled the number of pods;
+	// used by the autoscaler to control how often the number of pods is changed.
+	// +optional
+	LastScaleTime *time.Time `json:"lastScaleTime,omitempty" protobuf:"bytes,2,opt,name=lastScaleTime"`
+
+	// current number of replicas of pods managed by this autoscaler.
+	CurrentReplicas int32 `json:"currentReplicas" protobuf:"varint,3,opt,name=currentReplicas"`
+
+	// desired number of replicas of pods managed by this autoscaler.
+	DesiredReplicas int32 `json:"desiredReplicas" protobuf:"varint,4,opt,name=desiredReplicas"`
+
+	// current average CPU utilization over all pods, represented as a percentage of requested CPU,
+	// e.g. 70 means that an average pod is using now 70% of its requested CPU.
+	// +optional
+	CurrentCPUUtilizationPercentage *int32 `json:"currentCPUUtilizationPercentage,omitempty" protobuf:"varint,5,opt,name=currentCPUUtilizationPercentage"`
+}
+
 type AutoScale struct {
 	//metav1.TypeMeta `json:",inline"`
 	// +optional
@@ -534,4 +571,14 @@ type AutoScale struct {
 	// behaviour of autoscaler. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#spec-and-status.
 	// +optional
 	Spec HorizontalPodAutoscalerSpec `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
+
+	// current information about the autoscaler.
+	// +optional
+	Status HorizontalPodAutoscalerStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
+}
+
+// list of horizontal pod autoscaler objects.
+type AutoScaleList struct {
+	// list of horizontal pod autoscaler objects.
+	Items []AutoScale `json:"items" protobuf:"bytes,2,rep,name=items"`
 }

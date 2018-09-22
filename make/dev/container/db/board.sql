@@ -326,7 +326,7 @@ DROP TABLE IF EXISTS `log`;
         `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
         `creation_time` datetime DEFAULT NULL,
         `update_time` datetime DEFAULT NULL,
-		`source` SMALLINT(1) NOT NULL,
+        `source` SMALLINT(1) NOT NULL,
         `service_config` TEXT,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
@@ -365,6 +365,17 @@ DROP TABLE IF EXISTS `log`;
         `action` VARCHAR(255) DEFAULT '',
         `status` VARCHAR(255) DEFAULT '',
         `path` VARCHAR(255) DEFAULT '',		
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
+
+    CREATE TABLE `board`.`service_auto_scale` (
+        `id` INT NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(255) NOT NULL DEFAULT '',
+        `service_id` INT NOT NULL DEFAULT 0,
+        `min_pod` INT NOT NULL DEFAULT 0,
+        `max_pod` INT NOT NULL DEFAULT 0,
+        `cpu_percent` INT NOT NULL DEFAULT 0,
+        `status` INT NOT NULL DEFAULT 0,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
 

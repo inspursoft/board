@@ -156,32 +156,33 @@ func (p *ProjectController) GetProjectAction() {
 }
 
 func (p *ProjectController) DeleteProjectAction() {
-
 	projectID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
 	if err != nil {
 		p.internalError(err)
 		return
 	}
-	project := p.resolveProjectOwnerByID(int64(projectID))
-
-	isSuccess, err := service.DeleteProject(int64(projectID))
+	project := p.resolveProjectByID(int64(projectID))
+	if !(p.isSysAdmin || int64(project.OwnerID) == p.currentUser.ID) {
+		p.customAbort(http.StatusForbidden, "User is not the owner of the project.")
+		return
+	}
+	user, err := service.GetUserByName(project.OwnerName)
 	if err != nil {
 		p.internalError(err)
+		return
+	}
+	isSuccess, err := service.DeleteProject(user.ID, int64(projectID))
+	if err != nil {
+		if err == utils.ErrUnprocessableEntity {
+			p.CustomAbort(http.StatusUnprocessableEntity, fmt.Sprintf("Project %s has own member, repo or service.", project.Name))
+		} else {
+			p.internalError(err)
+		}
 		return
 	}
 	if !isSuccess {
 		p.customAbort(http.StatusBadRequest, "Failed to delete project.")
 		return
-	}
-
-	//Delete namespace in cluster
-	isSuccess, err = service.DeleteNamespace(project.Name)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if !isSuccess {
-		p.customAbort(http.StatusBadRequest, "Failed to delete namespace.")
 	}
 }
 

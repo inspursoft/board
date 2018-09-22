@@ -69,10 +69,11 @@ type LoadBalancer struct {
 }
 
 type ServiceAutoScale struct {
-	HPAID      int64  `json:"hpa_id" orm:"column(id)"`
+	ID         int64  `json:"hpa_id" orm:"column(id)"`
 	HPAName    string `json:"hpa_name" orm:"column(name)"`
 	ServiceID  int64  `json:"service_id" orm:"column(service_id)"`
 	MinPod     int    `json:"min_pod" orm:"column(min_pod)"`
 	MaxPod     int    `json:"max_pod" orm:"column(max_pod)"`
 	CPUPercent int    `json:"cpu_percent" orm:"column(cpu_percent)"`
+	HPAStatus  int    `json:"hpa_status" orm:"column(status)"`
 }

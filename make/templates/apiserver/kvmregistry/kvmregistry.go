@@ -15,138 +15,138 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"dao"
+
+	_ "github.com/mattn/go-sqlite3/driver"
 )
 
 var (
-	limitSize     int
-	port          int
-	kvmNamePrefix = "kvm-"
-	storeFile     = "store.dat"
+	limitSize      int
+	port           int
+	affinityConfig = "affinity.ini"
 )
 
-type node struct {
-	KvmName string `json:"kvm_name"`
-	JobName string `json:"job_name"`
-	InUsed  bool   `json:"in_used"`
-}
-
-func (n *node) String() string {
-	if n.JobName != "" {
-		return fmt.Sprintf("Node: %s with job: %s, in-used: %v", n.KvmName, n.JobName, n.InUsed)
-	}
-	return fmt.Sprintf("Node: %s was not in-used.", n.KvmName)
-}
-
-var storage = make(map[string]*node)
-
-func sync(process func(fh *os.File), accessOpt int) error {
-	fh, err := os.OpenFile(storeFile, accessOpt, 0660)
+func initLastAffinity() {
+	err := dao.InitDB()
 	if err != nil {
-		if os.IsNotExist(err) {
-			log.Printf("Store file does not exist, create it ...")
-			_, err = os.Create(storeFile)
-			process(fh)
-			return err
-		}
-		log.Printf("Failed to open file: %+v", err)
-		return err
+		log.Fatalf("Failed to initialize registry DB, error: %+v\n", err)
+	}
+	err = dao.DeleteLastAffinity()
+	if err != nil {
+		log.Printf("Failed to delete last affinity of KVMs, error: %+v\n", err)
+	}
+}
+
+func loadKVMAffinity() {
+	if _, err := os.Stat(affinityConfig); os.IsNotExist(err) {
+		log.Fatalf("KVM affinity config not exists, error: %+v\n", err)
+	}
+	fh, err := os.Open(affinityConfig)
+	if err != nil {
+		log.Fatalf("Failed to open affinity config file, error: %+v\n", err)
 	}
 	defer fh.Close()
-	process(fh)
-	return nil
-}
-
-func persist(fh *os.File) {
-	w := bufio.NewWriter(fh)
-	for n, s := range storage {
-		w.WriteString(fmt.Sprintf("%s=%s\n", n, s.JobName))
-	}
-	w.Flush()
-	output()
-}
-
-func load(fh *os.File) {
-	if _, err := os.Stat(storeFile); !os.IsNotExist(err) {
-		scanner := bufio.NewScanner(fh)
-		for scanner.Scan() {
-			parts := strings.Split(scanner.Text(), "=")
-			nodeName := parts[0]
-			jobName := parts[1]
-			if n, ok := storage[nodeName]; jobName != "" && ok {
-				n.KvmName = nodeName
-				n.JobName = jobName
-				n.InUsed = true
-			}
+	scanner := bufio.NewScanner(fh)
+	for scanner.Scan() {
+		parts := strings.Split(scanner.Text(), "=")
+		err = dao.AddOrUpdateKVM(parts[0], parts[1])
+		if err != nil {
+			log.Printf("Failed to add or update KVM, error: %+v", err)
 		}
 	}
 	output()
 }
 
 func output() {
-	for _, s := range storage {
+	allKVMs, err := dao.GetKVMStatus()
+	if err != nil {
+		log.Printf("Failed to get available KVMs, error: %+v\n", err)
+		return
+	}
+	for _, s := range allKVMs {
 		log.Printf("%+v", s)
 	}
 	log.Println("=============================")
 }
 
 func initilize() {
-	log.Printf("Start initializing ...")
-	for i := 0; i < limitSize; i++ {
-		kvmName := kvmNamePrefix + strconv.Itoa(i+1)
-		storage[kvmName] = &node{kvmName, "", false}
-	}
-	sync(load, os.O_RDONLY)
-
+	log.Println("Start loading and updating affinity configs ...")
+	initLastAffinity()
+	loadKVMAffinity()
 }
 
-func register(jobName string) (nodeName string) {
-	var hasRegistered bool
-	for n, s := range storage {
-		if s.JobName == jobName && s.InUsed {
-			nodeName = n
-			hasRegistered = true
-			continue
-		}
+func register(jobName string, affinity string) string {
+	availableNodes := availableKVMWithAffinity(affinity)
+	for len(availableNodes) == 0 {
+		time.Sleep(time.Second * 2)
+		log.Println("All nodes has been allocated, no available one currently.")
+		availableNodes = availableKVMWithAffinity(affinity)
 	}
-	if !hasRegistered {
-		availableNodes := availables()
-		availableCount := len(availableNodes)
-		if availableCount == 0 {
-			nodeName = "FULL"
-			log.Println("All nodes has been allocated, no available one currently.")
+
+	allocatableNodes := []string{}
+	for _, registry := range availableNodes {
+		if kvmName, allocated := registry[jobName]; allocated {
+			return kvmName
 		} else {
-			nodeName = availableNodes[rand.Intn(len(availableNodes))]
-			storage[nodeName] = &node{KvmName: nodeName, JobName: jobName, InUsed: true}
-			sync(persist, os.O_TRUNC|os.O_WRONLY)
+			allocatableNodes = append(allocatableNodes, registry["kvm_name"])
 		}
 	}
-	log.Printf("Current available nodes: %v", availables())
-	return
+
+	kvmName := allocatableNodes[rand.Intn(len(allocatableNodes))]
+	err := dao.AddOrUpdateRegistry(kvmName, jobName)
+	if err != nil {
+		log.Printf("Failed to add or update registry: %+v\n", err)
+	}
+	output()
+	return kvmName
 }
 
-func availables() []string {
-	results := []string{}
-	for n, s := range storage {
-		if s == nil || s.JobName == "" || !s.InUsed {
-			results = append(results, n)
-		}
+func updateRegistry(buildID, kvmName, jobName string) {
+	err := dao.UpdateRegistry(buildID, kvmName, jobName)
+	if err != nil {
+		log.Printf("Failed to update registry: %+v with kvmName: %s, job name: %s, build ID: %s\n", err, kvmName, jobName, buildID)
+	}
+}
+
+func availableKVMWithAffinity(affinity string) []map[string]string {
+	results, err := dao.GetAvailableKVMWithAffinity(affinity)
+	if err != nil {
+		log.Printf("Failed to get available KVMs with affinity %s, error: %+v\n", affinity, err)
+		return nil
 	}
 	return results
 }
 
-func unregister(jobName string) (kvmName string) {
-	kvmName = "NULL"
-	for n, s := range storage {
-		if s.InUsed && s.JobName == jobName {
-			s.KvmName = n
-			s.JobName = ""
-			s.InUsed = false
-			kvmName = n
-			sync(persist, os.O_TRUNC|os.O_WRONLY)
-			return
-		}
+func allAvailables() []map[string]string {
+	results, err := dao.GetKVMStatus()
+	if err != nil {
+		log.Printf("Failed to get available KVMs, error: %+v\n", err)
+		return nil
 	}
+	return results
+}
+
+func unregister(jobName string, buildID string) (kvmName string) {
+	kvmName, err := dao.GetKVMByJob(jobName)
+	if err != nil {
+		log.Printf("Failed to get KVM by job: %s, error: %+v\n", jobName, err)
+	}
+	err = dao.DeleteRelationalJob(jobName, buildID)
+	if err != nil {
+		log.Printf("Failed to delete relational job: %s, build ID: %s, error: %+v\n", jobName, buildID, err)
+	}
+	output()
 	return
+}
+
+func releaseRegistryWithJob(kvmName string, jobName string) string {
+	err := dao.DeleteRegistryWithJob(kvmName, jobName)
+	if err != nil {
+		log.Printf("Failed to delete registry with KVM: %s, job: %s, error: %+v\n", kvmName, jobName, err)
+	}
+	output()
+	return kvmName
 }
 
 func renderOutput(response http.ResponseWriter, statusCode int, input interface{}, contentType ...string) error {
@@ -192,12 +192,28 @@ func customAbort(resp http.ResponseWriter, statusCode int, err error) {
 func registerJob(response http.ResponseWriter, request *http.Request) {
 	if request.Method == http.MethodPost {
 		jobName := request.FormValue("job_name")
-		nodeName := register(jobName)
-		if nodeName == "FULL" {
-			customAbort(response, http.StatusPreconditionFailed, fmt.Errorf("no KVM could be allocated"))
+		affinity := request.FormValue("affinity")
+		if jobName == "" {
+			customAbort(response, http.StatusBadRequest, fmt.Errorf("no job name provided"))
 			return
 		}
-		renderText(response, nodeName)
+		if strings.TrimSpace(affinity) == "" {
+			affinity = "golang"
+		}
+		renderText(response, register(jobName, affinity))
+	}
+}
+
+func updateWithBuild(response http.ResponseWriter, request *http.Request) {
+	if request.Method == http.MethodPut {
+		kvmName := request.FormValue("kvm_name")
+		jobName := request.FormValue("job_name")
+		buildID := request.FormValue("build_id")
+		if kvmName == "" || jobName == "" || buildID == "" {
+			customAbort(response, http.StatusBadRequest, fmt.Errorf("no KVM name, job name or build ID provided"))
+			return
+		}
+		updateRegistry(buildID, kvmName, jobName)
 	}
 }
 
@@ -209,20 +225,31 @@ func getJob(response http.ResponseWriter, request *http.Request) {
 
 func getAvailableNodes(response http.ResponseWriter, request *http.Request) {
 	if request.Method == http.MethodGet {
-		renderJSON(response, availables())
-	}
-}
-
-func getAllNodes(response http.ResponseWriter, request *http.Request) {
-	if request.Method == http.MethodGet {
-		renderJSON(response, storage)
+		renderJSON(response, allAvailables())
 	}
 }
 
 func releaseNode(response http.ResponseWriter, request *http.Request) {
 	if request.Method == http.MethodGet {
-		kvmName := request.FormValue("job_name")
-		renderText(response, unregister(kvmName))
+		jobName := request.FormValue("job_name")
+		buildID := request.FormValue("build_id")
+		if jobName == "" || buildID == "" {
+			customAbort(response, http.StatusBadRequest, fmt.Errorf("no job name or build ID provided"))
+			return
+		}
+		renderText(response, unregister(jobName, buildID))
+	}
+}
+
+func releaseKVM(response http.ResponseWriter, request *http.Request) {
+	if request.Method == http.MethodGet {
+		kvmName := request.FormValue("kvm_name")
+		jobName := request.FormValue("job_name")
+		if kvmName == "" || jobName == "" {
+			customAbort(response, http.StatusBadRequest, fmt.Errorf("no KVM name or job name provided"))
+			return
+		}
+		renderText(response, releaseRegistryWithJob(kvmName, jobName))
 	}
 }
 
@@ -234,8 +261,8 @@ func triggerScript(response http.ResponseWriter, request *http.Request) {
 		log.Printf("Executing script name: %s, args: %+v", scriptName, args)
 		renderText(response, fmt.Sprintf("Triggerring script: %s with args: %+v...\n", scriptName, args))
 		defer func() {
-			time.Sleep(2 * time.Second)
 			go func() {
+				time.Sleep(2 * time.Second)
 				_, err := executeScripts(scriptName, args...)
 				if err != nil {
 					internalError(response, err)
@@ -271,10 +298,11 @@ func main() {
 	log.Printf("KVM-registry server listened on port %d.", port)
 	initilize()
 	http.HandleFunc("/register-job", registerJob)
+	http.HandleFunc("/update-build", updateWithBuild)
 	http.HandleFunc("/get-job", getJob)
 	http.HandleFunc("/available-nodes", getAvailableNodes)
-	http.HandleFunc("/nodes", getAllNodes)
 	http.HandleFunc("/release-node", releaseNode)
+	http.HandleFunc("/release-kvm", releaseKVM)
 	http.HandleFunc("/trigger-script", triggerScript)
 
 	l, err := net.Listen("tcp4", ":"+strconv.Itoa(port))

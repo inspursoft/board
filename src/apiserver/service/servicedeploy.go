@@ -31,12 +31,13 @@ func DeployService(serviceConfig *model.ConfigServiceStep, K8sMasterURL string, 
 	clusterConfig := &k8sassist.K8sAssistConfig{K8sMasterURL: K8sMasterURL}
 	cli := k8sassist.NewK8sAssistClient(clusterConfig)
 	deploymentConfig := MarshalDeployment(serviceConfig, registryURI)
+	//logs.Debug("Marshaled deployment: ", deploymentConfig)
 	deploymentInfo, deploymentFileInfo, err := cli.AppV1().Deployment(serviceConfig.ProjectName).Create(deploymentConfig)
 	if err != nil {
 		logs.Error("Deploy deployment object of %s failed. error: %+v\n", serviceConfig.ServiceName, err)
 		return nil, err
 	}
-
+	logs.Debug("Created deployment: ", deploymentInfo)
 	svcConfig := MarshalService(serviceConfig)
 	serviceInfo, serviceFileInfo, err := cli.AppV1().Service(serviceConfig.ProjectName).Create(svcConfig)
 	if err != nil {
@@ -103,7 +104,7 @@ func DeployServiceByYaml(projectName, K8sMasterURL, loadPath string) error {
 	}
 
 	defer deploymentFile.Close()
-	_, err = cli.AppV1().Deployment(projectName).CreateByYaml(deploymentFile)
+	deploymentInfo, err := cli.AppV1().Deployment(projectName).CreateByYaml(deploymentFile)
 	if err != nil {
 		logs.Error("Deploy deployment object by deployment.yaml failed, err:%+v\n", err)
 		return err
@@ -117,6 +118,7 @@ func DeployServiceByYaml(projectName, K8sMasterURL, loadPath string) error {
 	defer serviceFile.Close()
 	_, err = cli.AppV1().Service(projectName).CreateByYaml(serviceFile)
 	if err != nil {
+		cli.AppV1().Deployment(projectName).Delete(deploymentInfo.Name)
 		logs.Error("Deploy service object by service.yaml failed, err:%+v\n", err)
 		return err
 	}

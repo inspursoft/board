@@ -12,15 +12,18 @@ import (
 var jenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
 var gogitsBaseURL = utils.GetConfig("GOGITS_BASE_URL")
 var jenkinsfileRepoURL = utils.GetConfig("JENKINSFILE_REPO_URL")
-var maxRetryCount = 240
-var seedIgnitorJobName = "base_ignitor"
+var maxRetryCount = 245
 var seedJobName = "base"
 var jenkinsHostIP = utils.GetConfig("JENKINS_HOST_IP")
 var jenkinsHostPort = utils.GetConfig("JENKINS_HOST_PORT")
 var jenkinsNodeIP = utils.GetConfig("JENKINS_NODE_IP")
 var kvmRegistryPort = utils.GetConfig("KVM_REGISTRY_PORT")
+var executionMode = utils.GetConfig("JENKINS_EXECUTION_MODE")
 
-type jenkinsHandler struct{}
+type jenkinsHandler struct {
+	configURL   string
+	registryURL string
+}
 
 func NewJenkinsHandler() *jenkinsHandler {
 	pingURL := fmt.Sprintf("%s/job/%s", jenkinsBaseURL(), seedJobName)
@@ -43,14 +46,16 @@ func NewJenkinsHandler() *jenkinsHandler {
 		}
 		time.Sleep(time.Second)
 	}
-	return &jenkinsHandler{}
+	return &jenkinsHandler{
+		registryURL: fmt.Sprintf("http://%s:%s", jenkinsNodeIP(), kvmRegistryPort()),
+	}
 }
 
-func (j *jenkinsHandler) CreateJobWithParameter(projectName, username string) error {
-	repoCloneURL := fmt.Sprintf("%s/%s/%s.git", gogitsBaseURL(), username, projectName)
-	return utils.SimpleGetRequestHandle(fmt.Sprintf("%s/job/%s/buildWithParameters?F00=%s&F01=%s&F02=%s&F03=%s", jenkinsBaseURL(), seedJobName, projectName, repoCloneURL, jenkinsNodeIP(), kvmRegistryPort()))
+func (j *jenkinsHandler) CreateJobWithParameter(jobName string) error {
+	return utils.SimpleGetRequestHandle(fmt.Sprintf("%s/job/%s/buildWithParameters?F00=%s&F01=%s&F02=%s&F03=%s&F04=%s",
+		jenkinsBaseURL(), seedJobName, jobName, jenkinsNodeIP(), jenkinsBaseURL(), j.registryURL, executionMode()))
 }
 
-func (j *jenkinsHandler) CreateIgnitorJob() error {
-	return utils.SimpleGetRequestHandle(fmt.Sprintf("%s/job/%s/buildWithParameters?F00=%s&F01=%s", jenkinsBaseURL(), seedIgnitorJobName, jenkinsNodeIP(), kvmRegistryPort()))
+func (j *jenkinsHandler) DeleteJob(jobName string) error {
+	return utils.SimplePostRequestHandle(fmt.Sprintf("%s/job/%s/doDelete", jenkinsBaseURL(), jobName), nil, nil)
 }

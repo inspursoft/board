@@ -5,10 +5,13 @@ import (
 
 	"git/inspursoft/board/src/common/model"
 
+	"strconv"
+
 	appsv1beta2 "k8s.io/api/apps/v1beta2"
 	autoscalev1 "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -256,6 +259,22 @@ func ToK8sContainer(container *model.K8sContainer) *v1.Container {
 	for i := range container.VolumeMounts {
 		mounts = append(mounts, ToK8sVolumeMount(container.VolumeMounts[i]))
 	}
+
+	var resources v1.ResourceRequirements
+	resources.Requests = make(v1.ResourceList)
+	resources.Limits = make(v1.ResourceList)
+	if v, ok := container.Resources.Requests["cpu"]; ok {
+		resources.Requests["cpu"] = resource.MustParse(string(v))
+	}
+	if v, ok := container.Resources.Requests["memory"]; ok {
+		resources.Requests["memory"] = resource.MustParse(string(v))
+	}
+	if v, ok := container.Resources.Limits["cpu"]; ok {
+		resources.Limits["cpu"] = resource.MustParse(string(v))
+	}
+	if v, ok := container.Resources.Limits["memory"]; ok {
+		resources.Limits["memory"] = resource.MustParse(string(v))
+	}
 	return &v1.Container{
 		Name:         container.Name,
 		Image:        container.Image,
@@ -264,6 +283,7 @@ func ToK8sContainer(container *model.K8sContainer) *v1.Container {
 		WorkingDir:   container.WorkingDir,
 		Ports:        ports,
 		Env:          envs,
+		Resources:    resources,
 		VolumeMounts: mounts,
 	}
 }
@@ -576,6 +596,23 @@ func FromK8sContainer(container *v1.Container) *model.K8sContainer {
 	for i := range container.VolumeMounts {
 		mounts = append(mounts, FromK8sVolumeMount(container.VolumeMounts[i]))
 	}
+
+	var resources model.ResourceRequirements
+	resources.Requests = make(model.ResourceList)
+	resources.Limits = make(model.ResourceList)
+	if v, ok := container.Resources.Requests["cpu"]; ok {
+		resources.Requests["cpu"] = model.QuantityStr(v.String())
+	}
+	if v, ok := container.Resources.Requests["memory"]; ok {
+		resources.Requests["memory"] = model.QuantityStr(v.String())
+	}
+	if v, ok := container.Resources.Limits["cpu"]; ok {
+		resources.Limits["cpu"] = model.QuantityStr(v.String())
+	}
+	if v, ok := container.Resources.Limits["memory"]; ok {
+		resources.Limits["memory"] = model.QuantityStr(v.String())
+	}
+
 	return &model.K8sContainer{
 		Name:         container.Name,
 		Image:        container.Image,
@@ -584,6 +621,7 @@ func FromK8sContainer(container *v1.Container) *model.K8sContainer {
 		WorkingDir:   container.WorkingDir,
 		Ports:        ports,
 		Env:          envs,
+		Resources:    resources,
 		VolumeMounts: mounts,
 	}
 }
@@ -711,14 +749,16 @@ func FromK8sServiceList(typesServiceList *ServiceList) *model.ServiceList {
 func ToK8sNodeStatus(nodestatus model.NodeStatus) v1.NodeStatus {
 	capacity := make(map[v1.ResourceName]resource.Quantity)
 	for k, v := range nodestatus.Capacity {
-		q := resource.NewQuantity(int64(v), resource.DecimalExponent)
+		value, _ := strconv.Atoi(string(v))
+		q := resource.NewQuantity(int64(value), resource.DecimalExponent)
 		capacity[v1.ResourceName(k)] = *q
 
 	}
 
 	allocatable := make(map[v1.ResourceName]resource.Quantity)
 	for k, v := range nodestatus.Allocatable {
-		q := resource.NewQuantity(int64(v), resource.DecimalExponent)
+		value, _ := strconv.Atoi(string(v))
+		q := resource.NewQuantity(int64(value), resource.DecimalExponent)
 		capacity[v1.ResourceName(k)] = *q
 
 	}
@@ -762,7 +802,8 @@ func UpdateK8sNodeStatus(k8sNodeStatus *v1.NodeStatus, nodestatus *model.NodeSta
 			k8sNodeStatus.Capacity = v1.ResourceList(make(map[v1.ResourceName]resource.Quantity))
 		}
 		for k, v := range nodestatus.Capacity {
-			q := resource.NewQuantity(int64(v), resource.DecimalExponent)
+			value, _ := strconv.Atoi(string(v))
+			q := resource.NewQuantity(int64(value), resource.DecimalExponent)
 			k8sNodeStatus.Capacity[v1.ResourceName(k)] = *q
 		}
 	}
@@ -774,7 +815,8 @@ func UpdateK8sNodeStatus(k8sNodeStatus *v1.NodeStatus, nodestatus *model.NodeSta
 			k8sNodeStatus.Allocatable = v1.ResourceList(make(map[v1.ResourceName]resource.Quantity))
 		}
 		for k, v := range nodestatus.Allocatable {
-			q := resource.NewQuantity(int64(v), resource.DecimalExponent)
+			value, _ := strconv.Atoi(string(v))
+			q := resource.NewQuantity(int64(value), resource.DecimalExponent)
 			k8sNodeStatus.Allocatable[v1.ResourceName(k)] = *q
 
 		}
@@ -854,17 +896,17 @@ func UpdateK8sNode(k8sNode *v1.Node, node *model.Node) {
 
 // adapt model node.Status from k8s node.Status
 func FromK8sNodeStatus(nodestatus v1.NodeStatus) model.NodeStatus {
-	capacity := make(map[model.ResourceName]model.Quantity)
+	capacity := make(map[model.ResourceName]model.QuantityStr)
 	for k, v := range nodestatus.Capacity {
 		i, _ := v.AsInt64()
-		capacity[model.ResourceName(k)] = model.Quantity(i)
+		capacity[model.ResourceName(k)] = model.QuantityStr(strconv.Itoa(int(i)))
 
 	}
 
-	allocatable := make(map[model.ResourceName]model.Quantity)
+	allocatable := make(map[model.ResourceName]model.QuantityStr)
 	for k, v := range nodestatus.Allocatable {
 		i, _ := v.AsInt64()
-		allocatable[model.ResourceName(k)] = model.Quantity(i)
+		allocatable[model.ResourceName(k)] = model.QuantityStr(strconv.Itoa(int(i)))
 	}
 
 	conditions := make([]model.NodeCondition, 0)
@@ -957,6 +999,7 @@ func GenerateDeploymentConfig(deployment *appsv1beta2.Deployment) *appsv1beta2.D
 			Ports:          container.Ports,
 			EnvFrom:        container.EnvFrom,
 			Env:            container.Env,
+			Resources:      container.Resources,
 			VolumeMounts:   container.VolumeMounts,
 			LivenessProbe:  container.LivenessProbe,
 			ReadinessProbe: container.ReadinessProbe,
@@ -1013,5 +1056,101 @@ func GenerateServiceConfig(service *v1.Service) *v1.Service {
 }
 
 func FromK8sAutoScale(autoscale *autoscalev1.HorizontalPodAutoscaler) *model.AutoScale {
-	return &model.AutoScale{}
+	var lastTime *time.Time
+	if autoscale.Status.LastScaleTime != nil {
+		lastTime = &autoscale.Status.LastScaleTime.Time
+	}
+	return &model.AutoScale{
+		ObjectMeta: FromK8sObjectMeta(autoscale.ObjectMeta),
+		Spec: model.HorizontalPodAutoscalerSpec{
+			ScaleTargetRef: model.CrossVersionObjectReference{
+				Kind:       autoscale.Spec.ScaleTargetRef.Kind,
+				Name:       autoscale.Spec.ScaleTargetRef.Name,
+				APIVersion: autoscale.Spec.ScaleTargetRef.APIVersion,
+			},
+			MinReplicas:                    autoscale.Spec.MinReplicas,
+			MaxReplicas:                    autoscale.Spec.MaxReplicas,
+			TargetCPUUtilizationPercentage: autoscale.Spec.TargetCPUUtilizationPercentage,
+		},
+		Status: model.HorizontalPodAutoscalerStatus{
+			ObservedGeneration:              autoscale.Status.ObservedGeneration,
+			LastScaleTime:                   lastTime,
+			CurrentReplicas:                 autoscale.Status.CurrentReplicas,
+			DesiredReplicas:                 autoscale.Status.DesiredReplicas,
+			CurrentCPUUtilizationPercentage: autoscale.Status.CurrentCPUUtilizationPercentage,
+		},
+	}
+}
+
+func FromK8sAutoScaleList(asList *autoscalev1.HorizontalPodAutoscalerList) *model.AutoScaleList {
+	if asList == nil {
+		return nil
+	}
+	items := make([]model.AutoScale, 0)
+	for i := range asList.Items {
+		if as := FromK8sAutoScale(&asList.Items[i]); as != nil {
+			items = append(items, *as)
+		}
+	}
+	return &model.AutoScaleList{
+		Items: items,
+	}
+}
+
+func ToK8sAutoScale(autoscale *model.AutoScale) *autoscalev1.HorizontalPodAutoscaler {
+	var lastTime *metav1.Time
+	if autoscale.Status.LastScaleTime != nil {
+		t := metav1.NewTime(*autoscale.Status.LastScaleTime)
+		lastTime = &t
+	}
+	return &autoscalev1.HorizontalPodAutoscaler{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "AutoScaling",
+			APIVersion: "v1",
+		},
+		ObjectMeta: ToK8sObjectMeta(autoscale.ObjectMeta),
+		Spec: autoscalev1.HorizontalPodAutoscalerSpec{
+			ScaleTargetRef: autoscalev1.CrossVersionObjectReference{
+				Kind:       autoscale.Spec.ScaleTargetRef.Kind,
+				Name:       autoscale.Spec.ScaleTargetRef.Name,
+				APIVersion: autoscale.Spec.ScaleTargetRef.APIVersion,
+			},
+			MinReplicas:                    autoscale.Spec.MinReplicas,
+			MaxReplicas:                    autoscale.Spec.MaxReplicas,
+			TargetCPUUtilizationPercentage: autoscale.Spec.TargetCPUUtilizationPercentage,
+		},
+		Status: autoscalev1.HorizontalPodAutoscalerStatus{
+			ObservedGeneration:              autoscale.Status.ObservedGeneration,
+			LastScaleTime:                   lastTime,
+			CurrentReplicas:                 autoscale.Status.CurrentReplicas,
+			DesiredReplicas:                 autoscale.Status.DesiredReplicas,
+			CurrentCPUUtilizationPercentage: autoscale.Status.CurrentCPUUtilizationPercentage,
+		},
+	}
+}
+
+// update k8s autoscale using model autosacle
+func UpdateK8sAutoScale(k8sHPA *autoscalev1.HorizontalPodAutoscaler, autoscale *model.AutoScale) {
+	if k8sHPA == nil || autoscale == nil {
+		return
+	}
+	// just update our attributes.
+	k8sHPA.Spec = autoscalev1.HorizontalPodAutoscalerSpec{
+		ScaleTargetRef: autoscalev1.CrossVersionObjectReference{
+			Kind:       autoscale.Spec.ScaleTargetRef.Kind,
+			Name:       autoscale.Spec.ScaleTargetRef.Name,
+			APIVersion: autoscale.Spec.ScaleTargetRef.APIVersion,
+		},
+		MinReplicas:                    autoscale.Spec.MinReplicas,
+		MaxReplicas:                    autoscale.Spec.MaxReplicas,
+		TargetCPUUtilizationPercentage: autoscale.Spec.TargetCPUUtilizationPercentage,
+	}
+}
+
+func IsNotFoundError(err error) bool {
+	return errors.IsNotFound(err)
+}
+
+func IsAlreadyExistError(err error) bool {
+	return errors.IsAlreadyExists(err)
 }

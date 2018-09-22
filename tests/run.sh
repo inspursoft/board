@@ -64,7 +64,7 @@ do
 done
 }
 echo "mode: set" >$volumeDir/total.cov
-rungotest apiserver 
+rungotest src/apiserver 
 rungotest tokenserver 
 go tool cover -func=total.cov >> $volumeDir/total.temp
 cov=`cat $dir/total.temp|grep "total"|grep -v -E 'NaN'|awk '{print $NF}'|cut -d "%" -f 1|tr -s [:space:]`
