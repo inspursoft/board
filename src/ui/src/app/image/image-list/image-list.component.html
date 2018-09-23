@@ -45,7 +45,7 @@
 <div *ngIf="isBuildImageWIP" class="build-image-container">
   <span>{{"IMAGE.CREATE_IMAGE_SELECT_PROJECT"|translate}}:</span>
   <cs-dropdown class="custom-margin"
-               [dropdownDefaultText]="dropdownDefaultText|translate"
+               [dropdownDefaultText]="'IMAGE.CREATE_IMAGE_SELECT_PROJECT' | translate"
                [dropdownWidth]="200"
                [dropdownList]="projectsList"
                [dropdownListTextKey]="'project_name'"

@@ -14,7 +14,6 @@
          class="cs-input-field-container tooltip tooltip-md"
          (mousedown)="onEditClick()"
          [class.tooltip-validation]="!isDisabled"
-         [class.tooltip-bottom-right]="isDisabled"
          [class.tooltip-bottom-left]="!isDisabled"
          [class.invalid]="inputControl.invalid && inputControl.touched">
     <input #input
@@ -31,9 +30,6 @@
            [placeholder]="inputPlaceholder">
     <span class="tooltip-content" style="width: 200px;" *ngIf="inputControl.errors">
       {{getValidatorMessage(inputControl.errors) | translate}}{{inputValidatorMessageParam}}
-    </span>
-    <span class="tooltip-content" *ngIf="isDisabled">
-      {{inputControl.value}}
     </span>
   </label>
   <a *ngIf="inputField.status == 0 && inputControl.enabled"

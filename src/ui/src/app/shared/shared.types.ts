@@ -25,6 +25,7 @@ export class Message {
 }
 
 export type AlertType = 'alert-success' | 'alert-danger' | 'alert-info' | 'alert-warning';
+export type DropdownMenuPositon = 'bottom-left' | 'bottom-right' | 'top-left' | 'top-right';
 
 export class AlertMessage {
   message: string = '';

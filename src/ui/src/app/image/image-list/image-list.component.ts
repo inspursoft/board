@@ -21,7 +21,6 @@ export class ImageListComponent extends CsModalParentBase implements OnInit, OnD
   curImage: Image;
   isShowDetail: boolean = false;
   isBuildImageWIP: boolean = false;
-  isOpenNewImage: boolean = false;
   selectedProjectName: string = "";
   selectedProjectId: number = 0;
   imageListErrMsg: string = "";
@@ -30,7 +29,6 @@ export class ImageListComponent extends CsModalParentBase implements OnInit, OnD
   loadingWIP: boolean;
   projectsList: Array<Project>;
   createImageMethod: CreateImageMethod = CreateImageMethod.None;
-  dropdownDefaultText: string = "";
   _subscription: Subscription;
 
   constructor(private imageService: ImageService,
@@ -46,7 +44,6 @@ export class ImageListComponent extends CsModalParentBase implements OnInit, OnD
   }
 
   ngOnInit() {
-    this.dropdownDefaultText = "IMAGE.CREATE_IMAGE_SELECT_PROJECT";
     this.imageService.getProjects().then((res: Array<Project>) => {
       let createNewProject: Project = new Project();
       createNewProject.project_name = "IMAGE.CREATE_IMAGE_CREATE_PROJECT";
@@ -74,11 +71,6 @@ export class ImageListComponent extends CsModalParentBase implements OnInit, OnD
     return false;
   }
 
-  setDropdownDefaultText(): void {
-    let selected = this.projectsList.find((project: Project) => project.project_id === this.selectedProjectId);
-    this.dropdownDefaultText = selected ? selected.project_name : "IMAGE.CREATE_IMAGE_SELECT_PROJECT";
-  }
-
   clickSelectProject() {
     this.sharedActionService.createProjectComponent(this.selfView).subscribe((projectName: string) => {
       if (projectName) {
@@ -88,7 +80,6 @@ export class ImageListComponent extends CsModalParentBase implements OnInit, OnD
           let project = this.projectsList.shift();
           this.projectsList.unshift(res[0]);
           this.projectsList.unshift(project);
-          this.setDropdownDefaultText();
         })
       }
     });
@@ -97,7 +88,6 @@ export class ImageListComponent extends CsModalParentBase implements OnInit, OnD
   changeSelectProject(project: Project) {
     this.selectedProjectName = project.project_name;
     this.selectedProjectId = project.project_id;
-    this.setDropdownDefaultText();
   }
 
   retrieve() {
@@ -135,7 +125,6 @@ export class ImageListComponent extends CsModalParentBase implements OnInit, OnD
     this.isBuildImageWIP = true;
     this.selectedProjectName = "";
     this.selectedProjectId = 0;
-    this.dropdownDefaultText = "IMAGE.CREATE_IMAGE_SELECT_PROJECT";
     this.createImageMethod = CreateImageMethod.None;
   }
 

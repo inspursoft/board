@@ -32,6 +32,7 @@
                            [dropdownDisabled]="isBuildImageWIP"
                            [dropdownWidth]="230"
                            [dropdownDefaultText]="'Docker File Template'"
+                           [dropdownMustBeSelect]="false"
                            [dropdownList]="imageTemplateList"
                            [dropdownListTextKey]="'name'">
               </cs-dropdown>
@@ -101,6 +102,7 @@
                              [dropdownWidth]="100"
                              [dropdownDisabled]="isBuildImageWIP"
                              [dropdownList]="imageDetailList"
+                             [dropdownMustBeSelect]="false"
                              [dropdownDefaultText]="imageDetailList[0]?.image_tag"
                              [dropdownListTextKey]="'image_tag'"
                              (onChange)="setBaseImageDetail($event)">

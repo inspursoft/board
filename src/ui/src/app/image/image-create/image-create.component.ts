@@ -25,7 +25,7 @@ const AUTO_REFRESH_IMAGE_LIST: number = 2000;
   templateUrl: "./image-create.component.html",
   styleUrls: ["./image-create.component.css"]
 })
-export class CreateImageComponent extends CsModalChildBase implements OnInit, AfterContentChecked, OnDestroy {
+export class CreateImageComponent extends CsModalChildBase implements OnInit, OnDestroy {
   boardHost: string;
   @ViewChildren(CsInputArrayComponent) inputArrayComponents: QueryList<CsInputArrayComponent>;
   @ViewChild("areaStatus") areaStatus: ElementRef;
@@ -45,7 +45,6 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, Af
   intervalAutoRefreshImageList: any;
   isNeedAutoRefreshImageList: boolean = false;
   isBuildImageWIP: boolean = false;
-  isInputComponentsValid: boolean = false;
   isServerHaveDockerFile: boolean = false;
   isUploadFileWIP = false;
   customerNewImage: BuildImageData;
@@ -95,17 +94,6 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, Af
         this.modalOpened = false;
         this.messageService.showAlert('IMAGE.CREATE_IMAGE_UPDATE_IMAGE_LIST_FAILED', {alertType: 'alert-danger', view: this.alertView});
       });
-  }
-
-  ngAfterContentChecked() {
-    this.isInputComponentsValid = true;
-    if (this.inputArrayComponents) {
-      this.inputArrayComponents.forEach(item => {
-        if (!item.valid) {
-          this.isInputComponentsValid = false;
-        }
-      });
-    }
   }
 
   ngOnDestroy() {
@@ -323,7 +311,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, Af
     if (this.imageBuildMethod == CreateImageMethod.Template) {
       if (this.verifyInputValid() &&
         this.verifyInputArrayValid() &&
-        this.isInputComponentsValid &&
+        this.verifyDropdownValid() &&
         this.customerNewImage.image_dockerfile.image_base != "") {
         buildImageInit();
         this.imageService.buildImageFromTemp(this.customerNewImage)
