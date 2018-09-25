@@ -235,11 +235,7 @@ func (p *ImageController) GetImageDockerfileAction() {
 
 	dockerfile, err := service.GetDockerfileInfo(p.repoImagePath, imageName, imageTag)
 	if err != nil {
-		if err == os.ErrNotExist {
-			p.customAbort(http.StatusNotFound, err.Error())
-		} else {
-			p.internalError(err)
-		}
+		p.customAbort(http.StatusNotFound, err.Error())
 		return
 	}
 	p.renderJSON(dockerfile)
