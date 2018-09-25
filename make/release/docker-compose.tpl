@@ -34,6 +34,8 @@ services:
     ports:
       - "10022:22"
       - "10080:3000"
+    networks:
+      - board
     depends_on:
       - log
     logging:
