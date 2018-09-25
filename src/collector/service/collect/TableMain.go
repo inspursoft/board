@@ -60,6 +60,7 @@ func timeList() {
 
 //get nodes info from k8s apiserver
 func (this *SourceMap) GainPods() error {
+	defer ThreadCountGet.Done()
 	c := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
 		K8sMasterURL: KuberMasterURL,
 	})
@@ -72,13 +73,13 @@ func (this *SourceMap) GainPods() error {
 	this.maps.PodContainerCount = make(map[string]int64)
 	getPods(this, PodList.Items)
 	util.Logger.SetInfo("pods is insert")
-	ThreadCountGet.Done()
 	return nil
 }
 
 //get insert data for nodes k8s info from the func
 
 func (resource SourceMap) GainNodes() error {
+	defer ThreadCountGet.Done()
 	var nodeCollect []collect.Node
 	c := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
 		K8sMasterURL: KuberMasterURL,
@@ -136,7 +137,6 @@ loopNode:
 
 	}
 	util.Logger.SetInfo("nodes is insert")
-	ThreadCountGet.Done()
 	return nil
 
 }
@@ -215,6 +215,7 @@ func getNodePs(ip string, cpuCores int) (cpu float32, mem float32, err error) {
 
 //get server info
 func (resource *SourceMap) GainServices() error {
+	defer ThreadCountGet.Done()
 	c := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
 		K8sMasterURL: KuberMasterURL,
 	})
@@ -239,6 +240,5 @@ func (resource *SourceMap) GainServices() error {
 		}
 		dao.InsertDb(&service)
 	}
-	ThreadCountGet.Done()
 	return nil
 }
