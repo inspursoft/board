@@ -85,6 +85,10 @@ func generateServiceStatusSQL(query model.ServiceStatus, userID int64) (string, 
 	params := make([]interface{}, 0)
 	params = append(params, userID, userID, userID, userID)
 
+	if query.ProjectID != 0 {
+		params = append(params, query.ProjectID)
+		sql += ` and s.project_id = ?`
+	}
 	if query.Name != "" {
 		params = append(params, "%"+query.Name+"%")
 		sql += ` and s.name like ? `
