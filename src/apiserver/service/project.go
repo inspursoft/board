@@ -123,7 +123,7 @@ func DeleteProject(userID, projectID int64) (bool, error) {
 		logs.Error("Project %s has member that cannot be deleted.", project.Name)
 		return false, utils.ErrUnprocessableEntity
 	}
-	serviceList, err := dao.GetServiceData(model.ServiceStatus{}, userID)
+	serviceList, err := dao.GetServiceData(model.ServiceStatus{ProjectID: projectID}, userID)
 	if err != nil {
 		logs.Error("Failed to get service data with user ID: %d, error: %+v", userID, err)
 		return false, utils.ErrUnprocessableEntity
