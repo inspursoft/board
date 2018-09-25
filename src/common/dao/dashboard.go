@@ -323,7 +323,7 @@ FROM (SELECT
       FROM %s n
         LEFT JOIN time_list_log t ON n.time_list_id = t.id
       WHERE t.record_time >= ?
-      AND t.record_time <= ?
+      AND t.record_time <= ? AND n.service_name in (select name from service_status)
       ORDER BY n.time_list_id DESC) AS nt
 GROUP BY nt.record_time
 ORDER BY nt.record_time DESC
