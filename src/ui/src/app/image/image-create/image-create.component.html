@@ -178,6 +178,7 @@
                       [inputPattern]="patternNewImageName"
                       [inputLabel]="'IMAGE.CREATE_IMAGE_NEW_IMAGE_NAME'|translate"
                       [disabled]="isBuildImageWIP"
+                      [customerValidatorAsyncFunc]="checkImageNameFun"
                       [simpleFiled]="customerNewImage.image_name"
                       (onCheck)="customerNewImage.image_name = $event;downloadDockerFile()">
             </cs-input>
@@ -185,6 +186,7 @@
                       [inputPattern]="patternNewImageTag"
                       [inputLabel]="'IMAGE.CREATE_IMAGE_IMAGE_TAG'|translate"
                       [disabled]="isBuildImageWIP"
+                      [customerValidatorAsyncFunc]="checkImageTagFun"
                       [simpleFiled]="customerNewImage.image_tag"
                       (onCheck)="customerNewImage.image_tag = $event;downloadDockerFile()">
             </cs-input>

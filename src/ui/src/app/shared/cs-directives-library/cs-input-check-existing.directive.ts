@@ -9,6 +9,7 @@ import { ValidationErrors } from "@angular/forms/src/directives/validators";
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/map'
 import 'rxjs/add/observable/of'
+import { UsernameInUseKey } from "../shared.const";
 
 @Directive({
   selector: "[checkItemExistingEx]"
@@ -25,6 +26,9 @@ export class CsInputCheckExistingDirective {
   }
 
   checkUserExists(value: string, errorMsg: string): Observable<ValidationErrors | null> {
+    if (this.checkItemExistingEx === 'username' && UsernameInUseKey.indexOf(value) > 0){
+      return Observable.of({'checkItemExistingEx': 'ACCOUNT.USERNAME_IS_KEY'})
+    }
     return this.http.get("/api/v1/user-exists", {
       observe: "response",
       params: {

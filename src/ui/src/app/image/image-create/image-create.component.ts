@@ -166,7 +166,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
     if (this.customerNewImage.image_name == "") {
       return Promise.resolve(null);
     }
-    return this.imageService.checkImageExist(this.customerNewImage.image_name, this.customerNewImage.image_name, control.value)
+    return this.imageService.checkImageExist(this.customerNewImage.project_name, this.customerNewImage.image_name, control.value)
       .then(() => null)
       .catch((err: HttpErrorResponse) => {
         if (err.status == 409) {
@@ -184,7 +184,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
     if (this.customerNewImage.image_tag == "") {
       return Promise.resolve(null);
     }
-    return this.imageService.checkImageExist(this.customerNewImage.image_name, control.value, this.customerNewImage.image_tag)
+    return this.imageService.checkImageExist(this.customerNewImage.project_name, control.value, this.customerNewImage.image_tag)
       .then(() => null)
       .catch((err: HttpErrorResponse) => {
         if (err.status == 409) {

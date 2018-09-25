@@ -43,3 +43,6 @@ export const MAIN_MENU_DATA: Array<ICsMenuItemData> = [
   {caption: 'SIDE_NAV.KIBANA', visible: true, icon: 'curve-chart', url: `/${RouteKibana}`},
   {caption: 'SIDE_NAV.PROFILES', visible: true, icon: 'help-info', url: `/${RouteProfile}`}
 ];
+
+export const UsernameInUseKey: Array<string> = ["explore", "create", "assets", "css", "img", "js", "less", "plugins", "debug", "raw",
+  "install", "api", "avatar", "user", "org", "help", "stars", "issues", "pulls", "commits", "repo", "template", "new", ".", ".."];
