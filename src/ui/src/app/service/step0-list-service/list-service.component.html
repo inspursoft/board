@@ -40,11 +40,16 @@
           <clr-dg-cell>{{service.service_owner_name}}</clr-dg-cell>
           <clr-dg-cell>{{service.service_creation_time | date: 'short'}}</clr-dg-cell>
           <clr-dg-cell>
-            <input type="checkbox"
-                   [id]="service.service_name"
-                   [checked]="service.service_public === 1"
-                   (click)="toggleServicePublic(service, $event)">
-            <label [for]="service.service_name"></label>
+            <div class="tooltip tooltip-right">
+              <input type="checkbox"
+                     title=""
+                     [checked]="service.service_public === 1"
+                     [disabled]="!isSystemAdminOrOwner(service)"
+                     (click)="toggleServicePublic(service, $event)">
+              <span [hidden]="isSystemAdminOrOwner(service)" class="tooltip-content">
+                {{'ERROR.INSUFFICIENT_PRIVILEGE' | translate}}
+              </span>
+            </div>
           </clr-dg-cell>
           <clr-dg-cell>
           <span [ngClass]="getStatusClass(service.service_status)">

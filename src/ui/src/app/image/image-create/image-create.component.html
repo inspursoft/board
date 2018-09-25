@@ -32,6 +32,7 @@
                            [dropdownDisabled]="isBuildImageWIP"
                            [dropdownWidth]="230"
                            [dropdownDefaultText]="'Docker File Template'"
+                           [dropdownMustBeSelect]="false"
                            [dropdownList]="imageTemplateList"
                            [dropdownListTextKey]="'name'">
               </cs-dropdown>
@@ -101,6 +102,7 @@
                              [dropdownWidth]="100"
                              [dropdownDisabled]="isBuildImageWIP"
                              [dropdownList]="imageDetailList"
+                             [dropdownMustBeSelect]="false"
                              [dropdownDefaultText]="imageDetailList[0]?.image_tag"
                              [dropdownListTextKey]="'image_tag'"
                              (onChange)="setBaseImageDetail($event)">
@@ -176,6 +178,7 @@
                       [inputPattern]="patternNewImageName"
                       [inputLabel]="'IMAGE.CREATE_IMAGE_NEW_IMAGE_NAME'|translate"
                       [disabled]="isBuildImageWIP"
+                      [customerValidatorAsyncFunc]="checkImageNameFun"
                       [simpleFiled]="customerNewImage.image_name"
                       (onCheck)="customerNewImage.image_name = $event;downloadDockerFile()">
             </cs-input>
@@ -183,6 +186,7 @@
                       [inputPattern]="patternNewImageTag"
                       [inputLabel]="'IMAGE.CREATE_IMAGE_IMAGE_TAG'|translate"
                       [disabled]="isBuildImageWIP"
+                      [customerValidatorAsyncFunc]="checkImageTagFun"
                       [simpleFiled]="customerNewImage.image_tag"
                       (onCheck)="customerNewImage.image_tag = $event;downloadDockerFile()">
             </cs-input>

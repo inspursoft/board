@@ -40,7 +40,8 @@ export const LANG_ZH_CN = {
     "HTTP_403":"您没有足够的权限进行该操作:403",
     "HTTP_404":"资源未找到:404",
     "HTTP_412": "请求内容不满足应提供的前置条件:412",
-    "HTTP_UNK":"未知错误"
+    "HTTP_UNK":"未知错误",
+    "INSUFFICIENT_PRIVILEGE":"权限不足，无法操作."
   },
   "CS_DROPDOWN":{
     "NO_ITEMS": "没有可选项"
@@ -68,6 +69,7 @@ export const LANG_ZH_CN = {
     "REGISTER": "用户注册",
     "USERNAME_IS_REQUIRED": "用户名为必填项。",
     "USERNAME_ALREADY_EXISTS": "用户名已存在。",
+    "USERNAME_IS_KEY": "不能用关键字作为用户名。",
     "USERNAME_ARE_NOT_IDENTICAL": "用户名由数字、小写字母以及下划线组成，且长度范围是[4,40]。",
     "EMAIL_IS_REQUIRED": "邮箱为必填项。",
     "EMAIL_IS_ILLEGAL": "邮箱格式非法。",
@@ -119,6 +121,7 @@ export const LANG_ZH_CN = {
     "IMAGES": "镜像",
     "ADMIN_OPTIONS": "管理员选项",
     "AUDIT": "操作审计",
+    "KIBANA": "Kibana",
     "PROFILES": "系统信息",
     "GUIDE_SERVICE_LIST":"请创建属于您的新服务",
     "GUIDE_PROJECT_LIST":"请创建属于您的新项目"
@@ -474,6 +477,8 @@ export const LANG_ZH_CN = {
     "AUDIT_IMAGES": "镜像",
     "AUDIT_FILE": "文件",
     "AUDIT_SYSTEM": "系统",
+    "AUDIT_RESET_PASSWORD": "重置密码",
+    "AUDIT_FORGOT_PASSWORD": "忘记密码",
     "AUDIT_GET": "查询",
     "AUDIT_CREATE": "创建",
     "AUDIT_DELETE": "删除",

@@ -156,7 +156,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     let data = this.lineResponses.get(lineType);
     thirdLine.maxDate = new Date(maxTimeStrap * 1000);
     thirdLine.minDate = new Date(minTimeStrap * 1000);
-    let newLineOption = Object();
+    let newLineOption = Object.create({});
     this.lineOptions.delete(lineType);
     lineSeries["series"][0]["data"] = data.firstLineData;
     lineSeries["series"][1]["data"] = data.secondLineData;
@@ -346,10 +346,9 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
           this.query.get(lineType).time_count = MAX_COUNT_PER_PAGE;
           this.query.get(lineType).timestamp_base = this._serverTimeStamp;
           this.getOneLineData(lineType).subscribe((res: IResponse) => {
-            this.clearEChart(lineType);
             this.lineResponses.set(lineType, res);
             this.detectChartData(lineType);
-
+            this.clearEChart(lineType);
           });
         }
       }
@@ -401,11 +400,11 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
       this.getOneLineData(lineType).subscribe((res: IResponse) => {
         this.lineStateInfo.get(lineType).inRefreshWIP = false;
         if (!res.limit.isMin) {
-          this.clearEChart(lineType);
           this.lineResponses.set(lineType, res);
           this.setLineZoomByCount(lineType, true);
           this.resetBaseLinePos(lineType);
           this.detectChartData(lineType);
+          this.clearEChart(lineType);
           } else {
             this.resetAfterDragTimeStamp(lineType);
           }
@@ -413,11 +412,11 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     } else {
       this.getOneLineData(lineType).subscribe((res: IResponse) => {
         if (!res.limit.isMax) {
-          this.clearEChart(lineType);
           this.lineResponses.set(lineType, res);
           this.setLineZoomByCount(lineType, false);
           this.resetBaseLinePos(lineType);
           this.detectChartData(lineType);
+          this.clearEChart(lineType);
         }
       });
     }
@@ -496,11 +495,11 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
         thirdLine.minDate = new Date(minTimeStamp * 1000);
         thirdLine.maxDate = new Date(maxTimeStamp * 1000);
         this.getOneLineData(value).subscribe((res: IResponse) => {
-          this.clearEChart(lineType);
-          this.lineResponses.set(lineType, res);
+          this.lineResponses.set(value, res);
           this.setLineZoomByTimeStamp(value, query.baseLineTimeStamp);
           this.resetBaseLinePos(value);
           this.detectChartData(value);
+          this.clearEChart(value);
         });
       });
     }

@@ -57,7 +57,7 @@
     </cs-input>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-default" (click)="isOpen = false">
+    <button type="button" class="btn btn-default" [disabled]="isWorkWIP" (click)="isOpen = false">
       {{'USER_CENTER.CANCEL' | translate}}
     </button>
     <button type="submit" class="btn btn-primary" [disabled]="isWorkWIP" (click)="submitUser()">

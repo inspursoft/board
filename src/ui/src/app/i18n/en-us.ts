@@ -40,7 +40,8 @@ export const LANG_EN_US = {
     "HTTP_403":"Insufficient privilege to requested operation:403",
     "HTTP_404":"Resource not found:404",
     "HTTP_412": "Precondition given in one or more of the request are evaluated to false:412",
-    "HTTP_UNK":"Unknown error"
+    "HTTP_UNK":"Unknown error",
+    "INSUFFICIENT_PRIVILEGE":"Insufficient privilege to operate it."
   },
   "CS_DROPDOWN":{
     "NO_ITEMS": "No items"
@@ -68,6 +69,7 @@ export const LANG_EN_US = {
     "REGISTER": "Register",
     "USERNAME_IS_REQUIRED": "Username is required.",
     "USERNAME_ALREADY_EXISTS": "Username already exists.",
+    "USERNAME_IS_KEY": "The username is key.",
     "USERNAME_ARE_NOT_IDENTICAL": "The username consists of numeric, lowercase letter and underscore, and the length range is [4,40]",
     "EMAIL_IS_REQUIRED": "Email is required.",
     "EMAIL_IS_ILLEGAL": "Email is illegal.",
@@ -119,6 +121,7 @@ export const LANG_EN_US = {
     "IMAGES": "Images",
     "ADMIN_OPTIONS": "Admin Options",
     "AUDIT": "Operation Audit",
+    "KIBANA": "Kibana",
     "PROFILES": "System Info",
     "GUIDE_SERVICE_LIST":"Please create your own Service.",
     "GUIDE_PROJECT_LIST":"Please create your own Project."
@@ -474,6 +477,8 @@ export const LANG_EN_US = {
     "AUDIT_IMAGES": "images",
     "AUDIT_FILE": "file",
     "AUDIT_SYSTEM": "system",
+    "AUDIT_RESET_PASSWORD": "Reset password",
+    "AUDIT_FORGOT_PASSWORD": "Forgot password",
     "AUDIT_CREATE": "Create",
     "AUDIT_GET": "Get",
     "AUDIT_DELETE": "Delete",

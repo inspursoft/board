@@ -11,8 +11,10 @@
   </label>
   <label aria-haspopup="true"
          role="tooltip"
-         class="cs-input-field-container tooltip tooltip-validation tooltip-md tooltip-bottom-left"
+         class="cs-input-field-container tooltip tooltip-md"
          (mousedown)="onEditClick()"
+         [class.tooltip-validation]="!isDisabled"
+         [class.tooltip-bottom-left]="!isDisabled"
          [class.invalid]="inputControl.invalid && inputControl.touched">
     <input #input
            formControlName="inputControl"
