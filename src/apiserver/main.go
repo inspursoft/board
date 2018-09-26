@@ -41,14 +41,9 @@ func initBoardVersion() {
 	version, err := ioutil.ReadFile("VERSION")
 	if err != nil {
 		logs.Error("Failed to read VERSION file: %+v", err)
-		panic(err)
 	}
 	utils.SetConfig("BOARD_VERSION", string(bytes.TrimSpace(version)))
-	err = service.SetSystemInfo("BOARD_VERSION", true)
-	if err != nil {
-		logs.Error("Failed to set system config: %+v", err)
-		panic(err)
-	}
+	service.SetSystemInfo("BOARD_VERSION", true)
 }
 
 func updateAdminPassword() {
@@ -65,11 +60,7 @@ func updateAdminPassword() {
 	}
 	if isSuccess {
 		utils.SetConfig("SET_ADMIN_PASSWORD", "updated")
-		err = service.SetSystemInfo("SET_ADMIN_PASSWORD", false)
-		if err != nil {
-			logs.Error("Failed to set system config: %+v", err)
-			panic(err)
-		}
+		service.SetSystemInfo("SET_ADMIN_PASSWORD", false)
 		logs.Info("Admin password has been updated successfully.")
 	} else {
 		logs.Info("Failed to update admin initial password.")
@@ -107,60 +98,29 @@ func initProjectRepo() {
 	}
 
 	utils.SetConfig("INIT_PROJECT_REPO", "created")
-	err = service.SetSystemInfo("INIT_PROJECT_REPO", true)
-	if err != nil {
-		logs.Error("Failed to set system config: %+v", err)
-		panic(err)
-	}
+	service.SetSystemInfo("INIT_PROJECT_REPO", true)
+	logs.Info("Finished to create initial project and repo.")
 }
 
-func initDefaultProjects() {
-	logs.Info("Initialize default projects...")
+func syncUpWithK8s() {
+	logs.Info("Initialize to sync up with K8s status ...")
+	defer func() {
+		utils.SetConfig("SYNC_K8S", "finished")
+		service.SetSystemInfo("SYNC_K8S", false)
+	}()
 	var err error
 	// Sync namespace with specific project ownerID
 	err = service.SyncNamespaceByOwnerID(adminUserID)
 	if err != nil {
 		logs.Error("Failed to sync namespace by userID: %d, err: %+v", adminUserID, err)
-		panic(err)
 	}
-	logs.Info("Successful synchonized namespace for admin user.")
+	logs.Info("Successful sync up with namespaces for admin user.")
 	// Sync projects from cluster namespaces
 	err = service.SyncProjectsWithK8s()
 	if err != nil {
 		logs.Error("Failed to sync projects with K8s: %+v", err)
-		panic(err)
 	}
-	logs.Info("Successful synchonized projects with Kubernetes.")
-}
-
-/*
-func syncServiceWithK8s() {
-	service.SyncServiceWithK8s()
-	utils.SetConfig("SYNC_K8S", "created")
-	err := service.SetSystemInfo("SYNC_K8S", true)
-	if err != nil {
-		logs.Error("Failed to set system config: %+v", err)
-		panic(err)
-	}
-}
-*/
-
-func updateSystemInfo() {
-	var err error
-	err = service.SetSystemInfo("BOARD_HOST_IP", true)
-	if err != nil {
-		logs.Error("Failed to set system config BOARD_HOST_IP: %+v", err)
-		panic(err)
-	}
-	err = service.SetSystemInfo("AUTH_MODE", false)
-	if err != nil {
-		logs.Error("Failed to set system config AUTH_MODE: %+v", err)
-		panic(err)
-	}
-	err = service.SetSystemInfo("REDIRECTION_URL", false)
-	if err != nil {
-		logs.Error("Failed to set system config REDIRECTION_URL: %+v", err)
-	}
+	logs.Info("Successful sync up with projects with K8s.")
 }
 
 func main() {
@@ -185,8 +145,6 @@ func main() {
 	controller.InitController()
 	controller.InitRouter()
 
-	updateSystemInfo()
-
 	systemInfo, err := service.GetSystemInfo()
 	if err != nil {
 		logs.Error("Failed to set system config: %+v", err)
@@ -203,11 +161,14 @@ func main() {
 		initProjectRepo()
 	}
 
-	// if systemInfo.SyncK8s == "" || utils.GetStringValue("FORCE_INIT_SYNC") == "true" {
-	// initDefaultProjects()
-	// already do sync service in sync project
-	// syncServiceWithK8s()
-	// }
+	if systemInfo.SyncK8s == "" || utils.GetStringValue("FORCE_INIT_SYNC") == "true" {
+		syncUpWithK8s()
+	}
+
+	service.SetSystemInfo("BOARD_HOST_IP", true)
+	service.SetSystemInfo("AUTH_MODE", false)
+	service.SetSystemInfo("REDIRECTION_URL", false)
+
 	if utils.GetStringValue("JENKINS_EXECUTION_MODE") != "single" {
 		err = service.PrepareKVMHost()
 		if err != nil {

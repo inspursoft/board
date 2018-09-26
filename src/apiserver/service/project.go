@@ -146,18 +146,24 @@ func DeleteProject(userID, projectID int64) (bool, error) {
 	err = gogs.NewGogsHandler(user.Username, user.RepoToken).DeleteRepo(user.Username, repoName)
 	if err != nil {
 		logs.Error("Failed to delete repo with repo name: %s, error: %+v", repoName, err)
-		return false, err
+		if err == utils.ErrUnprocessableEntity {
+			return false, err
+		}
 	}
 	repoPath := ResolveRepoPath(repoName, user.Username)
 	err = os.RemoveAll(repoPath)
 	if err != nil {
 		logs.Error("Failed to remove repo path: %s, error: %+v", repoPath, err)
-		return false, err
+		if err == utils.ErrUnprocessableEntity {
+			return false, err
+		}
 	}
 	err = jenkins.NewJenkinsHandler().DeleteJob(repoName)
 	if err != nil {
 		logs.Error("Failed to delete Jenkins job with name: %s, error: %+v", repoName, err)
-		return false, err
+		if err == utils.ErrUnprocessableEntity {
+			return false, err
+		}
 	}
 	//Delete namespace in cluster
 	_, err = DeleteNamespace(project.Name)
@@ -201,7 +207,7 @@ func CreateNamespace(projectName string) (bool, error) {
 		return false, err
 	}
 	if projectExists {
-		logs.Info("Project library already exists in cluster.")
+		logs.Info("Project %s already exists in cluster.", projectName)
 		return true, nil
 	}
 
@@ -214,7 +220,7 @@ func CreateNamespace(projectName string) (bool, error) {
 	namespace.ObjectMeta.Name = projectName
 	_, err = n.Create(&namespace)
 	if err != nil {
-		logs.Error("Failed to creat namespace", projectName)
+		logs.Error("Failed to create namespace: %s, error: %+v", projectName, err)
 		return false, err
 	}
 	logs.Info(namespace)
@@ -225,7 +231,7 @@ func SyncNamespaceByOwnerID(userID int64) error {
 	query := model.Project{OwnerID: int(userID)}
 	projects, err := GetProjectsByUser(query, userID)
 	if err != nil {
-		return fmt.Errorf("Failed to get default projects: %+v", err)
+		return fmt.Errorf("Failed to get default projects with user ID: %d, error: %+v", userID, err)
 	}
 
 	for _, project := range projects {
@@ -235,7 +241,7 @@ func SyncNamespaceByOwnerID(userID int64) error {
 		projectName := project.Name
 		_, err = CreateNamespace(projectName)
 		if err != nil {
-			return fmt.Errorf("Failed to create namespace: %s", projectName)
+			return fmt.Errorf("Failed to create namespace: %s, error: %+v", projectName, err)
 		}
 	}
 	return nil
@@ -249,14 +255,14 @@ func SyncProjectsWithK8s() error {
 
 	namespaceList, err := n.List()
 	if err != nil {
-		logs.Error("Failed to check namespace list in cluster")
+		logs.Error("Failed to check namespace list in cluster: %+v", err)
 		return err
 	}
 
 	for _, namespace := range (*namespaceList).Items {
 		existing, err := ProjectExists(namespace.Name)
 		if err != nil {
-			logs.Error("Failed to check prject existing %s %+v", namespace.Name, err)
+			logs.Error("Failed to check prject existing name: %s, error: %+v", namespace.Name, err)
 			continue
 		}
 		if existing {
@@ -270,24 +276,24 @@ func SyncProjectsWithK8s() error {
 			reqProject.Public = projectPrivate
 			isSuccess, err := CreateProject(reqProject)
 			if err != nil {
-				logs.Error("Failed to create project %s %+v", reqProject.Name, err)
+				logs.Error("Failed to create project name: %s, error: %+v", reqProject.Name, err)
 				// Still can work
 				continue
 			}
 			if !isSuccess {
-				logs.Error("Failed to create project %s", reqProject.Name)
+				logs.Error("Failed to create project name: %s, error: %+v", reqProject.Name, err)
 				// Still can work
 				continue
 			}
 			err = CreateRepoAndJob(adminUserID, reqProject.Name)
 			if err != nil {
-				logs.Error("Failed create repo and job: %s %+v", reqProject.Name, err)
+				logs.Error("Failed create repo and job with project name: %s, error: %+v", reqProject.Name, err)
 			}
 		}
 		// Sync the services in this project namespace
 		err = SyncServiceWithK8s(namespace.Name)
 		if err != nil {
-			logs.Error("Failed to sync service %s %+v", namespace.Name, err)
+			logs.Error("Failed to sync service with project name: %s, error: %+v", namespace.Name, err)
 			// Still can work
 			continue
 		}
