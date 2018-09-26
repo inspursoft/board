@@ -180,6 +180,30 @@ Select manually scale, set the desired instance number, and confirm it.
 
 <img src="img/userguide/scale3.png" width="100" alt="Scale service">
 
+### AutoScale Service
+To use the autoscale, first need to create a service with resource request.  The following is to create a nginx
+service with 200m CPU and 64Mi Memory request.
+<img src="img/userguide/autoscale1.JPG" width="100" alt="AutoScale service">  
+<img src="img/userguide/autoscale2.JPG" width="100" alt="AutoScale service">
+<img src="img/userguide/autoscale4.JPG" width="100" alt="AutoScale service">
+
+Click the "control" icon in the sevice list page, pop up the service control page.
+In this control page, user can scale the service on runtime and configure the auto-scale rule for this service.
+<img src="img/userguide/autoscale7.JPG" width="100" alt="AutoScale service">
+
+Choose the autoscale
+<img src="img/userguide/autoscale8.JPG" width="100" alt="AutoScale service">
+
+Add a autoscale rule for this service.
+<img src="img/userguide/autoscale10.JPG" width="100" alt="AutoScale service">
+
+Confirm this configuration.
+
+Continuously access this nginx service to give a certain stress. 
+User can check the pod number of this service by the dashboard page.
+<img src="img/userguide/autoscale13.JPG" width="100" alt="AutoScale service">
+<img src="img/userguide/autoscale18.JPG" width="100" alt="AutoScale service">
+
 ### Update Service
 Click the "control" icon in the sevice list page, pop up the service control page.
 Select the "update" tab.
