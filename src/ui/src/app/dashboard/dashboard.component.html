@@ -61,12 +61,12 @@
     <div class="card-block-top-container">
       <cs-dropdown [dropdownDefaultText]="getCurLineName(0)"
                    [dropdownWidth]="200"
-                   [dropdownDisabled]="lineStateInfo.get(0)?.inRefreshWIP"
+                   [dropdownDisabled]="lineStateInfo.get(0)?.inRefreshWIP || !lineStateInfo.get(0)"
                    [dropdownList]="getLinesName(0)"
                    (onChange)="dropDownChange(0,$event)">
       </cs-dropdown>
       <a href="javascript:void(0)" (click)="refreshLine()" class="refresh"
-         [class.disabled]="lineStateInfo.get(0)?.inRefreshWIP">
+         [class.disabled]="lineStateInfo.get(0)?.inRefreshWIP || !lineStateInfo.get(0)">
         <clr-icon shape="refresh" class="refresh"></clr-icon>
       </a>
       <div class="caption_container">
@@ -74,7 +74,7 @@
         <span class="second-line">{{ 'DASHBOARD.CONTAINERS' | translate }}:{{curValue.get(0)?.curSecond}}</span>
       </div>
       <time-range-scale class="range-scale"
-                        [disabled]="lineStateInfo.get(0)?.inRefreshWIP"
+                        [disabled]="lineStateInfo.get(0)?.inRefreshWIP || !lineStateInfo.get(0)"
                         [options]="scaleOptions"
                         [curScale]="query.get(0) ? query.get(0).scale:{}"
                         (scaleChange)="scaleChange(0,$event)">
@@ -100,12 +100,12 @@
     <div class="card-block-top-container">
       <cs-dropdown [dropdownDefaultText]="getCurLineName(1)"
                    [dropdownWidth]="200"
-                   [dropdownDisabled]="lineStateInfo.get(1)?.inRefreshWIP"
+                   [dropdownDisabled]="lineStateInfo.get(1)?.inRefreshWIP || !lineStateInfo.get(1)"
                    [dropdownList]="getLinesName(1)"
                    (onChange)="dropDownChange(1,$event)">
       </cs-dropdown>
       <a href="javascript:void(0)" (click)="refreshLine()" class="refresh"
-         [class.disabled]="lineStateInfo.get(1)?.inRefreshWIP">
+         [class.disabled]="lineStateInfo.get(1)?.inRefreshWIP || !lineStateInfo.get(1)">
         <clr-icon shape="refresh" class="refresh"></clr-icon>
       </a>
       <div class="caption_container">
@@ -115,7 +115,7 @@
       <div class="select-time-container">
         <time-range-scale [curScale]="query.get(1) ? query.get(1).scale:{}"
                           (scaleChange)="scaleChange(1,$event)"
-                          [disabled]="lineStateInfo.get(1)?.inRefreshWIP"
+                          [disabled]="lineStateInfo.get(1)?.inRefreshWIP || !lineStateInfo.get(1)"
                           [options]="scaleOptions">
         </time-range-scale>
       </div>
@@ -142,12 +142,12 @@
     <div class="card-block-top-container">
       <cs-dropdown [dropdownDefaultText]="getCurLineName(2)"
                    [dropdownWidth]="200"
-                   [dropdownDisabled]="lineStateInfo.get(2)?.inRefreshWIP"
+                   [dropdownDisabled]="lineStateInfo.get(2)?.inRefreshWIP || !lineStateInfo.get(2)"
                    [dropdownList]="getLinesName(2)"
                    (onChange)="dropDownChange(2,$event)">
       </cs-dropdown>
       <a href="javascript:void(0)" (click)="refreshLine()" class="refresh"
-         [class.disabled]="lineStateInfo.get(2)?.inRefreshWIP">
+         [class.disabled]="lineStateInfo.get(2)?.inRefreshWIP || !lineStateInfo.get(2)">
         <clr-icon shape="refresh" class="refresh"></clr-icon>
       </a>
       <div class="caption_container">
@@ -158,7 +158,7 @@
       <div class="select-time-container">
         <time-range-scale [curScale]="query.get(2) ? query.get(2).scale:{}"
                           (scaleChange)="scaleChange(2,$event)"
-                          [disabled]="lineStateInfo.get(2)?.inRefreshWIP"
+                          [disabled]="lineStateInfo.get(2)?.inRefreshWIP || !lineStateInfo.get(2)"
                           [options]="scaleOptions">
         </time-range-scale>
       </div>

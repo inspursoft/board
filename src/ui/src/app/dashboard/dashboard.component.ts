@@ -70,7 +70,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
   query: Map<LineType, {list_name: string, scale: scaleOption, baseLineTimeStamp: number, time_count: number, timestamp_base: number}>;
   eventDragChange: Subject<{lineType: LineType, isDragBack: boolean}>;
   eventZoomBarChange: Subject<{start: number, end: number}>;
-  eventInitChangeDetector: Subject<LineType>;
+  // eventInitChangeDetector: Subject<LineType>;
   eventLangChangeSubscription: Subscription;
   eChartInstance: Map<LineType, Object>;
   autoRefreshInterval: Map<LineType, number>;
@@ -85,7 +85,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     // this.changeDetectorRef.detach();
     this.eventDragChange = new Subject<{lineType: LineType, isDragBack: boolean}>();
     this.eventZoomBarChange = new Subject<{start: number, end: number}>();
-    this.eventInitChangeDetector = new Subject<LineType>();
+    // this.eventInitChangeDetector = new Subject<LineType>();
     this.lineResponses = new Map<LineType, IResponse>();
     this.lineThirdLine = new Map<LineType, ThirdLine>();
     this.query = new Map<LineType, {list_name: string, scale: scaleOption, baseLineTimeStamp: number, time_count: number, timestamp_base: number}>();
@@ -174,7 +174,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
               curFirst: res.firstLineData.length > 0 ? res.firstLineData[0][1] : 0,
               curSecond: res.secondLineData.length > 0 ?res.secondLineData[0][1] : 0
             });
-            this.eventInitChangeDetector.next(lineType)
+            // this.eventInitChangeDetector.next(lineType)
           })
         });
       });
