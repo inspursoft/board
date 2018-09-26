@@ -159,6 +159,8 @@ func InitializeDefaultConfig() {
 
 	AddValue("IS_EXTERNAL_AUTH", (GetStringValue("AUTH_MODE") != "db_auth"))
 
+	SetConfig("SYNC_K8S", "false")
+
 	AddEnv("EMAIL_HOST")
 	AddEnv("EMAIL_PORT")
 	AddEnv("EMAIL_USR")

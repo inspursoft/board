@@ -16,6 +16,7 @@ import (
 var ErrBadRequest = errors.New("Bad request")
 var ErrUnauthorized = errors.New("Unauthorized")
 var ErrForbidden = errors.New("Forbidden")
+var ErrNotFound = errors.New("Not found")
 var ErrConflict = errors.New("Conflict")
 var ErrUnprocessableEntity = errors.New("Unprocessable entity")
 var ErrInternalError = errors.New("Internal server error")
@@ -40,6 +41,8 @@ func DefaultResponseHandler(req *http.Request, resp *http.Response) error {
 			return ErrUnauthorized
 		case http.StatusForbidden:
 			return ErrForbidden
+		case http.StatusNotFound:
+			return ErrNotFound
 		case http.StatusConflict:
 			return ErrConflict
 		case http.StatusUnprocessableEntity:

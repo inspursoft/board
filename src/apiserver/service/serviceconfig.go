@@ -231,15 +231,14 @@ func SyncServiceWithK8s(pName string) error {
 
 	serviceList, err := k8sclient.AppV1().Service(pName).List()
 	if err != nil {
-		logs.Error("Failed to get service list %s", pName)
+		logs.Error("Failed to get service list with project name: %s", pName)
 		return err
 	}
 
 	//handle the serviceList data
 	var servicequery model.ServiceStatus
 	for _, item := range serviceList.Items {
-		queryProject := model.Project{Name: item.Namespace}
-		project, err := GetProject(queryProject, "name")
+		project, err := GetProjectByName(item.Namespace)
 		if err != nil {
 			logs.Error("Failed to check project in DB %s", item.Namespace)
 			return err
