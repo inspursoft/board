@@ -174,3 +174,14 @@ div.grafana-container-header{
 span.grafana-card-title{
   flex-basis: 100%;
 }
+
+a.refresh.disabled{
+  cursor: not-allowed;
+  color: #e0e0e0;
+}
+
+clr-icon.refresh {
+  height: 20px;
+  width: 20px;
+  margin-left: 10px;
+}

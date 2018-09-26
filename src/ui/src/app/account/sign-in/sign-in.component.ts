@@ -21,7 +21,7 @@ export class SignInComponent implements OnInit {
               private messageService: MessageService,
               private accountService: AccountService,
               private router: Router) {
-    this.authMode = this.appInitService.systemInfo['auth_mode'];
+    this.authMode = this.appInitService.systemInfo ? this.appInitService.systemInfo['auth_mode'] :'';
     this.redirectionURL = this.appInitService.systemInfo['redirection_url'];
   }
 

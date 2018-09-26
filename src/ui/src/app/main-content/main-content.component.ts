@@ -11,7 +11,6 @@ import { ICsMenuItemData } from "../shared/shared.types";
 export class MainContentComponent {
   @ViewChild("frameDashboard") frame:ElementRef;
   navSource: Array<ICsMenuItemData>;
-  isOnlyShowGrafanaView: boolean = false;
   isSignIn: boolean = true;
   hasSignedIn: boolean = false;
   searchContent: string = '';
@@ -30,19 +29,13 @@ export class MainContentComponent {
     this.getMenuItemByRoute(RouteUserCenters).visible = this.appInitService.isSystemAdmin;
     this.getMenuItemByRoute(RouteAudit).visible = this.appInitService.isSystemAdmin;
     this.route.queryParamMap.subscribe(params=>{
-      this.isOnlyShowGrafanaView = params.get("isOnlyShowGrafanaView") == "true";
       this.searchContent = params.get("q");
     });
     this.appInitService.systemInfo = this.route.snapshot.data['systeminfo'];
-    this.appInitService.grafanaViewUrl = `/grafana/dashboard/db/kubernetes/`;
   }
 
   getMenuItemByRoute(route: string): ICsMenuItemData {
     return this.navSource.find((value => value.url.includes(route)));
-  }
-
-  get grafanaViewUrl():string{
-    return this.appInitService.grafanaViewUrl;
   }
 
   navigateTo(link) {

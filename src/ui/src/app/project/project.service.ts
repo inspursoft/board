@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Project } from './project';
+import { Observable } from "rxjs/Observable";
 
 @Injectable()
 export class ProjectService {
@@ -31,9 +32,7 @@ export class ProjectService {
       .toPromise()
   }
 
-  deleteProject(project: Project): Promise<any> {
-    return this.http
-      .delete(`/api/v1/projects/${project.project_id}`, {observe: "response"})
-      .toPromise()
+  deleteProject(project: Project): Observable<any> {
+    return this.http.delete(`/api/v1/projects/${project.project_id}`, {observe: "response"})
   }
 }

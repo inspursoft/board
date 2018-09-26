@@ -6,7 +6,10 @@
     </div>
   </div>
   <div class="scale-text-container">
-    <div class="scale-text" *ngFor="let option of options;let i = index" (click)="changeBlock(i,option)">
+    <div *ngFor="let option of options;let i = index"
+         class="scale-text"
+         [class.disabled]="disabled"
+         (click)="changeBlock(i,option)">
       {{option.description | translate }}
     </div>
   </div>
