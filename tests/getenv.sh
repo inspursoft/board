@@ -1,21 +1,5 @@
-source /root/env.cfg
-WORKSPACE=$2
-echo "-----------------------------------"
-echo "head_repo_clone_url:	$head_repo_clone_url"
-echo "head_repo_brach:		$head_repo_branch"
-echo "base_repo_clone_url:	$base_repo_clone_url"
-echo "base_repo_branch:		$base_repo_branch"
-echo "comment_url:		$comments_url"
-echo "action:			$action"
-echo "build_url:		$BUILD_URL"
-echo "workspace:		$WORKSPACE"
-echo "-----------------------------------"
+#!/bin/sh
 
-boardDir=$WORKSPACE/src/git/inspursoft
-mkdir -p $boardDir
-mkdir -p $WORKSPACE/index
-mkdir -p $WORKSPACE/tag
-mkdir -p $WORKSPACE/total
 
 cd $boardDir
 
@@ -42,7 +26,4 @@ git fetch upstream
 git checkout -b master-main --track upstream/$base_repo_branch
 git merge $head_repo_branch 
 fi
-
-
-
 

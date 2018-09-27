@@ -1,10 +1,13 @@
 install:
 env:
-  - export registry_ip=10.110.18.177
-  - export golang_version=1.9.6
-  - export mysql_version=5.6.35
-  - export opendap_version=1.1.11
-  - export last_version=latest
+  - registry_ip=10.110.18.177
+  - golang_version=1.9.6
+  - mysql_version=5.6.35
+  - opendap_version=1.1.11
+  - last_version=latest
+  - boardDir=$workspace/src/git/inspursoft
+  - envFile=$boardDir/$base_repo_name/tests/env.cfg
+  - GOPATH=$workspace
 before_script:
   - echo "before script"
   - echo "------------------------"
@@ -16,7 +19,6 @@ before_script:
   - echo "$action"
   - echo "$workspace"
   - echo "$build_number"
-  - echo $BUILD_NUMBER
   - systemctl start docker
   - docker pull $registry_ip/library/golang:$golang_version
   - docker tag $registry_ip/library/golang:$golang_version golang:$golang_version
@@ -32,14 +34,25 @@ before_script:
   - docker tag $registry_ip/board/dev_jenkins:dev dev_jenkins:dev
  
 script:
+  - source /root/env.cfg
   - echo $action
   - cd $workspace/tests
   - echo $BUILD_NUMBER
-  - sudo ./getenv.sh build_url $workspace
-  - cd $workspace/src/git/inspursoft/board/tests
+  - mkdir -p $boardDir
+  - sh getenv.sh
+  - cd $boardDir/$base_repo_name
+  - make prepare
+  - cd $boardDir/board/tests
+  - cp $boardDir/$base_repo_name/tests/docker-compose.test.yml  $boardDir/$base_repo_name/make/dev
+  - cp $boardDir/$base_repo_name/tests/ldap_test.ldif  $boardDir/$base_repo_name/make/dev
+  - cd $boardDir/$base_repo_name/make/dev
+  - docker-compose -f docker-compose.test.yml up -d
   - ls
-  - sudo ./hosts.sh 
-  - sudo ./jenkinsrun.sh $BUILD_NUMBER $workspace
+  - cd $boardDir/board/tests
+  - sh hosts.sh
+  - sh run.sh 
+  - cd $boardDir/board/tests
+  - sh report.sh
 
 after_script:
   - echo 'after_script'
