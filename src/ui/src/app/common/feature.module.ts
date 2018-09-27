@@ -11,6 +11,7 @@ import { AuditModule } from "../audit/audit.module";
 import { AccountModule } from "../account/account.module";
 import { MainContentModule } from "../main-content/main-content.module";
 import { KibanaModule } from "../kibana/kibana.module";
+import { GrafanaModule } from "../grafana/grafana.module";
 
 @NgModule({
   exports: [
@@ -25,7 +26,8 @@ import { KibanaModule } from "../kibana/kibana.module";
     UserCenterModule,
     AuditModule,
     AccountModule,
-    KibanaModule
+    KibanaModule,
+    GrafanaModule
   ]
 })
 export class FeatureModule {}

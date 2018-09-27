@@ -61,10 +61,10 @@ export class CsDropdownComponent implements OnChanges, OnInit {
     if (changes["dropdownList"] && changes["dropdownList"].currentValue) {
       this.isShowDefaultText = true;
       this.filterDropdownList = this.dropdownList;
-      if (this.dropdownHideSearch) {
+      if (this.dropdownHideSearch || (this.dropdownList.length < DROP_DOWN_SHOW_COUNT)) {
         this.shownDropdownList = this.dropdownList;
       } else {
-        this.shownDropdownList = this.dropdownList.filter((value, index) => index < this.dropdownShowTimes * DROP_DOWN_SHOW_COUNT);
+        this.shownDropdownList = this.dropdownList.filter((value, index) => index < DROP_DOWN_SHOW_COUNT);
       }
     }
   }

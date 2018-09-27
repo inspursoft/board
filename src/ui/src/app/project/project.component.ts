@@ -76,7 +76,7 @@ export class ProjectComponent implements OnInit {
       this.translateService.get('PROJECT.CONFIRM_TO_DELETE_PROJECT', [project.project_name]).subscribe((msg: string) => {
         this.messageService.showDeleteDialog(msg, 'PROJECT.DELETE_PROJECT').subscribe((message: Message) => {
           if (message.returnStatus == RETURN_STATUS.rsConfirm) {
-            this.projectService.deleteProject(project).then(() => {
+            this.projectService.deleteProject(project).subscribe(() => {
               this.messageService.showAlert('PROJECT.SUCCESSFUL_DELETE_PROJECT');
               this.retrieve(this.oldStateInfo);
             })

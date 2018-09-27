@@ -21,8 +21,8 @@ export class SignInComponent implements OnInit {
               private messageService: MessageService,
               private accountService: AccountService,
               private router: Router) {
-    this.authMode = this.appInitService.systemInfo['auth_mode'];
-    this.redirectionURL = this.appInitService.systemInfo['redirection_url'];
+    this.authMode = this.appInitService.systemInfo ? this.appInitService.systemInfo['auth_mode'] :'';
+    this.redirectionURL = this.appInitService.systemInfo ? this.appInitService.systemInfo['redirection_url'] :'';
   }
 
   ngOnInit(): void {

@@ -2,7 +2,7 @@
                 [hasSignedIn]="hasSignedIn"
                 [searchContent]="searchContent">
 </header-content>
-<div class="content-container-1" *ngIf="!isOnlyShowGrafanaView">
+<div class="content-container-1">
   <cs-vertical-nav *ngIf="hasSignedIn" [navSource]="navSource">
     <ng-template [csVerticalNavGuide]="'service'">
       <cs-guide [description]="'SIDE_NAV.GUIDE_SERVICE_LIST'"
@@ -24,11 +24,6 @@
   <div class="outlet-container">
     <router-outlet></router-outlet>
   </div>
-</div>
-<div *ngIf="isOnlyShowGrafanaView" style="height: 100%; padding: 0;margin: 0;scrollbar-base-color: blue">
-  <iframe #frameDashboard height=100% width="100%" frameborder="0" [src]="grafanaViewUrl | safe">
-    {{"DASHBOARD.GRAFANA_FRAME_SUPPORT" | translate}}
-  </iframe>
 </div>
 
 

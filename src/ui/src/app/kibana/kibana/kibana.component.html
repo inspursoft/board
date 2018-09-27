@@ -1,3 +1,4 @@
-<iframe #frameDashboard height=100% width="100%" frameborder="0" [src]="kibanaUrl | safe">
+<h3 *ngIf="errorMessage!==''">{{errorMessage}}</h3>
+<iframe *ngIf="errorMessage==''" height=100% width="100%" frameborder="0" [src]="kibanaUrl | safe">
   {{"DASHBOARD.GRAFANA_FRAME_SUPPORT" | translate}}
 </iframe>

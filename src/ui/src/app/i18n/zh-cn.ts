@@ -122,6 +122,7 @@ export const LANG_ZH_CN = {
     "ADMIN_OPTIONS": "管理员选项",
     "AUDIT": "操作审计",
     "KIBANA": "Kibana",
+    "GRAFANA": "Grafana",
     "PROFILES": "系统信息",
     "GUIDE_SERVICE_LIST":"请创建属于您的新服务",
     "GUIDE_PROJECT_LIST":"请创建属于您的新项目"
