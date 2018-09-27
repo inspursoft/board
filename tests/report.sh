@@ -1,53 +1,19 @@
-source /root/env.cfg
-build_number=$1
-WORKSPACE=$2
+#!/bin/sh
 
-consoleLink=$jenkins_master_url/job/$group_name/$build_number/console
-boardDir=$WORKSPACE/src/git/inspursoft
-branchDir=`echo $base_repo_clone_url|awk -F '/' '{print $NF}'|cut -d '.' -f 1`
-workDir=$WORKSPACE
-
+consoleLink=$jenkins_master_url/job/$group_name/$build_id/console
 last_build_cov=$last_coverage
 echo "--------------------------"
 echo $lastBuildCov
-echo $build_number
-echo "xxxxxxxxxxxxxxxxxxxxxxxxxx"
+echo $build_id
 
 #make prepare
-cd $boardDir/$branchDir
-make prepare
-
-#start up mysql docker container
-#cp /home/backup/docker-compose.mysql.a.yml $boardDir/$branchDir/make/dev
-cp $boardDir/$branchDir/tests/docker-compose.test.yml  $boardDir/$branchDir/make/dev
-cp $boardDir/$branchDir/tests/ldap_test.ldif  $boardDir/$branchDir/make/dev
-cd $boardDir/$branchDir/make/dev
-docker-compose -f docker-compose.test.yml down -v
-rm -rf /data/board
-rm -rf /tmp/test-repos /tmp/test-keys
-rm -f  /root/.ssh/known_hosts
-docker-compose -f docker-compose.test.yml up -d
-
-
-#docker-compose -f docker-compose.uibuilder.test.yml up 
-
-export GOPATH=$workDir
-
-cd $boardDir/$branchDir/tests
-
-
-#cd $boardDir/board/tests
 
 chmod +x *
-envFile=$boardDir/$branchDir/tests/env.cfg
-#make run
-./run.sh $envFile
 
 if [ "$action" == "pull_request" ]; then
-#cov=`cat $boardDir/$branchDir/tests/out.temp|grep "total"|awk '{print $NF}'|cut -d "%" -f 1|tr -s [:space:]`
-covfile=$boardDir/$branchDir/tests/avaCov.cov
-coverage_file_html=$boardDir/$branchDir/tests/profile.html
-build_cov=`cat $boardDir/$branchDir/tests/avaCov.cov`
+covfile=$boardDir/$base_repo_name/tests/avaCov.cov
+coverage_file_html=$boardDir/$base_repo_name/tests/profile.html
+build_cov=`cat $boardDir/$base_repo_name/tests/avaCov.cov`
 
 
 echo "push to register======================="
@@ -57,14 +23,14 @@ echo "full_name:	$full_name"
 echo "username:		$username"
 echo "cov_num:		$cov_num"
 command="curl -X POST \
-  '$gogs_url/upload?full_name=$full_name&build_number=$build_number' \
+  '$gogs_url/upload?full_name=$full_name&build_id=$build_id' \
   -H 'Cache-Control: no-cache' \
   -H 'Content-Type: multipart/form-data' \
   -F 'upload=@$coverage_file_html'
 "
 echo $command
 eval $command
-coverage_file_html_path="$gogs_url/results/$full_name/$build_number/profile.html"
+coverage_file_html_path="$gogs_url/results/$full_name/$build_id/profile.html"
 
 echo $coverage_file_html_path
 
@@ -118,7 +84,7 @@ serverresult=$build_cov
 consoleinfo=", check "
 uiCov=" <a href=$uiLink>$uiCoverage </a>"
 serverCovLink=" <a href=$coverage_file_html_path>$serverresult</a>"
-console_url=" <a href=$consoleLink> consolse log</a> "
+console_url=" <a href=$consoleLink> console log</a> "
 imageLink=$gogs_url/results/pic/$pic
 image_url=" <img src="$imageLink" width="20" height="20"> "
 bodyinfo=$info1$serverCovLink$imageu$uiinfo$uiImageuri$consoleinfo$consoleuri
@@ -133,6 +99,8 @@ cmd="curl -X POST \
   -H 'Authorization: token $access_token' \
   -H 'Content-Type: application/json' \
   '$b'"
+
+echo "---------command--------"
 echo $cmd
 eval $cmd
 
