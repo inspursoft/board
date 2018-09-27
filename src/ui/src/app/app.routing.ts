@@ -27,6 +27,8 @@ import { TimeoutComponent } from "./shared/error-pages/timeout.component/timeout
 import { BadGatewayComponent } from "./shared/error-pages/bad-gateway.component/bad-gateway.component";
 import { BoardLoadingComponent } from "./shared/error-pages/board-loading.component/board-loading.component";
 import { KibanaComponent } from "./kibana/kibana/kibana.component";
+import { GrafanaComponent } from "./grafana/grafana/grafana.component";
+import { RouteGrafana, RouteKibana } from "./shared/shared.const";
 
 @Injectable()
 export class SystemInfoResolve implements Resolve<any> {
@@ -92,7 +94,8 @@ export const ROUTES: Routes = [
       {path: 'services', component: ServiceComponent, canDeactivate: [ServiceGuard]},
       {path: 'user-center', component: UserCenterComponent},
       {path: 'profile', component: ProfileComponent},
-      {path: 'kibana', component: KibanaComponent},
+      {path: RouteKibana, component: KibanaComponent},
+      {path: RouteGrafana, component: GrafanaComponent},
       {path: 'audit', component: ListAuditComponent}
     ]
   },

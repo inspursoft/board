@@ -25,11 +25,22 @@ div.scale-block-container {
   cursor: pointer;
 }
 
+.scale-text.disabled {
+  cursor: not-allowed;
+}
+
 .normal-block {
   height: 10px;
   margin-top: -3px;
   cursor: pointer;
   width: 10px;
+}
+
+.normal-block.disabled {
+  height: 0;
+  margin-top: -3px;
+  cursor: not-allowed;
+  width: 0;
 }
 
 .left-block {
@@ -43,6 +54,10 @@ div.scale-block-container {
   border: solid 1px #bbbbbb;
   background: blue;
   border-radius: 7px;
+}
+
+.left-block.disabled {
+  background: #bbbbbb;
 }
 
 .middle-block {
@@ -59,6 +74,10 @@ div.scale-block-container {
   background: blue;
 }
 
+.middle-block.disabled {
+  background: #bbbbbb;
+}
+
 .right-block {
   border-right: solid 1px #bbbbbb;
 }
@@ -70,4 +89,8 @@ div.scale-block-container {
   margin-top: -6px;
   border: solid 1px #bbbbbb;
   background: blue;
+}
+
+.right-block.disabled {
+  background: #bbbbbb;
 }

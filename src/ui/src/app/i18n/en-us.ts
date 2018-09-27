@@ -122,6 +122,7 @@ export const LANG_EN_US = {
     "ADMIN_OPTIONS": "Admin Options",
     "AUDIT": "Operation Audit",
     "KIBANA": "Kibana",
+    "GRAFANA": "Grafana",
     "PROFILES": "System Info",
     "GUIDE_SERVICE_LIST":"Please create your own Service.",
     "GUIDE_PROJECT_LIST":"Please create your own Project."
