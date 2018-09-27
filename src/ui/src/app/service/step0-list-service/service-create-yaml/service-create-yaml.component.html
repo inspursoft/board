@@ -48,9 +48,10 @@
     <div class="build-btn-container">
       <label class="base-text"></label>
       <button class="btn btn-default cancel-build custom-margin"
-              [disabled]="isUploadFileWIP || isToggleServiceWIP"
+              [class.btn-danger]="createServiceStatus=='Failed'"
+              [disabled]="createServiceStatus=='Executing' || uploadFileStatus == 'Executing'"
               (click)="btnCancelClick($event)">
-        {{"BUTTON.CANCEL"|translate}}
+        {{createServiceStatus=='Failed' ? ("BUTTON.DELETE" | translate) : ("BUTTON.CANCEL" | translate)}}
       </button>
       <button class="btn btn-primary"
               [disabled]="isBtnUploadDisabled"
@@ -58,11 +59,12 @@
         {{"SERVICE.SERVICE_YAML_UPLOAD" | translate}}
       </button>
       <button class="btn btn-primary"
-              [disabled]="!isUploadFileSuccess || isToggleServiceWIP || isFileInEdit"
+              [disabled]="uploadFileStatus != 'Success'"
               (click)="btnCreateClick($event)">
         {{"BUTTON.CREATE"|translate}}
       </button>
-      <div *ngIf="isToggleServiceWIP" class="custom-margin spinner-container">
+      <div *ngIf="createServiceStatus=='Executing' || uploadFileStatus == 'Executing'"
+           class="custom-margin spinner-container">
         <span class="spinner spinner-sm"></span>
       </div>
     </div>

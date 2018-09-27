@@ -12,6 +12,10 @@ export enum RETURN_STATUS {
   rsNone, rsConfirm, rsCancel
 }
 
+export enum EXECUTE_STATUS {
+  esNotExe = 'NotExe', esExecuting = 'Executing', esSuccess = 'Success', esFailed = 'Failed'
+}
+
 export enum BUTTON_STYLE {
   CONFIRMATION = 1, DELETION, YES_NO, ONLY_CONFIRM
 }
