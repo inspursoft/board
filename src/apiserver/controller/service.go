@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"os"
 
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/apiserver/service/devops/travis"
@@ -370,7 +371,12 @@ func (p *ServiceController) ToggleServiceAction() {
 		p.customAbort(http.StatusBadRequest, "Service already running.")
 		return
 	}
-
+	
+	p.resolveRepoServicePath(s.ProjectName, s.Name)
+	if _, err := os.Stat(p.repoServicePath); os.IsNotExist(err) {
+		p.customAbort(http.StatusPreconditionFailed, "Service restored from initialization, cannot be switched.")
+		return
+	}
 	if reqServiceToggle.Toggle == 0 {
 		// stop service
 		err = service.StopServiceK8s(s)
@@ -386,7 +392,6 @@ func (p *ServiceController) ToggleServiceAction() {
 		}
 	} else {
 		// start service
-		p.resolveRepoServicePath(s.ProjectName, s.Name)
 		err := service.DeployServiceByYaml(s.ProjectName, kubeMasterURL(), p.repoServicePath)
 		if err != nil {
 			p.parseError(err, parsePostK8sError)
