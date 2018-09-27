@@ -49,7 +49,7 @@ script:
   - docker-compose -f docker-compose.test.yml up -d
   - ls
   - cd $boardDir/board/tests
-  - source env.cfg
+  - source $boardDir/board/tests/env.cfg
   - sh hosts.sh
   - sh run.sh 
   - cd $boardDir/board/tests
