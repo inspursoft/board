@@ -73,7 +73,7 @@ func (u *UserController) ChangeUserAccount() {
 	}
 
 	reqUser.ID = u.currentUser.ID
-	users, err := service.GetUsers("email", reqUser.Email)
+	users, err := service.GetUsers("email", reqUser.Email, "id", "email")
 	if err != nil {
 		u.internalError(err)
 		return
@@ -358,7 +358,7 @@ func (u *SystemAdminController) UpdateUserAction() {
 	}
 
 	reqUser.ID = user.ID
-	users, err := service.GetUsers("email", reqUser.Email)
+	users, err := service.GetUsers("email", reqUser.Email, "id", "email")
 	if err != nil {
 		u.internalError(err)
 		return

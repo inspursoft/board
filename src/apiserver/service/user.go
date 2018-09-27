@@ -12,6 +12,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+
+	"github.com/astaxie/beego/logs"
 )
 
 var sshKeyPath = utils.GetConfig("SSH_KEY_PATH")
@@ -117,6 +119,7 @@ func ResetUserPassword(user model.User, newPassword string) (bool, error) {
 func DeleteUser(userID int64) (bool, error) {
 	user, err := GetUserByID(userID)
 	if err != nil {
+		logs.Error("Failed to get user by ID: %d, error: %+v", userID, err)
 		return false, nil
 	}
 	user.Username = "%" + user.Username + "%"
@@ -124,6 +127,7 @@ func DeleteUser(userID int64) (bool, error) {
 	user.Deleted = 1
 	_, err = dao.UpdateUser(*user, "username", "email", "deleted")
 	if err != nil {
+		logs.Error("Failed to update user: %v, error: %+v", user, err)
 		return false, err
 	}
 	return true, nil

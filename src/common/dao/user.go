@@ -54,7 +54,7 @@ func queryUsers(field string, value interface{}) orm.QuerySeter {
 	if value == nil {
 		return qs
 	}
-	return qs.Filter(field+"__contains", value)
+	return qs.Filter(field, value)
 }
 
 func GetUsers(field string, value interface{}, selectedFields ...string) ([]*model.User, error) {

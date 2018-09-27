@@ -86,8 +86,8 @@ func TestUserAction(t *testing.T) {
 		r, _ := http.NewRequest("DELETE", fmt.Sprintf("/api/v1/users/%d?token=%s", readUser.ID, token), nil)
 		w := httptest.NewRecorder()
 		beego.BeeApp.Handlers.ServeHTTP(w, r)
-
 		assert.Equal(http.StatusOK, w.Code, "Delete User fail.")
+		cleanUp(readUser.Username)
 	}()
 
 	t.Log("getting one user")
@@ -223,16 +223,6 @@ func TestChangeUserAccount(t *testing.T) {
 	}
 	readUser := readUsers[0]
 
-	// defer delete user
-	defer func() {
-		t.Log("deleteing user")
-		r, _ := http.NewRequest("DELETE", fmt.Sprintf("/api/v1/users/%d?token=%s", readUser.ID, token), nil)
-		w := httptest.NewRecorder()
-		beego.BeeApp.Handlers.ServeHTTP(w, r)
-
-		assert.Equal(http.StatusOK, w.Code, "Delete User fail.")
-	}()
-
 	t.Log("getting one user")
 	r, _ = http.NewRequest("GET", fmt.Sprintf("/api/v1/users/%d?token=%s", readUser.ID, token), nil)
 	w = httptest.NewRecorder()
@@ -274,7 +264,6 @@ func TestChangeUserAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("updateduser unmarshal error: %v", err)
 	}
-
 	if !assert.Equal(readUser.Comment, updatedUser.Comment, "Upate User Comment fail.") {
 		t.FailNow()
 	}
@@ -336,16 +325,6 @@ func TestChangePasswordAction(t *testing.T) {
 	}
 	readUser := readUsers[0]
 
-	// defer delete user
-	defer func() {
-		t.Log("deleteing user")
-		r, _ := http.NewRequest("DELETE", fmt.Sprintf("/api/v1/users/%d?token=%s", readUser.ID, token), nil)
-		w := httptest.NewRecorder()
-		beego.BeeApp.Handlers.ServeHTTP(w, r)
-
-		assert.Equal(http.StatusOK, w.Code, "Delete User fail.")
-	}()
-
 	t.Log("getting one user")
 	r, _ = http.NewRequest("GET", fmt.Sprintf("/api/v1/users/%d?token=%s", readUser.ID, token), nil)
 	w = httptest.NewRecorder()
@@ -388,13 +367,8 @@ func cleanUp(username string) {
 	if err != nil {
 		logs.Error("Error occurred while deleting user: %+v", err)
 	}
-	affected, err := r.RowsAffected()
+	_, err = r.RowsAffected()
 	if err != nil {
 		logs.Error("Error occurred while deleting user: %+v", err)
-	}
-	if affected == 0 {
-		logs.Error("Failed to delete user")
-	} else {
-		logs.Info("Successful cleared up.")
 	}
 }
