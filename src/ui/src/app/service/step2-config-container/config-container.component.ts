@@ -112,7 +112,7 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
     buf.imageIndex.image_name = image.image_name;
     buf.imageIndex.project_name = this.stepSelectImageData.projectName;
     buf.container.image.image_name = image.image_name;
-    buf.container.name = image.image_name;
+    buf.container.name = image.image_name.substr(image.image_name.indexOf('/') + 1);
     buf.container.image.project_name = this.stepSelectImageData.projectName;
     this.containerIsInEdit.set(buf.container, false);
     if (this.imageDetailSourceList.has(image.image_name)) {
