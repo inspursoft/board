@@ -59,7 +59,6 @@ func TestUserAction(t *testing.T) {
 	if !assert.Equal(http.StatusOK, w.Code, "Add User fail.") {
 		t.FailNow()
 	}
-	defer cleanUp(user.Username)
 
 	// get users
 	t.Log("getting users")
