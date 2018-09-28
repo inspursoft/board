@@ -55,7 +55,6 @@ script:
   - sh run.sh 
   - cd $boardDir/board/tests
   - sh report.sh
-
 after_script:
   - echo 'after_script'
 
