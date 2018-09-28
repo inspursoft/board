@@ -25,7 +25,7 @@ function listDeps()
     done
 }
 #$@pull      
-set -e
+#set -e
 
 # set envirnment
 deps=""
@@ -33,7 +33,6 @@ gopath=/go/src/git/inspursoft/board/
 volumeDir=`dirname $(pwd)`/tests
 
 dir="$( cd "$( dirname "$0"  )" && pwd  )"
-echo "xxxcvadsfadsafas"
 echo $dir
 
 function rungotest()

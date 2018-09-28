@@ -6,7 +6,7 @@ import { Service } from "../../service";
 import { HttpErrorResponse } from "@angular/common/http";
 import { SharedService } from "../../../shared/shared.service";
 import { SharedActionService } from "../../../shared/shared-action.service";
-import { GlobalAlertType } from "../../../shared/shared.types";
+import { EXECUTE_STATUS, GlobalAlertType } from "../../../shared/shared.types";
 
 export const DEPLOYMENT = "deployment";
 export const SERVICE = "service";
@@ -24,9 +24,8 @@ export class ServiceCreateYamlComponent implements OnInit {
   newServiceName: string = "";
   newServiceId: number = 0;
   filesDataMap: Map<string, File>;
-  isUploadFileWIP: boolean = false;
-  isToggleServiceWIP: boolean = false;
-  isUploadFileSuccess: boolean = false;
+  uploadFileStatus = EXECUTE_STATUS.esNotExe;
+  createServiceStatus = EXECUTE_STATUS.esNotExe;
   isFileInEdit: boolean = false;
   curFileContent: string = "";
   curFileName: FileType;
@@ -105,18 +104,24 @@ export class ServiceCreateYamlComponent implements OnInit {
   }
 
   btnCancelClick(event: MouseEvent) {
-    this.onCancelEvent.emit(event);
+    if (this.createServiceStatus == EXECUTE_STATUS.esFailed){
+      this.k8sService.deleteService(this.newServiceId)
+        .then(()=>this.onCancelEvent.emit(event))
+        .catch(()=>this.onCancelEvent.emit(event))
+    } else {
+      this.onCancelEvent.emit(event);
+    }
   }
 
   btnCreateClick(event: MouseEvent) {
-    this.isToggleServiceWIP = true;
+    this.createServiceStatus = EXECUTE_STATUS.esExecuting;
     this.k8sService.toggleServiceStatus(this.newServiceId, 1)
       .then(() => {
-        this.isToggleServiceWIP = false;
+        this.createServiceStatus = EXECUTE_STATUS.esSuccess;
         this.onCancelEvent.emit(event);
       })
       .catch((err:HttpErrorResponse) => {
-        this.isToggleServiceWIP = false;
+        this.createServiceStatus = EXECUTE_STATUS.esFailed;
         this.messageService.showGlobalMessage('SERVICE.SERVICE_YAML_CREATE_FAILED', {
           errorObject: err,
           globalAlertType: GlobalAlertType.gatShowDetail
@@ -130,44 +135,40 @@ export class ServiceCreateYamlComponent implements OnInit {
     let serviceFile = this.filesDataMap.get(SERVICE);
     formData.append("deployment_file", deploymentFile, deploymentFile.name);
     formData.append("service_file", serviceFile, serviceFile.name);
-    this.isUploadFileWIP = true;
+    this.uploadFileStatus = EXECUTE_STATUS.esExecuting;
     this.k8sService.uploadServiceYamlFile(this.selectedProjectName, formData)
       .subscribe((res: Service) => {
         this.newServiceName = res.service_name;
         this.newServiceId = res.service_id;
-        this.isUploadFileWIP = false;
       }, (error: HttpErrorResponse) => {
-        this.isUploadFileSuccess = false;
-        this.isUploadFileWIP = false;
+        this.uploadFileStatus = EXECUTE_STATUS.esFailed;
         this.messageService.showGlobalMessage('SERVICE.SERVICE_YAML_UPLOAD_FAILED', {
           errorObject: error,
           globalAlertType: GlobalAlertType.gatShowDetail
         })
       }, () => {
-        this.isUploadFileSuccess = true;
+        this.uploadFileStatus = EXECUTE_STATUS.esSuccess;
         this.messageService.showAlert('SERVICE.SERVICE_YAML_UPLOAD_SUCCESS');
       });
   }
 
   get isBtnUploadDisabled(): boolean {
     return this.selectedProjectId == 0
-      || this.isUploadFileWIP
+      || this.uploadFileStatus == EXECUTE_STATUS.esExecuting
+      || this.uploadFileStatus == EXECUTE_STATUS.esSuccess
       || !this.filesDataMap.has('deployment')
-      || this.isUploadFileSuccess
       || this.isFileInEdit
       || !this.filesDataMap.has('service');
   }
 
   get isEditDeploymentEnable(): boolean{
-    return !this.isUploadFileSuccess
-      && !this.isUploadFileWIP
+    return this.uploadFileStatus == EXECUTE_STATUS.esNotExe
       && !this.isFileInEdit
       && this.filesDataMap.get('deployment') != undefined
   }
 
   get isEditServiceEnable(): boolean{
-    return !this.isUploadFileSuccess
-      && !this.isUploadFileWIP
+    return this.uploadFileStatus == EXECUTE_STATUS.esNotExe
       && !this.isFileInEdit
       && this.filesDataMap.get('service') != undefined
   }
