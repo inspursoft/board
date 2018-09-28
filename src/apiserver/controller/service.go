@@ -113,19 +113,13 @@ func (p *ServiceController) DeployServiceAction() {
 		return
 	}
 
-	p.resolveRepoServicePath(project.Name, newservice.Name)
-	err = service.CheckFilePath(p.repoServicePath)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
 	deployInfo, err := service.DeployService((*model.ConfigServiceStep)(configService), kubeMasterURL(), registryBaseURI())
 	if err != nil {
 		p.parseError(err, parsePostK8sError)
 		return
 	}
 
+	p.resolveRepoServicePath(project.Name, newservice.Name)
 	err = service.GenerateDeployYamlFiles(deployInfo, p.repoServicePath)
 	if err != nil {
 		p.internalError(err)
@@ -371,7 +365,7 @@ func (p *ServiceController) ToggleServiceAction() {
 		p.customAbort(http.StatusBadRequest, "Service already running.")
 		return
 	}
-	
+
 	p.resolveRepoServicePath(s.ProjectName, s.Name)
 	if _, err := os.Stat(p.repoServicePath); os.IsNotExist(err) {
 		p.customAbort(http.StatusPreconditionFailed, "Service restored from initialization, cannot be switched.")
@@ -450,8 +444,9 @@ func (p *ServiceController) GetServiceInfoAction() {
 		return
 	}
 	//Judge authority
-	p.resolveUserPrivilegeByID(s.ProjectID)
-
+	if s.Public != 1 {
+		p.resolveUserPrivilegeByID(s.ProjectID)
+	}
 	serviceStatus, err := service.GetServiceByK8sassist(s.ProjectName, s.Name)
 	if err != nil {
 		p.parseError(err, parseGetK8sError)

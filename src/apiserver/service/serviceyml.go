@@ -83,7 +83,7 @@ func GenerateDeploymentYamlFileFromK8S(serviceConfig *model.ServiceStatus, loadP
 	if err != nil {
 		return err
 	}
-	return GenerateDeploymentYamlFile(deploymentFileInfo, loadPath)
+	return GenerateK8SYamlFile(deploymentFileInfo, loadPath, deploymentFilename)
 }
 
 func GenerateServiceYamlFileFromK8S(serviceConfig *model.ServiceStatus, loadPath, masterURL string) error {
@@ -93,7 +93,7 @@ func GenerateServiceYamlFileFromK8S(serviceConfig *model.ServiceStatus, loadPath
 	if err != nil {
 		return err
 	}
-	return GenerateServiceYamlFile(serviceFileInfo, loadPath)
+	return GenerateK8SYamlFile(serviceFileInfo, loadPath, serviceFilename)
 }
 
 func DeleteServiceConfigYaml(serviceConfigPath string) error {

@@ -192,7 +192,7 @@ func (p *ServiceRollingUpdateController) PatchServiceAction(rollingUpdateConfig 
 	}
 
 	p.resolveRepoServicePath(projectName, serviceName)
-	err = service.GenerateDeploymentYamlFile(deploymentFileInfo, p.repoServicePath)
+	err = service.GenerateK8SYamlFile(deploymentFileInfo, p.repoServicePath, deploymentFilename)
 	if err != nil {
 		p.internalError(err)
 		return
@@ -216,7 +216,7 @@ func (p *ServiceRollingUpdateController) UpdateServiceAction(rollingUpdateConfig
 	}
 	logs.Debug("Updated deployment: ", deploymentConfig)
 	p.resolveRepoServicePath(projectName, serviceName)
-	err = service.GenerateDeploymentYamlFile(deploymentFileInfo, p.repoServicePath)
+	err = service.GenerateK8SYamlFile(deploymentFileInfo, p.repoServicePath, deploymentFilename)
 	if err != nil {
 		p.internalError(err)
 		return

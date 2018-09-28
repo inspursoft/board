@@ -59,11 +59,11 @@ func GenerateDeployYamlFiles(deployInfo *DeployInfo, loadPath string) error {
 		logs.Error("Deploy info is empty.")
 		return errors.New("Deploy info is empty.")
 	}
-	err := GenerateServiceYamlFile(deployInfo.ServiceFileInfo, loadPath)
+	err := GenerateK8SYamlFile(deployInfo.ServiceFileInfo, loadPath, serviceFilename)
 	if err != nil {
 		return err
 	}
-	err = GenerateDeploymentYamlFile(deployInfo.DeploymentFileInfo, loadPath)
+	err = GenerateK8SYamlFile(deployInfo.DeploymentFileInfo, loadPath, deploymentFilename)
 	if err != nil {
 		return err
 	}
@@ -71,25 +71,18 @@ func GenerateDeployYamlFiles(deployInfo *DeployInfo, loadPath string) error {
 	return nil
 }
 
-func GenerateDeploymentYamlFile(deploymentInfo []byte, loadPath string) error {
-	deploymentAbsName := filepath.Join(loadPath, deploymentFilename)
-	err := ioutil.WriteFile(deploymentAbsName, deploymentInfo, 0644)
+func GenerateK8SYamlFile(fileInfo []byte, loadPath string, fileName string) error {
+	err := CheckFilePath(loadPath)
 	if err != nil {
-		logs.Error("Generate deployment object yaml file failed, err:%+v\n", err)
+		logs.Error("Check yaml file path error, err:%+v\n", err)
 		return err
 	}
-
-	return nil
-}
-
-func GenerateServiceYamlFile(serviceInfo []byte, loadPath string) error {
-	ServiceAbsName := filepath.Join(loadPath, serviceFilename)
-	err := ioutil.WriteFile(ServiceAbsName, serviceInfo, 0644)
+	absFileName := filepath.Join(loadPath, fileName)
+	err = ioutil.WriteFile(absFileName, fileInfo, 0644)
 	if err != nil {
-		logs.Error("Generate service object yaml file failed, err:%+v\n", err)
+		logs.Error("Generate yaml file failed, err:%+v\n", err)
 		return err
 	}
-
 	return nil
 }
 
