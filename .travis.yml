@@ -8,6 +8,7 @@ env:
   - boardDir=$workspace/src/git/inspursoft
   - envFile=$boardDir/$base_repo_name/tests/env.cfg
   - GOPATH=$workspace
+  - build_id=$BUILD_NUMBER
 before_script:
   - echo "before script"
   - echo "------------------------"
@@ -37,7 +38,7 @@ script:
   - source /root/env.cfg
   - echo $action
   - cd $workspace/tests
-  - echo $BUILD_NUMBER
+  - echo $build_id
   - mkdir -p $boardDir
   - sh getenv.sh
   - cd $boardDir/$base_repo_name
