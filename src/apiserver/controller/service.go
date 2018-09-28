@@ -655,7 +655,7 @@ func (f *ServiceController) resolveUploadedYamlFile(uploadedFileName string) (fu
 
 	return func(fileName string, serviceInfo *model.ServiceStatus) error {
 		f.resolveRepoServicePath(serviceInfo.ProjectName, serviceInfo.Name)
-		err = service.CheckFilePath(f.repoServicePath)
+		err = utils.CheckFilePath(f.repoServicePath)
 		if err != nil {
 			f.internalError(err)
 			return nil
@@ -744,7 +744,7 @@ func (f *ServiceController) DownloadDeploymentYamlFileAction() {
 func (f *ServiceController) resolveDownloadYaml(serviceConfig *model.ServiceStatus, fileName string, generator func(*model.ServiceStatus, string, string) error) {
 	logs.Debug("Current download yaml file: %s", fileName)
 	//checkout the path of download
-	err := service.CheckFilePath(f.repoServicePath)
+	err := utils.CheckFilePath(f.repoServicePath)
 	if err != nil {
 		f.internalError(err)
 		return

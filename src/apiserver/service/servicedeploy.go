@@ -4,8 +4,8 @@ import (
 	"errors"
 	"git/inspursoft/board/src/common/k8sassist"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -59,30 +59,15 @@ func GenerateDeployYamlFiles(deployInfo *DeployInfo, loadPath string) error {
 		logs.Error("Deploy info is empty.")
 		return errors.New("Deploy info is empty.")
 	}
-	err := GenerateK8SYamlFile(deployInfo.ServiceFileInfo, loadPath, serviceFilename)
+	err := utils.GenerateFile(deployInfo.ServiceFileInfo, loadPath, serviceFilename)
 	if err != nil {
 		return err
 	}
-	err = GenerateK8SYamlFile(deployInfo.DeploymentFileInfo, loadPath, deploymentFilename)
+	err = utils.GenerateFile(deployInfo.DeploymentFileInfo, loadPath, deploymentFilename)
 	if err != nil {
 		return err
 	}
 
-	return nil
-}
-
-func GenerateK8SYamlFile(fileInfo []byte, loadPath string, fileName string) error {
-	err := CheckFilePath(loadPath)
-	if err != nil {
-		logs.Error("Check yaml file path error, err:%+v\n", err)
-		return err
-	}
-	absFileName := filepath.Join(loadPath, fileName)
-	err = ioutil.WriteFile(absFileName, fileInfo, 0644)
-	if err != nil {
-		logs.Error("Generate yaml file failed, err:%+v\n", err)
-		return err
-	}
 	return nil
 }
 
