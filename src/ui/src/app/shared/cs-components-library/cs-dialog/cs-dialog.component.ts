@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { BUTTON_STYLE, Message, RETURN_STATUS } from '../../shared.types';
 import { Observable, Subject } from 'rxjs';
+import { Subscription } from "rxjs/Subscription";
 import "rxjs/add/observable/fromEvent"
 
 @Component({
@@ -9,24 +10,24 @@ import "rxjs/add/observable/fromEvent"
 export class CsDialogComponent implements OnDestroy, OnInit {
   opened: boolean;
   curMessage: Message;
-  protected returnSubject: Subject<Message>;
+  private keypressSubscribe: Subscription;
+  private returnSubject: Subject<Message>;
+
   constructor() {
     this.curMessage = new Message();
     this.returnSubject = new Subject<Message>();
   }
 
   ngOnDestroy(): void {
-    delete this.curMessage;
-    delete this.returnSubject;
+    this.keypressSubscribe.unsubscribe();
   }
 
   ngOnInit() {
     const obsKeyPress = Observable.fromEvent(document, 'keypress');
-    const unSubscribe= obsKeyPress.subscribe((event: KeyboardEvent) => {
+    this.keypressSubscribe = obsKeyPress.subscribe((event: KeyboardEvent) => {
       if (event.charCode === 13 && this.curMessage.buttonStyle == BUTTON_STYLE.ONLY_CONFIRM) {
         this.curMessage.returnStatus = RETURN_STATUS.rsCancel;
         this.returnSubject.next(this.curMessage);
-        unSubscribe.unsubscribe();
       }
     });
   }
