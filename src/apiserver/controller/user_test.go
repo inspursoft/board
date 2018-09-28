@@ -35,9 +35,9 @@ func TestUserAction(t *testing.T) {
 	defer adminLogoutTest(t)
 
 	user := model.User{
-		Username:    "testuser1",
+		Username:    "testuser",
 		Password:    "testuserpasswrd",
-		Email:       "testuser1@test.com",
+		Email:       "testuser@test.com",
 		Realname:    "testuser",
 		Comment:     "this is just a test account",
 		SystemAdmin: 0,
