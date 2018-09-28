@@ -35,9 +35,9 @@ func TestUserAction(t *testing.T) {
 	defer adminLogoutTest(t)
 
 	user := model.User{
-		Username:    "testuser",
+		Username:    "testuser1",
 		Password:    "testuserpasswrd",
-		Email:       "testuser@test.com",
+		Email:       "testuser1@test.com",
 		Realname:    "testuser",
 		Comment:     "this is just a test account",
 		SystemAdmin: 0,
@@ -59,7 +59,6 @@ func TestUserAction(t *testing.T) {
 	if !assert.Equal(http.StatusOK, w.Code, "Add User fail.") {
 		t.FailNow()
 	}
-	defer cleanUp(user.Username)
 
 	// get users
 	t.Log("getting users")

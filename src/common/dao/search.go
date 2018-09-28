@@ -41,7 +41,8 @@ func SearchPublicProject(projectName string) ([]SearchProjectResult, error) {
 	  project.name as project_name,
 	  project.public as is_public
 	from project
-	where public = 1
+	where deleted = 0 
+	and public = 1
 	and project.name like ?;`
 	o := orm.NewOrm()
 	_, err := o.Raw(sql, "%"+projectName+"%").QueryRows(&searchRes)
