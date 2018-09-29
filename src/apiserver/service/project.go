@@ -24,6 +24,8 @@ const (
 	adminUserID    = 1
 	adminUserName  = "admin"
 	projectPrivate = 0
+	kubeNamespace  = "kube-system"
+	istioNamespace = "istio-system"
 )
 
 func CreateProject(project model.Project) (bool, error) {
@@ -260,6 +262,11 @@ func SyncProjectsWithK8s() error {
 	}
 
 	for _, namespace := range (*namespaceList).Items {
+		// Skip kubernetes system namespace
+		if namespace.Name == kubeNamespace || namespace.Name == istioNamespace {
+			logs.Debug("Skip %s namespace", namespace.Name)
+			continue
+		}
 		existing, err := ProjectExists(namespace.Name)
 		if err != nil {
 			logs.Error("Failed to check prject existing name: %s, error: %+v", namespace.Name, err)
