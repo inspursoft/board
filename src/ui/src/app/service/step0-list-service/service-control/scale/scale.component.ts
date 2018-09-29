@@ -27,6 +27,7 @@ export class ScaleComponent extends CsComponentBase implements OnInit {
   scaleNum: number = 0;
   scaleInfo: IScaleInfo = {desired_instance: 0, available_instance: 0};
   autoScaleConfig: Array<ServiceHPA>;
+  patternHpaName:RegExp = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
 
   constructor(private k8sService: K8sService,
               private messageService: MessageService) {
