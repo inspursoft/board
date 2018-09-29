@@ -48,3 +48,16 @@ export const MAIN_MENU_DATA: Array<ICsMenuItemData> = [
 
 export const UsernameInUseKey: Array<string> = ["explore", "create", "assets", "css", "img", "js", "less", "plugins", "debug", "raw",
   "install", "api", "avatar", "user", "org", "help", "stars", "issues", "pulls", "commits", "repo", "template", "new", ".", ".."];
+export const InvalidServiceName: Array<string> = [
+  'istio-egressgateway',
+  'istio-ingress',
+  'istio-ingressgateway',
+  'istio-pilot',
+  'istio-policy',
+  'istio-statsd-prom-bridge',
+  'istio-telemetry',
+  'prometheus',
+  'kube-dns',
+  'tiller-deploy',
+  'istio-citadel'
+];
