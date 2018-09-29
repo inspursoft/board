@@ -3,6 +3,7 @@ package controller
 import (
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -192,7 +193,7 @@ func (p *ServiceRollingUpdateController) PatchServiceAction(rollingUpdateConfig 
 	}
 
 	p.resolveRepoServicePath(projectName, serviceName)
-	err = service.GenerateDeploymentYamlFile(deploymentFileInfo, p.repoServicePath)
+	err = utils.GenerateFile(deploymentFileInfo, p.repoServicePath, deploymentFilename)
 	if err != nil {
 		p.internalError(err)
 		return
@@ -216,7 +217,7 @@ func (p *ServiceRollingUpdateController) UpdateServiceAction(rollingUpdateConfig
 	}
 	logs.Debug("Updated deployment: ", deploymentConfig)
 	p.resolveRepoServicePath(projectName, serviceName)
-	err = service.GenerateDeploymentYamlFile(deploymentFileInfo, p.repoServicePath)
+	err = utils.GenerateFile(deploymentFileInfo, p.repoServicePath, deploymentFilename)
 	if err != nil {
 		p.internalError(err)
 		return
