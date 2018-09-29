@@ -1,7 +1,7 @@
 
 div.modal-body-container {
   display: flex;
-  min-height: 580px;
+  height: 580px;
 }
 
 .base-margin-left {
@@ -61,10 +61,10 @@ label.base-text {
 
 div.console-container {
   display: flex;
-  min-height: 200px;
   flex-direction: column;
   flex-basis: 100%;
   padding: 10px;
+  height: 100%;
 }
 
 input.upload-file-input {
