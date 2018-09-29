@@ -169,9 +169,10 @@ export class DashboardService {
         listLogs.sort((a: Object, b: Object) => a[lineListQuery.data_list_name_key] > (b[lineListQuery.data_list_name_key]) ? 1 : -1);
         listLogs.forEach((item: Object) => {
           const serviceName: string = item[lineListQuery.data_list_name_key];
-          if (InvalidServiceName.indexOf(serviceName.toLocaleLowerCase()) === -1){
-            result.list.push(serviceName);
-          }
+          result.list.push(serviceName);
+          // if (InvalidServiceName.indexOf(serviceName.toLocaleLowerCase()) === -1){
+          //   result.list.push(serviceName);
+          // }
         });
       }
       return result;
