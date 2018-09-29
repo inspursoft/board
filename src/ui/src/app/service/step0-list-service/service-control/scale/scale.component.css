@@ -32,7 +32,11 @@ div.auto-scale-container {
 
 div.auto-scale-line-container {
   display: flex;
-  justify-content: space-between;
+  padding: 0 14px;
+}
+
+div.auto-scale-line-container cs-input {
+  flex-basis: 100%;
 }
 
 div.auto-scale-plus-container {
