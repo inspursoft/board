@@ -119,7 +119,11 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     });
     this.eventLangChangeSubscription = this.translateService.onLangChange.subscribe(() => {
       this.lineTypeSet.forEach((lineType: LineType) => {
-        this.setLineBaseOption(lineType).subscribe(res => this.lineOptions.set(lineType, res));
+        this.setLineBaseOption(lineType).subscribe(res => {
+          this.lineOptions.set(lineType, res);
+          this.detectChartData(lineType);
+          this.clearEChart(lineType);
+        });
       });
     });
   }
