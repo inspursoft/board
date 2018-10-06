@@ -2,8 +2,8 @@ import { Injectable } from "@angular/core";
 import { HttpClient, HttpHeaders, HttpResponse } from "@angular/common/http";
 import { AuditQueryData } from "./audit";
 import { Observable } from "rxjs/Observable";
-import { User } from "../user-center/user";
 import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from "../shared/shared.const";
+import { User } from "../shared/shared.types";
 
 const BASE_URL = "/api/v1";
 

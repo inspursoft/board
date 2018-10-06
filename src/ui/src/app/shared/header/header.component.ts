@@ -6,6 +6,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { AppInitService } from '../../app.init.service';
 import { AccountService } from '../../account/account.service';
 import { MessageService } from '../message-service/message.service';
+import { CookieService } from "ngx-cookie";
 
 @Component({
   selector: 'header-content',
@@ -30,6 +31,7 @@ export class HeaderComponent implements OnInit {
 
   constructor(private router: Router,
               private translateService: TranslateService,
+              private cookieService: CookieService,
               private appInitService: AppInitService,
               private accountService: AccountService,
               private messageService: MessageService) {
@@ -39,8 +41,8 @@ export class HeaderComponent implements OnInit {
   ngOnInit(): void {
     if (this.hasSignedIn){
       this.currentUser = this.appInitService.currentUser || {};
-      this.authMode = this.appInitService.systemInfo['auth_mode'];
-      this.redirectionURL = this.appInitService.systemInfo['redirection_url'];
+      this.authMode = this.appInitService.systemInfo.auth_mode;
+      this.redirectionURL = this.appInitService.systemInfo.redirection_url;
     }
   }
 
@@ -82,17 +84,15 @@ export class HeaderComponent implements OnInit {
   }
 
   logOut() {
-    this.accountService
-      .signOut()
-      .then(res=>{
-        this.appInitService.token = '';
-        this.appInitService.currentUser = null;
-        if(this.authMode === 'indata_auth') {
-          window.location.href = this.redirectionURL;
-          return;
-        }
-        this.router.navigate(['/sign-in']);
-      })
-      .catch(() => this.messageService.showAlert('ACCOUNT.FAILED_TO_SIGN_OUT', {alertType: 'alert-danger'}));
+    this.accountService.signOut(this.appInitService.currentUser.user_name).subscribe(() => {
+      this.cookieService.remove('token');
+      this.appInitService.token = '';
+      this.appInitService.currentUser = null;
+      if (this.authMode === 'indata_auth') {
+        window.location.href = this.redirectionURL;
+        return;
+      }
+      this.router.navigate(['/sign-in']).then();
+    }, () => this.messageService.showAlert('ACCOUNT.FAILED_TO_SIGN_OUT', {alertType: 'alert-danger'}));
   }
 }

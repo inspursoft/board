@@ -23,15 +23,15 @@ export class ChooseProjectComponent extends ServiceStepBase implements OnInit {
 
   ngOnInit() {
     if (this.isBack) {
-      this.k8sService.getServiceConfig(this.stepPhase).then((res: UIServiceStep1) => {
+      this.k8sService.getServiceConfig(this.stepPhase).subscribe((res: UIServiceStep1) => {
         this.uiBaseData = res;
         this.uiData.projectId = res.projectId;
       })
     } else {
-      this.k8sService.deleteServiceConfig().then(res => res);
+      this.k8sService.deleteServiceConfig().subscribe(res => res);
     }
     this.k8sService.getProjects()
-      .then((res: Array<Project>) => {
+      .subscribe((res: Array<Project>) => {
         let createNewProject: Project = new Project();
         createNewProject.project_name = "SERVICE.STEP_1_CREATE_PROJECT";
         createNewProject.project_id = -1;
@@ -59,15 +59,15 @@ export class ChooseProjectComponent extends ServiceStepBase implements OnInit {
   }
 
   forward() {
-    this.k8sService.setServiceConfig(this.uiData.uiToServer()).then(() => {
-      this.k8sService.stepSource.next({index: 2, isBack: false});
-    })
+    this.k8sService.setServiceConfig(this.uiData.uiToServer()).subscribe(
+      () => this.k8sService.stepSource.next({index: 2, isBack: false})
+    );
   }
 
   clickSelectProject() {
     this.sharedActionService.createProjectComponent(this.selfView).subscribe((projectName: string) => {
       if (projectName) {
-        this.sharedService.getOneProject(projectName).then((res: Array<Project>) => {
+        this.sharedService.getOneProject(projectName).subscribe((res: Array<Project>) => {
           this.uiData.projectId = res[0].project_id;
           let project = this.projectsList.shift();
           this.projectsList.unshift(res[0]);

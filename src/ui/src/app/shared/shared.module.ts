@@ -112,6 +112,7 @@ import { CsModalChildBaseSelector } from "./cs-modal-base/cs-modal-child-base";
     WebsocketService,
     SharedService,
     SharedActionService
+
   ]
 })
 export class SharedModule {}

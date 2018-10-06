@@ -28,7 +28,7 @@ export class ResetPasswordComponent extends CsComponentBase implements OnInit {
   }
 
   ngOnInit() {
-    if(this.appInitService.systemInfo["auth_mode"] != 'db_auth') {
+    if (this.appInitService.systemInfo.auth_mode != 'db_auth') {
       this.router.navigate([RouteSignIn]).then();
     } else {
       this.activatedRoute.queryParamMap.subscribe((params: ParamMap) => this.resetUuid = params.get("reset_uuid"));
@@ -42,12 +42,10 @@ export class ResetPasswordComponent extends CsComponentBase implements OnInit {
   sendResetPassRequest() {
     if (this.verifyInputValid()) {
       this.sendRequestWIP = true;
-      this.accountService.resetPassword(this.signUpModel.password, this.resetUuid)
-        .then(() =>
-          this.messageService.showOnlyOkDialogObservable('ACCOUNT.RESET_PASS_SUCCESS_MSG', 'ACCOUNT.RESET_PASS_SUCCESS')
-            .subscribe(() => this.router.navigate([RouteSignIn]).then())
-        )
-        .catch((err: HttpErrorResponse) => {
+      this.accountService.resetPassword(this.signUpModel.password, this.resetUuid).subscribe(
+        () => this.messageService.showOnlyOkDialogObservable('ACCOUNT.RESET_PASS_SUCCESS_MSG', 'ACCOUNT.RESET_PASS_SUCCESS').subscribe(
+          () => this.router.navigate([RouteSignIn]).then())
+        , (err: HttpErrorResponse) => {
           this.sendRequestWIP = false;
           let rtnErrorMessage = (err: HttpErrorResponse): string => {
             if (/Invalid reset UUID/gm.test(err.error)) {

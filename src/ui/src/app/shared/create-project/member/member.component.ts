@@ -43,8 +43,8 @@ export class MemberComponent extends CsModalChildBase implements OnInit {
   }
 
   retrieveAvailableMembers() {
-    this.sharedService.getProjectMembers(this.project.project_id).then((members: Array<Member>) => {
-      this.sharedService.getAvailableMembers().then((availableMembers: Array<Member>) => {
+    this.sharedService.getProjectMembers(this.project.project_id).subscribe((members: Array<Member>) => {
+      this.sharedService.getAvailableMembers().subscribe((availableMembers: Array<Member>) => {
         this.availableMembers = availableMembers;
         this.availableMembers.forEach((am: Member) => {
           am.isMember = false;
@@ -98,10 +98,11 @@ export class MemberComponent extends CsModalChildBase implements OnInit {
     this.selectedMember.project_member_role_id = role.role_id;
     this.isActionWip = true;
     this.sharedService.addOrUpdateProjectMember(this.project.project_id,
-        this.selectedMember.project_member_user_id, 
-        this.selectedMember.project_member_role_id)
-      .then(() => this.displayInlineMessage('PROJECT.SUCCESSFUL_CHANGED_MEMBER_ROLE', 'alert-info', [this.selectedMember.project_member_username]))
-      .catch(() => this.displayInlineMessage('PROJECT.FAILED_TO_CHANGE_MEMBER_ROLE', 'alert-danger'));
+      this.selectedMember.project_member_user_id,
+      this.selectedMember.project_member_role_id).subscribe(
+      () => this.displayInlineMessage('PROJECT.SUCCESSFUL_CHANGED_MEMBER_ROLE', 'alert-info', [this.selectedMember.project_member_username]),
+      () => this.displayInlineMessage('PROJECT.FAILED_TO_CHANGE_MEMBER_ROLE', 'alert-danger')
+    );
   }
 
   setMember(): void {
@@ -110,10 +111,11 @@ export class MemberComponent extends CsModalChildBase implements OnInit {
         member.project_member_role_id = this.role.role_id;
         this.isActionWip = true;
         this.sharedService.addOrUpdateProjectMember(this.project.project_id,
-            this.selectedMember.project_member_user_id, 
-            this.selectedMember.project_member_role_id)
-          .then(() => this.displayInlineMessage('PROJECT.SUCCESSFUL_ADDED_MEMBER', 'alert-info', [this.selectedMember.project_member_username]))
-          .catch(() => this.displayInlineMessage('PROJECT.FAILED_TO_ADD_MEMBER', 'alert-danger'));
+          this.selectedMember.project_member_user_id,
+          this.selectedMember.project_member_role_id).subscribe(
+          () => this.displayInlineMessage('PROJECT.SUCCESSFUL_ADDED_MEMBER', 'alert-info', [this.selectedMember.project_member_username]),
+          () => this.displayInlineMessage('PROJECT.FAILED_TO_ADD_MEMBER', 'alert-danger')
+        );
         member.isMember = true;
       }
     });
@@ -126,10 +128,10 @@ export class MemberComponent extends CsModalChildBase implements OnInit {
         this.selectedMember.project_member_id = 1;
         member.isMember = false;
         this.isActionWip = true;
-        this.sharedService
-          .deleteProjectMember(this.project.project_id, this.selectedMember.project_member_user_id)
-          .then(() => this.displayInlineMessage('PROJECT.SUCCESSFUL_REMOVED_MEMBER', 'alert-info', [this.selectedMember.project_member_username]))
-          .catch(() => this.displayInlineMessage('PROJECT.FAILED_TO_REMOVE_MEMBER', 'alert-danger'));
+        this.sharedService.deleteProjectMember(this.project.project_id, this.selectedMember.project_member_user_id).subscribe(
+          () => this.displayInlineMessage('PROJECT.SUCCESSFUL_REMOVED_MEMBER', 'alert-info', [this.selectedMember.project_member_username]),
+          () => this.displayInlineMessage('PROJECT.FAILED_TO_REMOVE_MEMBER', 'alert-danger')
+        );
       }
     });
     this.memberSubject.next(this.availableMembers);

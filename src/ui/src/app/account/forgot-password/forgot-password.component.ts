@@ -25,7 +25,7 @@ export class ForgotPasswordComponent extends CsComponentBase implements OnInit {
   }
 
   ngOnInit() {
-    if (this.appInitService.systemInfo["auth_mode"] != 'db_auth') {
+    if (this.appInitService.systemInfo.auth_mode != 'db_auth') {
       this.router.navigate([RouteSignIn]).then();
     }
   }

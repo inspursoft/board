@@ -4,6 +4,9 @@ import { MessageService } from "../../shared/message-service/message.service";
 import { ValidationErrors } from "@angular/forms";
 import { HttpErrorResponse } from "@angular/common/http";
 import { CsModalChildBase } from "../../shared/cs-modal-base/cs-modal-child-base";
+import { Observable } from "rxjs/Observable";
+import "rxjs/add/operator/map"
+import "rxjs/add/observable/of"
 
 class NodeGroup implements INodeGroup {
   nodegroup_id: number = 0;
@@ -33,16 +36,17 @@ export class NodeCreateGroupComponent extends CsModalChildBase {
     return this.checkNodeGroupName.bind(this);
   }
 
-  checkNodeGroupName(control: HTMLInputElement): Promise<ValidationErrors | null> {
+  checkNodeGroupName(control: HTMLInputElement): Observable<ValidationErrors | null> {
     return this.nodeService.checkNodeGroupExist(control.value)
-      .toPromise()
-      .then(() => null)
+      .map(() => null)
       .catch((err:HttpErrorResponse) => {
         this.messageService.cleanNotification();
         if (err.status == 409) {
-          return {nodeGroupExist: "NODE.NODE_GROUP_NAME_EXIST"}
+          return Observable.of({nodeGroupExist: "NODE.NODE_GROUP_NAME_EXIST"})
+        } else {
+          return Observable.of(null)
         }
-      });
+      })
   }
 
   commitNodeGroup() {

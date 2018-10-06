@@ -21,7 +21,6 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   currentUser: {[key: string]: any};
   services: Service[];
   isInLoading: boolean = false;
-  _subscriptionInterval: Subscription;
   totalRecordCount: number;
   pageIndex: number = 1;
   pageSize: number = 15;
@@ -32,24 +31,25 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   projectList: Array<Project>;
   descSort = ClrDatagridSortOrder.DESC;
   oldStateInfo: ClrDatagridStateInterface;
+  private subscriptionInterval: Subscription;
 
   constructor(protected injector: Injector,
               private translateService: TranslateService,
               private viewRef: ViewContainerRef,
               private factory: ComponentFactoryResolver) {
     super(injector);
-    this._subscriptionInterval = Observable.interval(10000).subscribe(() => this.retrieve(true, this.oldStateInfo));
+    this.subscriptionInterval = Observable.interval(10000).subscribe(() => this.retrieve(true, this.oldStateInfo));
     this.isActionWIP = new Map<number, boolean>();
     this.projectList = Array<Project>();
   }
 
   ngOnInit(): void {
     this.currentUser = this.appInitService.currentUser;
-    this.k8sService.getProjects().then((res: Array<Project>) => this.projectList = res);
+    this.k8sService.getProjects().subscribe((res: Array<Project>) => this.projectList = res);
   }
 
   ngOnDestroy(): void {
-    this._subscriptionInterval.unsubscribe();
+    this.subscriptionInterval.unsubscribe();
   }
 
   isServiceInStoppedStatus(s: Service): boolean {
@@ -84,13 +84,13 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
       setTimeout(()=>{
         this.isInLoading = !isAuto;
         this.oldStateInfo = stateInfo;
-        this.k8sService.getServices(this.pageIndex, this.pageSize, stateInfo.sort.by as string, stateInfo.sort.reverse)
-          .then(paginatedServices => {
+        this.k8sService.getServices(this.pageIndex, this.pageSize, stateInfo.sort.by as string, stateInfo.sort.reverse).subscribe(
+          paginatedServices => {
             this.totalRecordCount = paginatedServices["pagination"]["total_count"];
             this.services = paginatedServices["service_status_list"];
             this.isInLoading = false;
-          })
-          .catch(() => this.isInLoading = false);
+          }, () => this.isInLoading = false
+        );
       });
     }
   }
@@ -118,13 +118,11 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
 
   toggleServicePublic(service: Service, $event:MouseEvent): void {
     let oldServicePublic = service.service_public;
-    this.k8sService
-      .toggleServicePublicity(service.service_id, service.service_public == 1 ? 0 : 1)
-      .then(() => {
+    this.k8sService.toggleServicePublicity(service.service_id, service.service_public == 1 ? 0 : 1).subscribe(() => {
         service.service_public = oldServicePublic == 1 ? 0 : 1;
         this.messageService.showAlert('SERVICE.SUCCESSFUL_TOGGLE')
-      })
-      .catch(() => ($event.srcElement as HTMLInputElement).checked = oldServicePublic == 1);
+      }, () => ($event.srcElement as HTMLInputElement).checked = oldServicePublic == 1
+    );
   }
 
   toggleService(service: Service){
@@ -132,13 +130,12 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
       this.translateService.get('SERVICE.CONFIRM_TO_TOGGLE_SERVICE', [service.service_name]).subscribe((msg: string) => {
         this.messageService.showConfirmationDialog(msg, 'SERVICE.TOGGLE_SERVICE').subscribe((message: Message) => {
           if (message.returnStatus == RETURN_STATUS.rsConfirm) {
-            this.k8sService.toggleServiceStatus(service.service_id, service.service_status == 1 ? 0 : 1)
-              .then(() => {
+            this.k8sService.toggleServiceStatus(service.service_id, service.service_status == 1 ? 0 : 1).subscribe(() => {
                 this.messageService.showAlert('SERVICE.SUCCESSFUL_TOGGLE');
                 this.isActionWIP.set(service.service_id, false);
                 this.retrieve(false, this.oldStateInfo);
-              })
-              .catch(() => this.isActionWIP.set(service.service_id, false));
+              }, () => this.isActionWIP.set(service.service_id, false)
+            );
           }
         });
       });
@@ -150,13 +147,12 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
       this.translateService.get('SERVICE.CONFIRM_TO_DELETE_SERVICE', [service.service_name]).subscribe((msg: string) => {
         this.messageService.showDeleteDialog(msg, 'SERVICE.DELETE_SERVICE').subscribe((message: Message) => {
           if (message.returnStatus == RETURN_STATUS.rsConfirm) {
-            this.k8sService.deleteService(service.service_id)
-              .then(() => {
+            this.k8sService.deleteService(service.service_id).subscribe(() => {
                 this.messageService.showAlert('SERVICE.SUCCESSFUL_DELETE');
                 this.isActionWIP.set(service.service_id, false);
                 this.retrieve(false, this.oldStateInfo);
-              })
-              .catch(() => this.isActionWIP.set(service.service_id, false));
+              }, () => this.isActionWIP.set(service.service_id, false)
+            );
           }
         });
       });
