@@ -50,13 +50,13 @@ export class CsVerticalNavComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    // this.guideContainers.forEach(container => {
-    //   let guid = this.guideTemplates.find(guid => container.csVerticalNavGuide.includes(guid.csVerticalNavGuide));
-    //   if (guid) {
-    //     container.viewContainer.createEmbeddedView(guid.templateRef);
-    //     this.changeRef.detectChanges();
-    //   }
-    // })
+    this.guideContainers.forEach(container => {
+      let guid = this.guideTemplates.find(guid => container.csVerticalNavGuide.includes(guid.csVerticalNavGuide));
+      if (guid) {
+        container.viewContainer.createEmbeddedView(guid.templateRef);
+        this.changeRef.detectChanges();
+      }
+    })
   }
 
   get queryParams(): {token: string} {
