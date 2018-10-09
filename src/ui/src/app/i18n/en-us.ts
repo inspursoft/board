@@ -41,6 +41,7 @@ export const LANG_EN_US = {
     "HTTP_404":"Resource not found:404",
     "HTTP_412": "Precondition given in one or more of the request are evaluated to false:412",
     "HTTP_UNK":"Unknown error",
+    "HTTP_TIME_OUT":"Http request timeout",
     "INSUFFICIENT_PRIVILEGE":"Insufficient privilege to operate it."
   },
   "CS_DROPDOWN":{
