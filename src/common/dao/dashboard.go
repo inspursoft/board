@@ -213,14 +213,12 @@ func (d *DashboardNodeDao) genNodeDataTotalSqlString(tableName string) string {
 }
 func (d *DashboardNodeDao) getNodeListDataSqlString(tableName string) (sql string) {
 	sql = fmt.Sprintf(`
-	(SELECT
-   nd.node_name      AS node_name,
-   max(tll.record_time) AS record_time
+	(SELECT distinct
+   nd.node_name      AS node_name
  FROM %s nd
    LEFT JOIN time_list_log tll ON nd.time_list_id = tll.id
  WHERE tll.record_time >= ?
-       AND tll.record_time <= ?
- GROUP BY nd.node_name)
+       AND tll.record_time <= ?)
  ORDER BY record_time ASC;
 	`, tableName)
 
@@ -229,14 +227,12 @@ func (d *DashboardNodeDao) getNodeListDataSqlString(tableName string) (sql strin
 
 func (d *DashboardServiceDao) getServiceListDataSqlString(tableName string) (sql string) {
 	sql = fmt.Sprintf(`
-(SELECT
-   sd.service_name      AS service_name,
-   max(tll.record_time) AS record_time
+(SELECT distinct
+   sd.service_name      AS service_name
  FROM %s sd
    LEFT JOIN time_list_log tll ON sd.time_list_id = tll.id
  WHERE tll.record_time >= ?
-       AND tll.record_time <= ?
- GROUP BY sd.service_name)
+       AND tll.record_time <= ?)
  ORDER BY record_time ASC;`, tableName)
 
 	return sql
