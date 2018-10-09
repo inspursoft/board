@@ -40,3 +40,4 @@ make/config
 tools/swagger
 !tools/swagger/*.sh
 src/apiserver/*.py
+make/templates/apiserver/kvmregistry/kvmregistry
