@@ -1,7 +1,8 @@
-import { Component, EventEmitter, Input, Output, OnInit } from "@angular/core"
+import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core"
 import { UserService } from "../../user-center/user-service/user-service";
-import { User } from "../../user-center/user";
 import { MessageService } from "../message-service/message.service";
+import { User } from "../shared.types";
+import { AppInitService } from "../../app.init.service";
 
 @Component({
   selector: "user-setting",
@@ -11,15 +12,16 @@ import { MessageService } from "../message-service/message.service";
 })
 export class AccountSettingComponent implements OnInit {
   _isOpen: boolean = false;
-  isWorkWip: boolean = false;
+  isWorkWip = false;
   curUser: User = new User();
 
-  constructor(private userService: UserService,
+  constructor(private appInitService: AppInitService,
+              private userService: UserService,
               private messageService: MessageService) {
   }
 
   ngOnInit() {
-    this.userService.getCurrentUser().then(res => this.curUser = res)
+    this.curUser = this.appInitService.currentUser;
   }
 
   @Output() isOpenChange: EventEmitter<boolean> = new EventEmitter<boolean>();
@@ -36,11 +38,9 @@ export class AccountSettingComponent implements OnInit {
 
   submitAccountSetting() {
     this.isWorkWip = true;
-    this.userService.usesChangeAccount(this.curUser)
-      .then(() => {
-        this.isOpen = false;
-        this.messageService.showAlert('ACCOUNT.ACCOUNT_SETTING_SUCCESS');
-      })
-      .catch(() => this.isOpen = false);
+    this.userService.usesChangeAccount(this.curUser).subscribe(
+      () => this.isOpen = false,
+      () => this.isOpen = false,
+      () => this.messageService.showAlert('ACCOUNT.ACCOUNT_SETTING_SUCCESS'))
   }
 }

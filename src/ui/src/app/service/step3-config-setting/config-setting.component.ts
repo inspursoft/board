@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Injector, OnInit} from '@angular/core';
+import { ChangeDetectorRef, Component, Injector, OnInit } from '@angular/core';
 import {
   Container,
   ExternalService,
@@ -11,6 +11,7 @@ import {
 import { ServiceStepBase } from "../service-step";
 import { ValidationErrors } from "@angular/forms/forms";
 import { HttpErrorResponse } from "@angular/common/http";
+import { Observable } from "rxjs/Observable";
 
 @Component({
   styleUrls: ["./config-setting.component.css"],
@@ -40,11 +41,11 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
   }
 
   ngOnInit() {
-    this.k8sService.getServiceConfig(PHASE_CONFIG_CONTAINERS).then(res => {
+    this.k8sService.getServiceConfig(PHASE_CONFIG_CONTAINERS).subscribe(res => {
       this.uiPreData = res as UIServiceStep3;
       this.noPortForExtent = this.uiPreData.containerList.every(value => !value.isHavePort())
     });
-    this.k8sService.getServiceConfig(this.stepPhase).then(res => {
+    this.k8sService.getServiceConfig(this.stepPhase).subscribe(res => {
       this.uiBaseData = res;
       this.setServiceName(this.uiData.serviceName);
       this.changeDetectorRef.detectChanges();
@@ -77,16 +78,17 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
     return this.uiData.nodeSelector == "" ? 'SERVICE.STEP_3_NODE_SELECTOR_COMMENT': this.uiData.nodeSelector;
   }
 
-  checkServiceName(control: HTMLInputElement): Promise<ValidationErrors | null> {
+  checkServiceName(control: HTMLInputElement): Observable<ValidationErrors | null> {
     return this.k8sService.checkServiceExist(this.uiData.projectName, control.value)
-      .then(() => null)
+      .map(() => null)
       .catch((err:HttpErrorResponse) => {
         if (err.status == 409) {
           this.messageService.cleanNotification();
-          return {serviceExist: "SERVICE.STEP_3_SERVICE_NAME_EXIST"}
+          return Observable.of({serviceExist: "SERVICE.STEP_3_SERVICE_NAME_EXIST"});
         } else if (err.status == 404) {
           this.messageService.cleanNotification();
         }
+        return Observable.of(null);
       });
   }
 
@@ -98,9 +100,9 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
     this.uiData.serviceName = serviceName;
     /*Todo:add reset the Collaborative service Info*/
     this.collaborativeServiceList.splice(0, this.collaborativeServiceList.length);
-    this.k8sService.getCollaborativeService(serviceName, this.uiData.projectName)
-      .then(res => this.collaborativeServiceList = res)
-      .catch((err:HttpErrorResponse) => {
+    this.k8sService.getCollaborativeService(serviceName, this.uiData.projectName).subscribe(
+      res => this.collaborativeServiceList = res,
+      (err: HttpErrorResponse) => {
         if (err.status == 404) {
           this.messageService.cleanNotification();
         }
@@ -162,8 +164,9 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
   forward(): void {
     if (this.verifyInputValid()) {
       this.isActionWip = true;
-      this.k8sService.setServiceConfig(this.uiData.uiToServer())
-        .then(() => this.k8sService.stepSource.next({index: 5, isBack: false}));
+      this.k8sService.setServiceConfig(this.uiData.uiToServer()).subscribe(
+        () => this.k8sService.stepSource.next({index: 5, isBack: false})
+      );
     }
   }
 

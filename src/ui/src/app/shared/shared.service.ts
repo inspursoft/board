@@ -10,28 +10,22 @@ export class SharedService {
 
   }
 
-  getProjectMembers(projectId: number): Promise<Member[]> {
+  getProjectMembers(projectId: number): Observable<Array<Member>> {
     return this.http
-      .get<Member[]>(`/api/v1/projects/${projectId}/members`, {observe: "response"})
-      .toPromise()
-      .then((res: HttpResponse<Member[]>) => res.body || [])
+      .get<Array<Member>>(`/api/v1/projects/${projectId}/members`, {observe: "response"})
+      .map((res: HttpResponse<Array<Member>>) => res.body || [])
   }
 
-  getOneProject(projectName: string): Promise<Array<Project>> {
-    return this.http
-      .get<Array<Project>>('/api/v1/projects', {
+  getOneProject(projectName: string): Observable<Array<Project>> {
+    return this.http.get<Array<Project>>('/api/v1/projects', {
         observe: "response",
         params: {'project_name': projectName}
-      })
-      .toPromise()
-      .then(res => res.body)
+      }).map(res => res.body)
   }
 
-  getAvailableMembers(): Promise<Member[]> {
-    return this.http
-      .get('/api/v1/users', {observe: "response"})
-      .toPromise()
-      .then((res: HttpResponse<Object>) => {
+  getAvailableMembers(): Observable<Array<Member>> {
+    return this.http.get('/api/v1/users', {observe: "response"})
+      .map((res: HttpResponse<Object>) => {
         let members = Array<Member>();
         let users = res.body as Array<any>;
         users.forEach(u => {
@@ -44,26 +38,24 @@ export class SharedService {
           }
         });
         return members;
-      })
-      .catch(err => Promise.reject(err));
+      });
   }
 
-  addOrUpdateProjectMember(projectId: number, userId: number, roleId: number): Promise<any> {
+  addOrUpdateProjectMember(projectId: number, userId: number, roleId: number): Observable<any> {
     return this.http.post(`/api/v1/projects/${projectId}/members`, {
       'project_member_role_id': roleId,
       'project_member_user_id': userId
     }, {
       headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
       observe: "response"
-    }).toPromise()
+    })
   }
 
-  deleteProjectMember(projectId: number, userId: number): Promise<any> {
-    return this.http
-      .delete(`/api/v1/projects/${projectId}/members/${userId}`, {
+  deleteProjectMember(projectId: number, userId: number): Observable<any> {
+    return this.http.delete(`/api/v1/projects/${projectId}/members/${userId}`, {
         headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
         observe: "response"
-      }).toPromise()
+      })
   }
 
   createProject(project: Project): Observable<any> {

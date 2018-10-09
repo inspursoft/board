@@ -7,6 +7,9 @@ import { Observable } from "rxjs/Observable";
 import { Subject } from "rxjs/Subject";
 import { K8sService } from "../service/service.k8s";
 import { Message, RETURN_STATUS } from "./shared.types";
+import "rxjs/add/operator/map"
+import "rxjs/add/operator/catch"
+import "rxjs/add/observable/of"
 
 @Injectable()
 export class AuthGuard implements CanActivate, CanActivateChild {
@@ -16,29 +19,25 @@ export class AuthGuard implements CanActivate, CanActivateChild {
               private router: Router) {
   }
 
-  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> | boolean {
-    return new Promise<boolean>((resolve, reject) => {
-      this.appInitService
-        .getCurrentUser(route.queryParamMap.get("token"))
-        .then(res => {
-          if (state.url === '/') {
-            this.router.navigate(['/dashboard']);
-            resolve(true);
-          }
-          resolve(true);
-        })
-        .catch(err => {
-          if (state.url.indexOf('/search') === 0) {
-            resolve(true);
-          } else {
-            this.router.navigate(['/sign-in']);
-            resolve(true);
-          }
-        });
-    });
+  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | Promise<boolean> | boolean {
+    return this.appInitService.getCurrentUser(route.queryParamMap.get('token'))
+      .map(() => {
+        if (state.url === '/') {
+          this.router.navigate(['/dashboard']).then();
+        }
+        return true;
+      })
+      .catch(() => {
+        if (state.url.indexOf('/search') === 0) {
+          return Observable.of(true);
+        } else {
+          this.router.navigate(['/sign-in']).then();
+          return Observable.of(true);
+        }
+      })
   }
 
-  canActivateChild(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> | boolean {
+  canActivateChild(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | Promise<boolean> | boolean {
     return this.canActivate(route, state);
   }
 }

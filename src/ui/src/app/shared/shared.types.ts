@@ -5,7 +5,8 @@ export interface ICsMenuItemData {
   caption: string,
   icon: string,
   url: string,
-  visible: boolean
+  visible: boolean,
+  children?: Array<ICsMenuItemData>
 }
 
 export enum RETURN_STATUS {
@@ -74,4 +75,39 @@ export class ServiceHPA {
   cpu_percent: number = 0;//The target CPU percentage.
   isEdit: boolean = false;
 }
+
+export class SystemInfo {
+  board_host = '';
+  auth_mode = '';
+  set_auth_password = '';
+  init_project_repo = '';
+  sync_k8s = '';
+  redirection_url = '';
+  board_version = '';
+
+  constructor() {
+  }
+}
+
+export class User {
+  public user_id = 0;
+  public user_name = '';
+  public user_email = '';
+  public user_password = '';
+  public user_confirm_password = '';
+  public user_realname = '';
+  public user_comment = '';
+  public user_deleted = 0;
+  public user_system_admin = 0;
+  public user_reset_uuid = '';
+  public user_salt: string = '';
+  public user_creation_time: Date;
+  public user_update_time: Date;
+
+  constructor() {
+    this.user_creation_time = new Date();
+    this.user_update_time = new Date();
+  }
+}
+
 export enum CreateImageMethod{None, Template, DockerFile, DevOps}

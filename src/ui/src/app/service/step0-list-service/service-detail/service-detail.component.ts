@@ -40,7 +40,7 @@ export class ServiceDetailComponent {
 
   constructor(private appInitService: AppInitService,
               private k8sService: K8sService) {
-    this.boardHost = this.appInitService.systemInfo['board_host'];
+    this.boardHost = this.appInitService.systemInfo.board_host;
     this.closeNotification = new Subject<any>();
   }
 
@@ -64,10 +64,10 @@ export class ServiceDetailComponent {
 
   getServiceDetail(serviceId: number, projectName: string, ownerName: string): void {
     this.urlList = [];
-    this.k8sService.getServiceDetail(serviceId).then(res => {
+    this.k8sService.getServiceDetail(serviceId).subscribe(res => {
       if (!res["details"]) {
         let arrNodePort = res["node_Port"] as Array<number>;
-        this.k8sService.getNodesList({"ping": true}).then(res => {
+        this.k8sService.getNodesList({"ping": true}).subscribe(res => {
           let arrNode = res as Array<{node_name: string, node_ip: string, status: number}>;
           for(let n = 0; n < arrNodePort.length; n++) {
             for (let i = 0; i < arrNode.length; i++) {
@@ -80,15 +80,14 @@ export class ServiceDetailComponent {
                 route: `http://${host}:${port}/deploy/${ownerName}/${projectName}/${this.curService.service_name}`
               };
               this.urlList.push(nodeInfo);
-              this.k8sService.addServiceRoute(nodeInfo.url, nodeInfo.identity).then(() => {
-              });
+              this.k8sService.addServiceRoute(nodeInfo.url, nodeInfo.identity).subscribe();
             }
           }
         });
       }
       this.serviceDetail = res;
       this.isOpenServiceDetail = true;
-    }).catch(() => this.isOpenServiceDetail = false);
+    }, () => this.isOpenServiceDetail = false);
   }
 
   getDeploymentYamlFile(): Observable<string> {

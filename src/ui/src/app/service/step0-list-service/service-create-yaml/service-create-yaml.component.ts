@@ -44,8 +44,7 @@ export class ServiceCreateYamlComponent implements OnInit {
 
   ngOnInit() {
     this.dropdownDefaultText = "IMAGE.CREATE_IMAGE_SELECT_PROJECT";
-    this.k8sService.getProjects()
-      .then((res: Array<Project>) => {
+    this.k8sService.getProjects().subscribe((res: Array<Project>) => {
         let createNewProject: Project = new Project();
         createNewProject.project_name = "IMAGE.CREATE_IMAGE_CREATE_PROJECT";
         createNewProject.project_id = -1;
@@ -85,7 +84,7 @@ export class ServiceCreateYamlComponent implements OnInit {
   clickSelectProject() {
     this.sharedActionService.createProjectComponent(this.selfView).subscribe((projectName: string) => {
       if (projectName) {
-        this.sharedService.getOneProject(projectName).then((res: Array<Project>) => {
+        this.sharedService.getOneProject(projectName).subscribe((res: Array<Project>) => {
           this.selectedProjectId = res[0].project_id;
           this.selectedProjectName = res[0].project_name;
           let project = this.projectsList.shift();
@@ -105,9 +104,10 @@ export class ServiceCreateYamlComponent implements OnInit {
 
   btnCancelClick(event: MouseEvent) {
     if (this.createServiceStatus == EXECUTE_STATUS.esFailed){
-      this.k8sService.deleteService(this.newServiceId)
-        .then(()=>this.onCancelEvent.emit(event))
-        .catch(()=>this.onCancelEvent.emit(event))
+      this.k8sService.deleteService(this.newServiceId).subscribe(
+        ()=>this.onCancelEvent.emit(event),
+        ()=>this.onCancelEvent.emit(event)
+      );
     } else {
       this.onCancelEvent.emit(event);
     }
@@ -115,12 +115,12 @@ export class ServiceCreateYamlComponent implements OnInit {
 
   btnCreateClick(event: MouseEvent) {
     this.createServiceStatus = EXECUTE_STATUS.esExecuting;
-    this.k8sService.toggleServiceStatus(this.newServiceId, 1)
-      .then(() => {
+    this.k8sService.toggleServiceStatus(this.newServiceId, 1).subscribe(
+      () => {
         this.createServiceStatus = EXECUTE_STATUS.esSuccess;
         this.onCancelEvent.emit(event);
-      })
-      .catch((err:HttpErrorResponse) => {
+      },
+      (err: HttpErrorResponse) => {
         this.createServiceStatus = EXECUTE_STATUS.esFailed;
         this.messageService.showGlobalMessage('SERVICE.SERVICE_YAML_CREATE_FAILED', {
           errorObject: err,

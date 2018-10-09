@@ -4,6 +4,7 @@ import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
 import { CookieService } from 'ngx-cookie';
 import { GUIDE_STEP } from "./shared/shared.const";
+import { SystemInfo, User } from "./shared/shared.types";
 
 export interface IAuditOperationData {
   operation_id?: number,
@@ -54,13 +55,14 @@ export class AppInitService {
   _currentLang: string;
   cookieExpiry: Date = new Date(Date.now() + 10 * 60 * 60 * 24 * 365 * 1000);
   guideStep: GUIDE_STEP;
-  currentUser: {[key: string]: any} = null;
-  systemInfo: {[key: string]: any} = null;
+  currentUser: User;
+  systemInfo: SystemInfo;
 
   constructor(private cookieService: CookieService,
               private http: HttpClient,
               private tokenService: AppTokenService) {
-    console.log('App initialized from current service.');
+    this.systemInfo = new SystemInfo();
+    this.currentUser = new User();
     this._isFirstLogin = this.cookieService.get("isFirstLogin") == undefined;
     if (this._isFirstLogin) {
       this.guideStep = GUIDE_STEP.PROJECT_LIST;
@@ -89,30 +91,21 @@ export class AppInitService {
   }
 
   get isSystemAdmin(): boolean{
-    return this.currentUser && this.currentUser["user_system_admin"] == 1;
+    return this.currentUser.user_system_admin === 1;
   }
 
-  getCurrentUser(tokenParam?: string): Promise<any> {
+  getCurrentUser(tokenParam?: string): Observable<User> {
     let token = this.tokenService.token || tokenParam || this.cookieService.get("token") || '';
-    return this.http
-      .get('/api/v1/users/current',
-        {
-          observe: "response",
-          params: {
-            'token': token
-          }
-        })
-      .toPromise()
-      .then(res => {
+    return this.http.get<User>('/api/v1/users/current', {observe: "response", params: {'token': token}})
+      .map((res: HttpResponse<User>) => {
         this.currentUser = res.body;
         return res.body;
-      });
+      })
   }
 
   getSystemInfo(): Observable<any> {
-    return this.http
-      .get(`/api/v1/systeminfo`, {observe: "response"})
-      .map(res => {
+    return this.http.get(`/api/v1/systeminfo`, {observe: "response"})
+      .map((res: HttpResponse<SystemInfo>) => {
         this.systemInfo = res.body;
         return this.systemInfo
       });

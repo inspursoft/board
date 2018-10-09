@@ -10,6 +10,6 @@ export class ProfileComponent {
   version: string = "";
 
   constructor(private appInitService: AppInitService) {
-    this.appInitService.getSystemInfo().subscribe(res => this.version = res["board_version"]);
+    this.version = this.appInitService.systemInfo.board_version;
   }
 }

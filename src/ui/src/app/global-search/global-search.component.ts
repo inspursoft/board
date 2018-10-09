@@ -33,9 +33,7 @@ export class GlobalSearchComponent implements OnInit {
   }
 
   search(q: string) {
-    this.globalSearchService
-      .search(q)
-      .then(search=>{
+    this.globalSearchService.search(q).subscribe(search=>{
         this.globalSearch = search;
         this.route.queryParamMap.subscribe(params=>{
           params["token"] = this.token;
