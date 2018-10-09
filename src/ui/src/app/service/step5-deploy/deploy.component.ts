@@ -6,7 +6,6 @@ import { ServiceStepBase } from "../service-step";
 import { PHASE_ENTIRE_SERVICE, ServiceStepPhase, UIServiceStepBase } from "../service-step.component";
 import { HttpErrorResponse } from "@angular/common/http";
 import { GlobalAlertType, Message, RETURN_STATUS } from "../../shared/shared.types";
-import { ClrLoadingButton } from "@clr/angular";
 
 @Component({
   templateUrl: "./deploy.component.html",
@@ -23,7 +22,7 @@ export class DeployComponent extends ServiceStepBase {
 
   constructor(protected injector: Injector) {
     super(injector);
-    this.boardHost = this.appInitService.systemInfo['board_host'];
+    this.boardHost = this.appInitService.systemInfo.board_host;
   }
 
   get stepPhase(): ServiceStepPhase {
@@ -38,22 +37,20 @@ export class DeployComponent extends ServiceStepBase {
     if (!this.isDeployed) {
       this.isDeployed = true;
       this.isInDeployWIP = true;
-      this.k8sService.serviceDeployment()
-        .then(res => {
-          this.serviceID = res['service_id'];
-          this.deployConsole = res;
-          this.messageService.showAlert('SERVICE.STEP_5_DEPLOY_SUCCESS');
-          this.isDeploySuccess = true;
-          this.isInDeployWIP = false;
-        })
-        .catch((err: HttpErrorResponse) => {
-          this.messageService.showGlobalMessage('SERVICE.STEP_5_DEPLOY_FAILED', {
-            globalAlertType: GlobalAlertType.gatShowDetail,
-            errorObject: err
-          });
-          this.isDeploySuccess = false;
-          this.isInDeployWIP = false;
-        })
+      this.k8sService.serviceDeployment().subscribe(res => {
+        this.serviceID = res['service_id'];
+        this.deployConsole = res;
+        this.messageService.showAlert('SERVICE.STEP_5_DEPLOY_SUCCESS');
+        this.isDeploySuccess = true;
+        this.isInDeployWIP = false;
+      }, (err: HttpErrorResponse) => {
+        this.messageService.showGlobalMessage('SERVICE.STEP_5_DEPLOY_FAILED', {
+          globalAlertType: GlobalAlertType.gatShowDetail,
+          errorObject: err
+        });
+        this.isDeploySuccess = false;
+        this.isInDeployWIP = false;
+      });
     }
   }
 
@@ -61,9 +58,10 @@ export class DeployComponent extends ServiceStepBase {
     this.messageService.showDeleteDialog('SERVICE.STEP_5_DELETE_MSG', 'SERVICE.STEP_5_DELETE_TITLE').subscribe((message: Message) => {
       if (message.returnStatus == RETURN_STATUS.rsConfirm) {
         this.isDeleteInWIP = true;
-        this.k8sService.deleteDeployment(this.serviceID)
-          .then(() => this.k8sService.stepSource.next({index: 0, isBack: false}))
-          .catch(() => this.k8sService.stepSource.next({index: 0, isBack: false}))
+        this.k8sService.deleteDeployment(this.serviceID).subscribe(
+          () => this.k8sService.stepSource.next({index: 0, isBack: false}),
+          () => this.k8sService.stepSource.next({index: 0, isBack: false})
+        );
       }
     })
   }

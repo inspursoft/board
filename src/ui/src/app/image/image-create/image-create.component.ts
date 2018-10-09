@@ -2,7 +2,7 @@
  * Created by liyanq on 21/11/2017.
  */
 
-import { AfterContentChecked, Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from "@angular/core"
+import { Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from "@angular/core"
 import { CsInputArrayComponent } from "../../shared/cs-components-library/cs-input-array/cs-input-array.component";
 import { BuildImageData, Image, ImageDetail } from "../image";
 import { ImageService } from "../image-service/image-service";
@@ -16,6 +16,11 @@ import { ValidationErrors } from "@angular/forms";
 import { TranslateService } from "@ngx-translate/core";
 import { CsModalChildBase } from "../../shared/cs-modal-base/cs-modal-child-base";
 import { CreateImageMethod } from "../../shared/shared.types";
+import { Observable } from "rxjs/Observable";
+import "rxjs/add/operator/zip"
+import "rxjs/add/operator/catch"
+import "rxjs/add/observable/empty"
+import "rxjs/add/observable/of"
 
 const AUTO_REFRESH_IMAGE_LIST: number = 2000;
 
@@ -67,7 +72,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
               private appInitService: AppInitService) {
     super();
     this.filesList = new Map<string, Array<{path: string, file_name: string, size: number}>>();
-    this.boardHost = this.appInitService.systemInfo['board_host'];
+    this.boardHost = this.appInitService.systemInfo.board_host;
     this.imageList = Array<Image>();
     this.imageDetailList = Array<ImageDetail>();
     this.cancelInfo = {isShow: false, isForce: false, title: "", message: ""};
@@ -76,7 +81,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   ngOnInit() {
     this.intervalAutoRefreshImageList = setInterval(() => {
       if (this.isNeedAutoRefreshImageList && this.isBuildImageWIP) {
-        this.imageService.getImages(this.customerNewImage.image_name, 0, 0).then(res => {
+        this.imageService.getImages(this.customerNewImage.image_name, 0, 0).subscribe((res: Array<Image>) => {
           res.forEach(value => {
             let newImageName = `${this.customerNewImage.project_name}/${this.customerNewImage.image_name}`;
             if (value.image_name == newImageName) {
@@ -85,15 +90,15 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
               this.modalOpened = false;
             }
           });
-        }).catch(() => this.modalOpened = false);
+        }, () => this.modalOpened = false);
       }
     }, AUTO_REFRESH_IMAGE_LIST);
-    this.imageService.getImages("", 0, 0)
-      .then(res => this.imageList = res || [])
-      .catch(() => {
+    this.imageService.getImages("", 0, 0).subscribe(
+      (res: Array<Image>) => this.imageList = res || [],
+      () => {
         this.modalOpened = false;
         this.messageService.showAlert('IMAGE.CREATE_IMAGE_UPDATE_IMAGE_LIST_FAILED', {alertType: 'alert-danger', view: this.alertView});
-      });
+      })
   }
 
   ngOnDestroy() {
@@ -162,39 +167,41 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
       "IMAGE.CREATE_IMAGE_BUILD_CANCEL";
   }
 
-  checkImageTag(control: HTMLInputElement): Promise<ValidationErrors> {
+  checkImageTag(control: HTMLInputElement): Observable<ValidationErrors | null> {
     if (this.customerNewImage.image_name == "") {
-      return Promise.resolve(null);
+      return Observable.of(null);
     }
     return this.imageService.checkImageExist(this.customerNewImage.project_name, this.customerNewImage.image_name, control.value)
-      .then(() => null)
+      .map(() => null)
       .catch((err: HttpErrorResponse) => {
         if (err.status == 409) {
           this.messageService.cleanNotification();
-          return {imageTagExist: "IMAGE.CREATE_IMAGE_TAG_EXIST"}
+          return Observable.of({imageTagExist: "IMAGE.CREATE_IMAGE_TAG_EXIST"})
         } else if (err.status == 404) {
           this.messageService.cleanNotification();
         } else {
           this.modalOpened = false;
         }
+        return Observable.of(null);
       });
   }
 
-  checkImageName(control: HTMLInputElement): Promise<ValidationErrors> {
+  checkImageName(control: HTMLInputElement): Observable<ValidationErrors | null> {
     if (this.customerNewImage.image_tag == "") {
-      return Promise.resolve(null);
+      return Observable.of(null);
     }
     return this.imageService.checkImageExist(this.customerNewImage.project_name, control.value, this.customerNewImage.image_tag)
-      .then(() => null)
+      .map(() => null)
       .catch((err: HttpErrorResponse) => {
         if (err.status == 409) {
           this.messageService.cleanNotification();
-          return {imageNameExist: "IMAGE.CREATE_IMAGE_NAME_EXIST"}
+          return Observable.of({imageNameExist: "IMAGE.CREATE_IMAGE_NAME_EXIST"})
         } else if (err.status == 404) {
           this.messageService.cleanNotification();
         } else {
           this.modalOpened = false;
         }
+        return Observable.of(null);
       });
   }
 
@@ -222,7 +229,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
     }
   }
 
-  uploadDockerFile(): Promise<boolean> {
+  uploadDockerFile(): Observable<boolean> {
     if (this.selectFromImportFile) {
       this.isUploadFileWIP = true;
       let formData: FormData = new FormData();
@@ -230,15 +237,14 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
       formData.append("project_name", this.customerNewImage.project_name);
       formData.append("image_name", this.customerNewImage.image_name);
       formData.append("image_tag", this.customerNewImage.image_tag);
-      return this.imageService.uploadDockerFile(formData)
-        .then(() => {
-          this.isUploadFileWIP = false;
-          return true;
-        })
+      return this.imageService.uploadDockerFile(formData).map(() => {
+        this.isUploadFileWIP = false;
+        return true;
+      })
     }
   }
 
-  async buildImageByDockerFile(): Promise<any> {
+  buildImageByDockerFile(): Observable<any> {
     let fileInfo = {
       imageName: this.customerNewImage.image_name,
       tagName: this.customerNewImage.image_tag,
@@ -247,11 +253,9 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
     if (this.isServerHaveDockerFile) {
       return this.imageService.buildImageFromDockerFile(fileInfo);
     } else {
-      if (await this.uploadDockerFile()) {
-        return this.imageService.buildImageFromDockerFile(fileInfo);
-      } else {
-        return Promise.reject(false);
-      }
+      let obsUpload = this.uploadDockerFile();
+      let obsBuild = this.imageService.buildImageFromDockerFile(fileInfo);
+      return obsUpload.zip(obsBuild);
     }
   }
 
@@ -266,7 +270,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
       });
     }
     this.imageService.deleteImageConfig(this.customerNewImage.project_name).subscribe();
-    this.updateFileList().then();
+    this.updateFileList().subscribe();
   }
 
   buildImageResole() {
@@ -314,49 +318,54 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
         this.verifyDropdownValid() &&
         this.customerNewImage.image_dockerfile.image_base != "") {
         buildImageInit();
-        this.imageService.buildImageFromTemp(this.customerNewImage)
-          .then(this.buildImageResole.bind(this))
-          .catch(this.cleanImageConfig.bind(this));
+        this.imageService.buildImageFromTemp(this.customerNewImage).subscribe(
+          () => this.buildImageResole(),
+          () => this.cleanImageConfig()
+        );
       }
     } else if (this.verifyInputValid()) {
       if (this.selectFromImportFile) {
         buildImageInit();
-        this.buildImageByDockerFile()
-          .then(this.buildImageResole.bind(this))
-          .catch(this.cleanImageConfig.bind(this));
+        this.buildImageByDockerFile().subscribe(
+          () => this.buildImageResole(),
+          () => this.cleanImageConfig()
+        );
       } else {
         this.messageService.showAlert('IMAGE.CREATE_IMAGE_SELECT_DOCKER_FILE', {alertType: 'alert-warning', view: this.alertView});
       }
     }
   }
 
-  updateFileList(): Promise<any> {
+  updateFileList(): Observable<any> {
     this.filesList.clear();
     let formFileList: FormData = new FormData();
     formFileList.append('project_name', this.customerNewImage.project_name);
     formFileList.append('image_name', this.customerNewImage.image_name);
     formFileList.append('image_tag', this.customerNewImage.image_tag);
-    return this.imageService.getFileList(formFileList).then(res => {
-      this.filesList.set(this.customerNewImage.image_name, res);
-      let imageCopyArr = this.customerNewImage.image_dockerfile.image_copy;
-      imageCopyArr.splice(0, imageCopyArr.length);
-      this.filesList.get(this.customerNewImage.image_name).forEach(value => {
-        imageCopyArr.push({
-          dockerfile_copyfrom: value.file_name,
-          dockerfile_copyto: this.uploadCopyToPath + "/" + value.file_name,
+    return this.imageService.getFileList(formFileList)
+      .map(res => {
+        this.filesList.set(this.customerNewImage.image_name, res);
+        let imageCopyArr = this.customerNewImage.image_dockerfile.image_copy;
+        imageCopyArr.splice(0, imageCopyArr.length);
+        this.filesList.get(this.customerNewImage.image_name).forEach(value => {
+          imageCopyArr.push({
+            dockerfile_copyfrom: value.file_name,
+            dockerfile_copyto: this.uploadCopyToPath + "/" + value.file_name,
+          });
         });
-      });
-    }).catch((err: HttpErrorResponse) => {
-      if (err.status == 401) {
-        this.modalOpened = false;
-      } else {
-        this.messageService.showAlert('IMAGE.CREATE_IMAGE_UPDATE_IMAGE_LIST_FAILED', {alertType: 'alert-danger', view: this.alertView});
-      }
+      })
+      .catch((err: HttpErrorResponse) => {
+        if (err.status == 401) {
+          this.modalOpened = false;
+        } else {
+          this.messageService.showAlert('IMAGE.CREATE_IMAGE_UPDATE_IMAGE_LIST_FAILED', {alertType: 'alert-danger', view: this.alertView});
+        }
+        return Observable.empty();
     });
   }
 
   updateFileListAndPreviewInfo() {
-    this.updateFileList().then(() => {
+    this.updateFileList().subscribe(() => {
       this.getDockerFilePreviewInfo();
     });
   }
@@ -391,12 +400,11 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
         tagName: this.customerNewImage.image_tag,
         projectName: this.customerNewImage.project_name
       };
-      this.imageService.downloadDockerFile(downloadInfo)
-        .then((res: HttpResponse<string>) => {
+      this.imageService.downloadDockerFile(downloadInfo).subscribe((res: HttpResponse<string>) => {
           this.consoleText = res.body;
           this.isServerHaveDockerFile = true;
-        })
-        .catch(()=>this.messageService.cleanNotification());
+        },()=>this.messageService.cleanNotification()
+      );
     }
   }
 
@@ -441,18 +449,19 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
 
   getDockerFilePreviewInfo() {
     if (this.customerNewImage.image_dockerfile.image_base != "") {
-      this.imageService.getDockerFilePreview(this.customerNewImage)
-        .then(res => this.consoleText = res)
-        .catch((err: HttpErrorResponse) => {
+      this.imageService.getDockerFilePreview(this.customerNewImage).subscribe(
+        res => this.consoleText = res,
+        (err: HttpErrorResponse) => {
           if (err.status == 401) {
             this.modalOpened = false;
-        } else {
+          } else {
             this.messageService.showAlert('IMAGE.CREATE_IMAGE_UPDATE_DOCKER_FILE_FAILED', {
               alertType: 'alert-danger',
               view: this.alertView
             });
+          }
         }
-      });
+      )
     }
   }
 
@@ -509,14 +518,13 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
     this.imageDetailList = null;
     this.imageService.getBoardRegistry().subscribe((res: string) => {
       this.boardRegistry = res.replace(/"/g,"");
-      this.imageService.getImageDetailList(selectImage.image_name)
-        .then((res: ImageDetail[]) => {
+      this.imageService.getImageDetailList(selectImage.image_name).subscribe((res: ImageDetail[]) => {
           this.selectedImage = selectImage;
           this.imageDetailList = res;
           this.customerNewImage.image_dockerfile.image_base = `${this.boardRegistry}/${this.selectedImage.image_name}:${res[0].image_tag}`;
           this.getDockerFilePreviewInfo();
-        })
-        .catch(() => this.modalOpened = false);
+        }, () => this.modalOpened = false
+      );
     });
   }
 

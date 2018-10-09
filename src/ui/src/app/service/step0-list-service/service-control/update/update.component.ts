@@ -40,13 +40,12 @@ export class UpdateComponent implements OnInit {
   getServiceImages() {
     this.imageTagSelected.clear();
     this.imageList.splice(0, this.imageList.length);
-    this.k8sService.getServiceImages(this.service.service_project_name, this.service.service_name)
-      .then(res => {
+    this.k8sService.getServiceImages(this.service.service_project_name, this.service.service_name).subscribe(
+      (res: Array<ImageIndex>) => {
         this.imageList = res;
         this.imageList.forEach(value => {
           this.imageTagSelected.set(value.image_name, value.image_tag);
-          this.k8sService.getImageDetailList(value.image_name)
-            .then((res: Array<ImageDetail>) => {
+          this.k8sService.getImageDetailList(value.image_name).subscribe((res: Array<ImageDetail>) => {
               if (res.length == 0) {
                 let tag = new ImageDetail();
                 let tagList = Array<ImageDetail>();
@@ -57,17 +56,17 @@ export class UpdateComponent implements OnInit {
                 this.imageTagList.set(value.image_name, res);
               }
               this.setActionEnabled();
-            })
-            .catch(err => this.onError.next(err));
+            }, err => this.onError.next(err)
+          );
         });
-      })
-      .catch((err: HttpErrorResponse) => {
+      },
+      (err: HttpErrorResponse) => {
         if (err.status == 500) {
           this.onAlertMsg.emit("SERVICE.SERVICE_CONTROL_NOT_UPDATE");
         } else {
           this.onError.next(err);
         }
-      })
+      });
   }
 
   changeImageTag(imageName: string, imageDetail: ImageDetail) {
@@ -77,9 +76,10 @@ export class UpdateComponent implements OnInit {
 
   actionExecute(): void {
     this.imageList.map(value => value.image_tag = this.imageTagSelected.get(value.image_name));
-    this.k8sService.updateServiceImages(this.service.service_project_name, this.service.service_name, this.imageList)
-      .then(() => this.onMessage.emit('SERVICE.SERVICE_CONTROL_UPDATE_SUCCESSFUL'))
-      .catch((err) => this.onError.emit(err));
+    this.k8sService.updateServiceImages(this.service.service_project_name, this.service.service_name, this.imageList).subscribe(
+      () => this.onMessage.emit('SERVICE.SERVICE_CONTROL_UPDATE_SUCCESSFUL'),
+      (err) => this.onError.emit(err)
+    );
   }
 
   setActionEnabled(): void {

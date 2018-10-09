@@ -63,7 +63,7 @@ func (b *BaseController) Prepare() {
 }
 
 func (b *BaseController) Finish() {
-	b.updateOperationAudit()
+	b.updateOperationAudit(b.Ctx.ResponseWriter.Status)
 }
 
 func (b *BaseController) recordOperationAudit() {
@@ -82,7 +82,7 @@ func (b *BaseController) recordOperationAudit() {
 	b.operationID = operation.ID
 }
 
-func (b *BaseController) updateOperationAudit() {
+func (b *BaseController) updateOperationAudit(statusCode int) {
 	if b.operationID == 0 {
 		return
 	}
@@ -90,7 +90,7 @@ func (b *BaseController) updateOperationAudit() {
 	if b.currentUser == nil {
 		user = b.auditUser
 	}
-	err := service.UpdateOperationAuditStatus(b.operationID, b.Ctx.ResponseWriter.Status, b.project, user)
+	err := service.UpdateOperationAuditStatus(b.operationID, statusCode, b.project, user)
 	if err != nil {
 		logs.Error("Failed to update operation Audit. Error:%+v", err)
 		return
@@ -116,29 +116,30 @@ func (b *BaseController) renderJSON(data interface{}) {
 	b.ServeJSON()
 }
 
-func (b *BaseController) serveStatus(status int, message string) {
-	b.serveJSON(status, struct {
+func (b *BaseController) serveStatus(statusCode int, message string) {
+	b.serveJSON(statusCode, struct {
 		StatusCode int    `json:"status"`
 		Message    string `json:"message"`
 	}{
-		StatusCode: status,
+		StatusCode: statusCode,
 		Message:    message,
 	})
 }
 
-func (b *BaseController) serveJSON(status int, data interface{}) {
-	b.Ctx.ResponseWriter.WriteHeader(status)
+func (b *BaseController) serveJSON(statusCode int, data interface{}) {
+	b.Ctx.ResponseWriter.WriteHeader(statusCode)
 	b.renderJSON(data)
 }
 
 func (b *BaseController) internalError(err error) {
 	logs.Error("Error occurred: %+v", err)
-	b.serveStatus(http.StatusInternalServerError, "Unexpected error occurred.")
+	b.customAbort(http.StatusInternalServerError, "Unexpected error occurred.")
 }
 
-func (b *BaseController) customAbort(status int, body string) {
+func (b *BaseController) customAbort(statusCode int, body string) {
 	logs.Error("Error of custom aborted: %s", body)
-	b.serveStatus(status, body)
+	b.updateOperationAudit(statusCode)
+	b.CustomAbort(statusCode, body)
 }
 
 func parsePostK8sError(message string) int {
@@ -336,7 +337,7 @@ func (b *BaseController) resolveUserPrivilege(projectName string) {
 		return
 	}
 	if !(b.isSysAdmin || isMember) {
-		b.customAbort(http.StatusForbidden, "Insufficient privileges to build image.")
+		b.customAbort(http.StatusForbidden, "Insufficient privileges to operation.")
 		return
 	}
 	if b.isSysAdmin && !isMember {

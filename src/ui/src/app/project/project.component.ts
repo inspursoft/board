@@ -41,14 +41,12 @@ export class ProjectComponent implements OnInit {
       if (state) {
         this.isInLoading = true;
         this.oldStateInfo = state;
-        this.projectService
-          .getProjects('', this.pageIndex, this.pageSize, state.sort.by as string, state.sort.reverse)
-          .then(paginatedProjects => {
+        this.projectService.getProjects('', this.pageIndex, this.pageSize, state.sort.by as string, state.sort.reverse).subscribe(
+          paginatedProjects => {
             this.totalRecordCount = paginatedProjects.pagination.total_count;
             this.projects = paginatedProjects.project_list;
             this.isInLoading = false;
-          })
-          .catch(() => {
+          }, () => {
             this.messageService.showAlert('PROJECT.FAILED_TO_RETRIEVE_PROJECTS',{alertType: "alert-warning"});
             this.isInLoading = false;
           });
@@ -88,13 +86,11 @@ export class ProjectComponent implements OnInit {
 
   toggleProjectPublic(project: Project, $event:MouseEvent): void {
     let oldPublic = project.project_public;
-    this.projectService
-      .togglePublicity(project.project_id, project.project_public === 1? 0 : 1)
-      .then(()=>{
+    this.projectService.togglePublicity(project.project_id, project.project_public === 1 ? 0 : 1).subscribe(() => {
         this.messageService.showAlert('PROJECT.SUCCESSFUL_TOGGLE_PROJECT');
         project.project_public = oldPublic === 1 ? 0 : 1;
-      })
-      .catch(() => ($event.srcElement as HTMLInputElement).checked = oldPublic === 1);
+      }, () => ($event.srcElement as HTMLInputElement).checked = oldPublic === 1
+    );
   }
 
   get isFirstLogin(): boolean{

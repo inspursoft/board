@@ -4,7 +4,7 @@ import { Audit, AuditQueryData } from "../audit";
 import { ClrDatagridSortOrder, ClrDatagridStateInterface } from "@clr/angular";
 import { OperationAuditService } from "../audit-service";
 import { HttpErrorResponse } from "@angular/common/http";
-import { User } from "../../user-center/user";
+import { User } from "../../shared/shared.types";
 
 @Component({
   selector: 'list-audit',

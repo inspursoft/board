@@ -15,10 +15,10 @@
       <label class="base-text">{{"SERVICE.SERVICE_YAML_SELECT_DEPLOYMENT_YAML" | translate}}:</label>
       <input type="file"
              class="upload-file-input"
-             [disabled]="selectedProjectId == 0 || isUploadFileWIP || isUploadFileWIP"
+             [disabled]="selectedProjectId == 0 || uploadFileStatus == 'Executing'"
              (change)="uploadFile($event,true)"
              accept="*.*">
-      <div *ngIf="isUploadFileWIP" class="custom-margin spinner-container">
+      <div *ngIf="uploadFileStatus == 'Executing'" class="custom-margin spinner-container">
         <span class="spinner spinner-sm"></span>
       </div>
       <a href="javascript:void(0)" *ngIf="isEditDeploymentEnable">
@@ -29,10 +29,10 @@
       <label class="base-text">{{"SERVICE.SERVICE_YAML_SELECT_SERVICE_YAML" | translate}}:</label>
       <input type="file"
              class="upload-file-input"
-             [disabled]="selectedProjectId == 0 || isUploadFileWIP || isUploadFileWIP"
+             [disabled]="selectedProjectId == 0 || uploadFileStatus == 'Executing'"
              (change)="uploadFile($event,false)"
              accept="*.*">
-      <div *ngIf="isUploadFileWIP" class="custom-margin spinner-container">
+      <div *ngIf="uploadFileStatus == 'Executing'" class="custom-margin spinner-container">
         <span class="spinner spinner-sm"></span>
       </div>
       <a href="javascript:void(0)" *ngIf="isEditServiceEnable">

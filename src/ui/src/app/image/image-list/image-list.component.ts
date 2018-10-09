@@ -44,7 +44,7 @@ export class ImageListComponent extends CsModalParentBase implements OnInit, OnD
   }
 
   ngOnInit() {
-    this.imageService.getProjects().then((res: Array<Project>) => {
+    this.imageService.getProjects().subscribe((res: Array<Project>) => {
       let createNewProject: Project = new Project();
       createNewProject.project_name = "IMAGE.CREATE_IMAGE_CREATE_PROJECT";
       createNewProject.project_id = -1;
@@ -74,7 +74,7 @@ export class ImageListComponent extends CsModalParentBase implements OnInit, OnD
   clickSelectProject() {
     this.sharedActionService.createProjectComponent(this.selfView).subscribe((projectName: string) => {
       if (projectName) {
-        this.sharedService.getOneProject(projectName).then((res: Array<Project>) => {
+        this.sharedService.getOneProject(projectName).subscribe((res: Array<Project>) => {
           this.selectedProjectId = res[0].project_id;
           this.selectedProjectName = res[0].project_name;
           let project = this.projectsList.shift();
@@ -92,12 +92,11 @@ export class ImageListComponent extends CsModalParentBase implements OnInit, OnD
 
   retrieve() {
     this.loadingWIP = true;
-    this.imageService.getImages("", 0, 0)
-      .then(res => {
+    this.imageService.getImages("", 0, 0).subscribe((res: Array<Image>) => {
         this.loadingWIP = false;
         this.imageList = res || [];
-      })
-      .catch(() => this.loadingWIP = false);
+      }, () => this.loadingWIP = false
+    );
   }
 
   showImageDetail(image: Image) {
@@ -111,7 +110,7 @@ export class ImageListComponent extends CsModalParentBase implements OnInit, OnD
       this.translateService.get('IMAGE.CONFIRM_TO_DELETE_IMAGE', [imageName]).subscribe((msg: string) => {
         this.messageService.showDeleteDialog(msg, 'IMAGE.DELETE_IMAGE').subscribe((message: Message) => {
           if (message.returnStatus == RETURN_STATUS.rsConfirm) {
-            this.imageService.deleteImages(imageName).then(() => {
+            this.imageService.deleteImages(imageName).subscribe(() => {
               this.messageService.showAlert('IMAGE.SUCCESSFUL_DELETED_IMAGE');
               this.retrieve();
             })

@@ -25,7 +25,7 @@ export class SignUpComponent extends CsComponentBase implements OnInit {
   }
 
   ngOnInit(): void {
-    if(this.appInitService.systemInfo["auth_mode"] != 'db_auth') {
+    if(this.appInitService.systemInfo.auth_mode != 'db_auth') {
       this.router.navigate(['/sign-in']).then();
     }
   }

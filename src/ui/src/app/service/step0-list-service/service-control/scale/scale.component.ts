@@ -27,6 +27,7 @@ export class ScaleComponent extends CsComponentBase implements OnInit {
   scaleNum: number = 0;
   scaleInfo: IScaleInfo = {desired_instance: 0, available_instance: 0};
   autoScaleConfig: Array<ServiceHPA>;
+  patternHpaName:RegExp = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
 
   constructor(private k8sService: K8sService,
               private messageService: MessageService) {
@@ -67,9 +68,10 @@ export class ScaleComponent extends CsComponentBase implements OnInit {
     if (this.verifyInputValid()) {
       if (this.scaleModule == ScaleMethod.smManually) {
         this.onActionInWIPChange.emit(true);
-        this.k8sService.setServiceScale(this.service.service_id, this.scaleNum)
-          .then(() => this.onMessage.emit('SERVICE.SERVICE_CONTROL_SCALE_SUCCESSFUL'))
-          .catch((err) => this.onError.emit(err));
+        this.k8sService.setServiceScale(this.service.service_id, this.scaleNum).subscribe(
+          () => this.onMessage.emit('SERVICE.SERVICE_CONTROL_SCALE_SUCCESSFUL'),
+          (err) => this.onError.emit(err)
+        );
       } else {
         this.autoScaleConfig.forEach((config: ServiceHPA) => {
           if (config.min_pod > config.max_pod) {
@@ -78,10 +80,12 @@ export class ScaleComponent extends CsComponentBase implements OnInit {
           } else {
             this.onActionInWIPChange.emit(true);
             if (config.isEdit) {
+              Reflect.deleteProperty(config,'isEdit');
               this.k8sService.modifyAutoScaleConfig(this.service.service_id, config)
                 .subscribe(() => this.onMessage.emit('SERVICE.SERVICE_CONTROL_SCALE_SUCCESSFUL'),
                   err => this.onError.emit(err))
             } else {
+              Reflect.deleteProperty(config,'isEdit');
               this.k8sService.setAutoScaleConfig(this.service.service_id, config)
                 .subscribe(() => this.onMessage.emit('SERVICE.SERVICE_CONTROL_SCALE_SUCCESSFUL'),
                   err => this.onError.emit(err))

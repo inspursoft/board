@@ -23,7 +23,7 @@ export class ServiceCreateYamlComponent implements OnInit {
   projectsList: Array<Project>;
   newServiceName: string = "";
   newServiceId: number = 0;
-  filesDataMap: Map<string, File>;
+  filesDataMap: Map<FileType, Blob>;
   uploadFileStatus = EXECUTE_STATUS.esNotExe;
   createServiceStatus = EXECUTE_STATUS.esNotExe;
   isFileInEdit: boolean = false;
@@ -39,13 +39,12 @@ export class ServiceCreateYamlComponent implements OnInit {
               private messageService: MessageService) {
     this.projectsList = Array<Project>();
     this.onCancelEvent = new EventEmitter<any>();
-    this.filesDataMap = new Map<string, File>();
+    this.filesDataMap = new Map<FileType, Blob>();
   }
 
   ngOnInit() {
     this.dropdownDefaultText = "IMAGE.CREATE_IMAGE_SELECT_PROJECT";
-    this.k8sService.getProjects()
-      .then((res: Array<Project>) => {
+    this.k8sService.getProjects().subscribe((res: Array<Project>) => {
         let createNewProject: Project = new Project();
         createNewProject.project_name = "IMAGE.CREATE_IMAGE_CREATE_PROJECT";
         createNewProject.project_id = -1;
@@ -85,7 +84,7 @@ export class ServiceCreateYamlComponent implements OnInit {
   clickSelectProject() {
     this.sharedActionService.createProjectComponent(this.selfView).subscribe((projectName: string) => {
       if (projectName) {
-        this.sharedService.getOneProject(projectName).then((res: Array<Project>) => {
+        this.sharedService.getOneProject(projectName).subscribe((res: Array<Project>) => {
           this.selectedProjectId = res[0].project_id;
           this.selectedProjectName = res[0].project_name;
           let project = this.projectsList.shift();
@@ -105,9 +104,10 @@ export class ServiceCreateYamlComponent implements OnInit {
 
   btnCancelClick(event: MouseEvent) {
     if (this.createServiceStatus == EXECUTE_STATUS.esFailed){
-      this.k8sService.deleteService(this.newServiceId)
-        .then(()=>this.onCancelEvent.emit(event))
-        .catch(()=>this.onCancelEvent.emit(event))
+      this.k8sService.deleteService(this.newServiceId).subscribe(
+        ()=>this.onCancelEvent.emit(event),
+        ()=>this.onCancelEvent.emit(event)
+      );
     } else {
       this.onCancelEvent.emit(event);
     }
@@ -115,12 +115,12 @@ export class ServiceCreateYamlComponent implements OnInit {
 
   btnCreateClick(event: MouseEvent) {
     this.createServiceStatus = EXECUTE_STATUS.esExecuting;
-    this.k8sService.toggleServiceStatus(this.newServiceId, 1)
-      .then(() => {
+    this.k8sService.toggleServiceStatus(this.newServiceId, 1).subscribe(
+      () => {
         this.createServiceStatus = EXECUTE_STATUS.esSuccess;
         this.onCancelEvent.emit(event);
-      })
-      .catch((err:HttpErrorResponse) => {
+      },
+      (err: HttpErrorResponse) => {
         this.createServiceStatus = EXECUTE_STATUS.esFailed;
         this.messageService.showGlobalMessage('SERVICE.SERVICE_YAML_CREATE_FAILED', {
           errorObject: err,
@@ -133,8 +133,8 @@ export class ServiceCreateYamlComponent implements OnInit {
     let formData = new FormData();
     let deploymentFile = this.filesDataMap.get(DEPLOYMENT);
     let serviceFile = this.filesDataMap.get(SERVICE);
-    formData.append("deployment_file", deploymentFile, deploymentFile.name);
-    formData.append("service_file", serviceFile, serviceFile.name);
+    formData.append("deployment_file", deploymentFile, `${DEPLOYMENT}.yaml`);
+    formData.append("service_file", serviceFile, `${SERVICE}.yaml`);
     this.uploadFileStatus = EXECUTE_STATUS.esExecuting;
     this.k8sService.uploadServiceYamlFile(this.selectedProjectName, formData)
       .subscribe((res: Service) => {
@@ -156,21 +156,21 @@ export class ServiceCreateYamlComponent implements OnInit {
     return this.selectedProjectId == 0
       || this.uploadFileStatus == EXECUTE_STATUS.esExecuting
       || this.uploadFileStatus == EXECUTE_STATUS.esSuccess
-      || !this.filesDataMap.has('deployment')
+      || !this.filesDataMap.has(DEPLOYMENT)
       || this.isFileInEdit
-      || !this.filesDataMap.has('service');
+      || !this.filesDataMap.has(SERVICE);
   }
 
   get isEditDeploymentEnable(): boolean{
     return this.uploadFileStatus == EXECUTE_STATUS.esNotExe
       && !this.isFileInEdit
-      && this.filesDataMap.get('deployment') != undefined
+      && this.filesDataMap.get(DEPLOYMENT) != undefined
   }
 
   get isEditServiceEnable(): boolean{
     return this.uploadFileStatus == EXECUTE_STATUS.esNotExe
       && !this.isFileInEdit
-      && this.filesDataMap.get('service') != undefined
+      && this.filesDataMap.get(SERVICE) != undefined
   }
 
   editFile(fileName: FileType): void {
@@ -187,8 +187,13 @@ export class ServiceCreateYamlComponent implements OnInit {
   saveFile():void{
     this.isFileInEdit = false;
     this.filesDataMap.delete(this.curFileName);
-    let writer = new File(Array.from(this.curFileContent), this.curFileName);
-    this.filesDataMap.set(this.curFileName, writer);
+    try {
+      let writer = new File(Array.from(this.curFileContent), this.curFileName);
+      this.filesDataMap.set(this.curFileName, writer);
+    } catch (e) {
+      let writer = new MSBlobBuilder();
+      writer.append(this.curFileContent);
+      this.filesDataMap.set(this.curFileName, writer.getBlob());
+    }
   }
-
 }

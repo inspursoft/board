@@ -1,8 +1,8 @@
-import { Component, Input, Output, EventEmitter } from "@angular/core";
-import { User } from '../user';
+import { Component, EventEmitter, Input, Output } from "@angular/core";
 import { UserService } from "../user-service/user-service"
 import { MessageService } from "../../shared/message-service/message.service";
 import { CsComponentBase } from "../../shared/cs-components-library/cs-component-base";
+import { User } from "../../shared/shared.types";
 
 export enum editModel { emNew, emEdit }
 @Component({
@@ -55,23 +55,23 @@ export class NewEditUserComponent extends CsComponentBase{
   }
 
   updateUser() {
-    this.userService.updateUser(this.userModel)
-      .then(() => {
+    this.userService.updateUser(this.userModel).subscribe(() => {
         this.SubmitSuccessEvent.emit(true);
         this.isOpen = false;
         this.messageService.showAlert('USER_CENTER.EDIT_USER_SUCCESS');
-      })
-      .catch(()=>this.isOpen = false);
+      },
+      () => this.isOpen = false
+    );
   }
 
   addNewUser() {
-    this.userService.newUser(this.userModel)
-      .then(() => {
+    this.userService.newUser(this.userModel).subscribe(() => {
         this.SubmitSuccessEvent.emit(true);
         this.isOpen = false;
         this.messageService.showAlert('USER_CENTER.ADD_USER_SUCCESS');
-      })
-      .catch(() => this.isOpen = false);
+      },
+      () => this.isOpen = false
+    );
   }
 
 }

@@ -6,7 +6,7 @@ import {
   Directive,
   Input,
   QueryList,
-  TemplateRef,
+  TemplateRef, ViewChild,
   ViewChildren,
   ViewContainerRef
 } from '@angular/core';
@@ -31,7 +31,6 @@ export class CsMenuItemUrlDirective {
 })
 export class CsVerticalNavComponent implements AfterViewInit {
   collapsed: boolean = false;
-  activeIndex: number = 0;
   private _navSource: Array<ICsMenuItemData>;
   @ContentChildren(CsMenuItemUrlDirective) guideTemplates: QueryList<CsMenuItemUrlDirective>;
   @ViewChildren(CsMenuItemUrlDirective) guideContainers: QueryList<CsMenuItemUrlDirective>;
@@ -39,7 +38,6 @@ export class CsVerticalNavComponent implements AfterViewInit {
   @Input()
   set navSource(value: Array<ICsMenuItemData>) {
     this._navSource = value;
-    this.changeMenuClick(0);
   }
 
   get navSource(): Array<ICsMenuItemData> {
@@ -47,7 +45,7 @@ export class CsVerticalNavComponent implements AfterViewInit {
   }
 
   constructor(private tokenService: AppTokenService,
-              private changeRef: ChangeDetectorRef) {
+              private changeRef: ChangeDetectorRef){
     this.navSource = Array<ICsMenuItemData>();
   }
 
@@ -61,11 +59,11 @@ export class CsVerticalNavComponent implements AfterViewInit {
     })
   }
 
-  changeMenuClick(index: number) {
-    this.activeIndex = index;
-  }
-
   get queryParams(): {token: string} {
     return {token: this.tokenService.token};
+  }
+
+  isHasChildren(item: ICsMenuItemData): boolean{
+    return Reflect.has(item,'children');
   }
 }

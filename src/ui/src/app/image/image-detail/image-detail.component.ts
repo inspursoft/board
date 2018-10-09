@@ -42,8 +42,7 @@ export class ImageDetailComponent implements OnInit {
   getImageDetailList() {
     if (this.curImage && this.curImage.image_name) {
       this.loadingWIP = true;
-      this.imageService.getImageDetailList(this.curImage.image_name)
-        .then((res: ImageDetail[]) => {
+      this.imageService.getImageDetailList(this.curImage.image_name).subscribe((res: ImageDetail[]) => {
           this.loadingWIP = false;
           for (let item of res || []) {
             item['image_detail'] = JSON.parse(item['image_detail']);
@@ -52,19 +51,17 @@ export class ImageDetailComponent implements OnInit {
           }
           this.showDeleteAlert = new Array(this.imageDetailList.length);
           this.imageDetailList = res || [];
-        })
-        .catch(() => this.loadingWIP = false);
+        }, () => this.loadingWIP = false
+      );
     }
   }
 
   deleteTag(tagName: string) {
-    this.imageService
-      .deleteImageTag(this.curImage.image_name, tagName)
-      .then(() => {
+    this.imageService.deleteImageTag(this.curImage.image_name, tagName).subscribe(() => {
         this.reload.emit(true);
         this.isOpen = false;
         this.messageService.showAlert('IMAGE.SUCCESSFUL_DELETED_TAG');
-      })
-      .catch(() => this.isOpen = false);
+      },() => this.isOpen = false
+    )
   }
 }

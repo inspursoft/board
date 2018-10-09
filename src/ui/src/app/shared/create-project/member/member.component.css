@@ -12,8 +12,10 @@ div.left-list-container {
 div.list-action-container {
   flex-basis: 10%;
   display: flex;
+  justify-content: center;
   align-items: center;
   margin: 0 5px 0;
+  flex-direction: column;
 }
 
 div.right-list-container {

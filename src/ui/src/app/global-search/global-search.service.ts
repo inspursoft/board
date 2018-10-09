@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AppInitService } from '../app.init.service';
+import { Observable } from "rxjs/Observable";
 
 @Injectable()
 export class GlobalSearchService {
@@ -10,17 +11,14 @@ export class GlobalSearchService {
     private appInitService: AppInitService
   ) {}
 
-  search(content: string): Promise<any>{
+  search(content: string): Observable<any>{
     return this.http.get("/api/v1/search", {
         observe:"response",
         params: {
           q: content,
           token: this.appInitService.token
         }
-      })
-      .toPromise()
-      .then(res=> res.body)
-      .catch(err=>Promise.reject(err));
+      }).map(res=> res.body)
   }
 
 }

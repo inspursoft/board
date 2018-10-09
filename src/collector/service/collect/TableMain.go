@@ -19,6 +19,7 @@ import (
 	"github.com/google/cadvisor/info/v2"
 )
 
+var ignoredNamespaces []string = []string{"kube-system", "istio-system"}
 var PodList model.PodList
 var NodeList model.NodeList
 var ServiceList model.ServiceList
@@ -69,6 +70,14 @@ func (this *SourceMap) GainPods() error {
 		return err
 	}
 	PodList = *l
+	// filter the ignored pods.
+	items := make([]model.Pod, 0, len(PodList.Items))
+	for _, p := range PodList.Items {
+		if !shouldIgnore(p.Namespace) {
+			items = append(items, p)
+		}
+	}
+	PodList.Items = items
 	this.maps.ServiceCount = make(map[string]ServiceLog)
 	this.maps.PodContainerCount = make(map[string]int64)
 	getPods(this, PodList.Items)
@@ -224,6 +233,14 @@ func (resource *SourceMap) GainServices() error {
 		return err
 	}
 	ServiceList = *l
+	// filter the ignored services.
+	items := make([]model.Service, 0, len(ServiceList.Items))
+	for _, v := range ServiceList.Items {
+		if !shouldIgnore(v.Namespace) {
+			items = append(items, v)
+		}
+	}
+	ServiceList.Items = items
 	for _, v := range ServiceList.Items {
 		var service = resource.services
 		service.CreateTime = v.CreationTimestamp.Format("2006-01-02 15:04:05")
@@ -241,4 +258,13 @@ func (resource *SourceMap) GainServices() error {
 		dao.InsertDb(&service)
 	}
 	return nil
+}
+
+func shouldIgnore(namespace string) bool {
+	for _, ns := range ignoredNamespaces {
+		if ns == namespace {
+			return true
+		}
+	}
+	return false
 }

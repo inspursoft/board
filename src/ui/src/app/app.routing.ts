@@ -29,6 +29,7 @@ import { BoardLoadingComponent } from "./shared/error-pages/board-loading.compon
 import { KibanaComponent } from "./kibana/kibana/kibana.component";
 import { GrafanaComponent } from "./grafana/grafana/grafana.component";
 import { RouteGrafana, RouteKibana } from "./shared/shared.const";
+import { Observable } from "rxjs/Observable";
 
 @Injectable()
 export class SystemInfoResolve implements Resolve<any> {
@@ -36,7 +37,7 @@ export class SystemInfoResolve implements Resolve<any> {
   }
 
   resolve(route: ActivatedRouteSnapshot,
-          state: RouterStateSnapshot): Promise<any> | any {
+          state: RouterStateSnapshot): Observable<any> | Promise<any> | any {
     return this.appInitService.getSystemInfo();
   }
 }
