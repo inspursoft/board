@@ -176,7 +176,7 @@ func (d *DashboardNodeDao) GetTotalNodeData() (count int, nodeItems []NodeDataLo
 	last, prev, err := d.getDurationTime()
 	sql := d.genNodeDataTotalSqlString(tableName)
 	o := orm.NewOrm()
-	i, err := o.Raw(sql, prev, last, d.TimeCount).QueryRows(&nodeItems)
+	i, err := o.Raw(sql, prev, last, d.TimeCount, prev, last, d.TimeCount).QueryRows(&nodeItems)
 	count = int(i)
 	return count, nodeItems, err
 
@@ -199,15 +199,15 @@ func (d *DashboardNodeDao) genNodeDataTotalSqlString(tableName string) string {
 	        n.mem_usage     AS mem_usage,
 	        t.record_time,
 	        n.time_list_id  AS time_list_id
-	      FROM  %s n
-	        LEFT JOIN time_list_log t ON n.time_list_id = t.id
-	      WHERE t.record_time >= ?
+	      FROM  %s n, (select id, record_time from time_list_log where record_time >= ? and record_time <= ? limit ?) t
+				WHERE n.time_list_id = t.id
+				      AND t.record_time >= ?
 	            AND t.record_time <= ?
 	      ORDER BY n.time_list_id DESC) AS nt
 	GROUP BY nt.time_list_id, nt.record_time
 	ORDER BY nt.time_list_id DESC
 	LIMIT ?)
- 	ORDER BY record_time ASC;
+ 	ORDER BY record_time;
 		`, tableName)
 	return sql
 }
@@ -316,16 +316,15 @@ FROM (SELECT
         n.pod_number       AS pod_number,
         n.container_number AS container_number,
         t.record_time
-      FROM %s n
-        LEFT JOIN time_list_log t ON n.time_list_id = t.id
-      WHERE t.record_time >= ?
-      AND t.record_time <= ? AND n.service_name in (select name from service_status)
+      FROM %s n, (select id, record_time from time_list_log where record_time >= ? and record_time <= ? limit ?) t
+			WHERE n.time_list_id = t.id
+			AND t.record_time >= ?
+      AND t.record_time <= ? AND exists (select name from service_status)
       ORDER BY n.time_list_id DESC) AS nt
 GROUP BY nt.record_time
 ORDER BY nt.record_time DESC
 LIMIT ?)
- ORDER BY record_time ASC;
-
+ORDER BY record_time;
 		`, tableName)
 	return sql
 }
@@ -378,7 +377,7 @@ func (d *DashboardServiceDao) GetTotalServiceData() (count int, serviceItems []S
 	last, prev, err := d.getDurationTime()
 	sql := d.genServiceDataTotalSqlString(tableName)
 	o := orm.NewOrm()
-	i, err := o.Raw(sql, prev, last, d.TimeCount).QueryRows(&serviceItems)
+	i, err := o.Raw(sql, prev, last, d.TimeCount, prev, last, d.TimeCount).QueryRows(&serviceItems)
 	count = int(i)
 	if err != nil {
 		return count, []ServiceDataLog{}, err
@@ -397,9 +396,9 @@ func (d *DashboardServiceDao) genServiceDataSqlString(tableName string) (sql str
    sd.pod_number       AS pod_number,
    sd.container_number AS container_number,
    tll.record_time     AS record_time
- FROM %s sd
-   JOIN time_list_log tll ON time_list_id = tll.id
- WHERE tll.record_time >= ?
+ FROM %s sd, (select id, record_time from time_list_log where record_time >= ? and record_time <= ? limit ?) tll
+ WHERE sd.time_list_id = tll.id
+       AND tll.record_time >= ?
        AND tll.record_time <= ?
        AND sd.service_name = ?
  ORDER BY tll.record_time DESC
@@ -435,7 +434,7 @@ func (d *DashboardServiceDao) GetServiceData() (count int, serviceItems []Servic
 	last, prev, err := d.getDurationTime()
 	sql := d.genServiceDataSqlString(tableName)
 	o := orm.NewOrm()
-	i, err := o.Raw(sql, prev, last, d.Name, d.TimeCount).QueryRows(&serviceItems)
+	i, err := o.Raw(sql, prev, last, d.TimeCount, prev, last, d.Name, d.TimeCount).QueryRows(&serviceItems)
 
 	count = int(i)
 	if err != nil {
