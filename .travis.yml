@@ -9,6 +9,7 @@ env:
   - envFile=$boardDir/$base_repo_name/tests/env.cfg
   - GOPATH=$workspace
   - build_id=$BUILD_NUMBER
+  - access_token_jenkins=0aa0d1cabc926b5ee23780c6c817198fa31f9e96 
 before_script:
   - echo "before script"
   - echo "------------------------"
@@ -52,7 +53,7 @@ script:
   - cd $boardDir/board/tests
   - source $boardDir/board/tests/env.cfg
   - sh hosts.sh
-  - sh run.sh 
+  - sh run.sh
   - cd $boardDir/board/tests
   - sh report.sh
 after_script:
