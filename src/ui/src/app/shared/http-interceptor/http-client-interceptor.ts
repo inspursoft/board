@@ -85,7 +85,11 @@ export class HttpClientInterceptor implements HttpInterceptor {
             });
           }
         } else {
-          window.location.replace('/timeout-page');
+          this.messageService.showGlobalMessage(`ERROR.HTTP_TIME_OUT`, {
+            globalAlertType: GlobalAlertType.gatShowDetail,
+            errorObject: err,
+            endMessage: req.url
+          });
         }
         return Observable.throw(err);
       });

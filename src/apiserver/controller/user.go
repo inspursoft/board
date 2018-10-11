@@ -48,7 +48,7 @@ func (u *UserController) GetUsersAction() {
 		paginatedUsers, err = service.GetPaginatedUsers(fieldName, fieldValue, pageIndex, pageSize, orderField, orderAsc)
 		u.Data["json"] = paginatedUsers
 	} else {
-		users, err = service.GetUsers(fieldName, fieldValue)
+		users, err = service.GetUsers(fieldName, fieldValue, "id", "username", "email", "realname")
 		u.Data["json"] = users
 	}
 	if err != nil {

@@ -41,6 +41,7 @@ export const LANG_ZH_CN = {
     "HTTP_404":"资源未找到:404",
     "HTTP_412": "请求内容不满足应提供的前置条件:412",
     "HTTP_UNK":"未知错误",
+    "HTTP_TIME_OUT":"Http请求超时",
     "INSUFFICIENT_PRIVILEGE":"权限不足，无法操作."
   },
   "CS_DROPDOWN":{
