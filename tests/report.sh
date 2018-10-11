@@ -23,7 +23,7 @@ echo "full_name:	$full_name"
 echo "username:		$username"
 echo "cov_num:		$cov_num"
 command="curl -X POST \
-  '$gogs_url/upload?full_name=$full_name&build_id=$build_id' \
+  '$gogs_url/upload?full_name=$full_name&build_number=$build_id' \
   -H 'Cache-Control: no-cache' \
   -H 'Content-Type: multipart/form-data' \
   -F 'upload=@$coverage_file_html'
@@ -96,7 +96,7 @@ b='-d { "body": "'$bodyinfo'"}'
 echo $b
 cmd="curl -X POST \
   $comment_url \
-  -H 'Authorization: token $access_token' \
+  -H 'Authorization: token $access_token_jenkins' \
   -H 'Content-Type: application/json' \
   '$b'"
 
