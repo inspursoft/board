@@ -1,5 +1,6 @@
 import { HttpErrorResponse } from "@angular/common/http";
 import { Type } from "@angular/core";
+import { TimeoutError } from "rxjs/src/util/TimeoutError";
 
 export interface ICsMenuItemData {
   caption: string,
@@ -45,7 +46,8 @@ export class GlobalAlertMessage {
   type: GlobalAlertType = GlobalAlertType.gatNormal;
   message: string = '';
   alertType: AlertType = 'alert-danger';
-  errorObject: HttpErrorResponse | Type<Error>;
+  errorObject: HttpErrorResponse | Type<Error> | TimeoutError;
+  endMessage: string = '';
 }
 
 export class SignUp {

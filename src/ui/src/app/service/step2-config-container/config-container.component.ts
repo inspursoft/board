@@ -116,7 +116,7 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
     buf.container.image.image_name = image.image_name;
     buf.container.name = image.image_name.substr(image.image_name.indexOf('/') + 1);
     buf.container.image.project_name = this.stepSelectImageData.projectName;
-    this.containerIsInEdit.set(buf.container, false);
+    this.toggleContainerEditStatus(buf.container);
     if (this.imageDetailSourceList.has(image.image_name)) {
       let detailList: Array<ImageDetail> = this.imageDetailSourceList.get(image.image_name);
       buf.container.image.image_tag = detailList[0].image_tag;

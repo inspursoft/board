@@ -5,6 +5,7 @@ import { AlertMessage, AlertType, BUTTON_STYLE, GlobalAlertMessage, GlobalAlertT
 import { CsAlertComponent } from "../cs-components-library/cs-alert/cs-alert.component";
 import { CsGlobalAlertComponent } from "../cs-components-library/cs-global-alert/cs-global-alert.component";
 import { CsDialogComponent } from "../cs-components-library/cs-dialog/cs-dialog.component";
+import { TimeoutError } from "rxjs/src/util/TimeoutError";
 
 @Injectable()
 export class MessageService {
@@ -40,8 +41,9 @@ export class MessageService {
                            optional?: {
                              alertType?: AlertType,
                              globalAlertType?: GlobalAlertType,
-                             errorObject?: HttpErrorResponse | Type<Error>,
-                             view?: ViewContainerRef
+                             errorObject?: HttpErrorResponse | Type<Error> | TimeoutError,
+                             view?: ViewContainerRef,
+                             endMessage?: string
                            }): void {
     let globalView: ViewContainerRef = optional ? optional.view || this.dialogView : this.dialogView;
     let message: GlobalAlertMessage = new GlobalAlertMessage();
@@ -49,6 +51,7 @@ export class MessageService {
     message.alertType = optional ? optional.alertType || 'alert-danger' : 'alert-danger';
     message.type = optional ? optional.globalAlertType || GlobalAlertType.gatNormal : GlobalAlertType.gatNormal;
     message.errorObject = optional ? optional.errorObject : null;
+    message.endMessage = optional && optional.endMessage ? `:${optional.endMessage}` : '';
     let componentRef = this.createComponent(CsGlobalAlertComponent, globalView);
     componentRef.instance.openAlert(message).subscribe(() => globalView.remove(globalView.indexOf(componentRef.hostView)));
   }
