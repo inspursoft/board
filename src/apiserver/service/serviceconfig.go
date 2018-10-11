@@ -394,6 +394,7 @@ func MarshalService(serviceConfig *model.ConfigServiceStep) *model.Service {
 		ObjectMeta: model.ObjectMeta{Name: serviceConfig.ServiceName},
 		Ports:      ports,
 		Selector:   map[string]string{"app": serviceConfig.ServiceName},
+		ClusterIP:  serviceConfig.ClusterIP,
 		Type:       "NodePort",
 	}
 }
