@@ -3,6 +3,7 @@ package controller_test
 import (
 	"git/inspursoft/board/src/apiserver/controller"
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/apiserver/service/devops/gogs"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/model/dashboard"
@@ -16,6 +17,9 @@ import (
 
 const (
 	adminUserID            = 1
+	adminUsername          = "admin"
+	adminEmail             = "admin@inspur.com"
+	defaultProject         = "library"
 	defaultInitialPassword = "123456a?"
 )
 
@@ -49,6 +53,41 @@ func updateAdminPassword() {
 	}
 }
 
+func initProjectRepo() {
+	initialPassword := utils.GetStringValue("BOARD_ADMIN_PASSWORD")
+	if initialPassword == "" {
+		initialPassword = defaultInitialPassword
+	}
+
+	err := gogs.SignUp(model.User{Username: adminUsername, Email: adminEmail, Password: initialPassword})
+	if err != nil {
+		logs.Error("Failed to create admin user on Gogit: %+v", err)
+	}
+
+	token, err := gogs.CreateAccessToken(adminUsername, initialPassword)
+	if err != nil {
+		logs.Error("Failed to create access token for admin user: %+v", err)
+	}
+	user := model.User{ID: adminUserID, RepoToken: token.Sha1}
+	service.UpdateUser(user, "repo_token")
+
+	err = service.ConfigSSHAccess(adminUsername, token.Sha1)
+	if err != nil {
+		logs.Error("Failed to config SSH access for admin user: %+v", err)
+	}
+	logs.Info("Initialize serve repo ...")
+	logs.Info("Init git repo for default project %s", defaultProject)
+
+	// err = service.CreateRepoAndJob(adminUserID, defaultProject)
+	// if err != nil {
+	// 	logs.Error("Failed to create default repo %s: %+v", defaultProject, err)
+	// }
+
+	utils.SetConfig("INIT_PROJECT_REPO", "created")
+	service.SetSystemInfo("INIT_PROJECT_REPO", true)
+	logs.Info("Finished to create initial project and repo.")
+}
+
 func TestMain(m *testing.M) {
 	utils.InitializeDefaultConfig()
 	utils.AddEnv("NODE_IP")
@@ -59,7 +98,19 @@ func TestMain(m *testing.M) {
 	utils.SetConfig("AUDIT_DEBUG", "false")
 
 	dao.InitDB()
-	updateAdminPassword()
+	systemInfo, err := service.GetSystemInfo()
+	if err != nil {
+		logs.Error("Failed to set system config: %+v", err)
+		panic(err)
+	}
+	if systemInfo.SetAdminPassword == "" {
+		updateAdminPassword()
+	}
+
+	if systemInfo.InitProjectRepo == "" {
+		initProjectRepo()
+	}
+
 	controller.InitController()
 	os.Exit(m.Run())
 }

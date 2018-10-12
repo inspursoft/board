@@ -28,8 +28,7 @@ services:
     env_file:
       - ../config/tokenserver/env
     restart: always
-    volumes:
-      - ../config/tokenserver/app.conf:/go/bin/app.conf:z
+
     ports:
       - 4000:4000
   registry:
