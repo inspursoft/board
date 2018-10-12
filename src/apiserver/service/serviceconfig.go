@@ -381,6 +381,7 @@ func MarshalService(serviceConfig *model.ConfigServiceStep) *model.Service {
 	if serviceConfig == nil {
 		return nil
 	}
+	var spectype = "ClusterIP"
 	ports := make([]model.ServicePort, 0)
 	for index, port := range serviceConfig.ExternalServiceList {
 		ports = append(ports, model.ServicePort{
@@ -388,6 +389,9 @@ func MarshalService(serviceConfig *model.ConfigServiceStep) *model.Service {
 			Port:     int32(port.NodeConfig.TargetPort),
 			NodePort: int32(port.NodeConfig.NodePort),
 		})
+		if port.NodeConfig.NodePort != 0 {
+			spectype = "NodePort"
+		}
 	}
 
 	return &model.Service{
@@ -395,7 +399,7 @@ func MarshalService(serviceConfig *model.ConfigServiceStep) *model.Service {
 		Ports:      ports,
 		Selector:   map[string]string{"app": serviceConfig.ServiceName},
 		ClusterIP:  serviceConfig.ClusterIP,
-		Type:       "NodePort",
+		Type:       spectype,
 	}
 }
 
