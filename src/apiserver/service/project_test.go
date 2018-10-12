@@ -84,17 +84,17 @@ func TestGetProjectsByMember(t *testing.T) {
 	assert.NotNil(projectList, fmt.Sprintf("Failed to get projects by userID: %d", userID))
 }
 
-func TestDeleteProject(t *testing.T) {
-	isSuccess, err := service.DeleteProject(userID, projectID)
-	assert := assert.New(t)
-	assert.Nil(err, "Error occurred while deleting project.")
-	assert.Equalf(true, isSuccess, "Failed to delete project by ID: %d", projectID)
+// func TestDeleteProject(t *testing.T) {
+// 	isSuccess, err := service.DeleteProject(userID, projectID)
+// 	assert := assert.New(t)
+// 	assert.Nil(err, "Error occurred while deleting project.")
+// 	assert.Equalf(true, isSuccess, "Failed to delete project by ID: %d", projectID)
 
-	isSuccess, err = service.DeleteNamespace(projectName)
-	assert.Nil(err, "Error occurred while deleting namespace.")
-	assert.Equalf(true, isSuccess, "Failed to delete namespace by name: %s", projectName)
+// 	isSuccess, err = service.DeleteNamespace(projectName)
+// 	assert.Nil(err, "Error occurred while deleting namespace.")
+// 	assert.Equalf(true, isSuccess, "Failed to delete namespace by name: %s", projectName)
 
-	project, err := service.GetProjectByID(projectID)
-	assert.Nilf(err, "Error occurred while getting project by ID: %d", projectID)
-	assert.Nilf(project, "Project with ID: %d is not nil.", projectID)
-}
+// 	project, err := service.GetProjectByID(projectID)
+// 	assert.Nilf(err, "Error occurred while getting project by ID: %d", projectID)
+// 	assert.Nilf(project, "Project with ID: %d is not nil.", projectID)
+// }
