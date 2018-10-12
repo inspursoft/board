@@ -85,7 +85,7 @@ func TestGetProjectsByMember(t *testing.T) {
 }
 
 func TestDeleteProject(t *testing.T) {
-	isSuccess, err := service.DeleteProject(projectID)
+	isSuccess, err := service.DeleteProject(userID, projectID)
 	assert := assert.New(t)
 	assert.Nil(err, "Error occurred while deleting project.")
 	assert.Equalf(true, isSuccess, "Failed to delete project by ID: %d", projectID)

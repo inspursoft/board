@@ -15,7 +15,7 @@ const (
 	TOKEN_OTHER_SIGNMETHOD = "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.tyh-VfuzIxCyGYDlkBA7DfyjrqmSHu6pQ2hoZuFqUSLPNY2N0mpHb3nk5K17HWP_3cYHBw7AhHale5wky6-sVA"
 )
 
-var PAYLOARD = map[string]interface{}{
+var PAYLOAD = map[string]interface{}{
 	"id":               "1",
 	"username":         "zhangsan",
 	"email":            "zhangsan@inspur.com",
@@ -65,7 +65,7 @@ func TestTokenWithValidPayload(t *testing.T) {
 	// test timeout token
 	os.Setenv("TOKEN_EXPIRE_TIME", "1")
 	service.InitService()
-	token, err := service.Sign(PAYLOARD)
+	token, err := service.Sign(PAYLOAD)
 	assert.Nil(err, fmt.Sprintf("Sign payload error: %+v", err))
 	assert.NotEmpty(token, "The sign token is empty")
 	time.Sleep(2 * time.Second)
@@ -75,11 +75,11 @@ func TestTokenWithValidPayload(t *testing.T) {
 	// normal test
 	os.Setenv("TOKEN_EXPIRE_TIME", "1200")
 	service.InitService()
-	token, err = service.Sign(PAYLOARD)
+	token, err = service.Sign(PAYLOAD)
 	assert.Nil(err, fmt.Sprintf("Sign payload error: %+v", err))
 	assert.NotEmpty(token, "The sign token is empty")
 	v, err = service.Verify(token)
 	assert.Nil(err, fmt.Sprintf("Verify token error: %+v", err))
-	assert.Equal(PAYLOARD, v, "Verify origin payload error")
+	assert.Equal(PAYLOAD, v, "Verify origin payload error")
 
 }
