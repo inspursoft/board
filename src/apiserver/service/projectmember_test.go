@@ -108,13 +108,13 @@ func TestIsProjectMemberByName(t *testing.T) {
 	assert.Equalf(true, isSuccess, "User %s is project %s's member.", projectMember.Username, testMemberProjectName)
 }
 
-func TestDeleteProjectMember(t *testing.T) {
-	project, err := service.GetProjectByName(testMemberProjectName)
-	if err != nil {
-		logs.Error("Failed to get project.")
-	}
-	assert := assert.New(t)
-	isSuccess, err := service.DeleteProjectMember(project.ID, adminUserID)
-	assert.Nilf(err, "Error occurred while deleting project member by projectID: %d, userID: %d.", project.ID, adminUserID)
-	assert.Equalf(true, isSuccess, "Failed to delete project member by projectID: %d, userID: %d.", project.ID, adminUserID)
-}
+// func TestDeleteProjectMember(t *testing.T) {
+// 	project, err := service.GetProjectByName(testMemberProjectName)
+// 	if err != nil {
+// 		logs.Error("Failed to get project.")
+// 	}
+// 	assert := assert.New(t)
+// 	isSuccess, err := service.DeleteProjectMember(project.ID, adminUserID)
+// 	assert.Nilf(err, "Error occurred while deleting project member by projectID: %d, userID: %d.", project.ID, adminUserID)
+// 	assert.Equalf(true, isSuccess, "Failed to delete project member by projectID: %d, userID: %d.", project.ID, adminUserID)
+// }

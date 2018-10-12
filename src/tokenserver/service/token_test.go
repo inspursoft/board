@@ -26,12 +26,8 @@ var PAYLOAD = map[string]interface{}{
 
 func TestInitService(t *testing.T) {
 	assert := assert.New(t)
-	os.Remove("app.conf")
-	err := service.InitService()
-	assert.NotNil(err, "Init service without config file should failed")
-
 	os.Setenv("TOKEN_EXPIRE_TIME", "abc")
-	err = service.InitService()
+	err := service.InitService()
 	assert.NotNil(err, "Init service with wrong configfile should failed")
 }
 
