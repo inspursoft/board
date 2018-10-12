@@ -24,13 +24,6 @@ var PAYLOAD = map[string]interface{}{
 	"is_system_admin":  float64(0),
 }
 
-func TestInitService(t *testing.T) {
-	assert := assert.New(t)
-	os.Setenv("TOKEN_EXPIRE_TIME", "abc")
-	err := service.InitService()
-	assert.NotNil(err, "Init service with wrong configfile should failed")
-}
-
 func TestSign(t *testing.T) {
 	assert := assert.New(t)
 
