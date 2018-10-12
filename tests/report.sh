@@ -1,9 +1,9 @@
 #!/bin/sh
 
 consoleLink=$jenkins_master_url/job/$group_name/$build_id/console
-last_build_cov=$last_coverage
+last_build_cov=`echo $last_coverage|cut -d ":" -f 2`
+last_ui_cov=`echo $last_coverage|cut -d ":" -f 1`
 echo "--------------------------"
-echo $lastBuildCov
 echo $build_id
 
 #make prepare
@@ -12,9 +12,10 @@ chmod +x *
 
 if [ "$action" == "pull_request" ]; then
 covfile=$boardDir/$base_repo_name/tests/avaCov.cov
-coverage_file_html=$boardDir/$base_repo_name/tests/profile.html
+coverage_build_html=$boardDir/$base_repo_name/tests/profile.html
+coverage_ui_html=$boardDir/$base_repo_name/src/ui/coverage/index.html 
 build_cov=`cat $boardDir/$base_repo_name/tests/avaCov.cov`
-
+ui_cov=`cat $boardDir/$base_repo_name/src/ui/testresult.log |grep "Statements"|cut -d ":" -f 2|cut -d "%" -f 1|awk 'gsub(/^ *| *$/,"")'`
 
 echo "push to register======================="
 echo "gogs_url:		$gogs_url"
@@ -22,17 +23,23 @@ echo "group_name:	$group_name"
 echo "full_name:	$full_name"
 echo "username:		$username"
 echo "cov_num:		$cov_num"
+
+for postfile in $coverage_build_html $coverage_ui_html;
+do
 command="curl -X POST \
   '$gogs_url/upload?full_name=$full_name&build_number=$build_id' \
   -H 'Cache-Control: no-cache' \
   -H 'Content-Type: multipart/form-data' \
-  -F 'upload=@$coverage_file_html'
+  -F 'upload=@$postfile'
 "
 echo $command
 eval $command
-coverage_file_html_path="$gogs_url/results/$full_name/$build_id/profile.html"
+done
+coverage_build_html_path="$gogs_url/results/$full_name/$build_id/profile.html"
+coverage_ui_html_path="$gogs_url/results/$full_name/$build_id/index.html"
 
-echo $coverage_file_html_path
+echo $coverage_build_html_path
+echo $coverage_ui_html_path
 
 commit_cov_num="curl -X PUT \
   '$gogs_url/config?group_name=$group_name&username=$username' \
@@ -40,7 +47,7 @@ commit_cov_num="curl -X PUT \
   -H 'Content-Type: application/json' \
   -d '{
                 \"config_key\": \"last_coverage\",
-                \"config_val\": \"$build_cov\"
+                \"config_val\": \"$build_cov:$ui_cov\"
 }'"
 
 echo $commit_cov_num
@@ -73,24 +80,30 @@ pic="error.jpg"
 cov="FAIL"
 else
 
+
+echo "last_build_cov:$last_build_cov;build_cov:$build_cov;"
 pic=`getFlag $last_build_cov $build_cov`
-fi
 echo $comment_url
 
+uiPic=`getFlag $last_ui_cov $ui_cov`
+
+fi
 
 echo "=================================================================="
 info1="The test coverage for backend is "
 serverresult=$build_cov
 consoleinfo=", check "
-uiCov=" <a href=$uiLink>$uiCoverage </a>"
-serverCovLink=" <a href=$coverage_file_html_path>$serverresult</a>"
+serverCovLink=" <a href=$coverage_build_html_path>$serverresult%</a>"
+uiCovLink=" <a href=$coverage_ui_html_path>$ui_cov%</a>"
 console_url=" <a href=$consoleLink> console log</a> "
-imageLink=$gogs_url/results/pic/$pic
-image_url=" <img src="$imageLink" width="20" height="20"> "
+build_image_link=$gogs_url/results/pic/$pic
+ui_image_link=$gogs_url/results/pic/$uiPic
+build_image_url=" <img src="$build_image_link" width="20" height="20"> "
+ui_image_url=" <img src="$build_image_link" width="20" height="20"> "
 bodyinfo=$info1$serverCovLink$imageu$uiinfo$uiImageuri$consoleinfo$consoleuri
 bodyinfo=$info1$serverCovLink$imageuri$uiinfo$uiCov$uiImageuri$consoleinfo$consoleuri
 bodyinfo=$info1$serverCovLink$imageuri$uiinfo$uiCov$uiImageuri$consoleinfo$consoleuri
-bodyinfo=$info1$serverCovLink$image_url$consoleinfo$console_url
+bodyinfo=$info1$serverCovLink$build_image_url$uiCovLink$ui_image_url$consoleinfo$console_url
 #bodyinfo=$info1
 b='-d { "body": "'$bodyinfo'"}'
 echo $b
