@@ -445,28 +445,3 @@ func (sc *ServiceConfigController) configEntireService(key string, configService
 
 	SetConfigServiceStep(key, &entireService)
 }
-
-func (sc *ServiceConfigController) GetConfigServiceFromDBAction() {
-	key := sc.getKey()
-	configServiceStep := NewConfigServiceStep(key)
-	serviceName := strings.ToLower(sc.GetString("service_name"))
-	projectName := strings.ToLower(sc.GetString("project_name"))
-	serviceData, err := service.GetService(model.ServiceStatus{Name: serviceName, ProjectName: projectName}, "name", "project_name")
-	if err != nil {
-		sc.internalError(err)
-		return
-	}
-	if serviceData == nil || serviceData.ServiceConfig == "" {
-		sc.serveStatus(http.StatusNotFound, notFoundErr.Error())
-		return
-	}
-
-	logs.Info("service config form DB is %+v\n", serviceData)
-
-	err = json.Unmarshal([]byte(serviceData.ServiceConfig), configServiceStep)
-	if err != nil {
-		sc.internalError(err)
-		return
-	}
-	SetConfigServiceStep(key, configServiceStep)
-}

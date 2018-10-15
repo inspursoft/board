@@ -1035,36 +1035,6 @@ paths:
           description: The updated image list conflict.
         500:
           description: Internal errors.
-  /v1/services/reconfig:
-    get:
-      summary: load service config from service DB.
-      description: 
-        This endpoint returns nil.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: project_name 
-          in: query
-          description: Project name for filtering results.
-          required: false
-          type: string
-        - name: service_name 
-          in: query
-          description: Service name for filtering results.
-          required: false
-          type: string
-      tags:
-        - Products
-      responses:
-        200:
-          description: Return all matched services.
-        401:
-          description: User need to log in first.
-        500:
-          description: Internal errors.
   /v1/services:
     get:
       summary: Return services created by Board.
