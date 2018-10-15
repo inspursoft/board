@@ -1,4 +1,4 @@
-package controller
+package controller_test
 
 import (
 	"bytes"
@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
+
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/orm"
@@ -17,7 +18,7 @@ import (
 )
 
 func isExternalAuth() bool {
-	authMode := os.Getenv("AUTH_MODE")
+	authMode := utils.GetStringValue("AUTH_MODE")
 	if authMode != "" && authMode != "db_auth" {
 		return true
 	}
@@ -34,14 +35,13 @@ func TestUserAction(t *testing.T) {
 	defer adminLogoutTest(t)
 
 	user := model.User{
-		Username:     "testuser",
-		Password:     "testuserpasswrd",
-		Email:        "testuser@test.com",
-		Realname:     "testuser",
-		Comment:      "this is just a test account",
-		SystemAdmin:  0,
+		Username:    "testuser",
+		Password:    "testuserpasswrd",
+		Email:       "testuser@test.com",
+		Realname:    "testuser",
+		Comment:     "this is just a test account",
+		SystemAdmin: 0,
 	}
-
 	body, err := json.Marshal(user)
 	if err != nil {
 		t.Fatalf("user marshal error: %v", err)
@@ -59,7 +59,6 @@ func TestUserAction(t *testing.T) {
 		t.FailNow()
 	}
 	defer cleanUp(user.Username)
-
 	// get users
 	t.Log("getting users")
 	r, _ = http.NewRequest("GET", fmt.Sprintf("/api/v1/users?username=%s&token=%s", user.Username, token), nil)
@@ -78,16 +77,6 @@ func TestUserAction(t *testing.T) {
 		t.Fatalf("can't find the user which just created")
 	}
 	readUser := readUsers[0]
-
-	// defer delete user
-	defer func() {
-		t.Log("deleteing user")
-		r, _ := http.NewRequest("DELETE", fmt.Sprintf("/api/v1/users/%d?token=%s", readUser.ID, token), nil)
-		w := httptest.NewRecorder()
-		beego.BeeApp.Handlers.ServeHTTP(w, r)
-
-		assert.Equal(http.StatusOK, w.Code, "Delete User fail.")
-	}()
 
 	t.Log("getting one user")
 	r, _ = http.NewRequest("GET", fmt.Sprintf("/api/v1/users/%d?token=%s", readUser.ID, token), nil)
@@ -165,6 +154,12 @@ func TestUserAction(t *testing.T) {
 	if !assert.Equal(updatedUser.SystemAdmin, toggledUser.SystemAdmin, "Toggle User SystemAdmin fail.") {
 		t.FailNow()
 	}
+
+	t.Log("deleteing user")
+	r, _ = http.NewRequest("DELETE", fmt.Sprintf("/api/v1/users/%d?token=%s", readUser.ID, token), nil)
+	w = httptest.NewRecorder()
+	beego.BeeApp.Handlers.ServeHTTP(w, r)
+	assert.Equal(http.StatusOK, w.Code, "Delete User fail.")
 }
 
 func TestChangeUserAccount(t *testing.T) {
@@ -177,12 +172,12 @@ func TestChangeUserAccount(t *testing.T) {
 	defer adminLogoutTest(t)
 
 	user := model.User{
-		Username:     "testuseraccount",
-		Password:     "testuseraccountpwd",
-		Email:        "testuseraccount@test.com",
-		Realname:     "testuseraccount",
-		Comment:      "this is just a test account",
-		SystemAdmin:  0,
+		Username:    "testuseraccount",
+		Password:    "testuseraccountpwd",
+		Email:       "testuseraccount@test.com",
+		Realname:    "testuseraccount",
+		Comment:     "this is just a test account",
+		SystemAdmin: 0,
 	}
 
 	body, err := json.Marshal(user)
@@ -221,16 +216,6 @@ func TestChangeUserAccount(t *testing.T) {
 		t.Fatalf("can't find the user which just created")
 	}
 	readUser := readUsers[0]
-
-	// defer delete user
-	defer func() {
-		t.Log("deleteing user")
-		r, _ := http.NewRequest("DELETE", fmt.Sprintf("/api/v1/users/%d?token=%s", readUser.ID, token), nil)
-		w := httptest.NewRecorder()
-		beego.BeeApp.Handlers.ServeHTTP(w, r)
-
-		assert.Equal(http.StatusOK, w.Code, "Delete User fail.")
-	}()
 
 	t.Log("getting one user")
 	r, _ = http.NewRequest("GET", fmt.Sprintf("/api/v1/users/%d?token=%s", readUser.ID, token), nil)
@@ -273,7 +258,6 @@ func TestChangeUserAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("updateduser unmarshal error: %v", err)
 	}
-
 	if !assert.Equal(readUser.Comment, updatedUser.Comment, "Upate User Comment fail.") {
 		t.FailNow()
 	}
@@ -290,12 +274,12 @@ func TestChangePasswordAction(t *testing.T) {
 	defer adminLogoutTest(t)
 
 	user := model.User{
-		Username:     "testpassword",
-		Password:     "testpasswordpwd",
-		Email:        "testpasswordpwd@test.com",
-		Realname:     "testpasswordpwd",
-		Comment:      "this is just a test account",
-		SystemAdmin:  0,
+		Username:    "testpassword",
+		Password:    "testpasswordpwd",
+		Email:       "testpasswordpwd@test.com",
+		Realname:    "testpasswordpwd",
+		Comment:     "this is just a test account",
+		SystemAdmin: 0,
 	}
 
 	body, err := json.Marshal(user)
@@ -334,16 +318,6 @@ func TestChangePasswordAction(t *testing.T) {
 		t.Fatalf("can't find the user which just created")
 	}
 	readUser := readUsers[0]
-
-	// defer delete user
-	defer func() {
-		t.Log("deleteing user")
-		r, _ := http.NewRequest("DELETE", fmt.Sprintf("/api/v1/users/%d?token=%s", readUser.ID, token), nil)
-		w := httptest.NewRecorder()
-		beego.BeeApp.Handlers.ServeHTTP(w, r)
-
-		assert.Equal(http.StatusOK, w.Code, "Delete User fail.")
-	}()
 
 	t.Log("getting one user")
 	r, _ = http.NewRequest("GET", fmt.Sprintf("/api/v1/users/%d?token=%s", readUser.ID, token), nil)
@@ -387,13 +361,8 @@ func cleanUp(username string) {
 	if err != nil {
 		logs.Error("Error occurred while deleting user: %+v", err)
 	}
-	affected, err := r.RowsAffected()
+	_, err = r.RowsAffected()
 	if err != nil {
 		logs.Error("Error occurred while deleting user: %+v", err)
-	}
-	if affected == 0 {
-		logs.Error("Failed to delete user")
-	} else {
-		logs.Info("Successful cleared up.")
 	}
 }

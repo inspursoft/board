@@ -1,39 +1,58 @@
 /**
  * Created by liyanq on 9/11/17.
  */
-import { Component, Input, Output, EventEmitter, OnInit, ViewChild, ElementRef } from "@angular/core"
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from "@angular/core"
 import { AsyncValidatorFn, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from "@angular/forms";
+import { AbstractControl } from "@angular/forms/src/model";
 
-export enum CsInputStatus{isView = 0, isEdit = 1}
+export enum CsInputFiledType {iftString, iftNumber, iftPassword, iftEmail}
 export enum CsInputType{itWithInput, itWithNoInput, itOnlyWithInput}
-export enum CsInputFiledType{iftString, iftNumber}
+export enum CsInputStatus {isView = 0, isEdit = 1}
 export type CsInputSupportType = string | number
-export class CsInputFiled {
+
+class CsInputFiled {
   constructor(public status: CsInputStatus,
               public defaultValue: CsInputSupportType,
               public value: CsInputSupportType) {
   }
 }
 
-const InputPatternNumber: RegExp = /^[1-9]\d*$/;
+class CustomValidator {
+  static passwordValidate(c: AbstractControl): ValidationErrors | null {
+    let sourceElement: HTMLCollectionOf<Element> = document.getElementsByClassName("source-password");
+    let verifyElement: HTMLCollectionOf<Element> = document.getElementsByClassName("verify-password");
+    if (sourceElement && sourceElement.length > 0 && verifyElement && verifyElement.length > 0) {
+      let source = (sourceElement.item(0) as HTMLInputElement).value;
+      let verify = (verifyElement.item(0) as HTMLInputElement).value;
+      if (source != "" && verify != "") {
+        return source == verify ? null : {verifyPassword: "verify-password"}
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  }
+}
+
+const PATTERN_Number: RegExp = /^[1-9]\d*$/;
 @Component({
   selector: "cs-input",
   templateUrl: "./cs-input.component.html",
   styleUrls: ["./cs-input.component.css"]
 })
 export class CsInputComponent implements OnInit {
-  _isDisabled: boolean = false;
-  isInValidatorWIP:boolean = false;
-  inputErrors: ValidationErrors;
   inputFormGroup: FormGroup;
-  inputControl: FormControl;
   inputValidatorFns: Array<ValidatorFn>;
   inputValidatorMessageParam: string;
   inputField: CsInputFiled;
-  @ViewChild("input") inputHtml;
+  isCheckInputOnKeyPress: boolean = false;
+  _isDisabled: boolean = false;
+  public inputControl: FormControl;
+  @ViewChild("input") inputHtml: ElementRef;
   @ViewChild("container") containerHtml: ElementRef;
   @Input() inputLabel: string = "";
-  @Input() inputLabelMinWidth: string = "180px";
+  @Input() inputLabelMinWidth: string = "180";
   @Input() inputFiledType: CsInputFiledType = CsInputFiledType.iftString;
   @Input() inputIsRequired: boolean = false;
   @Input() inputPattern: RegExp;
@@ -42,22 +61,34 @@ export class CsInputComponent implements OnInit {
   @Input() inputMax: number = 0;
   @Input() inputMin: number = 0;
   @Input() inputType: CsInputType = CsInputType.itWithInput;
-  @Input() customerValidatorFns: Array<ValidatorFn>;
   @Input() customerValidatorAsyncFunc: AsyncValidatorFn;
+  @Input() customerValidatorFunc: ValidatorFn;
   @Input() validatorMessage: Array<{validatorKey: string, validatorMessage: string}>;
+  @Input() inputPlaceholder: string = "";
+  @Input() sourcePassword: boolean = false;
+  @Input() verifyPassword: boolean = false;
+
 
   constructor() {
     this.inputValidatorFns = Array<ValidatorFn>();
+    this.inputControl = new FormControl("", {updateOn: 'blur'});
+    this.inputFormGroup = new FormGroup({inputControl: this.inputControl}, {updateOn: 'blur'});
   }
 
   ngOnInit() {
-    this.inputControl = new FormControl({
-      value: this.SimpleFiled,
-      disabled: this.isDisabled || this.isInValidatorWIP
+    setTimeout(() => {//Todo:Bad method for prevent validate when dynamic create;
+      if (this.customerValidatorAsyncFunc) {
+        this.inputControl.setAsyncValidators(this.customerValidatorAsyncFunc);
+      }
     });
-    this.inputFormGroup = new FormGroup({inputControl: this.inputControl});
+    if (this.inputControl.validator) {
+      this.inputValidatorFns.push(this.inputControl.validator);
+    }
+    if (this.customerValidatorFunc) {
+      this.inputValidatorFns.push(this.customerValidatorFunc);
+    }
     if (this.inputFiledType == CsInputFiledType.iftNumber) {
-      this.inputValidatorFns.push(Validators.pattern(InputPatternNumber));
+      this.inputValidatorFns.push(Validators.pattern(PATTERN_Number));
     }
     if (this.inputIsRequired) {
       this.inputValidatorFns.push(Validators.required);
@@ -77,10 +108,39 @@ export class CsInputComponent implements OnInit {
     if (this.inputPattern) {
       this.inputValidatorFns.push(Validators.pattern(this.inputPattern));
     }
-    if (this.customerValidatorFns) {
-      this.customerValidatorFns.forEach(value => {
-        this.inputValidatorFns.push(value);
-      })
+    if (this.verifyPassword || this.sourcePassword) {
+      this.inputValidatorFns.push(CustomValidator.passwordValidate);
+    }
+    this.inputControl.setValidators(this.inputValidatorFns);
+    this.inputControl.statusChanges.subscribe(() => {
+      if (this.inputControl.valid) {
+        this.inputField.status = CsInputStatus.isView;
+        this.inputField.defaultValue = this.inputControl.value;
+        this.onCheckEvent.emit(this.inputFiledType == CsInputFiledType.iftNumber ? Number(this.inputControl.value) : this.inputControl.value);
+        if (this.isCheckInputOnKeyPress) {
+          this.isCheckInputOnKeyPress = false;
+          let nextInputElement: Element = this.containerHtml.nativeElement.parentElement.nextElementSibling;
+          if (nextInputElement) {
+            let nextLabelElement: NodeListOf<HTMLLabelElement> = nextInputElement.getElementsByClassName("cs-input-label") as NodeListOf<HTMLLabelElement>;
+            if (nextLabelElement && nextLabelElement.length > 0) {
+              nextLabelElement[0].click();
+            }
+          }
+        }
+      }
+    });
+  }
+
+  get inputFieldTypeName(): string {
+    switch (this.inputFiledType) {
+      case CsInputFiledType.iftNumber:
+        return "number";
+      case CsInputFiledType.iftPassword:
+        return "password";
+      case CsInputFiledType.iftEmail:
+        return "email";
+      default:
+        return "text";
     }
   }
 
@@ -89,6 +149,10 @@ export class CsInputComponent implements OnInit {
     this.inputField = new CsInputFiled(
       CsInputStatus.isView, value, value
     );
+    if ((this.inputFiledType == CsInputFiledType.iftNumber && this.inputControl.value == 0) ||
+      (this.inputFiledType != CsInputFiledType.iftNumber && this.inputControl.value == '')) {
+      this.inputControl.setValue(value);
+    }
   }
 
   get SimpleFiled(): CsInputSupportType {
@@ -99,28 +163,22 @@ export class CsInputComponent implements OnInit {
   set isDisabled(value: boolean) {
     this._isDisabled = value;
     if (value) {
+      this.inputControl.clearAsyncValidators();
+      this.inputControl.disable();
       this.inputField.status = CsInputStatus.isView;
-    }
-    if (this.inputControl) {
-      this.inputControl.reset({
-        value: this.SimpleFiled,
-        disabled: value
-      });
+    } else {
+      this.inputControl.enable();
+      this.inputControl.setAsyncValidators(this.customerValidatorAsyncFunc);
     }
   }
 
-  get isDisabled() {
+  get isDisabled(): boolean {
     return this._isDisabled;
   }
 
   public get valid(): boolean {
-    let notEmpty = this.inputField.value != 0 && this.inputField.value;
-    let isInView = this.inputField.status == CsInputStatus.isView;
-    if (this.inputIsRequired) {
-      return notEmpty && isInView;
-    } else {
-      return isInView;
-    }
+    return this.inputIsRequired ? this.inputControl.valid && this.inputField.status == CsInputStatus.isView :
+      this.inputControl.valid && this.inputField.status == CsInputStatus.isView;
   }
 
   getValidatorMessage(errors: ValidationErrors): string {
@@ -153,6 +211,10 @@ export class CsInputComponent implements OnInit {
       } else if (errors["min"]) {
         result = `ERROR.INPUT_MIN_VALUE`;
         this.inputValidatorMessageParam = `:${this.inputMin}`
+      } else if (errors["passwordPattern"]) {
+        result = `ACCOUNT.PASSWORD_FORMAT`;
+      } else if (errors["verifyPassword"]) {
+        result = `ACCOUNT.PASSWORDS_ARE_NOT_IDENTICAL`;
       } else if (Object.keys(errors).length > 0){
         result = errors[Object.keys(errors)[0]];
       }
@@ -160,43 +222,22 @@ export class CsInputComponent implements OnInit {
     return result;
   }
 
-  get isPassValidator(): Promise<boolean> {
-    let result = true;
-    this.inputErrors = null;
-    this.isInValidatorWIP = true;
-    this.inputValidatorFns.forEach(value => {
-      let error = value(this.inputControl);
-      if (error) {
-        result = false;
-        this.inputErrors = error;
-      }
-    });
-    if (result && this.customerValidatorAsyncFunc) {
-      let asyncResult = this.customerValidatorAsyncFunc(this.inputControl);
-      return (asyncResult as Promise<ValidationErrors | null>).then((error) => {
-        this.inputErrors = error;
-        this.isInValidatorWIP = false;
-        return !error;
-      });
-    } else {
-      this.isInValidatorWIP = false;
-      return Promise.resolve(result);
+  onInputKeyPressEvent(event: KeyboardEvent) {
+    if (event.keyCode == 13) {
+      this.isCheckInputOnKeyPress = true;
+      (this.inputHtml.nativeElement as HTMLElement).blur();
     }
   }
 
-  onInputKeyPressEvent(event: KeyboardEvent) {
-    if (event.keyCode == 13) {
-      this.onCheckClick().then((isChecked) => {
-        if (isChecked) {
-          let nextInputElement: Element = this.containerHtml.nativeElement.parentElement.nextElementSibling;
-          if (nextInputElement) {
-            let nextLabelElement: NodeListOf<HTMLLabelElement> = nextInputElement.getElementsByClassName("cs-input-label") as NodeListOf<HTMLLabelElement>;
-            if (nextLabelElement && nextLabelElement.length > 0) {
-              nextLabelElement[0].click();
-            }
-          }
-        }
-      });
+  onInputBlur() {
+    if (this.inputControl.valid && this.inputField.status == CsInputStatus.isEdit && this.inputType != CsInputType.itWithNoInput) {
+      this.inputField.status = CsInputStatus.isView;
+    }
+  }
+
+  onInputFocus() {
+    if (this.inputControl.enabled && this.inputField.status == CsInputStatus.isView && this.inputType != CsInputType.itWithNoInput) {
+      this.inputField.status = CsInputStatus.isEdit;
     }
   }
 
@@ -205,31 +246,33 @@ export class CsInputComponent implements OnInit {
   @Output("onRevert") onRevertEvent: EventEmitter<any> = new EventEmitter<any>();
 
   onEditClick() {
-    if (!this.isDisabled && this.inputType != CsInputType.itWithNoInput) {
-      this.inputField.status = CsInputStatus.isEdit;
+    if (this.inputControl.enabled && this.inputField.status == CsInputStatus.isView && this.inputType != CsInputType.itWithNoInput) {
       this.inputHtml.nativeElement.focus();
-    } else if (!this.isDisabled && this.inputType == CsInputType.itWithNoInput) {
+      if (document.activeElement == this.inputHtml.nativeElement){
+        this.inputField.status = CsInputStatus.isEdit;
+        this.onEditEvent.emit();
+      }
+    } else if (this.inputControl.enabled && this.inputType == CsInputType.itWithNoInput) {
       this.inputHtml.nativeElement.blur();
       this.onEditEvent.emit();
     }
   }
 
-  onCheckClick(): Promise<boolean> {
-    return this.isPassValidator.then((isChecked) => {
-      if (isChecked) {
-        this.inputField.status = CsInputStatus.isView;
-        this.inputField.defaultValue = this.inputField.value;
-        this.inputHtml.nativeElement.blur();
-        this.onCheckEvent.emit(this.inputField.value);
-      }
-      return isChecked;
-    });
+  onCheckClick(): void {
+    this.checkInputSelf();
   }
 
   onRevertClick() {
-    this.inputErrors = null;
-    this.inputField.value = this.inputField.defaultValue;
     this.inputField.status = CsInputStatus.isView;
-    this.onRevertEvent.emit();
+    this.inputControl.reset(this.inputField.defaultValue);
+    this.onRevertEvent.emit(this.inputControl.value);
+  }
+
+  public checkInputSelf() {
+    if (this.inputControl.enabled && (this.inputControl.touched || this.inputIsRequired)) {
+      (this.inputHtml.nativeElement as HTMLElement).focus();
+      this.inputControl.markAsTouched({onlySelf: true});
+      this.inputControl.updateValueAndValidity();
+    }
   }
 }

@@ -1,42 +1,38 @@
-<clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'lg'" [clrModalClosable]="false" [clrModalPreventClose]="true">
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'lg'" [clrModalClosable]="false" [clrModalPreventClose]="true">
   <div class="modal-title title-container">
-    <span>{{ "IMAGE.CREATE_IMAGE_TITLE" | translate }}</span>
+    <h4 class="modal-title">{{ "IMAGE.CREATE_IMAGE_TITLE" | translate }}</h4>
     <button class="close"
             [ngClass]="{'disabled':isBuildImageWIP}"
-            (click)="isOpen = false"
+            (click)="modalOpened = false"
             [disabled]="isBuildImageWIP">X
     </button>
   </div>
   <div class="modal-body modal-body-reset-position">
-    <clr-alert [(clrAlertClosed)]="!isNewImageAlertOpen" [clrAlertType]="newImageAlertType">
-      <div class="alert-item">
-        <span class="alert-text">{{newImageErrMessage | translate}}{{newImageErrReason}}</span>
-      </div>
-    </clr-alert>
     <div class="modal-body-container" [ngSwitch]="imageBuildMethod">
       <div class="create-image-container">
         <div class="btn-group build-method-container">
           <button class="btn"
                   [disabled]="isBuildImageWIP"
-                  [ngClass]="{'btn-primary':imageBuildMethod == 0}"
-                  (click)="resetBuildMethod(0)">
+                  [ngClass]="{'btn-primary':imageBuildMethod == 1}"
+                  (click)="resetBuildMethod(1)">
             {{"IMAGE.CREATE_IMAGE_FROM_TEMP" | translate}}
           </button>
           <button class="btn"
                   [disabled]="isBuildImageWIP"
-                  [ngClass]="{'btn-primary':imageBuildMethod == 1}"
-                  (click)="resetBuildMethod(1)">
+                  [ngClass]="{'btn-primary':imageBuildMethod == 2}"
+                  (click)="resetBuildMethod(2)">
             {{"IMAGE.CREATE_IMAGE_FROM_FILE" | translate}}
           </button>
         </div>
-        <ng-template [ngSwitchCase]="0">
-          <div class="from-temp-container">
+        <ng-template [ngSwitchCase]="1">
+          <div class="from-temp-container" [style.height.px]="500">
             <div class="line-container">
               <label class="base-text">{{"IMAGE.CREATE_IMAGE_SELECT_IMAGE_TEMP" | translate}}:</label>
               <cs-dropdown class="base-margin-left"
                            [dropdownDisabled]="isBuildImageWIP"
                            [dropdownWidth]="230"
                            [dropdownDefaultText]="'Docker File Template'"
+                           [dropdownMustBeSelect]="false"
                            [dropdownList]="imageTemplateList"
                            [dropdownListTextKey]="'name'">
               </cs-dropdown>
@@ -106,6 +102,7 @@
                              [dropdownWidth]="100"
                              [dropdownDisabled]="isBuildImageWIP"
                              [dropdownList]="imageDetailList"
+                             [dropdownMustBeSelect]="false"
                              [dropdownDefaultText]="imageDetailList[0]?.image_tag"
                              [dropdownListTextKey]="'image_tag'"
                              (onChange)="setBaseImageDetail($event)">
@@ -125,22 +122,25 @@
                       (onEdit)="isOpenEnvironment = true"></cs-input>
             <cs-input-array [inputArraySource]="imageVolume"
                             [inputArrayPattern]="patternVolume"
-                            [disabled]="isBuildImageWIP"
+                            [inputArrayDisabled]="isBuildImageWIP"
                             [inputArrayLabelText]="'IMAGE.CREATE_IMAGE_IMAGE_VOLUME'|translate"
                             (onCheck)="getDockerFilePreviewInfo()"
-                            (onMinus)="getDockerFilePreviewInfo()"></cs-input-array>
+                            (onMinus)="getDockerFilePreviewInfo()">
+            </cs-input-array>
             <cs-input-array [inputArraySource]="imageRun"
                             [inputArrayPattern]="patternRun"
-                            [disabled]="isBuildImageWIP"
+                            [inputArrayDisabled]="isBuildImageWIP"
                             [inputArrayLabelText]="'IMAGE.CREATE_IMAGE_IMAGE_RUN'|translate"
                             (onCheck)="getDockerFilePreviewInfo()"
-                            (onMinus)="getDockerFilePreviewInfo()"></cs-input-array>
+                            (onMinus)="getDockerFilePreviewInfo()">
+            </cs-input-array>
             <cs-input-array [inputArraySource]="imageExpose"
                             [inputArrayPattern]="patternExpose"
-                            [disabled]="isBuildImageWIP"
+                            [inputArrayDisabled]="isBuildImageWIP"
                             [inputArrayLabelText]="'IMAGE.CREATE_IMAGE_IMAGE_EXPOSE'|translate"
                             (onCheck)="getDockerFilePreviewInfo()"
-                            (onMinus)="getDockerFilePreviewInfo()"></cs-input-array>
+                            (onMinus)="getDockerFilePreviewInfo()">
+            </cs-input-array>
             <cs-input [inputPattern]="patternCopyPath"
                       [inputLabel]="'IMAGE.CREATE_IMAGE_UPLOAD_ARCHIVES' | translate"
                       [disabled]="isBuildImageWIP"
@@ -172,12 +172,13 @@
             </cs-input>
           </div>
         </ng-template>
-        <ng-template [ngSwitchCase]="1">
+        <ng-template [ngSwitchCase]="2">
           <div class="from-docker-file-container">
             <cs-input [inputIsRequired]="true"
                       [inputPattern]="patternNewImageName"
                       [inputLabel]="'IMAGE.CREATE_IMAGE_NEW_IMAGE_NAME'|translate"
                       [disabled]="isBuildImageWIP"
+                      [customerValidatorAsyncFunc]="checkImageNameFun"
                       [simpleFiled]="customerNewImage.image_name"
                       (onCheck)="customerNewImage.image_name = $event;downloadDockerFile()">
             </cs-input>
@@ -185,6 +186,7 @@
                       [inputPattern]="patternNewImageTag"
                       [inputLabel]="'IMAGE.CREATE_IMAGE_IMAGE_TAG'|translate"
                       [disabled]="isBuildImageWIP"
+                      [customerValidatorAsyncFunc]="checkImageTagFun"
                       [simpleFiled]="customerNewImage.image_tag"
                       (onCheck)="customerNewImage.image_tag = $event;downloadDockerFile()">
             </cs-input>
@@ -221,7 +223,7 @@
         </ng-template>
       </div>
       <div class="console-container">
-        <textarea title="" id="areaStatus" class="area-status" readonly>{{consoleText | translate}}</textarea>
+        <textarea #areaStatus title="" id="areaStatus" class="area-status" readonly>{{consoleText | translate}}</textarea>
         <div class="build-btn-container">
           <button class="btn btn-primary default-primary"
                   [disabled]="isBuildDisabled"
@@ -230,8 +232,9 @@
           </button>
           <button class="btn btn-primary default-primary"
                   *ngIf="isBuildImageWIP"
+                  [disabled]="cancelButtonDisable"
                   (click)="cancelBuildImage()">
-            {{"IMAGE.CREATE_IMAGE_CANCEL_WAIT" | translate}}
+            {{cancelCaption | translate}}
           </button>
           <span *ngIf="isBuildImageWIP" class="spinner spinner-sm"></span>
         </div>
@@ -242,5 +245,23 @@
                        [(isOpen)]="isOpenEnvironment"
                        (onConfirm)="setEnvironment($event)">
     </environment-value>
+    <clr-modal [(clrModalOpen)]="cancelInfo.isShow" [clrModalClosable]="false">
+      <h3 class="modal-title">{{ cancelInfo.title | translate }}</h3>
+      <div class="modal-body">
+        <p>{{ cancelInfo.message | translate }}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button"
+                class="btn btn-outline"
+                (click)="cancelInfo.isShow  = false">
+          {{ 'BUTTON.NO' | translate }}
+        </button>
+        <button type="button"
+                class="btn btn-primary"
+                (click)="cancelBuildImageBehavior()">
+          {{ 'BUTTON.YES' | translate }}
+        </button>
+      </div>
+    </clr-modal>
   </div>
 </clr-modal>

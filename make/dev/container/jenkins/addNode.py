@@ -92,6 +92,7 @@ if __name__ == "__main__":
             'slave',
             nodeDescription='add slave',
             remoteFS=jenkinsNodeVolume,
+            numExecutors=8,
             labels='slave',
             exclusive=False,
             launcher=jenkins.LAUNCHER_SSH,

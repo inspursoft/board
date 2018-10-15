@@ -1,0 +1,61 @@
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalClosable]="!isActionWip">
+  <h3 class="modal-title">{{ 'PROJECT.ADD_MEMBER_FOR' | translate }}&nbsp;{{ project.project_name }}</h3>
+  <div class="modal-body">
+    <div class="list-container">
+      <div class="left-list-container">
+        <span>{{ 'PROJECT.AVAILABLE_MEMBERS' | translate }}:</span>
+        <select #select1 title="" id="selSelected" multiple class="member"
+                (click)='isLeftPane=true; isRightPane=false; pickUpMember(select1.value)'>
+          <option *ngFor="let m of isNotAvailableMembers" value="{{m.project_member_user_id}}">
+            {{ m.project_member_username }}
+          </option>
+        </select>
+      </div>
+      <div class="list-action-container">
+        <button class="btn btn-link" [disabled]="!doSet || isActionWip" (click)="setMember()">
+          <clr-icon shape="caret right"></clr-icon>
+        </button>
+        <button class="btn btn-link" [disabled]="!doUnset || isActionWip" (click)="unsetMember()">
+          <clr-icon shape="caret left"></clr-icon>
+        </button>
+      </div>
+      <div class="right-list-container">
+        <span>{{ 'PROJECT.ASSIGNED_MEMBERS' | translate }}:</span>
+        <select #select2 title="" id="selDeselected" multiple class="member"
+                (click)="isLeftPane=false; isRightPane=true; pickUpMember(select2.value)">
+          <option *ngFor="let m of isAvailableMembers" value="{{m.project_member_user_id}}">
+            {{ m.project_member_username }}
+          </option>
+        </select>
+      </div>
+    </div>
+    <!-- <div class="row">
+      <div class="col-xs-12">
+        <form class="compact" [hidden]="doSet">
+          <section class="form-block">
+            <div class="form-group" style="margin-left:36px; padding-left: 100px;">
+              <label style="width: auto;">{{ 'PROJECT.ROLE' | translate }}</label>
+              <div style="float: left;">
+                <input type="radio" name="roleRadios" [disabled]="!roleToggleable" id="role_project_admin" [(ngModel)]="role.role_id" [value]="1" (click)="role.role_id = 1; pickUpRole(role)" [checked]="role.role_id === 1">
+                <label for="role_project_admin">{{ 'PROJECT.PROJECT_ADMIN' | translate }}</label>
+                &nbsp;&nbsp;
+                <input type="radio" name="roleRadios" [disabled]="!roleToggleable" id="role_developer" [(ngModel)]="role.role_id" [value]="2" (click)="role.role_id = 2; pickUpRole(role)" [checked]="role.role_id === 2">
+                <label for="role_developer">{{ 'PROJECT.DEVELOPER' | translate }}</label>
+                &nbsp;&nbsp;
+                <input type="radio" name="roleRadios" [disabled]="!roleToggleable" id="role_visitor" [(ngModel)]="role.role_id" [value]="3" (click)="role.role_id = 3; pickUpRole(role)" [checked]="role.role_id === 3">
+                <label for="role_visitor">{{ 'PROJECT.VISITOR' | translate }}</label>
+                &nbsp;&nbsp;
+              </div>
+            </div>
+          </section>
+        </form>
+      </div>
+    </div> -->
+  </div>
+  <div class="modal-footer">
+    <button type="button" [disabled]="isActionWip" class="btn btn-primary" (click)="modalOpened = false">
+      {{ 'BUTTON.CONFIRM' | translate }}
+    </button>
+    <span class="spinner spinner-sm" *ngIf="isActionWip"></span>
+  </div>
+</clr-modal>

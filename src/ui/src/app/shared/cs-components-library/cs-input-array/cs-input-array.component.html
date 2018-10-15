@@ -1,50 +1,37 @@
-<div [formGroup]="inputArrayFormGroup" style="display: flex;width: 100%;">
-  <span class="cs-input-array-label">{{inputArrayLabelText}}:<span *ngIf="inputArrayIsRequired" class="asterisk">*</span></span>
-  <div style="flex-basis: 100%">
-    <div *ngFor="let item of inputArrayFileds;let iIndex = index" class="cs-input-array-container">
-      <div class="cs-input-array-icon-container" *ngIf="isShowMinus(item)">
+<div class="component-container">
+  <span class="cs-input-array-label" [style.minWidth.px]="inputArrayLabelMinWidth">{{inputArrayLabelText}}:
+    <span *ngIf="inputArrayIsRequired" class="asterisk">*</span>
+  </span>
+  <div class="cs-input-array-input-container">
+    <div *ngFor="let item of inputArrayFixedSource;" class="cs-input-array-container">
+      <cs-input [inputType]="2"
+                [disabled]="true"
+                [simpleFiled]="item">
+      </cs-input>
+    </div>
+    <div *ngFor="let itemSource of inputArraySourceObject;let iIndex = index" class="cs-input-array-container">
+      <div *ngIf="!inputArrayDisabled">
         <clr-icon class="cs-input-array minus" shape="minus" (click)="onMinusClick(iIndex)"></clr-icon>
       </div>
-      <label aria-haspopup="true"
-             role="tooltip"
-             class="cs-input-array-container tooltip tooltip-validation tooltip-md tooltip-bottom-left"
-             (click)="onEditClick(iIndex)"
-             [for]="'fieldInput'+iIndex"
-             [class.invalid]="getArrayErrors(iIndex) && (inputArrayFormGroup.dirty || inputArrayFormGroup.touched)">
-        <input #arrInput
-               type="text"
-               class="cs-input-array-input"
-               [placeholder]="inputArrayTipText"
-               [id]="'fieldInput'+iIndex"
-               [formControlName]="'inputControl_' + iIndex"
-               (keypress)="onInputKeyPressEvent($event,iIndex)"
-               [(ngModel)]="item.value">
-        <span class="tooltip-content" style="width: 200px;" *ngIf="getArrayErrors(iIndex)">
-      {{getValidatorMessage(iIndex) | translate}}{{inputArrayValidatorMessageParam}}
-    </span>
-      </label>
-      <a *ngIf="item.status == 0 && !disabled"
-         href="javascript:void(0)"
-         class="cs-input-array-icon"
-         (click)="onEditClick(iIndex)">
-        <clr-icon shape="note"></clr-icon>
-      </a>
-      <a *ngIf="item.status == 1"
-         href="javascript:void(0)"
-         class="cs-input-array-icon"
-         (click)="onCheckClick(iIndex)">
-        <clr-icon shape="check"></clr-icon>
-      </a>
-      <a *ngIf="item.status == 1"
-         href="javascript:void(0)"
-         class="cs-input-array-icon"
-         (click)="onRevertClick(iIndex)">
-        <clr-icon shape="refresh"></clr-icon>
-      </a>
+      <cs-input [inputType]="2"
+                [disabled]="inputArrayDisabled"
+                [inputIsRequired]="true"
+                [inputFiledType]="inputArrayType"
+                [inputPattern]="inputArrayPattern"
+                [inputMinlength]="inputArrayMinlength"
+                [inputMaxlength]="inputArrayMaxlength"
+                [inputMin]="inputArrayMin"
+                [inputMax]="inputArrayMax"
+                [validatorMessage]="validatorMessage"
+                [customerValidatorFunc]="checkRepeatAction.bind(selfObject)"
+                [customerValidatorAsyncFunc]="customerValidatorAsyncFunc"
+                [simpleFiled]="itemSource.fieldValue"
+                (onRevert)="onRevertClick(iIndex,$event)"
+                (onCheck)="onCheckClick(iIndex,$event)">
+      </cs-input>
     </div>
-    <div class="cs-input-array-container" *ngIf="!disabled">
+    <div *ngIf="!inputArrayDisabled">
       <clr-icon class="cs-input-array plus" shape="plus" (click)="onPlusClick()"></clr-icon>
-      <!--<span class="cs-input-array-des-text">{{"SERVICE.INPUT_ARRAY_DES" | translate}}</span>-->
     </div>
   </div>
 </div>

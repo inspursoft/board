@@ -2,6 +2,7 @@
   "type": "config",
   "config": {
     "buildNum": 16627,
-    "defaultIndex": "board-index"
+    "defaultIndex": "board-index",
+    "state:storeInSessionStorage" : true
   }
 }

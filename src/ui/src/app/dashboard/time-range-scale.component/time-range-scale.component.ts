@@ -18,6 +18,7 @@ interface StandardKeyValue<T> {
 export class TimeRangeScale implements OnChanges {
   @Input() options: Array<scaleOption>;
   @Input() curScale: scaleOption;
+  @Input() disabled = false;
   @Output() scaleChange: EventEmitter<scaleOption> = new EventEmitter<scaleOption>();
   _activeIndex: number = 0;
 
@@ -32,8 +33,10 @@ export class TimeRangeScale implements OnChanges {
   }
 
   changeBlock(index: number, data: scaleOption): void {
-    this._activeIndex = index;
-    this.scaleChange.emit(data);
+    if (this._activeIndex != index && !this.disabled){
+      this._activeIndex = index;
+      this.scaleChange.emit(data);
+    }
   }
 
   getClassByIndex(index: number): StandardKeyValue<boolean> {
@@ -42,7 +45,8 @@ export class TimeRangeScale implements OnChanges {
       "left-block": index == 0,
       "right-block": index == this.options.length - 1,
       "middle-block": index > 0 && index < this.options.length - 1,
-      "active": this._activeIndex == index
+      "active": this._activeIndex == index && !this.disabled,
+      "disabled": this.disabled
     }
   }
 }

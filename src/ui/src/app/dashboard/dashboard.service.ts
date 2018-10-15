@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpResponse } from "@angular/common/http"
 import { Observable } from "rxjs/Observable";
+import { InvalidServiceName } from "../shared/shared.const";
 
 export enum LineType {ltService, ltNode, ltStorage}
 
@@ -165,8 +166,13 @@ export class DashboardService {
       result.list.push(lineType == LineType.ltService ? "total" :"average");
       let listLogs: Array<Object> = obs.body[lineListQuery.data_list_filed_key];
       if (listLogs && listLogs.length > 0) {//for list
+        listLogs.sort((a: Object, b: Object) => a[lineListQuery.data_list_name_key] > (b[lineListQuery.data_list_name_key]) ? 1 : -1);
         listLogs.forEach((item: Object) => {
-          result.list.push(item[lineListQuery.data_list_name_key]);
+          const serviceName: string = item[lineListQuery.data_list_name_key];
+          result.list.push(serviceName);
+          // if (InvalidServiceName.indexOf(serviceName.toLocaleLowerCase()) === -1){
+          //   result.list.push(serviceName);
+          // }
         });
       }
       return result;

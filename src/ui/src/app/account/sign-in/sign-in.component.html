@@ -1,7 +1,6 @@
-<clr-main-container style="height: 100%;">
+
   <header-content [isSignIn]="true" [hasSignedIn]="false"></header-content>
   <div class="background">
-    <confirmation-dialog></confirmation-dialog>
     <div class="row background-row-container">
       <div class="col-lg-7 hidden-md-down">
         <div class="row custom-row">
@@ -102,6 +101,12 @@
                         (click)="signUp()">
                   {{ 'ACCOUNT.SIGN_UP' | translate }}
                 </button>
+                <button *ngIf="authMode === 'db_auth'"
+                        [disabled]="isSignWIP"
+                        class="btn btn-link"
+                        (click)="navigateForgotPassword()">
+                  {{ 'ACCOUNT.FORGOT_PASSWORD' | translate }}?
+                </button>
                 <!--button class="btn btn-link">{{ 'ACCOUNT.FORGOT_PASSWORD' | translate }}</button-->
               </div>
             </div>
@@ -110,4 +115,3 @@
       </div>
     </div>
   </div>
-</clr-main-container>

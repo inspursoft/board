@@ -1,0 +1,39 @@
+<fieldset class="fieldSet-default">
+  <legend class="legend-default">{{"SERVICE.SERVICE_CONTROL_STATUS" | translate}}</legend>
+  <div class="detail-container">
+    <div class="detail-line">
+          <span>{{ 'SERVICE.SERVICE_CONTROL_NAME' | translate }}:
+            <span class="status-value">{{service.service_name}}</span>
+          </span>
+      <span>{{ 'SERVICE.STATUS' | translate }}:
+            <span [ngClass]="getStatusClass(service.service_status)" class="status-value">
+              {{getServiceStatus(service.service_status) | translate}}</span>
+          </span>
+    </div>
+    <div class="detail-line">
+          <span>{{ 'SERVICE.SERVICE_CONTROL_REASON' | translate }}:
+          <span class="status-value">{{reason}}</span>
+          </span>
+    </div>
+    <div class="detail-line">
+            <span class="status-value">{{"SERVICE.SERVICE_CONTROL_AVAILABLE_INSTANCE" | translate}}:
+            <span class="status-value">{{scaleInfo.available_instance}}</span>
+          </span>
+      <span>{{"SERVICE.SERVICE_CONTROL_DESIRED_INSTANCE" | translate}}:
+            <span class="status-value">{{scaleInfo.desired_instance}}</span>
+          </span>
+    </div>
+    <!--todo:issue #1526 -20180710-->
+    <!--<div class="detail-line">-->
+          <!--<span>{{ 'SERVICE.SERVICE_CONTROL_POD_STATUS' | translate }}:-->
+            <!--<span class="status-value"> </span>-->
+          <!--</span>-->
+      <!--<span>{{ 'SERVICE.SERVICE_CONTROL_CPU_USAGE' | translate }}:-->
+            <!--<span class="status-value"> </span>-->
+          <!--</span>-->
+      <!--<span>{{ 'SERVICE.SERVICE_CONTROL_MEM_USAGE' | translate }}:-->
+            <!--<span class="status-value"> </span>-->
+          <!--</span>-->
+    <!--</div>-->
+  </div>
+</fieldset>

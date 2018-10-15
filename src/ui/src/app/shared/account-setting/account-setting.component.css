@@ -1,3 +1,11 @@
-.input-style{
-  min-width: 180px;
+div.input-container {
+  display: flex;
+  flex-direction: column;
+  margin-right: 50px;
+  min-height: 250px;
+  color: black;
+}
+
+div.input-container cs-input {
+  margin-top: 10px;
 }

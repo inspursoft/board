@@ -1,28 +1,38 @@
 <div #container class="cs-input-container" [formGroup]="inputFormGroup">
   <label *ngIf="inputType == 0 || inputType == 1"
          (mousedown)="onEditClick()"
+         (click)="onEditClick()"
          class="cs-input-label"
-         [style.minWidth]="inputLabelMinWidth">
+         [style.minWidth.px]="inputLabelMinWidth">
     {{inputLabel}}:<span *ngIf="inputIsRequired" class="asterisk">*</span>
+  </label>
+  <label *ngIf="inputType == 2 && inputIsRequired" class="cs-input-label">
+    <span class="asterisk">*</span>
   </label>
   <label aria-haspopup="true"
          role="tooltip"
-         class="cs-input-field-container tooltip tooltip-validation tooltip-md tooltip-bottom-left"
+         class="cs-input-field-container tooltip tooltip-md"
          (mousedown)="onEditClick()"
-         [class.invalid]="inputErrors && (inputFormGroup.dirty || inputFormGroup.touched)">
+         [class.tooltip-validation]="!isDisabled"
+         [class.tooltip-bottom-left]="!isDisabled"
+         [class.invalid]="inputControl.invalid && inputControl.touched">
     <input #input
-           id="inputField"
            formControlName="inputControl"
            class="cs-input-input"
-           type="text"
+           [type]="inputFieldTypeName"
            [class.no-input-module]="!isDisabled && inputType == 1"
+           [class.source-password]="sourcePassword"
+           [class.verify-password]="verifyPassword"
            (keypress)="onInputKeyPressEvent($event)"
-           [(ngModel)]="inputField.value">
-    <span class="tooltip-content" style="width: 200px;" *ngIf="inputErrors">
-      {{getValidatorMessage(inputErrors) | translate}}{{inputValidatorMessageParam}}
+           (blur)="onInputBlur()"
+           (focus)="onInputFocus()"
+           [title]="inputPlaceholder"
+           [placeholder]="inputPlaceholder">
+    <span class="tooltip-content" style="width: 200px;" *ngIf="inputControl.errors">
+      {{getValidatorMessage(inputControl.errors) | translate}}{{inputValidatorMessageParam}}
     </span>
   </label>
-  <a *ngIf="inputField.status == 0 && !isDisabled"
+  <a *ngIf="inputField.status == 0 && inputControl.enabled"
      href="javascript:void(0)"
      class="cs-input-icon"
      (click)="onEditClick()">
@@ -30,15 +40,14 @@
   </a>
   <a *ngIf="inputField.status == 1 && inputType != 1"
      href="javascript:void(0)"
-     class="cs-input-icon"
-     (click)="onCheckClick()">
+     class="cs-input-icon">
     <clr-icon shape="check"></clr-icon>
   </a>
-  <a *ngIf="inputField.status == 1 && inputType != 1"
+  <a *ngIf="inputField.status == 1 && inputControl.errors"
      href="javascript:void(0)"
      class="cs-input-icon"
      (click)="onRevertClick()">
     <clr-icon shape="refresh"></clr-icon>
   </a>
-  <span *ngIf="isInValidatorWIP" class="spinner spinner-sm"></span>
+  <span *ngIf="inputControl.pending" class="spinner spinner-sm"></span>
 </div>

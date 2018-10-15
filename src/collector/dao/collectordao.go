@@ -1,9 +1,10 @@
 package dao
 
 import (
-	"github.com/astaxie/beego/orm"
 	"git/inspursoft/board/src/collector/model/collect"
 	"git/inspursoft/board/src/collector/model/collect/dashboard"
+
+	"github.com/astaxie/beego/orm"
 )
 
 func InsertDb(model interface{}) (int64, error) {
@@ -47,7 +48,7 @@ func nRow(timeUnit string) string {
 	}
 	return "none"
 }
-func QuerTimeListID(timeUnit string) (TimeList [] struct {
+func QuerTimeListID(timeUnit string) (TimeList []struct {
 	Temp int64 `json:"pod_name" orm:"column(time_list_id)"`
 }) {
 	sql := "SELECT DISTINCT time_list_id FROM node ORDER BY time_list_id DESC LIMIT " + nRow(timeUnit)
@@ -133,7 +134,7 @@ func assignNode(ori collect.Node, tar collect.Node) collect.Node {
 	}
 }
 
-func CalcNode(timeUnit string) (interface{}) {
+func CalcNode(timeUnit string) interface{} {
 
 	switch timeUnit {
 	case "minute":
@@ -212,4 +213,39 @@ func any(res interface{}, string string, k *int, timeUnit string) bool {
 		return false
 	}
 	return false
+}
+
+func DeleteStaleData(tableName string, dateSpan int) (int64, error) {
+	o := orm.NewOrm()
+	ptmt, err := o.Raw("delete t from " + tableName + " t " +
+		" where t.time_list_id in (select id as time_list_id from time_list_log " +
+		"     where datediff(now(), date_format(from_unixtime(record_time), '%Y-%m-%d %H:%i:%s')) >= ?);").Prepare()
+	if err != nil {
+		return 0, err
+	}
+	rs, err := ptmt.Exec(dateSpan)
+	if err != nil {
+		if err == orm.ErrNoRows {
+			return 0, nil
+		}
+		return 0, err
+	}
+	return rs.RowsAffected()
+}
+
+func DeleteStaleTimeList(dateSpan int) (int64, error) {
+	o := orm.NewOrm()
+	ptmt, err := o.Raw(`delete t from time_list_log t
+		where datediff(now(), date_format(from_unixtime(t.record_time), '%Y-%m-%d %H:%i:%s')) >=?;`).Prepare()
+	if err != nil {
+		return 0, err
+	}
+	rs, err := ptmt.Exec(dateSpan)
+	if err != nil {
+		if err == orm.ErrNoRows {
+			return 0, nil
+		}
+		return 0, err
+	}
+	return rs.RowsAffected()
 }

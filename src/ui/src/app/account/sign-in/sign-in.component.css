@@ -1,5 +1,7 @@
-:host > > > .main-container {
-  height: inherit;
+:host{
+  flex-basis: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .custom-row {

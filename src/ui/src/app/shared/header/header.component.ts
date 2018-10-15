@@ -1,12 +1,12 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 
-import { TranslateService, LangChangeEvent } from '@ngx-translate/core';
+import { TranslateService } from '@ngx-translate/core';
 
 import { AppInitService } from '../../app.init.service';
 import { AccountService } from '../../account/account.service';
 import { MessageService } from '../message-service/message.service';
-
+import { CookieService } from "ngx-cookie";
 
 @Component({
   selector: 'header-content',
@@ -14,7 +14,6 @@ import { MessageService } from '../message-service/message.service';
   styleUrls: [ 'header.component.css' ]
 })
 export class HeaderComponent implements OnInit {
-
   currentLang: string;
   @Input() isSignIn: boolean;
   @Input() hasSignedIn: boolean;
@@ -30,19 +29,21 @@ export class HeaderComponent implements OnInit {
     return this.isSignIn ? '../../images/board-blue.jpg': '../../../images/board.png';
   }
 
-  constructor(
-    private router: Router,
-    private translateService: TranslateService,
-    private appInitService: AppInitService,
-    private accountService: AccountService,
-    private messageService: MessageService) {
+  constructor(private router: Router,
+              private translateService: TranslateService,
+              private cookieService: CookieService,
+              private appInitService: AppInitService,
+              private accountService: AccountService,
+              private messageService: MessageService) {
     this._assertLanguage(this.appInitService.currentLang);
-    this.authMode = this.appInitService.systemInfo['auth_mode'];
-    this.redirectionURL = this.appInitService.systemInfo['redirection_url'];
   }
 
   ngOnInit(): void {
-    this.currentUser = this.appInitService.currentUser || {};
+    if (this.hasSignedIn){
+      this.currentUser = this.appInitService.currentUser || {};
+      this.authMode = this.appInitService.systemInfo.auth_mode;
+      this.redirectionURL = this.appInitService.systemInfo.redirection_url;
+    }
   }
 
   _assertLanguage(lang: string) {
@@ -83,17 +84,15 @@ export class HeaderComponent implements OnInit {
   }
 
   logOut() {
-    this.accountService
-      .signOut()
-      .then(res=>{
-        this.appInitService.token = '';
-        this.appInitService.currentUser = null;
-        if(this.authMode === 'indata_auth') {
-          window.location.href = this.redirectionURL;
-          return;
-        }
-        this.router.navigate(['/sign-in']);
-      })
-      .catch(err=>this.messageService.dispatchError(err, 'ACCOUNT.FAILED_TO_SIGN_OUT'));
+    this.accountService.signOut(this.appInitService.currentUser.user_name).subscribe(() => {
+      this.cookieService.remove('token');
+      this.appInitService.token = '';
+      this.appInitService.currentUser = null;
+      if (this.authMode === 'indata_auth') {
+        window.location.href = this.redirectionURL;
+        return;
+      }
+      this.router.navigate(['/sign-in']).then();
+    }, () => this.messageService.showAlert('ACCOUNT.FAILED_TO_SIGN_OUT', {alertType: 'alert-danger'}));
   }
 }

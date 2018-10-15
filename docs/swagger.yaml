@@ -218,7 +218,56 @@ paths:
           schema:
             $ref: '#/definitions/SystemInfo'
         500:
-          description: Unexpected internal error.     
+          description: Unexpected internal error. 
+  /v1/forgot-password:
+    post:
+      summary: Use registered username or email to receive a resetting URL from user's email inbox.
+      description: |
+        This endpoint is for user to reset his password by registered username or email.
+      parameters:
+        - name: credential
+          in: query
+          type: string
+          required: true
+          description: User's registered username or email.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Resetting password email sent successfully.
+        404:
+          description: Invalid credential or not found.
+        412:
+          description: Reset password doesn't support in external auth.
+        500:
+          description: Unexpected internal errors.
+  /v1/reset-password:
+    post:
+      summary: Reset password with provided reset UUID.
+      description: |
+        This endpoint is for user to reset with provided reset UUID.
+      parameters:
+        - name: reset_uuid
+          in: query
+          type: string
+          required: true
+          description: Provided reset UUID from resetting password URL.
+        - name: password
+          in: query
+          type: string
+          required: true
+          description: New reset password.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Reset password successfully.
+        400:
+          description: Invalid reset UUID.
+        412:
+          description: Reset password doesn't support in external auth.
+        500:
+          description: Unexpected internal errors.     
   /v1/users/{user_id}:
     get:
       summary: Get user by ID.
@@ -984,36 +1033,6 @@ paths:
           description: User need to log in first.
         409:
           description: The updated image list conflict.
-        500:
-          description: Internal errors.
-  /v1/services/reconfig:
-    get:
-      summary: load service config from service DB.
-      description: 
-        This endpoint returns nil.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: project_name 
-          in: query
-          description: Project name for filtering results.
-          required: false
-          type: string
-        - name: service_name 
-          in: query
-          description: Service name for filtering results.
-          required: false
-          type: string
-      tags:
-        - Products
-      responses:
-        200:
-          description: Return all matched services.
-        401:
-          description: User need to log in first.
         500:
           description: Internal errors.
   /v1/services:
@@ -1864,7 +1883,178 @@ paths:
         403:
           description: Invalid service ID.
         500:
-          description: Unexpected internal errors.             
+          description: Unexpected internal errors.            
+  /v1/services/{service_id}/autoscale:
+    post:  
+      summary: Create an auto scale info.
+      description: |
+        This endpoint is aimed to create an auto scale info.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.
+        - name: hpa
+          in: body
+          required: true 
+          schema:
+            $ref: '#/definitions/HPA'
+          description: An auto-scale config data.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the auto scale hpa.
+          schema:
+            $ref: '#/definitions/HPA'
+        401:
+          description: User need to log in first.
+        500:
+          description: Unexpected internal errors.     
+    get:  
+      summary: Get the auto scale list of this service.
+      description: |
+        This endpoint is aimed to get the auto scale info.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the auto scale hpa.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/HPA'          
+        401:
+          description: User need to log in first.
+        500:
+          description: Unexpected internal errors.       
+  /v1/services/{service_id}/autoscale/{hpa_id}:        
+    delete:
+      summary: Delete this autoscale hpa.
+      description: |
+        This endpoint is aimed to delete this autoscale hpa.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.      
+        - name: hpa_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected hpa ID.            
+      tags:
+        - Products
+      responses:
+        200:
+          description: Delete hpa config successfully.
+        401:
+          description: User need to log in first.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.          
+    put:  
+      summary: Update an auto scale info.
+      description: |
+        This endpoint is aimed to update an auto scale info.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.
+        - name: hpa_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected hpa ID.           
+        - name: hpa
+          in: body
+          required: true 
+          schema:
+            $ref: '#/definitions/HPA'
+          description: An auto-scale config data.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the updated auto scale hpa successfully.
+          schema:
+            $ref: '#/definitions/HPA'
+        401:
+          description: User need to log in first.
+        500:
+          description: Unexpected internal errors.          
+    get:
+      summary: Get this autoscale hpa current details.
+      description: |
+        This endpoint is aimed to get this autoscale hpa current details.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.      
+        - name: hpa_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected hpa ID.              
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the hpa current detailes successfully.
+          schema:
+            $ref: '#/definitions/HPADetail'          
+        401:
+          description: User need to log in first.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.                     
   /v1/services/{service_id}/locate:
     get:  
       summary: Get service deployment locate info.
@@ -2306,6 +2496,32 @@ paths:
           description: User need to log in as admin.
         500:
           description: Unexpected internal errors. 
+  /v1/nodes/availableresources:
+    get:
+      summary: Return the system available resources of nodes.
+      description: |
+        This endpoint returns the system available resources of nodes.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the system available resources of nodes.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/NodeAvailableResources'              
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.          
   /v1/nodegroup:
     get:
       summary: Return all node groups in Board.
@@ -3139,118 +3355,6 @@ paths:
           description: Invalid storage name.
         500:
           description: Internal errors.
-  /v1/git/serve:
-    post:
-      summary: Create bared repo named as 'board_repo_serve' which to store pushed commits.
-      description: |
-        This endpoint is used to create serve repo for storing pushed commits.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-      tags:
-        - Products
-      responses:
-        200:
-          description: Return the status creation of serve repo.
-        400:
-          description: Bad request.
-        401:
-          description: Need to login first.
-        403:
-          description: Insufficient privileges.
-        500:
-          description: Internal errors.
-  /v1/git/repo:
-    post:
-      summary: Create repo named as 'board_repo' to store files.
-      description: |
-        This endpoint is used to create repo and sub path to store users' specific files.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: sub_path
-          in: query
-          type: string
-          required: true
-          description: Provide project name or service ID to store specific archives.
-      tags:
-        - Products
-      responses:
-        200:
-          description: Return the status creation customer repo.
-        400:
-          description: Bad request.
-        401:
-          description: Need to login first.
-        403:
-          description: Insufficient privileges.
-        500:
-          description: Internal errors.
-  /v1/git/push:
-    post:
-      summary: Add files and push commits to serve repo and trigger specified Jenkins Job.
-      description: |
-        This endpoint is used to add files and push commits to serve repo and trigger Jenkins Job.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: push
-          in: body
-          required: true
-          schema:
-            $ref: '#/definitions/PushObject'
-          description: The pushed object from custom repo.
-      tags:
-        - Products
-      responses:
-        200:
-          description: Return the status creation customer repo.
-        400:
-          description: Bad request.
-        401:
-          description: Need to login first.
-        403:
-          description: Insufficient privileges.
-        500:
-          description: Internal errors.
-  /v1/git/pull:
-    post:
-      summary: Pull commits from serve repo.
-      description: |
-        This endpoint is used to pull commits to target name repo from serve repo.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: target
-          in: query
-          type: string
-          required: true
-          description: Target repo to pull commits.
-      tags:
-        - Products
-      responses:
-        200:
-          description: Return the status creation customer repo.
-        400:
-          description: Bad request.
-        401:
-          description: Need to login first.
-        403:
-          description: Insufficient privileges.
-        500:
-          description: Internal errors.
   /v1/files/upload:
     post:
       summary: Upload file to specified path.
@@ -3455,6 +3559,85 @@ paths:
           description: Need to login first.
         500:
           description: Internal errors.
+  /v1/yamlconfig:
+    post:
+      summary: Create an object by posting a yaml config.
+      description: |
+        This endpoint is used to create an object by posting a yaml config.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: yaml_path
+          in: query
+          type: string
+          required: true
+          description: Specify the yaml config file path.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Successful create an object by posting a yaml config.
+        400:
+          description: Bad request.
+        401:
+          description: Need to admin login first.
+        500:
+          description: Internal errors.
+    put:
+      summary: Change an object by applying a yaml config.
+      description: |
+        This endpoint is change an object by applying a yaml config.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: yaml_path
+          in: query
+          type: string
+          required: true
+          description: Specify the yaml config file path.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Successful changed an object by applying a yaml config.
+        400:
+          description: Bad request.
+        401:
+          description: Need to admin login first.
+        500:
+          description: Internal errors.
+    delete:
+      summary: Delete an object by a yaml config.
+      description: |
+        This endpoint is delete an object by a yaml config.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: yaml_path
+          in: query
+          type: string
+          required: true
+          description: Specify the yaml config file path.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Successful delete an object by a yaml config.
+        400:
+          description: Bad request.
+        401:
+          description: Need to admin login first.
+        500:
+          description: Internal errors.
   /v1/email/ping:
     post:
       summary: Test connection and authentication with email server.
@@ -3463,7 +3646,7 @@ paths:
       parameters:
         - name: settings
           in: body
-          description: >-
+          description: 
             Email server settings, will be read from board.cfg.
           required: false
           schema:
@@ -3482,6 +3665,215 @@ paths:
         '415':
           $ref: '#/responses/UnsupportedMediaType'
         '500':
+          description: Unexpected internal errors.
+  /v1/operations:
+    get:
+      summary: Return operation records created by Board.
+      description: |
+        This endpoint returns all operation records created by Board.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: operation_object 
+          in: query
+          description: Operation object name for filtering results.
+          required: false
+          type: string
+        - name: operation_action
+          in: query
+          description: Operation action for filtering results.
+          required: false
+          type: string
+        - name: operation_user 
+          in: query
+          description: Operation user name for filtering results.
+          required: false
+          type: string
+        - name: operation_status 
+          in: query
+          description: Operation status for filtering results.
+          required: false
+          type: string
+        - name: operation_fromdate 
+          in: query
+          description: Operation time for beginning filtering.
+          required: false
+          type: string       
+        - name: operation_todate 
+          in: query
+          description: Operation time for ending filtering.
+          required: false
+          type: string     
+        - name: page_index
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.
+        - name: order_field 
+          in: query
+          description: Order field for results.
+          required: false
+          type: string
+        - name: order_asc 
+          in: query
+          description: Order ascent type for results.
+          required: false
+          type: integer
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched projects.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Operation'
+          headers:
+            X-Total-Count:
+              description: The total count of projects.
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page.
+              type: string
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.    
+    post:
+      summary: Create an operation record.
+      description: |
+        This endpoint is to create an operation record for audit. 
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: operation
+          in: body
+          description: New created operation record.
+          required: true
+          schema:
+            $ref: '#/definitions/Operation'
+      tags:
+        - Products
+      responses:
+        201:
+          description: Operation record created successfully.
+          schema:
+            description: The operation record ID.  
+            type: string              
+        400:
+          description: Unsatisfied with constraints of the operation creation.
+        401:
+          description: User need to log in first.
+        500:
+          description: Unexpected internal errors.
+  /v1/operations/{operation_id}:
+    get:
+      summary: Return specific operation detail infomation.
+      description: |
+        This endpoint returns specific operation information by operation ID.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: operation_id
+          in: path
+          description: Operation ID for filtering results.
+          required: true
+          type: integer
+          format: int32
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched operation information.
+          schema:
+            $ref: '#/definitions/Operation'
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.  
+    delete:
+      summary: Delete operation record by operation ID
+      description: |
+        This endpoint is aimed to delete operation by operation ID.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: operation_id
+          in: path
+          description: Operation ID of operation which will be deleted.
+          required: true
+          type: integer
+          format: int32
+      tags:
+        - Products
+      responses:
+        200:
+          description: Operation is deleted successfully.
+        400:
+          description: Invalid operation id.
+        403:
+          description: User need to log in first.
+        404:
+          description: Operation does not exist.
+        412:
+          description: Operation contains policies, can not be deleted.
+        500:
+          description: Internal errors.
+    put:
+      summary: Update an operation record.
+      description: |
+        This endpoint is to update an operation record for audit. 
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: operation_id
+          in: path
+          description: Operation ID of operation which will be deleted.
+          required: true
+          type: integer
+          format: int32
+        - name: operation
+          in: body
+          description: New operation content to be updated.
+          required: true
+          schema:
+            $ref: '#/definitions/Operation'
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated operation successfully.
+        400:
+          description: Illegal format of provided ID value.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission to the operation.
+        404:
+          description: Operation ID does not exist.
+        500:
           description: Unexpected internal errors.
 responses:
   UnsupportedMediaType: 
@@ -3831,6 +4223,13 @@ definitions:
       service_name:
         type: string
         description: The name of this service.
+      service_project_id:  
+        type: integer
+        format: int32
+        description: The project ID of this service belongs to.      
+      service_project_name:  
+        type: string
+        description: The project name of this service belongs to.      
       service_comment:
         type: string
         description: The commnet of this service.
@@ -3850,33 +4249,22 @@ definitions:
         description: The owner ID of the service always means the creator of the service.
       service_owner_name:
         type: string
-        description: The owner name of this service.
-      service_entry_urls:
-        type: array
-        description: The url list of this service entry.
-        items:
-          type: string
-          description: The url of this service entry.        
+        description: The owner name of this service.      
       service_public:
         type: integer
         format: int32
         description: The status of this service.
-      service_togglable:
-        type: boolean
-        description: Correspond to the UI about whether the service's publicity is  updatable (for UI)
-      service_current_user_role_id:
+      service_source:
         type: integer
-        description: The role ID of the current user who triggered the API (for UI)
-      service_pods_info:
-        description: The pods information of this service.
-        type: array
-        items:
-          $ref: '#/definitions/PodBrief'
-      service_resource_usage:
-        description: The resources usage of this service.
-        type: array
-        items:
-          $ref: '#/definitions/ResourcesUsage'
+        format: int32
+        description: The creation way type of this service. 
+      service_status:
+        type: integer
+        format: int32
+        description: The current service status. 
+      service_config:
+        type: string
+        description: The service config of this service.                 
   ServiceProject:
     type: object
     properties:
@@ -4120,6 +4508,18 @@ definitions:
         items:
           type: integer   
           format: int
+      cpu_request:
+        type: string
+        description: the CPU request of this container   
+      mem_request:
+        type: string
+        description: the memory request of this container
+      cpu_limit:
+        type: string
+        description: the CPU limit of this container
+      mem_limit:
+        type: string
+        description: the Memory limit of this container                               
       volume_mounts:
         type: object
         properties:
@@ -4982,7 +5382,148 @@ definitions:
           When it's set to true the system will access Email server via TLS by
           default.  If it's set to false, it still will handle "STARTTLS" from
           server side.
-    
+  Operation:
+    type: object
+    properties:
+      operation_id:
+        type: integer
+        format: int32
+        description: The integer ID of this operation.
+      operation_creation_time:
+        type: string
+        description: The creation time of the operation.
+      operation_update_time:
+        type: string
+        description: The update time of the operation.
+      operation_deleted:
+        type: integer
+        format: int32
+        description: A deletion mark of the operation (1 means it's deleted, 0 is not).
+      operation_user_id:
+        type: integer
+        format: int32
+        description: The user ID of the project always means the creator of the project.
+      operation_user_name:
+        type: string
+        description: The user name of the project.
+      operation_project_name:
+        type: string
+        description: The user name of the project.
+      operation_project_id:
+        type: integer
+        format: int32
+        description: The user ID of the project always means the creator of the project.
+      operation_tag:
+        type: string
+        description: The operation tag to mark the operation priorty.
+      operation_comment:
+        type: string
+        description: The admin comment or ranking for this operation.
+      operation_object_type:
+        type: string
+        description: The operated object for this operation record.
+      operation_object_name:
+        type: string
+        description: The operated object name for this operation record.
+      operation_action:
+        type: string
+        description: The operation action for this operated object.
+      operation_status:
+        type: string
+        description: The operation status for this operated object.        
+      operation_path:
+        type: string
+        description: The operation path for this operated object.     
+  HPA:
+    type: object
+    properties:
+      hpa_id:
+        type: integer
+        format: int32
+        description: The hpa ID of this autoscale.     
+      hpa_name:
+        type: string
+        description: The hpa name of this autoscale.         
+      service_id:
+        type: integer   
+        format: int32   
+        description: The service ID of this hpa to control. 
+      min_pod:
+        type: integer   
+        format: int32   
+        description: The minimum pod number.  
+      max_pod:
+        type: integer   
+        format: int32   
+        description: The maximum pod number.   
+      cpu_percent:
+        type: integer   
+        format: int32   
+        description: The target CPU percentage. 
+      hpa_status:
+        type: integer   
+        format: int32   
+        description: The status of this HPA item.        
+  NodeAvailableResources:              
+    type: object
+    properties:
+      node_id:
+        type: integer
+        format: int32
+        description: The node ID.     
+      node_name:
+        type: string
+        description: The node name.
+      cpu_available:
+        type: string
+        description: The max available CPU resource of this node.       
+      mem_available:
+        type: string
+        description: The max available Memory resource of this node.    
+      storage_available:
+        type: string
+        description: The max available Storage resource of this node.      
+  HPADetail:                          
+    type: object
+    properties:
+      hpa_id:
+        type: integer
+        format: int32
+        description: The hpa ID of this autoscale.     
+      hpa_name:
+        type: string
+        description: The hpa name of this autoscale.         
+      service_id:
+        type: integer   
+        format: int32   
+        description: The service ID of this hpa to control. 
+      min_pod:
+        type: integer   
+        format: int32   
+        description: The minimum pod number.  
+      max_pod:
+        type: integer   
+        format: int32   
+        description: The maximum pod number.   
+      cpu_percent:
+        type: integer   
+        format: int32   
+        description: The target CPU percentage. 
+      current_replicas:
+        type: integer   
+        format: int32   
+        description: The current pod number.      
+      desired_replicas:
+        type: integer   
+        format: int32   
+        description: The desired pod number.   
+      current_cpu:
+        type: integer   
+        format: int32   
+        description: The current CPU percentage. 
+
+
+ 
         
 
 

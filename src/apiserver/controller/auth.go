@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/apiserver/service/auth"
@@ -15,12 +14,15 @@ import (
 	"github.com/astaxie/beego/logs"
 )
 
+var reservdUsernames = [...]string{"explore", "create", "assets", "css", "img", "js", "less", "plugins", "debug", "raw", "install", "api", "avatar", "user", "org", "help", "stars", "issues", "pulls", "commits", "repo", "template", "new", ".", ".."}
+
 type AuthController struct {
-	baseController
+	BaseController
 }
 
 func (u *AuthController) Prepare() {
 	u.isExternalAuth = utils.GetBoolValue("IS_EXTERNAL_AUTH")
+	u.recordOperationAudit()
 }
 
 func (u *AuthController) processAuth(principal, password string) (string, bool) {
@@ -58,27 +60,18 @@ func (u *AuthController) processAuth(principal, password string) (string, bool) 
 	}
 	memoryCache.Put(user.Username, token.TokenString, time.Second*time.Duration(tokenCacheExpireSeconds))
 	memoryCache.Put(token.TokenString, payload, time.Second*time.Duration(tokenCacheExpireSeconds))
+	u.auditUser, _ = service.GetUserByName(user.Username)
 	return token.TokenString, true
 }
 
 func (u *AuthController) SignInAction() {
-	var err error
-	reqData, err := u.resolveBody()
+	var reqUser model.User
+	err := u.resolveBody(&reqUser)
 	if err != nil {
-		u.internalError(err)
 		return
 	}
-	if reqData != nil {
-		var reqUser model.User
-		err = json.Unmarshal(reqData, &reqUser)
-		if err != nil {
-			u.internalError(err)
-			return
-		}
-		token, _ := u.processAuth(reqUser.Username, reqUser.Password)
-		u.Data["json"] = model.Token{TokenString: token}
-		u.ServeJSON()
-	}
+	token, _ := u.processAuth(reqUser.Username, reqUser.Password)
+	u.renderJSON(model.Token{TokenString: token})
 }
 
 func (u *AuthController) ExternalAuthAction() {
@@ -88,35 +81,34 @@ func (u *AuthController) ExternalAuthAction() {
 		return
 	}
 	if token, isSuccess := u.processAuth(externalToken, ""); isSuccess {
-		u.Redirect(fmt.Sprintf("http://%s/dashboard?token=%s", utils.GetStringValue("BOARD_HOST"), token), http.StatusFound)
+		u.Redirect(fmt.Sprintf("http://%s/dashboard?token=%s", utils.GetStringValue("BOARD_HOST_IP"), token), http.StatusFound)
 		logs.Debug("Successful logged in.")
 	}
-
 }
 
 func (u *AuthController) SignUpAction() {
-	var err error
 	if u.isExternalAuth {
 		logs.Debug("Current AUTH_MODE is external auth.")
 		u.customAbort(http.StatusMethodNotAllowed, "Current AUTH_MODE is external auth.")
 		return
 	}
-
-	reqData, err := u.resolveBody()
-	if err != nil {
-		u.internalError(err)
-		return
-	}
 	var reqUser model.User
-	err = json.Unmarshal(reqData, &reqUser)
+	err := u.resolveBody(&reqUser)
 	if err != nil {
-		u.internalError(err)
 		return
 	}
 
 	if !utils.ValidateWithPattern("username", reqUser.Username) {
 		u.customAbort(http.StatusBadRequest, "Username content is illegal.")
 		return
+	}
+
+	// can't be the reserved name.
+	for _, rsdname := range reservdUsernames {
+		if rsdname == reqUser.Username {
+			u.customAbort(http.StatusBadRequest, fmt.Sprintf("Username %s is reserved.", reqUser.Username))
+			return
+		}
 	}
 
 	usernameExists, err := service.UserExists("username", reqUser.Username, 0)
@@ -181,8 +173,8 @@ func (u *AuthController) CurrentUserAction() {
 		u.customAbort(http.StatusUnauthorized, "Need to login first.")
 		return
 	}
-	u.Data["json"] = user
-	u.ServeJSON()
+
+	u.renderJSON(user)
 }
 
 func (u *AuthController) GetSystemInfo() {
@@ -191,8 +183,7 @@ func (u *AuthController) GetSystemInfo() {
 		u.internalError(err)
 		return
 	}
-	u.Data["json"] = systemInfo
-	u.ServeJSON()
+	u.renderJSON(systemInfo)
 }
 
 func (u *AuthController) LogOutAction() {
@@ -213,5 +204,35 @@ func (u *AuthController) UserExists() {
 	}
 	if isExists {
 		u.customAbort(http.StatusConflict, target+" already exists.")
+	}
+}
+
+func (u *AuthController) ResetPassword() {
+	if utils.GetBoolValue("IS_EXTERNAL_AUTH") {
+		u.customAbort(http.StatusPreconditionFailed, "Resetting password doesn't support in external auth.")
+		return
+	}
+	resetUUID := u.GetString("reset_uuid")
+	user, err := service.GetUserByResetUUID(resetUUID)
+	if err != nil {
+		logs.Error("Failed to get user by reset UUID: %s, error: %+v", resetUUID, err)
+		u.internalError(err)
+		return
+	}
+	if user == nil {
+		logs.Error("Invalid reset UUID: %s", resetUUID)
+		u.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid reset UUID: %s", resetUUID))
+		return
+	}
+	newPassword := u.GetString("password")
+	if strings.TrimSpace(newPassword) == "" {
+		logs.Error("No password provided.")
+		u.customAbort(http.StatusBadRequest, "No password provided.")
+		return
+	}
+	_, err = service.ResetUserPassword(*user, newPassword)
+	if err != nil {
+		logs.Error("Failed to reset user password for user ID: %d, error: %+v", user.ID, err)
+		u.internalError(err)
 	}
 }

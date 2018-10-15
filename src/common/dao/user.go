@@ -54,7 +54,7 @@ func queryUsers(field string, value interface{}) orm.QuerySeter {
 	if value == nil {
 		return qs
 	}
-	return qs.Filter(field+"__contains", value)
+	return qs.Filter(field, value)
 }
 
 func GetUsers(field string, value interface{}, selectedFields ...string) ([]*model.User, error) {
@@ -79,7 +79,7 @@ func GetPaginatedUsers(field string, value interface{}, pageIndex int, pageSize 
 	if err != nil {
 		return nil, err
 	}
-	qs = qs.OrderBy(getOrderExprs(userTable, orderField, orderAsc)).Limit(pagination.PageSize).Offset(pagination.GetPageOffset())
+	qs = qs.OrderBy(getOrderExprs(orderField, orderAsc)).Limit(pagination.PageSize).Offset(pagination.GetPageOffset())
 	logs.Debug("%+v", pagination.String())
 
 	users := make([]*model.User, 0)
@@ -94,13 +94,10 @@ func GetPaginatedUsers(field string, value interface{}, pageIndex int, pageSize 
 	}, nil
 }
 
-func getOrderExprs(orderTable string, orderField string, orderAsc int) string {
-	key := fmt.Sprintf("%s_%s", strings.ToUpper(orderTable), strings.ToUpper(orderField))
-	if orderFields[key] == "" {
-		return fmt.Sprintf(`-%s`, orderFields[defaultField])
-	}
+func getOrderExprs(orderField string, orderAsc int) string {
+	orderStr := strings.ToLower(orderField)
 	if orderAsc != 0 {
-		return orderFields[key]
+		return orderStr
 	}
-	return fmt.Sprintf(`-%s`, orderFields[key])
+	return fmt.Sprintf(`-%s`, orderStr)
 }

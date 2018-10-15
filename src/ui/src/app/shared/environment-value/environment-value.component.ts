@@ -2,18 +2,11 @@
  * Created by liyanq on 9/4/17.
  */
 
-import {
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-  OnInit,
-  ViewChildren,
-  QueryList,
-  AfterContentChecked
-} from "@angular/core"
+import { Component, EventEmitter, Input, OnInit, Output, QueryList, ViewChildren } from "@angular/core"
 import { CsInputComponent } from "../cs-components-library/cs-input/cs-input.component";
 import { ValidatorFn, Validators } from "@angular/forms";
+import { CsModalChildBase } from "../cs-modal-base/cs-modal-child-base";
+import { MessageService } from "../message-service/message.service";
 
 export class EnvType {
   constructor(public envName: string,
@@ -25,21 +18,19 @@ export class EnvType {
   templateUrl: "./environment-value.component.html",
   styleUrls: ["./environment-value.component.css"]
 })
-export class EnvironmentValueComponent implements OnInit, AfterContentChecked {
+export class EnvironmentValueComponent extends CsModalChildBase implements OnInit {
   _isOpen: boolean = false;
   patternEnv:RegExp = /^[\w-$/\\=\"[\]{}@&:,'`\t. ?]+$/;
-  isCanConfirm: boolean = false;
-  envAlertMessage: string;
   envsData: Array<EnvType>;
-  isAlertOpen: boolean = false;
-  afterCommitErr: string = "";
+  envsText: string = "";
   inputValidator: Array<ValidatorFn>;
   inputValidatorMsg: Array<{validatorKey: string, validatorMessage: string}>;
-  @ViewChildren(CsInputComponent) inputComponents: QueryList<CsInputComponent>;
+  @ViewChildren(CsInputComponent) inputComponentList: QueryList<CsInputComponent>;
   @Input() inputEnvsData: Array<EnvType>;
   @Input() inputFixedKeyList: Array<string>;
 
-  constructor() {
+  constructor(private messageService: MessageService) {
+    super();
     this.envsData = Array<EnvType>();
     this.inputValidator = Array<ValidatorFn>();
     this.inputValidatorMsg = Array<{validatorKey: string, validatorMessage: string}>();
@@ -50,19 +41,6 @@ export class EnvironmentValueComponent implements OnInit, AfterContentChecked {
     this.inputValidatorMsg.push({validatorKey: "required", validatorMessage: "SERVICE.ENV_REQUIRED"});
     if (this.inputEnvsData && this.inputEnvsData.length > 0) {
       this.envsData = this.envsData.concat(this.inputEnvsData);
-    }
-  }
-
-  ngAfterContentChecked() {
-    if (this.inputComponents){
-      let componentArr = this.inputComponents.toArray();
-      for (let i = 0; i < componentArr.length; i++) {
-        if (!componentArr[i].valid) {
-          this.isCanConfirm = false;
-          return
-        }
-      }
-      this.isCanConfirm = true;
     }
   }
 
@@ -84,12 +62,31 @@ export class EnvironmentValueComponent implements OnInit, AfterContentChecked {
   }
 
   confirmEnvInfo() {
-    this.onConfirm.emit(this.envsData);
-    this.isOpen = false;
+    if (this.verifyInputValid()) {
+      this.onConfirm.emit(this.envsData);
+      this.isOpen = false;
+    }
   }
 
   envMinusClick(index: number) {
     this.envsData.splice(index, 1);
   }
 
+  envTextAddClick() {
+    let patternEnv = this.patternEnv;
+    let envTypes: Array<EnvType>;
+    try {
+      envTypes = this.envsText.split(";").map((str: string) => {
+        let envStrPair = str.split("=");
+        if (!patternEnv.test(envStrPair[0]) || !patternEnv.test(envStrPair[1])) {
+          throw new Error()
+        }
+        return new EnvType(envStrPair[0], envStrPair[1]);
+      });
+    } catch (e) {
+      this.messageService.showAlert('SERVICE.TXT_ALERT_MESSAGE', {alertType: 'alert-warning', view: this.alertView});
+      return;
+    }
+    this.envsData = this.envsData.concat(envTypes);
+  }
 }

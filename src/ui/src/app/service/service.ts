@@ -3,6 +3,7 @@ export class Service {
   service_name: string;
   service_project_id: number;
   service_project_name: string;
+  service_owner_id: number;
   service_owner_name: string;
   service_creation_time:string;
   service_create_time: Date;

@@ -25,7 +25,7 @@
       </tr>
       <tr>
         <th>{{ 'NODE.MEMORY_SIZE' | translate }}</th>
-        <td>{{ toGigaBytes(nodeDetail.memory_size, 'KiB') }}</td>
+        <td>{{ toGigaBytes(nodeDetail.memory_size) }}</td>
       </tr>
       <tr>
         <th>{{ 'NODE.STORAGE_TOTAL' | translate }}</th>
@@ -33,7 +33,7 @@
       </tr>
       <tr>
         <th>{{ 'NODE.STORAGE_USAGE' | translate }}</th>
-        <td>{{ toGigaBytes(nodeDetail.storage_use) }}</td>
+        <td>{{ toPercentage(storagePercentage(nodeDetail)) }}</td>
       </tr>
       <tr>
         <th>{{ 'NODE.NODE_GROUP' | translate }}</th>

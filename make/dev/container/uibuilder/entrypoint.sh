@@ -15,8 +15,11 @@ function prod(){
     npm run rollup
     cp node_modules/@clr/ui/clr-ui.min.css dist/clr-ui.min.css
     cp node_modules/@clr/icons/clr-icons.min.css dist/clr-icons.min.css
+    cp node_modules/inspurprism/prism-default.css dist/prism-default.css
+    cp node_modules/es6-shim/es6-shim.min.js dist/es6-shim.min.js
     cp node_modules/echarts/dist/echarts.min.js dist/echarts.min.js
     cp node_modules/zone.js/dist/zone.min.js dist/zone.min.js
+    cp node_modules/@webcomponents/custom-elements/custom-elements.min.js dist/custom-elements.min.js
     cp node_modules/@clr/icons/clr-icons.min.js dist/clr-icons.min.js
     cp src/styles.css dist/styles.css
     cp src/favicon.ico dist/favicon.ico

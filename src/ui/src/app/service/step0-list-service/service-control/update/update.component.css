@@ -1,0 +1,18 @@
+tr.image-tag-line {
+  height: 30px;
+}
+
+td.image-name {
+  line-height: 30px;
+  font-size: 14px;
+}
+
+td.image-tag {
+  margin: auto;
+  font-size: 14px;
+  line-height: 30px;
+}
+
+td.change {
+  background-color: antiquewhite;
+}

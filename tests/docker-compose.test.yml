@@ -1,6 +1,6 @@
 version: '2'
 services:
-  mysql:
+  db:
     build: 
       context: ../../
       dockerfile: make/dev/container/db/Dockerfile
@@ -9,17 +9,8 @@ services:
       - /data/board/database:/var/lib/mysql
     env_file:
       - ../config/db/env
-   # networks:
-    #  - board
     ports:
       - 3306:3306
-   # depends_on:
-   #   - log
-    #logging:
-    #  driver: "syslog"
-   #   options:  
-   #     syslog-address: "tcp://127.0.0.1:1514"
-   #     tag: "mysql"
   openldap:
     image: osixia/openldap:1.1.11
     restart: always
@@ -37,8 +28,7 @@ services:
     env_file:
       - ../config/tokenserver/env
     restart: always
-    volumes:
-      - ../config/tokenserver/app.conf:/go/bin/app.conf:z
+
     ports:
       - 4000:4000
   registry:
@@ -56,11 +46,37 @@ services:
       dockerfile: make/dev/container/gogits/Dockerfile
     image: dev_gogits:dev
     restart: always
-    env_file:
-      - ../config/gogits/env
     volumes:
       - ../config/gogits/conf/app.ini:/tmp/conf/app.ini
       - /data/board/gogits:/data:rw
     ports:
       - "10022:22"
       - "10080:3000"
+  gomail:    
+    image: 10.110.18.177/board/dev_gomail:dev
+    restart: always
+    ports:
+      - "12225:12225"
+  jenkins:
+    build:
+      context: ../../
+      dockerfile: make/dev/container/jenkins/Dockerfile
+    image: dev_jenkins:dev
+    restart: always
+    volumes:
+      - /data/board/jenkins_home:/var/jenkins_home
+      - ../config/ssh_keys:/root/.ssh
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/local/bin/docker:/usr/bin/docker
+    environment:
+      - jenkins_host_ip=127.0.0.1
+      - jenkins_host_port=8888
+      - jenkins_node_ip=127.0.0.1
+      - jenkins_node_ssh_port=22
+      - jenkins_node_username=root
+      - jenkins_node_password=123456a?
+      - jenkins_node_volume=/data/jenkins_node
+    ports:
+      - 8888:8080
+      - 50000:50000
+

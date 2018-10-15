@@ -1,0 +1,8 @@
+div.locate-container {
+  display: flex;
+  flex-direction: column;
+}
+
+cs-dropdown.locate-dropdown {
+  margin-top: 15px;
+}

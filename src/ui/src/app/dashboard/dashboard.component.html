@@ -55,20 +55,26 @@
   </div>
 </div>
 
-<div *ngIf="!isShowGrafanaView" class="card">
+<div class="card">
   <div class="card-header">{{'DASHBOARD.SERVICE' | translate }}</div>
   <div class="card-block line-area-block">
     <div class="card-block-top-container">
       <cs-dropdown [dropdownDefaultText]="getCurLineName(0)"
                    [dropdownWidth]="200"
+                   [dropdownDisabled]="lineStateInfo.get(0)?.inRefreshWIP || !lineStateInfo.get(0)"
                    [dropdownList]="getLinesName(0)"
                    (onChange)="dropDownChange(0,$event)">
       </cs-dropdown>
+      <a href="javascript:void(0)" (click)="refreshLine()" class="refresh"
+         [class.disabled]="lineStateInfo.get(0)?.inRefreshWIP || !lineStateInfo.get(0)">
+        <clr-icon shape="refresh" class="refresh"></clr-icon>
+      </a>
       <div class="caption_container">
         <span class="first-line">{{ 'DASHBOARD.PODS' | translate }}:{{curValue.get(0)?.curFirst}}</span>
         <span class="second-line">{{ 'DASHBOARD.CONTAINERS' | translate }}:{{curValue.get(0)?.curSecond}}</span>
       </div>
       <time-range-scale class="range-scale"
+                        [disabled]="lineStateInfo.get(0)?.inRefreshWIP || !lineStateInfo.get(0)"
                         [options]="scaleOptions"
                         [curScale]="query.get(0) ? query.get(0).scale:{}"
                         (scaleChange)="scaleChange(0,$event)">
@@ -79,6 +85,7 @@
       <div echarts
            (chartInit)="onEChartInit(0,$event)"
            [options]="lineOptions.get(0)"
+           [loading]="lineStateInfo.get(0)?.inRefreshWIP"
            (mouseup)="chartMouseUp(0,$event)"
            (chartDataZoom)="chartDataZoom(0,$event)"
            style="height: 300px">
@@ -87,15 +94,20 @@
   </div>
 </div>
 
-<div *ngIf="!isShowGrafanaView" class="card">
+<div  class="card">
   <div class="card-header">{{'DASHBOARD.NODE' | translate }}</div>
   <div class="card-block line-area-block">
     <div class="card-block-top-container">
       <cs-dropdown [dropdownDefaultText]="getCurLineName(1)"
                    [dropdownWidth]="200"
+                   [dropdownDisabled]="lineStateInfo.get(1)?.inRefreshWIP || !lineStateInfo.get(1)"
                    [dropdownList]="getLinesName(1)"
                    (onChange)="dropDownChange(1,$event)">
       </cs-dropdown>
+      <a href="javascript:void(0)" (click)="refreshLine()" class="refresh"
+         [class.disabled]="lineStateInfo.get(1)?.inRefreshWIP || !lineStateInfo.get(1)">
+        <clr-icon shape="refresh" class="refresh"></clr-icon>
+      </a>
       <div class="caption_container">
         <span class="first-line">{{ 'DASHBOARD.CPU' | translate }}:{{curValue.get(1)?.curFirst}}%</span>
         <span class="second-line">{{ 'DASHBOARD.MEMORY' | translate }}:{{curValue.get(1)?.curSecond}}%</span>
@@ -103,6 +115,7 @@
       <div class="select-time-container">
         <time-range-scale [curScale]="query.get(1) ? query.get(1).scale:{}"
                           (scaleChange)="scaleChange(1,$event)"
+                          [disabled]="lineStateInfo.get(1)?.inRefreshWIP || !lineStateInfo.get(1)"
                           [options]="scaleOptions">
         </time-range-scale>
       </div>
@@ -114,6 +127,7 @@
       <div echarts
            (chartInit)="onEChartInit(1,$event)"
            [options]="lineOptions.get(1)"
+           [loading]="lineStateInfo.get(1)?.inRefreshWIP"
            (mouseup)="chartMouseUp(1,$event)"
            (chartDataZoom)="chartDataZoom(1,$event)"
            style="height: 300px">
@@ -122,15 +136,20 @@
   </div>
 </div>
 
-<div *ngIf="!isShowGrafanaView" class="card">
+<div class="card">
   <div class="card-header">{{'DASHBOARD.STORAGE' | translate }}</div>
   <div class="card-block line-area-block">
     <div class="card-block-top-container">
       <cs-dropdown [dropdownDefaultText]="getCurLineName(2)"
                    [dropdownWidth]="200"
+                   [dropdownDisabled]="lineStateInfo.get(2)?.inRefreshWIP || !lineStateInfo.get(2)"
                    [dropdownList]="getLinesName(2)"
                    (onChange)="dropDownChange(2,$event)">
       </cs-dropdown>
+      <a href="javascript:void(0)" (click)="refreshLine()" class="refresh"
+         [class.disabled]="lineStateInfo.get(2)?.inRefreshWIP || !lineStateInfo.get(2)">
+        <clr-icon shape="refresh" class="refresh"></clr-icon>
+      </a>
       <div class="caption_container">
         <span class="first-line">{{ 'DASHBOARD.USAGE' | translate }}:{{curValue.get(2)?.curFirst}}{{StorageUnit}}</span>
         <span
@@ -139,6 +158,7 @@
       <div class="select-time-container">
         <time-range-scale [curScale]="query.get(2) ? query.get(2).scale:{}"
                           (scaleChange)="scaleChange(2,$event)"
+                          [disabled]="lineStateInfo.get(2)?.inRefreshWIP || !lineStateInfo.get(2)"
                           [options]="scaleOptions">
         </time-range-scale>
       </div>
@@ -151,28 +171,10 @@
            (chartInit)="onEChartInit(2,$event)"
            (mouseup)="chartMouseUp(2,$event)"
            [options]="lineOptions.get(2)"
+           [loading]="lineStateInfo.get(2)?.inRefreshWIP"
            (chartDataZoom)="chartDataZoom(2,$event)"
            style="height: 300px">
       </div>
-    </div>
-  </div>
-</div>
-
-<div class="card">
-  <div class="card-header grafana-container-header">
-    <span class="grafana-card-title">More Detail</span>
-    <a href="javascript:void(0)" (click)="isShowGrafanaView = !isShowGrafanaView">
-      <clr-icon shape="window-restore" class="detail"></clr-icon>
-    </a>
-    <a [routerLink]="['/dashboard']" [queryParams]="{isOnlyShowGrafanaView: 'true'}" target="_blank">
-      <clr-icon shape="window-max" class="detail"></clr-icon>
-    </a>
-  </div>
-  <div class="card-block">
-    <div class="grafana-container-block" [ngStyle]="{height:isShowGrafanaView?'900px':'300px'}">
-      <iframe #frameDashboard height=100% width="100%" frameborder="0" [src]="grafanaViewUrl | safe">
-        {{"DASHBOARD.GRAFANA_FRAME_SUPPORT" | translate}}
-      </iframe>
     </div>
   </div>
 </div>

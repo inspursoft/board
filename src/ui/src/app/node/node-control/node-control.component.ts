@@ -1,16 +1,17 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { INode, INodeGroup, NodeService } from "../node.service";
-import { MessageService } from "../../shared/message-service/message.service";
+import { CsModalChildBase } from "../../shared/cs-modal-base/cs-modal-child-base";
 import "rxjs/add/operator/zip"
 import "rxjs/add/operator/do"
 import "rxjs/add/operator/catch"
+import { MessageService } from "../../shared/message-service/message.service";
 
 @Component({
   selector: 'node-control',
   templateUrl: './node-control.component.html',
   styleUrls: ['./node-control.component.css']
 })
-export class NodeControlComponent implements OnInit {
+export class NodeControlComponent extends CsModalChildBase implements OnInit {
   nodeControlOpened: boolean = false;
   nodeGroupList: Array<INodeGroup>;
   nodeGroupListSelect: Array<string>;
@@ -22,6 +23,7 @@ export class NodeControlComponent implements OnInit {
   constructor(private nodeService: NodeService,
               private messageService: MessageService,
               private changeDetectorRef: ChangeDetectorRef) {
+    super();
     this.nodeGroupList = Array<INodeGroup>();
     this.nodeGroupListSelect = Array<string>();
     this.changeDetectorRef.detach();
@@ -49,17 +51,15 @@ export class NodeControlComponent implements OnInit {
       .do((res: Array<INodeGroup>) => this.nodeGroupList = res);
     let obs2 = this.nodeService.getNodeGroupsOfOneNode(this.nodeCurrent.node_name)
       .do((res: Array<string>) => this.nodeGroupListSelect = res);
-    obs1.zip(obs2)
-      .subscribe(() => {
+    obs1.zip(obs2).subscribe(
+      () => {
         this.removeAlreadySelected();
         this.isActionWip = false;
         this.selectedDelNodeGroup = "";
         this.selectedAddNodeGroup = "";
         this.changeDetectorRef.reattach();
-      }, (err) => {
-        this.nodeControlOpened = false;
-        this.messageService.dispatchError(err);
-      });
+      },
+      () => this.nodeControlOpened = false);
   }
 
   openNodeControlModal(node: INode): void {
@@ -74,8 +74,10 @@ export class NodeControlComponent implements OnInit {
       this.selectedAddNodeGroup != '' &&
       this.nodeGroupListSelect.indexOf(this.selectedAddNodeGroup) < 0) {
       this.isActionWip = true;
-      this.nodeService.addNodeToNodeGroup(this.nodeCurrent.node_name, this.selectedAddNodeGroup)
-        .subscribe(() => this.refreshData())
+      this.nodeService.addNodeToNodeGroup(this.nodeCurrent.node_name, this.selectedAddNodeGroup).subscribe(
+        () => this.messageService.showAlert('NODE.NODE_GROUP_ADD_SUCCESS',{view: this.alertView}),
+        () => this.nodeControlOpened = false,
+        () => this.refreshData());
     }
   }
 
@@ -84,8 +86,10 @@ export class NodeControlComponent implements OnInit {
       this.selectedDelNodeGroup != '' &&
       this.nodeGroupListSelect.indexOf(this.selectedDelNodeGroup) >= 0) {
       this.isActionWip = true;
-      this.nodeService.deleteNodeToNodeGroup(this.nodeCurrent.node_name, this.selectedDelNodeGroup)
-        .subscribe(() => this.refreshData())
+      this.nodeService.deleteNodeToNodeGroup(this.nodeCurrent.node_name, this.selectedDelNodeGroup).subscribe(
+        () => this.messageService.showAlert('NODE.NODE_GROUP_REMOVE_SUCCESS',{view: this.alertView}),
+        () => this.nodeControlOpened = false,
+        () => this.refreshData())
     }
   }
 

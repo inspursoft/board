@@ -10,71 +10,52 @@ import (
 )
 
 var jenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
-var maxRetryCount = 120
+var gogitsBaseURL = utils.GetConfig("GOGITS_BASE_URL")
+var jenkinsfileRepoURL = utils.GetConfig("JENKINSFILE_REPO_URL")
+var maxRetryCount = 245
 var seedJobName = "base"
+var jenkinsHostIP = utils.GetConfig("JENKINS_HOST_IP")
+var jenkinsHostPort = utils.GetConfig("JENKINS_HOST_PORT")
+var jenkinsNodeIP = utils.GetConfig("JENKINS_NODE_IP")
+var kvmRegistryPort = utils.GetConfig("KVM_REGISTRY_PORT")
+var executionMode = utils.GetConfig("JENKINS_EXECUTION_MODE")
 
-type jenkinsHandler struct{}
+type jenkinsHandler struct {
+	configURL   string
+	registryURL string
+}
 
 func NewJenkinsHandler() *jenkinsHandler {
+	pingURL := fmt.Sprintf("%s/job/%s", jenkinsBaseURL(), seedJobName)
 	for i := 0; i < maxRetryCount; i++ {
 		logs.Debug("Ping Jenkins server %d time(s)...", i+1)
-		resp, err := utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s/job/%s", jenkinsBaseURL(), seedJobName), nil, nil)
-		if err != nil {
-			logs.Error("Failed to request Jenkins server: %+v", err)
-		}
-		if resp != nil {
-			if resp.StatusCode <= 400 {
-				break
-			}
-		} else if i == maxRetryCount-1 {
+		if i == maxRetryCount-1 {
 			logs.Warn("Failed to ping Gogits due to exceed max retry count.")
+			break
+		}
+		err := utils.RequestHandle(http.MethodGet, pingURL, nil, nil,
+			func(req *http.Request, resp *http.Response) error {
+				if resp.StatusCode <= 400 {
+					return nil
+				}
+				return fmt.Errorf("Requested URL %s with unexpected response: %d", pingURL, resp.StatusCode)
+			})
+		if err == nil {
+			logs.Info("Successful connected to the Jenkins service.")
+			break
 		}
 		time.Sleep(time.Second)
 	}
-	return &jenkinsHandler{}
+	return &jenkinsHandler{
+		registryURL: fmt.Sprintf("http://%s:%s", jenkinsNodeIP(), kvmRegistryPort()),
+	}
 }
 
-func (j *jenkinsHandler) CreateJob(projectName string) error {
-	resp, err := utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/createItem?name=%s&mode=copy&from=base", jenkinsBaseURL(), projectName), nil, nil)
-	if err != nil {
-		return err
-	}
-	if resp != nil {
-		defer resp.Body.Close()
-		if resp.StatusCode >= http.StatusInternalServerError {
-			return fmt.Errorf("Internal error: %+v", err)
-		}
-		logs.Info("Requested Jenkins clone job with response status code: %d", resp.StatusCode)
-	}
-	return nil
+func (j *jenkinsHandler) CreateJobWithParameter(jobName string) error {
+	return utils.SimpleGetRequestHandle(fmt.Sprintf("%s/job/%s/buildWithParameters?F00=%s&F01=%s&F02=%s&F03=%s&F04=%s",
+		jenkinsBaseURL(), seedJobName, jobName, jenkinsNodeIP(), jenkinsBaseURL(), j.registryURL, executionMode()))
 }
 
-func (j *jenkinsHandler) CreateJobWithParameter(projectName string) error {
-	resp, err := utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s/job/%s/buildWithParameters?F00=%s", jenkinsBaseURL(), seedJobName, projectName), nil, nil)
-	if err != nil {
-		return err
-	}
-	if resp != nil {
-		defer resp.Body.Close()
-		if resp.StatusCode >= http.StatusInternalServerError {
-			return fmt.Errorf("Internal error: %+v", err)
-		}
-		logs.Info("Requested Jenkins create job by paramerters with response status code: %d", resp.StatusCode)
-	}
-	return nil
-}
-
-func (j *jenkinsHandler) ToggleJob(projectName, action string) error {
-	resp, err := utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/job/%s/%s", jenkinsBaseURL(), projectName, action), nil, nil)
-	if err != nil {
-		return err
-	}
-	if resp != nil {
-		defer resp.Body.Close()
-		if resp.StatusCode >= http.StatusInternalServerError {
-			return fmt.Errorf("Internal error: %+v", err)
-		}
-		logs.Info("Requested Jenkins toggle job with action %s and response status code: %d", action, resp.StatusCode)
-	}
-	return nil
+func (j *jenkinsHandler) DeleteJob(jobName string) error {
+	return utils.SimplePostRequestHandle(fmt.Sprintf("%s/job/%s/doDelete", jenkinsBaseURL(), jobName), nil, nil)
 }

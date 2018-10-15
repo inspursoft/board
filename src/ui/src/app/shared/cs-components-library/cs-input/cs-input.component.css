@@ -43,3 +43,41 @@ a.cs-input-icon {
   margin-left: 5px;
   flex-basis: 20px;
 }
+
+input::placeholder {
+  color: darkgray !important;
+  font-size: 14px;
+}
+
+input::-moz-placeholder{
+  color: darkgray !important;
+  font-size: 14px;
+}
+
+input::-webkit-input-placeholder{
+  color: darkgray !important;
+  font-size: 14px;
+}
+
+input:-moz-placeholder{
+  color: darkgray !important;
+  font-size: 14px;
+}
+
+input:-ms-input-placeholder{
+  color: darkgray !important;
+  font-size: 14px;
+}
+
+input::-ms-input-placeholder {
+  color: darkgray !important;
+  font-size: 14px;
+}
+
+input.source-password{
+
+}
+
+input.verify-password{
+
+}

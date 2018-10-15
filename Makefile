@@ -17,13 +17,13 @@
 #
 DEVFLAG=release
 ifeq ($(DEVFLAG), release) 
-	BASEIMAGE=alpine:3.5
-	GOBUILDIMAGE=golang:1.8.3-alpine3.5
+	BASEIMAGE=alpine:3.7
+	GOBUILDIMAGE=golang:1.9.6-alpine3.7
 	WORKPATH=release
 	IMAGEPREFIX=board
 else
 	BASEIMAGE=ubuntu:14.04
-	GOBUILDIMAGE=golang:1.8.1
+	GOBUILDIMAGE=golang:1.9.6
 	WORKPATH=dev
 	IMAGEPREFIX=dev
 endif 
@@ -126,6 +126,7 @@ version:
 
 compile_ui:
 	$(DOCKERCOMPOSECMD) -f $(MAKEWORKPATH)/$(DOCKERCOMPOSEUIFILENAME) up
+	$(DOCKERCOMPOSECMD) -f $(MAKEWORKPATH)/$(DOCKERCOMPOSEUIFILENAME) down
 
 $(COMPILE_LIST): %_compile: # %_fmt  %_vet %_golint
 	$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOIMGBASEPATH) \

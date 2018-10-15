@@ -1,6 +1,7 @@
-package service
+package service_test
 
 import (
+	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
 	"testing"
 
@@ -24,7 +25,7 @@ var Dockerfile model.Dockerfile
 var imageConfig model.ImageConfig
 
 func TestCheckDockerfileConfig(t *testing.T) {
-	err := CheckDockerfileConfig(&imageConfig)
+	err := service.CheckDockerfileConfig(&imageConfig)
 	if err == nil {
 		t.Errorf("Check nil dockerfile config should be failed")
 	} else {
@@ -32,7 +33,7 @@ func TestCheckDockerfileConfig(t *testing.T) {
 	}
 
 	imageConfig.ImageDockerfile.Base = "Test:1.0"
-	err = CheckDockerfileConfig(&imageConfig)
+	err = service.CheckDockerfileConfig(&imageConfig)
 	if err == nil {
 		t.Errorf("Check dockerfile with upper charactor in base should be failed")
 	} else {
@@ -41,7 +42,7 @@ func TestCheckDockerfileConfig(t *testing.T) {
 
 	imageConfig.ImageDockerfile.Base = "test:1.0"
 	imageConfig.ImageDockerfile.EntryPoint = "a\nb"
-	err = CheckDockerfileConfig(&imageConfig)
+	err = service.CheckDockerfileConfig(&imageConfig)
 	if err == nil {
 		t.Errorf("Check dockerfile with enter in Entrypoint should be failed")
 	} else {
@@ -50,7 +51,7 @@ func TestCheckDockerfileConfig(t *testing.T) {
 
 	imageConfig.ImageDockerfile.EntryPoint = "ab"
 	imageConfig.ImageDockerfile.ExposePort = append(imageConfig.ImageDockerfile.ExposePort, "0s")
-	err = CheckDockerfileConfig(&imageConfig)
+	err = service.CheckDockerfileConfig(&imageConfig)
 	if err == nil {
 		t.Errorf("Check dockerfile port should be failed")
 	} else {
@@ -63,7 +64,7 @@ func TestCheckDockerfileConfig(t *testing.T) {
 	//imageConfig.ImageDockerfile.Copy = append(imageConfig.ImageDockerfile.Copy, Copy)
 	imageConfig.ImageDockerfile.RUN = append(imageConfig.ImageDockerfile.RUN, "run")
 	imageConfig.ImageDockerfile.EnvList = append(imageConfig.ImageDockerfile.EnvList, Env)
-	err = CheckDockerfileConfig(&imageConfig)
+	err = service.CheckDockerfileConfig(&imageConfig)
 	if err != nil {
 		t.Errorf("Check dockerfile error: %+v", err)
 	} else {
@@ -75,7 +76,7 @@ func TestBuildDockerfile(t *testing.T) {
 	imageConfig.ImageDockerfile.Base = "test:1.0"
 	imageConfig.ImageDockerfile.Copy = append(imageConfig.ImageDockerfile.Copy, Copy)
 	imageConfig.ImageDockerfilePath = "path"
-	err := BuildDockerfile(imageConfig)
+	err := service.BuildDockerfile(imageConfig)
 	if err != nil {
 		t.Errorf("Build dockerfile fail: %+v", err)
 	} else {
@@ -84,7 +85,7 @@ func TestBuildDockerfile(t *testing.T) {
 }
 
 func TestGetDockerfileInfo(t *testing.T) {
-	dockerfile, err := GetDockerfileInfo("path")
+	dockerfile, err := service.GetDockerfileInfo("path", imageConfig.ImageName, imageConfig.ImageTag)
 	if err != nil {
 		t.Errorf("Get dockerfile info error: %+v", err)
 	}
@@ -95,7 +96,7 @@ func TestGetDockerfileInfo(t *testing.T) {
 }
 
 func TestImageConfigClean(t *testing.T) {
-	err := ImageConfigClean("path")
+	err := service.ImageConfigClean("path")
 	if err != nil {
 		t.Errorf("Clean config error: %+v", err)
 	} else {
@@ -149,7 +150,7 @@ var testImageid int64
 
 func TestCreateImage(t *testing.T) {
 	assert := assert.New(t)
-	id, err := CreateImage(testimage)
+	id, err := service.CreateImage(testimage)
 	assert.Nil(err, "Failed, err when create test image.")
 	assert.NotEqual(0, id, "Failed to assign a image id")
 	testImageid = id
@@ -160,7 +161,7 @@ func TestUpdateImage(t *testing.T) {
 	assert := assert.New(t)
 	testimage.ImageDeleted = 1
 	testimage.ImageID = testImageid
-	ret, err := UpdateImage(testimage, "deleted")
+	ret, err := service.UpdateImage(testimage, "deleted")
 	assert.Nil(err, "Failed, err when update test image.")
 	assert.Equal(true, ret, "Failed to update test image.")
 }
@@ -168,7 +169,7 @@ func TestUpdateImage(t *testing.T) {
 func TestGetImage(t *testing.T) {
 	assert := assert.New(t)
 	testimage.ImageID = testImageid
-	retimage, err := GetImage(testimage, "id")
+	retimage, err := service.GetImage(testimage, "id")
 	assert.Nil(err, "Failed, err when get test image.")
 	assert.Equal("testimage1", retimage.ImageName, "Failed to get image name.")
 	t.Log(retimage)
@@ -189,7 +190,7 @@ var testITagid int64
 
 func TestCreateImageTag(t *testing.T) {
 	assert := assert.New(t)
-	id, err := CreateImageTag(testITag)
+	id, err := service.CreateImageTag(testITag)
 	assert.Nil(err, "Failed, err when create test image tag.")
 	assert.NotEqual(0, id, "Failed to assign a image tag id")
 	testITagid = id
@@ -200,7 +201,7 @@ func TestUpdateImageTag(t *testing.T) {
 	assert := assert.New(t)
 	testITag.Tag = "1.1"
 	testITag.ImageTagID = testITagid
-	ret, err := UpdateImageTag(testITag, "tag")
+	ret, err := service.UpdateImageTag(testITag, "tag")
 	assert.Nil(err, "Failed, err when update test image tag.")
 	assert.Equal(true, ret, "Failed to update test image tag.")
 	t.Log(ret)
@@ -209,14 +210,14 @@ func TestUpdateImageTag(t *testing.T) {
 func TestDeleteImageTag(t *testing.T) {
 	assert := assert.New(t)
 	testITag.ImageTagID = testITagid
-	err := DeleteImageTag(testITag)
+	err := service.DeleteImageTag(testITag)
 	assert.Nil(err, "Failed, err when delete test image tag.")
 }
 
 func TestGetImageTag(t *testing.T) {
 	assert := assert.New(t)
 	testITag.ImageTagID = testITagid
-	retimageTag, err := GetImageTag(testITag, "id")
+	retimageTag, err := service.GetImageTag(testITag, "id")
 	assert.Nil(err, "Failed, err when get test image tag.")
 	assert.Equal("testimage1", retimageTag.ImageName, "Failed to get image tag.")
 	t.Log(retimageTag)

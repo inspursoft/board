@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
@@ -11,8 +12,7 @@ import (
 type DbAuth struct{}
 
 func (auth DbAuth) DoAuth(principal, password string) (*model.User, error) {
-	query := model.User{Username: principal, Password: password, Deleted: 0}
-	user, err := dao.GetUser(query, "username", "deleted")
+	user, err := service.GetUserByName(principal)
 	if err != nil {
 		logs.Error("Failed to get user in SignIn: %+v\n", err)
 		return nil, err
@@ -20,6 +20,7 @@ func (auth DbAuth) DoAuth(principal, password string) (*model.User, error) {
 	if user == nil {
 		return nil, nil
 	}
+	query := model.User{Username: principal, Password: password}
 	query.Password = utils.Encrypt(query.Password, user.Salt)
 	return dao.GetUser(query, "username", "password")
 }

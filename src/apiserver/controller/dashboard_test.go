@@ -1,4 +1,4 @@
-package controller
+package controller_test
 
 import (
 	"bytes"
@@ -9,64 +9,66 @@ import (
 	"testing"
 	"time"
 
+	"git/inspursoft/board/src/apiserver/controller"
 	"git/inspursoft/board/src/common/model/dashboard"
+
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 	"github.com/stretchr/testify/assert"
 )
 
 func getBodys() ([][]byte, error) {
-	bodies := []DsBodyPara{
-		DsBodyPara{
-			Service: ServicePara{
+	bodies := []controller.DsBodyPara{
+		controller.DsBodyPara{
+			Service: controller.ServicePara{
 				TimeUnit:      "second",
 				TimeCount:     1,
 				TimestampBase: time.Now().Second(),
 				DurationTime:  0,
 			},
-			Node: NodePara{
+			Node: controller.NodePara{
 				TimeUnit:      "second",
 				TimeCount:     1,
 				TimestampBase: time.Now().Second(),
 				DurationTime:  0,
 			},
 		},
-		DsBodyPara{
-			Service: ServicePara{
+		controller.DsBodyPara{
+			Service: controller.ServicePara{
 				TimeUnit:      "minute",
 				TimeCount:     1,
 				TimestampBase: time.Now().Second(),
 				DurationTime:  0,
 			},
-			Node: NodePara{
+			Node: controller.NodePara{
 				TimeUnit:      "minute",
 				TimeCount:     1,
 				TimestampBase: time.Now().Second(),
 				DurationTime:  0,
 			},
 		},
-		DsBodyPara{
-			Service: ServicePara{
+		controller.DsBodyPara{
+			Service: controller.ServicePara{
 				TimeUnit:      "hour",
 				TimeCount:     1,
 				TimestampBase: time.Now().Second(),
 				DurationTime:  0,
 			},
-			Node: NodePara{
+			Node: controller.NodePara{
 				TimeUnit:      "hour",
 				TimeCount:     1,
 				TimestampBase: time.Now().Second(),
 				DurationTime:  0,
 			},
 		},
-		DsBodyPara{
-			Service: ServicePara{
+		controller.DsBodyPara{
+			Service: controller.ServicePara{
 				TimeUnit:      "day",
 				TimeCount:     1,
 				TimestampBase: time.Now().Second(),
 				DurationTime:  0,
 			},
-			Node: NodePara{
+			Node: controller.NodePara{
 				TimeUnit:      "day",
 				TimeCount:     1,
 				TimestampBase: time.Now().Second(),

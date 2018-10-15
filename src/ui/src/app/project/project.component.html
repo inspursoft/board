@@ -9,17 +9,14 @@
   <button class="btn btn-primary" (click)="createProject()">{{ 'PROJECT.CREATE_PROJECT' | translate }}</button>
 </div>
 <div class="row">
-  <create-project (reload)="retrieve(oldStateInfo)" (closeEvent)="createProjectClose(2)"></create-project>
-  <project-member></project-member>
   <div class="col-xs-12">
     <clr-datagrid (clrDgRefresh)="retrieve($event)" [clrDgLoading]="isInLoading">
-      <clr-dg-column [clrDgField]="'NAME'"
-                     [clrDgSortOrder]="descSort">
+      <clr-dg-column [clrDgField]="'NAME'" [clrDgSortOrder]="descSort">
         <clr-dg-filter [hidden]="true"></clr-dg-filter>
         {{ 'PROJECT.PROJECT_NAME' | translate }}
       </clr-dg-column>
       <clr-dg-column>{{ 'PROJECT.CREATOR' | translate }}</clr-dg-column>
-      <clr-dg-column [clrDgField]="'CREATE_TIME'"
+      <clr-dg-column [clrDgField]="'CREATION_TIME'"
                      [clrDgSortOrder]="descSort">
         <clr-dg-filter [hidden]="true"></clr-dg-filter>
         {{ 'PROJECT.CREATION_TIME' | translate }}
@@ -32,28 +29,48 @@
         <clr-dg-cell>{{project.project_owner_name}}</clr-dg-cell>
         <clr-dg-cell>{{project.project_creation_time | date: 'short'}}</clr-dg-cell>
         <clr-dg-cell>
-          <input type="checkbox"
-                 [id]="project.project_name"
-                 [checked]="project.project_public === 1"
-                 (click)="toggleProjectPublic(project, $event)">
-          <label [for]="project.project_name"></label>
+          <div class="tooltip tooltip-right">
+            <input type="checkbox"
+                   title=""
+                   [checked]="project.project_public === 1"
+                   [disabled]="!isSystemAdminOrOwner(project)"
+                   (click)="toggleProjectPublic(project, $event)">
+            <label [hidden]="isSystemAdminOrOwner(project)" class="tooltip-content">
+              {{'ERROR.INSUFFICIENT_PRIVILEGE' | translate}}
+            </label>
+          </div>
         </clr-dg-cell>
         <clr-dg-cell>{{project.project_comment}}</clr-dg-cell>
         <clr-dg-cell>
           <a href="javascript:void(0)" >
-            <clr-icon shape="group"
-                      class="action"
-                      (click)="editProjectMember(project)"
-                      [ngClass]="{'disabled':!isSystemAdminOrOwner(project)}">
-            </clr-icon>
+            <clr-tooltip>
+              <clr-icon clrTooltipTrigger
+                        shape="group"
+                        class="action"
+                        (click)="editProjectMember(project)"
+                        [ngClass]="{'disabled':!isSystemAdminOrOwner(project)}">
+              </clr-icon>
+              <clr-tooltip-content [clrPosition]="'left'"
+                                   [clrSize]="'md'"
+                                   [hidden]="isSystemAdminOrOwner(project)">
+                {{'ERROR.INSUFFICIENT_PRIVILEGE' | translate}}
+              </clr-tooltip-content>
+            </clr-tooltip>
           </a>
           <a href="javascript:void(0)">
-            <clr-icon shape="trash"
-                      class="action"
-                      [hidden]="true"
-                      [ngClass]="{'disabled':!isSystemAdminOrOwner(project)}"
-                      (click)="confirmToDeleteProject(project)">
-            </clr-icon>
+            <clr-tooltip>
+              <clr-icon clrTooltipTrigger
+                        shape="trash"
+                        class="action"
+                        [ngClass]="{'disabled':!isSystemAdminOrOwner(project)}"
+                        (click)="confirmToDeleteProject(project)">
+              </clr-icon>
+              <clr-tooltip-content [clrPosition]="'left'"
+                                   [clrSize]="'md'"
+                                   [hidden]="isSystemAdminOrOwner(project)">
+                {{'ERROR.INSUFFICIENT_PRIVILEGE' | translate}}
+              </clr-tooltip-content>
+            </clr-tooltip>
           </a>
         </clr-dg-cell>
       </clr-dg-row>

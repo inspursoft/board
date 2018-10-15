@@ -1,23 +1,23 @@
-import { Component, Input, Output, EventEmitter } from "@angular/core";
-import { User } from '../user';
+import { Component, EventEmitter, Input, Output } from "@angular/core";
 import { UserService } from "../user-service/user-service"
 import { MessageService } from "../../shared/message-service/message.service";
+import { CsComponentBase } from "../../shared/cs-components-library/cs-component-base";
+import { User } from "../../shared/shared.types";
 
 export enum editModel { emNew, emEdit }
-
 @Component({
   selector: "new-user",
   templateUrl: "./user-new-edit.component.html",
   styleUrls: ["./user-new-edit.component.css"]
 })
-export class NewEditUserComponent {
+export class NewEditUserComponent extends CsComponentBase{
   _isOpen: boolean;
-  isAlertOpen: boolean = false;
-  afterCommitErr: string = "";
+  isWorkWIP: boolean = false;
 
   constructor(private userService: UserService,
               private messageService: MessageService) {
-  };
+    super();
+  }
 
   @Input() userModel: User;
   @Input() CurEditModel: editModel;
@@ -44,55 +44,34 @@ export class NewEditUserComponent {
   get ActionCaption() {
     return this.CurEditModel == editModel.emNew
       ? "USER_CENTER.ADD"
-      : "USER_CENTER.EDIT";
+      : "USER_CENTER.SAVE";
   }
 
   submitUser() {
-    this.CurEditModel == editModel.emEdit ? this.updateUser() : this.addNewUser();
+    if (this.verifyInputValid()){
+      this.isWorkWIP = true;
+      this.CurEditModel == editModel.emEdit ? this.updateUser() : this.addNewUser();
+    }
   }
 
   updateUser() {
-    this.userService.updateUser(this.userModel)
-      .then(() => {
+    this.userService.updateUser(this.userModel).subscribe(() => {
         this.SubmitSuccessEvent.emit(true);
         this.isOpen = false;
-      })
-      .catch(err => {
-        if(err) {
-          if(err.status === 400) {
-            this.isAlertOpen = true;
-            this.afterCommitErr = 'ACCOUNT.EMAIL_IS_ILLEGAL';
-          } else if(err.status === 409){
-            this.isAlertOpen = true;
-            this.afterCommitErr = 'ACCOUNT.EMAIL_ALREADY_EXISTS';
-          } else {
-            this.isOpen = false;
-            this.messageService.dispatchError(err)
-          }
-        }
-      });
+        this.messageService.showAlert('USER_CENTER.EDIT_USER_SUCCESS');
+      },
+      () => this.isOpen = false
+    );
   }
 
   addNewUser() {
-    this.userService.newUser(this.userModel)
-      .then(() => {
+    this.userService.newUser(this.userModel).subscribe(() => {
         this.SubmitSuccessEvent.emit(true);
         this.isOpen = false;
-      })
-      .catch(err => {
-        if(err) {
-          if(err.status === 400) {
-            this.isAlertOpen = true;
-            this.afterCommitErr = 'ACCOUNT.EMAIL_IS_ILLEGAL';
-          } else if(err.status === 409){
-            this.isAlertOpen = true;
-            this.afterCommitErr = 'ACCOUNT.EMAIL_ALREADY_EXISTS';
-          } else {
-            this.isOpen = false;
-            this.messageService.dispatchError(err)
-          }
-        }
-      });
+        this.messageService.showAlert('USER_CENTER.ADD_USER_SUCCESS');
+      },
+      () => this.isOpen = false
+    );
   }
 
 }

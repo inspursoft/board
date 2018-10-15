@@ -26,21 +26,21 @@ type SelectorServiceYaml struct {
 	App string
 }
 
-type ServiceStructYaml struct {
-	ApiVersion string `yaml:"apiVersion,flow"`
-	Kind       string
-	Metadata   struct {
-		Name   string
-		Labels struct {
-			App string
-		}
-	}
-	Spec struct {
-		Tpe      string              `yaml:"type,flow,omitempty"`
-		Ports    []PortsServiceYaml  `yaml:",omitempty"`
-		Selector SelectorServiceYaml `yaml:",omitempty"`
-	} `yaml:",omitempty"`
-}
+//type ServiceStructYaml struct {
+//	ApiVersion string `yaml:"apiVersion,flow"`
+//	Kind       string
+//	Metadata   struct {
+//		Name   string
+//		Labels struct {
+//			App string
+//		}
+//	}
+//	Spec struct {
+//		Tpe      string              `yaml:"type,flow,omitempty"`
+//		Ports    []PortsServiceYaml  `yaml:",omitempty"`
+//		Selector SelectorServiceYaml `yaml:",omitempty"`
+//	} `yaml:",omitempty"`
+//}
 
 type PortsDeploymentYaml struct {
 	ContainerPort int `yaml:"containerPort,flow"`
@@ -72,8 +72,12 @@ type ContainersDeploymentYaml struct {
 	Image      string
 	Workingdir string   `yaml:",omitempty"`
 	Command    []string `yaml:",omitempty"`
-	Resource   struct {
-		Request struct {
+	Resources  struct {
+		Requests struct {
+			Cpu    string `yaml:",omitempty"`
+			Memory string `yaml:",omitempty"`
+		}
+		Limits struct {
 			Cpu    string `yaml:",omitempty"`
 			Memory string `yaml:",omitempty"`
 		}
@@ -119,6 +123,7 @@ type ConfigServiceStep struct {
 	NodeSelector        string            `json:"node_selector"`
 	ImageList           []ImageIndex      `json:"image_list"`
 	Instance            int               `json:"instance"`
+	ClusterIP           string            `json:"cluster_ip"`
 	ContainerList       []Container       `json:"container_list"`
 	ExternalServiceList []ExternalService `json:"external_service_list"`
 }

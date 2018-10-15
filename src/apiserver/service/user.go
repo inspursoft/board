@@ -12,6 +12,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+
+	"github.com/astaxie/beego/logs"
 )
 
 var sshKeyPath = utils.GetConfig("SSH_KEY_PATH")
@@ -75,6 +77,16 @@ func GetUserByName(username string) (*model.User, error) {
 	return dao.GetUser(query, "username", "deleted")
 }
 
+func GetUserByEmail(email string) (*model.User, error) {
+	query := model.User{Email: email, Deleted: 0}
+	return dao.GetUser(query, "email", "deleted")
+}
+
+func GetUserByResetUUID(resetUuid string) (*model.User, error) {
+	query := model.User{ResetUUID: resetUuid, Deleted: 0}
+	return dao.GetUser(query, "reset_uuid", "deleted")
+}
+
 func GetUsers(field string, value interface{}, selectedFields ...string) ([]*model.User, error) {
 	return dao.GetUsers(field, value, selectedFields...)
 }
@@ -94,10 +106,28 @@ func UpdateUser(user model.User, selectedFields ...string) (bool, error) {
 	return true, nil
 }
 
+func UpdateUserUUID(userID int64, resetUUID string) (bool, error) {
+	return UpdateUser(model.User{ID: userID, ResetUUID: resetUUID}, "reset_uuid")
+}
+
+func ResetUserPassword(user model.User, newPassword string) (bool, error) {
+	user.Password = utils.Encrypt(newPassword, user.Salt)
+	user.ResetUUID = ""
+	return UpdateUser(user, "password", "reset_uuid")
+}
+
 func DeleteUser(userID int64) (bool, error) {
-	user := model.User{ID: userID, Deleted: 1}
-	_, err := dao.UpdateUser(user, "deleted")
+	user, err := GetUserByID(userID)
 	if err != nil {
+		logs.Error("Failed to get user by ID: %d, error: %+v", userID, err)
+		return false, nil
+	}
+	user.Username = "%" + user.Username + "%"
+	user.Email = "%" + user.Email + "%"
+	user.Deleted = 1
+	_, err = dao.UpdateUser(*user, "username", "email", "deleted")
+	if err != nil {
+		logs.Error("Failed to update user: %v, error: %+v", user, err)
 		return false, err
 	}
 	return true, nil

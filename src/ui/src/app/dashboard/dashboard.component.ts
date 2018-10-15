@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { DashboardComponentParent } from "./dashboard.component.parent"
 import { DashboardService, IQuery, IResponse, LineType } from "./dashboard.service";
 import { TranslateService } from "@ngx-translate/core";
@@ -8,13 +8,11 @@ import { MessageService } from "../shared/message-service/message.service";
 import { AppInitService } from "../app.init.service";
 import { scaleOption } from "./time-range-scale.component/time-range-scale.component";
 import { Observable } from "rxjs/Observable";
-import { HttpErrorResponse } from "@angular/common/http";
 import "rxjs/add/operator/delay";
 import "rxjs/add/operator/bufferCount"
 
 const MAX_COUNT_PER_PAGE: number = 200;
 const MAX_COUNT_PER_DRAG: number = 100;
-const AUTO_REFRESH_SEED: number = 10;
 const AUTO_REFRESH_CUR_SEED: number = 5;
 
 class ThirdLine {
@@ -55,10 +53,10 @@ class ThirdLine {
 })
 export class DashboardComponent extends DashboardComponentParent implements OnInit, AfterViewInit, OnDestroy {
   scaleOptions: Array<scaleOption> = [
-    {"id": 1, "description": "DASHBOARD.MIN", "value": "second", valueOfSecond: 5},
-    {"id": 2, "description": "DASHBOARD.HR", "value": "minute", valueOfSecond: 60},
-    {"id": 3, "description": "DASHBOARD.DAY", "value": "hour", valueOfSecond: 60 * 60},
-    {"id": 4, "description": "DASHBOARD.MTH", "value": "day", valueOfSecond: 60 * 60 * 24}];
+    {id: 1, description: "DASHBOARD.MIN", value: "second", valueOfSecond: 5},
+    {id: 2, description: "DASHBOARD.HR", value: "minute", valueOfSecond: 60},
+    {id: 3, description: "DASHBOARD.DAY", value: "hour", valueOfSecond: 60 * 60},
+    {id: 4, description: "DASHBOARD.MTH", value: "day", valueOfSecond: 60 * 60 * 24}];
   _serverTimeStamp: number;
   _autoRefreshCurInterval: number = AUTO_REFRESH_CUR_SEED;
   intervalAutoRefresh: any;
@@ -72,24 +70,22 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
   query: Map<LineType, {list_name: string, scale: scaleOption, baseLineTimeStamp: number, time_count: number, timestamp_base: number}>;
   eventDragChange: Subject<{lineType: LineType, isDragBack: boolean}>;
   eventZoomBarChange: Subject<{start: number, end: number}>;
-  eventInitChangeDetector: Subject<LineType>;
+  // eventInitChangeDetector: Subject<LineType>;
   eventLangChangeSubscription: Subscription;
   eChartInstance: Map<LineType, Object>;
   autoRefreshInterval: Map<LineType, number>;
   curRealTimeValue: Map<LineType, {curFirst: number, curSecond: number}>;
   noDataErrMsg: Map<LineType, string>;
-  isShowGrafanaView: boolean = false;
 
   constructor(private service: DashboardService,
               private appInitService: AppInitService,
               private messageService: MessageService,
-              private translateService: TranslateService,
-              private changeDetectorRef: ChangeDetectorRef) {
+              private translateService: TranslateService) {
     super();
-    this.changeDetectorRef.detach();
+    // this.changeDetectorRef.detach();
     this.eventDragChange = new Subject<{lineType: LineType, isDragBack: boolean}>();
     this.eventZoomBarChange = new Subject<{start: number, end: number}>();
-    this.eventInitChangeDetector = new Subject<LineType>();
+    // this.eventInitChangeDetector = new Subject<LineType>();
     this.lineResponses = new Map<LineType, IResponse>();
     this.lineThirdLine = new Map<LineType, ThirdLine>();
     this.query = new Map<LineType, {list_name: string, scale: scaleOption, baseLineTimeStamp: number, time_count: number, timestamp_base: number}>();
@@ -108,7 +104,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     this.lineTypeSet.add(LineType.ltService);
     this.lineTypeSet.add(LineType.ltNode);
     this.lineTypeSet.add(LineType.ltStorage);
-    this.eventInitChangeDetector.asObservable().bufferCount(this.lineTypeSet.size).subscribe(() => this.changeDetectorRef.reattach());
+    // this.eventInitChangeDetector.asObservable().bufferCount(this.lineTypeSet.size).subscribe(() => this.changeDetectorRef.reattach());
     this.eventDragChange.asObservable().debounceTime(300).subscribe(dragInfo => {
       this.lineTypeSet.forEach((value) => {
         this.refreshLineDataByDrag(value, dragInfo.isDragBack);
@@ -123,7 +119,11 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     });
     this.eventLangChangeSubscription = this.translateService.onLangChange.subscribe(() => {
       this.lineTypeSet.forEach((lineType: LineType) => {
-        this.setLineBaseOption(lineType).subscribe(res => this.lineOptions.set(lineType, res));
+        this.setLineBaseOption(lineType).subscribe(res => {
+          this.lineOptions.set(lineType, res);
+          this.detectChartData(lineType);
+          this.clearEChart(lineType);
+        });
       });
     });
   }
@@ -142,9 +142,9 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     this.initAsyncLines();
     this.intervalAutoRefresh = setInterval(() => {
       this.autoRefreshCurDada();
-      this.lineTypeSet.forEach(value => {
-        this.autoRefreshDada(value);
-      });
+      // this.lineTypeSet.forEach(value => {
+      //   this.autoRefreshDada(value);
+      // });
     }, 1000);
   }
 
@@ -157,7 +157,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     let data = this.lineResponses.get(lineType);
     thirdLine.maxDate = new Date(maxTimeStrap * 1000);
     thirdLine.minDate = new Date(minTimeStrap * 1000);
-    let newLineOption = Object();
+    let newLineOption = Object.create({});
     this.lineOptions.delete(lineType);
     lineSeries["series"][0]["data"] = data.firstLineData;
     lineSeries["series"][1]["data"] = data.secondLineData;
@@ -178,7 +178,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
               curFirst: res.firstLineData.length > 0 ? res.firstLineData[0][1] : 0,
               curSecond: res.secondLineData.length > 0 ?res.secondLineData[0][1] : 0
             });
-            this.eventInitChangeDetector.next(lineType)
+            // this.eventInitChangeDetector.next(lineType)
           })
         });
       });
@@ -199,7 +199,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     this.curValue.set(lineType, {curFirst: 0, curSecond: 0});
     this.curRealTimeValue.set(lineType, {curFirst: 0, curSecond: 0});
     this.lineStateInfo.set(lineType, {isCanAutoRefresh: true, isDropBack: false, inDrop: false, inRefreshWIP: false});
-    this.autoRefreshInterval.set(lineType, AUTO_REFRESH_SEED);
+    this.autoRefreshInterval.set(lineType, this.scaleOptions[0].valueOfSecond);
     this.query.set(lineType, {
       time_count: MAX_COUNT_PER_PAGE,
       list_name: "total",
@@ -273,10 +273,9 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
       .do(() => {
         this.noData.set(lineType, false);
         this.lineStateInfo.get(lineType).inRefreshWIP = false;
-      }, (err: HttpErrorResponse) => {
+      }, () => {
         this.lineStateInfo.get(lineType).inRefreshWIP = false;
         this.noData.set(lineType, true);
-        this.messageService.dispatchError(err);
       });
   }
 
@@ -343,15 +342,14 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     if (this.autoRefreshInterval.get(lineType) > 0) {
       this.autoRefreshInterval.set(lineType, this.autoRefreshInterval.get(lineType) - 1);
       if (this.autoRefreshInterval.get(lineType) == 0) {
-        this.autoRefreshInterval.set(lineType, AUTO_REFRESH_SEED);
+        this.autoRefreshInterval.set(lineType, this.query.get(lineType).scale.valueOfSecond);
         if (this.lineStateInfo.get(lineType).isCanAutoRefresh) {
           this.query.get(lineType).time_count = MAX_COUNT_PER_PAGE;
           this.query.get(lineType).timestamp_base = this._serverTimeStamp;
           this.getOneLineData(lineType).subscribe((res: IResponse) => {
-            this.clearEChart(lineType);
             this.lineResponses.set(lineType, res);
             this.detectChartData(lineType);
-
+            this.clearEChart(lineType);
           });
         }
       }
@@ -403,11 +401,11 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
       this.getOneLineData(lineType).subscribe((res: IResponse) => {
         this.lineStateInfo.get(lineType).inRefreshWIP = false;
         if (!res.limit.isMin) {
-          this.clearEChart(lineType);
           this.lineResponses.set(lineType, res);
           this.setLineZoomByCount(lineType, true);
           this.resetBaseLinePos(lineType);
           this.detectChartData(lineType);
+          this.clearEChart(lineType);
           } else {
             this.resetAfterDragTimeStamp(lineType);
           }
@@ -415,11 +413,11 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     } else {
       this.getOneLineData(lineType).subscribe((res: IResponse) => {
         if (!res.limit.isMax) {
-          this.clearEChart(lineType);
           this.lineResponses.set(lineType, res);
           this.setLineZoomByCount(lineType, false);
           this.resetBaseLinePos(lineType);
           this.detectChartData(lineType);
+          this.clearEChart(lineType);
         }
       });
     }
@@ -498,11 +496,11 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
         thirdLine.minDate = new Date(minTimeStamp * 1000);
         thirdLine.maxDate = new Date(maxTimeStamp * 1000);
         this.getOneLineData(value).subscribe((res: IResponse) => {
-          this.clearEChart(lineType);
-          this.lineResponses.set(lineType, res);
+          this.lineResponses.set(value, res);
           this.setLineZoomByTimeStamp(value, query.baseLineTimeStamp);
           this.resetBaseLinePos(value);
           this.detectChartData(value);
+          this.clearEChart(value);
         });
       });
     }
@@ -515,6 +513,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
       this.getOneLineData(lineType).subscribe((res: IResponse) => {
         this.lineResponses.set(lineType, res);
         this.detectChartData(lineType);
+        this.clearEChart(lineType);
       });
     }
   }
@@ -522,7 +521,6 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
   public onToolTipEvent(params: Object, lineType: LineType) {
     if ((params as Array<any>).length > 1) {
       this.curValue.set(lineType, {curFirst: params[0].value[1], curSecond: params[1].value[1]});
-      this.changeDetectorRef.detectChanges();
     }
   }
 
@@ -551,15 +549,22 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
   }
 
   getLinesName(lineType: LineType): Array<string> {
-    return this.lineResponses.get(lineType) ? this.lineResponses.get(lineType).list : [];
+    return this.lineResponses.get(lineType) ? this.lineResponses.get(lineType).list : null;
   }
-
 
   get StorageUnit(): string {
     return this.service.CurStorageUnit;
   };
 
-  get grafanaViewUrl(){
-   return this.appInitService.grafanaViewUrl;
+  refreshLine(){
+    this.lineTypeSet.forEach(value => {
+      this.query.get(value).timestamp_base = this._serverTimeStamp;
+      this.query.get(value).time_count = MAX_COUNT_PER_PAGE;
+      this.getOneLineData(value).subscribe((res: IResponse) => {
+        this.lineResponses.set(value, res);
+        this.detectChartData(value);
+        this.clearEChart(value);
+      });
+    });
   }
 }

@@ -140,13 +140,13 @@ func (d *Dashboard) GetNodeDataToObj() (err error) {
 	var tMin int
 	switch d.NodeReqPara.TimeUnit {
 	case "second":
-		tMin =  d.NodeReqPara.TimeStamp-d.ServiceReqPara.TimeCount * 5
+		tMin = d.NodeReqPara.TimeStamp - d.ServiceReqPara.TimeCount*5
 	case "minute":
-		tMin = d.NodeReqPara.TimeStamp-d.ServiceReqPara.TimeCount * 60
+		tMin = d.NodeReqPara.TimeStamp - d.ServiceReqPara.TimeCount*60
 	case "hour":
-		tMin = d.NodeReqPara.TimeStamp-d.ServiceReqPara.TimeCount * 60 * 60
+		tMin = d.NodeReqPara.TimeStamp - d.ServiceReqPara.TimeCount*60*60
 	case "day":
-		tMin = d.NodeReqPara.TimeStamp-d.ServiceReqPara.TimeCount * 60 * 60 * 24
+		tMin = d.NodeReqPara.TimeStamp - d.ServiceReqPara.TimeCount*60*60*24
 
 	}
 	s := dao.DashboardNodeDao{}

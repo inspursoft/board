@@ -1,9 +1,8 @@
-import { Component, EventEmitter, Input, Output, OnInit } from "@angular/core"
-import { AppInitService } from "../../app.init.service";
+import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core"
 import { UserService } from "../../user-center/user-service/user-service";
-import { User } from "../../user-center/user";
 import { MessageService } from "../message-service/message.service";
-import { Message } from "../message-service/message";
+import { User } from "../shared.types";
+import { AppInitService } from "../../app.init.service";
 
 @Component({
   selector: "user-setting",
@@ -13,9 +12,8 @@ import { Message } from "../message-service/message";
 })
 export class AccountSettingComponent implements OnInit {
   _isOpen: boolean = false;
+  isWorkWip = false;
   curUser: User = new User();
-  isAlertClose: boolean = true;
-  errMessage: string;
 
   constructor(private appInitService: AppInitService,
               private userService: UserService,
@@ -23,11 +21,7 @@ export class AccountSettingComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.userService.getCurrentUser()
-      .then(res => {
-        this.curUser = res;
-      })
-      .catch(err =>this.messageService.dispatchError(err));
+    this.curUser = this.appInitService.currentUser;
   }
 
   @Output() isOpenChange: EventEmitter<boolean> = new EventEmitter<boolean>();
@@ -43,22 +37,10 @@ export class AccountSettingComponent implements OnInit {
   }
 
   submitAccountSetting() {
-    this.userService.usesChangeAccount(this.curUser)
-      .then(() => {
-        let m: Message = new Message();
-        m.message = "ACCOUNT.ACCOUNT_SETTING_SUCCESS";
-        this.messageService.inlineAlertMessage(m);
-        this.isOpen = false;
-      })
-      .catch(err => {
-        if (err){
-          if(err.status === 409) {
-            this.isAlertClose = false;
-            this.errMessage = "ACCOUNT.EMAIL_ALREADY_EXISTS";
-          } else {
-            this.messageService.dispatchError(err);
-          }
-        }
-      });
+    this.isWorkWip = true;
+    this.userService.usesChangeAccount(this.curUser).subscribe(
+      () => this.isOpen = false,
+      () => this.isOpen = false,
+      () => this.messageService.showAlert('ACCOUNT.ACCOUNT_SETTING_SUCCESS'))
   }
 }

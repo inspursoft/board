@@ -1,0 +1,68 @@
+install:
+env:
+  - registry_ip=10.110.18.177
+  - golang_version=1.9.6
+  - mysql_version=5.6.35
+  - opendap_version=1.1.11
+  - last_version=latest
+  - boardDir=$workspace/src/git/inspursoft
+  - envFile=$boardDir/$base_repo_name/tests/env.cfg
+  - GOPATH=$workspace
+  - build_id=$BUILD_NUMBER
+  - access_token_jenkins=0aa0d1cabc926b5ee23780c6c817198fa31f9e96 
+before_script:
+  - echo "before script"
+  - echo "------------------------"
+  - echo "$head_repo_html_url"
+  - echo "$head_repo_name"
+  - echo "$base_repo_html_url"
+  - echo "$base_repo_name"
+  - echo "$comment_url"
+  - echo "$action"
+  - echo "$workspace"
+  - echo "$build_number"
+  - systemctl start docker
+  - docker pull $registry_ip/library/golang:$golang_version
+  - docker tag $registry_ip/library/golang:$golang_version golang:$golang_version
+  - docker pull $registry_ip/library/registry:2.6.2        
+  - docker tag $registry_ip/library/registry:2.6.2 registry:latest
+  - docker pull $registry_ip/library/mysql:$mysql_version
+  - docker tag $registry_ip/library/mysql:$mysql_version mysql:$mysql_version
+  - docker pull $registry_ip/library/openldap:$opendap_version
+  - docker tag $registry_ip/library/openldap:$opendap_version osixia/openldap:$opendap_version
+  - docker pull $registry_ip/board/board-gogits:$last_version
+  - docker tag $registry_ip/board/board-gogits:latest board-gogits:$last_version
+  - docker pull $registry_ip/board/dev_jenkins:dev
+  - docker tag $registry_ip/board/dev_jenkins:dev dev_jenkins:dev
+  - docker pull $registry_ip/board/dev_uibuilder:v2.3
+  - docker tag $registry_ip/board/dev_uibuilder:v2.3 uibuilder:$last_version
+  - docker pull $registry_ip/board/dev_jenkins:dev
+  - docker tag $registry_ip/board/dev_jenkins:dev dev_jenkins:dev
+ 
+script:
+  - source /root/env.cfg
+  - echo $action
+  - cd $workspace/tests
+  - echo $build_id
+  - mkdir -p $boardDir
+  - sh getenv.sh
+  - cd $boardDir/$base_repo_name
+  - make prepare
+  - cd $boardDir/board/tests
+  - cp $boardDir/$base_repo_name/tests/docker-compose.test.yml  $boardDir/$base_repo_name/make/dev
+  - cp $boardDir/$base_repo_name/tests/ldap_test.ldif  $boardDir/$base_repo_name/make/dev
+  - cd $boardDir/$base_repo_name/make/dev
+  - docker-compose -f docker-compose.test.yml up -d
+  - ls
+  - cd $boardDir/board/tests
+  - source $boardDir/board/tests/env.cfg
+  - sh hosts.sh
+  - sh run.sh
+  - cd $boardDir/board/tests
+  - sh report.sh
+after_script:
+  - echo 'after_script'
+
+branches:
+  only:
+    - dev

@@ -4,8 +4,6 @@ import { Router, ActivatedRoute, ParamMap } from '@angular/router';
 import { AppInitService, AppTokenService } from '../app.init.service';
 import { GlobalSearchService } from './global-search.service';
 
-import { MessageService } from '../shared/message-service/message.service';
-
 @Component({
   selector: 'global-search',
   templateUrl: 'global-search.component.html'
@@ -23,7 +21,6 @@ export class GlobalSearchComponent implements OnInit {
     private appInitService: AppInitService,
     private appTokenService: AppTokenService,
     private globalSearchService: GlobalSearchService,
-    private messageService: MessageService
   ) {}
 
   ngOnInit(): void {
@@ -36,15 +33,12 @@ export class GlobalSearchComponent implements OnInit {
   }
 
   search(q: string) {
-    this.globalSearchService
-      .search(q)
-      .then(search=>{
+    this.globalSearchService.search(q).subscribe(search=>{
         this.globalSearch = search;
         this.route.queryParamMap.subscribe(params=>{
           params["token"] = this.token;
         })
-      })
-      .catch(err=>this.messageService.dispatchError(err));
+      });
   }
 
   navigateTo(link) {

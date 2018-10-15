@@ -1,25 +1,26 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, ComponentFactoryResolver, OnDestroy, OnInit, ViewContainerRef } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { Image } from "../image";
 import { ImageService } from "../image-service/image-service"
 import { MessageService } from "../../shared/message-service/message.service";
-import { BUTTON_STYLE, MESSAGE_TARGET } from '../../shared/shared.const';
-import { Message } from '../../shared/message-service/message';
 import { AppInitService } from "../../app.init.service";
 import { Project } from "../../project/project";
-import { Router } from "@angular/router";
+import { SharedActionService } from "../../shared/shared-action.service";
+import { SharedService } from "../../shared/shared.service";
+import { CsModalParentBase } from "../../shared/cs-modal-base/cs-modal-parent-base";
+import { TranslateService } from "@ngx-translate/core";
+import { CreateImageMethod, Message, RETURN_STATUS } from "../../shared/shared.types";
+import { CreateImageComponent } from "../image-create/image-create.component";
 
-enum CreateImageMethod{None, Template, DockerFile, DevOps}
 @Component({
   selector: 'image-list',
   templateUrl: './image-list.component.html',
   styleUrls: ["./image-list.component.css"]
 })
-export class ImageListComponent implements OnInit, OnDestroy {
+export class ImageListComponent extends CsModalParentBase implements OnInit, OnDestroy {
   curImage: Image;
   isShowDetail: boolean = false;
   isBuildImageWIP: boolean = false;
-  isOpenNewImage: boolean = false;
   selectedProjectName: string = "";
   selectedProjectId: number = 0;
   imageListErrMsg: string = "";
@@ -31,42 +32,29 @@ export class ImageListComponent implements OnInit, OnDestroy {
   _subscription: Subscription;
 
   constructor(private imageService: ImageService,
-              private router: Router,
+              private sharedActionService: SharedActionService,
+              private sharedService: SharedService,
+              private translateService: TranslateService,
+              private view: ViewContainerRef,
+              private resolver: ComponentFactoryResolver,
               private appInitService: AppInitService,
               private messageService: MessageService) {
+    super(resolver, view);
     this.projectsList = Array<Project>();
-    this._subscription = this.messageService.messageConfirmed$.subscribe(m => {
-      let confirmationMessage = <Message>m;
-      if (confirmationMessage && confirmationMessage.target == MESSAGE_TARGET.DELETE_IMAGE) {
-        let imageName = <string>confirmationMessage.data;
-        let m: Message = new Message();
-        this.imageService
-          .deleteImages(imageName)
-          .then(res => {
-            m.message = 'IMAGE.SUCCESSFUL_DELETED_IMAGE';
-            this.messageService.inlineAlertMessage(m);
-            this.retrieve();
-          })
-          .catch(err => {
-             this.messageService.dispatchError(err);
-          });
-      }
-    });
   }
 
   ngOnInit() {
-    this.imageService.getProjects()
-      .then(res => {
-        let createNewProject: Project = new Project();
-        createNewProject.project_name = "IMAGE.CREATE_IMAGE_CREATE_PROJECT";
-        createNewProject["isSpecial"] = true;
-        createNewProject["OnlyClick"] = true;
-        this.projectsList.push(createNewProject);
-        if (res && res.length > 0) {
-          this.projectsList = this.projectsList.concat(res);
-        }
-      })
-      .catch(err => this.messageService.dispatchError(err));
+    this.imageService.getProjects().subscribe((res: Array<Project>) => {
+      let createNewProject: Project = new Project();
+      createNewProject.project_name = "IMAGE.CREATE_IMAGE_CREATE_PROJECT";
+      createNewProject.project_id = -1;
+      createNewProject["isSpecial"] = true;
+      createNewProject["OnlyClick"] = true;
+      this.projectsList.push(createNewProject);
+      if (res && res.length > 0) {
+        this.projectsList = this.projectsList.concat(res);
+      }
+    });
     this.retrieve();
   }
 
@@ -83,8 +71,18 @@ export class ImageListComponent implements OnInit, OnDestroy {
     return false;
   }
 
-  clickSelectProject(project: Project) {
-    this.router.navigate(["/projects"], {queryParams: {token: this.appInitService.token}, fragment: "create"});
+  clickSelectProject() {
+    this.sharedActionService.createProjectComponent(this.selfView).subscribe((projectName: string) => {
+      if (projectName) {
+        this.sharedService.getOneProject(projectName).subscribe((res: Array<Project>) => {
+          this.selectedProjectId = res[0].project_id;
+          this.selectedProjectName = res[0].project_name;
+          let project = this.projectsList.shift();
+          this.projectsList.unshift(res[0]);
+          this.projectsList.unshift(project);
+        })
+      }
+    });
   }
 
   changeSelectProject(project: Project) {
@@ -94,15 +92,11 @@ export class ImageListComponent implements OnInit, OnDestroy {
 
   retrieve() {
     this.loadingWIP = true;
-    this.imageService.getImages("", 0, 0)
-      .then(res => {
+    this.imageService.getImages("", 0, 0).subscribe((res: Array<Image>) => {
         this.loadingWIP = false;
         this.imageList = res || [];
-      })
-      .catch(err => {
-        this.loadingWIP = false;
-        this.messageService.dispatchError(err)
-      });
+      }, () => this.loadingWIP = false
+    );
   }
 
   showImageDetail(image: Image) {
@@ -113,14 +107,16 @@ export class ImageListComponent implements OnInit, OnDestroy {
 
   confirmToDeleteImage(imageName: string) {
     if (this.isSystemAdmin){
-      let announceMessage = new Message();
-      announceMessage.title = 'IMAGE.DELETE_IMAGE';
-      announceMessage.message = 'IMAGE.CONFIRM_TO_DELETE_IMAGE';
-      announceMessage.params = [imageName];
-      announceMessage.target = MESSAGE_TARGET.DELETE_IMAGE;
-      announceMessage.buttons = BUTTON_STYLE.DELETION;
-      announceMessage.data = imageName;
-      this.messageService.announceMessage(announceMessage);
+      this.translateService.get('IMAGE.CONFIRM_TO_DELETE_IMAGE', [imageName]).subscribe((msg: string) => {
+        this.messageService.showDeleteDialog(msg, 'IMAGE.DELETE_IMAGE').subscribe((message: Message) => {
+          if (message.returnStatus == RETURN_STATUS.rsConfirm) {
+            this.imageService.deleteImages(imageName).subscribe(() => {
+              this.messageService.showAlert('IMAGE.SUCCESSFUL_DELETED_IMAGE');
+              this.retrieve();
+            })
+          }
+        })
+      })
     }
   }
 
@@ -128,15 +124,23 @@ export class ImageListComponent implements OnInit, OnDestroy {
     this.isBuildImageWIP = true;
     this.selectedProjectName = "";
     this.selectedProjectId = 0;
-  }
-
-  onBuildImageCompleted(imageName: string) {
-    this.isBuildImageWIP = false;
     this.createImageMethod = CreateImageMethod.None;
-    this.retrieve();
   }
 
   setCreateImageMethod(method: CreateImageMethod): void {
     this.createImageMethod = method;
+  }
+
+  createNewImage() {
+    let component = this.createNewModal(CreateImageComponent);
+    component.initCustomerNewImage(this.selectedProjectId, this.selectedProjectName);
+    component.initBuildMethod(this.createImageMethod);
+    component.closeNotification.subscribe((res: any) => {
+      this.isBuildImageWIP = false;
+      this.createImageMethod = CreateImageMethod.None;
+      if (res) {
+        this.retrieve();
+      }
+    })
   }
 }

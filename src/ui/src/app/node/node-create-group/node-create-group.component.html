@@ -1,4 +1,4 @@
-<clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'md'">
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'md'">
   <h3 class="modal-title">{{ 'NODE.NODE_GROUP_CREATE' | translate }}</h3>
   <div class="modal-body node-create-group-body">
     <cs-input [inputIsRequired]="true"
@@ -14,10 +14,7 @@
     </cs-input>
   </div>
   <div class="modal-footer">
-    <button type="button"
-            class="btn btn-primary"
-            [disabled]="newNodeGroupData.nodegroup_name == ''"
-            (click)="commitNodeGroup()">
+    <button type="button" class="btn btn-primary" (click)="commitNodeGroup()">
       {{ 'BUTTON.OK' | translate }}
     </button>
   </div>

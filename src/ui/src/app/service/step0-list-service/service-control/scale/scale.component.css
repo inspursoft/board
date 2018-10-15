@@ -1,0 +1,68 @@
+div.utilization-container {
+  margin: 20px 0 20px 0;
+  display: none;
+}
+label.margin-left-10 {
+  margin-left: 10px;
+}
+
+div.scale-container {
+  display: flex;
+  flex-direction: column;
+}
+
+clr-icon.dynamic-icon {
+  color: white;
+  background: green;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+clr-icon.dynamic-icon.disabled {
+  cursor: not-allowed;
+  background-color: #e0e0e0;
+}
+
+div.auto-scale-container {
+  display: flex;
+  flex-flow: column;
+}
+
+div.auto-scale-line-container {
+  display: flex;
+  padding: 0 14px;
+}
+
+div.auto-scale-line-container cs-input {
+  flex-basis: 100%;
+}
+
+div.auto-scale-plus-container {
+  display: flex;
+  align-items: center;
+}
+
+div.auto-scale-plus-container span{
+  margin-left: 10px;
+}
+
+div.auto-scale-delete-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+div.auto-scale-delete-container.only-delete a {
+  margin-left: auto;
+}
+
+div.auto-scale-delete-container clr-alert {
+  flex-basis: 100%;
+}
+
+div.auto-scale-delete-container a.disabled{
+  cursor: not-allowed;
+  color: #e0e0e0;
+}

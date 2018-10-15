@@ -4,10 +4,10 @@ import (
 	"git/inspursoft/board/src/collector/dao"
 	"git/inspursoft/board/src/collector/model/collect"
 	"git/inspursoft/board/src/collector/model/collect/dashboard"
-	modelK8s "k8s.io/client-go/pkg/api/v1"
+	"git/inspursoft/board/src/common/model"
 )
 
-func getPods(resource *SourceMap, podItems []modelK8s.Pod) []modelK8s.Pod {
+func getPods(resource *SourceMap, podItems []model.Pod) []model.Pod {
 	i := 0
 	n_containers := 0
 	for _, v := range podItems {

@@ -17,8 +17,7 @@
         {{'USER_CENTER.LIST_COL_USERNAME' | translate}}
       </clr-dg-column>
       <clr-dg-column>{{'USER_CENTER.LIST_COL_EMAIL' | translate}}</clr-dg-column>
-      <clr-dg-column [clrDgField]="'CREATE_TIME'"
-                     [clrDgSortOrder]="descSort">
+      <clr-dg-column [clrDgField]="'CREATION_TIME'" [clrDgSortOrder]="descSort">
         <clr-dg-filter [hidden]="true"></clr-dg-filter>
         {{'USER_CENTER.LIST_COL_CREATE_DATE' | translate}}
       </clr-dg-column>
@@ -40,7 +39,7 @@
                  [disabled]="true" [checked]="user.user_deleted == 1">
         </clr-dg-cell>
         <clr-dg-cell>
-          <clr-icon [hidden]="true" [ngClass]="{'disabled': user.user_deleted == 1 ||  user.user_id == 1 || user.user_id == currentUserID}"
+          <clr-icon [ngClass]="{'disabled': user.user_deleted == 1 ||  user.user_id == 1 || user.user_id == currentUserID}"
                     (click)="deleteUser(user)"
                     class="trash"
                     shape="trash">

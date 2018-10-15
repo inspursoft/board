@@ -1,1 +1,0 @@
-target_base_url=$jenkins_job_trigger_url
