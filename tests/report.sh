@@ -13,7 +13,12 @@ chmod +x *
 if [ "$action" == "pull_request" ]; then
 covfile=$boardDir/$base_repo_name/tests/avaCov.cov
 coverage_build_html=$boardDir/$base_repo_name/tests/profile.html
-coverage_ui_html=$boardDir/$base_repo_name/src/ui/coverage/index.html 
+coverage_ui_html=$boardDir/$base_repo_name/src/ui/coverage/index.html
+coverage_ui_tar=$boardDir/$base_repo_name/src/ui/coverage.tar
+echo $coverage_ui_tar
+cd $boardDir/$base_repo_name/src/ui/
+echo $boardDir/$base_repo_name/src/ui/
+tar cvf coverage.tar coverage
 build_cov=`cat $boardDir/$base_repo_name/tests/avaCov.cov`
 ui_cov=`cat $boardDir/$base_repo_name/src/ui/testresult.log |grep "Statements"|cut -d ":" -f 2|cut -d "%" -f 1|awk 'gsub(/^ *| *$/,"")'`
 
@@ -24,7 +29,7 @@ echo "full_name:	$full_name"
 echo "username:		$username"
 echo "cov_num:		$cov_num"
 
-for postfile in $coverage_build_html $coverage_ui_html;
+for postfile in $coverage_build_html $coverage_ui_tar;
 do
 command="curl -X POST \
   '$gogs_url/upload?full_name=$full_name&build_number=$build_id' \
@@ -36,7 +41,7 @@ echo $command
 eval $command
 done
 coverage_build_html_path="$gogs_url/results/$full_name/$build_id/profile.html"
-coverage_ui_html_path="$gogs_url/results/$full_name/$build_id/index.html"
+coverage_ui_html_path="$gogs_url/results/$full_name/$build_id/coverage/index.html"
 
 echo $coverage_build_html_path
 echo $coverage_ui_html_path
