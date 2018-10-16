@@ -514,6 +514,35 @@ func setDeploymentVolumes(containerList []model.Container) []model.Volume {
 	return volumes
 }
 
+func setDeploymentAffinity(affinityList []model.Affinity) model.K8sAffinity {
+	k8sAffinity := model.K8sAffinity{}
+	if affinityList == nil {
+		return k8sAffinity
+	}
+	for _, affinity := range affinityList {
+		affinityTerm := model.PodAffinityTerm{
+			LabelSelector: model.LabelSelector{
+				MatchExpressions: []model.LabelSelectorRequirement{
+					model.LabelSelectorRequirement{
+						Key:      "app",
+						Operator: "In",
+						Values:   affinity.ServiceNames,
+					},
+				},
+			},
+			Namespaces:  affinity.Namespaces,
+			TopologyKey: "kubernetes.io/hostname",
+		}
+		if affinity.AntiFlag == 0 {
+			k8sAffinity.PodAntiAffinity = append(k8sAffinity.PodAntiAffinity, affinityTerm)
+		} else {
+			k8sAffinity.PodAffinity = append(k8sAffinity.PodAffinity, affinityTerm)
+		}
+	}
+
+	return k8sAffinity
+}
+
 func MarshalDeployment(serviceConfig *model.ConfigServiceStep, registryURI string) *model.Deployment {
 	if serviceConfig == nil {
 		return nil
@@ -527,6 +556,7 @@ func MarshalDeployment(serviceConfig *model.ConfigServiceStep, registryURI strin
 			Volumes:      setDeploymentVolumes(serviceConfig.ContainerList),
 			Containers:   setDeploymentContainers(serviceConfig.ContainerList, registryURI),
 			NodeSelector: setDeploymentNodeSelector(serviceConfig.NodeSelector),
+			Affinity:     setDeploymentAffinity(serviceConfig.AffinityList),
 		},
 	}
 

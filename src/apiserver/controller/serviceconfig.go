@@ -150,6 +150,13 @@ func (s *ConfigServiceStep) ConfigExternalService(serviceName string, instance i
 	return s
 }
 
+func (s *ConfigServiceStep) ConfigAffinity(affinityList []model.Affinity) *ConfigServiceStep {
+	if affinityList != nil {
+		s.AffinityList = affinityList
+	}
+	return s
+}
+
 func (s *ConfigServiceStep) GetConfigExternalService() interface{} {
 	return struct {
 		ProjectName         string                  `json:"project_name"`
@@ -158,6 +165,7 @@ func (s *ConfigServiceStep) GetConfigExternalService() interface{} {
 		Public              int                     `json:"service_public"`
 		NodeSelector        string                  `json:"node_selector"`
 		ExternalServiceList []model.ExternalService `json:"external_service_list"`
+		AffinityList        []model.Affinity        `json:"affinity_list"`
 	}{
 		ProjectName:         s.ProjectName,
 		ServiceName:         s.ServiceName,
@@ -165,6 +173,7 @@ func (s *ConfigServiceStep) GetConfigExternalService() interface{} {
 		Public:              s.Public,
 		NodeSelector:        s.NodeSelector,
 		ExternalServiceList: s.ExternalServiceList,
+		AffinityList:        s.AffinityList,
 	}
 }
 
@@ -346,21 +355,21 @@ func (sc *ServiceConfigController) configExternalService(key string, configServi
 		}
 	}
 
-	var externalServiceList []model.ExternalService
-	err = json.Unmarshal(reqData, &externalServiceList)
+	var serviceConfig model.ConfigServiceStep
+	err = json.Unmarshal(reqData, &serviceConfig)
 	if err != nil {
 		sc.internalError(err)
 		return
 	}
 
-	for _, external := range externalServiceList {
+	for _, external := range serviceConfig.ExternalServiceList {
 		if external.NodeConfig.NodePort > maximumPortNum || external.NodeConfig.NodePort < minimumPortNum {
 			sc.serveStatus(http.StatusBadRequest, portInvalidErr.Error())
 			return
 		}
 	}
-
-	SetConfigServiceStep(key, configServiceStep.ConfigExternalService(serviceName, instance, public, nodeOrNodeGroupName, externalServiceList))
+	configServiceStep.ConfigExternalService(serviceName, instance, public, nodeOrNodeGroupName, serviceConfig.ExternalServiceList)
+	SetConfigServiceStep(key, configServiceStep.ConfigAffinity(serviceConfig.AffinityList))
 }
 
 func (sc *ServiceConfigController) checkServiceDuplicateName(serviceName string) (bool, error) {
@@ -408,6 +417,7 @@ func (sc *ServiceConfigController) checkEntireServiceConfig(entireService *Confi
 	if isDuplicate == true {
 		return serverNameDuplicateErr
 	}
+	entireService.ProjectName = project.Name
 
 	if entireService.Instance < 1 {
 		return instanceInvalidErr
