@@ -141,7 +141,7 @@ func (s *ConfigServiceStep) GetConfigContainerList() interface{} {
 	}
 }
 
-func (s *ConfigServiceStep) ConfigExternalService(serviceName string, instance int, public int, nodeOrNodeGroupName string, externalServiceList []model.ExternalService) *ConfigServiceStep {
+func (s *ConfigServiceStep) configExternalService(serviceName string, instance int, public int, nodeOrNodeGroupName string, externalServiceList []model.ExternalService) *ConfigServiceStep {
 	s.ServiceName = serviceName
 	s.Instance = instance
 	s.Public = public
@@ -150,7 +150,7 @@ func (s *ConfigServiceStep) ConfigExternalService(serviceName string, instance i
 	return s
 }
 
-func (s *ConfigServiceStep) ConfigAffinity(affinityList []model.Affinity) *ConfigServiceStep {
+func (s *ConfigServiceStep) configAffinity(affinityList []model.Affinity) *ConfigServiceStep {
 	if affinityList != nil {
 		s.AffinityList = affinityList
 	}
@@ -368,8 +368,8 @@ func (sc *ServiceConfigController) configExternalService(key string, configServi
 			return
 		}
 	}
-	configServiceStep.ConfigExternalService(serviceName, instance, public, nodeOrNodeGroupName, serviceConfig.ExternalServiceList)
-	SetConfigServiceStep(key, configServiceStep.ConfigAffinity(serviceConfig.AffinityList))
+	configServiceStep.configExternalService(serviceName, instance, public, nodeOrNodeGroupName, serviceConfig.ExternalServiceList)
+	SetConfigServiceStep(key, configServiceStep.configAffinity(serviceConfig.AffinityList))
 }
 
 func (sc *ServiceConfigController) checkServiceDuplicateName(serviceName string) (bool, error) {

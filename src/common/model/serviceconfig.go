@@ -131,6 +131,5 @@ type ConfigServiceStep struct {
 
 type Affinity struct {
 	AntiFlag     int      `json:"anti_flag"`
-	Namespaces   []string `json:"namespaces"`
 	ServiceNames []string `json:"service_names"`
 }

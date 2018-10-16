@@ -4603,10 +4603,6 @@ definitions:
     properties:
       anti_flag:  
         type: integer
-      namespaces:
-        type: array
-        items:
-          type: string
       service_names:
         type: array
         items:

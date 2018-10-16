@@ -530,13 +530,12 @@ func setDeploymentAffinity(affinityList []model.Affinity) model.K8sAffinity {
 					},
 				},
 			},
-			Namespaces:  affinity.Namespaces,
 			TopologyKey: "kubernetes.io/hostname",
 		}
 		if affinity.AntiFlag == 0 {
-			k8sAffinity.PodAntiAffinity = append(k8sAffinity.PodAntiAffinity, affinityTerm)
-		} else {
 			k8sAffinity.PodAffinity = append(k8sAffinity.PodAffinity, affinityTerm)
+		} else {
+			k8sAffinity.PodAntiAffinity = append(k8sAffinity.PodAntiAffinity, affinityTerm)
 		}
 	}
 
