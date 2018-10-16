@@ -93,8 +93,8 @@ export class Container implements UiServerExchangeData<Container> {
   public cpu_limit: string = "";
   public mem_limit: string = "";
 
-  isHavePort(): boolean {
-    return this.container_port.length > 0;
+  isEmptyPort(): boolean {
+    return this.container_port.length == 0;
   }
 
   serverToUi(serverResponse: Object): Container {
@@ -266,11 +266,11 @@ export class UIServiceStep4 extends UIServiceStepBase {
   public instance: number = 1;
   public servicePublic: boolean;
   public externalServiceList: Array<ConfigCardData>;
-  public affinityList: Array<{flag: number, services: Array<ConfigCardData>}>;
+  public affinityList: Array<{flag: boolean, services: Array<ConfigCardData>}>;
 
   constructor() {
     super();
-    this.affinityList = Array<{flag: number, services: Array<ConfigCardData>}>();
+    this.affinityList = Array<{flag: boolean, services: Array<ConfigCardData>}>();
     this.externalServiceList = Array<ConfigCardData>();
   }
 
@@ -290,7 +290,7 @@ export class UIServiceStep4 extends UIServiceStepBase {
       external.node_config.target_port = value.containerPort;
       postExternalData.push(external.uiToServer());
     });
-    this.affinityList.forEach((value: {flag: number, services: Array<ConfigCardData>}) => {
+    this.affinityList.forEach((value: {flag: boolean, services: Array<ConfigCardData>}) => {
       let serviceNames = Array<string>();
       value.services.forEach((card: ConfigCardData) => serviceNames.push(card.cardName));
       postAffinityData.push({anti_flag: value.flag ? 1 : 0 , service_names: serviceNames})
@@ -326,7 +326,7 @@ export class UIServiceStep4 extends UIServiceStepBase {
             services.push(card);
           });
         }
-        step4.affinityList.push({flag: value.anti_flag, services: services});
+        step4.affinityList.push({flag: value.anti_flag == 1, services: services});
       });
     }
     if (serverResponse && serverResponse["instance"]) {
