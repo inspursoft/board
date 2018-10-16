@@ -1,7 +1,7 @@
-import { ChangeDetectorRef, Component, Injector, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Injector, OnInit, ViewChild } from '@angular/core';
 import {
+  ConfigCardData,
   Container,
-  ExternalService,
   PHASE_CONFIG_CONTAINERS,
   PHASE_EXTERNAL_SERVICE,
   ServiceStepPhase,
@@ -12,37 +12,47 @@ import { ServiceStepBase } from "../service-step";
 import { ValidationErrors } from "@angular/forms/forms";
 import { HttpErrorResponse } from "@angular/common/http";
 import { Observable } from "rxjs/Observable";
+import { DragStatus } from "../../shared/shared.types";
+import { SetExternalComponent } from "./set-external-port/set-external.component";
+import { ConfigCardListComponent } from "./config-card-list/config-card-list.component";
 
 @Component({
   styleUrls: ["./config-setting.component.css"],
   templateUrl: './config-setting.component.html'
 })
 export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
+  @ViewChild('external') externalList: ConfigCardListComponent;
   patternServiceName: RegExp = /^[a-z]([-a-z0-9]*[a-z0-9])+$/;
-  dropDownListNum: Array<number>;
-  showAdvanced: boolean = true;
-  showExternal: boolean = false;
-  showCollaborative: boolean = false;
-  showNodeSelector: boolean = false;
-  uiPreData: UIServiceStep3 = new UIServiceStep3();
-  collaborativeServiceList: Array<string>;
-  /*Todo:Only for collaborative plus action.It must be delete after update UIServiceStep4*/
-  collaborativeList:Array<Object>;
-  nodeSelectorList:Array<string>;
-  noPortForExtent: boolean = false;
+  containerSourceDataList: Array<ConfigCardData>;
+  affineSourceDataList: Array<ConfigCardData>;
+  nodeSelectorCardList: Array<ConfigCardData>;
+  uiPreData: UIServiceStep3;
+  noPortForExtent = false;
+  tabBaseActive = true;
+  tabAdvanceActive = false;
   isActionWip: boolean = false;
 
-  constructor(protected injector: Injector, private changeDetectorRef: ChangeDetectorRef) {
+  constructor(protected injector: Injector,
+              private changeDetectorRef: ChangeDetectorRef) {
     super(injector);
-    this.dropDownListNum = Array<number>();
-    this.collaborativeServiceList = Array<string>();
-    this.collaborativeList = Array<Object>();
-    this.nodeSelectorList = Array<string>()
+    this.containerSourceDataList = Array<ConfigCardData>();
+    this.affineSourceDataList = Array<ConfigCardData>();
+    this.nodeSelectorCardList = Array<ConfigCardData>();
+    this.uiPreData = new UIServiceStep3();
   }
 
   ngOnInit() {
     this.k8sService.getServiceConfig(PHASE_CONFIG_CONTAINERS).subscribe(res => {
       this.uiPreData = res as UIServiceStep3;
+      this.uiPreData.containerList.forEach((container: Container) => {
+        container.container_port.forEach(port => {
+          let card = new ConfigCardData();
+          card.cardName = container.name;
+          card.containerPort = port;
+          card.status = DragStatus.dsReady;
+          this.containerSourceDataList.push(card);
+        });
+      });
       this.noPortForExtent = this.uiPreData.containerList.every(value => !value.isHavePort())
     });
     this.k8sService.getServiceConfig(this.stepPhase).subscribe(res => {
@@ -51,11 +61,13 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
       this.changeDetectorRef.detectChanges();
     });
     this.k8sService.getNodeSelectors().subscribe((res:Array<string>)=>{
-      this.nodeSelectorList = res;
+      res.forEach(value => {
+        let card = new ConfigCardData();
+        card.cardName = value;
+        card.status = DragStatus.dsReady;
+        this.nodeSelectorCardList.push(card);
+      });
     });
-    for (let i = 1; i <= 100; i++) {
-      this.dropDownListNum.push(i)
-    }
   }
 
   get stepPhase(): ServiceStepPhase {
@@ -68,14 +80,6 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
 
   get checkServiceNameFun() {
     return this.checkServiceName.bind(this);
-  }
-
-  get isCanAddContainerInfo(){
-    return this.uiPreData.containerList.find(value => value.isHavePort());
-  }
-
-  get nodeSelectorDefaultText(){
-    return this.uiData.nodeSelector == "" ? 'SERVICE.STEP_3_NODE_SELECTOR_COMMENT': this.uiData.nodeSelector;
   }
 
   checkServiceName(control: HTMLInputElement): Observable<ValidationErrors | null> {
@@ -92,16 +96,16 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
       });
   }
 
-  setNodePort(index: number, port: number) {
-    this.uiData.externalServiceList[index].node_config.node_port = Number(port).valueOf();
-  }
-
   setServiceName(serviceName: string): void {
     this.uiData.serviceName = serviceName;
-    /*Todo:add reset the Collaborative service Info*/
-    this.collaborativeServiceList.splice(0, this.collaborativeServiceList.length);
-    this.k8sService.getCollaborativeService(serviceName, this.uiData.projectName).subscribe(
-      res => this.collaborativeServiceList = res,
+    this.k8sService.getCollaborativeService(serviceName, this.uiData.projectName).subscribe((res: Array<string>) => {
+        res.forEach(value => {
+          let card = new ConfigCardData();
+          card.cardName = value;
+          card.status = DragStatus.dsReady;
+          this.affineSourceDataList.push(card);
+        });
+      },
       (err: HttpErrorResponse) => {
         if (err.status == 404) {
           this.messageService.cleanNotification();
@@ -109,64 +113,50 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
       });
   }
 
-  addContainerInfo() {
-    if (this.isCanAddContainerInfo){
-      let externalService = new ExternalService();
-      if (this.uiPreData.containerList.length > 0) {
-        externalService.container_name = this.uiPreData.containerList[0].name;
-        let containerPorts = this.getContainerPorts(externalService.container_name);
-        if (containerPorts.length > 0) {
-          externalService.node_config.target_port = containerPorts[0];
-        }
-      }
-      this.uiData.externalServiceList.push(externalService);
-    }
+  addNewAffinity() {
+    this.uiData.affinityList.push({flag: 0, services: Array<ConfigCardData>()})
   }
 
-  addOneCollaborativeService(){
-    if (this.collaborativeServiceList.length > 0){
-      this.collaborativeList.push({});
-    }
-  }
-
-  removeContainerInfo(index: number) {
-    this.uiData.externalServiceList.splice(index, 1);
-  }
-
-  getContainerDropdownText(index: number): string {
-    let result = this.uiData.externalServiceList[index].container_name;
-    return result == "" ? "SERVICE.STEP_3_SELECT_CONTAINER" : result;
-  }
-
-  getContainerPortDropdownText(index: number): string {
-    let result = this.uiData.externalServiceList[index].node_config.target_port;
-    return result == 0 ? "SERVICE.STEP_3_SELECT_PORT" : result.toString();
-  }
-
-  setExternalInfo(container: Container, index: number) {
-    this.uiData.externalServiceList[index].container_name = container.name;
-    let containerPorts = this.getContainerPorts(container.name);
-    if (containerPorts.length > 0) {
-      this.uiData.externalServiceList[index].node_config.target_port = containerPorts[0];
-    }
-  }
-
-  getContainerPorts(containerName: string): Array<number> {
-    let result: Array<number> = Array<number>();
-    this.uiPreData.containerList.forEach((container: Container) => {
-      if (container.name == containerName) {
-        result = container.container_port;
-      }
+  deleteAffinity(index: number) {
+    this.uiData.affinityList[index].services.forEach(value => {
+      value.status = DragStatus.dsReady;
+      this.affineSourceDataList.push(value);
     });
-    return result;
+    this.uiData.affinityList.splice(index, 1);
+  }
+
+  setExternalPort(data: ConfigCardData): void {
+    let factory = this.factoryResolver.resolveComponentFactory(SetExternalComponent);
+    let componentRef = this.selfView.createComponent(factory);
+    componentRef.instance.openSetModal(data).subscribe(() => {
+      if (!componentRef.instance.alreadySet) {
+        this.externalList.removeContainerCard(data);
+      }
+      this.selfView.remove(this.selfView.indexOf(componentRef.hostView))
+    });
   }
 
   forward(): void {
-    if (this.verifyInputValid()) {
-      this.isActionWip = true;
-      this.k8sService.setServiceConfig(this.uiData.uiToServer()).subscribe(
-        () => this.k8sService.stepSource.next({index: 5, isBack: false})
-      );
+    let funExecute = () => {
+      if (this.uiData.externalServiceList.length == 0) {
+        this.tabBaseActive = true;
+        this.messageService.showAlert(`SERVICE.STEP_3_WARNING_MESSAGE`, {alertType: "alert-warning"});
+      } else {
+        this.isActionWip = true;
+        this.k8sService.setServiceConfig(this.uiData.uiToServer()).subscribe(
+          () => this.k8sService.stepSource.next({index: 5, isBack: false})
+        );
+      }
+    };
+    if (this.tabAdvanceActive) {
+      if (this.uiData.serviceName === '') {
+        this.tabBaseActive = true;
+        this.messageService.showAlert(`SERVICE.STEP_3_SERVICE_NAME_EMPTY`, {alertType: "alert-warning"});
+      } else {
+        funExecute();
+      }
+    } else if (this.verifyInputValid()) {
+      funExecute();
     }
   }
 

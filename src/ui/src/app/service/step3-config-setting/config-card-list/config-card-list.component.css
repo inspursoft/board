@@ -1,0 +1,32 @@
+div.card-list-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+div.drag-active {
+  background-color: lightgreen;
+}
+
+div.drag-container {
+  padding: 5px;
+
+  display: flex;
+  flex-wrap: wrap;
+  flex-basis: 100%;
+}
+
+div.list-border {
+  border: 1px silver dashed;
+  border-radius: 5px;
+}
+
+span.list-title {
+  font-style: italic;
+  font-size: 14px;
+  color: #2e9919;
+}
+
+div.card-container {
+  margin-top: 10px;
+}

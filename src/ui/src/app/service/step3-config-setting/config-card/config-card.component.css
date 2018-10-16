@@ -1,0 +1,32 @@
+div.card-container {
+  border: 1px solid silver;
+  border-radius: 3px;
+  margin-right: 10px;
+  min-height: 50px;
+  box-shadow: 0 0 2px #bbbbbb;
+  display: flex;
+  flex-direction: column;
+}
+
+div.selected {
+  background-color: lightgreen;
+}
+
+b.card-name {
+  word-wrap: break-word;
+}
+
+span.card-port {
+  text-align: center;
+  font-size: 16px;
+}
+
+span.card-external {
+  font-size: 16px;
+  color: blue;
+  font-style: italic;
+}
+
+a.card-remove {
+  margin-left: auto;
+}

@@ -246,10 +246,11 @@ export class K8sService {
       .get(`/api/v1/nodes`, {observe: "response"})
       .map((res: HttpResponse<Array<Object>>) => res.body)
       .map((res: Array<Object>) => {
-        let r = Array<string>();
-        res.filter(value => value["status"] == 1)
-          .forEach(value => r.push(String(value["node_name"]).trim()));
-        return r;
+        let result = Array<string>();
+        if (res) {
+          res.filter(value => value["status"] == 1).forEach(value => result.push(String(value["node_name"]).trim()));
+        }
+        return result;
       });
     let obsNodeGroupList = this.http
       .get(`/api/v1/nodegroup`, {observe: "response", params: {is_valid_node_group: '1'}})

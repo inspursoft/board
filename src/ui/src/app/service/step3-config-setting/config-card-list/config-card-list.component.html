@@ -1,0 +1,31 @@
+<div class="card-list-container">
+  <span class="list-title"><b>{{title}}{{description}}</b></span>
+  <div *ngIf="model === 'drag'" class="drag-container" (dragleave)="dragLeave()" (dragover)="dragOver($event)"
+       (drop)="drop($event)" [class.list-border]="listBorder" [class.drag-active]="isDragActive"
+       [style.min-height.px]="listMinHeight">
+    <div *ngFor="let data of ConfigCardDataList" class="card-container">
+      <config-card [model]="model"
+                      [data]="data"
+                      [disabled]="disabled"
+                      [minWidth]="cardMinWidth"
+                      [minHeight]="cardMinHeight"
+                      (onRemoveFromList)="removeContainerCard($event)">
+      </config-card>
+    </div>
+  </div>
+  <div *ngIf="model === 'select'" class="drag-container" [class.list-border]="listBorder">
+    <div *ngFor="let data of ConfigCardDataList" class="card-container">
+      <config-card [model]="model"
+                      [data]="data"
+                      [disabled]="disabled"
+                      [minWidth]="cardMinWidth"
+                      [minHeight]="cardMinHeight"
+                      (onSelected)="selectedCard($event)"
+                      (onUnselected)="unselectedCard($event)">
+      </config-card>
+    </div>
+  </div>
+</div>
+
+
+

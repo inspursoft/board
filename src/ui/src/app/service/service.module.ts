@@ -20,6 +20,10 @@ import { ConfigSettingComponent } from "./step3-config-setting/config-setting.co
 import { TestingComponent } from "./step4-testing/testing.component";
 import { DeployComponent } from "./step5-deploy/deploy.component";
 import { ConfigContainerComponent } from "./step2-config-container/config-container.component";
+import { SetExternalComponent } from "./step3-config-setting/set-external-port/set-external.component";
+import { ConfigCardComponent } from "./step3-config-setting/config-card/config-card.component";
+import { ConfigCardListComponent } from "./step3-config-setting/config-card-list/config-card-list.component";
+
 
 @NgModule({
   imports: [
@@ -43,7 +47,10 @@ import { ConfigContainerComponent } from "./step2-config-container/config-contai
     ScaleComponent,
     UpdateComponent,
     LocateComponent,
-    StatusComponent
+    StatusComponent,
+    ConfigCardComponent,
+    ConfigCardListComponent,
+    SetExternalComponent,
   ],
   entryComponents: [
     ListServiceComponent,
@@ -53,7 +60,8 @@ import { ConfigContainerComponent } from "./step2-config-container/config-contai
     TestingComponent,
     ServiceControlComponent,
     DeployComponent,
-    ServiceDetailComponent
+    ServiceDetailComponent,
+    SetExternalComponent
   ],
   providers: [
     K8sService,

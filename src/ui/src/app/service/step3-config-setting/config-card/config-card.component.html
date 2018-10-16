@@ -1,0 +1,13 @@
+<div *ngIf="model ==='drag'" class="card-container" [ngStyle]="containerStyle" (dragstart)="dragStartEvent($event)"
+     (drag)="dragEvent()" [draggable]="data.status !== 'end'">
+  <span *ngIf="data.cardName !== ''"><b class="card-name">{{data.cardName}}</b></span>
+  <span *ngIf="data.containerPort !== 0" class="card-port">{{data.containerPort}}</span>
+  <span *ngIf="data.externalInfo !== ''" class="card-external">{{data.externalInfo}}</span>
+  <a *ngIf="data.status === 'end' && !disabled" href="javascript:void(0)" class="card-remove" (click)="removeFromList()">
+    <clr-icon shape="trash"></clr-icon>
+  </a>
+</div>
+<div *ngIf="model ==='select'" [style.min-width.px]="minWidth" [style.min-height.px]="minHeight"
+     [style.cursor]="'pointer'" class="card-container" [class.selected]="isSelected" (click)="onSelect()">
+  <span><b class="card-name">{{data.cardName}}</b></span>
+</div>

@@ -112,4 +112,8 @@ export class User {
   }
 }
 
+export enum DragStatus {
+  dsReady = 'ready', dsStart = 'start', dsDragIng = 'drag', dsEnd = 'end'
+}
+
 export enum CreateImageMethod{None, Template, DockerFile, DevOps}
