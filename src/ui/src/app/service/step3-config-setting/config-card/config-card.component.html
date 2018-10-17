@@ -1,9 +1,31 @@
 <div *ngIf="model ==='drag'" class="card-container" [ngStyle]="containerStyle" (dragstart)="dragStartEvent($event)"
      (drag)="dragEvent()" [draggable]="data.status !== 'end'">
-  <span *ngIf="data.cardName !== ''"><b class="card-name">{{data.cardName}}</b></span>
-  <span *ngIf="data.containerPort !== 0" class="card-port">{{data.containerPort}}</span>
-  <span *ngIf="data.externalInfo !== ''" class="card-external">{{data.externalInfo}}</span>
-  <a *ngIf="data.status === 'end' && !disabled" href="javascript:void(0)" class="card-remove" (click)="removeFromList()">
+  <table *ngIf="viewModel == 'table'" class="table table-vertical">
+    <tbody>
+    <tr *ngIf="data.status === 'end' && !disabled">
+      <th class="card-remove" colspan="2">
+        <a href="javascript:void(0)" (click)="removeFromList()">
+          <clr-icon shape="close"></clr-icon>
+        </a>
+      </th>
+    </tr>
+    <tr *ngIf="data.cardName !== ''">
+      <th>{{"SERVICE.STEP_3_CONTAINER_NAME" | translate}}:</th>
+      <td>{{data.cardName}}</td>
+    </tr>
+    <tr *ngIf="data.containerPort !== 0">
+      <th>{{"SERVICE.STEP_3_CONTAINER_PORT" | translate}}:</th>
+      <td>{{data.containerPort}}</td>
+    </tr>
+    <tr *ngIf="data.externalInfo !== ''">
+      <th>{{"SERVICE.STEP_3_NODE_PORT" | translate}}:</th>
+      <td class="card-external">{{data.externalInfo}}</td>
+    </tr>
+    </tbody>
+  </table>
+  <span *ngIf="viewModel == 'name'"><b class="card-name">{{data.cardName}}</b></span>
+  <a style="margin-left: auto" *ngIf="viewModel == 'name' && data.status === 'end' && !disabled"
+     href="javascript:void(0)" (click)="removeFromList()">
     <clr-icon shape="trash"></clr-icon>
   </a>
 </div>

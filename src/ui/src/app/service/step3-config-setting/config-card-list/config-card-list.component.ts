@@ -1,6 +1,6 @@
 import { AfterViewInit, ChangeDetectorRef, Component, EventEmitter, Input, Output, QueryList, ViewChildren } from "@angular/core";
 import { DragStatus } from "../../../shared/shared.types";
-import { ConfigCardData, ConfigCardModel } from "../../service-step.component";
+import { ConfigCardData, ConfigCardModel, ConfigCardViewModel } from "../../service-step.component";
 import { ConfigCardComponent } from "../config-card/config-card.component";
 
 @Component({
@@ -15,6 +15,7 @@ export class ConfigCardListComponent implements AfterViewInit {
   @Input() sourceList: ConfigCardListComponent;
   @Input() ConfigCardDataList: Array<ConfigCardData>;
   @Input() model: ConfigCardModel = ConfigCardModel.cmDefault;
+  @Input() viewModel: ConfigCardViewModel = ConfigCardViewModel.cvmTable;
   @Input() cardMinHeight = 60;
   @Input() cardMinWidth = 100;
   @Input() listMinHeight = 100;

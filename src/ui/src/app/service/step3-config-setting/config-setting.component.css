@@ -51,3 +51,19 @@ div.affinity-container {
   flex-direction: column;
 }
 
+div.affinity-group-control {
+  display: flex;
+}
+
+div.affinity-group-control label {
+  margin-right: 15px;
+}
+
+div.affinity-group-control a {
+  margin-left: auto;
+}
+
+div.affinity-group-control a.disabled {
+  color: silver;
+  cursor: not-allowed;
+}

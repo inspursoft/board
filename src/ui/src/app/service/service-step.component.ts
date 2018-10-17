@@ -22,6 +22,10 @@ export enum ConfigCardModel {
   cmDefault = 'drag', cmSelect = 'select'
 }
 
+export enum ConfigCardViewModel {
+  cvmTable = 'table', cvmName = 'name'
+}
+
 export abstract class UIServiceStepBase implements UiServerExchangeData<UIServiceStepBase> {
   abstract uiToServer(): ServerServiceStep;
 

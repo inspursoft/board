@@ -5,11 +5,12 @@
        [style.min-height.px]="listMinHeight">
     <div *ngFor="let data of ConfigCardDataList" class="card-container">
       <config-card [model]="model"
-                      [data]="data"
-                      [disabled]="disabled"
-                      [minWidth]="cardMinWidth"
-                      [minHeight]="cardMinHeight"
-                      (onRemoveFromList)="removeContainerCard($event)">
+                   [viewModel]="viewModel"
+                   [data]="data"
+                   [disabled]="disabled"
+                   [minWidth]="cardMinWidth"
+                   [minHeight]="cardMinHeight"
+                   (onRemoveFromList)="removeContainerCard($event)">
       </config-card>
     </div>
   </div>
@@ -19,12 +20,13 @@
        [class.list-border]="listBorder">
     <div *ngFor="let data of ConfigCardDataList" class="card-container">
       <config-card [model]="model"
-                      [data]="data"
-                      [disabled]="disabled"
-                      [minWidth]="cardMinWidth"
-                      [minHeight]="cardMinHeight"
-                      (onSelected)="selectedCard($event)"
-                      (onUnselected)="unselectedCard($event)">
+                   [viewModel]="viewModel"
+                   [data]="data"
+                   [disabled]="disabled"
+                   [minWidth]="cardMinWidth"
+                   [minHeight]="cardMinHeight"
+                   (onSelected)="selectedCard($event)"
+                   (onUnselected)="unselectedCard($event)">
       </config-card>
     </div>
   </div>

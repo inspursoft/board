@@ -129,11 +129,13 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit,Af
   }
 
   deleteAffinity(index: number) {
-    this.uiData.affinityList[index].services.forEach(value => {
-      value.status = DragStatus.dsReady;
-      this.affinitySourceDataList.push(value);
-    });
-    this.uiData.affinityList.splice(index, 1);
+    if (!this.isActionWip){
+      this.uiData.affinityList[index].services.forEach(value => {
+        value.status = DragStatus.dsReady;
+        this.affinitySourceDataList.push(value);
+      });
+      this.uiData.affinityList.splice(index, 1);
+    }
   }
 
   setExternalPort(data: ConfigCardData): void {

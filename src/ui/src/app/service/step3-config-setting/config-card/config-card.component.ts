@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from "@angular/core";
 import { DragStatus } from "../../../shared/shared.types";
-import { ConfigCardData, ConfigCardModel } from "../../service-step.component";
+import { ConfigCardData, ConfigCardModel, ConfigCardViewModel } from "../../service-step.component";
 
 @Component({
   selector: 'config-card',
@@ -12,6 +12,7 @@ export class ConfigCardComponent {
   @Input() minWidth = 100;
   @Input() minHeight = 60;
   @Input() model: ConfigCardModel = ConfigCardModel.cmDefault;
+  @Input() viewModel: ConfigCardViewModel = ConfigCardViewModel.cvmTable;
   @Input() disabled = false;
   @Output() onRemoveFromList: EventEmitter<ConfigCardData>;
   @Output() onSelected: EventEmitter<ConfigCardData>;
@@ -25,7 +26,6 @@ export class ConfigCardComponent {
   }
 
   dragStartEvent(event: DragEvent) {
-    console.log(event);
     this.data.status = DragStatus.dsStart;
     event.dataTransfer.setData("text", this.data.key);
   }

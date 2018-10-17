@@ -36,7 +36,7 @@
               {{"SERVICE.STEP_3_DANGER_MESSAGE" | translate}}
             </div>
             <config-card-list #source
-                              [title]="'SERVICE.STEP_3_PORT' | translate"
+                              [title]="'SERVICE.STEP_3_CONTAINER_PORT' | translate"
                               [description]="'SERVICE.STEP_3_CONTAINER_DESCRIPTION' | translate"
                               [acceptDrag]="false"
                               [cardMinHeight]="50"
@@ -81,6 +81,7 @@
                               [acceptDrag]="false"
                               [cardMinWidth]="160"
                               [cardMinHeight]="30"
+                              [viewModel]="'name'"
                               [description]="'SERVICE.STEP_3_AFFINITY_DESCRIPTION' | translate"
                               [disabled]="isActionWip"
                               [ConfigCardDataList]="affinitySourceDataList">
@@ -91,16 +92,26 @@
               <clr-icon shape="plus"></clr-icon>
               {{"SERVICE.STEP_3_AFFINITY_SETTING" | translate}}
             </a>
-            <div class="affinity-container" *ngFor="let affinity of uiData.affinityList;let i = index">
-              <div class="toggle-switch">
-                <input title="'affinity setting'"
-                       [id]="i"
-                       type="checkbox"
-                       [checked]="affinity.flag"
-                       [(ngModel)]="affinity.flag">
-                <label [for]="i" *ngIf="affinity.flag">{{"SERVICE.STEP_3_AFFINITY_GROUP" | translate}}:</label>
-                <label [for]="i" *ngIf="!affinity.flag">{{"SERVICE.STEP_3_REVERSE_AFFINITY_GROUP" | translate}}:</label>
-                <a *ngIf="!isActionWip" href="javascript:void(0)" (click)="deleteAffinity(i)">
+            <div class="affinity-container" *ngFor="let affinity of uiData.affinityList">
+              <div class="affinity-group-control">
+                <label>
+                  <input type="radio"
+                         [checked]="affinity.flag"
+                         [value]="true"
+                         [disabled]="isActionWip"
+                         [(ngModel)]="affinity.flag">
+                  {{"SERVICE.STEP_3_AFFINITY_GROUP" | translate}}
+                </label>
+                <label>
+                  <input type="radio"
+                         [checked]="!affinity.flag"
+                         [value]="false"
+                         [disabled]="isActionWip"
+                         [(ngModel)]="affinity.flag">
+                  {{"SERVICE.STEP_3_ANTI_AFFINITY_GROUP" | translate}}
+                </label>
+                <a [class.disabled]="isActionWip" *ngIf="!isActionWip" href="javascript:void(0)"
+                   (click)="deleteAffinity(i)">
                   <clr-icon shape="trash"></clr-icon>
                 </a>
               </div>
@@ -110,6 +121,7 @@
                                 [cardMinHeight]="50"
                                 [listMinHeight]="80"
                                 [listBorder]="true"
+                                [viewModel]="'name'"
                                 [disabled]="isActionWip"
                                 [ConfigCardDataList]="affinity.services">
               </config-card-list>
