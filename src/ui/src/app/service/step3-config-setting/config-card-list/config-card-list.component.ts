@@ -57,7 +57,7 @@ export class ConfigCardListComponent implements AfterViewInit {
   drop(event: DragEvent) {
     if (this.acceptDrag && !this.disabled) {
       this.isDragActive = false;
-      let dataKey = event.dataTransfer.getData('data');
+      let dataKey = event.dataTransfer.getData('text');
       let configCardData = this.sourceList.ConfigCardDataList.find(value => value.key === dataKey);
       if (configCardData) {
         let index = this.sourceList.ConfigCardDataList.indexOf(configCardData);

@@ -13,7 +13,10 @@
       </config-card>
     </div>
   </div>
-  <div *ngIf="model === 'select'" class="drag-container" [class.list-border]="listBorder">
+  <div *ngIf="model === 'select'"
+       class="drag-container"
+       [style.min-height.px]="listMinHeight"
+       [class.list-border]="listBorder">
     <div *ngFor="let data of ConfigCardDataList" class="card-container">
       <config-card [model]="model"
                       [data]="data"

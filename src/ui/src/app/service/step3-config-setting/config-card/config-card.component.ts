@@ -25,8 +25,9 @@ export class ConfigCardComponent {
   }
 
   dragStartEvent(event: DragEvent) {
+    console.log(event);
     this.data.status = DragStatus.dsStart;
-    event.dataTransfer.setData("data", this.data.key);
+    event.dataTransfer.setData("text", this.data.key);
   }
 
   dragEvent() {
