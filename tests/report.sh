@@ -5,13 +5,17 @@ last_build_cov=`echo $last_coverage|cut -d ":" -f 2`
 last_ui_cov=`echo $last_coverage|cut -d ":" -f 1`
 echo "--------------------------"
 echo $build_id
+echo $action
 
 #make prepare
 
 chmod +x *
 
-if [ "$action" == "pull_request" ]; then
 covfile=$boardDir/$base_repo_name/tests/avaCov.cov
+build_cov=`cat $boardDir/$base_repo_name/tests/avaCov.cov`
+ui_cov=`cat $boardDir/$base_repo_name/src/ui/testresult.log |grep "Statements"|cut -d ":" -f 2|cut -d "%" -f 1|awk 'gsub(/^ *| *$/,"")'`
+
+if [ "$action" == "pull_request" ]; then
 coverage_build_html=$boardDir/$base_repo_name/tests/profile.html
 coverage_ui_html=$boardDir/$base_repo_name/src/ui/coverage/index.html
 coverage_ui_tar=$boardDir/$base_repo_name/src/ui/coverage.tar
@@ -19,8 +23,6 @@ echo $coverage_ui_tar
 cd $boardDir/$base_repo_name/src/ui/
 echo $boardDir/$base_repo_name/src/ui/
 tar cvf coverage.tar coverage
-build_cov=`cat $boardDir/$base_repo_name/tests/avaCov.cov`
-ui_cov=`cat $boardDir/$base_repo_name/src/ui/testresult.log |grep "Statements"|cut -d ":" -f 2|cut -d "%" -f 1|awk 'gsub(/^ *| *$/,"")'`
 
 echo "push to register======================="
 echo "gogs_url:		$gogs_url"
@@ -126,4 +128,9 @@ echo "+++++++++++++++++++"
 echo "comment_url	:"$comment_url
 echo "info1		:"$info1
 echo "uiinfo		:"$uiinfo
+
+elif [ "$action" == "push" ]; then
+cmd="curl -X POST '$gogs_url/commit-report' -H 'Content-Type: application/json' -d '{ \"commit_id\": \"${commit_id}\", \"report\": \" ${build_cov}%; ${ui_cov}%|${jenkins_master_url}/job/${base_repo_name}/${build_number}/console\"}'"
+echo $cmd
+eval $cmd 
 fi
