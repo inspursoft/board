@@ -129,7 +129,7 @@ echo "info1		:"$info1
 echo "uiinfo		:"$uiinfo
 
 elif [ "$action" == "pull_request" ]; then
-cmd="curl -X POST "$gogs_url/commit-report" -H "Content-Type: application/json" -d "{\"commit_id\": \"${commit_id}\", \"report\": \"30%; 20.5%|${jenkins_master_url}/job/${base_repo_name}/${build_number}/console\"}""
+cmd="curl -X POST "$gogs_url/commit-report" -H "Content-Type: application/json" -d "{\"commit_id\": \"${commit_id}\", \"report\": \"build_cov%; ui_cov%|${jenkins_master_url}/job/${base_repo_name}/${build_number}/console\"}""
 echo $cmd
 eval $cmd 
 fi
