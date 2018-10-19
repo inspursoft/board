@@ -97,7 +97,7 @@ def initKVM(jenkinsmasterurl, kvmname, jenkinsnodeip):
     except Exception, e:
         print "Failed to create KVM failed, err: %s" % e
     print "Initialized KVM: %s as Jenkins node" % usekvmname
-    hostport = '2000' + usekvmname[-1]
+    hostport = str(20000 + int(usekvmname.split("-")[-1]))
     addJenkinsNode(jenkinsmasterurl, usekvmname, jenkinsnodeip, hostport)
 
 def main():
