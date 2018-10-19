@@ -1,5 +1,12 @@
 #!/bin/sh
 
+if [ $? -ne 0 ]; then
+    result='failed'
+else
+    result='pass'
+fi
+
+
 consoleLink=$jenkins_master_url/job/$group_name/$build_id/console
 last_build_cov=`echo $last_coverage|cut -d ":" -f 2`
 last_ui_cov=`echo $last_coverage|cut -d ":" -f 1`
@@ -130,7 +137,7 @@ echo "info1		:"$info1
 echo "uiinfo		:"$uiinfo
 
 elif [ "$action" == "push" ]; then
-cmd="curl -X POST '$gogs_url/commit-report' -H 'Content-Type: application/json' -d '{ \"commit_id\": \"${commit_id}\", \"report\": \" pass|${jenkins_master_url}/job/${base_repo_name}/${build_number}/console\"}'"
+cmd="curl -X POST '$gogs_url/commit-report' -H 'Content-Type: application/json' -d '{ \"commit_id\": \"${commit_id}\", \"report\": \"$result|${jenkins_master_url}/job/${base_repo_name}/${build_number}/console\"}'"
 echo $cmd
 eval $cmd 
 fi
