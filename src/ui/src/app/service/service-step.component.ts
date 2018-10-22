@@ -1,4 +1,5 @@
 import { DragStatus } from "../shared/shared.types";
+import { SERVICE_STATUS } from "../shared/shared.const";
 
 export const PHASE_SELECT_PROJECT = "SELECT_PROJECT";
 export const PHASE_SELECT_IMAGES = "SELECT_IMAGES";
@@ -16,14 +17,6 @@ export interface UiServerExchangeData<T> {
   uiToServer(): Object;
 
   serverToUi(serverResponse: Object): T;
-}
-
-export enum ConfigCardModel {
-  cmDefault = 'drag', cmSelect = 'select'
-}
-
-export enum ConfigCardViewModel {
-  cvmTable = 'table', cvmName = 'name'
 }
 
 export abstract class UIServiceStepBase implements UiServerExchangeData<UIServiceStepBase> {
@@ -133,7 +126,9 @@ export class NodeType implements UiServerExchangeData<NodeType> {
   node_port: number = 0;
 
   serverToUi(serverResponse: Object): NodeType {
-    return Object.assign(this, serverResponse);
+    this.target_port = serverResponse['target_port'];
+    this.node_port = serverResponse['node_port'];
+    return this;
   }
 
   uiToServer(): NodeType {
@@ -145,7 +140,8 @@ export class LoadBalancer implements UiServerExchangeData<LoadBalancer> {
   external_access: string;
 
   serverToUi(serverResponse: Object): LoadBalancer {
-    return Object.assign(this, serverResponse);
+    this.external_access = serverResponse['external_access'];
+    return this;
   }
 
   uiToServer(): LoadBalancer {
@@ -175,14 +171,17 @@ export class ExternalService implements UiServerExchangeData<ExternalService> {
   }
 }
 
-export class ConfigCardData {
-  cardName = '';
-  containerPort = 0;
-  externalInfo = '';
+export enum AffinityCardListView {
+  aclvColumn = 'column',aclvRow = 'row'
+}
+
+export class AffinityCardData {
+  serviceName = '';
+  serviceStatus: SERVICE_STATUS;
   status? = DragStatus.dsReady;
 
   get key(): string {
-    return `${this.cardName}${this.containerPort}`
+    return `${this.serviceName}`
   }
 }
 
@@ -239,7 +238,19 @@ export class UIServiceStep2 extends UIServiceStepBase {
 }
 
 export class UIServiceStep3 extends UIServiceStepBase {
-  public containerList: Array<Container> = Array<Container>();
+  public containerList: Array<Container>;
+  public containerHavePortList: Array<Container>;
+
+  constructor() {
+    super();
+    this.containerList = Array<Container>();
+    this.containerHavePortList = Array<Container>();
+  }
+
+  getPortList(containerName: string): Array<number> {
+    let container = this.containerHavePortList.find(value => value.name === containerName);
+    return container ? container.container_port : Array<number>();
+  }
 
   uiToServer(): ServerServiceStep {
     let result = new ServerServiceStep();
@@ -256,7 +267,12 @@ export class UIServiceStep3 extends UIServiceStepBase {
     if (serverResponse && serverResponse["container_list"]) {
       let list: Array<Container> = serverResponse["container_list"];
       list.forEach((value: Container) => {
-        this.containerList.push((new Container()).serverToUi(value))
+        let container = new Container();
+        container.serverToUi(value);
+        this.containerList.push(container);
+        if (container.container_port.length > 0) {
+          this.containerHavePortList.push(container);
+        }
       });
     }
     return this;
@@ -264,74 +280,56 @@ export class UIServiceStep3 extends UIServiceStepBase {
 }
 
 export class UIServiceStep4 extends UIServiceStepBase {
-  public projectName: string = "";
-  public serviceName: string = "";
-  public nodeSelector: ConfigCardData;
-  public instance: number = 1;
-  public servicePublic: boolean;
-  public externalServiceList: Array<ConfigCardData>;
-  public affinityList: Array<{flag: boolean, services: Array<ConfigCardData>}>;
+  public projectName = "";
+  public serviceName = "";
+  public nodeSelector = "";
+  public instance = 1;
+  public servicePublic = false;
+  public externalServiceList: Array<ExternalService>;
+  public affinityList: Array<{flag: boolean, services: Array<AffinityCardData>}>;
 
   constructor() {
     super();
-    this.affinityList = Array<{flag: boolean, services: Array<ConfigCardData>}>();
-    this.externalServiceList = Array<ConfigCardData>();
+    this.affinityList = Array<{flag: boolean, services: Array<AffinityCardData>}>();
+    this.externalServiceList = Array<ExternalService>();
   }
 
   uiToServer(): ServerServiceStep {
     let result = new ServerServiceStep();
-    let postExternalData: Array<ExternalService> = Array<ExternalService>();
     let postAffinityData: Array<{anti_flag: number, service_names: Array<string>}> = Array<{anti_flag: number, service_names: Array<string>}>();
     result.phase = PHASE_EXTERNAL_SERVICE;
     result.service_name = this.serviceName;
     result.instance = this.instance;
     result.service_public = this.servicePublic ? 1 : 0;
-    result.node_selector = this.nodeSelector ? this.nodeSelector.cardName : '';
-    this.externalServiceList.forEach((value: ConfigCardData) => {
-      let external = new ExternalService();
-      external.container_name = value.cardName;
-      external.node_config.node_port = Number.parseInt(value.externalInfo);
-      external.node_config.target_port = value.containerPort;
-      postExternalData.push(external.uiToServer());
-    });
-    this.affinityList.forEach((value: {flag: boolean, services: Array<ConfigCardData>}) => {
+    result.node_selector = this.nodeSelector;
+    this.affinityList.forEach((value: {flag: boolean, services: Array<AffinityCardData>}) => {
       let serviceNames = Array<string>();
-      value.services.forEach((card: ConfigCardData) => serviceNames.push(card.cardName));
+      value.services.forEach((card: AffinityCardData) => serviceNames.push(card.serviceName));
       postAffinityData.push({anti_flag: value.flag ? 1 : 0 , service_names: serviceNames})
     });
-    result.postData = {external_service_list: postExternalData, affinity_list: postAffinityData};
+    result.postData = {external_service_list: this.externalServiceList, affinity_list: postAffinityData};
     return result;
   }
 
   serverToUi(serverResponse: Object): UIServiceStep4 {
     let step4 = new UIServiceStep4();
-    if (serverResponse && serverResponse["external_service_list"]) {
-      let list: Array<ExternalService> = serverResponse["external_service_list"];
-      list.forEach((value: ExternalService) => {
-        const card = new ConfigCardData();
-        const external = new ExternalService();
-        external.serverToUi(value);
-        card.status = DragStatus.dsEnd;
-        card.cardName = external.container_name;
-        card.externalInfo = external.node_config.node_port.toString();
-        card.containerPort = external.node_config.target_port;
-        step4.externalServiceList.push(card);
-      });
-    }
     if (serverResponse && serverResponse["affinity_list"]) {
       let list: Array<{anti_flag: number, service_names: Array<string>}> = serverResponse["affinity_list"];
       list.forEach((value: {anti_flag: number, service_names: Array<string>}) => {
-        let services = Array<ConfigCardData>();
+        let services = Array<AffinityCardData>();
         if (value.service_names && value.service_names.length > 0) {
           value.service_names.forEach((serviceName: string) => {
-            let card = new ConfigCardData();
-            card.cardName = serviceName;
+            let card = new AffinityCardData();
+            card.serviceName = serviceName;
             card.status = DragStatus.dsEnd;
             services.push(card);
           });
         }
         step4.affinityList.push({flag: value.anti_flag == 1, services: services});
       });
+    }
+    if (serverResponse && serverResponse["external_service_list"]) {
+      step4.externalServiceList = serverResponse["external_service_list"];
     }
     if (serverResponse && serverResponse["instance"]) {
       step4.instance = serverResponse["instance"];
@@ -346,9 +344,7 @@ export class UIServiceStep4 extends UIServiceStepBase {
       step4.servicePublic = serverResponse["service_public"] == 1;
     }
     if (serverResponse && serverResponse["node_selector"]) {
-      const card = new ConfigCardData();
-      card.cardName = serverResponse["node_selector"];
-      step4.nodeSelector = card;
+      step4.nodeSelector = serverResponse["node_selector"];
     }
     return step4;
   }

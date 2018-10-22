@@ -1,137 +1,113 @@
-<clr-tabs>
-  <clr-tab>
-    <button clrTabLink>{{"SERVICE.STEP_3_SERVICE_CONFIG_TITLE" | translate}}</button>
-    <ng-template [(clrIfActive)]="tabBaseActive">
-      <clr-tab-content>
-        <div class="config-content-container">
-          <div class="base-left-config">
-            <cs-input [inputIsRequired]="true"
-                      [disabled]="isActionWip"
-                      [inputPattern]="patternServiceName"
-                      [inputLabel]="'SERVICE.STEP_3_SERVICE_NAME' | translate"
-                      [customerValidatorAsyncFunc]="checkServiceNameFun"
-                      [simpleFiled]="uiData.serviceName"
-                      [inputPlaceholder]="'SERVICE.STEP_3_SERVICE_OF_NAME'| translate"
-                      (onCheck)="setServiceName($event)">
-            </cs-input>
-            <div class="toggle-switch">
-              <input type="checkbox"
-                     id="toggle_public"
-                     [disabled]="isActionWip"
-                     [checked]="uiData.servicePublic"
-                     [(ngModel)]="uiData.servicePublic">
-              <label for="toggle_public" style="width: 180px;text-align: right">
-                {{"SERVICE.STEP_3_PUBLIC" | translate}}:</label>
-            </div>
-            <cs-input [inputIsRequired]="true"
-                      [inputFiledType]="1"
-                      [inputMin]="1"
-                      [inputMax]="99"
-                      [disabled]="isActionWip"
-                      [inputLabel]="'SERVICE.STEP_3_INSTANCE' | translate"
-                      [simpleFiled]="uiData.instance"
-                      (onCheck)="uiData.instance = $event">
-            </cs-input>
-            <div *ngIf="noPortForExtent" class="alert alert-warning" role="alert">
-              {{"SERVICE.STEP_3_DANGER_MESSAGE" | translate}}
-            </div>
-            <config-card-list #source
-                              [title]="'SERVICE.STEP_3_CONTAINER_PORT' | translate"
-                              [description]="'SERVICE.STEP_3_CONTAINER_DESCRIPTION' | translate"
-                              [acceptDrag]="false"
-                              [cardMinHeight]="50"
-                              [disabled]="isActionWip"
-                              [ConfigCardDataList]="containerSourceDataList">
-            </config-card-list>
-          </div>
-          <div class="base-right-config">
-            <config-card-list #external
-                              [title]="'SERVICE.STEP_3_NODE_PORT' | translate"
-                              [listBorder]="true"
-                              [cardMinHeight]="80"
-                              [acceptDrag]="true"
-                              [sourceList]="source"
-                              [disabled]="isActionWip"
-                              [ConfigCardDataList]="uiData.externalServiceList"
-                              (onDrop)="setExternalPort($event)">
-            </config-card-list>
-          </div>
-        </div>
-      </clr-tab-content>
-    </ng-template>
-  </clr-tab>
-  <clr-tab>
-    <button clrTabLink>{{"SERVICE.STEP_3_ADVANCED_CONFIG"|translate}}</button>
-    <ng-template [(clrIfActive)]="tabAdvanceActive">
-      <clr-tab-content>
-        <div class="config-content-container">
-          <div class="advance-left-config">
-            <config-card-list #nodeSelector
-                              [model]="'select'"
-                              [title]="'SERVICE.STEP_3_NODE_SELECTOR' | translate"
-                              [acceptDrag]="false"
-                              [cardMinWidth]="160"
-                              [cardMinHeight]="30"
-                              [(selected)]="uiData.nodeSelector"
-                              [disabled]="isActionWip"
-                              [ConfigCardDataList]="nodeSelectorCardList">
-            </config-card-list>
-            <config-card-list #affinitySource
-                              [title]="'SERVICE.STEP_3_COLLABORATIVE'|translate"
-                              [acceptDrag]="false"
-                              [cardMinWidth]="160"
-                              [cardMinHeight]="30"
-                              [viewModel]="'name'"
-                              [description]="'SERVICE.STEP_3_AFFINITY_DESCRIPTION' | translate"
-                              [disabled]="isActionWip"
-                              [ConfigCardDataList]="affinitySourceDataList">
-            </config-card-list>
-          </div>
-          <div class="advance-right-config">
-            <a href="javascript:void(0)" (click)="addNewAffinity()">
-              <clr-icon shape="plus"></clr-icon>
-              {{"SERVICE.STEP_3_AFFINITY_SETTING" | translate}}
-            </a>
-            <div class="affinity-container" *ngFor="let affinity of uiData.affinityList">
-              <div class="affinity-group-control">
-                <label>
-                  <input type="radio"
-                         [checked]="affinity.flag"
-                         [value]="true"
-                         [disabled]="isActionWip"
-                         [(ngModel)]="affinity.flag">
-                  {{"SERVICE.STEP_3_AFFINITY_GROUP" | translate}}
-                </label>
-                <label>
-                  <input type="radio"
-                         [checked]="!affinity.flag"
-                         [value]="false"
-                         [disabled]="isActionWip"
-                         [(ngModel)]="affinity.flag">
-                  {{"SERVICE.STEP_3_ANTI_AFFINITY_GROUP" | translate}}
-                </label>
-                <a [class.disabled]="isActionWip" *ngIf="!isActionWip" href="javascript:void(0)"
-                   (click)="deleteAffinity(i)">
-                  <clr-icon shape="trash"></clr-icon>
-                </a>
-              </div>
-              <config-card-list [sourceList]="affinitySource"
-                                [acceptDrag]="true"
-                                [cardMinWidth]="160"
-                                [cardMinHeight]="50"
-                                [listMinHeight]="80"
-                                [listBorder]="true"
-                                [viewModel]="'name'"
-                                [disabled]="isActionWip"
-                                [ConfigCardDataList]="affinity.services">
-              </config-card-list>
-            </div>
-          </div>
-        </div>
-      </clr-tab-content>
-    </ng-template>
-  </clr-tab>
-</clr-tabs>
+<div class="config-container">
+  <div class="line-container">
+    <span>{{"SERVICE.STEP_3_SERVICE_CONFIG_TITLE"|translate}}:</span>
+  </div>
+  <div class="line-container">
+    <cs-input [inputIsRequired]="true"
+              [disabled]="isActionWip"
+              [inputPattern]="patternServiceName"
+              [inputLabel]="'SERVICE.STEP_3_SERVICE_NAME' | translate"
+              [customerValidatorAsyncFunc]="checkServiceNameFun"
+              [simpleFiled]="uiData.serviceName"
+              [inputPlaceholder]="'SERVICE.STEP_3_SERVICE_OF_NAME'| translate"
+              (onCheck)="uiData.serviceName = $event">
+    </cs-input>
+  </div>
+  <div class="line-container">
+    <cs-input [inputIsRequired]="true"
+              [inputFiledType]="1"
+              [inputMin]="1"
+              [inputMax]="99"
+              [disabled]="isActionWip"
+              [inputLabel]="'SERVICE.STEP_3_INSTANCE' | translate"
+              [simpleFiled]="uiData.instance"
+              (onCheck)="uiData.instance = $event">
+    </cs-input>
+  </div>
+  <div class="line-container">
+    <label class="public">{{"SERVICE.STEP_3_PUBLIC" | translate}}:
+      <input title=""
+             type="checkbox"
+             class="base-margin-left"
+             [checked]="uiData.servicePublic"
+             [(ngModel)]="uiData.servicePublic">
+    </label>
+  </div>
+  <div *ngIf="uiData.externalServiceList.length == 0" class="alert alert-warning" role="alert">
+    {{"SERVICE.STEP_3_DANGER_MESSAGE" | translate}}
+  </div>
+  <div *ngFor="let externalService of uiData.externalServiceList;let iIndex = index" class="external-container">
+    <div class="line-container">
+      <clr-icon *ngIf="iIndex > 0" class="plus-icon" shape="minus" (click)="removeExternalService(iIndex)"></clr-icon>
+      <span>{{"SERVICE.STEP_3_EXTERNAL_SERVICE"|translate}}</span>
+    </div>
+    <div class="line-container">
+      <label>{{"SERVICE.STEP_3_CONTAINER_NAME"|translate}}:</label>
+      <cs-dropdown [dropdownList]="uiPreData.containerHavePortList"
+                   [dropdownListTextKey]="'name'"
+                   [dropdownWidth]="310"
+                   [dropdownDisabled]="isActionWip"
+                   [dropdownDefaultText]="getContainerDropdownText(iIndex) | translate"
+                   (onChange)="setExternalInfo($event, iIndex)">
+      </cs-dropdown>
+    </div>
+    <div class="line-container" *ngIf="externalService.container_name !== ''">
+      <label>{{"SERVICE.STEP_3_CONTAINER_NAME"|translate}}:</label>
+      <cs-dropdown [dropdownDisabled]="externalService.container_name == '' || isActionWip"
+                   [dropdownList]="uiPreData.getPortList(externalService.container_name)"
+                   [dropdownWidth]="310"
+                   [dropdownDefaultText]="externalService.node_config.target_port.toString()"
+                   (onChange)="externalService.node_config.target_port = $event">
+      </cs-dropdown>
+    </div>
+    <div class="line-container" *ngIf="externalService.container_name !== ''">
+      <cs-input [inputFiledType]="1"
+                [simpleFiled]="externalService.node_config.node_port"
+                [disabled]="isActionWip"
+                [inputLabel]="'SERVICE.STEP_3_NODE_PORT' | translate"
+                [inputIsRequired]="true"
+                [inputMin]="30000"
+                [inputMax]="32766"
+                [inputPlaceholder]="'SERVICE.STEP_3_EXTERNAL_PORT'| translate"
+                (onCheck)="setNodePort(iIndex,$event)">
+      </cs-input>
+    </div>
+  </div>
+  <div class="line-container">
+    <clr-icon class="plus-icon"
+              shape="plus"
+              [ngClass]="{'disabled':uiPreData.containerHavePortList.length == 0}"
+              (click)="addNewExternalService()">
+    </clr-icon>
+    <span>{{"SERVICE.STEP_3_EXTERNAL_SERVICE_ADD"|translate}}</span>
+  </div>
+  <div class="line-container" (click)="showAdvanced = !showAdvanced">
+    <div [ngClass]="{'advanced-open':showAdvanced,'advanced-close':!showAdvanced}" class="step-arrow"></div>
+    <span>{{"SERVICE.STEP_3_ADVANCED_CONFIG"|translate}}</span>
+  </div>
+  <div class="line-container" *ngIf="showAdvanced">
+    <clr-icon class="plus-icon" shape="wrench" (click)="setAffinity()"></clr-icon>
+    <span>{{"SERVICE.STEP_3_SET_AFFINITY"|translate}}</span>
+  </div>
+  <div class="line-container" *ngIf="showAdvanced">
+    <div (click)="showNodeSelector = !showNodeSelector"
+         [ngClass]="{'node-selector-close':showNodeSelector,'node-selector-open':!showNodeSelector}">
+      <clr-icon  shape="caret up" class="plus-icon"></clr-icon>
+    </div>
+    <span>{{"SERVICE.STEP_3_NODE_SELECTOR"|translate}}:</span>
+  </div>
+  <div class="line-container" *ngIf="showAdvanced && showNodeSelector">
+    <label></label>
+    <cs-dropdown [dropdownList]="nodeSelectorList"
+                 [dropdownListTextKey]="'name'"
+                 [dropdownDisabled]="isActionWip"
+                 [dropdownWidth]="310"
+                 [dropdownPosition]="'top-left'"
+                 [dropdownDefaultText]="'SERVICE.STEP_3_NODE_DEFAULT' | translate "
+                 (onChange)="uiData.nodeSelector = $event['value']">
+    </cs-dropdown>
+  </div>
+</div>
 <div class="button-container">
   <button class="btn btn-default" (click)="cancelBuildService()" [disabled]="isActionWip">
     {{"BUTTON.CANCEL" | translate}}
@@ -142,7 +118,7 @@
   <button class="btn btn-default" (click)="backUpStep()" [disabled]="isActionWip">
     {{"BUTTON.BACK" | translate}}
   </button>
-  <button class="btn btn-default" (click)="forward()" [disabled]="noPortForExtent || isActionWip">
+  <button class="btn btn-default" (click)="forward()" [disabled]="isActionWip">
     {{"BUTTON.NEXT" | translate}}
   </button>
   <span *ngIf="isActionWip" class="spinner spinner-sm"></span>

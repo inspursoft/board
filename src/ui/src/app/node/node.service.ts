@@ -4,12 +4,7 @@ import { Observable } from "rxjs/Observable";
 import "rxjs/add/operator/map"
 import "rxjs/add/operator/repeat"
 import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from "../shared/shared.const";
-
-export interface INode {
-  node_name: string;
-  node_ip: string;
-  status: number;
-}
+import { INode, INodeGroup } from "../shared/shared.types";
 
 export interface INodeDetail {
   node_name: string,
@@ -20,13 +15,6 @@ export interface INodeDetail {
   memory_size: string,
   storage_total: string,
   storage_use: string
-}
-
-export interface INodeGroup {
-  nodegroup_id: number,
-  nodegroup_project: string,
-  nodegroup_name: string,
-  nodegroup_comment: string;
 }
 
 @Injectable()

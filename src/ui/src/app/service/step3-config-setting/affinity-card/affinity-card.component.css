@@ -1,10 +1,8 @@
 div.card-container {
   border-radius: 3px;
-  margin-right: 10px;
-  min-height: 50px;
   box-shadow: 0 0 2px #bbbbbb;
+  margin: 3px;
   display: flex;
-  flex-direction: column;
 }
 
 div.selected {
@@ -23,6 +21,7 @@ table {
 table th {
   font-weight: bold;
   text-align: right;
+  width: 120px;
 }
 
 td.card-external {

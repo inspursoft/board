@@ -1,69 +1,121 @@
-div.config-content-container {
+div.config-container {
   display: flex;
-  height: 400px;
-}
-
-div.base-left-config {
-  flex-basis: 800px;
-  height: 100%;
-  display: flex;
+  min-height: 400px; /*fixed height*/
   flex-direction: column;
-  overflow-y: auto;
-  padding: 10px;
+  margin-top: 30px;
+  margin-bottom: 20px;
+  width: 600px;
 }
 
-div.advance-left-config {
-  flex-basis: 800px;
-  height: 100%;
+div.config-service-info-line {
   display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  padding: 10px;
-}
-
-div.base-left-config > cs-input,
-div.base-left-config > div,
-div.base-left-config > config-card-list {
   margin-top: 10px;
+  align-items: center;
+  height: 40px;
 }
 
-div.base-right-config {
-  flex-basis: 100%;
+label.instance {
+  width: 180px;
+  text-align: right;
+}
+
+clr-icon.plus-icon {
+  color: white;
+  background: green;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  cursor: pointer;
+
+}
+
+clr-icon.plus-icon.disabled {
+  background: silver;
+}
+
+clr-icon.plus-icon.disabled:hover {
+  cursor: not-allowed;
+}
+
+div.step-arrow {
+  border: 8px solid transparent;
+  border-left: 8px solid black;
+  border-right: 0 solid transparent;
+  width: 0;
+  height: 0;
+}
+
+.base-margin-left {
   margin-left: 10px;
-  overflow-y: auto;
-  padding: 10px;
 }
 
-div.advance-right-config {
-  flex-basis: 100%;
-  overflow-y: auto;
-  padding: 10px;
+div.line-container {
+  margin-top: 10px;
+  display: flex;
+  height: 34px;
+  align-items: center;
+}
+
+div.line-container cs-input {
+  width: 100%;
+}
+
+div.line-container span {
+  margin-left: 10px;
+}
+
+div.line-container cs-dropdown {
+  margin-left: 10px;
+}
+
+div.line-container label {
+  width: 180px;
+  text-align: right;
+}
+
+div.advanced-item-icon-container {
+  width: 20px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+clr-icon.advanced-item-icon {
+  width: 20px;
+  height: 20px;
+  color: gray;
+}
+
+label.public {
+  width: 200px;
+  text-align: right;
+}
+
+div.external-container {
+  display: flex;
+  flex-direction: column;
+}
+
+div.node-selector-close {
+  transform: rotate(0deg);
+}
+
+div.node-selector-open {
+  transform: rotate(90deg);
+}
+
+div.advanced-open {
+  transform: rotate(90deg);
+  transition-duration: 0.5s;
+}
+
+div.advanced-close {
+  transform: rotate(0deg);
+  transition-duration: 0.5s;
 }
 
 div.button-container {
   display: flex;
   align-items: center;
   margin-top: 20px;
-}
-
-div.affinity-container {
-  display: flex;
-  flex-direction: column;
-}
-
-div.affinity-group-control {
-  display: flex;
-}
-
-div.affinity-group-control label {
-  margin-right: 15px;
-}
-
-div.affinity-group-control a {
-  margin-left: auto;
-}
-
-div.affinity-group-control a.disabled {
-  color: silver;
-  cursor: not-allowed;
 }

@@ -1,0 +1,45 @@
+div.modal-body{
+  min-height: 500px;
+  display: flex;
+}
+
+div.modal-body cs-input{
+  margin-top: 10px;
+}
+
+div.advance-left-config {
+  flex-basis: 500px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+div.advance-right-config {
+  flex-basis: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+div.affinity-container {
+  display: flex;
+  flex-direction: column;
+}
+
+div.affinity-group-control {
+  display: flex;
+  margin: 5px 0;
+}
+
+div.affinity-group-control label {
+  margin-right: 15px;
+}
+
+div.affinity-group-control a {
+  margin-left: auto;
+}
+
+div.affinity-group-control a.disabled {
+  color: silver;
+  cursor: not-allowed;
+}

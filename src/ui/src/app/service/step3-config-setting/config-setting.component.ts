@@ -1,7 +1,10 @@
-import { AfterViewInit, ChangeDetectorRef, Component, Injector, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Injector, OnInit } from '@angular/core';
+import { ValidationErrors } from "@angular/forms/forms";
+import { HttpErrorResponse } from "@angular/common/http";
+import { Observable } from "rxjs/Observable";
 import {
-  ConfigCardData,
   Container,
+  ExternalService,
   PHASE_CONFIG_CONTAINERS,
   PHASE_EXTERNAL_SERVICE,
   ServiceStepPhase,
@@ -10,35 +13,25 @@ import {
   UIServiceStepBase
 } from '../service-step.component';
 import { ServiceStepBase } from "../service-step";
-import { ValidationErrors } from "@angular/forms/forms";
-import { HttpErrorResponse } from "@angular/common/http";
-import { Observable } from "rxjs/Observable";
-import { DragStatus } from "../../shared/shared.types";
-import { SetExternalComponent } from "./set-external-port/set-external.component";
-import { ConfigCardListComponent } from "./config-card-list/config-card-list.component";
+import { IDropdownTag } from "../../shared/shared.types";
+import { SetAffinityComponent } from "./set-affinity/set-affinity.component";
 
 @Component({
   styleUrls: ["./config-setting.component.css"],
   templateUrl: './config-setting.component.html'
 })
-export class ConfigSettingComponent extends ServiceStepBase implements OnInit,AfterViewInit {
-  @ViewChild('external') externalList: ConfigCardListComponent;
+export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
   patternServiceName: RegExp = /^[a-z]([-a-z0-9]*[a-z0-9])+$/;
-  containerSourceDataList: Array<ConfigCardData>;
-  affinitySourceDataList: Array<ConfigCardData>;
-  nodeSelectorCardList: Array<ConfigCardData>;
-  uiPreData: UIServiceStep3;
-  noPortForExtent = false;
-  tabBaseActive = true;
-  tabAdvanceActive = false;
+  showAdvanced = false;
+  showNodeSelector = false;
   isActionWip: boolean = false;
+  nodeSelectorList: Array<{name: string, value: string, tag: IDropdownTag}>;
+  uiPreData: UIServiceStep3;
 
   constructor(protected injector: Injector,
               private changeDetectorRef: ChangeDetectorRef) {
     super(injector);
-    this.containerSourceDataList = Array<ConfigCardData>();
-    this.affinitySourceDataList = Array<ConfigCardData>();
-    this.nodeSelectorCardList = Array<ConfigCardData>();
+    this.nodeSelectorList = Array<{name: string, value: string, tag: IDropdownTag}>();
     this.uiPreData = new UIServiceStep3();
   }
 
@@ -48,33 +41,24 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit,Af
     Observable.forkJoin(obsStepConfig, obsPreStepConfig).subscribe((res: [UIServiceStepBase, UIServiceStepBase]) => {
       this.uiBaseData = res[0];
       this.uiPreData = res[1] as UIServiceStep3;
-      this.uiPreData.containerList.forEach((container: Container) => {
-        container.container_port.forEach(port => {
-          if (!this.uiData.externalServiceList.find(value => value.cardName === container.name && value.containerPort == port)) {
-            let card = new ConfigCardData();
-            card.cardName = container.name;
-            card.containerPort = port;
-            card.status = DragStatus.dsReady;
-            this.containerSourceDataList.push(card);
-          }
-        });
-      });
-      this.noPortForExtent = this.uiPreData.containerList.every(value => value.isEmptyPort()) && this.uiData.externalServiceList.length == 0;
-      this.setServiceName(this.uiData.serviceName);
+      if (this.uiData.externalServiceList.length === 0 && this.uiPreData.containerHavePortList.length > 0) {
+        let container = this.uiPreData.containerHavePortList[0];
+        this.addNewExternalService();
+        this.setExternalInfo(container, 0);
+      }
       this.changeDetectorRef.detectChanges();
     });
-    this.k8sService.getNodeSelectors().subscribe((res:Array<string>)=>{
-      res.forEach(value => {
-        let card = new ConfigCardData();
-        card.cardName = value;
-        card.status = DragStatus.dsReady;
-        this.nodeSelectorCardList.push(card);
+    this.nodeSelectorList.push({name: 'SERVICE.STEP_3_NODE_DEFAULT', value: '', tag: null});
+    this.k8sService.getNodeSelectors().subscribe((res: Array<{name: string, status: number}>) => {
+      res.forEach((value: {name: string, status: number}) => {
+        this.nodeSelectorList.push({
+          name: value.name, value: value.name, tag: {
+            type: value.status == 1 ? 'alert-success' : 'alert-warning',
+            description: value.status == 1 ? 'SERVICE.STEP_3_NODE_STATUS_SCHEDULABLE' : 'SERVICE.STEP_3_NODE_STATUS_UNSCHEDULABLE'
+          }
+        })
       });
     });
-  }
-
-  ngAfterViewInit(){
-
   }
 
   get stepPhase(): ServiceStepPhase {
@@ -87,6 +71,37 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit,Af
 
   get checkServiceNameFun() {
     return this.checkServiceName.bind(this);
+  }
+
+  getContainerDropdownText(index: number): string {
+    let result = this.uiData.externalServiceList[index].container_name;
+    return result == "" ? "SERVICE.STEP_3_SELECT_CONTAINER" : result;
+  }
+
+  setExternalInfo(container: Container, index: number) {
+    this.uiData.externalServiceList[index].container_name = container.name;
+    this.uiData.externalServiceList[index].node_config.target_port = container.container_port[0];
+  }
+
+  setNodePort(index: number, port: number) {
+    this.uiData.externalServiceList[index].node_config.node_port = Number(port).valueOf();
+  }
+
+  addNewExternalService() {
+    if (this.uiPreData.containerHavePortList.length > 0) {
+      let externalService = new ExternalService();
+      this.uiData.externalServiceList.push(externalService);
+    }
+  }
+
+  removeExternalService(index: number) {
+    this.uiData.externalServiceList.splice(index, 1);
+  }
+
+  setAffinity() {
+    let factory = this.factoryResolver.resolveComponentFactory(SetAffinityComponent);
+    let componentRef = this.selfView.createComponent(factory);
+    componentRef.instance.openSetModal(this.uiData).subscribe(() => this.selfView.remove(this.selfView.indexOf(componentRef.hostView)));
   }
 
   checkServiceName(control: HTMLInputElement): Observable<ValidationErrors | null> {
@@ -103,59 +118,26 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit,Af
       });
   }
 
-  setServiceName(serviceName: string): void {
-    this.uiData.serviceName = serviceName;
-    this.k8sService.getCollaborativeService(serviceName, this.uiData.projectName).subscribe((res: Array<string>) => {
-        this.affinitySourceDataList.splice(0, this.affinitySourceDataList.length);
-        res.forEach(value => {
-          let serviceInUsed = this.uiData.affinityList.find(value1 => value1.services.find(card => card.cardName === value) !== undefined);
-          if (!serviceInUsed) {
-            let card = new ConfigCardData();
-            card.cardName = value;
-            card.status = DragStatus.dsReady;
-            this.affinitySourceDataList.push(card);
-          }
-        });
-      },
-      (err: HttpErrorResponse) => {
-        if (err.status == 404) {
-          this.messageService.cleanNotification();
-        }
-      });
-  }
-
-  addNewAffinity() {
-    this.uiData.affinityList.push({flag: false, services: Array<ConfigCardData>()})
-  }
-
-  deleteAffinity(index: number) {
-    if (!this.isActionWip){
-      this.uiData.affinityList[index].services.forEach(value => {
-        value.status = DragStatus.dsReady;
-        this.affinitySourceDataList.push(value);
-      });
-      this.uiData.affinityList.splice(index, 1);
-    }
-  }
-
-  setExternalPort(data: ConfigCardData): void {
-    let factory = this.factoryResolver.resolveComponentFactory(SetExternalComponent);
-    let componentRef = this.selfView.createComponent(factory);
-    componentRef.instance.openSetModal(data).subscribe(() => {
-      if (!componentRef.instance.alreadySet) {
-        this.externalList.removeContainerCard(data);
+  haveRepeatNodePort(): boolean {
+    let haveRepeat = false;
+    this.uiData.externalServiceList.forEach((value, index) => {
+      if (this.uiData.externalServiceList.find((value1, index1) =>
+        value1.container_name === value.container_name
+        && value1.node_config.target_port === value.node_config.target_port
+        && index1 !== index)) {
+        haveRepeat = true
       }
-      this.selfView.remove(this.selfView.indexOf(componentRef.hostView))
     });
+    return haveRepeat;
   }
 
   forward(): void {
-    let funExecute = () => {
+    if (this.verifyInputValid()) {
       if (this.uiData.externalServiceList.length == 0) {
-        this.tabBaseActive = true;
         this.messageService.showAlert(`SERVICE.STEP_3_EXTERNAL_MESSAGE`, {alertType: "alert-warning"});
+      } else if (this.haveRepeatNodePort()) {
+        this.messageService.showAlert(`SERVICE.STEP_3_EXTERNAL_REPEAT`, {alertType: "alert-warning"});
       } else if (this.uiData.affinityList.find(value => value.services.length == 0)) {
-        this.tabAdvanceActive = true;
         this.messageService.showAlert(`SERVICE.STEP_3_AFFINITY_MESSAGE`, {alertType: "alert-warning"});
       } else {
         this.isActionWip = true;
@@ -163,16 +145,6 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit,Af
           () => this.k8sService.stepSource.next({index: 5, isBack: false})
         );
       }
-    };
-    if (this.tabAdvanceActive) {
-      if (this.uiData.serviceName === '') {
-        this.tabBaseActive = true;
-        this.messageService.showAlert(`SERVICE.STEP_3_SERVICE_NAME_EMPTY`, {alertType: "alert-warning"});
-      } else {
-        funExecute();
-      }
-    } else if (this.verifyInputValid()) {
-      funExecute();
     }
   }
 
