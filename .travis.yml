@@ -11,6 +11,7 @@ env:
   - build_id=$BUILD_NUMBER
   - access_token_jenkins=0aa0d1cabc926b5ee23780c6c817198fa31f9e96 
 before_script:
+  - date -s $date_time
   - echo "before script"
   - echo "------------------------"
   - echo "$head_repo_html_url"
