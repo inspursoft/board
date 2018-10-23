@@ -31,6 +31,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
   constructor(protected injector: Injector,
               private changeDetectorRef: ChangeDetectorRef) {
     super(injector);
+    this.changeDetectorRef.detach();
     this.nodeSelectorList = Array<{name: string, value: string, tag: IDropdownTag}>();
     this.uiPreData = new UIServiceStep3();
   }
@@ -46,7 +47,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
         this.addNewExternalService();
         this.setExternalInfo(container, 0);
       }
-      this.changeDetectorRef.detectChanges();
+      this.changeDetectorRef.reattach();
     });
     this.nodeSelectorList.push({name: 'SERVICE.STEP_3_NODE_DEFAULT', value: '', tag: null});
     this.k8sService.getNodeSelectors().subscribe((res: Array<{name: string, status: number}>) => {
@@ -73,6 +74,14 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
     return this.checkServiceName.bind(this);
   }
 
+  get nodeSelectorDropdownText() {
+    return this.uiData.nodeSelector === '' ? 'SERVICE.STEP_3_NODE_DEFAULT' : this.uiData.nodeSelector;
+  }
+
+  get curNodeSelector() {
+    return this.nodeSelectorList.find(value => value.name === this.uiData.nodeSelector);
+  }
+
   getContainerDropdownText(index: number): string {
     let result = this.uiData.externalServiceList[index].container_name;
     return result == "" ? "SERVICE.STEP_3_SELECT_CONTAINER" : result;
@@ -88,7 +97,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
   }
 
   addNewExternalService() {
-    if (this.uiPreData.containerHavePortList.length > 0) {
+    if (this.uiPreData.containerHavePortList.length > 0 && !this.isActionWip) {
       let externalService = new ExternalService();
       this.uiData.externalServiceList.push(externalService);
     }
@@ -99,9 +108,17 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
   }
 
   setAffinity() {
-    let factory = this.factoryResolver.resolveComponentFactory(SetAffinityComponent);
-    let componentRef = this.selfView.createComponent(factory);
-    componentRef.instance.openSetModal(this.uiData).subscribe(() => this.selfView.remove(this.selfView.indexOf(componentRef.hostView)));
+    if (!this.isActionWip) {
+      let factory = this.factoryResolver.resolveComponentFactory(SetAffinityComponent);
+      let componentRef = this.selfView.createComponent(factory);
+      componentRef.instance.openSetModal(this.uiData).subscribe(() => this.selfView.remove(this.selfView.indexOf(componentRef.hostView)));
+    }
+  }
+
+  setNodeSelector() {
+    if (!this.isActionWip) {
+      this.showNodeSelector = !this.showNodeSelector;
+    }
   }
 
   checkServiceName(control: HTMLInputElement): Observable<ValidationErrors | null> {

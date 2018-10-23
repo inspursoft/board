@@ -1,22 +1,19 @@
 <div class="card-container" [ngStyle]="containerStyle" (dragstart)="dragStartEvent($event)"
      (drag)="dragEvent()" [draggable]="data.status !== 'end'">
-  <table class="table table-vertical">
-    <tbody>
-    <tr *ngIf="data.status === 'end' && !disabled">
-      <th class="card-remove" colspan="2">
-        <a href="javascript:void(0)" (click)="removeFromList()">
-          <clr-icon shape="close"></clr-icon>
-        </a>
-      </th>
-    </tr>
-    <tr>
-      <th>{{"SERVICE.SERVICE_NAME" | translate}}:</th>
-      <td>{{data.serviceName}}</td>
-    </tr>
-    <tr>
-      <th>{{"SERVICE.STATUS" | translate}}:</th>
-      <td>{{serviceStatus | translate}}</td>
-    </tr>
-    </tbody>
-  </table>
+  <div class="icon-container">
+    <a *ngIf="data.status !== 'end' && !disabled" href="javascript:void(0)">
+      <clr-icon shape="drag-handle"></clr-icon>
+    </a>
+    <a *ngIf="data.status === 'end' && !disabled" href="javascript:void(0)" (click)="removeFromList()">
+      <clr-icon shape="trash"></clr-icon>
+    </a>
+  </div>
+  <div class="name-container">
+    <span>{{"SERVICE.SERVICE_NAME" | translate}}:</span>
+    <span>{{"SERVICE.STATUS" | translate}}:</span>
+  </div>
+  <div class="value-container">
+    <span>{{data.serviceName}}</span>
+    <span>{{serviceStatus | translate}}</span>
+  </div>
 </div>

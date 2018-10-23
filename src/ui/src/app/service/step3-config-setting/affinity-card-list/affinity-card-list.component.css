@@ -5,7 +5,7 @@ div.card-col-list-container {
 
 div.drag-col-container {
   padding: 5px;
-  max-height: 450px;
+  max-height: 420px;
   overflow-y: auto;
 }
 

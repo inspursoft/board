@@ -69,7 +69,7 @@ div.line-container cs-dropdown {
 }
 
 div.line-container label {
-  width: 180px;
+  min-width: 180px;
   text-align: right;
 }
 
@@ -109,9 +109,17 @@ div.advanced-open {
   transition-duration: 0.5s;
 }
 
+div.advanced-open:hover{
+  cursor: pointer;
+}
+
 div.advanced-close {
   transform: rotate(0deg);
   transition-duration: 0.5s;
+}
+
+div.advanced-close:hover {
+ cursor: pointer;
 }
 
 div.button-container {

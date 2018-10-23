@@ -362,7 +362,7 @@ export const LANG_ZH_CN = {
     "STEP_3_INSTANCE":"实例",
     "STEP_3_SET_AFFINITY":"亲和配置",
     "STEP_3_EXTERNAL_SERVICE":"外部服务配置",
-    "STEP_3_EXTERNAL_SERVICE_ADD":"添加外部服务配置",
+    "STEP_3_EXTERNAL_SERVICE_ADD":"添加",
     "STEP_3_CONTAINER_NAME":"容器名称",
     "STEP_3_SELECT_CONTAINER":"选择容器...",
     "STEP_3_CONTAINER_PORT":"容器端口",

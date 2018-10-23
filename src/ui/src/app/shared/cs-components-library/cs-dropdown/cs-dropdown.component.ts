@@ -38,6 +38,7 @@ export class CsDropdownComponent implements OnChanges, OnInit {
   @Input() dropdownListTextKey = '';
   @Input() dropdownTitleFontSize = 14;
   @Input() dropdownMustBeSelect = true;
+  @Input() curDropdownItem: any;
   @Output("onChange") dropdownChange: EventEmitter<any>;
   @Output("onOnlyClickItem") dropdownClick: EventEmitter<any>;
   isShowDefaultText = true;
@@ -48,7 +49,6 @@ export class CsDropdownComponent implements OnChanges, OnInit {
   shownDropdownList: Array<any>;
   filterDropdownList: Array<any>;
   animation: string;
-  curDropdownItem: any;
 
   constructor() {
     this.dropdownChange = new EventEmitter<any>();

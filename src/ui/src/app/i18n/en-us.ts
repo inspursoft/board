@@ -362,7 +362,7 @@ export const LANG_EN_US = {
     "STEP_3_INSTANCE":"Instance",
     "STEP_3_SET_AFFINITY":"Set affinity",
     "STEP_3_EXTERNAL_SERVICE":"External service",
-    "STEP_3_EXTERNAL_SERVICE_ADD":"Add one external service",
+    "STEP_3_EXTERNAL_SERVICE_ADD":"Add",
     "STEP_3_CONTAINER_NAME":"Container name",
     "STEP_3_SELECT_CONTAINER":"Select Container...",
     "STEP_3_CONTAINER_PORT":"Container Port",

@@ -29,6 +29,7 @@
       <input title=""
              type="checkbox"
              class="base-margin-left"
+             [disabled]="isActionWip"
              [checked]="uiData.servicePublic"
              [(ngModel)]="uiData.servicePublic">
     </label>
@@ -38,7 +39,8 @@
   </div>
   <div *ngFor="let externalService of uiData.externalServiceList;let iIndex = index" class="external-container">
     <div class="line-container">
-      <clr-icon *ngIf="iIndex > 0" class="plus-icon" shape="minus" (click)="removeExternalService(iIndex)"></clr-icon>
+      <clr-icon *ngIf="iIndex > 0 && !isActionWip" class="plus-icon" shape="minus"
+                (click)="removeExternalService(iIndex)"></clr-icon>
       <span>{{"SERVICE.STEP_3_EXTERNAL_SERVICE"|translate}}</span>
     </div>
     <div class="line-container">
@@ -52,7 +54,7 @@
       </cs-dropdown>
     </div>
     <div class="line-container" *ngIf="externalService.container_name !== ''">
-      <label>{{"SERVICE.STEP_3_CONTAINER_NAME"|translate}}:</label>
+      <label>{{"SERVICE.STEP_3_CONTAINER_PORT"|translate}}:</label>
       <cs-dropdown [dropdownDisabled]="externalService.container_name == '' || isActionWip"
                    [dropdownList]="uiPreData.getPortList(externalService.container_name)"
                    [dropdownWidth]="310"
@@ -76,7 +78,7 @@
   <div class="line-container">
     <clr-icon class="plus-icon"
               shape="plus"
-              [ngClass]="{'disabled':uiPreData.containerHavePortList.length == 0}"
+              [ngClass]="{'disabled':uiPreData.containerHavePortList.length == 0 || isActionWip}"
               (click)="addNewExternalService()">
     </clr-icon>
     <span>{{"SERVICE.STEP_3_EXTERNAL_SERVICE_ADD"|translate}}</span>
@@ -86,13 +88,13 @@
     <span>{{"SERVICE.STEP_3_ADVANCED_CONFIG"|translate}}</span>
   </div>
   <div class="line-container" *ngIf="showAdvanced">
-    <clr-icon class="plus-icon" shape="wrench" (click)="setAffinity()"></clr-icon>
+    <clr-icon shape="wrench" class="plus-icon" [ngClass]="{'disabled':isActionWip}" (click)="setAffinity()"></clr-icon>
     <span>{{"SERVICE.STEP_3_SET_AFFINITY"|translate}}</span>
   </div>
   <div class="line-container" *ngIf="showAdvanced">
-    <div (click)="showNodeSelector = !showNodeSelector"
-         [ngClass]="{'node-selector-close':showNodeSelector,'node-selector-open':!showNodeSelector}">
-      <clr-icon  shape="caret up" class="plus-icon"></clr-icon>
+    <div [ngClass]="{'node-selector-close':showNodeSelector,'node-selector-open':!showNodeSelector}">
+      <clr-icon shape="caret up" class="plus-icon" [ngClass]="{'disabled':isActionWip}"
+                (click)="setNodeSelector()"></clr-icon>
     </div>
     <span>{{"SERVICE.STEP_3_NODE_SELECTOR"|translate}}:</span>
   </div>
@@ -103,7 +105,8 @@
                  [dropdownDisabled]="isActionWip"
                  [dropdownWidth]="310"
                  [dropdownPosition]="'top-left'"
-                 [dropdownDefaultText]="'SERVICE.STEP_3_NODE_DEFAULT' | translate "
+                 [dropdownDefaultText]="nodeSelectorDropdownText | translate "
+                 [curDropdownItem]="curNodeSelector"
                  (onChange)="uiData.nodeSelector = $event['value']">
     </cs-dropdown>
   </div>

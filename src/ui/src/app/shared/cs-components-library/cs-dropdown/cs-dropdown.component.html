@@ -10,7 +10,7 @@
                 [clrCloseMenuOnItemClick]="true">
     <div clrDropdownToggle
          class="title-container"
-         [style.min-height.px]="getItemTag(item) ? 60 :30"
+         [style.min-height.px]="getItemTag(curDropdownItem) ? 60 :30"
          [ngClass]="{'disabled':dropdownDisabled}">
       <div class="icon-container">
         <span class="cs-dropdown-title" [ngStyle]="{'font-size':dropdownTitleFontSize + 'px'}"
@@ -39,8 +39,8 @@
         <div *ngIf="dropdownShowSearch && shownDropdownList.length < dropdownList.length" class="dropdown-divider"></div>
         <div class="menu-list-container">
           <div clrDropdownItem
-               (click)="changeSelect(item)"
                *ngFor="let item of shownDropdownList;"
+               (click)="changeSelect(item)"
                class="dropdown-item-container"
                [ngClass]="getActiveClass(item)"
                [style.min-height.px]="getItemTag(item) ? 60 :30">
