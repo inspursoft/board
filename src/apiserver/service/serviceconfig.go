@@ -293,8 +293,8 @@ func ScaleReplica(serviceInfo *model.ServiceStatus, number int32) (bool, error) 
 	return true, err
 }
 
-func GetSelectableServices(pname string, sName string) ([]string, error) {
-	serviceList, err := dao.GetSelectableServices(pname, sName)
+func GetServicesByProjectName(pname string) ([]model.ServiceStatus, error) {
+	serviceList, err := dao.GetServices("project_name", pname)
 	if err != nil {
 		return nil, err
 	}

@@ -629,11 +629,10 @@ func (p *ServiceController) ScaleServiceAction() {
 
 //get selectable service list
 func (p *ServiceController) GetSelectableServicesAction() {
-	serviceName := p.GetString("service_name")
 	projectName := p.GetString("project_name")
 	p.resolveProjectMember(projectName)
-	logs.Info("Get selectable service list for", projectName, serviceName)
-	serviceList, err := service.GetSelectableServices(projectName, serviceName)
+	logs.Info("Get selectable service list for", projectName)
+	serviceList, err := service.GetServicesByProjectName(projectName)
 	if err != nil {
 		logs.Error("Failed to get selectable services.")
 		p.internalError(err)
