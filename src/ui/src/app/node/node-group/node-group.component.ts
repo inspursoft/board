@@ -1,9 +1,9 @@
 import { Component, ComponentFactoryResolver, OnInit, ViewContainerRef } from '@angular/core';
-import { INodeGroup, NodeService } from "../node.service";
+import { NodeService } from "../node.service";
 import { NodeCreateGroupComponent } from "../node-create-group/node-create-group.component";
 import { MessageService } from "../../shared/message-service/message.service";
 import { CsModalParentBase } from "../../shared/cs-modal-base/cs-modal-parent-base";
-import { Message, RETURN_STATUS } from "../../shared/shared.types";
+import { INodeGroup, Message, RETURN_STATUS } from "../../shared/shared.types";
 import { TranslateService } from "@ngx-translate/core";
 
 @Component({

@@ -1,10 +1,11 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { INode, INodeGroup, NodeService } from "../node.service";
+import { NodeService } from "../node.service";
 import { CsModalChildBase } from "../../shared/cs-modal-base/cs-modal-child-base";
+import { MessageService } from "../../shared/message-service/message.service";
+import { INode, INodeGroup } from "../../shared/shared.types";
 import "rxjs/add/operator/zip"
 import "rxjs/add/operator/do"
 import "rxjs/add/operator/catch"
-import { MessageService } from "../../shared/message-service/message.service";
 
 @Component({
   selector: 'node-control',

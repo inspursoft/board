@@ -1,7 +1,7 @@
 /**
  * Created by liyanq on 9/11/17.
  */
-import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from "@angular/core"
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from "@angular/core"
 import { AsyncValidatorFn, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from "@angular/forms";
 import { AbstractControl } from "@angular/forms/src/model";
 
@@ -41,13 +41,14 @@ const PATTERN_Number: RegExp = /^[1-9]\d*$/;
   templateUrl: "./cs-input.component.html",
   styleUrls: ["./cs-input.component.css"]
 })
-export class CsInputComponent implements OnInit {
+export class CsInputComponent implements OnInit, AfterViewInit {
   inputFormGroup: FormGroup;
   inputValidatorFns: Array<ValidatorFn>;
   inputValidatorMessageParam: string;
   inputField: CsInputFiled;
   isCheckInputOnKeyPress: boolean = false;
-  _isDisabled: boolean = false;
+  _isDisabled = false;
+  private isAfterViewInit = false;
   public inputControl: FormControl;
   @ViewChild("input") inputHtml: ElementRef;
   @ViewChild("container") containerHtml: ElementRef;
@@ -75,12 +76,14 @@ export class CsInputComponent implements OnInit {
     this.inputFormGroup = new FormGroup({inputControl: this.inputControl}, {updateOn: 'blur'});
   }
 
+  ngAfterViewInit() {
+    this.isAfterViewInit = true;
+    if (this.customerValidatorAsyncFunc) {
+      this.inputControl.setAsyncValidators(this.customerValidatorAsyncFunc);
+    }
+  }
+
   ngOnInit() {
-    setTimeout(() => {//Todo:Bad method for prevent validate when dynamic create;
-      if (this.customerValidatorAsyncFunc) {
-        this.inputControl.setAsyncValidators(this.customerValidatorAsyncFunc);
-      }
-    });
     if (this.inputControl.validator) {
       this.inputValidatorFns.push(this.inputControl.validator);
     }
@@ -166,7 +169,7 @@ export class CsInputComponent implements OnInit {
       this.inputControl.clearAsyncValidators();
       this.inputControl.disable();
       this.inputField.status = CsInputStatus.isView;
-    } else {
+    } else if (this.isAfterViewInit) {
       this.inputControl.enable();
       this.inputControl.setAsyncValidators(this.customerValidatorAsyncFunc);
     }

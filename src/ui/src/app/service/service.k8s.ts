@@ -7,7 +7,7 @@ import { BuildImageDockerfileData, Image, ImageDetail } from "../image/image";
 import { ImageIndex, ServerServiceStep, ServiceStepPhase, UiServiceFactory, UIServiceStepBase } from "./service-step.component";
 import { Service } from "./service";
 import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from "../shared/shared.const";
-import { NodeAvailableResources, ServiceHPA } from "../shared/shared.types";
+import { INode, INodeGroup, NodeAvailableResources, ServiceHPA } from "../shared/shared.types";
 
 @Injectable()
 export class K8sService {
@@ -177,15 +177,14 @@ export class K8sService {
     });
   }
 
-  getCollaborativeService(serviceName: string, projectName: string): Observable<Array<string>> {
-    return this.http
-      .get<Array<string>>(`/api/v1/services/selectservices`, {
+  getCollaborativeService(serviceName: string, projectName: string): Observable<Array<Service>> {
+    return this.http.get<Array<Service>>(`/api/v1/services/selectservices`, {
         observe: "response",
         params: {
           service_name: serviceName,
           project_name: projectName
         }
-      }).map((res: HttpResponse<Array<string>>) => res.body || Array<string>());
+      }).map((res: HttpResponse<Array<Service>>) => res.body || Array<Service>());
   }
 
   getServiceYamlFile(projectName: string, serviceName: string, yamlType: string): Observable<string> {
@@ -241,23 +240,22 @@ export class K8sService {
       .map((res: HttpResponse<Object>) => res.body)
   }
 
-  getNodeSelectors(): Observable<Array<string>> {
+  getNodeSelectors(): Observable<Array<{name: string, status: number}>> {
     let obsNodeList = this.http
       .get(`/api/v1/nodes`, {observe: "response"})
-      .map((res: HttpResponse<Array<Object>>) => res.body)
-      .map((res: Array<Object>) => {
-        let r = Array<string>();
-        res.filter(value => value["status"] == 1)
-          .forEach(value => r.push(String(value["node_name"]).trim()));
-        return r;
+      .map((res: HttpResponse<Array<INode>>) => res.body)
+      .map((res: Array<INode>) => {
+        let result = Array<{name: string, status: number}>();
+        res.forEach((iNode: INode) => result.push({name: String(iNode.node_name).trim(), status: iNode.status}));
+        return result;
       });
     let obsNodeGroupList = this.http
       .get(`/api/v1/nodegroup`, {observe: "response", params: {is_valid_node_group: '1'}})
-      .map((res: HttpResponse<Array<Object>>) => res.body)
-      .map((res: Array<Object>) => {
-        let r = Array<string>();
-        res.forEach(value => r.push(String(value["nodegroup_name"]).trim()));
-        return r;
+      .map((res: HttpResponse<Array<INodeGroup>>) => res.body)
+      .map((res: Array<INodeGroup>) => {
+        let result = Array<{name: string, status: number}>();
+        res.forEach((iNodeGroup: INodeGroup) => result.push({name: String(iNodeGroup.nodegroup_name).trim(), status: 1}));
+        return result;
       });
     return obsNodeList
       .zip(obsNodeGroupList)

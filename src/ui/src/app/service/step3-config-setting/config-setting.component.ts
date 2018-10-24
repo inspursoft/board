@@ -1,4 +1,7 @@
 import { ChangeDetectorRef, Component, Injector, OnInit } from '@angular/core';
+import { ValidationErrors } from "@angular/forms/forms";
+import { HttpErrorResponse } from "@angular/common/http";
+import { Observable } from "rxjs/Observable";
 import {
   Container,
   ExternalService,
@@ -6,12 +9,12 @@ import {
   PHASE_EXTERNAL_SERVICE,
   ServiceStepPhase,
   UIServiceStep3,
-  UIServiceStep4
+  UIServiceStep4,
+  UIServiceStepBase
 } from '../service-step.component';
 import { ServiceStepBase } from "../service-step";
-import { ValidationErrors } from "@angular/forms/forms";
-import { HttpErrorResponse } from "@angular/common/http";
-import { Observable } from "rxjs/Observable";
+import { IDropdownTag } from "../../shared/shared.types";
+import { SetAffinityComponent } from "./set-affinity/set-affinity.component";
 
 @Component({
   styleUrls: ["./config-setting.component.css"],
@@ -19,43 +22,44 @@ import { Observable } from "rxjs/Observable";
 })
 export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
   patternServiceName: RegExp = /^[a-z]([-a-z0-9]*[a-z0-9])+$/;
-  dropDownListNum: Array<number>;
-  showAdvanced: boolean = true;
-  showExternal: boolean = false;
-  showCollaborative: boolean = false;
-  showNodeSelector: boolean = false;
-  uiPreData: UIServiceStep3 = new UIServiceStep3();
-  collaborativeServiceList: Array<string>;
-  /*Todo:Only for collaborative plus action.It must be delete after update UIServiceStep4*/
-  collaborativeList:Array<Object>;
-  nodeSelectorList:Array<string>;
-  noPortForExtent: boolean = false;
+  showAdvanced = false;
+  showNodeSelector = false;
   isActionWip: boolean = false;
+  nodeSelectorList: Array<{name: string, value: string, tag: IDropdownTag}>;
+  uiPreData: UIServiceStep3;
 
-  constructor(protected injector: Injector, private changeDetectorRef: ChangeDetectorRef) {
+  constructor(protected injector: Injector,
+              private changeDetectorRef: ChangeDetectorRef) {
     super(injector);
-    this.dropDownListNum = Array<number>();
-    this.collaborativeServiceList = Array<string>();
-    this.collaborativeList = Array<Object>();
-    this.nodeSelectorList = Array<string>()
+    this.changeDetectorRef.detach();
+    this.nodeSelectorList = Array<{name: string, value: string, tag: IDropdownTag}>();
+    this.uiPreData = new UIServiceStep3();
   }
 
   ngOnInit() {
-    this.k8sService.getServiceConfig(PHASE_CONFIG_CONTAINERS).subscribe(res => {
-      this.uiPreData = res as UIServiceStep3;
-      this.noPortForExtent = this.uiPreData.containerList.every(value => !value.isHavePort())
+    let obsStepConfig = this.k8sService.getServiceConfig(this.stepPhase);
+    let obsPreStepConfig = this.k8sService.getServiceConfig(PHASE_CONFIG_CONTAINERS);
+    Observable.forkJoin(obsStepConfig, obsPreStepConfig).subscribe((res: [UIServiceStepBase, UIServiceStepBase]) => {
+      this.uiBaseData = res[0];
+      this.uiPreData = res[1] as UIServiceStep3;
+      if (this.uiData.externalServiceList.length === 0 && this.uiPreData.containerHavePortList.length > 0) {
+        let container = this.uiPreData.containerHavePortList[0];
+        this.addNewExternalService();
+        this.setExternalInfo(container, 0);
+      }
+      this.changeDetectorRef.reattach();
     });
-    this.k8sService.getServiceConfig(this.stepPhase).subscribe(res => {
-      this.uiBaseData = res;
-      this.setServiceName(this.uiData.serviceName);
-      this.changeDetectorRef.detectChanges();
+    this.nodeSelectorList.push({name: 'SERVICE.STEP_3_NODE_DEFAULT', value: '', tag: null});
+    this.k8sService.getNodeSelectors().subscribe((res: Array<{name: string, status: number}>) => {
+      res.forEach((value: {name: string, status: number}) => {
+        this.nodeSelectorList.push({
+          name: value.name, value: value.name, tag: {
+            type: value.status == 1 ? 'alert-success' : 'alert-warning',
+            description: value.status == 1 ? 'SERVICE.STEP_3_NODE_STATUS_SCHEDULABLE' : 'SERVICE.STEP_3_NODE_STATUS_UNSCHEDULABLE'
+          }
+        })
+      });
     });
-    this.k8sService.getNodeSelectors().subscribe((res:Array<string>)=>{
-      this.nodeSelectorList = res;
-    });
-    for (let i = 1; i <= 100; i++) {
-      this.dropDownListNum.push(i)
-    }
   }
 
   get stepPhase(): ServiceStepPhase {
@@ -70,12 +74,51 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
     return this.checkServiceName.bind(this);
   }
 
-  get isCanAddContainerInfo(){
-    return this.uiPreData.containerList.find(value => value.isHavePort());
+  get nodeSelectorDropdownText() {
+    return this.uiData.nodeSelector === '' ? 'SERVICE.STEP_3_NODE_DEFAULT' : this.uiData.nodeSelector;
   }
 
-  get nodeSelectorDefaultText(){
-    return this.uiData.nodeSelector == "" ? 'SERVICE.STEP_3_NODE_SELECTOR_COMMENT': this.uiData.nodeSelector;
+  get curNodeSelector() {
+    return this.nodeSelectorList.find(value => value.name === this.uiData.nodeSelector);
+  }
+
+  getContainerDropdownText(index: number): string {
+    let result = this.uiData.externalServiceList[index].container_name;
+    return result == "" ? "SERVICE.STEP_3_SELECT_CONTAINER" : result;
+  }
+
+  setExternalInfo(container: Container, index: number) {
+    this.uiData.externalServiceList[index].container_name = container.name;
+    this.uiData.externalServiceList[index].node_config.target_port = container.container_port[0];
+  }
+
+  setNodePort(index: number, port: number) {
+    this.uiData.externalServiceList[index].node_config.node_port = Number(port).valueOf();
+  }
+
+  addNewExternalService() {
+    if (this.uiPreData.containerHavePortList.length > 0 && !this.isActionWip) {
+      let externalService = new ExternalService();
+      this.uiData.externalServiceList.push(externalService);
+    }
+  }
+
+  removeExternalService(index: number) {
+    this.uiData.externalServiceList.splice(index, 1);
+  }
+
+  setAffinity() {
+    if (!this.isActionWip) {
+      let factory = this.factoryResolver.resolveComponentFactory(SetAffinityComponent);
+      let componentRef = this.selfView.createComponent(factory);
+      componentRef.instance.openSetModal(this.uiData).subscribe(() => this.selfView.remove(this.selfView.indexOf(componentRef.hostView)));
+    }
+  }
+
+  setNodeSelector() {
+    if (!this.isActionWip) {
+      this.showNodeSelector = !this.showNodeSelector;
+    }
   }
 
   checkServiceName(control: HTMLInputElement): Observable<ValidationErrors | null> {
@@ -92,81 +135,33 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
       });
   }
 
-  setNodePort(index: number, port: number) {
-    this.uiData.externalServiceList[index].node_config.node_port = Number(port).valueOf();
-  }
-
-  setServiceName(serviceName: string): void {
-    this.uiData.serviceName = serviceName;
-    /*Todo:add reset the Collaborative service Info*/
-    this.collaborativeServiceList.splice(0, this.collaborativeServiceList.length);
-    this.k8sService.getCollaborativeService(serviceName, this.uiData.projectName).subscribe(
-      res => this.collaborativeServiceList = res,
-      (err: HttpErrorResponse) => {
-        if (err.status == 404) {
-          this.messageService.cleanNotification();
-        }
-      });
-  }
-
-  addContainerInfo() {
-    if (this.isCanAddContainerInfo){
-      let externalService = new ExternalService();
-      if (this.uiPreData.containerList.length > 0) {
-        externalService.container_name = this.uiPreData.containerList[0].name;
-        let containerPorts = this.getContainerPorts(externalService.container_name);
-        if (containerPorts.length > 0) {
-          externalService.node_config.target_port = containerPorts[0];
-        }
-      }
-      this.uiData.externalServiceList.push(externalService);
-    }
-  }
-
-  addOneCollaborativeService(){
-    if (this.collaborativeServiceList.length > 0){
-      this.collaborativeList.push({});
-    }
-  }
-
-  removeContainerInfo(index: number) {
-    this.uiData.externalServiceList.splice(index, 1);
-  }
-
-  getContainerDropdownText(index: number): string {
-    let result = this.uiData.externalServiceList[index].container_name;
-    return result == "" ? "SERVICE.STEP_3_SELECT_CONTAINER" : result;
-  }
-
-  getContainerPortDropdownText(index: number): string {
-    let result = this.uiData.externalServiceList[index].node_config.target_port;
-    return result == 0 ? "SERVICE.STEP_3_SELECT_PORT" : result.toString();
-  }
-
-  setExternalInfo(container: Container, index: number) {
-    this.uiData.externalServiceList[index].container_name = container.name;
-    let containerPorts = this.getContainerPorts(container.name);
-    if (containerPorts.length > 0) {
-      this.uiData.externalServiceList[index].node_config.target_port = containerPorts[0];
-    }
-  }
-
-  getContainerPorts(containerName: string): Array<number> {
-    let result: Array<number> = Array<number>();
-    this.uiPreData.containerList.forEach((container: Container) => {
-      if (container.name == containerName) {
-        result = container.container_port;
+  haveRepeatNodePort(): boolean {
+    let haveRepeat = false;
+    this.uiData.externalServiceList.forEach((value, index) => {
+      if (this.uiData.externalServiceList.find((value1, index1) =>
+        value1.container_name === value.container_name
+        && value1.node_config.target_port === value.node_config.target_port
+        && index1 !== index)) {
+        haveRepeat = true
       }
     });
-    return result;
+    return haveRepeat;
   }
 
   forward(): void {
     if (this.verifyInputValid()) {
-      this.isActionWip = true;
-      this.k8sService.setServiceConfig(this.uiData.uiToServer()).subscribe(
-        () => this.k8sService.stepSource.next({index: 5, isBack: false})
-      );
+      if (this.uiData.externalServiceList.length == 0) {
+        this.messageService.showAlert(`SERVICE.STEP_3_EXTERNAL_MESSAGE`, {alertType: "alert-warning"});
+      } else if (this.haveRepeatNodePort()) {
+        this.messageService.showAlert(`SERVICE.STEP_3_EXTERNAL_REPEAT`, {alertType: "alert-warning"});
+      } else if (this.uiData.affinityList.find(value => value.services.length == 0)) {
+        this.messageService.showAlert(`SERVICE.STEP_3_AFFINITY_MESSAGE`, {alertType: "alert-warning"});
+      } else {
+        this.isActionWip = true;
+        this.k8sService.setServiceConfig(this.uiData.uiToServer()).subscribe(
+          () => this.k8sService.stepSource.next({index: 5, isBack: false})
+        );
+      }
     }
   }
 

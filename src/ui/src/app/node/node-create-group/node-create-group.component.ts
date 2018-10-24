@@ -1,10 +1,11 @@
 import { Component, EventEmitter, Output } from '@angular/core';
-import { INodeGroup, NodeService } from "../node.service";
+import { NodeService } from "../node.service";
 import { MessageService } from "../../shared/message-service/message.service";
 import { ValidationErrors } from "@angular/forms";
 import { HttpErrorResponse } from "@angular/common/http";
 import { CsModalChildBase } from "../../shared/cs-modal-base/cs-modal-child-base";
 import { Observable } from "rxjs/Observable";
+import { INodeGroup } from "../../shared/shared.types";
 import "rxjs/add/operator/map"
 import "rxjs/add/observable/of"
 
