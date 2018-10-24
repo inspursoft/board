@@ -8,17 +8,22 @@
   <clr-dropdown #csDropdown
                 *ngIf="dropdownList && dropdownList.length > 0"
                 [clrCloseMenuOnItemClick]="true">
-    <div class="title-container" [ngClass]="{'disabled':dropdownDisabled}" clrDropdownToggle>
-      <span class="cs-dropdown-title"
-            [ngStyle]="{'font-size':dropdownTitleFontSize + 'px'}"
-            [ngClass]="{'disabled':dropdownDisabled}">
-        {{ isShowDefaultText? (dropdownDefaultText | translate):(dropdownText| translate)}}
-      </span>
-      <div class="icon-container" *ngIf="dropdownEnabled">
-        <div class="cs-dropdown-icon" [ngClass]="{'open':active,'close':!active}">
+    <div clrDropdownToggle
+         class="title-container"
+         [style.min-height.px]="getItemTag(curDropdownItem) ? 60 :30"
+         [ngClass]="{'disabled':dropdownDisabled}">
+      <div class="icon-container">
+        <span class="cs-dropdown-title" [ngStyle]="{'font-size':dropdownTitleFontSize + 'px'}"
+              [ngClass]="{'disabled':dropdownDisabled}">
+          {{ isShowDefaultText? (dropdownDefaultText | translate):(dropdownText| translate)}}
+        </span>
+        <div *ngIf="dropdownEnabled" class="cs-dropdown-icon" [ngClass]="{'open':active,'close':!active}">
           <clr-icon shape="caret up"></clr-icon>
         </div>
       </div>
+      <span *ngIf="getItemTag(curDropdownItem)" class="tag label" [ngClass]="getItemTagClass(curDropdownItem)">
+        {{getItemTagDes(curDropdownItem) | translate}}
+      </span>
     </div>
     <clr-dropdown-menu #csDropdownMenu
                        [clrPosition]="dropdownPosition"
@@ -33,13 +38,19 @@
         </div>
         <div *ngIf="dropdownShowSearch && shownDropdownList.length < dropdownList.length" class="dropdown-divider"></div>
         <div class="menu-list-container">
-          <button *ngFor="let item of shownDropdownList;"
-                  clrDropdownItem
-                  class="dropdown-item"
-                  [ngClass]="getItemClass(item)"
-                  (click)="changeSelect(item)">
-            {{getItemDescription(item) | translate}}
-          </button>
+          <div clrDropdownItem
+               *ngFor="let item of shownDropdownList;"
+               (click)="changeSelect(item)"
+               class="dropdown-item-container"
+               [ngClass]="getActiveClass(item)"
+               [style.min-height.px]="getItemTag(item) ? 60 :30">
+            <button [ngClass]="getSpecialClass(item)" class="dropdown-item">
+              {{getItemDescription(item) | translate}}
+            </button>
+            <span *ngIf="getItemTag(item)" class="tag label" [ngClass]="getItemTagClass(item)">
+              {{getItemTagDes(item) | translate}}
+            </span>
+          </div>
         </div>
         <div *ngIf="hasMoreItems" class="dropdown-divider"></div>
         <a *ngIf="hasMoreItems" href="javascript:void(0)" (click)="incShowTimes($event)">

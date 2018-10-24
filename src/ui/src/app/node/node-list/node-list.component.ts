@@ -1,9 +1,9 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { INode, NodeService } from "../node.service";
+import { NodeService } from "../node.service";
 import { MessageService } from "../../shared/message-service/message.service";
 import { NodeDetailComponent } from "../node-detail/node-detail.component";
 import { NodeControlComponent } from "../node-control/node-control.component";
-import { Message, RETURN_STATUS } from "../../shared/shared.types";
+import { INode, Message, RETURN_STATUS } from "../../shared/shared.types";
 import { TranslateService } from "@ngx-translate/core";
 
 @Component({
