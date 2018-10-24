@@ -7,7 +7,8 @@ export enum SERVICE_STATUS{
   PREPARING,
   RUNNING,
   STOPPED,
-  WARNING
+  WARNING,
+  DELETED
 }
 
 export enum GUIDE_STEP{

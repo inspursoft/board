@@ -20,6 +20,10 @@ import { ConfigSettingComponent } from "./step3-config-setting/config-setting.co
 import { TestingComponent } from "./step4-testing/testing.component";
 import { DeployComponent } from "./step5-deploy/deploy.component";
 import { ConfigContainerComponent } from "./step2-config-container/config-container.component";
+import { SetAffinityComponent } from "./step3-config-setting/set-affinity/set-affinity.component";
+import { AffinityCardComponent } from "./step3-config-setting/affinity-card/affinity-card.component";
+import { AffinityCardListComponent } from "./step3-config-setting/affinity-card-list/affinity-card-list.component";
+
 
 @NgModule({
   imports: [
@@ -43,7 +47,10 @@ import { ConfigContainerComponent } from "./step2-config-container/config-contai
     ScaleComponent,
     UpdateComponent,
     LocateComponent,
-    StatusComponent
+    StatusComponent,
+    AffinityCardComponent,
+    AffinityCardListComponent,
+    SetAffinityComponent,
   ],
   entryComponents: [
     ListServiceComponent,
@@ -53,7 +60,8 @@ import { ConfigContainerComponent } from "./step2-config-container/config-contai
     TestingComponent,
     ServiceControlComponent,
     DeployComponent,
-    ServiceDetailComponent
+    ServiceDetailComponent,
+    SetAffinityComponent
   ],
   providers: [
     K8sService,

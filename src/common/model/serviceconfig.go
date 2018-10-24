@@ -126,4 +126,10 @@ type ConfigServiceStep struct {
 	ClusterIP           string            `json:"cluster_ip"`
 	ContainerList       []Container       `json:"container_list"`
 	ExternalServiceList []ExternalService `json:"external_service_list"`
+	AffinityList        []Affinity        `json:"affinity_list"`
+}
+
+type Affinity struct {
+	AntiFlag     int      `json:"anti_flag"`
+	ServiceNames []string `json:"service_names"`
 }

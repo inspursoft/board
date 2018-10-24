@@ -5,7 +5,7 @@
  */
 
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from "@angular/core"
-import { DropdownMenuPositon } from "../../shared.types";
+import { DropdownMenuPosition, IDropdownTag } from "../../shared.types";
 import { Subject } from "rxjs/Subject";
 import { animate, state, style, transition, trigger } from "@angular/animations";
 import { DISMISS_CHECK_DROPDOWN } from "../../shared.const";
@@ -28,7 +28,7 @@ export type EnableSelectCallBack = (item: any) => boolean;
 })
 export class CsDropdownComponent implements OnChanges, OnInit {
   @ViewChild("csDropdown") csDropdown: Object;
-  @Input() dropdownPosition: DropdownMenuPositon = 'bottom-left';
+  @Input() dropdownPosition: DropdownMenuPosition = 'bottom-left';
   @Input() dropdownDisabled = false;
   @Input() dropdownHideSearch = false;
   @Input() dropdownCanSelect: EnableSelectCallBack;
@@ -38,6 +38,7 @@ export class CsDropdownComponent implements OnChanges, OnInit {
   @Input() dropdownListTextKey = '';
   @Input() dropdownTitleFontSize = 14;
   @Input() dropdownMustBeSelect = true;
+  @Input() curDropdownItem: any;
   @Output("onChange") dropdownChange: EventEmitter<any>;
   @Output("onOnlyClickItem") dropdownClick: EventEmitter<any>;
   isShowDefaultText = true;
@@ -84,10 +85,15 @@ export class CsDropdownComponent implements OnChanges, OnInit {
     this.subFilterDropdownList.next(this.dropdownSearchText);
   }
 
-  getItemClass(item: any) {
+  getSpecialClass(item: any) {
     return {
-      'special': (typeof item == "object") && item['isSpecial'],
-      'active': this.dropdownText === this.getItemDescription(item)
+      'special': (typeof item == "object") && Reflect.has(item, 'isSpecial')
+    }
+  }
+
+  getActiveClass(item: any) {
+    return {
+      'active': this.dropdownText === this.getItemDescription(item) || this.dropdownDefaultText === this.getItemDescription(item)
     }
   }
 
@@ -119,8 +125,31 @@ export class CsDropdownComponent implements OnChanges, OnInit {
     return item.toString();
   }
 
+  getItemTag(item: any): IDropdownTag | null {
+    if (typeof item === "object") {
+      return Reflect.has(item, 'tag') ? item['tag'] : null
+    } else {
+      return null
+    }
+  }
+
+  getItemTagDes(item: any): string {
+    let tag: IDropdownTag = item['tag'];
+    return tag.description;
+  }
+
+  getItemTagClass(item: any) {
+    let tag: IDropdownTag = item['tag'];
+    return {
+      'label-info': tag.type == 'alert-success',
+      'label-warning': tag.type == 'alert-warning',
+      'label-danger': tag.type == 'alert-danger'
+    }
+  }
+
   changeSelect(item: any) {
     if (typeof item == "object" && item[ONLY_FOR_CLICK]) {
+      this.curDropdownItem = item;
       this.dropdownClick.emit(item);
     } else {
       if (this.dropdownCanSelect && !this.dropdownCanSelect(item)) {
@@ -129,6 +158,7 @@ export class CsDropdownComponent implements OnChanges, OnInit {
       if (this.dropdownText != this.getItemDescription(item)) {
         this.isShowDefaultText = false;
         this.dropdownText = this.getItemDescription(item);
+        this.curDropdownItem = item;
         this.dropdownChange.emit(item);
       }
     }

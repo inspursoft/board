@@ -31,7 +31,12 @@ export class Message {
 }
 
 export type AlertType = 'alert-success' | 'alert-danger' | 'alert-info' | 'alert-warning';
-export type DropdownMenuPositon = 'bottom-left' | 'bottom-right' | 'top-left' | 'top-right';
+export type DropdownMenuPosition = 'bottom-left' | 'bottom-right' | 'top-left' | 'top-right';
+
+export interface IDropdownTag {
+  type: AlertType,
+  description: string
+}
 
 export class AlertMessage {
   message: string = '';
@@ -57,6 +62,19 @@ export class SignUp {
   confirmPassword: string;
   realname: string;
   comment: string;
+}
+
+export interface INode {
+  node_name: string;
+  node_ip: string;
+  status: number;
+}
+
+export interface INodeGroup {
+  nodegroup_id: number,
+  nodegroup_project: string,
+  nodegroup_name: string,
+  nodegroup_comment: string;
 }
 
 export class NodeAvailableResources {
@@ -110,6 +128,10 @@ export class User {
     this.user_creation_time = new Date();
     this.user_update_time = new Date();
   }
+}
+
+export enum DragStatus {
+  dsReady = 'ready', dsStart = 'start', dsDragIng = 'drag', dsEnd = 'end'
 }
 
 export enum CreateImageMethod{None, Template, DockerFile, DevOps}
