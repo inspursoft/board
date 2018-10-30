@@ -1086,9 +1086,10 @@ func GenerateServiceConfig(service *v1.Service) *v1.Service {
 			Namespace: service.ObjectMeta.Namespace,
 		},
 		Spec: v1.ServiceSpec{
-			Ports:    service.Spec.Ports,
-			Selector: service.Spec.Selector,
-			Type:     service.Spec.Type,
+			ClusterIP: service.Spec.ClusterIP,
+			Ports:     service.Spec.Ports,
+			Selector:  service.Spec.Selector,
+			Type:      service.Spec.Type,
 		},
 	}
 }
