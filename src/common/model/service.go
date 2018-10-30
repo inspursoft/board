@@ -62,6 +62,7 @@ type ExternalService struct {
 type NodeType struct {
 	TargetPort int `json:"target_port"`
 	NodePort   int `json:"node_port"`
+	Port       int `json:"port"`
 }
 
 type LoadBalancer struct {

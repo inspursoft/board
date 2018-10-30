@@ -363,7 +363,7 @@ func (sc *ServiceConfigController) configExternalService(key string, configServi
 	}
 
 	for _, external := range serviceConfig.ExternalServiceList {
-		if external.NodeConfig.NodePort > maximumPortNum || external.NodeConfig.NodePort < minimumPortNum {
+		if external.NodeConfig.NodePort != 0 && (external.NodeConfig.NodePort > maximumPortNum || external.NodeConfig.NodePort < minimumPortNum) {
 			sc.serveStatus(http.StatusBadRequest, portInvalidErr.Error())
 			return
 		}
@@ -432,7 +432,7 @@ func (sc *ServiceConfigController) checkEntireServiceConfig(entireService *Confi
 		return emptyExternalServiceListErr
 	}
 	for _, external := range entireService.ExternalServiceList {
-		if external.NodeConfig.NodePort > maximumPortNum || external.NodeConfig.NodePort < minimumPortNum {
+		if external.NodeConfig.NodePort != 0 && (external.NodeConfig.NodePort > maximumPortNum || external.NodeConfig.NodePort < minimumPortNum) {
 			return portInvalidErr
 		}
 	}
