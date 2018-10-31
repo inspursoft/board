@@ -141,10 +141,11 @@ func (s *ConfigServiceStep) GetConfigContainerList() interface{} {
 	}
 }
 
-func (s *ConfigServiceStep) configExternalService(serviceName string, instance int, public int, nodeOrNodeGroupName string, externalServiceList []model.ExternalService) *ConfigServiceStep {
+func (s *ConfigServiceStep) configExternalService(serviceName string, clusterIP string, instance int, public int, nodeOrNodeGroupName string, externalServiceList []model.ExternalService) *ConfigServiceStep {
 	s.ServiceName = serviceName
 	s.Instance = instance
 	s.Public = public
+	s.ClusterIP = clusterIP
 	s.NodeSelector = nodeOrNodeGroupName
 	s.ExternalServiceList = externalServiceList
 	return s
@@ -163,6 +164,7 @@ func (s *ConfigServiceStep) GetConfigExternalService() interface{} {
 		ServiceName         string                  `json:"service_name"`
 		Instance            int                     `json:"instance"`
 		Public              int                     `json:"service_public"`
+		ClusterIP           string                  `json:"cluster_ip"`
 		NodeSelector        string                  `json:"node_selector"`
 		ExternalServiceList []model.ExternalService `json:"external_service_list"`
 		AffinityList        []model.Affinity        `json:"affinity_list"`
@@ -171,6 +173,7 @@ func (s *ConfigServiceStep) GetConfigExternalService() interface{} {
 		ServiceName:         s.ServiceName,
 		Instance:            s.Instance,
 		Public:              s.Public,
+		ClusterIP:           s.ClusterIP,
 		NodeSelector:        s.NodeSelector,
 		ExternalServiceList: s.ExternalServiceList,
 		AffinityList:        s.AffinityList,
@@ -342,6 +345,9 @@ func (sc *ServiceConfigController) configExternalService(key string, configServi
 		return
 	}
 
+	clusterIP := sc.GetString("cluster_ip")
+	// TODO check valid cluster IP
+
 	nodeOrNodeGroupName := strings.ToLower(sc.GetString("node_selector"))
 	if nodeOrNodeGroupName != "" {
 		isExists, err := service.NodeOrNodeGroupExists(nodeOrNodeGroupName)
@@ -368,7 +374,7 @@ func (sc *ServiceConfigController) configExternalService(key string, configServi
 			return
 		}
 	}
-	configServiceStep.configExternalService(serviceName, instance, public, nodeOrNodeGroupName, serviceConfig.ExternalServiceList)
+	configServiceStep.configExternalService(serviceName, clusterIP, instance, public, nodeOrNodeGroupName, serviceConfig.ExternalServiceList)
 	SetConfigServiceStep(key, configServiceStep.configAffinity(serviceConfig.AffinityList))
 }
 

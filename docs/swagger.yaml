@@ -1625,6 +1625,10 @@ paths:
           in: query
           type: string
           required: false
+        - name: cluster_ip
+          in: query
+          type: string
+          required: false          
         - name: node_selector
           in: query
           type: string
@@ -4580,6 +4584,8 @@ definitions:
       service_public:
         type: integer   
         format: int32
+      cluster_ip:
+        type: string        
       node_selector:
         type: string
       image_list:

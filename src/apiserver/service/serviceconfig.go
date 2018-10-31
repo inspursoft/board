@@ -271,6 +271,45 @@ func SyncServiceWithK8s(pName string) error {
 	return nil
 }
 
+func SyncAutoScaleWithK8s(pName string) error {
+	logs.Debug("Sync AutoScale of namespace %s", pName)
+
+	//obtain AutoScale List data of
+	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		K8sMasterURL: kubeMasterURL(),
+	})
+
+	hpaList, err := k8sclient.AppV1().AutoScale(pName).List()
+	if err != nil {
+		logs.Error("Failed to get service list with project name: %s", pName)
+		return err
+	}
+
+	//handle the hpaList data
+	for _, item := range hpaList.Items {
+		s := model.ServiceStatus{Name: item.Spec.ScaleTargetRef.Name,
+			ProjectName: pName,
+		}
+		serviceData, err := GetService(s, "name", "project_name")
+		if serviceData == nil {
+			logs.Info("Not found this service in DB %s %s", item.Spec.ScaleTargetRef.Name, pName)
+			continue
+		}
+		var asquery model.ServiceAutoScale
+		asquery.ServiceID = serviceData.ID
+		asquery.HPAName = item.ObjectMeta.Name
+		asquery.HPAStatus = 1
+		asquery.CPUPercent = int(*item.Spec.TargetCPUUtilizationPercentage)
+		asquery.MaxPod = int(item.Spec.MaxReplicas)
+		asquery.MinPod = int(*item.Spec.MinReplicas)
+		_, err = dao.SyncAutoScaleData(asquery)
+		if err != nil {
+			logs.Error("Sync HPA %s failed.", asquery.HPAName)
+		}
+	}
+	return nil
+}
+
 func ScaleReplica(serviceInfo *model.ServiceStatus, number int32) (bool, error) {
 
 	var config k8sassist.K8sAssistConfig
