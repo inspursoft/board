@@ -22,6 +22,7 @@ import { SetAffinityComponent } from "./set-affinity/set-affinity.component";
 })
 export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
   patternServiceName: RegExp = /^[a-z]([-a-z0-9]*[a-z0-9])+$/;
+  patternIP: RegExp = /^((?:(?:25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d)))\.){3}(?:25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d))))$/;
   showAdvanced = false;
   showNodeSelector = false;
   isActionWip: boolean = false;

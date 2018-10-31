@@ -25,6 +25,14 @@
     </cs-input>
   </div>
   <div class="line-container">
+    <cs-input [disabled]="isActionWip"
+              [inputPattern]="patternIP"
+              [inputLabel]="'SERVICE.STEP_3_CLUSTER_IP' | translate"
+              [simpleFiled]="uiData.clusterIp"
+              (onCheck)="uiData.clusterIp = $event">
+    </cs-input>
+  </div>
+  <div class="line-container">
     <label class="public">{{"SERVICE.STEP_3_PUBLIC" | translate}}:
       <input title=""
              type="checkbox"
@@ -67,8 +75,8 @@
                 [simpleFiled]="externalService.node_config.node_port"
                 [disabled]="isActionWip"
                 [inputLabel]="'SERVICE.STEP_3_NODE_PORT' | translate"
-                [inputIsRequired]="true"
-                [inputMin]="30000"
+                [inputIsRequired]="uiData.clusterIp == ''"
+                [inputMin]="uiData.clusterIp == '' ? 0 : 30000"
                 [inputMax]="32766"
                 [inputPlaceholder]="'SERVICE.STEP_3_EXTERNAL_PORT'| translate"
                 (onCheck)="setNodePort(iIndex,$event)">

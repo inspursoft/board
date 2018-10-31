@@ -26,7 +26,7 @@ export class AffinityCardComponent {
   }
 
   dragEvent() {
-    this.data.status = DragStatus.dsDragIng;
+    // this.data.status = DragStatus.dsDragIng;
   }
 
   get containerStyle() {
