@@ -88,3 +88,24 @@ func GetAutoScalesByService(query model.ServiceAutoScale, svcID int64) ([]*model
 	autoscalesBySvcSQL, params := generateAutoScalesBySvcSQL(query, svcID)
 	return queryAutoScales(autoscalesBySvcSQL, params)
 }
+
+// Sync autoscale from k8s to DB
+func SyncAutoScaleData(autoscale model.ServiceAutoScale) (int64, error) {
+
+	var asquery model.ServiceAutoScale
+	asquery.HPAName = autoscale.HPAName
+	o := orm.NewOrm()
+	err := o.Read(&asquery, "name")
+	if err != orm.ErrNoRows {
+		return 0, nil
+	}
+
+	autoscaleID, err := o.Insert(&autoscale)
+	if err != nil {
+		if err == orm.ErrNoRows {
+			return 0, nil
+		}
+		return 0, err
+	}
+	return autoscaleID, err
+}

@@ -304,6 +304,14 @@ func SyncProjectsWithK8s() error {
 			// Still can work
 			continue
 		}
+
+		// Sync the autoscale hpa in this project namespace
+		err = SyncAutoScaleWithK8s(namespace.Name)
+		if err != nil {
+			logs.Error("Failed to sync autoscale rule with project name: %s, error: %+v", namespace.Name, err)
+			// Still can work
+			continue
+		}
 	}
 	return err
 }
