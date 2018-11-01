@@ -76,7 +76,6 @@
                 [disabled]="isActionWip"
                 [inputLabel]="'SERVICE.STEP_3_NODE_PORT' | translate"
                 [inputIsRequired]="uiData.clusterIp == ''"
-                [inputMin]="uiData.clusterIp == '' ? 0 : 30000"
                 [inputMax]="32766"
                 [inputPlaceholder]="'SERVICE.STEP_3_EXTERNAL_PORT'| translate"
                 (onCheck)="setNodePort(iIndex,$event)">

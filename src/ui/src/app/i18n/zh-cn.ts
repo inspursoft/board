@@ -381,6 +381,7 @@ export const LANG_ZH_CN = {
     "STEP_3_DANGER_MESSAGE":"没有设置可用的容器端口，请检查。",
     "STEP_3_EXTERNAL_MESSAGE":"至少需要有一个节点端口",
     "STEP_3_EXTERNAL_REPEAT":"节点端口不能重复",
+    "STEP_3_INVALID_MIN_NODE_PORT":"节点端口不能小于30000",
     "STEP_3_AFFINITY_MESSAGE":"亲和组/反亲和组不能为空",
     "STEP_3_AFFINITY_SETTING":"添加亲和组/反亲和组",
     "STEP_3_AFFINITY_GROUP":"亲和组",

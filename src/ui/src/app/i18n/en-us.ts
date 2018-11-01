@@ -381,6 +381,7 @@ export const LANG_EN_US = {
     "STEP_3_DANGER_MESSAGE":"No available port set to any containers, please check.",
     "STEP_3_EXTERNAL_MESSAGE":"Node port is can't empty.",
     "STEP_3_EXTERNAL_REPEAT":"Node port can't repeat.",
+    "STEP_3_INVALID_MIN_NODE_PORT":"Node port can't less than 30000",
     "STEP_3_AFFINITY_MESSAGE":"Either affinity group or anti-affinity group should't be empty.",
     "STEP_3_AFFINITY_SETTING":"Add affinity group or anti-affinity group",
     "STEP_3_AFFINITY_GROUP":"Affinity group",
