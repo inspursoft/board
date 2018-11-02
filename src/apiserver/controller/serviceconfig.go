@@ -17,7 +17,6 @@ import (
 const (
 	expircyTimeSpan       time.Duration = 900
 	selectProject                       = "SELECT_PROJECT"
-	selectImageList                     = "SELECT_IMAGES"
 	configContainerList                 = "CONFIG_CONTAINERS"
 	configExternalService               = "EXTERNAL_SERVICE"
 	configEntireService                 = "ENTIRE_SERVICE"
@@ -85,58 +84,19 @@ func (s *ConfigServiceStep) GetSelectedProject() interface{} {
 	}
 }
 
-func (s *ConfigServiceStep) SelectImageList(imageList []model.ImageIndex) *ConfigServiceStep {
-	s.ImageList = imageList
-	return s
-}
-
-func (s *ConfigServiceStep) GetSelectedImageList() interface{} {
-	return struct {
-		ProjectID   int64              `json:"project_id"`
-		ProjectName string             `json:"project_name"`
-		ImageList   []model.ImageIndex `json:"image_list"`
-	}{
-		ProjectID:   s.ProjectID,
-		ProjectName: s.ProjectName,
-		ImageList:   s.ImageList,
-	}
-}
-
 func (s *ConfigServiceStep) ConfigContainerList(containerList []model.Container) *ConfigServiceStep {
 	s.ContainerList = containerList
 	return s
 }
 
 func (s *ConfigServiceStep) GetConfigContainerList() interface{} {
-	if len(s.ContainerList) < 1 {
-		for _, image := range s.ImageList {
-			fromIndex := strings.LastIndex(image.ImageName, "/")
-			image.ProjectName = image.ImageName[:fromIndex]
-			s.ContainerList = append(s.ContainerList, model.Container{Name: image.ImageName[fromIndex+1:], Image: image})
-		}
-	} else {
-		containerList := make([]model.Container, 0)
-		for _, image := range s.ImageList {
-			hasChanged := false
-			for _, container := range s.ContainerList {
-				if image.ImageName == container.Image.ImageName && image.ImageTag == container.Image.ImageTag {
-					hasChanged = true
-					containerList = append(containerList, container)
-					break
-				}
-			}
-			if hasChanged == false {
-				fromIndex := strings.LastIndex(image.ImageName, "/")
-				image.ProjectName = image.ImageName[:fromIndex]
-				containerList = append(containerList, model.Container{Name: image.ImageName[fromIndex+1:], Image: image})
-			}
-		}
-		s.ContainerList = containerList
-	}
-
 	return struct {
+		ProjectID     int64             `json:"project_id"`
+		ProjectName   string            `json:"project_name"`
 		ContainerList []model.Container `json:"container_list"`
 	}{
+		ProjectID:     s.ProjectID,
+		ProjectName:   s.ProjectName,
 		ContainerList: s.ContainerList,
 	}
 }
@@ -200,8 +160,6 @@ func (sc *ServiceConfigController) GetConfigServiceStepAction() {
 	switch phase {
 	case selectProject:
 		result = configServiceStep.GetSelectedProject()
-	case selectImageList:
-		result = configServiceStep.GetSelectedImageList()
 	case configContainerList:
 		result = configServiceStep.GetConfigContainerList()
 	case configExternalService:
@@ -236,8 +194,6 @@ func (sc *ServiceConfigController) SetConfigServiceStepAction() {
 	switch phase {
 	case selectProject:
 		sc.selectProject(key, configServiceStep)
-	case selectImageList:
-		sc.selectImageList(key, configServiceStep, reqData)
 	case configContainerList:
 		sc.configContainerList(key, configServiceStep, reqData)
 	case configExternalService:
@@ -268,28 +224,6 @@ func (sc *ServiceConfigController) selectProject(key string, configServiceStep *
 
 	project := sc.resolveUserPrivilegeByID(int64(projectID))
 	SetConfigServiceStep(key, configServiceStep.SelectProject(projectID, project.Name))
-}
-
-func (sc *ServiceConfigController) selectImageList(key string, configServiceStep *ConfigServiceStep, reqData []byte) {
-	var imageList []model.ImageIndex
-	err := json.Unmarshal(reqData, &imageList)
-	if err != nil {
-		sc.internalError(err)
-		return
-	}
-
-	if len(imageList) < 0 {
-		sc.serveStatus(http.StatusBadRequest, imageListInvalidErr.Error())
-		return
-	}
-	for _, image := range imageList {
-		if strings.Index(image.ImageName, "/") == -1 || len(strings.TrimSpace(image.ImageTag)) == 0 {
-			sc.serveStatus(http.StatusBadRequest, imageListInvalidErr.Error())
-			return
-		}
-	}
-
-	SetConfigServiceStep(key, configServiceStep.SelectImageList(imageList))
 }
 
 func (sc *ServiceConfigController) configContainerList(key string, configServiceStep *ConfigServiceStep, reqData []byte) {
