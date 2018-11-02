@@ -8,13 +8,14 @@ import {
   PHASE_CONFIG_CONTAINERS,
   PHASE_EXTERNAL_SERVICE,
   ServiceStepPhase,
+  UIServiceStep2,
   UIServiceStep3,
-  UIServiceStep4,
   UIServiceStepBase
 } from '../service-step.component';
 import { ServiceStepBase } from "../service-step";
 import { IDropdownTag } from "../../shared/shared.types";
 import { SetAffinityComponent } from "./set-affinity/set-affinity.component";
+import 'rxjs/add/observable/forkJoin'
 
 @Component({
   styleUrls: ["./config-setting.component.css"],
@@ -27,14 +28,14 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
   showNodeSelector = false;
   isActionWip: boolean = false;
   nodeSelectorList: Array<{name: string, value: string, tag: IDropdownTag}>;
-  uiPreData: UIServiceStep3;
+  uiPreData: UIServiceStep2;
 
   constructor(protected injector: Injector,
               private changeDetectorRef: ChangeDetectorRef) {
     super(injector);
     this.changeDetectorRef.detach();
     this.nodeSelectorList = Array<{name: string, value: string, tag: IDropdownTag}>();
-    this.uiPreData = new UIServiceStep3();
+    this.uiPreData = new UIServiceStep2();
   }
 
   ngOnInit() {
@@ -42,7 +43,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
     let obsPreStepConfig = this.k8sService.getServiceConfig(PHASE_CONFIG_CONTAINERS);
     Observable.forkJoin(obsStepConfig, obsPreStepConfig).subscribe((res: [UIServiceStepBase, UIServiceStepBase]) => {
       this.uiBaseData = res[0];
-      this.uiPreData = res[1] as UIServiceStep3;
+      this.uiPreData = res[1] as UIServiceStep2;
       if (this.uiData.externalServiceList.length === 0 && this.uiPreData.containerHavePortList.length > 0) {
         let container = this.uiPreData.containerHavePortList[0];
         this.addNewExternalService();
@@ -67,8 +68,8 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
     return PHASE_EXTERNAL_SERVICE
   }
 
-  get uiData(): UIServiceStep4 {
-    return this.uiBaseData as UIServiceStep4;
+  get uiData(): UIServiceStep3 {
+    return this.uiBaseData as UIServiceStep3;
   }
 
   get checkServiceNameFun() {
