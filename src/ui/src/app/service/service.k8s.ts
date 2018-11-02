@@ -45,6 +45,7 @@ export class K8sService {
         phase: config.phase,
         project_id: config.project_id.toString(),
         service_name: config.service_name,
+        cluster_ip: config.cluster_ip,
         instance: config.instance.toString(),
         service_public:config.service_public.toString(),
         node_selector:config.node_selector

@@ -30,6 +30,7 @@ export class ServerServiceStep {
   public project_id?: number = 0;
   public service_name?: string = "";
   public node_selector?: string = "";
+  public cluster_ip?: string = "";
   public instance?: number = 0;
   public postData?: Object;
   public service_public?: number = 0;
@@ -283,6 +284,7 @@ export class UIServiceStep4 extends UIServiceStepBase {
   public projectName = "";
   public serviceName = "";
   public nodeSelector = "";
+  public clusterIp = "";
   public instance = 1;
   public servicePublic = false;
   public externalServiceList: Array<ExternalService>;
@@ -300,6 +302,7 @@ export class UIServiceStep4 extends UIServiceStepBase {
     result.phase = PHASE_EXTERNAL_SERVICE;
     result.service_name = this.serviceName;
     result.instance = this.instance;
+    result.cluster_ip = this.clusterIp;
     result.service_public = this.servicePublic ? 1 : 0;
     result.node_selector = this.nodeSelector;
     this.affinityList.forEach((value: {flag: boolean, services: Array<AffinityCardData>}) => {
@@ -345,6 +348,9 @@ export class UIServiceStep4 extends UIServiceStepBase {
     }
     if (serverResponse && serverResponse["node_selector"]) {
       step4.nodeSelector = serverResponse["node_selector"];
+    }
+    if (serverResponse && serverResponse["cluster_ip"]) {
+      step4.clusterIp = serverResponse["cluster_ip"];
     }
     return step4;
   }
