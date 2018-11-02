@@ -23,10 +23,7 @@ export class ChooseProjectComponent extends ServiceStepBase implements OnInit {
 
   ngOnInit() {
     if (this.isBack) {
-      this.k8sService.getServiceConfig(this.stepPhase).subscribe((res: UIServiceStep1) => {
-        this.uiBaseData = res;
-        this.uiData.projectId = res.projectId;
-      })
+      this.k8sService.getServiceConfig(this.stepPhase).subscribe((res: UIServiceStep1) => this.uiBaseData = res)
     } else {
       this.k8sService.deleteServiceConfig().subscribe(res => res);
     }
@@ -46,8 +43,7 @@ export class ChooseProjectComponent extends ServiceStepBase implements OnInit {
   }
 
   setDropdownDefaultText(): void {
-    let selected = this.projectsList.find((project: Project) => project.project_id === this.uiData.projectId);
-    this.dropdownDefaultText = selected ? selected.project_name : "SERVICE.STEP_TITLE_1";
+    this.dropdownDefaultText = this.uiData.projectName != '' ? this.uiData.projectName : "SERVICE.STEP_TITLE_1";
   }
 
   get stepPhase(): ServiceStepPhase {
@@ -80,6 +76,7 @@ export class ChooseProjectComponent extends ServiceStepBase implements OnInit {
 
   changeSelectProject(project: Project) {
     this.uiData.projectId = project.project_id;
+    this.uiData.projectName = project.project_name;
     this.setDropdownDefaultText();
   }
 }

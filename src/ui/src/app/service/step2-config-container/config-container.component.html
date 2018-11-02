@@ -6,7 +6,7 @@
       <button class="btn" [disabled]="true">Docker hub</button>
     </div>
   </div>
-  <div *ngFor="let workBuf of workBufferList;let iBuf = index" class="dynamic-container">
+  <div *ngFor="let container of serviceStep2Data.containerList;let iBuf = index" class="dynamic-container">
     <div class="dynamic-line-container">
       <div class="dynamic-icon-container">
         <clr-icon class="dynamic-icon" shape="minus" (click)="minusSelectImage(iBuf)"></clr-icon>
@@ -14,87 +14,87 @@
       <cs-dropdown class="base-margin-left"
                    [dropdownWidth]="300"
                    [dropdownList]="imageSourceList"
-                   [dropdownDefaultText]="workBuf.imageIndex.image_name"
+                   [dropdownDefaultText]="container.image.image_name"
                    [dropdownListTextKey]="'image_name'"
                    [dropdownCanSelect]="canChangeSelectImage.bind(selfObject)"
                    (onChange)="changeSelectImage(iBuf, $event)"
                    (onOnlyClickItem)="createNewCustomImage(iBuf)">
       </cs-dropdown>
       <button class="btn btn-default get-tag"
-              (click)="getImageDetailList(workBuf.imageIndex.image_name).then()"
-              *ngIf="imageTagNotReadyList.get(workBuf.imageIndex.image_name)">
+              (click)="getImageDetailList(container.image.image_name).then()"
+              *ngIf="imageTagNotReadyList.get(container.image.image_name)">
         {{"SERVICE.STEP_2_GET_IMAGE_TAG"|translate}}
       </button>
       <cs-dropdown class="base-margin-left"
-                   *ngIf="imageDetailSourceList.get(workBuf.imageIndex.image_name)"
+                   *ngIf="imageDetailSourceList.get(container.image.image_name)"
                    [dropdownWidth]="150"
-                   [dropdownDefaultText]="workBuf.imageIndex.image_tag"
-                   [dropdownList]="imageDetailSourceList.get(workBuf.imageIndex.image_name)"
+                   [dropdownDefaultText]="container.image.image_tag"
+                   [dropdownList]="imageDetailSourceList.get(container.image.image_name)"
                    [dropdownListTextKey]="'image_tag'"
-                   (onChange)="changeSelectImageDetail(workBuf.imageIndex.image_name,$event)">
+                   (onChange)="changeSelectImageDetail(container.image.image_name,$event)">
       </cs-dropdown>
       <a href="javascript:void(0)">
-        <clr-icon *ngIf="imageDetailSourceList.get(workBuf.imageIndex.image_name)"
+        <clr-icon *ngIf="imageDetailSourceList.get(container.image.image_name)"
                   shape="wrench"
                   class="action"
-                  (click)="toggleContainerEditStatus(workBuf.container)">
+                  (click)="toggleContainerEditStatus(container)">
         </clr-icon>
       </a>
     </div>
-    <div class="dynamic-line-container config-container" *ngIf="containerIsInEdit.get(workBuf.container)">
+    <div class="dynamic-line-container config-container" *ngIf="containerIsInEdit.get(container)">
       <cs-input [inputLabel]="'SERVICE.STEP_2_CONTAINER_NAME' | translate"
                 [inputIsRequired]="true"
                 [inputPattern]="patternContainerName"
-                [simpleFiled]="workBuf.container.name"
-                (onCheck)="workBuf.container.name = $event"></cs-input>
+                [simpleFiled]="container.name"
+                (onCheck)="container.name = $event"></cs-input>
       <cs-input [inputLabel]="'SERVICE.STEP_2_WORKING_DIR' | translate"
                 [inputPattern]="patternWorkdir"
-                [simpleFiled]="workBuf.container.working_dir"
+                [simpleFiled]="container.working_dir"
                 [inputPlaceholder]="'SERVICE.STEP_2_WORK_DIRECTOR'| translate"
-                (onCheck)="workBuf.container.working_dir = $event"></cs-input>
+                (onCheck)="container.working_dir = $event"></cs-input>
       <cs-input [inputType]="1"
                 [inputLabel]="'SERVICE.STEP_2_VOLUME_MOUNTS' | translate"
-                [simpleFiled]="getVolumesDescription(workBuf.container)"
+                [simpleFiled]="getVolumesDescription(container)"
                 [inputPlaceholder]="'SERVICE.STEP_2_STORAGE_VOLUME'| translate"
-                (onEdit)="editVolumeMount(workBuf.container)"></cs-input>
+                (onEdit)="editVolumeMount(container)"></cs-input>
       <cs-input [inputType]="1"
                 [inputLabel]="'SERVICE.STEP_2_Env' | translate"
-                [simpleFiled]="getEnvsDescription(workBuf.container)"
+                [simpleFiled]="getEnvsDescription(container)"
                 [inputPlaceholder]="'SERVICE.STEP_2_ENVIRONMENT_VARIABLES'| translate"
-                (onEdit)="editEnvironment(workBuf.container)"></cs-input>
+                (onEdit)="editEnvironment(container)"></cs-input>
       <cs-input-array [inputArrayType]="1"
-                      [inputArrayFixedSource]="fixedContainerPort.get(workBuf.container.image.image_name)"
+                      [inputArrayFixedSource]="fixedContainerPort.get(container.image.image_name)"
                       [inputArrayMin]="1"
                       [inputArrayMax]="65535"
                       [inputArrayLabelText]="'SERVICE.STEP_2_CONTAINER_PORT' | translate"
-                      [inputArraySource]="workBuf.container.container_port">
+                      [inputArraySource]="container.container_port">
       </cs-input-array>
       <cs-input [inputLabel]="'SERVICE.STEP_2_COMMAND' | translate"
-                [simpleFiled]="workBuf.container.command"
+                [simpleFiled]="container.command"
                 [inputPlaceholder]="'SERVICE.STEP_2_COMMAND'| translate"
-                (onCheck)="workBuf.container.command = $event"></cs-input>
+                (onCheck)="container.command = $event"></cs-input>
       <cs-input [inputLabel]="'SERVICE.STEP_2_CPU_REQUEST' | translate"
                 [inputPattern]="patternCpuRequest"
-                [simpleFiled]="workBuf.container.cpu_request"
+                [simpleFiled]="container.cpu_request"
                 [inputPlaceholder]="'SERVICE.STEP_2_PLACEHOLDER_DEFAULT'| translate"
                 [customerValidatorAsyncFunc]="checkSetCpuRequestFun"
-                (onCheck)="workBuf.container.cpu_request = $event"></cs-input>
+                (onCheck)="container.cpu_request = $event"></cs-input>
       <cs-input [inputLabel]="'SERVICE.STEP_2_MEMORY_REQUEST' | translate"
                 [inputPattern]="patternMemRequest"
                 [customerValidatorAsyncFunc]="checkSetMemRequestFun"
-                [simpleFiled]="workBuf.container.mem_request"
+                [simpleFiled]="container.mem_request"
                 [inputPlaceholder]="'SERVICE.STEP_2_PLACEHOLDER_DEFAULT'| translate"
-                (onCheck)="workBuf.container.mem_request = $event"></cs-input>
+                (onCheck)="container.mem_request = $event"></cs-input>
       <cs-input [inputLabel]="'SERVICE.STEP_2_CPU_LIMIT' | translate"
-                [simpleFiled]="workBuf.container.cpu_limit"
+                [simpleFiled]="container.cpu_limit"
                 [inputPlaceholder]="'SERVICE.STEP_2_PLACEHOLDER_DEFAULT'| translate"
                 [inputPattern]="patternCpuLimit"
-                (onCheck)="workBuf.container.cpu_limit = $event"></cs-input>
+                (onCheck)="container.cpu_limit = $event"></cs-input>
       <cs-input [inputLabel]="'SERVICE.STEP_2_MEMORY_LIMIT' | translate"
-                [simpleFiled]="workBuf.container.mem_limit"
+                [simpleFiled]="container.mem_limit"
                 [inputPattern]="patternMemLimit"
                 [inputPlaceholder]="'SERVICE.STEP_2_PLACEHOLDER_DEFAULT'| translate"
-                (onCheck)="workBuf.container.mem_limit = $event"></cs-input>
+                (onCheck)="container.mem_limit = $event"></cs-input>
     </div>
   </div>
   <div class="plus-container">
