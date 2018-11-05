@@ -734,6 +734,15 @@ func ToK8sService(modelService *model.Service) *Service {
 			},
 		})
 	}
+	var sessionAffinity SessionAffinity
+	var sessionAffinityConfig *SessionAffinityConfig
+	if modelService.SessionAffinityFlag != 0 {
+		var timeoutSecond int32 = int32(modelService.SessionAffinityTime)
+		sessionAffinity = SessionAffinityClientIP
+		sessionAffinityConfig = &SessionAffinityConfig{
+			ClientIP: &ClientIPConfig{TimeoutSeconds: &timeoutSecond},
+		}
+	}
 	return &Service{
 		TypeMeta: TypeMeta{
 			Kind:       "Service",
@@ -741,12 +750,14 @@ func ToK8sService(modelService *model.Service) *Service {
 		},
 		ObjectMeta: ToK8sObjectMeta(modelService.ObjectMeta),
 		Spec: ServiceSpec{
-			Ports:        ports,
-			Selector:     modelService.Selector,
-			ClusterIP:    modelService.ClusterIP,
-			Type:         ServiceType(modelService.Type),
-			ExternalIPs:  modelService.ExternalIPs,
-			ExternalName: modelService.ExternalName,
+			Ports:                 ports,
+			Selector:              modelService.Selector,
+			ClusterIP:             modelService.ClusterIP,
+			Type:                  ServiceType(modelService.Type),
+			ExternalIPs:           modelService.ExternalIPs,
+			ExternalName:          modelService.ExternalName,
+			SessionAffinity:       sessionAffinity,
+			SessionAffinityConfig: sessionAffinityConfig,
 		},
 	}
 }
@@ -762,14 +773,22 @@ func FromK8sService(typesService *Service) *model.Service {
 			TargetPort: port.TargetPort.IntVal,
 		})
 	}
+	var sessionAffinityFlag int
+	var sessionAffinityTime int
+	if typesService.Spec.SessionAffinity == SessionAffinityClientIP {
+		sessionAffinityFlag = 1
+		sessionAffinityTime = int(*typesService.Spec.SessionAffinityConfig.ClientIP.TimeoutSeconds)
+	}
 	return &model.Service{
-		ObjectMeta:   FromK8sObjectMeta(typesService.ObjectMeta),
-		Ports:        ports,
-		Selector:     typesService.Spec.Selector,
-		ClusterIP:    typesService.Spec.ClusterIP,
-		Type:         string(typesService.Spec.Type),
-		ExternalIPs:  typesService.Spec.ExternalIPs,
-		ExternalName: typesService.Spec.ExternalName,
+		ObjectMeta:          FromK8sObjectMeta(typesService.ObjectMeta),
+		Ports:               ports,
+		Selector:            typesService.Spec.Selector,
+		ClusterIP:           typesService.Spec.ClusterIP,
+		Type:                string(typesService.Spec.Type),
+		ExternalIPs:         typesService.Spec.ExternalIPs,
+		ExternalName:        typesService.Spec.ExternalName,
+		SessionAffinityFlag: sessionAffinityFlag,
+		SessionAffinityTime: sessionAffinityTime,
 	}
 }
 

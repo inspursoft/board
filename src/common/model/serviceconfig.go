@@ -126,6 +126,8 @@ type ConfigServiceStep struct {
 	ContainerList       []Container       `json:"container_list"`
 	ExternalServiceList []ExternalService `json:"external_service_list"`
 	AffinityList        []Affinity        `json:"affinity_list"`
+	SessionAffinityFlag int               `json:"session_affinity_flag"`
+	SessionAffinityTime int               `json:"session_affinity_time"`
 }
 
 type Affinity struct {

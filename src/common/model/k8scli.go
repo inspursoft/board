@@ -136,13 +136,14 @@ type ServicePort struct {
 
 type Service struct {
 	ObjectMeta
-	Ports       []ServicePort
-	Selector    map[string]string
-	ClusterIP   string
-	Type        string
-	ExternalIPs []string
-	//SessionAffinity ServiceAffinity
-	ExternalName string
+	Ports               []ServicePort
+	Selector            map[string]string
+	ClusterIP           string
+	Type                string
+	ExternalIPs         []string
+	SessionAffinityFlag int
+	SessionAffinityTime int
+	ExternalName        string
 }
 
 type ServiceList struct {
