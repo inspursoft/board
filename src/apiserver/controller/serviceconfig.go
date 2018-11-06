@@ -287,13 +287,13 @@ func (sc *ServiceConfigController) configExternalService(key string, configServi
 
 	clusterIP := sc.GetString("cluster_ip")
 	// TODO check valid cluster IP
-	sessionAffinityFlag, err := sc.GetInt("session_affinity_flag")
+	sessionAffinityFlag, err := sc.GetInt("session_affinity_flag", 0)
 	if err != nil {
 		sc.internalError(err)
 		return
 	}
 
-	sessionAffinityTime, err := sc.GetInt("session_affinity_time")
+	sessionAffinityTime, err := sc.GetInt("session_affinity_time", 0)
 	if err != nil {
 		sc.internalError(err)
 		return
