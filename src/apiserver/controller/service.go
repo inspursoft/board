@@ -126,20 +126,9 @@ func (p *ServiceController) DeployServiceAction() {
 		return
 	}
 
-	serviceName := newservice.Name
-	deploymentURL := fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), deploymentAPI, project.Name, "deployments")
-	serviceURL := fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), serviceAPI, project.Name, "services")
-	err = p.generateDeploymentTravis(serviceName, deploymentURL, serviceURL)
-	if err != nil {
-		logs.Error("Failed to generate deployement travis.yml: %+v", err)
-		p.internalError(err)
-		return
-	}
-
-	deploymentFile := filepath.Join(serviceName, deploymentFilename)
-	serviceFile := filepath.Join(serviceName, serviceFilename)
-
-	items := []string{".travis.yml", deploymentFile, serviceFile}
+	deploymentFile := filepath.Join(newservice.Name, deploymentFilename)
+	serviceFile := filepath.Join(newservice.Name, serviceFilename)
+	items := []string{deploymentFile, serviceFile}
 	p.pushItemsToRepo(items...)
 
 	serviceConfig, err := json.Marshal(&configService)
@@ -392,18 +381,7 @@ func (p *ServiceController) ToggleServiceAction() {
 			return
 		}
 		// Push deployment to Git repo
-		deploymentURL := fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), deploymentAPI, s.ProjectName, "deployments")
-		serviceURL := fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), serviceAPI, s.ProjectName, "services")
-
-		serviceName := s.Name
-		err = p.generateDeploymentTravis(serviceName, deploymentURL, serviceURL)
-		if err != nil {
-			logs.Error("Failed to generate deployment travis: %+v", err)
-			p.internalError(err)
-			return
-		}
-		// Add deployment file to repo
-		items := []string{".travis.yml", filepath.Join(serviceName, deploymentFilename), filepath.Join(serviceName, serviceFilename)}
+		items := []string{filepath.Join(s.Name, deploymentFilename), filepath.Join(s.Name, serviceFilename)}
 		p.pushItemsToRepo(items...)
 		p.collaborateWithPullRequest("master", "master", items...)
 
@@ -414,27 +392,6 @@ func (p *ServiceController) ToggleServiceAction() {
 			return
 		}
 	}
-}
-
-func stopService(s *model.ServiceStatus) error {
-	// Stop service
-	header := http.Header{
-		"Content-Type": []string{"application/yaml"},
-	}
-	deleteServiceURL := kubeMasterURL() + serviceAPI + s.ProjectName + "/services/" + s.Name
-	err := utils.SimpleDeleteRequestHandle(deleteServiceURL, header)
-	if err != nil {
-		logs.Error("Failed to request %s to stop service.", deleteServiceURL)
-	}
-	logs.Info("Stop service successfully, id: %d, name: %s", s.ID, s.Name)
-	// Stop deployment
-	deleteDeploymentURL := kubeMasterURL() + deploymentAPI + s.ProjectName + "/deployments/" + s.Name
-	err = utils.SimpleDeleteRequestHandle(deleteDeploymentURL, header)
-	if err != nil {
-		logs.Error("Failed to request %s to stop deployment.", deleteDeploymentURL)
-	}
-	logs.Info("Stop deployment successfully, id: %d, name: %s", s.ID, s.Name)
-	return nil
 }
 
 func (p *ServiceController) GetServiceInfoAction() {
@@ -552,16 +509,7 @@ func (p *ServiceController) DeleteDeploymentAction() {
 	logs.Debug("Service config path: %s", p.repoServicePath)
 
 	// TODO clear kube-master, even if the service is not deployed successfully
-	deploymentURL := filepath.Join(kubeMasterURL(), deploymentAPI, s.ProjectName, "deployments")
-	serviceName := s.Name
-	err = p.generateDeploymentTravis(serviceName, deploymentURL, "")
-	if err != nil {
-		logs.Error("Failed to generate deployment travis: %+v", err)
-		p.internalError(err)
-		return
-	}
-	// Update git repo
-	p.removeItemsToRepo(".travis.yml", filepath.Join(serviceName, deploymentFilename))
+	p.removeItemsToRepo(filepath.Join(s.Name, deploymentFilename))
 
 	// Delete yaml files
 	err = service.DeleteServiceConfigYaml(p.repoServicePath)
