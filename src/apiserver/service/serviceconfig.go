@@ -276,7 +276,7 @@ func SyncAutoScaleWithK8s(pName string) error {
 
 	//obtain AutoScale List data of
 	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
-		K8sMasterURL: kubeMasterURL(),
+		KubeConfigPath: kubeConfigPath(),
 	})
 
 	hpaList, err := k8sclient.AppV1().AutoScale(pName).List()
