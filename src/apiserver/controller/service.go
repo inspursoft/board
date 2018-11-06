@@ -113,7 +113,7 @@ func (p *ServiceController) DeployServiceAction() {
 		return
 	}
 
-	deployInfo, err := service.DeployService((*model.ConfigServiceStep)(configService), kubeMasterURL(), registryBaseURI())
+	deployInfo, err := service.DeployService((*model.ConfigServiceStep)(configService), registryBaseURI())
 	if err != nil {
 		p.parseError(err, parsePostK8sError)
 		return
@@ -386,7 +386,7 @@ func (p *ServiceController) ToggleServiceAction() {
 		}
 	} else {
 		// start service
-		err := service.DeployServiceByYaml(s.ProjectName, kubeMasterURL(), p.repoServicePath)
+		err := service.DeployServiceByYaml(s.ProjectName, p.repoServicePath)
 		if err != nil {
 			p.parseError(err, parsePostK8sError)
 			return
@@ -454,7 +454,7 @@ func (p *ServiceController) GetServiceInfoAction() {
 	}
 	//Get NodeIP
 	//endpointUrl format /api/v1/namespaces/default/endpoints/
-	nodesStatus, err := service.GetNodesStatus(fmt.Sprintf("%s/api/v1/nodes", kubeMasterURL()))
+	nodesStatus, err := service.GetNodesStatus()
 	if err != nil {
 		p.parseError(err, parseGetK8sError)
 		return
@@ -675,7 +675,7 @@ func (f *ServiceController) UploadYamlFileAction() {
 	if err != nil {
 		return
 	}
-	deployInfo, err := service.CheckDeployYamlConfig(serviceFile, deploymentFile, projectName, kubeMasterURL())
+	deployInfo, err := service.CheckDeployYamlConfig(serviceFile, deploymentFile, projectName)
 	if err != nil {
 		f.customAbort(http.StatusBadRequest, err.Error())
 		return
@@ -740,7 +740,7 @@ func (f *ServiceController) DownloadDeploymentYamlFileAction() {
 	}
 }
 
-func (f *ServiceController) resolveDownloadYaml(serviceConfig *model.ServiceStatus, fileName string, generator func(*model.ServiceStatus, string, string) error) {
+func (f *ServiceController) resolveDownloadYaml(serviceConfig *model.ServiceStatus, fileName string, generator func(*model.ServiceStatus, string) error) {
 	logs.Debug("Current download yaml file: %s", fileName)
 	//checkout the path of download
 	err := utils.CheckFilePath(f.repoServicePath)
@@ -749,7 +749,7 @@ func (f *ServiceController) resolveDownloadYaml(serviceConfig *model.ServiceStat
 		return
 	}
 	absFileName := filepath.Join(f.repoServicePath, fileName)
-	err = generator(serviceConfig, f.repoServicePath, kubeMasterURL())
+	err = generator(serviceConfig, f.repoServicePath)
 	if err != nil {
 		f.parseError(err, parseGetK8sError)
 		return

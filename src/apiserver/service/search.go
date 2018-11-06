@@ -126,7 +126,7 @@ func getProjectByUser(userID int64) (projectName []string, err error) {
 func searchNode(para string) (res []SearchNodeResult, err error) {
 	defer func() { recover() }()
 	var config k8sassist.K8sAssistConfig
-	config.K8sMasterURL = kubeMasterURL()
+	config.KubeConfigPath = kubeConfigPath()
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 	nodecli := k8sclient.AppV1().Node()
 
