@@ -33,6 +33,7 @@ export class ServerServiceStep {
   public instance?: number = 0;
   public postData?: Object;
   public service_public?: number = 0;
+  public session_affinity_flag?: number = 0;
 }
 
 export class ImageIndex implements UiServerExchangeData<ImageIndex> {
@@ -232,6 +233,7 @@ export class UIServiceStep2 extends UIServiceStepBase {
     let result = new ServerServiceStep();
     let postData: Array<Container> = Array<Container>();
     result.phase = PHASE_CONFIG_CONTAINERS;
+    result.project_id = this.projectId;
     this.containerList.forEach((value: Container) => {
       postData.push(value.uiToServer());
     });
@@ -273,6 +275,7 @@ export class UIServiceStep3 extends UIServiceStepBase {
   public clusterIp = "";
   public instance = 1;
   public servicePublic = false;
+  public sessionAffinityFlag = false;
   public externalServiceList: Array<ExternalService>;
   public affinityList: Array<{flag: boolean, services: Array<AffinityCardData>}>;
 
@@ -288,6 +291,7 @@ export class UIServiceStep3 extends UIServiceStepBase {
     result.phase = PHASE_EXTERNAL_SERVICE;
     result.service_name = this.serviceName;
     result.instance = this.instance;
+    result.session_affinity_flag = this.sessionAffinityFlag ? 1 : 0;
     result.cluster_ip = this.clusterIp;
     result.service_public = this.servicePublic ? 1 : 0;
     result.node_selector = this.nodeSelector;
@@ -301,7 +305,7 @@ export class UIServiceStep3 extends UIServiceStepBase {
   }
 
   serverToUi(serverResponse: Object): UIServiceStep3 {
-    let step4 = new UIServiceStep3();
+    let step3 = new UIServiceStep3();
     if (serverResponse && serverResponse["affinity_list"]) {
       let list: Array<{anti_flag: number, service_names: Array<string>}> = serverResponse["affinity_list"];
       list.forEach((value: {anti_flag: number, service_names: Array<string>}) => {
@@ -314,31 +318,34 @@ export class UIServiceStep3 extends UIServiceStepBase {
             services.push(card);
           });
         }
-        step4.affinityList.push({flag: value.anti_flag == 1, services: services});
+        step3.affinityList.push({flag: value.anti_flag == 1, services: services});
       });
     }
     if (serverResponse && serverResponse["external_service_list"]) {
-      step4.externalServiceList = serverResponse["external_service_list"];
+      step3.externalServiceList = serverResponse["external_service_list"];
     }
     if (serverResponse && serverResponse["instance"]) {
-      step4.instance = serverResponse["instance"];
+      step3.instance = serverResponse["instance"];
     }
     if (serverResponse && serverResponse["service_name"]) {
-      step4.serviceName = serverResponse["service_name"];
+      step3.serviceName = serverResponse["service_name"];
     }
     if (serverResponse && serverResponse["project_name"]) {
-      step4.projectName = serverResponse["project_name"];
+      step3.projectName = serverResponse["project_name"];
     }
     if (serverResponse && serverResponse["service_public"]) {
-      step4.servicePublic = serverResponse["service_public"] == 1;
+      step3.servicePublic = serverResponse["service_public"] == 1;
     }
     if (serverResponse && serverResponse["node_selector"]) {
-      step4.nodeSelector = serverResponse["node_selector"];
+      step3.nodeSelector = serverResponse["node_selector"];
     }
     if (serverResponse && serverResponse["cluster_ip"]) {
-      step4.clusterIp = serverResponse["cluster_ip"];
+      step3.clusterIp = serverResponse["cluster_ip"];
     }
-    return step4;
+    if (serverResponse && serverResponse["session_affinity_flag"]) {
+      step3.sessionAffinityFlag = serverResponse["session_affinity_flag"] == 1;
+    }
+    return step3;
   }
 }
 

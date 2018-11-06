@@ -376,6 +376,7 @@ export const LANG_ZH_CN = {
     "STEP_3_SELECT_SERVICE":"选择服务...",
     "STEP_3_SERVICE_NAME_EXIST":"服务名称已经存在",
     "STEP_3_PUBLIC":"公开性",
+    "STEP_3_SESSION_AFFINITY_FLAG":"会话保持",
     "STEP_3_NODE_SELECTOR":"节点选择",
     "STEP_3_NODE_SELECTOR_COMMENT":"选择节点或节点组...",
     "STEP_3_DANGER_MESSAGE":"没有设置可用的容器端口，请检查。",
@@ -466,6 +467,17 @@ export const LANG_ZH_CN = {
     "SERVICE_YAML_VALID_FILE":"文件合法，可以上传",
     "SERVICE_YAML_UPLOAD_SUCCESS":"上传成功!目前服务处于'准备'状态，点击'创建'，运行该服务",
     "SERVICE_YAML_UPLOAD_FAILED":"上传失败。"
+  },
+  "STORAGE":{
+    "PV_CREATE":"创建pv",
+    "PV_NAME":"pv 名称",
+    "PV_TYPE":"类型",
+    "PV_CLASS":"类别",
+    "PV_CAPACITY":"额定",
+    "PV_STATUS":"状态",
+    "PV_OPERATION":"操作",
+    "PV_CREATE_SELECT_PROJECT":"选择项目",
+    "PV_CREATE_SELECT_TYPE":"选择存储类型"
   },
   "AUDIT":{
     "ALL":"全部",
