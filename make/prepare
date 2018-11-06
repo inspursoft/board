@@ -50,6 +50,17 @@ def delfile(src):
             itemsrc=os.path.join(src,item)
             delfile(itemsrc)
 
+def create_cert(conf_path, key_path="/data/board/cert/board-key.pem", cert_path="/data/board/cert/board.pem", ca_key="/etc/board/cert/ca-key.pem", ca_cert="/etc/board/cert/ca.pem"):
+	cert_dir = os.path.dirname(cert_path)
+	csr_path = os.path.join(cert_dir, "board.csr")
+	rc = subprocess.call(["openssl", "genrsa", "-out", key_path, "2048"], stdout=FNULL, stderr=subprocess.STDOUT)
+	if rc != 0:
+		return rc
+	rc = subprocess.call(["openssl", "req", "-new", "-key", key_path, "-out", csr_path, "-config", conf_path], stdout=FNULL, stderr=subprocess.STDOUT)
+	if rc != 0:
+		return rc
+	return subprocess.call(["openssl", "x509", "-req", "-in", csr_path, "-CA", ca_cert, "-CAkey", ca_key, "-CAcreateserial", "-out", cert_path, "-days", "10000", "-extensions", "v3_ext", "-extfile", conf_path], stdout=FNULL, stderr=subprocess.STDOUT)
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--conf', dest='cfgfile', default=base_dir+'/board.cfg',type=str,help="the path of Board configuration file")
 args = parser.parse_args()
@@ -69,6 +80,7 @@ rcp.readfp(conf)
 hostname = rcp.get("configuration", "hostname")
 api_server_port = rcp.get("configuration", "api_server_port")
 db_password = rcp.get("configuration", "db_password")
+kube_http_scheme = rcp.get("configuration", "kube_http_scheme")
 kube_master_ip = rcp.get("configuration", "kube_master_ip")
 kube_master_port = rcp.get("configuration", "kube_master_port")
 board_admin_password = rcp.get("configuration", "board_admin_password")
@@ -142,7 +154,8 @@ apiserver_env= os.path.join(config_dir, "apiserver", "env")
 if not os.path.exists(os.path.join(apiserver_config_dir, "kvmregistry")):
     os.makedirs(os.path.join(apiserver_config_dir, "kvmregistry"))
 apiserver_kvm = os.path.join(apiserver_config_dir, "kvmregistry")
-
+apiserver_kubeconfig = os.path.join(apiserver_config_dir, "kubeconfig")
+apiserver_openssl = os.path.join(apiserver_config_dir, "openssl.conf")
 
 tokenserver_config_dir = os.path.join(config_dir,"tokenserver")
 if not os.path.exists(tokenserver_config_dir):
@@ -190,6 +203,12 @@ elasticsearch_env = os.path.join(config_dir, "elasticsearch", "env")
 
 kibana_config_dir = os.path.join(config_dir, "kibana")
 
+if not os.path.exists("/etc/board/cert"):
+	os.makedirs("/etc/board/cert")
+
+if not os.path.exists("/data/board/cert"):
+	os.makedirs("/data/board/cert")
+
 #Render Configure File
 render(os.path.join(templates_dir, "apiserver", "env"),
         apiserver_env,
@@ -198,6 +217,7 @@ render(os.path.join(templates_dir, "apiserver", "env"),
         db_password=db_password,
         token_cache_expire_seconds=token_cache_expire_seconds,
         board_admin_password=board_admin_password,
+		kube_http_scheme=kube_http_scheme,
         kube_master_ip=kube_master_ip,
         kube_master_port=kube_master_port,
         registry_ip=registry_ip,
@@ -236,6 +256,25 @@ render(os.path.join(templates_dir, "apiserver", "env"),
         kvm_registry_port=kvm_registry_port,
         kvm_toolkits_path=kvm_toolkits_path)
 
+if kube_http_scheme == "http":
+	render(os.path.join(templates_dir, "apiserver", "kubeconfig_http"),
+			apiserver_kubeconfig,
+			kube_http_scheme=kube_http_scheme,
+			kube_master_ip=kube_master_ip,
+			kube_master_port=kube_master_port)
+elif kube_http_scheme == "https":
+	render(os.path.join(templates_dir, "apiserver", "kubeconfig_https"),
+			apiserver_kubeconfig,
+			kube_http_scheme=kube_http_scheme,
+			kube_master_ip=kube_master_ip,
+			kube_master_port=kube_master_port)
+	render(os.path.join(templates_dir, "apiserver", "openssl.conf"),
+			apiserver_openssl,
+			kube_master_ip=kube_master_ip)
+	rc = create_cert(apiserver_openssl)
+	if rc != 0:
+		print("Create the board cert fail, please read the documents for board.")
+		exit(1)
 
 if os.path.exists(os.path.join(apiserver_config_dir, "kvm")):
     shutil.rmtree(os.path.join(apiserver_config_dir, "kvm"))

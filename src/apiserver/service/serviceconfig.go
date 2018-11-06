@@ -157,7 +157,7 @@ func GetServiceByK8sassist(pName string, sName string) (*model.Service, error) {
 	logs.Debug("Get Service info %s/%s", pName, sName)
 
 	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
-		K8sMasterURL: kubeMasterURL(),
+		KubeConfigPath: kubeConfigPath(),
 	})
 	service, _, err := k8sclient.AppV1().Service(pName).Get(sName)
 
@@ -167,11 +167,11 @@ func GetServiceByK8sassist(pName string, sName string) (*model.Service, error) {
 	return service, nil
 }
 
-func GetNodesStatus(nodesURL string) (*model.NodeList, error) {
-	logs.Debug("Get Node info nodeURL (endpoint): %+s", nodesURL)
+func GetNodesStatus() (*model.NodeList, error) {
+	//	logs.Debug("Get Node info nodeURL (endpoint): %+s", nodesURL)
 
 	var config k8sassist.K8sAssistConfig
-	config.K8sMasterURL = kubeMasterURL()
+	config.KubeConfigPath = kubeConfigPath()
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 	nodes, err := k8sclient.AppV1().Node().List()
 
@@ -226,7 +226,7 @@ func SyncServiceWithK8s(pName string) error {
 
 	//obtain serviceList data of
 	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
-		K8sMasterURL: kubeMasterURL(),
+		KubeConfigPath: kubeConfigPath(),
 	})
 
 	serviceList, err := k8sclient.AppV1().Service(pName).List()
@@ -274,7 +274,7 @@ func SyncServiceWithK8s(pName string) error {
 func ScaleReplica(serviceInfo *model.ServiceStatus, number int32) (bool, error) {
 
 	var config k8sassist.K8sAssistConfig
-	config.K8sMasterURL = kubeMasterURL()
+	config.KubeConfigPath = kubeConfigPath()
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 	s := k8sclient.AppV1().Scale(serviceInfo.ProjectName)
 
@@ -303,7 +303,7 @@ func GetServicesByProjectName(pname string) ([]model.ServiceStatus, error) {
 
 func GetDeployment(pName string, sName string) (*model.Deployment, error) {
 	var config k8sassist.K8sAssistConfig
-	config.K8sMasterURL = kubeMasterURL()
+	config.KubeConfigPath = kubeConfigPath()
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 	d := k8sclient.AppV1().Deployment(pName)
 
@@ -317,7 +317,7 @@ func GetDeployment(pName string, sName string) (*model.Deployment, error) {
 
 func PatchDeployment(pName string, sName string, deploymentConfig *model.Deployment) (*model.Deployment, []byte, error) {
 	var config k8sassist.K8sAssistConfig
-	config.K8sMasterURL = kubeMasterURL()
+	config.KubeConfigPath = kubeConfigPath()
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 	d := k8sclient.AppV1().Deployment(pName)
 
@@ -332,7 +332,7 @@ func PatchDeployment(pName string, sName string, deploymentConfig *model.Deploym
 
 func GetK8sService(pName string, sName string) (*model.Service, error) {
 	var config k8sassist.K8sAssistConfig
-	config.K8sMasterURL = kubeMasterURL()
+	config.KubeConfigPath = kubeConfigPath()
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 	s := k8sclient.AppV1().Service(pName)
 
@@ -360,7 +360,7 @@ func StopServiceK8s(s *model.ServiceStatus) error {
 	logs.Info("stop service in cluster %s", s.Name)
 	// Stop deployment
 	config := k8sassist.K8sAssistConfig{}
-	config.K8sMasterURL = kubeMasterURL()
+	config.KubeConfigPath = kubeConfigPath()
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 	d := k8sclient.AppV1().Deployment(s.ProjectName)
 	err := d.Delete(s.Name)
@@ -594,7 +594,7 @@ func MarshalNamespace(namespace string) *model.Namespace {
 
 func GetPods() (*model.PodList, error) {
 	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
-		K8sMasterURL: kubeMasterURL(),
+		KubeConfigPath: kubeConfigPath(),
 	})
 	l, err := k8sclient.AppV1().Pod("").List()
 	if err != nil {
@@ -605,7 +605,7 @@ func GetPods() (*model.PodList, error) {
 
 func UpdateDeployment(pName string, sName string, deploymentConfig *model.Deployment) (*model.Deployment, []byte, error) {
 	var config k8sassist.K8sAssistConfig
-	config.K8sMasterURL = kubeMasterURL()
+	config.KubeConfigPath = kubeConfigPath()
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 	d := k8sclient.AppV1().Deployment(pName)
 

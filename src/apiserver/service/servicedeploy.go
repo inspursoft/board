@@ -27,8 +27,8 @@ type DeployInfo struct {
 	DeploymentFileInfo []byte
 }
 
-func DeployService(serviceConfig *model.ConfigServiceStep, K8sMasterURL string, registryURI string) (*DeployInfo, error) {
-	clusterConfig := &k8sassist.K8sAssistConfig{K8sMasterURL: K8sMasterURL}
+func DeployService(serviceConfig *model.ConfigServiceStep, registryURI string) (*DeployInfo, error) {
+	clusterConfig := &k8sassist.K8sAssistConfig{KubeConfigPath: kubeConfigPath()}
 	cli := k8sassist.NewK8sAssistClient(clusterConfig)
 	deploymentConfig := MarshalDeployment(serviceConfig, registryURI)
 	//logs.Debug("Marshaled deployment: ", deploymentConfig)
@@ -71,8 +71,8 @@ func GenerateDeployYamlFiles(deployInfo *DeployInfo, loadPath string) error {
 	return nil
 }
 
-func DeployServiceByYaml(projectName, K8sMasterURL, loadPath string) error {
-	clusterConfig := &k8sassist.K8sAssistConfig{K8sMasterURL: K8sMasterURL}
+func DeployServiceByYaml(projectName, loadPath string) error {
+	clusterConfig := &k8sassist.K8sAssistConfig{KubeConfigPath: kubeConfigPath()}
 	cli := k8sassist.NewK8sAssistClient(clusterConfig)
 
 	deploymentAbsName := filepath.Join(loadPath, deploymentFilename)
@@ -104,8 +104,8 @@ func DeployServiceByYaml(projectName, K8sMasterURL, loadPath string) error {
 }
 
 //check yaml file config
-func CheckDeployYamlConfig(serviceFile, deploymentFile io.Reader, projectName, K8sMasterURL string) (*DeployInfo, error) {
-	clusterConfig := &k8sassist.K8sAssistConfig{K8sMasterURL: K8sMasterURL}
+func CheckDeployYamlConfig(serviceFile, deploymentFile io.Reader, projectName string) (*DeployInfo, error) {
+	clusterConfig := &k8sassist.K8sAssistConfig{KubeConfigPath: kubeConfigPath()}
 	cli := k8sassist.NewK8sAssistClient(clusterConfig)
 
 	deploymentInfo, err := cli.AppV1().Deployment(projectName).CheckYaml(deploymentFile)
