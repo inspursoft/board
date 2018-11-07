@@ -377,6 +377,7 @@ export const LANG_EN_US = {
     "STEP_3_SERVICE_NAME_EXIST":"Service name already exist",
     "STEP_3_PUBLIC":"Publicity",
     "STEP_3_NODE_SELECTOR":"Node selector",
+    "STEP_3_SESSION_AFFINITY_FLAG":"Session affinity flag",
     "STEP_3_NODE_SELECTOR_COMMENT":"Select node or node group...",
     "STEP_3_DANGER_MESSAGE":"No available port set to any containers, please check.",
     "STEP_3_EXTERNAL_MESSAGE":"Node port is can't empty.",
@@ -466,6 +467,17 @@ export const LANG_EN_US = {
     "SERVICE_YAML_VALID_FILE":"Files valid,please upload them",
     "SERVICE_YAML_UPLOAD_SUCCESS":"Upload success!This service in 'preparing' status, click 'create' for run it",
     "SERVICE_YAML_UPLOAD_FAILED":"Upload failed."
+  },
+  "STORAGE":{
+    "PV_CREATE":"new pv",
+    "PV_NAME":"pv name",
+    "PV_TYPE":"Type",
+    "PV_CLASS":"Class",
+    "PV_CAPACITY":"Capacity",
+    "PV_STATUS":"Status",
+    "PV_OPERATION":"Operation",
+    "PV_CREATE_SELECT_PROJECT":"Select project",
+    "PV_CREATE_SELECT_TYPE":"Select storage type"
   },
   "AUDIT":{
     "ALL":"All",

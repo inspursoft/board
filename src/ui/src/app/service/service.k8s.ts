@@ -47,6 +47,7 @@ export class K8sService {
         service_name: config.service_name,
         cluster_ip: config.cluster_ip,
         instance: config.instance.toString(),
+        session_affinity_flag: config.session_affinity_flag.toString(),
         service_public:config.service_public.toString(),
         node_selector:config.node_selector
       }

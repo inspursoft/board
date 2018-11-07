@@ -42,6 +42,16 @@
              [(ngModel)]="uiData.servicePublic">
     </label>
   </div>
+  <div class="line-container">
+    <label class="public">{{"SERVICE.STEP_3_SESSION_AFFINITY_FLAG" | translate}}:
+      <input title=""
+             type="checkbox"
+             class="base-margin-left"
+             [disabled]="isActionWip"
+             [checked]="uiData.sessionAffinityFlag"
+             [(ngModel)]="uiData.sessionAffinityFlag">
+    </label>
+  </div>
   <div *ngIf="uiData.externalServiceList.length == 0" class="alert alert-warning" role="alert">
     {{"SERVICE.STEP_3_DANGER_MESSAGE" | translate}}
   </div>
