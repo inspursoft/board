@@ -1,4 +1,4 @@
-<div style="display: flex;flex-wrap: nowrap">
+<div *ngIf="hideMaxGrafanaWindow" style="display: flex;flex-wrap: nowrap">
   <div class="section-container split-line">
     <div class="section-image-container">
       <div class="circle">
@@ -55,7 +55,7 @@
   </div>
 </div>
 
-<div class="card">
+<div *ngIf="hideMaxGrafanaWindow" class="card">
   <div class="card-header">{{'DASHBOARD.SERVICE' | translate }}</div>
   <div class="card-block line-area-block">
     <div class="card-block-top-container">
@@ -94,7 +94,7 @@
   </div>
 </div>
 
-<div  class="card">
+<div *ngIf="hideMaxGrafanaWindow" class="card">
   <div class="card-header">{{'DASHBOARD.NODE' | translate }}</div>
   <div class="card-block line-area-block">
     <div class="card-block-top-container">
@@ -136,7 +136,7 @@
   </div>
 </div>
 
-<div class="card">
+<div *ngIf="hideMaxGrafanaWindow" class="card">
   <div class="card-header">{{'DASHBOARD.STORAGE' | translate }}</div>
   <div class="card-block line-area-block">
     <div class="card-block-top-container">
@@ -176,5 +176,22 @@
            style="height: 300px">
       </div>
     </div>
+  </div>
+</div>
+
+<div *ngIf="showGrafanaWindow" class="card" [class.grafana-container]="showMaxGrafanaWindow">
+  <div class="card-header grafana-container-header">
+    <span class="grafana-card-title">Grafana dashboard</span>
+    <a *ngIf="showMaxGrafanaWindow" href="javascript:void(0)" (click)="showMaxGrafanaWindow = false">
+      <clr-icon shape="window-min" class="detail"></clr-icon>
+    </a>
+    <a *ngIf="hideMaxGrafanaWindow" href="javascript:void(0)" (click)="showMaxGrafanaWindow = true">
+      <clr-icon shape="window-max" class="detail"></clr-icon>
+    </a>
+  </div>
+  <div class="card-block" [ngStyle]="{height:showMaxGrafanaWindow?'100%':'300px'}">
+    <iframe height="100%" width="100%" frameborder="0" [src]="grafanaViewUrl | safe">
+      {{"DASHBOARD.GRAFANA_FRAME_SUPPORT" | translate}}
+    </iframe>
   </div>
 </div>

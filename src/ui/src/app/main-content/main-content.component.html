@@ -2,7 +2,10 @@
                 [hasSignedIn]="hasSignedIn"
                 [searchContent]="searchContent">
 </header-content>
-<div class="content-container-1">
+<div class="outlet-container-grafana" *ngIf="showMaxGrafanaWindow">
+  <router-outlet></router-outlet>
+</div>
+<div class="content-container-1" *ngIf="hideMaxGrafanaWindow">
   <cs-vertical-nav *ngIf="hasSignedIn" [navSource]="navSource">
     <ng-template [csVerticalNavGuide]="'service'">
       <cs-guide [description]="'SIDE_NAV.GUIDE_SERVICE_LIST'"
