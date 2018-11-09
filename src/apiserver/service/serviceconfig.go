@@ -433,12 +433,17 @@ func MarshalService(serviceConfig *model.ConfigServiceStep) *model.Service {
 		}
 	}
 
+	if serviceConfig.SessionAffinityFlag != 0 && serviceConfig.SessionAffinityTime == 0 {
+		serviceConfig.SessionAffinityTime = 1800
+	}
 	return &model.Service{
-		ObjectMeta: model.ObjectMeta{Name: serviceConfig.ServiceName},
-		Ports:      ports,
-		Selector:   map[string]string{"app": serviceConfig.ServiceName},
-		ClusterIP:  serviceConfig.ClusterIP,
-		Type:       spectype,
+		ObjectMeta:          model.ObjectMeta{Name: serviceConfig.ServiceName},
+		Ports:               ports,
+		Selector:            map[string]string{"app": serviceConfig.ServiceName},
+		ClusterIP:           serviceConfig.ClusterIP,
+		Type:                spectype,
+		SessionAffinityFlag: serviceConfig.SessionAffinityFlag,
+		SessionAffinityTime: serviceConfig.SessionAffinityTime,
 	}
 }
 

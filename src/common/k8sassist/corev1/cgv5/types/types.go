@@ -32,6 +32,9 @@ type ServiceType = v1.ServiceType
 type Protocol = v1.Protocol
 type IntOrString = intstr.IntOrString
 type Type = intstr.Type
+type SessionAffinity = v1.ServiceAffinity
+type SessionAffinityConfig = v1.SessionAffinityConfig
+type ClientIPConfig = v1.ClientIPConfig
 
 //define namespace type
 type Namespace = v1.Namespace
@@ -58,6 +61,7 @@ const (
 	DeletePropagationForeground = metav1.DeletePropagationForeground
 	NamespaceActive             = v1.NamespaceActive
 	NamespaceTerminating        = v1.NamespaceTerminating
+	SessionAffinityClientIP     = v1.ServiceAffinityClientIP
 )
 
 const (

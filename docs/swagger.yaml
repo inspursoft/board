@@ -1643,6 +1643,16 @@ paths:
           type: integer
           format: int
           required: false 
+        - name: session_affinity_flag
+          in: query
+          type: integer
+          format: int
+          required: false 
+        - name: session_affinity_time
+          in: query
+          type: integer
+          format: int
+          required: false 
         - name: service_config
           in: body
           required: false 
