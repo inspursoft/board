@@ -37,7 +37,7 @@ func CreateAutoScale(svc *model.ServiceStatus, autoscale *model.ServiceAutoScale
 	// add the hpa from k8s
 	hpa := genAutoScaleObject(svc, autoscale)
 	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
-		K8sMasterURL: kubeMasterURL(),
+		KubeConfigPath: kubeConfigPath(),
 	})
 	var err error
 	hpa, err = k8sclient.AppV1().AutoScale(hpa.Namespace).Create(hpa)
@@ -64,7 +64,7 @@ func UpdateAutoScale(svc *model.ServiceStatus, autoscale *model.ServiceAutoScale
 	// update the hpa from k8s
 	hpa := genAutoScaleObject(svc, autoscale)
 	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
-		K8sMasterURL: kubeMasterURL(),
+		KubeConfigPath: kubeConfigPath(),
 	})
 	var err error
 	hpa, err = k8sclient.AppV1().AutoScale(hpa.Namespace).Update(hpa)
@@ -99,7 +99,7 @@ func DeleteAutoScale(svc *model.ServiceStatus, hpaid int64) error {
 	}
 	// delete the hpa from k8s
 	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
-		K8sMasterURL: kubeMasterURL(),
+		KubeConfigPath: kubeConfigPath(),
 	})
 	err = k8sclient.AppV1().AutoScale(svc.ProjectName).Delete(as.HPAName)
 	if err != nil {
@@ -174,7 +174,7 @@ func UpdateAutoScaleDB(autoscale model.ServiceAutoScale, fieldNames ...string) (
 
 func GetAutoScaleK8s(project string, name string) (*model.AutoScale, bool, error) {
 	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
-		K8sMasterURL: kubeMasterURL(),
+		KubeConfigPath: kubeConfigPath(),
 	})
 	hpa, err := k8sclient.AppV1().AutoScale(project).Get(name)
 	if err != nil {
