@@ -73,7 +73,7 @@ services:
       - /data/board/keys:/keys:rw
       - /data/board/cert:/cert:rw
       - ../config/apiserver/kubeconfig:/root/kubeconfig
-      - /etc/board/cert/ca.pem:/etc/board/cert/ca.pem
+      - /etc/board/cert:/etc/board/cert:rw
     env_file:
       - ../config/apiserver/env
     ports:

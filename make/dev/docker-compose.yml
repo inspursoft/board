@@ -92,7 +92,7 @@ services:
       - /data/board/cert:/cert:rw
       - ../config/apiserver/kvm:/root/kvm
       - ../config/apiserver/kvmregistry:/root/kvmregistry
-      - /etc/board/cert/ca.pem:/etc/board/cert/ca.pem
+      - /etc/board/cert:/etc/board/cert:rw
       - ../config/apiserver/kubeconfig:/root/kubeconfig
     env_file:
       - ../config/apiserver/env
