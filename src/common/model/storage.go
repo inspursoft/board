@@ -11,7 +11,7 @@ type PersistentVolume struct {
 	Accessmode string      `json:"pv_accessmode" orm:"column(accessmode)"`
 	Class      string      `json:"pv_class" orm:"column(class)"`
 	Readonly   bool        `json:"pv_readonly" orm:"column(readonly)"`
-	Raclaim    string      `json:"pv_raclaim" orm:"column(raclaim)"`
+	Reclaim    string      `json:"pv_reclaim" orm:"column(reclaim)"`
 	Option     interface{} `json:"pv_options"`
 }
 
