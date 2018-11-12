@@ -2193,6 +2193,177 @@ paths:
           description: Invalid project name.
         500:
           description: Unexpected internal errors.
+  /v1/pvolumes:
+    get:
+      summary: Return all Persistent Volumes in Board.
+      description: |
+        This endpoint returns all Persistent Volumes in Board.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: pv_name 
+          in: query
+          description: pv name for filtering results.
+          required: false
+          type: string
+        - name: pv_list_page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: pv_list_page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched Persistent Volumes.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/PersistentVolume'
+          headers:
+            X-Total-Count:
+              description: The total count of Persistent Volumes.
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page.
+              type: string
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+    post:
+      summary: Add a new PersistentVolume.
+      description: |
+        This endpoint is for admin to add a new PersistentVolume.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: pvolume
+          in: body
+          description: New added PersistentVolume.
+          required: true
+          schema:
+            $ref: '#/definitions/PersistentVolume'
+      tags:
+        - Products
+      responses:
+        201:
+          description: PersistentVolume added successfully.
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        409:
+          description: PersistentVolume name already exists.
+        500:
+          description: Internal errors.      
+  /v1/pvolumes/{pv_id}:    
+    get:
+      summary: Return a specific PersistentVolume detail infomation.
+      description: |
+        This endpoint returns a specific PersistentVolume information by pv ID.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: pv_id
+          in: path
+          description: PersistentVolume ID for filtering results.
+          required: true
+          type: integer
+          format: int32
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched PersistentVolume information.
+          schema:
+            $ref: '#/definitions/PersistentVolume'
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Internal errors.        
+    delete:
+      summary: Delete a PersistentVolume by pv ID
+      description: |
+        This endpoint is aimed to remove a Persistent Volume by pv ID.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: pv_id
+          in: path
+          description: Node will be removed by pv_id.
+          required: true
+          type: integer
+          format: int32
+      tags:
+        - Products
+      responses:
+        200:
+          description: Persistent Volume is deleted successfully.
+        400:
+          description: Invalid node id.
+        403:
+          description: User need to log in as admin.
+        404:
+          description: Node does not exist.
+        500:
+          description: Internal errors.         
+    put:
+      summary: Update Persistent Volume properties.
+      description: |
+       This endpoint is to update Persistent Volume.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: pv_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: The Persistent Volume ID for node info changing.
+        - name: pvolume
+          in: body
+          description: The Persistent Volume properties to be changed.
+          required: true
+          schema:
+            $ref: '#/definitions/PersistentVolume' 
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated PersistentVolume properties successfully.
+        400:
+          description: Invalid node ID.
+        403:
+          description: User need to log in as admin.
+        500:
+          description: Unexpected internal errors.               
   /v1/node:
     get:
       summary: Return nodes in Board added by admin.
@@ -5550,6 +5721,79 @@ definitions:
         type: integer   
         format: int32   
         description: The current CPU percentage. 
+  PersistentVolume:                          
+    type: object
+    properties:
+      pv_id:
+        type: integer
+        format: int32
+        description: The ID of this persitent volume.     
+      pv_name:
+        type: string
+        description: The name of this persitent volume.         
+      pv_type:
+        type: integer   
+        format: int32   
+        description: The source type of this persitent volume, nfs 1, cephrbd 2.      
+      pv_state:
+        type: integer   
+        format: int32   
+        description: The current state of this persitent volume.        
+      pv_capacity:
+        type: string
+        description: The capacity MB of this persitent volume.   
+      pv_accessmode: 
+        type: string
+        description: The access mode of this persitent volume, ReadWriteOnce, ReadOnlyMany, ReadWriteMany.  
+      pv_class: 
+        type: string
+        description: The class of this persitent volume.    
+      pv_readonly: 
+        type: boolean
+        description: The readonly value of this persitent volume, default false.           
+      pv_reclaim:
+        type: string
+        description: The reclaim policy of this persitent volume, Retain, Recycle, Delete.   
+      pv_options:        
+        description: The option of this persitent volume.
+        $ref: '#/definitions/PersistentVolumeOptions'   
+  PersistentVolumeOptions:                          
+    type: object
+    properties:       
+      path:
+        type: string
+        description: The stoarge path of this persitent volume.   
+      server:
+        type: string
+        description: The storage server of this persitent volume.     
+  PersistentVolumeOptionsCephRBD:                          
+    type: object
+    properties:       
+      user:
+        type: string
+        description: The stoarge user of this CephRBD persitent volume.   
+      keyring:
+        type: string
+        description: The key ring of this CephRBD persitent volume.        
+      pool:
+        type: string
+        description: The pool of this CephRBD persitent volume.   
+      image:  
+        type: string
+        description: The image of this CephRBD persitent volume.     
+      fstype: 
+        type: string
+        description: The fiel system type of this CephRBD persitent volume.   
+      secretname:  
+        type: string
+        description: The secretname of this CephRBD persitent volume.  
+      secretnamespace:  
+        type: string
+        description: The secret namespace of this CephRBD persitent volume.   
+      monitors:                                            
+        type: string
+        description: The monitors of this CephRBD persitent volume, split by comma.  
+
 
 
  
