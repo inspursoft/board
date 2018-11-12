@@ -12,7 +12,7 @@ type PersistentVolume struct {
 	Class      string      `json:"pv_class" orm:"column(class)"`
 	Readonly   bool        `json:"pv_readonly" orm:"column(readonly)"`
 	Reclaim    string      `json:"pv_reclaim" orm:"column(reclaim)"`
-	Option     interface{} `json:"pv_options"`
+	Option     interface{} `json:"pv_options" orm:"-"`
 }
 
 type PersistentVolumeOptionNfs struct {
