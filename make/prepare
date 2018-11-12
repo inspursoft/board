@@ -273,7 +273,7 @@ elif kube_http_scheme == "https":
 			kube_master_ip=kube_master_ip)
 	rc = create_cert(apiserver_openssl)
 	if rc != 0:
-		print("Create the Board cert fail, please read the documents for board.")
+		print("Create the Board cert failed, please read the documents for Board.")
 		exit(1)
 
 if os.path.exists(os.path.join(apiserver_config_dir, "kvm")):
