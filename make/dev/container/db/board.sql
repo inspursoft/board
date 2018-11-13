@@ -378,4 +378,37 @@ DROP TABLE IF EXISTS `log`;
         `status` INT NOT NULL DEFAULT 0,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
+	
+	CREATE TABLE `board`.`persistent_volume` (
+        `id` INT NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(255) NOT NULL DEFAULT '',
+        `type` INT NOT NULL DEFAULT 0,
+        `state` INT NOT NULL DEFAULT 0,
+		`capacity` VARCHAR(255) NOT NULL DEFAULT '',
+		`accessmode` VARCHAR(255) NOT NULL DEFAULT '',
+	    `class` VARCHAR(255) NOT NULL DEFAULT '',	
+        `readonly` SMALLINT(1) NULL,		
+	    `reclaim` VARCHAR(255) NOT NULL DEFAULT '',		
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
+	
+	CREATE TABLE `board`.`persistent_volume_option_nfs` (
+        `id` INT NOT NULL,
+		`path` VARCHAR(255) NOT NULL DEFAULT '',
+		`server` VARCHAR(255) NOT NULL DEFAULT '',	
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+	CREATE TABLE `board`.`persistent_volume_option_cephrbd` (
+        `id` INT NOT NULL,
+		`user` VARCHAR(255) NOT NULL DEFAULT '',
+		`keyring` VARCHAR(255) NOT NULL DEFAULT '',	
+		`pool` VARCHAR(255) NOT NULL DEFAULT '',
+		`image` VARCHAR(255) NOT NULL DEFAULT '',	
+		`fstype` VARCHAR(255) NOT NULL DEFAULT '',
+		`secretname` VARCHAR(255) NOT NULL DEFAULT '',		
+		`secretnamespace` VARCHAR(255) NOT NULL DEFAULT '',
+		`monitors` VARCHAR(255) NOT NULL DEFAULT '',			
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;	
 
