@@ -98,7 +98,7 @@ func InitRouter() {
 				"get:GetPVolumeListAction;post:AddPVolumeAction"),
 			beego.NSRouter("/pvolumes/:id([0-9]+)",
 				&PVolumeController{},
-				"get:GetPVolumeAction"),
+				"get:GetPVolumeAction;delete:RemovePVolumeAction"),
 			beego.NSRouter("/node",
 				&NodeController{}, "get:GetNode"),
 			beego.NSRouter("/nodes",

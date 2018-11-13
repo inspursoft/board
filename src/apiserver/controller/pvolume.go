@@ -1,12 +1,13 @@
 package controller
 
 import (
-	//"fmt"
-	//"git/inspursoft/board/src/apiserver/service"
 	"encoding/json"
+	"fmt"
+	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/astaxie/beego/logs"
@@ -17,15 +18,122 @@ type PVolumeController struct {
 }
 
 func (n *PVolumeController) GetPVolumeAction() {
-	//TODO
+	pvID, err := strconv.Atoi(n.Ctx.Input.Param(":id"))
+	if err != nil {
+		n.internalError(err)
+		return
+	}
+	pv, err := service.GetPVDB(model.PersistentVolume{ID: int64(pvID)}, "id")
+	if err != nil {
+		n.internalError(err)
+		return
+	}
+	if pv == nil {
+		logs.Error("Not found this PV %d in DB", pvID)
+		n.internalError(err)
+		return
+	}
+
+	// TODO sync the state with K8S
+
+	// To optimize the different types of common code
+	switch pv.Type {
+	case model.PVNFS:
+		// PV NFS
+		pvo, err := service.GetPVOptionNFS(model.PersistentVolumeOptionNfs{ID: int64(pvID)}, "id")
+		if err != nil {
+			n.internalError(err)
+			return
+		}
+		if pv == nil {
+			logs.Error("Not found this PV Option %d in DB", pvID)
+			n.internalError(err)
+			return
+		}
+		pv.Option = pvo
+
+	case model.PVCephRBD:
+		// PV CephRBD
+		pvo, err := service.GetPVOptionRBD(model.PersistentVolumeOptionCephrbd{ID: int64(pvID)}, "id")
+		if err != nil {
+			n.internalError(err)
+			return
+		}
+		if pv == nil {
+			logs.Error("Not found this PV Option %d in DB", pvID)
+			n.internalError(err)
+			return
+		}
+		pv.Option = pvo
+	default:
+		logs.Error("Unknown pv type %d", pv.Type)
+		n.customAbort(http.StatusBadRequest, "Unknown pv type")
+		return
+	}
+
+	n.renderJSON(pv)
+	logs.Debug("Return get pv %v", pv)
+}
+
+func (n *PVolumeController) RemovePVolumeAction() {
+	pvID, err := strconv.Atoi(n.Ctx.Input.Param(":id"))
+	if err != nil {
+		n.internalError(err)
+		return
+	}
+	pv, err := service.GetPVDB(model.PersistentVolume{ID: int64(pvID)}, "id")
+	if err != nil {
+		n.internalError(err)
+		return
+	}
+	if pv == nil {
+		logs.Debug("Not found this PV %d in DB", pvID)
+		return
+	}
+
+	//TODO check and delete pv from k8s system
+
+	switch pv.Type {
+	case model.PVNFS:
+		// PV NFS
+		_, err = service.DeletePVOptionNFS(int64(pvID))
+		if err != nil {
+			logs.Error("Failed to delete PV NFS option %d", pvID)
+			n.internalError(err)
+			return
+		}
+	case model.PVCephRBD:
+		_, err = service.DeletePVOptionRBD(int64(pvID))
+		if err != nil {
+			logs.Error("Failed to delete PV RBD option %d", pvID)
+			n.internalError(err)
+			return
+		}
+
+	default:
+		logs.Error("Unknown pv type %d", pv.Type)
+	}
+
+	// Delete PV DB
+	_, err = service.DeletePVDB(int64(pvID))
+	if err != nil {
+		logs.Error("Failed to delete PV %d", pvID)
+		n.internalError(err)
+		return
+	}
 }
 
 func (n *PVolumeController) GetPVolumeListAction() {
-	//TODO
+	res, err := service.GetPVList()
+	if err != nil {
+		logs.Debug("Failed to get PV List")
+		n.customAbort(http.StatusInternalServerError, fmt.Sprint(err))
+		return
+	}
+	n.renderJSON(res)
 }
 
 func (n *PVolumeController) AddPVolumeAction() {
-	var reqPVolume model.PersistentVolume
 	var err error
 	var message json.RawMessage
 	pv := model.PersistentVolume{
@@ -55,7 +163,12 @@ func (n *PVolumeController) AddPVolumeAction() {
 		}
 
 		logs.Debug("Receive pv nfs option %v", PVOptionNFS)
-		//TODO service.AddPVolumeNFS(reqPVolume, PVOptionNFS)
+		err = service.AddPVolumeNFS(pv, PVOptionNFS)
+		if err != nil {
+			logs.Error("Failed to create nfs %v", err)
+			n.customAbort(http.StatusBadRequest, "Invalid PV NFS")
+			return
+		}
 
 	case model.PVCephRBD:
 		// PV CephRBD
@@ -69,9 +182,14 @@ func (n *PVolumeController) AddPVolumeAction() {
 
 		logs.Debug("Receive pv rbd option %v", PVOptionRBD)
 		logs.Debug("Receive rbd monitors %v", strings.Split(PVOptionRBD.Monitors, ","))
-		//TODO service.AddPVolumeCephRBD(reqPVolume, PVOptionRBD)
+		err = service.AddPVolumeCephRBD(pv, PVOptionRBD)
+		if err != nil {
+			logs.Error("Failed to create rbc %v", err)
+			n.customAbort(http.StatusBadRequest, "Invalid PV RBD")
+			return
+		}
 	default:
-		logs.Error("Unknown pv type %d", reqPVolume.Type)
+		logs.Error("Unknown pv type %d", pv.Type)
 		n.customAbort(http.StatusBadRequest, "Unknown pv type")
 		return
 	}
