@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -131,14 +130,9 @@ func (p *ServiceController) DeployServiceAction() {
 	items := []string{deploymentFile, serviceFile}
 	p.pushItemsToRepo(items...)
 
-	serviceConfig, err := json.Marshal(&configService)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	updateService := model.ServiceStatus{ID: serviceInfo.ID, Status: uncompleted, ServiceConfig: string(serviceConfig)}
-	_, err = service.UpdateService(updateService, "id", "status", "service_config")
+	updateService := model.ServiceStatus{ID: serviceInfo.ID, Status: uncompleted, ServiceObjectConfig: string(deployInfo.ServiceFileInfo),
+		DeploymentObjectConfig: string(deployInfo.DeploymentFileInfo)}
+	_, err = service.UpdateService(updateService, "status", "service_object_config", "deployment_object_config")
 	if err != nil {
 		p.internalError(err)
 		return
@@ -204,7 +198,7 @@ func syncK8sStatus(serviceList []*model.ServiceStatusMO) error {
 		}
 
 		// Check the service in k8s cluster status
-		serviceK8s, err := service.GetK8sService((*serviceStatus).ProjectName, (*serviceStatus).Name)
+		serviceK8s, err := service.GetK8SService((*serviceStatus).ProjectName, (*serviceStatus).Name)
 		if serviceK8s == nil {
 			logs.Info("Failed to get service in cluster", err)
 			var reason = "The service is not established in cluster system"

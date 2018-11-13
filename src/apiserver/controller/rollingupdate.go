@@ -61,41 +61,49 @@ func (p *ServiceRollingUpdateController) getServiceConfig() (deploymentConfig *m
 	return
 }
 
-/*
-func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceImageAction() {
-
-	var imageList []model.ImageIndex
-	err := p.resolveBody(&imageList)
+func (s *ServiceRollingUpdateController) UpdateServiceSessionAction() {
+	sessionAffinityFlag, err := s.GetInt("session_affinity_flag", 0)
 	if err != nil {
+		s.internalError(err)
 		return
 	}
-
-	serviceConfig, err := p.getServiceConfig()
+	serviceName := s.GetString("service_name")
+	projectName := s.GetString("project_name")
+	s.resolveProjectMember(projectName)
+	svc, err := service.GetK8SService(projectName, serviceName)
 	if err != nil {
+		s.internalError(err)
 		return
 	}
-	if len(serviceConfig.Spec.Template.Spec.Containers) != len(imageList) {
-		p.customAbort(http.StatusConflict, "Image's config is invalid.")
+	svc.SessionAffinityFlag = sessionAffinityFlag
+	_, svcFileInfo, err := service.PatchK8SService(projectName, serviceName, svc)
+	if err != nil {
+		s.internalError(err)
 		return
 	}
 
-	var rollingUpdateConfig model.Deployment
-	for index, container := range serviceConfig.Spec.Template.Spec.Containers {
-		image := registryBaseURI() + "/" + imageList[index].ImageName + ":" + imageList[index].ImageTag
-		if serviceConfig.Spec.Template.Spec.Containers[index].Image != image {
-			rollingUpdateConfig.Spec.Template.Spec.Containers = append(rollingUpdateConfig.Spec.Template.Spec.Containers, model.K8sContainer{
-				Name:  container.Name,
-				Image: image,
-			})
-		}
-	}
-	if len(rollingUpdateConfig.Spec.Template.Spec.Containers) == 0 {
-		logs.Info("Nothing to be updated")
+	serviceStatus, err := service.GetServiceByProject(serviceName, projectName)
+	if err != nil {
+		s.internalError(err)
 		return
 	}
-	p.PatchServiceAction(&rollingUpdateConfig)
+	updateService := model.ServiceStatus{ID: serviceStatus.ID, ServiceObjectConfig: string(svcFileInfo)}
+	_, err = service.UpdateService(updateService, "service_object_config")
+	if err != nil {
+		s.internalError(err)
+		return
+	}
+	logs.Debug("Update service Successful.And the services config:%+v\n", updateService)
+
+	s.resolveRepoServicePath(projectName, serviceName)
+	err = utils.GenerateFile(svcFileInfo, s.repoServicePath, serviceFilename)
+	if err != nil {
+		s.internalError(err)
+		return
+	}
+	s.pushItemsToRepo(filepath.Join(serviceName, serviceFilename))
 }
-*/
+
 func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceImageAction() {
 
 	var imageList []model.ImageIndex
