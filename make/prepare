@@ -50,6 +50,7 @@ def delfile(src):
             itemsrc=os.path.join(src,item)
             delfile(itemsrc)
 
+
 def create_cert(conf_path, key_path="/data/board/cert/board-key.pem", cert_path="/data/board/cert/board.pem", ca_key="/etc/board/cert/ca-key.pem", ca_cert="/etc/board/cert/ca.pem"):
 	cert_dir = os.path.dirname(cert_path)
 	csr_path = os.path.join(cert_dir, "board.csr")
@@ -202,12 +203,6 @@ if not os.path.exists(elasticsearch_config_dir):
 elasticsearch_env = os.path.join(config_dir, "elasticsearch", "env")
 
 kibana_config_dir = os.path.join(config_dir, "kibana")
-
-if not os.path.exists("/etc/board/cert"):
-	os.makedirs("/etc/board/cert")
-
-if not os.path.exists("/data/board/cert"):
-	os.makedirs("/data/board/cert")
 
 #Render Configure File
 render(os.path.join(templates_dir, "apiserver", "env"),
