@@ -60,8 +60,19 @@ func (p *ServiceRollingUpdateController) getServiceConfig() (deploymentConfig *m
 	}
 	return
 }
+func (s *ServiceRollingUpdateController) GetServiceSessionFlagAction() {
+	serviceName := s.GetString("service_name")
+	projectName := s.GetString("project_name")
+	s.resolveProjectMember(projectName)
+	svc, err := service.GetK8SService(projectName, serviceName)
+	if err != nil {
+		s.internalError(err)
+		return
+	}
+	s.renderJSON(svc)
+}
 
-func (s *ServiceRollingUpdateController) UpdateServiceSessionAction() {
+func (s *ServiceRollingUpdateController) PatchServiceSessionAction() {
 	sessionAffinityFlag, err := s.GetInt("session_affinity_flag", 0)
 	if err != nil {
 		s.internalError(err)

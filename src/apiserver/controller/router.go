@@ -140,7 +140,7 @@ func InitRouter() {
 				"get:ServiceExists"),
 			beego.NSRouter("/services/rollingupdate/session",
 				&ServiceRollingUpdateController{},
-				"patch:UpdateServiceSessionAction"),
+				"get:GetServiceSessionFlagAction;patch:PatchServiceSessionAction"),
 			beego.NSRouter("/services/rollingupdate/image",
 				&ServiceRollingUpdateController{},
 				"get:GetRollingUpdateServiceImageConfigAction;patch:PatchRollingUpdateServiceImageAction"),
