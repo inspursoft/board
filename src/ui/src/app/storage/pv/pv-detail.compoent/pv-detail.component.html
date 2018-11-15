@@ -1,0 +1,64 @@
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'md'">
+  <h3 class="modal-title">{{ 'STORAGE.PV_DETAIL' | translate }}</h3>
+  <div class="modal-body">
+    <table class="table table-vertical">
+      <tbody>
+      <tr>
+        <th><span>{{"STORAGE.PV_NAME" | translate}}:</span></th>
+        <td>{{curPersistentVolume.name}}</td>
+        <th><span>{{"STORAGE.PV_CAPACITY" | translate}}:</span></th>
+        <td>{{curPersistentVolume.capacity}}</td>
+      </tr>
+      <tr>
+        <th><span>{{"STORAGE.PV_TYPE" | translate}}:</span></th>
+        <td>{{curPersistentVolume.typeDescription}}</td>
+        <th><span>{{"STORAGE.PV_STATUS" | translate}}:</span></th>
+        <td>{{curPersistentVolume.statusDescription}}</td>
+      </tr>
+      <tr>
+        <th><span>{{"STORAGE.PV_ACCESS_MODES" | translate}}:</span></th>
+        <td>{{curPersistentVolume.accessMode}}</td>
+        <th><span>{{"STORAGE.PV_RECLAIM" | translate}}:</span></th>
+        <td>{{curPersistentVolume.reclaim}}</td>
+      </tr>
+      <tr *ngIf="curPersistentVolume.typeDescription == 'NFS'">
+        <th><span>{{"STORAGE.PV_NFS_SERVER" | translate}}:</span></th>
+        <td colspan="3">{{curNFSPersistentVolume.options.server}}</td>
+      </tr>
+      <tr *ngIf="curPersistentVolume.typeDescription == 'NFS'">
+        <th><span>{{"STORAGE.PV_NFS_PATH" | translate}}:</span></th>
+        <td colspan="3">{{curNFSPersistentVolume.options.path}}</td>
+      </tr>
+      <tr *ngIf="curPersistentVolume.typeDescription == 'RBD'">
+        <th><span>{{"STORAGE.PV_USER" | translate}}:</span></th>
+        <td>{{curRBDPersistentVolume.options.user}}</td>
+        <th><span>{{"STORAGE.PV_KEYRING" | translate}}:</span></th>
+        <td>{{curRBDPersistentVolume.options.keyring}}</td>
+      </tr>
+      <tr *ngIf="curPersistentVolume.typeDescription == 'RBD'">
+        <th><span>{{"STORAGE.PV_POOL" | translate}}:</span></th>
+        <td>{{curRBDPersistentVolume.options.pool}}</td>
+        <th><span>{{"STORAGE.PV_IMAGE" | translate}}:</span></th>
+        <td>{{curRBDPersistentVolume.options.image}}</td>
+      </tr>
+      <tr *ngIf="curPersistentVolume.typeDescription == 'RBD'">
+        <th><span>{{"STORAGE.PV_SECRET" | translate}}:</span></th>
+        <td>{{curRBDPersistentVolume.options.secretname}}</td>
+        <th><span>{{"STORAGE.PV_SECRET_NAMESPACE" | translate}}:</span></th>
+        <td>{{curRBDPersistentVolume.options.secretnamespace}}</td>
+      </tr>
+      <tr *ngIf="curPersistentVolume.typeDescription == 'RBD'">
+        <th><span>{{"STORAGE.PV_FS_TYPE" | translate}}:</span></th>
+        <td colspan="3">{{curRBDPersistentVolume.options.fstype}}</td>
+      </tr>
+      <tr *ngIf="curPersistentVolume.typeDescription == 'RBD'">
+        <th><span>{{"STORAGE.PV_MONITORS" | translate}}:</span></th>
+        <td colspan="3">{{curRBDPersistentVolume.options.monitors}}</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-primary" (click)="modalOpened = false">{{ 'BUTTON.OK' | translate }}</button>
+  </div>
+</clr-modal>

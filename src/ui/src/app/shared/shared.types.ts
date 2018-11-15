@@ -135,3 +135,89 @@ export enum DragStatus {
 }
 
 export enum CreateImageMethod{None, Template, DockerFile, DevOps}
+
+export class PersistentVolumeOptions {
+  public path = '';
+  public server = '';
+}
+
+export class PersistentVolumeOptionsRBD {
+  public user = '';
+  public keyring = '';
+  public pool = 'rbd';
+  public image = '';
+  public fstype = '';
+  public secretname = '';
+  public secretnamespace = '';
+  public monitors = '';
+}
+
+export enum PvAccessMode {
+  ReadWriteOnce = 'ReadWriteOnce',
+  ReadOnlyMany = 'ReadOnlyMany',
+  ReadWriteMany = 'ReadWriteMany'
+}
+
+export enum PvReclaimMode {
+  Retain = 'Retain',
+  Recycle = 'Recycle',
+  Delete = 'Delete'
+}
+
+export class PersistentVolume {
+  public id = 0;
+  public name = '';
+  public type = 0;
+  public state = 0;
+  public capacity = '';
+  public accessMode = PvAccessMode;
+  public reclaim = PvReclaimMode;
+
+  get typeDescription(): string {
+    return ['Unknown', 'NFS', 'RBD'][this.type];
+  }
+
+  get statusDescription(): string{
+    return ['Unknown', 'Available', 'Bound', 'Released', 'Failed', 'Invalid'][this.state];
+  }
+
+  postObject(): Object {
+    return {
+      pv_name: this.name,
+      pv_capacity: this.capacity,
+      pv_type: this.type,
+      pv_accessmode: this.accessMode,
+      pv_reclaim: this.reclaim
+    }
+  }
+}
+
+export class NFSPersistentVolume extends PersistentVolume {
+  public options: PersistentVolumeOptions;
+
+  constructor() {
+    super();
+    this.options = new PersistentVolumeOptions();
+  }
+
+  postObject(): Object {
+    let result = super.postObject();
+    Reflect.set(result, 'pv_options', this.options);
+    return result;
+  }
+}
+
+export class RBDPersistentVolume extends PersistentVolume {
+  public options: PersistentVolumeOptionsRBD;
+
+  constructor() {
+    super();
+    this.options = new PersistentVolumeOptionsRBD();
+  }
+
+  postObject(): Object {
+    let result = super.postObject();
+    Reflect.set(result, 'pv_options', this.options);
+    return result;
+  }
+}

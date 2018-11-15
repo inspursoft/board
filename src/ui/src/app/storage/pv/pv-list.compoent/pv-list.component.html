@@ -1,0 +1,31 @@
+<div style="display: flex">
+  <button class="btn btn-primary" style="margin-left: auto" (click)="createNewPv()">
+    {{ 'STORAGE.PV_CREATE' | translate }}
+  </button>
+</div>
+<clr-datagrid [clrDgLoading]="isInLoadWip" (clrDgRefresh)="refreshList($event)">
+  <clr-dg-column>{{ 'STORAGE.PV_NAME' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'STORAGE.PV_TYPE' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'STORAGE.PV_CAPACITY' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'STORAGE.PV_STATUS' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'STORAGE.PV_RECLAIM' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'STORAGE.PV_ACCESS_MODES' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'STORAGE.PV_OPERATION' | translate }}</clr-dg-column>
+  <clr-dg-row *ngFor="let pv of pvList">
+    <clr-dg-cell>{{pv.name}}</clr-dg-cell>
+    <clr-dg-cell>{{pv.typeDescription}}</clr-dg-cell>
+    <clr-dg-cell>{{pv.capacity}}</clr-dg-cell>
+    <clr-dg-cell>{{pv.statusDescription | translate}}</clr-dg-cell>
+    <clr-dg-cell>{{pv.reclaim}}</clr-dg-cell>
+    <clr-dg-cell>{{pv.accessMode}}</clr-dg-cell>
+    <clr-dg-cell>
+      <a href="javascript:void(0)" (click)="deletePv(pv.name,pv.id)">
+        <clr-icon shape="trash" class="is-solid"></clr-icon>
+      </a>
+      <a href="javascript:void(0)" (click)="showPvDetail(pv.id)">
+        <clr-icon shape="info-standard"></clr-icon>
+      </a>
+    </clr-dg-cell>
+  </clr-dg-row>
+  <clr-dg-footer>{{pvList ? pvList.length : 0}} {{ 'DATAGRID.ITEMS' | translate }}</clr-dg-footer>
+</clr-datagrid>

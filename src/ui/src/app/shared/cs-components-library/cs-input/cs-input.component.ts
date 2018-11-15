@@ -93,7 +93,7 @@ export class CsInputComponent implements OnInit, AfterViewInit {
     if (this.inputFiledType == CsInputFiledType.iftNumber) {
       this.inputValidatorFns.push(Validators.pattern(PATTERN_Number));
     }
-    if (this.inputIsRequired) {
+    if (this.inputIsRequired && this.inputType != CsInputType.itWithNoInput) {
       this.inputValidatorFns.push(Validators.required);
     }
     if (this.inputMaxlength > 0) {
@@ -147,19 +147,16 @@ export class CsInputComponent implements OnInit, AfterViewInit {
     }
   }
 
-  @Input("simpleFiled")
-  set SimpleFiled(value: CsInputSupportType) {
-    this.inputField = new CsInputFiled(
-      CsInputStatus.isView, value, value
-    );
-    if ((this.inputFiledType == CsInputFiledType.iftNumber && this.inputControl.value == 0) ||
-      (this.inputFiledType != CsInputFiledType.iftNumber && this.inputControl.value == '')) {
-      this.inputControl.setValue(value);
+  @Input("simpleFiled") set SimpleFiled(value: CsInputSupportType) {
+    if (this.inputField) {
+      this.inputField.value = value;
+      this.inputField.defaultValue = value;
+    } else {
+      this.inputField = new CsInputFiled(
+        CsInputStatus.isView, value, value
+      );
     }
-  }
-
-  get SimpleFiled(): CsInputSupportType {
-    return this.inputField.value;
+    this.inputControl.setValue(value);
   }
 
   @Input("disabled")

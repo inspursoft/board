@@ -1,12 +1,10 @@
 import { NgModule } from '@angular/core';
-import { RouterModule } from '@angular/router';
 import { SharedModule } from '../shared/shared.module';
 import { MainContentComponent } from './main-content.component';
 
 @NgModule({
   imports: [
-    SharedModule,
-    RouterModule
+    SharedModule
   ],
   declarations: [
     MainContentComponent
