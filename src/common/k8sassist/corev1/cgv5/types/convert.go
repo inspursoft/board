@@ -14,6 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 // generate k8s objectmeta from model objectmeta
@@ -1213,4 +1214,180 @@ func IsNotFoundError(err error) bool {
 
 func IsAlreadyExistError(err error) bool {
 	return errors.IsAlreadyExists(err)
+}
+
+func FromK8sRBD(rbd *v1.RBDVolumeSource) *model.RBDVolumeSource {
+	if rbd == nil {
+		return nil
+	}
+	return &model.RBDVolumeSource{
+		CephMonitors: rbd.CephMonitors,
+		RBDImage:     rbd.RBDImage,
+		FSType:       rbd.FSType,
+		RBDPool:      rbd.RBDPool,
+		RadosUser:    rbd.RadosUser,
+		Keyring:      rbd.Keyring,
+		SecretRef:    (*model.LocalObjectReference)(rbd.SecretRef),
+		ReadOnly:     rbd.ReadOnly,
+	}
+}
+
+func FromK8sPVAccessMode(am []v1.PersistentVolumeAccessMode) []model.PersistentVolumeAccessMode {
+	items := make([]model.PersistentVolumeAccessMode, 0)
+	for _, valueK8s := range am {
+		items = append(items, (model.PersistentVolumeAccessMode)(valueK8s))
+	}
+	return items
+}
+
+func FromK8sPVObjectReference(or *v1.ObjectReference) *model.ObjectReference {
+	return &model.ObjectReference{
+		Kind:            or.Kind,
+		Namespace:       or.Namespace,
+		Name:            or.Name,
+		UID:             model.UID(or.UID),
+		APIVersion:      or.APIVersion,
+		ResourceVersion: or.ResourceVersion,
+		FieldPath:       or.FieldPath,
+	}
+}
+
+func FromK8sPV(pv *v1.PersistentVolume) *model.PersistentVolumeK8scli {
+	//var lastTime *time.Time
+	//if autoscale.Status.LastScaleTime != nil {
+	//	lastTime = &autoscale.Status.LastScaleTime.Time
+	//}
+	capacity := make(map[model.ResourceName]model.QuantityStr)
+	for k, v := range pv.Spec.Capacity {
+		i, _ := v.AsInt64()
+		capacity[model.ResourceName(k)] = model.QuantityStr(strconv.Itoa(int(i)))
+
+	}
+
+	return &model.PersistentVolumeK8scli{
+		ObjectMeta: FromK8sObjectMeta(pv.ObjectMeta),
+		Spec: model.PersistentVolumeSpec{
+			Capacity: capacity,
+			PersistentVolumeSource: model.PersistentVolumeSource{
+				NFS: (*model.NFSVolumeSource)(pv.Spec.PersistentVolumeSource.NFS),
+				RBD: FromK8sRBD(pv.Spec.PersistentVolumeSource.RBD),
+			},
+			AccessModes:                   FromK8sPVAccessMode(pv.Spec.AccessModes),
+			ClaimRef:                      FromK8sPVObjectReference(pv.Spec.ClaimRef),
+			PersistentVolumeReclaimPolicy: (model.PersistentVolumeReclaimPolicy)(pv.Spec.PersistentVolumeReclaimPolicy),
+			StorageClassName:              pv.Spec.StorageClassName,
+			MountOptions:                  pv.Spec.MountOptions,
+		},
+		Status: model.PersistentVolumeStatus{
+			Phase:   (model.PersistentVolumePhase)(pv.Status.Phase),
+			Message: pv.Status.Message,
+			Reason:  pv.Status.Reason,
+		},
+	}
+}
+
+func FromK8sPVList(pvList *v1.PersistentVolumeList) *model.PersistentVolumeList {
+	if pvList == nil {
+		return nil
+	}
+	items := make([]model.PersistentVolumeK8scli, 0)
+	for i := range pvList.Items {
+		if pv := FromK8sPV(&pvList.Items[i]); pv != nil {
+			items = append(items, *pv)
+		}
+	}
+	return &model.PersistentVolumeList{
+		Items: items,
+	}
+}
+
+func ToK8sRBD(rbd *model.RBDVolumeSource) *v1.RBDVolumeSource {
+	if rbd == nil {
+		return nil
+	}
+	return &v1.RBDVolumeSource{
+		CephMonitors: rbd.CephMonitors,
+		RBDImage:     rbd.RBDImage,
+		FSType:       rbd.FSType,
+		RBDPool:      rbd.RBDPool,
+		RadosUser:    rbd.RadosUser,
+		Keyring:      rbd.Keyring,
+		SecretRef:    (*v1.LocalObjectReference)(rbd.SecretRef),
+		ReadOnly:     rbd.ReadOnly,
+	}
+}
+
+func ToK8sPVAccessMode(am []model.PersistentVolumeAccessMode) []v1.PersistentVolumeAccessMode {
+	items := make([]v1.PersistentVolumeAccessMode, 0)
+	for _, valueK8s := range am {
+		items = append(items, (v1.PersistentVolumeAccessMode)(valueK8s))
+	}
+	return items
+}
+
+func ToK8sPVObjectReference(or *model.ObjectReference) *v1.ObjectReference {
+	return &v1.ObjectReference{
+		Kind:            or.Kind,
+		Namespace:       or.Namespace,
+		Name:            or.Name,
+		UID:             types.UID(or.UID),
+		APIVersion:      or.APIVersion,
+		ResourceVersion: or.ResourceVersion,
+		FieldPath:       or.FieldPath,
+	}
+}
+
+func ToK8sPV(pv *model.PersistentVolumeK8scli) *v1.PersistentVolume {
+	//var lastTime *metav1.Time
+	//if autoscale.Status.LastScaleTime != nil {
+	//	t := metav1.NewTime(*autoscale.Status.LastScaleTime)
+	//	lastTime = &t
+	//}
+	capacity := make(map[v1.ResourceName]resource.Quantity)
+	for k, v := range pv.Spec.Capacity {
+		value, _ := strconv.Atoi(string(v))
+		q := resource.NewQuantity(int64(value), resource.DecimalExponent)
+		capacity[v1.ResourceName(k)] = *q
+
+	}
+	return &v1.PersistentVolume{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "PersistentVolume",
+			APIVersion: "v1",
+		},
+		ObjectMeta: ToK8sObjectMeta(pv.ObjectMeta),
+		Spec: v1.PersistentVolumeSpec{
+			Capacity: capacity,
+			PersistentVolumeSource: v1.PersistentVolumeSource{
+				NFS: (*v1.NFSVolumeSource)(pv.Spec.PersistentVolumeSource.NFS),
+				RBD: ToK8sRBD(pv.Spec.PersistentVolumeSource.RBD),
+			},
+			AccessModes:                   ToK8sPVAccessMode(pv.Spec.AccessModes),
+			ClaimRef:                      ToK8sPVObjectReference(pv.Spec.ClaimRef),
+			PersistentVolumeReclaimPolicy: (v1.PersistentVolumeReclaimPolicy)(pv.Spec.PersistentVolumeReclaimPolicy),
+			StorageClassName:              pv.Spec.StorageClassName,
+			MountOptions:                  pv.Spec.MountOptions,
+		},
+		Status: v1.PersistentVolumeStatus{
+			Phase:   (v1.PersistentVolumePhase)(pv.Status.Phase),
+			Message: pv.Status.Message,
+			Reason:  pv.Status.Reason,
+		},
+	}
+}
+
+//TODO implement update later， only support capacity now
+func UpdateK8sPV(k8sPV *v1.PersistentVolume, pv *model.PersistentVolumeK8scli) {
+	if k8sPV == nil || pv == nil {
+		return
+	}
+	capacity := make(map[v1.ResourceName]resource.Quantity)
+	for k, v := range pv.Spec.Capacity {
+		value, _ := strconv.Atoi(string(v))
+		q := resource.NewQuantity(int64(value), resource.DecimalExponent)
+		capacity[v1.ResourceName(k)] = *q
+
+	}
+	// just update our attributes.
+	k8sPV.Spec.Capacity = capacity
 }

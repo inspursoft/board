@@ -49,6 +49,10 @@ func (p *AppV1Client) AutoScale(namespace string) AutoscaleInterface {
 	return apps.NewAutoScales(namespace, p.Clientset.AutoscalingV1().HorizontalPodAutoscalers(namespace))
 }
 
+func (p *AppV1Client) PersistentVolume() PersistentVolumeInterface {
+	return apps.NewPersistentVolume(p.Clientset.CoreV1().PersistentVolumes())
+}
+
 // AppV1ClientInterface level 1 interface to access others
 type AppV1ClientInterface interface {
 	Service(namespace string) ServiceClientInterface
@@ -59,6 +63,7 @@ type AppV1ClientInterface interface {
 	ReplicaSet(namespace string) ReplicaSetClientInterface
 	Pod(namespace string) PodClientInterface
 	AutoScale(namespace string) AutoscaleInterface
+	PersistentVolume() PersistentVolumeInterface
 }
 
 // ServiceCli interface has methods to work with Service resources in k8s-assist.
@@ -162,4 +167,16 @@ type AutoscaleInterface interface {
 	//	DeleteCollection(options *meta_v1.DeleteOptions, listOptions meta_v1.ListOptions) error
 	Get(name string) (*model.AutoScale, error)
 	List() (*model.AutoScaleList, error)
+}
+
+// How to:  autoscaleCli, err := k8sassist.NewAutoscale(nameSpace)
+//          _, err := autoscaleCli.Update(&autoscale)
+type PersistentVolumeInterface interface {
+	Create(*model.PersistentVolumeK8scli) (*model.PersistentVolumeK8scli, error)
+	Update(*model.PersistentVolumeK8scli) (*model.PersistentVolumeK8scli, error)
+	UpdateStatus(*model.PersistentVolumeK8scli) (*model.PersistentVolumeK8scli, error)
+	Delete(name string) error
+	//	DeleteCollection(options *meta_v1.DeleteOptions, listOptions meta_v1.ListOptions) error
+	Get(name string) (*model.PersistentVolumeK8scli, error)
+	List() (*model.PersistentVolumeList, error)
 }
