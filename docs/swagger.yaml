@@ -864,6 +864,71 @@ paths:
           description: User need to log in first.
         500:
           description: Internal errors.
+  /v1/services/rollingupdate/session:
+    get:
+      summary: Return the results the service config.
+      description: 
+        This endpoint returns the results the service config.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name 
+          in: query
+          description: Project name.
+          required: true
+          type: string
+        - name: service_name 
+          in: query
+          description: Service name.
+          required: true
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return service config.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+    patch:
+      summary: Return the results the rolling update service config.
+      description: 
+        This endpoint returns the results the rolling update service config.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name 
+          in: query
+          description: Project name.
+          required: true
+          type: string
+        - name: service_name 
+          in: query
+          description: Service name.
+          required: true
+          type: string
+        - name: session_affinity_flag 
+          in: query
+          description: Session affinity flag for service.
+          required: true
+          type: integer
+          format: int32
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return null.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
   /v1/services/rollingupdate/image:
     get:
       summary: Return the results the rolling update service config.

@@ -62,6 +62,7 @@ const (
 	NamespaceActive             = v1.NamespaceActive
 	NamespaceTerminating        = v1.NamespaceTerminating
 	SessionAffinityClientIP     = v1.ServiceAffinityClientIP
+	ServiceAffinityNone         = v1.ServiceAffinityNone
 )
 
 const (
