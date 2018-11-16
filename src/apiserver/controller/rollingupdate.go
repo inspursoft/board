@@ -64,7 +64,7 @@ func (s *ServiceRollingUpdateController) GetServiceSessionFlagAction() {
 	serviceName := s.GetString("service_name")
 	projectName := s.GetString("project_name")
 	s.resolveProjectMember(projectName)
-	svc, err := service.GetK8SService(projectName, serviceName)
+	svc, err := service.GetK8sService(projectName, serviceName)
 	if err != nil {
 		s.internalError(err)
 		return
@@ -81,13 +81,13 @@ func (s *ServiceRollingUpdateController) PatchServiceSessionAction() {
 	serviceName := s.GetString("service_name")
 	projectName := s.GetString("project_name")
 	s.resolveProjectMember(projectName)
-	svc, err := service.GetK8SService(projectName, serviceName)
+	svc, err := service.GetK8sService(projectName, serviceName)
 	if err != nil {
 		s.internalError(err)
 		return
 	}
 	svc.SessionAffinityFlag = sessionAffinityFlag
-	_, svcFileInfo, err := service.PatchK8SService(projectName, serviceName, svc)
+	_, svcFileInfo, err := service.PatchK8sService(projectName, serviceName, svc)
 	if err != nil {
 		s.internalError(err)
 		return
@@ -98,8 +98,8 @@ func (s *ServiceRollingUpdateController) PatchServiceSessionAction() {
 		s.internalError(err)
 		return
 	}
-	updateService := model.ServiceStatus{ID: serviceStatus.ID, ServiceObjectConfig: string(svcFileInfo)}
-	_, err = service.UpdateService(updateService, "service_object_config")
+	updateService := model.ServiceStatus{ID: serviceStatus.ID, ServiceYaml: string(svcFileInfo)}
+	_, err = service.UpdateService(updateService, "service_yaml")
 	if err != nil {
 		s.internalError(err)
 		return

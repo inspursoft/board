@@ -327,8 +327,8 @@ DROP TABLE IF EXISTS `log`;
         `creation_time` datetime DEFAULT NULL,
         `update_time` datetime DEFAULT NULL,
         `source` SMALLINT(1) NOT NULL,
-        `service_object_config` TEXT,
-        `deployment_object_config` TEXT,
+        `service_yaml` TEXT,
+        `deployment_yaml` TEXT,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
 

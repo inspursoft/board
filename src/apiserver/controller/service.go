@@ -130,9 +130,9 @@ func (p *ServiceController) DeployServiceAction() {
 	items := []string{deploymentFile, serviceFile}
 	p.pushItemsToRepo(items...)
 
-	updateService := model.ServiceStatus{ID: serviceInfo.ID, Status: uncompleted, ServiceObjectConfig: string(deployInfo.ServiceFileInfo),
-		DeploymentObjectConfig: string(deployInfo.DeploymentFileInfo)}
-	_, err = service.UpdateService(updateService, "status", "service_object_config", "deployment_object_config")
+	updateService := model.ServiceStatus{ID: serviceInfo.ID, Status: uncompleted, ServiceYaml: string(deployInfo.ServiceFileInfo),
+		DeploymentYaml: string(deployInfo.DeploymentFileInfo)}
+	_, err = service.UpdateService(updateService, "status", "service_yaml", "deployment_yaml")
 	if err != nil {
 		p.internalError(err)
 		return
@@ -198,7 +198,7 @@ func syncK8sStatus(serviceList []*model.ServiceStatusMO) error {
 		}
 
 		// Check the service in k8s cluster status
-		serviceK8s, err := service.GetK8SService((*serviceStatus).ProjectName, (*serviceStatus).Name)
+		serviceK8s, err := service.GetK8sService((*serviceStatus).ProjectName, (*serviceStatus).Name)
 		if serviceK8s == nil {
 			logs.Info("Failed to get service in cluster", err)
 			var reason = "The service is not established in cluster system"
@@ -676,9 +676,9 @@ func (f *ServiceController) DownloadDeploymentYamlFileAction() {
 		return
 	}
 	if yamlType == deploymentType {
-		f.resolveDownloadYaml(serviceInfo, deploymentFilename, service.GenerateDeploymentYamlFileFromK8S)
+		f.resolveDownloadYaml(serviceInfo, deploymentFilename, service.GenerateDeploymentYamlFileFromK8s)
 	} else if yamlType == serviceType {
-		f.resolveDownloadYaml(serviceInfo, serviceFilename, service.GenerateServiceYamlFileFromK8S)
+		f.resolveDownloadYaml(serviceInfo, serviceFilename, service.GenerateServiceYamlFileFromK8s)
 	}
 }
 

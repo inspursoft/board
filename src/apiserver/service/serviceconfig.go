@@ -369,7 +369,7 @@ func PatchDeployment(pName string, sName string, deploymentConfig *model.Deploym
 	return deployment, deploymentFileInfo, err
 }
 
-func PatchK8SService(pName string, sName string, serviceConfig *model.Service) (*model.Service, []byte, error) {
+func PatchK8sService(pName string, sName string, serviceConfig *model.Service) (*model.Service, []byte, error) {
 	var config k8sassist.K8sAssistConfig
 	config.KubeConfigPath = kubeConfigPath()
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
@@ -382,7 +382,7 @@ func PatchK8SService(pName string, sName string, serviceConfig *model.Service) (
 	return svc, svcInfo, nil
 }
 
-func GetK8SService(pName string, sName string) (*model.Service, error) {
+func GetK8sService(pName string, sName string) (*model.Service, error) {
 	var config k8sassist.K8sAssistConfig
 	config.KubeConfigPath = kubeConfigPath()
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
