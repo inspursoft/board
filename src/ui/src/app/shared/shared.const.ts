@@ -38,8 +38,7 @@ export const MAIN_MENU_DATA: Array<ICsMenuItemData> = [
   {
     caption: 'SIDE_NAV.DASHBOARD', visible: true, icon: 'dashboard', url: `/${RouteDashboard}`, children: [
       {caption: 'SIDE_NAV.DASHBOARD', visible: true, icon: 'dashboard', url: `/${RouteDashboard}`},
-      {caption: 'SIDE_NAV.KIBANA', visible: true, icon: 'curve-chart', url: `/${RouteKibana}`},
-      {caption: 'SIDE_NAV.GRAFANA', visible: true, icon: 'axis-chart', url: `/${RouteGrafana}`}]
+      {caption: 'SIDE_NAV.KIBANA', visible: true, icon: 'curve-chart', url: `/${RouteKibana}`}]
   },
   {caption: 'SIDE_NAV.SERVICES', visible: true, icon: 'applications', url: `/${RouteServices}`},
   {caption: 'SIDE_NAV.PROJECTS', visible: true, icon: 'vm', url: `/${RouteProjects}`},

@@ -77,7 +77,7 @@ type ServiceClientInterface interface {
 	//DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
 	Get(name string) (*model.Service, []byte, error)
 	List() (*model.ServiceList, error)
-	//Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *v1.Service, err error)
+	Patch(name string, pt model.PatchType, modelService *model.Service) (*model.Service, []byte, error)
 	CreateByYaml(io.Reader) (*model.Service, error)
 	CheckYaml(io.Reader) (*model.Service, error)
 }

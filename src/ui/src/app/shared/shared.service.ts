@@ -6,6 +6,7 @@ import { Observable } from "rxjs/Observable";
 
 @Injectable()
 export class SharedService {
+  public showMaxGrafanaWindow = false;
   constructor(private http: HttpClient) {
 
   }

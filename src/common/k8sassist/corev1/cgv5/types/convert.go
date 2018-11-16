@@ -737,9 +737,19 @@ func ToK8sService(modelService *model.Service) *Service {
 	}
 	var sessionAffinity SessionAffinity
 	var sessionAffinityConfig *SessionAffinityConfig
+	var timeoutSecond int32 = 0
 	if modelService.SessionAffinityFlag != 0 {
-		var timeoutSecond int32 = int32(modelService.SessionAffinityTime)
+		if modelService.SessionAffinityTime == 0 {
+			timeoutSecond = 1800
+		} else {
+			timeoutSecond = int32(modelService.SessionAffinityTime)
+		}
 		sessionAffinity = SessionAffinityClientIP
+		sessionAffinityConfig = &SessionAffinityConfig{
+			ClientIP: &ClientIPConfig{TimeoutSeconds: &timeoutSecond},
+		}
+	} else {
+		sessionAffinity = ServiceAffinityNone
 		sessionAffinityConfig = &SessionAffinityConfig{
 			ClientIP: &ClientIPConfig{TimeoutSeconds: &timeoutSecond},
 		}

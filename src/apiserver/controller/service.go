@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -131,14 +130,9 @@ func (p *ServiceController) DeployServiceAction() {
 	items := []string{deploymentFile, serviceFile}
 	p.pushItemsToRepo(items...)
 
-	serviceConfig, err := json.Marshal(&configService)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	updateService := model.ServiceStatus{ID: serviceInfo.ID, Status: uncompleted, ServiceConfig: string(serviceConfig)}
-	_, err = service.UpdateService(updateService, "id", "status", "service_config")
+	updateService := model.ServiceStatus{ID: serviceInfo.ID, Status: uncompleted, ServiceYaml: string(deployInfo.ServiceFileInfo),
+		DeploymentYaml: string(deployInfo.DeploymentFileInfo)}
+	_, err = service.UpdateService(updateService, "status", "service_yaml", "deployment_yaml")
 	if err != nil {
 		p.internalError(err)
 		return
@@ -682,9 +676,9 @@ func (f *ServiceController) DownloadDeploymentYamlFileAction() {
 		return
 	}
 	if yamlType == deploymentType {
-		f.resolveDownloadYaml(serviceInfo, deploymentFilename, service.GenerateDeploymentYamlFileFromK8S)
+		f.resolveDownloadYaml(serviceInfo, deploymentFilename, service.GenerateDeploymentYamlFileFromK8s)
 	} else if yamlType == serviceType {
-		f.resolveDownloadYaml(serviceInfo, serviceFilename, service.GenerateServiceYamlFileFromK8S)
+		f.resolveDownloadYaml(serviceInfo, serviceFilename, service.GenerateServiceYamlFileFromK8s)
 	}
 }
 

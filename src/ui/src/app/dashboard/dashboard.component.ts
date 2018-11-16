@@ -10,6 +10,7 @@ import { scaleOption } from "./time-range-scale.component/time-range-scale.compo
 import { Observable } from "rxjs/Observable";
 import "rxjs/add/operator/delay";
 import "rxjs/add/operator/bufferCount"
+import { SharedService } from "../shared/shared.service";
 
 const MAX_COUNT_PER_PAGE: number = 200;
 const MAX_COUNT_PER_DRAG: number = 100;
@@ -80,7 +81,8 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
   constructor(private service: DashboardService,
               private appInitService: AppInitService,
               private messageService: MessageService,
-              private translateService: TranslateService) {
+              private translateService: TranslateService,
+              private shardService: SharedService) {
     super();
     // this.changeDetectorRef.detach();
     this.eventDragChange = new Subject<{lineType: LineType, isDragBack: boolean}>();
@@ -555,6 +557,26 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
   get StorageUnit(): string {
     return this.service.CurStorageUnit;
   };
+
+  get grafanaViewUrl(): string{
+    return `http://${this.appInitService.systemInfo['board_host']}/grafana/dashboard/db/kubernetes/`
+  }
+
+  get showGrafanaWindow(): boolean{
+    return this.appInitService.isSystemAdmin;
+  }
+
+  get showMaxGrafanaWindow(): boolean{
+    return this.shardService.showMaxGrafanaWindow;
+  }
+
+  set showMaxGrafanaWindow(value: boolean){
+    this.shardService.showMaxGrafanaWindow = value;
+  }
+
+  get hideMaxGrafanaWindow(): boolean{
+    return !this.shardService.showMaxGrafanaWindow;
+  }
 
   refreshLine(){
     this.lineTypeSet.forEach(value => {

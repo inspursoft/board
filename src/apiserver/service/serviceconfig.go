@@ -369,6 +369,19 @@ func PatchDeployment(pName string, sName string, deploymentConfig *model.Deploym
 	return deployment, deploymentFileInfo, err
 }
 
+func PatchK8sService(pName string, sName string, serviceConfig *model.Service) (*model.Service, []byte, error) {
+	var config k8sassist.K8sAssistConfig
+	config.KubeConfigPath = kubeConfigPath()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	s := k8sclient.AppV1().Service(pName)
+	svc, svcInfo, err := s.Patch(sName, model.StrategicMergePatchType, serviceConfig)
+	if err != nil {
+		logs.Info("Failed to Update service", pName, serviceConfig.Name)
+		return nil, nil, err
+	}
+	return svc, svcInfo, nil
+}
+
 func GetK8sService(pName string, sName string) (*model.Service, error) {
 	var config k8sassist.K8sAssistConfig
 	config.KubeConfigPath = kubeConfigPath()
@@ -433,9 +446,6 @@ func MarshalService(serviceConfig *model.ConfigServiceStep) *model.Service {
 		}
 	}
 
-	if serviceConfig.SessionAffinityFlag != 0 && serviceConfig.SessionAffinityTime == 0 {
-		serviceConfig.SessionAffinityTime = 1800
-	}
 	return &model.Service{
 		ObjectMeta:          model.ObjectMeta{Name: serviceConfig.ServiceName},
 		Ports:               ports,
