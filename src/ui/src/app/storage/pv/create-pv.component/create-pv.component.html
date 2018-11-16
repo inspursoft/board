@@ -19,9 +19,8 @@
     </div>
     <div class="dynamic-line-container">
       <span class="filed-text">{{"STORAGE.PV_TYPE"|translate}}:</span>
-      <cs-dropdown [dropdownDefaultText]="'STORAGE.PV_CREATE_SELECT_TYPE'|translate"
+      <cs-dropdown [dropdownDefaultText]="newPersistentVolume.typeDescription"
                    [dropdownWidth]="260"
-                   [dropdownMustBeSelect]="true"
                    [dropdownDisabled]="isCreateWip"
                    [dropdownList]="storageTypeList"
                    [dropdownListTextKey]="'name'"

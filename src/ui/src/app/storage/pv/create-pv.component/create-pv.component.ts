@@ -21,7 +21,7 @@ export class CreatePvComponent extends CsModalChildBase implements OnInit {
   constructor(private storageService: StorageService) {
     super();
     this.storageTypeList = Array<{name: string, value: number, classType: Type<PersistentVolume>}>();
-    this.newPersistentVolume = new PersistentVolume();
+    this.newPersistentVolume = new NFSPersistentVolume();//default 'NFS' type
     this.accessModeList = Array<PvAccessMode>();
     this.reclaimModeList = Array<PvReclaimMode>();
     this.onAfterCommit = new EventEmitter<PersistentVolume>();

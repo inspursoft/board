@@ -178,7 +178,13 @@ export class PersistentVolume {
   }
 
   get statusDescription(): string{
-    return ['Unknown', 'Available', 'Bound', 'Released', 'Failed', 'Invalid'][this.state];
+    return [
+      'STORAGE.PV_STATE_UNKNOWN',
+      'STORAGE.PV_STATE_AVAILABLE',
+      'STORAGE.PV_STATE_BOUND',
+      'STORAGE.PV_STATE_RELEASED',
+      'STORAGE.PV_STATE_FAILED',
+      'STORAGE.PV_STATE_INVALID'][this.state];
   }
 
   postObject(): Object {
@@ -197,6 +203,7 @@ export class NFSPersistentVolume extends PersistentVolume {
 
   constructor() {
     super();
+    this.type = 1;
     this.options = new PersistentVolumeOptions();
   }
 
@@ -212,6 +219,7 @@ export class RBDPersistentVolume extends PersistentVolume {
 
   constructor() {
     super();
+    this.type = 2;
     this.options = new PersistentVolumeOptionsRBD();
   }
 
