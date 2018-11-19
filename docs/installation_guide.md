@@ -92,6 +92,15 @@ may not be able to log in after the upgrade.
 * **self_registration**: (**on** or **off**. Default is **on**) Enable / Disable the ability for a user to register himself/herself. When disabled, new users can only be created by the Admin user, only an admin user can create new users in Board. _NOTE_: When **auth_mode** is set to **ldap_auth**, self-registration feature is **always** disabled, and this flag is ignored.  
 * **token_expiration**: The expiration time (in minutes) of a token created by token service, default is 30 minutes.
 
+#### Connecting Kubernetes cluster which authentication strategy with CA certification
+If the Kubernetes cluster which Board connect to authentication strategy with CA certification, you must copy the Kubernetes cluster's CA files to your machine which installing the Board. You should put CA files into /etc/board/cert directory and name them as 'ca-key.pem'(for private key) and 'ca.pem'(for public key).
+
+Then you should configure these items:
+
+* **kube_http_scheme**: Set to 'https'. It means the requests Board send to Kubernetes cluster will be used via 'https' protocol.
+* **kube_master_ip**: The IP address of the Master of Kubernetes cluster.
+* **kube_master_port**: The port number of the Master of Kubernetes cluster(maybe 443 or 6443).
+
 #### Finishing installation and starting Board
 Once **board.cfg** is configured, install and start Board using the ```install.sh``` script.  ~~Note that it may take some time for the online installer to download Board images from Docker hub.~~ (Coming soon)  
 

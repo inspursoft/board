@@ -1,11 +1,13 @@
 package apps
 
 import (
+	"encoding/json"
 	"git/inspursoft/board/src/common/k8sassist/corev1/cgv5/types"
 	"git/inspursoft/board/src/common/model"
-
 	"io"
 	"io/ioutil"
+
+	k8stypes "k8s.io/apimachinery/pkg/types"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/ghodss/yaml"
@@ -38,6 +40,29 @@ func (s *services) Create(modelService *model.Service) (*model.Service, []byte, 
 func (s *services) Update(modelService *model.Service) (*model.Service, []byte, error) {
 	typeService := types.ToK8sService(modelService)
 	svc, err := s.service.Update(typeService)
+	if err != nil {
+		logs.Error("Update service failed, error: %v", err)
+		return nil, nil, err
+	}
+
+	serviceConfig := types.GenerateServiceConfig(svc)
+	svcfileInfo, err := yaml.Marshal(serviceConfig)
+	if err != nil {
+		logs.Error("Marshal service info failed, error: %v", err)
+		return types.FromK8sService(svc), nil, err
+	}
+	return types.FromK8sService(svc), svcfileInfo, nil
+}
+
+func (s *services) Patch(name string, pt model.PatchType, modelService *model.Service) (*model.Service, []byte, error) {
+	typeService := types.ToK8sService(modelService)
+	servicePatchConfig, err := json.Marshal(typeService)
+	if err != nil {
+		logs.Debug("Marshal rolling Update services Config failed %+v\n", typeService)
+		return nil, nil, err
+	}
+
+	svc, err := s.service.Patch(name, k8stypes.PatchType(pt), servicePatchConfig)
 	if err != nil {
 		logs.Error("Update service failed, error: %v", err)
 		return nil, nil, err

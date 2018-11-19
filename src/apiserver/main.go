@@ -23,6 +23,7 @@ const (
 	defaultTokenServer          = "tokenserver"
 	defaultTokenServerPort      = "4000"
 	defaultTokenCacheExpireTime = "1800"
+	defaultKubeConfigPath       = "/root/kubeconfig"
 	adminUserID                 = 1
 	adminUsername               = "admin"
 	adminEmail                  = "admin@inspur.com"
@@ -139,6 +140,8 @@ func main() {
 
 	utils.SetConfig("KVM_TOOLS_PATH", kvmToolsPath)
 	utils.SetConfig("KVM_REGISTRY_PATH", kvmRegistryPath)
+
+	utils.SetConfig("KUBE_CONFIG_PATH", defaultKubeConfigPath)
 
 	dao.InitDB()
 
