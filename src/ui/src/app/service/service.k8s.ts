@@ -316,4 +316,23 @@ export class K8sService {
         return res
       });
   }
+
+  getSessionAffinityFlag(serviceName: string, projectName: string): Observable<boolean> {
+    return this.http.get(`/api/v1/services/rollingupdate/session`, {
+      observe: "response", params: {
+        project_name: projectName,
+        service_name: serviceName
+      }
+    }).map((res: HttpResponse<Object>) => res.body['SessionAffinityFlag'] == 1)
+  }
+
+  setSessionAffinityFlag(serviceName: string, projectName: string, flag: boolean): Observable<any> {
+    return this.http.patch(`/api/v1/services/rollingupdate/session`, null, {
+      observe: "response", params: {
+        project_name: projectName,
+        service_name: serviceName,
+        session_affinity_flag: flag ? '1' : '0'
+      }
+    })
+  }
 }
