@@ -3,8 +3,7 @@
  * This software is released under MIT license.
  * The full license information can be found in LICENSE in the root directory of this project.
  */
-import { ModuleWithProviders } from '@angular/core/src/metadata/ng_module';
-import { ActivatedRouteSnapshot, Resolve, RouterModule, RouterStateSnapshot, Routes } from '@angular/router';
+import { ActivatedRouteSnapshot, Resolve, RouterStateSnapshot, Routes } from '@angular/router';
 import { Injectable } from '@angular/core';
 import { GlobalSearchComponent } from './global-search/global-search.component';
 import { SignInComponent } from './account/sign-in/sign-in.component';
@@ -28,7 +27,7 @@ import { BadGatewayComponent } from "./shared/error-pages/bad-gateway.component/
 import { BoardLoadingComponent } from "./shared/error-pages/board-loading.component/board-loading.component";
 import { KibanaComponent } from "./kibana/kibana/kibana.component";
 import { GrafanaComponent } from "./grafana/grafana/grafana.component";
-import { RouteGrafana, RouteKibana } from "./shared/shared.const";
+import { RouteGrafana, RouteKibana, RouteStorage } from "./shared/shared.const";
 import { Observable } from "rxjs/Observable";
 
 @Injectable()
@@ -97,11 +96,10 @@ export const ROUTES: Routes = [
       {path: 'profile', component: ProfileComponent},
       {path: RouteKibana, component: KibanaComponent},
       {path: RouteGrafana, component: GrafanaComponent},
+      {path: RouteStorage, loadChildren:'./storage/storage.module#StorageModule'},
       {path: 'audit', component: ListAuditComponent}
     ]
   },
   {path: '', redirectTo: '/sign-in', pathMatch: 'full'},
   {path: '**', component: SignInComponent}
 ];
-
-export const ROUTING: ModuleWithProviders = RouterModule.forRoot(ROUTES);
