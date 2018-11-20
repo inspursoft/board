@@ -233,7 +233,7 @@ func genPersistentVolumeK8scli(pv model.PersistentVolume, pvK8s *model.Persisten
 	pvK8s.Labels["pvname"] = pv.Name
 	pvK8s.Spec.Capacity = make(model.ResourceList)
 	pvK8s.Spec.Capacity["storage"] = model.QuantityStr(pv.Capacity)
-	pvK8s.Spec.AccessModes[0] = (model.PersistentVolumeAccessMode)(pv.Accessmode)
+	pvK8s.Spec.AccessModes = append(pvK8s.Spec.AccessModes, (model.PersistentVolumeAccessMode)(pv.Accessmode))
 	pvK8s.Spec.PersistentVolumeReclaimPolicy = (model.PersistentVolumeReclaimPolicy)(pv.Reclaim)
 	return pvK8s
 }

@@ -1251,6 +1251,9 @@ func FromK8sPVAccessMode(am []v1.PersistentVolumeAccessMode) []model.PersistentV
 }
 
 func FromK8sPVObjectReference(or *v1.ObjectReference) *model.ObjectReference {
+	if or == nil {
+		return nil
+	}
 	return &model.ObjectReference{
 		Kind:            or.Kind,
 		Namespace:       or.Namespace,
@@ -1336,6 +1339,9 @@ func ToK8sPVAccessMode(am []model.PersistentVolumeAccessMode) []v1.PersistentVol
 }
 
 func ToK8sPVObjectReference(or *model.ObjectReference) *v1.ObjectReference {
+	if or == nil {
+		return nil
+	}
 	return &v1.ObjectReference{
 		Kind:            or.Kind,
 		Namespace:       or.Namespace,
