@@ -379,3 +379,14 @@ DROP TABLE IF EXISTS `log`;
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
 
+    CREATE TABLE `board`.`repository` (
+        `id` INT NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(255) NOT NULL DEFAULT '',
+        `url` VARCHAR(255) NOT NULL DEFAULT '',
+        `username` VARCHAR(255) NOT NULL DEFAULT '',
+        `password` VARCHAR(255) NOT NULL DEFAULT '',
+        `cert` VARCHAR(2048),
+        `key` VARCHAR(2048),
+        `ca` VARCHAR(2048),
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	

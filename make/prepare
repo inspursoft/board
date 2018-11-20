@@ -100,6 +100,8 @@ kvm_registry_size = rcp.get("configuration", "kvm_registry_size")
 kvm_registry_port = rcp.get("configuration", "kvm_registry_port")
 kvm_toolkits_path = rcp.get("configuration", "kvm_toolkits_path")
 
+helm_host = rcp.get("configuration", "helm_host")
+
 ###email configuration
 email_identity = rcp.get("configuration", "email_identity")
 email_host = rcp.get("configuration", "email_server")
@@ -234,7 +236,8 @@ render(os.path.join(templates_dir, "apiserver", "env"),
         jenkins_execution_mode=jenkins_execution_mode,
         kvm_registry_size=kvm_registry_size,
         kvm_registry_port=kvm_registry_port,
-        kvm_toolkits_path=kvm_toolkits_path)
+        kvm_toolkits_path=kvm_toolkits_path,
+        helm_host=helm_host)
 
 
 if os.path.exists(os.path.join(apiserver_config_dir, "kvm")):

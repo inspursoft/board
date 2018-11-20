@@ -170,5 +170,7 @@ func InitializeDefaultConfig() {
 	AddEnv("EMAIL_IDENTITY")
 	AddEnv("AUDIT_DEBUG")
 
+	AddEnv("HELM_HOST")
+
 	ShowAllConfigs()
 }
