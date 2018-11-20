@@ -27,8 +27,10 @@ import { BadGatewayComponent } from "./shared/error-pages/bad-gateway.component/
 import { BoardLoadingComponent } from "./shared/error-pages/board-loading.component/board-loading.component";
 import { KibanaComponent } from "./kibana/kibana/kibana.component";
 import { GrafanaComponent } from "./grafana/grafana/grafana.component";
-import { RouteGrafana, RouteKibana, RouteStorage } from "./shared/shared.const";
+import { RouteGrafana, RouteKibana, RoutePV, RoutePvc, RouteStorage } from "./shared/shared.const";
+import { PvListComponent } from "./storage/pv/pv-list.compoent/pv-list.component";
 import { Observable } from "rxjs/Observable";
+import { PvcListComponent } from "./storage/pvc/pvc-list.component/pvc-list.component";
 
 @Injectable()
 export class SystemInfoResolve implements Resolve<any> {
@@ -96,7 +98,8 @@ export const ROUTES: Routes = [
       {path: 'profile', component: ProfileComponent},
       {path: RouteKibana, component: KibanaComponent},
       {path: RouteGrafana, component: GrafanaComponent},
-      {path: RouteStorage, loadChildren:'./storage/storage.module#StorageModule'},
+      {path: `${RouteStorage}/${RoutePV}`, component: PvListComponent},
+      {path: `${RouteStorage}/${RoutePvc}`, component: PvcListComponent},
       {path: 'audit', component: ListAuditComponent}
     ]
   },
