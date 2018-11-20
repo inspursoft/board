@@ -3,18 +3,36 @@ package service
 import (
 	"errors"
 	//"fmt"
-
 	"git/inspursoft/board/src/common/dao"
-	//"git/inspursoft/board/src/common/k8sassist"
-	//"git/inspursoft/board/src/common/k8sassist/corev1/cgv5/types"
+	"git/inspursoft/board/src/common/k8sassist"
+	"git/inspursoft/board/src/common/k8sassist/corev1/cgv5/types"
 	"git/inspursoft/board/src/common/model"
+	"strings"
 
 	"github.com/astaxie/beego/logs"
 )
 
 func AddPVolumeNFS(pv model.PersistentVolume, pvo model.PersistentVolumeOptionNfs) error {
 
-	//TODO k8s PV process
+	//k8s PV process
+	var pvk8s model.PersistentVolumeK8scli
+	var pvoption model.NFSVolumeSource
+
+	genPersistentVolumeK8scli(pv, &pvk8s)
+	pvoption.Path = pvo.Path
+	pvoption.Server = pvo.Server
+	pvoption.ReadOnly = pv.Readonly
+	pvk8s.Spec.PersistentVolumeSource = model.PersistentVolumeSource{
+		NFS: &pvoption,
+	}
+
+	newpvk8s, err := CreatePVK8s(&pvk8s)
+	if err != nil {
+		logs.Error("Failed to add PV to K8s %v %v", pvk8s, err)
+		return err
+	}
+	logs.Info("Created PV in K8s %v", newpvk8s)
+
 	pvID, err := CreatePVDB(pv)
 	if err != nil {
 		return err
@@ -32,6 +50,30 @@ func AddPVolumeNFS(pv model.PersistentVolume, pvo model.PersistentVolumeOptionNf
 func AddPVolumeCephRBD(pv model.PersistentVolume, pvo model.PersistentVolumeOptionCephrbd) error {
 
 	//TODO k8s PV process
+	var pvk8s model.PersistentVolumeK8scli
+	var pvoption model.RBDVolumeSource
+
+	genPersistentVolumeK8scli(pv, &pvk8s)
+	pvoption.FSType = pvo.Fstype
+	pvoption.CephMonitors = strings.Split(pvo.Monitors, ",")
+	pvoption.ReadOnly = pv.Readonly
+	pvoption.Keyring = pvo.Keyring
+	pvoption.RBDImage = pvo.Image
+	pvoption.RadosUser = pvo.User
+	pvoption.RBDPool = pvo.Pool
+	// TODO support secret
+	// pvoption.SecretRef = pvo.Secretname
+	pvk8s.Spec.PersistentVolumeSource = model.PersistentVolumeSource{
+		RBD: &pvoption,
+	}
+
+	newpvk8s, err := CreatePVK8s(&pvk8s)
+	if err != nil {
+		logs.Error("Failed to add PV to K8s %v %v", pvk8s, err)
+		return err
+	}
+	logs.Info("Created PV in K8s %v", newpvk8s)
+
 	pvID, err := CreatePVDB(pv)
 	if err != nil {
 		return err
@@ -151,4 +193,47 @@ func GetPVOptionRBD(pv model.PersistentVolumeOptionCephrbd, selectedFields ...st
 		return nil, err
 	}
 	return n, nil
+}
+
+func CreatePVK8s(pv *model.PersistentVolumeK8scli) (*model.PersistentVolumeK8scli, error) {
+	// add the pv to k8s
+	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		KubeConfigPath: kubeConfigPath(),
+	})
+	var err error
+	newpv, err := k8sclient.AppV1().PersistentVolume().Create(pv)
+	if err != nil {
+		logs.Debug("Failed to add PV to K8s %v %v", pv, err)
+		return nil, err
+	}
+	logs.Debug("Added PV to K8s")
+	return newpv, nil
+}
+
+func DeletePVK8s(pvname string) error {
+
+	// delete the hpa from k8s
+	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		KubeConfigPath: kubeConfigPath(),
+	})
+	err := k8sclient.AppV1().PersistentVolume().Delete(pvname)
+	if err != nil {
+		if types.IsNotFoundError(err) {
+			logs.Debug("Not found PV %s", pvname)
+		} else {
+			return err
+		}
+	}
+	return nil
+}
+
+func genPersistentVolumeK8scli(pv model.PersistentVolume, pvK8s *model.PersistentVolumeK8scli) *model.PersistentVolumeK8scli {
+	pvK8s.Name = pv.Name
+	pvK8s.Labels = make(map[string]string)
+	pvK8s.Labels["pvname"] = pv.Name
+	pvK8s.Spec.Capacity = make(model.ResourceList)
+	pvK8s.Spec.Capacity["storage"] = model.QuantityStr(pv.Capacity)
+	pvK8s.Spec.AccessModes = append(pvK8s.Spec.AccessModes, (model.PersistentVolumeAccessMode)(pv.Accessmode))
+	pvK8s.Spec.PersistentVolumeReclaimPolicy = (model.PersistentVolumeReclaimPolicy)(pv.Reclaim)
+	return pvK8s
 }

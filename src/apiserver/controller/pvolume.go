@@ -91,7 +91,12 @@ func (n *PVolumeController) RemovePVolumeAction() {
 		return
 	}
 
-	//TODO check and delete pv from k8s system
+	err = service.DeletePVK8s(pv.Name)
+	if err != nil {
+		logs.Info("Delete PV %s from K8s Failed %v", pv.Name, err)
+	} else {
+		logs.Info("Delete PV %s from K8s Successful %v", pv.Name, err)
+	}
 
 	switch pv.Type {
 	case model.PVNFS:
