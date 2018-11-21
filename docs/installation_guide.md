@@ -498,3 +498,36 @@ When you need install, please note the limitations:
 
 1. If you want to use CentOS or Redhat, you need install CentOS, Redhat 7.2 or higher version.
 2. To install Board, the host should with Docker 17.02 or higher version.
+
+### Ports Reservation
+There are some ports which Board and Kubernetes installation will be used, these ports should be accepted by firewall of the servers.
+
+Board:
+
+| Component | Port Numbers |
+| -------- | -------- |
+| board-log | 1514 |
+| board-gogits | 10022, 10080 |
+| board-apiserver | 8088 |
+| board-ui | 80 |
+| board-graphite | 2003 |
+| board-elasticsearch | 9200 |
+| jenkins | 8888 |
+
+Kubernetes master:
+
+| Component | Port Numbers |
+| -------- | -------- |
+| kube-apiserver | 8080, 6443 |
+| kube-scheduler | 10251 |
+| kube-controller-manager | 10252 |
+| etcd | 2379, 2380 |
+
+Kubernetes node(s):
+
+| Component | Port Numbers |
+| -------- | -------- |
+| kubelet | 10248, 10250, 10255 |
+| kube-proxy | 10256 |
+| cAdvisor | 4194 |
+
