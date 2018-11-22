@@ -266,8 +266,6 @@ elif kube_http_scheme == "https":
 	render(os.path.join(templates_dir, "apiserver", "openssl.conf"),
 			apiserver_openssl,
 			kube_master_ip=kube_master_ip)
-	if not os.path.exists("/etc/board/cert"):
-		os.makedirs("/etc/board/cert")
 	if not os.path.exists("/data/board/cert"):
 		os.makedirs("/data/board/cert")
 	rc = create_cert(apiserver_openssl)
