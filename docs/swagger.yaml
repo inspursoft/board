@@ -2428,7 +2428,178 @@ paths:
         403:
           description: User need to log in as admin.
         500:
-          description: Unexpected internal errors.               
+          description: Unexpected internal errors.     
+  /v1/pvclaims:
+    get:
+      summary: Return all Persistent Volume Claims in Board.
+      description: |
+        This endpoint returns all Persistent Volume Claims in Board.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: pvc_name 
+          in: query
+          description: pvc name for filtering results.
+          required: false
+          type: string
+        - name: pvc_list_page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: pvc_list_page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched Persistent Volume Claims.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/PersistentVolumeClaim'
+          headers:
+            X-Total-Count:
+              description: The total count of Persistent Volume Claims.
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page.
+              type: string
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+    post:
+      summary: Add a new PersistentVolume Claim.
+      description: |
+        This endpoint is for admin to add a new PersistentVolume Claim.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: pvclaim
+          in: body
+          description: New added PersistentVolume Claim.
+          required: true
+          schema:
+            $ref: '#/definitions/PersistentVolumeClaim'
+      tags:
+        - Products
+      responses:
+        201:
+          description: PersistentVolume Claim added successfully.
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        409:
+          description: PersistentVolume Claim name already exists.
+        500:
+          description: Internal errors.      
+  /v1/pvclaims/{pvc_id}:    
+    get:
+      summary: Return a specific PersistentVolume Claim detail infomation.
+      description: |
+        This endpoint returns a specific PersistentVolume Claim information by pv ID.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: pvc_id
+          in: path
+          description: PersistentVolume Claim ID for filtering results.
+          required: true
+          type: integer
+          format: int32
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched PersistentVolume Claim information.
+          schema:
+            $ref: '#/definitions/PersistentVolumeClaimDetail'
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Internal errors.        
+    delete:
+      summary: Delete a PersistentVolume Claim by pvc ID
+      description: |
+        This endpoint is aimed to remove a Persistent Volume Claim by pvc ID.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: pvc_id
+          in: path
+          description: Node will be removed by pvc_id.
+          required: true
+          type: integer
+          format: int32
+      tags:
+        - Products
+      responses:
+        200:
+          description: Persistent Volume Claim is deleted successfully.
+        400:
+          description: Invalid pvc id.
+        403:
+          description: User need to log in as admin.
+        404:
+          description: Node does not exist.
+        500:
+          description: Internal errors.         
+    put:
+      summary: Update Persistent Volume Claim properties.
+      description: |
+       This endpoint is to update Persistent Volume CLaim.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: pvc_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: The Persistent Volume Claim ID for node info changing.
+        - name: pvclaim
+          in: body
+          description: The Persistent Volume Claim properties to be changed.
+          required: true
+          schema:
+            $ref: '#/definitions/PersistentVolumeClaim' 
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated PersistentVolume Claim properties successfully.
+        400:
+          description: Invalid pvc ID.
+        403:
+          description: User need to log in as admin.
+        500:
+          description: Unexpected internal errors.                      
   /v1/node:
     get:
       summary: Return nodes in Board added by admin.
@@ -5858,6 +6029,53 @@ definitions:
       monitors:                                            
         type: string
         description: The monitors of this CephRBD persitent volume, split by comma.  
+  PersistentVolumeClaim:                          
+    type: object
+    properties:
+      pvc_id:
+        type: integer
+        format: int32
+        description: The ID of this persitent volume claim.     
+      pvc_name:
+        type: string
+        description: The name of this persitent volume claim.     
+      pvc_projectid:
+        type: integer
+        format: int32
+        description: The project ID of this persitent volume claim belongs to.                        
+      pvc_capacity:
+        type: string
+        description: The capacity MB of this persitent volume claim.   
+      pvc_accessmode: 
+        type: string
+        description: The access mode of this persitent volume claim, ReadWriteOnce, ReadOnlyMany, ReadWriteMany.  
+      pvc_class: 
+        type: string
+        description: The class of this persitent volume claim.             
+      pvc_designatedpv:
+        type: string
+        description: The designated pv name of this persitent volume claim.      
+  PersistentVolumeClaimDetail:                          
+    type: object
+    properties:
+      pvclaim:        
+        description: The option of this persitent volume claim.
+        $ref: '#/definitions/PersistentVolumeClaim'        
+      pvc_state:
+        type: integer
+        format: int32
+        description: The current state of this persitent volume claim.    
+      pvc_volume:
+        type: string
+        description: The current volume of this persitent volume claim.  
+      pvc_events:
+        type: array
+        description: The events of this persitent volume claim. 
+        items:
+          type: string        
+
+
+
 
 
 
