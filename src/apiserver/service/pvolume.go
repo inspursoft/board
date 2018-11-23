@@ -93,16 +93,16 @@ func GetPVList() ([]model.PersistentVolume, error) {
 	if err != nil {
 		return nil, err
 	}
-	for _, pv := range pvList {
+	for i, pv := range pvList {
 		pvk8s, err := GetPVK8s(pv.Name)
 		if err != nil {
 			logs.Error("Fail to get this PV %s in cluster %v", pv.Name, err)
-			pv.State = model.UnknownPV
+			pvList[i].State = model.UnknownPV
 		}
 		if pvk8s == nil {
-			pv.State = model.InvalidPV
+			pvList[i].State = model.InvalidPV
 		} else {
-			pv.State = ReverseState(string(pvk8s.Status.Phase))
+			pvList[i].State = ReverseState(string(pvk8s.Status.Phase))
 		}
 	}
 	return pvList, nil
