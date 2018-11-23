@@ -100,7 +100,7 @@ func InitRouter() {
 				&PVolumeController{},
 				"get:GetPVolumeAction;delete:RemovePVolumeAction"),
 			beego.NSRouter("/pvolumes/existing",
-				&NodeGroupController{},
+				&PVolumeController{},
 				"get:CheckPVolumeNameExistingAction"),
 			beego.NSRouter("/node",
 				&NodeController{}, "get:GetNode"),
