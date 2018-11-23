@@ -212,3 +212,30 @@ func (n *PVolumeController) AddPVolumeAction() {
 	}
 
 }
+
+func (n *PVolumeController) CheckPVolumeNameExistingAction() {
+	pvName := n.GetString("pv_name")
+	if pvName == "" {
+		return
+	}
+	ispvk8s, err := service.GetPVK8s(pvName)
+	if err != nil {
+		n.internalError(err)
+		return
+	}
+	if ispvk8s != nil {
+		n.customAbort(http.StatusConflict, "This pv name is already existing in cluster.")
+		return
+	}
+
+	ispvDB, err := service.GetPVDB(model.PersistentVolume{Name: pvName}, "name")
+	if err != nil {
+		n.internalError(err)
+		return
+	}
+	if ispvDB != nil {
+		n.customAbort(http.StatusConflict, "This pv name is already existing in DB.")
+		return
+	}
+	logs.Info("PV name of %s is available", pvName)
+}

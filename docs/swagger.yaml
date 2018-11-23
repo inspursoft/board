@@ -6058,6 +6058,10 @@ definitions:
       pvc_designatedpv:
         type: string
         description: The designated pv name of this persitent volume claim.      
+      pvc_state:
+        type: integer
+        format: int32
+        description: The current state of this persitent volume claim.          
   PersistentVolumeClaimDetail:                          
     type: object
     properties:
