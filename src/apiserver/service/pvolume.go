@@ -89,7 +89,23 @@ func AddPVolumeCephRBD(pv model.PersistentVolume, pvo model.PersistentVolumeOpti
 }
 
 func GetPVList() ([]model.PersistentVolume, error) {
-	return dao.GetPVList()
+	pvList, err := dao.GetPVList()
+	if err != nil {
+		return nil, err
+	}
+	for i, pv := range pvList {
+		pvk8s, err := GetPVK8s(pv.Name)
+		if err != nil {
+			logs.Error("Fail to get this PV %s in cluster %v", pv.Name, err)
+			pvList[i].State = model.UnknownPV
+		}
+		if pvk8s == nil {
+			pvList[i].State = model.InvalidPV
+		} else {
+			pvList[i].State = ReverseState(string(pvk8s.Status.Phase))
+		}
+	}
+	return pvList, nil
 }
 
 func GetPVDB(pv model.PersistentVolume, selectedFields ...string) (*model.PersistentVolume, error) {
@@ -227,6 +243,24 @@ func DeletePVK8s(pvname string) error {
 	return nil
 }
 
+func GetPVK8s(pvname string) (*model.PersistentVolumeK8scli, error) {
+
+	// delete the hpa from k8s
+	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		KubeConfigPath: kubeConfigPath(),
+	})
+	pvk8s, err := k8sclient.AppV1().PersistentVolume().Get(pvname)
+	if err != nil {
+		if types.IsNotFoundError(err) {
+			logs.Debug("Not found PV %s", pvname)
+			return nil, nil
+		} else {
+			return nil, err
+		}
+	}
+	return pvk8s, nil
+}
+
 func genPersistentVolumeK8scli(pv model.PersistentVolume, pvK8s *model.PersistentVolumeK8scli) *model.PersistentVolumeK8scli {
 	pvK8s.Name = pv.Name
 	pvK8s.Labels = make(map[string]string)
@@ -236,4 +270,21 @@ func genPersistentVolumeK8scli(pv model.PersistentVolume, pvK8s *model.Persisten
 	pvK8s.Spec.AccessModes = append(pvK8s.Spec.AccessModes, (model.PersistentVolumeAccessMode)(pv.Accessmode))
 	pvK8s.Spec.PersistentVolumeReclaimPolicy = (model.PersistentVolumeReclaimPolicy)(pv.Reclaim)
 	return pvK8s
+}
+
+func ReverseState(state string) int {
+	var ret = model.UnknownPV
+	switch state {
+	case "Pending":
+		ret = model.PendingPV
+	case "Available":
+		ret = model.AvailablePV
+	case "Bound":
+		ret = model.BoundPV
+	case "Released":
+		ret = model.ReleasedPV
+	case "Failed":
+		ret = model.FailedPV
+	}
+	return ret
 }

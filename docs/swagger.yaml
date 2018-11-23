@@ -6040,9 +6040,12 @@ definitions:
         type: string
         description: The name of this persitent volume claim.     
       pvc_projectid:
+        type: string
+        description: The project name of this persitent volume claim belongs to.      
+      pvc_projectname:
         type: integer
         format: int32
-        description: The project ID of this persitent volume claim belongs to.                        
+        description: The project ID of this persitent volume claim belongs to.                           
       pvc_capacity:
         type: string
         description: The capacity MB of this persitent volume claim.   
