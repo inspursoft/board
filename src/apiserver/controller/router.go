@@ -78,7 +78,7 @@ func InitRouter() {
 				"post:DockerfileBuildImageAction"),
 			beego.NSRouter("/images/dockerfile",
 				&ImageController{},
-				"get:GetImageDockerfileAction;put:UpdateDockerfileCopyCommandAction"),
+				"get:GetImageDockerfileAction"),
 			beego.NSRouter("/images/registry",
 				&ImageController{},
 				"get:GetImageRegistryAction"),

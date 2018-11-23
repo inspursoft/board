@@ -365,26 +365,6 @@ func (p *ImageController) DockerfileBuildImageAction() {
 	p.collaborateWithPullRequest("master", "master", items...)
 }
 
-func (p *ImageController) UpdateDockerfileCopyCommandAction() {
-	projectName := strings.TrimSpace(p.GetString("project_name"))
-	imageName := strings.TrimSpace(p.GetString("image_name"))
-	imageTag := strings.TrimSpace(p.GetString("image_tag"))
-	if imageName == "" || imageTag == "" {
-		logs.Error("Missing image name or tag, current image name is: %s, tag is: %s", imageName, imageTag)
-		p.customAbort(http.StatusBadRequest, "Missing image name or tag.")
-		return
-	}
-	p.resolveRepoImagePath(projectName)
-	dockerfileName := service.ResolveDockerfileName(imageName, imageTag)
-	dockerfileInfo, err := service.UpdateDockerfileCopyCommand(p.repoImagePath, dockerfileName)
-	if err != nil {
-		logs.Error("Update dockerfile err: %s", err.Error())
-		p.customAbort(http.StatusBadRequest, err.Error())
-		return
-	}
-	p.Ctx.WriteString(string(dockerfileInfo))
-}
-
 func (p *ImageController) CheckImageTagExistingAction() {
 	var err error
 	projectName := strings.TrimSpace(p.GetString("project_name"))
@@ -474,6 +454,13 @@ func (f *ImageController) UploadDockerfileFileAction() {
 	if err != nil {
 		f.internalError(err)
 	}
+	dockerfileInfo, err := service.UpdateDockerfileCopyCommand(f.repoImagePath, dockerfileName)
+	if err != nil {
+		logs.Error("Update dockerfile err: %s", err.Error())
+		f.customAbort(http.StatusBadRequest, err.Error())
+		return
+	}
+	f.Ctx.WriteString(string(dockerfileInfo))
 }
 
 func (f *ImageController) DownloadDockerfileFileAction() {
