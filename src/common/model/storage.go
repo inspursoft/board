@@ -43,3 +43,13 @@ const (
 	PVNFS
 	PVCephRBD
 )
+
+const (
+	UnknownPV = iota
+	PendingPV
+	AvailablePV
+	BoundPV
+	ReleasedPV
+	FailedPV
+	InvalidPV
+)
