@@ -348,6 +348,7 @@ func ToK8sVolumeMount(mount model.VolumeMount) v1.VolumeMount {
 	return v1.VolumeMount{
 		Name:      mount.Name,
 		MountPath: mount.MountPath,
+		SubPath:   mount.SubPath,
 	}
 }
 
@@ -686,6 +687,7 @@ func FromK8sVolumeMount(mount v1.VolumeMount) model.VolumeMount {
 	return model.VolumeMount{
 		Name:      mount.Name,
 		MountPath: mount.MountPath,
+		SubPath:   mount.SubPath,
 	}
 }
 

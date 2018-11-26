@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"path/filepath"
 	"strconv"
 	"strings"
 	//"fmt"
@@ -488,10 +489,14 @@ func setDeploymentContainers(containerList []model.Container, registryURI string
 		}
 
 		if cont.VolumeMounts.VolumeName != "" {
-			container.VolumeMounts = append(container.VolumeMounts, model.VolumeMount{
+			volumeMount := model.VolumeMount{
 				Name:      cont.VolumeMounts.VolumeName,
 				MountPath: cont.VolumeMounts.ContainerPath,
-			})
+			}
+			if cont.VolumeMounts.MountTypeFlag != 0 {
+				_, volumeMount.SubPath = filepath.Split(cont.VolumeMounts.ContainerPath)
+			}
+			container.VolumeMounts = append(container.VolumeMounts, volumeMount)
 		}
 
 		if len(cont.Env) > 0 {

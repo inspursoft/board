@@ -302,6 +302,7 @@ type EnvVar struct {
 type VolumeMount struct {
 	Name      string
 	MountPath string
+	SubPath   string
 }
 
 // NamespaceCli Interface has methods to work with Namespace resources.
