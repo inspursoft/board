@@ -13,5 +13,6 @@ func InitModelDB() {
 		new(dashboard.ServiceDashboardMinute), new(dashboard.ServiceDashboardHour),
 		new(dashboard.ServiceDashboardDay), new(dashboard.TimeListLog), new(ServiceStatus),
 		new(ImageTag), new(Image), new(NodeGroup), new(Config), new(Operation), new(ServiceAutoScale),
-		new(PersistentVolume), new(PersistentVolumeOptionNfs), new(PersistentVolumeOptionCephrbd))
+		new(PersistentVolume), new(PersistentVolumeOptionNfs), new(PersistentVolumeOptionCephrbd),
+		new(PersistentVolumeClaimM), new(PersistentVolumeClaimV))
 }
