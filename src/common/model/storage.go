@@ -53,3 +53,27 @@ const (
 	FailedPV
 	InvalidPV
 )
+
+type PersistentVolumeClaimM struct {
+	ID          int64  `json:"pvc_id" orm:"column(id)"`
+	Name        string `json:"pvc_name" orm:"column(name)"`
+	ProjectID   int64  `json:"project_id" orm:"column(projectid)"`
+	ProjectName string `json:"project_name" orm:"column(-)"`
+	//State       int    `json:"pv_state" orm:"column(-)"`
+	Capacity   string `json:"pvc_capacity" orm:"column(capacity)"`
+	Accessmode string `json:"pv_accessmode" orm:"column(accessmode)"`
+	Class      string `json:"pv_class" orm:"column(class)"`
+	PVName     string `json:"pv_name" orm:"column(pvname)"`
+}
+
+type PersistentVolumeClaimV struct {
+	ID          int64  `json:"pvc_id" orm:"column(id)"`
+	Name        string `json:"pvc_name" orm:"column(name)"`
+	ProjectID   int64  `json:"project_id" orm:"column(projectid)"`
+	ProjectName string `json:"project_name" orm:"column(projectname)"`
+	State       int    `json:"pv_state" orm:"column(-)"`
+	Capacity    string `json:"pvc_capacity" orm:"column(capacity)"`
+	Accessmode  string `json:"pv_accessmode" orm:"column(accessmode)"`
+	Class       string `json:"pv_class" orm:"column(class)"`
+	PVName      string `json:"pv_name" orm:"column(pvname)"`
+}

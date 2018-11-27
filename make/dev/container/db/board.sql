@@ -412,4 +412,15 @@ DROP TABLE IF EXISTS `log`;
 		`monitors` VARCHAR(255) NOT NULL DEFAULT '',			
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;	
+	
+	CREATE TABLE `board`.`persistent_volume_claim_m` (
+        `id` INT NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(255) NOT NULL DEFAULT '',
+        `projectid` INT NOT NULL DEFAULT 0,
+		`capacity` VARCHAR(255) NOT NULL DEFAULT '',
+		`accessmode` VARCHAR(255) NOT NULL DEFAULT '',
+	    `class` VARCHAR(255) NOT NULL DEFAULT '',		
+	    `pvname` VARCHAR(255) NOT NULL DEFAULT '',		
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;		
 
