@@ -77,3 +77,10 @@ type PersistentVolumeClaimV struct {
 	Class       string `json:"pvc_class" orm:"column(class)"`
 	PVName      string `json:"pvc_designatedpv" orm:"column(pvname)"`
 }
+
+type PersistentVolumeClaimDetail struct {
+	PVClaim PersistentVolumeClaimM `json:"pvclaim"`
+	State   int                    `json:"pvc_state"`
+	Volume  string                 `json:"pvc_volume"`
+	Events  []string               `json:"pvc_events"`
+}
