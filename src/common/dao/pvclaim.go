@@ -75,7 +75,7 @@ func GetPVCList() ([]model.PersistentVolumeClaimM, error) {
 
 func QueryPVCByProjectID(projectID int64) ([]*model.PersistentVolumeClaimV, error) {
 
-	var pvcByProjectSQL = `select pvc.id, pvc.name, pvc.projectid, p.name, 
+	var pvcByProjectSQL = `select pvc.id, pvc.name, pvc.projectid, p.name as projectname, 
 	pvc.capacity, pvc.accessmode, pvc.class, 
 	pvc.pvname
 	from persistent_volume_claim_m pvc 
