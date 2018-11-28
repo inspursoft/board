@@ -19,4 +19,6 @@ type VolumeStruct struct {
 	TargetPath           string `json:"target_path"`
 	VolumeName           string `json:"volume_name"`
 	ContainerPath        string `json:"container_path"`
+	//mount type: 0, folder; 1, file
+	MountTypeFlag int `json:"mount_type_flag"`
 }

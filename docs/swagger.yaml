@@ -4951,7 +4951,10 @@ definitions:
           volume_name:
             type: string
           container_path:
-            type: string 
+            type: string
+          mount_type_flag:
+            type: integer   
+            format: int
       image:
         $ref: '#/definitions/ImageList'       
       env:
