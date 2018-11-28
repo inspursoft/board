@@ -6,6 +6,7 @@ import { MessageService } from "../../../shared/message-service/message.service"
 import { StorageService } from "../../storage.service";
 import { CsModalParentBase } from "../../../shared/cs-modal-base/cs-modal-parent-base";
 import { CreatePvcComponent } from "../../../shared/create-pvc/create-pvc.component";
+import { PvcDetailComponent } from "../pvc-detail.component/pvc-detail.component";
 
 @Component({
   templateUrl: './pvc-list.component.html',
@@ -59,6 +60,9 @@ export class PvcListComponent extends CsModalParentBase{
   }
 
   showPvcDetail(pvcId: number){
-
+    this.storageService.getPvcDetailInfo(pvcId).subscribe((res: PersistentVolumeClaim) => {
+      let instance = this.createNewModal(PvcDetailComponent);
+      instance.curPersistentVolumeClaim = res;
+    });
   }
 }

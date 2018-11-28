@@ -179,6 +179,18 @@ export class PersistentVolume {
   public accessMode = PvAccessMode;
   public reclaim = PvReclaimMode;
 
+  initFromRes(res: Object) {
+    if (res) {
+      this.id = Reflect.get(res, 'pv_id');
+      this.name = Reflect.get(res, 'pv_name');
+      this.type = Reflect.get(res, 'pv_type');
+      this.state = Reflect.get(res, 'pv_state');
+      this.capacity = Reflect.get(res, 'pv_capacity');
+      this.accessMode = Reflect.get(res, 'pv_accessmode');
+      this.reclaim = Reflect.get(res, 'pv_reclaim');
+    }
+  }
+
   get typeDescription(): string {
     return ['Unknown', 'NFS', 'RBD'][this.type];
   }
@@ -241,11 +253,32 @@ export class PersistentVolumeClaim {
   public id = 0;
   public name = '';
   public projectId = 0;
+  public projectName = '';
   public capacity = '';
   public state = 0;
   public accessMode = PvcAccessMode;
   public class = '';
   public designatedPv = '';
+  public volume = '';
+  public events: Array<string>;
+
+  constructor() {
+    this.events = Array<string>();
+  }
+
+  initFromRes(res: Object) {
+    if (res) {
+      this.id = Reflect.get(res, 'pvc_id');
+      this.name = Reflect.get(res, 'pvc_name');
+      this.projectId = Reflect.get(res, 'pvc_projectid');
+      this.projectName = Reflect.get(res, 'pvc_projectname');
+      this.capacity = Reflect.get(res, 'pvc_capacity');
+      this.state = Reflect.get(res, 'pvc_state');
+      this.accessMode = Reflect.get(res, 'pvc_accessmode');
+      this.class = Reflect.get(res, 'pvc_class');
+      this.designatedPv = Reflect.get(res, 'pvc_designatedpv');
+    }
+  }
 
   get statusDescription(): string {
     return [

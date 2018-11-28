@@ -33,9 +33,7 @@
                    (onChange)="newPersistentVolumeClaim.accessMode = $event">
       </cs-dropdown>
     </div>
-    <div class="dynamic-line-container">
-      options
-    </div>
+    <div class="pvc-section-container"><span>Options</span></div>
     <cs-input [disabled]="isCreateWip"
               [inputLabel]="'STORAGE.PVC_CLASS' | translate"
               [simpleFiled]="newPersistentVolumeClaim.class"

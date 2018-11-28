@@ -2,6 +2,10 @@ import { Component, EventEmitter, OnInit, Type } from "@angular/core";
 import { CsModalChildBase } from "../../../shared/cs-modal-base/cs-modal-child-base";
 import { NFSPersistentVolume, PersistentVolume, PvAccessMode, PvReclaimMode, RBDPersistentVolume } from "../../../shared/shared.types";
 import { StorageService } from "../../storage.service";
+import { ValidationErrors } from "@angular/forms";
+import { Observable } from "rxjs/Observable";
+import { HttpErrorResponse } from "@angular/common/http";
+import { MessageService } from "../../../shared/message-service/message.service";
 
 
 @Component({
@@ -18,7 +22,8 @@ export class CreatePvComponent extends CsModalChildBase implements OnInit {
   isEditPvMonitors = false;
   isCreateWip = false;
 
-  constructor(private storageService: StorageService) {
+  constructor(private storageService: StorageService,
+              private messageService: MessageService) {
     super();
     this.storageTypeList = Array<{name: string, value: number, classType: Type<PersistentVolume>}>();
     this.newPersistentVolume = new NFSPersistentVolume();//default 'NFS' type
@@ -56,6 +61,24 @@ export class CreatePvComponent extends CsModalChildBase implements OnInit {
 
   get rbdPersistentVolume(): RBDPersistentVolume {
     return this.newPersistentVolume as RBDPersistentVolume;
+  }
+
+  get checkPvNameFun(){
+    return this.checkPvName.bind(this)
+  }
+
+  checkPvName(control: HTMLInputElement): Observable<ValidationErrors | null> {
+    return this.storageService.checkPvNameExist(control.value)
+      .map(() => null)
+      .catch((err:HttpErrorResponse) => {
+        if (err.status == 409) {
+          this.messageService.cleanNotification();
+          return Observable.of({serviceExist: "STORAGE.PV_NAME_EXIST"});
+        } else if (err.status == 404) {
+          this.messageService.cleanNotification();
+        }
+        return Observable.of(null);
+      });
   }
 
   changeSelectType(event: {name: string, value: number, classType: Type<PersistentVolume>}) {

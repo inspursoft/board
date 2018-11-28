@@ -15,7 +15,8 @@ import { PvcDetailComponent } from "./pvc/pvc-detail.component/pvc-detail.compon
   ],
   entryComponents: [
     CreatePvComponent,
-    PvDetailComponent
+    PvDetailComponent,
+    PvcDetailComponent
   ],
   providers: [
     StorageService,

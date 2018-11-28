@@ -21,14 +21,7 @@ export class StorageService {
       let result: Array<PersistentVolumeClaim> = Array<PersistentVolumeClaim>();
       res.body.forEach(resObject => {
         let persistentVolume = new PersistentVolumeClaim();
-        persistentVolume.id = Reflect.get(resObject, 'pvc_id');
-        persistentVolume.name = Reflect.get(resObject, 'pvc_name');
-        persistentVolume.projectId = Reflect.get(resObject, 'pvc_projectid');
-        persistentVolume.capacity = Reflect.get(resObject, 'pvc_capacity');
-        persistentVolume.state = Reflect.get(resObject, 'pvc_state');
-        persistentVolume.accessMode = Reflect.get(resObject, 'pvc_accessmode');
-        persistentVolume.class = Reflect.get(resObject, 'pvc_class');
-        persistentVolume.designatedPv = Reflect.get(resObject, 'pvc_designatedpv');
+        persistentVolume.initFromRes(resObject);
         result.push(persistentVolume);
       });
       return result;
@@ -37,6 +30,20 @@ export class StorageService {
 
   deletePvc(pvcId: number): Observable<Object> {
     return this.http.delete(`/api/v1/pvclaims/${pvcId}`, {observe: "response"})
+  }
+
+  getPvcDetailInfo(pvcId: number): Observable<PersistentVolumeClaim> {
+    return this.http.get(`/api/v1/pvclaims/${pvcId}`, {observe: "response"})
+      .map((res: HttpResponse<Object>) => {
+        let persistentVolume = new PersistentVolumeClaim();
+        persistentVolume.initFromRes(res.body['pvclaim']);
+        persistentVolume.state = res.body['pvc_state'];
+        persistentVolume.volume = res.body['pvc_volume'];
+        if (res.body['pvc_events']){
+          persistentVolume.events = res.body['pvc_events'];
+        }
+        return persistentVolume;
+      })
   }
 
   getPvList(pvName: string, pvListPage: number, pvListPageSize: number): Observable<Array<PersistentVolume>> {
@@ -50,13 +57,7 @@ export class StorageService {
       let result: Array<PersistentVolume> = Array<PersistentVolume>();
       res.body.forEach(resObject => {
         let persistentVolume = new PersistentVolume();
-        persistentVolume.id = Reflect.get(resObject, 'pv_id');
-        persistentVolume.name = Reflect.get(resObject, 'pv_name');
-        persistentVolume.type = Reflect.get(resObject, 'pv_type');
-        persistentVolume.state = Reflect.get(resObject, 'pv_state');
-        persistentVolume.capacity = Reflect.get(resObject, 'pv_capacity');
-        persistentVolume.accessMode = Reflect.get(resObject, 'pv_accessmode');
-        persistentVolume.reclaim = Reflect.get(resObject, 'pv_reclaim');
+        persistentVolume.initFromRes(resObject);
         result.push(persistentVolume);
       });
       return result;
@@ -69,6 +70,10 @@ export class StorageService {
 
   deletePv(pvId: number): Observable<Object> {
     return this.http.delete(`/api/v1/pvolumes/${pvId}`, {observe: "response"})
+  }
+
+  checkPvNameExist(pvName: string): Observable<any> {
+    return this.http.get(`/api/v1/pvolumes/existing`, {observe: "response", params: {pv_name: pvName}});
   }
 
   getPvDetailInfo(id: number): Observable<PersistentVolume> {

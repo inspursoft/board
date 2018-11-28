@@ -3,6 +3,7 @@
 </div>
 <clr-datagrid [clrDgLoading]="isInLoadWip" (clrDgRefresh)="refreshList($event)">
   <clr-dg-column>{{ 'STORAGE.PVC_NAME' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'STORAGE.PVC_PROJECT' | translate }}</clr-dg-column>
   <clr-dg-column>{{ 'STORAGE.PVC_ACCESS_MODES' | translate }}</clr-dg-column>
   <clr-dg-column>{{ 'STORAGE.PVC_CLASS' | translate }}</clr-dg-column>
   <clr-dg-column>{{ 'STORAGE.PVC_CAPACITY' | translate }}</clr-dg-column>
@@ -10,6 +11,7 @@
   <clr-dg-column>{{ 'STORAGE.PVC_OPERATION' | translate }}</clr-dg-column>
   <clr-dg-row *ngFor="let pvc of pvcList">
     <clr-dg-cell>{{pvc.name}}</clr-dg-cell>
+    <clr-dg-cell>{{pvc.projectName}}</clr-dg-cell>
     <clr-dg-cell>{{pvc.accessMode}}</clr-dg-cell>
     <clr-dg-cell>{{pvc.class}}</clr-dg-cell>
     <clr-dg-cell>{{pvc.capacity}}</clr-dg-cell>

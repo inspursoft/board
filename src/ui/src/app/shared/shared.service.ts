@@ -35,13 +35,7 @@ export class SharedService {
         let result: Array<PersistentVolume> = Array<PersistentVolume>();
         res.body.forEach(resObject => {
           let persistentVolume = new PersistentVolume();
-          persistentVolume.id = Reflect.get(resObject, 'pv_id');
-          persistentVolume.name = Reflect.get(resObject, 'pv_name');
-          persistentVolume.type = Reflect.get(resObject, 'pv_type');
-          persistentVolume.state = Reflect.get(resObject, 'pv_state');
-          persistentVolume.capacity = Reflect.get(resObject, 'pv_capacity');
-          persistentVolume.accessMode = Reflect.get(resObject, 'pv_accessmode');
-          persistentVolume.reclaim = Reflect.get(resObject, 'pv_reclaim');
+          persistentVolume.initFromRes(resObject);
           result.push(persistentVolume);
         });
         return result;
