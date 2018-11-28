@@ -18,58 +18,26 @@ type PVClaimController struct {
 }
 
 func (n *PVClaimController) GetPVClaimAction() {
-	//	pvID, err := strconv.Atoi(n.Ctx.Input.Param(":id"))
-	//	if err != nil {
-	//		n.internalError(err)
-	//		return
-	//	}
-	//	pv, err := service.GetPVDB(model.PersistentVolume{ID: int64(pvID)}, "id")
-	//	if err != nil {
-	//		n.internalError(err)
-	//		return
-	//	}
-	//	if pv == nil {
-	//		logs.Error("Not found this PV %d in DB", pvID)
-	//		n.internalError(err)
-	//		return
-	//	}
+	pvcID, err := strconv.Atoi(n.Ctx.Input.Param(":id"))
+	if err != nil {
+		n.internalError(err)
+		return
+	}
+	pvc, err := service.GetPVCDB(model.PersistentVolumeClaimM{ID: int64(pvcID)}, "id")
+	if err != nil {
+		n.internalError(err)
+		return
+	}
+	if pvc == nil {
+		logs.Error("Not found this PVC %d in DB", pvcID)
+		n.internalError(err)
+		return
+	}
 
-	//	// To optimize the different types of common code
-	//	switch pv.Type {
-	//	case model.PVNFS:
-	//		// PV NFS
-	//		pvo, err := service.GetPVOptionNFS(model.PersistentVolumeOptionNfs{ID: int64(pvID)}, "id")
-	//		if err != nil {
-	//			n.internalError(err)
-	//			return
-	//		}
-	//		if pv == nil {
-	//			logs.Error("Not found this PV Option %d in DB", pvID)
-	//			n.internalError(err)
-	//			return
-	//		}
-	//		pv.Option = pvo
+	var pvcDetail model.PersistentVolumeClaimDetail
+	pvcDetail.PVClaim = *pvc
 
-	//	case model.PVCephRBD:
-	//		// PV CephRBD
-	//		pvo, err := service.GetPVOptionRBD(model.PersistentVolumeOptionCephrbd{ID: int64(pvID)}, "id")
-	//		if err != nil {
-	//			n.internalError(err)
-	//			return
-	//		}
-	//		if pv == nil {
-	//			logs.Error("Not found this PV Option %d in DB", pvID)
-	//			n.internalError(err)
-	//			return
-	//		}
-	//		pv.Option = pvo
-	//	default:
-	//		logs.Error("Unknown pv type %d", pv.Type)
-	//		n.customAbort(http.StatusBadRequest, "Unknown pv type")
-	//		return
-	//	}
-
-	//	// sync the state with K8S
+	// sync the state with K8S
 
 	//	pvk8s, err := service.GetPVK8s(pv.Name)
 	//	if err != nil {
@@ -83,8 +51,8 @@ func (n *PVClaimController) GetPVClaimAction() {
 	//		pv.State = service.ReverseState(string(pvk8s.Status.Phase))
 	//	}
 
-	//	n.renderJSON(pv)
-	//	logs.Debug("Return get pv %v", pv)
+	n.renderJSON(pvcDetail)
+	logs.Debug("Return get pvc %v", pvcDetail)
 }
 
 func (n *PVClaimController) RemovePVClaimAction() {
