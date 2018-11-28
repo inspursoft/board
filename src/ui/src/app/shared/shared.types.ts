@@ -158,6 +158,12 @@ export enum PvAccessMode {
   ReadWriteMany = 'ReadWriteMany'
 }
 
+export enum PvcAccessMode {
+  ReadWriteOnce = 'ReadWriteOnce',
+  ReadOnlyMany = 'ReadOnlyMany',
+  ReadWriteMany = 'ReadWriteMany'
+}
+
 export enum PvReclaimMode {
   Retain = 'Retain',
   Recycle = 'Recycle',
@@ -179,12 +185,13 @@ export class PersistentVolume {
 
   get statusDescription(): string{
     return [
-      'STORAGE.PV_STATE_UNKNOWN',
-      'STORAGE.PV_STATE_AVAILABLE',
-      'STORAGE.PV_STATE_BOUND',
-      'STORAGE.PV_STATE_RELEASED',
-      'STORAGE.PV_STATE_FAILED',
-      'STORAGE.PV_STATE_INVALID'][this.state];
+      'STORAGE.STATE_UNKNOWN',
+      'STORAGE.STATE_PENDING',
+      'STORAGE.STATE_AVAILABLE',
+      'STORAGE.STATE_BOUND',
+      'STORAGE.STATE_RELEASED',
+      'STORAGE.STATE_FAILED',
+      'STORAGE.STATE_INVALID'][this.state];
   }
 
   postObject(): Object {
@@ -227,5 +234,38 @@ export class RBDPersistentVolume extends PersistentVolume {
     let result = super.postObject();
     Reflect.set(result, 'pv_options', this.options);
     return result;
+  }
+}
+
+export class PersistentVolumeClaim {
+  public id = 0;
+  public name = '';
+  public projectId = 0;
+  public capacity = '';
+  public state = 0;
+  public accessMode = PvcAccessMode;
+  public class = '';
+  public designatedPv = '';
+
+  get statusDescription(): string {
+    return [
+      'STORAGE.STATE_UNKNOWN',
+      'STORAGE.STATE_PENDING',
+      'STORAGE.STATE_AVAILABLE',
+      'STORAGE.STATE_BOUND',
+      'STORAGE.STATE_RELEASED',
+      'STORAGE.STATE_FAILED',
+      'STORAGE.STATE_INVALID'][this.state];
+  }
+
+  postObject(): object {
+    return {
+      pvc_name: this.name,
+      pvc_projectid: this.projectId,
+      pvc_capacity: this.capacity,
+      pvc_accessmode: this.accessMode,
+      pvc_class: this.class,
+      pvc_designatedpv: this.designatedPv
+    }
   }
 }

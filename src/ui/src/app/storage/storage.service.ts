@@ -1,13 +1,42 @@
 import { Injectable } from "@angular/core";
 import { Observable } from "rxjs/Observable";
 import { HttpClient, HttpResponse } from "@angular/common/http";
-import { NFSPersistentVolume, PersistentVolume, RBDPersistentVolume } from "../shared/shared.types";
+import { NFSPersistentVolume, PersistentVolume, PersistentVolumeClaim, RBDPersistentVolume } from "../shared/shared.types";
 
 @Injectable()
 export class StorageService {
 
   constructor(private http: HttpClient) {
 
+  }
+
+  getPvcList(pvcName: string, pvcListPage: number, pvcListPageSize: number): Observable<Array<PersistentVolumeClaim>> {
+    return this.http.get(`/api/v1/pvclaims`, {
+      observe: "response", params: {
+        pvc_name: pvcName,
+        pvc_list_page: pvcListPage.toString(),
+        pvc_list_page_size: pvcListPageSize.toString()
+      }
+    }).map((res: HttpResponse<Array<Object>>) => {
+      let result: Array<PersistentVolumeClaim> = Array<PersistentVolumeClaim>();
+      res.body.forEach(resObject => {
+        let persistentVolume = new PersistentVolumeClaim();
+        persistentVolume.id = Reflect.get(resObject, 'pvc_id');
+        persistentVolume.name = Reflect.get(resObject, 'pvc_name');
+        persistentVolume.projectId = Reflect.get(resObject, 'pvc_projectid');
+        persistentVolume.capacity = Reflect.get(resObject, 'pvc_capacity');
+        persistentVolume.state = Reflect.get(resObject, 'pvc_state');
+        persistentVolume.accessMode = Reflect.get(resObject, 'pvc_accessmode');
+        persistentVolume.class = Reflect.get(resObject, 'pvc_class');
+        persistentVolume.designatedPv = Reflect.get(resObject, 'pvc_designatedpv');
+        result.push(persistentVolume);
+      });
+      return result;
+    })
+  }
+
+  deletePvc(pvcId: number): Observable<Object> {
+    return this.http.delete(`/api/v1/pvclaims/${pvcId}`, {observe: "response"})
   }
 
   getPvList(pvName: string, pvListPage: number, pvListPageSize: number): Observable<Array<PersistentVolume>> {
