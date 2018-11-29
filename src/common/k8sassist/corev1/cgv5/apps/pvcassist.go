@@ -19,7 +19,7 @@ func (p *persistentvolumeclaim) Create(pvc *model.PersistentVolumeClaimK8scli) (
 	k8sPVC := types.ToK8sPVC(pvc)
 	k8sPVC, err := p.pvc.Create(k8sPVC)
 	if err != nil {
-		logs.Error("Create pvc of %s failed. Err:%+v", pvc.Name, err)
+		logs.Error("Create pvc of failed. %v Err:%+v", k8sPVC, err)
 		return nil, err
 	}
 

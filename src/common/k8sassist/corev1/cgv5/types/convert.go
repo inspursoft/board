@@ -1476,10 +1476,10 @@ func ToK8sPVC(pvc *model.PersistentVolumeClaimK8scli) *v1.PersistentVolumeClaim 
 	resources.Requests = make(v1.ResourceList)
 	resources.Limits = make(v1.ResourceList)
 	if v, ok := pvc.Spec.Resources.Requests["storage"]; ok {
-		resources.Requests["cpu"] = resource.MustParse(string(v))
+		resources.Requests["storage"] = resource.MustParse(string(v))
 	}
 	if v, ok := pvc.Spec.Resources.Limits["storage"]; ok {
-		resources.Limits["cpu"] = resource.MustParse(string(v))
+		resources.Limits["storage"] = resource.MustParse(string(v))
 	}
 
 	return &v1.PersistentVolumeClaim{
