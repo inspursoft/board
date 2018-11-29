@@ -1409,3 +1409,111 @@ func UpdateK8sPV(k8sPV *v1.PersistentVolume, pv *model.PersistentVolumeK8scli) {
 	// just update our attributes.
 	k8sPV.Spec.Capacity = capacity
 }
+
+// PVC convert
+func FromK8sPVC(pvc *v1.PersistentVolumeClaim) *model.PersistentVolumeClaimK8scli {
+
+	var resources model.ResourceRequirements
+	resources.Requests = make(model.ResourceList)
+	resources.Limits = make(model.ResourceList)
+	if v, ok := pvc.Spec.Resources.Requests["storage"]; ok {
+		resources.Requests["storage"] = model.QuantityStr(v.String())
+	}
+
+	if v, ok := pvc.Spec.Resources.Limits["storage"]; ok {
+		resources.Limits["storage"] = model.QuantityStr(v.String())
+	}
+
+	capacity := make(map[model.ResourceName]model.QuantityStr)
+	for k, v := range pvc.Status.Capacity {
+		i, _ := v.AsInt64()
+		capacity[model.ResourceName(k)] = model.QuantityStr(strconv.Itoa(int(i)))
+
+	}
+
+	return &model.PersistentVolumeClaimK8scli{
+		ObjectMeta: FromK8sObjectMeta(pvc.ObjectMeta),
+		Spec: model.PersistentVolumeClaimSpec{
+			AccessModes:      FromK8sPVAccessMode(pvc.Spec.AccessModes),
+			VolumeName:       pvc.Spec.VolumeName,
+			Resources:        resources,
+			StorageClassName: pvc.Spec.StorageClassName,
+		},
+		Status: model.PersistentVolumeClaimStatus{
+			Phase:       (model.PersistentVolumeClaimPhase)(pvc.Status.Phase),
+			AccessModes: FromK8sPVAccessMode(pvc.Status.AccessModes),
+			Capacity:    capacity,
+		},
+	}
+}
+
+func FromK8sPVCList(pvcList *v1.PersistentVolumeClaimList) *model.PersistentVolumeClaimList {
+	if pvcList == nil {
+		return nil
+	}
+	items := make([]model.PersistentVolumeClaimK8scli, 0)
+	for i := range pvcList.Items {
+		if pvc := FromK8sPVC(&pvcList.Items[i]); pvc != nil {
+			items = append(items, *pvc)
+		}
+	}
+	return &model.PersistentVolumeClaimList{
+		Items: items,
+	}
+}
+
+func ToK8sPVC(pvc *model.PersistentVolumeClaimK8scli) *v1.PersistentVolumeClaim {
+
+	capacity := make(map[v1.ResourceName]resource.Quantity)
+	for k, v := range pvc.Status.Capacity {
+		value, _ := strconv.Atoi(string(v))
+		q := resource.NewQuantity(int64(value), resource.DecimalExponent)
+		capacity[v1.ResourceName(k)] = *q
+
+	}
+
+	var resources v1.ResourceRequirements
+	resources.Requests = make(v1.ResourceList)
+	resources.Limits = make(v1.ResourceList)
+	if v, ok := pvc.Spec.Resources.Requests["storage"]; ok {
+		resources.Requests["cpu"] = resource.MustParse(string(v))
+	}
+	if v, ok := pvc.Spec.Resources.Limits["storage"]; ok {
+		resources.Limits["cpu"] = resource.MustParse(string(v))
+	}
+
+	return &v1.PersistentVolumeClaim{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "PersistentVolumeClaim",
+			APIVersion: "v1",
+		},
+		ObjectMeta: ToK8sObjectMeta(pvc.ObjectMeta),
+		Spec: v1.PersistentVolumeClaimSpec{
+			AccessModes:      ToK8sPVAccessMode(pvc.Spec.AccessModes),
+			VolumeName:       pvc.Spec.VolumeName,
+			Resources:        resources,
+			StorageClassName: pvc.Spec.StorageClassName,
+		},
+		Status: v1.PersistentVolumeClaimStatus{
+			Phase:       (v1.PersistentVolumeClaimPhase)(pvc.Status.Phase),
+			AccessModes: ToK8sPVAccessMode(pvc.Status.AccessModes),
+			Capacity:    capacity,
+		},
+	}
+}
+
+//TODO implement update later， only support capacity now
+func UpdateK8sPVC(k8sPVC *v1.PersistentVolumeClaim, pvc *model.PersistentVolumeClaimK8scli) {
+	//	if k8sPV == nil || pv == nil {
+	//		return
+	//	}
+	//	capacity := make(map[v1.ResourceName]resource.Quantity)
+	//	for k, v := range pv.Spec.Capacity {
+	//		value, _ := strconv.Atoi(string(v))
+	//		q := resource.NewQuantity(int64(value), resource.DecimalExponent)
+	//		capacity[v1.ResourceName(k)] = *q
+
+	//	}
+	//	// just update our attributes.
+	//	k8sPV.Spec.Capacity = capacity
+}

@@ -61,23 +61,30 @@ func (n *PVClaimController) RemovePVClaimAction() {
 		n.internalError(err)
 		return
 	}
-	pv, err := service.GetPVCDB(model.PersistentVolumeClaimM{ID: int64(pvcID)}, "id")
+	//check pvc existing DB
+	pvc, err := service.GetPVCDB(model.PersistentVolumeClaimM{ID: int64(pvcID)}, "id")
 	if err != nil {
 		n.internalError(err)
 		return
 	}
-	if pv == nil {
+	if pvc == nil {
 		logs.Debug("Not found this PVC %d in DB", pvcID)
 		return
 	}
 
-	//  TODO pvc k8s later
-	//	err = service.DeletePVK8s(pv.Name)
-	//	if err != nil {
-	//		logs.Info("Delete PV %s from K8s Failed %v", pv.Name, err)
-	//	} else {
-	//		logs.Info("Delete PV %s from K8s Successful %v", pv.Name, err)
-	//	}
+	// Get PVC view mode
+	pvcview, err := service.QueryPVCByID(int64(pvcID))
+	if err != nil {
+		n.internalError(err)
+		return
+	}
+
+	err = service.DeletePVCK8s(pvcview.Name, pvcview.ProjectName)
+	if err != nil {
+		logs.Info("Delete PVC %s from K8s Failed %v", pvcview.Name, err)
+	} else {
+		logs.Info("Delete PVC %s from K8s Successful %v", pvcview.Name, err)
+	}
 
 	// Delete PV DB
 	_, err = service.DeletePVCDB(int64(pvcID))
@@ -121,7 +128,7 @@ func (n *PVClaimController) AddPVClaimAction() {
 	//		return
 	//	}
 
-	pvcID, err := service.CreatePVCDB(reqPVC)
+	pvcID, err := service.CreatePVC(reqPVC)
 	if err != nil {
 		logs.Debug("Failed to add pvc %v", reqPVC)
 		n.internalError(err)
