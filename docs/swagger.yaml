@@ -2553,7 +2553,7 @@ paths:
           description: Node will be removed by pvc_id.
           required: true
           type: integer
-          format: int32
+          format: int32     
       tags:
         - Products
       responses:

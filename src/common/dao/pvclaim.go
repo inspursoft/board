@@ -89,3 +89,20 @@ func QueryPVCByProjectID(projectID int64) ([]*model.PersistentVolumeClaimV, erro
 	}
 	return pvcs, nil
 }
+
+func QueryPVCByID(pvcID int64) (*model.PersistentVolumeClaimV, error) {
+
+	var pvcByIDSQL = `select pvc.id, pvc.name, pvc.projectid, p.name as projectname, 
+	pvc.capacity, pvc.accessmode, pvc.class, 
+	pvc.pvname
+	from persistent_volume_claim_m pvc 
+	left join project p on pvc.projectid = p.id
+	where pvc.id = ?`
+
+	var pvc model.PersistentVolumeClaimV
+	err := orm.NewOrm().Raw(pvcByIDSQL, pvcID).QueryRow(&pvc)
+	if err != nil {
+		return nil, err
+	}
+	return &pvc, nil
+}

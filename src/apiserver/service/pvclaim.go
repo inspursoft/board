@@ -4,8 +4,8 @@ import (
 	"errors"
 	//"fmt"
 	"git/inspursoft/board/src/common/dao"
-	//"git/inspursoft/board/src/common/k8sassist"
-	//"git/inspursoft/board/src/common/k8sassist/corev1/cgv5/types"
+	"git/inspursoft/board/src/common/k8sassist"
+	"git/inspursoft/board/src/common/k8sassist/corev1/cgv5/types"
 	"git/inspursoft/board/src/common/model"
 	//"strings"
 
@@ -38,6 +38,16 @@ func QueryPVCsByUser(userID int64) ([]*model.PersistentVolumeClaimV, error) {
 	}
 	logs.Debug("Guery PVC list %v", pvcs)
 	return pvcs, err
+}
+
+func QueryPVCByID(pvcID int64) (*model.PersistentVolumeClaimV, error) {
+	pvc, err := dao.QueryPVCByID(pvcID)
+	if err != nil {
+		logs.Debug("Failed to get pvc by id %d %v", pvcID, err)
+		return nil, err
+	}
+
+	return pvc, err
 }
 
 func GetPVCDB(pvc model.PersistentVolumeClaimM, selectedFields ...string) (*model.PersistentVolumeClaimM, error) {
@@ -76,63 +86,87 @@ func UpdatePVCDB(pvc model.PersistentVolumeClaimM, fieldNames ...string) (bool, 
 	return true, nil
 }
 
-//func CreatePVK8s(pv *model.PersistentVolumeK8scli) (*model.PersistentVolumeK8scli, error) {
-//	// add the pv to k8s
-//	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
-//		KubeConfigPath: kubeConfigPath(),
-//	})
-//	var err error
-//	newpv, err := k8sclient.AppV1().PersistentVolume().Create(pv)
-//	if err != nil {
-//		logs.Debug("Failed to add PV to K8s %v %v", pv, err)
-//		return nil, err
-//	}
-//	logs.Debug("Added PV to K8s")
-//	return newpv, nil
-//}
+func CreatePVCK8s(pvc *model.PersistentVolumeClaimK8scli) (*model.PersistentVolumeClaimK8scli, error) {
+	// add the pvc to k8s
+	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		KubeConfigPath: kubeConfigPath(),
+	})
+	var err error
+	newpvc, err := k8sclient.AppV1().PersistentVolumeClaim(pvc.Namespace).Create(pvc)
+	if err != nil {
+		logs.Debug("Failed to add PVC to K8s %v %v", pvc, err)
+		return nil, err
+	}
+	logs.Debug("Added PVC to K8s")
+	return newpvc, nil
+}
 
-//func DeletePVK8s(pvname string) error {
+func CreatePVC(pvc model.PersistentVolumeClaimM) (int64, error) {
 
-//	// delete the hpa from k8s
-//	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
-//		KubeConfigPath: kubeConfigPath(),
-//	})
-//	err := k8sclient.AppV1().PersistentVolume().Delete(pvname)
-//	if err != nil {
-//		if types.IsNotFoundError(err) {
-//			logs.Debug("Not found PV %s", pvname)
-//		} else {
-//			return err
-//		}
-//	}
-//	return nil
-//}
+	project, err := GetProjectByID(pvc.ProjectID)
+	if err != nil {
+		return 0, err
+	}
+	if project == nil {
+		logs.Debug("Failed to find project %d", pvc.ProjectID)
+	}
 
-//func GetPVK8s(pvname string) (*model.PersistentVolumeK8scli, error) {
+	// create pvc on cluster
+	var pvcK8s model.PersistentVolumeClaimK8scli
+	pvcK8s.Name = pvc.Name
+	if pvc.PVName != "" {
+		pvcK8s.Spec.VolumeName = pvc.PVName
+	}
+	pvcK8s.Namespace = project.Name
+	pvcK8s.Spec.Resources.Requests = make(model.ResourceList)
+	pvcK8s.Spec.Resources.Requests["storage"] = model.QuantityStr(pvc.Capacity)
+	pvcK8s.Spec.AccessModes = append(pvcK8s.Spec.AccessModes, (model.PersistentVolumeAccessMode)(pvc.Accessmode))
 
-//	// delete the hpa from k8s
-//	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
-//		KubeConfigPath: kubeConfigPath(),
-//	})
-//	pvk8s, err := k8sclient.AppV1().PersistentVolume().Get(pvname)
-//	if err != nil {
-//		if types.IsNotFoundError(err) {
-//			logs.Debug("Not found PV %s", pvname)
-//			return nil, nil
-//		} else {
-//			return nil, err
-//		}
-//	}
-//	return pvk8s, nil
-//}
+	newpvc, err := CreatePVCK8s(&pvcK8s)
+	if err != nil {
+		logs.Debug("Failed to create pvc in cluster", pvcK8s)
+		return 0, err
+	}
+	logs.Debug("Create PVC in cluster %v", newpvc)
 
-//func genPersistentVolumeK8scli(pv model.PersistentVolume, pvK8s *model.PersistentVolumeK8scli) *model.PersistentVolumeK8scli {
-//	pvK8s.Name = pv.Name
-//	pvK8s.Labels = make(map[string]string)
-//	pvK8s.Labels["pvname"] = pv.Name
-//	pvK8s.Spec.Capacity = make(model.ResourceList)
-//	pvK8s.Spec.Capacity["storage"] = model.QuantityStr(pv.Capacity)
-//	pvK8s.Spec.AccessModes = append(pvK8s.Spec.AccessModes, (model.PersistentVolumeAccessMode)(pv.Accessmode))
-//	pvK8s.Spec.PersistentVolumeReclaimPolicy = (model.PersistentVolumeReclaimPolicy)(pv.Reclaim)
-//	return pvK8s
-//}
+	pvcID, err := CreatePVCDB(pvc)
+	if err != nil {
+		return 0, err
+	}
+	return pvcID, nil
+}
+
+func DeletePVCK8s(pvcname string, projectname string) error {
+
+	// delete the hpa from k8s
+	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		KubeConfigPath: kubeConfigPath(),
+	})
+	err := k8sclient.AppV1().PersistentVolumeClaim(projectname).Delete(pvcname)
+	if err != nil {
+		if types.IsNotFoundError(err) {
+			logs.Debug("Not found PVC %s", pvcname)
+		} else {
+			return err
+		}
+	}
+	return nil
+}
+
+func GetPVCK8s(pvcname string, projectname string) (*model.PersistentVolumeClaimK8scli, error) {
+
+	// delete the hpa from k8s
+	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		KubeConfigPath: kubeConfigPath(),
+	})
+	pvck8s, err := k8sclient.AppV1().PersistentVolumeClaim(projectname).Get(pvcname)
+	if err != nil {
+		if types.IsNotFoundError(err) {
+			logs.Debug("Not found PV %s", pvcname)
+			return nil, nil
+		} else {
+			return nil, err
+		}
+	}
+	return pvck8s, nil
+}
