@@ -4945,19 +4945,6 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/VolumeMount'      
-        type: object
-        properties:
-          target_storage_service:
-            type: string
-          target_path:
-            type: string    
-          volume_name:
-            type: string
-          container_path:
-            type: string
-          mount_type_flag:
-            type: integer   
-            format: int
       image:
         $ref: '#/definitions/ImageList'       
       env:
