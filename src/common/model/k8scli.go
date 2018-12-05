@@ -231,8 +231,9 @@ type Volume struct {
 }
 
 type VolumeSource struct {
-	HostPath *HostPathVolumeSource
-	NFS      *NFSVolumeSource
+	HostPath              *HostPathVolumeSource
+	NFS                   *NFSVolumeSource
+	PersistentVolumeClaim *PersistentVolumeClaimVolumeSource `json:"persistentVolumeClaim,omitempty" protobuf:"bytes,10,opt,name=persistentVolumeClaim"`
 }
 
 type HostPathVolumeSource struct {
@@ -243,6 +244,16 @@ type HostPathVolumeSource struct {
 //	Server string
 //	Path   string
 //}
+
+type PersistentVolumeClaimVolumeSource struct {
+	// ClaimName is the name of a PersistentVolumeClaim in the same namespace as the pod using this volume.
+	// More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#persistentvolumeclaims
+	ClaimName string `json:"claimName" protobuf:"bytes,1,opt,name=claimName"`
+	// Will force the ReadOnly setting in VolumeMounts.
+	// Default false.
+	// +optional
+	ReadOnly bool `json:"readOnly,omitempty" protobuf:"varint,2,opt,name=readOnly"`
+}
 
 // ResourceRequirements describes the compute resource requirements.
 type ResourceRequirements struct {
