@@ -573,6 +573,47 @@ func setDeploymentVolumes(containerList []model.Container) []model.Volume {
 	return volumes
 }
 
+func setVolumes(volumeList []model.VolumeMountStruct) []model.Volume {
+	if volumeList == nil {
+		return nil
+	}
+	volumes := make([]model.Volume, 0)
+	for _, v := range volumeList {
+		switch v.VolumeType {
+		case "hostpath":
+			volumes = append(volumes, model.Volume{
+				Name: v.VolumeName,
+				VolumeSource: model.VolumeSource{
+					HostPath: &model.HostPathVolumeSource{
+						Path: v.TargetPath,
+					},
+				},
+			})
+		case "nfs":
+			volumes = append(volumes, model.Volume{
+				Name: v.VolumeName,
+				VolumeSource: model.VolumeSource{
+					NFS: &model.NFSVolumeSource{
+						Server: v.TargetStorageService,
+						Path:   v.TargetPath,
+					},
+				},
+			})
+		case "pvc":
+			volumes = append(volumes, model.Volume{
+				Name: v.VolumeName,
+				VolumeSource: model.VolumeSource{
+					PersistentVolumeClaim: &model.PersistentVolumeClaimVolumeSource{
+						ClaimName: v.TargetPVC,
+					},
+				},
+			})
+		}
+
+	}
+	return volumes
+}
+
 func setDeploymentAffinity(affinityList []model.Affinity) model.K8sAffinity {
 	k8sAffinity := model.K8sAffinity{}
 	if affinityList == nil {

@@ -22,3 +22,14 @@ type VolumeStruct struct {
 	//mount type: 0, folder; 1, file
 	MountTypeFlag int `json:"mount_type_flag"`
 }
+
+type VolumeMountStruct struct {
+	VolumeType    string `json:"volume_type"`
+	VolumeName    string `json:"volume_name"`
+	ContainerPath string `json:"container_path"`
+	//mount type: 0, folder; 1, file
+	ContainerPathFlag    int    `json:"container_path_flag"`
+	TargetStorageService string `json:"target_storage_service"`
+	TargetPath           string `json:"target_path"`
+	TargetPVC            string `json:"target_pvc"`
+}
