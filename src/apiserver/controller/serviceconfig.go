@@ -240,14 +240,15 @@ func (sc *ServiceConfigController) configContainerList(key string, configService
 		return
 	}
 
-	for index, container := range containerList {
-		if container.VolumeMounts.TargetPath != "" && container.VolumeMounts.TargetStorageService == "" {
-			sc.serveStatus(http.StatusBadRequest, emptyVolumeTargetStorageServiceErr.Error())
-			return
-		}
-		containerList[index].VolumeMounts.VolumeName = strings.ToLower(container.VolumeMounts.VolumeName)
-		containerList[index].Name = strings.ToLower(container.Name)
-	}
+	//TODO: Skip check and transfer to Lower case
+	//	for index, container := range containerList {
+	//		if container.VolumeMounts.TargetPath != "" && container.VolumeMounts.TargetStorageService == "" {
+	//			sc.serveStatus(http.StatusBadRequest, emptyVolumeTargetStorageServiceErr.Error())
+	//			return
+	//		}
+	//		containerList[index].VolumeMounts.VolumeName = strings.ToLower(container.VolumeMounts.VolumeName)
+	//		containerList[index].Name = strings.ToLower(container.Name)
+	//	}
 
 	SetConfigServiceStep(key, configServiceStep.ConfigContainerList(containerList))
 }
@@ -380,10 +381,11 @@ func (sc *ServiceConfigController) checkEntireServiceConfig(entireService *Confi
 		return instanceInvalidErr
 	}
 
-	for key, container := range entireService.ContainerList {
-		entireService.ContainerList[key].VolumeMounts.VolumeName = strings.ToLower(container.VolumeMounts.VolumeName)
-		entireService.ContainerList[key].Name = strings.ToLower(container.Name)
-	}
+	//TODO: Skip check and transfer to Lower case
+	//	for key, container := range entireService.ContainerList {
+	//		entireService.ContainerList[key].VolumeMounts.VolumeName = strings.ToLower(container.VolumeMounts.VolumeName)
+	//		entireService.ContainerList[key].Name = strings.ToLower(container.Name)
+	//	}
 
 	if len(entireService.ExternalServiceList) < 1 {
 		return emptyExternalServiceListErr
