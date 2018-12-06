@@ -1362,12 +1362,10 @@ func ToK8sPV(pv *model.PersistentVolumeK8scli) *v1.PersistentVolume {
 	//	lastTime = &t
 	//}
 	capacity := make(map[v1.ResourceName]resource.Quantity)
-	for k, v := range pv.Spec.Capacity {
-		value, _ := strconv.Atoi(string(v))
-		q := resource.NewQuantity(int64(value), resource.DecimalExponent)
-		capacity[v1.ResourceName(k)] = *q
-
+	if v, ok := pv.Spec.Capacity["storage"]; ok {
+		capacity["storage"] = resource.MustParse(string(v))
 	}
+
 	return &v1.PersistentVolume{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "PersistentVolume",
