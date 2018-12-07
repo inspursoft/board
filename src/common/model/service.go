@@ -4,6 +4,14 @@ import (
 	"time"
 )
 
+const (
+	ServiceTypeUnknown = iota
+	ServiceTypeNormalWizard
+	ServiceTypeHelm
+	ServiceTypeDeloymentOnly
+	ServiceTypeClusterIP
+)
+
 type ServiceStatus struct {
 	ID             int64     `json:"service_id" orm:"column(id)"`
 	Name           string    `json:"service_name" orm:"column(name)"`
