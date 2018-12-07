@@ -7,7 +7,7 @@ import { BuildImageDockerfileData, Image, ImageDetail } from "../image/image";
 import { ImageIndex, ServerServiceStep, ServiceStepPhase, UiServiceFactory, UIServiceStepBase } from "./service-step.component";
 import { Service } from "./service";
 import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from "../shared/shared.const";
-import { INode, INodeGroup, NodeAvailableResources, ServiceHPA } from "../shared/shared.types";
+import { INode, INodeGroup, NodeAvailableResources, PersistentVolumeClaim, ServiceHPA } from "../shared/shared.types";
 
 @Injectable()
 export class K8sService {
@@ -333,6 +333,19 @@ export class K8sService {
         service_name: serviceName,
         session_affinity_flag: flag ? '1' : '0'
       }
+    })
+  }
+
+  getPvcNameList(): Observable<Array<PersistentVolumeClaim>> {
+    return this.http.get(`/api/v1/pvclaims`, {observe: "response"}).map((res: HttpResponse<Array<Object>>) => {
+      let result: Array<PersistentVolumeClaim> = Array<PersistentVolumeClaim>();
+      res.body.forEach(resObject => {
+        let persistentVolume = new PersistentVolumeClaim();
+        persistentVolume.id = Reflect.get(resObject, 'pvc_id');
+        persistentVolume.name = Reflect.get(resObject, 'pvc_name');
+        result.push(persistentVolume);
+      });
+      return result;
     })
   }
 }

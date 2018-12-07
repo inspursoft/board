@@ -24,8 +24,9 @@ export class ImageService {
     }).map((res: HttpResponse<Array<Project>>) => res.body || [])
   }
 
-  uploadDockerFile(formData: FormData): Observable<any> {
-    return this.http.post(`/api/v1/images/dockerfile/upload`, formData, {observe: "response"})
+  uploadDockerFile(formData: FormData): Observable<string> {
+    return this.http.post(`/api/v1/images/dockerfile/upload`, formData, {observe: "response", responseType: "text"})
+      .map((res: HttpResponse<string>) => res.body)
   }
 
   downloadDockerFile(fileInfo: {imageName: string, tagName: string, projectName: string}): Observable<any> {

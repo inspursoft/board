@@ -74,3 +74,10 @@ button.get-tag {
 clr-icon.action{
   margin-left: 10px;
 }
+
+div.volume-info-container {
+  display: flex;
+  flex-direction: column;
+  margin-left: 195px;
+  margin-top: 10px;
+}

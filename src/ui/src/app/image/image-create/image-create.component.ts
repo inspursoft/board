@@ -52,6 +52,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   isBuildImageWIP: boolean = false;
   isServerHaveDockerFile: boolean = false;
   isUploadFileWIP = false;
+  isImageNameAndTagDisabled = false;
   customerNewImage: BuildImageData;
   consoleText: string = "";
   uploadCopyToPath: string = "/tmp";
@@ -229,7 +230,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
     }
   }
 
-  uploadDockerFile(): Observable<boolean> {
+  uploadDockerFile(): Observable<string> {
     if (this.selectFromImportFile) {
       this.isUploadFileWIP = true;
       let formData: FormData = new FormData();
@@ -237,9 +238,9 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
       formData.append("project_name", this.customerNewImage.project_name);
       formData.append("image_name", this.customerNewImage.image_name);
       formData.append("image_tag", this.customerNewImage.image_tag);
-      return this.imageService.uploadDockerFile(formData).map(() => {
+      return this.imageService.uploadDockerFile(formData).map(res => {
         this.isUploadFileWIP = false;
-        return true;
+        return res;
       })
     }
   }
@@ -250,13 +251,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
       tagName: this.customerNewImage.image_tag,
       projectName: this.customerNewImage.project_name
     };
-    if (this.isServerHaveDockerFile) {
-      return this.imageService.buildImageFromDockerFile(fileInfo);
-    } else {
-      let obsUpload = this.uploadDockerFile();
-      let obsBuild = this.imageService.buildImageFromDockerFile(fileInfo);
-      return obsUpload.zip(obsBuild);
-    }
+    return this.imageService.buildImageFromDockerFile(fileInfo);
   }
 
   cleanImageConfig(err?: HttpErrorResponse) {
@@ -324,7 +319,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
         );
       }
     } else if (this.verifyInputValid()) {
-      if (this.selectFromImportFile) {
+      if (this.isServerHaveDockerFile) {
         buildImageInit();
         this.buildImageByDockerFile().subscribe(
           () => this.buildImageResole(),
@@ -385,26 +380,15 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
           this.consoleText = (ev.target as FileReader).result;
         };
         reader.readAsText(this.selectFromImportFile);
+        this.uploadDockerFile().subscribe((res: string) => {
+          (event.target as HTMLInputElement).value = "";
+          this.isServerHaveDockerFile = true;
+          this.isImageNameAndTagDisabled = true;
+          this.consoleText = res;
+          this.messageService.showAlert('IMAGE.CREATE_IMAGE_FILE_UPLOAD_SUCCESS', {view: this.alertView});
+        })
       }
 
-    }
-  }
-
-  downloadDockerFile(): void {
-    this.selectFromImportFile = null;
-    this.consoleText = "";
-    this.isServerHaveDockerFile = false;
-    if (this.customerNewImage.image_name && this.customerNewImage.image_tag) {
-      let downloadInfo = {
-        imageName: this.customerNewImage.image_name,
-        tagName: this.customerNewImage.image_tag,
-        projectName: this.customerNewImage.project_name
-      };
-      this.imageService.downloadDockerFile(downloadInfo).subscribe((res: HttpResponse<string>) => {
-          this.consoleText = res.body;
-          this.isServerHaveDockerFile = true;
-        },()=>this.messageService.cleanNotification()
-      );
     }
   }
 
@@ -427,9 +411,10 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
             this.uploadProgressValue = res;
           } else if (res.type == HttpEventType.Response) {
             (event.target as HTMLInputElement).value = "";
-            this.messageService.showAlert('IMAGE.CREATE_IMAGE_UPLOAD_SUCCESS', {view: this.alertView});
+            this.isImageNameAndTagDisabled = true;
             this.isUploadFileWIP = false;
             this.updateFileListAndPreviewInfo();
+            this.messageService.showAlert('IMAGE.CREATE_IMAGE_UPLOAD_SUCCESS', {view: this.alertView});
           }
         }, (error: HttpErrorResponse) => {
           this.isUploadFileWIP = false;

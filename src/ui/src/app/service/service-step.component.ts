@@ -69,16 +69,22 @@ export class EnvStruct implements UiServerExchangeData<EnvStruct> {
 }
 
 export class VolumeStruct implements UiServerExchangeData<VolumeStruct> {
+  public volume_type: 'nfs' | 'pvc' = 'nfs';
   public target_storage_service = '';
   public target_path = '';
   public volume_name = '';
   public container_path = '';
+  public container_path_flag = 0;
+  public target_pvc = '';
 
   serverToUi(serverResponse: Object): VolumeStruct {
     this.target_storage_service = serverResponse['target_storage_service'];
     this.target_path = serverResponse['target_path'];
     this.volume_name = serverResponse['volume_name'];
     this.container_path = serverResponse['container_path'];
+    this.volume_type = serverResponse['volume_type'];
+    this.container_path_flag = serverResponse['container_path_flag'];
+    this.target_pvc = serverResponse['target_pvc'];
     return this;
   }
 
@@ -95,13 +101,13 @@ export class Container implements UiServerExchangeData<Container> {
   public mem_request = '';
   public cpu_limit = '';
   public mem_limit = '';
-  public volume_mount: VolumeStruct;
+  public volume_mounts: Array<VolumeStruct>;
   public image: ImageIndex;
   public env: Array<EnvStruct>;
   public container_port: Array<number>;
 
   constructor() {
-    this.volume_mount = new VolumeStruct();
+    this.volume_mounts = Array<VolumeStruct>();
     this.image = new ImageIndex();
     this.env = Array<EnvStruct>();
     this.container_port = Array<number>();
@@ -115,7 +121,13 @@ export class Container implements UiServerExchangeData<Container> {
     this.mem_request = serverResponse["mem_request"];
     this.mem_limit = serverResponse["mem_limit"];
     this.command = serverResponse["command"];
-    this.volume_mount.serverToUi(serverResponse["volume_mount"]);
+    if (serverResponse["volume_mounts"]) {
+      let tempVolumeDataList: Array<Object> = serverResponse["volume_mounts"];
+      tempVolumeDataList.forEach(tempVolumeData => {
+        let volume = new VolumeStruct();
+        this.volume_mounts.push(volume.serverToUi(tempVolumeData));
+      })
+    }
     this.image.serverToUi(serverResponse["image"]);
     if (serverResponse["env"]) {
       let envArr: Array<EnvStruct> = serverResponse["env"];
