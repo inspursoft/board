@@ -8,7 +8,6 @@ import { PvDetailComponent } from "./pv/pv-detail.compoent/pv-detail.component";
 import { PvListComponent } from "./pv/pv-list.compoent/pv-list.component";
 import { PvcListComponent } from "./pvc/pvc-list.component/pvc-list.component";
 import { PvcDetailComponent } from "./pvc/pvc-detail.component/pvc-detail.component";
-import { CreatePvcComponent } from "./pvc/create-pvc.component/create-pvc.component";
 
 @NgModule({
   imports: [
@@ -16,7 +15,8 @@ import { CreatePvcComponent } from "./pvc/create-pvc.component/create-pvc.compon
   ],
   entryComponents: [
     CreatePvComponent,
-    PvDetailComponent
+    PvDetailComponent,
+    PvcDetailComponent
   ],
   providers: [
     StorageService,
@@ -26,7 +26,6 @@ import { CreatePvcComponent } from "./pvc/create-pvc.component/create-pvc.compon
     PvListComponent,
     PvcListComponent,
     CreatePvComponent,
-    CreatePvcComponent,
     PvDetailComponent,
     PvcDetailComponent,
     MonitorsComponent

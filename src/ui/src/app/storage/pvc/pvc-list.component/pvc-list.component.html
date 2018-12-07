@@ -1,1 +1,29 @@
-<h1>This is PVC component </h1>
+<div class="create-button-container">
+  <button class="btn btn-primary" (click)="createNewPvc()">{{ 'STORAGE.PVC_CREATE' | translate }}</button>
+</div>
+<clr-datagrid [clrDgLoading]="isInLoadWip" (clrDgRefresh)="refreshList($event)">
+  <clr-dg-column>{{ 'STORAGE.PVC_NAME' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'STORAGE.PVC_PROJECT' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'STORAGE.PVC_ACCESS_MODES' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'STORAGE.PVC_CLASS' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'STORAGE.PVC_CAPACITY' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'STORAGE.PVC_STATUS' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'STORAGE.PVC_OPERATION' | translate }}</clr-dg-column>
+  <clr-dg-row *ngFor="let pvc of pvcList">
+    <clr-dg-cell>{{pvc.name}}</clr-dg-cell>
+    <clr-dg-cell>{{pvc.projectName}}</clr-dg-cell>
+    <clr-dg-cell>{{pvc.accessMode}}</clr-dg-cell>
+    <clr-dg-cell>{{pvc.class}}</clr-dg-cell>
+    <clr-dg-cell>{{pvc.capacity}}</clr-dg-cell>
+    <clr-dg-cell>{{pvc.statusDescription | translate}}</clr-dg-cell>
+    <clr-dg-cell>
+      <a href="javascript:void(0)" (click)="deletePvc(pvc.name,pvc.id)">
+        <clr-icon shape="trash"></clr-icon>
+      </a>
+      <a href="javascript:void(0)" (click)="showPvcDetail(pvc.id)">
+        <clr-icon shape="info-standard"></clr-icon>
+      </a>
+    </clr-dg-cell>
+  </clr-dg-row>
+  <clr-dg-footer>{{pvcList ? pvcList.length : 0}} {{ 'DATAGRID.ITEMS' | translate }}</clr-dg-footer>
+</clr-datagrid>

@@ -3,7 +3,6 @@ import { NgxEchartsModule } from 'ngx-echarts';
 import { HeaderComponent } from './header/header.component';
 import { CheckItemExistingDirective } from './directives/check-item-existing.directive';
 import { CheckItemIdenticalDirective } from './directives/check-item-identical.directive';
-import { MessageService } from './message-service/message.service';
 import { AuthGuard, ServiceGuard } from './auth-guard.service';
 import { CheckItemPatternDirective } from "./directives/check-item-pattern.directive";
 import { ChangePasswordComponent } from "./change-password/change-password.component";
@@ -36,6 +35,7 @@ import { CsAlertComponent } from "./cs-components-library/cs-alert/cs-alert.comp
 import { CsGlobalAlertComponent } from "./cs-components-library/cs-global-alert/cs-global-alert.component";
 import { CsModalChildBaseSelector } from "./cs-modal-base/cs-modal-child-base";
 import { CoreModule } from "../core/core.module";
+import { CreatePvcComponent } from "./create-pvc/create-pvc.component";
 
 @NgModule({
   imports: [
@@ -95,10 +95,12 @@ import { CoreModule } from "../core/core.module";
     MemberComponent,
     TimeoutComponent,
     BoardLoadingComponent,
-    BadGatewayComponent
+    BadGatewayComponent,
+    CreatePvcComponent
   ],
   entryComponents: [
     CreateProjectComponent,
+    CreatePvcComponent,
     CsDialogComponent,
     CsAlertComponent,
     CsGlobalAlertComponent],

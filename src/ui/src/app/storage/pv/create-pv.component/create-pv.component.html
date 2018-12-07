@@ -5,6 +5,7 @@
     <div class="dynamic-line-container">
       <cs-input [inputIsRequired]="true"
                 [disabled]="isCreateWip"
+                [customerValidatorAsyncFunc]="checkPvNameFun"
                 [inputLabel]="'STORAGE.PV_NAME' | translate"
                 [simpleFiled]="newPersistentVolume.name"
                 (onCheck)="newPersistentVolume.name = $event">
@@ -21,6 +22,7 @@
       <span class="filed-text">{{"STORAGE.PV_TYPE"|translate}}:</span>
       <cs-dropdown [dropdownDefaultText]="newPersistentVolume.typeDescription"
                    [dropdownWidth]="260"
+                   [dropdownMustBeSelect]="false"
                    [dropdownDisabled]="isCreateWip"
                    [dropdownList]="storageTypeList"
                    [dropdownListTextKey]="'name'"

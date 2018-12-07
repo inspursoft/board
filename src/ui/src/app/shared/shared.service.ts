@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders, HttpResponse } from "@angular/common/http";
 import { Member, Project } from "../project/project";
 import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from "./shared.const";
 import { Observable } from "rxjs/Observable";
+import { PersistentVolume, PersistentVolumeClaim } from "./shared.types";
 
 @Injectable()
 export class SharedService {
@@ -22,6 +23,27 @@ export class SharedService {
         observe: "response",
         params: {'project_name': projectName}
       }).map(res => res.body)
+  }
+
+  getAllProjects(): Observable<Array<Project>> {
+    return this.http.get<Array<Project>>('/api/v1/projects', {observe: "response"}).map(res => res.body)
+  }
+
+  getAllPvList(): Observable<Array<PersistentVolume>> {
+    return this.http.get(`/api/v1/pvolumes`, {observe: "response"})
+      .map((res: HttpResponse<Array<Object>>) => {
+        let result: Array<PersistentVolume> = Array<PersistentVolume>();
+        res.body.forEach(resObject => {
+          let persistentVolume = new PersistentVolume();
+          persistentVolume.initFromRes(resObject);
+          result.push(persistentVolume);
+        });
+        return result;
+      })
+  }
+
+  createNewPvc(pvc: PersistentVolumeClaim): Observable<any> {
+    return this.http.post(`/api/v1/pvclaims`, pvc.postObject(), {observe: "response"})
   }
 
   getAvailableMembers(): Observable<Array<Member>> {
