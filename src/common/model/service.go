@@ -13,6 +13,7 @@ type ServiceStatus struct {
 	OwnerID        int64     `json:"service_owner_id" orm:"column(owner_id)"`
 	OwnerName      string    `json:"service_owner_name" orm:"column(owner_name)"`
 	Status         int       `json:"service_status" orm:"column(status)"`
+	Type           int       `json:"service_type" orm:"column(type)"`
 	Public         int       `json:"service_public" orm:"column(public)"`
 	Deleted        int       `json:"service_deleted" orm:"column(deleted)"`
 	CreationTime   time.Time `json:"service_creation_time" orm:"column(creation_time)"`
