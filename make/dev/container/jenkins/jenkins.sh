@@ -23,7 +23,6 @@ if [[ $# -lt 1 ]] || [[ "$1" == "--"* ]]; then
     mv /tmp/jobs /var/jenkins_home/.
   fi
 
-  /usr/share/jenkins/pythonenv.sh  
   /usr/share/jenkins/init.sh
   exec java "${java_opts_array[@]}" -jar /usr/share/jenkins/jenkins.war "${jenkins_opts_array[@]}" "$@"
 fi
