@@ -16,6 +16,7 @@ export class CreatePvcComponent extends CsModalChildBase implements OnInit {
   accessModeList: Array<PvcAccessMode>;
   pvList: Array<PersistentVolume>;
   newPersistentVolumeClaim: PersistentVolumeClaim;
+  isCreateWip = false;
 
   constructor(private sharedService: SharedService,
               private messageService: MessageService) {
@@ -45,9 +46,13 @@ export class CreatePvcComponent extends CsModalChildBase implements OnInit {
 
   createNewPvc() {
     if (this.verifyInputValid() && this.verifyDropdownValid()) {
+      this.isCreateWip = true;
       this.sharedService.createNewPvc(this.newPersistentVolumeClaim).subscribe(
         () => this.messageService.showAlert('STORAGE.PVC_CREATE_SUCCESS'),
-        (error: HttpErrorResponse) => this.messageService.showAlert(error.message, {alertType: "alert-warning", view: this.alertView}),
+        (error: HttpErrorResponse) => {
+          this.messageService.showAlert(error.message, {alertType: "alert-warning", view: this.alertView});
+          this.isCreateWip = false;
+        },
         () => {
           this.onAfterCommit.emit(this.newPersistentVolumeClaim);
           this.modalOpened = false;
