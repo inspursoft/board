@@ -4683,6 +4683,10 @@ definitions:
         type: integer
         format: int32
         description: The current service status. 
+      service_type:
+        type: integer
+        format: int32
+        description: The service type, 0 Unkonwn, 1 NormalWizard, 2 HelmService.         
       service_config:
         type: string
         description: The service config of this service.                 
@@ -4991,6 +4995,10 @@ definitions:
         format: int
       service_name:
         type: string
+      service_type:
+        type: integer   
+        format: int32   
+        description: The service type, 0 Unkonwn, 1 NormalWizard, 2 HelmService.      
       service_public:
         type: integer   
         format: int32
@@ -6073,28 +6081,7 @@ definitions:
         description: The events of this persitent volume claim. 
         items:
           type: string        
-  VolumeMount:
-      type: object
-      properties:
-        volume_type:
-          type: string
-          description: The volume type of this mount point, hostpath, nfs, pvc    
-        volume_name:
-          type: string            
-          description: The volume name of this mount point 
-        container_path:
-          type: string
-        container_path_flag:
-          type: integer   
-          format: int          
-          description: The path flag, 0 directory, 1 file
-        target_storage_service:
-          type: string
-        target_path:
-          type: string    
-        target_pvc:
-          type: string 
-          description: The target pvc name for this mount point.
+ServiceStatus
 
 
 
