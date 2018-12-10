@@ -365,6 +365,7 @@ export const LANG_EN_US = {
     "STEP_2_ENVIRONMENT_VARIABLES":"﻿VERSION = 1.0",
     "STEP_2_PORT_CONTAINER":"80",
     "STEP_2_BEYOND_MAX_VALUE":"beyond the max value",
+    "STEP_2_CONTAINER_PORT_REPEAT":"Container port can not repeat",
     "STEP_3_SERVICE_OF_NAME":"service01",
     "STEP_3_EXTERNAL_PORT":"30001",
     "STEP_3_SERVICE_CONFIG_TITLE":"Basic configuration",

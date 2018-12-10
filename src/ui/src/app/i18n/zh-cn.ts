@@ -365,6 +365,7 @@ export const LANG_ZH_CN = {
     "STEP_2_ENVIRONMENT_VARIABLES":"﻿请输入环境变量定义:﻿VERSION = 1.0",
     "STEP_2_PORT_CONTAINER":"请输入容器的服务端口:80",
     "STEP_2_BEYOND_MAX_VALUE":"超过最大限制",
+    "STEP_2_CONTAINER_PORT_REPEAT":"容器端口不能重复",
     "STEP_3_SERVICE_OF_NAME":"service01",
     "STEP_3_EXTERNAL_PORT":"30001",
     "STEP_3_SERVICE_CONFIG_TITLE":"服务配置",

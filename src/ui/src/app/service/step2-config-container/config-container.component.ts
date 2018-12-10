@@ -164,23 +164,49 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
     return {valid: everyValid, invalidIndex: invalidIndex};
   }
 
+  isValidContainerPorts(): {valid: boolean, invalidIndex: number} {
+    let invalidIndex: number = -1;
+    let valid = true;
+    let portBuf = new Set<number>();
+    this.serviceStep2Data.containerList.forEach((container, index) => {
+      container.container_port.forEach(port => {
+        if (portBuf.has(port)) {
+          invalidIndex = index;
+          valid = false
+        } else {
+          portBuf.add(port);
+        }
+      })
+    });
+    return {valid: valid, invalidIndex: invalidIndex};
+  }
+
   forward(): void {
-    let checkContainerName = this.isValidContainerNames();
-    if (checkContainerName.valid) {
-      if (this.verifyInputValid() && this.verifyInputArrayValid()) {
-        this.k8sService.setServiceConfig(this.serviceStep2Data.uiToServer()).subscribe(
-          () => this.k8sService.stepSource.next({index: 3, isBack: false})
-        );
-      }
-    } else {
+    let funShowInvalidContainer = (invalidIndex: number) => {
       let iterator: IterableIterator<Container> = this.containerIsInEdit.keys();
       let key = iterator.next();
       while (!key.done) {
         this.containerIsInEdit.set(key.value, false);
         key = iterator.next();
       }
-      this.containerIsInEdit.set(this.serviceStep2Data.containerList[checkContainerName.invalidIndex], true);
+      this.containerIsInEdit.set(this.serviceStep2Data.containerList[invalidIndex], true);
       setTimeout(() => this.verifyInputValid());
+    };
+    let checkContainerName = this.isValidContainerNames();
+    if (checkContainerName.valid) {
+      let checkContainerPort = this.isValidContainerPorts();
+      if (checkContainerPort.valid) {
+        if (this.verifyInputValid() && this.verifyInputArrayValid()) {
+          this.k8sService.setServiceConfig(this.serviceStep2Data.uiToServer()).subscribe(
+            () => this.k8sService.stepSource.next({index: 3, isBack: false})
+          );
+        }
+      } else {
+        funShowInvalidContainer(checkContainerPort.invalidIndex);
+        this.messageService.showAlert('SERVICE.STEP_2_CONTAINER_PORT_REPEAT', {alertType: "alert-warning"});
+      }
+    } else {
+      funShowInvalidContainer(checkContainerName.invalidIndex)
     }
   }
 
