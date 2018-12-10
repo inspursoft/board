@@ -130,9 +130,17 @@ func (p *ServiceController) DeployServiceAction() {
 	items := []string{deploymentFile, serviceFile}
 	p.pushItemsToRepo(items...)
 
-	updateService := model.ServiceStatus{ID: serviceInfo.ID, Status: uncompleted, ServiceYaml: string(deployInfo.ServiceFileInfo),
+	var serviceType int
+	if deployInfo.Service.Type == "NodePort" {
+		serviceType = model.ServiceTypeNormalNodePort
+	} else if deployInfo.Service.Type == "ClusterIP" {
+		serviceType = model.ServiceTypeClusterIP
+	}
+	// TODO support deployment only
+
+	updateService := model.ServiceStatus{ID: serviceInfo.ID, Status: uncompleted, Type: serviceType, ServiceYaml: string(deployInfo.ServiceFileInfo),
 		DeploymentYaml: string(deployInfo.DeploymentFileInfo)}
-	_, err = service.UpdateService(updateService, "status", "service_yaml", "deployment_yaml")
+	_, err = service.UpdateService(updateService, "status", "type", "service_yaml", "deployment_yaml")
 	if err != nil {
 		p.internalError(err)
 		return

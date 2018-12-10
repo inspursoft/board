@@ -6,7 +6,7 @@ import (
 
 const (
 	ServiceTypeUnknown = iota
-	ServiceTypeNormalWizard
+	ServiceTypeNormalNodePort
 	ServiceTypeHelm
 	ServiceTypeDeloymentOnly
 	ServiceTypeClusterIP
