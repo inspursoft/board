@@ -13,7 +13,8 @@ export class CsDialogComponent implements OnDestroy, AfterViewInit {
   @HostBinding('tabindex') tabIndex = '-1';
 
   @HostListener('keypress', ['$event']) onKeypress(event: KeyboardEvent) {
-    if (event.charCode === 13 && this.curMessage.buttonStyle == BUTTON_STYLE.ONLY_CONFIRM) {
+    if ((event.charCode === 13 || event.code == 'Enter' || event.code == 'NumpadEnter')
+      && this.curMessage.buttonStyle == BUTTON_STYLE.ONLY_CONFIRM) {
       this.curMessage.returnStatus = RETURN_STATUS.rsCancel;
       this.returnSubject.next(this.curMessage);
     }
