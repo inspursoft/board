@@ -7,6 +7,7 @@
               [disabled]="isActionWip"
               [inputPattern]="patternServiceName"
               [inputLabel]="'SERVICE.STEP_3_SERVICE_NAME' | translate"
+              [validatorMessage]="[{validatorKey:'pattern',validatorMessage:'SERVICE.STEP_3_SERVICE_NAME_PATTERN_NSG'}]"
               [customerValidatorAsyncFunc]="checkServiceNameFun"
               [simpleFiled]="uiData.serviceName"
               [inputPlaceholder]="'SERVICE.STEP_3_SERVICE_OF_NAME'| translate"
