@@ -124,6 +124,19 @@ func syncUpWithK8s() {
 	logs.Info("Successful sync up with projects with K8s.")
 }
 
+func initKubernetesInfo() {
+	logs.Info("Initialize kubernetes info")
+	info, err := service.GetKubernetesInfo()
+	if err != nil {
+		logs.Error("Failed to initialize kubernetes info, err: %+v", err)
+		utils.SetConfig("KUBERNETES_VERSION", "NA")
+	} else {
+		utils.SetConfig("KUBERNETES_VERSION", info.GitVersion)
+	}
+	service.SetSystemInfo("KUBERNETES_VERSION", true)
+	logs.Info("Finished to initialize kubernetes info.")
+}
+
 func main() {
 
 	utils.InitializeDefaultConfig()
@@ -162,6 +175,10 @@ func main() {
 
 	if systemInfo.InitProjectRepo == "" {
 		initProjectRepo()
+	}
+
+	if systemInfo.KubernetesVersion == "" || systemInfo.KubernetesVersion == "NA" {
+		initKubernetesInfo()
 	}
 
 	if systemInfo.SyncK8s == "" || utils.GetStringValue("FORCE_INIT_SYNC") == "true" {

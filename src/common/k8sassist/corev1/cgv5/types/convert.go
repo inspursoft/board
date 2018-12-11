@@ -15,6 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/version"
 )
 
 // generate k8s objectmeta from model objectmeta
@@ -349,6 +350,20 @@ func ToK8sVolumeMount(mount model.VolumeMount) v1.VolumeMount {
 		Name:      mount.Name,
 		MountPath: mount.MountPath,
 		SubPath:   mount.SubPath,
+	}
+}
+
+func FromK8sInfo(info *version.Info) *model.KubernetesInfo {
+	return &model.KubernetesInfo{
+		Major:        info.Major,
+		Minor:        info.Minor,
+		GitVersion:   info.GitVersion,
+		GitCommit:    info.GitCommit,
+		GitTreeState: info.GitTreeState,
+		BuildDate:    info.BuildDate,
+		GoVersion:    info.GoVersion,
+		Compiler:     info.Compiler,
+		Platform:     info.Platform,
 	}
 }
 

@@ -17,6 +17,10 @@ type AppV1Client struct {
 	Clientset *types.Clientset
 }
 
+func (p *AppV1Client) Discovery() ServerVersionInterface {
+	return apps.NewServerVersion(p.Clientset.Discovery())
+}
+
 func (p *AppV1Client) Service(namespace string) ServiceClientInterface {
 	return apps.NewServices(namespace, p.Clientset.CoreV1().Services(namespace))
 }
@@ -59,6 +63,7 @@ func (p *AppV1Client) PersistentVolumeClaim(namespace string) PersistentVolumeCl
 
 // AppV1ClientInterface level 1 interface to access others
 type AppV1ClientInterface interface {
+	Discovery() ServerVersionInterface
 	Service(namespace string) ServiceClientInterface
 	Deployment(namespace string) DeploymentClientInterface
 	Node() NodeClientInterface
@@ -69,6 +74,12 @@ type AppV1ClientInterface interface {
 	AutoScale(namespace string) AutoscaleInterface
 	PersistentVolume() PersistentVolumeInterface
 	PersistentVolumeClaim(namespace string) PersistentVolumeClaimInterface
+}
+
+// ServerVersionInterface has a method for retrieving the server's version.
+type ServerVersionInterface interface {
+	// ServerVersion retrieves and parses the server's version (git version).
+	ServerVersion() (*model.KubernetesInfo, error)
 }
 
 // ServiceCli interface has methods to work with Service resources in k8s-assist.
