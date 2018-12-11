@@ -78,7 +78,9 @@ export class VolumeStruct implements UiServerExchangeData<VolumeStruct> {
   public target_pvc = '';
 
   serverToUi(serverResponse: Object): VolumeStruct {
-    this.target_storage_service = serverResponse['target_storage_service'];
+    if (serverResponse['target_storage_service']){
+      this.target_storage_service = serverResponse['target_storage_service'];
+    }
     this.target_path = serverResponse['target_path'];
     this.volume_name = serverResponse['volume_name'];
     this.container_path = serverResponse['container_path'];
