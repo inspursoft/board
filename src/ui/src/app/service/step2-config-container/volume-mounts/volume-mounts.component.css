@@ -1,31 +1,32 @@
-fieldset.fieldSet-default {
-  margin: 0 20px;
-  border: 1px solid silver;
-  overflow: hidden;
+.base-margin-left {
+  margin-left: 10px;
 }
 
-legend.legend-default {
-  padding: .5em;
-  border: 0;
-  width: auto;
-  margin-left: 30px;
+div.modal-body{
+  min-height: 300px;
 }
 
-div.vol-configure-container {
+span.title{
+  width: 180px;
+  text-align: right;
+}
+
+div.dynamic-line-container {
   display: flex;
-  flex-direction: column;
-  margin-bottom: 10px;
-}
-
-div.vol-confirm-container {
-  width: 100%;
-  height: 100px;
-  display: flex;
+  margin-top: 8px;
+  margin-bottom: 8px;
   align-items: center;
-  margin-top: 10px;
-  justify-content: flex-end;
 }
 
-button.vol-confirm {
-  margin-right: 30px;
+div.dynamic-line-container input[type='radio'] {
+  margin-left: 10px;
+}
+
+clr-icon.dynamic-icon {
+  color: white;
+  background: green;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  cursor: pointer;
 }

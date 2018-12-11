@@ -12,17 +12,18 @@
       <div class="create-image-container">
         <div class="btn-group build-method-container">
           <button class="btn"
-                  [disabled]="isBuildImageWIP"
+                  [disabled]="isBuildImageWIP || imageBuildMethod != 1"
                   [ngClass]="{'btn-primary':imageBuildMethod == 1}"
                   (click)="resetBuildMethod(1)">
             {{"IMAGE.CREATE_IMAGE_FROM_TEMP" | translate}}
           </button>
           <button class="btn"
-                  [disabled]="isBuildImageWIP"
+                  [disabled]="isBuildImageWIP || imageBuildMethod != 2"
                   [ngClass]="{'btn-primary':imageBuildMethod == 2}"
                   (click)="resetBuildMethod(2)">
             {{"IMAGE.CREATE_IMAGE_FROM_FILE" | translate}}
           </button>
+
         </div>
         <ng-template [ngSwitchCase]="1">
           <div class="from-temp-container" [style.height.px]="500">
@@ -177,19 +178,38 @@
             <cs-input [inputIsRequired]="true"
                       [inputPattern]="patternNewImageName"
                       [inputLabel]="'IMAGE.CREATE_IMAGE_NEW_IMAGE_NAME'|translate"
-                      [disabled]="isBuildImageWIP"
+                      [disabled]="isBuildImageWIP || isImageNameAndTagDisabled"
                       [customerValidatorAsyncFunc]="checkImageNameFun"
                       [simpleFiled]="customerNewImage.image_name"
-                      (onCheck)="customerNewImage.image_name = $event;downloadDockerFile()">
+                      (onCheck)="customerNewImage.image_name = $event">
             </cs-input>
             <cs-input [inputIsRequired]="true"
-                      [inputPattern]="patternNewImageTag"
+                      [inputPattern]="patternNewImageTag || isImageNameAndTagDisabled"
                       [inputLabel]="'IMAGE.CREATE_IMAGE_IMAGE_TAG'|translate"
                       [disabled]="isBuildImageWIP"
                       [customerValidatorAsyncFunc]="checkImageTagFun"
                       [simpleFiled]="customerNewImage.image_tag"
-                      (onCheck)="customerNewImage.image_tag = $event;downloadDockerFile()">
+                      (onCheck)="customerNewImage.image_tag = $event">
             </cs-input>
+            <div class="line-container base-margin-top">
+              <label class="base-text">{{"IMAGE.CREATE_IMAGE_UPLOAD_FILE_LIST" | translate}}:</label>
+              ﻿<input type="file"
+                      class="upload-file-input"
+                      [disabled]="!customerNewImage.image_name|| !customerNewImage.image_tag || isBuildImageWIP || isUploadFileWIP"
+                      (change)="uploadFile($event)"
+                      accept="*.*">
+              <span *ngIf="isUploadFileWIP" class="spinner spinner-sm"></span>
+            </div>
+            <div *ngIf="isUploadFileWIP" class="line-container base-margin-top">
+              <label class="base-text"></label>
+              <cs-progress class="base-margin-left" [progressData]="uploadProgressValue"></cs-progress>
+            </div>
+            <div class="file-list"
+                 *ngFor="let file of filesList.get(customerNewImage.image_name)">
+              <clr-icon *ngIf="!isBuildImageWIP" class="dynamic-icon" shape="minus"
+                        (click)="removeFile(file)"></clr-icon>
+              {{file.file_name}}
+            </div>
             <div class="line-container base-margin-top">
               <label>{{"IMAGE.CREATE_IMAGE_SELECT_DOCKER_FILE" | translate}}:</label>
             </div>

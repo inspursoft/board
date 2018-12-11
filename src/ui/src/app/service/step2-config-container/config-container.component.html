@@ -54,9 +54,14 @@
                 (onCheck)="container.working_dir = $event"></cs-input>
       <cs-input [inputType]="1"
                 [inputLabel]="'SERVICE.STEP_2_VOLUME_MOUNTS' | translate"
-                [simpleFiled]="getVolumesDescription(container)"
+                [simpleFiled]="getVolumesDescription(0, container)"
                 [inputPlaceholder]="'SERVICE.STEP_2_STORAGE_VOLUME'| translate"
                 (onEdit)="editVolumeMount(container)"></cs-input>
+      <div *ngIf="container.volume_mounts.length > 1" class="volume-info-container">
+        <span *ngFor="let _ of container.volume_mounts; let i = index">
+          <span *ngIf="i > 0">{{getVolumesDescription(1, container)}}</span>
+        </span>
+      </div>
       <cs-input [inputType]="1"
                 [inputLabel]="'SERVICE.STEP_2_Env' | translate"
                 [simpleFiled]="getEnvsDescription(container)"
@@ -117,8 +122,3 @@
                    [(isOpen)]="showEnvironmentValue"
                    (onConfirm)="setEnvironment($event)">
 </environment-value>
-<volume-mounts *ngIf="showVolumeMounts"
-               [volumeData]="getVolumeMountData()"
-               [(isOpen)]="showVolumeMounts"
-               (onConfirmEvent)="setVolumeMount($event)">
-</volume-mounts>

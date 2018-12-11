@@ -1,14 +1,14 @@
 import { Component, Injector, OnInit } from '@angular/core';
-import { Container, EnvStruct, PHASE_CONFIG_CONTAINERS, UiServiceFactory, UIServiceStep2 } from '../service-step.component';
+import { Container, EnvStruct, PHASE_CONFIG_CONTAINERS, UiServiceFactory, UIServiceStep2, VolumeStruct } from '../service-step.component';
 import { BuildImageDockerfileData, Image, ImageDetail } from "../../image/image";
 import { ServiceStepBase } from "../service-step";
 import { CreateImageComponent } from "../../image/image-create/image-create.component";
 import { EnvType } from "../../shared/environment-value/environment-value.component";
-import { VolumeOutPut } from "./volume-mounts/volume-mounts.component";
 import { ValidationErrors } from "@angular/forms";
 import { Observable } from "rxjs/Observable";
 import { NodeAvailableResources } from "../../shared/shared.types";
 import "rxjs/add/operator/map"
+import { VolumeMountsComponent } from "./volume-mounts/volume-mounts.component";
 
 @Component({
   templateUrl: './config-container.component.html',
@@ -272,11 +272,15 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
     this.serviceStep2Data.containerList.push(container);
   }
 
-  getVolumesDescription(container: Container): string {
-    let volume = container.volume_mount;
-    let storageServer = volume.target_storage_service == "" ? "" : volume.target_storage_service.concat(":");
-    let result = `${volume.container_path}:${storageServer}${volume.target_path}`;
-    return result == ":" ? "" : result;
+  getVolumesDescription(index: number, container: Container): string {
+    let volume = container.volume_mounts;
+    if (volume.length > index){
+      let storageServer = volume[index].target_storage_service == "" ? "" : volume[index].target_storage_service.concat(":");
+      let result = `${volume[index].container_path}:${storageServer}${volume[index].target_path}`;
+      return result == ":" ? "" : result;
+    } else {
+      return ""
+    }
   }
 
   getEnvsDescription(container: Container): string {
@@ -318,24 +322,9 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
   editVolumeMount(container: Container) {
     this.curEditEnvContainer = container;
     this.showVolumeMounts = true;
-  }
-
-  setVolumeMount(data: VolumeOutPut) {
-    let volume = this.curEditEnvContainer.volume_mount;
-    volume.target_storage_service = data.out_medium;
-    volume.target_path = data.out_path;
-    volume.container_path = data.out_mountPath;
-    volume.volume_name = data.out_name;
-  }
-
-  getVolumeMountData(): VolumeOutPut {
-    let volume = this.curEditEnvContainer.volume_mount;
-    return {
-      out_name: volume.volume_name,
-      out_mountPath: volume.container_path,
-      out_path: volume.target_path,
-      out_medium: volume.target_storage_service
-    };
+    let component = this.createNewModal(VolumeMountsComponent);
+    component.volumeDataList = this.curEditEnvContainer.volume_mounts;
+    component.onConfirmEvent.subscribe((res: Array<VolumeStruct>) => this.curEditEnvContainer.volume_mounts = res);
   }
 
   getDefaultEnvsData() {

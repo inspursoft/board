@@ -63,7 +63,8 @@ import { LoadBalanceComponent } from "./step0-list-service/service-control/loadB
     ServiceControlComponent,
     DeployComponent,
     ServiceDetailComponent,
-    SetAffinityComponent
+    SetAffinityComponent,
+    VolumeMountsComponent
   ],
   providers: [
     K8sService,
