@@ -49,6 +49,10 @@ func (p *AppV1Client) AutoScale(namespace string) AutoscaleInterface {
 	return apps.NewAutoScales(namespace, p.Clientset.AutoscalingV1().HorizontalPodAutoscalers(namespace))
 }
 
+func (p *AppV1Client) Mapper() MapperInterface {
+	return apps.NewMapper()
+}
+
 // AppV1ClientInterface level 1 interface to access others
 type AppV1ClientInterface interface {
 	Service(namespace string) ServiceClientInterface
@@ -59,6 +63,7 @@ type AppV1ClientInterface interface {
 	ReplicaSet(namespace string) ReplicaSetClientInterface
 	Pod(namespace string) PodClientInterface
 	AutoScale(namespace string) AutoscaleInterface
+	Mapper() MapperInterface
 }
 
 // ServiceCli interface has methods to work with Service resources in k8s-assist.
@@ -162,4 +167,8 @@ type AutoscaleInterface interface {
 	//	DeleteCollection(options *meta_v1.DeleteOptions, listOptions meta_v1.ListOptions) error
 	Get(name string) (*model.AutoScale, error)
 	List() (*model.AutoScaleList, error)
+}
+
+type MapperInterface interface {
+	Visit(info string, fn model.VisitorFunc) error
 }

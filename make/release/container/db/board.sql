@@ -390,3 +390,22 @@ DROP TABLE IF EXISTS `log`;
         `ca` VARCHAR(2048),
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
+
+
+INSERT INTO `board`.`repository`
+ (`id`, `name`, `url`, `username`, `password`, `cert`, `key`, `ca`)
+ VALUES
+ (1, 'chartmuseum', 'http://chartmuseum:8080/', '', '', '', '','');
+
+    CREATE TABLE `board`.`release` (
+        `id` INT NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(255) NOT NULL DEFAULT '',
+        `namespace` VARCHAR(255) NOT NULL DEFAULT '',
+        `repoid` INT NOT NULL,
+        `chart` VARCHAR(255) NOT NULL DEFAULT '',
+        `chartversion` VARCHAR(255) NOT NULL DEFAULT '',
+        `value` VARCHAR(4096) NOT NULL DEFAULT '',
+        `workload` VARCHAR(4096) NOT NULL DEFAULT '',
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+

@@ -388,5 +388,32 @@ DROP TABLE IF EXISTS `log`;
         `cert` VARCHAR(2048),
         `key` VARCHAR(2048),
         `ca` VARCHAR(2048),
+        `type` INT NOT NULL DEFAULT 0,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
+
+
+INSERT INTO `board`.`repository`
+ (`id`, `name`, `url`, `username`, `password`, `cert`, `key`, `ca`, `type`)
+ VALUES
+ (1, 'chartmuseum', 'http://chartmuseum:8080/', '', '', '', '','', 1);
+
+    CREATE TABLE `board`.`release` (
+        `id` INT NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(255) NOT NULL DEFAULT '',
+        `project_id` INT NOT NULL,
+        `repoid` INT NOT NULL,
+        `chart` VARCHAR(255) NOT NULL DEFAULT '',
+        `chartversion` VARCHAR(255) NOT NULL DEFAULT '',
+        `value` VARCHAR(4096) NOT NULL DEFAULT '',
+        `workload` VARCHAR(4096) NOT NULL DEFAULT '',
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+    CREATE TABLE `board`.`release_service` (
+        `releaseid` INT NOT NULL,
+        `serviceid` INT NOT NULL,
+        PRIMARY KEY (`releaseid`, `serviceid`),
+        CONSTRAINT `c_release_1` FOREIGN KEY (`releaseid`) REFERENCES `board`.`release` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+

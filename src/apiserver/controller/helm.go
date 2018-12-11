@@ -2,13 +2,16 @@ package controller
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/astaxie/beego/logs"
 
-	"git/inspursoft/board/src/apiserver/service/helm"
+	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
 )
 
@@ -20,7 +23,7 @@ func (hc *HelmController) ListHelmReposAction() {
 	logs.Info("list all helm repos")
 
 	// list the repos from storage
-	repo, err := helm.ListRepositories()
+	repo, err := service.ListRepositories()
 	if err != nil {
 		hc.internalError(err)
 		return
@@ -29,16 +32,21 @@ func (hc *HelmController) ListHelmReposAction() {
 }
 
 func (hc *HelmController) CreateHelmRepoAction() {
+	if hc.isSysAdmin == false {
+		hc.customAbort(http.StatusForbidden, "Insufficient privileges to delete image.")
+		return
+	}
 	// resolve the repository
 	repo := new(model.Repository)
 	err := hc.resolveBody(repo)
 	if err != nil {
+		hc.internalError(err)
 		return
 	}
 	logs.Info("Added repository %s: %+v", repo.Name, repo)
 
 	// do some check
-	exist, err := helm.CheckRepoNameNotExist(repo.Name)
+	exist, err := service.CheckRepoNameNotExist(repo.Name)
 	if err != nil {
 		hc.internalError(err)
 		return
@@ -47,8 +55,8 @@ func (hc *HelmController) CreateHelmRepoAction() {
 		return
 	}
 
-	// add the hpa to k8s
-	repoid, err := helm.AddRepository(*repo)
+	// add the repo to k8s
+	repoid, err := service.AddRepository(*repo)
 	if err != nil {
 		hc.internalError(err)
 		return
@@ -58,6 +66,10 @@ func (hc *HelmController) CreateHelmRepoAction() {
 }
 
 func (hc *HelmController) UpdateHelmRepoAction() {
+	if hc.isSysAdmin == false {
+		hc.customAbort(http.StatusForbidden, "Insufficient privileges to delete image.")
+		return
+	}
 	// get the repo id
 	id, err := strconv.Atoi(hc.Ctx.Input.Param(":id"))
 	if err != nil {
@@ -65,10 +77,11 @@ func (hc *HelmController) UpdateHelmRepoAction() {
 		return
 	}
 
-	// resolve the hpa
+	// resolve the repo
 	repo := new(model.Repository)
 	err = hc.resolveBody(repo)
 	if err != nil {
+		hc.internalError(err)
 		return
 	}
 
@@ -77,7 +90,7 @@ func (hc *HelmController) UpdateHelmRepoAction() {
 	repo.ID = int64(id)
 
 	// do some check
-	oldrepo, err := helm.GetRepository(repo.ID)
+	oldrepo, err := service.GetRepository(repo.ID)
 	if err != nil {
 		hc.internalError(err)
 		return
@@ -89,7 +102,7 @@ func (hc *HelmController) UpdateHelmRepoAction() {
 		return
 	}
 
-	err = helm.UpdateRepository(*repo)
+	err = service.UpdateRepository(*repo)
 	if err != nil {
 		hc.internalError(err)
 		return
@@ -98,6 +111,10 @@ func (hc *HelmController) UpdateHelmRepoAction() {
 }
 
 func (hc *HelmController) DeleteHelmRepoAction() {
+	if hc.isSysAdmin == false {
+		hc.customAbort(http.StatusForbidden, "Insufficient privileges to delete image.")
+		return
+	}
 	// get the repo id
 	id, err := strconv.Atoi(hc.Ctx.Input.Param(":id"))
 	if err != nil {
@@ -107,7 +124,7 @@ func (hc *HelmController) DeleteHelmRepoAction() {
 	logs.Info("delete helm repository %d", id)
 
 	// do some check
-	oldrepo, err := helm.GetRepository(int64(id))
+	oldrepo, err := service.GetRepository(int64(id))
 	if err != nil {
 		hc.internalError(err)
 		return
@@ -117,7 +134,7 @@ func (hc *HelmController) DeleteHelmRepoAction() {
 	}
 
 	// delete the repo
-	err = helm.DeleteRepository(int64(id))
+	err = service.DeleteRepository(int64(id))
 	if err != nil {
 		hc.internalError(err)
 		return
@@ -134,7 +151,7 @@ func (hc *HelmController) GetHelmRepoAction() {
 	logs.Info("get helm repository %d", id)
 
 	// do some check
-	repo, err := helm.GetRepository(int64(id))
+	repo, err := service.GetRepository(int64(id))
 	if err != nil {
 		hc.internalError(err)
 		return
@@ -156,7 +173,7 @@ func (hc *HelmController) GetHelmRepoDetailAction() {
 	logs.Info("get helm repository %d", id)
 
 	// do some check
-	repo, err := helm.GetRepository(int64(id))
+	repo, err := service.GetRepository(int64(id))
 	if err != nil {
 		hc.internalError(err)
 		return
@@ -165,7 +182,7 @@ func (hc *HelmController) GetHelmRepoDetailAction() {
 		return
 	}
 
-	detail, err := helm.GetRepoDetail(repo)
+	detail, err := service.GetRepoDetail(repo)
 	if err != nil {
 		hc.internalError(err)
 		return
@@ -193,7 +210,7 @@ func (hc *HelmController) GetHelmChartDetailAction() {
 	logs.Info("get helm chart %s with version %s from repository %d", chartname, chartversion, id)
 
 	// do some check
-	repo, err := helm.GetRepository(int64(id))
+	repo, err := service.GetRepository(int64(id))
 	if err != nil {
 		hc.internalError(err)
 		return
@@ -202,7 +219,7 @@ func (hc *HelmController) GetHelmChartDetailAction() {
 		return
 	}
 
-	detail, err := helm.GetChartDetail(repo, chartname, chartversion)
+	detail, err := service.GetChartDetail(repo, chartname, chartversion)
 	if err != nil {
 		hc.internalError(err)
 		return
@@ -210,7 +227,7 @@ func (hc *HelmController) GetHelmChartDetailAction() {
 	hc.renderJSON(detail)
 }
 
-func (hc *HelmController) InstallHelmChartAction() {
+func (hc *HelmController) DeleteHelmChartAction() {
 	// get the repo id
 	id, err := strconv.Atoi(hc.Ctx.Input.Param(":id"))
 	if err != nil {
@@ -227,27 +244,10 @@ func (hc *HelmController) InstallHelmChartAction() {
 		hc.internalError(err)
 		return
 	}
-	name := hc.Ctx.Input.Param(":name")
-	if err != nil {
-		hc.internalError(err)
-		return
-	}
-	namespace := hc.Ctx.Input.Param(":namespace")
-	if err != nil {
-		hc.internalError(err)
-		return
-	}
-	defer hc.Ctx.Request.Body.Close()
-	value, err := ioutil.ReadAll(hc.Ctx.Request.Body)
-	if err != nil {
-		hc.internalError(err)
-		return
-	}
-	logs.Info("install helm chart %s with version %s from repository %d", chartname, chartversion, id)
-	logs.Info("install release %s in namespace %s with value %s", name, namespace, value)
+	logs.Info("delete helm chart %s with version %s from repository %d", chartname, chartversion, id)
 
 	// do some check
-	repo, err := helm.GetRepository(int64(id))
+	repo, err := service.GetRepository(int64(id))
 	if err != nil {
 		hc.internalError(err)
 		return
@@ -256,10 +256,137 @@ func (hc *HelmController) InstallHelmChartAction() {
 		return
 	}
 
-	err = helm.InstallChart(repo, chartname, chartversion, name, namespace, string(value))
+	err = service.DeleteChart(repo, chartname, chartversion)
+	if err != nil {
+		hc.internalError(err)
+		return
+	}
+}
+
+func (hc *HelmController) InstallHelmChartAction() {
+	// resolve the release info
+	release := new(model.Release)
+	err := hc.resolveBody(release)
+	if err != nil {
+		hc.internalError(err)
+		return
+	}
+
+	logs.Info("install helm chart %s with version %s from repository %d", release.Chart, release.ChartVersion, release.RepositoryId)
+	logs.Info("install release %s in project %d with value %s", release.Name, release.ProjectId, release.Value)
+
+	// do some check
+	repo, err := service.GetRepository(release.RepositoryId)
+	if err != nil {
+		hc.internalError(err)
+		return
+	} else if repo == nil {
+		hc.customAbort(http.StatusBadRequest, fmt.Sprintf("Helm repository %d does not exists.", release.RepositoryId))
+		return
+	}
+
+	//Judge authority
+	project := hc.resolveUserPrivilegeByID(release.ProjectId)
+	err = service.InstallChart(repo, release.Chart, release.ChartVersion, release.Name, release.ProjectId, project.Name, release.Value, hc.currentUser.ID, hc.currentUser.Username)
 	if err != nil {
 		hc.internalError(err)
 		return
 	}
 	//	hc.renderJSON(detail)
+}
+
+func (hc *HelmController) ListHelmReleaseAction() {
+	// get the repo id
+	repoStr := hc.GetString("repository_id")
+	var repo *model.Repository
+	var err error
+	if repoStr != "" {
+		repoid, err := strconv.Atoi(repoStr)
+		if err != nil {
+			hc.internalError(err)
+			return
+		}
+		// do some check
+		repo, err = service.GetRepository(int64(repoid))
+		if err != nil {
+			hc.internalError(err)
+			return
+		} else if repo == nil {
+			hc.customAbort(http.StatusBadRequest, fmt.Sprintf("Helm repository %d does not exists.", repoid))
+			return
+		}
+	}
+
+	releases, err := service.ListReleases(repo)
+	if err != nil {
+		hc.internalError(err)
+		return
+	}
+
+	hc.renderJSON(releases)
+}
+
+func (hc *HelmController) DeleteHelmReleaseAction() {
+	// get the release id
+	releaseid, err := strconv.Atoi(hc.Ctx.Input.Param(":id"))
+	if err != nil {
+		hc.internalError(err)
+		return
+	}
+
+	err = service.DeleteRelease(int64(releaseid))
+	if err != nil {
+		hc.internalError(err)
+		return
+	}
+
+}
+
+func (hc *HelmController) UploadHelmChartAction() {
+	logs.Info("upload helm chart")
+	if hc.isSysAdmin == false {
+		hc.customAbort(http.StatusForbidden, "Insufficient privileges to delete image.")
+		return
+	}
+
+	// get the repo id
+	id, err := strconv.Atoi(hc.Ctx.Input.Param(":id"))
+	if err != nil {
+		hc.internalError(err)
+		return
+	}
+	logs.Info("get helm repository %d", id)
+
+	// do some check
+	repo, err := service.GetRepository(int64(id))
+	if err != nil {
+		hc.internalError(err)
+		return
+	} else if repo == nil {
+		hc.customAbort(http.StatusBadRequest, fmt.Sprintf("Helm repository %d does not exists.", int64(id)))
+		return
+	}
+
+	_, fileHeader, err := hc.GetFile("upload_file")
+	if err != nil {
+		hc.internalError(err)
+		return
+	}
+	if !strings.HasSuffix(fileHeader.Filename, "tgz") && !strings.HasSuffix(fileHeader.Filename, "tar.gz") {
+		hc.internalError(fmt.Errorf("the upload file must be a gzip tar file"))
+		return
+	}
+	// save to the museum chart directory
+	tempDir := filepath.Join(os.TempDir(), fmt.Sprintf("%d", time.Now().UnixNano()))
+	tempFile := filepath.Join(tempDir, fileHeader.Filename)
+	os.MkdirAll(tempDir, 0755)
+	defer os.RemoveAll(tempDir)
+	err = hc.SaveToFile("upload_file", tempFile)
+	if err != nil {
+		hc.internalError(err)
+	}
+	err = service.UploadChart(repo, tempFile)
+	if err != nil {
+		hc.internalError(err)
+	}
 }

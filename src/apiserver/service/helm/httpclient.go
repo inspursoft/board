@@ -1,4 +1,4 @@
-package getter
+package helm
 
 import (
 	"bytes"
@@ -11,25 +11,15 @@ import (
 	"strings"
 )
 
-//HttpGetter is the efault HTTP(/S) backend handler
-type HttpGetter struct { //nolint
+//HttpClient is the efault HTTP(/S) backend handler
+type HttpClient struct { //nolint
 	client   *http.Client
 	username string
 	password string
 }
 
-//SetCredentials sets the credentials for the getter
-func (g *HttpGetter) SetCredentials(username, password string) {
-	g.username = username
-	g.password = password
-}
-
-//Get performs a Get from repo.Getter and returns the body.
-func (g *HttpGetter) Get(href string) (*bytes.Buffer, error) {
-	return g.get(href)
-}
-
-func (g *HttpGetter) get(href string) (*bytes.Buffer, error) {
+//Get performs a Http Get and returns the body.
+func (g *HttpClient) Get(href string) (*bytes.Buffer, error) {
 	buf := bytes.NewBuffer(nil)
 
 	// Set a helm specific user agent so that a repo server and metrics can
@@ -47,23 +37,74 @@ func (g *HttpGetter) get(href string) (*bytes.Buffer, error) {
 	if err != nil {
 		return buf, err
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
 		return buf, fmt.Errorf("Failed to fetch %s : %s", href, resp.Status)
 	}
 
 	_, err = io.Copy(buf, resp.Body)
-	resp.Body.Close()
 	return buf, err
 }
 
-// newHTTPGetter constructs a valid http/https client as Getter
-func newHTTPGetter(URL string, Cert, Key, CA []byte) (Getter, error) {
-	return NewHTTPGetter(URL, Cert, Key, CA)
+//Upload performs a Http Post.
+func (g *HttpClient) Upload(href string, body io.Reader) (*bytes.Buffer, error) {
+	// Set a helm specific user agent so that a repo server and metrics can
+	// separate helm calls from other tools interacting with repos.
+	req, err := http.NewRequest("POST", href, body)
+	if err != nil {
+		return nil, err
+	}
+
+	if g.username != "" && g.password != "" {
+		req.SetBasicAuth(g.username, g.password)
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	resp, err := g.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 201 {
+		return nil, fmt.Errorf("Failed to fetch %s : %s", href, resp.Status)
+	}
+
+	buf := bytes.NewBuffer(nil)
+	_, err = io.Copy(buf, resp.Body)
+
+	return buf, err
 }
 
-// NewHTTPGetter constructs a valid http/https client as HttpGetter
-func NewHTTPGetter(URL string, Cert, Key, CA []byte) (*HttpGetter, error) {
-	var client HttpGetter
+//Delete performs a Http Delete.
+func (g *HttpClient) Delete(href string) (*bytes.Buffer, error) {
+	// Set a helm specific user agent so that a repo server and metrics can
+	// separate helm calls from other tools interacting with repos.
+	req, err := http.NewRequest("DELETE", href, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if g.username != "" && g.password != "" {
+		req.SetBasicAuth(g.username, g.password)
+	}
+
+	resp, err := g.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("Failed to fetch %s : %s", href, resp.Status)
+	}
+
+	buf := bytes.NewBuffer(nil)
+	_, err = io.Copy(buf, resp.Body)
+
+	return buf, nil
+}
+
+// NewHTTPClient constructs a valid http/https client as HttpClient
+func NewHTTPClient(URL, username, password string, Cert, Key, CA []byte) (*HttpClient, error) {
 	tr := &http.Transport{
 		DisableCompression: true,
 		Proxy:              http.ProxyFromEnvironment,
@@ -71,11 +112,15 @@ func NewHTTPGetter(URL string, Cert, Key, CA []byte) (*HttpGetter, error) {
 	if (Cert != nil && Key != nil) || CA != nil {
 		tlsConf, err := NewTLSConfig(URL, Cert, Key, CA)
 		if err != nil {
-			return &client, fmt.Errorf("can't create TLS config: %s", err.Error())
+			return nil, fmt.Errorf("can't create TLS config: %s", err.Error())
 		}
 		tr.TLSClientConfig = tlsConf
 	}
-	client.client = &http.Client{Transport: tr}
+	client := HttpClient{
+		client:   &http.Client{Transport: tr},
+		username: username,
+		password: password,
+	}
 	return &client, nil
 }
 

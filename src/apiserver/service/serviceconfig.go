@@ -31,6 +31,7 @@ const (
 const (
 	board = iota
 	k8s
+	helm
 )
 
 func InitServiceConfig() (*model.ServiceConfig, error) {

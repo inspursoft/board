@@ -4055,6 +4055,37 @@ paths:
           description: Repository does not exist.
         500:
           description: Internal errors.
+  /v1/helm/repositories/{repository_id}/chartupload:
+    post:
+      summary: Upload specific helm chart
+      description: |
+        This endpoint is to upload specific helm chart into chart repository.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: repository_id
+          in: path
+          description: Repository ID for uploading.
+          required: true
+          type: integer
+          format: int32
+        - name: upload_file
+          in: formData
+          type: file
+          required: true
+          description: Chart to be uploaded.
+      tags:
+        - Products
+      responses:
+        201:
+          description: Chart uploaded successfully.
+        401:
+          description: User need to log in first.
+        500:
+          description: Unexpected internal errors.
   /v1/helm/repositories/{repository_id}/charts/{chartname}/{chartversion}:
     get:
       summary: Return specific repository chart infomation.
@@ -4095,7 +4126,44 @@ paths:
           description: Repository does not exist.
         500:
           description: Internal errors.
-  /v1/helm/repositories/{repository_id}/charts/{chartname}/{chartversion}/namespace/{namespace}/{name}:
+    delete:
+      summary: Delete specific repository chart.
+      description: |
+        This endpoint delete specific repository chart by repository ID, chart name and chart version.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: repository_id
+          in: path
+          description: Repository ID for filtering results.
+          required: true
+          type: integer
+          format: int32
+        - name: chartname
+          in: path
+          description: Chart Name for filtering results.
+          required: true
+          type: string
+        - name: chartversion
+          in: path
+          description: Chart Version for filtering results.
+          required: true
+          type: string
+      tags:
+        - Products
+      responses:
+        201:
+          description: Chart deleted successfully.
+        401:
+          description: User need to log in first.
+        404:
+          description: Repository does not exist.
+        500:
+          description: Internal errors.
+  /v1/helm/release:
     post:
       summary: Install specific repository chart
       description: |
@@ -4106,37 +4174,12 @@ paths:
           type: string
           required: true
           description: Current available token.
-        - name: repository_id
-          in: path
-          description: Repository ID for repository to use.
-          required: true
-          type: integer
-          format: int32
-        - name: chartname
-          in: path
-          description: Chart Name for chart to use.
-          required: true
-          type: string
-        - name: chartversion
-          in: path
-          description: Chart Version for chart to use.
-          required: true
-          type: string
-        - name: name
-          in: path
-          description: Name of created chart.
-          required: true
-          type: string
-        - name: namespace
-          in: path
-          description: Namespace of the created chart.
-          required: true
-          type: string
-        - name: value
+        - name: release
           in: body
-          description: New values for chart.
-          required: false
-          type: string
+          description: Release information to create.
+          required: true
+          schema:
+            $ref: '#/definitions/Release'
       tags:
         - Products
       responses:
@@ -4147,7 +4190,66 @@ paths:
         401:
           description: User need to log in first.
         500:
-          description: Unexpected internal errors. 
+          description: Unexpected internal errors.
+    get:
+      summary: Return specific release infomation.
+      description: |
+        This endpoint returns release information.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: repository_id
+          in: query
+          description: Repository ID for filtering results.
+          required: false
+          type: integer
+          format: int32
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched release information.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Release'
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+  /v1/helm/release/{id}:
+    delete:
+      summary: Delete release by release ID
+      description: |
+        This endpoint is aimed to delete release by release ID.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: id
+          in: path
+          description: Release ID of release which will be deleted.
+          required: true
+          type: integer
+          format: int32
+      tags:
+        - Products
+      responses:
+        200:
+          description: Operation is deleted successfully.
+        400:
+          description: Invalid operation id.
+        403:
+          description: User need to log in first.
+        404:
+          description: Release does not exist.
+        500:
+          description: Internal errors.
 responses:
   UnsupportedMediaType: 
     description: The Media Type of the request is not supported, it has to be "application/json"
@@ -5835,6 +5937,10 @@ definitions:
       ca:
         type: string
         description: The client ca of this repository. 
+      type:
+        type: integer
+        format: int32
+        description: The type of this repository.    
   RepositoryDetail:                          
     type: object
     allOf:
@@ -5922,3 +6028,52 @@ definitions:
       contents:
         type: string
         description: The contents of this file.
+  Release:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int32
+        description: The ID of this release.
+      name:
+        type: string
+        description: The name of this release.
+      project_id:
+        type: integer
+        format: int32
+        description: The project's integer ID which include this service.          
+      repoid:
+        type: integer
+        format: int32
+        description: The Repository ID of this release.     
+      chart:
+        type: string
+        description: The Repository Chart of this release. 
+      chartversion:
+        type: string
+        description: The Repository ChartVersion of this release. 
+      value:
+        type: string
+        description: The value of this release uses. 
+      workloads:
+        type: string
+        description: The workloads ID of this release creates. 
+      services:
+        description: The services of this release created.
+        type: array
+        items:
+          $ref: '#/definitions/ReleaseService'
+  ReleaseService:
+    type: object
+    properties:
+      releaseid:
+        type: integer
+        format: int32
+        description: The ID of release.
+      serviceid:
+        type: integer
+        format: int32
+        description: The ID of service.
+      servicename:
+        type: string
+        description: The name of service.    

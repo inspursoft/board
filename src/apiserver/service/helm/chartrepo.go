@@ -21,30 +21,39 @@ import (
 	"github.com/astaxie/beego/logs"
 	"gopkg.in/yaml.v2"
 
-	"git/inspursoft/board/src/apiserver/service/helm/getter"
 	"git/inspursoft/board/src/common/model"
 )
 
-const indexPath = "index.yaml"
+const (
+	helmName  = "helm"
+	indexPath = "index.yaml"
 
-type TemplateHandler func(string) error
+	MuseumType  = 1
+	DefaultType = 0
+)
+
+type TemplateHandler interface {
+	PreInstall(string) error
+	PostInstall(string) error
+}
 
 // Entry represents a collection of parameters for chart repository
 type Entry struct {
-	Name     string `json:"name"`
-	URL      string `json:"url"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Cert     []byte `json:"cert"`
-	Key      []byte `json:"key"`
-	CA       []byte `json:"ca"`
+	Name     string
+	URL      string
+	Username string
+	Password string
+	Cert     []byte
+	Key      []byte
+	CA       []byte
+	Type     int64
 }
 
 // ChartRepository represents a chart repository
 type ChartRepository struct {
 	Config    *Entry
 	IndexFile *IndexFile
-	Client    getter.Getter
+	Client    *HttpClient
 }
 
 // Load loads a directory of charts as if it were a repository.
@@ -79,7 +88,6 @@ func (r *ChartRepository) downloadIndexFile() ([]byte, error) {
 
 	indexURL = parsedURL.String()
 
-	r.setCredentials()
 	resp, err := r.Client.Get(indexURL)
 	if err != nil {
 		return nil, err
@@ -91,13 +99,6 @@ func (r *ChartRepository) downloadIndexFile() ([]byte, error) {
 	}
 
 	return index, nil
-}
-
-// If HttpGetter is used, this method sets the configured repository credentials on the HttpGetter.
-func (r *ChartRepository) setCredentials() {
-	if t, ok := r.Client.(getter.AuthGetter); ok {
-		t.SetCredentials(r.Config.Username, r.Config.Password)
-	}
 }
 
 // Index generates an index for the chart repository and writes an index.yaml file.
@@ -117,6 +118,7 @@ func (r *ChartRepository) FetchTgz(url string) (*model.Chart, error) {
 	var chart model.Chart
 
 	logs.Debug("Fetching file %s", url)
+
 	resp, err := r.Client.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("Error in HTTP GET of [%s], error: %s", url, err)
@@ -212,6 +214,39 @@ func (r *ChartRepository) FetchChart(chartName, chartVersion string) (*model.Cha
 		return nil, err
 	}
 	return c, nil
+}
+
+func (r *ChartRepository) UploadChart(chartfile string) error {
+	if r.Config.Type == MuseumType {
+		absoluteChartURL, err := ResolveReferenceURL(r.Config.URL, "/api/charts")
+		if err != nil {
+			return fmt.Errorf("failed to make chart URL absolute: %v", err)
+		}
+
+		body, err := os.Open(chartfile)
+		if err != nil {
+			return err
+		}
+		defer body.Close()
+
+		_, err = r.Client.Upload(absoluteChartURL, body)
+		return err
+	}
+	return fmt.Errorf("the upload chart operation is not supported")
+}
+
+func (r *ChartRepository) DeleteChart(chartName, chartVersion string) error {
+	if r.Config.Type == MuseumType {
+		absoluteChartURL, err := ResolveReferenceURL(r.Config.URL, fmt.Sprintf("/api/charts/%s/%s", chartName, chartVersion))
+		if err != nil {
+			return fmt.Errorf("failed to make chart URL absolute: %v", err)
+		}
+
+		_, err = r.Client.Delete(absoluteChartURL)
+		return err
+	}
+	return fmt.Errorf("the delete operation is not supported")
+
 }
 
 func (r *ChartRepository) DownloadChart(chartName, chartVersion, targetdir string) error {
@@ -314,12 +349,13 @@ func (r *ChartRepository) Icon(versions model.ChartVersions) (string, string, er
 			},
 		}
 	}
-	resp, err := r.Client.Get(urlLocation)
+	resp, err := client.Get(urlLocation)
 	if err != nil {
 		return "", "", fmt.Errorf("Error in HTTP GET of [%s], error: %s", urlLocation, err)
 	}
+	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp)
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return "", "", err
 	}
@@ -331,41 +367,51 @@ func (r *ChartRepository) Icon(versions model.ChartVersions) (string, string, er
 	return iconData, iconFilename, nil
 }
 
-func (r *ChartRepository) InstallChart(chartName, chartVersion, releasename, namespace, values, helmhost string, handler TemplateHandler) error {
+func (r *ChartRepository) InstallChart(chartName, chartVersion, releasename, namespace, values, helmhost string, handler TemplateHandler) (string, error) {
 	targetdir, err := ioutil.TempDir("", "template")
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer os.RemoveAll(targetdir)
 
 	err = r.DownloadChart(chartName, chartVersion, targetdir)
 	if err != nil {
-		return err
+		return "", err
 	}
 	if values != "" {
 		//override the values.yaml
 		err = ioutil.WriteFile(filepath.Join(targetdir, chartName, "values.yaml"), []byte(values), 0777)
 		if err != nil {
-			return err
+			return "", err
 		}
 	}
 
 	//template the chart for resolve kubernetes elements
 	templateInfo, err := templateChart(releasename, namespace, filepath.Join(targetdir, chartName), helmhost)
 	if err != nil {
-		return err
+		return "", err
 	}
-	err = handler(templateInfo)
-	if err != nil {
-		return err
+	//invoke the handler before chart installation
+	if handler != nil {
+		err = handler.PreInstall(templateInfo)
+		if err != nil {
+			return "", err
+		}
 	}
 
 	//create the release
 	err = installChart(releasename, namespace, filepath.Join(targetdir, chartName), helmhost)
 	if err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	//invoke the handler after chart installation
+	if handler != nil {
+		err = handler.PostInstall(templateInfo)
+		if err != nil {
+			return "", err
+		}
+	}
+	return templateInfo, nil
 }
 
 // NewChartRepository constructs ChartRepository
@@ -375,12 +421,7 @@ func NewChartRepository(cfg *Entry) (*ChartRepository, error) {
 		return nil, fmt.Errorf("invalid chart URL format: %s", cfg.URL)
 	}
 
-	get, err := getter.ByScheme(u.Scheme)
-	if err != nil {
-		return nil, fmt.Errorf("Could not find protocol handler for: %s", u.Scheme)
-	}
-	getterConstructor := get.New
-	client, err := getterConstructor(cfg.URL, cfg.Cert, cfg.Key, cfg.CA)
+	client, err := NewHTTPClient(cfg.URL, cfg.Username, cfg.Password, cfg.Cert, cfg.Key, cfg.CA)
 	if err != nil {
 		return nil, fmt.Errorf("Could not construct protocol handler for: %s error: %v", u.Scheme, err)
 	}
@@ -407,14 +448,14 @@ func NewChartRepository(cfg *Entry) (*ChartRepository, error) {
 
 // FindChartInRepoURL finds chart in chart repository pointed by repoURL
 // without adding repo to repositories
-func FindChartInRepoURL(repoURL, chartName, chartVersion string, cert, key, ca []byte) (string, error) {
-	return FindChartInAuthRepoURL(repoURL, "", "", chartName, chartVersion, cert, key, ca)
+func FindChartInRepoURL(repoURL, chartName, chartVersion string, cert, key, ca []byte, repotype int64) (string, error) {
+	return FindChartInAuthRepoURL(repoURL, "", "", chartName, chartVersion, cert, key, ca, repotype)
 }
 
 // FindChartInAuthRepoURL finds chart in chart repository pointed by repoURL
 // without adding repo to repositories, like FindChartInRepoURL,
 // but it also receives credentials for the chart repository.
-func FindChartInAuthRepoURL(repoURL, username, password, chartName, chartVersion string, cert, key, ca []byte) (string, error) {
+func FindChartInAuthRepoURL(repoURL, username, password, chartName, chartVersion string, cert, key, ca []byte, repotype int64) (string, error) {
 	c := Entry{
 		URL:      repoURL,
 		Username: username,
@@ -422,6 +463,7 @@ func FindChartInAuthRepoURL(repoURL, username, password, chartName, chartVersion
 		Cert:     cert,
 		Key:      key,
 		CA:       ca,
+		Type:     repotype,
 	}
 	r, err := NewChartRepository(&c)
 	if err != nil {
@@ -508,10 +550,10 @@ func templateChart(name, namespace, rootDir, helmhost string) (string, error) {
 	cmd.Stdout = stdoutBuf
 	cmd.Stderr = stderrBuf
 	if err := cmd.Start(); err != nil {
-		return "", fmt.Errorf("failed to install chart %s. %s, error:%s", name, stderrBuf.String(), err.Error())
+		return "", fmt.Errorf("failed to get chart %s template in project %s. %s, error:%s", name, namespace, stderrBuf.String(), err.Error())
 	}
 	if err := cmd.Wait(); err != nil {
-		return "", fmt.Errorf("failed to install chart %s. %s, error:%s", name, stderrBuf.String(), err.Error())
+		return "", fmt.Errorf("failed to get chart %s template in project %s. %s, error:%s", name, namespace, stderrBuf.String(), err.Error())
 	}
 	return stdoutBuf.String(), nil
 }
@@ -527,19 +569,19 @@ func installChart(name, namespace, rootDir, helmhost string) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = stderrBuf
 	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("failed to install chart %s. %s, error:%s", name, stderrBuf.String(), err.Error())
+		return fmt.Errorf("failed to install chart %s in project %s. %s, error:%s", name, namespace, stderrBuf.String(), err.Error())
 	}
 	if err := cmd.Wait(); err != nil {
-		return fmt.Errorf("failed to install chart %s. %s, error:%s", name, stderrBuf.String(), err.Error())
+		return fmt.Errorf("failed to install chart %s in project %s. %s, error:%s", name, namespace, stderrBuf.String(), err.Error())
 	}
 	return nil
 }
 
-func deleteRelease(release, helmhost string) error {
+func DeleteReleaseFromRepository(release, helmhost string) error {
 	cmd := exec.Command(helmName, "delete", "--purge", release)
 	cmd.Env = []string{fmt.Sprintf("%s=%s", "HELM_HOST", helmhost)}
 	combinedOutput, err := cmd.CombinedOutput()
-	if err != nil && combinedOutput != nil && strings.Contains(string(combinedOutput), fmt.Sprintf("Error: release: \"%s\" not found", release)) {
+	if err == nil || (err != nil && combinedOutput != nil && strings.Contains(string(combinedOutput), fmt.Sprintf("Error: release: \"%s\" not found", release))) {
 		return nil
 	}
 	return errors.New(string(combinedOutput))
