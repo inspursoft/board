@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ComponentFactoryResolver, HostListener, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { AfterViewInit, Component, ComponentFactoryResolver, ViewChild, ViewContainerRef } from '@angular/core';
 import { AppInitService } from './app.init.service';
 import { TranslateService } from '@ngx-translate/core';
 import { CookieService } from "ngx-cookie";
@@ -17,7 +17,7 @@ export class AppComponent implements AfterViewInit {
               private cookieService: CookieService,
               private messageService: MessageService,
               private resolver: ComponentFactoryResolver,
-              private translateService: TranslateService) {
+              private translateService: TranslateService){
     if (!cookieService.get('currentLang')) {
       console.log('No found cookie for current lang, will use the default browser language.');
       cookieService.put('currentLang', this.translateService.getBrowserCultureLang(), {expires: this.cookieExpiry});
@@ -34,5 +34,4 @@ export class AppComponent implements AfterViewInit {
   ngAfterViewInit() {
     this.messageService.registerDialogHandle(this.messageContainer, this.resolver);
   }
-
 }
