@@ -70,4 +70,5 @@ export function localIdServiceFactory(appInitService: AppInitService) {
   bootstrap: [AppComponent]
 })
 export class AppModule {
+
 }
