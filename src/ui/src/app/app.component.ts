@@ -3,6 +3,8 @@ import { AppInitService } from './app.init.service';
 import { TranslateService } from '@ngx-translate/core';
 import { CookieService } from "ngx-cookie";
 import { MessageService } from "./shared/message-service/message.service";
+import { registerLocaleData } from "@angular/common";
+import localeZhHans from "@angular/common/locales/zh-Hans";
 
 @Component({
   selector: 'board-app',
@@ -27,8 +29,11 @@ export class AppComponent implements AfterViewInit {
     this.translateService.onLangChange.subscribe(() => {
       this.appInitService.currentLang = this.translateService.currentLang;
       cookieService.put('currentLang', this.appInitService.currentLang, {expires: this.cookieExpiry});
-      console.log('Change lang to:' + this.appInitService.currentLang);
+      window.location.reload(true);
     });
+    if (appInitService.currentLang == 'zh-cn') {
+      registerLocaleData(localeZhHans, 'zh-Hans');
+    }
   }
 
   ngAfterViewInit() {

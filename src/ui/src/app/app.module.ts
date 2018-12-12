@@ -1,4 +1,4 @@
-import { NgModule, APP_INITIALIZER } from '@angular/core';
+import { APP_INITIALIZER, LOCALE_ID, NgModule } from '@angular/core';
 import { FeatureModule } from './common/feature.module';
 import { AppComponent } from './app.component';
 import { AppInitService, AppTokenService } from './app.init.service';
@@ -16,6 +16,14 @@ import { BrowserModule } from "@angular/platform-browser";
 
 export function appInitServiceFactory(appInitService: AppInitService) {
   return () => (appInitService);
+}
+
+export function localIdServiceFactory(appInitService: AppInitService) {
+  if (appInitService.currentLang == 'zh-cn') {
+    return 'zh-Hans';
+  } else {
+    return 'en-US';
+  }
 }
 
 @NgModule({
@@ -51,6 +59,11 @@ export function appInitServiceFactory(appInitService: AppInitService) {
       useClass: HttpClientInterceptor,
       deps: [AppTokenService,MessageService],
       multi: true
+    },
+    {
+      provide: LOCALE_ID,
+      useFactory: localIdServiceFactory,
+      deps: [AppInitService]
     },
     SystemInfoResolve
   ],
