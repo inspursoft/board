@@ -219,6 +219,20 @@ paths:
             $ref: '#/definitions/SystemInfo'
         500:
           description: Unexpected internal error. 
+  /v1/kubernetesinfo:
+    get:
+      summary: Get kubernetes info.
+      description: |
+        Get kubernetes info of current configurations. 
+      tags:
+        - Products
+      responses:
+        200:
+          description: Get kubernetes info successfully.
+          schema:
+            $ref: '#/definitions/KubernetesInfo'
+        500:
+          description: Unexpected internal error. 
   /v1/forgot-password:
     post:
       summary: Use registered username or email to receive a resetting URL from user's email inbox.
@@ -5789,11 +5803,42 @@ definitions:
   SystemInfo:
     type: object
     properties:
+      board_host:
+        type: string
       auth_mode:
         type: string
       set_auth_password:
         type: string
       init_project_repo:
+        type: string
+      sync_k8s:
+        type: string
+      redirection_url:
+        type: string
+      board_version:
+        type: string
+      kubernetes_version:
+        type: string
+  KubernetesInfo:
+    type: object
+    properties:
+      major:
+        type: string
+      minor:
+        type: string
+      git_version:
+        type: string
+      git_commit:
+        type: string
+      git_tree_state:
+        type: string
+      build_date:
+        type: string
+      go_version:
+        type: string
+      compiler:
+        type: string
+      platform:
         type: string
   EmailServerSetting:
     type: object
