@@ -9,7 +9,6 @@ import { TimeoutError } from "rxjs/src/util/TimeoutError";
 
 @Injectable()
 export class MessageService {
-  public s: number;
   private dialogView: ViewContainerRef;
   private dialogResolver: ComponentFactoryResolver;
 

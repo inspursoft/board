@@ -24,12 +24,12 @@
         </cs-dropdown>
       </div>
       <div class="dynamic-line-container">
-        <cs-input [inputLabel]="'SERVICE.VOLUME_TARGET_PATH'| translate"
-                  [simpleFiled]="volumeData.target_path"
+        <cs-input [inputLabel]="'SERVICE.VOLUME_CONTAINER_PATH'| translate"
+                  [inputPattern]="patternPath"
+                  [simpleFiled]="volumeData.container_path"
                   [inputPlaceholder]="'/data'"
                   [inputIsRequired]="true"
-                  [inputPattern]="patternPath"
-                  (onCheck)="volumeData.target_path = $event">
+                  (onCheck)="volumeData.container_path = $event">
         </cs-input>
         <input type="radio" title="path" [name]="i" (click)="selectPathOrFile(true,i)" checked>
         {{'SERVICE.VOLUME_PATH'| translate}}
@@ -44,12 +44,12 @@
                   [inputIsRequired]="true"
                   (onCheck)="volumeData.target_storage_service = $event">
         </cs-input>
-        <cs-input [inputLabel]="'SERVICE.VOLUME_CONTAINER_PATH'| translate"
-                  [inputPattern]="patternPath"
-                  [simpleFiled]="volumeData.container_path"
+        <cs-input [inputLabel]="'SERVICE.VOLUME_TARGET_PATH'| translate"
+                  [simpleFiled]="volumeData.target_path"
                   [inputPlaceholder]="'/data'"
                   [inputIsRequired]="true"
-                  (onCheck)="volumeData.container_path = $event">
+                  [inputPattern]="patternPath"
+                  (onCheck)="volumeData.target_path = $event">
         </cs-input>
       </div>
       <div *ngIf="volumeData.volume_type == 'pvc'" class="dynamic-line-container">

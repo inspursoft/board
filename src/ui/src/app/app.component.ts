@@ -3,13 +3,15 @@ import { AppInitService } from './app.init.service';
 import { TranslateService } from '@ngx-translate/core';
 import { CookieService } from "ngx-cookie";
 import { MessageService } from "./shared/message-service/message.service";
+import { registerLocaleData } from "@angular/common";
+import localeZhHans from "@angular/common/locales/zh-Hans";
 
 @Component({
   selector: 'board-app',
   templateUrl: './app.component.html',
   styleUrls:['./app.component.css']
 })
-export class AppComponent implements AfterViewInit{
+export class AppComponent implements AfterViewInit {
   @ViewChild('messageContainer', {read: ViewContainerRef}) messageContainer;
   cookieExpiry: Date = new Date(Date.now() + 60 * 60 * 24 * 365 * 1000);
 
@@ -17,7 +19,7 @@ export class AppComponent implements AfterViewInit{
               private cookieService: CookieService,
               private messageService: MessageService,
               private resolver: ComponentFactoryResolver,
-              private translateService: TranslateService) {
+              private translateService: TranslateService){
     if (!cookieService.get('currentLang')) {
       console.log('No found cookie for current lang, will use the default browser language.');
       cookieService.put('currentLang', this.translateService.getBrowserCultureLang(), {expires: this.cookieExpiry});
@@ -27,8 +29,11 @@ export class AppComponent implements AfterViewInit{
     this.translateService.onLangChange.subscribe(() => {
       this.appInitService.currentLang = this.translateService.currentLang;
       cookieService.put('currentLang', this.appInitService.currentLang, {expires: this.cookieExpiry});
-      console.log('Change lang to:' + this.appInitService.currentLang);
+      window.location.reload(true);
     });
+    if (appInitService.currentLang == 'zh-cn') {
+      registerLocaleData(localeZhHans, 'zh-Hans');
+    }
   }
 
   ngAfterViewInit() {

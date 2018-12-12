@@ -46,6 +46,7 @@
                 [inputIsRequired]="true"
                 [inputPattern]="patternContainerName"
                 [simpleFiled]="container.name"
+                [validatorMessage]="[{validatorKey:'pattern',validatorMessage:'SERVICE.STEP_2_CONTAINER_NAME_PATTERN_NSG'}]"
                 (onCheck)="container.name = $event"></cs-input>
       <cs-input [inputLabel]="'SERVICE.STEP_2_WORKING_DIR' | translate"
                 [inputPattern]="patternWorkdir"
