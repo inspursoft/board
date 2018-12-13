@@ -169,6 +169,7 @@ func InitializeDefaultConfig() {
 	AddEnv("EMAIL_FROM")
 	AddEnv("EMAIL_IDENTITY")
 	AddEnv("AUDIT_DEBUG")
+	AddEnv("DNS_SUFFIX")
 
 	ShowAllConfigs()
 }

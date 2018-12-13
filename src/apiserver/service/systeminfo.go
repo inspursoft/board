@@ -30,6 +30,8 @@ func GetSystemInfo() (*model.SystemInfo, error) {
 			systemInfo.RedirectionURL = config.Value
 		case "BOARD_VERSION":
 			systemInfo.Version = config.Value
+		case "DNS_SUFFIX":
+			systemInfo.DNSSuffix = config.Value
 		case "KUBERNETES_VERSION":
 			systemInfo.KubernetesVersion = config.Value
 		}

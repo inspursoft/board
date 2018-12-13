@@ -185,6 +185,7 @@ func main() {
 		syncUpWithK8s()
 	}
 
+	service.SetSystemInfo("DNS_SUFFIX", true)
 	service.SetSystemInfo("BOARD_HOST_IP", true)
 	service.SetSystemInfo("AUTH_MODE", false)
 	service.SetSystemInfo("REDIRECTION_URL", false)
