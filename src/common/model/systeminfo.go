@@ -8,6 +8,7 @@ type SystemInfo struct {
 	SyncK8s           string `json:"sync_k8s"`
 	RedirectionURL    string `json:"redirection_url"`
 	Version           string `json:"board_version"`
+	DNSSuffix         string `json:"dns_suffix"`
 	KubernetesVersion string `json:"kubernetes_version"`
 }
 

@@ -5817,6 +5817,8 @@ definitions:
         type: string
       board_version:
         type: string
+      dns_suffix:
+        type: string
       kubernetes_version:
         type: string
   KubernetesInfo:
