@@ -563,27 +563,6 @@ func setDeploymentVolumes(containerList []model.Container) []model.Volume {
 	for _, cont := range containerList {
 		newvolumes := setVolumes(cont.VolumeMounts)
 		volumes = append(volumes, newvolumes...)
-		//		if strings.ToLower(cont.VolumeMounts.TargetStorageService) == "hostpath" {
-		//			volumes = append(volumes, model.Volume{
-		//				Name: cont.VolumeMounts.VolumeName,
-		//				VolumeSource: model.VolumeSource{
-		//					HostPath: &model.HostPathVolumeSource{
-		//						Path: cont.VolumeMounts.TargetPath,
-		//					},
-		//				},
-		//			})
-		//		} else if strings.ToLower(cont.VolumeMounts.TargetStorageService) == "nfs" {
-		//			index := strings.IndexByte(cont.VolumeMounts.TargetPath, '/')
-		//			volumes = append(volumes, model.Volume{
-		//				Name: cont.VolumeMounts.VolumeName,
-		//				VolumeSource: model.VolumeSource{
-		//					NFS: &model.NFSVolumeSource{
-		//						Server: cont.VolumeMounts.TargetPath[:index],
-		//						Path:   cont.VolumeMounts.TargetPath[index:],
-		//					},
-		//				},
-		//			})
-		//		}
 	}
 	return volumes
 }

@@ -276,9 +276,19 @@ func ToK8sVolumeSource(volumeSource *model.VolumeSource) *v1.VolumeSource {
 			Path:   volumeSource.NFS.Path,
 		}
 	}
+
+	var pvc *v1.PersistentVolumeClaimVolumeSource
+	if volumeSource.PersistentVolumeClaim != nil {
+		pvc = &v1.PersistentVolumeClaimVolumeSource{
+			ClaimName: volumeSource.PersistentVolumeClaim.ClaimName,
+			ReadOnly:  volumeSource.PersistentVolumeClaim.ReadOnly,
+		}
+	}
+
 	return &v1.VolumeSource{
 		HostPath: hp,
 		NFS:      nfs,
+		PersistentVolumeClaim: pvc,
 	}
 }
 
@@ -628,9 +638,17 @@ func FromK8sVolumeSource(volumeSource v1.VolumeSource) model.VolumeSource {
 			Path:   volumeSource.NFS.Path,
 		}
 	}
+	var pvc *model.PersistentVolumeClaimVolumeSource
+	if volumeSource.PersistentVolumeClaim != nil {
+		pvc = &model.PersistentVolumeClaimVolumeSource{
+			ClaimName: volumeSource.PersistentVolumeClaim.ClaimName,
+			ReadOnly:  volumeSource.PersistentVolumeClaim.ReadOnly,
+		}
+	}
 	return model.VolumeSource{
 		HostPath: hp,
 		NFS:      nfs,
+		PersistentVolumeClaim: pvc,
 	}
 }
 
