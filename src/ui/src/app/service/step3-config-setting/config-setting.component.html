@@ -70,7 +70,7 @@
       </cs-dropdown>
     </div>
     <div class="line-container" *ngIf="externalService.container_name !== ''">
-      <cs-input *ngIf="uiPreData.getPortList(externalService.container_name).length == 0"
+      <cs-input *ngIf="inputExternalPortEnable(externalService.container_name)"
                 [inputFiledType]="1"
                 [simpleFiled]="externalService.node_config.target_port"
                 [disabled]="isActionWip"
@@ -80,11 +80,11 @@
                 [inputMax]="32766"
                 (onCheck)="externalService.node_config.target_port = $event">
       </cs-input>
-      <label *ngIf="uiPreData.getPortList(externalService.container_name).length > 0">
+      <label *ngIf="selectExternalPortEnable(externalService.container_name)">
         {{"SERVICE.STEP_3_CONTAINER_PORT"|translate}}:</label>
-      <cs-dropdown *ngIf="uiPreData.getPortList(externalService.container_name).length > 0"
+      <cs-dropdown *ngIf="selectExternalPortEnable(externalService.container_name)"
                    [dropdownDisabled]="externalService.container_name == '' || isActionWip"
-                   [dropdownList]="uiPreData.getPortList(externalService.container_name)"
+                   [dropdownList]="getContainerPorts(externalService.container_name)"
                    [dropdownWidth]="310"
                    [dropdownDefaultText]="externalService.node_config.target_port.toString()"
                    (onChange)="externalService.node_config.target_port = $event">

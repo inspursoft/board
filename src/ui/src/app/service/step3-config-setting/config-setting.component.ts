@@ -89,6 +89,10 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
     return result == "" ? "SERVICE.STEP_3_SELECT_CONTAINER" : result;
   }
 
+  getContainerPorts(containerName: string):Array<number>{
+    return this.uiPreData.getPortList(containerName);
+  }
+
   setExternalInfo(container: Container, index: number) {
     this.uiData.externalServiceList[index].container_name = container.name;
     this.uiData.externalServiceList[index].node_config.target_port = container.container_port.length > 0 ? container.container_port[0] : 0;
@@ -96,6 +100,14 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
 
   setNodePort(index: number, port: number) {
     this.uiData.externalServiceList[index].node_config.node_port = Number(port).valueOf();
+  }
+
+  inputExternalPortEnable(containerName: string): boolean {
+    return this.uiPreData.getPortList(containerName).length == 0;
+  }
+
+  selectExternalPortEnable(containerName: string): boolean {
+    return this.uiPreData.getPortList(containerName).length > 0;
   }
 
   addNewExternalService() {
