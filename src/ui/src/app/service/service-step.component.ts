@@ -78,9 +78,7 @@ export class VolumeStruct implements UiServerExchangeData<VolumeStruct> {
   public target_pvc = '';
 
   serverToUi(serverResponse: Object): VolumeStruct {
-    if (serverResponse['target_storage_service']){
-      this.target_storage_service = serverResponse['target_storage_service'];
-    }
+    this.target_storage_service = serverResponse['target_storage_service'];
     this.target_path = serverResponse['target_path'];
     this.volume_name = serverResponse['volume_name'];
     this.container_path = serverResponse['container_path'];
@@ -233,14 +231,12 @@ export class UIServiceStep1 extends UIServiceStepBase {
 
 export class UIServiceStep2 extends UIServiceStepBase {
   public containerList: Array<Container>;
-  public containerHavePortList: Array<Container>;
   public projectId = 0;
   public projectName = '';
 
   constructor() {
     super();
     this.containerList = Array<Container>();
-    this.containerHavePortList = Array<Container>();
   }
 
   uiToServer(): ServerServiceStep {
@@ -262,9 +258,6 @@ export class UIServiceStep2 extends UIServiceStepBase {
         let container = new Container();
         container.serverToUi(value);
         this.containerList.push(container);
-        if (container.container_port.length > 0) {
-          this.containerHavePortList.push(container);
-        }
       });
     }
     if (serverResponse && serverResponse["project_id"]) {
@@ -277,8 +270,7 @@ export class UIServiceStep2 extends UIServiceStepBase {
   }
 
   getPortList(containerName: string): Array<number> {
-    let container = this.containerHavePortList.find(value => value.name === containerName);
-    return container ? container.container_port : Array<number>();
+    return this.containerList.find(value => value.name === containerName).container_port;
   }
 }
 

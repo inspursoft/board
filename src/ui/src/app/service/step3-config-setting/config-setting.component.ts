@@ -44,8 +44,8 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
     Observable.forkJoin(obsStepConfig, obsPreStepConfig).subscribe((res: [UIServiceStepBase, UIServiceStepBase]) => {
       this.uiBaseData = res[0];
       this.uiPreData = res[1] as UIServiceStep2;
-      if (this.uiData.externalServiceList.length === 0 && this.uiPreData.containerHavePortList.length > 0) {
-        let container = this.uiPreData.containerHavePortList[0];
+      if (this.uiData.externalServiceList.length === 0) {
+        let container = this.uiPreData.containerList[0];
         this.addNewExternalService();
         this.setExternalInfo(container, 0);
       }
@@ -91,7 +91,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
 
   setExternalInfo(container: Container, index: number) {
     this.uiData.externalServiceList[index].container_name = container.name;
-    this.uiData.externalServiceList[index].node_config.target_port = container.container_port[0];
+    this.uiData.externalServiceList[index].node_config.target_port = container.container_port.length > 0 ? container.container_port[0] : 0;
   }
 
   setNodePort(index: number, port: number) {
@@ -99,7 +99,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
   }
 
   addNewExternalService() {
-    if (this.uiPreData.containerHavePortList.length > 0 && !this.isActionWip) {
+    if (this.uiPreData.containerList.length > 0 && !this.isActionWip) {
       let externalService = new ExternalService();
       this.uiData.externalServiceList.push(externalService);
     }

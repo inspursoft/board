@@ -53,9 +53,6 @@
              [(ngModel)]="uiData.sessionAffinityFlag">
     </label>
   </div>
-  <div *ngIf="uiData.externalServiceList.length == 0" class="alert alert-warning" role="alert">
-    {{"SERVICE.STEP_3_DANGER_MESSAGE" | translate}}
-  </div>
   <div *ngFor="let externalService of uiData.externalServiceList;let iIndex = index" class="external-container">
     <div class="line-container">
       <clr-icon *ngIf="iIndex > 0 && !isActionWip" class="plus-icon" shape="minus"
@@ -64,7 +61,7 @@
     </div>
     <div class="line-container">
       <label>{{"SERVICE.STEP_3_CONTAINER_NAME"|translate}}:</label>
-      <cs-dropdown [dropdownList]="uiPreData.containerHavePortList"
+      <cs-dropdown [dropdownList]="uiPreData.containerList"
                    [dropdownListTextKey]="'name'"
                    [dropdownWidth]="310"
                    [dropdownDisabled]="isActionWip"
@@ -73,8 +70,20 @@
       </cs-dropdown>
     </div>
     <div class="line-container" *ngIf="externalService.container_name !== ''">
-      <label>{{"SERVICE.STEP_3_CONTAINER_PORT"|translate}}:</label>
-      <cs-dropdown [dropdownDisabled]="externalService.container_name == '' || isActionWip"
+      <cs-input *ngIf="uiPreData.getPortList(externalService.container_name).length == 0"
+                [inputFiledType]="1"
+                [simpleFiled]="externalService.node_config.target_port"
+                [disabled]="isActionWip"
+                [inputLabel]="'SERVICE.STEP_3_CONTAINER_PORT' | translate"
+                [inputIsRequired]="uiData.clusterIp == ''"
+                [inputMin]="1"
+                [inputMax]="32766"
+                (onCheck)="externalService.node_config.target_port = $event">
+      </cs-input>
+      <label *ngIf="uiPreData.getPortList(externalService.container_name).length > 0">
+        {{"SERVICE.STEP_3_CONTAINER_PORT"|translate}}:</label>
+      <cs-dropdown *ngIf="uiPreData.getPortList(externalService.container_name).length > 0"
+                   [dropdownDisabled]="externalService.container_name == '' || isActionWip"
                    [dropdownList]="uiPreData.getPortList(externalService.container_name)"
                    [dropdownWidth]="310"
                    [dropdownDefaultText]="externalService.node_config.target_port.toString()"
@@ -96,7 +105,7 @@
   <div class="line-container">
     <clr-icon class="plus-icon"
               shape="plus"
-              [ngClass]="{'disabled':uiPreData.containerHavePortList.length == 0 || isActionWip}"
+              [ngClass]="{'disabled':uiPreData.containerList.length == 0 || isActionWip}"
               (click)="addNewExternalService()">
     </clr-icon>
     <span>{{"SERVICE.STEP_3_EXTERNAL_SERVICE_ADD"|translate}}</span>
