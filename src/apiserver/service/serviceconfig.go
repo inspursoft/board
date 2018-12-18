@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"path/filepath"
 	"strconv"
 	"strings"
 	//"fmt"
@@ -487,11 +488,28 @@ func setDeploymentContainers(containerList []model.Container, registryURI string
 			container.Args = append(container.Args, "-c", cont.Command)
 		}
 
-		if cont.VolumeMounts.VolumeName != "" {
-			container.VolumeMounts = append(container.VolumeMounts, model.VolumeMount{
-				Name:      cont.VolumeMounts.VolumeName,
-				MountPath: cont.VolumeMounts.ContainerPath,
-			})
+		//		if cont.VolumeMounts.VolumeName != "" {
+		//			volumeMount := model.VolumeMount{
+		//				Name:      cont.VolumeMounts.VolumeName,
+		//				MountPath: cont.VolumeMounts.ContainerPath,
+		//			}
+		//			if cont.VolumeMounts.MountTypeFlag != 0 {
+		//				_, volumeMount.SubPath = filepath.Split(cont.VolumeMounts.ContainerPath)
+		//			}
+		//			container.VolumeMounts = append(container.VolumeMounts, volumeMount)
+		//		}
+
+		for _, v := range cont.VolumeMounts {
+			if v.VolumeName != "" {
+				volumeMount := model.VolumeMount{
+					Name:      v.VolumeName,
+					MountPath: v.ContainerPath,
+				}
+				if v.ContainerPathFlag != 0 {
+					_, volumeMount.SubPath = filepath.Split(v.ContainerPath)
+				}
+				container.VolumeMounts = append(container.VolumeMounts, volumeMount)
+			}
 		}
 
 		if len(cont.Env) > 0 {
@@ -543,27 +561,49 @@ func setDeploymentVolumes(containerList []model.Container) []model.Volume {
 	}
 	volumes := make([]model.Volume, 0)
 	for _, cont := range containerList {
-		if strings.ToLower(cont.VolumeMounts.TargetStorageService) == "hostpath" {
+		newvolumes := setVolumes(cont.VolumeMounts)
+		volumes = append(volumes, newvolumes...)
+	}
+	return volumes
+}
+
+func setVolumes(volumeList []model.VolumeMountStruct) []model.Volume {
+	if volumeList == nil {
+		return nil
+	}
+	volumes := make([]model.Volume, 0)
+	for _, v := range volumeList {
+		switch v.VolumeType {
+		case "hostpath":
 			volumes = append(volumes, model.Volume{
-				Name: cont.VolumeMounts.VolumeName,
+				Name: v.VolumeName,
 				VolumeSource: model.VolumeSource{
 					HostPath: &model.HostPathVolumeSource{
-						Path: cont.VolumeMounts.TargetPath,
+						Path: v.TargetPath,
 					},
 				},
 			})
-		} else if strings.ToLower(cont.VolumeMounts.TargetStorageService) == "nfs" {
-			index := strings.IndexByte(cont.VolumeMounts.TargetPath, '/')
+		case "nfs":
 			volumes = append(volumes, model.Volume{
-				Name: cont.VolumeMounts.VolumeName,
+				Name: v.VolumeName,
 				VolumeSource: model.VolumeSource{
 					NFS: &model.NFSVolumeSource{
-						Server: cont.VolumeMounts.TargetPath[:index],
-						Path:   cont.VolumeMounts.TargetPath[index:],
+						Server: v.TargetStorageService,
+						Path:   v.TargetPath,
+					},
+				},
+			})
+		case "pvc":
+			volumes = append(volumes, model.Volume{
+				Name: v.VolumeName,
+				VolumeSource: model.VolumeSource{
+					PersistentVolumeClaim: &model.PersistentVolumeClaimVolumeSource{
+						ClaimName: v.TargetPVC,
 					},
 				},
 			})
 		}
+
 	}
 	return volumes
 }

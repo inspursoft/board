@@ -34,8 +34,6 @@ func (n *PVolumeController) GetPVolumeAction() {
 		return
 	}
 
-	// TODO sync the state with K8S
-
 	// To optimize the different types of common code
 	switch pv.Type {
 	case model.PVNFS:
@@ -69,6 +67,20 @@ func (n *PVolumeController) GetPVolumeAction() {
 		logs.Error("Unknown pv type %d", pv.Type)
 		n.customAbort(http.StatusBadRequest, "Unknown pv type")
 		return
+	}
+
+	// sync the state with K8S
+
+	pvk8s, err := service.GetPVK8s(pv.Name)
+	if err != nil {
+		logs.Error("Fail to get this PV %s in cluster %v", pv.Name, err)
+		n.internalError(err)
+		return
+	}
+	if pvk8s == nil {
+		pv.State = model.InvalidPV
+	} else {
+		pv.State = service.ReverseState(string(pvk8s.Status.Phase))
 	}
 
 	n.renderJSON(pv)
@@ -199,4 +211,31 @@ func (n *PVolumeController) AddPVolumeAction() {
 		return
 	}
 
+}
+
+func (n *PVolumeController) CheckPVolumeNameExistingAction() {
+	pvName := n.GetString("pv_name")
+	if pvName == "" {
+		return
+	}
+	ispvk8s, err := service.GetPVK8s(pvName)
+	if err != nil {
+		n.internalError(err)
+		return
+	}
+	if ispvk8s != nil {
+		n.customAbort(http.StatusConflict, "This pv name is already existing in cluster.")
+		return
+	}
+
+	ispvDB, err := service.GetPVDB(model.PersistentVolume{Name: pvName}, "name")
+	if err != nil {
+		n.internalError(err)
+		return
+	}
+	if ispvDB != nil {
+		n.customAbort(http.StatusConflict, "This pv name is already existing in DB.")
+		return
+	}
+	logs.Info("PV name of %s is available", pvName)
 }

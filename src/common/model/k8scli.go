@@ -231,8 +231,9 @@ type Volume struct {
 }
 
 type VolumeSource struct {
-	HostPath *HostPathVolumeSource
-	NFS      *NFSVolumeSource
+	HostPath              *HostPathVolumeSource
+	NFS                   *NFSVolumeSource
+	PersistentVolumeClaim *PersistentVolumeClaimVolumeSource `json:"persistentVolumeClaim,omitempty" protobuf:"bytes,10,opt,name=persistentVolumeClaim"`
 }
 
 type HostPathVolumeSource struct {
@@ -243,6 +244,16 @@ type HostPathVolumeSource struct {
 //	Server string
 //	Path   string
 //}
+
+type PersistentVolumeClaimVolumeSource struct {
+	// ClaimName is the name of a PersistentVolumeClaim in the same namespace as the pod using this volume.
+	// More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#persistentvolumeclaims
+	ClaimName string `json:"claimName" protobuf:"bytes,1,opt,name=claimName"`
+	// Will force the ReadOnly setting in VolumeMounts.
+	// Default false.
+	// +optional
+	ReadOnly bool `json:"readOnly,omitempty" protobuf:"varint,2,opt,name=readOnly"`
+}
 
 // ResourceRequirements describes the compute resource requirements.
 type ResourceRequirements struct {
@@ -302,6 +313,7 @@ type EnvVar struct {
 type VolumeMount struct {
 	Name      string
 	MountPath string
+	SubPath   string
 }
 
 // NamespaceCli Interface has methods to work with Namespace resources.
@@ -962,4 +974,122 @@ const (
 	VolumeReleased PersistentVolumePhase = "Released"
 	// used for PersistentVolumes that failed to be correctly recycled or deleted after being released from a claim
 	VolumeFailed PersistentVolumePhase = "Failed"
+)
+
+// PersistentVolumeClaim is a user's request for and claim to a persistent volume
+type PersistentVolumeClaimK8scli struct {
+	//metav1.TypeMeta `json:",inline"`
+	// Standard object's metadata.
+	// More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
+	// +optional
+	ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+
+	// Spec defines the desired characteristics of a volume requested by a pod author.
+	// More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#persistentvolumeclaims
+	// +optional
+	Spec PersistentVolumeClaimSpec `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
+
+	// Status represents the current information/status of a persistent volume claim.
+	// Read-only.
+	// More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#persistentvolumeclaims
+	// +optional
+	Status PersistentVolumeClaimStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// PersistentVolumeClaimList is a list of PersistentVolumeClaim items.
+type PersistentVolumeClaimList struct {
+	//metav1.TypeMeta `json:",inline"`
+	// Standard list metadata.
+	// More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds
+	// +optional
+	//metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+	// A list of persistent volume claims.
+	// More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#persistentvolumeclaims
+	Items []PersistentVolumeClaimK8scli `json:"items" protobuf:"bytes,2,rep,name=items"`
+}
+
+// PersistentVolumeClaimSpec describes the common attributes of storage devices
+// and allows a Source for provider-specific attributes
+type PersistentVolumeClaimSpec struct {
+	// AccessModes contains the desired access modes the volume should have.
+	// More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#access-modes-1
+	// +optional
+	AccessModes []PersistentVolumeAccessMode `json:"accessModes,omitempty" protobuf:"bytes,1,rep,name=accessModes,casttype=PersistentVolumeAccessMode"`
+	// A label query over volumes to consider for binding.
+	// +optional
+	Selector *LabelSelector `json:"selector,omitempty" protobuf:"bytes,4,opt,name=selector"`
+	// Resources represents the minimum resources the volume should have.
+	// More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources
+	// +optional
+	Resources ResourceRequirements `json:"resources,omitempty" protobuf:"bytes,2,opt,name=resources"`
+	// VolumeName is the binding reference to the PersistentVolume backing this claim.
+	// +optional
+	VolumeName string `json:"volumeName,omitempty" protobuf:"bytes,3,opt,name=volumeName"`
+	// Name of the StorageClass required by the claim.
+	// More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1
+	// +optional
+	StorageClassName *string `json:"storageClassName,omitempty" protobuf:"bytes,5,opt,name=storageClassName"`
+}
+
+// PersistentVolumeClaimConditionType is a valid value of PersistentVolumeClaimCondition.Type
+type PersistentVolumeClaimConditionType string
+
+const (
+	// PersistentVolumeClaimResizing - a user trigger resize of pvc has been started
+	PersistentVolumeClaimResizing PersistentVolumeClaimConditionType = "Resizing"
+)
+
+// PersistentVolumeClaimCondition contails details about state of pvc
+//type PersistentVolumeClaimCondition struct {
+//	Type   PersistentVolumeClaimConditionType `json:"type" protobuf:"bytes,1,opt,name=type,casttype=PersistentVolumeClaimConditionType"`
+//	Status ConditionStatus                    `json:"status" protobuf:"bytes,2,opt,name=status,casttype=ConditionStatus"`
+//	// Last time we probed the condition.
+//	// +optional
+//	LastProbeTime metav1.Time `json:"lastProbeTime,omitempty" protobuf:"bytes,3,opt,name=lastProbeTime"`
+//	// Last time the condition transitioned from one status to another.
+//	// +optional
+//	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty" protobuf:"bytes,4,opt,name=lastTransitionTime"`
+//	// Unique, this should be a short, machine understandable string that gives the reason
+//	// for condition's last transition. If it reports "ResizeStarted" that means the underlying
+//	// persistent volume is being resized.
+//	// +optional
+//	Reason string `json:"reason,omitempty" protobuf:"bytes,5,opt,name=reason"`
+//	// Human-readable message indicating details about last transition.
+//	// +optional
+//	Message string `json:"message,omitempty" protobuf:"bytes,6,opt,name=message"`
+//}
+
+// PersistentVolumeClaimStatus is the current status of a persistent volume claim.
+type PersistentVolumeClaimStatus struct {
+	// Phase represents the current phase of PersistentVolumeClaim.
+	// +optional
+	Phase PersistentVolumeClaimPhase `json:"phase,omitempty" protobuf:"bytes,1,opt,name=phase,casttype=PersistentVolumeClaimPhase"`
+	// AccessModes contains the actual access modes the volume backing the PVC has.
+	// More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#access-modes-1
+	// +optional
+	AccessModes []PersistentVolumeAccessMode `json:"accessModes,omitempty" protobuf:"bytes,2,rep,name=accessModes,casttype=PersistentVolumeAccessMode"`
+	// Represents the actual resources of the underlying volume.
+	// +optional
+	Capacity ResourceList `json:"capacity,omitempty" protobuf:"bytes,3,rep,name=capacity,casttype=ResourceList,castkey=ResourceName"`
+	// Current Condition of persistent volume claim. If underlying persistent volume is being
+	// resized then the Condition will be set to 'ResizeStarted'.
+	// +optional
+	// +patchMergeKey=type
+	// +patchStrategy=merge
+	//Conditions []PersistentVolumeClaimCondition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,4,rep,name=conditions"`
+}
+
+type PersistentVolumeClaimPhase string
+
+const (
+	// used for PersistentVolumeClaims that are not yet bound
+	ClaimPending PersistentVolumeClaimPhase = "Pending"
+	// used for PersistentVolumeClaims that are bound
+	ClaimBound PersistentVolumeClaimPhase = "Bound"
+	// used for PersistentVolumeClaims that lost their underlying
+	// PersistentVolume. The claim was bound to a PersistentVolume and this
+	// volume does not exist any longer and all data on it was lost.
+	ClaimLost PersistentVolumeClaimPhase = "Lost"
 )

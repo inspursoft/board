@@ -43,3 +43,44 @@ const (
 	PVNFS
 	PVCephRBD
 )
+
+const (
+	UnknownPV = iota
+	PendingPV
+	AvailablePV
+	BoundPV
+	ReleasedPV
+	FailedPV
+	InvalidPV
+)
+
+type PersistentVolumeClaimM struct {
+	ID          int64  `json:"pvc_id" orm:"column(id)"`
+	Name        string `json:"pvc_name" orm:"column(name)"`
+	ProjectID   int64  `json:"pvc_projectid" orm:"column(projectid)"`
+	ProjectName string `json:"pvc_projectname" orm:"-"`
+	//State       int    `json:"pvc_state" orm:"-"`
+	Capacity   string `json:"pvc_capacity" orm:"column(capacity)"`
+	Accessmode string `json:"pvc_accessmode" orm:"column(accessmode)"`
+	Class      string `json:"pvc_class" orm:"column(class)"`
+	PVName     string `json:"pvc_designatedpv" orm:"column(pvname)"`
+}
+
+type PersistentVolumeClaimV struct {
+	ID          int64  `json:"pvc_id" orm:"column(id)"`
+	Name        string `json:"pvc_name" orm:"column(name)"`
+	ProjectID   int64  `json:"pvc_projectid" orm:"column(projectid)"`
+	ProjectName string `json:"pvc_projectname" orm:"column(projectname)"`
+	State       int    `json:"pvc_state" orm:"-"`
+	Capacity    string `json:"pvc_capacity" orm:"column(capacity)"`
+	Accessmode  string `json:"pvc_accessmode" orm:"column(accessmode)"`
+	Class       string `json:"pvc_class" orm:"column(class)"`
+	PVName      string `json:"pvc_designatedpv" orm:"column(pvname)"`
+}
+
+type PersistentVolumeClaimDetail struct {
+	PVClaim PersistentVolumeClaimM `json:"pvclaim"`
+	State   int                    `json:"pvc_state"`
+	Volume  string                 `json:"pvc_volume"`
+	Events  []string               `json:"pvc_events"`
+}

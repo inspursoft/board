@@ -322,6 +322,7 @@ DROP TABLE IF EXISTS `log`;
         `owner_id` INT NOT NULL,
         `owner_name` VARCHAR(255) DEFAULT NULL,
         `status` SMALLINT(1) NOT NULL,
+		`type` SMALLINT(1) NOT NULL DEFAULT 0,
         `public` SMALLINT(1) NULL,
         `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
         `creation_time` datetime DEFAULT NULL,
@@ -412,4 +413,15 @@ DROP TABLE IF EXISTS `log`;
 		`monitors` VARCHAR(255) NOT NULL DEFAULT '',			
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;	
+	
+	CREATE TABLE `board`.`persistent_volume_claim_m` (
+        `id` INT NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(255) NOT NULL DEFAULT '',
+        `projectid` INT NOT NULL DEFAULT 0,
+		`capacity` VARCHAR(255) NOT NULL DEFAULT '',
+		`accessmode` VARCHAR(255) NOT NULL DEFAULT '',
+	    `class` VARCHAR(255) NOT NULL DEFAULT '',		
+	    `pvname` VARCHAR(255) NOT NULL DEFAULT '',		
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;		
 

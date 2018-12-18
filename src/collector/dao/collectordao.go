@@ -223,6 +223,7 @@ func DeleteStaleData(tableName string, dateSpan int) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
+	defer ptmt.Close()
 	rs, err := ptmt.Exec(dateSpan)
 	if err != nil {
 		if err == orm.ErrNoRows {
@@ -240,6 +241,7 @@ func DeleteStaleTimeList(dateSpan int) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
+	defer ptmt.Close()
 	rs, err := ptmt.Exec(dateSpan)
 	if err != nil {
 		if err == orm.ErrNoRows {

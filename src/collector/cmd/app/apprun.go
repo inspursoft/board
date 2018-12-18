@@ -50,7 +50,7 @@ func collectMainInOnCycle() {
 	count := 0
 	for range ticker.C {
 		count = count + 1
-		if count%500 == 0 {
+		if count%20000 == 0 {
 			cleanStales(20)
 			count = 0
 		}

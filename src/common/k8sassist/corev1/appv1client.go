@@ -17,6 +17,10 @@ type AppV1Client struct {
 	Clientset *types.Clientset
 }
 
+func (p *AppV1Client) Discovery() ServerVersionInterface {
+	return apps.NewServerVersion(p.Clientset.Discovery())
+}
+
 func (p *AppV1Client) Service(namespace string) ServiceClientInterface {
 	return apps.NewServices(namespace, p.Clientset.CoreV1().Services(namespace))
 }
@@ -53,8 +57,13 @@ func (p *AppV1Client) PersistentVolume() PersistentVolumeInterface {
 	return apps.NewPersistentVolume(p.Clientset.CoreV1().PersistentVolumes())
 }
 
+func (p *AppV1Client) PersistentVolumeClaim(namespace string) PersistentVolumeClaimInterface {
+	return apps.NewPersistentVolumeClaim(namespace, p.Clientset.CoreV1().PersistentVolumeClaims(namespace))
+}
+
 // AppV1ClientInterface level 1 interface to access others
 type AppV1ClientInterface interface {
+	Discovery() ServerVersionInterface
 	Service(namespace string) ServiceClientInterface
 	Deployment(namespace string) DeploymentClientInterface
 	Node() NodeClientInterface
@@ -64,6 +73,13 @@ type AppV1ClientInterface interface {
 	Pod(namespace string) PodClientInterface
 	AutoScale(namespace string) AutoscaleInterface
 	PersistentVolume() PersistentVolumeInterface
+	PersistentVolumeClaim(namespace string) PersistentVolumeClaimInterface
+}
+
+// ServerVersionInterface has a method for retrieving the server's version.
+type ServerVersionInterface interface {
+	// ServerVersion retrieves and parses the server's version (git version).
+	ServerVersion() (*model.KubernetesInfo, error)
 }
 
 // ServiceCli interface has methods to work with Service resources in k8s-assist.
@@ -179,4 +195,14 @@ type PersistentVolumeInterface interface {
 	//	DeleteCollection(options *meta_v1.DeleteOptions, listOptions meta_v1.ListOptions) error
 	Get(name string) (*model.PersistentVolumeK8scli, error)
 	List() (*model.PersistentVolumeList, error)
+}
+
+type PersistentVolumeClaimInterface interface {
+	Create(*model.PersistentVolumeClaimK8scli) (*model.PersistentVolumeClaimK8scli, error)
+	Update(*model.PersistentVolumeClaimK8scli) (*model.PersistentVolumeClaimK8scli, error)
+	UpdateStatus(*model.PersistentVolumeClaimK8scli) (*model.PersistentVolumeClaimK8scli, error)
+	Delete(name string) error
+	//	DeleteCollection(options *meta_v1.DeleteOptions, listOptions meta_v1.ListOptions) error
+	Get(name string) (*model.PersistentVolumeClaimK8scli, error)
+	List() (*model.PersistentVolumeClaimList, error)
 }

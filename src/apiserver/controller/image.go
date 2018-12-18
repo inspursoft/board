@@ -337,9 +337,7 @@ func (p *ImageController) resolveDockerfileName() (dockerfileName string) {
 }
 
 func (p *ImageController) DockerfileBuildImageAction() {
-
 	projectName := strings.TrimSpace(p.GetString("project_name"))
-
 	p.resolveUserPrivilege(projectName)
 	p.resolveRepoImagePath(projectName)
 	dockerfilePath := p.repoImagePath
@@ -456,6 +454,13 @@ func (f *ImageController) UploadDockerfileFileAction() {
 	if err != nil {
 		f.internalError(err)
 	}
+	dockerfileInfo, err := service.UpdateDockerfileCopyCommand(f.repoImagePath, dockerfileName)
+	if err != nil {
+		logs.Error("Update dockerfile err: %s", err.Error())
+		f.customAbort(http.StatusBadRequest, err.Error())
+		return
+	}
+	f.Ctx.WriteString(string(dockerfileInfo))
 }
 
 func (f *ImageController) DownloadDockerfileFileAction() {
