@@ -5,6 +5,7 @@ import { CookieService } from "ngx-cookie";
 import { MessageService } from "./shared/message-service/message.service";
 import { registerLocaleData } from "@angular/common";
 import localeZhHans from "@angular/common/locales/zh-Hans";
+import { LangChangeEvent } from "@ngx-translate/core/src/translate.service";
 
 @Component({
   selector: 'board-app',
@@ -26,10 +27,13 @@ export class AppComponent implements AfterViewInit {
     }
     this.appInitService.currentLang = cookieService.get('currentLang') || 'en-us';
     translateService.use(this.appInitService.currentLang);
-    this.translateService.onLangChange.subscribe(() => {
+    this.translateService.onLangChange.subscribe((res: LangChangeEvent) => {
+      let oldLang = this.appInitService.currentLang;
       this.appInitService.currentLang = this.translateService.currentLang;
       cookieService.put('currentLang', this.appInitService.currentLang, {expires: this.cookieExpiry});
-      window.location.reload(true);
+      if (res.lang.toLocaleLowerCase() != oldLang.toLocaleLowerCase()) {
+        window.location.reload(true);
+      }
     });
     if (appInitService.currentLang == 'zh-cn') {
       registerLocaleData(localeZhHans, 'zh-Hans');

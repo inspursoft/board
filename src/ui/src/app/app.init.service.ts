@@ -91,7 +91,7 @@ export class AppInitService {
   }
 
   get isSystemAdmin(): boolean{
-    return this.currentUser.user_system_admin === 1;
+    return this.currentUser && this.currentUser.user_system_admin === 1;
   }
 
   getCurrentUser(tokenParam?: string): Observable<User> {
