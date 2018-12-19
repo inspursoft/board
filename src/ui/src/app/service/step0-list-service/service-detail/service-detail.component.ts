@@ -58,7 +58,7 @@ export class ServiceDetailComponent {
 
   openModal(service: Service): Observable<any> {
     this.curService = service;
-    this.dns =`Dns:${this.curService.service_name}.${this.curService.service_project_name}.svc${this.appInitService.systemInfo.dns_suffix}`;
+    this.dns =`${this.curService.service_name}.${this.curService.service_project_name}.svc${this.appInitService.systemInfo.dns_suffix}`;
     this.getDeploymentYamlFile()
       .subscribe(() => this.getServiceDetail(service.service_id, service.service_project_name, service.service_owner_name));
     return this.closeNotification.asObservable();
