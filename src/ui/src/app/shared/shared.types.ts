@@ -105,7 +105,7 @@ export class SystemInfo {
   redirection_url = '';
   board_version = '';
   kubernetes_version = '';
-
+  dns_suffix = '';
   constructor() {
   }
 }
