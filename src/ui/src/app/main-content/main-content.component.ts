@@ -1,7 +1,7 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppInitService, AppTokenService } from '../app.init.service';
-import { GUIDE_STEP, MAIN_MENU_DATA, RouteAudit, RouteNodes, RouteUserCenters } from "../shared/shared.const";
+import { GUIDE_STEP, MAIN_MENU_DATA, RouteAudit, RouteNodes, RoutePV, RouteStorage, RouteUserCenters } from "../shared/shared.const";
 import { ICsMenuItemData } from "../shared/shared.types";
 import { SharedService } from "../shared/shared.service";
 
@@ -30,6 +30,7 @@ export class MainContentComponent {
     this.getMenuItemByRoute(RouteNodes).visible = this.appInitService.isSystemAdmin;
     this.getMenuItemByRoute(RouteUserCenters).visible = this.appInitService.isSystemAdmin;
     this.getMenuItemByRoute(RouteAudit).visible = this.appInitService.isSystemAdmin;
+    this.getMenuItemByRoute(RouteStorage).children[0].visible = this.appInitService.isSystemAdmin;
     this.route.queryParamMap.subscribe(params=>{
       this.searchContent = params.get("q");
     });
@@ -37,7 +38,7 @@ export class MainContentComponent {
   }
 
   getMenuItemByRoute(route: string): ICsMenuItemData {
-    return this.navSource.find((value => value.url.includes(route)));
+    return this.navSource.find(value => value.url.includes(route));
   }
 
   navigateTo(link) {

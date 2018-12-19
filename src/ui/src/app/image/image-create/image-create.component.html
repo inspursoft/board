@@ -10,21 +10,6 @@
   <div class="modal-body modal-body-reset-position">
     <div class="modal-body-container" [ngSwitch]="imageBuildMethod">
       <div class="create-image-container">
-        <div class="btn-group build-method-container">
-          <button class="btn"
-                  [disabled]="isBuildImageWIP || imageBuildMethod != 1"
-                  [ngClass]="{'btn-primary':imageBuildMethod == 1}"
-                  (click)="resetBuildMethod(1)">
-            {{"IMAGE.CREATE_IMAGE_FROM_TEMP" | translate}}
-          </button>
-          <button class="btn"
-                  [disabled]="isBuildImageWIP || imageBuildMethod != 2"
-                  [ngClass]="{'btn-primary':imageBuildMethod == 2}"
-                  (click)="resetBuildMethod(2)">
-            {{"IMAGE.CREATE_IMAGE_FROM_FILE" | translate}}
-          </button>
-
-        </div>
         <ng-template [ngSwitchCase]="1">
           <div class="from-temp-container" [style.height.px]="500">
             <div class="line-container">
@@ -184,9 +169,9 @@
                       (onCheck)="customerNewImage.image_name = $event">
             </cs-input>
             <cs-input [inputIsRequired]="true"
-                      [inputPattern]="patternNewImageTag || isImageNameAndTagDisabled"
+                      [inputPattern]="patternNewImageTag"
                       [inputLabel]="'IMAGE.CREATE_IMAGE_IMAGE_TAG'|translate"
-                      [disabled]="isBuildImageWIP"
+                      [disabled]="isBuildImageWIP || isImageNameAndTagDisabled"
                       [customerValidatorAsyncFunc]="checkImageTagFun"
                       [simpleFiled]="customerNewImage.image_tag"
                       (onCheck)="customerNewImage.image_tag = $event">
@@ -238,6 +223,39 @@
                 </tr>
                 </tbody>
               </table>
+            </div>
+          </div>
+        </ng-template>
+        <ng-template [ngSwitchCase]="3">
+          <div class="from-docker-file-container">
+            <cs-input [inputIsRequired]="true"
+                      [inputPattern]="patternNewImageName"
+                      [inputLabel]="'IMAGE.CREATE_IMAGE_NEW_IMAGE_NAME'|translate"
+                      [disabled]="isBuildImageWIP"
+                      [customerValidatorAsyncFunc]="checkImageNameFun"
+                      [simpleFiled]="customerNewImage.image_name"
+                      (onCheck)="customerNewImage.image_name = $event">
+            </cs-input>
+            <cs-input [inputIsRequired]="true"
+                      [inputPattern]="patternNewImageTag"
+                      [inputLabel]="'IMAGE.CREATE_IMAGE_IMAGE_TAG'|translate"
+                      [disabled]="isBuildImageWIP"
+                      [customerValidatorAsyncFunc]="checkImageTagFun"
+                      [simpleFiled]="customerNewImage.image_tag"
+                      (onCheck)="customerNewImage.image_tag = $event">
+            </cs-input>
+            <div class="line-container base-margin-top">
+              <label class="base-text">{{"IMAGE.CREATE_IMAGE_UPLOAD_TAR" | translate}}:</label>
+              ﻿<input type="file"
+                      class="upload-file-input"
+                      [disabled]="isUploadTarDisabled"
+                      (change)="uploadFile($event)"
+                      accept="application/x-tar">
+              <span *ngIf="isUploadFileWIP" class="spinner spinner-sm"></span>
+            </div>
+            <div *ngIf="isUploadFileWIP" class="line-container base-margin-top">
+              <label class="base-text"></label>
+              <cs-progress class="base-margin-left" [progressData]="uploadProgressValue"></cs-progress>
             </div>
           </div>
         </ng-template>
