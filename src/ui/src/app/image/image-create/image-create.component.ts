@@ -510,14 +510,6 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
       () => this.updateFileListAndPreviewInfo());
   }
 
-  resetBuildMethod(method: CreateImageMethod) {
-    this.imageBuildMethod = method;
-    this.consoleText = "";
-    if (method == CreateImageMethod.Template) {
-      this.selectFromImportFile = null;
-    }
-  }
-
   cleanBaseImageInfo(isGetBoardRegistry: boolean = false): void {
     if ((this.baseImageSource == 1 && isGetBoardRegistry) ||
       (this.baseImageSource == 2 && !isGetBoardRegistry)) {
