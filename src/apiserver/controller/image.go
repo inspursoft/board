@@ -158,6 +158,27 @@ func (p *ImageController) generateBuildingImageTravis(imageURI, dockerfileName s
 	return travisCommand.GenerateCustomTravis(p.repoPath)
 }
 
+func (p *ImageController) generatePushImagePackageTravis(imageURI, imagePackageName string) error {
+	userID := p.currentUser.ID
+	var travisCommand travis.TravisCommand
+	travisCommand.BeforeDeploy.Commands = []string{
+		fmt.Sprintf("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
+		"if [ -d 'upload' ]; then rm -rf upload; fi",
+		"if [ -e 'attachment.zip' ]; then rm -f attachment.zip; fi",
+		fmt.Sprintf("token=%s", p.token),
+		fmt.Sprintf("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | cut -d$' ' -f2`", boardAPIBaseURL()),
+		fmt.Sprintf("if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi", boardAPIBaseURL()),
+	}
+	travisCommand.Deploy.Commands = []string{
+		"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
+		fmt.Sprintf("image_name_tag=$(docker load -i upload/%s |grep 'Loaded image:'|awk '{print $3}')", imagePackageName),
+		fmt.Sprintf("docker tag $image_name_tag %s", imageURI),
+		fmt.Sprintf("docker push %s", imageURI),
+		fmt.Sprintf("docker rmi %s $image_name_tag", imageURI),
+	}
+	return travisCommand.GenerateCustomTravis(p.repoPath)
+}
+
 func (p *ImageController) BuildImageAction() {
 	var reqImageConfig model.ImageConfig
 	var err error
@@ -363,6 +384,29 @@ func (p *ImageController) DockerfileBuildImageAction() {
 	items := []string{".travis.yml", filepath.Join("containers", dockerfileName)}
 	p.pushItemsToRepo(items...)
 	p.collaborateWithPullRequest("master", "master", items...)
+}
+
+func (p *ImageController) UploadAndPushImagePackageAction() {
+	projectName := strings.TrimSpace(p.GetString("project_name"))
+	p.resolveUserPrivilege(projectName)
+	p.resolveRepoImagePath(projectName)
+	imageName := strings.TrimSpace(p.GetString("image_name"))
+	imageTag := strings.TrimSpace(p.GetString("image_tag"))
+	if imageName == "" || imageTag == "" {
+		logs.Error("Missing image name or tag, current image name is: %s, tag is: %s", imageName, imageTag)
+		p.customAbort(http.StatusBadRequest, "Missing image name or tag.")
+		return
+	}
+	imagePackageName := strings.TrimSpace(p.GetString("image_package_name"))
+	imageURI := filepath.Join(registryBaseURI(), projectName, imageName) + ":" + imageTag
+	err := p.generatePushImagePackageTravis(imageURI, imagePackageName)
+	if err != nil {
+		logs.Error("Failed to generate building image travis: %+v", err)
+		return
+	}
+
+	p.pushItemsToRepo(".travis.yml")
+	p.collaborateWithPullRequest("master", "master", ".travis.yml")
 }
 
 func (p *ImageController) CheckImageTagExistingAction() {
