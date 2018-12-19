@@ -104,7 +104,8 @@ export class SystemInfo {
   sync_k8s = '';
   redirection_url = '';
   board_version = '';
-
+  kubernetes_version = '';
+  dns_suffix = '';
   constructor() {
   }
 }
