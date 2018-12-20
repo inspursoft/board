@@ -52,7 +52,7 @@ func (p *ServiceRollingUpdateController) getServiceConfig() (deploymentConfig *m
 		return
 	}
 
-	deploymentConfig, err = service.GetDeployment(projectName, serviceName)
+	deploymentConfig, _, err = service.GetDeployment(projectName, serviceName)
 	if err != nil {
 		logs.Error("Failed to get service info %+v\n", err)
 		p.parseError(err, parseGetK8sError)
