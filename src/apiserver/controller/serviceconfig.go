@@ -239,17 +239,24 @@ func (sc *ServiceConfigController) configContainerList(key string, configService
 		sc.internalError(err)
 		return
 	}
-
-	//TODO: Skip check and transfer to Lower case
-	//	for index, container := range containerList {
-	//		if container.VolumeMounts.TargetPath != "" && container.VolumeMounts.TargetStorageService == "" {
-	//			sc.serveStatus(http.StatusBadRequest, emptyVolumeTargetStorageServiceErr.Error())
-	//			return
-	//		}
-	//		containerList[index].VolumeMounts.VolumeName = strings.ToLower(container.VolumeMounts.VolumeName)
-	//		containerList[index].Name = strings.ToLower(container.Name)
-	//	}
-
+	//containerPort ->nodeConfig.port?
+	// externalServiceList := make([]model.ExternalService, 0)
+	// for _, externalService := range configServiceStep.ExternalServiceList {
+	// 	for _, container := range containerList {
+	// 		if externalService.ContainerName == container.Name {
+	// 			if len(container.ContainerPort) == 0 {
+	// 				externalServiceList = append(externalServiceList, externalService)
+	// 			} else {
+	// 				for _, port := range container.ContainerPort {
+	// 					if port == externalService.NodeConfig.TargetPort {
+	// 						externalServiceList = append(externalServiceList, externalService)
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
+	// configServiceStep.ExternalServiceList = externalServiceList
 	SetConfigServiceStep(key, configServiceStep.ConfigContainerList(containerList))
 }
 

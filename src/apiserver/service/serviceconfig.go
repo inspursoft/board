@@ -341,18 +341,18 @@ func GetServicesByProjectName(pname string) ([]model.ServiceStatus, error) {
 	return serviceList, err
 }
 
-func GetDeployment(pName string, sName string) (*model.Deployment, error) {
+func GetDeployment(pName string, sName string) (*model.Deployment, []byte, error) {
 	var config k8sassist.K8sAssistConfig
 	config.KubeConfigPath = kubeConfigPath()
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 	d := k8sclient.AppV1().Deployment(pName)
 
-	deployment, _, err := d.Get(sName)
+	deployment, deploymentFileInfo, err := d.Get(sName)
 	if err != nil {
 		logs.Info("Failed to get deployment", pName, sName)
-		return nil, err
+		return nil, nil, err
 	}
-	return deployment, err
+	return deployment, deploymentFileInfo, err
 }
 
 func PatchDeployment(pName string, sName string, deploymentConfig *model.Deployment) (*model.Deployment, []byte, error) {
@@ -399,7 +399,7 @@ func GetK8sService(pName string, sName string) (*model.Service, error) {
 
 func GetScaleStatus(serviceInfo *model.ServiceStatus) (model.ScaleStatus, error) {
 	var scaleStatus model.ScaleStatus
-	deployment, err := GetDeployment(serviceInfo.ProjectName, serviceInfo.Name)
+	deployment, _, err := GetDeployment(serviceInfo.ProjectName, serviceInfo.Name)
 	if err != nil {
 		logs.Debug("Failed to get deployment %s", serviceInfo.Name)
 		return scaleStatus, err

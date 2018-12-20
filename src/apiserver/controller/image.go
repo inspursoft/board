@@ -145,7 +145,7 @@ func (p *ImageController) generateBuildingImageTravis(imageURI, dockerfileName s
 		fmt.Sprintf("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
 		"if [ -d 'upload' ]; then rm -rf upload; fi",
 		"if [ -e 'attachment.zip' ]; then rm -f attachment.zip; fi",
-		"if [ -f key.txt ]; then token=`cat key.txt`; fi",
+		fmt.Sprintf("token=%s", p.token),
 		fmt.Sprintf("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | cut -d$' ' -f2`", boardAPIBaseURL()),
 		fmt.Sprintf("if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi", boardAPIBaseURL()),
 	}
@@ -222,11 +222,6 @@ func (p *ImageController) BuildImageAction() {
 	imageName := reqImageConfig.ImageName
 	imageTag := reqImageConfig.ImageTag
 	imageURI := filepath.Join(registryBaseURI(), projectName, imageName) + ":" + imageTag
-
-	if currentToken, ok := memoryCache.Get(p.currentUser.Username).(string); ok {
-		service.CreateFile("key.txt", currentToken, p.repoPath)
-	}
-
 	dockerfileName := service.ResolveDockerfileName(imageName, imageTag)
 	err = p.generateBuildingImageTravis(imageURI, dockerfileName)
 	if err != nil {
@@ -234,7 +229,7 @@ func (p *ImageController) BuildImageAction() {
 		return
 	}
 
-	items := []string{".travis.yml", "key.txt", filepath.Join("containers", dockerfileName)}
+	items := []string{".travis.yml", filepath.Join("containers", dockerfileName)}
 	p.pushItemsToRepo(items...)
 	p.collaborateWithPullRequest("master", "master", items...)
 }
