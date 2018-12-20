@@ -82,7 +82,7 @@
                              [dropdownListTextKey]="'image_name'"
                              (onChange)="setBaseImage($event)">
                 </cs-dropdown>
-                <span *ngIf="!selectedImage && !imageDetailList" class="spinner spinner-sm"></span>
+                <span *ngIf="isInitBaseImageWip" class="spinner spinner-sm"></span>
                 <cs-dropdown *ngIf="selectedImage"
                              class="margin-left-5"
                              [dropdownWidth]="100"
@@ -137,7 +137,7 @@
               <label class="base-text">{{"IMAGE.CREATE_IMAGE_UPLOAD_FILE_LIST" | translate}}:</label>
               ﻿<input type="file"
                       class="upload-file-input"
-                      [disabled]="!customerNewImage.image_name|| !customerNewImage.image_tag || isBuildImageWIP || isUploadFileWIP"
+                      [disabled]="isUploadDisabled"
                       (change)="uploadFile($event)"
                       accept="*.*">
               <span *ngIf="isUploadFileWIP" class="spinner spinner-sm"></span>
@@ -180,7 +180,7 @@
               <label class="base-text">{{"IMAGE.CREATE_IMAGE_UPLOAD_FILE_LIST" | translate}}:</label>
               ﻿<input type="file"
                       class="upload-file-input"
-                      [disabled]="!customerNewImage.image_name|| !customerNewImage.image_tag || isBuildImageWIP || isUploadFileWIP"
+                      [disabled]="isUploadDisabled"
                       (change)="uploadFile($event)"
                       accept="*.*">
               <span *ngIf="isUploadFileWIP" class="spinner spinner-sm"></span>
@@ -199,10 +199,7 @@
               <label>{{"IMAGE.CREATE_IMAGE_SELECT_DOCKER_FILE" | translate}}:</label>
             </div>
             <div class="line-container base-margin-top">
-              ﻿<input type="file"
-                      [disabled]="!customerNewImage.image_name|| !customerNewImage.image_tag || isBuildImageWIP || isUploadFileWIP"
-                      (change)="selectDockerFile($event)"
-                      accept="*.*">
+              ﻿<input type="file" [disabled]="isUploadDisabled" (change)="selectDockerFile($event)" accept="*.*">
               <span *ngIf="isUploadFileWIP" class="spinner spinner-sm"></span>
             </div>
             <div *ngIf="selectFromImportFile" class="line-container file-info-container">
@@ -248,7 +245,7 @@
               <label class="base-text">{{"IMAGE.CREATE_IMAGE_UPLOAD_TAR" | translate}}:</label>
               ﻿<input type="file"
                       class="upload-file-input"
-                      [disabled]="isUploadTarDisabled"
+                      [disabled]="isUploadDisabled"
                       (change)="uploadFile($event)"
                       accept="application/x-tar">
               <span *ngIf="isUploadFileWIP" class="spinner spinner-sm"></span>

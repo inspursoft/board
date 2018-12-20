@@ -15,12 +15,13 @@ import { EnvType } from "../../shared/environment-value/environment-value.compon
 import { ValidationErrors } from "@angular/forms";
 import { TranslateService } from "@ngx-translate/core";
 import { CsModalChildBase } from "../../shared/cs-modal-base/cs-modal-child-base";
-import { CreateImageMethod } from "../../shared/shared.types";
+import { CreateImageMethod, Tools } from "../../shared/shared.types";
 import { Observable } from "rxjs/Observable";
 import "rxjs/add/operator/zip"
 import "rxjs/add/operator/catch"
 import "rxjs/add/observable/empty"
 import "rxjs/add/observable/of"
+import { SharedActionService } from "../../shared/shared-action.service";
 
 const AUTO_REFRESH_IMAGE_LIST: number = 2000;
 
@@ -135,6 +136,10 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
     return this.customerNewImage.image_dockerfile.image_expose;
   }
 
+  get isInitBaseImageWip(): boolean{
+    return Tools.isInvalidObject(this.selectedImage) && Tools.isInvalidArray(this.imageDetailList)
+  }
+
   get envsDescription() {
     let result: string = "";
     this.customerNewImage.image_dockerfile.image_env.forEach(value => {
@@ -155,8 +160,8 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
     return this.isBuildImageWIP || this.isUploadFileWIP;
   }
 
-  get isUploadTarDisabled() {
-    return !this.customerNewImage.image_name || !this.customerNewImage.image_tag
+  get isUploadDisabled(): boolean {
+    return Tools.isInvalidString(this.customerNewImage.image_name) || Tools.isInvalidString(this.customerNewImage.image_tag)
       || this.isBuildImageWIP || this.isUploadFileWIP;
   }
 
