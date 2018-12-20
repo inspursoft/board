@@ -240,19 +240,23 @@ func (sc *ServiceConfigController) configContainerList(key string, configService
 		return
 	}
 	//containerPort ->nodeConfig.port?
-	externalServiceList := make([]model.ExternalService, 0)
-	for _, externalService := range configServiceStep.ExternalServiceList {
-		for _, container := range containerList {
-			if externalService.ContainerName == container.Name {
-				for _, port := range container.ContainerPort {
-					if port == externalService.NodeConfig.Port {
-						externalServiceList = append(externalServiceList, externalService)
-					}
-				}
-			}
-		}
-	}
-	configServiceStep.ExternalServiceList = externalServiceList
+	// externalServiceList := make([]model.ExternalService, 0)
+	// for _, externalService := range configServiceStep.ExternalServiceList {
+	// 	for _, container := range containerList {
+	// 		if externalService.ContainerName == container.Name {
+	// 			if len(container.ContainerPort) == 0 {
+	// 				externalServiceList = append(externalServiceList, externalService)
+	// 			} else {
+	// 				for _, port := range container.ContainerPort {
+	// 					if port == externalService.NodeConfig.TargetPort {
+	// 						externalServiceList = append(externalServiceList, externalService)
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
+	// configServiceStep.ExternalServiceList = externalServiceList
 	SetConfigServiceStep(key, configServiceStep.ConfigContainerList(containerList))
 }
 
