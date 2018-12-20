@@ -78,12 +78,12 @@
   <div class="import-method-container">
     <input title=""
            type="radio"
-           id="fromDevOps"
-           [disabled]="true"
+           id="fromImagePackage"
+           [disabled]="selectedProjectId == 0"
            name="buildMethod"
            (click)="setCreateImageMethod(3)">
-    <label for="fromDevOps" class="disabled">
-      {{"IMAGE.CREATE_IMAGE_DEVOPES"|translate}}
+    <label for="fromImagePackage" [ngClass]="{'disabled':selectedProjectId == 0,'enable':selectedProjectId > 0}">
+      {{"IMAGE.CREATE_IMAGE_IMAGE_PACKAGE"|translate}}
     </label>
   </div>
   <div class="build-btn-container">

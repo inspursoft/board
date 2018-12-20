@@ -135,7 +135,7 @@ export enum DragStatus {
   dsReady = 'ready', dsStart = 'start', dsDragIng = 'drag', dsEnd = 'end'
 }
 
-export enum CreateImageMethod{None, Template, DockerFile, DevOps}
+export enum CreateImageMethod {None, Template, DockerFile, ImagePackage}
 
 export class PersistentVolumeOptions {
   public path = '';
@@ -301,5 +301,36 @@ export class PersistentVolumeClaim {
       pvc_class: this.class,
       pvc_designatedpv: this.designatedPv
     }
+  }
+}
+
+export class Tools {
+  static isValidString(str: string, reg?: RegExp): boolean {
+    if (str == undefined || str == null || str.trim() == '') {
+      return false;
+    } else if (reg) {
+      return reg.test(str)
+    }
+    return true;
+  }
+
+  static isInvalidString(str: string, reg?: RegExp): boolean {
+    return !Tools.isValidString(str, reg);
+  }
+
+  static isValidObject(obj: any): boolean {
+    return Object.isObject(obj);
+  }
+
+  static isInvalidObject(obj: any): boolean {
+    return !Tools.isValidObject(obj);
+  }
+
+  static isValidArray(obj: any): boolean {
+    return Tools.isValidObject(obj) && Array.isArray(obj);
+  }
+
+  static isInvalidArray(obj: any): boolean {
+    return !Tools.isValidArray(obj);
   }
 }
