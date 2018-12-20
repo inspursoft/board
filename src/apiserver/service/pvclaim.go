@@ -37,6 +37,23 @@ func QueryPVCsByUser(userID int64) ([]*model.PersistentVolumeClaimV, error) {
 		pvcs = append(pvcs, querypvcs...)
 	}
 	logs.Debug("Guery PVC list %v", pvcs)
+
+	//Sync state with cluster system
+
+	for _, pvc := range pvcs {
+		pvck8s, err := GetPVCK8s(pvc.Name, pvc.ProjectName)
+		if err != nil {
+			logs.Error("Fail to get this PVC %s in cluster %v", pvc.Name, err)
+			// continue to work for other pvcs
+			pvc.State = model.InvalidPVC
+		}
+		if pvck8s == nil {
+			pvc.State = model.InvalidPVC
+		} else {
+			pvc.State = ReverseStatePVC(string(pvck8s.Status.Phase))
+		}
+	}
+
 	return pvcs, err
 }
 
@@ -169,4 +186,17 @@ func GetPVCK8s(pvcname string, projectname string) (*model.PersistentVolumeClaim
 		}
 	}
 	return pvck8s, nil
+}
+
+func ReverseStatePVC(state string) int {
+	var ret = model.UnknownPVC
+	switch state {
+	case "Pending":
+		ret = model.PendingPVC
+	case "Bound":
+		ret = model.BoundPVC
+	case "Lost":
+		ret = model.LostPVC
+	}
+	return ret
 }
