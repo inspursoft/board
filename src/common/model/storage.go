@@ -54,6 +54,14 @@ const (
 	InvalidPV
 )
 
+const (
+	UnknownPVC = iota
+	PendingPVC
+	BoundPVC
+	LostPVC
+	InvalidPVC
+)
+
 type PersistentVolumeClaimM struct {
 	ID          int64  `json:"pvc_id" orm:"column(id)"`
 	Name        string `json:"pvc_name" orm:"column(name)"`
@@ -79,7 +87,7 @@ type PersistentVolumeClaimV struct {
 }
 
 type PersistentVolumeClaimDetail struct {
-	PVClaim PersistentVolumeClaimM `json:"pvclaim"`
+	PVClaim PersistentVolumeClaimV `json:"pvclaim"`
 	State   int                    `json:"pvc_state"`
 	Volume  string                 `json:"pvc_volume"`
 	Events  []string               `json:"pvc_events"`

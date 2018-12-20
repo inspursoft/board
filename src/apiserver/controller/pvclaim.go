@@ -23,7 +23,7 @@ func (n *PVClaimController) GetPVClaimAction() {
 		n.internalError(err)
 		return
 	}
-	pvc, err := service.GetPVCDB(model.PersistentVolumeClaimM{ID: int64(pvcID)}, "id")
+	pvc, err := service.QueryPVCByID(int64(pvcID))
 	if err != nil {
 		n.internalError(err)
 		return
@@ -37,19 +37,21 @@ func (n *PVClaimController) GetPVClaimAction() {
 	var pvcDetail model.PersistentVolumeClaimDetail
 	pvcDetail.PVClaim = *pvc
 
-	// sync the state with K8S
+	//sync the state with K8S
 
-	//	pvk8s, err := service.GetPVK8s(pv.Name)
-	//	if err != nil {
-	//		logs.Error("Fail to get this PV %s in cluster %v", pv.Name, err)
-	//		n.internalError(err)
-	//		return
-	//	}
-	//	if pvk8s == nil {
-	//		pv.State = model.InvalidPV
-	//	} else {
-	//		pv.State = service.ReverseState(string(pvk8s.Status.Phase))
-	//	}
+	pvck8s, err := service.GetPVCK8s(pvc.Name, pvc.ProjectName)
+	if err != nil {
+		logs.Error("Fail to get this PVC %s in cluster %v", pvc.Name, err)
+		n.internalError(err)
+		return
+	}
+	if pvck8s == nil {
+		pvcDetail.PVClaim.State = model.InvalidPVC // TODO duplicate
+		pvcDetail.State = model.InvalidPVC
+	} else {
+		pvcDetail.State = service.ReverseStatePVC(string(pvck8s.Status.Phase))
+		pvcDetail.PVClaim.State = pvcDetail.State // TODO duplicate
+	}
 
 	n.renderJSON(pvcDetail)
 	logs.Debug("Return get pvc %v", pvcDetail)
