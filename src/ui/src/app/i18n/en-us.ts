@@ -20,6 +20,7 @@ export const LANG_EN_US = {
     "ASK":"Ask",
     "DELETE":"Delete",
     "SIGN_IN": "Sign In",
+    "WARNING":"Warning",
     "ERROR_DETAIL":"Error Detail"
   },
   "ERROR": {
@@ -168,6 +169,7 @@ export const LANG_EN_US = {
     "FAILED_TO_RETRIEVE_PROJECTS": "Failed to retrieve projects.",
     "DELETE_PROJECT": "Delete Project",
     "CONFIRM_TO_DELETE_PROJECT": "Do you confirm to delete project {{0}}?",
+    "CONFIRM_TO_DELETE_PROJECT_SECONDLY": "Deleting a project will delete entire data that depend on it,such as service.Continue to delete?",
     "SUCCESSFUL_TOGGLE_PROJECT": "Successful toggle project.",
     "FAILED_TO_TOGGLE_PROJECT": "Failed to toggle project.",
     "SUCCESSFUL_ADDED_MEMBER": "Successful added member: {{0}}.",

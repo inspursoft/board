@@ -20,6 +20,7 @@ export const LANG_ZH_CN = {
     "ASK":"询问",
     "DELETE":"删除",
     "SIGN_IN": "登录",
+    "WARNING":"警告",
     "ERROR_DETAIL":"错误详情"
   },
   "ERROR": {
@@ -168,6 +169,7 @@ export const LANG_ZH_CN = {
     "FAILED_TO_RETRIEVE_PROJECTS": "查询项目失败。",
     "DELETE_PROJECT": "删除项目",
     "CONFIRM_TO_DELETE_PROJECT": "确认删除项目 {{0}}?",
+    "CONFIRM_TO_DELETE_PROJECT_SECONDLY": "删除项目后,依赖该项目的服务和其他资源将全部删除,是否继续?",
     "SUCCESSFUL_TOGGLE_PROJECT": "切换项目状态成功。",
     "FAILED_TO_TOGGLE_PROJECT": "切换项目公开失败。",
     "SUCCESSFUL_ADDED_MEMBER": "添加项目成员:{{0}} 成功。",

@@ -8,6 +8,9 @@ import { ClrDatagridSortOrder, ClrDatagridStateInterface } from "@clr/angular";
 import { SharedActionService } from "../shared/shared-action.service";
 import { TranslateService } from "@ngx-translate/core";
 import { Message, RETURN_STATUS } from "../shared/shared.types";
+import { Observable } from "rxjs/Observable";
+import "rxjs/add/operator/switchMap"
+import "rxjs/add/observable/empty"
 
 @Component({
   selector: 'project',
@@ -72,7 +75,15 @@ export class ProjectComponent implements OnInit {
   confirmToDeleteProject(project: Project): void {
     if (this.isSystemAdminOrOwner(project)) {
       this.translateService.get('PROJECT.CONFIRM_TO_DELETE_PROJECT', [project.project_name]).subscribe((msg: string) => {
-        this.messageService.showDeleteDialog(msg, 'PROJECT.DELETE_PROJECT').subscribe((message: Message) => {
+        let firstConfirm = this.messageService.showDeleteDialog(msg, 'PROJECT.DELETE_PROJECT');
+        let obsDelete = firstConfirm.switchMap((message: Message) => {
+          if (message.returnStatus == RETURN_STATUS.rsConfirm) {
+            return this.messageService.showDeleteDialog('PROJECT.CONFIRM_TO_DELETE_PROJECT_SECONDLY', 'GLOBAL_ALERT.WARNING');
+          } else {
+            return Observable.empty();
+          }
+        });
+        obsDelete.subscribe((message: Message) => {
           if (message.returnStatus == RETURN_STATUS.rsConfirm) {
             this.projectService.deleteProject(project).subscribe(() => {
               this.messageService.showAlert('PROJECT.SUCCESSFUL_DELETE_PROJECT');
