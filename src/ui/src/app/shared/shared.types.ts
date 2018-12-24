@@ -177,8 +177,8 @@ export class PersistentVolume {
   public type = 0;
   public state = 0;
   public capacity = '';
-  public accessMode = PvAccessMode;
-  public reclaim = PvReclaimMode;
+  public accessMode: PvAccessMode;
+  public reclaim: PvReclaimMode;
 
   initFromRes(res: Object) {
     if (res) {
@@ -257,7 +257,7 @@ export class PersistentVolumeClaim {
   public projectName = '';
   public capacity = '';
   public state = 0;
-  public accessMode = PvcAccessMode;
+  public accessMode: PvcAccessMode;
   public class = '';
   public designatedPv = '';
   public volume = '';
@@ -285,10 +285,8 @@ export class PersistentVolumeClaim {
     return [
       'STORAGE.STATE_UNKNOWN',
       'STORAGE.STATE_PENDING',
-      'STORAGE.STATE_AVAILABLE',
       'STORAGE.STATE_BOUND',
-      'STORAGE.STATE_RELEASED',
-      'STORAGE.STATE_FAILED',
+      'STORAGE.STATE_LOST',
       'STORAGE.STATE_INVALID'][this.state];
   }
 

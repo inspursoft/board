@@ -21,6 +21,7 @@ export class CreatePvComponent extends CsModalChildBase implements OnInit {
   patternKeyring: RegExp = /^\/(\w+\/?)+$/;
   isEditPvMonitors = false;
   isCreateWip = false;
+  capacityPattern: RegExp = /^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/;
 
   constructor(private storageService: StorageService,
               private messageService: MessageService) {
@@ -43,6 +44,10 @@ export class CreatePvComponent extends CsModalChildBase implements OnInit {
       {name: 'NFS', value: 1, classType: NFSPersistentVolume},
       {name: 'Ceph rbd', value: 2, classType: RBDPersistentVolume}
     ];
+  }
+
+  changeAccessMode(mode: PvAccessMode){
+    this.newPersistentVolume.accessMode = mode;
   }
 
   createNewPv() {

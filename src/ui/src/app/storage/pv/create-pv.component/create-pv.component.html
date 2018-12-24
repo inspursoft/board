@@ -13,6 +13,7 @@
       <cs-input [inputIsRequired]="true"
                 [inputLabel]="'STORAGE.PV_CAPACITY' | translate"
                 [inputPlaceholder]="'eg. 5Gi'"
+                [inputPattern]="capacityPattern"
                 [disabled]="isCreateWip"
                 [simpleFiled]="newPersistentVolume.capacity"
                 (onCheck)="newPersistentVolume.capacity = $event">
@@ -36,8 +37,14 @@
                    [dropdownWidth]="260"
                    [dropdownDisabled]="isCreateWip"
                    [dropdownList]="accessModeList"
-                   (onChange)="newPersistentVolume.accessMode = $event">
+                   (onChange)="changeAccessMode($event)">
       </cs-dropdown>
+      <label *ngIf="newPersistentVolume.accessMode =='ReadOnlyMany'" class="alert alert-warning warning-info">
+        {{"STORAGE.PV_WARNING_READ_ONLY_MANY" | translate}}
+      </label>
+      <label *ngIf="newPersistentVolume.accessMode =='ReadWriteMany'" class="alert alert-warning warning-info">
+        {{"STORAGE.PV_WARNING_READ_WRITE_MANY" | translate}}
+      </label>
     </div>
     <div class="dynamic-line-container">
       <span class="filed-text">{{"STORAGE.PV_RECLAIM"|translate}}:</span>
@@ -47,6 +54,10 @@
                    [dropdownList]="reclaimModeList"
                    (onChange)="newPersistentVolume.reclaim = $event">
       </cs-dropdown>
+      <label *ngIf="newPersistentVolume.reclaim =='Recycle' || newPersistentVolume.reclaim =='Delete'"
+             class="alert alert-warning warning-info">
+        {{"STORAGE.PV_WARNING_RECLAIM" | translate}}
+      </label>
     </div>
     <div class="pv-section-container"><span>Options</span></div>
     <div [ngSwitch]="newPersistentVolume.typeDescription">
