@@ -17,6 +17,7 @@ export class CreatePvcComponent extends CsModalChildBase implements OnInit {
   pvList: Array<PersistentVolume>;
   newPersistentVolumeClaim: PersistentVolumeClaim;
   isCreateWip = false;
+  capacityPattern: RegExp = /^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/;
 
   constructor(private sharedService: SharedService,
               private messageService: MessageService) {
