@@ -2,9 +2,9 @@
   <div class="modal-title title-container">
     <h4 class="modal-title">{{ "IMAGE.CREATE_IMAGE_TITLE" | translate }}</h4>
     <button class="close"
-            [ngClass]="{'disabled':isBuildImageWIP}"
+            [ngClass]="{'disabled':isBuildImageWIP || isUploadFileWIP}"
             (click)="modalOpened = false"
-            [disabled]="isBuildImageWIP">X
+            [disabled]="isBuildImageWIP || isUploadFileWIP">X
     </button>
   </div>
   <div class="modal-body modal-body-reset-position">
@@ -241,7 +241,7 @@
                       [simpleFiled]="customerNewImage.image_tag"
                       (onCheck)="customerNewImage.image_tag = $event">
             </cs-input>
-            <div class="line-container base-margin-top">
+            <div *ngIf="uploadTarPackageName == ''" class="line-container base-margin-top">
               <label class="base-text">{{"IMAGE.CREATE_IMAGE_UPLOAD_TAR" | translate}}:</label>
               ﻿<input type="file"
                       class="upload-file-input"
@@ -254,12 +254,27 @@
               <label class="base-text"></label>
               <cs-progress class="base-margin-left" [progressData]="uploadProgressValue"></cs-progress>
             </div>
+            <div *ngIf="uploadTarPackageName != ''"  class="line-container base-margin-top">
+              <label class="base-text">{{"IMAGE.CREATE_IMAGE_UPLOAD_TAR" | translate}}:</label>
+              <label class="tar-package-name">{{uploadTarPackageName}}</label>
+            </div>
+            <div class="line-container base-margin-top end">
+              <button class="btn btn-primary default-primary"
+                      [disabled]="uploadTarPackageName == '' || isBuildImageWIP"
+                      (click)="buildImage()">
+                {{"IMAGE.CREATE_IMAGE_BUILD_IMAGE" | translate}}
+              </button>
+              <button class="btn btn-default"
+                      [disabled]="isUploadFileWIP"
+                      (click)="cancelBuildImage()">
+                {{cancelCaption | translate}}</button>
+            </div>
           </div>
         </ng-template>
       </div>
       <div class="console-container">
         <textarea #areaStatus title="" id="areaStatus" class="area-status" readonly>{{consoleText | translate}}</textarea>
-        <div class="build-btn-container">
+        <div *ngIf="imageBuildMethod == 1 || imageBuildMethod == 2" class="build-btn-container">
           <button class="btn btn-primary default-primary"
                   [disabled]="isBuildDisabled"
                   (click)="buildImage()">

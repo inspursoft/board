@@ -233,6 +233,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
     } else {
       this.imageService.cancelConsole(this.customerNewImage.image_name).subscribe(
         () => this.cleanImageConfig(),
+        () => this.modalOpened = false,
         () => this.modalOpened = false);
     }
   }
@@ -282,7 +283,6 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
       });
     }
     this.imageService.deleteImageConfig(this.customerNewImage.project_name).subscribe();
-    this.updateFileList().subscribe();
   }
 
   buildImageResole() {
@@ -332,7 +332,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
         buildImageInit();
         this.imageService.buildImageFromTemp(this.customerNewImage).subscribe(
           () => this.buildImageResole(),
-          () => this.cleanImageConfig()
+          (error: HttpErrorResponse) => this.cleanImageConfig(error)
         );
       }
     } else if (this.imageBuildMethod == CreateImageMethod.DockerFile) {
@@ -340,7 +340,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
         buildImageInit();
         this.buildImageByDockerFile().subscribe(
           () => this.buildImageResole(),
-          () => this.cleanImageConfig()
+          (error: HttpErrorResponse) => this.cleanImageConfig(error)
         );
       } else {
         this.messageService.showAlert('IMAGE.CREATE_IMAGE_SELECT_DOCKER_FILE', {alertType: 'alert-warning', view: this.alertView});
@@ -351,7 +351,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
           buildImageInit();
           this.buildImageByImagePackage().subscribe(
             () => this.buildImageResole(),
-            () => this.cleanImageConfig()
+            (error: HttpErrorResponse) => this.cleanImageConfig(error)
           );
         }
         else {
