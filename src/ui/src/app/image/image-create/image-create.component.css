@@ -161,8 +161,11 @@ input.base-image-radio {
 
 label.base-image-source {
   cursor: pointer;
-  margin-right: 6px;
+  margin-right: 3px;
   margin-left: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 div.board-registry-container {

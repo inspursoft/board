@@ -21,7 +21,6 @@ import "rxjs/add/operator/zip"
 import "rxjs/add/operator/catch"
 import "rxjs/add/observable/empty"
 import "rxjs/add/observable/of"
-import { SharedActionService } from "../../shared/shared-action.service";
 
 const AUTO_REFRESH_IMAGE_LIST: number = 2000;
 
@@ -53,6 +52,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   isBuildImageWIP: boolean = false;
   isServerHaveDockerFile: boolean = false;
   isUploadFileWIP = false;
+  isGetImageDetailListWip = false;
   isImageNameAndTagDisabled = false;
   customerNewImage: BuildImageData;
   consoleText: string = "";
@@ -134,10 +134,6 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
 
   get imageExpose(): Array<string> {
     return this.customerNewImage.image_dockerfile.image_expose;
-  }
-
-  get isInitBaseImageWip(): boolean{
-    return Tools.isInvalidObject(this.selectedImage) && Tools.isInvalidArray(this.imageDetailList)
   }
 
   get envsDescription() {
@@ -528,6 +524,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   setBaseImage(selectImage: Image): void {
     this.selectedImage = null;
     this.imageDetailList = null;
+    this.isGetImageDetailListWip = true;
     this.imageService.getBoardRegistry().subscribe((res: string) => {
       this.boardRegistry = res.replace(/"/g,"");
       this.imageService.getImageDetailList(selectImage.image_name).subscribe((res: ImageDetail[]) => {
@@ -535,7 +532,9 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
           this.imageDetailList = res;
           this.customerNewImage.image_dockerfile.image_base = `${this.boardRegistry}/${this.selectedImage.image_name}:${res[0].image_tag}`;
           this.getDockerFilePreviewInfo();
-        }, () => this.modalOpened = false
+        },
+        () => this.modalOpened = false,
+        () => this.isGetImageDetailListWip = false
       );
     });
   }

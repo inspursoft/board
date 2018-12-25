@@ -47,11 +47,13 @@
       <cs-input [inputLabel]="'ACCOUNT.REALNAME' | translate "
                 [simpleFiled]="signUpModel.realname"
                 [disabled]="isSignUpWIP"
+                [inputMaxlength]="20"
                 (onCheck)="signUpModel.realname = $event">
       </cs-input>
       <cs-input [inputLabel]="'ACCOUNT.COMMENT' | translate "
                 [simpleFiled]="signUpModel.comment"
                 [disabled]="isSignUpWIP"
+                [inputMaxlength]="50"
                 (onCheck)="signUpModel.comment = $event">
       </cs-input>
       <div class="btn-container">

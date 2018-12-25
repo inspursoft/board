@@ -13,6 +13,7 @@
     <cs-input [inputIsRequired]="true"
               [disabled]="isCreateWip"
               [inputLabel]="'STORAGE.PVC_NAME' | translate"
+              [inputPattern]="namePattern"
               [simpleFiled]="newPersistentVolumeClaim.name"
               (onCheck)="newPersistentVolumeClaim.name = $event">
     </cs-input>
@@ -56,6 +57,7 @@
                    [dropdownDisabled]="isCreateWip"
                    [dropdownList]="pvList"
                    [dropdownListTextKey]="'name'"
+                   (onOnlyClickItem)="changeDesignatePv($event)"
                    (onChange)="changeDesignatePv($event)">
       </cs-dropdown>
     </div>
