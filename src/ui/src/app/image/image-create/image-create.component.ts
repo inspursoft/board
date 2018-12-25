@@ -424,7 +424,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
 
   uploadFile(event: Event) {
     let fileList: FileList = (event.target as HTMLInputElement).files;
-    if (fileList.length > 0) {
+    if (fileList.length > 0 && this.verifyInputValid()) {
       let file: File = fileList[0];
       if (file.size > 1024 * 1024 * 500) {
         (event.target as HTMLInputElement).value = "";
