@@ -1,6 +1,7 @@
 import { HttpErrorResponse } from "@angular/common/http";
 import { Type } from "@angular/core";
 import { TimeoutError } from "rxjs/src/util/TimeoutError";
+import * as isObject from "isobject";
 
 export interface ICsMenuItemData {
   caption: string,
@@ -317,7 +318,7 @@ export class Tools {
   }
 
   static isValidObject(obj: any): boolean {
-    return Object.isObject(obj);
+    return isObject(obj);
   }
 
   static isInvalidObject(obj: any): boolean {
@@ -325,7 +326,7 @@ export class Tools {
   }
 
   static isValidArray(obj: any): boolean {
-    return Tools.isValidObject(obj) && Array.isArray(obj);
+    return Array.isArray(obj);
   }
 
   static isInvalidArray(obj: any): boolean {
