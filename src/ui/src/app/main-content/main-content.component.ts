@@ -22,7 +22,7 @@ export class MainContentComponent {
     private router: Router,
     private route: ActivatedRoute,
     private sharedService: SharedService) {
-    if(this.appInitService.currentUser) {
+    if(this.appInitService.currentUser && this.appInitService.currentUser.user_id > 0) {
       this.isSignIn = false;
       this.hasSignedIn = true;
     }
