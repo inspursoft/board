@@ -1,6 +1,6 @@
 FROM library/ubuntu:14.04
 
-RUN rm /etc/rsyslog.d/* && rm /etc/rsyslog.conf
+RUN update-locale && rm /etc/rsyslog.d/* && rm /etc/rsyslog.conf
 
 ADD make/dev/container/log/rsyslog.conf /etc/rsyslog.conf
 
