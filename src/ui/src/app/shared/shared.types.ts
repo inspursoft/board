@@ -318,7 +318,7 @@ export class Tools {
   }
 
   static isValidObject(obj: any): boolean {
-    return isObject(obj);
+    return obj != null && obj != undefined && typeof obj == 'object';
   }
 
   static isInvalidObject(obj: any): boolean {
