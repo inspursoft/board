@@ -25,7 +25,7 @@ export class SetAffinityComponent extends CsModalChildBase {
   }
 
   addNewAffinity() {
-    this.uiData.affinityList.push({flag: true, services: Array<AffinityCardData>()})
+    this.uiData.affinityList.push({antiFlag: false, services: Array<AffinityCardData>()})
   }
 
   deleteAffinity(index: number) {

@@ -283,11 +283,11 @@ export class UIServiceStep3 extends UIServiceStepBase {
   public servicePublic = false;
   public sessionAffinityFlag = false;
   public externalServiceList: Array<ExternalService>;
-  public affinityList: Array<{flag: boolean, services: Array<AffinityCardData>}>;
+  public affinityList: Array<{antiFlag: boolean, services: Array<AffinityCardData>}>;
 
   constructor() {
     super();
-    this.affinityList = Array<{flag: boolean, services: Array<AffinityCardData>}>();
+    this.affinityList = Array<{antiFlag: boolean, services: Array<AffinityCardData>}>();
     this.externalServiceList = Array<ExternalService>();
   }
 
@@ -301,10 +301,10 @@ export class UIServiceStep3 extends UIServiceStepBase {
     result.cluster_ip = this.clusterIp;
     result.service_public = this.servicePublic ? 1 : 0;
     result.node_selector = this.nodeSelector;
-    this.affinityList.forEach((value: {flag: boolean, services: Array<AffinityCardData>}) => {
+    this.affinityList.forEach((value: {antiFlag: boolean, services: Array<AffinityCardData>}) => {
       let serviceNames = Array<string>();
       value.services.forEach((card: AffinityCardData) => serviceNames.push(card.serviceName));
-      postAffinityData.push({anti_flag: value.flag ? 1 : 0 , service_names: serviceNames})
+      postAffinityData.push({anti_flag: value.antiFlag ? 1 : 0 , service_names: serviceNames})
     });
     result.postData = {external_service_list: this.externalServiceList, affinity_list: postAffinityData};
     return result;
@@ -324,7 +324,7 @@ export class UIServiceStep3 extends UIServiceStepBase {
             services.push(card);
           });
         }
-        step3.affinityList.push({flag: value.anti_flag == 1, services: services});
+        step3.affinityList.push({antiFlag: value.anti_flag == 1, services: services});
       });
     }
     if (serverResponse && serverResponse["external_service_list"]) {

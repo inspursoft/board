@@ -35,6 +35,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   @ViewChildren(CsInputArrayComponent) inputArrayComponents: QueryList<CsInputArrayComponent>;
   @ViewChild("areaStatus") areaStatus: ElementRef;
   imageBuildMethod: CreateImageMethod = CreateImageMethod.Template;
+  createImageMethod = CreateImageMethod;
   isOpenEnvironment = false;
   patternNewImageName: RegExp = /^[a-z\d.-]+$/;
   patternNewImageTag: RegExp = /^[a-z\d.-]+$/;
@@ -113,7 +114,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
 
   public initCustomerNewImage(projectId: number, projectName: string): void {
     this.customerNewImage = new BuildImageData();
-    this.customerNewImage.image_dockerfile.image_author = this.appInitService.currentUser["user_name"];
+    this.customerNewImage.image_dockerfile.image_author = this.appInitService.currentUser.user_name;
     this.customerNewImage.project_id = projectId;
     this.customerNewImage.project_name = projectName;
     this.customerNewImage.image_template = "dockerfile-template";
@@ -233,6 +234,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
     } else {
       this.imageService.cancelConsole(this.customerNewImage.image_name).subscribe(
         () => this.cleanImageConfig(),
+        () => this.modalOpened = false,
         () => this.modalOpened = false);
     }
   }
@@ -282,7 +284,6 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
       });
     }
     this.imageService.deleteImageConfig(this.customerNewImage.project_name).subscribe();
-    this.updateFileList().subscribe();
   }
 
   buildImageResole() {
@@ -303,8 +304,8 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
           this.cancelButtonDisable = true;
           this.isNeedAutoRefreshImageList = false;
           this.appInitService.setAuditLog({
-            operation_user_id: this.appInitService.currentUser["user_id"],
-            operation_user_name: this.appInitService.currentUser["user_name"],
+            operation_user_id: this.appInitService.currentUser.user_id,
+            operation_user_name: this.appInitService.currentUser.user_name,
             operation_project_id: this.customerNewImage.project_id,
             operation_project_name: this.customerNewImage.project_name,
             operation_object_type: "images",
@@ -332,7 +333,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
         buildImageInit();
         this.imageService.buildImageFromTemp(this.customerNewImage).subscribe(
           () => this.buildImageResole(),
-          () => this.cleanImageConfig()
+          (error: HttpErrorResponse) => this.cleanImageConfig(error)
         );
       }
     } else if (this.imageBuildMethod == CreateImageMethod.DockerFile) {
@@ -340,7 +341,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
         buildImageInit();
         this.buildImageByDockerFile().subscribe(
           () => this.buildImageResole(),
-          () => this.cleanImageConfig()
+          (error: HttpErrorResponse) => this.cleanImageConfig(error)
         );
       } else {
         this.messageService.showAlert('IMAGE.CREATE_IMAGE_SELECT_DOCKER_FILE', {alertType: 'alert-warning', view: this.alertView});
@@ -351,7 +352,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
           buildImageInit();
           this.buildImageByImagePackage().subscribe(
             () => this.buildImageResole(),
-            () => this.cleanImageConfig()
+            (error: HttpErrorResponse) => this.cleanImageConfig(error)
           );
         }
         else {
@@ -424,7 +425,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
 
   uploadFile(event: Event) {
     let fileList: FileList = (event.target as HTMLInputElement).files;
-    if (fileList.length > 0) {
+    if (fileList.length > 0 && this.verifyInputValid()) {
       let file: File = fileList[0];
       if (file.size > 1024 * 1024 * 500) {
         (event.target as HTMLInputElement).value = "";

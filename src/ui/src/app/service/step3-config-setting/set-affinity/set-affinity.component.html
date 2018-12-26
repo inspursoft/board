@@ -21,19 +21,19 @@
           <label>
             <input type="radio"
                    [name]="i"
-                   [checked]="affinity.flag"
-                   [value]="true"
+                   [checked]="!affinity.antiFlag"
+                   [value]="false"
                    [disabled]="isActionWip"
-                   [(ngModel)]="affinity.flag">
+                   [(ngModel)]="affinity.antiFlag">
             {{"SERVICE.STEP_3_AFFINITY_GROUP" | translate}}
           </label>
           <label>
             <input type="radio"
                    [name]="i"
-                   [checked]="!affinity.flag"
-                   [value]="false"
+                   [checked]="affinity.antiFlag"
+                   [value]="true"
                    [disabled]="isActionWip"
-                   [(ngModel)]="affinity.flag">
+                   [(ngModel)]="affinity.antiFlag">
             {{"SERVICE.STEP_3_ANTI_AFFINITY_GROUP" | translate}}
           </label>
           <a *ngIf="!isActionWip" [class.disabled]="isActionWip" href="javascript:void(0)"
