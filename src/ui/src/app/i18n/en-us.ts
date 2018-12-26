@@ -505,6 +505,7 @@ export const LANG_EN_US = {
     "PV_CREATE_SELECT_TYPE": "Select storage type ...",
     "PV_CREATE_SELECT_ACCESS_MODE":"Select access mode ...",
     "PV_CREATE_SELECT_RECLAIM":"Select reclaim ...",
+    "PV_CREATE_NAME_PATTERN":"Made of numbers or lowercase letter with '.' character supported in the middle.",
     "PV_USER": "User",
     "PV_KEYRING":"Keyring",
     "PV_MONITORS":"Monitors",
@@ -548,6 +549,7 @@ export const LANG_EN_US = {
     "PVC_CREATE_SELECT_PROJECT":"Select project ...",
     "PVC_CREATE_SELECT_ACCESS_MODE":"Select access mode ...",
     "PVC_CREATE_SUCCESS":"Create PVC success.",
+    "PVC_CREATE_NAME_PATTERN":"Made of numbers or lowercase letter with '.' character supported in the middle.",
     "PVC_DELETE_CONFIRM":"Confirm to delete: {{0}}?",
     "PVC_DELETE_SUCCESS":"Delete success",
     "PVC_DELETE_FAILED":"Delete failed"

@@ -8,6 +8,9 @@
                 [customerValidatorAsyncFunc]="checkPvNameFun"
                 [inputLabel]="'STORAGE.PV_NAME' | translate"
                 [simpleFiled]="newPersistentVolume.name"
+                [inputMaxlength]="50"
+                [inputPattern]="namePattern"
+                [validatorMessage]="[{validatorKey: 'pattern', validatorMessage: 'STORAGE.PV_CREATE_NAME_PATTERN'}]"
                 (onCheck)="newPersistentVolume.name = $event">
       </cs-input>
       <cs-input [inputIsRequired]="true"
@@ -146,10 +149,10 @@
     </div>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-default" (click)="modalOpened = false">
+    <button type="button" class="btn btn-default" [disabled]="isCreateWip" (click)="modalOpened = false">
       {{ 'BUTTON.CANCEL' | translate }}
     </button>
-    <button type="button" class="btn btn-primary" (click)="createNewPv()">
+    <button type="button" class="btn btn-primary" [disabled]="isCreateWip" (click)="createNewPv()">
       {{ 'BUTTON.CREATE' | translate }}
     </button>
     <span *ngIf="isCreateWip" class="spinner spinner-sm"></span>

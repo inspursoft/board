@@ -256,7 +256,7 @@ export class PersistentVolumeClaim {
   public name = '';
   public projectId = 0;
   public projectName = '';
-  public capacity = '';
+  public capacity = 0;
   public state = 0;
   public accessMode: PvcAccessMode;
   public class = '';
@@ -274,7 +274,7 @@ export class PersistentVolumeClaim {
       this.name = Reflect.get(res, 'pvc_name');
       this.projectId = Reflect.get(res, 'pvc_projectid');
       this.projectName = Reflect.get(res, 'pvc_projectname');
-      this.capacity = Reflect.get(res, 'pvc_capacity');
+      this.capacity = Number.parseFloat(Reflect.get(res, 'pvc_capacity'));
       this.state = Reflect.get(res, 'pvc_state');
       this.accessMode = Reflect.get(res, 'pvc_accessmode');
       this.class = Reflect.get(res, 'pvc_class');
@@ -295,7 +295,7 @@ export class PersistentVolumeClaim {
     return {
       pvc_name: this.name,
       pvc_projectid: this.projectId,
-      pvc_capacity: this.capacity,
+      pvc_capacity: `${this.capacity}Gi`,
       pvc_accessmode: this.accessMode,
       pvc_class: this.class,
       pvc_designatedpv: this.designatedPv

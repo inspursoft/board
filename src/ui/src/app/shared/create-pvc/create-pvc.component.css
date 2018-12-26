@@ -22,6 +22,10 @@ div.dynamic-line-container {
   align-items: center;
 }
 
+div.dynamic-line-container cs-input{
+  flex-basis: 100%;
+}
+
 span.filed-text {
   width: 180px;
   text-align: right;
