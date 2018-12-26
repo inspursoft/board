@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewContainerRef } from '@angular/core';
+import { Component, ViewContainerRef } from '@angular/core';
 import { AppInitService } from '../app.init.service';
 import { MessageService } from '../shared/message-service/message.service';
 import { GUIDE_STEP } from '../shared/shared.const';
@@ -17,12 +17,11 @@ import "rxjs/add/observable/empty"
   styleUrls: ["./project.component.css"],
   templateUrl: 'project.component.html'
 })
-export class ProjectComponent implements OnInit {
+export class ProjectComponent {
   totalRecordCount: number;
   pageIndex: number = 1;  
   pageSize: number = 15;
   projects: Project[];
-  currentUser: {[key: string]: any};
   isInLoading:boolean = false;
   descSort = ClrDatagridSortOrder.DESC;
   oldStateInfo: ClrDatagridStateInterface;
@@ -33,10 +32,6 @@ export class ProjectComponent implements OnInit {
     private sharedActionService: SharedActionService,
     private translateService: TranslateService,
     private selfView: ViewContainerRef) {
-  }
-
-  ngOnInit(): void {
-    this.currentUser = this.appInitService.currentUser;
   }
 
   retrieve(state: ClrDatagridStateInterface): void {
@@ -113,11 +108,8 @@ export class ProjectComponent implements OnInit {
   }
 
   isSystemAdminOrOwner(project: Project): boolean {
-    if (this.appInitService.currentUser) {
-      return this.appInitService.currentUser["user_system_admin"] == 1 ||
-        project.project_owner_id == this.appInitService.currentUser["user_id"];
-    }
-    return false;
+      return this.appInitService.currentUser.user_system_admin == 1 ||
+        project.project_owner_id == this.appInitService.currentUser.user_id;
   }
 
   guideNextStep(step:GUIDE_STEP){

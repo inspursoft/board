@@ -24,12 +24,11 @@ export class GlobalSearchComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    if(this.appInitService.currentUser) {
+    if(this.appInitService.currentUser.user_id > 0) {
       this.hasSignedIn = true;
     }
     this.appTokenService.tokenMessage$.subscribe(token=>this.token = token);
     this.route.queryParamMap.subscribe(params=>this.search(params.get("q")));
-    console.log(this.appInitService.currentUser);
   }
 
   search(q: string) {

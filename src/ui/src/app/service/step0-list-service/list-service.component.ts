@@ -18,7 +18,6 @@ enum CreateServiceMethod{None, Wizards, YamlFile, DevOps}
   styleUrls: ["./list-service.component.css"]
 })
 export class ListServiceComponent extends ServiceStepBase implements OnInit, OnDestroy {
-  currentUser: {[key: string]: any};
   services: Service[];
   isInLoading: boolean = false;
   totalRecordCount: number;
@@ -44,7 +43,6 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   }
 
   ngOnInit(): void {
-    this.currentUser = this.appInitService.currentUser;
     this.k8sService.getProjects().subscribe((res: Array<Project>) => this.projectList = res);
   }
 
@@ -206,10 +204,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   }
 
   isSystemAdminOrOwner(service: Service): boolean {
-    if (this.appInitService.currentUser) {
-      return this.appInitService.currentUser["user_system_admin"] == 1 ||
-        service.service_owner_id == this.appInitService.currentUser["user_id"];
-    }
-    return false;
+      return this.appInitService.currentUser.user_system_admin == 1 ||
+        service.service_owner_id == this.appInitService.currentUser.user_id;
   }
 }

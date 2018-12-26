@@ -7,6 +7,7 @@ import { AppInitService } from '../../app.init.service';
 import { AccountService } from '../../account/account.service';
 import { MessageService } from '../message-service/message.service';
 import { CookieService } from "ngx-cookie";
+import { User } from "../shared.types";
 
 @Component({
   selector: 'header-content',
@@ -19,7 +20,7 @@ export class HeaderComponent implements OnInit {
   @Input() hasSignedIn: boolean;
   @Input() searchContent: string;
 
-  currentUser: {[key: string]: any};
+  currentUser: User;
   showChangePassword:boolean = false;
   showAccountSetting:boolean = false;
   authMode: string = '';
@@ -40,7 +41,7 @@ export class HeaderComponent implements OnInit {
 
   ngOnInit(): void {
     if (this.hasSignedIn){
-      this.currentUser = this.appInitService.currentUser || {};
+      this.currentUser = this.appInitService.currentUser;
       this.authMode = this.appInitService.systemInfo.auth_mode;
       this.redirectionURL = this.appInitService.systemInfo.redirection_url;
     }
@@ -87,7 +88,7 @@ export class HeaderComponent implements OnInit {
     this.accountService.signOut(this.appInitService.currentUser.user_name).subscribe(() => {
       this.cookieService.remove('token');
       this.appInitService.token = '';
-      this.appInitService.currentUser = null;
+      this.appInitService.currentUser = new User();
       if (this.authMode === 'indata_auth') {
         window.location.href = this.redirectionURL;
         return;
