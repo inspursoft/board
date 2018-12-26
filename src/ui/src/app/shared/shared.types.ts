@@ -177,7 +177,7 @@ export class PersistentVolume {
   public name = '';
   public type = 0;
   public state = 0;
-  public capacity = '';
+  public capacity = 0;
   public accessMode: PvAccessMode;
   public reclaim: PvReclaimMode;
 
@@ -187,7 +187,7 @@ export class PersistentVolume {
       this.name = Reflect.get(res, 'pv_name');
       this.type = Reflect.get(res, 'pv_type');
       this.state = Reflect.get(res, 'pv_state');
-      this.capacity = Reflect.get(res, 'pv_capacity');
+      this.capacity = Number.parseFloat(Reflect.get(res, 'pv_capacity'));
       this.accessMode = Reflect.get(res, 'pv_accessmode');
       this.reclaim = Reflect.get(res, 'pv_reclaim');
     }
@@ -211,7 +211,7 @@ export class PersistentVolume {
   postObject(): Object {
     return {
       pv_name: this.name,
-      pv_capacity: this.capacity,
+      pv_capacity: `${this.capacity}Gi`,
       pv_type: this.type,
       pv_accessmode: this.accessMode,
       pv_reclaim: this.reclaim

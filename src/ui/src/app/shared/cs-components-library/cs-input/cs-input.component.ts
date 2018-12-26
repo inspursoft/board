@@ -35,7 +35,7 @@ class CustomValidator {
   }
 }
 
-const PATTERN_Number: RegExp = /^[0-9]\d*$/;
+const PATTERN_Number: RegExp = /^\d+(\.\d+)?$/;
 @Component({
   selector: "cs-input",
   templateUrl: "./cs-input.component.html",
