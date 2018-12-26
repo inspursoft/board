@@ -39,6 +39,7 @@ var (
 	emptyExternalServiceListErr        = errors.New("ERR_EMPTY_EXTERNAL_SERVICE_LIST")
 	notFoundErr                        = errors.New("ERR_NOT_FOUND")
 	nodeOrNodeGroupNameNotFound        = errors.New("ERR_NODE_SELECTOR_NAME_NOT_FOUND")
+	resourcerequestErr                 = errors.New("ERR_INVALID_RESOURCE_REQUEST")
 )
 
 type ConfigServiceStep model.ConfigServiceStep
@@ -239,6 +240,45 @@ func (sc *ServiceConfigController) configContainerList(key string, configService
 	if err != nil {
 		sc.internalError(err)
 		return
+	}
+
+
+	//Check CPU Mem request and limit
+	for _, container := range containerList {
+		if container.CPURequest != "" && container.CPULimit != "" {
+			cpurequest, err := strconv.Atoi(strings.TrimRight(container.CPURequest, "m"))
+			if err != nil {
+				sc.serveStatus(http.StatusBadRequest, resourcerequestErr.Error())
+				return
+			}
+			cpulimit, err := strconv.Atoi(strings.TrimRight(container.CPULimit, "m"))
+			if err != nil {
+				sc.serveStatus(http.StatusBadRequest, resourcerequestErr.Error())
+				return
+			}
+			if cpurequest > cpulimit {
+				sc.serveStatus(http.StatusBadRequest, resourcerequestErr.Error())
+				return
+			}
+
+		}
+		if container.MemRequest != "" && container.MemLimit != "" {
+			memrequest, err := strconv.Atoi(strings.TrimRight(container.MemRequest, "Mi"))
+			if err != nil {
+				sc.serveStatus(http.StatusBadRequest, resourcerequestErr.Error())
+				return
+			}
+			memlimit, err := strconv.Atoi(strings.TrimRight(container.MemLimit, "Mi"))
+			if err != nil {
+				sc.serveStatus(http.StatusBadRequest, resourcerequestErr.Error())
+				return
+			}
+			if memrequest > memlimit {
+				sc.serveStatus(http.StatusBadRequest, resourcerequestErr.Error())
+				return
+			}
+
+		}
 	}
 
 	//delete invalid port to nodeport map in ExternalServiceList, which may have been configured in phase "EXTERNAL_SERVICE"
