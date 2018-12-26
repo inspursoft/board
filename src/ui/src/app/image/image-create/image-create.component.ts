@@ -35,6 +35,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   @ViewChildren(CsInputArrayComponent) inputArrayComponents: QueryList<CsInputArrayComponent>;
   @ViewChild("areaStatus") areaStatus: ElementRef;
   imageBuildMethod: CreateImageMethod = CreateImageMethod.Template;
+  createImageMethod = CreateImageMethod;
   isOpenEnvironment = false;
   patternNewImageName: RegExp = /^[a-z\d.-]+$/;
   patternNewImageTag: RegExp = /^[a-z\d.-]+$/;
@@ -113,7 +114,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
 
   public initCustomerNewImage(projectId: number, projectName: string): void {
     this.customerNewImage = new BuildImageData();
-    this.customerNewImage.image_dockerfile.image_author = this.appInitService.currentUser["user_name"];
+    this.customerNewImage.image_dockerfile.image_author = this.appInitService.currentUser.user_name;
     this.customerNewImage.project_id = projectId;
     this.customerNewImage.project_name = projectName;
     this.customerNewImage.image_template = "dockerfile-template";
@@ -303,8 +304,8 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
           this.cancelButtonDisable = true;
           this.isNeedAutoRefreshImageList = false;
           this.appInitService.setAuditLog({
-            operation_user_id: this.appInitService.currentUser["user_id"],
-            operation_user_name: this.appInitService.currentUser["user_name"],
+            operation_user_id: this.appInitService.currentUser.user_id,
+            operation_user_name: this.appInitService.currentUser.user_name,
             operation_project_id: this.customerNewImage.project_id,
             operation_project_name: this.customerNewImage.project_name,
             operation_object_type: "images",
