@@ -3,6 +3,7 @@
   <div class="modal-body node-create-group-body">
     <cs-input [inputIsRequired]="true"
               [inputPattern]="patternNodeGroupName"
+              [inputMaxlength]="63"
               [inputLabel]="'NODE.NODE_GROUP_NAME' | translate"
               [simpleFiled]="newNodeGroupData.nodegroup_name"
               [customerValidatorAsyncFunc]="checkNodeGroupNameFun"

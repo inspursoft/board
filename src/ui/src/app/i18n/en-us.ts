@@ -647,6 +647,7 @@ export const LANG_EN_US = {
     "NODE_GROUP_CREATE":"Create node group",
     "NODE_GROUP_NAME_EXIST":"Node group name exist",
     "NODE_GROUP_CREATE_SUCCESS":"Successful create node group",
+    "NODE_GROUP_CREATE_FAILED":"Add node group failed",
     "NODE_GROUP":"Node Group List",
     "NODE_GROUP_DELETE":"Delete Node Group",
     "NODE_GROUP_DELETE_SUCCESS":"Delete node group Successfully!",
