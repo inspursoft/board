@@ -12,12 +12,13 @@
       </cs-input>
       <cs-input [inputIsRequired]="true"
                 [inputLabel]="'STORAGE.PV_CAPACITY' | translate"
-                [inputPlaceholder]="'eg. 5Gi'"
-                [inputPattern]="capacityPattern"
+                [inputPlaceholder]="'eg. 5'"
+                [inputMin]="0.1"
+                [inputFiledType]="1"
                 [disabled]="isCreateWip"
                 [simpleFiled]="newPersistentVolume.capacity"
                 (onCheck)="newPersistentVolume.capacity = $event">
-      </cs-input>
+      </cs-input>(Gi)
     </div>
     <div class="dynamic-line-container">
       <span class="filed-text">{{"STORAGE.PV_TYPE"|translate}}:</span>
@@ -59,7 +60,7 @@
         {{"STORAGE.PV_WARNING_RECLAIM" | translate}}
       </label>
     </div>
-    <div class="pv-section-container"><span>Options</span></div>
+    <div class="pv-section-container"><span>Advanced</span></div>
     <div [ngSwitch]="newPersistentVolume.typeDescription">
       <ng-container *ngSwitchCase="'NFS'">
         <div class="dynamic-line-container">
