@@ -99,10 +99,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
     }, AUTO_REFRESH_IMAGE_LIST);
     this.imageService.getImages("", 0, 0).subscribe(
       (res: Array<Image>) => this.imageList = res || [],
-      () => {
-        this.modalOpened = false;
-        this.messageService.showAlert('IMAGE.CREATE_IMAGE_UPDATE_IMAGE_LIST_FAILED', {alertType: 'alert-danger', view: this.alertView});
-      })
+      () => this.modalOpened = false)
   }
 
   ngOnDestroy() {

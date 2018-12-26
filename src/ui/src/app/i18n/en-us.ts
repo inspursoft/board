@@ -301,6 +301,8 @@ export const LANG_EN_US = {
     "CREATE_IMAGE_TAG_EXIST":"Image tag exist.",
     "CREATE_IMAGE_NAME_EXIST":"Image name exist.",
     "CREATE_IMAGE_JENKINS_PREPARE":"Jenkins preparing...",
+    "CREATE_IMAGE_NAME_TAG_PATTERN":"A string consisting of the lowercase,numeric,'.',-'",
+    "CREATE_IMAGE_BASE_IMAGE_PATTERN":"A string consisting of the lowercase,numeric,'.',-',':'",
   },
   "SERVICE": {
     "ASK_TITLE":"Cancel",

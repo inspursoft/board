@@ -301,6 +301,8 @@ export const LANG_ZH_CN = {
     "CREATE_IMAGE_TAG_EXIST":"镜像标签已经存在",
     "CREATE_IMAGE_NAME_EXIST":"镜像名称已经存在",
     "CREATE_IMAGE_JENKINS_PREPARE":"Jenkins正在准备...",
+    "CREATE_IMAGE_NAME_TAG_PATTERN":"由小写字母、数字、'.'、'-'组成的字符串",
+    "CREATE_IMAGE_BASE_IMAGE_PATTERN":"由小写字母、数字、'.'、':'、'-'组成的字符串",
   },
   "SERVICE": {
     "ASK_TITLE":"取消",

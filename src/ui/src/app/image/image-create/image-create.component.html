@@ -27,6 +27,7 @@
                       [inputPattern]="patternNewImageName"
                       [inputLabel]="'IMAGE.CREATE_IMAGE_NEW_IMAGE_NAME'|translate"
                       [customerValidatorAsyncFunc]="checkImageNameFun"
+                      [validatorMessage]="[{validatorKey: 'pattern', validatorMessage: 'IMAGE.CREATE_IMAGE_NAME_TAG_PATTERN'}]"
                       [disabled]="isBuildImageWIP"
                       [simpleFiled]="customerNewImage.image_name"
                       (onCheck)="customerNewImage.image_name = $event;updateFileListAndPreviewInfo()">
@@ -36,6 +37,7 @@
                       [inputLabel]="'IMAGE.CREATE_IMAGE_IMAGE_TAG'|translate"
                       [customerValidatorAsyncFunc]="checkImageTagFun"
                       [disabled]="isBuildImageWIP"
+                      [validatorMessage]="[{validatorKey: 'pattern', validatorMessage: 'IMAGE.CREATE_IMAGE_NAME_TAG_PATTERN'}]"
                       [simpleFiled]="customerNewImage.image_tag"
                       (onCheck)="customerNewImage.image_tag = $event;updateFileListAndPreviewInfo()">
             </cs-input>
@@ -68,6 +70,7 @@
                         class="margin-left-180"
                         [inputIsRequired]="true"
                         [inputPattern]="patternBaseImage"
+                        [validatorMessage]="[{validatorKey: 'pattern', validatorMessage: 'IMAGE.CREATE_IMAGE_BASE_IMAGE_PATTERN'}]"
                         [inputType]="2"
                         [disabled]="isBuildImageWIP"
                         [simpleFiled]="customerNewImage.image_dockerfile.image_base"
@@ -163,6 +166,7 @@
             <cs-input [inputIsRequired]="true"
                       [inputPattern]="patternNewImageName"
                       [inputLabel]="'IMAGE.CREATE_IMAGE_NEW_IMAGE_NAME'|translate"
+                      [validatorMessage]="[{validatorKey: 'pattern', validatorMessage: 'IMAGE.CREATE_IMAGE_NAME_TAG_PATTERN'}]"
                       [disabled]="isBuildImageWIP || isImageNameAndTagDisabled"
                       [customerValidatorAsyncFunc]="checkImageNameFun"
                       [simpleFiled]="customerNewImage.image_name"
@@ -172,6 +176,7 @@
                       [inputPattern]="patternNewImageTag"
                       [inputLabel]="'IMAGE.CREATE_IMAGE_IMAGE_TAG'|translate"
                       [disabled]="isBuildImageWIP || isImageNameAndTagDisabled"
+                      [validatorMessage]="[{validatorKey: 'pattern', validatorMessage: 'IMAGE.CREATE_IMAGE_NAME_TAG_PATTERN'}]"
                       [customerValidatorAsyncFunc]="checkImageTagFun"
                       [simpleFiled]="customerNewImage.image_tag"
                       (onCheck)="customerNewImage.image_tag = $event">
@@ -229,6 +234,7 @@
                       [inputPattern]="patternNewImageName"
                       [inputLabel]="'IMAGE.CREATE_IMAGE_NEW_IMAGE_NAME'|translate"
                       [disabled]="isBuildImageWIP"
+                      [validatorMessage]="[{validatorKey: 'pattern', validatorMessage: 'IMAGE.CREATE_IMAGE_NAME_TAG_PATTERN'}]"
                       [customerValidatorAsyncFunc]="checkImageNameFun"
                       [simpleFiled]="customerNewImage.image_name"
                       (onCheck)="customerNewImage.image_name = $event">
@@ -237,6 +243,7 @@
                       [inputPattern]="patternNewImageTag"
                       [inputLabel]="'IMAGE.CREATE_IMAGE_IMAGE_TAG'|translate"
                       [disabled]="isBuildImageWIP"
+                      [validatorMessage]="[{validatorKey: 'pattern', validatorMessage: 'IMAGE.CREATE_IMAGE_NAME_TAG_PATTERN'}]"
                       [customerValidatorAsyncFunc]="checkImageTagFun"
                       [simpleFiled]="customerNewImage.image_tag"
                       (onCheck)="customerNewImage.image_tag = $event">
