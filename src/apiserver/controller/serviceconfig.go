@@ -5,6 +5,7 @@ import (
 	"errors"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -239,7 +240,7 @@ func (sc *ServiceConfigController) configContainerList(key string, configService
 		sc.internalError(err)
 		return
 	}
-	
+
 	//delete invalid port to nodeport map in ExternalServiceList, which may have been configured in phase "EXTERNAL_SERVICE"
 	externalServiceList := make([]model.ExternalService, 0)
 	for _, externalService := range configServiceStep.ExternalServiceList {
@@ -263,8 +264,8 @@ func (sc *ServiceConfigController) configContainerList(key string, configService
 
 func (sc *ServiceConfigController) configExternalService(key string, configServiceStep *ConfigServiceStep, reqData []byte) {
 	serviceName := strings.ToLower(sc.GetString("service_name"))
-	if serviceName == "" {
-		sc.serveStatus(http.StatusBadRequest, emptyServiceNameErr.Error())
+	if !utils.ValidateWithLengthRange(serviceName, 1, 63) {
+		sc.serveStatus(http.StatusBadRequest, "Service Name must be not empty and no more than 63 characters ")
 		return
 	}
 
