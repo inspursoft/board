@@ -13,12 +13,14 @@
     <cs-input [inputIsRequired]="true"
               [disabled]="isCreateWip"
               [inputLabel]="'STORAGE.PVC_NAME' | translate"
+              [inputPattern]="namePattern"
               [simpleFiled]="newPersistentVolumeClaim.name"
               (onCheck)="newPersistentVolumeClaim.name = $event">
     </cs-input>
     <cs-input [inputIsRequired]="true"
               [inputLabel]="'STORAGE.PVC_CAPACITY' | translate"
               [inputPlaceholder]="'eg. 5Gi'"
+              [inputPattern]="capacityPattern"
               [disabled]="isCreateWip"
               [simpleFiled]="newPersistentVolumeClaim.capacity"
               (onCheck)="newPersistentVolumeClaim.capacity = $event">
@@ -32,6 +34,14 @@
                    [dropdownList]="accessModeList"
                    (onChange)="newPersistentVolumeClaim.accessMode = $event">
       </cs-dropdown>
+    </div>
+    <div *ngIf="newPersistentVolumeClaim.accessMode == 'ReadOnlyMany'"
+         class="dynamic-line-container alert alert-warning warning-info">
+      {{"STORAGE.PV_WARNING_READ_ONLY_MANY" | translate}}
+    </div>
+    <div *ngIf="newPersistentVolumeClaim.accessMode == 'ReadWriteMany'"
+         class="dynamic-line-container alert alert-warning warning-info">
+      {{"STORAGE.PV_WARNING_READ_WRITE_MANY" | translate}}
     </div>
     <div class="pvc-section-container"><span>Options</span></div>
     <cs-input [disabled]="isCreateWip"
@@ -47,6 +57,7 @@
                    [dropdownDisabled]="isCreateWip"
                    [dropdownList]="pvList"
                    [dropdownListTextKey]="'name'"
+                   (onOnlyClickItem)="changeDesignatePv($event)"
                    (onChange)="changeDesignatePv($event)">
       </cs-dropdown>
     </div>

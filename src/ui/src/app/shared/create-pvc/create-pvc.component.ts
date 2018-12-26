@@ -17,6 +17,8 @@ export class CreatePvcComponent extends CsModalChildBase implements OnInit {
   pvList: Array<PersistentVolume>;
   newPersistentVolumeClaim: PersistentVolumeClaim;
   isCreateWip = false;
+  capacityPattern: RegExp = /^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/;
+  namePattern: RegExp = /^[a-z0-9][(.a-z0-9?)]*$/;
 
   constructor(private sharedService: SharedService,
               private messageService: MessageService) {
@@ -33,7 +35,16 @@ export class CreatePvcComponent extends CsModalChildBase implements OnInit {
     this.accessModeList.push(PvcAccessMode.ReadWriteMany);
     this.accessModeList.push(PvcAccessMode.ReadOnlyMany);
     this.sharedService.getAllProjects().subscribe((res: Array<Project>) => this.projectsList = res);
-    this.sharedService.getAllPvList().subscribe((res: Array<PersistentVolume>) => this.pvList = res);
+    this.sharedService.getAllPvList().subscribe((res: Array<PersistentVolume>) => {
+      this.pvList = res;
+      if (this.pvList.length > 0) {
+        let pvNone = new PersistentVolume();
+        pvNone.name = 'None';
+        pvNone["isSpecial"] = true;
+        pvNone["OnlyClick"] = true;
+        this.pvList.unshift(pvNone);
+      }
+    });
   }
 
   changeSelectProject(project: Project) {
@@ -41,7 +52,7 @@ export class CreatePvcComponent extends CsModalChildBase implements OnInit {
   }
 
   changeDesignatePv(pv: PersistentVolume) {
-    this.newPersistentVolumeClaim.designatedPv = pv.name;
+    this.newPersistentVolumeClaim.designatedPv = pv.name == 'None' ? '' : pv.name;
   }
 
   createNewPvc() {

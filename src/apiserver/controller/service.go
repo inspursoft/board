@@ -176,7 +176,7 @@ func syncK8sStatus(serviceList []*model.ServiceStatusMO) error {
 			continue
 		}
 		// Check the deployment status
-		deployment, err := service.GetDeployment((*serviceStatus).ProjectName, (*serviceStatus).Name)
+		deployment, _, err := service.GetDeployment((*serviceStatus).ProjectName, (*serviceStatus).Name)
 		if deployment == nil && serviceStatus.Name != k8sServices {
 			logs.Info("Failed to get deployment", err)
 			var reason = "The deployment is not established in cluster system"
@@ -568,13 +568,25 @@ func (p *ServiceController) ScaleServiceAction() {
 	}
 	// change the replica number of service
 	res, err := service.ScaleReplica(s, reqServiceScale.Replica)
-
 	if res != true {
 		logs.Info("Failed to scale service replica", s, reqServiceScale.Replica)
 		p.internalError(err)
 		return
 	}
 	logs.Info("Scale service replica successfully")
+
+	_, deploymentFileInfo, err := service.GetDeployment(s.ProjectName, s.Name)
+	if err != nil {
+		logs.Error("Failed to get deployment %s", s.Name)
+		return
+	}
+	p.resolveRepoServicePath(s.ProjectName, s.Name)
+	err = utils.GenerateFile(deploymentFileInfo, p.repoServicePath, deploymentFilename)
+	if err != nil {
+		logs.Error("Failed to update file of deployment %s", s.Name)
+		return
+	}
+	p.pushItemsToRepo(filepath.Join(s.Name, deploymentFilename))
 }
 
 //get selectable service list

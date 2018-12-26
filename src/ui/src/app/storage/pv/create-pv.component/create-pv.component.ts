@@ -45,6 +45,10 @@ export class CreatePvComponent extends CsModalChildBase implements OnInit {
     ];
   }
 
+  changeAccessMode(mode: PvAccessMode){
+    this.newPersistentVolume.accessMode = mode;
+  }
+
   createNewPv() {
     if (this.verifyInputValid() && this.verifyDropdownValid()) {
       this.storageService.createNewPv(this.newPersistentVolume).subscribe(

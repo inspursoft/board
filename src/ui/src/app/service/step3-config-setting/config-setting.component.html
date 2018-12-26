@@ -6,6 +6,7 @@
     <cs-input [inputIsRequired]="true"
               [disabled]="isActionWip"
               [inputPattern]="patternServiceName"
+              [inputMaxlength]="63"
               [inputLabel]="'SERVICE.STEP_3_SERVICE_NAME' | translate"
               [validatorMessage]="[{validatorKey:'pattern',validatorMessage:'SERVICE.STEP_3_SERVICE_NAME_PATTERN_NSG'}]"
               [customerValidatorAsyncFunc]="checkServiceNameFun"

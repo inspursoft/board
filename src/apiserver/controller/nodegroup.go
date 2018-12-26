@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"strings"
 
@@ -32,8 +33,8 @@ func (n *NodeGroupController) AddNodeGroupAction() {
 		return
 	}
 
-	if reqNodeGroup.GroupName == "" {
-		n.customAbort(http.StatusBadRequest, "NodeGroup Name should not null")
+	if !utils.ValidateWithLengthRange(reqNodeGroup.GroupName, 1, 63) {
+		n.customAbort(http.StatusBadRequest, "NodeGroup Name must be not empty and no more than 63 characters ")
 		return
 	}
 

@@ -7,7 +7,7 @@ import { CsInputArrayComponent } from "../../shared/cs-components-library/cs-inp
 import { BuildImageData, Image, ImageDetail } from "../image";
 import { ImageService } from "../image-service/image-service";
 import { MessageService } from "../../shared/message-service/message.service";
-import { HttpErrorResponse, HttpEvent, HttpEventType, HttpProgressEvent, HttpResponse } from "@angular/common/http"
+import { HttpErrorResponse, HttpEvent, HttpEventType, HttpProgressEvent } from "@angular/common/http"
 import { AppInitService } from "../../app.init.service";
 import { Subscription } from "rxjs/Subscription";
 import { WebsocketService } from "../../shared/websocket-service/websocket.service";
@@ -15,7 +15,7 @@ import { EnvType } from "../../shared/environment-value/environment-value.compon
 import { ValidationErrors } from "@angular/forms";
 import { TranslateService } from "@ngx-translate/core";
 import { CsModalChildBase } from "../../shared/cs-modal-base/cs-modal-child-base";
-import { CreateImageMethod } from "../../shared/shared.types";
+import { CreateImageMethod, Tools } from "../../shared/shared.types";
 import { Observable } from "rxjs/Observable";
 import "rxjs/add/operator/zip"
 import "rxjs/add/operator/catch"
@@ -35,6 +35,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   @ViewChildren(CsInputArrayComponent) inputArrayComponents: QueryList<CsInputArrayComponent>;
   @ViewChild("areaStatus") areaStatus: ElementRef;
   imageBuildMethod: CreateImageMethod = CreateImageMethod.Template;
+  createImageMethod = CreateImageMethod;
   isOpenEnvironment = false;
   patternNewImageName: RegExp = /^[a-z\d.-]+$/;
   patternNewImageTag: RegExp = /^[a-z\d.-]+$/;
@@ -52,6 +53,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   isBuildImageWIP: boolean = false;
   isServerHaveDockerFile: boolean = false;
   isUploadFileWIP = false;
+  isGetImageDetailListWip = false;
   isImageNameAndTagDisabled = false;
   customerNewImage: BuildImageData;
   consoleText: string = "";
@@ -65,6 +67,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   processImageSubscription: Subscription;
   cancelButtonDisable = true;
   cancelInfo: {isShow: boolean, isForce: boolean, title: string, message: string};
+  uploadTarPackageName = '';
 
   constructor(private imageService: ImageService,
               private messageService: MessageService,
@@ -111,7 +114,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
 
   public initCustomerNewImage(projectId: number, projectName: string): void {
     this.customerNewImage = new BuildImageData();
-    this.customerNewImage.image_dockerfile.image_author = this.appInitService.currentUser["user_name"];
+    this.customerNewImage.image_dockerfile.image_author = this.appInitService.currentUser.user_name;
     this.customerNewImage.project_id = projectId;
     this.customerNewImage.project_name = projectName;
     this.customerNewImage.image_template = "dockerfile-template";
@@ -152,6 +155,11 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
 
   get isBuildDisabled() {
     return this.isBuildImageWIP || this.isUploadFileWIP;
+  }
+
+  get isUploadDisabled(): boolean {
+    return Tools.isInvalidString(this.customerNewImage.image_name) || Tools.isInvalidString(this.customerNewImage.image_tag)
+      || this.isBuildImageWIP || this.isUploadFileWIP;
   }
 
   get checkImageTagFun() {
@@ -226,6 +234,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
     } else {
       this.imageService.cancelConsole(this.customerNewImage.image_name).subscribe(
         () => this.cleanImageConfig(),
+        () => this.modalOpened = false,
         () => this.modalOpened = false);
     }
   }
@@ -254,6 +263,16 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
     return this.imageService.buildImageFromDockerFile(fileInfo);
   }
 
+  buildImageByImagePackage(): Observable<any> {
+    let params = {
+      imageName: this.customerNewImage.image_name,
+      tagName: this.customerNewImage.image_tag,
+      projectName: this.customerNewImage.project_name,
+      imagePackageName: this.uploadTarPackageName
+    };
+    return this.imageService.buildImageFromImagePackage(params);
+  }
+
   cleanImageConfig(err?: HttpErrorResponse) {
     this.isBuildImageWIP = false;
     this.isUploadFileWIP = false;
@@ -265,7 +284,6 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
       });
     }
     this.imageService.deleteImageConfig(this.customerNewImage.project_name).subscribe();
-    this.updateFileList().subscribe();
   }
 
   buildImageResole() {
@@ -286,8 +304,8 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
           this.cancelButtonDisable = true;
           this.isNeedAutoRefreshImageList = false;
           this.appInitService.setAuditLog({
-            operation_user_id: this.appInitService.currentUser["user_id"],
-            operation_user_name: this.appInitService.currentUser["user_name"],
+            operation_user_id: this.appInitService.currentUser.user_id,
+            operation_user_name: this.appInitService.currentUser.user_name,
             operation_project_id: this.customerNewImage.project_id,
             operation_project_name: this.customerNewImage.project_name,
             operation_object_type: "images",
@@ -315,18 +333,31 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
         buildImageInit();
         this.imageService.buildImageFromTemp(this.customerNewImage).subscribe(
           () => this.buildImageResole(),
-          () => this.cleanImageConfig()
+          (error: HttpErrorResponse) => this.cleanImageConfig(error)
         );
       }
-    } else if (this.verifyInputValid()) {
-      if (this.isServerHaveDockerFile) {
+    } else if (this.imageBuildMethod == CreateImageMethod.DockerFile) {
+      if (this.verifyInputValid() && this.isServerHaveDockerFile) {
         buildImageInit();
         this.buildImageByDockerFile().subscribe(
           () => this.buildImageResole(),
-          () => this.cleanImageConfig()
+          (error: HttpErrorResponse) => this.cleanImageConfig(error)
         );
       } else {
         this.messageService.showAlert('IMAGE.CREATE_IMAGE_SELECT_DOCKER_FILE', {alertType: 'alert-warning', view: this.alertView});
+      }
+    } else if (this.imageBuildMethod == CreateImageMethod.ImagePackage) {
+      if (this.verifyInputValid()) {
+        if (this.uploadTarPackageName != ''){
+          buildImageInit();
+          this.buildImageByImagePackage().subscribe(
+            () => this.buildImageResole(),
+            (error: HttpErrorResponse) => this.cleanImageConfig(error)
+          );
+        }
+        else {
+          this.messageService.showAlert('IMAGE.CREATE_IMAGE_SELECT_IMAGE_PACKAGE', {alertType: 'alert-warning', view: this.alertView});
+        }
       }
     }
   }
@@ -394,7 +425,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
 
   uploadFile(event: Event) {
     let fileList: FileList = (event.target as HTMLInputElement).files;
-    if (fileList.length > 0) {
+    if (fileList.length > 0 && this.verifyInputValid()) {
       let file: File = fileList[0];
       if (file.size > 1024 * 1024 * 500) {
         (event.target as HTMLInputElement).value = "";
@@ -412,6 +443,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
           } else if (res.type == HttpEventType.Response) {
             (event.target as HTMLInputElement).value = "";
             this.isImageNameAndTagDisabled = true;
+            this.uploadTarPackageName = file.name;
             this.isUploadFileWIP = false;
             this.updateFileListAndPreviewInfo();
             this.messageService.showAlert('IMAGE.CREATE_IMAGE_UPLOAD_SUCCESS', {view: this.alertView});
@@ -480,14 +512,6 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
       () => this.updateFileListAndPreviewInfo());
   }
 
-  resetBuildMethod(method: CreateImageMethod) {
-    this.imageBuildMethod = method;
-    this.consoleText = "";
-    if (method == CreateImageMethod.Template) {
-      this.selectFromImportFile = null;
-    }
-  }
-
   cleanBaseImageInfo(isGetBoardRegistry: boolean = false): void {
     if ((this.baseImageSource == 1 && isGetBoardRegistry) ||
       (this.baseImageSource == 2 && !isGetBoardRegistry)) {
@@ -501,6 +525,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   setBaseImage(selectImage: Image): void {
     this.selectedImage = null;
     this.imageDetailList = null;
+    this.isGetImageDetailListWip = true;
     this.imageService.getBoardRegistry().subscribe((res: string) => {
       this.boardRegistry = res.replace(/"/g,"");
       this.imageService.getImageDetailList(selectImage.image_name).subscribe((res: ImageDetail[]) => {
@@ -508,7 +533,9 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
           this.imageDetailList = res;
           this.customerNewImage.image_dockerfile.image_base = `${this.boardRegistry}/${this.selectedImage.image_name}:${res[0].image_tag}`;
           this.getDockerFilePreviewInfo();
-        }, () => this.modalOpened = false
+        },
+        () => this.modalOpened = false,
+        () => this.isGetImageDetailListWip = false
       );
     });
   }

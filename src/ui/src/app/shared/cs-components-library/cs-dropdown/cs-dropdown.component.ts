@@ -150,6 +150,8 @@ export class CsDropdownComponent implements OnChanges, OnInit {
   changeSelect(item: any) {
     if (typeof item == "object" && item[ONLY_FOR_CLICK]) {
       this.curDropdownItem = item;
+      this.isShowDefaultText = true;
+      this.dropdownText = '';
       this.dropdownClick.emit(item);
     } else {
       if (this.dropdownCanSelect && !this.dropdownCanSelect(item)) {

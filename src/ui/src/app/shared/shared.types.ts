@@ -1,6 +1,7 @@
 import { HttpErrorResponse } from "@angular/common/http";
 import { Type } from "@angular/core";
 import { TimeoutError } from "rxjs/src/util/TimeoutError";
+import * as isObject from "isobject";
 
 export interface ICsMenuItemData {
   caption: string,
@@ -135,7 +136,7 @@ export enum DragStatus {
   dsReady = 'ready', dsStart = 'start', dsDragIng = 'drag', dsEnd = 'end'
 }
 
-export enum CreateImageMethod{None, Template, DockerFile, DevOps}
+export enum CreateImageMethod {None, Template, DockerFile, ImagePackage}
 
 export class PersistentVolumeOptions {
   public path = '';
@@ -176,9 +177,9 @@ export class PersistentVolume {
   public name = '';
   public type = 0;
   public state = 0;
-  public capacity = '';
-  public accessMode = PvAccessMode;
-  public reclaim = PvReclaimMode;
+  public capacity = 0;
+  public accessMode: PvAccessMode;
+  public reclaim: PvReclaimMode;
 
   initFromRes(res: Object) {
     if (res) {
@@ -186,7 +187,7 @@ export class PersistentVolume {
       this.name = Reflect.get(res, 'pv_name');
       this.type = Reflect.get(res, 'pv_type');
       this.state = Reflect.get(res, 'pv_state');
-      this.capacity = Reflect.get(res, 'pv_capacity');
+      this.capacity = Number.parseFloat(Reflect.get(res, 'pv_capacity'));
       this.accessMode = Reflect.get(res, 'pv_accessmode');
       this.reclaim = Reflect.get(res, 'pv_reclaim');
     }
@@ -210,7 +211,7 @@ export class PersistentVolume {
   postObject(): Object {
     return {
       pv_name: this.name,
-      pv_capacity: this.capacity,
+      pv_capacity: `${this.capacity}Gi`,
       pv_type: this.type,
       pv_accessmode: this.accessMode,
       pv_reclaim: this.reclaim
@@ -257,7 +258,7 @@ export class PersistentVolumeClaim {
   public projectName = '';
   public capacity = '';
   public state = 0;
-  public accessMode = PvcAccessMode;
+  public accessMode: PvcAccessMode;
   public class = '';
   public designatedPv = '';
   public volume = '';
@@ -285,10 +286,8 @@ export class PersistentVolumeClaim {
     return [
       'STORAGE.STATE_UNKNOWN',
       'STORAGE.STATE_PENDING',
-      'STORAGE.STATE_AVAILABLE',
       'STORAGE.STATE_BOUND',
-      'STORAGE.STATE_RELEASED',
-      'STORAGE.STATE_FAILED',
+      'STORAGE.STATE_LOST',
       'STORAGE.STATE_INVALID'][this.state];
   }
 
@@ -301,5 +300,36 @@ export class PersistentVolumeClaim {
       pvc_class: this.class,
       pvc_designatedpv: this.designatedPv
     }
+  }
+}
+
+export class Tools {
+  static isValidString(str: string, reg?: RegExp): boolean {
+    if (str == undefined || str == null || str.trim() == '') {
+      return false;
+    } else if (reg) {
+      return reg.test(str)
+    }
+    return true;
+  }
+
+  static isInvalidString(str: string, reg?: RegExp): boolean {
+    return !Tools.isValidString(str, reg);
+  }
+
+  static isValidObject(obj: any): boolean {
+    return obj != null && obj != undefined && typeof obj == 'object';
+  }
+
+  static isInvalidObject(obj: any): boolean {
+    return !Tools.isValidObject(obj);
+  }
+
+  static isValidArray(obj: any): boolean {
+    return Array.isArray(obj);
+  }
+
+  static isInvalidArray(obj: any): boolean {
+    return !Tools.isValidArray(obj);
   }
 }

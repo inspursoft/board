@@ -5,6 +5,7 @@ import (
 	"errors"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -241,15 +242,6 @@ func (sc *ServiceConfigController) configContainerList(key string, configService
 		return
 	}
 
-	//TODO: Skip check and transfer to Lower case
-	//	for index, container := range containerList {
-	//		if container.VolumeMounts.TargetPath != "" && container.VolumeMounts.TargetStorageService == "" {
-	//			sc.serveStatus(http.StatusBadRequest, emptyVolumeTargetStorageServiceErr.Error())
-	//			return
-	//		}
-	//		containerList[index].VolumeMounts.VolumeName = strings.ToLower(container.VolumeMounts.VolumeName)
-	//		containerList[index].Name = strings.ToLower(container.Name)
-	//	}
 
 	//Check CPU Mem request and limit
 	for _, container := range containerList {
@@ -289,13 +281,31 @@ func (sc *ServiceConfigController) configContainerList(key string, configService
 		}
 	}
 
+	//delete invalid port to nodeport map in ExternalServiceList, which may have been configured in phase "EXTERNAL_SERVICE"
+	externalServiceList := make([]model.ExternalService, 0)
+	for _, externalService := range configServiceStep.ExternalServiceList {
+		for _, container := range containerList {
+			if externalService.ContainerName == container.Name {
+				if len(container.ContainerPort) == 0 {
+					externalServiceList = append(externalServiceList, externalService)
+				} else {
+					for _, port := range container.ContainerPort {
+						if port == externalService.NodeConfig.TargetPort {
+							externalServiceList = append(externalServiceList, externalService)
+						}
+					}
+				}
+			}
+		}
+	}
+	configServiceStep.ExternalServiceList = externalServiceList
 	SetConfigServiceStep(key, configServiceStep.ConfigContainerList(containerList))
 }
 
 func (sc *ServiceConfigController) configExternalService(key string, configServiceStep *ConfigServiceStep, reqData []byte) {
 	serviceName := strings.ToLower(sc.GetString("service_name"))
-	if serviceName == "" {
-		sc.serveStatus(http.StatusBadRequest, emptyServiceNameErr.Error())
+	if !utils.ValidateWithLengthRange(serviceName, 1, 63) {
+		sc.serveStatus(http.StatusBadRequest, "Service Name must be not empty and no more than 63 characters ")
 		return
 	}
 
