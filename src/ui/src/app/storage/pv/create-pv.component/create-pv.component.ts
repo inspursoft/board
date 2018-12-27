@@ -21,6 +21,7 @@ export class CreatePvComponent extends CsModalChildBase implements OnInit {
   patternKeyring: RegExp = /^\/(\w+\/?)+$/;
   isEditPvMonitors = false;
   isCreateWip = false;
+  namePattern: RegExp = /^[a-z0-9][(.a-z0-9?)]*$/;
 
   constructor(private storageService: StorageService,
               private messageService: MessageService) {

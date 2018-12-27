@@ -14,17 +14,22 @@
               [disabled]="isCreateWip"
               [inputLabel]="'STORAGE.PVC_NAME' | translate"
               [inputPattern]="namePattern"
+              [inputMaxlength]="50"
+              [validatorMessage]="[{validatorKey: 'pattern', validatorMessage: 'STORAGE.PVC_CREATE_NAME_PATTERN'}]"
               [simpleFiled]="newPersistentVolumeClaim.name"
               (onCheck)="newPersistentVolumeClaim.name = $event">
     </cs-input>
-    <cs-input [inputIsRequired]="true"
-              [inputLabel]="'STORAGE.PVC_CAPACITY' | translate"
-              [inputPlaceholder]="'eg. 5Gi'"
-              [inputPattern]="capacityPattern"
-              [disabled]="isCreateWip"
-              [simpleFiled]="newPersistentVolumeClaim.capacity"
-              (onCheck)="newPersistentVolumeClaim.capacity = $event">
-    </cs-input>
+    <div class="dynamic-line-container">
+      <cs-input [inputIsRequired]="true"
+                [inputLabel]="'STORAGE.PVC_CAPACITY' | translate"
+                [inputPlaceholder]="'eg. 5'"
+                [inputMin]="0.1"
+                [inputFiledType]="1"
+                [disabled]="isCreateWip"
+                [simpleFiled]="newPersistentVolumeClaim.capacity"
+                (onCheck)="newPersistentVolumeClaim.capacity = $event">
+      </cs-input>(Gi)
+    </div>
     <div class="dynamic-line-container">
       <span class="filed-text">{{"STORAGE.PVC_ACCESS_MODES" | translate}}:</span>
       <cs-dropdown [dropdownDefaultText]="'STORAGE.PVC_CREATE_SELECT_ACCESS_MODE' | translate"
@@ -63,10 +68,10 @@
     </div>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-default" (click)="modalOpened = false">
+    <button type="button" class="btn btn-default" [disabled]="isCreateWip" (click)="modalOpened = false">
       {{ 'BUTTON.CANCEL' | translate }}
     </button>
-    <button type="button" class="btn btn-primary" (click)="createNewPvc()">
+    <button type="button" class="btn btn-primary" [disabled]="isCreateWip" (click)="createNewPvc()">
       {{ 'BUTTON.CREATE' | translate }}
     </button>
     <span *ngIf="isCreateWip" class="spinner spinner-sm"></span>

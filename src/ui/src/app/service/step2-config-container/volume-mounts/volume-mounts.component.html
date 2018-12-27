@@ -47,6 +47,7 @@
         <cs-input [inputLabel]="'SERVICE.VOLUME_TARGET_PATH'| translate"
                   [simpleFiled]="volumeData.target_path"
                   [inputPlaceholder]="'/data'"
+                  [inputLabelMinWidth]="160"
                   [inputIsRequired]="true"
                   [inputPattern]="patternPath"
                   (onCheck)="volumeData.target_path = $event">
