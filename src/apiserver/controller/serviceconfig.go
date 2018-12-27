@@ -242,7 +242,6 @@ func (sc *ServiceConfigController) configContainerList(key string, configService
 		return
 	}
 
-
 	//Check CPU Mem request and limit
 	for _, container := range containerList {
 		if container.CPURequest != "" && container.CPULimit != "" {
@@ -281,24 +280,7 @@ func (sc *ServiceConfigController) configContainerList(key string, configService
 		}
 	}
 
-	//delete invalid port to nodeport map in ExternalServiceList, which may have been configured in phase "EXTERNAL_SERVICE"
-	externalServiceList := make([]model.ExternalService, 0)
-	for _, externalService := range configServiceStep.ExternalServiceList {
-		for _, container := range containerList {
-			if externalService.ContainerName == container.Name {
-				if len(container.ContainerPort) == 0 {
-					externalServiceList = append(externalServiceList, externalService)
-				} else {
-					for _, port := range container.ContainerPort {
-						if port == externalService.NodeConfig.TargetPort {
-							externalServiceList = append(externalServiceList, externalService)
-						}
-					}
-				}
-			}
-		}
-	}
-	configServiceStep.ExternalServiceList = externalServiceList
+	configServiceStep.ExternalServiceList = service.CheckServiceConfigPortMap(configServiceStep.ExternalServiceList, containerList)
 	SetConfigServiceStep(key, configServiceStep.ConfigContainerList(containerList))
 }
 
