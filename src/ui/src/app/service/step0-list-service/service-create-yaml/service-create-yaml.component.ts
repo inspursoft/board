@@ -73,6 +73,8 @@ export class ServiceCreateYamlComponent implements OnInit {
         (event.target as HTMLInputElement).value = '';
         this.messageService.showAlert('SERVICE.SERVICE_YAML_INVALID_FILE', {alertType: 'alert-warning'});
       }
+    } else {
+      isDeploymentYaml ? this.filesDataMap.delete(DEPLOYMENT) : this.filesDataMap.delete(SERVICE);
     }
   }
 
