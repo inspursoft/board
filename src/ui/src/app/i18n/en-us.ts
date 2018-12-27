@@ -373,6 +373,8 @@ export const LANG_EN_US = {
     "STEP_2_PORT_CONTAINER":"80",
     "STEP_2_BEYOND_MAX_VALUE":"beyond the max value",
     "STEP_2_CONTAINER_PORT_REPEAT":"Container port can not repeat",
+    "STEP_2_CONTAINER_NAME_REPEAT":"Container name can not repeat",
+    "STEP_2_CONTAINER_REQUEST_ERROR":"The requested resource cannot exceed the qualified resource",
     "STEP_2_CONTAINER_NAME_PATTERN_NSG":"Made of numbers or lowercase letter with '-' character supported in the middle.",
     "STEP_3_SERVICE_OF_NAME":"service01",
     "STEP_3_EXTERNAL_PORT":"30001",

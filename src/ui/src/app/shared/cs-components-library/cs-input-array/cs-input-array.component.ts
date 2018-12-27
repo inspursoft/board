@@ -2,7 +2,7 @@
  * Created by liyanq on 9/12/17.
  */
 import { Component, EventEmitter, Input, OnInit, Output, QueryList, ViewChildren } from "@angular/core"
-import { AsyncValidatorFn, ValidationErrors, Validators } from "@angular/forms";
+import { AsyncValidatorFn, ValidationErrors } from "@angular/forms";
 import { CsInputComponent } from "../cs-input/cs-input.component";
 import { AbstractControl } from "@angular/forms/src/model";
 
@@ -54,27 +54,23 @@ export class CsInputArrayComponent implements OnInit {
     this.inputList.toArray().forEach(value => value.checkInputSelf());
   }
 
-  checkRepeatAction(c: AbstractControl): ValidationErrors | null {
-    if (this.inputList) {
-      let ctr = this.inputList.toArray().find(value => {
-        if (this.inputArrayType == CsInputArrType.iasString) {
-          return value.inputControl != c && (value.inputControl.value as string).trim() === (c.value as string).trim();
-        } else {
-          return value.inputControl != c && value.inputControl.value === c.value;
-        }
-      });
-      if (ctr) {
-        return {notRepeat: "ERROR.INPUT_NOT_REPEAT"};
-      } else{
-        return Validators.nullValidator;
-      }
-    } else {
-      return Validators.nullValidator;
-    }
+  get funCheckRepeatAction() {
+    return this.checkRepeatAction.bind(this)
   }
 
-  get selfObject() {
-    return this;
+  checkRepeatAction(control: AbstractControl): ValidationErrors | null {
+    let controlList = this.inputList.toArray();
+    if (controlList.length > 1) {
+      let findControl = controlList.find(value => {
+        if (this.inputArrayType == CsInputArrType.iasString) {
+          return value.inputControl != control && (value.inputControl.value as string).trim() == (control.value as string).trim();
+        } else {
+          return value.inputControl != control && value.inputControl.value == control.value;
+        }
+      });
+      return findControl ? {notRepeat: "ERROR.INPUT_NOT_REPEAT"} : null;
+    }
+    return null;
   }
 
   onMinusClick(index: number) {

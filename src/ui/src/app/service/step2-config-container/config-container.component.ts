@@ -155,16 +155,18 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
       }, () => this.messageService.cleanNotification());
   }
 
-  isValidContainerNames(): {valid: boolean, invalidIndex: number} {
+  isValidContainerNames(): {invalid: boolean, invalidIndex: number} {
     let invalidIndex: number = -1;
     let everyValid = this.serviceStep2Data.containerList.every((container, index: number) => {
       invalidIndex = index;
-      return this.patternContainerName.test(container.name);
+      let findRepeat = this.serviceStep2Data.containerList.find((findValue: Container, findIndex: number) =>
+        findValue.name == container.name && findIndex != index);
+      return this.patternContainerName.test(container.name) && findRepeat == undefined;
     });
-    return {valid: everyValid, invalidIndex: invalidIndex};
+    return {invalid: !everyValid, invalidIndex: invalidIndex};
   }
 
-  isValidContainerPorts(): {valid: boolean, invalidIndex: number} {
+  isValidContainerPorts(): {invalid: boolean, invalidIndex: number} {
     let invalidIndex: number = -1;
     let valid = true;
     let portBuf = new Set<number>();
@@ -178,7 +180,25 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
         }
       })
     });
-    return {valid: valid, invalidIndex: invalidIndex};
+    return {invalid: !valid, invalidIndex: invalidIndex};
+  }
+
+  isValidContainerCpuAndMem(): {invalid: boolean, invalidIndex: number} {
+    let containerList = this.serviceStep2Data.containerList;
+    let invalidIndex: number = -1;
+    let everyValid = containerList.every((container: Container, index: number) => {
+      invalidIndex = index;
+      let cpuValid = true;
+      let memValid = true;
+      if (container.cpu_request != '' && container.cpu_limit != '') {
+        cpuValid = Number.parseFloat(container.cpu_request) < Number.parseFloat(container.cpu_limit);
+      }
+      if (container.mem_request != '' && container.mem_limit != '') {
+        memValid = Number.parseFloat(container.mem_request) < Number.parseFloat(container.mem_limit)
+      }
+      return cpuValid && memValid;
+    });
+    return {invalid: !everyValid, invalidIndex: invalidIndex};
   }
 
   forward(): void {
@@ -190,23 +210,31 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
         key = iterator.next();
       }
       this.containerIsInEdit.set(this.serviceStep2Data.containerList[invalidIndex], true);
-      setTimeout(() => this.verifyInputValid());
     };
     let checkContainerName = this.isValidContainerNames();
-    if (checkContainerName.valid) {
-      let checkContainerPort = this.isValidContainerPorts();
-      if (checkContainerPort.valid) {
-        if (this.verifyInputValid() && this.verifyInputArrayValid()) {
-          this.k8sService.setServiceConfig(this.serviceStep2Data.uiToServer()).subscribe(
-            () => this.k8sService.stepSource.next({index: 3, isBack: false})
-          );
-        }
-      } else {
-        funShowInvalidContainer(checkContainerPort.invalidIndex);
-        this.messageService.showAlert('SERVICE.STEP_2_CONTAINER_PORT_REPEAT', {alertType: "alert-warning"});
+    if (checkContainerName.invalid) {
+      funShowInvalidContainer(checkContainerName.invalidIndex);
+      if (this.verifyInputValid()) {
+        this.messageService.showAlert('SERVICE.STEP_2_CONTAINER_NAME_REPEAT', {alertType: "alert-warning"});
       }
-    } else {
-      funShowInvalidContainer(checkContainerName.invalidIndex)
+      return;
+    }
+    let checkContainerPort = this.isValidContainerPorts();
+    if (checkContainerPort.invalid) {
+      funShowInvalidContainer(checkContainerPort.invalidIndex);
+      this.messageService.showAlert('SERVICE.STEP_2_CONTAINER_PORT_REPEAT', {alertType: "alert-warning"});
+      return;
+    }
+    let checkRequest = this.isValidContainerCpuAndMem();
+    if (checkRequest.invalid) {
+      funShowInvalidContainer(checkRequest.invalidIndex);
+      this.messageService.showAlert('SERVICE.STEP_2_CONTAINER_REQUEST_ERROR', {alertType: "alert-warning"});
+      return;
+    }
+    if (this.verifyInputValid() && this.verifyInputArrayValid()) {
+      this.k8sService.setServiceConfig(this.serviceStep2Data.uiToServer()).subscribe(
+        () => this.k8sService.stepSource.next({index: 3, isBack: false})
+      );
     }
   }
 
