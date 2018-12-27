@@ -315,6 +315,21 @@ func (p *ServiceController) DeleteServiceAction() {
 		}
 	}
 
+	// 	Delete the service's autoscale rule
+	hpas, err := service.ListAutoScales(s)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	for _, hpa := range hpas {
+		err := service.DeleteAutoScale(s, hpa.ID)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+		logs.Debug("Deleted Hpa %d %s", hpa.ID, hpa.HPAName)
+	}
+
 	isSuccess, err := service.DeleteService(s.ID)
 	if err != nil {
 		p.internalError(err)
