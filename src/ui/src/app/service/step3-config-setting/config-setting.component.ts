@@ -183,7 +183,8 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
       } else {
         this.isActionWip = true;
         this.k8sService.setServiceConfig(this.uiData.uiToServer()).subscribe(
-          () => this.k8sService.stepSource.next({index: 5, isBack: false})
+          () => this.k8sService.stepSource.next({index: 5, isBack: false}),
+          () => this.isActionWip = false
         );
       }
     }
