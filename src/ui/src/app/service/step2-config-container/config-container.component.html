@@ -82,24 +82,24 @@
       <cs-input [inputLabel]="'SERVICE.STEP_2_CPU_REQUEST' | translate"
                 [inputPattern]="patternCpuRequest"
                 [simpleFiled]="container.cpu_request"
-                [inputPlaceholder]="'SERVICE.STEP_2_PLACEHOLDER_DEFAULT'| translate"
+                [inputPlaceholder]="'eg. 100m'"
                 [customerValidatorAsyncFunc]="checkSetCpuRequestFun"
                 (onCheck)="container.cpu_request = $event"></cs-input>
       <cs-input [inputLabel]="'SERVICE.STEP_2_MEMORY_REQUEST' | translate"
                 [inputPattern]="patternMemRequest"
                 [customerValidatorAsyncFunc]="checkSetMemRequestFun"
                 [simpleFiled]="container.mem_request"
-                [inputPlaceholder]="'SERVICE.STEP_2_PLACEHOLDER_DEFAULT'| translate"
+                [inputPlaceholder]="'eg. 100Mi'"
                 (onCheck)="container.mem_request = $event"></cs-input>
       <cs-input [inputLabel]="'SERVICE.STEP_2_CPU_LIMIT' | translate"
                 [simpleFiled]="container.cpu_limit"
-                [inputPlaceholder]="'SERVICE.STEP_2_PLACEHOLDER_DEFAULT'| translate"
+                [inputPlaceholder]="'eg. 1024m'"
                 [inputPattern]="patternCpuLimit"
                 (onCheck)="container.cpu_limit = $event"></cs-input>
       <cs-input [inputLabel]="'SERVICE.STEP_2_MEMORY_LIMIT' | translate"
                 [simpleFiled]="container.mem_limit"
                 [inputPattern]="patternMemLimit"
-                [inputPlaceholder]="'SERVICE.STEP_2_PLACEHOLDER_DEFAULT'| translate"
+                [inputPlaceholder]="'eg. 1024Mi'"
                 (onCheck)="container.mem_limit = $event"></cs-input>
     </div>
   </div>

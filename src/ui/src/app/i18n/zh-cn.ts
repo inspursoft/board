@@ -373,6 +373,8 @@ export const LANG_ZH_CN = {
     "STEP_2_PORT_CONTAINER":"请输入容器的服务端口:80",
     "STEP_2_BEYOND_MAX_VALUE":"超过最大限制",
     "STEP_2_CONTAINER_PORT_REPEAT":"容器端口不能重复",
+    "STEP_2_CONTAINER_NAME_REPEAT":"容器名称不能重复",
+    "STEP_2_CONTAINER_REQUEST_ERROR":"请求资源不能超出限定资源",
     "STEP_2_CONTAINER_NAME_PATTERN_NSG":"数字或小写字母组成，中间支持'-'字符",
     "STEP_3_SERVICE_OF_NAME":"service01",
     "STEP_3_EXTERNAL_PORT":"30001",
