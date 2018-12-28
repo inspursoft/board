@@ -2,15 +2,17 @@ package service
 
 import (
 	"errors"
-	"path/filepath"
-	"strconv"
-	"strings"
-	//"fmt"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/k8sassist"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/model/yaml"
+	"path/filepath"
+	"strconv"
+	"strings"
 	"time"
+
+	"github.com/drborges/rivers"
+	"github.com/drborges/rivers/stream"
 
 	"github.com/astaxie/beego/logs"
 )
@@ -709,4 +711,45 @@ func UpdateDeployment(pName string, sName string, deploymentConfig *model.Deploy
 		return nil, nil, err
 	}
 	return deployment, deploymentFileInfo, err
+}
+
+//delete invalid port to nodeport map in ExternalServiceList, which may have been configured in phase "EXTERNAL_SERVICE"
+/*	externalServiceList := make([]model.ExternalService, 0)
+	for _, externalService := range configServiceStep.ExternalServiceList {
+		for _, container := range containerList {
+			if externalService.ContainerName == container.Name {
+				if len(container.ContainerPort) == 0 {
+					externalServiceList = append(externalServiceList, externalService)
+				} else {
+					for _, port := range container.ContainerPort {
+						if port == externalService.NodeConfig.TargetPort {
+							externalServiceList = append(externalServiceList, externalService)
+						}
+					}
+				}
+			}
+		}
+	}
+*/
+func CheckServiceConfigPortMap(externalServiceList []model.ExternalService, containerList []model.Container) []model.ExternalService {
+	results := make([]model.ExternalService, 0)
+	err := rivers.FromSlice(containerList).FlatMap(func(dc stream.T) stream.T {
+		items, _ := rivers.FromSlice(externalServiceList).Take(func(ds stream.T) bool {
+			return dc.(model.Container).Name == ds.(model.ExternalService).ContainerName
+		}).FlatMap(func(ds stream.T) stream.T {
+			ports, _ := rivers.FromSlice(dc.(model.Container).ContainerPort).Take(func(dp stream.T) bool {
+				return dp.(int) == ds.(model.ExternalService).NodeConfig.Port
+			}).Collect()
+			if len(ports) > 0 || len(dc.(model.Container).ContainerPort) == 0 {
+				return ds
+			}
+			return nil
+		}).Collect()
+		return items
+	}).Drop(func(ds stream.T) bool { return ds == nil }).CollectAs(&results)
+	if err != nil {
+		logs.Info("Failed to check service config map.")
+		return nil
+	}
+	return results
 }
