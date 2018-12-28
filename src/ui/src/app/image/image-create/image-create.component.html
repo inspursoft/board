@@ -167,7 +167,7 @@
                       [inputPattern]="patternNewImageName"
                       [inputLabel]="'IMAGE.CREATE_IMAGE_NEW_IMAGE_NAME'|translate"
                       [validatorMessage]="[{validatorKey: 'pattern', validatorMessage: 'IMAGE.CREATE_IMAGE_NAME_TAG_PATTERN'}]"
-                      [disabled]="isBuildImageWIP || isImageNameAndTagDisabled"
+                      [disabled]="nameAndTagDisabledDockerFile"
                       [customerValidatorAsyncFunc]="checkImageNameFun"
                       [simpleFiled]="customerNewImage.image_name"
                       (onCheck)="customerNewImage.image_name = $event">
@@ -175,7 +175,7 @@
             <cs-input [inputIsRequired]="true"
                       [inputPattern]="patternNewImageTag"
                       [inputLabel]="'IMAGE.CREATE_IMAGE_IMAGE_TAG'|translate"
-                      [disabled]="isBuildImageWIP || isImageNameAndTagDisabled"
+                      [disabled]="nameAndTagDisabledDockerFile"
                       [validatorMessage]="[{validatorKey: 'pattern', validatorMessage: 'IMAGE.CREATE_IMAGE_NAME_TAG_PATTERN'}]"
                       [customerValidatorAsyncFunc]="checkImageTagFun"
                       [simpleFiled]="customerNewImage.image_tag"
@@ -200,28 +200,28 @@
                         (click)="removeFile(file)"></clr-icon>
               {{file.file_name}}
             </div>
-            <div class="line-container base-margin-top">
+            <div *ngIf="!isSelectedDockerFile" class="line-container base-margin-top">
               <label>{{"IMAGE.CREATE_IMAGE_SELECT_DOCKER_FILE" | translate}}:</label>
             </div>
-            <div class="line-container base-margin-top">
-              ﻿<input type="file" [disabled]="isUploadDisabled" (change)="selectDockerFile($event)" accept="*.*">
+            <div *ngIf="!isSelectedDockerFile" class="line-container base-margin-top">
+              ﻿<input type="file" accept="*.*" [disabled]="isUploadDisabled" (change)="selectDockerFile($event)">
               <span *ngIf="isUploadFileWIP" class="spinner spinner-sm"></span>
             </div>
-            <div *ngIf="selectFromImportFile" class="line-container file-info-container">
+            <div *ngIf="isSelectedDockerFile" class="line-container file-info-container">
               <label>{{"IMAGE.CREATE_IMAGE_SELECTED_FILE_INFO" | translate}}:</label>
               <table class="table table-vertical">
                 <tbody>
                 <tr>
                   <th><span class="file-title">{{"IMAGE.CREATE_IMAGE_FILE_NAME" | translate}}:</span></th>
-                  <td>{{selectFromImportFile?.name}}</td>
+                  <td>{{selectedDockerFile?.name}}</td>
                 </tr>
                 <tr>
                   <th><span class="file-title">{{"IMAGE.CREATE_IMAGE_FILE_SIZE" | translate}}:</span></th>
-                  <td>{{selectFromImportFile?.size | size}}</td>
+                  <td>{{selectedDockerFile?.size | size}}</td>
                 </tr>
                 <tr>
                   <th><span class="file-title">{{"IMAGE.CREATE_IMAGE_FILE_LAST_MODIFY" | translate}}:</span></th>
-                  <td>{{selectFromImportFile?.lastModifiedDate | date:'short'}}</td>
+                  <td>{{selectedDockerFile?.lastModifiedDate | date:'short'}}</td>
                 </tr>
                 </tbody>
               </table>
