@@ -47,14 +47,13 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   patternCopyPath: RegExp = /.+/;
   imageTemplateList: Array<Object> = [{name: "Docker File Template"}];
   filesList: Map<string, Array<{path: string, file_name: string, size: number}>>;
-  selectFromImportFile: File;
+  selectedDockerFile: File;
   intervalAutoRefreshImageList: any;
   isNeedAutoRefreshImageList: boolean = false;
   isBuildImageWIP: boolean = false;
-  isServerHaveDockerFile: boolean = false;
+  isSelectedDockerFile = false;
   isUploadFileWIP = false;
   isGetImageDetailListWip = false;
-  isImageNameAndTagDisabled = false;
   customerNewImage: BuildImageData;
   consoleText: string = "";
   uploadCopyToPath: string = "/tmp";
@@ -154,6 +153,9 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
     return this.isBuildImageWIP || this.isUploadFileWIP;
   }
 
+  get nameAndTagDisabledDockerFile() {
+    return this.isBuildDisabled || this.isSelectedDockerFile;
+  }
   get isUploadDisabled(): boolean {
     return Tools.isInvalidString(this.customerNewImage.image_name) || Tools.isInvalidString(this.customerNewImage.image_tag)
       || this.isBuildImageWIP || this.isUploadFileWIP;
@@ -237,18 +239,16 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   }
 
   uploadDockerFile(): Observable<string> {
-    if (this.selectFromImportFile) {
-      this.isUploadFileWIP = true;
-      let formData: FormData = new FormData();
-      formData.append("upload_file", this.selectFromImportFile, this.selectFromImportFile.name);
-      formData.append("project_name", this.customerNewImage.project_name);
-      formData.append("image_name", this.customerNewImage.image_name);
-      formData.append("image_tag", this.customerNewImage.image_tag);
-      return this.imageService.uploadDockerFile(formData).map(res => {
-        this.isUploadFileWIP = false;
-        return res;
-      })
-    }
+    this.isUploadFileWIP = true;
+    let formData: FormData = new FormData();
+    formData.append("upload_file", this.selectedDockerFile, this.selectedDockerFile.name);
+    formData.append("project_name", this.customerNewImage.project_name);
+    formData.append("image_name", this.customerNewImage.image_name);
+    formData.append("image_tag", this.customerNewImage.image_tag);
+    return this.imageService.uploadDockerFile(formData).map(res => {
+      this.isUploadFileWIP = false;
+      return res;
+    })
   }
 
   buildImageByDockerFile(): Observable<any> {
@@ -334,7 +334,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
         );
       }
     } else if (this.imageBuildMethod == CreateImageMethod.DockerFile) {
-      if (this.verifyInputValid() && this.isServerHaveDockerFile) {
+      if (this.verifyInputValid()) {
         buildImageInit();
         this.buildImageByDockerFile().subscribe(
           () => this.buildImageResole(),
@@ -395,28 +395,26 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
 
   selectDockerFile(event: Event) {
     let fileList: FileList = (event.target as HTMLInputElement).files;
-    if (fileList.length > 0) {
+    if (fileList.length > 0 && this.verifyInputValid()) {
       let file:File = fileList[0];
       if (file.name !== "Dockerfile"){
         (event.target as HTMLInputElement).value = "";
-        this.selectFromImportFile = null;
         this.messageService.showAlert('IMAGE.CREATE_IMAGE_FILE_NAME_ERROR', {alertType: 'alert-danger', view: this.alertView});
       } else {
-        this.selectFromImportFile = file;
+        this.selectedDockerFile = file;
         let reader = new FileReader();
         reader.onload = (ev: ProgressEvent) => {
           this.consoleText = (ev.target as FileReader).result;
         };
-        reader.readAsText(this.selectFromImportFile);
+        reader.readAsText(this.selectedDockerFile);
         this.uploadDockerFile().subscribe((res: string) => {
-          (event.target as HTMLInputElement).value = "";
-          this.isServerHaveDockerFile = true;
-          this.isImageNameAndTagDisabled = true;
+          this.isSelectedDockerFile = true;
           this.consoleText = res;
           this.messageService.showAlert('IMAGE.CREATE_IMAGE_FILE_UPLOAD_SUCCESS', {view: this.alertView});
         })
       }
-
+    } else{
+      (event.target as HTMLInputElement).value = "";
     }
   }
 
@@ -439,7 +437,6 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
             this.uploadProgressValue = res;
           } else if (res.type == HttpEventType.Response) {
             (event.target as HTMLInputElement).value = "";
-            this.isImageNameAndTagDisabled = true;
             this.uploadTarPackageName = file.name;
             this.isUploadFileWIP = false;
             this.updateFileListAndPreviewInfo();
