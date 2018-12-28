@@ -59,9 +59,8 @@ export class CsInputArrayComponent implements OnInit {
   }
 
   checkRepeatAction(control: AbstractControl): ValidationErrors | null {
-    let controlList = this.inputList.toArray();
-    if (controlList.length > 1) {
-      let findControl = controlList.find(value => {
+    if (this.inputList) {
+      let findControl = this.inputList.toArray().find(value => {
         if (this.inputArrayType == CsInputArrType.iasString) {
           return value.inputControl != control && (value.inputControl.value as string).trim() == (control.value as string).trim();
         } else {
