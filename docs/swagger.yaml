@@ -2245,6 +2245,39 @@ paths:
           description: Invalid service ID.
         500:
           description: Unexpected internal errors.    
+  /v1/services/nodeports:
+    get:  
+      summary: Get the existing nodeport list.
+      description: |
+        This endpoint is aimed to get the existing nodeport list.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name 
+          in: query
+          description: project name for service.
+          required: false
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the existing nodeport list.
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int32
+              description: The node port.           
+        401:
+          description: User need to log in first.
+        403:
+          description: Invalid project name.
+        500:
+          description: Unexpected internal errors.          
   /v1/services/ingress:
     get:  
       summary: Get the ingress module status.
@@ -5104,6 +5137,23 @@ definitions:
     properties:
       name:
         type: string
+  VolumeMount:      
+    type: object
+    properties:
+      volume_type:
+        type: string  
+      volume_name:
+        type: string  
+      container_path:
+        type: string  
+      container_path_flag:
+        type: integer  
+      target_storage_service:
+        type: string  
+      target_path:
+        type: string  
+      target_pvc:
+        type: string                                                  
   DeploymentYaml:
     type: object
     properties:
@@ -6170,17 +6220,3 @@ definitions:
         description: The events of this persitent volume claim. 
         items:
           type: string        
-ServiceStatus
-
-
-
-
-
-
- 
-        
-
-
-
-
-
