@@ -133,6 +133,10 @@ services:
       dockerfile: make/dev/container/collector/Dockerfile
     image: dev_collector:dev
     restart: always
+    volumes:
+      - /data/board/cert:/cert:rw
+      - /etc/board/cert:/etc/board/cert:rw
+      - ../config/collector/kubeconfig:/root/kubeconfig
     env_file:
       - ../config/collector/env
     networks:
