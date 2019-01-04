@@ -92,15 +92,18 @@
       </cs-dropdown>
     </div>
     <div class="line-container" *ngIf="externalService.container_name !== ''">
-      <cs-input [inputFiledType]="1"
-                [simpleFiled]="externalService.node_config.node_port"
-                [disabled]="isActionWip"
-                [inputLabel]="'SERVICE.STEP_3_NODE_PORT' | translate"
-                [inputIsRequired]="uiData.clusterIp == ''"
-                [inputMax]="32766"
-                [inputPlaceholder]="'SERVICE.STEP_3_EXTERNAL_PORT'| translate"
-                (onCheck)="setNodePort(iIndex,$event)">
-      </cs-input>
+      <label>{{"SERVICE.STEP_3_NODE_PORT"|translate}}:</label>
+      <cs-input-dropdown [inputConflictNumbers]="[30001]"
+                         [inputValue]="externalService.node_config.node_port"
+                         [inputDisabled]="isActionWip"
+                         [inputWidth]="310"
+                         [inputIsRequired]="true"
+                         [inputPlaceholder]="'SERVICE.STEP_3_EXTERNAL_PORT'| translate"
+                         [validatorMessage]="[{validatorKey: 'inUsed', validatorMessage: 'SERVICE.STEP_3_NODE_PORT_ALREADY_USED'}]"
+                         [inputMin]="30000"
+                         [inputMax]="32767"
+                         (onCommitEvent)="externalService.node_config.node_port = $event">
+      </cs-input-dropdown>
     </div>
   </div>
   <div class="line-container">

@@ -149,14 +149,6 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
       });
   }
 
-  isValidMinNodePort(): boolean {
-    if (this.uiData.clusterIp === '') {
-      return this.uiData.externalServiceList.every(value => value.node_config.node_port >= 30000);
-    } else {
-      return this.uiData.externalServiceList.every(value => value.node_config.node_port >= 30000 || value.node_config.node_port == 0)
-    }
-  }
-
   haveRepeatNodePort(): boolean {
     let haveRepeat = false;
     this.uiData.externalServiceList.forEach((value, index) => {
@@ -171,13 +163,11 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
   }
 
   forward(): void {
-    if (this.verifyInputValid()) {
+    if (this.verifyInputValid() && this.verifyInputDropdownValid()) {
       if (this.uiData.externalServiceList.length == 0) {
         this.messageService.showAlert(`SERVICE.STEP_3_EXTERNAL_MESSAGE`, {alertType: "alert-warning"});
       } else if (this.haveRepeatNodePort()) {
         this.messageService.showAlert(`SERVICE.STEP_3_EXTERNAL_REPEAT`, {alertType: "alert-warning"});
-      } else if (!this.isValidMinNodePort()){
-        this.messageService.showAlert(`SERVICE.STEP_3_INVALID_MIN_NODE_PORT`, {alertType: "alert-warning"});
       } else if (this.uiData.affinityList.find(value => value.services.length == 0)) {
         this.messageService.showAlert(`SERVICE.STEP_3_AFFINITY_MESSAGE`, {alertType: "alert-warning"});
       } else {
