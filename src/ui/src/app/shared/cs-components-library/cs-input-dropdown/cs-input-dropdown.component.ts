@@ -1,12 +1,13 @@
-import {AfterViewInit, Component, EventEmitter, Input, Output} from "@angular/core";
-import {FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators} from "@angular/forms";
-import {AbstractControl} from "@angular/forms/src/model";
+import { AfterViewInit, Component, EventEmitter, Input, Output } from "@angular/core";
+import { FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from "@angular/forms";
+import { AbstractControl } from "@angular/forms/src/model";
 
 @Component({
   selector: 'cs-input-dropdown',
   templateUrl: './cs-input-dropdown.component.html',
   styleUrls: ['./cs-input-dropdown.component.css']
 })
+
 export class CsInputDropdownComponent implements AfterViewInit {
   @Input() inputPlaceholder = "";
   @Input() inputIsRequired = false;

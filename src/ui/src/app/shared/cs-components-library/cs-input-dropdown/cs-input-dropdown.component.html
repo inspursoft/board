@@ -20,7 +20,6 @@
       {{'['+inputMin + '...' + inputMax +']'}}</span>
     <div *ngFor="let validNumber of dropdownMenuList;let i = index"
          clrDropdownItem
-         [class.single]="i % 2 == 1"
          [style.width.px]="inputWidth"
          (click)="onDropdownItemCLick(validNumber)">
       <span>{{validNumberStart(validNumber)}}</span>
