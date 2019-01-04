@@ -812,7 +812,7 @@ func (p *ServiceController) GetServiceNodePorts() {
 	}
 
 	//Check nodeports in cluster
-	nodeportList, err := service.GetServicesByProjectName(projectName)
+	nodeportList, err := service.GetNodePortsK8s(projectName)
 	if err != nil {
 		logs.Error("Failed to get selectable services.")
 		p.internalError(err)
