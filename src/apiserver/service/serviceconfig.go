@@ -753,3 +753,68 @@ func CheckServiceConfigPortMap(externalServiceList []model.ExternalService, cont
 	}
 	return results
 }
+
+//Get service node ports
+func GetNodePortsByProjectName(pname string) ([]int32, error) {
+	var nodeports []int32
+
+	//obtain serviceList data of
+	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		KubeConfigPath: kubeConfigPath(),
+	})
+
+	serviceList, err := k8sclient.AppV1().Service(pname).List()
+	if err != nil {
+		logs.Error("Failed to get service list with project name: %s", pname)
+		return nil, err
+	}
+
+	//handle the serviceList data
+	for _, service := range serviceList.Items {
+
+		for _, port := range service.Ports {
+			if port.NodePort != 0 {
+				nodeports = append(nodeports, port.NodePort)
+			}
+		}
+	}
+	return nodeports, err
+}
+
+func GetNodePortsK8s(pname string) ([]int32, error) {
+	var portList []int32
+	var err error
+	if pname != "" {
+		portList, err = GetNodePortsByProjectName(pname)
+		if err != nil {
+			logs.Error("Failed to get nodeport %s %v", pname, err)
+			return nil, err
+		}
+	} else {
+		//Get all projects
+		var config k8sassist.K8sAssistConfig
+		config.KubeConfigPath = kubeConfigPath()
+		k8sclient := k8sassist.NewK8sAssistClient(&config)
+		n := k8sclient.AppV1().Namespace()
+
+		namespaceList, err := n.List()
+		if err != nil {
+			logs.Error("Failed to check namespace list in cluster: %+v", err)
+			return nil, err
+		}
+
+		for _, namespace := range (*namespaceList).Items {
+			// Sync the service nodeport in this namespace
+			ports, err := GetNodePortsByProjectName(namespace.Name)
+			if err != nil {
+				logs.Error("Failed to get service nodeport in namespace: %s, error: %+v", namespace.Name, err)
+				// Still can work, fix me
+				return portList, err
+			}
+			portList = append(portList, ports...)
+		}
+
+	}
+
+	return portList, nil
+}

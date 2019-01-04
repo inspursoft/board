@@ -801,3 +801,24 @@ func (p *ServiceController) DeleteDeployAction() {
 		return
 	}
 }
+
+//get service nodeport list
+func (p *ServiceController) GetServiceNodePorts() {
+	projectName := p.GetString("project_name")
+
+	if projectName != "" {
+		p.resolveProjectMember(projectName)
+		logs.Info("Get service nodeport list for", projectName)
+	}
+
+	//Check nodeports in cluster
+	nodeportList, err := service.GetNodePortsK8s(projectName)
+	if err != nil {
+		logs.Error("Failed to get selectable services.")
+		p.internalError(err)
+		return
+	}
+
+	//Check nodeports in DB
+	p.renderJSON(nodeportList)
+}
