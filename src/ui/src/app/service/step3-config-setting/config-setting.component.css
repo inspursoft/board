@@ -68,6 +68,10 @@ div.line-container cs-dropdown {
   margin-left: 10px;
 }
 
+div.line-container cs-input-dropdown {
+  margin-left: 10px;
+}
+
 div.line-container label {
   min-width: 180px;
   text-align: right;

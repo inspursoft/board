@@ -242,6 +242,11 @@ export class K8sService {
       .map((res: HttpResponse<Object>) => res.body)
   }
 
+  getNodePorts(projectName: string): Observable<Array<number>> {
+    return this.http.get(`/api/v1/services/nodeports`, {observe: "response"})
+      .map((res: HttpResponse<Array<number>>) => res.body)
+  }
+
   getNodeSelectors(): Observable<Array<{name: string, status: number}>> {
     let obsNodeList = this.http
       .get(`/api/v1/nodes`, {observe: "response"})

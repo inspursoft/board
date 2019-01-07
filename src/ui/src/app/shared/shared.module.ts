@@ -36,6 +36,7 @@ import { CsGlobalAlertComponent } from "./cs-components-library/cs-global-alert/
 import { CsModalChildBaseSelector } from "./cs-modal-base/cs-modal-child-base";
 import { CoreModule } from "../core/core.module";
 import { CreatePvcComponent } from "./create-pvc/create-pvc.component";
+import {CsInputDropdownComponent} from "./cs-components-library/cs-input-dropdown/cs-input-dropdown.component";
 
 @NgModule({
   imports: [
@@ -62,6 +63,7 @@ import { CreatePvcComponent } from "./create-pvc/create-pvc.component";
     CsHighlightComponent,
     CsVerticalNavComponent,
     CsMenuItemUrlDirective,
+    CsInputDropdownComponent,
     SizePipe,
     SafePipe
   ],
@@ -89,6 +91,7 @@ import { CreatePvcComponent } from "./create-pvc/create-pvc.component";
     SafePipe,
     CsGuideComponent,
     CreateProjectComponent,
+    CsInputDropdownComponent,
     CsHighlightComponent,
     CsVerticalNavComponent,
     CsMenuItemUrlDirective,

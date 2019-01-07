@@ -26,21 +26,25 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
   patternIP: RegExp = /^((?:(?:25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d)))\.){3}(?:25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d))))$/;
   showAdvanced = false;
   showNodeSelector = false;
-  isActionWip: boolean = false;
-  nodeSelectorList: Array<{name: string, value: string, tag: IDropdownTag}>;
+  isActionWip = false;
+  isGetNodePortWip = false;
+  nodeSelectorList: Array<{ name: string, value: string, tag: IDropdownTag }>;
   uiPreData: UIServiceStep2;
+  existingNodePorts: Array<number>;
 
   constructor(protected injector: Injector,
               private changeDetectorRef: ChangeDetectorRef) {
     super(injector);
     this.changeDetectorRef.detach();
-    this.nodeSelectorList = Array<{name: string, value: string, tag: IDropdownTag}>();
+    this.nodeSelectorList = Array<{ name: string, value: string, tag: IDropdownTag }>();
+    this.existingNodePorts = Array<number>();
     this.uiPreData = new UIServiceStep2();
   }
 
   ngOnInit() {
     let obsStepConfig = this.k8sService.getServiceConfig(this.stepPhase);
     let obsPreStepConfig = this.k8sService.getServiceConfig(PHASE_CONFIG_CONTAINERS);
+    this.isGetNodePortWip = true;
     Observable.forkJoin(obsStepConfig, obsPreStepConfig).subscribe((res: [UIServiceStepBase, UIServiceStepBase]) => {
       this.uiBaseData = res[0];
       this.uiPreData = res[1] as UIServiceStep2;
@@ -49,11 +53,15 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
         this.addNewExternalService();
         this.setExternalInfo(container, 0);
       }
+      this.k8sService.getNodePorts(this.uiData.projectName).subscribe(
+        (res: Array<number>) => this.existingNodePorts = res, null,
+        () => this.isGetNodePortWip = false
+      );
       this.changeDetectorRef.reattach();
     });
     this.nodeSelectorList.push({name: 'SERVICE.STEP_3_NODE_DEFAULT', value: '', tag: null});
-    this.k8sService.getNodeSelectors().subscribe((res: Array<{name: string, status: number}>) => {
-      res.forEach((value: {name: string, status: number}) => {
+    this.k8sService.getNodeSelectors().subscribe((res: Array<{ name: string, status: number }>) => {
+      res.forEach((value: { name: string, status: number }) => {
         this.nodeSelectorList.push({
           name: value.name, value: value.name, tag: {
             type: value.status == 1 ? 'alert-success' : 'alert-warning',
@@ -89,7 +97,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
     return result == "" ? "SERVICE.STEP_3_SELECT_CONTAINER" : result;
   }
 
-  getContainerPorts(containerName: string):Array<number>{
+  getContainerPorts(containerName: string): Array<number> {
     return this.uiPreData.getPortList(containerName);
   }
 
@@ -138,7 +146,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
   checkServiceName(control: HTMLInputElement): Observable<ValidationErrors | null> {
     return this.k8sService.checkServiceExist(this.uiData.projectName, control.value)
       .map(() => null)
-      .catch((err:HttpErrorResponse) => {
+      .catch((err: HttpErrorResponse) => {
         if (err.status == 409) {
           this.messageService.cleanNotification();
           return Observable.of({serviceExist: "SERVICE.STEP_3_SERVICE_NAME_EXIST"});
@@ -147,14 +155,6 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
         }
         return Observable.of(null);
       });
-  }
-
-  isValidMinNodePort(): boolean {
-    if (this.uiData.clusterIp === '') {
-      return this.uiData.externalServiceList.every(value => value.node_config.node_port >= 30000);
-    } else {
-      return this.uiData.externalServiceList.every(value => value.node_config.node_port >= 30000 || value.node_config.node_port == 0)
-    }
   }
 
   haveRepeatNodePort(): boolean {
@@ -171,13 +171,11 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
   }
 
   forward(): void {
-    if (this.verifyInputValid()) {
+    if (this.verifyInputValid() && this.verifyInputDropdownValid()) {
       if (this.uiData.externalServiceList.length == 0) {
         this.messageService.showAlert(`SERVICE.STEP_3_EXTERNAL_MESSAGE`, {alertType: "alert-warning"});
       } else if (this.haveRepeatNodePort()) {
         this.messageService.showAlert(`SERVICE.STEP_3_EXTERNAL_REPEAT`, {alertType: "alert-warning"});
-      } else if (!this.isValidMinNodePort()){
-        this.messageService.showAlert(`SERVICE.STEP_3_INVALID_MIN_NODE_PORT`, {alertType: "alert-warning"});
       } else if (this.uiData.affinityList.find(value => value.services.length == 0)) {
         this.messageService.showAlert(`SERVICE.STEP_3_AFFINITY_MESSAGE`, {alertType: "alert-warning"});
       } else {
