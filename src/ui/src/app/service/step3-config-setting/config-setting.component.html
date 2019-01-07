@@ -93,9 +93,9 @@
     </div>
     <div class="line-container" *ngIf="externalService.container_name !== ''">
       <label>{{"SERVICE.STEP_3_NODE_PORT"|translate}}:</label>
-      <cs-input-dropdown [inputConflictNumbers]="[30001]"
+      <cs-input-dropdown [inputConflictNumbers]="existingNodePorts"
                          [inputValue]="externalService.node_config.node_port"
-                         [inputDisabled]="isActionWip"
+                         [inputDisabled]="isActionWip || isGetNodePortWip"
                          [inputWidth]="310"
                          [inputIsRequired]="true"
                          [inputPlaceholder]="'SERVICE.STEP_3_EXTERNAL_PORT'| translate"
