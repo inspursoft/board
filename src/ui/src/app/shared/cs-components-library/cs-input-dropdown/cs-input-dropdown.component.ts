@@ -55,29 +55,22 @@ export class CsInputDropdownComponent implements AfterViewInit {
   }
 
   get valid(): boolean {
-    if ((this.inputIsRequired && this.inputControl.value < this.inputMin) ||
-      (!this.inputIsRequired && this.inputControl.value != 0 && this.inputControl.value < this.inputMin)) {
-      return false
-    }
-    return this.inputControl.valid;
+    return this.checkMin(this.inputControl) && this.inputControl.valid;
   }
 
   checkAlreadyUsed(c: AbstractControl): ValidationErrors | null {
     if (this.inputConflictNumbers.indexOf(c.value) > -1) {
       return {'inUsed': 'inUsed'}
-    } else {
-      return null;
     }
+    return null;
   }
 
   checkMin(c: AbstractControl): ValidationErrors | null {
-    if (this.inputIsRequired && c.value < this.inputMin) {
+    if ((this.inputIsRequired && c.value < this.inputMin) ||
+      (!this.inputIsRequired && c.value != 0 && c.value < this.inputMin)){
       return {'min': 'min'}
-    } else if (!this.inputIsRequired && c.value != 0 && c.value < this.inputMin) {
-      return {'min': 'min'}
-    } else {
-      return null;
     }
+    return null;
   }
 
   validNumberStart(validNumber: number): string {
