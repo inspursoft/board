@@ -200,3 +200,24 @@ func ReverseStatePVC(state string) int {
 	}
 	return ret
 }
+
+// check exsiting pvc name list in k8s by project
+func QueryPVCNames(projectname string) ([]string, error) {
+	if projectname == "" {
+		return nil, errors.New("Project name is empty.")
+	}
+
+	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		KubeConfigPath: kubeConfigPath(),
+	})
+	pvclist, err := k8sclient.AppV1().PersistentVolumeClaim(projectname).List()
+	if err != nil {
+		logs.Error("Failed to get pvc %s", projectname)
+		return nil, err
+	}
+	var pvcnames []string
+	for _, pvc := range pvclist.Items {
+		pvcnames = append(pvcnames, pvc.Name)
+	}
+	return pvcnames, nil
+}
