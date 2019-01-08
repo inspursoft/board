@@ -140,7 +140,7 @@ func (n *PVClaimController) AddPVClaimAction() {
 }
 
 // Get the exsiting PVC name for checking
-func (n *PVClaimController) GetPVCNamesAction() {
+func (n *PVClaimController) GetPVCNameExisting() {
 	projectName := n.GetString("project_name")
 	if projectName == "" {
 		logs.Debug("Failed to get Project name")
@@ -148,11 +148,21 @@ func (n *PVClaimController) GetPVCNamesAction() {
 		return
 	}
 
-	res, err := service.QueryPVCNames(projectName)
+	pvcName := n.GetString("pvc_name")
+	if projectName == "" {
+		logs.Debug("Failed to get PVC name")
+		n.customAbort(http.StatusBadRequest, "No pvc name")
+		return
+	}
+
+	res, err := service.QueryPVCNameExisting(projectName, pvcName)
 	if err != nil {
-		logs.Debug("Failed to get PVC name List")
+		logs.Debug("Failed to check PVC name")
 		n.customAbort(http.StatusInternalServerError, fmt.Sprint(err))
 		return
 	}
-	n.renderJSON(res)
+	if res == true {
+		n.customAbort(http.StatusConflict, "The pvc name existing")
+		return
+	}
 }

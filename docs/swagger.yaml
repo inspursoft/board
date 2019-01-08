@@ -2647,11 +2647,11 @@ paths:
           description: User need to log in as admin.
         500:
           description: Unexpected internal errors.  
-  /v1/pvclaims/pvcnames:   
+  /v1/pvclaims/existing:   
     get:
-      summary: Return all PVC existing name of this project.
+      summary: Check the pvc name existing in this project.
       description: |
-        This endpoint returns all PVC existing name of this project.
+        This endpoint to check the pvc name existing in this project.
       parameters:
         - name: token
           in: header
@@ -2662,30 +2662,25 @@ paths:
           in: query
           description: project name for filtering results.
           required: true
-          type: string       
+          type: string  
+        - name: pvc_name
+          in: query
+          description: pvc name for filtering results.
+          required: true
+          type: string                 
       tags:
         - Products
       responses:
         200:
-          description: Return all PVC existing name of this project.
-          schema:
-            type: array
-            items:
-              type: string
-              description: The existing pvc name.   
-          headers:
-            X-Total-Count:
-              description: The total count of Persistent Volume Claims.
-              type: integer
-            Link:
-              description: Link refers to the previous page and next page.
-              type: string
+          description: PVC name don't existing.
         400:
           description: Bad Request.
         401:
           description: User need to log in first.
+        409:
+          description: PVC name already exists.          
         500:
-          description: Internal errors.                             
+          description: Internal errors.                           
   /v1/node:
     get:
       summary: Return nodes in Board added by admin.

@@ -201,10 +201,14 @@ func ReverseStatePVC(state string) int {
 	return ret
 }
 
-// check exsiting pvc name list in k8s by project
-func QueryPVCNames(projectname string) ([]string, error) {
+// check exsiting pvc name list in k8s by project, true is existed
+func QueryPVCNameExisting(projectname string, pvcname string) (bool, error) {
 	if projectname == "" {
-		return nil, errors.New("Project name is empty.")
+		return false, errors.New("Project name is empty.")
+	}
+
+	if pvcname == "" {
+		return false, errors.New("PVC name is empty.")
 	}
 
 	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
@@ -213,11 +217,13 @@ func QueryPVCNames(projectname string) ([]string, error) {
 	pvclist, err := k8sclient.AppV1().PersistentVolumeClaim(projectname).List()
 	if err != nil {
 		logs.Error("Failed to get pvc %s", projectname)
-		return nil, err
+		return false, err
 	}
-	var pvcnames []string
 	for _, pvc := range pvclist.Items {
-		pvcnames = append(pvcnames, pvc.Name)
+		if pvcname == pvc.Name {
+			logs.Debug("pvc %s existing in %s", pvc.Name, projectname)
+			return true, nil
+		}
 	}
-	return pvcnames, nil
+	return false, nil
 }
