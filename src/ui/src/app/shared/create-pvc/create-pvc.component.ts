@@ -69,7 +69,9 @@ export class CreatePvcComponent extends CsModalChildBase implements OnInit {
   changeSelectProject(project: Project) {
     this.newPersistentVolumeClaim.projectId = project.project_id;
     this.newPersistentVolumeClaim.projectName = project.project_name;
-    this.pvcNameInput.checkInputSelf();
+    if (this.newPersistentVolumeClaim.name != ''){
+      this.pvcNameInput.checkInputSelf();
+    }
   }
 
   changeDesignatePv(pv: PersistentVolume) {
