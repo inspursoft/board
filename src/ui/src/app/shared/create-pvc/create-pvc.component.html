@@ -10,11 +10,13 @@
                    (onChange)="changeSelectProject($event)">
       </cs-dropdown>
     </div>
-    <cs-input [inputIsRequired]="true"
+    <cs-input #pvcNameInput
+              [inputIsRequired]="true"
               [disabled]="isCreateWip"
               [inputLabel]="'STORAGE.PVC_NAME' | translate"
               [inputPattern]="namePattern"
               [inputMaxlength]="50"
+              [customerValidatorAsyncFunc]="checkPvcNameFun"
               [validatorMessage]="[{validatorKey: 'pattern', validatorMessage: 'STORAGE.PVC_CREATE_NAME_PATTERN'}]"
               [simpleFiled]="newPersistentVolumeClaim.name"
               (onCheck)="newPersistentVolumeClaim.name = $event">
