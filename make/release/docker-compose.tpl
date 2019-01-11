@@ -106,6 +106,10 @@ services:
   collector:
     image: board_collector:__version__
     restart: always
+    volumes:
+      - /data/board/cert:/cert:rw
+      - ../config/collector/kubeconfig:/root/kubeconfig
+      - /etc/board/cert:/etc/board/cert:rw
     env_file:
       - ../config/collector/env
     networks:
