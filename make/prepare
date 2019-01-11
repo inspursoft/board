@@ -53,7 +53,7 @@ def delfile(src):
 
 def create_cert(conf_path, key_path="/data/board/cert/board-key.pem", cert_path="/data/board/cert/board.pem", ca_key="/etc/board/cert/ca-key.pem", ca_cert="/etc/board/cert/ca.pem"):
 	cert_dir = os.path.dirname(cert_path)
-	csr_path = os.path.join(cert_dir, "board.csr")
+	csr_path = os.path.join(cert_dir, "request.csr")
 	rc = subprocess.call(["openssl", "genrsa", "-out", key_path, "2048"], stdout=FNULL, stderr=subprocess.STDOUT)
 	if rc != 0:
 		return rc
@@ -152,14 +152,15 @@ ldap_timeout = rcp.get("configuration", "ldap_timeout")
 
 #Setting Directory
 apiserver_config_dir = os.path.join(config_dir,"apiserver")
+collector_config_dir = os.path.join(config_dir,"collector")
 if not os.path.exists(apiserver_config_dir):
     os.makedirs(os.path.join(config_dir, "apiserver"))
+if not os.path.exists(collector_config_dir):
+    os.makedirs(os.path.join(config_dir, "collector"))
 apiserver_env= os.path.join(config_dir, "apiserver", "env")
 if not os.path.exists(os.path.join(apiserver_config_dir, "kvmregistry")):
     os.makedirs(os.path.join(apiserver_config_dir, "kvmregistry"))
 apiserver_kvm = os.path.join(apiserver_config_dir, "kvmregistry")
-apiserver_kubeconfig = os.path.join(apiserver_config_dir, "kubeconfig")
-apiserver_openssl = os.path.join(apiserver_config_dir, "openssl.conf")
 
 tokenserver_config_dir = os.path.join(config_dir,"tokenserver")
 if not os.path.exists(tokenserver_config_dir):
@@ -256,26 +257,34 @@ render(os.path.join(templates_dir, "apiserver", "env"),
         kvm_toolkits_path=kvm_toolkits_path)
 
 if kube_http_scheme == "http":
-	render(os.path.join(templates_dir, "apiserver", "kubeconfig_http"),
-			apiserver_kubeconfig,
-			kube_http_scheme=kube_http_scheme,
-			kube_master_ip=kube_master_ip,
-			kube_master_port=kube_master_port)
+	for name in ["apiserver", "collector"]:
+		render(os.path.join(templates_dir, "kube", "kubeconfig_http"),
+				os.path.join(config_dir, name, "kubeconfig"),
+				kube_http_scheme=kube_http_scheme,
+				kube_master_ip=kube_master_ip,
+				kube_master_port=kube_master_port,
+				name=name)
 elif kube_http_scheme == "https":
-	render(os.path.join(templates_dir, "apiserver", "kubeconfig_https"),
-			apiserver_kubeconfig,
-			kube_http_scheme=kube_http_scheme,
-			kube_master_ip=kube_master_ip,
-			kube_master_port=kube_master_port)
-	render(os.path.join(templates_dir, "apiserver", "openssl.conf"),
-			apiserver_openssl,
-			kube_master_ip=kube_master_ip)
 	if not os.path.exists("/data/board/cert"):
 		os.makedirs("/data/board/cert")
-	rc = create_cert(apiserver_openssl)
-	if rc != 0:
-		print("Create the Board cert failed, please read the documents for Board.")
-		exit(1)
+	for name in ["apiserver", "collector"]:
+		openssl_path=os.path.join(config_dir, name, "openssl.conf")
+		key_path=os.path.join("/data/board/cert", name+'-key.pem')
+		cert_path=os.path.join("/data/board/cert", name+'.pem')
+		render(os.path.join(templates_dir, "kube", "kubeconfig_https"),
+				os.path.join(config_dir, name, "kubeconfig"),
+				kube_http_scheme=kube_http_scheme,
+				kube_master_ip=kube_master_ip,
+				kube_master_port=kube_master_port,
+				name=name)
+		render(os.path.join(templates_dir, "kube", "openssl.conf"),
+				openssl_path,
+				kube_master_ip=kube_master_ip,
+				name=name)
+		rc = create_cert(openssl_path, key_path=key_path, cert_path=cert_path)
+		if rc != 0:
+			print("Create the Board cert failed, please read the documents for Board.")
+			exit(1)
 
 if os.path.exists(os.path.join(apiserver_config_dir, "kvm")):
     shutil.rmtree(os.path.join(apiserver_config_dir, "kvm"))
