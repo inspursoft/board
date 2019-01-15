@@ -2646,7 +2646,41 @@ paths:
         403:
           description: User need to log in as admin.
         500:
-          description: Unexpected internal errors.                      
+          description: Unexpected internal errors.  
+  /v1/pvclaims/existing:   
+    get:
+      summary: Check the pvc name existing in this project.
+      description: |
+        This endpoint to check the pvc name existing in this project.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name
+          in: query
+          description: project name for filtering results.
+          required: true
+          type: string  
+        - name: pvc_name
+          in: query
+          description: pvc name for filtering results.
+          required: true
+          type: string                 
+      tags:
+        - Products
+      responses:
+        200:
+          description: PVC name don't existing.
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        409:
+          description: PVC name already exists.          
+        500:
+          description: Internal errors.                           
   /v1/node:
     get:
       summary: Return nodes in Board added by admin.
