@@ -1,16 +1,20 @@
-import { Component, EventEmitter, OnInit } from "@angular/core";
+import { Component, EventEmitter, OnInit, ViewChild } from "@angular/core";
 import { Project } from "../../project/project";
 import { CsModalChildBase } from "../cs-modal-base/cs-modal-child-base";
 import { PersistentVolume, PersistentVolumeClaim, PvcAccessMode } from "../shared.types";
 import { SharedService } from "../shared.service";
 import { MessageService } from "../message-service/message.service";
 import { HttpErrorResponse } from "@angular/common/http";
+import { Observable } from "rxjs";
+import { ValidationErrors } from "@angular/forms";
+import { CsInputComponent } from "../cs-components-library/cs-input/cs-input.component";
 
 @Component({
   templateUrl: "./create-pvc.component.html",
   styleUrls: ["./create-pvc.component.css"]
 })
 export class CreatePvcComponent extends CsModalChildBase implements OnInit {
+  @ViewChild("pvcNameInput") pvcNameInput: CsInputComponent;
   onAfterCommit: EventEmitter<PersistentVolumeClaim>;
   projectsList: Array<Project>;
   accessModeList: Array<PvcAccessMode>;
@@ -46,8 +50,28 @@ export class CreatePvcComponent extends CsModalChildBase implements OnInit {
     });
   }
 
+  get checkPvcNameFun() {
+    return this.checkPvcName.bind(this)
+  }
+
+  checkPvcName(control: HTMLInputElement): Observable<ValidationErrors | null> {
+    return this.sharedService.checkPvcNameExist(this.newPersistentVolumeClaim.projectName, control.value)
+      .map(() => null)
+      .catch((err: HttpErrorResponse) => {
+        this.messageService.cleanNotification();
+        if (err.status == 409) {
+          return Observable.of({serviceExist: "STORAGE.PVC_CREATE_NAME_EXIST"});
+        }
+        return Observable.of(null);
+      });
+  }
+
   changeSelectProject(project: Project) {
     this.newPersistentVolumeClaim.projectId = project.project_id;
+    this.newPersistentVolumeClaim.projectName = project.project_name;
+    if (this.newPersistentVolumeClaim.name != ''){
+      this.pvcNameInput.checkInputSelf();
+    }
   }
 
   changeDesignatePv(pv: PersistentVolume) {

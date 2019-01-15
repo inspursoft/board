@@ -54,7 +54,8 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
         this.setExternalInfo(container, 0);
       }
       this.k8sService.getNodePorts(this.uiData.projectName).subscribe(
-        (res: Array<number>) => this.existingNodePorts = res, null,
+        (res: Array<number>) => this.existingNodePorts = res,
+        () => this.isGetNodePortWip = false,
         () => this.isGetNodePortWip = false
       );
       this.changeDetectorRef.reattach();

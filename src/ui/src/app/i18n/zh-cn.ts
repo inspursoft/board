@@ -553,10 +553,11 @@ export const LANG_ZH_CN = {
     "PVC_CREATE_SELECT_PROJECT":"选择项目 ...",
     "PVC_CREATE_SELECT_ACCESS_MODE":"选择访问模式 ...",
     "PVC_CREATE_SUCCESS":"PVC创建成功",
+    "PVC_CREATE_NAME_EXIST":"PVC名称已存在",
     "PVC_CREATE_NAME_PATTERN":"数字或小写字母组成，中间支持'.'字符",
     "PVC_DELETE_CONFIRM":"确认删除: {{0}}?",
     "PVC_DELETE_SUCCESS":"删除成功",
-    "PVC_DELETE_FAILED":"删除失败"
+    "PVC_DELETE_FAILED":"删除失败",
   },
   "AUDIT":{
     "ALL":"全部",

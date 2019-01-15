@@ -55,7 +55,7 @@ export class CsInputDropdownComponent implements AfterViewInit {
   }
 
   get valid(): boolean {
-    return this.checkMin(this.inputControl) && this.inputControl.valid;
+    return this.checkMin(this.inputControl) == null && this.inputControl.valid;
   }
 
   checkAlreadyUsed(c: AbstractControl): ValidationErrors | null {
