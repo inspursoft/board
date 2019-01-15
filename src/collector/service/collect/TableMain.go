@@ -101,16 +101,7 @@ func (resource SourceMap) GainNodes() error {
 		return err
 	}
 	NodeList = *l
-loopNode:
 	for _, v := range NodeList.Items {
-		for _, cond := range v.Status.Conditions {
-			if strings.EqualFold(string(cond.Type), "Ready") {
-				if cond.Status != model.ConditionTrue && !v.Unschedulable {
-					util.Logger.SetWarn("this node status is false", v.Status.Addresses[1].Address)
-					continue loopNode
-				}
-			}
-		}
 		var nodes = resource.nodes
 		nodes.NodeName = v.Name
 		nodes.CreateTime = v.CreationTimestamp.Format("2006-01-02 15:04:05")
@@ -131,19 +122,36 @@ loopNode:
 
 		nodes.TimeListId = (*serviceDashboardID)[*minuteCounterI]
 		nodes.InternalIp = v.Status.Addresses[1].Address
-		cpu, mem, err := getNodePs(v.Status.Addresses[1].Address, cpuCores)
-		if err != nil {
-			return err
+		if func(nodeCondition []model.NodeCondition) bool {
+			for _, cond := range nodeCondition {
+				if strings.EqualFold(string(cond.Type), "Ready") {
+					if cond.Status != model.ConditionTrue {
+						return false
+					}
+				}
+			}
+			return true
+		}(v.Status.Conditions) {
+			cpu, mem, err := getNodePs(v.Status.Addresses[1].Address, cpuCores)
+			if err != nil {
+				return err
+			}
+			s := GetNodeMachine(v.Status.Addresses[1].Address)
+			a, _ := s.(struct {
+				outCapacity int64
+				outUse      int64
+			})
+			nodes.StorageTotal = a.outCapacity
+			nodes.StorageUse = a.outUse
+			nodes.CpuUsage = float32(cpu)
+			nodes.MemUsage = float32(mem)
+		} else {
+			nodes.StorageTotal = 0
+			nodes.StorageUse = 0
+			nodes.CpuUsage = float32(0)
+			nodes.MemUsage = float32(0)
+			util.Logger.SetWarn("this node status is unkown", v.Status.Addresses[1].Address)
 		}
-		s := GetNodeMachine(v.Status.Addresses[1].Address)
-		a, _ := s.(struct {
-			outCapacity int64
-			outUse      int64
-		})
-		nodes.StorageTotal = a.outCapacity
-		nodes.StorageUse = a.outUse
-		nodes.CpuUsage = float32(cpu)
-		nodes.MemUsage = float32(mem)
 		nodeCollect = append(nodeCollect, nodes)
 		dao.InsertDb(&nodes)
 
