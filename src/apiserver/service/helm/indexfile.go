@@ -20,7 +20,9 @@ var (
 	ErrNoChartName = errors.New("no chart name found")
 )
 
-type IndexFile model.IndexFile
+type IndexFile struct {
+	Entries map[string][]*model.ChartVersion `json:"entries" yaml:"entries"`
+}
 
 // Has returns true if the index has an entry for a chart with the given name and exact version.
 func (i IndexFile) Has(name, version string) bool {
@@ -109,6 +111,6 @@ func (i *IndexFile) Merge(f *IndexFile) {
 // NewIndexFile initializes an index.
 func NewIndexFile() *IndexFile {
 	return &IndexFile{
-		Entries: map[string]model.ChartVersions{},
+		Entries: map[string][]*model.ChartVersion{},
 	}
 }

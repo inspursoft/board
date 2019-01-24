@@ -2,6 +2,9 @@ package service
 
 import (
 	"fmt"
+	"regexp"
+	"sort"
+	"strings"
 	"time"
 
 	helmpkg "git/inspursoft/board/src/apiserver/service/helm"
@@ -81,33 +84,68 @@ func CheckRepoNameNotExist(name string) (bool, error) {
 
 func toEntry(repo *model.Repository) *helmpkg.Entry {
 	entry := &helmpkg.Entry{
-		Name:     repo.Name,
-		URL:      repo.URL,
-		Username: repo.Username,
-		Password: repo.Password,
-		Type:     repo.Type,
-	}
-	if repo.Cert != "" {
-		entry.Cert = []byte(repo.Cert)
-	}
-	if repo.Key != "" {
-		entry.Key = []byte(repo.Key)
-	}
-	if repo.CA != "" {
-		entry.CA = []byte(repo.CA)
+		Name: repo.Name,
+		URL:  repo.URL,
+		Type: repo.Type,
 	}
 	return entry
 }
 
-func GetRepoDetail(repo *model.Repository) (*model.RepositoryDetail, error) {
+func GetRepoDetail(repo *model.Repository, nameRegex string, pageIndex, pageSize int) (*model.RepositoryDetail, error) {
+	var err error
+	var filter *regexp.Regexp
+	if nameRegex != "" {
+		filter, err = regexp.Compile(nameRegex)
+		if err != nil {
+			return nil, err
+		}
+	}
 	chartrepo, err := helmpkg.NewChartRepository(toEntry(repo))
 	if err != nil {
 		return nil, err
 	}
 	var detail model.RepositoryDetail
-	// TODO: replace ICON URL to ICON base64 code.
-	detail.IndexFile = (*model.IndexFile)(chartrepo.IndexFile)
-	detail.Repository = repo
+	detail.Repository = *repo
+
+	if chartrepo.IndexFile != nil {
+		var allCharts []*model.ChartVersions
+		//filter the results.
+		for chartname, versions := range chartrepo.IndexFile.Entries {
+			if filter == nil || filter.FindString(chartname) != "" {
+				allCharts = append(allCharts, &model.ChartVersions{
+					Name:     chartname,
+					Versions: versions,
+				})
+			}
+		}
+		//sort the chart by chartname
+		sort.Sort(helmpkg.SortChartVersionsByName(allCharts))
+		page := &model.Pagination{
+			PageIndex:  pageIndex,
+			PageSize:   pageSize,
+			TotalCount: int64(len(allCharts)),
+		}
+		page.GetPageCount()
+		if pageIndex == 0 {
+			detail.PaginatedChartVersions = model.PaginatedChartVersions{
+				Pagination:        page,
+				ChartVersionsList: allCharts,
+			}
+		} else if (pageIndex-1)*pageSize < len(allCharts) {
+			if pageSize == 0 || pageIndex*pageSize >= len(allCharts) {
+				detail.PaginatedChartVersions = model.PaginatedChartVersions{
+					Pagination:        page,
+					ChartVersionsList: allCharts[(pageIndex-1)*pageSize:],
+				}
+			} else {
+				detail.PaginatedChartVersions = model.PaginatedChartVersions{
+					Pagination:        page,
+					ChartVersionsList: allCharts[(pageIndex-1)*pageSize : pageIndex*pageSize],
+				}
+			}
+		}
+	}
+
 	return &detail, nil
 }
 
@@ -139,109 +177,6 @@ func DeleteChart(repo *model.Repository, chartname, chartversion string) error {
 	return chartrepo.DeleteChart(chartname, chartversion)
 }
 
-type boardServiceInsertAction struct {
-	ownerid     int64
-	ownername   string
-	projectname string
-	release     *model.ReleaseModel
-}
-
-func (b *boardServiceInsertAction) PreInstall(templateInfo string) error {
-	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
-		K8sMasterURL: utils.GetConfig("KUBE_MASTER_URL")(),
-	})
-	//resolve the templateInfo into kubernetes service and deployments.....
-	mapper := k8sclient.AppV1().Mapper()
-	return mapper.Visit(templateInfo, func(infos []*model.Info) error {
-		// board only support Service and Deployment yamls
-		var serviceInfos, deploymentInfos []*model.Info
-		for i := range infos {
-			if infos[i].Namespace == "" {
-				infos[i].Namespace = b.projectname
-			}
-			if infos[i].GroupVersionKind.Kind == "Service" && infos[i].Namespace == b.projectname {
-				serviceInfos = append(serviceInfos, infos[i])
-			} else if infos[i].GroupVersionKind.Kind == "Deployment" && infos[i].Namespace == b.projectname {
-				deploymentInfos = append(deploymentInfos, infos[i])
-			}
-		}
-
-		if len(serviceInfos) == 0 || len(deploymentInfos) == 0 {
-			return fmt.Errorf("The helm chart %s-%s must have a service and deployment within namespace %s", b.release.Chart, b.release.ChartVersion, b.projectname)
-		}
-		updateBoard := false
-		for i := range serviceInfos {
-			var findDeploy *model.Info
-			// find the deployment with service name
-			for j := range deploymentInfos {
-				if serviceInfos[i].Name == deploymentInfos[j].Name {
-					findDeploy = deploymentInfos[j]
-					break
-				}
-			}
-			if findDeploy != nil {
-				//add the service in board
-				//TODO: add the service and deployment in board.....
-				updateBoard = true
-			}
-		}
-		if !updateBoard {
-			return fmt.Errorf("The service and deployment in helm chart %s-%s must have same name", b.release.Chart, b.release.ChartVersion)
-		}
-		return nil
-	})
-}
-
-func (b *boardServiceInsertAction) PostInstall(templateInfo string) error {
-	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
-		K8sMasterURL: utils.GetConfig("KUBE_MASTER_URL")(),
-	})
-	//resolve the templateInfo into kubernetes service and deployments.....
-	mapper := k8sclient.AppV1().Mapper()
-	err := mapper.Visit(templateInfo, func(infos []*model.Info) error {
-		// board only support Service and Deployment yamls
-		for i := range infos {
-			if infos[i].Namespace == "" {
-				infos[i].Namespace = b.projectname
-			}
-			if infos[i].GroupVersionKind.Kind == "Service" && infos[i].Namespace == b.projectname {
-				// install the service into service_status table.
-				status, err := CreateServiceConfig(model.ServiceStatus{
-					Name:          infos[i].Name,
-					ProjectID:     b.release.RepositoryId,
-					ProjectName:   b.projectname,
-					Comment:       "helm chart created service",
-					OwnerID:       b.ownerid,
-					OwnerName:     b.ownername,
-					Status:        defaultStatus,
-					Public:        projectPrivate,
-					Deleted:       defaultDeleted,
-					CreationTime:  time.Now(),
-					UpdateTime:    time.Now(),
-					Source:        helm,
-					ServiceConfig: "",
-				})
-				if err != nil {
-					return err
-				}
-				b.release.Services = append(b.release.Services, model.ReleaseServiceModel{
-					ServiceId: status.ID,
-				})
-			}
-		}
-
-		return nil
-	})
-	if err != nil {
-		return err
-	}
-
-	b.release.Workloads = templateInfo
-	_, err = dao.AddHelmRelease(*b.release)
-
-	return err
-}
-
 func InstallChart(repo *model.Repository, chartname, chartversion, name string, projectid int64, projectname, values string, ownerid int64, ownername string) error {
 	chartrepo, err := helmpkg.NewChartRepository(toEntry(repo))
 	if err != nil {
@@ -251,27 +186,86 @@ func InstallChart(repo *model.Repository, chartname, chartversion, name string, 
 	if helmhost == "" {
 		return fmt.Errorf("You must specify the HELM_HOST environment when the apiserver starts")
 	}
-	_, err = chartrepo.InstallChart(chartname, chartversion, name, projectname, values, helmhost, &boardServiceInsertAction{
-		ownerid:     ownerid,
-		ownername:   ownername,
-		projectname: projectname,
-		release: &model.ReleaseModel{
-			Name:         name,
-			ProjectId:    projectid,
-			RepositoryId: repo.ID,
-			Chart:        chartname,
-			ChartVersion: chartversion,
-			Value:        values,
-		},
-	})
+	workloads, err := chartrepo.InstallChart(chartname, chartversion, name, projectname, values, helmhost)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			// remove the release in the helm, ignore the err
+			removeerr := helmpkg.DeleteReleaseFromRepository(name, helmhost)
+			if removeerr != nil {
+				logs.Warning("remove the release %s error: %+v", name, removeerr)
+			}
+		}
+	}()
+	// retrieve the release detail info
+	r, err := helmpkg.GetRelease(name, helmhost)
+	if err != nil {
+		logs.Warning("Get release %s info from helm error:%+v", name, err)
+		return err
+	}
+	var update time.Time
+	if r.Updated != "-" {
+		update, err = time.Parse(time.ANSIC, r.Updated)
+		if err != nil {
+			logs.Warning("Parse the release %s time error: %+v", name, r.Updated)
+			err = nil //ignore this err
+		}
+	}
+	model := model.ReleaseModel{
+		Name:           name,
+		ProjectId:      projectid,
+		ProjectName:    projectname,
+		Workloads:      workloads,
+		RepositoryId:   repo.ID,
+		RepostiroyName: repo.Name,
+		OwnerID:        ownerid,
+		OwnerName:      ownername,
+		UpdateTime:     update,
+		CreateTime:     update,
+	}
+	_, err = dao.AddHelmRelease(model)
 	return err
 }
 
-func ListReleases(repo *model.Repository) ([]model.Release, error) {
+func ListReleases(repo *model.Repository, userid int64) ([]model.Release, error) {
+	var models []model.ReleaseModel
+	var err error
 	if repo == nil {
-		return dao.GetHelmReleases()
+		models, err = dao.GetHelmReleasesByRepositoryAndUser(-1, userid)
+	} else {
+		models, err = dao.GetHelmReleasesByRepositoryAndUser(repo.ID, userid)
 	}
-	return dao.GetHelmReleasesByRepositoryId(repo.ID)
+	// get the releases from helm cmd
+	helmhost := utils.GetStringValue("HELM_HOST")
+	if helmhost == "" {
+		return nil, fmt.Errorf("You must specify the HELM_HOST environment when the apiserver starts")
+	}
+	list, err := helmpkg.ListReleases(helmhost)
+	if err != nil {
+		return nil, err
+	}
+	releases := make(map[string]helmpkg.Release)
+	for i := range list.Releases {
+		releases[list.Releases[i].Name] = list.Releases[i]
+	}
+	// list the release base on the database.
+	var ret []model.Release
+	for _, m := range models {
+		if r, ok := releases[m.Name]; ok {
+			ret = append(ret, generateModelRelease(&m, &r))
+		} else {
+			logs.Warning("the release %s does not exist in kubernetes", m.Name)
+		}
+	}
+	return ret, err
+}
+
+func GetReleaseFromDB(releaseid int64) (*model.ReleaseModel, error) {
+	return dao.GetHelmRelease(model.ReleaseModel{
+		ID: releaseid,
+	})
 }
 
 func DeleteRelease(releaseid int64) error {
@@ -293,15 +287,129 @@ func DeleteRelease(releaseid int64) error {
 	if err != nil {
 		return err
 	}
-	for i := range release.Services {
-		//delete the service
-		_, err := DeleteService(release.Services[i].ServiceId)
-		if err != nil {
-			return err
-		}
-	}
 	_, err = dao.DeleteHelmRelease(model.ReleaseModel{
 		ID: releaseid,
 	})
 	return err
+}
+
+func GetReleaseDetail(releaseid int64) (*model.ReleaseDetail, error) {
+	helmhost := utils.GetStringValue("HELM_HOST")
+	if helmhost == "" {
+		return nil, fmt.Errorf("You must specify the HELM_HOST environment when the apiserver starts")
+	}
+	release, err := dao.GetHelmRelease(model.ReleaseModel{
+		ID: releaseid,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if release == nil {
+		logs.Error("the release with id %d does not exist", releaseid)
+		return nil, NotExistError
+	}
+	releaseChan := make(chan *helmpkg.Release)
+	go func() {
+		r, err := helmpkg.GetRelease(release.Name, helmhost)
+		if err != nil {
+			logs.Warning("Get release %s from helm error:%+v", release.Name, err)
+		}
+		releaseChan <- r
+	}()
+
+	notesChan := make(chan string)
+	go func() {
+		note, err := helmpkg.GetReleaseNotes(release.Name, helmhost)
+		if err != nil {
+			logs.Warning("Get release %s notes from helm error:%+v", release.Name, err)
+		}
+		notesChan <- note
+	}()
+
+	statusChan := make(chan string)
+	go func() {
+		status, err := helmpkg.GetReleaseStatus(release.Name, helmhost)
+		if err != nil {
+			logs.Warning("Get release %s status from helm error:%+v", release.Name, err)
+		}
+		statusChan <- status
+	}()
+
+	loadChan := make(chan string)
+	go func() {
+		load, err := helmpkg.GetReleaseManifest(release.Name, helmhost)
+		if err != nil {
+			logs.Warning("Get release %s workloads from helm error:%+v", release.Name, err)
+		}
+		loadChan <- load
+	}()
+
+	//get the result
+	helmrelease := <-releaseChan
+
+	notes := <-notesChan
+	workloads := <-loadChan
+	status := <-statusChan
+
+	detail := model.ReleaseDetail{
+		Release:        generateModelRelease(release, helmrelease),
+		Workloads:      workloads,
+		Notes:          notes,
+		WorkloadStatus: status,
+	}
+	return &detail, err
+}
+
+func generateModelRelease(m *model.ReleaseModel, r *helmpkg.Release) model.Release {
+	var chart, version, status string
+	if r != nil {
+		index := strings.LastIndex(r.Chart, "-")
+		chart = r.Chart
+		if index != -1 {
+			chart = r.Chart[:index]
+			if index != len(r.Chart)-1 {
+				version = r.Chart[index+1:]
+			}
+		}
+		status = r.Status
+	}
+
+	return model.Release{
+		ID:             m.ID,
+		Name:           m.Name,
+		ProjectId:      m.ProjectId,
+		ProjectName:    m.ProjectName,
+		RepositoryId:   m.RepositoryId,
+		RepositoryName: m.RepostiroyName,
+		Chart:          chart,
+		ChartVersion:   version,
+		OwnerID:        m.OwnerID,
+		OwnerName:      m.OwnerName,
+		Status:         status,
+		UpdateTime:     m.UpdateTime,
+		CreateTime:     m.CreateTime,
+	}
+}
+
+func GetHelmReleaseResources() ([]*model.Info, error) {
+	models, err := dao.GetHelmReleasesByRepositoryAndUser(-1, -1)
+	if err != nil {
+		return nil, err
+	}
+	ret := []*model.Info{}
+	for _, m := range models {
+		k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+			K8sMasterURL: utils.GetConfig("KUBE_MASTER_URL")(),
+		})
+		//resolve the templateInfo into kubernetes service and deployments.....
+		mapper := k8sclient.AppV1().Mapper()
+		mapper.Visit(m.Workloads, func(infos []*model.Info, err error) error {
+			if err != nil {
+				logs.Warning("ignore analysis the workload error: %s", err.Error())
+			}
+			ret = append(ret, infos...)
+			return nil
+		})
+	}
+	return ret, nil
 }

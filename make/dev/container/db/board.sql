@@ -383,11 +383,6 @@ DROP TABLE IF EXISTS `log`;
         `id` INT NOT NULL AUTO_INCREMENT,
         `name` VARCHAR(255) NOT NULL DEFAULT '',
         `url` VARCHAR(255) NOT NULL DEFAULT '',
-        `username` VARCHAR(255) NOT NULL DEFAULT '',
-        `password` VARCHAR(255) NOT NULL DEFAULT '',
-        `cert` VARCHAR(2048),
-        `key` VARCHAR(2048),
-        `ca` VARCHAR(2048),
         `type` INT NOT NULL DEFAULT 0,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
@@ -402,18 +397,15 @@ INSERT INTO `board`.`repository`
         `id` INT NOT NULL AUTO_INCREMENT,
         `name` VARCHAR(255) NOT NULL DEFAULT '',
         `project_id` INT NOT NULL,
+        `project_name` VARCHAR(255) NOT NULL,
         `repoid` INT NOT NULL,
-        `chart` VARCHAR(255) NOT NULL DEFAULT '',
-        `chartversion` VARCHAR(255) NOT NULL DEFAULT '',
-        `value` VARCHAR(4096) NOT NULL DEFAULT '',
-        `workload` VARCHAR(4096) NOT NULL DEFAULT '',
+        `repository` VARCHAR(255) NOT NULL,
+        `workloads` VARCHAR(65531),
+        `owner_id` INT NOT NULL,
+        `owner_name` VARCHAR(255) NOT NULL,
+        `creation_time` datetime DEFAULT NULL,
+        `update_time` datetime DEFAULT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
-    CREATE TABLE `board`.`release_service` (
-        `releaseid` INT NOT NULL,
-        `serviceid` INT NOT NULL,
-        PRIMARY KEY (`releaseid`, `serviceid`),
-        CONSTRAINT `c_release_1` FOREIGN KEY (`releaseid`) REFERENCES `board`.`release` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

@@ -3899,133 +3899,7 @@ paths:
           description: User need to log in first.
         500:
           description: Unexpected internal errors.
-    post:
-      summary: Add a repository
-      description: |
-        This endpoint is to add a repository into board.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: repository
-          in: body
-          description: New added repository.
-          required: true
-          schema:
-            $ref: '#/definitions/Repository'
-      tags:
-        - Products
-      responses:
-        201:
-          description: Repository added successfully.
-          schema:
-            description: The Repository record ID.  
-            type: string              
-        409:
-          description: The repository name has already exist.
-        401:
-          description: User need to log in first.
-        500:
-          description: Unexpected internal errors.
   /v1/helm/repositories/{repository_id}:
-    get:
-      summary: Return specific repository infomation.
-      description: |
-        This endpoint returns specific repository information by repository ID.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: repository_id
-          in: path
-          description: Repository ID for filtering results.
-          required: true
-          type: integer
-          format: int32
-      tags:
-        - Products
-      responses:
-        200:
-          description: Return matched repository information.
-          schema:
-            $ref: '#/definitions/Repository'
-        401:
-          description: User need to log in first.
-        404:
-          description: Repository does not exist.
-        500:
-          description: Internal errors.
-    put:
-      summary: Update an repository.
-      description: |
-        This endpoint is to update an repository. 
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: repository_id
-          in: path
-          description: Repository ID of repository which will be deleted.
-          required: true
-          type: integer
-          format: int32
-        - name: operation
-          in: body
-          description: New repository content to be updated.
-          required: true
-          schema:
-            $ref: '#/definitions/Repository'
-      tags:
-        - Products
-      responses:
-        200:
-          description: Updated operation successfully.
-        400:
-          description: Illegal format of provided ID value.
-        401:
-          description: User need to log in first.
-        403:
-          description: User does not have permission to the operation.
-        404:
-          description: Repository ID does not exist.
-        500:
-          description: Unexpected internal errors.
-    delete:
-      summary: Delete repository by repository ID
-      description: |
-        This endpoint is aimed to delete repository by repository ID.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: repository_id
-          in: path
-          description: Repository ID of repository which will be deleted.
-          required: true
-          type: integer
-          format: int32
-      tags:
-        - Products
-      responses:
-        200:
-          description: Operation is deleted successfully.
-        400:
-          description: Invalid operation id.
-        403:
-          description: User need to log in first.
-        404:
-          description: Repository does not exist.
-        500:
-          description: Internal errors.
-  /v1/helm/repositories/{repository_id}/detail:
     get:
       summary: Return specific repository detail infomation.
       description: |
@@ -4042,6 +3916,17 @@ paths:
           required: true
           type: integer
           format: int32
+        - name: page_index
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
       tags:
         - Products
       responses:
@@ -4221,6 +4106,33 @@ paths:
         500:
           description: Internal errors.
   /v1/helm/release/{id}:
+    get:
+      summary: Return specific release infomation.
+      description: |
+        This endpoint returns release information.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: id
+          in: path
+          description: Release ID of release which will be deleted.
+          required: true
+          type: integer
+          format: int32
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched release information.
+          schema:
+            $ref: '#/definitions/ReleaseDetail'
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
     delete:
       summary: Delete release by release ID
       description: |
@@ -5922,21 +5834,6 @@ definitions:
       url:
         type: string      
         description: The url location of this repository.
-      username:
-        type: string      
-        description: The username of this repository.
-      password:
-        type: string   
-        description: The password of this repository.  
-      cert:
-        type: string
-        description: The client certificate of this repository. 
-      key:
-        type: string
-        description: The client key of this repository.    
-      ca:
-        type: string
-        description: The client ca of this repository. 
       type:
         type: integer
         format: int32
@@ -5945,21 +5842,27 @@ definitions:
     type: object
     allOf:
     - $ref: '#/definitions/Repository'
+    - $ref: '#/definitions/PaginatedChartVersions'
+  PaginatedChartVersions:                          
+    type: object
+    allOf:
+    - $ref: '#/definitions/Pagination'
     - type: object
       properties:
-        index:
-          $ref: '#/definitions/IndexFile'
-  IndexFile:                          
+        charts:
+          type: array
+          items:
+            $ref: '#/definitions/ChartVersions'
+  ChartVersions:
     type: object
     properties:
-      entries:
-        type: object
-        additionalProperties:
-          $ref: '#/definitions/ChartVersions'
-  ChartVersions:
-    type: array
-    items:
-      $ref: '#/definitions/ChartVersion'
+      name:
+        type: string
+        description: The chart name of chart versions.
+      versions:
+        type: array
+        items:
+          $ref: '#/definitions/ChartVersion'
   ChartVersion:
     type: object
     allOf:
@@ -6041,39 +5944,70 @@ definitions:
       project_id:
         type: integer
         format: int32
-        description: The project's integer ID which include this service.          
+        description: The project's integer ID which include this release.   
+      project_name:
+        type: string
+        description: The project's name which include this release.  
       repoid:
         type: integer
         format: int32
-        description: The Repository ID of this release.     
+        description: The Repository ID of this release.    
+      repository:
+        type: string
+        description: The Repository's name of this release.  
       chart:
         type: string
         description: The Repository Chart of this release. 
       chartversion:
         type: string
         description: The Repository ChartVersion of this release. 
-      value:
+      owner_id:
+        type: integer
+        format: int32
+        description: The owner id of this release.
+      owner_name:
         type: string
-        description: The value of this release uses. 
-      workloads:
+        description: The owner name of this release.
+      status:
         type: string
-        description: The workloads ID of this release creates. 
-      services:
-        description: The services of this release created.
-        type: array
-        items:
-          $ref: '#/definitions/ReleaseService'
-  ReleaseService:
+        description: The status of this release.
+      values:
+        type: string
+        description: The values of this release uses. 
+      update_time:
+        type: string
+        description: The last update time of this release.
+  ReleaseDetail:
+    type: object
+    allOf:
+    - $ref: '#/definitions/Release'
+    - type: object
+      properties:
+        notes:
+          type: string
+          description: The usage of this release.
+        workloads:
+          type: string
+          description: The work loads of this release.
+        workloadstatus:
+          type: string
+          description: The work loads status of this release.
+  Pagination:
     type: object
     properties:
-      releaseid:
-        type: integer
+      page_index:
+        type: int
         format: int32
-        description: The ID of release.
-      serviceid:
-        type: integer
+        description: The index of the page
+      page_size:
+        type: int
         format: int32
-        description: The ID of service.
-      servicename:
-        type: string
-        description: The name of service.    
+        description: The size of the page
+      total_count:
+        type: int
+        format: int64
+        description: The total count of all pages
+      page_count:
+        type: int
+        format: int32
+        description: The count of the pages

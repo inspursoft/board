@@ -6,6 +6,7 @@ import (
 	"compress/gzip"
 	"crypto/tls"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -32,9 +33,38 @@ const (
 	DefaultType = 0
 )
 
-type TemplateHandler interface {
-	PreInstall(string) error
-	PostInstall(string) error
+type ReleaseList struct {
+	Next     string    `json:"Next,omitempty"`
+	Releases []Release `json:"Releases,omitempty"`
+}
+
+type Release struct {
+	Name      string `json:"Name,omitempty"`
+	Namespace string `json:"Namespace,omitempty"`
+	Revision  int32  `json:"Revision,omitempty"`
+	Updated   string `json:"Updated,omitempty"`
+	Status    string `json:"Status,omitempty"`
+	Chart     string `json:"Chart,omitempty"`
+}
+
+type ReleaseStatus struct {
+	Name      string `json:"name,omitempty"`
+	Namespace string `json:"namespace,omitempty"`
+	Info      *Info  `json:"info,omitempty"`
+}
+
+type Info struct {
+	Status *Status `json:"status,omitempty"`
+	// Description is human-friendly "log entry" about this release.
+	Description string `json:"Description,omitempty"`
+}
+
+// Status defines the status of a release.
+type Status struct {
+	// Cluster resources as kubectl would print them.
+	Resources string `json:"resources,omitempty"`
+	// Contains the rendered templates/NOTES.txt if available
+	Notes string `json:"notes,omitempty"`
 }
 
 // Entry represents a collection of parameters for chart repository
@@ -324,7 +354,7 @@ func (r *ChartRepository) DownloadChart(chartName, chartVersion, targetdir strin
 //	return "", "", os.ErrNotExist
 //}
 
-func (r *ChartRepository) Icon(versions model.ChartVersions) (string, string, error) {
+func (r *ChartRepository) Icon(versions ChartVersions) (string, string, error) {
 	//	data, file, err := iconFromFile(versions)
 	//	if err == nil {
 	//		return data, file, nil
@@ -367,7 +397,7 @@ func (r *ChartRepository) Icon(versions model.ChartVersions) (string, string, er
 	return iconData, iconFilename, nil
 }
 
-func (r *ChartRepository) InstallChart(chartName, chartVersion, releasename, namespace, values, helmhost string, handler TemplateHandler) (string, error) {
+func (r *ChartRepository) InstallChart(chartName, chartVersion, releasename, namespace, values, helmhost string) (string, error) {
 	targetdir, err := ioutil.TempDir("", "template")
 	if err != nil {
 		return "", err
@@ -391,25 +421,11 @@ func (r *ChartRepository) InstallChart(chartName, chartVersion, releasename, nam
 	if err != nil {
 		return "", err
 	}
-	//invoke the handler before chart installation
-	if handler != nil {
-		err = handler.PreInstall(templateInfo)
-		if err != nil {
-			return "", err
-		}
-	}
 
 	//create the release
 	err = installChart(releasename, namespace, filepath.Join(targetdir, chartName), helmhost)
 	if err != nil {
 		return "", err
-	}
-	//invoke the handler after chart installation
-	if handler != nil {
-		err = handler.PostInstall(templateInfo)
-		if err != nil {
-			return "", err
-		}
 	}
 	return templateInfo, nil
 }
@@ -585,4 +601,88 @@ func DeleteReleaseFromRepository(release, helmhost string) error {
 		return nil
 	}
 	return errors.New(string(combinedOutput))
+}
+
+func ListReleases(helmhost string) (*ReleaseList, error) {
+	cmd := exec.Command(helmName, "ls", "-a", "--output", "json")
+	cmd.Env = []string{fmt.Sprintf("%s=%s", "HELM_HOST", helmhost)}
+	combinedOutput, err := cmd.CombinedOutput()
+	if err != nil {
+		return nil, err
+	}
+	list := new(ReleaseList)
+	err = json.Unmarshal(combinedOutput, list)
+	if err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
+func GetRelease(release, helmhost string) (*Release, error) {
+	cmd := exec.Command(helmName, "ls", "-m", "1", "-o", release, "--output", "json")
+	cmd.Env = []string{fmt.Sprintf("%s=%s", "HELM_HOST", helmhost)}
+	combinedOutput, err := cmd.CombinedOutput()
+	if err != nil {
+		return nil, err
+	}
+	list := new(ReleaseList)
+	err = json.Unmarshal(combinedOutput, list)
+	if err != nil {
+		return nil, err
+	}
+	for i := range list.Releases {
+		if release == list.Releases[i].Name {
+			return &list.Releases[i], nil
+		}
+	}
+	return nil, fmt.Errorf("can't find the release %s", release)
+}
+
+func GetReleaseValues(release, helmhost string) (string, error) {
+	cmd := exec.Command(helmName, "get", "values", release)
+	cmd.Env = []string{fmt.Sprintf("%s=%s", "HELM_HOST", helmhost)}
+	combinedOutput, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", err
+	}
+	return string(combinedOutput), nil
+}
+
+func GetReleaseNotes(release, helmhost string) (string, error) {
+	cmd := exec.Command(helmName, "get", "notes", release)
+	cmd.Env = []string{fmt.Sprintf("%s=%s", "HELM_HOST", helmhost)}
+	combinedOutput, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", err
+	}
+	return string(combinedOutput), nil
+}
+
+func GetReleaseManifest(release, helmhost string) (string, error) {
+	cmd := exec.Command(helmName, "get", "manifest", release)
+	cmd.Env = []string{fmt.Sprintf("%s=%s", "HELM_HOST", helmhost)}
+	combinedOutput, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", err
+	}
+	return string(combinedOutput), nil
+}
+
+func GetReleaseStatus(release, helmhost string) (string, error) {
+	cmd := exec.Command(helmName, "status", release, "--output", "json")
+	cmd.Env = []string{fmt.Sprintf("%s=%s", "HELM_HOST", helmhost)}
+	combinedOutput, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", err
+	}
+	status := new(ReleaseStatus)
+	err = json.Unmarshal(combinedOutput, status)
+	if err != nil {
+		return "", err
+	}
+	if status.Info != nil && status.Info.Status != nil {
+		return status.Info.Status.Resources, nil
+	}
+	logs.Warning("can't get the release %s status", release)
+	return "", nil
 }

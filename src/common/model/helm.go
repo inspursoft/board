@@ -1,29 +1,30 @@
 package model
 
-import ()
+import (
+	"time"
+)
 
 type Repository struct {
-	ID       int64  `json:"id" orm:"column(id)"`
-	Name     string `json:"name" orm:"column(name)"`
-	URL      string `json:"url" orm:"column(url)"`
-	Username string `json:"username" orm:"column(username)"`
-	Password string `json:"password" orm:"column(password)"`
-	Cert     string `json:"cert" orm:"column(cert)"`
-	Key      string `json:"key" orm:"column(key)"`
-	CA       string `json:"ca" orm:"column(ca)"`
-	Type     int64  `json:"type" orm:"column(type)"`
+	ID   int64  `json:"id" orm:"column(id)"`
+	Name string `json:"name" orm:"column(name)"`
+	URL  string `json:"url" orm:"column(url)"`
+	Type int64  `json:"type" orm:"column(type)"`
 }
 
 type RepositoryDetail struct {
-	Repository *Repository `yaml:",inline"`
-	IndexFile  *IndexFile  `json:"index" yaml:"index"`
+	Repository             `yaml:",inline"`
+	PaginatedChartVersions `yaml:",inline"`
 }
 
-type IndexFile struct {
-	Entries map[string]ChartVersions `json:"entries" yaml:"entries"`
+type PaginatedChartVersions struct {
+	Pagination        *Pagination      `json:"pagination"`
+	ChartVersionsList []*ChartVersions `json:"charts"`
 }
 
-type ChartVersions []*ChartVersion
+type ChartVersions struct {
+	Name     string          `json:"name" yaml:"name"`
+	Versions []*ChartVersion `json:"versions" yaml:"versions"`
+}
 
 type ChartVersion struct {
 	ChartMetadata `yaml:",inline"`
@@ -62,46 +63,49 @@ type File struct {
 	Contents string `json:"contents,omitempty"`
 }
 
-type ReleaseService struct {
-	ReleaseId   int64  `json:"releaseid,omitempty"`
-	ServiceId   int64  `json:"serviceid"`
-	ServiceName string `json:"servicename,omitempty"`
+type Release struct {
+	ID             int64     `json:"id,omitempty"`
+	Name           string    `json:"name"`
+	ProjectId      int64     `json:"project_id"`
+	ProjectName    string    `json:"project_name"`
+	RepositoryId   int64     `json:"repoid"`
+	RepositoryName string    `json:"repository"`
+	Chart          string    `json:"chart"`
+	ChartVersion   string    `json:"chartversion"`
+	OwnerID        int64     `json:"owner_id,omitempty"`
+	OwnerName      string    `json:"owner_name,omitempty"`
+	Status         string    `json:"status,omitempty"`
+	Values         string    `json:"values,omitempty"`
+	UpdateTime     time.Time `json:"update_time,omitempty"`
+	CreateTime     time.Time `json:"creation,omitempty"`
 }
 
-type Release struct {
-	ID           int64            `json:"id,omitempty"`
-	Name         string           `json:"name"`
-	ProjectId    int64            `json:"project_id"`
-	RepositoryId int64            `json:"repoid"`
-	Chart        string           `json:"chart"`
-	ChartVersion string           `json:"chartversion"`
-	Value        string           `json:"value,omitempty"`
-	Workloads    string           `json:"workload,omitempty"`
-	Services     []ReleaseService `json:"services,omitempty"`
+type ReleaseDetail struct {
+	Release        `yaml:",inline"`
+	Notes          string `json:"notes,omitempty" yaml:"notes,omitempty"`
+	Workloads      string `json:"workloads,omitempty" yaml:"workloads,omitempty"`
+	WorkloadStatus string `json:"workloadstatus,omitempty" yaml:"workloadstatus,omitempty"`
 }
 
 type ReleaseModel struct {
-	ID           int64                 `orm:"column(id)"`
-	Name         string                `orm:"column(name)"`
-	ProjectId    int64                 `orm:"column(project_id)"`
-	RepositoryId int64                 `orm:"column(repoid)"`
-	Chart        string                `orm:"column(chart)"`
-	ChartVersion string                `orm:"column(chartversion)"`
-	Value        string                `orm:"column(value)"`
-	Workloads    string                `orm:"column(workload)"`
-	Services     []ReleaseServiceModel `orm:"-"`
+	ID             int64     `orm:"column(id)"`
+	Name           string    `orm:"column(name)"`
+	ProjectId      int64     `orm:"column(project_id)"`
+	ProjectName    string    `orm:"column(project_name)"`
+	RepositoryId   int64     `orm:"column(repoid)"`
+	RepostiroyName string    `orm:"column(repository)"`
+	Workloads      string    `orm:"column(workloads)`
+	OwnerID        int64     `orm:"column(owner_id)"`
+	OwnerName      string    `orm:"column(owner_name)"`
+	UpdateTime     time.Time `orm:"column(update_time)"`
+	CreateTime     time.Time `orm:"column(creation_time)"`
 }
 
 func (rm *ReleaseModel) TableName() string {
 	return "release"
 }
 
-type ReleaseServiceModel struct {
-	ReleaseId int64
-	ServiceId int64
-}
-
-type VisitorFunc func([]*Info) error
+type VisitorFunc func([]*Info, error) error
 
 // GroupVersionKind unambiguously identifies a kind.  It doesn't anonymously include GroupVersion
 // to avoid automatic coercion.  It doesn't use a GroupVersion to avoid custom marshalling
@@ -119,7 +123,6 @@ type Info struct {
 	Name      string
 	GroupVersionKind
 
-	// Optional, Source is the filename or URL to template file (.json or .yaml),
-	// or stdin to use to handle the resource
+	// object source string
 	Source string
 }

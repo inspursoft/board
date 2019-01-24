@@ -10,6 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/yaml"
 )
 
@@ -48,6 +49,7 @@ func (m *mapper) Visit(info string, fn model.VisitorFunc) error {
 	buffer := bytes.NewBufferString(info)
 	d := yaml.NewYAMLOrJSONDecoder(buffer, 4096)
 	var infos []*model.Info
+	errs := []error(nil)
 	for {
 		ext := runtime.RawExtension{}
 		if err := d.Decode(&ext); err != nil {
@@ -64,12 +66,12 @@ func (m *mapper) Visit(info string, fn model.VisitorFunc) error {
 
 		info, err := m.infoForData(ext.Raw)
 		if err != nil {
-			return err
+			errs = append(errs, err)
 		}
 		infos = append(infos, info)
 	}
 
-	return fn(infos)
+	return fn(infos, utilerrors.NewAggregate(errs))
 }
 
 func NewMapper() *mapper {
