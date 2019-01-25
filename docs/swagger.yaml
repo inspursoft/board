@@ -5180,11 +5180,15 @@ definitions:
         type: string  
       container_path:
         type: string  
+      container_file:
+        type: string  
       container_path_flag:
         type: integer  
       target_storage_service:
         type: string  
       target_path:
+        type: string  
+      target_file:
         type: string  
       target_pvc:
         type: string                                                  

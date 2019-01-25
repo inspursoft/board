@@ -508,7 +508,8 @@ func setDeploymentContainers(containerList []model.Container, registryURI string
 					MountPath: v.ContainerPath,
 				}
 				if v.ContainerPathFlag != 0 {
-					_, volumeMount.SubPath = filepath.Split(v.ContainerPath)
+					volumeMount.MountPath = filepath.Join(volumeMount.MountPath, v.ContainerFile)
+					volumeMount.SubPath = v.TargetFile
 				}
 				container.VolumeMounts = append(container.VolumeMounts, volumeMount)
 			}
