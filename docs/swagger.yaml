@@ -2680,7 +2680,151 @@ paths:
         409:
           description: PVC name already exists.          
         500:
-          description: Internal errors.                           
+          description: Internal errors.                   
+  /v1/configmaps:
+    get:
+      summary: Return all ConfigMap in Board.
+      description: |
+        This endpoint returns all ConfigMaps in Board.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name 
+          in: query
+          description: project name for filtering results.
+          required: false
+          type: string
+        - name: configmap_list_page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: configmap_list_page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched ConfigMaps.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ConfigMap'
+          headers:
+            X-Total-Count:
+              description: The total count of ConfigMaps.
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page.
+              type: string
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+    post:
+      summary: Add a new ConfigMap.
+      description: |
+        This endpoint is for admin to add a new ConfigMap.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: configmap
+          in: body
+          description: New added ConfigMap.
+          required: true
+          schema:
+            $ref: '#/definitions/ConfigMap'
+      tags:
+        - Products
+      responses:
+        201:
+          description: ConfigMap added successfully.
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        409:
+          description: ConfigMap name already exists.
+        500:
+          description: Internal errors.      
+  /v1/configmaps/{configmap_name}:    
+    get:
+      summary: Return a specific ConfigMap detail infomation.
+      description: |
+        This endpoint returns a specific ConfigMap information by name.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: configmap_name
+          in: path
+          description: ConfigMap name for filtering results.
+          required: true
+          type: string
+        - name: project_name 
+          in: query
+          description: project name for filtering results.
+          required: true
+          type: string          
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched ConfigMap information.
+          schema:
+            $ref: '#/definitions/ConfigMap'
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Internal errors.        
+    delete:
+      summary: Delete a ConfigMap by name
+      description: |
+        This endpoint is aimed to remove a ConfigMap by name.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: configmap_name
+          in: path
+          description: ConfigMap name for filtering results.
+          required: true
+          type: string
+        - name: project_name 
+          in: query
+          description: project name for filtering results.
+          required: true
+          type: string    
+      tags:
+        - Products
+      responses:
+        200:
+          description: ConfigMap is deleted successfully.
+        400:
+          description: Invalid ConfigMap name.
+        403:
+          description: User need to log in as admin.
+        500:
+          description: Internal errors.                            
   /v1/node:
     get:
       summary: Return nodes in Board added by admin.
@@ -6253,4 +6397,27 @@ definitions:
         type: array
         description: The events of this persitent volume claim. 
         items:
-          type: string        
+          type: string       
+  ConfigMap:
+    type: object
+    properties:    
+      namespace: 
+        type: string
+        description: The project name of this ConfigMap belongs to. 
+      name:
+        type: string
+        description: The ConfigMap name.
+      datalist:
+        type: array
+        description: The data pair list of this ConfigMap.   
+        items:
+          $ref: '#/definitions/ConfigMapData'        
+  ConfigMapData:
+    type: object
+    properties: 
+      key:            
+        type: string
+        description: The key of this ConfigMap. 
+      value:            
+        type: string
+        description: The value of this ConfigMap key.         
