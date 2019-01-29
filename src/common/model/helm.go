@@ -77,7 +77,7 @@ type Release struct {
 	Status         string    `json:"status,omitempty"`
 	Values         string    `json:"values,omitempty"`
 	UpdateTime     time.Time `json:"update_time,omitempty"`
-	CreateTime     time.Time `json:"creation,omitempty"`
+	CreateTime     time.Time `json:"creation_time,omitempty"`
 }
 
 type ReleaseDetail struct {

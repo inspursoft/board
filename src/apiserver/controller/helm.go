@@ -351,6 +351,13 @@ func (hc *HelmController) InstallHelmChartAction() {
 
 	//Judge authority
 	project := hc.resolveUserPrivilegeByID(release.ProjectId)
+	//Check name exist or not
+	err = service.CheckReleaseNames(release.Name)
+	if err != nil {
+		hc.internalError(err)
+		return
+	}
+
 	err = service.InstallChart(repo, release.Chart, release.ChartVersion, release.Name, release.ProjectId, project.Name, release.Values, hc.currentUser.ID, hc.currentUser.Username)
 	if err != nil {
 		hc.internalError(err)
@@ -396,7 +403,7 @@ func (hc *HelmController) ListHelmReleaseAction() {
 func (hc *HelmController) DeleteHelmReleaseAction() {
 	// get the release id
 	m := hc.checkReleaseOperationPriviledges()
-	if m != nil {
+	if m == nil {
 		return
 	}
 	err := service.DeleteRelease(m.ID)
@@ -410,7 +417,7 @@ func (hc *HelmController) DeleteHelmReleaseAction() {
 func (hc *HelmController) GetHelmReleaseAction() {
 	// get the release id
 	m := hc.checkReleaseOperationPriviledges()
-	if m != nil {
+	if m == nil {
 		return
 	}
 	release, err := service.GetReleaseDetail(m.ID)
