@@ -1093,3 +1093,31 @@ const (
 	// volume does not exist any longer and all data on it was lost.
 	ClaimLost PersistentVolumeClaimPhase = "Lost"
 )
+
+// ConfigMap holds configuration data for pods to consume.
+type ConfigMap struct {
+	//metav1.TypeMeta `json:",inline"`
+	// Standard object's metadata.
+	// More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
+	// +optional
+	ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+
+	// Data contains the configuration data.
+	// Each key must consist of alphanumeric characters, '-', '_' or '.'.
+	// +optional
+	Data map[string]string `json:"data,omitempty" protobuf:"bytes,2,rep,name=data"`
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// ConfigMapList is a resource containing a list of ConfigMap objects.
+type ConfigMapList struct {
+	//metav1.TypeMeta `json:",inline"`
+
+	// More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
+	// +optional
+	//metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+
+	// Items is the list of ConfigMaps.
+	Items []ConfigMap `json:"items" protobuf:"bytes,2,rep,name=items"`
+}
