@@ -1548,3 +1548,44 @@ func UpdateK8sPVC(k8sPVC *v1.PersistentVolumeClaim, pvc *model.PersistentVolumeC
 	//	// just update our attributes.
 	//	k8sPV.Spec.Capacity = capacity
 }
+
+// ConfigMap convert
+func FromK8sConfigMap(configmap *v1.ConfigMap) *model.ConfigMap {
+
+	return &model.ConfigMap{
+		ObjectMeta: FromK8sObjectMeta(configmap.ObjectMeta),
+		Data:       configmap.Data,
+	}
+}
+
+func FromK8sConfigMapList(configmapList *v1.ConfigMapList) *model.ConfigMapList {
+	if configmapList == nil {
+		return nil
+	}
+	items := make([]model.ConfigMap, 0)
+	for i := range configmapList.Items {
+		if configmap := FromK8sConfigMap(&configmapList.Items[i]); configmap != nil {
+			items = append(items, *configmap)
+		}
+	}
+	return &model.ConfigMapList{
+		Items: items,
+	}
+}
+
+func ToK8sConfigMap(configmap *model.ConfigMap) *v1.ConfigMap {
+
+	return &v1.ConfigMap{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "ConfigMap",
+			APIVersion: "v1",
+		},
+		ObjectMeta: ToK8sObjectMeta(configmap.ObjectMeta),
+		Data:       configmap.Data,
+	}
+}
+
+//TODO implement update later
+func UpdateK8sConfigMap(k8sCM *v1.ConfigMap, cm *model.ConfigMap) {
+
+}
