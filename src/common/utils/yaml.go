@@ -44,3 +44,11 @@ func CheckFilePath(loadPath string) error {
 	}
 	return nil
 }
+
+func UnmarshalYamlData(data []byte, config interface{}, callback func(in interface{}) error) error {
+	err := yaml.Unmarshal(data, config)
+	if err != nil {
+		return err
+	}
+	return callback(config)
+}
