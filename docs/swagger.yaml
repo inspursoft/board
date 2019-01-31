@@ -2760,7 +2760,7 @@ paths:
           description: ConfigMap name already exists.
         500:
           description: Internal errors.      
-  /v1/configmaps/{configmap_name}:    
+  /v1/configmaps/{configmapname}:    
     get:
       summary: Return a specific ConfigMap detail infomation.
       description: |
@@ -2771,7 +2771,7 @@ paths:
           type: string
           required: true
           description: Current available token.
-        - name: configmap_name
+        - name: configmapname
           in: path
           description: ConfigMap name for filtering results.
           required: true
@@ -6407,17 +6407,9 @@ definitions:
       name:
         type: string
         description: The ConfigMap name.
-      datalist:
-        type: array
-        description: The data pair list of this ConfigMap.   
-        items:
-          $ref: '#/definitions/ConfigMapData'        
-  ConfigMapData:
-    type: object
-    properties: 
-      key:            
-        type: string
-        description: The key of this ConfigMap. 
-      value:            
-        type: string
-        description: The value of this ConfigMap key.         
+      datalist:        
+        description: The data pair list of this ConfigMap.
+        type: object
+        additionalProperties: 
+          type: string        
+       
