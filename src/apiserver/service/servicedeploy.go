@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/k8sassist"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
@@ -13,11 +14,12 @@ import (
 )
 
 const (
-	hostPath           = "hostpath"
-	nfs                = "nfs"
-	emptyDir           = ""
-	deploymentFilename = "deployment.yaml"
-	serviceFilename    = "service.yaml"
+	hostPath             = "hostpath"
+	nfs                  = "nfs"
+	emptyDir             = ""
+	deploymentFilename   = "deployment.yaml"
+	serviceFilename      = "service.yaml"
+	serviceStoppedStatus = 2
 )
 
 type DeployInfo struct {
@@ -123,4 +125,35 @@ func CheckDeployYamlConfig(serviceFile, deploymentFile io.Reader, projectName st
 		Service:    serviceInfo,
 		Deployment: deploymentInfo,
 	}, nil
+}
+
+func GetStoppedSeviceNodePorts() ([]int32, error) {
+	stoppedServices, err := dao.GetServices("status", serviceStoppedStatus)
+	if err != nil {
+		logs.Error("Failed to get the services when get NodePorts.")
+		return nil, err
+	}
+	ports := []int32{}
+	type config struct {
+		Spec struct {
+			Ports []struct {
+				NodePort int `yaml:"nodePort,flow"`
+			}
+		}
+	}
+	for _, serviceConfig := range stoppedServices {
+		err := utils.UnmarshalYamlData([]byte(serviceConfig.ServiceYaml), &config{}, func(in interface{}) error {
+			if c, ok := in.(*config); ok {
+				for _, port := range c.Spec.Ports {
+					ports = append(ports, int32(port.NodePort))
+				}
+			}
+			return nil
+		})
+		if err != nil {
+			logs.Error("Failed to Unmarshal data of the service.")
+			return nil, err
+		}
+	}
+	return ports, nil
 }
