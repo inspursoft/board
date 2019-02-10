@@ -61,6 +61,10 @@ func (p *AppV1Client) PersistentVolumeClaim(namespace string) PersistentVolumeCl
 	return apps.NewPersistentVolumeClaim(namespace, p.Clientset.CoreV1().PersistentVolumeClaims(namespace))
 }
 
+func (p *AppV1Client) ConfigMap(namespace string) ConfigMapInterface {
+	return apps.NewConfigMap(namespace, p.Clientset.CoreV1().ConfigMaps(namespace))
+}
+
 // AppV1ClientInterface level 1 interface to access others
 type AppV1ClientInterface interface {
 	Discovery() ServerVersionInterface
@@ -74,6 +78,7 @@ type AppV1ClientInterface interface {
 	AutoScale(namespace string) AutoscaleInterface
 	PersistentVolume() PersistentVolumeInterface
 	PersistentVolumeClaim(namespace string) PersistentVolumeClaimInterface
+	ConfigMap(namespace string) ConfigMapInterface
 }
 
 // ServerVersionInterface has a method for retrieving the server's version.
@@ -205,4 +210,14 @@ type PersistentVolumeClaimInterface interface {
 	//	DeleteCollection(options *meta_v1.DeleteOptions, listOptions meta_v1.ListOptions) error
 	Get(name string) (*model.PersistentVolumeClaimK8scli, error)
 	List() (*model.PersistentVolumeClaimList, error)
+}
+
+type ConfigMapInterface interface {
+	Create(*model.ConfigMap) (*model.ConfigMap, error)
+	Update(*model.ConfigMap) (*model.ConfigMap, error)
+	//UpdateStatus(*model.ConfigMap) (*model.ConfigMap, error)
+	Delete(name string) error
+	//	DeleteCollection(options *meta_v1.DeleteOptions, listOptions meta_v1.ListOptions) error
+	Get(name string) (*model.ConfigMap, error)
+	List() (*model.ConfigMapList, error)
 }
