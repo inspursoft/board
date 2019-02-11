@@ -23,6 +23,7 @@ const (
 	defaultTokenServer          = "tokenserver"
 	defaultTokenServerPort      = "4000"
 	defaultTokenCacheExpireTime = "1800"
+	defaultKubeConfigPath       = "/root/kubeconfig"
 	adminUserID                 = 1
 	adminUsername               = "admin"
 	adminEmail                  = "admin@inspur.com"
@@ -123,6 +124,19 @@ func syncUpWithK8s() {
 	logs.Info("Successful sync up with projects with K8s.")
 }
 
+func initKubernetesInfo() {
+	logs.Info("Initialize kubernetes info")
+	info, err := service.GetKubernetesInfo()
+	if err != nil {
+		logs.Error("Failed to initialize kubernetes info, err: %+v", err)
+		utils.SetConfig("KUBERNETES_VERSION", "NA")
+	} else {
+		utils.SetConfig("KUBERNETES_VERSION", info.GitVersion)
+	}
+	service.SetSystemInfo("KUBERNETES_VERSION", true)
+	logs.Info("Finished to initialize kubernetes info.")
+}
+
 func main() {
 
 	utils.InitializeDefaultConfig()
@@ -139,6 +153,8 @@ func main() {
 
 	utils.SetConfig("KVM_TOOLS_PATH", kvmToolsPath)
 	utils.SetConfig("KVM_REGISTRY_PATH", kvmRegistryPath)
+
+	utils.SetConfig("KUBE_CONFIG_PATH", defaultKubeConfigPath)
 
 	dao.InitDB()
 
@@ -161,10 +177,15 @@ func main() {
 		initProjectRepo()
 	}
 
+	if systemInfo.KubernetesVersion == "" || systemInfo.KubernetesVersion == "NA" {
+		initKubernetesInfo()
+	}
+
 	if systemInfo.SyncK8s == "" || utils.GetStringValue("FORCE_INIT_SYNC") == "true" {
 		syncUpWithK8s()
 	}
 
+	service.SetSystemInfo("DNS_SUFFIX", true)
 	service.SetSystemInfo("BOARD_HOST_IP", true)
 	service.SetSystemInfo("AUTH_MODE", false)
 	service.SetSystemInfo("REDIRECTION_URL", false)

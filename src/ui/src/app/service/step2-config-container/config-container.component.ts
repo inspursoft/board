@@ -1,25 +1,14 @@
-import { ChangeDetectorRef, Component, Injector, OnInit } from '@angular/core';
-import {
-  Container,
-  EnvStruct,
-  ImageIndex,
-  PHASE_CONFIG_CONTAINERS,
-  PHASE_SELECT_IMAGES,
-  UiServiceFactory,
-  UIServiceStep2,
-  UIServiceStep3
-} from '../service-step.component';
+import { Component, Injector, OnInit } from '@angular/core';
+import { Container, EnvStruct, PHASE_CONFIG_CONTAINERS, UiServiceFactory, UIServiceStep2, VolumeStruct } from '../service-step.component';
 import { BuildImageDockerfileData, Image, ImageDetail } from "../../image/image";
 import { ServiceStepBase } from "../service-step";
 import { CreateImageComponent } from "../../image/image-create/image-create.component";
 import { EnvType } from "../../shared/environment-value/environment-value.component";
-import { VolumeOutPut } from "./volume-mounts/volume-mounts.component";
 import { ValidationErrors } from "@angular/forms";
 import { Observable } from "rxjs/Observable";
 import { NodeAvailableResources } from "../../shared/shared.types";
 import "rxjs/add/operator/map"
-import "rxjs/add/operator/zip"
-import "rxjs/add/observable/forkJoin"
+import { VolumeMountsComponent } from "./volume-mounts/volume-mounts.component";
 
 @Component({
   templateUrl: './config-container.component.html',
@@ -35,72 +24,34 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
   imageSourceList: Array<Image>;
   imageDetailSourceList: Map<string, Array<ImageDetail>>;
   imageTagNotReadyList: Map<string, boolean>;
-  workBufferList: Array<{imageIndex: ImageIndex, container: Container}>;
   containerIsInEdit: Map<Container, boolean>;
   fixedContainerPort: Map<string, Array<number>>;
   fixedContainerEnv: Map<string, Array<EnvStruct>>;
-  stepSelectImageData: UIServiceStep2;
-  stepConfigContainerData: UIServiceStep3;
-  showEnvironmentValue: boolean = false;
-  showVolumeMounts: boolean = false;
+  serviceStep2Data: UIServiceStep2;
+  showEnvironmentValue = false;
+  showVolumeMounts = false;
   curEditEnvContainer: Container;
 
-  constructor(protected injector: Injector,private changeRef: ChangeDetectorRef) {
+  constructor(protected injector: Injector) {
     super(injector);
-    this.workBufferList = Array<{imageIndex: ImageIndex, container: Container}>();
     this.imageDetailSourceList = new Map<string, Array<ImageDetail>>();
     this.imageTagNotReadyList = new Map<string, boolean>();
     this.containerIsInEdit = new Map<Container, boolean>();
     this.fixedContainerPort = new Map<string, Array<number>>();
     this.fixedContainerEnv = new Map<string, Array<EnvStruct>>();
-    this.stepSelectImageData = UiServiceFactory.getInstance(PHASE_SELECT_IMAGES) as UIServiceStep2;
-    this.stepConfigContainerData = UiServiceFactory.getInstance(PHASE_CONFIG_CONTAINERS) as UIServiceStep3;
+    this.serviceStep2Data = UiServiceFactory.getInstance(PHASE_CONFIG_CONTAINERS) as UIServiceStep2;
   }
 
   ngOnInit() {
-    let obsSelectImage = this.k8sService.getServiceConfig(PHASE_SELECT_IMAGES);
-    let obsConfigContainer = this.k8sService.getServiceConfig(PHASE_CONFIG_CONTAINERS);
-    obsSelectImage.zip(obsConfigContainer).subscribe(([resSelectImage, resConfigContainer]) => {
-      this.stepSelectImageData = resSelectImage as UIServiceStep2;
-      this.stepConfigContainerData = resConfigContainer as UIServiceStep3;
-      this.stepSelectImageData.imageList.forEach((imageIndex: ImageIndex) => {
-        this.getImageDetailList(imageIndex.image_name).subscribe();
-        let imageIndexBuf = new ImageIndex();
-        imageIndexBuf.image_name = imageIndex.image_name;
-        imageIndexBuf.image_tag = imageIndex.image_tag;
-        imageIndexBuf.project_name = imageIndex.project_name;
-        let container = this.stepConfigContainerData.containerList.find(value =>
-          value.image.image_name == imageIndex.image_name && value.image.image_tag == imageIndex.image_tag);
-        let containerBuf = new Container();
-        containerBuf.image.image_name = imageIndex.image_name;
-        containerBuf.image.image_tag = imageIndex.image_tag;
-        containerBuf.image.project_name = imageIndex.project_name;
-        containerBuf.volume_mount.container_path = container.volume_mount.container_path;
-        containerBuf.volume_mount.target_path = container.volume_mount.target_path;
-        containerBuf.volume_mount.volume_name = container.volume_mount.volume_name;
-        containerBuf.volume_mount.target_storage_service = container.volume_mount.target_storage_service;
-        containerBuf.name = container.name;
-        containerBuf.command = container.command;
-        containerBuf.working_dir = container.working_dir;
-        containerBuf.cpu_request = container.cpu_request;
-        containerBuf.cpu_limit = container.cpu_limit;
-        containerBuf.mem_request = container.mem_request;
-        containerBuf.mem_limit = container.mem_limit;
-        container.container_port.forEach(port => containerBuf.container_port.push(port));
-        container.env.forEach(env => {
-          let envBuf = new EnvStruct();
-          envBuf.dockerfile_envname = env.dockerfile_envname;
-          envBuf.dockerfile_envvalue = env.dockerfile_envvalue;
-          containerBuf.env.push(envBuf);
-        });
-        this.workBufferList.push({imageIndex: imageIndexBuf, container: containerBuf});
-        this.containerIsInEdit.set(containerBuf, false);
-        this.setContainerFixedInfo(containerBuf);
+    this.k8sService.getServiceConfig(PHASE_CONFIG_CONTAINERS).subscribe((res: UIServiceStep2) => {
+      this.serviceStep2Data = res;
+      this.serviceStep2Data.containerList.forEach((container: Container) => {
+        this.getImageDetailList(container.image.image_name).subscribe();
+        this.containerIsInEdit.set(container, false);
+        this.setContainerFixedInfo(container);
       });
-      if (this.stepSelectImageData.imageList.length == 0) {
+      if (this.serviceStep2Data.containerList.length == 0) {
         this.addEmptyWorkItem();
-      } else {
-        this.changeRef.detectChanges();
       }
     });
     this.k8sService.getImages("", 0, 0).subscribe(res => {
@@ -110,35 +61,30 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
   }
 
   changeSelectImage(index: number, image: Image) {
-    let buf = this.workBufferList[index];
-    buf.imageIndex.image_name = image.image_name;
-    buf.imageIndex.project_name = this.stepSelectImageData.projectName;
-    buf.container.image.image_name = image.image_name;
-    buf.container.name = image.image_name.substr(image.image_name.indexOf('/') + 1);
-    buf.container.image.project_name = this.stepSelectImageData.projectName;
-    this.toggleContainerEditStatus(buf.container);
+    let container = this.serviceStep2Data.containerList[index];
+    container.name = image.image_name.substr(image.image_name.indexOf('/') + 1);
+    container.image.project_name = this.serviceStep2Data.projectName;
+    container.image.image_name = image.image_name;
+    this.toggleContainerEditStatus(container);
     if (this.imageDetailSourceList.has(image.image_name)) {
       let detailList: Array<ImageDetail> = this.imageDetailSourceList.get(image.image_name);
-      buf.container.image.image_tag = detailList[0].image_tag;
-      buf.imageIndex.image_tag = detailList[0].image_tag;
-      this.setDefaultContainerInfo(buf.container);
-      this.setContainerFixedInfo(buf.container);
+      container.image.image_tag = detailList[0].image_tag;
+      this.setDefaultContainerInfo(container);
+      this.setContainerFixedInfo(container);
     } else {
       this.getImageDetailList(image.image_name).subscribe((res: ImageDetail[]) => {
-        buf.imageIndex.image_tag = res[0].image_tag;
-        buf.container.image.image_tag = res[0].image_tag;
-        this.setDefaultContainerInfo(buf.container);
-        this.setContainerFixedInfo(buf.container);
+        container.image.image_tag = res[0].image_tag;
+        this.setDefaultContainerInfo(container);
+        this.setContainerFixedInfo(container);
       })
     }
   }
 
   changeSelectImageDetail(imageName: string, imageDetail: ImageDetail) {
-    let workBuf = this.workBufferList.find(value => value.container.image.image_name == imageName);
-    workBuf.imageIndex.image_tag = imageDetail.image_tag;
-    workBuf.container.image.image_tag = imageDetail.image_tag;
-    this.setDefaultContainerInfo(workBuf.container);
-    this.setContainerFixedInfo(workBuf.container);
+    let container = this.serviceStep2Data.containerList.find(value => value.image.image_name == imageName);
+    container.image.image_tag = imageDetail.image_tag;
+    this.setDefaultContainerInfo(container);
+    this.setContainerFixedInfo(container);
   }
 
   getImageDetailList(imageName: string): Observable<Array<ImageDetail>> {
@@ -159,7 +105,8 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
   }
 
   setContainerFixedInfo(container: Container): void {
-    this.k8sService.getContainerDefaultInfo(container.image.image_name, container.image.image_tag, container.image.project_name).subscribe(
+    const imageIndex = container.image;
+    this.k8sService.getContainerDefaultInfo(imageIndex.image_name, imageIndex.image_tag, imageIndex.project_name).subscribe(
       (res: BuildImageDockerfileData) => {
         if (res.image_env) {
           let fixedEnvs: Array<EnvStruct> = Array<EnvStruct>();
@@ -169,7 +116,7 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
             env.dockerfile_envvalue = value.dockerfile_envvalue;
             fixedEnvs.push(env);
           });
-          this.fixedContainerEnv.set(container.image.image_name, fixedEnvs);
+          this.fixedContainerEnv.set(imageIndex.image_name, fixedEnvs);
         }
         if (res.image_expose) {
           let fixedPorts: Array<number> = Array();
@@ -177,7 +124,7 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
             let port: number = Number(value).valueOf();
             fixedPorts.push(port);
           });
-          this.fixedContainerPort.set(container.image.image_name, fixedPorts);
+          this.fixedContainerPort.set(imageIndex.image_name, fixedPorts);
         }
       }, () => this.messageService.cleanNotification()
     );
@@ -185,7 +132,8 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
 
 
   setDefaultContainerInfo(container: Container): void {
-    this.k8sService.getContainerDefaultInfo(container.image.image_name, container.image.image_tag, container.image.project_name).subscribe(
+    const imageIndex = container.image;
+    this.k8sService.getContainerDefaultInfo(imageIndex.image_name, imageIndex.image_tag, imageIndex.project_name).subscribe(
       (res: BuildImageDockerfileData) => {
         if (res.image_cmd) {
           container.command = res.image_cmd;
@@ -207,45 +155,93 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
       }, () => this.messageService.cleanNotification());
   }
 
-  isValidContainerNames(): {valid: boolean, invalidIndex: number} {
+  isValidContainerNames(): {invalid: boolean, invalidIndex: number} {
     let invalidIndex: number = -1;
-    let everyValid = this.workBufferList.every((work, index: number) => {
+    let everyValid = this.serviceStep2Data.containerList.every((container, index: number) => {
       invalidIndex = index;
-      return this.patternContainerName.test(work.container.name);
+      let findRepeat = this.serviceStep2Data.containerList.find((findValue: Container, findIndex: number) =>
+        findValue.name == container.name && findIndex != index);
+      return this.patternContainerName.test(container.name) && findRepeat == undefined;
     });
-    return {valid: everyValid, invalidIndex: invalidIndex};
+    return {invalid: !everyValid, invalidIndex: invalidIndex};
+  }
+
+  isValidContainerPorts(): {invalid: boolean, invalidIndex: number} {
+    let invalidIndex: number = -1;
+    let valid = true;
+    let portBuf = new Set<number>();
+    this.serviceStep2Data.containerList.forEach((container, index) => {
+      container.container_port.forEach(port => {
+        if (portBuf.has(port)) {
+          invalidIndex = index;
+          valid = false
+        } else {
+          portBuf.add(port);
+        }
+      })
+    });
+    return {invalid: !valid, invalidIndex: invalidIndex};
+  }
+
+  isValidContainerCpuAndMem(): {invalid: boolean, invalidIndex: number} {
+    let containerList = this.serviceStep2Data.containerList;
+    let invalidIndex: number = -1;
+    let everyValid = containerList.every((container: Container, index: number) => {
+      invalidIndex = index;
+      let cpuValid = true;
+      let memValid = true;
+      if (container.cpu_request != '' && container.cpu_limit != '') {
+        cpuValid = Number.parseFloat(container.cpu_request) < Number.parseFloat(container.cpu_limit);
+      }
+      if (container.mem_request != '' && container.mem_limit != '') {
+        memValid = Number.parseFloat(container.mem_request) < Number.parseFloat(container.mem_limit)
+      }
+      return cpuValid && memValid;
+    });
+    return {invalid: !everyValid, invalidIndex: invalidIndex};
   }
 
   forward(): void {
-    let checkContainerName = this.isValidContainerNames();
-    if (checkContainerName.valid) {
-      if (this.verifyInputValid() && this.verifyInputArrayValid()) {
-        this.stepSelectImageData.imageList.splice(0, this.stepSelectImageData.imageList.length);
-        this.stepConfigContainerData.containerList.splice(0, this.stepConfigContainerData.containerList.length);
-        this.workBufferList.forEach(workBuf => {
-          this.stepSelectImageData.imageList.push(workBuf.imageIndex);
-          this.stepConfigContainerData.containerList.push(workBuf.container);
-        });
-        let obsSelectImage = this.k8sService.setServiceConfig(this.stepSelectImageData.uiToServer());
-        let obsConfigContainer = this.k8sService.setServiceConfig(this.stepConfigContainerData.uiToServer());
-        Observable.forkJoin(obsSelectImage, obsConfigContainer).subscribe(() => this.k8sService.stepSource.next({index: 3, isBack: false}));
-      }
-    } else {
+    let funShowInvalidContainer = (invalidIndex: number) => {
       let iterator: IterableIterator<Container> = this.containerIsInEdit.keys();
       let key = iterator.next();
       while (!key.done) {
         this.containerIsInEdit.set(key.value, false);
         key = iterator.next();
       }
-      this.containerIsInEdit.set(this.workBufferList[checkContainerName.invalidIndex].container, true);
-      setTimeout(() => this.verifyInputValid());
+      this.containerIsInEdit.set(this.serviceStep2Data.containerList[invalidIndex], true);
+    };
+    let checkContainerName = this.isValidContainerNames();
+    if (checkContainerName.invalid) {
+      funShowInvalidContainer(checkContainerName.invalidIndex);
+      if (this.verifyInputValid()) {
+        this.messageService.showAlert('SERVICE.STEP_2_CONTAINER_NAME_REPEAT', {alertType: "alert-warning"});
+      }
+      return;
+    }
+    let checkContainerPort = this.isValidContainerPorts();
+    if (checkContainerPort.invalid) {
+      funShowInvalidContainer(checkContainerPort.invalidIndex);
+      this.messageService.showAlert('SERVICE.STEP_2_CONTAINER_PORT_REPEAT', {alertType: "alert-warning"});
+      return;
+    }
+    let checkRequest = this.isValidContainerCpuAndMem();
+    if (checkRequest.invalid) {
+      funShowInvalidContainer(checkRequest.invalidIndex);
+      this.messageService.showAlert('SERVICE.STEP_2_CONTAINER_REQUEST_ERROR', {alertType: "alert-warning"});
+      return;
+    }
+    if (this.verifyInputValid() && this.verifyInputArrayValid()) {
+      this.k8sService.setServiceConfig(this.serviceStep2Data.uiToServer()).subscribe(
+        () => this.k8sService.stepSource.next({index: 3, isBack: false})
+      );
     }
   }
 
   get isCanNextStep(): boolean {
-    return this.workBufferList
-      .filter(value => value.imageIndex.image_name != "SERVICE.STEP_2_SELECT_IMAGE")
-      .length == this.workBufferList.length;
+    return this.serviceStep2Data.containerList
+      .filter(value => value.image.image_name != "SERVICE.STEP_2_SELECT_IMAGE")
+      .length == this.serviceStep2Data.containerList.length;
   }
 
   get selfObject() {
@@ -269,7 +265,7 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
   }
 
   canChangeSelectImage(image: Image) {
-    if (this.workBufferList.find(value => value.imageIndex.image_name == image.image_name)) {
+    if (this.serviceStep2Data.containerList.find(value => value.image.image_name == image.image_name)) {
       this.messageService.showAlert('IMAGE.CREATE_IMAGE_EXIST', {alertType: "alert-warning"});
       return false;
     }
@@ -301,7 +297,7 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
   createNewCustomImage(index: number) {
     let newImageIndex = index;
     let component = this.createNewModal(CreateImageComponent);
-    component.initCustomerNewImage(this.stepSelectImageData.projectId, this.stepSelectImageData.projectName);
+    component.initCustomerNewImage(this.serviceStep2Data.projectId, this.serviceStep2Data.projectName);
     component.closeNotification.subscribe((imageName: string) => {
       if (imageName) {
         this.k8sService.getImages("", 0, 0).subscribe(res => {
@@ -319,23 +315,26 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
 
   minusSelectImage(index: number) {
     if (index > 0) {
-      this.workBufferList.splice(index, 1);
+      this.serviceStep2Data.containerList.splice(index, 1);
     }
   }
 
   addEmptyWorkItem() {
-    let imageIndexBuf = new ImageIndex();
-    imageIndexBuf.image_name = 'SERVICE.STEP_2_SELECT_IMAGE';
-    let containerBuf = new Container();
-    this.containerIsInEdit.set(containerBuf, false);
-    this.workBufferList.push({imageIndex: imageIndexBuf, container: containerBuf});
+    let container = new Container();
+    container.image.image_name = 'SERVICE.STEP_2_SELECT_IMAGE';
+    this.containerIsInEdit.set(container, false);
+    this.serviceStep2Data.containerList.push(container);
   }
 
-  getVolumesDescription(container: Container): string {
-    let volume = container.volume_mount;
-    let storageServer = volume.target_storage_service == "" ? "" : volume.target_storage_service.concat(":");
-    let result = `${volume.container_path}:${storageServer}${volume.target_path}`;
-    return result == ":" ? "" : result;
+  getVolumesDescription(index: number, container: Container): string {
+    let volume = container.volume_mounts;
+    if (volume.length > index){
+      let storageServer = volume[index].target_storage_service == "" ? "" : volume[index].target_storage_service.concat(":");
+      let result = `${volume[index].container_path}:${storageServer}${volume[index].target_path}`;
+      return result == ":" ? "" : result;
+    } else {
+      return ""
+    }
   }
 
   getEnvsDescription(container: Container): string {
@@ -377,24 +376,9 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
   editVolumeMount(container: Container) {
     this.curEditEnvContainer = container;
     this.showVolumeMounts = true;
-  }
-
-  setVolumeMount(data: VolumeOutPut) {
-    let volume = this.curEditEnvContainer.volume_mount;
-    volume.target_storage_service = data.out_medium;
-    volume.target_path = data.out_path;
-    volume.container_path = data.out_mountPath;
-    volume.volume_name = data.out_name;
-  }
-
-  getVolumeMountData(): VolumeOutPut {
-    let volume = this.curEditEnvContainer.volume_mount;
-    return {
-      out_name: volume.volume_name,
-      out_mountPath: volume.container_path,
-      out_path: volume.target_path,
-      out_medium: volume.target_storage_service
-    };
+    let component = this.createNewModal(VolumeMountsComponent);
+    component.volumeDataList = this.curEditEnvContainer.volume_mounts;
+    component.onConfirmEvent.subscribe((res: Array<VolumeStruct>) => this.curEditEnvContainer.volume_mounts = res);
   }
 
   getDefaultEnvsData() {

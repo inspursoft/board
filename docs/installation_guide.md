@@ -92,6 +92,15 @@ may not be able to log in after the upgrade.
 * **self_registration**: (**on** or **off**. Default is **on**) Enable / Disable the ability for a user to register himself/herself. When disabled, new users can only be created by the Admin user, only an admin user can create new users in Board. _NOTE_: When **auth_mode** is set to **ldap_auth**, self-registration feature is **always** disabled, and this flag is ignored.  
 * **token_expiration**: The expiration time (in minutes) of a token created by token service, default is 30 minutes.
 
+#### Connecting Kubernetes cluster which authentication strategy with CA certification
+If the Kubernetes cluster which Board connect to authentication strategy with CA certification, you must copy the Kubernetes cluster's CA files to your machine which installing the Board. You should put CA files into /etc/board/cert directory and name them as 'ca-key.pem'(for private key) and 'ca.pem'(for public key).
+
+Then you should configure these items:
+
+* **kube_http_scheme**: Set to 'https'. It means the requests Board send to Kubernetes cluster will be used via 'https' protocol.
+* **kube_master_ip**: The IP address of the Master of Kubernetes cluster.
+* **kube_master_port**: The port number of the Master of Kubernetes cluster(maybe 443 or 6443).
+
 #### Finishing installation and starting Board
 Once **board.cfg** is configured, install and start Board using the ```install.sh``` script.  ~~Note that it may take some time for the online installer to download Board images from Docker hub.~~ (Coming soon)  
 
@@ -489,3 +498,36 @@ When you need install, please note the limitations:
 
 1. If you want to use CentOS or Redhat, you need install CentOS, Redhat 7.2 or higher version.
 2. To install Board, the host should with Docker 17.02 or higher version.
+
+### Ports Reservation
+There are some ports which Board and Kubernetes installation will be used, these ports should be accepted by firewall of the servers.
+
+Board:
+
+| Component | Port Numbers |
+| -------- | -------- |
+| board-log | 1514 |
+| board-gogits | 10022, 10080 |
+| board-apiserver | 8088 |
+| board-ui | 80 |
+| board-graphite | 2003 |
+| board-elasticsearch | 9200 |
+| jenkins | 8888 |
+
+Kubernetes master:
+
+| Component | Port Numbers |
+| -------- | -------- |
+| kube-apiserver | 8080, 6443 |
+| kube-scheduler | 10251 |
+| kube-controller-manager | 10252 |
+| etcd | 2379, 2380 |
+
+Kubernetes node(s):
+
+| Component | Port Numbers |
+| -------- | -------- |
+| kubelet | 10248, 10250, 10255 |
+| kube-proxy | 10256 |
+| cAdvisor | 4194 |
+

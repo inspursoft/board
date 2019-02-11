@@ -2,31 +2,18 @@ import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http'
 import { ClarityModule } from '@clr/angular';
-import { CookieModule } from 'ngx-cookie';
-import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
-import { CustomTranslateLoader } from '../i18n/custom-translate-loader';
-import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
-import { BrowserModule } from '@angular/platform-browser';
+import { RouterModule } from "@angular/router";
+import { CommonModule } from "@angular/common";
+import { TranslateModule } from "@ngx-translate/core";
 
 @NgModule({
-  imports:[
-    ClarityModule.forRoot(),
-    CookieModule.forRoot(),
-    TranslateModule.forRoot({
-      loader: {
-        provide: TranslateLoader,
-        useClass: CustomTranslateLoader
-      }
-    }),
-  ],
   exports:[
-    BrowserAnimationsModule,
-    BrowserModule,
+    CommonModule,
     HttpClientModule,
     FormsModule,
     ReactiveFormsModule,
+    RouterModule,
     ClarityModule,
-    CookieModule,
     TranslateModule
   ]
 })

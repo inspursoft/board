@@ -49,7 +49,7 @@ type NodeInfo struct {
 func GetNode(nodeName string) (node NodeInfo, err error) {
 	defer func() { recover() }()
 	var config k8sassist.K8sAssistConfig
-	config.K8sMasterURL = kubeMasterURL()
+	config.KubeConfigPath = kubeConfigPath()
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 	nodecli := k8sclient.AppV1().Node()
 
@@ -130,7 +130,7 @@ func GetNodeList() (res []NodeListResult) {
 	//nodecli, err := k8sassist.NewNodes()
 
 	var config k8sassist.K8sAssistConfig
-	config.K8sMasterURL = kubeMasterURL()
+	config.KubeConfigPath = kubeConfigPath()
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 	nodecli := k8sclient.AppV1().Node()
 
@@ -213,7 +213,7 @@ func NodeGroupExists(nodeGroupName string) (bool, error) {
 
 func AddNodeToGroup(nodeName string, groupName string) error {
 	var config k8sassist.K8sAssistConfig
-	config.K8sMasterURL = kubeMasterURL()
+	config.KubeConfigPath = kubeConfigPath()
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 	nInterface := k8sclient.AppV1().Node()
 
@@ -245,7 +245,7 @@ func GetGroupOfNode(nodeName string) ([]string, error) {
 	//}
 
 	var config k8sassist.K8sAssistConfig
-	config.K8sMasterURL = kubeMasterURL()
+	config.KubeConfigPath = kubeConfigPath()
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 	nInterface := k8sclient.AppV1().Node()
 
@@ -286,7 +286,7 @@ func RemoveNodeFromGroup(nodeName string, groupName string) error {
 	//	return err
 	//}
 	var config k8sassist.K8sAssistConfig
-	config.K8sMasterURL = kubeMasterURL()
+	config.KubeConfigPath = kubeConfigPath()
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 	nInterface := k8sclient.AppV1().Node()
 
@@ -362,7 +362,7 @@ func RemovePodByNode(node string) error {
 		if v.Status.HostIP == node {
 			logs.Info("Gracefully remove the pod %s from node %s", v.Name, node)
 			k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
-				K8sMasterURL: kubeMasterURL(),
+				KubeConfigPath: kubeConfigPath(),
 			})
 			//TODO need evict in released version
 			err = k8sclient.AppV1().Pod(v.Namespace).Delete(v.Name)
@@ -378,7 +378,7 @@ func RemovePodByNode(node string) error {
 func GetNodesAvailableResources() ([]model.NodeAvailableResources, error) {
 	var resources []model.NodeAvailableResources
 	c := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
-		K8sMasterURL: kubeMasterURL(),
+		KubeConfigPath: kubeConfigPath(),
 	})
 	l, err := c.AppV1().Node().List()
 	if err != nil {

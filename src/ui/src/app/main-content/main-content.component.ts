@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AppInitService, AppTokenService } from '../app.init.service';
 import { GUIDE_STEP, MAIN_MENU_DATA, RouteAudit, RouteNodes, RouteUserCenters } from "../shared/shared.const";
 import { ICsMenuItemData } from "../shared/shared.types";
+import { SharedService } from "../shared/shared.service";
 
 @Component({
   templateUrl: './main-content.component.html',
@@ -19,8 +20,9 @@ export class MainContentComponent {
     private appInitService: AppInitService,
     private appTokenService: AppTokenService,
     private router: Router,
-    private route: ActivatedRoute) {
-    if(this.appInitService.currentUser) {
+    private route: ActivatedRoute,
+    private sharedService: SharedService) {
+    if(this.appInitService.currentUser.user_id > 0) {
       this.isSignIn = false;
       this.hasSignedIn = true;
     }
@@ -48,6 +50,14 @@ export class MainContentComponent {
 
   get guideStep(): GUIDE_STEP{
     return this.appInitService.guideStep;
+  }
+
+  get showMaxGrafanaWindow(): boolean{
+    return this.sharedService.showMaxGrafanaWindow;
+  }
+
+  get hideMaxGrafanaWindow(): boolean{
+    return !this.sharedService.showMaxGrafanaWindow;
   }
 
   setGuideNoneStep(){

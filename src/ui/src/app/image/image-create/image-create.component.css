@@ -54,6 +54,10 @@ div.line-container {
   height: 30px;
 }
 
+div.line-container.end {
+  justify-content: flex-end;
+}
+
 label.base-text {
   min-width: 180px;
   text-align: right;
@@ -161,8 +165,11 @@ input.base-image-radio {
 
 label.base-image-source {
   cursor: pointer;
-  margin-right: 6px;
+  margin-right: 3px;
   margin-left: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 div.board-registry-container {
@@ -182,4 +189,10 @@ cs-dropdown.margin-left-120{
 
 cs-input.margin-left-180{
   margin-left: 180px;
+}
+
+label.tar-package-name {
+  margin-left: 10px;
+  color: darkblue;
+  font-weight: bold;
 }

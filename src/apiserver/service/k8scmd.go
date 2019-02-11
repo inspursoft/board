@@ -24,10 +24,11 @@ import (
 )
 
 var (
-	kubeMasterURL = utils.GetConfig("KUBE_MASTER_URL")
-	EntryMethod   EntryMethodEnum
-	CAPath        string
-	TokenStr      string
+	kubeMasterURL  = utils.GetConfig("KUBE_MASTER_URL")
+	kubeConfigPath = utils.GetConfig("KUBE_CONFIG_PATH")
+	EntryMethod    EntryMethodEnum
+	CAPath         string
+	TokenStr       string
 )
 
 type EntryMethodEnum int
@@ -64,7 +65,7 @@ func K8sCliFactory(clusterName string, masterUrl string, apiVersion string) (*re
 func Suspend(nodeName string) (bool, error) {
 
 	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
-		K8sMasterURL: kubeMasterURL(),
+		KubeConfigPath: kubeConfigPath(),
 	})
 	n := k8sclient.AppV1().Node()
 
@@ -77,7 +78,7 @@ func Suspend(nodeName string) (bool, error) {
 
 func Resume(nodeName string) (bool, error) {
 	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
-		K8sMasterURL: kubeMasterURL(),
+		KubeConfigPath: kubeConfigPath(),
 	})
 	n := k8sclient.AppV1().Node()
 	nodeData, err := n.Get(nodeName)
@@ -88,7 +89,7 @@ func Resume(nodeName string) (bool, error) {
 
 func Taint(nodeName string, effect string) error {
 	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
-		K8sMasterURL: kubeMasterURL(),
+		KubeConfigPath: kubeConfigPath(),
 	})
 	n := k8sclient.AppV1().Node()
 	nodeData, err := n.Get(nodeName)

@@ -23,6 +23,7 @@ import { ConfigContainerComponent } from "./step2-config-container/config-contai
 import { SetAffinityComponent } from "./step3-config-setting/set-affinity/set-affinity.component";
 import { AffinityCardComponent } from "./step3-config-setting/affinity-card/affinity-card.component";
 import { AffinityCardListComponent } from "./step3-config-setting/affinity-card-list/affinity-card-list.component";
+import { LoadBalanceComponent } from "./step0-list-service/service-control/loadBalance/loadBalance.component";
 
 
 @NgModule({
@@ -48,6 +49,7 @@ import { AffinityCardListComponent } from "./step3-config-setting/affinity-card-
     UpdateComponent,
     LocateComponent,
     StatusComponent,
+    LoadBalanceComponent,
     AffinityCardComponent,
     AffinityCardListComponent,
     SetAffinityComponent,
@@ -61,7 +63,8 @@ import { AffinityCardListComponent } from "./step3-config-setting/affinity-card-
     ServiceControlComponent,
     DeployComponent,
     ServiceDetailComponent,
-    SetAffinityComponent
+    SetAffinityComponent,
+    VolumeMountsComponent
   ],
   providers: [
     K8sService,

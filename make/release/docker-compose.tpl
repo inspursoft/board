@@ -71,6 +71,9 @@ services:
 #     - ../../tools/swagger/vendors/swagger-ui-2.1.4/dist:/usr/bin/swagger:z
       - /data/board/repos:/repos:rw
       - /data/board/keys:/keys:rw
+      - /data/board/cert:/cert:rw
+      - ../config/apiserver/kubeconfig:/root/kubeconfig
+      - /etc/board/cert:/etc/board/cert:rw
     env_file:
       - ../config/apiserver/env
     ports:
@@ -103,6 +106,10 @@ services:
   collector:
     image: board_collector:__version__
     restart: always
+    volumes:
+      - /data/board/cert:/cert:rw
+      - ../config/collector/kubeconfig:/root/kubeconfig
+      - /etc/board/cert:/etc/board/cert:rw
     env_file:
       - ../config/collector/env
     networks:

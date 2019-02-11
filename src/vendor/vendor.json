@@ -145,6 +145,48 @@
 			"revision": ""
 		},
 		{
+			"checksumSHA1": "0fsNwpT6W0gEmg7bXd6AgU71QL8=",
+			"path": "github.com/drborges/rivers",
+			"revision": "21204e23eb59bbe4d42297208aad1f882775c256",
+			"revisionTime": "2015-12-02T12:06:50Z"
+		},
+		{
+			"checksumSHA1": "yHmQjLofFMQA2VV88MZd42HND18=",
+			"path": "github.com/drborges/rivers/combiners",
+			"revision": "21204e23eb59bbe4d42297208aad1f882775c256",
+			"revisionTime": "2015-12-02T12:06:50Z"
+		},
+		{
+			"checksumSHA1": "ynTJ+E5xZZgIC1qzIlb4F9RKcK4=",
+			"path": "github.com/drborges/rivers/consumers",
+			"revision": "21204e23eb59bbe4d42297208aad1f882775c256",
+			"revisionTime": "2015-12-02T12:06:50Z"
+		},
+		{
+			"checksumSHA1": "z07vwDbiCRj6SdR4CkH149aVjeI=",
+			"path": "github.com/drborges/rivers/dispatchers",
+			"revision": "21204e23eb59bbe4d42297208aad1f882775c256",
+			"revisionTime": "2015-12-02T12:06:50Z"
+		},
+		{
+			"checksumSHA1": "n3j54IHJN6+7G8pV7jrG6mcWI4M=",
+			"path": "github.com/drborges/rivers/producers",
+			"revision": "21204e23eb59bbe4d42297208aad1f882775c256",
+			"revisionTime": "2015-12-02T12:06:50Z"
+		},
+		{
+			"checksumSHA1": "q+5jFrpUNoFbO18YLcOOHnuYSlU=",
+			"path": "github.com/drborges/rivers/stream",
+			"revision": "21204e23eb59bbe4d42297208aad1f882775c256",
+			"revisionTime": "2015-12-02T12:06:50Z"
+		},
+		{
+			"checksumSHA1": "Edbwzjk1EGaUhbWJIoNbXB7cAr4=",
+			"path": "github.com/drborges/rivers/transformers",
+			"revision": "21204e23eb59bbe4d42297208aad1f882775c256",
+			"revisionTime": "2015-12-02T12:06:50Z"
+		},
+		{
 			"checksumSHA1": "aaUR0FaTkm9HdCovPv3tecD71/s=",
 			"path": "github.com/kballard/go-shellquote",
 			"revision": "95032a82bc518f77982ea72343cc1ade730072f0",

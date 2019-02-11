@@ -24,8 +24,9 @@ export class ImageService {
     }).map((res: HttpResponse<Array<Project>>) => res.body || [])
   }
 
-  uploadDockerFile(formData: FormData): Observable<any> {
-    return this.http.post(`/api/v1/images/dockerfile/upload`, formData, {observe: "response"})
+  uploadDockerFile(formData: FormData): Observable<string> {
+    return this.http.post(`/api/v1/images/dockerfile/upload`, formData, {observe: "response", responseType: "text"})
+      .map((res: HttpResponse<string>) => res.body)
   }
 
   downloadDockerFile(fileInfo: {imageName: string, tagName: string, projectName: string}): Observable<any> {
@@ -71,6 +72,19 @@ export class ImageService {
         image_name: fileInfo.imageName,
         image_tag: fileInfo.tagName,
         project_name: fileInfo.projectName
+      }
+    });
+  }
+
+  buildImageFromImagePackage(params: {imageName: string, tagName: string, projectName: string, imagePackageName: string}): Observable<any> {
+    return this.http.post(`/api/v1/images/imagepackage`, null, {
+      headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
+      observe: "response",
+      params: {
+        image_name: params.imageName,
+        image_tag: params.tagName,
+        project_name: params.projectName,
+        image_package_name: params.imagePackageName
       }
     });
   }

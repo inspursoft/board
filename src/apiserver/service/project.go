@@ -184,7 +184,7 @@ func DeleteProject(userID, projectID int64) (bool, error) {
 
 func NamespaceExists(projectName string) (bool, error) {
 	var config k8sassist.K8sAssistConfig
-	config.K8sMasterURL = kubeMasterURL()
+	config.KubeConfigPath = kubeConfigPath()
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 	n := k8sclient.AppV1().Namespace()
 
@@ -214,7 +214,7 @@ func CreateNamespace(projectName string) (bool, error) {
 	}
 
 	var config k8sassist.K8sAssistConfig
-	config.K8sMasterURL = kubeMasterURL()
+	config.KubeConfigPath = kubeConfigPath()
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 	n := k8sclient.AppV1().Namespace()
 
@@ -251,7 +251,7 @@ func SyncNamespaceByOwnerID(userID int64) error {
 
 func SyncProjectsWithK8s() error {
 	var config k8sassist.K8sAssistConfig
-	config.K8sMasterURL = kubeMasterURL()
+	config.KubeConfigPath = kubeConfigPath()
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 	n := k8sclient.AppV1().Namespace()
 
@@ -311,6 +311,14 @@ func SyncProjectsWithK8s() error {
 			// Still can work
 			continue
 		}
+
+		// Sync the autoscale hpa in this project namespace
+		err = SyncAutoScaleWithK8s(namespace.Name)
+		if err != nil {
+			logs.Error("Failed to sync autoscale rule with project name: %s, error: %+v", namespace.Name, err)
+			// Still can work
+			continue
+		}
 	}
 	return err
 }
@@ -326,7 +334,7 @@ func DeleteNamespace(nameSpace string) (bool, error) {
 	}
 
 	var config k8sassist.K8sAssistConfig
-	config.K8sMasterURL = kubeMasterURL()
+	config.KubeConfigPath = kubeConfigPath()
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 	n := k8sclient.AppV1().Namespace()
 

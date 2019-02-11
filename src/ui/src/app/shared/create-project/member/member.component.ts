@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { AppInitService } from "../../../app.init.service";
 import { Member, Project, Role } from "../../../project/project";
@@ -14,8 +14,7 @@ import { CsModalChildBase } from "../../cs-modal-base/cs-modal-child-base";
   styleUrls:['./member.component.css'],
   templateUrl: './member.component.html'
 })
-export class MemberComponent extends CsModalChildBase implements OnInit {
-  currentUser: {[key: string]: any};
+export class MemberComponent extends CsModalChildBase {
   role: Role = new Role();
   availableMembers: Member[];
   isAvailableMembers: Array<Member>;
@@ -36,10 +35,6 @@ export class MemberComponent extends CsModalChildBase implements OnInit {
     super();
     this.isAvailableMembers = Array<Member>();
     this.isNotAvailableMembers = Array<Member>();
-  }
-  
-  ngOnInit(): void {
-    this.currentUser = this.appInitService.currentUser;
   }
 
   retrieveAvailableMembers() {
@@ -78,9 +73,9 @@ export class MemberComponent extends CsModalChildBase implements OnInit {
     this.selectedMember = this.availableMembers.find(value => value.project_member_user_id == Number.parseInt(projectMemberUserId));
     this.doSet = false;
     this.doUnset = false;
-    let isProjectOwner = (this.project.project_owner_id === this.currentUser.user_id);
-    let isSelf = (this.currentUser.user_id === this.selectedMember.project_member_user_id);
-    let isSystemAdmin = (this.currentUser.user_system_admin === 1);
+    let isProjectOwner = (this.project.project_owner_id === this.appInitService.currentUser.user_id);
+    let isSelf = (this.appInitService.currentUser.user_id === this.selectedMember.project_member_user_id);
+    let isSystemAdmin = (this.appInitService.currentUser.user_system_admin === 1);
     let isOnesProject = (this.project.project_owner_id === this.selectedMember.project_member_user_id);
     if((isSelf && isProjectOwner) || (isSystemAdmin && isOnesProject)) {
       this.doSet = false;

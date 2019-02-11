@@ -1,10 +1,8 @@
 import { NgModule } from '@angular/core';
-import { CoreModule } from '../core/core.module';
 import { NgxEchartsModule } from 'ngx-echarts';
 import { HeaderComponent } from './header/header.component';
 import { CheckItemExistingDirective } from './directives/check-item-existing.directive';
 import { CheckItemIdenticalDirective } from './directives/check-item-identical.directive';
-import { MessageService } from './message-service/message.service';
 import { AuthGuard, ServiceGuard } from './auth-guard.service';
 import { CheckItemPatternDirective } from "./directives/check-item-pattern.directive";
 import { ChangePasswordComponent } from "./change-password/change-password.component";
@@ -31,18 +29,18 @@ import { BadGatewayComponent } from "./error-pages/bad-gateway.component/bad-gat
 import { CsInputCheckExistingDirective } from "./cs-directives-library/cs-input-check-existing.directive";
 import { CsInputCheckPatternDirective } from "./cs-directives-library/cs-input-check-pattern.directive";
 import { CsMenuItemUrlDirective, CsVerticalNavComponent } from "./cs-components-library/cs-vertical-nav/cs-vertical-nav.component";
-import { RouterModule } from "@angular/router";
 import "inspurprism"
 import { CsDialogComponent } from "./cs-components-library/cs-dialog/cs-dialog.component";
 import { CsAlertComponent } from "./cs-components-library/cs-alert/cs-alert.component";
 import { CsGlobalAlertComponent } from "./cs-components-library/cs-global-alert/cs-global-alert.component";
 import { CsModalChildBaseSelector } from "./cs-modal-base/cs-modal-child-base";
+import { CoreModule } from "../core/core.module";
+import { CreatePvcComponent } from "./create-pvc/create-pvc.component";
+import {CsInputDropdownComponent} from "./cs-components-library/cs-input-dropdown/cs-input-dropdown.component";
 
 @NgModule({
   imports: [
-    RouterModule,
-    CoreModule,
-    NgxEchartsModule
+    CoreModule
   ],
   exports: [
     CoreModule,
@@ -65,6 +63,7 @@ import { CsModalChildBaseSelector } from "./cs-modal-base/cs-modal-child-base";
     CsHighlightComponent,
     CsVerticalNavComponent,
     CsMenuItemUrlDirective,
+    CsInputDropdownComponent,
     SizePipe,
     SafePipe
   ],
@@ -92,27 +91,28 @@ import { CsModalChildBaseSelector } from "./cs-modal-base/cs-modal-child-base";
     SafePipe,
     CsGuideComponent,
     CreateProjectComponent,
+    CsInputDropdownComponent,
     CsHighlightComponent,
     CsVerticalNavComponent,
     CsMenuItemUrlDirective,
     MemberComponent,
     TimeoutComponent,
     BoardLoadingComponent,
-    BadGatewayComponent
+    BadGatewayComponent,
+    CreatePvcComponent
   ],
   entryComponents: [
     CreateProjectComponent,
+    CreatePvcComponent,
     CsDialogComponent,
     CsAlertComponent,
     CsGlobalAlertComponent],
   providers: [
     AuthGuard,
     ServiceGuard,
-    MessageService,
     WebsocketService,
     SharedService,
     SharedActionService
-
   ]
 })
 export class SharedModule {}

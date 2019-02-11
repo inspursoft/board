@@ -26,11 +26,13 @@ export interface IAuditOperationData {
 
 @Injectable()
 export class AppTokenService {
-  _tokenString: string | null;
-  tokenMessageSource: Subject<string> = new Subject<string>();
-  tokenMessage$: Observable<string> = this.tokenMessageSource.asObservable();
+  _tokenString: string | null = '';
+  tokenMessageSource: Subject<string>;
+  tokenMessage$: Observable<string>;
 
   constructor(private cookieService: CookieService) {
+    this.tokenMessageSource = new Subject<string>();
+    this.tokenMessage$ = this.tokenMessageSource.asObservable();
   }
 
   set token(t: string | null) {
@@ -91,7 +93,7 @@ export class AppInitService {
   }
 
   get isSystemAdmin(): boolean{
-    return this.currentUser.user_system_admin === 1;
+    return this.currentUser && this.currentUser.user_system_admin === 1;
   }
 
   getCurrentUser(tokenParam?: string): Observable<User> {

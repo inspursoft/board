@@ -2,7 +2,6 @@ import { DragStatus } from "../shared/shared.types";
 import { SERVICE_STATUS } from "../shared/shared.const";
 
 export const PHASE_SELECT_PROJECT = "SELECT_PROJECT";
-export const PHASE_SELECT_IMAGES = "SELECT_IMAGES";
 export const PHASE_CONFIG_CONTAINERS = "CONFIG_CONTAINERS";
 export const PHASE_EXTERNAL_SERVICE = "EXTERNAL_SERVICE";
 export const PHASE_ENTIRE_SERVICE = "ENTIRE_SERVICE";
@@ -30,18 +29,23 @@ export class ServerServiceStep {
   public project_id?: number = 0;
   public service_name?: string = "";
   public node_selector?: string = "";
+  public cluster_ip?: string = "";
   public instance?: number = 0;
   public postData?: Object;
   public service_public?: number = 0;
+  public session_affinity_flag?: number = 0;
 }
 
 export class ImageIndex implements UiServerExchangeData<ImageIndex> {
-  image_name: string = "";
-  image_tag: string = "";
-  project_name: string = "";
+  image_name = '';
+  image_tag = '';
+  project_name = '';
 
   serverToUi(serverResponse: Object): ImageIndex {
-    return Object.assign(this, serverResponse);
+    this.image_tag = serverResponse['image_tag'];
+    this.image_name = serverResponse['image_name'];
+    this.project_name = serverResponse['project_name'];
+    return this;
   }
 
   uiToServer(): ImageIndex {
@@ -50,11 +54,13 @@ export class ImageIndex implements UiServerExchangeData<ImageIndex> {
 }
 
 export class EnvStruct implements UiServerExchangeData<EnvStruct> {
-  dockerfile_envname: string = "";
-  dockerfile_envvalue: string = "";
+  dockerfile_envname = '';
+  dockerfile_envvalue = '';
 
   serverToUi(serverResponse: Object): EnvStruct {
-    return Object.assign(this, serverResponse);
+    this.dockerfile_envname = serverResponse['dockerfile_envname'];
+    this.dockerfile_envvalue = serverResponse['dockerfile_envvalue'];
+    return this;
   }
 
   uiToServer(): EnvStruct {
@@ -63,13 +69,23 @@ export class EnvStruct implements UiServerExchangeData<EnvStruct> {
 }
 
 export class VolumeStruct implements UiServerExchangeData<VolumeStruct> {
-  public target_storage_service: string = "";
-  public target_path: string = "";
-  public volume_name: string = "";
-  public container_path: string = "";
+  public volume_type: 'nfs' | 'pvc' = 'nfs';
+  public target_storage_service = '';
+  public target_path = '';
+  public volume_name = '';
+  public container_path = '';
+  public container_path_flag = 0;
+  public target_pvc = '';
 
   serverToUi(serverResponse: Object): VolumeStruct {
-    return Object.assign(this, serverResponse);
+    this.target_storage_service = serverResponse['target_storage_service'];
+    this.target_path = serverResponse['target_path'];
+    this.volume_name = serverResponse['volume_name'];
+    this.container_path = serverResponse['container_path'];
+    this.volume_type = serverResponse['volume_type'];
+    this.container_path_flag = serverResponse['container_path_flag'];
+    this.target_pvc = serverResponse['target_pvc'];
+    return this;
   }
 
   uiToServer(): VolumeStruct {
@@ -78,20 +94,23 @@ export class VolumeStruct implements UiServerExchangeData<VolumeStruct> {
 }
 
 export class Container implements UiServerExchangeData<Container> {
-  public name: string = "";
-  public working_dir: string = "";
-  public volume_mount: VolumeStruct = new VolumeStruct();
-  public image: ImageIndex = new ImageIndex();
-  public env: Array<EnvStruct> = Array<EnvStruct>();
-  public container_port: Array<number> = Array();
-  public command: string = "";
-  public cpu_request: string = "";
-  public mem_request: string = "";
-  public cpu_limit: string = "";
-  public mem_limit: string = "";
+  public name = '';
+  public working_dir = '';
+  public command = '';
+  public cpu_request = '';
+  public mem_request = '';
+  public cpu_limit = '';
+  public mem_limit = '';
+  public volume_mounts: Array<VolumeStruct>;
+  public image: ImageIndex;
+  public env: Array<EnvStruct>;
+  public container_port: Array<number>;
 
-  isEmptyPort(): boolean {
-    return this.container_port.length == 0;
+  constructor() {
+    this.volume_mounts = Array<VolumeStruct>();
+    this.image = new ImageIndex();
+    this.env = Array<EnvStruct>();
+    this.container_port = Array<number>();
   }
 
   serverToUi(serverResponse: Object): Container {
@@ -101,18 +120,25 @@ export class Container implements UiServerExchangeData<Container> {
     this.cpu_limit = serverResponse["cpu_limit"];
     this.mem_request = serverResponse["mem_request"];
     this.mem_limit = serverResponse["mem_limit"];
-    this.volume_mount = (new VolumeStruct()).serverToUi(serverResponse["volume_mount"]);
-    this.image = (new ImageIndex()).serverToUi(serverResponse["image"]);
+    this.command = serverResponse["command"];
+    if (serverResponse["volume_mounts"]) {
+      let tempVolumeDataList: Array<Object> = serverResponse["volume_mounts"];
+      tempVolumeDataList.forEach(tempVolumeData => {
+        let volume = new VolumeStruct();
+        this.volume_mounts.push(volume.serverToUi(tempVolumeData));
+      })
+    }
+    this.image.serverToUi(serverResponse["image"]);
     if (serverResponse["env"]) {
       let envArr: Array<EnvStruct> = serverResponse["env"];
       envArr.forEach((env: EnvStruct) => {
-        this.env.push((new EnvStruct()).serverToUi(env));
+        let envStruct = new EnvStruct();
+        this.env.push(envStruct.serverToUi(env));
       });
     }
     if (serverResponse["container_port"]) {
       this.container_port = Array.from(serverResponse["container_port"]) as Array<number>;
     }
-    this.command = serverResponse["command"];
     return this;
   }
 
@@ -122,8 +148,8 @@ export class Container implements UiServerExchangeData<Container> {
 }
 
 export class NodeType implements UiServerExchangeData<NodeType> {
-  target_port: number = 0;
-  node_port: number = 0;
+  target_port = 0;
+  node_port = 0;
 
   serverToUi(serverResponse: Object): NodeType {
     this.target_port = serverResponse['target_port'];
@@ -137,7 +163,7 @@ export class NodeType implements UiServerExchangeData<NodeType> {
 }
 
 export class LoadBalancer implements UiServerExchangeData<LoadBalancer> {
-  external_access: string;
+  external_access = '';
 
   serverToUi(serverResponse: Object): LoadBalancer {
     this.external_access = serverResponse['external_access'];
@@ -150,7 +176,7 @@ export class LoadBalancer implements UiServerExchangeData<LoadBalancer> {
 }
 
 export class ExternalService implements UiServerExchangeData<ExternalService> {
-  public container_name = "";
+  public container_name = '';
   public node_config: NodeType;
   public load_balancer_config: LoadBalancer;
 
@@ -161,8 +187,8 @@ export class ExternalService implements UiServerExchangeData<ExternalService> {
 
   serverToUi(serverResponse: Object): ExternalService {
     this.container_name = serverResponse["container_name"];
-    this.node_config = (new NodeType()).serverToUi(serverResponse["node_config"]);
-    this.load_balancer_config = (new LoadBalancer()).serverToUi(serverResponse["load_balancer_config"]);
+    this.node_config.serverToUi(serverResponse["node_config"]);
+    this.load_balancer_config.serverToUi(serverResponse["load_balancer_config"]);
     return this;
   }
 
@@ -186,8 +212,8 @@ export class AffinityCardData {
 }
 
 export class UIServiceStep1 extends UIServiceStepBase {
-  public projectId: number = 0;
-  public projectName: string = "";
+  public projectId = 0;
+  public projectName = '';
 
   uiToServer(): ServerServiceStep {
     let result = new ServerServiceStep();
@@ -197,65 +223,27 @@ export class UIServiceStep1 extends UIServiceStepBase {
   }
 
   serverToUi(serverResponse: Object): UIServiceStep1 {
-    if (serverResponse && serverResponse["project_id"]) {
-      this.projectId = serverResponse["project_id"];
-    }
+    this.projectId = serverResponse["project_id"];
+    this.projectName = serverResponse["project_name"];
     return this;
   }
 }
 
 export class UIServiceStep2 extends UIServiceStepBase {
-  public imageList: Array<ImageIndex> = Array<ImageIndex>();
-  public projectId: number = 0;
-  public projectName: string = "";
-
-  uiToServer(): ServerServiceStep {
-    let result = new ServerServiceStep();
-    let postData: Array<ImageIndex> = Array<ImageIndex>();
-    result.phase = PHASE_SELECT_IMAGES;
-    this.imageList.forEach((value: ImageIndex) => {
-      postData.push(value.uiToServer());
-    });
-    result.postData = postData;
-    return result;
-  }
-
-  serverToUi(serverResponse: Object): UIServiceStep2 {
-    if (serverResponse && serverResponse["project_id"]) {
-      this.projectId = serverResponse["project_id"];
-    }
-    if (serverResponse && serverResponse["project_name"]) {
-      this.projectName = serverResponse["project_name"];
-    }
-    if (serverResponse && serverResponse["image_list"]) {
-      let list: Array<ImageIndex> = serverResponse["image_list"];
-      list.forEach((value: ImageIndex) => {
-        this.imageList.push((new ImageIndex()).serverToUi(value))
-      });
-    }
-    return this;
-  }
-}
-
-export class UIServiceStep3 extends UIServiceStepBase {
   public containerList: Array<Container>;
-  public containerHavePortList: Array<Container>;
+  public projectId = 0;
+  public projectName = '';
 
   constructor() {
     super();
     this.containerList = Array<Container>();
-    this.containerHavePortList = Array<Container>();
-  }
-
-  getPortList(containerName: string): Array<number> {
-    let container = this.containerHavePortList.find(value => value.name === containerName);
-    return container ? container.container_port : Array<number>();
   }
 
   uiToServer(): ServerServiceStep {
     let result = new ServerServiceStep();
     let postData: Array<Container> = Array<Container>();
     result.phase = PHASE_CONFIG_CONTAINERS;
+    result.project_id = this.projectId;
     this.containerList.forEach((value: Container) => {
       postData.push(value.uiToServer());
     });
@@ -263,34 +251,43 @@ export class UIServiceStep3 extends UIServiceStepBase {
     return result;
   }
 
-  serverToUi(serverResponse: Object): UIServiceStep3 {
+  serverToUi(serverResponse: Object): UIServiceStep2 {
     if (serverResponse && serverResponse["container_list"]) {
       let list: Array<Container> = serverResponse["container_list"];
       list.forEach((value: Container) => {
         let container = new Container();
         container.serverToUi(value);
         this.containerList.push(container);
-        if (container.container_port.length > 0) {
-          this.containerHavePortList.push(container);
-        }
       });
+    }
+    if (serverResponse && serverResponse["project_id"]) {
+      this.projectId = serverResponse["project_id"];
+    }
+    if (serverResponse && serverResponse["project_name"]) {
+      this.projectName = serverResponse["project_name"];
     }
     return this;
   }
+
+  getPortList(containerName: string): Array<number> {
+    return this.containerList.find(value => value.name === containerName).container_port;
+  }
 }
 
-export class UIServiceStep4 extends UIServiceStepBase {
+export class UIServiceStep3 extends UIServiceStepBase {
   public projectName = "";
   public serviceName = "";
   public nodeSelector = "";
+  public clusterIp = "";
   public instance = 1;
   public servicePublic = false;
+  public sessionAffinityFlag = false;
   public externalServiceList: Array<ExternalService>;
-  public affinityList: Array<{flag: boolean, services: Array<AffinityCardData>}>;
+  public affinityList: Array<{antiFlag: boolean, services: Array<AffinityCardData>}>;
 
   constructor() {
     super();
-    this.affinityList = Array<{flag: boolean, services: Array<AffinityCardData>}>();
+    this.affinityList = Array<{antiFlag: boolean, services: Array<AffinityCardData>}>();
     this.externalServiceList = Array<ExternalService>();
   }
 
@@ -300,19 +297,21 @@ export class UIServiceStep4 extends UIServiceStepBase {
     result.phase = PHASE_EXTERNAL_SERVICE;
     result.service_name = this.serviceName;
     result.instance = this.instance;
+    result.session_affinity_flag = this.sessionAffinityFlag ? 1 : 0;
+    result.cluster_ip = this.clusterIp;
     result.service_public = this.servicePublic ? 1 : 0;
     result.node_selector = this.nodeSelector;
-    this.affinityList.forEach((value: {flag: boolean, services: Array<AffinityCardData>}) => {
+    this.affinityList.forEach((value: {antiFlag: boolean, services: Array<AffinityCardData>}) => {
       let serviceNames = Array<string>();
       value.services.forEach((card: AffinityCardData) => serviceNames.push(card.serviceName));
-      postAffinityData.push({anti_flag: value.flag ? 1 : 0 , service_names: serviceNames})
+      postAffinityData.push({anti_flag: value.antiFlag ? 1 : 0 , service_names: serviceNames})
     });
     result.postData = {external_service_list: this.externalServiceList, affinity_list: postAffinityData};
     return result;
   }
 
-  serverToUi(serverResponse: Object): UIServiceStep4 {
-    let step4 = new UIServiceStep4();
+  serverToUi(serverResponse: Object): UIServiceStep3 {
+    let step3 = new UIServiceStep3();
     if (serverResponse && serverResponse["affinity_list"]) {
       let list: Array<{anti_flag: number, service_names: Array<string>}> = serverResponse["affinity_list"];
       list.forEach((value: {anti_flag: number, service_names: Array<string>}) => {
@@ -325,28 +324,34 @@ export class UIServiceStep4 extends UIServiceStepBase {
             services.push(card);
           });
         }
-        step4.affinityList.push({flag: value.anti_flag == 1, services: services});
+        step3.affinityList.push({antiFlag: value.anti_flag == 1, services: services});
       });
     }
     if (serverResponse && serverResponse["external_service_list"]) {
-      step4.externalServiceList = serverResponse["external_service_list"];
+      step3.externalServiceList = serverResponse["external_service_list"];
     }
     if (serverResponse && serverResponse["instance"]) {
-      step4.instance = serverResponse["instance"];
+      step3.instance = serverResponse["instance"];
     }
     if (serverResponse && serverResponse["service_name"]) {
-      step4.serviceName = serverResponse["service_name"];
+      step3.serviceName = serverResponse["service_name"];
     }
     if (serverResponse && serverResponse["project_name"]) {
-      step4.projectName = serverResponse["project_name"];
+      step3.projectName = serverResponse["project_name"];
     }
     if (serverResponse && serverResponse["service_public"]) {
-      step4.servicePublic = serverResponse["service_public"] == 1;
+      step3.servicePublic = serverResponse["service_public"] == 1;
     }
     if (serverResponse && serverResponse["node_selector"]) {
-      step4.nodeSelector = serverResponse["node_selector"];
+      step3.nodeSelector = serverResponse["node_selector"];
     }
-    return step4;
+    if (serverResponse && serverResponse["cluster_ip"]) {
+      step3.clusterIp = serverResponse["cluster_ip"];
+    }
+    if (serverResponse && serverResponse["session_affinity_flag"]) {
+      step3.sessionAffinityFlag = serverResponse["session_affinity_flag"] == 1;
+    }
+    return step3;
   }
 }
 
@@ -355,12 +360,10 @@ export class UiServiceFactory {
     switch (phase) {
       case PHASE_SELECT_PROJECT:
         return new UIServiceStep1();
-      case PHASE_SELECT_IMAGES:
-        return new UIServiceStep2();
       case PHASE_CONFIG_CONTAINERS:
-        return new UIServiceStep3();
+        return new UIServiceStep2();
       case PHASE_EXTERNAL_SERVICE:
-        return new UIServiceStep4();
+        return new UIServiceStep3();
       default:
         return null;
     }

@@ -7,7 +7,7 @@ import { BuildImageDockerfileData, Image, ImageDetail } from "../image/image";
 import { ImageIndex, ServerServiceStep, ServiceStepPhase, UiServiceFactory, UIServiceStepBase } from "./service-step.component";
 import { Service } from "./service";
 import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from "../shared/shared.const";
-import { INode, INodeGroup, NodeAvailableResources, ServiceHPA } from "../shared/shared.types";
+import { INode, INodeGroup, NodeAvailableResources, PersistentVolumeClaim, ServiceHPA } from "../shared/shared.types";
 
 @Injectable()
 export class K8sService {
@@ -45,7 +45,9 @@ export class K8sService {
         phase: config.phase,
         project_id: config.project_id.toString(),
         service_name: config.service_name,
+        cluster_ip: config.cluster_ip,
         instance: config.instance.toString(),
+        session_affinity_flag: config.session_affinity_flag.toString(),
         service_public:config.service_public.toString(),
         node_selector:config.node_selector
       }
@@ -240,6 +242,11 @@ export class K8sService {
       .map((res: HttpResponse<Object>) => res.body)
   }
 
+  getNodePorts(projectName: string): Observable<Array<number>> {
+    return this.http.get(`/api/v1/services/nodeports`, {observe: "response"})
+      .map((res: HttpResponse<Array<number>>) => res.body)
+  }
+
   getNodeSelectors(): Observable<Array<{name: string, status: number}>> {
     let obsNodeList = this.http
       .get(`/api/v1/nodes`, {observe: "response"})
@@ -313,5 +320,37 @@ export class K8sService {
         res.forEach(config => config.isEdit = true);
         return res
       });
+  }
+
+  getSessionAffinityFlag(serviceName: string, projectName: string): Observable<boolean> {
+    return this.http.get(`/api/v1/services/rollingupdate/session`, {
+      observe: "response", params: {
+        project_name: projectName,
+        service_name: serviceName
+      }
+    }).map((res: HttpResponse<Object>) => res.body['SessionAffinityFlag'] == 1)
+  }
+
+  setSessionAffinityFlag(serviceName: string, projectName: string, flag: boolean): Observable<any> {
+    return this.http.patch(`/api/v1/services/rollingupdate/session`, null, {
+      observe: "response", params: {
+        project_name: projectName,
+        service_name: serviceName,
+        session_affinity_flag: flag ? '1' : '0'
+      }
+    })
+  }
+
+  getPvcNameList(): Observable<Array<PersistentVolumeClaim>> {
+    return this.http.get(`/api/v1/pvclaims`, {observe: "response"}).map((res: HttpResponse<Array<Object>>) => {
+      let result: Array<PersistentVolumeClaim> = Array<PersistentVolumeClaim>();
+      res.body.forEach(resObject => {
+        let persistentVolume = new PersistentVolumeClaim();
+        persistentVolume.id = Reflect.get(resObject, 'pvc_id');
+        persistentVolume.name = Reflect.get(resObject, 'pvc_name');
+        result.push(persistentVolume);
+      });
+      return result;
+    })
   }
 }

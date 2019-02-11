@@ -8,13 +8,14 @@ import {
   PHASE_CONFIG_CONTAINERS,
   PHASE_EXTERNAL_SERVICE,
   ServiceStepPhase,
+  UIServiceStep2,
   UIServiceStep3,
-  UIServiceStep4,
   UIServiceStepBase
 } from '../service-step.component';
 import { ServiceStepBase } from "../service-step";
 import { IDropdownTag } from "../../shared/shared.types";
 import { SetAffinityComponent } from "./set-affinity/set-affinity.component";
+import 'rxjs/add/observable/forkJoin'
 
 @Component({
   styleUrls: ["./config-setting.component.css"],
@@ -22,36 +23,46 @@ import { SetAffinityComponent } from "./set-affinity/set-affinity.component";
 })
 export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
   patternServiceName: RegExp = /^[a-z]([-a-z0-9]*[a-z0-9])+$/;
+  patternIP: RegExp = /^((?:(?:25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d)))\.){3}(?:25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d))))$/;
   showAdvanced = false;
   showNodeSelector = false;
-  isActionWip: boolean = false;
-  nodeSelectorList: Array<{name: string, value: string, tag: IDropdownTag}>;
-  uiPreData: UIServiceStep3;
+  isActionWip = false;
+  isGetNodePortWip = false;
+  nodeSelectorList: Array<{ name: string, value: string, tag: IDropdownTag }>;
+  uiPreData: UIServiceStep2;
+  existingNodePorts: Array<number>;
 
   constructor(protected injector: Injector,
               private changeDetectorRef: ChangeDetectorRef) {
     super(injector);
     this.changeDetectorRef.detach();
-    this.nodeSelectorList = Array<{name: string, value: string, tag: IDropdownTag}>();
-    this.uiPreData = new UIServiceStep3();
+    this.nodeSelectorList = Array<{ name: string, value: string, tag: IDropdownTag }>();
+    this.existingNodePorts = Array<number>();
+    this.uiPreData = new UIServiceStep2();
   }
 
   ngOnInit() {
     let obsStepConfig = this.k8sService.getServiceConfig(this.stepPhase);
     let obsPreStepConfig = this.k8sService.getServiceConfig(PHASE_CONFIG_CONTAINERS);
+    this.isGetNodePortWip = true;
     Observable.forkJoin(obsStepConfig, obsPreStepConfig).subscribe((res: [UIServiceStepBase, UIServiceStepBase]) => {
       this.uiBaseData = res[0];
-      this.uiPreData = res[1] as UIServiceStep3;
-      if (this.uiData.externalServiceList.length === 0 && this.uiPreData.containerHavePortList.length > 0) {
-        let container = this.uiPreData.containerHavePortList[0];
+      this.uiPreData = res[1] as UIServiceStep2;
+      if (this.uiData.externalServiceList.length === 0) {
+        let container = this.uiPreData.containerList[0];
         this.addNewExternalService();
         this.setExternalInfo(container, 0);
       }
+      this.k8sService.getNodePorts(this.uiData.projectName).subscribe(
+        (res: Array<number>) => this.existingNodePorts = res,
+        () => this.isGetNodePortWip = false,
+        () => this.isGetNodePortWip = false
+      );
       this.changeDetectorRef.reattach();
     });
     this.nodeSelectorList.push({name: 'SERVICE.STEP_3_NODE_DEFAULT', value: '', tag: null});
-    this.k8sService.getNodeSelectors().subscribe((res: Array<{name: string, status: number}>) => {
-      res.forEach((value: {name: string, status: number}) => {
+    this.k8sService.getNodeSelectors().subscribe((res: Array<{ name: string, status: number }>) => {
+      res.forEach((value: { name: string, status: number }) => {
         this.nodeSelectorList.push({
           name: value.name, value: value.name, tag: {
             type: value.status == 1 ? 'alert-success' : 'alert-warning',
@@ -66,8 +77,8 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
     return PHASE_EXTERNAL_SERVICE
   }
 
-  get uiData(): UIServiceStep4 {
-    return this.uiBaseData as UIServiceStep4;
+  get uiData(): UIServiceStep3 {
+    return this.uiBaseData as UIServiceStep3;
   }
 
   get checkServiceNameFun() {
@@ -87,17 +98,29 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
     return result == "" ? "SERVICE.STEP_3_SELECT_CONTAINER" : result;
   }
 
+  getContainerPorts(containerName: string): Array<number> {
+    return this.uiPreData.getPortList(containerName);
+  }
+
   setExternalInfo(container: Container, index: number) {
     this.uiData.externalServiceList[index].container_name = container.name;
-    this.uiData.externalServiceList[index].node_config.target_port = container.container_port[0];
+    this.uiData.externalServiceList[index].node_config.target_port = container.container_port.length > 0 ? container.container_port[0] : 0;
   }
 
   setNodePort(index: number, port: number) {
     this.uiData.externalServiceList[index].node_config.node_port = Number(port).valueOf();
   }
 
+  inputExternalPortEnable(containerName: string): boolean {
+    return this.uiPreData.getPortList(containerName).length == 0;
+  }
+
+  selectExternalPortEnable(containerName: string): boolean {
+    return this.uiPreData.getPortList(containerName).length > 0;
+  }
+
   addNewExternalService() {
-    if (this.uiPreData.containerHavePortList.length > 0 && !this.isActionWip) {
+    if (this.uiPreData.containerList.length > 0 && !this.isActionWip) {
       let externalService = new ExternalService();
       this.uiData.externalServiceList.push(externalService);
     }
@@ -124,7 +147,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
   checkServiceName(control: HTMLInputElement): Observable<ValidationErrors | null> {
     return this.k8sService.checkServiceExist(this.uiData.projectName, control.value)
       .map(() => null)
-      .catch((err:HttpErrorResponse) => {
+      .catch((err: HttpErrorResponse) => {
         if (err.status == 409) {
           this.messageService.cleanNotification();
           return Observable.of({serviceExist: "SERVICE.STEP_3_SERVICE_NAME_EXIST"});
@@ -149,7 +172,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
   }
 
   forward(): void {
-    if (this.verifyInputValid()) {
+    if (this.verifyInputValid() && this.verifyInputDropdownValid()) {
       if (this.uiData.externalServiceList.length == 0) {
         this.messageService.showAlert(`SERVICE.STEP_3_EXTERNAL_MESSAGE`, {alertType: "alert-warning"});
       } else if (this.haveRepeatNodePort()) {
@@ -159,7 +182,8 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
       } else {
         this.isActionWip = true;
         this.k8sService.setServiceConfig(this.uiData.uiToServer()).subscribe(
-          () => this.k8sService.stepSource.next({index: 5, isBack: false})
+          () => this.k8sService.stepSource.next({index: 5, isBack: false}),
+          () => this.isActionWip = false
         );
       }
     }

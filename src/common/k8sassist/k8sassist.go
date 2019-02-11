@@ -6,7 +6,8 @@ import (
 )
 
 type K8sAssistConfig struct {
-	K8sMasterURL string
+	K8sMasterURL   string
+	KubeConfigPath string
 }
 
 type K8sAssistClient struct {
@@ -21,7 +22,7 @@ func NewK8sAssistClient(c *K8sAssistConfig) *K8sAssistClient {
 }
 
 func (c *K8sAssistClient) AppV1() v1.AppV1ClientInterface {
-	clientset, err := base.NewBaseClient(c.config.K8sMasterURL)
+	clientset, err := base.NewBaseClient(c.config.K8sMasterURL, c.config.KubeConfigPath)
 	if err != nil {
 		panic(err)
 	}

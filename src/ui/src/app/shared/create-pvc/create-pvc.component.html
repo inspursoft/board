@@ -1,0 +1,81 @@
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'md'">
+  <h3 class="modal-title">{{ 'STORAGE.PVC_CREATE' | translate }}</h3>
+  <div class="modal-body">
+    <div class="dynamic-line-container">
+      <span class="filed-text">{{"STORAGE.PVC_CREATE_PROJECT" | translate}}:</span>
+      <cs-dropdown [dropdownDefaultText]="'STORAGE.PVC_CREATE_SELECT_PROJECT' | translate"
+                   [dropdownWidth]="310"
+                   [dropdownList]="projectsList"
+                   [dropdownListTextKey]="'project_name'"
+                   (onChange)="changeSelectProject($event)">
+      </cs-dropdown>
+    </div>
+    <cs-input #pvcNameInput
+              [inputIsRequired]="true"
+              [disabled]="isCreateWip"
+              [inputLabel]="'STORAGE.PVC_NAME' | translate"
+              [inputPattern]="namePattern"
+              [inputMaxlength]="50"
+              [customerValidatorAsyncFunc]="checkPvcNameFun"
+              [validatorMessage]="[{validatorKey: 'pattern', validatorMessage: 'STORAGE.PVC_CREATE_NAME_PATTERN'}]"
+              [simpleFiled]="newPersistentVolumeClaim.name"
+              (onCheck)="newPersistentVolumeClaim.name = $event">
+    </cs-input>
+    <div class="dynamic-line-container">
+      <cs-input [inputIsRequired]="true"
+                [inputLabel]="'STORAGE.PVC_CAPACITY' | translate"
+                [inputPlaceholder]="'eg. 5'"
+                [inputMin]="0.1"
+                [inputFiledType]="1"
+                [disabled]="isCreateWip"
+                [simpleFiled]="newPersistentVolumeClaim.capacity"
+                (onCheck)="newPersistentVolumeClaim.capacity = $event">
+      </cs-input>(Gi)
+    </div>
+    <div class="dynamic-line-container">
+      <span class="filed-text">{{"STORAGE.PVC_ACCESS_MODES" | translate}}:</span>
+      <cs-dropdown [dropdownDefaultText]="'STORAGE.PVC_CREATE_SELECT_ACCESS_MODE' | translate"
+                   [dropdownWidth]="310"
+                   [dropdownMustBeSelect]="true"
+                   [dropdownDisabled]="isCreateWip"
+                   [dropdownList]="accessModeList"
+                   (onChange)="newPersistentVolumeClaim.accessMode = $event">
+      </cs-dropdown>
+    </div>
+    <div *ngIf="newPersistentVolumeClaim.accessMode == 'ReadOnlyMany'"
+         class="dynamic-line-container alert alert-warning warning-info">
+      {{"STORAGE.PV_WARNING_READ_ONLY_MANY" | translate}}
+    </div>
+    <div *ngIf="newPersistentVolumeClaim.accessMode == 'ReadWriteMany'"
+         class="dynamic-line-container alert alert-warning warning-info">
+      {{"STORAGE.PV_WARNING_READ_WRITE_MANY" | translate}}
+    </div>
+    <div class="pvc-section-container"><span>Options</span></div>
+    <cs-input [disabled]="isCreateWip"
+              [inputLabel]="'STORAGE.PVC_CLASS' | translate"
+              [simpleFiled]="newPersistentVolumeClaim.class"
+              (onCheck)="newPersistentVolumeClaim.class = $event">
+    </cs-input>
+    <div class="dynamic-line-container">
+      <span class="filed-text">{{"STORAGE.PVC_CREATE_DESIGNATE_PV"|translate}}:</span>
+      <cs-dropdown [dropdownDefaultText]="'STORAGE.PVC_CREATE_SELECT_DESIGNATED_PV' | translate"
+                   [dropdownWidth]="310"
+                   [dropdownMustBeSelect]="false"
+                   [dropdownDisabled]="isCreateWip"
+                   [dropdownList]="pvList"
+                   [dropdownListTextKey]="'name'"
+                   (onOnlyClickItem)="changeDesignatePv($event)"
+                   (onChange)="changeDesignatePv($event)">
+      </cs-dropdown>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-default" [disabled]="isCreateWip" (click)="modalOpened = false">
+      {{ 'BUTTON.CANCEL' | translate }}
+    </button>
+    <button type="button" class="btn btn-primary" [disabled]="isCreateWip" (click)="createNewPvc()">
+      {{ 'BUTTON.CREATE' | translate }}
+    </button>
+    <span *ngIf="isCreateWip" class="spinner spinner-sm"></span>
+  </div>
+</clr-modal>

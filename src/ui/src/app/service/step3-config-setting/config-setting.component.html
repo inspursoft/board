@@ -6,7 +6,9 @@
     <cs-input [inputIsRequired]="true"
               [disabled]="isActionWip"
               [inputPattern]="patternServiceName"
+              [inputMaxlength]="63"
               [inputLabel]="'SERVICE.STEP_3_SERVICE_NAME' | translate"
+              [validatorMessage]="[{validatorKey:'pattern',validatorMessage:'SERVICE.STEP_3_SERVICE_NAME_PATTERN_NSG'}]"
               [customerValidatorAsyncFunc]="checkServiceNameFun"
               [simpleFiled]="uiData.serviceName"
               [inputPlaceholder]="'SERVICE.STEP_3_SERVICE_OF_NAME'| translate"
@@ -25,6 +27,14 @@
     </cs-input>
   </div>
   <div class="line-container">
+    <cs-input [disabled]="isActionWip"
+              [inputPattern]="patternIP"
+              [inputLabel]="'SERVICE.STEP_3_CLUSTER_IP' | translate"
+              [simpleFiled]="uiData.clusterIp"
+              (onCheck)="uiData.clusterIp = $event">
+    </cs-input>
+  </div>
+  <div class="line-container">
     <label class="public">{{"SERVICE.STEP_3_PUBLIC" | translate}}:
       <input title=""
              type="checkbox"
@@ -34,8 +44,15 @@
              [(ngModel)]="uiData.servicePublic">
     </label>
   </div>
-  <div *ngIf="uiData.externalServiceList.length == 0" class="alert alert-warning" role="alert">
-    {{"SERVICE.STEP_3_DANGER_MESSAGE" | translate}}
+  <div class="line-container">
+    <label class="public">{{"SERVICE.STEP_3_SESSION_AFFINITY_FLAG" | translate}}:
+      <input title=""
+             type="checkbox"
+             class="base-margin-left"
+             [disabled]="isActionWip"
+             [checked]="uiData.sessionAffinityFlag"
+             [(ngModel)]="uiData.sessionAffinityFlag">
+    </label>
   </div>
   <div *ngFor="let externalService of uiData.externalServiceList;let iIndex = index" class="external-container">
     <div class="line-container">
@@ -45,7 +62,7 @@
     </div>
     <div class="line-container">
       <label>{{"SERVICE.STEP_3_CONTAINER_NAME"|translate}}:</label>
-      <cs-dropdown [dropdownList]="uiPreData.containerHavePortList"
+      <cs-dropdown [dropdownList]="uiPreData.containerList"
                    [dropdownListTextKey]="'name'"
                    [dropdownWidth]="310"
                    [dropdownDisabled]="isActionWip"
@@ -54,31 +71,45 @@
       </cs-dropdown>
     </div>
     <div class="line-container" *ngIf="externalService.container_name !== ''">
-      <label>{{"SERVICE.STEP_3_CONTAINER_PORT"|translate}}:</label>
-      <cs-dropdown [dropdownDisabled]="externalService.container_name == '' || isActionWip"
-                   [dropdownList]="uiPreData.getPortList(externalService.container_name)"
+      <cs-input *ngIf="inputExternalPortEnable(externalService.container_name)"
+                [inputFiledType]="1"
+                [simpleFiled]="externalService.node_config.target_port"
+                [disabled]="isActionWip"
+                [inputLabel]="'SERVICE.STEP_3_CONTAINER_PORT' | translate"
+                [inputIsRequired]="uiData.clusterIp == ''"
+                [inputMin]="1"
+                [inputMax]="32766"
+                (onCheck)="externalService.node_config.target_port = $event">
+      </cs-input>
+      <label *ngIf="selectExternalPortEnable(externalService.container_name)">
+        {{"SERVICE.STEP_3_CONTAINER_PORT"|translate}}:</label>
+      <cs-dropdown *ngIf="selectExternalPortEnable(externalService.container_name)"
+                   [dropdownDisabled]="externalService.container_name == '' || isActionWip"
+                   [dropdownList]="getContainerPorts(externalService.container_name)"
                    [dropdownWidth]="310"
                    [dropdownDefaultText]="externalService.node_config.target_port.toString()"
                    (onChange)="externalService.node_config.target_port = $event">
       </cs-dropdown>
     </div>
     <div class="line-container" *ngIf="externalService.container_name !== ''">
-      <cs-input [inputFiledType]="1"
-                [simpleFiled]="externalService.node_config.node_port"
-                [disabled]="isActionWip"
-                [inputLabel]="'SERVICE.STEP_3_NODE_PORT' | translate"
-                [inputIsRequired]="true"
-                [inputMin]="30000"
-                [inputMax]="32766"
-                [inputPlaceholder]="'SERVICE.STEP_3_EXTERNAL_PORT'| translate"
-                (onCheck)="setNodePort(iIndex,$event)">
-      </cs-input>
+      <label>{{"SERVICE.STEP_3_NODE_PORT"|translate}}:</label>
+      <cs-input-dropdown [inputConflictNumbers]="existingNodePorts"
+                         [inputValue]="externalService.node_config.node_port"
+                         [inputDisabled]="isActionWip || isGetNodePortWip"
+                         [inputWidth]="310"
+                         [inputIsRequired]="true"
+                         [inputPlaceholder]="'SERVICE.STEP_3_EXTERNAL_PORT'| translate"
+                         [validatorMessage]="[{validatorKey: 'inUsed', validatorMessage: 'SERVICE.STEP_3_NODE_PORT_ALREADY_USED'}]"
+                         [inputMin]="30000"
+                         [inputMax]="32767"
+                         (onCommitEvent)="externalService.node_config.node_port = $event">
+      </cs-input-dropdown>
     </div>
   </div>
   <div class="line-container">
     <clr-icon class="plus-icon"
               shape="plus"
-              [ngClass]="{'disabled':uiPreData.containerHavePortList.length == 0 || isActionWip}"
+              [ngClass]="{'disabled':uiPreData.containerList.length == 0 || isActionWip}"
               (click)="addNewExternalService()">
     </clr-icon>
     <span>{{"SERVICE.STEP_3_EXTERNAL_SERVICE_ADD"|translate}}</span>

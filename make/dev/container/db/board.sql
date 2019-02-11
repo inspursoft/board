@@ -322,12 +322,14 @@ DROP TABLE IF EXISTS `log`;
         `owner_id` INT NOT NULL,
         `owner_name` VARCHAR(255) DEFAULT NULL,
         `status` SMALLINT(1) NOT NULL,
+		`type` SMALLINT(1) NOT NULL DEFAULT 0,
         `public` SMALLINT(1) NULL,
         `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
         `creation_time` datetime DEFAULT NULL,
         `update_time` datetime DEFAULT NULL,
         `source` SMALLINT(1) NOT NULL,
-        `service_config` TEXT,
+        `service_yaml` TEXT,
+        `deployment_yaml` TEXT,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
 
@@ -378,6 +380,50 @@ DROP TABLE IF EXISTS `log`;
         `status` INT NOT NULL DEFAULT 0,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
+	
+	CREATE TABLE `board`.`persistent_volume` (
+        `id` INT NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(255) NOT NULL DEFAULT '',
+        `type` INT NOT NULL DEFAULT 0,
+        `state` INT NOT NULL DEFAULT 0,
+		`capacity` VARCHAR(255) NOT NULL DEFAULT '',
+		`accessmode` VARCHAR(255) NOT NULL DEFAULT '',
+	    `class` VARCHAR(255) NOT NULL DEFAULT '',	
+        `readonly` SMALLINT(1) NULL,		
+	    `reclaim` VARCHAR(255) NOT NULL DEFAULT '',		
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
+	
+	CREATE TABLE `board`.`persistent_volume_option_nfs` (
+        `id` INT NOT NULL,
+		`path` VARCHAR(255) NOT NULL DEFAULT '',
+		`server` VARCHAR(255) NOT NULL DEFAULT '',	
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+	CREATE TABLE `board`.`persistent_volume_option_cephrbd` (
+        `id` INT NOT NULL,
+		`user` VARCHAR(255) NOT NULL DEFAULT '',
+		`keyring` VARCHAR(255) NOT NULL DEFAULT '',	
+		`pool` VARCHAR(255) NOT NULL DEFAULT '',
+		`image` VARCHAR(255) NOT NULL DEFAULT '',	
+		`fstype` VARCHAR(255) NOT NULL DEFAULT '',
+		`secretname` VARCHAR(255) NOT NULL DEFAULT '',		
+		`secretnamespace` VARCHAR(255) NOT NULL DEFAULT '',
+		`monitors` VARCHAR(255) NOT NULL DEFAULT '',			
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;	
+	
+	CREATE TABLE `board`.`persistent_volume_claim_m` (
+        `id` INT NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(255) NOT NULL DEFAULT '',
+        `projectid` INT NOT NULL DEFAULT 0,
+		`capacity` VARCHAR(255) NOT NULL DEFAULT '',
+		`accessmode` VARCHAR(255) NOT NULL DEFAULT '',
+	    `class` VARCHAR(255) NOT NULL DEFAULT '',		
+	    `pvname` VARCHAR(255) NOT NULL DEFAULT '',		
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;		
 
     CREATE TABLE `board`.`repository` (
         `id` INT NOT NULL AUTO_INCREMENT,

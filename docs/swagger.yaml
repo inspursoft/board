@@ -219,6 +219,20 @@ paths:
             $ref: '#/definitions/SystemInfo'
         500:
           description: Unexpected internal error. 
+  /v1/kubernetesinfo:
+    get:
+      summary: Get kubernetes info.
+      description: |
+        Get kubernetes info of current configurations. 
+      tags:
+        - Products
+      responses:
+        200:
+          description: Get kubernetes info successfully.
+          schema:
+            $ref: '#/definitions/KubernetesInfo'
+        500:
+          description: Unexpected internal error. 
   /v1/forgot-password:
     post:
       summary: Use registered username or email to receive a resetting URL from user's email inbox.
@@ -860,6 +874,71 @@ paths:
       responses:
         200:
           description: Return all matched services.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+  /v1/services/rollingupdate/session:
+    get:
+      summary: Return the results the service config.
+      description: 
+        This endpoint returns the results the service config.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name 
+          in: query
+          description: Project name.
+          required: true
+          type: string
+        - name: service_name 
+          in: query
+          description: Service name.
+          required: true
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return service config.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+    patch:
+      summary: Return the results the rolling update service config.
+      description: 
+        This endpoint returns the results the rolling update service config.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name 
+          in: query
+          description: Project name.
+          required: true
+          type: string
+        - name: service_name 
+          in: query
+          description: Service name.
+          required: true
+          type: string
+        - name: session_affinity_flag 
+          in: query
+          description: Session affinity flag for service.
+          required: true
+          type: integer
+          format: int32
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return null.
         401:
           description: User need to log in first.
         500:
@@ -1625,6 +1704,10 @@ paths:
           in: query
           type: string
           required: false
+        - name: cluster_ip
+          in: query
+          type: string
+          required: false          
         - name: node_selector
           in: query
           type: string
@@ -1635,6 +1718,16 @@ paths:
           format: int
           required: false
         - name: instance
+          in: query
+          type: integer
+          format: int
+          required: false 
+        - name: session_affinity_flag
+          in: query
+          type: integer
+          format: int
+          required: false 
+        - name: session_affinity_time
           in: query
           type: integer
           format: int
@@ -2152,6 +2245,39 @@ paths:
           description: Invalid service ID.
         500:
           description: Unexpected internal errors.    
+  /v1/services/nodeports:
+    get:  
+      summary: Get the existing nodeport list.
+      description: |
+        This endpoint is aimed to get the existing nodeport list.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name 
+          in: query
+          description: project name for service.
+          required: false
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the existing nodeport list.
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int32
+              description: The node port.           
+        401:
+          description: User need to log in first.
+        403:
+          description: Invalid project name.
+        500:
+          description: Unexpected internal errors.          
   /v1/services/ingress:
     get:  
       summary: Get the ingress module status.
@@ -2179,6 +2305,526 @@ paths:
           description: Invalid project name.
         500:
           description: Unexpected internal errors.
+  /v1/pvolumes:
+    get:
+      summary: Return all Persistent Volumes in Board.
+      description: |
+        This endpoint returns all Persistent Volumes in Board.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: pv_name 
+          in: query
+          description: pv name for filtering results.
+          required: false
+          type: string
+        - name: pv_list_page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: pv_list_page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched Persistent Volumes.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/PersistentVolume'
+          headers:
+            X-Total-Count:
+              description: The total count of Persistent Volumes.
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page.
+              type: string
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+    post:
+      summary: Add a new PersistentVolume.
+      description: |
+        This endpoint is for admin to add a new PersistentVolume.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: pvolume
+          in: body
+          description: New added PersistentVolume.
+          required: true
+          schema:
+            $ref: '#/definitions/PersistentVolume'
+      tags:
+        - Products
+      responses:
+        201:
+          description: PersistentVolume added successfully.
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        409:
+          description: PersistentVolume name already exists.
+        500:
+          description: Internal errors.      
+  /v1/pvolumes/{pv_id}:    
+    get:
+      summary: Return a specific PersistentVolume detail infomation.
+      description: |
+        This endpoint returns a specific PersistentVolume information by pv ID.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: pv_id
+          in: path
+          description: PersistentVolume ID for filtering results.
+          required: true
+          type: integer
+          format: int32
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched PersistentVolume information.
+          schema:
+            $ref: '#/definitions/PersistentVolume'
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Internal errors.        
+    delete:
+      summary: Delete a PersistentVolume by pv ID
+      description: |
+        This endpoint is aimed to remove a Persistent Volume by pv ID.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: pv_id
+          in: path
+          description: Node will be removed by pv_id.
+          required: true
+          type: integer
+          format: int32
+      tags:
+        - Products
+      responses:
+        200:
+          description: Persistent Volume is deleted successfully.
+        400:
+          description: Invalid node id.
+        403:
+          description: User need to log in as admin.
+        404:
+          description: Node does not exist.
+        500:
+          description: Internal errors.         
+    put:
+      summary: Update Persistent Volume properties.
+      description: |
+       This endpoint is to update Persistent Volume.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: pv_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: The Persistent Volume ID for node info changing.
+        - name: pvolume
+          in: body
+          description: The Persistent Volume properties to be changed.
+          required: true
+          schema:
+            $ref: '#/definitions/PersistentVolume' 
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated PersistentVolume properties successfully.
+        400:
+          description: Invalid node ID.
+        403:
+          description: User need to log in as admin.
+        500:
+          description: Unexpected internal errors.     
+  /v1/pvclaims:
+    get:
+      summary: Return all Persistent Volume Claims in Board.
+      description: |
+        This endpoint returns all Persistent Volume Claims in Board.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: pvc_name 
+          in: query
+          description: pvc name for filtering results.
+          required: false
+          type: string
+        - name: pvc_list_page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: pvc_list_page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched Persistent Volume Claims.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/PersistentVolumeClaim'
+          headers:
+            X-Total-Count:
+              description: The total count of Persistent Volume Claims.
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page.
+              type: string
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+    post:
+      summary: Add a new PersistentVolume Claim.
+      description: |
+        This endpoint is for admin to add a new PersistentVolume Claim.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: pvclaim
+          in: body
+          description: New added PersistentVolume Claim.
+          required: true
+          schema:
+            $ref: '#/definitions/PersistentVolumeClaim'
+      tags:
+        - Products
+      responses:
+        201:
+          description: PersistentVolume Claim added successfully.
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        409:
+          description: PersistentVolume Claim name already exists.
+        500:
+          description: Internal errors.      
+  /v1/pvclaims/{pvc_id}:    
+    get:
+      summary: Return a specific PersistentVolume Claim detail infomation.
+      description: |
+        This endpoint returns a specific PersistentVolume Claim information by pv ID.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: pvc_id
+          in: path
+          description: PersistentVolume Claim ID for filtering results.
+          required: true
+          type: integer
+          format: int32
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched PersistentVolume Claim information.
+          schema:
+            $ref: '#/definitions/PersistentVolumeClaimDetail'
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Internal errors.        
+    delete:
+      summary: Delete a PersistentVolume Claim by pvc ID
+      description: |
+        This endpoint is aimed to remove a Persistent Volume Claim by pvc ID.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: pvc_id
+          in: path
+          description: Node will be removed by pvc_id.
+          required: true
+          type: integer
+          format: int32     
+      tags:
+        - Products
+      responses:
+        200:
+          description: Persistent Volume Claim is deleted successfully.
+        400:
+          description: Invalid pvc id.
+        403:
+          description: User need to log in as admin.
+        404:
+          description: Node does not exist.
+        500:
+          description: Internal errors.         
+    put:
+      summary: Update Persistent Volume Claim properties.
+      description: |
+       This endpoint is to update Persistent Volume CLaim.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: pvc_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: The Persistent Volume Claim ID for node info changing.
+        - name: pvclaim
+          in: body
+          description: The Persistent Volume Claim properties to be changed.
+          required: true
+          schema:
+            $ref: '#/definitions/PersistentVolumeClaim' 
+      tags:
+        - Products
+      responses:
+        200:
+          description: Updated PersistentVolume Claim properties successfully.
+        400:
+          description: Invalid pvc ID.
+        403:
+          description: User need to log in as admin.
+        500:
+          description: Unexpected internal errors.  
+  /v1/pvclaims/existing:   
+    get:
+      summary: Check the pvc name existing in this project.
+      description: |
+        This endpoint to check the pvc name existing in this project.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name
+          in: query
+          description: project name for filtering results.
+          required: true
+          type: string  
+        - name: pvc_name
+          in: query
+          description: pvc name for filtering results.
+          required: true
+          type: string                 
+      tags:
+        - Products
+      responses:
+        200:
+          description: PVC name don't existing.
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        409:
+          description: PVC name already exists.          
+        500:
+          description: Internal errors.                   
+  /v1/configmaps:
+    get:
+      summary: Return all ConfigMap in Board.
+      description: |
+        This endpoint returns all ConfigMaps in Board.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name 
+          in: query
+          description: project name for filtering results.
+          required: false
+          type: string
+        - name: configmap_list_page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: configmap_list_page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched ConfigMaps.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ConfigMap'
+          headers:
+            X-Total-Count:
+              description: The total count of ConfigMaps.
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page.
+              type: string
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+    post:
+      summary: Add a new ConfigMap.
+      description: |
+        This endpoint is for admin to add a new ConfigMap.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: configmap
+          in: body
+          description: New added ConfigMap.
+          required: true
+          schema:
+            $ref: '#/definitions/ConfigMap'
+      tags:
+        - Products
+      responses:
+        201:
+          description: ConfigMap added successfully.
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        409:
+          description: ConfigMap name already exists.
+        500:
+          description: Internal errors.      
+  /v1/configmaps/{configmapname}:    
+    get:
+      summary: Return a specific ConfigMap detail infomation.
+      description: |
+        This endpoint returns a specific ConfigMap information by name.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: configmapname
+          in: path
+          description: ConfigMap name for filtering results.
+          required: true
+          type: string
+        - name: project_name 
+          in: query
+          description: project name for filtering results.
+          required: true
+          type: string          
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched ConfigMap information.
+          schema:
+            $ref: '#/definitions/ConfigMap'
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Internal errors.        
+    delete:
+      summary: Delete a ConfigMap by name
+      description: |
+        This endpoint is aimed to remove a ConfigMap by name.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: configmap_name
+          in: path
+          description: ConfigMap name for filtering results.
+          required: true
+          type: string
+        - name: project_name 
+          in: query
+          description: project name for filtering results.
+          required: true
+          type: string    
+      tags:
+        - Products
+      responses:
+        200:
+          description: ConfigMap is deleted successfully.
+        400:
+          description: Invalid ConfigMap name.
+        403:
+          description: User need to log in as admin.
+        500:
+          description: Internal errors.                            
   /v1/node:
     get:
       summary: Return nodes in Board added by admin.
@@ -2863,6 +3509,48 @@ paths:
           description: User need to log in as admin.
         500:
           description: Internal errors.   
+  /v1/images/imagepackage:          
+    post:
+      summary: push image package to registry used defined image name and tag
+      description: |
+        push image package to registry used defined image name and tag
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: image_name
+          in: query
+          description: image name to specify an image.
+          required: true
+          type: string
+        - name: image_tag
+          in: query
+          type: string
+          required: true
+          description: The tag of this image.
+        - name: project_name
+          in: query
+          type: string
+          required: true
+          description: The project name that the image belongs to. 
+        - name: image_package_name
+          in: query
+          type: string
+          required: true
+          description: The image package name.              
+      tags:
+        - Products
+      responses:
+        200:
+          description: Push the image package to registry successfully.
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        500:
+          description: Internal errors.  
   /v1/images/{image_name}/push:   
     post:
       summary: Upload the new image to board registry
@@ -3875,293 +4563,6 @@ paths:
           description: Operation ID does not exist.
         500:
           description: Unexpected internal errors.
-  /v1/helm/repositories:
-    get:
-      summary: Get all repositories
-      description: |
-        This endpoint is to get all repositories
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-      tags:
-        - Products
-      responses:
-        200:
-          description: Return all matched repositories.
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Repository'
-        401:
-          description: User need to log in first.
-        500:
-          description: Unexpected internal errors.
-  /v1/helm/repositories/{repository_id}:
-    get:
-      summary: Return specific repository detail infomation.
-      description: |
-        This endpoint returns specific repository detail information by repository ID.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: repository_id
-          in: path
-          description: Repository ID for filtering results.
-          required: true
-          type: integer
-          format: int32
-        - name: page_index
-          in: query
-          type: integer
-          format: int32
-          required: false
-          description: The page nubmer, default is 1.
-        - name: page_size
-          in: query
-          type: integer
-          format: int32
-          required: false
-      tags:
-        - Products
-      responses:
-        200:
-          description: Return matched repository detail information.
-          schema:
-            $ref: '#/definitions/RepositoryDetail'
-        401:
-          description: User need to log in first.
-        404:
-          description: Repository does not exist.
-        500:
-          description: Internal errors.
-  /v1/helm/repositories/{repository_id}/chartupload:
-    post:
-      summary: Upload specific helm chart
-      description: |
-        This endpoint is to upload specific helm chart into chart repository.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: repository_id
-          in: path
-          description: Repository ID for uploading.
-          required: true
-          type: integer
-          format: int32
-        - name: upload_file
-          in: formData
-          type: file
-          required: true
-          description: Chart to be uploaded.
-      tags:
-        - Products
-      responses:
-        201:
-          description: Chart uploaded successfully.
-        401:
-          description: User need to log in first.
-        500:
-          description: Unexpected internal errors.
-  /v1/helm/repositories/{repository_id}/charts/{chartname}/{chartversion}:
-    get:
-      summary: Return specific repository chart infomation.
-      description: |
-        This endpoint returns specific repository chart information by repository ID, chart name and chart version.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: repository_id
-          in: path
-          description: Repository ID for filtering results.
-          required: true
-          type: integer
-          format: int32
-        - name: chartname
-          in: path
-          description: Chart Name for filtering results.
-          required: true
-          type: string
-        - name: chartversion
-          in: path
-          description: Chart Version for filtering results.
-          required: true
-          type: string
-      tags:
-        - Products
-      responses:
-        200:
-          description: Return matched repository chart information.
-          schema:
-            $ref: '#/definitions/RepositoryDetail'
-        401:
-          description: User need to log in first.
-        404:
-          description: Repository does not exist.
-        500:
-          description: Internal errors.
-    delete:
-      summary: Delete specific repository chart.
-      description: |
-        This endpoint delete specific repository chart by repository ID, chart name and chart version.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: repository_id
-          in: path
-          description: Repository ID for filtering results.
-          required: true
-          type: integer
-          format: int32
-        - name: chartname
-          in: path
-          description: Chart Name for filtering results.
-          required: true
-          type: string
-        - name: chartversion
-          in: path
-          description: Chart Version for filtering results.
-          required: true
-          type: string
-      tags:
-        - Products
-      responses:
-        201:
-          description: Chart deleted successfully.
-        401:
-          description: User need to log in first.
-        404:
-          description: Repository does not exist.
-        500:
-          description: Internal errors.
-  /v1/helm/release:
-    post:
-      summary: Install specific repository chart
-      description: |
-        This endpoint is to install specific repository chart into board.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: release
-          in: body
-          description: Release information to create.
-          required: true
-          schema:
-            $ref: '#/definitions/Release'
-      tags:
-        - Products
-      responses:
-        201:
-          description: Chart installed successfully.
-        409:
-          description: The repository name has already exist.
-        401:
-          description: User need to log in first.
-        500:
-          description: Unexpected internal errors.
-    get:
-      summary: Return specific release infomation.
-      description: |
-        This endpoint returns release information.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: repository_id
-          in: query
-          description: Repository ID for filtering results.
-          required: false
-          type: integer
-          format: int32
-      tags:
-        - Products
-      responses:
-        200:
-          description: Return matched release information.
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Release'
-        401:
-          description: User need to log in first.
-        500:
-          description: Internal errors.
-  /v1/helm/release/{id}:
-    get:
-      summary: Return specific release infomation.
-      description: |
-        This endpoint returns release information.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: id
-          in: path
-          description: Release ID of release which will be deleted.
-          required: true
-          type: integer
-          format: int32
-      tags:
-        - Products
-      responses:
-        200:
-          description: Return matched release information.
-          schema:
-            $ref: '#/definitions/ReleaseDetail'
-        401:
-          description: User need to log in first.
-        500:
-          description: Internal errors.
-    delete:
-      summary: Delete release by release ID
-      description: |
-        This endpoint is aimed to delete release by release ID.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: id
-          in: path
-          description: Release ID of release which will be deleted.
-          required: true
-          type: integer
-          format: int32
-      tags:
-        - Products
-      responses:
-        200:
-          description: Operation is deleted successfully.
-        400:
-          description: Invalid operation id.
-        403:
-          description: User need to log in first.
-        404:
-          description: Release does not exist.
-        500:
-          description: Internal errors.
 responses:
   UnsupportedMediaType: 
     description: The Media Type of the request is not supported, it has to be "application/json"
@@ -4549,6 +4950,10 @@ definitions:
         type: integer
         format: int32
         description: The current service status. 
+      service_type:
+        type: integer
+        format: int32
+        description: The service type, 0 Unkonwn, 1 NormalWizard, 2 HelmService.         
       service_config:
         type: string
         description: The service config of this service.                 
@@ -4808,16 +5213,9 @@ definitions:
         type: string
         description: the Memory limit of this container                               
       volume_mounts:
-        type: object
-        properties:
-          target_storage_service:
-            type: string
-          target_path:
-            type: string    
-          volume_name:
-            type: string
-          container_path:
-            type: string 
+        type: array
+        items:
+          $ref: '#/definitions/VolumeMount'      
       image:
         $ref: '#/definitions/ImageList'       
       env:
@@ -4864,9 +5262,15 @@ definitions:
         format: int
       service_name:
         type: string
+      service_type:
+        type: integer   
+        format: int32   
+        description: The service type, 0 Unkonwn, 1 NormalWizard, 2 HelmService.      
       service_public:
         type: integer   
         format: int32
+      cluster_ip:
+        type: string        
       node_selector:
         type: string
       image_list:
@@ -4911,6 +5315,23 @@ definitions:
     properties:
       name:
         type: string
+  VolumeMount:      
+    type: object
+    properties:
+      volume_type:
+        type: string  
+      volume_name:
+        type: string  
+      container_path:
+        type: string  
+      container_path_flag:
+        type: integer  
+      target_storage_service:
+        type: string  
+      target_path:
+        type: string  
+      target_pvc:
+        type: string                                                  
   DeploymentYaml:
     type: object
     properties:
@@ -5652,11 +6073,44 @@ definitions:
   SystemInfo:
     type: object
     properties:
+      board_host:
+        type: string
       auth_mode:
         type: string
       set_auth_password:
         type: string
       init_project_repo:
+        type: string
+      sync_k8s:
+        type: string
+      redirection_url:
+        type: string
+      board_version:
+        type: string
+      dns_suffix:
+        type: string
+      kubernetes_version:
+        type: string
+  KubernetesInfo:
+    type: object
+    properties:
+      major:
+        type: string
+      minor:
+        type: string
+      git_version:
+        type: string
+      git_commit:
+        type: string
+      git_tree_state:
+        type: string
+      build_date:
+        type: string
+      go_version:
+        type: string
+      compiler:
+        type: string
+      platform:
         type: string
   EmailServerSetting:
     type: object
@@ -5821,196 +6275,141 @@ definitions:
         type: integer   
         format: int32   
         description: The current CPU percentage. 
-  Repository:                          
+  PersistentVolume:                          
     type: object
     properties:
-      id:
+      pv_id:
         type: integer
         format: int32
-        description: The ID of this repository.     
-      name:
+        description: The ID of this persitent volume.     
+      pv_name:
         type: string
-        description: The name of this repository.         
-      url:
-        type: string      
-        description: The url location of this repository.
-      type:
-        type: integer
-        format: int32
-        description: The type of this repository.    
-  RepositoryDetail:                          
+        description: The name of this persitent volume.         
+      pv_type:
+        type: integer   
+        format: int32   
+        description: The source type of this persitent volume, nfs 1, cephrbd 2.      
+      pv_state:
+        type: integer   
+        format: int32   
+        description: The current state of this persitent volume.        
+      pv_capacity:
+        type: string
+        description: The capacity MB of this persitent volume.   
+      pv_accessmode: 
+        type: string
+        description: The access mode of this persitent volume, ReadWriteOnce, ReadOnlyMany, ReadWriteMany.  
+      pv_class: 
+        type: string
+        description: The class of this persitent volume.    
+      pv_readonly: 
+        type: boolean
+        description: The readonly value of this persitent volume, default false.           
+      pv_reclaim:
+        type: string
+        description: The reclaim policy of this persitent volume, Retain, Recycle, Delete.   
+      pv_options:        
+        description: The option of this persitent volume.
+        $ref: '#/definitions/PersistentVolumeOptions'   
+  PersistentVolumeOptions:                          
     type: object
-    allOf:
-    - $ref: '#/definitions/Repository'
-    - $ref: '#/definitions/PaginatedChartVersions'
-  PaginatedChartVersions:                          
+    properties:       
+      path:
+        type: string
+        description: The stoarge path of this persitent volume.   
+      server:
+        type: string
+        description: The storage server of this persitent volume.     
+  PersistentVolumeOptionsCephRBD:                          
     type: object
-    allOf:
-    - $ref: '#/definitions/Pagination'
-    - type: object
-      properties:
-        charts:
-          type: array
-          items:
-            $ref: '#/definitions/ChartVersions'
-  ChartVersions:
+    properties:       
+      user:
+        type: string
+        description: The stoarge user of this CephRBD persitent volume.   
+      keyring:
+        type: string
+        description: The key ring of this CephRBD persitent volume.        
+      pool:
+        type: string
+        description: The pool of this CephRBD persitent volume.   
+      image:  
+        type: string
+        description: The image of this CephRBD persitent volume.     
+      fstype: 
+        type: string
+        description: The fiel system type of this CephRBD persitent volume.   
+      secretname:  
+        type: string
+        description: The secretname of this CephRBD persitent volume.  
+      secretnamespace:  
+        type: string
+        description: The secret namespace of this CephRBD persitent volume.   
+      monitors:                                            
+        type: string
+        description: The monitors of this CephRBD persitent volume, split by comma.  
+  PersistentVolumeClaim:                          
     type: object
     properties:
-      name:
+      pvc_id:
+        type: integer
+        format: int32
+        description: The ID of this persitent volume claim.     
+      pvc_name:
         type: string
-        description: The chart name of chart versions.
-      versions:
+        description: The name of this persitent volume claim.     
+      pvc_projectid:
+        type: integer
+        format: int32
+        description: The project ID of this persitent volume claim belongs to.      
+      pvc_projectname: 
+        type: string
+        description: The project name of this persitent volume claim belongs to.                                  
+      pvc_capacity:
+        type: string
+        description: The capacity MB of this persitent volume claim.   
+      pvc_accessmode: 
+        type: string
+        description: The access mode of this persitent volume claim, ReadWriteOnce, ReadOnlyMany, ReadWriteMany.  
+      pvc_class: 
+        type: string
+        description: The class of this persitent volume claim.             
+      pvc_designatedpv:
+        type: string
+        description: The designated pv name of this persitent volume claim.      
+      pvc_state:
+        type: integer
+        format: int32
+        description: The current state of this persitent volume claim.          
+  PersistentVolumeClaimDetail:                          
+    type: object
+    properties:
+      pvclaim:        
+        description: The option of this persitent volume claim.
+        $ref: '#/definitions/PersistentVolumeClaim'        
+      pvc_state:
+        type: integer
+        format: int32
+        description: The current state of this persitent volume claim.    
+      pvc_volume:
+        type: string
+        description: The current volume of this persitent volume claim.  
+      pvc_events:
         type: array
+        description: The events of this persitent volume claim. 
         items:
-          $ref: '#/definitions/ChartVersion'
-  ChartVersion:
+          type: string       
+  ConfigMap:
     type: object
-    allOf:
-    - $ref: '#/definitions/ChartMetadata'
-    - type: object
-      properties:
-        urls:
-          type: array
-          items:
-            type: string
-          description: the urls of this chart.
-        digest:
-          type: string
-          description: the digest of this chart.
-  ChartMetadata:
-    type: object
-    properties:
+    properties:    
+      namespace: 
+        type: string
+        description: The project name of this ConfigMap belongs to. 
       name:
         type: string
-        description: The name of this chart.
-      sources:
-        type: array
-        items:
-          type: string
-        description: The sources of this chart.
-      version:
-        type: string
-        description: The version of this chart.
-      kubeVersion:
-        type: string
-        description: The kubernetes version of this chart supported.
-      description:
-        type: string
-        description: the description of this chart.
-      keywords:
-        type: array
-        items:
-          type: string
-        description: the keywords of this chart.
-      icon:
-        type: string
-        description: the icon of this chart.
-  Chart:
-    type: object
-    allOf:
-    - $ref: '#/definitions/ChartMetadata'
-    - type: object
-      properties:
-        tempates:
-          type: array
-          items:
-            $ref: '#/definitions/File'
-        values:
-          type: string
-          description: The values content of this chart.
-        files:
-          type: array
-          items:
-            $ref: '#/definitions/File'
-  File:
-    type: object
-    properties:
-      name:
-        type: string
-        description: The name of this file.
-      contents:
-        type: string
-        description: The contents of this file.
-  Release:
-    type: object
-    properties:
-      id:
-        type: integer
-        format: int32
-        description: The ID of this release.
-      name:
-        type: string
-        description: The name of this release.
-      project_id:
-        type: integer
-        format: int32
-        description: The project's integer ID which include this release.   
-      project_name:
-        type: string
-        description: The project's name which include this release.  
-      repoid:
-        type: integer
-        format: int32
-        description: The Repository ID of this release.    
-      repository:
-        type: string
-        description: The Repository's name of this release.  
-      chart:
-        type: string
-        description: The Repository Chart of this release. 
-      chartversion:
-        type: string
-        description: The Repository ChartVersion of this release. 
-      owner_id:
-        type: integer
-        format: int32
-        description: The owner id of this release.
-      owner_name:
-        type: string
-        description: The owner name of this release.
-      status:
-        type: string
-        description: The status of this release.
-      values:
-        type: string
-        description: The values of this release uses. 
-      update_time:
-        type: string
-        description: The last update time of this release.
-      creation_time:
-        type: string
-        description: The creation time of this release.
-  ReleaseDetail:
-    type: object
-    allOf:
-    - $ref: '#/definitions/Release'
-    - type: object
-      properties:
-        notes:
-          type: string
-          description: The usage of this release.
-        workloads:
-          type: string
-          description: The work loads of this release.
-        workloadstatus:
-          type: string
-          description: The work loads status of this release.
-  Pagination:
-    type: object
-    properties:
-      page_index:
-        type: int
-        format: int32
-        description: The index of the page
-      page_size:
-        type: int
-        format: int32
-        description: The size of the page
-      total_count:
-        type: int
-        format: int64
-        description: The total count of all pages
-      page_count:
-        type: int
-        format: int32
-        description: The count of the pages
+        description: The ConfigMap name.
+      datalist:        
+        description: The data pair list of this ConfigMap.
+        type: object
+        additionalProperties: 
+          type: string        
+       

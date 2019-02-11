@@ -48,11 +48,13 @@
     <cs-input [inputLabel]="'ACCOUNT.REALNAME' | translate "
               [simpleFiled]="userModel.user_realname"
               [disabled]="isWorkWIP"
+              [inputMaxlength]="20"
               (onCheck)="userModel.user_realname = $event">
     </cs-input>
     <cs-input [inputLabel]="'USER_CENTER.COMMENT' | translate "
               [simpleFiled]="userModel.user_comment"
               [disabled]="isWorkWIP"
+              [inputMaxlength]="50"
               (onCheck)="userModel.user_comment = $event">
     </cs-input>
   </div>

@@ -6,7 +6,6 @@ import { OperationAuditService } from "./audit-service";
 
 @NgModule({
   imports: [
-    CommonModule,
     SharedModule
   ],
   providers: [OperationAuditService],

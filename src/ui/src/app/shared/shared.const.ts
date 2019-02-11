@@ -34,17 +34,24 @@ export const RouteAudit = "audit";
 export const RouteKibana = "kibana-url";
 export const RouteGrafana = "grafana";
 export const RouteProfile = "profile";
+export const RouteStorage = "storage";
+export const RoutePV = "pv";
+export const RoutePvc = "pvc";
 export const MAIN_MENU_DATA: Array<ICsMenuItemData> = [
   {
     caption: 'SIDE_NAV.DASHBOARD', visible: true, icon: 'dashboard', url: `/${RouteDashboard}`, children: [
       {caption: 'SIDE_NAV.DASHBOARD', visible: true, icon: 'dashboard', url: `/${RouteDashboard}`},
-      {caption: 'SIDE_NAV.KIBANA', visible: true, icon: 'curve-chart', url: `/${RouteKibana}`},
-      {caption: 'SIDE_NAV.GRAFANA', visible: true, icon: 'axis-chart', url: `/${RouteGrafana}`}]
+      {caption: 'SIDE_NAV.KIBANA', visible: true, icon: 'curve-chart', url: `/${RouteKibana}`}]
   },
   {caption: 'SIDE_NAV.SERVICES', visible: true, icon: 'applications', url: `/${RouteServices}`},
   {caption: 'SIDE_NAV.PROJECTS', visible: true, icon: 'vm', url: `/${RouteProjects}`},
   {caption: 'SIDE_NAV.NODES', visible: true, icon: 'layers', url: `/${RouteNodes}`},
   {caption: 'SIDE_NAV.IMAGES', visible: true, icon: 'cluster', url: `/${RouteImages}`},
+  {
+    caption: 'SIDE_NAV.STORAGE', visible: true, icon: 'storage', url: `/${RouteStorage}`, children: [
+      {caption: 'PV', visible: true, icon: 'dashboard', url: `/${RouteStorage}/${RoutePV}`},
+      {caption: 'PVC', visible: true, icon: 'dashboard', url: `/${RouteStorage}/${RoutePvc}`}]
+  },
   {caption: 'SIDE_NAV.ADMIN_OPTIONS', visible: true, icon: 'administrator', url: `/${RouteUserCenters}`},
   {caption: 'SIDE_NAV.AUDIT', visible: true, icon: 'library', url: `/${RouteAudit}`},
   {caption: 'SIDE_NAV.PROFILES', visible: true, icon: 'help-info', url: `/${RouteProfile}`}

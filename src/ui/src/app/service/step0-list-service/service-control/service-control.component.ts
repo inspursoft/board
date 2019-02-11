@@ -12,13 +12,14 @@ import { Subject } from "rxjs/Subject";
 import { Observable } from "rxjs/Observable";
 import { CsModalChildBase } from "../../../shared/cs-modal-base/cs-modal-child-base";
 import { TranslateService } from "@ngx-translate/core";
+import { LoadBalanceComponent } from "./loadBalance/loadBalance.component";
 
 export interface IScaleInfo {
   desired_instance: number;
   available_instance: number;
 }
 
-enum ActionMethod {scale, update, locate}
+enum ActionMethod {scale, update, locate, loadBalance}
 
 @Component({
   selector: "service-control",
@@ -29,6 +30,7 @@ export class ServiceControlComponent extends CsModalChildBase implements OnInit 
   @ViewChild(UpdateComponent) updateComponent: UpdateComponent;
   @ViewChild(ScaleComponent) scaleComponent: ScaleComponent;
   @ViewChild(LocateComponent) locateComponent: LocateComponent;
+  @ViewChild(LoadBalanceComponent) loadBalanceComponent: LoadBalanceComponent;
   service: Service;
   _isOpen: boolean = false;
   actionMethod: ActionMethod = ActionMethod.scale;
@@ -86,8 +88,10 @@ export class ServiceControlComponent extends CsModalChildBase implements OnInit 
       this.updateComponent.actionExecute();
     } else if (this.actionMethod == ActionMethod.scale) {
       this.scaleComponent.actionExecute();
-    } else {
+    } else if (this.actionMethod == ActionMethod.locate){
       this.locateComponent.actionExecute();
+    } else {
+      this.loadBalanceComponent.actionExecute();
     }
   }
 }

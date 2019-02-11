@@ -1,0 +1,10 @@
+span.tooltip-content {
+  width: 200px !important;
+}
+
+span.arrange {
+  font-size: 12px;
+  color: darkgreen;
+  font-style: italic;
+  margin-left: 10px;
+}

@@ -1,0 +1,14 @@
+div.load-balance-container {
+  display: flex;
+  flex-direction: column;
+}
+
+div.session-container {
+  display: flex;
+  align-items: center;
+  margin-top: 20px;
+}
+
+div.session-container clr-dropdown{
+  margin-left: 20px;
+}

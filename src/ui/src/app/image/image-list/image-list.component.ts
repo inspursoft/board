@@ -65,10 +65,7 @@ export class ImageListComponent extends CsModalParentBase implements OnInit, OnD
   }
 
   get isSystemAdmin(): boolean {
-    if(this.appInitService.currentUser) {
-      return this.appInitService.currentUser["user_system_admin"] == 1;
-    }
-    return false;
+    return this.appInitService.currentUser.user_system_admin == 1;
   }
 
   clickSelectProject() {
@@ -136,9 +133,9 @@ export class ImageListComponent extends CsModalParentBase implements OnInit, OnD
     component.initCustomerNewImage(this.selectedProjectId, this.selectedProjectName);
     component.initBuildMethod(this.createImageMethod);
     component.closeNotification.subscribe((res: any) => {
-      this.isBuildImageWIP = false;
-      this.createImageMethod = CreateImageMethod.None;
       if (res) {
+        this.createImageMethod = CreateImageMethod.None;
+        this.isBuildImageWIP = false;
         this.retrieve();
       }
     })

@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -113,7 +112,7 @@ func (p *ServiceController) DeployServiceAction() {
 		return
 	}
 
-	deployInfo, err := service.DeployService((*model.ConfigServiceStep)(configService), kubeMasterURL(), registryBaseURI())
+	deployInfo, err := service.DeployService((*model.ConfigServiceStep)(configService), registryBaseURI())
 	if err != nil {
 		p.parseError(err, parsePostK8sError)
 		return
@@ -126,30 +125,22 @@ func (p *ServiceController) DeployServiceAction() {
 		return
 	}
 
-	serviceName := newservice.Name
-	deploymentURL := fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), deploymentAPI, project.Name, "deployments")
-	serviceURL := fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), serviceAPI, project.Name, "services")
-	err = p.generateDeploymentTravis(serviceName, deploymentURL, serviceURL)
-	if err != nil {
-		logs.Error("Failed to generate deployement travis.yml: %+v", err)
-		p.internalError(err)
-		return
-	}
-
-	deploymentFile := filepath.Join(serviceName, deploymentFilename)
-	serviceFile := filepath.Join(serviceName, serviceFilename)
-
-	items := []string{".travis.yml", deploymentFile, serviceFile}
+	deploymentFile := filepath.Join(newservice.Name, deploymentFilename)
+	serviceFile := filepath.Join(newservice.Name, serviceFilename)
+	items := []string{deploymentFile, serviceFile}
 	p.pushItemsToRepo(items...)
 
-	serviceConfig, err := json.Marshal(&configService)
-	if err != nil {
-		p.internalError(err)
-		return
+	var serviceType int
+	if deployInfo.Service.Type == "NodePort" {
+		serviceType = model.ServiceTypeNormalNodePort
+	} else if deployInfo.Service.Type == "ClusterIP" {
+		serviceType = model.ServiceTypeClusterIP
 	}
+	// TODO support deployment only
 
-	updateService := model.ServiceStatus{ID: serviceInfo.ID, Status: uncompleted, ServiceConfig: string(serviceConfig)}
-	_, err = service.UpdateService(updateService, "id", "status", "service_config")
+	updateService := model.ServiceStatus{ID: serviceInfo.ID, Status: uncompleted, Type: serviceType, ServiceYaml: string(deployInfo.ServiceFileInfo),
+		DeploymentYaml: string(deployInfo.DeploymentFileInfo)}
+	_, err = service.UpdateService(updateService, "status", "type", "service_yaml", "deployment_yaml")
 	if err != nil {
 		p.internalError(err)
 		return
@@ -185,7 +176,7 @@ func syncK8sStatus(serviceList []*model.ServiceStatusMO) error {
 			continue
 		}
 		// Check the deployment status
-		deployment, err := service.GetDeployment((*serviceStatus).ProjectName, (*serviceStatus).Name)
+		deployment, _, err := service.GetDeployment((*serviceStatus).ProjectName, (*serviceStatus).Name)
 		if deployment == nil && serviceStatus.Name != k8sServices {
 			logs.Info("Failed to get deployment", err)
 			var reason = "The deployment is not established in cluster system"
@@ -324,6 +315,21 @@ func (p *ServiceController) DeleteServiceAction() {
 		}
 	}
 
+	// 	Delete the service's autoscale rule
+	hpas, err := service.ListAutoScales(s)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	for _, hpa := range hpas {
+		err := service.DeleteAutoScale(s, hpa.ID)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+		logs.Debug("Deleted Hpa %d %s", hpa.ID, hpa.HPAName)
+	}
+
 	isSuccess, err := service.DeleteService(s.ID)
 	if err != nil {
 		p.internalError(err)
@@ -386,24 +392,13 @@ func (p *ServiceController) ToggleServiceAction() {
 		}
 	} else {
 		// start service
-		err := service.DeployServiceByYaml(s.ProjectName, kubeMasterURL(), p.repoServicePath)
+		err := service.DeployServiceByYaml(s.ProjectName, p.repoServicePath)
 		if err != nil {
 			p.parseError(err, parsePostK8sError)
 			return
 		}
 		// Push deployment to Git repo
-		deploymentURL := fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), deploymentAPI, s.ProjectName, "deployments")
-		serviceURL := fmt.Sprintf("%s%s%s/%s", kubeMasterURL(), serviceAPI, s.ProjectName, "services")
-
-		serviceName := s.Name
-		err = p.generateDeploymentTravis(serviceName, deploymentURL, serviceURL)
-		if err != nil {
-			logs.Error("Failed to generate deployment travis: %+v", err)
-			p.internalError(err)
-			return
-		}
-		// Add deployment file to repo
-		items := []string{".travis.yml", filepath.Join(serviceName, deploymentFilename), filepath.Join(serviceName, serviceFilename)}
+		items := []string{filepath.Join(s.Name, deploymentFilename), filepath.Join(s.Name, serviceFilename)}
 		p.pushItemsToRepo(items...)
 		p.collaborateWithPullRequest("master", "master", items...)
 
@@ -414,27 +409,6 @@ func (p *ServiceController) ToggleServiceAction() {
 			return
 		}
 	}
-}
-
-func stopService(s *model.ServiceStatus) error {
-	// Stop service
-	header := http.Header{
-		"Content-Type": []string{"application/yaml"},
-	}
-	deleteServiceURL := kubeMasterURL() + serviceAPI + s.ProjectName + "/services/" + s.Name
-	err := utils.SimpleDeleteRequestHandle(deleteServiceURL, header)
-	if err != nil {
-		logs.Error("Failed to request %s to stop service.", deleteServiceURL)
-	}
-	logs.Info("Stop service successfully, id: %d, name: %s", s.ID, s.Name)
-	// Stop deployment
-	deleteDeploymentURL := kubeMasterURL() + deploymentAPI + s.ProjectName + "/deployments/" + s.Name
-	err = utils.SimpleDeleteRequestHandle(deleteDeploymentURL, header)
-	if err != nil {
-		logs.Error("Failed to request %s to stop deployment.", deleteDeploymentURL)
-	}
-	logs.Info("Stop deployment successfully, id: %d, name: %s", s.ID, s.Name)
-	return nil
 }
 
 func (p *ServiceController) GetServiceInfoAction() {
@@ -454,7 +428,7 @@ func (p *ServiceController) GetServiceInfoAction() {
 	}
 	//Get NodeIP
 	//endpointUrl format /api/v1/namespaces/default/endpoints/
-	nodesStatus, err := service.GetNodesStatus(fmt.Sprintf("%s/api/v1/nodes", kubeMasterURL()))
+	nodesStatus, err := service.GetNodesStatus()
 	if err != nil {
 		p.parseError(err, parseGetK8sError)
 		return
@@ -552,16 +526,7 @@ func (p *ServiceController) DeleteDeploymentAction() {
 	logs.Debug("Service config path: %s", p.repoServicePath)
 
 	// TODO clear kube-master, even if the service is not deployed successfully
-	deploymentURL := filepath.Join(kubeMasterURL(), deploymentAPI, s.ProjectName, "deployments")
-	serviceName := s.Name
-	err = p.generateDeploymentTravis(serviceName, deploymentURL, "")
-	if err != nil {
-		logs.Error("Failed to generate deployment travis: %+v", err)
-		p.internalError(err)
-		return
-	}
-	// Update git repo
-	p.removeItemsToRepo(".travis.yml", filepath.Join(serviceName, deploymentFilename))
+	p.removeItemsToRepo(filepath.Join(s.Name, deploymentFilename))
 
 	// Delete yaml files
 	err = service.DeleteServiceConfigYaml(p.repoServicePath)
@@ -618,13 +583,25 @@ func (p *ServiceController) ScaleServiceAction() {
 	}
 	// change the replica number of service
 	res, err := service.ScaleReplica(s, reqServiceScale.Replica)
-
 	if res != true {
 		logs.Info("Failed to scale service replica", s, reqServiceScale.Replica)
 		p.internalError(err)
 		return
 	}
 	logs.Info("Scale service replica successfully")
+
+	_, deploymentFileInfo, err := service.GetDeployment(s.ProjectName, s.Name)
+	if err != nil {
+		logs.Error("Failed to get deployment %s", s.Name)
+		return
+	}
+	p.resolveRepoServicePath(s.ProjectName, s.Name)
+	err = utils.GenerateFile(deploymentFileInfo, p.repoServicePath, deploymentFilename)
+	if err != nil {
+		logs.Error("Failed to update file of deployment %s", s.Name)
+		return
+	}
+	p.pushItemsToRepo(filepath.Join(s.Name, deploymentFilename))
 }
 
 //get selectable service list
@@ -675,7 +652,7 @@ func (f *ServiceController) UploadYamlFileAction() {
 	if err != nil {
 		return
 	}
-	deployInfo, err := service.CheckDeployYamlConfig(serviceFile, deploymentFile, projectName, kubeMasterURL())
+	deployInfo, err := service.CheckDeployYamlConfig(serviceFile, deploymentFile, projectName)
 	if err != nil {
 		f.customAbort(http.StatusBadRequest, err.Error())
 		return
@@ -734,13 +711,13 @@ func (f *ServiceController) DownloadDeploymentYamlFileAction() {
 		return
 	}
 	if yamlType == deploymentType {
-		f.resolveDownloadYaml(serviceInfo, deploymentFilename, service.GenerateDeploymentYamlFileFromK8S)
+		f.resolveDownloadYaml(serviceInfo, deploymentFilename, service.GenerateDeploymentYamlFileFromK8s)
 	} else if yamlType == serviceType {
-		f.resolveDownloadYaml(serviceInfo, serviceFilename, service.GenerateServiceYamlFileFromK8S)
+		f.resolveDownloadYaml(serviceInfo, serviceFilename, service.GenerateServiceYamlFileFromK8s)
 	}
 }
 
-func (f *ServiceController) resolveDownloadYaml(serviceConfig *model.ServiceStatus, fileName string, generator func(*model.ServiceStatus, string, string) error) {
+func (f *ServiceController) resolveDownloadYaml(serviceConfig *model.ServiceStatus, fileName string, generator func(*model.ServiceStatus, string) error) {
 	logs.Debug("Current download yaml file: %s", fileName)
 	//checkout the path of download
 	err := utils.CheckFilePath(f.repoServicePath)
@@ -749,7 +726,7 @@ func (f *ServiceController) resolveDownloadYaml(serviceConfig *model.ServiceStat
 		return
 	}
 	absFileName := filepath.Join(f.repoServicePath, fileName)
-	err = generator(serviceConfig, f.repoServicePath, kubeMasterURL())
+	err = generator(serviceConfig, f.repoServicePath)
 	if err != nil {
 		f.parseError(err, parseGetK8sError)
 		return
@@ -823,4 +800,25 @@ func (p *ServiceController) DeleteDeployAction() {
 		p.internalError(err)
 		return
 	}
+}
+
+//get service nodeport list
+func (p *ServiceController) GetServiceNodePorts() {
+	projectName := p.GetString("project_name")
+
+	if projectName != "" {
+		p.resolveProjectMember(projectName)
+		logs.Info("Get service nodeport list for", projectName)
+	}
+
+	//Check nodeports in cluster
+	nodeportList, err := service.GetNodePortsK8s(projectName)
+	if err != nil {
+		logs.Error("Failed to get selectable services.")
+		p.internalError(err)
+		return
+	}
+
+	//Check nodeports in DB
+	p.renderJSON(nodeportList)
 }

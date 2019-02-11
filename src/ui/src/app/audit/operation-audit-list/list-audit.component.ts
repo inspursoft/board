@@ -25,7 +25,6 @@ export class ListAuditComponent implements OnInit {
   actionQueryMap: Array<{ key: string, title: string, isSpecial?: boolean }>;
   actionStatusMap: Array<{ key: string, title: string, isSpecial?: boolean }>;
 
-
   constructor(private messageService: MessageService,
               private auditService: OperationAuditService) {
     let now: Date = new Date();

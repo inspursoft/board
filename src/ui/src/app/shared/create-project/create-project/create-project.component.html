@@ -6,6 +6,8 @@
                 [inputLabel]="'PROJECT.PROJECT_NAME' | translate "
                 [simpleFiled]="createProject.projectName"
                 [inputLabelMinWidth]="110"
+                [inputMaxlength]="30"
+                [inputMinlength]="2"
                 checkItemExistingEx="project"
                 [inputPattern]="projectNamePattern"
                 [disabled]="isCreateProjectWIP"

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -17,7 +18,6 @@ import (
 const (
 	expircyTimeSpan       time.Duration = 900
 	selectProject                       = "SELECT_PROJECT"
-	selectImageList                     = "SELECT_IMAGES"
 	configContainerList                 = "CONFIG_CONTAINERS"
 	configExternalService               = "EXTERNAL_SERVICE"
 	configEntireService                 = "ENTIRE_SERVICE"
@@ -39,6 +39,7 @@ var (
 	emptyExternalServiceListErr        = errors.New("ERR_EMPTY_EXTERNAL_SERVICE_LIST")
 	notFoundErr                        = errors.New("ERR_NOT_FOUND")
 	nodeOrNodeGroupNameNotFound        = errors.New("ERR_NODE_SELECTOR_NAME_NOT_FOUND")
+	resourcerequestErr                 = errors.New("ERR_INVALID_RESOURCE_REQUEST")
 )
 
 type ConfigServiceStep model.ConfigServiceStep
@@ -85,68 +86,32 @@ func (s *ConfigServiceStep) GetSelectedProject() interface{} {
 	}
 }
 
-func (s *ConfigServiceStep) SelectImageList(imageList []model.ImageIndex) *ConfigServiceStep {
-	s.ImageList = imageList
-	return s
-}
-
-func (s *ConfigServiceStep) GetSelectedImageList() interface{} {
-	return struct {
-		ProjectID   int64              `json:"project_id"`
-		ProjectName string             `json:"project_name"`
-		ImageList   []model.ImageIndex `json:"image_list"`
-	}{
-		ProjectID:   s.ProjectID,
-		ProjectName: s.ProjectName,
-		ImageList:   s.ImageList,
-	}
-}
-
 func (s *ConfigServiceStep) ConfigContainerList(containerList []model.Container) *ConfigServiceStep {
 	s.ContainerList = containerList
 	return s
 }
 
 func (s *ConfigServiceStep) GetConfigContainerList() interface{} {
-	if len(s.ContainerList) < 1 {
-		for _, image := range s.ImageList {
-			fromIndex := strings.LastIndex(image.ImageName, "/")
-			image.ProjectName = image.ImageName[:fromIndex]
-			s.ContainerList = append(s.ContainerList, model.Container{Name: image.ImageName[fromIndex+1:], Image: image})
-		}
-	} else {
-		containerList := make([]model.Container, 0)
-		for _, image := range s.ImageList {
-			hasChanged := false
-			for _, container := range s.ContainerList {
-				if image.ImageName == container.Image.ImageName && image.ImageTag == container.Image.ImageTag {
-					hasChanged = true
-					containerList = append(containerList, container)
-					break
-				}
-			}
-			if hasChanged == false {
-				fromIndex := strings.LastIndex(image.ImageName, "/")
-				image.ProjectName = image.ImageName[:fromIndex]
-				containerList = append(containerList, model.Container{Name: image.ImageName[fromIndex+1:], Image: image})
-			}
-		}
-		s.ContainerList = containerList
-	}
-
 	return struct {
+		ProjectID     int64             `json:"project_id"`
+		ProjectName   string            `json:"project_name"`
 		ContainerList []model.Container `json:"container_list"`
 	}{
+		ProjectID:     s.ProjectID,
+		ProjectName:   s.ProjectName,
 		ContainerList: s.ContainerList,
 	}
 }
 
-func (s *ConfigServiceStep) configExternalService(serviceName string, instance int, public int, nodeOrNodeGroupName string, externalServiceList []model.ExternalService) *ConfigServiceStep {
+func (s *ConfigServiceStep) configExternalService(serviceName string, clusterIP string, instance int, public int, nodeOrNodeGroupName string, externalServiceList []model.ExternalService, sessionAffinityFlag int, sessionAffinityTime int) *ConfigServiceStep {
 	s.ServiceName = serviceName
 	s.Instance = instance
 	s.Public = public
+	s.ClusterIP = clusterIP
 	s.NodeSelector = nodeOrNodeGroupName
 	s.ExternalServiceList = externalServiceList
+	s.SessionAffinityFlag = sessionAffinityFlag
+	s.SessionAffinityTime = sessionAffinityTime
 	return s
 }
 
@@ -163,17 +128,23 @@ func (s *ConfigServiceStep) GetConfigExternalService() interface{} {
 		ServiceName         string                  `json:"service_name"`
 		Instance            int                     `json:"instance"`
 		Public              int                     `json:"service_public"`
+		ClusterIP           string                  `json:"cluster_ip"`
 		NodeSelector        string                  `json:"node_selector"`
 		ExternalServiceList []model.ExternalService `json:"external_service_list"`
 		AffinityList        []model.Affinity        `json:"affinity_list"`
+		SessionAffinityFlag int                     `json:"session_affinity_flag"`
+		SessionAffinityTime int                     `json:"session_affinity_time"`
 	}{
 		ProjectName:         s.ProjectName,
 		ServiceName:         s.ServiceName,
 		Instance:            s.Instance,
 		Public:              s.Public,
+		ClusterIP:           s.ClusterIP,
 		NodeSelector:        s.NodeSelector,
 		ExternalServiceList: s.ExternalServiceList,
 		AffinityList:        s.AffinityList,
+		SessionAffinityFlag: s.SessionAffinityFlag,
+		SessionAffinityTime: s.SessionAffinityTime,
 	}
 }
 
@@ -197,8 +168,6 @@ func (sc *ServiceConfigController) GetConfigServiceStepAction() {
 	switch phase {
 	case selectProject:
 		result = configServiceStep.GetSelectedProject()
-	case selectImageList:
-		result = configServiceStep.GetSelectedImageList()
 	case configContainerList:
 		result = configServiceStep.GetConfigContainerList()
 	case configExternalService:
@@ -233,8 +202,6 @@ func (sc *ServiceConfigController) SetConfigServiceStepAction() {
 	switch phase {
 	case selectProject:
 		sc.selectProject(key, configServiceStep)
-	case selectImageList:
-		sc.selectImageList(key, configServiceStep, reqData)
 	case configContainerList:
 		sc.configContainerList(key, configServiceStep, reqData)
 	case configExternalService:
@@ -267,28 +234,6 @@ func (sc *ServiceConfigController) selectProject(key string, configServiceStep *
 	SetConfigServiceStep(key, configServiceStep.SelectProject(projectID, project.Name))
 }
 
-func (sc *ServiceConfigController) selectImageList(key string, configServiceStep *ConfigServiceStep, reqData []byte) {
-	var imageList []model.ImageIndex
-	err := json.Unmarshal(reqData, &imageList)
-	if err != nil {
-		sc.internalError(err)
-		return
-	}
-
-	if len(imageList) < 0 {
-		sc.serveStatus(http.StatusBadRequest, imageListInvalidErr.Error())
-		return
-	}
-	for _, image := range imageList {
-		if strings.Index(image.ImageName, "/") == -1 || len(strings.TrimSpace(image.ImageTag)) == 0 {
-			sc.serveStatus(http.StatusBadRequest, imageListInvalidErr.Error())
-			return
-		}
-	}
-
-	SetConfigServiceStep(key, configServiceStep.SelectImageList(imageList))
-}
-
 func (sc *ServiceConfigController) configContainerList(key string, configServiceStep *ConfigServiceStep, reqData []byte) {
 	var containerList []model.Container
 	err := json.Unmarshal(reqData, &containerList)
@@ -297,22 +242,52 @@ func (sc *ServiceConfigController) configContainerList(key string, configService
 		return
 	}
 
-	for index, container := range containerList {
-		if container.VolumeMounts.TargetPath != "" && container.VolumeMounts.TargetStorageService == "" {
-			sc.serveStatus(http.StatusBadRequest, emptyVolumeTargetStorageServiceErr.Error())
-			return
+	//Check CPU Mem request and limit
+	for _, container := range containerList {
+		if container.CPURequest != "" && container.CPULimit != "" {
+			cpurequest, err := strconv.Atoi(strings.TrimRight(container.CPURequest, "m"))
+			if err != nil {
+				sc.serveStatus(http.StatusBadRequest, resourcerequestErr.Error())
+				return
+			}
+			cpulimit, err := strconv.Atoi(strings.TrimRight(container.CPULimit, "m"))
+			if err != nil {
+				sc.serveStatus(http.StatusBadRequest, resourcerequestErr.Error())
+				return
+			}
+			if cpurequest > cpulimit {
+				sc.serveStatus(http.StatusBadRequest, resourcerequestErr.Error())
+				return
+			}
+
 		}
-		containerList[index].VolumeMounts.VolumeName = strings.ToLower(container.VolumeMounts.VolumeName)
-		containerList[index].Name = strings.ToLower(container.Name)
+		if container.MemRequest != "" && container.MemLimit != "" {
+			memrequest, err := strconv.Atoi(strings.TrimRight(container.MemRequest, "Mi"))
+			if err != nil {
+				sc.serveStatus(http.StatusBadRequest, resourcerequestErr.Error())
+				return
+			}
+			memlimit, err := strconv.Atoi(strings.TrimRight(container.MemLimit, "Mi"))
+			if err != nil {
+				sc.serveStatus(http.StatusBadRequest, resourcerequestErr.Error())
+				return
+			}
+			if memrequest > memlimit {
+				sc.serveStatus(http.StatusBadRequest, resourcerequestErr.Error())
+				return
+			}
+
+		}
 	}
 
+	configServiceStep.ExternalServiceList = service.CheckServiceConfigPortMap(configServiceStep.ExternalServiceList, containerList)
 	SetConfigServiceStep(key, configServiceStep.ConfigContainerList(containerList))
 }
 
 func (sc *ServiceConfigController) configExternalService(key string, configServiceStep *ConfigServiceStep, reqData []byte) {
 	serviceName := strings.ToLower(sc.GetString("service_name"))
-	if serviceName == "" {
-		sc.serveStatus(http.StatusBadRequest, emptyServiceNameErr.Error())
+	if !utils.ValidateWithLengthRange(serviceName, 1, 63) {
+		sc.serveStatus(http.StatusBadRequest, "Service Name must be not empty and no more than 63 characters ")
 		return
 	}
 
@@ -342,6 +317,20 @@ func (sc *ServiceConfigController) configExternalService(key string, configServi
 		return
 	}
 
+	clusterIP := sc.GetString("cluster_ip")
+	// TODO check valid cluster IP
+	sessionAffinityFlag, err := sc.GetInt("session_affinity_flag", 0)
+	if err != nil {
+		sc.internalError(err)
+		return
+	}
+
+	sessionAffinityTime, err := sc.GetInt("session_affinity_time", 0)
+	if err != nil {
+		sc.internalError(err)
+		return
+	}
+
 	nodeOrNodeGroupName := strings.ToLower(sc.GetString("node_selector"))
 	if nodeOrNodeGroupName != "" {
 		isExists, err := service.NodeOrNodeGroupExists(nodeOrNodeGroupName)
@@ -363,12 +352,12 @@ func (sc *ServiceConfigController) configExternalService(key string, configServi
 	}
 
 	for _, external := range serviceConfig.ExternalServiceList {
-		if external.NodeConfig.NodePort > maximumPortNum || external.NodeConfig.NodePort < minimumPortNum {
+		if external.NodeConfig.NodePort != 0 && (external.NodeConfig.NodePort > maximumPortNum || external.NodeConfig.NodePort < minimumPortNum) {
 			sc.serveStatus(http.StatusBadRequest, portInvalidErr.Error())
 			return
 		}
 	}
-	configServiceStep.configExternalService(serviceName, instance, public, nodeOrNodeGroupName, serviceConfig.ExternalServiceList)
+	configServiceStep.configExternalService(serviceName, clusterIP, instance, public, nodeOrNodeGroupName, serviceConfig.ExternalServiceList, sessionAffinityFlag, sessionAffinityTime)
 	SetConfigServiceStep(key, configServiceStep.configAffinity(serviceConfig.AffinityList))
 }
 
@@ -423,16 +412,17 @@ func (sc *ServiceConfigController) checkEntireServiceConfig(entireService *Confi
 		return instanceInvalidErr
 	}
 
-	for key, container := range entireService.ContainerList {
-		entireService.ContainerList[key].VolumeMounts.VolumeName = strings.ToLower(container.VolumeMounts.VolumeName)
-		entireService.ContainerList[key].Name = strings.ToLower(container.Name)
-	}
+	//TODO: Skip check and transfer to Lower case
+	//	for key, container := range entireService.ContainerList {
+	//		entireService.ContainerList[key].VolumeMounts.VolumeName = strings.ToLower(container.VolumeMounts.VolumeName)
+	//		entireService.ContainerList[key].Name = strings.ToLower(container.Name)
+	//	}
 
 	if len(entireService.ExternalServiceList) < 1 {
 		return emptyExternalServiceListErr
 	}
 	for _, external := range entireService.ExternalServiceList {
-		if external.NodeConfig.NodePort > maximumPortNum || external.NodeConfig.NodePort < minimumPortNum {
+		if external.NodeConfig.NodePort != 0 && (external.NodeConfig.NodePort > maximumPortNum || external.NodeConfig.NodePort < minimumPortNum) {
 			return portInvalidErr
 		}
 	}

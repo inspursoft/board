@@ -1,7 +1,7 @@
 import { Component } from "@angular/core";
 import { Observable } from "rxjs/Rx";
 import { CsModalChildBase } from "../../../shared/cs-modal-base/cs-modal-child-base";
-import { AffinityCardData, UIServiceStep4 } from "../../service-step.component";
+import { AffinityCardData, UIServiceStep3 } from "../../service-step.component";
 import { DragStatus } from "../../../shared/shared.types";
 import { HttpErrorResponse } from "@angular/common/http";
 import { K8sService } from "../../service.k8s";
@@ -16,7 +16,7 @@ import { SERVICE_STATUS } from "../../../shared/shared.const";
 export class SetAffinityComponent extends CsModalChildBase {
   isActionWip = false;
   affinitySourceDataList: Array<AffinityCardData>;
-  uiData: UIServiceStep4;
+  uiData: UIServiceStep3;
 
   constructor(private k8sService: K8sService,
               private messageService: MessageService) {
@@ -25,7 +25,7 @@ export class SetAffinityComponent extends CsModalChildBase {
   }
 
   addNewAffinity() {
-    this.uiData.affinityList.push({flag: true, services: Array<AffinityCardData>()})
+    this.uiData.affinityList.push({antiFlag: false, services: Array<AffinityCardData>()})
   }
 
   deleteAffinity(index: number) {
@@ -67,7 +67,7 @@ export class SetAffinityComponent extends CsModalChildBase {
     });
   }
 
-  openSetModal(uiData: UIServiceStep4): Observable<any> {
+  openSetModal(uiData: UIServiceStep3): Observable<any> {
     this.uiData = uiData;
     if (this.uiData.affinityList.length == 0) {
       this.addNewAffinity();

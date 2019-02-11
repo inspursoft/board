@@ -121,12 +121,13 @@ type ConfigServiceStep struct {
 	ServiceName         string            `json:"service_name"`
 	Public              int               `json:"service_public"`
 	NodeSelector        string            `json:"node_selector"`
-	ImageList           []ImageIndex      `json:"image_list"`
 	Instance            int               `json:"instance"`
 	ClusterIP           string            `json:"cluster_ip"`
 	ContainerList       []Container       `json:"container_list"`
 	ExternalServiceList []ExternalService `json:"external_service_list"`
 	AffinityList        []Affinity        `json:"affinity_list"`
+	SessionAffinityFlag int               `json:"session_affinity_flag"`
+	SessionAffinityTime int               `json:"session_affinity_time"`
 }
 
 type Affinity struct {
