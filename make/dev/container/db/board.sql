@@ -389,9 +389,9 @@ DROP TABLE IF EXISTS `log`;
 
 
 INSERT INTO `board`.`repository`
- (`id`, `name`, `url`, `username`, `password`, `cert`, `key`, `ca`, `type`)
+ (`id`, `name`, `url`, `type`)
  VALUES
- (1, 'chartmuseum', 'http://chartmuseum:8080/', '', '', '', '','', 1);
+ (1, 'chartmuseum', 'http://chartmuseum:8080/', 1);
 
     CREATE TABLE `board`.`release` (
         `id` INT NOT NULL AUTO_INCREMENT,
@@ -400,7 +400,7 @@ INSERT INTO `board`.`repository`
         `project_name` VARCHAR(255) NOT NULL,
         `repoid` INT NOT NULL,
         `repository` VARCHAR(255) NOT NULL,
-        `workloads` VARCHAR(65531),
+        `workloads` TEXT,
         `owner_id` INT NOT NULL,
         `owner_name` VARCHAR(255) NOT NULL,
         `creation_time` datetime DEFAULT NULL,

@@ -261,6 +261,13 @@ func SyncProjectsWithK8s() error {
 		return err
 	}
 
+	// retrieve the helm resource infos
+	resources, err := GetHelmReleaseResources()
+	if err != nil {
+		logs.Error("Failed to get helm created resources: %+v", err)
+		return err
+	}
+
 	for _, namespace := range (*namespaceList).Items {
 		// Skip kubernetes system namespace
 		if namespace.Name == kubeNamespace || namespace.Name == istioNamespace {
@@ -298,7 +305,7 @@ func SyncProjectsWithK8s() error {
 			}
 		}
 		// Sync the services in this project namespace
-		err = SyncServiceWithK8s(namespace.Name)
+		err = SyncServiceWithK8s(namespace.Name, resources)
 		if err != nil {
 			logs.Error("Failed to sync service with project name: %s, error: %+v", namespace.Name, err)
 			// Still can work

@@ -5977,6 +5977,9 @@ definitions:
       update_time:
         type: string
         description: The last update time of this release.
+      creation_time:
+        type: string
+        description: The creation time of this release.
   ReleaseDetail:
     type: object
     allOf:
