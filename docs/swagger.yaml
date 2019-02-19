@@ -4563,6 +4563,322 @@ paths:
           description: Operation ID does not exist.
         500:
           description: Unexpected internal errors.
+  /v1/helm/repositories:
+    get:
+      summary: Get all repositories
+      description: |
+        This endpoint is to get all repositories
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched repositories.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Repository'
+        401:
+          description: User need to log in first.
+        500:
+          description: Unexpected internal errors.
+  /v1/helm/repositories/{repository_id}:
+    get:
+      summary: Return specific repository detail infomation.
+      description: |
+        This endpoint returns specific repository detail information by repository ID.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: repository_id
+          in: path
+          description: Repository ID for filtering results.
+          required: true
+          type: integer
+          format: int32
+        - name: page_index
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched repository detail information.
+          schema:
+            $ref: '#/definitions/RepositoryDetail'
+        401:
+          description: User need to log in first.
+        404:
+          description: Repository does not exist.
+        500:
+          description: Internal errors.
+  /v1/helm/repositories/{repository_id}/chartupload:
+    post:
+      summary: Upload specific helm chart
+      description: |
+        This endpoint is to upload specific helm chart into chart repository.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: repository_id
+          in: path
+          description: Repository ID for uploading.
+          required: true
+          type: integer
+          format: int32
+        - name: upload_file
+          in: formData
+          type: file
+          required: true
+          description: Chart to be uploaded.
+      tags:
+        - Products
+      responses:
+        201:
+          description: Chart uploaded successfully.
+        401:
+          description: User need to log in first.
+        500:
+          description: Unexpected internal errors.
+  /v1/helm/repositories/{repository_id}/charts/{chartname}/{chartversion}:
+    get:
+      summary: Return specific repository chart infomation.
+      description: |
+        This endpoint returns specific repository chart information by repository ID, chart name and chart version.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: repository_id
+          in: path
+          description: Repository ID for filtering results.
+          required: true
+          type: integer
+          format: int32
+        - name: chartname
+          in: path
+          description: Chart Name for filtering results.
+          required: true
+          type: string
+        - name: chartversion
+          in: path
+          description: Chart Version for filtering results.
+          required: true
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched repository chart information.
+          schema:
+            $ref: '#/definitions/Chart'
+        401:
+          description: User need to log in first.
+        404:
+          description: Repository does not exist.
+        500:
+          description: Internal errors.
+    delete:
+      summary: Delete specific repository chart.
+      description: |
+        This endpoint delete specific repository chart by repository ID, chart name and chart version.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: repository_id
+          in: path
+          description: Repository ID for filtering results.
+          required: true
+          type: integer
+          format: int32
+        - name: chartname
+          in: path
+          description: Chart Name for filtering results.
+          required: true
+          type: string
+        - name: chartversion
+          in: path
+          description: Chart Version for filtering results.
+          required: true
+          type: string
+      tags:
+        - Products
+      responses:
+        201:
+          description: Chart deleted successfully.
+        401:
+          description: User need to log in first.
+        404:
+          description: Repository does not exist.
+        500:
+          description: Internal errors.
+  /v1/helm/release/existing:   
+    get:
+      summary: Check the release name existing in this project.
+      description: |
+        This endpoint to check the release name existing in this project.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: release_name
+          in: query
+          description: release name for check.
+          required: true
+          type: string              
+      tags:
+        - Products
+      responses:
+        200:
+          description: Release name don't existing.
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        409:
+          description: Release name already exists.          
+        500:
+          description: Internal errors.  
+  /v1/helm/release:
+    post:
+      summary: Install specific repository chart
+      description: |
+        This endpoint is to install specific repository chart into board.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: release
+          in: body
+          description: Release information to create.
+          required: true
+          schema:
+            $ref: '#/definitions/Release'
+      tags:
+        - Products
+      responses:
+        201:
+          description: Chart installed successfully.
+        409:
+          description: The repository name has already exist.
+        401:
+          description: User need to log in first.
+        500:
+          description: Unexpected internal errors.
+    get:
+      summary: Return specific release infomation.
+      description: |
+        This endpoint returns release information.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: repository_id
+          in: query
+          description: Repository ID for filtering results.
+          required: false
+          type: integer
+          format: int32
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched release information.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Release'
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+  /v1/helm/release/{id}:
+    get:
+      summary: Return specific release infomation.
+      description: |
+        This endpoint returns release information.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: id
+          in: path
+          description: Release ID of release which will be deleted.
+          required: true
+          type: integer
+          format: int32
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched release information.
+          schema:
+            $ref: '#/definitions/ReleaseDetail'
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+    delete:
+      summary: Delete release by release ID
+      description: |
+        This endpoint is aimed to delete release by release ID.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: id
+          in: path
+          description: Release ID of release which will be deleted.
+          required: true
+          type: integer
+          format: int32
+      tags:
+        - Products
+      responses:
+        200:
+          description: Operation is deleted successfully.
+        400:
+          description: Invalid operation id.
+        403:
+          description: User need to log in first.
+        404:
+          description: Release does not exist.
+        500:
+          description: Internal errors.
 responses:
   UnsupportedMediaType: 
     description: The Media Type of the request is not supported, it has to be "application/json"
@@ -6412,4 +6728,196 @@ definitions:
         type: object
         additionalProperties: 
           type: string        
-       
+  Repository:                          
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int32
+        description: The ID of this repository.     
+      name:
+        type: string
+        description: The name of this repository.         
+      url:
+        type: string      
+        description: The url location of this repository.
+      type:
+        type: integer
+        format: int32
+        description: The type of this repository.    
+  RepositoryDetail:                          
+    type: object
+    allOf:
+    - $ref: '#/definitions/Repository'
+    - $ref: '#/definitions/PaginatedChartVersions'
+  PaginatedChartVersions:                          
+    type: object
+    allOf:
+    - $ref: '#/definitions/Pagination'
+    - type: object
+      properties:
+        charts:
+          type: array
+          items:
+            $ref: '#/definitions/ChartVersions'
+  ChartVersions:
+    type: object
+    properties:
+      name:
+        type: string
+        description: The chart name of chart versions.
+      versions:
+        type: array
+        items:
+          $ref: '#/definitions/ChartVersion'
+  ChartVersion:
+    type: object
+    allOf:
+    - $ref: '#/definitions/ChartMetadata'
+    - type: object
+      properties:
+        urls:
+          type: array
+          items:
+            type: string
+          description: the urls of this chart.
+        digest:
+          type: string
+          description: the digest of this chart.
+  ChartMetadata:
+    type: object
+    properties:
+      name:
+        type: string
+        description: The name of this chart.
+      sources:
+        type: array
+        items:
+          type: string
+        description: The sources of this chart.
+      version:
+        type: string
+        description: The version of this chart.
+      kubeVersion:
+        type: string
+        description: The kubernetes version of this chart supported.
+      description:
+        type: string
+        description: the description of this chart.
+      keywords:
+        type: array
+        items:
+          type: string
+        description: the keywords of this chart.
+      icon:
+        type: string
+        description: the icon of this chart.
+  Chart:
+    type: object
+    allOf:
+    - $ref: '#/definitions/ChartMetadata'
+    - type: object
+      properties:
+        tempates:
+          type: array
+          items:
+            $ref: '#/definitions/File'
+        values:
+          type: string
+          description: The values content of this chart.
+        files:
+          type: array
+          items:
+            $ref: '#/definitions/File'
+  File:
+    type: object
+    properties:
+      name:
+        type: string
+        description: The name of this file.
+      contents:
+        type: string
+        description: The contents of this file.
+  Release:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int32
+        description: The ID of this release.
+      name:
+        type: string
+        description: The name of this release.
+      project_id:
+        type: integer
+        format: int32
+        description: The project's integer ID which include this release.   
+      project_name:
+        type: string
+        description: The project's name which include this release.  
+      repoid:
+        type: integer
+        format: int32
+        description: The Repository ID of this release.    
+      repository:
+        type: string
+        description: The Repository's name of this release.  
+      chart:
+        type: string
+        description: The Repository Chart of this release. 
+      chartversion:
+        type: string
+        description: The Repository ChartVersion of this release. 
+      owner_id:
+        type: integer
+        format: int32
+        description: The owner id of this release.
+      owner_name:
+        type: string
+        description: The owner name of this release.
+      status:
+        type: string
+        description: The status of this release.
+      values:
+        type: string
+        description: The values of this release uses. 
+      update_time:
+        type: string
+        description: The last update time of this release.
+      creation_time:
+        type: string
+        description: The creation time of this release.
+  ReleaseDetail:
+    type: object
+    allOf:
+    - $ref: '#/definitions/Release'
+    - type: object
+      properties:
+        notes:
+          type: string
+          description: The usage of this release.
+        workloads:
+          type: string
+          description: The work loads of this release.
+        workloadstatus:
+          type: string
+          description: The work loads status of this release.
+  Pagination:
+    type: object
+    properties:
+      page_index:
+        type: int
+        format: int32
+        description: The index of the page
+      page_size:
+        type: int
+        format: int32
+        description: The size of the page
+      total_count:
+        type: int
+        format: int64
+        description: The total count of all pages
+      page_count:
+        type: int
+        format: int32
+        description: The count of the pages

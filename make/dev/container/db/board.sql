@@ -433,7 +433,6 @@ DROP TABLE IF EXISTS `log`;
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
 
-
 INSERT INTO `board`.`repository`
  (`id`, `name`, `url`, `type`)
  VALUES
