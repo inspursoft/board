@@ -397,9 +397,8 @@ func GetHelmReleaseResources() ([]*model.Info, error) {
 		return nil, err
 	}
 
-	//TODO: use kubeconfig file instead of master url
 	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
-		K8sMasterURL: utils.GetConfig("KUBE_MASTER_URL")(),
+		KubeConfigPath: kubeConfigPath(),
 	})
 	//resolve the templateInfo into kubernetes service and deployments.....
 	mapper := k8sclient.AppV1().Mapper()
@@ -422,30 +421,30 @@ func GetHelmReleaseResources() ([]*model.Info, error) {
 	return ret, nil
 }
 
-func CheckReleaseNames(name string) error {
+func CheckReleaseNames(name string) (bool, error) {
 	models, err := dao.GetHelmReleasesByRepositoryAndUser(-1, -1)
 	if err != nil {
-		return err
+		return false, err
 	}
 	for i := range models {
 		if models[i].Name == name {
-			return fmt.Errorf("The release %s has already exists", name)
+			return true, nil
 		}
 	}
 	// get the releases from helm cmd
 	helmhost := utils.GetStringValue("HELM_HOST")
 	if helmhost == "" {
-		return fmt.Errorf("You must specify the HELM_HOST environment when the apiserver starts")
+		return false, fmt.Errorf("You must specify the HELM_HOST environment when the apiserver starts")
 	}
 	list, err := helmpkg.ListReleases(helmhost)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	for i := range list.Releases {
 		if list.Releases[i].Name == name {
-			return fmt.Errorf("The release %s has already exists", name)
+			return true, nil
 		}
 	}
-	return nil
+	return false, nil
 }

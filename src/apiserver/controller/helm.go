@@ -31,138 +31,6 @@ func (hc *HelmController) ListHelmReposAction() {
 	hc.renderJSON(repo)
 }
 
-func (hc *HelmController) CreateHelmRepoAction() {
-	if hc.isSysAdmin == false {
-		hc.customAbort(http.StatusForbidden, "Insufficient privileges to delete image.")
-		return
-	}
-	// resolve the repository
-	repo := new(model.Repository)
-	err := hc.resolveBody(repo)
-	if err != nil {
-		hc.internalError(err)
-		return
-	}
-	logs.Info("Added repository %s: %+v", repo.Name, repo)
-
-	// do some check
-	exist, err := service.CheckRepoNameNotExist(repo.Name)
-	if err != nil {
-		hc.internalError(err)
-		return
-	} else if exist {
-		hc.customAbort(http.StatusConflict, fmt.Sprintf("Helm Repository %s already exists in cluster.", repo.Name))
-		return
-	}
-
-	// add the repo to k8s
-	repoid, err := service.AddRepository(*repo)
-	if err != nil {
-		hc.internalError(err)
-		return
-	}
-	repo.ID = repoid
-	hc.renderJSON(repo)
-}
-
-func (hc *HelmController) UpdateHelmRepoAction() {
-	if hc.isSysAdmin == false {
-		hc.customAbort(http.StatusForbidden, "Insufficient privileges to delete image.")
-		return
-	}
-	// get the repo id
-	id, err := strconv.Atoi(hc.Ctx.Input.Param(":id"))
-	if err != nil {
-		hc.internalError(err)
-		return
-	}
-
-	// resolve the repo
-	repo := new(model.Repository)
-	err = hc.resolveBody(repo)
-	if err != nil {
-		hc.internalError(err)
-		return
-	}
-
-	logs.Info("update helm repository %d to %+v", id, repo)
-	// override the fields
-	repo.ID = int64(id)
-
-	// do some check
-	oldrepo, err := service.GetRepository(repo.ID)
-	if err != nil {
-		hc.internalError(err)
-		return
-	} else if oldrepo == nil {
-		hc.customAbort(http.StatusBadRequest, fmt.Sprintf("Helm Repository %d does not exists.", repo.ID))
-		return
-	} else if oldrepo.Name != repo.Name {
-		hc.customAbort(http.StatusBadRequest, fmt.Sprintf("can't change Helm Repository %s's name to %s", oldrepo.Name, repo.Name))
-		return
-	}
-
-	err = service.UpdateRepository(*repo)
-	if err != nil {
-		hc.internalError(err)
-		return
-	}
-	hc.renderJSON(repo)
-}
-
-func (hc *HelmController) DeleteHelmRepoAction() {
-	if hc.isSysAdmin == false {
-		hc.customAbort(http.StatusForbidden, "Insufficient privileges to delete image.")
-		return
-	}
-	// get the repo id
-	id, err := strconv.Atoi(hc.Ctx.Input.Param(":id"))
-	if err != nil {
-		hc.internalError(err)
-		return
-	}
-	logs.Info("delete helm repository %d", id)
-
-	// do some check
-	oldrepo, err := service.GetRepository(int64(id))
-	if err != nil {
-		hc.internalError(err)
-		return
-	} else if oldrepo == nil {
-		hc.customAbort(http.StatusBadRequest, fmt.Sprintf("Helm repository %d does not exists.", int64(id)))
-		return
-	}
-
-	// delete the repo
-	err = service.DeleteRepository(int64(id))
-	if err != nil {
-		hc.internalError(err)
-		return
-	}
-}
-
-func (hc *HelmController) GetHelmRepoAction() {
-	// get the repo id
-	id, err := strconv.Atoi(hc.Ctx.Input.Param(":id"))
-	if err != nil {
-		hc.internalError(err)
-		return
-	}
-	logs.Info("get helm repository %d", id)
-
-	// do some check
-	repo, err := service.GetRepository(int64(id))
-	if err != nil {
-		hc.internalError(err)
-		return
-	} else if repo == nil {
-		hc.customAbort(http.StatusBadRequest, fmt.Sprintf("Helm repository %d does not exists.", int64(id)))
-		return
-	}
-
-	hc.renderJSON(repo)
-}
-
 func (hc *HelmController) GetHelmRepoDetailAction() {
 	// get the repo id
 	id, err := strconv.Atoi(hc.Ctx.Input.Param(":id"))
@@ -352,10 +220,13 @@ func (hc *HelmController) InstallHelmChartAction() {
 	//Judge authority
 	project := hc.resolveUserPrivilegeByID(release.ProjectId)
 	//Check name exist or not
-	err = service.CheckReleaseNames(release.Name)
+	isExists, err := service.CheckReleaseNames(release.Name)
 	if err != nil {
 		hc.internalError(err)
 		return
+	}
+	if isExists {
+		hc.customAbort(http.StatusConflict, "release "+release.Name+" already exists.")
 	}
 
 	err = service.InstallChart(repo, release.Chart, release.ChartVersion, release.Name, release.ProjectId, project.Name, release.Values, hc.currentUser.ID, hc.currentUser.Username)
@@ -449,4 +320,16 @@ func (hc *HelmController) checkReleaseOperationPriviledges() *model.ReleaseModel
 		return nil
 	}
 	return model
+}
+
+func (hc *HelmController) ReleaseExists() {
+	target := hc.GetString("release_name")
+	isExists, err := service.CheckReleaseNames(target)
+	if err != nil {
+		hc.internalError(err)
+		return
+	}
+	if isExists {
+		hc.customAbort(http.StatusConflict, "release "+target+" already exists.")
+	}
 }
