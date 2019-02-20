@@ -33,4 +33,5 @@ type VolumeMountStruct struct {
 	TargetStorageService string `json:"target_storage_service"`
 	TargetPath           string `json:"target_path"`
 	TargetPVC            string `json:"target_pvc"`
+	TargetConfigMap      string `json:"target_configmap"`
 }

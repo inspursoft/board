@@ -604,6 +604,17 @@ func setVolumes(volumeList []model.VolumeMountStruct) []model.Volume {
 					},
 				},
 			})
+		case "configmap":
+			volumes = append(volumes, model.Volume{
+				Name: v.VolumeName,
+				VolumeSource: model.VolumeSource{
+					ConfigMap: &model.ConfigMapVolumeSource{
+						LocalObjectReference: model.LocalObjectReference{
+							Name: v.TargetConfigMap,
+						},
+					},
+				},
+			})
 		}
 
 	}
