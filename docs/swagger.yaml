@@ -2804,7 +2804,7 @@ paths:
           type: string
           required: true
           description: Current available token.
-        - name: configmap_name
+        - name: configmapname
           in: path
           description: ConfigMap name for filtering results.
           required: true
