@@ -53,7 +53,7 @@ export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
       .catch((err:HttpErrorResponse) => {
         this.messageService.cleanNotification();
         if (err.status == 409) {
-          return Observable.of({nodeGroupExist: "HELM.NODE_GROUP_NAME_EXIST"})
+          return Observable.of({nodeGroupExist: "HELM.RELEASE_CHART_NAME_EXISTING"})
         } else {
           return Observable.of(null)
         }
