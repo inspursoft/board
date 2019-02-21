@@ -336,6 +336,7 @@ export const LANG_ZH_CN = {
     "VOLUME_FILE":"文件",
     "VOLUME_NFS_SERVER":"NFS服务",
     "VOLUME_CONTAINER_PATH":"容器路径",
+    "VOLUME_SUB_PATH_FILE":"文件",
     "VOLUME_SELECT_PVC_TITLE":"选择PVC",
     "VOLUME_SELECT_PVC":"选择PVC...",
     "VOLUME_CREATE_PVC":"创建PVC...",

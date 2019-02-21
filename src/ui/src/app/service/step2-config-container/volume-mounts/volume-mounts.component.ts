@@ -110,10 +110,6 @@ export class VolumeMountsComponent extends CsModalChildBase implements OnInit {
     this.curVolumeDataList[index].volume_type = volumeType.name;
   }
 
-  selectPathOrFile(isNfs: boolean, index: number) {
-    this.curVolumeDataList[index].container_path_flag = isNfs ? 0 : 1
-  }
-
   deleteVolumeData(index: number) {
     this.curVolumeDataList.splice(index, 1);
   }
