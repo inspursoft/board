@@ -29,15 +29,6 @@ export class RepoListComponent implements OnInit {
   }
 
   showRepoDetail(repo: IHelmRepoList) {
-    // this.loadingWIP = true;
-    // this.helmService.getRepoDetail(repo.id).subscribe((res: Object) => {
-    //   let repoDetail = HelmRepoDetail.newFromServe(res);
-    //   let viewData = new HelmViewData(repoDetail, HelmViewType.hvtChartList);
-    //   viewData.description = `HELM.CHART_LIST_TITTLE`;
-    //   this.helmService.pushNewView(viewData);
-    // });
-
-
     let viewData = new HelmViewData(repo, HelmViewType.hvtChartList);
     viewData.description = `HELM.CHART_LIST_TITTLE`;
     this.helmService.pushNewView(viewData);

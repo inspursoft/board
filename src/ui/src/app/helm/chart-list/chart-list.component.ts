@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ComponentFactoryResolver, OnInit, ViewContainerRef } from "@angular/core";
+import { Component, ComponentFactoryResolver, ViewContainerRef } from "@angular/core";
 import { CsModalParentBase } from "../../shared/cs-modal-base/cs-modal-parent-base";
 import { HelmChart, HelmChartVersion, HelmRepoDetail, IHelmRepoList } from "../helm.type";
 import { HelmService } from "../helm.service";
@@ -7,7 +7,8 @@ import { MessageService } from "../../shared/message-service/message.service";
 import { UploadChartComponent } from "../upload-chart/upload-chart.component";
 import { ChartReleaseComponent } from "../chart-release/chart-release.component";
 
-enum ViewMethod {vmList = 'list',vmCard = 'card'}
+enum ViewMethod {vmList = 'list', vmCard = 'card'}
+
 @Component({
   templateUrl: './chart-list.component.html',
   styleUrls: ['./chart-list.component.css']

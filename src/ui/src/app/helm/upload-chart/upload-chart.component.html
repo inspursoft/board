@@ -1,4 +1,4 @@
-<clr-modal [(clrModalOpen)]="modalOpened">
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalClosable]="!isUploadChartWIP">
     <h3 class="modal-title">{{ 'HELM.UPLOAD_CHART_TITLE' | translate }}</h3>
     <div class="modal-body">
         <div class="line-container base-margin-top">

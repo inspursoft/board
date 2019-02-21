@@ -9,12 +9,8 @@ import { CsModalChildBase } from "../../shared/cs-modal-base/cs-modal-child-base
 })
 export class ChartReleaseDetailComponent extends CsModalChildBase {
   detail: IChartReleaseDetail;
-  isUploadChartWIP = false;
 
-  constructor(private helmService: HelmService) {
+  constructor() {
     super();
   }
-
-
-
 }
