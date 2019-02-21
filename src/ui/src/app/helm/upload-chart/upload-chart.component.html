@@ -1,0 +1,30 @@
+<clr-modal [(clrModalOpen)]="modalOpened">
+    <h3 class="modal-title">{{ 'HELM.UPLOAD_CHART_TITLE' | translate }}</h3>
+    <div class="modal-body">
+        <div class="line-container base-margin-top">
+            <label class="base-text">{{"HELM.RELEASE_CHART_REPO_NAME" | translate}}:</label>
+            <label class="base-margin-left">{{repoInfo.name}}</label>
+        </div>
+        <div class="line-container base-margin-top">
+            <label class="base-text">{{"HELM.UPLOAD_CHART_PACKAGE" | translate}}:</label>
+            ﻿<input type="file"
+                    class="upload-file-input"
+                    [disabled]="isUploadChartWIP"
+                    (change)="selectChartPackage($event)"
+                    accept="*.*">
+        </div>
+        <div *ngIf="isUploadChartWIP" class="line-container base-margin-top">
+            <label class="base-text"></label>
+            <cs-progress class="base-margin-left" [progressData]="uploadProgressValue"></cs-progress>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline" [disabled]="isUploadChartWIP" (click)="modalOpened = false">
+            {{ 'BUTTON.CANCEL' | translate }}
+        </button>
+        <button type="button" class="btn btn-primary" [disabled]="isUploadChartWIP" (click)="uploadChart()">
+            {{ 'HELM.UPLOAD_CHART_UPLOAD' | translate }}
+        </button>
+        <span *ngIf="isUploadChartWIP" class="spinner spinner-sm"></span>
+    </div>
+</clr-modal>

@@ -1,0 +1,50 @@
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'lg'">
+    <h3 class="modal-title">{{ 'HELM.RELEASE_CHART_TITLE' | translate }}</h3>
+    <div class="modal-body">
+        <div class="line-container base-margin-top">
+            <label class="base-text">{{"HELM.RELEASE_CHART_SELECT_PROJECT"|translate}}:</label>
+            <cs-dropdown class="base-margin-left"
+                         [dropdownDefaultText]="'HELM.RELEASE_CHART_SELECT_PROJECT' | translate"
+                         [dropdownWidth]="200"
+                         [dropdownList]="projectsList"
+                         [dropdownDisabled]="isReleaseWIP"
+                         [dropdownListTextKey]="'project_name'"
+                         (onChange)="changeSelectProject($event)">
+            </cs-dropdown>
+        </div>
+        <cs-input [inputLabel]="'HELM.RELEASE_CHART_NAME_EXISTING' | translate"
+                  [simpleFiled]="releaseName"
+                  [inputIsRequired]="true"
+                  [disabled]="isReleaseWIP"
+                  [customerValidatorAsyncFunc]="checkChartReleaseNameFun"
+                  (onCheck)="releaseName = $event">
+        </cs-input>
+        <div class="line-container base-margin-top">
+            <label class="base-text">{{"HELM.RELEASE_CHART_REPO_NAME" | translate}}:</label>
+            <label class="base-margin-left">{{repoInfo.name}}</label>
+        </div>
+        <div class="line-container base-margin-top">
+            <label class="base-text">{{"HELM.RELEASE_CHART_CHART_NAME" | translate}}:</label>
+            <label class="base-margin-left">{{chartVersion.name}}</label>
+        </div>
+        <div class="line-container base-margin-top">
+            <label class="base-text">{{"HELM.RELEASE_CHART_CHART_VERSION" | translate}}:</label>
+            <label class="base-margin-left">{{chartVersion.version}}</label>
+        </div>
+        <div class="line-container base-margin-top">
+            <label class="base-text">{{"HELM.RELEASE_CHART_DESCRIPTION" | translate}}:</label>
+            <label class="base-margin-left">{{chartVersion.description}}</label>
+        </div>
+        <label class="base-text">{{"HELM.RELEASE_CHART_VALUES" | translate}}:</label>
+        <cs-highlight [language]="'yaml'" [code]="chartValue"></cs-highlight>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline" [disabled]="isReleaseWIP" (click)="modalOpened = false">
+            {{ 'BUTTON.CANCEL' | translate }}
+        </button>
+        <button type="button" class="btn btn-primary" [disabled]="isReleaseWIP" (click)="chartRelease()">
+            {{ 'HELM.RELEASE_CHART_RELEASE' | translate }}
+        </button>
+        <span *ngIf="isReleaseWIP" class="spinner spinner-sm"></span>
+    </div>
+</clr-modal>

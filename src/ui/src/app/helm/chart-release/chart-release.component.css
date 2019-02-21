@@ -1,0 +1,19 @@
+label.base-text {
+  min-width: 180px;
+  text-align: right;
+}
+
+div.line-container {
+  margin-top: 10px;
+  display: flex;
+  height: 34px;
+  align-items: center;
+}
+
+div.base-margin-top {
+  margin-top: 5px;
+}
+
+.base-margin-left {
+  margin-left: 10px;
+}

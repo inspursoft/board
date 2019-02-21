@@ -26,6 +26,9 @@ export const RouteSignUp = 'sign-up';
 export const RouteForgotPassword = 'forgot-password';
 export const RouteDashboard = "dashboard";
 export const RouteServices = "services";
+export const RouteHelm = "helm";
+export const RouteRepoList = "repo-list";
+export const RouteReleaseList = "release-list";
 export const RouteProjects = "projects";
 export const RouteNodes = "nodes";
 export const RouteImages = "images";
@@ -44,6 +47,10 @@ export const MAIN_MENU_DATA: Array<ICsMenuItemData> = [
       {caption: 'SIDE_NAV.KIBANA', visible: true, icon: 'curve-chart', url: `/${RouteKibana}`}]
   },
   {caption: 'SIDE_NAV.SERVICES', visible: true, icon: 'applications', url: `/${RouteServices}`},
+  {caption: 'SIDE_NAV.HELM', visible: true, icon: 'shopping-cart',url: `/${RouteHelm}`,children:[
+      {caption: 'SIDE_NAV.MARKET_LIST', visible: true, icon: 'list', url: `/${RouteHelm}/${RouteRepoList}`},
+      {caption: 'SIDE_NAV.SERVICE_LIST', visible: true, icon: 'list', url: `/${RouteHelm}/${RouteReleaseList}`}]
+  },
   {caption: 'SIDE_NAV.PROJECTS', visible: true, icon: 'vm', url: `/${RouteProjects}`},
   {caption: 'SIDE_NAV.NODES', visible: true, icon: 'layers', url: `/${RouteNodes}`},
   {caption: 'SIDE_NAV.IMAGES', visible: true, icon: 'cluster', url: `/${RouteImages}`},
