@@ -285,10 +285,20 @@ func ToK8sVolumeSource(volumeSource *model.VolumeSource) *v1.VolumeSource {
 		}
 	}
 
+	var configmap *v1.ConfigMapVolumeSource
+	if volumeSource.ConfigMap != nil {
+		configmap = &v1.ConfigMapVolumeSource{
+			LocalObjectReference: (v1.LocalObjectReference)(volumeSource.ConfigMap.LocalObjectReference),
+			//			Items:                volumeSource.ConfigMap.Items,
+			//TODO: suppurt Item later
+		}
+	}
+
 	return &v1.VolumeSource{
 		HostPath: hp,
 		NFS:      nfs,
 		PersistentVolumeClaim: pvc,
+		ConfigMap:             configmap,
 	}
 }
 
@@ -645,10 +655,19 @@ func FromK8sVolumeSource(volumeSource v1.VolumeSource) model.VolumeSource {
 			ReadOnly:  volumeSource.PersistentVolumeClaim.ReadOnly,
 		}
 	}
+
+	var configmap *model.ConfigMapVolumeSource
+	if volumeSource.ConfigMap != nil {
+		configmap = &model.ConfigMapVolumeSource{
+			LocalObjectReference: (model.LocalObjectReference)(volumeSource.ConfigMap.LocalObjectReference),
+		}
+	}
+
 	return model.VolumeSource{
 		HostPath: hp,
 		NFS:      nfs,
 		PersistentVolumeClaim: pvc,
+		ConfigMap:             configmap,
 	}
 }
 
