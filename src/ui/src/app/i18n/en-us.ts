@@ -121,6 +121,8 @@ export const LANG_EN_US = {
     "MEMBERS": "Members",
     "NODES": "Nodes",
     "IMAGES": "Images",
+    "RESOURCE": "Resource",
+    "CONFIG_MAP": "Config map",
     "STORAGE": "Storage",
     "ADMIN_OPTIONS": "Admin Options",
     "AUDIT": "Operation Audit",

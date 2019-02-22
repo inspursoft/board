@@ -13,6 +13,7 @@ import { MainContentModule } from "../main-content/main-content.module";
 import { KibanaModule } from "../kibana/kibana.module";
 import { GrafanaModule } from "../grafana/grafana.module";
 import { StorageModule } from "../storage/storage.module";
+import { ResourceModule } from "../resource/resource.module";
 
 @NgModule({
   exports: [
@@ -29,7 +30,8 @@ import { StorageModule } from "../storage/storage.module";
     AccountModule,
     KibanaModule,
     GrafanaModule,
-    StorageModule
+    StorageModule,
+    ResourceModule
   ]
 })
 export class FeatureModule {}

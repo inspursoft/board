@@ -121,6 +121,8 @@ export const LANG_ZH_CN = {
     "MEMBERS": "成员",
     "NODES": "节点",
     "IMAGES": "镜像",
+    "RESOURCE": "资源",
+    "CONFIG_MAP": "配置地图",
     "STORAGE": "存储",
     "ADMIN_OPTIONS": "管理员选项",
     "AUDIT": "操作审计",
