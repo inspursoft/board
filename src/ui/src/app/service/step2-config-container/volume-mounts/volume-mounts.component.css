@@ -2,24 +2,28 @@
   margin-left: 10px;
 }
 
-div.modal-body{
-  min-height: 300px;
+div.modal-body {
+  min-height: 400px;
 }
 
-span.title{
-  width: 160px;
+span.title {
+  width: 180px;
   text-align: right;
+}
+
+span.title.min {
+  width: 160px;
 }
 
 div.dynamic-line-container {
   display: flex;
-  margin-top: 8px;
-  margin-bottom: 8px;
+  margin-top: 2px;
+  margin-bottom: 2px;
   align-items: center;
 }
 
-div.dynamic-line-container input[type='radio'] {
-  margin-left: 10px;
+div.dynamic-line-container cs-input{
+  width: 100%;
 }
 
 clr-icon.dynamic-icon {
@@ -29,4 +33,16 @@ clr-icon.dynamic-icon {
   height: 20px;
   border-radius: 5px;
   cursor: pointer;
+}
+
+div.clr-checkbox-container {
+  display: flex;
+  justify-content: flex-end;
+  min-width: 175px;
+  align-items: center;
+}
+
+div.clr-checkbox-container clr-checkbox {
+  width: 24px;
+  height: 24px;
 }
