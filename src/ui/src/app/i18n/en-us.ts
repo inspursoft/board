@@ -338,6 +338,7 @@ export const LANG_EN_US = {
     "VOLUME_FILE":"file",
     "VOLUME_NFS_SERVER":"NFS Server",
     "VOLUME_CONTAINER_PATH":"Container Path",
+    "VOLUME_SUB_PATH_FILE":"SubPath file",
     "VOLUME_SELECT_PVC_TITLE":"Select PVC",
     "VOLUME_SELECT_PVC":"Select PVC...",
     "VOLUME_CREATE_PVC":"Create PVC...",
