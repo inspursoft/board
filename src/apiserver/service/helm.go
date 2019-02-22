@@ -10,6 +10,7 @@ import (
 	helmpkg "git/inspursoft/board/src/apiserver/service/helm"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/k8sassist"
+	"git/inspursoft/board/src/common/k8sassist/corev1"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 
@@ -213,7 +214,7 @@ func InstallChart(repo *model.Repository, chartname, chartversion, name string, 
 			err = nil //ignore this err
 		}
 	}
-	model := model.ReleaseModel{
+	m := model.ReleaseModel{
 		Name:           name,
 		ProjectId:      projectid,
 		ProjectName:    projectname,
@@ -225,7 +226,103 @@ func InstallChart(repo *model.Repository, chartname, chartversion, name string, 
 		UpdateTime:     update,
 		CreateTime:     update,
 	}
-	_, err = dao.AddHelmRelease(model)
+	id, err := dao.AddHelmRelease(m)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			// remove the release from database
+			dao.DeleteHelmRelease(model.ReleaseModel{ID: id})
+		}
+	}()
+	// add the kubernetes resources to board
+	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		KubeConfigPath: kubeConfigPath(),
+	})
+	//resolve the templateInfo into kubernetes service and deployments.....
+	mapper := k8sclient.AppV1().Mapper()
+
+	err = mapper.Visit(workloads, func(infos []*model.Info, err error) error {
+		if err != nil {
+			return err
+		}
+		svcs := make([]*model.Info, 0, 0)
+		deps := make([]*model.Info, 0, 0)
+		for i := range infos {
+			if infos[i].Namespace == "" {
+				infos[i].Namespace = projectname
+			}
+
+			if infos[i].Kind == "Service" {
+				svcs = append(svcs, infos[i])
+			} else if infos[i].Kind == "Deployment" {
+				deps = append(deps, infos[i])
+			}
+		}
+
+		// add the service into board
+		for i := range svcs {
+			svcout, err := setSourceNamespace(mapper, svcs[i].Source, svcs[i].Namespace)
+			if err != nil {
+				return err
+			}
+			//check service type
+			svcModel, err := k8sclient.AppV1().Service(svcs[i].Namespace).CheckYaml(strings.NewReader(svcout))
+			if err != nil {
+				return err
+			}
+			svcType := model.ServiceTypeUnknown
+			switch svcModel.Type {
+			case "ClusterIP":
+				svcType = model.ServiceTypeClusterIP
+			case "NodePort":
+				svcType = model.ServiceTypeNormalNodePort
+			}
+
+			for j := range deps {
+				// deployment should be the same name with service.
+				if svcs[i].Name == deps[j].Name && svcs[i].Namespace == deps[j].Namespace {
+					// add this to board
+					exist, err := ServiceExists(svcs[i].Name, svcs[i].Namespace)
+					if err != nil {
+						return err
+					}
+					if exist {
+						return fmt.Errorf("The service %s has already exist in project %s", svcs[i].Name, svcs[i].Namespace)
+					}
+					depout, err := setSourceNamespace(mapper, deps[i].Source, deps[i].Namespace)
+					if err != nil {
+						return err
+					}
+
+					_, err = CreateServiceConfig(model.ServiceStatus{
+						Name:           svcs[i].Name,
+						ProjectID:      projectid,
+						ProjectName:    projectname,
+						Comment:        "service created by helm",
+						OwnerID:        ownerid,
+						OwnerName:      ownername,
+						Status:         defaultStatus,
+						Type:           svcType,
+						Public:         defaultPublic,
+						CreationTime:   update,
+						UpdateTime:     update,
+						Source:         helm,
+						ServiceYaml:    svcout,
+						DeploymentYaml: depout,
+					})
+					if err != nil {
+						return err
+					}
+					break
+				}
+			}
+		}
+
+		return nil
+	})
+
 	return err
 }
 
@@ -289,6 +386,51 @@ func DeleteRelease(releaseid int64) error {
 	}
 	_, err = dao.DeleteHelmRelease(model.ReleaseModel{
 		ID: releaseid,
+	})
+	if err != nil {
+		return err
+	}
+	// remove the service entry from database
+	// add the kubernetes resources to board
+	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		KubeConfigPath: kubeConfigPath(),
+	})
+	//resolve the templateInfo into kubernetes service and deployments.....
+	mapper := k8sclient.AppV1().Mapper()
+
+	err = mapper.Visit(release.Workloads, func(infos []*model.Info, err error) error {
+		if err != nil {
+			return err
+		}
+		svcs := make([]*model.Info, 0, 0)
+		deps := make([]*model.Info, 0, 0)
+		for i := range infos {
+			if infos[i].Namespace == "" {
+				infos[i].Namespace = release.ProjectName
+			}
+
+			if infos[i].Kind == "Service" {
+				svcs = append(svcs, infos[i])
+			} else if infos[i].Kind == "Deployment" {
+				deps = append(deps, infos[i])
+			}
+		}
+
+		// add the service into board
+		for i := range svcs {
+			for j := range deps {
+				// deployment should be the same name with service.
+				if svcs[i].Name == deps[j].Name && svcs[i].Namespace == deps[j].Namespace {
+					dao.DeleteServiceByNameAndProjectName(model.ServiceStatus{
+						Name:        svcs[i].Name,
+						ProjectName: svcs[i].Namespace,
+					})
+					break
+				}
+			}
+		}
+
+		return nil
 	})
 	return err
 }
@@ -447,4 +589,33 @@ func CheckReleaseNames(name string) (bool, error) {
 		}
 	}
 	return false, nil
+}
+
+func SetNamespace(obj map[string]interface{}, value interface{}) {
+	setNestedField(obj, value, "metadata", "namespace")
+}
+
+func setNestedField(obj map[string]interface{}, value interface{}, fields ...string) {
+	m := obj
+	if len(fields) > 1 {
+		for _, field := range fields[0 : len(fields)-1] {
+			if _, ok := m[field].(map[string]interface{}); !ok {
+				m[field] = make(map[string]interface{})
+			}
+			m = m[field].(map[string]interface{})
+		}
+	}
+	m[fields[len(fields)-1]] = value
+}
+
+func setSourceNamespace(mapper corev1.MapperInterface, source, namespace string) (string, error) {
+	return mapper.Transform(source, func(in interface{}) (interface{}, error) {
+		switch s := in.(type) {
+		case map[string]interface{}:
+			SetNamespace(s, namespace)
+			return s, nil
+		default:
+			return nil, fmt.Errorf("The type of object %+v is unknown", in)
+		}
+	})
 }

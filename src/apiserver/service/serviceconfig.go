@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/k8sassist"
 	"git/inspursoft/board/src/common/model"
@@ -826,4 +827,11 @@ func GetNodePortsK8s(pname string) ([]int32, error) {
 	}
 
 	return portList, nil
+}
+
+func CheckServiceDeletable(svc *model.ServiceStatus) error {
+	if svc != nil && svc.Source == helm {
+		return fmt.Errorf("you must delete the service %s from helm release page.", svc.Name)
+	}
+	return nil
 }

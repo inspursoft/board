@@ -7,6 +7,7 @@ import (
 
 	"git/inspursoft/board/src/common/model"
 
+	gyaml "github.com/ghodss/yaml"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -72,6 +73,23 @@ func (m *mapper) Visit(info string, fn model.VisitorFunc) error {
 	}
 
 	return fn(infos, utilerrors.NewAggregate(errs))
+}
+
+func (m *mapper) Transform(in string, fn model.Modifier) (string, error) {
+	src := make(map[string]interface{})
+	err := gyaml.Unmarshal([]byte(in), &src)
+	if err != nil {
+		return "", err
+	}
+	target, err := fn(src)
+	if err != nil {
+		return "", err
+	}
+	bs, err := gyaml.Marshal(target)
+	if err != nil {
+		return "", err
+	}
+	return string(bs), nil
 }
 
 func NewMapper() *mapper {

@@ -62,6 +62,18 @@ func DeleteService(service model.ServiceStatus) (int64, error) {
 	return num, err
 }
 
+func DeleteServiceByNameAndProjectName(service model.ServiceStatus) (int64, error) {
+	o := orm.NewOrm()
+	num, err := o.Delete(&service, "name", "project_name")
+	if err != nil {
+		if err == orm.ErrNoRows {
+			return 0, nil
+		}
+		return 0, err
+	}
+	return num, err
+}
+
 func generateServiceStatusSQL(query model.ServiceStatus, userID int64) (string, []interface{}) {
 	sql := `select distinct s.id, s.name, s.project_id, s.project_name, u.username as owner_name, s.owner_id, s.creation_time, s.status, s.type, s.public, s.source,
 	(select if(count(s0.id), 1, 0) from service_status s0 where s0.deleted = 0 and s0.id = s.id and s0.project_id in (

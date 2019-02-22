@@ -229,4 +229,5 @@ type ConfigMapInterface interface {
 
 type MapperInterface interface {
 	Visit(info string, fn model.VisitorFunc) error
+	Transform(in string, fn model.Modifier) (string, error)
 }
