@@ -1,0 +1,36 @@
+div.modal-body {
+  min-height: 300px;
+}
+
+div.dynamic-line-container {
+  display: flex;
+  margin-top: 2px;
+  margin-bottom: 2px;
+  align-items: center;
+}
+
+div.dynamic-line-container.key-title {
+  justify-content: space-around;
+  margin-top: 10px;
+}
+
+div.dynamic-line-container.key-title span {
+  font-size: 16px;
+}
+
+span.filed-text {
+  width: 180px;
+  text-align: right;
+  margin-right: 10px;
+}
+
+span.filed-text-value {
+  width: 180px;
+  text-align: left;
+}
+
+div.dynamic-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}

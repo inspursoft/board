@@ -1,0 +1,60 @@
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'md'">
+    <h3 class="modal-title">{{ 'RESOURCE.CREATE_CONFIG_MAP_TITLE' | translate }}
+        <span *ngIf="isLoadWip" class="spinner spinner-sm"></span>
+    </h3>
+    <div class="modal-body">
+        <div class="dynamic-line-container">
+            <span class="filed-text">{{"RESOURCE.CREATE_CONFIG_MAP_PROJECT" | translate}}:</span>
+            <cs-dropdown [dropdownDefaultText]="'RESOURCE.CREATE_CONFIG_MAP_PROJECT_DES' | translate"
+                         [dropdownWidth]="310"
+                         [dropdownDisabled]="isCreateWip"
+                         [dropdownMustBeSelect]="true"
+                         [dropdownList]="projectList"
+                         [dropdownListTextKey]="'project_name'"
+                         (onChange)="changeSelectProject($event)">
+            </cs-dropdown>
+        </div>
+        <cs-input [inputIsRequired]="true"
+                  [disabled]="isCreateWip"
+                  [inputLabel]="'RESOURCE.CREATE_CONFIG_MAP_NAME' | translate"
+                  [simpleFiled]="newConfigMap.name"
+                  [inputMaxlength]="50"
+                  (onCheck)="newConfigMap.name = $event">
+        </cs-input>
+        <div class="dynamic-line-container key-title">
+            <span><b>{{'RESOURCE.CREATE_CONFIG_MAP_KEY' | translate}}</b></span>
+            <span><b>{{'RESOURCE.CREATE_CONFIG_MAP_VALUE' | translate}}</b></span>
+        </div>
+        <div *ngFor="let data of newConfigMap.dataList;index as i" class="dynamic-container">
+            <div class="dynamic-line-container">
+                <div class="dynamic-icon-container">
+                    <clr-icon class="dynamic-icon" shape="minus" (click)="removeKeyValue(i)"></clr-icon>
+                </div>
+                <cs-input [inputIsRequired]="true"
+                          [disabled]="isCreateWip"
+                          [simpleFiled]="data.key"
+                          [inputType]="2"
+                          (onCheck)="data.key = $event">
+                </cs-input>
+                <cs-input [inputIsRequired]="true"
+                          [disabled]="isCreateWip"
+                          [simpleFiled]="data.value"
+                          [inputType]="2"
+                          (onCheck)="data.value = $event">
+                </cs-input>
+            </div>
+        </div>
+        <div  class="plus-container">
+            <clr-icon class="dynamic-icon" shape="plus" (click)="addKeyValue()"></clr-icon>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default" [disabled]="isCreateWip" (click)="modalOpened = false">
+            {{ 'BUTTON.CANCEL' | translate }}
+        </button>
+        <button type="button" class="btn btn-primary" [disabled]="isCreateWip" (click)="createConfigMap()">
+            {{ 'BUTTON.CREATE' | translate }}
+        </button>
+        <span *ngIf="isCreateWip" class="spinner spinner-sm"></span>
+    </div>
+</clr-modal>
