@@ -80,3 +80,26 @@ func (n *ConfigMapController) GetConfigMapListAction() {
 	}
 	n.renderJSON(res)
 }
+
+func (n *ConfigMapController) GetConfigMapAction() {
+
+	projectName := n.GetString("project_name")
+	if projectName == "" {
+		n.customAbort(http.StatusBadRequest, "project should not null")
+		return
+	}
+	cmName := n.Ctx.Input.Param(":configmapname")
+	if cmName == "" {
+		n.customAbort(http.StatusBadRequest, "ConfigMap Name should not null")
+		return
+	}
+
+	cm, err := service.GetConfigMapK8s(cmName, projectName)
+	if err != nil {
+		logs.Debug("Failed to get ConfigMap")
+		n.customAbort(http.StatusInternalServerError, fmt.Sprint(err))
+		return
+	}
+	n.renderJSON(cm)
+
+}

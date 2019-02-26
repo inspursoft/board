@@ -67,3 +67,18 @@ func DeleteConfigMapK8s(configname string, projectname string) error {
 	}
 	return nil
 }
+
+func GetConfigMapK8s(configname string, projectname string) (*model.ConfigMap, error) {
+	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		KubeConfigPath: kubeConfigPath(),
+	})
+	cm, err := k8sclient.AppV1().ConfigMap(projectname).Get(configname)
+	if err != nil {
+		if types.IsNotFoundError(err) {
+			logs.Debug("Not found ConfigMap %s", configname)
+		} else {
+			return nil, err
+		}
+	}
+	return cm, nil
+}
