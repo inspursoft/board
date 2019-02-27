@@ -64,19 +64,45 @@ func (n *ConfigMapController) RemoveConfigMapAction() {
 }
 
 func (n *ConfigMapController) GetConfigMapListAction() {
+	projectName := n.GetString("project_name")
+	if projectName == "" {
+		res, err := service.GetConfigMapListByUser(n.currentUser.ID)
+		if err != nil {
+			logs.Debug("Failed to get ConfigMap List from User")
+			n.customAbort(http.StatusInternalServerError, fmt.Sprint(err))
+			return
+		}
+		n.renderJSON(res)
+	} else {
+		res, err := service.GetConfigMapListByProject(projectName)
+		if err != nil {
+			logs.Debug("Failed to get ConfigMap List")
+			n.customAbort(http.StatusInternalServerError, fmt.Sprint(err))
+			return
+		}
+		n.renderJSON(res)
+	}
+}
+
+func (n *ConfigMapController) GetConfigMapAction() {
 
 	projectName := n.GetString("project_name")
 	if projectName == "" {
-		// TODO support all later
 		n.customAbort(http.StatusBadRequest, "project should not null")
 		return
 	}
+	cmName := n.Ctx.Input.Param(":configmapname")
+	if cmName == "" {
+		n.customAbort(http.StatusBadRequest, "ConfigMap Name should not null")
+		return
+	}
 
-	res, err := service.GetConfigMapListByProject(projectName)
+	cm, err := service.GetConfigMapK8s(cmName, projectName)
 	if err != nil {
-		logs.Debug("Failed to get ConfigMap List")
+		logs.Debug("Failed to get ConfigMap")
 		n.customAbort(http.StatusInternalServerError, fmt.Sprint(err))
 		return
 	}
-	n.renderJSON(res)
+	n.renderJSON(cm)
+
 }
