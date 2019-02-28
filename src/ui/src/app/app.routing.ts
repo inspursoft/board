@@ -18,7 +18,6 @@ import { UserCenterComponent } from './user-center/user-center.component';
 import { AuthGuard, ServiceGuard } from './shared/auth-guard.service';
 import { ProfileComponent } from "./profile/profile.component";
 import { AppInitService } from "./app.init.service";
-import { MemberComponent } from "./shared/create-project/member/member.component";
 import { ListAuditComponent } from "./audit/operation-audit-list/list-audit.component";
 import { ResetPasswordComponent } from "./account/reset-password/reset-password.component";
 import { ForgotPasswordComponent } from "./account/forgot-password/forgot-password.component";
@@ -27,7 +26,6 @@ import { BadGatewayComponent } from "./shared/error-pages/bad-gateway.component/
 import { BoardLoadingComponent } from "./shared/error-pages/board-loading.component/board-loading.component";
 import { KibanaComponent } from "./kibana/kibana/kibana.component";
 import { GrafanaComponent } from "./grafana/grafana/grafana.component";
-import { RouteConfigMap, RouteGrafana, RouteKibana, RoutePV, RoutePvc, RouteResource, RouteStorage } from "./shared/shared.const";
 import { PvListComponent } from "./storage/pv/pv-list.compoent/pv-list.component";
 import { Observable } from "rxjs/Observable";
 import { PvcListComponent } from "./storage/pvc/pvc-list.component/pvc-list.component";
@@ -86,27 +84,22 @@ export const ROUTES: Routes = [
       {path: 'search', component: GlobalSearchComponent},
       {path: 'dashboard', component: DashboardComponent},
       {path: 'nodes', component: NodeComponent},
-      {
-        path: 'projects', children: [
-          {path: '', component: ProjectComponent},
-          {path: 'members', component: MemberComponent}
-        ]
-      },
+      {path: 'projects', component: ProjectComponent},
       {path: 'images', component: ImageListComponent},
       {
-        path: RouteResource, children: [
-          {path: RouteConfigMap, component: ConfigMapListComponent}
+        path: 'resource', children: [
+          {path: 'config-map', component: ConfigMapListComponent}
         ]
       },
       {path: 'services', component: ServiceComponent, canDeactivate: [ServiceGuard]},
       {path: 'user-center', component: UserCenterComponent},
       {path: 'profile', component: ProfileComponent},
-      {path: RouteKibana, component: KibanaComponent},
-      {path: RouteGrafana, component: GrafanaComponent},
+      {path: 'kibana-url', component: KibanaComponent},
+      {path: 'grafana', component: GrafanaComponent},
       {
-        path: RouteStorage, children: [
-          {path: RoutePV, component: PvListComponent},
-          {path: RoutePvc, component: PvcListComponent}
+        path: 'storage', children: [
+          {path: 'pv', component: PvListComponent},
+          {path: 'pvc', component: PvcListComponent}
         ]
       },
       {path: 'audit', component: ListAuditComponent}
