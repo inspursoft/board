@@ -39,7 +39,6 @@ export class ResourceService {
     }).map((res: HttpResponse<Array<Object>>) => {
       let result = Array<ConfigMapList>();
       res.body.forEach((configMap: Object) => result.push(ConfigMapList.createFromRes(configMap)));
-      console.log(result);
       return result;
     })
   }

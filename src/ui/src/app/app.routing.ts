@@ -87,21 +87,28 @@ export const ROUTES: Routes = [
       {path: 'dashboard', component: DashboardComponent},
       {path: 'nodes', component: NodeComponent},
       {
-        path: 'projects',
-        children: [
+        path: 'projects', children: [
           {path: '', component: ProjectComponent},
           {path: 'members', component: MemberComponent}
         ]
       },
       {path: 'images', component: ImageListComponent},
-      {path: `${RouteResource}/${RouteConfigMap}`, component: ConfigMapListComponent},
+      {
+        path: RouteResource, children: [
+          {path: RouteConfigMap, component: ConfigMapListComponent}
+        ]
+      },
       {path: 'services', component: ServiceComponent, canDeactivate: [ServiceGuard]},
       {path: 'user-center', component: UserCenterComponent},
       {path: 'profile', component: ProfileComponent},
       {path: RouteKibana, component: KibanaComponent},
       {path: RouteGrafana, component: GrafanaComponent},
-      {path: `${RouteStorage}/${RoutePV}`, component: PvListComponent},
-      {path: `${RouteStorage}/${RoutePvc}`, component: PvcListComponent},
+      {
+        path: RouteStorage, children: [
+          {path: RoutePV, component: PvListComponent},
+          {path: RoutePvc, component: PvcListComponent}
+        ]
+      },
       {path: 'audit', component: ListAuditComponent}
     ]
   },
