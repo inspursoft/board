@@ -153,7 +153,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
   private detectChartData(lineType: LineType) {
     let thirdLine = this.lineThirdLine.get(lineType);
     let query = this.query.get(lineType);
-    let minTimeStrap = query.timestamp_base - MAX_COUNT_PER_DRAG * query.scale.valueOfSecond;
+    let minTimeStrap = query.timestamp_base - MAX_COUNT_PER_PAGE * query.scale.valueOfSecond;
     let maxTimeStrap = query.timestamp_base;
     let lineSeries = this.lineOptions.get(lineType);
     let data = this.lineResponses.get(lineType);
