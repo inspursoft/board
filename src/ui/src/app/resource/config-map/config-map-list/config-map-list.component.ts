@@ -13,7 +13,7 @@ import { ConfigMapDetailComponent } from "../config-map-detail/config-map-detail
 })
 export class ConfigMapListComponent extends CsModalParentBase {
   configMapList: Array<ConfigMapList>;
-  isInLoading = false;
+  isInLoading = true;
 
   constructor(private view: ViewContainerRef,
               private resolver: ComponentFactoryResolver,
@@ -24,17 +24,13 @@ export class ConfigMapListComponent extends CsModalParentBase {
   }
 
   retrieve() {
-    setTimeout(() => {
-      this.isInLoading = true;
-      //TODO: Add the pageIndex and pageSize params when backend is ok.
-      this.resourceService.getConfigMapList('', 1, 15).subscribe(
-        res => {
-          this.configMapList = res;
-        },
-        () => this.isInLoading = false,
-        () => this.isInLoading = false
-      )
-    });
+    this.isInLoading = true;
+    //TODO: Add the pageIndex and pageSize params when backend is ok.
+    this.resourceService.getConfigMapList('', 1, 15).subscribe(
+      res => this.configMapList = res,
+      () => this.isInLoading = false,
+      () => this.isInLoading = false
+    )
   }
 
   confirmToDeleteConfigMap(configMap: ConfigMapList) {
