@@ -226,14 +226,8 @@ func GetDeployConfig(deployConfigURL string) (model.Deployment, error) {
 	return deployConfig, err
 }
 
-func SyncServiceWithK8s(pName string, infos []*model.Info) error {
+func SyncServiceWithK8s(pName string) error {
 	logs.Debug("Sync Service Status of namespace %s", pName)
-	ignoreServices := map[string]bool{}
-	for i := range infos {
-		if infos[i].Kind == "Service" && infos[i].Namespace == pName {
-			ignoreServices[infos[i].Name] = true
-		}
-	}
 	//obtain serviceList data of
 	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
 		KubeConfigPath: kubeConfigPath(),
@@ -248,9 +242,6 @@ func SyncServiceWithK8s(pName string, infos []*model.Info) error {
 	//handle the serviceList data
 	var servicequery model.ServiceStatus
 	for _, item := range serviceList.Items {
-		if ignoreServices[item.Name] {
-			continue
-		}
 		project, err := GetProjectByName(item.Namespace)
 		if err != nil {
 			logs.Error("Failed to check project in DB %s", item.Namespace)

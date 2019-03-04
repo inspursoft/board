@@ -61,7 +61,12 @@ func (hc *HelmController) GetHelmRepoDetailAction() {
 		return
 	}
 
-	detail, err := service.GetRepoDetail(repo, nameRegex, pageIndex, pageSize)
+	var detail interface{}
+	if pageSize == 0 {
+		detail, err = service.GetRepoDetail(repo, nameRegex)
+	} else {
+		detail, err = service.GetPaginatedRepoDetail(repo, nameRegex, pageIndex, pageSize)
+	}
 	if err != nil {
 		hc.internalError(err)
 		return
@@ -204,21 +209,21 @@ func (hc *HelmController) InstallHelmChartAction() {
 		return
 	}
 
-	logs.Info("install helm chart %s with version %s from repository %d", release.Chart, release.ChartVersion, release.RepositoryId)
-	logs.Info("install release %s in project %d with values %s", release.Name, release.ProjectId, release.Values)
+	logs.Info("install helm chart %s with version %s from repository %d", release.Chart, release.ChartVersion, release.RepositoryID)
+	logs.Info("install release %s in project %d with values %s", release.Name, release.ProjectID, release.Values)
 
 	// do some check
-	repo, err := service.GetRepository(release.RepositoryId)
+	repo, err := service.GetRepository(release.RepositoryID)
 	if err != nil {
 		hc.internalError(err)
 		return
 	} else if repo == nil {
-		hc.customAbort(http.StatusBadRequest, fmt.Sprintf("Helm repository %d does not exists.", release.RepositoryId))
+		hc.customAbort(http.StatusBadRequest, fmt.Sprintf("Helm repository %d does not exists.", release.RepositoryID))
 		return
 	}
 
 	//Judge authority
-	project := hc.resolveUserPrivilegeByID(release.ProjectId)
+	project := hc.resolveUserPrivilegeByID(release.ProjectID)
 	//Check name exist or not
 	isExists, err := service.CheckReleaseNames(release.Name)
 	if err != nil {
@@ -229,7 +234,7 @@ func (hc *HelmController) InstallHelmChartAction() {
 		hc.customAbort(http.StatusConflict, "release "+release.Name+" already exists.")
 	}
 
-	err = service.InstallChart(repo, release.Chart, release.ChartVersion, release.Name, release.ProjectId, project.Name, release.Values, hc.currentUser.ID, hc.currentUser.Username)
+	err = service.InstallChart(repo, release.Chart, release.ChartVersion, release.Name, release.ProjectID, project.Name, release.Values, hc.currentUser.ID, hc.currentUser.Username)
 	if err != nil {
 		hc.internalError(err)
 		return

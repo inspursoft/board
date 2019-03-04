@@ -4621,7 +4621,7 @@ paths:
         200:
           description: Return matched repository detail information.
           schema:
-            $ref: '#/definitions/RepositoryDetail'
+            $ref: '#/definitions/PaginatedRepositoryDetail'
         401:
           description: User need to log in first.
         404:
@@ -6753,6 +6753,16 @@ definitions:
     type: object
     allOf:
     - $ref: '#/definitions/Repository'
+    - type: object
+      properties:
+        charts:
+          type: array
+          items:
+            $ref: '#/definitions/ChartVersions'
+  PaginatedRepositoryDetail:                          
+    type: object
+    allOf:
+    - $ref: '#/definitions/Repository'
     - $ref: '#/definitions/PaginatedChartVersions'
   PaginatedChartVersions:                          
     type: object
@@ -6859,7 +6869,7 @@ definitions:
       project_name:
         type: string
         description: The project's name which include this release.  
-      repoid:
+      repository_id:
         type: integer
         format: int32
         description: The Repository ID of this release.    

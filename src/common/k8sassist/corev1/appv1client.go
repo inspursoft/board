@@ -65,10 +65,6 @@ func (p *AppV1Client) ConfigMap(namespace string) ConfigMapInterface {
 	return apps.NewConfigMap(namespace, p.Clientset.CoreV1().ConfigMaps(namespace))
 }
 
-func (p *AppV1Client) Mapper() MapperInterface {
-	return apps.NewMapper()
-}
-
 // AppV1ClientInterface level 1 interface to access others
 type AppV1ClientInterface interface {
 	Discovery() ServerVersionInterface
@@ -83,7 +79,6 @@ type AppV1ClientInterface interface {
 	PersistentVolume() PersistentVolumeInterface
 	PersistentVolumeClaim(namespace string) PersistentVolumeClaimInterface
 	ConfigMap(namespace string) ConfigMapInterface
-	Mapper() MapperInterface
 }
 
 // ServerVersionInterface has a method for retrieving the server's version.
@@ -225,9 +220,4 @@ type ConfigMapInterface interface {
 	//	DeleteCollection(options *meta_v1.DeleteOptions, listOptions meta_v1.ListOptions) error
 	Get(name string) (*model.ConfigMap, error)
 	List() (*model.ConfigMapList, error)
-}
-
-type MapperInterface interface {
-	Visit(info string, fn model.VisitorFunc) error
-	Transform(in string, fn model.Modifier) (string, error)
 }

@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"math"
 	"net/http"
 	"net/url"
 	"os"
@@ -336,30 +337,7 @@ func (r *ChartRepository) DownloadChart(chartName, chartVersion, targetdir strin
 	return nil
 }
 
-//func iconFromFile(versions ChartVersions) (string, string, error) {
-//	for _, version := range versions {
-//		if version.Dir == "" || version.Icon == "" {
-//			continue
-//		}
-//
-//		filename := filepath.Base(version.Icon)
-//		iconFile := filepath.Join(filepath.Dir(version.Dir), filename)
-//
-//		bytes, err := ioutil.ReadFile(iconFile)
-//		if err == nil {
-//			return base64.StdEncoding.EncodeToString(bytes), filename, nil
-//		}
-//	}
-//
-//	return "", "", os.ErrNotExist
-//}
-
 func (r *ChartRepository) Icon(versions ChartVersions) (string, string, error) {
-	//	data, file, err := iconFromFile(versions)
-	//	if err == nil {
-	//		return data, file, nil
-	//	}
-
 	if len(versions) == 0 || versions[0].Icon == "" {
 		return "", "", nil
 	}
@@ -398,6 +376,9 @@ func (r *ChartRepository) Icon(versions ChartVersions) (string, string, error) {
 }
 
 func (r *ChartRepository) InstallChart(chartName, chartVersion, releasename, namespace, values, helmhost string) (string, error) {
+	if helmhost == "" {
+		return "", fmt.Errorf("You must specify the HELM_HOST environment when the apiserver starts")
+	}
 	targetdir, err := ioutil.TempDir("", "template")
 	if err != nil {
 		return "", err
@@ -593,7 +574,10 @@ func installChart(name, namespace, rootDir, helmhost string) error {
 	return nil
 }
 
-func DeleteReleaseFromRepository(release, helmhost string) error {
+func DeleteRelease(release, helmhost string) error {
+	if helmhost == "" {
+		return fmt.Errorf("You must specify the HELM_HOST environment when the apiserver starts")
+	}
 	cmd := exec.Command(helmName, "delete", "--purge", release)
 	cmd.Env = []string{fmt.Sprintf("%s=%s", "HELM_HOST", helmhost)}
 	combinedOutput, err := cmd.CombinedOutput()
@@ -603,8 +587,29 @@ func DeleteReleaseFromRepository(release, helmhost string) error {
 	return errors.New(string(combinedOutput))
 }
 
-func ListReleases(helmhost string) (*ReleaseList, error) {
-	cmd := exec.Command(helmName, "ls", "-a", "--output", "json")
+func ListAllReleases(helmhost string) (*ReleaseList, error) {
+	if helmhost == "" {
+		return nil, fmt.Errorf("You must specify the HELM_HOST environment when the apiserver starts")
+	}
+	cmd := exec.Command(helmName, "ls", "-a", "-m", fmt.Sprintf("%d", math.MaxInt32), "--output", "json")
+	cmd.Env = []string{fmt.Sprintf("%s=%s", "HELM_HOST", helmhost)}
+	combinedOutput, err := cmd.CombinedOutput()
+	if err != nil {
+		return nil, err
+	}
+	list := new(ReleaseList)
+	err = json.Unmarshal(combinedOutput, list)
+	if err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
+func ListDeployedReleasesByNamespace(helmhost, namespace string) (*ReleaseList, error) {
+	if helmhost == "" {
+		return nil, fmt.Errorf("You must specify the HELM_HOST environment when the apiserver starts")
+	}
+	cmd := exec.Command(helmName, "ls", "--deployed", "-m", fmt.Sprintf("%d", math.MaxInt32), "--namespace", namespace, "--output", "json")
 	cmd.Env = []string{fmt.Sprintf("%s=%s", "HELM_HOST", helmhost)}
 	combinedOutput, err := cmd.CombinedOutput()
 	if err != nil {
@@ -619,6 +624,9 @@ func ListReleases(helmhost string) (*ReleaseList, error) {
 }
 
 func GetRelease(release, helmhost string) (*Release, error) {
+	if helmhost == "" {
+		return nil, fmt.Errorf("You must specify the HELM_HOST environment when the apiserver starts")
+	}
 	cmd := exec.Command(helmName, "ls", "-m", "1", "-o", release, "--output", "json")
 	cmd.Env = []string{fmt.Sprintf("%s=%s", "HELM_HOST", helmhost)}
 	combinedOutput, err := cmd.CombinedOutput()
@@ -639,6 +647,9 @@ func GetRelease(release, helmhost string) (*Release, error) {
 }
 
 func GetReleaseValues(release, helmhost string) (string, error) {
+	if helmhost == "" {
+		return "", fmt.Errorf("You must specify the HELM_HOST environment when the apiserver starts")
+	}
 	cmd := exec.Command(helmName, "get", "values", release)
 	cmd.Env = []string{fmt.Sprintf("%s=%s", "HELM_HOST", helmhost)}
 	combinedOutput, err := cmd.CombinedOutput()
@@ -649,6 +660,9 @@ func GetReleaseValues(release, helmhost string) (string, error) {
 }
 
 func GetReleaseNotes(release, helmhost string) (string, error) {
+	if helmhost == "" {
+		return "", fmt.Errorf("You must specify the HELM_HOST environment when the apiserver starts")
+	}
 	cmd := exec.Command(helmName, "get", "notes", release)
 	cmd.Env = []string{fmt.Sprintf("%s=%s", "HELM_HOST", helmhost)}
 	combinedOutput, err := cmd.CombinedOutput()
@@ -659,6 +673,9 @@ func GetReleaseNotes(release, helmhost string) (string, error) {
 }
 
 func GetReleaseManifest(release, helmhost string) (string, error) {
+	if helmhost == "" {
+		return "", fmt.Errorf("You must specify the HELM_HOST environment when the apiserver starts")
+	}
 	cmd := exec.Command(helmName, "get", "manifest", release)
 	cmd.Env = []string{fmt.Sprintf("%s=%s", "HELM_HOST", helmhost)}
 	combinedOutput, err := cmd.CombinedOutput()
@@ -669,6 +686,9 @@ func GetReleaseManifest(release, helmhost string) (string, error) {
 }
 
 func GetReleaseStatus(release, helmhost string) (string, error) {
+	if helmhost == "" {
+		return "", fmt.Errorf("You must specify the HELM_HOST environment when the apiserver starts")
+	}
 	cmd := exec.Command(helmName, "status", release, "--output", "json")
 	cmd.Env = []string{fmt.Sprintf("%s=%s", "HELM_HOST", helmhost)}
 	combinedOutput, err := cmd.CombinedOutput()

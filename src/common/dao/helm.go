@@ -5,9 +5,10 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
-type filterCondition struct {
-	name   string
-	values []interface{}
+type ReleaseFilter struct {
+	RepositoryID int64
+	OwnerID      int64
+	Name         string
 }
 
 func AddHelmRepository(repo model.Repository) (int64, error) {
@@ -104,32 +105,24 @@ func DeleteHelmRelease(release model.ReleaseModel) (int64, error) {
 	return num, err
 }
 
-func GetHelmReleasesByRepositoryAndUser(repoid, userid int64) ([]model.ReleaseModel, error) {
-	filters := []filterCondition{}
-	if repoid > 0 {
-		filters = append(filters, filterCondition{
-			name:   "repoid",
-			values: []interface{}{repoid},
-		})
-	}
-	if userid > 0 {
-		filters = append(filters, filterCondition{
-			name:   "owner_id",
-			values: []interface{}{userid},
-		})
-	}
-	return GetHelmReleases(filters...)
-}
-
-func GetHelmReleases(filters ...filterCondition) ([]model.ReleaseModel, error) {
+func GetHelmReleases(filter *ReleaseFilter) ([]model.ReleaseModel, error) {
 	releases := make([]model.ReleaseModel, 0)
 	o := orm.NewOrm()
 	qs := o.QueryTable("release").OrderBy("-creation_time")
-	for _, filter := range filters {
-		if filter.name != "" {
-			qs = qs.Filter(filter.name, filter.values...)
+
+	if filter != nil {
+		if filter.OwnerID <= 0 {
+			qs = qs.Filter("owner_id", filter.OwnerID)
+		}
+
+		if filter.RepositoryID <= 0 {
+			qs = qs.Filter("repository_id", filter.RepositoryID)
+		}
+		if filter.Name != "" {
+			qs = qs.Filter("name", filter.Name)
 		}
 	}
+
 	_, err := qs.All(&releases)
 	if err != nil {
 		return nil, err

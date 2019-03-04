@@ -1,7 +1,17 @@
 package model
 
 import (
+	"bytes"
+	"fmt"
+	"io"
 	"time"
+
+	gyaml "github.com/ghodss/yaml"
+	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	"k8s.io/apimachinery/pkg/util/yaml"
 )
 
 type Repository struct {
@@ -12,6 +22,11 @@ type Repository struct {
 }
 
 type RepositoryDetail struct {
+	Repository        `yaml:",inline"`
+	ChartVersionsList []*ChartVersions `json:"charts"`
+}
+
+type PaginatedRepositoryDetail struct {
 	Repository             `yaml:",inline"`
 	PaginatedChartVersions `yaml:",inline"`
 }
@@ -66,9 +81,9 @@ type File struct {
 type Release struct {
 	ID             int64     `json:"id,omitempty"`
 	Name           string    `json:"name"`
-	ProjectId      int64     `json:"project_id"`
+	ProjectID      int64     `json:"project_id"`
 	ProjectName    string    `json:"project_name"`
-	RepositoryId   int64     `json:"repoid"`
+	RepositoryID   int64     `json:"repository_id"`
 	RepositoryName string    `json:"repository"`
 	Chart          string    `json:"chart"`
 	ChartVersion   string    `json:"chartversion"`
@@ -90,9 +105,9 @@ type ReleaseDetail struct {
 type ReleaseModel struct {
 	ID             int64     `orm:"column(id)"`
 	Name           string    `orm:"column(name)"`
-	ProjectId      int64     `orm:"column(project_id)"`
+	ProjectID      int64     `orm:"column(project_id)"`
 	ProjectName    string    `orm:"column(project_name)"`
-	RepositoryId   int64     `orm:"column(repoid)"`
+	RepositoryID   int64     `orm:"column(repository_id)"`
 	RepostiroyName string    `orm:"column(repository)"`
 	Workloads      string    `orm:"column(workloads)`
 	OwnerID        int64     `orm:"column(owner_id)"`
@@ -105,7 +120,7 @@ func (rm *ReleaseModel) TableName() string {
 	return "release"
 }
 
-type VisitorFunc func([]*Info, error) error
+type VisitorFunc func([]*K8sInfo, error) error
 
 // Modifier modify the object
 type Modifier func(interface{}) (interface{}, error)
@@ -120,7 +135,7 @@ type GroupVersionKind struct {
 
 // Info contains temporary info to execute a REST call, or show the results
 // of an already completed REST call.
-type Info struct {
+type K8sInfo struct {
 	// Namespace will be set if the object is namespaced and has a specified value.
 	Namespace string
 	Name      string
@@ -128,4 +143,88 @@ type Info struct {
 
 	// object source string
 	Source string
+}
+
+// K8sHelper is a convenience struct for holding references to the interfaces
+// needed to create K8sInfo for arbitrary objects.
+type K8sHelper struct {
+	meta.MetadataAccessor
+	runtime.Decoder
+}
+
+// infoForData creates an K8sInfo object for the given data. An error is returned
+// if any of the decoding or client lookup steps fail. Name and namespace will be
+// set into K8sInfo if the mapping's MetadataAccessor can retrieve them.
+func (m *K8sHelper) infoForData(data []byte) (*K8sInfo, error) {
+	obj, gvk, err := m.Decode(data, nil, nil)
+	if err != nil {
+		return nil, fmt.Errorf("unable to decode %s: %v", string(data), err)
+	}
+
+	name, _ := m.MetadataAccessor.Name(obj)
+	namespace, _ := m.MetadataAccessor.Namespace(obj)
+
+	return &K8sInfo{
+		Source:    string(data),
+		Namespace: namespace,
+		Name:      name,
+		GroupVersionKind: GroupVersionKind{
+			Group:   gvk.Group,
+			Version: gvk.Version,
+			Kind:    gvk.Kind,
+		},
+	}, nil
+}
+
+func (m *K8sHelper) Visit(info string, fn VisitorFunc) error {
+	buffer := bytes.NewBufferString(info)
+	d := yaml.NewYAMLOrJSONDecoder(buffer, 4096)
+	var infos []*K8sInfo
+	errs := []error(nil)
+	for {
+		ext := runtime.RawExtension{}
+		if err := d.Decode(&ext); err != nil {
+			if err == io.EOF {
+				break
+			}
+			return err
+		}
+		// TODO: This needs to be able to handle object in other encodings and schemas.
+		ext.Raw = bytes.TrimSpace(ext.Raw)
+		if len(ext.Raw) == 0 || bytes.Equal(ext.Raw, []byte("null")) {
+			continue
+		}
+
+		info, err := m.infoForData(ext.Raw)
+		if err != nil {
+			errs = append(errs, err)
+		}
+		infos = append(infos, info)
+	}
+
+	return fn(infos, utilerrors.NewAggregate(errs))
+}
+
+func (m *K8sHelper) Transform(in string, fn Modifier) (string, error) {
+	src := make(map[string]interface{})
+	err := gyaml.Unmarshal([]byte(in), &src)
+	if err != nil {
+		return in, err
+	}
+	target, err := fn(src)
+	if err != nil {
+		return in, err
+	}
+	bs, err := gyaml.Marshal(target)
+	if err != nil {
+		return in, err
+	}
+	return string(bs), nil
+}
+
+func NewK8sHelper() *K8sHelper {
+	return &K8sHelper{
+		meta.NewAccessor(),
+		unstructured.UnstructuredJSONScheme,
+	}
 }

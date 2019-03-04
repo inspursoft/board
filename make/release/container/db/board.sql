@@ -443,7 +443,7 @@ INSERT INTO `board`.`repository`
         `name` VARCHAR(255) NOT NULL DEFAULT '',
         `project_id` INT NOT NULL,
         `project_name` VARCHAR(255) NOT NULL,
-        `repoid` INT NOT NULL,
+        `repository_id` INT NOT NULL,
         `repository` VARCHAR(255) NOT NULL,
         `workloads` TEXT,
         `owner_id` INT NOT NULL,
