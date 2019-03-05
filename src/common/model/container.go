@@ -6,13 +6,20 @@ type Container struct {
 	//VolumeMounts  VolumeStruct `json:"volume_mount"`
 	VolumeMounts  []VolumeMountStruct `json:"volume_mounts"`
 	Image         ImageIndex          `json:"image"`
-	Env           []EnvStruct         `json:"env"`
+	Env           []EnvStructCont     `json:"env"`
 	ContainerPort []int               `json:"container_port"`
 	Command       string              `json:"command"`
 	CPURequest    string              `json:"cpu_request"`
 	MemRequest    string              `json:"mem_request"`
 	CPULimit      string              `json:"cpu_limit"`
 	MemLimit      string              `json:"mem_limit"`
+}
+
+type EnvStructCont struct {
+	EnvName          string `json:"dockerfile_envname"`
+	EnvValue         string `json:"dockerfile_envvalue"`
+	EnvConfigMapName string `json:"configmap_name"`
+	EnvConfigMapKey  string `json:"configmap_key"`
 }
 
 type VolumeStruct struct {

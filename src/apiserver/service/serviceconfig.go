@@ -518,9 +518,23 @@ func setDeploymentContainers(containerList []model.Container, registryURI string
 		if len(cont.Env) > 0 {
 			for _, enviroment := range cont.Env {
 				if enviroment.EnvName != "" {
+					var evs *model.EnvVarSource
+					if enviroment.EnvConfigMapName == "" {
+						evs = nil
+					} else {
+						evs = &model.EnvVarSource{
+							ConfigMapKeyRef: &model.ConfigMapKeySelector{
+								Key: enviroment.EnvConfigMapKey,
+								LocalObjectReference: model.LocalObjectReference{
+									Name: enviroment.EnvConfigMapName,
+								},
+							},
+						}
+					}
 					container.Env = append(container.Env, model.EnvVar{
-						Name:  enviroment.EnvName,
-						Value: enviroment.EnvValue,
+						Name:      enviroment.EnvName,
+						Value:     enviroment.EnvValue,
+						ValueFrom: evs,
 					})
 				}
 			}
