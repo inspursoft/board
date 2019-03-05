@@ -5229,6 +5229,10 @@ definitions:
         type: string
       dockerfile_envvalue:
         type: string   
+      configmap_key:
+        type: string
+      configmap_name:
+        type: string          
   ExternalService:
     type: object
     properties:
@@ -5304,10 +5308,6 @@ definitions:
       name:
         type: string
       value:
-        type: string  
-      configmap_key:
-        type: string
-      configmap_name:
         type: string      
   ContainerPorts:
     type: object
