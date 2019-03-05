@@ -5304,7 +5304,11 @@ definitions:
       name:
         type: string
       value:
-        type: string        
+        type: string  
+      configmap_key:
+        type: string
+      configmap_name:
+        type: string      
   ContainerPorts:
     type: object
     properties:
