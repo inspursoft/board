@@ -76,6 +76,8 @@ export class VolumeStruct implements UiServerExchangeData<VolumeStruct> {
   public container_path = '';
   public container_path_flag = 0;
   public target_pvc = '';
+  public container_file = '';
+  public target_file = '';
 
   serverToUi(serverResponse: Object): VolumeStruct {
     this.target_storage_service = serverResponse['target_storage_service'];
@@ -85,7 +87,17 @@ export class VolumeStruct implements UiServerExchangeData<VolumeStruct> {
     this.volume_type = serverResponse['volume_type'];
     this.container_path_flag = serverResponse['container_path_flag'];
     this.target_pvc = serverResponse['target_pvc'];
+    this.container_file = serverResponse['container_file'];
+    this.target_file = serverResponse['target_file'];
     return this;
+  }
+
+  get containerPathFlag(): boolean {
+    return this.container_path_flag == 1;
+  }
+
+  set containerPathFlag(value) {
+    this.container_path_flag = value ? 1 : 0;
   }
 
   uiToServer(): VolumeStruct {
@@ -198,7 +210,7 @@ export class ExternalService implements UiServerExchangeData<ExternalService> {
 }
 
 export enum AffinityCardListView {
-  aclvColumn = 'column',aclvRow = 'row'
+  aclvColumn = 'column', aclvRow = 'row'
 }
 
 export class AffinityCardData {
@@ -304,7 +316,7 @@ export class UIServiceStep3 extends UIServiceStepBase {
     this.affinityList.forEach((value: {antiFlag: boolean, services: Array<AffinityCardData>}) => {
       let serviceNames = Array<string>();
       value.services.forEach((card: AffinityCardData) => serviceNames.push(card.serviceName));
-      postAffinityData.push({anti_flag: value.antiFlag ? 1 : 0 , service_names: serviceNames})
+      postAffinityData.push({anti_flag: value.antiFlag ? 1 : 0, service_names: serviceNames})
     });
     result.postData = {external_service_list: this.externalServiceList, affinity_list: postAffinityData};
     return result;

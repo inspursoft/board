@@ -285,10 +285,20 @@ func ToK8sVolumeSource(volumeSource *model.VolumeSource) *v1.VolumeSource {
 		}
 	}
 
+	var configmap *v1.ConfigMapVolumeSource
+	if volumeSource.ConfigMap != nil {
+		configmap = &v1.ConfigMapVolumeSource{
+			LocalObjectReference: (v1.LocalObjectReference)(volumeSource.ConfigMap.LocalObjectReference),
+			//			Items:                volumeSource.ConfigMap.Items,
+			//TODO: suppurt Item later
+		}
+	}
+
 	return &v1.VolumeSource{
 		HostPath: hp,
 		NFS:      nfs,
 		PersistentVolumeClaim: pvc,
+		ConfigMap:             configmap,
 	}
 }
 
@@ -348,10 +358,32 @@ func ToK8sContainerPort(containerPort model.ContainerPort) v1.ContainerPort {
 	}
 }
 
+func ToK8sConfigMapKeySelector(cmks *model.ConfigMapKeySelector) *v1.ConfigMapKeySelector {
+	if cmks == nil {
+		return nil
+	}
+	return &v1.ConfigMapKeySelector{
+		Key:      cmks.Key,
+		Optional: cmks.Optional,
+		LocalObjectReference: v1.LocalObjectReference{
+			Name: cmks.LocalObjectReference.Name,
+		},
+	}
+}
+
 func ToK8sEnvVar(env model.EnvVar) v1.EnvVar {
+	var valuefrom *v1.EnvVarSource
+	if env.ValueFrom == nil {
+		valuefrom = nil
+	} else {
+		valuefrom = &v1.EnvVarSource{
+			ConfigMapKeyRef: ToK8sConfigMapKeySelector(env.ValueFrom.ConfigMapKeyRef),
+		}
+	}
 	return v1.EnvVar{
-		Name:  env.Name,
-		Value: env.Value,
+		Name:      env.Name,
+		Value:     env.Value,
+		ValueFrom: valuefrom,
 	}
 }
 
@@ -645,10 +677,19 @@ func FromK8sVolumeSource(volumeSource v1.VolumeSource) model.VolumeSource {
 			ReadOnly:  volumeSource.PersistentVolumeClaim.ReadOnly,
 		}
 	}
+
+	var configmap *model.ConfigMapVolumeSource
+	if volumeSource.ConfigMap != nil {
+		configmap = &model.ConfigMapVolumeSource{
+			LocalObjectReference: (model.LocalObjectReference)(volumeSource.ConfigMap.LocalObjectReference),
+		}
+	}
+
 	return model.VolumeSource{
 		HostPath: hp,
 		NFS:      nfs,
 		PersistentVolumeClaim: pvc,
+		ConfigMap:             configmap,
 	}
 }
 
@@ -710,9 +751,22 @@ func FromK8sContainerPort(containerPort v1.ContainerPort) model.ContainerPort {
 }
 
 func FromK8sEnvVar(env v1.EnvVar) model.EnvVar {
+	var valuefrom *model.EnvVarSource
+	if env.ValueFrom == nil {
+		valuefrom = nil
+	} else {
+		valuefrom = &model.EnvVarSource{
+			ConfigMapKeyRef: &model.ConfigMapKeySelector{
+				LocalObjectReference: model.LocalObjectReference(env.ValueFrom.ConfigMapKeyRef.LocalObjectReference),
+				Key:                  env.ValueFrom.ConfigMapKeyRef.Key,
+				Optional:             env.ValueFrom.ConfigMapKeyRef.Optional,
+			},
+		}
+	}
 	return model.EnvVar{
-		Name:  env.Name,
-		Value: env.Value,
+		Name:      env.Name,
+		Value:     env.Value,
+		ValueFrom: valuefrom,
 	}
 }
 

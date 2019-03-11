@@ -508,7 +508,8 @@ func setDeploymentContainers(containerList []model.Container, registryURI string
 					MountPath: v.ContainerPath,
 				}
 				if v.ContainerPathFlag != 0 {
-					_, volumeMount.SubPath = filepath.Split(v.ContainerPath)
+					volumeMount.MountPath = filepath.Join(volumeMount.MountPath, v.ContainerFile)
+					volumeMount.SubPath = v.TargetFile
 				}
 				container.VolumeMounts = append(container.VolumeMounts, volumeMount)
 			}
@@ -517,9 +518,23 @@ func setDeploymentContainers(containerList []model.Container, registryURI string
 		if len(cont.Env) > 0 {
 			for _, enviroment := range cont.Env {
 				if enviroment.EnvName != "" {
+					var evs *model.EnvVarSource
+					if enviroment.EnvConfigMapName == "" {
+						evs = nil
+					} else {
+						evs = &model.EnvVarSource{
+							ConfigMapKeyRef: &model.ConfigMapKeySelector{
+								Key: enviroment.EnvConfigMapKey,
+								LocalObjectReference: model.LocalObjectReference{
+									Name: enviroment.EnvConfigMapName,
+								},
+							},
+						}
+					}
 					container.Env = append(container.Env, model.EnvVar{
-						Name:  enviroment.EnvName,
-						Value: enviroment.EnvValue,
+						Name:      enviroment.EnvName,
+						Value:     enviroment.EnvValue,
+						ValueFrom: evs,
 					})
 				}
 			}
@@ -601,6 +616,17 @@ func setVolumes(volumeList []model.VolumeMountStruct) []model.Volume {
 				VolumeSource: model.VolumeSource{
 					PersistentVolumeClaim: &model.PersistentVolumeClaimVolumeSource{
 						ClaimName: v.TargetPVC,
+					},
+				},
+			})
+		case "configmap":
+			volumes = append(volumes, model.Volume{
+				Name: v.VolumeName,
+				VolumeSource: model.VolumeSource{
+					ConfigMap: &model.ConfigMapVolumeSource{
+						LocalObjectReference: model.LocalObjectReference{
+							Name: v.TargetConfigMap,
+						},
 					},
 				},
 			})

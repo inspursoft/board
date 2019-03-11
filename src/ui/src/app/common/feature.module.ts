@@ -14,6 +14,7 @@ import { KibanaModule } from "../kibana/kibana.module";
 import { GrafanaModule } from "../grafana/grafana.module";
 import { StorageModule } from "../storage/storage.module";
 import { HelmModule } from "../helm/helm.module";
+import { ResourceModule } from "../resource/resource.module";
 
 @NgModule({
   exports: [
@@ -31,7 +32,8 @@ import { HelmModule } from "../helm/helm.module";
     KibanaModule,
     GrafanaModule,
     StorageModule,
-    HelmModule
+    HelmModule,
+    ResourceModule
   ]
 })
 export class FeatureModule {}

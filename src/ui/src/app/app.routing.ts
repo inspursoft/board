@@ -18,7 +18,6 @@ import { UserCenterComponent } from './user-center/user-center.component';
 import { AuthGuard, ServiceGuard } from './shared/auth-guard.service';
 import { ProfileComponent } from "./profile/profile.component";
 import { AppInitService } from "./app.init.service";
-import { MemberComponent } from "./shared/create-project/member/member.component";
 import { ListAuditComponent } from "./audit/operation-audit-list/list-audit.component";
 import { ResetPasswordComponent } from "./account/reset-password/reset-password.component";
 import { ForgotPasswordComponent } from "./account/forgot-password/forgot-password.component";
@@ -27,21 +26,13 @@ import { BadGatewayComponent } from "./shared/error-pages/bad-gateway.component/
 import { BoardLoadingComponent } from "./shared/error-pages/board-loading.component/board-loading.component";
 import { KibanaComponent } from "./kibana/kibana/kibana.component";
 import { GrafanaComponent } from "./grafana/grafana/grafana.component";
-import {
-  RouteGrafana,
-  RouteHelm,
-  RouteKibana,
-  RoutePV,
-  RoutePvc,
-  RouteReleaseList,
-  RouteRepoList,
-  RouteStorage
-} from "./shared/shared.const";
+import { RouteHelm, RouteReleaseList, RouteRepoList } from "./shared/shared.const";
 import { PvListComponent } from "./storage/pv/pv-list.compoent/pv-list.component";
 import { Observable } from "rxjs/Observable";
 import { PvcListComponent } from "./storage/pvc/pvc-list.component/pvc-list.component";
 import { HelmHostComponent } from "./helm/helm-host/helm-host.component";
 import { ChartReleaseListComponent } from "./helm/chart-release-list/chart-release-list.component";
+import { ConfigMapListComponent } from "./resource/config-map/config-map-list/config-map-list.component";
 
 @Injectable()
 export class SystemInfoResolve implements Resolve<any> {
@@ -96,23 +87,26 @@ export const ROUTES: Routes = [
       {path: 'search', component: GlobalSearchComponent},
       {path: 'dashboard', component: DashboardComponent},
       {path: 'nodes', component: NodeComponent},
+      {path: 'projects', component: ProjectComponent},
+      {path: 'images', component: ImageListComponent},
       {
-        path: 'projects',
-        children: [
-          {path: '', component: ProjectComponent},
-          {path: 'members', component: MemberComponent}
+        path: 'resource', children: [
+          {path: 'config-map', component: ConfigMapListComponent}
         ]
       },
-      {path: 'images', component: ImageListComponent},
       {path: 'services', component: ServiceComponent, canDeactivate: [ServiceGuard]},
       {path: `${RouteHelm}/${RouteRepoList}`, component: HelmHostComponent},
       {path: `${RouteHelm}/${RouteReleaseList}`, component: ChartReleaseListComponent},
       {path: 'user-center', component: UserCenterComponent},
       {path: 'profile', component: ProfileComponent},
-      {path: RouteKibana, component: KibanaComponent},
-      {path: RouteGrafana, component: GrafanaComponent},
-      {path: `${RouteStorage}/${RoutePV}`, component: PvListComponent},
-      {path: `${RouteStorage}/${RoutePvc}`, component: PvcListComponent},
+      {path: 'kibana-url', component: KibanaComponent},
+      {path: 'grafana', component: GrafanaComponent},
+      {
+        path: 'storage', children: [
+          {path: 'pv', component: PvListComponent},
+          {path: 'pvc', component: PvcListComponent}
+        ]
+      },
       {path: 'audit', component: ListAuditComponent}
     ]
   },

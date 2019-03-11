@@ -1,0 +1,56 @@
+div.modal-body {
+  min-height: 300px;
+}
+
+div.dynamic-line-container {
+  display: flex;
+  margin-top: 2px;
+  margin-bottom: 2px;
+  align-items: center;
+}
+
+div.dynamic-line-container.key-title {
+  justify-content: space-around;
+  margin-top: 10px;
+}
+
+div.dynamic-line-container.key-title span {
+  font-size: 16px;
+}
+
+div.dynamic-line-container cs-input {
+  width: 100%;
+}
+
+span.filed-text {
+  width: 180px;
+  text-align: right;
+  margin-right: 10px;
+}
+
+div.plus-container {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+}
+
+div.dynamic-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+div.dynamic-icon-container {
+  flex-basis: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+clr-icon.dynamic-icon {
+  color: white;
+  background: green;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}

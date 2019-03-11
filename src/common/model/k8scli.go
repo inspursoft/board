@@ -234,10 +234,52 @@ type VolumeSource struct {
 	HostPath              *HostPathVolumeSource
 	NFS                   *NFSVolumeSource
 	PersistentVolumeClaim *PersistentVolumeClaimVolumeSource `json:"persistentVolumeClaim,omitempty" protobuf:"bytes,10,opt,name=persistentVolumeClaim"`
+	ConfigMap             *ConfigMapVolumeSource             `json:"configMap,omitempty" protobuf:"bytes,19,opt,name=configMap"`
 }
 
 type HostPathVolumeSource struct {
 	Path string
+}
+
+type ConfigMapVolumeSource struct {
+	LocalObjectReference `json:",inline" protobuf:"bytes,1,opt,name=localObjectReference"`
+	// If unspecified, each key-value pair in the Data field of the referenced
+	// ConfigMap will be projected into the volume as a file whose name is the
+	// key and content is the value. If specified, the listed keys will be
+	// projected into the specified paths, and unlisted keys will not be
+	// present. If a key is specified which is not present in the ConfigMap,
+	// the volume setup will error unless it is marked optional. Paths must be
+	// relative and may not contain the '..' path or start with '..'.
+	// +optional
+	Items []KeyToPath `json:"items,omitempty" protobuf:"bytes,2,rep,name=items"`
+	// Optional: mode bits to use on created files by default. Must be a
+	// value between 0 and 0777. Defaults to 0644.
+	// Directories within the path are not affected by this setting.
+	// This might be in conflict with other options that affect the file
+	// mode, like fsGroup, and the result can be other mode bits set.
+	// +optional
+	DefaultMode *int32 `json:"defaultMode,omitempty" protobuf:"varint,3,opt,name=defaultMode"`
+	// Specify whether the ConfigMap or it's keys must be defined
+	// +optional
+	Optional *bool `json:"optional,omitempty" protobuf:"varint,4,opt,name=optional"`
+}
+
+// Maps a string key to a path within a volume.
+type KeyToPath struct {
+	// The key to project.
+	Key string `json:"key" protobuf:"bytes,1,opt,name=key"`
+
+	// The relative path of the file to map the key to.
+	// May not be an absolute path.
+	// May not contain the path element '..'.
+	// May not start with the string '..'.
+	Path string `json:"path" protobuf:"bytes,2,opt,name=path"`
+	// Optional: mode bits to use on this file, must be a value between 0
+	// and 0777. If not specified, the volume defaultMode will be used.
+	// This might be in conflict with other options that affect the file
+	// mode, like fsGroup, and the result can be other mode bits set.
+	// +optional
+	Mode *int32 `json:"mode,omitempty" protobuf:"varint,3,opt,name=mode"`
 }
 
 //type NFSVolumeSource struct {
@@ -307,6 +349,38 @@ type ContainerPort struct {
 type EnvVar struct {
 	Name  string
 	Value string
+	// Source for the environment variable's value. Cannot be used if value is not empty.
+	// +optional
+	ValueFrom *EnvVarSource `json:"valueFrom,omitempty" protobuf:"bytes,3,opt,name=valueFrom"`
+}
+
+// EnvVarSource represents a source for the value of an EnvVar.
+type EnvVarSource struct {
+	// Selects a field of the pod: supports metadata.name, metadata.namespace, metadata.labels, metadata.annotations,
+	// spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP.
+	// +optional
+	//FieldRef *ObjectFieldSelector `json:"fieldRef,omitempty" protobuf:"bytes,1,opt,name=fieldRef"`
+	// Selects a resource of the container: only resources limits and requests
+	// (limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.
+	// +optional
+	//ResourceFieldRef *ResourceFieldSelector `json:"resourceFieldRef,omitempty" protobuf:"bytes,2,opt,name=resourceFieldRef"`
+	// Selects a key of a ConfigMap.
+	// +optional
+	ConfigMapKeyRef *ConfigMapKeySelector `json:"configMapKeyRef,omitempty" protobuf:"bytes,3,opt,name=configMapKeyRef"`
+	// Selects a key of a secret in the pod's namespace
+	// +optional
+	//SecretKeyRef *SecretKeySelector `json:"secretKeyRef,omitempty" protobuf:"bytes,4,opt,name=secretKeyRef"`
+}
+
+// Selects a key from a ConfigMap.
+type ConfigMapKeySelector struct {
+	// The ConfigMap to select from.
+	LocalObjectReference `json:",inline" protobuf:"bytes,1,opt,name=localObjectReference"`
+	// The key to select.
+	Key string `json:"key" protobuf:"bytes,2,opt,name=key"`
+	// Specify whether the ConfigMap or it's key must be defined
+	// +optional
+	Optional *bool `json:"optional,omitempty" protobuf:"varint,3,opt,name=optional"`
 }
 
 // VolumeMount describes a mounting of a Volume within a container.
