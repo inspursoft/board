@@ -55,12 +55,12 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   }
 
   isServiceCanChangePauseStatus(service: Service): boolean {
-    return service.service_status in [SERVICE_STATUS.RUNNING, SERVICE_STATUS.WARNING]
+    return [SERVICE_STATUS.RUNNING, SERVICE_STATUS.WARNING].indexOf(service.service_status) > -1
       && !this.isActionWIP.get(service.service_id);
   }
 
   isDeleteDisable(service: Service): boolean{
-    return service.service_status in [SERVICE_STATUS.PREPARING, SERVICE_STATUS.RUNNING]
+    return [SERVICE_STATUS.PREPARING, SERVICE_STATUS.RUNNING].indexOf(service.service_status) > -1
       || this.isActionWIP.get(service.service_id)
       || service.service_is_member == 0;
   }
