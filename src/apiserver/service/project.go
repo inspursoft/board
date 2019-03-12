@@ -297,6 +297,14 @@ func SyncProjectsWithK8s() error {
 				logs.Error("Failed create repo and job with project name: %s, error: %+v", reqProject.Name, err)
 			}
 		}
+		// Sync the helm release on this project namespace
+		err = SyncHelmReleaseWithK8s(namespace.Name)
+		if err != nil {
+			logs.Error("Failed to sync helm service with project name: %s, error: %+v", namespace.Name, err)
+			// Still can work
+			continue
+		}
+
 		// Sync the services in this project namespace
 		err = SyncServiceWithK8s(namespace.Name)
 		if err != nil {

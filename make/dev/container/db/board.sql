@@ -425,3 +425,32 @@ DROP TABLE IF EXISTS `log`;
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;		
 
+    CREATE TABLE `board`.`helm_repository` (
+        `id` INT NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(255) NOT NULL DEFAULT '',
+        `url` VARCHAR(255) NOT NULL DEFAULT '',
+        `type` INT NOT NULL DEFAULT 0,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
+
+INSERT INTO `board`.`helm_repository`
+ (`id`, `name`, `url`, `type`)
+ VALUES
+ (1, 'chartmuseum', 'http://chartmuseum:8080/', 1);
+
+    CREATE TABLE `board`.`release` (
+        `id` INT NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(255) NOT NULL DEFAULT '',
+        `project_id` INT NOT NULL,
+        `project_name` VARCHAR(255) NOT NULL,
+        `repository_id` INT NOT NULL,
+        `repository` VARCHAR(255) NOT NULL,
+        `workloads` TEXT,
+        `owner_id` INT NOT NULL,
+        `owner_name` VARCHAR(255) NOT NULL,
+        `creation_time` datetime DEFAULT NULL,
+        `update_time` datetime DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+
