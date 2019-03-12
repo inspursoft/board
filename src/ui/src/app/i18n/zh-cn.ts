@@ -355,6 +355,8 @@ export const LANG_ZH_CN = {
     "ENV_ADD":"添加新的环境变量",
     "ENV_CONFIRM":"确认",
     "ENV_REQUIRED":"key或value不能为空",
+    "ENV_CONFIG_MAP_DEFAULT_TEXT":"选择ConfigMap...",
+    "ENV_CONFIG_MAP_KEY_DEFAULT_TEXT":"选择KEY...",
     "VOLUME_CONFIG":"配置卷",
     "VOLUME_TYPE": "卷类型",
     "VOLUME_TARGET_PATH":"卷路径",
