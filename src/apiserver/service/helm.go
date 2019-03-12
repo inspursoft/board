@@ -15,6 +15,7 @@ import (
 	"github.com/astaxie/beego/logs"
 	"github.com/drborges/rivers"
 	"github.com/drborges/rivers/stream"
+	"github.com/drborges/rivers/transformers"
 )
 
 var (
@@ -24,20 +25,21 @@ var (
 )
 
 type matchedServiceAndDeployment struct {
-	Service    *model.K8sInfo
-	Deployment *model.K8sInfo
+	Service     *model.K8sInfo
+	ServiceType int
+	Deployment  *model.K8sInfo
 }
 
-func ListRepositories() ([]model.Repository, error) {
+func ListHelmRepositories() ([]model.HelmRepository, error) {
 	return dao.GetHelmRepositories()
 }
 
-func AddRepository(repo model.Repository) (int64, error) {
+func AddHelmRepository(repo model.HelmRepository) (int64, error) {
 	return dao.AddHelmRepository(repo)
 }
 
-func GetRepository(id int64) (*model.Repository, error) {
-	repo := model.Repository{
+func GetHelmRepository(id int64) (*model.HelmRepository, error) {
+	repo := model.HelmRepository{
 		ID: id,
 	}
 
@@ -52,7 +54,7 @@ func GetRepository(id int64) (*model.Repository, error) {
 	return r, nil
 }
 
-func UpdateRepository(repo model.Repository) error {
+func UpdateHelmRepository(repo model.HelmRepository) error {
 	id, err := dao.UpdateHelmRepository(repo)
 	if err != nil {
 		return err
@@ -64,8 +66,8 @@ func UpdateRepository(repo model.Repository) error {
 	return nil
 }
 
-func DeleteRepository(id int64) error {
-	repo, err := dao.DeleteHelmRepository(model.Repository{
+func DeleteHelmRepository(id int64) error {
+	repo, err := dao.DeleteHelmRepository(model.HelmRepository{
 		ID: id,
 	})
 	if err != nil {
@@ -78,7 +80,7 @@ func DeleteRepository(id int64) error {
 	return nil
 }
 
-func toEntry(repo *model.Repository) *helmpkg.Entry {
+func toEntry(repo *model.HelmRepository) *helmpkg.Entry {
 	entry := &helmpkg.Entry{
 		Name: repo.Name,
 		URL:  repo.URL,
@@ -87,14 +89,14 @@ func toEntry(repo *model.Repository) *helmpkg.Entry {
 	return entry
 }
 
-func GetRepoDetail(repo *model.Repository, nameRegex string) (*model.RepositoryDetail, error) {
+func GetRepoDetail(repo *model.HelmRepository, nameRegex string) (*model.HelmRepositoryDetail, error) {
 	var err error
 	chartrepo, err := helmpkg.NewChartRepository(toEntry(repo))
 	if err != nil {
 		return nil, err
 	}
-	var detail model.RepositoryDetail
-	detail.Repository = *repo
+	var detail model.HelmRepositoryDetail
+	detail.HelmRepository = *repo
 
 	if chartrepo.IndexFile != nil {
 		var allCharts []*model.ChartVersions
@@ -115,18 +117,18 @@ func GetRepoDetail(repo *model.Repository, nameRegex string) (*model.RepositoryD
 	return &detail, nil
 }
 
-func GetPaginatedRepoDetail(repo *model.Repository, nameRegex string, pageIndex, pageSize int) (*model.PaginatedRepositoryDetail, error) {
+func GetPaginatedRepoDetail(repo *model.HelmRepository, nameRegex string, pageIndex, pageSize int) (*model.PaginatedHelmRepositoryDetail, error) {
 	detail, err := GetRepoDetail(repo, nameRegex)
 	if err != nil {
 		return nil, err
 	}
 
-	return paginateRepositoryDetail(detail, pageIndex, pageSize), nil
+	return paginateHelmRepositoryDetail(detail, pageIndex, pageSize), nil
 }
 
-func paginateRepositoryDetail(detail *model.RepositoryDetail, pageIndex, pageSize int) *model.PaginatedRepositoryDetail {
-	var pagedDetail model.PaginatedRepositoryDetail
-	pagedDetail.Repository = detail.Repository
+func paginateHelmRepositoryDetail(detail *model.HelmRepositoryDetail, pageIndex, pageSize int) *model.PaginatedHelmRepositoryDetail {
+	var pagedDetail model.PaginatedHelmRepositoryDetail
+	pagedDetail.HelmRepository = detail.HelmRepository
 
 	page := &model.Pagination{
 		PageIndex:  pageIndex,
@@ -148,7 +150,7 @@ func paginateRepositoryDetail(detail *model.RepositoryDetail, pageIndex, pageSiz
 	return &pagedDetail
 }
 
-func GetChartDetail(repo *model.Repository, chartname, chartversion string) (*model.Chart, error) {
+func GetChartDetail(repo *model.HelmRepository, chartname, chartversion string) (*model.Chart, error) {
 	chartrepo, err := helmpkg.NewChartRepository(toEntry(repo))
 	if err != nil {
 		return nil, err
@@ -160,7 +162,7 @@ func GetChartDetail(repo *model.Repository, chartname, chartversion string) (*mo
 	return chart, nil
 }
 
-func UploadChart(repo *model.Repository, chartfile string) error {
+func UploadChart(repo *model.HelmRepository, chartfile string) error {
 	chartrepo, err := helmpkg.NewChartRepository(toEntry(repo))
 	if err != nil {
 		return err
@@ -168,7 +170,7 @@ func UploadChart(repo *model.Repository, chartfile string) error {
 	return chartrepo.UploadChart(chartfile)
 }
 
-func DeleteChart(repo *model.Repository, chartname, chartversion string) error {
+func DeleteChart(repo *model.HelmRepository, chartname, chartversion string) error {
 	chartrepo, err := helmpkg.NewChartRepository(toEntry(repo))
 	if err != nil {
 		return err
@@ -176,30 +178,30 @@ func DeleteChart(repo *model.Repository, chartname, chartversion string) error {
 	return chartrepo.DeleteChart(chartname, chartversion)
 }
 
-func InstallChart(repo *model.Repository, chartname, chartversion, name string, projectid int64, projectname, values string, ownerid int64, ownername string) error {
+func InstallChart(repo *model.HelmRepository, target *model.Release) error {
 	chartrepo, err := helmpkg.NewChartRepository(toEntry(repo))
 	if err != nil {
 		return err
 	}
 	helmhost := utils.GetStringValue("HELM_HOST")
-	workloads, err := chartrepo.InstallChart(chartname, chartversion, name, projectname, values, helmhost)
+	err = chartrepo.InstallChart(target.Chart, target.ChartVersion, target.Name, target.ProjectName, target.Values, helmhost)
 	if err != nil {
 		return err
 	}
 
-	err = initBoardReleaseFromKubernetesHelmRelease(name, workloads, projectid, projectname, repo.ID, repo.Name, ownerid, ownername)
+	err = initBoardReleaseFromKubernetesHelmRelease(repo, target)
 	if err != nil {
 		// remove the release in the helm, ignore the err
-		removeerr := helmpkg.DeleteRelease(name, helmhost)
+		removeerr := helmpkg.DeleteRelease(target.Name, helmhost)
 		if removeerr != nil {
-			logs.Warning("remove the release %s error: %+v", name, removeerr)
+			logs.Warning("remove the release %s error: %+v", target.Name, removeerr)
 		}
 	}
 	return nil
 }
 
-func initBoardReleaseFromKubernetesHelmRelease(name, workloads string, projectid int64, projectname string, repoid int64, reponame string, ownerid int64, ownername string) error {
-	r, err := insertReleaseIntoDatabase(name, workloads, projectid, projectname, repoid, reponame, ownerid, ownername)
+func initBoardReleaseFromKubernetesHelmRelease(repo *model.HelmRepository, target *model.Release) error {
+	r, err := insertReleaseIntoDatabase(repo, target)
 	if err != nil {
 		return err
 	}
@@ -212,30 +214,36 @@ func initBoardReleaseFromKubernetesHelmRelease(name, workloads string, projectid
 	return nil
 }
 
-func insertReleaseIntoDatabase(name, workloads string, projectid int64, projectname string, repoid int64, reponame string, ownerid int64, ownername string) (*model.ReleaseModel, error) {
+func insertReleaseIntoDatabase(repo *model.HelmRepository, target *model.Release) (*model.ReleaseModel, error) {
 	// retrieve the release detail info
-	r, err := helmpkg.GetRelease(name, utils.GetStringValue("HELM_HOST"))
+	r, err := helmpkg.GetRelease(target.Name, utils.GetStringValue("HELM_HOST"))
 	if err != nil {
-		logs.Error("Get release %s info from helm error:%+v", name, err)
+		logs.Error("Get release %s info from helm error:%+v", target.Name, err)
 		return nil, err
 	}
 	var update time.Time
 	if r.Updated != "-" {
 		update, err = time.Parse(time.ANSIC, r.Updated)
 		if err != nil {
-			logs.Warning("Parse the release %s time error: %+v", name, r.Updated)
+			logs.Warning("Parse the release %s time error: %+v", target.Name, r.Updated)
 			err = nil //ignore this err
 		}
 	}
+	// get the release workloads
+	workloads, err := helmpkg.GetReleaseManifest(target.Name, utils.GetStringValue("HELM_HOST"))
+	if err != nil {
+		logs.Error("Get release %s workloads when synchronizing error:%+v", target.Name, err)
+		return nil, err
+	}
 	m := model.ReleaseModel{
-		Name:           name,
-		ProjectID:      projectid,
-		ProjectName:    projectname,
+		Name:           target.Name,
+		ProjectID:      target.ProjectID,
+		ProjectName:    target.ProjectName,
 		Workloads:      workloads,
-		RepositoryID:   repoid,
-		RepostiroyName: reponame,
-		OwnerID:        ownerid,
-		OwnerName:      ownername,
+		RepositoryID:   repo.ID,
+		RepostiroyName: repo.Name,
+		OwnerID:        target.OwnerID,
+		OwnerName:      target.OwnerName,
 		UpdateTime:     update,
 		CreateTime:     update,
 	}
@@ -253,31 +261,25 @@ func addHelmReleaseToBoardService(r *model.ReleaseModel) error {
 		KubeConfigPath: kubeConfigPath(),
 	})
 	//resolve the templateInfo into kubernetes service and deployments.....
-	return model.NewK8sHelper().Visit(r.Workloads, func(infos []*model.K8sInfo, err error) error {
+	return processBoardMatchedServiceAndDeployments(r.Workloads, r.ProjectName, func(matched *matchedServiceAndDeployment) (bool, error) {
+		// check service existents
+		exist, err := ServiceExists(matched.Service.Name, matched.Service.Namespace)
 		if err != nil {
-			return err
+			return false, err
 		}
-		matched, err := getBoardMatchedServiceAndDeployments(r.ProjectName, infos)
-		if err != nil {
-			return err
+		if !exist {
+			svcType, err := getServiceTypeFromYaml(k8sclient, matched.Service.Namespace, matched.Service.Source)
+			if err != nil {
+				return false, err
+			}
+			matched.ServiceType = svcType
+			return true, nil
 		}
-
+		return false, nil
+	}, func(matched []*matchedServiceAndDeployment) error {
 		// add the service into board
 		for i := range matched {
-			// check service existents
-			exist, err := ServiceExists(matched[i].Service.Name, matched[i].Service.Namespace)
-			if err != nil {
-				return err
-			}
-			if exist {
-				return fmt.Errorf("The service %s has already exist in project %s", matched[i].Service.Name, matched[i].Service.Namespace)
-			}
-			svcType, err := getServiceTypeFromYaml(k8sclient, matched[i].Service.Namespace, matched[i].Service.Source)
-			if err != nil {
-				return err
-			}
-
-			_, err = CreateServiceConfig(model.ServiceStatus{
+			_, err := CreateServiceConfig(model.ServiceStatus{
 				Name:           matched[i].Service.Name,
 				ProjectID:      r.ProjectID,
 				ProjectName:    r.ProjectName,
@@ -285,7 +287,7 @@ func addHelmReleaseToBoardService(r *model.ReleaseModel) error {
 				OwnerID:        r.OwnerID,
 				OwnerName:      r.OwnerName,
 				Status:         defaultStatus,
-				Type:           svcType,
+				Type:           matched[i].ServiceType,
 				Public:         defaultPublic,
 				CreationTime:   r.CreateTime,
 				UpdateTime:     r.UpdateTime,
@@ -296,58 +298,76 @@ func addHelmReleaseToBoardService(r *model.ReleaseModel) error {
 			if err != nil {
 				return err
 			}
-			break
 		}
-
 		return nil
 	})
 }
 
-func getBoardMatchedServiceAndDeployments(namespace string, infos []*model.K8sInfo) ([]matchedServiceAndDeployment, error) {
-	svcs, err := rivers.FromSlice(infos).Filter(func(t stream.T) bool {
-		info := t.(*model.K8sInfo)
-		if info.Kind == "Service" {
-			info.Namespace = namespace
-			return true
+func processBoardMatchedServiceAndDeployments(workloads, projectname string, prepare func(matched *matchedServiceAndDeployment) (bool, error), process func(matched []*matchedServiceAndDeployment) error) error {
+	return model.NewK8sHelper().Visit(workloads, func(infos []*model.K8sInfo, err error) error {
+		if err != nil {
+			return err
 		}
-		return false
-	}).GroupBy(func(t stream.T) stream.T {
-		info := t.(*model.K8sInfo)
-		return model.K8sInfo{Name: info.Name, Namespace: info.Namespace}
-	})
-	if err != nil {
-		return nil, err
-	}
+		svcs, err := rivers.FromSlice(infos).Filter(func(t stream.T) bool {
+			info := t.(*model.K8sInfo)
+			if info.Kind == "Service" {
+				info.Namespace = projectname
+				return true
+			}
+			return false
+		}).GroupBy(func(t stream.T) stream.T {
+			info := t.(*model.K8sInfo)
+			return model.K8sInfo{Name: info.Name, Namespace: info.Namespace}
+		})
+		if err != nil {
+			return err
+		}
 
-	matched := []matchedServiceAndDeployment{}
-	err = rivers.FromSlice(infos).Filter(func(t stream.T) bool {
-		info := t.(*model.K8sInfo)
-		if info.Kind == "Deployment" {
-			info.Namespace = namespace
-			return true
-		}
-		return false
-	}).OnData(func(t stream.T, emitter stream.Emitter) {
-		info := t.(*model.K8sInfo)
-		if matchedSvcs, ok := svcs[model.K8sInfo{Name: info.Name, Namespace: info.Namespace}]; ok {
-			svc := matchedSvcs[0].(*model.K8sInfo)
-			svc.Source, err = setYamlNamespace(svc.Source, svc.Namespace)
-			if err != nil {
-				logs.Warning("set the service namespace error:%+v", err)
-				return
+		matched := []*matchedServiceAndDeployment{}
+		pipeline := rivers.FromSlice(infos).Filter(func(t stream.T) bool {
+			info := t.(*model.K8sInfo)
+			if info.Kind == "Deployment" {
+				info.Namespace = projectname
+				return true
 			}
-			info.Source, err = setYamlNamespace(info.Source, info.Namespace)
-			if err != nil {
-				logs.Warning("set the service namespace error:%+v", err)
-				return
+			return false
+		}).OnData(func(t stream.T, emitter stream.Emitter) {
+			info := t.(*model.K8sInfo)
+			if matchedSvcs, ok := svcs[model.K8sInfo{Name: info.Name, Namespace: info.Namespace}]; ok {
+				svc := matchedSvcs[0].(*model.K8sInfo)
+				svc.Source, err = setYamlNamespace(svc.Source, svc.Namespace)
+				if err != nil {
+					logs.Warning("set the service namespace error:%+v", err)
+					return
+				}
+				info.Source, err = setYamlNamespace(info.Source, info.Namespace)
+				if err != nil {
+					logs.Warning("set the service namespace error:%+v", err)
+					return
+				}
+				emitter.Emit(&matchedServiceAndDeployment{Service: svc, Deployment: info})
 			}
-			emitter.Emit(matchedServiceAndDeployment{Service: svc, Deployment: info})
+		})
+		if prepare != nil {
+			pipeline.Apply(&transformers.Observer{
+				OnNext: func(data stream.T, emitter stream.Emitter) error {
+					send, err := prepare(data.(*matchedServiceAndDeployment))
+					if send {
+						emitter.Emit(data)
+					}
+					return err
+				},
+			})
 		}
-	}).CollectAs(&matched)
-	if err != nil {
-		return nil, err
-	}
-	return matched, nil
+		err = pipeline.CollectAs(&matched)
+		if err != nil {
+			return err
+		}
+		if process != nil {
+			return process(matched)
+		}
+		return nil
+	})
 }
 
 func getServiceTypeFromYaml(k8sclient *k8sassist.K8sAssistClient, namespace, yaml string) (int, error) {
@@ -367,33 +387,20 @@ func getServiceTypeFromYaml(k8sclient *k8sassist.K8sAssistClient, namespace, yam
 	return svcType, nil
 }
 
-func ListReleases(repo *model.Repository, userid int64) ([]model.Release, error) {
-	var models []model.ReleaseModel
-	var err error
-	if repo == nil {
-		models, err = dao.GetHelmReleases(&dao.ReleaseFilter{OwnerID: userid})
-	} else {
-		models, err = dao.GetHelmReleases(&dao.ReleaseFilter{RepositoryID: repo.ID, OwnerID: userid})
-	}
-	// get the releases from helm cmd
-	list, err := helmpkg.ListAllReleases(utils.GetStringValue("HELM_HOST"))
+func ListAllReleases() ([]model.Release, error) {
+	models, err := dao.GetAllHelmReleases()
 	if err != nil {
 		return nil, err
 	}
-	releases := map[string]helmpkg.Release{}
-	for i := range list.Releases {
-		releases[list.Releases[i].Name] = list.Releases[i]
+	return generateModelReleases(models)
+}
+
+func ListReleasesByUserID(userid int64) ([]model.Release, error) {
+	models, err := dao.GetHelmReleasesByUserID(userid)
+	if err != nil {
+		return nil, err
 	}
-	// list the release base on the database.
-	var ret []model.Release
-	for _, m := range models {
-		if r, ok := releases[m.Name]; ok {
-			ret = append(ret, generateModelRelease(&m, &r))
-		} else {
-			logs.Warning("the release %s does not exist in kubernetes", m.Name)
-		}
-	}
-	return ret, err
+	return generateModelReleases(models)
 }
 
 func GetReleaseFromDB(releaseid int64) (*model.ReleaseModel, error) {
@@ -423,29 +430,20 @@ func DeleteRelease(releaseid int64) error {
 	if err != nil {
 		return err
 	}
-	// remove the service entry from database
-	// add the kubernetes resources to board
-	//resolve the templateInfo into kubernetes service and deployments.....
-	err = model.NewK8sHelper().Visit(release.Workloads, func(infos []*model.K8sInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		matched, err := getBoardMatchedServiceAndDeployments(release.ProjectName, infos)
-		if err != nil {
-			return err
-		}
-
+	return processBoardMatchedServiceAndDeployments(release.Workloads, release.ProjectName, nil, func(matched []*matchedServiceAndDeployment) error {
 		// delete the service from board
-		for i := range matched {
-			dao.DeleteServiceByNameAndProjectName(model.ServiceStatus{
-				Name:        matched[i].Service.Name,
-				ProjectName: matched[i].Service.Namespace,
-			})
-		}
-
-		return nil
+		services := []model.ServiceStatus{}
+		rivers.FromSlice(matched).Map(func(t stream.T) stream.T {
+			m := t.(*matchedServiceAndDeployment)
+			return model.ServiceStatus{
+				Name:        m.Service.Name,
+				ProjectName: m.Service.Namespace,
+			}
+		}).CollectAs(&services)
+		_, err = dao.DeleteServiceByNames(services)
+		return err
 	})
-	return err
+
 }
 
 func GetReleaseDetail(releaseid int64) (*model.ReleaseDetail, error) {
@@ -513,6 +511,28 @@ func GetReleaseDetail(releaseid int64) (*model.ReleaseDetail, error) {
 	return &detail, err
 }
 
+func generateModelReleases(models []model.ReleaseModel) ([]model.Release, error) {
+	// get the releases from helm cmd
+	list, err := helmpkg.ListAllReleases(utils.GetStringValue("HELM_HOST"))
+	if err != nil {
+		return nil, err
+	}
+	releases := map[string]helmpkg.Release{}
+	for i := range list.Releases {
+		releases[list.Releases[i].Name] = list.Releases[i]
+	}
+	// list the release base on the database.
+	var ret []model.Release
+	for _, m := range models {
+		if r, ok := releases[m.Name]; ok {
+			ret = append(ret, generateModelRelease(&m, &r))
+		} else {
+			logs.Warning("the release %s does not exist in kubernetes", m.Name)
+		}
+	}
+	return ret, nil
+}
+
 func generateModelRelease(m *model.ReleaseModel, r *helmpkg.Release) model.Release {
 	var chart, version, status string
 	if r != nil {
@@ -545,12 +565,12 @@ func generateModelRelease(m *model.ReleaseModel, r *helmpkg.Release) model.Relea
 }
 
 func CheckReleaseNames(name string) (bool, error) {
-	models, err := dao.GetHelmReleases(&dao.ReleaseFilter{Name: name})
+	release, err := dao.GetHelmReleaseByName(name)
 	if err != nil {
 		return false, err
 	}
 
-	if len(models) > 0 {
+	if release != nil {
 		return true, nil
 	}
 
@@ -590,7 +610,7 @@ func SyncHelmReleaseWithK8s(projectname string) error {
 		return err
 	}
 	// get repo
-	repo, err := GetRepository(defaultRepoID)
+	repo, err := GetHelmRepository(defaultRepoID)
 	if err != nil {
 		return err
 	}
@@ -602,8 +622,7 @@ func SyncHelmReleaseWithK8s(projectname string) error {
 	}
 
 	// get release from dao
-	helmhost := utils.GetStringValue("HELM_HOST")
-	models, err := dao.GetHelmReleases(nil)
+	models, err := dao.GetAllHelmReleases()
 	for i := range list.Releases {
 		exist := false
 		for j := range models {
@@ -614,14 +633,16 @@ func SyncHelmReleaseWithK8s(projectname string) error {
 		}
 		// sync the release which does not exist in board release table.
 		if !exist {
-			// get the release manifest
-			load, err := helmpkg.GetReleaseManifest(list.Releases[i].Name, helmhost)
-			if err != nil {
-				logs.Warning("Get release %s workloads when synchronizing error:%+v", list.Releases[i].Name, err)
-				continue
-			}
 			// add the release into database.
-			err = initBoardReleaseFromKubernetesHelmRelease(list.Releases[i].Name, load, project.ID, project.Name, repo.ID, repo.Name, int64(project.OwnerID), project.OwnerName)
+			err = initBoardReleaseFromKubernetesHelmRelease(repo, &model.Release{
+				Name:           list.Releases[i].Name,
+				ProjectID:      project.ID,
+				ProjectName:    project.Name,
+				RepositoryID:   repo.ID,
+				RepositoryName: repo.Name,
+				OwnerID:        int64(project.OwnerID),
+				OwnerName:      project.OwnerName,
+			})
 			if err != nil {
 				// ignore the initReleaseError
 				logs.Warning("sync release from kubernetes release %s error: %+v", list.Releases[i].Name, err)

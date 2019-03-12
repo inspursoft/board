@@ -14,20 +14,20 @@ import (
 	"k8s.io/apimachinery/pkg/util/yaml"
 )
 
-type Repository struct {
+type HelmRepository struct {
 	ID   int64  `json:"id" orm:"column(id)"`
 	Name string `json:"name" orm:"column(name)"`
 	URL  string `json:"url" orm:"column(url)"`
 	Type int64  `json:"type" orm:"column(type)"`
 }
 
-type RepositoryDetail struct {
-	Repository        `yaml:",inline"`
+type HelmRepositoryDetail struct {
+	HelmRepository    `yaml:",inline"`
 	ChartVersionsList []*ChartVersions `json:"charts"`
 }
 
-type PaginatedRepositoryDetail struct {
-	Repository             `yaml:",inline"`
+type PaginatedHelmRepositoryDetail struct {
+	HelmRepository         `yaml:",inline"`
 	PaginatedChartVersions `yaml:",inline"`
 }
 

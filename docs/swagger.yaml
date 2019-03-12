@@ -4582,7 +4582,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/Repository'
+              $ref: '#/definitions/HelmRepository'
         401:
           description: User need to log in first.
         500:
@@ -4621,7 +4621,7 @@ paths:
         200:
           description: Return matched repository detail information.
           schema:
-            $ref: '#/definitions/PaginatedRepositoryDetail'
+            $ref: '#/definitions/PaginatedHelmRepositoryDetail'
         401:
           description: User need to log in first.
         404:
@@ -4803,12 +4803,6 @@ paths:
           type: string
           required: true
           description: Current available token.
-        - name: repository_id
-          in: query
-          description: Repository ID for filtering results.
-          required: false
-          type: integer
-          format: int32
       tags:
         - Products
       responses:
@@ -6732,7 +6726,7 @@ definitions:
         type: object
         additionalProperties: 
           type: string        
-  Repository:                          
+  HelmRepository:                          
     type: object
     properties:
       id:
@@ -6749,20 +6743,20 @@ definitions:
         type: integer
         format: int32
         description: The type of this repository.    
-  RepositoryDetail:                          
+  HelmRepositoryDetail:                          
     type: object
     allOf:
-    - $ref: '#/definitions/Repository'
+    - $ref: '#/definitions/HelmRepository'
     - type: object
       properties:
         charts:
           type: array
           items:
             $ref: '#/definitions/ChartVersions'
-  PaginatedRepositoryDetail:                          
+  PaginatedHelmRepositoryDetail:                          
     type: object
     allOf:
-    - $ref: '#/definitions/Repository'
+    - $ref: '#/definitions/HelmRepository'
     - $ref: '#/definitions/PaginatedChartVersions'
   PaginatedChartVersions:                          
     type: object

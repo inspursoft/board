@@ -5,13 +5,7 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
-type ReleaseFilter struct {
-	RepositoryID int64
-	OwnerID      int64
-	Name         string
-}
-
-func AddHelmRepository(repo model.Repository) (int64, error) {
+func AddHelmRepository(repo model.HelmRepository) (int64, error) {
 	o := orm.NewOrm()
 	repoId, err := o.Insert(&repo)
 	if err != nil {
@@ -23,7 +17,7 @@ func AddHelmRepository(repo model.Repository) (int64, error) {
 	return repoId, err
 }
 
-func GetHelmRepository(repo model.Repository, fieldNames ...string) (*model.Repository, error) {
+func GetHelmRepository(repo model.HelmRepository, fieldNames ...string) (*model.HelmRepository, error) {
 	o := orm.NewOrm()
 	err := o.Read(&repo, fieldNames...)
 	if err != nil {
@@ -35,7 +29,7 @@ func GetHelmRepository(repo model.Repository, fieldNames ...string) (*model.Repo
 	return &repo, err
 }
 
-func UpdateHelmRepository(repo model.Repository, fieldNames ...string) (int64, error) {
+func UpdateHelmRepository(repo model.HelmRepository, fieldNames ...string) (int64, error) {
 	o := orm.NewOrm()
 	repoId, err := o.Update(&repo, fieldNames...)
 	if err != nil {
@@ -47,7 +41,7 @@ func UpdateHelmRepository(repo model.Repository, fieldNames ...string) (int64, e
 	return repoId, err
 }
 
-func DeleteHelmRepository(repo model.Repository) (int64, error) {
+func DeleteHelmRepository(repo model.HelmRepository) (int64, error) {
 	o := orm.NewOrm()
 	num, err := o.Delete(&repo)
 	if err != nil {
@@ -59,10 +53,10 @@ func DeleteHelmRepository(repo model.Repository) (int64, error) {
 	return num, err
 }
 
-func GetHelmRepositories(selectedFields ...string) ([]model.Repository, error) {
-	repos := make([]model.Repository, 0)
+func GetHelmRepositories(selectedFields ...string) ([]model.HelmRepository, error) {
+	repos := make([]model.HelmRepository, 0)
 	o := orm.NewOrm()
-	_, err := o.QueryTable("repository").OrderBy("name").All(&repos, selectedFields...)
+	_, err := o.QueryTable("helm_repository").OrderBy("name").All(&repos, selectedFields...)
 	if err != nil {
 		return nil, err
 	}
@@ -105,27 +99,51 @@ func DeleteHelmRelease(release model.ReleaseModel) (int64, error) {
 	return num, err
 }
 
-func GetHelmReleases(filter *ReleaseFilter) ([]model.ReleaseModel, error) {
+func GetHelmReleaseByName(name string) (*model.ReleaseModel, error) {
+	release := &model.ReleaseModel{Name: name}
+	o := orm.NewOrm()
+	err := o.Read(release, "name")
+	if err != nil {
+		if err == orm.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return release, err
+}
+
+func GetAllHelmReleases() ([]model.ReleaseModel, error) {
 	releases := make([]model.ReleaseModel, 0)
 	o := orm.NewOrm()
-	qs := o.QueryTable("release").OrderBy("-creation_time")
+	_, err := o.QueryTable("release").OrderBy("-creation_time").All(&releases)
 
-	if filter != nil {
-		if filter.OwnerID <= 0 {
-			qs = qs.Filter("owner_id", filter.OwnerID)
-		}
-
-		if filter.RepositoryID <= 0 {
-			qs = qs.Filter("repository_id", filter.RepositoryID)
-		}
-		if filter.Name != "" {
-			qs = qs.Filter("name", filter.Name)
-		}
-	}
-
-	_, err := qs.All(&releases)
 	if err != nil {
 		return nil, err
 	}
 	return releases, nil
+}
+
+func GetHelmReleasesByUserID(userID int64) ([]model.ReleaseModel, error) {
+	sql, params := generateHelmReleasesSQL(userID)
+	return queryHelmReleases(sql, params)
+}
+
+func generateHelmReleasesSQL(userID int64) (string, []interface{}) {
+	sql := `select distinct hr.id, hr.name, hr.project_id, hr.project_name, hr.repository_id, hr.repository, hr.workloads, hr.owner_id, hr.owner_name, hr.creation_time, hr.update_time
+	from helm_release hr 
+		left join project_member pm on hr.project_id = pm.project_id
+		left join project p on p.id = pm.project_id
+		left join user u on u.id = s.owner_id
+	where hr.project_id in (select p.id from project p left join project_member pm on p.id = pm.project_id  left join user u on u.id = pm.user_id where p.deleted = 0 and u.deleted = 0 and u.id = ?)
+		or exists (select * from user u where u.deleted = 0 and u.system_admin = 1 and u.id = ?) order by creation_time desc`
+	return sql, []interface{}{userID, userID}
+}
+
+func queryHelmReleases(sql string, params []interface{}) ([]model.ReleaseModel, error) {
+	releaseList := make([]model.ReleaseModel, 0)
+	_, err := orm.NewOrm().Raw(sql, params).QueryRows(&releaseList)
+	if err != nil {
+		return nil, err
+	}
+	return releaseList, nil
 }

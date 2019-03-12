@@ -2,12 +2,12 @@ package controller
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/astaxie/beego/logs"
 
@@ -23,7 +23,7 @@ func (hc *HelmController) ListHelmReposAction() {
 	logs.Info("list all helm repos")
 
 	// list the repos from storage
-	repo, err := service.ListRepositories()
+	repo, err := service.ListHelmRepositories()
 	if err != nil {
 		hc.internalError(err)
 		return
@@ -52,14 +52,7 @@ func (hc *HelmController) GetHelmRepoDetailAction() {
 	logs.Info("get helm repository %d, filter by name regex %s and from index %d with size %d", id, nameRegex, pageIndex, pageSize)
 
 	// do some check
-	repo, err := service.GetRepository(int64(id))
-	if err != nil {
-		hc.internalError(err)
-		return
-	} else if repo == nil {
-		hc.customAbort(http.StatusBadRequest, fmt.Sprintf("Helm repository %d does not exists.", int64(id)))
-		return
-	}
+	repo := hc.resolveHelmRepositoryByID(int64(id))
 
 	var detail interface{}
 	if pageSize == 0 {
@@ -93,17 +86,7 @@ func (hc *HelmController) GetHelmChartDetailAction() {
 	}
 	logs.Info("get helm chart %s with version %s from repository %d", chartname, chartversion, id)
 
-	// do some check
-	repo, err := service.GetRepository(int64(id))
-	if err != nil {
-		hc.internalError(err)
-		return
-	} else if repo == nil {
-		hc.customAbort(http.StatusBadRequest, fmt.Sprintf("Helm repository %d does not exists.", int64(id)))
-		return
-	}
-
-	detail, err := service.GetChartDetail(repo, chartname, chartversion)
+	detail, err := service.GetChartDetail(hc.resolveHelmRepositoryByID(int64(id)), chartname, chartversion)
 	if err != nil {
 		hc.internalError(err)
 		return
@@ -127,14 +110,7 @@ func (hc *HelmController) UploadHelmChartAction() {
 	logs.Info("get helm repository %d", id)
 
 	// do some check
-	repo, err := service.GetRepository(int64(id))
-	if err != nil {
-		hc.internalError(err)
-		return
-	} else if repo == nil {
-		hc.customAbort(http.StatusBadRequest, fmt.Sprintf("Helm repository %d does not exists.", int64(id)))
-		return
-	}
+	repo := hc.resolveHelmRepositoryByID(int64(id))
 
 	_, fileHeader, err := hc.GetFile("upload_file")
 	if err != nil {
@@ -146,10 +122,13 @@ func (hc *HelmController) UploadHelmChartAction() {
 		return
 	}
 	// save to the museum chart directory
-	tempDir := filepath.Join(os.TempDir(), fmt.Sprintf("%d", time.Now().UnixNano()))
-	tempFile := filepath.Join(tempDir, fileHeader.Filename)
-	os.MkdirAll(tempDir, 0755)
+	tempDir, err := ioutil.TempDir("", "upload")
+	if err != nil {
+		hc.internalError(err)
+		return
+	}
 	defer os.RemoveAll(tempDir)
+	tempFile := filepath.Join(tempDir, fileHeader.Filename)
 	err = hc.SaveToFile("upload_file", tempFile)
 	if err != nil {
 		hc.internalError(err)
@@ -183,17 +162,7 @@ func (hc *HelmController) DeleteHelmChartAction() {
 	}
 	logs.Info("delete helm chart %s with version %s from repository %d", chartname, chartversion, id)
 
-	// do some check
-	repo, err := service.GetRepository(int64(id))
-	if err != nil {
-		hc.internalError(err)
-		return
-	} else if repo == nil {
-		hc.customAbort(http.StatusBadRequest, fmt.Sprintf("Helm repository %d does not exists.", int64(id)))
-		return
-	}
-
-	err = service.DeleteChart(repo, chartname, chartversion)
+	err = service.DeleteChart(hc.resolveHelmRepositoryByID(int64(id)), chartname, chartversion)
 	if err != nil {
 		hc.internalError(err)
 		return
@@ -208,22 +177,11 @@ func (hc *HelmController) InstallHelmChartAction() {
 		hc.internalError(err)
 		return
 	}
-
 	logs.Info("install helm chart %s with version %s from repository %d", release.Chart, release.ChartVersion, release.RepositoryID)
 	logs.Info("install release %s in project %d with values %s", release.Name, release.ProjectID, release.Values)
-
-	// do some check
-	repo, err := service.GetRepository(release.RepositoryID)
-	if err != nil {
-		hc.internalError(err)
-		return
-	} else if repo == nil {
-		hc.customAbort(http.StatusBadRequest, fmt.Sprintf("Helm repository %d does not exists.", release.RepositoryID))
-		return
-	}
-
 	//Judge authority
 	project := hc.resolveUserPrivilegeByID(release.ProjectID)
+
 	//Check name exist or not
 	isExists, err := service.CheckReleaseNames(release.Name)
 	if err != nil {
@@ -233,8 +191,12 @@ func (hc *HelmController) InstallHelmChartAction() {
 	if isExists {
 		hc.customAbort(http.StatusConflict, "release "+release.Name+" already exists.")
 	}
+	// update the release attributes
+	release.ProjectName = project.Name
+	release.OwnerID = hc.currentUser.ID
+	release.OwnerName = hc.currentUser.Username
 
-	err = service.InstallChart(repo, release.Chart, release.ChartVersion, release.Name, release.ProjectID, project.Name, release.Values, hc.currentUser.ID, hc.currentUser.Username)
+	err = service.InstallChart(hc.resolveHelmRepositoryByID(release.RepositoryID), release)
 	if err != nil {
 		hc.internalError(err)
 		return
@@ -242,32 +204,13 @@ func (hc *HelmController) InstallHelmChartAction() {
 }
 
 func (hc *HelmController) ListHelmReleaseAction() {
-	// get the repo id
-	repoStr := hc.GetString("repository_id")
-	var repo *model.Repository
 	var err error
-	if repoStr != "" {
-		repoid, err := strconv.Atoi(repoStr)
-		if err != nil {
-			hc.internalError(err)
-			return
-		}
-		// do some check
-		repo, err = service.GetRepository(int64(repoid))
-		if err != nil {
-			hc.internalError(err)
-			return
-		} else if repo == nil {
-			hc.customAbort(http.StatusBadRequest, fmt.Sprintf("Helm repository %d does not exists.", repoid))
-			return
-		}
+	var releases interface{}
+	if hc.isSysAdmin {
+		releases, err = service.ListAllReleases()
+	} else {
+		releases, err = service.ListReleasesByUserID(hc.currentUser.ID)
 	}
-
-	var userid int64 = -1
-	if !hc.isSysAdmin {
-		userid = hc.currentUser.ID
-	}
-	releases, err := service.ListReleases(repo, userid)
 	if err != nil {
 		hc.internalError(err)
 		return
@@ -278,11 +221,12 @@ func (hc *HelmController) ListHelmReleaseAction() {
 
 func (hc *HelmController) DeleteHelmReleaseAction() {
 	// get the release id
-	m := hc.checkReleaseOperationPriviledges()
-	if m == nil {
+	r := hc.resolveRelease()
+	if !hc.isSysAdmin && hc.currentUser.ID != r.OwnerID {
+		hc.customAbort(http.StatusForbidden, fmt.Sprintf("Insufficient privileges to operate release %s.", r.Name))
 		return
 	}
-	err := service.DeleteRelease(m.ID)
+	err := service.DeleteRelease(r.ID)
 	if err != nil {
 		hc.internalError(err)
 		return
@@ -292,11 +236,12 @@ func (hc *HelmController) DeleteHelmReleaseAction() {
 
 func (hc *HelmController) GetHelmReleaseAction() {
 	// get the release id
-	m := hc.checkReleaseOperationPriviledges()
-	if m == nil {
+	r := hc.resolveRelease()
+	if !hc.isSysAdmin && hc.currentUser.ID != r.OwnerID {
+		hc.customAbort(http.StatusForbidden, fmt.Sprintf("Insufficient privileges to operate release %s.", r.Name))
 		return
 	}
-	release, err := service.GetReleaseDetail(m.ID)
+	release, err := service.GetReleaseDetail(r.ID)
 	if err != nil {
 		hc.internalError(err)
 		return
@@ -304,7 +249,7 @@ func (hc *HelmController) GetHelmReleaseAction() {
 	hc.renderJSON(release)
 }
 
-func (hc *HelmController) checkReleaseOperationPriviledges() *model.ReleaseModel {
+func (hc *HelmController) resolveRelease() *model.ReleaseModel {
 	// get the release id
 	releaseid, err := strconv.Atoi(hc.Ctx.Input.Param(":id"))
 	if err != nil {
@@ -320,11 +265,20 @@ func (hc *HelmController) checkReleaseOperationPriviledges() *model.ReleaseModel
 		hc.customAbort(http.StatusNotFound, fmt.Sprintf("Can't find the release with id %d.", releaseid))
 		return nil
 	}
-	if !hc.isSysAdmin && hc.currentUser.ID != model.OwnerID {
-		hc.customAbort(http.StatusForbidden, fmt.Sprintf("Insufficient privileges to operate release %s.", model.Name))
+	return model
+}
+
+func (hc *HelmController) resolveHelmRepositoryByID(repositoryID int64) *model.HelmRepository {
+	// do some check
+	repo, err := service.GetHelmRepository(repositoryID)
+	if err != nil {
+		hc.internalError(err)
+		return nil
+	} else if repo == nil {
+		hc.customAbort(http.StatusNotFound, fmt.Sprintf("Helm repository %d does not exists.", repositoryID))
 		return nil
 	}
-	return model
+	return repo
 }
 
 func (hc *HelmController) ReleaseExists() {

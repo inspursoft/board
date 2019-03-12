@@ -425,7 +425,7 @@ DROP TABLE IF EXISTS `log`;
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;		
 
-    CREATE TABLE `board`.`repository` (
+    CREATE TABLE `board`.`helm_repository` (
         `id` INT NOT NULL AUTO_INCREMENT,
         `name` VARCHAR(255) NOT NULL DEFAULT '',
         `url` VARCHAR(255) NOT NULL DEFAULT '',
@@ -433,7 +433,7 @@ DROP TABLE IF EXISTS `log`;
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
 
-INSERT INTO `board`.`repository`
+INSERT INTO `board`.`helm_repository`
  (`id`, `name`, `url`, `type`)
  VALUES
  (1, 'chartmuseum', 'http://chartmuseum:8080/', 1);

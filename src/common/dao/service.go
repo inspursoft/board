@@ -62,16 +62,30 @@ func DeleteService(service model.ServiceStatus) (int64, error) {
 	return num, err
 }
 
-func DeleteServiceByNameAndProjectName(service model.ServiceStatus) (int64, error) {
-	o := orm.NewOrm()
-	num, err := o.Delete(&service, "name", "project_name")
+func DeleteServiceByNames(services []model.ServiceStatus) (int64, error) {
+	if services == nil || len(services) == 0 {
+		return 0, nil
+	}
+	sql, params := generateDeleteServiceByNamesSQL(services)
+	result, err := orm.NewOrm().Raw(sql, params).Exec()
 	if err != nil {
-		if err == orm.ErrNoRows {
-			return 0, nil
-		}
 		return 0, err
 	}
-	return num, err
+	return result.RowsAffected()
+}
+
+func generateDeleteServiceByNamesSQL(services []model.ServiceStatus) (string, []interface{}) {
+	values := ""
+	params := make([]interface{}, 0, 2*len(services))
+	for i, svc := range services {
+		params = append(params, svc.Name, svc.ProjectName)
+		if i != 0 {
+			values += ","
+		}
+		values += ` (?,?)`
+	}
+	sql := `delete from service_status where (name, project_name) in ( ` + values + ` )`
+	return sql, params
 }
 
 func generateServiceStatusSQL(query model.ServiceStatus, userID int64) (string, []interface{}) {

@@ -375,40 +375,34 @@ func (r *ChartRepository) Icon(versions ChartVersions) (string, string, error) {
 	return iconData, iconFilename, nil
 }
 
-func (r *ChartRepository) InstallChart(chartName, chartVersion, releasename, namespace, values, helmhost string) (string, error) {
+func (r *ChartRepository) InstallChart(chartName, chartVersion, releasename, namespace, values, helmhost string) error {
 	if helmhost == "" {
-		return "", fmt.Errorf("You must specify the HELM_HOST environment when the apiserver starts")
+		return fmt.Errorf("You must specify the HELM_HOST environment when the apiserver starts")
 	}
 	targetdir, err := ioutil.TempDir("", "template")
 	if err != nil {
-		return "", err
+		return err
 	}
 	defer os.RemoveAll(targetdir)
 
 	err = r.DownloadChart(chartName, chartVersion, targetdir)
 	if err != nil {
-		return "", err
+		return err
 	}
 	if values != "" {
 		//override the values.yaml
 		err = ioutil.WriteFile(filepath.Join(targetdir, chartName, "values.yaml"), []byte(values), 0777)
 		if err != nil {
-			return "", err
+			return err
 		}
-	}
-
-	//template the chart for resolve kubernetes elements
-	templateInfo, err := templateChart(releasename, namespace, filepath.Join(targetdir, chartName), helmhost)
-	if err != nil {
-		return "", err
 	}
 
 	//create the release
 	err = installChart(releasename, namespace, filepath.Join(targetdir, chartName), helmhost)
 	if err != nil {
-		return "", err
+		return err
 	}
-	return templateInfo, nil
+	return nil
 }
 
 // NewChartRepository constructs ChartRepository
