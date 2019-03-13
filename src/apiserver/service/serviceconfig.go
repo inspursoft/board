@@ -520,6 +520,7 @@ func setDeploymentContainers(containerList []model.Container, registryURI string
 			for _, enviroment := range cont.Env {
 				if enviroment.EnvName != "" {
 					var evs *model.EnvVarSource
+					value := enviroment.EnvValue
 					if enviroment.EnvConfigMapName == "" {
 						evs = nil
 					} else {
@@ -531,10 +532,11 @@ func setDeploymentContainers(containerList []model.Container, registryURI string
 								},
 							},
 						}
+						value = ""
 					}
 					container.Env = append(container.Env, model.EnvVar{
 						Name:      enviroment.EnvName,
-						Value:     enviroment.EnvValue,
+						Value:     value,
 						ValueFrom: evs,
 					})
 				}
