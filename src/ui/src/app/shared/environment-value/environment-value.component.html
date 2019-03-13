@@ -40,7 +40,7 @@
       <div class="line-container" *ngIf="isProvideBindConfigMap">
         <clr-checkbox [clrChecked]="bindConfigMap.get(iEnv)"
                       (clrCheckedChange)="changeBindConfigMap(iEnv, envInfo, $event)">
-          Bind configMap
+          {{"SERVICE.ENV_BIND_CONFIG_MAP" | translate}}
         </clr-checkbox>
         <cs-dropdown *ngIf="bindConfigMap.get(iEnv)"
                      [dropdownDefaultText]="getEnvConfigMapDefaltText(iEnv) |translate"

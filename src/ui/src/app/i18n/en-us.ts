@@ -357,6 +357,7 @@ export const LANG_EN_US = {
     "ENV_REQUIRED":"The key or value is required",
     "ENV_CONFIG_MAP_DEFAULT_TEXT":"Select configMap...",
     "ENV_CONFIG_MAP_KEY_DEFAULT_TEXT":"Select key...",
+    "ENV_BIND_CONFIG_MAP":"Bind configMap",
     "VOLUME_CONFIG":"Config volume",
     "VOLUME_TYPE": "Volume type",
     "VOLUME_TARGET_PATH":"Volume Path",

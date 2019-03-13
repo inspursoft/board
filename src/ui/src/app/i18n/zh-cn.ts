@@ -357,6 +357,7 @@ export const LANG_ZH_CN = {
     "ENV_REQUIRED":"key或value不能为空",
     "ENV_CONFIG_MAP_DEFAULT_TEXT":"选择ConfigMap...",
     "ENV_CONFIG_MAP_KEY_DEFAULT_TEXT":"选择KEY...",
+    "ENV_BIND_CONFIG_MAP":"绑定ConfigMap",
     "VOLUME_CONFIG":"配置卷",
     "VOLUME_TYPE": "卷类型",
     "VOLUME_TARGET_PATH":"卷路径",
