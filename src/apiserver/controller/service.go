@@ -306,6 +306,10 @@ func (p *ServiceController) DeleteServiceAction() {
 	//Judge authority
 	p.resolveUserPrivilegeByID(s.ProjectID)
 
+	if err = service.CheckServiceDeletable(s); err != nil {
+		p.internalError(err)
+		return
+	}
 	// Call stop service if running
 	if s.Status != stopped {
 		err = service.StopServiceK8s(s)

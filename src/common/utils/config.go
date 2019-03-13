@@ -171,5 +171,7 @@ func InitializeDefaultConfig() {
 	AddEnv("AUDIT_DEBUG")
 	AddEnv("DNS_SUFFIX")
 
+	AddEnv("HELM_HOST")
+
 	ShowAllConfigs()
 }

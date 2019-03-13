@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/k8sassist"
 	"git/inspursoft/board/src/common/model"
@@ -34,6 +35,7 @@ const (
 const (
 	board = iota
 	k8s
+	helm
 )
 
 func InitServiceConfig() (*model.ServiceConfig, error) {
@@ -226,7 +228,6 @@ func GetDeployConfig(deployConfigURL string) (model.Deployment, error) {
 
 func SyncServiceWithK8s(pName string) error {
 	logs.Debug("Sync Service Status of namespace %s", pName)
-
 	//obtain serviceList data of
 	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
 		KubeConfigPath: kubeConfigPath(),
@@ -843,4 +844,11 @@ func GetNodePortsK8s(pname string) ([]int32, error) {
 	}
 
 	return portList, nil
+}
+
+func CheckServiceDeletable(svc *model.ServiceStatus) error {
+	if svc != nil && svc.Source == helm {
+		return fmt.Errorf("you must delete the service %s from helm release page.", svc.Name)
+	}
+	return nil
 }
