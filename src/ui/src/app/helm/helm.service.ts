@@ -79,7 +79,7 @@ export class HelmService {
     return this.http.post(`/api/v1/helm/release`, {
       name: postBody.name,
       project_id: postBody.projectId,
-      repoid: postBody.repoId,
+      repository_id: postBody.repoId,
       chart: postBody.chart,
       owner_id: postBody.ownerId,
       chartversion: postBody.chartVersion

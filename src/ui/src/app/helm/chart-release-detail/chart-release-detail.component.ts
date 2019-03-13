@@ -5,7 +5,7 @@ import { CsModalChildBase } from "../../shared/cs-modal-base/cs-modal-child-base
 
 @Component({
   templateUrl: './chart-release-detail.component.html',
-  styleUrls: ['./chart-release-detail.component.html']
+  styleUrls: ['./chart-release-detail.component.css']
 })
 export class ChartReleaseDetailComponent extends CsModalChildBase {
   detail: IChartReleaseDetail;
