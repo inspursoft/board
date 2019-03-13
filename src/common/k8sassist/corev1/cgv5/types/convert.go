@@ -754,7 +754,8 @@ func FromK8sEnvVar(env v1.EnvVar) model.EnvVar {
 	var valuefrom *model.EnvVarSource
 	if env.ValueFrom == nil {
 		valuefrom = nil
-	} else {
+	} else if env.ValueFrom.ConfigMapKeyRef != nil {
+		// configmap env type
 		valuefrom = &model.EnvVarSource{
 			ConfigMapKeyRef: &model.ConfigMapKeySelector{
 				LocalObjectReference: model.LocalObjectReference(env.ValueFrom.ConfigMapKeyRef.LocalObjectReference),
@@ -762,6 +763,7 @@ func FromK8sEnvVar(env v1.EnvVar) model.EnvVar {
 				Optional:             env.ValueFrom.ConfigMapKeyRef.Optional,
 			},
 		}
+		// TODO support other types
 	}
 	return model.EnvVar{
 		Name:      env.Name,
