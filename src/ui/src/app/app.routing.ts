@@ -95,8 +95,12 @@ export const ROUTES: Routes = [
         ]
       },
       {path: 'services', component: ServiceComponent, canDeactivate: [ServiceGuard]},
-      {path: `${RouteHelm}/${RouteRepoList}`, component: HelmHostComponent},
-      {path: `${RouteHelm}/${RouteReleaseList}`, component: ChartReleaseListComponent},
+      {
+        path: 'helm', children: [
+          {path: 'repo-list', component: HelmHostComponent},
+          {path: 'release-list', component: ChartReleaseListComponent}
+        ]
+      },
       {path: 'user-center', component: UserCenterComponent},
       {path: 'profile', component: ProfileComponent},
       {path: 'kibana-url', component: KibanaComponent},
