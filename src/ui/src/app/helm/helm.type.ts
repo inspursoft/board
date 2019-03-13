@@ -12,7 +12,7 @@ export interface IChartReleaseList {
   name: string;
   project_id: number;
   project_name: string;
-  repoid: number;
+  repository_id: number;
   repository: string;
   chart: string;
   chartversion: string;
@@ -29,7 +29,7 @@ export interface IChartReleaseDetail {
   name: string;
   project_id: number;
   project_name: string;
-  repoid: number;
+  repository_id: number;
   repository: string;
   chart: string;
   chartversion: string;
