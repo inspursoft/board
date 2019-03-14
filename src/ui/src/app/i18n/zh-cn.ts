@@ -283,6 +283,7 @@ export const LANG_ZH_CN = {
     "RELEASE_CHART_LIST_NOTES":"注释",
     "RELEASE_CHART_LIST_WORKLOADS":"内容",
     "RELEASE_CHART_LIST_WORKLOADS_STATUS":"内容状态",
+    "RELEASE_CHART_LIST_LOADING":"正在获取信息...",
   },
   "IMAGE":{
     "COL_IMAGE_NAME":"镜像名",

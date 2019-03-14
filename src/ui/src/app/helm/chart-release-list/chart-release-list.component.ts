@@ -36,11 +36,9 @@ export class ChartReleaseListComponent extends CsModalParentBase implements OnIn
   }
 
   showReleaseDetail(release: IChartRelease) {
-    this.helmService.getChartReleaseDetail(release.id).subscribe((res: IChartReleaseDetail) => {
-      this.view.clear();
-      let component = this.createNewModal(ChartReleaseDetailComponent);
-      component.detail = res;
-    });
+    this.view.clear();
+    let component = this.createNewModal(ChartReleaseDetailComponent);
+    component.releaseId = release.id;
   }
 
   deleteChartRelease(release: IChartRelease) {

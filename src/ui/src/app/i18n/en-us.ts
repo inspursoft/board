@@ -283,6 +283,7 @@ export const LANG_EN_US = {
     "RELEASE_CHART_LIST_NOTES":"Notes",
     "RELEASE_CHART_LIST_WORKLOADS":"Workloads",
     "RELEASE_CHART_LIST_WORKLOADS_STATUS":"Workloads Status",
+    "RELEASE_CHART_LIST_LOADING":"Loading...",
   },
   "IMAGE":{
     "COL_IMAGE_NAME":"Image Name",

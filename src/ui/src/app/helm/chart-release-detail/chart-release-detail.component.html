@@ -1,7 +1,10 @@
 <clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'lg'">
     <h3 class="modal-title">{{ 'HELM.RELEASE_CHART_LIST_DETAIL' | translate }}</h3>
     <div class="modal-body">
-        <clr-tabs>
+        <div class="loading-container" *ngIf="!isGotDetail">
+            <span class="spinner spinner-md"></span>{{"HELM.RELEASE_CHART_LIST_LOADING"|translate}}
+        </div>
+        <clr-tabs *ngIf="isGotDetail">
             <clr-tab>
                 <button clrTabLink>{{"HELM.RELEASE_CHART_LIST_NOTES" | translate}}</button>
                 <clr-tab-content *clrIfActive>
