@@ -20,6 +20,7 @@ export class ChartListComponent extends CsModalParentBase {
   curPageSize = 15;
   curPageIndex = 1;
   recordTotalCount = 1;
+  ViewMethod = ViewMethod;
   viewMethod: ViewMethod = ViewMethod.vmList;
 
   constructor(private helmService: HelmService,
