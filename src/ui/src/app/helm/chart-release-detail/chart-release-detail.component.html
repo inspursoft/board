@@ -1,0 +1,34 @@
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'lg'">
+    <h3 class="modal-title">{{ 'HELM.RELEASE_CHART_LIST_DETAIL' | translate }}</h3>
+    <div class="modal-body">
+        <div class="loading-container" *ngIf="!isGotDetail">
+            <span class="spinner spinner-md"></span>{{"HELM.RELEASE_CHART_LIST_LOADING"|translate}}
+        </div>
+        <clr-tabs *ngIf="isGotDetail">
+            <clr-tab>
+                <button clrTabLink>{{"HELM.RELEASE_CHART_LIST_NOTES" | translate}}</button>
+                <clr-tab-content *clrIfActive>
+                    <cs-highlight [language]="'yaml'" [code]="detail.notes"></cs-highlight>
+                </clr-tab-content>
+            </clr-tab>
+            <clr-tab>
+                <button clrTabLink>{{"HELM.RELEASE_CHART_LIST_WORKLOADS" | translate}}</button>
+                <clr-tab-content  *clrIfActive>
+                    <cs-highlight [language]="'yaml'" [code]="detail.workloads">
+                    </cs-highlight>
+                </clr-tab-content>
+            </clr-tab>
+            <clr-tab>
+                <button clrTabLink >{{"HELM.RELEASE_CHART_LIST_WORKLOADS_STATUS" | translate}}</button>
+                <clr-tab-content *clrIfActive>
+                    <cs-highlight [language]="'yaml'" [code]="detail.workloadstatus"></cs-highlight>
+                </clr-tab-content>
+            </clr-tab>
+        </clr-tabs>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline" (click)="modalOpened = false">
+            {{ 'BUTTON.OK' | translate }}
+        </button>
+    </div>
+</clr-modal>
