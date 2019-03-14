@@ -7,7 +7,7 @@ export interface IHelmRepo {
   type: number;
 }
 
-export interface IChartReleaseList {
+export interface IChartRelease {
   id: number;
   name: string;
   project_id: number;

@@ -1,5 +1,5 @@
 import { Component, ComponentFactoryResolver, OnInit, ViewContainerRef } from "@angular/core";
-import { IChartReleaseDetail, IChartReleaseList } from "../helm.type";
+import { IChartReleaseDetail, IChartRelease } from "../helm.type";
 import { HelmService } from "../helm.service";
 import { Message, RETURN_STATUS } from "../../shared/shared.types";
 import { MessageService } from "../../shared/message-service/message.service";
@@ -12,14 +12,14 @@ import { ChartReleaseDetailComponent } from "../chart-release-detail/chart-relea
 })
 export class ChartReleaseListComponent extends CsModalParentBase implements OnInit {
   loadingWIP = false;
-  chartReleaseList: Array<IChartReleaseList>;
+  chartReleaseList: Array<IChartRelease>;
 
   constructor(private helmService: HelmService,
               private resolver: ComponentFactoryResolver,
               private view: ViewContainerRef,
               private messageService: MessageService) {
     super(resolver, view);
-    this.chartReleaseList = Array<IChartReleaseList>();
+    this.chartReleaseList = Array<IChartRelease>();
   }
 
   ngOnInit() {
@@ -29,13 +29,13 @@ export class ChartReleaseListComponent extends CsModalParentBase implements OnIn
   retrieve() {
     this.loadingWIP = true;
     this.helmService.getChartReleaseList().subscribe(
-      (res: Array<IChartReleaseList>) => this.chartReleaseList = res,
+      (res: Array<IChartRelease>) => this.chartReleaseList = res,
       () => this.loadingWIP = false,
       () => this.loadingWIP = false
     );
   }
 
-  showReleaseDetail(release: IChartReleaseList) {
+  showReleaseDetail(release: IChartRelease) {
     this.helmService.getChartReleaseDetail(release.id).subscribe((res: IChartReleaseDetail) => {
       this.view.clear();
       let component = this.createNewModal(ChartReleaseDetailComponent);
@@ -43,7 +43,7 @@ export class ChartReleaseListComponent extends CsModalParentBase implements OnIn
     });
   }
 
-  deleteChartRelease(release: IChartReleaseList) {
+  deleteChartRelease(release: IChartRelease) {
     this.messageService.showDeleteDialog('HELM.RELEASE_CHART_LIST_DELETE_MSG', 'HELM.RELEASE_CHART_LIST_DELETE').subscribe(
       (message: Message) => {
         if (message.returnStatus == RETURN_STATUS.rsConfirm) {

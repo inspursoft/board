@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { HttpClient, HttpEvent, HttpRequest, HttpResponse } from "@angular/common/http";
 import { Observable, Subject } from "rxjs";
-import { HelmViewData, IChartReleaseDetail, IChartReleaseList, IHelmRepo } from "./helm.type";
+import { HelmViewData, IChartReleaseDetail, IChartRelease, IHelmRepo } from "./helm.type";
 
 @Injectable()
 export class HelmService {
@@ -86,9 +86,9 @@ export class HelmService {
     }, {observe: "response"})
   }
 
-  getChartReleaseList(): Observable<Array<IChartReleaseList>> {
+  getChartReleaseList(): Observable<Array<IChartRelease>> {
     return this.http.get<Object>(`/api/v1/helm/release`, {observe: "response"})
-      .map((res: HttpResponse<Array<IChartReleaseList>>) => res.body)
+      .map((res: HttpResponse<Array<IChartRelease>>) => res.body)
   }
 
   getChartReleaseDetail(chartReleaseId: number): Observable<IChartReleaseDetail> {
