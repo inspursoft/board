@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from "@angular/core";
-import { HelmChartVersion, HelmRepoDetail, IHelmRepoList } from "../helm.type";
+import { HelmChartVersion, HelmRepoDetail, IHelmRepo } from "../helm.type";
 import { CsModalChildBase } from "../../shared/cs-modal-base/cs-modal-child-base";
 import { Project } from "../../project/project";
 import { SharedService } from "../../shared/shared.service";
@@ -15,7 +15,7 @@ import { HttpErrorResponse } from "@angular/common/http";
   styleUrls: ['./chart-release.component.css']
 })
 export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
-  repoInfo: IHelmRepoList;
+  repoInfo: IHelmRepo;
   chartVersion: HelmChartVersion;
   projectsList: Array<Project>;
   selectProject: Project = null;

@@ -12,7 +12,8 @@ export const LANG_ZH_CN = {
     "TEST":"测试",
   },
   "DATAGRID": {
-    "ITEMS": "条记录"
+    "ITEMS": "条记录",
+    "TOTAL": " 共:"
   },
   "GLOBAL_ALERT": {
     "TITLE":"标题",

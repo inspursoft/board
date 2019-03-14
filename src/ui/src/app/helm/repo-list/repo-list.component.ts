@@ -1,6 +1,6 @@
 import { Component, OnInit } from "@angular/core";
 import { HelmService } from "../helm.service";
-import { HelmRepoDetail, HelmViewData, HelmViewType, IHelmRepoList } from "../helm.type";
+import { HelmRepoDetail, HelmViewData, HelmViewType, IHelmRepo } from "../helm.type";
 
 @Component({
   selector: 'helm-repo-list',
@@ -9,7 +9,7 @@ import { HelmRepoDetail, HelmViewData, HelmViewType, IHelmRepoList } from "../he
 })
 export class RepoListComponent implements OnInit {
   loadingWIP = false;
-  repoList: Array<IHelmRepoList>;
+  repoList: Array<IHelmRepo>;
 
   constructor(private helmService: HelmService) {
 
@@ -21,15 +21,15 @@ export class RepoListComponent implements OnInit {
 
   retrieve() {
     this.loadingWIP = true;
-    this.helmService.getRepoList().subscribe((res: Array<IHelmRepoList>) => {
+    this.helmService.getRepoList().subscribe((res: Array<IHelmRepo>) => {
         this.loadingWIP = false;
         this.repoList = res;
       }, () => this.loadingWIP = false
     );
   }
 
-  showRepoDetail(repo: IHelmRepoList) {
-    let viewData = new HelmViewData(repo, HelmViewType.hvtChartList);
+  showRepoDetail(repo: IHelmRepo) {
+    let viewData = new HelmViewData(HelmViewType.ChartList, repo);
     viewData.description = `HELM.CHART_LIST_TITTLE`;
     this.helmService.pushNewView(viewData);
   }

@@ -17,15 +17,15 @@ export class HelmHostComponent implements OnInit,OnDestroy {
   ngOnInit(): void {
     this.helmService.viewSubject.asObservable().subscribe((helmViewData: HelmViewData) => {
       switch (helmViewData.type) {
-        case HelmViewType.hvtRepoList:
+        case HelmViewType.RepoList:
           this.createRepoList();
           return;
-        case HelmViewType.hvtChartList:
+        case HelmViewType.ChartList:
           this.createChartList(helmViewData);
           return;
       }
     });
-    let repoView = new HelmViewData(null, HelmViewType.hvtRepoList);
+    let repoView = new HelmViewData(HelmViewType.RepoList);
     repoView.description = `HELM.REPO_LIST_TITLE`;
     this.helmService.pushNewView(repoView);
   }

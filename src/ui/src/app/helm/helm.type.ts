@@ -1,6 +1,6 @@
 import { IPagination } from "../shared/shared.types";
 
-export interface IHelmRepoList {
+export interface IHelmRepo {
   id: number;
   name: string;
   url: string;
@@ -63,7 +63,7 @@ export class HelmChartVersion {
     version.description = response['description'];
     version.urls = response['urls'];
     version.digest = response['digest'];
-    if (Reflect.has(response,'icon')){
+    if (Reflect.has(response, 'icon')) {
       version.icon = response['icon'];
     }
     return version;
@@ -91,7 +91,7 @@ export class HelmChart {
 }
 
 export class HelmRepoDetail {
-  baseInfo: IHelmRepoList;
+  baseInfo: IHelmRepo;
   pagination: IPagination;
   charts: Array<HelmChart>;
 
@@ -118,13 +118,13 @@ export class HelmRepoDetail {
 }
 
 export enum HelmViewType {
-  hvtRepoList, hvtChartList, hvtUploadChart, hvtRelease
+  RepoList, ChartList,
 }
 
 export class HelmViewData {
   description = '';
 
-  constructor(public data: any, public type: HelmViewType) {
+  constructor(public type: HelmViewType, public data: any = null) {
 
   }
 }

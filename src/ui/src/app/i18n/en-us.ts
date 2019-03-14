@@ -12,7 +12,8 @@ export const LANG_EN_US = {
     "TEST":"Test",
   },
   "DATAGRID": {
-    "ITEMS": "items"
+    "ITEMS": "items",
+    "TOTAL": " total:"
   },
   "GLOBAL_ALERT": {
     "TITLE":"Title",

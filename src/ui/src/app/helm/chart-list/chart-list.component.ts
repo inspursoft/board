@@ -1,6 +1,6 @@
 import { Component, ComponentFactoryResolver, ViewContainerRef } from "@angular/core";
 import { CsModalParentBase } from "../../shared/cs-modal-base/cs-modal-parent-base";
-import { HelmChart, HelmChartVersion, HelmRepoDetail, IHelmRepoList } from "../helm.type";
+import { HelmChart, HelmChartVersion, HelmRepoDetail, IHelmRepo } from "../helm.type";
 import { HelmService } from "../helm.service";
 import { Message, RETURN_STATUS } from "../../shared/shared.types";
 import { MessageService } from "../../shared/message-service/message.service";
@@ -14,7 +14,7 @@ enum ViewMethod {vmList = 'list', vmCard = 'card'}
   styleUrls: ['./chart-list.component.css']
 })
 export class ChartListComponent extends CsModalParentBase {
-  repoInfo: IHelmRepoList;
+  repoInfo: IHelmRepo;
   loadingWIP = false;
   versionList: Array<HelmChartVersion>;
   curPageSize = 15;

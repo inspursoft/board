@@ -32,7 +32,8 @@
         </clr-dg-cell>
     </clr-dg-row>
     <clr-dg-footer>
-        {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} of {{pagination.totalItems}} items
+        {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
+        {{"DATAGRID.TOTAL" | translate}}<{{pagination.totalItems}}>{{"DATAGRID.ITEMS" | translate}}
         <clr-dg-pagination #pagination
                            [clrDgTotalItems]="recordTotalCount"
                            [(clrDgPage)]="curPageIndex"

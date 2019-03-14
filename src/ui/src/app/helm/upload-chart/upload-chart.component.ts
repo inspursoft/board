@@ -1,5 +1,5 @@
 import { Component } from "@angular/core";
-import { IHelmRepoList } from "../helm.type";
+import { IHelmRepo } from "../helm.type";
 import { CsModalChildBase } from "../../shared/cs-modal-base/cs-modal-child-base";
 import { HelmService } from "../helm.service";
 import { HttpEvent, HttpEventType, HttpProgressEvent } from "@angular/common/http";
@@ -11,7 +11,7 @@ import { Observable, Subject } from "rxjs";
   styleUrls: ['./upload-chart.component.css']
 })
 export class UploadChartComponent extends CsModalChildBase {
-  repoInfo: IHelmRepoList;
+  repoInfo: IHelmRepo;
   isUploadChartWIP = false;
   selectedFile: File = null;
   uploadProgressValue: HttpProgressEvent;
