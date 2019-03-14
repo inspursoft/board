@@ -1,0 +1,63 @@
+<div class="chart-title">
+    <h1>{{"HELM.CHART_LIST_TITTLE" | translate}}({{repoInfo.name}})</h1>
+    <div class="chart-title-action">
+        <a href="javascript:void(0)">
+            <clr-icon (click)="viewMethod = 'list'" [class.active]="viewMethod == 'list'" shape="view-list"></clr-icon>
+        </a>
+        <a href="javascript:void(0)">
+            <clr-icon (click)="viewMethod = 'card'" [class.active]="viewMethod == 'card'" shape="view-cards"></clr-icon>
+        </a>
+        <button class="btn btn-primary" (click)="showUploadChart()">
+            {{"HELM.UPLOAD_CHART_TITLE" | translate}}</button>
+    </div>
+</div>
+<clr-datagrid *ngIf="viewMethod == 'list'" (clrDgRefresh)="retrieve($event)" [clrDgLoading]="loadingWIP">
+    <clr-dg-column>{{ 'HELM.CHART_LIST_NAME' | translate }}</clr-dg-column>
+    <clr-dg-column>{{ 'HELM.CHART_LIST_VERSION' | translate }}</clr-dg-column>
+    <clr-dg-column>{{ 'HELM.CHART_LIST_DESCRIPTION' | translate }}</clr-dg-column>
+    <clr-dg-column>{{ 'HELM.CHART_LIST_URLS' | translate }}</clr-dg-column>
+    <clr-dg-column>{{ 'HELM.UPLOAD_CHART_OPERATION' | translate }}</clr-dg-column>
+    <clr-dg-row *ngFor="let version of versionList">
+        <clr-dg-cell>{{version.name}}</clr-dg-cell>
+        <clr-dg-cell>{{version.version}}</clr-dg-cell>
+        <clr-dg-cell>{{version.description}}</clr-dg-cell>
+        <clr-dg-cell>{{version.urls}}</clr-dg-cell>
+        <clr-dg-cell>
+            <a href="javascript:void(0)">
+                <clr-icon shape="trash" (click)="deleteChartVersion(version)"></clr-icon>
+            </a>
+            <a href="javascript:void(0)">
+                <clr-icon shape="cog" class="is-solid" (click)="showReleaseChartVersion(version)"></clr-icon>
+            </a>
+        </clr-dg-cell>
+    </clr-dg-row>
+    <clr-dg-footer>
+        {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
+        {{"DATAGRID.TOTAL" | translate}}{{pagination.totalItems}}{{"DATAGRID.ITEMS" | translate}}
+        <clr-dg-pagination #pagination
+                           [clrDgTotalItems]="recordTotalCount"
+                           [(clrDgPage)]="curPageIndex"
+                           [clrDgPageSize]="curPageSize">
+        </clr-dg-pagination>
+    </clr-dg-footer>
+</clr-datagrid>
+<div *ngIf="viewMethod == 'card'" class="card-container">
+    <div *ngFor="let version of versionList" class="card">
+        <img *ngIf="version.icon" [alt]="" [src]="version.icon">
+        <span class="card-name"><b>{{version.name}}({{version.version}})</b></span>
+        <span class="card-title">{{ 'HELM.CHART_LIST_URLS' | translate }}:
+            <span class="card-content">{{version.urls}}</span>
+        </span>
+        <span class="card-title">{{ 'HELM.CHART_LIST_DESCRIPTION' | translate }}:
+            <span class="card-content">{{version.description}}</span>
+        </span>
+        <div class="card-action-container">
+            <a href="javascript:void(0)">
+                <clr-icon shape="trash" (click)="deleteChartVersion(version)"></clr-icon>
+            </a>
+            <a href="javascript:void(0)">
+                <clr-icon shape="cog" class="is-solid" (click)="showReleaseChartVersion(version)"></clr-icon>
+            </a>
+        </div>
+    </div>
+</div>

@@ -1,7 +1,13 @@
 import { HttpErrorResponse } from "@angular/common/http";
 import { Type } from "@angular/core";
 import { TimeoutError } from "rxjs/src/util/TimeoutError";
-import * as isObject from "isobject";
+
+export interface IPagination {
+  page_index: number;
+  page_size: number;
+  total_count: number;
+  page_count: number;
+}
 
 export interface ICsMenuItemData {
   caption: string,

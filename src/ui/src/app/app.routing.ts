@@ -26,9 +26,12 @@ import { BadGatewayComponent } from "./shared/error-pages/bad-gateway.component/
 import { BoardLoadingComponent } from "./shared/error-pages/board-loading.component/board-loading.component";
 import { KibanaComponent } from "./kibana/kibana/kibana.component";
 import { GrafanaComponent } from "./grafana/grafana/grafana.component";
+import { RouteHelm, RouteReleaseList, RouteRepoList } from "./shared/shared.const";
 import { PvListComponent } from "./storage/pv/pv-list.compoent/pv-list.component";
 import { Observable } from "rxjs/Observable";
 import { PvcListComponent } from "./storage/pvc/pvc-list.component/pvc-list.component";
+import { HelmHostComponent } from "./helm/helm-host/helm-host.component";
+import { ChartReleaseListComponent } from "./helm/chart-release-list/chart-release-list.component";
 import { ConfigMapListComponent } from "./resource/config-map/config-map-list/config-map-list.component";
 
 @Injectable()
@@ -92,6 +95,12 @@ export const ROUTES: Routes = [
         ]
       },
       {path: 'services', component: ServiceComponent, canDeactivate: [ServiceGuard]},
+      {
+        path: 'helm', children: [
+          {path: 'repo-list', component: HelmHostComponent},
+          {path: 'release-list', component: ChartReleaseListComponent}
+        ]
+      },
       {path: 'user-center', component: UserCenterComponent},
       {path: 'profile', component: ProfileComponent},
       {path: 'kibana-url', component: KibanaComponent},
