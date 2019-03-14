@@ -12,4 +12,13 @@
             </a>
         </clr-dg-cell>
     </clr-dg-row>
+    <clr-dg-footer>
+        {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
+        {{"DATAGRID.TOTAL" | translate}}{{repoList.length}}{{"DATAGRID.ITEMS" | translate}}
+        <clr-dg-pagination #pagination
+                           [clrDgTotalItems]="repoList.length"
+                           [clrDgPage]="1"
+                           [clrDgPageSize]="repoList.length">
+        </clr-dg-pagination>
+    </clr-dg-footer>
 </clr-datagrid>

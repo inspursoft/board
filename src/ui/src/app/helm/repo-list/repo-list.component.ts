@@ -12,7 +12,7 @@ export class RepoListComponent implements OnInit {
   repoList: Array<IHelmRepo>;
 
   constructor(private helmService: HelmService) {
-
+    this.repoList = Array<IHelmRepo>();
   }
 
   ngOnInit() {

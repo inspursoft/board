@@ -1,5 +1,21 @@
+div.modal-body {
+  display: flex;
+}
+
+div.info-container {
+  display: flex;
+  flex-direction: column;
+  flex-basis: 50%;
+}
+
+div.code-container {
+  flex-basis: 50%;
+  margin-left: 5px;
+  overflow-x: auto;
+}
+
 label.base-text {
-  min-width: 180px;
+  min-width: 100px;
   text-align: right;
 }
 
