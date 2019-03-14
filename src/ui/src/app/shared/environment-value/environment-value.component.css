@@ -71,3 +71,7 @@ div.env-item-add-container {
   height: 30px;
   margin-top: 7px;
 }
+
+div.env-item-add-container span {
+  margin-left: 10px;
+}

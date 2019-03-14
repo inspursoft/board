@@ -406,7 +406,7 @@ export const LANG_ZH_CN = {
     "STEP_TITLE_4":"测试",
     "STEP_TITLE_5":"部署",
     "ENV_TITLE":"环境变量配置",
-    "TXT_TITLE":"环境变量输入",
+    "TXT_TITLE":"环境变量输入(KEY1=VALUE1;KEY2=VALUE2)",
     "TXT_BUTTON":"添加",
     "TXT_ALERT_MESSAGE":"环境变量不合法",
     "ENV_ADD":"添加新的环境变量",
