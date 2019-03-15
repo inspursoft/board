@@ -2,12 +2,12 @@
     <h1>{{"HELM.CHART_LIST_TITTLE" | translate}}({{repoInfo.name}})</h1>
     <div class="chart-title-action">
         <a href="javascript:void(0)">
-            <clr-icon (click)="viewMethod = ViewMethod.vmList"
+            <clr-icon (click)="setViewMethod('List')"
                       [class.active]="viewMethod == 'list'"
                       shape="view-list"></clr-icon>
         </a>
         <a href="javascript:void(0)">
-            <clr-icon (click)="viewMethod = ViewMethod.vmCard"
+            <clr-icon (click)="setViewMethod('Card')"
                       [class.active]="viewMethod == 'card'"
                       shape="view-cards"></clr-icon>
         </a>

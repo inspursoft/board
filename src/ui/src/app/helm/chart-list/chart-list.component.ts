@@ -7,7 +7,7 @@ import { MessageService } from "../../shared/message-service/message.service";
 import { UploadChartComponent } from "../upload-chart/upload-chart.component";
 import { ChartReleaseComponent } from "../chart-release/chart-release.component";
 
-enum ViewMethod {vmList = 'list', vmCard = 'card'}
+enum ViewMethod {List = 'list', Card = 'card'}
 
 @Component({
   templateUrl: './chart-list.component.html',
@@ -20,8 +20,7 @@ export class ChartListComponent extends CsModalParentBase {
   curPageSize = 15;
   curPageIndex = 1;
   recordTotalCount = 1;
-  ViewMethod = ViewMethod;
-  viewMethod: ViewMethod = ViewMethod.vmList;
+  viewMethod: ViewMethod = ViewMethod.List;
 
   constructor(private helmService: HelmService,
               private resolver: ComponentFactoryResolver,
@@ -29,6 +28,10 @@ export class ChartListComponent extends CsModalParentBase {
               private messageService: MessageService) {
     super(resolver, view);
     this.versionList = Array<HelmChartVersion>();
+  }
+
+  setViewMethod(method: string) {
+    this.viewMethod = ViewMethod[method];
   }
 
   retrieve(): void {
