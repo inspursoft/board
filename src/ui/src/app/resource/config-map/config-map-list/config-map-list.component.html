@@ -4,7 +4,7 @@
 </div>
 <clr-datagrid (clrDgRefresh)="retrieve()" [clrDgLoading]="isInLoading">
     <clr-dg-column>{{ 'RESOURCE.CONFIG_MAP_LIST_NAME' | translate }}</clr-dg-column>
-    <clr-dg-column>{{ 'RESOURCE.CONFIG_MAP_LIST_NAMESPACE' | translate }}</clr-dg-column>
+    <clr-dg-column>{{ 'RESOURCE.CONFIG_MAP_LIST_PROJECT_NAME' | translate }}</clr-dg-column>
     <clr-dg-column>{{ 'RESOURCE.CONFIG_MAP_LIST_STATUS' | translate }}</clr-dg-column>
     <clr-dg-column>{{ 'RESOURCE.CONFIG_MAP_LIST_OPERATION' | translate }}</clr-dg-column>
     <clr-dg-row *ngFor="let configMap of configMapList">
