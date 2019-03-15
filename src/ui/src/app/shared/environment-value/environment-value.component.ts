@@ -12,14 +12,25 @@ import { ResourceService } from "../../resource/resource.service";
 import { HttpErrorResponse } from "@angular/common/http";
 
 export class EnvType {
+  static patternEnv = /^[\w-$/\\=\"[\]{}@&:,'`\t. ?]+$/;
   public envName = '';
   public envValue = '';
   public envConfigMapName = '';
   public envConfigMapKey = '';
 
   constructor(name, value: string) {
-    this.envName = name;
-    this.envValue = value;
+    this.envName = name.trim();
+    this.envValue = value.trim();
+  }
+
+  static fromEnvs(envsText: string): Array<EnvType> {
+    return envsText.split(";").map((str: string) => {
+      let envStrPair = str.split("=");
+      if (!EnvType.patternEnv.test(envStrPair[0]) || !EnvType.patternEnv.test(envStrPair[1])) {
+        throw new Error()
+      }
+      return new EnvType(envStrPair[0], envStrPair[1]);
+    });
   }
 }
 
@@ -30,7 +41,6 @@ export class EnvType {
   providers: [ResourceService]
 })
 export class EnvironmentValueComponent extends CsModalChildBase implements OnInit {
-  patternEnv = /^[\w-$/\\=\"[\]{}@&:,'`\t. ?]+$/;
   envsData: Array<EnvType>;
   envsText = "";
   inputValidator: Array<ValidatorFn>;
@@ -105,21 +115,13 @@ export class EnvironmentValueComponent extends CsModalChildBase implements OnIni
   }
 
   envTextAddClick() {
-    let patternEnv = this.patternEnv;
-    let envTypes: Array<EnvType>;
     try {
-      envTypes = this.envsText.split(";").map((str: string) => {
-        let envStrPair = str.split("=");
-        if (!patternEnv.test(envStrPair[0]) || !patternEnv.test(envStrPair[1])) {
-          throw new Error()
-        }
-        return new EnvType(envStrPair[0], envStrPair[1]);
-      });
+      let envTypes = EnvType.fromEnvs(this.envsText);
+      this.envsData = this.envsData.concat(envTypes);
     } catch (e) {
       this.messageService.showAlert('SERVICE.TXT_ALERT_MESSAGE', {alertType: 'alert-warning', view: this.alertView});
       return;
     }
-    this.envsData = this.envsData.concat(envTypes);
   }
 
   changeConfigMap(index: number, envInfo: EnvType, configMap: ConfigMapList) {
