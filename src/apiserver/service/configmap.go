@@ -113,3 +113,23 @@ func GetConfigMapK8s(configname string, projectname string) (*model.ConfigMap, e
 	}
 	return cm, nil
 }
+
+func UpdateConfigMapK8s(cm *model.ConfigMapStruct) (*model.ConfigMap, error) {
+	// add the configmap to k8s
+	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		KubeConfigPath: kubeConfigPath(),
+	})
+	var err error
+	var cmk8s model.ConfigMap
+	cmk8s.Name = cm.Name
+	cmk8s.Namespace = cm.Namespace
+	cmk8s.Data = cm.DataList
+
+	newcm, err := k8sclient.AppV1().ConfigMap(cm.Namespace).Update(&cmk8s)
+	if err != nil {
+		logs.Debug("Failed to update ConfigMap to K8s %v %v", cmk8s, err)
+		return nil, err
+	}
+	logs.Debug("Updated ConfigMap to K8s")
+	return newcm, nil
+}

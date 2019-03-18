@@ -106,3 +106,26 @@ func (n *ConfigMapController) GetConfigMapAction() {
 	n.renderJSON(cm)
 
 }
+
+func (n *ConfigMapController) UpdateConfigMapAction() {
+	var reqCM model.ConfigMapStruct
+	var err error
+	err = n.resolveBody(&reqCM)
+	if err != nil {
+		return
+	}
+
+	if reqCM.Name == "" || reqCM.Namespace == "" {
+		n.customAbort(http.StatusBadRequest, "ConfigMap Name and project should not null")
+		return
+	}
+
+	configmap, err := service.UpdateConfigMapK8s(&reqCM)
+	if err != nil {
+		logs.Debug("Failed to update configmap %v", reqCM)
+		n.internalError(err)
+		return
+	}
+	logs.Info("Updated configmap %v", configmap)
+	n.renderJSON(configmap)
+}
