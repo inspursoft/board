@@ -12,7 +12,6 @@ import { ResourceService } from "../../resource/resource.service";
 import { HttpErrorResponse } from "@angular/common/http";
 
 export class EnvType {
-  static patternEnv = /^[\w-$/\\=\"[\]{}@&:,'`\t. ?]+$/;
   public envName = '';
   public envValue = '';
   public envConfigMapName = '';
@@ -21,16 +20,6 @@ export class EnvType {
   constructor(name, value: string) {
     this.envName = name.trim();
     this.envValue = value.trim();
-  }
-
-  static fromEnvs(envsText: string): Array<EnvType> {
-    return envsText.split(";").map((str: string) => {
-      let envStrPair = str.split("=");
-      if (!EnvType.patternEnv.test(envStrPair[0]) || !EnvType.patternEnv.test(envStrPair[1])) {
-        throw new Error()
-      }
-      return new EnvType(envStrPair[0], envStrPair[1]);
-    });
   }
 }
 
@@ -41,6 +30,7 @@ export class EnvType {
   providers: [ResourceService]
 })
 export class EnvironmentValueComponent extends CsModalChildBase implements OnInit {
+  patternEnv = /^[\w-$/\\=\"[\]{}@&:,'`\t. ?]+$/;
   envsData: Array<EnvType>;
   envsText = "";
   inputValidator: Array<ValidatorFn>;
@@ -116,7 +106,13 @@ export class EnvironmentValueComponent extends CsModalChildBase implements OnIni
 
   envTextAddClick() {
     try {
-      let envTypes = EnvType.fromEnvs(this.envsText);
+      let envTypes = this.envsText.split(";").map((str: string) => {
+        let envStrPair = str.split("=");
+        if (!this.patternEnv.test(envStrPair[0]) || !this.patternEnv.test(envStrPair[1])) {
+          throw new Error()
+        }
+        return new EnvType(envStrPair[0], envStrPair[1]);
+      });
       this.envsData = this.envsData.concat(envTypes);
     } catch (e) {
       this.messageService.showAlert('SERVICE.TXT_ALERT_MESSAGE', {alertType: 'alert-warning', view: this.alertView});
