@@ -2845,7 +2845,9 @@ paths:
           description: New ConfigMap to be updated.
           required: true
           schema:
-            $ref: '#/definitions/ConfigMap'          
+            $ref: '#/definitions/ConfigMap'      
+      tags:
+        - Products                
       responses:
         200:
           description: ConfigMap is updated successfully.
