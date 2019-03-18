@@ -4665,6 +4665,8 @@ paths:
       summary: Upload specific helm chart
       description: |
         This endpoint is to upload specific helm chart into chart repository.
+      consumes:
+         - multipart/form-data        
       parameters:
         - name: token
           in: header
