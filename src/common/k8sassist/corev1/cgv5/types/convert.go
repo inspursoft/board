@@ -1643,5 +1643,9 @@ func ToK8sConfigMap(configmap *model.ConfigMap) *v1.ConfigMap {
 
 //TODO implement update later
 func UpdateK8sConfigMap(k8sCM *v1.ConfigMap, cm *model.ConfigMap) {
+	if k8sCM == nil || cm == nil {
+		return
+	}
+	k8sCM.Data = cm.Data
 
 }

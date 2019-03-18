@@ -2824,7 +2824,41 @@ paths:
         403:
           description: User need to log in as admin.
         500:
-          description: Internal errors.                            
+          description: Internal errors.    
+    put:
+      summary: Update a ConfigMap by name
+      description: |
+        This endpoint is aimed to udpate a ConfigMap by name.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: configmapname
+          in: path
+          description: ConfigMap name for filtering results.
+          required: true
+          type: string
+        - name: configmap
+          in: body
+          description: New ConfigMap to be updated.
+          required: true
+          schema:
+            $ref: '#/definitions/ConfigMap'      
+      tags:
+        - Products                
+      responses:
+        200:
+          description: ConfigMap is updated successfully.
+          schema:
+            $ref: '#/definitions/ConfigMap'          
+        400:
+          description: Invalid ConfigMap name.
+        403:
+          description: User need to log in as admin.
+        500:
+          description: Internal errors.                                              
   /v1/node:
     get:
       summary: Return nodes in Board added by admin.
@@ -4633,6 +4667,8 @@ paths:
       summary: Upload specific helm chart
       description: |
         This endpoint is to upload specific helm chart into chart repository.
+      consumes:
+         - multipart/form-data        
       parameters:
         - name: token
           in: header
@@ -6918,18 +6954,18 @@ definitions:
     type: object
     properties:
       page_index:
-        type: int
+        type: integer
         format: int32
         description: The index of the page
       page_size:
-        type: int
+        type: integer
         format: int32
         description: The size of the page
       total_count:
-        type: int
+        type: integer
         format: int64
         description: The total count of all pages
       page_count:
-        type: int
+        type: integer
         format: int32
         description: The count of the pages
