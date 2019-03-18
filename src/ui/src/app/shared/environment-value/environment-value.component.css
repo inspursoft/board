@@ -1,7 +1,54 @@
-.env-icon {
+div.modal-body {
+  min-height: 450px;
+}
+
+textarea {
+  padding: 0;
+  flex-basis: 100%;
+  color: black;
+  font-size: 16px;
+  line-height: 20px;
+  overflow-y: auto;
+}
+
+div.input-area-container {
+  display: flex;
+  flex-direction: column;
+}
+
+div.input-area-title {
+  display: flex
+}
+
+div.line-container {
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+}
+
+div.line-container cs-input {
+  flex-grow: 1;
+}
+
+div.line-container cs-dropdown {
+  margin-left: 10px;
+}
+
+div.line-container clr-checkbox {
+  margin-left: 40px;
+}
+
+span.env-item-title-no {
+  flex-basis: 20px;
+  height: 15px;
+  text-align: center;
+  margin-right: 10px;
+}
+
+clr-icon.env-icon {
   color: white;
   background: green;
-  width: 20px;
+  flex-basis: 20px;
   height: 20px;
   border-radius: 5px;
   cursor: pointer;
@@ -19,46 +66,12 @@ span.env-title {
   line-height: 20px;
 }
 
-div.env-item-container {
-  display: flex;
-  width: 100%;
-}
-
-div.env-item-title-container {
-  flex-basis: 40px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-}
-
-span.env-item-title-no {
-  width: 10px;
-  height: 15px;
-  margin-top: 15px;
-  line-height: 15px;
-  text-align: center;
-  margin-right: 10px;
-}
-
 div.env-item-add-container {
-  width: 100%;
-  height: 30px;
-  margin-top: 20px;
-}
-
-div.env-item-confirm-container {
-  width: 100%;
-  height: 30px;
   display: flex;
-  flex-direction: row-reverse;
+  height: 30px;
+  margin-top: 7px;
 }
 
-.env-item-input {
-  width: calc(50% - 20px);
-}
-
-fieldset.fieldSet-default {
-  margin: 0 2px;
-  border-radius: 5px;
-  padding-bottom: 20px;
+div.env-item-add-container span {
+  margin-left: 10px;
 }

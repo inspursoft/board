@@ -56,10 +56,14 @@ export class ImageIndex implements UiServerExchangeData<ImageIndex> {
 export class EnvStruct implements UiServerExchangeData<EnvStruct> {
   dockerfile_envname = '';
   dockerfile_envvalue = '';
+  configmap_name = '';
+  configmap_key = '';
 
   serverToUi(serverResponse: Object): EnvStruct {
     this.dockerfile_envname = serverResponse['dockerfile_envname'];
     this.dockerfile_envvalue = serverResponse['dockerfile_envvalue'];
+    this.configmap_name = serverResponse['configmap_name'];
+    this.configmap_key = serverResponse['configmap_key'];
     return this;
   }
 

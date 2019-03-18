@@ -118,8 +118,10 @@
   {{"BUTTON.NEXT"|translate}}
 </button>
 <environment-value *ngIf="showEnvironmentValue"
+                   [isProvideBindConfigMap]="true"
+                   [projectName]="serviceStep2Data.projectName"
                    [inputEnvsData]="getDefaultEnvsData()"
                    [inputFixedKeyList]="getDefaultEnvsFixedData()"
-                   [(isOpen)]="showEnvironmentValue"
+                   (closeNotification)="showEnvironmentValue = false"
                    (onConfirm)="setEnvironment($event)">
 </environment-value>

@@ -92,7 +92,6 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
     return this.k8sService.getImageDetailList(imageName).map((res: Array<ImageDetail>) => {
       if (res && res.length > 0) {
         for (let item of res) {
-          item['image_detail'] = JSON.parse(item['image_detail']);
           item['image_size_number'] = Number.parseFloat((item['image_size_number'] / (1024 * 1024)).toFixed(2));
           item['image_size_unit'] = 'MB';
         }
@@ -369,6 +368,8 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
       let env = new EnvStruct();
       env.dockerfile_envname = value.envName;
       env.dockerfile_envvalue = value.envValue;
+      env.configmap_name = value.envConfigMapName;
+      env.configmap_key = value.envConfigMapKey;
       envsArray.push(env);
     });
   }
@@ -384,7 +385,10 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
   getDefaultEnvsData() {
     let result = Array<EnvType>();
     this.curEditEnvContainer.env.forEach((value: EnvStruct) => {
-      result.push(new EnvType(value.dockerfile_envname, value.dockerfile_envvalue))
+      let env = new EnvType(value.dockerfile_envname, value.dockerfile_envvalue);
+      env.envConfigMapKey = value.configmap_key;
+      env.envConfigMapName = value.configmap_name;
+      result.push(env)
     });
     return result;
   }

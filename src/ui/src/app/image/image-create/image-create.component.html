@@ -300,7 +300,7 @@
     </div>
     <environment-value *ngIf="isOpenEnvironment"
                        [inputEnvsData]="defaultEnvsData"
-                       [(isOpen)]="isOpenEnvironment"
+                       (closeNotification)="isOpenEnvironment = false"
                        (onConfirm)="setEnvironment($event)">
     </environment-value>
     <clr-modal [(clrModalOpen)]="cancelInfo.isShow" [clrModalClosable]="false">
