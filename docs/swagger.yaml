@@ -6950,18 +6950,18 @@ definitions:
     type: object
     properties:
       page_index:
-        type: int
+        type: integer
         format: int32
         description: The index of the page
       page_size:
-        type: int
+        type: integer
         format: int32
         description: The size of the page
       total_count:
-        type: int
+        type: integer
         format: int64
         description: The total count of all pages
       page_count:
-        type: int
+        type: integer
         format: int32
         description: The count of the pages
