@@ -171,7 +171,7 @@ func InitializeDefaultConfig() {
 	AddEnv("AUDIT_DEBUG")
 	AddEnv("DNS_SUFFIX")
 
-	AddEnv("HELM_HOST")
+	AddEnv("TILLER_PORT")
 
 	ShowAllConfigs()
 }

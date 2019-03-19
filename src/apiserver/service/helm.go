@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -183,7 +184,10 @@ func InstallChart(repo *model.HelmRepository, target *model.Release) error {
 	if err != nil {
 		return err
 	}
-	helmhost := utils.GetStringValue("HELM_HOST")
+	helmhost, err := getHelmHost()
+	if err != nil {
+		return err
+	}
 	err = chartrepo.InstallChart(target.Chart, target.ChartVersion, target.Name, target.ProjectName, target.Values, helmhost)
 	if err != nil {
 		return err
@@ -216,7 +220,11 @@ func initBoardReleaseFromKubernetesHelmRelease(repo *model.HelmRepository, targe
 
 func insertReleaseIntoDatabase(repo *model.HelmRepository, target *model.Release) (*model.ReleaseModel, error) {
 	// retrieve the release detail info
-	r, err := helmpkg.GetRelease(target.Name, utils.GetStringValue("HELM_HOST"))
+	helmhost, err := getHelmHost()
+	if err != nil {
+		return nil, err
+	}
+	r, err := helmpkg.GetRelease(target.Name, helmhost)
 	if err != nil {
 		logs.Error("Get release %s info from helm error:%+v", target.Name, err)
 		return nil, err
@@ -230,7 +238,7 @@ func insertReleaseIntoDatabase(repo *model.HelmRepository, target *model.Release
 		}
 	}
 	// get the release workloads
-	workloads, err := helmpkg.GetReleaseManifest(target.Name, utils.GetStringValue("HELM_HOST"))
+	workloads, err := helmpkg.GetReleaseManifest(target.Name, helmhost)
 	if err != nil {
 		logs.Error("Get release %s workloads when synchronizing error:%+v", target.Name, err)
 		return nil, err
@@ -420,7 +428,11 @@ func DeleteRelease(releaseid int64) error {
 		logs.Error("the release with id %d does not exist", releaseid)
 		return NotExistError
 	}
-	err = helmpkg.DeleteRelease(release.Name, utils.GetStringValue("HELM_HOST"))
+	helmhost, err := getHelmHost()
+	if err != nil {
+		return err
+	}
+	err = helmpkg.DeleteRelease(release.Name, helmhost)
 	if err != nil {
 		return err
 	}
@@ -458,7 +470,10 @@ func GetReleaseDetail(releaseid int64) (*model.ReleaseDetail, error) {
 		return nil, NotExistError
 	}
 
-	helmhost := utils.GetStringValue("HELM_HOST")
+	helmhost, err := getHelmHost()
+	if err != nil {
+		return nil, err
+	}
 	releaseChan := make(chan *helmpkg.Release)
 	go func() {
 		r, err := helmpkg.GetRelease(release.Name, helmhost)
@@ -513,7 +528,11 @@ func GetReleaseDetail(releaseid int64) (*model.ReleaseDetail, error) {
 
 func generateModelReleases(models []model.ReleaseModel) ([]model.Release, error) {
 	// get the releases from helm cmd
-	list, err := helmpkg.ListAllReleases(utils.GetStringValue("HELM_HOST"))
+	helmhost, err := getHelmHost()
+	if err != nil {
+		return nil, err
+	}
+	list, err := helmpkg.ListAllReleases(helmhost)
 	if err != nil {
 		return nil, err
 	}
@@ -575,7 +594,11 @@ func CheckReleaseNames(name string) (bool, error) {
 	}
 
 	// get the releases from helm cmd
-	list, err := helmpkg.ListAllReleases(utils.GetStringValue("HELM_HOST"))
+	helmhost, err := getHelmHost()
+	if err != nil {
+		return false, err
+	}
+	list, err := helmpkg.ListAllReleases(helmhost)
 	if err != nil {
 		return false, err
 	}
@@ -616,7 +639,11 @@ func SyncHelmReleaseWithK8s(projectname string) error {
 	}
 	// get releases from kubernetes
 	// get the releases from helm cmd
-	list, err := helmpkg.ListDeployedReleasesByNamespace(utils.GetStringValue("HELM_HOST"), projectname)
+	helmhost, err := getHelmHost()
+	if err != nil {
+		return err
+	}
+	list, err := helmpkg.ListDeployedReleasesByNamespace(helmhost, projectname)
 	if err != nil {
 		return err
 	}
@@ -650,4 +677,27 @@ func SyncHelmReleaseWithK8s(projectname string) error {
 		}
 	}
 	return nil
+}
+
+func getHelmHost() (string, error) {
+	tillerport := utils.GetIntValue("TILLER_PORT")
+	// add the kubernetes resources to board
+	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		KubeConfigPath: kubeConfigPath(),
+	})
+	nodes, err := k8sclient.AppV1().Node().List()
+	if err != nil {
+		return "", err
+	}
+	if nodes != nil {
+		for i := range nodes.Items {
+			logs.Warn("test the ip %s", nodes.Items[i].NodeIP)
+			ok, err := utils.PingIPAddr(nodes.Items[i].NodeIP)
+			logs.Warn("finish the ip test %s, %v, %v", nodes.Items[i].NodeIP, ok, err)
+			if err == nil && ok {
+				return nodes.Items[i].NodeIP + ":" + strconv.Itoa(tillerport), nil
+			}
+		}
+	}
+	return "", fmt.Errorf("Can't find the available node used for tiller access")
 }

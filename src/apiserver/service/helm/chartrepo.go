@@ -592,9 +592,11 @@ func ListAllReleases(helmhost string) (*ReleaseList, error) {
 		return nil, err
 	}
 	list := new(ReleaseList)
-	err = json.Unmarshal(combinedOutput, list)
-	if err != nil {
-		return nil, err
+	if string(combinedOutput) != "" {
+		err = json.Unmarshal(combinedOutput, list)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return list, nil
 }
@@ -610,9 +612,11 @@ func ListDeployedReleasesByNamespace(helmhost, namespace string) (*ReleaseList, 
 		return nil, err
 	}
 	list := new(ReleaseList)
-	err = json.Unmarshal(combinedOutput, list)
-	if err != nil {
-		return nil, err
+	if string(combinedOutput) != "" {
+		err = json.Unmarshal(combinedOutput, list)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return list, nil
 }

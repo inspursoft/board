@@ -113,7 +113,7 @@ kvm_registry_size = rcp.get("configuration", "kvm_registry_size")
 kvm_registry_port = rcp.get("configuration", "kvm_registry_port")
 kvm_toolkits_path = rcp.get("configuration", "kvm_toolkits_path")
 
-helm_host = rcp.get("configuration", "helm_host")
+tiller_port = rcp.get("configuration", "tiller_port")
 
 ###email configuration
 email_identity = rcp.get("configuration", "email_identity")
@@ -257,7 +257,7 @@ render(os.path.join(templates_dir, "apiserver", "env"),
         kvm_registry_size=kvm_registry_size,
         kvm_registry_port=kvm_registry_port,
         kvm_toolkits_path=kvm_toolkits_path,
-        helm_host=helm_host)
+        tiller_port=tiller_port)
 
 if kube_http_scheme == "http":
 	for name in ["apiserver", "collector"]:
