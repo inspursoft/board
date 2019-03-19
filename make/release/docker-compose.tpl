@@ -210,6 +210,22 @@ services:
       options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "kibana"
+  chartmuseum:
+    image: board_chartmuseum:__version__
+    restart: always
+    networks:
+      - board
+#    ports:
+#      - 8089:8080
+    depends_on:
+      - log
+    volumes:
+      - /data/board/chartmuseum:/storage
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "chartmuseum"
 networks:
   board:
     external: false
