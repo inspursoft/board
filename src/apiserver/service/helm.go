@@ -357,7 +357,7 @@ func processBoardMatchedServiceAndDeployments(workloads, projectname string, pre
 			}
 		})
 		if prepare != nil {
-			pipeline.Apply(&transformers.Observer{
+			pipeline = pipeline.Apply(&transformers.Observer{
 				OnNext: func(data stream.T, emitter stream.Emitter) error {
 					send, err := prepare(data.(*matchedServiceAndDeployment))
 					if send {
