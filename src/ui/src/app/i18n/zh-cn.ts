@@ -748,6 +748,7 @@ export const LANG_ZH_CN = {
     "NODE_GROUP":"节点组列表",
     "NODE_GROUP_NAME":"节点组名称",
     "NODE_GROUP_COMMENT":"节点组注释",
+    "NODE_GROUP_CREATE_PATTERN_MESSAGE":"由小写字母、大写字母、数字、'.'、'_'、'-'组成的字符串",
     "CONFIRM_TO_DELETE_NODE_GROUP": "确定删除节点组 {{0}} ?",
   },
   "GUIDE":{
