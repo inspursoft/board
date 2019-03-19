@@ -43,4 +43,4 @@ KVM_REGISTRY_PORT=$kvm_registry_port
 KVM_TOOLKITS_PATH=$kvm_toolkits_path
 AUDIT_DEBUG=$audit_debug
 DNS_SUFFIX=$dns_suffix
-HELM_HOST=$helm_host
+TILLER_PORT=$tiller_port
