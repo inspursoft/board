@@ -691,13 +691,13 @@ func getHelmHost() (string, error) {
 	}
 	if nodes != nil {
 		for i := range nodes.Items {
-			logs.Warn("test the ip %s", nodes.Items[i].NodeIP)
+			logs.Info("ping the ip %s for tiller address", nodes.Items[i].NodeIP)
 			ok, err := utils.PingIPAddr(nodes.Items[i].NodeIP)
-			logs.Warn("finish the ip test %s, %v, %v", nodes.Items[i].NodeIP, ok, err)
 			if err == nil && ok {
 				return nodes.Items[i].NodeIP + ":" + strconv.Itoa(tillerport), nil
 			}
 		}
 	}
-	return "", fmt.Errorf("Can't find the available node used for tiller access")
+	logs.Error("Can't find the available node used for tiller address")
+	return "", fmt.Errorf("Can't find the available node used for tiller address")
 }
