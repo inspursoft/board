@@ -20,6 +20,7 @@ export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
   projectsList: Array<Project>;
   selectProject: Project = null;
   isReleaseWIP = false;
+  isCheckNameWip = false;
   releaseName = '';
   chartValue = '';
 
@@ -48,10 +49,12 @@ export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
   }
 
   checkChartReleaseName(control: HTMLInputElement): Observable<ValidationErrors | null>{
+    this.isCheckNameWip = true;
     return this.helmService.checkChartReleaseName(control.value)
-      .map(() => null)
+      .map(() => this.isCheckNameWip = false)
       .catch((err:HttpErrorResponse) => {
         this.messageService.cleanNotification();
+        this.isCheckNameWip = false;
         if (err.status == 409) {
           return Observable.of({nodeGroupExist: "HELM.RELEASE_CHART_NAME_EXISTING"})
         } else {
