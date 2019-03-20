@@ -1,4 +1,4 @@
-<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'lg'" [clrModalClosable]="!isReleaseWIP">
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'lg'" [clrModalClosable]="!isReleaseWIP || !isCheckNameWip">
   <h3 class="modal-title">{{ 'HELM.RELEASE_CHART_TITLE' | translate }}</h3>
   <div class="modal-body">
     <div class="info-container">
@@ -8,7 +8,7 @@
                      [dropdownDefaultText]="'HELM.RELEASE_CHART_SELECT_PROJECT' | translate"
                      [dropdownWidth]="200"
                      [dropdownList]="projectsList"
-                     [dropdownDisabled]="isReleaseWIP"
+                     [dropdownDisabled]="isReleaseWIP || isCheckNameWip"
                      [dropdownListTextKey]="'project_name'"
                      (onChange)="changeSelectProject($event)">
         </cs-dropdown>
@@ -17,8 +17,7 @@
                 [simpleFiled]="releaseName"
                 [inputLabelMinWidth]="100"
                 [inputIsRequired]="true"
-                [disabled]="isReleaseWIP"
-                [customerValidatorAsyncFunc]="checkChartReleaseNameFun"
+                [disabled]="isReleaseWIP || isCheckNameWip"
                 (onCheck)="releaseName = $event">
       </cs-input>
       <div class="line-container base-margin-top">
@@ -43,10 +42,14 @@
     </div>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-outline" [disabled]="isReleaseWIP" (click)="modalOpened = false">
+    <button type="button" class="btn btn-outline"
+            [disabled]="isReleaseWIP || isCheckNameWip"
+            (click)="modalOpened = false">
       {{ 'BUTTON.CANCEL' | translate }}
     </button>
-    <button type="button" class="btn btn-primary" [disabled]="isReleaseWIP" (click)="chartRelease()">
+    <button type="button" class="btn btn-primary"
+            [disabled]="isReleaseWIP || isCheckNameWip"
+            (click)="chartRelease()">
       {{ 'HELM.RELEASE_CHART_RELEASE' | translate }}
     </button>
     <span *ngIf="isReleaseWIP" class="spinner spinner-sm"></span>

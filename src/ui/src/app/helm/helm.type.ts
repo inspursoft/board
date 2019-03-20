@@ -108,11 +108,13 @@ export class HelmRepoDetail {
       type: response['type']
     };
     detail.pagination = response['pagination'];
-    let resCharts: Array<Object> = response['charts'];
-    resCharts.forEach((resChart: Object) => {
-      let chart = HelmChart.newFromServe(resChart);
-      detail.charts.push(chart);
-    });
+    if (response['charts']){
+      let resCharts: Array<Object> = response['charts'];
+      resCharts.forEach((resChart: Object) => {
+        let chart = HelmChart.newFromServe(resChart);
+        detail.charts.push(chart);
+      });
+    }
     return detail;
   }
 }

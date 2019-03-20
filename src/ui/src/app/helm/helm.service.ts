@@ -38,7 +38,7 @@ export class HelmService {
   getRepoList(): Observable<Array<IHelmRepo>> {
     return this.http.get<Array<IHelmRepo>>('/api/v1/helm/repositories', {
       observe: "response"
-    }).map((res: HttpResponse<Array<IHelmRepo>>) => res.body || [])
+    }).map((res: HttpResponse<Array<IHelmRepo>>) => res.body || Array<IHelmRepo>())
   }
 
   getRepoDetail(repoId: number, pageIndex: number = 1, pageSize: number = 1): Observable<Object> {
@@ -75,7 +75,7 @@ export class HelmService {
     }).map((res: HttpResponse<Object>) => res.body)
   }
 
-  releaseChartVersion(postBody: { name, chart, chartVersion: string, repoId, projectId, ownerId: number }): Observable<any> {
+  releaseChartVersion(postBody: {name, chart, chartVersion: string, repoId, projectId, ownerId: number}): Observable<any> {
     return this.http.post(`/api/v1/helm/release`, {
       name: postBody.name,
       project_id: postBody.projectId,
@@ -88,7 +88,7 @@ export class HelmService {
 
   getChartReleaseList(): Observable<Array<IChartRelease>> {
     return this.http.get<Object>(`/api/v1/helm/release`, {observe: "response"})
-      .map((res: HttpResponse<Array<IChartRelease>>) => res.body)
+      .map((res: HttpResponse<Array<IChartRelease>>) => res.body || Array<IChartRelease>())
   }
 
   getChartReleaseDetail(chartReleaseId: number): Observable<IChartReleaseDetail> {
