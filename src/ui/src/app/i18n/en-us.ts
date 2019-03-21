@@ -748,6 +748,7 @@ export const LANG_EN_US = {
     "NODE_GROUP_DELETE_FAILED":"Delete node group failed!",
     "NODE_GROUP_NAME":"Node Group Name",
     "NODE_GROUP_COMMENT":"Node Group Comment",
+    "NODE_GROUP_CREATE_PATTERN_MESSAGE": "Node group name should be composed by numbers,alphabets,or some specific characters (.-_).",
     "CONFIRM_TO_DELETE_NODE_GROUP": "Confirm to delete node group {{0}} ?",
   },
   "GUIDE":{

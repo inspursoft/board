@@ -6,6 +6,7 @@
               [inputMaxlength]="63"
               [inputLabel]="'NODE.NODE_GROUP_NAME' | translate"
               [simpleFiled]="newNodeGroupData.nodegroup_name"
+              [validatorMessage]="[{validatorKey: 'pattern', validatorMessage: 'NODE.NODE_GROUP_CREATE_PATTERN_MESSAGE'}]"
               [customerValidatorAsyncFunc]="checkNodeGroupNameFun"
               (onCheck)="newNodeGroupData.nodegroup_name = $event">
     </cs-input>
