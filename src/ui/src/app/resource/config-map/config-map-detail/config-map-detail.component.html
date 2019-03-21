@@ -13,19 +13,14 @@
         </div>
         <div class="dynamic-line-container">
             <span class="filed-text">{{"RESOURCE.CONFIG_MAP_DETAIL_CREATION_TIME" | translate}}:</span>
-            <span class="filed-text-value">{{configMapDetail.creationTime}}</span>
-        </div>
-        <div class="dynamic-line-container">
-            <span class="filed-text">{{"RESOURCE.CONFIG_MAP_DETAIL_DELETION_TIME" | translate}}:</span>
-            <span class="filed-text-value">{{configMapDetail.deletionTime}}</span>
+            <span class="filed-text-value">{{configMapDetail.creationTime | date:'short'}}</span>
         </div>
         <div class="dynamic-line-container">
             <span class="filed-text">{{"RESOURCE.CONFIG_MAP_DETAIL_LABLES" | translate}}:</span>
             <span class="filed-text-value">{{configMapDetail.labels}}</span>
         </div>
-        <div class="dynamic-line-container key-title">
-            <span><b>{{'RESOURCE.CONFIG_MAP_DETAIL_KEY' | translate}}</b></span>
-            <span><b>{{'RESOURCE.CONFIG_MAP_DETAIL_VALUE' | translate}}</b></span>
+        <div class="dynamic-line-container">
+            <span>{{'RESOURCE.CONFIG_MAP_DETAIL_DATA_LIST' | translate}}:</span>
         </div>
         <div *ngFor="let data of configMapDetail.dataList;index as i" class="dynamic-container">
             <div class="dynamic-line-container">

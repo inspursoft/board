@@ -21,9 +21,8 @@
                   [inputMaxlength]="50"
                   (onCheck)="newConfigMap.name = $event">
         </cs-input>
-        <div class="dynamic-line-container key-title">
-            <span><b>{{'RESOURCE.CREATE_CONFIG_MAP_KEY' | translate}}</b></span>
-            <span><b>{{'RESOURCE.CREATE_CONFIG_MAP_VALUE' | translate}}</b></span>
+        <div class="dynamic-line-container">
+            <span>{{'RESOURCE.CONFIG_MAP_DETAIL_DATA_LIST' | translate}}:</span>
         </div>
         <div *ngFor="let data of newConfigMap.dataList;index as i" class="dynamic-container">
             <div class="dynamic-line-container">
