@@ -2,8 +2,8 @@ package helm
 
 import (
 	"archive/tar"
-	"bytes"
 	"compress/gzip"
+	"context"
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
@@ -529,71 +529,27 @@ func loadIndex(data []byte) (*IndexFile, error) {
 	return i, nil
 }
 
-func templateChart(name, namespace, rootDir, helmhost string) (string, error) {
-	commands := make([]string, 0)
-	commands = append([]string{"template", "--namespace", namespace, "--name", name})
-	commands = append(commands, rootDir)
-
-	cmd := exec.Command(helmName, commands...)
-	cmd.Env = []string{fmt.Sprintf("%s=%s", "HELM_HOST", helmhost)}
-	stderrBuf := &bytes.Buffer{}
-	stdoutBuf := &bytes.Buffer{}
-	cmd.Stdout = stdoutBuf
-	cmd.Stderr = stderrBuf
-	if err := cmd.Start(); err != nil {
-		return "", fmt.Errorf("failed to get chart %s template in project %s. %s, error:%s", name, namespace, stderrBuf.String(), err.Error())
-	}
-	if err := cmd.Wait(); err != nil {
-		return "", fmt.Errorf("failed to get chart %s template in project %s. %s, error:%s", name, namespace, stderrBuf.String(), err.Error())
-	}
-	return stdoutBuf.String(), nil
-}
-
 func installChart(name, namespace, rootDir, helmhost string) error {
-	commands := make([]string, 0)
-	commands = append([]string{"upgrade", "--install", "--namespace", namespace, name})
-	commands = append(commands, rootDir)
-
-	cmd := exec.Command(helmName, commands...)
-	cmd.Env = []string{fmt.Sprintf("%s=%s", "HELM_HOST", helmhost)}
-	stderrBuf := &bytes.Buffer{}
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = stderrBuf
-	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("failed to install chart %s in project %s. %s, error:%s", name, namespace, stderrBuf.String(), err.Error())
-	}
-	if err := cmd.Wait(); err != nil {
-		return fmt.Errorf("failed to install chart %s in project %s. %s, error:%s", name, namespace, stderrBuf.String(), err.Error())
-	}
-	return nil
+	_, err := execHelmCommand(helmhost, "upgrade", "--install", "--namespace", namespace, name, rootDir)
+	return err
 }
 
 func DeleteRelease(release, helmhost string) error {
-	if helmhost == "" {
-		return fmt.Errorf("You must specify the HELM_HOST environment when the apiserver starts")
-	}
-	cmd := exec.Command(helmName, "delete", "--purge", release)
-	cmd.Env = []string{fmt.Sprintf("%s=%s", "HELM_HOST", helmhost)}
-	combinedOutput, err := cmd.CombinedOutput()
-	if err == nil || (err != nil && combinedOutput != nil && strings.Contains(string(combinedOutput), fmt.Sprintf("Error: release: \"%s\" not found", release))) {
+	combinedOutput, err := execHelmCommand(helmhost, "delete", "--purge", release)
+	if err == nil || (err != nil && strings.Contains(combinedOutput, fmt.Sprintf("Error: release: \"%s\" not found", release))) {
 		return nil
 	}
-	return errors.New(string(combinedOutput))
+	return errors.New(combinedOutput)
 }
 
 func ListAllReleases(helmhost string) (*ReleaseList, error) {
-	if helmhost == "" {
-		return nil, fmt.Errorf("You must specify the HELM_HOST environment when the apiserver starts")
-	}
-	cmd := exec.Command(helmName, "ls", "-a", "-m", fmt.Sprintf("%d", math.MaxInt32), "--output", "json")
-	cmd.Env = []string{fmt.Sprintf("%s=%s", "HELM_HOST", helmhost)}
-	combinedOutput, err := cmd.CombinedOutput()
+	combinedOutput, err := execHelmCommand(helmhost, "ls", "-a", "-m", fmt.Sprintf("%d", math.MaxInt32), "--output", "json")
 	if err != nil {
 		return nil, err
 	}
 	list := new(ReleaseList)
-	if string(combinedOutput) != "" {
-		err = json.Unmarshal(combinedOutput, list)
+	if combinedOutput != "" {
+		err = json.Unmarshal([]byte(combinedOutput), list)
 		if err != nil {
 			return nil, err
 		}
@@ -602,18 +558,13 @@ func ListAllReleases(helmhost string) (*ReleaseList, error) {
 }
 
 func ListDeployedReleasesByNamespace(helmhost, namespace string) (*ReleaseList, error) {
-	if helmhost == "" {
-		return nil, fmt.Errorf("You must specify the HELM_HOST environment when the apiserver starts")
-	}
-	cmd := exec.Command(helmName, "ls", "--deployed", "-m", fmt.Sprintf("%d", math.MaxInt32), "--namespace", namespace, "--output", "json")
-	cmd.Env = []string{fmt.Sprintf("%s=%s", "HELM_HOST", helmhost)}
-	combinedOutput, err := cmd.CombinedOutput()
+	combinedOutput, err := execHelmCommand(helmhost, "ls", "--deployed", "-m", fmt.Sprintf("%d", math.MaxInt32), "--namespace", namespace, "--output", "json")
 	if err != nil {
 		return nil, err
 	}
 	list := new(ReleaseList)
-	if string(combinedOutput) != "" {
-		err = json.Unmarshal(combinedOutput, list)
+	if combinedOutput != "" {
+		err = json.Unmarshal([]byte(combinedOutput), list)
 		if err != nil {
 			return nil, err
 		}
@@ -622,17 +573,12 @@ func ListDeployedReleasesByNamespace(helmhost, namespace string) (*ReleaseList, 
 }
 
 func GetRelease(release, helmhost string) (*Release, error) {
-	if helmhost == "" {
-		return nil, fmt.Errorf("You must specify the HELM_HOST environment when the apiserver starts")
-	}
-	cmd := exec.Command(helmName, "ls", "-m", "1", "-o", release, "--output", "json")
-	cmd.Env = []string{fmt.Sprintf("%s=%s", "HELM_HOST", helmhost)}
-	combinedOutput, err := cmd.CombinedOutput()
+	combinedOutput, err := execHelmCommand(helmhost, "ls", "-m", "1", "-o", release, "--output", "json")
 	if err != nil {
 		return nil, err
 	}
 	list := new(ReleaseList)
-	err = json.Unmarshal(combinedOutput, list)
+	err = json.Unmarshal([]byte(combinedOutput), list)
 	if err != nil {
 		return nil, err
 	}
@@ -645,56 +591,24 @@ func GetRelease(release, helmhost string) (*Release, error) {
 }
 
 func GetReleaseValues(release, helmhost string) (string, error) {
-	if helmhost == "" {
-		return "", fmt.Errorf("You must specify the HELM_HOST environment when the apiserver starts")
-	}
-	cmd := exec.Command(helmName, "get", "values", release)
-	cmd.Env = []string{fmt.Sprintf("%s=%s", "HELM_HOST", helmhost)}
-	combinedOutput, err := cmd.CombinedOutput()
-	if err != nil {
-		return "", err
-	}
-	return string(combinedOutput), nil
+	return execHelmCommand(helmhost, "get", "values", release)
 }
 
 func GetReleaseNotes(release, helmhost string) (string, error) {
-	if helmhost == "" {
-		return "", fmt.Errorf("You must specify the HELM_HOST environment when the apiserver starts")
-	}
-	cmd := exec.Command(helmName, "get", "notes", release)
-	cmd.Env = []string{fmt.Sprintf("%s=%s", "HELM_HOST", helmhost)}
-	combinedOutput, err := cmd.CombinedOutput()
-	if err != nil {
-		return "", err
-	}
-	return string(combinedOutput), nil
+	return execHelmCommand(helmhost, "get", "notes", release)
 }
 
 func GetReleaseManifest(release, helmhost string) (string, error) {
-	if helmhost == "" {
-		return "", fmt.Errorf("You must specify the HELM_HOST environment when the apiserver starts")
-	}
-	cmd := exec.Command(helmName, "get", "manifest", release)
-	cmd.Env = []string{fmt.Sprintf("%s=%s", "HELM_HOST", helmhost)}
-	combinedOutput, err := cmd.CombinedOutput()
-	if err != nil {
-		return "", err
-	}
-	return string(combinedOutput), nil
+	return execHelmCommand(helmhost, "get", "manifest", release)
 }
 
 func GetReleaseStatus(release, helmhost string) (string, error) {
-	if helmhost == "" {
-		return "", fmt.Errorf("You must specify the HELM_HOST environment when the apiserver starts")
-	}
-	cmd := exec.Command(helmName, "status", release, "--output", "json")
-	cmd.Env = []string{fmt.Sprintf("%s=%s", "HELM_HOST", helmhost)}
-	combinedOutput, err := cmd.CombinedOutput()
+	combinedOutput, err := execHelmCommand(helmhost, "status", release, "--output", "json")
 	if err != nil {
 		return "", err
 	}
 	status := new(ReleaseStatus)
-	err = json.Unmarshal(combinedOutput, status)
+	err = json.Unmarshal([]byte(combinedOutput), status)
 	if err != nil {
 		return "", err
 	}
@@ -703,4 +617,25 @@ func GetReleaseStatus(release, helmhost string) (string, error) {
 	}
 	logs.Warning("can't get the release %s status", release)
 	return "", nil
+}
+
+func execHelmCommand(helmhost string, args ...string) (string, error) {
+	if helmhost == "" {
+		return "", fmt.Errorf("You must specify the HELM_HOST environment when the apiserver starts")
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, helmName, args...)
+	cmd.Env = []string{fmt.Sprintf("%s=%s", "HELM_HOST", helmhost)}
+	logs.Info("Execute command 'helm %s' with HELM_HOST=%s", strings.Join(args, " "), helmhost)
+	combinedOutput, err := cmd.CombinedOutput()
+	if err != nil {
+		if context.DeadlineExceeded == ctx.Err() {
+			logs.Error("Execute command 'helm %s' timeout, make sure the helm host %s is available", strings.Join(args, " "), helmhost)
+		} else {
+			logs.Error("Execute command 'helm %s' error: %+v", strings.Join(args, " "), err)
+		}
+		return "", err
+	}
+	return string(combinedOutput), nil
 }
