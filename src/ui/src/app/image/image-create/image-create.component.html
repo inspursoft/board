@@ -1,4 +1,5 @@
-<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'lg'" [clrModalClosable]="false" [clrModalPreventClose]="true">
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'lg'" [clrModalClosable]="false"
+           [clrModalPreventClose]="true">
   <div class="modal-title title-container">
     <h4 class="modal-title">{{ "IMAGE.CREATE_IMAGE_TITLE" | translate }}</h4>
     <button class="close"
@@ -151,7 +152,8 @@
             </div>
             <div class="file-list"
                  *ngFor="let file of filesList.get(customerNewImage.image_name)">
-              <clr-icon *ngIf="!isBuildImageWIP" class="dynamic-icon" shape="minus" (click)="removeFile(file)"></clr-icon>
+              <clr-icon *ngIf="!isBuildImageWIP" class="dynamic-icon" shape="minus"
+                        (click)="removeFile(file)"></clr-icon>
               {{file.file_name}}
             </div>
             <cs-input [inputLabel]="'IMAGE.CREATE_IMAGE_COMMAND'|translate"
@@ -181,33 +183,12 @@
                       [simpleFiled]="customerNewImage.image_tag"
                       (onCheck)="customerNewImage.image_tag = $event">
             </cs-input>
-            <div class="line-container base-margin-top">
-              <label class="base-text">{{"IMAGE.CREATE_IMAGE_UPLOAD_FILE_LIST" | translate}}:</label>
-              ﻿<input type="file"
-                      class="upload-file-input"
-                      [disabled]="isUploadDisabled"
-                      (change)="uploadFile($event)"
-                      accept="*.*">
-              <span *ngIf="isUploadFileWIP" class="spinner spinner-sm"></span>
-            </div>
-            <div *ngIf="isUploadFileWIP" class="line-container base-margin-top">
-              <label class="base-text"></label>
-              <cs-progress class="base-margin-left" [progressData]="uploadProgressValue"></cs-progress>
-            </div>
-            <div class="file-list"
-                 *ngFor="let file of filesList.get(customerNewImage.image_name)">
-              <clr-icon *ngIf="!isBuildImageWIP" class="dynamic-icon" shape="minus"
-                        (click)="removeFile(file)"></clr-icon>
-              {{file.file_name}}
-            </div>
             <div *ngIf="!isSelectedDockerFile" class="line-container base-margin-top">
-              <label>{{"IMAGE.CREATE_IMAGE_SELECT_DOCKER_FILE" | translate}}:</label>
+              <label class="base-text">{{"IMAGE.CREATE_IMAGE_SELECT_DOCKER_FILE" | translate}}:</label>
+              <input type="file" class="upload-file-input" accept="*.*"
+                     [disabled]="isUploadDisabled" (change)="selectDockerFile($event)">
             </div>
-            <div *ngIf="!isSelectedDockerFile" class="line-container base-margin-top">
-              ﻿<input type="file" accept="*.*" [disabled]="isUploadDisabled" (change)="selectDockerFile($event)">
-              <span *ngIf="isUploadFileWIP" class="spinner spinner-sm"></span>
-            </div>
-            <div *ngIf="isSelectedDockerFile" class="line-container file-info-container">
+            <div *ngIf="isSelectedDockerFile" class="file-info-container">
               <label>{{"IMAGE.CREATE_IMAGE_SELECTED_FILE_INFO" | translate}}:</label>
               <table class="table table-vertical">
                 <tbody>
@@ -225,6 +206,21 @@
                 </tr>
                 </tbody>
               </table>
+            </div>
+            <div class="line-container base-margin-top">
+              <label class="base-text">{{"IMAGE.CREATE_IMAGE_UPLOAD_FILE_LIST" | translate}}:</label>
+              ﻿<input type="file" class="upload-file-input" [disabled]="isUploadDisabled"
+                      (change)="uploadFile($event)" accept="*.*">
+              <span *ngIf="isUploadFileWIP" class="spinner spinner-sm"></span>
+            </div>
+            <div class="file-list" *ngFor="let file of filesList.get(customerNewImage.image_name)">
+              <clr-icon *ngIf="!isBuildImageWIP" class="dynamic-icon" shape="minus"
+                        (click)="removeFile(file)"></clr-icon>
+              {{file.file_name}}
+            </div>
+            <div *ngIf="isUploadFileWIP" class="line-container base-margin-top">
+              <label class="base-text"></label>
+              <cs-progress class="base-margin-left" [progressData]="uploadProgressValue"></cs-progress>
             </div>
           </div>
         </ng-template>
@@ -261,7 +257,7 @@
               <label class="base-text"></label>
               <cs-progress class="base-margin-left" [progressData]="uploadProgressValue"></cs-progress>
             </div>
-            <div *ngIf="uploadTarPackageName != ''"  class="line-container base-margin-top">
+            <div *ngIf="uploadTarPackageName != ''" class="line-container base-margin-top">
               <label class="base-text">{{"IMAGE.CREATE_IMAGE_UPLOAD_TAR" | translate}}:</label>
               <label class="tar-package-name">{{uploadTarPackageName}}</label>
             </div>
@@ -280,7 +276,8 @@
         </ng-template>
       </div>
       <div class="console-container">
-        <textarea #areaStatus title="" id="areaStatus" class="area-status" readonly>{{consoleText | translate}}</textarea>
+        <textarea #areaStatus title="" id="areaStatus" class="area-status"
+                  readonly>{{consoleText | translate}}</textarea>
         <div *ngIf="imageBuildMethod == createImageMethod.Template || imageBuildMethod == createImageMethod.DockerFile"
              class="build-btn-container">
           <button class="btn btn-primary default-primary"
