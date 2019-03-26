@@ -1,7 +1,6 @@
 import { AfterViewInit, Component, EventEmitter, Input, Output } from "@angular/core";
 import { FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from "@angular/forms";
 import { AbstractControl } from "@angular/forms/src/model";
-import { CsInputStatus } from "../cs-input/cs-input.component";
 
 @Component({
   selector: 'cs-input-dropdown',
