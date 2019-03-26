@@ -19,13 +19,21 @@ export class CsInputDropdownComponent implements AfterViewInit {
   @Output() onCommitEvent: EventEmitter<number>;
 
   @Input() set inputDisabled(value: boolean) {
-    value ? this.inputControl.disable() : this.inputControl.enable();
+    if (value) {
+      this.inputControl.clearValidators();
+      this.inputControl.disable();
+    } else if (this.isAfterViewInit) {
+      this.inputControl.clearValidators();
+      this.inputControl.enable();
+      this.inputControl.setValidators(this.inputValidatorFns)
+    }
   }
 
   @Input() set inputValue(value: number) {
     this.inputControl.setValue(value);
   }
 
+  private isAfterViewInit = false;
   inputFormGroup: FormGroup;
   inputControl: FormControl;
   dropdownMenuList: Array<number>;
@@ -43,6 +51,7 @@ export class CsInputDropdownComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
+    this.isAfterViewInit = true;
     if (this.inputIsRequired) {
       this.inputValidatorFns.push(Validators.required);
     }
