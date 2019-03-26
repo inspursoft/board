@@ -2,6 +2,7 @@ import { Injectable } from "@angular/core";
 import { HttpClient, HttpEvent, HttpRequest, HttpResponse } from "@angular/common/http";
 import { Observable, Subject } from "rxjs";
 import { HelmViewData, IChartReleaseDetail, IChartRelease, IHelmRepo } from "./helm.type";
+import { Project } from "../project/project";
 
 @Injectable()
 export class HelmService {
@@ -65,6 +66,13 @@ export class HelmService {
     return this.http.delete(`/api/v1/helm/release/${releaseId}`, {
       observe: 'response'
     })
+  }
+
+  getProjects(): Observable<Array<Project>> {
+    return this.http.get<Array<Project>>('/api/v1/projects', {
+      observe: "response",
+      params: {'member_only': "1"}
+    }).map((res: HttpResponse<Array<Project>>) => res.body)
   }
 
   checkChartReleaseName(chartReleaseName: string): Observable<Object> {
