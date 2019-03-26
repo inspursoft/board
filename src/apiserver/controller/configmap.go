@@ -9,6 +9,7 @@ import (
 	"net/http"
 	//"strconv"
 	//"strings"
+	"git/inspursoft/board/src/common/utils"
 
 	"github.com/astaxie/beego/logs"
 )
@@ -27,6 +28,11 @@ func (n *ConfigMapController) AddConfigMapAction() {
 
 	if reqCM.Name == "" || reqCM.Namespace == "" {
 		n.customAbort(http.StatusBadRequest, "ConfigMap Name and project should not null")
+		return
+	}
+
+	if !utils.ValidateWithPattern("configmapname", reqCM.Name) {
+		n.customAbort(http.StatusBadRequest, "ConfigMap name content is illegal.")
 		return
 	}
 
