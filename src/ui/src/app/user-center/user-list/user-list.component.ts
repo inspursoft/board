@@ -8,6 +8,7 @@ import { AppInitService } from "../../app.init.service";
 import { MessageService } from "../../shared/message-service/message.service";
 import { Message, RETURN_STATUS, User } from "../../shared/shared.types";
 import { TranslateService } from "@ngx-translate/core";
+import { HttpErrorResponse } from "@angular/common/http";
 
 @Component({
   selector: "user-list",
@@ -92,6 +93,10 @@ export class UserList implements OnInit, OnDestroy {
             this.userService.deleteUser(user).subscribe(() => {
               this.refreshData(this.oldStateInfo);
               this.messageService.showAlert('USER_CENTER.DELETE_USER_SUCCESS');
+            },(error: HttpErrorResponse)=>{
+              if (error.status == 422){
+                this.messageService.showAlert('USER_CENTER.DELETE_USER_ERROR',{alertType: "alert-danger"})
+              }
             })
           }
         })

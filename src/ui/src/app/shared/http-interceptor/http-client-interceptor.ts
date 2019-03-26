@@ -7,6 +7,7 @@ import { Injectable } from "@angular/core";
 import { TimeoutError } from "rxjs/Rx";
 import { MessageService } from "../message-service/message.service";
 import { GlobalAlertType } from "../shared.types";
+import { TranslateService } from "@ngx-translate/core";
 import "rxjs/add/operator/do";
 import "rxjs/add/operator/timeout";
 import "rxjs/add/observable/throw";
@@ -15,7 +16,8 @@ import "rxjs/add/observable/throw";
 export class HttpClientInterceptor implements HttpInterceptor {
 
   constructor(private appTokenService: AppTokenService,
-              private messageService: MessageService) {
+              private messageService: MessageService,
+              private translateService: TranslateService) {
 
   }
 
@@ -78,6 +80,11 @@ export class HttpClientInterceptor implements HttpInterceptor {
             this.messageService.showAlert(`ERROR.HTTP_404`, {alertType:'alert-danger'});
           } else if (err.status == 412) {
             this.messageService.showAlert(`ERROR.HTTP_412`, {alertType:'alert-warning'});
+          } else if (err.status == 422) {
+            this.translateService.get(`ERROR.HTTP_422`).subscribe((msg:string)=>{
+              let alertMsg = `${msg},${err.error}`;
+              this.messageService.showAlert(alertMsg, {alertType:'alert-danger'});
+            });
           } else if (this.appTokenService.token){
             this.messageService.showGlobalMessage(`ERROR.HTTP_UNK`, {
               globalAlertType: GlobalAlertType.gatShowDetail,

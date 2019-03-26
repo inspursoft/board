@@ -42,6 +42,7 @@ export const LANG_ZH_CN = {
     "HTTP_403":"您没有足够的权限进行该操作:403",
     "HTTP_404":"资源未找到:404",
     "HTTP_412": "请求内容不满足应提供的前置条件:412",
+    "HTTP_422": "无法处理实体:422",
     "HTTP_UNK":"未知错误",
     "HTTP_TIME_OUT":"Http请求超时",
     "INSUFFICIENT_PRIVILEGE":"权限不足，无法操作."
@@ -198,6 +199,7 @@ export const LANG_ZH_CN = {
     "LIST_COL_DELETE":"已删除",
     "LIST_COL_OPERATION":"操作",
     "DELETE_USER_SUCCESS":"删除用户成功!",
+    "DELETE_USER_ERROR":"删除失败，该用户拥有项目或库。",
     "ADD_USER_SUCCESS":"添加用户成功!",
     "EDIT_USER_SUCCESS":"修改用户信息成功!",
     "DELETE_USER": "删除用户",
