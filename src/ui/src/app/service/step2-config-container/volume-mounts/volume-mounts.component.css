@@ -22,6 +22,10 @@ div.dynamic-line-container {
   align-items: center;
 }
 
+div.dynamic-line-container.large-margin {
+  margin-bottom: 18px;
+}
+
 div.dynamic-line-container cs-input{
   width: 100%;
 }
