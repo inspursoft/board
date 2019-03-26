@@ -103,6 +103,7 @@ import {CsInputDropdownComponent} from "./cs-components-library/cs-input-dropdow
   ],
   entryComponents: [
     CreateProjectComponent,
+    MemberComponent,
     CreatePvcComponent,
     CsDialogComponent,
     CsAlertComponent,
