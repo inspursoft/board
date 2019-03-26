@@ -97,7 +97,7 @@
                          [inputValue]="externalService.node_config.node_port"
                          [inputDisabled]="isActionWip || isGetNodePortWip"
                          [inputWidth]="310"
-                         [inputIsRequired]="true"
+                         [inputIsRequired]="uiData.clusterIp == ''"
                          [inputPlaceholder]="'SERVICE.STEP_3_EXTERNAL_PORT'| translate"
                          [validatorMessage]="[{validatorKey: 'inUsed', validatorMessage: 'SERVICE.STEP_3_NODE_PORT_ALREADY_USED'}]"
                          [inputMin]="30000"
