@@ -69,6 +69,14 @@ export class SetAffinityComponent extends CsModalChildBase {
 
   openSetModal(uiData: UIServiceStep3): Observable<any> {
     this.uiData = uiData;
+    this.closeNotification.subscribe(() => {
+      let list = this.uiData.affinityList;
+      for (let i = list.length - 1; i >= 0; i--) {
+        if (list[i].services.length == 0) {
+          list.splice(i, 1);
+        }
+      }
+    });
     if (this.uiData.affinityList.length == 0) {
       this.addNewAffinity();
     }

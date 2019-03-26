@@ -431,6 +431,7 @@ export const LANG_ZH_CN = {
     "VOLUME_PATH":"NFS存储路径",
     "VOLUME_FILE":"指定存储路径下文件",
     "VOLUME_NFS_SERVER":"NFS服务器",
+    "VOLUME_NFS_SERVER_FORMAT": "请输入正确的IP地址，如：10.0.0.0",
     "VOLUME_CONTAINER_PATH":"容器路径",
     "VOLUME_SUB_PATH_FILE":"指定挂入子文件",
     "VOLUME_SELECT_PVC_TITLE":"选择PVC",

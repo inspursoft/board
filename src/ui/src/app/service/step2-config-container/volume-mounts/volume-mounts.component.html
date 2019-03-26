@@ -53,6 +53,7 @@
                           [inputPattern]="patternIP"
                           [inputPlaceholder]="'10.0.0.0'"
                           [inputIsRequired]="true"
+                          [validatorMessage]="[{validatorKey:'pattern',validatorMessage:'SERVICE.VOLUME_NFS_SERVER_FORMAT'}]"
                           (onCheck)="volumeData.target_storage_service = $event">
                 </cs-input>
             </div>
