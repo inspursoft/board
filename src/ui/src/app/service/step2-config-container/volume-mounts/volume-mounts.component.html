@@ -15,13 +15,12 @@
                              (onChange)="changeSelectVolumeType(i,$event)">
                 </cs-dropdown>
             </div>
-            <div class="dynamic-line-container">
+            <div class="dynamic-line-container large-margin">
                 <cs-input [inputLabel]="'SERVICE.VOLUME_NAME'| translate"
                           [inputPattern]="patternName"
                           [inputLabelMinWidth]="180"
                           [inputIsRequired]="true"
                           [simpleFiled]="volumeData.volume_name"
-                          [inputPlaceholder]="'nfsVolume'"
                           (onCheck)="volumeData.volume_name = $event">
                 </cs-input>
             </div>
@@ -35,7 +34,7 @@
                           (onCheck)="volumeData.container_path = $event">
                 </cs-input>
             </div>
-            <div class="dynamic-line-container" *ngIf="volumeData.volume_type == 'nfs'">
+            <div class="dynamic-line-container large-margin" *ngIf="volumeData.volume_type == 'nfs'">
                 <div class="clr-checkbox-container">
                     <clr-checkbox [(clrChecked)]="volumeData.containerPathFlag"></clr-checkbox>
                     <label>{{"SERVICE.VOLUME_SUB_PATH_FILE" | translate}}:</label>
