@@ -53,8 +53,8 @@ div.value-container {
 
 div.value-container span {
   font-size: 12px;
-  line-height: 40px;
-  height: 40px;
+  flex-basis: 50%;
+  line-height: 20px;
   text-align: center;
 }
 
