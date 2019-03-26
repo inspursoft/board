@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { HttpClient, HttpResponse } from "@angular/common/http";
 import { Observable } from "rxjs";
-import { ConfigMap, ConfigMapDetail, ConfigMapList } from "./resource.types";
+import { ConfigMap, ConfigMapDetail } from "./resource.types";
 
 @Injectable()
 export class ResourceService {
@@ -29,7 +29,11 @@ export class ResourceService {
     })
   }
 
-  getConfigMapList(projectName: string, pageIndex, pageSize: number): Observable<Array<ConfigMapList>> {
+  updateConfigMap(configMap: ConfigMap): Observable<any> {
+    return this.http.put(`/api/v1/configmaps/${configMap.name}`, configMap.postBody(), {observe: "response"})
+  }
+
+  getConfigMapList(projectName: string, pageIndex, pageSize: number): Observable<Array<ConfigMap>> {
     return this.http.get<Array<Object>>(`/api/v1/configmaps`, {
       observe: "response", params: {
         project_name: projectName,
@@ -37,8 +41,8 @@ export class ResourceService {
         configmap_list_page_size: pageSize.toString()
       }
     }).map((res: HttpResponse<Array<Object>>) => {
-      let result = Array<ConfigMapList>();
-      res.body.forEach((configMap: Object) => result.push(ConfigMapList.createFromRes(configMap)));
+      let result = Array<ConfigMap>();
+      res.body.forEach((configMap: Object) => result.push(ConfigMap.createFromRes(configMap)));
       return result;
     })
   }

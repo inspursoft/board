@@ -7,7 +7,7 @@ import { CsInputComponent } from "../cs-components-library/cs-input/cs-input.com
 import { ValidatorFn, Validators } from "@angular/forms";
 import { CsModalChildBase } from "../cs-modal-base/cs-modal-child-base";
 import { MessageService } from "../message-service/message.service";
-import { ConfigMapDetail, ConfigMapList } from "../../resource/resource.types";
+import { ConfigMapDetail, ConfigMap } from "../../resource/resource.types";
 import { ResourceService } from "../../resource/resource.service";
 import { HttpErrorResponse } from "@angular/common/http";
 
@@ -35,7 +35,7 @@ export class EnvironmentValueComponent extends CsModalChildBase implements OnIni
   envsText = "";
   inputValidator: Array<ValidatorFn>;
   inputValidatorMsg: Array<{validatorKey: string, validatorMessage: string}>;
-  configMapList: Array<ConfigMapList>;
+  configMapList: Array<ConfigMap>;
   configMapDetail: Map<number, ConfigMapDetail>;
   bindConfigMap: Map<number, boolean>;
 
@@ -53,7 +53,7 @@ export class EnvironmentValueComponent extends CsModalChildBase implements OnIni
     this.onConfirm = new EventEmitter<Array<EnvType>>();
     this.inputValidator = Array<ValidatorFn>();
     this.inputValidatorMsg = Array<{validatorKey: string, validatorMessage: string}>();
-    this.configMapList = Array<ConfigMapList>();
+    this.configMapList = Array<ConfigMap>();
     this.configMapDetail = new Map<number, ConfigMapDetail>();
     this.bindConfigMap = new Map<number, boolean>();
   }
@@ -71,7 +71,7 @@ export class EnvironmentValueComponent extends CsModalChildBase implements OnIni
       })
     }
     this.resourceService.getConfigMapList(this.projectName, 0, 0).subscribe(
-      (res: Array<ConfigMapList>) => this.configMapList = res);
+      (res: Array<ConfigMap>) => this.configMapList = res);
     this.modalOpened = true;
   }
 
@@ -120,7 +120,7 @@ export class EnvironmentValueComponent extends CsModalChildBase implements OnIni
     }
   }
 
-  changeConfigMap(index: number, envInfo: EnvType, configMap: ConfigMapList) {
+  changeConfigMap(index: number, envInfo: EnvType, configMap: ConfigMap) {
     envInfo.envConfigMapName = configMap.name;
     this.resourceService.getConfigMapDetail(configMap.name, this.projectName).subscribe(
       (res: ConfigMapDetail) => this.configMapDetail.set(index, res),
