@@ -1,4 +1,4 @@
-export class ConfigMapList {
+export class ConfigMap {
   namespace = '';
   name = '';
   dataList: Array<{key: string, value: string}>;
@@ -7,8 +7,8 @@ export class ConfigMapList {
     this.dataList = Array<{key: string, value: string}>();
   }
 
-  static createFromRes(res: Object): ConfigMapList {
-    let result = new ConfigMapList();
+  static createFromRes(res: Object): ConfigMap {
+    let result = new ConfigMap();
     result.namespace = res['namespace'];
     result.name = res['name'];
     if (Reflect.has(res, 'datalist')) {
@@ -17,16 +17,6 @@ export class ConfigMapList {
       );
     }
     return result;
-  }
-}
-
-export class ConfigMap {
-  namespace = '';
-  name = '';
-  dataList: Array<{key: string, value: string}>;
-
-  constructor() {
-    this.dataList = Array<{key: string, value: string}>();
   }
 
   postBody(): Object {

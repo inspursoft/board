@@ -60,7 +60,7 @@
                 (onEdit)="editVolumeMount(container)"></cs-input>
       <div *ngIf="container.volume_mounts.length > 1" class="volume-info-container">
         <span *ngFor="let _ of container.volume_mounts; let i = index">
-          <span *ngIf="i > 0">{{getVolumesDescription(1, container)}}</span>
+          <span *ngIf="i > 0">{{getVolumesDescription(i, container)}}</span>
         </span>
       </div>
       <cs-input [inputType]="1"

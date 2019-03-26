@@ -1,4 +1,4 @@
-<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'md'">
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'md'" [clrModalClosable]="false" [clrModalPreventClose]="true">
     <h3 class="modal-title">{{ 'SERVICE.VOLUME_CONFIG' | translate }}</h3>
     <div class="modal-body">
         <div *ngFor="let volumeData of curVolumeDataList;let i = index">
@@ -94,8 +94,7 @@
         </div>
     </div>
     <div class="modal-footer">
-        <button class="btn btn-primary" (click)="confirmVolumeInfo()">
-            {{"BUTTON.CONFIRM" | translate}}
-        </button>
+        <button class="btn btn-default" (click)="modalOpened = false">{{"BUTTON.CANCEL" | translate}}</button>
+        <button class="btn btn-primary" (click)="confirmVolumeInfo()">{{"BUTTON.CONFIRM" | translate}}</button>
     </div>
 </clr-modal>

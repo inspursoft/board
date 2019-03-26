@@ -261,25 +261,12 @@
               <label class="base-text">{{"IMAGE.CREATE_IMAGE_UPLOAD_TAR" | translate}}:</label>
               <label class="tar-package-name">{{uploadTarPackageName}}</label>
             </div>
-            <div class="line-container base-margin-top end">
-              <button class="btn btn-primary default-primary"
-                      [disabled]="uploadTarPackageName == '' || isBuildImageWIP"
-                      (click)="buildImage()">
-                {{"IMAGE.CREATE_IMAGE_BUILD_IMAGE" | translate}}
-              </button>
-              <button class="btn btn-default"
-                      [disabled]="isUploadFileWIP"
-                      (click)="cancelBuildImage()">
-                {{cancelCaption | translate}}</button>
-            </div>
           </div>
         </ng-template>
       </div>
       <div class="console-container">
-        <textarea #areaStatus title="" id="areaStatus" class="area-status"
-                  readonly>{{consoleText | translate}}</textarea>
-        <div *ngIf="imageBuildMethod == createImageMethod.Template || imageBuildMethod == createImageMethod.DockerFile"
-             class="build-btn-container">
+        <textarea #areaStatus title="" id="areaStatus" class="area-status" readonly>{{consoleText | translate}}</textarea>
+        <div class="build-btn-container">
           <button class="btn btn-primary default-primary"
                   [disabled]="isBuildDisabled"
                   (click)="buildImage()">
