@@ -1,4 +1,4 @@
-<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'lg'">
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'lg'" [clrModalClosable]="false" [clrModalPreventClose]="true">
   <h3 class="modal-title">{{"SERVICE.ENV_TITLE" | translate }}</h3>
   <div class="modal-body">
     <div class="input-area-container">
@@ -65,8 +65,7 @@
     </div>
   </div>
   <div class="modal-footer">
-    <button class="btn btn-primary" (click)="confirmEnvInfo()">
-      {{"SERVICE.ENV_CONFIRM" | translate }}
-    </button>
+    <button class="btn btn-default" (click)="modalOpened = false">{{"BUTTON.CANCEL" | translate }}</button>
+    <button class="btn btn-primary" (click)="confirmEnvInfo()">{{"SERVICE.ENV_CONFIRM" | translate }}</button>
   </div>
 </clr-modal>

@@ -1,4 +1,4 @@
-<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'lg'" [clrModalClosable]="!isReleaseWIP || !isCheckNameWip">
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'lg'" [clrModalClosable]="!isReleaseWIP && !isCheckNameWip">
   <h3 class="modal-title">{{ 'HELM.RELEASE_CHART_TITLE' | translate }}</h3>
   <div class="modal-body">
     <div class="info-container">
@@ -17,7 +17,8 @@
                 [simpleFiled]="releaseName"
                 [inputLabelMinWidth]="100"
                 [inputIsRequired]="true"
-                [disabled]="isReleaseWIP || isCheckNameWip"
+                [disabled]="isReleaseWIP"
+                [customerValidatorAsyncFunc]="checkChartReleaseNameFun"
                 (onCheck)="releaseName = $event">
       </cs-input>
       <div class="line-container base-margin-top">
