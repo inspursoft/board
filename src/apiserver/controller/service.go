@@ -826,3 +826,29 @@ func (p *ServiceController) GetServiceNodePorts() {
 	//Check nodeports in DB
 	p.renderJSON(nodeportList)
 }
+
+//import cluster services
+func (p *ServiceController) ImportServicesAction() {
+
+	if p.isSysAdmin == false {
+		p.customAbort(http.StatusForbidden, "Insufficient privileges to import services.")
+		return
+	}
+
+	projectList, err := service.GetProjectsByUser(model.Project{}, p.currentUser.ID)
+	if err != nil {
+		logs.Error("Failed to get projects.")
+		p.internalError(err)
+		return
+	}
+
+	for _, project := range projectList {
+		err := service.SyncServiceWithK8s(project.Name)
+		if err != nil {
+			logs.Error("Failed to sync service for project %s.", project.Name)
+			p.internalError(err)
+			return
+		}
+	}
+	logs.Debug("imported services from cluster successfully")
+}

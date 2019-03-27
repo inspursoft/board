@@ -2277,7 +2277,27 @@ paths:
         403:
           description: Invalid project name.
         500:
-          description: Unexpected internal errors.          
+          description: Unexpected internal errors.   
+  /v1/services/import:
+    get:  
+      summary: Import the services from cluster.
+      description: |
+        This endpoint is aimed to import service from cluster.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the existing nodeport list.       
+        401:
+          description: User need to log in first.
+        500:
+          description: Unexpected internal errors.                   
   /v1/services/ingress:
     get:  
       summary: Get the ingress module status.
@@ -2298,7 +2318,7 @@ paths:
         - Products
       responses:
         200:
-          description: Return ingress data.
+          description: Import services successfully.
         401:
           description: User need to log in first.
         403:
