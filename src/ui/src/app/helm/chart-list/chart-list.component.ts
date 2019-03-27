@@ -6,6 +6,7 @@ import { Message, RETURN_STATUS } from "../../shared/shared.types";
 import { MessageService } from "../../shared/message-service/message.service";
 import { UploadChartComponent } from "../upload-chart/upload-chart.component";
 import { ChartReleaseComponent } from "../chart-release/chart-release.component";
+import { AppInitService } from "../../app.init.service";
 
 enum ViewMethod {List = 'list', Card = 'card'}
 
@@ -25,9 +26,14 @@ export class ChartListComponent extends CsModalParentBase {
   constructor(private helmService: HelmService,
               private resolver: ComponentFactoryResolver,
               private view: ViewContainerRef,
-              private messageService: MessageService) {
+              private messageService: MessageService,
+              private appInitService: AppInitService) {
     super(resolver, view);
     this.versionList = Array<HelmChartVersion>();
+  }
+
+  get isSystemAdmin(): boolean {
+    return this.appInitService.currentUser.user_system_admin == 1;
   }
 
   setViewMethod(method: string) {
@@ -62,14 +68,16 @@ export class ChartListComponent extends CsModalParentBase {
   }
 
   deleteChartVersion(version: HelmChartVersion) {
-    this.messageService.showDeleteDialog('HELM.CHART_LIST_DELETE_MSG', 'HELM.CHART_LIST_DELETE').subscribe(
-      (message: Message) => {
-        if (message.returnStatus == RETURN_STATUS.rsConfirm) {
-          this.helmService.deleteChartVersion(this.repoInfo.id, version.name, version.version).subscribe(() => {
-            this.messageService.showAlert('HELM.CHART_LIST_SUCCESS_DELETE_MSG');
-            this.retrieve();
-          })
-        }
-      })
+    if (this.isSystemAdmin) {
+      this.messageService.showDeleteDialog('HELM.CHART_LIST_DELETE_MSG', 'HELM.CHART_LIST_DELETE').subscribe(
+        (message: Message) => {
+          if (message.returnStatus == RETURN_STATUS.rsConfirm) {
+            this.helmService.deleteChartVersion(this.repoInfo.id, version.name, version.version).subscribe(() => {
+              this.messageService.showAlert('HELM.CHART_LIST_SUCCESS_DELETE_MSG');
+              this.retrieve();
+            })
+          }
+        })
+    }
   }
 }

@@ -81,3 +81,11 @@ div.card-action-container {
   justify-content: flex-end;
   margin-top: auto;
 }
+
+clr-icon.disabled {
+  color: silver;
+}
+
+clr-icon.disabled:hover {
+  cursor: not-allowed;
+}
