@@ -479,6 +479,7 @@ export const LANG_ZH_CN = {
     "STEP_3_SERVICE_CONFIG_TITLE":"服务配置",
     "STEP_3_SERVICE_NAME":"服务名称",
     "STEP_3_CLUSTER_IP":"集群地址",
+    "STEP_3_CLUSTER_IP_FORMAT": "请输入正确的IP地址，如：10.0.0.0",
     "STEP_3_SERVICE_NAME_EMPTY":"服务名称不能为空",
     "STEP_3_INSTANCE":"实例",
     "STEP_3_SET_AFFINITY":"亲和配置",

@@ -479,6 +479,7 @@ export const LANG_EN_US = {
     "STEP_3_SERVICE_CONFIG_TITLE":"Basic configuration",
     "STEP_3_SERVICE_NAME":"Service name",
     "STEP_3_CLUSTER_IP":"Cluster ip",
+    "STEP_3_CLUSTER_IP_FORMAT": "Please input a IP address, such as:10.0.0.0",
     "STEP_3_SERVICE_NAME_EMPTY":"Service name can't empty",
     "STEP_3_INSTANCE":"Instance",
     "STEP_3_SET_AFFINITY":"Set affinity",
