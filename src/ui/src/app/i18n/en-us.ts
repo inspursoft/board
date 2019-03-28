@@ -199,7 +199,7 @@ export const LANG_EN_US = {
     "LIST_COL_DELETE":"Deleted",
     "LIST_COL_OPERATION":"Operation",
     "DELETE_USER_SUCCESS":"Delete user success!",
-    "DELETE_USER_ERROR":"Delete failed.User has own project or repo.",
+    "DELETE_USER_ERROR":"Failed to delete the user as it has related resource. (project, repo or services)",
     "ADD_USER_SUCCESS":"Add new user successfully!",
     "EDIT_USER_SUCCESS":"Update the user info successfully!",
     "DELETE_USER": "Delete User",

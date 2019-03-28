@@ -199,7 +199,7 @@ export const LANG_ZH_CN = {
     "LIST_COL_DELETE":"已删除",
     "LIST_COL_OPERATION":"操作",
     "DELETE_USER_SUCCESS":"删除用户成功!",
-    "DELETE_USER_ERROR":"删除失败，该用户拥有项目或库。",
+    "DELETE_USER_ERROR":"无法删除用户，因为其拥有相关资源。（项目，仓库或服务）",
     "ADD_USER_SUCCESS":"添加用户成功!",
     "EDIT_USER_SUCCESS":"修改用户信息成功!",
     "DELETE_USER": "删除用户",
