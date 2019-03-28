@@ -75,7 +75,7 @@ export class ProjectComponent {
               this.retrieve(this.oldStateInfo);
             }, (error: HttpErrorResponse) => {
               if (error.status == 422) {
-                this.messageService.showAlert('PROJECT.SUCCESSFUL_DELETE_PROJECT_ERROR', {alertType: "alert-warning"})
+                this.messageService.showAlert('PROJECT.FAILED_TO_DELETE_PROJECT_ERROR', {alertType: "alert-warning"})
               }
             })
           }
