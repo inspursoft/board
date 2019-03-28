@@ -42,6 +42,7 @@ export const LANG_EN_US = {
     "HTTP_403":"Insufficient privilege to requested operation:403",
     "HTTP_404":"Resource not found:404",
     "HTTP_412": "Precondition given in one or more of the request are evaluated to false:412",
+    "HTTP_422": "Unprocessable Entity:422",
     "HTTP_UNK":"Unknown error",
     "HTTP_TIME_OUT":"Http request timeout",
     "INSUFFICIENT_PRIVILEGE":"Insufficient privilege to operate it."
@@ -199,6 +200,7 @@ export const LANG_EN_US = {
     "LIST_COL_DELETE":"Deleted",
     "LIST_COL_OPERATION":"Operation",
     "DELETE_USER_SUCCESS":"Delete user success!",
+    "DELETE_USER_ERROR":"Failed to delete the user as it has related resource. (project, repo or services)",
     "ADD_USER_SUCCESS":"Add new user successfully!",
     "EDIT_USER_SUCCESS":"Update the user info successfully!",
     "DELETE_USER": "Delete User",

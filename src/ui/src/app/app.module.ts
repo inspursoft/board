@@ -10,7 +10,7 @@ import { MessageService } from "./shared/message-service/message.service";
 import { RouterModule } from "@angular/router";
 import { CookieModule } from "ngx-cookie";
 import { CustomTranslateLoader } from "./i18n/custom-translate-loader";
-import { TranslateLoader, TranslateModule } from "@ngx-translate/core";
+import { TranslateLoader, TranslateModule, TranslateService } from "@ngx-translate/core";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { BrowserModule } from "@angular/platform-browser";
 
@@ -57,7 +57,7 @@ export function localIdServiceFactory(appInitService: AppInitService) {
     {
       provide: HTTP_INTERCEPTORS,
       useClass: HttpClientInterceptor,
-      deps: [AppTokenService,MessageService],
+      deps: [AppTokenService,MessageService,TranslateService],
       multi: true
     },
     {
