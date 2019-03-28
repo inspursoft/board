@@ -8,3 +8,9 @@ span.arrange {
   font-style: italic;
   margin-left: 10px;
 }
+
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0;
+}
