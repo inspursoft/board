@@ -11,8 +11,16 @@
                       [class.active]="viewMethod == 'card'"
                       shape="view-cards"></clr-icon>
         </a>
-        <button class="btn btn-primary" (click)="showUploadChart()">
-            {{"HELM.UPLOAD_CHART_TITLE" | translate}}</button>
+        <clr-tooltip>
+            <div clrTooltipTrigger>
+                <button clrTooltipTrigger class="btn btn-primary" [disabled]="!isSystemAdmin" (click)="showUploadChart()">
+                    {{"HELM.UPLOAD_CHART_TITLE" | translate}}
+                </button>
+            </div>
+            <clr-tooltip-content [hidden]="isSystemAdmin" [clrSize]="'md'" [clrPosition]="'left'">
+                {{"ERROR.INSUFFICIENT_PRIVILEGE" | translate}}
+            </clr-tooltip-content>
+        </clr-tooltip>
     </div>
 </div>
 <clr-datagrid *ngIf="viewMethod == 'list'" (clrDgRefresh)="retrieve($event)" [clrDgLoading]="loadingWIP">
@@ -28,7 +36,16 @@
         <clr-dg-cell>{{version.urls}}</clr-dg-cell>
         <clr-dg-cell>
             <a href="javascript:void(0)">
-                <clr-icon shape="trash" (click)="deleteChartVersion(version)"></clr-icon>
+                <clr-tooltip>
+                    <clr-icon shape="trash"
+                              clrTooltipTrigger
+                              [ngClass]="{'disabled':!isSystemAdmin}"
+                              (click)="deleteChartVersion(version)">
+                    </clr-icon>
+                    <clr-tooltip-content [hidden]="isSystemAdmin" [clrSize]="'md'" [clrPosition]="'left'">
+                        {{"ERROR.INSUFFICIENT_PRIVILEGE" | translate}}
+                    </clr-tooltip-content>
+                </clr-tooltip>
             </a>
             <a href="javascript:void(0)">
                 <clr-icon shape="cog" class="is-solid" (click)="showReleaseChartVersion(version)"></clr-icon>

@@ -2,7 +2,6 @@ import { ChangeDetectorRef, Component, OnInit } from "@angular/core";
 import { HelmChartVersion, HelmRepoDetail, IHelmRepo } from "../helm.type";
 import { CsModalChildBase } from "../../shared/cs-modal-base/cs-modal-child-base";
 import { Project } from "../../project/project";
-import { SharedService } from "../../shared/shared.service";
 import { HelmService } from "../helm.service";
 import { MessageService } from "../../shared/message-service/message.service";
 import { AppInitService } from "../../app.init.service";
@@ -24,8 +23,7 @@ export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
   releaseName = '';
   chartValue = '';
 
-  constructor(private sharedService: SharedService,
-              private helmService: HelmService,
+  constructor(private helmService: HelmService,
               private appInitService: AppInitService,
               private messageService: MessageService,
               private changeRef: ChangeDetectorRef) {
@@ -35,8 +33,8 @@ export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
   }
 
   ngOnInit(): void {
-    this.sharedService.getAllProjects().subscribe(
-      (res: Array<Project>) => this.projectsList = res || []
+    this.helmService.getProjects().subscribe(
+      (res: Array<Project>) => this.projectsList = res || Array<Project>()
     );
     this.helmService.getChartRelease(this.repoInfo.id, this.chartVersion.name, this.chartVersion.version).subscribe(
       (res: Object) => this.chartValue = res['values'], null,
