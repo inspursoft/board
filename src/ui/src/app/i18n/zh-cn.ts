@@ -171,6 +171,7 @@ export const LANG_ZH_CN = {
     "DEVELOPER": "开发人员",
     "VISITOR": "访客",
     "SUCCESSFUL_DELETE_PROJECT": "删除项目成功。",
+    "FAILED_TO_DELETE_PROJECT_ERROR": "无法删除项目，因为它拥有自己的成员，仓库或服务。",
     "FAILED_TO_DELETE_PROJECT": "删除项目失败。",
     "FAILED_TO_RETRIEVE_PROJECTS": "查询项目失败。",
     "DELETE_PROJECT": "删除项目",

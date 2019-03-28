@@ -171,6 +171,7 @@ export const LANG_EN_US = {
     "DEVELOPER": "Developer",
     "VISITOR": "Visitor",
     "SUCCESSFUL_DELETE_PROJECT": "Successful delete project.",
+    "FAILED_TO_DELETE_PROJECT_ERROR": "Failed to delete the project as it has own member, repo or service.",
     "FAILED_TO_DELETE_PROJECT": "Failed to delete project.",
     "FAILED_TO_RETRIEVE_PROJECTS": "Failed to retrieve projects.",
     "DELETE_PROJECT": "Delete Project",
