@@ -58,42 +58,61 @@
           </clr-dg-cell>
           <clr-dg-cell>
             <span *ngIf="isActionWIP.get(service.service_id)" class="spinner spinner-sm"></span>
-            <a href="javascript:void(0)"
-               *ngIf="isServiceInStoppedStatus(service)">
-              <clr-icon shape="play"
-                        class="action"
-                        (click)="toggleService(service)"
-                        [ngClass]="{'disabled':service.service_is_member == 0}">
-              </clr-icon>
-            </a>
-            <a href="javascript:void(0)"
-               *ngIf="isServiceCanChangePauseStatus(service)">
-              <clr-icon shape="pause"
-                        class="action"
-                        (click)="toggleService(service)"
-                        [ngClass]="{'disabled':service.service_is_member == 0}">
-              </clr-icon>
+            <a href="javascript:void(0)">
+              <clr-tooltip>
+                <clr-icon *ngIf="isServiceCanPlay(service)"
+                          shape="play"
+                          class="action"
+                          clrTooltipTrigger
+                          (click)="toggleService(service)"
+                          [ngClass]="{'disabled':isServiceToggleDisabled(service)}">
+                </clr-icon>
+                <clr-icon *ngIf="isServiceCanPause(service)"
+                          shape="pause"
+                          class="action"
+                          clrTooltipTrigger
+                          (click)="toggleService(service)"
+                          [ngClass]="{'disabled':isServiceToggleDisabled(service)}">
+                </clr-icon>
+                <clr-tooltip-content [hidden]="!isServiceToggleDisabled(service)"
+                                     [clrSize]="'md'" [clrPosition]="'left'">
+                  {{serviceToggleTipMessage(service) | translate}}
+                </clr-tooltip-content>
+              </clr-tooltip>
             </a>
             <a href="javascript:void(0)">
-              <clr-icon shape="trash"
-                        class="action"
-                        (click)="deleteService(service)"
-                        [ngClass]="{'disabled':isDeleteDisable(service)}">
-              </clr-icon>
+              <clr-tooltip>
+                <clr-icon shape="trash"
+                          class="action"
+                          clrTooltipTrigger
+                          (click)="deleteService(service)"
+                          [ngClass]="{'disabled':isDeleteDisable(service)}">
+                </clr-icon>
+                <clr-tooltip-content [hidden]="!isDeleteDisable(service)"
+                                     [clrSize]="'md'" [clrPosition]="'left'">
+                  {{serviceDeleteTipMessage(service) | translate}}
+                </clr-tooltip-content>
+              </clr-tooltip>
             </a>
-            <a href="javascript:void(0)"
-               (click)="openServiceDetail(service)">
+            <a href="javascript:void(0)" (click)="openServiceDetail(service)">
               <clr-icon shape="info-standard"
                         class="action"
                         [ngClass]="{'disabled':service.service_status == 2}">
               </clr-icon>
             </a>
             <a href="javascript:void(0)">
-              <clr-icon shape="wrench"
-                        class="action"
-                        (click)="openServiceControl(service)"
-                        [ngClass]="{'disabled':service.service_is_member == 0 || service.service_status != 1}">
-              </clr-icon>
+              <clr-tooltip>
+                <clr-icon shape="wrench"
+                          class="action"
+                          clrTooltipTrigger
+                          (click)="openServiceControl(service)"
+                          [ngClass]="{'disabled':isUpdateDisable(service)}">
+                </clr-icon>
+                <clr-tooltip-content [hidden]="!isUpdateDisable(service)"
+                                     [clrSize]="'md'" [clrPosition]="'left'">
+                  {{serviceUpdateTipMessage(service) | translate}}
+                </clr-tooltip-content>
+              </clr-tooltip>
             </a>
           </clr-dg-cell>
         </clr-dg-row>

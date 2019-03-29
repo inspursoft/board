@@ -10,4 +10,5 @@ export class Service {
   service_public: number;
   service_status: number;
   service_is_member:number;
+  service_source:number;
 }

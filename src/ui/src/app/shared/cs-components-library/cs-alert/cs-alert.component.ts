@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AlertMessage } from '../../shared.types';
 import { Observable, Subject } from 'rxjs';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { DISMISS_ALERT_INTERVAL } from "../../shared.const";
+import "rxjs/add/observable/interval"
 
 @Component({
   templateUrl: './cs-alert.component.html',
@@ -15,14 +16,30 @@ import { DISMISS_ALERT_INTERVAL } from "../../shared.const";
     ])
   ]
 })
-export class CsAlertComponent {
+export class CsAlertComponent implements OnInit{
   _isOpen: boolean = false;
   curMessage: AlertMessage;
   onCloseEvent: Subject<any>;
   animation: string;
+  isRunningAnimation = true;
+  timeRemaining: number;
 
   constructor() {
     this.onCloseEvent = new Subject<any>();
+  }
+
+  ngOnInit(): void {
+    this.timeRemaining = DISMISS_ALERT_INTERVAL;
+    Observable.interval(1000).subscribe(()=>{
+      if (this.isRunningAnimation){
+        if (this.timeRemaining == 0){
+          this.animation = 'hidden';
+          setTimeout(() => this.isOpen = false,500);
+        } else {
+          this.timeRemaining --;
+        }
+      }
+    })
   }
 
   get isOpen(): boolean {
@@ -41,8 +58,6 @@ export class CsAlertComponent {
     this.isOpen = true;
     this.animation = 'hidden';
     setTimeout(() => this.animation = 'show');
-    setTimeout(() => this.animation = 'hidden', DISMISS_ALERT_INTERVAL);
-    setTimeout(() => this.isOpen = false, DISMISS_ALERT_INTERVAL + 500);
     return this.onCloseEvent.asObservable();
   }
 }
