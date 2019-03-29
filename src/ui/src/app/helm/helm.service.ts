@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { HttpClient, HttpEvent, HttpRequest, HttpResponse } from "@angular/common/http";
 import { Observable, Subject } from "rxjs";
-import { HelmViewData, IChartReleaseDetail, IChartRelease, IHelmRepo } from "./helm.type";
+import { HelmViewData, IChartReleaseDetail, IChartRelease, IHelmRepo, HelmRepoDetail } from "./helm.type";
 import { Project } from "../project/project";
 
 @Injectable()
@@ -42,11 +42,11 @@ export class HelmService {
     }).map((res: HttpResponse<Array<IHelmRepo>>) => res.body || Array<IHelmRepo>())
   }
 
-  getRepoDetail(repoId: number, pageIndex: number = 1, pageSize: number = 1): Observable<Object> {
-    return this.http.get<Object>(`/api/v1/helm/repositories/${repoId}`, {
+  getRepoDetail(repoId: number, pageIndex: number = 1, pageSize: number = 1): Observable<HelmRepoDetail> {
+    return this.http.get<HelmRepoDetail>(`/api/v1/helm/repositories/${repoId}`, {
       params: {page_index: pageIndex.toString(), page_size: pageSize.toString()},
       observe: "response"
-    }).map((res: HttpResponse<Object>) => res.body)
+    }).map((res: HttpResponse<HelmRepoDetail>) => HelmRepoDetail.newFromServe(res.body))
   }
 
   uploadChart(repoId: number, formData: FormData): Observable<HttpEvent<Object>> {

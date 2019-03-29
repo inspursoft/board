@@ -97,6 +97,13 @@ export class HelmRepoDetail {
 
   constructor() {
     this.charts = Array<HelmChart>();
+    this.pagination = {page_count: 1, page_index: 0, page_size: 15, total_count: 0}
+  }
+
+  get versionList(): Array<HelmChartVersion> {
+    let list = Array<HelmChartVersion>();
+    this.charts.forEach((chart: HelmChart) => list.push(...chart.versions));
+    return list
   }
 
   static newFromServe(response: Object): HelmRepoDetail {
@@ -107,8 +114,10 @@ export class HelmRepoDetail {
       url: response['url'],
       type: response['type']
     };
-    detail.pagination = response['pagination'];
-    if (response['charts']){
+    if (response['pagination']) {
+      detail.pagination = response['pagination'];
+    }
+    if (response['charts']) {
       let resCharts: Array<Object> = response['charts'];
       resCharts.forEach((resChart: Object) => {
         let chart = HelmChart.newFromServe(resChart);
