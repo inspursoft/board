@@ -1,6 +1,6 @@
 import { Component, ComponentFactoryResolver, Injector, OnDestroy, OnInit, ViewContainerRef } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
-import { Service } from '../service';
+import { Service, ServiceSource } from '../service';
 import { ClrDatagridSortOrder, ClrDatagridStateInterface } from '@clr/angular';
 import { GUIDE_STEP, SERVICE_STATUS } from '../../shared/shared.const';
 import { ServiceDetailComponent } from './service-detail/service-detail.component';
@@ -51,38 +51,42 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
     this.subscriptionInterval.unsubscribe();
   }
 
+  checkContainedValue(check: number, ...args: Array<number>): boolean {
+    return args.indexOf(check) > -1;
+  }
+
   isServiceCanPlay(service: Service): boolean {
     return service.service_status == SERVICE_STATUS.STOPPED;
   }
 
   isServiceCanPause(service: Service): boolean {
-    return [SERVICE_STATUS.RUNNING, SERVICE_STATUS.WARNING].indexOf(service.service_status) > -1;
+    return this.checkContainedValue(service.service_status, SERVICE_STATUS.RUNNING, SERVICE_STATUS.WARNING);
   }
 
   isServiceToggleDisabled(service: Service): boolean {
     return this.isActionWIP.get(service.service_id)
       || service.service_is_member == 0
-      || service.service_source == 2;
+      || service.service_source == ServiceSource.ServiceSourceHelm;
   }
 
   isDeleteDisable(service: Service): boolean {
     return this.isActionWIP.get(service.service_id)
-      || [SERVICE_STATUS.PREPARING, SERVICE_STATUS.RUNNING].indexOf(service.service_status) > -1
+      || this.checkContainedValue(service.service_status, SERVICE_STATUS.PREPARING, SERVICE_STATUS.RUNNING)
       || service.service_is_member == 0
-      || service.service_source == 2;
+      || service.service_source == ServiceSource.ServiceSourceHelm;
   }
 
   isUpdateDisable(service: Service): boolean {
     return this.isActionWIP.get(service.service_id)
       || service.service_status != SERVICE_STATUS.RUNNING
       || service.service_is_member == 0
-      || service.service_source == 2;
+      || service.service_source == ServiceSource.ServiceSourceHelm;
   }
 
   serviceToggleTipMessage(service: Service): string {
     if (service.service_is_member == 0) {
       return 'SERVICE.STEP_0_NOT_SERVICE_MEMBER'
-    } else if (service.service_source == 2) {
+    } else if (service.service_source == ServiceSource.ServiceSourceHelm) {
       return "SERVICE.STEP_0_SERVICE_FROM_HELM"
     }
     return '';
@@ -91,9 +95,9 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   serviceDeleteTipMessage(service: Service): string {
     if (service.service_is_member == 0) {
       return 'SERVICE.STEP_0_NOT_SERVICE_MEMBER'
-    } else if (service.service_source == 2) {
+    } else if (service.service_source == ServiceSource.ServiceSourceHelm) {
       return "SERVICE.STEP_0_SERVICE_FROM_HELM"
-    } else if ([SERVICE_STATUS.PREPARING, SERVICE_STATUS.RUNNING].indexOf(service.service_status) > -1){
+    } else if (this.checkContainedValue(service.service_status, SERVICE_STATUS.PREPARING, SERVICE_STATUS.RUNNING)) {
       return "SERVICE.STEP_0_CAN_NOT_DELETE_MSG"
     }
     return '';
@@ -102,9 +106,9 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   serviceUpdateTipMessage(service: Service): string {
     if (service.service_is_member == 0) {
       return 'SERVICE.STEP_0_NOT_SERVICE_MEMBER'
-    } else if (service.service_source == 2) {
+    } else if (service.service_source == ServiceSource.ServiceSourceHelm) {
       return "SERVICE.STEP_0_SERVICE_FROM_HELM"
-    } else if (SERVICE_STATUS.RUNNING != service.service_status){
+    } else if (SERVICE_STATUS.RUNNING != service.service_status) {
       return "SERVICE.STEP_0_CAN_NOT_UPDATE_MSG"
     }
     return '';
@@ -181,7 +185,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
               },
               () => {
                 this.isActionWIP.set(service.service_id, false);
-                this.messageService.showAlert('SERVICE.SERVICE_NOT_SUPPORT_TOGGLE',{alertType: "alert-warning"});
+                this.messageService.showAlert('SERVICE.SERVICE_NOT_SUPPORT_TOGGLE', {alertType: "alert-warning"});
               });
           }
         });
