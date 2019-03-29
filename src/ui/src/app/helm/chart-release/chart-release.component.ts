@@ -46,13 +46,16 @@ export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
     return this.checkChartReleaseName.bind(this);
   }
 
-  checkChartReleaseName(control: HTMLInputElement): Observable<ValidationErrors | null>{
+  checkChartReleaseName(control: HTMLInputElement): Observable<ValidationErrors | null> {
     this.isCheckNameWip = true;
     return this.helmService.checkChartReleaseName(control.value)
-      .map(() => this.isCheckNameWip = false)
-      .catch((err:HttpErrorResponse) => {
+      .map(() => {
+        setTimeout(() => this.isCheckNameWip = false);
+        return null;
+      })
+      .catch((err: HttpErrorResponse) => {
         this.messageService.cleanNotification();
-        this.isCheckNameWip = false;
+        setTimeout(() => this.isCheckNameWip = false);
         if (err.status == 409) {
           return Observable.of({nodeGroupExist: "HELM.RELEASE_CHART_NAME_EXISTING"})
         } else {
