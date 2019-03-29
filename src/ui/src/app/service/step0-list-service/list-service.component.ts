@@ -181,7 +181,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
       this.translateService.get('SERVICE.CONFIRM_TO_TOGGLE_SERVICE', [service.service_name]).subscribe((msg: string) => {
         this.messageService.showConfirmationDialog(msg, 'SERVICE.TOGGLE_SERVICE').subscribe((message: Message) => {
           if (message.returnStatus == RETURN_STATUS.rsConfirm) {
-            this.k8sService.toggleServiceStatus(service.service_id, service.service_status == 1 ? 0 : 1).subscribe(
+            this.k8sService.toggleServiceStatus(service.service_id, service.service_status == SERVICE_STATUS.RUNNING ? 0 : 1).subscribe(
               () => {
                 this.messageService.showAlert('SERVICE.SUCCESSFUL_TOGGLE');
                 this.isActionWIP.set(service.service_id, false);
@@ -215,7 +215,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   }
 
   openServiceDetail(service: Service) {
-    if (service.service_status != 2) {
+    if (service.service_status != SERVICE_STATUS.STOPPED) {
       let factory = this.factory.resolveComponentFactory(ServiceDetailComponent);
       let componentRef = this.viewRef.createComponent(factory);
       componentRef.instance.openModal(service)
