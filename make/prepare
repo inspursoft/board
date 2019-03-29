@@ -89,6 +89,7 @@ token_cache_expire_seconds = rcp.get("configuration", "token_cache_expire_second
 token_expire_seconds = rcp.get("configuration", "token_expire_seconds")
 registry_ip = rcp.get("configuration", "registry_ip")
 registry_port = rcp.get("configuration", "registry_port")
+image_baseline_time = rcp.get("configuration", "image_baseline_time")
 
 auth_mode = rcp.get("configuration", "auth_mode")
 verification_url = rcp.get("configuration", "verification_url")
@@ -223,6 +224,7 @@ render(os.path.join(templates_dir, "apiserver", "env"),
         kube_master_port=kube_master_port,
         registry_ip=registry_ip,
         registry_port=registry_port,
+        image_baseline_time=image_baseline_time,
         auth_mode=auth_mode,
         email_host=email_host,
         email_port=email_port,
