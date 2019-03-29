@@ -51,8 +51,12 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
     this.subscriptionInterval.unsubscribe();
   }
 
-  checkContainedValue(check: number, ...args: Array<number>): boolean {
-    return args.indexOf(check) > -1;
+  checkWithinPreparingRunning(status: number): boolean {
+    return [SERVICE_STATUS.RUNNING, SERVICE_STATUS.PREPARING].indexOf(status) > -1
+  }
+
+  checkWithinWarningRunning(status: number): boolean{
+    return [SERVICE_STATUS.RUNNING, SERVICE_STATUS.WARNING].indexOf(status) > -1
   }
 
   isServiceCanPlay(service: Service): boolean {
@@ -60,7 +64,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   }
 
   isServiceCanPause(service: Service): boolean {
-    return this.checkContainedValue(service.service_status, SERVICE_STATUS.RUNNING, SERVICE_STATUS.WARNING);
+    return this.checkWithinWarningRunning(service.service_status);
   }
 
   isServiceToggleDisabled(service: Service): boolean {
@@ -71,7 +75,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
 
   isDeleteDisable(service: Service): boolean {
     return this.isActionWIP.get(service.service_id)
-      || this.checkContainedValue(service.service_status, SERVICE_STATUS.PREPARING, SERVICE_STATUS.RUNNING)
+      || this.checkWithinPreparingRunning(service.service_status)
       || service.service_is_member == 0
       || service.service_source == ServiceSource.ServiceSourceHelm;
   }
@@ -97,7 +101,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
       return 'SERVICE.STEP_0_NOT_SERVICE_MEMBER'
     } else if (service.service_source == ServiceSource.ServiceSourceHelm) {
       return "SERVICE.STEP_0_SERVICE_FROM_HELM"
-    } else if (this.checkContainedValue(service.service_status, SERVICE_STATUS.PREPARING, SERVICE_STATUS.RUNNING)) {
+    } else if (this.checkWithinPreparingRunning(service.service_status)) {
       return "SERVICE.STEP_0_CAN_NOT_DELETE_MSG"
     }
     return '';
