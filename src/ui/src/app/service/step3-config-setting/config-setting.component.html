@@ -31,6 +31,7 @@
               [inputPattern]="patternIP"
               [inputLabel]="'SERVICE.STEP_3_CLUSTER_IP' | translate"
               [simpleFiled]="uiData.clusterIp"
+              [validatorMessage]="[{validatorKey:'pattern',validatorMessage:'SERVICE.STEP_3_CLUSTER_IP_FORMAT'}]"
               (onCheck)="uiData.clusterIp = $event">
     </cs-input>
   </div>
