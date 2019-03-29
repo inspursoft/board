@@ -16,10 +16,6 @@
             <span class="filed-text-value">{{configMapDetail.creationTime | date:'short'}}</span>
         </div>
         <div class="dynamic-line-container">
-            <span class="filed-text">{{"RESOURCE.CONFIG_MAP_DETAIL_LABLES" | translate}}:</span>
-            <span class="filed-text-value">{{configMapDetail.labels}}</span>
-        </div>
-        <div class="dynamic-line-container">
             <span>{{'RESOURCE.CONFIG_MAP_DETAIL_DATA_LIST' | translate}}:</span>
         </div>
         <div *ngFor="let data of configMapDetail.dataList;index as i" class="dynamic-container">
