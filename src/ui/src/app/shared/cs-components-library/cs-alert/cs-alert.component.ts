@@ -3,6 +3,7 @@ import { AlertMessage } from '../../shared.types';
 import { Observable, Subject } from 'rxjs';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { DISMISS_ALERT_INTERVAL } from "../../shared.const";
+import { Subscription } from "rxjs/Subscription";
 import "rxjs/add/observable/interval"
 
 @Component({
@@ -17,12 +18,13 @@ import "rxjs/add/observable/interval"
   ]
 })
 export class CsAlertComponent implements OnInit{
-  _isOpen: boolean = false;
+  _isOpen = false;
   curMessage: AlertMessage;
   onCloseEvent: Subject<any>;
   animation: string;
   isRunningAnimation = true;
   timeRemaining: number;
+  intervalSubscription: Subscription;
 
   constructor() {
     this.onCloseEvent = new Subject<any>();
@@ -30,11 +32,11 @@ export class CsAlertComponent implements OnInit{
 
   ngOnInit(): void {
     this.timeRemaining = DISMISS_ALERT_INTERVAL;
-    Observable.interval(1000).subscribe(()=>{
+    this.intervalSubscription = Observable.interval(1000).subscribe(()=>{
       if (this.isRunningAnimation){
         if (this.timeRemaining == 0){
           this.animation = 'hidden';
-          setTimeout(() => this.isOpen = false,500);
+          setTimeout(() => this.isOpen = false, 500);
         } else {
           this.timeRemaining --;
         }
@@ -50,6 +52,7 @@ export class CsAlertComponent implements OnInit{
     this._isOpen = value;
     if (!value) {
       this.onCloseEvent.next();
+      this.intervalSubscription.unsubscribe();
     }
   }
 
