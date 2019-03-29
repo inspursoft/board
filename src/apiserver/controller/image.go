@@ -6,6 +6,7 @@ import (
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/apiserver/service/devops/travis"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -20,6 +21,8 @@ import (
 type ImageController struct {
 	BaseController
 }
+
+var imageBaselineTime = utils.GetConfig("IMAGE_BASELINE_TIME")
 
 // API to get image list
 func (p *ImageController) GetImagesAction() {
@@ -111,7 +114,13 @@ func (p *ImageController) GetImagesAction() {
 			}
 			newImage.ImageID = imageID
 		}
-		if newImage.ImageDeleted == 0 {
+
+		baselineTime, err := time.Parse("2006-01-02 15:04:05", imageBaselineTime())
+		if err != nil {
+			logs.Error("Illegal image baseline time: %s, err:%+v", imageBaselineTime(), err)
+			baselineTime, _ = time.Parse("2006-01-02 15:04:05", "2017-06-06 00:00:00")
+		}
+		if newImage.ImageDeleted == 0 && newImage.ImageUpdateTime.Unix() > baselineTime.Unix() {
 			imageList = append(imageList, &newImage)
 		}
 	}

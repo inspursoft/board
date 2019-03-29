@@ -109,6 +109,7 @@ func InitializeDefaultConfig() {
 	AddEnv("KUBE_MASTER_PORT")
 	AddEnv("REGISTRY_IP")
 	AddEnv("REGISTRY_PORT")
+	AddEnv("IMAGE_BASELINE_TIME")
 
 	AddEnv("AUTH_MODE")
 
