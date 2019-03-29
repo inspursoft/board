@@ -240,7 +240,7 @@ export const LANG_EN_US = {
     "REPO_LIST_NAME":"Name",
     "REPO_LIST_URL":"URL",
     "REPO_LIST_TYPE":"Type",
-    "REPO_LIST_OPERATION":"Operation",
+    "REPO_LIST_CHART_LIST":"Chart list",
     "CHART_LIST_TITTLE":"Charts list",
     "CHART_LIST_NAME":"Name",
     "CHART_LIST_ICON":"Icon",

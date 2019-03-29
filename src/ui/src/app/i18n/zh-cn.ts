@@ -240,7 +240,7 @@ export const LANG_ZH_CN = {
     "REPO_LIST_NAME":"名称",
     "REPO_LIST_URL":"URL地址",
     "REPO_LIST_TYPE":"类型",
-    "REPO_LIST_OPERATION":"操作",
+    "REPO_LIST_CHART_LIST":"Chart列表",
     "CHART_LIST_TITTLE":"Chart列表",
     "CHART_LIST_NAME":"名称",
     "CHART_LIST_ICON":"图标",
