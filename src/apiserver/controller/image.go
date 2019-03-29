@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/apiserver/service/devops/travis"
@@ -8,6 +9,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
+	"time"
 
 	"strings"
 
@@ -48,10 +51,13 @@ func (p *ImageController) GetImagesAction() {
 	}
 
 	/* Interpret the message to api server */
-	imageList := []model.Image{}
+	imageList := model.ImageList{}
 	for _, imageName := range repoListFiltered.Names {
-		var newImage model.Image
-		newImage.ImageName = imageName
+		newImage := model.Image{
+			ImageName:         imageName,
+			ImageCreationTime: time.Now(),
+		}
+
 		reqTagList, err := service.GetRegistryImageTags(imageName)
 		if err != nil {
 			p.internalError(err)
@@ -62,6 +68,29 @@ func (p *ImageController) GetImagesAction() {
 			continue
 		}
 
+		for _, imageTag := range reqTagList.Tags {
+			imageManifest, err := service.GetRegistryManifest1(imageName, imageTag)
+			if err != nil {
+				logs.Error("Failed to get resgistry image manifest: %+v", err)
+				continue
+			}
+			if len(imageManifest.History) > 0 {
+				imageDetail := struct {
+					Created time.Time `json:"created"`
+				}{}
+				err := json.Unmarshal([]byte((imageManifest.History[0])["v1Compatibility"]), &imageDetail)
+				if err != nil {
+					logs.Error("Failed to Unmarshal registry manifest: %+v", err)
+					continue
+				}
+				if newImage.ImageCreationTime.Unix() > imageDetail.Created.Unix() {
+					newImage.ImageCreationTime = imageDetail.Created
+				}
+				if newImage.ImageUpdateTime.Unix() < imageDetail.Created.Unix() {
+					newImage.ImageUpdateTime = imageDetail.Created
+				}
+			}
+		}
 		// Check image in DB
 		dbImage, err := service.GetImageByName(imageName)
 		if err != nil {
@@ -83,9 +112,10 @@ func (p *ImageController) GetImagesAction() {
 			newImage.ImageID = imageID
 		}
 		if newImage.ImageDeleted == 0 {
-			imageList = append(imageList, newImage)
+			imageList = append(imageList, &newImage)
 		}
 	}
+	sort.Sort(imageList)
 	p.renderJSON(imageList)
 }
 
