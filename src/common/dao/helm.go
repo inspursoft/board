@@ -2,6 +2,7 @@ package dao
 
 import (
 	"git/inspursoft/board/src/common/model"
+
 	"github.com/astaxie/beego/orm"
 )
 
@@ -130,10 +131,10 @@ func GetHelmReleasesByUserID(userID int64) ([]model.ReleaseModel, error) {
 
 func generateHelmReleasesSQL(userID int64) (string, []interface{}) {
 	sql := `select distinct hr.id, hr.name, hr.project_id, hr.project_name, hr.repository_id, hr.repository, hr.workloads, hr.owner_id, hr.owner_name, hr.creation_time, hr.update_time
-	from helm_release hr 
+	from release_model hr 
 		left join project_member pm on hr.project_id = pm.project_id
 		left join project p on p.id = pm.project_id
-		left join user u on u.id = s.owner_id
+		left join user u on u.id = hr.owner_id
 	where hr.project_id in (select p.id from project p left join project_member pm on p.id = pm.project_id  left join user u on u.id = pm.user_id where p.deleted = 0 and u.deleted = 0 and u.id = ?)
 		or exists (select * from user u where u.deleted = 0 and u.system_admin = 1 and u.id = ?) order by creation_time desc`
 	return sql, []interface{}{userID, userID}

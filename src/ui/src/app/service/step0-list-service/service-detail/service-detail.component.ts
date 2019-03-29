@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { K8sService } from '../../service.k8s';
 import { AppInitService } from '../../../app.init.service';
-import { Service } from "../../service";
+import { Service, ServiceType } from "../../service";
 import { Subject } from "rxjs/Subject";
 import { Observable } from "rxjs/Observable";
 import "rxjs/add/operator/do"
@@ -35,7 +35,7 @@ export class ServiceDetailComponent {
   curService: Service;
   deploymentYamlFile: string = "";
   serviceYamlFile: string = "";
-  closeNotification:Subject<any>;
+  closeNotification: Subject<any>;
   k8sHostName: string = "";
   dns = '';
 
@@ -43,6 +43,7 @@ export class ServiceDetailComponent {
               private k8sService: K8sService) {
     this.boardHost = this.appInitService.systemInfo.board_host;
     this.closeNotification = new Subject<any>();
+    this.urlList = Array<NodeURL>();
   }
 
   get isOpenServiceDetail(): boolean {
@@ -65,9 +66,8 @@ export class ServiceDetailComponent {
   }
 
   getServiceDetail(serviceId: number, projectName: string, ownerName: string): void {
-    this.urlList = [];
     this.k8sService.getServiceDetail(serviceId).subscribe(res => {
-      if (!res["details"]) {
+      if (!res["details"] && this.curService.service_type == ServiceType.ServiceTypeNormalNodePort) {
         let arrNodePort = res["node_Port"] as Array<number>;
         this.k8sService.getNodesList({"ping": true}).subscribe(res => {
           let arrNode = res as Array<{node_name: string, node_ip: string, status: number}>;
