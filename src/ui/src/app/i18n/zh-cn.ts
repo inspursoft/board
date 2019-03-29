@@ -295,6 +295,7 @@ export const LANG_ZH_CN = {
     "COL_TAG":"标签",
     "COL_AUTHOR":"创建者",
     "COL_CREATION_TIME":"创建时间",
+    "COL_UPDATE_TIME":"更新时间",
     "COL_SIZE":"大小",
     "COL_OPERATION":"操作",
     "DETAIL_TITLE":"镜像",

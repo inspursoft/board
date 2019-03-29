@@ -10,9 +10,13 @@
   <clr-datagrid [clrDgLoading]="loadingWIP">
     <clr-dg-placeholder>{{imageListErrMsg | translate}}</clr-dg-placeholder>
     <clr-dg-column>{{ 'IMAGE.COL_IMAGE_NAME' | translate }}</clr-dg-column>
+    <clr-dg-column>{{ 'IMAGE.COL_CREATION_TIME' | translate }}</clr-dg-column>
+    <clr-dg-column>{{ 'IMAGE.COL_UPDATE_TIME' | translate }}</clr-dg-column>
     <clr-dg-column>{{ 'IMAGE.COL_OPERATION' | translate }}</clr-dg-column>
     <clr-dg-row *clrDgItems="let image of imageList">
       <clr-dg-cell>{{image.image_name}}</clr-dg-cell>
+      <clr-dg-cell>{{image.image_creation_time | date: 'short'}}</clr-dg-cell>
+      <clr-dg-cell>{{image.image_update_time | date: 'short'}}</clr-dg-cell>
       <clr-dg-cell>
         <a href="javascript:void(0)" (click)="showImageDetail(image)">
           <clr-icon shape="info-standard"></clr-icon>
