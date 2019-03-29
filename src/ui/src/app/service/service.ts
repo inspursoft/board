@@ -6,6 +6,12 @@ export enum ServiceType {
   ServiceTypeClusterIP
 }
 
+export enum ServiceSource {
+  ServiceSourceBoard,
+  ServiceSourceK8s,
+  ServiceSourceHelm
+}
+
 export class Service {
   service_id: number;
   service_name: string;
@@ -17,6 +23,7 @@ export class Service {
   service_create_time: Date;
   service_public: number;
   service_status: number;
+  service_source: ServiceSource;
   service_is_member: number;
   service_type: ServiceType;
 }

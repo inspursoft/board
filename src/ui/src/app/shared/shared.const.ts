@@ -1,6 +1,6 @@
 import { ICsMenuItemData } from "./shared.types";
 
-export const DISMISS_ALERT_INTERVAL: number = 4 * 1000;
+export const DISMISS_ALERT_INTERVAL: number = 4;
 export const DISMISS_CHECK_DROPDOWN: number = 2000;
 
 export enum SERVICE_STATUS{

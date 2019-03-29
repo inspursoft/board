@@ -1,4 +1,6 @@
-<div class="alert-container" [@open]="animation">
+<div (mouseenter)="isRunningAnimation = false"
+     (mouseleave)="isRunningAnimation = true"
+     class="alert-container" [@open]="animation">
   <clr-alert [clrAlertType]="curMessage.alertType"
              [clrAlertClosed]="!isOpen"
              (clrAlertClosedChange)="isOpen = false">
