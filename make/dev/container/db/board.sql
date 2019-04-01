@@ -438,7 +438,7 @@ INSERT INTO `board`.`helm_repository`
  VALUES
  (1, 'chartmuseum', 'http://chartmuseum:8080/', 1);
 
-    CREATE TABLE `board`.`release_model` (
+    CREATE TABLE `board`.`helm_release` (
         `id` INT NOT NULL AUTO_INCREMENT,
         `name` VARCHAR(255) NOT NULL DEFAULT '',
         `project_id` INT NOT NULL,

@@ -117,7 +117,7 @@ type ReleaseModel struct {
 }
 
 func (rm *ReleaseModel) TableName() string {
-	return "release"
+	return "helm_release"
 }
 
 type VisitorFunc func([]*K8sInfo, error) error
