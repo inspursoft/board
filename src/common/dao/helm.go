@@ -116,7 +116,7 @@ func GetHelmReleaseByName(name string) (*model.ReleaseModel, error) {
 func GetAllHelmReleases() ([]model.ReleaseModel, error) {
 	releases := make([]model.ReleaseModel, 0)
 	o := orm.NewOrm()
-	_, err := o.QueryTable("release").OrderBy("-creation_time").All(&releases)
+	_, err := o.QueryTable("helm_release").OrderBy("-creation_time").All(&releases)
 
 	if err != nil {
 		return nil, err
@@ -131,7 +131,7 @@ func GetHelmReleasesByUserID(userID int64) ([]model.ReleaseModel, error) {
 
 func generateHelmReleasesSQL(userID int64) (string, []interface{}) {
 	sql := `select distinct hr.id, hr.name, hr.project_id, hr.project_name, hr.repository_id, hr.repository, hr.workloads, hr.owner_id, hr.owner_name, hr.creation_time, hr.update_time
-	from release_model hr 
+	from helm_release hr 
 		left join project_member pm on hr.project_id = pm.project_id
 		left join project p on p.id = pm.project_id
 		left join user u on u.id = hr.owner_id
