@@ -9,18 +9,14 @@ import { ImageService } from "../image-service/image-service";
 import { MessageService } from "../../shared/message-service/message.service";
 import { HttpErrorResponse, HttpEvent, HttpEventType, HttpProgressEvent } from "@angular/common/http"
 import { AppInitService } from "../../app.init.service";
-import { Subscription } from "rxjs/Subscription";
 import { WebsocketService } from "../../shared/websocket-service/websocket.service";
 import { EnvType } from "../../shared/environment-value/environment-value.component";
 import { ValidationErrors } from "@angular/forms";
 import { TranslateService } from "@ngx-translate/core";
 import { CsModalChildBase } from "../../shared/cs-modal-base/cs-modal-child-base";
 import { CreateImageMethod, Tools } from "../../shared/shared.types";
-import { Observable } from "rxjs/Observable";
-import "rxjs/add/operator/zip"
-import "rxjs/add/operator/catch"
-import "rxjs/add/observable/empty"
-import "rxjs/add/observable/of"
+import { empty, Observable, of, Subscription } from "rxjs";
+import { catchError, map } from "rxjs/operators";
 
 const AUTO_REFRESH_IMAGE_LIST: number = 2000;
 
@@ -46,7 +42,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   patternEntryPoint: RegExp = /.+/;
   patternCopyPath: RegExp = /.+/;
   imageTemplateList: Array<Object> = [{name: "Docker File Template"}];
-  filesList: Map<string, Array<{path: string, file_name: string, size: number}>>;
+  filesList: Map<string, Array<{ path: string, file_name: string, size: number }>>;
   selectedDockerFile: File;
   intervalAutoRefreshImageList: any;
   isNeedAutoRefreshImageList: boolean = false;
@@ -65,7 +61,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   boardRegistry: string = "";
   processImageSubscription: Subscription;
   cancelButtonDisable = true;
-  cancelInfo: {isShow: boolean, isForce: boolean, title: string, message: string};
+  cancelInfo: { isShow: boolean, isForce: boolean, title: string, message: string };
   uploadTarPackageName = '';
 
   constructor(private imageService: ImageService,
@@ -74,7 +70,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
               private translateService: TranslateService,
               private appInitService: AppInitService) {
     super();
-    this.filesList = new Map<string, Array<{path: string, file_name: string, size: number}>>();
+    this.filesList = new Map<string, Array<{ path: string, file_name: string, size: number }>>();
     this.boardHost = this.appInitService.systemInfo.board_host;
     this.imageList = Array<Image>();
     this.imageDetailList = Array<ImageDetail>();
@@ -178,40 +174,42 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
 
   checkImageTag(control: HTMLInputElement): Observable<ValidationErrors | null> {
     if (this.customerNewImage.image_name == "") {
-      return Observable.of(null);
+      return of(null);
     }
     return this.imageService.checkImageExist(this.customerNewImage.project_name, this.customerNewImage.image_name, control.value)
-      .map(() => null)
-      .catch((err: HttpErrorResponse) => {
-        if (err.status == 409) {
-          this.messageService.cleanNotification();
-          return Observable.of({imageTagExist: "IMAGE.CREATE_IMAGE_TAG_EXIST"})
-        } else if (err.status == 404) {
-          this.messageService.cleanNotification();
-        } else {
-          this.modalOpened = false;
-        }
-        return Observable.of(null);
-      });
+      .pipe(
+        map(() => null),
+        catchError((err: HttpErrorResponse) => {
+          if (err.status == 409) {
+            this.messageService.cleanNotification();
+            return of({imageTagExist: "IMAGE.CREATE_IMAGE_TAG_EXIST"})
+          } else if (err.status == 404) {
+            this.messageService.cleanNotification();
+          } else {
+            this.modalOpened = false;
+          }
+          return of(null);
+        }));
   }
 
   checkImageName(control: HTMLInputElement): Observable<ValidationErrors | null> {
     if (this.customerNewImage.image_tag == "") {
-      return Observable.of(null);
+      return of(null);
     }
     return this.imageService.checkImageExist(this.customerNewImage.project_name, control.value, this.customerNewImage.image_tag)
-      .map(() => null)
-      .catch((err: HttpErrorResponse) => {
-        if (err.status == 409) {
-          this.messageService.cleanNotification();
-          return Observable.of({imageNameExist: "IMAGE.CREATE_IMAGE_NAME_EXIST"})
-        } else if (err.status == 404) {
-          this.messageService.cleanNotification();
-        } else {
-          this.modalOpened = false;
-        }
-        return Observable.of(null);
-      });
+      .pipe(
+        map(() => null),
+        catchError((err: HttpErrorResponse) => {
+          if (err.status == 409) {
+            this.messageService.cleanNotification();
+            return of({imageNameExist: "IMAGE.CREATE_IMAGE_NAME_EXIST"})
+          } else if (err.status == 404) {
+            this.messageService.cleanNotification();
+          } else {
+            this.modalOpened = false;
+          }
+          return of(null);
+        }))
   }
 
   cancelBuildImage() {
@@ -362,25 +360,26 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
     formFileList.append('image_name', this.customerNewImage.image_name);
     formFileList.append('image_tag', this.customerNewImage.image_tag);
     return this.imageService.getFileList(formFileList)
-      .map(res => {
-        this.filesList.set(this.customerNewImage.image_name, res);
-        let imageCopyArr = this.customerNewImage.image_dockerfile.image_copy;
-        imageCopyArr.splice(0, imageCopyArr.length);
-        this.filesList.get(this.customerNewImage.image_name).forEach(value => {
-          imageCopyArr.push({
-            dockerfile_copyfrom: value.file_name,
-            dockerfile_copyto: this.uploadCopyToPath + "/" + value.file_name,
+      .pipe(
+        map(res => {
+          this.filesList.set(this.customerNewImage.image_name, res);
+          let imageCopyArr = this.customerNewImage.image_dockerfile.image_copy;
+          imageCopyArr.splice(0, imageCopyArr.length);
+          this.filesList.get(this.customerNewImage.image_name).forEach(value => {
+            imageCopyArr.push({
+              dockerfile_copyfrom: value.file_name,
+              dockerfile_copyto: this.uploadCopyToPath + "/" + value.file_name,
+            });
           });
-        });
-      })
-      .catch((err: HttpErrorResponse) => {
-        if (err.status == 401) {
-          this.modalOpened = false;
-        } else {
-          this.messageService.showAlert('IMAGE.CREATE_IMAGE_UPDATE_IMAGE_LIST_FAILED', {alertType: 'alert-danger', view: this.alertView});
-        }
-        return Observable.empty();
-      });
+        }),
+        catchError((err: HttpErrorResponse) => {
+          if (err.status == 401) {
+            this.modalOpened = false;
+          } else {
+            this.messageService.showAlert('IMAGE.CREATE_IMAGE_UPDATE_IMAGE_LIST_FAILED', {alertType: 'alert-danger', view: this.alertView});
+          }
+          return null;
+        }));
   }
 
   updateFileListAndPreviewInfo() {
@@ -400,7 +399,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
         this.selectedDockerFile = file;
         let reader = new FileReader();
         reader.onload = (ev: ProgressEvent) => {
-          this.consoleText = (ev.target as FileReader).result;
+          this.consoleText = (ev.target as FileReader).result as string;
         };
         reader.readAsText(this.selectedDockerFile);
         this.uploadDockerFile().subscribe((res: string) => {
@@ -484,7 +483,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
     this.getDockerFilePreviewInfo();
   }
 
-  removeFile(file: {path: string, file_name: string, size: number}) {
+  removeFile(file: { path: string, file_name: string, size: number }) {
     let fromRemoveData: FormData = new FormData();
     fromRemoveData.append("project_name", this.customerNewImage.project_name);
     fromRemoveData.append("image_name", this.customerNewImage.image_name);

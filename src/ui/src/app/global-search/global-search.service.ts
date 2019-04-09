@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AppInitService } from '../app.init.service';
-import { Observable } from "rxjs/Observable";
+import { Observable } from "rxjs";
+import { map } from "rxjs/operators";
 
 @Injectable()
 export class GlobalSearchService {
@@ -18,7 +19,7 @@ export class GlobalSearchService {
           q: content,
           token: this.appInitService.token
         }
-      }).map(res=> res.body)
+      }).pipe(map(res=> res.body));
   }
 
 }

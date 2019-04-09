@@ -1,38 +1,32 @@
-/*
- * Copyright (c) 2016 VMware, Inc. All Rights Reserved.
- * This software is released under MIT license.
- * The full license information can be found in LICENSE in the root directory of this project.
- */
-import { ActivatedRouteSnapshot, Resolve, RouterStateSnapshot, Routes } from '@angular/router';
-import { Injectable } from '@angular/core';
-import { GlobalSearchComponent } from './global-search/global-search.component';
+import { Injectable, NgModule } from '@angular/core';
+import { Routes, RouterModule, Resolve, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { SignInComponent } from './account/sign-in/sign-in.component';
 import { SignUpComponent } from './account/sign-up/sign-up.component';
+import { ResetPasswordComponent } from './account/reset-password/reset-password.component';
+import { ForgotPasswordComponent } from './account/forgot-password/forgot-password.component';
+import { TimeoutComponent } from './shared/error-pages/timeout.component/timeout.component';
+import { BadGatewayComponent } from './shared/error-pages/bad-gateway.component/bad-gateway.component';
+import { BoardLoadingComponent } from './shared/error-pages/board-loading.component/board-loading.component';
 import { MainContentComponent } from './main-content/main-content.component';
+import { AuthGuard, ServiceGuard } from './shared/auth-guard.service';
+import { GlobalSearchComponent } from './global-search/global-search.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { NodeComponent } from './node/node.component';
 import { ProjectComponent } from './project/project.component';
 import { ImageListComponent } from './image/image-list/image-list.component';
+import { ConfigMapListComponent } from './resource/config-map/config-map-list/config-map-list.component';
 import { ServiceComponent } from './service/service.component';
+import { HelmHostComponent } from './helm/helm-host/helm-host.component';
+import { ChartReleaseListComponent } from './helm/chart-release-list/chart-release-list.component';
 import { UserCenterComponent } from './user-center/user-center.component';
-import { AuthGuard, ServiceGuard } from './shared/auth-guard.service';
-import { ProfileComponent } from "./profile/profile.component";
-import { AppInitService } from "./app.init.service";
-import { ListAuditComponent } from "./audit/operation-audit-list/list-audit.component";
-import { ResetPasswordComponent } from "./account/reset-password/reset-password.component";
-import { ForgotPasswordComponent } from "./account/forgot-password/forgot-password.component";
-import { TimeoutComponent } from "./shared/error-pages/timeout.component/timeout.component";
-import { BadGatewayComponent } from "./shared/error-pages/bad-gateway.component/bad-gateway.component";
-import { BoardLoadingComponent } from "./shared/error-pages/board-loading.component/board-loading.component";
-import { KibanaComponent } from "./kibana/kibana/kibana.component";
-import { GrafanaComponent } from "./grafana/grafana/grafana.component";
-import { RouteHelm, RouteReleaseList, RouteRepoList } from "./shared/shared.const";
-import { PvListComponent } from "./storage/pv/pv-list.compoent/pv-list.component";
-import { Observable } from "rxjs/Observable";
-import { PvcListComponent } from "./storage/pvc/pvc-list.component/pvc-list.component";
-import { HelmHostComponent } from "./helm/helm-host/helm-host.component";
-import { ChartReleaseListComponent } from "./helm/chart-release-list/chart-release-list.component";
-import { ConfigMapListComponent } from "./resource/config-map/config-map-list/config-map-list.component";
+import { ProfileComponent } from './profile/profile.component';
+import { KibanaComponent } from './kibana/kibana/kibana.component';
+import { GrafanaComponent } from './grafana/grafana/grafana.component';
+import { PvListComponent } from './storage/pv/pv-list.compoent/pv-list.component';
+import { PvcListComponent } from './storage/pvc/pvc-list.component/pvc-list.component';
+import { ListAuditComponent } from './audit/operation-audit-list/list-audit.component';
+import { AppInitService } from './app.init.service';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class SystemInfoResolve implements Resolve<any> {
@@ -45,14 +39,13 @@ export class SystemInfoResolve implements Resolve<any> {
   }
 }
 
-export const ROUTES: Routes = [
-  {
-    path: 'sign-in',
-    component: SignInComponent,
-    resolve: {
-      systeminfo: SystemInfoResolve
-    },
+const routes: Routes = [{
+  path: 'sign-in',
+  component: SignInComponent,
+  resolve: {
+    systeminfo: SystemInfoResolve
   },
+},
   {
     path: 'sign-up',
     component: SignUpComponent,
@@ -117,3 +110,10 @@ export const ROUTES: Routes = [
   {path: '', redirectTo: '/sign-in', pathMatch: 'full'},
   {path: '**', component: SignInComponent}
 ];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
+})
+export class AppRoutingModule {
+}

@@ -1,11 +1,10 @@
 import { AfterViewInit, Component, ComponentFactoryResolver, ViewChild, ViewContainerRef } from '@angular/core';
 import { AppInitService } from './app.init.service';
-import { TranslateService } from '@ngx-translate/core';
+import { LangChangeEvent, TranslateService } from '@ngx-translate/core';
 import { CookieService } from "ngx-cookie";
 import { MessageService } from "./shared/message-service/message.service";
 import { registerLocaleData } from "@angular/common";
 import localeZhHans from "@angular/common/locales/zh-Hans";
-import { LangChangeEvent } from "@ngx-translate/core/src/translate.service";
 
 @Component({
   selector: 'board-app',

@@ -1,9 +1,10 @@
 import { Injectable } from "@angular/core";
 import { HttpClient, HttpHeaders, HttpResponse } from "@angular/common/http";
 import { AuditQueryData } from "./audit";
-import { Observable } from "rxjs/Observable";
+import { Observable } from "rxjs";
 import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from "../shared/shared.const";
 import { User } from "../shared/shared.types";
+import { map } from "rxjs/operators";
 
 const BASE_URL = "/api/v1";
 
@@ -15,7 +16,7 @@ export class OperationAuditService {
   getUserList(): Observable<Array<User>> {
     return this.http.get(`${BASE_URL}/users`, {
       observe: "response",
-    }).map((res: HttpResponse<Array<User>>) => res.body);
+    }).pipe(map((res: HttpResponse<Array<User>>) => res.body));
   }
 
   getAuditList(querydata: AuditQueryData): Observable<any> {
@@ -36,6 +37,6 @@ export class OperationAuditService {
           "operation_object": querydata.object_name
         }
       })
-      .map((res: HttpResponse<Object>) => res.body);
+      .pipe(map((res: HttpResponse<Object>) => res.body));
   }
 }

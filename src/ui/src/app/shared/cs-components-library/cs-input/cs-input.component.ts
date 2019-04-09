@@ -124,7 +124,7 @@ export class CsInputComponent implements OnInit, AfterViewInit {
           this.isCheckInputOnKeyPress = false;
           let nextInputElement: Element = this.containerHtml.nativeElement.parentElement.nextElementSibling;
           if (nextInputElement) {
-            let nextLabelElement: NodeListOf<HTMLLabelElement> = nextInputElement.getElementsByClassName("cs-input-label") as NodeListOf<HTMLLabelElement>;
+            let nextLabelElement: HTMLCollectionOf<HTMLLabelElement> = nextInputElement.getElementsByClassName("cs-input-label") as HTMLCollectionOf<HTMLLabelElement>;
             if (nextLabelElement && nextLabelElement.length > 0) {
               nextLabelElement[0].click();
             }

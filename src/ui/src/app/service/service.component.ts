@@ -7,7 +7,7 @@ import { ServiceStepBase } from './service-step';
 import { K8sService } from './service.k8s';
 import { StepService } from './service-step.service';
 import { ServiceHostDirective } from "./service-host.directive";
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from "rxjs";
 
 @Component({
   selector: 'service',

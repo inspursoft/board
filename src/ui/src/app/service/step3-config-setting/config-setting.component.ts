@@ -1,7 +1,6 @@
 import { ChangeDetectorRef, Component, Injector, OnInit } from '@angular/core';
 import { ValidationErrors } from "@angular/forms/forms";
 import { HttpErrorResponse } from "@angular/common/http";
-import { Observable } from "rxjs/Observable";
 import {
   Container,
   ExternalService,
@@ -15,7 +14,8 @@ import {
 import { ServiceStepBase } from "../service-step";
 import { IDropdownTag } from "../../shared/shared.types";
 import { SetAffinityComponent } from "./set-affinity/set-affinity.component";
-import 'rxjs/add/observable/forkJoin'
+import { forkJoin, Observable, of } from "rxjs";
+import { catchError, map } from "rxjs/operators";
 
 @Component({
   styleUrls: ["./config-setting.component.css"],
@@ -45,7 +45,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
     let obsStepConfig = this.k8sService.getServiceConfig(this.stepPhase);
     let obsPreStepConfig = this.k8sService.getServiceConfig(PHASE_CONFIG_CONTAINERS);
     this.isGetNodePortWip = true;
-    Observable.forkJoin(obsStepConfig, obsPreStepConfig).subscribe((res: [UIServiceStepBase, UIServiceStepBase]) => {
+    forkJoin(obsStepConfig, obsPreStepConfig).subscribe((res: [UIServiceStepBase, UIServiceStepBase]) => {
       this.uiBaseData = res[0];
       this.uiPreData = res[1] as UIServiceStep2;
       if (this.uiData.externalServiceList.length === 0) {
@@ -146,16 +146,17 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
 
   checkServiceName(control: HTMLInputElement): Observable<ValidationErrors | null> {
     return this.k8sService.checkServiceExist(this.uiData.projectName, control.value)
-      .map(() => null)
-      .catch((err: HttpErrorResponse) => {
-        if (err.status == 409) {
-          this.messageService.cleanNotification();
-          return Observable.of({serviceExist: "SERVICE.STEP_3_SERVICE_NAME_EXIST"});
-        } else if (err.status == 404) {
-          this.messageService.cleanNotification();
-        }
-        return Observable.of(null);
-      });
+      .pipe(
+        map(() => null),
+        catchError((err: HttpErrorResponse) => {
+          if (err.status == 409) {
+            this.messageService.cleanNotification();
+            return of({serviceExist: "SERVICE.STEP_3_SERVICE_NAME_EXIST"});
+          } else if (err.status == 404) {
+            this.messageService.cleanNotification();
+          }
+          return of(null);
+        }));
   }
 
   haveRepeatNodePort(): boolean {

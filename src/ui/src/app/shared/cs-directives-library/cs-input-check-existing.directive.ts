@@ -1,15 +1,13 @@
 import { Directive, Input } from '@angular/core';
 import { AbstractControl } from '@angular/forms';
-import { Observable } from 'rxjs/Observable';
 import { HttpClient } from '@angular/common/http';
 import { AppInitService } from '../../app.init.service';
 import { MessageService } from '../message-service/message.service';
 import { CsInputComponent } from "../cs-components-library/cs-input/cs-input.component";
 import { ValidationErrors } from "@angular/forms/src/directives/validators";
-import 'rxjs/add/operator/catch';
-import 'rxjs/add/operator/map'
-import 'rxjs/add/observable/of'
 import { UsernameInUseKey } from "../shared.const";
+import { Observable, of } from "rxjs";
+import { catchError, map } from "rxjs/operators";
 
 @Directive({
   selector: "[checkItemExistingEx]"
@@ -26,8 +24,8 @@ export class CsInputCheckExistingDirective {
   }
 
   checkUserExists(value: string, errorMsg: string): Observable<ValidationErrors | null> {
-    if (this.checkItemExistingEx === 'username' && UsernameInUseKey.indexOf(value) > 0){
-      return Observable.of({'checkItemExistingEx': 'ACCOUNT.USERNAME_IS_KEY'})
+    if (this.checkItemExistingEx === 'username' && UsernameInUseKey.indexOf(value) > 0) {
+      return of({'checkItemExistingEx': 'ACCOUNT.USERNAME_IS_KEY'})
     }
     return this.http.get("/api/v1/user-exists", {
       observe: "response",
@@ -36,14 +34,15 @@ export class CsInputCheckExistingDirective {
         'value': value,
         'user_id': this.userID.toString()
       }
-    }).map(() => null)
-      .catch(err => {
+    }).pipe(
+      map(() => null),
+      catchError(err => {
         this.messageService.cleanNotification();
         if (err && err.status === 409) {
-          return Observable.of({'checkItemExistingEx': errorMsg});
+          return of({'checkItemExistingEx': errorMsg});
         }
         return null;
-      });
+      }));
   }
 
   checkProjectExists(projectName: string): Observable<ValidationErrors | null> {
@@ -52,14 +51,15 @@ export class CsInputCheckExistingDirective {
       params: {
         'project_name': projectName
       }
-    }).map(() => null)
-      .catch(err => {
+    }).pipe(
+      map(() => null),
+      catchError(err => {
         this.messageService.cleanNotification();
         if (err && err.status === 409) {
-          return Observable.of({'checkItemExistingEx': "PROJECT.PROJECT_NAME_ALREADY_EXISTS"});
+          return of({'checkItemExistingEx': "PROJECT.PROJECT_NAME_ALREADY_EXISTS"});
         }
         return null;
-      });
+      }))
   }
 
   validateAction(control: AbstractControl): Observable<ValidationErrors | null> {
@@ -71,7 +71,7 @@ export class CsInputCheckExistingDirective {
       case 'project':
         return this.checkProjectExists(control.value);
       default:
-        return Observable.of(null);
+        return of(null);
     }
   }
 }

@@ -1,5 +1,4 @@
 import { Component, ComponentFactoryResolver, OnDestroy, OnInit, ViewContainerRef } from '@angular/core';
-import { Subscription } from 'rxjs/Subscription';
 import { Image } from "../image";
 import { ImageService } from "../image-service/image-service"
 import { MessageService } from "../../shared/message-service/message.service";
@@ -11,6 +10,7 @@ import { CsModalParentBase } from "../../shared/cs-modal-base/cs-modal-parent-ba
 import { TranslateService } from "@ngx-translate/core";
 import { CreateImageMethod, Message, RETURN_STATUS } from "../../shared/shared.types";
 import { CreateImageComponent } from "../image-create/image-create.component";
+import { Subscription } from "rxjs";
 
 @Component({
   selector: 'image-list',

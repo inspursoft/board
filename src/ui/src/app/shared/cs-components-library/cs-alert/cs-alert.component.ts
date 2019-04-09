@@ -1,10 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { AlertMessage } from '../../shared.types';
-import { Observable, Subject } from 'rxjs';
+import { interval, Observable, Subject, Subscription } from 'rxjs';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { DISMISS_ALERT_INTERVAL } from "../../shared.const";
-import { Subscription } from "rxjs/Subscription";
-import "rxjs/add/observable/interval"
 
 @Component({
   templateUrl: './cs-alert.component.html',
@@ -32,7 +30,7 @@ export class CsAlertComponent implements OnInit{
 
   ngOnInit(): void {
     this.timeRemaining = DISMISS_ALERT_INTERVAL;
-    this.intervalSubscription = Observable.interval(1000).subscribe(()=>{
+    this.intervalSubscription = interval(1000).subscribe(()=>{
       if (this.isRunningAnimation){
         if (this.timeRemaining == 0){
           this.animation = 'hidden';

@@ -3,9 +3,10 @@ import { CsModalChildBase } from "../../../shared/cs-modal-base/cs-modal-child-b
 import { NFSPersistentVolume, PersistentVolume, PvAccessMode, PvReclaimMode, RBDPersistentVolume } from "../../../shared/shared.types";
 import { StorageService } from "../../storage.service";
 import { ValidationErrors } from "@angular/forms";
-import { Observable } from "rxjs/Observable";
 import { HttpErrorResponse } from "@angular/common/http";
 import { MessageService } from "../../../shared/message-service/message.service";
+import { Observable, of } from "rxjs";
+import { catchError, map } from "rxjs/operators";
 
 
 @Component({
@@ -74,16 +75,15 @@ export class CreatePvComponent extends CsModalChildBase implements OnInit {
 
   checkPvName(control: HTMLInputElement): Observable<ValidationErrors | null> {
     return this.storageService.checkPvNameExist(control.value)
-      .map(() => null)
-      .catch((err:HttpErrorResponse) => {
+      .pipe(map(() => null),catchError((err:HttpErrorResponse) => {
         if (err.status == 409) {
           this.messageService.cleanNotification();
-          return Observable.of({serviceExist: "STORAGE.PV_NAME_EXIST"});
+          return of({serviceExist: "STORAGE.PV_NAME_EXIST"});
         } else if (err.status == 404) {
           this.messageService.cleanNotification();
         }
-        return Observable.of(null);
-      });
+        return of(null);
+      }));
   }
 
   changeSelectType(event: {name: string, value: number, classType: Type<PersistentVolume>}) {

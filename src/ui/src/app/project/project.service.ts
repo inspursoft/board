@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Project } from './project';
-import { Observable } from "rxjs/Observable";
+import { map } from "rxjs/operators";
+import { Observable } from "rxjs";
 
 @Injectable()
 export class ProjectService {
@@ -19,7 +20,7 @@ export class ProjectService {
           "order_field": sortBy,
           "order_asc": isReverse ? "0" : "1"
         }
-      }).map(res => res.body)
+      }).pipe(map(res => res.body))
   }
 
   togglePublicity(projectId: number, projectPublic: number): Observable<any> {

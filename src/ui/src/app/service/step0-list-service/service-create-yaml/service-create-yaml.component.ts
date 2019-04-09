@@ -181,7 +181,7 @@ export class ServiceCreateYamlComponent implements OnInit {
     let file = this.filesDataMap.get(fileName);
     let reader = new FileReader();
     reader.onload = (ev: ProgressEvent) => {
-      this.curFileContent = (ev.target as FileReader).result;
+      this.curFileContent = (ev.target as FileReader).result as string;
     };
     reader.readAsText(file);
   }

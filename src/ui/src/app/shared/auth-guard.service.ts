@@ -3,13 +3,10 @@ import { ActivatedRouteSnapshot, CanActivate, CanActivateChild, CanDeactivate, R
 import { AppInitService } from '../app.init.service';
 import { MessageService } from './message-service/message.service';
 import { ServiceComponent } from "../service/service.component";
-import { Observable } from "rxjs/Observable";
-import { Subject } from "rxjs/Subject";
 import { K8sService } from "../service/service.k8s";
 import { Message, RETURN_STATUS } from "./shared.types";
-import "rxjs/add/operator/map"
-import "rxjs/add/operator/catch"
-import "rxjs/add/observable/of"
+import { Observable, of, Subject } from "rxjs";
+import { catchError, map } from "rxjs/operators";
 
 @Injectable()
 export class AuthGuard implements CanActivate, CanActivateChild {
@@ -21,20 +18,19 @@ export class AuthGuard implements CanActivate, CanActivateChild {
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | Promise<boolean> | boolean {
     return this.appInitService.getCurrentUser(route.queryParamMap.get('token'))
-      .map(() => {
+      .pipe(map(() => {
         if (state.url === '/') {
           this.router.navigate(['/dashboard']).then();
         }
         return true;
-      })
-      .catch(() => {
+      }), catchError(() => {
         if (state.url.indexOf('/search') === 0) {
-          return Observable.of(true);
+          return of(true);
         } else {
           this.router.navigate(['/sign-in']).then();
-          return Observable.of(true);
+          return of(true);
         }
-      })
+      }))
   }
 
   canActivateChild(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | Promise<boolean> | boolean {

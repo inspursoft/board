@@ -1,9 +1,9 @@
 import { ComponentFactoryResolver, Injectable, ViewContainerRef } from "@angular/core"
 import { CreateProjectComponent } from "./create-project/create-project/create-project.component";
-import { Observable } from "rxjs/Observable";
 import { Project } from "../project/project";
-import "rxjs/add/operator/do"
 import { MemberComponent } from "./create-project/member/member.component";
+import { Observable } from "rxjs";
+import { tap } from "rxjs/operators";
 
 @Injectable()
 export class SharedActionService {
@@ -13,7 +13,8 @@ export class SharedActionService {
   createProjectComponent(container: ViewContainerRef): Observable<string> {
     let factory = this.resolver.resolveComponentFactory(CreateProjectComponent);
     let componentRef = container.createComponent(factory);
-    return componentRef.instance.openCreateProjectModal().do(() => container.remove(container.indexOf(componentRef.hostView)));
+    return componentRef.instance.openCreateProjectModal()
+      .pipe(tap(() => container.remove(container.indexOf(componentRef.hostView))));
   }
 
   createProjectMemberComponent(project: Project, container: ViewContainerRef): void {

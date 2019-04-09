@@ -6,9 +6,10 @@
 
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from "@angular/core"
 import { DropdownMenuPosition, IDropdownTag } from "../../shared.types";
-import { Subject } from "rxjs/Subject";
 import { animate, state, style, transition, trigger } from "@angular/animations";
 import { DISMISS_CHECK_DROPDOWN } from "../../shared.const";
+import { Subject } from "rxjs";
+import { debounceTime } from "rxjs/operators";
 
 export const ONLY_FOR_CLICK = "OnlyClick";
 const DROP_DOWN_SHOW_COUNT = 20;
@@ -71,7 +72,7 @@ export class CsDropdownComponent implements OnChanges, OnInit {
   }
 
   ngOnInit() {
-    this.subFilterDropdownList.asObservable().debounceTime(300).subscribe((searchText: string) => {
+    this.subFilterDropdownList.asObservable().pipe(debounceTime(300)).subscribe((searchText: string) => {
       this.filterDropdownList = this.dropdownList.filter(value => {
         const text = this.getItemDescription(value);
         return searchText !== '' ? text.indexOf(searchText) > -1 : true;

@@ -5,9 +5,10 @@ import { Project } from "../../project/project";
 import { HelmService } from "../helm.service";
 import { MessageService } from "../../shared/message-service/message.service";
 import { AppInitService } from "../../app.init.service";
-import { Observable } from "rxjs";
+import { Observable, of } from "rxjs";
 import { ValidationErrors } from "@angular/forms";
 import { HttpErrorResponse } from "@angular/common/http";
+import { catchError, map } from "rxjs/operators";
 
 @Component({
   templateUrl: './chart-release.component.html',
@@ -49,19 +50,20 @@ export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
   checkChartReleaseName(control: HTMLInputElement): Observable<ValidationErrors | null> {
     this.isCheckNameWip = true;
     return this.helmService.checkChartReleaseName(control.value)
-      .map(() => {
-        setTimeout(() => this.isCheckNameWip = false);
-        return null;
-      })
-      .catch((err: HttpErrorResponse) => {
-        this.messageService.cleanNotification();
-        setTimeout(() => this.isCheckNameWip = false);
-        if (err.status == 409) {
-          return Observable.of({nodeGroupExist: "HELM.RELEASE_CHART_NAME_EXISTING"})
-        } else {
-          return Observable.of(null)
-        }
-      })
+      .pipe(
+        map(() => {
+          setTimeout(() => this.isCheckNameWip = false);
+          return null;
+        }),
+        catchError((err: HttpErrorResponse) => {
+          this.messageService.cleanNotification();
+          setTimeout(() => this.isCheckNameWip = false);
+          if (err.status == 409) {
+            return of({nodeGroupExist: "HELM.RELEASE_CHART_NAME_EXISTING"})
+          } else {
+            return of(null)
+          }
+        }));
   }
 
   changeSelectProject(project: Project) {

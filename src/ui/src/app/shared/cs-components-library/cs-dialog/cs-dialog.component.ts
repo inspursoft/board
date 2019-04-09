@@ -1,7 +1,6 @@
 import { AfterViewInit, Component, ElementRef, HostBinding, HostListener, OnDestroy } from '@angular/core';
 import { BUTTON_STYLE, Message, RETURN_STATUS } from '../../shared.types';
 import { Observable, Subject } from 'rxjs';
-import "rxjs/add/observable/fromEvent"
 
 @Component({
   templateUrl: "./cs-dialog.component.html"

@@ -1,11 +1,11 @@
 import { ComponentFactoryResolver, ComponentRef, Injectable, Type, ViewContainerRef } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AlertMessage, AlertType, BUTTON_STYLE, GlobalAlertMessage, GlobalAlertType, Message } from "../shared.types";
 import { CsAlertComponent } from "../cs-components-library/cs-alert/cs-alert.component";
 import { CsGlobalAlertComponent } from "../cs-components-library/cs-global-alert/cs-global-alert.component";
 import { CsDialogComponent } from "../cs-components-library/cs-dialog/cs-dialog.component";
-import { TimeoutError } from "rxjs/src/util/TimeoutError";
+import { Observable, TimeoutError } from "rxjs";
+import { tap } from "rxjs/operators";
 
 @Injectable()
 export class MessageService {
@@ -71,7 +71,7 @@ export class MessageService {
     message.data = optional ? optional.data : null;
     let componentRef = this.createComponent(CsDialogComponent, dialogView);
     return componentRef.instance.openDialog(message)
-      .do(() => dialogView.remove(dialogView.indexOf(componentRef.hostView)));
+      .pipe(tap(() => dialogView.remove(dialogView.indexOf(componentRef.hostView))));
   }
 
   public showOnlyOkDialog(msg: string, title?: string): void {

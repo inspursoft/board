@@ -5,9 +5,10 @@ import { PersistentVolume, PersistentVolumeClaim, PvcAccessMode } from "../share
 import { SharedService } from "../shared.service";
 import { MessageService } from "../message-service/message.service";
 import { HttpErrorResponse } from "@angular/common/http";
-import { Observable } from "rxjs";
+import { Observable, of } from "rxjs";
 import { ValidationErrors } from "@angular/forms";
 import { CsInputComponent } from "../cs-components-library/cs-input/cs-input.component";
+import { catchError } from "rxjs/operators";
 
 @Component({
   templateUrl: "./create-pvc.component.html",
@@ -56,20 +57,21 @@ export class CreatePvcComponent extends CsModalChildBase implements OnInit {
 
   checkPvcName(control: HTMLInputElement): Observable<ValidationErrors | null> {
     return this.sharedService.checkPvcNameExist(this.newPersistentVolumeClaim.projectName, control.value)
-      .map(() => null)
-      .catch((err: HttpErrorResponse) => {
-        this.messageService.cleanNotification();
-        if (err.status == 409) {
-          return Observable.of({serviceExist: "STORAGE.PVC_CREATE_NAME_EXIST"});
-        }
-        return Observable.of(null);
-      });
+      .pipe(
+        () => null,
+        catchError((err: HttpErrorResponse) => {
+          this.messageService.cleanNotification();
+          if (err.status == 409) {
+            return of({serviceExist: "STORAGE.PVC_CREATE_NAME_EXIST"});
+          }
+          return of(null);
+        }));
   }
 
   changeSelectProject(project: Project) {
     this.newPersistentVolumeClaim.projectId = project.project_id;
     this.newPersistentVolumeClaim.projectName = project.project_name;
-    if (this.newPersistentVolumeClaim.name != ''){
+    if (this.newPersistentVolumeClaim.name != '') {
       this.pvcNameInput.checkInputSelf();
     }
   }

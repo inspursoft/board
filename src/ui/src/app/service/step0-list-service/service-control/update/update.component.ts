@@ -4,7 +4,6 @@ import { HttpErrorResponse } from "@angular/common/http";
 import { ImageDetail } from "../../../../image/image";
 import { K8sService } from "../../../service.k8s";
 import { Service } from "../../../service";
-import "rxjs/add/observable/of"
 
 @Component({
   selector: 'update',
