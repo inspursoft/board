@@ -6,7 +6,7 @@
     "start": "ng serve --proxy-config proxy.config.json --host 0.0.0.0",
     "build": "ng build",
     "prod": "ng build --prod",
-    "test": "ng test --single-run --code-coverage",
+    "test": "ng test --code-coverage",
     "showcoverage": "http-server -c-1 -o -p 9875 ./coverage",
     "lint": "ng lint",
     "e2e": "ng e2e"
