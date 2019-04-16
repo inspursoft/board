@@ -18,7 +18,7 @@ function test(){
     echo -e "Begin executing test"
     rm -rf converage/
     rm -rf /board_src/coverage
-    npm test > testresult.log
+    npm run test > testresult.log
     cat testresult.log
     cp testresult.log /board_src
     cp -R coverage /board_src
