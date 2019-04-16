@@ -13,12 +13,10 @@ import { AccountService } from "../account.service";
 import { AppModule } from "../../app.module";
 import { AppComponent } from "../../app.component";
 import { AppInitService } from "../../app.init.service";
-import { Observable } from "rxjs/Observable";
 import { HttpErrorResponse } from "@angular/common/http";
-import "rxjs/add/observable/of"
-import "rxjs/add/observable/defer"
 import { HeaderComponent } from "../../shared/header/header.component";
 import Spy = jasmine.Spy;
+import { defer } from "rxjs";
 
 export function newEvent(eventName: string, bubbles = false, cancelable = false) {
   let evt = document.createEvent('CustomEvent');  // MUST be 'CustomEvent'
@@ -27,7 +25,7 @@ export function newEvent(eventName: string, bubbles = false, cancelable = false)
 }
 
 export function asyncData<T>(data: T) {
-  return Observable.defer(() => Promise.resolve(data));
+  return defer(() => Promise.resolve(data));
 }
 
 @Injectable()
