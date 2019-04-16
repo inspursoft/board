@@ -1,16 +1,14 @@
 import { Component, ComponentFactoryResolver, Injector, OnDestroy, OnInit, ViewContainerRef } from '@angular/core';
-import { Subscription } from 'rxjs/Subscription';
 import { Service, ServiceSource } from '../service';
 import { ClrDatagridSortOrder, ClrDatagridStateInterface } from '@clr/angular';
 import { GUIDE_STEP, SERVICE_STATUS } from '../../shared/shared.const';
 import { ServiceDetailComponent } from './service-detail/service-detail.component';
 import { ServiceStepBase } from "../service-step";
-import { Observable } from "rxjs/Observable";
 import { Project } from "../../project/project";
 import { ServiceControlComponent } from "./service-control/service-control.component";
 import { TranslateService } from "@ngx-translate/core";
 import { Message, RETURN_STATUS } from "../../shared/shared.types";
-import "rxjs/add/observable/interval";
+import { interval, Subscription } from "rxjs";
 
 enum CreateServiceMethod {None, Wizards, YamlFile, DevOps}
 
@@ -38,7 +36,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
               private viewRef: ViewContainerRef,
               private factory: ComponentFactoryResolver) {
     super(injector);
-    this.subscriptionInterval = Observable.interval(10000).subscribe(() => this.retrieve(true, this.oldStateInfo));
+    this.subscriptionInterval = interval(10000).subscribe(() => this.retrieve(true, this.oldStateInfo));
     this.isActionWIP = new Map<number, boolean>();
     this.projectList = Array<Project>();
   }

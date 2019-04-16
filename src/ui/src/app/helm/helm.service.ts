@@ -3,6 +3,7 @@ import { HttpClient, HttpEvent, HttpRequest, HttpResponse } from "@angular/commo
 import { Observable, Subject } from "rxjs";
 import { HelmViewData, IChartReleaseDetail, IChartRelease, IHelmRepo, HelmRepoDetail } from "./helm.type";
 import { Project } from "../project/project";
+import { map } from "rxjs/operators";
 
 @Injectable()
 export class HelmService {
@@ -39,14 +40,14 @@ export class HelmService {
   getRepoList(): Observable<Array<IHelmRepo>> {
     return this.http.get<Array<IHelmRepo>>('/api/v1/helm/repositories', {
       observe: "response"
-    }).map((res: HttpResponse<Array<IHelmRepo>>) => res.body || Array<IHelmRepo>())
+    }).pipe(map((res: HttpResponse<Array<IHelmRepo>>) => res.body || Array<IHelmRepo>()));
   }
 
   getRepoDetail(repoId: number, pageIndex: number = 1, pageSize: number = 1): Observable<HelmRepoDetail> {
     return this.http.get<HelmRepoDetail>(`/api/v1/helm/repositories/${repoId}`, {
       params: {page_index: pageIndex.toString(), page_size: pageSize.toString()},
       observe: "response"
-    }).map((res: HttpResponse<HelmRepoDetail>) => HelmRepoDetail.newFromServe(res.body))
+    }).pipe(map((res: HttpResponse<HelmRepoDetail>) => HelmRepoDetail.newFromServe(res.body)));
   }
 
   uploadChart(repoId: number, formData: FormData): Observable<HttpEvent<Object>> {
@@ -72,7 +73,7 @@ export class HelmService {
     return this.http.get<Array<Project>>('/api/v1/projects', {
       observe: "response",
       params: {'member_only': "1"}
-    }).map((res: HttpResponse<Array<Project>>) => res.body)
+    }).pipe(map((res: HttpResponse<Array<Project>>) => res.body));
   }
 
   checkChartReleaseName(chartReleaseName: string): Observable<Object> {
@@ -80,7 +81,7 @@ export class HelmService {
       observe: "response", params: {
         release_name: chartReleaseName
       }
-    }).map((res: HttpResponse<Object>) => res.body)
+    }).pipe(map((res: HttpResponse<Object>) => res.body));
   }
 
   releaseChartVersion(postBody: {name, chart, chartVersion: string, repoId, projectId, ownerId: number}): Observable<any> {
@@ -96,16 +97,16 @@ export class HelmService {
 
   getChartReleaseList(): Observable<Array<IChartRelease>> {
     return this.http.get<Object>(`/api/v1/helm/release`, {observe: "response"})
-      .map((res: HttpResponse<Array<IChartRelease>>) => res.body || Array<IChartRelease>())
+      .pipe(map((res: HttpResponse<Array<IChartRelease>>) => res.body || Array<IChartRelease>()));
   }
 
   getChartReleaseDetail(chartReleaseId: number): Observable<IChartReleaseDetail> {
     return this.http.get<Object>(`/api/v1/helm/release/${chartReleaseId}`, {observe: "response"})
-      .map((res: HttpResponse<IChartReleaseDetail>) => res.body)
+      .pipe(map((res: HttpResponse<IChartReleaseDetail>) => res.body));
   }
 
   getChartRelease(repoId: number, chartName, chartVersion: string): Observable<Object> {
     return this.http.get(`/api/v1/helm/repositories/${repoId}/charts/${chartName}/${chartVersion}`, {observe: 'response'})
-      .map((res: HttpResponse<Object>) => res.body)
+      .pipe(map((res: HttpResponse<Object>) => res.body));
   }
 }

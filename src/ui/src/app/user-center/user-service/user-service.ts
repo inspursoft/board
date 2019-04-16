@@ -2,8 +2,8 @@ import { Injectable } from "@angular/core";
 import { HttpClient, HttpHeaders, HttpResponse } from "@angular/common/http";
 import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from "../../shared/shared.const";
 import { User } from "../../shared/shared.types";
-import { Observable } from "rxjs/Observable";
-import "rxjs/add/operator/map"
+import { Observable } from "rxjs";
+import { map } from "rxjs/operators";
 
 const BASE_URL = "/api/v1";
 
@@ -22,7 +22,7 @@ export class UserService {
 
   getUser(userID: number): Observable<User> {
     return this.http.get(`${BASE_URL}/users/${userID}`, {observe: "response"})
-      .map((res: HttpResponse<User>) => res.body);
+      .pipe(map((res: HttpResponse<User>) => res.body));
   }
 
   changeUserPassword(userID: number, user_password_old: string, user_password_new: string): Observable<any> {
@@ -60,7 +60,7 @@ export class UserService {
         'order_field': sortBy,
         'order_asc': isReverse ? "0" : "1"
       }
-    }).map((res: HttpResponse<Object>) => res.body);
+    }).pipe(map((res: HttpResponse<Object>) => res.body));
   }
 
   setUserSystemAdmin(userID: number, userSystemAdmin: number): Observable<any> {

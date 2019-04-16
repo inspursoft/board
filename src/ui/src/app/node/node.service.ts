@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
-import { Observable } from "rxjs/Observable";
-import "rxjs/add/operator/map"
-import "rxjs/add/operator/repeat"
 import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from "../shared/shared.const";
 import { INode, INodeGroup } from "../shared/shared.types";
+import { Observable } from "rxjs";
+import { map } from "rxjs/operators";
 
 export interface INodeDetail {
   node_name: string,
@@ -25,7 +24,7 @@ export class NodeService {
   getNodes(): Observable<Array<INode>> {
     return this.http
       .get(`/api/v1/nodes`, {observe: "response"})
-      .map((res: HttpResponse<Array<INode>>) => res.body)
+      .pipe(map((res: HttpResponse<Array<INode>>) => res.body));
   }
 
   getNodeByName(nodeName: string): Observable<INodeDetail> {
@@ -35,8 +34,7 @@ export class NodeService {
         params: {
           'node_name': nodeName
         }
-      })
-      .map((res: HttpResponse<INodeDetail>) => res.body)
+      }).pipe(map((res: HttpResponse<INodeDetail>) => res.body));
   }
 
   toggleNodeStatus(nodeName: string, status: boolean): Observable<HttpResponse<Object>> {
@@ -54,7 +52,7 @@ export class NodeService {
   getNodeGroupsOfOneNode(nodeName: string): Observable<Array<string>> {
     return this.http.get<Array<string>>(`/api/v1/node/0/group`,
       {observe: "response", params: {node_name: nodeName}})
-      .map((res: HttpResponse<Array<string>>) => res.body || [])
+      .pipe(map((res: HttpResponse<Array<string>>) => res.body || []));
   }
 
   addNodeToNodeGroup(nodeName:string,nodeGroupName:string): Observable<Object> {
@@ -63,8 +61,7 @@ export class NodeService {
         headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
         observe: "response",
         params: {node_name: nodeName, groupname: nodeGroupName}
-      })
-      .map((res: HttpResponse<Object>) => res.body)
+      }).pipe(map((res: HttpResponse<Object>) => res.body));
   }
 
   deleteNodeToNodeGroup(nodeName:string,nodeGroupName:string): Observable<Object> {
@@ -74,12 +71,12 @@ export class NodeService {
         observe: "response",
         params: {node_name: nodeName, groupname: nodeGroupName}
       })
-      .map((res: HttpResponse<Object>) => res.body)
+      .pipe(map((res: HttpResponse<Object>) => res.body));
   }
 
   getNodeGroups(): Observable<Array<INodeGroup>> {
     return this.http.get<Array<INodeGroup>>(`/api/v1/nodegroup`, {observe: "response"})
-      .map((res: HttpResponse<Array<INodeGroup>>) => res.body || [])
+      .pipe(map((res: HttpResponse<Array<INodeGroup>>) => res.body || []));
   }
 
   addNodeGroup(group: INodeGroup): Observable<HttpResponse<Object>> {

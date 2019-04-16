@@ -5,10 +5,10 @@ import { ServiceStepBase } from "../service-step";
 import { CreateImageComponent } from "../../image/image-create/image-create.component";
 import { EnvType } from "../../shared/environment-value/environment-value.component";
 import { ValidationErrors } from "@angular/forms";
-import { Observable } from "rxjs/Observable";
 import { NodeAvailableResources } from "../../shared/shared.types";
-import "rxjs/add/operator/map"
 import { VolumeMountsComponent } from "./volume-mounts/volume-mounts.component";
+import { Observable } from "rxjs";
+import { map } from "rxjs/operators";
 
 @Component({
   templateUrl: './config-container.component.html',
@@ -89,18 +89,19 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
 
   getImageDetailList(imageName: string): Observable<Array<ImageDetail>> {
     this.imageTagNotReadyList.set(imageName, false);
-    return this.k8sService.getImageDetailList(imageName).map((res: Array<ImageDetail>) => {
-      if (res && res.length > 0) {
-        for (let item of res) {
-          item['image_size_number'] = Number.parseFloat((item['image_size_number'] / (1024 * 1024)).toFixed(2));
-          item['image_size_unit'] = 'MB';
+    return this.k8sService.getImageDetailList(imageName)
+      .pipe(map((res: Array<ImageDetail>) => {
+        if (res && res.length > 0) {
+          for (let item of res) {
+            item['image_size_number'] = Number.parseFloat((item['image_size_number'] / (1024 * 1024)).toFixed(2));
+            item['image_size_unit'] = 'MB';
+          }
+          this.imageDetailSourceList.set(imageName, res);
+        } else {
+          this.imageTagNotReadyList.set(imageName, true);
         }
-        this.imageDetailSourceList.set(imageName, res);
-      } else {
-        this.imageTagNotReadyList.set(imageName, true);
-      }
-      return res;
-    })
+        return res;
+      }));
   }
 
   setContainerFixedInfo(container: Container): void {
@@ -154,7 +155,7 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
       }, () => this.messageService.cleanNotification());
   }
 
-  isValidContainerNames(): {invalid: boolean, invalidIndex: number} {
+  isValidContainerNames(): { invalid: boolean, invalidIndex: number } {
     let invalidIndex: number = -1;
     let everyValid = this.serviceStep2Data.containerList.every((container, index: number) => {
       invalidIndex = index;
@@ -165,7 +166,7 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
     return {invalid: !everyValid, invalidIndex: invalidIndex};
   }
 
-  isValidContainerPorts(): {invalid: boolean, invalidIndex: number} {
+  isValidContainerPorts(): { invalid: boolean, invalidIndex: number } {
     let invalidIndex: number = -1;
     let valid = true;
     let portBuf = new Set<number>();
@@ -182,7 +183,7 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
     return {invalid: !valid, invalidIndex: invalidIndex};
   }
 
-  isValidContainerCpuAndMem(): {invalid: boolean, invalidIndex: number} {
+  isValidContainerCpuAndMem(): { invalid: boolean, invalidIndex: number } {
     let containerList = this.serviceStep2Data.containerList;
     let invalidIndex: number = -1;
     let everyValid = containerList.every((container: Container, index: number) => {
@@ -247,11 +248,11 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
     return this;
   }
 
-  get checkSetCpuRequestFun(){
+  get checkSetCpuRequestFun() {
     return this.checkSetCpuRequest.bind(this);
   }
 
-  get checkSetMemRequestFun(){
+  get checkSetMemRequestFun() {
     return this.checkSetMemRequest.bind(this);
   }
 
@@ -272,25 +273,27 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
   }
 
   checkSetCpuRequest(control: HTMLInputElement): Observable<ValidationErrors | null> {
-    return this.k8sService.getNodesAvailableSources().map((res: Array<NodeAvailableResources>) => {
-      let isInValid = res.every(value => Number.parseInt(control.value) > Number.parseInt(value.cpu_available) * 1000);
-      if (isInValid) {
-        return {beyondMaxLimit: 'SERVICE.STEP_2_BEYOND_MAX_VALUE'};
-      } else {
-        return null;
-      }
-    })
+    return this.k8sService.getNodesAvailableSources()
+      .pipe(map((res: Array<NodeAvailableResources>) => {
+        let isInValid = res.every(value => Number.parseInt(control.value) > Number.parseInt(value.cpu_available) * 1000);
+        if (isInValid) {
+          return {beyondMaxLimit: 'SERVICE.STEP_2_BEYOND_MAX_VALUE'};
+        } else {
+          return null;
+        }
+      }));
   }
 
   checkSetMemRequest(control: HTMLInputElement): Observable<ValidationErrors | null> {
-    return this.k8sService.getNodesAvailableSources().map((res: Array<NodeAvailableResources>) => {
-      let isInValid = res.every(value => Number.parseInt(control.value) > Number.parseInt(value.mem_available) / (1024 * 1024));
-      if (isInValid) {
-        return {beyondMaxLimit: 'SERVICE.STEP_2_BEYOND_MAX_VALUE'};
-      } else {
-        return null;
-      }
-    })
+    return this.k8sService.getNodesAvailableSources()
+      .pipe(map((res: Array<NodeAvailableResources>) => {
+        let isInValid = res.every(value => Number.parseInt(control.value) > Number.parseInt(value.mem_available) / (1024 * 1024));
+        if (isInValid) {
+          return {beyondMaxLimit: 'SERVICE.STEP_2_BEYOND_MAX_VALUE'};
+        } else {
+          return null;
+        }
+      }));
   }
 
   createNewCustomImage(index: number) {
@@ -327,7 +330,7 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
 
   getVolumesDescription(index: number, container: Container): string {
     let volume = container.volume_mounts;
-    if (volume.length > index){
+    if (volume.length > index) {
       let storageServer = volume[index].target_storage_service == "" ? "" : volume[index].target_storage_service.concat(":");
       let result = `${volume[index].container_path}:${storageServer}${volume[index].target_path}`;
       return result == ":" ? "" : result;
@@ -349,8 +352,8 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
     let oldStatus = this.containerIsInEdit.get(container);
     let iterator: IterableIterator<Container> = this.containerIsInEdit.keys();
     let key = iterator.next();
-    while (!key.done){
-      this.containerIsInEdit.set(key.value,false);
+    while (!key.done) {
+      this.containerIsInEdit.set(key.value, false);
       key = iterator.next();
     }
     this.containerIsInEdit.set(container, !oldStatus);

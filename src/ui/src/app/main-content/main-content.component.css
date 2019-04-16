@@ -7,6 +7,7 @@
 div.content-container-1 {
   display: flex;
   flex-basis: 100%;
+  overflow: auto;
 }
 
 div.outlet-container {

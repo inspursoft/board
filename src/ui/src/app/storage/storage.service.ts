@@ -1,7 +1,8 @@
 import { Injectable } from "@angular/core";
-import { Observable } from "rxjs/Observable";
 import { HttpClient, HttpResponse } from "@angular/common/http";
 import { NFSPersistentVolume, PersistentVolume, PersistentVolumeClaim, RBDPersistentVolume } from "../shared/shared.types";
+import { Observable } from "rxjs";
+import { map } from "rxjs/operators";
 
 @Injectable()
 export class StorageService {
@@ -17,7 +18,7 @@ export class StorageService {
         pvc_list_page: pvcListPage.toString(),
         pvc_list_page_size: pvcListPageSize.toString()
       }
-    }).map((res: HttpResponse<Array<Object>>) => {
+    }).pipe(map((res: HttpResponse<Array<Object>>) => {
       let result: Array<PersistentVolumeClaim> = Array<PersistentVolumeClaim>();
       res.body.forEach(resObject => {
         let persistentVolume = new PersistentVolumeClaim();
@@ -25,7 +26,7 @@ export class StorageService {
         result.push(persistentVolume);
       });
       return result;
-    })
+    }))
   }
 
   deletePvc(pvcId: number): Observable<Object> {
@@ -34,7 +35,7 @@ export class StorageService {
 
   getPvcDetailInfo(pvcId: number): Observable<PersistentVolumeClaim> {
     return this.http.get(`/api/v1/pvclaims/${pvcId}`, {observe: "response"})
-      .map((res: HttpResponse<Object>) => {
+      .pipe(map((res: HttpResponse<Object>) => {
         let persistentVolume = new PersistentVolumeClaim();
         persistentVolume.initFromRes(res.body['pvclaim']);
         persistentVolume.state = res.body['pvc_state'];
@@ -43,7 +44,7 @@ export class StorageService {
           persistentVolume.events = res.body['pvc_events'];
         }
         return persistentVolume;
-      })
+      }))
   }
 
   getPvList(pvName: string, pvListPage: number, pvListPageSize: number): Observable<Array<PersistentVolume>> {
@@ -53,7 +54,7 @@ export class StorageService {
         pv_listPage: pvListPage.toString(),
         pv_list_page_size: pvListPageSize.toString()
       }
-    }).map((res: HttpResponse<Array<Object>>) => {
+    }).pipe(map((res: HttpResponse<Array<Object>>) => {
       let result: Array<PersistentVolume> = Array<PersistentVolume>();
       res.body.forEach(resObject => {
         let persistentVolume = new PersistentVolume();
@@ -61,7 +62,7 @@ export class StorageService {
         result.push(persistentVolume);
       });
       return result;
-    })
+    }));
   }
 
   createNewPv(body: PersistentVolume): Observable<Object> {
@@ -78,7 +79,7 @@ export class StorageService {
 
   getPvDetailInfo(id: number): Observable<PersistentVolume> {
     return this.http.get(`/api/v1/pvolumes/${id}`, {observe: "response"})
-      .map((res: HttpResponse<Object>) => {
+      .pipe(map((res: HttpResponse<Object>) => {
         let result: PersistentVolume;
         let options = Reflect.get(res.body, 'pv_options');
         if (Reflect.get(res.body, 'pv_type') == 1) {
@@ -109,8 +110,6 @@ export class StorageService {
           result.reclaim = Reflect.get(res.body, 'pv_reclaim');
         }
         return result;
-      })
+      }));
   }
-
-
 }

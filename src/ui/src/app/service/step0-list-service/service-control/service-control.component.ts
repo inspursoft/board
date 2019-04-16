@@ -8,11 +8,10 @@ import { MessageService } from "../../../shared/message-service/message.service"
 import { UpdateComponent } from "./update/update.component";
 import { LocateComponent } from "./locate/locate.component";
 import { ScaleComponent } from "./scale/scale.component";
-import { Subject } from "rxjs/Subject";
-import { Observable } from "rxjs/Observable";
 import { CsModalChildBase } from "../../../shared/cs-modal-base/cs-modal-child-base";
 import { TranslateService } from "@ngx-translate/core";
 import { LoadBalanceComponent } from "./loadBalance/loadBalance.component";
+import { Observable, Subject } from "rxjs";
 
 export interface IScaleInfo {
   desired_instance: number;

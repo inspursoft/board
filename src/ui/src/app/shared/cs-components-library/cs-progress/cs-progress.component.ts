@@ -1,7 +1,6 @@
 import { Component, HostBinding, Input, OnDestroy, OnInit } from "@angular/core"
 import { HttpProgressEvent } from "@angular/common/http";
-import { Observable } from "rxjs/Observable";
-import { Subscription } from "rxjs/Subscription";
+import { interval, Observable, Subscription } from "rxjs";
 
 @Component({
   selector: "cs-progress",
@@ -18,7 +17,7 @@ export class CsProgressComponent implements OnInit, OnDestroy {
   speed: number = 0;
 
   ngOnInit() {
-    this.subscription = Observable.interval(500).subscribe(() => {
+    this.subscription = interval(500).subscribe(() => {
       if (this.progressData) {
         if (this.progressData.loaded < this.progressData.total) {
           if (this.previousValue > 0) {

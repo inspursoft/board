@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from "@angular/common/http";
 import { Type } from "@angular/core";
-import { TimeoutError } from "rxjs/src/util/TimeoutError";
+import { TimeoutError } from "rxjs";
 
 export interface IPagination {
   page_index: number;

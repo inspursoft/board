@@ -2,6 +2,7 @@ import { Injectable } from "@angular/core";
 import { HttpClient, HttpResponse } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { ConfigMap, ConfigMapDetail } from "./resource.types";
+import { map } from "rxjs/operators";
 
 @Injectable()
 export class ResourceService {
@@ -18,7 +19,7 @@ export class ResourceService {
       observe: "response", params: {
         project_name: projectName
       }
-    }).map((res: HttpResponse<Object>) => ConfigMapDetail.createFromRes(res.body))
+    }).pipe(map((res: HttpResponse<Object>) => ConfigMapDetail.createFromRes(res.body)));
   }
 
   deleteConfigMap(configMapName, projectName: string): Observable<any> {
@@ -40,10 +41,10 @@ export class ResourceService {
         configmap_list_page: pageIndex.toString(),
         configmap_list_page_size: pageSize.toString()
       }
-    }).map((res: HttpResponse<Array<Object>>) => {
+    }).pipe(map((res: HttpResponse<Array<Object>>) => {
       let result = Array<ConfigMap>();
       res.body.forEach((configMap: Object) => result.push(ConfigMap.createFromRes(configMap)));
       return result;
-    })
+    }));
   }
 }

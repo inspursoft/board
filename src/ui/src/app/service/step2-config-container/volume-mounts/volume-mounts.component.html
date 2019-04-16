@@ -35,10 +35,10 @@
                 </cs-input>
             </div>
             <div class="dynamic-line-container large-margin" *ngIf="volumeData.volume_type == 'nfs'">
-                <div class="clr-checkbox-container">
-                    <clr-checkbox [(clrChecked)]="volumeData.containerPathFlag"></clr-checkbox>
-                    <label>{{"SERVICE.VOLUME_SUB_PATH_FILE" | translate}}:</label>
-                </div>
+                <!--<div class="clr-checkbox-container">-->
+                    <!--<clr-checkbox [(clrChecked)]="volumeData.containerPathFlag"></clr-checkbox>-->
+                    <!--<label>{{"SERVICE.VOLUME_SUB_PATH_FILE" | translate}}:</label>-->
+                <!--</div>-->
                 <cs-input [inputPattern]="patternPath"
                           [inputType]="2"
                           [simpleFiled]="volumeData.container_file"

@@ -1,5 +1,5 @@
 import { Component } from "@angular/core";
-import { Observable } from "rxjs/Rx";
+import { Observable } from "rxjs";
 import { CsModalChildBase } from "../../../shared/cs-modal-base/cs-modal-child-base";
 import { AffinityCardData, UIServiceStep3 } from "../../service-step.component";
 import { DragStatus } from "../../../shared/shared.types";

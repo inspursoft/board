@@ -2,12 +2,11 @@ import { Component } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { AppInitService } from "../../../app.init.service";
 import { Member, Project, Role } from "../../../project/project";
-import { Subject } from 'rxjs/Subject';
 import { SharedService } from "../../shared.service";
 import { MessageService } from "../../message-service/message.service";
-import { Observable } from "rxjs/Observable";
 import { AlertType } from "../../shared.types";
 import { CsModalChildBase } from "../../cs-modal-base/cs-modal-child-base";
+import { Observable, Subject } from "rxjs";
 
 @Component({
   selector: 'project-member',

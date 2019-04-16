@@ -3,8 +3,8 @@ import { CreateProject, Project } from "../../../project/project";
 import { SharedService } from "../../shared.service";
 import { MessageService } from "../../message-service/message.service";
 import { HttpErrorResponse } from "@angular/common/http";
-import { Observable } from "rxjs/Observable";
 import { CsModalChildBase } from "../../cs-modal-base/cs-modal-child-base";
+import { Observable } from "rxjs";
 
 @Component({
   selector: 'create-project',

@@ -2,9 +2,8 @@ import { Component } from '@angular/core';
 import { K8sService } from '../../service.k8s';
 import { AppInitService } from '../../../app.init.service';
 import { Service, ServiceType } from "../../service";
-import { Subject } from "rxjs/Subject";
-import { Observable } from "rxjs/Observable";
-import "rxjs/add/operator/do"
+import { Observable, Subject } from "rxjs";
+import { tap } from "rxjs/operators";
 
 class NodeURL {
   url: string;
@@ -94,14 +93,14 @@ export class ServiceDetailComponent {
 
   getDeploymentYamlFile(): Observable<string> {
     return this.k8sService.getServiceYamlFile(this.curService.service_project_name, this.curService.service_name, YAML_TYPE_DEPLOYMENT)
-      .do((res: string) => {
+      .pipe(tap((res: string) => {
         this.deploymentYamlFile = res;
         let arr: Array<string> = res.split(/[\n]/g);
         let k8sHost = arr.find(value => value.startsWith(K8S_HOSTNAME_KEY));
         if (k8sHost && k8sHost.length > 0) {
           this.k8sHostName = k8sHost.split(':')[1].trim();
         }
-      }, () => this.isOpenServiceDetail = false);
+      }, () => this.isOpenServiceDetail = false));
   }
 
   getServiceYamlFile() {

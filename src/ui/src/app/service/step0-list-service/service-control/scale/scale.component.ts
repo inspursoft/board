@@ -5,7 +5,6 @@ import { IScaleInfo } from "../service-control.component";
 import { BUTTON_STYLE, Message, RETURN_STATUS, ServiceHPA } from "../../../../shared/shared.types";
 import { MessageService } from "../../../../shared/message-service/message.service";
 import { CsComponentBase } from "../../../../shared/cs-components-library/cs-component-base";
-import "rxjs/add/observable/of"
 
 enum ScaleMethod {smManually, smAuto}
 

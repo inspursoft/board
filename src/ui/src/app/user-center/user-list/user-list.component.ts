@@ -1,7 +1,6 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { ClrDatagridSortOrder, ClrDatagridStateInterface } from "@clr/angular";
 import { ActivatedRoute } from "@angular/router";
-import { Subscription } from "rxjs/Subscription";
 import { UserService } from "../user-service/user-service";
 import { editModel } from "../user-new-edit/user-new-edit.component"
 import { AppInitService } from "../../app.init.service";
@@ -9,6 +8,7 @@ import { MessageService } from "../../shared/message-service/message.service";
 import { Message, RETURN_STATUS, User } from "../../shared/shared.types";
 import { TranslateService } from "@ngx-translate/core";
 import { HttpErrorResponse } from "@angular/common/http";
+import { Subscription } from "rxjs";
 
 @Component({
   selector: "user-list",

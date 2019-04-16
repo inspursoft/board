@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
-import { Subject } from 'rxjs/Subject';
-import { Observable } from 'rxjs/Observable';
 import { CookieService } from 'ngx-cookie';
 import { GUIDE_STEP } from "./shared/shared.const";
 import { SystemInfo, User } from "./shared/shared.types";
+import { map } from "rxjs/operators";
+import { Observable, Subject } from "rxjs";
 
 export interface IAuditOperationData {
-  operation_id?: number,
+  operation_id?: number;
   operation_creation_time?: string,
   operation_update_time?: string,
   operation_deleted?: number,
@@ -92,25 +92,25 @@ export class AppInitService {
     return this._isFirstLogin;
   }
 
-  get isSystemAdmin(): boolean{
+  get isSystemAdmin(): boolean {
     return this.currentUser && this.currentUser.user_system_admin === 1;
   }
 
   getCurrentUser(tokenParam?: string): Observable<User> {
     let token = this.tokenService.token || tokenParam || this.cookieService.get("token") || '';
     return this.http.get<User>('/api/v1/users/current', {observe: "response", params: {'token': token}})
-      .map((res: HttpResponse<User>) => {
+      .pipe(map((res: HttpResponse<User>) => {
         this.currentUser = res.body;
         return res.body;
-      })
+      }))
   }
 
   getSystemInfo(): Observable<any> {
-    return this.http.get(`/api/v1/systeminfo`, {observe: "response"})
-      .map((res: HttpResponse<SystemInfo>) => {
+    return this.http.get(`/api/v1/systeminfo`, {observe: 'response'})
+      .pipe(map((res: HttpResponse<SystemInfo>) => {
         this.systemInfo = res.body;
         return this.systemInfo
-      });
+      }));
   }
 
   setAuditLog(auditData: IAuditOperationData): Observable<any> {
