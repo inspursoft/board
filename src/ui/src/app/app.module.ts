@@ -12,7 +12,6 @@ import { TranslateLoader, TranslateModule, TranslateService } from '@ngx-transla
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule, SystemInfoResolve } from './app-routing.module';
-import { CoreModule } from "./core/core.module";
 
 export function appInitServiceFactory(appInitService: AppInitService) {
   return () => (appInitService);
