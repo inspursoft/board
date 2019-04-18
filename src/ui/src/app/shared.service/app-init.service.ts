@@ -60,7 +60,7 @@ export class AppInitService {
   }
 
   getCurrentUser(tokenParam?: string): Observable<User> {
-    const token = this.tokenService.token || tokenParam || this.cookieService.get('token') || '';
+    const token = this.tokenService.token || tokenParam;
     return this.http.get<User>('/api/v1/users/current', {observe: 'response', params: {token}})
       .pipe(map((res: HttpResponse<User>) => {
         this.currentUser = res.body;

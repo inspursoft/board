@@ -4,12 +4,14 @@ import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { AppInitService } from './app-init.service';
 import { MessageService } from './message.service';
+import { AppTokenService } from "./app-token.service";
 
 @Injectable()
 export class AppGuardService implements CanActivate, CanActivateChild {
 
   constructor(private appInitService: AppInitService,
               private messageService: MessageService,
+              private appTokenService: AppTokenService,
               private router: Router) {
   }
 
@@ -17,7 +19,7 @@ export class AppGuardService implements CanActivate, CanActivateChild {
     return this.appInitService.getCurrentUser(route.queryParamMap.get('token'))
       .pipe(map(() => {
         if (state.url === '/') {
-          this.router.navigate(['/dashboard']).then();
+          this.router.navigate(['/dashboard'],{queryParams:{token: this.appTokenService.token}}).then();
         }
         return true;
       }), catchError(() => {
