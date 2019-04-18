@@ -37,6 +37,7 @@ export const LANG_EN_US = {
     "INPUT_PATTERN":"Input does not confirm to the rules",
     "HTTP_504":"Gateway Timeout:504",
     "HTTP_500":"Unexpected internal error:500",
+    "HTTP_502":"Bad gateway :502",
     "HTTP_400":"Bad Request:400",
     "HTTP_401":"User's token has expired, please sign in again:401",
     "HTTP_403":"Insufficient privilege to requested operation:403",

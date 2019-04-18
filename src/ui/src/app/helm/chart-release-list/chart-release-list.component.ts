@@ -2,7 +2,7 @@ import { Component, ComponentFactoryResolver, OnInit, ViewContainerRef } from "@
 import { IChartReleaseDetail, IChartRelease } from "../helm.type";
 import { HelmService } from "../helm.service";
 import { Message, RETURN_STATUS } from "../../shared/shared.types";
-import { MessageService } from "../../shared/message-service/message.service";
+import { MessageService } from "../../shared.service/message.service";
 import { CsModalParentBase } from "../../shared/cs-modal-base/cs-modal-parent-base";
 import { ChartReleaseDetailComponent } from "../chart-release-detail/chart-release-detail.component";
 

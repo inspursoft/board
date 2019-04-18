@@ -1,17 +1,39 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Member, Project } from '../project/project';
-import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from './shared.const';
-import { PersistentVolume, PersistentVolumeClaim } from './shared.types';
-import { Observable } from "rxjs";
-import { map } from "rxjs/operators";
+import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from '../shared/shared.const';
+import { PersistentVolume, PersistentVolumeClaim } from '../shared/shared.types';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { AppInitService } from "./app-init.service";
 
 @Injectable()
 export class SharedService {
   public showMaxGrafanaWindow = false;
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient,
+              private appInitService: AppInitService) {
 
+  }
+
+  signOut(username: string): Observable<any> {
+    return this.http.get('/api/v1/log-out', {
+        headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
+        params: {
+          'username': username
+        }
+      }
+    );
+  }
+
+  search(content: string): Observable<any>{
+    return this.http.get("/api/v1/search", {
+      observe:"response",
+      params: {
+        q: content,
+        token: this.appInitService.token
+      }
+    }).pipe(map(res=> res.body));
   }
 
   getProjectMembers(projectId: number): Observable<Array<Member>> {
@@ -33,7 +55,7 @@ export class SharedService {
 
   getAllPvList(): Observable<Array<PersistentVolume>> {
     return this.http.get(`/api/v1/pvolumes`, {observe: 'response'})
-      .pipe(map((res: HttpResponse<Array<Object>>) => {
+      .pipe(map((res: HttpResponse<Array<object>>) => {
         const result: Array<PersistentVolume> = Array<PersistentVolume>();
         res.body.forEach(resObject => {
           const persistentVolume = new PersistentVolume();
@@ -50,7 +72,7 @@ export class SharedService {
 
   getAvailableMembers(): Observable<Array<Member>> {
     return this.http.get('/api/v1/users', {observe: 'response'})
-      .pipe(map((res: HttpResponse<Object>) => {
+      .pipe(map((res: HttpResponse<object>) => {
         const members = Array<Member>();
         const users = res.body as Array<any>;
         users.forEach(u => {

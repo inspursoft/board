@@ -2,8 +2,8 @@ import { ChangeDetectorRef, Component, EventEmitter, OnInit } from "@angular/cor
 import { CsModalChildBase } from "../../../shared/cs-modal-base/cs-modal-child-base";
 import { ConfigMap } from "../../resource.types";
 import { ResourceService } from "../../resource.service";
-import { MessageService } from "../../../shared/message-service/message.service";
-import { SharedService } from "../../../shared/shared.service";
+import { MessageService } from "../../../shared.service/message.service";
+import { SharedService } from "../../../shared.service/shared.service";
 import { Project } from "../../../project/project";
 
 @Component({
@@ -30,7 +30,9 @@ export class CreateConfigMapComponent extends CsModalChildBase implements OnInit
   ngOnInit(): void {
     this.isLoadWip = true;
     this.sharedService.getAllProjects().subscribe(
-      (res: Array<Project>) => this.projectList = res, null, () => this.isLoadWip = false
+      (res: Array<Project>) => this.projectList = res,
+      () => this.isLoadWip = false,
+      () => this.isLoadWip = false
     );
   }
 

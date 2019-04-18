@@ -6,10 +6,10 @@ import { Component, EventEmitter, Input, OnInit, Output, QueryList, ViewChildren
 import { CsInputComponent } from "../cs-components-library/cs-input/cs-input.component";
 import { ValidatorFn, Validators } from "@angular/forms";
 import { CsModalChildBase } from "../cs-modal-base/cs-modal-child-base";
-import { MessageService } from "../message-service/message.service";
 import { ConfigMapDetail, ConfigMap } from "../../resource/resource.types";
 import { ResourceService } from "../../resource/resource.service";
 import { HttpErrorResponse } from "@angular/common/http";
+import { MessageService } from "../../shared.service/message.service";
 
 export class EnvType {
   public envName = '';
@@ -115,7 +115,7 @@ export class EnvironmentValueComponent extends CsModalChildBase implements OnIni
       });
       this.envsData = this.envsData.concat(envTypes);
     } catch (e) {
-      this.messageService.showAlert('SERVICE.TXT_ALERT_MESSAGE', {alertType: 'alert-warning', view: this.alertView});
+      this.messageService.showAlert('SERVICE.TXT_ALERT_MESSAGE', {alertType: 'warning', view: this.alertView});
       return;
     }
   }
@@ -124,7 +124,7 @@ export class EnvironmentValueComponent extends CsModalChildBase implements OnIni
     envInfo.envConfigMapName = configMap.name;
     this.resourceService.getConfigMapDetail(configMap.name, this.projectName).subscribe(
       (res: ConfigMapDetail) => this.configMapDetail.set(index, res),
-      (err: HttpErrorResponse) => this.messageService.showAlert(err.message, {alertType: "alert-danger", view: this.alertView})
+      (err: HttpErrorResponse) => this.messageService.showAlert(err.message, {alertType: "danger", view: this.alertView})
     )
   }
 

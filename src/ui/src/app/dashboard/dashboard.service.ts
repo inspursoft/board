@@ -96,6 +96,10 @@ export class DashboardService {
     });
   };
 
+  testGrafana(grafanaUrl: string): Observable<any> {
+    return this.http.get(grafanaUrl, {observe: "response"})
+  }
+
   private getUnitMultipleValue(sample: number): number {
     let result: number = 1;
     let nameIndex: number = 0;

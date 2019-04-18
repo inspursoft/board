@@ -1,22 +1,17 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
+import { AppTokenService } from "../shared.service/app-token.service";
+import { AppInitService } from "../shared.service/app-init.service";
+import { MessageService } from "../shared.service/message.service";
 
 @Component({
-  selector: 'node',
   templateUrl: './node.component.html'
 })
-export class NodeComponent implements OnInit, OnDestroy {
-
-  constructor() {
-
+export class NodeComponent {
+  constructor(private appTokenService: AppTokenService,
+              private appInitService: AppInitService,
+              private messageService: MessageService) {
+    console.log('appTokenService', this.appTokenService)
+    console.log('appInitService', this.appInitService)
+    console.log('messageService', this.messageService)
   }
-
-  ngOnInit(): void {
-
-  }
-
-  ngOnDestroy(): void {
-
-  }
-
-
 }

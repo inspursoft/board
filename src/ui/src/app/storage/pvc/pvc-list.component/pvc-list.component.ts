@@ -2,7 +2,7 @@ import { Component, ComponentFactoryResolver, ViewContainerRef } from "@angular/
 import { ClrDatagridStateInterface } from "@clr/angular";
 import { TranslateService } from "@ngx-translate/core";
 import { Message, PersistentVolumeClaim, RETURN_STATUS } from "../../../shared/shared.types";
-import { MessageService } from "../../../shared/message-service/message.service";
+import { MessageService } from "../../../shared.service/message.service";
 import { StorageService } from "../../storage.service";
 import { CsModalParentBase } from "../../../shared/cs-modal-base/cs-modal-parent-base";
 import { CreatePvcComponent } from "../../../shared/create-pvc/create-pvc.component";

@@ -1,10 +1,10 @@
 import { Directive, Input } from '@angular/core';
 import { AbstractControl, AsyncValidator, NG_ASYNC_VALIDATORS, ValidatorFn, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { AppInitService } from '../../app.init.service';
-import { MessageService } from '../message-service/message.service';
-import { Observable, of } from "rxjs";
-import { catchError, debounceTime, distinctUntilChanged, first, map, switchMap } from "rxjs/operators";
+import { AppInitService } from '../../shared.service/app-init.service';
+import { Observable, of } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, first, map, switchMap } from 'rxjs/operators';
+import { MessageService } from '../../shared.service/message.service';
 
 @Directive({
   selector: '[checkItemExisting]',
@@ -14,7 +14,7 @@ import { catchError, debounceTime, distinctUntilChanged, first, map, switchMap }
 })
 export class CheckItemExistingDirective implements AsyncValidator {
   @Input() checkItemExisting;
-  @Input() userID: number = 0;
+  @Input() userID = 0;
 
   valFn: ValidatorFn = Validators.nullValidator;
 
@@ -24,31 +24,31 @@ export class CheckItemExistingDirective implements AsyncValidator {
   }
 
   checkUserExists(target: string, value: string, userID: number): Observable<{ [key: string]: any }> {
-    return this.http.get("/api/v1/user-exists", {
-      observe: "response",
+    return this.http.get('/api/v1/user-exists', {
+      observe: 'response',
       params: {
-        'target': target,
-        'value': value,
-        'user_id': userID.toString()
+        target: target,
+        value: value,
+        user_id: userID.toString()
       }
     }).pipe(map(() => this.valFn), catchError(err => {
       this.messageService.cleanNotification();
       if (err && err.status === 409) {
-        return of({'checkItemExisting': {value}});
+        return of({checkItemExisting: {value}});
       }
     }));
   }
 
   checkProjectExists(token: string, projectName: string): Observable<{ [key: string]: any }> {
     return this.http.head('/api/v1/projects', {
-      observe: "response",
+      observe: 'response',
       params: {
-        'project_name': projectName
+        project_name: projectName
       }
     }).pipe(map(() => this.valFn), catchError(err => {
       this.messageService.cleanNotification();
       if (err && err.status === 409) {
-        return of({'checkItemExisting': {projectName}});
+        return of({checkItemExisting: {projectName}});
       }
     }));
   }

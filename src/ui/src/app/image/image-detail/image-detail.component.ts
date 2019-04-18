@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core"
 import { Image, ImageDetail } from "../image"
 import { ImageService } from "../image-service/image-service";
-import { MessageService } from "../../shared/message-service/message.service";
+import { MessageService } from "../../shared.service/message.service";
 
 @Component({
   selector: "image-detail",

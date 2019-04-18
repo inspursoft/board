@@ -3,7 +3,7 @@ import { IHelmRepo } from "../helm.type";
 import { CsModalChildBase } from "../../shared/cs-modal-base/cs-modal-child-base";
 import { HelmService } from "../helm.service";
 import { HttpEvent, HttpEventType, HttpProgressEvent } from "@angular/common/http";
-import { MessageService } from "../../shared/message-service/message.service";
+import { MessageService } from "../../shared.service/message.service";
 import { Observable, Subject } from "rxjs";
 
 @Component({
@@ -54,7 +54,7 @@ export class UploadChartComponent extends CsModalChildBase {
         }, () => this.modalOpened = false
       );
     } else {
-      this.messageService.showAlert('HELM.UPLOAD_CHART_PACKAGE_TIP', {view: this.alertView, alertType: "alert-warning"});
+      this.messageService.showAlert('HELM.UPLOAD_CHART_PACKAGE_TIP', {view: this.alertView, alertType: "warning"});
     }
   }
 }

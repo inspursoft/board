@@ -1,20 +1,20 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { MessageService } from '../../shared/message-service/message.service';
+import { MessageService } from '../../shared.service/message.service';
 import { Account } from '../account';
 import { AccountService } from '../account.service';
-import { HttpErrorResponse } from "@angular/common/http";
-import { AppInitService } from "../../app.init.service";
-import { CsComponentBase } from "../../shared/cs-components-library/cs-component-base";
-import { RouteSignIn } from "../../shared/shared.const";
-import { SignUp } from "../../shared/shared.types";
+import { HttpErrorResponse } from '@angular/common/http';
+import { AppInitService } from '../../shared.service/app-init.service';
+import { CsComponentBase } from '../../shared/cs-components-library/cs-component-base';
+import { RouteSignIn } from '../../shared/shared.const';
+import { SignUp } from '../../shared/shared.types';
 
 @Component({
    templateUrl: './sign-up.component.html',
    styleUrls: [ './sign-up.component.css' ]
 })
 export class SignUpComponent extends CsComponentBase implements OnInit {
-  isSignUpWIP:boolean = false;
+  isSignUpWIP = false;
   signUpModel: SignUp = new SignUp();
 
   constructor(private accountService: AccountService,
@@ -25,15 +25,15 @@ export class SignUpComponent extends CsComponentBase implements OnInit {
   }
 
   ngOnInit(): void {
-    if(this.appInitService.systemInfo.auth_mode != 'db_auth') {
-      this.router.navigate(['/sign-in']).then();
+    if (this.appInitService.systemInfo.auth_mode !== 'db_auth') {
+      this.router.navigate(['/account/sign-in']).then();
     }
   }
-  
+
   signUp(): void {
-    if (this.verifyInputValid()){
+    if (this.verifyInputValid()) {
       this.isSignUpWIP = true;
-      let account: Account = {
+      const account: Account = {
         username: this.signUpModel.username,
         email: this.signUpModel.email,
         password: this.signUpModel.password,
@@ -50,7 +50,7 @@ export class SignUpComponent extends CsComponentBase implements OnInit {
             this.messageService.showOnlyOkDialog('ACCOUNT.FAILED_TO_SIGN_UP', 'ACCOUNT.ERROR');
           }
         },
-        () => this.router.navigate([RouteSignIn]).then())
+        () => this.router.navigate([RouteSignIn]).then());
     }
   }
 

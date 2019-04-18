@@ -8,10 +8,18 @@ import { PvDetailComponent } from "./pv/pv-detail.compoent/pv-detail.component";
 import { PvListComponent } from "./pv/pv-list.compoent/pv-list.component";
 import { PvcListComponent } from "./pvc/pvc-list.component/pvc-list.component";
 import { PvcDetailComponent } from "./pvc/pvc-detail.component/pvc-detail.component";
+import { CoreModule } from "../core/core.module";
+import { HttpInterceptorService } from "../shared.service/http-client-interceptor";
+import { RouterModule } from "@angular/router";
 
 @NgModule({
   imports: [
-    SharedModule
+    CoreModule,
+    SharedModule,
+    RouterModule.forChild([
+      {path: 'pv', component: PvListComponent},
+      {path: 'pvc', component: PvcListComponent}
+    ])
   ],
   entryComponents: [
     CreatePvComponent,
@@ -20,6 +28,7 @@ import { PvcDetailComponent } from "./pvc/pvc-detail.component/pvc-detail.compon
   ],
   providers: [
     StorageService,
+    HttpInterceptorService
   ],
   declarations: [
     StorageComponent,

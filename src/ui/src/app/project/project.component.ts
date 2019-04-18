@@ -1,11 +1,11 @@
 import { Component, ViewContainerRef } from '@angular/core';
-import { AppInitService } from '../app.init.service';
-import { MessageService } from '../shared/message-service/message.service';
+import { AppInitService } from '../shared.service/app-init.service';
+import { MessageService } from '../shared.service/message.service';
 import { GUIDE_STEP } from '../shared/shared.const';
 import { Project } from './project';
 import { ProjectService } from './project.service';
 import { ClrDatagridSortOrder, ClrDatagridStateInterface } from "@clr/angular";
-import { SharedActionService } from "../shared/shared-action.service";
+import { SharedActionService } from "../shared.service/shared-action.service";
 import { TranslateService } from "@ngx-translate/core";
 import { Message, RETURN_STATUS } from "../shared/shared.types";
 import { HttpErrorResponse } from "@angular/common/http";
@@ -43,7 +43,7 @@ export class ProjectComponent {
             this.projects = paginatedProjects.project_list;
             this.isInLoading = false;
           }, () => {
-            this.messageService.showAlert('PROJECT.FAILED_TO_RETRIEVE_PROJECTS',{alertType: "alert-warning"});
+            this.messageService.showAlert('PROJECT.FAILED_TO_RETRIEVE_PROJECTS',{alertType: "warning"});
             this.isInLoading = false;
           });
       }
@@ -75,7 +75,7 @@ export class ProjectComponent {
               this.retrieve(this.oldStateInfo);
             }, (error: HttpErrorResponse) => {
               if (error.status == 422) {
-                this.messageService.showAlert('PROJECT.FAILED_TO_DELETE_PROJECT_ERROR', {alertType: "alert-warning"})
+                this.messageService.showAlert('PROJECT.FAILED_TO_DELETE_PROJECT_ERROR', {alertType: "warning"})
               }
             })
           }

@@ -1,18 +1,23 @@
 import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
 import { SharedModule } from '../shared/shared.module';
 import { NodeComponent } from './node.component';
 import { NodeService } from './node.service';
 import { NodeGroupComponent } from './node-group/node-group.component';
 import { NodeListComponent } from './node-list/node-list.component';
-import { NodeDetailComponent } from "./node-detail/node-detail.component";
+import { NodeDetailComponent } from './node-detail/node-detail.component';
 import { NodeCreateGroupComponent } from './node-create-group/node-create-group.component';
 import { NodeControlComponent } from './node-control/node-control.component';
+import { CoreModule } from '../core/core.module';
+import { HttpInterceptorService } from "../shared.service/http-client-interceptor";
 
 @NgModule({
   imports: [
-    SharedModule
+    CoreModule,
+    SharedModule,
+    RouterModule.forChild([{path: '', component: NodeComponent}])
   ],
-  declarations: [ 
+  declarations: [
     NodeComponent,
     NodeDetailComponent,
     NodeGroupComponent,
@@ -20,12 +25,14 @@ import { NodeControlComponent } from './node-control/node-control.component';
     NodeCreateGroupComponent,
     NodeControlComponent
   ],
-  entryComponents:[
+  entryComponents: [
     NodeCreateGroupComponent
   ],
   providers: [
-    NodeService
+    NodeService,
+    HttpInterceptorService
   ]
 })
 
-export class NodeModule {}
+export class NodeModule {
+}

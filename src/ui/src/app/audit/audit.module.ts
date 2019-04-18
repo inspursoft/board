@@ -1,14 +1,21 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { SharedModule } from "../shared/shared.module";
 import { ListAuditComponent } from "./operation-audit-list/list-audit.component";
 import { OperationAuditService } from "./audit-service";
+import { CoreModule } from "../core/core.module";
+import { HttpInterceptorService } from "../shared.service/http-client-interceptor";
+import { RouterModule, Routes } from "@angular/router";
 
 @NgModule({
   imports: [
-    SharedModule
+    CoreModule,
+    SharedModule,
+    RouterModule.forChild([{path:'', component: ListAuditComponent}])
   ],
-  providers: [OperationAuditService],
+  providers: [
+    OperationAuditService,
+    HttpInterceptorService,
+  ],
   declarations: [
     ListAuditComponent
   ]

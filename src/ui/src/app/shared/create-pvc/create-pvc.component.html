@@ -43,11 +43,11 @@
       </cs-dropdown>
     </div>
     <div *ngIf="newPersistentVolumeClaim.accessMode == 'ReadOnlyMany'"
-         class="dynamic-line-container alert alert-warning warning-info">
+         class="dynamic-line-container alert warning warning-info">
       {{"STORAGE.PV_WARNING_READ_ONLY_MANY" | translate}}
     </div>
     <div *ngIf="newPersistentVolumeClaim.accessMode == 'ReadWriteMany'"
-         class="dynamic-line-container alert alert-warning warning-info">
+         class="dynamic-line-container alert warning warning-info">
       {{"STORAGE.PV_WARNING_READ_WRITE_MANY" | translate}}
     </div>
     <div class="pvc-section-container"><span>Options</span></div>

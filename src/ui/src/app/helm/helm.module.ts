@@ -8,10 +8,23 @@ import { UploadChartComponent } from "./upload-chart/upload-chart.component";
 import { ChartReleaseComponent } from "./chart-release/chart-release.component";
 import { ChartReleaseListComponent } from "./chart-release-list/chart-release-list.component";
 import { ChartReleaseDetailComponent } from "./chart-release-detail/chart-release-detail.component";
+import { CoreModule } from "../core/core.module";
+import { HttpInterceptorService } from "../shared.service/http-client-interceptor";
+import { RouterModule } from "@angular/router";
 
 @NgModule({
-  imports: [SharedModule],
-  providers: [HelmService],
+  imports: [
+    CoreModule,
+    SharedModule,
+    RouterModule.forChild([
+      {path: 'repo-list', component: HelmHostComponent},
+      {path: 'release-list', component: ChartReleaseListComponent}
+    ])
+  ],
+  providers: [
+    HelmService,
+    HttpInterceptorService,
+  ],
   declarations: [
     RepoListComponent,
     HelmHostComponent,

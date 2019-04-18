@@ -2,8 +2,8 @@ import { Component, Injector, OnInit, ViewContainerRef } from '@angular/core';
 import { PHASE_SELECT_PROJECT, ServiceStepPhase, UIServiceStep1 } from '../service-step.component';
 import { Project } from "../../project/project";
 import { ServiceStepBase } from "../service-step";
-import { SharedActionService } from "../../shared/shared-action.service";
-import { SharedService } from "../../shared/shared.service";
+import { SharedActionService } from "../../shared.service/shared-action.service";
+import { SharedService } from "../../shared.service/shared.service";
 
 @Component({
   styleUrls: ["./choose-project.component.css"],

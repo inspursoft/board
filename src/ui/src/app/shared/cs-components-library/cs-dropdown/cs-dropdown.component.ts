@@ -142,9 +142,9 @@ export class CsDropdownComponent implements OnChanges, OnInit {
   getItemTagClass(item: any) {
     let tag: IDropdownTag = item['tag'];
     return {
-      'label-info': tag.type == 'alert-success',
-      'label-warning': tag.type == 'alert-warning',
-      'label-danger': tag.type == 'alert-danger'
+      'label-info': tag.type == 'success',
+      'label-warning': tag.type == 'warning',
+      'label-danger': tag.type == 'danger'
     }
   }
 

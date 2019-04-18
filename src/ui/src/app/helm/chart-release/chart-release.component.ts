@@ -1,14 +1,14 @@
 import { ChangeDetectorRef, Component, OnInit } from "@angular/core";
-import { HelmChartVersion, HelmRepoDetail, IHelmRepo } from "../helm.type";
+import { ValidationErrors } from "@angular/forms";
+import { HttpErrorResponse } from "@angular/common/http";
+import { Observable, of } from "rxjs";
+import { catchError, map } from "rxjs/operators";
+import { HelmChartVersion, IHelmRepo } from "../helm.type";
 import { CsModalChildBase } from "../../shared/cs-modal-base/cs-modal-child-base";
 import { Project } from "../../project/project";
 import { HelmService } from "../helm.service";
-import { MessageService } from "../../shared/message-service/message.service";
-import { AppInitService } from "../../app.init.service";
-import { Observable, of } from "rxjs";
-import { ValidationErrors } from "@angular/forms";
-import { HttpErrorResponse } from "@angular/common/http";
-import { catchError, map } from "rxjs/operators";
+import { MessageService } from "../../shared.service/message.service";
+import { AppInitService } from "../../shared.service/app-init.service";
 
 @Component({
   templateUrl: './chart-release.component.html',
@@ -72,7 +72,7 @@ export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
 
   chartRelease() {
     if (!this.selectProject) {
-      this.messageService.showAlert('HELM.RELEASE_CHART_SELECT_PROJECT_TIP', {view: this.alertView, alertType: "alert-warning"})
+      this.messageService.showAlert('HELM.RELEASE_CHART_SELECT_PROJECT_TIP', {view: this.alertView, alertType: "warning"})
     } else if (this.verifyInputValid()) {
       this.isReleaseWIP = true;
       this.helmService.releaseChartVersion({

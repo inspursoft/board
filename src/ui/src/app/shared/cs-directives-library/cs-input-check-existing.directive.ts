@@ -1,13 +1,13 @@
 import { Directive, Input } from '@angular/core';
 import { AbstractControl } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { AppInitService } from '../../app.init.service';
-import { MessageService } from '../message-service/message.service';
+import { AppInitService } from '../../shared.service/app-init.service';
 import { CsInputComponent } from "../cs-components-library/cs-input/cs-input.component";
 import { ValidationErrors } from "@angular/forms/src/directives/validators";
 import { UsernameInUseKey } from "../shared.const";
 import { Observable, of } from "rxjs";
 import { catchError, map } from "rxjs/operators";
+import { MessageService } from "../../shared.service/message.service";
 
 @Directive({
   selector: "[checkItemExistingEx]"

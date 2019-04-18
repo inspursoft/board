@@ -65,7 +65,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
       res.forEach((value: { name: string, status: number }) => {
         this.nodeSelectorList.push({
           name: value.name, value: value.name, tag: {
-            type: value.status == 1 ? 'alert-success' : 'alert-warning',
+            type: value.status == 1 ? 'success' : 'warning',
             description: value.status == 1 ? 'SERVICE.STEP_3_NODE_STATUS_SCHEDULABLE' : 'SERVICE.STEP_3_NODE_STATUS_UNSCHEDULABLE'
           }
         })
@@ -175,11 +175,11 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
   forward(): void {
     if (this.verifyInputValid() && this.verifyInputDropdownValid()) {
       if (this.uiData.externalServiceList.length == 0) {
-        this.messageService.showAlert(`SERVICE.STEP_3_EXTERNAL_MESSAGE`, {alertType: "alert-warning"});
+        this.messageService.showAlert(`SERVICE.STEP_3_EXTERNAL_MESSAGE`, {alertType: "warning"});
       } else if (this.haveRepeatNodePort()) {
-        this.messageService.showAlert(`SERVICE.STEP_3_EXTERNAL_REPEAT`, {alertType: "alert-warning"});
+        this.messageService.showAlert(`SERVICE.STEP_3_EXTERNAL_REPEAT`, {alertType: "warning"});
       } else if (this.uiData.affinityList.find(value => value.services.length == 0)) {
-        this.messageService.showAlert(`SERVICE.STEP_3_AFFINITY_MESSAGE`, {alertType: "alert-warning"});
+        this.messageService.showAlert(`SERVICE.STEP_3_AFFINITY_MESSAGE`, {alertType: "warning"});
       } else {
         this.isActionWip = true;
         this.k8sService.setServiceConfig(this.uiData.uiToServer()).subscribe(

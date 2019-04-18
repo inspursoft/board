@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { MessageService } from "../../shared/message-service/message.service";
+import { MessageService } from "../../shared.service/message.service";
 import { Audit, AuditQueryData } from "../audit";
 import { ClrDatagridSortOrder, ClrDatagridStateInterface } from "@clr/angular";
 import { OperationAuditService } from "../audit-service";
@@ -130,7 +130,7 @@ export class ListAuditComponent implements OnInit {
         }, () => this.isInLoading = false)
       });
     } else {
-      this.messageService.showAlert('AUDIT.AUDIT_QUERY_DATE_ERROR', {alertType: 'alert-warning'})
+      this.messageService.showAlert('AUDIT.AUDIT_QUERY_DATE_ERROR', {alertType: 'warning'})
     }
   }
 

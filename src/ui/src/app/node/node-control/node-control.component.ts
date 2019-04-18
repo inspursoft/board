@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { NodeService } from "../node.service";
 import { CsModalChildBase } from "../../shared/cs-modal-base/cs-modal-child-base";
-import { MessageService } from "../../shared/message-service/message.service";
+import { MessageService } from "../../shared.service/message.service";
 import { INode, INodeGroup } from "../../shared/shared.types";
 import { tap } from "rxjs/operators";
 import { zip } from "rxjs";
