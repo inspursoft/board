@@ -1,14 +1,14 @@
 import { Component, ViewContainerRef } from '@angular/core';
+import { HttpErrorResponse } from "@angular/common/http";
+import { TranslateService } from "@ngx-translate/core";
+import { ClrDatagridSortOrder, ClrDatagridStateInterface } from "@clr/angular";
 import { AppInitService } from '../shared.service/app-init.service';
 import { MessageService } from '../shared.service/message.service';
 import { GUIDE_STEP } from '../shared/shared.const';
 import { Project } from './project';
 import { ProjectService } from './project.service';
-import { ClrDatagridSortOrder, ClrDatagridStateInterface } from "@clr/angular";
 import { SharedActionService } from "../shared.service/shared-action.service";
-import { TranslateService } from "@ngx-translate/core";
 import { Message, RETURN_STATUS } from "../shared/shared.types";
-import { HttpErrorResponse } from "@angular/common/http";
 
 @Component({
   selector: 'project',
@@ -17,19 +17,19 @@ import { HttpErrorResponse } from "@angular/common/http";
 })
 export class ProjectComponent {
   totalRecordCount: number;
-  pageIndex: number = 1;  
+  pageIndex: number = 1;
   pageSize: number = 15;
   projects: Project[];
-  isInLoading:boolean = false;
+  isInLoading: boolean = false;
   descSort = ClrDatagridSortOrder.DESC;
   oldStateInfo: ClrDatagridStateInterface;
-  constructor(
-    private appInitService: AppInitService,
-    private projectService: ProjectService,
-    private messageService: MessageService,
-    private sharedActionService: SharedActionService,
-    private translateService: TranslateService,
-    private selfView: ViewContainerRef) {
+
+  constructor(private appInitService: AppInitService,
+              private projectService: ProjectService,
+              private messageService: MessageService,
+              private sharedActionService: SharedActionService,
+              private translateService: TranslateService,
+              private selfView: ViewContainerRef) {
   }
 
   retrieve(state: ClrDatagridStateInterface): void {
@@ -41,11 +41,10 @@ export class ProjectComponent {
           paginatedProjects => {
             this.totalRecordCount = paginatedProjects.pagination.total_count;
             this.projects = paginatedProjects.project_list;
-            this.isInLoading = false;
-          }, () => {
-            this.messageService.showAlert('PROJECT.FAILED_TO_RETRIEVE_PROJECTS',{alertType: "warning"});
-            this.isInLoading = false;
-          });
+          },
+          () => this.isInLoading = false,
+          () => this.isInLoading = false
+        );
       }
     });
   }
@@ -93,29 +92,29 @@ export class ProjectComponent {
     );
   }
 
-  get isFirstLogin(): boolean{
+  get isFirstLogin(): boolean {
     return this.appInitService.isFirstLogin;
   }
 
-  get guideStep(): GUIDE_STEP{
+  get guideStep(): GUIDE_STEP {
     return this.appInitService.guideStep;
   }
 
   isSystemAdminOrOwner(project: Project): boolean {
-      return this.appInitService.currentUser.user_system_admin == 1 ||
-        project.project_owner_id == this.appInitService.currentUser.user_id;
+    return this.appInitService.currentUser.user_system_admin == 1 ||
+      project.project_owner_id == this.appInitService.currentUser.user_id;
   }
 
-  guideNextStep(step:GUIDE_STEP){
+  guideNextStep(step: GUIDE_STEP) {
     this.createProject();
   }
 
-  setGuideNoneStep(){
-     this.appInitService.guideStep = GUIDE_STEP.NONE_STEP;
+  setGuideNoneStep() {
+    this.appInitService.guideStep = GUIDE_STEP.NONE_STEP;
   }
 
   createProjectClose() {
-    if (this.isFirstLogin){
+    if (this.isFirstLogin) {
       this.appInitService.guideStep = GUIDE_STEP.SERVICE_LIST;
     }
   }
