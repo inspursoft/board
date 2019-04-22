@@ -1,4 +1,5 @@
 import { NgModule } from "@angular/core";
+import { RouterModule } from "@angular/router";
 import { SharedModule } from "../shared/shared.module";
 import { RepoListComponent } from "./repo-list/repo-list.component";
 import { HelmService } from "./helm.service";
@@ -8,10 +9,20 @@ import { UploadChartComponent } from "./upload-chart/upload-chart.component";
 import { ChartReleaseComponent } from "./chart-release/chart-release.component";
 import { ChartReleaseListComponent } from "./chart-release-list/chart-release-list.component";
 import { ChartReleaseDetailComponent } from "./chart-release-detail/chart-release-detail.component";
+import { CoreModule } from "../core/core.module";
 
 @NgModule({
-  imports: [SharedModule],
-  providers: [HelmService],
+  imports: [
+    CoreModule,
+    SharedModule,
+    RouterModule.forChild([
+      {path: 'repo-list', component: HelmHostComponent},
+      {path: 'release-list', component: ChartReleaseListComponent}
+    ])
+  ],
+  providers: [
+    HelmService
+  ],
   declarations: [
     RepoListComponent,
     HelmHostComponent,

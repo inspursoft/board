@@ -6,7 +6,7 @@ import { CsModalParentBase } from "../../../shared/cs-modal-base/cs-modal-parent
 import { CreatePvComponent } from "../create-pv.component/create-pv.component";
 import { StorageService } from "../../storage.service";
 import { PvDetailComponent } from "../pv-detail.compoent/pv-detail.component";
-import { MessageService } from "../../../shared/message-service/message.service";
+import { MessageService } from "../../../shared.service/message.service";
 
 @Component({
   templateUrl: './pv-list.component.html',

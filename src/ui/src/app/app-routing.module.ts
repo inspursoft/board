@@ -1,32 +1,10 @@
 import { Injectable, NgModule } from '@angular/core';
 import { Routes, RouterModule, Resolve, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
-import { SignInComponent } from './account/sign-in/sign-in.component';
-import { SignUpComponent } from './account/sign-up/sign-up.component';
-import { ResetPasswordComponent } from './account/reset-password/reset-password.component';
-import { ForgotPasswordComponent } from './account/forgot-password/forgot-password.component';
-import { TimeoutComponent } from './shared/error-pages/timeout.component/timeout.component';
-import { BadGatewayComponent } from './shared/error-pages/bad-gateway.component/bad-gateway.component';
-import { BoardLoadingComponent } from './shared/error-pages/board-loading.component/board-loading.component';
 import { MainContentComponent } from './main-content/main-content.component';
-import { AuthGuard, ServiceGuard } from './shared/auth-guard.service';
 import { GlobalSearchComponent } from './global-search/global-search.component';
-import { DashboardComponent } from './dashboard/dashboard.component';
-import { NodeComponent } from './node/node.component';
-import { ProjectComponent } from './project/project.component';
-import { ImageListComponent } from './image/image-list/image-list.component';
-import { ConfigMapListComponent } from './resource/config-map/config-map-list/config-map-list.component';
-import { ServiceComponent } from './service/service.component';
-import { HelmHostComponent } from './helm/helm-host/helm-host.component';
-import { ChartReleaseListComponent } from './helm/chart-release-list/chart-release-list.component';
-import { UserCenterComponent } from './user-center/user-center.component';
-import { ProfileComponent } from './profile/profile.component';
-import { KibanaComponent } from './kibana/kibana/kibana.component';
-import { GrafanaComponent } from './grafana/grafana/grafana.component';
-import { PvListComponent } from './storage/pv/pv-list.compoent/pv-list.component';
-import { PvcListComponent } from './storage/pvc/pvc-list.component/pvc-list.component';
-import { ListAuditComponent } from './audit/operation-audit-list/list-audit.component';
-import { AppInitService } from './app.init.service';
+import { AppInitService } from './shared.service/app-init.service';
 import { Observable } from 'rxjs';
+import { AppGuardService } from "./shared.service/app-guard.service";
 
 @Injectable()
 export class SystemInfoResolve implements Resolve<any> {
@@ -39,76 +17,28 @@ export class SystemInfoResolve implements Resolve<any> {
   }
 }
 
-const routes: Routes = [{
-  path: 'sign-in',
-  component: SignInComponent,
-  resolve: {
-    systeminfo: SystemInfoResolve
-  },
-},
+const routes: Routes = [
+  {path: 'account', loadChildren: './account/account.module#AccountModule', pathMatch: 'prefix'},
   {
-    path: 'sign-up',
-    component: SignUpComponent,
-    resolve: {
-      systeminfo: SystemInfoResolve
-    }
-  },
-  {
-    path: 'reset-password',
-    component: ResetPasswordComponent,
-    resolve: {
-      systeminfo: SystemInfoResolve
-    }
-  },
-  {
-    path: 'forgot-password',
-    component: ForgotPasswordComponent,
-    resolve: {
-      systeminfo: SystemInfoResolve
-    }
-  },
-  {path: 'timeout-page', component: TimeoutComponent},
-  {path: 'bad-gateway-page', component: BadGatewayComponent},
-  {path: 'board-loading-page', component: BoardLoadingComponent},
-  {
-    path: '', component: MainContentComponent,
-    resolve: {
-      systeminfo: SystemInfoResolve
-    },
-    canActivate: [AuthGuard],
+    path: '', component: MainContentComponent, resolve: {systeminfo: SystemInfoResolve},
+    canActivate: [AppGuardService],
     children: [
       {path: 'search', component: GlobalSearchComponent},
-      {path: 'dashboard', component: DashboardComponent},
-      {path: 'nodes', component: NodeComponent},
-      {path: 'projects', component: ProjectComponent},
-      {path: 'images', component: ImageListComponent},
-      {
-        path: 'resource', children: [
-          {path: 'config-map', component: ConfigMapListComponent}
-        ]
-      },
-      {path: 'services', component: ServiceComponent, canDeactivate: [ServiceGuard]},
-      {
-        path: 'helm', children: [
-          {path: 'repo-list', component: HelmHostComponent},
-          {path: 'release-list', component: ChartReleaseListComponent}
-        ]
-      },
-      {path: 'user-center', component: UserCenterComponent},
-      {path: 'profile', component: ProfileComponent},
-      {path: 'kibana-url', component: KibanaComponent},
-      {path: 'grafana', component: GrafanaComponent},
-      {
-        path: 'storage', children: [
-          {path: 'pv', component: PvListComponent},
-          {path: 'pvc', component: PvcListComponent}
-        ]
-      },
-      {path: 'audit', component: ListAuditComponent}
+      {path: 'dashboard', loadChildren: './dashboard/dashboard.module#DashboardModule'},
+      {path: 'nodes', loadChildren: './node/node.module#NodeModule'},
+      {path: 'services', loadChildren: './service/service.module#ServiceModule'},
+      {path: 'audit', loadChildren: './audit/audit.module#AuditModule'},
+      {path: 'user-center', loadChildren: './user-center/user-center.module#UserCenterModule'},
+      {path: 'projects', loadChildren: './project/project.module#ProjectModule'},
+      {path: 'resource', loadChildren: './resource/resource.module#ResourceModule'},
+      {path: 'helm', loadChildren: './helm/helm.module#HelmModule'},
+      {path: 'profile', loadChildren: './profile/profile.module#ProfileModule'},
+      {path: 'storage', loadChildren: './storage/storage.module#StorageModule'},
+      {path: 'kibana-url', loadChildren:'./kibana/kibana.module#KibanaModule'},
+      {path: 'images', loadChildren: './image/image.module#ImageModule'},
     ]
   },
-  {path: '', redirectTo: '/sign-in', pathMatch: 'full'},
-  {path: '**', component: SignInComponent}
+  {path: '**', redirectTo: '/account/sign-in'},
 ];
 
 @NgModule({

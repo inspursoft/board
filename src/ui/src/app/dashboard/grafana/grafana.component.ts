@@ -1,6 +1,6 @@
 import { Component, HostBinding, OnInit } from "@angular/core";
-import { GrafanaService } from "../grafana.service";
 import { HttpErrorResponse } from "@angular/common/http";
+import { DashboardService } from "../dashboard.service";
 
 @Component({
   templateUrl: './grafana.component.html'
@@ -9,12 +9,12 @@ export class GrafanaComponent implements OnInit {
   grafanaUrl = '';
   errorMessage = '';
 
-  constructor(private grafanaService: GrafanaService) {
+  constructor(private dashboardService: DashboardService) {
   };
 
   ngOnInit() {
     const url = '/grafana/dashboard/db/kubernetes/';
-    this.grafanaService.testGrafana(url).subscribe(
+    this.dashboardService.testGrafana(url).subscribe(
       () => this.grafanaUrl = url,
       (err: HttpErrorResponse) => this.errorMessage = err.message
     )

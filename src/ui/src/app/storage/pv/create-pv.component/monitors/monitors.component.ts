@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from "@angular/core";
 import { CsModalChildBase } from "../../../../shared/cs-modal-base/cs-modal-child-base";
-import { MessageService } from "../../../../shared/message-service/message.service";
+import { MessageService } from "../../../../shared.service/message.service";
 
 @Component({
   selector: 'pv-monitors',
@@ -44,7 +44,7 @@ export class MonitorsComponent extends CsModalChildBase {
   changeIp(ip: string, index: number) {
     let monitor = this.monitorsArray[index];
     if (this.monitorsArray.find((value, oldIndex) => value.startsWith(ip) && index != oldIndex)) {
-      this.messageService.showAlert(`STORAGE.PV_CONFIG_MONITORS_IP`, {alertType: "alert-warning", view: this.alertView});
+      this.messageService.showAlert(`STORAGE.PV_CONFIG_MONITORS_IP`, {alertType: "warning", view: this.alertView});
       this.monitorsArray[index] = `${monitor} `
     } else {
       let port = this.getPort(monitor);
@@ -68,7 +68,7 @@ export class MonitorsComponent extends CsModalChildBase {
 
   addNewMonitor() {
     if (this.monitorsArray.find(value => value.startsWith('127.0.0.1'))) {
-      this.messageService.showAlert(`STORAGE.PV_CONFIG_MONITORS_IP`, {alertType: "alert-warning", view: this.alertView});
+      this.messageService.showAlert(`STORAGE.PV_CONFIG_MONITORS_IP`, {alertType: "warning", view: this.alertView});
     } else {
       this.monitorsArray.push('127.0.0.1:6789')
     }

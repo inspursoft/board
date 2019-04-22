@@ -3,7 +3,7 @@ import { Service } from "../../../service";
 import { K8sService } from "../../../service.k8s";
 import { IScaleInfo } from "../service-control.component";
 import { BUTTON_STYLE, Message, RETURN_STATUS, ServiceHPA } from "../../../../shared/shared.types";
-import { MessageService } from "../../../../shared/message-service/message.service";
+import { MessageService } from "../../../../shared.service/message.service";
 import { CsComponentBase } from "../../../../shared/cs-components-library/cs-component-base";
 
 enum ScaleMethod {smManually, smAuto}
@@ -74,7 +74,7 @@ export class ScaleComponent extends CsComponentBase implements OnInit {
       } else {
         this.autoScaleConfig.forEach((config: ServiceHPA) => {
           if (config.min_pod > config.max_pod) {
-            this.messageService.showAlert('SERVICE.SERVICE_CONTROL_HPA_WARNING', {view: this.alertView, alertType: 'alert-warning'});
+            this.messageService.showAlert('SERVICE.SERVICE_CONTROL_HPA_WARNING', {view: this.alertView, alertType: 'warning'});
             this.onActionInWIPChange.emit(false);
           } else {
             this.onActionInWIPChange.emit(true);

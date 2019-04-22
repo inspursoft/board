@@ -6,10 +6,10 @@ import { Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChild, ViewChi
 import { CsInputArrayComponent } from "../../shared/cs-components-library/cs-input-array/cs-input-array.component";
 import { BuildImageData, Image, ImageDetail } from "../image";
 import { ImageService } from "../image-service/image-service";
-import { MessageService } from "../../shared/message-service/message.service";
+import { MessageService } from "../../shared.service/message.service";
 import { HttpErrorResponse, HttpEvent, HttpEventType, HttpProgressEvent } from "@angular/common/http"
-import { AppInitService } from "../../app.init.service";
-import { WebsocketService } from "../../shared/websocket-service/websocket.service";
+import { AppInitService } from "../../shared.service/app-init.service";
+import { WebsocketService } from "../../shared.service/websocket.service";
 import { EnvType } from "../../shared/environment-value/environment-value.component";
 import { ValidationErrors } from "@angular/forms";
 import { TranslateService } from "@ngx-translate/core";
@@ -272,7 +272,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
     if (err) {
       let reason = err ? ((err as HttpErrorResponse).error as Error).message : "";
       this.translateService.get(`IMAGE.CREATE_IMAGE_BUILD_IMAGE_FAILED`).subscribe((msg: string) => {
-        this.messageService.showAlert(`${msg}:${reason}`, {alertType: 'alert-danger', view: this.alertView});
+        this.messageService.showAlert(`${msg}:${reason}`, {alertType: 'danger', view: this.alertView});
       });
     }
     this.imageService.deleteImageConfig(this.customerNewImage.project_name).subscribe();
@@ -336,7 +336,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
           (error: HttpErrorResponse) => this.cleanImageConfig(error)
         );
       } else {
-        this.messageService.showAlert('IMAGE.CREATE_IMAGE_SELECT_DOCKER_FILE', {alertType: 'alert-warning', view: this.alertView});
+        this.messageService.showAlert('IMAGE.CREATE_IMAGE_SELECT_DOCKER_FILE', {alertType: 'warning', view: this.alertView});
       }
     } else if (this.imageBuildMethod == CreateImageMethod.ImagePackage) {
       if (this.verifyInputValid()) {
@@ -347,7 +347,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
             (error: HttpErrorResponse) => this.cleanImageConfig(error)
           );
         } else {
-          this.messageService.showAlert('IMAGE.CREATE_IMAGE_SELECT_IMAGE_PACKAGE', {alertType: 'alert-warning', view: this.alertView});
+          this.messageService.showAlert('IMAGE.CREATE_IMAGE_SELECT_IMAGE_PACKAGE', {alertType: 'warning', view: this.alertView});
         }
       }
     }
@@ -376,7 +376,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
           if (err.status == 401) {
             this.modalOpened = false;
           } else {
-            this.messageService.showAlert('IMAGE.CREATE_IMAGE_UPDATE_IMAGE_LIST_FAILED', {alertType: 'alert-danger', view: this.alertView});
+            this.messageService.showAlert('IMAGE.CREATE_IMAGE_UPDATE_IMAGE_LIST_FAILED', {alertType: 'danger', view: this.alertView});
           }
           return null;
         }));
@@ -394,7 +394,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
       let file: File = fileList[0];
       if (file.name !== "Dockerfile") {
         (event.target as HTMLInputElement).value = "";
-        this.messageService.showAlert('IMAGE.CREATE_IMAGE_FILE_NAME_ERROR', {alertType: 'alert-danger', view: this.alertView});
+        this.messageService.showAlert('IMAGE.CREATE_IMAGE_FILE_NAME_ERROR', {alertType: 'danger', view: this.alertView});
       } else {
         this.selectedDockerFile = file;
         let reader = new FileReader();
@@ -406,7 +406,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
           this.isSelectedDockerFile = true;
           this.consoleText = res;
           this.messageService.showAlert('IMAGE.CREATE_IMAGE_FILE_UPLOAD_SUCCESS', {view: this.alertView});
-        }, (err: HttpErrorResponse) => this.messageService.showAlert(err.error, {alertType: "alert-danger", view: this.alertView}))
+        }, (err: HttpErrorResponse) => this.messageService.showAlert(err.error, {alertType: "danger", view: this.alertView}))
       }
     } else {
       (event.target as HTMLInputElement).value = "";
@@ -419,7 +419,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
       let file: File = fileList[0];
       if (file.size > 1024 * 1024 * 500) {
         (event.target as HTMLInputElement).value = "";
-        this.messageService.showAlert('IMAGE.CREATE_IMAGE_UPDATE_FILE_SIZE', {alertType: 'alert-danger', view: this.alertView});
+        this.messageService.showAlert('IMAGE.CREATE_IMAGE_UPDATE_FILE_SIZE', {alertType: 'danger', view: this.alertView});
       } else {
         let formData: FormData = new FormData();
         this.isUploadFileWIP = true;
@@ -445,7 +445,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
             (event.target as HTMLInputElement).value = "";
             let newImageErrReason = (error.error as Error).message;
             this.translateService.get('IMAGE.CREATE_IMAGE_UPLOAD_FAILED').subscribe((msg: string) => {
-              this.messageService.showAlert(`${msg}:${newImageErrReason}`, {alertType: 'alert-danger', view: this.alertView});
+              this.messageService.showAlert(`${msg}:${newImageErrReason}`, {alertType: 'danger', view: this.alertView});
             });
           }
         });
@@ -462,7 +462,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
             this.modalOpened = false;
           } else {
             this.messageService.showAlert('IMAGE.CREATE_IMAGE_UPDATE_DOCKER_FILE_FAILED', {
-              alertType: 'alert-danger',
+              alertType: 'danger',
               view: this.alertView
             });
           }
@@ -495,7 +495,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
         if (err.status == 401) {
           this.modalOpened = false;
         } else {
-          this.messageService.showAlert('IMAGE.CREATE_IMAGE_REMOVE_FILE_FAILED', {alertType: 'alert-danger', view: this.alertView});
+          this.messageService.showAlert('IMAGE.CREATE_IMAGE_REMOVE_FILE_FAILED', {alertType: 'danger', view: this.alertView});
         }
       },
       () => this.updateFileListAndPreviewInfo());

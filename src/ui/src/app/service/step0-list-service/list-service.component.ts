@@ -187,7 +187,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
               },
               () => {
                 this.isActionWIP.set(service.service_id, false);
-                this.messageService.showAlert('SERVICE.SERVICE_NOT_SUPPORT_TOGGLE', {alertType: "alert-warning"});
+                this.messageService.showAlert('SERVICE.SERVICE_NOT_SUPPORT_TOGGLE', {alertType: "warning"});
               });
           }
         });

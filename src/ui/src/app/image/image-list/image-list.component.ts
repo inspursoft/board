@@ -1,11 +1,11 @@
 import { Component, ComponentFactoryResolver, OnDestroy, OnInit, ViewContainerRef } from '@angular/core';
 import { Image } from "../image";
 import { ImageService } from "../image-service/image-service"
-import { MessageService } from "../../shared/message-service/message.service";
-import { AppInitService } from "../../app.init.service";
+import { MessageService } from "../../shared.service/message.service";
+import { AppInitService } from "../../shared.service/app-init.service";
 import { Project } from "../../project/project";
-import { SharedActionService } from "../../shared/shared-action.service";
-import { SharedService } from "../../shared/shared.service";
+import { SharedActionService } from "../../shared.service/shared-action.service";
+import { SharedService } from "../../shared.service/shared.service";
 import { CsModalParentBase } from "../../shared/cs-modal-base/cs-modal-parent-base";
 import { TranslateService } from "@ngx-translate/core";
 import { CreateImageMethod, Message, RETURN_STATUS } from "../../shared/shared.types";

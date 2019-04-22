@@ -37,7 +37,7 @@ export class Message {
   returnStatus: RETURN_STATUS = RETURN_STATUS.rsNone;
 }
 
-export type AlertType = 'alert-success' | 'alert-danger' | 'alert-info' | 'alert-warning';
+export type AlertType = 'success' | 'danger' | 'info' | 'warning';
 export type DropdownMenuPosition = 'bottom-left' | 'bottom-right' | 'top-left' | 'top-right';
 
 export interface IDropdownTag {
@@ -47,7 +47,7 @@ export interface IDropdownTag {
 
 export class AlertMessage {
   message: string = '';
-  alertType: AlertType = 'alert-success';
+  alertType: AlertType = 'success';
 }
 
 export enum GlobalAlertType {
@@ -57,7 +57,7 @@ export enum GlobalAlertType {
 export class GlobalAlertMessage {
   type: GlobalAlertType = GlobalAlertType.gatNormal;
   message: string = '';
-  alertType: AlertType = 'alert-danger';
+  alertType: AlertType = 'danger';
   errorObject: HttpErrorResponse | Type<Error> | TimeoutError;
   endMessage: string = '';
 }

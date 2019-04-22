@@ -6,7 +6,7 @@ import { VolumeStruct } from "../../service-step.component";
 import { CsModalChildBase } from "../../../shared/cs-modal-base/cs-modal-child-base";
 import { K8sService } from "../../service.k8s";
 import { PersistentVolumeClaim } from "../../../shared/shared.types";
-import { MessageService } from "../../../shared/message-service/message.service";
+import { MessageService } from "../../../shared.service/message.service";
 import { HttpErrorResponse } from "@angular/common/http";
 import { CreatePvcComponent } from "../../../shared/create-pvc/create-pvc.component";
 
@@ -57,7 +57,7 @@ export class VolumeMountsComponent extends CsModalChildBase implements OnInit {
         if (res && res.length > 0) {
           this.pvcList = this.pvcList.concat(res);
         }
-      }, (err: HttpErrorResponse) => this.messageService.showAlert(err.message, {alertType: "alert-warning", view: this.alertView})
+      }, (err: HttpErrorResponse) => this.messageService.showAlert(err.message, {alertType: "warning", view: this.alertView})
     )
   }
 
@@ -69,15 +69,15 @@ export class VolumeMountsComponent extends CsModalChildBase implements OnInit {
     let validInput = true;
     this.curVolumeDataList.forEach((volume: VolumeStruct, index: number) => {
       if (this.curVolumeDataList.find((value, i) => value.volume_name == volume.volume_name && index != i) != undefined && validInput) {
-        this.messageService.showAlert('SERVICE.VOLUME_VALID_NAME', {alertType: "alert-warning", view: this.alertView});
+        this.messageService.showAlert('SERVICE.VOLUME_VALID_NAME', {alertType: "warning", view: this.alertView});
         validInput = false;
       }
       if (this.curVolumeDataList.find((value, i) => value.target_path == volume.target_path && index != i) != undefined && validInput) {
-        this.messageService.showAlert('SERVICE.VOLUME_VALID_PATH', {alertType: "alert-warning", view: this.alertView});
+        this.messageService.showAlert('SERVICE.VOLUME_VALID_PATH', {alertType: "warning", view: this.alertView});
         validInput = false;
       }
       if (this.curVolumeDataList.find((value, i) => value.container_path == volume.container_path && index != i) != undefined && validInput) {
-        this.messageService.showAlert('SERVICE.VOLUME_VALID_CONTAINER_PATH', {alertType: "alert-warning", view: this.alertView});
+        this.messageService.showAlert('SERVICE.VOLUME_VALID_CONTAINER_PATH', {alertType: "warning", view: this.alertView});
         validInput = false;
       }
     });

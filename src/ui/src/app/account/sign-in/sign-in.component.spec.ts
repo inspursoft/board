@@ -12,7 +12,7 @@ import { SignInComponent } from "./sign-in.component"
 import { AccountService } from "../account.service";
 import { AppModule } from "../../app.module";
 import { AppComponent } from "../../app.component";
-import { AppInitService } from "../../app.init.service";
+import { AppInitService } from "../../shared.service/app-init.service";
 import { HttpErrorResponse } from "@angular/common/http";
 import { HeaderComponent } from "../../shared/header/header.component";
 import Spy = jasmine.Spy;

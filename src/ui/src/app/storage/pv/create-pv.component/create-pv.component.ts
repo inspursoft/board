@@ -4,7 +4,7 @@ import { NFSPersistentVolume, PersistentVolume, PvAccessMode, PvReclaimMode, RBD
 import { StorageService } from "../../storage.service";
 import { ValidationErrors } from "@angular/forms";
 import { HttpErrorResponse } from "@angular/common/http";
-import { MessageService } from "../../../shared/message-service/message.service";
+import { MessageService } from "../../../shared.service/message.service";
 import { Observable, of } from "rxjs";
 import { catchError, map } from "rxjs/operators";
 

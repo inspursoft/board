@@ -43,10 +43,10 @@
                    [dropdownList]="accessModeList"
                    (onChange)="changeAccessMode($event)">
       </cs-dropdown>
-      <label *ngIf="newPersistentVolume.accessMode =='ReadOnlyMany'" class="alert alert-warning warning-info">
+      <label *ngIf="newPersistentVolume.accessMode =='ReadOnlyMany'" class="alert warning warning-info">
         {{"STORAGE.PV_WARNING_READ_ONLY_MANY" | translate}}
       </label>
-      <label *ngIf="newPersistentVolume.accessMode =='ReadWriteMany'" class="alert alert-warning warning-info">
+      <label *ngIf="newPersistentVolume.accessMode =='ReadWriteMany'" class="alert warning warning-info">
         {{"STORAGE.PV_WARNING_READ_WRITE_MANY" | translate}}
       </label>
     </div>
@@ -59,7 +59,7 @@
                    (onChange)="newPersistentVolume.reclaim = $event">
       </cs-dropdown>
       <label *ngIf="newPersistentVolume.reclaim =='Recycle' || newPersistentVolume.reclaim =='Delete'"
-             class="alert alert-warning warning-info">
+             class="alert warning warning-info">
         {{"STORAGE.PV_WARNING_RECLAIM" | translate}}
       </label>
     </div>

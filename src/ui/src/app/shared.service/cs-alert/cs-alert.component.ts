@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertMessage } from '../../shared.types';
+import { AlertMessage } from '../../shared/shared.types';
 import { interval, Observable, Subject, Subscription } from 'rxjs';
 import { animate, state, style, transition, trigger } from '@angular/animations';
-import { DISMISS_ALERT_INTERVAL } from "../../shared.const";
+import { DISMISS_ALERT_INTERVAL } from "../../shared/shared.const";
 
 @Component({
   templateUrl: './cs-alert.component.html',

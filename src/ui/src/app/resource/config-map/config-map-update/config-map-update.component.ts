@@ -2,7 +2,7 @@ import { Component, OnInit } from "@angular/core";
 import { CsModalChildBase } from "../../../shared/cs-modal-base/cs-modal-child-base";
 import { ConfigMap, ConfigMapDetail } from "../../resource.types";
 import { ResourceService } from "../../resource.service";
-import { MessageService } from "../../../shared/message-service/message.service";
+import { MessageService } from "../../../shared.service/message.service";
 
 @Component({
   templateUrl: './config-map-update.component.html',

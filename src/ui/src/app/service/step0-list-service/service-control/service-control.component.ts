@@ -4,7 +4,7 @@
 import { Component, OnInit, ViewChild } from "@angular/core"
 import { Service } from "../../service";
 import { K8sService } from "../../service.k8s";
-import { MessageService } from "../../../shared/message-service/message.service";
+import { MessageService } from "../../../shared.service/message.service";
 import { UpdateComponent } from "./update/update.component";
 import { LocateComponent } from "./locate/locate.component";
 import { ScaleComponent } from "./scale/scale.component";
@@ -74,7 +74,7 @@ export class ServiceControlComponent extends CsModalChildBase implements OnInit 
   }
 
   defaultHandleAlertMessage(msg: string) {
-    this.messageService.showAlert(msg, {alertType: 'alert-warning', view: this.alertView})
+    this.messageService.showAlert(msg, {alertType: 'warning', view: this.alertView})
   }
 
   defaultHandleActionEnabled(enabled: boolean){

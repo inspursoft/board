@@ -1,17 +1,18 @@
 import { APP_INITIALIZER, LOCALE_ID, NgModule } from '@angular/core';
-import { FeatureModule } from './common/feature.module';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { AppComponent } from './app.component';
-import { AppInitService, AppTokenService } from './app.init.service';
-import { HTTP_INTERCEPTORS } from '@angular/common/http';
-import { HttpClientInterceptor } from './shared/http-interceptor/http-client-interceptor';
-import { SharedModule } from './shared/shared.module';
-import { MessageService } from './shared/message-service/message.service';
+import { AppInitService } from './shared.service/app-init.service';
 import { CookieModule } from 'ngx-cookie';
 import { CustomTranslateLoader } from './i18n/custom-translate-loader';
-import { TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule, SystemInfoResolve } from './app-routing.module';
+import { MainContentComponent } from './main-content/main-content.component';
+import { SharedServiceModule } from './shared.service/shared-service.module';
+import { CoreModule } from './core/core.module';
+import { SharedModule } from "./shared/shared.module";
+import { GlobalSearchComponent } from "./global-search/global-search.component";
+import { HttpClientModule } from "@angular/common/http";
 
 export function appInitServiceFactory(appInitService: AppInitService) {
   return () => (appInitService);
@@ -29,24 +30,26 @@ export function localIdServiceFactory(appInitService: AppInitService) {
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
-    SharedModule,
-    FeatureModule,
-    CookieModule.forRoot(),
+    CoreModule,
+    HttpClientModule,
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,
         useClass: CustomTranslateLoader
       }
     }),
+    CookieModule.forRoot(),
+    SharedModule,
+    SharedServiceModule,
     AppRoutingModule
   ],
   declarations: [
-    AppComponent
+    AppComponent,
+    GlobalSearchComponent,
+    MainContentComponent
   ],
   providers: [
-    AppTokenService,
-    AppInitService,
-    MessageService,
+    SystemInfoResolve,
     {
       provide: APP_INITIALIZER,
       useFactory: appInitServiceFactory,
@@ -54,17 +57,10 @@ export function localIdServiceFactory(appInitService: AppInitService) {
       multi: true
     },
     {
-      provide: HTTP_INTERCEPTORS,
-      useClass: HttpClientInterceptor,
-      deps: [AppTokenService, MessageService, TranslateService],
-      multi: true
-    },
-    {
       provide: LOCALE_ID,
       useFactory: localIdServiceFactory,
       deps: [AppInitService]
-    },
-    SystemInfoResolve
+    }
   ],
   bootstrap: [AppComponent]
 })

@@ -1,11 +1,11 @@
 import { Component, EventEmitter, OnInit, Output, ViewContainerRef } from '@angular/core';
 import { K8sService } from "../../service.k8s";
-import { MessageService } from "../../../shared/message-service/message.service";
+import { MessageService } from "../../../shared.service/message.service";
 import { Project } from "../../../project/project";
 import { Service } from "../../service";
 import { HttpErrorResponse } from "@angular/common/http";
-import { SharedService } from "../../../shared/shared.service";
-import { SharedActionService } from "../../../shared/shared-action.service";
+import { SharedService } from "../../../shared.service/shared.service";
+import { SharedActionService } from "../../../shared.service/shared-action.service";
 import { EXECUTE_STATUS, GlobalAlertType } from "../../../shared/shared.types";
 
 export const DEPLOYMENT = "deployment";
@@ -71,7 +71,7 @@ export class ServiceCreateYamlComponent implements OnInit {
         }
       } else {
         (event.target as HTMLInputElement).value = '';
-        this.messageService.showAlert('SERVICE.SERVICE_YAML_INVALID_FILE', {alertType: 'alert-warning'});
+        this.messageService.showAlert('SERVICE.SERVICE_YAML_INVALID_FILE', {alertType: 'warning'});
       }
     } else {
       isDeploymentYaml ? this.filesDataMap.delete(DEPLOYMENT) : this.filesDataMap.delete(SERVICE);

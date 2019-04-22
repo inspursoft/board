@@ -5,7 +5,7 @@ import { AffinityCardData, UIServiceStep3 } from "../../service-step.component";
 import { DragStatus } from "../../../shared/shared.types";
 import { HttpErrorResponse } from "@angular/common/http";
 import { K8sService } from "../../service.k8s";
-import { MessageService } from "../../../shared/message-service/message.service";
+import { MessageService } from "../../../shared.service/message.service";
 import { Service } from "../../service";
 import { SERVICE_STATUS } from "../../../shared/shared.const";
 

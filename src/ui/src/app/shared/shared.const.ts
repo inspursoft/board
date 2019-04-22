@@ -21,9 +21,9 @@ export enum GUIDE_STEP{
 
 export const AUDIT_RECORD_HEADER_KEY = "audit";
 export const AUDIT_RECORD_HEADER_VALUE = "true";
-export const RouteSignIn = 'sign-in';
-export const RouteSignUp = 'sign-up';
-export const RouteForgotPassword = 'forgot-password';
+export const RouteSignIn = 'account/sign-in';
+export const RouteSignUp = 'account/sign-up';
+export const RouteForgotPassword = 'account/forgot-password';
 export const RouteDashboard = "dashboard";
 export const RouteServices = "services";
 export const RouteHelm = "helm";
@@ -37,7 +37,6 @@ export const RouteConfigMap = "config-map";
 export const RouteUserCenters = "user-center";
 export const RouteAudit = "audit";
 export const RouteKibana = "kibana-url";
-export const RouteGrafana = "grafana";
 export const RouteProfile = "profile";
 export const RouteStorage = "storage";
 export const RoutePV = "pv";

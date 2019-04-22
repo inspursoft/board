@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { K8sService } from '../../service.k8s';
-import { AppInitService } from '../../../app.init.service';
+import { AppInitService } from '../../../shared.service/app-init.service';
 import { Service, ServiceType } from "../../service";
 import { Observable, Subject } from "rxjs";
 import { tap } from "rxjs/operators";

@@ -1,12 +1,12 @@
-import { Component, ComponentFactoryResolver, ViewContainerRef } from "@angular/core";
-import { CsModalParentBase } from "../../shared/cs-modal-base/cs-modal-parent-base";
-import { HelmChart, HelmChartVersion, HelmRepoDetail, IHelmRepo } from "../helm.type";
-import { HelmService } from "../helm.service";
-import { Message, RETURN_STATUS } from "../../shared/shared.types";
-import { MessageService } from "../../shared/message-service/message.service";
-import { UploadChartComponent } from "../upload-chart/upload-chart.component";
-import { ChartReleaseComponent } from "../chart-release/chart-release.component";
-import { AppInitService } from "../../app.init.service";
+import { Component, ComponentFactoryResolver, ViewContainerRef } from '@angular/core';
+import { CsModalParentBase } from '../../shared/cs-modal-base/cs-modal-parent-base';
+import { HelmChartVersion, HelmRepoDetail, IHelmRepo } from '../helm.type';
+import { HelmService } from '../helm.service';
+import { Message, RETURN_STATUS } from '../../shared/shared.types';
+import { MessageService } from '../../shared.service/message.service';
+import { UploadChartComponent } from '../upload-chart/upload-chart.component';
+import { ChartReleaseComponent } from '../chart-release/chart-release.component';
+import { AppInitService } from '../../shared.service/app-init.service';
 
 enum ViewMethod {List = 'list', Card = 'card'}
 
@@ -51,17 +51,17 @@ export class ChartListComponent extends CsModalParentBase {
         },
         () => this.loadingWIP = false,
         () => this.loadingWIP = false);
-    })
+    });
   }
 
   showUploadChart() {
-    let component = this.createNewModal(UploadChartComponent);
+    const component = this.createNewModal(UploadChartComponent);
     component.repoInfo = this.repoInfo;
     component.uploadSuccessObservable.subscribe(() => this.retrieve());
   }
 
   showReleaseChartVersion(version: HelmChartVersion) {
-    let component = this.createNewModal(ChartReleaseComponent);
+    const component = this.createNewModal(ChartReleaseComponent);
     component.repoInfo = this.repoInfo;
     component.chartVersion = version;
   }
@@ -74,9 +74,9 @@ export class ChartListComponent extends CsModalParentBase {
             this.helmService.deleteChartVersion(this.repoInfo.id, version.name, version.version).subscribe(() => {
               this.messageService.showAlert('HELM.CHART_LIST_SUCCESS_DELETE_MSG');
               this.retrieve();
-            })
+            });
           }
-        })
+        });
     }
   }
 }

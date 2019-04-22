@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { NodeService } from "../node.service";
-import { MessageService } from "../../shared/message-service/message.service";
+import { MessageService } from "../../shared.service/message.service";
 import { ValidationErrors } from "@angular/forms";
 import { HttpErrorResponse } from "@angular/common/http";
 import { CsModalChildBase } from "../../shared/cs-modal-base/cs-modal-child-base";
@@ -58,7 +58,7 @@ export class NodeCreateGroupComponent extends CsModalChildBase {
           this.messageService.showAlert('NODE.NODE_GROUP_CREATE_SUCCESS');
           this.modalOpened = false;
         },
-        () => this.messageService.showAlert('NODE.NODE_GROUP_CREATE_FAILED', {alertType: 'alert-danger', view: this.alertView}))
+        () => this.messageService.showAlert('NODE.NODE_GROUP_CREATE_FAILED', {alertType: 'danger', view: this.alertView}))
     }
   }
 }

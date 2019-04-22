@@ -1,21 +1,21 @@
-import { Component, EventEmitter, OnInit, ViewChild } from "@angular/core";
-import { Project } from "../../project/project";
-import { CsModalChildBase } from "../cs-modal-base/cs-modal-child-base";
-import { PersistentVolume, PersistentVolumeClaim, PvcAccessMode } from "../shared.types";
-import { SharedService } from "../shared.service";
-import { MessageService } from "../message-service/message.service";
-import { HttpErrorResponse } from "@angular/common/http";
-import { Observable, of } from "rxjs";
-import { ValidationErrors } from "@angular/forms";
-import { CsInputComponent } from "../cs-components-library/cs-input/cs-input.component";
-import { catchError } from "rxjs/operators";
+import { Component, EventEmitter, OnInit, ViewChild } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ValidationErrors } from '@angular/forms';
+import { Observable, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { Project } from '../../project/project';
+import { CsModalChildBase } from '../cs-modal-base/cs-modal-child-base';
+import { PersistentVolume, PersistentVolumeClaim, PvcAccessMode } from '../shared.types';
+import { SharedService } from '../../shared.service/shared.service';
+import { CsInputComponent } from '../cs-components-library/cs-input/cs-input.component';
+import { MessageService } from '../../shared.service/message.service';
 
 @Component({
-  templateUrl: "./create-pvc.component.html",
-  styleUrls: ["./create-pvc.component.css"]
+  templateUrl: './create-pvc.component.html',
+  styleUrls: ['./create-pvc.component.css']
 })
 export class CreatePvcComponent extends CsModalChildBase implements OnInit {
-  @ViewChild("pvcNameInput") pvcNameInput: CsInputComponent;
+  @ViewChild('pvcNameInput') pvcNameInput: CsInputComponent;
   onAfterCommit: EventEmitter<PersistentVolumeClaim>;
   projectsList: Array<Project>;
   accessModeList: Array<PvcAccessMode>;
@@ -42,7 +42,7 @@ export class CreatePvcComponent extends CsModalChildBase implements OnInit {
     this.sharedService.getAllPvList().subscribe((res: Array<PersistentVolume>) => {
       this.pvList = res;
       if (this.pvList.length > 0) {
-        let pvNone = new PersistentVolume();
+        const pvNone = new PersistentVolume();
         pvNone.name = 'None';
         pvNone["isSpecial"] = true;
         pvNone["OnlyClick"] = true;
@@ -52,7 +52,7 @@ export class CreatePvcComponent extends CsModalChildBase implements OnInit {
   }
 
   get checkPvcNameFun() {
-    return this.checkPvcName.bind(this)
+    return this.checkPvcName.bind(this);
   }
 
   checkPvcName(control: HTMLInputElement): Observable<ValidationErrors | null> {
@@ -62,7 +62,7 @@ export class CreatePvcComponent extends CsModalChildBase implements OnInit {
         catchError((err: HttpErrorResponse) => {
           this.messageService.cleanNotification();
           if (err.status == 409) {
-            return of({serviceExist: "STORAGE.PVC_CREATE_NAME_EXIST"});
+            return of({serviceExist: 'STORAGE.PVC_CREATE_NAME_EXIST'});
           }
           return of(null);
         }));
@@ -86,14 +86,14 @@ export class CreatePvcComponent extends CsModalChildBase implements OnInit {
       this.sharedService.createNewPvc(this.newPersistentVolumeClaim).subscribe(
         () => this.messageService.showAlert('STORAGE.PVC_CREATE_SUCCESS'),
         (error: HttpErrorResponse) => {
-          this.messageService.showAlert(error.message, {alertType: "alert-warning", view: this.alertView});
+          this.messageService.showAlert(error.message, {alertType: 'warning', view: this.alertView});
           this.isCreateWip = false;
         },
         () => {
           this.onAfterCommit.emit(this.newPersistentVolumeClaim);
           this.modalOpened = false;
         }
-      )
+      );
     }
   }
 }

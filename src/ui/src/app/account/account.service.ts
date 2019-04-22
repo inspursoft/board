@@ -34,16 +34,6 @@ export class AccountService {
       )
   }
 
-  signOut(username: string): Observable<any> {
-    return this.http.get(BASE_URL + '/log-out', {
-        headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
-        params: {
-          'username': username
-        }
-      }
-    );
-  }
-
   postEmail(credential: string): Observable<any> {
     return this.http.post(BASE_URL + `/forgot-password?credential=${credential}`, null,
       {

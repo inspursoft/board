@@ -3,8 +3,8 @@ import { ClrDatagridSortOrder, ClrDatagridStateInterface } from "@clr/angular";
 import { ActivatedRoute } from "@angular/router";
 import { UserService } from "../user-service/user-service";
 import { editModel } from "../user-new-edit/user-new-edit.component"
-import { AppInitService } from "../../app.init.service";
-import { MessageService } from "../../shared/message-service/message.service";
+import { AppInitService } from "../../shared.service/app-init.service";
+import { MessageService } from "../../shared.service/message.service";
 import { Message, RETURN_STATUS, User } from "../../shared/shared.types";
 import { TranslateService } from "@ngx-translate/core";
 import { HttpErrorResponse } from "@angular/common/http";
@@ -95,7 +95,7 @@ export class UserList implements OnInit, OnDestroy {
               this.messageService.showAlert('USER_CENTER.DELETE_USER_SUCCESS');
             },(error: HttpErrorResponse)=>{
               if (error.status == 422){
-                this.messageService.showAlert('USER_CENTER.DELETE_USER_ERROR',{alertType: "alert-danger"})
+                this.messageService.showAlert('USER_CENTER.DELETE_USER_ERROR',{alertType: "danger"})
               }
             })
           }

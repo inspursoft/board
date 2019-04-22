@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { AppInitService } from "../app.init.service";
+import { AppInitService } from "../shared.service/app-init.service";
+
 
 @Component({
   selector: 'profile',

@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
-import { GlobalAlertMessage } from '../../shared.types';
+import { GlobalAlertMessage } from '../../shared/shared.types';
 import { Observable, Subject } from 'rxjs';
 import { Router } from '@angular/router';
-import { RouteSignIn } from '../../shared.const';
+import { RouteSignIn } from '../../shared/shared.const';
 import { HttpErrorResponse } from '@angular/common/http';
-import { AppInitService } from "../../../app.init.service";
+import { AppInitService } from "../app-init.service";
 
 @Component({
   templateUrl: './cs-global-alert.component.html',

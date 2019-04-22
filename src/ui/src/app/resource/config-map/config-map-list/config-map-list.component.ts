@@ -3,7 +3,7 @@ import { ResourceService } from "../../resource.service";
 import { ConfigMap } from "../../resource.types";
 import { CsModalParentBase } from "../../../shared/cs-modal-base/cs-modal-parent-base";
 import { CreateConfigMapComponent } from "../create-config-map/create-config-map.component";
-import { MessageService } from "../../../shared/message-service/message.service";
+import { MessageService } from "../../../shared.service/message.service";
 import { Message, RETURN_STATUS } from "../../../shared/shared.types";
 import { ConfigMapDetailComponent } from "../config-map-detail/config-map-detail.component";
 import { ConfigMapUpdateComponent } from "../config-map-update/config-map-update.component";

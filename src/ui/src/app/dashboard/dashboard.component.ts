@@ -1,13 +1,13 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Observable, Subject, Subscription } from "rxjs";
+import { debounceTime, map, tap } from "rxjs/operators";
 import { DashboardComponentParent } from "./dashboard.component.parent"
 import { DashboardService, IQuery, IResponse, LineType } from "./dashboard.service";
 import { TranslateService } from "@ngx-translate/core";
-import { MessageService } from "../shared/message-service/message.service";
-import { AppInitService } from "../app.init.service";
 import { scaleOption } from "./time-range-scale.component/time-range-scale.component";
-import { SharedService } from "../shared/shared.service";
-import { Observable, Subject, Subscription } from "rxjs";
-import { debounceTime, map, tap } from "rxjs/operators";
+import { MessageService } from "../shared.service/message.service";
+import { AppInitService } from "../shared.service/app-init.service";
+import { SharedService } from "../shared.service/shared.service";
 
 const MAX_COUNT_PER_PAGE: number = 200;
 const MAX_COUNT_PER_DRAG: number = 100;

@@ -215,20 +215,20 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
     if (checkContainerName.invalid) {
       funShowInvalidContainer(checkContainerName.invalidIndex);
       if (this.verifyInputValid()) {
-        this.messageService.showAlert('SERVICE.STEP_2_CONTAINER_NAME_REPEAT', {alertType: "alert-warning"});
+        this.messageService.showAlert('SERVICE.STEP_2_CONTAINER_NAME_REPEAT', {alertType: "warning"});
       }
       return;
     }
     let checkContainerPort = this.isValidContainerPorts();
     if (checkContainerPort.invalid) {
       funShowInvalidContainer(checkContainerPort.invalidIndex);
-      this.messageService.showAlert('SERVICE.STEP_2_CONTAINER_PORT_REPEAT', {alertType: "alert-warning"});
+      this.messageService.showAlert('SERVICE.STEP_2_CONTAINER_PORT_REPEAT', {alertType: "warning"});
       return;
     }
     let checkRequest = this.isValidContainerCpuAndMem();
     if (checkRequest.invalid) {
       funShowInvalidContainer(checkRequest.invalidIndex);
-      this.messageService.showAlert('SERVICE.STEP_2_CONTAINER_REQUEST_ERROR', {alertType: "alert-warning"});
+      this.messageService.showAlert('SERVICE.STEP_2_CONTAINER_REQUEST_ERROR', {alertType: "warning"});
       return;
     }
     if (this.verifyInputValid() && this.verifyInputArrayValid()) {
@@ -266,7 +266,7 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
 
   canChangeSelectImage(image: Image) {
     if (this.serviceStep2Data.containerList.find(value => value.image.image_name == image.image_name)) {
-      this.messageService.showAlert('IMAGE.CREATE_IMAGE_EXIST', {alertType: "alert-warning"});
+      this.messageService.showAlert('IMAGE.CREATE_IMAGE_EXIST', {alertType: "warning"});
       return false;
     }
     return true;
