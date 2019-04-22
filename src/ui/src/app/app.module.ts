@@ -12,6 +12,7 @@ import { SharedServiceModule } from './shared.service/shared-service.module';
 import { CoreModule } from './core/core.module';
 import { SharedModule } from "./shared/shared.module";
 import { GlobalSearchComponent } from "./global-search/global-search.component";
+import { HttpClientModule } from "@angular/common/http";
 
 export function appInitServiceFactory(appInitService: AppInitService) {
   return () => (appInitService);
@@ -30,6 +31,7 @@ export function localIdServiceFactory(appInitService: AppInitService) {
     BrowserModule,
     BrowserAnimationsModule,
     CoreModule,
+    HttpClientModule,
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,
@@ -39,7 +41,7 @@ export function localIdServiceFactory(appInitService: AppInitService) {
     CookieModule.forRoot(),
     SharedModule,
     SharedServiceModule,
-    AppRoutingModule,
+    AppRoutingModule
   ],
   declarations: [
     AppComponent,

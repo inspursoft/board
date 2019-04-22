@@ -26,7 +26,6 @@ import { AffinityCardListComponent } from './step3-config-setting/affinity-card-
 import { LoadBalanceComponent } from './step0-list-service/service-control/loadBalance/loadBalance.component';
 import { CoreModule } from '../core/core.module';
 import { ServiceGuard } from './service-guard.service';
-import { HttpInterceptorService } from "../shared.service/http-client-interceptor";
 
 @NgModule({
   imports: [
@@ -72,8 +71,7 @@ import { HttpInterceptorService } from "../shared.service/http-client-intercepto
   providers: [
     K8sService,
     StepService,
-    ServiceGuard,
-    HttpInterceptorService
+    ServiceGuard
   ]
 })
 export class ServiceModule {

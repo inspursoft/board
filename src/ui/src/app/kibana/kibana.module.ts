@@ -3,7 +3,6 @@ import { RouterModule } from "@angular/router";
 import { KibanaComponent } from "./kibana/kibana.component";
 import { KibanaService } from "./kibana.service";
 import { CoreModule } from "../core/core.module";
-import { HttpInterceptorService } from "../shared.service/http-client-interceptor";
 import { SharedModule } from "../shared/shared.module";
 
 @NgModule({
@@ -19,8 +18,7 @@ import { SharedModule } from "../shared/shared.module";
     KibanaComponent
   ],
   providers: [
-    KibanaService,
-    HttpInterceptorService
+    KibanaService
   ]
 })
 export class KibanaModule {

@@ -1,4 +1,5 @@
 import { NgModule } from "@angular/core";
+import { RouterModule } from "@angular/router";
 import { SharedModule } from "../shared/shared.module";
 import { RepoListComponent } from "./repo-list/repo-list.component";
 import { HelmService } from "./helm.service";
@@ -9,8 +10,6 @@ import { ChartReleaseComponent } from "./chart-release/chart-release.component";
 import { ChartReleaseListComponent } from "./chart-release-list/chart-release-list.component";
 import { ChartReleaseDetailComponent } from "./chart-release-detail/chart-release-detail.component";
 import { CoreModule } from "../core/core.module";
-import { HttpInterceptorService } from "../shared.service/http-client-interceptor";
-import { RouterModule } from "@angular/router";
 
 @NgModule({
   imports: [
@@ -22,8 +21,7 @@ import { RouterModule } from "@angular/router";
     ])
   ],
   providers: [
-    HelmService,
-    HttpInterceptorService,
+    HelmService
   ],
   declarations: [
     RepoListComponent,

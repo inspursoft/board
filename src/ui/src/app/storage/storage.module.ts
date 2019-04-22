@@ -9,7 +9,6 @@ import { PvListComponent } from "./pv/pv-list.compoent/pv-list.component";
 import { PvcListComponent } from "./pvc/pvc-list.component/pvc-list.component";
 import { PvcDetailComponent } from "./pvc/pvc-detail.component/pvc-detail.component";
 import { CoreModule } from "../core/core.module";
-import { HttpInterceptorService } from "../shared.service/http-client-interceptor";
 import { RouterModule } from "@angular/router";
 
 @NgModule({
@@ -27,8 +26,7 @@ import { RouterModule } from "@angular/router";
     PvcDetailComponent
   ],
   providers: [
-    StorageService,
-    HttpInterceptorService
+    StorageService
   ],
   declarations: [
     StorageComponent,

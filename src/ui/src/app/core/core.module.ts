@@ -10,7 +10,6 @@ import { NgxEchartsModule } from "ngx-echarts";
 @NgModule({
   exports:[
     CommonModule,
-    HttpClientModule,
     FormsModule,
     ReactiveFormsModule,
     RouterModule,

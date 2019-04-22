@@ -5,7 +5,6 @@ import { TimeRangeScale } from './time-range-scale.component/time-range-scale.co
 import { DashboardService } from './dashboard.service';
 import { CoreModule } from '../core/core.module';
 import { RouterModule } from '@angular/router';
-import { HttpInterceptorService } from "../shared.service/http-client-interceptor";
 import { GrafanaComponent } from "./grafana/grafana.component";
 
 @NgModule({
@@ -20,8 +19,7 @@ import { GrafanaComponent } from "./grafana/grafana.component";
     TimeRangeScale
   ],
   providers: [
-    DashboardService,
-    HttpInterceptorService
+    DashboardService
   ]
 })
 export class DashboardModule {

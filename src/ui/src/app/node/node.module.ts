@@ -9,7 +9,6 @@ import { NodeDetailComponent } from './node-detail/node-detail.component';
 import { NodeCreateGroupComponent } from './node-create-group/node-create-group.component';
 import { NodeControlComponent } from './node-control/node-control.component';
 import { CoreModule } from '../core/core.module';
-import { HttpInterceptorService } from "../shared.service/http-client-interceptor";
 
 @NgModule({
   imports: [
@@ -29,8 +28,7 @@ import { HttpInterceptorService } from "../shared.service/http-client-intercepto
     NodeCreateGroupComponent
   ],
   providers: [
-    NodeService,
-    HttpInterceptorService
+    NodeService
   ]
 })
 

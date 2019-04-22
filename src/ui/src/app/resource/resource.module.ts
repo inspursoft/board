@@ -7,7 +7,6 @@ import { CreateConfigMapComponent } from "./config-map/create-config-map/create-
 import { ConfigMapDetailComponent } from "./config-map/config-map-detail/config-map-detail.component";
 import { ConfigMapUpdateComponent } from "./config-map/config-map-update/config-map-update.component";
 import { CoreModule } from "../core/core.module";
-import { HttpInterceptorService } from "../shared.service/http-client-interceptor";
 
 @NgModule({
   imports: [
@@ -27,8 +26,7 @@ import { HttpInterceptorService } from "../shared.service/http-client-intercepto
     ConfigMapUpdateComponent
   ],
   providers: [
-    ResourceService,
-    HttpInterceptorService
+    ResourceService
   ]
 })
 export class ResourceModule {

@@ -6,7 +6,6 @@ import { SharedModule } from "../shared/shared.module";
 import { ImageService } from "./image-service/image-service";
 import { CreateImageComponent } from "./image-create/image-create.component";
 import { CoreModule } from "../core/core.module";
-import { HttpInterceptorService } from "../shared.service/http-client-interceptor";
 
 @NgModule({
   imports: [
@@ -15,8 +14,7 @@ import { HttpInterceptorService } from "../shared.service/http-client-intercepto
     RouterModule.forChild([{path:'', component: ImageListComponent}])
   ],
   providers: [
-    ImageService,
-    HttpInterceptorService
+    ImageService
   ],
   entryComponents:[
     CreateImageComponent

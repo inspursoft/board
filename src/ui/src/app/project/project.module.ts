@@ -4,7 +4,6 @@ import { SharedModule } from '../shared/shared.module';
 import { ProjectComponent } from './project.component';
 import { ProjectService } from './project.service';
 import { CoreModule } from '../core/core.module';
-import { HttpInterceptorService } from "../shared.service/http-client-interceptor";
 
 @NgModule({
   imports: [
@@ -16,8 +15,7 @@ import { HttpInterceptorService } from "../shared.service/http-client-intercepto
     ProjectComponent
   ],
   providers: [
-    ProjectService,
-    HttpInterceptorService
+    ProjectService
   ]
 })
 export class ProjectModule {

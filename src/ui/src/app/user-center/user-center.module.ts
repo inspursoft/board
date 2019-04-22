@@ -1,12 +1,11 @@
 import { NgModule } from '@angular/core';
+import { RouterModule } from "@angular/router";
 import { UserList } from "./user-list/user-list.component";
 import { SharedModule } from "../shared/shared.module";
 import { UserService } from "./user-service/user-service";
 import { UserCenterComponent } from './user-center.component';
 import { NewEditUserComponent } from "./user-new-edit/user-new-edit.component";
 import { CoreModule } from "../core/core.module";
-import { RouterModule } from "@angular/router";
-import { HttpInterceptorService } from "../shared.service/http-client-interceptor";
 
 @NgModule({
   imports: [
@@ -20,8 +19,7 @@ import { HttpInterceptorService } from "../shared.service/http-client-intercepto
     UserList
   ],
   providers: [
-    UserService,
-    HttpInterceptorService
+    UserService
   ],
 })
 export class UserCenterModule {
