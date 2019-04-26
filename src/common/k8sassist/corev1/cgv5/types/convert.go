@@ -1649,3 +1649,170 @@ func UpdateK8sConfigMap(k8sCM *v1.ConfigMap, cm *model.ConfigMap) {
 	k8sCM.Data = cm.Data
 
 }
+
+func ToK8sJob(job *model.Job) *Job {
+	if job == nil {
+		return nil
+	}
+	var templ v1.PodTemplateSpec
+	if t := ToK8sPodTemplateSpec(&job.Spec.Template); t != nil {
+		templ = *t
+	}
+	conditions := make([]JobCondition, 0)
+	for _, condition := range job.Status.Conditions {
+		conditions = append(conditions, JobCondition{
+			Type:   JobConditionType(condition.Type),
+			Status: ConditionStatus(condition.Status),
+			LastProbeTime: metav1.Time{
+				condition.LastProbeTime,
+			},
+			LastTransitionTime: metav1.Time{
+				condition.LastTransitionTime,
+			},
+			Reason:  condition.Reason,
+			Message: condition.Message,
+		})
+	}
+	return &Job{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Job",
+			APIVersion: "batch/v1",
+		},
+		ObjectMeta: ToK8sObjectMeta(job.ObjectMeta),
+		Spec: JobSpec{
+			Parallelism:           job.Spec.Parallelism,
+			Completions:           job.Spec.Completions,
+			ActiveDeadlineSeconds: job.Spec.ActiveDeadlineSeconds,
+			BackoffLimit:          job.Spec.BackoffLimit,
+			Selector: &metav1.LabelSelector{
+				MatchLabels: job.Spec.Selector.MatchLabels,
+			},
+			ManualSelector: job.Spec.ManualSelector,
+			Template:       templ,
+		},
+		Status: JobStatus{
+			Conditions: conditions,
+			StartTime: &metav1.Time{
+				job.Status.StartTime,
+			},
+			CompletionTime: &metav1.Time{
+				job.Status.CompletionTime,
+			},
+			Active:    job.Status.Active,
+			Succeeded: job.Status.Succeeded,
+			Failed:    job.Status.Failed,
+		},
+	}
+	return &Job{}
+}
+
+func FromK8sJob(job *Job) *model.Job {
+	if job == nil {
+		return nil
+	}
+	var templ model.PodTemplateSpec
+	if t := FromK8sPodTemplateSpec(&job.Spec.Template); t != nil {
+		templ = *t
+	}
+	conditions := make([]model.JobCondition, 0)
+	for _, condition := range job.Status.Conditions {
+		conditions = append(conditions, model.JobCondition{
+			Type:               string(condition.Type),
+			Status:             string(condition.Status),
+			LastProbeTime:      condition.LastProbeTime.Time,
+			LastTransitionTime: condition.LastTransitionTime.Time,
+			Reason:             condition.Reason,
+			Message:            condition.Message,
+		})
+	}
+	return &model.Job{
+		ObjectMeta: FromK8sObjectMeta(job.ObjectMeta),
+		Spec: model.JobSpec{
+			Parallelism:           job.Spec.Parallelism,
+			Completions:           job.Spec.Completions,
+			ActiveDeadlineSeconds: job.Spec.ActiveDeadlineSeconds,
+			BackoffLimit:          job.Spec.BackoffLimit,
+			Selector: &model.LabelSelector{
+				MatchLabels: job.Spec.Selector.MatchLabels,
+			},
+			ManualSelector: job.Spec.ManualSelector,
+			Template:       templ,
+		},
+		Status: model.JobStatus{
+			Conditions:     conditions,
+			StartTime:      job.Status.StartTime.Time,
+			CompletionTime: job.Status.CompletionTime.Time,
+			Active:         job.Status.Active,
+			Succeeded:      job.Status.Succeeded,
+			Failed:         job.Status.Failed,
+		},
+	}
+}
+
+func GenerateJobConfig(job *Job) *Job {
+	containersConfig := []v1.Container{}
+	for _, container := range job.Spec.Template.Spec.Containers {
+		containersConfig = append(containersConfig, v1.Container{
+			Name:           container.Name,
+			Image:          container.Image,
+			Command:        container.Command,
+			Args:           container.Args,
+			WorkingDir:     container.WorkingDir,
+			Ports:          container.Ports,
+			EnvFrom:        container.EnvFrom,
+			Env:            container.Env,
+			Resources:      container.Resources,
+			VolumeMounts:   container.VolumeMounts,
+			LivenessProbe:  container.LivenessProbe,
+			ReadinessProbe: container.ReadinessProbe,
+		})
+	}
+	return &Job{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       job.TypeMeta.Kind,
+			APIVersion: job.TypeMeta.APIVersion,
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Labels:    job.ObjectMeta.Labels,
+			Name:      job.ObjectMeta.Name,
+			Namespace: job.ObjectMeta.Namespace,
+		},
+		Spec: JobSpec{
+			Parallelism:           job.Spec.Parallelism,
+			Completions:           job.Spec.Completions,
+			ActiveDeadlineSeconds: job.Spec.ActiveDeadlineSeconds,
+			BackoffLimit:          job.Spec.BackoffLimit,
+			Selector:              job.Spec.Selector,
+			ManualSelector:        job.Spec.ManualSelector,
+			Template: v1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: job.Spec.Template.ObjectMeta.Labels,
+					Name:   job.Spec.Template.ObjectMeta.Name,
+				},
+				Spec: v1.PodSpec{
+					Affinity:           job.Spec.Template.Spec.Affinity,
+					Volumes:            job.Spec.Template.Spec.Volumes,
+					NodeSelector:       job.Spec.Template.Spec.NodeSelector,
+					ServiceAccountName: job.Spec.Template.Spec.ServiceAccountName,
+					ImagePullSecrets:   job.Spec.Template.Spec.ImagePullSecrets,
+					InitContainers:     job.Spec.Template.Spec.InitContainers,
+					Containers:         containersConfig,
+				},
+			},
+		},
+	}
+}
+
+func FromK8sJobList(jobList *JobList) *model.JobList {
+	if jobList == nil {
+		return nil
+	}
+	items := make([]model.Job, 0)
+	for i := range jobList.Items {
+		job := FromK8sJob(&jobList.Items[i])
+		items = append(items, *job)
+	}
+	return &model.JobList{
+		Items: items,
+	}
+}

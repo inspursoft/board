@@ -65,6 +65,10 @@ func (p *AppV1Client) ConfigMap(namespace string) ConfigMapInterface {
 	return apps.NewConfigMap(namespace, p.Clientset.CoreV1().ConfigMaps(namespace))
 }
 
+func (p *AppV1Client) Job(namespace string) JobInterface {
+	return apps.NewJob(namespace, p.Clientset.BatchV1().Jobs(namespace))
+}
+
 // AppV1ClientInterface level 1 interface to access others
 type AppV1ClientInterface interface {
 	Discovery() ServerVersionInterface
@@ -220,4 +224,17 @@ type ConfigMapInterface interface {
 	//	DeleteCollection(options *meta_v1.DeleteOptions, listOptions meta_v1.ListOptions) error
 	Get(name string) (*model.ConfigMap, error)
 	List() (*model.ConfigMapList, error)
+}
+
+type JobInterface interface {
+	Create(*model.Job) (*model.Job, []byte, error)
+	Update(*model.Job) (*model.Job, []byte, error)
+	UpdateStatus(*model.Job) (*model.Job, []byte, error)
+	Delete(name string) error
+	Get(name string) (*model.Job, []byte, error)
+	List() (*model.JobList, error)
+	Patch(name string, pt model.PatchType, data []byte, subresources ...string) (result *model.Job, err error)
+	PatchToK8s(string, model.PatchType, *model.Job) (*model.Job, []byte, error)
+	CreateByYaml(io.Reader) (*model.Job, error)
+	CheckYaml(io.Reader) (*model.Job, error)
 }

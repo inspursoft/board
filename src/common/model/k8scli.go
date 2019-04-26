@@ -1369,3 +1369,99 @@ type RollingUpdateStatefulSetStrategy struct {
 	// partitioned.
 	Partition *int32 `json:"partition,omitempty" protobuf:"varint,1,opt,name=partition"`
 }
+
+type JobList struct {
+	Items []Job
+}
+
+type Job struct {
+	ObjectMeta
+	Spec   JobSpec
+	Status JobStatus
+}
+
+type JobSpec struct {
+	// Specifies the maximum desired number of pods the job should
+	// run at any given time. The actual number of pods running in steady state will
+	// be less than this number when ((.spec.completions - .status.successful) < .spec.parallelism),
+	// i.e. when the work left to do is less than max parallelism.
+	Parallelism *int32 `json:"parallelism,omitempty" protobuf:"varint,1,opt,name=parallelism"`
+
+	// Specifies the desired number of successfully finished pods the
+	// job should be run with.  Setting to nil means that the success of any
+	// pod signals the success of all pods, and allows parallelism to have any positive
+	// value.  Setting to 1 means that parallelism is limited to 1 and the success of that
+	// pod signals the success of the job.
+	Completions *int32 `json:"completions,omitempty" protobuf:"varint,2,opt,name=completions"`
+
+	// Specifies the duration in seconds relative to the startTime that the job may be active
+	// before the system tries to terminate it; value must be positive integer
+	ActiveDeadlineSeconds *int64 `json:"activeDeadlineSeconds,omitempty" protobuf:"varint,3,opt,name=activeDeadlineSeconds"`
+
+	// Specifies the number of retries before marking this job failed.
+	// Defaults to 6
+	BackoffLimit *int32 `json:"backoffLimit,omitempty" protobuf:"varint,7,opt,name=backoffLimit"`
+
+	// Optional number of failed pods to retain.
+	// FailedPodsLimit *int32 `json:"failedPodsLimit,omitempty" protobuf:"varint,9,opt,name=failedPodsLimit"`
+
+	// A label query over pods that should match the pod count.
+	// Normally, the system sets this field for you.
+	Selector *LabelSelector `json:"selector,omitempty" protobuf:"bytes,4,opt,name=selector"`
+
+	// manualSelector controls generation of pod labels and pod selectors.
+	// Leave `manualSelector` unset unless you are certain what you are doing.
+	// When false or unset, the system pick labels unique to this job
+	// and appends those labels to the pod template.  When true,
+	// the user is responsible for picking unique labels and specifying
+	// the selector.  Failure to pick a unique label may cause this
+	// and other jobs to not function correctly.  However, You may see
+	// `manualSelector=true` in jobs that were created with the old `extensions/v1beta1`
+	// API.
+	ManualSelector *bool `json:"manualSelector,omitempty" protobuf:"varint,5,opt,name=manualSelector"`
+
+	// Describes the pod that will be created when executing a job.
+	Template PodTemplateSpec `json:"template" protobuf:"bytes,6,opt,name=template"`
+}
+
+type JobStatus struct {
+	// The latest available observations of an object's current state.
+	// +patchMergeKey=type
+	// +patchStrategy=merge
+	Conditions []JobCondition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,1,rep,name=conditions"`
+
+	// Represents time when the job was acknowledged by the job controller.
+	// It is not guaranteed to be set in happens-before order across separate operations.
+	// It is represented in RFC3339 form and is in UTC.
+	StartTime time.Time `json:"startTime,omitempty" protobuf:"bytes,2,opt,name=startTime"`
+
+	// Represents time when the job was completed. It is not guaranteed to
+	// be set in happens-before order across separate operations.
+	// It is represented in RFC3339 form and is in UTC.
+	CompletionTime time.Time `json:"completionTime,omitempty" protobuf:"bytes,3,opt,name=completionTime"`
+
+	// The number of actively running pods.
+	Active int32 `json:"active,omitempty" protobuf:"varint,4,opt,name=active"`
+
+	// The number of pods which reached phase Succeeded.
+	Succeeded int32 `json:"succeeded,omitempty" protobuf:"varint,5,opt,name=succeeded"`
+
+	// The number of pods which reached phase Failed.
+	Failed int32 `json:"failed,omitempty" protobuf:"varint,6,opt,name=failed"`
+}
+
+// JobCondition describes current state of a job.
+type JobCondition struct {
+	// Type of job condition, Complete or Failed.
+	Type string `json:"type" protobuf:"bytes,1,opt,name=type,casttype=JobConditionType"`
+	// Status of the condition, one of True, False, Unknown.
+	Status string `json:"status" protobuf:"bytes,2,opt,name=status,casttype=k8s.io/api/core/v1.ConditionStatus"`
+	// Last time the condition was checked.
+	LastProbeTime time.Time `json:"lastProbeTime,omitempty" protobuf:"bytes,3,opt,name=lastProbeTime"`
+	// Last time the condition transit from one status to another.
+	LastTransitionTime time.Time `json:"lastTransitionTime,omitempty" protobuf:"bytes,4,opt,name=lastTransitionTime"`
+	// (brief) reason for the condition's last transition.
+	Reason string `json:"reason,omitempty" protobuf:"bytes,5,opt,name=reason"`
+	// Human readable message indicating details about last transition.
+	Message string `json:"message,omitempty" protobuf:"bytes,6,opt,name=message"`
+}
