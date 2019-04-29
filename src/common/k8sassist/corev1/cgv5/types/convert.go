@@ -1673,6 +1673,18 @@ func ToK8sJob(job *model.Job) *Job {
 			Message: condition.Message,
 		})
 	}
+	var starttime *metav1.Time
+	if job.Status.StartTime != nil {
+		starttime = &metav1.Time{
+			*job.Status.StartTime,
+		}
+	}
+	var completiontime *metav1.Time
+	if job.Status.CompletionTime != nil {
+		completiontime = &metav1.Time{
+			*job.Status.CompletionTime,
+		}
+	}
 	return &Job{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Job",
@@ -1691,19 +1703,14 @@ func ToK8sJob(job *model.Job) *Job {
 			Template:       templ,
 		},
 		Status: JobStatus{
-			Conditions: conditions,
-			StartTime: &metav1.Time{
-				job.Status.StartTime,
-			},
-			CompletionTime: &metav1.Time{
-				job.Status.CompletionTime,
-			},
-			Active:    job.Status.Active,
-			Succeeded: job.Status.Succeeded,
-			Failed:    job.Status.Failed,
+			Conditions:     conditions,
+			StartTime:      starttime,
+			CompletionTime: completiontime,
+			Active:         job.Status.Active,
+			Succeeded:      job.Status.Succeeded,
+			Failed:         job.Status.Failed,
 		},
 	}
-	return &Job{}
 }
 
 func FromK8sJob(job *Job) *model.Job {
@@ -1725,6 +1732,14 @@ func FromK8sJob(job *Job) *model.Job {
 			Message:            condition.Message,
 		})
 	}
+	var starttime *time.Time
+	if job.Status.StartTime != nil {
+		starttime = &job.Status.StartTime.Time
+	}
+	var completiontime *time.Time
+	if job.Status.CompletionTime != nil {
+		completiontime = &job.Status.CompletionTime.Time
+	}
 	return &model.Job{
 		ObjectMeta: FromK8sObjectMeta(job.ObjectMeta),
 		Spec: model.JobSpec{
@@ -1740,8 +1755,8 @@ func FromK8sJob(job *Job) *model.Job {
 		},
 		Status: model.JobStatus{
 			Conditions:     conditions,
-			StartTime:      job.Status.StartTime.Time,
-			CompletionTime: job.Status.CompletionTime.Time,
+			StartTime:      starttime,
+			CompletionTime: completiontime,
 			Active:         job.Status.Active,
 			Succeeded:      job.Status.Succeeded,
 			Failed:         job.Status.Failed,

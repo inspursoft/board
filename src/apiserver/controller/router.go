@@ -293,7 +293,7 @@ func InitRouter() {
 				"put:ToggleJobAction"),
 			beego.NSRouter("/jobs/:id([0-9]+)",
 				&JobController{},
-				"delete:DeleteJobAction"),
+				"delete:DeleteJobAction;get:GetJobAction"),
 			beego.NSRouter("/jobs/:id([0-9]+)/status",
 				&JobController{},
 				"get:GetJobStatusAction"),

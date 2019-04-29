@@ -117,77 +117,48 @@ func (p *JobController) DeployJobAction() {
 	p.renderJSON(config)
 }
 
-////
-//func syncK8sStatus(serviceList []*model.ServiceStatusMO) error {
-//	var err error
-//	// synchronize service status with the cluster system
-//	for _, serviceStatusMO := range serviceList {
-//		// Get serviceStatus from serviceStatusMO to adapt for updating services
-//		serviceStatus := &serviceStatusMO.ServiceStatus
-//		if (*serviceStatus).Status == stopped {
-//			continue
-//		}
-//		// Check the deployment status
-//		deployment, _, err := service.GetDeployment((*serviceStatus).ProjectName, (*serviceStatus).Name)
-//		if deployment == nil && serviceStatus.Name != k8sServices {
-//			logs.Info("Failed to get deployment", err)
-//			var reason = "The deployment is not established in cluster system"
-//			(*serviceStatus).Status = uncompleted
-//			// TODO create a new field in serviceStatus for reason
-//			(*serviceStatus).Comment = "Reason: " + reason
-//			_, err = service.UpdateService(*serviceStatus, "status", "Comment")
-//			if err != nil {
-//				logs.Error("Failed to update deployment.")
-//				break
-//			}
-//			continue
-//		} else {
-//			if deployment.Status.Replicas > deployment.Status.AvailableReplicas {
-//				logs.Debug("The desired replicas number is not available",
-//					deployment.Status.Replicas, deployment.Status.AvailableReplicas)
-//				(*serviceStatus).Status = uncompleted
-//				reason := "The desired replicas number is not available"
-//				(*serviceStatus).Comment = "Reason: " + reason
-//				_, err = service.UpdateService(*serviceStatus, "status", "Comment")
-//				if err != nil {
-//					logs.Error("Failed to update deployment replicas.")
-//					break
-//				}
-//				continue
-//			}
-//		}
 //
-//		// Check the service in k8s cluster status
-//		serviceK8s, err := service.GetK8sService((*serviceStatus).ProjectName, (*serviceStatus).Name)
-//		if serviceK8s == nil {
-//			logs.Info("Failed to get service in cluster", err)
-//			var reason = "The service is not established in cluster system"
-//			(*serviceStatus).Status = uncompleted
-//			(*serviceStatus).Comment = "Reason: " + reason
-//			_, err = service.UpdateService(*serviceStatus, "status", "Comment")
-//			if err != nil {
-//				logs.Error("Failed to update service in cluster.")
-//				break
-//			}
-//			continue
-//		}
-//
-//		if serviceStatus.Status == uncompleted {
-//			logs.Info("The service is restored to running")
-//			(*serviceStatus).Status = running
-//			(*serviceStatus).Comment = ""
-//			_, err = service.UpdateService(*serviceStatus, "status", "Comment")
-//			if err != nil {
-//				logs.Error("Failed to update service status.")
-//				break
-//			}
-//			continue
-//		}
-//	}
-//	return err
-//}
+func syncJobK8sStatus(jobList []*model.JobStatusMO) error {
+	var err error
+	reason := ""
+	status := uncompleted
+	// synchronize job status with the cluster system
+	for _, jobStatusMO := range jobList {
+		// Check the job status
+		job, err := service.GetK8sJobByK8sassist(jobStatusMO.ProjectName, jobStatusMO.Name)
+		if job == nil {
+			logs.Info("Failed to get job", err)
+			reason = "The job is not established in cluster system"
+			status = uncompleted
+		} else if job.Status.CompletionTime == nil {
+			logs.Info("The job does not complete")
+			reason = "The job does not complete"
+			status = uncompleted
+		} else {
+			if job.Spec.Completions == nil || job.Status.Succeeded > *job.Spec.Completions {
+				logs.Debug("The desired completion number is reached",
+					job.Status.Succeeded, job.Spec.Completions)
+				status = completed
+				reason = "The desired replicas number is reached"
+			} else {
+				logs.Debug("The desired completion number is not reached",
+					job.Status.Succeeded, job.Spec.Completions)
+				status = failed
+				reason = "The desired replicas number is not reached"
+			}
+		}
+		jobStatusMO.Status = status
+		jobStatusMO.Comment = "Reason: " + reason
+		_, err = service.UpdateJob(*jobStatusMO, "status", "comment")
+		if err != nil {
+			logs.Error("Failed to update job status.")
+			break
+		}
+	}
+	return err
+}
 
-//get service list
+//get job list
 func (p *JobController) GetJobListAction() {
 	jobName := p.GetString("job_name")
 	pageIndex, _ := p.GetInt("page_index", 0)
@@ -200,11 +171,11 @@ func (p *JobController) GetJobListAction() {
 			p.internalError(err)
 			return
 		}
-		//		err = syncK8sStatus(serviceStatus)
-		//		if err != nil {
-		//			p.internalError(err)
-		//			return
-		//		}
+		err = syncJobK8sStatus(jobStatus)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
 		p.renderJSON(jobStatus)
 	} else {
 		paginatedJobStatus, err := service.GetPaginatedJobList(jobName, p.currentUser.ID, pageIndex, pageSize, orderField, orderAsc)
@@ -212,13 +183,32 @@ func (p *JobController) GetJobListAction() {
 			p.internalError(err)
 			return
 		}
-		//		err = syncK8sStatus(paginatedServiceStatus.ServiceStatusList)
-		//		if err != nil {
-		//			p.internalError(err)
-		//			return
-		//		}
+		err = syncJobK8sStatus(paginatedJobStatus.JobStatusList)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
 		p.renderJSON(paginatedJobStatus)
 	}
+}
+
+//get job
+func (p *JobController) GetJobAction() {
+	j, err := p.resolveJobInfo()
+	if err != nil {
+		return
+	}
+	//Judge authority
+	_ = p.resolveUserPrivilegeByID(j.ProjectID)
+
+	jobStatus := []*model.JobStatusMO{j}
+	err = syncJobK8sStatus(jobStatus)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	p.renderJSON(jobStatus[0])
+
 }
 
 //// API to create service config
@@ -258,6 +248,12 @@ func (p *JobController) DeleteJobAction() {
 	//Judge authority
 	p.resolveUserPrivilegeByID(j.ProjectID)
 
+	// stop service
+	err = service.StopJobK8s(j)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
 	//TODO: where is the deletion of kubernetes job object?, write it here or in service method? do we need another state to reference it?
 	isSuccess, err := service.DeleteJob(j.ID)
 	if err != nil {

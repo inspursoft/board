@@ -1433,12 +1433,12 @@ type JobStatus struct {
 	// Represents time when the job was acknowledged by the job controller.
 	// It is not guaranteed to be set in happens-before order across separate operations.
 	// It is represented in RFC3339 form and is in UTC.
-	StartTime time.Time `json:"startTime,omitempty" protobuf:"bytes,2,opt,name=startTime"`
+	StartTime *time.Time `json:"startTime,omitempty" protobuf:"bytes,2,opt,name=startTime"`
 
 	// Represents time when the job was completed. It is not guaranteed to
 	// be set in happens-before order across separate operations.
 	// It is represented in RFC3339 form and is in UTC.
-	CompletionTime time.Time `json:"completionTime,omitempty" protobuf:"bytes,3,opt,name=completionTime"`
+	CompletionTime *time.Time `json:"completionTime,omitempty" protobuf:"bytes,3,opt,name=completionTime"`
 
 	// The number of actively running pods.
 	Active int32 `json:"active,omitempty" protobuf:"varint,4,opt,name=active"`
