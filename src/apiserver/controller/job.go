@@ -135,7 +135,18 @@ func syncJobK8sStatus(jobList []*model.JobStatusMO) error {
 			reason = "The job does not complete"
 			status = uncompleted
 		} else {
-			if job.Spec.Completions == nil || job.Status.Succeeded >= *job.Spec.Completions {
+			// read the doc https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/
+			success := false
+			if job.Spec.Completions == nil {
+				if job.Spec.Parallelism == nil {
+					success = job.Status.Succeeded >= 1
+				} else {
+					success = job.Status.Succeeded >= *job.Spec.Parallelism
+				}
+			} else {
+				success = job.Status.Succeeded >= *job.Spec.Completions
+			}
+			if success {
 				logs.Debug("The desired completion number is reached",
 					job.Status.Succeeded, job.Spec.Completions)
 				status = completed
