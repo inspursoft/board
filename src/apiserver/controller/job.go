@@ -135,7 +135,7 @@ func syncJobK8sStatus(jobList []*model.JobStatusMO) error {
 			reason = "The job does not complete"
 			status = uncompleted
 		} else {
-			if job.Spec.Completions == nil || job.Status.Succeeded > *job.Spec.Completions {
+			if job.Spec.Completions == nil || job.Status.Succeeded >= *job.Spec.Completions {
 				logs.Debug("The desired completion number is reached",
 					job.Status.Succeeded, job.Spec.Completions)
 				status = completed
