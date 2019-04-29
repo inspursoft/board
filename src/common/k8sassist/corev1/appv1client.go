@@ -83,6 +83,7 @@ type AppV1ClientInterface interface {
 	PersistentVolume() PersistentVolumeInterface
 	PersistentVolumeClaim(namespace string) PersistentVolumeClaimInterface
 	ConfigMap(namespace string) ConfigMapInterface
+	Job(namespace string) JobInterface
 }
 
 // ServerVersionInterface has a method for retrieving the server's version.
