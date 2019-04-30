@@ -39,8 +39,8 @@ type JobConfig struct {
 	AffinityList          []Affinity  `json:"affinity_list"`
 	Parallelism           *int32      `json:"parallelism,omitempty"`
 	Completions           *int32      `json:"completions,omitempty"`
-	ActiveDeadlineSeconds *int64      `json:"activeDeadlineSeconds,omitempty"`
-	BackoffLimit          *int32      `json:"backoffLimit,omitempty"`
+	ActiveDeadlineSeconds *int64      `json:"active_Deadline_Seconds,omitempty"`
+	BackoffLimit          *int32      `json:"backoff_Limit,omitempty"`
 }
 
 type JobToggle struct {
