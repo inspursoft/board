@@ -453,4 +453,19 @@ INSERT INTO `board`.`helm_repository`
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
-
+    CREATE TABLE `board`.`job_status` (
+        `id` INT NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(255) NOT NULL DEFAULT '',
+        `project_id` INT NOT NULL,
+        `project_name` VARCHAR(255) NOT NULL DEFAULT '',
+        `comment` VARCHAR(255) NOT NULL DEFAULT '',
+        `owner_id` INT NOT NULL,
+        `owner_name` VARCHAR(255) DEFAULT NULL,
+        `status` SMALLINT(1) NOT NULL,
+        `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
+        `creation_time` datetime DEFAULT NULL,
+        `update_time` datetime DEFAULT NULL,
+        `source` SMALLINT(1) NOT NULL,
+        `yaml` TEXT,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
