@@ -12,6 +12,7 @@ import (
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
+
 	"github.com/astaxie/beego/logs"
 )
 
@@ -26,27 +27,6 @@ var (
 type JobController struct {
 	BaseController
 }
-
-//func (p *JobController) generateDeploymentTravis(serviceName, deploymentURL, serviceURL string) error {
-//	userID := p.currentUser.ID
-//	var travisCommand travis.TravisCommand
-//	travisCommand.Script.Commands = []string{}
-//	items := []string{
-//		fmt.Sprintf("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
-//	}
-//	if deploymentURL != "" {
-//		items = append(items, fmt.Sprintf("#curl -X POST -H 'Content-Type: application/yaml' --data-binary @%s/deployment.yaml %s", serviceName, deploymentURL))
-//	}
-//	if serviceURL != "" {
-//		items = append(items, fmt.Sprintf("#curl -X POST -H 'Content-Type: application/yaml' --data-binary @%s/service.yaml %s", serviceName, serviceURL))
-//	}
-//	travisCommand.Script.Commands = items
-//	return travisCommand.GenerateCustomTravis(p.repoPath)
-//}
-//
-//func (p *JobController) getKey() string {
-//	return strconv.Itoa(int(p.currentUser.ID))
-//}
 
 func (p *JobController) resolveJobInfo() (j *model.JobStatusMO, err error) {
 	jobID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
@@ -219,36 +199,7 @@ func (p *JobController) GetJobAction() {
 		return
 	}
 	p.renderJSON(jobStatus[0])
-
 }
-
-//// API to create service config
-//func (p *JobController) CreateJobAction() {
-//	var reqServiceProject model.ServiceProject
-//	var err error
-//
-//	err = p.resolveBody(&reqServiceProject)
-//	if err != nil {
-//		return
-//	}
-//
-//	//Judge authority
-//	p.resolveUserPrivilegeByID(reqServiceProject.ProjectID)
-//
-//	//Assign and return Service ID with mysql
-//	var newservice model.ServiceStatus
-//	newservice.ProjectID = reqServiceProject.ProjectID
-//	newservice.ProjectName = reqServiceProject.ProjectName
-//	newservice.Status = preparing // 0: preparing 1: running 2: suspending
-//	newservice.OwnerID = p.currentUser.ID
-//
-//	serviceInfo, err := service.CreateServiceConfig(newservice)
-//	if err != nil {
-//		p.internalError(err)
-//		return
-//	}
-//	p.renderJSON(serviceInfo.ID)
-//}
 
 func (p *JobController) DeleteJobAction() {
 	var err error
@@ -361,36 +312,6 @@ func (p *JobController) GetJobStatusAction() {
 	}
 	p.renderJSON(jobStatus)
 }
-
-//func (p *JobController) DeleteDeploymentAction() {
-//	var err error
-//	s, err := p.resolveJobInfo()
-//	if err != nil {
-//		return
-//	}
-//	// Get the path of the service config files
-//	p.resolveUserPrivilege(s.ProjectName)
-//	p.resolveRepoServicePath(s.ProjectName, s.Name)
-//	logs.Debug("Service config path: %s", p.repoServicePath)
-//
-//	// TODO clear kube-master, even if the service is not deployed successfully
-//	p.removeItemsToRepo(filepath.Join(s.Name, deploymentFilename))
-//
-//	// Delete yaml files
-//	err = service.DeleteServiceConfigYaml(p.repoServicePath)
-//	if err != nil {
-//		logs.Info("Failed to delete service yaml under path: %s", p.repoServicePath)
-//		p.internalError(err)
-//		return
-//	}
-//
-//	// For terminated service config, actually delete it in DB
-//	_, err = service.DeleteServiceByID(s.ID)
-//	if err != nil {
-//		p.internalError(err)
-//		return
-//	}
-//}
 
 func (p *JobController) JobExists() {
 	projectName := p.GetString("project_name")
@@ -507,76 +428,3 @@ func (f *JobController) resolveDownloadYaml(jobConfig *model.JobStatusMO, fileNa
 	logs.Info("User: %s downloaded %s YAML file.", f.currentUser.Username, fileName)
 	f.Ctx.Output.Download(absFileName, fileName)
 }
-
-//func (p *JobController) DeleteDeployAction() {
-//	var err error
-//
-//	//Judge authority
-//	p.resolveUserPrivilegeByID(configService.ProjectID)
-//
-//	// Clean deployment and service
-//
-//	s := model.ServiceStatus{Name: configService.ServiceName,
-//		ProjectName: configService.ProjectName,
-//	}
-//
-//	err = service.StopServiceK8s(&s)
-//	if err != nil {
-//		logs.Error("Failed to clean service %s", s.Name)
-//		p.internalError(err)
-//		return
-//	}
-//
-//	//Clean data DB if existing
-//	serviceData, err := service.GetService(s, "name", "project_name")
-//	if serviceData != nil {
-//		isSuccess, err := service.DeleteService(serviceData.ID)
-//		if err != nil {
-//			p.internalError(err)
-//			return
-//		}
-//		if !isSuccess {
-//			p.customAbort(http.StatusBadRequest, fmt.Sprintf("Failed to delete service with ID: %d", s.ID))
-//			return
-//		}
-//	}
-//
-//	//delete repo files of the service
-//	p.resolveRepoServicePath(s.ProjectName, s.Name)
-//	p.removeItemsToRepo(filepath.Join(s.Name, serviceFilename), filepath.Join(s.Name, deploymentFilename))
-//
-//	//clean the config step
-//	err = DeleteConfigServiceStep(key)
-//	if err != nil {
-//		logs.Debug("Failed to clean the config steps")
-//		p.internalError(err)
-//		return
-//	}
-//}
-
-//
-////import cluster services
-//func (p *JobController) ImportServicesAction() {
-//
-//	if p.isSysAdmin == false {
-//		p.customAbort(http.StatusForbidden, "Insufficient privileges to import services.")
-//		return
-//	}
-//
-//	projectList, err := service.GetProjectsByUser(model.Project{}, p.currentUser.ID)
-//	if err != nil {
-//		logs.Error("Failed to get projects.")
-//		p.internalError(err)
-//		return
-//	}
-//
-//	for _, project := range projectList {
-//		err := service.SyncServiceWithK8s(project.Name)
-//		if err != nil {
-//			logs.Error("Failed to sync service for project %s.", project.Name)
-//			p.internalError(err)
-//			return
-//		}
-//	}
-//	logs.Debug("imported services from cluster successfully")
-//}
