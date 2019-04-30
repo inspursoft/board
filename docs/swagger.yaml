@@ -7227,8 +7227,6 @@ definitions:
   JobConfig:
     type: object
     properties:
-    type: object
-    properties:
       project_id:
         type: integer   
         format: int64
