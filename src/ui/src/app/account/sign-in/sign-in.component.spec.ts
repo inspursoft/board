@@ -17,6 +17,7 @@ import { HttpErrorResponse } from "@angular/common/http";
 import { HeaderComponent } from "../../shared/header/header.component";
 import Spy = jasmine.Spy;
 import { defer } from "rxjs";
+import { AccountModule } from "../account.module";
 
 export function newEvent(eventName: string, bubbles = false, cancelable = false) {
   let evt = document.createEvent('CustomEvent');  // MUST be 'CustomEvent'
@@ -58,7 +59,7 @@ describe("SignInComponent", () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [AppModule],
+      imports: [AppModule,AccountModule],
       providers: [
         {provide: Router, useClass: RouterStub},
         {provide: ActivatedRoute, useValue: fakeActivatedRoute}]
