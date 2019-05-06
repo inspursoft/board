@@ -2,14 +2,11 @@ package service
 
 import (
 	"errors"
-	"io"
-	"os"
 	"strings"
 
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/k8sassist"
 	"git/inspursoft/board/src/common/model"
-	"git/inspursoft/board/src/common/utils"
 	"github.com/astaxie/beego/logs"
 )
 
@@ -18,40 +15,6 @@ type JobDeployInfo struct {
 	JobFileInfo []byte
 }
 
-//func InitServiceConfig() (*model.ServiceConfig, error) {
-//	return &model.ServiceConfig{}, nil
-//}
-//
-//func SelectProject(config *model.ServiceConfig, projectID int64) (*model.ServiceConfig, error) {
-//	config.Phase = "SELECT_PROJECT"
-//	config.ProjectID = projectID
-//	return config, nil
-//}
-//
-//func ConfigureContainers(config *model.ServiceConfig, containers []yaml.Container) (*model.ServiceConfig, error) {
-//	config.Phase = "CONFIGURE_CONTAINERS"
-//	config.DeploymentYaml = yaml.Deployment{}
-//	config.DeploymentYaml.ContainerList = containers
-//	return config, nil
-//}
-//
-//func ConfigureService(config *model.ServiceConfig, service yaml.Service, deployment yaml.Deployment) (*model.ServiceConfig, error) {
-//	config.Phase = "CONFIGURE_SERVICE"
-//	config.ServiceYaml = service
-//	config.DeploymentYaml = deployment
-//	return config, nil
-//}
-//
-//func ConfigureTest(config *model.ServiceConfig) error {
-//	config.Phase = "CONFIGURE_TESTING"
-//	return nil
-//}
-//
-//func Deploy(config *model.ServiceConfig) error {
-//	config.Phase = "CONFIGURE_DEPLOY"
-//	return nil
-//}
-//
 func CreateJob(jobConfig model.JobStatusMO) (*model.JobStatusMO, error) {
 	query := model.Project{Name: jobConfig.ProjectName}
 	project, err := GetProject(query, "name")
@@ -171,55 +134,6 @@ func GetJobByProject(jobName string, projectName string) (*model.JobStatusMO, er
 	return job, nil
 }
 
-//func SyncJobWithK8s(pName string) error {
-//	logs.Debug("Sync Job of namespace %s", pName)
-//	//obtain serviceList data of
-//	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
-//		KubeConfigPath: kubeConfigPath(),
-//	})
-//
-//	jobList, err := k8sclient.AppV1().Job(pName).List()
-//	if err != nil {
-//		logs.Error("Failed to get job list with project name: %s", pName)
-//		return err
-//	}
-//
-//	//handle the jobList data
-//	var jobquery model.JobStatus
-//	for _, item := range jobList.Items {
-//		project, err := GetProjectByName(item.Namespace)
-//		if err != nil {
-//			logs.Error("Failed to check project in DB %s", item.Namespace)
-//			return err
-//		}
-//		if project == nil {
-//			logs.Error("not found project in DB: %s", item.Namespace)
-//			continue
-//		}
-//		if item.ObjectMeta.Name == k8sService {
-//			continue
-//		}
-//		jobquery.Name = item.ObjectMeta.Name
-//		jobquery.OwnerID = int64(project.OwnerID) //owner or admin TBD
-//		jobquery.OwnerName = project.OwnerName
-//		jobquery.ProjectName = project.Name
-//		jobquery.ProjectID = project.ID
-//		jobquery.Public = defaultPublic
-//		jobquery.Comment = defaultComment
-//		jobquery.Deleted = defaultDeleted
-//		jobquery.Status = defaultStatus
-//		jobquery.Source = k8s
-//		jobquery.CreationTime, _ = time.Parse(time.RFC3339, item.CreationTimestamp.Format(time.RFC3339))
-//		jobquery.UpdateTime, _ = time.Parse(time.RFC3339, item.CreationTimestamp.Format(time.RFC3339))
-//		_, err = dao.SyncServiceData(servicequery)
-//		if err != nil {
-//			logs.Error("Sync Service %s failed.", servicequery.Name)
-//		}
-//	}
-//
-//	return nil
-//}
-
 func GetJobsByProjectName(pname string) ([]model.JobStatusMO, error) {
 	jobList, err := dao.GetJobs("project_name", pname)
 	if err != nil {
@@ -235,38 +149,6 @@ func JobExists(jobName string, projectName string) (bool, error) {
 	s, err := GetJob(jobquery, "name", "project_name")
 
 	return s != nil, err
-}
-
-func GenerateJobYamlFileFromK8s(job *model.JobStatusMO, loadPath, filename string) error {
-	clusterConfig := &k8sassist.K8sAssistConfig{KubeConfigPath: kubeConfigPath()}
-	cli := k8sassist.NewK8sAssistClient(clusterConfig)
-	_, jobFileInfo, err := cli.AppV1().Job(job.ProjectName).Get(job.Name)
-	if err != nil {
-		return err
-	}
-	return utils.GenerateFile(jobFileInfo, loadPath, filename)
-}
-
-func SaveJobDeployYamlFiles(jobInfo *JobDeployInfo, loadPath, filename string) error {
-	if jobInfo == nil {
-		logs.Error("Job Deploy info is empty.")
-		return errors.New("Job Deploy info is empty.")
-	}
-	return utils.GenerateFile(jobInfo.JobFileInfo, loadPath, filename)
-}
-
-//check yaml file config
-func CheckJobYamlConfig(yamlFile io.Reader, projectName string) (*model.Job, error) {
-	clusterConfig := &k8sassist.K8sAssistConfig{KubeConfigPath: kubeConfigPath()}
-	cli := k8sassist.NewK8sAssistClient(clusterConfig)
-
-	jobInfo, err := cli.AppV1().Job(projectName).CheckYaml(yamlFile)
-	if err != nil {
-		logs.Error("Check job object by job.yaml failed, err:%+v\n", err)
-		return nil, err
-	}
-
-	return jobInfo, nil
 }
 
 func DeployJob(jobConfig *model.JobConfig, registryURI string) (*JobDeployInfo, error) {
@@ -285,24 +167,6 @@ func DeployJob(jobConfig *model.JobConfig, registryURI string) (*JobDeployInfo, 
 		Job:         jobInfo,
 		JobFileInfo: jobFileInfo,
 	}, nil
-}
-
-func DeployJobByYaml(projectName, jobAbsName string) error {
-	clusterConfig := &k8sassist.K8sAssistConfig{KubeConfigPath: kubeConfigPath()}
-	cli := k8sassist.NewK8sAssistClient(clusterConfig)
-
-	jobFile, err := os.Open(jobAbsName)
-	if err != nil {
-		return err
-	}
-	defer jobFile.Close()
-
-	_, err = cli.AppV1().Job(projectName).CreateByYaml(jobFile)
-	if err != nil {
-		logs.Error("Deploy job object by job.yaml failed, err:%+v\n", err)
-		return err
-	}
-	return nil
 }
 
 func StopJobK8s(j *model.JobStatusMO) error {

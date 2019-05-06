@@ -3,21 +3,12 @@ package controller
 import (
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strconv"
 
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
-	"git/inspursoft/board/src/common/utils"
-
 	"github.com/astaxie/beego/logs"
-)
-
-const (
-	jobFilename = "job.yaml"
 )
 
 var (
@@ -75,16 +66,6 @@ func (p *JobController) DeployJobAction() {
 		p.parseError(err, parsePostK8sError)
 		return
 	}
-
-	p.resolveRepoServicePath(project.Name, newjob.Name)
-	err = service.SaveJobDeployYamlFiles(jobDeployInfo, p.repoServicePath, jobFilename)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	jobFile := filepath.Join(newjob.Name, jobFilename)
-	p.pushItemsToRepo(jobFile)
 
 	updateJob := model.JobStatusMO{ID: jobInfo.ID, Status: uncompleted, Yaml: string(jobDeployInfo.JobFileInfo)}
 	_, err = service.UpdateJob(updateJob, "status", "yaml")
@@ -227,74 +208,6 @@ func (p *JobController) DeleteJobAction() {
 		return
 	}
 
-	//delete repo files of the job
-	p.resolveRepoServicePath(j.ProjectName, j.Name)
-	p.removeItemsToRepo(filepath.Join(j.Name, jobFilename))
-
-}
-
-// API to deploy service
-func (p *JobController) ToggleJobAction() {
-	var err error
-	j, err := p.resolveJobInfo()
-	if err != nil {
-		return
-	}
-	var reqJobToggle model.JobToggle
-	err = p.resolveBody(&reqJobToggle)
-	if err != nil {
-		return
-	}
-
-	//Judge authority
-	p.resolveUserPrivilegeByID(j.ProjectID)
-
-	if j.Status == stopped && reqJobToggle.Toggle == 0 {
-		p.customAbort(http.StatusBadRequest, "Service already stopped.")
-		return
-	}
-
-	if j.Status == running && reqJobToggle.Toggle == 1 {
-		p.customAbort(http.StatusBadRequest, "Service already running.")
-		return
-	}
-
-	p.resolveRepoServicePath(j.ProjectName, j.Name)
-	if _, err := os.Stat(p.repoServicePath); os.IsNotExist(err) {
-		p.customAbort(http.StatusPreconditionFailed, "Job restored from initialization, cannot be switched.")
-		return
-	}
-	if reqJobToggle.Toggle == 0 {
-		// stop service
-		err = service.StopJobK8s(j)
-		if err != nil {
-			p.internalError(err)
-			return
-		}
-		// Update job status DB
-		_, err = service.UpdateJobStatus(j.ID, stopped)
-		if err != nil {
-			p.internalError(err)
-			return
-		}
-	} else {
-		// start service
-		err := service.DeployJobByYaml(j.ProjectName, filepath.Join(p.repoServicePath, jobFilename))
-		if err != nil {
-			p.parseError(err, parsePostK8sError)
-			return
-		}
-		// Push job to Git repo
-		p.pushItemsToRepo(filepath.Join(j.Name, jobFilename))
-		p.collaborateWithPullRequest("master", "master", filepath.Join(j.Name, jobFilename))
-
-		// Update job status DB
-		_, err = service.UpdateJobStatus(j.ID, running)
-		if err != nil {
-			p.internalError(err)
-			return
-		}
-	}
 }
 
 func (p *JobController) GetJobStatusAction() {
@@ -327,104 +240,4 @@ func (p *JobController) JobExists() {
 		p.customAbort(http.StatusConflict, jobNameDuplicateErr.Error())
 		return
 	}
-}
-
-func (f *JobController) resolveUploadedYamlFile(uploadedFileName string) (func(fileName string, jobInfo *model.JobStatusMO) error, io.Reader, error) {
-	uploadedFile, _, err := f.GetFile(uploadedFileName)
-	if err != nil {
-		if err.Error() == "http: no such file" {
-			f.customAbort(http.StatusBadRequest, "Missing file: "+uploadedFileName)
-			return nil, nil, err
-		}
-		f.internalError(err)
-		return nil, nil, err
-	}
-
-	return func(fileName string, jobInfo *model.JobStatusMO) error {
-		f.resolveRepoServicePath(jobInfo.ProjectName, jobInfo.Name)
-		err = utils.CheckFilePath(f.repoServicePath)
-		if err != nil {
-			f.internalError(err)
-			return nil
-		}
-		return f.SaveToFile(uploadedFileName, filepath.Join(f.repoServicePath, fileName))
-	}, uploadedFile, nil
-}
-
-func (f *JobController) UploadYamlFileAction() {
-	projectName := f.GetString("project_name")
-	f.resolveProjectMember(projectName)
-
-	fhJob, jobFile, err := f.resolveUploadedYamlFile("file")
-	if err != nil {
-		return
-	}
-	k8sjobInfo, err := service.CheckJobYamlConfig(jobFile, projectName)
-	if err != nil {
-		f.customAbort(http.StatusBadRequest, err.Error())
-		return
-	}
-
-	jobName := k8sjobInfo.Name
-	job, err := service.GetJobByProject(jobName, projectName)
-	if err != nil {
-		f.internalError(err)
-		return
-	}
-	if job != nil {
-		f.customAbort(http.StatusBadRequest, "Job name has been used.")
-		return
-	}
-	jobInfo, err := service.CreateJob(model.JobStatusMO{
-		Name:        jobName,
-		ProjectName: projectName,
-		Status:      preparing, // 0: preparing 1: running 2: suspending
-		OwnerID:     f.currentUser.ID,
-		OwnerName:   f.currentUser.Username,
-	})
-	if err != nil {
-		f.internalError(err)
-		return
-	}
-	err = fhJob(jobFilename, jobInfo)
-	if err != nil {
-		f.internalError(err)
-		return
-	}
-	f.renderJSON(jobInfo)
-}
-
-func (f *JobController) DownloadYamlFileAction() {
-	projectName := f.GetString("project_name")
-	jobName := f.GetString("job_name")
-	jobInfo, err := service.GetJobByProject(jobName, projectName)
-	if err != nil {
-		f.internalError(err)
-		return
-	}
-	if jobInfo == nil {
-		f.customAbort(http.StatusBadRequest, "Job name is invalid.")
-		return
-	}
-	f.resolveRepoServicePath(projectName, jobName)
-	f.resolveDownloadYaml(jobInfo, jobFilename, service.GenerateJobYamlFileFromK8s)
-
-}
-
-func (f *JobController) resolveDownloadYaml(jobConfig *model.JobStatusMO, fileName string, generator func(*model.JobStatusMO, string, string) error) {
-	logs.Debug("Current download yaml file: %s", fileName)
-	//checkout the path of download
-	err := utils.CheckFilePath(f.repoServicePath)
-	if err != nil {
-		f.internalError(err)
-		return
-	}
-	absFileName := filepath.Join(f.repoServicePath, fileName)
-	err = generator(jobConfig, f.repoServicePath, jobFilename)
-	if err != nil {
-		f.parseError(err, parseGetK8sError)
-		return
-	}
-	logs.Info("User: %s downloaded %s YAML file.", f.currentUser.Username, fileName)
-	f.Ctx.Output.Download(absFileName, fileName)
 }
