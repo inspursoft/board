@@ -4929,9 +4929,6 @@ paths:
           description: Release does not exist.
         500:
           description: Internal errors.
-responses:
-  UnsupportedMediaType: 
-    description: The Media Type of the request is not supported, it has to be "application/json"
   /v1/jobs:
     get:
       summary: Get jobs infomation.
@@ -5168,6 +5165,9 @@ responses:
           description: Unauthorized
         500:
           description: Unexpected internal errors.
+responses:
+  UnsupportedMediaType: 
+    description: The Media Type of the request is not supported, it has to be "application/json"
 # The following is for structure definition          
 definitions:
   Search:

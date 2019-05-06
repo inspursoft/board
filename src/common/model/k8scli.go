@@ -4,6 +4,14 @@ import (
 	"time"
 )
 
+type RestartPolicy string
+
+const (
+	RestartPolicyAlways    RestartPolicy = "Always"
+	RestartPolicyOnFailure RestartPolicy = "OnFailure"
+	RestartPolicyNever     RestartPolicy = "Never"
+)
+
 //Path Type
 type PatchType string
 
@@ -210,6 +218,7 @@ type PodSpec struct {
 	NodeName       string
 	HostNetwork    bool
 	Affinity       K8sAffinity
+	RestartPolicy  RestartPolicy
 }
 
 type PodStatus struct {
