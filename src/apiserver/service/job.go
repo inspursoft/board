@@ -330,10 +330,11 @@ func MarshalJob(jobConfig *model.JobConfig, registryURI string) *model.Job {
 			Labels: map[string]string{"app": jobConfig.Name},
 		},
 		Spec: model.PodSpec{
-			Volumes:      setDeploymentVolumes(jobConfig.ContainerList),
-			Containers:   setDeploymentContainers(jobConfig.ContainerList, registryURI),
-			NodeSelector: setDeploymentNodeSelector(jobConfig.NodeSelector),
-			Affinity:     setDeploymentAffinity(jobConfig.AffinityList),
+			Volumes:       setDeploymentVolumes(jobConfig.ContainerList),
+			Containers:    setDeploymentContainers(jobConfig.ContainerList, registryURI),
+			NodeSelector:  setDeploymentNodeSelector(jobConfig.NodeSelector),
+			Affinity:      setDeploymentAffinity(jobConfig.AffinityList),
+			RestartPolicy: model.RestartPolicyNever,
 		},
 	}
 

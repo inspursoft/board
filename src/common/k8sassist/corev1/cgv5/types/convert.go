@@ -226,6 +226,7 @@ func ToK8sPodSpec(spec *model.PodSpec) *v1.PodSpec {
 		NodeName:       spec.NodeName,
 		HostNetwork:    spec.HostNetwork,
 		Affinity:       affinity,
+		RestartPolicy:  v1.RestartPolicy(string(spec.RestartPolicy)),
 	}
 }
 
@@ -643,6 +644,7 @@ func FromK8sPodSpec(spec *v1.PodSpec) *model.PodSpec {
 		NodeSelector:   spec.NodeSelector,
 		NodeName:       spec.NodeName,
 		HostNetwork:    spec.HostNetwork,
+		RestartPolicy:  model.RestartPolicy(string(spec.RestartPolicy)),
 	}
 }
 
@@ -1696,11 +1698,9 @@ func ToK8sJob(job *model.Job) *Job {
 			Completions:           job.Spec.Completions,
 			ActiveDeadlineSeconds: job.Spec.ActiveDeadlineSeconds,
 			BackoffLimit:          job.Spec.BackoffLimit,
-			Selector: &metav1.LabelSelector{
-				MatchLabels: job.Spec.Selector.MatchLabels,
-			},
-			ManualSelector: job.Spec.ManualSelector,
-			Template:       templ,
+			Selector:              ToK8sLabelSelector(job.Spec.Selector),
+			ManualSelector:        job.Spec.ManualSelector,
+			Template:              templ,
 		},
 		Status: JobStatus{
 			Conditions:     conditions,
@@ -1747,11 +1747,9 @@ func FromK8sJob(job *Job) *model.Job {
 			Completions:           job.Spec.Completions,
 			ActiveDeadlineSeconds: job.Spec.ActiveDeadlineSeconds,
 			BackoffLimit:          job.Spec.BackoffLimit,
-			Selector: &model.LabelSelector{
-				MatchLabels: job.Spec.Selector.MatchLabels,
-			},
-			ManualSelector: job.Spec.ManualSelector,
-			Template:       templ,
+			Selector:              FromK8sLabelSelector(job.Spec.Selector),
+			ManualSelector:        job.Spec.ManualSelector,
+			Template:              templ,
 		},
 		Status: model.JobStatus{
 			Conditions:     conditions,
@@ -1812,6 +1810,7 @@ func GenerateJobConfig(job *Job) *Job {
 					ImagePullSecrets:   job.Spec.Template.Spec.ImagePullSecrets,
 					InitContainers:     job.Spec.Template.Spec.InitContainers,
 					Containers:         containersConfig,
+					RestartPolicy:      job.Spec.Template.Spec.RestartPolicy,
 				},
 			},
 		},
@@ -1829,5 +1828,41 @@ func FromK8sJobList(jobList *JobList) *model.JobList {
 	}
 	return &model.JobList{
 		Items: items,
+	}
+}
+
+func FromK8sLabelSelector(selector *metav1.LabelSelector) *model.LabelSelector {
+	if selector == nil {
+		return nil
+	}
+	var expretions []model.LabelSelectorRequirement
+	for i := range selector.MatchExpressions {
+		expretions = append(expretions, model.LabelSelectorRequirement{
+			Key:      selector.MatchExpressions[i].Key,
+			Operator: string(selector.MatchExpressions[i].Operator),
+			Values:   selector.MatchExpressions[i].Values,
+		})
+	}
+	return &model.LabelSelector{
+		MatchLabels:      selector.MatchLabels,
+		MatchExpressions: expretions,
+	}
+}
+
+func ToK8sLabelSelector(selector *model.LabelSelector) *metav1.LabelSelector {
+	if selector == nil {
+		return nil
+	}
+	var expretions []metav1.LabelSelectorRequirement
+	for i := range selector.MatchExpressions {
+		expretions = append(expretions, metav1.LabelSelectorRequirement{
+			Key:      selector.MatchExpressions[i].Key,
+			Operator: metav1.LabelSelectorOperator(selector.MatchExpressions[i].Operator),
+			Values:   selector.MatchExpressions[i].Values,
+		})
+	}
+	return &metav1.LabelSelector{
+		MatchLabels:      selector.MatchLabels,
+		MatchExpressions: expretions,
 	}
 }
