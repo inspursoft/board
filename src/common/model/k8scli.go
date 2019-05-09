@@ -84,6 +84,17 @@ type QuantityStr string
 
 type ResourceList map[ResourceName]QuantityStr
 
+type PodLogOptions struct {
+	Container    string     `json:"container,omitempty"`
+	Follow       bool       `json:"follow,omitempty"`
+	Previous     bool       `json:"previous,omitempty"`
+	SinceSeconds *int64     `json:"sinceSeconds,omitempty"`
+	SinceTime    *time.Time `json:"sinceTime,omitempty"`
+	Timestamps   bool       `json:"timestamps,omitempty"`
+	TailLines    *int64     `json:"tailLines,omitempty"`
+	LimitBytes   *int64     `json:"limitBytes,omitempty"`
+}
+
 type ObjectMeta struct {
 	Name              string
 	Namespace         string

@@ -3,11 +3,14 @@ package controller
 import (
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
+	"time"
 
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
 	"github.com/astaxie/beego/logs"
 )
 
@@ -240,4 +243,94 @@ func (p *JobController) JobExists() {
 		p.customAbort(http.StatusConflict, jobNameDuplicateErr.Error())
 		return
 	}
+}
+
+func (p *JobController) GetJobPodsAction() {
+	var err error
+	j, err := p.resolveJobInfo()
+	if err != nil {
+		return
+	}
+	//Judge authority
+	p.resolveUserPrivilegeByID(j.ProjectID)
+	pods, err := service.GetK8sJobPods(j)
+	if err != nil {
+		p.parseError(err, parseGetK8sError)
+		return
+	}
+	p.renderJSON(pods)
+}
+
+func (p *JobController) GetJobLogsAction() {
+	var err error
+	j, err := p.resolveJobInfo()
+	if err != nil {
+		return
+	}
+	//Judge authority
+	p.resolveUserPrivilegeByID(j.ProjectID)
+	podName := p.Ctx.Input.Param(":podname")
+	readCloser, err := service.GetK8sJobLogs(j, podName, p.generatePodLogOptions())
+	if err != nil {
+		p.parseError(err, parseGetK8sError)
+		return
+	}
+	defer readCloser.Close()
+	_, err = io.Copy(&utils.FlushResponseWriter{p.Ctx.Output.Context.ResponseWriter}, readCloser)
+	if err != nil {
+		logs.Error("get job logs error:%+v", err)
+	}
+}
+
+func (p *JobController) generatePodLogOptions() *model.PodLogOptions {
+	var err error
+	opt := &model.PodLogOptions{}
+	opt.Container = p.GetString("container")
+	opt.Follow, err = p.GetBool("follow", false)
+	if err != nil {
+		logs.Warn("Follow parameter %s is invalid: %+v", p.GetString("follow"), err)
+	}
+	opt.Previous, err = p.GetBool("privious", false)
+	if err != nil {
+		logs.Warn("Privious parameter %s is invalid: %+v", p.GetString("privious"), err)
+	}
+	opt.Timestamps, err = p.GetBool("timestamps", false)
+	if err != nil {
+		logs.Warn("Timestamps parameter %s is invalid: %+v", p.GetString("timestamps"), err)
+	}
+
+	if p.GetString("sinceSeconds") != "" {
+		since, err := p.GetInt64("sinceSeconds")
+		if err != nil {
+			logs.Warn("SinceSeconds parameter %s is invalid: %+v", p.GetString("sinceSeconds"), err)
+		} else {
+			opt.SinceSeconds = &since
+		}
+	}
+
+	since := p.GetString("sinceTime")
+	if since != "" {
+		sinceTime, err := time.Parse(time.RFC3339, since)
+		if err != nil {
+			logs.Warn("SinceTime parameter %s is invalid: %+v", since, err)
+		} else {
+			opt.SinceTime = &sinceTime
+		}
+	}
+
+	tail, err := p.GetInt64("tailLines", -1)
+	if err != nil {
+		logs.Warn("TailLines parameter %s is invalid: %+v", p.GetString("tailLines"), err)
+	} else if tail != -1 {
+		opt.TailLines = &tail
+	}
+
+	limit, err := p.GetInt64("limitBytes", -1)
+	if err != nil {
+		logs.Warn("LimitBytes parameter %s is invalid: %+v", p.GetString("limitBytes"), err)
+	} else if limit != -1 {
+		opt.LimitBytes = &limit
+	}
+
+	return opt
 }

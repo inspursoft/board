@@ -161,9 +161,9 @@ type PodClientInterface interface {
 	Delete(name string) error
 	//DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
 	Get(name string) (*model.Pod, error)
-	List() (*model.PodList, error)
-	//List(opts v1.ListOptions) (*v1.PodList, error)
+	List(opts model.ListOptions) (*model.PodList, error)
 	//Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *v1.Pod, err error)
+	GetLogs(name string, opts *model.PodLogOptions) (io.ReadCloser, error)
 }
 
 // How to:  deploymentCli, err := k8sassist.NewDeployments(nameSpace)
