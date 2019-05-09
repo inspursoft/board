@@ -1866,3 +1866,39 @@ func ToK8sLabelSelector(selector *model.LabelSelector) *metav1.LabelSelector {
 		MatchExpressions: expretions,
 	}
 }
+
+func ToK8sPodLogOptions(opt *model.PodLogOptions) *v1.PodLogOptions {
+	if opt == nil {
+		return nil
+	}
+	var since *metav1.Time
+	if opt.SinceTime != nil {
+		since = &metav1.Time{
+			*opt.SinceTime,
+		}
+	}
+	return &v1.PodLogOptions{
+		Container:    opt.Container,
+		Follow:       opt.Follow,
+		Previous:     opt.Previous,
+		SinceSeconds: opt.SinceSeconds,
+		SinceTime:    since,
+		Timestamps:   opt.Timestamps,
+		TailLines:    opt.TailLines,
+		LimitBytes:   opt.LimitBytes,
+	}
+}
+
+func ToK8sListOptions(opts model.ListOptions) metav1.ListOptions {
+	return metav1.ListOptions{
+		LabelSelector:   opts.LabelSelector,
+		FieldSelector:   opts.FieldSelector,
+		Watch:           opts.Watch,
+		ResourceVersion: opts.ResourceVersion,
+		TimeoutSeconds:  opts.TimeoutSeconds,
+	}
+}
+
+func LabelSelectorToString(selector *model.LabelSelector) string {
+	return metav1.FormatLabelSelector(ToK8sLabelSelector(selector))
+}

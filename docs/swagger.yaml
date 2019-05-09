@@ -5096,6 +5096,110 @@ paths:
           description: User need to log in first.
         500:
           description: Internal errors.
+  /v1/jobs/{job_id}/pods:
+    get:
+      summary: Return specific job relate pods.
+      description: |
+        This endpoint returns specific job relate pods by job_id.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: job_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected job ID.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched job status.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+  /v1/jobs/{job_id}/logs/{pod_name}:
+    get:
+      summary: Return specific job relate pods.
+      description: |
+        This endpoint returns specific job relate pods by job_id.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: job_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected job ID.
+        - name: pod_name
+          in: path
+          type: string
+          required: true
+          description: Selected pod Name.
+        - name: container 
+          in: query
+          description: The container name of this pod to logs.
+          required: false
+          type: string
+        - name: follow 
+          in: query
+          description: Whether follow the logs or not.
+          required: false
+          type: boolean
+        - name: previous 
+          in: query
+          description: Whether show previous container logs.
+          required: false
+          type: boolean
+        - name: sinceSeconds 
+          in: query
+          description: The start seconds of logs.
+          required: false
+          type: integer
+          format: int64
+        - name: sinceTime 
+          in: query
+          description: The start time of logs.
+          required: false
+          type: string
+        - name: timestamps 
+          in: query
+          description: Whether show the timestamps in logs.
+          required: false
+          type: boolean
+        - name: tailLines 
+          in: query
+          description: The tail lines of logs.
+          required: false
+          type: integer
+          format: int64
+        - name: limitBytes 
+          in: query
+          description: The limit size in bytes of logs.
+          required: false
+          type: integer
+          format: int64
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched job status.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Pod'
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors. 
 responses:
   UnsupportedMediaType: 
     description: The Media Type of the request is not supported, it has to be "application/json"
@@ -7237,4 +7341,16 @@ definitions:
         description: The current job status. 
       job_yaml:
         type: string
-        description: The job config of this job.  
+        description: The job config of this job.
+  Pod:
+    type: object
+    properties:
+      name:
+        type: string
+        description: The name of this pod.
+      project_name:
+        type: string
+        description: The project name of this pod belongs.
+      spec:
+        description: The specification of this pod.
+        $ref: '#/definitions/Spec2'

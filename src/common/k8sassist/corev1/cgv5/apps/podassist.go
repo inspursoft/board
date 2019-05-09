@@ -1,6 +1,9 @@
 package apps
 
 import (
+	"fmt"
+	"io"
+
 	"git/inspursoft/board/src/common/k8sassist/corev1/cgv5/types"
 	"git/inspursoft/board/src/common/model"
 
@@ -69,8 +72,8 @@ func (p *pods) Get(name string) (*model.Pod, error) {
 	return modelPod, nil
 }
 
-func (p *pods) List() (*model.PodList, error) {
-	podList, err := p.pod.List(metav1.ListOptions{})
+func (p *pods) List(opts model.ListOptions) (*model.PodList, error) {
+	podList, err := p.pod.List(types.ToK8sListOptions(opts))
 	if err != nil {
 		logs.Error("list pods failed. Err:%+v", err)
 		return nil, err
@@ -78,6 +81,16 @@ func (p *pods) List() (*model.PodList, error) {
 
 	modelPodList := types.FromK8sPodList(podList)
 	return modelPodList, nil
+}
+
+func (p *pods) GetLogs(name string, opts *model.PodLogOptions) (io.ReadCloser, error) {
+	request := p.pod.GetLogs(name, types.ToK8sPodLogOptions(opts))
+	if request == nil {
+		err := fmt.Errorf("get pod of %s/%s logs failed, request client is null", name, p.namespace)
+		logs.Error("%+v", err)
+		return nil, err
+	}
+	return request.Stream()
 }
 
 func NewPods(namespace string, pod v1.PodInterface) *pods {

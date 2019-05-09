@@ -2,10 +2,12 @@ package service
 
 import (
 	"errors"
+	"io"
 	"strings"
 
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/k8sassist"
+	"git/inspursoft/board/src/common/k8sassist/corev1/cgv5/types"
 	"git/inspursoft/board/src/common/model"
 	"github.com/astaxie/beego/logs"
 )
@@ -216,4 +218,54 @@ func MarshalJob(jobConfig *model.JobConfig, registryURI string) *model.Job {
 			Template: podTemplate,
 		},
 	}
+}
+func GetK8sJobPods(job *model.JobStatusMO) ([]model.PodMO, error) {
+	logs.Debug("Get Job pods %s/%s", job.ProjectName, job.Name)
+
+	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		KubeConfigPath: kubeConfigPath(),
+	})
+	k8sjob, _, err := k8sclient.AppV1().Job(job.ProjectName).Get(job.Name)
+
+	if err != nil {
+		return nil, err
+	}
+	var opts model.ListOptions
+	if k8sjob.Spec.Selector != nil {
+		opts.LabelSelector = types.LabelSelectorToString(k8sjob.Spec.Selector)
+	}
+	list, err := k8sclient.AppV1().Pod(job.ProjectName).List(opts)
+	if err != nil {
+		return nil, err
+	}
+	if list == nil {
+		return nil, nil
+	}
+	var pods []model.PodMO
+	for i := range list.Items {
+		var containers []model.ContainerMO
+		for j := range list.Items[i].Spec.Containers {
+			containers = append(containers, model.ContainerMO{
+				Name:  list.Items[i].Spec.Containers[j].Name,
+				Image: list.Items[i].Spec.Containers[j].Image,
+			})
+		}
+		pods = append(pods, model.PodMO{
+			Name:        list.Items[i].Name,
+			ProjectName: list.Items[i].Namespace,
+			Spec: model.PodSpecMO{
+				Containers: containers,
+			},
+		})
+	}
+	return pods, nil
+}
+
+func GetK8sJobLogs(job *model.JobStatusMO, podName string, opt *model.PodLogOptions) (io.ReadCloser, error) {
+	logs.Debug("Get Job logs %s/%s/%s", job.ProjectName, job.Name, podName)
+
+	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		KubeConfigPath: kubeConfigPath(),
+	})
+	return k8sclient.AppV1().Pod(job.ProjectName).GetLogs(podName, opt)
 }

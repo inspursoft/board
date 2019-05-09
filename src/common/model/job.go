@@ -42,7 +42,3 @@ type JobConfig struct {
 	ActiveDeadlineSeconds *int64      `json:"active_Deadline_Seconds,omitempty"`
 	BackoffLimit          *int32      `json:"backoff_Limit,omitempty"`
 }
-
-type JobToggle struct {
-	Toggle int `json:"job_toggle"`
-}
