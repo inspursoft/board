@@ -26,7 +26,7 @@ func (j *JobStatusMO) TableName() string {
 
 type PaginatedJobStatus struct {
 	Pagination    *Pagination    `json:"pagination"`
-	JobStatusList []*JobStatusMO `json:"service_status_list"`
+	JobStatusList []*JobStatusMO `json:"job_status_list"`
 }
 
 type JobConfig struct {
