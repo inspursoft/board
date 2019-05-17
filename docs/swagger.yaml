@@ -7284,16 +7284,16 @@ definitions:
             $ref: '#/definitions/AffinityList' 
       parallelism:
         type: integer
-        formot: int32
+        format: int32
       completions:
         type: integer
-        formot: int32
+        format: int32
       active_Deadline_Seconds:
         type: integer
-        formot: int32
+        format: int32
       backoff_Limit:
         type: integer
-        formot: int32
+        format: int32
   JobDetail:
     type: object
     properties:
