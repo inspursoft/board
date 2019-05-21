@@ -199,7 +199,7 @@ func MarshalJob(jobConfig *model.JobConfig, registryURI string) *model.Job {
 			Volumes:       setDeploymentVolumes(jobConfig.ContainerList),
 			Containers:    setDeploymentContainers(jobConfig.ContainerList, registryURI),
 			NodeSelector:  setDeploymentNodeSelector(jobConfig.NodeSelector),
-			Affinity:      setDeploymentAffinity(jobConfig.AffinityList),
+			Affinity:      setJobAffinity(jobConfig.AffinityList),
 			RestartPolicy: model.RestartPolicyNever,
 		},
 	}
@@ -219,6 +219,35 @@ func MarshalJob(jobConfig *model.JobConfig, registryURI string) *model.Job {
 		},
 	}
 }
+
+func setJobAffinity(affinityList []model.JobAffinity) model.K8sAffinity {
+	k8sAffinity := model.K8sAffinity{}
+	if affinityList == nil {
+		return k8sAffinity
+	}
+	for _, affinity := range affinityList {
+		affinityTerm := model.PodAffinityTerm{
+			LabelSelector: model.LabelSelector{
+				MatchExpressions: []model.LabelSelectorRequirement{
+					model.LabelSelectorRequirement{
+						Key:      "app",
+						Operator: "In",
+						Values:   affinity.JobNames,
+					},
+				},
+			},
+			TopologyKey: "kubernetes.io/hostname",
+		}
+		if affinity.AntiFlag == 0 {
+			k8sAffinity.PodAffinity = append(k8sAffinity.PodAffinity, affinityTerm)
+		} else {
+			k8sAffinity.PodAntiAffinity = append(k8sAffinity.PodAntiAffinity, affinityTerm)
+		}
+	}
+
+	return k8sAffinity
+}
+
 func GetK8sJobPods(job *model.JobStatusMO) ([]model.PodMO, error) {
 	logs.Debug("Get Job pods %s/%s", job.ProjectName, job.Name)
 

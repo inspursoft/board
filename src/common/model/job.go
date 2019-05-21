@@ -30,15 +30,20 @@ type PaginatedJobStatus struct {
 }
 
 type JobConfig struct {
-	ID                    int64       `json:"job_id"`
-	Name                  string      `json:"job_name"`
-	ProjectID             int64       `json:"project_id"`
-	ProjectName           string      `json:"project_name"`
-	ContainerList         []Container `json:"container_list"`
-	NodeSelector          string      `json:"node_selector"`
-	AffinityList          []Affinity  `json:"affinity_list"`
-	Parallelism           *int32      `json:"parallelism,omitempty"`
-	Completions           *int32      `json:"completions,omitempty"`
-	ActiveDeadlineSeconds *int64      `json:"active_Deadline_Seconds,omitempty"`
-	BackoffLimit          *int32      `json:"backoff_Limit,omitempty"`
+	ID                    int64         `json:"job_id"`
+	Name                  string        `json:"job_name"`
+	ProjectID             int64         `json:"project_id"`
+	ProjectName           string        `json:"project_name"`
+	ContainerList         []Container   `json:"container_list"`
+	NodeSelector          string        `json:"node_selector"`
+	AffinityList          []JobAffinity `json:"affinity_list"`
+	Parallelism           *int32        `json:"parallelism,omitempty"`
+	Completions           *int32        `json:"completions,omitempty"`
+	ActiveDeadlineSeconds *int64        `json:"active_Deadline_Seconds,omitempty"`
+	BackoffLimit          *int32        `json:"backoff_Limit,omitempty"`
+}
+
+type JobAffinity struct {
+	AntiFlag int      `json:"anti_flag"`
+	JobNames []string `json:"job_names"`
 }
