@@ -5200,6 +5200,36 @@ paths:
           description: User need to log in first.
         500:
           description: Internal errors. 
+  /v1/jobs/selectjobs:
+    get:
+      summary: Return the available job list to be selected.
+      description: |
+        This endpoint returns the available job list to be selected.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name 
+          in: query
+          description: project name for filtering results.
+          required: true
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all selectable job.
+          schema:
+            type: array
+            items:
+              type: string
+              description: The job name.  
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.  
 responses:
   UnsupportedMediaType: 
     description: The Media Type of the request is not supported, it has to be "application/json"
