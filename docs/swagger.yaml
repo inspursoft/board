@@ -7281,7 +7281,7 @@ definitions:
       affinity_list:
         type: array
         items:
-            $ref: '#/definitions/AffinityList' 
+            $ref: '#/definitions/JobAffinity' 
       parallelism:
         type: integer
         format: int32
@@ -7354,3 +7354,12 @@ definitions:
       spec:
         description: The specification of this pod.
         $ref: '#/definitions/Spec2'
+  JobAffinity:
+    type: object  
+    properties:
+      anti_flag:  
+        type: integer
+      job_names:
+        type: array
+        items:
+          type: string
