@@ -11,6 +11,7 @@ import (
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
+
 	"github.com/astaxie/beego/logs"
 )
 
@@ -333,4 +334,16 @@ func (p *JobController) generatePodLogOptions() *model.PodLogOptions {
 	}
 
 	return opt
+}
+func (p *JobController) GetSelectableJobsAction() {
+	projectName := p.GetString("project_name")
+	p.resolveProjectMember(projectName)
+	logs.Info("Get selectable job list for", projectName)
+	jobList, err := service.GetJobsByProjectName(projectName)
+	if err != nil {
+		logs.Error("Failed to get selectable jobs.")
+		p.internalError(err)
+		return
+	}
+	p.renderJSON(jobList)
 }
