@@ -96,9 +96,14 @@ func syncJobK8sStatus(jobList []*model.JobStatusMO) error {
 			reason = "The job is not established in cluster system"
 			status = uncompleted
 		} else if job.Status.CompletionTime == nil {
-			logs.Info("The job does not complete")
-			reason = "The job does not complete"
-			status = uncompleted
+			if job.Status.Active == 1 {
+				logs.Info("The job is running")
+				status = running
+			} else {
+				logs.Info("The job does not complete")
+				reason = "The job does not complete"
+				status = uncompleted
+			}
 		} else {
 			// read the doc https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/
 			success := false

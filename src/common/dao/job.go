@@ -174,7 +174,7 @@ func SyncJobData(job model.JobStatusMO) (int64, error) {
 func GetJobs(field string, value interface{}, selectedFields ...string) ([]model.JobStatusMO, error) {
 	jobs := make([]model.JobStatusMO, 0)
 	o := orm.NewOrm()
-	_, err := o.QueryTable("job_status").Filter(field, value).Filter("deleted", 0).All(&jobs, selectedFields...)
+	_, err := o.QueryTable("job_status").Filter(field, value).Filter("status", 1).Filter("deleted", 0).All(&jobs, selectedFields...)
 	if err != nil {
 		return nil, err
 	}
