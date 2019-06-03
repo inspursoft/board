@@ -1,0 +1,65 @@
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'lg'">
+  <h3 class="modal-title">{{ 'JOB.JOB_CREATE_SET_AFFINITY' | translate }}</h3>
+  <div class="modal-body">
+    <div class="advance-left-config">
+      <job-affinity-card-list
+          [sourceList]="sourceList"
+          [title]="'JOB.JOB_CREATE_COLLABORATIVE'|translate"
+          [viewModel]="'column'"
+          [acceptDrag]="false"
+          [description]="'JOB.JOB_CREATE_AFFINITY_DESCRIPTION' | translate"
+          [disabled]="isActionWip">
+      </job-affinity-card-list>
+    </div>
+    <div class="advance-right-config">
+      <a href="javascript:void(0)" (click)="addNewAffinity()">
+        <clr-icon shape="plus"></clr-icon>
+        {{"JOB.JOB_CREATE_AFFINITY_SETTING" | translate}}
+      </a>
+      <div class="affinity-container" *ngFor="let affinity of selectedList;let i = index">
+        <div class="affinity-group-control">
+          <label>
+            <input type="radio"
+                   [name]="i"
+                   [checked]="!affinity.antiFlag"
+                   [value]="false"
+                   [disabled]="isActionWip"
+                   [(ngModel)]="affinity.antiFlag">
+            {{"JOB.JOB_CREATE_AFFINITY_GROUP" | translate}}
+          </label>
+          <label>
+            <input type="radio"
+                   [name]="i"
+                   [checked]="affinity.antiFlag"
+                   [value]="true"
+                   [disabled]="isActionWip"
+                   [(ngModel)]="affinity.antiFlag">
+            {{"JOB.JOB_CREATE_ANTI_AFFINITY_GROUP" | translate}}
+          </label>
+          <a *ngIf="!isActionWip" [class.disabled]="isActionWip" href="javascript:void(0)" (click)="deleteAffinity(i)">
+            <clr-icon shape="trash"></clr-icon>
+          </a>
+        </div>
+        <job-affinity-card-list
+            [sourceList]="affinity.list"
+            [acceptDrag]="true"
+            [listMinHeight]="150"
+            [viewModel]="'row'"
+            [listBorder]="true"
+            [cardWidth]="220"
+            [disabled]="isActionWip"
+            (onDrop)="onDropEvent($event, affinity.list)"
+            (onRemove)="onRemoveEvent($event, affinity.list)">
+        </job-affinity-card-list>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-default" (click)="modalOpened = false">
+      {{ 'BUTTON.CANCEL' | translate }}
+    </button>
+    <button type="button" class="btn btn-primary" (click)="setAffinity()">
+      {{ 'BUTTON.CONFIRM' | translate }}
+    </button>
+  </div>
+</clr-modal>

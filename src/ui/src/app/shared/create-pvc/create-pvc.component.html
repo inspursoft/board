@@ -12,7 +12,7 @@
     </div>
     <cs-input #pvcNameInput
               [inputIsRequired]="true"
-              [disabled]="isCreateWip"
+              [disabled]="isCreateWip || newPersistentVolumeClaim.projectName == ''"
               [inputLabel]="'STORAGE.PVC_NAME' | translate"
               [inputPattern]="namePattern"
               [inputMaxlength]="50"

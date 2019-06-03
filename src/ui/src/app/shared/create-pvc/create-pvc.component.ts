@@ -2,7 +2,7 @@ import { Component, EventEmitter, OnInit, ViewChild } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ValidationErrors } from '@angular/forms';
 import { Observable, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { Project } from '../../project/project';
 import { CsModalChildBase } from '../cs-modal-base/cs-modal-child-base';
 import { PersistentVolume, PersistentVolumeClaim, PvcAccessMode } from '../shared.types';
@@ -57,7 +57,7 @@ export class CreatePvcComponent extends CsModalChildBase implements OnInit {
 
   checkPvcName(control: HTMLInputElement): Observable<ValidationErrors | null> {
     return this.sharedService.checkPvcNameExist(this.newPersistentVolumeClaim.projectName, control.value)
-      .pipe(
+      .pipe(map(
         () => null,
         catchError((err: HttpErrorResponse) => {
           this.messageService.cleanNotification();
@@ -65,7 +65,8 @@ export class CreatePvcComponent extends CsModalChildBase implements OnInit {
             return of({serviceExist: 'STORAGE.PVC_CREATE_NAME_EXIST'});
           }
           return of(null);
-        }));
+        }))
+      );
   }
 
   changeSelectProject(project: Project) {

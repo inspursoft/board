@@ -12,7 +12,7 @@ import { Subject } from "rxjs";
 import { debounceTime } from "rxjs/operators";
 
 export const ONLY_FOR_CLICK = "OnlyClick";
-const DROP_DOWN_SHOW_COUNT = 20;
+export const DROP_DOWN_SHOW_COUNT = 20;
 export type EnableSelectCallBack = (item: any) => boolean;
 
 @Component({

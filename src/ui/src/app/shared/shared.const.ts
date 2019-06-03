@@ -32,6 +32,7 @@ export const RouteReleaseList = "release-list";
 export const RouteProjects = "projects";
 export const RouteNodes = "nodes";
 export const RouteImages = "images";
+export const RouteTrainingJob = "training-job";
 export const RouteResource = "resource";
 export const RouteConfigMap = "config-map";
 export const RouteUserCenters = "user-center";
@@ -56,8 +57,9 @@ export const MAIN_MENU_DATA: Array<ICsMenuItemData> = [
   {caption: 'SIDE_NAV.NODES', visible: true, icon: 'layers', url: `/${RouteNodes}`},
   {caption: 'SIDE_NAV.IMAGES', visible: true, icon: 'cluster', url: `/${RouteImages}`},
   {caption: 'SIDE_NAV.RESOURCE', visible: true, icon: 'euro', url: `/${RouteResource}`,children:[
-      {caption: 'SIDE_NAV.CONFIG_MAP', visible: true, icon: 'map', url: `/${RouteResource}/${RouteConfigMap}`}
-    ]},
+      {caption: 'SIDE_NAV.CONFIG_MAP', visible: true, icon: 'map', url: `/${RouteResource}/${RouteConfigMap}`}]
+  },
+  {caption: 'SIDE_NAV.TRAINING_JOB', visible: true, icon: 'cluster', url: `/${RouteTrainingJob}`},
   {
     caption: 'SIDE_NAV.STORAGE', visible: true, icon: 'storage', url: `/${RouteStorage}`, children: [
       {caption: 'PV', visible: true, icon: '', url: `/${RouteStorage}/${RoutePV}`},

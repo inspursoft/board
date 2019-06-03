@@ -1,4 +1,5 @@
-<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'lg'" [clrModalClosable]="false" [clrModalPreventClose]="true">
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'lg'" [clrModalClosable]="false"
+           [clrModalPreventClose]="true">
   <h3 class="modal-title">{{"SERVICE.ENV_TITLE" | translate }}</h3>
   <div class="modal-body">
     <div class="input-area-container">
@@ -37,9 +38,12 @@
         </cs-input>
       </div>
       <div class="line-container" *ngIf="isProvideBindConfigMap">
-        <!--<clr-checkbox [clrChecked]="bindConfigMap.get(iEnv)">-->
-          <!--{{"SERVICE.ENV_BIND_CONFIG_MAP" | translate}}-->
-        <!--</clr-checkbox>-->
+        <input clrCheckbox
+               [id]="iEnv"
+               type="checkbox"
+               (click)="changeBindConfigMap(iEnv, envInfo, $event)"
+               [checked]="bindConfigMap.get(iEnv)">
+        <label [for]="iEnv">{{"SERVICE.ENV_BIND_CONFIG_MAP" | translate}}</label>
         <cs-dropdown *ngIf="bindConfigMap.get(iEnv)"
                      [dropdownDefaultText]="getEnvConfigMapDefaltText(iEnv) |translate"
                      [dropdownWidth]="300"

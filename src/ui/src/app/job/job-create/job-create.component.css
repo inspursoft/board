@@ -1,0 +1,48 @@
+cs-input{
+  min-width: 480px;
+}
+
+div.clr-row{
+  margin-top: 10px;
+}
+
+span.filed-text {
+  width: 180px;
+  text-align: right;
+  margin-right: 10px;
+}
+
+clr-icon.dynamic-icon {
+  color: white;
+  background: green;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+clr-icon.dynamic-icon.disabled {
+  cursor: not-allowed;
+  background-color: silver;
+}
+
+clr-icon.dynamic-icon.disabled:hover {
+  cursor: not-allowed;
+}
+
+clr-icon.plus-icon {
+  color: white;
+  background: green;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+clr-icon.plus-icon.disabled {
+  background: silver;
+}
+
+clr-icon.plus-icon.disabled:hover {
+  cursor: not-allowed;
+}

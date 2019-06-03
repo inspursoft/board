@@ -1,0 +1,17 @@
+cs-input {
+  min-width: 480px;
+}
+
+div.modal-body {
+  min-height: 300px;
+}
+
+div.clr-row {
+  margin-top: 10px;
+}
+
+span.filed-text {
+  width: 180px;
+  text-align: right;
+  margin-right: 10px;
+}

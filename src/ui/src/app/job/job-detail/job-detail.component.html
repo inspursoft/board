@@ -1,0 +1,31 @@
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'lg'">
+  <div class="modal-title">
+    {{job.job_name}}
+    <span *ngIf="isLoading" class="spinner spinner-sm"></span>
+  </div>
+  <div class="modal-body">
+    <div class="clr-flex-row" style="background-color: black;color: white; overflow-y: auto;">
+      <pre *ngFor="let log of jobLogs" style="border: none; margin: 0;">{{log}}</pre>
+    </div>
+  </div>
+  <div class="modal-footer clr-justify-content-start">
+    <clr-dropdown>
+      <button type="button" class="btn btn-outline-primary" clrDropdownTrigger>
+        {{currentPod ? currentPod.name : '选择POD'}}
+        <clr-icon shape="caret down"></clr-icon>
+      </button>
+      <clr-dropdown-menu clrPosition="top-left" *clrIfOpen>
+        <label class="dropdown-header">Pods列表</label>
+        <button type="button" *ngFor="let pod of jobPods" (click)="getLogs(pod)" clrDropdownItem>{{pod.name}}</button>
+      </clr-dropdown-menu>
+    </clr-dropdown>
+    <a href="javascript:void(0)"><clr-icon shape="step-forward-2" style="transform: rotate(180deg)"></clr-icon></a>
+    <a href="javascript:void(0)"><clr-icon shape="angle" style="transform: rotate(270deg)"></clr-icon></a>
+    <a href="javascript:void(0)"><clr-icon shape="angle" style="transform: rotate(90deg)"></clr-icon></a>
+    <a href="javascript:void(0)"><clr-icon shape="step-forward-2"></clr-icon></a>
+    {{sinceTime | date:'short'}}
+    <button type="button" class="btn btn-primary" style="margin-left: auto" (click)="modalOpened = false">
+      {{ 'BUTTON.OK' | translate }}
+    </button>
+  </div>
+</clr-modal>

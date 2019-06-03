@@ -30,6 +30,7 @@ const routes: Routes = [
       {path: 'audit', loadChildren: './audit/audit.module#AuditModule'},
       {path: 'user-center', loadChildren: './user-center/user-center.module#UserCenterModule'},
       {path: 'projects', loadChildren: './project/project.module#ProjectModule'},
+      {path: 'training-job', loadChildren: './job/job.module#JobModule'},
       {path: 'resource', loadChildren: './resource/resource.module#ResourceModule'},
       {path: 'helm', loadChildren: './helm/helm.module#HelmModule'},
       {path: 'profile', loadChildren: './profile/profile.module#ProfileModule'},
