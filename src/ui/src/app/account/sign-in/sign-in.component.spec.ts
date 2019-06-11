@@ -59,7 +59,7 @@ describe("SignInComponent", () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [AppModule,AccountModule],
+      imports: [AppModule, AccountModule],
       providers: [
         {provide: Router, useClass: RouterStub},
         {provide: ActivatedRoute, useValue: fakeActivatedRoute}]

@@ -11,6 +11,7 @@ env:
   - build_id=$BUILD_NUMBER
   - access_token_jenkins=0aa0d1cabc926b5ee23780c6c817198fa31f9e96 
 before_script:
+  - source /etc/profile
   - date -s $date_time
   - echo "before script"
   - echo "------------------------"
@@ -35,8 +36,8 @@ before_script:
   - docker tag $registry_ip/board/board-gogits:latest board-gogits:$last_version
   - docker pull $registry_ip/board/dev_jenkins:dev
   - docker tag $registry_ip/board/dev_jenkins:dev dev_jenkins:dev
-  - docker pull $registry_ip/board/dev_uibuilder:v2.3
-  - docker tag $registry_ip/board/dev_uibuilder:v2.3 uibuilder:$last_version
+  - docker pull $registry_ip/board/dev_uibuilder:7.0
+  - docker tag $registry_ip/board/dev_uibuilder:7.0 uibuilder:$last_version
   - docker pull $registry_ip/board/dev_jenkins:dev
   - docker tag $registry_ip/board/dev_jenkins:dev dev_jenkins:dev
  

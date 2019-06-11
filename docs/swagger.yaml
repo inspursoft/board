@@ -1880,6 +1880,89 @@ paths:
           description: Invalid service ID.
         500:
           description: Unexpected internal errors.
+  /v1/services/statefulsets:
+    post:
+      summary: Deploy a statefulset service by this service configuration.
+      description: |
+        This endpoint is aimed to deploy a statefulset service by this service configuration.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Deploy a statefulset service successfully, return serive brief.
+          schema:
+            $ref: '#/definitions/ServiceBrief'
+        401:
+          description: User need to log in first.
+        402:
+          description: Invalid configuration phase.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.        
+  /v1/services/{service_id}/statefulsets:
+    get:
+      summary: Return specific service_name infomation.
+      description: |
+        This endpoint returns specific service information by service_name.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched service information.
+          schema:
+            $ref: '#/definitions/ServiceDetail'
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.  
+    delete:
+      summary: Delete a statefulset service.
+      description: |
+        This endpoint is aimed to delete a statefulset service.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected service ID.  
+      tags:
+        - Products
+      responses:
+        200:
+          description: Delete a statefulset service config successfully.
+        401:
+          description: User need to log in first.
+        402:
+          description: Invalid configuration phase.
+        403:
+          description: Invalid service ID.
+        500:
+          description: Unexpected internal errors.            
   /v1/services/{service_id}/toggle:
     put:  
       summary: Update the service to stop or run.

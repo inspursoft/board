@@ -10,6 +10,8 @@ const (
 	ServiceTypeHelm
 	ServiceTypeDeloymentOnly
 	ServiceTypeClusterIP
+	ServiceTypeStatefulSet
+	ServiceTypeJob
 )
 
 type ServiceStatus struct {
