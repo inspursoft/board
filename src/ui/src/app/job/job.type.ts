@@ -6,7 +6,7 @@ export class PaginationJob {
 
   constructor() {
     this.job_status_list = Array<Job>();
-    this.pagination = {page_count: 1, page_index: 0, page_size: 15, total_count: 0}
+    this.pagination = {page_count: 1, page_index: 1, page_size: 15, total_count: 0}
   }
 }
 

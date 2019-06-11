@@ -1,17 +1,15 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Job, JobPod } from "../job.type";
 import { JobService } from "../job.service";
-import { CsModalChildBase } from "../../shared/cs-modal-base/cs-modal-child-base";
-import { formatDate, formatNumber } from "@angular/common";
-import NumberFormat = Intl.NumberFormat;
-import { formatSize } from "@angular-devkit/build-angular/src/angular-cli-files/utilities/stats";
+import { CsModalChildBase, CsModalChildMessage } from "../../shared/cs-modal-base/cs-modal-child-base";
+import { MessageService } from "../../shared.service/message.service";
 
 @Component({
   selector: 'app-job-detail',
   templateUrl: './job-detail.component.html',
   styleUrls: ['./job-detail.component.css']
 })
-export class JobDetailComponent extends CsModalChildBase implements OnInit {
+export class JobDetailComponent extends CsModalChildMessage implements OnInit {
   @Input() job: Job;
   jobPods: Array<JobPod>;
   jobLogs: Array<{datetime: string, content: string}>;
@@ -20,8 +18,9 @@ export class JobDetailComponent extends CsModalChildBase implements OnInit {
   sinceDate: Date;
   currentPod: JobPod;
 
-  constructor(private jobService: JobService) {
-    super();
+  constructor(private jobService: JobService,
+              protected messageService: MessageService) {
+    super(messageService);
     const now: Date = new Date();
     this.jobPods = Array<JobPod>();
     this.jobLogs = Array<{datetime: string, content: string}>();

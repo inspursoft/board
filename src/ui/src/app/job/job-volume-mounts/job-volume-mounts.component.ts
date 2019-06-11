@@ -3,7 +3,7 @@
  */
 import { Component, ComponentFactoryResolver, EventEmitter, Input, OnInit, Output, ViewContainerRef } from "@angular/core"
 import { HttpErrorResponse } from "@angular/common/http";
-import { CsModalChildBase } from "../../shared/cs-modal-base/cs-modal-child-base";
+import { CsModalChildBase, CsModalChildMessage } from "../../shared/cs-modal-base/cs-modal-child-base";
 import { CreatePvcComponent } from "../../shared/create-pvc/create-pvc.component";
 import { JobVolumeMounts } from "../job.type";
 import { JobService } from "../job.service";
@@ -15,7 +15,7 @@ import { MessageService } from "../../shared.service/message.service";
   templateUrl: "./job-volume-mounts.component.html",
   styleUrls: ["./job-volume-mounts.component.css"]
 })
-export class JobVolumeMountsComponent extends CsModalChildBase implements OnInit {
+export class JobVolumeMountsComponent extends CsModalChildMessage implements OnInit {
   patternName: RegExp = /^[a-z0-9A-Z_]+$/;
   patternMountPath: RegExp = /^[a-z0-9A-Z_/]+$/;
   patternIP: RegExp = /^((?:(?:25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d)))\.){3}(?:25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d))))$/;
@@ -35,10 +35,10 @@ export class JobVolumeMountsComponent extends CsModalChildBase implements OnInit
   @Output() onConfirmEvent: EventEmitter<Array<JobVolumeMounts>>;
 
   constructor(private jobService: JobService,
-              private messageService: MessageService,
+              protected messageService: MessageService,
               private factoryResolver: ComponentFactoryResolver,
               private selfView: ViewContainerRef) {
-    super();
+    super(messageService);
     this.onConfirmEvent = new EventEmitter<Array<JobVolumeMounts>>();
     this.volumeTypes = Array<{name: 'nfs' | 'pvc', value: number}>();
     this.volumeList = Array<JobVolumeMounts>();

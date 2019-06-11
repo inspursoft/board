@@ -163,6 +163,7 @@ export const LANG_ZH_CN = {
     "STATUS_COMPLETED":"完成",
     "STATUS_FAILED":"错误",
     "STATUS_DEPLOYING":"部署中",
+    "STATUS_RUNNING": "运行中",
     "JOB_LIST_NAME":"名称",
     "JOB_LIST_PROJECT_NAME":"项目名称",
     "JOB_LIST_CREATION_TIME":"创建时间",

@@ -25,10 +25,10 @@
 </div>
 <div class="clr-row" *ngFor="let container of newJobDeployment.container_list;let i = index">
   <span class="filed-text">{{"JOB.JOB_CREATE_CONTAINER" | translate}}{{i + 1}}->{{container.name}}:</span>
-  <a (click)="editContainer(container, true)">
+  <a href="javascript:void(0)" (click)="editContainer(container, true)">
     <clr-icon shape="edit"></clr-icon>
   </a>
-  <a (click)="deleteContainer(i)">
+  <a href="javascript:void(0)" (click)="deleteContainer(i)">
     <clr-icon shape="trash"></clr-icon>
   </a>
 </div>

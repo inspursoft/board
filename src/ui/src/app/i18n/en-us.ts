@@ -163,6 +163,7 @@ export const LANG_EN_US = {
     "STATUS_COMPLETED":"Completed",
     "STATUS_FAILED":"Failed",
     "STATUS_DEPLOYING":"Deploying",
+    "STATUS_RUNNING": "Running",
     "JOB_LIST_NAME":"Job name",
     "JOB_LIST_PROJECT_NAME":"Project name",
     "JOB_LIST_CREATION_TIME":"Creation time",

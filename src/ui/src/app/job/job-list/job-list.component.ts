@@ -8,10 +8,9 @@ import { CsModalParentBase } from "../../shared/cs-modal-base/cs-modal-parent-ba
 
 @Component({
   templateUrl: './job-list.component.html',
-  styleUrls: ['./job-list.component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrls: ['./job-list.component.css']
 })
-export class JobListComponent extends CsModalParentBase implements OnInit {
+export class JobListComponent extends CsModalParentBase {
   loadingWIP = false;
   createNewJob = false;
   paginationJobs: PaginationJob;
@@ -54,24 +53,19 @@ export class JobListComponent extends CsModalParentBase implements OnInit {
     }
   }
 
-  ngOnInit(): void {
-    this.retrieve();
-  }
-
   retrieve() {
-    this.loadingWIP = true;
-    this.changeRef.markForCheck();
-    this.jobService.getJobList(this.paginationJobs.pagination.page_index, this.paginationJobs.pagination.page_size).subscribe(
-      (res: PaginationJob) => {
-        this.paginationJobs = res;
-        this.loadingWIP = false;
-        this.changeRef.markForCheck();
-      },
-      () => {
-        this.loadingWIP = false;
-        this.changeRef.markForCheck();
-      }
-    );
+    setTimeout(()=>{
+      this.loadingWIP = true;
+      this.jobService.getJobList(this.paginationJobs.pagination.page_index, this.paginationJobs.pagination.page_size).subscribe(
+        (res: PaginationJob) => {
+          this.paginationJobs = res;
+          this.loadingWIP = false;
+        },
+        () => {
+          this.loadingWIP = false;
+        }
+      );
+    });
   }
 
   deleteJob(job: Job) {
