@@ -82,63 +82,6 @@ func (p *JobController) DeployJobAction() {
 	p.renderJSON(config)
 }
 
-//
-func syncJobK8sStatus(jobList []*model.JobStatusMO) error {
-	var err error
-	reason := ""
-	status := uncompleted
-	// synchronize job status with the cluster system
-	for _, jobStatusMO := range jobList {
-		// Check the job status
-		job, err := service.GetK8sJobByK8sassist(jobStatusMO.ProjectName, jobStatusMO.Name)
-		if job == nil {
-			logs.Info("Failed to get job", err)
-			reason = "The job is not established in cluster system"
-			status = uncompleted
-		} else if job.Status.CompletionTime == nil {
-			if job.Status.Active == 1 {
-				logs.Info("The job is running")
-				status = running
-			} else {
-				logs.Info("The job does not complete")
-				reason = "The job does not complete"
-				status = uncompleted
-			}
-		} else {
-			// read the doc https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/
-			success := false
-			if job.Spec.Completions == nil {
-				if job.Spec.Parallelism == nil {
-					success = job.Status.Succeeded >= 1
-				} else {
-					success = job.Status.Succeeded >= *job.Spec.Parallelism
-				}
-			} else {
-				success = job.Status.Succeeded >= *job.Spec.Completions
-			}
-			if success {
-				logs.Debug("The desired completion number is reached",
-					job.Status.Succeeded, job.Spec.Completions)
-				status = completed
-				reason = "The desired replicas number is reached"
-			} else {
-				logs.Debug("The desired completion number is not reached",
-					job.Status.Succeeded, job.Spec.Completions)
-				status = failed
-				reason = "The desired replicas number is not reached"
-			}
-		}
-		jobStatusMO.Status = status
-		jobStatusMO.Comment = "Reason: " + reason
-		_, err = service.UpdateJob(*jobStatusMO, "status", "comment")
-		if err != nil {
-			logs.Error("Failed to update job status.")
-			break
-		}
-	}
-	return err
-}
-
 //get job list
 func (p *JobController) GetJobListAction() {
 	jobName := p.GetString("job_name")
@@ -152,7 +95,7 @@ func (p *JobController) GetJobListAction() {
 			p.internalError(err)
 			return
 		}
-		err = syncJobK8sStatus(jobStatus)
+		err = service.SyncJobK8sStatus(jobStatus)
 		if err != nil {
 			p.internalError(err)
 			return
@@ -164,7 +107,7 @@ func (p *JobController) GetJobListAction() {
 			p.internalError(err)
 			return
 		}
-		err = syncJobK8sStatus(paginatedJobStatus.JobStatusList)
+		err = service.SyncJobK8sStatus(paginatedJobStatus.JobStatusList)
 		if err != nil {
 			p.internalError(err)
 			return
@@ -180,10 +123,10 @@ func (p *JobController) GetJobAction() {
 		return
 	}
 	//Judge authority
-	_ = p.resolveUserPrivilegeByID(j.ProjectID)
+	p.resolveUserPrivilegeByID(j.ProjectID)
 
 	jobStatus := []*model.JobStatusMO{j}
-	err = syncJobK8sStatus(jobStatus)
+	err = service.SyncJobK8sStatus(jobStatus)
 	if err != nil {
 		p.internalError(err)
 		return
@@ -214,7 +157,6 @@ func (p *JobController) DeleteJobAction() {
 	}
 	if !isSuccess {
 		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Failed to delete job with ID: %d", j.ID))
-		return
 	}
 
 }
@@ -247,7 +189,6 @@ func (p *JobController) JobExists() {
 	}
 	if isJobExists {
 		p.customAbort(http.StatusConflict, jobNameDuplicateErr.Error())
-		return
 	}
 }
 
@@ -296,7 +237,7 @@ func (p *JobController) generatePodLogOptions() *model.PodLogOptions {
 	if err != nil {
 		logs.Warn("Follow parameter %s is invalid: %+v", p.GetString("follow"), err)
 	}
-	opt.Previous, err = p.GetBool("privious", false)
+	opt.Previous, err = p.GetBool("previous", false)
 	if err != nil {
 		logs.Warn("Privious parameter %s is invalid: %+v", p.GetString("privious"), err)
 	}
@@ -305,35 +246,35 @@ func (p *JobController) generatePodLogOptions() *model.PodLogOptions {
 		logs.Warn("Timestamps parameter %s is invalid: %+v", p.GetString("timestamps"), err)
 	}
 
-	if p.GetString("sinceSeconds") != "" {
-		since, err := p.GetInt64("sinceSeconds")
+	if p.GetString("since_seconds") != "" {
+		since, err := p.GetInt64("since_seconds")
 		if err != nil {
-			logs.Warn("SinceSeconds parameter %s is invalid: %+v", p.GetString("sinceSeconds"), err)
+			logs.Warn("SinceSeconds parameter %s is invalid: %+v", p.GetString("since_seconds"), err)
 		} else {
 			opt.SinceSeconds = &since
 		}
 	}
 
-	since := p.GetString("sinceTime")
+	since := p.GetString("since_time")
 	if since != "" {
 		sinceTime, err := time.Parse(time.RFC3339, since)
 		if err != nil {
-			logs.Warn("SinceTime parameter %s is invalid: %+v", since, err)
+			logs.Warn("since_time parameter %s is invalid: %+v", since, err)
 		} else {
 			opt.SinceTime = &sinceTime
 		}
 	}
 
-	tail, err := p.GetInt64("tailLines", -1)
+	tail, err := p.GetInt64("tail_lines", -1)
 	if err != nil {
-		logs.Warn("TailLines parameter %s is invalid: %+v", p.GetString("tailLines"), err)
+		logs.Warn("tail_lines parameter %s is invalid: %+v", p.GetString("tail_lines"), err)
 	} else if tail != -1 {
 		opt.TailLines = &tail
 	}
 
-	limit, err := p.GetInt64("limitBytes", -1)
+	limit, err := p.GetInt64("limit_bytes", -1)
 	if err != nil {
-		logs.Warn("LimitBytes parameter %s is invalid: %+v", p.GetString("limitBytes"), err)
+		logs.Warn("limit_bytes parameter %s is invalid: %+v", p.GetString("limit_bytes"), err)
 	} else if limit != -1 {
 		opt.LimitBytes = &limit
 	}

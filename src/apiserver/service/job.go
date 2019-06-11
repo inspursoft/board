@@ -9,6 +9,7 @@ import (
 	"git/inspursoft/board/src/common/k8sassist"
 	"git/inspursoft/board/src/common/k8sassist/corev1/cgv5/types"
 	"git/inspursoft/board/src/common/model"
+
 	"github.com/astaxie/beego/logs"
 )
 
@@ -297,4 +298,60 @@ func GetK8sJobLogs(job *model.JobStatusMO, podName string, opt *model.PodLogOpti
 		KubeConfigPath: kubeConfigPath(),
 	})
 	return k8sclient.AppV1().Pod(job.ProjectName).GetLogs(podName, opt)
+}
+
+func SyncJobK8sStatus(jobList []*model.JobStatusMO) error {
+	var err error
+	reason := ""
+	status := model.Uncompleted
+	// synchronize job status with the cluster system
+	for _, jobStatusMO := range jobList {
+		// Check the job status
+		job, err := GetK8sJobByK8sassist(jobStatusMO.ProjectName, jobStatusMO.Name)
+		if job == nil {
+			logs.Info("Failed to get job", err)
+			reason = "The job is not established in cluster system"
+			status = model.Uncompleted
+		} else if job.Status.CompletionTime == nil {
+			if job.Status.Active == 1 {
+				logs.Info("The job is running")
+				status = model.Running
+			} else {
+				logs.Info("The job does not complete")
+				reason = "The job does not complete"
+				status = model.Uncompleted
+			}
+		} else {
+			// read the doc https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/
+			success := false
+			if job.Spec.Completions == nil {
+				if job.Spec.Parallelism == nil {
+					success = job.Status.Succeeded >= 1
+				} else {
+					success = job.Status.Succeeded >= *job.Spec.Parallelism
+				}
+			} else {
+				success = job.Status.Succeeded >= *job.Spec.Completions
+			}
+			if success {
+				logs.Debug("The desired completion number is reached",
+					job.Status.Succeeded, job.Spec.Completions)
+				status = model.Completed
+				reason = "The desired replicas number is reached"
+			} else {
+				logs.Debug("The desired completion number is not reached",
+					job.Status.Succeeded, job.Spec.Completions)
+				status = model.Failed
+				reason = "The desired replicas number is not reached"
+			}
+		}
+		jobStatusMO.Status = status
+		jobStatusMO.Comment = "Reason: " + reason
+		_, err = UpdateJob(*jobStatusMO, "status", "comment")
+		if err != nil {
+			logs.Error("Failed to update job status.")
+			break
+		}
+	}
+	return err
 }

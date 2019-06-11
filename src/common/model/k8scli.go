@@ -88,11 +88,11 @@ type PodLogOptions struct {
 	Container    string     `json:"container,omitempty"`
 	Follow       bool       `json:"follow,omitempty"`
 	Previous     bool       `json:"previous,omitempty"`
-	SinceSeconds *int64     `json:"sinceSeconds,omitempty"`
-	SinceTime    *time.Time `json:"sinceTime,omitempty"`
+	SinceSeconds *int64     `json:"since_seconds,omitempty"`
+	SinceTime    *time.Time `json:"since_time,omitempty"`
 	Timestamps   bool       `json:"timestamps,omitempty"`
-	TailLines    *int64     `json:"tailLines,omitempty"`
-	LimitBytes   *int64     `json:"limitBytes,omitempty"`
+	TailLines    *int64     `json:"tail_lines,omitempty"`
+	LimitBytes   *int64     `json:"limit_bytes,omitempty"`
 }
 
 type ObjectMeta struct {

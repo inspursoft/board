@@ -5165,7 +5165,7 @@ paths:
           required: false
           type: integer
           format: int64
-        - name: sinceTime 
+        - name: since_time 
           in: query
           description: The start time of logs.
           required: false
@@ -5175,13 +5175,13 @@ paths:
           description: Whether show the timestamps in logs.
           required: false
           type: boolean
-        - name: tailLines 
+        - name: tail_lines 
           in: query
           description: The tail lines of logs.
           required: false
           type: integer
           format: int64
-        - name: limitBytes 
+        - name: limit_bytes 
           in: query
           description: The limit size in bytes of logs.
           required: false
