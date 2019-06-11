@@ -60,16 +60,16 @@ export class JobListComponent extends CsModalParentBase implements OnInit {
 
   retrieve() {
     this.loadingWIP = true;
-    this.changeRef.detectChanges();
+    this.changeRef.markForCheck();
     this.jobService.getJobList(this.paginationJobs.pagination.page_index, this.paginationJobs.pagination.page_size).subscribe(
-      (res: PaginationJob) => this.paginationJobs = res,
-      () => {
+      (res: PaginationJob) => {
+        this.paginationJobs = res;
         this.loadingWIP = false;
-        this.changeRef.detectChanges();
+        this.changeRef.markForCheck();
       },
       () => {
         this.loadingWIP = false;
-        this.changeRef.detectChanges();
+        this.changeRef.markForCheck();
       }
     );
   }

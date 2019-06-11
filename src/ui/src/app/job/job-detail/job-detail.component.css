@@ -3,7 +3,7 @@ cs-input {
 }
 
 div.modal-body {
-  min-height: 300px;
+  min-height: 400px;
 }
 
 div.clr-row {
@@ -14,4 +14,21 @@ span.filed-text {
   width: 180px;
   text-align: right;
   margin-right: 10px;
+}
+
+a.disabled {
+  color: gray;
+}
+
+a.disabled:hover {
+  cursor: not-allowed;
+}
+
+div.log-container {
+  max-height: 350px;
+  overflow-y: auto;
+  background-color: black;
+  color: white;
+  display: flex;
+  flex-direction: column;
 }

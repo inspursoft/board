@@ -2,6 +2,9 @@ import { Component, Input, OnInit } from '@angular/core';
 import { Job, JobPod } from "../job.type";
 import { JobService } from "../job.service";
 import { CsModalChildBase } from "../../shared/cs-modal-base/cs-modal-child-base";
+import { formatDate, formatNumber } from "@angular/common";
+import NumberFormat = Intl.NumberFormat;
+import { formatSize } from "@angular-devkit/build-angular/src/angular-cli-files/utilities/stats";
 
 @Component({
   selector: 'app-job-detail',
@@ -11,16 +14,21 @@ import { CsModalChildBase } from "../../shared/cs-modal-base/cs-modal-child-base
 export class JobDetailComponent extends CsModalChildBase implements OnInit {
   @Input() job: Job;
   jobPods: Array<JobPod>;
-  jobLogs: Array<string>;
+  jobLogs: Array<{datetime: string, content: string}>;
   isLoading = false;
-  sinceTime: Date;
+  sinceTime: string;
+  sinceDate: Date;
   currentPod: JobPod;
 
   constructor(private jobService: JobService) {
     super();
+    const now: Date = new Date();
     this.jobPods = Array<JobPod>();
-    this.jobLogs = Array<string>();
-    this.sinceTime = new Date(Date.now());
+    this.jobLogs = Array<{datetime: string, content: string}>();
+    this.sinceDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+    const num = Number(now.getHours());
+    console.log();
+    this.sinceTime = `${this.getFormatNumber(now.getHours())}:${this.getFormatNumber(now.getMinutes())}`;
   }
 
   ngOnInit() {
@@ -32,15 +40,55 @@ export class JobDetailComponent extends CsModalChildBase implements OnInit {
     );
   }
 
+  getFormatNumber(num: number): string {
+    const r = Number(num).toString();
+    return r.length <= 1 ? `0${r}` : r;
+  }
+
+  getSearchDateTime(): Date {
+    const h = Number(this.sinceTime.split(':')[0]);
+    const m = Number(this.sinceTime.split(':')[1]);
+    return new Date(
+      this.sinceDate.getFullYear(),
+      this.sinceDate.getMonth(),
+      this.sinceDate.getDate(),
+      h, m, 0);
+  }
+
+  setSinceDate(date: Date) {
+    this.sinceDate = date;
+    this.getLogs(this.currentPod);
+  }
+
+  setSinceTime(event: Event) {
+    const time = (event.target as HTMLInputElement).value;
+    if (time && time !== '') {
+      this.sinceTime = time;
+    }
+  }
+
+  refreshLogs() {
+    if (this.currentPod && !this.isLoading) {
+      this.getLogs(this.currentPod);
+    }
+  }
+
   getLogs(pod: JobPod) {
-    const startSecond = 20;
     this.currentPod = pod;
     this.isLoading = true;
-    this.jobService.getJobLogs(this.job, pod, {
+    this.jobLogs.splice(0, this.jobLogs.length);
+    this.jobService.getJobLogs(this.job, this.currentPod, {
       timestamps: true,
-      sinceTime: this.sinceTime.toISOString()
-    }).subscribe(
-      (res: string) => this.jobLogs = res.split(/\n/),
+      limitBytes: 1024,
+      sinceTime: this.getSearchDateTime().toISOString()
+    }).subscribe((res: string) => {
+        res.split(/\n/).forEach((log: string) => {
+          const arrLog = log.split(" ");
+          if (arrLog.length == 2){
+            this.jobLogs.push({datetime: arrLog[0], content: `   ${arrLog[1]}`});
+          }
+        })
+      },
       () => this.isLoading = false,
       () => this.isLoading = false
     );

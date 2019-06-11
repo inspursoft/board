@@ -125,7 +125,7 @@ export const LANG_EN_US = {
     "MEMBERS": "Members",
     "NODES": "Nodes",
     "IMAGES": "Images",
-    "TRAINING_JOB": "Training job",
+    "TRAINING_JOB": "Job",
     "RESOURCE": "Resource",
     "CONFIG_MAP": "Config map",
     "STORAGE": "Storage",
@@ -224,7 +224,12 @@ export const LANG_EN_US = {
     "JOB_CREATE_BACKOFF_LIMIT":"Backoff limit",
     "JOB_CREATE_SUCCESSFULLY": "Job create successfully.",
     "JOB_CREATE_FAILED": "Job create failed.",
-    "JOB_CREATE_CONTAINER_COUNT": "Please add a container at least."
+    "JOB_CREATE_CONTAINER_COUNT": "Please add a container at least.",
+    "JOB_DETAIL_SELECT_POD":"select pod",
+    "JOB_DETAIL_POD_LIST":"Pod list",
+    "JOB_DETAIL_SINCE_DATETIME":"Since datetime",
+    "JOB_DETAIL_TOTAL_LOGS":"Total logs",
+    "JOB_DETAIL_MAX_LOGS":"Max logs",
   },
   "PROJECT": {
     "CREATE_PROJECT": "Create Project",
