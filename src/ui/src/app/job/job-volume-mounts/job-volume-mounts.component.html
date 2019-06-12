@@ -69,7 +69,7 @@
                           (onCheck)="volumeData.target_path = $event">
                 </cs-input>
             </div>
-            <div *ngIf="volumeData.volume_type == 'nfs' && volumeData.containerPathFlag"
+            <div *ngIf="volumeData.volume_type == 'nfs' && volumeData.container_path_flag == 1"
                  class="dynamic-line-container">
                 <cs-input [inputLabel]="'SERVICE.VOLUME_FILE'| translate"
                           [simpleFiled]="volumeData.target_file"

@@ -55,10 +55,10 @@ export class JobAffinityComponent extends CsModalChildBase {
     this.jobService.getCollaborativeJobs(this.projectName).subscribe((res: Array<Job>) => {
       this.isActionWip = false;
       res.forEach((job: Job) => {
-        let jobNotInUsed = this.affinityList.find(
+        let jobInUsed = this.affinityList.find(
           (jobAffinity: JobAffinity) => jobAffinity.job_names.find(
-            (serviceName: string) => serviceName === job.job_name) === undefined);
-        if (jobNotInUsed) {
+            (jobName: string) => jobName === job.job_name) !== undefined);
+        if (!jobInUsed) {
           let jobCard = new JobAffinityCardData();
           jobCard.jobName = job.job_name;
           jobCard.status = DragStatus.dsReady;
@@ -74,13 +74,16 @@ export class JobAffinityComponent extends CsModalChildBase {
   }
 
   setAffinity() {
-    this.affinityList.splice(0, this.selectedList.length);
+    this.affinityList.splice(0, this.affinityList.length);
     this.selectedList.forEach((selected: {antiFlag: boolean, list: Array<JobAffinityCardData>}) => {
-      const affinity = new JobAffinity();
-      affinity.anti_flag = selected.antiFlag ? 1 : 0;
-      selected.list.forEach((jobCard: JobAffinityCardData) => affinity.job_names.push(jobCard.jobName));
-      this.affinityList.push(affinity);
+      if (selected.list.length > 0){
+        const affinity = new JobAffinity();
+        affinity.anti_flag = selected.antiFlag ? 1 : 0;
+        selected.list.forEach((jobCard: JobAffinityCardData) => affinity.job_names.push(jobCard.jobName));
+        this.affinityList.push(affinity);
+      }
     });
+    this.modalOpened = false;
   }
 
   openModal(): Observable<any> {

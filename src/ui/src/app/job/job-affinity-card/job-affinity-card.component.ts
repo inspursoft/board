@@ -3,7 +3,7 @@ import { JobAffinityCardData } from "../job.type";
 import { DragStatus } from "../../shared/shared.types";
 
 @Component({
-  selector: 'affinity-card',
+  selector: 'job-affinity-card',
   styleUrls: ['./job-affinity-card.component.css'],
   templateUrl: './job-affinity-card.component.html'
 })

@@ -21,7 +21,11 @@
     <clr-dg-cell>{{job.job_owner_name}}</clr-dg-cell>
     <clr-dg-cell>{{job.job_source}}</clr-dg-cell>
     <clr-dg-cell>{{job.job_comment}}</clr-dg-cell>
-    <clr-dg-cell>{{getJobStatus(job.job_status) | translate}}</clr-dg-cell>
+    <clr-dg-cell>
+      <span [ngClass]="getStatusClass(job.job_status)">
+        {{getJobStatus(job.job_status) | translate}}
+      </span>
+    </clr-dg-cell>
     <clr-dg-cell>
       <a href="javascript:void(0)" (click)="showJobDetail(job)">
         <clr-icon shape="info-standard"></clr-icon>

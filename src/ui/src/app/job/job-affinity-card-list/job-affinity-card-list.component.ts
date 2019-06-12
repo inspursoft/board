@@ -14,7 +14,6 @@ export class JobAffinityCardListComponent {
   @Input() listMinHeight = 100;
   @Input() listBorder = false;
   @Input() disabled = false;
-  @Input() cardWidth = 0;
   @Input() viewModel: JobAffinityCardListView = JobAffinityCardListView.aclvColumn;
   @Output() onDrop: EventEmitter<string>;
   @Output() onRemove: EventEmitter<JobAffinityCardData>;

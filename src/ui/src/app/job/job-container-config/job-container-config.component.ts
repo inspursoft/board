@@ -42,6 +42,7 @@ export class JobContainerConfigComponent extends CsModalChildBase implements OnI
   }
 
   ngOnInit() {
+    this.generateDescriptions();
   }
 
   createNewContainer() {
@@ -78,7 +79,7 @@ export class JobContainerConfigComponent extends CsModalChildBase implements OnI
     let isExists = false;
     let portBuf = new Set<number>();
     this.containerList.forEach((container) => {
-      if (container.name !== this.container.name){
+      if (container.name !== this.container.name) {
         container.container_port.forEach(port => portBuf.add(port))
       }
     });
@@ -154,22 +155,26 @@ export class JobContainerConfigComponent extends CsModalChildBase implements OnI
     });
   }
 
+  generateDescriptions() {
+    this.volumesDescriptions.splice(0, this.volumesDescriptions.length);
+    this.container.volume_mounts.forEach((volume: JobVolumeMounts) => {
+      if (volume.volume_type === 'nfs') {
+        const des = `NFS[${volume.volume_name}]`;
+        this.volumesDescriptions.push(des);
+      } else if (volume.volume_type === 'pvc') {
+        const des = `PVC[${volume.volume_name}]`;
+        this.volumesDescriptions.push(des);
+      }
+    });
+  }
+
   editVolumeMount() {
     let factory = this.factoryResolver.resolveComponentFactory(JobVolumeMountsComponent);
     let componentRef = this.view.createComponent(factory);
     componentRef.instance.volumeDataList = this.container.volume_mounts;
     componentRef.instance.onConfirmEvent.subscribe((res: Array<JobVolumeMounts>) => {
       this.container.volume_mounts = res;
-      this.volumesDescriptions.splice(0, this.volumesDescriptions.length);
-      res.forEach((volume: JobVolumeMounts) => {
-        if (volume.volume_type === 'nfs') {
-          const des = `NFS[${volume.volume_name}:${volume.target_storage_service}${volume.container_path}]`;
-          this.volumesDescriptions.push(des);
-        } else if (volume.volume_type === 'pvc') {
-          const des = `PVC[${volume.volume_name}:${volume.target_pvc}:${volume.container_path}]`;
-          this.volumesDescriptions.push(des);
-        }
-      });
+      this.generateDescriptions();
     });
     componentRef.instance.openModal().subscribe(() => this.view.remove(this.view.indexOf(componentRef.hostView)));
   }

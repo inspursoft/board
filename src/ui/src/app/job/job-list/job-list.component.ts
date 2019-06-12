@@ -53,6 +53,27 @@ export class JobListComponent extends CsModalParentBase {
     }
   }
 
+  getStatusClass(status: number) {
+    switch (status) {
+      case 0:
+        return 'preparing';
+      case 1:
+        return 'running';
+      case 2:
+        return 'stopped';
+      case 3:
+        return 'uncompleted';
+      case 4:
+        return 'warning';
+      case 5:
+        return 'deploying';
+      case 6:
+        return 'completed';
+      case 7:
+        return 'failed';
+    }
+  }
+
   retrieve() {
     setTimeout(()=>{
       this.loadingWIP = true;

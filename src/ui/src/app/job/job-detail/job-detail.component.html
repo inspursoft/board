@@ -12,7 +12,12 @@
         </button>
         <clr-dropdown-menu *clrIfOpen>
           <label class="dropdown-header">{{"JOB.JOB_DETAIL_POD_LIST" | translate}}</label>
-          <button type="button" *ngFor="let pod of jobPods" (click)="getLogs(pod)" clrDropdownItem>{{pod.name}}</button>
+          <button type="button"
+                  clrDropdownItem
+                  [disabled]="isLoading"
+                  *ngFor="let pod of jobPods" (click)="getLogs(pod)">
+            {{pod.name}}
+          </button>
         </clr-dropdown-menu>
       </clr-dropdown>
       {{"JOB.JOB_DETAIL_SINCE_DATETIME" | translate}}:
@@ -22,11 +27,11 @@
              [clrDate]="sinceDate"
              (clrDateChange)="setSinceDate($event)"
              clrDate>
-        <input type="time"
-               id="time"
-               [disabled]="!currentPod || isLoading"
-               [value]="sinceTime"
-               (change)="setSinceTime($event)">
+      <input type="time"
+             id="time"
+             [disabled]="!currentPod || isLoading"
+             [value]="sinceTime"
+             (change)="setSinceTime($event)">
       <a href="javascript:void (0)" [class.disabled]="!currentPod || isLoading" (click)="refreshLogs()">
         <clr-icon shape="refresh"></clr-icon>
       </a>
@@ -38,7 +43,7 @@
     </div>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-primary"  (click)="modalOpened = false">
+    <button type="button" class="btn btn-primary" (click)="modalOpened = false">
       {{ 'BUTTON.OK' | translate }}
     </button>
   </div>

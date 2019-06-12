@@ -1,0 +1,15 @@
+span.preparing, span.running {
+  color: green;
+}
+
+span.deploying, span.completed {
+  color: blue;
+}
+
+span.stopped, span.uncompleted, span.failed {
+  color: darkred;
+}
+
+span.warning {
+  color: orchid;
+}

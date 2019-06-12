@@ -21,8 +21,6 @@ div.card-row-list-container {
 
 div.drag-row-container {
   padding: 5px;
-  display: flex;
-  flex-wrap: wrap;
 }
 
 div.drag-active {

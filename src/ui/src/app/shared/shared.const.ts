@@ -59,7 +59,7 @@ export const MAIN_MENU_DATA: Array<ICsMenuItemData> = [
   {caption: 'SIDE_NAV.RESOURCE', visible: true, icon: 'euro', url: `/${RouteResource}`,children:[
       {caption: 'SIDE_NAV.CONFIG_MAP', visible: true, icon: 'map', url: `/${RouteResource}/${RouteConfigMap}`}]
   },
-  {caption: 'SIDE_NAV.TRAINING_JOB', visible: true, icon: 'cluster', url: `/${RouteTrainingJob}`},
+  {caption: 'SIDE_NAV.TRAINING_JOB', visible: true, icon: 'event', url: `/${RouteTrainingJob}`},
   {
     caption: 'SIDE_NAV.STORAGE', visible: true, icon: 'storage', url: `/${RouteStorage}`, children: [
       {caption: 'PV', visible: true, icon: '', url: `/${RouteStorage}/${RoutePV}`},

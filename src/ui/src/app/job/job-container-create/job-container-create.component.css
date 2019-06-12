@@ -2,6 +2,11 @@ div.modal-body {
   min-height: 300px;
 }
 
+div.card-block {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
 div.clr-flex-nowrap div.card {
   margin: 0 10px;
   width: auto;
