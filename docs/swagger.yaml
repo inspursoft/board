@@ -5159,7 +5159,7 @@ paths:
           description: Whether show previous container logs.
           required: false
           type: boolean
-        - name: sinceSeconds 
+        - name: since_seconds 
           in: query
           description: The start seconds of logs.
           required: false
