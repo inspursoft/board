@@ -32,11 +32,11 @@ export class JobService {
         container: query && query.container ? query.container : '',
         follow: query && query.follow ? 'true' : 'false',
         previous: query && query.previous ? 'true' : 'false',
-        sinceSeconds: query && query.sinceSeconds ? query.sinceSeconds.toString() : '0',
-        sinceTime: query && query.sinceTime ? query.sinceTime : '',
+        since_seconds: query && query.sinceSeconds ? query.sinceSeconds.toString() : '0',
+        since_time: query && query.sinceTime ? query.sinceTime : '',
         timestamps: query && query.timestamps ? 'true' : 'false',
-        tailLines: query && query.tailLines ? query.tailLines.toString() : '0',
-        limitBytes: query && query.limitBytes ? query.limitBytes.toString() : '0'
+        tail_lines: query && query.tailLines ? query.tailLines.toString() : '0',
+        limit_bytes: query && query.limitBytes ? query.limitBytes.toString() : '0'
       }
     });
   }
