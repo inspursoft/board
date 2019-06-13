@@ -119,6 +119,7 @@ type ConfigServiceStep struct {
 	ProjectName         string            `json:"project_name"`
 	ServiceID           int64             `json:"service_id"`
 	ServiceName         string            `json:"service_name"`
+	ServiceType         int               `json:"service_type"`
 	Public              int               `json:"service_public"`
 	NodeSelector        string            `json:"node_selector"`
 	Instance            int               `json:"instance"`

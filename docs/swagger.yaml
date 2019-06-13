@@ -1704,6 +1704,11 @@ paths:
           in: query
           type: string
           required: false
+        - name: service_type
+          in: query
+          type: integer
+          format: int64
+          required: false           
         - name: cluster_ip
           in: query
           type: string
@@ -5350,6 +5355,10 @@ definitions:
         type: integer 
         format: int32
         description: The flag to indicate the publicity of the service (1 is public, 0 is non-public).
+      service_type:
+        type: integer 
+        format: int32
+        description: The flag to indicate the type of the service (0 is unknown, 1 for normal).        
   ServiceDetail:
     type: object
     properties:
@@ -5718,7 +5727,7 @@ definitions:
       service_type:
         type: integer   
         format: int32   
-        description: The service type, 0 Unkonwn, 1 NormalWizard, 2 HelmService.      
+        description: The service type, 0 Unkonwn, 1 NormalWizard, 2 HelmService, 5 StatefulSet.      
       service_public:
         type: integer   
         format: int32
