@@ -7,6 +7,7 @@ import (
 
 	"strconv"
 
+	appsv1beta1 "k8s.io/api/apps/v1beta1"
 	appsv1beta2 "k8s.io/api/apps/v1beta2"
 	autoscalev1 "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/api/core/v1"
@@ -1648,4 +1649,149 @@ func UpdateK8sConfigMap(k8sCM *v1.ConfigMap, cm *model.ConfigMap) {
 	}
 	k8sCM.Data = cm.Data
 
+}
+
+// ToK8sStatefulSet is to generate k8s statefulset from model statefulset
+func ToK8sStatefulSet(statefulset *model.StatefulSet) *appsv1beta1.StatefulSet {
+	if statefulset == nil {
+		return nil
+	}
+	var templ v1.PodTemplateSpec
+	if t := ToK8sPodTemplateSpec(&statefulset.Spec.Template); t != nil {
+		templ = *t
+	}
+	//rep := deployment.Spec.Replicas
+
+	return &appsv1beta1.StatefulSet{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "StatefulSet",
+			APIVersion: "apps/v1beta1",
+		},
+		ObjectMeta: ToK8sObjectMeta(statefulset.ObjectMeta),
+		Spec: appsv1beta1.StatefulSetSpec{
+			Replicas: statefulset.Spec.Replicas,
+			Selector: &metav1.LabelSelector{
+				MatchLabels: statefulset.Spec.Selector.MatchLabels,
+			},
+			Template: templ,
+			//TODO: support storage class later
+			//VolumeClaimTemplates:   statefulset.Spec.VolumeClaimTemplates,
+			ServiceName: statefulset.Spec.ServiceName,
+			//UpdateStrategy:  statefulset.Spec.UpdateStrategy,
+			//RevisionHistoryLimit:  statefulset.Spec.RevisionHistoryLimit,
+		},
+		Status: appsv1beta1.StatefulSetStatus{
+			Replicas:        statefulset.Status.Replicas,
+			ReadyReplicas:   statefulset.Status.ReadyReplicas,
+			CurrentReplicas: statefulset.Status.CurrentReplicas,
+			UpdatedReplicas: statefulset.Status.UpdatedReplicas,
+			CurrentRevision: statefulset.Status.CurrentRevision,
+			UpdateRevision:  statefulset.Status.UpdateRevision,
+		},
+	}
+}
+
+// FromK8sStatefulSet is to generate model StatefulSet from k8s StatefulSet
+func FromK8sStatefulSet(statefulset *appsv1beta1.StatefulSet) *model.StatefulSet {
+	if statefulset == nil {
+		return nil
+	}
+
+	var template model.PodTemplateSpec
+	if t := FromK8sPodTemplateSpec(&statefulset.Spec.Template); t != nil {
+		template = *t
+	}
+	return &model.StatefulSet{
+		ObjectMeta: FromK8sObjectMeta(statefulset.ObjectMeta),
+		Spec: model.StatefulSetSpec{
+			Replicas: statefulset.Spec.Replicas,
+			Selector: &model.LabelSelector{
+				MatchLabels: statefulset.Spec.Selector.MatchLabels,
+			},
+			Template: template,
+			//TODO: support storage class later
+			//VolumeClaimTemplates:
+			ServiceName: statefulset.Spec.ServiceName,
+			//UpdateStrategy:
+			//RevisionHistoryLimit: statefulset.Spec.RevisionHistoryLimit,
+		},
+		Status: model.StatefulSetStatus{
+			ObservedGeneration: statefulset.Status.ObservedGeneration,
+			Replicas:           statefulset.Status.Replicas,
+			ReadyReplicas:      statefulset.Status.ReadyReplicas,
+			UpdatedReplicas:    statefulset.Status.UpdatedReplicas,
+			CurrentReplicas:    statefulset.Status.CurrentReplicas,
+			CurrentRevision:    statefulset.Status.CurrentRevision,
+			UpdateRevision:     statefulset.Status.UpdateRevision,
+			CollisionCount:     statefulset.Status.CollisionCount,
+		},
+	}
+}
+
+// FromK8sStatefulSetList is to generate model StatefulSetList from k8s StatefulSetList
+func FromK8sStatefulSetList(statefulsetList *appsv1beta1.StatefulSetList) *model.StatefulSetList {
+	if statefulsetList == nil {
+		return nil
+	}
+	items := make([]model.StatefulSet, 0)
+	for i := range statefulsetList.Items {
+		if statefulset := FromK8sStatefulSet(&statefulsetList.Items[i]); statefulset != nil {
+			items = append(items, *statefulset)
+		}
+	}
+	return &model.StatefulSetList{
+		Items: items,
+	}
+}
+
+// GenerateStatefulSetConfig is to generate stateful config
+func GenerateStatefulSetConfig(statefulset *appsv1beta1.StatefulSet) *appsv1beta1.StatefulSet {
+	containersConfig := []v1.Container{}
+	for _, container := range statefulset.Spec.Template.Spec.Containers {
+		containersConfig = append(containersConfig, v1.Container{
+			Name:           container.Name,
+			Image:          container.Image,
+			Command:        container.Command,
+			Args:           container.Args,
+			WorkingDir:     container.WorkingDir,
+			Ports:          container.Ports,
+			EnvFrom:        container.EnvFrom,
+			Env:            container.Env,
+			Resources:      container.Resources,
+			VolumeMounts:   container.VolumeMounts,
+			LivenessProbe:  container.LivenessProbe,
+			ReadinessProbe: container.ReadinessProbe,
+		})
+	}
+	return &appsv1beta1.StatefulSet{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "StatefulSet",
+			APIVersion: "apps/v1beta1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Labels:    statefulset.ObjectMeta.Labels,
+			Name:      statefulset.ObjectMeta.Name,
+			Namespace: statefulset.ObjectMeta.Namespace,
+		},
+		Spec: appsv1beta1.StatefulSetSpec{
+			Replicas: statefulset.Spec.Replicas,
+			Selector: statefulset.Spec.Selector,
+			Template: v1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: statefulset.Spec.Template.ObjectMeta.Labels,
+					Name:   statefulset.Spec.Template.ObjectMeta.Name,
+				},
+				Spec: v1.PodSpec{
+					Affinity:           statefulset.Spec.Template.Spec.Affinity,
+					Volumes:            statefulset.Spec.Template.Spec.Volumes,
+					NodeSelector:       statefulset.Spec.Template.Spec.NodeSelector,
+					ServiceAccountName: statefulset.Spec.Template.Spec.ServiceAccountName,
+					ImagePullSecrets:   statefulset.Spec.Template.Spec.ImagePullSecrets,
+					InitContainers:     statefulset.Spec.Template.Spec.InitContainers,
+					Containers:         containersConfig,
+				},
+			},
+			ServiceName: statefulset.Spec.ServiceName,
+		},
+	}
 }
