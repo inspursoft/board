@@ -65,6 +65,10 @@ func (p *AppV1Client) ConfigMap(namespace string) ConfigMapInterface {
 	return apps.NewConfigMap(namespace, p.Clientset.CoreV1().ConfigMaps(namespace))
 }
 
+func (p *AppV1Client) StatefulSet(namespace string) StatefulSetClientInterface {
+	return apps.NewStatefulSets(namespace, p.Clientset.AppsV1beta1().StatefulSets(namespace))
+}
+
 // AppV1ClientInterface level 1 interface to access others
 type AppV1ClientInterface interface {
 	Discovery() ServerVersionInterface
@@ -79,6 +83,7 @@ type AppV1ClientInterface interface {
 	PersistentVolume() PersistentVolumeInterface
 	PersistentVolumeClaim(namespace string) PersistentVolumeClaimInterface
 	ConfigMap(namespace string) ConfigMapInterface
+	StatefulSet(namespace string) StatefulSetClientInterface
 }
 
 // ServerVersionInterface has a method for retrieving the server's version.
@@ -220,4 +225,20 @@ type ConfigMapInterface interface {
 	//	DeleteCollection(options *meta_v1.DeleteOptions, listOptions meta_v1.ListOptions) error
 	Get(name string) (*model.ConfigMap, error)
 	List() (*model.ConfigMapList, error)
+}
+
+// StatefulSetClientInterface has methods to work with StatefulSet resources of adapter
+type StatefulSetClientInterface interface {
+	Create(*model.StatefulSet) (*model.StatefulSet, []byte, error)
+	Update(*model.StatefulSet) (*model.StatefulSet, []byte, error)
+	UpdateStatus(*model.StatefulSet) (*model.StatefulSet, []byte, error)
+	Delete(name string) error
+	//DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
+	Get(name string) (*model.StatefulSet, []byte, error)
+	//List(opts v1.ListOptions) (*DeploymentList, error)
+	List() (*model.StatefulSetList, error)
+	Patch(name string, pt model.PatchType, data []byte, subresources ...string) (result *model.StatefulSet, err error)
+	PatchToK8s(string, model.PatchType, *model.StatefulSet) (*model.StatefulSet, []byte, error)
+	CreateByYaml(io.Reader) (*model.StatefulSet, error)
+	CheckYaml(io.Reader) (*model.StatefulSet, error)
 }
