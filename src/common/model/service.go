@@ -90,3 +90,18 @@ type ServiceAutoScale struct {
 	CPUPercent int    `json:"cpu_percent" orm:"column(cpu_percent)"`
 	HPAStatus  int    `json:"hpa_status" orm:"column(status)"`
 }
+
+type PodMO struct {
+	Name        string    `json:"name" `
+	ProjectName string    `json:"project_name"`
+	Spec        PodSpecMO `json:"spec"`
+}
+
+type PodSpecMO struct {
+	Containers []ContainerMO `json:"containers"`
+}
+
+type ContainerMO struct {
+	Name  string `json:"name"`
+	Image string `json:"image"`
+}

@@ -44,6 +44,8 @@ const (
 	uncompleted
 	warning
 	deploying
+	completed
+	failed
 )
 
 type ServiceController struct {
