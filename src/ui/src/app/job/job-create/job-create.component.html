@@ -1,0 +1,114 @@
+<div class="clr-row">
+  <span class="filed-text">{{"JOB.JOB_CREATE_SELECT_PROJECT" | translate}}:</span>
+  <cs-dropdown class="custom-margin"
+               #selectProject
+               [dropdownDefaultText]="projectDropdownText | translate"
+               [dropdownWidth]="300"
+               [dropdownList]="projectList"
+               [dropdownListTextKey]="'project_name'"
+               [dropdownCanSelect]="canChangeSelectImageFun"
+               (onChange)="changeSelectProject($event)"
+               (onOnlyClickItem)="clickSelectProject()"></cs-dropdown>
+</div>
+<div class="clr-row">
+  <cs-input [inputIsRequired]="true"
+            [disabled]="isActionWip"
+            [inputPattern]="patternServiceName"
+            [inputMaxlength]="63"
+            [inputLabel]="'JOB.JOB_CREATE_JOB_NAME' | translate"
+            [validatorMessage]="[{validatorKey:'pattern',validatorMessage:'JOB.JOB_CREATE_JOB_NAME_PATTERN_NSG'}]"
+            [customerValidatorAsyncFunc]="checkJobNameFun"
+            [simpleFiled]="newJobDeployment.job_name"
+            [inputPlaceholder]="'JOB.JOB_CREATE_JOB_NAME'| translate"
+            (onCheck)="newJobDeployment.job_name = $event">
+  </cs-input>
+</div>
+<div class="clr-row" *ngFor="let container of newJobDeployment.container_list;let i = index">
+  <span class="filed-text">{{"JOB.JOB_CREATE_CONTAINER" | translate}}{{i + 1}}->{{container.name}}:</span>
+  <a href="javascript:void(0)" (click)="editContainer(container, true)">
+    <clr-icon shape="edit"></clr-icon>
+  </a>
+  <a href="javascript:void(0)" (click)="deleteContainer(i)">
+    <clr-icon shape="trash"></clr-icon>
+  </a>
+</div>
+<div class="clr-row">
+  <span class="filed-text">{{"JOB.JOB_CREATE_ADD_CONTAINER"|translate}}:</span>
+  <a (click)="addNewContainer()">
+    <clr-icon class="dynamic-icon"
+              [class.disabled]="isActionWip || newJobDeployment.project_id == 0"
+              shape="plus"></clr-icon>
+  </a>
+</div>
+<div class="clr-row">
+  <span class="filed-text">{{"JOB.JOB_CREATE_SET_AFFINITY"|translate}}:</span>
+  <clr-icon shape="wrench"
+            class="plus-icon"
+            [ngClass]="{'disabled':isActionWip || newJobDeployment.project_id == 0}"
+            (click)="setAffinity()"></clr-icon>
+</div>
+<div class="clr-row">
+  <span class="filed-text">{{"JOB.JOB_CREATE_NODE_SELECTOR"|translate}}:</span>
+  <cs-dropdown [dropdownList]="nodeSelectorList"
+               [dropdownListTextKey]="'name'"
+               [dropdownDisabled]="isActionWip"
+               [dropdownWidth]="300"
+               [dropdownPosition]="'top-left'"
+               [dropdownDefaultText]="nodeSelectorDropdownText | translate "
+               [curDropdownItem]="curNodeSelector"
+               (onChange)="newJobDeployment.node_selector = $event['value']">
+  </cs-dropdown>
+</div>
+<div class="clr-row">
+  <cs-input [inputIsRequired]="true"
+            [inputFiledType]="1"
+            [inputMin]="1"
+            [inputMax]="99"
+            [disabled]="isActionWip"
+            [inputLabel]="'JOB.JOB_CREATE_PARALLELISM' | translate"
+            [simpleFiled]="newJobDeployment.parallelism"
+            (onCheck)="newJobDeployment.parallelism = $event">
+  </cs-input>
+</div>
+<div class="clr-row">
+  <cs-input [inputIsRequired]="true"
+            [inputFiledType]="1"
+            [inputMin]="1"
+            [inputMax]="99"
+            [disabled]="isActionWip"
+            [inputLabel]="'JOB.JOB_CREATE_COMPLETIONS' | translate"
+            [simpleFiled]="newJobDeployment.completions"
+            (onCheck)="newJobDeployment.completions = $event">
+  </cs-input>
+</div>
+<div class="clr-row">
+  <cs-input [inputIsRequired]="true"
+            [inputFiledType]="1"
+            [inputMin]="1"
+            [inputMax]="99"
+            [disabled]="isActionWip"
+            [inputLabel]="'JOB.JOB_CREATE_ACTIVE_DEADLINE_SECONDS' | translate"
+            [simpleFiled]="newJobDeployment.active_Deadline_Seconds"
+            (onCheck)="newJobDeployment.active_Deadline_Seconds = $event">
+  </cs-input>
+</div>
+<div class="clr-row">
+  <cs-input [inputIsRequired]="true"
+            [inputFiledType]="1"
+            [inputMin]="1"
+            [inputMax]="99"
+            [disabled]="isActionWip"
+            [inputLabel]="'JOB.JOB_CREATE_BACKOFF_LIMIT' | translate"
+            [simpleFiled]="newJobDeployment.backoff_Limit"
+            (onCheck)="newJobDeployment.backoff_Limit = $event">
+  </cs-input>
+</div>
+<div class="clr-row clr-align-items-center">
+  <button class="btn btn-default" [disabled]="isActionWip" (click)="cancelDeploymentJob()">
+    {{ 'BUTTON.CANCEL' | translate }}
+  </button>
+  <button class="btn btn-primary" [disabled]="isActionWip" (click)="deploymentJob()">
+    {{ 'JOB.JOB_LIST_CREATE_JOB' | translate }}
+  </button>
+  <span *ngIf="isActionWip" class="spinner spinner-sm"></span>
+</div>

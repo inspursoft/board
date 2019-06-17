@@ -1,0 +1,37 @@
+div.modal-body {
+  min-height: 300px;
+}
+
+div.card-block {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+div.clr-flex-nowrap div.card {
+  margin: 0 10px;
+  width: auto;
+  flex-basis: 50%;
+  min-height: 270px;
+}
+
+div.modal-title h3 {
+  margin-bottom: auto;
+  margin-top: auto;
+}
+
+ul.list li {
+  height: 28px;
+  line-height: 28px;
+  margin: 5px 0;
+}
+
+ul.list li.selected {
+  background-color: lightseagreen;
+  color: white;
+  font-size: 20px;
+}
+
+ul.list li:hover {
+  cursor: pointer;
+  background-color: lightblue;
+}

@@ -1,0 +1,81 @@
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'lg'">
+  <div class="modal-title clr-row clr-align-items-center">
+    {{ 'JOB.JOB_CREATE_CONFIG_CONTAINER' | translate }}
+    <span *ngIf="isLoading" class="spinner spinner-sm"></span>
+  </div>
+  <div class="modal-body">
+    <cs-input [inputLabel]="'JOB.JOB_CREATE_CONTAINER_NAME' | translate"
+              [inputIsRequired]="true"
+              [inputPattern]="patternContainerName"
+              [disabled]="isEditModel"
+              [simpleFiled]="container.name"
+              [validatorMessage]="[{validatorKey:'pattern',validatorMessage:'SERVICE.STEP_2_CONTAINER_NAME_PATTERN_NSG'}]"
+              (onCheck)="container.name = $event"></cs-input>
+    <cs-input [inputLabel]="'JOB.JOB_CREATE_WORKING_DIR' | translate"
+              [inputPattern]="patternWorkdir"
+              [simpleFiled]="container.working_Dir"
+              [inputPlaceholder]="'JOB.JOB_CREATE_WORK_DIRECTOR'| translate"
+              (onCheck)="container.working_dir = $event"></cs-input>
+    <cs-input [inputType]="1"
+              [inputLabel]="'JOB.JOB_CREATE_VOLUME_MOUNTS' | translate"
+              [simpleFiled]="volumesDescriptions[0]"
+              [inputPlaceholder]="'JOB.JOB_CREATE_CONFIG_VOLUME_MOUNTS'| translate"
+              (onEdit)="editVolumeMount()"></cs-input>
+    <div *ngIf="container.volume_mounts.length > 1" class="volume-info-container">
+        <span class="volume-info" *ngFor="let _ of container.volume_mounts; let i = index">
+          <span *ngIf="i > 0">{{volumesDescriptions[i]}}</span>
+        </span>
+    </div>
+    <cs-input [inputType]="1"
+              [inputLabel]="'JOB.JOB_CREATE_Env' | translate"
+              [simpleFiled]="getEnvsDescription()"
+              [inputPlaceholder]="'JOB.JOB_CREATE_ENVIRONMENT_VARIABLES'| translate"
+              (onEdit)="showEnvironmentValue = true"></cs-input>
+    <cs-input-array [inputArrayType]="1"
+                    [inputArrayMin]="1"
+                    [inputArrayMax]="65535"
+                    [inputArrayLabelText]="'JOB.JOB_CREATE_CONTAINER_PORT' | translate"
+                    [inputArraySource]="container.container_port"></cs-input-array>
+    <cs-input [inputLabel]="'JOB.JOB_CREATE_COMMAND' | translate"
+              [simpleFiled]="container.command"
+              [inputPlaceholder]="'JOB.JOB_CREATE_COMMAND'| translate"
+              (onCheck)="container.command = $event"></cs-input>
+    <cs-input [inputLabel]="'JOB.JOB_CREATE_CPU_REQUEST' | translate"
+              [inputPattern]="patternCpuRequest"
+              [simpleFiled]="container.cpu_request"
+              [inputPlaceholder]="'eg. 100m'"
+              [customerValidatorAsyncFunc]="checkSetCpuRequestFun"
+              (onCheck)="container.cpu_request = $event"></cs-input>
+    <cs-input [inputLabel]="'JOB.JOB_CREATE_MEMORY_REQUEST' | translate"
+              [inputPattern]="patternMemRequest"
+              [customerValidatorAsyncFunc]="checkSetMemRequestFun"
+              [simpleFiled]="container.mem_request"
+              [inputPlaceholder]="'eg. 100Mi'"
+              (onCheck)="container.mem_request = $event"></cs-input>
+    <cs-input [inputLabel]="'JOB.JOB_CREATE_CPU_LIMIT' | translate"
+              [simpleFiled]="container.cpu_limit"
+              [inputPlaceholder]="'eg. 1024m'"
+              [inputPattern]="patternCpuLimit"
+              (onCheck)="container.cpu_limit = $event"></cs-input>
+    <cs-input [inputLabel]="'JOB.JOB_CREATE_MEMORY_LIMIT' | translate"
+              [simpleFiled]="container.mem_limit"
+              [inputPattern]="patternMemLimit"
+              [inputPlaceholder]="'eg. 1024Mi'"
+              (onCheck)="container.mem_limit = $event"></cs-input>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="modalOpened = false">
+      {{ 'BUTTON.CANCEL' | translate }}
+    </button>
+    <button type="button" class="btn btn-primary" (click)="createNewContainer()">
+      {{ 'BUTTON.OK' | translate }}
+    </button>
+  </div>
+</clr-modal>
+<environment-value *ngIf="showEnvironmentValue"
+                   [isProvideBindConfigMap]="true"
+                   [projectName]="projectName"
+                   [inputEnvsData]="getDefaultEnvsData()"
+                   (closeNotification)="showEnvironmentValue = false"
+                   (onConfirm)="setEnvironment($event)">
+</environment-value>

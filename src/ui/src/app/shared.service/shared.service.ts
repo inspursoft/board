@@ -4,7 +4,7 @@ import { Member, Project } from '../project/project';
 import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from '../shared/shared.const';
 import { PersistentVolume, PersistentVolumeClaim } from '../shared/shared.types';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { AppInitService } from "./app-init.service";
 
 @Injectable()

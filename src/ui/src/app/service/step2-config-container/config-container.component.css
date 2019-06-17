@@ -78,6 +78,10 @@ clr-icon.action{
 div.volume-info-container {
   display: flex;
   flex-direction: column;
+}
+
+span.volume-info {
   margin-left: 195px;
   margin-top: 10px;
+  color: dodgerblue;
 }

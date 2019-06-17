@@ -1,0 +1,50 @@
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'lg'">
+  <div class="modal-title">
+    {{job.job_name}}
+    <span *ngIf="isLoading" class="spinner spinner-sm"></span>
+  </div>
+  <div class="modal-body">
+    <div class="clr-flex-row">
+      <clr-dropdown>
+        <button type="button" class="btn btn-outline-primary" clrDropdownTrigger>
+          {{currentPod ? currentPod.name : "JOB.JOB_DETAIL_SELECT_POD" | translate}}
+          <clr-icon shape="caret down"></clr-icon>
+        </button>
+        <clr-dropdown-menu *clrIfOpen>
+          <label class="dropdown-header">{{"JOB.JOB_DETAIL_POD_LIST" | translate}}</label>
+          <button type="button"
+                  clrDropdownItem
+                  [disabled]="isLoading"
+                  *ngFor="let pod of jobPods" (click)="getLogs(pod)">
+            {{pod.name}}
+          </button>
+        </clr-dropdown-menu>
+      </clr-dropdown>
+      {{"JOB.JOB_DETAIL_SINCE_DATETIME" | translate}}:
+      <input type="date"
+             name="date"
+             [disabled]="!currentPod || isLoading"
+             [clrDate]="sinceDate"
+             (clrDateChange)="setSinceDate($event)"
+             clrDate>
+      <input type="time"
+             id="time"
+             [disabled]="!currentPod || isLoading"
+             [value]="sinceTime"
+             (change)="setSinceTime($event)">
+      <a href="javascript:void (0)" [class.disabled]="!currentPod || isLoading" (click)="refreshLogs()">
+        <clr-icon shape="refresh"></clr-icon>
+      </a>
+      {{"JOB.JOB_DETAIL_TOTAL_LOGS" | translate}}:<b>{{jobLogs.length}}</b>
+      {{"JOB.JOB_DETAIL_MAX_LOGS" | translate}}:1024(Bytes)
+    </div>
+    <div class="log-container">
+      <span *ngFor="let log of jobLogs">{{log.datetime | date: "long"}}{{log.content}}</span>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-primary" (click)="modalOpened = false">
+      {{ 'BUTTON.OK' | translate }}
+    </button>
+  </div>
+</clr-modal>

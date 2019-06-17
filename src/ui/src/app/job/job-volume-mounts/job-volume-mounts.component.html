@@ -1,7 +1,7 @@
 <clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'md'" [clrModalClosable]="false" [clrModalPreventClose]="true">
     <h3 class="modal-title">{{ 'SERVICE.VOLUME_CONFIG' | translate }}</h3>
     <div class="modal-body">
-        <div *ngFor="let volumeData of curVolumeDataList;let i = index">
+        <div *ngFor="let volumeData of volumeList;let i = index">
             <div class="dynamic-line-container">
                 <div class="dynamic-icon-container">
                     <clr-icon class="dynamic-icon" shape="minus" (click)="deleteVolumeData(i)"></clr-icon>
@@ -15,7 +15,7 @@
                              (onChange)="changeSelectVolumeType(i,$event)">
                 </cs-dropdown>
             </div>
-            <div class="dynamic-line-container large-margin">
+            <div class="dynamic-line-container">
                 <cs-input [inputLabel]="'SERVICE.VOLUME_NAME'| translate"
                           [inputPattern]="patternName"
                           [inputLabelMinWidth]="180"
@@ -34,9 +34,12 @@
                           (onCheck)="volumeData.container_path = $event">
                 </cs-input>
             </div>
-            <div class="dynamic-line-container large-margin" *ngIf="volumeData.volume_type == 'nfs'">
+            <div class="dynamic-line-container" *ngIf="volumeData.volume_type == 'nfs'">
                 <div class="clr-checkbox-container">
-                    <input type="checkbox" clrCheckbox [(ngModel)]="volumeData.containerPathFlag">
+                    <input type="checkbox"
+                           clrCheckbox
+                           [checked]="volumeData.container_path_flag == 1"
+                           (change)="setContainerPathFlag(volumeData, $event)">
                     <label>{{"SERVICE.VOLUME_SUB_PATH_FILE" | translate}}:</label>
                 </div>
                 <cs-input [inputPattern]="patternPath"
@@ -66,7 +69,7 @@
                           (onCheck)="volumeData.target_path = $event">
                 </cs-input>
             </div>
-            <div *ngIf="volumeData.volume_type == 'nfs' && volumeData.containerPathFlag"
+            <div *ngIf="volumeData.volume_type == 'nfs' && volumeData.container_path_flag == 1"
                  class="dynamic-line-container">
                 <cs-input [inputLabel]="'SERVICE.VOLUME_FILE'| translate"
                           [simpleFiled]="volumeData.target_file"

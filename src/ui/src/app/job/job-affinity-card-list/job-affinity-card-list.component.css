@@ -1,0 +1,54 @@
+div.card-col-list-container {
+  display: flex;
+  flex-direction: column;
+}
+
+div.drag-col-container {
+  padding: 5px;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+div.card-col-container {
+  margin-top: 10px;
+  width: 100%;
+}
+
+div.card-row-list-container {
+  display: flex;
+  flex-direction: column;
+}
+
+div.drag-row-container {
+  padding: 5px;
+}
+
+div.drag-active {
+  background-color: lightgreen;
+}
+
+span.list-title {
+  font-size: 14px;
+  color: #2e9919;
+}
+
+div.list-border {
+  border: 1px silver dashed;
+  border-radius: 5px;
+}
+
+div.search-container {
+  display: flex;
+  width: 100%;
+  min-height: 30px;
+}
+
+div.search-container input {
+  flex-basis: 100%;
+}
+
+div.search-container clr-icon {
+  height: 20px;
+  flex-basis: 20px;
+  color: darkgreen;
+}

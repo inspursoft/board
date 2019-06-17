@@ -1,4 +1,4 @@
-import { ComponentFactoryResolver, ComponentRef, Injectable, Type, ViewContainerRef } from '@angular/core';
+import { ComponentFactoryResolver, ComponentRef, Injectable, Injector, Type, ViewChild, ViewContainerRef } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, TimeoutError } from 'rxjs';
 import { tap } from 'rxjs/operators';
@@ -9,7 +9,8 @@ import { CsDialogComponent } from './cs-dialog/cs-dialog.component';
 
 @Injectable()
 export class MessageService {
-  private dialogView: ViewContainerRef;
+  private defaultDialogView: ViewContainerRef;
+  private modalDialogView: ViewContainerRef;
   private dialogResolver: ComponentFactoryResolver;
 
   private createComponent<T>(component: Type<T>, view: ViewContainerRef): ComponentRef<T> {
@@ -18,8 +19,20 @@ export class MessageService {
     return view.createComponent<T>(factory);
   }
 
+  get dialogView(): ViewContainerRef {
+    return this.modalDialogView ? this.modalDialogView : this.defaultDialogView;
+  }
+
+  public registerModalDialogHandle(view: ViewContainerRef) {
+    this.modalDialogView = view;
+  }
+
+  public unregisterModalDialogHandle() {
+    this.modalDialogView = null;
+  }
+
   public registerDialogHandle(view: ViewContainerRef, resolver: ComponentFactoryResolver) {
-    this.dialogView = view;
+    this.defaultDialogView = view;
     this.dialogResolver = resolver;
   }
 
