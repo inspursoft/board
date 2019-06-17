@@ -227,6 +227,7 @@ func ToK8sPodSpec(spec *model.PodSpec) *v1.PodSpec {
 		NodeName:       spec.NodeName,
 		HostNetwork:    spec.HostNetwork,
 		Affinity:       affinity,
+		RestartPolicy:  v1.RestartPolicy(string(spec.RestartPolicy)),
 	}
 }
 
@@ -644,6 +645,7 @@ func FromK8sPodSpec(spec *v1.PodSpec) *model.PodSpec {
 		NodeSelector:   spec.NodeSelector,
 		NodeName:       spec.NodeName,
 		HostNetwork:    spec.HostNetwork,
+		RestartPolicy:  model.RestartPolicy(string(spec.RestartPolicy)),
 	}
 }
 
@@ -1689,6 +1691,256 @@ func ToK8sStatefulSet(statefulset *model.StatefulSet) *appsv1beta1.StatefulSet {
 			UpdateRevision:  statefulset.Status.UpdateRevision,
 		},
 	}
+}
+func ToK8sJob(job *model.Job) *Job {
+	if job == nil {
+		return nil
+	}
+	var templ v1.PodTemplateSpec
+	if t := ToK8sPodTemplateSpec(&job.Spec.Template); t != nil {
+		templ = *t
+	}
+	conditions := make([]JobCondition, 0)
+	for _, condition := range job.Status.Conditions {
+		conditions = append(conditions, JobCondition{
+			Type:   JobConditionType(condition.Type),
+			Status: ConditionStatus(condition.Status),
+			LastProbeTime: metav1.Time{
+				condition.LastProbeTime,
+			},
+			LastTransitionTime: metav1.Time{
+				condition.LastTransitionTime,
+			},
+			Reason:  condition.Reason,
+			Message: condition.Message,
+		})
+	}
+	var starttime *metav1.Time
+	if job.Status.StartTime != nil {
+		starttime = &metav1.Time{
+			*job.Status.StartTime,
+		}
+	}
+	var completiontime *metav1.Time
+	if job.Status.CompletionTime != nil {
+		completiontime = &metav1.Time{
+			*job.Status.CompletionTime,
+		}
+	}
+	return &Job{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Job",
+			APIVersion: "batch/v1",
+		},
+		ObjectMeta: ToK8sObjectMeta(job.ObjectMeta),
+		Spec: JobSpec{
+			Parallelism:           job.Spec.Parallelism,
+			Completions:           job.Spec.Completions,
+			ActiveDeadlineSeconds: job.Spec.ActiveDeadlineSeconds,
+			BackoffLimit:          job.Spec.BackoffLimit,
+			Selector:              ToK8sLabelSelector(job.Spec.Selector),
+			ManualSelector:        job.Spec.ManualSelector,
+			Template:              templ,
+		},
+		Status: JobStatus{
+			Conditions:     conditions,
+			StartTime:      starttime,
+			CompletionTime: completiontime,
+			Active:         job.Status.Active,
+			Succeeded:      job.Status.Succeeded,
+			Failed:         job.Status.Failed,
+		},
+	}
+}
+
+func FromK8sJob(job *Job) *model.Job {
+	if job == nil {
+		return nil
+	}
+	var templ model.PodTemplateSpec
+	if t := FromK8sPodTemplateSpec(&job.Spec.Template); t != nil {
+		templ = *t
+	}
+	conditions := make([]model.JobCondition, 0)
+	for _, condition := range job.Status.Conditions {
+		conditions = append(conditions, model.JobCondition{
+			Type:               string(condition.Type),
+			Status:             string(condition.Status),
+			LastProbeTime:      condition.LastProbeTime.Time,
+			LastTransitionTime: condition.LastTransitionTime.Time,
+			Reason:             condition.Reason,
+			Message:            condition.Message,
+		})
+	}
+	var starttime *time.Time
+	if job.Status.StartTime != nil {
+		starttime = &job.Status.StartTime.Time
+	}
+	var completiontime *time.Time
+	if job.Status.CompletionTime != nil {
+		completiontime = &job.Status.CompletionTime.Time
+	}
+	return &model.Job{
+		ObjectMeta: FromK8sObjectMeta(job.ObjectMeta),
+		Spec: model.JobSpec{
+			Parallelism:           job.Spec.Parallelism,
+			Completions:           job.Spec.Completions,
+			ActiveDeadlineSeconds: job.Spec.ActiveDeadlineSeconds,
+			BackoffLimit:          job.Spec.BackoffLimit,
+			Selector:              FromK8sLabelSelector(job.Spec.Selector),
+			ManualSelector:        job.Spec.ManualSelector,
+			Template:              templ,
+		},
+		Status: model.JobStatus{
+			Conditions:     conditions,
+			StartTime:      starttime,
+			CompletionTime: completiontime,
+			Active:         job.Status.Active,
+			Succeeded:      job.Status.Succeeded,
+			Failed:         job.Status.Failed,
+		},
+	}
+}
+
+func GenerateJobConfig(job *Job) *Job {
+	containersConfig := []v1.Container{}
+	for _, container := range job.Spec.Template.Spec.Containers {
+		containersConfig = append(containersConfig, v1.Container{
+			Name:           container.Name,
+			Image:          container.Image,
+			Command:        container.Command,
+			Args:           container.Args,
+			WorkingDir:     container.WorkingDir,
+			Ports:          container.Ports,
+			EnvFrom:        container.EnvFrom,
+			Env:            container.Env,
+			Resources:      container.Resources,
+			VolumeMounts:   container.VolumeMounts,
+			LivenessProbe:  container.LivenessProbe,
+			ReadinessProbe: container.ReadinessProbe,
+		})
+	}
+	return &Job{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       job.TypeMeta.Kind,
+			APIVersion: job.TypeMeta.APIVersion,
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Labels:    job.ObjectMeta.Labels,
+			Name:      job.ObjectMeta.Name,
+			Namespace: job.ObjectMeta.Namespace,
+		},
+		Spec: JobSpec{
+			Parallelism:           job.Spec.Parallelism,
+			Completions:           job.Spec.Completions,
+			ActiveDeadlineSeconds: job.Spec.ActiveDeadlineSeconds,
+			BackoffLimit:          job.Spec.BackoffLimit,
+			Selector:              job.Spec.Selector,
+			ManualSelector:        job.Spec.ManualSelector,
+			Template: v1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: job.Spec.Template.ObjectMeta.Labels,
+					Name:   job.Spec.Template.ObjectMeta.Name,
+				},
+				Spec: v1.PodSpec{
+					Affinity:           job.Spec.Template.Spec.Affinity,
+					Volumes:            job.Spec.Template.Spec.Volumes,
+					NodeSelector:       job.Spec.Template.Spec.NodeSelector,
+					ServiceAccountName: job.Spec.Template.Spec.ServiceAccountName,
+					ImagePullSecrets:   job.Spec.Template.Spec.ImagePullSecrets,
+					InitContainers:     job.Spec.Template.Spec.InitContainers,
+					Containers:         containersConfig,
+					RestartPolicy:      job.Spec.Template.Spec.RestartPolicy,
+				},
+			},
+		},
+	}
+}
+
+func FromK8sJobList(jobList *JobList) *model.JobList {
+	if jobList == nil {
+		return nil
+	}
+	items := make([]model.Job, 0)
+	for i := range jobList.Items {
+		job := FromK8sJob(&jobList.Items[i])
+		items = append(items, *job)
+	}
+	return &model.JobList{
+		Items: items,
+	}
+}
+
+func FromK8sLabelSelector(selector *metav1.LabelSelector) *model.LabelSelector {
+	if selector == nil {
+		return nil
+	}
+	var expretions []model.LabelSelectorRequirement
+	for i := range selector.MatchExpressions {
+		expretions = append(expretions, model.LabelSelectorRequirement{
+			Key:      selector.MatchExpressions[i].Key,
+			Operator: string(selector.MatchExpressions[i].Operator),
+			Values:   selector.MatchExpressions[i].Values,
+		})
+	}
+	return &model.LabelSelector{
+		MatchLabels:      selector.MatchLabels,
+		MatchExpressions: expretions,
+	}
+}
+
+func ToK8sLabelSelector(selector *model.LabelSelector) *metav1.LabelSelector {
+	if selector == nil {
+		return nil
+	}
+	var expretions []metav1.LabelSelectorRequirement
+	for i := range selector.MatchExpressions {
+		expretions = append(expretions, metav1.LabelSelectorRequirement{
+			Key:      selector.MatchExpressions[i].Key,
+			Operator: metav1.LabelSelectorOperator(selector.MatchExpressions[i].Operator),
+			Values:   selector.MatchExpressions[i].Values,
+		})
+	}
+	return &metav1.LabelSelector{
+		MatchLabels:      selector.MatchLabels,
+		MatchExpressions: expretions,
+	}
+}
+
+func ToK8sPodLogOptions(opt *model.PodLogOptions) *v1.PodLogOptions {
+	if opt == nil {
+		return nil
+	}
+	var since *metav1.Time
+	if opt.SinceTime != nil {
+		since = &metav1.Time{
+			*opt.SinceTime,
+		}
+	}
+	return &v1.PodLogOptions{
+		Container:    opt.Container,
+		Follow:       opt.Follow,
+		Previous:     opt.Previous,
+		SinceSeconds: opt.SinceSeconds,
+		SinceTime:    since,
+		Timestamps:   opt.Timestamps,
+		TailLines:    opt.TailLines,
+		LimitBytes:   opt.LimitBytes,
+	}
+}
+
+func ToK8sListOptions(opts model.ListOptions) metav1.ListOptions {
+	return metav1.ListOptions{
+		LabelSelector:   opts.LabelSelector,
+		FieldSelector:   opts.FieldSelector,
+		Watch:           opts.Watch,
+		ResourceVersion: opts.ResourceVersion,
+		TimeoutSeconds:  opts.TimeoutSeconds,
+	}
+}
+
+func LabelSelectorToString(selector *model.LabelSelector) string {
+	return metav1.FormatLabelSelector(ToK8sLabelSelector(selector))
 }
 
 // FromK8sStatefulSet is to generate model StatefulSet from k8s StatefulSet

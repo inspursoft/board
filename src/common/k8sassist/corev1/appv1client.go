@@ -68,6 +68,9 @@ func (p *AppV1Client) ConfigMap(namespace string) ConfigMapInterface {
 func (p *AppV1Client) StatefulSet(namespace string) StatefulSetClientInterface {
 	return apps.NewStatefulSets(namespace, p.Clientset.AppsV1beta1().StatefulSets(namespace))
 }
+func (p *AppV1Client) Job(namespace string) JobInterface {
+	return apps.NewJob(namespace, p.Clientset.BatchV1().Jobs(namespace))
+}
 
 // AppV1ClientInterface level 1 interface to access others
 type AppV1ClientInterface interface {
@@ -84,6 +87,7 @@ type AppV1ClientInterface interface {
 	PersistentVolumeClaim(namespace string) PersistentVolumeClaimInterface
 	ConfigMap(namespace string) ConfigMapInterface
 	StatefulSet(namespace string) StatefulSetClientInterface
+	Job(namespace string) JobInterface
 }
 
 // ServerVersionInterface has a method for retrieving the server's version.
@@ -161,9 +165,9 @@ type PodClientInterface interface {
 	Delete(name string) error
 	//DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
 	Get(name string) (*model.Pod, error)
-	List() (*model.PodList, error)
-	//List(opts v1.ListOptions) (*v1.PodList, error)
+	List(opts model.ListOptions) (*model.PodList, error)
 	//Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *v1.Pod, err error)
+	GetLogs(name string, opts *model.PodLogOptions) (io.ReadCloser, error)
 }
 
 // How to:  deploymentCli, err := k8sassist.NewDeployments(nameSpace)
@@ -241,4 +245,16 @@ type StatefulSetClientInterface interface {
 	PatchToK8s(string, model.PatchType, *model.StatefulSet) (*model.StatefulSet, []byte, error)
 	CreateByYaml(io.Reader) (*model.StatefulSet, error)
 	CheckYaml(io.Reader) (*model.StatefulSet, error)
+}
+type JobInterface interface {
+	Create(*model.Job) (*model.Job, []byte, error)
+	Update(*model.Job) (*model.Job, []byte, error)
+	UpdateStatus(*model.Job) (*model.Job, []byte, error)
+	Delete(name string) error
+	Get(name string) (*model.Job, []byte, error)
+	List() (*model.JobList, error)
+	Patch(name string, pt model.PatchType, data []byte, subresources ...string) (result *model.Job, err error)
+	PatchToK8s(string, model.PatchType, *model.Job) (*model.Job, []byte, error)
+	CreateByYaml(io.Reader) (*model.Job, error)
+	CheckYaml(io.Reader) (*model.Job, error)
 }

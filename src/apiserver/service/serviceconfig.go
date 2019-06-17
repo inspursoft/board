@@ -721,7 +721,7 @@ func GetPods() (*model.PodList, error) {
 	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
 		KubeConfigPath: kubeConfigPath(),
 	})
-	l, err := k8sclient.AppV1().Pod("").List()
+	l, err := k8sclient.AppV1().Pod("").List(model.ListOptions{})
 	if err != nil {
 		return nil, err
 	}

@@ -35,10 +35,3 @@ type OperationParam struct {
 	Fromdate int64
 	Todate   int64
 }
-
-const (
-	Success = "Success"
-	Failed  = "Failed"
-	Error   = "Error"
-	Unknown = "Unknown"
-)
