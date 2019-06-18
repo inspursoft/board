@@ -29,3 +29,19 @@ var configServiceStep = model.ConfigServiceStep{
 		},
 	},
 }
+
+// TODO: unit test case later
+// TestDeployStatefulSet
+func TestDeployStatefulSet(t *testing.T) {
+	//assert := assert.New(t)
+	//id, err := service.DeployStatefulSet(&configServiceStep, )
+	//assert.Nil(err, "Failed, err when create test image.")
+	//assert.NotEqual(0, id, "Failed to assign a image id")
+	//testImageid = id
+	t.Log(configServiceStep)
+}
+
+// TODO: clean test
+func cleanStatefulSetByID(id int64) {
+
+}
