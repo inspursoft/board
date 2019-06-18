@@ -18,9 +18,18 @@ const (
 	nfs                  = "nfs"
 	emptyDir             = ""
 	deploymentFilename   = "deployment.yaml"
+	statefulsetFilename  = "statefulset.yaml"
 	serviceFilename      = "service.yaml"
 	serviceStoppedStatus = 2
 )
+
+// DeployStatefulSetInfo is the data for yaml files of statefulset and its service
+type DeployStatefulSetInfo struct {
+	Service             *model.Service
+	ServiceFileInfo     []byte
+	StatefulSet         *model.StatefulSet
+	StatefulSetFileInfo []byte
+}
 
 type DeployInfo struct {
 	Service            *model.Service
@@ -66,6 +75,25 @@ func GenerateDeployYamlFiles(deployInfo *DeployInfo, loadPath string) error {
 		return err
 	}
 	err = utils.GenerateFile(deployInfo.DeploymentFileInfo, loadPath, deploymentFilename)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// TODO: this func should be refactored with GenerateDeployYamlFiles
+// GenerateStatefulSetYamlFiles
+func GenerateStatefulSetYamlFiles(deployInfo *DeployStatefulSetInfo, loadPath string) error {
+	if deployInfo == nil {
+		logs.Error("Deploy info is empty.")
+		return errors.New("Deploy info is empty.")
+	}
+	err := utils.GenerateFile(deployInfo.ServiceFileInfo, loadPath, serviceFilename)
+	if err != nil {
+		return err
+	}
+	err = utils.GenerateFile(deployInfo.StatefulSetFileInfo, loadPath, statefulsetFilename)
 	if err != nil {
 		return err
 	}
@@ -156,4 +184,32 @@ func GetStoppedSeviceNodePorts() ([]int32, error) {
 		}
 	}
 	return ports, nil
+}
+
+// DeployStatefulSet is to deploy the statefulset service in k8s
+func DeployStatefulSet(serviceConfig *model.ConfigServiceStep, registryURI string) (*DeployStatefulSetInfo, error) {
+	clusterConfig := &k8sassist.K8sAssistConfig{KubeConfigPath: kubeConfigPath()}
+	cli := k8sassist.NewK8sAssistClient(clusterConfig)
+	statefulsetConfig := MarshalStatefulSet(serviceConfig, registryURI)
+	//logs.Debug("Marshaled deployment: ", deploymentConfig)
+	statefulsetInfo, statefulsetFileInfo, err := cli.AppV1().StatefulSet(serviceConfig.ProjectName).Create(statefulsetConfig)
+	if err != nil {
+		logs.Error("Deploy statefulset object of %s failed. error: %+v\n", serviceConfig.ServiceName, err)
+		return nil, err
+	}
+	logs.Debug("Created statefulset: ", statefulsetInfo)
+	svcConfig := MarshalService(serviceConfig)
+	serviceInfo, serviceFileInfo, err := cli.AppV1().Service(serviceConfig.ProjectName).Create(svcConfig)
+	if err != nil {
+		cli.AppV1().StatefulSet(serviceConfig.ProjectName).Delete(serviceConfig.ServiceName)
+		logs.Error("Deploy service object of %s failed. error: %+v\n", serviceConfig.ServiceName, err)
+		return nil, err
+	}
+
+	return &DeployStatefulSetInfo{
+		Service:             serviceInfo,
+		ServiceFileInfo:     serviceFileInfo,
+		StatefulSet:         statefulsetInfo,
+		StatefulSetFileInfo: statefulsetFileInfo,
+	}, nil
 }

@@ -433,6 +433,29 @@ func StopServiceK8s(s *model.ServiceStatus) error {
 	return nil
 }
 
+// TODO: StopStatefulSetK8s should be refactored
+// StopStatefulSetK8s
+func StopStatefulSetK8s(s *model.ServiceStatus) error {
+	logs.Info("stop service in cluster %s", s.Name)
+	// Stop deployment
+	config := k8sassist.K8sAssistConfig{}
+	config.KubeConfigPath = kubeConfigPath()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	d := k8sclient.AppV1().StatefulSet(s.ProjectName)
+	err := d.Delete(s.Name)
+	if err != nil && !strings.Contains(err.Error(), "not found") {
+		logs.Error("Failed to delete statefulset in cluster, error:%v", err)
+		return err
+	}
+	svc := k8sclient.AppV1().Service(s.ProjectName)
+	err = svc.Delete(s.Name)
+	if err != nil && !strings.Contains(err.Error(), "not found") {
+		logs.Error("Failed to delete service in cluster, error:%v", err)
+		return err
+	}
+	return nil
+}
+
 func MarshalService(serviceConfig *model.ConfigServiceStep) *model.Service {
 	if serviceConfig == nil {
 		return nil
@@ -693,6 +716,42 @@ func MarshalDeployment(serviceConfig *model.ConfigServiceStep, registryURI strin
 			Replicas: int32(serviceConfig.Instance),
 			Selector: map[string]string{"app": serviceConfig.ServiceName},
 			Template: podTemplate,
+		},
+	}
+}
+
+// MarshalStatefulSet is to create the statefulset data for k8s
+func MarshalStatefulSet(serviceConfig *model.ConfigServiceStep, registryURI string) *model.StatefulSet {
+	if serviceConfig == nil {
+		return nil
+	}
+	podTemplate := model.PodTemplateSpec{
+		ObjectMeta: model.ObjectMeta{
+			Name:   serviceConfig.ServiceName,
+			Labels: map[string]string{"app": serviceConfig.ServiceName},
+		},
+		Spec: model.PodSpec{
+			Volumes:      setDeploymentVolumes(serviceConfig.ContainerList),
+			Containers:   setDeploymentContainers(serviceConfig.ContainerList, registryURI),
+			NodeSelector: setDeploymentNodeSelector(serviceConfig.NodeSelector),
+			Affinity:     setDeploymentAffinity(serviceConfig.AffinityList),
+		},
+	}
+
+	instancenumber := int32(serviceConfig.Instance)
+
+	return &model.StatefulSet{
+		ObjectMeta: model.ObjectMeta{
+			Name:      serviceConfig.ServiceName,
+			Namespace: serviceConfig.ProjectName,
+		},
+		Spec: model.StatefulSetSpec{
+			Replicas: &instancenumber,
+			Selector: &model.LabelSelector{
+				MatchLabels: map[string]string{"app": serviceConfig.ServiceName},
+			},
+			Template:    podTemplate,
+			ServiceName: serviceConfig.ServiceName,
 		},
 	}
 }
