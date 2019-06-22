@@ -861,7 +861,7 @@ func (p *ServiceController) DeployStatefulSetAction() {
 	key := p.getKey()
 	configService := NewConfigServiceStep(key)
 
-	if configService.ServiceType == model.ServiceTypeStatefulSet {
+	if configService.ServiceType != model.ServiceTypeStatefulSet {
 		p.customAbort(http.StatusBadRequest, "Invalid service type.")
 		return
 	}
