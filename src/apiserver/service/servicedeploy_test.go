@@ -2,6 +2,9 @@ package service_test
 
 import (
 	"git/inspursoft/board/src/common/model"
+	"testing"
+
+	"github.com/astaxie/beego/logs"
 )
 
 var path = "./"
@@ -43,5 +46,5 @@ func TestDeployStatefulSet(t *testing.T) {
 
 // TODO: clean test
 func cleanStatefulSetByID(id int64) {
-
+	logs.Debug("cleanStatefulSetByID")
 }

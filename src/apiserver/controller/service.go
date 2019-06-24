@@ -35,6 +35,7 @@ const (
 	k8sServices      = "kubernetes"
 	deploymentType   = "deployment"
 	serviceType      = "service"
+	statefulsetType  = "statefulset"
 	startingDuration = 300 * time.Second //300 seconds
 )
 
@@ -713,15 +714,19 @@ func (f *ServiceController) DownloadDeploymentYamlFileAction() {
 	}
 	f.resolveRepoServicePath(projectName, serviceName)
 	yamlType := f.GetString("yaml_type")
-	if yamlType == "" {
+
+	switch yamlType {
+	case "":
 		f.customAbort(http.StatusBadRequest, "No YAML type found.")
 		return
-	}
-	if yamlType == deploymentType {
+	case deploymentType:
 		f.resolveDownloadYaml(serviceInfo, deploymentFilename, service.GenerateDeploymentYamlFileFromK8s)
-	} else if yamlType == serviceType {
+	case serviceType:
 		f.resolveDownloadYaml(serviceInfo, serviceFilename, service.GenerateServiceYamlFileFromK8s)
+	case statefulsetType:
+		f.resolveDownloadYaml(serviceInfo, statefulsetFilename, service.GenerateStatefulSetYamlFileFromK8s)
 	}
+
 }
 
 func (f *ServiceController) resolveDownloadYaml(serviceConfig *model.ServiceStatus, fileName string, generator func(*model.ServiceStatus, string) error) {
