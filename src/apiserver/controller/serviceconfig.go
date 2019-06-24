@@ -103,8 +103,9 @@ func (s *ConfigServiceStep) GetConfigContainerList() interface{} {
 	}
 }
 
-func (s *ConfigServiceStep) configExternalService(serviceName string, clusterIP string, instance int, public int, nodeOrNodeGroupName string, externalServiceList []model.ExternalService, sessionAffinityFlag int, sessionAffinityTime int) *ConfigServiceStep {
+func (s *ConfigServiceStep) configExternalService(serviceName string, serviceType int, clusterIP string, instance int, public int, nodeOrNodeGroupName string, externalServiceList []model.ExternalService, sessionAffinityFlag int, sessionAffinityTime int) *ConfigServiceStep {
 	s.ServiceName = serviceName
+	s.ServiceType = serviceType
 	s.Instance = instance
 	s.Public = public
 	s.ClusterIP = clusterIP
@@ -319,6 +320,12 @@ func (sc *ServiceConfigController) configExternalService(key string, configServi
 		return
 	}
 
+	serviceType, err := sc.GetInt("service_type")
+	if err != nil {
+		sc.internalError(err)
+		return
+	}
+
 	clusterIP := sc.GetString("cluster_ip")
 	// TODO check valid cluster IP
 	sessionAffinityFlag, err := sc.GetInt("session_affinity_flag", 0)
@@ -359,7 +366,7 @@ func (sc *ServiceConfigController) configExternalService(key string, configServi
 			return
 		}
 	}
-	configServiceStep.configExternalService(serviceName, clusterIP, instance, public, nodeOrNodeGroupName, serviceConfig.ExternalServiceList, sessionAffinityFlag, sessionAffinityTime)
+	configServiceStep.configExternalService(serviceName, serviceType, clusterIP, instance, public, nodeOrNodeGroupName, serviceConfig.ExternalServiceList, sessionAffinityFlag, sessionAffinityTime)
 	SetConfigServiceStep(key, configServiceStep.configAffinity(serviceConfig.AffinityList))
 }
 
