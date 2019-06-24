@@ -126,6 +126,7 @@ func (s *ConfigServiceStep) GetConfigExternalService() interface{} {
 	return struct {
 		ProjectName         string                  `json:"project_name"`
 		ServiceName         string                  `json:"service_name"`
+		ServiceType         int                     `json:"service_type"`
 		Instance            int                     `json:"instance"`
 		Public              int                     `json:"service_public"`
 		ClusterIP           string                  `json:"cluster_ip"`
@@ -137,6 +138,7 @@ func (s *ConfigServiceStep) GetConfigExternalService() interface{} {
 	}{
 		ProjectName:         s.ProjectName,
 		ServiceName:         s.ServiceName,
+		ServiceType:         s.ServiceType,
 		Instance:            s.Instance,
 		Public:              s.Public,
 		ClusterIP:           s.ClusterIP,
