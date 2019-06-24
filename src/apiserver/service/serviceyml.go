@@ -87,6 +87,16 @@ func GenerateDeploymentYamlFileFromK8s(serviceConfig *model.ServiceStatus, loadP
 	return utils.GenerateFile(deploymentFileInfo, loadPath, deploymentFilename)
 }
 
+func GenerateStatefulSetYamlFileFromK8s(serviceConfig *model.ServiceStatus, loadPath string) error {
+	clusterConfig := &k8sassist.K8sAssistConfig{KubeConfigPath: kubeConfigPath()}
+	cli := k8sassist.NewK8sAssistClient(clusterConfig)
+	_, statefulsetFileInfo, err := cli.AppV1().StatefulSet(serviceConfig.ProjectName).Get(serviceConfig.Name)
+	if err != nil {
+		return err
+	}
+	return utils.GenerateFile(statefulsetFileInfo, loadPath, statefulsetFilename)
+}
+
 func GenerateServiceYamlFileFromK8s(serviceConfig *model.ServiceStatus, loadPath string) error {
 	clusterConfig := &k8sassist.K8sAssistConfig{KubeConfigPath: kubeConfigPath()}
 	cli := k8sassist.NewK8sAssistClient(clusterConfig)
