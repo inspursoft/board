@@ -179,33 +179,44 @@ func syncK8sStatus(serviceList []*model.ServiceStatusMO) error {
 		if (*serviceStatus).Status == stopped {
 			continue
 		}
-		// Check the deployment status
-		deployment, _, err := service.GetDeployment((*serviceStatus).ProjectName, (*serviceStatus).Name)
-		if deployment == nil && serviceStatus.Name != k8sServices {
-			logs.Info("Failed to get deployment", err)
-			var reason = "The deployment is not established in cluster system"
-			(*serviceStatus).Status = uncompleted
-			// TODO create a new field in serviceStatus for reason
-			(*serviceStatus).Comment = "Reason: " + reason
-			_, err = service.UpdateService(*serviceStatus, "status", "Comment")
-			if err != nil {
-				logs.Error("Failed to update deployment.")
-				break
-			}
-			continue
-		} else {
-			if deployment.Status.Replicas > deployment.Status.AvailableReplicas {
-				logs.Debug("The desired replicas number is not available",
-					deployment.Status.Replicas, deployment.Status.AvailableReplicas)
+
+		switch serviceStatus.Type {
+		case model.ServiceTypeNormalNodePort, model.ServiceTypeClusterIP:
+			// Check the deployment status
+			deployment, _, err := service.GetDeployment((*serviceStatus).ProjectName, (*serviceStatus).Name)
+			if deployment == nil && serviceStatus.Name != k8sServices {
+				logs.Info("Failed to get deployment", err)
+				var reason = "The deployment is not established in cluster system"
 				(*serviceStatus).Status = uncompleted
-				reason := "The desired replicas number is not available"
+				// TODO create a new field in serviceStatus for reason
 				(*serviceStatus).Comment = "Reason: " + reason
 				_, err = service.UpdateService(*serviceStatus, "status", "Comment")
 				if err != nil {
-					logs.Error("Failed to update deployment replicas.")
+					logs.Error("Failed to update deployment.")
 					break
 				}
 				continue
+			} else {
+				if deployment.Status.Replicas > deployment.Status.AvailableReplicas {
+					logs.Debug("The desired replicas number is not available",
+						deployment.Status.Replicas, deployment.Status.AvailableReplicas)
+					(*serviceStatus).Status = uncompleted
+					reason := "The desired replicas number is not available"
+					(*serviceStatus).Comment = "Reason: " + reason
+					_, err = service.UpdateService(*serviceStatus, "status", "Comment")
+					if err != nil {
+						logs.Error("Failed to update deployment replicas.")
+						break
+					}
+					continue
+				}
+			}
+		case model.ServiceTypeStatefulSet:
+			// Check the statefulset status
+			statefulset, _, err := service.GetStatefulSet((*serviceStatus).ProjectName, (*serviceStatus).Name)
+			if statefulset == nil || statefulset.Status.Replicas < *statefulset.Spec.Replicas {
+				logs.Debug("The statefulset %s is not ready %v", (*serviceStatus).Name, err)
+				(*serviceStatus).Status = uncompleted
 			}
 		}
 

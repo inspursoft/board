@@ -358,6 +358,20 @@ func GetDeployment(pName string, sName string) (*model.Deployment, []byte, error
 	return deployment, deploymentFileInfo, err
 }
 
+func GetStatefulSet(pName string, sName string) (*model.StatefulSet, []byte, error) {
+	var config k8sassist.K8sAssistConfig
+	config.KubeConfigPath = kubeConfigPath()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	d := k8sclient.AppV1().StatefulSet(pName)
+
+	statefulset, statefulsetFileInfo, err := d.Get(sName)
+	if err != nil {
+		logs.Info("Failed to get statefulset", pName, sName)
+		return nil, nil, err
+	}
+	return statefulset, statefulsetFileInfo, err
+}
+
 func PatchDeployment(pName string, sName string, deploymentConfig *model.Deployment) (*model.Deployment, []byte, error) {
 	var config k8sassist.K8sAssistConfig
 	config.KubeConfigPath = kubeConfigPath()
