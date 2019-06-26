@@ -3,7 +3,9 @@ export enum ServiceType {
   ServiceTypeNormalNodePort,
   ServiceTypeHelm,
   ServiceTypeDeploymentOnly,
-  ServiceTypeClusterIP
+  ServiceTypeClusterIP,
+  ServiceTypeStatefulSet,
+  ServiceTypeJob
 }
 
 export enum ServiceSource {

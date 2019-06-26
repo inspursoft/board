@@ -1,28 +1,42 @@
 /**
  * Created by liyanq on 9/17/17.
  */
-import { Component, Injector } from "@angular/core"
+import { Component, Injector, OnInit } from "@angular/core"
 import { ServiceStepBase } from "../service-step";
-import { PHASE_ENTIRE_SERVICE, ServiceStepPhase, UIServiceStepBase } from "../service-step.component";
+import {
+  PHASE_ENTIRE_SERVICE,
+  PHASE_EXTERNAL_SERVICE,
+  ServiceStepPhase,
+  UIServiceStep3,
+  UIServiceStepBase
+} from "../service-step.component";
 import { HttpErrorResponse } from "@angular/common/http";
 import { GlobalAlertType, Message, RETURN_STATUS } from "../../shared/shared.types";
+import { ServiceType } from "../service";
+import { Observable } from "rxjs";
 
 @Component({
   templateUrl: "./deploy.component.html",
   styleUrls: ["./deploy.component.css"]
 })
-export class DeployComponent extends ServiceStepBase {
+export class DeployComponent extends ServiceStepBase implements OnInit {
   boardHost: string;
   isDeployed: boolean = false;
   isDeploySuccess: boolean = false;
   isInDeployWIP: boolean = false;
   isDeleteInWIP: boolean = false;
   serviceID: number = 0;
-  deployConsole:Object;
+  deployConsole: Object;
+  serviceType: ServiceType;
 
   constructor(protected injector: Injector) {
     super(injector);
     this.boardHost = this.appInitService.systemInfo.board_host;
+  }
+
+  ngOnInit(): void {
+    this.k8sService.getServiceConfig(PHASE_EXTERNAL_SERVICE)
+      .subscribe((step3: UIServiceStep3) => this.serviceType = step3.serviceType)
   }
 
   get stepPhase(): ServiceStepPhase {
@@ -37,7 +51,13 @@ export class DeployComponent extends ServiceStepBase {
     if (!this.isDeployed) {
       this.isDeployed = true;
       this.isInDeployWIP = true;
-      this.k8sService.serviceDeployment().subscribe(res => {
+      let obsDeploy: Observable<Object>;
+      if (this.serviceType === ServiceType.ServiceTypeStatefulSet) {
+        obsDeploy = this.k8sService.serviceStatefulDeployment()
+      } else {
+        obsDeploy = this.k8sService.serviceDeployment();
+      }
+      obsDeploy.subscribe(res => {
         this.serviceID = res['service_id'];
         this.deployConsole = res;
         this.messageService.showAlert('SERVICE.STEP_5_DEPLOY_SUCCESS');

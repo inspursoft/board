@@ -16,6 +16,7 @@ import { IDropdownTag } from "../../shared/shared.types";
 import { SetAffinityComponent } from "./set-affinity/set-affinity.component";
 import { forkJoin, Observable, of } from "rxjs";
 import { catchError, map } from "rxjs/operators";
+import { ServiceType } from "../service";
 
 @Component({
   styleUrls: ["./config-setting.component.css"],
@@ -28,22 +29,26 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
   showNodeSelector = false;
   isActionWip = false;
   isGetNodePortWip = false;
-  nodeSelectorList: Array<{ name: string, value: string, tag: IDropdownTag }>;
+  nodeSelectorList: Array<{name: string, value: string, tag: IDropdownTag}>;
   uiPreData: UIServiceStep2;
   existingNodePorts: Array<number>;
+  serviceTypes: Array<{description: string, type: ServiceType}>;
 
   constructor(protected injector: Injector,
               private changeDetectorRef: ChangeDetectorRef) {
     super(injector);
     this.changeDetectorRef.detach();
-    this.nodeSelectorList = Array<{ name: string, value: string, tag: IDropdownTag }>();
+    this.nodeSelectorList = Array<{name: string, value: string, tag: IDropdownTag}>();
     this.existingNodePorts = Array<number>();
     this.uiPreData = new UIServiceStep2();
+    this.serviceTypes = new Array<{description: string, type: ServiceType}>();
   }
 
   ngOnInit() {
     let obsStepConfig = this.k8sService.getServiceConfig(this.stepPhase);
     let obsPreStepConfig = this.k8sService.getServiceConfig(PHASE_CONFIG_CONTAINERS);
+    this.serviceTypes.push({description: 'SERVICE.STEP_3_SERVICE_TYPE_NORMAL', type: ServiceType.ServiceTypeNormalNodePort});
+    this.serviceTypes.push({description: 'SERVICE.STEP_3_SERVICE_TYPE_STATEFUL', type: ServiceType.ServiceTypeStatefulSet});
     this.isGetNodePortWip = true;
     forkJoin(obsStepConfig, obsPreStepConfig).subscribe((res: [UIServiceStepBase, UIServiceStepBase]) => {
       this.uiBaseData = res[0];
@@ -61,8 +66,8 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
       this.changeDetectorRef.reattach();
     });
     this.nodeSelectorList.push({name: 'SERVICE.STEP_3_NODE_DEFAULT', value: '', tag: null});
-    this.k8sService.getNodeSelectors().subscribe((res: Array<{ name: string, status: number }>) => {
-      res.forEach((value: { name: string, status: number }) => {
+    this.k8sService.getNodeSelectors().subscribe((res: Array<{name: string, status: number}>) => {
+      res.forEach((value: {name: string, status: number}) => {
         this.nodeSelectorList.push({
           name: value.name, value: value.name, tag: {
             type: value.status == 1 ? 'success' : 'warning',
@@ -93,6 +98,14 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
     return this.nodeSelectorList.find(value => value.name === this.uiData.nodeSelector);
   }
 
+  get serviceTypeDescription() {
+    return this.serviceTypes.find(value => value.type == this.uiData.serviceType).description;
+  }
+
+  get isStatefulService() {
+    return this.uiData.serviceType == ServiceType.ServiceTypeStatefulSet;
+  }
+
   getContainerDropdownText(index: number): string {
     let result = this.uiData.externalServiceList[index].container_name;
     return result == "" ? "SERVICE.STEP_3_SELECT_CONTAINER" : result;
@@ -109,6 +122,13 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
 
   setNodePort(index: number, port: number) {
     this.uiData.externalServiceList[index].node_config.node_port = Number(port).valueOf();
+  }
+
+  setServiceType(value: {description: string, type: ServiceType}) {
+    this.uiData.serviceType = value.type;
+    if (value.type === ServiceType.ServiceTypeStatefulSet) {
+      this.uiData.externalServiceList.forEach((external:ExternalService) => external.node_config.node_port = 0);
+    }
   }
 
   inputExternalPortEnable(containerName: string): boolean {

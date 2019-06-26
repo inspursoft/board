@@ -19,6 +19,7 @@ class NodeURL {
 
 const K8S_HOSTNAME_KEY = 'kubernetes.io/hostname';
 const YAML_TYPE_DEPLOYMENT = 'deployment';
+const YAML_TYPE_STATEFUL_SET = 'statefulset';
 const YAML_TYPE_SERVICE = 'service';
 
 @Component({
@@ -92,7 +93,8 @@ export class ServiceDetailComponent {
   }
 
   getDeploymentYamlFile(): Observable<string> {
-    return this.k8sService.getServiceYamlFile(this.curService.service_project_name, this.curService.service_name, YAML_TYPE_DEPLOYMENT)
+    let yamlType = this.curService.service_type == ServiceType.ServiceTypeStatefulSet ? YAML_TYPE_STATEFUL_SET: YAML_TYPE_DEPLOYMENT
+    return this.k8sService.getServiceYamlFile(this.curService.service_project_name, this.curService.service_name, yamlType)
       .pipe(tap((res: string) => {
         this.deploymentYamlFile = res;
         let arr: Array<string> = res.split(/[\n]/g);
