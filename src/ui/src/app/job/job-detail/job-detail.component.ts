@@ -83,9 +83,8 @@ export class JobDetailComponent extends CsModalChildMessage implements OnInit {
     }).subscribe((res: string) => {
         res.split(/\n/).forEach((log: string) => {
           const arrLog = log.split(" ");
-          if (arrLog.length >= 2){
-            const content = log.substring(arrLog[0].length);
-            this.jobLogs.push({datetime: arrLog[0], content: `   ${content}`});
+          if (arrLog.length == 2){
+            this.jobLogs.push({datetime: arrLog[0], content: `   ${arrLog[1]}`});
           }
         })
       },

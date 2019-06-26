@@ -60,8 +60,10 @@
   </cs-dropdown>
 </div>
 <div class="clr-row">
-  <cs-input [inputFiledType]="1"
+  <cs-input [inputIsRequired]="true"
+            [inputFiledType]="1"
             [inputMin]="1"
+            [inputMax]="99"
             [disabled]="isActionWip"
             [inputLabel]="'JOB.JOB_CREATE_PARALLELISM' | translate"
             [simpleFiled]="newJobDeployment.parallelism"
@@ -69,8 +71,10 @@
   </cs-input>
 </div>
 <div class="clr-row">
-  <cs-input [inputFiledType]="1"
+  <cs-input [inputIsRequired]="true"
+            [inputFiledType]="1"
             [inputMin]="1"
+            [inputMax]="99"
             [disabled]="isActionWip"
             [inputLabel]="'JOB.JOB_CREATE_COMPLETIONS' | translate"
             [simpleFiled]="newJobDeployment.completions"
@@ -78,8 +82,10 @@
   </cs-input>
 </div>
 <div class="clr-row">
-  <cs-input [inputFiledType]="1"
+  <cs-input [inputIsRequired]="true"
+            [inputFiledType]="1"
             [inputMin]="1"
+            [inputMax]="99"
             [disabled]="isActionWip"
             [inputLabel]="'JOB.JOB_CREATE_ACTIVE_DEADLINE_SECONDS' | translate"
             [simpleFiled]="newJobDeployment.active_Deadline_Seconds"
@@ -87,8 +93,10 @@
   </cs-input>
 </div>
 <div class="clr-row">
-  <cs-input [inputFiledType]="1"
+  <cs-input [inputIsRequired]="true"
+            [inputFiledType]="1"
             [inputMin]="1"
+            [inputMax]="99"
             [disabled]="isActionWip"
             [inputLabel]="'JOB.JOB_CREATE_BACKOFF_LIMIT' | translate"
             [simpleFiled]="newJobDeployment.backoff_Limit"
