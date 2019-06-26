@@ -328,6 +328,12 @@ func (sc *ServiceConfigController) configExternalService(key string, configServi
 
 	clusterIP := sc.GetString("cluster_ip")
 	// TODO check valid cluster IP
+
+	// A tmp fix for headless service
+	if serviceType == model.ServiceTypeStatefulSet {
+		clusterIP = "None"
+	}
+
 	sessionAffinityFlag, err := sc.GetInt("session_affinity_flag", 0)
 	if err != nil {
 		sc.internalError(err)
