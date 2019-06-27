@@ -14,7 +14,7 @@ export class JobService {
   }
 
   checkJobNameExists(projectName, jobName: string): Observable<any> {
-    return this.http.get(`/api/v1/jobs`, {params: {project_name: projectName, job_name: jobName}})
+    return this.http.get(`/api/v1/jobs/exists`, {params: {project_name: projectName, job_name: jobName}})
   }
 
   deleteJob(job: Job): Observable<any> {
