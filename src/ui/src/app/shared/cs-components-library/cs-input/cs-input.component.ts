@@ -269,7 +269,7 @@ export class CsInputComponent implements OnInit, AfterViewInit {
   }
 
   public checkInputSelf() {
-    if (this.inputControl.enabled && (this.inputControl.touched || this.inputIsRequired)) {
+    if (this.inputControl.enabled) {
       (this.inputHtml.nativeElement as HTMLElement).focus();
       this.inputControl.markAsTouched({onlySelf: true});
       this.inputControl.updateValueAndValidity();
