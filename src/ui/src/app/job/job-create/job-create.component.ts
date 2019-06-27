@@ -168,7 +168,7 @@ export class JobCreateComponent extends CsModalParentBase implements OnInit {
   }
 
   setAffinity() {
-    if (!this.isActionWip) {
+    if (!this.isActionWip && this.newJobDeployment.project_id > 0) {
       let factory = this.factoryResolver.resolveComponentFactory(JobAffinityComponent);
       let componentRef = this.selfView.createComponent(factory);
       componentRef.instance.jobName = this.newJobDeployment.job_name;
