@@ -183,8 +183,8 @@ export class JobCreateComponent extends CsModalParentBase implements OnInit {
   }
 
   verifyContainer(): boolean {
-    if (this.newJobDeployment.container_list.length === 0){
-      this.messageService.showAlert('JOB.JOB_CREATE_CONTAINER_COUNT',{alertType: "warning"});
+    if (this.newJobDeployment.container_list.length === 0) {
+      this.messageService.showAlert('JOB.JOB_CREATE_CONTAINER_COUNT', {alertType: "warning"});
       return false;
     } else {
       return true;
@@ -193,9 +193,16 @@ export class JobCreateComponent extends CsModalParentBase implements OnInit {
 
   deploymentJob() {
     if (this.verifyContainer() && this.verifyInputValid() && this.verifyInputValid()) {
+      this.isActionWip = true;
       this.jobService.deploymentJob(this.newJobDeployment).subscribe(
-        () => this.messageService.showAlert('JOB.JOB_CREATE_SUCCESSFULLY'),
-        () => this.messageService.showAlert('JOB.JOB_CREATE_FAILED',{alertType: "warning"}),
+        () => {
+          this.messageService.showAlert('JOB.JOB_CREATE_SUCCESSFULLY');
+          this.isActionWip = false;
+        },
+        () => {
+          this.messageService.showAlert('JOB.JOB_CREATE_FAILED', {alertType: "warning"});
+          this.isActionWip = false;
+        },
         () => this.afterDeployment.next(true)
       )
     }
