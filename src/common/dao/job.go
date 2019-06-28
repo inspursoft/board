@@ -89,7 +89,7 @@ func generateDeleteJobByNamesSQL(jobs []model.JobStatusMO) (string, []interface{
 }
 
 func generateJobStatusSQL(query model.JobStatusMO, userID int64) (string, []interface{}) {
-	sql := `select distinct s.id, s.name, s.project_id, s.project_name, u.username as owner_name, s.owner_id, s.creation_time, s.status, s.source
+	sql := `select distinct s.id, s.name, s.project_id, s.project_name, u.username as owner_name, s.owner_id, s.creation_time, s.update_time, s.status, s.source
 	from job_status s 
 		left join project p on p.id = s.project_id
 		left join user u on u.id = s.owner_id

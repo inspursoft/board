@@ -313,7 +313,7 @@ func SyncJobK8sStatus(jobList []*model.JobStatusMO) error {
 			reason = "The job is not established in cluster system"
 			status = model.Uncompleted
 		} else if job.Status.CompletionTime == nil {
-			if job.Status.Active == 1 {
+			if job.Status.Active > 0 {
 				logs.Info("The job is running")
 				status = model.Running
 			} else {
