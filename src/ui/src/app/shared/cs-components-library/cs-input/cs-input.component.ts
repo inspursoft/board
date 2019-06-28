@@ -6,8 +6,11 @@ import { AsyncValidatorFn, FormControl, FormGroup, ValidationErrors, ValidatorFn
 import { AbstractControl } from "@angular/forms/src/model";
 
 export enum CsInputFiledType {iftString, iftNumber, iftPassword, iftEmail}
-export enum CsInputType{itWithInput, itWithNoInput, itOnlyWithInput}
+
+export enum CsInputType {itWithInput, itWithNoInput, itOnlyWithInput}
+
 export enum CsInputStatus {isView = 0, isEdit = 1}
+
 export type CsInputSupportType = string | number
 
 class CsInputFiled {
@@ -35,7 +38,6 @@ class CustomValidator {
   }
 }
 
-const PATTERN_Number: RegExp = /^\d+(\.\d+)?$/;
 @Component({
   selector: "cs-input",
   templateUrl: "./cs-input.component.html",
@@ -61,6 +63,7 @@ export class CsInputComponent implements OnInit, AfterViewInit {
   @Input() inputMinlength: number = 0;
   @Input() inputMax: number = 0;
   @Input() inputMin: number = 0;
+  @Input() inputIsInteger = true;
   @Input() inputType: CsInputType = CsInputType.itWithInput;
   @Input() customerValidatorAsyncFunc: AsyncValidatorFn;
   @Input() customerValidatorFunc: ValidatorFn;
@@ -90,9 +93,6 @@ export class CsInputComponent implements OnInit, AfterViewInit {
     if (this.customerValidatorFunc) {
       this.inputValidatorFns.push(this.customerValidatorFunc);
     }
-    if (this.inputFiledType == CsInputFiledType.iftNumber) {
-      this.inputValidatorFns.push(Validators.pattern(PATTERN_Number));
-    }
     if (this.inputIsRequired && this.inputType != CsInputType.itWithNoInput) {
       this.inputValidatorFns.push(Validators.required);
     }
@@ -118,6 +118,12 @@ export class CsInputComponent implements OnInit, AfterViewInit {
     this.inputControl.statusChanges.subscribe(() => {
       if (this.inputControl.valid) {
         this.inputField.status = CsInputStatus.isView;
+        if (this.inputIsInteger &&
+          this.inputFiledType == CsInputFiledType.iftNumber &&
+          this.inputControl.value.toString().indexOf('.') > -1) {
+          const intValue = Math.round(Number(this.inputControl.value));
+          this.inputControl.setValue(intValue);
+        }
         this.inputField.defaultValue = this.inputControl.value;
         this.onCheckEvent.emit(this.inputFiledType == CsInputFiledType.iftNumber ? Number(this.inputControl.value) : this.inputControl.value);
         if (this.isCheckInputOnKeyPress) {
@@ -215,7 +221,7 @@ export class CsInputComponent implements OnInit, AfterViewInit {
         result = `ACCOUNT.PASSWORD_FORMAT`;
       } else if (errors["verifyPassword"]) {
         result = `ACCOUNT.PASSWORDS_ARE_NOT_IDENTICAL`;
-      } else if (Object.keys(errors).length > 0){
+      } else if (Object.keys(errors).length > 0) {
         result = errors[Object.keys(errors)[0]];
       }
     }
@@ -248,7 +254,7 @@ export class CsInputComponent implements OnInit, AfterViewInit {
   onEditClick() {
     if (this.inputControl.enabled && this.inputField.status == CsInputStatus.isView && this.inputType != CsInputType.itWithNoInput) {
       this.inputHtml.nativeElement.focus();
-      if (document.activeElement == this.inputHtml.nativeElement){
+      if (document.activeElement == this.inputHtml.nativeElement) {
         this.inputField.status = CsInputStatus.isEdit;
         this.onEditEvent.emit();
       }
