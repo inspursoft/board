@@ -24,7 +24,7 @@ import { JobAffinityComponent } from "../job-affinity/job-affinity.component";
 export class JobCreateComponent extends CsModalParentBase implements OnInit {
   @Output() afterDeployment: EventEmitter<boolean>;
   @ViewChild('selectProject') selectProject: CsDropdownComponent;
-  patternServiceName: RegExp = /^[a-z]([-a-z0-9]*[a-z0-9])+$/;
+  patternServiceName: RegExp = /[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/;
   projectList: Array<Project>;
   newJobDeployment: JobDeployment;
   isActionWip = false;

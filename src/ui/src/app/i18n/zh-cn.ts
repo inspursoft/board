@@ -208,7 +208,7 @@ export const LANG_ZH_CN = {
     "JOB_CREATE_CHANGE_PROJECT":"警告! 所有容器将被删除，确定继续么？",
     "JOB_CREATE_JOB_NAME":"任务名称",
     "JOB_CREATE_JOB_NAME_EXISTS":"任务名称已经存在",
-    "JOB_CREATE_JOB_NAME_PATTERN_NSG":"数字或小写字母组成，中间支持'-'字符",
+    "JOB_CREATE_JOB_NAME_PATTERN_NSG":"以数字或小写字母或'.'开头，由数字或小写字母组成，中间支持'-',''-'字符",
     "JOB_CREATE_NODE_STATUS_SCHEDULABLE": "可调度",
     "JOB_CREATE_NODE_STATUS_UNSCHEDULABLE": "不可调度",
     "JOB_CREATE_NODE_DEFAULT": "默认节点",

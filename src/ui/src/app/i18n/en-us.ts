@@ -208,7 +208,7 @@ export const LANG_EN_US = {
     "JOB_CREATE_CHANGE_PROJECT":"Warning! All containers will be delete, are you sure to continue?",
     "JOB_CREATE_JOB_NAME":"Job name",
     "JOB_CREATE_JOB_NAME_EXISTS":"Job name exists.",
-    "JOB_CREATE_JOB_NAME_PATTERN_NSG":"Made of numbers or lowercase letter with '-' character supported in the middle.",
+    "JOB_CREATE_JOB_NAME_PATTERN_NSG":"Start with lowercase letter or number, made of numbers or lowercase letter or '-' or '.' character supported in the middle.",
     "JOB_CREATE_NODE_STATUS_SCHEDULABLE": "Schedulable",
     "JOB_CREATE_NODE_STATUS_UNSCHEDULABLE": "Unschedulable",
     "JOB_CREATE_NODE_DEFAULT": "Default node",
