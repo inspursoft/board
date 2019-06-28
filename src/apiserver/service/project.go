@@ -26,6 +26,7 @@ const (
 	projectPrivate = 0
 	kubeNamespace  = "kube-system"
 	istioNamespace = "istio-system"
+	istioLabel     = "istio-injection"
 )
 
 func CreateProject(project model.Project) (bool, error) {
@@ -203,13 +204,13 @@ func NamespaceExists(projectName string) (bool, error) {
 	return false, nil
 }
 
-func CreateNamespace(projectName string) (bool, error) {
-	projectExists, err := NamespaceExists(projectName)
+func CreateNamespace(project *model.Project) (bool, error) {
+	projectExists, err := NamespaceExists(project.Name)
 	if err != nil {
 		return false, err
 	}
 	if projectExists {
-		logs.Info("Project %s already exists in cluster.", projectName)
+		logs.Info("Project %s already exists in cluster.", project.Name)
 		return true, nil
 	}
 
@@ -219,10 +220,13 @@ func CreateNamespace(projectName string) (bool, error) {
 	n := k8sclient.AppV1().Namespace()
 
 	var namespace model.Namespace
-	namespace.ObjectMeta.Name = projectName
+	namespace.ObjectMeta.Name = project.Name
+	if project.IstioSupport {
+		namespace.Labels = map[string]string{istioLabel: "enabled"}
+	}
 	_, err = n.Create(&namespace)
 	if err != nil {
-		logs.Error("Failed to create namespace: %s, error: %+v", projectName, err)
+		logs.Error("Failed to create namespace: %s, error: %+v", project.Name, err)
 		return false, err
 	}
 	logs.Info(namespace)
@@ -240,10 +244,9 @@ func SyncNamespaceByOwnerID(userID int64) error {
 		if !utils.ValidateWithPattern("project", project.Name) {
 			continue
 		}
-		projectName := project.Name
-		_, err = CreateNamespace(projectName)
+		_, err = CreateNamespace(project)
 		if err != nil {
-			return fmt.Errorf("Failed to create namespace: %s, error: %+v", projectName, err)
+			return fmt.Errorf("Failed to create namespace: %s, error: %+v", project.Name, err)
 		}
 	}
 	return nil
@@ -281,6 +284,9 @@ func SyncProjectsWithK8s() error {
 			reqProject.OwnerID = adminUserID
 			reqProject.OwnerName = adminUserName
 			reqProject.Public = projectPrivate
+			if namespace.Labels != nil && namespace.Labels[istioLabel] == "enabled" {
+				reqProject.IstioSupport = true
+			}
 			isSuccess, err := CreateProject(reqProject)
 			if err != nil {
 				logs.Error("Failed to create project name: %s, error: %+v", reqProject.Name, err)

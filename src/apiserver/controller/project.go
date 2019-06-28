@@ -68,7 +68,7 @@ func (p *ProjectController) CreateProjectAction() {
 		return
 	}
 
-	isSuccess, err = service.CreateNamespace(reqProject.Name)
+	isSuccess, err = service.CreateNamespace(&reqProject)
 	if err != nil {
 		p.internalError(err)
 		return
