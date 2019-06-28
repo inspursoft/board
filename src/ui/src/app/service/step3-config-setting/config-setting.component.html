@@ -36,7 +36,7 @@
                  (onChange)="setServiceType($event)">
     </cs-dropdown>
   </div>
-  <div class="line-container">
+  <div *ngIf="!isStatefulService" class="line-container">
     <cs-input [disabled]="isActionWip"
               [inputPattern]="patternIP"
               [inputLabel]="'SERVICE.STEP_3_CLUSTER_IP' | translate"
