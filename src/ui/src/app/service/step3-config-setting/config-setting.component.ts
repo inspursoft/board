@@ -128,6 +128,8 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
     this.uiData.serviceType = value.type;
     if (value.type === ServiceType.ServiceTypeStatefulSet) {
       this.uiData.externalServiceList.forEach((external:ExternalService) => external.node_config.node_port = 0);
+    } else {
+      this.uiData.clusterIp = '';
     }
   }
 
