@@ -27,6 +27,16 @@
     </cs-input>
   </div>
   <div class="line-container">
+    <label>{{"SERVICE.STEP_3_TYPE"|translate}}:</label>
+    <cs-dropdown [dropdownList]="serviceTypes"
+                 [dropdownListTextKey]="'description'"
+                 [dropdownWidth]="310"
+                 [dropdownDisabled]="isActionWip"
+                 [dropdownDefaultText]="serviceTypeDescription | translate"
+                 (onChange)="setServiceType($event)">
+    </cs-dropdown>
+  </div>
+  <div *ngIf="!isStatefulService" class="line-container">
     <cs-input [disabled]="isActionWip"
               [inputPattern]="patternIP"
               [inputLabel]="'SERVICE.STEP_3_CLUSTER_IP' | translate"
@@ -92,13 +102,15 @@
                    (onChange)="externalService.node_config.target_port = $event">
       </cs-dropdown>
     </div>
-    <div class="line-container" *ngIf="externalService.container_name !== ''">
+    <div class="line-container"
+         *ngIf="externalService.container_name !== ''"
+         [style.display]="isStatefulService ? 'none' : 'flex'">
       <label>{{"SERVICE.STEP_3_NODE_PORT"|translate}}:</label>
       <cs-input-dropdown [inputConflictNumbers]="existingNodePorts"
                          [inputValue]="externalService.node_config.node_port"
                          [inputDisabled]="isActionWip || isGetNodePortWip"
                          [inputWidth]="310"
-                         [inputIsRequired]="uiData.clusterIp == ''"
+                         [inputIsRequired]="uiData.clusterIp == '' && !isStatefulService"
                          [inputPlaceholder]="'SERVICE.STEP_3_EXTERNAL_PORT'| translate"
                          [validatorMessage]="[{validatorKey: 'inUsed', validatorMessage: 'SERVICE.STEP_3_NODE_PORT_ALREADY_USED'}]"
                          [inputMin]="30000"

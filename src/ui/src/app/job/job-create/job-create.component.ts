@@ -24,7 +24,7 @@ import { JobAffinityComponent } from "../job-affinity/job-affinity.component";
 export class JobCreateComponent extends CsModalParentBase implements OnInit {
   @Output() afterDeployment: EventEmitter<boolean>;
   @ViewChild('selectProject') selectProject: CsDropdownComponent;
-  patternServiceName: RegExp = /^[a-z]([-a-z0-9]*[a-z0-9])+$/;
+  patternServiceName: RegExp = /[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/;
   projectList: Array<Project>;
   newJobDeployment: JobDeployment;
   isActionWip = false;
@@ -168,7 +168,7 @@ export class JobCreateComponent extends CsModalParentBase implements OnInit {
   }
 
   setAffinity() {
-    if (!this.isActionWip) {
+    if (!this.isActionWip && this.newJobDeployment.project_id > 0) {
       let factory = this.factoryResolver.resolveComponentFactory(JobAffinityComponent);
       let componentRef = this.selfView.createComponent(factory);
       componentRef.instance.jobName = this.newJobDeployment.job_name;
@@ -183,8 +183,8 @@ export class JobCreateComponent extends CsModalParentBase implements OnInit {
   }
 
   verifyContainer(): boolean {
-    if (this.newJobDeployment.container_list.length === 0){
-      this.messageService.showAlert('JOB.JOB_CREATE_CONTAINER_COUNT',{alertType: "warning"});
+    if (this.newJobDeployment.container_list.length === 0) {
+      this.messageService.showAlert('JOB.JOB_CREATE_CONTAINER_COUNT', {alertType: "warning"});
       return false;
     } else {
       return true;
@@ -193,9 +193,16 @@ export class JobCreateComponent extends CsModalParentBase implements OnInit {
 
   deploymentJob() {
     if (this.verifyContainer() && this.verifyInputValid() && this.verifyInputValid()) {
+      this.isActionWip = true;
       this.jobService.deploymentJob(this.newJobDeployment).subscribe(
-        () => this.messageService.showAlert('JOB.JOB_CREATE_SUCCESSFULLY'),
-        () => this.messageService.showAlert('JOB.JOB_CREATE_FAILED',{alertType: "warning"}),
+        () => {
+          this.messageService.showAlert('JOB.JOB_CREATE_SUCCESSFULLY');
+          this.isActionWip = false;
+        },
+        () => {
+          this.messageService.showAlert('JOB.JOB_CREATE_FAILED', {alertType: "warning"});
+          this.isActionWip = false;
+        },
         () => this.afterDeployment.next(true)
       )
     }

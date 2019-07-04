@@ -1,5 +1,6 @@
 import { DragStatus } from "../shared/shared.types";
 import { SERVICE_STATUS } from "../shared/shared.const";
+import { ServiceType } from "./service";
 
 export const PHASE_SELECT_PROJECT = "SELECT_PROJECT";
 export const PHASE_CONFIG_CONTAINERS = "CONFIG_CONTAINERS";
@@ -28,6 +29,7 @@ export class ServerServiceStep {
   public phase: ServiceStepPhase;
   public project_id?: number = 0;
   public service_name?: string = "";
+  public service_type? = ServiceType.ServiceTypeNormalNodePort;
   public node_selector?: string = "";
   public cluster_ip?: string = "";
   public instance?: number = 0;
@@ -294,6 +296,7 @@ export class UIServiceStep3 extends UIServiceStepBase {
   public projectName = "";
   public serviceName = "";
   public nodeSelector = "";
+  public serviceType = ServiceType.ServiceTypeNormalNodePort;
   public clusterIp = "";
   public instance = 1;
   public servicePublic = false;
@@ -312,6 +315,7 @@ export class UIServiceStep3 extends UIServiceStepBase {
     let postAffinityData: Array<{anti_flag: number, service_names: Array<string>}> = Array<{anti_flag: number, service_names: Array<string>}>();
     result.phase = PHASE_EXTERNAL_SERVICE;
     result.service_name = this.serviceName;
+    result.service_type = this.serviceType;
     result.instance = this.instance;
     result.session_affinity_flag = this.sessionAffinityFlag ? 1 : 0;
     result.cluster_ip = this.clusterIp;
@@ -354,6 +358,9 @@ export class UIServiceStep3 extends UIServiceStepBase {
     }
     if (serverResponse && serverResponse["project_name"]) {
       step3.projectName = serverResponse["project_name"];
+    }
+    if (serverResponse && serverResponse["service_type"]) {
+      step3.serviceType = serverResponse["service_type"];
     }
     if (serverResponse && serverResponse["service_public"]) {
       step3.servicePublic = serverResponse["service_public"] == 1;

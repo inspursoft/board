@@ -90,7 +90,7 @@ export class JobDeployment {
   affinity_list: Array<JobAffinity>;
   parallelism = 1;
   completions = 1;
-  active_Deadline_Seconds = 1;
+  active_Deadline_Seconds: number;
   backoff_Limit = 6;
 
   constructor() {

@@ -11,8 +11,8 @@ import { map } from "rxjs/operators";
 
 @Injectable()
 export class K8sService {
-  stepSource: Subject<{ index: number, isBack: boolean }> = new Subject<{ index: number, isBack: boolean }>();
-  step$: Observable<{ index: number, isBack: boolean }> = this.stepSource.asObservable();
+  stepSource: Subject<{index: number, isBack: boolean}> = new Subject<{index: number, isBack: boolean}>();
+  step$: Observable<{index: number, isBack: boolean}> = this.stepSource.asObservable();
 
   constructor(private http: HttpClient) {
   }
@@ -46,6 +46,7 @@ export class K8sService {
         project_id: config.project_id.toString(),
         service_name: config.service_name,
         cluster_ip: config.cluster_ip,
+        service_type: config.service_type.toString(),
         instance: config.instance.toString(),
         session_affinity_flag: config.session_affinity_flag.toString(),
         service_public: config.service_public.toString(),
@@ -67,6 +68,13 @@ export class K8sService {
 
   serviceDeployment(): Observable<Object> {
     return this.http.post(`/api/v1/services/deployment`, {}, {
+      headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
+      observe: "response"
+    }).pipe(map((res: HttpResponse<Object>) => res.body));
+  }
+
+  serviceStatefulDeployment(): Observable<Object> {
+    return this.http.post(`/api/v1/services/statefulsets`, {}, {
       headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
       observe: "response"
     }).pipe(map((res: HttpResponse<Object>) => res.body));
@@ -129,6 +137,13 @@ export class K8sService {
     })
   }
 
+  deleteStatefulService(serviceID: number): Observable<any> {
+    return this.http.delete(`/api/v1/services/${serviceID}/statefulsets`, {
+      headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
+      observe: "response"
+    })
+  }
+
   toggleServiceStatus(serviceID: number, isStart: 0 | 1): Observable<any> {
     return this.http.put(`/api/v1/services/${serviceID}/toggle`, {service_toggle: isStart}, {
       headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
@@ -155,11 +170,11 @@ export class K8sService {
       }).pipe(map((res: HttpResponse<string>) => res.body));
   }
 
-  getNodesList(param?: {}): Observable<Array<{ node_name: string, node_ip: string, status: number }>> {
+  getNodesList(param?: {}): Observable<Array<{node_name: string, node_ip: string, status: number}>> {
     let queryParam = param || {};
     return this.http
       .get(`/api/v1/nodes`, {observe: "response", params: queryParam})
-      .pipe(map((res: HttpResponse<Array<{ node_name: string, node_ip: string, status: number }>>) => res.body || []));
+      .pipe(map((res: HttpResponse<Array<{node_name: string, node_ip: string, status: number}>>) => res.body || []));
   }
 
   addServiceRoute(serviceURL: string, serviceIdentity: string): Observable<any> {
@@ -245,12 +260,12 @@ export class K8sService {
       .pipe(map((res: HttpResponse<Array<number>>) => res.body));
   }
 
-  getNodeSelectors(): Observable<Array<{ name: string, status: number }>> {
+  getNodeSelectors(): Observable<Array<{name: string, status: number}>> {
     let obsNodeList = this.http
       .get(`/api/v1/nodes`, {observe: "response"})
       .pipe(
         map((res: HttpResponse<Array<INode>>) => {
-          let result = Array<{ name: string, status: number }>();
+          let result = Array<{name: string, status: number}>();
           res.body.forEach((iNode: INode) => result.push({name: String(iNode.node_name).trim(), status: iNode.status}));
           return result;
         }));
@@ -258,7 +273,7 @@ export class K8sService {
       .get(`/api/v1/nodegroup`, {observe: "response", params: {is_valid_node_group: '1'}})
       .pipe(
         map((res: HttpResponse<Array<INodeGroup>>) => {
-          let result = Array<{ name: string, status: number }>();
+          let result = Array<{name: string, status: number}>();
           res.body.forEach((iNodeGroup: INodeGroup) => result.push({name: String(iNodeGroup.nodegroup_name).trim(), status: 1}));
           return result;
         }));

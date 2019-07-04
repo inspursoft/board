@@ -36,7 +36,6 @@
         <clr-icon shape="refresh"></clr-icon>
       </a>
       {{"JOB.JOB_DETAIL_TOTAL_LOGS" | translate}}:<b>{{jobLogs.length}}</b>
-      {{"JOB.JOB_DETAIL_MAX_LOGS" | translate}}:1024(Bytes)
     </div>
     <div class="log-container">
       <span *ngFor="let log of jobLogs">{{log.datetime | date: "long"}}{{log.content}}</span>

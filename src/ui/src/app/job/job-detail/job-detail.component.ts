@@ -78,13 +78,14 @@ export class JobDetailComponent extends CsModalChildMessage implements OnInit {
     this.jobLogs.splice(0, this.jobLogs.length);
     this.jobService.getJobLogs(this.job, this.currentPod, {
       timestamps: true,
-      limitBytes: 1024,
+      limitBytes: 1048576,
       sinceTime: this.getSearchDateTime().toISOString()
     }).subscribe((res: string) => {
         res.split(/\n/).forEach((log: string) => {
           const arrLog = log.split(" ");
-          if (arrLog.length == 2){
-            this.jobLogs.push({datetime: arrLog[0], content: `   ${arrLog[1]}`});
+          if (arrLog.length >= 2){
+            let content = log.substring(arrLog[0].length);
+            this.jobLogs.push({datetime: arrLog[0], content: `   ${content}`});
           }
         })
       },

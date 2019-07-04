@@ -9,7 +9,6 @@
   <clr-dg-column>{{ 'JOB.JOB_LIST_CREATION_TIME' | translate }}</clr-dg-column>
   <clr-dg-column>{{ 'JOB.JOB_LIST_UPDATE_TIME' | translate }}</clr-dg-column>
   <clr-dg-column>{{ 'JOB.JOB_LIST_OWNER_NAME' | translate }}</clr-dg-column>
-  <clr-dg-column>{{ 'JOB.JOB_LIST_SOURCE' | translate }}</clr-dg-column>
   <clr-dg-column>{{ 'JOB.JOB_LIST_COMMENT' | translate }}</clr-dg-column>
   <clr-dg-column>{{ 'JOB.JOB_LIST_STATUS' | translate }}</clr-dg-column>
   <clr-dg-column>{{ 'JOB.JOB_LIST_OPERATION' | translate }}</clr-dg-column>
@@ -19,7 +18,6 @@
     <clr-dg-cell>{{job.job_creation_time | date:'short'}}</clr-dg-cell>
     <clr-dg-cell>{{job.job_update_time | date:'short'}}</clr-dg-cell>
     <clr-dg-cell>{{job.job_owner_name}}</clr-dg-cell>
-    <clr-dg-cell>{{job.job_source}}</clr-dg-cell>
     <clr-dg-cell>{{job.job_comment}}</clr-dg-cell>
     <clr-dg-cell>
       <span [ngClass]="getStatusClass(job.job_status)">

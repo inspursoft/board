@@ -25,7 +25,7 @@ a.disabled:hover {
 }
 
 div.log-container {
-  max-height: 350px;
+  height: 350px;
   overflow-y: auto;
   background-color: black;
   color: white;
