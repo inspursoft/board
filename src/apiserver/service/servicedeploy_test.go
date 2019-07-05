@@ -5,7 +5,10 @@ import (
 	"git/inspursoft/board/src/common/model"
 	"testing"
 
+	"git/inspursoft/board/src/common/utils"
+
 	"github.com/astaxie/beego/logs"
+	"github.com/stretchr/testify/assert"
 )
 
 var path = "./"
@@ -36,8 +39,9 @@ var configServiceStep = model.ConfigServiceStep{
 
 var configStatefulSet = model.ConfigServiceStep{
 	ProjectID:   1,
+	ProjectName: "library",
 	Instance:    1,
-	ServiceName: "teststatefulset001",
+	ServiceName: "unitteststatefulset001",
 	ServiceType: model.ServiceTypeStatefulSet,
 	ClusterIP:   "None",
 	ContainerList: []model.Container{
@@ -61,24 +65,40 @@ var configStatefulSet = model.ConfigServiceStep{
 	},
 }
 
+var statufulsetName = "unitteststatefulset001"
+
 // TODO: unit test case later
 // TestDeployStatefulSet
 func TestDeployStatefulSet(t *testing.T) {
 	assert := assert.New(t)
-	//deployStatefulSetInfo, err := service.DeployStatefulSet(&configServiceStep, registryBaseURI())
-	//assert.Nil(err, "Failed, err when create test image.")
-	//assert.NotEqual(0, id, "Failed to assign a image id")
-	//testImageid = id
-	//t.Log(deployStatefulSetInfo)
-	t.Log("Test KubeMaster")
-	masterIP = utils.GetConfig("KUBE_MASTER_IP")
-	registryIP = utils.GetConfig("REGISTRY_IP")
-	t.Log("KUBE_MASTER_IP %s  REGISTRY_IP %s", masterIP, registryIP)
+	t.Log("Check KubeMaster")
+	masterIP := utils.GetStringValue("KUBE_MASTER_IP")
+	logs.Info("KUBE_MASTER_IP %s", masterIP)
 
+	registryURI := utils.GetStringValue("REGISTRY_BASE_URI")
+	logs.Info("REGISTRY_URI %s", registryURI)
+
+	deployStatefulSetInfo, err := service.DeployStatefulSet(&configStatefulSet, registryURI)
+	assert.Nil(err, "Failed, err when create test StatefulSet")
+	assert.Equal(statufulsetName, deployStatefulSetInfo.Service.Name, "Failed to create StatefulSet")
+	logs.Info("Created statefulset %v %v", deployStatefulSetInfo.Service, deployStatefulSetInfo.StatefulSet)
+
+	//clean test
+	t.Log("Clean TestDeployStatefulSet")
+	cleanStatefulSet(configStatefulSet.ProjectName, configStatefulSet.ServiceName)
 	t.Log("Tested TestDeployStatefulSet")
 }
 
-// TODO: clean test
-func cleanStatefulSetByID(id int64) {
-	logs.Debug("cleanStatefulSetByID")
+// clean test
+func cleanStatefulSet(projectName string, serviceName string) {
+	logs.Info("cleanStatefulSet %s %s", projectName, serviceName)
+	err := service.StopStatefulSetK8s(&model.ServiceStatus{
+		Name:        serviceName,
+		ProjectName: projectName,
+	})
+	if err != nil {
+		logs.Info("cleanStatefulSet failed %v", err)
+		return
+	}
+	logs.Info("cleaned StatefulSet")
 }

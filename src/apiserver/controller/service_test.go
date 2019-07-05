@@ -7,11 +7,14 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	//"io/ioutil"
+
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
 	"github.com/stretchr/testify/assert"
 )
 
-var configServiceStep = model.ConfigServiceStep{
+var configServiceStep1 = model.ConfigServiceStep{
 	ProjectID:   1,
 	Instance:    1,
 	ServiceName: "teststatefulset001",
@@ -65,14 +68,16 @@ func TestDeployStatefulSetAction(t *testing.T) {
 	}()
 
 	t.Log("Test KubeMaster")
-	masterIP = utils.GetConfig("KUBE_MASTER_IP")
-	registryIP = utils.GetConfig("REGISTRY_IP")
-	t.Log("KUBE_MASTER_IP %s  REGISTRY_IP %s", masterIP, registryIP)
+	masterIP := utils.GetStringValue("KUBE_MASTER_IP")
+	registryIP := utils.GetStringValue("REGISTRY_IP")
+	logs.Info("KUBE_MASTER_IP %s  REGISTRY_IP %s", masterIP, registryIP)
 
 	//get service list
 	r, _ := http.NewRequest("GET", "/api/v1/services", nil)
 	r.Header.Add("token", token)
 	w := httptest.NewRecorder()
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
+	//data, _ := ioutil.ReadAll(w.Body)
+	logs.Info("Response %s", w.Body.String())
 	assert.Equal(w.Code, http.StatusOK, "Error occurred while testing GetServiceListAction.")
 }
