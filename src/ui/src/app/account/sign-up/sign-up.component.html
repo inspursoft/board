@@ -1,79 +1,78 @@
 <header-content [isSignIn]="false" [hasSignedIn]="false"></header-content>
-  <div class="content-container background">
-    <div class="input-container">
-      <cs-input [inputIsRequired]="true"
-                [inputLabel]="'ACCOUNT.USERNAME' | translate "
-                [simpleFiled]="signUpModel.username"
-                [disabled]="isSignUpWIP"
-                checkItemPatternEx="username"
-                checkItemExistingEx="username"
-                [inputMaxlength]="40"
-                [inputMinlength]="4"
-                [inputPlaceholder]="'ACCOUNT.INPUT_USERNAME' | translate"
-                [validatorMessage]="[{validatorKey: 'required', validatorMessage: 'ACCOUNT.USERNAME_IS_REQUIRED' | translate}]"
-                (onCheck)="signUpModel.username = $event">
-      </cs-input>
-      <cs-input [inputIsRequired]="true"
-                [inputLabel]="'ACCOUNT.EMAIL' | translate "
-                [simpleFiled]="signUpModel.email"
-                [disabled]="isSignUpWIP"
-                [inputFiledType]="3"
-                checkItemPatternEx="email"
-                checkItemExistingEx="email"
-                [inputPlaceholder]="'ACCOUNT.INPUT_EMAIL' | translate "
-                [validatorMessage]="[{validatorKey: 'required', validatorMessage: 'ACCOUNT.EMAIL_IS_REQUIRED' | translate}]"
-                (onCheck)="signUpModel.email = $event">
-      </cs-input>
-      <cs-input [inputIsRequired]="true"
-                [inputLabel]="'USER_CENTER.PASSWORD' | translate "
-                [simpleFiled]="signUpModel.password"
-                [disabled]="isSignUpWIP"
-                [inputFiledType]="2"
-                [sourcePassword]="true"
-                checkItemPatternEx="password"
-                [inputPlaceholder]="'ACCOUNT.INPUT_PASSWORD' | translate"
-                [validatorMessage]="[{validatorKey: 'required', validatorMessage: 'ACCOUNT.PASSWORD_IS_REQUIRED' | translate}]"
-                (onCheck)="signUpModel.password = $event">
-      </cs-input>
-      <cs-input [inputIsRequired]="true"
-                [inputLabel]="'ACCOUNT.CONFIRM_PASSWORD' | translate "
-                [simpleFiled]="signUpModel.confirmPassword"
-                [disabled]="isSignUpWIP"
-                [inputFiledType]="2"
-                [verifyPassword]="true"
-                [inputPlaceholder]="'ACCOUNT.INPUT_CONFIRM_PASSWORD' | translate "
-                (onCheck)="signUpModel.confirmPassword = $event">
-      </cs-input>
-      <cs-input [inputLabel]="'ACCOUNT.REALNAME' | translate "
-                [simpleFiled]="signUpModel.realname"
-                [disabled]="isSignUpWIP"
-                [inputMaxlength]="20"
-                (onCheck)="signUpModel.realname = $event">
-      </cs-input>
-      <cs-input [inputLabel]="'ACCOUNT.COMMENT' | translate "
-                [simpleFiled]="signUpModel.comment"
-                [disabled]="isSignUpWIP"
-                [inputMaxlength]="50"
-                (onCheck)="signUpModel.comment = $event">
-      </cs-input>
-      <div class="btn-container">
-        <button type="button"
-                class="btn btn-default"
-                (click)="goBack()">
-          {{ 'ACCOUNT.BACK' | translate }}
-        </button>
-        <button type="button"
-                class="btn btn-primary"
-                (click)="signUp()"
-                [disabled]="isSignUpWIP">
-          {{'ACCOUNT.SIGN_UP' | translate}}
-        </button>
-        <span *ngIf="isSignUpWIP" class="spinner spinner-sm"></span>
-      </div>
+<div class="content-container background">
+  <div class="input-container">
+    <lib-input-ex libCheckItemExistingEx="username"
+                  libCheckPatternEx="username"
+                  [inputIsRequired]="true"
+                  [inputLabel]="'ACCOUNT.USERNAME' | translate "
+                  [inputDefaultValue]="signUpModel.username"
+                  [inputDisabled]="isSignUpWIP"
+                  [inputPlaceholder]="'ACCOUNT.INPUT_USERNAME' | translate"
+                  [validatorMessage]="[{key: 'required', message: 'ACCOUNT.USERNAME_IS_REQUIRED' | translate}]"
+                  [inputMaxlength]="40"
+                  [inputMinlength]="4"
+                  (commitEvent)="signUpModel.username = $event">
+    </lib-input-ex>
+    <lib-input-ex libCheckItemExistingEx="email"
+                  libCheckPatternEx="email"
+                  [inputIsRequired]="true"
+                  [inputLabel]="'ACCOUNT.EMAIL' | translate "
+                  [inputDefaultValue]="signUpModel.email"
+                  [inputDisabled]="isSignUpWIP"
+                  [inputCategory]="4"
+                  [inputPlaceholder]="'ACCOUNT.INPUT_EMAIL' | translate "
+                  [validatorMessage]="[{key: 'required', message: 'ACCOUNT.EMAIL_IS_REQUIRED' | translate}]"
+                  (commitEvent)="signUpModel.email = $event">
+    </lib-input-ex>
+    <lib-input-ex libCheckPatternEx="password"
+                  [inputIsRequired]="true"
+                  [inputLabel]="'USER_CENTER.PASSWORD' | translate "
+                  [inputDefaultValue]="signUpModel.password"
+                  [inputDisabled]="isSignUpWIP"
+                  [inputCategory]="3"
+                  [sourcePassword]="true"
+                  [inputPlaceholder]="'ACCOUNT.INPUT_PASSWORD' | translate"
+                  [validatorMessage]="[{key: 'required', message: 'ACCOUNT.PASSWORD_IS_REQUIRED' | translate}]"
+                  (commitEvent)="signUpModel.password = $event">
+    </lib-input-ex>
+    <lib-input-ex [inputIsRequired]="true"
+                  [inputLabel]="'ACCOUNT.CONFIRM_PASSWORD' | translate "
+                  [inputDisabled]="isSignUpWIP"
+                  [inputDefaultValue]="signUpModel.confirmPassword"
+                  [verifyPassword]="true"
+                  [inputPlaceholder]="'ACCOUNT.INPUT_CONFIRM_PASSWORD' | translate "
+                  (commitEvent)="signUpModel.confirmPassword = $event">
+    </lib-input-ex>
+    <lib-input-ex [inputLabel]="'ACCOUNT.REALNAME' | translate "
+                  [inputDefaultValue]="signUpModel.realname"
+                  [inputDisabled]="isSignUpWIP"
+                  [inputMaxlength]="20"
+                  (commitEvent)="signUpModel.realname = $event">
+    </lib-input-ex>
+    <lib-input-ex [inputLabel]="'ACCOUNT.COMMENT' | translate "
+                  [inputDefaultValue]="signUpModel.comment"
+                  [inputDisabled]="isSignUpWIP"
+                  [inputMaxlength]="50"
+                  (commitEvent)="signUpModel.comment = $event">
+    </lib-input-ex>
+    <div class="btn-container">
+      <button type="button"
+              class="btn btn-default"
+              (click)="goBack()">
+        {{ 'ACCOUNT.BACK' | translate }}
+      </button>
+      <button type="button"
+              class="btn btn-primary"
+              (click)="signUp()"
+              [disabled]="isSignUpWIP">
+        {{'ACCOUNT.SIGN_UP' | translate}}
+      </button>
+      <span *ngIf="isSignUpWIP" class="spinner spinner-sm"></span>
     </div>
-    <nav class="sidenav">
-     <section class="sidenav-content">
-       <a href="javascript:void(0)" class="nav-link active">{{ 'ACCOUNT.REGISTER' | translate }}</a>
-     </section>
-    </nav>
   </div>
+  <nav class="sidenav">
+    <section class="sidenav-content">
+      <a href="javascript:void(0)" class="nav-link active">{{ 'ACCOUNT.REGISTER' | translate }}</a>
+    </section>
+  </nav>
+</div>

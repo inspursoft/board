@@ -26,6 +26,8 @@ import { CsModalChildBaseSelector } from './cs-modal-base/cs-modal-child-base';
 import { CreatePvcComponent } from './create-pvc/create-pvc.component';
 import { CsInputDropdownComponent } from './cs-components-library/cs-input-dropdown/cs-input-dropdown.component';
 import { CoreModule } from "../core/core.module";
+import { LibCheckPatternExDirective } from "./lib-directives/input-check-pattern.directive";
+import { LibCheckExistingExDirective } from "./lib-directives/input-check-existing.directive";
 
 @NgModule({
   imports: [CoreModule],
@@ -33,6 +35,8 @@ import { CoreModule } from "../core/core.module";
     HeaderComponent,
     CheckItemExistingDirective,
     CheckItemIdenticalDirective,
+    LibCheckPatternExDirective,
+    LibCheckExistingExDirective,
     CsDropdownComponent,
     CheckItemPatternDirective,
     ValidateOnBlurDirective,
@@ -56,6 +60,8 @@ import { CoreModule } from "../core/core.module";
     CheckItemExistingDirective,
     CheckItemIdenticalDirective,
     CheckItemPatternDirective,
+    LibCheckPatternExDirective,
+    LibCheckExistingExDirective,
     ValidateOnBlurDirective,
     CsDropdownComponent,
     CsSearchInput,

@@ -31,7 +31,7 @@ export class SignUpComponent extends CsComponentBase implements OnInit {
   }
 
   signUp(): void {
-    if (this.verifyInputValid()) {
+    if (this.verifyInputExValid()) {
       this.isSignUpWIP = true;
       const account: Account = {
         username: this.signUpModel.username,
