@@ -11,6 +11,7 @@ import { TranslateService } from "@ngx-translate/core";
 import { CreateImageMethod, Message, RETURN_STATUS } from "../../shared/shared.types";
 import { CreateImageComponent } from "../image-create/image-create.component";
 import { Subscription } from "rxjs";
+import { ActivatedRoute, Data } from "@angular/router";
 
 @Component({
   selector: 'image-list',
@@ -31,7 +32,8 @@ export class ImageListComponent extends CsModalParentBase implements OnInit, OnD
   createImageMethod: CreateImageMethod = CreateImageMethod.None;
   _subscription: Subscription;
 
-  constructor(private imageService: ImageService,
+  constructor(private activatedRoute: ActivatedRoute,
+              private imageService: ImageService,
               private sharedActionService: SharedActionService,
               private sharedService: SharedService,
               private translateService: TranslateService,
@@ -56,6 +58,11 @@ export class ImageListComponent extends CsModalParentBase implements OnInit, OnD
       }
     });
     this.retrieve();
+    this.activatedRoute.fragment.subscribe((fragment: string) => {
+      if (fragment === 'createImage') {
+        this.createImage();
+      }
+    })
   }
 
   ngOnDestroy() {
@@ -103,7 +110,7 @@ export class ImageListComponent extends CsModalParentBase implements OnInit, OnD
   }
 
   confirmToDeleteImage(imageName: string) {
-    if (this.isSystemAdmin){
+    if (this.isSystemAdmin) {
       this.translateService.get('IMAGE.CONFIRM_TO_DELETE_IMAGE', [imageName]).subscribe((msg: string) => {
         this.messageService.showDeleteDialog(msg, 'IMAGE.DELETE_IMAGE').subscribe((message: Message) => {
           if (message.returnStatus == RETURN_STATUS.rsConfirm) {
