@@ -358,6 +358,20 @@ func GetDeployment(pName string, sName string) (*model.Deployment, []byte, error
 	return deployment, deploymentFileInfo, err
 }
 
+func GetStatefulSet(pName string, sName string) (*model.StatefulSet, []byte, error) {
+	var config k8sassist.K8sAssistConfig
+	config.KubeConfigPath = kubeConfigPath()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	d := k8sclient.AppV1().StatefulSet(pName)
+
+	statefulset, statefulsetFileInfo, err := d.Get(sName)
+	if err != nil {
+		logs.Info("Failed to get statefulset", pName, sName)
+		return nil, nil, err
+	}
+	return statefulset, statefulsetFileInfo, err
+}
+
 func PatchDeployment(pName string, sName string, deploymentConfig *model.Deployment) (*model.Deployment, []byte, error) {
 	var config k8sassist.K8sAssistConfig
 	config.KubeConfigPath = kubeConfigPath()
@@ -422,6 +436,29 @@ func StopServiceK8s(s *model.ServiceStatus) error {
 	err := d.Delete(s.Name)
 	if err != nil && !strings.Contains(err.Error(), "not found") {
 		logs.Error("Failed to delete deployment in cluster, error:%v", err)
+		return err
+	}
+	svc := k8sclient.AppV1().Service(s.ProjectName)
+	err = svc.Delete(s.Name)
+	if err != nil && !strings.Contains(err.Error(), "not found") {
+		logs.Error("Failed to delete service in cluster, error:%v", err)
+		return err
+	}
+	return nil
+}
+
+// TODO: StopStatefulSetK8s should be refactored
+// StopStatefulSetK8s
+func StopStatefulSetK8s(s *model.ServiceStatus) error {
+	logs.Info("stop service in cluster %s", s.Name)
+	// Stop deployment
+	config := k8sassist.K8sAssistConfig{}
+	config.KubeConfigPath = kubeConfigPath()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	d := k8sclient.AppV1().StatefulSet(s.ProjectName)
+	err := d.Delete(s.Name)
+	if err != nil && !strings.Contains(err.Error(), "not found") {
+		logs.Error("Failed to delete statefulset in cluster, error:%v", err)
 		return err
 	}
 	svc := k8sclient.AppV1().Service(s.ProjectName)
@@ -697,6 +734,42 @@ func MarshalDeployment(serviceConfig *model.ConfigServiceStep, registryURI strin
 	}
 }
 
+// MarshalStatefulSet is to create the statefulset data for k8s
+func MarshalStatefulSet(serviceConfig *model.ConfigServiceStep, registryURI string) *model.StatefulSet {
+	if serviceConfig == nil {
+		return nil
+	}
+	podTemplate := model.PodTemplateSpec{
+		ObjectMeta: model.ObjectMeta{
+			Name:   serviceConfig.ServiceName,
+			Labels: map[string]string{"app": serviceConfig.ServiceName},
+		},
+		Spec: model.PodSpec{
+			Volumes:      setDeploymentVolumes(serviceConfig.ContainerList),
+			Containers:   setDeploymentContainers(serviceConfig.ContainerList, registryURI),
+			NodeSelector: setDeploymentNodeSelector(serviceConfig.NodeSelector),
+			Affinity:     setDeploymentAffinity(serviceConfig.AffinityList),
+		},
+	}
+
+	instancenumber := int32(serviceConfig.Instance)
+
+	return &model.StatefulSet{
+		ObjectMeta: model.ObjectMeta{
+			Name:      serviceConfig.ServiceName,
+			Namespace: serviceConfig.ProjectName,
+		},
+		Spec: model.StatefulSetSpec{
+			Replicas: &instancenumber,
+			Selector: &model.LabelSelector{
+				MatchLabels: map[string]string{"app": serviceConfig.ServiceName},
+			},
+			Template:    podTemplate,
+			ServiceName: serviceConfig.ServiceName,
+		},
+	}
+}
+
 func MarshalNode(nodeName, labelKey string, schedFlag bool) *model.Node {
 	label := make(map[string]string)
 	if labelKey != "" {
@@ -721,7 +794,7 @@ func GetPods() (*model.PodList, error) {
 	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
 		KubeConfigPath: kubeConfigPath(),
 	})
-	l, err := k8sclient.AppV1().Pod("").List()
+	l, err := k8sclient.AppV1().Pod("").List(model.ListOptions{})
 	if err != nil {
 		return nil, err
 	}

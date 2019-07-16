@@ -1704,6 +1704,11 @@ paths:
           in: query
           type: string
           required: false
+        - name: service_type
+          in: query
+          type: integer
+          format: int64
+          required: false           
         - name: cluster_ip
           in: query
           type: string
@@ -5012,10 +5017,310 @@ paths:
           description: Release does not exist.
         500:
           description: Internal errors.
+  /v1/jobs:
+    get:
+      summary: Get jobs infomation.
+      description: |
+        This endpoint returns jobs information.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: job_name 
+          in: query
+          description: Job name for filtering results.
+          required: false
+          type: string
+        - name: page_index
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.
+        - name: order_field 
+          in: query
+          description: Order field for results.
+          required: false
+          type: string
+        - name: order_asc 
+          in: query
+          description: Order ascent type for results.
+          required: false
+          type: integer
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched release information.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/JobDetail'
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+  /v1/jobs/deployment:
+    post:
+      summary: Deploy Job by this job configuration.
+      description: |
+        This endpoint is aimed to deploy job by this job configuration.
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+          description: Current available token.
+        - name: job_config
+          in: body
+          required: true 
+          schema:
+            $ref: '#/definitions/JobConfig'
+          description: Updates of JobConfig data.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Deploy job successfully, return job config.
+          schema:
+            $ref: '#/definitions/JobConfig'
+        401:
+          description: User need to log in first.
+        402:
+          description: Invalid configuration phase.
+        403:
+          description: Invalid job ID.
+        500:
+          description: Unexpected internal errors.
+  /v1/jobs/{job_id}:
+    delete:
+      summary: Delete the specific job by service_id.
+      description: |
+        This endpoint to delete the specific job by job_id ID.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: job_id
+          in: path
+          description: job ID for deleting.
+          required: true
+          type: integer
+          format: int32
+      tags:
+        - Products
+      responses:
+        200:
+          description: Delete the service successfully.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.  
+  /v1/jobs/{job_id}/status:
+    get:
+      summary: Return specific job status.
+      description: |
+        This endpoint returns specific job status by job_id.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: job_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected job ID.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched job status.
+          schema:
+            $ref: '#/definitions/JobDetail'
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors. 
+  /v1/jobs/exists:
+    get:
+      summary: Return the results whether does the job exist.
+      description: 
+        This endpoint returns the results whether does the job exist.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name 
+          in: query
+          description: Project name for filtering results.
+          required: false
+          type: string
+        - name: job_name 
+          in: query
+          description: Job name for filtering results.
+          required: false
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched jobs.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+  /v1/jobs/{job_id}/pods:
+    get:
+      summary: Return specific job relate pods.
+      description: |
+        This endpoint returns specific job relate pods by job_id.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: job_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected job ID.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched job status.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+  /v1/jobs/{job_id}/logs/{pod_name}:
+    get:
+      summary: Return specific job relate pods.
+      description: |
+        This endpoint returns specific job relate pods by job_id.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: job_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected job ID.
+        - name: pod_name
+          in: path
+          type: string
+          required: true
+          description: Selected pod Name.
+        - name: container 
+          in: query
+          description: The container name of this pod to logs.
+          required: false
+          type: string
+        - name: follow 
+          in: query
+          description: Whether follow the logs or not.
+          required: false
+          type: boolean
+        - name: previous 
+          in: query
+          description: Whether show previous container logs.
+          required: false
+          type: boolean
+        - name: since_seconds 
+          in: query
+          description: The start seconds of logs.
+          required: false
+          type: integer
+          format: int64
+        - name: since_time 
+          in: query
+          description: The start time of logs.
+          required: false
+          type: string
+        - name: timestamps 
+          in: query
+          description: Whether show the timestamps in logs.
+          required: false
+          type: boolean
+        - name: tail_lines 
+          in: query
+          description: The tail lines of logs.
+          required: false
+          type: integer
+          format: int64
+        - name: limit_bytes 
+          in: query
+          description: The limit size in bytes of logs.
+          required: false
+          type: integer
+          format: int64
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched job status.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Pod'
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors. 
+  /v1/jobs/selectjobs:
+    get:
+      summary: Return the available job list to be selected.
+      description: |
+        This endpoint returns the available job list to be selected.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name 
+          in: query
+          description: project name for filtering results.
+          required: true
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all selectable job.
+          schema:
+            type: array
+            items:
+              type: string
+              description: The job name.  
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.  
 responses:
   UnsupportedMediaType: 
     description: The Media Type of the request is not supported, it has to be "application/json"
-
 # The following is for structure definition          
 definitions:
   Search:
@@ -5350,6 +5655,10 @@ definitions:
         type: integer 
         format: int32
         description: The flag to indicate the publicity of the service (1 is public, 0 is non-public).
+      service_type:
+        type: integer 
+        format: int32
+        description: The flag to indicate the type of the service (0 is unknown, 1 for normal).        
   ServiceDetail:
     type: object
     properties:
@@ -5718,7 +6027,7 @@ definitions:
       service_type:
         type: integer   
         format: int32   
-        description: The service type, 0 Unkonwn, 1 NormalWizard, 2 HelmService.      
+        description: The service type, 0 Unkonwn, 1 NormalWizard, 2 HelmService, 5 StatefulSet.      
       service_public:
         type: integer   
         format: int32
@@ -7072,3 +7381,107 @@ definitions:
         type: integer
         format: int32
         description: The count of the pages
+  JobConfig:
+    type: object
+    properties:
+      project_id:
+        type: integer   
+        format: int64
+      project_name:
+        type: string
+      job_id:
+        type: integer   
+        format: int64
+      job_name:
+        type: string
+      node_selector:
+        type: string
+      container_list:
+        type: array
+        items:
+            $ref: '#/definitions/ContainerList'
+      affinity_list:
+        type: array
+        items:
+            $ref: '#/definitions/JobAffinity' 
+      parallelism:
+        type: integer
+        format: int32
+      completions:
+        type: integer
+        format: int32
+      active_Deadline_Seconds:
+        type: integer
+        format: int32
+      backoff_Limit:
+        type: integer
+        format: int32
+  JobDetail:
+    type: object
+    properties:
+      job_id:
+        type: integer
+        format: int32
+        description: The integer ID of this job.
+      job_name:
+        type: string
+        description: The name of this job.
+      job_project_id:  
+        type: integer
+        format: int32
+        description: The project ID of this job belongs to.      
+      job_project_name:  
+        type: string
+        description: The project name of this job belongs to.      
+      job_comment:
+        type: string
+        description: The commnet of this job.
+      job_creation_time:
+        type: string
+        description: The creation time of this job.
+      job_update_time:
+        type: string
+        description: The update time of this job.
+      job_deleted:
+        type: integer
+        format: int32
+        description: A deletion mark of the job (1 means it's deleted, 0 is not).
+      job_owner_id:
+        type: integer
+        format: int32
+        description: The owner ID of the job always means the creator of the job.
+      job_owner_name:
+        type: string
+        description: The owner name of this job.      
+      job_source:
+        type: integer
+        format: int32
+        description: The creation way type of this job. 
+      job_status:
+        type: integer
+        format: int32
+        description: The current job status. 
+      job_yaml:
+        type: string
+        description: The job config of this job.
+  Pod:
+    type: object
+    properties:
+      name:
+        type: string
+        description: The name of this pod.
+      project_name:
+        type: string
+        description: The project name of this pod belongs.
+      spec:
+        description: The specification of this pod.
+        $ref: '#/definitions/Spec2'
+  JobAffinity:
+    type: object  
+    properties:
+      anti_flag:  
+        type: integer
+      job_names:
+        type: array
+        items:
+          type: string

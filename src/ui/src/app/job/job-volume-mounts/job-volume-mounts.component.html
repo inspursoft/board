@@ -1,0 +1,103 @@
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'md'" [clrModalClosable]="false" [clrModalPreventClose]="true">
+    <h3 class="modal-title">{{ 'SERVICE.VOLUME_CONFIG' | translate }}</h3>
+    <div class="modal-body">
+        <div *ngFor="let volumeData of volumeList;let i = index">
+            <div class="dynamic-line-container">
+                <div class="dynamic-icon-container">
+                    <clr-icon class="dynamic-icon" shape="minus" (click)="deleteVolumeData(i)"></clr-icon>
+                </div>
+                <span class="title min">{{"SERVICE.VOLUME_TYPE"|translate}}:</span>
+                <cs-dropdown class="base-margin-left"
+                             [dropdownWidth]="215"
+                             [dropdownList]="volumeTypes"
+                             [dropdownDefaultText]="volumeData.volume_type"
+                             [dropdownListTextKey]="'name'"
+                             (onChange)="changeSelectVolumeType(i,$event)">
+                </cs-dropdown>
+            </div>
+            <div class="dynamic-line-container">
+                <cs-input [inputLabel]="'SERVICE.VOLUME_NAME'| translate"
+                          [inputPattern]="patternName"
+                          [inputLabelMinWidth]="180"
+                          [inputIsRequired]="true"
+                          [simpleFiled]="volumeData.volume_name"
+                          (onCheck)="volumeData.volume_name = $event">
+                </cs-input>
+            </div>
+            <div class="dynamic-line-container">
+                <cs-input [inputLabel]="'SERVICE.VOLUME_TARGET_PATH'| translate"
+                          [simpleFiled]="volumeData.container_path"
+                          [inputPlaceholder]="'/data'"
+                          [inputLabelMinWidth]="180"
+                          [inputIsRequired]="true"
+                          [inputPattern]="patternMountPath"
+                          (onCheck)="volumeData.container_path = $event">
+                </cs-input>
+            </div>
+            <div class="dynamic-line-container" *ngIf="volumeData.volume_type == 'nfs'">
+                <div class="clr-checkbox-container">
+                    <input type="checkbox"
+                           clrCheckbox
+                           [checked]="volumeData.container_path_flag == 1"
+                           (change)="setContainerPathFlag(volumeData, $event)">
+                    <label>{{"SERVICE.VOLUME_SUB_PATH_FILE" | translate}}:</label>
+                </div>
+                <cs-input [inputPattern]="patternPath"
+                          [inputType]="2"
+                          [simpleFiled]="volumeData.container_file"
+                          [inputPlaceholder]="'file.txt'"
+                          [inputIsRequired]="true"
+                          (onCheck)="volumeData.container_file = $event">
+                </cs-input>
+            </div>
+            <div *ngIf="volumeData.volume_type == 'nfs'" class="dynamic-line-container">
+                <cs-input [inputLabel]="'SERVICE.VOLUME_NFS_SERVER'| translate"
+                          [simpleFiled]="volumeData.target_storage_service"
+                          [inputPattern]="patternIP"
+                          [inputPlaceholder]="'10.0.0.0'"
+                          [inputIsRequired]="true"
+                          [validatorMessage]="[{validatorKey:'pattern',validatorMessage:'SERVICE.VOLUME_NFS_SERVER_FORMAT'}]"
+                          (onCheck)="volumeData.target_storage_service = $event">
+                </cs-input>
+            </div>
+            <div *ngIf="volumeData.volume_type == 'nfs'" class="dynamic-line-container">
+                <cs-input [inputLabel]="'SERVICE.VOLUME_PATH'| translate"
+                          [simpleFiled]="volumeData.target_path"
+                          [inputPattern]="patternMountPath"
+                          [inputPlaceholder]="'/data'"
+                          [inputIsRequired]="true"
+                          (onCheck)="volumeData.target_path = $event">
+                </cs-input>
+            </div>
+            <div *ngIf="volumeData.volume_type == 'nfs' && volumeData.container_path_flag == 1"
+                 class="dynamic-line-container">
+                <cs-input [inputLabel]="'SERVICE.VOLUME_FILE'| translate"
+                          [simpleFiled]="volumeData.target_file"
+                          [inputPattern]="patternPath"
+                          [inputPlaceholder]="'file.txt'"
+                          (onCheck)="volumeData.target_file = $event">
+                </cs-input>
+            </div>
+            <div *ngIf="volumeData.volume_type == 'pvc'" class="dynamic-line-container">
+                <span class="title">{{"SERVICE.VOLUME_SELECT_PVC_TITLE" | translate}}:</span>
+                <cs-dropdown class="base-margin-left"
+                             [dropdownDefaultText]="pvcDropdownDefaultText(i) | translate"
+                             [dropdownWidth]="215"
+                             [dropdownList]="pvcList"
+                             [dropdownMustBeSelect]="true"
+                             [dropdownListTextKey]="'name'"
+                             (onChange)="changeSelectPVC(i, $event)"
+                             (onOnlyClickItem)="createNewPvc(i)">
+                </cs-dropdown>
+            </div>
+        </div>
+        <div class="dynamic-line-container">
+            <clr-icon class="dynamic-icon" shape="plus" (click)="addNewVolumeData()"></clr-icon>
+            <span class="base-margin-left">{{"SERVICE.VOLUME_ADD_VOLUME"|translate}}</span>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-default" (click)="modalOpened = false">{{"BUTTON.CANCEL" | translate}}</button>
+        <button class="btn btn-primary" (click)="confirmVolumeInfo()">{{"BUTTON.CONFIRM" | translate}}</button>
+    </div>
+</clr-modal>

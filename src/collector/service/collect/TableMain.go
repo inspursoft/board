@@ -68,7 +68,7 @@ func (this *SourceMap) GainPods() error {
 	c := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
 		KubeConfigPath: kubeConfigPath,
 	})
-	l, err := c.AppV1().Pod("").List()
+	l, err := c.AppV1().Pod("").List(model.ListOptions{})
 	if err != nil {
 		return err
 	}

@@ -21,6 +21,7 @@ import (
 const (
 	dockerfileName         = "Dockerfile"
 	deploymentFilename     = "deployment.yaml"
+	statefulsetFilename    = "statefulset.yaml"
 	serviceFilename        = "service.yaml"
 	rollingUpdateFilename  = "rollingUpdateDeployment.yaml"
 	deploymentTestFilename = "testdeployment.yaml"
@@ -34,6 +35,7 @@ const (
 	k8sServices      = "kubernetes"
 	deploymentType   = "deployment"
 	serviceType      = "service"
+	statefulsetType  = "statefulset"
 	startingDuration = 300 * time.Second //300 seconds
 )
 
@@ -44,6 +46,8 @@ const (
 	uncompleted
 	warning
 	deploying
+	completed
+	failed
 )
 
 type ServiceController struct {
@@ -175,33 +179,44 @@ func syncK8sStatus(serviceList []*model.ServiceStatusMO) error {
 		if (*serviceStatus).Status == stopped {
 			continue
 		}
-		// Check the deployment status
-		deployment, _, err := service.GetDeployment((*serviceStatus).ProjectName, (*serviceStatus).Name)
-		if deployment == nil && serviceStatus.Name != k8sServices {
-			logs.Info("Failed to get deployment", err)
-			var reason = "The deployment is not established in cluster system"
-			(*serviceStatus).Status = uncompleted
-			// TODO create a new field in serviceStatus for reason
-			(*serviceStatus).Comment = "Reason: " + reason
-			_, err = service.UpdateService(*serviceStatus, "status", "Comment")
-			if err != nil {
-				logs.Error("Failed to update deployment.")
-				break
-			}
-			continue
-		} else {
-			if deployment.Status.Replicas > deployment.Status.AvailableReplicas {
-				logs.Debug("The desired replicas number is not available",
-					deployment.Status.Replicas, deployment.Status.AvailableReplicas)
+
+		switch serviceStatus.Type {
+		case model.ServiceTypeNormalNodePort, model.ServiceTypeClusterIP:
+			// Check the deployment status
+			deployment, _, err := service.GetDeployment((*serviceStatus).ProjectName, (*serviceStatus).Name)
+			if deployment == nil && serviceStatus.Name != k8sServices {
+				logs.Info("Failed to get deployment", err)
+				var reason = "The deployment is not established in cluster system"
 				(*serviceStatus).Status = uncompleted
-				reason := "The desired replicas number is not available"
+				// TODO create a new field in serviceStatus for reason
 				(*serviceStatus).Comment = "Reason: " + reason
 				_, err = service.UpdateService(*serviceStatus, "status", "Comment")
 				if err != nil {
-					logs.Error("Failed to update deployment replicas.")
+					logs.Error("Failed to update deployment.")
 					break
 				}
 				continue
+			} else {
+				if deployment.Status.Replicas > deployment.Status.AvailableReplicas {
+					logs.Debug("The desired replicas number is not available",
+						deployment.Status.Replicas, deployment.Status.AvailableReplicas)
+					(*serviceStatus).Status = uncompleted
+					reason := "The desired replicas number is not available"
+					(*serviceStatus).Comment = "Reason: " + reason
+					_, err = service.UpdateService(*serviceStatus, "status", "Comment")
+					if err != nil {
+						logs.Error("Failed to update deployment replicas.")
+						break
+					}
+					continue
+				}
+			}
+		case model.ServiceTypeStatefulSet:
+			// Check the statefulset status
+			statefulset, _, err := service.GetStatefulSet((*serviceStatus).ProjectName, (*serviceStatus).Name)
+			if statefulset == nil || statefulset.Status.Replicas < *statefulset.Spec.Replicas {
+				logs.Debug("The statefulset %s is not ready %v", (*serviceStatus).Name, err)
+				(*serviceStatus).Status = uncompleted
 			}
 		}
 
@@ -710,15 +725,19 @@ func (f *ServiceController) DownloadDeploymentYamlFileAction() {
 	}
 	f.resolveRepoServicePath(projectName, serviceName)
 	yamlType := f.GetString("yaml_type")
-	if yamlType == "" {
+
+	switch yamlType {
+	case "":
 		f.customAbort(http.StatusBadRequest, "No YAML type found.")
 		return
-	}
-	if yamlType == deploymentType {
+	case deploymentType:
 		f.resolveDownloadYaml(serviceInfo, deploymentFilename, service.GenerateDeploymentYamlFileFromK8s)
-	} else if yamlType == serviceType {
+	case serviceType:
 		f.resolveDownloadYaml(serviceInfo, serviceFilename, service.GenerateServiceYamlFileFromK8s)
+	case statefulsetType:
+		f.resolveDownloadYaml(serviceInfo, statefulsetFilename, service.GenerateStatefulSetYamlFileFromK8s)
 	}
+
 }
 
 func (f *ServiceController) resolveDownloadYaml(serviceConfig *model.ServiceStatus, fileName string, generator func(*model.ServiceStatus, string) error) {
@@ -851,4 +870,110 @@ func (p *ServiceController) ImportServicesAction() {
 		}
 	}
 	logs.Debug("imported services from cluster successfully")
+}
+
+// DeployStatefulSetAction is an api action to deploy statefulset
+func (p *ServiceController) DeployStatefulSetAction() {
+	key := p.getKey()
+	configService := NewConfigServiceStep(key)
+
+	if configService.ServiceType != model.ServiceTypeStatefulSet {
+		p.customAbort(http.StatusBadRequest, "Invalid service type.")
+		return
+	}
+
+	//Judge authority
+	project := p.resolveUserPrivilegeByID(configService.ProjectID)
+
+	var newservice model.ServiceStatus
+	newservice.Name = configService.ServiceName
+	newservice.ProjectID = configService.ProjectID
+	newservice.Status = preparing // 0: preparing 1: running 2: suspending
+	newservice.OwnerID = p.currentUser.ID
+	newservice.OwnerName = p.currentUser.Username
+	newservice.Public = configService.Public
+	newservice.ProjectName = project.Name
+	newservice.Type = configService.ServiceType
+
+	serviceInfo, err := service.CreateServiceConfig(newservice)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	statefulsetInfo, err := service.DeployStatefulSet((*model.ConfigServiceStep)(configService), registryBaseURI())
+	if err != nil {
+		p.parseError(err, parsePostK8sError)
+		return
+	}
+
+	p.resolveRepoServicePath(project.Name, newservice.Name)
+	err = service.GenerateStatefulSetYamlFiles(statefulsetInfo, p.repoServicePath)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	statefulsetFile := filepath.Join(newservice.Name, statefulsetFilename)
+	serviceFile := filepath.Join(newservice.Name, serviceFilename)
+	items := []string{statefulsetFile, serviceFile}
+	p.pushItemsToRepo(items...)
+
+	updateService := model.ServiceStatus{ID: serviceInfo.ID, Status: uncompleted, ServiceYaml: string(statefulsetInfo.ServiceFileInfo),
+		DeploymentYaml: string(statefulsetInfo.StatefulSetFileInfo)}
+	_, err = service.UpdateService(updateService, "status", "service_yaml", "deployment_yaml")
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	err = DeleteConfigServiceStep(key)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	logs.Info("Service with ID:%d has been deleted in cache.", serviceInfo.ID)
+
+	configService.ServiceID = serviceInfo.ID
+	p.renderJSON(configService)
+}
+
+func (p *ServiceController) DeleteStatefulSetAction() {
+	var err error
+	s, err := p.resolveServiceInfo()
+	if err != nil {
+		return
+	}
+	//Judge authority
+	p.resolveUserPrivilegeByID(s.ProjectID)
+
+	if err = service.CheckServiceDeletable(s); err != nil {
+		p.internalError(err)
+		return
+	}
+	// Call stop service if running
+	if s.Status != stopped {
+		err = service.StopStatefulSetK8s(s)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+	}
+
+	// 	Delete the service's autoscale rule later
+
+	isSuccess, err := service.DeleteService(s.ID)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if !isSuccess {
+		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Failed to delete service with ID: %d", s.ID))
+		return
+	}
+
+	//delete repo files of the service
+	p.resolveRepoServicePath(s.ProjectName, s.Name)
+	p.removeItemsToRepo(filepath.Join(s.Name, serviceFilename), filepath.Join(s.Name, statefulsetFilename))
+
 }

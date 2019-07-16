@@ -1,8 +1,9 @@
-import { Directive, Input, OnDestroy, Output, ViewChild, ViewContainerRef } from '@angular/core';
+import { AfterViewInit, Directive, Input, OnDestroy, Optional, Output, ViewChild, ViewContainerRef } from '@angular/core';
 import { CsComponentBase } from '../cs-components-library/cs-component-base';
 import { Observable, Subject } from 'rxjs';
+import { MessageService } from "../../shared.service/message.service";
 
-@Directive({selector: 'div.modal-body'})
+@Directive({selector: 'div.modal-body, .modal-title'})
 export class CsModalChildBaseSelector {
   constructor(public view: ViewContainerRef) {
 
@@ -41,5 +42,19 @@ export class CsModalChildBase extends CsComponentBase implements OnDestroy{
   openModal(): Observable<any> {
     this.modalOpened = true;
     return this.closeNotification.asObservable();
+  }
+}
+
+export class CsModalChildMessage extends CsModalChildBase implements OnDestroy, AfterViewInit {
+  constructor(protected messageService: MessageService) {
+    super();
+  }
+
+  ngAfterViewInit(): void {
+    this.messageService.registerModalDialogHandle(this.alertView)
+  }
+
+  ngOnDestroy() {
+    this.messageService.unregisterModalDialogHandle();
   }
 }

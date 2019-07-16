@@ -28,6 +28,13 @@ var methodType = map[string]string{
 	http.MethodGet:    "get",
 }
 
+const (
+	Success = "Success"
+	Failed  = "Failed"
+	Error   = "Error"
+	NA      = "Unknown"
+)
+
 func GetPaginatedOperationList(query model.OperationParam, pageIndex int, pageSize int, orderField string, orderAsc int) (*model.PaginatedOperations, error) {
 	paginatedOperations, err := dao.GetPaginatedOperations(query, pageIndex, pageSize, orderField, orderAsc)
 	if err != nil {
@@ -57,7 +64,7 @@ func ParseOperationAudit(ctx *context.Context) (operation model.Operation) {
 		}
 		return objectType[inputType]
 	}(operation.Path)
-	operation.Status = model.Unknown
+	operation.Status = NA
 	return
 }
 
@@ -76,11 +83,11 @@ func UpdateOperationAuditStatus(operationID int64, status int, project *model.Pr
 
 	var operationStatus string
 	if status < 400 {
-		operationStatus = model.Success
+		operationStatus = Success
 	} else if status < 500 {
-		operationStatus = model.Failed
+		operationStatus = Failed
 	} else {
-		operationStatus = model.Error
+		operationStatus = Error
 	}
 	operation.Status = operationStatus
 	param := []string{"status"}

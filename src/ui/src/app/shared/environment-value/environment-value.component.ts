@@ -133,7 +133,8 @@ export class EnvironmentValueComponent extends CsModalChildBase implements OnIni
     envInfo.envConfigMapKey = data.key;
   }
 
-  changeBindConfigMap(index: number, envInfo: EnvType, checked: boolean) {
+  changeBindConfigMap(index: number, envInfo: EnvType, event: Event) {
+    const checked = (event.target as HTMLInputElement).checked;
     this.bindConfigMap.set(index, checked);
     if (!checked) {
       envInfo.envConfigMapName = '';

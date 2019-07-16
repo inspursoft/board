@@ -1,5 +1,5 @@
 import { Component, ComponentFactoryResolver, Injector, OnDestroy, OnInit, ViewContainerRef } from '@angular/core';
-import { Service, ServiceSource } from '../service';
+import { Service, ServiceSource, ServiceType } from '../service';
 import { ClrDatagridSortOrder, ClrDatagridStateInterface } from '@clr/angular';
 import { GUIDE_STEP, SERVICE_STATUS } from '../../shared/shared.const';
 import { ServiceDetailComponent } from './service-detail/service-detail.component';
@@ -8,7 +8,7 @@ import { Project } from "../../project/project";
 import { ServiceControlComponent } from "./service-control/service-control.component";
 import { TranslateService } from "@ngx-translate/core";
 import { Message, RETURN_STATUS } from "../../shared/shared.types";
-import { interval, Subscription } from "rxjs";
+import { interval, Observable, Subscription } from "rxjs";
 
 enum CreateServiceMethod {None, Wizards, YamlFile, DevOps}
 
@@ -53,7 +53,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
     return [SERVICE_STATUS.RUNNING, SERVICE_STATUS.PREPARING].indexOf(status) > -1
   }
 
-  checkWithinWarningRunning(status: number): boolean{
+  checkWithinWarningRunning(status: number): boolean {
     return [SERVICE_STATUS.RUNNING, SERVICE_STATUS.WARNING].indexOf(status) > -1
   }
 
@@ -82,6 +82,7 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
     return this.isActionWIP.get(service.service_id)
       || service.service_status != SERVICE_STATUS.RUNNING
       || service.service_is_member == 0
+      || service.service_type === ServiceType.ServiceTypeStatefulSet
       || service.service_source == ServiceSource.ServiceSourceHelm;
   }
 
@@ -110,6 +111,8 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
       return 'SERVICE.STEP_0_NOT_SERVICE_MEMBER'
     } else if (service.service_source == ServiceSource.ServiceSourceHelm) {
       return "SERVICE.STEP_0_SERVICE_FROM_HELM"
+    } else if (service.service_type == ServiceType.ServiceTypeStatefulSet) {
+      return "SERVICE.STEP_0_SERVICE_STATEFUL"
     } else if (SERVICE_STATUS.RUNNING != service.service_status) {
       return "SERVICE.STEP_0_CAN_NOT_UPDATE_MSG"
     }
@@ -200,7 +203,10 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
       this.translateService.get('SERVICE.CONFIRM_TO_DELETE_SERVICE', [service.service_name]).subscribe((msg: string) => {
         this.messageService.showDeleteDialog(msg, 'SERVICE.DELETE_SERVICE').subscribe((message: Message) => {
           if (message.returnStatus == RETURN_STATUS.rsConfirm) {
-            this.k8sService.deleteService(service.service_id).subscribe(() => {
+            let obsDelete: Observable<any> = service.service_type == ServiceType.ServiceTypeStatefulSet ?
+              this.k8sService.deleteStatefulService(service.service_id) :
+              this.k8sService.deleteService(service.service_id);
+            obsDelete.subscribe(() => {
                 this.messageService.showAlert('SERVICE.SUCCESSFUL_DELETE');
                 this.isActionWIP.set(service.service_id, false);
                 this.retrieve(false, this.oldStateInfo);
