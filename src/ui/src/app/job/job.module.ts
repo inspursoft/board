@@ -12,6 +12,7 @@ import { JobAffinityComponent } from "./job-affinity/job-affinity.component";
 import { JobAffinityCardComponent } from "./job-affinity-card/job-affinity-card.component";
 import { JobAffinityCardListComponent } from "./job-affinity-card-list/job-affinity-card-list.component";
 import { JobDetailComponent } from './job-detail/job-detail.component';
+import { JobLogsComponent } from './job-logs/job-logs.component';
 
 @NgModule({
   imports: [
@@ -27,7 +28,8 @@ import { JobDetailComponent } from './job-detail/job-detail.component';
     JobAffinityComponent,
     JobAffinityCardComponent,
     JobAffinityCardListComponent,
-    JobDetailComponent
+    JobDetailComponent,
+    JobLogsComponent
   ],
   declarations: [
     JobListComponent,
@@ -38,7 +40,8 @@ import { JobDetailComponent } from './job-detail/job-detail.component';
     JobAffinityComponent,
     JobAffinityCardComponent,
     JobAffinityCardListComponent,
-    JobDetailComponent
+    JobDetailComponent,
+    JobLogsComponent
   ]
 })
 export class JobModule {

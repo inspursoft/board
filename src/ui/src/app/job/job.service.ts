@@ -53,6 +53,10 @@ export class JobService {
     });
   }
 
+  getJobStatus(jobId: number): Observable<any> {
+    return this.http.get(`/api/v1/jobs/${jobId}/status`);
+  }
+
   getCollaborativeJobs(projectName: string): Observable<Array<Job>> {
     return this.http.get<Array<Job>>(`/api/v1/jobs/selectjobs`, {
       params: {
