@@ -2,13 +2,14 @@ import { Component, Injector, OnInit } from '@angular/core';
 import { Container, EnvStruct, PHASE_CONFIG_CONTAINERS, UiServiceFactory, UIServiceStep2, VolumeStruct } from '../service-step.component';
 import { BuildImageDockerfileData, Image, ImageDetail } from "../../image/image";
 import { ServiceStepBase } from "../service-step";
-import { CreateImageComponent } from "../../image/image-create/image-create.component";
 import { EnvType } from "../../shared/environment-value/environment-value.component";
 import { ValidationErrors } from "@angular/forms";
 import { NodeAvailableResources } from "../../shared/shared.types";
 import { VolumeMountsComponent } from "./volume-mounts/volume-mounts.component";
 import { Observable, of } from "rxjs";
 import { map } from "rxjs/operators";
+import { RouteImages } from "../../shared/shared.const";
+import { AppTokenService } from "../../shared.service/app-token.service";
 
 @Component({
   templateUrl: './config-container.component.html',
@@ -32,7 +33,8 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
   showVolumeMounts = false;
   curEditEnvContainer: Container;
 
-  constructor(protected injector: Injector) {
+  constructor(protected injector: Injector,
+              private tokenService: AppTokenService) {
     super(injector);
     this.imageDetailSourceList = new Map<string, Array<ImageDetail>>();
     this.imageTagNotReadyList = new Map<string, boolean>();
@@ -152,7 +154,7 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
       }, () => this.messageService.cleanNotification());
   }
 
-  isValidContainerNames(): { invalid: boolean, invalidIndex: number } {
+  isValidContainerNames(): {invalid: boolean, invalidIndex: number} {
     let invalidIndex: number = -1;
     let everyValid = this.serviceStep2Data.containerList.every((container, index: number) => {
       invalidIndex = index;
@@ -163,7 +165,7 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
     return {invalid: !everyValid, invalidIndex: invalidIndex};
   }
 
-  isValidContainerPorts(): { invalid: boolean, invalidIndex: number } {
+  isValidContainerPorts(): {invalid: boolean, invalidIndex: number} {
     let invalidIndex: number = -1;
     let valid = true;
     let portBuf = new Set<number>();
@@ -180,7 +182,7 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
     return {invalid: !valid, invalidIndex: invalidIndex};
   }
 
-  isValidContainerCpuAndMem(): { invalid: boolean, invalidIndex: number } {
+  isValidContainerCpuAndMem(): {invalid: boolean, invalidIndex: number} {
     let containerList = this.serviceStep2Data.containerList;
     let invalidIndex: number = -1;
     let everyValid = containerList.every((container: Container, index: number) => {
@@ -286,21 +288,11 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
   }
 
   createNewCustomImage(index: number) {
-    let newImageIndex = index;
-    let component = this.createNewModal(CreateImageComponent);
-    component.initCustomerNewImage(this.serviceStep2Data.projectId, this.serviceStep2Data.projectName);
-    component.closeNotification.subscribe((imageName: string) => {
-      if (imageName) {
-        this.k8sService.getImages("", 0, 0).subscribe(res => {
-          res.forEach(value => {
-            if (value.image_name === imageName) {
-              this.imageSourceList = Array.from(res);
-              this.changeSelectImage(newImageIndex, value);
-            }
-          });
-        })
+    this.router.navigate([`/${RouteImages}`], {
+        fragment: 'createImage',
+        queryParams: {token: this.tokenService.token}
       }
-    })
+    ).then();
   }
 
   minusSelectImage(index: number) {

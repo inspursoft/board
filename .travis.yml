@@ -14,7 +14,6 @@ before_script:
   - source /etc/profile
   - date -s $date_time
   - echo "before script"
-  - echo "------------------------"
   - echo "$head_repo_html_url"
   - echo "$head_repo_name"
   - echo "$base_repo_html_url"

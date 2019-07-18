@@ -5,6 +5,7 @@ import { MessageService } from "../../shared.service/message.service";
 import { Message, RETURN_STATUS } from "../../shared/shared.types";
 import { JobDetailComponent } from "../job-detail/job-detail.component";
 import { CsModalParentBase } from "../../shared/cs-modal-base/cs-modal-parent-base";
+import { JobLogsComponent } from "../job-logs/job-logs.component";
 
 @Component({
   templateUrl: './job-list.component.html',
@@ -75,7 +76,7 @@ export class JobListComponent extends CsModalParentBase {
   }
 
   retrieve() {
-    setTimeout(()=>{
+    setTimeout(() => {
       this.loadingWIP = true;
       this.jobService.getJobList(this.paginationJobs.pagination.page_index, this.paginationJobs.pagination.page_size).subscribe(
         (res: PaginationJob) => {
@@ -100,7 +101,12 @@ export class JobListComponent extends CsModalParentBase {
     })
   }
 
-  showJobDetail(job: Job) {
+  showJobLogs(job: Job) {
+    const component = this.createNewModal(JobLogsComponent);
+    component.job = job;
+  }
+
+  showJobDetail(job: Job){
     const component = this.createNewModal(JobDetailComponent);
     component.job = job;
   }
