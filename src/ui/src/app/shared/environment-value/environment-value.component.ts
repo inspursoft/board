@@ -34,7 +34,6 @@ export class EnvironmentValueComponent extends CsModalChildBase implements OnIni
   envsData: Array<EnvType>;
   envsText = "";
   inputValidator: Array<ValidatorFn>;
-  inputValidatorMsg: Array<{validatorKey: string, validatorMessage: string}>;
   configMapList: Array<ConfigMap>;
   configMapDetail: Map<number, ConfigMapDetail>;
   bindConfigMap: Map<number, boolean>;
@@ -52,7 +51,6 @@ export class EnvironmentValueComponent extends CsModalChildBase implements OnIni
     this.envsData = Array<EnvType>();
     this.onConfirm = new EventEmitter<Array<EnvType>>();
     this.inputValidator = Array<ValidatorFn>();
-    this.inputValidatorMsg = Array<{validatorKey: string, validatorMessage: string}>();
     this.configMapList = Array<ConfigMap>();
     this.configMapDetail = new Map<number, ConfigMapDetail>();
     this.bindConfigMap = new Map<number, boolean>();
@@ -60,7 +58,6 @@ export class EnvironmentValueComponent extends CsModalChildBase implements OnIni
 
   ngOnInit() {
     this.inputValidator.push(Validators.required);
-    this.inputValidatorMsg.push({validatorKey: "required", validatorMessage: "SERVICE.ENV_REQUIRED"});
     if (this.inputEnvsData && this.inputEnvsData.length > 0) {
       this.envsData = this.envsData.concat(this.inputEnvsData);
       this.envsData.forEach((value: EnvType, index: number) => {
@@ -75,24 +72,12 @@ export class EnvironmentValueComponent extends CsModalChildBase implements OnIni
     this.modalOpened = true;
   }
 
-  getEnvConfigMapDefaltText(index: number): string {
-    return this.envsData[index].envConfigMapName != '' ?
-      this.envsData[index].envConfigMapName :
-      'SERVICE.ENV_CONFIG_MAP_DEFAULT_TEXT'
-  }
-
-  getEnvConfigMapDefaltKeyText(index: number): string {
-    return this.envsData[index].envConfigMapKey != '' ?
-      this.envsData[index].envConfigMapKey :
-      'SERVICE.ENV_CONFIG_MAP_KEY_DEFAULT_TEXT'
-  }
-
   addNewEnv() {
     this.envsData.push(new EnvType("", ""));
   }
 
   confirmEnvInfo() {
-    if (this.verifyInputValid() && this.verifyDropdownValid()) {
+    if (this.verifyInputExValid() && this.verifyDropdownExValid()) {
       this.onConfirm.emit(this.envsData);
       this.modalOpened = false;
     }

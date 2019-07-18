@@ -73,7 +73,7 @@ export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
   chartRelease() {
     if (!this.selectProject) {
       this.messageService.showAlert('HELM.RELEASE_CHART_SELECT_PROJECT_TIP', {view: this.alertView, alertType: "warning"})
-    } else if (this.verifyInputValid()) {
+    } else if (this.verifyInputExValid()) {
       this.isReleaseWIP = true;
       this.helmService.releaseChartVersion({
         name: this.releaseName,

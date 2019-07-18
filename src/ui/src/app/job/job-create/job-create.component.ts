@@ -9,7 +9,6 @@ import { JobContainerCreateComponent } from "../job-container-create/job-contain
 import { JobContainerConfigComponent } from "../job-container-config/job-container-config.component";
 import { MessageService } from "../../shared.service/message.service";
 import { IDropdownTag, Message, RETURN_STATUS } from "../../shared/shared.types";
-import { CsDropdownComponent } from "../../shared/cs-components-library/cs-dropdown/cs-dropdown.component";
 import { Observable, of } from "rxjs";
 import { ValidationErrors } from "@angular/forms";
 import { catchError, map } from "rxjs/operators";
@@ -23,9 +22,9 @@ import { JobAffinityComponent } from "../job-affinity/job-affinity.component";
 })
 export class JobCreateComponent extends CsModalParentBase implements OnInit {
   @Output() afterDeployment: EventEmitter<boolean>;
-  @ViewChild('selectProject') selectProject: CsDropdownComponent;
   patternServiceName: RegExp = /[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/;
   projectList: Array<Project>;
+  curActiveProject: Project;
   newJobDeployment: JobDeployment;
   isActionWip = false;
   nodeSelectorList: Array<{name: string, value: string, tag: IDropdownTag}>;
@@ -45,15 +44,7 @@ export class JobCreateComponent extends CsModalParentBase implements OnInit {
 
   ngOnInit(): void {
     this.jobService.getProjectList().subscribe((res: Array<Project>) => {
-      const createNewProject: Project = new Project();
-      createNewProject.project_name = "JOB.JOB_CREATE_CREATE_PROJECT";
-      createNewProject.project_id = 0;
-      createNewProject["isSpecial"] = true;
-      createNewProject["OnlyClick"] = true;
-      this.projectList.push(createNewProject);
-      if (res && res.length > 0) {
-        this.projectList = this.projectList.concat(res);
-      }
+      this.projectList = res;
     });
 
     this.nodeSelectorList.push({name: 'JOB.JOB_CREATE_NODE_DEFAULT', value: '', tag: null});
@@ -89,12 +80,20 @@ export class JobCreateComponent extends CsModalParentBase implements OnInit {
     return this.canChangeSelectImage.bind(this);
   }
 
+  getItemTagClass(dropdownTag: IDropdownTag) {
+    return {
+      'label-info': dropdownTag.type == 'success',
+      'label-warning': dropdownTag.type == 'warning',
+      'label-danger': dropdownTag.type == 'danger'
+    }
+  }
+
   checkJobName(control: HTMLInputElement): Observable<ValidationErrors | null> {
     return this.jobService.checkJobNameExists(this.newJobDeployment.project_name, control.value)
       .pipe(map(() => null), catchError((err: HttpErrorResponse) => {
         if (err.status == 409) {
           this.messageService.cleanNotification();
-          return of({serviceExist: "JOB.JOB_CREATE_JOB_NAME_EXISTS"});
+          return of({jobNameExists: "JOB.JOB_CREATE_JOB_NAME_EXISTS"});
         } else if (err.status == 404) {
           this.messageService.cleanNotification();
         }
@@ -107,6 +106,7 @@ export class JobCreateComponent extends CsModalParentBase implements OnInit {
       if (projectName) {
         this.jobService.getOneProject(projectName).subscribe((res: Project) => {
           if (res) {
+            this.curActiveProject = res;
             this.newJobDeployment.project_name = res.project_name;
             this.newJobDeployment.project_id = res.project_id;
             this.projectList.push(res);
@@ -116,19 +116,19 @@ export class JobCreateComponent extends CsModalParentBase implements OnInit {
     });
   }
 
-  canChangeSelectImage(project: Project): boolean {
+  canChangeSelectImage(project: Project): Observable<boolean> {
     if (this.newJobDeployment.container_list.length > 0) {
-      this.messageService.showDeleteDialog('JOB.JOB_CREATE_CHANGE_PROJECT').subscribe((msg: Message) => {
-        if (msg.returnStatus == RETURN_STATUS.rsConfirm) {
-          this.newJobDeployment.container_list.splice(0, this.newJobDeployment.container_list.length);
-          this.selectProject.changeSelect(project);
-          return true;
-        } else {
-          return false;
-        }
-      })
+      return this.messageService.showDeleteDialog('JOB.JOB_CREATE_CHANGE_PROJECT')
+        .pipe(map((msg: Message) => {
+          if (msg.returnStatus == RETURN_STATUS.rsConfirm) {
+            this.newJobDeployment.container_list.splice(0, this.newJobDeployment.container_list.length);
+            return true;
+          } else {
+            return false;
+          }
+        }));
     } else {
-      return true;
+      return of(true);
     }
   }
 
@@ -192,7 +192,7 @@ export class JobCreateComponent extends CsModalParentBase implements OnInit {
   }
 
   deploymentJob() {
-    if (this.verifyContainer() && this.verifyInputValid() && this.verifyInputValid()) {
+    if (this.verifyDropdownExValid() && this.verifyInputExValid() && this.verifyContainer()) {
       this.isActionWip = true;
       this.jobService.deploymentJob(this.newJobDeployment).subscribe(
         () => {

@@ -7,7 +7,7 @@ import { EnvType } from "../../shared/environment-value/environment-value.compon
 import { ValidationErrors } from "@angular/forms";
 import { NodeAvailableResources } from "../../shared/shared.types";
 import { VolumeMountsComponent } from "./volume-mounts/volume-mounts.component";
-import { Observable } from "rxjs";
+import { Observable, of } from "rxjs";
 import { map } from "rxjs/operators";
 
 @Component({
@@ -54,10 +54,7 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
         this.addEmptyWorkItem();
       }
     });
-    this.k8sService.getImages("", 0, 0).subscribe(res => {
-      this.imageSourceList = res;
-      this.unshiftCustomerCreateImage();
-    })
+    this.k8sService.getImages("", 0, 0).subscribe(res => this.imageSourceList = res)
   }
 
   changeSelectImage(index: number, image: Image) {
@@ -256,20 +253,12 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
     return this.checkSetMemRequest.bind(this);
   }
 
-  unshiftCustomerCreateImage() {
-    let customerCreateImage: Image = new Image();
-    customerCreateImage.image_name = "SERVICE.STEP_2_CREATE_IMAGE";
-    customerCreateImage["isSpecial"] = true;
-    customerCreateImage["OnlyClick"] = true;
-    this.imageSourceList.unshift(customerCreateImage);
-  }
-
-  canChangeSelectImage(image: Image) {
+  canChangeSelectImage(image: Image): Observable<boolean> {
     if (this.serviceStep2Data.containerList.find(value => value.image.image_name == image.image_name)) {
       this.messageService.showAlert('IMAGE.CREATE_IMAGE_EXIST', {alertType: "warning"});
-      return false;
+      return of(false);
     }
-    return true;
+    return of(true);
   }
 
   checkSetCpuRequest(control: HTMLInputElement): Observable<ValidationErrors | null> {
@@ -305,8 +294,7 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
         this.k8sService.getImages("", 0, 0).subscribe(res => {
           res.forEach(value => {
             if (value.image_name === imageName) {
-              this.imageSourceList = Object.create(res);
-              this.unshiftCustomerCreateImage();
+              this.imageSourceList = Array.from(res);
               this.changeSelectImage(newImageIndex, value);
             }
           });

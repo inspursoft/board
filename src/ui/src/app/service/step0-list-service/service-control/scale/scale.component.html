@@ -1,36 +1,33 @@
 <div class="scale-container">
   <status *ngIf="service" [service]="service"></status>
   <div class="utilization-container" #alertView>
-    <cs-input [inputLabel]="'SERVICE.SERVICE_CONTROL_CPU_UTILIZATION_CURRENT'| translate"
-              [inputLabelMinWidth]="230"
-              [disabled]="true"
-              [simpleFiled]="'50%'">
-    </cs-input>
-    <cs-input [inputLabel]="'SERVICE.SERVICE_CONTROL_CPU_UTILIZATION_QUALIFIED'| translate"
-              [inputLabelMinWidth]="230"
-              [disabled]="isActionInWIP"
-              [simpleFiled]="'55%'">
-    </cs-input>
+    <lib-input-ex [inputLabel]="'SERVICE.SERVICE_CONTROL_CPU_UTILIZATION_CURRENT'| translate"
+                  [inputLabelWidth]="230"
+                  [inputDisabled]="true"
+                  [inputDefaultValue]="'50%'">
+    </lib-input-ex>
+    <lib-input-ex [inputLabel]="'SERVICE.SERVICE_CONTROL_CPU_UTILIZATION_QUALIFIED'| translate"
+                  [inputLabelWidth]="230"
+                  [inputDisabled]="isActionInWIP"
+                  [inputDefaultValue]="'55%'">
+    </lib-input-ex>
   </div>
   <div class="scale-line">
-    <input [disabled]="isActionInWIP" title="" type="radio" id="manually" name="scaleMethod" [checked]="scaleModule == 0"
+    <input [disabled]="isActionInWIP" title="" type="radio" id="manually" name="scaleMethod"
+           [checked]="scaleModule == 0"
            (change)="setScaleMethod(0)">
     <label class="margin-left-10" for="manually">
       {{"SERVICE.SERVICE_CONTROL_MANUALLY_SCALE"|translate}}
     </label>
-    <span *ngIf="scaleModule == 0" class="margin-left-20">
-      {{"SERVICE.SERVICE_CONTROL_INSTANCE_NUMBER"|translate}}:
-    </span>
-    <cs-dropdown *ngIf="scaleModule == 0"
-                 style="display: inline-block;"
-                 class="margin-left-10"
-                 [dropdownDefaultText]="scaleNum.toString()"
-                 [dropdownDisabled]="isActionInWIP"
-                 [dropdownWidth]="100"
-                 [dropdownHideSearch]="true"
-                 [dropdownList]="dropDownListNum"
-                 (onChange)="scaleNum = $event;actionEnabled()">
-    </cs-dropdown>
+    <lib-dropdown-ex *ngIf="scaleModule == 0"
+                     class="margin-left-10"
+                     [dropdownLabel]="'SERVICE.SERVICE_CONTROL_INSTANCE_NUMBER' | translate"
+                     [dropdownTip]="scaleNum.toString()"
+                     [dropdownDisabled]="isActionInWIP"
+                     [dropdownMinWidth]="100"
+                     [dropdownItems]="dropDownListNum"
+                     (dropdownChangeItem)="scaleNum = $event;actionEnabled()">
+    </lib-dropdown-ex>
   </div>
   <div class="scale-line">
     <input title="" type="radio" id="auto" name="scaleMethod" [checked]="scaleModule == 1"
@@ -41,42 +38,42 @@
     <div class="auto-scale-container" *ngIf="scaleModule == 1">
       <div *ngFor="let hpa of autoScaleConfig;">
         <div class="auto-scale-line-container">
-          <cs-input [inputLabel]="'SERVICE.SERVICE_CONTROL_NAME'| translate"
-                    [inputLabelMinWidth]="100"
-                    [inputPattern]="patternHpaName"
-                    [inputIsRequired]="true"
-                    [simpleFiled]="hpa.hpa_name"
-                    [disabled]="isActionInWIP || hpa.isEdit"
-                    (onCheck)="hpa.hpa_name = $event">
-          </cs-input>
-          <cs-input [inputLabel]="'SERVICE.SERVICE_CONTROL_TARGET'| translate"
-                    [inputLabelMinWidth]="170"
-                    [inputIsRequired]="true"
-                    [simpleFiled]="hpa.cpu_percent"
-                    [inputFiledType]="1"
-                    [disabled]="isActionInWIP"
-                    (onCheck)="hpa.cpu_percent = $event">
-          </cs-input>
+          <lib-input-ex [inputLabel]="'SERVICE.SERVICE_CONTROL_NAME'| translate"
+                        [inputLabelWidth]="100"
+                        [inputPattern]="patternHpaName"
+                        [inputIsRequired]="true"
+                        [inputDefaultValue]="hpa.hpa_name"
+                        [inputDisabled]="isActionInWIP || hpa.isEdit"
+                        (commitEvent)="hpa.hpa_name = $event">
+          </lib-input-ex>
+          <lib-input-ex [inputLabel]="'SERVICE.SERVICE_CONTROL_TARGET'| translate"
+                        [inputLabelWidth]="200"
+                        [inputIsRequired]="true"
+                        [inputDefaultValue]="hpa.cpu_percent"
+                        [inputCategory]="2"
+                        [inputDisabled]="isActionInWIP"
+                        (commitEvent)="hpa.cpu_percent = $event">
+          </lib-input-ex>
         </div>
         <div class="auto-scale-line-container">
-          <cs-input [inputLabel]="'SERVICE.SERVICE_CONTROL_MIN_REPLICAS'| translate"
-                    [inputLabelMinWidth]="100"
-                    [simpleFiled]="hpa.min_pod"
-                    [inputMin]="1"
-                    [inputMax]="99"
-                    [inputFiledType]="1"
-                    [disabled]="isActionInWIP"
-                    (onCheck)="hpa.min_pod = $event">
-          </cs-input>
-          <cs-input [inputLabel]="'SERVICE.SERVICE_CONTROL_MAX_REPLICAS'| translate"
-                    [inputLabelMinWidth]="170"
-                    [inputFiledType]="1"
-                    [inputMin]="1"
-                    [inputMax]="99"
-                    [disabled]="isActionInWIP"
-                    [simpleFiled]="hpa.max_pod"
-                    (onCheck)="hpa.max_pod = $event">
-          </cs-input>
+          <lib-input-ex [inputLabel]="'SERVICE.SERVICE_CONTROL_MIN_REPLICAS'| translate"
+                        [inputLabelWidth]="100"
+                        [inputDefaultValue]="hpa.min_pod"
+                        [inputMin]="1"
+                        [inputMax]="99"
+                        [inputCategory]="2"
+                        [inputDisabled]="isActionInWIP"
+                        (commitEvent)="hpa.min_pod = $event">
+          </lib-input-ex>
+          <lib-input-ex [inputLabel]="'SERVICE.SERVICE_CONTROL_MAX_REPLICAS'| translate"
+                        [inputLabelWidth]="200"
+                        [inputCategory]="2"
+                        [inputMin]="1"
+                        [inputMax]="99"
+                        [inputDisabled]="isActionInWIP"
+                        [inputDefaultValue]="hpa.max_pod"
+                        (commitEvent)="hpa.max_pod = $event">
+          </lib-input-ex>
         </div>
         <div class="auto-scale-delete-container" *ngIf="hpa.isEdit"
              [class.only-delete]="hpa.hpa_status == 1">

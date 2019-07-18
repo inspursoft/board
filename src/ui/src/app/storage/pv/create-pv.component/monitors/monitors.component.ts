@@ -79,7 +79,7 @@ export class MonitorsComponent extends CsModalChildBase {
   }
 
   confirmMonitors() {
-    if (this.verifyInputValid()) {
+    if (this.verifyInputExValid()) {
       this.onCommitMonitorText.emit(this.monitorText);
       this.isOpen = false;
     }

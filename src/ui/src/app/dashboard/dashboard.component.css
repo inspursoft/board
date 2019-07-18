@@ -71,7 +71,12 @@
 div.card-block-top-container {
   height: 60px;
   display: flex;
+  align-items: center;
   padding: 10px 20px 10px 20px;
+}
+
+div.card-block-top-container a{
+  margin-left: 10px;
 }
 
 div.card-block-bottom-container {

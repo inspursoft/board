@@ -23,6 +23,7 @@ export class JobVolumeMountsComponent extends CsModalChildMessage implements OnI
   volumeTypes: Array<{name: 'nfs' | 'pvc', value: number}>;
   volumeList: Array<JobVolumeMounts>;
   pvcList: Array<PersistentVolumeClaim>;
+  curActivePvc: PersistentVolumeClaim;
 
   @Input() set volumeDataList(value: Array<JobVolumeMounts>) {
     value.forEach(volumeData => {
@@ -48,24 +49,10 @@ export class JobVolumeMountsComponent extends CsModalChildMessage implements OnI
   ngOnInit() {
     this.volumeTypes.push({name: "nfs", value: 1});
     this.volumeTypes.push({name: "pvc", value: 2});
-    let createNewPVC = new PersistentVolumeClaim();
-    createNewPVC.name = "SERVICE.VOLUME_CREATE_PVC";
-    createNewPVC["isSpecial"] = true;
-    createNewPVC["OnlyClick"] = true;
-    this.pvcList.push(createNewPVC);
-    this.jobService.getPvcNameList().subscribe((res: Array<PersistentVolumeClaim>) => {
-        if (res && res.length > 0) {
-          this.pvcList = this.pvcList.concat(res);
-        }
-      }, (err: HttpErrorResponse) => this.messageService.showAlert(err.message, {alertType: "warning", view: this.alertView})
-    )
-  }
-
-  pvcDropdownDefaultText(index: number): string {
-    const targetPvc = this.volumeList[index].target_pvc;
-    return targetPvc === '' || targetPvc === undefined ?
-      'SERVICE.VOLUME_SELECT_PVC' :
-      this.volumeList[index].target_pvc;
+    this.jobService.getPvcNameList().subscribe(
+      (res: Array<PersistentVolumeClaim>) => this.pvcList = res,
+      (err: HttpErrorResponse) => this.messageService.showAlert(err.message, {alertType: "warning", view: this.alertView})
+    );
   }
 
   checkInputValid(): boolean {
@@ -100,7 +87,7 @@ export class JobVolumeMountsComponent extends CsModalChildMessage implements OnI
   }
 
   confirmVolumeInfo() {
-    if (this.verifyInputValid() && this.checkInputValid()) {
+    if (this.verifyInputExValid() && this.checkInputValid()) {
       this.onConfirmEvent.emit(this.volumeList);
       this.modalOpened = false;
     }
@@ -116,8 +103,9 @@ export class JobVolumeMountsComponent extends CsModalChildMessage implements OnI
     componentRef.instance.openModal().subscribe(() => this.selfView.remove(this.selfView.indexOf(componentRef.hostView)));
     componentRef.instance.onAfterCommit.subscribe((pvc: PersistentVolumeClaim) => {
       this.messageService.cleanNotification();
+      this.curActivePvc = pvc;
+      this.pvcList.push(pvc);
       this.volumeList[index].target_pvc = pvc.name;
-      this.pvcList.push(pvc)
     })
   }
 

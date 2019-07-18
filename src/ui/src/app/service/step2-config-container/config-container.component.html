@@ -8,18 +8,24 @@
   </div>
   <div *ngFor="let container of serviceStep2Data.containerList;let iBuf = index" class="dynamic-container">
     <div class="dynamic-line-container">
-      <div class="dynamic-icon-container">
-        <clr-icon class="dynamic-icon" shape="minus" (click)="minusSelectImage(iBuf)"></clr-icon>
+      <div  class="dynamic-icon-container">
+        <clr-icon shape="minus"
+                  class="dynamic-icon"
+                  [class.disabled]="iBuf == 0"
+                  (click)="minusSelectImage(iBuf)"></clr-icon>
       </div>
-      <cs-dropdown class="base-margin-left"
-                   [dropdownWidth]="300"
-                   [dropdownList]="imageSourceList"
-                   [dropdownDefaultText]="container.image.image_name"
-                   [dropdownListTextKey]="'image_name'"
-                   [dropdownCanSelect]="canChangeSelectImage.bind(selfObject)"
-                   (onChange)="changeSelectImage(iBuf, $event)"
-                   (onOnlyClickItem)="createNewCustomImage(iBuf)">
-      </cs-dropdown>
+      <lib-dropdown-ex class="base-margin-left"
+                   [dropdownMinWidth]="300"
+                   [dropdownItems]="imageSourceList"
+                   [dropdownTip]="'SERVICE.STEP_2_SELECT_IMAGE' | translate"
+                   [dropdownKey]="'image_name'"
+                   [dropdownItemSelectEnableFn]="canChangeSelectImage.bind(selfObject)"
+                   (dropdownChangeItem)="changeSelectImage(iBuf, $event)"
+                   (dropdownEspecialClick)="createNewCustomImage(iBuf)">
+        <ng-template libEspecialTemp>
+          <span style="color: blue">{{"SERVICE.STEP_2_CREATE_IMAGE" | translate}}</span>
+        </ng-template>
+      </lib-dropdown-ex>
       <button class="btn btn-default get-tag"
               (click)="getImageDetailList(container.image.image_name).then()"
               *ngIf="imageTagNotReadyList.get(container.image.image_name)">

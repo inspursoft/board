@@ -48,7 +48,7 @@ export class NewEditUserComponent extends CsComponentBase {
   }
 
   submitUser() {
-    if (this.verifyInputValid()) {
+    if (this.verifyInputExValid()) {
       this.isWorkWIP = true;
       this.CurEditModel == editModel.emEdit ? this.updateUser() : this.addNewUser();
     }

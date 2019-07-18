@@ -26,11 +26,11 @@ div.line-container {
   align-items: center;
 }
 
-div.line-container cs-input {
+div.line-container lib-input-ex {
   flex-grow: 1;
 }
 
-div.line-container cs-dropdown {
+div.line-container lib-dropdown-ex {
   margin-left: 10px;
 }
 

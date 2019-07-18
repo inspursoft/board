@@ -3,7 +3,6 @@
  */
 
 import { Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from "@angular/core"
-import { CsInputArrayComponent } from "../../shared/cs-components-library/cs-input-array/cs-input-array.component";
 import { BuildImageData, Image, ImageDetail } from "../image";
 import { ImageService } from "../image-service/image-service";
 import { MessageService } from "../../shared.service/message.service";
@@ -28,7 +27,6 @@ const AUTO_REFRESH_IMAGE_LIST: number = 2000;
 })
 export class CreateImageComponent extends CsModalChildBase implements OnInit, OnDestroy {
   boardHost: string;
-  @ViewChildren(CsInputArrayComponent) inputArrayComponents: QueryList<CsInputArrayComponent>;
   @ViewChild("areaStatus") areaStatus: ElementRef;
   imageBuildMethod: CreateImageMethod = CreateImageMethod.Template;
   createImageMethod = CreateImageMethod;
@@ -121,12 +119,24 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
     return this.customerNewImage.image_dockerfile.image_run;
   }
 
+  set imageRun(value: Array<string>) {
+    this.customerNewImage.image_dockerfile.image_run = value;
+  }
+
   get imageVolume(): Array<string> {
     return this.customerNewImage.image_dockerfile.image_volume;
   }
 
+  set imageVolume(value: Array<string>){
+    this.customerNewImage.image_dockerfile.image_volume = value;
+  }
+
   get imageExpose(): Array<string> {
     return this.customerNewImage.image_dockerfile.image_expose;
+  }
+
+  set imageExpose(value: Array<string>) {
+    this.customerNewImage.image_dockerfile.image_expose = value;
   }
 
   get envsDescription() {
@@ -182,7 +192,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
         catchError((err: HttpErrorResponse) => {
           if (err.status == 409) {
             this.messageService.cleanNotification();
-            return of({imageTagExist: "IMAGE.CREATE_IMAGE_TAG_EXIST"})
+            return of({imageTagExists: "IMAGE.CREATE_IMAGE_TAG_EXIST"})
           } else if (err.status == 404) {
             this.messageService.cleanNotification();
           } else {
@@ -202,7 +212,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
         catchError((err: HttpErrorResponse) => {
           if (err.status == 409) {
             this.messageService.cleanNotification();
-            return of({imageNameExist: "IMAGE.CREATE_IMAGE_NAME_EXIST"})
+            return of({imageNameExists: "IMAGE.CREATE_IMAGE_NAME_EXIST"})
           } else if (err.status == 404) {
             this.messageService.cleanNotification();
           } else {
@@ -318,9 +328,9 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
       setTimeout(() => this.cancelButtonDisable = false, 10000);
     };
     if (this.imageBuildMethod == CreateImageMethod.Template) {
-      if (this.verifyInputValid() &&
-        this.verifyInputArrayValid() &&
-        this.verifyDropdownValid() &&
+      if (this.verifyInputExValid() &&
+        this.verifyInputArrayExValid() &&
+        this.verifyDropdownExValid() &&
         this.customerNewImage.image_dockerfile.image_base != "") {
         buildImageInit();
         this.imageService.buildImageFromTemp(this.customerNewImage).subscribe(
@@ -329,7 +339,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
         );
       }
     } else if (this.imageBuildMethod == CreateImageMethod.DockerFile) {
-      if (this.verifyInputValid()) {
+      if (this.verifyInputExValid()) {
         buildImageInit();
         this.buildImageByDockerFile().subscribe(
           () => this.buildImageResole(),
@@ -339,7 +349,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
         this.messageService.showAlert('IMAGE.CREATE_IMAGE_SELECT_DOCKER_FILE', {alertType: 'warning', view: this.alertView});
       }
     } else if (this.imageBuildMethod == CreateImageMethod.ImagePackage) {
-      if (this.verifyInputValid()) {
+      if (this.verifyInputExValid()) {
         if (this.uploadTarPackageName != '') {
           buildImageInit();
           this.buildImageByImagePackage().subscribe(
@@ -390,7 +400,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
 
   selectDockerFile(event: Event) {
     let fileList: FileList = (event.target as HTMLInputElement).files;
-    if (fileList.length > 0 && this.verifyInputValid()) {
+    if (fileList.length > 0 && this.verifyInputExValid()) {
       let file: File = fileList[0];
       if (file.name !== "Dockerfile") {
         (event.target as HTMLInputElement).value = "";
@@ -415,7 +425,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
 
   uploadFile(event: Event) {
     let fileList: FileList = (event.target as HTMLInputElement).files;
-    if (fileList.length > 0 && this.verifyInputValid()) {
+    if (fileList.length > 0 && this.verifyInputExValid()) {
       let file: File = fileList[0];
       if (file.size > 1024 * 1024 * 500) {
         (event.target as HTMLInputElement).value = "";

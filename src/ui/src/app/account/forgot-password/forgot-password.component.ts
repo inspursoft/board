@@ -35,7 +35,7 @@ export class ForgotPasswordComponent extends CsComponentBase implements OnInit {
   }
 
   sendRequest(): void {
-    if (this.verifyInputValid()) {
+    if (this.verifyInputExValid()) {
       this.sendRequestWIP = true;
       this.accountService.postEmail(this.credential).subscribe(
         () => this.messageService.showOnlyOkDialogObservable('ACCOUNT.SEND_REQUEST_SUCCESS_MSG', 'ACCOUNT.SEND_REQUEST_SUCCESS')

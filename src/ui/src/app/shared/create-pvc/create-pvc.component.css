@@ -5,9 +5,9 @@ div.modal-body {
 div.pvc-section-container {
   display: flex;
   align-items: center;
-  height: 30px;
-  background-color: #cbe0c5;
-  border-left: solid 4px #84c38e;
+  /*height: 30px;*/
+  /*background-color: #cbe0c5;*/
+  /*border-left: solid 4px #84c38e;*/
 }
 
 div.pvc-section-container span {
@@ -22,7 +22,7 @@ div.dynamic-line-container {
   align-items: center;
 }
 
-div.dynamic-line-container cs-input{
+div.dynamic-line-container lib-input-ex{
   flex-basis: 100%;
 }
 

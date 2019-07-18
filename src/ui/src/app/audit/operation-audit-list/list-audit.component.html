@@ -1,36 +1,68 @@
 <div class="audit-container">
   <div class="query-container">
     <div class="line-container">
-      <label class="query-title">{{"AUDIT.OBJECT" | translate}}:</label>
-      <cs-dropdown [dropdownDefaultText]="'AUDIT.AUDIT_OBJECT'| translate"
-                   [dropdownWidth]="200"
-                   [dropdownList]="objectQueryMap"
-                   [dropdownListTextKey]="'title'"
-                   (onChange)="changeObjectQuery($event)">
-      </cs-dropdown>
-      <label class="query-title">{{"AUDIT.ACTION" | translate}}:</label>
-      <cs-dropdown [dropdownDefaultText]="'AUDIT.OPERATION_TYPE'| translate"
-                   [dropdownWidth]="200"
-                   [dropdownList]="actionQueryMap"
-                   [dropdownListTextKey]="'title'"
-                   (onChange)="changeActionQuery($event)">
-      </cs-dropdown>
-      <label class="query-title">{{"AUDIT.STATUS" | translate}}:</label>
-      <cs-dropdown [dropdownDefaultText]="'AUDIT.SELECT_STATUS'| translate"
-                   [dropdownWidth]="200"
-                   [dropdownList]="actionStatusMap"
-                   [dropdownListTextKey]="'title'"
-                   (onChange)="changeStatusQuery($event)">
-      </cs-dropdown>
+      <lib-dropdown-ex [dropdownTip]="'AUDIT.AUDIT_OBJECT'| translate"
+                       [dropdownLabel]="'AUDIT.OBJECT' | translate"
+                       [dropdownLabelWidth]="100"
+                       [dropdownMinWidth]="200"
+                       [dropdownItems]="objectQueryMap"
+                       [dropdownKey]="'title'"
+                       [dropdownDisabled]="isInLoading"
+                       (dropdownChangeItem)="changeObjectQuery($event)">
+        <ng-template libItemTemp let-title="title" let-key="key">
+          <span [style.color]="key === 'ALL' ? 'blue' : 'black'">{{title | translate}}</span>
+        </ng-template>
+        <ng-template libTitleTemp let-title="title" let-key="key">
+          <span [style.color]="key === 'ALL' ? 'blue' : 'black'">{{title | translate}}</span>
+        </ng-template>
+      </lib-dropdown-ex>
+      <lib-dropdown-ex [dropdownTip]="'AUDIT.OPERATION_TYPE'| translate"
+                       [dropdownLabel]="'AUDIT.ACTION' | translate"
+                       [dropdownLabelWidth]="100"
+                       [dropdownMinWidth]="200"
+                       [dropdownItems]="actionQueryMap"
+                       [dropdownDisabled]="isInLoading"
+                       [dropdownKey]="'title'"
+                       (dropdownChangeItem)="changeActionQuery($event)">
+        <ng-template libItemTemp let-title="title" let-key="key">
+          <span [style.color]="key === 'ALL' ? 'blue' : 'black'">{{title | translate}}</span>
+        </ng-template>
+        <ng-template libTitleTemp let-title="title" let-key="key">
+          <span [style.color]="key === 'ALL' ? 'blue' : 'black'">{{title | translate}}</span>
+        </ng-template>
+      </lib-dropdown-ex>
+      <lib-dropdown-ex [dropdownTip]="'AUDIT.SELECT_STATUS'| translate"
+                       [dropdownLabel]="'AUDIT.STATUS' | translate"
+                       [dropdownLabelWidth]="100"
+                       [dropdownMinWidth]="200"
+                       [dropdownItems]="actionStatusMap"
+                       [dropdownDisabled]="isInLoading"
+                       [dropdownKey]="'title'"
+                       (dropdownChangeItem)="changeStatusQuery($event)">
+        <ng-template libItemTemp let-title="title" let-key="key">
+          <span [style.color]="key === 'ALL' ? 'blue' : 'black'">{{title | translate}}</span>
+        </ng-template>
+        <ng-template libTitleTemp let-title="title" let-key="key">
+          <span [style.color]="key === 'ALL' ? 'blue' : 'black'">{{title | translate}}</span>
+        </ng-template>
+      </lib-dropdown-ex>
     </div>
     <div class="line-container">
-      <label class="query-title">{{"AUDIT.USER" | translate}}:</label>
-      <cs-dropdown [dropdownDefaultText]="'AUDIT.SELECT_USER'| translate"
-                   [dropdownWidth]="200"
-                   [dropdownList]="userNames"
-                   [dropdownListTextKey]="'user_name'"
-                   (onChange)="changeUsernameQuery($event)">
-      </cs-dropdown>
+      <lib-dropdown-ex [dropdownTip]="'AUDIT.SELECT_USER'| translate"
+                       [dropdownLabel]="'AUDIT.USER' | translate"
+                       [dropdownLabelWidth]="100"
+                       [dropdownMinWidth]="200"
+                       [dropdownItems]="userNames"
+                       [dropdownDisabled]="isInLoading"
+                       [dropdownKey]="'user_name'"
+                       (dropdownChangeItem)="changeUsernameQuery($event)">
+        <ng-template libItemTemp let-userName="user_name" let-id="user_id">
+          <span [style.color]="id === 0 ? 'blue' : 'black'">{{userName | translate}}</span>
+        </ng-template>
+        <ng-template libTitleTemp let-userName="user_name" let-id="user_id">
+          <span [style.color]="id === 0 ? 'blue' : 'black'">{{userName | translate}}</span>
+        </ng-template>
+      </lib-dropdown-ex>
       <label class="query-title">{{"AUDIT.BEGIN" | translate}}:</label>
       <input title="" class="date-time" type="date" clrDate [(clrDate)]="beginDate">
       <label class="query-title custom-margin">{{"AUDIT.END" | translate}}:</label>

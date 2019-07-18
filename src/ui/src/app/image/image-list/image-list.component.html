@@ -46,13 +46,18 @@
 
 <div *ngIf="isBuildImageWIP" class="build-image-container">
   <span>{{"IMAGE.CREATE_IMAGE_SELECT_PROJECT"|translate}}:</span>
-  <cs-dropdown class="custom-margin"
-               [dropdownDefaultText]="'IMAGE.CREATE_IMAGE_SELECT_PROJECT' | translate"
-               [dropdownWidth]="200"
-               [dropdownList]="projectsList"
-               [dropdownListTextKey]="'project_name'"
-               (onChange)="changeSelectProject($event)"
-               (onOnlyClickItem)="clickSelectProject($event)"></cs-dropdown>
+  <lib-dropdown-ex class="custom-margin"
+                   [dropdownTip]="'IMAGE.CREATE_IMAGE_SELECT_PROJECT' | translate"
+                   [dropdownMinWidth]="200"
+                   [dropdownItems]="projectsList"
+                   [dropdownKey]="'project_name'"
+                   [dropdownActiveItem]="curActiveProject"
+                   (dropdownChangeItem)="changeSelectProject($event)"
+                   (dropdownEspecialClick)="clickSelectProject($event)">
+    <ng-template libEspecialTemp >
+      <span style="color: blue">{{'IMAGE.CREATE_IMAGE_CREATE_PROJECT' | translate}}</span>
+    </ng-template>
+  </lib-dropdown-ex>
   <span class="custom-margin">{{"IMAGE.CREATE_IMAGE_SELECT_DES"|translate}}</span>
   <div class="import-method-container">
     <input title=""

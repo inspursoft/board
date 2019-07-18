@@ -41,7 +41,7 @@ export class CreateConfigMapComponent extends CsModalChildBase implements OnInit
   }
 
   createConfigMap() {
-    if (this.verifyDropdownValid() && this.verifyInputValid()) {
+    if (this.verifyDropdownExValid() && this.verifyInputExValid()) {
       this.isCreateWip = true;
       this.resourceService.createConfigMap(this.newConfigMap).subscribe(
         () => {

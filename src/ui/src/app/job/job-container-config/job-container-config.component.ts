@@ -52,7 +52,7 @@ export class JobContainerConfigComponent extends CsModalChildBase implements OnI
       this.messageService.showAlert('JOB.JOB_CREATE_CONTAINER_PORT_REPEAT', {alertType: "warning", view: this.alertView});
     } else if (this.isInvalidContainerCpuAndMem()) {
       this.messageService.showAlert('JOB.JOB_CREATE_CONTAINER_REQUEST_ERROR', {alertType: "warning", view: this.alertView});
-    } else if (this.verifyInputValid() && this.verifyInputArrayValid()) {
+    } else if (this.verifyInputExValid()) {
       this.createSuccess.next(this.container);
       this.modalOpened = false;
     }
