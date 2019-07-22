@@ -37,6 +37,7 @@
                         [inputLabel]="'JOB.JOB_CREATE_CONTAINER_PORT' | translate"
                         [inputMax]="65535"
                         [inputMin]="1"
+                        [inputArrayDefault]="container.container_port "
                         [inputPlaceholder]="'[1..65535]'"
                         (commitEvent)="container.container_port = $event">
     </lib-input-array-ex>

@@ -7,7 +7,6 @@ import { Project } from '../../project/project';
 import { CsModalChildBase } from '../cs-modal-base/cs-modal-child-base';
 import { PersistentVolume, PersistentVolumeClaim, PvcAccessMode } from '../shared.types';
 import { SharedService } from '../../shared.service/shared.service';
-import { CsInputComponent } from '../cs-components-library/cs-input/cs-input.component';
 import { MessageService } from '../../shared.service/message.service';
 
 @Component({
@@ -15,7 +14,6 @@ import { MessageService } from '../../shared.service/message.service';
   styleUrls: ['./create-pvc.component.css']
 })
 export class CreatePvcComponent extends CsModalChildBase implements OnInit {
-  @ViewChild('pvcNameInput') pvcNameInput: CsInputComponent;
   onAfterCommit: EventEmitter<PersistentVolumeClaim>;
   projectsList: Array<Project>;
   accessModeList: Array<PvcAccessMode>;

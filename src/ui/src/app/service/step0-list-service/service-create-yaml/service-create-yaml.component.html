@@ -1,15 +1,19 @@
 <div class="service-create-container">
   <div>
     <div class="line-container">
-      <label class="base-text">{{"SERVICE.SERVICE_YAML_SELECT_PROJECT" | translate}}:</label>
-      <cs-dropdown class="custom-margin"
-                   [dropdownDefaultText]="dropdownDefaultText |translate"
-                   [dropdownWidth]="280"
-                   [dropdownList]="projectsList"
-                   [dropdownListTextKey]="'project_name'"
-                   (onChange)="changeSelectProject($event)"
-                   (onOnlyClickItem)="clickSelectProject()">
-      </cs-dropdown>
+      <lib-dropdown-ex [dropdownLabel]="'SERVICE.SERVICE_YAML_SELECT_PROJECT' | translate"
+                       [dropdownTip]="'IMAGE.CREATE_IMAGE_SELECT_PROJECT' | translate"
+                       [dropdownMinWidth]="280"
+                       [dropdownLabelWidth]="220"
+                       [dropdownItems]="projectsList"
+                       [dropdownKey]="'project_name'"
+                       [dropdownActiveItem]="curActiveProject"
+                       (dropdownChangeItem)="changeSelectProject($event)"
+                       (dropdownEspecialClick)="clickSelectProject()">
+        <ng-template libEspecialTemp>
+          <span style="color: blue">{{'IMAGE.CREATE_IMAGE_CREATE_PROJECT' | translate}}</span>
+        </ng-template>
+      </lib-dropdown-ex>
     </div>
     <div class="line-container">
       <label class="base-text">{{"SERVICE.SERVICE_YAML_SELECT_DEPLOYMENT_YAML" | translate}}:</label>
@@ -51,7 +55,7 @@
               [class.btn-danger]="createServiceStatus=='Failed'"
               [disabled]="createServiceStatus=='Executing' || uploadFileStatus == 'Executing'"
               (click)="btnCancelClick($event)">
-        {{createServiceStatus=='Failed' ? ("BUTTON.DELETE" | translate) : ("BUTTON.CANCEL" | translate)}}
+        {{createServiceStatus == 'Failed' ? ("BUTTON.DELETE" | translate) : ("BUTTON.CANCEL" | translate)}}
       </button>
       <button class="btn btn-primary"
               [disabled]="isBtnUploadDisabled"

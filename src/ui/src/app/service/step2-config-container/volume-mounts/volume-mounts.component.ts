@@ -23,6 +23,7 @@ export class VolumeMountsComponent extends CsModalChildBase implements OnInit {
   volumeTypes: Array<{name: 'nfs' | 'pvc', value: number}>;
   curVolumeDataList: Array<VolumeStruct>;
   pvcList: Array<PersistentVolumeClaim>;
+  curActivePvc: PersistentVolumeClaim;
 
   @Input() set volumeDataList(value: Array<VolumeStruct>) {
     value.forEach(volumeData => {
@@ -48,21 +49,10 @@ export class VolumeMountsComponent extends CsModalChildBase implements OnInit {
   ngOnInit() {
     this.volumeTypes.push({name: "nfs", value: 1});
     this.volumeTypes.push({name: "pvc", value: 2});
-    let createNewPVC = new PersistentVolumeClaim();
-    createNewPVC.name = "SERVICE.VOLUME_CREATE_PVC";
-    createNewPVC["isSpecial"] = true;
-    createNewPVC["OnlyClick"] = true;
-    this.pvcList.push(createNewPVC);
-    this.k8sService.getPvcNameList().subscribe((res: Array<PersistentVolumeClaim>) => {
-        if (res && res.length > 0) {
-          this.pvcList = this.pvcList.concat(res);
-        }
-      }, (err: HttpErrorResponse) => this.messageService.showAlert(err.message, {alertType: "warning", view: this.alertView})
+    this.k8sService.getPvcNameList().subscribe(
+      (res: Array<PersistentVolumeClaim>) => this.pvcList = res,
+      (err: HttpErrorResponse) => this.messageService.showAlert(err.message, {alertType: "warning", view: this.alertView})
     )
-  }
-
-  pvcDropdownDefaultText(index: number): string {
-    return this.curVolumeDataList[index].target_pvc == '' ? 'SERVICE.VOLUME_SELECT_PVC' : this.curVolumeDataList[index].target_pvc;
   }
 
   checkInputValid(): boolean {
@@ -85,7 +75,7 @@ export class VolumeMountsComponent extends CsModalChildBase implements OnInit {
   }
 
   confirmVolumeInfo() {
-    if (this.verifyInputValid() && this.checkInputValid()) {
+    if (this.verifyInputExValid() && this.checkInputValid()) {
       this.onConfirmEvent.emit(this.curVolumeDataList);
       this.modalOpened = false;
     }
@@ -102,6 +92,7 @@ export class VolumeMountsComponent extends CsModalChildBase implements OnInit {
     componentRef.instance.onAfterCommit.subscribe((pvc: PersistentVolumeClaim) => {
       this.messageService.cleanNotification();
       this.curVolumeDataList[index].target_pvc = pvc.name;
+      this.curActivePvc = pvc;
       this.pvcList.push(pvc)
     })
   }

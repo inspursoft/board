@@ -31,9 +31,7 @@ div.dynamic-line-container {
   align-items: center;
 }
 
-div.dynamic-line-container.config-container {
-  flex-direction: column;
-  margin-top: 0;
+div.config-container {
   width: 500px;
 }
 
@@ -67,7 +65,7 @@ div.plus-container {
 }
 
 .base-margin-left {
-  margin-left: 10px;
+  margin-left: 5px;
 }
 
 button.get-tag {
@@ -84,6 +82,7 @@ clr-icon.action{
 div.volume-info-container {
   display: flex;
   flex-direction: column;
+  margin-left: 195px;
 }
 
 span.volume-info {

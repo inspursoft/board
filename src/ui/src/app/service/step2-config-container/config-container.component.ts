@@ -213,7 +213,7 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
     let checkContainerName = this.isValidContainerNames();
     if (checkContainerName.invalid) {
       funShowInvalidContainer(checkContainerName.invalidIndex);
-      if (this.verifyInputValid()) {
+      if (this.verifyInputExValid()) {
         this.messageService.showAlert('SERVICE.STEP_2_CONTAINER_NAME_REPEAT', {alertType: "warning"});
       }
       return;
@@ -230,7 +230,7 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
       this.messageService.showAlert('SERVICE.STEP_2_CONTAINER_REQUEST_ERROR', {alertType: "warning"});
       return;
     }
-    if (this.verifyInputValid() && this.verifyInputArrayValid()) {
+    if (this.verifyInputExValid() && this.verifyInputArrayExValid()) {
       this.k8sService.setServiceConfig(this.serviceStep2Data.uiToServer()).subscribe(
         () => this.k8sService.stepSource.next({index: 3, isBack: false})
       );
@@ -239,7 +239,7 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
 
   get isCanNextStep(): boolean {
     return this.serviceStep2Data.containerList
-      .filter(value => value.image.image_name != "SERVICE.STEP_2_SELECT_IMAGE")
+      .filter(value => value.image.image_name !== "")
       .length == this.serviceStep2Data.containerList.length;
   }
 
@@ -303,7 +303,6 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
 
   addEmptyWorkItem() {
     let container = new Container();
-    container.image.image_name = 'SERVICE.STEP_2_SELECT_IMAGE';
     this.containerIsInEdit.set(container, false);
     this.serviceStep2Data.containerList.push(container);
   }

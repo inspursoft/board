@@ -98,17 +98,16 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
     return this.nodeSelectorList.find(value => value.name === this.uiData.nodeSelector);
   }
 
-  get serviceTypeDescription() {
-    return this.serviceTypes.find(value => value.type == this.uiData.serviceType).description;
-  }
-
   get isStatefulService() {
     return this.uiData.serviceType == ServiceType.ServiceTypeStatefulSet;
   }
 
-  getContainerDropdownText(index: number): string {
-    let result = this.uiData.externalServiceList[index].container_name;
-    return result == "" ? "SERVICE.STEP_3_SELECT_CONTAINER" : result;
+  getItemTagClass(dropdownTag: IDropdownTag) {
+    return {
+      'label-info': dropdownTag.type == 'success',
+      'label-warning': dropdownTag.type == 'warning',
+      'label-danger': dropdownTag.type == 'danger'
+    }
   }
 
   getContainerPorts(containerName: string): Array<number> {
@@ -195,7 +194,7 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
   }
 
   forward(): void {
-    if (this.verifyInputValid() && this.verifyInputDropdownValid()) {
+    if (this.verifyInputExValid() && this.verifyDropdownExValid() && this.verifyInputNumberDropdownValid()) {
       if (this.uiData.externalServiceList.length == 0) {
         this.messageService.showAlert(`SERVICE.STEP_3_EXTERNAL_MESSAGE`, {alertType: "warning"});
       } else if (this.haveRepeatNodePort()) {

@@ -4,7 +4,7 @@ div.config-container {
   flex-direction: column;
   margin-top: 30px;
   margin-bottom: 20px;
-  width: 600px;
+  width: 520px;
 }
 
 div.config-service-info-line {
@@ -50,26 +50,27 @@ div.step-arrow {
 }
 
 div.line-container {
-  margin-top: 10px;
   display: flex;
-  height: 34px;
   align-items: center;
+  margin-top: 3px;
 }
 
-div.line-container cs-input {
+div.line-container lib-input-ex {
   width: 100%;
-}
-
-div.line-container span {
-  margin-left: 10px;
-}
-
-div.line-container cs-dropdown {
-  margin-left: 10px;
 }
 
 div.line-container cs-input-dropdown {
   margin-left: 10px;
+}
+
+div.line-container lib-input-dropdown-number {
+  margin-left: 10px;
+}
+
+div.temp-container {
+  display: flex;
+  justify-content: space-between;
+  flex-basis: 100%;
 }
 
 div.line-container label {
@@ -91,7 +92,7 @@ clr-icon.advanced-item-icon {
 }
 
 label.public {
-  width: 200px;
+  width: 210px;
   text-align: right;
 }
 

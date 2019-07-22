@@ -2,8 +2,7 @@
  * Created by liyanq on 9/4/17.
  */
 
-import { Component, EventEmitter, Input, OnInit, Output, QueryList, ViewChildren } from "@angular/core"
-import { CsInputComponent } from "../cs-components-library/cs-input/cs-input.component";
+import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core"
 import { ValidatorFn, Validators } from "@angular/forms";
 import { CsModalChildBase } from "../cs-modal-base/cs-modal-child-base";
 import { ConfigMapDetail, ConfigMap } from "../../resource/resource.types";
@@ -38,7 +37,6 @@ export class EnvironmentValueComponent extends CsModalChildBase implements OnIni
   configMapDetail: Map<number, ConfigMapDetail>;
   bindConfigMap: Map<number, boolean>;
 
-  @ViewChildren(CsInputComponent) inputComponentList: QueryList<CsInputComponent>;
   @Input() inputEnvsData: Array<EnvType>;
   @Input() inputFixedKeyList: Array<string>;
   @Input() isProvideBindConfigMap = false;
