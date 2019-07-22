@@ -51,7 +51,7 @@ export class NodeCreateGroupComponent extends CsModalChildBase {
   }
 
   commitNodeGroup() {
-    if (this.verifyInputValid()) {
+    if (this.verifyInputExValid()) {
       this.nodeService.addNodeGroup(this.newNodeGroupData).subscribe(
         () => {
           this.onAfterCommit.emit(this.newNodeGroupData);

@@ -6,7 +6,7 @@ import { EnvType } from "../../shared/environment-value/environment-value.compon
 import { ValidationErrors } from "@angular/forms";
 import { NodeAvailableResources } from "../../shared/shared.types";
 import { VolumeMountsComponent } from "./volume-mounts/volume-mounts.component";
-import { Observable } from "rxjs";
+import { Observable, of } from "rxjs";
 import { map } from "rxjs/operators";
 import { RouteImages } from "../../shared/shared.const";
 import { AppTokenService } from "../../shared.service/app-token.service";
@@ -56,10 +56,7 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
         this.addEmptyWorkItem();
       }
     });
-    this.k8sService.getImages("", 0, 0).subscribe(res => {
-      this.imageSourceList = res;
-      this.unshiftCustomerCreateImage();
-    })
+    this.k8sService.getImages("", 0, 0).subscribe(res => this.imageSourceList = res)
   }
 
   changeSelectImage(index: number, image: Image) {
@@ -216,7 +213,7 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
     let checkContainerName = this.isValidContainerNames();
     if (checkContainerName.invalid) {
       funShowInvalidContainer(checkContainerName.invalidIndex);
-      if (this.verifyInputValid()) {
+      if (this.verifyInputExValid()) {
         this.messageService.showAlert('SERVICE.STEP_2_CONTAINER_NAME_REPEAT', {alertType: "warning"});
       }
       return;
@@ -233,7 +230,7 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
       this.messageService.showAlert('SERVICE.STEP_2_CONTAINER_REQUEST_ERROR', {alertType: "warning"});
       return;
     }
-    if (this.verifyInputValid() && this.verifyInputArrayValid()) {
+    if (this.verifyInputExValid() && this.verifyInputArrayExValid()) {
       this.k8sService.setServiceConfig(this.serviceStep2Data.uiToServer()).subscribe(
         () => this.k8sService.stepSource.next({index: 3, isBack: false})
       );
@@ -242,7 +239,7 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
 
   get isCanNextStep(): boolean {
     return this.serviceStep2Data.containerList
-      .filter(value => value.image.image_name != "SERVICE.STEP_2_SELECT_IMAGE")
+      .filter(value => value.image.image_name !== "")
       .length == this.serviceStep2Data.containerList.length;
   }
 
@@ -258,20 +255,12 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
     return this.checkSetMemRequest.bind(this);
   }
 
-  unshiftCustomerCreateImage() {
-    let customerCreateImage: Image = new Image();
-    customerCreateImage.image_name = "SERVICE.STEP_2_CREATE_IMAGE";
-    customerCreateImage["isSpecial"] = true;
-    customerCreateImage["OnlyClick"] = true;
-    this.imageSourceList.unshift(customerCreateImage);
-  }
-
-  canChangeSelectImage(image: Image) {
+  canChangeSelectImage(image: Image): Observable<boolean> {
     if (this.serviceStep2Data.containerList.find(value => value.image.image_name == image.image_name)) {
       this.messageService.showAlert('IMAGE.CREATE_IMAGE_EXIST', {alertType: "warning"});
-      return false;
+      return of(false);
     }
-    return true;
+    return of(true);
   }
 
   checkSetCpuRequest(control: HTMLInputElement): Observable<ValidationErrors | null> {
@@ -314,7 +303,6 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
 
   addEmptyWorkItem() {
     let container = new Container();
-    container.image.image_name = 'SERVICE.STEP_2_SELECT_IMAGE';
     this.containerIsInEdit.set(container, false);
     this.serviceStep2Data.containerList.push(container);
   }

@@ -35,12 +35,12 @@ export class ResetPasswordComponent extends CsComponentBase implements OnInit {
     }
   }
 
-  goBack(){
+  goBack() {
     this.router.navigate([RouteSignIn]).then();
   }
 
   sendResetPassRequest() {
-    if (this.verifyInputValid()) {
+    if (this.verifyInputExValid()) {
       this.sendRequestWIP = true;
       this.accountService.resetPassword(this.signUpModel.password, this.resetUuid).subscribe(
         () => this.messageService.showOnlyOkDialogObservable('ACCOUNT.RESET_PASS_SUCCESS_MSG', 'ACCOUNT.RESET_PASS_SUCCESS').subscribe(

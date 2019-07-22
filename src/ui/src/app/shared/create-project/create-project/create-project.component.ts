@@ -27,7 +27,7 @@ export class CreateProjectComponent extends CsModalChildBase {
   }
 
   confirm(): void {
-    if (this.verifyInputValid()) {
+    if (this.verifyInputExValid()) {
       this.isCreateProjectWIP = true;
       const project = new Project();
       project.project_name = this.createProject.projectName;

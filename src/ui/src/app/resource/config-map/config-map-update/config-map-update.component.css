@@ -2,17 +2,6 @@ div.modal-body {
   min-height: 300px;
 }
 
-div.dynamic-line-container {
-  display: flex;
-  margin-top: 2px;
-  margin-bottom: 2px;
-  align-items: center;
-}
-
-div.dynamic-line-container cs-input {
-  flex-basis: 100%;
-}
-
 span.filed-text {
   width: 180px;
   text-align: right;

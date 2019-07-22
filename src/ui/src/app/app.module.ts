@@ -13,6 +13,7 @@ import { CoreModule } from './core/core.module';
 import { SharedModule } from "./shared/shared.module";
 import { GlobalSearchComponent } from "./global-search/global-search.component";
 import { HttpClientModule } from "@angular/common/http";
+import { COMPONENTS_CUR_LANG } from "board-components-library";
 
 export function appInitServiceFactory(appInitService: AppInitService) {
   return () => (appInitService);
@@ -25,6 +26,11 @@ export function localIdServiceFactory(appInitService: AppInitService) {
     return 'en-US';
   }
 }
+
+export function InitBoardLibraryLang(appInitService: AppInitService): string {
+  return appInitService.currentLang === 'zh-cn' ? 'zh' : 'en';
+}
+
 
 @NgModule({
   imports: [
@@ -59,6 +65,11 @@ export function localIdServiceFactory(appInitService: AppInitService) {
     {
       provide: LOCALE_ID,
       useFactory: localIdServiceFactory,
+      deps: [AppInitService]
+    },
+    {
+      provide: COMPONENTS_CUR_LANG,
+      useFactory: InitBoardLibraryLang,
       deps: [AppInitService]
     }
   ],

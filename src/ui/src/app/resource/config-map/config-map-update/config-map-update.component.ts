@@ -32,15 +32,17 @@ export class ConfigMapUpdateComponent extends CsModalChildBase implements OnInit
   }
 
   updateConfigMap(){
-    let configMap = new ConfigMap();
-    configMap.name = this.configMapName;
-    configMap.namespace = this.projectName;
-    this.configMapDetail.dataList.forEach(value => configMap.dataList.push(value));
-    this.isUpdateWip = true;
-    this.resourceService.updateConfigMap(configMap).subscribe(
-      ()=>this.messageService.showAlert('RESOURCE.CONFIG_MAP_EDIT_UPDATE_SUCCESS'),
-      ()=>this.modalOpened = false,
-      ()=>this.modalOpened = false
-    )
+    if (this.verifyInputExValid()){
+      let configMap = new ConfigMap();
+      configMap.name = this.configMapName;
+      configMap.namespace = this.projectName;
+      this.configMapDetail.dataList.forEach(value => configMap.dataList.push(value));
+      this.isUpdateWip = true;
+      this.resourceService.updateConfigMap(configMap).subscribe(
+        ()=>this.messageService.showAlert('RESOURCE.CONFIG_MAP_EDIT_UPDATE_SUCCESS'),
+        ()=>this.modalOpened = false,
+        ()=>this.modalOpened = false
+      )
+    }
   }
 }

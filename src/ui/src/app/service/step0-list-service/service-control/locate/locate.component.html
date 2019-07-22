@@ -1,12 +1,11 @@
 <div class="locate-container">
   <status *ngIf="service" [service]="service"></status>
-  <cs-dropdown class="locate-dropdown"
-               [dropdownDisabled]="isActionInWIP"
-               [dropdownDefaultText]="dropdownDefaultText"
-               [dropdownWidth]="200"
-               [dropdownHideSearch]="true"
-               [dropdownList]="nodeSelectorList"
-               (onChange)="setNodeSelector($event)">
-  </cs-dropdown>
+  <lib-dropdown-ex class="locate-dropdown"
+                   [dropdownDisabled]="isActionInWIP"
+                   [dropdownTip]="dropdownDefaultText | translate"
+                   [dropdownMinWidth]="200"
+                   [dropdownItems]="nodeSelectorList"
+                   (dropdownChangeItem)="setNodeSelector($event)">
+  </lib-dropdown-ex>
 </div>
 

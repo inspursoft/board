@@ -19,14 +19,12 @@
       <span>{{'RESOURCE.CONFIG_MAP_EDIT_DATA_LIST' | translate}}:</span>
     </div>
     <div *ngFor="let data of configMapDetail.dataList;index as i">
-      <div class="dynamic-line-container">
-        <cs-input [inputIsRequired]="true"
-                  [disabled]="isUpdateWip || isLoadWip"
-                  [simpleFiled]="data.value"
-                  [inputLabel]="data.key"
-                  (onCheck)="data.value = $event">
-        </cs-input>
-      </div>
+      <lib-input-ex [inputIsRequired]="true"
+                    [inputDisabled]="isUpdateWip || isLoadWip"
+                    [inputDefaultValue]="data.value"
+                    [inputLabel]="data.key"
+                    (commitEvent)="data.value = $event">
+      </lib-input-ex>
     </div>
   </div>
   <div class="modal-footer">

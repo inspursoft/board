@@ -12,14 +12,13 @@
     <td class="left image-name">{{imageIndex.image_name}}</td>
     <td class="left image-tag">{{imageIndex.image_tag}}</td>
     <td class="left" [ngClass]="{'change':imageIndex.image_tag != imageTagSelected.get(imageIndex.image_name)}">
-      <cs-dropdown [dropdownDefaultText]="'SERVICE.SERVICE_CONTROL_LOCATE_SELECT' | translate"
-                   [dropdownWidth]="150"
-                   [dropdownList]="imageTagList.get(imageIndex.image_name)"
-                   [dropdownListTextKey]="'image_tag'"
-                   [dropdownTitleFontSize]="14"
-                   [dropdownDisabled]="isActionInWIP"
-                   (onChange)="changeImageTag(imageIndex.image_name,$event)">
-      </cs-dropdown>
+      <lib-dropdown-ex [dropdownTip]="'SERVICE.SERVICE_CONTROL_LOCATE_SELECT' | translate"
+                       [dropdownMinWidth]="150"
+                       [dropdownItems]="imageTagList.get(imageIndex.image_name)"
+                       [dropdownKey]="'image_tag'"
+                       [dropdownDisabled]="isActionInWIP"
+                       (dropdownChangeItem)="changeImageTag(imageIndex.image_name,$event)">
+      </lib-dropdown-ex>
     </td>
   </tr>
   </tbody>

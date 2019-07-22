@@ -146,7 +146,6 @@ div.modal-body-reset-position{
 }
 
 div.base-image-container {
-  height: 60px;
   display: flex;
   flex-direction: column;
 }
@@ -179,15 +178,15 @@ div.board-registry-container {
   margin-left: 5px;
 }
 
-cs-dropdown.margin-left-5{
+lib-dropdown-ex.margin-left-5{
   margin-left: 5px;
 }
 
-cs-dropdown.margin-left-120{
-  margin-left: 120px;
+lib-dropdown-ex.margin-left-100{
+  margin-left: 100px;
 }
 
-cs-input.margin-left-180{
+lib-input-ex.margin-left-180{
   margin-left: 180px;
 }
 

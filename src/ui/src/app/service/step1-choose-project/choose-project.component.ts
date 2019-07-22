@@ -11,14 +11,13 @@ import { SharedService } from "../../shared.service/shared.service";
 })
 export class ChooseProjectComponent extends ServiceStepBase implements OnInit {
   projectsList: Array<Project>;
-  dropdownDefaultText: string = "";
+  curActiveProject: Project;
 
   constructor(protected injector: Injector,
               private sharedService: SharedService,
               private sharedActionService: SharedActionService) {
     super(injector);
     this.projectsList = Array<Project>();
-    this.dropdownDefaultText = "SERVICE.STEP_TITLE_1";
   }
 
   ngOnInit() {
@@ -27,23 +26,7 @@ export class ChooseProjectComponent extends ServiceStepBase implements OnInit {
     } else {
       this.k8sService.deleteServiceConfig().subscribe(res => res);
     }
-    this.k8sService.getProjects()
-      .subscribe((res: Array<Project>) => {
-        let createNewProject: Project = new Project();
-        createNewProject.project_name = "SERVICE.STEP_1_CREATE_PROJECT";
-        createNewProject.project_id = -1;
-        createNewProject["isSpecial"] = true;
-        createNewProject["OnlyClick"] = true;
-        this.projectsList.push(createNewProject);
-        if (res && res.length > 0) {
-          this.projectsList = this.projectsList.concat(res);
-        }
-        this.setDropdownDefaultText();
-      })
-  }
-
-  setDropdownDefaultText(): void {
-    this.dropdownDefaultText = this.uiData.projectName != '' ? this.uiData.projectName : "SERVICE.STEP_TITLE_1";
+    this.k8sService.getProjects().subscribe((res: Array<Project>) => this.projectsList = res)
   }
 
   get stepPhase(): ServiceStepPhase {
@@ -64,11 +47,10 @@ export class ChooseProjectComponent extends ServiceStepBase implements OnInit {
     this.sharedActionService.createProjectComponent(this.selfView).subscribe((projectName: string) => {
       if (projectName) {
         this.sharedService.getOneProject(projectName).subscribe((res: Array<Project>) => {
+          this.curActiveProject = res[0];
           this.uiData.projectId = res[0].project_id;
-          let project = this.projectsList.shift();
-          this.projectsList.unshift(res[0]);
-          this.projectsList.unshift(project);
-          this.setDropdownDefaultText();
+          this.uiData.projectName = res[0].project_name;
+          this.projectsList.push(res[0]);
         })
       }
     });
@@ -77,6 +59,5 @@ export class ChooseProjectComponent extends ServiceStepBase implements OnInit {
   changeSelectProject(project: Project) {
     this.uiData.projectId = project.project_id;
     this.uiData.projectName = project.project_name;
-    this.setDropdownDefaultText();
   }
 }

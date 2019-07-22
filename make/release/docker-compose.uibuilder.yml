@@ -1,10 +1,10 @@
 version: '2'
 services:
-  uibuilder7:
+  uibuilder7.1:
     build:
       context: ../../
       dockerfile: make/dev/container/uibuilder/Dockerfile
-    image: uibuilder7
+    image: uibuilder7.1
     volumes:
       - ../../src/ui:/board_src
     environment:

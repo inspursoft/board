@@ -2,26 +2,26 @@
   <h3 class="modal-title">{{ 'PROJECT.CREATE_PROJECT' | translate }}</h3>
   <div class="modal-body">
     <div class="input-container">
-      <cs-input [inputIsRequired]="true"
-                [inputLabel]="'PROJECT.PROJECT_NAME' | translate "
-                [simpleFiled]="createProject.projectName"
-                [inputLabelMinWidth]="110"
-                [inputMaxlength]="30"
-                [inputMinlength]="2"
-                checkItemExistingEx="project"
-                [inputPattern]="projectNamePattern"
-                [disabled]="isCreateProjectWIP"
-                [validatorMessage]="[
-              {validatorKey:'required',validatorMessage:'PROJECT.PROJECT_NAME_IS_REQUIRED'},
-              {validatorKey:'pattern',validatorMessage:'PROJECT.PROJECT_NAME_IS_ILLEGAL'}]"
-                (onCheck)="createProject.projectName = $event">
-      </cs-input>
-      <cs-input [inputLabel]="'PROJECT.COMMENT' | translate"
-                [simpleFiled]="createProject.comment"
-                [disabled]="isCreateProjectWIP"
-                [inputLabelMinWidth]="110"
-                (onCheck)="createProject.comment = $event">
-      </cs-input>
+      <lib-input-ex [inputIsRequired]="true"
+                    [inputLabel]="'PROJECT.PROJECT_NAME' | translate "
+                    [inputDefaultValue]="createProject.projectName"
+                    [inputLabelWidth]="110"
+                    [inputMaxlength]="30"
+                    [inputMinlength]="2"
+                    libCheckItemExistingEx="project"
+                    [inputPattern]="projectNamePattern"
+                    [inputDisabled]="isCreateProjectWIP"
+                    [validatorMessage]="[
+                       {key:'required',message:'PROJECT.PROJECT_NAME_IS_REQUIRED' | translate},
+                       {key:'pattern',message:'PROJECT.PROJECT_NAME_IS_ILLEGAL' | translate}]"
+                    (commitEvent)="createProject.projectName = $event">
+      </lib-input-ex>
+      <lib-input-ex [inputLabel]="'PROJECT.COMMENT' | translate"
+                    [inputDefaultValue]="createProject.comment"
+                    [inputDisabled]="isCreateProjectWIP"
+                    [inputLabelWidth]="110"
+                    (commitEvent)="createProject.comment = $event">
+      </lib-input-ex>
       <div class="public-container">
         <label for="chkIsPublic" class="public-label">{{ 'PROJECT.PUBLIC' | translate }}:</label>
         <div class="checkbox public-checkbox">

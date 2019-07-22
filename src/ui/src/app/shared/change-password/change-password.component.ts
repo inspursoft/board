@@ -40,7 +40,7 @@ export class ChangePasswordComponent extends CsModalChildBase {
   }
 
   submitChangePassword(): void {
-    if (this.verifyInputValid()) {
+    if (this.verifyInputExValid()) {
       const curUser = this.appInitService.currentUser;
       if (curUser.user_id > 0) {
         this.isWorkWip = true;

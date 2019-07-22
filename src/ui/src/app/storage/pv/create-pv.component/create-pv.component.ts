@@ -52,7 +52,8 @@ export class CreatePvComponent extends CsModalChildBase implements OnInit {
   }
 
   createNewPv() {
-    if (this.verifyInputValid() && this.verifyDropdownValid()) {
+    if (this.verifyInputExValid()) {
+      this.isCreateWip = true;
       this.storageService.createNewPv(this.newPersistentVolume).subscribe(
         () => this.onAfterCommit.emit(this.newPersistentVolume),
         () => this.modalOpened = false,
@@ -78,7 +79,7 @@ export class CreatePvComponent extends CsModalChildBase implements OnInit {
       .pipe(map(() => null),catchError((err:HttpErrorResponse) => {
         if (err.status == 409) {
           this.messageService.cleanNotification();
-          return of({serviceExist: "STORAGE.PV_NAME_EXIST"});
+          return of({pvNameExists: "STORAGE.PV_NAME_EXIST"});
         } else if (err.status == 404) {
           this.messageService.cleanNotification();
         }

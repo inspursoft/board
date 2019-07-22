@@ -29,6 +29,7 @@ export class ImageListComponent extends CsModalParentBase implements OnInit, OnD
   imageCountPerPage: number = 10;
   loadingWIP: boolean;
   projectsList: Array<Project>;
+  curActiveProject: Project;
   createImageMethod: CreateImageMethod = CreateImageMethod.None;
   _subscription: Subscription;
 
@@ -46,17 +47,7 @@ export class ImageListComponent extends CsModalParentBase implements OnInit, OnD
   }
 
   ngOnInit() {
-    this.imageService.getProjects().subscribe((res: Array<Project>) => {
-      let createNewProject: Project = new Project();
-      createNewProject.project_name = "IMAGE.CREATE_IMAGE_CREATE_PROJECT";
-      createNewProject.project_id = -1;
-      createNewProject["isSpecial"] = true;
-      createNewProject["OnlyClick"] = true;
-      this.projectsList.push(createNewProject);
-      if (res && res.length > 0) {
-        this.projectsList = this.projectsList.concat(res);
-      }
-    });
+    this.imageService.getProjects().subscribe((res: Array<Project>) => this.projectsList = res);
     this.retrieve();
     this.activatedRoute.fragment.subscribe((fragment: string) => {
       if (fragment === 'createImage') {
@@ -79,11 +70,10 @@ export class ImageListComponent extends CsModalParentBase implements OnInit, OnD
     this.sharedActionService.createProjectComponent(this.selfView).subscribe((projectName: string) => {
       if (projectName) {
         this.sharedService.getOneProject(projectName).subscribe((res: Array<Project>) => {
+          this.curActiveProject = res[0];
           this.selectedProjectId = res[0].project_id;
           this.selectedProjectName = res[0].project_name;
-          let project = this.projectsList.shift();
-          this.projectsList.unshift(res[0]);
-          this.projectsList.unshift(project);
+          this.projectsList.push(res[0]);
         })
       }
     });

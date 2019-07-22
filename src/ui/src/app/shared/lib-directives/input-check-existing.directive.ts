@@ -2,35 +2,45 @@ import { Directive, Input } from '@angular/core';
 import { AbstractControl } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { AppInitService } from '../../shared.service/app-init.service';
-import { CsInputComponent } from "../cs-components-library/cs-input/cs-input.component";
 import { ValidationErrors } from "@angular/forms/src/directives/validators";
 import { UsernameInUseKey } from "../shared.const";
 import { Observable, of } from "rxjs";
 import { catchError, map } from "rxjs/operators";
 import { MessageService } from "../../shared.service/message.service";
+import { InputExComponent } from "board-components-library";
+import { TranslateService } from "@ngx-translate/core";
 
 @Directive({
-  selector: "[checkItemExistingEx]"
+  selector: "[libCheckItemExistingEx]"
 })
-export class CsInputCheckExistingDirective {
-  @Input() checkItemExistingEx = "";
+export class LibCheckExistingExDirective {
+  @Input() libCheckItemExistingEx = "";
   @Input() userID: number = 0;
+  usernameIsKey = '';
+  usernameExists = '';
+  emailExists = '';
+  projectNameExists = '';
 
-  constructor(private csInputComponent: CsInputComponent,
+  constructor(private inputComponent: InputExComponent,
               private http: HttpClient,
               private appInitService: AppInitService,
-              private messageService: MessageService) {
-    this.csInputComponent.customerValidatorAsyncFunc = this.validateAction.bind(this);
+              private messageService: MessageService,
+              private translateService: TranslateService) {
+    this.inputComponent.validatorAsyncFn = this.validateAction.bind(this);
+    this.translateService.get('ACCOUNT.USERNAME_IS_KEY').subscribe(res => this.usernameIsKey = res);
+    this.translateService.get('PROJECT.PROJECT_NAME_ALREADY_EXISTS').subscribe(res => this.projectNameExists = res);
+    this.translateService.get('ACCOUNT.USERNAME_ALREADY_EXISTS').subscribe(res => this.usernameExists = res);
+    this.translateService.get('ACCOUNT.EMAIL_ALREADY_EXISTS').subscribe(res => this.emailExists = res);
   }
 
   checkUserExists(value: string, errorMsg: string): Observable<ValidationErrors | null> {
-    if (this.checkItemExistingEx === 'username' && UsernameInUseKey.indexOf(value) > 0) {
-      return of({'checkItemExistingEx': 'ACCOUNT.USERNAME_IS_KEY'})
+    if (this.libCheckItemExistingEx === 'username' && UsernameInUseKey.indexOf(value) > 0) {
+      return of({'checkItemExistingEx': this.usernameIsKey})
     }
     return this.http.get("/api/v1/user-exists", {
       observe: "response",
       params: {
-        'target': this.checkItemExistingEx,
+        'target': this.libCheckItemExistingEx,
         'value': value,
         'user_id': this.userID.toString()
       }
@@ -56,18 +66,18 @@ export class CsInputCheckExistingDirective {
       catchError(err => {
         this.messageService.cleanNotification();
         if (err && err.status === 409) {
-          return of({'checkItemExistingEx': "PROJECT.PROJECT_NAME_ALREADY_EXISTS"});
+          return of({'checkItemExistingEx': this.projectNameExists});
         }
         return null;
       }))
   }
 
   validateAction(control: AbstractControl): Observable<ValidationErrors | null> {
-    switch (this.checkItemExistingEx) {
+    switch (this.libCheckItemExistingEx) {
       case 'username':
-        return this.checkUserExists(control.value, "ACCOUNT.USERNAME_ALREADY_EXISTS");
+        return this.checkUserExists(control.value, this.usernameExists);
       case 'email':
-        return this.checkUserExists(control.value, "ACCOUNT.EMAIL_ALREADY_EXISTS");
+        return this.checkUserExists(control.value, this.emailExists);
       case 'project':
         return this.checkProjectExists(control.value);
       default:

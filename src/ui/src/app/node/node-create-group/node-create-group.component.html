@@ -1,19 +1,20 @@
 <clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'md'">
   <h3 class="modal-title">{{ 'NODE.NODE_GROUP_CREATE' | translate }}</h3>
   <div class="modal-body node-create-group-body">
-    <cs-input [inputIsRequired]="true"
-              [inputPattern]="patternNodeGroupName"
-              [inputMaxlength]="63"
-              [inputLabel]="'NODE.NODE_GROUP_NAME' | translate"
-              [simpleFiled]="newNodeGroupData.nodegroup_name"
-              [validatorMessage]="[{validatorKey: 'pattern', validatorMessage: 'NODE.NODE_GROUP_CREATE_PATTERN_MESSAGE'}]"
-              [customerValidatorAsyncFunc]="checkNodeGroupNameFun"
-              (onCheck)="newNodeGroupData.nodegroup_name = $event">
-    </cs-input>
-    <cs-input [inputLabel]="'NODE.NODE_GROUP_COMMENT'  | translate"
-              [simpleFiled]="newNodeGroupData.nodegroup_comment"
-              (onCheck)="newNodeGroupData.nodegroup_comment = $event">
-    </cs-input>
+    <lib-input-ex [inputIsRequired]="true"
+                  [inputPattern]="patternNodeGroupName"
+                  [inputMaxlength]="63"
+                  [inputLabel]="'NODE.NODE_GROUP_NAME' | translate"
+                  [inputDefaultValue]="newNodeGroupData.nodegroup_name"
+                  [validatorMessage]="[{key: 'pattern', message: 'NODE.NODE_GROUP_CREATE_PATTERN_MESSAGE' | translate},
+                                   {key:'nodeGroupExist', message:'NODE.NODE_GROUP_NAME_EXIST' | translate}]"
+                  [validatorAsyncFn]="checkNodeGroupNameFun"
+                  (commitEvent)="newNodeGroupData.nodegroup_name = $event">
+    </lib-input-ex>
+    <lib-input-ex [inputLabel]="'NODE.NODE_GROUP_COMMENT'  | translate"
+                  [inputDefaultValue]="newNodeGroupData.nodegroup_comment"
+                  (commitEvent)="newNodeGroupData.nodegroup_comment = $event">
+    </lib-input-ex>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-primary" (click)="commitNodeGroup()">

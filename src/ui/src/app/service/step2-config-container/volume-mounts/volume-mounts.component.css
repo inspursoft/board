@@ -11,10 +11,6 @@ span.title {
   text-align: right;
 }
 
-span.title.min {
-  width: 160px;
-}
-
 div.dynamic-line-container {
   display: flex;
   margin-top: 2px;
@@ -22,11 +18,7 @@ div.dynamic-line-container {
   align-items: center;
 }
 
-div.dynamic-line-container.large-margin {
-  margin-bottom: 18px;
-}
-
-div.dynamic-line-container cs-input{
+div.dynamic-line-container lib-input-ex{
   width: 100%;
 }
 
@@ -42,7 +34,7 @@ clr-icon.dynamic-icon {
 div.clr-checkbox-container {
   display: flex;
   justify-content: flex-end;
-  min-width: 175px;
+  min-width: 200px;
   align-items: center;
 }
 

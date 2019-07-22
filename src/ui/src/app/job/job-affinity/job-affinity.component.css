@@ -3,10 +3,6 @@ div.modal-body{
   display: flex;
 }
 
-div.modal-body cs-input{
-  margin-top: 10px;
-}
-
 div.advance-left-config {
   flex-basis: 500px;
   height: 100%;

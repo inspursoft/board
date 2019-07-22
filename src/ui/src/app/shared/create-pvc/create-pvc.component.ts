@@ -7,7 +7,6 @@ import { Project } from '../../project/project';
 import { CsModalChildBase } from '../cs-modal-base/cs-modal-child-base';
 import { PersistentVolume, PersistentVolumeClaim, PvcAccessMode } from '../shared.types';
 import { SharedService } from '../../shared.service/shared.service';
-import { CsInputComponent } from '../cs-components-library/cs-input/cs-input.component';
 import { MessageService } from '../../shared.service/message.service';
 
 @Component({
@@ -15,7 +14,6 @@ import { MessageService } from '../../shared.service/message.service';
   styleUrls: ['./create-pvc.component.css']
 })
 export class CreatePvcComponent extends CsModalChildBase implements OnInit {
-  @ViewChild('pvcNameInput') pvcNameInput: CsInputComponent;
   onAfterCommit: EventEmitter<PersistentVolumeClaim>;
   projectsList: Array<Project>;
   accessModeList: Array<PvcAccessMode>;
@@ -44,8 +42,6 @@ export class CreatePvcComponent extends CsModalChildBase implements OnInit {
       if (this.pvList.length > 0) {
         const pvNone = new PersistentVolume();
         pvNone.name = 'None';
-        pvNone["isSpecial"] = true;
-        pvNone["OnlyClick"] = true;
         this.pvList.unshift(pvNone);
       }
     });
@@ -62,7 +58,7 @@ export class CreatePvcComponent extends CsModalChildBase implements OnInit {
         catchError((err: HttpErrorResponse) => {
           this.messageService.cleanNotification();
           if (err.status == 409) {
-            return of({serviceExist: 'STORAGE.PVC_CREATE_NAME_EXIST'});
+            return of({pvNameExists: 'STORAGE.PVC_CREATE_NAME_EXIST'});
           }
           return of(null);
         }))
@@ -72,9 +68,6 @@ export class CreatePvcComponent extends CsModalChildBase implements OnInit {
   changeSelectProject(project: Project) {
     this.newPersistentVolumeClaim.projectId = project.project_id;
     this.newPersistentVolumeClaim.projectName = project.project_name;
-    if (this.newPersistentVolumeClaim.name != '') {
-      this.pvcNameInput.checkInputSelf();
-    }
   }
 
   changeDesignatePv(pv: PersistentVolume) {
@@ -82,7 +75,7 @@ export class CreatePvcComponent extends CsModalChildBase implements OnInit {
   }
 
   createNewPvc() {
-    if (this.verifyInputValid() && this.verifyDropdownValid()) {
+    if (this.verifyDropdownExValid() && this.verifyInputExValid()) {
       this.isCreateWip = true;
       this.sharedService.createNewPvc(this.newPersistentVolumeClaim).subscribe(
         () => this.messageService.showAlert('STORAGE.PVC_CREATE_SUCCESS'),

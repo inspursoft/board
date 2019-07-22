@@ -3,46 +3,47 @@
   <div class="modal-body">
     <div class="pv-section-container"><span>Basic</span></div>
     <div class="dynamic-line-container">
-      <cs-input [inputIsRequired]="true"
-                [disabled]="isCreateWip"
-                [customerValidatorAsyncFunc]="checkPvNameFun"
-                [inputLabel]="'STORAGE.PV_NAME' | translate"
-                [simpleFiled]="newPersistentVolume.name"
-                [inputMaxlength]="50"
-                [inputPattern]="namePattern"
-                [validatorMessage]="[{validatorKey: 'pattern', validatorMessage: 'STORAGE.PV_CREATE_NAME_PATTERN'}]"
-                (onCheck)="newPersistentVolume.name = $event">
-      </cs-input>
-      <cs-input [inputIsRequired]="true"
-                [inputLabel]="'STORAGE.PV_CAPACITY' | translate"
-                [inputPlaceholder]="'eg. 5'"
-                [inputMin]="0.1"
-                [inputFiledType]="1"
-                [disabled]="isCreateWip"
-                [simpleFiled]="newPersistentVolume.capacity"
-                (onCheck)="newPersistentVolume.capacity = $event">
-      </cs-input>(Gi)
+      <lib-input-ex [inputIsRequired]="true"
+                    [inputDisabled]="isCreateWip"
+                    [validatorAsyncFn]="checkPvNameFun"
+                    [inputLabel]="'STORAGE.PV_NAME' | translate"
+                    [inputDefaultValue]="newPersistentVolume.name"
+                    [inputMaxlength]="50"
+                    [inputPattern]="namePattern"
+                    [validatorMessage]="[
+                    {key: 'pattern', message: 'STORAGE.PV_CREATE_NAME_PATTERN' | translate},
+                    {key: 'pvNameExists', message :'STORAGE.PV_NAME_EXIST' | translate}]"
+                    (commitEvent)="newPersistentVolume.name = $event">
+      </lib-input-ex>
+      <lib-input-ex [inputIsRequired]="true"
+                    [inputLabel]="'STORAGE.PV_CAPACITY' | translate"
+                    [inputPlaceholder]="'eg. 5'"
+                    [inputMin]="0.1"
+                    [inputCategory]="2"
+                    [inputDisabled]="isCreateWip"
+                    [inputDefaultValue]="newPersistentVolume.capacity"
+                    (commitEvent)="newPersistentVolume.capacity = $event">
+      </lib-input-ex>
+      (Gi)
     </div>
     <div class="dynamic-line-container">
-      <span class="filed-text">{{"STORAGE.PV_TYPE"|translate}}:</span>
-      <cs-dropdown [dropdownDefaultText]="newPersistentVolume.typeDescription"
-                   [dropdownWidth]="260"
-                   [dropdownMustBeSelect]="false"
-                   [dropdownDisabled]="isCreateWip"
-                   [dropdownList]="storageTypeList"
-                   [dropdownListTextKey]="'name'"
-                   (onChange)="changeSelectType($event)">
-      </cs-dropdown>
+      <lib-dropdown-ex [dropdownLabel]="'STORAGE.PV_TYPE'|translate"
+                       [dropdownDisabled]="isCreateWip"
+                       [dropdownItems]="storageTypeList"
+                       [dropdownKey]="'name'"
+                       [dropdownMinWidth]="260"
+                       [dropdownTip]="newPersistentVolume.typeDescription"
+                       (dropdownChangeItem)="changeSelectType($event)">
+      </lib-dropdown-ex>
     </div>
-
     <div class="dynamic-line-container">
-      <span class="filed-text">{{"STORAGE.PV_ACCESS_MODES"|translate}}:</span>
-      <cs-dropdown [dropdownDefaultText]="'STORAGE.PV_CREATE_SELECT_ACCESS_MODE'|translate"
-                   [dropdownWidth]="260"
-                   [dropdownDisabled]="isCreateWip"
-                   [dropdownList]="accessModeList"
-                   (onChange)="changeAccessMode($event)">
-      </cs-dropdown>
+      <lib-dropdown-ex [dropdownTip]="'STORAGE.PV_CREATE_SELECT_ACCESS_MODE'|translate"
+                       [dropdownMinWidth]="260"
+                       [dropdownDisabled]="isCreateWip"
+                       [dropdownItems]="accessModeList"
+                       [dropdownLabel]="'STORAGE.PV_ACCESS_MODES'|translate"
+                       (dropdownChangeItem)="changeAccessMode($event)">
+      </lib-dropdown-ex>
       <label *ngIf="newPersistentVolume.accessMode =='ReadOnlyMany'" class="alert warning warning-info">
         {{"STORAGE.PV_WARNING_READ_ONLY_MANY" | translate}}
       </label>
@@ -51,13 +52,13 @@
       </label>
     </div>
     <div class="dynamic-line-container">
-      <span class="filed-text">{{"STORAGE.PV_RECLAIM"|translate}}:</span>
-      <cs-dropdown [dropdownDefaultText]="'STORAGE.PV_CREATE_SELECT_RECLAIM'|translate"
-                   [dropdownWidth]="260"
-                   [dropdownDisabled]="isCreateWip"
-                   [dropdownList]="reclaimModeList"
-                   (onChange)="newPersistentVolume.reclaim = $event">
-      </cs-dropdown>
+      <lib-dropdown-ex [dropdownTip]="'STORAGE.PV_CREATE_SELECT_RECLAIM'|translate"
+                       [dropdownLabel]="'STORAGE.PV_RECLAIM' | translate"
+                       [dropdownDisabled]="isCreateWip"
+                       [dropdownMinWidth]="260"
+                       [dropdownItems]="reclaimModeList"
+                       (dropdownChangeItem)="newPersistentVolume.reclaim = $event">
+      </lib-dropdown-ex>
       <label *ngIf="newPersistentVolume.reclaim =='Recycle' || newPersistentVolume.reclaim =='Delete'"
              class="alert warning warning-info">
         {{"STORAGE.PV_WARNING_RECLAIM" | translate}}
@@ -67,79 +68,79 @@
     <div [ngSwitch]="newPersistentVolume.typeDescription">
       <ng-container *ngSwitchCase="'NFS'">
         <div class="dynamic-line-container">
-          <cs-input [inputIsRequired]="true"
-                    [disabled]="isCreateWip"
-                    [inputLabel]="'STORAGE.PV_NFS_SERVER' | translate"
-                    [simpleFiled]="nfsPersistentVolume.options.server"
-                    (onCheck)="nfsPersistentVolume.options.server = $event">
-          </cs-input>
-          <cs-input [inputIsRequired]="true"
-                    [disabled]="isCreateWip"
-                    [inputLabel]="'STORAGE.PV_NFS_PATH' | translate"
-                    [simpleFiled]="nfsPersistentVolume.options.path"
-                    (onCheck)="nfsPersistentVolume.options.path = $event">
-          </cs-input>
+          <lib-input-ex [inputIsRequired]="true"
+                        [inputDisabled]="isCreateWip"
+                        [inputLabel]="'STORAGE.PV_NFS_SERVER' | translate"
+                        [inputDefaultValue]="nfsPersistentVolume.options.server"
+                        (commitEvent)="nfsPersistentVolume.options.server = $event">
+          </lib-input-ex>
+          <lib-input-ex [inputIsRequired]="true"
+                        [inputDisabled]="isCreateWip"
+                        [inputLabel]="'STORAGE.PV_NFS_PATH' | translate"
+                        [inputDefaultValue]="nfsPersistentVolume.options.path"
+                        (commitEvent)="nfsPersistentVolume.options.path = $event">
+          </lib-input-ex>
         </div>
       </ng-container>
       <ng-container *ngSwitchCase="'RBD'">
         <div class="dynamic-line-container">
-          <cs-input [inputIsRequired]="true"
-                    [disabled]="isCreateWip"
-                    [inputLabel]="'STORAGE.PV_USER' | translate"
-                    [simpleFiled]="rbdPersistentVolume.options.user"
-                    (onCheck)="rbdPersistentVolume.options.user = $event">
-          </cs-input>
-          <cs-input [inputIsRequired]="true"
-                    [disabled]="isCreateWip"
-                    [inputLabel]="'STORAGE.PV_KEYRING' | translate"
-                    [inputPattern]="patternKeyring"
-                    [simpleFiled]="rbdPersistentVolume.options.keyring"
-                    (onCheck)="rbdPersistentVolume.options.keyring = $event">
-          </cs-input>
+          <lib-input-ex [inputIsRequired]="true"
+                        [inputDisabled]="isCreateWip"
+                        [inputLabel]="'STORAGE.PV_USER' | translate"
+                        [inputDefaultValue]="rbdPersistentVolume.options.user"
+                        (commitEvent)="rbdPersistentVolume.options.user = $event">
+          </lib-input-ex>
+          <lib-input-ex [inputIsRequired]="true"
+                        [inputDisabled]="isCreateWip"
+                        [inputLabel]="'STORAGE.PV_KEYRING' | translate"
+                        [inputPattern]="patternKeyring"
+                        [inputDefaultValue]="rbdPersistentVolume.options.keyring"
+                        (commitEvent)="rbdPersistentVolume.options.keyring = $event">
+          </lib-input-ex>
         </div>
         <div class="dynamic-line-container">
-          <cs-input [inputIsRequired]="true"
-                    [disabled]="isCreateWip"
-                    [inputLabel]="'STORAGE.PV_POOL' | translate"
-                    [simpleFiled]="rbdPersistentVolume.options.pool"
-                    (onCheck)="rbdPersistentVolume.options.pool = $event">
-          </cs-input>
-          <cs-input [inputIsRequired]="true"
-                    [disabled]="isCreateWip"
-                    [inputLabel]="'STORAGE.PV_IMAGE' | translate"
-                    [simpleFiled]="rbdPersistentVolume.options.image"
-                    (onCheck)="rbdPersistentVolume.options.image = $event">
-          </cs-input>
+          <lib-input-ex [inputIsRequired]="true"
+                        [inputDisabled]="isCreateWip"
+                        [inputLabel]="'STORAGE.PV_POOL' | translate"
+                        [inputDefaultValue]="rbdPersistentVolume.options.pool"
+                        (commitEvent)="rbdPersistentVolume.options.pool = $event">
+          </lib-input-ex>
+          <lib-input-ex [inputIsRequired]="true"
+                        [inputDisabled]="isCreateWip"
+                        [inputLabel]="'STORAGE.PV_IMAGE' | translate"
+                        [inputDefaultValue]="rbdPersistentVolume.options.image"
+                        (commitEvent)="rbdPersistentVolume.options.image = $event">
+          </lib-input-ex>
         </div>
         <div class="dynamic-line-container">
-          <cs-input [inputIsRequired]="true"
-                    [disabled]="isCreateWip"
-                    [inputLabel]="'STORAGE.PV_MONITORS' | translate"
-                    [inputType]="1"
-                    [simpleFiled]="rbdPersistentVolume.options.monitors"
-                    (onEdit)="editMonitors()">
-          </cs-input>
-          <cs-input [inputIsRequired]="true"
-                    [disabled]="isCreateWip"
-                    [inputLabel]="'STORAGE.PV_FS_TYPE' | translate"
-                    [inputPlaceholder]="'eg. ext4'"
-                    [simpleFiled]="rbdPersistentVolume.options.fstype"
-                    (onCheck)="rbdPersistentVolume.options.fstype = $event">
-          </cs-input>
+          <lib-input-ex [inputIsRequired]="true"
+                        [inputDisabled]="isCreateWip"
+                        [inputLabel]="'STORAGE.PV_MONITORS' | translate"
+                        [inputType]="2"
+                        [inputDefaultValue]="rbdPersistentVolume.options.monitors"
+                        (editEvent)="editMonitors()">
+          </lib-input-ex>
+          <lib-input-ex [inputIsRequired]="true"
+                        [inputDisabled]="isCreateWip"
+                        [inputLabel]="'STORAGE.PV_FS_TYPE' | translate"
+                        [inputPlaceholder]="'eg. ext4'"
+                        [inputDefaultValue]="rbdPersistentVolume.options.fstype"
+                        (commitEvent)="rbdPersistentVolume.options.fstype = $event">
+          </lib-input-ex>
         </div>
         <div class="dynamic-line-container">
-          <cs-input [inputIsRequired]="true"
-                    [disabled]="isCreateWip"
-                    [inputLabel]="'STORAGE.PV_SECRET' | translate"
-                    [simpleFiled]="rbdPersistentVolume.options.secretname"
-                    (onCheck)="rbdPersistentVolume.options.secretname = $event">
-          </cs-input>
-          <cs-input [inputIsRequired]="true"
-                    [disabled]="isCreateWip"
-                    [inputLabel]="'STORAGE.PV_SECRET_NAMESPACE' | translate"
-                    [simpleFiled]="rbdPersistentVolume.options.secretnamespace"
-                    (onCheck)="rbdPersistentVolume.options.secretnamespace = $event">
-          </cs-input>
+          <lib-input-ex [inputIsRequired]="true"
+                        [inputDisabled]="isCreateWip"
+                        [inputLabel]="'STORAGE.PV_SECRET' | translate"
+                        [inputDefaultValue]="rbdPersistentVolume.options.secretname"
+                        (commitEvent)="rbdPersistentVolume.options.secretname = $event">
+          </lib-input-ex>
+          <lib-input-ex [inputIsRequired]="true"
+                        [inputDisabled]="isCreateWip"
+                        [inputLabel]="'STORAGE.PV_SECRET_NAMESPACE' | translate"
+                        [inputDefaultValue]="rbdPersistentVolume.options.secretnamespace"
+                        (commitEvent)="rbdPersistentVolume.options.secretnamespace = $event">
+          </lib-input-ex>
         </div>
         <pv-monitors [(isOpen)]="isEditPvMonitors"
                      [monitorText]="rbdPersistentVolume.options.monitors"

@@ -26,7 +26,7 @@ export class ScaleComponent extends CsComponentBase implements OnInit {
   scaleNum: number = 0;
   scaleInfo: IScaleInfo = {desired_instance: 0, available_instance: 0};
   autoScaleConfig: Array<ServiceHPA>;
-  patternHpaName:RegExp = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
+  patternHpaName: RegExp = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
 
   constructor(private k8sService: K8sService,
               private messageService: MessageService) {
@@ -64,7 +64,7 @@ export class ScaleComponent extends CsComponentBase implements OnInit {
   }
 
   actionExecute() {
-    if (this.verifyInputValid()) {
+    if (this.verifyInputExValid()) {
       if (this.scaleModule == ScaleMethod.smManually) {
         this.onActionInWIPChange.emit(true);
         this.k8sService.setServiceScale(this.service.service_id, this.scaleNum).subscribe(
@@ -79,12 +79,12 @@ export class ScaleComponent extends CsComponentBase implements OnInit {
           } else {
             this.onActionInWIPChange.emit(true);
             if (config.isEdit) {
-              Reflect.deleteProperty(config,'isEdit');
+              Reflect.deleteProperty(config, 'isEdit');
               this.k8sService.modifyAutoScaleConfig(this.service.service_id, config)
                 .subscribe(() => this.onMessage.emit('SERVICE.SERVICE_CONTROL_SCALE_SUCCESSFUL'),
                   err => this.onError.emit(err))
             } else {
-              Reflect.deleteProperty(config,'isEdit');
+              Reflect.deleteProperty(config, 'isEdit');
               this.k8sService.setAutoScaleConfig(this.service.service_id, config)
                 .subscribe(() => this.onMessage.emit('SERVICE.SERVICE_CONTROL_SCALE_SUCCESSFUL'),
                   err => this.onError.emit(err))
@@ -97,16 +97,17 @@ export class ScaleComponent extends CsComponentBase implements OnInit {
     }
   }
 
-  actionEnabled(){
+  actionEnabled() {
     let enabled = this.scaleModule == ScaleMethod.smManually
       ? this.scaleNum > 0 && this.scaleNum != this.scaleInfo.available_instance
-      : true;
+      : this.autoScaleConfig.length > 0;
     this.onActionIsEnabled.emit(enabled);
   }
 
   addOneHpa() {
     if (this.autoScaleConfig.length == 0) {
       this.autoScaleConfig.push(new ServiceHPA());
+      this.actionEnabled();
     }
   }
 
@@ -118,7 +119,8 @@ export class ScaleComponent extends CsComponentBase implements OnInit {
           this.onActionInWIPChange.emit(true);
           this.k8sService.deleteAutoScaleConfig(this.service.service_id, hpa).subscribe(
             () => this.onMessage.emit('SERVICE.SERVICE_CONTROL_HPA_DELETE_SUCCESS'),
-            err => this.onError.emit(err));
+            err => this.onError.emit(err),
+            () => this.actionEnabled());
         }
       })
     }

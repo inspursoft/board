@@ -29,7 +29,7 @@ export class ServiceCreateYamlComponent implements OnInit {
   isFileInEdit: boolean = false;
   curFileContent: string = "";
   curFileName: FileType;
-  dropdownDefaultText: string;
+  curActiveProject: Project;
   @Output() onCancelEvent: EventEmitter<any>;
 
   constructor(private k8sService: K8sService,
@@ -43,18 +43,7 @@ export class ServiceCreateYamlComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.dropdownDefaultText = "IMAGE.CREATE_IMAGE_SELECT_PROJECT";
-    this.k8sService.getProjects().subscribe((res: Array<Project>) => {
-        let createNewProject: Project = new Project();
-        createNewProject.project_name = "IMAGE.CREATE_IMAGE_CREATE_PROJECT";
-        createNewProject.project_id = -1;
-        createNewProject["isSpecial"] = true;
-        createNewProject["OnlyClick"] = true;
-        this.projectsList.push(createNewProject);
-        if (res && res.length > 0) {
-          this.projectsList = this.projectsList.concat(res);
-        }
-      })
+    this.k8sService.getProjects().subscribe((res: Array<Project>) => this.projectsList = res)
   }
 
   uploadFile(event: Event, isDeploymentYaml: boolean) {
@@ -80,19 +69,16 @@ export class ServiceCreateYamlComponent implements OnInit {
 
   setDropdownDefaultText(): void {
     let selected = this.projectsList.find((project: Project) => project.project_id === this.selectedProjectId);
-    this.dropdownDefaultText = selected ? selected.project_name : "IMAGE.CREATE_IMAGE_CREATE_PROJECT";
   }
 
   clickSelectProject() {
     this.sharedActionService.createProjectComponent(this.selfView).subscribe((projectName: string) => {
       if (projectName) {
         this.sharedService.getOneProject(projectName).subscribe((res: Array<Project>) => {
+          this.curActiveProject = res[0];
           this.selectedProjectId = res[0].project_id;
           this.selectedProjectName = res[0].project_name;
-          let project = this.projectsList.shift();
           this.projectsList.unshift(res[0]);
-          this.projectsList.unshift(project);
-          this.setDropdownDefaultText();
         })
       }
     });
@@ -101,7 +87,6 @@ export class ServiceCreateYamlComponent implements OnInit {
   changeSelectProject(project: Project) {
     this.selectedProjectName = project.project_name;
     this.selectedProjectId = project.project_id;
-    this.setDropdownDefaultText();
   }
 
   btnCancelClick(event: MouseEvent) {

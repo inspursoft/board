@@ -1,11 +1,11 @@
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http'
 import { ClarityModule } from '@clr/angular';
 import { RouterModule } from "@angular/router";
 import { CommonModule } from "@angular/common";
 import { TranslateModule } from "@ngx-translate/core";
 import { NgxEchartsModule } from "ngx-echarts";
+import { BoardComponentsLibraryModule } from "board-components-library";
 
 @NgModule({
   exports:[
@@ -15,7 +15,8 @@ import { NgxEchartsModule } from "ngx-echarts";
     RouterModule,
     ClarityModule,
     TranslateModule,
-    NgxEchartsModule
+    NgxEchartsModule,
+    BoardComponentsLibraryModule
   ]
 })
 export class CoreModule {}

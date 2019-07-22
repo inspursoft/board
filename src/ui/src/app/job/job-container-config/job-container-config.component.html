@@ -4,64 +4,71 @@
     <span *ngIf="isLoading" class="spinner spinner-sm"></span>
   </div>
   <div class="modal-body">
-    <cs-input [inputLabel]="'JOB.JOB_CREATE_CONTAINER_NAME' | translate"
-              [inputIsRequired]="true"
-              [inputPattern]="patternContainerName"
-              [disabled]="isEditModel"
-              [simpleFiled]="container.name"
-              [validatorMessage]="[{validatorKey:'pattern',validatorMessage:'SERVICE.STEP_2_CONTAINER_NAME_PATTERN_NSG'}]"
-              (onCheck)="container.name = $event"></cs-input>
-    <cs-input [inputLabel]="'JOB.JOB_CREATE_WORKING_DIR' | translate"
-              [inputPattern]="patternWorkdir"
-              [simpleFiled]="container.working_Dir"
-              [inputPlaceholder]="'JOB.JOB_CREATE_WORK_DIRECTOR'| translate"
-              (onCheck)="container.working_Dir = $event"></cs-input>
-    <cs-input [inputType]="1"
-              [inputLabel]="'JOB.JOB_CREATE_VOLUME_MOUNTS' | translate"
-              [simpleFiled]="volumesDescriptions[0]"
-              [inputPlaceholder]="'JOB.JOB_CREATE_CONFIG_VOLUME_MOUNTS'| translate"
-              (onEdit)="editVolumeMount()"></cs-input>
+    <lib-input-ex [inputLabel]="'JOB.JOB_CREATE_CONTAINER_NAME' | translate"
+                  [inputIsRequired]="true"
+                  [inputPattern]="patternContainerName"
+                  [inputDisabled]="isEditModel"
+                  [inputDefaultValue]="container.name"
+                  [validatorMessage]="[{key:'pattern',message:'SERVICE.STEP_2_CONTAINER_NAME_PATTERN_NSG' | translate}]"
+                  (commitEvent)="container.name = $event">
+    </lib-input-ex>
+    <lib-input-ex [inputLabel]="'JOB.JOB_CREATE_WORKING_DIR' | translate"
+                  [inputPattern]="patternWorkdir"
+                  [inputDefaultValue]="container.working_Dir"
+                  [inputPlaceholder]="'JOB.JOB_CREATE_WORK_DIRECTOR'| translate"
+                  (commitEvent)="container.working_Dir = $event"></lib-input-ex>
+    <lib-input-ex [inputType]="2"
+                  [inputLabel]="'JOB.JOB_CREATE_VOLUME_MOUNTS' | translate"
+                  [inputDefaultValue]="volumesDescriptions[0]"
+                  [inputPlaceholder]="'JOB.JOB_CREATE_CONFIG_VOLUME_MOUNTS'| translate"
+                  (editEvent)="editVolumeMount()"></lib-input-ex>
     <div *ngIf="container.volume_mounts.length > 1" class="volume-info-container">
         <span class="volume-info" *ngFor="let _ of container.volume_mounts; let i = index">
           <span *ngIf="i > 0">{{volumesDescriptions[i]}}</span>
         </span>
     </div>
-    <cs-input [inputType]="1"
-              [inputLabel]="'JOB.JOB_CREATE_Env' | translate"
-              [simpleFiled]="getEnvsDescription()"
-              [inputPlaceholder]="'JOB.JOB_CREATE_ENVIRONMENT_VARIABLES'| translate"
-              (onEdit)="showEnvironmentValue = true"></cs-input>
-    <cs-input-array [inputArrayType]="1"
-                    [inputArrayMin]="1"
-                    [inputArrayMax]="65535"
-                    [inputArrayLabelText]="'JOB.JOB_CREATE_CONTAINER_PORT' | translate"
-                    [inputArraySource]="container.container_port"></cs-input-array>
-    <cs-input [inputLabel]="'JOB.JOB_CREATE_COMMAND' | translate"
-              [simpleFiled]="container.command"
-              [inputPlaceholder]="'JOB.JOB_CREATE_COMMAND'| translate"
-              (onCheck)="container.command = $event"></cs-input>
-    <cs-input [inputLabel]="'JOB.JOB_CREATE_CPU_REQUEST' | translate"
-              [inputPattern]="patternCpuRequest"
-              [simpleFiled]="container.cpu_request"
-              [inputPlaceholder]="'eg. 100m'"
-              [customerValidatorAsyncFunc]="checkSetCpuRequestFun"
-              (onCheck)="container.cpu_request = $event"></cs-input>
-    <cs-input [inputLabel]="'JOB.JOB_CREATE_MEMORY_REQUEST' | translate"
-              [inputPattern]="patternMemRequest"
-              [customerValidatorAsyncFunc]="checkSetMemRequestFun"
-              [simpleFiled]="container.mem_request"
-              [inputPlaceholder]="'eg. 100Mi'"
-              (onCheck)="container.mem_request = $event"></cs-input>
-    <cs-input [inputLabel]="'JOB.JOB_CREATE_CPU_LIMIT' | translate"
-              [simpleFiled]="container.cpu_limit"
-              [inputPlaceholder]="'eg. 1024m'"
-              [inputPattern]="patternCpuLimit"
-              (onCheck)="container.cpu_limit = $event"></cs-input>
-    <cs-input [inputLabel]="'JOB.JOB_CREATE_MEMORY_LIMIT' | translate"
-              [simpleFiled]="container.mem_limit"
-              [inputPattern]="patternMemLimit"
-              [inputPlaceholder]="'eg. 1024Mi'"
-              (onCheck)="container.mem_limit = $event"></cs-input>
+    <lib-input-ex [inputType]="2"
+                  [inputLabel]="'JOB.JOB_CREATE_Env' | translate"
+                  [inputDefaultValue]="getEnvsDescription()"
+                  [inputPlaceholder]="'JOB.JOB_CREATE_ENVIRONMENT_VARIABLES'| translate"
+                  (editEvent)="showEnvironmentValue = true">
+    </lib-input-ex>
+    <lib-input-array-ex [inputCategory]="'number'"
+                        [inputLabel]="'JOB.JOB_CREATE_CONTAINER_PORT' | translate"
+                        [inputMax]="65535"
+                        [inputMin]="1"
+                        [inputArrayDefault]="container.container_port "
+                        [inputPlaceholder]="'[1..65535]'"
+                        (commitEvent)="container.container_port = $event">
+    </lib-input-array-ex>
+    <lib-input-ex [inputLabel]="'JOB.JOB_CREATE_COMMAND' | translate"
+                  [inputDefaultValue]="container.command"
+                  [inputPlaceholder]="'JOB.JOB_CREATE_COMMAND'| translate"
+                  (commitEvent)="container.command = $event"></lib-input-ex>
+    <lib-input-ex [inputLabel]="'JOB.JOB_CREATE_CPU_REQUEST' | translate"
+                  [inputPattern]="patternCpuRequest"
+                  [inputDefaultValue]="container.cpu_request"
+                  [inputPlaceholder]="'eg. 100m'"
+                  [validatorAsyncFn]="checkSetCpuRequestFun"
+                  [validatorMessage]="[{key:'beyondMaxLimit', message: 'JOB.JOB_CREATE_BEYOND_MAX_VALUE' | translate}]"
+                  (commitEvent)="container.cpu_request = $event"></lib-input-ex>
+    <lib-input-ex [inputLabel]="'JOB.JOB_CREATE_MEMORY_REQUEST' | translate"
+                  [inputPattern]="patternMemRequest"
+                  [validatorAsyncFn]="checkSetMemRequestFun"
+                  [validatorMessage]="[{key:'beyondMaxLimit', message: 'JOB.JOB_CREATE_BEYOND_MAX_VALUE' | translate}]"
+                  [inputDefaultValue]="container.mem_request"
+                  [inputPlaceholder]="'eg. 100Mi'"
+                  (commitEvent)="container.mem_request = $event"></lib-input-ex>
+    <lib-input-ex [inputLabel]="'JOB.JOB_CREATE_CPU_LIMIT' | translate"
+                  [inputDefaultValue]="container.cpu_limit"
+                  [inputPlaceholder]="'eg. 1024m'"
+                  [inputPattern]="patternCpuLimit"
+                  (commitEvent)="container.cpu_limit = $event"></lib-input-ex>
+    <lib-input-ex [inputLabel]="'JOB.JOB_CREATE_MEMORY_LIMIT' | translate"
+                  [inputDefaultValue]="container.mem_limit"
+                  [inputPattern]="patternMemLimit"
+                  [inputPlaceholder]="'eg. 1024Mi'"
+                  (commitEvent)="container.mem_limit = $event"></lib-input-ex>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-outline" (click)="modalOpened = false">

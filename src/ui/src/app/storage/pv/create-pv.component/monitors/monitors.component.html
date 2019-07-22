@@ -4,18 +4,16 @@
     <div *ngFor="let monitor of monitorsArray;let i = index">
       <div class="monitor-container">
         <clr-icon class="icon" shape="minus" (click)="deleteMonitor(i)"></clr-icon>
-        <cs-input [inputIsRequired]="true"
-                  [inputPattern]="patternIp"
-                  [inputType]="2"
-                  [simpleFiled]="getIp(monitor)"
-                  (onCheck)="changeIp($event,i)">
-        </cs-input>
-        <cs-input [inputIsRequired]="true"
-                  [inputType]="2"
-                  [simpleFiled]="getPort(monitor)"
-                  [inputFiledType]="1"
-                  (onCheck)="changePort($event,i)">
-        </cs-input>
+        <lib-input-ex [inputIsRequired]="true"
+                      [inputPattern]="patternIp"
+                      [inputDefaultValue]="getIp(monitor)"
+                      (commitEvent)="changeIp($event,i)">
+        </lib-input-ex>
+        <lib-input-ex [inputIsRequired]="true"
+                      [inputDefaultValue]="getPort(monitor)"
+                      [inputCategory]="2"
+                      (commitEvent)="changePort($event,i)">
+        </lib-input-ex>
       </div>
     </div>
     <div class="icon-container">

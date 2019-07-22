@@ -1,15 +1,11 @@
-cs-input{
-  min-width: 480px;
-}
-
-div.clr-row{
+div.clr-row {
   margin-top: 10px;
 }
 
 span.filed-text {
   width: 180px;
   text-align: right;
-  margin-right: 10px;
+  margin-left: 10px;
 }
 
 clr-icon.dynamic-icon {
@@ -19,6 +15,7 @@ clr-icon.dynamic-icon {
   height: 20px;
   border-radius: 5px;
   cursor: pointer;
+  margin-left: 10px;
 }
 
 clr-icon.dynamic-icon.disabled {
@@ -45,4 +42,10 @@ clr-icon.plus-icon.disabled {
 
 clr-icon.plus-icon.disabled:hover {
   cursor: not-allowed;
+}
+
+div.temp-container {
+  display: flex;
+  justify-content: space-between;
+  flex-basis: 100%;
 }

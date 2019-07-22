@@ -28,21 +28,25 @@ div.dynamic-container {
 div.dynamic-line-container {
   display: flex;
   margin-top: 10px;
+  align-items: center;
 }
 
-div.dynamic-line-container.config-container {
-  flex-direction: column;
-  margin-top: 0;
+div.config-container {
   width: 500px;
 }
 
-.dynamic-icon {
+clr-icon.dynamic-icon {
   color: white;
   background: green;
   width: 20px;
   height: 20px;
   border-radius: 5px;
   cursor: pointer;
+}
+
+clr-icon.dynamic-icon.disabled {
+  cursor: not-allowed;
+  background-color: #e0e0e0;
 }
 
 label.base-text {
@@ -61,7 +65,7 @@ div.plus-container {
 }
 
 .base-margin-left {
-  margin-left: 10px;
+  margin-left: 5px;
 }
 
 button.get-tag {
@@ -78,6 +82,7 @@ clr-icon.action{
 div.volume-info-container {
   display: flex;
   flex-direction: column;
+  margin-left: 195px;
 }
 
 span.volume-info {
