@@ -146,10 +146,8 @@ div.modal-body-reset-position{
 }
 
 div.base-image-container {
-  height: 60px;
   display: flex;
   flex-direction: column;
-  margin-bottom: 10px;
 }
 
 div.base-image-source-container {
