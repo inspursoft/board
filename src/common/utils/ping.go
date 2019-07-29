@@ -3,7 +3,6 @@ package utils
 import (
 	"fmt"
 	"net"
-	"os"
 	"time"
 
 	fastping "github.com/tatsushid/go-fastping"
@@ -14,7 +13,6 @@ func PingIPAddr(ipAddr string) (status bool, err error) {
 	ra, err := net.ResolveIPAddr("ip4:icmp", ipAddr)
 	if err != nil {
 		fmt.Println(err)
-		os.Exit(1)
 	}
 	p.AddIPAddr(ra)
 	p.OnRecv = func(addr *net.IPAddr, rtt time.Duration) {
