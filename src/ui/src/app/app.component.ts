@@ -34,7 +34,7 @@ export class AppComponent implements AfterViewInit {
         window.location.reload(true);
       }
     });
-    if (appInitService.currentLang === 'zh-cn') {
+    if (appInitService.currentLang.toLowerCase() === 'zh-cn') {
       registerLocaleData(localeZhHans, 'zh-Hans');
     }
   }
