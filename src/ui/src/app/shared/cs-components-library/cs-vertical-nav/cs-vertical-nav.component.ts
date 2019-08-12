@@ -46,7 +46,7 @@ export class CsVerticalNavComponent implements AfterViewInit {
   }
 
   constructor(private tokenService: AppTokenService,
-              private changeRef: ChangeDetectorRef) {
+              private changeRef: ChangeDetectorRef){
     this.navSource = Array<ICsMenuItemData>();
   }
 
@@ -58,46 +58,13 @@ export class CsVerticalNavComponent implements AfterViewInit {
         this.changeRef.detectChanges();
       }
     });
-    const triggers: HTMLCollectionOf<Element> = document.getElementsByClassName('nav-group-trigger');
-    for (let i = 0; i < triggers.length; i++) {
-      this.replaceButtonTagToDiv(triggers.item(i))
-    }
-  }
-
-  replaceButtonTagToDiv(buttonEelement: Element) {
-    let div = document.createElement('div') as HTMLDivElement;
-    div.className = 'nav-group-trigger';
-    for (let i = 0; i < buttonEelement.childNodes.length; i++) {
-      div.appendChild(buttonEelement.childNodes.item(i).cloneNode(true));
-    }
-    div.addEventListener('click', this.toggleNavStatus);
-    buttonEelement.parentNode.appendChild(div);
-    buttonEelement.remove();
-  }
-
-  toggleNavStatus(event: Event) {
-    const navIcon = (event.target as HTMLDivElement).parentElement.getElementsByClassName('nav-group-trigger-icon');
-    const parentElement = (event.target as HTMLDivElement).parentElement.parentElement;
-    const childNavParentElement = parentElement.nextElementSibling as HTMLDivElement;
-    const open = navIcon.item(0).getAttribute('dir') === 'down';
-    if (open) {
-      navIcon.item(0).setAttribute('dir', 'right');
-      childNavParentElement.style.height = '0px';
-      childNavParentElement.style.visibility = 'hidden';
-      childNavParentElement.style.overflowY = 'hidden';
-    } else {
-      navIcon.item(0).setAttribute('dir', 'down');
-      childNavParentElement.style.height = 'inherit';
-      childNavParentElement.style.visibility = 'inherit';
-      childNavParentElement.style.overflowY = 'inherit';
-    }
   }
 
   get queryParams(): {token: string} {
     return {token: this.tokenService.token};
   }
 
-  isHasChildren(item: ICsMenuItemData): boolean {
+  isHasChildren(item: ICsMenuItemData): boolean{
     return Reflect.has(item, 'children');
   }
 }
