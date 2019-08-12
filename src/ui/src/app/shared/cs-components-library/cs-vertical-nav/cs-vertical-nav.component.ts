@@ -12,7 +12,6 @@ import {
 } from '@angular/core';
 import { ICsMenuItemData } from '../../shared.types';
 import { AppTokenService } from "../../../shared.service/app-token.service";
-import { ClrVerticalNavGroup } from "@clr/angular";
 
 @Directive({
   selector: 'ng-template[csVerticalNavGuide]'
