@@ -120,12 +120,14 @@ func TestGetK8sJobPods(t *testing.T) {
 }
 
 func TestGetK8sJobLogs(t *testing.T) {
-	time.Sleep(5 * time.Second)
+	time.Sleep(20 * time.Second)
 	readCloser, err := service.GetK8sJobLogs(&unitTestJob, podMOInfo[0].Name, &model.PodLogOptions{})
-	defer readCloser.Close()
+	if readCloser != nil {
+		defer readCloser.Close()
+		logs.Info("logs about pods of Job is %+v", readCloser)
+	}
 	assert := assert.New(t)
-	assert.Nil(err, "Error occurred while get job list.")
-	logs.Info("logs about pods of Job is %+v", readCloser)
+	assert.Nil(err, "Error occurred while get job logs.")
 }
 
 func TestSyncJobK8sStatus(t *testing.T) {
