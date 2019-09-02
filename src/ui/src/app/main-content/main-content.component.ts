@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppInitService } from '../shared.service/app-init.service';
 import { GUIDE_STEP, MAIN_MENU_DATA, RouteAudit, RouteNodes, RouteUserCenters } from '../shared/shared.const';
