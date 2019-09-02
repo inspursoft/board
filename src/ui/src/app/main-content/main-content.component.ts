@@ -9,7 +9,7 @@ import { SharedService } from '../shared.service/shared.service';
   templateUrl: './main-content.component.html',
   styleUrls: ['./main-content.component.css']
 })
-export class MainContentComponent implements OnInit, AfterViewInit {
+export class MainContentComponent {
   @ViewChild('frameDashboard') frame: ElementRef;
   navSource: Array<ICsMenuItemData>;
   isSignIn = true;
@@ -32,21 +32,6 @@ export class MainContentComponent implements OnInit, AfterViewInit {
       this.searchContent = params.get('q');
     });
     this.appInitService.systemInfo = this.route.snapshot.data.systeminfo;
-  }
-
-  ngOnInit(): void {
-    window.onresize = this.refreshOutletContainer;
-  }
-
-  ngAfterViewInit(): void {
-    this.refreshOutletContainer();
-  }
-
-  refreshOutletContainer() {
-    const outletContainer = window.document.getElementsByClassName('outlet-container').item(0);
-    if (outletContainer) {
-      (outletContainer as HTMLDivElement).style.height = `${window.document.body.clientHeight - 60}px`;
-    }
   }
 
   getMenuItemByRoute(route: string): ICsMenuItemData {
