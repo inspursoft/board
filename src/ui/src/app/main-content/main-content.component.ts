@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppInitService } from '../shared.service/app-init.service';
 import { GUIDE_STEP, MAIN_MENU_DATA, RouteAudit, RouteNodes, RouteUserCenters } from '../shared/shared.const';
@@ -9,7 +9,7 @@ import { SharedService } from '../shared.service/shared.service';
   templateUrl: './main-content.component.html',
   styleUrls: ['./main-content.component.css']
 })
-export class MainContentComponent {
+export class MainContentComponent implements OnInit, AfterViewInit {
   @ViewChild('frameDashboard') frame: ElementRef;
   navSource: Array<ICsMenuItemData>;
   isSignIn = true;
@@ -32,6 +32,21 @@ export class MainContentComponent {
       this.searchContent = params.get('q');
     });
     this.appInitService.systemInfo = this.route.snapshot.data.systeminfo;
+  }
+
+  ngOnInit(): void {
+    window.onresize = this.refreshOutletContainer;
+  }
+
+  ngAfterViewInit(): void {
+    this.refreshOutletContainer();
+  }
+
+  refreshOutletContainer() {
+    const outletContainer = window.document.getElementsByClassName('outlet-container').item(0);
+    if (outletContainer) {
+      (outletContainer as HTMLDivElement).style.height = `${window.document.body.clientHeight - 60}px`;
+    }
   }
 
   getMenuItemByRoute(route: string): ICsMenuItemData {
