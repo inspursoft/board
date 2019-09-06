@@ -10,6 +10,7 @@ type SystemInfo struct {
 	Version           string `json:"board_version"`
 	DNSSuffix         string `json:"dns_suffix"`
 	KubernetesVersion string `json:"kubernetes_version"`
+	ProcessorType     string `json:"processor_type"`
 }
 
 // Info contains versioning information.
