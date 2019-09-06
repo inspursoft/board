@@ -6043,6 +6043,10 @@ definitions:
         type: array
         items:
             $ref: '#/definitions/ContainerList'
+      initcontainer_list:
+        type: array
+        items:
+            $ref: '#/definitions/ContainerList'            
       external_service_list:
         type: array
         items:
@@ -6856,6 +6860,8 @@ definitions:
       dns_suffix:
         type: string
       kubernetes_version:
+        type: string
+      processor_type:
         type: string
   KubernetesInfo:
     type: object
