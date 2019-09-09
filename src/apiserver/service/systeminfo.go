@@ -39,12 +39,14 @@ func GetSystemInfo() (*model.SystemInfo, error) {
 	}
 
 	//Get the hareware processor arch
-	cmd := exec.Command("/usr/bin/uname -p")
+	cmd := exec.Command("uname", "-p")
 	out, err := cmd.Output()
 	if err != nil {
-		return nil, err
+		fmt.Errorf("Uname failed to get info %v", err)
+		systemInfo.ProcessorType = ""
+	} else {
+		systemInfo.ProcessorType = string(out)
 	}
-	systemInfo.ProcessorType = string(out)
 	return &systemInfo, nil
 }
 
