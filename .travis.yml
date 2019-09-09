@@ -35,8 +35,8 @@ before_script:
   - docker tag $registry_ip/board/board-gogits:latest board-gogits:$last_version
   - docker pull $registry_ip/board/dev_jenkins:dev
   - docker tag $registry_ip/board/dev_jenkins:dev dev_jenkins:dev
-  - docker pull $registry_ip/board/dev_uibuilder:7.0
-  - docker tag $registry_ip/board/dev_uibuilder:7.0 uibuilder:$last_version
+  - docker pull $registry_ip/board/dev_uibuilder:7.1
+  - docker tag $registry_ip/board/dev_uibuilder:7.1 uibuilder:$last_version
   - docker pull $registry_ip/board/dev_jenkins:dev
   - docker tag $registry_ip/board/dev_jenkins:dev dev_jenkins:dev
  
