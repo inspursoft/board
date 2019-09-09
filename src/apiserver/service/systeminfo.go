@@ -6,6 +6,7 @@ import (
 	"git/inspursoft/board/src/common/k8sassist"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
+	"os/exec"
 )
 
 func GetSystemInfo() (*model.SystemInfo, error) {
@@ -35,6 +36,16 @@ func GetSystemInfo() (*model.SystemInfo, error) {
 		case "KUBERNETES_VERSION":
 			systemInfo.KubernetesVersion = config.Value
 		}
+	}
+
+	//Get the hareware processor arch
+	cmd := exec.Command("uname", "-p")
+	out, err := cmd.Output()
+	if err != nil {
+		fmt.Errorf("Uname failed to get info %v", err)
+		systemInfo.ProcessorType = ""
+	} else {
+		systemInfo.ProcessorType = string(out)
 	}
 	return &systemInfo, nil
 }
