@@ -57,7 +57,6 @@ export class CreatePvcComponent extends CsModalChildMessage implements OnInit {
         map(() => null),
         catchError((err: HttpErrorResponse) => {
           this.messageService.cleanNotification();
-          console.log(err);
           if (err.status == 409) {
             return of({pvNameExists: 'STORAGE.PVC_CREATE_NAME_EXIST'});
           }
