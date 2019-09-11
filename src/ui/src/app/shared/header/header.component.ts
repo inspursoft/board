@@ -32,6 +32,10 @@ export class HeaderComponent implements OnInit {
     return this.isSignIn ? '../../images/nationalEmblem.png': '../../../images/nationalEmblem.png';
   }
 
+  get isMipsEnv(): boolean {
+    return this.appInitService.isMipsSystem;
+  }
+
   constructor(private router: Router,
               private translateService: TranslateService,
               private cookieService: CookieService,
