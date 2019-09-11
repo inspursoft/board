@@ -714,10 +714,11 @@ func MarshalDeployment(serviceConfig *model.ConfigServiceStep, registryURI strin
 			Labels: map[string]string{"app": serviceConfig.ServiceName},
 		},
 		Spec: model.PodSpec{
-			Volumes:      setDeploymentVolumes(serviceConfig.ContainerList),
-			Containers:   setDeploymentContainers(serviceConfig.ContainerList, registryURI),
-			NodeSelector: setDeploymentNodeSelector(serviceConfig.NodeSelector),
-			Affinity:     setDeploymentAffinity(serviceConfig.AffinityList),
+			Volumes:        setDeploymentVolumes(serviceConfig.ContainerList),
+			Containers:     setDeploymentContainers(serviceConfig.ContainerList, registryURI),
+			InitContainers: setDeploymentContainers(serviceConfig.InitContainerList, registryURI),
+			NodeSelector:   setDeploymentNodeSelector(serviceConfig.NodeSelector),
+			Affinity:       setDeploymentAffinity(serviceConfig.AffinityList),
 		},
 	}
 
@@ -745,10 +746,11 @@ func MarshalStatefulSet(serviceConfig *model.ConfigServiceStep, registryURI stri
 			Labels: map[string]string{"app": serviceConfig.ServiceName},
 		},
 		Spec: model.PodSpec{
-			Volumes:      setDeploymentVolumes(serviceConfig.ContainerList),
-			Containers:   setDeploymentContainers(serviceConfig.ContainerList, registryURI),
-			NodeSelector: setDeploymentNodeSelector(serviceConfig.NodeSelector),
-			Affinity:     setDeploymentAffinity(serviceConfig.AffinityList),
+			Volumes:        setDeploymentVolumes(serviceConfig.ContainerList),
+			Containers:     setDeploymentContainers(serviceConfig.ContainerList, registryURI),
+			InitContainers: setDeploymentContainers(serviceConfig.InitContainerList, registryURI),
+			NodeSelector:   setDeploymentNodeSelector(serviceConfig.NodeSelector),
+			Affinity:       setDeploymentAffinity(serviceConfig.AffinityList),
 		},
 	}
 
