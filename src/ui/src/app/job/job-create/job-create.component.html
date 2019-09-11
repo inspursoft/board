@@ -4,7 +4,6 @@
                  [dropdownItems]="projectList"
                  [dropdownIsRequired]="true"
                  [dropdownKey]="'project_name'"
-                 [dropdownActiveItem]="curActiveProject"
                  [dropdownItemSelectEnableFn]="canChangeSelectImageFun"
                  (dropdownEspecialClick)="clickSelectProject()"
                  (dropdownChangeItem)="changeSelectProject($event)">

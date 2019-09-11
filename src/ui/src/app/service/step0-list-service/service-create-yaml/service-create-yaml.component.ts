@@ -29,7 +29,6 @@ export class ServiceCreateYamlComponent implements OnInit {
   isFileInEdit: boolean = false;
   curFileContent: string = "";
   curFileName: FileType;
-  curActiveProject: Project;
   @Output() onCancelEvent: EventEmitter<any>;
 
   constructor(private k8sService: K8sService,
@@ -75,7 +74,6 @@ export class ServiceCreateYamlComponent implements OnInit {
     this.sharedActionService.createProjectComponent(this.selfView).subscribe((projectName: string) => {
       if (projectName) {
         this.sharedService.getOneProject(projectName).subscribe((res: Array<Project>) => {
-          this.curActiveProject = res[0];
           this.selectedProjectId = res[0].project_id;
           this.selectedProjectName = res[0].project_name;
           this.projectsList.unshift(res[0]);

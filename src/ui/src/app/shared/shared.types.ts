@@ -112,6 +112,7 @@ export class SystemInfo {
   redirection_url = '';
   board_version = '';
   kubernetes_version = '';
+  processor_type = '';
   dns_suffix = '';
   constructor() {
   }

@@ -4,7 +4,7 @@ import { ValidationErrors } from '@angular/forms';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { Project } from '../../project/project';
-import { CsModalChildBase } from '../cs-modal-base/cs-modal-child-base';
+import { CsModalChildMessage } from '../cs-modal-base/cs-modal-child-base';
 import { PersistentVolume, PersistentVolumeClaim, PvcAccessMode } from '../shared.types';
 import { SharedService } from '../../shared.service/shared.service';
 import { MessageService } from '../../shared.service/message.service';
@@ -13,7 +13,7 @@ import { MessageService } from '../../shared.service/message.service';
   templateUrl: './create-pvc.component.html',
   styleUrls: ['./create-pvc.component.css']
 })
-export class CreatePvcComponent extends CsModalChildBase implements OnInit {
+export class CreatePvcComponent extends CsModalChildMessage implements OnInit {
   onAfterCommit: EventEmitter<PersistentVolumeClaim>;
   projectsList: Array<Project>;
   accessModeList: Array<PvcAccessMode>;
@@ -23,8 +23,8 @@ export class CreatePvcComponent extends CsModalChildBase implements OnInit {
   namePattern: RegExp = /^[a-z0-9][(.a-z0-9?)]*$/;
 
   constructor(private sharedService: SharedService,
-              private messageService: MessageService) {
-    super();
+              public messageService: MessageService) {
+    super(messageService);
     this.newPersistentVolumeClaim = new PersistentVolumeClaim();
     this.onAfterCommit = new EventEmitter<PersistentVolumeClaim>();
     this.projectsList = Array<Project>();
@@ -53,15 +53,16 @@ export class CreatePvcComponent extends CsModalChildBase implements OnInit {
 
   checkPvcName(control: HTMLInputElement): Observable<ValidationErrors | null> {
     return this.sharedService.checkPvcNameExist(this.newPersistentVolumeClaim.projectName, control.value)
-      .pipe(map(
-        () => null,
+      .pipe(
+        map(() => null),
         catchError((err: HttpErrorResponse) => {
           this.messageService.cleanNotification();
+          console.log(err);
           if (err.status == 409) {
             return of({pvNameExists: 'STORAGE.PVC_CREATE_NAME_EXIST'});
           }
           return of(null);
-        }))
+        })
       );
   }
 

@@ -559,7 +559,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
   }
 
   get showGrafanaWindow(): boolean {
-    return this.appInitService.isSystemAdmin;
+    return this.appInitService.isSystemAdmin && !this.appInitService.isMipsSystem;
   }
 
   get showMaxGrafanaWindow(): boolean {

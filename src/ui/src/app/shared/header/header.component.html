@@ -2,8 +2,8 @@
   <change-password *ngIf="showChangePassword" [(isOpen)]="showChangePassword"></change-password>
   <user-setting *ngIf="showAccountSetting" [(isOpen)]="showAccountSetting"></user-setting>
   <div class="branding">
+    <img height="40px" width="40px" style="margin: auto;"  [src]="nationalEmblemLogoUrl" alt="board-logo"/>
     <a href="javascript:void(0)" class="nav-link" (click)="clickLogoAction()">
-      <span class="clr-icon clr-clarity-logo"></span>
       <img [src]="brandLogoUrl" alt="board-logo"/>
     </a>
   </div>

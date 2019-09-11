@@ -1,7 +1,7 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppInitService } from '../shared.service/app-init.service';
-import { GUIDE_STEP, MAIN_MENU_DATA, RouteAudit, RouteNodes, RouteUserCenters } from '../shared/shared.const';
+import { GUIDE_STEP, MAIN_MENU_DATA, RouteAudit, RouteHelm, RouteKibana, RouteNodes, RouteUserCenters } from '../shared/shared.const';
 import { ICsMenuItemData } from '../shared/shared.types';
 import { SharedService } from '../shared.service/shared.service';
 
@@ -25,17 +25,29 @@ export class MainContentComponent {
       this.hasSignedIn = true;
     }
     this.navSource = MAIN_MENU_DATA;
-    this.getMenuItemByRoute(RouteNodes).visible = this.appInitService.isSystemAdmin;
-    this.getMenuItemByRoute(RouteUserCenters).visible = this.appInitService.isSystemAdmin;
-    this.getMenuItemByRoute(RouteAudit).visible = this.appInitService.isSystemAdmin;
+    this.getMenuItemByRoute(this.navSource, RouteNodes).visible = this.appInitService.isSystemAdmin;
+    this.getMenuItemByRoute(this.navSource, RouteUserCenters).visible = this.appInitService.isSystemAdmin;
+    this.getMenuItemByRoute(this.navSource, RouteAudit).visible = this.appInitService.isSystemAdmin;
+    this.getMenuItemByRoute(this.navSource, RouteKibana).visible = !this.appInitService.isMipsSystem;
+    this.getMenuItemByRoute(this.navSource, RouteHelm).visible = !this.appInitService.isMipsSystem;
     this.route.queryParamMap.subscribe(params => {
       this.searchContent = params.get('q');
     });
     this.appInitService.systemInfo = this.route.snapshot.data.systeminfo;
   }
 
-  getMenuItemByRoute(route: string): ICsMenuItemData {
-    return this.navSource.find((value => value.url.includes(route)));
+  getMenuItemByRoute(source: Array<ICsMenuItemData>, route: string): ICsMenuItemData {
+    let result: ICsMenuItemData;
+    source.forEach(value => {
+      if (value.url.includes(route)) {
+        if (!result ){
+          result = value;
+        }
+      } else if (!result && value.children) {
+        result = this.getMenuItemByRoute(value.children, route);
+      }
+    });
+    return result;
   }
 
   navigateTo(link) {

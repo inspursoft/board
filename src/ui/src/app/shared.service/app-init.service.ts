@@ -59,6 +59,10 @@ export class AppInitService {
     return this.currentUser && this.currentUser.user_system_admin === 1;
   }
 
+  get isMipsSystem(): boolean {
+    return this.systemInfo.processor_type === 'mips64el';
+  }
+
   getCurrentUser(tokenParam?: string): Observable<User> {
     const token = this.tokenService.token || tokenParam;
     return this.http.get<User>('/api/v1/users/current', {observe: 'response', params: {token}})
@@ -69,11 +73,10 @@ export class AppInitService {
   }
 
   getSystemInfo(): Observable<any> {
-    return this.http.get(`/api/v1/systeminfo`, {observe: 'response'})
-      .pipe(map((res: HttpResponse<SystemInfo>) => {
-        this.systemInfo = res.body;
-        return this.systemInfo;
-      }));
+    return this.http.get(`/api/v1/systeminfo`).pipe(map((res: SystemInfo) => {
+      this.systemInfo = res;
+      return this.systemInfo;
+    }));
   }
 
   setAuditLog(auditData: IAuditOperationData): Observable<any> {

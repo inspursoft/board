@@ -23,7 +23,6 @@ export class VolumeMountsComponent extends CsModalChildBase implements OnInit {
   volumeTypes: Array<{name: 'nfs' | 'pvc', value: number}>;
   curVolumeDataList: Array<VolumeStruct>;
   pvcList: Array<PersistentVolumeClaim>;
-  curActivePvc: PersistentVolumeClaim;
 
   @Input() set volumeDataList(value: Array<VolumeStruct>) {
     value.forEach(volumeData => {
@@ -55,6 +54,11 @@ export class VolumeMountsComponent extends CsModalChildBase implements OnInit {
     )
   }
 
+  getCurActivePvc(index: number): PersistentVolumeClaim{
+    const pvcName = this.curVolumeDataList[index].target_pvc;
+    return this.pvcList.find(value => value.name === pvcName);
+  }
+
   checkInputValid(): boolean {
     let validInput = true;
     this.curVolumeDataList.forEach((volume: VolumeStruct, index: number) => {
@@ -62,8 +66,8 @@ export class VolumeMountsComponent extends CsModalChildBase implements OnInit {
         this.messageService.showAlert('SERVICE.VOLUME_VALID_NAME', {alertType: "warning", view: this.alertView});
         validInput = false;
       }
-      if (this.curVolumeDataList.find((value, i) => value.target_path == volume.target_path && index != i) != undefined && validInput) {
-        this.messageService.showAlert('SERVICE.VOLUME_VALID_PATH', {alertType: "warning", view: this.alertView});
+      if (this.curVolumeDataList.find((value, i) => value.target_path == volume.target_path && index != i && value.target_path !== '') != undefined && validInput) {
+        this.messageService.showAlert('SERVICE.NFS_STORAGE_VALID_PATH', {alertType: "warning", view: this.alertView});
         validInput = false;
       }
       if (this.curVolumeDataList.find((value, i) => value.container_path == volume.container_path && index != i) != undefined && validInput) {
@@ -75,7 +79,7 @@ export class VolumeMountsComponent extends CsModalChildBase implements OnInit {
   }
 
   confirmVolumeInfo() {
-    if (this.verifyInputExValid() && this.checkInputValid()) {
+    if (this.verifyInputExValid() && this.checkInputValid() && this.verifyDropdownExValid()) {
       this.onConfirmEvent.emit(this.curVolumeDataList);
       this.modalOpened = false;
     }
@@ -92,7 +96,6 @@ export class VolumeMountsComponent extends CsModalChildBase implements OnInit {
     componentRef.instance.onAfterCommit.subscribe((pvc: PersistentVolumeClaim) => {
       this.messageService.cleanNotification();
       this.curVolumeDataList[index].target_pvc = pvc.name;
-      this.curActivePvc = pvc;
       this.pvcList.push(pvc)
     })
   }

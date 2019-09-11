@@ -2,8 +2,12 @@
   <div class="image-source-container">
     <span class="base-text">{{"SERVICE.STEP_2_SELECT_IMAGE_SOURCE" | translate}}:</span>
     <div class="btn-group base-margin-left">
-      <button class="btn btn-primary">Board registry</button>
-      <button class="btn" [disabled]="true">Docker hub</button>
+      <button class="btn" [class.btn-primary]="curContainerType === 0" (click)="changeContainerType(0)">
+        Containers
+      </button>
+      <button class="btn" [class.btn-primary]="curContainerType === 1" (click)="changeContainerType(1)">
+        Init containers
+      </button>
     </div>
   </div>
   <div *ngFor="let container of serviceStep2Data.containerList;let iBuf = index" class="dynamic-container">
@@ -19,7 +23,7 @@
                        [dropdownItems]="imageSourceList"
                        [dropdownTip]="'SERVICE.STEP_2_SELECT_IMAGE' | translate"
                        [dropdownKey]="'image_name'"
-                       [dropdownItemSelectEnableFn]="canChangeSelectImage.bind(selfObject)"
+                       [dropdownItemSelectEnableFn]="canChangeSelectImageFun"
                        (dropdownChangeItem)="changeSelectImage(iBuf, $event)"
                        (dropdownEspecialClick)="createNewCustomImage(iBuf)">
         <ng-template libEspecialTemp>
@@ -27,7 +31,7 @@
         </ng-template>
       </lib-dropdown-ex>
       <button class="btn btn-default get-tag"
-              (click)="getImageDetailList(container.image.image_name).then()"
+              (click)="getImageDetailList(container.image.image_name).subscribe()"
               *ngIf="imageTagNotReadyList.get(container.image.image_name)">
         {{"SERVICE.STEP_2_GET_IMAGE_TAG"|translate}}
       </button>
@@ -87,26 +91,30 @@
                     [inputDefaultValue]="container.command"
                     [inputPlaceholder]="'SERVICE.STEP_2_COMMAND'| translate"
                     (commitEvent)="container.command = $event"></lib-input-ex>
-      <lib-input-ex [inputLabel]="'SERVICE.STEP_2_CPU_REQUEST' | translate"
+      <lib-input-ex *ngIf="curContainerType === 0"
+                    [inputLabel]="'SERVICE.STEP_2_CPU_REQUEST' | translate"
                     [inputPattern]="patternCpuRequest"
                     [inputDefaultValue]="container.cpu_request"
                     [inputPlaceholder]="'eg. 100m'"
                     [validatorAsyncFn]="checkSetCpuRequestFun"
                     [validatorMessage]="[{key:'beyondMaxLimit',message: 'SERVICE.STEP_2_BEYOND_MAX_VALUE' | translate}]"
                     (commitEvent)="container.cpu_request = $event"></lib-input-ex>
-      <lib-input-ex [inputLabel]="'SERVICE.STEP_2_MEMORY_REQUEST' | translate"
+      <lib-input-ex *ngIf="curContainerType === 0"
+                    [inputLabel]="'SERVICE.STEP_2_MEMORY_REQUEST' | translate"
                     [inputPattern]="patternMemRequest"
                     [validatorAsyncFn]="checkSetMemRequestFun"
                     [inputDefaultValue]="container.mem_request"
                     [inputPlaceholder]="'eg. 100Mi'"
                     [validatorMessage]="[{key:'beyondMaxLimit',message: 'SERVICE.STEP_2_BEYOND_MAX_VALUE' | translate}]"
                     (commitEvent)="container.mem_request = $event"></lib-input-ex>
-      <lib-input-ex [inputLabel]="'SERVICE.STEP_2_CPU_LIMIT' | translate"
+      <lib-input-ex *ngIf="curContainerType === 0"
+                    [inputLabel]="'SERVICE.STEP_2_CPU_LIMIT' | translate"
                     [inputDefaultValue]="container.cpu_limit"
                     [inputPlaceholder]="'eg. 1024m'"
                     [inputPattern]="patternCpuLimit"
                     (commitEvent)="container.cpu_limit = $event"></lib-input-ex>
-      <lib-input-ex [inputLabel]="'SERVICE.STEP_2_MEMORY_LIMIT' | translate"
+      <lib-input-ex *ngIf="curContainerType === 0"
+                    [inputLabel]="'SERVICE.STEP_2_MEMORY_LIMIT' | translate"
                     [inputDefaultValue]="container.mem_limit"
                     [inputPattern]="patternMemLimit"
                     [inputPlaceholder]="'eg. 1024Mi'"

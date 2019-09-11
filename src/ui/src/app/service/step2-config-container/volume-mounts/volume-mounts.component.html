@@ -68,14 +68,15 @@
                     (commitEvent)="volumeData.target_file = $event">
       </lib-input-ex>
       <div class="dynamic-line-container" *ngIf="volumeData.volume_type == 'pvc'">
-        <lib-dropdown-ex [dropdownLabel]="'SERVICE.VOLUME_SELECT_PVC_TITLE' | translate"
+        <lib-dropdown-ex class="base-margin-left"
+                         [dropdownLabel]="'SERVICE.VOLUME_SELECT_PVC_TITLE' | translate"
                          [dropdownTip]="'SERVICE.VOLUME_SELECT_PVC' | translate"
                          [dropdownMinWidth]="280"
                          [dropdownLabelWidth]="200"
                          [dropdownItems]="pvcList"
                          [dropdownIsRequired]="true"
                          [dropdownKey]="'name'"
-                         [dropdownActiveItem]="curActivePvc"
+                         [dropdownActiveItem]="getCurActivePvc(i)"
                          (dropdownChangeItem)="changeSelectPVC(i, $event)"
                          (dropdownEspecialClick)="createNewPvc(i)">
           <ng-template libEspecialTemp>

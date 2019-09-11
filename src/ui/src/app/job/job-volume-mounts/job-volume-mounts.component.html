@@ -75,7 +75,7 @@
                        [dropdownMinWidth]="300"
                        [dropdownItems]="pvcList"
                        [dropdownIsRequired]="true"
-                       [dropdownActiveItem]="curActivePvc"
+                       [dropdownActiveItem]="getCurActivePvc(i)"
                        [dropdownKey]="'name'"
                        (dropdownEspecialClick)="createNewPvc(i)"
                        (dropdownChangeItem)="changeSelectPVC(i, $event)">

@@ -29,7 +29,6 @@ export class ImageListComponent extends CsModalParentBase implements OnInit, OnD
   imageCountPerPage: number = 10;
   loadingWIP: boolean;
   projectsList: Array<Project>;
-  curActiveProject: Project;
   createImageMethod: CreateImageMethod = CreateImageMethod.None;
   _subscription: Subscription;
 
@@ -70,7 +69,6 @@ export class ImageListComponent extends CsModalParentBase implements OnInit, OnD
     this.sharedActionService.createProjectComponent(this.selfView).subscribe((projectName: string) => {
       if (projectName) {
         this.sharedService.getOneProject(projectName).subscribe((res: Array<Project>) => {
-          this.curActiveProject = res[0];
           this.selectedProjectId = res[0].project_id;
           this.selectedProjectName = res[0].project_name;
           this.projectsList.push(res[0]);
