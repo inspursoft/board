@@ -676,6 +676,73 @@ func setVolumes(volumeList []model.VolumeMountStruct) []model.Volume {
 	return volumes
 }
 
+// TODO: Need to redesign the volumes for init-contaier
+func addInitContainerVolumes(containerList []model.Container, volumes []model.Volume) []model.Volume {
+	if containerList == nil {
+		return volumes
+	}
+	for _, cont := range containerList {
+		if cont.VolumeMounts == nil {
+			continue
+		}
+		for _, v := range cont.VolumeMounts {
+			checkvolume := 0
+			for _, containerVolume := range volumes {
+				if v.VolumeName == containerVolume.Name {
+					logs.Debug("Volume existed %s", v.VolumeName)
+					checkvolume = 1
+					break
+				}
+			}
+
+			if checkvolume == 0 {
+				switch v.VolumeType {
+				case "hostpath":
+					volumes = append(volumes, model.Volume{
+						Name: v.VolumeName,
+						VolumeSource: model.VolumeSource{
+							HostPath: &model.HostPathVolumeSource{
+								Path: v.TargetPath,
+							},
+						},
+					})
+				case "nfs":
+					volumes = append(volumes, model.Volume{
+						Name: v.VolumeName,
+						VolumeSource: model.VolumeSource{
+							NFS: &model.NFSVolumeSource{
+								Server: v.TargetStorageService,
+								Path:   v.TargetPath,
+							},
+						},
+					})
+				case "pvc":
+					volumes = append(volumes, model.Volume{
+						Name: v.VolumeName,
+						VolumeSource: model.VolumeSource{
+							PersistentVolumeClaim: &model.PersistentVolumeClaimVolumeSource{
+								ClaimName: v.TargetPVC,
+							},
+						},
+					})
+				case "configmap":
+					volumes = append(volumes, model.Volume{
+						Name: v.VolumeName,
+						VolumeSource: model.VolumeSource{
+							ConfigMap: &model.ConfigMapVolumeSource{
+								LocalObjectReference: model.LocalObjectReference{
+									Name: v.TargetConfigMap,
+								},
+							},
+						},
+					})
+				}
+			}
+		}
+	}
+	return volumes
+}
+
 func setDeploymentAffinity(affinityList []model.Affinity) model.K8sAffinity {
 	k8sAffinity := model.K8sAffinity{}
 	if affinityList == nil {
@@ -722,6 +789,11 @@ func MarshalDeployment(serviceConfig *model.ConfigServiceStep, registryURI strin
 		},
 	}
 
+	//TODO need to redesign the volume config step and unite container volumes
+	if podTemplate.Spec.InitContainers != nil {
+		podTemplate.Spec.Volumes = addInitContainerVolumes(serviceConfig.InitContainerList, podTemplate.Spec.Volumes)
+	}
+
 	return &model.Deployment{
 		ObjectMeta: model.ObjectMeta{
 			Name:      serviceConfig.ServiceName,
@@ -752,6 +824,11 @@ func MarshalStatefulSet(serviceConfig *model.ConfigServiceStep, registryURI stri
 			NodeSelector:   setDeploymentNodeSelector(serviceConfig.NodeSelector),
 			Affinity:       setDeploymentAffinity(serviceConfig.AffinityList),
 		},
+	}
+
+	//TODO need to redesign the volume config step and unite container volumes
+	if podTemplate.Spec.InitContainers != nil {
+		podTemplate.Spec.Volumes = addInitContainerVolumes(serviceConfig.InitContainerList, podTemplate.Spec.Volumes)
 	}
 
 	instancenumber := int32(serviceConfig.Instance)
