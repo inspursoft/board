@@ -7,7 +7,6 @@
                        [dropdownLabelWidth]="220"
                        [dropdownItems]="projectsList"
                        [dropdownKey]="'project_name'"
-                       [dropdownActiveItem]="curActiveProject"
                        (dropdownChangeItem)="changeSelectProject($event)"
                        (dropdownEspecialClick)="clickSelectProject()">
         <ng-template libEspecialTemp>

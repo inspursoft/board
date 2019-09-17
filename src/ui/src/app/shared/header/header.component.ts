@@ -28,6 +28,14 @@ export class HeaderComponent implements OnInit {
     return this.isSignIn ? '../../images/board-blue.jpg': '../../../images/board.png';
   }
 
+  get nationalEmblemLogoUrl(): string {
+    return this.isSignIn ? '../../images/nationalEmblem.png': '../../../images/nationalEmblem.png';
+  }
+
+  get isMipsEnv(): boolean {
+    return this.appInitService.isMipsSystem;
+  }
+
   constructor(private router: Router,
               private translateService: TranslateService,
               private cookieService: CookieService,
@@ -55,7 +63,7 @@ export class HeaderComponent implements OnInit {
       break;
 
     case 'zh':
-    case 'zh-cn': 
+    case 'zh-cn':
       lang = 'zh-cn';
       this.currentLang = 'HEAD_NAV.LANG_ZH_CN';
       break;

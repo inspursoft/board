@@ -23,7 +23,6 @@ export class JobVolumeMountsComponent extends CsModalChildMessage implements OnI
   volumeTypes: Array<{name: 'nfs' | 'pvc', value: number}>;
   volumeList: Array<JobVolumeMounts>;
   pvcList: Array<PersistentVolumeClaim>;
-  curActivePvc: PersistentVolumeClaim;
 
   @Input() set volumeDataList(value: Array<JobVolumeMounts>) {
     value.forEach(volumeData => {
@@ -103,10 +102,14 @@ export class JobVolumeMountsComponent extends CsModalChildMessage implements OnI
     componentRef.instance.openModal().subscribe(() => this.selfView.remove(this.selfView.indexOf(componentRef.hostView)));
     componentRef.instance.onAfterCommit.subscribe((pvc: PersistentVolumeClaim) => {
       this.messageService.cleanNotification();
-      this.curActivePvc = pvc;
       this.pvcList.push(pvc);
       this.volumeList[index].target_pvc = pvc.name;
     })
+  }
+
+  getCurActivePvc(index: number): PersistentVolumeClaim{
+    const pvcName = this.volumeList[index].target_pvc;
+    return this.pvcList.find(value => value.name === pvcName);
   }
 
   changeSelectVolumeType(index: number, volumeType: {name: 'nfs' | 'pvc', value: number}) {

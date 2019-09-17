@@ -4,15 +4,19 @@ import { ServiceType } from "./service";
 
 export const PHASE_SELECT_PROJECT = "SELECT_PROJECT";
 export const PHASE_CONFIG_CONTAINERS = "CONFIG_CONTAINERS";
+export const PHASE_CONFIG_INIT_CONTAINERS = "CONFIG_INIT_CONTAINERS";
 export const PHASE_EXTERNAL_SERVICE = "EXTERNAL_SERVICE";
 export const PHASE_ENTIRE_SERVICE = "ENTIRE_SERVICE";
 export type ServiceStepPhase =
   "SELECT_PROJECT"
   | "SELECT_IMAGES"
   | "CONFIG_CONTAINERS"
+  | "CONFIG_INIT_CONTAINERS"
   | "EXTERNAL_SERVICE"
   | "ENTIRE_SERVICE"
-
+export enum ContainerType {
+  runContainer, initContainer
+}
 export interface UiServerExchangeData<T> {
   uiToServer(): Object;
 

@@ -1,5 +1,13 @@
 import { Component, Injector, OnInit } from '@angular/core';
-import { Container, EnvStruct, PHASE_CONFIG_CONTAINERS, UiServiceFactory, UIServiceStep2, VolumeStruct } from '../service-step.component';
+import {
+  Container,
+  EnvStruct,
+  PHASE_CONFIG_CONTAINERS,
+  ContainerType,
+  UiServiceFactory,
+  UIServiceStep2,
+  VolumeStruct
+} from '../service-step.component';
 import { BuildImageDockerfileData, Image, ImageDetail } from "../../image/image";
 import { ServiceStepBase } from "../service-step";
 import { EnvType } from "../../shared/environment-value/environment-value.component";
@@ -32,6 +40,7 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
   showEnvironmentValue = false;
   showVolumeMounts = false;
   curEditEnvContainer: Container;
+  curContainerType: ContainerType = ContainerType.runContainer;
 
   constructor(protected injector: Injector,
               private tokenService: AppTokenService) {
@@ -57,6 +66,10 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
       }
     });
     this.k8sService.getImages("", 0, 0).subscribe(res => this.imageSourceList = res)
+  }
+
+  changeContainerType(containerType: ContainerType){
+    this.curContainerType = containerType;
   }
 
   changeSelectImage(index: number, image: Image) {
@@ -253,6 +266,10 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
 
   get checkSetMemRequestFun() {
     return this.checkSetMemRequest.bind(this);
+  }
+
+  get canChangeSelectImageFun() {
+    return this.canChangeSelectImage.bind(this);
   }
 
   canChangeSelectImage(image: Image): Observable<boolean> {

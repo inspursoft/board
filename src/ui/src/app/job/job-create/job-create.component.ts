@@ -24,7 +24,6 @@ export class JobCreateComponent extends CsModalParentBase implements OnInit {
   @Output() afterDeployment: EventEmitter<boolean>;
   patternServiceName: RegExp = /[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/;
   projectList: Array<Project>;
-  curActiveProject: Project;
   newJobDeployment: JobDeployment;
   isActionWip = false;
   nodeSelectorList: Array<{name: string, value: string, tag: IDropdownTag}>;
@@ -64,18 +63,6 @@ export class JobCreateComponent extends CsModalParentBase implements OnInit {
     return this.checkJobName.bind(this);
   }
 
-  get curNodeSelector() {
-    return this.nodeSelectorList.find(value => value.name === this.newJobDeployment.node_selector);
-  }
-
-  get projectDropdownText() {
-    return this.newJobDeployment.project_name ? this.newJobDeployment.project_name : 'JOB.JOB_CREATE_SELECT_PROJECT';
-  }
-
-  get nodeSelectorDropdownText() {
-    return this.newJobDeployment.node_selector ? this.newJobDeployment.node_selector : 'JOB.JOB_CREATE_NODE_DEFAULT';
-  }
-
   get canChangeSelectImageFun() {
     return this.canChangeSelectImage.bind(this);
   }
@@ -106,7 +93,6 @@ export class JobCreateComponent extends CsModalParentBase implements OnInit {
       if (projectName) {
         this.jobService.getOneProject(projectName).subscribe((res: Project) => {
           if (res) {
-            this.curActiveProject = res;
             this.newJobDeployment.project_name = res.project_name;
             this.newJobDeployment.project_id = res.project_id;
             this.projectList.push(res);
