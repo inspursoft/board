@@ -16,13 +16,14 @@ import (
 )
 
 const (
-	expircyTimeSpan       time.Duration = 900
-	selectProject                       = "SELECT_PROJECT"
-	configContainerList                 = "CONFIG_CONTAINERS"
-	configExternalService               = "EXTERNAL_SERVICE"
-	configEntireService                 = "ENTIRE_SERVICE"
-	maximumPortNum                      = 32765
-	minimumPortNum                      = 30000
+	expircyTimeSpan         time.Duration = 900
+	selectProject                         = "SELECT_PROJECT"
+	configContainerList                   = "CONFIG_CONTAINERS"
+	configInitContainerList               = "CONFIG_INIT_CONTAINERS"
+	configExternalService                 = "EXTERNAL_SERVICE"
+	configEntireService                   = "ENTIRE_SERVICE"
+	maximumPortNum                        = 32765
+	minimumPortNum                        = 30000
 )
 
 var (
@@ -91,6 +92,11 @@ func (s *ConfigServiceStep) ConfigContainerList(containerList []model.Container)
 	return s
 }
 
+func (s *ConfigServiceStep) ConfigInitContainerList(containerList []model.Container) *ConfigServiceStep {
+	s.InitContainerList = containerList
+	return s
+}
+
 func (s *ConfigServiceStep) GetConfigContainerList() interface{} {
 	return struct {
 		ProjectID     int64             `json:"project_id"`
@@ -100,6 +106,18 @@ func (s *ConfigServiceStep) GetConfigContainerList() interface{} {
 		ProjectID:     s.ProjectID,
 		ProjectName:   s.ProjectName,
 		ContainerList: s.ContainerList,
+	}
+}
+
+func (s *ConfigServiceStep) GetConfigInitContainerList() interface{} {
+	return struct {
+		ProjectID         int64             `json:"project_id"`
+		ProjectName       string            `json:"project_name"`
+		InitContainerList []model.Container `json:"initcontainer_list"`
+	}{
+		ProjectID:         s.ProjectID,
+		ProjectName:       s.ProjectName,
+		InitContainerList: s.InitContainerList,
 	}
 }
 
@@ -173,6 +191,8 @@ func (sc *ServiceConfigController) GetConfigServiceStepAction() {
 		result = configServiceStep.GetSelectedProject()
 	case configContainerList:
 		result = configServiceStep.GetConfigContainerList()
+	case configInitContainerList:
+		result = configServiceStep.GetConfigInitContainerList()
 	case configExternalService:
 		result = configServiceStep.GetConfigExternalService()
 	case configEntireService:
@@ -206,7 +226,9 @@ func (sc *ServiceConfigController) SetConfigServiceStepAction() {
 	case selectProject:
 		sc.selectProject(key, configServiceStep)
 	case configContainerList:
-		sc.configContainerList(key, configServiceStep, reqData)
+		sc.configContainerList(key, configServiceStep, configServiceStep.ConfigContainerList, reqData)
+	case configInitContainerList:
+		sc.configContainerList(key, configServiceStep, configServiceStep.ConfigInitContainerList, reqData)
 	case configExternalService:
 		sc.configExternalService(key, configServiceStep, reqData)
 	case configEntireService:
@@ -237,7 +259,7 @@ func (sc *ServiceConfigController) selectProject(key string, configServiceStep *
 	SetConfigServiceStep(key, configServiceStep.SelectProject(projectID, project.Name))
 }
 
-func (sc *ServiceConfigController) configContainerList(key string, configServiceStep *ConfigServiceStep, reqData []byte) {
+func (sc *ServiceConfigController) configContainerList(key string, configServiceStep *ConfigServiceStep, f func([]model.Container) *ConfigServiceStep, reqData []byte) {
 	var containerList []model.Container
 	err := json.Unmarshal(reqData, &containerList)
 	if err != nil {
@@ -284,7 +306,7 @@ func (sc *ServiceConfigController) configContainerList(key string, configService
 	}
 
 	configServiceStep.ExternalServiceList = service.CheckServiceConfigPortMap(configServiceStep.ExternalServiceList, containerList)
-	SetConfigServiceStep(key, configServiceStep.ConfigContainerList(containerList))
+	SetConfigServiceStep(key, f(containerList))
 }
 
 func (sc *ServiceConfigController) configExternalService(key string, configServiceStep *ConfigServiceStep, reqData []byte) {
