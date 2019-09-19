@@ -39,6 +39,7 @@ export class AffinityCardListComponent {
     if (this.acceptDrag && !this.disabled) {
       this.isDragActive = true;
       event.preventDefault();
+      event.stopPropagation();
     }
   }
 
@@ -59,6 +60,8 @@ export class AffinityCardListComponent {
         this.onDrop.emit(card);
       }
     }
+    event.preventDefault();
+    event.stopPropagation();
   }
 
   removeAffinityCard(data: AffinityCardData) {

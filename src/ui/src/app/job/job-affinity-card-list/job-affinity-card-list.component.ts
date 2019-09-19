@@ -35,6 +35,7 @@ export class JobAffinityCardListComponent {
     if (this.acceptDrag && !this.disabled) {
       this.isDragActive = true;
       event.preventDefault();
+      event.stopPropagation();
     }
   }
 
@@ -48,6 +49,8 @@ export class JobAffinityCardListComponent {
       const dataKey = event.dataTransfer.getData('text');
       this.onDrop.emit(dataKey);
     }
+    event.preventDefault();
+    event.stopPropagation();
   }
 
   removeAffinityCard(data: JobAffinityCardData) {
