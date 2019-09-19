@@ -60,7 +60,7 @@ export class AppInitService {
   }
 
   get isMipsSystem(): boolean {
-    return this.systemInfo.processor_type === 'mips64el';
+    return this.systemInfo.processor_type && this.systemInfo.processor_type.startsWith('mips64el');
   }
 
   getCurrentUser(tokenParam?: string): Observable<User> {
