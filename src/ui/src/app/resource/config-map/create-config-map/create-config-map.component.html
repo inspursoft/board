@@ -16,6 +16,7 @@
                   [inputDisabled]="isCreateWip"
                   [inputLabel]="'RESOURCE.CREATE_CONFIG_MAP_NAME' | translate"
                   [inputDefaultValue]="newConfigMap.name"
+                  [inputPattern]="configMapNamePattern"
                   [inputMaxlength]="50"
                   (commitEvent)="newConfigMap.name = $event">
     </lib-input-ex>
