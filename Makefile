@@ -209,7 +209,7 @@ package: prepare_composefile
 	@cp $(MAKEPATH)/board.cfg $(PKGTEMPPATH)/.
 	@cp $(MAKEPATH)/prepare $(PKGTEMPPATH)/.
 	@cp -rf $(MAKEPATH)/templates $(PKGTEMPPATH)/.
-	@cp $(MAKEWORKPATH)/docker-compose${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/.
+	@cp $(MAKEWORKPATH)/docker-compose${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/docker-compose.yml
 #	@cp LICENSE $(PKGTEMPPATH)/LICENSE
 #	@cp NOTICE $(PKGTEMPPATH)/NOTICE
 	@sed -i "s/..\/config/.\/config/" $(PKGTEMPPATH)/docker-compose.yml
