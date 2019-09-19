@@ -19,6 +19,7 @@ export class SystemInfoResolve implements Resolve<any> {
 
 const routes: Routes = [
   {path: 'account', loadChildren: './account/account.module#AccountModule', pathMatch: 'prefix'},
+  {path: '', redirectTo: '/account/sign-in', pathMatch: 'full'},
   {
     path: '', component: MainContentComponent, resolve: {systeminfo: SystemInfoResolve},
     canActivate: [AppGuardService],

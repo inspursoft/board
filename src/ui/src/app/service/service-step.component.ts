@@ -14,9 +14,11 @@ export type ServiceStepPhase =
   | "CONFIG_INIT_CONTAINERS"
   | "EXTERNAL_SERVICE"
   | "ENTIRE_SERVICE"
+
 export enum ContainerType {
   runContainer, initContainer
 }
+
 export interface UiServerExchangeData<T> {
   uiToServer(): Object;
 
@@ -255,6 +257,7 @@ export class UIServiceStep2 extends UIServiceStepBase {
   public containerList: Array<Container>;
   public projectId = 0;
   public projectName = '';
+  public isInitContainers = false;
 
   constructor() {
     super();
@@ -264,7 +267,7 @@ export class UIServiceStep2 extends UIServiceStepBase {
   uiToServer(): ServerServiceStep {
     let result = new ServerServiceStep();
     let postData: Array<Container> = Array<Container>();
-    result.phase = PHASE_CONFIG_CONTAINERS;
+    result.phase = this.isInitContainers ? PHASE_CONFIG_INIT_CONTAINERS : PHASE_CONFIG_CONTAINERS;
     result.project_id = this.projectId;
     this.containerList.forEach((value: Container) => {
       postData.push(value.uiToServer());
@@ -274,8 +277,9 @@ export class UIServiceStep2 extends UIServiceStepBase {
   }
 
   serverToUi(serverResponse: Object): UIServiceStep2 {
-    if (serverResponse && serverResponse["container_list"]) {
-      let list: Array<Container> = serverResponse["container_list"];
+    const containerListKey = this.isInitContainers ? 'initcontainer_list' : 'container_list';
+    if (serverResponse && serverResponse[containerListKey]) {
+      let list: Array<Container> = serverResponse[containerListKey];
       list.forEach((value: Container) => {
         let container = new Container();
         container.serverToUi(value);
@@ -293,6 +297,13 @@ export class UIServiceStep2 extends UIServiceStepBase {
 
   getPortList(containerName: string): Array<number> {
     return this.containerList.find(value => value.name === containerName).container_port;
+  }
+}
+
+export class UIServiceStep2InitContainer extends UIServiceStep2 {
+  constructor() {
+    super();
+    this.isInitContainers = true;
   }
 }
 
@@ -391,6 +402,8 @@ export class UiServiceFactory {
         return new UIServiceStep2();
       case PHASE_EXTERNAL_SERVICE:
         return new UIServiceStep3();
+      case PHASE_CONFIG_INIT_CONTAINERS:
+        return new UIServiceStep2InitContainer();
       default:
         return null;
     }

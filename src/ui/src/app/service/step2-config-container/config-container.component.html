@@ -10,7 +10,7 @@
       </button>
     </div>
   </div>
-  <div *ngFor="let container of serviceStep2Data.containerList;let iBuf = index" class="dynamic-container">
+  <div *ngFor="let container of curStep2Data.containerList;let iBuf = index" class="dynamic-container">
     <div class="dynamic-line-container">
       <div class="dynamic-icon-container">
         <clr-icon shape="minus"
@@ -23,6 +23,7 @@
                        [dropdownItems]="imageSourceList"
                        [dropdownTip]="'SERVICE.STEP_2_SELECT_IMAGE' | translate"
                        [dropdownKey]="'image_name'"
+                       [dropdownActiveItem]="getActiveImage(iBuf)"
                        [dropdownItemSelectEnableFn]="canChangeSelectImageFun"
                        (dropdownChangeItem)="changeSelectImage(iBuf, $event)"
                        (dropdownEspecialClick)="createNewCustomImage(iBuf)">
@@ -32,7 +33,7 @@
       </lib-dropdown-ex>
       <button class="btn btn-default get-tag"
               (click)="getImageDetailList(container.image.image_name).subscribe()"
-              *ngIf="imageTagNotReadyList.get(container.image.image_name)">
+              *ngIf="imageTagNotReadyList.get(container)">
         {{"SERVICE.STEP_2_GET_IMAGE_TAG"|translate}}
       </button>
       <lib-dropdown-ex class="base-margin-left"
@@ -79,7 +80,7 @@
                     [inputPlaceholder]="'SERVICE.STEP_2_ENVIRONMENT_VARIABLES'| translate"
                     (editEvent)="editEnvironment(container)"></lib-input-ex>
       <lib-input-array-ex [inputCategory]="'number'"
-                          [inputArrayFixed]="fixedContainerPort.get(container.image.image_name)"
+                          [inputArrayFixed]="fixedContainerPort.get(container)"
                           [inputMin]="1"
                           [inputArrayDefault]="container.container_port"
                           [inputMax]="65535"
