@@ -1,4 +1,4 @@
-FROM jenkins/jenkins-mips:2.138
+FROM inspursoft/jenkins-mips:2.138
 
 ENV JAVA_OPTS "-Djenkins.install.runSetupWizard=false \
                -Dhudson.model.User.allowNonExistentUser=true"

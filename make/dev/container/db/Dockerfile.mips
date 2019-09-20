@@ -1,4 +1,4 @@
-FROM mysql-mips:5.6.45
+FROM inspursoft/mysql-mips:5.6.45
 
 WORKDIR /tmp
 

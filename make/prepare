@@ -78,7 +78,7 @@ conf.seek(0, os.SEEK_SET)
 rcp = ConfigParser.RawConfigParser()
 rcp.readfp(conf)
 
-minimal_mode = rcp.get("configuration", "minimal_mode")
+arch_type = rcp.get("configuration", "arch_type")
 hostname = rcp.get("configuration", "hostname")
 api_server_port = rcp.get("configuration", "api_server_port")
 db_password = rcp.get("configuration", "db_password")
@@ -321,7 +321,7 @@ render(os.path.join(templates_dir, "db", "env"),
         db_conf_env,
         db_password=db_password)
 
-if minimal_mode == "true":
+if arch_type == "mips":
 	render(os.path.join(templates_dir, "proxy", "nginx.http.mips.conf"),
 		proxy_conf)
 else:
