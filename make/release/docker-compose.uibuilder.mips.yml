@@ -4,7 +4,7 @@ services:
     build:
       context: ../../
       dockerfile: make/dev/container/uibuilder/Dockerfile.mips
-    image: inspursoft/uibuilder-mips7.1
+    image: inspursoft/uibuilder-mips:7.1
     volumes:
       - ../../src/ui:/board_src
     environment:
