@@ -2,11 +2,7 @@
   <change-password *ngIf="showChangePassword" [(isOpen)]="showChangePassword"></change-password>
   <user-setting *ngIf="showAccountSetting" [(isOpen)]="showAccountSetting"></user-setting>
   <div class="branding">
-    <img *ngIf="isMipsEnv"
-         height="40px"
-         width="40px"
-         style="margin: auto;"
-         [src]="nationalEmblemLogoUrl"/>
+    <img *ngIf="isMipsEnv" alt="" title="Mips platform" class="mips-logo" [src]="mipsLogoUrl"/>
     <a href="javascript:void(0)" class="nav-link" (click)="clickLogoAction()">
       <img [src]="brandLogoUrl" alt="board-logo"/>
     </a>

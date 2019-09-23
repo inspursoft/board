@@ -2,7 +2,7 @@
   background-image: url(../../../images/board.png);
 }
 
-:host >>>.header {
+:host >>> .header {
   background-color: #004a70;
 }
 
@@ -26,4 +26,11 @@ clr-icon.main-menu {
   height: 32px;
   width: 32px;
   color: white;
+}
+
+img.mips-logo {
+  margin: auto;
+  height: 42px;
+  border-radius: 3px;
+  box-shadow: 0 0 10px #ff1211;
 }
