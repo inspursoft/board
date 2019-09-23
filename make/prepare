@@ -78,6 +78,7 @@ conf.seek(0, os.SEEK_SET)
 rcp = ConfigParser.RawConfigParser()
 rcp.readfp(conf)
 
+arch_type = rcp.get("configuration", "arch_type")
 hostname = rcp.get("configuration", "hostname")
 api_server_port = rcp.get("configuration", "api_server_port")
 db_password = rcp.get("configuration", "db_password")
@@ -320,8 +321,12 @@ render(os.path.join(templates_dir, "db", "env"),
         db_conf_env,
         db_password=db_password)
 
-render(os.path.join(templates_dir, "proxy", "nginx.http.conf"),
-        proxy_conf)
+if arch_type == "mips":
+	render(os.path.join(templates_dir, "proxy", "nginx.http.mips.conf"),
+		proxy_conf)
+else:
+	render(os.path.join(templates_dir, "proxy", "nginx.http.conf"),
+		proxy_conf)
 
 render(os.path.join(templates_dir, "jenkins", "env"),
         jenkins_env,
