@@ -302,7 +302,6 @@ func SyncProjectsWithK8s() error {
 		if err != nil {
 			logs.Error("Failed to sync helm service with project name: %s, error: %+v", namespace.Name, err)
 			// Still can work
-			continue
 		}
 
 		// Sync the services in this project namespace
@@ -310,7 +309,6 @@ func SyncProjectsWithK8s() error {
 		if err != nil {
 			logs.Error("Failed to sync service with project name: %s, error: %+v", namespace.Name, err)
 			// Still can work
-			continue
 		}
 
 		// Sync the autoscale hpa in this project namespace
@@ -318,7 +316,6 @@ func SyncProjectsWithK8s() error {
 		if err != nil {
 			logs.Error("Failed to sync autoscale rule with project name: %s, error: %+v", namespace.Name, err)
 			// Still can work
-			continue
 		}
 	}
 	return err
