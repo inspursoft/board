@@ -15,7 +15,7 @@
       <div class="dynamic-icon-container">
         <clr-icon shape="minus"
                   class="dynamic-icon"
-                  [class.disabled]="iBuf == 0"
+                  [class.disabled]="iBuf == 0 && curContainerType === 0"
                   (click)="minusSelectImage(iBuf)"></clr-icon>
       </div>
       <lib-dropdown-ex class="base-margin-left"
