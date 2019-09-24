@@ -4,7 +4,7 @@ import {
   ContainerType,
   EnvStruct,
   PHASE_CONFIG_CONTAINERS,
-  PHASE_CONFIG_INIT_CONTAINERS, ServiceStepPhase,
+  PHASE_CONFIG_INIT_CONTAINERS,
   UiServiceFactory,
   UIServiceStep2,
   VolumeStruct
@@ -356,7 +356,7 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
   }
 
   minusSelectImage(index: number) {
-    if (index > 0) {
+    if (index > 0 || this.curContainerType === ContainerType.initContainer) {
       this.curStep2Data.containerList.splice(index, 1);
     }
   }
