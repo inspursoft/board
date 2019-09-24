@@ -28,8 +28,8 @@ export class HeaderComponent implements OnInit {
     return this.isSignIn ? '../../images/board-blue.jpg': '../../../images/board.png';
   }
 
-  get nationalEmblemLogoUrl(): string {
-    return this.isSignIn ? '../../images/nationalEmblem.png': '../../../images/nationalEmblem.png';
+  get mipsLogoUrl(): string {
+    return this.isSignIn ? '../../images/mips-logo.png': '../../images/mips-logo.png';
   }
 
   get isMipsEnv(): boolean {
