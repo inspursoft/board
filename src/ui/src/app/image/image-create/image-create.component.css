@@ -109,6 +109,8 @@ span.file-title {
 
 div.build-btn-container {
   height: 50px;
+  display: flex;
+  align-items: center;
 }
 
 div.file-info-container {
@@ -194,4 +196,11 @@ label.tar-package-name {
   margin-left: 10px;
   color: darkblue;
   font-weight: bold;
+}
+
+span.waiting{
+  font-size: 16px;
+  color: blue;
+  font-style: italic;
+  margin-left: auto;
 }

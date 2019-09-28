@@ -40,9 +40,10 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   patternEntryPoint: RegExp = /.+/;
   patternCopyPath: RegExp = /.+/;
   imageTemplateList: Array<Object> = [{name: "Docker File Template"}];
-  filesList: Map<string, Array<{ path: string, file_name: string, size: number }>>;
+  filesList: Map<string, Array<{path: string, file_name: string, size: number}>>;
   selectedDockerFile: File;
   intervalAutoRefreshImageList: any;
+  intervalWaitingPoints: any;
   isNeedAutoRefreshImageList: boolean = false;
   isBuildImageWIP: boolean = false;
   isSelectedDockerFile = false;
@@ -59,8 +60,10 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   boardRegistry: string = "";
   processImageSubscription: Subscription;
   cancelButtonDisable = true;
-  cancelInfo: { isShow: boolean, isForce: boolean, title: string, message: string };
+  cancelInfo: {isShow: boolean, isForce: boolean, title: string, message: string};
   uploadTarPackageName = '';
+  waitingMessage = '';
+  waitingPoints = '';
 
   constructor(private imageService: ImageService,
               private messageService: MessageService,
@@ -68,7 +71,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
               private translateService: TranslateService,
               private appInitService: AppInitService) {
     super();
-    this.filesList = new Map<string, Array<{ path: string, file_name: string, size: number }>>();
+    this.filesList = new Map<string, Array<{path: string, file_name: string, size: number}>>();
     this.boardHost = this.appInitService.systemInfo.board_host;
     this.imageList = Array<Image>();
     this.imageDetailList = Array<ImageDetail>();
@@ -76,8 +79,23 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   }
 
   ngOnInit() {
+    this.waitingMessage = 'IMAGE.CREATE_IMAGE_WAITING_UPLOAD';
+    this.intervalWaitingPoints = setInterval(() => {
+      if (this.isBuildImageWIP) {
+        if (this.waitingPoints === '') {
+          this.waitingPoints = '.'
+        } else if (this.waitingPoints === '.') {
+          this.waitingPoints = '..'
+        } else if (this.waitingPoints === '..') {
+          this.waitingPoints = '...'
+        } else {
+          this.waitingPoints = '';
+        }
+      }
+    }, 1000);
     this.intervalAutoRefreshImageList = setInterval(() => {
       if (this.isNeedAutoRefreshImageList && this.isBuildImageWIP) {
+        this.waitingMessage = 'IMAGE.CREATE_IMAGE_WAITING_UPLOAD';
         this.imageService.getImages(this.customerNewImage.image_name, 0, 0).subscribe((res: Array<Image>) => {
           res.forEach(value => {
             let newImageName = `${this.customerNewImage.project_name}/${this.customerNewImage.image_name}`;
@@ -100,6 +118,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
       this.processImageSubscription.unsubscribe();
     }
     clearInterval(this.intervalAutoRefreshImageList);
+    clearInterval(this.intervalWaitingPoints);
   }
 
   public initCustomerNewImage(projectId: number, projectName: string): void {
@@ -127,7 +146,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
     return this.customerNewImage.image_dockerfile.image_volume;
   }
 
-  set imageVolume(value: Array<string>){
+  set imageVolume(value: Array<string>) {
     this.customerNewImage.image_dockerfile.image_volume = value;
   }
 
@@ -293,6 +312,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
       .connect(`ws://${this.boardHost}/api/v1/jenkins-job/console?job_name=${this.customerNewImage.project_name}&token=${this.appInitService.token}`)
       .subscribe((obs: MessageEvent) => {
         this.consoleText = <string>obs.data;
+        this.waitingMessage = 'IMAGE.CREATE_IMAGE_WAITING_BUILD';
         this.cancelButtonDisable = false;
         this.areaStatus.nativeElement.scrollTop = this.areaStatus.nativeElement.scrollHeight;
         let consoleTextArr: Array<string> = this.consoleText.split(/[\n]/g);
@@ -324,6 +344,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
     let buildImageInit = () => {
       this.cancelButtonDisable = true;
       this.isBuildImageWIP = true;
+      this.waitingMessage = 'IMAGE.CREATE_IMAGE_JENKINS_PREPARE';
       this.consoleText = "IMAGE.CREATE_IMAGE_JENKINS_PREPARE";
       setTimeout(() => this.cancelButtonDisable = false, 10000);
     };
@@ -493,7 +514,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
     this.getDockerFilePreviewInfo();
   }
 
-  removeFile(file: { path: string, file_name: string, size: number }) {
+  removeFile(file: {path: string, file_name: string, size: number}) {
     let fromRemoveData: FormData = new FormData();
     fromRemoveData.append("project_name", this.customerNewImage.project_name);
     fromRemoveData.append("image_name", this.customerNewImage.image_name);

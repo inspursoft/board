@@ -447,6 +447,8 @@ export const LANG_EN_US = {
     "CREATE_IMAGE_JENKINS_PREPARE":"Jenkins preparing...",
     "CREATE_IMAGE_NAME_TAG_PATTERN":"A string consisting of the lowercase,numeric,'.',-'",
     "CREATE_IMAGE_BASE_IMAGE_PATTERN":"A string consisting of the lowercase,numeric,'.',-',':'",
+    "CREATE_IMAGE_WAITING_BUILD": "Building an image",
+    "CREATE_IMAGE_WAITING_UPLOAD": "Uploading the image to repository",
   },
   "RESOURCE":{
     "CONFIG_MAP_LIST_NAME":"Name",
@@ -864,6 +866,7 @@ export const LANG_EN_US = {
   "PROFILES":{
     "VERSION":"Version",
     "CLUSTER_VERSION":"Cluster Version",
+    "PROCESSOR_TYPE":"Processor type",
     "GET_HELP":"Get Help",
     "SUPPORT_TEAM":"Support team"
   },

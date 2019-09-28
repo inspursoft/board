@@ -447,6 +447,8 @@ export const LANG_ZH_CN = {
     "CREATE_IMAGE_JENKINS_PREPARE":"Jenkins正在准备...",
     "CREATE_IMAGE_NAME_TAG_PATTERN":"由小写字母、数字、'.'、'-'组成的字符串",
     "CREATE_IMAGE_BASE_IMAGE_PATTERN":"由小写字母、数字、'.'、':'、'-'组成的字符串",
+    "CREATE_IMAGE_WAITING_BUILD": "正在构建镜像",
+    "CREATE_IMAGE_WAITING_UPLOAD": "正在上传镜像至仓库",
   },
   "RESOURCE":{
     "CONFIG_MAP_LIST_NAME":"名称",
@@ -865,6 +867,7 @@ export const LANG_ZH_CN = {
     "VERSION":"版本",
     "CLUSTER_VERSION":"集群版本",
     "GET_HELP":"帮助",
-    "SUPPORT_TEAM":"支持"
+    "SUPPORT_TEAM":"支持",
+    "PROCESSOR_TYPE":"处理器类型",
   },
 };

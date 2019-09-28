@@ -2,6 +2,7 @@
            [clrModalPreventClose]="true">
   <div class="modal-title title-container">
     <h4 class="modal-title">{{ "IMAGE.CREATE_IMAGE_TITLE" | translate }}</h4>
+    <span *ngIf="isBuildImageWIP" class="waiting">{{waitingMessage | translate}}{{waitingPoints}}</span>
     <button class="close"
             [ngClass]="{'disabled':isBuildImageWIP || isUploadFileWIP}"
             (click)="modalOpened = false"
@@ -54,7 +55,7 @@
                        [(ngModel)]="baseImageSource"
                        (click)="cleanBaseImageInfo(false)"
                        checked>
-                <label for="radFromDocker" class="base-image-source">Docker Hub</label>
+                <label title="Docker Hub" for="radFromDocker" class="base-image-source">Docker Hub</label>
                 <input type="radio"
                        class="base-image-radio"
                        name="baseImageSource"
@@ -63,7 +64,7 @@
                        [disabled]="isBuildImageWIP"
                        [(ngModel)]="baseImageSource"
                        (click)="cleanBaseImageInfo(true)">
-                <label for="radFromBoard" class="base-image-source">Board Registry</label>
+                <label title="Board Registry" for="radFromBoard" class="base-image-source">Board Registry</label>
               </div>
               <lib-input-ex *ngIf="baseImageSource == 1"
                             class="margin-left-180"
