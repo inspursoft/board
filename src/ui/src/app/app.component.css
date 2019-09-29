@@ -5,6 +5,4 @@ clr-main-container {
 
 div.route-container {
   flex-basis: 100%;
-  display: flex;
-  flex-direction: column;
 }
