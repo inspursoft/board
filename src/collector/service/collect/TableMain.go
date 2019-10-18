@@ -109,14 +109,14 @@ func (resource SourceMap) GainNodes() error {
 		for k, v := range v.Status.Capacity {
 			switch k {
 			case "cpu":
-				nodes.NumbersCpuCore = fmt.Sprintf("%d", v)
+				nodes.NumbersCpuCore = fmt.Sprintf("%v", v)
 				cpuCores, _ = strconv.Atoi(string(v))
 			case "memory":
-				nodes.MemorySize = fmt.Sprintf("%d", v)
+				nodes.MemorySize = fmt.Sprintf("%v", v)
 			case "alpha.kubernetes.io/nvidia-gpu":
-				nodes.NumbersGpuCore = fmt.Sprintf("%d", v)
+				nodes.NumbersGpuCore = fmt.Sprintf("%v", v)
 			case "pods":
-				nodes.PodLimit = fmt.Sprintf("%d", v)
+				nodes.PodLimit = fmt.Sprintf("%v", v)
 			}
 		}
 
