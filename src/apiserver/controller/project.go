@@ -24,8 +24,8 @@ func (p *ProjectController) CreateProjectAction() {
 		return
 	}
 
-	if !utils.ValidateWithLengthRange(reqProject.Name, 2, 30) {
-		p.customAbort(http.StatusBadRequest, "Project name length should be between 2 and 30 characters.")
+	if !utils.ValidateWithLengthRange(reqProject.Name, 2, 63) {
+		p.customAbort(http.StatusBadRequest, "Project name length should be between 2 and 63 characters.")
 		return
 	}
 	if !utils.ValidateWithPattern("project", reqProject.Name) {
