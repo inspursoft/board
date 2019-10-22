@@ -1,14 +1,34 @@
 package model
 
+import "time"
+
 type RegistryRepo struct {
 	Names []string `json:"repositories"`
 }
 
 type Image struct {
-	ImageID      int64  `json:"-" orm:"column(id);pk"`
-	ImageName    string `json:"image_name" orm:"column(name)"`
-	ImageComment string `json:"image_comment" orm:"column(comment)"`
-	ImageDeleted int    `json:"image_deleted" orm:"column(deleted)"`
+	ImageID           int64     `json:"-" orm:"column(id);pk"`
+	ImageName         string    `json:"image_name" orm:"column(name)"`
+	ImageComment      string    `json:"image_comment" orm:"column(comment)"`
+	ImageDeleted      int       `json:"image_deleted" orm:"column(deleted)"`
+	ImageUpdateTime   time.Time `json:"image_update_time" orm:"-"`
+	ImageCreationTime time.Time `json:"image_creation_time" orm:"-"`
+}
+
+type ImageList []*Image
+
+func (c ImageList) Len() int {
+	return len(c)
+}
+
+func (c ImageList) Swap(i, j int) {
+	if c[i].ImageUpdateTime.Unix() > c[j].ImageUpdateTime.Unix() {
+		c[i], c[j] = c[j], c[i]
+	}
+}
+
+func (c ImageList) Less(i, j int) bool {
+	return c[i].ImageUpdateTime.Unix() > c[j].ImageUpdateTime.Unix()
 }
 
 type ImageTag struct {
@@ -88,6 +108,7 @@ type ImageConfig struct {
 	ImageTemplate       string     `json:"image_template"`
 	ImageDockerfile     Dockerfile `json:"image_dockerfile"`
 	ImageDockerfilePath string     `json:"-"`
+	RepoPath            string     `json:"-"`
 }
 
 type ImageIndex struct {

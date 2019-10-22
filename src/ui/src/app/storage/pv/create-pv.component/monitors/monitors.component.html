@@ -1,0 +1,29 @@
+<clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'md'">
+  <h3 class="modal-title">{{ 'STORAGE.PV_CONFIG_MONITORS' | translate }}</h3>
+  <div class="modal-body">
+    <div *ngFor="let monitor of monitorsArray;let i = index">
+      <div class="monitor-container">
+        <clr-icon class="icon" shape="minus" (click)="deleteMonitor(i)"></clr-icon>
+        <lib-input-ex [inputIsRequired]="true"
+                      [inputPattern]="patternIp"
+                      [inputDefaultValue]="getIp(monitor)"
+                      (commitEvent)="changeIp($event,i)">
+        </lib-input-ex>
+        <lib-input-ex [inputIsRequired]="true"
+                      [inputDefaultValue]="getPort(monitor)"
+                      [inputCategory]="2"
+                      (commitEvent)="changePort($event,i)">
+        </lib-input-ex>
+      </div>
+    </div>
+    <div class="icon-container">
+      <clr-icon class="icon" shape="plus" (click)="addNewMonitor()"></clr-icon>
+      <span>{{"STORAGE.PV_CONFIG_MONITORS_ADD" | translate }}</span>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-default" (click)="isOpen = false">{{ 'BUTTON.CANCEL' | translate }}</button>
+    <button type="button" class="btn btn-primary" (click)="confirmMonitors()">{{ 'BUTTON.CONFIRM' | translate }}
+    </button>
+  </div>
+</clr-modal>

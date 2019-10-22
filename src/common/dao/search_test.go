@@ -1,14 +1,13 @@
-package dao
+package dao_test
 
 import (
 	"fmt"
+	"git/inspursoft/board/src/common/dao"
 
 	"testing"
-
-	_ "github.com/go-sql-driver/mysql"
 )
 
 func TestSearchPrivite(t *testing.T) {
-	fmt.Println(SearchPrivateProject("l", "Admin"))
-	fmt.Println(SearchPublicProject("l"))
+	fmt.Println(dao.SearchPrivateProject("l", "Admin"))
+	fmt.Println(dao.SearchPublicProject("l"))
 }

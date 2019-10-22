@@ -1,0 +1,190 @@
+<div class="config-container">
+  <span>{{"SERVICE.STEP_3_SERVICE_CONFIG_TITLE"|translate}}:</span>
+  <div class="line-container">
+    <lib-dropdown-ex [dropdownLabel]="'SERVICE.STEP_3_TYPE' | translate"
+                     [dropdownKey]="'description'"
+                     [dropdownMinWidth]="310"
+                     [dropdownItems]="serviceTypes"
+                     [dropdownDisabled]="isActionWip"
+                     [dropdownDefaultActiveIndex]="0"
+                     (dropdownChangeItem)="setServiceType($event)">
+      <ng-template libItemTemp let-description="description">
+        {{description | translate}}
+      </ng-template>
+      <ng-template libTitleTemp let-description="description">
+        {{description | translate}}
+      </ng-template>
+    </lib-dropdown-ex>
+  </div>
+  <div class="line-container">
+    <lib-input-ex [inputIsRequired]="true"
+                  [inputDisabled]="isActionWip"
+                  [inputPattern]="patternServiceName"
+                  [inputMaxlength]="63"
+                  [inputLabel]="'SERVICE.STEP_3_SERVICE_NAME' | translate"
+                  [validatorMessage]="[{key:'pattern', message:'SERVICE.STEP_3_SERVICE_NAME_PATTERN_NSG' | translate},
+                                       {key:'serviceExist', message: 'SERVICE.STEP_3_SERVICE_NAME_EXIST' | translate}]"
+                  [validatorAsyncFn]="checkServiceNameFun"
+                  [inputDefaultValue]="uiData.serviceName"
+                  [inputPlaceholder]="'SERVICE.STEP_3_SERVICE_OF_NAME'| translate"
+                  (commitEvent)="uiData.serviceName = $event">
+    </lib-input-ex>
+  </div>
+  <div class="line-container">
+    <lib-input-ex [inputIsRequired]="true"
+                  [inputCategory]="2"
+                  [inputMin]="1"
+                  [inputMax]="99"
+                  [inputDisabled]="isActionWip"
+                  [inputLabel]="'SERVICE.STEP_3_INSTANCE' | translate"
+                  [inputDefaultValue]="uiData.instance"
+                  (commitEvent)="uiData.instance = $event">
+    </lib-input-ex>
+  </div>
+  <div *ngIf="!isStatefulService" class="line-container">
+    <lib-input-ex [inputDisabled]="isActionWip"
+                  [inputPattern]="patternIP"
+                  [inputLabel]="'SERVICE.STEP_3_CLUSTER_IP' | translate"
+                  [inputDefaultValue]="uiData.clusterIp"
+                  [validatorMessage]="[{key:'pattern',message:'SERVICE.STEP_3_CLUSTER_IP_FORMAT' | translate}]"
+                  (commitEvent)="uiData.clusterIp = $event">
+    </lib-input-ex>
+  </div>
+  <div class="line-container">
+    <label class="public">{{"SERVICE.STEP_3_PUBLIC" | translate}}:
+      <input title=""
+             type="checkbox"
+             class="base-margin-left"
+             [disabled]="isActionWip"
+             [checked]="uiData.servicePublic"
+             [(ngModel)]="uiData.servicePublic">
+    </label>
+  </div>
+  <div class="line-container">
+    <label class="public">{{"SERVICE.STEP_3_SESSION_AFFINITY_FLAG" | translate}}:
+      <input title=""
+             type="checkbox"
+             class="base-margin-left"
+             [disabled]="isActionWip"
+             [checked]="uiData.sessionAffinityFlag"
+             [(ngModel)]="uiData.sessionAffinityFlag">
+    </label>
+  </div>
+  <div *ngFor="let externalService of uiData.externalServiceList;let iIndex = index" class="external-container">
+    <div class="line-container">
+      <clr-icon *ngIf="iIndex > 0 && !isActionWip" class="plus-icon" shape="minus"
+                (click)="removeExternalService(iIndex)"></clr-icon>
+      <span>{{"SERVICE.STEP_3_EXTERNAL_SERVICE"|translate}}</span>
+    </div>
+    <div class="line-container">
+      <lib-dropdown-ex [dropdownItems]="uiPreData.containerList"
+                       [dropdownLabel]="'SERVICE.STEP_3_CONTAINER_NAME' | translate"
+                       [dropdownKey]="'name'"
+                       [dropdownMinWidth]="310"
+                       [dropdownDisabled]="isActionWip"
+                       [dropdownDefaultActiveIndex]="iIndex === 0 ? 0 : -1"
+                       [dropdownTip]="'SERVICE.STEP_3_SELECT_CONTAINER' | translate"
+                       (dropdownChangeItem)="setExternalInfo($event, iIndex)">
+      </lib-dropdown-ex>
+    </div>
+    <div class="line-container" *ngIf="externalService.container_name !== ''">
+      <lib-input-ex *ngIf="inputExternalPortEnable(externalService.container_name)"
+                    [inputCategory]="2"
+                    [inputDefaultValue]="externalService.node_config.target_port"
+                    [inputDisabled]="isActionWip"
+                    [inputLabel]="'SERVICE.STEP_3_CONTAINER_PORT' | translate"
+                    [inputIsRequired]="uiData.clusterIp == ''"
+                    [inputMin]="1"
+                    [inputMax]="32766"
+                    (commitEvent)="externalService.node_config.target_port = $event">
+      </lib-input-ex>
+      <lib-dropdown-ex *ngIf="selectExternalPortEnable(externalService.container_name)"
+                       [dropdownLabel]="'SERVICE.STEP_3_CONTAINER_PORT' |translate"
+                       [dropdownDisabled]="externalService.container_name == '' || isActionWip"
+                       [dropdownItems]="getContainerPorts(externalService.container_name)"
+                       [dropdownMinWidth]="310"
+                       [dropdownDefaultActiveIndex]="iIndex === 0 ? 0 : -1"
+                       [dropdownTip]="'SERVICE.STEP_3_SELECT_PORT' | translate"
+                       (dropdownChangeItem)="externalService.node_config.target_port = $event">
+      </lib-dropdown-ex>
+    </div>
+    <div class="line-container" *ngIf="externalService.container_name !== ''"
+         [style.display]="isStatefulService ? 'none' : 'flex'">
+      <lib-input-dropdown-number [label]="'SERVICE.STEP_3_NODE_PORT' | translate"
+                                 [inUsedNumbers]="existingNodePorts"
+                                 [activeItem]="externalService.node_config.node_port"
+                                 [disabled]="isActionWip || isGetNodePortWip"
+                                 [dropdownMinWidth]="340"
+                                 [isRequired]="uiData.clusterIp == '' && !isStatefulService"
+                                 [placeholder]="'SERVICE.STEP_3_EXTERNAL_PORT'| translate"
+                                 [validatorMessage]="[{key: 'inUsed', message: 'SERVICE.STEP_3_NODE_PORT_ALREADY_USED' | translate}]"
+                                 [max]="32767"
+                                 [min]="30000"
+                                 (changeItem)="externalService.node_config.node_port = $event">
+      </lib-input-dropdown-number>
+    </div>
+  </div>
+  <div class="line-container">
+    <clr-icon class="plus-icon"
+              shape="plus"
+              [ngClass]="{'disabled':uiPreData.containerList.length == 0 || isActionWip}"
+              (click)="addNewExternalService()">
+    </clr-icon>
+    <span>{{"SERVICE.STEP_3_EXTERNAL_SERVICE_ADD"|translate}}</span>
+  </div>
+  <div class="line-container" (click)="showAdvanced = !showAdvanced">
+    <div [ngClass]="{'advanced-open':showAdvanced,'advanced-close':!showAdvanced}" class="step-arrow"></div>
+    <span>{{"SERVICE.STEP_3_ADVANCED_CONFIG"|translate}}</span>
+  </div>
+  <div class="line-container" *ngIf="showAdvanced">
+    <clr-icon shape="wrench" class="plus-icon" [ngClass]="{'disabled':isActionWip}" (click)="setAffinity()"></clr-icon>
+    <span>{{"SERVICE.STEP_3_SET_AFFINITY"|translate}}</span>
+  </div>
+  <div class="line-container" *ngIf="showAdvanced">
+    <div [ngClass]="{'node-selector-close':showNodeSelector,'node-selector-open':!showNodeSelector}">
+      <clr-icon shape="caret up" class="plus-icon" [ngClass]="{'disabled':isActionWip}"
+                (click)="setNodeSelector()"></clr-icon>
+    </div>
+    <span>{{"SERVICE.STEP_3_NODE_SELECTOR"|translate}}:</span>
+  </div>
+  <div class="line-container" *ngIf="showAdvanced && showNodeSelector">
+    <lib-dropdown-ex [dropdownItems]="nodeSelectorList"
+                     [dropdownKey]="'name'"
+                     [dropdownDisabled]="isActionWip"
+                     [dropdownMinWidth]="310"
+                     [dropdpwnPosition]="'top-left'"
+                     [dropdownTip]="'SERVICE.STEP_3_NODE_DEFAULT' | translate "
+                     [dropdownActiveItem]="curNodeSelector"
+                     (dropdownChangeItem)="uiData.nodeSelector = $event['value']">
+      <ng-template libItemTemp let-name="name" let-tag="tag">
+        <div class="temp-container">
+          {{name | translate}}
+          <span *ngIf="tag" class="tag label" [ngClass]="getItemTagClass(tag)">
+        {{tag.description | translate}}</span>
+        </div>
+      </ng-template>
+      <ng-template libTitleTemp let-name="name" let-tag="tag">
+        <div class="temp-container">
+          {{name | translate}}
+          <span *ngIf="tag" class="tag label" [ngClass]="getItemTagClass(tag)">
+        {{tag.description | translate}}</span>
+        </div>
+      </ng-template>
+    </lib-dropdown-ex>
+  </div>
+</div>
+<div class="button-container">
+  <button class="btn btn-default" (click)="cancelBuildService()" [disabled]="isActionWip">
+    {{"BUTTON.CANCEL" | translate}}
+  </button>
+  <button class="btn btn-default" [disabled]="true">
+    {{"BUTTON.TEST" | translate}}
+  </button>
+  <button class="btn btn-default" (click)="backUpStep()" [disabled]="isActionWip">
+    {{"BUTTON.BACK" | translate}}
+  </button>
+  <button class="btn btn-default" (click)="forward()" [disabled]="isActionWip">
+    {{"BUTTON.NEXT" | translate}}
+  </button>
+  <span *ngIf="isActionWip" class="spinner spinner-sm"></span>
+</div>

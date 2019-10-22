@@ -13,9 +13,18 @@ This guide walks you through the fundamentals of using Board. You'll learn how t
   * Deploy Service
   * Scale Service
   * Update Service
+* Manage DevOps
+  * Introduction
+  * Configure External Gogits and Jenkins
+  * All-in-One Account Access
+  * Create Project for Gogits and Jenkins
+  * Review the Repository on Gogits
+  * Review the Pipeline Job on Jenkins
+  * Add Member to the Project to Make a Fork for the Repository
 * Search Projects, Services, Users and Images.
 * Monitoring Dashboard
 * Administrator Options
+* Action Audit
 * Q&A
 
 ## User account
@@ -37,6 +46,23 @@ Board supports databse authentication modes and support LDAP mode:
 	
 	Self-registration, changing password and resetting password are not supported under LDAP/AD authentication mode because the users are managed by LDAP or AD.  
 
+* **User password find back**  	
+
+    User can find back the password by email:
+	
+	Click the "forgot password" in the login page:
+	<img src="img/userguide/password1.JPG" width="100" alt="pass1">
+	
+	Input the user name or the registered email account:
+	<img src="img/userguide/password2.JPG" width="100" alt="pass2">
+	<img src="img/userguide/password3.JPG" width="100" alt="pass2">
+	
+	Click send request:
+	<img src="img/userguide/password4.JPG" width="100" alt="pass4">
+	
+	User will receive an email to reset password in the registered email account
+	<img src="img/userguide/password5.JPG" width="100" alt="pass5">
+	
 ## Project Based Access Control  
 
 Board manages services through projects on container service platform. Users can be added into system as a member with different roles:  
@@ -122,7 +148,15 @@ The following parameters could be customized for this service.
 * External service
 * Instance
 
-In the advanced configuration, can assign node pord for external service.
+In the advanced configuration, can assign node port for external service.
+
+In node selector, locate a service to the designated node or node group. 
+
+<img src="img/userguide/nodelocate1.JPG" width="100" alt="Locate service">
+
+Get all available nodes or node groups and select one.
+
+<img src="img/userguide/nodelocate2.JPG" width="100" alt="Locate service">
 
 Next step after configure service.
 
@@ -145,6 +179,30 @@ Click the "control" icon in the sevice list page, pop up the service control pag
 Select manually scale, set the desired instance number, and confirm it.
 
 <img src="img/userguide/scale3.png" width="100" alt="Scale service">
+
+### AutoScale Service
+To use the autoscale, first need to create a service with resource request.  The following is to create a nginx
+service with 200m CPU and 64Mi Memory request.
+<img src="img/userguide/autoscale1.JPG" width="100" alt="AutoScale service">  
+<img src="img/userguide/autoscale2.JPG" width="100" alt="AutoScale service">
+<img src="img/userguide/autoscale4.JPG" width="100" alt="AutoScale service">
+
+Click the "control" icon in the sevice list page, pop up the service control page.
+In this control page, user can scale the service on runtime and configure the auto-scale rule for this service.
+<img src="img/userguide/autoscale7.JPG" width="100" alt="AutoScale service">
+
+Choose the autoscale
+<img src="img/userguide/autoscale8.JPG" width="100" alt="AutoScale service">
+
+Add a autoscale rule for this service.
+<img src="img/userguide/autoscale10.JPG" width="100" alt="AutoScale service">
+
+Confirm this configuration.
+
+Continuously access this nginx service to give a certain stress. 
+User can check the pod number of this service by the dashboard page.
+<img src="img/userguide/autoscale13.JPG" width="100" alt="AutoScale service">
+<img src="img/userguide/autoscale18.JPG" width="100" alt="AutoScale service">
 
 ### Update Service
 Click the "control" icon in the sevice list page, pop up the service control page.
@@ -255,6 +313,84 @@ Deploy a service "bigdata" which is a containerized project for the Inspur bigda
 
 <img src="img/userguide/bigdata-l.PNG" width="100" alt="Configure the external node port">
 
+#### Manage DevOps
+
+### Introduction
+
+> Board now supports DevOps as external Gogit and Jenkin CI services.
+
+<img src="img/userguide/devops-board-project.png" width="100" alt="devops-board-project.PNG">
+
+<img src="img/userguide/devops-gogits-repo.png" width="100" alt="devops-gogits-repo.PNG">
+
+<img src="img/userguide/devops-jenkins-job.png" width="100" alt="devops-jenkins-job.PNG">
+
+### Configure External Gogits and Jenkins
+
+> You should provide configurations before starting DevOps.
+
+<img src="img/userguide/devops-configuration.png" width="100" alt="devops-configuration.PNG">
+
+> Then execute command ```./make prepare```
+
+### All-in-One Account Access
+
+> When signed up in Board, you also has made same authorization on Gogits.
+
+<img src="img/userguide/devops-board-sign-up.png" width="100" alt="devops-board-sign-up.PNG">
+
+ * You can sign in Gogits with the same authorization in Board.
+
+<img src="img/userguide/devops-gogits-sign-in.png" width="100" alt="devops-gogits-sign-in.PNG">
+
+ * Retrieve user list in Board.
+
+<img src="img/userguide/devops-board-user-list.png" width="100" alt="devops-board-user-list.PN">
+
+ * You also can retrieve the same user list in Gogits.
+
+<img src="img/userguide/devops-gogits-user-list.png" width="100" alt="devops-gogits-user-list.PNG">
+
+### Create Project for Gogits and Jenkins
+
+> By integrating access token with Gogits and web-hooks with Jenkins, Board can create project coordinated with repository creation on Gogits and pipeline Job creation on Jenkins.
+
+<img src="img/userguide/devops-board-create-project.png" width="100" alt="devops-board-create-project.PNG">
+
+ * Gogits would create repository as the same name of the project created in Board.
+
+<img src="img/userguide/devops-gogits-create-repo.png" width="100" alt="devops-gogits-create-repo.PNG">
+
+ * Jenkins would create pipeline Job as the same name of the project created in Board.
+
+<img src="img/userguide/devops-jenkins-create-job.png" width="100" alt="devops-jenkins-create-job.PNG">
+
+### Review the Repository on Gogits
+
+> Some folders and files would be created after Board project creation for the DevOps execution.  
+
+<img src="img/userguide/devops-gogits-review-repo.png" width="100" alt="devops-gogits-review-repo.PNG">
+
+### Review the Pipeline Job on Jenkins
+
+> Pipeline style Jenkins job created for the DevOps.
+
+<img src="img/userguide/devops-jenkins-create-job.png" width="100" alt="devops-jenkins-create-job.PNG">
+
+### Add Member to the Project to Make a Fork for   the Repository
+
+> When you add member to a specific project, you have forked repository to the added member which means he also has the same project named repository to execute his own DevOps.
+
+ * Add member to the project 'library'
+
+<img src="img/userguide/devops-board-add-member.png" width="100" alt="devops-board-add-member.PNG">
+
+ * The added member also has the same project named repository.
+
+<img src="img/userguide/devops-gogits-fork.png" width="100" alt="ddevops-gogits-fork.PNG">
+
+### Deploy Service via Wizard
+
 * Deploy the bigdata service
 
 <img src="img/userguide/bigdata-m.PNG" width="100" alt="Deploy the bigdata service">
@@ -343,6 +479,36 @@ dashboard show the statistical real-time and average numbers
 <img src="img/userguide/delete-user.png" width="100" alt="Board delete user">
 
 * **NOTE**: User currently only can be deleted as set 'deleted' flag as 1.
+
+## Action Audit
+
+Administrator can check the operation records by action audit functionality
+
+* Login with admin
+<img src="img/userguide/action1.JPG" width="100" alt="action1">
+
+* There are some search conditions to set, search all by default
+
+Object
+
+Action
+
+Status
+
+User
+
+Start time
+
+End time
+
+<img src="img/userguide/action2.JPG" width="100" alt="action2">
+<img src="img/userguide/action3.JPG" width="100" alt="action3">
+<img src="img/userguide/action4.JPG" width="100" alt="action4">
+<img src="img/userguide/action5.JPG" width="100" alt="action5">
+<img src="img/userguide/action6.JPG" width="100" alt="action6">
+
+* Click query to get the operation records 
+<img src="img/userguide/action8.JPG" width="100" alt="action8">
 
 ## Q&A
 

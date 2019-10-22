@@ -1,0 +1,11 @@
+<div class="locate-container">
+  <status *ngIf="service" [service]="service"></status>
+  <lib-dropdown-ex class="locate-dropdown"
+                   [dropdownDisabled]="isActionInWIP"
+                   [dropdownTip]="dropdownDefaultText | translate"
+                   [dropdownMinWidth]="200"
+                   [dropdownItems]="nodeSelectorList"
+                   (dropdownChangeItem)="setNodeSelector($event)">
+  </lib-dropdown-ex>
+</div>
+

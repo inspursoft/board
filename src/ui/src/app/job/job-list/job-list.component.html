@@ -1,0 +1,50 @@
+<div *ngIf="!createNewJob" class="clr-row clr-justify-content-end">
+  <button class="btn btn-primary" (click)="createJob()">
+    {{ 'JOB.JOB_LIST_CREATE_JOB' | translate }}
+  </button>
+</div>
+<clr-datagrid *ngIf="!createNewJob" [clrDgLoading]="loadingWIP" (clrDgRefresh)="retrieve()">
+  <clr-dg-column>{{ 'JOB.JOB_LIST_NAME' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'JOB.JOB_LIST_PROJECT_NAME' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'JOB.JOB_LIST_CREATION_TIME' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'JOB.JOB_LIST_UPDATE_TIME' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'JOB.JOB_LIST_OWNER_NAME' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'JOB.JOB_LIST_COMMENT' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'JOB.JOB_LIST_STATUS' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'JOB.JOB_LIST_OPERATION' | translate }}</clr-dg-column>
+  <clr-dg-row *ngFor="let job of paginationJobs.job_status_list">
+    <clr-dg-cell>{{job.job_name}}</clr-dg-cell>
+    <clr-dg-cell>{{job.job_project_name}}</clr-dg-cell>
+    <clr-dg-cell>{{job.job_creation_time | date:'short'}}</clr-dg-cell>
+    <clr-dg-cell>{{job.job_update_time | date:'short'}}</clr-dg-cell>
+    <clr-dg-cell>{{job.job_owner_name}}</clr-dg-cell>
+    <clr-dg-cell>{{job.job_comment}}</clr-dg-cell>
+    <clr-dg-cell>
+      <span [ngClass]="getStatusClass(job.job_status)">
+        {{getJobStatus(job.job_status) | translate}}
+      </span>
+    </clr-dg-cell>
+    <clr-dg-cell>
+      <a href="javascript:void(0)" (click)="showJobDetail(job)">
+        <clr-icon shape="info-standard"></clr-icon>
+      </a>
+      <a href="javascript:void(0)" (click)="deleteJob(job)">
+        <clr-icon shape="trash"></clr-icon>
+      </a>
+      <a href="javascript:void(0)" (click)="showJobLogs(job)">
+        <clr-icon shape="help-info"></clr-icon>
+      </a>
+    </clr-dg-cell>
+  </clr-dg-row>
+  <clr-dg-footer>
+    {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
+    {{"DATAGRID.TOTAL" | translate}}{{paginationJobs.pagination.total_count}}{{"DATAGRID.ITEMS" | translate}}
+    <clr-dg-pagination #pagination
+                       [clrDgTotalItems]="paginationJobs.pagination.total_count"
+                       [(clrDgPage)]="paginationJobs.pagination.page_index"
+                       [clrDgPageSize]="paginationJobs.pagination.page_size">
+    </clr-dg-pagination>
+  </clr-dg-footer>
+</clr-datagrid>
+<job-create *ngIf="createNewJob" (afterDeployment)="afterDeployment($event)"></job-create>
+

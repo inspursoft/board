@@ -2,8 +2,10 @@ package service
 
 import (
 	"bufio"
+	"bytes"
 	"errors"
 	"fmt"
+
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"io"
@@ -17,7 +19,6 @@ import (
 
 const (
 	dockerTemplatePath  = "templates"
-	dockerfileName      = "Dockerfile"
 	templateNameDefault = "dockerfile-template"
 )
 
@@ -164,8 +165,7 @@ func CheckDockerfileConfig(config *model.ImageConfig) error {
 		return err
 	}
 
-	relPath := filepath.Join(config.ProjectName, config.ImageName, config.ImageTag, "upload")
-	return CheckDockerfileItem(&config.ImageDockerfile, relPath)
+	return CheckDockerfileItem(&config.ImageDockerfile, "upload")
 }
 
 func BuildDockerfile(reqImageConfig model.ImageConfig, wr ...io.Writer) error {
@@ -197,6 +197,7 @@ func BuildDockerfile(reqImageConfig model.ImageConfig, wr ...io.Writer) error {
 		return errors.New("Dockerfile path is not dir")
 	}
 
+	dockerfileName := ResolveDockerfileName(reqImageConfig.ImageName, reqImageConfig.ImageTag)
 	dockerfile, err := os.OpenFile(filepath.Join(reqImageConfig.ImageDockerfilePath, dockerfileName), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
@@ -240,10 +241,15 @@ func ImageConfigClean(path string) error {
 	return nil
 }
 
-func GetDockerfileInfo(path string) (*model.Dockerfile, error) {
+func GetDockerfileInfo(dockerfilePath, imageName, tag string) (*model.Dockerfile, error) {
+	if _, err := os.Stat(dockerfilePath); os.IsNotExist(err) {
+		return nil, err
+	}
+
 	var Dockerfile model.Dockerfile
 	var fulline string
-	dockerfile, err := os.Open(filepath.Join(path, "Dockerfile"))
+	dockerfileName := ResolveDockerfileName(imageName, tag)
+	dockerfile, err := os.Open(filepath.Join(dockerfilePath, dockerfileName))
 	if err != nil {
 		return nil, err
 	}
@@ -326,6 +332,10 @@ func GetImage(image model.Image, selectedFields ...string) (*model.Image, error)
 	return m, nil
 }
 
+func GetImageByName(imageName string) (*model.Image, error) {
+	return GetImage(model.Image{ImageName: imageName, ImageDeleted: 0}, "name")
+}
+
 func UpdateImage(image model.Image, fieldNames ...string) (bool, error) {
 	if image.ImageID == 0 {
 		return false, errors.New("no Image ID provided")
@@ -386,4 +396,38 @@ func CreateImageTag(imageTag model.ImageTag) (int64, error) {
 		return 0, err
 	}
 	return imageTagID, nil
+}
+
+func UpdateDockerfileCopyCommand(repoImagePath, dockerfileName string) ([]byte, error) {
+	dockerfile, err := os.OpenFile(filepath.Join(repoImagePath, dockerfileName), os.O_RDWR, 0644)
+	if err != nil {
+		return nil, err
+	}
+	defer dockerfile.Close()
+
+	pattern := "^(COPY|ADD)\\s+([\\[\"\\s]*)([\\w./-]+)(.*)"
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		return nil, err
+	}
+	scanner := bufio.NewScanner(dockerfile)
+	var buffer bytes.Buffer
+	writer := bufio.NewWriter(&buffer)
+	for scanner.Scan() {
+		content := scanner.Text()
+		matches := re.FindStringSubmatch(content)
+		if len(matches) > 0 {
+			// replace the source path of ADD or COPY line in Dockerfile; eg: ADD [ "./abc/r.sql", "/tmp/my.cnf" ]
+			// will be replaced by ADD [ "update/r.sql", "/tmp/my.cnf" ]
+			_, filename := filepath.Split(matches[3])
+			content = fmt.Sprintf("%s %s %s %s", matches[1], matches[2], filepath.Join("upload", strings.TrimSpace(filename)), matches[4])
+		}
+		writer.WriteString(fmt.Sprintf("%s\n", content))
+	}
+	writer.Flush()
+	dockerfile.Truncate(0)
+	dockerfile.Seek(0, 0)
+	bufferInfo := buffer.Bytes()
+	buffer.WriteTo(dockerfile)
+	return bufferInfo, nil
 }

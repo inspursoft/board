@@ -1,0 +1,134 @@
+div.config-container {
+  display: flex;
+  min-height: 400px; /*fixed height*/
+  flex-direction: column;
+  margin-top: 30px;
+  margin-bottom: 20px;
+  width: 520px;
+}
+
+div.config-service-info-line {
+  display: flex;
+  margin-top: 10px;
+  align-items: center;
+  height: 40px;
+}
+
+label.instance {
+  width: 180px;
+  text-align: right;
+}
+
+clr-icon.plus-icon {
+  color: white;
+  background: green;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  cursor: pointer;
+
+}
+
+clr-icon.plus-icon.disabled {
+  background: silver;
+}
+
+clr-icon.plus-icon.disabled:hover {
+  cursor: not-allowed;
+}
+
+div.step-arrow {
+  border: 8px solid transparent;
+  border-left: 8px solid black;
+  border-right: 0 solid transparent;
+  width: 0;
+  height: 0;
+}
+
+.base-margin-left {
+  margin-left: 10px;
+}
+
+div.line-container {
+  display: flex;
+  align-items: center;
+  margin-top: 3px;
+}
+
+div.line-container lib-input-ex {
+  width: 100%;
+}
+
+div.line-container cs-input-dropdown {
+  margin-left: 10px;
+}
+
+div.line-container lib-input-dropdown-number {
+  margin-left: 10px;
+}
+
+div.temp-container {
+  display: flex;
+  justify-content: space-between;
+  flex-basis: 100%;
+}
+
+div.line-container label {
+  min-width: 180px;
+  text-align: right;
+}
+
+div.advanced-item-icon-container {
+  width: 20px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+clr-icon.advanced-item-icon {
+  width: 20px;
+  height: 20px;
+  color: gray;
+}
+
+label.public {
+  width: 210px;
+  text-align: right;
+}
+
+div.external-container {
+  display: flex;
+  flex-direction: column;
+}
+
+div.node-selector-close {
+  transform: rotate(0deg);
+}
+
+div.node-selector-open {
+  transform: rotate(90deg);
+}
+
+div.advanced-open {
+  transform: rotate(90deg);
+  transition-duration: 0.5s;
+}
+
+div.advanced-open:hover{
+  cursor: pointer;
+}
+
+div.advanced-close {
+  transform: rotate(0deg);
+  transition-duration: 0.5s;
+}
+
+div.advanced-close:hover {
+ cursor: pointer;
+}
+
+div.button-container {
+  display: flex;
+  align-items: center;
+  margin-top: 20px;
+}

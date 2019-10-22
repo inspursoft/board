@@ -1,12 +1,16 @@
 import { NgModule } from '@angular/core';
-
 import { ProfileComponent } from './profile.component';
-import { SharedModule } from "app/shared/shared.module";
+import { CoreModule } from "../core/core.module";
+import { RouterModule } from "@angular/router";
 
 @NgModule({
-  imports: [ SharedModule ],
+  imports: [
+    CoreModule,
+    RouterModule.forChild([{path: '', component: ProfileComponent}])
+  ],
   declarations: [
     ProfileComponent
   ]
 })
-export class ProfileModule { }
+export class ProfileModule {
+}

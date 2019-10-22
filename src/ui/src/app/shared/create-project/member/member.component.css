@@ -1,0 +1,31 @@
+div.list-container {
+  height: 200px;
+  display: flex;
+}
+
+div.left-list-container {
+  flex-basis: 45%;
+  display: flex;
+  flex-flow: column;
+}
+
+div.list-action-container {
+  flex-basis: 10%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 5px 0;
+  flex-direction: column;
+}
+
+div.right-list-container {
+  flex-basis: 45%;
+  display: flex;
+  flex-flow: column;
+}
+
+select.member {
+  height: 100%;
+  overflow-y: auto;
+  width: 100%;
+}

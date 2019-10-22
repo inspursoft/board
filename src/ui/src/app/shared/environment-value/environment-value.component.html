@@ -1,53 +1,72 @@
-<clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'md'">
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'lg'" [clrModalClosable]="false"
+           [clrModalPreventClose]="true">
   <h3 class="modal-title">{{"SERVICE.ENV_TITLE" | translate }}</h3>
-  <fieldset class="modal-body fieldSet-default">
-    <clr-alert (clrAlertClosedChange)="isAlertOpen = false"
-               [clrAlertClosed]="!isAlertOpen"
-               [clrAlertType]="'alert-danger'">
-      <div class="alert-item">
-        <span class="alert-text">{{envAlertMessage | translate}}</span>
+  <div class="modal-body">
+    <div class="input-area-container">
+      <div class="input-area-title">
+        <label for="aForm_4">{{"SERVICE.TXT_TITLE" | translate}}:</label>
+        <a href="javascript:void(0)" (click)="envTextAddClick()">
+          <clr-icon shape="export"></clr-icon>
+        </a>
       </div>
-    </clr-alert>
+      <textarea id="aForm_4" rows="3" [(ngModel)]="envsText" name="text"></textarea>
+    </div>
     <div class="env-title-container">
       <span class="env-title">Key</span>
       <span class="env-title">Value</span>
     </div>
-    <div *ngFor="let envInfo of envsData;let iEnv = index" class="env-item-container">
-      <div class="env-item-title-container">
+    <div *ngFor="let envInfo of envsData;let iEnv = index">
+      <div class="line-container">
         <span class="env-item-title-no">{{iEnv + 1}}.</span>
-        <clr-icon class="env-icon"
-                  shape="minus"
+        <clr-icon class="env-icon" shape="minus"
                   *ngIf="!inputFixedKeyList || inputFixedKeyList.indexOf(envInfo.envName) == -1"
                   (click)="envMinusClick(iEnv)">
         </clr-icon>
+        <lib-input-ex [inputIsRequired]="true"
+                      [inputPattern]="patternEnv"
+                      [validatorMessage]="[{key: 'required', message: 'SERVICE.ENV_REQUIRED' | translate}]"
+                      [inputDefaultValue]="envInfo.envName"
+                      (commitEvent)="envInfo.envName = $event">
+        </lib-input-ex>
+        <lib-input-ex [inputDisabled]="bindConfigMap.get(iEnv)"
+                      [inputIsRequired]="true"
+                      [validatorMessage]="[{key: 'required', message: 'SERVICE.ENV_REQUIRED' | translate}]"
+                      [inputDefaultValue]="envInfo.envValue"
+                      (commitEvent)="envInfo.envValue = $event">
+        </lib-input-ex>
       </div>
-        <cs-input class="env-item-input"
-                  [inputIsRequired]="true"
-                  [inputPattern]="patternEnv"
-                  [inputType]="2"
-                  [validatorMessage]="inputValidatorMsg"
-                  [simpleFiled]="envInfo.envName"
-                  (onCheck)="envInfo.envName = $event">
-        </cs-input>
-        <cs-input class="env-item-input"
-                  [inputIsRequired]="true"
-                  [inputPattern]="patternEnv"
-                  [inputType]="2"
-                  [validatorMessage]="inputValidatorMsg"
-                  [simpleFiled]="envInfo.envValue"
-                  (onCheck)="envInfo.envValue = $event">
-        </cs-input>
+      <div class="line-container" *ngIf="isProvideBindConfigMap">
+        <input clrCheckbox
+               [id]="iEnv"
+               type="checkbox"
+               (click)="changeBindConfigMap(iEnv, envInfo, $event)"
+               [checked]="bindConfigMap.get(iEnv)">
+        <label [for]="iEnv">{{"SERVICE.ENV_BIND_CONFIG_MAP" | translate}}</label>
+        <lib-dropdown-ex *ngIf="bindConfigMap.get(iEnv)"
+                         [dropdownTip]="'SERVICE.ENV_CONFIG_MAP_DEFAULT_TEXT' |translate"
+                         [dropdownMinWidth]="300"
+                         [dropdownItems]="configMapList"
+                         [dropdownIsRequired]="envsData[iEnv].envConfigMapName == ''"
+                         [dropdownKey]="'name'"
+                         (dropdownChangeItem)="changeConfigMap(iEnv,envInfo, $event)">
+        </lib-dropdown-ex>
+        <lib-dropdown-ex *ngIf="bindConfigMap.get(iEnv) && configMapDetail.get(iEnv) !== undefined"
+                         [dropdownTip]="'SERVICE.ENV_CONFIG_MAP_KEY_DEFAULT_TEXT' |translate"
+                         [dropdownMinWidth]="300"
+                         [dropdownIsRequired]="envsData[iEnv].envConfigMapKey == ''"
+                         [dropdownItems]="configMapDetail.get(iEnv).dataList"
+                         [dropdownKey]="'key'"
+                         (dropdownChangeItem)="changeConfigMapKey(envInfo, $event)">
+        </lib-dropdown-ex>
+      </div>
     </div>
     <div class="env-item-add-container">
       <clr-icon class="env-icon" (click)="addNewEnv()" shape="plus"></clr-icon>
       <span>{{"SERVICE.ENV_ADD" | translate }}</span>
     </div>
-    <div class="env-item-confirm-container">
-      <button class="btn btn-primary"
-              [disabled]="!isCanConfirm || envsData.length == 0"
-              (click)="confirmEnvInfo()">
-        {{"SERVICE.ENV_CONFIRM" | translate }}
-      </button>
-    </div>
-  </fieldset>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-default" (click)="modalOpened = false">{{"BUTTON.CANCEL" | translate }}</button>
+    <button class="btn btn-primary" (click)="confirmEnvInfo()">{{"SERVICE.ENV_CONFIRM" | translate }}</button>
+  </div>
 </clr-modal>

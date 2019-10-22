@@ -1,0 +1,36 @@
+<clr-vertical-nav [clrVerticalNavCollapsible]="true"
+                  [(clrVerticalNavCollapsed)]="collapsed">
+  <div *ngFor="let navItem of navSource">
+    <ng-container *ngIf="!navItem.children" [ngTemplateOutletContext]="navItem"
+                  [ngTemplateOutlet]="itemTemp"></ng-container>
+    <ng-container *ngIf="navItem.children && navItem.visible" [ngTemplateOutletContext]="navItem"
+                  [ngTemplateOutlet]="itemGroupTemp"></ng-container>
+  </div>
+  <ng-template let-visible='visible' let-url='url' let-icon='icon' let-caption='caption' #itemTemp>
+    <a *ngIf="visible"
+       clrVerticalNavLink
+       [routerLink]="url"
+       [routerLinkActive]="'active'"
+       [queryParams]="queryParams">
+      <clr-icon clrVerticalNavIcon [attr.shape]="icon" class="is-solid"></clr-icon>
+      <span>{{caption | translate}}</span>
+      <ng-template [csVerticalNavGuide]="url"></ng-template>
+    </a>
+  </ng-template>
+  <ng-template let-visible='visible'
+               let-url='url'
+               let-icon='icon'
+               let-caption='caption'
+               let-children='children'
+               #itemGroupTemp>
+    <clr-vertical-nav-group routerLinkActive="active">
+      <clr-icon [attr.shape]="icon" clrVerticalNavIcon></clr-icon>
+      <span>{{caption | translate}}</span>
+      <clr-vertical-nav-group-children>
+        <div *ngFor="let navItem of children">
+          <ng-container [ngTemplateOutletContext]="navItem" [ngTemplateOutlet]="itemTemp"></ng-container>
+        </div>
+      </clr-vertical-nav-group-children>
+    </clr-vertical-nav-group>
+  </ng-template>
+</clr-vertical-nav>

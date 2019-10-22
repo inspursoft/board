@@ -15,19 +15,26 @@
 # Common
 # Develop flag
 #
-# guyingyan add test
 DEVFLAG=release
+
+# ARCH default is x86_64, also support mips
+ARCH=
+
 ifeq ($(DEVFLAG), release) 
-	BASEIMAGE=alpine:3.5
-	GOBUILDIMAGE=golang:1.8.3-alpine3.5
+	BASEIMAGE=alpine:3.7
+	GOBUILDIMAGE=golang:1.9.6-alpine3.7
 	WORKPATH=release
 	IMAGEPREFIX=board
 else
 	BASEIMAGE=ubuntu:14.04
-	GOBUILDIMAGE=golang:1.8.1
+	GOBUILDIMAGE=golang:1.9.6
 	WORKPATH=dev
 	IMAGEPREFIX=dev
 endif 
+
+ifeq ($(ARCH), mips)
+	GOBUILDIMAGE=inspursoft/golang-mips:1.12.9
+endif
 
 # Base shell parameters
 SHELL := /bin/bash
@@ -51,8 +58,8 @@ DOCKERCOMPOSECMD=$(shell which docker-compose)
 DOCKERTAG=$(DOCKERCMD) tag
 
 DOCKERCOMPOSEFILEPATH=$(MAKEWORKPATH)
-DOCKERCOMPOSEFILENAME=docker-compose.yml
-DOCKERCOMPOSEUIFILENAME=docker-compose.uibuilder.yml
+DOCKERCOMPOSEFILENAME=docker-compose${if ${ARCH},.${ARCH}}.yml
+DOCKERCOMPOSEUIFILENAME=docker-compose.uibuilder${if ${ARCH},.${ARCH}}.yml
 
 # Go parameters
 GOCMD=go
@@ -91,7 +98,12 @@ endif
 # Package lists
 # TOPLEVEL_PKG := .
 INT_LIST := apiserver tokenserver collector/cmd
-IMG_LIST := apiserver tokenserver log collector gitserver jenkins db proxy grafana graphite
+ifndef ARCH
+	IMG_LIST := apiserver tokenserver log collector jenkins db proxy gogits grafana graphite elasticsearch kibana chartmuseum
+else
+	IMG_LIST := apiserver tokenserver log collector jenkins db proxy gogits
+endif
+
 
 # List building
 COMPILEALL_LIST = $(foreach int, $(INT_LIST), $(SRCPATH)/$(int))
@@ -126,7 +138,8 @@ version:
 	@echo $(VERSIONTAG) > $(VERSIONFILE)
 
 compile_ui:
-	$(DOCKERCOMPOSECMD) -f $(MAKEPATH)/dev/$(DOCKERCOMPOSEUIFILENAME) up
+	$(DOCKERCOMPOSECMD) -f $(MAKEWORKPATH)/$(DOCKERCOMPOSEUIFILENAME) up
+	$(DOCKERCOMPOSECMD) -f $(MAKEWORKPATH)/$(DOCKERCOMPOSEUIFILENAME) down
 
 $(COMPILE_LIST): %_compile: # %_fmt  %_vet %_golint
 	$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOIMGBASEPATH) \
@@ -154,7 +167,7 @@ build: version $(BUILD_LIST) #container/db_build
 cleanimage: $(RMIMG_LIST) #container/db_rmi
 
 $(BUILD_LIST): %_build: 
-	$(DOCKERBUILD) -f $(MAKEWORKPATH)/$*/Dockerfile . -t $(IMAGEPREFIX)_$(subst container/,,$*):$(VERSIONTAG)
+	$(DOCKERBUILD) -f $(MAKEWORKPATH)/$*/Dockerfile${if ${ARCH},.${ARCH}} . -t $(IMAGEPREFIX)_$(subst container/,,$*):$(VERSIONTAG)
 	
 $(RMIMG_LIST): %_rmi:
 	$(DOCKERRMIMAGE) -f $(IMAGEPREFIX)_$(subst container/,,$*):$(VERSIONTAG)
@@ -185,8 +198,8 @@ prepare_swagger:
 	@echo "Done."
 
 prepare_composefile:
-	@cp $(MAKEWORKPATH)/docker-compose.tpl $(MAKEWORKPATH)/docker-compose.yml
-	@sed -i "s/__version__/$(VERSIONTAG)/g" $(MAKEWORKPATH)/docker-compose.yml
+	@cp $(MAKEWORKPATH)/docker-compose${if ${ARCH},.${ARCH}}.tpl $(MAKEWORKPATH)/docker-compose${if ${ARCH},.${ARCH}}.yml
+	@sed -i "s/__version__/$(VERSIONTAG)/g" $(MAKEWORKPATH)/docker-compose${if ${ARCH},.${ARCH}}.yml
 
 package: prepare_composefile
 	@echo "packing offline package ..."
@@ -196,13 +209,13 @@ package: prepare_composefile
 	@cp $(MAKEPATH)/board.cfg $(PKGTEMPPATH)/.
 	@cp $(MAKEPATH)/prepare $(PKGTEMPPATH)/.
 	@cp -rf $(MAKEPATH)/templates $(PKGTEMPPATH)/.
-	@cp $(MAKEWORKPATH)/docker-compose.yml $(PKGTEMPPATH)/.
+	@cp $(MAKEWORKPATH)/docker-compose${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/docker-compose.yml
 #	@cp LICENSE $(PKGTEMPPATH)/LICENSE
 #	@cp NOTICE $(PKGTEMPPATH)/NOTICE
 	@sed -i "s/..\/config/.\/config/" $(PKGTEMPPATH)/docker-compose.yml
 	@echo "pcakage images ..."
 	@$(DOCKERSAVE) -o $(PKGTEMPPATH)/$(IMAGEPREFIX)_deployment.$(VERSIONTAG).tgz $(PKG_LIST)
-	@$(TARCMD) -zcvf $(PKGNAME)-offline-installer-$(VERSIONTAG).tgz $(PKGTEMPPATH)
+	@$(TARCMD) -zcvf $(PKGNAME)-offline-installer-$(VERSIONTAG)${if ${ARCH},.${ARCH}}.tgz $(PKGTEMPPATH)
 
 	@rm -rf $(PACKAGEPATH)
 

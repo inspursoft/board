@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/utils"
 	"io/ioutil"
 	"net/http"
@@ -13,9 +14,9 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-const jenkinsBuildConsoleTemplateURL = "http://jenkins:8080/job/{{.JobName}}/{{.BuildSerialID}}/consoleText"
-const jenkinsStopBuildTemplateURL = "http://jenkins:8080/job/{{.JobName}}/{{.BuildSerialID}}/stop"
-const maxRetryCount = 600
+const jenkinsBuildConsoleTemplateURL = "%s/job/{{.JobName}}/{{.BuildSerialID}}/consoleText"
+const jenkinsStopBuildTemplateURL = "%s/job/{{.JobName}}/{{.BuildSerialID}}/stop"
+const maxRetryCount = 300
 const buildNumberCacheExpireSecond = time.Duration(maxRetryCount * time.Second)
 const toggleBuildingCacheExpireSecond = time.Duration(maxRetryCount * time.Second)
 
@@ -25,8 +26,10 @@ type jobConsole struct {
 }
 
 type JenkinsJobCallbackController struct {
-	baseController
+	BaseController
 }
+
+func (j *JenkinsJobCallbackController) Prepare() {}
 
 func (j *JenkinsJobCallbackController) BuildNumberCallback() {
 	userID := j.Ctx.Input.Param(":userID")
@@ -36,16 +39,7 @@ func (j *JenkinsJobCallbackController) BuildNumberCallback() {
 }
 
 type JenkinsJobController struct {
-	baseController
-}
-
-func (j *JenkinsJobController) Prepare() {
-	user := j.getCurrentUser()
-	if user == nil {
-		j.customAbort(http.StatusUnauthorized, "Need to login first.")
-		return
-	}
-	j.currentUser = user
+	BaseController
 }
 
 func (j *JenkinsJobController) getBuildNumber() (int, error) {
@@ -98,13 +92,21 @@ func (j *JenkinsJobController) Console() {
 	}
 
 	jobName := j.GetString("job_name")
+
 	if jobName == "" {
 		j.customAbort(http.StatusBadRequest, "No job name found.")
 		return
 	}
-	query := jobConsole{JobName: jobName}
+
+	repoName, err := service.ResolveRepoName(jobName, j.currentUser.Username)
+	if err != nil {
+		j.internalError(err)
+		return
+	}
+
+	query := jobConsole{JobName: repoName}
 	query.BuildSerialID = strconv.Itoa(buildNumber)
-	buildConsoleURL, err := utils.GenerateURL(jenkinsBuildConsoleTemplateURL, query)
+	buildConsoleURL, err := utils.GenerateURL(fmt.Sprintf(jenkinsBuildConsoleTemplateURL, jenkinsBaseURL()), query)
 	if err != nil {
 		j.internalError(err)
 		return
@@ -201,9 +203,16 @@ func (j *JenkinsJobController) Stop() {
 		j.customAbort(http.StatusBadRequest, "No job name found.")
 		return
 	}
-	query := jobConsole{JobName: jobName}
+
+	repoName, err := service.ResolveRepoName(jobName, j.currentUser.Username)
+	if err != nil {
+		j.internalError(err)
+		return
+	}
+
+	query := jobConsole{JobName: repoName}
 	query.BuildSerialID = j.GetString("build_serial_id", strconv.Itoa(lastBuildNumber))
-	stopBuildURL, err := utils.GenerateURL(jenkinsStopBuildTemplateURL, query)
+	stopBuildURL, err := utils.GenerateURL(fmt.Sprintf(jenkinsStopBuildTemplateURL, jenkinsBaseURL()), query)
 	if err != nil {
 		j.internalError(err)
 		return
@@ -213,6 +222,10 @@ func (j *JenkinsJobController) Stop() {
 	if err != nil {
 		j.internalError(err)
 		return
+	}
+	err = service.ReleaseKVMRegistryByJobName(jobName)
+	if err != nil {
+		logs.Error("Failed to release KVM registry by job name: %s, error: %+v", jobName, err)
 	}
 	defer func() {
 		resp.Body.Close()

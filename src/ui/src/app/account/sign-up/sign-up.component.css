@@ -1,7 +1,28 @@
-.asterisk {
-  color: #FF0000;
+:host{
+  flex-basis: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
-.group-margin{
+div.input-container {
+  width: 500px;
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
+  color: black;
+}
+
+div.input-container cs-input {
+  margin-top: 10px;
+}
+
+div.btn-container {
+  display: flex;
+  justify-content: flex-end;
   margin-top: 50px;
+  align-items: center;
+}
+
+lib-input-ex{
+  margin-bottom: 10px;
 }

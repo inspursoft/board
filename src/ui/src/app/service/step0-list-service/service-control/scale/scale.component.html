@@ -1,0 +1,102 @@
+<div class="scale-container">
+  <status *ngIf="service" [service]="service"></status>
+  <div class="utilization-container" #alertView>
+    <lib-input-ex [inputLabel]="'SERVICE.SERVICE_CONTROL_CPU_UTILIZATION_CURRENT'| translate"
+                  [inputLabelWidth]="230"
+                  [inputDisabled]="true"
+                  [inputDefaultValue]="'50%'">
+    </lib-input-ex>
+    <lib-input-ex [inputLabel]="'SERVICE.SERVICE_CONTROL_CPU_UTILIZATION_QUALIFIED'| translate"
+                  [inputLabelWidth]="230"
+                  [inputDisabled]="isActionInWIP"
+                  [inputDefaultValue]="'55%'">
+    </lib-input-ex>
+  </div>
+  <div class="scale-line">
+    <input [disabled]="isActionInWIP" title="" type="radio" id="manually" name="scaleMethod"
+           [checked]="scaleModule == 0"
+           (change)="setScaleMethod(0)">
+    <label class="margin-left-10" for="manually">
+      {{"SERVICE.SERVICE_CONTROL_MANUALLY_SCALE"|translate}}
+    </label>
+    <lib-dropdown-ex *ngIf="scaleModule == 0"
+                     class="margin-left-10"
+                     [dropdownLabel]="'SERVICE.SERVICE_CONTROL_INSTANCE_NUMBER' | translate"
+                     [dropdownTip]="scaleNum.toString()"
+                     [dropdownDisabled]="isActionInWIP"
+                     [dropdownMinWidth]="100"
+                     [dropdownItems]="dropDownListNum"
+                     (dropdownChangeItem)="scaleNum = $event;actionEnabled()">
+    </lib-dropdown-ex>
+  </div>
+  <div class="scale-line">
+    <input title="" type="radio" id="auto" name="scaleMethod" [checked]="scaleModule == 1"
+           (change)="setScaleMethod(1)">
+    <label class="margin-left-10 disabled" for="auto">
+      {{"SERVICE.SERVICE_CONTROL_AUTO_SCALE"|translate}}
+    </label>
+    <div class="auto-scale-container" *ngIf="scaleModule == 1">
+      <div *ngFor="let hpa of autoScaleConfig;">
+        <div class="auto-scale-line-container">
+          <lib-input-ex [inputLabel]="'SERVICE.SERVICE_CONTROL_NAME'| translate"
+                        [inputLabelWidth]="100"
+                        [inputPattern]="patternHpaName"
+                        [inputIsRequired]="true"
+                        [inputDefaultValue]="hpa.hpa_name"
+                        [inputDisabled]="isActionInWIP || hpa.isEdit"
+                        (commitEvent)="hpa.hpa_name = $event">
+          </lib-input-ex>
+          <lib-input-ex [inputLabel]="'SERVICE.SERVICE_CONTROL_TARGET'| translate"
+                        [inputLabelWidth]="200"
+                        [inputIsRequired]="true"
+                        [inputDefaultValue]="hpa.cpu_percent"
+                        [inputCategory]="2"
+                        [inputDisabled]="isActionInWIP"
+                        (commitEvent)="hpa.cpu_percent = $event">
+          </lib-input-ex>
+        </div>
+        <div class="auto-scale-line-container">
+          <lib-input-ex [inputLabel]="'SERVICE.SERVICE_CONTROL_MIN_REPLICAS'| translate"
+                        [inputLabelWidth]="100"
+                        [inputDefaultValue]="hpa.min_pod"
+                        [inputMin]="1"
+                        [inputMax]="99"
+                        [inputCategory]="2"
+                        [inputDisabled]="isActionInWIP"
+                        (commitEvent)="hpa.min_pod = $event">
+          </lib-input-ex>
+          <lib-input-ex [inputLabel]="'SERVICE.SERVICE_CONTROL_MAX_REPLICAS'| translate"
+                        [inputLabelWidth]="200"
+                        [inputCategory]="2"
+                        [inputMin]="1"
+                        [inputMax]="99"
+                        [inputDisabled]="isActionInWIP"
+                        [inputDefaultValue]="hpa.max_pod"
+                        (commitEvent)="hpa.max_pod = $event">
+          </lib-input-ex>
+        </div>
+        <div class="auto-scale-delete-container" *ngIf="hpa.isEdit"
+             [class.only-delete]="hpa.hpa_status == 1">
+          <clr-alert [clrAlertType]="'warning'"
+                     [clrAlertClosable]="false"
+                     [hidden]="hpa.hpa_status == 1">
+            <div class="alert-item">
+              <span class="alert-text">
+                {{"SERVICE.SERVICE_CONTROL_HPA_DESCRIPTION" | translate}}
+              </span>
+            </div>
+          </clr-alert>
+          <a href="javascript:void(0)" [class.disabled]="isActionInWIP">
+            <clr-icon shape="trash" (click)="deleteOneHpa(hpa)"></clr-icon>
+          </a>
+        </div>
+      </div>
+      <div class="auto-scale-plus-container">
+        <clr-icon [class.disabled]="autoScaleConfig.length > 0"
+                  (click)="addOneHpa()"
+                  class="dynamic-icon" shape="plus"></clr-icon>
+        <span>{{"SERVICE.SERVICE_CONTROL_HPA_ADD" | translate}}</span>
+      </div>
+    </div>
+  </div>
+</div>

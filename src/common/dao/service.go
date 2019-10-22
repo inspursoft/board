@@ -62,8 +62,34 @@ func DeleteService(service model.ServiceStatus) (int64, error) {
 	return num, err
 }
 
+func DeleteServiceByNames(services []model.ServiceStatus) (int64, error) {
+	if services == nil || len(services) == 0 {
+		return 0, nil
+	}
+	sql, params := generateDeleteServiceByNamesSQL(services)
+	result, err := orm.NewOrm().Raw(sql, params).Exec()
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
+func generateDeleteServiceByNamesSQL(services []model.ServiceStatus) (string, []interface{}) {
+	values := ""
+	params := make([]interface{}, 0, 2*len(services))
+	for i, svc := range services {
+		params = append(params, svc.Name, svc.ProjectName)
+		if i != 0 {
+			values += ","
+		}
+		values += ` (?,?)`
+	}
+	sql := `delete from service_status where (name, project_name) in ( ` + values + ` )`
+	return sql, params
+}
+
 func generateServiceStatusSQL(query model.ServiceStatus, userID int64) (string, []interface{}) {
-	sql := `select distinct s.id, s.name, s.project_id, s.project_name, u.username as owner_name, s.owner_id, s.creation_time, s.status, s.public,
+	sql := `select distinct s.id, s.name, s.project_id, s.project_name, u.username as owner_name, s.owner_id, s.creation_time, s.update_time, s.status, s.type, s.public, s.source,
 	(select if(count(s0.id), 1, 0) from service_status s0 where s0.deleted = 0 and s0.id = s.id and s0.project_id in (
 		select p0.id
 		from project p0
@@ -85,6 +111,10 @@ func generateServiceStatusSQL(query model.ServiceStatus, userID int64) (string, 
 	params := make([]interface{}, 0)
 	params = append(params, userID, userID, userID, userID)
 
+	if query.ProjectID != 0 {
+		params = append(params, query.ProjectID)
+		sql += ` and s.project_id = ?`
+	}
 	if query.Name != "" {
 		params = append(params, "%"+query.Name+"%")
 		sql += ` and s.name like ? `
@@ -118,7 +148,7 @@ func GetPaginatedServiceData(query model.ServiceStatus, userID int64, pageIndex 
 	if err != nil {
 		return nil, err
 	}
-	sql += getOrderSQL(serviceTable, orderField, orderAsc) + ` limit ?, ?`
+	sql += getOrderSQL(orderField, orderAsc) + ` limit ?, ?`
 	params = append(params, pagination.GetPageOffset(), pagination.PageSize)
 	logs.Debug("%+v", pagination.String())
 
@@ -154,17 +184,12 @@ func SyncServiceData(service model.ServiceStatus) (int64, error) {
 	return serviceID, err
 }
 
-func GetSelectableServices(pName string, sName string) ([]string, error) {
+func GetServices(field string, value interface{}, selectedFields ...string) ([]model.ServiceStatus, error) {
+	services := make([]model.ServiceStatus, 0)
 	o := orm.NewOrm()
-	sql := `select s.name
-	from service_status s 
-	where s.deleted = 0 and s.status >= 1
-	and s.project_name = ? and s.name != ?`
-
-	params := make([]interface{}, 0)
-	params = append(params, pName, sName)
-
-	var serviceList []string
-	_, err := o.Raw(sql, params).QueryRows(&serviceList)
-	return serviceList, err
+	_, err := o.QueryTable("service_status").Filter(field, value).Filter("deleted", 0).All(&services, selectedFields...)
+	if err != nil {
+		return nil, err
+	}
+	return services, nil
 }

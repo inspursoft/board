@@ -9,6 +9,8 @@ import (
 
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/protocol/packp"
+	"gopkg.in/src-d/go-git.v4/plumbing/protocol/packp/capability"
+	"gopkg.in/src-d/go-git.v4/plumbing/protocol/packp/sideband"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport"
 	"gopkg.in/src-d/go-git.v4/utils/ioutil"
 )
@@ -17,7 +19,7 @@ type rpSession struct {
 	*session
 }
 
-func newReceivePackSession(c *http.Client, ep transport.Endpoint, auth transport.AuthMethod) (transport.ReceivePackSession, error) {
+func newReceivePackSession(c *http.Client, ep *transport.Endpoint, auth transport.AuthMethod) (transport.ReceivePackSession, error) {
 	s, err := newSession(c, ep, auth)
 	return &rpSession{s}, err
 }
@@ -52,6 +54,17 @@ func (s *rpSession) ReceivePack(ctx context.Context, req *packp.ReferenceUpdateR
 		return nil, err
 	}
 
+	var d *sideband.Demuxer
+	if req.Capabilities.Supports(capability.Sideband64k) {
+		d = sideband.NewDemuxer(sideband.Sideband64k, r)
+	} else if req.Capabilities.Supports(capability.Sideband) {
+		d = sideband.NewDemuxer(sideband.Sideband, r)
+	}
+	if d != nil {
+		d.Progress = req.Progress
+		r = d
+	}
+
 	rc := ioutil.NewReadCloser(r, res.Body)
 
 	report := packp.NewReportStatus()
@@ -76,8 +89,8 @@ func (s *rpSession) doRequest(
 		return nil, plumbing.NewPermanentError(err)
 	}
 
-	applyHeadersToRequest(req, content, s.endpoint.Host(), transport.ReceivePackServiceName)
-	s.applyAuthToRequest(req)
+	applyHeadersToRequest(req, content, s.endpoint.Host, transport.ReceivePackServiceName)
+	s.ApplyAuthToRequest(req)
 
 	res, err := s.client.Do(req.WithContext(ctx))
 	if err != nil {

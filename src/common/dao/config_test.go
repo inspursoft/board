@@ -1,6 +1,7 @@
-package dao
+package dao_test
 
 import (
+	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"testing"
 
@@ -11,10 +12,10 @@ import (
 func TestAddConfig(t *testing.T) {
 	assert := assert.New(t)
 	config := model.Config{Name: "auth_mode", Value: "db_auth"}
-	_, err := AddOrUpdateConfig(config)
+	_, err := dao.AddOrUpdateConfig(config)
 	assert.Nil(err, "Should has no errors while executing config adding.")
 
-	c, _ := GetConfig("auth_mode")
+	c, _ := dao.GetConfig("auth_mode")
 	assert.NotNil(c, "Should not nil with finding this key: auth_mode")
 	assert.Equal(c.Value, "db_auth", "Should get value db_auth.")
 }
@@ -22,10 +23,10 @@ func TestAddConfig(t *testing.T) {
 func TestUpdateConfig(t *testing.T) {
 	assert := assert.New(t)
 	config := model.Config{Name: "auth_mode", Value: "ldap_auth"}
-	_, err := AddOrUpdateConfig(config)
+	_, err := dao.AddOrUpdateConfig(config)
 	assert.Nil(err, "Should has no errors while executing config updating.")
 
-	c, _ := GetConfig("auth_mode")
+	c, _ := dao.GetConfig("auth_mode")
 	assert.NotNil(c, "Should not nil with finding this key: auth_mode")
 	assert.Equal(c.Value, "ldap_auth", "Should get value ldap_auth.")
 }
@@ -33,9 +34,9 @@ func TestUpdateConfig(t *testing.T) {
 func TestDeleteConfig(t *testing.T) {
 	assert := assert.New(t)
 	key := "auth_mode"
-	_, err := DeleteConfig(key)
+	_, err := dao.DeleteConfig(key)
 	assert.Nil(err, "Should has no errors while executing config deleting.")
 
-	c, _ := GetConfig("auth_mode")
+	c, _ := dao.GetConfig("auth_mode")
 	assert.Equal(c.Name, "", "Should nil with finding this key: auth_mode")
 }

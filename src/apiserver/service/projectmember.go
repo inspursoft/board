@@ -1,6 +1,9 @@
 package service
 
 import (
+	"fmt"
+	"git/inspursoft/board/src/apiserver/service/devops/gogs"
+	"git/inspursoft/board/src/apiserver/service/devops/jenkins"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 
@@ -23,20 +26,37 @@ func GetProjectMembers(projectID int64) ([]*model.ProjectMember, error) {
 }
 
 func DeleteProjectMember(projectID int64, userID int64) (bool, error) {
+	user, err := GetUserByID(userID)
+	if err != nil {
+		return false, err
+	}
+	if user == nil {
+		return false, errors.New("no user was found with provided user ID")
+	}
+	project, err := GetProjectByID(projectID)
+	if err != nil {
+		return false, fmt.Errorf("failed to get project by ID: %d, error: %+v", projectID, err)
+	}
+
+	repoName, err := ResolveRepoName(project.Name, user.Username)
+	if err != nil {
+		return false, fmt.Errorf("failed to resolve repo name with project: %s, username: %s, error: %+v", project.Name, user.Username, err)
+	}
+	err = gogs.NewGogsHandler(user.Username, user.RepoToken).DeleteRepo(user.Username, repoName)
+	if err != nil {
+		return false, fmt.Errorf("failed to delete repo with name: %s, error: %+v", repoName, err)
+	}
+	err = jenkins.NewJenkinsHandler().DeleteJob(repoName)
+	if err != nil {
+		return false, fmt.Errorf("failed to delete Jenkins job with name: %s, error: %+v", repoName, err)
+	}
+
 	projectMember := model.ProjectMember{ID: projectID + userID}
-	_, err := dao.DeleteProjectMember(projectMember)
+	_, err = dao.DeleteProjectMember(projectMember)
 	if err != nil {
 		return false, err
 	}
 	return true, nil
-}
-
-func HasProjectAdminRole(projectID int64, userID int64) (bool, error) {
-	role, err := dao.GetProjectMemberRole(model.Project{ID: projectID}, model.User{ID: userID})
-	if err != nil {
-		return false, err
-	}
-	return (role != nil && role.ID == model.ProjectAdmin), nil
 }
 
 func IsProjectMember(projectID int64, userID int64) (bool, error) {

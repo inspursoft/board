@@ -1,68 +1,35 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { Subscription } from 'rxjs/Subscription';
-import { AppInitService } from '../app.init.service';
-import { MessageService } from '../shared/message-service/message.service';
-import { Message } from '../shared/message-service/message';
-import { BUTTON_STYLE, GUIDE_STEP, MESSAGE_TARGET } from '../shared/shared.const';
+import { Component, ViewContainerRef } from '@angular/core';
+import { HttpErrorResponse } from "@angular/common/http";
+import { TranslateService } from "@ngx-translate/core";
+import { ClrDatagridSortOrder, ClrDatagridStateInterface } from "@clr/angular";
+import { AppInitService } from '../shared.service/app-init.service';
+import { MessageService } from '../shared.service/message.service';
+import { GUIDE_STEP } from '../shared/shared.const';
 import { Project } from './project';
 import { ProjectService } from './project.service';
-import { CreateProjectComponent } from './create-project/create-project.component';
-import { MemberComponent } from './member/member.component';
-import { ActivatedRoute } from "@angular/router";
-import { ClrDatagridSortOrder, ClrDatagridStateInterface } from "@clr/angular";
+import { SharedActionService } from "../shared.service/shared-action.service";
+import { Message, RETURN_STATUS } from "../shared/shared.types";
 
 @Component({
   selector: 'project',
   styleUrls: ["./project.component.css"],
   templateUrl: 'project.component.html'
 })
-export class ProjectComponent implements OnInit, OnDestroy {
-  @ViewChild(CreateProjectComponent) createProjectModal;
-  @ViewChild(MemberComponent) memberModal;
-  _subscription: Subscription;
+export class ProjectComponent {
   totalRecordCount: number;
-  pageIndex: number = 1;  
+  pageIndex: number = 1;
   pageSize: number = 15;
   projects: Project[];
-  currentUser: {[key: string]: any};
-  isInLoading:boolean = false;
+  isInLoading: boolean = false;
   descSort = ClrDatagridSortOrder.DESC;
   oldStateInfo: ClrDatagridStateInterface;
-  constructor(
-    private activatedRoute:ActivatedRoute,
-    private appInitService: AppInitService,
-    private projectService: ProjectService,
-    private messageService: MessageService) {
-    this._subscription = this.messageService.messageConfirmed$.subscribe(m=>{
-      let confirmationMessage = <Message>m;
-      if(confirmationMessage) {
-        let project = <Project>confirmationMessage.data;
-        this.projectService
-          .deleteProject(project)
-          .then(()=>{
-            let inlineMessage = new Message();
-            inlineMessage.message = 'PROJECT.SUCCESSFUL_DELETE_PROJECT';
-            this.messageService.inlineAlertMessage(inlineMessage);
-            this.retrieve(this.oldStateInfo);
-          })
-          .catch(err=>this.messageService.dispatchError(err, ''));
-      }
-    });
-  }
 
-  ngOnInit(): void {
-    this.currentUser = this.appInitService.currentUser;
-    this.activatedRoute.fragment.subscribe((res)=>{
-      if (res && res =="create"){
-        this.createProject();
-      }
-    });
-  }
-
-  ngOnDestroy(): void {
-    if(this._subscription) {
-      this._subscription.unsubscribe();
-    }
+  constructor(private appInitService: AppInitService,
+              private projectService: ProjectService,
+              private messageService: MessageService,
+              private sharedActionService: SharedActionService,
+              private translateService: TranslateService,
+              private selfView: ViewContainerRef) {
   }
 
   retrieve(state: ClrDatagridStateInterface): void {
@@ -70,86 +37,84 @@ export class ProjectComponent implements OnInit, OnDestroy {
       if (state) {
         this.isInLoading = true;
         this.oldStateInfo = state;
-        this.projectService
-          .getProjects('', this.pageIndex, this.pageSize, state.sort.by as string, state.sort.reverse)
-          .then(paginatedProjects => {
+        this.projectService.getProjects('', this.pageIndex, this.pageSize, state.sort.by as string, state.sort.reverse).subscribe(
+          paginatedProjects => {
             this.totalRecordCount = paginatedProjects.pagination.total_count;
             this.projects = paginatedProjects.project_list;
-            this.isInLoading = false;
-          })
-          .catch(err => {
-            this.messageService.dispatchError(err, 'PROJECT.FAILED_TO_RETRIEVE_PROJECTS');
-            this.isInLoading = false;
-          });
+          },
+          () => this.isInLoading = false,
+          () => this.isInLoading = false
+        );
       }
     });
   }
 
   createProject(): void {
-    this.createProjectModal.openModal();
+    this.sharedActionService.createProjectComponent(this.selfView).subscribe((projectName: string) => {
+      this.createProjectClose();
+      if (projectName) {
+        this.retrieve(this.oldStateInfo);
+      }
+    });
   }
 
-  editProjectMember(p: Project): void {
-    if (this.isSystemAdminOrOwner(p)) {
-      this.memberModal.openModal(p);
+  editProjectMember(project: Project): void {
+    if (this.isSystemAdminOrOwner(project)) {
+      this.sharedActionService.createProjectMemberComponent(project, this.selfView);
     }
   }
 
-  confirmToDeleteProject(p: Project): void {
-    if (this.isSystemAdminOrOwner(p)) {
-      let announceMessage = new Message();
-      announceMessage.title = 'PROJECT.DELETE_PROJECT';
-      announceMessage.message = 'PROJECT.CONFIRM_TO_DELETE_PROJECT';
-      announceMessage.params = [p.project_name];
-      announceMessage.target = MESSAGE_TARGET.DELETE_PROJECT;
-      announceMessage.buttons = BUTTON_STYLE.DELETION;
-      announceMessage.data = p;
-      this.messageService.announceMessage(announceMessage);
-    }
-  }
-
-  toggleProjectPublic(project: Project, $event:MouseEvent): void {
-    let oldPublic = project.project_public;
-    this.projectService
-      .togglePublicity(project.project_id, project.project_public === 1? 0 : 1)
-      .then(()=>{
-        let toggleMessage = new Message();
-        toggleMessage.message = 'PROJECT.SUCCESSFUL_TOGGLE_PROJECT'; 
-        this.messageService.inlineAlertMessage(toggleMessage);
-        project.project_public = oldPublic === 1 ? 0 : 1;
-      })
-      .catch(err=>{
-        ($event.srcElement as HTMLInputElement).checked = oldPublic === 1;
-        this.messageService.dispatchError(err);
+  confirmToDeleteProject(project: Project): void {
+    if (this.isSystemAdminOrOwner(project)) {
+      this.translateService.get('PROJECT.CONFIRM_TO_DELETE_PROJECT', [project.project_name]).subscribe((msg: string) => {
+        this.messageService.showDeleteDialog(msg, 'PROJECT.DELETE_PROJECT').subscribe((message: Message) => {
+          if (message.returnStatus == RETURN_STATUS.rsConfirm) {
+            this.projectService.deleteProject(project).subscribe(() => {
+              this.messageService.showAlert('PROJECT.SUCCESSFUL_DELETE_PROJECT');
+              this.retrieve(this.oldStateInfo);
+            }, (error: HttpErrorResponse) => {
+              if (error.status == 422) {
+                this.messageService.showAlert('PROJECT.FAILED_TO_DELETE_PROJECT_ERROR', {alertType: "warning"})
+              }
+            })
+          }
+        });
       });
+    }
   }
 
-  get isFirstLogin(): boolean{
+  toggleProjectPublic(project: Project, $event: MouseEvent): void {
+    let oldPublic = project.project_public;
+    this.projectService.togglePublicity(project.project_id, project.project_public === 1 ? 0 : 1).subscribe(() => {
+        this.messageService.showAlert('PROJECT.SUCCESSFUL_TOGGLE_PROJECT');
+        project.project_public = oldPublic === 1 ? 0 : 1;
+      }, () => ($event.srcElement as HTMLInputElement).checked = oldPublic === 1
+    );
+  }
+
+  get isFirstLogin(): boolean {
     return this.appInitService.isFirstLogin;
   }
 
-  get guideStep(): GUIDE_STEP{
+  get guideStep(): GUIDE_STEP {
     return this.appInitService.guideStep;
   }
 
   isSystemAdminOrOwner(project: Project): boolean {
-    if (this.appInitService.currentUser) {
-      return this.appInitService.currentUser["user_system_admin"] == 1 ||
-        project.project_owner_id == this.appInitService.currentUser["user_id"];
-    }
-    return false;
+    return this.appInitService.currentUser.user_system_admin == 1 ||
+      project.project_owner_id == this.appInitService.currentUser.user_id;
   }
 
-  guideNextStep(step:GUIDE_STEP){
+  guideNextStep(step: GUIDE_STEP) {
     this.createProject();
   }
 
-  setGuideNoneStep(){
-     this.appInitService.guideStep = GUIDE_STEP.NONE_STEP;
+  setGuideNoneStep() {
+    this.appInitService.guideStep = GUIDE_STEP.NONE_STEP;
   }
 
-  createProjectClose(step: GUIDE_STEP){
-    if (this.isFirstLogin){
+  createProjectClose() {
+    if (this.isFirstLogin) {
       this.appInitService.guideStep = GUIDE_STEP.SERVICE_LIST;
     }
   }

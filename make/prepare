@@ -30,9 +30,12 @@ def prep_conf_dir(root, name):
     return absolute_path
 
 def render(src, dest, **kw):
+    if not os.path.exists(os.path.dirname(dest)):
+        os.makedirs(os.path.dirname(dest))
     t = Template(open(src, 'r').read())
     with open(dest, 'w') as f:
         f.write(t.substitute(**kw))
+    os.chmod(dest, 0755)
     print("Generated configuration file: %s" % dest)
 
 def delfile(src):
@@ -47,28 +50,25 @@ def delfile(src):
             itemsrc=os.path.join(src,item)
             delfile(itemsrc)
 
+
+def create_cert(conf_path, key_path="/data/board/cert/board-key.pem", cert_path="/data/board/cert/board.pem", ca_key="/etc/board/cert/ca-key.pem", ca_cert="/etc/board/cert/ca.pem"):
+	cert_dir = os.path.dirname(cert_path)
+	csr_path = os.path.join(cert_dir, "request.csr")
+	rc = subprocess.call(["openssl", "genrsa", "-out", key_path, "2048"], stdout=FNULL, stderr=subprocess.STDOUT)
+	if rc != 0:
+		return rc
+	rc = subprocess.call(["openssl", "req", "-new", "-key", key_path, "-out", csr_path, "-config", conf_path], stdout=FNULL, stderr=subprocess.STDOUT)
+	if rc != 0:
+		return rc
+	return subprocess.call(["openssl", "x509", "-req", "-in", csr_path, "-CA", ca_cert, "-CAkey", ca_key, "-CAcreateserial", "-out", cert_path, "-days", "10000", "-extensions", "v3_ext", "-extfile", conf_path], stdout=FNULL, stderr=subprocess.STDOUT)
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--conf', dest='cfgfile', default=base_dir+'/board.cfg',type=str,help="the path of Board configuration file")
 args = parser.parse_args()
 
 delfile(config_dir)
 
-def render(src, dest, **kw):
-    t = Template(open(src, 'r').read())
-    with open(dest, 'w') as f:
-        f.write(t.substitute(**kw))
-    print("Generated configuration file: %s" % dest)
-
 FNULL = open(os.devnull, 'w')
-
-def generate_ssh_key_pairs(dest_path=os.path.join(config_dir,'ssh_keys')):
-    if not os.path.exists(dest_path):
-        os.makedirs(dest_path)
-    rc = subprocess.call(["ssh-keygen", "-t", "rsa", "-f", os.path.join(dest_path, "id_rsa"), "-q", "-N", ""], stdout=FNULL, stderr=subprocess.STDOUT)
-    if rc != 0:
-        return rc
-generate_ssh_key_pairs()
-
 
 #Read Configurations
 conf = StringIO.StringIO()
@@ -78,21 +78,59 @@ conf.seek(0, os.SEEK_SET)
 rcp = ConfigParser.RawConfigParser()
 rcp.readfp(conf)
 
+arch_type = rcp.get("configuration", "arch_type")
 hostname = rcp.get("configuration", "hostname")
+api_server_port = rcp.get("configuration", "api_server_port")
+db_password = rcp.get("configuration", "db_password")
+kube_http_scheme = rcp.get("configuration", "kube_http_scheme")
 kube_master_ip = rcp.get("configuration", "kube_master_ip")
 kube_master_port = rcp.get("configuration", "kube_master_port")
-db_ip = rcp.get("configuration", "db_ip")
-db_port = rcp.get("configuration", "db_port")
 board_admin_password = rcp.get("configuration", "board_admin_password")
-db_password = rcp.get("configuration", "db_password")
 token_cache_expire_seconds = rcp.get("configuration", "token_cache_expire_seconds")
 token_expire_seconds = rcp.get("configuration", "token_expire_seconds")
 registry_ip = rcp.get("configuration", "registry_ip")
 registry_port = rcp.get("configuration", "registry_port")
+image_baseline_time = rcp.get("configuration", "image_baseline_time")
 
 auth_mode = rcp.get("configuration", "auth_mode")
 verification_url = rcp.get("configuration", "verification_url")
 redirection_url = rcp.get("configuration", "redirection_url")
+
+elaseticsearch_memory_in_megabytes = rcp.get("configuration", "elaseticsearch_memory_in_megabytes")
+
+gogits_host_ip = rcp.get("configuration", "gogits_host_ip")
+gogits_host_port = rcp.get("configuration", "gogits_host_port")
+gogits_ssh_port = rcp.get("configuration", "gogits_ssh_port")
+
+jenkins_host_ip = rcp.get("configuration", "jenkins_host_ip")
+jenkins_host_port = rcp.get("configuration", "jenkins_host_port")
+jenkins_node_ip = rcp.get("configuration", "jenkins_node_ip")
+jenkins_node_ssh_port = rcp.get("configuration", "jenkins_node_ssh_port")
+jenkins_node_username = rcp.get("configuration", "jenkins_node_username")
+jenkins_node_password = rcp.get("configuration", "jenkins_node_password")
+jenkins_node_volume = rcp.get("configuration", "jenkins_node_volume")
+jenkins_execution_mode = rcp.get("configuration", "jenkins_execution_mode")
+
+kvm_registry_size = rcp.get("configuration", "kvm_registry_size")
+kvm_registry_port = rcp.get("configuration", "kvm_registry_port")
+kvm_toolkits_path = rcp.get("configuration", "kvm_toolkits_path")
+
+tiller_port = rcp.get("configuration", "tiller_port")
+
+###email configuration
+email_identity = rcp.get("configuration", "email_identity")
+email_host = rcp.get("configuration", "email_server")
+email_port = rcp.get("configuration", "email_server_port")
+email_usr = rcp.get("configuration", "email_username")
+email_pwd = rcp.get("configuration", "email_password")
+email_from = rcp.get("configuration", "email_from")
+email_ssl = rcp.get("configuration", "email_ssl")
+########
+
+audit_debug = rcp.get("configuration", "audit_debug")
+
+### kubernetes dns suffix
+dns_suffix = rcp.get("configuration", "dns_suffix")
 
 ###ldap configuration
 ldap_url = rcp.get("configuration", "ldap_url")
@@ -118,15 +156,19 @@ ldap_timeout = rcp.get("configuration", "ldap_timeout")
 
 #Setting Directory
 apiserver_config_dir = os.path.join(config_dir,"apiserver")
+collector_config_dir = os.path.join(config_dir,"collector")
 if not os.path.exists(apiserver_config_dir):
     os.makedirs(os.path.join(config_dir, "apiserver"))
-apiserver_conf= os.path.join(config_dir, "apiserver", "app.conf")
+if not os.path.exists(collector_config_dir):
+    os.makedirs(os.path.join(config_dir, "collector"))
 apiserver_env= os.path.join(config_dir, "apiserver", "env")
+if not os.path.exists(os.path.join(apiserver_config_dir, "kvmregistry")):
+    os.makedirs(os.path.join(apiserver_config_dir, "kvmregistry"))
+apiserver_kvm = os.path.join(apiserver_config_dir, "kvmregistry")
 
 tokenserver_config_dir = os.path.join(config_dir,"tokenserver")
 if not os.path.exists(tokenserver_config_dir):
     os.makedirs(os.path.join(config_dir, "tokenserver"))
-tokenserver_conf = os.path.join(config_dir, "tokenserver", "app.conf")
 tokenserver_env = os.path.join(config_dir, "tokenserver", "env")
 
 collector_config_dir = os.path.join(config_dir,"collector")
@@ -149,6 +191,11 @@ if not os.path.exists(jenkins_config_dir):
     os.makedirs(os.path.join(config_dir, "jenkins"))
 jenkins_env = os.path.join(config_dir, "jenkins", "env")
 
+gogits_config_dir = os.path.join(config_dir, "gogits")
+if not os.path.exists(gogits_config_dir):
+    os.makedirs(os.path.join(config_dir, "gogits"))
+gogits_conf = os.path.join(config_dir, "gogits", "conf", "app.ini")
+
 grafana_config_dir = os.path.join(config_dir, "grafana")
 if not os.path.exists(grafana_config_dir):
     os.makedirs(os.path.join(config_dir, "grafana"))
@@ -156,23 +203,39 @@ grafana_k8s_ds = os.path.join(grafana_config_dir, "kubernetes-datasource.json")
 grafana_graphite_ds = os.path.join(grafana_config_dir, "graphite-datasource.json")
 grafana_dashboard = os.path.join(grafana_config_dir, "kubernetes-dashboard.json")
 grafana_k8s = os.path.join(grafana_config_dir, "kubernetes.json")
+grafana_notifications = os.path.join(grafana_config_dir, "notifications.json")
+
+elasticsearch_config_dir = os.path.join(config_dir, "elasticsearch")
+if not os.path.exists(elasticsearch_config_dir):
+    os.makedirs(elasticsearch_config_dir)
+elasticsearch_env = os.path.join(config_dir, "elasticsearch", "env")
+
+kibana_config_dir = os.path.join(config_dir, "kibana")
 
 #Render Configure File
-render(os.path.join(templates_dir, "apiserver", "app.conf"),
-        apiserver_conf,
-        token_cache_expire_seconds=token_cache_expire_seconds,
-		db_ip=db_ip,
-        db_password=db_password)
-
 render(os.path.join(templates_dir, "apiserver", "env"),
         apiserver_env,
         hostname=hostname,
+        api_server_port=api_server_port,
+        db_password=db_password,
+        token_cache_expire_seconds=token_cache_expire_seconds,
         board_admin_password=board_admin_password,
+		kube_http_scheme=kube_http_scheme,
         kube_master_ip=kube_master_ip,
         kube_master_port=kube_master_port,
         registry_ip=registry_ip,
         registry_port=registry_port,
+        image_baseline_time=image_baseline_time,
         auth_mode=auth_mode,
+        email_host=email_host,
+        email_port=email_port,
+        email_usr=email_usr,
+        email_pwd=email_pwd,
+        email_ssl=email_ssl,
+        email_from=email_from,
+        email_identity=email_identity,
+        audit_debug=audit_debug,
+        dns_suffix=dns_suffix,
         ldap_url=ldap_url,
         ldap_searchdn =ldap_searchdn, 
         ldap_search_pwd =ldap_search_pwd,
@@ -182,34 +245,104 @@ render(os.path.join(templates_dir, "apiserver", "env"),
         ldap_scope=ldap_scope,
         ldap_timeout=ldap_timeout,
         verification_url=verification_url,
-        redirection_url=redirection_url)
+        redirection_url=redirection_url,
+        gogits_host_ip=gogits_host_ip,
+        gogits_host_port=gogits_host_port,
+        gogits_ssh_port=gogits_ssh_port,
+        jenkins_host_ip=jenkins_host_ip,
+        jenkins_host_port=jenkins_host_port,
+        jenkins_node_ip=jenkins_node_ip,
+        jenkins_node_username=jenkins_node_username,
+        jenkins_node_password=jenkins_node_password,
+        jenkins_node_ssh_port=jenkins_node_ssh_port,
+        jenkins_node_volume=jenkins_node_volume,
+        jenkins_execution_mode=jenkins_execution_mode,
+        kvm_registry_size=kvm_registry_size,
+        kvm_registry_port=kvm_registry_port,
+        kvm_toolkits_path=kvm_toolkits_path,
+        tiller_port=tiller_port)
 
-render(os.path.join(templates_dir, "tokenserver", "app.conf"),
-        tokenserver_conf,
-        token_expire_seconds=token_expire_seconds)
+if kube_http_scheme == "http":
+	for name in ["apiserver", "collector"]:
+		render(os.path.join(templates_dir, "kube", "kubeconfig_http"),
+				os.path.join(config_dir, name, "kubeconfig"),
+				kube_http_scheme=kube_http_scheme,
+				kube_master_ip=kube_master_ip,
+				kube_master_port=kube_master_port,
+				name=name)
+elif kube_http_scheme == "https":
+	if not os.path.exists("/data/board/cert"):
+		os.makedirs("/data/board/cert")
+	for name in ["apiserver", "collector"]:
+		openssl_path=os.path.join(config_dir, name, "openssl.conf")
+		key_path=os.path.join("/data/board/cert", name+'-key.pem')
+		cert_path=os.path.join("/data/board/cert", name+'.pem')
+		render(os.path.join(templates_dir, "kube", "kubeconfig_https"),
+				os.path.join(config_dir, name, "kubeconfig"),
+				kube_http_scheme=kube_http_scheme,
+				kube_master_ip=kube_master_ip,
+				kube_master_port=kube_master_port,
+				name=name)
+		render(os.path.join(templates_dir, "kube", "openssl.conf"),
+				openssl_path,
+				kube_master_ip=kube_master_ip,
+				name=name)
+		rc = create_cert(openssl_path, key_path=key_path, cert_path=cert_path)
+		if rc != 0:
+			print("Create the Board cert failed, please read the documents for Board.")
+			exit(1)
+
+if os.path.exists(os.path.join(apiserver_config_dir, "kvm")):
+    shutil.rmtree(os.path.join(apiserver_config_dir, "kvm"))
+shutil.copytree(os.path.join(templates_dir, "apiserver", "kvm"), os.path.join(apiserver_config_dir, "kvm"))
+
+if os.path.exists(os.path.join(apiserver_config_dir, "kvmregistry")):
+    shutil.rmtree(os.path.join(apiserver_config_dir, "kvmregistry"))
+
+if jenkins_execution_mode != "single":
+    subprocess.call("docker run --rm -v `pwd`/templates/apiserver/kvmregistry:/go/src -w=/go/src golang:1.9.6 go build -o kvmregistry", shell=True)
+    os.mkdir(os.path.join(apiserver_config_dir, "kvmregistry"))
+    shutil.copyfile(os.path.join(templates_dir, "apiserver", "kvmregistry", "kvmregistry"), os.path.join(apiserver_config_dir, "kvmregistry", "kvmregistry"))
+    shutil.copyfile(os.path.join(templates_dir, "apiserver", "kvmregistry", "affinity.ini"), os.path.join(apiserver_config_dir, "kvmregistry", "affinity.ini"))
+    shutil.copyfile(os.path.join(templates_dir, "apiserver", "kvmregistry", "register.sh"), os.path.join(apiserver_config_dir, "kvmregistry", "register.sh"))
+    shutil.copyfile(os.path.join(templates_dir, "apiserver", "kvmregistry", "release.sh"), os.path.join(apiserver_config_dir, "kvmregistry", "release.sh"))
 
 render(os.path.join(templates_dir, "tokenserver", "env"),
-        tokenserver_env)
+        tokenserver_env,
+        token_expire_seconds=token_expire_seconds)
 
 render(os.path.join(templates_dir, "collector", "env"),
         collector_conf_env,
         kube_master_ip=kube_master_ip,
         kube_master_port=kube_master_port,
-        db_ip=db_ip,
-        db_port=db_port,
         db_password=db_password)
 
 render(os.path.join(templates_dir, "db", "env"),
         db_conf_env,
         db_password=db_password)
 
-render(os.path.join(templates_dir, "proxy", "nginx.http.conf"),
-        proxy_conf)
+if arch_type == "mips":
+	render(os.path.join(templates_dir, "proxy", "nginx.http.mips.conf"),
+		proxy_conf)
+else:
+	render(os.path.join(templates_dir, "proxy", "nginx.http.conf"),
+		proxy_conf)
 
 render(os.path.join(templates_dir, "jenkins", "env"),
         jenkins_env,
-        registry_ip=registry_ip,
-        registry_port=registry_port)
+        jenkins_host_ip=jenkins_host_ip,
+        jenkins_host_port=jenkins_host_port,
+        jenkins_node_ip=jenkins_node_ip,
+        jenkins_node_ssh_port=jenkins_node_ssh_port,
+        jenkins_node_username=jenkins_node_username,
+        jenkins_node_password=jenkins_node_password,
+        jenkins_node_volume=jenkins_node_volume)
+    
+render(os.path.join(templates_dir, "gogits", "app.ini"),
+        gogits_conf,
+        gogits_host_ip=gogits_host_ip,
+        gogits_host_port=gogits_host_port,
+        gogits_ssh_port=gogits_ssh_port)
 
 render(os.path.join(templates_dir, "grafana", "kubernetes-datasource.json"),
         grafana_k8s_ds,
@@ -223,5 +356,15 @@ shutil.copy(os.path.join(templates_dir, "grafana", "kubernetes-dashboard.json"),
 
 render(os.path.join(templates_dir, "grafana", "kubernetes.json"),
         grafana_k8s)
+
+shutil.copy(os.path.join(templates_dir, "grafana", "notifications.json"), grafana_notifications)
+
+render(os.path.join(templates_dir, "elasticsearch", "env"),
+        elasticsearch_env,
+        es_java_opts="-Xms%sm -Xmx%sm"%(elaseticsearch_memory_in_megabytes,elaseticsearch_memory_in_megabytes))
+
+if os.path.exists(kibana_config_dir):
+    shutil.rmtree(kibana_config_dir)
+shutil.copytree(os.path.join(templates_dir, "kibana"), kibana_config_dir)
 
 print("The configuration files are ready, please use docker-compose to start the service.")

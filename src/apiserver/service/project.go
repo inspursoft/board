@@ -3,30 +3,33 @@ package service
 import (
 	"errors"
 	"fmt"
+	"git/inspursoft/board/src/apiserver/service/devops/gogs"
+	"git/inspursoft/board/src/apiserver/service/devops/jenkins"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"os"
-	"path/filepath"
 
 	"github.com/astaxie/beego/logs"
 
-	modelK8s "k8s.io/client-go/pkg/api/v1"
+	//modelK8s "k8s.io/client-go/pkg/api/v1"
 
-	"k8s.io/client-go/kubernetes"
+	"git/inspursoft/board/src/common/k8sassist"
 )
 
 var repoServeURL = utils.GetConfig("REPO_SERVE_URL")
-var repoPath = utils.GetConfig("REPO_PATH")
 
 const (
 	k8sAPIversion1 = "v1"
 	adminUserID    = 1
 	adminUserName  = "admin"
 	projectPrivate = 0
+	kubeNamespace  = "kube-system"
+	istioNamespace = "istio-system"
 )
 
 func CreateProject(project model.Project) (bool, error) {
+
 	projectID, err := dao.AddProject(project)
 	if err != nil {
 		return false, err
@@ -44,21 +47,6 @@ func CreateProject(project model.Project) (bool, error) {
 	if projectID == 0 || projectMemberID == 0 {
 		return false, errors.New("failed to create projectID memberID")
 	}
-
-	// Setup git repo for this project
-	logs.Info("Initializing project %s repo", project.Name)
-	_, err = InitRepo(repoServeURL(), repoPath())
-	if err != nil {
-		return false, errors.New("Initialize Project repo failed.")
-	}
-
-	subPath := project.Name
-	if subPath != "" {
-		os.MkdirAll(filepath.Join(repoPath(), subPath), 0755)
-		if err != nil {
-			return false, errors.New("Initialize Project path failed.")
-		}
-	}
 	return true, nil
 }
 
@@ -68,6 +56,14 @@ func GetProject(project model.Project, selectedFields ...string) (*model.Project
 		return nil, err
 	}
 	return p, nil
+}
+
+func GetProjectByName(name string) (*model.Project, error) {
+	return GetProject(model.Project{Name: name, Deleted: 0}, "name", "deleted")
+}
+
+func GetProjectByID(id int64) (*model.Project, error) {
+	return GetProject(model.Project{ID: id, Deleted: 0}, "id", "deleted")
 }
 
 func ProjectExists(projectName string) (bool, error) {
@@ -99,6 +95,10 @@ func UpdateProject(project model.Project, fieldNames ...string) (bool, error) {
 	return true, nil
 }
 
+func ToggleProjectPublic(projectID int64, public int) (bool, error) {
+	return UpdateProject(model.Project{ID: projectID, Public: public}, "public")
+}
+
 func GetProjectsByUser(query model.Project, userID int64) ([]*model.Project, error) {
 	return dao.GetProjectsByUser(query, userID)
 }
@@ -111,9 +111,71 @@ func GetProjectsByMember(query model.Project, userID int64) ([]*model.Project, e
 	return dao.GetProjectsByMember(query, userID)
 }
 
-func DeleteProject(projectID int64) (bool, error) {
-	project := model.Project{ID: projectID, Deleted: 1}
-	_, err := dao.UpdateProject(project, "deleted")
+func DeleteProject(userID, projectID int64) (bool, error) {
+	project, err := GetProjectByID(projectID)
+	if err != nil {
+		logs.Error("Failed to delete project with ID: %d, error: %+v", projectID, err)
+		return false, err
+	}
+	members, err := GetProjectMembers(project.ID)
+	if err != nil {
+		return false, err
+	}
+	if len(members) > 1 {
+		logs.Error("Project %s has member that cannot be deleted.", project.Name)
+		return false, utils.ErrUnprocessableEntity
+	}
+	serviceList, err := dao.GetServiceData(model.ServiceStatus{ProjectID: projectID}, userID)
+	if err != nil {
+		logs.Error("Failed to get service data with user ID: %d, error: %+v", userID, err)
+		return false, utils.ErrUnprocessableEntity
+	}
+	if len(serviceList) > 0 {
+		logs.Error("Project %s has service deployment.", project.Name)
+		return false, utils.ErrUnprocessableEntity
+	}
+	user, err := GetUserByID(userID)
+	if err != nil {
+		logs.Error("Failed to delete user with ID: %d, error: %+v", projectID, err)
+		return false, err
+	}
+	//Delete repo in Gogits
+	repoName, err := ResolveRepoName(project.Name, user.Username)
+	if err != nil {
+		logs.Error("Failed to resolve repo name with project name: %s, username: %s, error: %+v", project.Name, user.Username, err)
+		return false, err
+	}
+	err = gogs.NewGogsHandler(user.Username, user.RepoToken).DeleteRepo(user.Username, repoName)
+	if err != nil {
+		logs.Error("Failed to delete repo with repo name: %s, error: %+v", repoName, err)
+		if err == utils.ErrUnprocessableEntity {
+			return false, err
+		}
+	}
+	repoPath := ResolveRepoPath(repoName, user.Username)
+	err = os.RemoveAll(repoPath)
+	if err != nil {
+		logs.Error("Failed to remove repo path: %s, error: %+v", repoPath, err)
+		if err == utils.ErrUnprocessableEntity {
+			return false, err
+		}
+	}
+	err = jenkins.NewJenkinsHandler().DeleteJob(repoName)
+	if err != nil {
+		logs.Error("Failed to delete Jenkins job with name: %s, error: %+v", repoName, err)
+		if err == utils.ErrUnprocessableEntity {
+			return false, err
+		}
+	}
+	//Delete namespace in cluster
+	_, err = DeleteNamespace(project.Name)
+	if err != nil {
+		logs.Error("Failed to delete namespace with project name: %s, error: %+v", project.Name, err)
+		return false, err
+	}
+	project.Name = "%" + project.Name + "%"
+	project.Deleted = 1
+	_, err = dao.UpdateProject(*project, "name", "deleted")
 	if err != nil {
 		return false, err
 	}
@@ -121,15 +183,12 @@ func DeleteProject(projectID int64) (bool, error) {
 }
 
 func NamespaceExists(projectName string) (bool, error) {
-	cli, err := K8sCliFactory("", kubeMasterURL(), k8sAPIversion1)
-	apiSet, err := kubernetes.NewForConfig(cli)
-	if err != nil {
-		return false, err
-	}
+	var config k8sassist.K8sAssistConfig
+	config.KubeConfigPath = kubeConfigPath()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	n := k8sclient.AppV1().Namespace()
 
-	n := apiSet.Namespaces()
-	var listOpt modelK8s.ListOptions
-	namespaceList, err := n.List(listOpt)
+	namespaceList, err := n.List()
 	if err != nil {
 		logs.Error("Failed to check namespace list in cluster", projectName)
 		return false, err
@@ -150,22 +209,20 @@ func CreateNamespace(projectName string) (bool, error) {
 		return false, err
 	}
 	if projectExists {
-		logs.Info("Project library already exists in cluster.")
+		logs.Info("Project %s already exists in cluster.", projectName)
 		return true, nil
 	}
 
-	cli, err := K8sCliFactory("", kubeMasterURL(), "v1")
-	apiSet, err := kubernetes.NewForConfig(cli)
-	if err != nil {
-		return false, err
-	}
+	var config k8sassist.K8sAssistConfig
+	config.KubeConfigPath = kubeConfigPath()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	n := k8sclient.AppV1().Namespace()
 
-	n := apiSet.Namespaces()
-	var namespace modelK8s.Namespace
+	var namespace model.Namespace
 	namespace.ObjectMeta.Name = projectName
 	_, err = n.Create(&namespace)
 	if err != nil {
-		logs.Error("Failed to creat namespace", projectName)
+		logs.Error("Failed to create namespace: %s, error: %+v", projectName, err)
 		return false, err
 	}
 	logs.Info(namespace)
@@ -176,38 +233,43 @@ func SyncNamespaceByOwnerID(userID int64) error {
 	query := model.Project{OwnerID: int(userID)}
 	projects, err := GetProjectsByUser(query, userID)
 	if err != nil {
-		return fmt.Errorf("Failed to get default projects: %+v", err)
+		return fmt.Errorf("Failed to get default projects with user ID: %d, error: %+v", userID, err)
 	}
 
 	for _, project := range projects {
-		_, err = CreateNamespace((*project).Name)
+		if !utils.ValidateWithPattern("project", project.Name) {
+			continue
+		}
+		projectName := project.Name
+		_, err = CreateNamespace(projectName)
 		if err != nil {
-			return fmt.Errorf("Failed to create namespace: %s", (*project).Name)
+			return fmt.Errorf("Failed to create namespace: %s, error: %+v", projectName, err)
 		}
 	}
 	return nil
 }
 
 func SyncProjectsWithK8s() error {
-	cli, err := K8sCliFactory("", kubeMasterURL(), k8sAPIversion1)
-	apiSet, err := kubernetes.NewForConfig(cli)
-	if err != nil {
-		logs.Error("Failed to get K8s cli")
-		return err
-	}
+	var config k8sassist.K8sAssistConfig
+	config.KubeConfigPath = kubeConfigPath()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	n := k8sclient.AppV1().Namespace()
 
-	n := apiSet.Namespaces()
-	var listOpt modelK8s.ListOptions
-	namespaceList, err := n.List(listOpt)
+	namespaceList, err := n.List()
 	if err != nil {
-		logs.Error("Failed to check namespace list in cluster")
+		logs.Error("Failed to check namespace list in cluster: %+v", err)
 		return err
 	}
 
 	for _, namespace := range (*namespaceList).Items {
+		// Skip kubernetes system namespace
+		if namespace.Name == kubeNamespace || namespace.Name == istioNamespace {
+			logs.Debug("Skip %s namespace", namespace.Name)
+			continue
+		}
 		existing, err := ProjectExists(namespace.Name)
 		if err != nil {
-			logs.Error("Failed to check prject existing %s %+v", namespace.Name, err)
+			logs.Error("Failed to check prject existing name: %s, error: %+v", namespace.Name, err)
 			continue
 		}
 		if existing {
@@ -219,18 +281,41 @@ func SyncProjectsWithK8s() error {
 			reqProject.OwnerID = adminUserID
 			reqProject.OwnerName = adminUserName
 			reqProject.Public = projectPrivate
-
 			isSuccess, err := CreateProject(reqProject)
 			if err != nil {
-				logs.Error("Failed to create project %s %+v", namespace.Name, err)
+				logs.Error("Failed to create project name: %s, error: %+v", reqProject.Name, err)
 				// Still can work
 				continue
 			}
 			if !isSuccess {
-				logs.Error("Failed to create project %s", namespace.Name)
+				logs.Error("Failed to create project name: %s, error: %+v", reqProject.Name, err)
 				// Still can work
 				continue
 			}
+			err = CreateRepoAndJob(adminUserID, reqProject.Name)
+			if err != nil {
+				logs.Error("Failed create repo and job with project name: %s, error: %+v", reqProject.Name, err)
+			}
+		}
+		// Sync the helm release on this project namespace
+		err = SyncHelmReleaseWithK8s(namespace.Name)
+		if err != nil {
+			logs.Error("Failed to sync helm service with project name: %s, error: %+v", namespace.Name, err)
+			// Still can work
+		}
+
+		// Sync the services in this project namespace
+		err = SyncServiceWithK8s(namespace.Name)
+		if err != nil {
+			logs.Error("Failed to sync service with project name: %s, error: %+v", namespace.Name, err)
+			// Still can work
+		}
+
+		// Sync the autoscale hpa in this project namespace
+		err = SyncAutoScaleWithK8s(namespace.Name)
+		if err != nil {
+			logs.Error("Failed to sync autoscale rule with project name: %s, error: %+v", namespace.Name, err)
+			// Still can work
 		}
 	}
 	return err
@@ -246,14 +331,12 @@ func DeleteNamespace(nameSpace string) (bool, error) {
 		return true, nil
 	}
 
-	cli, err := K8sCliFactory("", kubeMasterURL(), "v1")
-	apiSet, err := kubernetes.NewForConfig(cli)
-	if err != nil {
-		return false, err
-	}
+	var config k8sassist.K8sAssistConfig
+	config.KubeConfigPath = kubeConfigPath()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	n := k8sclient.AppV1().Namespace()
 
-	n := apiSet.Namespaces()
-	err = n.Delete(nameSpace, nil)
+	err = n.Delete(nameSpace)
 	if err != nil {
 		logs.Error("Failed to delete namespace %s", nameSpace)
 		return false, err

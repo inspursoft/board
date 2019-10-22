@@ -1,0 +1,35 @@
+div.modal-body {
+  display: flex;
+}
+
+div.info-container {
+  display: flex;
+  flex-direction: column;
+  flex-basis: 50%;
+}
+
+div.code-container {
+  flex-basis: 50%;
+  margin-left: 5px;
+  overflow-x: auto;
+}
+
+label.base-text {
+  min-width: 100px;
+  text-align: right;
+}
+
+div.line-container {
+  margin-top: 10px;
+  display: flex;
+  height: 34px;
+  align-items: center;
+}
+
+div.base-margin-top {
+  margin-top: 5px;
+}
+
+.base-margin-left {
+  margin-left: 10px;
+}

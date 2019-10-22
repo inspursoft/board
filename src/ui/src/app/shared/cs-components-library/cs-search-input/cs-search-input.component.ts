@@ -2,7 +2,8 @@
  * Created by liyanq on 15/11/2017.
  */
 import { Component, EventEmitter, Output, OnInit, ViewChild, ElementRef } from "@angular/core"
-import { Subject } from "rxjs/Subject";
+import { Subject } from "rxjs";
+import { debounceTime } from "rxjs/operators";
 
 @Component({
   selector: "cs-search-input",
@@ -21,7 +22,7 @@ export class CsSearchInput implements OnInit {
   }
 
   ngOnInit() {
-    this.searchInputChange.asObservable().debounceTime(300)
+    this.searchInputChange.asObservable().pipe(debounceTime(300))
       .subscribe(searchText => {
         this.onSearchEvent.emit(searchText);
       })

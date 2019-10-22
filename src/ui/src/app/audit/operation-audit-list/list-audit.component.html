@@ -1,0 +1,101 @@
+<div class="audit-container">
+  <div class="query-container">
+    <div class="line-container">
+      <lib-dropdown-ex [dropdownTip]="'AUDIT.AUDIT_OBJECT'| translate"
+                       [dropdownLabel]="'AUDIT.OBJECT' | translate"
+                       [dropdownLabelWidth]="100"
+                       [dropdownMinWidth]="200"
+                       [dropdownItems]="objectQueryMap"
+                       [dropdownKey]="'title'"
+                       [dropdownDisabled]="isInLoading"
+                       (dropdownChangeItem)="changeObjectQuery($event)">
+        <ng-template libItemTemp let-title="title" let-key="key">
+          <span [style.color]="key === 'ALL' ? 'blue' : 'black'">{{title | translate}}</span>
+        </ng-template>
+        <ng-template libTitleTemp let-title="title" let-key="key">
+          <span [style.color]="key === 'ALL' ? 'blue' : 'black'">{{title | translate}}</span>
+        </ng-template>
+      </lib-dropdown-ex>
+      <lib-dropdown-ex [dropdownTip]="'AUDIT.OPERATION_TYPE'| translate"
+                       [dropdownLabel]="'AUDIT.ACTION' | translate"
+                       [dropdownLabelWidth]="100"
+                       [dropdownMinWidth]="200"
+                       [dropdownItems]="actionQueryMap"
+                       [dropdownDisabled]="isInLoading"
+                       [dropdownKey]="'title'"
+                       (dropdownChangeItem)="changeActionQuery($event)">
+        <ng-template libItemTemp let-title="title" let-key="key">
+          <span [style.color]="key === 'ALL' ? 'blue' : 'black'">{{title | translate}}</span>
+        </ng-template>
+        <ng-template libTitleTemp let-title="title" let-key="key">
+          <span [style.color]="key === 'ALL' ? 'blue' : 'black'">{{title | translate}}</span>
+        </ng-template>
+      </lib-dropdown-ex>
+      <lib-dropdown-ex [dropdownTip]="'AUDIT.SELECT_STATUS'| translate"
+                       [dropdownLabel]="'AUDIT.STATUS' | translate"
+                       [dropdownLabelWidth]="100"
+                       [dropdownMinWidth]="200"
+                       [dropdownItems]="actionStatusMap"
+                       [dropdownDisabled]="isInLoading"
+                       [dropdownKey]="'title'"
+                       (dropdownChangeItem)="changeStatusQuery($event)">
+        <ng-template libItemTemp let-title="title" let-key="key">
+          <span [style.color]="key === 'ALL' ? 'blue' : 'black'">{{title | translate}}</span>
+        </ng-template>
+        <ng-template libTitleTemp let-title="title" let-key="key">
+          <span [style.color]="key === 'ALL' ? 'blue' : 'black'">{{title | translate}}</span>
+        </ng-template>
+      </lib-dropdown-ex>
+    </div>
+    <div class="line-container">
+      <lib-dropdown-ex [dropdownTip]="'AUDIT.SELECT_USER'| translate"
+                       [dropdownLabel]="'AUDIT.USER' | translate"
+                       [dropdownLabelWidth]="100"
+                       [dropdownMinWidth]="200"
+                       [dropdownItems]="userNames"
+                       [dropdownDisabled]="isInLoading"
+                       [dropdownKey]="'user_name'"
+                       (dropdownChangeItem)="changeUsernameQuery($event)">
+        <ng-template libItemTemp let-userName="user_name" let-id="user_id">
+          <span [style.color]="id === 0 ? 'blue' : 'black'">{{userName | translate}}</span>
+        </ng-template>
+        <ng-template libTitleTemp let-userName="user_name" let-id="user_id">
+          <span [style.color]="id === 0 ? 'blue' : 'black'">{{userName | translate}}</span>
+        </ng-template>
+      </lib-dropdown-ex>
+      <label class="query-title">{{"AUDIT.BEGIN" | translate}}:</label>
+      <input title="" class="date-time" type="date" clrDate [(clrDate)]="beginDate">
+      <label class="query-title custom-margin">{{"AUDIT.END" | translate}}:</label>
+      <input title="" class="date-time" type="date" clrDate [clrDate]="endDate" (clrDateChange)="changeEndData($event)">
+    </div>
+  </div>
+  <button [disabled]="isInLoading" class="btn btn-primary" (click)="queryListData()">
+    {{"AUDIT.QUERY" | translate}}
+  </button>
+</div>
+
+<clr-datagrid (clrDgRefresh)="retrieve($event)" [clrDgLoading]="isInLoading">
+  <clr-dg-column [clrDgField]="'CREATION_TIME'" [clrDgSortOrder]="descSort">
+    <clr-dg-filter [hidden]="true"></clr-dg-filter>
+    {{"AUDIT.DATE" | translate}}
+  </clr-dg-column>
+  <clr-dg-column>{{"AUDIT.OBJECT" | translate}}</clr-dg-column>
+  <clr-dg-column>{{"AUDIT.ACTION" | translate}}</clr-dg-column>
+  <clr-dg-column>{{"AUDIT.STATUS" | translate}}</clr-dg-column>
+  <clr-dg-column>{{"AUDIT.USER" | translate}}</clr-dg-column>
+  <clr-dg-row *ngFor="let audit of auditsListData">
+    <clr-dg-cell>{{audit.operation_creation_time | date:'short' }}</clr-dg-cell>
+    <clr-dg-cell>{{getObjectTitle(audit.operation_object_type) | translate}}</clr-dg-cell>
+    <clr-dg-cell>{{getActionTitle(audit.operation_action) | translate}}</clr-dg-cell>
+    <clr-dg-cell>{{getStatusTitle(audit.operation_status) | translate}}</clr-dg-cell>
+    <clr-dg-cell>{{audit.operation_user_name}}</clr-dg-cell>
+  </clr-dg-row>
+  <clr-dg-footer>
+    {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} of {{pagination.totalItems}} items
+    <clr-dg-pagination #pagination
+                       [clrDgTotalItems]="totalRecordCount"
+                       [(clrDgPage)]="auditQueryData.pageIndex"
+                       [clrDgPageSize]="auditQueryData.pageSize">
+    </clr-dg-pagination>
+  </clr-dg-footer>
+</clr-datagrid>

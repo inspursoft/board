@@ -1,0 +1,21 @@
+<div class="load-balance-container">
+  <status *ngIf="service" [service]="service"></status>
+  <div class="session-container">
+    <span>{{"SERVICE.SERVICE_CONTROL_SESSION_AFFINITY" | translate}}</span>
+    <clr-dropdown>
+      <button type="button" class="btn btn-outline-primary" clrDropdownTrigger>
+        {{sessionAffinityFlag ? 'Yes' : 'No'}}
+        <clr-icon shape="caret down"></clr-icon>
+      </button>
+      <clr-dropdown-menu *clrIfOpen>
+        <label class="dropdown-header">{{"SERVICE.SERVICE_CONTROL_SESSION_AFFINITY" | translate}}</label>
+        <button [class.active]="sessionAffinityFlag" type="button" clrDropdownItem
+                (click)="setSessionAffinityFlag(true)">Yes
+        </button>
+        <button [class.active]="!sessionAffinityFlag" type="button" clrDropdownItem
+                (click)="setSessionAffinityFlag(false)">No
+        </button>
+      </clr-dropdown-menu>
+    </clr-dropdown>
+  </div>
+</div>

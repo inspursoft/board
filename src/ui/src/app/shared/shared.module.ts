@@ -1,89 +1,78 @@
 import { NgModule } from '@angular/core';
-import { CoreModule } from '../core/core.module';
-import { AngularEchartsModule } from 'angular2-echarts';
-import { ChartComponent } from './chart/chart.component';
 import { HeaderComponent } from './header/header.component';
-import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-dialog.component';
-import { InlineAlertComponent } from './inline-alert/inline-alert.component';
-import { GlobalMessageComponent } from './global-message/global-message.component';
 import { CheckItemExistingDirective } from './directives/check-item-existing.directive';
 import { CheckItemIdenticalDirective } from './directives/check-item-identical.directive';
-
-import { MessageService } from './message-service/message.service';
-import { AuthGuard, ServiceGuard } from './auth-guard.service';
-import { CheckItemPatternDirective } from "./directives/check-item-pattern.directive";
-import { ChangePasswordComponent } from "./change-password/change-password.component";
-import { AccountSettingComponent } from "./account-setting/account-setting.component";
-
+import { CheckItemPatternDirective } from './directives/check-item-pattern.directive';
+import { ChangePasswordComponent } from './change-password/change-password.component';
+import { AccountSettingComponent } from './account-setting/account-setting.component';
 import { ValidateOnBlurDirective } from './directives/validate-onblur.directive';
-import { CsDropdownComponent } from "./cs-components-library/cs-dropdown/cs-dropdown.component";
-import { WebsocketService } from './websocket-service/websocket.service';
-import { CsSearchInput } from "./cs-components-library/cs-search-input/cs-search-input.component";
-import { CsInputComponent } from "./cs-components-library/cs-input/cs-input.component";
-import { CsInputArrayComponent } from "./cs-components-library/cs-input-array/cs-input-array.component";
-import { CreateImageComponent } from "../image/image-create/image-create.component";
-import { EnvironmentValueComponent } from "./environment-value/environment-value.component";
-import { SizePipe } from "./pipes/size-pipe";
-import { CsGuideComponent } from "./cs-components-library/cs-guide/cs-guide.component";
-import { CsProgressComponent } from "./cs-components-library/cs-progress/cs-progress.component";
-import { SafePipe } from "./pipes/safe-pipe";
+import { CsSearchInput } from './cs-components-library/cs-search-input/cs-search-input.component';
+import { EnvironmentValueComponent } from './environment-value/environment-value.component';
+import { SizePipe } from './pipes/size-pipe';
+import { CsGuideComponent } from './cs-components-library/cs-guide/cs-guide.component';
+import { CsProgressComponent } from './cs-components-library/cs-progress/cs-progress.component';
+import { SafePipe } from './pipes/safe-pipe';
+import { CreateProjectComponent } from './create-project/create-project/create-project.component';
+import { MemberComponent } from './create-project/member/member.component';
+import { CsHighlightComponent } from './cs-components-library/cs-highlight/cs-highlight.component';
+import { CsMenuItemUrlDirective, CsVerticalNavComponent } from './cs-components-library/cs-vertical-nav/cs-vertical-nav.component';
+import 'inspurprism';
+import { CsModalChildBaseSelector } from './cs-modal-base/cs-modal-child-base';
+import { CreatePvcComponent } from './create-pvc/create-pvc.component';
+import { CoreModule } from "../core/core.module";
+import { LibCheckPatternExDirective } from "./lib-directives/input-check-pattern.directive";
+import { LibCheckExistingExDirective } from "./lib-directives/input-check-existing.directive";
 
 @NgModule({
-  imports: [
-    CoreModule,
-    AngularEchartsModule
-  ],
-  declarations: [
-    ChartComponent,
-    HeaderComponent, 
-    ConfirmationDialogComponent,
-    InlineAlertComponent,
-    GlobalMessageComponent,
-    CheckItemExistingDirective,
-    CheckItemIdenticalDirective,
-    CheckItemPatternDirective,
-    ValidateOnBlurDirective,
-    ChangePasswordComponent,
-    CsDropdownComponent,
-    AccountSettingComponent,
-    CreateImageComponent,
-    EnvironmentValueComponent,
-    CsSearchInput,
-    CsInputComponent,
-    CsInputArrayComponent,
-    CsProgressComponent,
-    SizePipe,
-    SafePipe,
-    CsGuideComponent,
-  ],
+  imports: [CoreModule],
   exports: [
-    CoreModule,
-    AngularEchartsModule,
-    ChartComponent,
     HeaderComponent,
-    ConfirmationDialogComponent,
-    InlineAlertComponent,
-    GlobalMessageComponent,
     CheckItemExistingDirective,
     CheckItemIdenticalDirective,
-    CsDropdownComponent,
+    LibCheckPatternExDirective,
+    LibCheckExistingExDirective,
     CheckItemPatternDirective,
     ValidateOnBlurDirective,
-    CreateImageComponent,
     EnvironmentValueComponent,
     CsSearchInput,
-    CsInputComponent,
-    CsInputArrayComponent,
+    CsModalChildBaseSelector,
     CsGuideComponent,
     CsProgressComponent,
+    CsHighlightComponent,
+    CsVerticalNavComponent,
+    CsMenuItemUrlDirective,
     SizePipe,
     SafePipe
   ],
-  providers: [
-    AuthGuard,
-    ServiceGuard,
-    MessageService,
-    WebsocketService
+  declarations: [
+    CheckItemExistingDirective,
+    CheckItemIdenticalDirective,
+    CheckItemPatternDirective,
+    LibCheckPatternExDirective,
+    LibCheckExistingExDirective,
+    ValidateOnBlurDirective,
+    CsSearchInput,
+    CsProgressComponent,
+    CsModalChildBaseSelector,
+    SizePipe,
+    SafePipe,
+    CsGuideComponent,
+    CreateProjectComponent,
+    CsHighlightComponent,
+    CsVerticalNavComponent,
+    CsMenuItemUrlDirective,
+    AccountSettingComponent,
+    EnvironmentValueComponent,
+    MemberComponent,
+    CreatePvcComponent,
+    ChangePasswordComponent,
+    HeaderComponent,
+  ],
+  entryComponents: [
+    CreateProjectComponent,
+    MemberComponent,
+    CreatePvcComponent
   ]
 })
-export class SharedModule {}
+export class SharedModule {
+}

@@ -1,0 +1,36 @@
+div.modal-body {
+  min-height: 470px;
+}
+
+div.pv-section-container {
+  display: flex;
+  align-items: center;
+  /*height: 30px;*/
+  /*background-color: #cbe0c5;*/
+  /*border-left: solid 4px #84c38e;*/
+}
+
+div.pv-section-container span {
+  color: #356635;
+  margin-left: 10px;
+}
+
+div.dynamic-line-container {
+  display: flex;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+span.filed-text {
+  width: 180px;
+  text-align: right;
+  margin-right: 10px;
+}
+
+label.warning-info {
+  margin-left: 15px;
+  padding: 0 3px;
+  margin-top: 0;
+  max-width: 340px;
+}

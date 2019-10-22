@@ -5,6 +5,8 @@ import (
 	"errors"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
@@ -14,14 +16,14 @@ import (
 )
 
 const (
-	expircyTimeSpan       time.Duration = 900
-	selectProject                       = "SELECT_PROJECT"
-	selectImageList                     = "SELECT_IMAGES"
-	configContainerList                 = "CONFIG_CONTAINERS"
-	configExternalService               = "EXTERNAL_SERVICE"
-	configEntireService                 = "ENTIRE_SERVICE"
-	maximumPortNum                      = 32765
-	minimumPortNum                      = 30000
+	expircyTimeSpan         time.Duration = 900
+	selectProject                         = "SELECT_PROJECT"
+	configContainerList                   = "CONFIG_CONTAINERS"
+	configInitContainerList               = "CONFIG_INIT_CONTAINERS"
+	configExternalService                 = "EXTERNAL_SERVICE"
+	configEntireService                   = "ENTIRE_SERVICE"
+	maximumPortNum                        = 32765
+	minimumPortNum                        = 30000
 )
 
 var (
@@ -37,6 +39,8 @@ var (
 	serviceConfigNotSetProjectErr      = errors.New("ERR_NOT_SET_PROJECT_IN_SERVICE_CONFIG")
 	emptyExternalServiceListErr        = errors.New("ERR_EMPTY_EXTERNAL_SERVICE_LIST")
 	notFoundErr                        = errors.New("ERR_NOT_FOUND")
+	nodeOrNodeGroupNameNotFound        = errors.New("ERR_NODE_SELECTOR_NAME_NOT_FOUND")
+	resourcerequestErr                 = errors.New("ERR_INVALID_RESOURCE_REQUEST")
 )
 
 type ConfigServiceStep model.ConfigServiceStep
@@ -83,67 +87,57 @@ func (s *ConfigServiceStep) GetSelectedProject() interface{} {
 	}
 }
 
-func (s *ConfigServiceStep) SelectImageList(imageList []model.ImageIndex) *ConfigServiceStep {
-	s.ImageList = imageList
-	return s
-}
-
-func (s *ConfigServiceStep) GetSelectedImageList() interface{} {
-	return struct {
-		ProjectID   int64              `json:"project_id"`
-		ProjectName string             `json:"project_name"`
-		ImageList   []model.ImageIndex `json:"image_list"`
-	}{
-		ProjectID:   s.ProjectID,
-		ProjectName: s.ProjectName,
-		ImageList:   s.ImageList,
-	}
-}
-
 func (s *ConfigServiceStep) ConfigContainerList(containerList []model.Container) *ConfigServiceStep {
 	s.ContainerList = containerList
 	return s
 }
 
-func (s *ConfigServiceStep) GetConfigContainerList() interface{} {
-	if len(s.ContainerList) < 1 {
-		for _, image := range s.ImageList {
-			fromIndex := strings.LastIndex(image.ImageName, "/")
-			image.ProjectName = image.ImageName[:fromIndex]
-			s.ContainerList = append(s.ContainerList, model.Container{Name: image.ImageName[fromIndex+1:], Image: image})
-		}
-	} else {
-		containerList := make([]model.Container, 0)
-		for _, image := range s.ImageList {
-			hasChanged := false
-			for _, container := range s.ContainerList {
-				if image.ImageName == container.Image.ImageName && image.ImageTag == container.Image.ImageTag {
-					hasChanged = true
-					containerList = append(containerList, container)
-					break
-				}
-			}
-			if hasChanged == false {
-				fromIndex := strings.LastIndex(image.ImageName, "/")
-				image.ProjectName = image.ImageName[:fromIndex]
-				containerList = append(containerList, model.Container{Name: image.ImageName[fromIndex+1:], Image: image})
-			}
-		}
-		s.ContainerList = containerList
-	}
+func (s *ConfigServiceStep) ConfigInitContainerList(containerList []model.Container) *ConfigServiceStep {
+	s.InitContainerList = containerList
+	return s
+}
 
+func (s *ConfigServiceStep) GetConfigContainerList() interface{} {
 	return struct {
+		ProjectID     int64             `json:"project_id"`
+		ProjectName   string            `json:"project_name"`
 		ContainerList []model.Container `json:"container_list"`
 	}{
+		ProjectID:     s.ProjectID,
+		ProjectName:   s.ProjectName,
 		ContainerList: s.ContainerList,
 	}
 }
 
-func (s *ConfigServiceStep) ConfigExternalService(serviceName string, instance int, public int, externalServiceList []model.ExternalService) *ConfigServiceStep {
+func (s *ConfigServiceStep) GetConfigInitContainerList() interface{} {
+	return struct {
+		ProjectID         int64             `json:"project_id"`
+		ProjectName       string            `json:"project_name"`
+		InitContainerList []model.Container `json:"initcontainer_list"`
+	}{
+		ProjectID:         s.ProjectID,
+		ProjectName:       s.ProjectName,
+		InitContainerList: s.InitContainerList,
+	}
+}
+
+func (s *ConfigServiceStep) configExternalService(serviceName string, serviceType int, clusterIP string, instance int, public int, nodeOrNodeGroupName string, externalServiceList []model.ExternalService, sessionAffinityFlag int, sessionAffinityTime int) *ConfigServiceStep {
 	s.ServiceName = serviceName
+	s.ServiceType = serviceType
 	s.Instance = instance
 	s.Public = public
+	s.ClusterIP = clusterIP
+	s.NodeSelector = nodeOrNodeGroupName
 	s.ExternalServiceList = externalServiceList
+	s.SessionAffinityFlag = sessionAffinityFlag
+	s.SessionAffinityTime = sessionAffinityTime
+	return s
+}
+
+func (s *ConfigServiceStep) configAffinity(affinityList []model.Affinity) *ConfigServiceStep {
+	if affinityList != nil {
+		s.AffinityList = affinityList
+	}
 	return s
 }
 
@@ -151,30 +145,32 @@ func (s *ConfigServiceStep) GetConfigExternalService() interface{} {
 	return struct {
 		ProjectName         string                  `json:"project_name"`
 		ServiceName         string                  `json:"service_name"`
+		ServiceType         int                     `json:"service_type"`
 		Instance            int                     `json:"instance"`
 		Public              int                     `json:"service_public"`
+		ClusterIP           string                  `json:"cluster_ip"`
+		NodeSelector        string                  `json:"node_selector"`
 		ExternalServiceList []model.ExternalService `json:"external_service_list"`
+		AffinityList        []model.Affinity        `json:"affinity_list"`
+		SessionAffinityFlag int                     `json:"session_affinity_flag"`
+		SessionAffinityTime int                     `json:"session_affinity_time"`
 	}{
 		ProjectName:         s.ProjectName,
 		ServiceName:         s.ServiceName,
+		ServiceType:         s.ServiceType,
 		Instance:            s.Instance,
 		Public:              s.Public,
+		ClusterIP:           s.ClusterIP,
+		NodeSelector:        s.NodeSelector,
 		ExternalServiceList: s.ExternalServiceList,
+		AffinityList:        s.AffinityList,
+		SessionAffinityFlag: s.SessionAffinityFlag,
+		SessionAffinityTime: s.SessionAffinityTime,
 	}
 }
 
 type ServiceConfigController struct {
-	baseController
-}
-
-func (sc *ServiceConfigController) Prepare() {
-	user := sc.getCurrentUser()
-	if user == nil {
-		sc.customAbort(http.StatusUnauthorized, "Need to login first.")
-		return
-	}
-	sc.currentUser = user
-	sc.isSysAdmin = (user.SystemAdmin == 1)
+	BaseController
 }
 
 func (sc *ServiceConfigController) getKey() string {
@@ -193,10 +189,10 @@ func (sc *ServiceConfigController) GetConfigServiceStepAction() {
 	switch phase {
 	case selectProject:
 		result = configServiceStep.GetSelectedProject()
-	case selectImageList:
-		result = configServiceStep.GetSelectedImageList()
 	case configContainerList:
 		result = configServiceStep.GetConfigContainerList()
+	case configInitContainerList:
+		result = configServiceStep.GetConfigInitContainerList()
 	case configExternalService:
 		result = configServiceStep.GetConfigExternalService()
 	case configEntireService:
@@ -212,17 +208,16 @@ func (sc *ServiceConfigController) GetConfigServiceStepAction() {
 			return
 		}
 		sc.internalError(err)
+		return
 	}
-
-	sc.Data["json"] = result
-	sc.ServeJSON()
+	sc.renderJSON(result)
 }
 
 func (sc *ServiceConfigController) SetConfigServiceStepAction() {
 	phase := sc.GetString("phase")
 	key := sc.getKey()
 	configServiceStep := NewConfigServiceStep(key)
-	reqData, err := sc.resolveBody()
+	reqData, err := ioutil.ReadAll(sc.Ctx.Request.Body)
 	if err != nil {
 		sc.internalError(err)
 		return
@@ -230,10 +225,10 @@ func (sc *ServiceConfigController) SetConfigServiceStepAction() {
 	switch phase {
 	case selectProject:
 		sc.selectProject(key, configServiceStep)
-	case selectImageList:
-		sc.selectImageList(key, configServiceStep, reqData)
 	case configContainerList:
-		sc.configContainerList(key, configServiceStep, reqData)
+		sc.configContainerList(key, configServiceStep, configServiceStep.ConfigContainerList, reqData)
+	case configInitContainerList:
+		sc.configContainerList(key, configServiceStep, configServiceStep.ConfigInitContainerList, reqData)
 	case configExternalService:
 		sc.configExternalService(key, configServiceStep, reqData)
 	case configEntireService:
@@ -260,42 +255,11 @@ func (sc *ServiceConfigController) selectProject(key string, configServiceStep *
 		return
 	}
 
-	project, err := service.GetProject(model.Project{ID: projectID}, "id")
-	if err != nil {
-		sc.internalError(err)
-		return
-	}
-	if project == nil {
-		sc.serveStatus(http.StatusBadRequest, projectIDInvalidErr.Error())
-		return
-	}
-
+	project := sc.resolveUserPrivilegeByID(int64(projectID))
 	SetConfigServiceStep(key, configServiceStep.SelectProject(projectID, project.Name))
 }
 
-func (sc *ServiceConfigController) selectImageList(key string, configServiceStep *ConfigServiceStep, reqData []byte) {
-	var imageList []model.ImageIndex
-	err := json.Unmarshal(reqData, &imageList)
-	if err != nil {
-		sc.internalError(err)
-		return
-	}
-
-	if len(imageList) < 0 {
-		sc.serveStatus(http.StatusBadRequest, imageListInvalidErr.Error())
-		return
-	}
-	for _, image := range imageList {
-		if strings.Index(image.ImageName, "/") == -1 || len(strings.TrimSpace(image.ImageTag)) == 0 {
-			sc.serveStatus(http.StatusBadRequest, imageListInvalidErr.Error())
-			return
-		}
-	}
-
-	SetConfigServiceStep(key, configServiceStep.SelectImageList(imageList))
-}
-
-func (sc *ServiceConfigController) configContainerList(key string, configServiceStep *ConfigServiceStep, reqData []byte) {
+func (sc *ServiceConfigController) configContainerList(key string, configServiceStep *ConfigServiceStep, f func([]model.Container) *ConfigServiceStep, reqData []byte) {
 	var containerList []model.Container
 	err := json.Unmarshal(reqData, &containerList)
 	if err != nil {
@@ -303,22 +267,52 @@ func (sc *ServiceConfigController) configContainerList(key string, configService
 		return
 	}
 
-	for index, container := range containerList {
-		if container.VolumeMounts.TargetPath != "" && container.VolumeMounts.TargetStorageService == "" {
-			sc.serveStatus(http.StatusBadRequest, emptyVolumeTargetStorageServiceErr.Error())
-			return
+	//Check CPU Mem request and limit
+	for _, container := range containerList {
+		if container.CPURequest != "" && container.CPULimit != "" {
+			cpurequest, err := strconv.Atoi(strings.TrimRight(container.CPURequest, "m"))
+			if err != nil {
+				sc.serveStatus(http.StatusBadRequest, resourcerequestErr.Error())
+				return
+			}
+			cpulimit, err := strconv.Atoi(strings.TrimRight(container.CPULimit, "m"))
+			if err != nil {
+				sc.serveStatus(http.StatusBadRequest, resourcerequestErr.Error())
+				return
+			}
+			if cpurequest > cpulimit {
+				sc.serveStatus(http.StatusBadRequest, resourcerequestErr.Error())
+				return
+			}
+
 		}
-		containerList[index].VolumeMounts.VolumeName = strings.ToLower(container.VolumeMounts.VolumeName)
-		containerList[index].Name = strings.ToLower(container.Name)
+		if container.MemRequest != "" && container.MemLimit != "" {
+			memrequest, err := strconv.Atoi(strings.TrimRight(container.MemRequest, "Mi"))
+			if err != nil {
+				sc.serveStatus(http.StatusBadRequest, resourcerequestErr.Error())
+				return
+			}
+			memlimit, err := strconv.Atoi(strings.TrimRight(container.MemLimit, "Mi"))
+			if err != nil {
+				sc.serveStatus(http.StatusBadRequest, resourcerequestErr.Error())
+				return
+			}
+			if memrequest > memlimit {
+				sc.serveStatus(http.StatusBadRequest, resourcerequestErr.Error())
+				return
+			}
+
+		}
 	}
 
-	SetConfigServiceStep(key, configServiceStep.ConfigContainerList(containerList))
+	configServiceStep.ExternalServiceList = service.CheckServiceConfigPortMap(configServiceStep.ExternalServiceList, containerList)
+	SetConfigServiceStep(key, f(containerList))
 }
 
 func (sc *ServiceConfigController) configExternalService(key string, configServiceStep *ConfigServiceStep, reqData []byte) {
 	serviceName := strings.ToLower(sc.GetString("service_name"))
-	if serviceName == "" {
-		sc.serveStatus(http.StatusBadRequest, emptyServiceNameErr.Error())
+	if !utils.ValidateWithLengthRange(serviceName, 1, 63) {
+		sc.serveStatus(http.StatusBadRequest, "Service Name must be not empty and no more than 63 characters ")
 		return
 	}
 
@@ -348,21 +342,60 @@ func (sc *ServiceConfigController) configExternalService(key string, configServi
 		return
 	}
 
-	var externalServiceList []model.ExternalService
-	err = json.Unmarshal(reqData, &externalServiceList)
+	serviceType, err := sc.GetInt("service_type")
 	if err != nil {
 		sc.internalError(err)
 		return
 	}
 
-	for _, external := range externalServiceList {
-		if external.NodeConfig.NodePort > maximumPortNum || external.NodeConfig.NodePort < minimumPortNum {
-			sc.serveStatus(http.StatusBadRequest, portInvalidErr.Error())
+	clusterIP := sc.GetString("cluster_ip")
+	// TODO check valid cluster IP
+
+	// A tmp fix for headless service
+	if serviceType == model.ServiceTypeStatefulSet {
+		clusterIP = "None"
+	}
+
+	sessionAffinityFlag, err := sc.GetInt("session_affinity_flag", 0)
+	if err != nil {
+		sc.internalError(err)
+		return
+	}
+
+	sessionAffinityTime, err := sc.GetInt("session_affinity_time", 0)
+	if err != nil {
+		sc.internalError(err)
+		return
+	}
+
+	nodeOrNodeGroupName := strings.ToLower(sc.GetString("node_selector"))
+	if nodeOrNodeGroupName != "" {
+		isExists, err := service.NodeOrNodeGroupExists(nodeOrNodeGroupName)
+		if err != nil {
+			sc.internalError(err)
+			return
+		}
+		if !isExists {
+			sc.serveStatus(http.StatusBadRequest, nodeOrNodeGroupNameNotFound.Error())
 			return
 		}
 	}
 
-	SetConfigServiceStep(key, configServiceStep.ConfigExternalService(serviceName, instance, public, externalServiceList))
+	var serviceConfig model.ConfigServiceStep
+	err = json.Unmarshal(reqData, &serviceConfig)
+	if err != nil {
+		sc.internalError(err)
+		return
+	}
+
+	for _, external := range serviceConfig.ExternalServiceList {
+		if external.NodeConfig.NodePort != 0 && (external.NodeConfig.NodePort > maximumPortNum || external.NodeConfig.NodePort < minimumPortNum) {
+			sc.serveStatus(http.StatusBadRequest, portInvalidErr.Error())
+			return
+		}
+	}
+	configServiceStep.configExternalService(serviceName, serviceType, clusterIP, instance, public, nodeOrNodeGroupName, serviceConfig.ExternalServiceList, sessionAffinityFlag, sessionAffinityTime)
+	SetConfigServiceStep(key, configServiceStep.configAffinity(serviceConfig.AffinityList))
 }
 
 func (sc *ServiceConfigController) checkServiceDuplicateName(serviceName string) (bool, error) {
@@ -383,6 +416,7 @@ func (sc *ServiceConfigController) checkServiceDuplicateName(serviceName string)
 	isServiceDuplicated, err := service.ServiceExists(serviceName, project.Name)
 	if err != nil {
 		sc.internalError(err)
+		return false, err
 	}
 	return isServiceDuplicated, nil
 
@@ -392,6 +426,7 @@ func (sc *ServiceConfigController) checkEntireServiceConfig(entireService *Confi
 	project, err := service.GetProject(model.Project{ID: entireService.ProjectID}, "id")
 	if err != nil {
 		sc.internalError(err)
+		return err
 	}
 	if project == nil {
 		return projectIDInvalidErr
@@ -408,21 +443,23 @@ func (sc *ServiceConfigController) checkEntireServiceConfig(entireService *Confi
 	if isDuplicate == true {
 		return serverNameDuplicateErr
 	}
+	entireService.ProjectName = project.Name
 
 	if entireService.Instance < 1 {
 		return instanceInvalidErr
 	}
 
-	for key, container := range entireService.ContainerList {
-		entireService.ContainerList[key].VolumeMounts.VolumeName = strings.ToLower(container.VolumeMounts.VolumeName)
-		entireService.ContainerList[key].Name = strings.ToLower(container.Name)
-	}
+	//TODO: Skip check and transfer to Lower case
+	//	for key, container := range entireService.ContainerList {
+	//		entireService.ContainerList[key].VolumeMounts.VolumeName = strings.ToLower(container.VolumeMounts.VolumeName)
+	//		entireService.ContainerList[key].Name = strings.ToLower(container.Name)
+	//	}
 
 	if len(entireService.ExternalServiceList) < 1 {
 		return emptyExternalServiceListErr
 	}
 	for _, external := range entireService.ExternalServiceList {
-		if external.NodeConfig.NodePort > 32765 || external.NodeConfig.NodePort < 30000 {
+		if external.NodeConfig.NodePort != 0 && (external.NodeConfig.NodePort > maximumPortNum || external.NodeConfig.NodePort < minimumPortNum) {
 			return portInvalidErr
 		}
 	}
@@ -444,29 +481,4 @@ func (sc *ServiceConfigController) configEntireService(key string, configService
 	}
 
 	SetConfigServiceStep(key, &entireService)
-}
-
-func (sc *ServiceConfigController) GetConfigServiceFromDBAction() {
-	key := sc.getKey()
-	configServiceStep := NewConfigServiceStep(key)
-	serviceName := strings.ToLower(sc.GetString("service_name"))
-	projectName := strings.ToLower(sc.GetString("project_name"))
-	serviceData, err := service.GetService(model.ServiceStatus{Name: serviceName, ProjectName: projectName}, "name", "project_name")
-	if err != nil {
-		sc.internalError(err)
-		return
-	}
-	if serviceData == nil || serviceData.ServiceConfig == "" {
-		sc.serveStatus(http.StatusNotFound, notFoundErr.Error())
-		return
-	}
-
-	logs.Info("service config form DB is %+v\n", serviceData)
-
-	err = json.Unmarshal([]byte(serviceData.ServiceConfig), configServiceStep)
-	if err != nil {
-		sc.internalError(err)
-		return
-	}
-	SetConfigServiceStep(key, configServiceStep)
 }

@@ -43,10 +43,10 @@ export class CsGuideComponent {
       let el = this.clrInfoIconRef.nativeElement as HTMLElement;
       el.addEventListener("click",()=>{
         let signpostElement: HTMLElement = this.clrInfoIconRef.nativeElement.parentElement;
-        let divNodeList: NodeListOf<HTMLDivElement> = signpostElement.getElementsByTagName("div");
+        let divNodeList: HTMLCollectionOf<HTMLDivElement> = signpostElement.getElementsByTagName('div') as HTMLCollectionOf<HTMLDivElement>;
         for (let i = 0; i < divNodeList.length; i++) {
           let div = divNodeList.item(i);
-          if (div.className == "signpost-flex-wrap") {
+          if (div.className == "signpost-flex-wrap" || div.className == "signpost-wrap") {
             div.style.border = "none";
             div.style.background = "rgba(0, 64, 96, 0.8)";
           }
