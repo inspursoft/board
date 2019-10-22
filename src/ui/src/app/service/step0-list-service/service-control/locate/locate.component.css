@@ -1,0 +1,8 @@
+div.locate-container {
+  display: flex;
+  flex-direction: column;
+}
+
+lib-dropdown-ex.locate-dropdown {
+  margin-top: 10px;
+}

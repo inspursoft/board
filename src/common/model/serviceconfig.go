@@ -26,21 +26,21 @@ type SelectorServiceYaml struct {
 	App string
 }
 
-type ServiceStructYaml struct {
-	ApiVersion string `yaml:"apiVersion,flow"`
-	Kind       string
-	Metadata   struct {
-		Name   string
-		Labels struct {
-			App string
-		}
-	}
-	Spec struct {
-		Tpe      string              `yaml:"type,flow,omitempty"`
-		Ports    []PortsServiceYaml  `yaml:",omitempty"`
-		Selector SelectorServiceYaml `yaml:",omitempty"`
-	} `yaml:",omitempty"`
-}
+//type ServiceStructYaml struct {
+//	ApiVersion string `yaml:"apiVersion,flow"`
+//	Kind       string
+//	Metadata   struct {
+//		Name   string
+//		Labels struct {
+//			App string
+//		}
+//	}
+//	Spec struct {
+//		Tpe      string              `yaml:"type,flow,omitempty"`
+//		Ports    []PortsServiceYaml  `yaml:",omitempty"`
+//		Selector SelectorServiceYaml `yaml:",omitempty"`
+//	} `yaml:",omitempty"`
+//}
 
 type PortsDeploymentYaml struct {
 	ContainerPort int `yaml:"containerPort,flow"`
@@ -72,8 +72,12 @@ type ContainersDeploymentYaml struct {
 	Image      string
 	Workingdir string   `yaml:",omitempty"`
 	Command    []string `yaml:",omitempty"`
-	Resource   struct {
-		Request struct {
+	Resources  struct {
+		Requests struct {
+			Cpu    string `yaml:",omitempty"`
+			Memory string `yaml:",omitempty"`
+		}
+		Limits struct {
 			Cpu    string `yaml:",omitempty"`
 			Memory string `yaml:",omitempty"`
 		}
@@ -115,9 +119,20 @@ type ConfigServiceStep struct {
 	ProjectName         string            `json:"project_name"`
 	ServiceID           int64             `json:"service_id"`
 	ServiceName         string            `json:"service_name"`
+	ServiceType         int               `json:"service_type"`
 	Public              int               `json:"service_public"`
-	ImageList           []ImageIndex      `json:"image_list"`
+	NodeSelector        string            `json:"node_selector"`
 	Instance            int               `json:"instance"`
+	ClusterIP           string            `json:"cluster_ip"`
 	ContainerList       []Container       `json:"container_list"`
+	InitContainerList   []Container       `json:"initcontainer_list"`
 	ExternalServiceList []ExternalService `json:"external_service_list"`
+	AffinityList        []Affinity        `json:"affinity_list"`
+	SessionAffinityFlag int               `json:"session_affinity_flag"`
+	SessionAffinityTime int               `json:"session_affinity_time"`
+}
+
+type Affinity struct {
+	AntiFlag     int      `json:"anti_flag"`
+	ServiceNames []string `json:"service_names"`
 }

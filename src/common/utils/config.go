@@ -3,12 +3,14 @@ package utils
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/astaxie/beego/logs"
 )
 
 var configStorage map[string]interface{}
+var boardHostIP = GetConfig("BOARD_HOST_IP")
 
 func add(name string, value interface{}) {
 	configStorage[name] = value
@@ -27,17 +29,25 @@ func AddValue(name string, value interface{}) {
 }
 
 func GetIntValue(name string) int {
-	if v, ok := configStorage[name].(int); ok {
-		return v
+	if value, ok := configStorage[name].(int); ok {
+		return value
 	}
-	panic(fmt.Sprintf("Failed to get int value for key: %s", name))
+	value, err := strconv.Atoi(GetStringValue(name))
+	if err != nil {
+		panic(fmt.Sprintf("Failed to get int value for key: %s", name))
+	}
+	return value
 }
 
 func GetBoolValue(name string) bool {
-	if v, ok := configStorage[name].(bool); ok {
-		return v
+	if value, ok := configStorage[name].(bool); ok {
+		return value
 	}
-	panic(fmt.Sprintf("Failed to get bool value for key: %s", name))
+	value, err := strconv.ParseBool(GetStringValue(name))
+	if err != nil {
+		panic(fmt.Sprintf("Failed to get bool value for key: %s", name))
+	}
+	return value
 }
 
 func GetStringValue(name string, defaultValue ...string) string {
@@ -77,4 +87,92 @@ func ShowAllConfigs() {
 		}
 		logs.Info("\t%s: %v", k, v)
 	}
+}
+
+func InitializeDefaultConfig() {
+	logs.SetLogFuncCall(true)
+	logs.SetLogFuncCallDepth(4)
+
+	Initialize()
+
+	AddEnv("BOARD_HOST_IP")
+	AddEnv("API_SERVER_PORT")
+	AddEnv("DB_IP")
+	AddEnv("DB_PORT")
+	AddEnv("DB_PASSWORD")
+
+	AddEnv("BOARD_ADMIN_PASSWORD")
+
+	AddEnv("TOKEN_CACHE_EXPIRE_SECONDS")
+
+	AddEnv("KUBE_MASTER_IP")
+	AddEnv("KUBE_MASTER_PORT")
+	AddEnv("REGISTRY_IP")
+	AddEnv("REGISTRY_PORT")
+	AddEnv("IMAGE_BASELINE_TIME")
+
+	AddEnv("AUTH_MODE")
+
+	AddEnv("LDAP_URL")
+	AddEnv("LDAP_SEARCH_DN")
+	AddEnv("LDAP_SEARCH_PWD")
+	AddEnv("LDAP_BASE_DN")
+	AddEnv("LDAP_FILTER")
+	AddEnv("LDAP_UID")
+	AddEnv("LDAP_SCOPE")
+	AddEnv("LDAP_TIMEOUT")
+	AddEnv("FORCE_INIT_SYNC")
+	AddEnv("VERIFICATION_URL")
+	AddEnv("REDIRECTION_URL")
+
+	SetConfig("BOARD_API_BASE_URL", "http://%s:%s/api/v1", "BOARD_HOST_IP", "API_SERVER_PORT")
+
+	AddEnv("GOGITS_HOST_IP")
+	AddEnv("GOGITS_HOST_PORT")
+	SetConfig("GOGITS_BASE_URL", "http://%s:%s", "GOGITS_HOST_IP", "GOGITS_HOST_PORT")
+
+	AddEnv("GOGITS_SSH_PORT")
+	SetConfig("GOGITS_SSH_URL", "ssh://git@%s:%s", "GOGITS_HOST_IP", "GOGITS_SSH_PORT")
+
+	AddEnv("JENKINS_HOST_IP")
+	AddEnv("JENKINS_HOST_PORT")
+	AddEnv("JENKINS_NODE_IP")
+	AddEnv("JENKINS_NODE_USERNAME")
+	AddEnv("JENKINS_NODE_PASSWORD")
+	AddEnv("JENKINS_NODE_SSH_PORT")
+	AddEnv("JENKINS_NODE_VOLUME")
+	AddEnv("JENKINS_EXECUTION_MODE")
+	SetConfig("JENKINS_BASE_URL", "http://%s:%s", "JENKINS_HOST_IP", "JENKINS_HOST_PORT")
+
+	SetConfig("JENKINSFILE_REPO_URL", "http://%s:%s/admin/devops-jenkins.git", "GOGITS_HOST_IP", "GOGITS_HOST_PORT")
+
+	AddEnv("KVM_REGISTRY_SIZE")
+	AddEnv("KVM_REGISTRY_PORT")
+	AddEnv("KVM_TOOLKITS_PATH")
+
+	SetConfig("REGISTRY_URL", "http://%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
+	SetConfig("KUBE_MASTER_URL", "http://%s:%s", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
+	SetConfig("KUBE_NODE_URL", "http://%s:%s/api/v1/nodes", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
+
+	SetConfig("API_SERVER_URL", "http://%s:%s", "BOARD_HOST_IP", "API_SERVER_PORT")
+
+	SetConfig("REGISTRY_BASE_URI", "%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
+
+	AddValue("IS_EXTERNAL_AUTH", (GetStringValue("AUTH_MODE") != "db_auth"))
+
+	SetConfig("SYNC_K8S", "false")
+
+	AddEnv("EMAIL_HOST")
+	AddEnv("EMAIL_PORT")
+	AddEnv("EMAIL_USR")
+	AddEnv("EMAIL_PWD")
+	AddEnv("EMAIL_SSL")
+	AddEnv("EMAIL_FROM")
+	AddEnv("EMAIL_IDENTITY")
+	AddEnv("AUDIT_DEBUG")
+	AddEnv("DNS_SUFFIX")
+
+	AddEnv("TILLER_PORT")
+
+	ShowAllConfigs()
 }

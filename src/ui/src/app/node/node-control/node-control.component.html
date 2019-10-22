@@ -1,0 +1,61 @@
+<clr-modal [(clrModalOpen)]="nodeControlOpened" [clrModalSize]="'md'">
+  <h3 class="modal-title">{{ 'NODE.NODE_CONTROL' | translate }}</h3>
+  <div class="modal-body control-body">
+    <div class="node-group-list-container">
+      <span class="comment">{{'NODE.NODE_CONTROL_COMMENT1' | translate}}</span>
+      <span *ngIf="nodeGroupList.length == 0" class="no-items">{{"NODE.NODE_GROUP_NO_ITEMS" | translate}}</span>
+      <ol *ngIf="nodeGroupList.length > 0" class="list node-group-list">
+        <li class="group-list-item"
+            *ngFor="let nodeGroup of nodeGroupList"
+            (click)="setNodeGroupSelectedToAdd(nodeGroup)"
+            [class.disabled]="isActionWip"
+            [class.active]="nodeGroup.nodegroup_name == selectedAddNodeGroup"
+            [class.hidden]="nodeGroupListSelect.indexOf(nodeGroup.nodegroup_name) > -1">
+          <a href="javascript:void(0)">
+            <clr-icon shape="check" style="color: blue;"></clr-icon>
+            {{nodeGroup.nodegroup_name}}
+          </a>
+        </li>
+      </ol>
+    </div>
+    <div class="action-container">
+      <a href="javascript:void(0)"
+         class="node-control-action"
+         [class.disabled]="this.selectedAddNodeGroup == ''"
+         (click)="addNodeToNodeGroup()">
+        <clr-icon shape="caret" class="action-add"></clr-icon>
+      </a>
+      <a href="javascript:void(0)"
+         class="node-control-action"
+         [class.disabled]="this.selectedDelNodeGroup == ''"
+         (click)="deleteNodeToNodeGroup()">
+        <clr-icon shape="caret" class="action-delete"></clr-icon>
+      </a>
+    </div>
+    <div class="node-group-list-container">
+      <span class="comment">
+        {{'NODE.NODE_CONTROL_COMMENT2' | translate}}
+        :{{nodeCurrent.node_name}}
+      </span>
+      <span *ngIf="nodeGroupListSelect.length == 0" class="no-items">{{"NODE.NODE_GROUP_NO_ITEMS" | translate}}</span>
+      <ol class="list node-group-list"
+          *ngIf="nodeGroupListSelect.length > 0">
+        <li *ngFor="let nodeGroupSelect of nodeGroupListSelect"
+            class="group-list-item"
+            [class.disabled]="isActionWip"
+            (click)="setNodeGroupSelectedToDel(nodeGroupSelect)"
+            [class.active]="nodeGroupSelect == selectedDelNodeGroup">
+          <a href="javascript:void(0)">
+            {{nodeGroupSelect}}
+          </a>
+        </li>
+      </ol>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-primary" [disabled]="isActionWip" (click)="nodeControlOpened = false">
+      {{ 'BUTTON.OK' | translate }}
+    </button>
+    <span class="spinner spinner-sm" *ngIf="isActionWip"></span>
+  </div>
+</clr-modal>

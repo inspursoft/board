@@ -1,192 +1,215 @@
 package service
 
 import (
+	"errors"
+	"git/inspursoft/board/src/common/dao"
+	"git/inspursoft/board/src/common/k8sassist"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
+	"io"
+	"os"
 	"path/filepath"
-	"strings"
 
-	"k8s.io/client-go/pkg/api/unversioned"
-	"k8s.io/client-go/pkg/api/v1"
+	"github.com/astaxie/beego/logs"
 )
-
-type DeploymentConfig v1.ReplicationController
-type ServiceConfig v1.Service
-
-var registryBaseURI = utils.GetConfig("REGISTRY_BASE_URI")
 
 const (
-	hostPath           = "hostpath"
-	nfs                = "nfs"
-	emptyDir           = ""
-	deploymentFilename = "deployment.yaml"
-	serviceFilename    = "service.yaml"
+	hostPath             = "hostpath"
+	nfs                  = "nfs"
+	emptyDir             = ""
+	deploymentFilename   = "deployment.yaml"
+	statefulsetFilename  = "statefulset.yaml"
+	serviceFilename      = "service.yaml"
+	serviceStoppedStatus = 2
 )
 
-func NewDeployment() *DeploymentConfig {
-	deployConfig := DeploymentConfig{
-		TypeMeta: unversioned.TypeMeta{
-			Kind:       deploymentKind,
-			APIVersion: deploymentAPIVersion,
-		},
-		Spec: v1.ReplicationControllerSpec{
-			Template: &v1.PodTemplateSpec{
-				ObjectMeta: v1.ObjectMeta{
-					Labels: make(map[string]string),
-				},
-			},
-		},
+// DeployStatefulSetInfo is the data for yaml files of statefulset and its service
+type DeployStatefulSetInfo struct {
+	Service             *model.Service
+	ServiceFileInfo     []byte
+	StatefulSet         *model.StatefulSet
+	StatefulSetFileInfo []byte
+}
+
+type DeployInfo struct {
+	Service            *model.Service
+	ServiceFileInfo    []byte
+	Deployment         *model.Deployment
+	DeploymentFileInfo []byte
+}
+
+func DeployService(serviceConfig *model.ConfigServiceStep, registryURI string) (*DeployInfo, error) {
+	clusterConfig := &k8sassist.K8sAssistConfig{KubeConfigPath: kubeConfigPath()}
+	cli := k8sassist.NewK8sAssistClient(clusterConfig)
+	deploymentConfig := MarshalDeployment(serviceConfig, registryURI)
+	//logs.Debug("Marshaled deployment: ", deploymentConfig)
+	deploymentInfo, deploymentFileInfo, err := cli.AppV1().Deployment(serviceConfig.ProjectName).Create(deploymentConfig)
+	if err != nil {
+		logs.Error("Deploy deployment object of %s failed. error: %+v\n", serviceConfig.ServiceName, err)
+		return nil, err
 	}
-	return &deployConfig
+	logs.Debug("Created deployment: ", deploymentInfo)
+	svcConfig := MarshalService(serviceConfig)
+	serviceInfo, serviceFileInfo, err := cli.AppV1().Service(serviceConfig.ProjectName).Create(svcConfig)
+	if err != nil {
+		cli.AppV1().Deployment(serviceConfig.ProjectName).Delete(serviceConfig.ServiceName)
+		logs.Error("Deploy service object of %s failed. error: %+v\n", serviceConfig.ServiceName, err)
+		return nil, err
+	}
+
+	return &DeployInfo{
+		Service:            serviceInfo,
+		ServiceFileInfo:    serviceFileInfo,
+		Deployment:         deploymentInfo,
+		DeploymentFileInfo: deploymentFileInfo,
+	}, nil
 }
 
-func (d *DeploymentConfig) setDeploymentName(name string) {
-	d.ObjectMeta.Name = name
-	d.Spec.Template.ObjectMeta.Labels["app"] = name
+func GenerateDeployYamlFiles(deployInfo *DeployInfo, loadPath string) error {
+	if deployInfo == nil {
+		logs.Error("Deploy info is empty.")
+		return errors.New("Deploy info is empty.")
+	}
+	err := utils.GenerateFile(deployInfo.ServiceFileInfo, loadPath, serviceFilename)
+	if err != nil {
+		return err
+	}
+	err = utils.GenerateFile(deployInfo.DeploymentFileInfo, loadPath, deploymentFilename)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (d *DeploymentConfig) setDeploymentInstance(Instance *int32) {
-	d.Spec.Replicas = Instance
+// TODO: this func should be refactored with GenerateDeployYamlFiles
+// GenerateStatefulSetYamlFiles
+func GenerateStatefulSetYamlFiles(deployInfo *DeployStatefulSetInfo, loadPath string) error {
+	if deployInfo == nil {
+		logs.Error("Deploy info is empty.")
+		return errors.New("Deploy info is empty.")
+	}
+	err := utils.GenerateFile(deployInfo.ServiceFileInfo, loadPath, serviceFilename)
+	if err != nil {
+		return err
+	}
+	err = utils.GenerateFile(deployInfo.StatefulSetFileInfo, loadPath, statefulsetFilename)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (d *DeploymentConfig) setDeploymentNamespace(name string) {
-	d.ObjectMeta.Namespace = name
+func DeployServiceByYaml(projectName, loadPath string) error {
+	clusterConfig := &k8sassist.K8sAssistConfig{KubeConfigPath: kubeConfigPath()}
+	cli := k8sassist.NewK8sAssistClient(clusterConfig)
+
+	deploymentAbsName := filepath.Join(loadPath, deploymentFilename)
+	deploymentFile, err := os.Open(deploymentAbsName)
+	if err != nil {
+		return err
+	}
+
+	defer deploymentFile.Close()
+	deploymentInfo, err := cli.AppV1().Deployment(projectName).CreateByYaml(deploymentFile)
+	if err != nil {
+		logs.Error("Deploy deployment object by deployment.yaml failed, err:%+v\n", err)
+		return err
+	}
+
+	ServiceAbsName := filepath.Join(loadPath, serviceFilename)
+	serviceFile, err := os.Open(ServiceAbsName)
+	if err != nil {
+		return err
+	}
+	defer serviceFile.Close()
+	_, err = cli.AppV1().Service(projectName).CreateByYaml(serviceFile)
+	if err != nil {
+		cli.AppV1().Deployment(projectName).Delete(deploymentInfo.Name)
+		logs.Error("Deploy service object by service.yaml failed, err:%+v\n", err)
+		return err
+	}
+	return nil
 }
 
-func (d *DeploymentConfig) setDeploymentContainers(ContainerList []model.Container) {
-	for _, cont := range ContainerList {
-		container := v1.Container{}
-		container.Name = cont.Name
+//check yaml file config
+func CheckDeployYamlConfig(serviceFile, deploymentFile io.Reader, projectName string) (*DeployInfo, error) {
+	clusterConfig := &k8sassist.K8sAssistConfig{KubeConfigPath: kubeConfigPath()}
+	cli := k8sassist.NewK8sAssistClient(clusterConfig)
 
-		if cont.WorkingDir != "" {
-			container.WorkingDir = cont.WorkingDir
-		}
+	deploymentInfo, err := cli.AppV1().Deployment(projectName).CheckYaml(deploymentFile)
+	if err != nil {
+		logs.Error("Check deployment object by deployment.yaml failed, err:%+v\n", err)
+		return nil, err
+	}
 
-		if len(cont.Command) > 0 {
-			container.Command = append(container.Command, cont.Command)
-		}
+	serviceInfo, err := cli.AppV1().Service(projectName).CheckYaml(serviceFile)
+	if err != nil {
+		logs.Error("Check service object by service.yaml failed, err:%+v\n", err)
+		return nil, err
+	}
+	return &DeployInfo{
+		Service:    serviceInfo,
+		Deployment: deploymentInfo,
+	}, nil
+}
 
-		if cont.VolumeMounts.VolumeName != "" {
-			container.VolumeMounts = append(container.VolumeMounts, v1.VolumeMount{
-				Name:      cont.VolumeMounts.VolumeName,
-				MountPath: cont.VolumeMounts.ContainerPath,
-			})
-		}
-
-		if len(cont.Env) > 0 {
-			for _, enviroment := range cont.Env {
-				if enviroment.EnvName != "" {
-					container.Env = append(container.Env, v1.EnvVar{
-						Name:  enviroment.EnvName,
-						Value: enviroment.EnvValue,
-					})
-				}
+func GetStoppedSeviceNodePorts() ([]int32, error) {
+	stoppedServices, err := dao.GetServices("status", serviceStoppedStatus)
+	if err != nil {
+		logs.Error("Failed to get the services when get NodePorts.")
+		return nil, err
+	}
+	ports := []int32{}
+	type config struct {
+		Spec struct {
+			Ports []struct {
+				NodePort int `yaml:"nodePort,flow"`
 			}
 		}
-
-		for _, port := range cont.ContainerPort {
-			container.Ports = append(container.Ports, v1.ContainerPort{
-				ContainerPort: int32(port),
-			})
-		}
-
-		container.Image = registryBaseURI() + "/" + cont.Image.ImageName + ":" + cont.Image.ImageTag
-
-		d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, container)
 	}
-}
-
-func (d *DeploymentConfig) setDeploymentVolumes(ContainerList []model.Container) {
-	for _, cont := range ContainerList {
-		if strings.ToLower(cont.VolumeMounts.TargetStorageService) == hostPath {
-			d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, v1.Volume{
-				Name: cont.VolumeMounts.VolumeName,
-				VolumeSource: v1.VolumeSource{
-					HostPath: &v1.HostPathVolumeSource{
-						Path: cont.VolumeMounts.TargetPath,
-					},
-				},
-			})
-		} else if strings.ToLower(cont.VolumeMounts.TargetStorageService) == nfs {
-			index := strings.IndexByte(cont.VolumeMounts.TargetPath, '/')
-			d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, v1.Volume{
-				Name: cont.VolumeMounts.VolumeName,
-				VolumeSource: v1.VolumeSource{
-					NFS: &v1.NFSVolumeSource{
-						Server: cont.VolumeMounts.TargetPath[:index],
-						Path:   cont.VolumeMounts.TargetPath[index:],
-					},
-				},
-			})
-		}
-	}
-}
-
-func NewService() *ServiceConfig {
-	serviceConfig := ServiceConfig{
-		TypeMeta: unversioned.TypeMeta{
-			Kind:       serviceKind,
-			APIVersion: serviceAPIVersion,
-		},
-		Spec: v1.ServiceSpec{
-			Selector: make(map[string]string),
-		},
-	}
-	return &serviceConfig
-}
-
-func (s *ServiceConfig) setServiceName(name string) {
-	s.ObjectMeta.Name = name
-}
-
-func (s *ServiceConfig) setServiceSelector(name string) {
-	s.Spec.Selector["app"] = name
-}
-
-func (s *ServiceConfig) setServiceNamespace(name string) {
-	s.ObjectMeta.Namespace = name
-}
-
-func (s *ServiceConfig) setServicePort(ExternalServiceList []model.ExternalService) {
-	for _, extService := range ExternalServiceList {
-		s.Spec.Ports = append(s.Spec.Ports, v1.ServicePort{
-			Port:     int32(extService.NodeConfig.TargetPort),
-			NodePort: int32(extService.NodeConfig.NodePort),
+	for _, serviceConfig := range stoppedServices {
+		err := utils.UnmarshalYamlData([]byte(serviceConfig.ServiceYaml), &config{}, func(in interface{}) error {
+			if c, ok := in.(*config); ok {
+				for _, port := range c.Spec.Ports {
+					ports = append(ports, int32(port.NodePort))
+				}
+			}
+			return nil
 		})
+		if err != nil {
+			logs.Error("Failed to Unmarshal data of the service.")
+			return nil, err
+		}
 	}
-	s.Spec.Type = nodePort
+	return ports, nil
 }
 
-func AssembleDeploymentYaml(serviceConfig *model.ConfigServiceStep, loadPath string) error {
-	//build struct
-	instance := (int32)(serviceConfig.Instance)
-	deployConfig := NewDeployment()
-	deployConfig.setDeploymentName(serviceConfig.ServiceName)
-	deployConfig.setDeploymentNamespace(serviceConfig.ProjectName)
-	deployConfig.setDeploymentInstance(&instance)
-	deployConfig.setDeploymentContainers(serviceConfig.ContainerList)
-	deployConfig.setDeploymentVolumes(serviceConfig.ContainerList)
-	deploymentAbsName := filepath.Join(loadPath, deploymentFilename)
-	err := GenerateYamlFile(deploymentAbsName, deployConfig)
+// DeployStatefulSet is to deploy the statefulset service in k8s
+func DeployStatefulSet(serviceConfig *model.ConfigServiceStep, registryURI string) (*DeployStatefulSetInfo, error) {
+	clusterConfig := &k8sassist.K8sAssistConfig{KubeConfigPath: kubeConfigPath()}
+	cli := k8sassist.NewK8sAssistClient(clusterConfig)
+	statefulsetConfig := MarshalStatefulSet(serviceConfig, registryURI)
+	//logs.Debug("Marshaled deployment: ", deploymentConfig)
+	statefulsetInfo, statefulsetFileInfo, err := cli.AppV1().StatefulSet(serviceConfig.ProjectName).Create(statefulsetConfig)
 	if err != nil {
-		return err
+		logs.Error("Deploy statefulset object of %s failed. error: %+v\n", serviceConfig.ServiceName, err)
+		return nil, err
+	}
+	logs.Debug("Created statefulset: ", statefulsetInfo)
+	svcConfig := MarshalService(serviceConfig)
+	serviceInfo, serviceFileInfo, err := cli.AppV1().Service(serviceConfig.ProjectName).Create(svcConfig)
+	if err != nil {
+		cli.AppV1().StatefulSet(serviceConfig.ProjectName).Delete(serviceConfig.ServiceName)
+		logs.Error("Deploy service object of %s failed. error: %+v\n", serviceConfig.ServiceName, err)
+		return nil, err
 	}
 
-	return nil
-}
-
-func AssembleServiceYaml(serviceConfig *model.ConfigServiceStep, loadPath string) error {
-	//build struct
-	svcConfig := NewService()
-	svcConfig.setServiceName(serviceConfig.ServiceName)
-	svcConfig.setServiceNamespace(serviceConfig.ProjectName)
-	svcConfig.setServiceSelector(serviceConfig.ServiceName)
-	svcConfig.setServicePort(serviceConfig.ExternalServiceList)
-	ServiceAbsName := filepath.Join(loadPath, serviceFilename)
-	err := GenerateYamlFile(ServiceAbsName, svcConfig)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return &DeployStatefulSetInfo{
+		Service:             serviceInfo,
+		ServiceFileInfo:     serviceFileInfo,
+		StatefulSet:         statefulsetInfo,
+		StatefulSetFileInfo: statefulsetFileInfo,
+	}, nil
 }

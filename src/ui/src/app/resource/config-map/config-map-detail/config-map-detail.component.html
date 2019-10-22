@@ -1,0 +1,33 @@
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'md'">
+    <h3 class="modal-title">{{ 'RESOURCE.CONFIG_MAP_DETAIL_TITLE' | translate }}
+        <span *ngIf="isLoadWip" class="spinner spinner-sm"></span>
+    </h3>
+    <div class="modal-body">
+        <div class="dynamic-line-container">
+            <span class="filed-text">{{"RESOURCE.CONFIG_MAP_DETAIL_NAMESPACE" | translate}}:</span>
+            <span class="filed-text-value">{{configMapDetail.namespace}}</span>
+        </div>
+        <div class="dynamic-line-container">
+            <span class="filed-text">{{"RESOURCE.CONFIG_MAP_DETAIL_NAME" | translate}}:</span>
+            <span class="filed-text-value">{{configMapDetail.name}}</span>
+        </div>
+        <div class="dynamic-line-container">
+            <span class="filed-text">{{"RESOURCE.CONFIG_MAP_DETAIL_CREATION_TIME" | translate}}:</span>
+            <span class="filed-text-value">{{configMapDetail.creationTime | date:'short'}}</span>
+        </div>
+        <div class="dynamic-line-container">
+            <span>{{'RESOURCE.CONFIG_MAP_DETAIL_DATA_LIST' | translate}}:</span>
+        </div>
+        <div *ngFor="let data of configMapDetail.dataList;index as i" class="dynamic-container">
+            <div class="dynamic-line-container">
+                <span class="filed-text">{{data.key}}:</span>
+                <span class="filed-text-value">{{data.value}}</span>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default" (click)="modalOpened = false">
+            {{ 'BUTTON.OK' | translate }}
+        </button>
+    </div>
+</clr-modal>

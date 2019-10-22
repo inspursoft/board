@@ -1,0 +1,14 @@
+<div class="card-container" [ngStyle]="containerStyle" (dragstart)="dragStartEvent($event)"
+     (drag)="dragEvent()" [draggable]="data.status !== 'end'">
+  <div class="icon-container">
+    <a *ngIf="data.status !== 'end' && !disabled" href="javascript:void(0)">
+      <clr-icon shape="drag-handle"></clr-icon>
+    </a>
+    <a *ngIf="data.status === 'end' && !disabled" href="javascript:void(0)" (click)="removeFromList()">
+      <clr-icon shape="close"></clr-icon>
+    </a>
+  </div>
+  <div class="name-container">
+    <span>{{data.jobName}}</span>
+  </div>
+</div>

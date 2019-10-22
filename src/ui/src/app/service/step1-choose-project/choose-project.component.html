@@ -1,13 +1,16 @@
-
 <div class="select-project-container">
   <span class="filed-text">{{"SERVICE.STEP_TITLE_1"|translate}}:</span>
-  <cs-dropdown class="custom-margin"
-               [dropdownDefaultText]="'SERVICE.STEP_TITLE_1'|translate"
-               [dropdownWidth]="200"
-               [dropdownList]="projectsList"
-               [dropdownListTextKey]="'project_name'"
-               (onChange)="changeSelectProject($event)"
-               (onOnlyClickItem)="clickSelectProject($event)"></cs-dropdown>
+  <lib-dropdown-ex [dropdownKey]="'project_name'"
+                   [dropdownTip]="'SERVICE.STEP_TITLE_1' | translate"
+                   [dropdownItems]="projectsList"
+                   [dropdownMinWidth]="300"
+                   [dropdownActiveItem]="curActiveProject"
+                   (dropdownEspecialClick)="clickSelectProject()"
+                   (dropdownChangeItem)="changeSelectProject($event)">
+    <ng-template libEspecialTemp>
+      <span class="especial">{{"SERVICE.STEP_1_CREATE_PROJECT" | translate}}</span>
+    </ng-template>
+  </lib-dropdown-ex>
   <span class="custom-margin">{{"SERVICE.STEP_1_SELECT_DES"|translate}}</span>
 </div>
 <button class="btn btn-default" (click)="cancelBuildService()">

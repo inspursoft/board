@@ -1,58 +1,60 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-
-import { Message } from '../../shared/message-service/message';
-import { MessageService } from '../../shared/message-service/message.service';
-
-import { Subscription } from 'rxjs/Subscription';
-
-import { SignUp } from './sign-up';
+import { MessageService } from '../../shared.service/message.service';
 import { Account } from '../account';
 import { AccountService } from '../account.service';
+import { HttpErrorResponse } from '@angular/common/http';
+import { AppInitService } from '../../shared.service/app-init.service';
+import { CsComponentBase } from '../../shared/cs-components-library/cs-component-base';
+import { RouteSignIn } from '../../shared/shared.const';
+import { SignUp } from '../../shared/shared.types';
 
 @Component({
    templateUrl: './sign-up.component.html',
    styleUrls: [ './sign-up.component.css' ]
 })
-export class SignUpComponent {
-  isSignUpWIP:boolean = false;
+export class SignUpComponent extends CsComponentBase implements OnInit {
+  isSignUpWIP = false;
   signUpModel: SignUp = new SignUp();
-  _subscription: Subscription;
 
-  constructor(
-    private accountService: AccountService, 
-    private messageService: MessageService,
-    private router: Router) {}
-  
+  constructor(private accountService: AccountService,
+              private messageService: MessageService,
+              private appInitService: AppInitService,
+              private router: Router) {
+    super();
+  }
+
+  ngOnInit(): void {
+    if (this.appInitService.systemInfo.auth_mode !== 'db_auth') {
+      this.router.navigate(['/account/sign-in']).then();
+    }
+  }
+
   signUp(): void {
-    this.isSignUpWIP = true;
-    let account: Account = {
-      username: this.signUpModel.username,
-      email: this.signUpModel.email,
-      password: this.signUpModel.password,
-      realname: this.signUpModel.realname,
-      comment: this.signUpModel.comment
-    };
-    this.accountService
-      .signUp(account)
-      .then(res=>{
-        this.isSignUpWIP = false;
-        this.router.navigate(['/sign-in']);
-      })
-      .catch(err=>{
-        this.isSignUpWIP = false;
-        let confirmationMessage = new Message();
-        confirmationMessage.title = "ACCOUNT.ERROR";
-        if(err && err.status === 409) {
-          confirmationMessage.message = 'ACCOUNT.USERNAME_ALREADY_EXISTS';
-        } else {
-          confirmationMessage.message = "ACCOUNT.FAILED_TO_SIGN_UP";
-        }
-        this.messageService.announceMessage(confirmationMessage);
-      });
+    if (this.verifyInputExValid()) {
+      this.isSignUpWIP = true;
+      const account: Account = {
+        username: this.signUpModel.username,
+        email: this.signUpModel.email,
+        password: this.signUpModel.password,
+        realname: this.signUpModel.realname,
+        comment: this.signUpModel.comment
+      };
+      this.accountService.signUp(account).subscribe(
+        () => this.messageService.showAlert('ACCOUNT.SUCCESS_TO_SIGN_UP'),
+        (err: HttpErrorResponse) => {
+          this.isSignUpWIP = false;
+          if (err && err.status === 409) {
+            this.messageService.showOnlyOkDialog('ACCOUNT.USERNAME_ALREADY_EXISTS', 'ACCOUNT.ERROR');
+          } else {
+            this.messageService.showOnlyOkDialog('ACCOUNT.FAILED_TO_SIGN_UP', 'ACCOUNT.ERROR');
+          }
+        },
+        () => this.router.navigate([RouteSignIn]).then());
+    }
   }
 
   goBack(): void {
-    this.router.navigate(['/sign-in']);
+    this.router.navigate([RouteSignIn]).then();
   }
 }

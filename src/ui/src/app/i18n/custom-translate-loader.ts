@@ -1,10 +1,8 @@
 import { TranslateLoader } from '@ngx-translate/core';
 
-import { Observable } from 'rxjs/Observable';
-
+import { Observable, of } from 'rxjs';
 import { LANG_EN_US } from './en-us';
 import { LANG_ZH_CN } from './zh-cn';
-import "rxjs/add/observable/of"
 
 export class CustomTranslateLoader implements TranslateLoader {
   
@@ -17,6 +15,6 @@ export class CustomTranslateLoader implements TranslateLoader {
   getTranslation(lang: string): Observable<any> {
     lang = lang.toLowerCase();
     console.log('Current lang is:' + lang);
-    return Observable.of(this.supportedLangs[lang]);
+    return of(this.supportedLangs[lang]);
   }
 }

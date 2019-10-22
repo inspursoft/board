@@ -1,6 +1,9 @@
 import { Injectable } from "@angular/core";
-import { HttpClient, HttpResponse } from "@angular/common/http";
-import { User } from "../user";
+import { HttpClient, HttpHeaders, HttpResponse } from "@angular/common/http";
+import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from "../../shared/shared.const";
+import { User } from "../../shared/shared.types";
+import { Observable } from "rxjs";
+import { map } from "rxjs/operators";
 
 const BASE_URL = "/api/v1";
 
@@ -10,39 +13,44 @@ export class UserService {
   constructor(private http: HttpClient) {
   }
 
-  deleteUser(user: User): Promise<any> {
-    return this.http.delete(`${BASE_URL}/users/${user.user_id}`, {observe: "response"}).toPromise();
+  deleteUser(user: User): Observable<any> {
+    return this.http.delete(`${BASE_URL}/users/${user.user_id}`, {
+      headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
+      observe: "response"
+    });
   }
 
-  getCurrentUser(): Promise<User> {
-    return this.http.get(`${BASE_URL}/users/current`, {observe: "response"})
-      .toPromise()
-      .then((res: HttpResponse<User>) => res.body);
-  }
-
-  getUser(userID: number): Promise<User> {
+  getUser(userID: number): Observable<User> {
     return this.http.get(`${BASE_URL}/users/${userID}`, {observe: "response"})
-      .toPromise()
-      .then((res: HttpResponse<User>) => res.body);
+      .pipe(map((res: HttpResponse<User>) => res.body));
   }
 
-  changeUserPassword(userID: number, user_password_old: string, user_password_new: string): Promise<any> {
+  changeUserPassword(userID: number, user_password_old: string, user_password_new: string): Observable<any> {
     let body = {
       "user_password_old": user_password_old,
       "user_password_new": user_password_new
     };
-    return this.http.put(`${BASE_URL}/users/${userID}/password`, body, {observe: "response"}).toPromise();
+    return this.http.put(`${BASE_URL}/users/${userID}/password`, body, {
+      headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
+      observe: "response"
+    });
   }
 
-  updateUser(user: User): Promise<any> {
-    return this.http.put(`${BASE_URL}/users/${user.user_id}`, user, {observe: "response"}).toPromise()
+  updateUser(user: User): Observable<any> {
+    return this.http.put(`${BASE_URL}/users/${user.user_id}`, user, {
+      headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
+      observe: "response"
+    })
   }
 
-  newUser(userParams: User): Promise<any> {
-    return this.http.post(`${BASE_URL}/adduser`, userParams, {observe: "response"}).toPromise();
+  newUser(userParams: User): Observable<any> {
+    return this.http.post(`${BASE_URL}/adduser`, userParams, {
+      headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
+      observe: "response"
+    });
   }
 
-  getUserList(username: string, pageIndex: number, pageSize: number,sortBy: string, isReverse: boolean): Promise<Object> {
+  getUserList(username: string, pageIndex: number, pageSize: number,sortBy: string, isReverse: boolean): Observable<Object> {
     return this.http.get(`${BASE_URL}/users`, {
       observe: "response",
       params: {
@@ -52,15 +60,14 @@ export class UserService {
         'order_field': sortBy,
         'order_asc': isReverse ? "0" : "1"
       }
-    }).toPromise()
-      .then((res: HttpResponse<Object>) => res.body);
+    }).pipe(map((res: HttpResponse<Object>) => res.body));
   }
 
-  setUserSystemAdmin(userID: number, userSystemAdmin: number): Promise<any> {
-    return this.http.put(`${BASE_URL}/users/${userID}/systemadmin`, {user_system_admin: userSystemAdmin}, {observe:"response"}).toPromise();
+  setUserSystemAdmin(userID: number, userSystemAdmin: number): Observable<any> {
+    return this.http.put(`${BASE_URL}/users/${userID}/systemadmin`, {user_system_admin: userSystemAdmin}, {observe:"response"});
   }
 
-  usesChangeAccount(user: User): Promise<any> {
-    return this.http.put(`${BASE_URL}/users/changeaccount`, user, {observe:"response"}).toPromise();
+  usesChangeAccount(user: User): Observable<any> {
+    return this.http.put(`${BASE_URL}/users/changeaccount`, user, {observe:"response"});
   }
 }

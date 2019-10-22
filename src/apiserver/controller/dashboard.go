@@ -1,10 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
-
-	"io/ioutil"
-
 	"git/inspursoft/board/src/apiserver/service"
 	"net/http"
 
@@ -32,32 +28,19 @@ type DsResp struct {
 	Service service.ServiceResp `json:"service"`
 }
 
-func (p *Dashboard) Prepare() {
-	user := p.getCurrentUser()
-	if user == nil {
-		p.customAbort(http.StatusUnauthorized, "Need to login first.")
-		return
-	}
-	p.currentUser = user
-}
-func (b *Dashboard) resolveBody() (in DsBodyPara, err error) {
-	data, err := ioutil.ReadAll(b.Ctx.Request.Body)
-	json.Unmarshal(data, &in)
-	if err != nil {
-		return in, err
-	}
-	return in, nil
-}
-
 type Dashboard struct {
-	baseController
+	BaseController
 }
 
 func (s *Dashboard) GetData() {
-	req, _ := s.resolveBody()
+	var req DsBodyPara
+	err := s.resolveBody(&req)
+	if err != nil {
+		return
+	}
 	nodeName := s.GetString("node_name")
 	serviceName := s.GetString("service_name")
-	beego.Debug("node_name", nodeName)
+
 	if req.Node.TimeCount == 0 && req.Service.TimeCount == 0 {
 		s.customAbort(http.StatusBadRequest, "Time count for dashboard data retrieval cannot be empty.")
 		return
@@ -78,7 +61,7 @@ func (s *Dashboard) GetData() {
 		req.Node.TimestampBase, nodeName, req.Node.DurationTime)
 	beego.Debug(req.Node.TimeUnit, req.Node.TimeCount,
 		req.Node.TimestampBase, nodeName)
-	err := para.GetNodeDataToObj()
+	err = para.GetNodeDataToObj()
 	if err != nil {
 		s.internalError(err)
 		return
@@ -107,7 +90,5 @@ func (s *Dashboard) GetData() {
 		s.internalError(err)
 		return
 	}
-	s.Data["json"] = resp
-	s.ServeJSON()
-
+	s.renderJSON(resp)
 }

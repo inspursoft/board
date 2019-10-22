@@ -90,7 +90,7 @@ func GetPaginatedProjectsByUser(query model.Project, userID int64, pageIndex int
 	if err != nil {
 		return nil, err
 	}
-	projectsByUserSQL += getOrderSQL(projectTable, orderField, orderAsc) + ` limit ?, ?`
+	projectsByUserSQL += getOrderSQL(orderField, orderAsc) + ` limit ?, ?`
 	params = append(params, pagination.GetPageOffset(), pagination.PageSize)
 	logs.Debug("%+v", pagination.String())
 

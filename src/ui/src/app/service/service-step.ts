@@ -1,13 +1,13 @@
 import { K8sService } from "./service.k8s";
 import { Injector } from "@angular/core";
-import { AppInitService } from "../app.init.service";
-import { MessageService } from "../shared/message-service/message.service";
-import { UIServiceStepBase, ServiceStepPhase, UiServiceFactory } from "./service-step.component";
+import { AppInitService } from "../shared.service/app-init.service";
+import { MessageService } from "../shared.service/message.service";
+import { ServiceStepPhase, UiServiceFactory, UIServiceStepBase } from "./service-step.component";
 import { Router } from "@angular/router";
-import { Message } from "../shared/message-service/message";
-import { BUTTON_STYLE } from "../shared/shared.const";
+import { Message, RETURN_STATUS } from "../shared/shared.types";
+import { CsModalParentBase } from "../shared/cs-modal-base/cs-modal-parent-base";
 
-export abstract class ServiceStepBase {
+export abstract class ServiceStepBase extends CsModalParentBase {
   protected k8sService: K8sService;
   protected appInitService: AppInitService;
   protected messageService: MessageService;
@@ -15,7 +15,8 @@ export abstract class ServiceStepBase {
   protected router: Router;
   public isBack: boolean = false;
 
-  constructor(protected injector: Injector) {
+  protected constructor(protected injector: Injector) {
+    super();
     this.k8sService = injector.get(K8sService);
     this.appInitService = injector.get(AppInitService);
     this.messageService = injector.get(MessageService);
@@ -24,15 +25,11 @@ export abstract class ServiceStepBase {
   }
 
   public cancelBuildService(): void {
-    let confirmSubscription = this.messageService.messageConfirmed$.subscribe(next => {
-      this.k8sService.cancelBuildService();
-      confirmSubscription.unsubscribe();
+    this.messageService.showYesNoDialog('SERVICE.ASK_TEXT','SERVICE.ASK_TITLE').subscribe((message: Message) => {
+      if (message.returnStatus == RETURN_STATUS.rsConfirm) {
+        this.k8sService.cancelBuildService();
+      }
     });
-    let m: Message = new Message();
-    m.title = "SERVICE.ASK_TITLE";
-    m.buttons = BUTTON_STYLE.YES_NO;
-    m.message = "SERVICE.ASK_TEXT";
-    this.messageService.announceMessage(m);
   }
 
   get stepPhase(): ServiceStepPhase {

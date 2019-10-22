@@ -1,4 +1,4 @@
-FROM golang:1.8.1
+FROM golang:1.9.6
 
 MAINTAINER wangkun_lc@inspur.com
 
@@ -7,19 +7,21 @@ COPY src/common /go/src/git/inspursoft/board/src/common
 COPY src/vendor /go/src/git/inspursoft/board/vendor
 COPY src/apiserver/templates /go/bin/templates
 COPY VERSION /go/bin/VERSION
+COPY helm-v2.11.0-linux-amd64.tar.gz /usr/bin/helm.tar.gz
 
 WORKDIR /go/src/git/inspursoft/board/src/apiserver
 
 RUN go build -v -a -o /go/bin/apiserver && \
-    chmod u+x /go/bin/apiserver
+    chmod u+x /go/bin/apiserver && \
+    mkdir repos && \
+    mkdir keys && \
+    tar -zxf /usr/bin/helm.tar.gz --strip-components=1  -C /usr/bin linux-amd64/helm && \
+    rm -rf /usr/bin/helm.tar.gz
 
 WORKDIR /go/bin/
 
-COPY make/dev/container/apiserver/entrypoint.sh /go/bin/entrypoint.sh
-RUN chmod u+x entrypoint.sh
+VOLUME ["/go/bin", "/repos", "/keys"]
 
-ENTRYPOINT ["sh", "entrypoint.sh"]
-
-VOLUME ["/go/bin"]
+CMD ["apiserver"]
 
 EXPOSE 8088

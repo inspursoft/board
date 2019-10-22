@@ -1,0 +1,28 @@
+<div class="step5-container">
+  <div class="step5-deploy-container">
+    <span>{{"SERVICE.STEP_5_DEPLOY"|translate}}:</span>
+    <div class="step5-icon-container"
+         (click)="serviceDeploy()"
+         [ngClass]="{'deploy':isDeployed}">
+      <div class="step5-start-icon"></div>
+    </div>
+    <span *ngIf="isInDeployWIP" class="spinner spinner-md step5-spinner"></span>
+  </div>
+  <cs-highlight *ngIf="deployConsole" [language]="'json'" [code]="deployConsole | json"></cs-highlight>
+</div>
+<div class="step5-button-container">
+  <button class="btn btn-primary default-primary"
+          [disabled]="isDeploySuccess || !isDeployed || isDeleteInWIP"
+          (click)="deleteDeploy()">
+    {{"SERVICE.STEP_5_DELETE" | translate}}
+  </button>
+  <button class="btn btn-default" [disabled]="isDeployed" (click)="backStep()">
+    {{"BUTTON.BACK" | translate}}
+  </button>
+  <button class="btn btn-default"
+          (click)="deployComplete()"
+          [disabled]="!isDeployed || isInDeployWIP || !isDeploySuccess">
+    {{"BUTTON.OK" | translate}}
+  </button>
+  <span *ngIf="isDeleteInWIP" class="spinner spinner-sm"></span>
+</div>

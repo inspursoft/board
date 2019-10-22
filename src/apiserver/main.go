@@ -3,45 +3,48 @@ package main
 import (
 	"bytes"
 	"git/inspursoft/board/src/apiserver/controller"
-	_ "git/inspursoft/board/src/apiserver/router"
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/apiserver/service/devops/gogs"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
+
 	"io/ioutil"
-	"os"
 
 	"github.com/astaxie/beego/logs"
-
-	"path/filepath"
 
 	"github.com/astaxie/beego"
 )
 
 const (
-	adminUserID            = 1
-	defaultInitialPassword = "123456a?"
-	baseRepoPath           = "/repos"
-	sshKeyPath             = "/root/.ssh/id_rsa"
-	defaultProject         = "library"
+	defaultDBServer             = "db"
+	defaultDBPort               = "3306"
+	defaultAPIServerPort        = "8088"
+	defaultTokenServer          = "tokenserver"
+	defaultTokenServerPort      = "4000"
+	defaultTokenCacheExpireTime = "1800"
+	defaultKubeConfigPath       = "/root/kubeconfig"
+	adminUserID                 = 1
+	adminUsername               = "admin"
+	adminEmail                  = "admin@inspur.com"
+	defaultInitialPassword      = "123456a?"
+	baseRepoPath                = "/repos"
+	sshKeyPath                  = "/keys"
+	defaultProject              = "library"
+	kvmToolsPath                = "/root/kvm"
+	kvmRegistryPath             = "/root/kvmregistry"
 )
 
-var repoServePath = filepath.Join(baseRepoPath, "board_repo_serve")
-var repoServeURL = filepath.Join("root@gitserver:", "gitserver", "repos", "board_repo_serve")
-var repoPath = filepath.Join(baseRepoPath, "board_repo")
+var gogitsSSHURL = utils.GetConfig("GOGITS_SSH_URL")
+var jenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
 
 func initBoardVersion() {
 	version, err := ioutil.ReadFile("VERSION")
 	if err != nil {
 		logs.Error("Failed to read VERSION file: %+v", err)
-		panic(err)
 	}
 	utils.SetConfig("BOARD_VERSION", string(bytes.TrimSpace(version)))
-	err = service.SetSystemInfo("BOARD_VERSION", true)
-	if err != nil {
-		logs.Error("Failed to set system config: %+v", err)
-		panic(err)
-	}
+	service.SetSystemInfo("BOARD_VERSION", true)
 }
 
 func updateAdminPassword() {
@@ -58,11 +61,7 @@ func updateAdminPassword() {
 	}
 	if isSuccess {
 		utils.SetConfig("SET_ADMIN_PASSWORD", "updated")
-		err = service.SetSystemInfo("SET_ADMIN_PASSWORD", false)
-		if err != nil {
-			logs.Error("Failed to set system config: %+v", err)
-			panic(err)
-		}
+		service.SetSystemInfo("SET_ADMIN_PASSWORD", false)
 		logs.Info("Admin password has been updated successfully.")
 	} else {
 		logs.Info("Failed to update admin initial password.")
@@ -70,126 +69,97 @@ func updateAdminPassword() {
 }
 
 func initProjectRepo() {
-	logs.Info("Initialize serve repo\n")
-	_, err := service.InitBareRepo(repoServePath)
-	if err != nil {
-		logs.Error("Failed to initialize serve repo: %+v\n", err)
+	initialPassword := utils.GetStringValue("BOARD_ADMIN_PASSWORD")
+	if initialPassword == "" {
+		initialPassword = defaultInitialPassword
 	}
 
+	err := gogs.SignUp(model.User{Username: adminUsername, Email: adminEmail, Password: initialPassword})
+	if err != nil {
+		logs.Error("Failed to create admin user on Gogit: %+v", err)
+	}
+
+	token, err := gogs.CreateAccessToken(adminUsername, initialPassword)
+	if err != nil {
+		logs.Error("Failed to create access token for admin user: %+v", err)
+	}
+	user := model.User{ID: adminUserID, RepoToken: token.Sha1}
+	service.UpdateUser(user, "repo_token")
+
+	err = service.ConfigSSHAccess(adminUsername, token.Sha1)
+	if err != nil {
+		logs.Error("Failed to config SSH access for admin user: %+v", err)
+	}
+	logs.Info("Initialize serve repo ...")
 	logs.Info("Init git repo for default project %s", defaultProject)
-	_, err = service.InitRepo(repoServeURL, repoPath)
-	if err != nil {
-		logs.Error("Failed to initialize default user's repo: %+v\n", err)
-		return
-	}
 
-	os.MkdirAll(filepath.Join(repoPath, defaultProject), 0755)
+	err = service.CreateRepoAndJob(adminUserID, defaultProject)
 	if err != nil {
-		logs.Error("Failed to make default user's repo: %+v\n", err)
+		logs.Error("Failed to create default repo %s: %+v", defaultProject, err)
 	}
 
 	utils.SetConfig("INIT_PROJECT_REPO", "created")
-	err = service.SetSystemInfo("INIT_PROJECT_REPO", true)
-	if err != nil {
-		logs.Error("Failed to set system config: %+v", err)
-		panic(err)
-	}
+	service.SetSystemInfo("INIT_PROJECT_REPO", true)
+	logs.Info("Finished to create initial project and repo.")
 }
 
-func initDefaultProjects() {
-	logs.Info("Initialize default projects\n")
+func syncUpWithK8s() {
+	logs.Info("Initialize to sync up with K8s status ...")
+	defer func() {
+		utils.SetConfig("SYNC_K8S", "finished")
+		service.SetSystemInfo("SYNC_K8S", false)
+	}()
 	var err error
 	// Sync namespace with specific project ownerID
 	err = service.SyncNamespaceByOwnerID(adminUserID)
 	if err != nil {
 		logs.Error("Failed to sync namespace by userID: %d, err: %+v", adminUserID, err)
-		panic(err)
 	}
-	logs.Info("Successful synchonized namespace for admin user.")
+	logs.Info("Successful sync up with namespaces for admin user.")
 	// Sync projects from cluster namespaces
 	err = service.SyncProjectsWithK8s()
 	if err != nil {
 		logs.Error("Failed to sync projects with K8s: %+v", err)
-		panic(err)
 	}
-	logs.Info("Successful synchonized projects with Kubernetes.")
+	logs.Info("Successful sync up with projects with K8s.")
 }
 
-func syncServiceWithK8s() {
-	service.SyncServiceWithK8s()
-	utils.SetConfig("SYNC_K8S", "created")
-	err := service.SetSystemInfo("SYNC_K8S", true)
+func initKubernetesInfo() {
+	logs.Info("Initialize kubernetes info")
+	info, err := service.GetKubernetesInfo()
 	if err != nil {
-		logs.Error("Failed to set system config: %+v", err)
-		panic(err)
+		logs.Error("Failed to initialize kubernetes info, err: %+v", err)
+		utils.SetConfig("KUBERNETES_VERSION", "NA")
+	} else {
+		utils.SetConfig("KUBERNETES_VERSION", info.GitVersion)
 	}
+	service.SetSystemInfo("KUBERNETES_VERSION", true)
+	logs.Info("Finished to initialize kubernetes info.")
 }
-func updateSystemInfo() {
-	var err error
-	err = service.SetSystemInfo("BOARD_HOST", true)
-	if err != nil {
-		logs.Error("Failed to set system config BOARD_HOST: %+v", err)
-		panic(err)
-	}
-	err = service.SetSystemInfo("AUTH_MODE", false)
-	if err != nil {
-		logs.Error("Failed to set system config AUTH_MODE: %+v", err)
-		panic(err)
-	}
-	err = service.SetSystemInfo("REDIRECTION_URL", false)
-	if err != nil {
-		logs.Error("Failed to set system config REDIRECTION_URL: %+v", err)
-		panic(err)
-	}
-}
+
 func main() {
 
-	logs.SetLogFuncCall(true)
-	logs.SetLogFuncCallDepth(4)
+	utils.InitializeDefaultConfig()
 
-	utils.Initialize()
+	utils.SetConfig("DB_IP", defaultDBServer)
+	utils.SetConfig("DB_PORT", defaultDBPort)
 
-	utils.AddEnv("BOARD_HOST")
-	utils.AddEnv("BOARD_ADMIN_PASSWORD")
-	utils.AddEnv("KUBE_MASTER_IP")
-	utils.AddEnv("KUBE_MASTER_PORT")
-	utils.AddEnv("REGISTRY_IP")
-	utils.AddEnv("REGISTRY_PORT")
-
-	utils.AddEnv("AUTH_MODE")
-
-	utils.AddEnv("LDAP_URL")
-	utils.AddEnv("LDAP_SEARCH_DN")
-	utils.AddEnv("LDAP_SEARCH_PWD")
-	utils.AddEnv("LDAP_BASE_DN")
-	utils.AddEnv("LDAP_FILTER")
-	utils.AddEnv("LDAP_UID")
-	utils.AddEnv("LDAP_SCOPE")
-	utils.AddEnv("LDAP_TIMEOUT")
-	utils.AddEnv("FORCE_INIT_SYNC")
-	utils.AddEnv("VERIFICATION_URL")
-	utils.AddEnv("REDIRECTION_URL")
-
-	utils.SetConfig("REGISTRY_URL", "http://%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
-	utils.SetConfig("KUBE_MASTER_URL", "http://%s:%s", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
-	utils.SetConfig("KUBE_NODE_URL", "http://%s:%s/api/v1/nodes", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")
+	utils.SetConfig("TOKEN_SERVER_IP", defaultTokenServer)
+	utils.SetConfig("TOKEN_SERVER_PORT", defaultTokenServerPort)
+	utils.SetConfig("TOKEN_SERVER_URL", "http://%s:%s/tokenservice/token", "TOKEN_SERVER_IP", "TOKEN_SERVER_PORT")
 
 	utils.SetConfig("BASE_REPO_PATH", baseRepoPath)
-	utils.SetConfig("REPO_SERVE_URL", repoServeURL)
-	utils.SetConfig("REPO_SERVE_PATH", repoServePath)
-	utils.SetConfig("REPO_PATH", repoPath)
 	utils.SetConfig("SSH_KEY_PATH", sshKeyPath)
 
-	utils.SetConfig("REGISTRY_BASE_URI", "%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
+	utils.SetConfig("KVM_TOOLS_PATH", kvmToolsPath)
+	utils.SetConfig("KVM_REGISTRY_PATH", kvmRegistryPath)
+
+	utils.SetConfig("KUBE_CONFIG_PATH", defaultKubeConfigPath)
 
 	dao.InitDB()
 
-	utils.AddValue("IS_EXTERNAL_AUTH", (utils.GetStringValue("AUTH_MODE") != "db_auth"))
-
-	utils.ShowAllConfigs()
-
 	controller.InitController()
-	updateSystemInfo()
+	controller.InitRouter()
 
 	systemInfo, err := service.GetSystemInfo()
 	if err != nil {
@@ -207,10 +177,26 @@ func main() {
 		initProjectRepo()
 	}
 
-	if systemInfo.SyncK8s == "" || utils.GetStringValue("FORCE_INIT_SYNC") == "true" {
-		initDefaultProjects()
-		syncServiceWithK8s()
+	if systemInfo.KubernetesVersion == "" || systemInfo.KubernetesVersion == "NA" {
+		initKubernetesInfo()
 	}
 
-	beego.Run(":8088")
+	if systemInfo.SyncK8s == "" || utils.GetStringValue("FORCE_INIT_SYNC") == "true" {
+		syncUpWithK8s()
+	}
+
+	service.SetSystemInfo("DNS_SUFFIX", true)
+	service.SetSystemInfo("BOARD_HOST_IP", true)
+	service.SetSystemInfo("AUTH_MODE", false)
+	service.SetSystemInfo("REDIRECTION_URL", false)
+
+	if utils.GetStringValue("JENKINS_EXECUTION_MODE") != "single" {
+		err = service.PrepareKVMHost()
+		if err != nil {
+			logs.Error("Failed to prepare KVM host: %+v", err)
+			panic(err)
+		}
+	}
+
+	beego.Run(":" + defaultAPIServerPort)
 }

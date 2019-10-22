@@ -1,0 +1,97 @@
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'md'" [clrModalClosable]="false"
+           [clrModalPreventClose]="true">
+  <h3 class="modal-title">{{ 'SERVICE.VOLUME_CONFIG' | translate }}</h3>
+  <div class="modal-body">
+    <div *ngFor="let volumeData of curVolumeDataList;let i = index">
+      <div class="dynamic-line-container">
+        <div class="dynamic-icon-container">
+          <clr-icon class="dynamic-icon" shape="minus" (click)="deleteVolumeData(i)"></clr-icon>
+        </div>
+        <lib-dropdown-ex class="base-margin-left"
+                         [dropdownLabel]="'SERVICE.VOLUME_TYPE' | translate"
+                         [dropdownMinWidth]="280"
+                         [dropdownItems]="volumeTypes"
+                         [dropdownTip]="volumeData.volume_type"
+                         [dropdownKey]="'name'"
+                         (dropdownChangeItem)="changeSelectVolumeType(i,$event)">
+        </lib-dropdown-ex>
+      </div>
+      <lib-input-ex [inputLabel]="'SERVICE.VOLUME_NAME'| translate"
+                    [inputPattern]="patternName"
+                    [inputLabelWidth]="200"
+                    [inputIsRequired]="true"
+                    [inputDefaultValue]="volumeData.volume_name"
+                    (commitEvent)="volumeData.volume_name = $event"></lib-input-ex>
+      <lib-input-ex [inputLabel]="'SERVICE.VOLUME_TARGET_PATH'| translate"
+                    [inputDefaultValue]="volumeData.container_path"
+                    [inputPlaceholder]="'/data'"
+                    [inputLabelWidth]="200"
+                    [inputIsRequired]="true"
+                    [inputPattern]="patternMountPath"
+                    (commitEvent)="volumeData.container_path = $event"></lib-input-ex>
+      <div class="dynamic-line-container" *ngIf="volumeData.volume_type == 'nfs'">
+        <div class="clr-checkbox-container">
+          <input type="checkbox" clrCheckbox [(ngModel)]="volumeData.containerPathFlag">
+          <label>{{"SERVICE.VOLUME_SUB_PATH_FILE" | translate}}:</label>
+        </div>
+        <lib-input-ex [inputPattern]="patternPath"
+                      [inputDefaultValue]="volumeData.container_file"
+                      [inputPlaceholder]="'file.txt'"
+                      [inputIsRequired]="true"
+                      (commitEvent)="volumeData.container_file = $event"></lib-input-ex>
+      </div>
+      <lib-input-ex *ngIf="volumeData.volume_type == 'nfs'"
+                    [inputLabel]="'SERVICE.VOLUME_NFS_SERVER'| translate"
+                    [inputDefaultValue]="volumeData.target_storage_service"
+                    [inputPattern]="patternIP"
+                    [inputPlaceholder]="'10.0.0.0'"
+                    [inputIsRequired]="true"
+                    [inputLabelWidth]="200"
+                    [validatorMessage]="[{key:'pattern',message:'SERVICE.VOLUME_NFS_SERVER_FORMAT' | translate}]"
+                    (commitEvent)="volumeData.target_storage_service = $event">
+      </lib-input-ex>
+      <lib-input-ex *ngIf="volumeData.volume_type == 'nfs'"
+                    [inputLabel]="'SERVICE.VOLUME_PATH'| translate"
+                    [inputDefaultValue]="volumeData.target_path"
+                    [inputPattern]="patternMountPath"
+                    [inputPlaceholder]="'/data'"
+                    [inputIsRequired]="true"
+                    [inputLabelWidth]="200"
+                    (commitEvent)="volumeData.target_path = $event">
+      </lib-input-ex>
+      <lib-input-ex *ngIf="volumeData.volume_type == 'nfs'  && volumeData.containerPathFlag"
+                    [inputLabel]="'SERVICE.VOLUME_FILE'| translate"
+                    [inputDefaultValue]="volumeData.target_file"
+                    [inputPattern]="patternPath"
+                    [inputLabelWidth]="200"
+                    [inputPlaceholder]="'file.txt'"
+                    (commitEvent)="volumeData.target_file = $event">
+      </lib-input-ex>
+      <div class="dynamic-line-container" *ngIf="volumeData.volume_type == 'pvc'">
+        <lib-dropdown-ex class="base-margin-left"
+                         [dropdownLabel]="'SERVICE.VOLUME_SELECT_PVC_TITLE' | translate"
+                         [dropdownTip]="'SERVICE.VOLUME_SELECT_PVC' | translate"
+                         [dropdownMinWidth]="280"
+                         [dropdownLabelWidth]="200"
+                         [dropdownItems]="pvcList"
+                         [dropdownIsRequired]="true"
+                         [dropdownKey]="'name'"
+                         [dropdownActiveItem]="getCurActivePvc(i)"
+                         (dropdownChangeItem)="changeSelectPVC(i, $event)"
+                         (dropdownEspecialClick)="createNewPvc(i)">
+          <ng-template libEspecialTemp>
+            <span style="color: blue">{{"SERVICE.VOLUME_CREATE_PVC" | translate}}</span>
+          </ng-template>
+        </lib-dropdown-ex>
+      </div>
+    </div>
+    <div class="dynamic-line-container">
+      <clr-icon class="dynamic-icon" shape="plus" (click)="addNewVolumeData()"></clr-icon>
+      <span class="base-margin-left">{{"SERVICE.VOLUME_ADD_VOLUME"|translate}}</span>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-default" (click)="modalOpened = false">{{"BUTTON.CANCEL" | translate}}</button>
+    <button class="btn btn-primary" (click)="confirmVolumeInfo()">{{"BUTTON.CONFIRM" | translate}}</button>
+  </div>
+</clr-modal>

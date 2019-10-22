@@ -1,44 +1,28 @@
 package controller
 
 import (
-	"encoding/json"
-	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
-	"io/ioutil"
+	"git/inspursoft/board/src/common/utils"
 	"net/http"
-	"net/url"
 	"path/filepath"
-	"strconv"
 	"strings"
-
-	"github.com/ghodss/yaml"
-
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/pkg/api"
-	"k8s.io/client-go/pkg/api/v1"
 
 	"github.com/astaxie/beego/logs"
 )
 
 type ServiceRollingUpdateController struct {
-	baseController
+	BaseController
 }
 
-func (p *ServiceRollingUpdateController) Prepare() {
-	user := p.getCurrentUser()
-	if user == nil {
-		p.customAbort(http.StatusUnauthorized, "Need to login first.")
+func (p *ServiceRollingUpdateController) GetRollingUpdateServiceImageConfigAction() {
+	serviceConfig, err := p.getServiceConfig()
+	if err != nil {
 		return
 	}
-	p.currentUser = user
-	p.isSysAdmin = (user.SystemAdmin == 1)
-}
-
-func (p *ServiceRollingUpdateController) GetRollingUpdateServiceConfigAction() {
-	serviceConfig, _ := p.getServiceConfig()
 	if len(serviceConfig.Spec.Template.Spec.Containers) < 1 {
 		p.customAbort(http.StatusBadRequest, "Requested service's config is invalid.")
+		return
 	}
 
 	var imageList []model.ImageIndex
@@ -50,178 +34,214 @@ func (p *ServiceRollingUpdateController) GetRollingUpdateServiceConfigAction() {
 			ImageTag:    container.Image[indexTag+1:],
 			ProjectName: container.Image[indexProject+1 : indexImage]})
 	}
-
-	p.Data["json"] = imageList
-	p.ServeJSON()
+	p.renderJSON(imageList)
 }
-func (p *ServiceRollingUpdateController) PostRollingUpdateServiceConfigAction() {
-	var imageList []model.ImageIndex
-	reqData, err := p.resolveBody()
-	if err != nil {
-		p.internalError(err)
-	}
-	err = json.Unmarshal(reqData, &imageList)
-	if err != nil {
-		p.internalError(err)
-	}
-	logs.Debug("Image list info: %+v\n", imageList)
 
-	serviceConfig, projectName := p.getServiceConfig()
+func (p *ServiceRollingUpdateController) getServiceConfig() (deploymentConfig *model.Deployment, err error) {
+	projectName := p.GetString("project_name")
+	p.resolveProjectMember(projectName)
+
+	serviceName := p.GetString("service_name")
+	serviceStatus, err := service.GetServiceByProject(serviceName, projectName)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if serviceStatus == nil {
+		p.customAbort(http.StatusBadRequest, "Service name doesn't exist.")
+		return
+	}
+
+	deploymentConfig, _, err = service.GetDeployment(projectName, serviceName)
+	if err != nil {
+		logs.Error("Failed to get service info %+v\n", err)
+		p.parseError(err, parseGetK8sError)
+		return
+	}
+	return
+}
+func (s *ServiceRollingUpdateController) GetServiceSessionFlagAction() {
+	serviceName := s.GetString("service_name")
+	projectName := s.GetString("project_name")
+	s.resolveProjectMember(projectName)
+	svc, err := service.GetK8sService(projectName, serviceName)
+	if err != nil {
+		s.internalError(err)
+		return
+	}
+	s.renderJSON(svc)
+}
+
+func (s *ServiceRollingUpdateController) PatchServiceSessionAction() {
+	sessionAffinityFlag, err := s.GetInt("session_affinity_flag", 0)
+	if err != nil {
+		s.internalError(err)
+		return
+	}
+	serviceName := s.GetString("service_name")
+	projectName := s.GetString("project_name")
+	s.resolveProjectMember(projectName)
+	svc, err := service.GetK8sService(projectName, serviceName)
+	if err != nil {
+		s.internalError(err)
+		return
+	}
+	svc.SessionAffinityFlag = sessionAffinityFlag
+	_, svcFileInfo, err := service.PatchK8sService(projectName, serviceName, svc)
+	if err != nil {
+		s.internalError(err)
+		return
+	}
+
+	serviceStatus, err := service.GetServiceByProject(serviceName, projectName)
+	if err != nil {
+		s.internalError(err)
+		return
+	}
+	updateService := model.ServiceStatus{ID: serviceStatus.ID, ServiceYaml: string(svcFileInfo)}
+	_, err = service.UpdateService(updateService, "service_yaml")
+	if err != nil {
+		s.internalError(err)
+		return
+	}
+	logs.Debug("Update service Successful.And the services config:%+v\n", updateService)
+
+	s.resolveRepoServicePath(projectName, serviceName)
+	err = utils.GenerateFile(svcFileInfo, s.repoServicePath, serviceFilename)
+	if err != nil {
+		s.internalError(err)
+		return
+	}
+	s.pushItemsToRepo(filepath.Join(serviceName, serviceFilename))
+}
+
+func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceImageAction() {
+
+	var imageList []model.ImageIndex
+	err := p.resolveBody(&imageList)
+	if err != nil {
+		return
+	}
+
+	serviceConfig, err := p.getServiceConfig()
+	if err != nil {
+		return
+	}
 	if len(serviceConfig.Spec.Template.Spec.Containers) != len(imageList) {
 		p.customAbort(http.StatusConflict, "Image's config is invalid.")
 	}
 
-	var rollingUpdateConfig v1.ReplicationController
-	rollingUpdateConfig.Spec.Template = &v1.PodTemplateSpec{}
+	//var rollingUpdateConfig model.Deployment
+	var rollingUpdateConfig model.PodSpec
 	for index, container := range serviceConfig.Spec.Template.Spec.Containers {
 		image := registryBaseURI() + "/" + imageList[index].ImageName + ":" + imageList[index].ImageTag
 		if serviceConfig.Spec.Template.Spec.Containers[index].Image != image {
-			rollingUpdateConfig.Spec.Template.Spec.Containers = append(rollingUpdateConfig.Spec.Template.Spec.Containers, v1.Container{
+			rollingUpdateConfig.Containers = append(rollingUpdateConfig.Containers, model.K8sContainer{
 				Name:  container.Name,
 				Image: image,
 			})
 		}
 	}
-
-	serviceRollConfig, err := json.Marshal(rollingUpdateConfig)
-	if err != nil {
-		p.internalError(err)
+	if len(rollingUpdateConfig.Containers) == 0 {
+		logs.Info("Nothing to be updated")
+		return
 	}
-	extras := fmt.Sprintf("%s%s", kubeMasterURL(), filepath.Join(deploymentAPI, projectName, "deployments", serviceConfig.Name))
-	logs.Debug("Requested rolling update jenkins with extras: %s", extras)
-
-	req, err := http.NewRequest("POST", `http://jenkins:8080/job/rolling_update/buildWithParameters`, nil)
-	if err != nil {
-		p.internalError(err)
-	}
-	form := url.Values{}
-	form.Add("value", string(serviceRollConfig))
-	form.Add("extras", extras)
-	req.URL.RawQuery = form.Encode()
-	logs.Debug("Request object to Jenkins is %+v", req)
-	client := http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		p.internalError(err)
-	}
-	if resp != nil {
-		defer resp.Body.Close()
-		respData, _ := ioutil.ReadAll(resp.Body)
-		logs.Debug("Response with requested Jenkins rolling update job: %s", string(respData))
-	}
-
+	serviceConfig.Spec.Template.Spec = rollingUpdateConfig
+	p.PatchServiceAction(serviceConfig)
 }
 
-func (p *ServiceRollingUpdateController) getServiceConfig() (*service.Deployment, string) {
+func (p *ServiceRollingUpdateController) GetRollingUpdateServiceNodeGroupConfigAction() {
+	serviceConfig, err := p.getServiceConfig()
+	if err != nil {
+		return
+	}
+	for key, value := range serviceConfig.Spec.Template.Spec.NodeSelector {
+		if key == "kubernetes.io/hostname" {
+			p.renderJSON(value)
+		} else {
+			p.renderJSON(key)
+		}
+	}
+}
+
+func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceNodeGroupAction() {
+	nodeGroup := p.GetString("node_selector")
+	if nodeGroup == "" {
+		p.customAbort(http.StatusBadRequest, "nodeGroup is empty.")
+		return
+	}
+	rollingUpdateConfig, err := p.getServiceConfig()
+	if err != nil {
+		return
+	}
+	nodeGroupExists, err := service.NodeGroupExists(nodeGroup)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if nodeGroupExists {
+		rollingUpdateConfig.Spec.Template.Spec.NodeSelector = map[string]string{nodeGroup: "true"}
+	} else {
+		rollingUpdateConfig.Spec.Template.Spec.NodeSelector = map[string]string{"kubernetes.io/hostname": nodeGroup}
+	}
+	logs.Debug("Action updating nodeselector: ", rollingUpdateConfig)
+	p.UpdateServiceAction(rollingUpdateConfig)
+}
+
+func (p *ServiceRollingUpdateController) PatchServiceAction(rollingUpdateConfig *model.Deployment) {
 	projectName := p.GetString("project_name")
-	isExistence, err := service.ProjectExists(projectName)
-	if err != nil {
-		p.internalError(err)
-	}
-	if isExistence != true {
-		p.customAbort(http.StatusBadRequest, "Project don't exist.")
-	}
+	p.resolveProjectMember(projectName)
 
 	serviceName := p.GetString("service_name")
 	serviceStatus, err := service.GetServiceByProject(serviceName, projectName)
 	if err != nil {
 		p.internalError(err)
-	}
-	if serviceStatus == nil {
-		p.customAbort(http.StatusBadRequest, "Service name don't exist.")
-	}
-
-	absFileName := filepath.Join(repoPath(), projectName, strconv.Itoa(int(serviceStatus.ID)), deploymentFilename)
-	logs.Info("User: %s get deployment.yaml images info from %s.", p.currentUser.Username, absFileName)
-
-	yamlFile, err := ioutil.ReadFile(absFileName)
-	if err != nil {
-		p.internalError(err)
-	}
-
-	var rcConfig service.Deployment
-	err = yaml.Unmarshal(yamlFile, &rcConfig)
-	if err != nil {
-		p.internalError(err)
-	}
-
-	return &rcConfig, projectName
-}
-
-func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceAction() {
-
-	var imageList []model.ImageIndex
-	reqData, err := p.resolveBody()
-	if err != nil {
-		p.internalError(err)
-	}
-	//logs.Debug("reqData %+v\n", string(reqData))
-	err = json.Unmarshal(reqData, &imageList)
-	if err != nil {
-		p.internalError(err)
-	}
-	logs.Debug("Image list info: %+v\n", imageList)
-
-	serviceConfig, projectName := p.getServiceConfig()
-	if len(serviceConfig.Spec.Template.Spec.Containers) != len(imageList) {
-		p.customAbort(http.StatusConflict, "Image's config is invalid.")
-	}
-
-	//Can not rollingupdate an uncompleted service
-	serviceName := p.GetString("service_name")
-	serviceStatus, err := service.GetServiceByProject(serviceName, projectName)
-	if err != nil {
-		p.internalError(err)
+		return
 	}
 	if serviceStatus.Status == uncompleted {
 		logs.Debug("Service is uncompleted, cannot be updated %s\n", serviceName)
 		p.customAbort(http.StatusMethodNotAllowed, "Service is in uncompleted")
-	}
-
-	var rollingUpdateConfig v1.ReplicationController
-	rollingUpdateConfig.Spec.Template = &v1.PodTemplateSpec{}
-	for index, container := range serviceConfig.Spec.Template.Spec.Containers {
-		image := registryBaseURI() + "/" + imageList[index].ImageName + ":" + imageList[index].ImageTag
-		if serviceConfig.Spec.Template.Spec.Containers[index].Image != image {
-			rollingUpdateConfig.Spec.Template.Spec.Containers = append(rollingUpdateConfig.Spec.Template.Spec.Containers, v1.Container{
-				Name:  container.Name,
-				Image: image,
-			})
-		}
-	}
-
-	if len(rollingUpdateConfig.Spec.Template.Spec.Containers) == 0 {
-		logs.Info("Nothing to be updated")
 		return
 	}
 
-	serviceRollConfig, err := json.Marshal(rollingUpdateConfig)
+	deploymentConfig, deploymentFileInfo, err := service.PatchDeployment(projectName, serviceName, rollingUpdateConfig)
 	if err != nil {
-		logs.Debug("rollingUpdateConfig %+v\n", rollingUpdateConfig)
-		p.internalError(err)
-	}
-	//logs.Debug("Marshal serviceRollConfig %+v\n", string(serviceRollConfig))
-
-	cli, err := service.K8sCliFactory("", kubeMasterURL(), "v1beta1")
-	apiSet, err := kubernetes.NewForConfig(cli)
-	if err != nil {
-		p.internalError(err)
+		logs.Error("Failed to get service info %+v\n", err)
+		p.parseError(err, parsePostK8sError)
+		return
 	}
 
-	d := apiSet.Deployments(projectName)
-	patchType := api.StrategicMergePatchType
-	deployData, err := d.Patch(serviceConfig.Name, patchType, serviceRollConfig)
+	p.resolveRepoServicePath(projectName, serviceName)
+	err = utils.GenerateFile(deploymentFileInfo, p.repoServicePath, deploymentFilename)
 	if err != nil {
-		logs.Error("Failed to update service %+v\n", err)
 		p.internalError(err)
+		return
 	}
-	logs.Debug("New updated deployment: %+v\n", deployData)
+	p.pushItemsToRepo(filepath.Join(serviceName, deploymentFilename))
 
-	//update deployment yaml file
-	err = service.RollingUpdateDeploymentYaml(repoPath(), deployData)
+	logs.Debug("New updated deployment: %+v\n", deploymentConfig)
+}
+
+// a temp fix, need to refactor
+func (p *ServiceRollingUpdateController) UpdateServiceAction(rollingUpdateConfig *model.Deployment) {
+	projectName := p.GetString("project_name")
+	p.resolveProjectMember(projectName)
+
+	serviceName := p.GetString("service_name")
+	deploymentConfig, deploymentFileInfo, err := service.UpdateDeployment(projectName, serviceName, rollingUpdateConfig)
 	if err != nil {
-		logs.Error("Failed to update deployment yaml file:%+v\n", err)
-		p.internalError(err)
+		logs.Error("Failed to get service info %+v\n", err)
+		p.parseError(err, parsePostK8sError)
+		return
 	}
+	logs.Debug("Updated deployment: ", deploymentConfig)
+	p.resolveRepoServicePath(projectName, serviceName)
+	err = utils.GenerateFile(deploymentFileInfo, p.repoServicePath, deploymentFilename)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	p.pushItemsToRepo(filepath.Join(serviceName, deploymentFilename))
 
+	logs.Debug("New updated deployment: %+v\n", deploymentConfig)
 }

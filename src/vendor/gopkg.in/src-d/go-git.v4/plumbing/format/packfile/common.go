@@ -1,7 +1,9 @@
 package packfile
 
 import (
+	"bytes"
 	"io"
+	"sync"
 
 	"gopkg.in/src-d/go-git.v4/plumbing/storer"
 	"gopkg.in/src-d/go-git.v4/utils/ioutil"
@@ -38,8 +40,7 @@ func UpdateObjectStorage(s storer.EncodedObjectStorer, packfile io.Reader) error
 	return err
 }
 
-func writePackfileToObjectStorage(sw storer.PackfileWriter, packfile io.Reader) error {
-	var err error
+func writePackfileToObjectStorage(sw storer.PackfileWriter, packfile io.Reader) (err error) {
 	w, err := sw.PackfileWriter()
 	if err != nil {
 		return err
@@ -48,4 +49,10 @@ func writePackfileToObjectStorage(sw storer.PackfileWriter, packfile io.Reader) 
 	defer ioutil.CheckClose(w, &err)
 	_, err = io.Copy(w, packfile)
 	return err
+}
+
+var bufPool = sync.Pool{
+	New: func() interface{} {
+		return bytes.NewBuffer(nil)
+	},
 }

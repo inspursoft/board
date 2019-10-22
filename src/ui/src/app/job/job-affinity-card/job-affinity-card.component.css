@@ -1,0 +1,36 @@
+div.card-container {
+  border-radius: 3px;
+  box-shadow: 0 0 2px #bbbbbb;
+  margin: 3px;
+  display: flex;
+}
+
+div.selected {
+  background-color: lightgreen;
+}
+
+div.icon-container {
+  flex-basis: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fafafa;
+  border-top: 1px solid silver;
+  border-bottom: 1px solid silver;
+}
+
+div.name-container {
+  flex-basis: 100%;
+  background-color: #fafafa;
+  min-height: 40px;
+  display: flex;
+  border: 1px solid silver;
+}
+
+div.name-container span {
+  font-size: 12px;
+  font-weight: bold;
+  min-height: 40px;
+  line-height: 40px;
+  text-align: center;
+}

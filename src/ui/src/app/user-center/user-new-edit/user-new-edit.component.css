@@ -1,13 +1,10 @@
-.asterisk {
-  color: #FF0000;
+div.input-container {
+  display: flex;
+  flex-direction: column;
+  margin-right: 50px;
+  min-height: 350px;
 }
 
-.hide-error-msg {
-  margin-top: 5px;
-  height: 38px;
-  padding: 0;
-}
-
-.group-margin{
-  margin-top: 30px;
+lib-input-ex{
+  margin-top: 10px;
 }

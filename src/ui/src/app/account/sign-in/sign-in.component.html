@@ -1,113 +1,124 @@
-<clr-main-container style="height: 100%;">
-  <header-content [isSignIn]="true" [hasSignedIn]="false"></header-content>
-  <div class="background">
-    <confirmation-dialog></confirmation-dialog>
-    <div class="row background-row-container">
-      <div class="col-lg-7 hidden-md-down">
-        <div class="row custom-row">
-          <div class="col-xs custom-top">
-            <div class="circle">
-              <img src="../../images/service_white.png" alt="Service" class="icon-pos icon-size" style="left: 15px; top: 30px;"/>
-            </div>
-            <p class="icon-description">{{ 'DASHBOARD.SERVICE' | translate }}</p>
+<header-content [isSignIn]="true" [hasSignedIn]="false"></header-content>
+<div class="background">
+  <div class="clr-row">
+    <div class="clr-col-lg-7 hidden-md-down clr-align-content-around clr-align-self-center">
+      <div class="clr-row custom-row clr-justify-content-around">
+        <div class="custom-top">
+          <div class="circle">
+            <img src="../../images/service_white.png" alt="Service" class="icon-pos icon-size"
+                 style="left: 15px; top: 30px;"/>
           </div>
-          <div class="col-xs custom-top">
-            <div class="circle">
-              <img src="../../images/node_white.png" alt="Node" class="icon-pos icon-size" style="left: 20px; top: 35px;"/>
-            </div>
-            <p class="icon-description">{{ 'DASHBOARD.NODE' | translate }}</p>
-          </div>
-          <div class="col-xs custom-top">
-            <div class="circle">
-              <img src="../../images/project_white.png" alt="Project" class="icon-pos icon-size" style="left: 18px; top: 30px;"/>
-            </div>
-            <p class="icon-description">{{ 'DASHBOARD.STORAGE' | translate }}</p>
-          </div>
+          <p class="icon-description">{{ 'DASHBOARD.SERVICE' | translate }}</p>
         </div>
-        <div class="row flex-items-xs-bottom custom-row-columns">
-          <div class="col-xs-1">
-          <img src="../../images/columns/1.png" />
+        <div class="custom-top">
+          <div class="circle">
+            <img src="../../images/node_white.png" alt="Node" class="icon-pos icon-size"
+                 style="left: 20px; top: 35px;"/>
           </div>
-          <div class="col-xs-1">
-          <img src="../../images/columns/2.png"/>
+          <p class="icon-description">{{ 'DASHBOARD.NODE' | translate }}</p>
+        </div>
+        <div class="custom-top">
+          <div class="circle">
+            <img src="../../images/project_white.png" alt="Project" class="icon-pos icon-size"
+                 style="left: 18px; top: 30px;"/>
           </div>
-          <div class="col-xs-1">
-          <img src="../../images/columns/3.png"/>
-          </div>
-          <div class="col-xs-1">
-          <img src="../../images/columns/4.png"/>
-          </div>
-          <div class="col-xs-1">
-          <img src="../../images/columns/5.png"/>
-          </div>
-          <div class="col-xs-1">
-          <img src="../../images/columns/6.png"/>
-          </div>
-          <div class="col-xs-1">
-          <img src="../../images/columns/7.png"/>
-          </div>
-          <div class="col-xs-1">
-          <img src="../../images/columns/8.png"/>
-          </div>
-          <div class="col-xs-1">
-          <img src="../../images/columns/9.png"/>
-          </div>
-          <div class="col-xs-1">
-          <img src="../../images/columns/10.png"/>
-          </div>
-          <div class="col-xs-1">
-          <img src="../../images/columns/11.png"/>
-          </div>
-          <div class="col-xs-1">
-          <img src="../../images/columns/6.png"/>
-          </div>
+          <p class="icon-description">{{ 'DASHBOARD.STORAGE' | translate }}</p>
         </div>
       </div>
-      <div class="col-lg-5 col-md-12 custom-sign-in-top">
-        <div class="sign-in-background">
-          <p class="custom-sign-in-title">{{ 'ACCOUNT.SIGN_IN' | translate }}</p>
-          <div class="row">
-            <div class="col-xs custom-sign-in-input">
-              <form #signInForm="ngForm" (ngSubmit)="signIn()">
-                <section class="form-block">
-                  <div class="form-group custom-input-padding" >
-                    <label></label>
-                    <label aria-haspopup="true" role="tooltip" [class.invalid]="username.invalid && username.touched"
-                      class="tooltip tooltip-validation invalid tooltip-sm">
-                      <input type="text" name="username" #username="ngModel"  style="width: 225px" required [(ngModel)]="signInUser.username" placeholder="{{ 'ACCOUNT.USERNAME_PLACEHOLDER' | translate }}" />
-                      <span class="tooltip-content" *ngIf="username.errors && username.errors.required">
+      <div class="clr-row custom-row clr-justify-content-around clr-align-items-end">
+        <div class="col-xs-1">
+          <img src="../../images/columns/1.png"/>
+        </div>
+        <div class="col-xs-1">
+          <img src="../../images/columns/2.png"/>
+        </div>
+        <div class="col-xs-1">
+          <img src="../../images/columns/3.png"/>
+        </div>
+        <div class="col-xs-1">
+          <img src="../../images/columns/4.png"/>
+        </div>
+        <div class="col-xs-1">
+          <img src="../../images/columns/5.png"/>
+        </div>
+        <div class="col-xs-1">
+          <img src="../../images/columns/6.png"/>
+        </div>
+        <div class="col-xs-1">
+          <img src="../../images/columns/7.png"/>
+        </div>
+        <div class="col-xs-1">
+          <img src="../../images/columns/8.png"/>
+        </div>
+        <div class="col-xs-1">
+          <img src="../../images/columns/9.png"/>
+        </div>
+        <div class="col-xs-1">
+          <img src="../../images/columns/10.png"/>
+        </div>
+        <div class="col-xs-1">
+          <img src="../../images/columns/11.png"/>
+        </div>
+        <div class="col-xs-1">
+          <img src="../../images/columns/6.png"/>
+        </div>
+      </div>
+    </div>
+    <div class="clr-col-lg-5 clr-col-md-12 custom-sign-in-top">
+      <div class="sign-in-background">
+        <p class="custom-sign-in-title">{{ 'ACCOUNT.SIGN_IN' | translate }}</p>
+        <div class="clr-row">
+          <div class="clr-col-xs custom-sign-in-input">
+            <form #signInForm="ngForm" (ngSubmit)="signIn()">
+              <section class="form-block">
+                <div class="form-group custom-input-padding">
+                  <label></label>
+                  <label aria-haspopup="true" role="tooltip" [class.invalid]="username.invalid && username.touched"
+                         class="tooltip tooltip-validation invalid tooltip-sm">
+                    <input type="text" name="username" #username="ngModel" style="width: 225px" required
+                           [(ngModel)]="signInUser.username"
+                           placeholder="{{ 'ACCOUNT.USERNAME_PLACEHOLDER' | translate }}"/>
+                    <span class="tooltip-content" *ngIf="username.errors && username.errors.required">
                       {{ 'ACCOUNT.USERNAME_IS_REQUIRED' | translate }}
                       </span>
-                    </label>
-                  </div>
-                  <div class="form-group custom-input-padding">
-                    <label></label>
-                    <label aria-haspopup="true" role="tooltip" [class.invalid]="password.invalid && password.touched"
-                      class="tooltip tooltip-validation invalid tooltip-sm">
-                      <input type="password" name="password" #password="ngModel" style="width: 225px" required [(ngModel)]="signInUser.password" placeholder="{{ 'ACCOUNT.PASSWORD_PLACEHOLDER' | translate }}" />
-                      <span class="tooltip-content" *ngIf="password.errors && password.errors.required">
+                  </label>
+                </div>
+                <div class="form-group custom-input-padding">
+                  <label></label>
+                  <label aria-haspopup="true" role="tooltip" [class.invalid]="password.invalid && password.touched"
+                         class="tooltip tooltip-validation invalid tooltip-sm">
+                    <input type="password" name="password" #password="ngModel" style="width: 225px" required
+                           [(ngModel)]="signInUser.password"
+                           placeholder="{{ 'ACCOUNT.PASSWORD_PLACEHOLDER' | translate }}"/>
+                    <span class="tooltip-content" *ngIf="password.errors && password.errors.required">
                       {{ 'ACCOUNT.PASSWORD_IS_REQUIRED' | translate }}
                       </span>
-                    </label>
-                  </div>
-                  <div class="form-group custom-input-padding">
-                    <input type="submit" [disabled]="signInForm.invalid" class="btn btn-primary" style="width: 225px" value="{{ 'ACCOUNT.SIGN_IN' | translate }}" />
-                  </div>
-                </section>
-              </form>
-              <div class="custom-down-padding">
-                <button *ngIf="authMode === 'db_auth'"
-                        [disabled]="isSignWIP"
-                        class="btn btn-link"
-                        (click)="signUp()">
-                  {{ 'ACCOUNT.SIGN_UP' | translate }}
-                </button>
-                <!--button class="btn btn-link">{{ 'ACCOUNT.FORGOT_PASSWORD' | translate }}</button-->
-              </div>
+                  </label>
+                </div>
+                <div class="form-group custom-input-padding">
+                  <input type="submit" [disabled]="signInForm.invalid" class="btn btn-primary" style="width: 225px"
+                         value="{{ 'ACCOUNT.SIGN_IN' | translate }}"/>
+                </div>
+              </section>
+            </form>
+            <div class="custom-down-padding">
+              <button *ngIf="authMode === 'db_auth'"
+                      [disabled]="isSignWIP"
+                      class="btn btn-link"
+                      (click)="signUp()">
+                {{ 'ACCOUNT.SIGN_UP' | translate }}
+              </button>
+              <button *ngIf="authMode === 'db_auth'"
+                      [disabled]="isSignWIP"
+                      class="btn btn-link"
+                      (click)="navigateForgotPassword()">
+                {{ 'ACCOUNT.FORGOT_PASSWORD' | translate }}?
+              </button>
+              <!--button class="btn btn-link">{{ 'ACCOUNT.FORGOT_PASSWORD' | translate }}</button-->
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-</clr-main-container>
+</div>

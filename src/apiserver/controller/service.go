@@ -1,12 +1,12 @@
 package controller
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
+	"io"
 	"os"
 
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/apiserver/service/devops/travis"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
@@ -16,28 +16,27 @@ import (
 	"time"
 
 	"github.com/astaxie/beego/logs"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/pkg/api/v1"
 )
 
 const (
 	dockerfileName         = "Dockerfile"
 	deploymentFilename     = "deployment.yaml"
+	statefulsetFilename    = "statefulset.yaml"
 	serviceFilename        = "service.yaml"
 	rollingUpdateFilename  = "rollingUpdateDeployment.yaml"
 	deploymentTestFilename = "testdeployment.yaml"
 	serviceTestFilename    = "testservice.yaml"
-	serviceProcess         = "process_service"
-	rollingUpdate          = "rolling_update"
-	apiheader              = "Content-Type: application/yaml"
-	deploymentAPI          = "/apis/extensions/v1beta1/namespaces/"
-	serviceAPI             = "/api/v1/namespaces/"
-	test                   = "test"
-	serviceNamespace       = "default" //TODO create in project post
-	k8sServices            = "kubernetes"
-	deploymentType         = "deployment"
-	serviceType            = "service"
-	startingDuration       = 300 * time.Second //300 secondsß
+
+	apiheader        = "Content-Type: application/yaml"
+	deploymentAPI    = "/apis/extensions/v1beta1/namespaces/"
+	serviceAPI       = "/api/v1/namespaces/"
+	test             = "test"
+	serviceNamespace = "default" //TODO create in project post
+	k8sServices      = "kubernetes"
+	deploymentType   = "deployment"
+	serviceType      = "service"
+	statefulsetType  = "statefulset"
+	startingDuration = 300 * time.Second //300 seconds
 )
 
 const (
@@ -46,30 +45,61 @@ const (
 	stopped
 	uncompleted
 	warning
+	deploying
+	completed
+	failed
 )
 
 type ServiceController struct {
-	baseController
+	BaseController
 }
 
-//  Checking the user priviledge by token
-func (p *ServiceController) Prepare() {
-	user := p.getCurrentUser()
-	if user == nil {
-		p.customAbort(http.StatusUnauthorized, "Need to login first.")
-		return
+func (p *ServiceController) generateDeploymentTravis(serviceName, deploymentURL, serviceURL string) error {
+	userID := p.currentUser.ID
+	var travisCommand travis.TravisCommand
+	travisCommand.Script.Commands = []string{}
+	items := []string{
+		fmt.Sprintf("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
 	}
-	p.currentUser = user
-	p.isSysAdmin = (user.SystemAdmin == 1)
+	if deploymentURL != "" {
+		items = append(items, fmt.Sprintf("#curl -X POST -H 'Content-Type: application/yaml' --data-binary @%s/deployment.yaml %s", serviceName, deploymentURL))
+	}
+	if serviceURL != "" {
+		items = append(items, fmt.Sprintf("#curl -X POST -H 'Content-Type: application/yaml' --data-binary @%s/service.yaml %s", serviceName, serviceURL))
+	}
+	travisCommand.Script.Commands = items
+	return travisCommand.GenerateCustomTravis(p.repoPath)
 }
 
 func (p *ServiceController) getKey() string {
 	return strconv.Itoa(int(p.currentUser.ID))
 }
 
+func (p *ServiceController) resolveServiceInfo() (s *model.ServiceStatus, err error) {
+	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	// Get the project info of this service
+	s, err = service.GetServiceByID(int64(serviceID))
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if s == nil {
+		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
+		return
+	}
+	return
+}
+
 func (p *ServiceController) DeployServiceAction() {
 	key := p.getKey()
 	configService := NewConfigServiceStep(key)
+
+	//Judge authority
+	project := p.resolveUserPrivilegeByID(configService.ProjectID)
 
 	var newservice model.ServiceStatus
 	newservice.Name = configService.ServiceName
@@ -78,16 +108,6 @@ func (p *ServiceController) DeployServiceAction() {
 	newservice.OwnerID = p.currentUser.ID
 	newservice.OwnerName = p.currentUser.Username
 	newservice.Public = configService.Public
-
-	project, err := service.GetProject(model.Project{ID: configService.ProjectID}, "id")
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if project == nil {
-		p.customAbort(http.StatusBadRequest, projectIDInvalidErr.Error())
-		return
-	}
 	newservice.ProjectName = project.Name
 
 	serviceInfo, err := service.CreateServiceConfig(newservice)
@@ -96,48 +116,35 @@ func (p *ServiceController) DeployServiceAction() {
 		return
 	}
 
-	loadPath := filepath.Join(repoPath(), project.Name, strconv.Itoa(int(serviceInfo.ID)))
-	err = service.CheckDeploymentPath(loadPath)
+	deployInfo, err := service.DeployService((*model.ConfigServiceStep)(configService), registryBaseURI())
+	if err != nil {
+		p.parseError(err, parsePostK8sError)
+		return
+	}
+
+	p.resolveRepoServicePath(project.Name, newservice.Name)
+	err = service.GenerateDeployYamlFiles(deployInfo, p.repoServicePath)
 	if err != nil {
 		p.internalError(err)
 		return
 	}
 
-	err = service.AssembleDeploymentYaml((*model.ConfigServiceStep)(configService), loadPath)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
+	deploymentFile := filepath.Join(newservice.Name, deploymentFilename)
+	serviceFile := filepath.Join(newservice.Name, serviceFilename)
+	items := []string{deploymentFile, serviceFile}
+	p.pushItemsToRepo(items...)
 
-	deployPushobject := assemblePushObject(deploymentFilename, serviceInfo.ID, project.Name, "deployments")
-	ret, msg, err := InternalPushObjects(&deployPushobject, &(p.baseController))
-	if err != nil {
-		p.internalError(fmt.Errorf("%s, error: %+v", msg, err))
-		return
+	var serviceType int
+	if deployInfo.Service.Type == "NodePort" {
+		serviceType = model.ServiceTypeNormalNodePort
+	} else if deployInfo.Service.Type == "ClusterIP" {
+		serviceType = model.ServiceTypeClusterIP
 	}
-	logs.Info("Internal push deployment object: %d %s", ret, msg)
-	err = service.AssembleServiceYaml((*model.ConfigServiceStep)(configService), loadPath)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
+	// TODO support deployment only
 
-	servicePushobject := assemblePushObject(serviceFilename, serviceInfo.ID, project.Name, "services")
-	ret, msg, err = InternalPushObjects(&servicePushobject, &(p.baseController))
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	logs.Info("Internal push deployment object: %d %s", ret, msg)
-
-	serviceConfig, err := json.Marshal(&configService)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	updateService := model.ServiceStatus{ID: serviceInfo.ID, Status: running, ServiceConfig: string(serviceConfig)}
-	_, err = service.UpdateService(updateService, "id", "status", "service_config")
+	updateService := model.ServiceStatus{ID: serviceInfo.ID, Status: uncompleted, Type: serviceType, ServiceYaml: string(deployInfo.ServiceFileInfo),
+		DeploymentYaml: string(deployInfo.DeploymentFileInfo)}
+	_, err = service.UpdateService(updateService, "status", "type", "service_yaml", "deployment_yaml")
 	if err != nil {
 		p.internalError(err)
 		return
@@ -151,27 +158,7 @@ func (p *ServiceController) DeployServiceAction() {
 	logs.Info("Service with ID:%d has been deleted in cache.", serviceInfo.ID)
 
 	configService.ServiceID = serviceInfo.ID
-	p.Data["json"] = configService
-	p.ServeJSON()
-}
-
-func assemblePushObject(fileName string, serviceID int64, projectName string, extras string) pushObject {
-	var pushobject pushObject
-	pushobject.FileName = fileName
-	pushobject.JobName = serviceProcess
-	pushobject.Value = filepath.Join(projectName, strconv.Itoa(int(serviceID)))
-	pushobject.Message = fmt.Sprintf("Create %s for project %s service %d", extras,
-		projectName, serviceID)
-	if extras == "deployments" {
-		pushobject.Extras = filepath.Join(kubeMasterURL(), deploymentAPI, projectName, extras)
-	} else {
-		pushobject.Extras = filepath.Join(kubeMasterURL(), serviceAPI, projectName, extras)
-	}
-	pushobject.Items = []string{filepath.Join(pushobject.Value, fileName)}
-	logs.Info("pushobject.FileName:%+v\n", pushobject.FileName)
-	logs.Info("pushobject.Value:%+v\n", pushobject.Value)
-	logs.Info("pushobject.Extras:%+v\n", pushobject.Extras)
-	return pushobject
+	p.renderJSON(configService)
 }
 
 func (p *ServiceController) DeployServiceTestAction() {
@@ -192,33 +179,44 @@ func syncK8sStatus(serviceList []*model.ServiceStatusMO) error {
 		if (*serviceStatus).Status == stopped {
 			continue
 		}
-		// Check the deployment status
-		deployment, err := service.GetDeployment((*serviceStatus).ProjectName, (*serviceStatus).Name)
-		if deployment == nil && serviceStatus.Name != k8sServices {
-			logs.Info("Failed to get deployment", err)
-			var reason = "The deployment is not established in cluster system"
-			(*serviceStatus).Status = uncompleted
-			// TODO create a new field in serviceStatus for reason
-			(*serviceStatus).Comment = "Reason: " + reason
-			_, err = service.UpdateService(*serviceStatus, "status", "Comment")
-			if err != nil {
-				logs.Error("Failed to update deployment.")
-				break
-			}
-			continue
-		} else {
-			if deployment.Status.Replicas > deployment.Status.AvailableReplicas {
-				logs.Debug("The desired replicas number is not available",
-					deployment.Status.Replicas, deployment.Status.AvailableReplicas)
+
+		switch serviceStatus.Type {
+		case model.ServiceTypeNormalNodePort, model.ServiceTypeClusterIP:
+			// Check the deployment status
+			deployment, _, err := service.GetDeployment((*serviceStatus).ProjectName, (*serviceStatus).Name)
+			if deployment == nil && serviceStatus.Name != k8sServices {
+				logs.Info("Failed to get deployment", err)
+				var reason = "The deployment is not established in cluster system"
 				(*serviceStatus).Status = uncompleted
-				reason := "The desired replicas number is not available"
+				// TODO create a new field in serviceStatus for reason
 				(*serviceStatus).Comment = "Reason: " + reason
 				_, err = service.UpdateService(*serviceStatus, "status", "Comment")
 				if err != nil {
-					logs.Error("Failed to update deployment replicas.")
+					logs.Error("Failed to update deployment.")
 					break
 				}
 				continue
+			} else {
+				if deployment.Status.Replicas > deployment.Status.AvailableReplicas {
+					logs.Debug("The desired replicas number is not available",
+						deployment.Status.Replicas, deployment.Status.AvailableReplicas)
+					(*serviceStatus).Status = uncompleted
+					reason := "The desired replicas number is not available"
+					(*serviceStatus).Comment = "Reason: " + reason
+					_, err = service.UpdateService(*serviceStatus, "status", "Comment")
+					if err != nil {
+						logs.Error("Failed to update deployment replicas.")
+						break
+					}
+					continue
+				}
+			}
+		case model.ServiceTypeStatefulSet:
+			// Check the statefulset status
+			statefulset, _, err := service.GetStatefulSet((*serviceStatus).ProjectName, (*serviceStatus).Name)
+			if statefulset == nil || statefulset.Status.Replicas < *statefulset.Spec.Replicas {
+				logs.Debug("The statefulset %s is not ready %v", (*serviceStatus).Name, err)
+				(*serviceStatus).Status = uncompleted
 			}
 		}
 
@@ -254,10 +252,10 @@ func syncK8sStatus(serviceList []*model.ServiceStatusMO) error {
 
 //get service list
 func (p *ServiceController) GetServiceListAction() {
-	serviceName := p.GetString("service_name", "")
+	serviceName := p.GetString("service_name")
 	pageIndex, _ := p.GetInt("page_index", 0)
 	pageSize, _ := p.GetInt("page_size", 0)
-	orderField := p.GetString("order_field", "CREATE_TIME")
+	orderField := p.GetString("order_field", "creation_time")
 	orderAsc, _ := p.GetInt("order_asc", 0)
 	if pageIndex == 0 && pageSize == 0 {
 		serviceStatus, err := service.GetServiceList(serviceName, p.currentUser.ID)
@@ -270,7 +268,7 @@ func (p *ServiceController) GetServiceListAction() {
 			p.internalError(err)
 			return
 		}
-		p.Data["json"] = serviceStatus
+		p.renderJSON(serviceStatus)
 	} else {
 		paginatedServiceStatus, err := service.GetPaginatedServiceList(serviceName, p.currentUser.ID, pageIndex, pageSize, orderField, orderAsc)
 		if err != nil {
@@ -282,24 +280,23 @@ func (p *ServiceController) GetServiceListAction() {
 			p.internalError(err)
 			return
 		}
-		p.Data["json"] = paginatedServiceStatus
+		p.renderJSON(paginatedServiceStatus)
 	}
-	p.ServeJSON()
 }
 
 // API to create service config
 func (p *ServiceController) CreateServiceConfigAction() {
-	reqData, err := p.resolveBody()
-	if err != nil {
-		p.internalError(err)
-		return
-	}
 	var reqServiceProject model.ServiceProject
-	err = json.Unmarshal(reqData, &reqServiceProject)
+	var err error
+
+	err = p.resolveBody(&reqServiceProject)
 	if err != nil {
-		p.internalError(err)
 		return
 	}
+
+	//Judge authority
+	p.resolveUserPrivilegeByID(reqServiceProject.ProjectID)
+
 	//Assign and return Service ID with mysql
 	var newservice model.ServiceStatus
 	newservice.ProjectID = reqServiceProject.ProjectID
@@ -307,230 +304,82 @@ func (p *ServiceController) CreateServiceConfigAction() {
 	newservice.Status = preparing // 0: preparing 1: running 2: suspending
 	newservice.OwnerID = p.currentUser.ID
 
-	isMember, err := service.IsProjectMember(newservice.ProjectID, p.currentUser.ID)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	//Judge authority
-	if !(p.isSysAdmin || isMember) {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges to create service.")
-		return
-	}
-
 	serviceInfo, err := service.CreateServiceConfig(newservice)
 	if err != nil {
 		p.internalError(err)
 		return
 	}
-	p.Data["json"] = strconv.Itoa(int(serviceInfo.ID))
-	p.ServeJSON()
-}
-
-func cleanDeploymentK8s(s *model.ServiceStatus) error {
-	logs.Info("clean in cluster %s", s.Name)
-	// Stop deployment
-	cli, err := service.K8sCliFactory("", kubeMasterURL(), "v1beta1")
-	apiSet, err := kubernetes.NewForConfig(cli)
-	if err != nil {
-		return err
-	}
-	d := apiSet.Deployments(s.ProjectName)
-	deployData, err := d.Get(s.Name)
-	if err != nil {
-		logs.Debug("Do not need to clean deployment")
-		return nil
-	}
-
-	var newreplicas int32 = 0
-	deployData.Spec.Replicas = &newreplicas
-	res, err := d.Update(deployData)
-	if err != nil {
-		logs.Error(res, err)
-		return err
-	}
-	time.Sleep(2)
-	err = d.Delete(s.Name, nil)
-	if err != nil {
-		logs.Error("Failed to delele deployment", s.Name, err)
-		return err
-	}
-	logs.Info("Deleted deployment %s", s.Name)
-
-	r := apiSet.ReplicaSets(s.ProjectName)
-	var listoption v1.ListOptions
-	listoption.LabelSelector = "app=" + s.Name
-	rsList, err := r.List(listoption)
-	if err != nil {
-		logs.Error("failed to get rs list")
-		return err
-	}
-
-	for _, rsi := range rsList.Items {
-		err = r.Delete(rsi.Name, nil)
-		if err != nil {
-			logs.Error("failed to delete rs %s", rsi.Name)
-			return err
-		}
-		logs.Debug("delete RS %s", rsi.Name)
-	}
-
-	return nil
-}
-
-func cleanServiceK8s(s *model.ServiceStatus) error {
-	logs.Info("clean Service in cluster %s", s.Name)
-	//Stop service in cluster
-	cli, err := service.K8sCliFactory("", kubeMasterURL(), "v1")
-	apiSet, err := kubernetes.NewForConfig(cli)
-	if err != nil {
-		return err
-	}
-	servcieInt := apiSet.Services(s.ProjectName)
-	_, err = servcieInt.Get(s.Name)
-	if err != nil {
-		logs.Debug("Do not need to clean service %s", s.Name)
-		return nil
-	}
-	err = servcieInt.Delete(s.Name, nil)
-	if err != nil {
-		logs.Error("Failed to delele service in cluster.", s.Name, err)
-		return err
-	}
-
-	return nil
+	p.renderJSON(serviceInfo.ID)
 }
 
 func (p *ServiceController) DeleteServiceAction() {
-	serviceID, err := strconv.ParseInt(p.Ctx.Input.Param(":id"), 10, 64)
+	var err error
+	s, err := p.resolveServiceInfo()
 	if err != nil {
-		p.internalError(err)
 		return
 	}
-	// Check service id exist
-	var servicequery model.ServiceStatus
-	servicequery.ID = int64(serviceID)
-	s, err := service.GetService(servicequery, "id")
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if s == nil {
-		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
-		return
-	}
-
-	isMember, err := service.IsProjectMember(s.ProjectID, p.currentUser.ID)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
 	//Judge authority
-	if !(p.isSysAdmin || isMember) {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges to delete service.")
+	p.resolveUserPrivilegeByID(s.ProjectID)
+
+	if err = service.CheckServiceDeletable(s); err != nil {
+		p.internalError(err)
 		return
 	}
-
 	// Call stop service if running
-	switch s.Status {
-	case running:
-		//err = stopService(s)
-		err = stopServiceK8s(s)
+	if s.Status != stopped {
+		err = service.StopServiceK8s(s)
 		if err != nil {
-			p.internalError(err)
-			return
-		}
-	case uncompleted:
-		timeInt := time.Now().Sub(s.UpdateTime)
-		logs.Debug("uncompleted status in %+v", timeInt)
-		if timeInt < startingDuration {
-			p.customAbort(http.StatusBadRequest,
-				fmt.Sprintf("Invalid request %d in starting status", serviceID))
-			return
-		}
-		err = cleanDeploymentK8s(s)
-		if err != nil {
-			logs.Error("Failed to clean deployment %s", s.Name)
-			p.internalError(err)
-			return
-		}
-		err = cleanServiceK8s(s)
-		if err != nil {
-			logs.Error("Failed to clean service %s", s.Name)
 			p.internalError(err)
 			return
 		}
 	}
 
-	isSuccess, err := service.DeleteService(serviceID)
+	// 	Delete the service's autoscale rule
+	hpas, err := service.ListAutoScales(s)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	for _, hpa := range hpas {
+		err := service.DeleteAutoScale(s, hpa.ID)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+		logs.Debug("Deleted Hpa %d %s", hpa.ID, hpa.HPAName)
+	}
+
+	isSuccess, err := service.DeleteService(s.ID)
 	if err != nil {
 		p.internalError(err)
 		return
 	}
 	if !isSuccess {
-		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Failed to delete service with ID: %d", serviceID))
+		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Failed to delete service with ID: %d", s.ID))
+		return
 	}
 
 	//delete repo files of the service
-	var serviceFiles pushObject
-	serviceFiles.Items = []string{filepath.Join(s.ProjectName, strconv.Itoa(int(serviceID)), serviceFilename),
-		filepath.Join(s.ProjectName, strconv.Itoa(int(serviceID)), deploymentFilename)}
-	serviceFiles.Message = fmt.Sprintf("Delete yaml files for project %s service %d", s.ProjectName, serviceID)
-	ret, msg, err := InternalCleanObjects(&serviceFiles, &(p.baseController))
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	logs.Info("Internal push deployment object: %d %s", ret, msg)
+	p.resolveRepoServicePath(s.ProjectName, s.Name)
+	p.removeItemsToRepo(filepath.Join(s.Name, serviceFilename), filepath.Join(s.Name, deploymentFilename))
+
 }
 
 // API to deploy service
 func (p *ServiceController) ToggleServiceAction() {
-	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
+	var err error
+	s, err := p.resolveServiceInfo()
 	if err != nil {
-		p.internalError(err)
-		return
-	}
-
-	reqData, err := p.resolveBody()
-	if err != nil {
-		p.internalError(err)
 		return
 	}
 	var reqServiceToggle model.ServiceToggle
-	err = json.Unmarshal(reqData, &reqServiceToggle)
+	err = p.resolveBody(&reqServiceToggle)
 	if err != nil {
-		p.internalError(err)
-		return
-	}
-	logs.Info(reqServiceToggle)
-
-	// Check the current service status
-	var servicequery model.ServiceStatus
-	servicequery.ID = int64(serviceID)
-	s, err := service.GetService(servicequery, "id")
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if s == nil {
-		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
-		return
-	}
-
-	isMember, err := service.IsProjectMember(s.ProjectID, p.currentUser.ID)
-	if err != nil {
-		p.internalError(err)
 		return
 	}
 
 	//Judge authority
-	if !(p.isSysAdmin || isMember) {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges to toggle service status.")
-		return
-	}
+	p.resolveUserPrivilegeByID(s.ProjectID)
 
 	if s.Status == stopped && reqServiceToggle.Toggle == 0 {
 		p.customAbort(http.StatusBadRequest, "Service already stopped.")
@@ -542,384 +391,142 @@ func (p *ServiceController) ToggleServiceAction() {
 		return
 	}
 
+	p.resolveRepoServicePath(s.ProjectName, s.Name)
+	if _, err := os.Stat(p.repoServicePath); os.IsNotExist(err) {
+		p.customAbort(http.StatusPreconditionFailed, "Service restored from initialization, cannot be switched.")
+		return
+	}
 	if reqServiceToggle.Toggle == 0 {
 		// stop service
-		//err = stopService(s)
-		err = stopServiceK8s(s)
+		err = service.StopServiceK8s(s)
 		if err != nil {
 			p.internalError(err)
 			return
 		}
-		//logs.Info("Stop service successful")
 		// Update service status DB
-		servicequery.Status = stopped
-		_, err = service.UpdateService(servicequery, "status")
+		_, err = service.UpdateServiceStatus(s.ID, stopped)
 		if err != nil {
 			p.internalError(err)
 			return
 		}
 	} else {
 		// start service
-		//serviceNamespace = reqServiceConfig.ProjectName TODO in project
-		// Push deployment to jenkins
-		var pushobject pushObject
-		pushobject.FileName = deploymentFilename
-		pushobject.JobName = serviceProcess
-		pushobject.Value = filepath.Join(s.ProjectName, strconv.Itoa(serviceID))
-		pushobject.Message = fmt.Sprintf("Create deployment for project %s service %d",
-			s.ProjectName, s.ID)
-		pushobject.Extras = filepath.Join(kubeMasterURL(), deploymentAPI,
-			s.ProjectName, "deployments")
-
-		// Add deployment file
-		pushobject.Items = []string{filepath.Join(pushobject.Value, deploymentFilename)}
-
-		ret, msg, err := InternalPushObjects(&pushobject, &(p.baseController))
+		err := service.DeployServiceByYaml(s.ProjectName, p.repoServicePath)
 		if err != nil {
-			p.internalError(err)
+			p.parseError(err, parsePostK8sError)
 			return
 		}
-		logs.Info("Internal push deployment object: %d %s", ret, msg)
-
-		//TODO: If fail to create deployment, should not continue to create service
-
-		//Push service to jenkins
-		pushobject.FileName = serviceFilename
-		pushobject.Message = fmt.Sprintf("Create service for project %s service %d",
-			s.ProjectName, s.ID)
-		pushobject.Extras = filepath.Join(kubeMasterURL(), serviceAPI, s.ProjectName, "services")
-		// Add deployment file
-		pushobject.Items = []string{filepath.Join(pushobject.Value, serviceFilename)}
-
-		ret, msg, err = InternalPushObjects(&pushobject, &(p.baseController))
-		if err != nil {
-			p.internalError(err)
-			return
-		}
-		logs.Debug("Internal push service object: %d %s", ret, msg)
+		// Push deployment to Git repo
+		items := []string{filepath.Join(s.Name, deploymentFilename), filepath.Join(s.Name, serviceFilename)}
+		p.pushItemsToRepo(items...)
+		p.collaborateWithPullRequest("master", "master", items...)
 
 		// Update service status DB
-		servicequery.Status = running
-		_, err = service.UpdateService(servicequery, "status")
+		_, err = service.UpdateServiceStatus(s.ID, running)
 		if err != nil {
 			p.internalError(err)
 			return
 		}
-		//logs.Info("Start service successful")
-	}
-}
-
-func stopService(s *model.ServiceStatus) error {
-	var err error
-	var client = &http.Client{}
-	// Stop service
-	//deleteServiceURL := filepath.Join(kubeMasterURL(), serviceAPI,
-	//	serviceNamespace, "services", s.Name)
-	deleteServiceURL := kubeMasterURL() + serviceAPI + s.ProjectName + "/services/" + s.Name
-	req, err := http.NewRequest("DELETE", deleteServiceURL, nil)
-	if err != nil {
-		logs.Error("Failed to new request for delete service: %s", deleteServiceURL)
-		return err
-	}
-	req.Header.Set("Content-Type", "application/yaml")
-	resp, err := client.Do(req)
-	if err != nil {
-		logs.Info(req)
-		return err
-	}
-	defer resp.Body.Close()
-	logs.Info("Stop service successfully", s.ID, s.Name, resp)
-
-	// Stop deployment
-	//deleteDeploymentURL := filepath.Join(kubeMasterURL(), deploymentAPI,
-	//	serviceNamespace, "deployments", s.Name)
-	deleteDeploymentURL := kubeMasterURL() + deploymentAPI + s.ProjectName + "/deployments/" + s.Name
-	req, err = http.NewRequest("DELETE", deleteDeploymentURL, nil)
-	if err != nil {
-		logs.Error("Failed to new request for delete deployment: %s", deleteDeploymentURL)
-		return err
-	}
-	req.Header.Set("Content-Type", "application/yaml")
-	resp, err = client.Do(req)
-	if err != nil {
-		logs.Error(req)
-		return err
-	}
-	defer resp.Body.Close()
-
-	logs.Info("Stop deployment successfully, id: %d, name: %s, resp: %+v", s.ID, s.Name, resp)
-	return nil
-}
-
-func stopServiceK8s(s *model.ServiceStatus) error {
-	logs.Info("stop service in cluster %s", s.Name)
-	// Stop deployment
-	cli, err := service.K8sCliFactory("", kubeMasterURL(), "v1beta1")
-	apiSet, err := kubernetes.NewForConfig(cli)
-	if err != nil {
-		return err
-	}
-	d := apiSet.Deployments(s.ProjectName)
-	deployData, err := d.Get(s.Name)
-	if err != nil {
-		logs.Error("Failed to get deployment in cluster")
-		return err
-	}
-
-	var newreplicas int32 = 0
-	deployData.Spec.Replicas = &newreplicas
-	res, err := d.Update(deployData)
-	if err != nil {
-		logs.Error(res, err)
-		return err
-	}
-	time.Sleep(2)
-	err = d.Delete(s.Name, nil)
-	if err != nil {
-		logs.Error("Failed to delele deployment", s.Name, err)
-		return err
-	}
-	logs.Info("Deleted deployment %s", s.Name)
-
-	r := apiSet.ReplicaSets(s.ProjectName)
-	var listoption v1.ListOptions
-	listoption.LabelSelector = "app=" + s.Name
-	rsList, err := r.List(listoption)
-	if err != nil {
-		logs.Error("failed to get rs list")
-		return err
-	}
-
-	for _, rsi := range rsList.Items {
-		err = r.Delete(rsi.Name, nil)
-		if err != nil {
-			logs.Error("failed to delete rs %s", rsi.Name)
-			return err
-		}
-		logs.Debug("delete RS %s", rsi.Name)
-	}
-
-	//Stop service in cluster
-	cli, err = service.K8sCliFactory("", kubeMasterURL(), "v1")
-	apiSet, err = kubernetes.NewForConfig(cli)
-	if err != nil {
-		return err
-	}
-	servcieInt := apiSet.Services(s.ProjectName)
-	//serviceData, err := servcieInt.Get(s.Name)
-	//if err != nil {
-	//	logs.Error("Failed to get service in cluster %s", s.Name)
-	//	return err
-	//}
-	err = servcieInt.Delete(s.Name, nil)
-	if err != nil {
-		logs.Error("Failed to delele service in cluster.", s.Name, err)
-		return err
-	}
-
-	return nil
-}
-
-func (p *ServiceController) resolveErrOutput(err error) {
-	if err != nil {
-		if strings.Index(err.Error(), "StatusNotFound:") == 0 {
-			var output interface{}
-			json.Unmarshal([]byte(err.Error()[15:]), &output)
-			p.Data["json"] = output
-			p.ServeJSON()
-			return
-		}
-		p.internalError(err)
 	}
 }
 
 func (p *ServiceController) GetServiceInfoAction() {
-	var serviceInfo model.ServiceInfoStruct
-
-	//Get Nodeport
-	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
+	var err error
+	s, err := p.resolveServiceInfo()
 	if err != nil {
-		p.internalError(err)
 		return
 	}
-
-	var servicequery model.ServiceStatus
-	servicequery.ID = int64(serviceID)
-	s, err := service.GetService(servicequery, "id")
-	if err != nil {
-		p.internalError(err)
-		return
+	//Judge authority
+	if s.Public != 1 {
+		p.resolveUserPrivilegeByID(s.ProjectID)
 	}
-	if s == nil {
-		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
-		return
-	}
-
-	serviceStatus, err := service.GetServiceStatus(kubeMasterURL() + serviceAPI + s.ProjectName + "/services/" + s.Name)
+	serviceStatus, err := service.GetServiceByK8sassist(s.ProjectName, s.Name)
 	if err != nil {
-		p.resolveErrOutput(err)
+		p.parseError(err, parseGetK8sError)
 		return
 	}
 	//Get NodeIP
 	//endpointUrl format /api/v1/namespaces/default/endpoints/
-	nodesStatus, err := service.GetNodesStatus(fmt.Sprintf("%s/api/v1/nodes", kubeMasterURL()))
+	nodesStatus, err := service.GetNodesStatus()
 	if err != nil {
-		p.resolveErrOutput(err)
+		p.parseError(err, parseGetK8sError)
 		return
 	}
-	if len(serviceStatus.Spec.Ports) == 0 || len(nodesStatus.Items) == 0 {
-		p.Data["json"] = "NA"
-		p.ServeJSON()
+	if len(serviceStatus.Ports) == 0 || len(nodesStatus.Items) == 0 {
+		p.renderJSON("NA")
 		return
 	}
 
-	for _, ports := range serviceStatus.Spec.Ports {
+	var serviceInfo model.ServiceInfoStruct
+	for _, ports := range serviceStatus.Ports {
 		serviceInfo.NodePort = append(serviceInfo.NodePort, ports.NodePort)
 	}
 	for _, items := range nodesStatus.Items {
 		serviceInfo.NodeName = append(serviceInfo.NodeName, items.Status.Addresses...)
 	}
-
-	p.Data["json"] = serviceInfo
-	p.ServeJSON()
+	p.renderJSON(serviceInfo)
 }
 
 func (p *ServiceController) GetServiceStatusAction() {
-	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
+	var err error
+	s, err := p.resolveServiceInfo()
 	if err != nil {
-		p.internalError(err)
 		return
 	}
-
-	var servicequery model.ServiceStatus
-	servicequery.ID = int64(serviceID)
-	s, err := service.GetService(servicequery, "id")
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if s == nil {
-		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
-		return
-	}
-
-	isMember, err := service.IsProjectMember(s.ProjectID, p.currentUser.ID)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
 	//Judge authority
-	if !(p.isSysAdmin || isMember) {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges to get publicity of service.")
-		return
-	}
-
-	serviceStatus, err := service.GetServiceStatus(kubeMasterURL() + serviceAPI + s.ProjectName + "/services/" + s.Name)
+	p.resolveUserPrivilegeByID(s.ProjectID)
+	serviceStatus, err := service.GetServiceByK8sassist(s.ProjectName, s.Name)
 	if err != nil {
-		p.resolveErrOutput(err)
+		p.parseError(err, parseGetK8sError)
 		return
 	}
-	p.Data["json"] = serviceStatus
-	p.ServeJSON()
+	p.renderJSON(serviceStatus)
 }
 
 func (p *ServiceController) ServicePublicityAction() {
-	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
+	var err error
+	s, err := p.resolveServiceInfo()
 	if err != nil {
-		p.internalError(err)
 		return
 	}
-
-	reqData, err := p.resolveBody()
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	var reqServiceUpdate model.ServicePublicityUpdate
-	err = json.Unmarshal(reqData, &reqServiceUpdate)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	logs.Info(reqServiceUpdate)
-
-	// Check the current service status
-	var servicequery model.ServiceStatus
-	servicequery.ID = int64(serviceID)
-	s, err := service.GetService(servicequery, "id")
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if s == nil {
-		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
-		return
-	}
-
-	isMember, err := service.IsProjectMember(s.ProjectID, p.currentUser.ID)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
 	//Judge authority
-	if !(p.isSysAdmin || isMember) {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges to get publicity of service.")
+	p.resolveUserPrivilegeByID(s.ProjectID)
+	var reqServiceUpdate model.ServicePublicityUpdate
+	err = p.resolveBody(&reqServiceUpdate)
+	if err != nil {
 		return
 	}
-
 	if s.Public != reqServiceUpdate.Public {
-		servicequery.Public = reqServiceUpdate.Public
-		_, err = service.UpdateService(servicequery, "public")
+		_, err := service.UpdateServicePublic(s.ID, reqServiceUpdate.Public)
 		if err != nil {
 			p.internalError(err)
 			return
 		}
-	} else {
-		logs.Info("Already in target publicity status")
 	}
 }
 
 func (p *ServiceController) DeleteServiceConfigAction() {
 	var err error
-	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
+	s, err := p.resolveServiceInfo()
 	if err != nil {
-		p.internalError(err)
 		return
 	}
-
-	// Get the project info of this service
-	var servicequery model.ServiceStatus
-	servicequery.ID = int64(serviceID)
-	s, err := service.GetService(servicequery, "id")
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if s == nil {
-		p.customAbort(http.StatusBadRequest,
-			fmt.Sprintf("Invalid service ID: %d", serviceID))
-		return
-	}
-	logs.Info("service status: ", s)
-
 	// Get the path of the service config files
-	serviceConfigPath := filepath.Join(repoPath(), s.ProjectName,
-		strconv.Itoa(serviceID))
-	logs.Debug("Service config path: %s", serviceConfigPath)
+	p.resolveUserPrivilege(s.ProjectName)
+	p.resolveRepoServicePath(s.ProjectName, s.Name)
+	logs.Debug("Service config path: %s", p.repoServicePath)
 
 	// Delete yaml files
 	// TODO
-	err = service.DeleteServiceConfigYaml(serviceConfigPath)
+	err = service.DeleteServiceConfigYaml(p.repoServicePath)
 	if err != nil {
-		logs.Info("failed to delete service yaml", serviceConfigPath)
+		logs.Info("failed to delete service yaml", p.repoServicePath)
 		p.internalError(err)
 		return
 	}
 
 	// For terminated service config, actually delete it in DB
-	_, err = service.DeleteServiceByID(servicequery)
+	_, err = service.DeleteServiceByID(s.ID)
 	if err != nil {
 		p.internalError(err)
 		return
@@ -928,74 +535,28 @@ func (p *ServiceController) DeleteServiceConfigAction() {
 
 func (p *ServiceController) DeleteDeploymentAction() {
 	var err error
-	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
+	s, err := p.resolveServiceInfo()
 	if err != nil {
-		p.internalError(err)
 		return
 	}
-
-	// Get the project info of this service
-	var servicequery model.ServiceStatus
-	servicequery.ID = int64(serviceID)
-	s, err := service.GetService(servicequery, "id")
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if s == nil {
-		p.customAbort(http.StatusBadRequest,
-			fmt.Sprintf("Invalid service ID: %d", serviceID))
-		return
-	}
-	logs.Info("service status: ", s)
-
 	// Get the path of the service config files
-	serviceConfigPath := filepath.Join(repoPath(), s.ProjectName,
-		strconv.Itoa(serviceID))
-	logs.Debug("Service config path: %s", serviceConfigPath)
+	p.resolveUserPrivilege(s.ProjectName)
+	p.resolveRepoServicePath(s.ProjectName, s.Name)
+	logs.Debug("Service config path: %s", p.repoServicePath)
 
 	// TODO clear kube-master, even if the service is not deployed successfully
-
-	// Update git repo
-	var pushobject pushObject
-	pushobject.FileName = deploymentFilename
-	pushobject.JobName = serviceProcess
-	pushobject.Value = filepath.Join(s.ProjectName, strconv.Itoa(serviceID))
-	pushobject.Message = fmt.Sprintf("Delete yaml files for project %s service %d",
-		s.ProjectName, s.ID)
-	pushobject.Extras = filepath.Join(kubeMasterURL(), deploymentAPI,
-		s.ProjectName, "deployments")
-
-	//Get file list for Jenkis git repo
-	uploads, err := service.ListUploadFiles(serviceConfigPath)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	// Add yaml files
-	for _, finfo := range uploads {
-		filefullname := filepath.Join(pushobject.Value, finfo.FileName)
-		pushobject.Items = append(pushobject.Items, filefullname)
-	}
-
-	ret, msg, err := InternalCleanObjects(&pushobject, &(p.baseController))
-	if err != nil {
-		logs.Info("Failed to push object for git repo clean", msg, ret, pushobject)
-		p.internalError(err)
-		return
-	}
-	logs.Info("Internal push clean deployment object: %d %s", ret, msg)
+	p.removeItemsToRepo(filepath.Join(s.Name, deploymentFilename))
 
 	// Delete yaml files
-	err = service.DeleteServiceConfigYaml(serviceConfigPath)
+	err = service.DeleteServiceConfigYaml(p.repoServicePath)
 	if err != nil {
-		logs.Info("failed to delete service yaml", serviceConfigPath)
+		logs.Info("Failed to delete service yaml under path: %s", p.repoServicePath)
 		p.internalError(err)
 		return
 	}
 
 	// For terminated service config, actually delete it in DB
-	_, err = service.DeleteServiceByID(servicequery)
+	_, err = service.DeleteServiceByID(s.ID)
 	if err != nil {
 		p.internalError(err)
 		return
@@ -1011,6 +572,7 @@ func (p *ServiceController) StoreServiceRoute() {
 
 func (p *ServiceController) ServiceExists() {
 	projectName := p.GetString("project_name")
+	p.resolveProjectMember(projectName)
 	serviceName := p.GetString("service_name")
 	isServiceExists, err := service.ServiceExists(serviceName, projectName)
 	if err != nil {
@@ -1025,133 +587,98 @@ func (p *ServiceController) ServiceExists() {
 }
 
 func (p *ServiceController) ScaleServiceAction() {
-	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
+	var err error
+	s, err := p.resolveServiceInfo()
 	if err != nil {
-		p.internalError(err)
 		return
 	}
-
-	reqData, err := p.resolveBody()
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	var reqServiceScale model.ServiceScale
-	err = json.Unmarshal(reqData, &reqServiceScale)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	logs.Info(reqServiceScale)
-
-	// Get the current service status
-	var servicequery model.ServiceStatus
-	servicequery.ID = int64(serviceID)
-	s, err := service.GetService(servicequery, "id")
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-	if s == nil {
-		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
-		return
-	}
-
-	isMember, err := service.IsProjectMember(s.ProjectID, p.currentUser.ID)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
 	//Judge authority
-	if !(p.isSysAdmin || isMember) {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges to get publicity of service.")
+	p.resolveUserPrivilegeByID(s.ProjectID)
+
+	var reqServiceScale model.ServiceScale
+	err = p.resolveBody(&reqServiceScale)
+	if err != nil {
 		return
 	}
-
 	// change the replica number of service
-
-	res, err := service.ScaleReplica(*s, reqServiceScale.Replica)
-
+	res, err := service.ScaleReplica(s, reqServiceScale.Replica)
 	if res != true {
 		logs.Info("Failed to scale service replica", s, reqServiceScale.Replica)
 		p.internalError(err)
 		return
 	}
 	logs.Info("Scale service replica successfully")
+
+	_, deploymentFileInfo, err := service.GetDeployment(s.ProjectName, s.Name)
+	if err != nil {
+		logs.Error("Failed to get deployment %s", s.Name)
+		return
+	}
+	p.resolveRepoServicePath(s.ProjectName, s.Name)
+	err = utils.GenerateFile(deploymentFileInfo, p.repoServicePath, deploymentFilename)
+	if err != nil {
+		logs.Error("Failed to update file of deployment %s", s.Name)
+		return
+	}
+	p.pushItemsToRepo(filepath.Join(s.Name, deploymentFilename))
 }
 
 //get selectable service list
 func (p *ServiceController) GetSelectableServicesAction() {
-	serviceName := p.GetString("service_name", "")
-	projectName := p.GetString("project_name", "")
-	logs.Info("Get selectable service list for", projectName, serviceName)
-	serviceList, err := service.GetSelectableServices(projectName, serviceName)
+	projectName := p.GetString("project_name")
+	p.resolveProjectMember(projectName)
+	logs.Info("Get selectable service list for", projectName)
+	serviceList, err := service.GetServicesByProjectName(projectName)
 	if err != nil {
 		logs.Error("Failed to get selectable services.")
 		p.internalError(err)
 		return
 	}
-	p.Data["json"] = serviceList
-	p.ServeJSON()
+	p.renderJSON(serviceList)
 }
 
-func (f *ServiceController) resolveUploadedYamlFile(uploadedFileName string, target interface{}, customError error) func(fileName string, serviceInfo *model.ServiceStatus) error {
+func (f *ServiceController) resolveUploadedYamlFile(uploadedFileName string) (func(fileName string, serviceInfo *model.ServiceStatus) error, io.Reader, error) {
 	uploadedFile, _, err := f.GetFile(uploadedFileName)
 	if err != nil {
 		if err.Error() == "http: no such file" {
 			f.customAbort(http.StatusBadRequest, "Missing file: "+uploadedFileName)
+			return nil, nil, err
 		}
 		f.internalError(err)
-	}
-	err = utils.UnmarshalYamlFile(uploadedFile, target)
-	if err != nil {
-		if strings.Index(err.Error(), "InternalError:") == 0 {
-			f.internalError(errors.New(err.Error()[14:]))
-		}
-		f.customAbort(http.StatusBadRequest, customError.Error())
+		return nil, nil, err
 	}
 
 	return func(fileName string, serviceInfo *model.ServiceStatus) error {
-		targetFilePath := filepath.Join(repoPath(), serviceInfo.ProjectName, strconv.Itoa(int(serviceInfo.ID)))
-		err = service.CheckDeploymentPath(targetFilePath)
+		f.resolveRepoServicePath(serviceInfo.ProjectName, serviceInfo.Name)
+		err = utils.CheckFilePath(f.repoServicePath)
 		if err != nil {
 			f.internalError(err)
+			return nil
 		}
-		return f.SaveToFile(uploadedFileName, filepath.Join(targetFilePath, fileName))
-	}
+		return f.SaveToFile(uploadedFileName, filepath.Join(f.repoServicePath, fileName))
+	}, uploadedFile, nil
 }
 
 func (f *ServiceController) UploadYamlFileAction() {
 	projectName := f.GetString("project_name")
-	isExistence, err := service.ProjectExists(projectName)
+	f.resolveProjectMember(projectName)
+
+	fhDeployment, deploymentFile, err := f.resolveUploadedYamlFile("deployment_file")
 	if err != nil {
-		f.internalError(err)
 		return
 	}
-	if isExistence != true {
-		f.customAbort(http.StatusBadRequest, "Project doesn't exist.")
+	fhService, serviceFile, err := f.resolveUploadedYamlFile("service_file")
+	if err != nil {
+		return
+	}
+	deployInfo, err := service.CheckDeployYamlConfig(serviceFile, deploymentFile, projectName)
+	if err != nil {
+		f.customAbort(http.StatusBadRequest, err.Error())
 		return
 	}
 
-	var deploymentConfig service.Deployment
-	fhDeployment := f.resolveUploadedYamlFile("deployment_file", &deploymentConfig, service.DeploymentYamlFileUnmarshalErr)
-
-	var serviceConfig service.Service
-	fhService := f.resolveUploadedYamlFile("service_file", &serviceConfig, service.ServiceYamlFileUnmarshalErr)
-
-	err = service.CheckDeploymentConfig(projectName, deploymentConfig)
-	if err != nil {
-		f.customAbort(http.StatusBadRequest, err.Error())
-	}
-	err = service.CheckServiceConfig(projectName, serviceConfig)
-	if err != nil {
-		f.customAbort(http.StatusBadRequest, err.Error())
-	}
-
-	//check label selector
-
-	serviceInfo, err := service.GetServiceByProject(serviceConfig.Name, projectName)
+	serviceName := deployInfo.Service.ObjectMeta.Name
+	serviceInfo, err := service.GetServiceByProject(serviceName, projectName)
 	if err != nil {
 		f.internalError(err)
 		return
@@ -1161,7 +688,7 @@ func (f *ServiceController) UploadYamlFileAction() {
 		return
 	}
 	serviceInfo, err = service.CreateServiceConfig(model.ServiceStatus{
-		Name:        serviceConfig.Name,
+		Name:        serviceName,
 		ProjectName: projectName,
 		Status:      preparing, // 0: preparing 1: running 2: suspending
 		OwnerID:     f.currentUser.ID,
@@ -1171,32 +698,21 @@ func (f *ServiceController) UploadYamlFileAction() {
 		f.internalError(err)
 		return
 	}
-
 	err = fhDeployment(deploymentFilename, serviceInfo)
 	if err != nil {
 		f.internalError(err)
+		return
 	}
 	err = fhService(serviceFilename, serviceInfo)
 	if err != nil {
 		f.internalError(err)
+		return
 	}
-
-	f.Data["json"] = serviceInfo
-	f.ServeJSON()
+	f.renderJSON(serviceInfo)
 }
 
 func (f *ServiceController) DownloadDeploymentYamlFileAction() {
 	projectName := f.GetString("project_name")
-	isExistence, err := service.ProjectExists(projectName)
-	if err != nil {
-		f.internalError(err)
-		return
-	}
-	if isExistence != true {
-		f.customAbort(http.StatusBadRequest, "Project name is invalid.")
-		return
-	}
-
 	serviceName := f.GetString("service_name")
 	serviceInfo, err := service.GetServiceByProject(serviceName, projectName)
 	if err != nil {
@@ -1207,106 +723,257 @@ func (f *ServiceController) DownloadDeploymentYamlFileAction() {
 		f.customAbort(http.StatusBadRequest, "Service name is invalid.")
 		return
 	}
-
-	//get paras
+	f.resolveRepoServicePath(projectName, serviceName)
 	yamlType := f.GetString("yaml_type")
-	fileName := getYamlFileName(yamlType)
-	if fileName == "" {
-		f.customAbort(http.StatusBadRequest, "Yaml type is invalid.")
+
+	switch yamlType {
+	case "":
+		f.customAbort(http.StatusBadRequest, "No YAML type found.")
+		return
+	case deploymentType:
+		f.resolveDownloadYaml(serviceInfo, deploymentFilename, service.GenerateDeploymentYamlFileFromK8s)
+	case serviceType:
+		f.resolveDownloadYaml(serviceInfo, serviceFilename, service.GenerateServiceYamlFileFromK8s)
+	case statefulsetType:
+		f.resolveDownloadYaml(serviceInfo, statefulsetFilename, service.GenerateStatefulSetYamlFileFromK8s)
+	}
+
+}
+
+func (f *ServiceController) resolveDownloadYaml(serviceConfig *model.ServiceStatus, fileName string, generator func(*model.ServiceStatus, string) error) {
+	logs.Debug("Current download yaml file: %s", fileName)
+	//checkout the path of download
+	err := utils.CheckFilePath(f.repoServicePath)
+	if err != nil {
+		f.internalError(err)
 		return
 	}
-	absFileName := filepath.Join(repoPath(), projectName, strconv.Itoa(int(serviceInfo.ID)), fileName)
-	logs.Info("User: %s download %s yaml file from %s.", f.currentUser.Username, yamlType, absFileName)
-
-	//check doc isexist
-	if _, err := os.Stat(absFileName); os.IsNotExist(err) {
-		//generate file
-		loadPath := filepath.Join(repoPath(), projectName, strconv.Itoa(int(serviceInfo.ID)))
-		err = service.CheckDeploymentPath(loadPath)
-		if err != nil {
-			f.internalError(err)
-			return
-		}
-		//if no doc, get config from k8s; generate yaml file;
-		if yamlType == deploymentType {
-			deployConfigURL := fmt.Sprintf("%s%s", kubeMasterURL(), filepath.Join(deploymentAPI, projectName, "deployments", serviceName))
-			logs.Info("deployConfigURL:", deployConfigURL)
-			err := service.GenerateDeploymentYamlFileFromK8S(deployConfigURL, absFileName)
-			if err != nil {
-				if strings.Index(err.Error(), "StatusNotFound:") == 0 {
-					f.customAbort(http.StatusNotFound, service.DeploymentNotFoundErr.Error())
-					return
-				}
-				f.internalError(err)
-				return
-			}
-		} else if yamlType == serviceType {
-			serviceConfigURL := fmt.Sprintf("%s%s", kubeMasterURL(), filepath.Join(serviceAPI, projectName, "services", serviceName))
-			logs.Info("serviceConfigURL:", serviceConfigURL)
-			err := service.GenerateServiceYamlFileFromK8S(serviceConfigURL, absFileName)
-			if err != nil {
-				if strings.Index(err.Error(), "StatusNotFound:") == 0 {
-					f.customAbort(http.StatusNotFound, service.ServiceNotFoundErr.Error())
-					return
-				}
-				f.internalError(err)
-				return
-			}
-		}
+	absFileName := filepath.Join(f.repoServicePath, fileName)
+	err = generator(serviceConfig, f.repoServicePath)
+	if err != nil {
+		f.parseError(err, parseGetK8sError)
+		return
 	}
-
+	logs.Info("User: %s downloaded %s YAML file.", f.currentUser.Username, fileName)
 	f.Ctx.Output.Download(absFileName, fileName)
 }
 
-func getYamlFileName(yamlType string) string {
-	var fileName string
-	if yamlType == deploymentType {
-		fileName = deploymentFilename
-	} else if yamlType == serviceType {
-		fileName = serviceFilename
-	} else {
-		return ""
-	}
-	return fileName
-}
-
 func (p *ServiceController) GetScaleStatusAction() {
-	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
-	if err != nil {
-		p.internalError(err)
-		return
-	}
 	// Get the current service status
-	var servicequery model.ServiceStatus
-	servicequery.ID = int64(serviceID)
-	s, err := service.GetService(servicequery, "id")
+	var err error
+	s, err := p.resolveServiceInfo()
 	if err != nil {
-		p.internalError(err)
 		return
 	}
-	if s == nil {
-		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
-		return
-	}
-
-	isMember, err := service.IsProjectMember(s.ProjectID, p.currentUser.ID)
-	if err != nil {
-		p.internalError(err)
-		return
-	}
-
 	//Judge authority
-	if !(p.isSysAdmin || isMember) {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges to get publicity of service.")
-		return
-	}
+	p.resolveUserPrivilegeByID(s.ProjectID)
 	scaleStatus, err := service.GetScaleStatus(s)
 	if err != nil {
 		logs.Debug("Get scale deployment status failed %s", s.Name)
 		p.internalError(err)
 		return
 	}
-	p.Data["json"] = scaleStatus
-	p.ServeJSON()
-	logs.Info("Get Scale status successfully")
+	p.renderJSON(scaleStatus)
+}
+
+func (p *ServiceController) DeleteDeployAction() {
+	var err error
+
+	key := p.getKey()
+	configService := NewConfigServiceStep(key)
+
+	//Judge authority
+	p.resolveUserPrivilegeByID(configService.ProjectID)
+
+	// Clean deployment and service
+
+	s := model.ServiceStatus{Name: configService.ServiceName,
+		ProjectName: configService.ProjectName,
+	}
+
+	err = service.StopServiceK8s(&s)
+	if err != nil {
+		logs.Error("Failed to clean service %s", s.Name)
+		p.internalError(err)
+		return
+	}
+
+	//Clean data DB if existing
+	serviceData, err := service.GetService(s, "name", "project_name")
+	if serviceData != nil {
+		isSuccess, err := service.DeleteService(serviceData.ID)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+		if !isSuccess {
+			p.customAbort(http.StatusBadRequest, fmt.Sprintf("Failed to delete service with ID: %d", s.ID))
+			return
+		}
+	}
+
+	//delete repo files of the service
+	p.resolveRepoServicePath(s.ProjectName, s.Name)
+	p.removeItemsToRepo(filepath.Join(s.Name, serviceFilename), filepath.Join(s.Name, deploymentFilename))
+
+	//clean the config step
+	err = DeleteConfigServiceStep(key)
+	if err != nil {
+		logs.Debug("Failed to clean the config steps")
+		p.internalError(err)
+		return
+	}
+}
+
+//get service nodeport list
+func (p *ServiceController) GetServiceNodePorts() {
+	projectName := p.GetString("project_name")
+
+	if projectName != "" {
+		p.resolveProjectMember(projectName)
+		logs.Info("Get service nodeport list for", projectName)
+	}
+
+	//Check nodeports in cluster
+	nodeportList, err := service.GetNodePortsK8s(projectName)
+	if err != nil {
+		logs.Error("Failed to get selectable services.")
+		p.internalError(err)
+		return
+	}
+
+	//Check nodeports in DB
+	p.renderJSON(nodeportList)
+}
+
+//import cluster services
+func (p *ServiceController) ImportServicesAction() {
+
+	if p.isSysAdmin == false {
+		p.customAbort(http.StatusForbidden, "Insufficient privileges to import services.")
+		return
+	}
+
+	projectList, err := service.GetProjectsByUser(model.Project{}, p.currentUser.ID)
+	if err != nil {
+		logs.Error("Failed to get projects.")
+		p.internalError(err)
+		return
+	}
+
+	for _, project := range projectList {
+		err := service.SyncServiceWithK8s(project.Name)
+		if err != nil {
+			logs.Error("Failed to sync service for project %s.", project.Name)
+			p.internalError(err)
+			return
+		}
+	}
+	logs.Debug("imported services from cluster successfully")
+}
+
+// DeployStatefulSetAction is an api action to deploy statefulset
+func (p *ServiceController) DeployStatefulSetAction() {
+	key := p.getKey()
+	configService := NewConfigServiceStep(key)
+
+	if configService.ServiceType != model.ServiceTypeStatefulSet {
+		p.customAbort(http.StatusBadRequest, "Invalid service type.")
+		return
+	}
+
+	//Judge authority
+	project := p.resolveUserPrivilegeByID(configService.ProjectID)
+
+	var newservice model.ServiceStatus
+	newservice.Name = configService.ServiceName
+	newservice.ProjectID = configService.ProjectID
+	newservice.Status = preparing // 0: preparing 1: running 2: suspending
+	newservice.OwnerID = p.currentUser.ID
+	newservice.OwnerName = p.currentUser.Username
+	newservice.Public = configService.Public
+	newservice.ProjectName = project.Name
+	newservice.Type = configService.ServiceType
+
+	serviceInfo, err := service.CreateServiceConfig(newservice)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	statefulsetInfo, err := service.DeployStatefulSet((*model.ConfigServiceStep)(configService), registryBaseURI())
+	if err != nil {
+		p.parseError(err, parsePostK8sError)
+		return
+	}
+
+	p.resolveRepoServicePath(project.Name, newservice.Name)
+	err = service.GenerateStatefulSetYamlFiles(statefulsetInfo, p.repoServicePath)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	statefulsetFile := filepath.Join(newservice.Name, statefulsetFilename)
+	serviceFile := filepath.Join(newservice.Name, serviceFilename)
+	items := []string{statefulsetFile, serviceFile}
+	p.pushItemsToRepo(items...)
+
+	updateService := model.ServiceStatus{ID: serviceInfo.ID, Status: uncompleted, ServiceYaml: string(statefulsetInfo.ServiceFileInfo),
+		DeploymentYaml: string(statefulsetInfo.StatefulSetFileInfo)}
+	_, err = service.UpdateService(updateService, "status", "service_yaml", "deployment_yaml")
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+
+	err = DeleteConfigServiceStep(key)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	logs.Info("Service with ID:%d has been deleted in cache.", serviceInfo.ID)
+
+	configService.ServiceID = serviceInfo.ID
+	p.renderJSON(configService)
+}
+
+func (p *ServiceController) DeleteStatefulSetAction() {
+	var err error
+	s, err := p.resolveServiceInfo()
+	if err != nil {
+		return
+	}
+	//Judge authority
+	p.resolveUserPrivilegeByID(s.ProjectID)
+
+	if err = service.CheckServiceDeletable(s); err != nil {
+		p.internalError(err)
+		return
+	}
+	// Call stop service if running
+	if s.Status != stopped {
+		err = service.StopStatefulSetK8s(s)
+		if err != nil {
+			p.internalError(err)
+			return
+		}
+	}
+
+	// 	Delete the service's autoscale rule later
+
+	isSuccess, err := service.DeleteService(s.ID)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if !isSuccess {
+		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Failed to delete service with ID: %d", s.ID))
+		return
+	}
+
+	//delete repo files of the service
+	p.resolveRepoServicePath(s.ProjectName, s.Name)
+	p.removeItemsToRepo(filepath.Join(s.Name, serviceFilename), filepath.Join(s.Name, statefulsetFilename))
+
 }

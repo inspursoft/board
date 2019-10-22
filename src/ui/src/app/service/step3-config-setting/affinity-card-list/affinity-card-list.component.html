@@ -1,0 +1,34 @@
+<div *ngIf="viewModel == 'column'" class="card-col-list-container">
+  <span class="list-title"><b>{{title}}{{description}}</b></span>
+  <div *ngIf="affinityCardDataList.length > 5" class="search-container">
+    <input title="" type="text" (click)="$event.stopPropagation()" (keyup)="filterExecute($event)">
+    <clr-icon shape="search"></clr-icon>
+  </div>
+  <div class="drag-col-container" (dragleave)="dragLeave()" (dragover)="dragOver($event)"
+       (drop)="drop($event)" [class.list-border]="listBorder" [class.drag-active]="isDragActive"
+       [style.min-height.px]="listMinHeight">
+    <div *ngFor="let data of filteredCardDataList" class="card-col-container">
+      <affinity-card [data]="data"
+                     [disabled]="disabled"
+                     (onRemoveFromList)="removeAffinityCard($event)">
+      </affinity-card>
+    </div>
+  </div>
+</div>
+<div *ngIf="viewModel == 'row'" class="card-row-list-container">
+  <span class="list-title"><b>{{title}}{{description}}</b></span>
+  <div class="drag-row-container" (dragleave)="dragLeave()" (dragover)="dragOver($event)"
+       (drop)="drop($event)" [class.list-border]="listBorder" [class.drag-active]="isDragActive"
+       [style.min-height.px]="listMinHeight">
+    <div *ngFor="let data of affinityCardDataList">
+      <affinity-card [data]="data"
+                     [width]="cardWidth"
+                     [disabled]="disabled"
+                     (onRemoveFromList)="removeAffinityCard($event)">
+      </affinity-card>
+    </div>
+  </div>
+</div>
+
+
+

@@ -18,17 +18,17 @@ CREATE TABLE `user` (
   `comment` varchar(255) DEFAULT NULL,
   `deleted` SMALLINT(1) DEFAULT NULL,
   `system_admin` SMALLINT(1) DEFAULT NULL,
-  `project_admin` SMALLINT(1) DEFAULT NULL,
   `reset_uuid` varchar(255) DEFAULT NULL,
   `salt` varchar(255) DEFAULT NULL,
+  `repo_token` VARCHAR(127) NULL DEFAULT NULL,  
   `creation_time` datetime DEFAULT NULL,
   `update_time` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 
-INSERT INTO `board`.`user` (`username`, `password`, `email`, `realname`, `comment`, `creation_time`, `update_time`, `deleted`, `system_admin`, `project_admin`)
-  VALUES ('admin', 'Board12345', 'admin@inspur.com', 'admin', 'admin user', now(), now(), 0, 1, 1);
+INSERT INTO `board`.`user` (`username`, `password`, `email`, `realname`, `comment`, `creation_time`, `update_time`, `deleted`, `system_admin`)
+  VALUES ('admin', 'Board12345', 'admin@inspur.com', 'admin', 'admin user', now(), now(), 0, 1);
 
 CREATE TABLE `board`.`project` (
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -313,7 +313,7 @@ DROP TABLE IF EXISTS `log`;
         `image_tag_id` INT NOT NULL
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
-	CREATE TABLE `board`.`service_status` (
+    CREATE TABLE `board`.`service_status` (
         `id` INT NOT NULL AUTO_INCREMENT,
         `name` VARCHAR(255) NOT NULL DEFAULT '',
         `project_id` INT NOT NULL,
@@ -322,13 +322,29 @@ DROP TABLE IF EXISTS `log`;
         `owner_id` INT NOT NULL,
         `owner_name` VARCHAR(255) DEFAULT NULL,
         `status` SMALLINT(1) NOT NULL,
+		`type` SMALLINT(1) NOT NULL DEFAULT 0,
         `public` SMALLINT(1) NULL,
         `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
         `creation_time` datetime DEFAULT NULL,
         `update_time` datetime DEFAULT NULL,
-        `service_config` TEXT,
+		`source` SMALLINT(1) NOT NULL,
+        `service_yaml` TEXT,
+        `deployment_yaml` TEXT,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
+
+    CREATE TABLE `board`.`node_group` (
+        `id` INT NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(255) NOT NULL DEFAULT '',
+        `comment` VARCHAR(255) NOT NULL DEFAULT '',
+        `owner_id` INT NOT NULL,
+        `creation_time` datetime DEFAULT NULL,
+        `update_time` datetime DEFAULT NULL,
+        `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
+        `project_name` VARCHAR(255) NOT NULL DEFAULT '',
+        `project_id` INT NOT NULL DEFAULT 0,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
     CREATE TABLE `board`.`config` (
         `name` varchar(50) NOT NULL DEFAULT '',
@@ -336,5 +352,120 @@ DROP TABLE IF EXISTS `log`;
         `comment` varchar(50) DEFAULT NULL,
         PRIMARY KEY (`name`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+	
+	CREATE TABLE `board`.`operation` (
+        `id` INT NOT NULL AUTO_INCREMENT,
+        `creation_time` timestamp DEFAULT 0,
+        `update_time` timestamp DEFAULT 0,
+        `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
+        `project_name` VARCHAR(255) DEFAULT '',
+        `project_id` INT DEFAULT 0,
+        `user_name` VARCHAR(255) DEFAULT '',
+        `user_id` INT DEFAULT 0,
+        `object_type` VARCHAR(255) DEFAULT '',
+        `object_name` VARCHAR(255) DEFAULT '',
+        `action` VARCHAR(255) DEFAULT '',
+        `status` VARCHAR(255) DEFAULT '',
+        `path` VARCHAR(255) DEFAULT '',		
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
 
+    CREATE TABLE `board`.`service_auto_scale` (
+        `id` INT NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(255) NOT NULL DEFAULT '',
+        `service_id` INT NOT NULL DEFAULT 0,
+        `min_pod` INT NOT NULL DEFAULT 0,
+        `max_pod` INT NOT NULL DEFAULT 0,
+        `cpu_percent` INT NOT NULL DEFAULT 0,
+        `status` INT NOT NULL DEFAULT 0,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
+	
+	CREATE TABLE `board`.`persistent_volume` (
+        `id` INT NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(255) NOT NULL DEFAULT '',
+        `type` INT NOT NULL DEFAULT 0,
+        `state` INT NOT NULL DEFAULT 0,
+		`capacity` VARCHAR(255) NOT NULL DEFAULT '',
+		`accessmode` VARCHAR(255) NOT NULL DEFAULT '',
+	    `class` VARCHAR(255) NOT NULL DEFAULT '',	
+        `readonly` SMALLINT(1) NULL,		
+	    `reclaim` VARCHAR(255) NOT NULL DEFAULT '',		
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
+	
+	CREATE TABLE `board`.`persistent_volume_option_nfs` (
+        `id` INT NOT NULL,
+		`path` VARCHAR(255) NOT NULL DEFAULT '',
+		`server` VARCHAR(255) NOT NULL DEFAULT '',	
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+	CREATE TABLE `board`.`persistent_volume_option_cephrbd` (
+        `id` INT NOT NULL,
+		`user` VARCHAR(255) NOT NULL DEFAULT '',
+		`keyring` VARCHAR(255) NOT NULL DEFAULT '',	
+		`pool` VARCHAR(255) NOT NULL DEFAULT '',
+		`image` VARCHAR(255) NOT NULL DEFAULT '',	
+		`fstype` VARCHAR(255) NOT NULL DEFAULT '',
+		`secretname` VARCHAR(255) NOT NULL DEFAULT '',		
+		`secretnamespace` VARCHAR(255) NOT NULL DEFAULT '',
+		`monitors` VARCHAR(255) NOT NULL DEFAULT '',			
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;		
+	
+	CREATE TABLE `board`.`persistent_volume_claim_m` (
+        `id` INT NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(255) NOT NULL DEFAULT '',
+        `projectid` INT NOT NULL DEFAULT 0,
+		`capacity` VARCHAR(255) NOT NULL DEFAULT '',
+		`accessmode` VARCHAR(255) NOT NULL DEFAULT '',
+	    `class` VARCHAR(255) NOT NULL DEFAULT '',		
+	    `pvname` VARCHAR(255) NOT NULL DEFAULT '',		
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;		
+
+    CREATE TABLE `board`.`helm_repository` (
+        `id` INT NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(255) NOT NULL DEFAULT '',
+        `url` VARCHAR(255) NOT NULL DEFAULT '',
+        `type` INT NOT NULL DEFAULT 0,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
+
+INSERT INTO `board`.`helm_repository`
+ (`id`, `name`, `url`, `type`)
+ VALUES
+ (1, 'chartmuseum', 'http://chartmuseum:8080/', 1);
+
+    CREATE TABLE `board`.`helm_release` (
+        `id` INT NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(255) NOT NULL DEFAULT '',
+        `project_id` INT NOT NULL,
+        `project_name` VARCHAR(255) NOT NULL,
+        `repository_id` INT NOT NULL,
+        `repository` VARCHAR(255) NOT NULL,
+        `workloads` TEXT,
+        `owner_id` INT NOT NULL,
+        `owner_name` VARCHAR(255) NOT NULL,
+        `creation_time` datetime DEFAULT NULL,
+        `update_time` datetime DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+    CREATE TABLE `board`.`job_status` (
+        `id` INT NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(255) NOT NULL DEFAULT '',
+        `project_id` INT NOT NULL,
+        `project_name` VARCHAR(255) NOT NULL DEFAULT '',
+        `comment` VARCHAR(255) NOT NULL DEFAULT '',
+        `owner_id` INT NOT NULL,
+        `owner_name` VARCHAR(255) DEFAULT NULL,
+        `status` SMALLINT(1) NOT NULL,
+        `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
+        `creation_time` datetime DEFAULT NULL,
+        `update_time` datetime DEFAULT NULL,
+        `source` SMALLINT(1) NOT NULL,
+        `yaml` TEXT,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	

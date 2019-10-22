@@ -12,13 +12,15 @@ type Volume struct {
 }
 
 type Container struct {
-	Name      string   `json:"container_name"`
-	BaseImage string   `json:"container_baseimage"`
-	WorkDir   string   `json:"container_workdir"`
-	Ports     []int    `json:"container_ports"`
-	Volumes   []Volume `json:"container_volumes"`
-	Envs      []Env    `json:"container_envs"`
-	Command   []string `json:"container_command"`
-	Memory    string   `json:"container_memory"`
-	CPU       string   `json:"container_cpu"`
+	Name          string   `json:"container_name"`
+	BaseImage     string   `json:"container_baseimage"`
+	WorkDir       string   `json:"container_workdir"`
+	Ports         []int    `json:"container_ports"`
+	Volumes       []Volume `json:"container_volumes"`
+	Envs          []Env    `json:"container_envs"`
+	Command       []string `json:"container_command"`
+	MemoryRequest string   `json:"container_memoryrequest"`
+	CPURequest    string   `json:"container_cpurequest"`
+	MemoryLimit   string   `json:"container_memorylimit"`
+	CPULimit      string   `json:"container_cpulimit"`
 }

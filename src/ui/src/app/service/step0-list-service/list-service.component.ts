@@ -1,29 +1,24 @@
-import { Component, Injector, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { Subscription } from 'rxjs/Subscription';
-import { Service } from '../service';
+import { Component, ComponentFactoryResolver, Injector, OnDestroy, OnInit, ViewContainerRef } from '@angular/core';
+import { Service, ServiceSource, ServiceType } from '../service';
 import { ClrDatagridSortOrder, ClrDatagridStateInterface } from '@clr/angular';
-import { BUTTON_STYLE, GUIDE_STEP, MESSAGE_TARGET, SERVICE_STATUS } from '../../shared/shared.const';
-import { Message } from '../../shared/message-service/message';
+import { GUIDE_STEP, SERVICE_STATUS } from '../../shared/shared.const';
 import { ServiceDetailComponent } from './service-detail/service-detail.component';
 import { ServiceStepBase } from "../service-step";
-import { Observable } from "rxjs/Observable";
 import { Project } from "../../project/project";
-import "rxjs/add/observable/interval";
+import { ServiceControlComponent } from "./service-control/service-control.component";
+import { TranslateService } from "@ngx-translate/core";
+import { Message, RETURN_STATUS } from "../../shared/shared.types";
+import { interval, Observable, Subscription } from "rxjs";
 
-enum CreateServiceMethod{None, Wizards, YamlFile, DevOps}
+enum CreateServiceMethod {None, Wizards, YamlFile, DevOps}
+
 @Component({
   templateUrl: './list-service.component.html',
   styleUrls: ["./list-service.component.css"]
 })
 export class ListServiceComponent extends ServiceStepBase implements OnInit, OnDestroy {
-  @ViewChild(ServiceDetailComponent) serviceDetailComponent;
-  currentUser: {[key: string]: any};
   services: Service[];
   isInLoading: boolean = false;
-  isServiceControlOpen: boolean = false;
-  serviceControlData: Service;
-  _subscription: Subscription;
-  _subscriptionInterval: Subscription;
   totalRecordCount: number;
   pageIndex: number = 1;
   pageSize: number = 15;
@@ -34,74 +29,94 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
   projectList: Array<Project>;
   descSort = ClrDatagridSortOrder.DESC;
   oldStateInfo: ClrDatagridStateInterface;
+  private subscriptionInterval: Subscription;
 
-  constructor(protected injector: Injector) {
+  constructor(protected injector: Injector,
+              private translateService: TranslateService,
+              private viewRef: ViewContainerRef,
+              private factory: ComponentFactoryResolver) {
     super(injector);
-    this._subscriptionInterval = Observable.interval(10000).subscribe(() => this.retrieve(true, this.oldStateInfo));
+    this.subscriptionInterval = interval(10000).subscribe(() => this.retrieve(true, this.oldStateInfo));
     this.isActionWIP = new Map<number, boolean>();
     this.projectList = Array<Project>();
-    this._subscription = this.messageService.messageConfirmed$.subscribe((msg:Message) => {
-      if (msg.target == MESSAGE_TARGET.TOGGLE_SERVICE){
-        let service: Service = msg.data;
-        this.k8sService
-          .toggleServiceStatus(service.service_id, service.service_status == 1 ? 0 : 1)
-          .then(() => {
-            msg.message = 'SERVICE.SUCCESSFUL_TOGGLE';
-            this.messageService.inlineAlertMessage(msg);
-            this.isActionWIP.set(service.service_id, false);
-            this.retrieve(false, this.oldStateInfo);
-          })
-          .catch(err => {
-            this.isActionWIP.set(service.service_id, false);
-            this.messageService.dispatchError(err);
-          });
-      } else if (msg.target == MESSAGE_TARGET.DELETE_SERVICE){
-        let service: Service = msg.data;
-        this.k8sService
-          .deleteService(service.service_id)
-          .then(() => {
-            msg.message = 'SERVICE.SUCCESSFUL_DELETE';
-            this.messageService.inlineAlertMessage(msg);
-            this.isActionWIP.set(service.service_id, false);
-            this.retrieve(false, this.oldStateInfo);
-          })
-          .catch(err => {
-            this.isActionWIP.set(service.service_id, false);
-            this.messageService.dispatchError(err);
-          });
-      }
-    });
   }
 
   ngOnInit(): void {
-    this.currentUser = this.appInitService.currentUser;
-    this.k8sService.getProjects()
-      .then((res: Array<Project>) => {
-        this.projectList = res;
-      })
-      .catch(err => this.messageService.dispatchError(err));
+    this.k8sService.getProjects().subscribe((res: Array<Project>) => this.projectList = res);
   }
 
   ngOnDestroy(): void {
-    this._subscriptionInterval.unsubscribe();
-    if (this._subscription) {
-      this._subscription.unsubscribe();
+    this.subscriptionInterval.unsubscribe();
+  }
+
+  checkWithinPreparingRunning(status: number): boolean {
+    return [SERVICE_STATUS.RUNNING, SERVICE_STATUS.PREPARING].indexOf(status) > -1
+  }
+
+  checkWithinWarningRunning(status: number): boolean {
+    return [SERVICE_STATUS.RUNNING, SERVICE_STATUS.WARNING].indexOf(status) > -1
+  }
+
+  isServiceCanPlay(service: Service): boolean {
+    return service.service_status == SERVICE_STATUS.STOPPED;
+  }
+
+  isServiceCanPause(service: Service): boolean {
+    return this.checkWithinWarningRunning(service.service_status);
+  }
+
+  isServiceToggleDisabled(service: Service): boolean {
+    return this.isActionWIP.get(service.service_id)
+      || service.service_is_member == 0
+      || service.service_source == ServiceSource.ServiceSourceHelm;
+  }
+
+  isDeleteDisable(service: Service): boolean {
+    return this.isActionWIP.get(service.service_id)
+      || this.checkWithinPreparingRunning(service.service_status)
+      || service.service_is_member == 0
+      || service.service_source == ServiceSource.ServiceSourceHelm;
+  }
+
+  isUpdateDisable(service: Service): boolean {
+    return this.isActionWIP.get(service.service_id)
+      || service.service_status != SERVICE_STATUS.RUNNING
+      || service.service_is_member == 0
+      || service.service_type === ServiceType.ServiceTypeStatefulSet
+      || service.service_source == ServiceSource.ServiceSourceHelm;
+  }
+
+  serviceToggleTipMessage(service: Service): string {
+    if (service.service_is_member == 0) {
+      return 'SERVICE.STEP_0_NOT_SERVICE_MEMBER'
+    } else if (service.service_source == ServiceSource.ServiceSourceHelm) {
+      return "SERVICE.STEP_0_SERVICE_FROM_HELM"
     }
+    return '';
   }
 
-  isServiceInStoppedStatus(s: Service): boolean {
-    return s.service_status == SERVICE_STATUS.STOPPED && !this.isActionWIP.get(s.service_id);
+  serviceDeleteTipMessage(service: Service): string {
+    if (service.service_is_member == 0) {
+      return 'SERVICE.STEP_0_NOT_SERVICE_MEMBER'
+    } else if (service.service_source == ServiceSource.ServiceSourceHelm) {
+      return "SERVICE.STEP_0_SERVICE_FROM_HELM"
+    } else if (this.checkWithinPreparingRunning(service.service_status)) {
+      return "SERVICE.STEP_0_CAN_NOT_DELETE_MSG"
+    }
+    return '';
   }
 
-  isServiceCanChangePauseStatus(service: Service): boolean {
-    return service.service_status in [SERVICE_STATUS.RUNNING, SERVICE_STATUS.WARNING]
-      && !this.isActionWIP.get(service.service_id);
-  }
-
-  isDeleteDisable(service: Service): boolean{
-    return service.service_status in [SERVICE_STATUS.PREPARING, SERVICE_STATUS.RUNNING]
-      || this.isActionWIP.get(service.service_id)
-      || service.service_is_member == 0;
+  serviceUpdateTipMessage(service: Service): string {
+    if (service.service_is_member == 0) {
+      return 'SERVICE.STEP_0_NOT_SERVICE_MEMBER'
+    } else if (service.service_source == ServiceSource.ServiceSourceHelm) {
+      return "SERVICE.STEP_0_SERVICE_FROM_HELM"
+    } else if (service.service_type == ServiceType.ServiceTypeStatefulSet) {
+      return "SERVICE.STEP_0_SERVICE_STATEFUL"
+    } else if (SERVICE_STATUS.RUNNING != service.service_status) {
+      return "SERVICE.STEP_0_CAN_NOT_UPDATE_MSG"
+    }
+    return '';
   }
 
   createService(): void {
@@ -118,19 +133,16 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
 
   retrieve(isAuto: boolean, stateInfo: ClrDatagridStateInterface): void {
     if (this.isNormalStatus && stateInfo) {
-      setTimeout(()=>{
+      setTimeout(() => {
         this.isInLoading = !isAuto;
         this.oldStateInfo = stateInfo;
-        this.k8sService.getServices(this.pageIndex, this.pageSize, stateInfo.sort.by as string, stateInfo.sort.reverse)
-          .then(paginatedServices => {
+        this.k8sService.getServices(this.pageIndex, this.pageSize, stateInfo.sort.by as string, stateInfo.sort.reverse).subscribe(
+          paginatedServices => {
             this.totalRecordCount = paginatedServices["pagination"]["total_count"];
             this.services = paginatedServices["service_status_list"];
             this.isInLoading = false;
-          })
-          .catch(err => {
-            this.messageService.dispatchError(err);
-            this.isInLoading = false;
-          });
+          }, () => this.isInLoading = false
+        );
       });
     }
   }
@@ -156,56 +168,72 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
     }
   }
 
-  toggleServicePublic(service: Service, $event:MouseEvent): void {
-    let toggleMessage = new Message();
+  toggleServicePublic(service: Service, $event: MouseEvent): void {
     let oldServicePublic = service.service_public;
-    this.k8sService
-      .toggleServicePublicity(service.service_id, service.service_public == 1 ? 0 : 1)
-      .then(() => {
+    this.k8sService.toggleServicePublicity(service.service_id, service.service_public == 1 ? 0 : 1).subscribe(() => {
         service.service_public = oldServicePublic == 1 ? 0 : 1;
-        toggleMessage.message = 'SERVICE.SUCCESSFUL_TOGGLE';
-        this.messageService.inlineAlertMessage(toggleMessage);
-      })
-      .catch(err => {
-        ($event.srcElement as HTMLInputElement).checked = oldServicePublic == 1;
-        this.messageService.dispatchError(err);
+        this.messageService.showAlert('SERVICE.SUCCESSFUL_TOGGLE')
+      }, () => ($event.srcElement as HTMLInputElement).checked = oldServicePublic == 1
+    );
+  }
+
+  toggleService(service: Service) {
+    if (!this.isServiceToggleDisabled(service)) {
+      this.translateService.get('SERVICE.CONFIRM_TO_TOGGLE_SERVICE', [service.service_name]).subscribe((msg: string) => {
+        this.messageService.showConfirmationDialog(msg, 'SERVICE.TOGGLE_SERVICE').subscribe((message: Message) => {
+          if (message.returnStatus == RETURN_STATUS.rsConfirm) {
+            this.k8sService.toggleServiceStatus(service.service_id, service.service_status == SERVICE_STATUS.RUNNING ? 0 : 1).subscribe(
+              () => {
+                this.messageService.showAlert('SERVICE.SUCCESSFUL_TOGGLE');
+                this.isActionWIP.set(service.service_id, false);
+                this.retrieve(false, this.oldStateInfo);
+              },
+              () => {
+                this.isActionWIP.set(service.service_id, false);
+                this.messageService.showAlert('SERVICE.SERVICE_NOT_SUPPORT_TOGGLE', {alertType: "warning"});
+              });
+          }
+        });
       });
-  }
-
-  toggleService(service: Service){
-    if (service.service_is_member == 1){
-      let announceMessage = new Message();
-      announceMessage.title = "SERVICE.TOGGLE_SERVICE";
-      announceMessage.message = "SERVICE.CONFIRM_TO_TOGGLE_SERVICE";
-      announceMessage.params = [service.service_name];
-      announceMessage.target = MESSAGE_TARGET.TOGGLE_SERVICE;
-      announceMessage.buttons = BUTTON_STYLE.CONFIRMATION;
-      announceMessage.data = service;
-      this.messageService.announceMessage(announceMessage);
     }
   }
 
-  deleteService(service:Service){
-    if (service.service_is_member == 1){
-      let announceMessage = new Message();
-      announceMessage.title = "SERVICE.DELETE_SERVICE";
-      announceMessage.message = "SERVICE.CONFIRM_TO_DELETE_SERVICE";
-      announceMessage.params = [service.service_name];
-      announceMessage.target = MESSAGE_TARGET.DELETE_SERVICE;
-      announceMessage.buttons = BUTTON_STYLE.DELETION;
-      announceMessage.data = service;
-      this.messageService.announceMessage(announceMessage);
+  deleteService(service: Service) {
+    if (!this.isDeleteDisable(service)) {
+      this.translateService.get('SERVICE.CONFIRM_TO_DELETE_SERVICE', [service.service_name]).subscribe((msg: string) => {
+        this.messageService.showDeleteDialog(msg, 'SERVICE.DELETE_SERVICE').subscribe((message: Message) => {
+          if (message.returnStatus == RETURN_STATUS.rsConfirm) {
+            let obsDelete: Observable<any> = service.service_type == ServiceType.ServiceTypeStatefulSet ?
+              this.k8sService.deleteStatefulService(service.service_id) :
+              this.k8sService.deleteService(service.service_id);
+            obsDelete.subscribe(() => {
+                this.messageService.showAlert('SERVICE.SUCCESSFUL_DELETE');
+                this.isActionWIP.set(service.service_id, false);
+                this.retrieve(false, this.oldStateInfo);
+              }, () => this.isActionWIP.set(service.service_id, false)
+            );
+          }
+        });
+      });
     }
   }
 
-  openServiceDetail(s: Service) {
-    this.serviceDetailComponent.openModal(s);
+  openServiceDetail(service: Service) {
+    if (service.service_status != SERVICE_STATUS.STOPPED) {
+      let factory = this.factory.resolveComponentFactory(ServiceDetailComponent);
+      let componentRef = this.viewRef.createComponent(factory);
+      componentRef.instance.openModal(service)
+        .subscribe(() => this.viewRef.remove(this.viewRef.indexOf(componentRef.hostView)));
+    }
   }
 
   openServiceControl(service: Service) {
-    if (service.service_is_member == 1 && service.service_status == SERVICE_STATUS.RUNNING){
-      this.serviceControlData = service;
-      this.isServiceControlOpen = true;
+    if (!this.isUpdateDisable(service)) {
+      let factory = this.factory.resolveComponentFactory(ServiceControlComponent);
+      let componentRef = this.viewRef.createComponent(factory);
+      componentRef.instance.service = service;
+      componentRef.instance.openModal()
+        .subscribe(() => this.viewRef.remove(this.viewRef.indexOf(componentRef.hostView)));
     }
   }
 
@@ -234,5 +262,10 @@ export class ListServiceComponent extends ServiceStepBase implements OnInit, OnD
     this.createServiceMethod = CreateServiceMethod.None;
     this.isBuildServiceWIP = false;
     this.isShowServiceCreateYaml = false;
+  }
+
+  isSystemAdminOrOwner(service: Service): boolean {
+    return this.appInitService.currentUser.user_system_admin == 1 ||
+      service.service_owner_id == this.appInitService.currentUser.user_id;
   }
 }
