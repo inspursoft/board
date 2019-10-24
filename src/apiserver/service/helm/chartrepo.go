@@ -400,7 +400,7 @@ func (r *ChartRepository) InstallChart(chartName, chartVersion, releasename, nam
 	setValues := []string{}
 	if answers != nil {
 		for k, v := range answers {
-			setValues = append(setValues, "--set", fmt.Sprintf("'%s'='%s'", k, strings.Replace(v, ",", "\v", -1)))
+			setValues = append(setValues, "--set", fmt.Sprintf("%s=%s", k, strings.Replace(v, ",", "\v", -1)))
 		}
 	}
 
