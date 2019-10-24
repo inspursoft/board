@@ -7347,6 +7347,11 @@ definitions:
       values:
         type: string
         description: The values of this release uses. 
+      answers:        
+        description: The answer pair of this release.
+        type: object
+        additionalProperties:
+          type: string   
       update_time:
         type: string
         description: The last update time of this release.
