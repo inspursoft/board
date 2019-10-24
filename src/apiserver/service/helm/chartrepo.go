@@ -399,11 +399,9 @@ func (r *ChartRepository) InstallChart(chartName, chartVersion, releasename, nam
 
 	setValues := []string{}
 	if answers != nil {
-		result := []string{}
 		for k, v := range answers {
-			result = append(result, fmt.Sprintf("%s=%s", k, v))
+			setValues = append(setValues, "--set", fmt.Sprintf("'%s'='%s'", k, strings.Replace(v, ",", "\v", -1)))
 		}
-		setValues = append([]string{"--set"}, strings.Join(result, ","))
 	}
 
 	//create the release
