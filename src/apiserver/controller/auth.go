@@ -186,6 +186,15 @@ func (u *AuthController) GetSystemInfo() {
 	u.renderJSON(systemInfo)
 }
 
+func (u *AuthController) GetSystemResources() {
+	systemResources, err := service.GetSystemResourcesInfo()
+	if err != nil {
+		u.internalError(err)
+		return
+	}
+	u.renderJSON(systemResources)
+}
+
 func (u *AuthController) GetKubernetesInfo() {
 	kubernetesInfo, err := service.GetKubernetesInfo()
 	if err != nil {

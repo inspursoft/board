@@ -7,7 +7,17 @@ import (
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"os/exec"
+
+	"github.com/astaxie/beego/logs"
 )
+
+type SystemResourcesInfo struct {
+	TotalNumberCpuCore int        `json:"total_number_cpu_core"`
+	TotalMemorySize    int        `json:"total_memory_size"`
+	TotalCpuUsage      float32    `json:"total_cpu_usage"`
+	TotalMemoryUsage   int        `json:"total_memory_usage"`
+	NodesResources     []NodeInfo `json:"nodes_resources"`
+}
 
 func GetSystemInfo() (*model.SystemInfo, error) {
 	configs, err := dao.GetAllConfigs()
@@ -73,4 +83,21 @@ func GetKubernetesInfo() (*model.KubernetesInfo, error) {
 		KubeConfigPath: kubeConfigPath(),
 	})
 	return k8sclient.AppV1().Discovery().ServerVersion()
+}
+
+func GetSystemResourcesInfo() (systemResourcesInfo SystemResourcesInfo, err error) {
+	nodes, err := GetNodes()
+	if err != nil {
+		logs.Error("Failed to get Node information.")
+		return
+	}
+	for _, node := range nodes {
+		systemResourcesInfo.TotalNumberCpuCore += node.NumberCPUCore
+		systemResourcesInfo.TotalMemorySize += node.MemorySize
+		systemResourcesInfo.TotalCpuUsage += node.CPUUsage / 100
+		systemResourcesInfo.TotalMemoryUsage += int(float32(node.MemorySize) * node.MemoryUsage / 100)
+		systemResourcesInfo.NodesResources = append(systemResourcesInfo.NodesResources, node)
+	}
+
+	return
 }
