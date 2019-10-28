@@ -79,20 +79,21 @@ type File struct {
 }
 
 type Release struct {
-	ID             int64     `json:"id,omitempty"`
-	Name           string    `json:"name"`
-	ProjectID      int64     `json:"project_id"`
-	ProjectName    string    `json:"project_name"`
-	RepositoryID   int64     `json:"repository_id"`
-	RepositoryName string    `json:"repository"`
-	Chart          string    `json:"chart"`
-	ChartVersion   string    `json:"chartversion"`
-	OwnerID        int64     `json:"owner_id,omitempty"`
-	OwnerName      string    `json:"owner_name,omitempty"`
-	Status         string    `json:"status,omitempty"`
-	Values         string    `json:"values,omitempty"`
-	UpdateTime     time.Time `json:"update_time,omitempty"`
-	CreateTime     time.Time `json:"creation_time,omitempty"`
+	ID             int64             `json:"id,omitempty"`
+	Name           string            `json:"name"`
+	ProjectID      int64             `json:"project_id"`
+	ProjectName    string            `json:"project_name"`
+	RepositoryID   int64             `json:"repository_id"`
+	RepositoryName string            `json:"repository"`
+	Chart          string            `json:"chart"`
+	ChartVersion   string            `json:"chartversion"`
+	OwnerID        int64             `json:"owner_id,omitempty"`
+	OwnerName      string            `json:"owner_name,omitempty"`
+	Status         string            `json:"status,omitempty"`
+	Values         string            `json:"values,omitempty"`
+	Answers        map[string]string `json:"Answers,omitempty"`
+	UpdateTime     time.Time         `json:"update_time,omitempty"`
+	CreateTime     time.Time         `json:"creation_time,omitempty"`
 }
 
 type ReleaseDetail struct {
