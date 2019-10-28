@@ -17,7 +17,7 @@ import { MessageService } from "../../shared.service/message.service";
 })
 export class JobVolumeMountsComponent extends CsModalChildMessage implements OnInit {
   patternName: RegExp = /^[a-z0-9A-Z_]+$/;
-  patternMountPath: RegExp = /^[a-z0-9A-Z_/]+$/;
+  patternMountPath: RegExp = /^[a-z0-9A-Z_/.:]+$/;
   patternIP: RegExp = /^((?:(?:25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d)))\.){3}(?:25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d))))$/;
   patternPath: RegExp = /^[a-z0-9A-Z_/.:]+$/;
   volumeTypes: Array<{name: 'nfs' | 'pvc', value: number}>;
