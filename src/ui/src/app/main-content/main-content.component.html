@@ -1,4 +1,5 @@
-<header-content [isSignIn]="isSignIn"
+<header-content *ngIf="false"
+                [isSignIn]="isSignIn"
                 [hasSignedIn]="hasSignedIn"
                 [searchContent]="searchContent">
 </header-content>
@@ -6,7 +7,7 @@
   <router-outlet></router-outlet>
 </div>
 <div class="content-container-1" *ngIf="hideMaxGrafanaWindow">
-  <cs-vertical-nav *ngIf="hasSignedIn" [navSource]="navSource">
+  <cs-vertical-nav *ngIf="false" [navSource]="navSource">
     <ng-template [csVerticalNavGuide]="'service'">
       <cs-guide [description]="'SIDE_NAV.GUIDE_SERVICE_LIST'"
                 [show]="isFirstLogin && guideStep == 3"
@@ -18,7 +19,7 @@
     <ng-template [csVerticalNavGuide]="'projects'">
       <cs-guide [description]="'SIDE_NAV.GUIDE_SERVICE_LIST'"
                 [show]="isFirstLogin && guideStep == 1"
-                [isShowIcon]="true"
+                [isShowIcon]="true"　
                 (onClose)="setGuideNoneStep()"
                 (onNextStep)="guideNextStep(1)">
       </cs-guide>

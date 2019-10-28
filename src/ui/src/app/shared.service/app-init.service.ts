@@ -40,7 +40,7 @@ export class AppInitService {
     this.systemInfo = new SystemInfo();
     this.currentUser = new User();
     this.cookieExpiry = new Date(Date.now() + 10 * 60 * 60 * 24 * 365 * 1000);
-    this.isFirstLogin = this.cookieService.get('isFirstLogin') === undefined;
+    // this.isFirstLogin = this.cookieService.get('isFirstLogin') === undefined;
     if (this.isFirstLogin) {
       this.guideStep = GUIDE_STEP.PROJECT_LIST;
       this.cookieService.put('isFirstLogin', 'used', {expires: this.cookieExpiry});

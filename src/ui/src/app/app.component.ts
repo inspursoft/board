@@ -20,11 +20,12 @@ export class AppComponent implements AfterViewInit {
               private messageService: MessageService,
               private resolver: ComponentFactoryResolver,
               private translateService: TranslateService) {
-    if (!cookieService.get('currentLang')) {
-      console.log('No found cookie for current lang, will use the default browser language.');
-      cookieService.put('currentLang', this.translateService.getBrowserCultureLang(), {expires: this.cookieExpiry});
-    }
-    this.appInitService.currentLang = cookieService.get('currentLang') || 'en-us';
+    // if (!cookieService.get('currentLang')) {
+    //   console.log('No found cookie for current lang, will use the default browser language.');
+    //   cookieService.put('currentLang', this.translateService.getBrowserCultureLang(), {expires: this.cookieExpiry});
+    // }
+    // this.appInitService.currentLang = cookieService.get('currentLang') || 'en-us';
+    this.appInitService.currentLang = 'zh-cn';
     translateService.use(this.appInitService.currentLang);
     this.translateService.onLangChange.subscribe((res: LangChangeEvent) => {
       const oldLang = this.appInitService.currentLang;
