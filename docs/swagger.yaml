@@ -7304,6 +7304,122 @@ definitions:
       contents:
         type: string
         description: The contents of this file.
+  Questions:
+    type: object
+    properties:
+      questions:
+        type: array
+        items:
+          $ref: '#/definitions/Question'
+        description: The questions of this chart.
+  Question:
+    type: object
+    properties:
+      variable:
+        type: string
+        description: The name of this variable.
+      label:
+        type: string
+        description: The label of this variable.
+      description:
+        type: string
+        description: The description of this variable.
+      type:
+        type: string
+        description: The type of this variable.
+      required:
+        type: boolean
+        description: Whether this variable is required or not.
+      default:
+        type: string
+        description: The default value of this variable.
+      group:
+        type: string
+        description: The group of this variable belongs.
+      min_length:
+        type: integer
+        description: The min length of this variable.
+      max_length:
+        type: integer
+        description: The max length of this variable.
+      min:
+        type: integer
+        description: The min value of this variable.
+      max:
+        type: integer
+        description: The max value of this variable.
+      options:
+        type: array
+        items:
+          type: string
+        description: The options value of this variable.
+      valid_chars:
+        type: string
+        description: The valid chars of this variable.
+      invalid_chars:
+        type: string
+        description: The invalid chars of this variable.
+      subquestions:
+        type: array
+        items:
+          $ref: '#/definitions/SubQuestion'
+        description: The sub questions of this variable.
+      show_if:
+        type: string
+        description: The show dependence of this variable.
+      show_subquestion_if:
+        type: string
+        description: The show dependence of this variable subqestions.
+  SubQuestion:
+    type: object
+    properties:
+      variable:
+        type: string
+        description: The name of this variable.
+      label:
+        type: string
+        description: The label of this variable.
+      description:
+        type: string
+        description: The description of this variable.
+      type:
+        type: string
+        description: The type of this variable.
+      required:
+        type: boolean
+        description: Whether this variable is required or not.
+      default:
+        type: string
+        description: The default value of this variable.
+      group:
+        type: string
+        description: The group of this variable belongs.    
+      min_length:
+        type: integer
+        description: The min length of this variable.
+      max_length:
+        type: integer
+        description: The max length of this variable.
+      min:
+        type: integer
+        description: The min value of this variable.
+      max:
+        type: integer
+        description: The max value of this variable.
+      options:
+        type: array
+        items:
+          type: string
+        description: The options value of this variable.
+      valid_chars:
+        type: string
+        description: The valid chars of this variable.
+      invalid_chars:
+        type: string
+        description: The invalid chars of this variable. 
+      show_if:
+        type: string
+        description: The show dependence of this variable.
   Release:
     type: object
     properties:
