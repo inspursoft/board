@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"git/inspursoft/board/src/common/dao"
@@ -35,18 +36,20 @@ type NodeListResult struct {
 	NodeIP   string     `json:"node_ip"`
 	Status   NodeStatus `json:"status"`
 }
+
 type NodeInfo struct {
-	NodeName     string  `json:"node_name" orm:"column(node_name)"`
-	NodeIP       string  `json:"node_ip" orm:"column(node_ip)"`
-	CreateTime   int64   `json:"create_time" orm:"column(create_time)"`
-	CPUUsage     float32 `json:"cpu_usage" orm:"column(cpu_usage)"`
-	MemoryUsage  float32 `json:"memory_usage" orm:"column(memory_usage)"`
-	MemorySize   string  `json:"memory_size" orm:"column(memory_size)"`
-	StorageTotal uint64  `json:"storage_total" orm:"column(storage_total)"`
-	StorageUse   uint64  `json:"storage_use" orm:"column(storage_usage)"`
+	NodeName      string  `json:"node_name" orm:"column(node_name)"`
+	NodeIP        string  `json:"node_ip" orm:"column(node_ip)"`
+	CreateTime    int64   `json:"create_time" orm:"column(create_time)"`
+	CPUUsage      float32 `json:"cpu_usage" orm:"column(cpu_usage)"`
+	NumberCPUCore int     `json:"numbers_cpu_core" orm:"column(numbers_cpu_core)"`
+	MemoryUsage   float32 `json:"memory_usage" orm:"column(memory_usage)"`
+	MemorySize    int     `json:"memory_size" orm:"column(memory_size)"`
+	StorageTotal  uint64  `json:"storage_total" orm:"column(storage_total)"`
+	StorageUse    uint64  `json:"storage_use" orm:"column(storage_usage)"`
 }
 
-func GetNode(nodeName string) (node NodeInfo, err error) {
+func GetNodes() (nodes []NodeInfo, err error) {
 	defer func() { recover() }()
 	var config k8sassist.K8sAssistConfig
 	config.KubeConfigPath = kubeConfigPath()
@@ -59,48 +62,63 @@ func GetNode(nodeName string) (node NodeInfo, err error) {
 		return
 	}
 	for _, v := range Node.Items {
-		var mlimit string
-		if strings.EqualFold(v.Status.Addresses[1].Address, nodeName) {
-			//for k, v := range v.Status.Capacity {
-			//	switch k {
-			//	case "memory":
-			//		mlimit = v.String()
-			//	}
-			//}
-			mlimit = fmt.Sprintf("%s", v.Status.Capacity["memory"])
-			time := v.CreationTimestamp.Unix()
-			var ps []v2.ProcessInfo
-			getFromRequest("http://"+nodeName+":4194/api/v2.0/ps/", &ps)
-			var c, m float32
-			for _, v := range ps {
-				c += v.PercentCpu
-				m += v.PercentMemory
-			}
-			cpu := c
-			mem := m
-			var fs []v2.MachineFsStats
-			getFromRequest("http://"+nodeName+":4194/api/v2.0/storage", &fs)
-			var capacity uint64
-			var use uint64
-			for _, v := range fs {
-				capacity += *v.Capacity
-				use += *v.Usage
-			}
-			node = NodeInfo{
-				NodeName:     nodeName,
-				NodeIP:       nodeName,
-				CreateTime:   time,
-				CPUUsage:     cpu,
-				MemoryUsage:  mem,
-				MemorySize:   mlimit,
-				StorageTotal: capacity,
-				StorageUse:   use,
-			}
+		var mlimit int
+		var CPUCore int
+		mlimit, err = strconv.Atoi(fmt.Sprintf("%s", v.Status.Capacity["memory"]))
+		if err != nil {
+			logs.Error("Failed to get the number of memory of %s Node.", v.Status.Addresses[1].Address)
+		}
+		CPUCore, err = strconv.Atoi(fmt.Sprintf("%s", v.Status.Capacity["cpu"]))
+		if err != nil {
+			logs.Error("Failed to get the number of CPU core of %s Node.", v.Status.Addresses[1].Address)
+		}
+		time := v.CreationTimestamp.Unix()
+		var ps []v2.ProcessInfo
+		getFromRequest("http://"+v.Status.Addresses[0].Address+":4194/api/v2.0/ps/", &ps)
+		var c, m float32
+		for _, v := range ps {
+			c += v.PercentCpu
+			m += v.PercentMemory
+		}
+		cpu := c
+		mem := m
+		var fs []v2.MachineFsStats
+		getFromRequest("http://"+v.Status.Addresses[0].Address+":4194/api/v2.0/storage", &fs)
+		var capacity uint64
+		var use uint64
+		for _, v := range fs {
+			capacity += *v.Capacity
+			use += *v.Usage
+		}
+		nodes = append(nodes, NodeInfo{
+			NodeName:      v.Status.Addresses[1].Address,
+			NodeIP:        v.Status.Addresses[0].Address,
+			CreateTime:    time,
+			CPUUsage:      cpu,
+			MemoryUsage:   mem,
+			MemorySize:    mlimit,
+			NumberCPUCore: CPUCore,
+			StorageTotal:  capacity,
+			StorageUse:    use,
+		})
+	}
+	return
+}
+
+func GetNode(nodeName string) (node NodeInfo, err error) {
+	nodes, err := GetNodes()
+	if err != nil {
+		logs.Error("Failed to get Node information.")
+		return
+	}
+	for _, node = range nodes {
+		if strings.EqualFold(node.NodeName, nodeName) {
 			break
 		}
 	}
 	return
 }
+
 func getFromRequest(url string, source interface{}) (err error) {
 	resp, err := http.Get(url)
 	if err != nil {
