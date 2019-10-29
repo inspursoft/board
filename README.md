@@ -1,5 +1,7 @@
 # Board
 
+[English](README.md) | [中文](README_zh_CN.md)
+
 **Note**: The `master` branch may be in an *unstable or even broken state* during development.
 Please use [releases] instead of the `master` branch in order to get stable binaries.
 
