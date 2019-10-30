@@ -112,14 +112,14 @@
                                 [inputDisabled]="isBuildImageWIP"
                                 [inputArrayDefault]="imageVolume"
                                 [inputArrayPattern]="patternVolume"
-                                [inputMaxlength]="40"
+                                [inputMaxlength]="1023"
                                 [inputPlaceholder]="'IMAGE.CREATE_IMAGE_IMAGE_VOLUME' | translate"
                                 (commitEvent)="imageVolume = $event; getDockerFilePreviewInfo()">
             </lib-input-array-ex>
             <lib-input-array-ex [inputArrayDefault]="imageRun"
                                 [inputArrayPattern]="patternRun"
                                 [inputDisabled]="isBuildImageWIP"
-                                [inputMaxlength]="40"
+                                [inputMaxlength]="1023"
                                 [inputLabel]="'IMAGE.CREATE_IMAGE_IMAGE_RUN'|translate"
                                 [inputPlaceholder]="'IMAGE.CREATE_IMAGE_IMAGE_VOLUME' | translate"
                                 (commitEvent)="imageRun= $event; getDockerFilePreviewInfo()">
@@ -127,7 +127,7 @@
             <lib-input-array-ex [inputArrayDefault]="imageExpose"
                                 [inputArrayPattern]="patternExpose"
                                 [inputDisabled]="isBuildImageWIP"
-                                [inputMaxlength]="40"
+                                [inputMaxlength]="1023"
                                 [inputLabel]="'IMAGE.CREATE_IMAGE_IMAGE_EXPOSE'|translate"
                                 [inputPlaceholder]="'IMAGE.CREATE_IMAGE_IMAGE_EXPOSE' | translate"
                                 (commitEvent)="imageExpose = $event; getDockerFilePreviewInfo()">
