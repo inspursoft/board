@@ -18,29 +18,29 @@ export class SystemInfoResolve implements Resolve<any> {
 }
 
 const routes: Routes = [
-  {path: 'account', loadChildren: './account/account.module#AccountModule', pathMatch: 'prefix'},
-  {path: '', redirectTo: '/account/sign-in', pathMatch: 'full'},
+  {path: 'board/account', loadChildren: './account/account.module#AccountModule', pathMatch: 'prefix'},
+  {path: '', redirectTo: '/board/account/sign-in', pathMatch: 'full'},
   {
     path: '', component: MainContentComponent, resolve: {systeminfo: SystemInfoResolve},
     canActivate: [AppGuardService],
     children: [
-      {path: 'search', component: GlobalSearchComponent},
-      {path: 'dashboard', loadChildren: './dashboard/dashboard.module#DashboardModule'},
-      {path: 'nodes', loadChildren: './node/node.module#NodeModule'},
-      {path: 'services', loadChildren: './service/service.module#ServiceModule'},
-      {path: 'audit', loadChildren: './audit/audit.module#AuditModule'},
-      {path: 'user-center', loadChildren: './user-center/user-center.module#UserCenterModule'},
-      {path: 'projects', loadChildren: './project/project.module#ProjectModule'},
-      {path: 'training-job', loadChildren: './job/job.module#JobModule'},
-      {path: 'resource', loadChildren: './resource/resource.module#ResourceModule'},
-      {path: 'helm', loadChildren: './helm/helm.module#HelmModule'},
-      {path: 'profile', loadChildren: './profile/profile.module#ProfileModule'},
-      {path: 'storage', loadChildren: './storage/storage.module#StorageModule'},
-      {path: 'kibana-url', loadChildren:'./kibana/kibana.module#KibanaModule'},
-      {path: 'images', loadChildren: './image/image.module#ImageModule'},
+      {path: 'board/search', component: GlobalSearchComponent},
+      {path: 'board/dashboard', loadChildren: './dashboard/dashboard.module#DashboardModule'},
+      {path: 'board/nodes', loadChildren: './node/node.module#NodeModule'},
+      {path: 'board/services', loadChildren: './service/service.module#ServiceModule'},
+      {path: 'board/audit', loadChildren: './audit/audit.module#AuditModule'},
+      {path: 'board/user-center', loadChildren: './user-center/user-center.module#UserCenterModule'},
+      {path: 'board/projects', loadChildren: './project/project.module#ProjectModule'},
+      {path: 'board/training-job', loadChildren: './job/job.module#JobModule'},
+      {path: 'board/resource', loadChildren: './resource/resource.module#ResourceModule'},
+      {path: 'board/helm', loadChildren: './helm/helm.module#HelmModule'},
+      {path: 'board/profile', loadChildren: './profile/profile.module#ProfileModule'},
+      {path: 'board/storage', loadChildren: './storage/storage.module#StorageModule'},
+      {path: 'board/kibana-url', loadChildren:'./kibana/kibana.module#KibanaModule'},
+      {path: 'board/images', loadChildren: './image/image.module#ImageModule'},
     ]
   },
-  {path: '**', redirectTo: '/account/sign-in'},
+  {path: '**', redirectTo: '/board/account/sign-in'},
 ];
 
 @NgModule({
