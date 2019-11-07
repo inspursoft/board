@@ -286,7 +286,7 @@ elif kube_http_scheme == "https":
 		render(os.path.join(templates_dir, "kube", "openssl.conf"),
 				openssl_path,
 				kube_master_ip=kube_master_ip,
-				name=name)
+				name='board-'+name)
 		rc = create_cert(openssl_path, key_path=key_path, cert_path=cert_path)
 		if rc != 0:
 			print("Create the Board cert failed, please read the documents for Board.")
