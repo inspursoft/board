@@ -119,6 +119,10 @@ func (p *ServiceController) DeployServiceAction() {
 	deployInfo, err := service.DeployService((*model.ConfigServiceStep)(configService), registryBaseURI())
 	if err != nil {
 		p.parseError(err, parsePostK8sError)
+		_, deleteServiceError := service.DeleteService(serviceInfo.ID)
+		if deleteServiceError != nil {
+			logs.Error("Failed to delete the service data of %s in database. Error: %s", serviceInfo.Name, deleteServiceError.Error())
+		}
 		return
 	}
 
