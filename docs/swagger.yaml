@@ -5582,6 +5582,9 @@ definitions:
       project_service_count:
         type: integer
         description: The number of the services under this project.
+      project_istio_support:
+        type: boolean
+        description: Whether the project is supported by istio auto injected
   ProjectPropertyUpdate:
     type: object
     properties:

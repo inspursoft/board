@@ -43,13 +43,14 @@ CREATE TABLE `board`.`project` (
   `toggleable` SMALLINT(1) NULL,
   `current_user_role_id` INT NULL,
   `service_count` INT NULL,
+  `istio_support` SMALLINT(1) NULL,
   PRIMARY KEY (`id`));
 
 INSERT INTO `board`.`project`
  (`id`, `name`, `comment`, `creation_time`, `update_time`, `deleted`, `owner_id`, 
-  `owner_name`, `public`, `toggleable`, `current_user_role_id`, `service_count`)
+  `owner_name`, `public`, `toggleable`, `current_user_role_id`, `service_count`, `istio_support`)
  VALUES
- (1, 'library', 'library comment', now(), now(), 0, 1,'admin', 1, 1, 1, 0);
+ (1, 'library', 'library comment', now(), now(), 0, 1,'admin', 1, 1, 1, 0, 0);
 
 
 CREATE TABLE `project_member` (

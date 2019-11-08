@@ -17,6 +17,7 @@ type Project struct {
 	Toggleable        bool      `json:"project_toggleable" orm:"column(toggleable)"`
 	CurrentUserRoleID int64     `json:"project_current_user_role_id" orm:"column(current_user_role_id)"`
 	ServiceCount      int       `json:"project_service_count" orm:"column(service_count)"`
+	IstioSupport      bool      `json:"project_istio_support" orm:"column(istio_support)"`
 }
 
 type PaginatedProjects struct {
