@@ -72,5 +72,5 @@ echo $cov > $dir/avaCov.cov
 go tool cover -html=$dir/total.cov -o $dir/profile.html
 
 # ui test
-cd $dir
-docker-compose -f docker-compose.uibuilder.test.yml up
+#cd $dir
+#docker-compose -f docker-compose.uibuilder.test.yml up
