@@ -2,13 +2,6 @@
 stages:
   - ui-test
   - api-test
-variables:
-  registry_ip: "10.110.25.227:6000"
-  golang_version: "1.9.6"
-  mysql_version: "5.6.35"
-  opendap_version: "1.1.11"
-  last_version: "latest"
-  jenkins_version: "2.127"
 job_ui_test:
   before_script:
     - echo "before script"
@@ -21,7 +14,7 @@ job_ui_test:
     - code=$(docker inspect tests_uibuilder7_1 -f "{{.State.ExitCode}}"), exit $code
   stage: ui-test
   tags:
-    - board-runner-mrli-vm
+    - board-runner-liyanqing-vm
   artifacts:
     paths:
       - /data/npm/logs/
@@ -60,4 +53,4 @@ job_api_test:
        -e GOPATH=/data/workspace/board golang:$golang_version bash -c "source env.cfg && source run.sh"
   stage: api-test
   tags:
-    - board-runner-mrli-vm
+    - board-runner-liyanqing-vm
