@@ -50,7 +50,7 @@ job_api_test:
     - |
        docker run --rm -v $CI_PROJECT_DIR:/data/workspace/board/src/git/inspursoft/board \
        -w /data/workspace/board/src/git/inspursoft/board/tests --network host \
-       -e GOPATH=/data/workspace/board golang:$golang_version bash -c "source env.cfg && source run.sh"
+       -e GOPATH=/data/workspace/board golang:$golang_version bash -c "source env.cfg"
   stage: api-test
   tags:
     - board-runner-liyanqing-vm
