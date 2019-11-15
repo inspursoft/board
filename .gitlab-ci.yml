@@ -47,6 +47,7 @@ job_api_test:
     - cp tests/ldap_test.ldif make/dev
     - docker-compose -f make/dev/docker-compose.test.yml up -d
     - sh tests/hosts.gitlab.sh
+    - echo $golang_version
     - |
        docker run --rm -v $CI_PROJECT_DIR:/data/workspace/board/src/git/inspursoft/board \
        -w /data/workspace/board/src/git/inspursoft/board/tests --network host \
