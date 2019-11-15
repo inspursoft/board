@@ -50,7 +50,7 @@ job_api_test:
     - echo "sh tests/hosts.gitlab.sh"
     - sh tests/hosts.gitlab.sh
     - echo $golang_version
-    - docker run --rm -v $CI_PROJECT_DIR:/data/workspace/board/src/git/inspursoft/board -e GOPATH=/data/workspace/board golang:$golang_version bash -c "ls"
+    - docker run --rm -v $CI_PROJECT_DIR:/data/workspace/board/src/git/inspursoft/board -w /data/workspace/board/src/git/inspursoft/board/tests --network host  -e GOPATH=/data/workspace/board golang:$golang_version bash -c "ls"
   stage: api-test
   tags:
     - board-runner-liyanqing-vm
