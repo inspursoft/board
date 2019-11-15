@@ -2,22 +2,22 @@
 stages:
 #  - ui-test
   - api-test
-job_ui_test:
-  before_script:
-    - echo "before script"
-    - docker pull $registry_ip/board/dev_uibuilder:7.1
-    - docker tag $registry_ip/board/dev_uibuilder:7.1 10.111.25.119/board/dev_uibuilder:7.1
-  script:
-    - pwd
-    - docker images
-    - docker-compose -f tests/docker-compose.uibuilder.test.yml up
-    - code=$(docker inspect tests_uibuilder7_1 -f "{{.State.ExitCode}}"), exit $code
-  stage: ui-test
-  tags:
-    - board-runner-liyanqing-vm
-  artifacts:
-    paths:
-      - /data/npm/logs/
+#job_ui_test:
+#  before_script:
+#    - echo "before script"
+#    - docker pull $registry_ip/board/dev_uibuilder:7.1
+#    - docker tag $registry_ip/board/dev_uibuilder:7.1 10.111.25.119/board/dev_uibuilder:7.1
+#  script:
+#    - pwd
+#    - docker images
+#    - docker-compose -f tests/docker-compose.uibuilder.test.yml up
+#    - code=$(docker inspect tests_uibuilder7_1 -f "{{.State.ExitCode}}"), exit $code
+#  stage: ui-test
+#  tags:
+#    - board-runner-liyanqing-vm
+#  artifacts:
+#    paths:
+#      - /data/npm/logs/
 job_api_test:
   before_script:
     - source /etc/profile
