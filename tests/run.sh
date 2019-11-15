@@ -25,7 +25,7 @@ function listDeps()
     done
 }
 #$@pull      
-set -e
+#set -e
 
 # set envirnment
 deps=""
