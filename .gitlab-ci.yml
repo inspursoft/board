@@ -24,21 +24,21 @@ job_api_test:
     - echo "before script"
     - docker pull $registry_ip/library/golang:$golang_version
     - docker tag $registry_ip/library/golang:$golang_version golang:$golang_version
-#    - docker pull $registry_ip/library/registry:2.6.2        
-#    - docker tag $registry_ip/library/registry:2.6.2 registry:latest
-#    - docker pull $registry_ip/library/mysql:$mysql_version
-#    - docker tag $registry_ip/library/mysql:$mysql_version mysql:$mysql_version
-#    - docker pull $registry_ip/library/openldap:$opendap_version
-#    - docker tag $registry_ip/library/openldap:$opendap_version osixia/openldap:$opendap_version
-#    - docker pull $registry_ip/board/board-gogits:$last_version
-#    - docker tag $registry_ip/board/board-gogits:$last_version board-gogits:$last_version
-#    - docker pull $registry_ip/board/dev_jenkins:dev
-#    - docker tag $registry_ip/board/dev_jenkins:dev dev_jenkins:dev
-#    - docker pull $registry_ip/board/dev_gomail:dev
-#    - docker tag $registry_ip/board/dev_gomail:dev 10.111.25.119/board/dev_gomail:dev
-#    - docker pull $registry_ip/library/python:tavern2
-#    - docker tag $registry_ip/library/python:tavern2 python:tavern2
-#    - docker run --rm -v `pwd`:/data python:tavern2 /data/make/prepare
+    - docker pull $registry_ip/library/registry:2.6.2        
+    - docker tag $registry_ip/library/registry:2.6.2 registry:latest
+    - docker pull $registry_ip/library/mysql:$mysql_version
+    - docker tag $registry_ip/library/mysql:$mysql_version mysql:$mysql_version
+    - docker pull $registry_ip/library/openldap:$opendap_version
+    - docker tag $registry_ip/library/openldap:$opendap_version osixia/openldap:$opendap_version
+    - docker pull $registry_ip/board/board-gogits:$last_version
+    - docker tag $registry_ip/board/board-gogits:$last_version board-gogits:$last_version
+    - docker pull $registry_ip/board/dev_jenkins:dev
+    - docker tag $registry_ip/board/dev_jenkins:dev dev_jenkins:dev
+    - docker pull $registry_ip/board/dev_gomail:dev
+    - docker tag $registry_ip/board/dev_gomail:dev 10.111.25.119/board/dev_gomail:dev
+    - docker pull $registry_ip/library/python:tavern2
+    - docker tag $registry_ip/library/python:tavern2 python:tavern2
+    - docker run --rm -v `pwd`:/data python:tavern2 /data/make/prepare
   script:
     - pwd
     - docker images
