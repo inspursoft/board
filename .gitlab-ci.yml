@@ -48,6 +48,7 @@ job_api_test:
     - docker-compose -f make/dev/docker-compose.test.yml up -d
     - sh tests/hosts.gitlab.sh
     - docker run --rm -v $CI_PROJECT_DIR:/data/workspace/board/src/git/inspursoft/board -w /data/workspace/board/src/git/inspursoft/board/tests --network host  -e GOPATH=/data/workspace/board golang:$golang_version bash -c "source env.cfg && source run.sh"
+    - curl ‘http://10.110.27.103:5003/api/v1/react?vm_name=minikube-vm’
   stage: api-test
   tags:
     - board-runner-liyanqing-vm
