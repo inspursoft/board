@@ -102,14 +102,14 @@ func TestGetPaginatedJobList(t *testing.T) {
 	logs.Info("Paginated job list is %+v", PaginatedJList)
 }
 
-func TestDeployJob(t *testing.T) {
-	registryURI := utils.GetStringValue("REGISTRY_BASE_URI")
-	logs.Info("REGISTRY_URI %s", registryURI)
-	jobDeployInfo, err := service.DeployJob(&unitTestJobConfig, registryURI)
-	assert := assert.New(t)
-	assert.Nil(err, "Error occurred while get job list.")
-	logs.Info("Information about deployed Job is %+v", string(jobDeployInfo.JobFileInfo))
-}
+//func TestDeployJob(t *testing.T) {
+//	registryURI := utils.GetStringValue("REGISTRY_BASE_URI")
+//	logs.Info("REGISTRY_URI %s", registryURI)
+//	jobDeployInfo, err := service.DeployJob(&unitTestJobConfig, registryURI)
+//	assert := assert.New(t)
+//	assert.Nil(err, "Error occurred while get job list.")
+//	logs.Info("Information about deployed Job is %+v", string(jobDeployInfo.JobFileInfo))
+//}
 
 func TestGetK8sJobPods(t *testing.T) {
 	podMO, err := service.GetK8sJobPods(&unitTestJob)
