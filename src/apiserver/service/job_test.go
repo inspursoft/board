@@ -6,7 +6,7 @@ import (
 
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
-	"git/inspursoft/board/src/common/utils"
+	//"git/inspursoft/board/src/common/utils"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/stretchr/testify/assert"
