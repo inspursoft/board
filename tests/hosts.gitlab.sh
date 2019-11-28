@@ -11,9 +11,8 @@ cat make/config/apiserver/kubeconfig
 echo "$KUBE_MASTER_IP"
 echo "$KUBE_MASTER_PORT"
 
-echo "cp make/config/apiserver/kubeconfig tests/"
+echo "cp make/config/apiserver/kubeconfig /tmp/"
 pwd
-ls -al
-cp make/config/apiserver/kubeconfig tests/
-sed -i 's/server: .*$/server: http:\/\/'"$KUBE_MASTER_IP"':'"$KUBE_MASTER_PORT"'/' tests/kubeconfig
-cat tests/kubeconfig
+cp make/config/apiserver/kubeconfig /tmp
+sed -i 's/server: .*$/server: http:\/\/'"$KUBE_MASTER_IP"':'"$KUBE_MASTER_PORT"'/' /tmp/kubeconfig
+cat /tmp/kubeconfig
