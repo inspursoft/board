@@ -1,0 +1,15 @@
+div.modal-body {
+  min-height: 300px;
+}
+
+span.filed-text {
+  width: 180px;
+  text-align: right;
+  margin-right: 10px;
+}
+
+span.filed-text-value {
+  width: 180px;
+  text-align: left;
+}
+

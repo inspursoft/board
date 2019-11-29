@@ -5,6 +5,7 @@
       <span>{{urlList.length > 1 ? 'URL' + (i+1) : 'URL'}}:</span>
       <a [href]="u.url" target="_blank">{{ u.route }}</a>
     </div>
+    <span class="dns">DNS:{{dns}}</span>
     <clr-tabs>
       <clr-tab>
         <button clrTabLink>{{"SERVICE.SERVICE_DETAIL_SERVICE_INFO" | translate}}</button>

@@ -1,10 +1,10 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { INode, INodeGroup, NodeService } from "../node.service";
+import { NodeService } from "../node.service";
 import { CsModalChildBase } from "../../shared/cs-modal-base/cs-modal-child-base";
-import "rxjs/add/operator/zip"
-import "rxjs/add/operator/do"
-import "rxjs/add/operator/catch"
-import { MessageService } from "../../shared/message-service/message.service";
+import { MessageService } from "../../shared.service/message.service";
+import { INode, INodeGroup } from "../../shared/shared.types";
+import { tap } from "rxjs/operators";
+import { zip } from "rxjs";
 
 @Component({
   selector: 'node-control',
@@ -48,10 +48,10 @@ export class NodeControlComponent extends CsModalChildBase implements OnInit {
 
   refreshData() {
     let obs1 = this.nodeService.getNodeGroups()
-      .do((res: Array<INodeGroup>) => this.nodeGroupList = res);
+      .pipe(tap((res: Array<INodeGroup>) => this.nodeGroupList = res));
     let obs2 = this.nodeService.getNodeGroupsOfOneNode(this.nodeCurrent.node_name)
-      .do((res: Array<string>) => this.nodeGroupListSelect = res);
-    obs1.zip(obs2).subscribe(
+      .pipe(tap((res: Array<string>) => this.nodeGroupListSelect = res));
+    zip(obs1,obs2).subscribe(
       () => {
         this.removeAlreadySelected();
         this.isActionWip = false;

@@ -1,9 +1,10 @@
 import { Injectable } from "@angular/core";
 import { HttpClient, HttpEvent, HttpHeaders, HttpRequest, HttpResponse } from "@angular/common/http";
 import { BuildImageData, Image, ImageDetail } from "../image";
-import { Observable } from "rxjs/Observable";
 import { Project } from "../../project/project";
 import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from "../../shared/shared.const";
+import { Observable } from "rxjs";
+import { map } from "rxjs/operators";
 
 @Injectable()
 export class ImageService {
@@ -21,11 +22,12 @@ export class ImageService {
     return this.http.get<Array<Project>>('/api/v1/projects', {
       observe: "response",
       params: {'project_name': projectName, 'member_only': "1"}
-    }).map((res: HttpResponse<Array<Project>>) => res.body || [])
+    }).pipe(map((res: HttpResponse<Array<Project>>) => res.body || []));
   }
 
-  uploadDockerFile(formData: FormData): Observable<any> {
-    return this.http.post(`/api/v1/images/dockerfile/upload`, formData, {observe: "response"})
+  uploadDockerFile(formData: FormData): Observable<string> {
+    return this.http.post(`/api/v1/images/dockerfile/upload`, formData, {observe: "response", responseType: "text"})
+      .pipe(map((res: HttpResponse<string>) => res.body));
   }
 
   downloadDockerFile(fileInfo: {imageName: string, tagName: string, projectName: string}): Observable<any> {
@@ -75,14 +77,27 @@ export class ImageService {
     });
   }
 
+  buildImageFromImagePackage(params: {imageName: string, tagName: string, projectName: string, imagePackageName: string}): Observable<any> {
+    return this.http.post(`/api/v1/images/imagepackage`, null, {
+      headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
+      observe: "response",
+      params: {
+        image_name: params.imageName,
+        image_tag: params.tagName,
+        project_name: params.projectName,
+        image_package_name: params.imagePackageName
+      }
+    });
+  }
+
   getFileList(formData: FormData): Observable<Array<{path: string, file_name: string, size: number}>> {
     return this.http.post(`/api/v1/files/list`, formData, {observe: "response"})
-      .map((res: HttpResponse<Array<{path: string, file_name: string, size: number}>>) => res.body)
+      .pipe(map((res: HttpResponse<Array<{path: string, file_name: string, size: number}>>) => res.body));
   }
 
   getDockerFilePreview(imageData: BuildImageData): Observable<string> {
     return this.http.post(`/api/v1/images/preview`, imageData, {observe: "response", responseType: 'text'})
-      .map(res => res.body)
+      .pipe(map(res => res.body));
   }
 
   getImages(image_name?: string, image_list_page?: number, image_list_page_size?: number): Observable<Array<Image>> {
@@ -93,12 +108,12 @@ export class ImageService {
         'image_list_page': image_list_page.toString(),
         'image_list_page_size': image_list_page_size.toString()
       }
-    }).map((res: HttpResponse<Array<Image>>) => res.body || [])
+    }).pipe(map((res: HttpResponse<Array<Image>>) => res.body || []));
   }
 
   getImageDetailList(image_name: string): Observable<ImageDetail[]> {
     return this.http.get<ImageDetail[]>(`/api/v1/images/${image_name}`, {observe: "response"})
-      .map((res: HttpResponse<ImageDetail[]>) => res.body || [])
+      .pipe(map((res: HttpResponse<ImageDetail[]>) => res.body || []));
   }
 
   deleteImages(imageName: string): Observable<any> {
@@ -126,13 +141,13 @@ export class ImageService {
 
   getBoardRegistry(): Observable<string> {
     return this.http.get(`/api/v1/images/registry`, {observe: "response", responseType: "text"})
-      .map((obs: HttpResponse<string>) => obs.body)
+      .pipe(map((obs: HttpResponse<string>) => obs.body));
   }
 
   deleteImageConfig(projectName: string): Observable<Object> {
     return this.http.delete(`/api/v1/images/configclean`, {
       observe: "response",
       params: {project_name: projectName}
-    }).map((obs: HttpResponse<Object>) => obs.body)
+    }).pipe(map((obs: HttpResponse<Object>) => obs.body));
   }
 }

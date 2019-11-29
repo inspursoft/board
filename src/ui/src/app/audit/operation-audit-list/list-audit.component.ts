@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { MessageService } from "../../shared/message-service/message.service";
+import { MessageService } from "../../shared.service/message.service";
 import { Audit, AuditQueryData } from "../audit";
 import { ClrDatagridSortOrder, ClrDatagridStateInterface } from "@clr/angular";
 import { OperationAuditService } from "../audit-service";
@@ -21,10 +21,9 @@ export class ListAuditComponent implements OnInit {
   totalRecordCount: number = 0;
   descSort = ClrDatagridSortOrder.DESC;
   oldStateInfo: ClrDatagridStateInterface;
-  objectQueryMap: Array<{ key: string, title: string, isSpecial?: boolean }>;
-  actionQueryMap: Array<{ key: string, title: string, isSpecial?: boolean }>;
-  actionStatusMap: Array<{ key: string, title: string, isSpecial?: boolean }>;
-
+  objectQueryMap: Array<{key: string, title: string}>;
+  actionQueryMap: Array<{key: string, title: string}>;
+  actionStatusMap: Array<{key: string, title: string}>;
 
   constructor(private messageService: MessageService,
               private auditService: OperationAuditService) {
@@ -34,9 +33,9 @@ export class ListAuditComponent implements OnInit {
     this.auditsListData = Array<Audit>();
     this.userNames = Array<User>();
     this.auditQueryData = new AuditQueryData();
-    this.objectQueryMap = Array<{ key: string, title: string }>();
-    this.actionQueryMap = Array<{ key: string, title: string }>();
-    this.actionStatusMap = Array<{ key: string, title: string }>();
+    this.objectQueryMap = Array<{key: string, title: string}>();
+    this.actionQueryMap = Array<{key: string, title: string}>();
+    this.actionStatusMap = Array<{key: string, title: string}>();
   }
 
   ngOnInit() {
@@ -47,7 +46,7 @@ export class ListAuditComponent implements OnInit {
   }
 
   initObjectQueryMap() {
-    this.objectQueryMap.push({key: "ALL", title: "AUDIT.ALL", isSpecial: true});
+    this.objectQueryMap.push({key: "ALL", title: "AUDIT.ALL"});
     this.objectQueryMap.push({key: "user", title: "AUDIT.AUDIT_USER"});
     this.objectQueryMap.push({key: "sign-in", title: "AUDIT.AUDIT_SIGN_IN"});
     this.objectQueryMap.push({key: "log-out", title: "AUDIT.AUDIT_LOG_OUT"});
@@ -64,7 +63,7 @@ export class ListAuditComponent implements OnInit {
   }
 
   initActionQueryMap() {
-    this.actionQueryMap.push({key: "ALL", title: "AUDIT.ALL", isSpecial: true});
+    this.actionQueryMap.push({key: "ALL", title: "AUDIT.ALL"});
     this.actionQueryMap.push({key: "get", title: "AUDIT.AUDIT_GET"});
     this.actionQueryMap.push({key: "create", title: "AUDIT.AUDIT_CREATE"});
     this.actionQueryMap.push({key: "delete", title: "AUDIT.AUDIT_DELETE"});
@@ -72,7 +71,7 @@ export class ListAuditComponent implements OnInit {
   }
 
   initStatusQueryMap() {
-    this.actionStatusMap.push({key: "ALL", title: "AUDIT.ALL", isSpecial: true});
+    this.actionStatusMap.push({key: "ALL", title: "AUDIT.ALL"});
     this.actionStatusMap.push({key: "Unknown", title: "AUDIT.AUDIT_UNKNOWN"});
     this.actionStatusMap.push({key: "Success", title: "AUDIT.AUDIT_SUCCESS"});
     this.actionStatusMap.push({key: "Failed", title: "AUDIT.AUDIT_FAILED"});
@@ -84,22 +83,21 @@ export class ListAuditComponent implements OnInit {
     this.auditService.getUserList().subscribe((res: Array<User>) => {
       let user = new User();
       user.user_name = "AUDIT.ALL";
-      user["isSpecial"] = true;
       this.userNames.push(user);
       this.userNames = this.userNames.concat(res);
       this.isInLoading = false;
     }, (err: HttpErrorResponse) => this.isInLoading = false)
   }
 
-  changeObjectQuery(event: { key: string, title: string }) {
-    this.auditQueryData.object_name = event.key == "ALL" ? "" : event.key;
+  changeObjectQuery(item: {key: string, title: string}) {
+    this.auditQueryData.object_name = item.key == "ALL" ? "" : item.key;
   }
 
-  changeActionQuery(event: { key: string, title: string }) {
+  changeActionQuery(event: {key: string, title: string}) {
     this.auditQueryData.action = event.key == "ALL" ? "" : event.key;
   }
 
-  changeStatusQuery(event: { key: string, title: string }) {
+  changeStatusQuery(event: {key: string, title: string}) {
     this.auditQueryData.status = event.key == "ALL" ? "" : event.key;
   }
 
@@ -131,7 +129,7 @@ export class ListAuditComponent implements OnInit {
         }, () => this.isInLoading = false)
       });
     } else {
-      this.messageService.showAlert('AUDIT.AUDIT_QUERY_DATE_ERROR', {alertType: 'alert-warning'})
+      this.messageService.showAlert('AUDIT.AUDIT_QUERY_DATE_ERROR', {alertType: 'warning'})
     }
   }
 

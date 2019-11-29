@@ -2,6 +2,7 @@ package types
 
 import (
 	appsv1beta2 "k8s.io/api/apps/v1beta2"
+	betchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	intstr "k8s.io/apimachinery/pkg/util/intstr"
@@ -23,6 +24,21 @@ type PodSpec = v1.PodSpec
 type Container = v1.Container
 type ContainerPort = v1.ContainerPort
 
+// These are valid conditions of a job.
+const (
+	JobComplete JobConditionType = "Complete"
+	JobFailed   JobConditionType = "Failed"
+)
+
+//define Job type
+type JobList = betchv1.JobList
+type Job = betchv1.Job
+type JobSpec = betchv1.JobSpec
+type JobStatus = betchv1.JobStatus
+type JobCondition = betchv1.JobCondition
+type JobConditionType = betchv1.JobConditionType
+type ConditionStatus = v1.ConditionStatus
+
 //define Service type
 type ServiceList = v1.ServiceList
 type Service = v1.Service
@@ -32,6 +48,9 @@ type ServiceType = v1.ServiceType
 type Protocol = v1.Protocol
 type IntOrString = intstr.IntOrString
 type Type = intstr.Type
+type SessionAffinity = v1.ServiceAffinity
+type SessionAffinityConfig = v1.SessionAffinityConfig
+type ClientIPConfig = v1.ClientIPConfig
 
 //define namespace type
 type Namespace = v1.Namespace
@@ -58,6 +77,8 @@ const (
 	DeletePropagationForeground = metav1.DeletePropagationForeground
 	NamespaceActive             = v1.NamespaceActive
 	NamespaceTerminating        = v1.NamespaceTerminating
+	SessionAffinityClientIP     = v1.ServiceAffinityClientIP
+	ServiceAffinityNone         = v1.ServiceAffinityNone
 )
 
 const (

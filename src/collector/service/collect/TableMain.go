@@ -27,29 +27,32 @@ var KuberMasterIp string
 var KuberMasterStatus bool
 var podItem []model.Pod
 var KuberMasterURL string
+var kubeConfigPath string
 var KuberPort string
 
 func SetInitVar(ip string, port string) {
 	KuberMasterIp = ip
 	KuberPort = port
 	KuberMasterURL = fmt.Sprintf("http://%s%s%s", KuberMasterIp, ":", KuberPort)
-	pingK8sApiLink()
+	kubeConfigPath = `/root/kubeconfig`
+	//	pingK8sApiLink()
 }
-func pingK8sApiLink() {
-	url := fmt.Sprintf("%s/version", KuberMasterURL)
-	cl := &http.Client{Timeout: time.Millisecond * 2000}
-	fmt.Println("url is ", url)
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		fmt.Println(err)
-	}
-	resp, _ := cl.Do(req)
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println("kubernetes version is ", string(body))
-}
+
+//func pingK8sApiLink() {
+//	url := fmt.Sprintf("%s/version", KuberMasterURL)
+//	cl := &http.Client{Timeout: time.Millisecond * 2000}
+//	fmt.Println("url is ", url)
+//	req, err := http.NewRequest("GET", url, nil)
+//	if err != nil {
+//		fmt.Println(err)
+//	}
+//	resp, _ := cl.Do(req)
+//	body, err := ioutil.ReadAll(resp.Body)
+//	if err != nil {
+//		fmt.Println(err)
+//	}
+//	fmt.Println("kubernetes version is ", string(body))
+//}
 
 // insert time list table
 func timeList() {
@@ -63,9 +66,9 @@ func timeList() {
 func (this *SourceMap) GainPods() error {
 	defer ThreadCountGet.Done()
 	c := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
-		K8sMasterURL: KuberMasterURL,
+		KubeConfigPath: kubeConfigPath,
 	})
-	l, err := c.AppV1().Pod("").List()
+	l, err := c.AppV1().Pod("").List(model.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -91,23 +94,14 @@ func (resource SourceMap) GainNodes() error {
 	defer ThreadCountGet.Done()
 	var nodeCollect []collect.Node
 	c := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
-		K8sMasterURL: KuberMasterURL,
+		KubeConfigPath: kubeConfigPath,
 	})
 	l, err := c.AppV1().Node().List()
 	if err != nil {
 		return err
 	}
 	NodeList = *l
-loopNode:
 	for _, v := range NodeList.Items {
-		for _, cond := range v.Status.Conditions {
-			if strings.EqualFold(string(cond.Type), "Ready") {
-				if cond.Status != model.ConditionTrue && !v.Unschedulable {
-					util.Logger.SetWarn("this node status is false", v.Status.Addresses[1].Address)
-					continue loopNode
-				}
-			}
-		}
 		var nodes = resource.nodes
 		nodes.NodeName = v.Name
 		nodes.CreateTime = v.CreationTimestamp.Format("2006-01-02 15:04:05")
@@ -115,32 +109,49 @@ loopNode:
 		for k, v := range v.Status.Capacity {
 			switch k {
 			case "cpu":
-				nodes.NumbersCpuCore = fmt.Sprintf("%d", v)
+				nodes.NumbersCpuCore = fmt.Sprintf("%v", v)
 				cpuCores, _ = strconv.Atoi(string(v))
 			case "memory":
-				nodes.MemorySize = fmt.Sprintf("%d", v)
+				nodes.MemorySize = fmt.Sprintf("%v", v)
 			case "alpha.kubernetes.io/nvidia-gpu":
-				nodes.NumbersGpuCore = fmt.Sprintf("%d", v)
+				nodes.NumbersGpuCore = fmt.Sprintf("%v", v)
 			case "pods":
-				nodes.PodLimit = fmt.Sprintf("%d", v)
+				nodes.PodLimit = fmt.Sprintf("%v", v)
 			}
 		}
 
 		nodes.TimeListId = (*serviceDashboardID)[*minuteCounterI]
 		nodes.InternalIp = v.Status.Addresses[1].Address
-		cpu, mem, err := getNodePs(v.Status.Addresses[1].Address, cpuCores)
-		if err != nil {
-			return err
+		if func(nodeCondition []model.NodeCondition) bool {
+			for _, cond := range nodeCondition {
+				if strings.EqualFold(string(cond.Type), "Ready") {
+					if cond.Status != model.ConditionTrue {
+						return false
+					}
+				}
+			}
+			return true
+		}(v.Status.Conditions) {
+			cpu, mem, err := getNodePs(v.Status.Addresses[1].Address, cpuCores)
+			if err != nil {
+				return err
+			}
+			s := GetNodeMachine(v.Status.Addresses[1].Address)
+			a, _ := s.(struct {
+				outCapacity int64
+				outUse      int64
+			})
+			nodes.StorageTotal = a.outCapacity
+			nodes.StorageUse = a.outUse
+			nodes.CpuUsage = float32(cpu)
+			nodes.MemUsage = float32(mem)
+		} else {
+			nodes.StorageTotal = 0
+			nodes.StorageUse = 0
+			nodes.CpuUsage = float32(0)
+			nodes.MemUsage = float32(0)
+			util.Logger.SetWarn("this node status is unkown", v.Status.Addresses[1].Address)
 		}
-		s := GetNodeMachine(v.Status.Addresses[1].Address)
-		a, _ := s.(struct {
-			outCapacity int64
-			outUse      int64
-		})
-		nodes.StorageTotal = a.outCapacity
-		nodes.StorageUse = a.outUse
-		nodes.CpuUsage = float32(cpu)
-		nodes.MemUsage = float32(mem)
 		nodeCollect = append(nodeCollect, nodes)
 		dao.InsertDb(&nodes)
 
@@ -226,7 +237,7 @@ func getNodePs(ip string, cpuCores int) (cpu float32, mem float32, err error) {
 func (resource *SourceMap) GainServices() error {
 	defer ThreadCountGet.Done()
 	c := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
-		K8sMasterURL: KuberMasterURL,
+		KubeConfigPath: kubeConfigPath,
 	})
 	l, err := c.AppV1().Service("").List()
 	if err != nil {

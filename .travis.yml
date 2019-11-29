@@ -1,6 +1,6 @@
 install:
 env:
-  - registry_ip=10.110.18.177
+  - registry_ip=10.111.25.119
   - golang_version=1.9.6
   - mysql_version=5.6.35
   - opendap_version=1.1.11
@@ -11,8 +11,9 @@ env:
   - build_id=$BUILD_NUMBER
   - access_token_jenkins=0aa0d1cabc926b5ee23780c6c817198fa31f9e96 
 before_script:
+  - source /etc/profile
+  - date -s $date_time
   - echo "before script"
-  - echo "------------------------"
   - echo "$head_repo_html_url"
   - echo "$head_repo_name"
   - echo "$base_repo_html_url"
@@ -34,8 +35,8 @@ before_script:
   - docker tag $registry_ip/board/board-gogits:latest board-gogits:$last_version
   - docker pull $registry_ip/board/dev_jenkins:dev
   - docker tag $registry_ip/board/dev_jenkins:dev dev_jenkins:dev
-  - docker pull $registry_ip/board/dev_uibuilder:v2.3
-  - docker tag $registry_ip/board/dev_uibuilder:v2.3 uibuilder:$last_version
+  - docker pull $registry_ip/board/dev_uibuilder:7.1
+  - docker tag $registry_ip/board/dev_uibuilder:7.1 uibuilder:$last_version
   - docker pull $registry_ip/board/dev_jenkins:dev
   - docker tag $registry_ip/board/dev_jenkins:dev dev_jenkins:dev
  

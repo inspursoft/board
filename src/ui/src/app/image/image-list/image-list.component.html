@@ -10,11 +10,13 @@
   <clr-datagrid [clrDgLoading]="loadingWIP">
     <clr-dg-placeholder>{{imageListErrMsg | translate}}</clr-dg-placeholder>
     <clr-dg-column>{{ 'IMAGE.COL_IMAGE_NAME' | translate }}</clr-dg-column>
-    <clr-dg-column>{{ 'IMAGE.COL_COMMENT' | translate }}</clr-dg-column>
+    <clr-dg-column>{{ 'IMAGE.COL_CREATION_TIME' | translate }}</clr-dg-column>
+    <clr-dg-column>{{ 'IMAGE.COL_UPDATE_TIME' | translate }}</clr-dg-column>
     <clr-dg-column>{{ 'IMAGE.COL_OPERATION' | translate }}</clr-dg-column>
     <clr-dg-row *clrDgItems="let image of imageList">
       <clr-dg-cell>{{image.image_name}}</clr-dg-cell>
-      <clr-dg-cell>{{image.image_comment}}</clr-dg-cell>
+      <clr-dg-cell>{{image.image_creation_time | date: 'short'}}</clr-dg-cell>
+      <clr-dg-cell>{{image.image_update_time | date: 'short'}}</clr-dg-cell>
       <clr-dg-cell>
         <a href="javascript:void(0)" (click)="showImageDetail(image)">
           <clr-icon shape="info-standard"></clr-icon>
@@ -44,13 +46,17 @@
 
 <div *ngIf="isBuildImageWIP" class="build-image-container">
   <span>{{"IMAGE.CREATE_IMAGE_SELECT_PROJECT"|translate}}:</span>
-  <cs-dropdown class="custom-margin"
-               [dropdownDefaultText]="'IMAGE.CREATE_IMAGE_SELECT_PROJECT' | translate"
-               [dropdownWidth]="200"
-               [dropdownList]="projectsList"
-               [dropdownListTextKey]="'project_name'"
-               (onChange)="changeSelectProject($event)"
-               (onOnlyClickItem)="clickSelectProject($event)"></cs-dropdown>
+  <lib-dropdown-ex class="custom-margin"
+                   [dropdownTip]="'IMAGE.CREATE_IMAGE_SELECT_PROJECT' | translate"
+                   [dropdownMinWidth]="200"
+                   [dropdownItems]="projectsList"
+                   [dropdownKey]="'project_name'"
+                   (dropdownChangeItem)="changeSelectProject($event)"
+                   (dropdownEspecialClick)="clickSelectProject($event)">
+    <ng-template libEspecialTemp >
+      <span style="color: blue">{{'IMAGE.CREATE_IMAGE_CREATE_PROJECT' | translate}}</span>
+    </ng-template>
+  </lib-dropdown-ex>
   <span class="custom-margin">{{"IMAGE.CREATE_IMAGE_SELECT_DES"|translate}}</span>
   <div class="import-method-container">
     <input title=""
@@ -78,12 +84,12 @@
   <div class="import-method-container">
     <input title=""
            type="radio"
-           id="fromDevOps"
-           [disabled]="true"
+           id="fromImagePackage"
+           [disabled]="selectedProjectId == 0"
            name="buildMethod"
            (click)="setCreateImageMethod(3)">
-    <label for="fromDevOps" class="disabled">
-      {{"IMAGE.CREATE_IMAGE_DEVOPES"|translate}}
+    <label for="fromImagePackage" [ngClass]="{'disabled':selectedProjectId == 0,'enable':selectedProjectId > 0}">
+      {{"IMAGE.CREATE_IMAGE_IMAGE_PACKAGE"|translate}}
     </label>
   </div>
   <div class="build-btn-container">

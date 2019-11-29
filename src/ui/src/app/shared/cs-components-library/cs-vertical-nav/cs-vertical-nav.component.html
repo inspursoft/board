@@ -3,7 +3,7 @@
   <div *ngFor="let navItem of navSource">
     <ng-container *ngIf="!navItem.children" [ngTemplateOutletContext]="navItem"
                   [ngTemplateOutlet]="itemTemp"></ng-container>
-    <ng-container *ngIf="navItem.children" [ngTemplateOutletContext]="navItem"
+    <ng-container *ngIf="navItem.children && navItem.visible" [ngTemplateOutletContext]="navItem"
                   [ngTemplateOutlet]="itemGroupTemp"></ng-container>
   </div>
   <ng-template let-visible='visible' let-url='url' let-icon='icon' let-caption='caption' #itemTemp>

@@ -71,7 +71,12 @@
 div.card-block-top-container {
   height: 60px;
   display: flex;
+  align-items: center;
   padding: 10px 20px 10px 20px;
+}
+
+div.card-block-top-container a{
+  margin-left: 10px;
 }
 
 div.card-block-bottom-container {
@@ -161,10 +166,9 @@ clr-icon.detail {
   width: 30px;
 }
 
-div.grafana-container-block {
-  padding: 0;
-  margin: 0;
-  scrollbar-base-color: blue;
+div.grafana-container {
+  height: 100%;
+  margin-top: 0;
 }
 
 div.grafana-container-header{

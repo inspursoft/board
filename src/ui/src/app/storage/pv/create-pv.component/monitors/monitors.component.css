@@ -1,0 +1,23 @@
+div.modal-body{
+  min-height: 300px;
+}
+
+div.monitor-container {
+  display: flex;
+  align-items: center;
+}
+
+div.icon-container {
+  display: flex;
+  align-items: center;
+}
+
+clr-icon.icon {
+  color: white;
+  background: green;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 10px;
+}

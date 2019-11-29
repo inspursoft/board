@@ -3,8 +3,10 @@ package service
 import (
 	"fmt"
 	"git/inspursoft/board/src/common/dao"
+	"git/inspursoft/board/src/common/k8sassist"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
+	"os/exec"
 )
 
 func GetSystemInfo() (*model.SystemInfo, error) {
@@ -29,7 +31,21 @@ func GetSystemInfo() (*model.SystemInfo, error) {
 			systemInfo.RedirectionURL = config.Value
 		case "BOARD_VERSION":
 			systemInfo.Version = config.Value
+		case "DNS_SUFFIX":
+			systemInfo.DNSSuffix = config.Value
+		case "KUBERNETES_VERSION":
+			systemInfo.KubernetesVersion = config.Value
 		}
+	}
+
+	//Get the hareware processor arch
+	cmd := exec.Command("uname", "-p")
+	out, err := cmd.Output()
+	if err != nil {
+		fmt.Errorf("Uname failed to get info %v", err)
+		systemInfo.ProcessorType = ""
+	} else {
+		systemInfo.ProcessorType = string(out)
 	}
 	return &systemInfo, nil
 }
@@ -49,4 +65,12 @@ func SetSystemInfo(name string, reconfigurable bool) error {
 	}
 	utils.SetConfig(name, config.Value)
 	return nil
+}
+
+func GetKubernetesInfo() (*model.KubernetesInfo, error) {
+	// add the pv to k8s
+	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		KubeConfigPath: kubeConfigPath(),
+	})
+	return k8sclient.AppV1().Discovery().ServerVersion()
 }

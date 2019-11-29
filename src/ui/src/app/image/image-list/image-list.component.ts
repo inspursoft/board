@@ -1,16 +1,17 @@
 import { Component, ComponentFactoryResolver, OnDestroy, OnInit, ViewContainerRef } from '@angular/core';
-import { Subscription } from 'rxjs/Subscription';
 import { Image } from "../image";
 import { ImageService } from "../image-service/image-service"
-import { MessageService } from "../../shared/message-service/message.service";
-import { AppInitService } from "../../app.init.service";
+import { MessageService } from "../../shared.service/message.service";
+import { AppInitService } from "../../shared.service/app-init.service";
 import { Project } from "../../project/project";
-import { SharedActionService } from "../../shared/shared-action.service";
-import { SharedService } from "../../shared/shared.service";
+import { SharedActionService } from "../../shared.service/shared-action.service";
+import { SharedService } from "../../shared.service/shared.service";
 import { CsModalParentBase } from "../../shared/cs-modal-base/cs-modal-parent-base";
 import { TranslateService } from "@ngx-translate/core";
 import { CreateImageMethod, Message, RETURN_STATUS } from "../../shared/shared.types";
 import { CreateImageComponent } from "../image-create/image-create.component";
+import { Subscription } from "rxjs";
+import { ActivatedRoute, Data } from "@angular/router";
 
 @Component({
   selector: 'image-list',
@@ -31,7 +32,8 @@ export class ImageListComponent extends CsModalParentBase implements OnInit, OnD
   createImageMethod: CreateImageMethod = CreateImageMethod.None;
   _subscription: Subscription;
 
-  constructor(private imageService: ImageService,
+  constructor(private activatedRoute: ActivatedRoute,
+              private imageService: ImageService,
               private sharedActionService: SharedActionService,
               private sharedService: SharedService,
               private translateService: TranslateService,
@@ -44,18 +46,13 @@ export class ImageListComponent extends CsModalParentBase implements OnInit, OnD
   }
 
   ngOnInit() {
-    this.imageService.getProjects().subscribe((res: Array<Project>) => {
-      let createNewProject: Project = new Project();
-      createNewProject.project_name = "IMAGE.CREATE_IMAGE_CREATE_PROJECT";
-      createNewProject.project_id = -1;
-      createNewProject["isSpecial"] = true;
-      createNewProject["OnlyClick"] = true;
-      this.projectsList.push(createNewProject);
-      if (res && res.length > 0) {
-        this.projectsList = this.projectsList.concat(res);
-      }
-    });
+    this.imageService.getProjects().subscribe((res: Array<Project>) => this.projectsList = res);
     this.retrieve();
+    this.activatedRoute.fragment.subscribe((fragment: string) => {
+      if (fragment === 'createImage') {
+        this.createImage();
+      }
+    })
   }
 
   ngOnDestroy() {
@@ -65,10 +62,7 @@ export class ImageListComponent extends CsModalParentBase implements OnInit, OnD
   }
 
   get isSystemAdmin(): boolean {
-    if(this.appInitService.currentUser) {
-      return this.appInitService.currentUser["user_system_admin"] == 1;
-    }
-    return false;
+    return this.appInitService.currentUser.user_system_admin == 1;
   }
 
   clickSelectProject() {
@@ -77,9 +71,7 @@ export class ImageListComponent extends CsModalParentBase implements OnInit, OnD
         this.sharedService.getOneProject(projectName).subscribe((res: Array<Project>) => {
           this.selectedProjectId = res[0].project_id;
           this.selectedProjectName = res[0].project_name;
-          let project = this.projectsList.shift();
-          this.projectsList.unshift(res[0]);
-          this.projectsList.unshift(project);
+          this.projectsList.push(res[0]);
         })
       }
     });
@@ -106,7 +98,7 @@ export class ImageListComponent extends CsModalParentBase implements OnInit, OnD
   }
 
   confirmToDeleteImage(imageName: string) {
-    if (this.isSystemAdmin){
+    if (this.isSystemAdmin) {
       this.translateService.get('IMAGE.CONFIRM_TO_DELETE_IMAGE', [imageName]).subscribe((msg: string) => {
         this.messageService.showDeleteDialog(msg, 'IMAGE.DELETE_IMAGE').subscribe((message: Message) => {
           if (message.returnStatus == RETURN_STATUS.rsConfirm) {
@@ -136,9 +128,9 @@ export class ImageListComponent extends CsModalParentBase implements OnInit, OnD
     component.initCustomerNewImage(this.selectedProjectId, this.selectedProjectName);
     component.initBuildMethod(this.createImageMethod);
     component.closeNotification.subscribe((res: any) => {
-      this.isBuildImageWIP = false;
-      this.createImageMethod = CreateImageMethod.None;
       if (res) {
+        this.createImageMethod = CreateImageMethod.None;
+        this.isBuildImageWIP = false;
         this.retrieve();
       }
     })

@@ -1,7 +1,7 @@
 import { K8sService } from "./service.k8s";
 import { Injector } from "@angular/core";
-import { AppInitService } from "../app.init.service";
-import { MessageService } from "../shared/message-service/message.service";
+import { AppInitService } from "../shared.service/app-init.service";
+import { MessageService } from "../shared.service/message.service";
 import { ServiceStepPhase, UiServiceFactory, UIServiceStepBase } from "./service-step.component";
 import { Router } from "@angular/router";
 import { Message, RETURN_STATUS } from "../shared/shared.types";

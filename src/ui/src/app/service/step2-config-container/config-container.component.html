@@ -2,99 +2,124 @@
   <div class="image-source-container">
     <span class="base-text">{{"SERVICE.STEP_2_SELECT_IMAGE_SOURCE" | translate}}:</span>
     <div class="btn-group base-margin-left">
-      <button class="btn btn-primary">Board registry</button>
-      <button class="btn" [disabled]="true">Docker hub</button>
+      <button class="btn" [class.btn-primary]="curContainerType === 0" (click)="changeContainerType(0)">
+        Containers
+      </button>
+      <button class="btn" [class.btn-primary]="curContainerType === 1" (click)="changeContainerType(1)">
+        Init containers
+      </button>
     </div>
   </div>
-  <div *ngFor="let workBuf of workBufferList;let iBuf = index" class="dynamic-container">
+  <div *ngFor="let container of curStep2Data.containerList;let iBuf = index" class="dynamic-container">
     <div class="dynamic-line-container">
       <div class="dynamic-icon-container">
-        <clr-icon class="dynamic-icon" shape="minus" (click)="minusSelectImage(iBuf)"></clr-icon>
+        <clr-icon shape="minus"
+                  class="dynamic-icon"
+                  [class.disabled]="iBuf == 0 && curContainerType === 0"
+                  (click)="minusSelectImage(iBuf)"></clr-icon>
       </div>
-      <cs-dropdown class="base-margin-left"
-                   [dropdownWidth]="300"
-                   [dropdownList]="imageSourceList"
-                   [dropdownDefaultText]="workBuf.imageIndex.image_name"
-                   [dropdownListTextKey]="'image_name'"
-                   [dropdownCanSelect]="canChangeSelectImage.bind(selfObject)"
-                   (onChange)="changeSelectImage(iBuf, $event)"
-                   (onOnlyClickItem)="createNewCustomImage(iBuf)">
-      </cs-dropdown>
+      <lib-dropdown-ex class="base-margin-left"
+                       [dropdownMinWidth]="300"
+                       [dropdownItems]="imageSourceList"
+                       [dropdownTip]="'SERVICE.STEP_2_SELECT_IMAGE' | translate"
+                       [dropdownKey]="'image_name'"
+                       [dropdownActiveItem]="getActiveImage(iBuf)"
+                       [dropdownItemSelectEnableFn]="canChangeSelectImageFun"
+                       (dropdownChangeItem)="changeSelectImage(iBuf, $event)"
+                       (dropdownEspecialClick)="createNewCustomImage(iBuf)">
+        <ng-template libEspecialTemp>
+          <span style="color: blue">{{"SERVICE.STEP_2_CREATE_IMAGE" | translate}}</span>
+        </ng-template>
+      </lib-dropdown-ex>
       <button class="btn btn-default get-tag"
-              (click)="getImageDetailList(workBuf.imageIndex.image_name).then()"
-              *ngIf="imageTagNotReadyList.get(workBuf.imageIndex.image_name)">
+              (click)="getImageDetailList(container.image.image_name).subscribe()"
+              *ngIf="imageTagNotReadyList.get(container)">
         {{"SERVICE.STEP_2_GET_IMAGE_TAG"|translate}}
       </button>
-      <cs-dropdown class="base-margin-left"
-                   *ngIf="imageDetailSourceList.get(workBuf.imageIndex.image_name)"
-                   [dropdownWidth]="150"
-                   [dropdownDefaultText]="workBuf.imageIndex.image_tag"
-                   [dropdownList]="imageDetailSourceList.get(workBuf.imageIndex.image_name)"
-                   [dropdownListTextKey]="'image_tag'"
-                   (onChange)="changeSelectImageDetail(workBuf.imageIndex.image_name,$event)">
-      </cs-dropdown>
+      <lib-dropdown-ex class="base-margin-left"
+                       *ngIf="imageDetailSourceList.get(container.image.image_name)"
+                       [dropdownMinWidth]="150"
+                       [dropdownTip]="container.image.image_tag"
+                       [dropdownItems]="imageDetailSourceList.get(container.image.image_name)"
+                       [dropdownKey]="'image_tag'"
+                       (dropdownChangeItem)="changeSelectImageDetail(container.image.image_name,$event)">
+      </lib-dropdown-ex>
       <a href="javascript:void(0)">
-        <clr-icon *ngIf="imageDetailSourceList.get(workBuf.imageIndex.image_name)"
+        <clr-icon *ngIf="imageDetailSourceList.get(container.image.image_name)"
                   shape="wrench"
                   class="action"
-                  (click)="toggleContainerEditStatus(workBuf.container)">
+                  (click)="toggleContainerEditStatus(container)">
         </clr-icon>
       </a>
     </div>
-    <div class="dynamic-line-container config-container" *ngIf="containerIsInEdit.get(workBuf.container)">
-      <cs-input [inputLabel]="'SERVICE.STEP_2_CONTAINER_NAME' | translate"
-                [inputIsRequired]="true"
-                [inputPattern]="patternContainerName"
-                [simpleFiled]="workBuf.container.name"
-                (onCheck)="workBuf.container.name = $event"></cs-input>
-      <cs-input [inputLabel]="'SERVICE.STEP_2_WORKING_DIR' | translate"
-                [inputPattern]="patternWorkdir"
-                [simpleFiled]="workBuf.container.working_dir"
-                [inputPlaceholder]="'SERVICE.STEP_2_WORK_DIRECTOR'| translate"
-                (onCheck)="workBuf.container.working_dir = $event"></cs-input>
-      <cs-input [inputType]="1"
-                [inputLabel]="'SERVICE.STEP_2_VOLUME_MOUNTS' | translate"
-                [simpleFiled]="getVolumesDescription(workBuf.container)"
-                [inputPlaceholder]="'SERVICE.STEP_2_STORAGE_VOLUME'| translate"
-                (onEdit)="editVolumeMount(workBuf.container)"></cs-input>
-      <cs-input [inputType]="1"
-                [inputLabel]="'SERVICE.STEP_2_Env' | translate"
-                [simpleFiled]="getEnvsDescription(workBuf.container)"
-                [inputPlaceholder]="'SERVICE.STEP_2_ENVIRONMENT_VARIABLES'| translate"
-                (onEdit)="editEnvironment(workBuf.container)"></cs-input>
-      <cs-input-array [inputArrayType]="1"
-                      [inputArrayFixedSource]="fixedContainerPort.get(workBuf.container.image.image_name)"
-                      [inputArrayMin]="1"
-                      [inputArrayMax]="65535"
-                      [inputArrayLabelText]="'SERVICE.STEP_2_CONTAINER_PORT' | translate"
-                      [inputArraySource]="workBuf.container.container_port">
-      </cs-input-array>
-      <cs-input [inputLabel]="'SERVICE.STEP_2_COMMAND' | translate"
-                [simpleFiled]="workBuf.container.command"
-                [inputPlaceholder]="'SERVICE.STEP_2_COMMAND'| translate"
-                (onCheck)="workBuf.container.command = $event"></cs-input>
-      <cs-input [inputLabel]="'SERVICE.STEP_2_CPU_REQUEST' | translate"
-                [inputPattern]="patternCpuRequest"
-                [simpleFiled]="workBuf.container.cpu_request"
-                [inputPlaceholder]="'SERVICE.STEP_2_PLACEHOLDER_DEFAULT'| translate"
-                [customerValidatorAsyncFunc]="checkSetCpuRequestFun"
-                (onCheck)="workBuf.container.cpu_request = $event"></cs-input>
-      <cs-input [inputLabel]="'SERVICE.STEP_2_MEMORY_REQUEST' | translate"
-                [inputPattern]="patternMemRequest"
-                [customerValidatorAsyncFunc]="checkSetMemRequestFun"
-                [simpleFiled]="workBuf.container.mem_request"
-                [inputPlaceholder]="'SERVICE.STEP_2_PLACEHOLDER_DEFAULT'| translate"
-                (onCheck)="workBuf.container.mem_request = $event"></cs-input>
-      <cs-input [inputLabel]="'SERVICE.STEP_2_CPU_LIMIT' | translate"
-                [simpleFiled]="workBuf.container.cpu_limit"
-                [inputPlaceholder]="'SERVICE.STEP_2_PLACEHOLDER_DEFAULT'| translate"
-                [inputPattern]="patternCpuLimit"
-                (onCheck)="workBuf.container.cpu_limit = $event"></cs-input>
-      <cs-input [inputLabel]="'SERVICE.STEP_2_MEMORY_LIMIT' | translate"
-                [simpleFiled]="workBuf.container.mem_limit"
-                [inputPattern]="patternMemLimit"
-                [inputPlaceholder]="'SERVICE.STEP_2_PLACEHOLDER_DEFAULT'| translate"
-                (onCheck)="workBuf.container.mem_limit = $event"></cs-input>
+    <div class="config-container" *ngIf="containerIsInEdit.get(container)">
+      <lib-input-ex [inputLabel]="'SERVICE.STEP_2_CONTAINER_NAME' | translate"
+                    [inputIsRequired]="true"
+                    [inputPattern]="patternContainerName"
+                    [inputDefaultValue]="container.name"
+                    [validatorMessage]="[{key:'pattern',message:'SERVICE.STEP_2_CONTAINER_NAME_PATTERN_NSG' | translate}]"
+                    (commitEvent)="container.name = $event"></lib-input-ex>
+      <lib-input-ex [inputLabel]="'SERVICE.STEP_2_WORKING_DIR' | translate"
+                    [inputPattern]="patternWorkdir"
+                    [inputDefaultValue]="container.working_dir"
+                    [inputPlaceholder]="'SERVICE.STEP_2_WORK_DIRECTOR'| translate"
+                    (commitEvent)="container.working_dir = $event"></lib-input-ex>
+      <lib-input-ex [inputType]="2"
+                    [inputLabel]="'SERVICE.STEP_2_VOLUME_MOUNTS' | translate"
+                    [inputDefaultValue]="getVolumesDescription(0, container)"
+                    [inputPlaceholder]="'SERVICE.STEP_2_STORAGE_VOLUME'| translate"
+                    (editEvent)="editVolumeMount(container)"></lib-input-ex>
+      <div *ngIf="container.volume_mounts.length > 1" class="volume-info-container">
+        <span *ngFor="let _ of container.volume_mounts; let i = index">
+          <span *ngIf="i > 0">{{getVolumesDescription(i, container)}}</span>
+        </span>
+      </div>
+      <lib-input-ex [inputType]="2"
+                    [inputLabel]="'SERVICE.STEP_2_Env' | translate"
+                    [inputDefaultValue]="getEnvsDescription(container)"
+                    [inputPlaceholder]="'SERVICE.STEP_2_ENVIRONMENT_VARIABLES'| translate"
+                    (editEvent)="editEnvironment(container)"></lib-input-ex>
+      <lib-input-array-ex [inputCategory]="'number'"
+                          [inputArrayFixed]="fixedContainerPort.get(container)"
+                          [inputMin]="1"
+                          [inputArrayDefault]="container.container_port"
+                          [inputMax]="65535"
+                          [inputPlaceholder]="'[1..65535]'"
+                          [inputLabel]="'SERVICE.STEP_2_CONTAINER_PORT' | translate"
+                          (commitEvent)="container.container_port = $event">
+      </lib-input-array-ex>
+      <lib-input-ex [inputLabel]="'SERVICE.STEP_2_COMMAND' | translate"
+                    [inputDefaultValue]="container.command"
+                    [inputPlaceholder]="'SERVICE.STEP_2_COMMAND'| translate"
+                    (commitEvent)="container.command = $event"></lib-input-ex>
+      <lib-input-ex *ngIf="curContainerType === 0"
+                    [inputLabel]="'SERVICE.STEP_2_CPU_REQUEST' | translate"
+                    [inputPattern]="patternCpuRequest"
+                    [inputDefaultValue]="container.cpu_request"
+                    [inputPlaceholder]="'eg. 100m'"
+                    [validatorAsyncFn]="checkSetCpuRequestFun"
+                    [validatorMessage]="[{key:'beyondMaxLimit',message: 'SERVICE.STEP_2_BEYOND_MAX_VALUE' | translate}]"
+                    (commitEvent)="container.cpu_request = $event"></lib-input-ex>
+      <lib-input-ex *ngIf="curContainerType === 0"
+                    [inputLabel]="'SERVICE.STEP_2_MEMORY_REQUEST' | translate"
+                    [inputPattern]="patternMemRequest"
+                    [validatorAsyncFn]="checkSetMemRequestFun"
+                    [inputDefaultValue]="container.mem_request"
+                    [inputPlaceholder]="'eg. 100Mi'"
+                    [validatorMessage]="[{key:'beyondMaxLimit',message: 'SERVICE.STEP_2_BEYOND_MAX_VALUE' | translate}]"
+                    (commitEvent)="container.mem_request = $event"></lib-input-ex>
+      <lib-input-ex *ngIf="curContainerType === 0"
+                    [inputLabel]="'SERVICE.STEP_2_CPU_LIMIT' | translate"
+                    [inputDefaultValue]="container.cpu_limit"
+                    [inputPlaceholder]="'eg. 1024m'"
+                    [inputPattern]="patternCpuLimit"
+                    (commitEvent)="container.cpu_limit = $event"></lib-input-ex>
+      <lib-input-ex *ngIf="curContainerType === 0"
+                    [inputLabel]="'SERVICE.STEP_2_MEMORY_LIMIT' | translate"
+                    [inputDefaultValue]="container.mem_limit"
+                    [inputPattern]="patternMemLimit"
+                    [inputPlaceholder]="'eg. 1024Mi'"
+                    (commitEvent)="container.mem_limit = $event"></lib-input-ex>
     </div>
   </div>
   <div class="plus-container">
@@ -112,13 +137,10 @@
   {{"BUTTON.NEXT"|translate}}
 </button>
 <environment-value *ngIf="showEnvironmentValue"
+                   [isProvideBindConfigMap]="true"
+                   [projectName]="serviceStep2Data.projectName"
                    [inputEnvsData]="getDefaultEnvsData()"
                    [inputFixedKeyList]="getDefaultEnvsFixedData()"
-                   [(isOpen)]="showEnvironmentValue"
+                   (closeNotification)="showEnvironmentValue = false"
                    (onConfirm)="setEnvironment($event)">
 </environment-value>
-<volume-mounts *ngIf="showVolumeMounts"
-               [volumeData]="getVolumeMountData()"
-               [(isOpen)]="showVolumeMounts"
-               (onConfirmEvent)="setVolumeMount($event)">
-</volume-mounts>

@@ -3,7 +3,7 @@
   (onCancelEvent)="cancelCreateService()">
 </service-create-yaml>
 <div *ngIf="isNormalStatus">
-  <div class="row flex-items-xs-right">
+  <div class="clr-row flex-items-xs-right">
     <cs-guide *ngIf="isFirstLogin && guideStep == 4"
               [description]="'SERVICE.GUIDE_CREATE_SERVICE'"
               [show]="isFirstLogin && guideStep == 4"
@@ -16,95 +16,110 @@
       {{ 'SERVICE.CREATE_SERVICE' | translate }}
     </button>
   </div>
-  <div class="row">
-    <div class="col-xs-12">
-      <clr-datagrid (clrDgRefresh)="retrieve(false, $event)" [clrDgLoading]="isInLoading">
-        <clr-dg-column [clrDgField]="'NAME'"
-                       [clrDgSortOrder]="descSort">
-          <clr-dg-filter [hidden]="true"></clr-dg-filter>
-          {{ 'SERVICE.SERVICE_NAME' | translate }}
-        </clr-dg-column>
-        <clr-dg-column>{{ 'SERVICE.PROJECT_NAME' | translate }}</clr-dg-column>
-        <clr-dg-column>{{ 'SERVICE.OWNER' | translate }}</clr-dg-column>
-        <clr-dg-column [clrDgField]="'CREATION_TIME'"
-                       [clrDgSortOrder]="descSort">
-          <clr-dg-filter [hidden]="true"></clr-dg-filter>
-          {{ 'SERVICE.CREATE_TIME' | translate }}
-        </clr-dg-column>
-        <clr-dg-column>{{ 'SERVICE.PUBLIC' | translate }}</clr-dg-column>
-        <clr-dg-column>{{ 'SERVICE.STATUS' | translate }}</clr-dg-column>
-        <clr-dg-column>{{ 'SERVICE.OPERATION' | translate }}</clr-dg-column>
-        <clr-dg-row *ngFor="let service of services">
-          <clr-dg-cell>{{service.service_name}}</clr-dg-cell>
-          <clr-dg-cell>{{service.service_project_name}}</clr-dg-cell>
-          <clr-dg-cell>{{service.service_owner_name}}</clr-dg-cell>
-          <clr-dg-cell>{{service.service_creation_time | date: 'short'}}</clr-dg-cell>
-          <clr-dg-cell>
-            <div class="tooltip tooltip-right">
-              <input type="checkbox"
-                     title=""
-                     [checked]="service.service_public === 1"
-                     [disabled]="!isSystemAdminOrOwner(service)"
-                     (click)="toggleServicePublic(service, $event)">
-              <span [hidden]="isSystemAdminOrOwner(service)" class="tooltip-content">
+  <clr-datagrid (clrDgRefresh)="retrieve(false, $event)" [clrDgLoading]="isInLoading">
+    <clr-dg-column [clrDgField]="'NAME'"
+                   [clrDgSortOrder]="descSort">
+      <clr-dg-filter [hidden]="true"></clr-dg-filter>
+      {{ 'SERVICE.SERVICE_NAME' | translate }}
+    </clr-dg-column>
+    <clr-dg-column>{{ 'SERVICE.PROJECT_NAME' | translate }}</clr-dg-column>
+    <clr-dg-column>{{ 'SERVICE.OWNER' | translate }}</clr-dg-column>
+    <clr-dg-column [clrDgField]="'CREATION_TIME'"
+                   [clrDgSortOrder]="descSort">
+      <clr-dg-filter [hidden]="true"></clr-dg-filter>
+      {{ 'SERVICE.CREATE_TIME' | translate }}
+    </clr-dg-column>
+    <clr-dg-column>{{ 'SERVICE.PUBLIC' | translate }}</clr-dg-column>
+    <clr-dg-column>{{ 'SERVICE.STATUS' | translate }}</clr-dg-column>
+    <clr-dg-column>{{ 'SERVICE.OPERATION' | translate }}</clr-dg-column>
+    <clr-dg-row *ngFor="let service of services">
+      <clr-dg-cell>{{service.service_name}}</clr-dg-cell>
+      <clr-dg-cell>{{service.service_project_name}}</clr-dg-cell>
+      <clr-dg-cell>{{service.service_owner_name}}</clr-dg-cell>
+      <clr-dg-cell>{{service.service_creation_time | date: 'short'}}</clr-dg-cell>
+      <clr-dg-cell>
+        <div class="tooltip tooltip-right">
+          <input type="checkbox"
+                 title=""
+                 [checked]="service.service_public === 1"
+                 [disabled]="!isSystemAdminOrOwner(service)"
+                 (click)="toggleServicePublic(service, $event)">
+          <span [hidden]="isSystemAdminOrOwner(service)" class="tooltip-content">
                 {{'ERROR.INSUFFICIENT_PRIVILEGE' | translate}}
               </span>
-            </div>
-          </clr-dg-cell>
-          <clr-dg-cell>
+        </div>
+      </clr-dg-cell>
+      <clr-dg-cell>
           <span [ngClass]="getStatusClass(service.service_status)">
             {{ getServiceStatus(service.service_status) | translate }}
           </span>
-          </clr-dg-cell>
-          <clr-dg-cell>
-            <span *ngIf="isActionWIP.get(service.service_id)" class="spinner spinner-sm"></span>
-            <a href="javascript:void(0)"
-               *ngIf="isServiceInStoppedStatus(service)">
-              <clr-icon shape="play"
-                        class="action"
-                        (click)="toggleService(service)"
-                        [ngClass]="{'disabled':service.service_is_member == 0}">
-              </clr-icon>
-            </a>
-            <a href="javascript:void(0)"
-               *ngIf="isServiceCanChangePauseStatus(service)">
-              <clr-icon shape="pause"
-                        class="action"
-                        (click)="toggleService(service)"
-                        [ngClass]="{'disabled':service.service_is_member == 0}">
-              </clr-icon>
-            </a>
-            <a href="javascript:void(0)">
-              <clr-icon shape="trash"
-                        class="action"
-                        (click)="deleteService(service)"
-                        [ngClass]="{'disabled':isDeleteDisable(service)}">
-              </clr-icon>
-            </a>
-            <a href="javascript:void(0)"
-               (click)="openServiceDetail(service)">
-              <clr-icon shape="info-standard"
-                        class="action"
-                        [ngClass]="{'disabled':service.service_status == 2}">
-              </clr-icon>
-            </a>
-            <a href="javascript:void(0)">
-              <clr-icon shape="wrench"
-                        class="action"
-                        (click)="openServiceControl(service)"
-                        [ngClass]="{'disabled':service.service_is_member == 0 || service.service_status != 1}">
-              </clr-icon>
-            </a>
-          </clr-dg-cell>
-        </clr-dg-row>
-        <clr-dg-footer>
-          {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} of {{pagination.totalItems}} items
-          <clr-dg-pagination #pagination [clrDgTotalItems]="totalRecordCount" [(clrDgPage)]="pageIndex"
-                             [clrDgPageSize]="pageSize"></clr-dg-pagination>
-        </clr-dg-footer>
-      </clr-datagrid>
-    </div>
-  </div>
+      </clr-dg-cell>
+      <clr-dg-cell>
+        <span *ngIf="isActionWIP.get(service.service_id)" class="spinner spinner-sm"></span>
+        <a href="javascript:void(0)">
+          <clr-tooltip>
+            <clr-icon *ngIf="isServiceCanPlay(service)"
+                      shape="play"
+                      class="action"
+                      clrTooltipTrigger
+                      (click)="toggleService(service)"
+                      [ngClass]="{'disabled':isServiceToggleDisabled(service)}">
+            </clr-icon>
+            <clr-icon *ngIf="isServiceCanPause(service)"
+                      shape="pause"
+                      class="action"
+                      clrTooltipTrigger
+                      (click)="toggleService(service)"
+                      [ngClass]="{'disabled':isServiceToggleDisabled(service)}">
+            </clr-icon>
+            <clr-tooltip-content [hidden]="!isServiceToggleDisabled(service)"
+                                 [clrSize]="'md'" [clrPosition]="'left'">
+              {{serviceToggleTipMessage(service) | translate}}
+            </clr-tooltip-content>
+          </clr-tooltip>
+        </a>
+        <a href="javascript:void(0)">
+          <clr-tooltip>
+            <clr-icon shape="trash"
+                      class="action"
+                      clrTooltipTrigger
+                      (click)="deleteService(service)"
+                      [ngClass]="{'disabled':isDeleteDisable(service)}">
+            </clr-icon>
+            <clr-tooltip-content [hidden]="!isDeleteDisable(service)"
+                                 [clrSize]="'md'" [clrPosition]="'left'">
+              {{serviceDeleteTipMessage(service) | translate}}
+            </clr-tooltip-content>
+          </clr-tooltip>
+        </a>
+        <a href="javascript:void(0)" (click)="openServiceDetail(service)">
+          <clr-icon shape="info-standard"
+                    class="action"
+                    [ngClass]="{'disabled':service.service_status == 2}">
+          </clr-icon>
+        </a>
+        <a href="javascript:void(0)">
+          <clr-tooltip>
+            <clr-icon shape="wrench"
+                      class="action"
+                      clrTooltipTrigger
+                      (click)="openServiceControl(service)"
+                      [ngClass]="{'disabled':isUpdateDisable(service)}">
+            </clr-icon>
+            <clr-tooltip-content [hidden]="!isUpdateDisable(service)"
+                                 [clrSize]="'md'" [clrPosition]="'left'">
+              {{serviceUpdateTipMessage(service) | translate}}
+            </clr-tooltip-content>
+          </clr-tooltip>
+        </a>
+      </clr-dg-cell>
+    </clr-dg-row>
+    <clr-dg-footer>
+      {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} of {{pagination.totalItems}} items
+      <clr-dg-pagination #pagination [clrDgTotalItems]="totalRecordCount" [(clrDgPage)]="pageIndex"
+                         [clrDgPageSize]="pageSize"></clr-dg-pagination>
+    </clr-dg-footer>
+  </clr-datagrid>
 </div>
 
 <div *ngIf="isBuildServiceWIP && !isShowServiceCreateYaml" class="build-service-container">

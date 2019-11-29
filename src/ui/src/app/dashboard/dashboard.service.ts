@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpResponse } from "@angular/common/http"
-import { Observable } from "rxjs/Observable";
-import { InvalidServiceName } from "../shared/shared.const";
+import { Observable } from "rxjs";
+import { map } from "rxjs/operators";
 
 export enum LineType {ltService, ltNode, ltStorage}
 
@@ -27,23 +27,23 @@ export interface IQuery {
 
 export interface IResponse {
   list: Array<string>,
-  firstLineData: Array<[Date,number]>,
-  secondLineData: Array<[Date,number]>,
+  firstLineData: Array<[Date, number]>,
+  secondLineData: Array<[Date, number]>,
   curListName: string,
-  limit: {isMax: boolean, isMin: boolean}
+  limit: { isMax: boolean, isMin: boolean }
 }
 
 class ResponseLineData implements IResponse {
   public list: Array<string>;
-  public firstLineData: Array<[Date,number]>;
-  public secondLineData: Array<[Date,number]>;
+  public firstLineData: Array<[Date, number]>;
+  public secondLineData: Array<[Date, number]>;
   public curListName: string;
-  public limit: {isMax: boolean, isMin: boolean};
+  public limit: { isMax: boolean, isMin: boolean };
 
   constructor() {
     this.list = Array<string>();
-    this.firstLineData = Array<[Date,number]>();
-    this.secondLineData = Array<[Date,number]>();
+    this.firstLineData = Array<[Date, number]>();
+    this.secondLineData = Array<[Date, number]>();
     this.limit = {isMax: false, isMin: false};
   }
 }
@@ -96,6 +96,10 @@ export class DashboardService {
     });
   };
 
+  testGrafana(grafanaUrl: string): Observable<any> {
+    return this.http.get(grafanaUrl, {observe: "response"})
+  }
+
   private getUnitMultipleValue(sample: number): number {
     let result: number = 1;
     let nameIndex: number = 0;
@@ -130,7 +134,7 @@ export class DashboardService {
 
   getServerTimeStamp(): Observable<number> {
     return this.http.get(`${BASE_URL}/dashboard/time`, {observe: "response"})
-      .map((res:HttpResponse<Object>)=>res.body["time_now"]);
+      .pipe(map((res: HttpResponse<Object>) => res.body["time_now"]));
   }
 
   getLineData(lineType: LineType, query: IQuery): Observable<IResponse> {
@@ -141,7 +145,7 @@ export class DashboardService {
     return this.http.post(`${BASE_URL}/dashboard/${lineListQuery.data_url_key}`, body, {
       observe: "response",
       params: requestParams
-    }).map((obs: HttpResponse<Object>) => {
+    }).pipe(map((obs: HttpResponse<Object>) => {
       let result = new ResponseLineData();
       let time_key = lineListQuery.data_time_stamp_key;
       let first_key = lineListQuery.data_first_line_key;
@@ -156,14 +160,14 @@ export class DashboardService {
           let timeValue = new Date(item[time_key] * 1000);
           let firstValue = Math.round(item[first_key] / multiple * 100) / 100;
           let secondValue = Math.round(item[second_key] / multiple * 100) / 100;
-          result.firstLineData.push([timeValue,firstValue]);
-          result.secondLineData.push([timeValue,secondValue]);
+          result.firstLineData.push([timeValue, firstValue]);
+          result.secondLineData.push([timeValue, secondValue]);
         });
       }
       result.curListName = obs.body[lineListQuery.data_list_cur_name];
       result.limit.isMax = obs.body["is_over_max_limit"];
       result.limit.isMin = obs.body["is_over_min_limit"];
-      result.list.push(lineType == LineType.ltService ? "total" :"average");
+      result.list.push(lineType == LineType.ltService ? "total" : "average");
       let listLogs: Array<Object> = obs.body[lineListQuery.data_list_filed_key];
       if (listLogs && listLogs.length > 0) {//for list
         listLogs.sort((a: Object, b: Object) => a[lineListQuery.data_list_name_key] > (b[lineListQuery.data_list_name_key]) ? 1 : -1);
@@ -176,6 +180,6 @@ export class DashboardService {
         });
       }
       return result;
-    });
+    }));
   }
 }

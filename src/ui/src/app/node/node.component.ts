@@ -1,22 +1,9 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 
 @Component({
-  selector: 'node',
   templateUrl: './node.component.html'
 })
-export class NodeComponent implements OnInit, OnDestroy {
-
+export class NodeComponent {
   constructor() {
-
   }
-
-  ngOnInit(): void {
-
-  }
-
-  ngOnDestroy(): void {
-
-  }
-
-
 }

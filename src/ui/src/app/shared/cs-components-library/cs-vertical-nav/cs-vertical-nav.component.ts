@@ -11,7 +11,7 @@ import {
   ViewContainerRef
 } from '@angular/core';
 import { ICsMenuItemData } from '../../shared.types';
-import { AppTokenService } from "../../../app.init.service";
+import { AppTokenService } from "../../../shared.service/app-token.service";
 
 @Directive({
   selector: 'ng-template[csVerticalNavGuide]'
@@ -30,7 +30,7 @@ export class CsMenuItemUrlDirective {
   styleUrls: ['./cs-vertical-nav.component.css']
 })
 export class CsVerticalNavComponent implements AfterViewInit {
-  collapsed: boolean = false;
+  collapsed = false;
   private _navSource: Array<ICsMenuItemData>;
   @ContentChildren(CsMenuItemUrlDirective) guideTemplates: QueryList<CsMenuItemUrlDirective>;
   @ViewChildren(CsMenuItemUrlDirective) guideContainers: QueryList<CsMenuItemUrlDirective>;
@@ -56,7 +56,7 @@ export class CsVerticalNavComponent implements AfterViewInit {
         container.viewContainer.createEmbeddedView(guid.templateRef);
         this.changeRef.detectChanges();
       }
-    })
+    });
   }
 
   get queryParams(): {token: string} {
@@ -64,6 +64,6 @@ export class CsVerticalNavComponent implements AfterViewInit {
   }
 
   isHasChildren(item: ICsMenuItemData): boolean{
-    return Reflect.has(item,'children');
+    return Reflect.has(item, 'children');
   }
 }

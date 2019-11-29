@@ -1,18 +1,18 @@
-import { Component, EventEmitter, Input, Output } from "@angular/core";
-import { UserService } from "../user-service/user-service"
-import { MessageService } from "../../shared/message-service/message.service";
-import { CsComponentBase } from "../../shared/cs-components-library/cs-component-base";
-import { User } from "../../shared/shared.types";
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { UserService } from '../user-service/user-service';
+import { CsComponentBase } from '../../shared/cs-components-library/cs-component-base';
+import { User } from '../../shared/shared.types';
+import { MessageService } from '../../shared.service/message.service';
 
 export enum editModel { emNew, emEdit }
 @Component({
-  selector: "new-user",
-  templateUrl: "./user-new-edit.component.html",
-  styleUrls: ["./user-new-edit.component.css"]
+  selector: 'new-user',
+  templateUrl: './user-new-edit.component.html',
+  styleUrls: ['./user-new-edit.component.css']
 })
-export class NewEditUserComponent extends CsComponentBase{
+export class NewEditUserComponent extends CsComponentBase {
   _isOpen: boolean;
-  isWorkWIP: boolean = false;
+  isWorkWIP = false;
 
   constructor(private userService: UserService,
               private messageService: MessageService) {
@@ -37,18 +37,18 @@ export class NewEditUserComponent extends CsComponentBase{
 
   get Title() {
     return this.CurEditModel == editModel.emNew
-      ? "USER_CENTER.ADD_USER"
-      : "USER_CENTER.EDIT_USER";
+      ? 'USER_CENTER.ADD_USER'
+      : 'USER_CENTER.EDIT_USER';
   }
 
   get ActionCaption() {
     return this.CurEditModel == editModel.emNew
-      ? "USER_CENTER.ADD"
-      : "USER_CENTER.SAVE";
+      ? 'USER_CENTER.ADD'
+      : 'USER_CENTER.SAVE';
   }
 
   submitUser() {
-    if (this.verifyInputValid()){
+    if (this.verifyInputExValid()) {
       this.isWorkWIP = true;
       this.CurEditModel == editModel.emEdit ? this.updateUser() : this.addNewUser();
     }

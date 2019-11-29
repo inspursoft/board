@@ -53,7 +53,7 @@ services:
       - "10022:22"
       - "10080:3000"
   gomail:    
-    image: 10.110.18.177/board/dev_gomail:dev
+    image: 10.111.25.119/board/dev_gomail:dev
     restart: always
     ports:
       - "12225:12225"

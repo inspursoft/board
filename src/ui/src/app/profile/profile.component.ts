@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { AppInitService } from "../app.init.service";
+import { AppInitService } from "../shared.service/app-init.service";
+
 
 @Component({
   selector: 'profile',
@@ -8,8 +9,11 @@ import { AppInitService } from "../app.init.service";
 })
 export class ProfileComponent {
   version: string = "";
-
+  k8sVersion = '';
+  processorType = '';
   constructor(private appInitService: AppInitService) {
     this.version = this.appInitService.systemInfo.board_version;
+    this.k8sVersion = this.appInitService.systemInfo.kubernetes_version;
+    this.processorType = this.appInitService.systemInfo.processor_type;
   }
 }

@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { AccountService } from "../account.service";
-import { MessageService } from "../../shared/message-service/message.service";
+import { MessageService } from "../../shared.service/message.service";
 import { ActivatedRoute, Router } from "@angular/router";
 import { RouteSignIn } from "../../shared/shared.const";
 import { HttpErrorResponse } from "@angular/common/http";
 import { ParamMap } from "@angular/router/src/shared";
-import { AppInitService } from "../../app.init.service";
+import { AppInitService } from "../../shared.service/app-init.service";
 import { CsComponentBase } from "../../shared/cs-components-library/cs-component-base";
 import { SignUp } from "../../shared/shared.types";
 
@@ -35,12 +35,12 @@ export class ResetPasswordComponent extends CsComponentBase implements OnInit {
     }
   }
 
-  goBack(){
+  goBack() {
     this.router.navigate([RouteSignIn]).then();
   }
 
   sendResetPassRequest() {
-    if (this.verifyInputValid()) {
+    if (this.verifyInputExValid()) {
       this.sendRequestWIP = true;
       this.accountService.resetPassword(this.signUpModel.password, this.resetUuid).subscribe(
         () => this.messageService.showOnlyOkDialogObservable('ACCOUNT.RESET_PASS_SUCCESS_MSG', 'ACCOUNT.RESET_PASS_SUCCESS').subscribe(

@@ -1,60 +1,60 @@
 <clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'md'">
   <h3 class="modal-title">{{ Title | translate }}</h3>
   <div class="modal-body input-container">
-    <cs-input [inputIsRequired]="true"
-              [inputLabel]="'USER_CENTER.USERNAME' | translate "
-              [simpleFiled]="userModel.user_name"
-              [disabled]="CurEditModel == 1 || isWorkWIP"
-              checkItemPatternEx="username"
-              checkItemExistingEx="username"
-              [inputMaxlength]="40"
-              [inputMinlength]="4"
-              [inputPlaceholder]="'USER_CENTER.INPUT_USERNAME' | translate"
-              [userID]="userModel.user_id"
-              (onCheck)="userModel.user_name = $event">
-    </cs-input>
-    <cs-input [inputIsRequired]="true"
-              [inputLabel]="'USER_CENTER.EMAIL' | translate "
-              [simpleFiled]="userModel.user_email"
-              [disabled]="CurEditModel == 1 || isWorkWIP"
-              [inputFiledType]="3"
-              checkItemPatternEx="email"
-              checkItemExistingEx="email"
-              [userID]="userModel.user_id"
-              [inputPlaceholder]="'USER_CENTER.INPUT_EMAIL' | translate "
-              (onCheck)="userModel.user_email = $event">
-    </cs-input>
-    <cs-input *ngIf="CurEditModel == 0"
-              [inputIsRequired]="true"
-              [inputLabel]="'USER_CENTER.PASSWORD' | translate "
-              [simpleFiled]="userModel.user_password"
-              [disabled]="CurEditModel == 1 || isWorkWIP"
-              [inputFiledType]="2"
-              [sourcePassword]="true"
-              checkItemPatternEx="password"
-              [inputPlaceholder]="'USER_CENTER.INPUT_PASSWORD' | translate "
-              (onCheck)="userModel.user_password = $event">
-    </cs-input>
-    <cs-input *ngIf="CurEditModel == 0"
-              [inputIsRequired]="true"
-              [inputLabel]="'USER_CENTER.CONFIRM_PASSWORD' | translate "
-              [simpleFiled]="userModel.user_confirm_password"
-              [disabled]="CurEditModel == 1 || isWorkWIP"
-              [inputFiledType]="2"
-              [verifyPassword]="true"
-              [inputPlaceholder]="'USER_CENTER.INPUT_CONFIRM_PASSWORD' | translate "
-              (onCheck)="userModel.user_confirm_password = $event">
-    </cs-input>
-    <cs-input [inputLabel]="'ACCOUNT.REALNAME' | translate "
-              [simpleFiled]="userModel.user_realname"
-              [disabled]="isWorkWIP"
-              (onCheck)="userModel.user_realname = $event">
-    </cs-input>
-    <cs-input [inputLabel]="'USER_CENTER.COMMENT' | translate "
-              [simpleFiled]="userModel.user_comment"
-              [disabled]="isWorkWIP"
-              (onCheck)="userModel.user_comment = $event">
-    </cs-input>
+    <lib-input-ex [inputIsRequired]="true"
+                  [inputLabel]="'USER_CENTER.USERNAME' | translate"
+                  [inputDefaultValue]="userModel.user_name"
+                  [inputDisabled]="CurEditModel == 1 || isWorkWIP"
+                  libCheckItemExistingEx="username"
+                  libCheckPatternEx="username"
+                  [inputMaxlength]="40"
+                  [inputMinlength]="4"
+                  [inputPlaceholder]="'USER_CENTER.INPUT_USERNAME' | translate"
+                  (commitEvent)="userModel.user_name = $event">
+    </lib-input-ex>
+    <lib-input-ex [inputIsRequired]="true"
+                  [inputLabel]="'USER_CENTER.EMAIL' | translate"
+                  [inputDefaultValue]="userModel.user_email"
+                  [inputDisabled]="CurEditModel == 1 || isWorkWIP"
+                  [inputCategory]="4"
+                  libCheckItemExistingEx="email"
+                  libCheckPatternEx="email"
+                  [inputPlaceholder]="'USER_CENTER.INPUT_EMAIL' | translate"
+                  (commitEvent)="userModel.user_email = $event">
+    </lib-input-ex>
+    <lib-input-ex *ngIf="CurEditModel == 0"
+                  [inputIsRequired]="true"
+                  [inputLabel]="'USER_CENTER.PASSWORD' | translate "
+                  [inputDefaultValue]="userModel.user_password"
+                  [inputDisabled]="CurEditModel == 1 || isWorkWIP"
+                  [inputCategory]="3"
+                  [sourcePassword]="true"
+                  libCheckPatternEx="password"
+                  [inputPlaceholder]="'USER_CENTER.INPUT_PASSWORD' | translate "
+                  (commitEvent)="userModel.user_password = $event">
+    </lib-input-ex>
+    <lib-input-ex *ngIf="CurEditModel == 0"
+                  [inputIsRequired]="true"
+                  [inputLabel]="'USER_CENTER.CONFIRM_PASSWORD' | translate "
+                  [inputDefaultValue]="userModel.user_confirm_password"
+                  [inputDisabled]="CurEditModel == 1 || isWorkWIP"
+                  [inputCategory]="3"
+                  [verifyPassword]="true"
+                  [inputPlaceholder]="'USER_CENTER.INPUT_CONFIRM_PASSWORD' | translate "
+                  (commitEvent)="userModel.user_confirm_password = $event">
+    </lib-input-ex>
+    <lib-input-ex [inputLabel]="'ACCOUNT.REALNAME' | translate "
+                  [inputDefaultValue]="userModel.user_realname"
+                  [inputDisabled]="isWorkWIP"
+                  [inputMaxlength]="20"
+                  (commitEvent)="userModel.user_realname = $event">
+    </lib-input-ex>
+    <lib-input-ex [inputLabel]="'USER_CENTER.COMMENT' | translate "
+                  [inputDefaultValue]="userModel.user_comment"
+                  [inputDisabled]="isWorkWIP"
+                  [inputMaxlength]="50"
+                  (commitEvent)="userModel.user_comment = $event">
+    </lib-input-ex>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-default" [disabled]="isWorkWIP" (click)="isOpen = false">

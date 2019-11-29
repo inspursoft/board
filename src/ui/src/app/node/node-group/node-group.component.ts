@@ -1,9 +1,9 @@
 import { Component, ComponentFactoryResolver, OnInit, ViewContainerRef } from '@angular/core';
-import { INodeGroup, NodeService } from "../node.service";
+import { NodeService } from "../node.service";
 import { NodeCreateGroupComponent } from "../node-create-group/node-create-group.component";
-import { MessageService } from "../../shared/message-service/message.service";
+import { MessageService } from "../../shared.service/message.service";
 import { CsModalParentBase } from "../../shared/cs-modal-base/cs-modal-parent-base";
-import { Message, RETURN_STATUS } from "../../shared/shared.types";
+import { INodeGroup, Message, RETURN_STATUS } from "../../shared/shared.types";
 import { TranslateService } from "@ngx-translate/core";
 
 @Component({
@@ -43,7 +43,7 @@ export class NodeGroupComponent extends CsModalParentBase implements OnInit {
           this.nodeService.deleteNodeGroup(groupId, groupName).subscribe(() => {
             this.messageService.showAlert('NODE.NODE_GROUP_DELETE_SUCCESS');
             this.refreshList();
-          }, () => this.messageService.showAlert('NODE_GROUP_DELETE_FAILED', {alertType: 'alert-warning'}))
+          }, () => this.messageService.showAlert('NODE_GROUP_DELETE_FAILED', {alertType: 'warning'}))
         }
       });
     })

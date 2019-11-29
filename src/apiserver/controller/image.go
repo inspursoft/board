@@ -1,13 +1,17 @@
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/apiserver/service/devops/travis"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
+	"time"
 
 	"strings"
 
@@ -17,6 +21,8 @@ import (
 type ImageController struct {
 	BaseController
 }
+
+var imageBaselineTime = utils.GetConfig("IMAGE_BASELINE_TIME")
 
 // API to get image list
 func (p *ImageController) GetImagesAction() {
@@ -48,10 +54,13 @@ func (p *ImageController) GetImagesAction() {
 	}
 
 	/* Interpret the message to api server */
-	imageList := []model.Image{}
+	imageList := model.ImageList{}
 	for _, imageName := range repoListFiltered.Names {
-		var newImage model.Image
-		newImage.ImageName = imageName
+		newImage := model.Image{
+			ImageName:         imageName,
+			ImageCreationTime: time.Now(),
+		}
+
 		reqTagList, err := service.GetRegistryImageTags(imageName)
 		if err != nil {
 			p.internalError(err)
@@ -62,6 +71,29 @@ func (p *ImageController) GetImagesAction() {
 			continue
 		}
 
+		for _, imageTag := range reqTagList.Tags {
+			imageManifest, err := service.GetRegistryManifest1(imageName, imageTag)
+			if err != nil {
+				logs.Error("Failed to get resgistry image manifest: %+v", err)
+				continue
+			}
+			if len(imageManifest.History) > 0 {
+				imageDetail := struct {
+					Created time.Time `json:"created"`
+				}{}
+				err := json.Unmarshal([]byte((imageManifest.History[0])["v1Compatibility"]), &imageDetail)
+				if err != nil {
+					logs.Error("Failed to Unmarshal registry manifest: %+v", err)
+					continue
+				}
+				if newImage.ImageCreationTime.Unix() > imageDetail.Created.Unix() {
+					newImage.ImageCreationTime = imageDetail.Created
+				}
+				if newImage.ImageUpdateTime.Unix() < imageDetail.Created.Unix() {
+					newImage.ImageUpdateTime = imageDetail.Created
+				}
+			}
+		}
 		// Check image in DB
 		dbImage, err := service.GetImageByName(imageName)
 		if err != nil {
@@ -82,10 +114,17 @@ func (p *ImageController) GetImagesAction() {
 			}
 			newImage.ImageID = imageID
 		}
-		if newImage.ImageDeleted == 0 {
-			imageList = append(imageList, newImage)
+
+		baselineTime, err := time.Parse("2006-01-02 15:04:05", imageBaselineTime())
+		if err != nil {
+			logs.Error("Illegal image baseline time: %s, err:%+v", imageBaselineTime(), err)
+			baselineTime, _ = time.Parse("2006-01-02 15:04:05", "2017-06-06 00:00:00")
+		}
+		if newImage.ImageDeleted == 0 && newImage.ImageUpdateTime.Unix() > baselineTime.Unix() {
+			imageList = append(imageList, &newImage)
 		}
 	}
+	sort.Sort(imageList)
 	p.renderJSON(imageList)
 }
 
@@ -145,7 +184,7 @@ func (p *ImageController) generateBuildingImageTravis(imageURI, dockerfileName s
 		fmt.Sprintf("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
 		"if [ -d 'upload' ]; then rm -rf upload; fi",
 		"if [ -e 'attachment.zip' ]; then rm -f attachment.zip; fi",
-		"if [ -f key.txt ]; then token=`cat key.txt`; fi",
+		fmt.Sprintf("token=%s", p.token),
 		fmt.Sprintf("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | cut -d$' ' -f2`", boardAPIBaseURL()),
 		fmt.Sprintf("if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi", boardAPIBaseURL()),
 	}
@@ -154,6 +193,27 @@ func (p *ImageController) generateBuildingImageTravis(imageURI, dockerfileName s
 		fmt.Sprintf("docker build -t %s -f containers/%s .", imageURI, dockerfileName),
 		fmt.Sprintf("docker push %s", imageURI),
 		fmt.Sprintf("docker rmi %s", imageURI),
+	}
+	return travisCommand.GenerateCustomTravis(p.repoPath)
+}
+
+func (p *ImageController) generatePushImagePackageTravis(imageURI, imagePackageName string) error {
+	userID := p.currentUser.ID
+	var travisCommand travis.TravisCommand
+	travisCommand.BeforeDeploy.Commands = []string{
+		fmt.Sprintf("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
+		"if [ -d 'upload' ]; then rm -rf upload; fi",
+		"if [ -e 'attachment.zip' ]; then rm -f attachment.zip; fi",
+		fmt.Sprintf("token=%s", p.token),
+		fmt.Sprintf("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | cut -d$' ' -f2`", boardAPIBaseURL()),
+		fmt.Sprintf("if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi", boardAPIBaseURL()),
+	}
+	travisCommand.Deploy.Commands = []string{
+		"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
+		fmt.Sprintf("image_name_tag=$(docker load -i upload/%s |grep 'Loaded image:'|awk '{print $3}')", imagePackageName),
+		fmt.Sprintf("docker tag $image_name_tag %s", imageURI),
+		fmt.Sprintf("docker push %s", imageURI),
+		fmt.Sprintf("docker rmi %s $image_name_tag", imageURI),
 	}
 	return travisCommand.GenerateCustomTravis(p.repoPath)
 }
@@ -201,11 +261,6 @@ func (p *ImageController) BuildImageAction() {
 	imageName := reqImageConfig.ImageName
 	imageTag := reqImageConfig.ImageTag
 	imageURI := filepath.Join(registryBaseURI(), projectName, imageName) + ":" + imageTag
-
-	if currentToken, ok := memoryCache.Get(p.currentUser.Username).(string); ok {
-		service.CreateFile("key.txt", currentToken, p.repoPath)
-	}
-
 	dockerfileName := service.ResolveDockerfileName(imageName, imageTag)
 	err = p.generateBuildingImageTravis(imageURI, dockerfileName)
 	if err != nil {
@@ -213,7 +268,7 @@ func (p *ImageController) BuildImageAction() {
 		return
 	}
 
-	items := []string{".travis.yml", "key.txt", filepath.Join("containers", dockerfileName)}
+	items := []string{".travis.yml", filepath.Join("containers", dockerfileName)}
 	p.pushItemsToRepo(items...)
 	p.collaborateWithPullRequest("master", "master", items...)
 }
@@ -337,9 +392,7 @@ func (p *ImageController) resolveDockerfileName() (dockerfileName string) {
 }
 
 func (p *ImageController) DockerfileBuildImageAction() {
-
 	projectName := strings.TrimSpace(p.GetString("project_name"))
-
 	p.resolveUserPrivilege(projectName)
 	p.resolveRepoImagePath(projectName)
 	dockerfilePath := p.repoImagePath
@@ -365,6 +418,29 @@ func (p *ImageController) DockerfileBuildImageAction() {
 	items := []string{".travis.yml", filepath.Join("containers", dockerfileName)}
 	p.pushItemsToRepo(items...)
 	p.collaborateWithPullRequest("master", "master", items...)
+}
+
+func (p *ImageController) UploadAndPushImagePackageAction() {
+	projectName := strings.TrimSpace(p.GetString("project_name"))
+	p.resolveUserPrivilege(projectName)
+	p.resolveRepoImagePath(projectName)
+	imageName := strings.TrimSpace(p.GetString("image_name"))
+	imageTag := strings.TrimSpace(p.GetString("image_tag"))
+	if imageName == "" || imageTag == "" {
+		logs.Error("Missing image name or tag, current image name is: %s, tag is: %s", imageName, imageTag)
+		p.customAbort(http.StatusBadRequest, "Missing image name or tag.")
+		return
+	}
+	imagePackageName := strings.TrimSpace(p.GetString("image_package_name"))
+	imageURI := filepath.Join(registryBaseURI(), projectName, imageName) + ":" + imageTag
+	err := p.generatePushImagePackageTravis(imageURI, imagePackageName)
+	if err != nil {
+		logs.Error("Failed to generate building image travis: %+v", err)
+		return
+	}
+
+	p.pushItemsToRepo(".travis.yml")
+	p.collaborateWithPullRequest("master", "master", ".travis.yml")
 }
 
 func (p *ImageController) CheckImageTagExistingAction() {
@@ -456,6 +532,13 @@ func (f *ImageController) UploadDockerfileFileAction() {
 	if err != nil {
 		f.internalError(err)
 	}
+	dockerfileInfo, err := service.UpdateDockerfileCopyCommand(f.repoImagePath, dockerfileName)
+	if err != nil {
+		logs.Error("Update dockerfile err: %s", err.Error())
+		f.customAbort(http.StatusBadRequest, err.Error())
+		return
+	}
+	f.Ctx.WriteString(string(dockerfileInfo))
 }
 
 func (f *ImageController) DownloadDockerfileFileAction() {

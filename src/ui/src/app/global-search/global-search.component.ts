@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, ParamMap } from '@angular/router';
-
-import { AppInitService, AppTokenService } from '../app.init.service';
-import { GlobalSearchService } from './global-search.service';
+import { AppInitService } from '../shared.service/app-init.service';
+import { AppTokenService } from '../shared.service/app-token.service';
+import { SharedService } from "../shared.service/shared.service";
 
 @Component({
   selector: 'global-search',
@@ -11,41 +11,33 @@ import { GlobalSearchService } from './global-search.service';
 export class GlobalSearchComponent implements OnInit {
 
   token: string;
-  
+
   hasSignedIn: boolean;
-  globalSearch: {[key: string]: any} = {};
-  
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    private appInitService: AppInitService,
-    private appTokenService: AppTokenService,
-    private globalSearchService: GlobalSearchService,
+  globalSearch: { [key: string]: any } = {};
+
+  constructor(private router: Router,
+              private route: ActivatedRoute,
+              private appInitService: AppInitService,
+              private appTokenService: AppTokenService,
+              private sharedService: SharedService,
   ) {}
 
   ngOnInit(): void {
-    if(this.appInitService.currentUser) {
+    if (this.appInitService.currentUser.user_id > 0) {
       this.hasSignedIn = true;
     }
-    this.appTokenService.tokenMessage$.subscribe(token=>this.token = token);
-    this.route.queryParamMap.subscribe(params=>this.search(params.get("q")));
-    console.log(this.appInitService.currentUser);
+    this.route.queryParamMap.subscribe(params => this.search(params.get('q')));
+    this.route.queryParamMap.subscribe(params => params["token"] = this.token);
   }
 
   search(q: string) {
-    this.globalSearchService.search(q).subscribe(search=>{
-        this.globalSearch = search;
-        this.route.queryParamMap.subscribe(params=>{
-          params["token"] = this.token;
-        })
-      });
+    this.sharedService.search(q).subscribe(search => this.globalSearch = search);
   }
 
   navigateTo(link) {
-    this.appTokenService.token = this.token;
     this.router.navigate([link], {
       queryParams: {
-        'token': this.appTokenService.token
+        token: this.appTokenService.token
       }
     });
   }

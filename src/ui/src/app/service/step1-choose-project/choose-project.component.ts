@@ -1,9 +1,9 @@
-import { Component, Injector, OnInit, ViewContainerRef } from '@angular/core';
+import { Component, Injector, OnInit } from '@angular/core';
 import { PHASE_SELECT_PROJECT, ServiceStepPhase, UIServiceStep1 } from '../service-step.component';
 import { Project } from "../../project/project";
 import { ServiceStepBase } from "../service-step";
-import { SharedActionService } from "../../shared/shared-action.service";
-import { SharedService } from "../../shared/shared.service";
+import { SharedActionService } from "../../shared.service/shared-action.service";
+import { SharedService } from "../../shared.service/shared.service";
 
 @Component({
   styleUrls: ["./choose-project.component.css"],
@@ -11,43 +11,32 @@ import { SharedService } from "../../shared/shared.service";
 })
 export class ChooseProjectComponent extends ServiceStepBase implements OnInit {
   projectsList: Array<Project>;
-  dropdownDefaultText: string = "";
+  curActiveProject: Project;
 
   constructor(protected injector: Injector,
               private sharedService: SharedService,
               private sharedActionService: SharedActionService) {
     super(injector);
     this.projectsList = Array<Project>();
-    this.dropdownDefaultText = "SERVICE.STEP_TITLE_1";
   }
 
   ngOnInit() {
     if (this.isBack) {
       this.k8sService.getServiceConfig(this.stepPhase).subscribe((res: UIServiceStep1) => {
         this.uiBaseData = res;
-        this.uiData.projectId = res.projectId;
+        this.k8sService.getProjects().subscribe((res: Array<Project>) => {
+          this.projectsList = res;
+          this.curActiveProject = this.projectsList.find(value => value.project_id === this.uiData.projectId);
+        })
       })
     } else {
       this.k8sService.deleteServiceConfig().subscribe(res => res);
+      this.k8sService.getProjects().subscribe((res: Array<Project>) => this.projectsList = res);
     }
-    this.k8sService.getProjects()
-      .subscribe((res: Array<Project>) => {
-        let createNewProject: Project = new Project();
-        createNewProject.project_name = "SERVICE.STEP_1_CREATE_PROJECT";
-        createNewProject.project_id = -1;
-        createNewProject["isSpecial"] = true;
-        createNewProject["OnlyClick"] = true;
-        this.projectsList.push(createNewProject);
-        if (res && res.length > 0) {
-          this.projectsList = this.projectsList.concat(res);
-        }
-        this.setDropdownDefaultText();
-      })
   }
 
-  setDropdownDefaultText(): void {
-    let selected = this.projectsList.find((project: Project) => project.project_id === this.uiData.projectId);
-    this.dropdownDefaultText = selected ? selected.project_name : "SERVICE.STEP_TITLE_1";
+  ngAfterViewInit(): void {
+
   }
 
   get stepPhase(): ServiceStepPhase {
@@ -69,10 +58,8 @@ export class ChooseProjectComponent extends ServiceStepBase implements OnInit {
       if (projectName) {
         this.sharedService.getOneProject(projectName).subscribe((res: Array<Project>) => {
           this.uiData.projectId = res[0].project_id;
-          let project = this.projectsList.shift();
-          this.projectsList.unshift(res[0]);
-          this.projectsList.unshift(project);
-          this.setDropdownDefaultText();
+          this.uiData.projectName = res[0].project_name;
+          this.projectsList.push(res[0]);
         })
       }
     });
@@ -80,6 +67,6 @@ export class ChooseProjectComponent extends ServiceStepBase implements OnInit {
 
   changeSelectProject(project: Project) {
     this.uiData.projectId = project.project_id;
-    this.setDropdownDefaultText();
+    this.uiData.projectName = project.project_name;
   }
 }

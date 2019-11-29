@@ -1,12 +1,11 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-
 import { TranslateService } from '@ngx-translate/core';
-
-import { AppInitService } from '../../app.init.service';
-import { AccountService } from '../../account/account.service';
-import { MessageService } from '../message-service/message.service';
+import { AppInitService } from '../../shared.service/app-init.service';
 import { CookieService } from "ngx-cookie";
+import { User } from "../shared.types";
+import { MessageService } from "../../shared.service/message.service";
+import { SharedService } from "../../shared.service/shared.service";
 
 @Component({
   selector: 'header-content',
@@ -19,7 +18,7 @@ export class HeaderComponent implements OnInit {
   @Input() hasSignedIn: boolean;
   @Input() searchContent: string;
 
-  currentUser: {[key: string]: any};
+  currentUser: User;
   showChangePassword:boolean = false;
   showAccountSetting:boolean = false;
   authMode: string = '';
@@ -29,18 +28,26 @@ export class HeaderComponent implements OnInit {
     return this.isSignIn ? '../../images/board-blue.jpg': '../../../images/board.png';
   }
 
+  get mipsLogoUrl(): string {
+    return this.isSignIn ? '../../images/mips-logo.png': '../../images/mips-logo.png';
+  }
+
+  get isMipsEnv(): boolean {
+    return this.appInitService.isMipsSystem;
+  }
+
   constructor(private router: Router,
               private translateService: TranslateService,
               private cookieService: CookieService,
               private appInitService: AppInitService,
-              private accountService: AccountService,
+              private sharedService: SharedService,
               private messageService: MessageService) {
     this._assertLanguage(this.appInitService.currentLang);
   }
 
   ngOnInit(): void {
     if (this.hasSignedIn){
-      this.currentUser = this.appInitService.currentUser || {};
+      this.currentUser = this.appInitService.currentUser;
       this.authMode = this.appInitService.systemInfo.auth_mode;
       this.redirectionURL = this.appInitService.systemInfo.redirection_url;
     }
@@ -56,7 +63,7 @@ export class HeaderComponent implements OnInit {
       break;
 
     case 'zh':
-    case 'zh-cn': 
+    case 'zh-cn':
       lang = 'zh-cn';
       this.currentLang = 'HEAD_NAV.LANG_ZH_CN';
       break;
@@ -79,20 +86,20 @@ export class HeaderComponent implements OnInit {
 
   clickLogoAction() {
     if(!this.hasSignedIn) {
-      this.router.navigate(['/sign-in']);
+      this.router.navigate(['/account/sign-in']);
     }
   }
 
   logOut() {
-    this.accountService.signOut(this.appInitService.currentUser.user_name).subscribe(() => {
+    this.sharedService.signOut(this.appInitService.currentUser.user_name).subscribe(() => {
       this.cookieService.remove('token');
       this.appInitService.token = '';
-      this.appInitService.currentUser = null;
+      this.appInitService.currentUser = new User();
       if (this.authMode === 'indata_auth') {
         window.location.href = this.redirectionURL;
         return;
       }
-      this.router.navigate(['/sign-in']).then();
-    }, () => this.messageService.showAlert('ACCOUNT.FAILED_TO_SIGN_OUT', {alertType: 'alert-danger'}));
+      this.router.navigate(['/account/sign-in']).then();
+    }, () => this.messageService.showAlert('ACCOUNT.FAILED_TO_SIGN_OUT', {alertType: 'danger'}));
   }
 }

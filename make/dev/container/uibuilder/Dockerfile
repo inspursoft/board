@@ -1,9 +1,8 @@
-FROM node:8.11
+FROM node:11.13.0
 
 RUN mkdir -p /board_resource
 
 COPY src/ui/package.json /board_resource
-COPY make/dev/container/uibuilder/sources.list /etc/apt/sources.list
 COPY make/dev/container/uibuilder/entrypoint.sh /
 
 WORKDIR /board_resource
@@ -15,7 +14,7 @@ RUN mkdir -p /board_src \
     && wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get update \
-    && apt-get install -y google-chrome-stable \
+    && apt-get install -y google-chrome-stable \ 
     && npm install -g @angular/cli@latest \
     && npm install \
     && chmod u+x /entrypoint.sh

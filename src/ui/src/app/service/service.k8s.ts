@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
-import { Subject } from 'rxjs/Subject';
-import { Observable } from 'rxjs/Observable';
 import { HttpClient, HttpHeaders, HttpResponse } from "@angular/common/http";
 import { Project } from "../project/project";
 import { BuildImageDockerfileData, Image, ImageDetail } from "../image/image";
 import { ImageIndex, ServerServiceStep, ServiceStepPhase, UiServiceFactory, UIServiceStepBase } from "./service-step.component";
 import { Service } from "./service";
 import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from "../shared/shared.const";
-import { NodeAvailableResources, ServiceHPA } from "../shared/shared.types";
+import { INode, INodeGroup, NodeAvailableResources, PersistentVolumeClaim, ServiceHPA } from "../shared/shared.types";
+import { Observable, Subject, zip } from "rxjs";
+import { map } from "rxjs/operators";
 
 @Injectable()
 export class K8sService {
@@ -32,10 +32,10 @@ export class K8sService {
     return this.http.get(`/api/v1/services/config`, {
       observe: "response",
       params: {phase: phase}
-    }).map((res: HttpResponse<Object>) => {
+    }).pipe(map((res: HttpResponse<Object>) => {
       let stepBase = UiServiceFactory.getInstance(phase);
       return stepBase.serverToUi(res.body);
-    });
+    }));
   }
 
   setServiceConfig(config: ServerServiceStep): Observable<any> {
@@ -45,9 +45,12 @@ export class K8sService {
         phase: config.phase,
         project_id: config.project_id.toString(),
         service_name: config.service_name,
+        cluster_ip: config.cluster_ip,
+        service_type: config.service_type.toString(),
         instance: config.instance.toString(),
-        service_public:config.service_public.toString(),
-        node_selector:config.node_selector
+        session_affinity_flag: config.session_affinity_flag.toString(),
+        service_public: config.service_public.toString(),
+        node_selector: config.node_selector
       }
     })
   }
@@ -67,21 +70,28 @@ export class K8sService {
     return this.http.post(`/api/v1/services/deployment`, {}, {
       headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
       observe: "response"
-    }).map((res: HttpResponse<Object>) => res.body)
+    }).pipe(map((res: HttpResponse<Object>) => res.body));
+  }
+
+  serviceStatefulDeployment(): Observable<Object> {
+    return this.http.post(`/api/v1/services/statefulsets`, {}, {
+      headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
+      observe: "response"
+    }).pipe(map((res: HttpResponse<Object>) => res.body));
   }
 
   getContainerDefaultInfo(image_name: string, image_tag: string, project_name: string): Observable<BuildImageDockerfileData> {
     return this.http.get<BuildImageDockerfileData>(`/api/v1/images/dockerfile`, {
       observe: "response",
       params: {image_name: image_name, project_name: project_name, image_tag: image_tag}
-    }).map((res: HttpResponse<BuildImageDockerfileData>) => res.body);
+    }).pipe(map((res: HttpResponse<BuildImageDockerfileData>) => res.body));
   }
 
   getProjects(projectName: string = ""): Observable<Array<Project>> {
     return this.http.get<Array<Project>>('/api/v1/projects', {
       observe: "response",
       params: {'project_name': projectName, 'member_only': "1"}
-    }).map((res: HttpResponse<Array<Project>>) => res.body)
+    }).pipe(map((res: HttpResponse<Array<Project>>) => res.body));
   }
 
   getDeployStatus(serviceId: number): Observable<any> {
@@ -96,32 +106,39 @@ export class K8sService {
         'image_list_page': image_list_page.toString(),
         'image_list_page_size': image_list_page_size.toString()
       }
-    }).map((res: HttpResponse<Image[]>) => res.body || []);
+    }).pipe(map((res: HttpResponse<Image[]>) => res.body || []));
   }
 
   getImageDetailList(image_name: string): Observable<Array<ImageDetail>> {
     return this.http.get(`/api/v1/images/${image_name}`, {observe: "response"})
-      .map((res: HttpResponse<Array<ImageDetail>>) => res.body || []);
+      .pipe(map((res: HttpResponse<Array<ImageDetail>>) => res.body || []));
   }
 
   getServices(pageIndex: number, pageSize: number, sortBy: string, isReverse: boolean): Observable<Object> {
     return this.http.get(`/api/v1/services`, {
-        observe: "response", params: {
-          "page_index": pageIndex.toString(),
-          "page_size": pageSize.toString(),
-          "order_field": sortBy,
-          "order_asc": isReverse ? "0" : "1"
-        }
-      }).map((res: HttpResponse<Object>) => res.body);
+      observe: "response", params: {
+        "page_index": pageIndex.toString(),
+        "page_size": pageSize.toString(),
+        "order_field": sortBy,
+        "order_asc": isReverse ? "0" : "1"
+      }
+    }).pipe(map((res: HttpResponse<Object>) => res.body));
   }
 
   getServiceDetail(serviceId: number): Observable<Object> {
     return this.http.get(`/api/v1/services/${serviceId}/info`, {observe: "response"})
-      .map((res: HttpResponse<Object>) => res.body)
+      .pipe(map((res: HttpResponse<Object>) => res.body));
   }
 
   deleteService(serviceID: number): Observable<any> {
     return this.http.delete(`/api/v1/services/${serviceID}`, {
+      headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
+      observe: "response"
+    })
+  }
+
+  deleteStatefulService(serviceID: number): Observable<any> {
+    return this.http.delete(`/api/v1/services/${serviceID}/statefulsets`, {
       headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
       observe: "response"
     })
@@ -150,14 +167,14 @@ export class K8sService {
           "job_name": jobName,
           "build_serial_id": buildSerialId
         }
-      }).map((res: HttpResponse<string>) => res.body);
+      }).pipe(map((res: HttpResponse<string>) => res.body));
   }
 
   getNodesList(param?: {}): Observable<Array<{node_name: string, node_ip: string, status: number}>> {
     let queryParam = param || {};
     return this.http
       .get(`/api/v1/nodes`, {observe: "response", params: queryParam})
-      .map((res: HttpResponse<Array<{node_name: string, node_ip: string, status: number}>>) => res.body || [])
+      .pipe(map((res: HttpResponse<Array<{node_name: string, node_ip: string, status: number}>>) => res.body || []));
   }
 
   addServiceRoute(serviceURL: string, serviceIdentity: string): Observable<any> {
@@ -177,15 +194,14 @@ export class K8sService {
     });
   }
 
-  getCollaborativeService(serviceName: string, projectName: string): Observable<Array<string>> {
-    return this.http
-      .get<Array<string>>(`/api/v1/services/selectservices`, {
-        observe: "response",
-        params: {
-          service_name: serviceName,
-          project_name: projectName
-        }
-      }).map((res: HttpResponse<Array<string>>) => res.body || Array<string>());
+  getCollaborativeService(serviceName: string, projectName: string): Observable<Array<Service>> {
+    return this.http.get<Array<Service>>(`/api/v1/services/selectservices`, {
+      observe: "response",
+      params: {
+        service_name: serviceName,
+        project_name: projectName
+      }
+    }).pipe(map((res: HttpResponse<Array<Service>>) => res.body || Array<Service>()));
   }
 
   getServiceYamlFile(projectName: string, serviceName: string, yamlType: string): Observable<string> {
@@ -198,18 +214,17 @@ export class K8sService {
           project_name: projectName,
           yaml_type: yamlType
         }
-      })
-      .map((res: HttpResponse<string>) => res.body);
+      }).pipe(map((res: HttpResponse<string>) => res.body));
   }
 
   getServiceImages(projectName: string, serviceName: string): Observable<Array<ImageIndex>> {
     return this.http.get<Array<ImageIndex>>(`/api/v1/services/rollingupdate/image`, {
-        observe: "response",
-        params: {
-          service_name: serviceName,
-          project_name: projectName
-        }
-      }).map((res: HttpResponse<Array<ImageIndex>>) => res.body || Array<ImageIndex>());
+      observe: "response",
+      params: {
+        service_name: serviceName,
+        project_name: projectName
+      }
+    }).pipe(map((res: HttpResponse<Array<ImageIndex>>) => res.body || Array<ImageIndex>()));
   }
 
   updateServiceImages(projectName: string, serviceName: string, postData: Array<ImageIndex>): Observable<any> {
@@ -232,44 +247,46 @@ export class K8sService {
         params: {
           project_name: projectName
         }
-      })
-      .map((res: HttpResponse<Service>) => res.body)
+      }).pipe(map((res: HttpResponse<Service>) => res.body));
   }
 
   getServiceScaleInfo(serviceId: number): Observable<Object> {
     return this.http.get(`/api/v1/services/${serviceId}/scale`, {observe: "response"})
-      .map((res: HttpResponse<Object>) => res.body)
+      .pipe(map((res: HttpResponse<Object>) => res.body));
   }
 
-  getNodeSelectors(): Observable<Array<string>> {
+  getNodePorts(projectName: string): Observable<Array<number>> {
+    return this.http.get(`/api/v1/services/nodeports`, {observe: "response"})
+      .pipe(map((res: HttpResponse<Array<number>>) => res.body));
+  }
+
+  getNodeSelectors(): Observable<Array<{name: string, status: number}>> {
     let obsNodeList = this.http
       .get(`/api/v1/nodes`, {observe: "response"})
-      .map((res: HttpResponse<Array<Object>>) => res.body)
-      .map((res: Array<Object>) => {
-        let r = Array<string>();
-        res.filter(value => value["status"] == 1)
-          .forEach(value => r.push(String(value["node_name"]).trim()));
-        return r;
-      });
+      .pipe(
+        map((res: HttpResponse<Array<INode>>) => {
+          let result = Array<{name: string, status: number}>();
+          res.body.forEach((iNode: INode) => result.push({name: String(iNode.node_name).trim(), status: iNode.status}));
+          return result;
+        }));
     let obsNodeGroupList = this.http
       .get(`/api/v1/nodegroup`, {observe: "response", params: {is_valid_node_group: '1'}})
-      .map((res: HttpResponse<Array<Object>>) => res.body)
-      .map((res: Array<Object>) => {
-        let r = Array<string>();
-        res.forEach(value => r.push(String(value["nodegroup_name"]).trim()));
-        return r;
-      });
-    return obsNodeList
-      .zip(obsNodeGroupList)
-      .map(value => value[0].concat(value[1]))
+      .pipe(
+        map((res: HttpResponse<Array<INodeGroup>>) => {
+          let result = Array<{name: string, status: number}>();
+          res.body.forEach((iNodeGroup: INodeGroup) => result.push({name: String(iNodeGroup.nodegroup_name).trim(), status: 1}));
+          return result;
+        }));
+    return zip(obsNodeList, obsNodeGroupList).pipe(
+      map(value => value[0].concat(value[1]))
+    );
   }
 
   getLocate(projectName: string, serviceName: string): Observable<string> {
     return this.http.get(`/api/v1/services/rollingupdate/nodegroup`, {
       observe: "response",
       params: {project_name: projectName, service_name: serviceName}
-    })
-      .map((res: HttpResponse<string>) => res.body)
+    }).pipe(map((res: HttpResponse<string>) => res.body));
   }
 
   setLocate(nodeSelector: string, projectName: string, serviceName: string): Observable<Object> {
@@ -278,14 +295,13 @@ export class K8sService {
         headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
         observe: "response",
         params: {project_name: projectName, service_name: serviceName, node_selector: nodeSelector}
-      })
-      .map((res: HttpResponse<Array<Object>>) => res.body)
+      }).pipe(map((res: HttpResponse<Array<Object>>) => res.body));
   }
 
   getNodesAvailableSources(): Observable<Array<NodeAvailableResources>> {
     return this.http.get(`/api/v1/nodes/availableresources`, {
       observe: "response"
-    }).map((res: HttpResponse<Array<NodeAvailableResources>>) => res.body)
+    }).pipe(map((res: HttpResponse<Array<NodeAvailableResources>>) => res.body));
   }
 
   setAutoScaleConfig(serviceId: number, hpa: ServiceHPA): Observable<any> {
@@ -310,10 +326,44 @@ export class K8sService {
   getAutoScaleConfig(serviceId: number): Observable<Array<ServiceHPA>> {
     return this.http.get(`/api/v1/services/${serviceId}/autoscale`, {
       observe: "response"
-    }).map((res: HttpResponse<Array<ServiceHPA>>) => res.body)
-      .map((res: Array<ServiceHPA>) => {
+    }).pipe(
+      map((res: HttpResponse<Array<ServiceHPA>>) => res.body),
+      map((res: Array<ServiceHPA>) => {
         res.forEach(config => config.isEdit = true);
         return res
-      });
+      }));
+  }
+
+  getSessionAffinityFlag(serviceName: string, projectName: string): Observable<boolean> {
+    return this.http.get(`/api/v1/services/rollingupdate/session`, {
+      observe: "response", params: {
+        project_name: projectName,
+        service_name: serviceName
+      }
+    }).pipe(map((res: HttpResponse<Object>) => res.body['SessionAffinityFlag'] == 1));
+  }
+
+  setSessionAffinityFlag(serviceName: string, projectName: string, flag: boolean): Observable<any> {
+    return this.http.patch(`/api/v1/services/rollingupdate/session`, null, {
+      observe: "response", params: {
+        project_name: projectName,
+        service_name: serviceName,
+        session_affinity_flag: flag ? '1' : '0'
+      }
+    })
+  }
+
+  getPvcNameList(): Observable<Array<PersistentVolumeClaim>> {
+    return this.http.get(`/api/v1/pvclaims`, {observe: "response"})
+      .pipe(map((res: HttpResponse<Array<Object>>) => {
+        let result: Array<PersistentVolumeClaim> = Array<PersistentVolumeClaim>();
+        res.body.forEach(resObject => {
+          let persistentVolume = new PersistentVolumeClaim();
+          persistentVolume.id = Reflect.get(resObject, 'pvc_id');
+          persistentVolume.name = Reflect.get(resObject, 'pvc_name');
+          result.push(persistentVolume);
+        });
+        return result;
+      }));
   }
 }

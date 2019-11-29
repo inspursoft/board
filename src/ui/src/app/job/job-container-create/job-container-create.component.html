@@ -1,0 +1,47 @@
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'lg'">
+  <div class="modal-title clr-row clr-align-items-center">
+    {{ 'JOB.JOB_CREATE_SELECT_IMAGE' | translate }}
+    <span *ngIf="isLoading" class="spinner spinner-sm"></span>
+  </div>
+  <div class="modal-body">
+    <div class="clr-row clr-flex-nowrap clr-justify-content-around">
+      <div class="card">
+        <div class="card-header">
+          {{ 'JOB.JOB_CREATE_IMAGE_LIST' | translate }}
+        </div>
+        <div class="card-block">
+          <ul class="list">
+            <li *ngFor="let image of imageList"
+                [class.selected]="selectedImageName === image.image_name"
+                (click)="getImageDetail(image)">
+              {{image.image_name}}
+            </li>
+          </ul>
+          <span *ngIf="imageList.length == 0">No data available</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          {{ 'JOB.JOB_CREATE_TAG_LIST' | translate }}
+        </div>
+        <div class="card-block">
+          <ul class="list">
+            <li *ngFor="let detail of imageDetailList"
+                [class.selected]="selectedImageTag === detail.image_tag"
+                (click)="setImageTag(detail)">
+              {{detail.image_tag}}
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="modalOpened = false">
+      {{ 'BUTTON.CANCEL' | translate }}
+    </button>
+    <button type="button" class="btn btn-primary" (click)="createNewContainer()">
+      {{ 'BUTTON.OK' | translate }}
+    </button>
+  </div>
+</clr-modal>

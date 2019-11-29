@@ -1,0 +1,79 @@
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'md'">
+  <h3 class="modal-title">{{ 'STORAGE.PVC_CREATE' | translate }}</h3>
+  <div class="modal-body">
+    <lib-dropdown-ex [dropdownTip]="'STORAGE.PVC_CREATE_SELECT_PROJECT' | translate"
+                     [dropdownMinWidth]="300"
+                     [dropdownIsRequired]="true"
+                     [dropdownDisabled]="isCreateWip"
+                     [dropdownItems]="projectsList"
+                     [dropdownKey]="'project_name'"
+                     [dropdownLabel]="'STORAGE.PVC_CREATE_PROJECT' | translate"
+                     (dropdownChangeItem)="changeSelectProject($event)">
+    </lib-dropdown-ex>
+    <lib-input-ex [inputIsRequired]="true"
+                  [inputDisabled]="isCreateWip || newPersistentVolumeClaim.projectName == ''"
+                  [inputPattern]="namePattern"
+                  [inputLabel]="'STORAGE.PVC_NAME' | translate"
+                  [inputMaxlength]="50"
+                  [validatorAsyncFn]="checkPvcNameFun"
+                  [validatorMessage]="[{key: 'pattern', message: 'STORAGE.PVC_CREATE_NAME_PATTERN' | translate},
+                                      {key: 'pvNameExists', message: 'STORAGE.PVC_CREATE_NAME_EXIST' | translate}]"
+                  [inputDefaultValue]="newPersistentVolumeClaim.name"
+                  (commitEvent)="newPersistentVolumeClaim.name = $event">
+    </lib-input-ex>
+    <div class="dynamic-line-container">
+      <lib-input-ex [inputIsRequired]="true"
+                    [inputLabel]="'STORAGE.PVC_CAPACITY' | translate"
+                    [inputPlaceholder]="'eg. 5'"
+                    [inputMin]="0.1"
+                    [inputCategory]="2"
+                    [inputDisabled]="isCreateWip || newPersistentVolumeClaim.projectName == ''"
+                    [inputDefaultValue]="newPersistentVolumeClaim.capacity"
+                    (commitEvent)="newPersistentVolumeClaim.capacity = $event">
+      </lib-input-ex>
+      (Gi)
+    </div>
+    <lib-dropdown-ex [dropdownLabel]="'STORAGE.PVC_ACCESS_MODES' | translate"
+                     [dropdownTip]="'STORAGE.PVC_CREATE_SELECT_ACCESS_MODE' | translate"
+                     [dropdownIsRequired]="true"
+                     [dropdownDisabled]="isCreateWip"
+                     [dropdownItems]="accessModeList"
+                     [dropdownMinWidth]="300"
+                     (dropdownChangeItem)="newPersistentVolumeClaim.accessMode = $event">
+    </lib-dropdown-ex>
+    <div *ngIf="newPersistentVolumeClaim.accessMode == 'ReadOnlyMany'"
+         class="dynamic-line-container alert warning warning-info">
+      {{"STORAGE.PV_WARNING_READ_ONLY_MANY" | translate}}
+    </div>
+    <div *ngIf="newPersistentVolumeClaim.accessMode == 'ReadWriteMany'"
+         class="dynamic-line-container alert warning warning-info">
+      {{"STORAGE.PV_WARNING_READ_WRITE_MANY" | translate}}
+    </div>
+    <div class="pvc-section-container"><span>Options</span></div>
+    <lib-dropdown-ex [dropdownLabel]="'STORAGE.PVC_CREATE_DESIGNATE_PV' | translate"
+                     [dropdownDisabled]="isCreateWip"
+                     [dropdownItems]="pvList"
+                     [dropdownKey]="'name'"
+                     [dropdownMinWidth]="300"
+                     [dropdownTip]="'STORAGE.PVC_CREATE_SELECT_DESIGNATED_PV' | translate"
+                     (dropdownChangeItem)="changeDesignatePv($event)">
+      <ng-template libItemTemp let-name='name'>
+        <span [style.color]="name === 'None' ? 'blue' : 'black'">{{name}}</span>
+      </ng-template>
+    </lib-dropdown-ex>
+    <lib-input-ex [inputDisabled]="isCreateWip"
+                  [inputLabel]="'STORAGE.PVC_CLASS' | translate"
+                  [inputDefaultValue]="newPersistentVolumeClaim.class"
+                  (commitEvent)="newPersistentVolumeClaim.class = $event">
+    </lib-input-ex>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-default" [disabled]="isCreateWip" (click)="modalOpened = false">
+      {{ 'BUTTON.CANCEL' | translate }}
+    </button>
+    <button type="button" class="btn btn-primary" [disabled]="isCreateWip" (click)="createNewPvc()">
+      {{ 'BUTTON.CREATE' | translate }}
+    </button>
+    <span *ngIf="isCreateWip" class="spinner spinner-sm"></span>
+  </div>
+</clr-modal>

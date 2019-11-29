@@ -43,13 +43,14 @@ CREATE TABLE `board`.`project` (
   `toggleable` SMALLINT(1) NULL,
   `current_user_role_id` INT NULL,
   `service_count` INT NULL,
+  `istio_support` SMALLINT(1) NULL,
   PRIMARY KEY (`id`));
 
 INSERT INTO `board`.`project`
  (`id`, `name`, `comment`, `creation_time`, `update_time`, `deleted`, `owner_id`, 
-  `owner_name`, `public`, `toggleable`, `current_user_role_id`, `service_count`)
+  `owner_name`, `public`, `toggleable`, `current_user_role_id`, `service_count`, `istio_support`)
  VALUES
- (1, 'library', 'library comment', now(), now(), 0, 1,'admin', 1, 1, 1, 0);
+ (1, 'library', 'library comment', now(), now(), 0, 1,'admin', 1, 1, 1, 0, 0);
 
 
 CREATE TABLE `project_member` (
@@ -322,12 +323,14 @@ DROP TABLE IF EXISTS `log`;
         `owner_id` INT NOT NULL,
         `owner_name` VARCHAR(255) DEFAULT NULL,
         `status` SMALLINT(1) NOT NULL,
+		`type` SMALLINT(1) NOT NULL DEFAULT 0,
         `public` SMALLINT(1) NULL,
         `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
         `creation_time` datetime DEFAULT NULL,
         `update_time` datetime DEFAULT NULL,
         `source` SMALLINT(1) NOT NULL,
-        `service_config` TEXT,
+        `service_yaml` TEXT,
+        `deployment_yaml` TEXT,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
 
@@ -353,8 +356,8 @@ DROP TABLE IF EXISTS `log`;
 	
     CREATE TABLE `board`.`operation` (
         `id` INT NOT NULL AUTO_INCREMENT,
-        `creation_time` timestamp DEFAULT NULL,
-        `update_time` timestamp DEFAULT NULL,
+        `creation_time` timestamp DEFAULT 0,
+        `update_time` timestamp DEFAULT 0,
         `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
         `project_name` VARCHAR(255) DEFAULT '',
         `project_id` INT DEFAULT 0,
@@ -378,4 +381,92 @@ DROP TABLE IF EXISTS `log`;
         `status` INT NOT NULL DEFAULT 0,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
+	
+	CREATE TABLE `board`.`persistent_volume` (
+        `id` INT NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(255) NOT NULL DEFAULT '',
+        `type` INT NOT NULL DEFAULT 0,
+        `state` INT NOT NULL DEFAULT 0,
+		`capacity` VARCHAR(255) NOT NULL DEFAULT '',
+		`accessmode` VARCHAR(255) NOT NULL DEFAULT '',
+	    `class` VARCHAR(255) NOT NULL DEFAULT '',	
+        `readonly` SMALLINT(1) NULL,		
+	    `reclaim` VARCHAR(255) NOT NULL DEFAULT '',		
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
+	
+	CREATE TABLE `board`.`persistent_volume_option_nfs` (
+        `id` INT NOT NULL,
+		`path` VARCHAR(255) NOT NULL DEFAULT '',
+		`server` VARCHAR(255) NOT NULL DEFAULT '',	
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+	CREATE TABLE `board`.`persistent_volume_option_cephrbd` (
+        `id` INT NOT NULL,
+		`user` VARCHAR(255) NOT NULL DEFAULT '',
+		`keyring` VARCHAR(255) NOT NULL DEFAULT '',	
+		`pool` VARCHAR(255) NOT NULL DEFAULT '',
+		`image` VARCHAR(255) NOT NULL DEFAULT '',	
+		`fstype` VARCHAR(255) NOT NULL DEFAULT '',
+		`secretname` VARCHAR(255) NOT NULL DEFAULT '',		
+		`secretnamespace` VARCHAR(255) NOT NULL DEFAULT '',
+		`monitors` VARCHAR(255) NOT NULL DEFAULT '',			
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;	
+	
+	CREATE TABLE `board`.`persistent_volume_claim_m` (
+        `id` INT NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(255) NOT NULL DEFAULT '',
+        `projectid` INT NOT NULL DEFAULT 0,
+		`capacity` VARCHAR(255) NOT NULL DEFAULT '',
+		`accessmode` VARCHAR(255) NOT NULL DEFAULT '',
+	    `class` VARCHAR(255) NOT NULL DEFAULT '',		
+	    `pvname` VARCHAR(255) NOT NULL DEFAULT '',		
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;		
+
+    CREATE TABLE `board`.`helm_repository` (
+        `id` INT NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(255) NOT NULL DEFAULT '',
+        `url` VARCHAR(255) NOT NULL DEFAULT '',
+        `type` INT NOT NULL DEFAULT 0,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
+
+INSERT INTO `board`.`helm_repository`
+ (`id`, `name`, `url`, `type`)
+ VALUES
+ (1, 'chartmuseum', 'http://chartmuseum:8080/', 1);
+
+    CREATE TABLE `board`.`helm_release` (
+        `id` INT NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(255) NOT NULL DEFAULT '',
+        `project_id` INT NOT NULL,
+        `project_name` VARCHAR(255) NOT NULL,
+        `repository_id` INT NOT NULL,
+        `repository` VARCHAR(255) NOT NULL,
+        `workloads` TEXT,
+        `owner_id` INT NOT NULL,
+        `owner_name` VARCHAR(255) NOT NULL,
+        `creation_time` datetime DEFAULT NULL,
+        `update_time` datetime DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+    CREATE TABLE `board`.`job_status` (
+        `id` INT NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(255) NOT NULL DEFAULT '',
+        `project_id` INT NOT NULL,
+        `project_name` VARCHAR(255) NOT NULL DEFAULT '',
+        `comment` VARCHAR(255) NOT NULL DEFAULT '',
+        `owner_id` INT NOT NULL,
+        `owner_name` VARCHAR(255) DEFAULT NULL,
+        `status` SMALLINT(1) NOT NULL,
+        `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
+        `creation_time` datetime DEFAULT NULL,
+        `update_time` datetime DEFAULT NULL,
+        `source` SMALLINT(1) NOT NULL,
+        `yaml` TEXT,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	

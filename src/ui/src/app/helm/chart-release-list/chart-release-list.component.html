@@ -1,0 +1,40 @@
+<clr-datagrid [clrDgLoading]="loadingWIP">
+    <clr-dg-column>{{ 'HELM.RELEASE_CHART_LIST_NAME' | translate }}</clr-dg-column>
+    <clr-dg-column>{{ 'HELM.RELEASE_CHART_LIST_PROJECT_NAME' | translate }}</clr-dg-column>
+    <clr-dg-column>{{ 'HELM.RELEASE_CHART_LIST_REPOSITORY_NAME' | translate }}</clr-dg-column>
+    <clr-dg-column>{{ 'HELM.RELEASE_CHART_LIST_CHART_NAME' | translate }}</clr-dg-column>
+    <clr-dg-column>{{ 'HELM.RELEASE_CHART_LIST_CHART_VERSION' | translate }}</clr-dg-column>
+    <clr-dg-column>{{ 'HELM.RELEASE_CHART_LIST_OWNER_NAME' | translate }}</clr-dg-column>
+    <clr-dg-column>{{ 'HELM.RELEASE_CHART_LIST_STATUS' | translate }}</clr-dg-column>
+    <clr-dg-column>{{ 'HELM.RELEASE_CHART_LIST_UPDATE_TIME' | translate }}</clr-dg-column>
+    <clr-dg-column>{{ 'HELM.RELEASE_CHART_LIST_CREATION_TIME' | translate }}</clr-dg-column>
+    <clr-dg-column>{{ 'HELM.RELEASE_CHART_LIST_OPERATION' | translate }}</clr-dg-column>
+    <clr-dg-row *clrDgItems="let release of chartReleaseList">
+        <clr-dg-cell>{{release.name}}</clr-dg-cell>
+        <clr-dg-cell>{{release.project_name}}</clr-dg-cell>
+        <clr-dg-cell>{{release.repository}}</clr-dg-cell>
+        <clr-dg-cell>{{release.chart}}</clr-dg-cell>
+        <clr-dg-cell>{{release.chartversion}}</clr-dg-cell>
+        <clr-dg-cell>{{release.owner_name}}</clr-dg-cell>
+        <clr-dg-cell>{{release.status}}</clr-dg-cell>
+        <clr-dg-cell>{{release.update_time | date: 'short'}}</clr-dg-cell>
+        <clr-dg-cell>{{release.creation_time | date: 'short'}}</clr-dg-cell>
+        <clr-dg-cell>
+            <a href="javascript:void(0)">
+                <clr-icon shape="trash" (click)="deleteChartRelease(release)"></clr-icon>
+            </a>
+            <a href="javascript:void(0)" (click)="showReleaseDetail(release)">
+                <clr-icon shape="info-standard"></clr-icon>
+            </a>
+        </clr-dg-cell>
+    </clr-dg-row>
+    <clr-dg-footer>
+        {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
+        {{"DATAGRID.TOTAL" | translate}}{{chartReleaseList.length}}{{"DATAGRID.ITEMS" | translate}}
+        <clr-dg-pagination #pagination
+                           [clrDgTotalItems]="chartReleaseList.length"
+                           [clrDgPage]="1"
+                           [clrDgPageSize]="chartReleaseList.length">
+        </clr-dg-pagination>
+    </clr-dg-footer>
+</clr-datagrid>

@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component } from '@angular/core';
 import { INodeDetail, NodeService } from "../node.service";
-import "rxjs/add/operator/zip"
-import "rxjs/add/operator/do"
+import { tap } from "rxjs/operators";
+import { zip } from "rxjs";
 
 @Component({
   selector: 'node-detail',
@@ -22,10 +22,10 @@ export class NodeDetailComponent {
     this.nodeDetailOpened = true;
     this.nodeGroups = "";
     let obs1 = this.nodeService.getNodeByName(nodeName)
-      .do((nodeDetail: INodeDetail) => this.nodeDetail = nodeDetail);
+      .pipe(tap((nodeDetail: INodeDetail) => this.nodeDetail = nodeDetail));
     let obs2 = this.nodeService.getNodeGroupsOfOneNode(nodeName)
-      .do((res: Array<string>) => res.forEach(value => this.nodeGroups = this.nodeGroups.concat(`${value};`)));
-    obs1.zip(obs2).subscribe(
+      .pipe(tap((res: Array<string>) => res.forEach(value => this.nodeGroups = this.nodeGroups.concat(`${value};`))));
+    zip(obs1, obs2).subscribe(
       () => this.changeDetectorRef.reattach(),
       () => this.nodeDetailOpened = false);
   }
@@ -34,7 +34,7 @@ export class NodeDetailComponent {
     return Math.round(num * 100) / 100 + '%';
   }
 
-  storagePercentage(nodeDetail:INodeDetail): number{
+  storagePercentage(nodeDetail: INodeDetail): number {
     return Number.parseInt(nodeDetail.storage_use) / Number.parseInt(nodeDetail.storage_total);
   }
 

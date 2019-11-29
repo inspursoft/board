@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
-import { CreateProject, Project } from "../../../project/project";
-import { SharedService } from "../../shared.service";
-import { MessageService } from "../../message-service/message.service";
-import { HttpErrorResponse } from "@angular/common/http";
-import { Observable } from "rxjs/Observable";
-import { CsModalChildBase } from "../../cs-modal-base/cs-modal-child-base";
+import { CreateProject, Project } from '../../../project/project';
+import { SharedService } from '../../../shared.service/shared.service';
+import { HttpErrorResponse } from '@angular/common/http';
+import { CsModalChildBase } from '../../cs-modal-base/cs-modal-child-base';
+import { Observable } from 'rxjs';
+import { MessageService } from '../../../shared.service/message.service';
 
 @Component({
   selector: 'create-project',
@@ -13,8 +13,8 @@ import { CsModalChildBase } from "../../cs-modal-base/cs-modal-child-base";
 })
 export class CreateProjectComponent extends CsModalChildBase {
   createProject: CreateProject;
-  isCreateProjectWIP: boolean = false;
-  projectNamePattern: string = '^[a-z0-9]+(?:[-][a-z0-9]+)*$';
+  isCreateProjectWIP = false;
+  projectNamePattern = '^[a-z0-9]+(?:[-][a-z0-9]+)*$';
   constructor(private sharedService: SharedService,
               private messageService: MessageService) {
     super();
@@ -27,9 +27,9 @@ export class CreateProjectComponent extends CsModalChildBase {
   }
 
   confirm(): void {
-    if (this.verifyInputValid()) {
+    if (this.verifyInputExValid()) {
       this.isCreateProjectWIP = true;
-      let project = new Project();
+      const project = new Project();
       project.project_name = this.createProject.projectName;
       project.project_public = this.createProject.publicity ? 1 : 0;
       project.project_comment = this.createProject.comment;
@@ -38,9 +38,9 @@ export class CreateProjectComponent extends CsModalChildBase {
         (err: HttpErrorResponse) => {
           this.isCreateProjectWIP = false;
           if (err.status == 409) {
-            this.messageService.showAlert('PROJECT.PROJECT_NAME_ALREADY_EXISTS', {alertType: 'alert-danger', view: this.alertView})
+            this.messageService.showAlert('PROJECT.PROJECT_NAME_ALREADY_EXISTS', {alertType: 'danger', view: this.alertView});
           } else if (err.status == 400) {
-            this.messageService.showAlert('PROJECT.PROJECT_NAME_IS_ILLEGAL', {alertType: 'alert-danger', view: this.alertView})
+            this.messageService.showAlert('PROJECT.PROJECT_NAME_IS_ILLEGAL', {alertType: 'danger', view: this.alertView});
           }
         },
         () => {

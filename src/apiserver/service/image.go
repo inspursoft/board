@@ -2,6 +2,7 @@ package service
 
 import (
 	"bufio"
+	"bytes"
 	"errors"
 	"fmt"
 
@@ -395,4 +396,38 @@ func CreateImageTag(imageTag model.ImageTag) (int64, error) {
 		return 0, err
 	}
 	return imageTagID, nil
+}
+
+func UpdateDockerfileCopyCommand(repoImagePath, dockerfileName string) ([]byte, error) {
+	dockerfile, err := os.OpenFile(filepath.Join(repoImagePath, dockerfileName), os.O_RDWR, 0644)
+	if err != nil {
+		return nil, err
+	}
+	defer dockerfile.Close()
+
+	pattern := "^(COPY|ADD)\\s+([\\[\"\\s]*)([\\w./-]+)(.*)"
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		return nil, err
+	}
+	scanner := bufio.NewScanner(dockerfile)
+	var buffer bytes.Buffer
+	writer := bufio.NewWriter(&buffer)
+	for scanner.Scan() {
+		content := scanner.Text()
+		matches := re.FindStringSubmatch(content)
+		if len(matches) > 0 {
+			// replace the source path of ADD or COPY line in Dockerfile; eg: ADD [ "./abc/r.sql", "/tmp/my.cnf" ]
+			// will be replaced by ADD [ "update/r.sql", "/tmp/my.cnf" ]
+			_, filename := filepath.Split(matches[3])
+			content = fmt.Sprintf("%s %s %s %s", matches[1], matches[2], filepath.Join("upload", strings.TrimSpace(filename)), matches[4])
+		}
+		writer.WriteString(fmt.Sprintf("%s\n", content))
+	}
+	writer.Flush()
+	dockerfile.Truncate(0)
+	dockerfile.Seek(0, 0)
+	bufferInfo := buffer.Bytes()
+	buffer.WriteTo(dockerfile)
+	return bufferInfo, nil
 }

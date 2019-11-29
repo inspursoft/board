@@ -1,15 +1,13 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Observable, Subject, Subscription } from "rxjs";
+import { debounceTime, map, tap } from "rxjs/operators";
 import { DashboardComponentParent } from "./dashboard.component.parent"
 import { DashboardService, IQuery, IResponse, LineType } from "./dashboard.service";
 import { TranslateService } from "@ngx-translate/core";
-import { Subscription } from "rxjs/Subscription";
-import { Subject } from "rxjs/Subject";
-import { MessageService } from "../shared/message-service/message.service";
-import { AppInitService } from "../app.init.service";
 import { scaleOption } from "./time-range-scale.component/time-range-scale.component";
-import { Observable } from "rxjs/Observable";
-import "rxjs/add/operator/delay";
-import "rxjs/add/operator/bufferCount"
+import { MessageService } from "../shared.service/message.service";
+import { AppInitService } from "../shared.service/app-init.service";
+import { SharedService } from "../shared.service/shared.service";
 
 const MAX_COUNT_PER_PAGE: number = 200;
 const MAX_COUNT_PER_DRAG: number = 100;
@@ -61,39 +59,40 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
   _autoRefreshCurInterval: number = AUTO_REFRESH_CUR_SEED;
   intervalAutoRefresh: any;
   lineOptions: Map<LineType, Object>;
-  lineStateInfo: Map<LineType, {inRefreshWIP: boolean, inDrop: boolean, isDropBack: boolean, isCanAutoRefresh: boolean}>;
+  lineStateInfo: Map<LineType, { inRefreshWIP: boolean, inDrop: boolean, isDropBack: boolean, isCanAutoRefresh: boolean }>;
   lineResponses: Map<LineType, IResponse>;
   lineThirdLine: Map<LineType, ThirdLine>;
-  curValue: Map<LineType, {curFirst: number, curSecond: number}>;
+  curValue: Map<LineType, { curFirst: number, curSecond: number }>;
   noData: Map<LineType, boolean>;
   lineTypeSet: Set<LineType>;
-  query: Map<LineType, {list_name: string, scale: scaleOption, baseLineTimeStamp: number, time_count: number, timestamp_base: number}>;
-  eventDragChange: Subject<{lineType: LineType, isDragBack: boolean}>;
-  eventZoomBarChange: Subject<{start: number, end: number}>;
+  query: Map<LineType, { list_name: string, scale: scaleOption, baseLineTimeStamp: number, time_count: number, timestamp_base: number }>;
+  eventDragChange: Subject<{ lineType: LineType, isDragBack: boolean }>;
+  eventZoomBarChange: Subject<{ start: number, end: number }>;
   // eventInitChangeDetector: Subject<LineType>;
   eventLangChangeSubscription: Subscription;
   eChartInstance: Map<LineType, Object>;
   autoRefreshInterval: Map<LineType, number>;
-  curRealTimeValue: Map<LineType, {curFirst: number, curSecond: number}>;
+  curRealTimeValue: Map<LineType, { curFirst: number, curSecond: number }>;
   noDataErrMsg: Map<LineType, string>;
 
   constructor(private service: DashboardService,
               private appInitService: AppInitService,
               private messageService: MessageService,
-              private translateService: TranslateService) {
+              private translateService: TranslateService,
+              private shardService: SharedService) {
     super();
     // this.changeDetectorRef.detach();
-    this.eventDragChange = new Subject<{lineType: LineType, isDragBack: boolean}>();
-    this.eventZoomBarChange = new Subject<{start: number, end: number}>();
+    this.eventDragChange = new Subject<{ lineType: LineType, isDragBack: boolean }>();
+    this.eventZoomBarChange = new Subject<{ start: number, end: number }>();
     // this.eventInitChangeDetector = new Subject<LineType>();
     this.lineResponses = new Map<LineType, IResponse>();
     this.lineThirdLine = new Map<LineType, ThirdLine>();
-    this.query = new Map<LineType, {list_name: string, scale: scaleOption, baseLineTimeStamp: number, time_count: number, timestamp_base: number}>();
-    this.lineStateInfo = new Map<LineType, {inRefreshWIP: boolean, inDrop: boolean, isDropBack: boolean, isCanAutoRefresh: boolean}>();
+    this.query = new Map<LineType, { list_name: string, scale: scaleOption, baseLineTimeStamp: number, time_count: number, timestamp_base: number }>();
+    this.lineStateInfo = new Map<LineType, { inRefreshWIP: boolean, inDrop: boolean, isDropBack: boolean, isCanAutoRefresh: boolean }>();
     this.autoRefreshInterval = new Map<LineType, number>();
     this.noData = new Map<LineType, boolean>();
-    this.curValue = new Map<LineType, {curFirst: number, curSecond: number}>();
-    this.curRealTimeValue = new Map<LineType, {curFirst: number, curSecond: number}>();
+    this.curValue = new Map<LineType, { curFirst: number, curSecond: number }>();
+    this.curRealTimeValue = new Map<LineType, { curFirst: number, curSecond: number }>();
     this.noDataErrMsg = new Map<LineType, string>();
     this.lineOptions = new Map<LineType, Object>();
     this.eChartInstance = new Map<LineType, Object>();
@@ -105,12 +104,12 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     this.lineTypeSet.add(LineType.ltNode);
     this.lineTypeSet.add(LineType.ltStorage);
     // this.eventInitChangeDetector.asObservable().bufferCount(this.lineTypeSet.size).subscribe(() => this.changeDetectorRef.reattach());
-    this.eventDragChange.asObservable().debounceTime(300).subscribe(dragInfo => {
+    this.eventDragChange.asObservable().pipe(debounceTime(300)).subscribe(dragInfo => {
       this.lineTypeSet.forEach((value) => {
         this.refreshLineDataByDrag(value, dragInfo.isDragBack);
       });
     });
-    this.eventZoomBarChange.asObservable().debounceTime(300).subscribe((zoom: {start: number, end: number}) => {
+    this.eventZoomBarChange.asObservable().pipe(debounceTime(300)).subscribe((zoom: { start: number, end: number }) => {
       this.lineTypeSet.forEach((value) => {
         this.lineOptions.get(value)["dataZoom"][0]["start"] = zoom.start;
         this.lineOptions.get(value)["dataZoom"][0]["end"] = zoom.end;
@@ -151,7 +150,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
   private detectChartData(lineType: LineType) {
     let thirdLine = this.lineThirdLine.get(lineType);
     let query = this.query.get(lineType);
-    let minTimeStrap = query.timestamp_base - MAX_COUNT_PER_DRAG * query.scale.valueOfSecond;
+    let minTimeStrap = query.timestamp_base - MAX_COUNT_PER_PAGE * query.scale.valueOfSecond;
     let maxTimeStrap = query.timestamp_base;
     let lineSeries = this.lineOptions.get(lineType);
     let data = this.lineResponses.get(lineType);
@@ -176,7 +175,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
             this.detectChartData(lineType);
             this.curRealTimeValue.set(lineType, {
               curFirst: res.firstLineData.length > 0 ? res.firstLineData[0][1] : 0,
-              curSecond: res.secondLineData.length > 0 ?res.secondLineData[0][1] : 0
+              curSecond: res.secondLineData.length > 0 ? res.secondLineData[0][1] : 0
             });
             // this.eventInitChangeDetector.next(lineType)
           })
@@ -209,7 +208,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     });
     this.initThirdLineDate(lineType);
     return this.setLineBaseOption(lineType)
-      .do(option => this.lineOptions.set(lineType, option));
+      .pipe(tap(option => this.lineOptions.set(lineType, option)));
   }
 
   private getBaseLineTimeStamp(lineType: LineType): number {
@@ -235,14 +234,14 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     let lineZoomHalf: number = (lineZoomEnd - lineZoomStart) / 2;
     if (lineData.firstLineData.length > 0) {
       let countPercent = Math.min((MAX_COUNT_PER_DRAG / MAX_COUNT_PER_PAGE) * 100, 99);
-        if (isDragBack) {
-          lineOption["dataZoom"][0]["start"] = Math.min(countPercent - lineZoomHalf, 99 - 2 * lineZoomHalf);
-          lineOption["dataZoom"][0]["end"] = lineOption["dataZoom"][0]["start"] + 2 * lineZoomHalf;
-        } else {
-          lineOption["dataZoom"][0]["end"] = Math.min(99 - countPercent + lineZoomHalf, 99);
-          lineOption["dataZoom"][0]["start"] = lineOption["dataZoom"][0]["end"] - 2 * lineZoomHalf;
-        }
+      if (isDragBack) {
+        lineOption["dataZoom"][0]["start"] = Math.min(countPercent - lineZoomHalf, 99 - 2 * lineZoomHalf);
+        lineOption["dataZoom"][0]["end"] = lineOption["dataZoom"][0]["start"] + 2 * lineZoomHalf;
+      } else {
+        lineOption["dataZoom"][0]["end"] = Math.min(99 - countPercent + lineZoomHalf, 99);
+        lineOption["dataZoom"][0]["start"] = lineOption["dataZoom"][0]["end"] - 2 * lineZoomHalf;
       }
+    }
   }
 
   private setLineZoomByTimeStamp(lineType: LineType, lineTimeStamp: number): void {
@@ -270,13 +269,13 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     };
     this.lineStateInfo.get(lineType).inRefreshWIP = true;
     return this.service.getLineData(lineType, httpQuery)
-      .do(() => {
+      .pipe(tap(() => {
         this.noData.set(lineType, false);
         this.lineStateInfo.get(lineType).inRefreshWIP = false;
       }, () => {
         this.lineStateInfo.get(lineType).inRefreshWIP = false;
         this.noData.set(lineType, true);
-      });
+      }));
   }
 
   private getLineInRefreshWIP(): boolean {
@@ -406,10 +405,10 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
           this.resetBaseLinePos(lineType);
           this.detectChartData(lineType);
           this.clearEChart(lineType);
-          } else {
-            this.resetAfterDragTimeStamp(lineType);
-          }
-        });
+        } else {
+          this.resetAfterDragTimeStamp(lineType);
+        }
+      });
     } else {
       this.getOneLineData(lineType).subscribe((res: IResponse) => {
         if (!res.limit.isMax) {
@@ -429,8 +428,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     let lineState = this.lineStateInfo.get(lineType);
     if (zoomStart == 0 && zoomEnd < 100 && !lineState.inRefreshWIP) {//get backup data
       this.eventDragChange.next({lineType: lineType, isDragBack: true});
-    }
-    else if (zoomEnd == 100 && zoomStart > 0 && !lineState.inRefreshWIP && !lineState.isCanAutoRefresh) {//get forward data
+    } else if (zoomEnd == 100 && zoomStart > 0 && !lineState.inRefreshWIP && !lineState.isCanAutoRefresh) {//get forward data
       this.eventDragChange.next({lineType: lineType, isDragBack: false});
     }
   }
@@ -455,7 +453,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
       }
     }
     return this.translateService.get([firstKey, secondKey])
-      .map(res => {
+      .pipe(map(res => {
         let firstLineTitle: string = res[firstKey];
         let secondLineTitle: string = res[secondKey];
         let result = DashboardComponentParent.getBaseOptions();
@@ -470,7 +468,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
         result["dataZoom"][0]["end"] = 100;
         result["legend"] = {data: [firstLineTitle, secondLineTitle], x: "left"};
         return result;
-      })
+      }));
   }
 
   scaleChange(lineType: LineType, data: scaleOption) {
@@ -556,7 +554,27 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     return this.service.CurStorageUnit;
   };
 
-  refreshLine(){
+  get grafanaViewUrl(): string {
+    return `http://${this.appInitService.systemInfo['board_host']}/grafana/dashboard/db/kubernetes/`
+  }
+
+  get showGrafanaWindow(): boolean {
+    return this.appInitService.isSystemAdmin && !this.appInitService.isMipsSystem;
+  }
+
+  get showMaxGrafanaWindow(): boolean {
+    return this.shardService.showMaxGrafanaWindow;
+  }
+
+  set showMaxGrafanaWindow(value: boolean) {
+    this.shardService.showMaxGrafanaWindow = value;
+  }
+
+  get hideMaxGrafanaWindow(): boolean {
+    return !this.shardService.showMaxGrafanaWindow;
+  }
+
+  refreshLine() {
     this.lineTypeSet.forEach(value => {
       this.query.get(value).timestamp_base = this._serverTimeStamp;
       this.query.get(value).time_count = MAX_COUNT_PER_PAGE;

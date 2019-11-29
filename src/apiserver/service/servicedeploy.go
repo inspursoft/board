@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/k8sassist"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
@@ -13,12 +14,22 @@ import (
 )
 
 const (
-	hostPath           = "hostpath"
-	nfs                = "nfs"
-	emptyDir           = ""
-	deploymentFilename = "deployment.yaml"
-	serviceFilename    = "service.yaml"
+	hostPath             = "hostpath"
+	nfs                  = "nfs"
+	emptyDir             = ""
+	deploymentFilename   = "deployment.yaml"
+	statefulsetFilename  = "statefulset.yaml"
+	serviceFilename      = "service.yaml"
+	serviceStoppedStatus = 2
 )
+
+// DeployStatefulSetInfo is the data for yaml files of statefulset and its service
+type DeployStatefulSetInfo struct {
+	Service             *model.Service
+	ServiceFileInfo     []byte
+	StatefulSet         *model.StatefulSet
+	StatefulSetFileInfo []byte
+}
 
 type DeployInfo struct {
 	Service            *model.Service
@@ -27,8 +38,8 @@ type DeployInfo struct {
 	DeploymentFileInfo []byte
 }
 
-func DeployService(serviceConfig *model.ConfigServiceStep, K8sMasterURL string, registryURI string) (*DeployInfo, error) {
-	clusterConfig := &k8sassist.K8sAssistConfig{K8sMasterURL: K8sMasterURL}
+func DeployService(serviceConfig *model.ConfigServiceStep, registryURI string) (*DeployInfo, error) {
+	clusterConfig := &k8sassist.K8sAssistConfig{KubeConfigPath: kubeConfigPath()}
 	cli := k8sassist.NewK8sAssistClient(clusterConfig)
 	deploymentConfig := MarshalDeployment(serviceConfig, registryURI)
 	//logs.Debug("Marshaled deployment: ", deploymentConfig)
@@ -71,8 +82,27 @@ func GenerateDeployYamlFiles(deployInfo *DeployInfo, loadPath string) error {
 	return nil
 }
 
-func DeployServiceByYaml(projectName, K8sMasterURL, loadPath string) error {
-	clusterConfig := &k8sassist.K8sAssistConfig{K8sMasterURL: K8sMasterURL}
+// TODO: this func should be refactored with GenerateDeployYamlFiles
+// GenerateStatefulSetYamlFiles
+func GenerateStatefulSetYamlFiles(deployInfo *DeployStatefulSetInfo, loadPath string) error {
+	if deployInfo == nil {
+		logs.Error("Deploy info is empty.")
+		return errors.New("Deploy info is empty.")
+	}
+	err := utils.GenerateFile(deployInfo.ServiceFileInfo, loadPath, serviceFilename)
+	if err != nil {
+		return err
+	}
+	err = utils.GenerateFile(deployInfo.StatefulSetFileInfo, loadPath, statefulsetFilename)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func DeployServiceByYaml(projectName, loadPath string) error {
+	clusterConfig := &k8sassist.K8sAssistConfig{KubeConfigPath: kubeConfigPath()}
 	cli := k8sassist.NewK8sAssistClient(clusterConfig)
 
 	deploymentAbsName := filepath.Join(loadPath, deploymentFilename)
@@ -104,8 +134,8 @@ func DeployServiceByYaml(projectName, K8sMasterURL, loadPath string) error {
 }
 
 //check yaml file config
-func CheckDeployYamlConfig(serviceFile, deploymentFile io.Reader, projectName, K8sMasterURL string) (*DeployInfo, error) {
-	clusterConfig := &k8sassist.K8sAssistConfig{K8sMasterURL: K8sMasterURL}
+func CheckDeployYamlConfig(serviceFile, deploymentFile io.Reader, projectName string) (*DeployInfo, error) {
+	clusterConfig := &k8sassist.K8sAssistConfig{KubeConfigPath: kubeConfigPath()}
 	cli := k8sassist.NewK8sAssistClient(clusterConfig)
 
 	deploymentInfo, err := cli.AppV1().Deployment(projectName).CheckYaml(deploymentFile)
@@ -122,5 +152,64 @@ func CheckDeployYamlConfig(serviceFile, deploymentFile io.Reader, projectName, K
 	return &DeployInfo{
 		Service:    serviceInfo,
 		Deployment: deploymentInfo,
+	}, nil
+}
+
+func GetStoppedSeviceNodePorts() ([]int32, error) {
+	stoppedServices, err := dao.GetServices("status", serviceStoppedStatus)
+	if err != nil {
+		logs.Error("Failed to get the services when get NodePorts.")
+		return nil, err
+	}
+	ports := []int32{}
+	type config struct {
+		Spec struct {
+			Ports []struct {
+				NodePort int `yaml:"nodePort,flow"`
+			}
+		}
+	}
+	for _, serviceConfig := range stoppedServices {
+		err := utils.UnmarshalYamlData([]byte(serviceConfig.ServiceYaml), &config{}, func(in interface{}) error {
+			if c, ok := in.(*config); ok {
+				for _, port := range c.Spec.Ports {
+					ports = append(ports, int32(port.NodePort))
+				}
+			}
+			return nil
+		})
+		if err != nil {
+			logs.Error("Failed to Unmarshal data of the service.")
+			return nil, err
+		}
+	}
+	return ports, nil
+}
+
+// DeployStatefulSet is to deploy the statefulset service in k8s
+func DeployStatefulSet(serviceConfig *model.ConfigServiceStep, registryURI string) (*DeployStatefulSetInfo, error) {
+	clusterConfig := &k8sassist.K8sAssistConfig{KubeConfigPath: kubeConfigPath()}
+	cli := k8sassist.NewK8sAssistClient(clusterConfig)
+	statefulsetConfig := MarshalStatefulSet(serviceConfig, registryURI)
+	//logs.Debug("Marshaled deployment: ", deploymentConfig)
+	statefulsetInfo, statefulsetFileInfo, err := cli.AppV1().StatefulSet(serviceConfig.ProjectName).Create(statefulsetConfig)
+	if err != nil {
+		logs.Error("Deploy statefulset object of %s failed. error: %+v\n", serviceConfig.ServiceName, err)
+		return nil, err
+	}
+	logs.Debug("Created statefulset: ", statefulsetInfo)
+	svcConfig := MarshalService(serviceConfig)
+	serviceInfo, serviceFileInfo, err := cli.AppV1().Service(serviceConfig.ProjectName).Create(svcConfig)
+	if err != nil {
+		cli.AppV1().StatefulSet(serviceConfig.ProjectName).Delete(serviceConfig.ServiceName)
+		logs.Error("Deploy service object of %s failed. error: %+v\n", serviceConfig.ServiceName, err)
+		return nil, err
+	}
+
+	return &DeployStatefulSetInfo{
+		Service:             serviceInfo,
+		ServiceFileInfo:     serviceFileInfo,
+		StatefulSet:         statefulsetInfo,
+		StatefulSetFileInfo: statefulsetFileInfo,
 	}, nil
 }

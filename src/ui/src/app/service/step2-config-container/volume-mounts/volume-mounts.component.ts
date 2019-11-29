@@ -1,47 +1,115 @@
 /**
  * Created by liyanq on 9/1/17.
  */
-import { Component, Input, Output, EventEmitter} from "@angular/core"
-import { CsComponentBase } from "../../../shared/cs-components-library/cs-component-base";
-
-export interface VolumeOutPut {
-  out_name: string;     //old=>target_storagename || deployment_yaml.volume_list.volume_name
-  out_mountPath: string;//old=>container_dir
-  out_path: string;     //old=>target_dir || deployment_yaml.volume_list.volume_path
-  out_medium: string;   //old=>target_storageServer
-}
+import { Component, ComponentFactoryResolver, EventEmitter, Input, OnInit, Output, ViewContainerRef } from "@angular/core"
+import { VolumeStruct } from "../../service-step.component";
+import { CsModalChildBase } from "../../../shared/cs-modal-base/cs-modal-child-base";
+import { K8sService } from "../../service.k8s";
+import { PersistentVolumeClaim } from "../../../shared/shared.types";
+import { MessageService } from "../../../shared.service/message.service";
+import { HttpErrorResponse } from "@angular/common/http";
+import { CreatePvcComponent } from "../../../shared/create-pvc/create-pvc.component";
 
 @Component({
   selector: "volume-mounts",
   templateUrl: "./volume-mounts.component.html",
   styleUrls: ["./volume-mounts.component.css"]
 })
-export class VolumeMountsComponent extends CsComponentBase{
-  _isOpen: boolean = false;
-  volumeDataOrigin:VolumeOutPut;
+export class VolumeMountsComponent extends CsModalChildBase implements OnInit {
   patternName: RegExp = /^[a-z0-9A-Z_]+$/;
   patternMountPath: RegExp = /^[a-z0-9A-Z_/]+$/;
+  patternIP: RegExp = /^((?:(?:25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d)))\.){3}(?:25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d))))$/;
   patternPath: RegExp = /^[a-z0-9A-Z_/.:]+$/;
-  @Input() volumeData:VolumeOutPut;
+  volumeTypes: Array<{name: 'nfs' | 'pvc', value: number}>;
+  curVolumeDataList: Array<VolumeStruct>;
+  pvcList: Array<PersistentVolumeClaim>;
 
-  @Input()
-  get isOpen() {
-    return this._isOpen;
+  @Input() set volumeDataList(value: Array<VolumeStruct>) {
+    value.forEach(volumeData => {
+      let tempVolumeData = new VolumeStruct();
+      Object.assign(tempVolumeData, volumeData);
+      this.curVolumeDataList.push(tempVolumeData);
+    })
   }
 
-  set isOpen(open: boolean) {
-    this._isOpen = open;
-    this.volumeDataOrigin = Object.create(this.volumeData);
-    this.isOpenChange.emit(this._isOpen);
+  @Output() onConfirmEvent: EventEmitter<Array<VolumeStruct>>;
+
+  constructor(private k8sService: K8sService,
+              private messageService: MessageService,
+              private factoryResolver: ComponentFactoryResolver,
+              private selfView: ViewContainerRef) {
+    super();
+    this.onConfirmEvent = new EventEmitter<Array<VolumeStruct>>();
+    this.volumeTypes = Array<{name: 'nfs' | 'pvc', value: number}>();
+    this.curVolumeDataList = Array<VolumeStruct>();
+    this.pvcList = Array<PersistentVolumeClaim>();
   }
 
-  @Output() isOpenChange: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() onConfirmEvent: EventEmitter<VolumeOutPut> = new EventEmitter<VolumeOutPut>();
+  ngOnInit() {
+    this.volumeTypes.push({name: "nfs", value: 1});
+    this.volumeTypes.push({name: "pvc", value: 2});
+    this.k8sService.getPvcNameList().subscribe(
+      (res: Array<PersistentVolumeClaim>) => this.pvcList = res,
+      (err: HttpErrorResponse) => this.messageService.showAlert(err.message, {alertType: "warning", view: this.alertView})
+    )
+  }
+
+  getCurActivePvc(index: number): PersistentVolumeClaim{
+    const pvcName = this.curVolumeDataList[index].target_pvc;
+    return this.pvcList.find(value => value.name === pvcName);
+  }
+
+  checkInputValid(): boolean {
+    let validInput = true;
+    this.curVolumeDataList.forEach((volume: VolumeStruct, index: number) => {
+      if (this.curVolumeDataList.find((value, i) => value.volume_name == volume.volume_name && index != i) != undefined && validInput) {
+        this.messageService.showAlert('SERVICE.VOLUME_VALID_NAME', {alertType: "warning", view: this.alertView});
+        validInput = false;
+      }
+      if (this.curVolumeDataList.find((value, i) => value.target_path == volume.target_path && index != i && value.target_path !== '') != undefined && validInput) {
+        this.messageService.showAlert('SERVICE.NFS_STORAGE_VALID_PATH', {alertType: "warning", view: this.alertView});
+        validInput = false;
+      }
+      if (this.curVolumeDataList.find((value, i) => value.container_path == volume.container_path && index != i) != undefined && validInput) {
+        this.messageService.showAlert('SERVICE.VOLUME_VALID_CONTAINER_PATH', {alertType: "warning", view: this.alertView});
+        validInput = false;
+      }
+    });
+    return validInput
+  }
 
   confirmVolumeInfo() {
-    if (this.verifyInputValid()){
-      this.onConfirmEvent.emit(this.volumeDataOrigin);
-      this.isOpen = false;
+    if (this.verifyInputExValid() && this.checkInputValid() && this.verifyDropdownExValid()) {
+      this.onConfirmEvent.emit(this.curVolumeDataList);
+      this.modalOpened = false;
     }
+  }
+
+  changeSelectPVC(index: number, pvc: PersistentVolumeClaim) {
+    this.curVolumeDataList[index].target_pvc = pvc.name;
+  }
+
+  createNewPvc(index: number) {
+    let factory = this.factoryResolver.resolveComponentFactory(CreatePvcComponent);
+    let componentRef = this.selfView.createComponent(factory);
+    componentRef.instance.openModal().subscribe(() => this.selfView.remove(this.selfView.indexOf(componentRef.hostView)));
+    componentRef.instance.onAfterCommit.subscribe((pvc: PersistentVolumeClaim) => {
+      this.messageService.cleanNotification();
+      this.curVolumeDataList[index].target_pvc = pvc.name;
+      this.pvcList.push(pvc)
+    })
+  }
+
+  changeSelectVolumeType(index: number, volumeType: {name: 'nfs' | 'pvc', value: number}) {
+    this.curVolumeDataList[index].volume_type = volumeType.name;
+  }
+
+  deleteVolumeData(index: number) {
+    this.curVolumeDataList.splice(index, 1);
+  }
+
+  addNewVolumeData() {
+    let tempVolumeData = new VolumeStruct();
+    this.curVolumeDataList.push(tempVolumeData);
   }
 }

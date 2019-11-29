@@ -2,7 +2,8 @@ export class Image {
   image_name: string = "";
   image_comment: string = "";
   image_deleted: number = 0;
-
+  image_update_time = '';
+  image_creation_time = '';
   constructor() {
   }
 }

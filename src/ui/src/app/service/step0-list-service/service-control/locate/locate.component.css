@@ -3,6 +3,6 @@ div.locate-container {
   flex-direction: column;
 }
 
-cs-dropdown.locate-dropdown {
-  margin-top: 15px;
+lib-dropdown-ex.locate-dropdown {
+  margin-top: 10px;
 }

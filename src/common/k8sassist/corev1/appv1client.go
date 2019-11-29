@@ -17,6 +17,10 @@ type AppV1Client struct {
 	Clientset *types.Clientset
 }
 
+func (p *AppV1Client) Discovery() ServerVersionInterface {
+	return apps.NewServerVersion(p.Clientset.Discovery())
+}
+
 func (p *AppV1Client) Service(namespace string) ServiceClientInterface {
 	return apps.NewServices(namespace, p.Clientset.CoreV1().Services(namespace))
 }
@@ -49,8 +53,28 @@ func (p *AppV1Client) AutoScale(namespace string) AutoscaleInterface {
 	return apps.NewAutoScales(namespace, p.Clientset.AutoscalingV1().HorizontalPodAutoscalers(namespace))
 }
 
+func (p *AppV1Client) PersistentVolume() PersistentVolumeInterface {
+	return apps.NewPersistentVolume(p.Clientset.CoreV1().PersistentVolumes())
+}
+
+func (p *AppV1Client) PersistentVolumeClaim(namespace string) PersistentVolumeClaimInterface {
+	return apps.NewPersistentVolumeClaim(namespace, p.Clientset.CoreV1().PersistentVolumeClaims(namespace))
+}
+
+func (p *AppV1Client) ConfigMap(namespace string) ConfigMapInterface {
+	return apps.NewConfigMap(namespace, p.Clientset.CoreV1().ConfigMaps(namespace))
+}
+
+func (p *AppV1Client) StatefulSet(namespace string) StatefulSetClientInterface {
+	return apps.NewStatefulSets(namespace, p.Clientset.AppsV1beta1().StatefulSets(namespace))
+}
+func (p *AppV1Client) Job(namespace string) JobInterface {
+	return apps.NewJob(namespace, p.Clientset.BatchV1().Jobs(namespace))
+}
+
 // AppV1ClientInterface level 1 interface to access others
 type AppV1ClientInterface interface {
+	Discovery() ServerVersionInterface
 	Service(namespace string) ServiceClientInterface
 	Deployment(namespace string) DeploymentClientInterface
 	Node() NodeClientInterface
@@ -59,6 +83,17 @@ type AppV1ClientInterface interface {
 	ReplicaSet(namespace string) ReplicaSetClientInterface
 	Pod(namespace string) PodClientInterface
 	AutoScale(namespace string) AutoscaleInterface
+	PersistentVolume() PersistentVolumeInterface
+	PersistentVolumeClaim(namespace string) PersistentVolumeClaimInterface
+	ConfigMap(namespace string) ConfigMapInterface
+	StatefulSet(namespace string) StatefulSetClientInterface
+	Job(namespace string) JobInterface
+}
+
+// ServerVersionInterface has a method for retrieving the server's version.
+type ServerVersionInterface interface {
+	// ServerVersion retrieves and parses the server's version (git version).
+	ServerVersion() (*model.KubernetesInfo, error)
 }
 
 // ServiceCli interface has methods to work with Service resources in k8s-assist.
@@ -72,7 +107,7 @@ type ServiceClientInterface interface {
 	//DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
 	Get(name string) (*model.Service, []byte, error)
 	List() (*model.ServiceList, error)
-	//Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *v1.Service, err error)
+	Patch(name string, pt model.PatchType, modelService *model.Service) (*model.Service, []byte, error)
 	CreateByYaml(io.Reader) (*model.Service, error)
 	CheckYaml(io.Reader) (*model.Service, error)
 }
@@ -130,9 +165,9 @@ type PodClientInterface interface {
 	Delete(name string) error
 	//DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
 	Get(name string) (*model.Pod, error)
-	List() (*model.PodList, error)
-	//List(opts v1.ListOptions) (*v1.PodList, error)
+	List(opts model.ListOptions) (*model.PodList, error)
 	//Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *v1.Pod, err error)
+	GetLogs(name string, opts *model.PodLogOptions) (io.ReadCloser, error)
 }
 
 // How to:  deploymentCli, err := k8sassist.NewDeployments(nameSpace)
@@ -162,4 +197,64 @@ type AutoscaleInterface interface {
 	//	DeleteCollection(options *meta_v1.DeleteOptions, listOptions meta_v1.ListOptions) error
 	Get(name string) (*model.AutoScale, error)
 	List() (*model.AutoScaleList, error)
+}
+
+// How to:  autoscaleCli, err := k8sassist.NewAutoscale(nameSpace)
+//          _, err := autoscaleCli.Update(&autoscale)
+type PersistentVolumeInterface interface {
+	Create(*model.PersistentVolumeK8scli) (*model.PersistentVolumeK8scli, error)
+	Update(*model.PersistentVolumeK8scli) (*model.PersistentVolumeK8scli, error)
+	UpdateStatus(*model.PersistentVolumeK8scli) (*model.PersistentVolumeK8scli, error)
+	Delete(name string) error
+	//	DeleteCollection(options *meta_v1.DeleteOptions, listOptions meta_v1.ListOptions) error
+	Get(name string) (*model.PersistentVolumeK8scli, error)
+	List() (*model.PersistentVolumeList, error)
+}
+
+type PersistentVolumeClaimInterface interface {
+	Create(*model.PersistentVolumeClaimK8scli) (*model.PersistentVolumeClaimK8scli, error)
+	Update(*model.PersistentVolumeClaimK8scli) (*model.PersistentVolumeClaimK8scli, error)
+	UpdateStatus(*model.PersistentVolumeClaimK8scli) (*model.PersistentVolumeClaimK8scli, error)
+	Delete(name string) error
+	//	DeleteCollection(options *meta_v1.DeleteOptions, listOptions meta_v1.ListOptions) error
+	Get(name string) (*model.PersistentVolumeClaimK8scli, error)
+	List() (*model.PersistentVolumeClaimList, error)
+}
+
+type ConfigMapInterface interface {
+	Create(*model.ConfigMap) (*model.ConfigMap, error)
+	Update(*model.ConfigMap) (*model.ConfigMap, error)
+	//UpdateStatus(*model.ConfigMap) (*model.ConfigMap, error)
+	Delete(name string) error
+	//	DeleteCollection(options *meta_v1.DeleteOptions, listOptions meta_v1.ListOptions) error
+	Get(name string) (*model.ConfigMap, error)
+	List() (*model.ConfigMapList, error)
+}
+
+// StatefulSetClientInterface has methods to work with StatefulSet resources of adapter
+type StatefulSetClientInterface interface {
+	Create(*model.StatefulSet) (*model.StatefulSet, []byte, error)
+	Update(*model.StatefulSet) (*model.StatefulSet, []byte, error)
+	UpdateStatus(*model.StatefulSet) (*model.StatefulSet, []byte, error)
+	Delete(name string) error
+	//DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
+	Get(name string) (*model.StatefulSet, []byte, error)
+	//List(opts v1.ListOptions) (*DeploymentList, error)
+	List() (*model.StatefulSetList, error)
+	Patch(name string, pt model.PatchType, data []byte, subresources ...string) (result *model.StatefulSet, err error)
+	PatchToK8s(string, model.PatchType, *model.StatefulSet) (*model.StatefulSet, []byte, error)
+	CreateByYaml(io.Reader) (*model.StatefulSet, error)
+	CheckYaml(io.Reader) (*model.StatefulSet, error)
+}
+type JobInterface interface {
+	Create(*model.Job) (*model.Job, []byte, error)
+	Update(*model.Job) (*model.Job, []byte, error)
+	UpdateStatus(*model.Job) (*model.Job, []byte, error)
+	Delete(name string) error
+	Get(name string) (*model.Job, []byte, error)
+	List() (*model.JobList, error)
+	Patch(name string, pt model.PatchType, data []byte, subresources ...string) (result *model.Job, err error)
+	PatchToK8s(string, model.PatchType, *model.Job) (*model.Job, []byte, error)
+	CreateByYaml(io.Reader) (*model.Job, error)
+	CheckYaml(io.Reader) (*model.Job, error)
 }

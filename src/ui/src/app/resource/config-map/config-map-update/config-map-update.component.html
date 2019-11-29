@@ -1,0 +1,39 @@
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'md'" [clrModalClosable]="!isLoadWip && !isUpdateWip">
+  <h3 class="modal-title">{{ 'RESOURCE.CONFIG_MAP_EDIT_TITLE' | translate }}
+    <span *ngIf="isLoadWip" class="spinner spinner-sm"></span>
+  </h3>
+  <div class="modal-body">
+    <div class="dynamic-line-container">
+      <span class="filed-text">{{"RESOURCE.CONFIG_MAP_EDIT_NAMESPACE" | translate}}:</span>
+      <span class="filed-text-value">{{configMapDetail.namespace}}</span>
+    </div>
+    <div class="dynamic-line-container">
+      <span class="filed-text">{{"RESOURCE.CONFIG_MAP_EDIT_NAME" | translate}}:</span>
+      <span class="filed-text-value">{{configMapDetail.name}}</span>
+    </div>
+    <div class="dynamic-line-container">
+      <span class="filed-text">{{"RESOURCE.CONFIG_MAP_EDIT_CREATION_TIME" | translate}}:</span>
+      <span class="filed-text-value">{{configMapDetail.creationTime | date:'short'}}</span>
+    </div>
+    <div class="dynamic-line-container">
+      <span>{{'RESOURCE.CONFIG_MAP_EDIT_DATA_LIST' | translate}}:</span>
+    </div>
+    <div *ngFor="let data of configMapDetail.dataList;index as i">
+      <lib-input-ex [inputIsRequired]="true"
+                    [inputDisabled]="isUpdateWip || isLoadWip"
+                    [inputDefaultValue]="data.value"
+                    [inputLabel]="data.key"
+                    (commitEvent)="data.value = $event">
+      </lib-input-ex>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-default" (click)="modalOpened = false" [disabled]="isUpdateWip || isLoadWip">
+      {{ 'BUTTON.CANCEL' | translate }}
+    </button>
+    <button type="button" class="btn btn-primary" (click)="updateConfigMap()" [disabled]="isUpdateWip || isLoadWip">
+      {{ 'BUTTON.CONFIRM' | translate }}
+    </button>
+    <span class="spinner spinner-md" *ngIf="isUpdateWip"></span>
+  </div>
+</clr-modal>

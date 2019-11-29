@@ -77,8 +77,8 @@ func GenerateYamlFile(name string, structdata interface{}) error {
 	return nil
 }
 
-func GenerateDeploymentYamlFileFromK8S(serviceConfig *model.ServiceStatus, loadPath, masterURL string) error {
-	clusterConfig := &k8sassist.K8sAssistConfig{K8sMasterURL: masterURL}
+func GenerateDeploymentYamlFileFromK8s(serviceConfig *model.ServiceStatus, loadPath string) error {
+	clusterConfig := &k8sassist.K8sAssistConfig{KubeConfigPath: kubeConfigPath()}
 	cli := k8sassist.NewK8sAssistClient(clusterConfig)
 	_, deploymentFileInfo, err := cli.AppV1().Deployment(serviceConfig.ProjectName).Get(serviceConfig.Name)
 	if err != nil {
@@ -87,8 +87,18 @@ func GenerateDeploymentYamlFileFromK8S(serviceConfig *model.ServiceStatus, loadP
 	return utils.GenerateFile(deploymentFileInfo, loadPath, deploymentFilename)
 }
 
-func GenerateServiceYamlFileFromK8S(serviceConfig *model.ServiceStatus, loadPath, masterURL string) error {
-	clusterConfig := &k8sassist.K8sAssistConfig{K8sMasterURL: masterURL}
+func GenerateStatefulSetYamlFileFromK8s(serviceConfig *model.ServiceStatus, loadPath string) error {
+	clusterConfig := &k8sassist.K8sAssistConfig{KubeConfigPath: kubeConfigPath()}
+	cli := k8sassist.NewK8sAssistClient(clusterConfig)
+	_, statefulsetFileInfo, err := cli.AppV1().StatefulSet(serviceConfig.ProjectName).Get(serviceConfig.Name)
+	if err != nil {
+		return err
+	}
+	return utils.GenerateFile(statefulsetFileInfo, loadPath, statefulsetFilename)
+}
+
+func GenerateServiceYamlFileFromK8s(serviceConfig *model.ServiceStatus, loadPath string) error {
+	clusterConfig := &k8sassist.K8sAssistConfig{KubeConfigPath: kubeConfigPath()}
 	cli := k8sassist.NewK8sAssistClient(clusterConfig)
 	_, serviceFileInfo, err := cli.AppV1().Service(serviceConfig.ProjectName).Get(serviceConfig.Name)
 	if err != nil {

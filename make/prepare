@@ -50,6 +50,18 @@ def delfile(src):
             itemsrc=os.path.join(src,item)
             delfile(itemsrc)
 
+
+def create_cert(conf_path, key_path="/data/board/cert/board-key.pem", cert_path="/data/board/cert/board.pem", ca_key="/etc/board/cert/ca-key.pem", ca_cert="/etc/board/cert/ca.pem"):
+	cert_dir = os.path.dirname(cert_path)
+	csr_path = os.path.join(cert_dir, "request.csr")
+	rc = subprocess.call(["openssl", "genrsa", "-out", key_path, "2048"], stdout=FNULL, stderr=subprocess.STDOUT)
+	if rc != 0:
+		return rc
+	rc = subprocess.call(["openssl", "req", "-new", "-key", key_path, "-out", csr_path, "-config", conf_path], stdout=FNULL, stderr=subprocess.STDOUT)
+	if rc != 0:
+		return rc
+	return subprocess.call(["openssl", "x509", "-req", "-in", csr_path, "-CA", ca_cert, "-CAkey", ca_key, "-CAcreateserial", "-out", cert_path, "-days", "10000", "-extensions", "v3_ext", "-extfile", conf_path], stdout=FNULL, stderr=subprocess.STDOUT)
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--conf', dest='cfgfile', default=base_dir+'/board.cfg',type=str,help="the path of Board configuration file")
 args = parser.parse_args()
@@ -66,9 +78,11 @@ conf.seek(0, os.SEEK_SET)
 rcp = ConfigParser.RawConfigParser()
 rcp.readfp(conf)
 
+arch_type = rcp.get("configuration", "arch_type")
 hostname = rcp.get("configuration", "hostname")
 api_server_port = rcp.get("configuration", "api_server_port")
 db_password = rcp.get("configuration", "db_password")
+kube_http_scheme = rcp.get("configuration", "kube_http_scheme")
 kube_master_ip = rcp.get("configuration", "kube_master_ip")
 kube_master_port = rcp.get("configuration", "kube_master_port")
 board_admin_password = rcp.get("configuration", "board_admin_password")
@@ -76,6 +90,7 @@ token_cache_expire_seconds = rcp.get("configuration", "token_cache_expire_second
 token_expire_seconds = rcp.get("configuration", "token_expire_seconds")
 registry_ip = rcp.get("configuration", "registry_ip")
 registry_port = rcp.get("configuration", "registry_port")
+image_baseline_time = rcp.get("configuration", "image_baseline_time")
 
 auth_mode = rcp.get("configuration", "auth_mode")
 verification_url = rcp.get("configuration", "verification_url")
@@ -100,6 +115,8 @@ kvm_registry_size = rcp.get("configuration", "kvm_registry_size")
 kvm_registry_port = rcp.get("configuration", "kvm_registry_port")
 kvm_toolkits_path = rcp.get("configuration", "kvm_toolkits_path")
 
+tiller_port = rcp.get("configuration", "tiller_port")
+
 ###email configuration
 email_identity = rcp.get("configuration", "email_identity")
 email_host = rcp.get("configuration", "email_server")
@@ -111,6 +128,9 @@ email_ssl = rcp.get("configuration", "email_ssl")
 ########
 
 audit_debug = rcp.get("configuration", "audit_debug")
+
+### kubernetes dns suffix
+dns_suffix = rcp.get("configuration", "dns_suffix")
 
 ###ldap configuration
 ldap_url = rcp.get("configuration", "ldap_url")
@@ -136,13 +156,15 @@ ldap_timeout = rcp.get("configuration", "ldap_timeout")
 
 #Setting Directory
 apiserver_config_dir = os.path.join(config_dir,"apiserver")
+collector_config_dir = os.path.join(config_dir,"collector")
 if not os.path.exists(apiserver_config_dir):
     os.makedirs(os.path.join(config_dir, "apiserver"))
+if not os.path.exists(collector_config_dir):
+    os.makedirs(os.path.join(config_dir, "collector"))
 apiserver_env= os.path.join(config_dir, "apiserver", "env")
 if not os.path.exists(os.path.join(apiserver_config_dir, "kvmregistry")):
     os.makedirs(os.path.join(apiserver_config_dir, "kvmregistry"))
 apiserver_kvm = os.path.join(apiserver_config_dir, "kvmregistry")
-
 
 tokenserver_config_dir = os.path.join(config_dir,"tokenserver")
 if not os.path.exists(tokenserver_config_dir):
@@ -198,10 +220,12 @@ render(os.path.join(templates_dir, "apiserver", "env"),
         db_password=db_password,
         token_cache_expire_seconds=token_cache_expire_seconds,
         board_admin_password=board_admin_password,
+		kube_http_scheme=kube_http_scheme,
         kube_master_ip=kube_master_ip,
         kube_master_port=kube_master_port,
         registry_ip=registry_ip,
         registry_port=registry_port,
+        image_baseline_time=image_baseline_time,
         auth_mode=auth_mode,
         email_host=email_host,
         email_port=email_port,
@@ -211,6 +235,7 @@ render(os.path.join(templates_dir, "apiserver", "env"),
         email_from=email_from,
         email_identity=email_identity,
         audit_debug=audit_debug,
+        dns_suffix=dns_suffix,
         ldap_url=ldap_url,
         ldap_searchdn =ldap_searchdn, 
         ldap_search_pwd =ldap_search_pwd,
@@ -234,8 +259,38 @@ render(os.path.join(templates_dir, "apiserver", "env"),
         jenkins_execution_mode=jenkins_execution_mode,
         kvm_registry_size=kvm_registry_size,
         kvm_registry_port=kvm_registry_port,
-        kvm_toolkits_path=kvm_toolkits_path)
+        kvm_toolkits_path=kvm_toolkits_path,
+        tiller_port=tiller_port)
 
+if kube_http_scheme == "http":
+	for name in ["apiserver", "collector"]:
+		render(os.path.join(templates_dir, "kube", "kubeconfig_http"),
+				os.path.join(config_dir, name, "kubeconfig"),
+				kube_http_scheme=kube_http_scheme,
+				kube_master_ip=kube_master_ip,
+				kube_master_port=kube_master_port,
+				name=name)
+elif kube_http_scheme == "https":
+	if not os.path.exists("/data/board/cert"):
+		os.makedirs("/data/board/cert")
+	for name in ["apiserver", "collector"]:
+		openssl_path=os.path.join(config_dir, name, "openssl.conf")
+		key_path=os.path.join("/data/board/cert", name+'-key.pem')
+		cert_path=os.path.join("/data/board/cert", name+'.pem')
+		render(os.path.join(templates_dir, "kube", "kubeconfig_https"),
+				os.path.join(config_dir, name, "kubeconfig"),
+				kube_http_scheme=kube_http_scheme,
+				kube_master_ip=kube_master_ip,
+				kube_master_port=kube_master_port,
+				name=name)
+		render(os.path.join(templates_dir, "kube", "openssl.conf"),
+				openssl_path,
+				kube_master_ip=kube_master_ip,
+				name='board-'+name)
+		rc = create_cert(openssl_path, key_path=key_path, cert_path=cert_path)
+		if rc != 0:
+			print("Create the Board cert failed, please read the documents for Board.")
+			exit(1)
 
 if os.path.exists(os.path.join(apiserver_config_dir, "kvm")):
     shutil.rmtree(os.path.join(apiserver_config_dir, "kvm"))
@@ -266,8 +321,12 @@ render(os.path.join(templates_dir, "db", "env"),
         db_conf_env,
         db_password=db_password)
 
-render(os.path.join(templates_dir, "proxy", "nginx.http.conf"),
-        proxy_conf)
+if arch_type == "mips":
+	render(os.path.join(templates_dir, "proxy", "nginx.http.mips.conf"),
+		proxy_conf)
+else:
+	render(os.path.join(templates_dir, "proxy", "nginx.http.conf"),
+		proxy_conf)
 
 render(os.path.join(templates_dir, "jenkins", "env"),
         jenkins_env,

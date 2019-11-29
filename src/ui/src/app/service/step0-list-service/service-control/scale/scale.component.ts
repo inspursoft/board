@@ -3,9 +3,8 @@ import { Service } from "../../../service";
 import { K8sService } from "../../../service.k8s";
 import { IScaleInfo } from "../service-control.component";
 import { BUTTON_STYLE, Message, RETURN_STATUS, ServiceHPA } from "../../../../shared/shared.types";
-import { MessageService } from "../../../../shared/message-service/message.service";
+import { MessageService } from "../../../../shared.service/message.service";
 import { CsComponentBase } from "../../../../shared/cs-components-library/cs-component-base";
-import "rxjs/add/observable/of"
 
 enum ScaleMethod {smManually, smAuto}
 
@@ -27,7 +26,7 @@ export class ScaleComponent extends CsComponentBase implements OnInit {
   scaleNum: number = 0;
   scaleInfo: IScaleInfo = {desired_instance: 0, available_instance: 0};
   autoScaleConfig: Array<ServiceHPA>;
-  patternHpaName:RegExp = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
+  patternHpaName: RegExp = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
 
   constructor(private k8sService: K8sService,
               private messageService: MessageService) {
@@ -65,7 +64,7 @@ export class ScaleComponent extends CsComponentBase implements OnInit {
   }
 
   actionExecute() {
-    if (this.verifyInputValid()) {
+    if (this.verifyInputExValid()) {
       if (this.scaleModule == ScaleMethod.smManually) {
         this.onActionInWIPChange.emit(true);
         this.k8sService.setServiceScale(this.service.service_id, this.scaleNum).subscribe(
@@ -75,17 +74,17 @@ export class ScaleComponent extends CsComponentBase implements OnInit {
       } else {
         this.autoScaleConfig.forEach((config: ServiceHPA) => {
           if (config.min_pod > config.max_pod) {
-            this.messageService.showAlert('SERVICE.SERVICE_CONTROL_HPA_WARNING', {view: this.alertView, alertType: 'alert-warning'});
+            this.messageService.showAlert('SERVICE.SERVICE_CONTROL_HPA_WARNING', {view: this.alertView, alertType: 'warning'});
             this.onActionInWIPChange.emit(false);
           } else {
             this.onActionInWIPChange.emit(true);
             if (config.isEdit) {
-              Reflect.deleteProperty(config,'isEdit');
+              Reflect.deleteProperty(config, 'isEdit');
               this.k8sService.modifyAutoScaleConfig(this.service.service_id, config)
                 .subscribe(() => this.onMessage.emit('SERVICE.SERVICE_CONTROL_SCALE_SUCCESSFUL'),
                   err => this.onError.emit(err))
             } else {
-              Reflect.deleteProperty(config,'isEdit');
+              Reflect.deleteProperty(config, 'isEdit');
               this.k8sService.setAutoScaleConfig(this.service.service_id, config)
                 .subscribe(() => this.onMessage.emit('SERVICE.SERVICE_CONTROL_SCALE_SUCCESSFUL'),
                   err => this.onError.emit(err))
@@ -98,16 +97,17 @@ export class ScaleComponent extends CsComponentBase implements OnInit {
     }
   }
 
-  actionEnabled(){
+  actionEnabled() {
     let enabled = this.scaleModule == ScaleMethod.smManually
       ? this.scaleNum > 0 && this.scaleNum != this.scaleInfo.available_instance
-      : true;
+      : this.autoScaleConfig.length > 0;
     this.onActionIsEnabled.emit(enabled);
   }
 
   addOneHpa() {
     if (this.autoScaleConfig.length == 0) {
       this.autoScaleConfig.push(new ServiceHPA());
+      this.actionEnabled();
     }
   }
 
@@ -119,7 +119,8 @@ export class ScaleComponent extends CsComponentBase implements OnInit {
           this.onActionInWIPChange.emit(true);
           this.k8sService.deleteAutoScaleConfig(this.service.service_id, hpa).subscribe(
             () => this.onMessage.emit('SERVICE.SERVICE_CONTROL_HPA_DELETE_SUCCESS'),
-            err => this.onError.emit(err));
+            err => this.onError.emit(err),
+            () => this.actionEnabled());
         }
       })
     }

@@ -45,6 +45,20 @@
           </locate>
         </clr-tab-content>
       </clr-tab>
+      <clr-tab>
+        <button clrTabLink (click)="actionMethod = 3">
+          {{"SERVICE.SERVICE_CONTROL_LOAD_BALANCE" | translate}}
+        </button>
+        <clr-tab-content *clrIfActive>
+          <load-balance *ngIf="service"
+                        [service]="service"
+                        [isActionInWIP]="isActionInWIP"
+                        (onError)="defaultDispatchErr($event)"
+                        (onMessage)="defaultHandleMessage($event)"
+                        (onActionIsEnabled)="defaultHandleActionEnabled($event)">
+          </load-balance>
+        </clr-tab-content>
+      </clr-tab>
     </clr-tabs>
   </div>
   <div class="modal-footer footer">

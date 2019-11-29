@@ -109,6 +109,7 @@ func InitializeDefaultConfig() {
 	AddEnv("KUBE_MASTER_PORT")
 	AddEnv("REGISTRY_IP")
 	AddEnv("REGISTRY_PORT")
+	AddEnv("IMAGE_BASELINE_TIME")
 
 	AddEnv("AUTH_MODE")
 
@@ -169,6 +170,9 @@ func InitializeDefaultConfig() {
 	AddEnv("EMAIL_FROM")
 	AddEnv("EMAIL_IDENTITY")
 	AddEnv("AUDIT_DEBUG")
+	AddEnv("DNS_SUFFIX")
+
+	AddEnv("TILLER_PORT")
 
 	ShowAllConfigs()
 }

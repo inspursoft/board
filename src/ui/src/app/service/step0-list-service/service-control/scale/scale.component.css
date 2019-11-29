@@ -35,7 +35,7 @@ div.auto-scale-line-container {
   padding: 0 14px;
 }
 
-div.auto-scale-line-container cs-input {
+div.auto-scale-line-container lib-input-ex {
   flex-basis: 100%;
 }
 

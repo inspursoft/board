@@ -1,0 +1,13 @@
+div.modal-body{
+  min-height: 400px;
+}
+
+div.volume-info-container {
+  display: flex;
+  flex-direction: column;
+}
+
+span.volume-info {
+  margin-left: 195px;
+  color: darkblue;
+}

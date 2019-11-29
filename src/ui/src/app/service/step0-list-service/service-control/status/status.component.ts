@@ -3,9 +3,7 @@ import { SERVICE_STATUS } from "../../../../shared/shared.const";
 import { Service } from "../../../service";
 import { K8sService } from "../../../service.k8s";
 import { IScaleInfo } from "../service-control.component";
-import { Observable } from "rxjs/Observable";
-import { Subject } from "rxjs/Subject";
-import "rxjs/add/operator/takeUntil"
+import { Subject } from "rxjs";
 
 @Component({
   selector: 'status',
@@ -29,8 +27,7 @@ export class StatusComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    Observable.interval(10000).takeUntil(this.onDestroy)
-      .subscribe(() => this.refreshScaleInfo());
+    this.onDestroy.subscribe(() => this.refreshScaleInfo());
     this.refreshScaleInfo();
   }
 
