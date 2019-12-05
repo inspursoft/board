@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppInitService } from '../shared.service/app-init.service';
 import { GUIDE_STEP, MAIN_MENU_DATA, RouteAudit, RouteHelm, RouteKibana, RouteNodes, RouteUserCenters } from '../shared/shared.const';
@@ -10,6 +10,7 @@ import { SharedService } from '../shared.service/shared.service';
   styleUrls: ['./main-content.component.css']
 })
 export class MainContentComponent {
+  @ViewChild('frameDashboard') frame: ElementRef;
   navSource: Array<ICsMenuItemData>;
   isSignIn = true;
   hasSignedIn = false;

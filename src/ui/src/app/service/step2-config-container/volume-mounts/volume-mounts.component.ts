@@ -17,7 +17,7 @@ import { CreatePvcComponent } from "../../../shared/create-pvc/create-pvc.compon
 })
 export class VolumeMountsComponent extends CsModalChildBase implements OnInit {
   patternName: RegExp = /^[a-z0-9A-Z_]+$/;
-  patternMountPath: RegExp = /^[a-z0-9A-Z_/.:]+$/;
+  patternMountPath: RegExp = /^[a-z0-9A-Z_/]+$/;
   patternIP: RegExp = /^((?:(?:25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d)))\.){3}(?:25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d))))$/;
   patternPath: RegExp = /^[a-z0-9A-Z_/.:]+$/;
   volumeTypes: Array<{name: 'nfs' | 'pvc', value: number}>;
