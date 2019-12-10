@@ -12,7 +12,7 @@ export abstract class ResponseBase {
     const metadataKeys: Array<string> = Reflect.getMetadataKeys(this);
     metadataKeys.forEach((metadataKey: string) => {
       const propertyName = Reflect.getMetadata(metadataKey, this);
-      if (Reflect.has(this.res, propertyName)) {
+      if (this.res && Reflect.has(this.res, propertyName)) {
         const value = Reflect.get(this.res, propertyName);
         Reflect.set(this, metadataKey, value);
       }

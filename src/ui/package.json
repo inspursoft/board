@@ -27,7 +27,7 @@
     "@nguniversal/express-engine": "^7.1.1",
     "@ngx-translate/core": "^11.0.1",
     "@webcomponents/custom-elements": "^1.2.2",
-    "board-components-library": "^1.0.82",
+    "board-components-library": "^1.0.86",
     "core-js": "^2.5.4",
     "echarts": "^4.2.1",
     "inspurprism": "^1.0.0",
@@ -35,6 +35,7 @@
     "ngx-echarts": "^4.1.0",
     "rxjs": "~6.3.3",
     "tslib": "^1.9.0",
+    "yaml": "^1.7.2",
     "zone.js": "~0.8.26"
   },
   "devDependencies": {
