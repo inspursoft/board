@@ -188,7 +188,7 @@ func InstallChart(repo *model.HelmRepository, target *model.Release) error {
 	if err != nil {
 		return err
 	}
-	err = chartrepo.InstallChart(target.Chart, target.ChartVersion, target.Name, target.ProjectName, target.Values, helmhost)
+	err = chartrepo.InstallChart(target.Chart, target.ChartVersion, target.Name, target.ProjectName, target.Values, target.Answers, helmhost)
 	if err != nil {
 		return err
 	}
