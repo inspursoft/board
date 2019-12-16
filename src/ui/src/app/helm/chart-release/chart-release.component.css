@@ -6,7 +6,6 @@ div.modal-body {
 div.release-container {
   display: flex;
   flex-basis: 100%;
-  height: 100%;
 }
 
 div.info-container {

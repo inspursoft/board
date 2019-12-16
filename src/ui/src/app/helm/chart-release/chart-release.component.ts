@@ -43,7 +43,9 @@ export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
       (res: object) => {
         this.chartValue = Reflect.get(res, 'values');
         const chartFiles = new ChartFiles(Reflect.get(res, 'files'));
-        this.questionsFile = chartFiles.questionsChartFile;
+        if (chartFiles.hasQuestionFile){
+          this.questionsFile = chartFiles.questionsChartFile;
+        }
         this.changeRef.reattach();
         this.updateYamlContainer();
       },
@@ -108,11 +110,12 @@ export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
       this.isReleaseWIP = true;
       this.helmService.releaseChartVersion({
         name: this.releaseName,
-        chartVersion: this.chartVersion.version,
-        repoId: this.repoInfo.id,
-        projectId: this.selectProject.project_id,
-        ownerId: this.appInitService.currentUser.user_id,
-        chart: this.chartVersion.name
+        chartversion: this.chartVersion.version,
+        repository_id: this.repoInfo.id,
+        project_id: this.selectProject.project_id,
+        owner_id: this.appInitService.currentUser.user_id,
+        chart: this.chartVersion.name,
+        Answers: this.questionsFile.postAnwsers
       }).subscribe(
         () => this.messageService.showAlert('HELM.RELEASE_CHART_RELEASE_SUCCESS'),
         (error: HttpErrorResponse) => {

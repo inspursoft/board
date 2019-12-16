@@ -2,7 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpEvent, HttpRequest, HttpResponse } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { HelmViewData, IChartReleaseDetail, IChartRelease, IHelmRepo, HelmRepoDetail } from './helm.type';
+import {
+  HelmViewData,
+  IChartReleaseDetail,
+  IChartRelease,
+  IHelmRepo,
+  HelmRepoDetail,
+  IChartReleasePost
+} from './helm.type';
 import { Project } from '../project/project';
 
 @Injectable()
@@ -84,15 +91,8 @@ export class HelmService {
     }).pipe(map((res: HttpResponse<object>) => res.body));
   }
 
-  releaseChartVersion(postBody: { name, chart, chartVersion: string, repoId, projectId, ownerId: number }): Observable<any> {
-    return this.http.post(`/api/v1/helm/release`, {
-      name: postBody.name,
-      project_id: postBody.projectId,
-      repository_id: postBody.repoId,
-      chart: postBody.chart,
-      owner_id: postBody.ownerId,
-      chartversion: postBody.chartVersion
-    }, {observe: 'response'});
+  releaseChartVersion(postBody: IChartReleasePost): Observable<any> {
+    return this.http.post(`/api/v1/helm/release`, postBody, {observe: 'response'});
   }
 
   getChartReleaseList(): Observable<Array<IChartRelease>> {

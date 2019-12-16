@@ -29,6 +29,10 @@ export class ChartFiles extends ResponseArrayBase<ChartFile> {
   get questionsChartFile(): QuestionsChartFile {
     return this.data.find(value => value.isQuestionFile) as QuestionsChartFile;
   }
+
+  get hasQuestionFile(): boolean {
+    return this.data.find(value => value.isQuestionFile) !== undefined;
+  }
 }
 
 export class ChartFile extends ResponseBase {
@@ -160,6 +164,16 @@ export interface IHelmRepo {
   name: string;
   url: string;
   type: number;
+}
+
+export interface IChartReleasePost {
+  name: string;
+  project_id: number;
+  repository_id: number;
+  chart: string;
+  chartversion: string;
+  owner_id: number;
+  Answers: { [index: string]: string };
 }
 
 export interface IChartRelease {
