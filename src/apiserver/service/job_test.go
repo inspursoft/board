@@ -2,11 +2,11 @@ package service_test
 
 import (
 	"testing"
-	//"time"
+	"time"
 
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
-	//"git/inspursoft/board/src/common/utils"
+	"git/inspursoft/board/src/common/utils"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/stretchr/testify/assert"
@@ -102,50 +102,50 @@ func TestGetPaginatedJobList(t *testing.T) {
 	logs.Info("Paginated job list is %+v", PaginatedJList)
 }
 
-//func TestDeployJob(t *testing.T) {
-//	registryURI := utils.GetStringValue("REGISTRY_BASE_URI")
-//	logs.Info("REGISTRY_URI %s", registryURI)
-//	jobDeployInfo, err := service.DeployJob(&unitTestJobConfig, registryURI)
-//	assert := assert.New(t)
-//	assert.Nil(err, "Error occurred while get job list.")
-//	logs.Info("Information about deployed Job is %+v", string(jobDeployInfo.JobFileInfo))
-//}
+func TestDeployJob(t *testing.T) {
+	registryURI := utils.GetStringValue("REGISTRY_BASE_URI")
+	logs.Info("REGISTRY_URI %s", registryURI)
+	jobDeployInfo, err := service.DeployJob(&unitTestJobConfig, registryURI)
+	assert := assert.New(t)
+	assert.Nil(err, "Error occurred while get job list.")
+	logs.Info("Information about deployed Job is %+v", string(jobDeployInfo.JobFileInfo))
+}
 
-//func TestGetK8sJobPods(t *testing.T) {
-//	podMO, err := service.GetK8sJobPods(&unitTestJob)
-//	assert := assert.New(t)
-//	assert.Nil(err, "Error occurred while get job pod information.")
-//	podMOInfo = podMO
-//	logs.Info("Information about pod of Job is %+v", podMOInfo)
-//}
+func TestGetK8sJobPods(t *testing.T) {
+	podMO, err := service.GetK8sJobPods(&unitTestJob)
+	assert := assert.New(t)
+	assert.Nil(err, "Error occurred while get job pod information.")
+	podMOInfo = podMO
+	logs.Info("Information about pod of Job is %+v", podMOInfo)
+}
 
-//func TestGetK8sJobLogs(t *testing.T) {
-//	time.Sleep(20 * time.Second)
-//	readCloser, err := service.GetK8sJobLogs(&unitTestJob, podMOInfo[0].Name, &model.PodLogOptions{})
-//	if readCloser != nil {
-//		defer readCloser.Close()
-//		logs.Info("logs about pods of Job is %+v", readCloser)
-//	}
-//	assert := assert.New(t)
-//	assert.Nil(err, "Error occurred while get job logs.")
-//}
+func TestGetK8sJobLogs(t *testing.T) {
+	time.Sleep(20 * time.Second)
+	readCloser, err := service.GetK8sJobLogs(&unitTestJob, podMOInfo[0].Name, &model.PodLogOptions{})
+	if readCloser != nil {
+		defer readCloser.Close()
+		logs.Info("logs about pods of Job is %+v", readCloser)
+	}
+	assert := assert.New(t)
+	assert.Nil(err, "Error occurred while get job logs.")
+}
 
-//func TestSyncJobK8sStatus(t *testing.T) {
-//	err := service.SyncJobK8sStatus(jobListInfo)
-//	assert := assert.New(t)
-//	assert.Nil(err, "Error occurred while sync jobs status with kubernetes.")
-//}
+func TestSyncJobK8sStatus(t *testing.T) {
+	err := service.SyncJobK8sStatus(jobListInfo)
+	assert := assert.New(t)
+	assert.Nil(err, "Error occurred while sync jobs status with kubernetes.")
+}
 
-//func TestStopJobK8s(t *testing.T) {
-//	err := service.StopJobK8s(&unitTestJob)
-//	assert := assert.New(t)
-//	assert.Nil(err, "Error occurred while stop job in kubernetes.")
-//}
+func TestStopJobK8s(t *testing.T) {
+	err := service.StopJobK8s(&unitTestJob)
+	assert := assert.New(t)
+	assert.Nil(err, "Error occurred while stop job in kubernetes.")
+}
 
-//func TestDeleteJobByID(t *testing.T) {
-//	unitTestJob.Status = 1
-//	num, err := service.DeleteJobByID(unitTestJob.ID)
-//	assert := assert.New(t)
-//	assert.Nil(err, "Error occurred while delete job by ID.")
-//	assert.Equal(int64(1), num, "Num of deleted job is error.")
-//}
+func TestDeleteJobByID(t *testing.T) {
+	unitTestJob.Status = 1
+	num, err := service.DeleteJobByID(unitTestJob.ID)
+	assert := assert.New(t)
+	assert.Nil(err, "Error occurred while delete job by ID.")
+	assert.Equal(int64(1), num, "Num of deleted job is error.")
+}
