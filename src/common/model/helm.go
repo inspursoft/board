@@ -92,16 +92,16 @@ type Question struct {
 	Required          bool          `json:"required,omitempty" yaml:"required,omitempty"`
 	Default           string        `json:"default,omitempty" yaml:"default,omitempty"`
 	Group             string        `json:"group,omitempty" yaml:"group,omitempty"`
-	MinLength         int           `json:"minLength,omitempty" yaml:"min_length,omitempty"`
-	MaxLength         int           `json:"maxLength,omitempty" yaml:"max_length,omitempty"`
+	MinLength         int           `json:"min_length,omitempty" yaml:"min_length,omitempty"`
+	MaxLength         int           `json:"max_length,omitempty" yaml:"max_length,omitempty"`
 	Min               int           `json:"min,omitempty" yaml:"min,omitempty"`
 	Max               int           `json:"max,omitempty" yaml:"max,omitempty"`
 	Options           []string      `json:"options,omitempty" yaml:"options,omitempty"`
-	ValidChars        string        `json:"validChars,omitempty" yaml:"valid_chars,omitempty"`
-	InvalidChars      string        `json:"invalidChars,omitempty" yaml:"invalid_chars,omitempty"`
+	ValidChars        string        `json:"valid_chars,omitempty" yaml:"valid_chars,omitempty"`
+	InvalidChars      string        `json:"invalid_chars,omitempty" yaml:"invalid_chars,omitempty"`
 	Subquestions      []SubQuestion `json:"subquestions,omitempty" yaml:"subquestions,omitempty"`
-	ShowIf            string        `json:"showIf,omitempty" yaml:"show_if,omitempty"`
-	ShowSubquestionIf string        `json:"showSubquestionIf,omitempty" yaml:"show_subquestion_if,omitempty"`
+	ShowIf            string        `json:"show_if,omitempty" yaml:"show_if,omitempty"`
+	ShowSubquestionIf string        `json:"show_subquestion_if,omitempty" yaml:"show_subquestion_if,omitempty"`
 }
 
 type SubQuestion struct {
@@ -112,14 +112,14 @@ type SubQuestion struct {
 	Required     bool     `json:"required,omitempty" yaml:"required,omitempty"`
 	Default      string   `json:"default,omitempty" yaml:"default,omitempty"`
 	Group        string   `json:"group,omitempty" yaml:"group,omitempty"`
-	MinLength    int      `json:"minLength,omitempty" yaml:"min_length,omitempty"`
-	MaxLength    int      `json:"maxLength,omitempty" yaml:"max_length,omitempty"`
+	MinLength    int      `json:"min_length,omitempty" yaml:"min_length,omitempty"`
+	MaxLength    int      `json:"max_length,omitempty" yaml:"max_length,omitempty"`
 	Min          int      `json:"min,omitempty" yaml:"min,omitempty"`
 	Max          int      `json:"max,omitempty" yaml:"max,omitempty"`
 	Options      []string `json:"options,omitempty" yaml:"options,omitempty"`
-	ValidChars   string   `json:"validChars,omitempty" yaml:"valid_chars,omitempty"`
-	InvalidChars string   `json:"invalidChars,omitempty" yaml:"invalid_chars,omitempty"`
-	ShowIf       string   `json:"showIf,omitempty" yaml:"show_if,omitempty"`
+	ValidChars   string   `json:"valid_chars,omitempty" yaml:"valid_chars,omitempty"`
+	InvalidChars string   `json:"invalid_chars,omitempty" yaml:"invalid_chars,omitempty"`
+	ShowIf       string   `json:"show_if,omitempty" yaml:"show_if,omitempty"`
 }
 
 type Release struct {
