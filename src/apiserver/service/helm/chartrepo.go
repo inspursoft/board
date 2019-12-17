@@ -218,7 +218,7 @@ func fillChartQuestions(chart *model.Chart) error {
 	// generate the questions
 	for _, file := range chart.Files {
 		for _, f := range supportedFiles {
-			if strings.EqualFold(fmt.Sprintf("%s/%s", chart.Metadata.Name, f), file.Name) {
+			if strings.EqualFold(f, file.Name) {
 				var value model.Questions
 				if err := yaml.Unmarshal([]byte(file.Contents), &value); err != nil {
 					return err
