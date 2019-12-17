@@ -7,7 +7,6 @@ services:
     image: 10.111.25.119/board/dev_uibuilder:7.1
     volumes:
       - ../src/ui:/board_src
-      - /data/npm/logs:/root/.npm/_logs
     environment:
       MODE: test
     entrypoint:

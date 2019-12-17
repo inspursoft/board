@@ -15,9 +15,6 @@ job_ui_test:
   stage: ui-test
   tags:
     - board-runner-liyanqing-vm
-  artifacts:
-    paths:
-      - /data/npm/logs/
 job_api_test:
   before_script:
     - source /etc/profile
