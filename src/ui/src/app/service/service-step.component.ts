@@ -169,12 +169,6 @@ export class Container implements UiServerExchangeData<Container> {
   uiToServer(): Container {
     return this;
   }
-
-  clone(): Container {
-    const result = new Container();
-    Object.assign(result, this);
-    return result;
-  }
 }
 
 export class NodeType implements UiServerExchangeData<NodeType> {

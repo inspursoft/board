@@ -1,6 +1,6 @@
 import { Component, ComponentFactoryResolver, OnInit, ViewContainerRef } from '@angular/core';
-import { Observable } from 'rxjs';
-import { ValidationErrors } from '@angular/forms';
+import { Observable, Subject } from 'rxjs';
+import { AbstractControl, ValidationErrors } from '@angular/forms';
 import { map } from 'rxjs/operators';
 import { InputArrayExType } from 'board-components-library';
 import { CsModalChildMessage } from '../../../shared/cs-modal-base/cs-modal-child-base';
@@ -46,6 +46,14 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
 
   get checkSetMemRequestFun() {
     return this.checkSetMemRequest.bind(this);
+  }
+
+  get validContainerNameFun() {
+    return this.validContainerName.bind(this);
+  }
+
+  get validContainerPortsFun() {
+    return this.validContainerPorts.bind(this);
   }
 
   getVolumesDescription(index: number, container: Container): string {
@@ -148,15 +156,15 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
     );
   }
 
-  isValidContainerName(): boolean {
-    return this.step2Data.containerList.find(value => value.name === this.container.name) === undefined &&
-      this.patternContainerName.test(this.container.name);
+  validContainerName(control: AbstractControl): ValidationErrors | null {
+    const isValid = this.step2Data.containerList.find((container) =>
+      this.container !== container && container.name === control.value) === undefined;
+    return isValid ? null : {containerNameRepeat: 'containerNameRepeat'};
   }
 
-  isValidContainerPorts(): boolean {
+  validContainerPorts(control: AbstractControl): ValidationErrors | null {
     let valid = true;
     const portBuf = new Set<number>();
-    this.container.container_port.forEach(port => portBuf.add(port));
     this.step2Data.containerList.forEach((container, index) => {
       container.container_port.forEach(port => {
         if (portBuf.has(port)) {
@@ -170,28 +178,30 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
   }
 
   isValidContainerCpuAndMem(): boolean {
-    let cpuValid = true;
-    let memValid = true;
-    if (this.container.cpu_request !== '' && this.container.cpu_limit !== '') {
-      cpuValid = Number.parseFloat(this.container.cpu_request) < Number.parseFloat(this.container.cpu_limit);
-    }
-    if (this.container.mem_request !== '' && this.container.mem_limit !== '') {
-      memValid = Number.parseFloat(this.container.mem_request) < Number.parseFloat(this.container.mem_limit);
-    }
-    return cpuValid && memValid;
+    return this.step2Data.containerList.every((container: Container, index: number) => {
+      let cpuValid = true;
+      let memValid = true;
+      if (container.cpu_request !== '' && container.cpu_limit !== '') {
+        cpuValid = Number.parseFloat(container.cpu_request) < Number.parseFloat(container.cpu_limit);
+      }
+      if (container.mem_request !== '' && container.mem_limit !== '') {
+        memValid = Number.parseFloat(container.mem_request) < Number.parseFloat(container.mem_limit);
+      }
+      return cpuValid && memValid;
+    });
   }
 
   setParams() {
     if (this.verifyInputExValid() && this.verifyInputArrayExValid()) {
-      if (!this.isValidContainerName()) {
-        this.messageService.showAlert('SERVICE.STEP_2_CONTAINER_NAME_REPEAT', {alertType: 'warning'});
-      }
-      if (!this.isValidContainerPorts()) {
-        this.messageService.showAlert('SERVICE.STEP_2_CONTAINER_PORT_REPEAT', {alertType: 'warning'});
-      }
+      // if (!this.isValidContainerPorts()) {
+      //   this.messageService.showAlert('SERVICE.STEP_2_CONTAINER_PORT_REPEAT', {alertType: 'warning'});
+      //   return;
+      // }
       if (!this.isValidContainerCpuAndMem()) {
         this.messageService.showAlert('SERVICE.STEP_2_CONTAINER_REQUEST_ERROR', {alertType: 'warning'});
+        return;
       }
+      this.modalOpened = false;
     }
   }
 }

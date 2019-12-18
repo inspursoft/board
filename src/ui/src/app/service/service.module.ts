@@ -68,7 +68,8 @@ import { ConfigParamsComponent } from './step2-config-container/config-params/co
     DeployComponent,
     ServiceDetailComponent,
     SetAffinityComponent,
-    VolumeMountsComponent
+    VolumeMountsComponent,
+    ConfigParamsComponent
   ],
   providers: [
     K8sService,

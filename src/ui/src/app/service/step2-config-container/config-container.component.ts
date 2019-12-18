@@ -225,7 +225,7 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
 
   showConfigParams(container: Container): void {
     const component = this.createNewModal(ConfigParamsComponent);
-    component.container = container.clone();
+    component.container = container;
     component.fixedContainerEnv = this.fixedContainerEnv;
     component.fixedContainerPort = this.fixedContainerPort;
     component.step2Data = this.curStep2Data;

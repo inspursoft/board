@@ -1,12 +1,16 @@
 <clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'md'" [clrModalClosable]="false"
            [clrModalPreventClose]="true">
-  <h3 class="modal-title">{{ 'SERVICE.VOLUME_CONFIG' | translate }}</h3>
+  <h3 class="modal-title">{{container.image.image_name}}:{{container.image.image_tag}}</h3>
   <div class="modal-body">
     <lib-input-ex [inputLabel]="'SERVICE.STEP_2_CONTAINER_NAME' | translate"
                   [inputIsRequired]="true"
                   [inputPattern]="patternContainerName"
+                  [validatorFns]="[validContainerNameFun]"
                   [inputDefaultValue]="container.name"
-                  [validatorMessage]="[{key:'pattern',message:'SERVICE.STEP_2_CONTAINER_NAME_PATTERN_NSG' | translate}]"
+                  [validatorMessage]="[
+                  {key:'pattern',message:'SERVICE.STEP_2_CONTAINER_NAME_PATTERN_NSG' | translate},
+                  {key:'containerNameRepeat',message:'SERVICE.STEP_2_CONTAINER_NAME_REPEAT' | translate}
+                  ]"
                   (commitEvent)="container.name = $event">
     </lib-input-ex>
     <lib-input-ex [inputLabel]="'SERVICE.STEP_2_WORKING_DIR' | translate"
