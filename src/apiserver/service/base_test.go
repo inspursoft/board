@@ -27,7 +27,7 @@ func TestMain(m *testing.M) {
 	utils.InitializeDefaultConfig()
 	utils.AddValue("BASE_REPO_PATH", "/tmp/test-repos")
 	utils.AddValue("SSH_KEY_PATH", "/tmp/test-keys")
-	utils.AddValue("KUBE_CONFIG_PATH", "/tmp/admin.conf")
+	utils.AddValue("KUBE_CONFIG_PATH", "/root/.kube/config")
 
 	dao.InitDB()
 	os.Exit(func() int {
