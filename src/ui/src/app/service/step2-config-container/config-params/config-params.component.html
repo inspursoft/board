@@ -55,37 +55,39 @@
                   [validatorMessage]="[{key:'beyondMaxLimit',message: 'SERVICE.STEP_2_BEYOND_MAX_VALUE' | translate}]"
                   (commitEvent)="container.cpu_request = $event">
     </lib-input-ex>
-<!--    <lib-input-ex *ngIf="curContainerType === 0"-->
-<!--                  [inputLabel]="'SERVICE.STEP_2_MEMORY_REQUEST' | translate"-->
-<!--                  [inputPattern]="patternMemRequest"-->
-<!--                  [validatorAsyncFn]="checkSetMemRequestFun"-->
-<!--                  [inputDefaultValue]="container.mem_request"-->
-<!--                  [inputPlaceholder]="'eg. 100Mi'"-->
-<!--                  [validatorMessage]="[{key:'beyondMaxLimit',message: 'SERVICE.STEP_2_BEYOND_MAX_VALUE' | translate}]"-->
-<!--                  (commitEvent)="container.mem_request = $event"></lib-input-ex>-->
-<!--    <lib-input-ex *ngIf="curContainerType === 0"-->
-<!--                  [inputLabel]="'SERVICE.STEP_2_CPU_LIMIT' | translate"-->
-<!--                  [inputDefaultValue]="container.cpu_limit"-->
-<!--                  [inputPlaceholder]="'eg. 1024m'"-->
-<!--                  [inputPattern]="patternCpuLimit"-->
-<!--                  (commitEvent)="container.cpu_limit = $event"></lib-input-ex>-->
-<!--    <lib-input-ex *ngIf="curContainerType === 0"-->
-<!--                  [inputLabel]="'SERVICE.STEP_2_MEMORY_LIMIT' | translate"-->
-<!--                  [inputDefaultValue]="container.mem_limit"-->
-<!--                  [inputPattern]="patternMemLimit"-->
-<!--                  [inputPlaceholder]="'eg. 1024Mi'"-->
-<!--                  (commitEvent)="container.mem_limit = $event"></lib-input-ex>-->
-
+    <lib-input-ex *ngIf="curContainerType === 0"
+                  [inputLabel]="'SERVICE.STEP_2_MEMORY_REQUEST' | translate"
+                  [inputPattern]="patternMemRequest"
+                  [validatorAsyncFn]="checkSetMemRequestFun"
+                  [inputDefaultValue]="container.mem_request"
+                  [inputPlaceholder]="'eg. 100Mi'"
+                  [validatorMessage]="[{key:'beyondMaxLimit',message: 'SERVICE.STEP_2_BEYOND_MAX_VALUE' | translate}]"
+                  (commitEvent)="container.mem_request = $event">
+    </lib-input-ex>
+    <lib-input-ex *ngIf="curContainerType === 0"
+                  [inputLabel]="'SERVICE.STEP_2_CPU_LIMIT' | translate"
+                  [inputDefaultValue]="container.cpu_limit"
+                  [inputPlaceholder]="'eg. 1024m'"
+                  [inputPattern]="patternCpuLimit"
+                  (commitEvent)="container.cpu_limit = $event">
+    </lib-input-ex>
+    <lib-input-ex *ngIf="curContainerType === 0"
+                  [inputLabel]="'SERVICE.STEP_2_MEMORY_LIMIT' | translate"
+                  [inputDefaultValue]="container.mem_limit"
+                  [inputPattern]="patternMemLimit"
+                  [inputPlaceholder]="'eg. 1024Mi'"
+                  (commitEvent)="container.mem_limit = $event">
+    </lib-input-ex>
   </div>
   <div class="modal-footer">
     <button class="btn btn-default" (click)="modalOpened = false">{{"BUTTON.CANCEL" | translate}}</button>
-    <button class="btn btn-primary">{{"BUTTON.CONFIRM" | translate}}</button>
+    <button class="btn btn-primary" (click)="setParams()">{{"BUTTON.CONFIRM" | translate}}</button>
   </div>
 </clr-modal>
 
 <environment-value *ngIf="showEnvironmentValue"
                    [isProvideBindConfigMap]="true"
-                   [projectName]="projectName"
+                   [projectName]="step2Data.projectName"
                    [inputEnvsData]="getDefaultEnvsData()"
                    [inputFixedKeyList]="getDefaultEnvsFixedData()"
                    (closeNotification)="showEnvironmentValue = false"
