@@ -26,6 +26,7 @@ import { AffinityCardListComponent } from './step3-config-setting/affinity-card-
 import { LoadBalanceComponent } from './step0-list-service/service-control/loadBalance/loadBalance.component';
 import { CoreModule } from '../core/core.module';
 import { ServiceGuard } from './service-guard.service';
+import { ConfigParamsComponent } from './step2-config-container/config-params/config-params.component';
 
 @NgModule({
   imports: [
@@ -55,6 +56,7 @@ import { ServiceGuard } from './service-guard.service';
     AffinityCardComponent,
     AffinityCardListComponent,
     SetAffinityComponent,
+    ConfigParamsComponent,
   ],
   entryComponents: [
     ListServiceComponent,
