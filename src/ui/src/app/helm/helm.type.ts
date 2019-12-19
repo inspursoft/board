@@ -1,6 +1,5 @@
 import { IPagination } from '../shared/shared.types';
 import { HttpBind, ResponseArrayBase, ResponseBase } from '../shared.service/shared-model-types';
-import YAML from 'yaml';
 
 export enum QuestionType {
   qtUnknown, qtBoolean, qtString, qtInteger
@@ -12,61 +11,19 @@ export enum HelmViewType {
 
 export enum ViewMethod {List = 'list', Card = 'card'}
 
-export class ChartFiles extends ResponseArrayBase<ChartFile> {
-  CreateOneItem(res: object): ChartFile {
-    let chartFile = new ChartFile(res);
-    if (chartFile.isQuestionFile) {
-      chartFile = new QuestionsChartFile(res);
-      chartFile.parseYamlFile();
-    }
-    return chartFile;
+export class Questions extends ResponseArrayBase<Question> {
+
+  CreateOneItem(res: object): Question {
+    return new Question(res);
   }
-
-  constructor(protected res: object) {
-    super(res);
-  }
-
-  get questionsChartFile(): QuestionsChartFile {
-    return this.data.find(value => value.isQuestionFile) as QuestionsChartFile;
-  }
-
-  get hasQuestionFile(): boolean {
-    return this.data.find(value => value.isQuestionFile) !== undefined;
-  }
-}
-
-export class ChartFile extends ResponseBase {
-  @HttpBind('name') fileName: string;
-  @HttpBind('contents') fileContents: string;
-
-  parseYamlFile() {
-
-  }
-
-  get isQuestionFile(): boolean {
-    return this.fileName.includes('question');
-  }
-}
-
-export class QuestionsChartFile extends ChartFile {
-  questions: Array<Question>;
 
   constructor(res: object) {
     super(res);
-    this.questions = Array<Question>();
   }
 
-  parseYamlFile() {
-    const yml = YAML.parse(this.fileContents);
-    (Reflect.get(yml, 'questions') as Array<object>).forEach(value => {
-      const question = new Question(value);
-      this.questions.push(question);
-    });
-  }
-
-  get postAnwsers(): { [key: string]: string } {
+  get postAnswers(): { [key: string]: string } {
     const result: { [key: string]: string } = {};
-    this.questions.forEach(question => {
+    this.data.forEach(question => {
       if (question.answerValue !== '' && question.answerValue !== question.default) {
         Reflect.set(result, question.variable, question.answerValue);
         if (question.isHasSubQuestion) {
@@ -83,9 +40,9 @@ export class QuestionsChartFile extends ChartFile {
 
   getQuestionByVariable(variable: string): Question {
     let result: Question;
-    result = this.questions.find(value => value.variable === variable);
+    result = this.data.find(value => value.variable === variable);
     if (result === undefined) {
-      this.questions.forEach(value => {
+      this.data.forEach(value => {
         if (value.isHasSubQuestion && result === undefined) {
           result = value.subQuestions.find(subValue => subValue.variable === variable);
         }

@@ -3,7 +3,7 @@ import { ValidationErrors } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { ChartFiles, HelmChartVersion, IHelmRepo, QuestionsChartFile, QuestionType } from '../helm.type';
+import { HelmChartVersion, IHelmRepo, Questions, QuestionType } from '../helm.type';
 import { CsModalChildBase } from '../../shared/cs-modal-base/cs-modal-child-base';
 import { Project } from '../../project/project';
 import { HelmService } from '../helm.service';
@@ -23,7 +23,7 @@ export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
   isReleaseWIP = false;
   releaseName = '';
   chartValue = '';
-  questionsFile: QuestionsChartFile;
+  questions: Questions;
 
   constructor(private helmService: HelmService,
               private appInitService: AppInitService,
@@ -31,7 +31,7 @@ export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
               private changeRef: ChangeDetectorRef) {
     super();
     this.projectsList = Array<Project>();
-    this.questionsFile = new QuestionsChartFile({});
+    this.questions = new Questions({});
     this.changeRef.detach();
   }
 
@@ -42,10 +42,7 @@ export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
     this.helmService.getChartRelease(this.repoInfo.id, this.chartVersion.name, this.chartVersion.version).subscribe(
       (res: object) => {
         this.chartValue = Reflect.get(res, 'values');
-        const chartFiles = new ChartFiles(Reflect.get(res, 'files'));
-        if (chartFiles.hasQuestionFile){
-          this.questionsFile = chartFiles.questionsChartFile;
-        }
+        this.questions = new Questions(Reflect.get(res, 'questions'));
         this.changeRef.reattach();
         this.updateYamlContainer();
       },
@@ -92,7 +89,7 @@ export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
   }
 
   setAnswer(variable: string, $event: any) {
-    const question = this.questionsFile.getQuestionByVariable(variable);
+    const question = this.questions.getQuestionByVariable(variable);
     if (question.questionType === QuestionType.qtBoolean) {
       question.answer = (($event as Event).target as HTMLInputElement).checked;
     } else if (question.questionType === QuestionType.qtString || question.questionType === QuestionType.qtInteger) {
@@ -115,7 +112,7 @@ export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
         project_id: this.selectProject.project_id,
         owner_id: this.appInitService.currentUser.user_id,
         chart: this.chartVersion.name,
-        Answers: this.questionsFile.postAnwsers
+        Answers: this.questions.postAnswers
       }).subscribe(
         () => this.messageService.showAlert('HELM.RELEASE_CHART_RELEASE_SUCCESS'),
         (error: HttpErrorResponse) => {

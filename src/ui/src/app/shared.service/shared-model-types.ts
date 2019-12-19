@@ -43,6 +43,10 @@ export abstract class ResponseArrayBase<T extends ResponseBase> {
     }
   }
 
+  get length() {
+    return this.data.length;
+  }
+
   [Symbol.iterator]() {
     let index = 0;
     const self = this;

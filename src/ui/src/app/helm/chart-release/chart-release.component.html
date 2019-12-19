@@ -39,16 +39,16 @@
           <label class="base-text">{{"HELM.RELEASE_CHART_DESCRIPTION" | translate}}:</label>
           <label class="base-margin-left">{{chartVersion.description}}</label>
         </div>
-        <div class="code-container" *ngIf="questionsFile.questions.length > 0">
+        <div class="code-container" *ngIf="questions.length > 0">
           <div style="position: absolute;">
             <cs-highlight [language]="'yaml'" [code]="chartValue"></cs-highlight>
           </div>
         </div>
       </div>
       <div class="questions-container">
-        <div *ngIf="questionsFile.questions.length > 0">
+        <div *ngIf="questions.length > 0">
           <p>{{'HELM.RELEASE_CHART_QUESTION_SETTING' | translate}}</p>
-          <div class="question" *ngFor="let question of questionsFile.questions;let i = index">
+          <div class="question" *ngFor="let question of questions;let i = index">
             {{i}}.
             <ng-container *ngIf="question.questionType === 1"
                           [ngTemplateOutlet]="booleanTemplate"
@@ -65,7 +65,7 @@
           </div>
         </div>
         <div class="code-container" style="height: 100%; overflow-y: auto "
-             *ngIf="questionsFile.questions.length === 0">
+             *ngIf="questions.length === 0">
           <div style="position: absolute;">
             <cs-highlight [language]="'yaml'" [code]="chartValue"></cs-highlight>
           </div>
@@ -100,7 +100,9 @@
   <p><b>{{description}}</b></p>
   <div class="boolean-template-container">
     <label class="base-text">{{label}}:</label>
-    <input type="checkbox" clrToggle [checked]="defaultValue" (change)="setAnswer(variable,$event)"/>
+    <input [disabled]="isReleaseWIP" type="checkbox" clrToggle
+           [checked]="defaultValue"
+           (change)="setAnswer(variable,$event)"/>
   </div>
   <div *ngIf="isShowSubQuestion && isHasSubQuestion">
     <div *ngFor="let subQuestion of subQuestions">
@@ -132,6 +134,7 @@
   <p><b>{{description}}</b></p>
   <lib-input-ex [inputLabel]="label"
                 [inputLabelWidth]="150"
+                [inputDisabled]="isReleaseWIP"
                 [inputDefaultValue]="defaultValue"
                 (commitEvent)="setAnswer(variable, $event)">
   </lib-input-ex>
@@ -166,6 +169,7 @@
   <lib-input-ex [inputLabel]="label"
                 [inputLabelWidth]="150"
                 [inputCategory]="2"
+                [inputDisabled]="isReleaseWIP"
                 [inputDefaultValue]="defaultValue"
                 (commitEvent)="setAnswer(variable,$event)">
   </lib-input-ex>
