@@ -10,6 +10,7 @@ import { VolumeMountsComponent } from '../volume-mounts/volume-mounts.component'
 import { EnvType } from '../../../shared/environment-value/environment-value.component';
 import { NodeAvailableResources } from '../../../shared/shared.types';
 import { K8sService } from '../../service.k8s';
+import { JobVolumeMounts } from "../../../job/job.type";
 
 @Component({
   selector: 'app-config-params',
@@ -56,6 +57,22 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
     return this.validContainerPorts.bind(this);
   }
 
+  get validContainerCpuFun() {
+    return this.validContainerCpu.bind(this);
+  }
+
+  get validContainerMemFun() {
+    return this.validContainerMem.bind(this);
+  }
+
+  get validContainerCpuLimitFun() {
+    return this.validContainerCpuLimit.bind(this);
+  }
+
+  get validContainerMemLimitFun() {
+    return this.validContainerMemLimit.bind(this);
+  }
+
   getVolumesDescription(index: number, container: Container): string {
     const volume = container.volume_mounts;
     if (volume.length > index) {
@@ -70,9 +87,10 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
 
   editVolumeMount() {
     const factory = this.resolver.resolveComponentFactory(VolumeMountsComponent);
-    const component = this.view.createComponent(factory).instance;
-    component.volumeDataList = this.container.volume_mounts;
-    component.onConfirmEvent.subscribe((res: Array<VolumeStruct>) => this.container.volume_mounts = res);
+    const componentRef = this.view.createComponent(factory);
+    componentRef.instance.volumeDataList = this.container.volume_mounts;
+    componentRef.instance.onConfirmEvent.subscribe((res: Array<VolumeStruct>) => this.container.volume_mounts = res);
+    componentRef.instance.openModal().subscribe(() => this.view.remove(this.view.indexOf(componentRef.hostView)));
   }
 
   getEnvsDescription(): string {
@@ -157,51 +175,60 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
   }
 
   validContainerName(control: AbstractControl): ValidationErrors | null {
-    const isValid = this.step2Data.containerList.find((container) =>
+    const isValid = this.step2Data.containerList.find(container =>
       this.container !== container && container.name === control.value) === undefined;
     return isValid ? null : {containerNameRepeat: 'containerNameRepeat'};
   }
 
   validContainerPorts(control: AbstractControl): ValidationErrors | null {
-    let valid = true;
+    let isValid = true;
     const portBuf = new Set<number>();
+    portBuf.add(Number.parseInt(control.value, 0));
     this.step2Data.containerList.forEach((container, index) => {
       container.container_port.forEach(port => {
         if (portBuf.has(port)) {
-          valid = false;
+          isValid = false;
         } else {
           portBuf.add(port);
         }
       });
     });
-    return valid;
+    return isValid ? null : {containerPortRepeat: 'containerPortRepeat'};
   }
 
-  isValidContainerCpuAndMem(): boolean {
-    return this.step2Data.containerList.every((container: Container, index: number) => {
-      let cpuValid = true;
-      let memValid = true;
-      if (container.cpu_request !== '' && container.cpu_limit !== '') {
-        cpuValid = Number.parseFloat(container.cpu_request) < Number.parseFloat(container.cpu_limit);
-      }
-      if (container.mem_request !== '' && container.mem_limit !== '') {
-        memValid = Number.parseFloat(container.mem_request) < Number.parseFloat(container.mem_limit);
-      }
-      return cpuValid && memValid;
-    });
+  validContainerCpu(control: AbstractControl): ValidationErrors | null {
+    let isValid = true;
+    if (control.value !== '' && this.container.cpu_limit !== '') {
+      isValid = Number.parseFloat(control.value) <= Number.parseFloat(this.container.cpu_limit);
+    }
+    return isValid ? null : {resourceRequestInvalid: 'resourceRequestInvalid'};
+  }
+
+  validContainerMem(control: AbstractControl): ValidationErrors | null {
+    let isValid = true;
+    if (control.value !== '' && this.container.mem_limit !== '') {
+      isValid = Number.parseFloat(control.value) <= Number.parseFloat(this.container.mem_limit);
+    }
+    return isValid ? null : {resourceRequestInvalid: 'resourceRequestInvalid'};
+  }
+
+  validContainerCpuLimit(control: AbstractControl): ValidationErrors | null {
+    let isValid = true;
+    if (control.value !== '' && this.container.cpu_request !== '') {
+      isValid = Number.parseFloat(control.value) >= Number.parseFloat(this.container.cpu_request);
+    }
+    return isValid ? null : {resourceRequestInvalid: 'resourceRequestInvalid'};
+  }
+
+  validContainerMemLimit(control: AbstractControl): ValidationErrors | null {
+    let isValid = true;
+    if (control.value !== '' && this.container.mem_request !== '' ){
+      isValid = Number.parseFloat(control.value) >= Number.parseFloat(this.container.mem_request);
+    }
+    return isValid ? null : {resourceRequestInvalid: 'resourceRequestInvalid'};
   }
 
   setParams() {
-    if (this.verifyInputExValid() && this.verifyInputArrayExValid()) {
-      // if (!this.isValidContainerPorts()) {
-      //   this.messageService.showAlert('SERVICE.STEP_2_CONTAINER_PORT_REPEAT', {alertType: 'warning'});
-      //   return;
-      // }
-      if (!this.isValidContainerCpuAndMem()) {
-        this.messageService.showAlert('SERVICE.STEP_2_CONTAINER_REQUEST_ERROR', {alertType: 'warning'});
-        return;
-      }
-      this.modalOpened = false;
-    }
+    this.modalOpened = false;
   }
 }

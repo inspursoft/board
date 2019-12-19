@@ -42,6 +42,10 @@
                         [inputArrayDefault]="container.container_port"
                         [inputMax]="65535"
                         [inputPlaceholder]="'[1..65535]'"
+                        [validatorFns]="[validContainerPortsFun]"
+                        [validatorMessage]="[
+                        {key:'containerPortRepeat',message:'SERVICE.STEP_2_CONTAINER_PORT_REPEAT' | translate}
+                        ]"
                         [inputLabel]="'SERVICE.STEP_2_CONTAINER_PORT' | translate"
                         (commitEvent)="setContainerPorts($event)">
     </lib-input-array-ex>
@@ -56,36 +60,51 @@
                   [inputDefaultValue]="container.cpu_request"
                   [inputPlaceholder]="'eg. 100m'"
                   [validatorAsyncFn]="checkSetCpuRequestFun"
-                  [validatorMessage]="[{key:'beyondMaxLimit',message: 'SERVICE.STEP_2_BEYOND_MAX_VALUE' | translate}]"
+                  [validatorFns]="[validContainerCpuFun]"
+                  [validatorMessage]="[
+                  {key:'beyondMaxLimit',message: 'SERVICE.STEP_2_BEYOND_MAX_VALUE' | translate},
+                  {key:'resourceRequestInvalid',message: 'SERVICE.STEP_2_CONTAINER_REQUEST_ERROR' | translate}
+                  ]"
                   (commitEvent)="container.cpu_request = $event">
     </lib-input-ex>
     <lib-input-ex *ngIf="curContainerType === 0"
                   [inputLabel]="'SERVICE.STEP_2_MEMORY_REQUEST' | translate"
                   [inputPattern]="patternMemRequest"
                   [validatorAsyncFn]="checkSetMemRequestFun"
+                  [validatorFns]="[validContainerMemFun]"
                   [inputDefaultValue]="container.mem_request"
                   [inputPlaceholder]="'eg. 100Mi'"
-                  [validatorMessage]="[{key:'beyondMaxLimit',message: 'SERVICE.STEP_2_BEYOND_MAX_VALUE' | translate}]"
+                  [validatorMessage]="[
+                  {key:'beyondMaxLimit',message: 'SERVICE.STEP_2_BEYOND_MAX_VALUE' | translate},
+                  {key:'resourceRequestInvalid',message: 'SERVICE.STEP_2_CONTAINER_REQUEST_ERROR' | translate}
+                  ]"
                   (commitEvent)="container.mem_request = $event">
     </lib-input-ex>
     <lib-input-ex *ngIf="curContainerType === 0"
                   [inputLabel]="'SERVICE.STEP_2_CPU_LIMIT' | translate"
                   [inputDefaultValue]="container.cpu_limit"
                   [inputPlaceholder]="'eg. 1024m'"
+                  [validatorFns]="[validContainerCpuLimitFun]"
+                  [validatorMessage]="[
+                  {key:'resourceRequestInvalid',message: 'SERVICE.STEP_2_CONTAINER_REQUEST_ERROR' | translate}
+                  ]"
                   [inputPattern]="patternCpuLimit"
                   (commitEvent)="container.cpu_limit = $event">
     </lib-input-ex>
     <lib-input-ex *ngIf="curContainerType === 0"
                   [inputLabel]="'SERVICE.STEP_2_MEMORY_LIMIT' | translate"
                   [inputDefaultValue]="container.mem_limit"
+                  [validatorFns]="[validContainerMemLimitFun]"
+                  [validatorMessage]="[
+                  {key:'resourceRequestInvalid',message: 'SERVICE.STEP_2_CONTAINER_REQUEST_ERROR' | translate}
+                  ]"
                   [inputPattern]="patternMemLimit"
                   [inputPlaceholder]="'eg. 1024Mi'"
                   (commitEvent)="container.mem_limit = $event">
     </lib-input-ex>
   </div>
   <div class="modal-footer">
-    <button class="btn btn-default" (click)="modalOpened = false">{{"BUTTON.CANCEL" | translate}}</button>
-    <button class="btn btn-primary" (click)="setParams()">{{"BUTTON.CONFIRM" | translate}}</button>
+    <button class="btn btn-default" (click)="modalOpened = false">{{"BUTTON.CLOSE" | translate}}</button>
   </div>
 </clr-modal>
 
