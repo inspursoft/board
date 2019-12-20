@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # listDeps lists packages referenced by package in $1, 
 # excluding golang standard library and packages in 
