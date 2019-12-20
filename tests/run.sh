@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # listDeps lists packages referenced by package in $1, 
 # excluding golang standard library and packages in 
@@ -70,7 +70,3 @@ echo $cov > $dir/avaCov.cov
 #return $cov
 
 go tool cover -html=$dir/total.cov -o $dir/profile.html
-
-# ui test
-cd $dir
-docker-compose -f docker-compose.uibuilder.test.yml up
