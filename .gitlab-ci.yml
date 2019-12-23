@@ -1,8 +1,37 @@
 ---
+.only-default: &only-default
+  only:
+    - master
+    - dev
+    - merge_requests
+before_script:
+  - reporter_token=9xyfSydF7bDYsUQbrnPv
+  - request_url="http://10.110.25.227/api/v4/projects/$CI_PROJECT_ID/repository/commits/$CI_COMMIT_SHA/comments?note=$message"
 stages:
+  - pre-merge-requests
   - ui-test
   - api-test
+  - report
+pre-merge-requests:
+  stage: pre-merge-requests
+  script:
+    - echo $CI_MERGE_REQUEST_REF_PATH
+    - echo $CI_MERGE_REQUEST_PROJECT_PATH
+    - echo $CI_MERGE_REQUEST_PROJECT_URL
+    - bare_url=`echo $CI_MERGE_REQUEST_PROJECT_URL|cut -d ":" -f 2-|sed 's/^..//g'`
+    - BASE_URL=$bare_url.git
+    - echo $CI_MERGE_REQUEST_TARGET_BRANCH_NAME
+    - git remote -v
+    - git remote add upstream http://gitlab-ci-token:$CI_TOKEN@$BASE_URL
+    - git remote -v
+    - git fetch upstream
+    - git config --local user.email $GITLAB_USER_EMAIL
+    - git config --local user.name $GITLAB_USER_NAME
+    - get merge upstream/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME
+  only:
+    - merge_requests
 job_ui_test:
+  <<: *only-default
   before_script:
     - echo "before script"
     - docker pull $registry_ip/board/dev_uibuilder:7.1
@@ -16,6 +45,7 @@ job_ui_test:
   tags:
     - board-runner-wangkun_lc-vm
 job_api_test:
+  <<: *only-default
   before_script:
     - source /etc/profile
     - echo "before script"
@@ -47,5 +77,25 @@ job_api_test:
     - docker run --rm -v $CI_PROJECT_DIR:/data/workspace/board/src/git/inspursoft/board -v /tmp:/tmp -w /data/workspace/board/src/git/inspursoft/board/tests --network host  -e GOPATH=/data/workspace/board golang:$golang_version bash -c "source env.cfg && source run.sh"
     - docker-compose -f tests/docker-compose.uibuilder.test.yml up
   stage: api-test
+  tags:
+    - board-runner-wangkun_lc-vm
+report-on-success:
+  stage: report
+  <<: *only-default
+  script:
+    - message="CI on Board passed."
+    - |
+      curl -X POST $request_url -H "PRIVATE-TOKEN: $reporter_token"    
+  when: on_success
+  tags:
+    - board-runner-wangkun_lc-vm
+report-on-failure:
+  stage: report
+  <<: *only-default
+  script:
+    - message="CI on Board failed."
+    - |
+      curl -X POST $request_url -H "PRIVATE-TOKEN: $reporter_token"
+  when: on_failure
   tags:
     - board-runner-wangkun_lc-vm
