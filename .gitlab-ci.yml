@@ -9,8 +9,8 @@ before_script:
     reporter_token=9xyfSydF7bDYsUQbrnPv && \
     gitlab_url=http://open.inspur.com
     request_url="$gitlab_url/api/v4/projects/$CI_PROJECT_ID/repository/commits/$CI_COMMIT_SHA/comments" && \
-    passed=":heavy_check_mark: <a href=\"$gitlab_url/$CI_PROJECT_PATH/commit/$CI_COMMIT_SHA\">Test Passed</a>" && \
-    failed=":x: <a href=\"$gitlab_url/$CI_PROJECT_PATH/commit/$CI_COMMIT_SHA\">Test Failed</a>"
+    passed=":heavy_check_mark: Test Passed" && \
+    failed=":x: Test Failed"
 stages:
 #  - pre-merge-requests
 #  - ui-test
