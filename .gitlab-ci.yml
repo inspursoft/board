@@ -6,7 +6,7 @@
     - merge_requests
 before_script:
   - reporter_token=9xyfSydF7bDYsUQbrnPv
-  - request_url="http://open.inspur.com/api/v4/projects/$CI_PROJECT_ID/repository/commits/$CI_COMMIT_SHA/comments?note=$message"
+  - request_url="http://open.inspur.com/api/v4/projects/$CI_PROJECT_ID/repository/commits/$CI_COMMIT_SHA/comments=$message"
 stages:
   - pre-merge-requests
   - ui-test
@@ -83,8 +83,8 @@ report-on-success:
   stage: report
   <<: *only-default
   script:
-    - message="CI on Board passed."
     - |
+      message="CI on Board passed." && \
       curl -X POST $request_url -H "PRIVATE-TOKEN: $reporter_token"  
   when: on_success
   tags:
@@ -93,8 +93,8 @@ report-on-failure:
   stage: report
   <<: *only-default
   script:
-    - message="CI on Board failed."
     - |
+      message="CI on Board failed." && \
       curl -X POST $request_url -H "PRIVATE-TOKEN: $reporter_token"
   when: on_failure
   tags:
