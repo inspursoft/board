@@ -9,7 +9,7 @@ before_script:
     reporter_token=9xyfSydF7bDYsUQbrnPv && \
     gitlab_url=http://open.inspur.com
     request_url="$gitlab_url/api/v4/projects/$CI_PROJECT_ID/repository/commits/$CI_COMMIT_SHA/comments" && \
-    passed=":heavy_check_mark: Test Passed" && \
+    passed=":heavy_check_mark: Test Passed"
     failed=":x: Test Failed"
 stages:
 #  - pre-merge-requests
@@ -88,8 +88,7 @@ report-on-success:
   <<: *only-default
   script:
     - |
-      message=$passed && \
-      curl -X POST $request_url -H "PRIVATE-TOKEN: $reporter_token" -H "Content-Type: application/json" \
+      message=$passed curl -X POST $request_url -H "PRIVATE-TOKEN: $reporter_token" -H "Content-Type: application/json" \
       -d '{ "note": "'"$message"'" }'
   when: on_success
   tags:
@@ -99,8 +98,7 @@ report-on-failure:
   <<: *only-default
   script:
     - |
-      message=$failed && \
-      curl -X POST $request_url -H "PRIVATE-TOKEN: $reporter_token" -H "Content-Type: application/json" \
+      message=$failed curl -X POST $request_url -H "PRIVATE-TOKEN: $reporter_token" -H "Content-Type: application/json" \
       -d '{ "note": "'"$message"'" }'
   when: on_failure
   tags:
