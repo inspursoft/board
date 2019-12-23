@@ -85,7 +85,7 @@ report-on-success:
   script:
     - message="CI on Board passed."
     - |
-      curl -X POST $request_url -H "PRIVATE_TOKEN: $reporter_token"    
+      curl -X POST $request_url -H "PRIVATE-TOKEN: $reporter_token"  
   when: on_success
   tags:
     - board-runner-wangkun_lc-vm
@@ -95,7 +95,7 @@ report-on-failure:
   script:
     - message="CI on Board failed."
     - |
-      curl -X POST $request_url -H "PRIVATE_TOKEN: $reporter_token"
+      curl -X POST $request_url -H "PRIVATE-TOKEN: $reporter_token"
   when: on_failure
   tags:
     - board-runner-wangkun_lc-vm
