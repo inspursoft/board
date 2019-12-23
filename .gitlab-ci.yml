@@ -90,7 +90,7 @@ report-on-success:
     - |
       message=$passed && \
       curl -X POST $request_url -H "PRIVATE-TOKEN: $reporter_token" -H "Content-Type: application/json" \
-      -d '{ "note": "'$message'" }'
+      -d '{ "note": "'"$message"'" }'
   when: on_success
   tags:
     - board-runner-wangkun_lc-vm
@@ -101,7 +101,7 @@ report-on-failure:
     - |
       message=$failed && \
       curl -X POST $request_url -H "PRIVATE-TOKEN: $reporter_token" -H "Content-Type: application/json" \
-      -d '{ "note": "'$message'" }'
+      -d '{ "note": "'"$message"'" }'
   when: on_failure
   tags:
     - board-runner-wangkun_lc-vm
