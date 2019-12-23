@@ -88,7 +88,7 @@ report-on-success:
   <<: *only-default
   script:
     - |
-      curl -X POST $request_url -H "PRIVATE-TOKEN: $reporter_token" --data-urlencode note=$success
+      curl -X POST $request_url -H "PRIVATE-TOKEN: $reporter_token" --data-urlencode note=$passed
   when: on_success
   tags:
     - board-runner-wangkun_lc-vm
