@@ -88,7 +88,7 @@ report-on-success:
   <<: *only-default
   script:
     - |
-      curl -X POST $request_url -H "PRIVATE-TOKEN: $reporter_token" -d '{ "note": "'"$passed"'" }'
+      curl -X POST $request_url -H "PRIVATE-TOKEN: $reporter_token" -H "Content-Type: application/json" -d '{ "note": "'"$passed"'" }'
   when: on_success
   tags:
     - board-runner-wangkun_lc-vm
@@ -97,7 +97,7 @@ report-on-failure:
   <<: *only-default
   script:
     - |
-      curl -X POST $request_url -H "PRIVATE-TOKEN: $reporter_token" -d '{ "note": "'"$failed"'" }'
+      curl -X POST $request_url -H "PRIVATE-TOKEN: $reporter_token" -H "Content-Type: application/json" -d '{ "note": "'"$failed"'" }'
   when: on_failure
   tags:
     - board-runner-wangkun_lc-vm
