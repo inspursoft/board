@@ -1,51 +1,102 @@
 ---
+.only-default: &only-default
+  only:
+    - master
+    - dev
+    - merge_requests
+before_script:
+  - |
+    reporter_token=9xyfSydF7bDYsUQbrnPv && \
+    request_url="http://open.inspur.com/api/v4/projects/$CI_PROJECT_ID/repository/commits/$CI_COMMIT_SHA/comments" && \
+    passed=':heavy_check_mark: <a href=\"'"$CI_PROJECT_URL"'/commit/'"$CI_COMMIT_SHA"'\">Test Passed</a>'
+    failed=':x: <a href=\"'"$CI_PROJECT_URL"'/commit/'"$CI_COMMIT_SHA"'\">Test Failed</a>'
 stages:
+  - pre-merge-requests
   - ui-test
   - api-test
+  - report
+pre-merge-requests:
+ stage: pre-merge-requests
+ script:
+   - echo $CI_MERGE_REQUEST_REF_PATH
+   - echo $CI_MERGE_REQUEST_PROJECT_PATH
+   - echo $CI_MERGE_REQUEST_PROJECT_URL
+   - bare_url=`echo $CI_MERGE_REQUEST_PROJECT_URL|cut -d ":" -f 2-|sed 's/^..//g'`
+   - BASE_URL=$bare_url.git
+   - echo $CI_MERGE_REQUEST_TARGET_BRANCH_NAME
+   - git remote -v
+   - git remote add upstream http://gitlab-ci-token:$CI_TOKEN@$BASE_URL
+   - git remote -v
+   - git fetch upstream
+   - git config --local user.email $GITLAB_USER_EMAIL
+   - git config --local user.name $GITLAB_USER_NAME
+   - get merge upstream/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME
+ only:
+   - merge_requests
 job_ui_test:
-  before_script:
-    - echo "before script"
-    - docker pull $registry_ip/board/dev_uibuilder:7.1
-    - docker tag $registry_ip/board/dev_uibuilder:7.1 10.111.25.119/board/dev_uibuilder:7.1
+ <<: *only-default
+ before_script:
+   - echo "before script"
+   - docker pull $registry_ip/board/dev_uibuilder:7.1
+   - docker tag $registry_ip/board/dev_uibuilder:7.1 10.111.25.119/board/dev_uibuilder:7.1
+ script:
+   - pwd
+   - docker images
+   - docker-compose -f tests/docker-compose.uibuilder.test.yml up
+   - code=$(docker inspect tests_uibuilder7_1 -f "{{.State.ExitCode}}"), exit $code
+ stage: ui-test
+ tags:
+   - board-runner-wangkun_lc-vm
+job_api_test:
+ <<: *only-default
+ before_script:
+   - source /etc/profile
+   - echo "before script"
+   - docker pull $registry_ip/library/golang:$golang_version
+   - docker tag $registry_ip/library/golang:$golang_version golang:$golang_version
+   - docker pull $registry_ip/library/registry:2.6.2        
+   - docker tag $registry_ip/library/registry:2.6.2 registry:latest
+   - docker pull $registry_ip/library/mysql:$mysql_version
+   - docker tag $registry_ip/library/mysql:$mysql_version mysql:$mysql_version
+   - docker pull $registry_ip/library/openldap:$openldap_version
+   - docker tag $registry_ip/library/openldap:$openldap_version osixia/openldap:$openldap_version
+   - docker pull $registry_ip/board/board-gogits:$last_version
+   - docker tag $registry_ip/board/board-gogits:$last_version board-gogits:$last_version
+   - docker pull $registry_ip/board/dev_jenkins:dev
+   - docker tag $registry_ip/board/dev_jenkins:dev dev_jenkins:dev
+   - docker pull $registry_ip/board/dev_gomail:dev
+   - docker tag $registry_ip/board/dev_gomail:dev 10.111.25.119/board/dev_gomail:dev
+   - docker pull $registry_ip/library/python:tavern2
+   - docker tag $registry_ip/library/python:tavern2 python:tavern2
+   - docker run --rm -v `pwd`:/data python:tavern2 /data/make/prepare
+ script:
+   - pwd
+   - docker images
+   - source tests/env.cfg
+   - cp tests/docker-compose.test.yml make/dev
+   - cp tests/ldap_test.ldif make/dev
+   - docker-compose -f make/dev/docker-compose.test.yml up -d
+   - sh tests/hosts.gitlab.sh
+   - docker run --rm -v $CI_PROJECT_DIR:/data/workspace/board/src/git/inspursoft/board -v /tmp:/tmp -w /data/workspace/board/src/git/inspursoft/board/tests --network host  -e GOPATH=/data/workspace/board golang:$golang_version bash -c "source env.cfg && source run.sh"
+   - docker-compose -f tests/docker-compose.uibuilder.test.yml up
+ stage: api-test
+ tags:
+   - board-runner-wangkun_lc-vm
+report-on-success:
+  stage: report
+  <<: *only-default
   script:
-    - pwd
-    - docker images
-    - docker-compose -f tests/docker-compose.uibuilder.test.yml up
-    - code=$(docker inspect tests_uibuilder7_1 -f "{{.State.ExitCode}}"), exit $code
-  stage: ui-test
+    - |
+      curl -X POST $request_url -H "PRIVATE-TOKEN: $reporter_token" -H "Content-Type: application/json" -d '{ "note": "'"$passed"'" }'
+  when: on_success
   tags:
     - board-runner-wangkun_lc-vm
-job_api_test:
-  before_script:
-    - source /etc/profile
-    - echo "before script"
-    - docker pull $registry_ip/library/golang:$golang_version
-    - docker tag $registry_ip/library/golang:$golang_version golang:$golang_version
-    - docker pull $registry_ip/library/registry:2.6.2        
-    - docker tag $registry_ip/library/registry:2.6.2 registry:latest
-    - docker pull $registry_ip/library/mysql:$mysql_version
-    - docker tag $registry_ip/library/mysql:$mysql_version mysql:$mysql_version
-    - docker pull $registry_ip/library/openldap:$openldap_version
-    - docker tag $registry_ip/library/openldap:$openldap_version osixia/openldap:$openldap_version
-    - docker pull $registry_ip/board/board-gogits:$last_version
-    - docker tag $registry_ip/board/board-gogits:$last_version board-gogits:$last_version
-    - docker pull $registry_ip/board/dev_jenkins:dev
-    - docker tag $registry_ip/board/dev_jenkins:dev dev_jenkins:dev
-    - docker pull $registry_ip/board/dev_gomail:dev
-    - docker tag $registry_ip/board/dev_gomail:dev 10.111.25.119/board/dev_gomail:dev
-    - docker pull $registry_ip/library/python:tavern2
-    - docker tag $registry_ip/library/python:tavern2 python:tavern2
-    - docker run --rm -v `pwd`:/data python:tavern2 /data/make/prepare
+report-on-failure:
+  stage: report
+  <<: *only-default
   script:
-    - pwd
-    - docker images
-    - source tests/env.cfg
-    - cp tests/docker-compose.test.yml make/dev
-    - cp tests/ldap_test.ldif make/dev
-    - docker-compose -f make/dev/docker-compose.test.yml up -d
-    - sh tests/hosts.gitlab.sh
-    - docker run --rm -v $CI_PROJECT_DIR:/data/workspace/board/src/git/inspursoft/board -v /tmp:/tmp -w /data/workspace/board/src/git/inspursoft/board/tests --network host  -e GOPATH=/data/workspace/board golang:$golang_version bash -c "source env.cfg && source run.sh"
-    - docker-compose -f tests/docker-compose.uibuilder.test.yml up
-  stage: api-test
+    - |
+      curl -X POST $request_url -H "PRIVATE-TOKEN: $reporter_token" -H "Content-Type: application/json" -d '{ "note": "'"$failed"'" }'
+  when: on_failure
   tags:
     - board-runner-wangkun_lc-vm
