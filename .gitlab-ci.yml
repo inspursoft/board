@@ -7,10 +7,10 @@
 before_script:
   - |
     reporter_token=9xyfSydF7bDYsUQbrnPv && \
-    request_url="http://open.inspur.com/api/v4/projects/$CI_PROJECT_ID/repository/commits/$CI_COMMIT_SHA/comments" && \
-    curl_command='curl -X POST $request_url -H "PRIVATE-TOKEN: '"$reporter_token"' -H  "Content-Type: application/json" -d { "note": '"$message"' }' && \
-    passed=':heavy_check_mark: <a href="'"$gitlab_url"'/'"$CI_PROJECT_PATH"'/commit/'"$CI_COMMIT_SHA"'">Test Passed</a>' && \
-    failed=':x: <a href="'"$gitlab_url"'/'"$CI_PROJECT_PATH"'/commit/'"$CI_COMMIT_SHA"'">Test Failed</a>'
+    gitlab_url=http://open.inspur.com
+    request_url="http://$gitlab_url/api/v4/projects/$CI_PROJECT_ID/repository/commits/$CI_COMMIT_SHA/comments" && \
+    passed=":heavy_check_mark: <a href=\"$gitlab_url/$CI_PROJECT_PATH/commit/$CI_COMMIT_SHA\">Test Passed</a>" && \
+    failed=":x: <a href=\"$gitlab_url/$CI_PROJECT_PATH/commit/$CI_COMMIT_SHA\">Test Failed</a>"
 stages:
 #  - pre-merge-requests
 #  - ui-test
@@ -87,7 +87,10 @@ report-on-success:
   stage: report
   <<: *only-default
   script:
-    - message=$passed && eval($curl_command)
+    - |
+      message=$passed && \
+      curl -X POST $request_url -H "PRIVATE-TOKEN: $reporter_token" -H "Content-Type: application/json" \
+      -d '{ "note": "$message" }'
   when: on_success
   tags:
     - board-runner-wangkun_lc-vm
@@ -95,7 +98,10 @@ report-on-failure:
   stage: report
   <<: *only-default
   script:
-    - message=$failed && eval($curl_command)
+    - |
+      message=$failed && \
+      curl -X POST $request_url -H "PRIVATE-TOKEN: $reporter_token" -H "Content-Type: application/json" \
+      -d '{ "note": "$message" }'
   when: on_failure
   tags:
     - board-runner-wangkun_lc-vm
