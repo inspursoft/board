@@ -34,6 +34,8 @@ pre-merge-requests:
    - get merge upstream/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME
  only:
    - merge_requests
+ tags:
+   - board-runner-wangkun_lc-vm
 job_ui_test:
  <<: *only-default
  before_script:
