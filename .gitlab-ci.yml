@@ -47,7 +47,7 @@ job_ui_test:
    - code=$(docker inspect tests_uibuilder7_1 -f "{{.State.ExitCode}}"), exit $code
  stage: ui-test
  tags:
-   - board-runner-wangkun_lc-vm
+   - board-runner-liyanqing-vm
 job_api_test:
  <<: *only-default
  before_script:
@@ -82,7 +82,7 @@ job_api_test:
    - docker-compose -f tests/docker-compose.uibuilder.test.yml up
  stage: api-test
  tags:
-   - board-runner-wangkun_lc-vm
+   - board-runner-liyanqing-vm
 report-on-success:
   stage: report
   <<: *only-default
@@ -91,7 +91,7 @@ report-on-success:
       curl -X POST $request_url -H "PRIVATE-TOKEN: $reporter_token" -H "Content-Type: application/json" -d '{ "note": "'"$passed"'" }'
   when: on_success
   tags:
-    - board-runner-wangkun_lc-vm
+    - board-runner-liyanqing-vm
 report-on-failure:
   stage: report
   <<: *only-default
@@ -100,4 +100,4 @@ report-on-failure:
       curl -X POST $request_url -H "PRIVATE-TOKEN: $reporter_token" -H "Content-Type: application/json" -d '{ "note": "'"$failed"'" }'
   when: on_failure
   tags:
-    - board-runner-wangkun_lc-vm
+    - board-runner-liyanqing-vm
