@@ -2,7 +2,8 @@
 .only-default: &only-default
   only:
     - master
-    - dev
+    - pushes
+    - tags
     - merge_requests
 before_script:
   - |
