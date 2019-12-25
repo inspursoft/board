@@ -81,7 +81,6 @@ job_api_test:
    - docker-compose -f make/dev/docker-compose.test.yml up -d
    - sh tests/hosts.gitlab.sh
    - docker run --rm -v $CI_PROJECT_DIR:/data/workspace/board/src/git/inspursoft/board -v /tmp:/tmp -w /data/workspace/board/src/git/inspursoft/board/tests --network host  -e GOPATH=/data/workspace/board golang:$golang_version bash -c "source env.cfg && source run.sh"
-   - docker-compose -f tests/docker-compose.uibuilder.test.yml up
  stage: api-test
  tags:
    - board-runner-zhanghu01-vm
