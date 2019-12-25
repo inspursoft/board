@@ -46,7 +46,7 @@ export const LANG_ZH_CN = {
     "HTTP_422": "无法处理实体:422",
     "HTTP_UNK":"未知错误",
     "HTTP_TIME_OUT":"Http请求超时",
-    "INVALID_TOKEN": "无效的Token，请把该Url发给开发人员",
+    "INVALID_TOKEN": "无效的Token，请把该url发给开发人员",
     "INSUFFICIENT_PRIVILEGE":"权限不足，无法操作."
   },
   "CS_DROPDOWN":{
