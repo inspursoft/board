@@ -1,13 +1,19 @@
-import { Component, EventEmitter, OnInit, Type } from "@angular/core";
-import { CsModalChildBase } from "../../../shared/cs-modal-base/cs-modal-child-base";
-import { NFSPersistentVolume, PersistentVolume, PvAccessMode, PvReclaimMode, RBDPersistentVolume } from "../../../shared/shared.types";
-import { StorageService } from "../../storage.service";
-import { ValidationErrors } from "@angular/forms";
-import { HttpErrorResponse } from "@angular/common/http";
-import { MessageService } from "../../../shared.service/message.service";
-import { Observable, of } from "rxjs";
-import { catchError, map } from "rxjs/operators";
+import { Component, EventEmitter, OnInit, Type } from '@angular/core';
+import { ValidationErrors } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Observable, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
+import { CsModalChildBase } from '../../../shared/cs-modal-base/cs-modal-child-base';
+import {
+  NFSPersistentVolume,
+  PersistentVolume,
+  PvAccessMode,
+  PvReclaimMode,
+  RBDPersistentVolume
+} from '../../../shared/shared.types';
+import { StorageService } from '../../storage.service';
+import { MessageService } from '../../../shared.service/message.service';
 
 @Component({
   templateUrl: './create-pv.component.html',
@@ -28,7 +34,7 @@ export class CreatePvComponent extends CsModalChildBase implements OnInit {
               private messageService: MessageService) {
     super();
     this.storageTypeList = Array<{name: string, value: number, classType: Type<PersistentVolume>}>();
-    this.newPersistentVolume = new NFSPersistentVolume();//default 'NFS' type
+    this.newPersistentVolume = new NFSPersistentVolume();
     this.accessModeList = Array<PvAccessMode>();
     this.reclaimModeList = Array<PvReclaimMode>();
     this.onAfterCommit = new EventEmitter<PersistentVolume>();
@@ -36,8 +42,8 @@ export class CreatePvComponent extends CsModalChildBase implements OnInit {
 
   ngOnInit() {
     this.accessModeList.push(PvAccessMode.ReadWriteOnce);
-    this.accessModeList.push(PvAccessMode.ReadWriteMany);
     this.accessModeList.push(PvAccessMode.ReadOnlyMany);
+    this.accessModeList.push(PvAccessMode.ReadWriteMany);
     this.reclaimModeList.push(PvReclaimMode.Retain);
     this.reclaimModeList.push(PvReclaimMode.Recycle);
     this.reclaimModeList.push(PvReclaimMode.Delete);
@@ -47,7 +53,7 @@ export class CreatePvComponent extends CsModalChildBase implements OnInit {
     ];
   }
 
-  changeAccessMode(mode: PvAccessMode){
+  changeAccessMode(mode: PvAccessMode) {
     this.newPersistentVolume.accessMode = mode;
   }
 
@@ -70,31 +76,36 @@ export class CreatePvComponent extends CsModalChildBase implements OnInit {
     return this.newPersistentVolume as RBDPersistentVolume;
   }
 
-  get checkPvNameFun(){
-    return this.checkPvName.bind(this)
+  get checkPvNameFun() {
+    return this.checkPvName.bind(this);
   }
 
   checkPvName(control: HTMLInputElement): Observable<ValidationErrors | null> {
     return this.storageService.checkPvNameExist(control.value)
-      .pipe(map(() => null),catchError((err:HttpErrorResponse) => {
-        if (err.status == 409) {
+      .pipe(map(() => null), catchError((err: HttpErrorResponse) => {
+        if (err.status === 409) {
           this.messageService.cleanNotification();
-          return of({pvNameExists: "STORAGE.PV_NAME_EXIST"});
-        } else if (err.status == 404) {
+          return of({pvNameExists: 'STORAGE.PV_NAME_EXIST'});
+        } else if (err.status === 404) {
           this.messageService.cleanNotification();
         }
         return of(null);
       }));
   }
 
-  changeSelectType(event: {name: string, value: number, classType: Type<PersistentVolume>}) {
-    let newPv = new event.classType();
+  changeSelectType(event: { name: string, value: number, classType: Type<PersistentVolume> }) {
+    const newPv = new event.classType();
     newPv.name = this.newPersistentVolume.name;
     newPv.capacity = this.newPersistentVolume.capacity;
-    newPv.accessMode = this.newPersistentVolume.accessMode;
     newPv.reclaim = this.newPersistentVolume.reclaim;
     this.newPersistentVolume = newPv;
     this.newPersistentVolume.type = event.value;
+    this.accessModeList = Array<PvAccessMode>();
+    this.accessModeList.push(PvAccessMode.ReadWriteOnce);
+    this.accessModeList.push(PvAccessMode.ReadOnlyMany);
+    if (this.newPersistentVolume.type === 1) {
+      this.accessModeList.push(PvAccessMode.ReadWriteMany);
+    }
   }
 
   editMonitors() {
