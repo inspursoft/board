@@ -2,8 +2,9 @@
 .only-default: &only-default
   only:
     - master
-    - dev
-    - merge_request 
+    - pushes
+    - tags
+    - merge_requests
 before_script:
   - |
     reporter_token=9xyfSydF7bDYsUQbrnPv && \
