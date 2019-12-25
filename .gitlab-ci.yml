@@ -3,8 +3,7 @@
   only:
     - master
     - dev
-    - merge_request 
-s
+    - merge_request
 before_script:
   - |
     reporter_token=9xyfSydF7bDYsUQbrnPv && \
