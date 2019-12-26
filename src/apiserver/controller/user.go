@@ -201,6 +201,11 @@ func (u *SystemAdminController) AddUserAction() {
 		return
 	}
 
+	if strings.Count(reqUser.Username, "") > 36 {
+		u.customAbort(http.StatusBadRequest, "Username must contain at most 35 characters.")
+		return
+	}
+
 	if !utils.ValidateWithPattern("username", reqUser.Username) {
 		u.customAbort(http.StatusBadRequest, "Username content is illegal.")
 		return
