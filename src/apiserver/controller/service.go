@@ -138,15 +138,7 @@ func (p *ServiceController) DeployServiceAction() {
 	items := []string{deploymentFile, serviceFile}
 	p.pushItemsToRepo(items...)
 
-	var serviceType int
-	if deployInfo.Service.Type == "NodePort" {
-		serviceType = model.ServiceTypeNormalNodePort
-	} else if deployInfo.Service.Type == "ClusterIP" {
-		serviceType = model.ServiceTypeClusterIP
-	}
-	// TODO support deployment only
-
-	updateService := model.ServiceStatus{ID: serviceInfo.ID, Status: uncompleted, Type: serviceType, ServiceYaml: string(deployInfo.ServiceFileInfo),
+	updateService := model.ServiceStatus{ID: serviceInfo.ID, Status: uncompleted, Type: service.GetServiceType(deployInfo.Service.Type), ServiceYaml: string(deployInfo.ServiceFileInfo),
 		DeploymentYaml: string(deployInfo.DeploymentFileInfo)}
 	_, err = service.UpdateService(updateService, "status", "type", "service_yaml", "deployment_yaml")
 	if err != nil {
@@ -697,6 +689,7 @@ func (f *ServiceController) UploadYamlFileAction() {
 		Status:      preparing, // 0: preparing 1: running 2: suspending
 		OwnerID:     f.currentUser.ID,
 		OwnerName:   f.currentUser.Username,
+		Type:        service.GetServiceType(deployInfo.Service.Type),
 	})
 	if err != nil {
 		f.internalError(err)
