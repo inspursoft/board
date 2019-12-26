@@ -205,6 +205,7 @@ func (u *SystemAdminController) AddUserAction() {
 		u.customAbort(http.StatusBadRequest, "Username content is illegal.")
 		return
 	}
+
 	usernameExists, err := service.UserExists("username", reqUser.Username, 0)
 	if err != nil {
 		u.internalError(err)
