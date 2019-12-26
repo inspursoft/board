@@ -71,11 +71,55 @@ type Chart struct {
 	// Miscellaneous files in a chart archive,
 	// e.g. README, LICENSE, etc.
 	Files []*File `json:"files,omitempty"`
+	// Questions
+	Questions []Question `json:"questions,omitempty"`
 }
 
 type File struct {
 	Name     string `json:"name,omitempty"`
 	Contents string `json:"contents,omitempty"`
+}
+
+type Questions struct {
+	Questions []Question `yaml:"questions,omitempty"`
+}
+
+type Question struct {
+	Variable          string        `json:"variable,omitempty" yaml:"variable,omitempty"`
+	Label             string        `json:"label,omitempty" yaml:"label,omitempty"`
+	Description       string        `json:"description,omitempty" yaml:"description,omitempty"`
+	Type              string        `json:"type,omitempty" yaml:"type,omitempty"`
+	Required          bool          `json:"required,omitempty" yaml:"required,omitempty"`
+	Default           string        `json:"default,omitempty" yaml:"default,omitempty"`
+	Group             string        `json:"group,omitempty" yaml:"group,omitempty"`
+	MinLength         int           `json:"min_length,omitempty" yaml:"min_length,omitempty"`
+	MaxLength         int           `json:"max_length,omitempty" yaml:"max_length,omitempty"`
+	Min               int           `json:"min,omitempty" yaml:"min,omitempty"`
+	Max               int           `json:"max,omitempty" yaml:"max,omitempty"`
+	Options           []string      `json:"options,omitempty" yaml:"options,omitempty"`
+	ValidChars        string        `json:"valid_chars,omitempty" yaml:"valid_chars,omitempty"`
+	InvalidChars      string        `json:"invalid_chars,omitempty" yaml:"invalid_chars,omitempty"`
+	Subquestions      []SubQuestion `json:"subquestions,omitempty" yaml:"subquestions,omitempty"`
+	ShowIf            string        `json:"show_if,omitempty" yaml:"show_if,omitempty"`
+	ShowSubquestionIf string        `json:"show_subquestion_if,omitempty" yaml:"show_subquestion_if,omitempty"`
+}
+
+type SubQuestion struct {
+	Variable     string   `json:"variable,omitempty" yaml:"variable,omitempty"`
+	Label        string   `json:"label,omitempty" yaml:"label,omitempty"`
+	Description  string   `json:"description,omitempty" yaml:"description,omitempty"`
+	Type         string   `json:"type,omitempty" yaml:"type,omitempty"`
+	Required     bool     `json:"required,omitempty" yaml:"required,omitempty"`
+	Default      string   `json:"default,omitempty" yaml:"default,omitempty"`
+	Group        string   `json:"group,omitempty" yaml:"group,omitempty"`
+	MinLength    int      `json:"min_length,omitempty" yaml:"min_length,omitempty"`
+	MaxLength    int      `json:"max_length,omitempty" yaml:"max_length,omitempty"`
+	Min          int      `json:"min,omitempty" yaml:"min,omitempty"`
+	Max          int      `json:"max,omitempty" yaml:"max,omitempty"`
+	Options      []string `json:"options,omitempty" yaml:"options,omitempty"`
+	ValidChars   string   `json:"valid_chars,omitempty" yaml:"valid_chars,omitempty"`
+	InvalidChars string   `json:"invalid_chars,omitempty" yaml:"invalid_chars,omitempty"`
+	ShowIf       string   `json:"show_if,omitempty" yaml:"show_if,omitempty"`
 }
 
 type Release struct {
@@ -91,7 +135,7 @@ type Release struct {
 	OwnerName      string            `json:"owner_name,omitempty"`
 	Status         string            `json:"status,omitempty"`
 	Values         string            `json:"values,omitempty"`
-	Answers        map[string]string `json:"Answers,omitempty"`
+	Answers        map[string]string `json:"answers,omitempty"`
 	UpdateTime     time.Time         `json:"update_time,omitempty"`
 	CreateTime     time.Time         `json:"creation_time,omitempty"`
 }
