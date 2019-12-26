@@ -37,6 +37,7 @@ const (
 	serviceType      = "service"
 	statefulsetType  = "statefulset"
 	startingDuration = 300 * time.Second //300 seconds
+	serviceTypeYaml  = 1
 )
 
 const (
@@ -697,6 +698,7 @@ func (f *ServiceController) UploadYamlFileAction() {
 		Status:      preparing, // 0: preparing 1: running 2: suspending
 		OwnerID:     f.currentUser.ID,
 		OwnerName:   f.currentUser.Username,
+		Type:        serviceTypeYaml,
 	})
 	if err != nil {
 		f.internalError(err)
