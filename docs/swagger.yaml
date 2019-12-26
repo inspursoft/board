@@ -7298,6 +7298,7 @@ definitions:
           type: array
           items:
             $ref: '#/definitions/File'
+    - $ref: '#/definitions/Questions'
   File:
     type: object
     properties:
