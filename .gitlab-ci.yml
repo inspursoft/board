@@ -35,7 +35,7 @@ pre-merge-requests:
  only:
    - merge_requests
  tags:
-   - board-runner-wangkun_lc-vm
+   - board-runner-zhanghu01-vm
 job_ui_test:
  <<: *only-default
  before_script:
