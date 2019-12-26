@@ -92,7 +92,7 @@ report-on-success:
       curl -X POST $request_url -H "PRIVATE-TOKEN: $reporter_token" -H "Content-Type: application/json" -d '{ "note": "'"$passed"'" }'
   when: on_success
   tags:
-    - board-runner-liyanqing-vm
+    - board-runner-wangkun_lc-vm
 report-on-failure:
   stage: report
   <<: *only-default
