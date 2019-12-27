@@ -338,6 +338,8 @@ export const LANG_EN_US = {
     "UPLOAD_CHART_OPERATION":"Operation",
     "UPLOAD_CHART_UPLOAD":"Upload",
     "RELEASE_CHART_TITLE":"Release",
+    "RELEASE_CHART_BASE_INFO":"Base information",
+    "RELEASE_CHART_QUESTION_SETTING":"Questions setting",
     "RELEASE_CHART_SELECT_PROJECT":"Select project",
     "RELEASE_CHART_SELECT_PROJECT_TIP":"Please select project",
     "RELEASE_CHART_REPO_NAME":"Repository name",
