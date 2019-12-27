@@ -12,7 +12,7 @@ export abstract class ResponseBase {
     const metadataKeys: Array<string> = Reflect.getMetadataKeys(this);
     metadataKeys.forEach((metadataKey: string) => {
       const propertyName = Reflect.getMetadata(metadataKey, this);
-      if (Reflect.has(this.res, propertyName)) {
+      if (this.res && Reflect.has(this.res, propertyName)) {
         const value = Reflect.get(this.res, propertyName);
         Reflect.set(this, metadataKey, value);
       }
@@ -41,6 +41,10 @@ export abstract class ResponseArrayBase<T extends ResponseBase> {
     if (isArray(this.res)) {
       (this.res as Array<object>).forEach(item => this.data.push(this.CreateOneItem(item)));
     }
+  }
+
+  get length() {
+    return this.data.length;
   }
 
   [Symbol.iterator]() {

@@ -66,10 +66,6 @@ export class ServiceCreateYamlComponent implements OnInit {
     }
   }
 
-  setDropdownDefaultText(): void {
-    let selected = this.projectsList.find((project: Project) => project.project_id === this.selectedProjectId);
-  }
-
   clickSelectProject() {
     this.sharedActionService.createProjectComponent(this.selfView).subscribe((projectName: string) => {
       if (projectName) {
@@ -88,10 +84,12 @@ export class ServiceCreateYamlComponent implements OnInit {
   }
 
   btnCancelClick(event: MouseEvent) {
-    if (this.createServiceStatus == EXECUTE_STATUS.esFailed){
+    if (this.createServiceStatus === EXECUTE_STATUS.esFailed || (
+      this.uploadFileStatus === EXECUTE_STATUS.esSuccess &&
+      this.createServiceStatus === EXECUTE_STATUS.esNotExe)) {
       this.k8sService.deleteService(this.newServiceId).subscribe(
-        ()=>this.onCancelEvent.emit(event),
-        ()=>this.onCancelEvent.emit(event)
+        () => this.onCancelEvent.emit(event),
+        () => this.onCancelEvent.emit(event)
       );
     } else {
       this.onCancelEvent.emit(event);
@@ -146,13 +144,13 @@ export class ServiceCreateYamlComponent implements OnInit {
       || !this.filesDataMap.has(SERVICE);
   }
 
-  get isEditDeploymentEnable(): boolean{
+  get isEditDeploymentEnable(): boolean {
     return this.uploadFileStatus == EXECUTE_STATUS.esNotExe
       && !this.isFileInEdit
       && this.filesDataMap.get(DEPLOYMENT) != undefined
   }
 
-  get isEditServiceEnable(): boolean{
+  get isEditServiceEnable(): boolean {
     return this.uploadFileStatus == EXECUTE_STATUS.esNotExe
       && !this.isFileInEdit
       && this.filesDataMap.get(SERVICE) != undefined
@@ -169,7 +167,7 @@ export class ServiceCreateYamlComponent implements OnInit {
     reader.readAsText(file);
   }
 
-  saveFile():void{
+  saveFile(): void {
     this.isFileInEdit = false;
     this.filesDataMap.delete(this.curFileName);
     try {
