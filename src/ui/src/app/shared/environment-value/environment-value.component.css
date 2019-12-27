@@ -1,5 +1,7 @@
 div.modal-body {
-  min-height: 450px;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
 }
 
 textarea {
@@ -28,10 +30,6 @@ div.line-container {
 
 div.line-container lib-input-ex {
   flex-grow: 1;
-}
-
-div.line-container lib-dropdown-ex {
-  margin-left: 10px;
 }
 
 div.line-container clr-checkbox {

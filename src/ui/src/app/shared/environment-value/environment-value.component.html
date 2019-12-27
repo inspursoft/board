@@ -1,4 +1,4 @@
-<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'lg'" [clrModalClosable]="false"
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'md'" [clrModalClosable]="false"
            [clrModalPreventClose]="true">
   <h3 class="modal-title">{{"SERVICE.ENV_TITLE" | translate }}</h3>
   <div class="modal-body">
@@ -42,9 +42,11 @@
                (click)="changeBindConfigMap(iEnv, envInfo, $event)"
                [checked]="bindConfigMap.get(iEnv)">
         <label [for]="iEnv">{{"SERVICE.ENV_BIND_CONFIG_MAP" | translate}}</label>
+      </div>
+      <div class="line-container" *ngIf="isProvideBindConfigMap">
         <lib-dropdown-ex *ngIf="bindConfigMap.get(iEnv)"
                          [dropdownTip]="'SERVICE.ENV_CONFIG_MAP_DEFAULT_TEXT' |translate"
-                         [dropdownMinWidth]="300"
+                         [dropdownMinWidth]="250"
                          [dropdownItems]="configMapList"
                          [dropdownIsRequired]="envsData[iEnv].envConfigMapName == ''"
                          [dropdownKey]="'name'"
@@ -52,7 +54,7 @@
         </lib-dropdown-ex>
         <lib-dropdown-ex *ngIf="bindConfigMap.get(iEnv) && configMapDetail.get(iEnv) !== undefined"
                          [dropdownTip]="'SERVICE.ENV_CONFIG_MAP_KEY_DEFAULT_TEXT' |translate"
-                         [dropdownMinWidth]="300"
+                         [dropdownMinWidth]="250"
                          [dropdownIsRequired]="envsData[iEnv].envConfigMapKey == ''"
                          [dropdownItems]="configMapDetail.get(iEnv).dataList"
                          [dropdownKey]="'key'"
