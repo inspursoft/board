@@ -11,11 +11,26 @@ import { GlobalAlertType } from '../shared/shared.types';
 
 @Injectable()
 export class HttpClientInterceptor implements HttpInterceptor {
+  exceptUrls: Array<string>;
 
   constructor(private appTokenService: AppTokenService,
               private messageService: MessageService,
               private translateService: TranslateService) {
+    this.exceptUrls = new Array<string>();
+    this.initExceptUrls();
+  }
 
+  initExceptUrls() {
+    this.exceptUrls.push('/api/v1/systeminfo');
+    this.exceptUrls.push('/api/v1/log-out');
+    this.exceptUrls.push('/api/v1/sign-in');
+    this.exceptUrls.push('/api/v1/user-exists');
+    this.exceptUrls.push('/api/v1/sign-up');
+    this.exceptUrls.push('/api/v1/forgot-password');
+  }
+
+  isNotExceptUrl(res: HttpResponse<object>): boolean {
+    return this.exceptUrls.every(value => res.url.indexOf(value) === -1);
   }
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
@@ -24,8 +39,8 @@ export class HttpClientInterceptor implements HttpInterceptor {
     });
     if (this.appTokenService.token !== '') {
       authReq = authReq.clone({
-        headers: authReq.headers.set("token", this.appTokenService.token),
-        params: authReq.params.set("Timestamp", Date.now().toString())
+        headers: authReq.headers.set('token', this.appTokenService.token),
+        params: authReq.params.set('Timestamp', Date.now().toString())
       });
     }
     return next.handle(authReq)
@@ -33,8 +48,15 @@ export class HttpClientInterceptor implements HttpInterceptor {
         tap((event: HttpEvent<any>) => {
           if (event instanceof HttpResponse) {
             const res = event as HttpResponse<object>;
-            if (res.ok && res.headers.has('token')) {
+            if (res.ok && res.headers.has('token') && res.headers.get('token') !== '') {
               this.appTokenService.chainResponse(res);
+            } else if (this.isNotExceptUrl(res)) {
+              this.translateService.get('ERROR.INVALID_TOKEN').subscribe(value => {
+                const msg = `${value}:${res.url}`;
+                this.messageService.showGlobalMessage(msg, {
+                  globalAlertType: GlobalAlertType.gatLogin
+                });
+              });
             }
           }
         }), timeout(30000),

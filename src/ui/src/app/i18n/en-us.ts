@@ -47,6 +47,7 @@ export const LANG_EN_US = {
     "HTTP_422": "Unprocessable Entity:422",
     "HTTP_UNK":"Unknown error",
     "HTTP_TIME_OUT":"Http request timeout",
+    "INVALID_TOKEN": "Invalid token, please send this url to developer",
     "INSUFFICIENT_PRIVILEGE":"Insufficient privilege to operate it."
   },
   "CS_DROPDOWN":{
