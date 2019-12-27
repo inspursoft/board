@@ -33,6 +33,10 @@ button.signpost-content-header-btn-close:hover {
   color: deepskyblue !important;
 }
 
+div.signpost-content-header{
+  background-color: transparent;
+}
+
 button.btn {
   text-transform: none;
 }
