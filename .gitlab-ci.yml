@@ -12,7 +12,7 @@ stages:
 pre-merge-requests:
   stage: pre-merge-requests
   script:
-    - echo $CI_MERGE_REQUEST_PROJECT_URL
+    - echo ${CI_MERGE_REQUEST_PROJECT_URL}
     - bare_url=`echo ${CI_MERGE_REQUEST_PROJECT_URL}|cut -d ":" -f 2-|sed 's/^..//g'`
     - BASE_URL=$bare_url
     - echo ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}
