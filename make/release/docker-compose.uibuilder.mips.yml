@@ -1,10 +1,10 @@
 version: '2'
 services:
-  uibuilder-mips7.1:
+  uibuilder-mips7.2:
     build:
       context: ../../
       dockerfile: make/dev/container/uibuilder/Dockerfile.mips
-    image: inspursoft/uibuilder-mips:7.1
+    image: inspursoft/uibuilder-mips:7.2
     volumes:
       - ../../src/ui:/board_src
     environment:
