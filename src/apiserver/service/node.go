@@ -161,7 +161,7 @@ func GetNodeList() (res []NodeListResult) {
 	for _, v := range Node.Items {
 		res = append(res, NodeListResult{
 			NodeName: v.Status.Addresses[1].Address,
-			NodeIP:   v.Status.Addresses[1].Address,
+			NodeIP:   v.Status.Addresses[0].Address,
 			Status: func() NodeStatus {
 				if v.Unschedulable {
 					return Unschedulable
