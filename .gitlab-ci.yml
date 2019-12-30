@@ -30,8 +30,8 @@ pre-merge-requests:
 job_ui_test:
   before_script:
     - echo "before script"
-    - docker pull $registry_ip/board/dev_uibuilder:7.1
-    - docker tag $registry_ip/board/dev_uibuilder:7.1 10.111.25.119/board/dev_uibuilder:7.1
+    - docker pull $registry_ip/board/dev_uibuilder:7.2
+    - docker tag $registry_ip/board/dev_uibuilder:7.2 10.111.25.119/board/dev_uibuilder:7.2
   script:
     - pwd
     - docker images
