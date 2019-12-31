@@ -310,7 +310,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   buildImageResole() {
     this.processImageSubscription = this.webSocketService
       .connect(`ws://${this.boardHost}/api/v1/jenkins-job/console?
-                job_name=${this.customerNewImage.project_name}&token=${this.appInitService.token}`)
+      job_name=${this.customerNewImage.project_name}&token=${this.appInitService.token}`)
       .subscribe((obs: MessageEvent) => {
         this.consoleText = obs.data as string;
         this.waitingMessage = 'IMAGE.CREATE_IMAGE_WAITING_BUILD';
