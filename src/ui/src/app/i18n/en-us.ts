@@ -453,6 +453,8 @@ export const LANG_EN_US = {
     "CREATE_IMAGE_BASE_IMAGE_PATTERN":"A string consisting of the lowercase,numeric,'.',-',':'",
     "CREATE_IMAGE_WAITING_BUILD": "Building an image",
     "CREATE_IMAGE_WAITING_UPLOAD": "Uploading the image to repository",
+    "CREATE_IMAGE_UPLOAD_IMAGE_TIMEOUT":"Wait too long, there may be an error, whether to continue waiting?",
+    "CREATE_IMAGE_TIMEOUT":"Time out",
   },
   "RESOURCE":{
     "CONFIG_MAP_LIST_NAME":"Name",
