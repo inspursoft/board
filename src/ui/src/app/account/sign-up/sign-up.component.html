@@ -9,7 +9,7 @@
                   [inputDisabled]="isSignUpWIP"
                   [inputPlaceholder]="'ACCOUNT.INPUT_USERNAME' | translate"
                   [validatorMessage]="[{key: 'required', message: 'ACCOUNT.USERNAME_IS_REQUIRED' | translate}]"
-                  [inputMaxlength]="40"
+                  [inputMaxlength]="35"
                   [inputMinlength]="4"
                   (commitEvent)="signUpModel.username = $event">
     </lib-input-ex>
