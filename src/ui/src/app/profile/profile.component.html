@@ -8,7 +8,7 @@
     <span class="line-title">{{"PROFILES.CLUSTER_VERSION" | translate}}:</span>
     <span>{{k8sVersion}}</span>
   </div>
-  <div class="line-container">
+  <div *ngIf="isShowProcessorType" class="line-container">
     <span class="line-title">{{"PROFILES.PROCESSOR_TYPE" | translate}}:</span>
     <span>{{processorType}}</span>
   </div>
