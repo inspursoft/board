@@ -2,7 +2,7 @@
  * Created by liyanq on 21/11/2017.
  */
 
-import { Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { BuildImageData, Image, ImageDetail } from '../image';
 import { ImageService } from '../image-service/image-service';
 import { MessageService } from '../../shared.service/message.service';
@@ -13,8 +13,8 @@ import { EnvType } from '../../shared/environment-value/environment-value.compon
 import { ValidationErrors } from '@angular/forms';
 import { TranslateService } from '@ngx-translate/core';
 import { CsModalChildBase } from '../../shared/cs-modal-base/cs-modal-child-base';
-import { CreateImageMethod, GlobalAlertType, Tools } from '../../shared/shared.types';
-import { Observable, of, Subscription } from 'rxjs';
+import { BUTTON_STYLE, CreateImageMethod, GlobalAlertType, RETURN_STATUS, Tools } from '../../shared/shared.types';
+import { interval, Observable, of, Subscription } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
 const AUTO_REFRESH_IMAGE_LIST = 2000;
@@ -59,6 +59,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   baseImageSource = 1;
   boardRegistry = '';
   processImageSubscription: Subscription;
+  announceUserSubscription: Subscription;
   cancelButtonDisable = true;
   cancelInfo: { isShow: boolean, isForce: boolean, title: string, message: string };
   uploadTarPackageName = '';
@@ -116,6 +117,9 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   ngOnDestroy() {
     if (this.processImageSubscription) {
       this.processImageSubscription.unsubscribe();
+    }
+    if (this.announceUserSubscription) {
+      this.announceUserSubscription.unsubscribe();
     }
     clearInterval(this.intervalAutoRefreshImageList);
     clearInterval(this.intervalWaitingPoints);
@@ -319,6 +323,16 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
         const consoleTextArr: Array<string> = this.consoleText.split(/[\n]/g);
         if (consoleTextArr.find(value => value.indexOf('Finished: SUCCESS') > -1)) {
           this.isNeedAutoRefreshImageList = true;
+          this.announceUserSubscription = interval(5 * 60 * 1000).subscribe(() => {
+            this.messageService.showDialog('IMAGE.CREATE_IMAGE_UPLOAD_IMAGE_TIMEOUT',
+              {title: 'IMAGE.CREATE_IMAGE_TIMEOUT', view: this.alertView, buttonStyle: BUTTON_STYLE.YES_NO})
+              .subscribe(message => {
+                if (message.returnStatus === RETURN_STATUS.rsCancel) {
+                  this.closeNotification.next({});
+                  this.modalOpened = false;
+                }
+              });
+          });
           this.processImageSubscription.unsubscribe();
         }
         if (consoleTextArr.find(value => value.indexOf('Finished: FAILURE') > -1)) {

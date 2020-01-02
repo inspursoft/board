@@ -453,6 +453,8 @@ export const LANG_ZH_CN = {
     "CREATE_IMAGE_BASE_IMAGE_PATTERN":"由小写字母、数字、'.'、':'、'-'组成的字符串",
     "CREATE_IMAGE_WAITING_BUILD": "正在构建镜像",
     "CREATE_IMAGE_WAITING_UPLOAD": "正在上传镜像至仓库",
+    "CREATE_IMAGE_UPLOAD_IMAGE_TIMEOUT":"等待时间过长，可能发生了错误，是否继续等待？",
+    "CREATE_IMAGE_TIMEOUT":"超时",
   },
   "RESOURCE":{
     "CONFIG_MAP_LIST_NAME":"名称",
