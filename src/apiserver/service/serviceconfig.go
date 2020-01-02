@@ -1006,3 +1006,13 @@ func CheckServiceDeletable(svc *model.ServiceStatus) error {
 	}
 	return nil
 }
+
+func GetServiceType(svcType string) int {
+	if svcType == "NodePort" {
+		return model.ServiceTypeNormalNodePort
+	} else if svcType == "ClusterIP" || svcType == "" {
+		return model.ServiceTypeClusterIP
+	} else {
+		return model.ServiceTypeUnknown
+	}
+}
