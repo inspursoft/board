@@ -18,6 +18,8 @@ The "Board" product is a container service platform based on docker + kubernetes
 * **Monitoring Dashboard**: Monitoring Dashboard collect logs from k8s master and nodes. It cover the machine indicators, such as cpu, memory usage, file system and k8s services runtime.
 * **Administrator Options**: Administrator options provide user management which can add, change or remove user by an admin user.
 
+<img alt="Board Overview" src="docs/img/Overview_20200101_en.png">
+
 ## Install
 
 **System requirements:**

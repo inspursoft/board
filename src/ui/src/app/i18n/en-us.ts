@@ -10,6 +10,7 @@ export const LANG_EN_US = {
     "NEXT":"Next",
     "BACK":"Back",
     "TEST":"Test",
+    CLOSE: 'Close'
   },
   "DATAGRID": {
     "ITEMS": "items",
@@ -46,6 +47,7 @@ export const LANG_EN_US = {
     "HTTP_422": "Unprocessable Entity:422",
     "HTTP_UNK":"Unknown error",
     "HTTP_TIME_OUT":"Http request timeout",
+    "INVALID_TOKEN": "Invalid token, please send this url to developer",
     "INSUFFICIENT_PRIVILEGE":"Insufficient privilege to operate it."
   },
   "CS_DROPDOWN":{
@@ -75,7 +77,7 @@ export const LANG_EN_US = {
     "USERNAME_IS_REQUIRED": "Username is required.",
     "USERNAME_ALREADY_EXISTS": "Username already exists.",
     "USERNAME_IS_KEY": "The username is key.",
-    "USERNAME_ARE_NOT_IDENTICAL": "The username consists of numeric, lowercase letter and underscore, and the length range is [4,40]",
+    "USERNAME_ARE_NOT_IDENTICAL": "The username consists of numeric, lowercase letter and underscore, and the length range is [4,35]",
     "EMAIL_IS_REQUIRED": "Email is required.",
     "EMAIL_IS_ILLEGAL": "Email is illegal.",
     "EMAIL_ALREADY_EXISTS": "Email already exists",
@@ -338,6 +340,8 @@ export const LANG_EN_US = {
     "UPLOAD_CHART_OPERATION":"Operation",
     "UPLOAD_CHART_UPLOAD":"Upload",
     "RELEASE_CHART_TITLE":"Release",
+    "RELEASE_CHART_BASE_INFO":"Base information",
+    "RELEASE_CHART_QUESTION_SETTING":"Questions setting",
     "RELEASE_CHART_SELECT_PROJECT":"Select project",
     "RELEASE_CHART_SELECT_PROJECT_TIP":"Please select project",
     "RELEASE_CHART_REPO_NAME":"Repository name",
@@ -449,6 +453,8 @@ export const LANG_EN_US = {
     "CREATE_IMAGE_BASE_IMAGE_PATTERN":"A string consisting of the lowercase,numeric,'.',-',':'",
     "CREATE_IMAGE_WAITING_BUILD": "Building an image",
     "CREATE_IMAGE_WAITING_UPLOAD": "Uploading the image to repository",
+    "CREATE_IMAGE_UPLOAD_IMAGE_TIMEOUT":"Wait too long, there may be an error, whether to continue waiting?",
+    "CREATE_IMAGE_TIMEOUT":"Time out",
   },
   "RESOURCE":{
     "CONFIG_MAP_LIST_NAME":"Name",

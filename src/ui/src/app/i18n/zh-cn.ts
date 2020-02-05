@@ -10,6 +10,7 @@ export const LANG_ZH_CN = {
     "NEXT":"下一步",
     "BACK":"上一步",
     "TEST":"测试",
+    CLOSE: '关闭'
   },
   "DATAGRID": {
     "ITEMS": "条记录",
@@ -46,6 +47,7 @@ export const LANG_ZH_CN = {
     "HTTP_422": "无法处理实体:422",
     "HTTP_UNK":"未知错误",
     "HTTP_TIME_OUT":"Http请求超时",
+    "INVALID_TOKEN": "无效的Token，请把该url发给开发人员",
     "INSUFFICIENT_PRIVILEGE":"权限不足，无法操作."
   },
   "CS_DROPDOWN":{
@@ -75,7 +77,7 @@ export const LANG_ZH_CN = {
     "USERNAME_IS_REQUIRED": "用户名为必填项。",
     "USERNAME_ALREADY_EXISTS": "用户名已存在。",
     "USERNAME_IS_KEY": "不能用关键字作为用户名。",
-    "USERNAME_ARE_NOT_IDENTICAL": "用户名由数字、小写字母以及下划线组成，且长度范围是[4,40]。",
+    "USERNAME_ARE_NOT_IDENTICAL": "用户名由数字、小写字母以及下划线组成，且长度范围是[4,35]。",
     "EMAIL_IS_REQUIRED": "邮箱为必填项。",
     "EMAIL_IS_ILLEGAL": "邮箱格式非法。",
     "EMAIL_ALREADY_EXISTS": "邮箱已存在。",
@@ -338,6 +340,8 @@ export const LANG_ZH_CN = {
     "UPLOAD_CHART_OPERATION":"操作",
     "UPLOAD_CHART_UPLOAD":"上传",
     "RELEASE_CHART_TITLE":"发布Chart",
+    "RELEASE_CHART_BASE_INFO":"基本信息",
+    "RELEASE_CHART_QUESTION_SETTING":"问题设置",
     "RELEASE_CHART_SELECT_PROJECT":"选择项目",
     "RELEASE_CHART_SELECT_PROJECT_TIP":"请选择项目",
     "RELEASE_CHART_REPO_NAME":"仓库名称",
@@ -449,6 +453,8 @@ export const LANG_ZH_CN = {
     "CREATE_IMAGE_BASE_IMAGE_PATTERN":"由小写字母、数字、'.'、':'、'-'组成的字符串",
     "CREATE_IMAGE_WAITING_BUILD": "正在构建镜像",
     "CREATE_IMAGE_WAITING_UPLOAD": "正在上传镜像至仓库",
+    "CREATE_IMAGE_UPLOAD_IMAGE_TIMEOUT":"等待时间过长，可能发生了错误，是否继续等待？",
+    "CREATE_IMAGE_TIMEOUT":"超时",
   },
   "RESOURCE":{
     "CONFIG_MAP_LIST_NAME":"名称",

@@ -1,29 +1,65 @@
 div.modal-body {
   display: flex;
+  min-height: 400px;
+}
+
+div.release-container {
+  display: flex;
+  flex-basis: 100%;
 }
 
 div.info-container {
   display: flex;
+  width: 400px;
   flex-direction: column;
-  flex-basis: 50%;
+  margin-right: 10px;
+}
+
+div.info-container p {
+  margin: 0;
+}
+
+div.questions-container {
+  flex-basis: 100%;
+}
+
+div.questions-container p {
+  margin: 0;
+}
+
+div.question {
+  border: 1px solid silver;
+  border-radius: 3px;
+  padding: 5px;
+  margin-top: 5px;
+}
+
+div.question:first-of-type {
+  margin-top: 0;
 }
 
 div.code-container {
-  flex-basis: 50%;
-  margin-left: 5px;
-  overflow-x: auto;
+  position: relative;
+  flex-basis: 100%;
+  overflow: auto;
+}
+
+div.boolean-template-container {
+  display: flex;
+}
+
+div.boolean-template-container label {
+  margin-right: 10px;
 }
 
 label.base-text {
-  min-width: 100px;
+  min-width: 150px;
   text-align: right;
 }
 
 div.line-container {
   margin-top: 10px;
   display: flex;
-  height: 34px;
-  align-items: center;
 }
 
 div.base-margin-top {

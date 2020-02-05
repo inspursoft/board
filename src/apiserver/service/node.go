@@ -105,6 +105,7 @@ func GetNodes() (nodes []NodeInfo, err error) {
 	return
 }
 
+// Get a node struct by the nodename
 func GetNode(nodeName string) (node NodeInfo, err error) {
 	nodes, err := GetNodes()
 	if err != nil {
@@ -113,10 +114,10 @@ func GetNode(nodeName string) (node NodeInfo, err error) {
 	}
 	for _, node = range nodes {
 		if strings.EqualFold(node.NodeName, nodeName) {
-			break
+			return
 		}
 	}
-	return
+	return NodeInfo{}, nil
 }
 
 func getFromRequest(url string, source interface{}) (err error) {

@@ -5,7 +5,7 @@ import { TranslateService } from "@ngx-translate/core";
 
 const emailPattern = /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 const passwordPattern = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,20}$/;
-const usernamePattern = /^[0-9a-z_]{4,40}$/;
+const usernamePattern = /^[0-9a-z_]{4,35}$/;
 
 @Directive({
   selector: '[libCheckPatternEx]'

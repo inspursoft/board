@@ -1,0 +1,10 @@
+h3.modal-title{
+  padding: 0;
+}
+
+div.modal-body {
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  line-height: 32px;
+}
