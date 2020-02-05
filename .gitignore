@@ -41,3 +41,10 @@ tools/swagger
 !tools/swagger/*.sh
 src/apiserver/*.py
 make/templates/apiserver/kvmregistry/kvmregistry
+
+src/apiserver/v2/routers/commentsRouter_*.go
+src/apiserver/v2/swagger
+src/apiserver/v2/*.exe
+src/apiserver/v2/v2
+src/apiserver/v2/*.tmp
+src/apiserver/v2/*.zip
