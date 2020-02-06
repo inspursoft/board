@@ -3,12 +3,13 @@ package main
 import (
 	"bytes"
 
+	v2routers "git/inspursoft/board/src/apiserver/routers"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/apiserver/service/devops/gogs"
+	"git/inspursoft/board/src/apiserver/v1/controller"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
-	v2routers "git/inspursoft/board/src/apiserver/routers"
 	"io/ioutil"
 
 	"github.com/astaxie/beego/logs"
