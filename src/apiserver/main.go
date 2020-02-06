@@ -2,13 +2,13 @@ package main
 
 import (
 	"bytes"
-	"git/inspursoft/board/src/apiserver/controller"
+
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/apiserver/service/devops/gogs"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
-
+	v2routers "git/inspursoft/board/src/apiserver/routers"
 	"io/ioutil"
 
 	"github.com/astaxie/beego/logs"
@@ -160,7 +160,11 @@ func main() {
 
 	controller.InitController()
 	controller.InitRouter()
-
+	v2routers.InitRouterV2()
+	if beego.BConfig.RunMode == "dev" {
+		beego.BConfig.WebConfig.DirectoryIndex = true
+		beego.BConfig.WebConfig.StaticDir["/swagger"] = "swagger"
+	}
 	systemInfo, err := service.GetSystemInfo()
 	if err != nil {
 		logs.Error("Failed to set system config: %+v", err)
