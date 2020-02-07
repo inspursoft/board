@@ -11,3 +11,14 @@ services:
        MODE: prod
     entrypoint:
       - /entrypoint.sh
+  uibuilder-adminserver-mips7.2:
+    build:
+      context: ../../
+      dockerfile: make/dev/container/uibuilder/Dockerfile.mips
+    image: inspursoft/uibuilder-adminserver-mips:7.2
+    volumes:
+      - ../../src/ui-adminserver:/board_src
+    environment:
+       MODE: build
+    entrypoint:
+      - /entrypoint.sh

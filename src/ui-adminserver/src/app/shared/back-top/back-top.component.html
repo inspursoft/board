@@ -1,0 +1,8 @@
+<div class="back-top" (click)="clickBackTop()" @fadeMotion *ngIf="visible">
+  <ng-template #defaultContent>
+    <a class="btn btn-icon" title="Back to top">
+      <clr-icon shape="angle"></clr-icon>
+    </a>
+  </ng-template>
+  <ng-template [ngTemplateOutlet]="backTopTemplate || defaultContent"></ng-template>
+</div>
