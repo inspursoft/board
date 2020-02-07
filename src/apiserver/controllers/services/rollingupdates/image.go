@@ -2,7 +2,7 @@ package rollingupdates
 
 import (
 	"github.com/astaxie/beego"
-	_ "git/inspursoft/board/src/apiserver/v2/models"
+	_ "git/inspursoft/board/src/apiserver/models"
 )
 
 // Operations about services
