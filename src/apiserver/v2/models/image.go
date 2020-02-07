@@ -1,6 +1,7 @@
 package models
 
 type Image	struct {
-	Name	string
-	Tag	string
+	ImageName	string	`json:"image_name"`
+	ImageTag	string	`json:"image_tag"`
+	ProjectName	string	`json:"project_name"`
 }

@@ -1,6 +1,9 @@
 package rollingupdates
 
-import "github.com/astaxie/beego"
+import (
+	"github.com/astaxie/beego"
+	_ "git/inspursoft/board/src/apiserver/v2/models"
+)
 
 // Operations about services
 type ImageController struct {
@@ -12,7 +15,7 @@ type ImageController struct {
 // @Param	project_id	path	int	false	"ID of projects"
 // @Param	service_id	path	int	false	"ID of services"
 // @Param	search	query	string	false	"Query item for services"
-// @Success 200 Successful listed.
+// @Success 200 {body} Successful listed.
 // @Failure 400 Bad requests.
 // @Failure 401 Unauthorized.
 // @Failure 403 Forbidden.
@@ -25,8 +28,8 @@ func (c *ImageController) List() {
 // @Description Patch rolling updates for services.
 // @Param	project_id	path	int	false	"ID of projects"
 // @Param	service_id	path	int	false	"ID of services"
-// @Param	body	body	models.services.rollingupdates.vm.Image	"View model of rolling update image."
-// @Success 200 Successful listed.
+// @Param	body	body	models.Image	"View model of rolling update image."
+// @Success 200 {object} Successful listed.
 // @Failure 400 Bad requests.
 // @Failure 401 Unauthorized.
 // @Failure 403 Forbidden.
