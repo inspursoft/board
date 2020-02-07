@@ -1,11 +1,30 @@
 package services
 
-import "github.com/astaxie/beego"
-
+import ( 
+  "github.com/astaxie/beego"
+  _ "git/inspursoft/board/src/apiserver/v2/models"
+)
 // Operations about supplement of services
 type SupplementController struct {
 	beego.Controller
 }
+
+// @Title Update the
+// @Description Get status of service by ID.
+// @Param       project_name      path    string     true   "Name of project"
+// @Param       service_name      path    string     true   "Name of service"
+// @Param       phase             qurey   string     false  "Switch the service status, only for running or stopped"
+// @Success 200 {object} models.Service
+// @Failure 400 Bad requests.
+// @Failure 401 Unauthorized.
+// @Failure 403 Forbidden.
+// @Failure 404 Not found.
+// @Failure 500 Unexpected internal errors.
+// @router /:project_name/:service_name/toggle [put]
+func (c *SupplementController) SwitchSerivceStatus() {
+
+}
+
 
 // @Title Get status of service by ID
 // @Description Get status of service by ID.
