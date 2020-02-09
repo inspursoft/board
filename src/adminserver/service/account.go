@@ -1,8 +1,8 @@
 package service
 
 import (
-	"board-adminserver/src/backend/encryption"
-	"board-adminserver/src/backend/models"
+	"git/inspursoft/board/src/adminserver/encryption"
+	"git/inspursoft/board/src/adminserver/models"
 	"encoding/base64"
 	"io/ioutil"
 	"log"

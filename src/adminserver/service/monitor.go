@@ -1,7 +1,7 @@
 package service
 
 import (
-	"board-adminserver/src/backend/models"
+	"git/inspursoft/board/src/adminserver/models"
 	"log"
 	"os/exec"
 	"regexp"

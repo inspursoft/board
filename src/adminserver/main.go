@@ -1,7 +1,7 @@
 package main
 
 import (
-	_ "board-adminserver/src/backend/routers"
+	_ "git/inspursoft/board/src/adminserver/routers"
 
 	"github.com/astaxie/beego"
 )

@@ -4,7 +4,7 @@ services:
     build:
       context: ../../
       dockerfile: make/dev/container/adminserver/Dockerfile
-    image: adminserver:1.0
+    image: adminserver:dev
     restart: always
     volumes:
       - ../:/go/cfgfile
@@ -12,11 +12,11 @@ services:
       - adms
     ports:
       - 8081:8080
-  proxy:
+  proxy-adminserver:
     build:
       context: ../../
-      dockerfile: make/dev/container/proxy/Dockerfile
-    image: proxy-adminserver:1.0
+      dockerfile: make/dev/container/proxy-adminserver/Dockerfile
+    image: proxy-adminserver:dev
     depends_on: 
       - adminserver
     restart: always

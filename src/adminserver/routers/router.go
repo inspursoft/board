@@ -7,7 +7,7 @@
 package routers
 
 import (
-	"board-adminserver/src/backend/controllers"
+	"git/inspursoft/board/src/adminserver/controllers"
 
 	"github.com/astaxie/beego"
 )

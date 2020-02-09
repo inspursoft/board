@@ -9,7 +9,7 @@ services:
       - adms
     ports:
       - 8080
-  proxy:
+  proxy-adminserver:
     image: board_adminserver_proxy:__version__
     depends_on: 
       - adminserver

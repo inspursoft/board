@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"board-adminserver/src/backend/models"
-	"board-adminserver/src/backend/service"
+	"git/inspursoft/board/src/adminserver/models"
+	"git/inspursoft/board/src/adminserver/service"
 	"encoding/json"
 	"net/http"
 

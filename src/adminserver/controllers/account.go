@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"board-adminserver/src/backend/models"
-	"board-adminserver/src/backend/service"
 	"encoding/json"
+	"git/inspursoft/board/src/adminserver/models"
+	"git/inspursoft/board/src/adminserver/service"
 	"net/http"
 
 	"github.com/astaxie/beego"
