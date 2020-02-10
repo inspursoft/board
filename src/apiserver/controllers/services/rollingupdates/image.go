@@ -1,8 +1,14 @@
 package rollingupdates
 
 import (
+	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
+	"net/http"
+	"path/filepath"
+
 	"github.com/astaxie/beego"
-	_ "git/inspursoft/board/src/apiserver/models"
+	"github.com/astaxie/beego/logs"
 )
 
 // Operations about services
@@ -20,7 +26,7 @@ type ImageController struct {
 // @Failure 401 Unauthorized.
 // @Failure 403 Forbidden.
 // @router /:project_id/:service_id/images [get]
-func (c *ImageController) List() {
+func (p *ImageController) List() {
 
 }
 
@@ -33,7 +39,71 @@ func (c *ImageController) List() {
 // @Failure 400 Bad requests.
 // @Failure 401 Unauthorized.
 // @Failure 403 Forbidden.
-// @router /:project_id/:service_id/images [patch]
-func (c *ImageController) Patch() {
+// @router /image [patch]
+func (p *ImageController) Patch() {
+
+	var imageList []model.ImageIndex
+	err := p.resolveBody(&imageList)
+	if err != nil {
+		return
+	}
+
+	serviceConfig, err := p.getServiceConfig()
+	if err != nil {
+		return
+	}
+	if len(serviceConfig.Spec.Template.Spec.Containers) != len(imageList) {
+		p.customAbort(http.StatusConflict, "Image's config is invalid.")
+	}
+
+	//var rollingUpdateConfig model.Deployment
+	var rollingUpdateConfig model.PodSpec
+	for index, container := range serviceConfig.Spec.Template.Spec.Containers {
+		image := registryBaseURI() + "/" + imageList[index].ImageName + ":" + imageList[index].ImageTag
+		if serviceConfig.Spec.Template.Spec.Containers[index].Image != image {
+			rollingUpdateConfig.Containers = append(rollingUpdateConfig.Containers, model.K8sContainer{
+				Name:  container.Name,
+				Image: image,
+			})
+		}
+	}
+	if len(rollingUpdateConfig.Containers) == 0 {
+		logs.Info("Nothing to be updated")
+		return
+	}
+	serviceConfig.Spec.Template.Spec = rollingUpdateConfig
+
+	// PatchServiceAction
+	projectName := p.GetString("project_name")
+	p.resolveProjectMember(projectName)
+
+	serviceName := p.GetString("service_name")
+	serviceStatus, err := service.GetServiceByProject(serviceName, projectName)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if serviceStatus.Status == uncompleted {
+		logs.Debug("Service is uncompleted, cannot be updated %s\n", serviceName)
+		p.customAbort(http.StatusMethodNotAllowed, "Service is in uncompleted")
+		return
+	}
+
+	deploymentConfig, deploymentFileInfo, err := service.PatchDeployment(projectName, serviceName, rollingUpdateConfig)
+	if err != nil {
+		logs.Error("Failed to get service info %+v\n", err)
+		p.parseError(err, parsePostK8sError)
+		return
+	}
+
+	p.resolveRepoServicePath(projectName, serviceName)
+	err = utils.GenerateFile(deploymentFileInfo, p.repoServicePath, deploymentFilename)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	p.pushItemsToRepo(filepath.Join(serviceName, deploymentFilename))
+
+	logs.Debug("New updated deployment: %+v\n", deploymentConfig)
 
 }
