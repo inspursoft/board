@@ -2002,6 +2002,44 @@ paths:
           description: Invalid service ID.
         500:
           description: Unexpected internal errors.    
+  /v2/services/supplements/{project_id}/{service_id}/toggle:
+    put:
+      tags:
+      - services/supplements
+      description: Get status of service by ID.
+      operationId: SupplementController.Update the
+      parameters:
+      - in: path
+        name: project_id
+        description: ID of project
+        required: true
+        type: integer
+        format: int64
+      - in: path
+        name: service_id
+        description: ID of service
+        required: true
+        type: integer
+        format: int64
+      - in: qurey
+        name: phase
+        description: Switch the service status, only for running or stopped
+        type: string
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.Service'
+        "400":
+          description: Bad requests.
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Forbidden.
+        "404":
+          description: Not found.
+        "500":
+          description: Unexpected internal errors.
   /v1/services/{service_id}/scale:
     get:  
       summary: Get service deployment scale info.
@@ -7616,3 +7654,50 @@ definitions:
         type: array
         items:
           type: string
+ models.Service:
+    title: Service
+    type: object
+    properties:
+      deployment_yaml:
+        type: string
+      service_comment:
+        type: string
+      service_creation_time:
+        type: string
+        format: datetime
+      service_deleted:
+        type: integer
+        format: int64
+      service_id:
+        type: integer
+        format: int64
+      service_name:
+        type: string
+      service_owner_id:
+        type: integer
+        format: int64
+      service_owner_name:
+        type: string
+      service_project_id:
+        type: integer
+        format: int64
+      service_project_name:
+        type: string
+      service_public:
+        type: integer
+        format: int64
+      service_source:
+        type: integer
+        format: int64
+      service_status:
+        type: integer
+        format: int64
+      service_type:
+        type: integer
+        format: int64
+      service_update_time:
+        type: string
+        format: datetime
+      service_yaml:
+        type: string
+
