@@ -15,7 +15,7 @@ RUN mkdir -p /board_src \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get update \
     && apt-get install -y google-chrome-stable \ 
-    && npm install -g @angular/cli@8 \
+    && npm install -g @angular/cli@latest \
     && npm install \
     && chmod u+x /entrypoint.sh
 VOLUME ["/board_src"]
