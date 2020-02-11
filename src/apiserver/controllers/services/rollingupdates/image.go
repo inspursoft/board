@@ -72,8 +72,11 @@ func (p *ImageController) Patch() {
 		return
 	}
 	serviceConfig.Spec.Template.Spec = rollingUpdateConfig
+	p.PatchServiceAction(serviceConfig)
 
-	// PatchServiceAction
+}
+
+func (p *ImageController) PatchServiceAction(rollingUpdateConfig *model.Deployment) {
 	projectName := p.GetString("project_name")
 	p.resolveProjectMember(projectName)
 
@@ -105,5 +108,28 @@ func (p *ImageController) Patch() {
 	p.pushItemsToRepo(filepath.Join(serviceName, deploymentFilename))
 
 	logs.Debug("New updated deployment: %+v\n", deploymentConfig)
+}
 
+func (p *ImageController) getServiceConfig() (deploymentConfig *model.Deployment, err error) {
+	projectName := p.GetString("project_name")
+	p.resolveProjectMember(projectName)
+
+	serviceName := p.GetString("service_name")
+	serviceStatus, err := service.GetServiceByProject(serviceName, projectName)
+	if err != nil {
+		p.internalError(err)
+		return
+	}
+	if serviceStatus == nil {
+		p.customAbort(http.StatusBadRequest, "Service name doesn't exist.")
+		return
+	}
+
+	deploymentConfig, _, err = service.GetDeployment(projectName, serviceName)
+	if err != nil {
+		logs.Error("Failed to get service info %+v\n", err)
+		p.parseError(err, parseGetK8sError)
+		return
+	}
+	return
 }
