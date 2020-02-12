@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
+	c "git/inspursoft/board/src/common/controller"
 	"git/inspursoft/board/src/common/model"
 	"io/ioutil"
 	"net/http"
@@ -14,23 +15,23 @@ import (
 )
 
 type PVolumeController struct {
-	BaseController
+	c.BaseController
 }
 
 func (n *PVolumeController) GetPVolumeAction() {
 	pvID, err := strconv.Atoi(n.Ctx.Input.Param(":id"))
 	if err != nil {
-		n.internalError(err)
+		n.InternalError(err)
 		return
 	}
 	pv, err := service.GetPVDB(model.PersistentVolume{ID: int64(pvID)}, "id")
 	if err != nil {
-		n.internalError(err)
+		n.InternalError(err)
 		return
 	}
 	if pv == nil {
 		logs.Error("Not found this PV %d in DB", pvID)
-		n.internalError(err)
+		n.InternalError(err)
 		return
 	}
 
@@ -40,12 +41,12 @@ func (n *PVolumeController) GetPVolumeAction() {
 		// PV NFS
 		pvo, err := service.GetPVOptionNFS(model.PersistentVolumeOptionNfs{ID: int64(pvID)}, "id")
 		if err != nil {
-			n.internalError(err)
+			n.InternalError(err)
 			return
 		}
 		if pv == nil {
 			logs.Error("Not found this PV Option %d in DB", pvID)
-			n.internalError(err)
+			n.InternalError(err)
 			return
 		}
 		pv.Option = pvo
@@ -54,18 +55,18 @@ func (n *PVolumeController) GetPVolumeAction() {
 		// PV CephRBD
 		pvo, err := service.GetPVOptionRBD(model.PersistentVolumeOptionCephrbd{ID: int64(pvID)}, "id")
 		if err != nil {
-			n.internalError(err)
+			n.InternalError(err)
 			return
 		}
 		if pv == nil {
 			logs.Error("Not found this PV Option %d in DB", pvID)
-			n.internalError(err)
+			n.InternalError(err)
 			return
 		}
 		pv.Option = pvo
 	default:
 		logs.Error("Unknown pv type %d", pv.Type)
-		n.customAbort(http.StatusBadRequest, "Unknown pv type")
+		n.CustomAbortAudit(http.StatusBadRequest, "Unknown pv type")
 		return
 	}
 
@@ -74,7 +75,7 @@ func (n *PVolumeController) GetPVolumeAction() {
 	pvk8s, err := service.GetPVK8s(pv.Name)
 	if err != nil {
 		logs.Error("Fail to get this PV %s in cluster %v", pv.Name, err)
-		n.internalError(err)
+		n.InternalError(err)
 		return
 	}
 	if pvk8s == nil {
@@ -83,19 +84,19 @@ func (n *PVolumeController) GetPVolumeAction() {
 		pv.State = service.ReverseState(string(pvk8s.Status.Phase))
 	}
 
-	n.renderJSON(pv)
+	n.RenderJSON(pv)
 	logs.Debug("Return get pv %v", pv)
 }
 
 func (n *PVolumeController) RemovePVolumeAction() {
 	pvID, err := strconv.Atoi(n.Ctx.Input.Param(":id"))
 	if err != nil {
-		n.internalError(err)
+		n.InternalError(err)
 		return
 	}
 	pv, err := service.GetPVDB(model.PersistentVolume{ID: int64(pvID)}, "id")
 	if err != nil {
-		n.internalError(err)
+		n.InternalError(err)
 		return
 	}
 	if pv == nil {
@@ -116,14 +117,14 @@ func (n *PVolumeController) RemovePVolumeAction() {
 		_, err = service.DeletePVOptionNFS(int64(pvID))
 		if err != nil {
 			logs.Error("Failed to delete PV NFS option %d", pvID)
-			n.internalError(err)
+			n.InternalError(err)
 			return
 		}
 	case model.PVCephRBD:
 		_, err = service.DeletePVOptionRBD(int64(pvID))
 		if err != nil {
 			logs.Error("Failed to delete PV RBD option %d", pvID)
-			n.internalError(err)
+			n.InternalError(err)
 			return
 		}
 
@@ -135,7 +136,7 @@ func (n *PVolumeController) RemovePVolumeAction() {
 	_, err = service.DeletePVDB(int64(pvID))
 	if err != nil {
 		logs.Error("Failed to delete PV %d", pvID)
-		n.internalError(err)
+		n.InternalError(err)
 		return
 	}
 }
@@ -144,10 +145,10 @@ func (n *PVolumeController) GetPVolumeListAction() {
 	res, err := service.GetPVList()
 	if err != nil {
 		logs.Debug("Failed to get PV List")
-		n.customAbort(http.StatusInternalServerError, fmt.Sprint(err))
+		n.CustomAbortAudit(http.StatusInternalServerError, fmt.Sprint(err))
 		return
 	}
-	n.renderJSON(res)
+	n.RenderJSON(res)
 }
 
 func (n *PVolumeController) AddPVolumeAction() {
@@ -158,12 +159,12 @@ func (n *PVolumeController) AddPVolumeAction() {
 	}
 	data, err := ioutil.ReadAll(n.Ctx.Request.Body)
 	if err != nil {
-		n.customAbort(http.StatusBadRequest, "Invalid Request")
+		n.CustomAbortAudit(http.StatusBadRequest, "Invalid Request")
 		return
 	}
 	err = json.Unmarshal(data, &pv)
 	if err != nil {
-		n.customAbort(http.StatusBadRequest, "Invalid Json Body")
+		n.CustomAbortAudit(http.StatusBadRequest, "Invalid Json Body")
 		return
 	}
 	logs.Debug("Add pv %v", pv)
@@ -175,7 +176,7 @@ func (n *PVolumeController) AddPVolumeAction() {
 		err = json.Unmarshal(message, &PVOptionNFS)
 		if err != nil {
 			logs.Error("Failed to unmarshal nfs %v", pv.Option)
-			n.customAbort(http.StatusBadRequest, "Invalid PV NFS")
+			n.CustomAbortAudit(http.StatusBadRequest, "Invalid PV NFS")
 			return
 		}
 
@@ -183,7 +184,7 @@ func (n *PVolumeController) AddPVolumeAction() {
 		err = service.AddPVolumeNFS(pv, PVOptionNFS)
 		if err != nil {
 			logs.Error("Failed to create nfs %v", err)
-			n.customAbort(http.StatusBadRequest, "Invalid PV NFS")
+			n.CustomAbortAudit(http.StatusBadRequest, "Invalid PV NFS")
 			return
 		}
 
@@ -193,7 +194,7 @@ func (n *PVolumeController) AddPVolumeAction() {
 		err = json.Unmarshal(message, &PVOptionRBD)
 		if err != nil {
 			logs.Error("Failed to unmarshal rbd %v", pv.Option)
-			n.customAbort(http.StatusBadRequest, "Invalid PV RBD")
+			n.CustomAbortAudit(http.StatusBadRequest, "Invalid PV RBD")
 			return
 		}
 
@@ -202,12 +203,12 @@ func (n *PVolumeController) AddPVolumeAction() {
 		err = service.AddPVolumeCephRBD(pv, PVOptionRBD)
 		if err != nil {
 			logs.Error("Failed to create rbc %v", err)
-			n.customAbort(http.StatusBadRequest, "Invalid PV RBD")
+			n.CustomAbortAudit(http.StatusBadRequest, "Invalid PV RBD")
 			return
 		}
 	default:
 		logs.Error("Unknown pv type %d", pv.Type)
-		n.customAbort(http.StatusBadRequest, "Unknown pv type")
+		n.CustomAbortAudit(http.StatusBadRequest, "Unknown pv type")
 		return
 	}
 
@@ -220,21 +221,21 @@ func (n *PVolumeController) CheckPVolumeNameExistingAction() {
 	}
 	ispvk8s, err := service.GetPVK8s(pvName)
 	if err != nil {
-		n.internalError(err)
+		n.InternalError(err)
 		return
 	}
 	if ispvk8s != nil {
-		n.customAbort(http.StatusConflict, "This pv name is already existing in cluster.")
+		n.CustomAbortAudit(http.StatusConflict, "This pv name is already existing in cluster.")
 		return
 	}
 
 	ispvDB, err := service.GetPVDB(model.PersistentVolume{Name: pvName}, "name")
 	if err != nil {
-		n.internalError(err)
+		n.InternalError(err)
 		return
 	}
 	if ispvDB != nil {
-		n.customAbort(http.StatusConflict, "This pv name is already existing in DB.")
+		n.CustomAbortAudit(http.StatusConflict, "This pv name is already existing in DB.")
 		return
 	}
 	logs.Info("PV name of %s is available", pvName)

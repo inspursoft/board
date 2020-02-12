@@ -2,6 +2,7 @@ package controller
 
 import (
 	"git/inspursoft/board/src/apiserver/service"
+	c "git/inspursoft/board/src/common/controller"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
@@ -12,7 +13,7 @@ import (
 )
 
 type ServiceRollingUpdateController struct {
-	BaseController
+	c.BaseController
 }
 
 func (p *ServiceRollingUpdateController) GetRollingUpdateServiceImageConfigAction() {
@@ -21,7 +22,7 @@ func (p *ServiceRollingUpdateController) GetRollingUpdateServiceImageConfigActio
 		return
 	}
 	if len(serviceConfig.Spec.Template.Spec.Containers) < 1 {
-		p.customAbort(http.StatusBadRequest, "Requested service's config is invalid.")
+		p.CustomAbortAudit(http.StatusBadRequest, "Requested service's config is invalid.")
 		return
 	}
 
@@ -34,28 +35,28 @@ func (p *ServiceRollingUpdateController) GetRollingUpdateServiceImageConfigActio
 			ImageTag:    container.Image[indexTag+1:],
 			ProjectName: container.Image[indexProject+1 : indexImage]})
 	}
-	p.renderJSON(imageList)
+	p.RenderJSON(imageList)
 }
 
 func (p *ServiceRollingUpdateController) getServiceConfig() (deploymentConfig *model.Deployment, err error) {
 	projectName := p.GetString("project_name")
-	p.resolveProjectMember(projectName)
+	p.ResolveProjectMember(projectName)
 
 	serviceName := p.GetString("service_name")
 	serviceStatus, err := service.GetServiceByProject(serviceName, projectName)
 	if err != nil {
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
 	if serviceStatus == nil {
-		p.customAbort(http.StatusBadRequest, "Service name doesn't exist.")
+		p.CustomAbortAudit(http.StatusBadRequest, "Service name doesn't exist.")
 		return
 	}
 
 	deploymentConfig, _, err = service.GetDeployment(projectName, serviceName)
 	if err != nil {
 		logs.Error("Failed to get service info %+v\n", err)
-		p.parseError(err, parseGetK8sError)
+		p.ParseError(err, c.ParseGetK8sError)
 		return
 	}
 	return
@@ -63,62 +64,62 @@ func (p *ServiceRollingUpdateController) getServiceConfig() (deploymentConfig *m
 func (s *ServiceRollingUpdateController) GetServiceSessionFlagAction() {
 	serviceName := s.GetString("service_name")
 	projectName := s.GetString("project_name")
-	s.resolveProjectMember(projectName)
+	s.ResolveProjectMember(projectName)
 	svc, err := service.GetK8sService(projectName, serviceName)
 	if err != nil {
-		s.internalError(err)
+		s.InternalError(err)
 		return
 	}
-	s.renderJSON(svc)
+	s.RenderJSON(svc)
 }
 
 func (s *ServiceRollingUpdateController) PatchServiceSessionAction() {
 	sessionAffinityFlag, err := s.GetInt("session_affinity_flag", 0)
 	if err != nil {
-		s.internalError(err)
+		s.InternalError(err)
 		return
 	}
 	serviceName := s.GetString("service_name")
 	projectName := s.GetString("project_name")
-	s.resolveProjectMember(projectName)
+	s.ResolveProjectMember(projectName)
 	svc, err := service.GetK8sService(projectName, serviceName)
 	if err != nil {
-		s.internalError(err)
+		s.InternalError(err)
 		return
 	}
 	svc.SessionAffinityFlag = sessionAffinityFlag
 	_, svcFileInfo, err := service.PatchK8sService(projectName, serviceName, svc)
 	if err != nil {
-		s.internalError(err)
+		s.InternalError(err)
 		return
 	}
 
 	serviceStatus, err := service.GetServiceByProject(serviceName, projectName)
 	if err != nil {
-		s.internalError(err)
+		s.InternalError(err)
 		return
 	}
 	updateService := model.ServiceStatus{ID: serviceStatus.ID, ServiceYaml: string(svcFileInfo)}
 	_, err = service.UpdateService(updateService, "service_yaml")
 	if err != nil {
-		s.internalError(err)
+		s.InternalError(err)
 		return
 	}
 	logs.Debug("Update service Successful.And the services config:%+v\n", updateService)
 
-	s.resolveRepoServicePath(projectName, serviceName)
-	err = utils.GenerateFile(svcFileInfo, s.repoServicePath, serviceFilename)
+	s.ResolveRepoServicePath(projectName, serviceName)
+	err = utils.GenerateFile(svcFileInfo, s.RepoServicePath, serviceFilename)
 	if err != nil {
-		s.internalError(err)
+		s.InternalError(err)
 		return
 	}
-	s.pushItemsToRepo(filepath.Join(serviceName, serviceFilename))
+	s.PushItemsToRepo(filepath.Join(serviceName, serviceFilename))
 }
 
 func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceImageAction() {
 
 	var imageList []model.ImageIndex
-	err := p.resolveBody(&imageList)
+	err := p.ResolveBody(&imageList)
 	if err != nil {
 		return
 	}
@@ -128,13 +129,13 @@ func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceImageAction() 
 		return
 	}
 	if len(serviceConfig.Spec.Template.Spec.Containers) != len(imageList) {
-		p.customAbort(http.StatusConflict, "Image's config is invalid.")
+		p.CustomAbortAudit(http.StatusConflict, "Image's config is invalid.")
 	}
 
 	//var rollingUpdateConfig model.Deployment
 	var rollingUpdateConfig model.PodSpec
 	for index, container := range serviceConfig.Spec.Template.Spec.Containers {
-		image := registryBaseURI() + "/" + imageList[index].ImageName + ":" + imageList[index].ImageTag
+		image := c.RegistryBaseURI() + "/" + imageList[index].ImageName + ":" + imageList[index].ImageTag
 		if serviceConfig.Spec.Template.Spec.Containers[index].Image != image {
 			rollingUpdateConfig.Containers = append(rollingUpdateConfig.Containers, model.K8sContainer{
 				Name:  container.Name,
@@ -157,9 +158,9 @@ func (p *ServiceRollingUpdateController) GetRollingUpdateServiceNodeGroupConfigA
 	}
 	for key, value := range serviceConfig.Spec.Template.Spec.NodeSelector {
 		if key == "kubernetes.io/hostname" {
-			p.renderJSON(value)
+			p.RenderJSON(value)
 		} else {
-			p.renderJSON(key)
+			p.RenderJSON(key)
 		}
 	}
 }
@@ -167,7 +168,7 @@ func (p *ServiceRollingUpdateController) GetRollingUpdateServiceNodeGroupConfigA
 func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceNodeGroupAction() {
 	nodeGroup := p.GetString("node_selector")
 	if nodeGroup == "" {
-		p.customAbort(http.StatusBadRequest, "nodeGroup is empty.")
+		p.CustomAbortAudit(http.StatusBadRequest, "nodeGroup is empty.")
 		return
 	}
 	rollingUpdateConfig, err := p.getServiceConfig()
@@ -176,7 +177,7 @@ func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceNodeGroupActio
 	}
 	nodeGroupExists, err := service.NodeGroupExists(nodeGroup)
 	if err != nil {
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
 	if nodeGroupExists {
@@ -190,34 +191,34 @@ func (p *ServiceRollingUpdateController) PatchRollingUpdateServiceNodeGroupActio
 
 func (p *ServiceRollingUpdateController) PatchServiceAction(rollingUpdateConfig *model.Deployment) {
 	projectName := p.GetString("project_name")
-	p.resolveProjectMember(projectName)
+	p.ResolveProjectMember(projectName)
 
 	serviceName := p.GetString("service_name")
 	serviceStatus, err := service.GetServiceByProject(serviceName, projectName)
 	if err != nil {
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
 	if serviceStatus.Status == uncompleted {
 		logs.Debug("Service is uncompleted, cannot be updated %s\n", serviceName)
-		p.customAbort(http.StatusMethodNotAllowed, "Service is in uncompleted")
+		p.CustomAbortAudit(http.StatusMethodNotAllowed, "Service is in uncompleted")
 		return
 	}
 
 	deploymentConfig, deploymentFileInfo, err := service.PatchDeployment(projectName, serviceName, rollingUpdateConfig)
 	if err != nil {
 		logs.Error("Failed to get service info %+v\n", err)
-		p.parseError(err, parsePostK8sError)
+		p.ParseError(err, c.ParsePostK8sError)
 		return
 	}
 
-	p.resolveRepoServicePath(projectName, serviceName)
-	err = utils.GenerateFile(deploymentFileInfo, p.repoServicePath, deploymentFilename)
+	p.ResolveRepoServicePath(projectName, serviceName)
+	err = utils.GenerateFile(deploymentFileInfo, p.RepoServicePath, deploymentFilename)
 	if err != nil {
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
-	p.pushItemsToRepo(filepath.Join(serviceName, deploymentFilename))
+	p.PushItemsToRepo(filepath.Join(serviceName, deploymentFilename))
 
 	logs.Debug("New updated deployment: %+v\n", deploymentConfig)
 }
@@ -225,23 +226,23 @@ func (p *ServiceRollingUpdateController) PatchServiceAction(rollingUpdateConfig 
 // a temp fix, need to refactor
 func (p *ServiceRollingUpdateController) UpdateServiceAction(rollingUpdateConfig *model.Deployment) {
 	projectName := p.GetString("project_name")
-	p.resolveProjectMember(projectName)
+	p.ResolveProjectMember(projectName)
 
 	serviceName := p.GetString("service_name")
 	deploymentConfig, deploymentFileInfo, err := service.UpdateDeployment(projectName, serviceName, rollingUpdateConfig)
 	if err != nil {
 		logs.Error("Failed to get service info %+v\n", err)
-		p.parseError(err, parsePostK8sError)
+		p.ParseError(err, c.ParsePostK8sError)
 		return
 	}
 	logs.Debug("Updated deployment: ", deploymentConfig)
-	p.resolveRepoServicePath(projectName, serviceName)
-	err = utils.GenerateFile(deploymentFileInfo, p.repoServicePath, deploymentFilename)
+	p.ResolveRepoServicePath(projectName, serviceName)
+	err = utils.GenerateFile(deploymentFileInfo, p.RepoServicePath, deploymentFilename)
 	if err != nil {
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
-	p.pushItemsToRepo(filepath.Join(serviceName, deploymentFilename))
+	p.PushItemsToRepo(filepath.Join(serviceName, deploymentFilename))
 
 	logs.Debug("New updated deployment: %+v\n", deploymentConfig)
 }

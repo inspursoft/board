@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
+	c "git/inspursoft/board/src/common/controller"
 	"git/inspursoft/board/src/common/utils"
 	"io/ioutil"
 	"net/http"
@@ -26,7 +27,7 @@ type jobConsole struct {
 }
 
 type JenkinsJobCallbackController struct {
-	BaseController
+	c.BaseController
 }
 
 func (j *JenkinsJobCallbackController) Prepare() {}
@@ -35,37 +36,37 @@ func (j *JenkinsJobCallbackController) BuildNumberCallback() {
 	userID := j.Ctx.Input.Param(":userID")
 	buildNumber, _ := strconv.Atoi(j.Ctx.Input.Param(":buildNumber"))
 	logs.Info("Get build number from Jenkins job callback: %d", buildNumber)
-	memoryCache.Put(userID+"_buildNumber", buildNumber, buildNumberCacheExpireSecond)
+	c.MemoryCache.Put(userID+"_buildNumber", buildNumber, buildNumberCacheExpireSecond)
 }
 
 type JenkinsJobController struct {
-	BaseController
+	c.BaseController
 }
 
 func (j *JenkinsJobController) getBuildNumber() (int, error) {
-	if buildNumber, ok := memoryCache.Get(strconv.Itoa(int(j.currentUser.ID)) + "_buildNumber").(int); ok {
-		logs.Info("Get build number with key %s from cache is %d", strconv.Itoa(int(j.currentUser.ID))+"_lastBuildNumber", buildNumber)
+	if buildNumber, ok := c.MemoryCache.Get(strconv.Itoa(int(j.CurrentUser.ID)) + "_buildNumber").(int); ok {
+		logs.Info("Get build number with key %s from cache is %d", strconv.Itoa(int(j.CurrentUser.ID))+"_lastBuildNumber", buildNumber)
 		return buildNumber, nil
 	}
 	return 0, fmt.Errorf("cannot get build number from cache currently")
 }
 
 func (j *JenkinsJobController) clearBuildNumber() {
-	key := strconv.Itoa(int(j.currentUser.ID)) + "_buildNumber"
-	if memoryCache.IsExist(key) {
-		memoryCache.Delete(key)
+	key := strconv.Itoa(int(j.CurrentUser.ID)) + "_buildNumber"
+	if c.MemoryCache.IsExist(key) {
+		c.MemoryCache.Delete(key)
 		logs.Info("Build number stored with key %s has been deleted from cache.", key)
 	}
 }
 
 func (j *JenkinsJobController) toggleBuild(status bool) {
 	logs.Info("Set building signal as %+v currently.", status)
-	memoryCache.Put(strconv.Itoa(int(j.currentUser.ID))+"_buildSignal", status, toggleBuildingCacheExpireSecond)
+	c.MemoryCache.Put(strconv.Itoa(int(j.CurrentUser.ID))+"_buildSignal", status, toggleBuildingCacheExpireSecond)
 }
 
 func (j *JenkinsJobController) getBuildSignal() bool {
-	key := strconv.Itoa(int(j.currentUser.ID)) + "_buildSignal"
-	if buildingSignal, ok := memoryCache.Get(key).(bool); ok {
+	key := strconv.Itoa(int(j.CurrentUser.ID)) + "_buildSignal"
+	if buildingSignal, ok := c.MemoryCache.Get(key).(bool); ok {
 		return buildingSignal
 	}
 	return false
@@ -94,30 +95,30 @@ func (j *JenkinsJobController) Console() {
 	jobName := j.GetString("job_name")
 
 	if jobName == "" {
-		j.customAbort(http.StatusBadRequest, "No job name found.")
+		j.CustomAbortAudit(http.StatusBadRequest, "No job name found.")
 		return
 	}
 
-	repoName, err := service.ResolveRepoName(jobName, j.currentUser.Username)
+	repoName, err := service.ResolveRepoName(jobName, j.CurrentUser.Username)
 	if err != nil {
-		j.internalError(err)
+		j.InternalError(err)
 		return
 	}
 
 	query := jobConsole{JobName: repoName}
 	query.BuildSerialID = strconv.Itoa(buildNumber)
-	buildConsoleURL, err := utils.GenerateURL(fmt.Sprintf(jenkinsBuildConsoleTemplateURL, jenkinsBaseURL()), query)
+	buildConsoleURL, err := utils.GenerateURL(fmt.Sprintf(jenkinsBuildConsoleTemplateURL, c.JenkinsBaseURL()), query)
 	if err != nil {
-		j.internalError(err)
+		j.InternalError(err)
 		return
 	}
 	logs.Debug("Requested Jenkins build console URL: %s", buildConsoleURL)
 	ws, err := websocket.Upgrade(j.Ctx.ResponseWriter, j.Ctx.Request, nil, 1024, 1024)
 	if _, ok := err.(websocket.HandshakeError); ok {
-		j.customAbort(http.StatusBadRequest, "Not a websocket handshake.")
+		j.CustomAbortAudit(http.StatusBadRequest, "Not a websocket handshake.")
 		return
 	} else if err != nil {
-		j.customAbort(http.StatusInternalServerError, "Cannot setup websocket connection.")
+		j.CustomAbortAudit(http.StatusInternalServerError, "Cannot setup websocket connection.")
 		return
 	}
 	defer ws.Close()
@@ -135,7 +136,7 @@ func (j *JenkinsJobController) Console() {
 		for range ticker.C {
 			resp, err := client.Do(req)
 			if err != nil {
-				j.internalError(err)
+				j.InternalError(err)
 				logs.Error("Failed to get console response: %+v", err)
 				done <- true
 				return
@@ -153,7 +154,7 @@ func (j *JenkinsJobController) Console() {
 			}
 			data, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
-				j.internalError(err)
+				j.InternalError(err)
 				logs.Error("Failed to read data from response body: %+v", err)
 				done <- true
 				return
@@ -200,27 +201,27 @@ func (j *JenkinsJobController) Stop() {
 
 	jobName := j.GetString("job_name")
 	if jobName == "" {
-		j.customAbort(http.StatusBadRequest, "No job name found.")
+		j.CustomAbortAudit(http.StatusBadRequest, "No job name found.")
 		return
 	}
 
-	repoName, err := service.ResolveRepoName(jobName, j.currentUser.Username)
+	repoName, err := service.ResolveRepoName(jobName, j.CurrentUser.Username)
 	if err != nil {
-		j.internalError(err)
+		j.InternalError(err)
 		return
 	}
 
 	query := jobConsole{JobName: repoName}
 	query.BuildSerialID = j.GetString("build_serial_id", strconv.Itoa(lastBuildNumber))
-	stopBuildURL, err := utils.GenerateURL(fmt.Sprintf(jenkinsStopBuildTemplateURL, jenkinsBaseURL()), query)
+	stopBuildURL, err := utils.GenerateURL(fmt.Sprintf(jenkinsStopBuildTemplateURL, c.JenkinsBaseURL()), query)
 	if err != nil {
-		j.internalError(err)
+		j.InternalError(err)
 		return
 	}
 	logs.Debug("Requested stop Jenkins build URL: %s", stopBuildURL)
 	resp, err := http.PostForm(stopBuildURL, nil)
 	if err != nil {
-		j.internalError(err)
+		j.InternalError(err)
 		return
 	}
 	err = service.ReleaseKVMRegistryByJobName(jobName)
@@ -232,5 +233,5 @@ func (j *JenkinsJobController) Stop() {
 		j.clearBuildNumber()
 	}()
 	logs.Debug("Response status of stopping Jenkins jobs: %d", resp.StatusCode)
-	j.serveStatus(resp.StatusCode, "")
+	j.ServeStatus(resp.StatusCode, "")
 }

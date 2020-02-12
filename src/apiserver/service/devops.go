@@ -13,9 +13,9 @@ import (
 	"github.com/astaxie/beego/logs"
 )
 
-var baseRepoPath = utils.GetConfig("BASE_REPO_PATH")
-var gogitsSSHURL = utils.GetConfig("GOGITS_SSH_URL")
-var jenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
+var BaseRepoPath = utils.GetConfig("BASE_REPO_PATH")
+var GogitsSSHURL = utils.GetConfig("GOGITS_SSH_URL")
+var JenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
 var jenkinsNodeIP = utils.GetConfig("JENKINS_NODE_IP")
 var jenkinsNodeSSHPort = utils.GetConfig("JENKINS_NODE_SSH_PORT")
 var jenkinsNodeUsername = utils.GetConfig("JENKINS_NODE_USERNAME")
@@ -50,7 +50,7 @@ func CreateRepoAndJob(userID int64, projectName string) error {
 	}
 	logs.Info("Initialize serve repo with name: %s ...", repoName)
 
-	repoURL := fmt.Sprintf("%s/%s/%s.git", gogitsSSHURL(), username, repoName)
+	repoURL := fmt.Sprintf("%s/%s/%s.git", GogitsSSHURL(), username, repoName)
 	repoPath := ResolveRepoPath(repoName, username)
 
 	_, err = InitRepo(repoURL, username, email, repoPath)
@@ -128,7 +128,7 @@ func ForkRepo(forkedUser *model.User, baseRepoName string) error {
 		logs.Error("Failed to create hook to repo: %s, error: %+v", repoName, err)
 		return err
 	}
-	repoURL := fmt.Sprintf("%s/%s/%s.git", gogitsSSHURL(), username, repoName)
+	repoURL := fmt.Sprintf("%s/%s/%s.git", GogitsSSHURL(), username, repoName)
 	repoPath := ResolveRepoPath(repoName, username)
 	_, err = InitRepo(repoURL, username, email, repoPath)
 	if err != nil {
@@ -204,7 +204,7 @@ func ResolveRepoName(projectName, username string) (repoName string, err error) 
 }
 
 func ResolveRepoPath(repoName, username string) (repoPath string) {
-	repoPath = filepath.Join(baseRepoPath(), username, "contents", repoName)
+	repoPath = filepath.Join(BaseRepoPath(), username, "contents", repoName)
 	logs.Debug("Set repo path at file upload: %s", repoPath)
 	return
 }
