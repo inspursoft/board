@@ -9,7 +9,7 @@ import (
 	"github.com/astaxie/beego/logs"
 )
 
-var jenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
+var JenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
 var gogitsBaseURL = utils.GetConfig("GOGITS_BASE_URL")
 var jenkinsfileRepoURL = utils.GetConfig("JENKINSFILE_REPO_URL")
 var maxRetryCount = 245
@@ -26,7 +26,7 @@ type jenkinsHandler struct {
 }
 
 func NewJenkinsHandler() *jenkinsHandler {
-	pingURL := fmt.Sprintf("%s/job/%s", jenkinsBaseURL(), seedJobName)
+	pingURL := fmt.Sprintf("%s/job/%s", JenkinsBaseURL(), seedJobName)
 	for i := 0; i < maxRetryCount; i++ {
 		logs.Debug("Ping Jenkins server %d time(s)...", i+1)
 		if i == maxRetryCount-1 {
@@ -53,9 +53,9 @@ func NewJenkinsHandler() *jenkinsHandler {
 
 func (j *jenkinsHandler) CreateJobWithParameter(jobName string) error {
 	return utils.SimpleGetRequestHandle(fmt.Sprintf("%s/job/%s/buildWithParameters?F00=%s&F01=%s&F02=%s&F03=%s&F04=%s",
-		jenkinsBaseURL(), seedJobName, jobName, jenkinsNodeIP(), jenkinsBaseURL(), j.registryURL, executionMode()))
+		JenkinsBaseURL(), seedJobName, jobName, jenkinsNodeIP(), JenkinsBaseURL(), j.registryURL, executionMode()))
 }
 
 func (j *jenkinsHandler) DeleteJob(jobName string) error {
-	return utils.SimplePostRequestHandle(fmt.Sprintf("%s/job/%s/doDelete", jenkinsBaseURL(), jobName), nil, nil)
+	return utils.SimplePostRequestHandle(fmt.Sprintf("%s/job/%s/doDelete", JenkinsBaseURL(), jobName), nil, nil)
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/apiserver/service/devops/gogs"
+	c "git/inspursoft/board/src/common/controller"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
@@ -14,13 +15,13 @@ import (
 )
 
 type UserController struct {
-	BaseController
+	c.BaseController
 }
 
 func (u *UserController) Prepare() {
-	u.resolveSignedInUser()
-	u.recordOperationAudit()
-	u.isExternalAuth = utils.GetBoolValue("IS_EXTERNAL_AUTH")
+	u.ResolveSignedInUser()
+	u.RecordOperationAudit()
+	u.IsExternalAuth = utils.GetBoolValue("IS_EXTERNAL_AUTH")
 }
 
 func (u *UserController) GetUsersAction() {
@@ -52,50 +53,50 @@ func (u *UserController) GetUsersAction() {
 		u.Data["json"] = users
 	}
 	if err != nil {
-		u.internalError(err)
+		u.InternalError(err)
 		return
 	}
 	u.ServeJSON()
 }
 
 func (u *UserController) ChangeUserAccount() {
-	if u.isExternalAuth && u.currentUser.Username != "admin" {
+	if u.IsExternalAuth && u.CurrentUser.Username != "admin" {
 		logs.Debug("Current AUTH_MODE is external auth.")
-		u.customAbort(http.StatusPreconditionFailed, "Current AUTH_MODE is not available to the user.")
+		u.CustomAbortAudit(http.StatusPreconditionFailed, "Current AUTH_MODE is not available to the user.")
 		return
 	}
 
 	var reqUser model.User
 	var err error
-	err = u.resolveBody(&reqUser)
+	err = u.ResolveBody(&reqUser)
 	if err != nil {
 		return
 	}
 
-	reqUser.ID = u.currentUser.ID
+	reqUser.ID = u.CurrentUser.ID
 	users, err := service.GetUsers("email", reqUser.Email, "id", "email")
 	if err != nil {
-		u.internalError(err)
+		u.InternalError(err)
 		return
 	}
 
 	if !utils.ValidateWithPattern("email", reqUser.Email) {
-		u.customAbort(http.StatusBadRequest, "Email content is illegal.")
+		u.CustomAbortAudit(http.StatusBadRequest, "Email content is illegal.")
 		return
 	}
 
 	if len(users) > 0 && users[0].ID != reqUser.ID {
-		u.customAbort(http.StatusConflict, "Email already exists.")
+		u.CustomAbortAudit(http.StatusConflict, "Email already exists.")
 		return
 	}
 
 	if !utils.ValidateWithMaxLength(reqUser.Realname, 40) {
-		u.customAbort(http.StatusBadRequest, "Realname maximum length is 40 characters.")
+		u.CustomAbortAudit(http.StatusBadRequest, "Realname maximum length is 40 characters.")
 		return
 	}
 
 	if !utils.ValidateWithMaxLength(reqUser.Comment, 127) {
-		u.customAbort(http.StatusBadRequest, "Comment maximum length is 127 characters.")
+		u.CustomAbortAudit(http.StatusBadRequest, "Comment maximum length is 127 characters.")
 		return
 	}
 
@@ -105,142 +106,142 @@ func (u *UserController) ChangeUserAccount() {
 
 	isSuccess, err := service.UpdateUser(reqUser, "email", "realname", "comment")
 	if err != nil {
-		u.internalError(err)
+		u.InternalError(err)
 		return
 	}
 
 	if !isSuccess {
-		u.customAbort(http.StatusBadRequest, "Failed to change user account.")
+		u.CustomAbortAudit(http.StatusBadRequest, "Failed to change user account.")
 	}
 }
 
 func (u *UserController) ChangePasswordAction() {
 	var err error
 
-	if u.isExternalAuth && u.currentUser.Username != "admin" {
+	if u.IsExternalAuth && u.CurrentUser.Username != "admin" {
 		logs.Debug("Current AUTH_MODE is external auth.")
-		u.customAbort(http.StatusMethodNotAllowed, "Current AUTH_MODE is external auth.")
+		u.CustomAbortAudit(http.StatusMethodNotAllowed, "Current AUTH_MODE is external auth.")
 		return
 	}
 
 	userID, err := strconv.Atoi(u.Ctx.Input.Param(":id"))
 	if err != nil {
-		u.internalError(err)
+		u.InternalError(err)
 		return
 	}
 	user, err := service.GetUserByID(int64(userID))
 	if err != nil {
-		u.internalError(err)
+		u.InternalError(err)
 		return
 	}
 	if user == nil {
-		u.customAbort(http.StatusNotFound, "No found user with provided User ID.")
+		u.CustomAbortAudit(http.StatusNotFound, "No found user with provided User ID.")
 		return
 	}
 
-	if !(u.isSysAdmin || u.currentUser.ID == user.ID) {
-		u.customAbort(http.StatusForbidden, "Only system admin can change others' password.")
+	if !(u.IsSysAdmin || u.CurrentUser.ID == user.ID) {
+		u.CustomAbortAudit(http.StatusForbidden, "Only system admin can change others' password.")
 		return
 	}
 
 	var changePassword model.ChangePassword
-	err = u.resolveBody(&changePassword)
+	err = u.ResolveBody(&changePassword)
 	if err != nil {
 		return
 	}
 
-	changePassword.OldPassword = utils.Encrypt(changePassword.OldPassword, u.currentUser.Salt)
+	changePassword.OldPassword = utils.Encrypt(changePassword.OldPassword, u.CurrentUser.Salt)
 
 	if changePassword.OldPassword != user.Password {
-		u.customAbort(http.StatusForbidden, "Old password input is incorrect.")
+		u.CustomAbortAudit(http.StatusForbidden, "Old password input is incorrect.")
 		return
 	}
 	if !utils.ValidateWithLengthRange(changePassword.NewPassword, 8, 20) {
-		u.customAbort(http.StatusBadRequest, "Password does not satisfy complexity requirement.")
+		u.CustomAbortAudit(http.StatusBadRequest, "Password does not satisfy complexity requirement.")
 		return
 	}
 	updateUser := model.User{
 		ID:       user.ID,
-		Password: utils.Encrypt(changePassword.NewPassword, u.currentUser.Salt),
+		Password: utils.Encrypt(changePassword.NewPassword, u.CurrentUser.Salt),
 	}
 	isSuccess, err := service.UpdateUser(updateUser, "password")
 	if err != nil {
-		u.internalError(err)
+		u.InternalError(err)
 		return
 	}
 	if !isSuccess {
-		u.customAbort(http.StatusBadRequest, "Failed to change password.")
+		u.CustomAbortAudit(http.StatusBadRequest, "Failed to change password.")
 	}
 }
 
 type SystemAdminController struct {
-	BaseController
+	c.BaseController
 }
 
 func (u *SystemAdminController) Prepare() {
-	u.resolveSignedInUser()
-	u.recordOperationAudit()
-	if !u.isSysAdmin {
-		u.customAbort(http.StatusForbidden, "Insufficient privileges to manipulate user.")
+	u.ResolveSignedInUser()
+	u.RecordOperationAudit()
+	if !u.IsSysAdmin {
+		u.CustomAbortAudit(http.StatusForbidden, "Insufficient privileges to manipulate user.")
 		return
 	}
-	u.isExternalAuth = utils.GetBoolValue("IS_EXTERNAL_AUTH")
+	u.IsExternalAuth = utils.GetBoolValue("IS_EXTERNAL_AUTH")
 }
 
 func (u *SystemAdminController) AddUserAction() {
 
-	if u.isExternalAuth {
+	if u.IsExternalAuth {
 		logs.Debug("Current AUTH_MODE is external auth.")
-		u.customAbort(http.StatusMethodNotAllowed, "Current AUTH_MODE is external auth.")
+		u.CustomAbortAudit(http.StatusMethodNotAllowed, "Current AUTH_MODE is external auth.")
 		return
 	}
 	var reqUser model.User
 	var err error
-	err = u.resolveBody(&reqUser)
+	err = u.ResolveBody(&reqUser)
 	if err != nil {
 		return
 	}
 
 	if !utils.ValidateWithPattern("username", reqUser.Username) {
-		u.customAbort(http.StatusBadRequest, "Username content is illegal.")
+		u.CustomAbortAudit(http.StatusBadRequest, "Username content is illegal.")
 		return
 	}
 
 	usernameExists, err := service.UserExists("username", reqUser.Username, 0)
 	if err != nil {
-		u.internalError(err)
+		u.InternalError(err)
 		return
 	}
 	if usernameExists {
-		u.customAbort(http.StatusConflict, "Username already exists.")
+		u.CustomAbortAudit(http.StatusConflict, "Username already exists.")
 		return
 	}
 	if !utils.ValidateWithPattern("email", reqUser.Email) {
-		u.customAbort(http.StatusBadRequest, "Email content is illegal.")
+		u.CustomAbortAudit(http.StatusBadRequest, "Email content is illegal.")
 		return
 	}
 	emailExists, err := service.UserExists("email", reqUser.Email, 0)
 	if err != nil {
-		u.internalError(err)
+		u.InternalError(err)
 		return
 	}
 	if emailExists {
-		u.customAbort(http.StatusConflict, "Email already exists.")
+		u.CustomAbortAudit(http.StatusConflict, "Email already exists.")
 		return
 	}
 
 	if !utils.ValidateWithLengthRange(reqUser.Password, 8, 20) {
-		u.customAbort(http.StatusBadRequest, "Password does not satisfy complexity requirement.")
+		u.CustomAbortAudit(http.StatusBadRequest, "Password does not satisfy complexity requirement.")
 		return
 	}
 
 	if !utils.ValidateWithMaxLength(reqUser.Realname, 40) {
-		u.customAbort(http.StatusBadRequest, "Realname maximum length is 40 characters.")
+		u.CustomAbortAudit(http.StatusBadRequest, "Realname maximum length is 40 characters.")
 		return
 	}
 
 	if !utils.ValidateWithMaxLength(reqUser.Comment, 127) {
-		u.customAbort(http.StatusBadRequest, "Comment maximum length is 127 characters.")
+		u.CustomAbortAudit(http.StatusBadRequest, "Comment maximum length is 127 characters.")
 		return
 	}
 
@@ -251,11 +252,11 @@ func (u *SystemAdminController) AddUserAction() {
 
 	isSuccess, err := service.SignUp(reqUser)
 	if err != nil {
-		u.internalError(err)
+		u.InternalError(err)
 		return
 	}
 	if !isSuccess {
-		u.customAbort(http.StatusBadRequest, "Failed to sign up user.")
+		u.CustomAbortAudit(http.StatusBadRequest, "Failed to sign up user.")
 	}
 }
 
@@ -263,16 +264,16 @@ func (u *SystemAdminController) GetUserAction() {
 
 	userID, err := strconv.Atoi(u.Ctx.Input.Param(":id"))
 	if err != nil {
-		u.internalError(err)
+		u.InternalError(err)
 		return
 	}
 	user, err := service.GetUserByID(int64(userID))
 	if err != nil {
-		u.internalError(err)
+		u.InternalError(err)
 		return
 	}
 	if user == nil {
-		u.customAbort(http.StatusNotFound, "No user found with provided User ID.")
+		u.CustomAbortAudit(http.StatusNotFound, "No user found with provided User ID.")
 		return
 	}
 	user.Password = ""
@@ -283,77 +284,77 @@ func (u *SystemAdminController) GetUserAction() {
 func (u *SystemAdminController) DeleteUserAction() {
 	userID, err := strconv.Atoi(u.Ctx.Input.Param(":id"))
 	if err != nil {
-		u.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid user ID: %d", userID))
+		u.CustomAbortAudit(http.StatusBadRequest, fmt.Sprintf("Invalid user ID: %d", userID))
 		return
 	}
 	user, err := service.GetUserByID(int64(userID))
 	if err != nil {
-		u.internalError(err)
+		u.InternalError(err)
 		return
 	}
 	if user == nil {
-		u.customAbort(http.StatusNotFound, "No user was found with provided ID.")
+		u.CustomAbortAudit(http.StatusNotFound, "No user was found with provided ID.")
 		return
 	}
-	if userID == 1 || int64(userID) == u.currentUser.ID {
-		u.customAbort(http.StatusBadRequest, "System admin user or current user cannot be deleted.")
+	if userID == 1 || int64(userID) == u.CurrentUser.ID {
+		u.CustomAbortAudit(http.StatusBadRequest, "System admin user or current user cannot be deleted.")
 		return
 	}
 	adminUser, err := service.GetUserByID(1)
 	if err != nil {
-		u.internalError(err)
+		u.InternalError(err)
 		return
 	}
 	err = gogs.NewGogsHandler(adminUser.Username, adminUser.RepoToken).DeleteUser(user.Username)
 	if err != nil {
 		if err == utils.ErrUnprocessableEntity {
-			u.customAbort(http.StatusUnprocessableEntity, "User has own project or repo.")
+			u.CustomAbortAudit(http.StatusUnprocessableEntity, "User has own project or repo.")
 		} else {
-			u.internalError(err)
+			u.InternalError(err)
 		}
 		return
 	}
 
 	isSuccess, err := service.DeleteUser(int64(userID))
 	if err != nil {
-		u.internalError(err)
+		u.InternalError(err)
 		return
 	}
 	if !isSuccess {
-		u.serveStatus(http.StatusBadRequest, "Failed to delete user.")
+		u.ServeStatus(http.StatusBadRequest, "Failed to delete user.")
 	}
 }
 
 func (u *SystemAdminController) UpdateUserAction() {
 
-	if u.isExternalAuth && u.currentUser.Username != "admin" {
+	if u.IsExternalAuth && u.CurrentUser.Username != "admin" {
 		logs.Debug("Current AUTH_MODE is external auth.")
-		u.customAbort(http.StatusMethodNotAllowed, "Current AUTH_MODE is external auth.")
+		u.CustomAbortAudit(http.StatusMethodNotAllowed, "Current AUTH_MODE is external auth.")
 		return
 	}
 
 	var err error
 	userID, err := strconv.Atoi(u.Ctx.Input.Param(":id"))
 	if err != nil {
-		u.serveStatus(http.StatusBadRequest, "Invalid user ID.")
+		u.ServeStatus(http.StatusBadRequest, "Invalid user ID.")
 		return
 	}
-	if userID == 1 || u.currentUser.ID == int64(userID) {
-		u.customAbort(http.StatusForbidden, "Insufficient privileges.")
+	if userID == 1 || u.CurrentUser.ID == int64(userID) {
+		u.CustomAbortAudit(http.StatusForbidden, "Insufficient privileges.")
 		return
 	}
 	user, err := service.GetUserByID(int64(userID))
 	if err != nil {
-		u.internalError(err)
+		u.InternalError(err)
 		return
 	}
 	if user == nil {
-		u.customAbort(http.StatusNotFound, "No user was found with provided ID.")
+		u.CustomAbortAudit(http.StatusNotFound, "No user was found with provided ID.")
 		return
 	}
 
 	var reqUser model.User
-	err = u.resolveBody(&reqUser)
+	err = u.ResolveBody(&reqUser)
 	if err != nil {
 		return
 	}
@@ -361,17 +362,17 @@ func (u *SystemAdminController) UpdateUserAction() {
 	reqUser.ID = user.ID
 	users, err := service.GetUsers("email", reqUser.Email, "id", "email")
 	if err != nil {
-		u.internalError(err)
+		u.InternalError(err)
 		return
 	}
 
 	if !utils.ValidateWithPattern("email", reqUser.Email) {
-		u.customAbort(http.StatusBadRequest, "Email content is illegal.")
+		u.CustomAbortAudit(http.StatusBadRequest, "Email content is illegal.")
 		return
 	}
 
 	if len(users) > 0 && users[0].ID != reqUser.ID {
-		u.customAbort(http.StatusConflict, "Email already exists.")
+		u.CustomAbortAudit(http.StatusConflict, "Email already exists.")
 		return
 	}
 
@@ -381,36 +382,36 @@ func (u *SystemAdminController) UpdateUserAction() {
 
 	isSuccess, err := service.UpdateUser(reqUser, "email", "realname", "comment")
 	if err != nil {
-		u.internalError(err)
+		u.InternalError(err)
 		return
 	}
 	if !isSuccess {
-		u.serveStatus(http.StatusBadRequest, "Failed to update user.")
+		u.ServeStatus(http.StatusBadRequest, "Failed to update user.")
 	}
 }
 
 func (u *SystemAdminController) ToggleSystemAdminAction() {
 	userID, err := strconv.Atoi(u.Ctx.Input.Param(":id"))
 	if err != nil {
-		u.internalError(err)
+		u.InternalError(err)
 		return
 	}
 	user, err := service.GetUserByID(int64(userID))
 	if err != nil {
-		u.internalError(err)
+		u.InternalError(err)
 		return
 	}
 	if user == nil {
-		u.customAbort(http.StatusNotFound, "No found user with provided user ID.")
+		u.CustomAbortAudit(http.StatusNotFound, "No found user with provided user ID.")
 		return
 	}
-	if userID == 1 || u.currentUser.ID == user.ID {
-		u.customAbort(http.StatusBadRequest, "Self or system admin cannot be changed.")
+	if userID == 1 || u.CurrentUser.ID == user.ID {
+		u.CustomAbortAudit(http.StatusBadRequest, "Self or system admin cannot be changed.")
 		return
 	}
 
 	var reqUser model.User
-	err = u.resolveBody(&reqUser)
+	err = u.ResolveBody(&reqUser)
 	if err != nil {
 		return
 	}
@@ -418,10 +419,10 @@ func (u *SystemAdminController) ToggleSystemAdminAction() {
 	user.SystemAdmin = reqUser.SystemAdmin
 	isSuccess, err := service.UpdateUser(*user, "system_admin")
 	if err != nil {
-		u.internalError(err)
+		u.InternalError(err)
 		return
 	}
 	if !isSuccess {
-		u.customAbort(http.StatusBadRequest, "Failed to toggle user system admin.")
+		u.CustomAbortAudit(http.StatusBadRequest, "Failed to toggle user system admin.")
 	}
 }
