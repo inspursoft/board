@@ -57,7 +57,7 @@ func (controller *Controller) AddDeleteNode(actionType node.ActionType, yamlFile
 			break
 		}
 		controller.sendMessage(ws, line, node.WsNodeResponseNormal)
-		if controller.checkIsEndingLog(line) {
+		if controller.checkIsEndingLog(line, nodeIp) {
 			if controller.checkIsSuccessExecuted(line) {
 				msgTip := fmt.Sprintf(actionName+"successed!%s", nodeIp)
 				controller.sendMessage(ws, msgTip, node.WsNodeResponseSuccess)
@@ -111,8 +111,9 @@ func (controller *Controller) sendMessage(ws *websocket.Conn, msg string, status
 	ws.WriteMessage(websocket.TextMessage, data)
 }
 
-func (controller *Controller) checkIsEndingLog(log string) bool {
+func (controller *Controller) checkIsEndingLog(log, nodeIp string) bool {
 	return len(log) > 0 &&
+		strings.Contains(log, nodeIp) &&
 		strings.Contains(log, "ok") &&
 		strings.Contains(log, "changed") &&
 		strings.Contains(log, "unreachable") &&
@@ -121,8 +122,8 @@ func (controller *Controller) checkIsEndingLog(log string) bool {
 
 func (controller *Controller) checkIsSuccessExecuted(log string) bool {
 	return len(log) > 0 &&
-		log[strings.Index(log, "unreachable")+3:strings.Index(log, "unreachable")+4] == "0" &&
-		log[strings.Index(log, "failed")+3:strings.Index(log, "failed")+4] == "0"
+		log[strings.Index(log, "unreachable")+12:strings.Index(log, "unreachable")+13] == "0" &&
+		log[strings.Index(log, "failed")+7:strings.Index(log, "failed")+8] == "0"
 }
 
 func (controller *Controller) removeNodeInfo(nodeIp string) error {
