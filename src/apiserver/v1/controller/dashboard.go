@@ -2,6 +2,7 @@ package controller
 
 import (
 	"git/inspursoft/board/src/apiserver/service"
+	c "git/inspursoft/board/src/common/controller"
 	"net/http"
 
 	"github.com/astaxie/beego"
@@ -29,12 +30,12 @@ type DsResp struct {
 }
 
 type Dashboard struct {
-	BaseController
+	c.BaseController
 }
 
 func (s *Dashboard) GetData() {
 	var req DsBodyPara
-	err := s.resolveBody(&req)
+	err := s.ResolveBody(&req)
 	if err != nil {
 		return
 	}
@@ -42,15 +43,15 @@ func (s *Dashboard) GetData() {
 	serviceName := s.GetString("service_name")
 
 	if req.Node.TimeCount == 0 && req.Service.TimeCount == 0 {
-		s.customAbort(http.StatusBadRequest, "Time count for dashboard data retrieval cannot be empty.")
+		s.CustomAbortAudit(http.StatusBadRequest, "Time count for dashboard data retrieval cannot be empty.")
 		return
 	}
 	if req.Node.TimestampBase == 0 && req.Service.TimestampBase == 0 {
-		s.customAbort(http.StatusBadRequest, "Timestamp for dashboard data retrieval cannot be empty.")
+		s.CustomAbortAudit(http.StatusBadRequest, "Timestamp for dashboard data retrieval cannot be empty.")
 		return
 	}
 	if req.Node.TimeUnit == "" && req.Service.TimeUnit == "" {
-		s.customAbort(http.StatusBadRequest, "Time unit for dashboard data retrieval cannot be empty.")
+		s.CustomAbortAudit(http.StatusBadRequest, "Time unit for dashboard data retrieval cannot be empty.")
 		return
 	}
 	var (
@@ -63,12 +64,12 @@ func (s *Dashboard) GetData() {
 		req.Node.TimestampBase, nodeName)
 	err = para.GetNodeDataToObj()
 	if err != nil {
-		s.internalError(err)
+		s.InternalError(err)
 		return
 	}
 	_, err = para.GetNodeListToObj()
 	if err != nil {
-		s.internalError(err)
+		s.InternalError(err)
 		return
 	}
 	resp.Node = para.NodeResp
@@ -77,18 +78,18 @@ func (s *Dashboard) GetData() {
 		req.Service.DurationTime)
 	err = para.GetServiceDataToObj()
 	if err != nil {
-		s.internalError(err)
+		s.InternalError(err)
 		return
 	}
 	_, err = para.GetServiceListToObj()
 	if err != nil {
-		s.internalError(err)
+		s.InternalError(err)
 		return
 	}
 	resp.Service = para.ServiceResp
 	if err != nil {
-		s.internalError(err)
+		s.InternalError(err)
 		return
 	}
-	s.renderJSON(resp)
+	s.RenderJSON(resp)
 }

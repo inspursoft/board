@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
+	c "git/inspursoft/board/src/common/controller"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
 
@@ -10,22 +11,22 @@ import (
 )
 
 type NodeController struct {
-	BaseController
+	c.BaseController
 }
 
 func (n *NodeController) GetNode() {
 	para := n.GetString("node_name")
 	res, err := service.GetNode(para)
 	if err != nil {
-		n.customAbort(http.StatusInternalServerError, fmt.Sprint(err))
+		n.CustomAbortAudit(http.StatusInternalServerError, fmt.Sprint(err))
 		return
 	}
-	n.renderJSON(res)
+	n.RenderJSON(res)
 }
 
 func (n *NodeController) NodeToggle() {
-	if !n.isSysAdmin {
-		n.customAbort(http.StatusForbidden, "user should be admin")
+	if !n.IsSysAdmin {
+		n.CustomAbortAudit(http.StatusForbidden, "user should be admin")
 		return
 	}
 
@@ -41,11 +42,11 @@ func (n *NodeController) NodeToggle() {
 		responseStatus, err = service.SuspendNode(paraName)
 	}
 	if err != nil {
-		n.customAbort(http.StatusInternalServerError, fmt.Sprint(err))
+		n.CustomAbortAudit(http.StatusInternalServerError, fmt.Sprint(err))
 		return
 	}
 	if responseStatus != true {
-		n.customAbort(http.StatusPreconditionFailed, fmt.Sprint(err))
+		n.CustomAbortAudit(http.StatusPreconditionFailed, fmt.Sprint(err))
 	}
 }
 
@@ -64,10 +65,10 @@ func (n *NodeController) NodeList() {
 				break
 			}
 		}
-		n.renderJSON(availableNodeList)
+		n.RenderJSON(availableNodeList)
 		return
 	}
-	n.renderJSON(nodeList)
+	n.RenderJSON(nodeList)
 }
 
 func (n *NodeController) AddNodeToGroupAction() {
@@ -81,7 +82,7 @@ func (n *NodeController) AddNodeToGroupAction() {
 	//TODO check existing
 	err := service.AddNodeToGroup(nodeName, groupName)
 	if err != nil {
-		n.internalError(err)
+		n.InternalError(err)
 		return
 	}
 }
@@ -97,10 +98,10 @@ func (n *NodeController) GetGroupsOfNodeAction() {
 	groups, err := service.GetGroupOfNode(nodeName)
 	if err != nil {
 		logs.Error("Failed to get node %s group", nodeName)
-		n.internalError(err)
+		n.InternalError(err)
 		return
 	}
-	n.renderJSON(groups)
+	n.RenderJSON(groups)
 }
 
 func (n *NodeController) RemoveNodeFromGroupAction() {
@@ -113,7 +114,7 @@ func (n *NodeController) RemoveNodeFromGroupAction() {
 
 	err := service.RemoveNodeFromGroup(nodeName, groupName)
 	if err != nil {
-		n.internalError(err)
+		n.InternalError(err)
 		return
 	}
 	logs.Debug("Removed %s from %s", nodeName, groupName)
@@ -123,9 +124,9 @@ func (n *NodeController) NodesAvailalbeResources() {
 	logs.Debug("GetNodesResources")
 	resources, err := service.GetNodesAvailableResources()
 	if err != nil {
-		n.internalError(err)
+		n.InternalError(err)
 		return
 	}
 
-	n.renderJSON(resources)
+	n.RenderJSON(resources)
 }

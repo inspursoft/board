@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
+	c "git/inspursoft/board/src/common/controller"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
@@ -44,14 +45,14 @@ type evalMatch struct {
 var emailIdentity = ""
 
 type EmailController struct {
-	BaseController
+	c.BaseController
 }
 
 func (e *EmailController) Prepare() {}
 
 func (e *EmailController) Ping() {
 	var pingEmail EmailPingParam
-	e.resolveBody(&pingEmail)
+	e.ResolveBody(&pingEmail)
 	err := utils.NewEmailHandler(emailIdentity,
 		pingEmail.Username, pingEmail.Password,
 		pingEmail.Hostname, pingEmail.Port).
@@ -59,7 +60,7 @@ func (e *EmailController) Ping() {
 		Ping()
 	if err != nil {
 		logs.Error("Failed to ping SMTP: %+v", err)
-		e.customAbort(http.StatusBadRequest, "Failed to ping SMTP server.")
+		e.CustomAbortAudit(http.StatusBadRequest, "Failed to ping SMTP server.")
 	}
 }
 
@@ -67,14 +68,14 @@ func (e *EmailController) send(to []string, subject string, content string) {
 	from := utils.GetStringValue("EMAIL_FROM")
 	if err := service.SendMail(from, to, subject, content); err != nil {
 		logs.Error("Failed to send email to error: %+v", err)
-		e.internalError(err)
+		e.InternalError(err)
 		return
 	}
 }
 
 func (e *EmailController) GrafanaNotification() {
 	var n grafanaNotification
-	e.resolveBody(&n)
+	e.ResolveBody(&n)
 	message := fmt.Sprintf(`<b>Title:</b>%s<br/>
 	<b>Rule ID:</b> %d<br/>
 	<b>Rule Name:</b> %s<br/>
@@ -93,7 +94,7 @@ func (e *EmailController) GrafanaNotification() {
 
 func (e *EmailController) ForgotPasswordEmail() {
 	if utils.GetBoolValue("IS_EXTERNAL_AUTH") {
-		e.customAbort(http.StatusPreconditionFailed, "Resetting password doesn't support in external auth.")
+		e.CustomAbortAudit(http.StatusPreconditionFailed, "Resetting password doesn't support in external auth.")
 		return
 	}
 	credential := e.GetString("credential")
@@ -106,19 +107,19 @@ func (e *EmailController) ForgotPasswordEmail() {
 	}
 	if err != nil {
 		logs.Error("Failed to get user with credential: %s, error: %+v", credential, err)
-		e.internalError(err)
+		e.InternalError(err)
 		return
 	}
 	if user == nil {
 		logs.Error("User not found with credential: %s", credential)
-		e.customAbort(http.StatusNotFound, "User not found")
+		e.CustomAbortAudit(http.StatusNotFound, "User not found")
 		return
 	}
 	resetUUID := utils.GenerateRandomString()
 	_, err = service.UpdateUserUUID(user.ID, resetUUID)
 	if err != nil {
 		logs.Error("Failed to update user reset UUID for user: %d, error: %+v", user.ID, err)
-		e.internalError(err)
+		e.InternalError(err)
 		return
 	}
 	var hostIP = utils.GetStringValue("BOARD_HOST_IP")
