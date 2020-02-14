@@ -13,12 +13,12 @@ type Controller struct {
 	beego.Controller
 }
 
-// @Title Get
+// @Title Get node list
 // @Description Get node list
 // @Success 200 {object} []node.NodeListType  success
 // @Failure 400 bad request
 // @Failure 500 Internal Server Error
-// @router / [get]
+// @router /list [get]
 func (controller *Controller) GetNodeListAction() {
 	var nodeListJson []node.NodeListType
 	var filePtr *os.File
@@ -41,10 +41,22 @@ func (controller *Controller) GetNodeListAction() {
 	}
 }
 
+// @Title add node
+// @Description Get add node
+// @Success 200
+// @Failure 400 bad request
+// @Failure 500 Internal Server Error
+// @router /add [get]
 func (controller *Controller) AddNodeAction() {
 	controller.AddDeleteNode(node.ActionTypeAddNode, node.AddNodeYamlFileName)
 }
 
+// @Title delete node
+// @Description Get delete node
+// @Success 200
+// @Failure 400 bad request
+// @Failure 500 Internal Server Error
+// @router /add [get]
 func (controller *Controller) DeleteNodeAction() {
 	controller.AddDeleteNode(node.ActionTypeDeleteNode, node.DeleteNodeYamlFileName)
 }

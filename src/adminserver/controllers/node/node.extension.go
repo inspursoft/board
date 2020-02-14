@@ -20,13 +20,6 @@ import (
 
 func (controller *Controller) AddDeleteNode(actionType node.ActionType, yamlFile string) {
 	nodeIp := controller.Ctx.Input.Query("node_ip")
-	configuration, statusMessage := service.GetAllCfg("")
-	if statusMessage == "BadRequest" {
-		controller.CustomAbort(http.StatusBadRequest, "Failed to get the configuration.")
-		return
-	}
-	masterIp := configuration.Apiserver.KubeMasterIP
-	registryIp := configuration.Apiserver.RegistryIP
 	actionName := "Add node ";
 	if actionType == node.ActionTypeDeleteNode {
 		actionName = "Delete node "
@@ -45,6 +38,13 @@ func (controller *Controller) AddDeleteNode(actionType node.ActionType, yamlFile
 		controller.sendMessage(ws, fileNotExists, node.WsNodeResponseError)
 		return
 	}
+	configuration, statusMessage := service.GetAllCfg("")
+	if statusMessage == "BadRequest" {
+		controller.sendMessage(ws, "Failed to get the configuration.", node.WsNodeResponseWarning)
+		return
+	}
+	masterIp := configuration.Apiserver.KubeMasterIP
+	registryIp := configuration.Apiserver.RegistryIP
 	controller.generateHostFile(masterIp, nodeIp, registryIp)
 	command := fmt.Sprintf("ansible-playbook -i " + node.AddDeleteNodeFileName + " " + yamlFile)
 	errTip := fmt.Sprintf("Start execute command.%s", command)

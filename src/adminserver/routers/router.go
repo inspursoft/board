@@ -32,9 +32,9 @@ func init() {
 			),
 		),
 		beego.NSNamespace("/node",
-			beego.NSRouter("/add", &node.Controller{}, "get:AddNodeAction"),
-			beego.NSRouter("/delete", &node.Controller{}, "get:DeleteNodeAction"),
-			beego.NSRouter("/list", &node.Controller{}, "get:GetNodeListAction"),
+			beego.NSInclude(
+				&node.Controller{},
+			),
 		),
 	)
 	beego.AddNamespace(ns)
