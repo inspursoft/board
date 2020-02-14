@@ -3,14 +3,14 @@ package controller
 import (
 	"errors"
 	"fmt"
+	"git/inspursoft/board/src/apiserver/service"
+	c "git/inspursoft/board/src/common/controller"
+	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
 	"io"
 	"net/http"
 	"strconv"
 	"time"
-
-	"git/inspursoft/board/src/apiserver/service"
-	"git/inspursoft/board/src/common/model"
-	"git/inspursoft/board/src/common/utils"
 
 	"github.com/astaxie/beego/logs"
 )
@@ -20,23 +20,23 @@ var (
 )
 
 type JobController struct {
-	BaseController
+	c.BaseController
 }
 
 func (p *JobController) resolveJobInfo() (j *model.JobStatusMO, err error) {
 	jobID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
 	if err != nil {
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
 	// Get the project info of this service
 	j, err = service.GetJobByID(int64(jobID))
 	if err != nil {
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
 	if j == nil {
-		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid job ID: %d", jobID))
+		p.CustomAbortAudit(http.StatusBadRequest, fmt.Sprintf("Invalid job ID: %d", jobID))
 		return
 	}
 	return
@@ -44,42 +44,42 @@ func (p *JobController) resolveJobInfo() (j *model.JobStatusMO, err error) {
 
 func (p *JobController) DeployJobAction() {
 	var config model.JobConfig
-	err := p.resolveBody(&config)
+	err := p.ResolveBody(&config)
 	if err != nil {
 		return
 	}
 	//Judge authority
-	project := p.resolveUserPrivilegeByID(config.ProjectID)
+	project := p.ResolveUserPrivilegeByID(config.ProjectID)
 
 	var newjob model.JobStatusMO
 	newjob.Name = config.Name
 	newjob.ProjectID = config.ProjectID
 	newjob.Status = preparing // 0: preparing 1: running 2: suspending
-	newjob.OwnerID = p.currentUser.ID
-	newjob.OwnerName = p.currentUser.Username
+	newjob.OwnerID = p.CurrentUser.ID
+	newjob.OwnerName = p.CurrentUser.Username
 	newjob.ProjectName = project.Name
 
 	jobInfo, err := service.CreateJob(newjob)
 	if err != nil {
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
 
-	jobDeployInfo, err := service.DeployJob(&config, registryBaseURI())
+	jobDeployInfo, err := service.DeployJob(&config, c.RegistryBaseURI())
 	if err != nil {
-		p.parseError(err, parsePostK8sError)
+		p.ParseError(err, c.ParsePostK8sError)
 		return
 	}
 
 	updateJob := model.JobStatusMO{ID: jobInfo.ID, Status: uncompleted, Yaml: string(jobDeployInfo.JobFileInfo)}
 	_, err = service.UpdateJob(updateJob, "status", "yaml")
 	if err != nil {
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
 
 	config.ID = jobInfo.ID
-	p.renderJSON(config)
+	p.RenderJSON(config)
 }
 
 //get job list
@@ -90,29 +90,29 @@ func (p *JobController) GetJobListAction() {
 	orderField := p.GetString("order_field", "creation_time")
 	orderAsc, _ := p.GetInt("order_asc", 0)
 	if pageIndex == 0 && pageSize == 0 {
-		jobStatus, err := service.GetJobList(jobName, p.currentUser.ID)
+		jobStatus, err := service.GetJobList(jobName, p.CurrentUser.ID)
 		if err != nil {
-			p.internalError(err)
+			p.InternalError(err)
 			return
 		}
 		err = service.SyncJobK8sStatus(jobStatus)
 		if err != nil {
-			p.internalError(err)
+			p.InternalError(err)
 			return
 		}
-		p.renderJSON(jobStatus)
+		p.RenderJSON(jobStatus)
 	} else {
-		paginatedJobStatus, err := service.GetPaginatedJobList(jobName, p.currentUser.ID, pageIndex, pageSize, orderField, orderAsc)
+		paginatedJobStatus, err := service.GetPaginatedJobList(jobName, p.CurrentUser.ID, pageIndex, pageSize, orderField, orderAsc)
 		if err != nil {
-			p.internalError(err)
+			p.InternalError(err)
 			return
 		}
 		err = service.SyncJobK8sStatus(paginatedJobStatus.JobStatusList)
 		if err != nil {
-			p.internalError(err)
+			p.InternalError(err)
 			return
 		}
-		p.renderJSON(paginatedJobStatus)
+		p.RenderJSON(paginatedJobStatus)
 	}
 }
 
@@ -123,15 +123,15 @@ func (p *JobController) GetJobAction() {
 		return
 	}
 	//Judge authority
-	p.resolveUserPrivilegeByID(j.ProjectID)
+	p.ResolveUserPrivilegeByID(j.ProjectID)
 
 	jobStatus := []*model.JobStatusMO{j}
 	err = service.SyncJobK8sStatus(jobStatus)
 	if err != nil {
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
-	p.renderJSON(jobStatus[0])
+	p.RenderJSON(jobStatus[0])
 }
 
 func (p *JobController) DeleteJobAction() {
@@ -141,22 +141,22 @@ func (p *JobController) DeleteJobAction() {
 		return
 	}
 	//Judge authority
-	p.resolveUserPrivilegeByID(j.ProjectID)
+	p.ResolveUserPrivilegeByID(j.ProjectID)
 
 	// stop service
 	err = service.StopJobK8s(j)
 	if err != nil {
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
 	//TODO: where is the deletion of kubernetes job object?, write it here or in service method? do we need another state to reference it?
 	isSuccess, err := service.DeleteJob(j.ID)
 	if err != nil {
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
 	if !isSuccess {
-		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Failed to delete job with ID: %d", j.ID))
+		p.CustomAbortAudit(http.StatusBadRequest, fmt.Sprintf("Failed to delete job with ID: %d", j.ID))
 	}
 
 }
@@ -168,27 +168,27 @@ func (p *JobController) GetJobStatusAction() {
 		return
 	}
 	//Judge authority
-	p.resolveUserPrivilegeByID(j.ProjectID)
+	p.ResolveUserPrivilegeByID(j.ProjectID)
 	jobStatus, err := service.GetK8sJobByK8sassist(j.ProjectName, j.Name)
 	if err != nil {
-		p.parseError(err, parseGetK8sError)
+		p.ParseError(err, c.ParseGetK8sError)
 		return
 	}
-	p.renderJSON(jobStatus)
+	p.RenderJSON(jobStatus)
 }
 
 func (p *JobController) JobExists() {
 	projectName := p.GetString("project_name")
-	p.resolveProjectMember(projectName)
+	p.ResolveProjectMember(projectName)
 	jobName := p.GetString("job_name")
 	isJobExists, err := service.JobExists(jobName, projectName)
 	if err != nil {
-		p.internalError(err)
+		p.InternalError(err)
 		logs.Error("Check job name failed, error: %+v", err.Error())
 		return
 	}
 	if isJobExists {
-		p.customAbort(http.StatusConflict, jobNameDuplicateErr.Error())
+		p.CustomAbortAudit(http.StatusConflict, jobNameDuplicateErr.Error())
 	}
 }
 
@@ -199,13 +199,13 @@ func (p *JobController) GetJobPodsAction() {
 		return
 	}
 	//Judge authority
-	p.resolveUserPrivilegeByID(j.ProjectID)
+	p.ResolveUserPrivilegeByID(j.ProjectID)
 	pods, err := service.GetK8sJobPods(j)
 	if err != nil {
-		p.parseError(err, parseGetK8sError)
+		p.ParseError(err, c.ParseGetK8sError)
 		return
 	}
-	p.renderJSON(pods)
+	p.RenderJSON(pods)
 }
 
 func (p *JobController) GetJobLogsAction() {
@@ -215,11 +215,11 @@ func (p *JobController) GetJobLogsAction() {
 		return
 	}
 	//Judge authority
-	p.resolveUserPrivilegeByID(j.ProjectID)
+	p.ResolveUserPrivilegeByID(j.ProjectID)
 	podName := p.Ctx.Input.Param(":podname")
 	readCloser, err := service.GetK8sJobLogs(j, podName, p.generatePodLogOptions())
 	if err != nil {
-		p.parseError(err, parseGetK8sError)
+		p.ParseError(err, c.ParseGetK8sError)
 		return
 	}
 	defer readCloser.Close()
@@ -283,13 +283,13 @@ func (p *JobController) generatePodLogOptions() *model.PodLogOptions {
 }
 func (p *JobController) GetSelectableJobsAction() {
 	projectName := p.GetString("project_name")
-	p.resolveProjectMember(projectName)
+	p.ResolveProjectMember(projectName)
 	logs.Info("Get selectable job list for", projectName)
 	jobList, err := service.GetJobsByProjectName(projectName)
 	if err != nil {
 		logs.Error("Failed to get selectable jobs.")
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
-	p.renderJSON(jobList)
+	p.RenderJSON(jobList)
 }

@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	authMode    = "db_auth"
+	AuthMode    = "db_auth"
 	targetName  = "REDIRECTION_URL"
 	targetValue = "http://test.domain.com"
 )
@@ -29,5 +29,5 @@ func TestGetSystemInfo(t *testing.T) {
 	assert := assert.New(t)
 	assert.Nilf(err, "Error occurred while getting system info: %+v", err)
 	assert.NotNilf(systemInfo, "Failed to get system info: %+v", err)
-	assert.Equalf(targetValue, systemInfo.RedirectionURL, "System info auth_mode value is not as expected: %s", authMode)
+	assert.Equalf(targetValue, systemInfo.RedirectionURL, "System info auth_mode value is not as expected: %s", AuthMode)
 }

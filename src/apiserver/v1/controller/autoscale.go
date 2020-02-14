@@ -5,30 +5,31 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/astaxie/beego/logs"
-
 	"git/inspursoft/board/src/apiserver/service"
+	c "git/inspursoft/board/src/common/controller"
 	"git/inspursoft/board/src/common/model"
+
+	"github.com/astaxie/beego/logs"
 )
 
 type AutoScaleController struct {
-	BaseController
+	c.BaseController
 }
 
 func (as *AutoScaleController) resolveServiceInfo() (s *model.ServiceStatus, err error) {
 	serviceID, err := strconv.Atoi(as.Ctx.Input.Param(":id"))
 	if err != nil {
-		as.internalError(err)
+		as.InternalError(err)
 		return
 	}
 	// Get the project info of this service
 	s, err = service.GetServiceByID(int64(serviceID))
 	if err != nil {
-		as.internalError(err)
+		as.InternalError(err)
 		return
 	}
 	if s == nil {
-		as.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
+		as.CustomAbortAudit(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
 		return
 	}
 	return
@@ -43,7 +44,7 @@ func (as *AutoScaleController) CreateAutoScaleAction() {
 
 	// resolve the hpa
 	hpa := new(model.ServiceAutoScale)
-	err = as.resolveBody(hpa)
+	err = as.ResolveBody(hpa)
 	if err != nil {
 		return
 	}
@@ -55,20 +56,20 @@ func (as *AutoScaleController) CreateAutoScaleAction() {
 	// do some check
 	exist, err := service.CheckAutoScaleExist(svc, hpa.HPAName)
 	if err != nil {
-		as.internalError(err)
+		as.InternalError(err)
 		return
 	} else if exist {
-		as.customAbort(http.StatusConflict, fmt.Sprintf("AutoScale %s already exists in cluster.", hpa.HPAName))
+		as.CustomAbortAudit(http.StatusConflict, fmt.Sprintf("AutoScale %s already exists in cluster.", hpa.HPAName))
 		return
 	}
 
 	// add the hpa to k8s
 	hpa, err = service.CreateAutoScale(svc, hpa)
 	if err != nil {
-		as.internalError(err)
+		as.InternalError(err)
 		return
 	}
-	as.renderJSON(hpa)
+	as.RenderJSON(hpa)
 }
 
 func (as *AutoScaleController) ListAutoScaleAction() {
@@ -82,13 +83,13 @@ func (as *AutoScaleController) ListAutoScaleAction() {
 	// list the hpas from storage
 	hpas, err := service.ListAutoScales(svc)
 	if err != nil {
-		as.internalError(err)
+		as.InternalError(err)
 		return
 	}
 	for _, hpa := range hpas {
 		_, exist, err := service.GetAutoScaleK8s(svc.ProjectName, hpa.HPAName)
 		if err != nil {
-			as.internalError(err)
+			as.InternalError(err)
 			return
 		} else if exist {
 			hpa.HPAStatus = 1
@@ -98,7 +99,7 @@ func (as *AutoScaleController) ListAutoScaleAction() {
 		}
 	}
 
-	as.renderJSON(hpas)
+	as.RenderJSON(hpas)
 }
 
 func (as *AutoScaleController) UpdateAutoScaleAction() {
@@ -111,13 +112,13 @@ func (as *AutoScaleController) UpdateAutoScaleAction() {
 	// get the hpa id
 	hpaid, err := strconv.Atoi(as.Ctx.Input.Param(":hpaid"))
 	if err != nil {
-		as.internalError(err)
+		as.InternalError(err)
 		return
 	}
 
 	// resolve the hpa
 	hpa := new(model.ServiceAutoScale)
-	err = as.resolveBody(hpa)
+	err = as.ResolveBody(hpa)
 	if err != nil {
 		return
 	}
@@ -130,25 +131,25 @@ func (as *AutoScaleController) UpdateAutoScaleAction() {
 	// do some check
 	autoscale, err := service.GetAutoScale(svc, hpa.ID)
 	if err != nil {
-		as.internalError(err)
+		as.InternalError(err)
 		return
 	} else if autoscale == nil {
-		as.customAbort(http.StatusBadRequest, fmt.Sprintf("Autoscale %d does not exists.", hpa.ID))
+		as.CustomAbortAudit(http.StatusBadRequest, fmt.Sprintf("Autoscale %d does not exists.", hpa.ID))
 		return
 	} else if autoscale.HPAName != hpa.HPAName {
-		as.customAbort(http.StatusBadRequest, fmt.Sprintf("can't change Autoscale %s's name to %s", autoscale.HPAName, hpa.HPAName))
+		as.CustomAbortAudit(http.StatusBadRequest, fmt.Sprintf("can't change Autoscale %s's name to %s", autoscale.HPAName, hpa.HPAName))
 		return
 	} else if autoscale.ServiceID != hpa.ServiceID {
-		as.customAbort(http.StatusBadRequest, fmt.Sprintf("can't change Autoscale's service id %d to %d", autoscale.ServiceID, hpa.ServiceID))
+		as.CustomAbortAudit(http.StatusBadRequest, fmt.Sprintf("can't change Autoscale's service id %d to %d", autoscale.ServiceID, hpa.ServiceID))
 		return
 	}
 
 	hpa, err = service.UpdateAutoScale(svc, hpa)
 	if err != nil {
-		as.internalError(err)
+		as.InternalError(err)
 		return
 	}
-	as.renderJSON(hpa)
+	as.RenderJSON(hpa)
 }
 
 func (as *AutoScaleController) DeleteAutoScaleAction() {
@@ -161,7 +162,7 @@ func (as *AutoScaleController) DeleteAutoScaleAction() {
 	// get the hpa id
 	hpaid, err := strconv.Atoi(as.Ctx.Input.Param(":hpaid"))
 	if err != nil {
-		as.internalError(err)
+		as.InternalError(err)
 		return
 	}
 	logs.Info("delete autoscale %d", hpaid)
@@ -169,17 +170,17 @@ func (as *AutoScaleController) DeleteAutoScaleAction() {
 	// do some check
 	autoscale, err := service.GetAutoScale(svc, int64(hpaid))
 	if err != nil {
-		as.internalError(err)
+		as.InternalError(err)
 		return
 	} else if autoscale == nil {
-		as.customAbort(http.StatusBadRequest, fmt.Sprintf("Autoscale %d does not exists.", int64(hpaid)))
+		as.CustomAbortAudit(http.StatusBadRequest, fmt.Sprintf("Autoscale %d does not exists.", int64(hpaid)))
 		return
 	}
 
 	// delete the autoscale
 	err = service.DeleteAutoScale(svc, int64(hpaid))
 	if err != nil {
-		as.internalError(err)
+		as.InternalError(err)
 		return
 	}
 }

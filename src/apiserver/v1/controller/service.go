@@ -2,14 +2,14 @@ package controller
 
 import (
 	"fmt"
-	"io"
-	"os"
-
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/apiserver/service/devops/travis"
+	c "git/inspursoft/board/src/common/controller"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
+	"io"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -51,15 +51,15 @@ const (
 )
 
 type ServiceController struct {
-	BaseController
+	c.BaseController
 }
 
 func (p *ServiceController) generateDeploymentTravis(serviceName, deploymentURL, serviceURL string) error {
-	userID := p.currentUser.ID
+	userID := p.CurrentUser.ID
 	var travisCommand travis.TravisCommand
 	travisCommand.Script.Commands = []string{}
 	items := []string{
-		fmt.Sprintf("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
+		fmt.Sprintf("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", c.BoardAPIBaseURL(), userID),
 	}
 	if deploymentURL != "" {
 		items = append(items, fmt.Sprintf("#curl -X POST -H 'Content-Type: application/yaml' --data-binary @%s/deployment.yaml %s", serviceName, deploymentURL))
@@ -68,27 +68,27 @@ func (p *ServiceController) generateDeploymentTravis(serviceName, deploymentURL,
 		items = append(items, fmt.Sprintf("#curl -X POST -H 'Content-Type: application/yaml' --data-binary @%s/service.yaml %s", serviceName, serviceURL))
 	}
 	travisCommand.Script.Commands = items
-	return travisCommand.GenerateCustomTravis(p.repoPath)
+	return travisCommand.GenerateCustomTravis(p.RepoPath)
 }
 
 func (p *ServiceController) getKey() string {
-	return strconv.Itoa(int(p.currentUser.ID))
+	return strconv.Itoa(int(p.CurrentUser.ID))
 }
 
 func (p *ServiceController) resolveServiceInfo() (s *model.ServiceStatus, err error) {
 	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":id"))
 	if err != nil {
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
 	// Get the project info of this service
 	s, err = service.GetServiceByID(int64(serviceID))
 	if err != nil {
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
 	if s == nil {
-		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
+		p.CustomAbortAudit(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
 		return
 	}
 	return
@@ -99,26 +99,26 @@ func (p *ServiceController) DeployServiceAction() {
 	configService := NewConfigServiceStep(key)
 
 	//Judge authority
-	project := p.resolveUserPrivilegeByID(configService.ProjectID)
+	project := p.ResolveUserPrivilegeByID(configService.ProjectID)
 
 	var newservice model.ServiceStatus
 	newservice.Name = configService.ServiceName
 	newservice.ProjectID = configService.ProjectID
 	newservice.Status = preparing // 0: preparing 1: running 2: suspending
-	newservice.OwnerID = p.currentUser.ID
-	newservice.OwnerName = p.currentUser.Username
+	newservice.OwnerID = p.CurrentUser.ID
+	newservice.OwnerName = p.CurrentUser.Username
 	newservice.Public = configService.Public
 	newservice.ProjectName = project.Name
 
 	serviceInfo, err := service.CreateServiceConfig(newservice)
 	if err != nil {
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
 
-	deployInfo, err := service.DeployService((*model.ConfigServiceStep)(configService), registryBaseURI())
+	deployInfo, err := service.DeployService((*model.ConfigServiceStep)(configService), c.RegistryBaseURI())
 	if err != nil {
-		p.parseError(err, parsePostK8sError)
+		p.ParseError(err, c.ParsePostK8sError)
 		_, deleteServiceError := service.DeleteService(serviceInfo.ID)
 		if deleteServiceError != nil {
 			logs.Error("Failed to delete the service data of %s in database. Error: %s", serviceInfo.Name, deleteServiceError.Error())
@@ -126,35 +126,35 @@ func (p *ServiceController) DeployServiceAction() {
 		return
 	}
 
-	p.resolveRepoServicePath(project.Name, newservice.Name)
-	err = service.GenerateDeployYamlFiles(deployInfo, p.repoServicePath)
+	p.ResolveRepoServicePath(project.Name, newservice.Name)
+	err = service.GenerateDeployYamlFiles(deployInfo, p.RepoServicePath)
 	if err != nil {
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
 
 	deploymentFile := filepath.Join(newservice.Name, deploymentFilename)
 	serviceFile := filepath.Join(newservice.Name, serviceFilename)
 	items := []string{deploymentFile, serviceFile}
-	p.pushItemsToRepo(items...)
+	p.PushItemsToRepo(items...)
 
 	updateService := model.ServiceStatus{ID: serviceInfo.ID, Status: uncompleted, Type: service.GetServiceType(deployInfo.Service.Type), ServiceYaml: string(deployInfo.ServiceFileInfo),
 		DeploymentYaml: string(deployInfo.DeploymentFileInfo)}
 	_, err = service.UpdateService(updateService, "status", "type", "service_yaml", "deployment_yaml")
 	if err != nil {
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
 
 	err = DeleteConfigServiceStep(key)
 	if err != nil {
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
 	logs.Info("Service with ID:%d has been deleted in cache.", serviceInfo.ID)
 
 	configService.ServiceID = serviceInfo.ID
-	p.renderJSON(configService)
+	p.RenderJSON(configService)
 }
 
 func (p *ServiceController) DeployServiceTestAction() {
@@ -254,29 +254,29 @@ func (p *ServiceController) GetServiceListAction() {
 	orderField := p.GetString("order_field", "creation_time")
 	orderAsc, _ := p.GetInt("order_asc", 0)
 	if pageIndex == 0 && pageSize == 0 {
-		serviceStatus, err := service.GetServiceList(serviceName, p.currentUser.ID)
+		serviceStatus, err := service.GetServiceList(serviceName, p.CurrentUser.ID)
 		if err != nil {
-			p.internalError(err)
+			p.InternalError(err)
 			return
 		}
 		err = syncK8sStatus(serviceStatus)
 		if err != nil {
-			p.internalError(err)
+			p.InternalError(err)
 			return
 		}
-		p.renderJSON(serviceStatus)
+		p.RenderJSON(serviceStatus)
 	} else {
-		paginatedServiceStatus, err := service.GetPaginatedServiceList(serviceName, p.currentUser.ID, pageIndex, pageSize, orderField, orderAsc)
+		paginatedServiceStatus, err := service.GetPaginatedServiceList(serviceName, p.CurrentUser.ID, pageIndex, pageSize, orderField, orderAsc)
 		if err != nil {
-			p.internalError(err)
+			p.InternalError(err)
 			return
 		}
 		err = syncK8sStatus(paginatedServiceStatus.ServiceStatusList)
 		if err != nil {
-			p.internalError(err)
+			p.InternalError(err)
 			return
 		}
-		p.renderJSON(paginatedServiceStatus)
+		p.RenderJSON(paginatedServiceStatus)
 	}
 }
 
@@ -285,27 +285,27 @@ func (p *ServiceController) CreateServiceConfigAction() {
 	var reqServiceProject model.ServiceProject
 	var err error
 
-	err = p.resolveBody(&reqServiceProject)
+	err = p.ResolveBody(&reqServiceProject)
 	if err != nil {
 		return
 	}
 
 	//Judge authority
-	p.resolveUserPrivilegeByID(reqServiceProject.ProjectID)
+	p.ResolveUserPrivilegeByID(reqServiceProject.ProjectID)
 
 	//Assign and return Service ID with mysql
 	var newservice model.ServiceStatus
 	newservice.ProjectID = reqServiceProject.ProjectID
 	newservice.ProjectName = reqServiceProject.ProjectName
 	newservice.Status = preparing // 0: preparing 1: running 2: suspending
-	newservice.OwnerID = p.currentUser.ID
+	newservice.OwnerID = p.CurrentUser.ID
 
 	serviceInfo, err := service.CreateServiceConfig(newservice)
 	if err != nil {
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
-	p.renderJSON(serviceInfo.ID)
+	p.RenderJSON(serviceInfo.ID)
 }
 
 func (p *ServiceController) DeleteServiceAction() {
@@ -315,17 +315,17 @@ func (p *ServiceController) DeleteServiceAction() {
 		return
 	}
 	//Judge authority
-	p.resolveUserPrivilegeByID(s.ProjectID)
+	p.ResolveUserPrivilegeByID(s.ProjectID)
 
 	if err = service.CheckServiceDeletable(s); err != nil {
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
 	// Call stop service if running
 	if s.Status != stopped {
 		err = service.StopServiceK8s(s)
 		if err != nil {
-			p.internalError(err)
+			p.InternalError(err)
 			return
 		}
 	}
@@ -333,13 +333,13 @@ func (p *ServiceController) DeleteServiceAction() {
 	// 	Delete the service's autoscale rule
 	hpas, err := service.ListAutoScales(s)
 	if err != nil {
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
 	for _, hpa := range hpas {
 		err := service.DeleteAutoScale(s, hpa.ID)
 		if err != nil {
-			p.internalError(err)
+			p.InternalError(err)
 			return
 		}
 		logs.Debug("Deleted Hpa %d %s", hpa.ID, hpa.HPAName)
@@ -347,17 +347,17 @@ func (p *ServiceController) DeleteServiceAction() {
 
 	isSuccess, err := service.DeleteService(s.ID)
 	if err != nil {
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
 	if !isSuccess {
-		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Failed to delete service with ID: %d", s.ID))
+		p.CustomAbortAudit(http.StatusBadRequest, fmt.Sprintf("Failed to delete service with ID: %d", s.ID))
 		return
 	}
 
 	//delete repo files of the service
-	p.resolveRepoServicePath(s.ProjectName, s.Name)
-	p.removeItemsToRepo(filepath.Join(s.Name, serviceFilename), filepath.Join(s.Name, deploymentFilename))
+	p.ResolveRepoServicePath(s.ProjectName, s.Name)
+	p.RemoveItemsToRepo(filepath.Join(s.Name, serviceFilename), filepath.Join(s.Name, deploymentFilename))
 
 }
 
@@ -369,58 +369,58 @@ func (p *ServiceController) ToggleServiceAction() {
 		return
 	}
 	var reqServiceToggle model.ServiceToggle
-	err = p.resolveBody(&reqServiceToggle)
+	err = p.ResolveBody(&reqServiceToggle)
 	if err != nil {
 		return
 	}
 
 	//Judge authority
-	p.resolveUserPrivilegeByID(s.ProjectID)
+	p.ResolveUserPrivilegeByID(s.ProjectID)
 
 	if s.Status == stopped && reqServiceToggle.Toggle == 0 {
-		p.customAbort(http.StatusBadRequest, "Service already stopped.")
+		p.CustomAbortAudit(http.StatusBadRequest, "Service already stopped.")
 		return
 	}
 
 	if s.Status == running && reqServiceToggle.Toggle == 1 {
-		p.customAbort(http.StatusBadRequest, "Service already running.")
+		p.CustomAbortAudit(http.StatusBadRequest, "Service already running.")
 		return
 	}
 
-	p.resolveRepoServicePath(s.ProjectName, s.Name)
-	if _, err := os.Stat(p.repoServicePath); os.IsNotExist(err) {
-		p.customAbort(http.StatusPreconditionFailed, "Service restored from initialization, cannot be switched.")
+	p.ResolveRepoServicePath(s.ProjectName, s.Name)
+	if _, err := os.Stat(p.RepoServicePath); os.IsNotExist(err) {
+		p.CustomAbortAudit(http.StatusPreconditionFailed, "Service restored from initialization, cannot be switched.")
 		return
 	}
 	if reqServiceToggle.Toggle == 0 {
 		// stop service
 		err = service.StopServiceK8s(s)
 		if err != nil {
-			p.internalError(err)
+			p.InternalError(err)
 			return
 		}
 		// Update service status DB
 		_, err = service.UpdateServiceStatus(s.ID, stopped)
 		if err != nil {
-			p.internalError(err)
+			p.InternalError(err)
 			return
 		}
 	} else {
 		// start service
-		err := service.DeployServiceByYaml(s.ProjectName, p.repoServicePath)
+		err := service.DeployServiceByYaml(s.ProjectName, p.RepoServicePath)
 		if err != nil {
-			p.parseError(err, parsePostK8sError)
+			p.ParseError(err, c.ParsePostK8sError)
 			return
 		}
 		// Push deployment to Git repo
 		items := []string{filepath.Join(s.Name, deploymentFilename), filepath.Join(s.Name, serviceFilename)}
-		p.pushItemsToRepo(items...)
-		p.collaborateWithPullRequest("master", "master", items...)
+		p.PushItemsToRepo(items...)
+		p.CollaborateWithPullRequest("master", "master", items...)
 
 		// Update service status DB
 		_, err = service.UpdateServiceStatus(s.ID, running)
 		if err != nil {
-			p.internalError(err)
+			p.InternalError(err)
 			return
 		}
 	}
@@ -434,22 +434,22 @@ func (p *ServiceController) GetServiceInfoAction() {
 	}
 	//Judge authority
 	if s.Public != 1 {
-		p.resolveUserPrivilegeByID(s.ProjectID)
+		p.ResolveUserPrivilegeByID(s.ProjectID)
 	}
 	serviceStatus, err := service.GetServiceByK8sassist(s.ProjectName, s.Name)
 	if err != nil {
-		p.parseError(err, parseGetK8sError)
+		p.ParseError(err, c.ParseGetK8sError)
 		return
 	}
 	//Get NodeIP
 	//endpointUrl format /api/v1/namespaces/default/endpoints/
 	nodesStatus, err := service.GetNodesStatus()
 	if err != nil {
-		p.parseError(err, parseGetK8sError)
+		p.ParseError(err, c.ParseGetK8sError)
 		return
 	}
 	if len(serviceStatus.Ports) == 0 || len(nodesStatus.Items) == 0 {
-		p.renderJSON("NA")
+		p.RenderJSON("NA")
 		return
 	}
 
@@ -460,7 +460,7 @@ func (p *ServiceController) GetServiceInfoAction() {
 	for _, items := range nodesStatus.Items {
 		serviceInfo.NodeName = append(serviceInfo.NodeName, items.Status.Addresses...)
 	}
-	p.renderJSON(serviceInfo)
+	p.RenderJSON(serviceInfo)
 }
 
 func (p *ServiceController) GetServiceStatusAction() {
@@ -470,13 +470,13 @@ func (p *ServiceController) GetServiceStatusAction() {
 		return
 	}
 	//Judge authority
-	p.resolveUserPrivilegeByID(s.ProjectID)
+	p.ResolveUserPrivilegeByID(s.ProjectID)
 	serviceStatus, err := service.GetServiceByK8sassist(s.ProjectName, s.Name)
 	if err != nil {
-		p.parseError(err, parseGetK8sError)
+		p.ParseError(err, c.ParseGetK8sError)
 		return
 	}
-	p.renderJSON(serviceStatus)
+	p.RenderJSON(serviceStatus)
 }
 
 func (p *ServiceController) ServicePublicityAction() {
@@ -486,16 +486,16 @@ func (p *ServiceController) ServicePublicityAction() {
 		return
 	}
 	//Judge authority
-	p.resolveUserPrivilegeByID(s.ProjectID)
+	p.ResolveUserPrivilegeByID(s.ProjectID)
 	var reqServiceUpdate model.ServicePublicityUpdate
-	err = p.resolveBody(&reqServiceUpdate)
+	err = p.ResolveBody(&reqServiceUpdate)
 	if err != nil {
 		return
 	}
 	if s.Public != reqServiceUpdate.Public {
 		_, err := service.UpdateServicePublic(s.ID, reqServiceUpdate.Public)
 		if err != nil {
-			p.internalError(err)
+			p.InternalError(err)
 			return
 		}
 	}
@@ -508,23 +508,23 @@ func (p *ServiceController) DeleteServiceConfigAction() {
 		return
 	}
 	// Get the path of the service config files
-	p.resolveUserPrivilege(s.ProjectName)
-	p.resolveRepoServicePath(s.ProjectName, s.Name)
-	logs.Debug("Service config path: %s", p.repoServicePath)
+	p.ResolveUserPrivilege(s.ProjectName)
+	p.ResolveRepoServicePath(s.ProjectName, s.Name)
+	logs.Debug("Service config path: %s", p.RepoServicePath)
 
 	// Delete yaml files
 	// TODO
-	err = service.DeleteServiceConfigYaml(p.repoServicePath)
+	err = service.DeleteServiceConfigYaml(p.RepoServicePath)
 	if err != nil {
-		logs.Info("failed to delete service yaml", p.repoServicePath)
-		p.internalError(err)
+		logs.Info("failed to delete service yaml", p.RepoServicePath)
+		p.InternalError(err)
 		return
 	}
 
 	// For terminated service config, actually delete it in DB
 	_, err = service.DeleteServiceByID(s.ID)
 	if err != nil {
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
 }
@@ -536,25 +536,25 @@ func (p *ServiceController) DeleteDeploymentAction() {
 		return
 	}
 	// Get the path of the service config files
-	p.resolveUserPrivilege(s.ProjectName)
-	p.resolveRepoServicePath(s.ProjectName, s.Name)
-	logs.Debug("Service config path: %s", p.repoServicePath)
+	p.ResolveUserPrivilege(s.ProjectName)
+	p.ResolveRepoServicePath(s.ProjectName, s.Name)
+	logs.Debug("Service config path: %s", p.RepoServicePath)
 
 	// TODO clear kube-master, even if the service is not deployed successfully
-	p.removeItemsToRepo(filepath.Join(s.Name, deploymentFilename))
+	p.RemoveItemsToRepo(filepath.Join(s.Name, deploymentFilename))
 
 	// Delete yaml files
-	err = service.DeleteServiceConfigYaml(p.repoServicePath)
+	err = service.DeleteServiceConfigYaml(p.RepoServicePath)
 	if err != nil {
-		logs.Info("Failed to delete service yaml under path: %s", p.repoServicePath)
-		p.internalError(err)
+		logs.Info("Failed to delete service yaml under path: %s", p.RepoServicePath)
+		p.InternalError(err)
 		return
 	}
 
 	// For terminated service config, actually delete it in DB
 	_, err = service.DeleteServiceByID(s.ID)
 	if err != nil {
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
 }
@@ -562,22 +562,22 @@ func (p *ServiceController) DeleteDeploymentAction() {
 func (p *ServiceController) StoreServiceRoute() {
 	serviceIdentity := p.GetString("service_identity")
 	serviceURL := p.GetString("service_url")
-	memoryCache.Put(strings.ToLower(serviceIdentity), serviceURL, time.Second*time.Duration(tokenCacheExpireSeconds))
+	c.MemoryCache.Put(strings.ToLower(serviceIdentity), serviceURL, time.Second*time.Duration(c.TokenCacheExpireSeconds))
 	logs.Debug("Service identity: %s, URL: %s", serviceIdentity, serviceURL)
 }
 
 func (p *ServiceController) ServiceExists() {
 	projectName := p.GetString("project_name")
-	p.resolveProjectMember(projectName)
+	p.ResolveProjectMember(projectName)
 	serviceName := p.GetString("service_name")
 	isServiceExists, err := service.ServiceExists(serviceName, projectName)
 	if err != nil {
-		p.internalError(err)
+		p.InternalError(err)
 		logs.Error("Check service name failed, error: %+v", err.Error())
 		return
 	}
 	if isServiceExists == true {
-		p.customAbort(http.StatusConflict, serverNameDuplicateErr.Error())
+		p.CustomAbortAudit(http.StatusConflict, serverNameDuplicateErr.Error())
 		return
 	}
 }
@@ -589,10 +589,10 @@ func (p *ServiceController) ScaleServiceAction() {
 		return
 	}
 	//Judge authority
-	p.resolveUserPrivilegeByID(s.ProjectID)
+	p.ResolveUserPrivilegeByID(s.ProjectID)
 
 	var reqServiceScale model.ServiceScale
-	err = p.resolveBody(&reqServiceScale)
+	err = p.ResolveBody(&reqServiceScale)
 	if err != nil {
 		return
 	}
@@ -600,7 +600,7 @@ func (p *ServiceController) ScaleServiceAction() {
 	res, err := service.ScaleReplica(s, reqServiceScale.Replica)
 	if res != true {
 		logs.Info("Failed to scale service replica", s, reqServiceScale.Replica)
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
 	logs.Info("Scale service replica successfully")
@@ -610,54 +610,54 @@ func (p *ServiceController) ScaleServiceAction() {
 		logs.Error("Failed to get deployment %s", s.Name)
 		return
 	}
-	p.resolveRepoServicePath(s.ProjectName, s.Name)
-	err = utils.GenerateFile(deploymentFileInfo, p.repoServicePath, deploymentFilename)
+	p.ResolveRepoServicePath(s.ProjectName, s.Name)
+	err = utils.GenerateFile(deploymentFileInfo, p.RepoServicePath, deploymentFilename)
 	if err != nil {
 		logs.Error("Failed to update file of deployment %s", s.Name)
 		return
 	}
-	p.pushItemsToRepo(filepath.Join(s.Name, deploymentFilename))
+	p.PushItemsToRepo(filepath.Join(s.Name, deploymentFilename))
 }
 
 //get selectable service list
 func (p *ServiceController) GetSelectableServicesAction() {
 	projectName := p.GetString("project_name")
-	p.resolveProjectMember(projectName)
+	p.ResolveProjectMember(projectName)
 	logs.Info("Get selectable service list for", projectName)
 	serviceList, err := service.GetServicesByProjectName(projectName)
 	if err != nil {
 		logs.Error("Failed to get selectable services.")
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
-	p.renderJSON(serviceList)
+	p.RenderJSON(serviceList)
 }
 
 func (f *ServiceController) resolveUploadedYamlFile(uploadedFileName string) (func(fileName string, serviceInfo *model.ServiceStatus) error, io.Reader, error) {
 	uploadedFile, _, err := f.GetFile(uploadedFileName)
 	if err != nil {
 		if err.Error() == "http: no such file" {
-			f.customAbort(http.StatusBadRequest, "Missing file: "+uploadedFileName)
+			f.CustomAbortAudit(http.StatusBadRequest, "Missing file: "+uploadedFileName)
 			return nil, nil, err
 		}
-		f.internalError(err)
+		f.InternalError(err)
 		return nil, nil, err
 	}
 
 	return func(fileName string, serviceInfo *model.ServiceStatus) error {
-		f.resolveRepoServicePath(serviceInfo.ProjectName, serviceInfo.Name)
-		err = utils.CheckFilePath(f.repoServicePath)
+		f.ResolveRepoServicePath(serviceInfo.ProjectName, serviceInfo.Name)
+		err = utils.CheckFilePath(f.RepoServicePath)
 		if err != nil {
-			f.internalError(err)
+			f.InternalError(err)
 			return nil
 		}
-		return f.SaveToFile(uploadedFileName, filepath.Join(f.repoServicePath, fileName))
+		return f.SaveToFile(uploadedFileName, filepath.Join(f.RepoServicePath, fileName))
 	}, uploadedFile, nil
 }
 
 func (f *ServiceController) UploadYamlFileAction() {
 	projectName := f.GetString("project_name")
-	f.resolveProjectMember(projectName)
+	f.ResolveProjectMember(projectName)
 
 	fhDeployment, deploymentFile, err := f.resolveUploadedYamlFile("deployment_file")
 	if err != nil {
@@ -669,43 +669,43 @@ func (f *ServiceController) UploadYamlFileAction() {
 	}
 	deployInfo, err := service.CheckDeployYamlConfig(serviceFile, deploymentFile, projectName)
 	if err != nil {
-		f.customAbort(http.StatusBadRequest, err.Error())
+		f.CustomAbortAudit(http.StatusBadRequest, err.Error())
 		return
 	}
 
 	serviceName := deployInfo.Service.ObjectMeta.Name
 	serviceInfo, err := service.GetServiceByProject(serviceName, projectName)
 	if err != nil {
-		f.internalError(err)
+		f.InternalError(err)
 		return
 	}
 	if serviceInfo != nil {
-		f.customAbort(http.StatusBadRequest, "Service name has been used.")
+		f.CustomAbortAudit(http.StatusBadRequest, "Service name has been used.")
 		return
 	}
 	serviceInfo, err = service.CreateServiceConfig(model.ServiceStatus{
 		Name:        serviceName,
 		ProjectName: projectName,
 		Status:      preparing, // 0: preparing 1: running 2: suspending
-		OwnerID:     f.currentUser.ID,
-		OwnerName:   f.currentUser.Username,
+		OwnerID:     f.CurrentUser.ID,
+		OwnerName:   f.CurrentUser.Username,
 		Type:        service.GetServiceType(deployInfo.Service.Type),
 	})
 	if err != nil {
-		f.internalError(err)
+		f.InternalError(err)
 		return
 	}
 	err = fhDeployment(deploymentFilename, serviceInfo)
 	if err != nil {
-		f.internalError(err)
+		f.InternalError(err)
 		return
 	}
 	err = fhService(serviceFilename, serviceInfo)
 	if err != nil {
-		f.internalError(err)
+		f.InternalError(err)
 		return
 	}
-	f.renderJSON(serviceInfo)
+	f.RenderJSON(serviceInfo)
 }
 
 func (f *ServiceController) DownloadDeploymentYamlFileAction() {
@@ -713,19 +713,19 @@ func (f *ServiceController) DownloadDeploymentYamlFileAction() {
 	serviceName := f.GetString("service_name")
 	serviceInfo, err := service.GetServiceByProject(serviceName, projectName)
 	if err != nil {
-		f.internalError(err)
+		f.InternalError(err)
 		return
 	}
 	if serviceInfo == nil {
-		f.customAbort(http.StatusBadRequest, "Service name is invalid.")
+		f.CustomAbortAudit(http.StatusBadRequest, "Service name is invalid.")
 		return
 	}
-	f.resolveRepoServicePath(projectName, serviceName)
+	f.ResolveRepoServicePath(projectName, serviceName)
 	yamlType := f.GetString("yaml_type")
 
 	switch yamlType {
 	case "":
-		f.customAbort(http.StatusBadRequest, "No YAML type found.")
+		f.CustomAbortAudit(http.StatusBadRequest, "No YAML type found.")
 		return
 	case deploymentType:
 		f.resolveDownloadYaml(serviceInfo, deploymentFilename, service.GenerateDeploymentYamlFileFromK8s)
@@ -740,18 +740,18 @@ func (f *ServiceController) DownloadDeploymentYamlFileAction() {
 func (f *ServiceController) resolveDownloadYaml(serviceConfig *model.ServiceStatus, fileName string, generator func(*model.ServiceStatus, string) error) {
 	logs.Debug("Current download yaml file: %s", fileName)
 	//checkout the path of download
-	err := utils.CheckFilePath(f.repoServicePath)
+	err := utils.CheckFilePath(f.RepoServicePath)
 	if err != nil {
-		f.internalError(err)
+		f.InternalError(err)
 		return
 	}
-	absFileName := filepath.Join(f.repoServicePath, fileName)
-	err = generator(serviceConfig, f.repoServicePath)
+	absFileName := filepath.Join(f.RepoServicePath, fileName)
+	err = generator(serviceConfig, f.RepoServicePath)
 	if err != nil {
-		f.parseError(err, parseGetK8sError)
+		f.ParseError(err, c.ParseGetK8sError)
 		return
 	}
-	logs.Info("User: %s downloaded %s YAML file.", f.currentUser.Username, fileName)
+	logs.Info("User: %s downloaded %s YAML file.", f.CurrentUser.Username, fileName)
 	f.Ctx.Output.Download(absFileName, fileName)
 }
 
@@ -763,14 +763,14 @@ func (p *ServiceController) GetScaleStatusAction() {
 		return
 	}
 	//Judge authority
-	p.resolveUserPrivilegeByID(s.ProjectID)
+	p.ResolveUserPrivilegeByID(s.ProjectID)
 	scaleStatus, err := service.GetScaleStatus(s)
 	if err != nil {
 		logs.Debug("Get scale deployment status failed %s", s.Name)
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
-	p.renderJSON(scaleStatus)
+	p.RenderJSON(scaleStatus)
 }
 
 func (p *ServiceController) DeleteDeployAction() {
@@ -780,7 +780,7 @@ func (p *ServiceController) DeleteDeployAction() {
 	configService := NewConfigServiceStep(key)
 
 	//Judge authority
-	p.resolveUserPrivilegeByID(configService.ProjectID)
+	p.ResolveUserPrivilegeByID(configService.ProjectID)
 
 	// Clean deployment and service
 
@@ -791,7 +791,7 @@ func (p *ServiceController) DeleteDeployAction() {
 	err = service.StopServiceK8s(&s)
 	if err != nil {
 		logs.Error("Failed to clean service %s", s.Name)
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
 
@@ -800,24 +800,24 @@ func (p *ServiceController) DeleteDeployAction() {
 	if serviceData != nil {
 		isSuccess, err := service.DeleteService(serviceData.ID)
 		if err != nil {
-			p.internalError(err)
+			p.InternalError(err)
 			return
 		}
 		if !isSuccess {
-			p.customAbort(http.StatusBadRequest, fmt.Sprintf("Failed to delete service with ID: %d", s.ID))
+			p.CustomAbortAudit(http.StatusBadRequest, fmt.Sprintf("Failed to delete service with ID: %d", s.ID))
 			return
 		}
 	}
 
 	//delete repo files of the service
-	p.resolveRepoServicePath(s.ProjectName, s.Name)
-	p.removeItemsToRepo(filepath.Join(s.Name, serviceFilename), filepath.Join(s.Name, deploymentFilename))
+	p.ResolveRepoServicePath(s.ProjectName, s.Name)
+	p.RemoveItemsToRepo(filepath.Join(s.Name, serviceFilename), filepath.Join(s.Name, deploymentFilename))
 
 	//clean the config step
 	err = DeleteConfigServiceStep(key)
 	if err != nil {
 		logs.Debug("Failed to clean the config steps")
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
 }
@@ -827,7 +827,7 @@ func (p *ServiceController) GetServiceNodePorts() {
 	projectName := p.GetString("project_name")
 
 	if projectName != "" {
-		p.resolveProjectMember(projectName)
+		p.ResolveProjectMember(projectName)
 		logs.Info("Get service nodeport list for", projectName)
 	}
 
@@ -835,26 +835,26 @@ func (p *ServiceController) GetServiceNodePorts() {
 	nodeportList, err := service.GetNodePortsK8s(projectName)
 	if err != nil {
 		logs.Error("Failed to get selectable services.")
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
 
 	//Check nodeports in DB
-	p.renderJSON(nodeportList)
+	p.RenderJSON(nodeportList)
 }
 
 //import cluster services
 func (p *ServiceController) ImportServicesAction() {
 
-	if p.isSysAdmin == false {
-		p.customAbort(http.StatusForbidden, "Insufficient privileges to import services.")
+	if p.IsSysAdmin == false {
+		p.CustomAbortAudit(http.StatusForbidden, "Insufficient privileges to import services.")
 		return
 	}
 
-	projectList, err := service.GetProjectsByUser(model.Project{}, p.currentUser.ID)
+	projectList, err := service.GetProjectsByUser(model.Project{}, p.CurrentUser.ID)
 	if err != nil {
 		logs.Error("Failed to get projects.")
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
 
@@ -862,7 +862,7 @@ func (p *ServiceController) ImportServicesAction() {
 		err := service.SyncServiceWithK8s(project.Name)
 		if err != nil {
 			logs.Error("Failed to sync service for project %s.", project.Name)
-			p.internalError(err)
+			p.InternalError(err)
 			return
 		}
 	}
@@ -875,64 +875,64 @@ func (p *ServiceController) DeployStatefulSetAction() {
 	configService := NewConfigServiceStep(key)
 
 	if configService.ServiceType != model.ServiceTypeStatefulSet {
-		p.customAbort(http.StatusBadRequest, "Invalid service type.")
+		p.CustomAbortAudit(http.StatusBadRequest, "Invalid service type.")
 		return
 	}
 
 	//Judge authority
-	project := p.resolveUserPrivilegeByID(configService.ProjectID)
+	project := p.ResolveUserPrivilegeByID(configService.ProjectID)
 
 	var newservice model.ServiceStatus
 	newservice.Name = configService.ServiceName
 	newservice.ProjectID = configService.ProjectID
 	newservice.Status = preparing // 0: preparing 1: running 2: suspending
-	newservice.OwnerID = p.currentUser.ID
-	newservice.OwnerName = p.currentUser.Username
+	newservice.OwnerID = p.CurrentUser.ID
+	newservice.OwnerName = p.CurrentUser.Username
 	newservice.Public = configService.Public
 	newservice.ProjectName = project.Name
 	newservice.Type = configService.ServiceType
 
 	serviceInfo, err := service.CreateServiceConfig(newservice)
 	if err != nil {
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
 
-	statefulsetInfo, err := service.DeployStatefulSet((*model.ConfigServiceStep)(configService), registryBaseURI())
+	statefulsetInfo, err := service.DeployStatefulSet((*model.ConfigServiceStep)(configService), c.RegistryBaseURI())
 	if err != nil {
-		p.parseError(err, parsePostK8sError)
+		p.ParseError(err, c.ParsePostK8sError)
 		return
 	}
 
-	p.resolveRepoServicePath(project.Name, newservice.Name)
-	err = service.GenerateStatefulSetYamlFiles(statefulsetInfo, p.repoServicePath)
+	p.ResolveRepoServicePath(project.Name, newservice.Name)
+	err = service.GenerateStatefulSetYamlFiles(statefulsetInfo, p.RepoServicePath)
 	if err != nil {
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
 
 	statefulsetFile := filepath.Join(newservice.Name, statefulsetFilename)
 	serviceFile := filepath.Join(newservice.Name, serviceFilename)
 	items := []string{statefulsetFile, serviceFile}
-	p.pushItemsToRepo(items...)
+	p.PushItemsToRepo(items...)
 
 	updateService := model.ServiceStatus{ID: serviceInfo.ID, Status: uncompleted, ServiceYaml: string(statefulsetInfo.ServiceFileInfo),
 		DeploymentYaml: string(statefulsetInfo.StatefulSetFileInfo)}
 	_, err = service.UpdateService(updateService, "status", "service_yaml", "deployment_yaml")
 	if err != nil {
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
 
 	err = DeleteConfigServiceStep(key)
 	if err != nil {
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
 	logs.Info("Service with ID:%d has been deleted in cache.", serviceInfo.ID)
 
 	configService.ServiceID = serviceInfo.ID
-	p.renderJSON(configService)
+	p.RenderJSON(configService)
 }
 
 func (p *ServiceController) DeleteStatefulSetAction() {
@@ -942,17 +942,17 @@ func (p *ServiceController) DeleteStatefulSetAction() {
 		return
 	}
 	//Judge authority
-	p.resolveUserPrivilegeByID(s.ProjectID)
+	p.ResolveUserPrivilegeByID(s.ProjectID)
 
 	if err = service.CheckServiceDeletable(s); err != nil {
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
 	// Call stop service if running
 	if s.Status != stopped {
 		err = service.StopStatefulSetK8s(s)
 		if err != nil {
-			p.internalError(err)
+			p.InternalError(err)
 			return
 		}
 	}
@@ -961,16 +961,16 @@ func (p *ServiceController) DeleteStatefulSetAction() {
 
 	isSuccess, err := service.DeleteService(s.ID)
 	if err != nil {
-		p.internalError(err)
+		p.InternalError(err)
 		return
 	}
 	if !isSuccess {
-		p.customAbort(http.StatusBadRequest, fmt.Sprintf("Failed to delete service with ID: %d", s.ID))
+		p.CustomAbortAudit(http.StatusBadRequest, fmt.Sprintf("Failed to delete service with ID: %d", s.ID))
 		return
 	}
 
 	//delete repo files of the service
-	p.resolveRepoServicePath(s.ProjectName, s.Name)
-	p.removeItemsToRepo(filepath.Join(s.Name, serviceFilename), filepath.Join(s.Name, statefulsetFilename))
+	p.ResolveRepoServicePath(s.ProjectName, s.Name)
+	p.RemoveItemsToRepo(filepath.Join(s.Name, serviceFilename), filepath.Join(s.Name, statefulsetFilename))
 
 }
