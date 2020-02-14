@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"git/inspursoft/board/src/adminserver/models/node"
+	"git/inspursoft/board/src/adminserver/service"
 	"git/inspursoft/board/src/common/utils"
 	"github.com/astaxie/beego/logs"
 	"github.com/gorilla/websocket"
@@ -19,13 +20,16 @@ import (
 
 func (controller *Controller) AddDeleteNode(actionType node.ActionType, yamlFile string) {
 	nodeIp := controller.Ctx.Input.Query("node_ip")
-	//masterIp := utils.GetStringValue("KUBE_MASTER_IP")
-	//registryIp := utils.GetStringValue("REGISTRY_IP")
-	masterIp := "192.168.122.44"
-	registryIp := "192.168.122.44"
+	configuration, statusMessage := service.GetAllCfg("")
+	if statusMessage == "BadRequest" {
+		controller.CustomAbort(http.StatusBadRequest, "Failed to get the configuration.")
+		return
+	}
+	masterIp := configuration.Apiserver.KubeMasterIP
+	registryIp := configuration.Apiserver.RegistryIP
 	actionName := "Add node ";
 	if actionType == node.ActionTypeDeleteNode {
-		actionName = "Delete node"
+		actionName = "Delete node "
 	}
 	ws, err := websocket.Upgrade(controller.Ctx.ResponseWriter, controller.Ctx.Request, nil, 1024, 1024)
 	if _, ok := err.(websocket.HandshakeError); ok {
