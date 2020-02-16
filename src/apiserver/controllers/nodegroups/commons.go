@@ -49,24 +49,23 @@ func (c *CommonController) List() {
 func (c *CommonController) Add() {
 	var reqNodeGroup models.nodegroups.NodeGroup
 	var err error
-//	err = c.resolveBody(&reqNodeGroup)
-//	if err != nil {
-//		return
-//	}
-
-//  TODO Use base.controller later
-	data, err := ioutil.ReadAll(c.Ctx.Request.Body)
+	err = c.ResolveBody(&reqNodeGroup)
 	if err != nil {
-		c.Ctx.ResponseWriter.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	err = json.Unmarshal(data, &reqNodeGroup)
-	if err != nil {
-		c.Ctx.ResponseWriter.WriteHeader(http.StatusBadRequest)
-		return
-	}
+// //  TODO Use base.controller later
+// 	data, err := ioutil.ReadAll(c.Ctx.Request.Body)
+// 	if err != nil {
+// 		c.Ctx.ResponseWriter.WriteHeader(http.StatusInternalServerError)
+// 		return
+// 	}
 
+// 	err = json.Unmarshal(data, &reqNodeGroup)
+// 	if err != nil {
+// 		c.Ctx.ResponseWriter.WriteHeader(http.StatusBadRequest)
+// 		return
+// 	}
 
 	if !utils.ValidateWithLengthRange(reqNodeGroup.GroupName, 1, 63) {
 		n.customAbort(http.StatusBadRequest, "NodeGroup Name must be not empty and no more than 63 characters ")
