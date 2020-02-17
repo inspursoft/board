@@ -3,19 +3,14 @@ package controller
 import (
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
-	"git/inspursoft/board/src/apiserver/service/auth"
 	c "git/inspursoft/board/src/common/controller"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/astaxie/beego/logs"
 )
-
-var reservdUsernames = [...]string{"explore", "create", "assets", "css", "img", "js", "less", "plugins", "debug", "raw", "install", "api", "avatar", "user", "org", "help", "stars", "issues", "pulls", "commits", "repo", "template", "new", ".", ".."}
 
 type AuthController struct {
 	c.BaseController
@@ -26,52 +21,13 @@ func (u *AuthController) Prepare() {
 	u.RecordOperationAudit()
 }
 
-func (u *AuthController) processAuth(principal, password string) (string, bool) {
-	var currentAuth *auth.Auth
-	var err error
-	if principal == "admin" {
-		currentAuth, err = auth.GetAuth("db_auth")
-	} else {
-		currentAuth, err = auth.GetAuth(c.AuthMode())
-	}
-	if err != nil {
-		u.InternalError(err)
-		return "", false
-	}
-	user, err := (*currentAuth).DoAuth(principal, password)
-	if err != nil {
-		u.InternalError(err)
-		return "", false
-	}
-
-	if user == nil {
-		u.ServeStatus(http.StatusBadRequest, "Incorrect username or password.")
-		return "", false
-	}
-	payload := make(map[string]interface{})
-	payload["id"] = strconv.Itoa(int(user.ID))
-	payload["username"] = user.Username
-	payload["email"] = user.Email
-	payload["realname"] = user.Realname
-	payload["is_system_admin"] = user.SystemAdmin
-	token, err := u.SignToken(payload)
-	if err != nil {
-		u.InternalError(err)
-		return "", false
-	}
-	c.MemoryCache.Put(user.Username, token.TokenString, time.Second*time.Duration(c.TokenCacheExpireSeconds))
-	c.MemoryCache.Put(token.TokenString, payload, time.Second*time.Duration(c.TokenCacheExpireSeconds))
-	u.AuditUser, _ = service.GetUserByName(user.Username)
-	return token.TokenString, true
-}
-
 func (u *AuthController) SignInAction() {
 	var reqUser model.User
 	err := u.ResolveBody(&reqUser)
 	if err != nil {
 		return
 	}
-	token, _ := u.processAuth(reqUser.Username, reqUser.Password)
+	token, _ := u.ProcessAuth(reqUser.Username, reqUser.Password)
 	u.RenderJSON(model.Token{TokenString: token})
 }
 
@@ -81,7 +37,7 @@ func (u *AuthController) ExternalAuthAction() {
 		u.CustomAbortAudit(http.StatusBadRequest, "Missing token for verification.")
 		return
 	}
-	if token, isSuccess := u.processAuth(externalToken, ""); isSuccess {
+	if token, isSuccess := u.ProcessAuth(externalToken, ""); isSuccess {
 		u.Redirect(fmt.Sprintf("http://%s/dashboard?token=%s", utils.GetStringValue("BOARD_HOST_IP"), token), http.StatusFound)
 		logs.Debug("Successful logged in.")
 	}
@@ -105,7 +61,7 @@ func (u *AuthController) SignUpAction() {
 	}
 
 	// can't be the reserved name.
-	for _, rsdname := range reservdUsernames {
+	for _, rsdname := range c.ReservedUsernames {
 		if rsdname == reqUser.Username {
 			u.CustomAbortAudit(http.StatusBadRequest, fmt.Sprintf("Username %s is reserved.", reqUser.Username))
 			return

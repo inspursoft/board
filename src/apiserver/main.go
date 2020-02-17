@@ -27,6 +27,7 @@ const (
 	defaultTokenCacheExpireTime = "1800"
 	defaultKubeConfigPath       = "/root/kubeconfig"
 	defaultSwaggerDoc           = "disabled"
+	defaultAuthMode             = "db_auth"
 	adminUserID                 = 1
 	adminUsername               = "admin"
 	adminEmail                  = "admin@inspur.com"
@@ -161,6 +162,8 @@ func main() {
 	utils.SetConfig("KVM_REGISTRY_PATH", kvmRegistryPath)
 
 	utils.SetConfig("KUBE_CONFIG_PATH", defaultKubeConfigPath)
+
+	utils.SetConfig("AUTH_MODE", defaultAuthMode)
 
 	dao.InitDB()
 
