@@ -17,4 +17,6 @@ VOLUME /var/jenkins_home/jobs
 
 ADD make/release/container/jenkins/plugins.txt /usr/share/jenkins/plugins.txt
 
+ENV JENKINS_UC_DOWNLOAD=https://mirrors.tuna.tsinghua.edu.cn/jenkins
+
 RUN /usr/local/bin/plugins.sh /usr/share/jenkins/plugins.txt
