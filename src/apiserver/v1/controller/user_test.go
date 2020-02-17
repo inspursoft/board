@@ -18,8 +18,8 @@ import (
 )
 
 func isExternalAuth() bool {
-	authMode := utils.GetStringValue("AUTH_MODE")
-	if authMode != "" && authMode != "db_auth" {
+	AuthMode := utils.GetStringValue("AUTH_MODE")
+	if AuthMode != "" && AuthMode != "db_auth" {
 		return true
 	}
 	return false

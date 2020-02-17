@@ -2,6 +2,7 @@ package controller
 
 import (
 	"git/inspursoft/board/src/apiserver/service"
+	c "git/inspursoft/board/src/common/controller"
 	"git/inspursoft/board/src/common/model"
 	"net/http"
 
@@ -9,16 +10,16 @@ import (
 )
 
 type OperationController struct {
-	BaseController
+	c.BaseController
 }
 
 func (o *OperationController) Prepare() {
-	o.resolveSignedInUser()
+	o.ResolveSignedInUser()
 }
 
 func (o *OperationController) OperationList() {
-	if !o.isSysAdmin {
-		o.customAbort(http.StatusForbidden, "Insufficient permissions.")
+	if !o.IsSysAdmin {
+		o.CustomAbortAudit(http.StatusForbidden, "Insufficient permissions.")
 		return
 	}
 	var optparam model.OperationParam
@@ -35,24 +36,24 @@ func (o *OperationController) OperationList() {
 
 	paginatedoperations, err := service.GetPaginatedOperationList(optparam, pageIndex, pageSize, orderField, orderAsc)
 	if err != nil {
-		o.internalError(err)
+		o.InternalError(err)
 		return
 	}
-	o.renderJSON(paginatedoperations)
+	o.RenderJSON(paginatedoperations)
 }
 
 func (o *OperationController) CreateOperation() {
 	operation := model.Operation{}
-	err := o.resolveBody(&operation)
+	err := o.ResolveBody(&operation)
 	if err != nil {
-		o.internalError(err)
+		o.InternalError(err)
 		return
 	}
 	err = service.CreateOperationAudit(&operation)
 	if err != nil {
 		logs.Error("Failed to create operation Audit. Error:%+v", err)
-		o.internalError(err)
+		o.InternalError(err)
 		return
 	}
-	o.renderJSON(operation)
+	o.RenderJSON(operation)
 }

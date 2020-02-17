@@ -4,11 +4,13 @@ import (
 	"git/inspursoft/board/src/apiserver/service"
 	"net/http"
 
+	c "git/inspursoft/board/src/common/controller"
+
 	"github.com/astaxie/beego"
 )
 
 type DashboardNodeController struct {
-	BaseController
+	c.BaseController
 }
 
 type NodeBodyReqPara struct {
@@ -20,22 +22,22 @@ type NodeBodyReqPara struct {
 
 func (s *DashboardNodeController) GetNodeData() {
 	var getNodeDataBodyReq NodeBodyReqPara
-	err := s.resolveBody(&getNodeDataBodyReq)
+	err := s.ResolveBody(&getNodeDataBodyReq)
 	if err != nil {
 		return
 	}
 	nodeName := s.GetString("node_name")
 	beego.Debug("node_name", nodeName)
 	if getNodeDataBodyReq.TimeCount == 0 {
-		s.customAbort(http.StatusBadRequest, "Time count for node data retrieval cannnot be empty.")
+		s.CustomAbortAudit(http.StatusBadRequest, "Time count for node data retrieval cannnot be empty.")
 		return
 	}
 	if getNodeDataBodyReq.TimestampBase == 0 {
-		s.customAbort(http.StatusBadRequest, "Time stamp for node data retrieval cannot be empty.")
+		s.CustomAbortAudit(http.StatusBadRequest, "Time stamp for node data retrieval cannot be empty.")
 		return
 	}
 	if getNodeDataBodyReq.TimeUnit == "" {
-		s.customAbort(http.StatusBadRequest, "Time unit for node data retrieval cannot be empty.")
+		s.CustomAbortAudit(http.StatusBadRequest, "Time unit for node data retrieval cannot be empty.")
 		return
 	}
 	var dashboardNodeDataResp service.Dashboard
@@ -45,13 +47,13 @@ func (s *DashboardNodeController) GetNodeData() {
 		getNodeDataBodyReq.TimestampBase, nodeName)
 	err = dashboardNodeDataResp.GetNodeDataToObj()
 	if err != nil {
-		s.internalError(err)
+		s.InternalError(err)
 		return
 	}
 	_, err = dashboardNodeDataResp.GetNodeListToObj()
 	if err != nil {
-		s.internalError(err)
+		s.InternalError(err)
 		return
 	}
-	s.renderJSON(dashboardNodeDataResp.NodeResp)
+	s.RenderJSON(dashboardNodeDataResp.NodeResp)
 }

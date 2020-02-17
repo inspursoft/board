@@ -2,6 +2,7 @@ package controller
 
 import (
 	"git/inspursoft/board/src/apiserver/service"
+	c "git/inspursoft/board/src/common/controller"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"net/http"
@@ -20,13 +21,13 @@ type ServiceBodyPara struct {
 }
 
 type DashboardServiceController struct {
-	BaseController
+	c.BaseController
 }
 
 func (s *DashboardServiceController) GetServiceData() {
 
 	var getServiceDataBodyReq ServiceBodyPara
-	err := s.resolveBody(&getServiceDataBodyReq)
+	err := s.ResolveBody(&getServiceDataBodyReq)
 	if err != nil {
 		return
 	}
@@ -34,15 +35,15 @@ func (s *DashboardServiceController) GetServiceData() {
 
 	beego.Debug("servicename", serviceName, getServiceDataBodyReq.DurationTime)
 	if getServiceDataBodyReq.TimeCount == 0 {
-		s.customAbort(http.StatusBadRequest, "")
+		s.CustomAbortAudit(http.StatusBadRequest, "")
 		return
 	}
 	if getServiceDataBodyReq.TimestampBase == 0 {
-		s.customAbort(http.StatusBadRequest, "")
+		s.CustomAbortAudit(http.StatusBadRequest, "")
 		return
 	}
 	if getServiceDataBodyReq.TimeUnit == "" {
-		s.customAbort(http.StatusBadRequest, "")
+		s.CustomAbortAudit(http.StatusBadRequest, "")
 		return
 	}
 
@@ -53,21 +54,21 @@ func (s *DashboardServiceController) GetServiceData() {
 	err = dashboardServiceDataResp.GetServiceDataToObj()
 	_, err = dashboardServiceDataResp.GetServiceListToObj()
 	if err != nil {
-		s.customAbort(http.StatusInternalServerError, fmt.Sprint(err))
+		s.CustomAbortAudit(http.StatusInternalServerError, fmt.Sprint(err))
 		return
 	}
 
 	query := model.Project{}
-	projectList, err := service.GetProjectsByMember(query, s.currentUser.ID)
+	projectList, err := service.GetProjectsByMember(query, s.CurrentUser.ID)
 	if err != nil {
-		s.internalError(err)
+		s.InternalError(err)
 		return
 	}
 	serviceList := make([]dao.ServiceListDataLogs, 0)
 	for _, svc := range dashboardServiceDataResp.ServiceResp.ServiceListData {
 		svcQuery, err := service.GetService(model.ServiceStatus{Name: svc.NodeName}, "name")
 		if err != nil {
-			s.internalError(err)
+			s.InternalError(err)
 			return
 		}
 		if svcQuery == nil {
@@ -87,10 +88,10 @@ func (s *DashboardServiceController) GetServiceData() {
 	dashboardServiceDataResp.ServiceResp.ServiceListData = serviceList
 	logs.Info("serivcelist:%+v\n", dashboardServiceDataResp.ServiceResp.ServiceListData)
 
-	s.renderJSON(dashboardServiceDataResp.ServiceResp)
+	s.RenderJSON(dashboardServiceDataResp.ServiceResp)
 }
 
 func (s *DashboardServiceController) GetServerTime() {
 	time := service.GetServerTime()
-	s.renderJSON(time)
+	s.RenderJSON(time)
 }

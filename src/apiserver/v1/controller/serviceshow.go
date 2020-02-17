@@ -1,6 +1,7 @@
 package controller
 
 import (
+	c "git/inspursoft/board/src/common/controller"
 	"net/http"
 	"strings"
 
@@ -8,7 +9,7 @@ import (
 )
 
 type ServiceShowController struct {
-	BaseController
+	c.BaseController
 }
 
 func (s *ServiceShowController) Prepare() {}
@@ -18,7 +19,7 @@ func (s *ServiceShowController) Get() {
 	projectName := s.Ctx.Input.Param(":project_name")
 	serviceName := s.Ctx.Input.Param(":service_name")
 	serviceIdentity := strings.ToLower(ownerName + "_" + projectName + "_" + serviceName)
-	if serviceURL, ok := memoryCache.Get(serviceIdentity).(string); ok {
+	if serviceURL, ok := c.MemoryCache.Get(serviceIdentity).(string); ok {
 		logs.Debug("Service URL: %s", serviceURL)
 		http.Redirect(s.Ctx.ResponseWriter, s.Ctx.Request, serviceURL, http.StatusFound)
 	}
