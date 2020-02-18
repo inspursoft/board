@@ -1,0 +1,18 @@
+<clr-stack-block>
+  <clr-stack-label>Compute Resource</clr-stack-label>
+  <clr-stack-block (clrSbExpandedChange)="fetchNodes()">
+    <clr-stack-label>Node Resource</clr-stack-label>
+    <clr-stack-content>
+      <a href="javascript: void(0)" (click)="addNode()">
+        <clr-icon shape="plus-circle"></clr-icon>
+        Add node</a>
+    </clr-stack-content>
+    <clr-stack-block *ngIf="nodes.length == 0">
+      <div>{{nodeLoadingInfo}}</div>
+    </clr-stack-block>
+    <clr-stack-block *ngFor="let node of nodes">
+      <clr-stack-label>{{node.Ip}}</clr-stack-label>
+      <clr-stack-content>{{node.CreationTime | date:"short"}}</clr-stack-content>
+    </clr-stack-block>
+  </clr-stack-block>
+</clr-stack-block>

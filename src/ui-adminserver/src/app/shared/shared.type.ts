@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import { isArray } from 'util';
 
 export abstract class ResponseBase {
   protected init() {
@@ -7,7 +8,7 @@ export abstract class ResponseBase {
       const propertyName = Reflect.getMetadata(metadataKey, this);
       if (Reflect.has(this.res, propertyName)) {
         const value = Reflect.get(this.res, propertyName);
-        Reflect.set(this, metadataKey, value)
+        Reflect.set(this, metadataKey, value);
       }
     });
   }
@@ -25,4 +26,35 @@ export function HttpBind(name: string) {
   return (target: ResponseBase, propertyName: string) => {
     Reflect.defineMetadata(propertyName, name, target);
   };
+}
+
+export abstract class ResponseArrayBase<T extends ResponseBase> {
+  protected data: Array<T>;
+
+  abstract CreateOneItem(res: object): T;
+
+  constructor(protected res: object) {
+    this.data = Array<T>();
+    if (isArray(this.res)) {
+      (this.res as Array<object>).forEach(item => this.data.push(this.CreateOneItem(item)));
+    }
+  }
+
+  get length(): number {
+    return this.data.length;
+  }
+
+  [Symbol.iterator]() {
+    let index = 0;
+    const self = this;
+    return {
+      next() {
+        if (index < self.data.length) {
+          return {value: self.data[index++], done: false};
+        } else {
+          return {value: undefined, done: true};
+        }
+      }
+    };
+  }
 }

@@ -1,0 +1,28 @@
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'md'" [clrModalClosable]="false">
+  <h3 class="modal-title"><b>{{title | translate}}</b></h3>
+  <div class="modal-body">
+    <lib-input-ex [inputLabel]="'Node.Node_Form_Node_Ip' | translate"
+                  [inputIsRequired]="true"
+                  [inputDisabled]="isExecuting || actionType == 1"
+                  [inputDefaultValue]="nodeIp"
+                  [validatorMessage]="[{key:'required', message:'Please input the node ip.'}]"
+                  (commitEvent)="nodeIp = $event">
+    </lib-input-ex>
+    <div class="logs-container">
+      <div #consoleLogs></div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button [disabled]="isExecuting" class="btn btn-outline" (click)="cancel()">
+      {{"BUTTON.CANCEL" | translate}}
+    </button>
+    <button [disabled]="isExecuting" class="btn" [ngClass]="btnClassName" (click)="execute()">
+      {{executeActionName | translate}}
+    </button>
+    <span *ngIf="isExecuting" class="spinner spinner-sm"></span>
+  </div>
+</clr-modal>
+
+<ng-template #logTemplate let-message="message" let-status="status">
+  <span [ngStyle]="getLogStyle(status)">{{message}}<br></span>
+</ng-template>

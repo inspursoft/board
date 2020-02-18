@@ -1,0 +1,12 @@
+div.modal-body {
+  min-height: 450px;
+}
+
+div.logs-container {
+  background-color: black;
+  overflow-y: auto;
+  height: 410px;
+  margin-top: 10px;
+  border: 1px solid silver;
+  border-radius: 5px;
+}
