@@ -60,7 +60,8 @@ func (controller *Controller) AddDeleteNode(actionType node.ActionType, yamlFile
 		if err != nil || io.EOF == err {
 			break
 		}
-		controller.sendMessage(ws, line, node.WsNodeResponseNormal)
+		wsResponse := controller.checkLogStatus(line)
+		controller.sendMessage(ws, wsResponse.Message, wsResponse.Status)
 		if controller.checkIsEndingLog(line, nodeIp) {
 			if controller.checkIsSuccessExecuted(line) {
 				msgTip := fmt.Sprintf(actionName+"successed!%s", nodeIp)
@@ -128,6 +129,18 @@ func (controller *Controller) checkIsSuccessExecuted(log string) bool {
 	return len(log) > 0 &&
 		log[strings.Index(log, "unreachable")+12:strings.Index(log, "unreachable")+13] == "0" &&
 		log[strings.Index(log, "failed")+7:strings.Index(log, "failed")+8] == "0"
+}
+
+func (controller *Controller) checkLogStatus(log string) node.WsNodeResponse {
+	if strings.Index(log, "fatal") == 0 || strings.Index(log, "failed") == 0 {
+		return node.WsNodeResponse{Message: log, Status: node.WsNodeResponseError}
+	} else if strings.Index(log, "TASK") == 0 {
+		return node.WsNodeResponse{Message: log, Status: node.WsNodeResponseStart}
+	} else if strings.Index(log, "ok") == 0 || strings.Index(log, "changed") == 0 {
+		return node.WsNodeResponse{Message: log, Status: node.WsNodeResponseSuccess}
+	} else {
+		return node.WsNodeResponse{Message: log, Status: node.WsNodeResponseNormal}
+	}
 }
 
 func (controller *Controller) removeNodeInfo(nodeIp string) error {

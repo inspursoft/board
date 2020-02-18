@@ -23,7 +23,7 @@ func (controller *Controller) GetNodeListAction() {
 	var nodeListJson []node.NodeListType
 	var filePtr *os.File
 	if _, err := os.Stat(node.AddDeleteNodeJsonFileName); os.IsNotExist(err) {
-		controller.CustomAbort(http.StatusNotFound, "The file of addNode.json is not exists")
+		controller.CustomAbort(http.StatusBadRequest, "The file of "+node.AddDeleteNodeJsonFileName+" is not exists")
 		return
 	} else {
 		filePtr, _ = os.Open(node.AddDeleteNodeJsonFileName)
