@@ -22,7 +22,7 @@ func (controller *Controller) AddDeleteNode(actionType node.ActionType, yamlFile
 	nodeIp := controller.Ctx.Input.Query("node_ip")
 	actionName := "Add node ";
 	if actionType == node.ActionTypeDeleteNode {
-		actionName = "Delete node "
+		actionName = "Remove node "
 	}
 	ws, err := websocket.Upgrade(controller.Ctx.ResponseWriter, controller.Ctx.Request, nil, 1024, 1024)
 	if _, ok := err.(websocket.HandshakeError); ok {
@@ -64,7 +64,7 @@ func (controller *Controller) AddDeleteNode(actionType node.ActionType, yamlFile
 		controller.sendMessage(ws, wsResponse.Message, wsResponse.Status)
 		if controller.checkIsEndingLog(line, nodeIp) {
 			if controller.checkIsSuccessExecuted(line) {
-				msgTip := fmt.Sprintf(actionName+"successed!%s", nodeIp)
+				msgTip := fmt.Sprintf(actionName+" successfully! %s", nodeIp)
 				controller.sendMessage(ws, msgTip, node.WsNodeResponseSuccess)
 				if actionType == node.ActionTypeAddNode {
 					updateErr := controller.appendNodeInfo(nodeIp)
@@ -137,7 +137,7 @@ func (controller *Controller) checkLogStatus(log string) node.WsNodeResponse {
 	} else if strings.Index(log, "TASK") == 0 {
 		return node.WsNodeResponse{Message: log, Status: node.WsNodeResponseStart}
 	} else if strings.Index(log, "ok") == 0 || strings.Index(log, "changed") == 0 {
-		return node.WsNodeResponse{Message: log, Status: node.WsNodeResponseSuccess}
+		return node.WsNodeResponse{Message: log, Status: node.WsNodeResponseWarning}
 	} else {
 		return node.WsNodeResponse{Message: log, Status: node.WsNodeResponseNormal}
 	}

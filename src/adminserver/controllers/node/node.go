@@ -56,7 +56,7 @@ func (controller *Controller) AddNodeAction() {
 // @Success 200
 // @Failure 400 bad request
 // @Failure 500 Internal Server Error
-// @router /add [get]
+// @router /delete [get]
 func (controller *Controller) DeleteNodeAction() {
 	controller.AddDeleteNode(node.ActionTypeDeleteNode, node.DeleteNodeYamlFileName)
 }
