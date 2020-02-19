@@ -1,5 +1,5 @@
-import { Component, ComponentFactoryResolver, OnInit, ViewContainerRef } from '@angular/core';
-import { ResponseArrayNode } from '../resource.types';
+import { Component, ComponentFactoryResolver, Input, OnInit, ViewContainerRef } from '@angular/core';
+import { NodeActionsType, ResponseArrayNode } from '../resource.types';
 import { ResourceService } from '../services/resource.service';
 import { HttpErrorResponse } from "@angular/common/http";
 import { NodeAddRemoveComponent } from "../node-add-remove/node-add-remove.component";
@@ -13,6 +13,7 @@ import { MessageService } from "../../shared/message/message.service";
 export class ComputeComponent implements OnInit {
   nodes: ResponseArrayNode;
   nodeLoadingInfo = 'Loading...';
+  @Input('viewContainer') viewContainer: ViewContainerRef;
 
   constructor(private resolver: ComponentFactoryResolver,
               private messageService: MessageService,
@@ -21,21 +22,24 @@ export class ComputeComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.resourceService.getNodeList().subscribe(
-      res => this.nodes = res,
-      (err: HttpErrorResponse) => this.nodeLoadingInfo = err.message
-    );
+
   }
 
   fetchNodes() {
-
+    this.resourceService.getNodeList().subscribe(
+      res => this.nodes = res,
+      (err: HttpErrorResponse) => this.nodeLoadingInfo = err.message,
+      () => this.nodeLoadingInfo = 'Node list is empty.'
+    );
   }
 
-  addNode() {
+  addRemoveNode(actionType: NodeActionsType, nodeIp: string) {
     const nodeFactory = this.resolver.resolveComponentFactory(NodeAddRemoveComponent);
-    const nodeComponentRef = this.messageService.dialogView.createComponent(nodeFactory);
+    const nodeComponentRef = this.viewContainer.createComponent(nodeFactory);
+    nodeComponentRef.instance.actionType = actionType;
+    nodeComponentRef.instance.nodeIp = nodeIp;
     nodeComponentRef.instance.openModal().subscribe(() =>
-      this.messageService.dialogView.remove(this.messageService.dialogView.indexOf(nodeComponentRef.hostView))
+      this.viewContainer.remove(this.viewContainer.indexOf(nodeComponentRef.hostView))
     );
     nodeComponentRef.instance.successNotification.subscribe(() => this.fetchNodes());
   }

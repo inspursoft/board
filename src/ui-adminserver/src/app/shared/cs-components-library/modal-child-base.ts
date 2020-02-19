@@ -4,8 +4,6 @@ import { MessageService } from '../message/message.service';
 import { CsComponentBase } from './cs-component-base';
 
 export abstract class ModalChildBase extends CsComponentBase implements OnDestroy {
-  abstract get alertView(): ViewContainerRef;
-
   modalOpenedValue = false;
   @Output() closeNotification: Subject<any>;
 
@@ -37,6 +35,8 @@ export abstract class ModalChildBase extends CsComponentBase implements OnDestro
 }
 
 export abstract class ModalChildMessage extends ModalChildBase implements OnDestroy, AfterViewInit {
+  abstract get alertView(): ViewContainerRef;
+
   protected constructor(protected messageService: MessageService) {
     super();
   }

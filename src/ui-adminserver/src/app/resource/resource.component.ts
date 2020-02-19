@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewContainerRef } from '@angular/core';
 
 @Component({
   selector: 'app-resource',
@@ -7,9 +7,13 @@ import { Component, OnInit } from '@angular/core';
 })
 export class ResourceComponent implements OnInit {
 
-  constructor() { }
+  constructor(private view: ViewContainerRef) {
+  }
 
   ngOnInit() {
   }
 
+  get viewContainer(): ViewContainerRef {
+    return this.view;
+  }
 }

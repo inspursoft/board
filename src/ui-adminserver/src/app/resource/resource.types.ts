@@ -12,6 +12,8 @@ export enum WsNodeResponseStatus {
 
 export enum NodeActionsType {Add, Remove}
 
+export enum NodeReadyStatus {Ready, Chatting, Closed}
+
 export class NodeLogResponse extends ResponseBase {
   @HttpBind('status') status: WsNodeResponseStatus;
   @HttpBind('message') message: string;

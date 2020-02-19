@@ -3,16 +3,22 @@
   <clr-stack-block (clrSbExpandedChange)="fetchNodes()">
     <clr-stack-label>Node Resource</clr-stack-label>
     <clr-stack-content>
-      <a href="javascript: void(0)" (click)="addNode()">
+      <a href="javascript: void(0)" (click)="addRemoveNode(0, '')">
         <clr-icon shape="plus-circle"></clr-icon>
-        Add node</a>
+        {{"Node.Node_Form_Title_Add" | translate}}
+      </a>
     </clr-stack-content>
     <clr-stack-block *ngIf="nodes.length == 0">
       <div>{{nodeLoadingInfo}}</div>
     </clr-stack-block>
     <clr-stack-block *ngFor="let node of nodes">
       <clr-stack-label>{{node.Ip}}</clr-stack-label>
-      <clr-stack-content>{{node.CreationTime | date:"short"}}</clr-stack-content>
+      <clr-stack-content>
+        {{node.CreationTime | date:"short"}}
+        <a href="javascript: void(0)" (click)="addRemoveNode(1, node.Ip)">
+          <clr-icon shape="trash"></clr-icon>
+        </a>
+      </clr-stack-content>
     </clr-stack-block>
   </clr-stack-block>
 </clr-stack-block>

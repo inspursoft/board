@@ -9,4 +9,9 @@ div.logs-container {
   margin-top: 10px;
   border: 1px solid silver;
   border-radius: 5px;
+  padding: 3px;
+}
+
+div.modal-footer{
+  align-items: center;
 }
