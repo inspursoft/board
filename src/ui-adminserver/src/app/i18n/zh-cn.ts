@@ -58,9 +58,11 @@ export const LANG_ZH_CN = {
   'DASHBOARD': {
   },
   Node: {
-    Node_Form_Title_Add: 'Add node',
-    Node_Form_Title_Remove: 'Remove node',
-    Node_Form_Node_Ip: 'Node ip',
+    Node_Form_Add: '添加',
+    Node_Form_Remove: '移除',
+    Node_Form_Title_Add: '添加节点',
+    Node_Form_Title_Remove: '移除节点',
+    Node_Form_Node_Ip: '节点IP',
   },
   'CONFIGURATIONS': {
     'API_SERVER': {
