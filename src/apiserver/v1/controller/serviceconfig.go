@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"git/inspursoft/board/src/apiserver/service"
+	c "git/inspursoft/board/src/common/controller"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"io/ioutil"
@@ -54,19 +55,19 @@ func NewConfigServiceStep(key string) *ConfigServiceStep {
 }
 
 func SetConfigServiceStep(key string, s *ConfigServiceStep) {
-	memoryCache.Put(key, s, time.Second*expircyTimeSpan)
+	c.MemoryCache.Put(key, s, time.Second*expircyTimeSpan)
 }
 
 func GetConfigServiceStep(key string) *ConfigServiceStep {
-	if s, ok := memoryCache.Get(key).(*ConfigServiceStep); ok {
+	if s, ok := c.MemoryCache.Get(key).(*ConfigServiceStep); ok {
 		return s
 	}
 	return nil
 }
 
 func DeleteConfigServiceStep(key string) error {
-	if memoryCache.IsExist(key) {
-		return memoryCache.Delete(key)
+	if c.MemoryCache.IsExist(key) {
+		return c.MemoryCache.Delete(key)
 	}
 	return nil
 }
@@ -170,18 +171,18 @@ func (s *ConfigServiceStep) GetConfigExternalService() interface{} {
 }
 
 type ServiceConfigController struct {
-	BaseController
+	c.BaseController
 }
 
 func (sc *ServiceConfigController) getKey() string {
-	return strconv.Itoa(int(sc.currentUser.ID))
+	return strconv.Itoa(int(sc.CurrentUser.ID))
 }
 
 func (sc *ServiceConfigController) GetConfigServiceStepAction() {
 	key := sc.getKey()
 	configServiceStep := GetConfigServiceStep(key)
 	if configServiceStep == nil {
-		sc.customAbort(http.StatusNotFound, "Config service step has not been created yet.")
+		sc.CustomAbortAudit(http.StatusNotFound, "Config service step has not been created yet.")
 		return
 	}
 	phase := sc.GetString("phase")
@@ -198,19 +199,19 @@ func (sc *ServiceConfigController) GetConfigServiceStepAction() {
 	case configEntireService:
 		result = configServiceStep
 	default:
-		sc.serveStatus(http.StatusBadRequest, phaseInvalidErr.Error())
+		sc.ServeStatus(http.StatusBadRequest, phaseInvalidErr.Error())
 		return
 	}
 
 	if err, ok := result.(error); ok {
 		if err == projectIDInvalidErr {
-			sc.serveStatus(http.StatusBadRequest, err.Error())
+			sc.ServeStatus(http.StatusBadRequest, err.Error())
 			return
 		}
-		sc.internalError(err)
+		sc.InternalError(err)
 		return
 	}
-	sc.renderJSON(result)
+	sc.RenderJSON(result)
 }
 
 func (sc *ServiceConfigController) SetConfigServiceStepAction() {
@@ -219,7 +220,7 @@ func (sc *ServiceConfigController) SetConfigServiceStepAction() {
 	configServiceStep := NewConfigServiceStep(key)
 	reqData, err := ioutil.ReadAll(sc.Ctx.Request.Body)
 	if err != nil {
-		sc.internalError(err)
+		sc.InternalError(err)
 		return
 	}
 	switch phase {
@@ -234,7 +235,7 @@ func (sc *ServiceConfigController) SetConfigServiceStepAction() {
 	case configEntireService:
 		sc.configEntireService(key, configServiceStep, reqData)
 	default:
-		sc.serveStatus(http.StatusBadRequest, phaseInvalidErr.Error())
+		sc.ServeStatus(http.StatusBadRequest, phaseInvalidErr.Error())
 		return
 	}
 	logs.Info("set configService after phase %s is :%+v", phase, NewConfigServiceStep(key))
@@ -244,18 +245,18 @@ func (sc *ServiceConfigController) DeleteServiceStepAction() {
 	key := sc.getKey()
 	err := DeleteConfigServiceStep(key)
 	if err != nil {
-		sc.internalError(err)
+		sc.InternalError(err)
 		return
 	}
 }
 func (sc *ServiceConfigController) selectProject(key string, configServiceStep *ConfigServiceStep) {
 	projectID, err := sc.GetInt64("project_id")
 	if err != nil {
-		sc.internalError(err)
+		sc.InternalError(err)
 		return
 	}
 
-	project := sc.resolveUserPrivilegeByID(int64(projectID))
+	project := sc.ResolveUserPrivilegeByID(int64(projectID))
 	SetConfigServiceStep(key, configServiceStep.SelectProject(projectID, project.Name))
 }
 
@@ -263,7 +264,7 @@ func (sc *ServiceConfigController) configContainerList(key string, configService
 	var containerList []model.Container
 	err := json.Unmarshal(reqData, &containerList)
 	if err != nil {
-		sc.internalError(err)
+		sc.InternalError(err)
 		return
 	}
 
@@ -272,16 +273,16 @@ func (sc *ServiceConfigController) configContainerList(key string, configService
 		if container.CPURequest != "" && container.CPULimit != "" {
 			cpurequest, err := strconv.Atoi(strings.TrimRight(container.CPURequest, "m"))
 			if err != nil {
-				sc.serveStatus(http.StatusBadRequest, resourcerequestErr.Error())
+				sc.ServeStatus(http.StatusBadRequest, resourcerequestErr.Error())
 				return
 			}
 			cpulimit, err := strconv.Atoi(strings.TrimRight(container.CPULimit, "m"))
 			if err != nil {
-				sc.serveStatus(http.StatusBadRequest, resourcerequestErr.Error())
+				sc.ServeStatus(http.StatusBadRequest, resourcerequestErr.Error())
 				return
 			}
 			if cpurequest > cpulimit {
-				sc.serveStatus(http.StatusBadRequest, resourcerequestErr.Error())
+				sc.ServeStatus(http.StatusBadRequest, resourcerequestErr.Error())
 				return
 			}
 
@@ -289,16 +290,16 @@ func (sc *ServiceConfigController) configContainerList(key string, configService
 		if container.MemRequest != "" && container.MemLimit != "" {
 			memrequest, err := strconv.Atoi(strings.TrimRight(container.MemRequest, "Mi"))
 			if err != nil {
-				sc.serveStatus(http.StatusBadRequest, resourcerequestErr.Error())
+				sc.ServeStatus(http.StatusBadRequest, resourcerequestErr.Error())
 				return
 			}
 			memlimit, err := strconv.Atoi(strings.TrimRight(container.MemLimit, "Mi"))
 			if err != nil {
-				sc.serveStatus(http.StatusBadRequest, resourcerequestErr.Error())
+				sc.ServeStatus(http.StatusBadRequest, resourcerequestErr.Error())
 				return
 			}
 			if memrequest > memlimit {
-				sc.serveStatus(http.StatusBadRequest, resourcerequestErr.Error())
+				sc.ServeStatus(http.StatusBadRequest, resourcerequestErr.Error())
 				return
 			}
 
@@ -312,39 +313,39 @@ func (sc *ServiceConfigController) configContainerList(key string, configService
 func (sc *ServiceConfigController) configExternalService(key string, configServiceStep *ConfigServiceStep, reqData []byte) {
 	serviceName := strings.ToLower(sc.GetString("service_name"))
 	if !utils.ValidateWithLengthRange(serviceName, 1, 63) {
-		sc.serveStatus(http.StatusBadRequest, "Service Name must be not empty and no more than 63 characters ")
+		sc.ServeStatus(http.StatusBadRequest, "Service Name must be not empty and no more than 63 characters ")
 		return
 	}
 
 	isDuplicate, err := sc.checkServiceDuplicateName(serviceName)
 	if err != nil {
-		sc.serveStatus(http.StatusBadRequest, err.Error())
+		sc.ServeStatus(http.StatusBadRequest, err.Error())
 		return
 	}
 	if isDuplicate == true {
-		sc.serveStatus(http.StatusBadRequest, serverNameDuplicateErr.Error())
+		sc.ServeStatus(http.StatusBadRequest, serverNameDuplicateErr.Error())
 		return
 	}
 
 	instance, err := sc.GetInt("instance")
 	if err != nil {
-		sc.internalError(err)
+		sc.InternalError(err)
 		return
 	}
 	if instance < 1 {
-		sc.serveStatus(http.StatusBadRequest, instanceInvalidErr.Error())
+		sc.ServeStatus(http.StatusBadRequest, instanceInvalidErr.Error())
 		return
 	}
 
 	public, err := sc.GetInt("service_public")
 	if err != nil {
-		sc.internalError(err)
+		sc.InternalError(err)
 		return
 	}
 
 	serviceType, err := sc.GetInt("service_type")
 	if err != nil {
-		sc.internalError(err)
+		sc.InternalError(err)
 		return
 	}
 
@@ -358,13 +359,13 @@ func (sc *ServiceConfigController) configExternalService(key string, configServi
 
 	sessionAffinityFlag, err := sc.GetInt("session_affinity_flag", 0)
 	if err != nil {
-		sc.internalError(err)
+		sc.InternalError(err)
 		return
 	}
 
 	sessionAffinityTime, err := sc.GetInt("session_affinity_time", 0)
 	if err != nil {
-		sc.internalError(err)
+		sc.InternalError(err)
 		return
 	}
 
@@ -372,11 +373,11 @@ func (sc *ServiceConfigController) configExternalService(key string, configServi
 	if nodeOrNodeGroupName != "" {
 		isExists, err := service.NodeOrNodeGroupExists(nodeOrNodeGroupName)
 		if err != nil {
-			sc.internalError(err)
+			sc.InternalError(err)
 			return
 		}
 		if !isExists {
-			sc.serveStatus(http.StatusBadRequest, nodeOrNodeGroupNameNotFound.Error())
+			sc.ServeStatus(http.StatusBadRequest, nodeOrNodeGroupNameNotFound.Error())
 			return
 		}
 	}
@@ -384,13 +385,13 @@ func (sc *ServiceConfigController) configExternalService(key string, configServi
 	var serviceConfig model.ConfigServiceStep
 	err = json.Unmarshal(reqData, &serviceConfig)
 	if err != nil {
-		sc.internalError(err)
+		sc.InternalError(err)
 		return
 	}
 
 	for _, external := range serviceConfig.ExternalServiceList {
 		if external.NodeConfig.NodePort != 0 && (external.NodeConfig.NodePort > maximumPortNum || external.NodeConfig.NodePort < minimumPortNum) {
-			sc.serveStatus(http.StatusBadRequest, portInvalidErr.Error())
+			sc.ServeStatus(http.StatusBadRequest, portInvalidErr.Error())
 			return
 		}
 	}
@@ -407,7 +408,7 @@ func (sc *ServiceConfigController) checkServiceDuplicateName(serviceName string)
 
 	project, err := service.GetProject(model.Project{ID: configServiceStep.ProjectID}, "id")
 	if err != nil {
-		sc.internalError(err)
+		sc.InternalError(err)
 	}
 	if project == nil {
 		return false, serviceConfigNotSetProjectErr
@@ -415,7 +416,7 @@ func (sc *ServiceConfigController) checkServiceDuplicateName(serviceName string)
 
 	isServiceDuplicated, err := service.ServiceExists(serviceName, project.Name)
 	if err != nil {
-		sc.internalError(err)
+		sc.InternalError(err)
 		return false, err
 	}
 	return isServiceDuplicated, nil
@@ -425,7 +426,7 @@ func (sc *ServiceConfigController) checkServiceDuplicateName(serviceName string)
 func (sc *ServiceConfigController) checkEntireServiceConfig(entireService *ConfigServiceStep) error {
 	project, err := service.GetProject(model.Project{ID: entireService.ProjectID}, "id")
 	if err != nil {
-		sc.internalError(err)
+		sc.InternalError(err)
 		return err
 	}
 	if project == nil {
@@ -438,7 +439,7 @@ func (sc *ServiceConfigController) checkEntireServiceConfig(entireService *Confi
 	}
 	isDuplicate, err := service.ServiceExists(serviceName, project.Name)
 	if err != nil {
-		sc.internalError(err)
+		sc.InternalError(err)
 	}
 	if isDuplicate == true {
 		return serverNameDuplicateErr
@@ -471,12 +472,12 @@ func (sc *ServiceConfigController) configEntireService(key string, configService
 	var entireService ConfigServiceStep
 	err := json.Unmarshal(reqData, &entireService)
 	if err != nil {
-		sc.internalError(err)
+		sc.InternalError(err)
 		return
 	}
 
 	if err = sc.checkEntireServiceConfig(&entireService); err != nil {
-		sc.serveStatus(http.StatusBadRequest, err.Error())
+		sc.ServeStatus(http.StatusBadRequest, err.Error())
 		return
 	}
 

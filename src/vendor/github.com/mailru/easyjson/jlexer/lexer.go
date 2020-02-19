@@ -418,7 +418,7 @@ func (r *Lexer) errSyntax() {
 	r.errParse("syntax error")
 }
 
-func (r *Lexer) errInvalidToken(expected string) {
+func (r *Lexer) ErrInvalidToken(expected string) {
 	if r.fatalError != nil {
 		return
 	}
@@ -466,8 +466,8 @@ func (r *Lexer) Delim(c byte) {
 	}
 
 	if !r.Ok() || r.token.delimValue != c {
-		r.consume() // errInvalidToken can change token if UseMultipleErrors is enabled.
-		r.errInvalidToken(string([]byte{c}))
+		r.consume() // ErrInvalidToken can change token if UseMultipleErrors is enabled.
+		r.ErrInvalidToken(string([]byte{c}))
 	} else {
 		r.consume()
 	}
@@ -487,7 +487,7 @@ func (r *Lexer) Null() {
 		r.FetchToken()
 	}
 	if !r.Ok() || r.token.kind != tokenNull {
-		r.errInvalidToken("null")
+		r.ErrInvalidToken("null")
 	}
 	r.consume()
 }
@@ -601,7 +601,7 @@ func (r *Lexer) unsafeString() (string, []byte) {
 		r.FetchToken()
 	}
 	if !r.Ok() || r.token.kind != tokenString {
-		r.errInvalidToken("string")
+		r.ErrInvalidToken("string")
 		return "", nil
 	}
 	bytes := r.token.byteValue
@@ -631,7 +631,7 @@ func (r *Lexer) String() string {
 		r.FetchToken()
 	}
 	if !r.Ok() || r.token.kind != tokenString {
-		r.errInvalidToken("string")
+		r.ErrInvalidToken("string")
 		return ""
 	}
 	ret := string(r.token.byteValue)
@@ -645,7 +645,7 @@ func (r *Lexer) Bytes() []byte {
 		r.FetchToken()
 	}
 	if !r.Ok() || r.token.kind != tokenString {
-		r.errInvalidToken("string")
+		r.ErrInvalidToken("string")
 		return nil
 	}
 	ret := make([]byte, base64.StdEncoding.DecodedLen(len(r.token.byteValue)))
@@ -667,7 +667,7 @@ func (r *Lexer) Bool() bool {
 		r.FetchToken()
 	}
 	if !r.Ok() || r.token.kind != tokenBool {
-		r.errInvalidToken("bool")
+		r.ErrInvalidToken("bool")
 		return false
 	}
 	ret := r.token.boolValue
@@ -680,7 +680,7 @@ func (r *Lexer) number() string {
 		r.FetchToken()
 	}
 	if !r.Ok() || r.token.kind != tokenNumber {
-		r.errInvalidToken("number")
+		r.ErrInvalidToken("number")
 		return ""
 	}
 	ret := bytesToStr(r.token.byteValue)
@@ -1087,7 +1087,7 @@ func (r *Lexer) JsonNumber() json.Number {
 		r.FetchToken()
 	}
 	if !r.Ok() {
-		r.errInvalidToken("json.Number")
+		r.ErrInvalidToken("json.Number")
 		return json.Number("")
 	}
 

@@ -12,7 +12,7 @@ import (
 )
 
 var gogitsBaseURL = utils.GetConfig("GOGITS_BASE_URL")
-var jenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
+var JenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
 var maxRetryCount = 30
 
 type createAccessTokenOption struct {
@@ -244,7 +244,7 @@ func (g *gogsHandler) CreateIssueComment(ownerName string, baseRepoName string, 
 
 func (g *gogsHandler) CreateHook(ownerName string, repoName string) error {
 	config := make(map[string]string)
-	config["url"] = fmt.Sprintf("%s/generic-webhook-trigger/invoke", jenkinsBaseURL())
+	config["url"] = fmt.Sprintf("%s/generic-webhook-trigger/invoke", JenkinsBaseURL())
 	config["content_type"] = "json"
 
 	opt := createHookOption{

@@ -4,33 +4,36 @@ import (
 	//"encoding/json"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
+	c "git/inspursoft/board/src/common/controller"
 	"git/inspursoft/board/src/common/model"
+
 	//"io/ioutil"
 	"net/http"
 	"strconv"
+
 	//"strings"
 
 	"github.com/astaxie/beego/logs"
 )
 
 type PVClaimController struct {
-	BaseController
+	c.BaseController
 }
 
 func (n *PVClaimController) GetPVClaimAction() {
 	pvcID, err := strconv.Atoi(n.Ctx.Input.Param(":id"))
 	if err != nil {
-		n.internalError(err)
+		n.InternalError(err)
 		return
 	}
 	pvc, err := service.QueryPVCByID(int64(pvcID))
 	if err != nil {
-		n.internalError(err)
+		n.InternalError(err)
 		return
 	}
 	if pvc == nil {
 		logs.Error("Not found this PVC %d in DB", pvcID)
-		n.internalError(err)
+		n.InternalError(err)
 		return
 	}
 
@@ -42,7 +45,7 @@ func (n *PVClaimController) GetPVClaimAction() {
 	pvck8s, err := service.GetPVCK8s(pvc.Name, pvc.ProjectName)
 	if err != nil {
 		logs.Error("Fail to get this PVC %s in cluster %v", pvc.Name, err)
-		n.internalError(err)
+		n.InternalError(err)
 		return
 	}
 	if pvck8s == nil {
@@ -53,20 +56,20 @@ func (n *PVClaimController) GetPVClaimAction() {
 		pvcDetail.PVClaim.State = pvcDetail.State // TODO duplicate
 	}
 
-	n.renderJSON(pvcDetail)
+	n.RenderJSON(pvcDetail)
 	logs.Debug("Return get pvc %v", pvcDetail)
 }
 
 func (n *PVClaimController) RemovePVClaimAction() {
 	pvcID, err := strconv.Atoi(n.Ctx.Input.Param(":id"))
 	if err != nil {
-		n.internalError(err)
+		n.InternalError(err)
 		return
 	}
 	//check pvc existing DB
 	pvc, err := service.GetPVCDB(model.PersistentVolumeClaimM{ID: int64(pvcID)}, "id")
 	if err != nil {
-		n.internalError(err)
+		n.InternalError(err)
 		return
 	}
 	if pvc == nil {
@@ -77,7 +80,7 @@ func (n *PVClaimController) RemovePVClaimAction() {
 	// Get PVC view mode
 	pvcview, err := service.QueryPVCByID(int64(pvcID))
 	if err != nil {
-		n.internalError(err)
+		n.InternalError(err)
 		return
 	}
 
@@ -92,48 +95,48 @@ func (n *PVClaimController) RemovePVClaimAction() {
 	_, err = service.DeletePVCDB(int64(pvcID))
 	if err != nil {
 		logs.Error("Failed to delete PVC %d", pvcID)
-		n.internalError(err)
+		n.InternalError(err)
 		return
 	}
 }
 
 func (n *PVClaimController) GetPVClaimListAction() {
-	res, err := service.QueryPVCsByUser(n.currentUser.ID)
+	res, err := service.QueryPVCsByUser(n.CurrentUser.ID)
 	if err != nil {
 		logs.Debug("Failed to get PV List")
-		n.customAbort(http.StatusInternalServerError, fmt.Sprint(err))
+		n.CustomAbortAudit(http.StatusInternalServerError, fmt.Sprint(err))
 		return
 	}
-	n.renderJSON(res)
+	n.RenderJSON(res)
 }
 
 func (n *PVClaimController) AddPVClaimAction() {
 	var reqPVC model.PersistentVolumeClaimM
 	var err error
-	err = n.resolveBody(&reqPVC)
+	err = n.ResolveBody(&reqPVC)
 	if err != nil {
 		return
 	}
 
 	if reqPVC.Name == "" || reqPVC.ProjectID == 0 {
-		n.customAbort(http.StatusBadRequest, "PVC Name and project ID should not null")
+		n.CustomAbortAudit(http.StatusBadRequest, "PVC Name and project ID should not null")
 		return
 	}
 
 	//	pvcExists, err := service.PVCExists(reqPVC.ProjectID, reqPVC.Name)
 	//	if err != nil {
-	//		n.internalError(err)
+	//		n.InternalError(err)
 	//		return
 	//	}
 	//	if pvcExists {
-	//		n.customAbort(http.StatusConflict, "Node Group name already exists.")
+	//		n.CustomAbortAudit(http.StatusConflict, "Node Group name already exists.")
 	//		return
 	//	}
 
 	pvcID, err := service.CreatePVC(reqPVC)
 	if err != nil {
 		logs.Debug("Failed to add pvc %v", reqPVC)
-		n.internalError(err)
+		n.InternalError(err)
 		return
 	}
 	logs.Info("Added PVC %s %d", reqPVC.Name, pvcID)
@@ -144,25 +147,25 @@ func (n *PVClaimController) GetPVCNameExisting() {
 	projectName := n.GetString("project_name")
 	if projectName == "" {
 		logs.Debug("Failed to get Project name")
-		n.customAbort(http.StatusBadRequest, "No project name")
+		n.CustomAbortAudit(http.StatusBadRequest, "No project name")
 		return
 	}
 
 	pvcName := n.GetString("pvc_name")
 	if projectName == "" {
 		logs.Debug("Failed to get PVC name")
-		n.customAbort(http.StatusBadRequest, "No pvc name")
+		n.CustomAbortAudit(http.StatusBadRequest, "No pvc name")
 		return
 	}
 
 	res, err := service.QueryPVCNameExisting(projectName, pvcName)
 	if err != nil {
 		logs.Debug("Failed to check PVC name")
-		n.customAbort(http.StatusInternalServerError, fmt.Sprint(err))
+		n.CustomAbortAudit(http.StatusInternalServerError, fmt.Sprint(err))
 		return
 	}
 	if res == true {
-		n.customAbort(http.StatusConflict, "The pvc name existing")
+		n.CustomAbortAudit(http.StatusConflict, "The pvc name existing")
 		return
 	}
 }
