@@ -7,6 +7,7 @@ import (
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/apiserver/service/devops/gogs"
 	"git/inspursoft/board/src/apiserver/v1/controller"
+	c "git/inspursoft/board/src/common/controller"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
@@ -25,19 +26,23 @@ const (
 	defaultTokenServerPort      = "4000"
 	defaultTokenCacheExpireTime = "1800"
 	defaultKubeConfigPath       = "/root/kubeconfig"
+	defaultSwaggerDoc           = "disabled"
 	adminUserID                 = 1
 	adminUsername               = "admin"
 	adminEmail                  = "admin@inspur.com"
 	defaultInitialPassword      = "123456a?"
-	baseRepoPath                = "/repos"
-	sshKeyPath                  = "/keys"
+	BaseRepoPath                = "/Users/wangkun/data/board/repos"
+	sshKeyPath                  = "/Users/wangkun/data/board/keys"
 	defaultProject              = "library"
 	kvmToolsPath                = "/root/kvm"
 	kvmRegistryPath             = "/root/kvmregistry"
 )
 
-var gogitsSSHURL = utils.GetConfig("GOGITS_SSH_URL")
-var jenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
+var GogitsSSHURL = utils.GetConfig("GOGITS_SSH_URL")
+var JenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
+
+var apiServerPort = utils.GetConfig("API_SERVER_PORT", defaultAPIServerPort)
+var swaggerDoc = utils.GetConfig("SWAGGER_DOC", defaultSwaggerDoc)
 
 func initBoardVersion() {
 	version, err := ioutil.ReadFile("VERSION")
@@ -149,7 +154,7 @@ func main() {
 	utils.SetConfig("TOKEN_SERVER_PORT", defaultTokenServerPort)
 	utils.SetConfig("TOKEN_SERVER_URL", "http://%s:%s/tokenservice/token", "TOKEN_SERVER_IP", "TOKEN_SERVER_PORT")
 
-	utils.SetConfig("BASE_REPO_PATH", baseRepoPath)
+	utils.SetConfig("BASE_REPO_PATH", BaseRepoPath)
 	utils.SetConfig("SSH_KEY_PATH", sshKeyPath)
 
 	utils.SetConfig("KVM_TOOLS_PATH", kvmToolsPath)
@@ -159,10 +164,10 @@ func main() {
 
 	dao.InitDB()
 
-	controller.InitController()
+	c.InitController()
 	controller.InitRouter()
 	v2routers.InitRouterV2()
-	if beego.BConfig.RunMode == "dev" {
+	if swaggerDoc() == "enabled" {
 		beego.BConfig.WebConfig.DirectoryIndex = true
 		beego.BConfig.WebConfig.StaticDir["/swagger"] = "swagger"
 	}
@@ -203,5 +208,5 @@ func main() {
 		}
 	}
 
-	beego.Run(":" + defaultAPIServerPort)
+	beego.Run(":" + apiServerPort())
 }
