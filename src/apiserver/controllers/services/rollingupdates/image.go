@@ -142,10 +142,40 @@ func (p *ImageController) PatchServiceAction(rollingUpdateConfig *model.Deployme
 }
 
 func (p *ImageController) getServiceConfig() (deploymentConfig *model.Deployment, err error) {
-	projectName := p.GetString("project_name")
+	projectID, err := strconv.Atoi(p.Ctx.Input.Param(":project_id"))
+	if err != nil {
+		p.InternalError(err)
+		return
+	}
+	project, err := service.GetProjectByID(int64(projectID))
+	if err != nil {
+		p.InternalError(err)
+		return
+	}
+	if project == nil {
+		p.CustomAbortAudit(http.StatusNotFound, fmt.Sprintf("No project was found with provided ID: %d", projectID))
+		return
+	}
+	projectName := project.Name
+	//	projectName := p.GetString("project_name")
 	p.ResolveProjectMember(projectName)
 
-	serviceName := p.GetString("service_name")
+	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":service_id"))
+	if err != nil {
+		p.InternalError(err)
+		return
+	}
+	s, err := service.GetServiceByID(int64(serviceID))
+	if err != nil {
+		p.InternalError(err)
+		return
+	}
+	if s == nil {
+		p.CustomAbortAudit(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
+		return
+	}
+	serviceName := s.Name
+	//	serviceName := p.GetString("service_name")
 	serviceStatus, err := service.GetServiceByProject(serviceName, projectName)
 	if err != nil {
 		p.InternalError(err)
