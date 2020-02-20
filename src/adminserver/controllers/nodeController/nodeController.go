@@ -47,7 +47,7 @@ func (controller *Controller) GetNodeListAction() {
 // @Failure 500 Internal Server Error
 // @router /logs [get]
 func (controller *Controller) GetNodeLogHistory() {
-	var logHistoryList []nodeModel.NodeLogDetail
+	var logHistoryList []nodeModel.LogHistory
 	err := nodeService.GetArrayJsonByFile(nodeModel.AddNodeHistoryJson, &logHistoryList)
 	if err != nil {
 		errorMsg := fmt.Sprintf("Bad request.%s", err.Error())

@@ -5,12 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"git/inspursoft/board/src/adminserver/models/nodeModel"
+	"github.com/astaxie/beego/logs"
 	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"src/github.com/astaxie/beego/logs"
+
 	"strings"
 	"time"
 )
@@ -94,6 +95,7 @@ func updateList(cmd *exec.Cmd, fileName string, history *nodeModel.LogHistory) {
 		cmd.Wait();
 		history.Success = cmd.ProcessState.Success()
 		history.Pid = cmd.ProcessState.Pid()
+		history.Completed = true
 		updateErr := updateAddNodeHistory(history)
 		if updateErr != nil {
 			logs.Info(updateErr.Error())
