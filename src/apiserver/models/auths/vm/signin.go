@@ -1,6 +1,6 @@
-package models
+package vm
 
 type SignIn struct {
-	Username string
-	Password string
+	Username string `json:"user_username"`
+	Password string `json:"user_password"`
 }

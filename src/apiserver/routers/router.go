@@ -63,6 +63,11 @@ func InitRouterV2() {
 				&admins.CommonController{},
 			),
 		),
+		beego.NSNamespace("/users/admins/supplements",
+			beego.NSInclude(
+				&admins.SupplementController{},
+			),
+		),
 		beego.NSNamespace("/users/probe",
 			beego.NSInclude(
 				&users.ProbeController{},
@@ -75,7 +80,7 @@ func InitRouterV2() {
 		),
 		beego.NSNamespace("/systems",
 			beego.NSInclude(
-				&systems.CommonController{},
+				&systems.SupplementController{},
 			),
 		),
 		beego.NSNamespace("/searches",
@@ -86,6 +91,11 @@ func InitRouterV2() {
 		beego.NSNamespace("/projects",
 			beego.NSInclude(
 				&projects.CommonController{},
+			),
+		),
+		beego.NSNamespace("/projects/supplements",
+			beego.NSInclude(
+				&projects.SupplementController{},
 			),
 		),
 		beego.NSNamespace("/projects/members",

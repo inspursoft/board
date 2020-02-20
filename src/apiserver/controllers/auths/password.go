@@ -1,46 +1,56 @@
 package auths
 
 import (
-	"github.com/astaxie/beego"
+	"fmt"
+	"git/inspursoft/board/src/apiserver/service"
+	c "git/inspursoft/board/src/common/controller"
+	"git/inspursoft/board/src/common/utils"
+	"net/http"
+	"strings"
+
+	"github.com/astaxie/beego/logs"
 )
 
 // Operations about user password
 type PasswordController struct {
-	beego.Controller
+	c.BaseController
 }
 
 // @Title Reset password for user
 // @Description Reset password for users.
-// @Param	body	body 	"models.users.vm.ResetPassword"	true	"View model for user resetting password."
+// @Param	reset_uuid	query 	string	true	"UUID for requesting to reset password"
+// @Param	password	query	string	true	"New password to be reset."
 // @Success 200 Successful reset.
 // @Failure 400 Bad requests.
 // @Failure 401 Unauthorized.
 // @Failure 403 Forbidden.
 // @router /reset [post]
 func (u *PasswordController) Reset() {
-
-}
-
-// @Title Change password for user
-// @Description Change password for users.
-// @Param	body	body 	"models.users.vm.ChangePassword"	true	"View model for user changing password."
-// @Success 200 Successful changed.
-// @Failure 400 Bad requests.
-// @Failure 401 Unauthorized.
-// @Failure 403 Forbidden.
-// @router /change [put]
-func (u *PasswordController) Change() {
-
-}
-
-// @Title Forgot password for user
-// @Description Forgot password for users.
-// @Param	body	body 	"models.users.vm.ForgotPassword"	true	"View model for user changing password."
-// @Success 200 Successful changed.
-// @Failure 400 Bad requests.
-// @Failure 401 Unauthorized.
-// @Failure 403 Forbidden.
-// @router /forgot [post]
-func (u *PasswordController) Forgot() {
-
+	if utils.GetBoolValue("IS_EXTERNAL_AUTH") {
+		u.CustomAbortAudit(http.StatusPreconditionFailed, "Resetting password doesn't support in external auth.")
+		return
+	}
+	resetUUID := u.GetString("reset_uuid")
+	user, err := service.GetUserByResetUUID(resetUUID)
+	if err != nil {
+		logs.Error("Failed to get user by reset UUID: %s, error: %+v", resetUUID, err)
+		u.InternalError(err)
+		return
+	}
+	if user == nil {
+		logs.Error("Invalid reset UUID: %s", resetUUID)
+		u.CustomAbortAudit(http.StatusBadRequest, fmt.Sprintf("Invalid reset UUID: %s", resetUUID))
+		return
+	}
+	newPassword := u.GetString("password")
+	if strings.TrimSpace(newPassword) == "" {
+		logs.Error("No password provided.")
+		u.CustomAbortAudit(http.StatusBadRequest, "No password provided.")
+		return
+	}
+	_, err = service.ResetUserPassword(*user, newPassword)
+	if err != nil {
+		logs.Error("Failed to reset user password for user ID: %d, error: %+v", user.ID, err)
+		u.InternalError(err)
+	}
 }
