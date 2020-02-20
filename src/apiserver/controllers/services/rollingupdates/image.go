@@ -1,12 +1,14 @@
 package rollingupdates
 
 import (
+	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	c "git/inspursoft/board/src/common/controller"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"path/filepath"
+	"strconv"
 
 	"github.com/astaxie/beego/logs"
 )
@@ -39,9 +41,8 @@ func (p *ImageController) List() {
 // @Failure 400 Bad requests.
 // @Failure 401 Unauthorized.
 // @Failure 403 Forbidden.
-// @router /image [patch]
+// @router /:project_id/:service_id/images [patch]
 func (p *ImageController) PatchRollingUpdateServiceImageAction() {
-
 	var imageList []model.ImageIndex
 	err := p.ResolveBody(&imageList)
 	if err != nil {
@@ -77,16 +78,46 @@ func (p *ImageController) PatchRollingUpdateServiceImageAction() {
 }
 
 func (p *ImageController) PatchServiceAction(rollingUpdateConfig *model.Deployment) {
-	projectName := p.GetString("project_name")
+	projectID, err := strconv.Atoi(p.Ctx.Input.Param(":project_id"))
+	if err != nil {
+		p.InternalError(err)
+		return
+	}
+	project, err := service.GetProjectByID(int64(projectID))
+	if err != nil {
+		p.InternalError(err)
+		return
+	}
+	if project == nil {
+		p.CustomAbortAudit(http.StatusNotFound, fmt.Sprintf("No project was found with provided ID: %d", projectID))
+		return
+	}
+	projectName := project.Name
+	//	projectName := p.GetString("project_name")
 	p.ResolveProjectMember(projectName)
 
-	serviceName := p.GetString("service_name")
+	serviceID, err := strconv.Atoi(p.Ctx.Input.Param(":service_id"))
+	if err != nil {
+		p.InternalError(err)
+		return
+	}
+	s, err := service.GetServiceByID(int64(serviceID))
+	if err != nil {
+		p.InternalError(err)
+		return
+	}
+	if s == nil {
+		p.CustomAbortAudit(http.StatusBadRequest, fmt.Sprintf("Invalid service ID: %d", serviceID))
+		return
+	}
+	serviceName := s.Name
+	//	serviceName := p.GetString("service_name")
 	serviceStatus, err := service.GetServiceByProject(serviceName, projectName)
 	if err != nil {
 		p.InternalError(err)
 		return
 	}
-	if serviceStatus.Status == uncompleted {
+	if serviceStatus.Status == 3 {
 		logs.Debug("Service is uncompleted, cannot be updated %s\n", serviceName)
 		p.CustomAbortAudit(http.StatusMethodNotAllowed, "Service is in uncompleted")
 		return
