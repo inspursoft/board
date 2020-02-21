@@ -1,9 +1,5 @@
 package nodeModel
 
-import (
-	"time"
-)
-
 const AddNodeYamlFile = "/root/ansible_k8s/addNode.yml"
 const RemoveNodeYamlFile = "/root/ansible_k8s/uninstallnode.yml"
 const AddRemoveNodeFile = "/root/ansible_k8s/addNode"
@@ -57,6 +53,6 @@ type NodeLogDetail struct {
 }
 
 type NodeListType struct {
-	Ip           string    `json:"ip"`
-	CreationTime time.Time `json:"creation_time"`
+	Ip           string `json:"ip"`
+	CreationTime int64  `json:"creation_time"`
 }

@@ -68,7 +68,7 @@ export const LANG_EN_US = {
     Node_Logs_Empty: 'Node log list is empty',
     Node_Detail_Add: 'Add',
     Node_Detail_Remove: 'Remove',
-    Node_Detail_Refresh: 'Refresh',
+    Node_Detail_Refresh: 'Refresh log',
     Node_Detail_Title_Add: 'Add node',
     Node_Detail_Title_Remove: 'Removing node',
     Node_Detail_Title_Log: 'Node log',

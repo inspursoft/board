@@ -123,7 +123,7 @@ export class NodeDetailComponent extends ModalChildBase implements OnInit {
   }
 
   refreshLog() {
-    const logFileName = `${this.logInfo.ip}@${String(this.logInfo.creationTime)}.txt`;
+    const logFileName = `${this.logInfo.ip}@${this.logInfo.creationTime}.txt`;
     const el = this.divElement.nativeElement as HTMLDivElement;
     this.refreshingLog = true;
     this.resourceService.getNodeLog(logFileName).subscribe(

@@ -1,5 +1,5 @@
 import { Component, ComponentFactoryResolver, OnInit, ViewContainerRef } from '@angular/core';
-import { NodeActionsType, NodeList, NodeListType } from '../../resource.types';
+import { NodeActionsType, NodeList, NodeListType, NodeLog } from '../../resource.types';
 import { ResourceService } from '../../services/resource.service';
 import { MessageService } from "../../../shared/message/message.service";
 import { Message, ReturnStatus } from "../../../shared/message/message.types";

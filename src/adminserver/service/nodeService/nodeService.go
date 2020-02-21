@@ -115,7 +115,7 @@ func updateList(cmd *exec.Cmd, fileName string, history *nodeModel.LogHistory) {
 		}
 		if history.Success {
 			if history.Type == nodeModel.ActionTypeAddNode {
-				updateErr := appendNodeInfo(history.Ip)
+				updateErr := appendNodeInfo(history.Ip, history.CreationTime)
 				if updateErr != nil {
 					logs.Info(updateErr.Error())
 				}
@@ -162,7 +162,7 @@ func removeNodeInfo(nodeIp string) error {
 	return nil
 }
 
-func appendNodeInfo(nodeIp string) error {
+func appendNodeInfo(nodeIp string, creationTime int64) error {
 	var nodeListJson []nodeModel.NodeListType
 	var filePtr *os.File
 	if _, err := os.Stat(nodeModel.AddNodeListJson); os.IsNotExist(err) {
@@ -176,7 +176,7 @@ func appendNodeInfo(nodeIp string) error {
 		}
 	}
 	defer filePtr.Close();
-	nodeListJson = append(nodeListJson, nodeModel.NodeListType{Ip: nodeIp, CreationTime: time.Now()})
+	nodeListJson = append(nodeListJson, nodeModel.NodeListType{Ip: nodeIp, CreationTime: creationTime})
 	nodeListJsonBytes, _ := json.Marshal(nodeListJson)
 	writeErr := ioutil.WriteFile(nodeModel.AddNodeListJson, nodeListJsonBytes, os.ModeType)
 	if writeErr != nil {
