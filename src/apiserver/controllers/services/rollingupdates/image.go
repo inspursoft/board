@@ -117,7 +117,7 @@ func (p *ImageController) PatchServiceAction(rollingUpdateConfig *model.Deployme
 		p.InternalError(err)
 		return
 	}
-	if serviceStatus.Status == 3 {
+	if serviceStatus.Status == model.Uncompleted {
 		logs.Debug("Service is uncompleted, cannot be updated %s\n", serviceName)
 		p.CustomAbortAudit(http.StatusMethodNotAllowed, "Service is in uncompleted")
 		return
@@ -131,12 +131,12 @@ func (p *ImageController) PatchServiceAction(rollingUpdateConfig *model.Deployme
 	}
 
 	p.ResolveRepoServicePath(projectName, serviceName)
-	err = utils.GenerateFile(deploymentFileInfo, p.RepoServicePath, deploymentFilename)
+	err = utils.GenerateFile(deploymentFileInfo, p.RepoServicePath, model.DeploymentFilename)
 	if err != nil {
 		p.InternalError(err)
 		return
 	}
-	p.PushItemsToRepo(filepath.Join(serviceName, deploymentFilename))
+	p.PushItemsToRepo(filepath.Join(serviceName, model.DeploymentFilename))
 
 	logs.Debug("New updated deployment: %+v\n", deploymentConfig)
 }
