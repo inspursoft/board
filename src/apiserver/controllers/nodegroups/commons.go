@@ -50,7 +50,7 @@ func (n *CommonController) List() {
 // @router / [post]
 func (n *CommonController) Add() {
 	var reqNodeGroup nodegroups.NodeGroup
-	var moNodeGruop model.NodeGroup
+	var moNodeGroup model.NodeGroup
 	var err error
 
 	err = n.ResolveBody(&reqNodeGroup)
