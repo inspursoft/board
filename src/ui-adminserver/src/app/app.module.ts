@@ -13,7 +13,7 @@ import { CustomTranslateLoader } from './i18n/custom-translate-loader';
 import { ConfigurationModule } from './configuration/configuration.module';
 import { HttpClientModule } from '@angular/common/http';
 import { AccountModule } from './account/account.module';
-import { ResourceModule } from './resource/resource.module';
+
 
 @NgModule({
   declarations: [
@@ -23,7 +23,6 @@ import { ResourceModule } from './resource/resource.module';
   imports: [
     BrowserModule,
     SharedModule,
-    AppRoutingModule,
     AccountModule,
     ClarityModule,
     DashboardModule,
@@ -36,7 +35,7 @@ import { ResourceModule } from './resource/resource.module';
       }
     }),
     HttpClientModule,
-    ResourceModule,
+    AppRoutingModule
   ],
   providers: [],
   bootstrap: [AppComponent]

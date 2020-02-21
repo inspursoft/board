@@ -3,25 +3,34 @@ import { CommonModule } from '@angular/common';
 import { ResourceComponent } from './resource.component';
 import { ClarityModule } from '@clr/angular';
 import { RouterModule } from '@angular/router';
-import { ComputeComponent } from './compute/compute.component';
 import { ResourceService } from './services/resource.service';
 import { CustomHttpProvider } from './services/custom-http.service';
-import { NodeAddRemoveComponent } from './node-add-remove/node-add-remove.component';
 import { TranslateModule } from '@ngx-translate/core';
 import { BoardComponentsLibraryModule } from 'board-components-library';
+import { NodeListComponent } from './compute/node-list/node-list.component';
+import { NodeLogsComponent } from './compute/node-logs/node-logs.component';
+import { NodeDetailComponent } from './compute/node-detail/node-detail.component';
 
 @NgModule({
-  declarations: [ResourceComponent, ComputeComponent, NodeAddRemoveComponent],
+  declarations: [
+    ResourceComponent,
+    NodeListComponent,
+    NodeLogsComponent,
+    NodeDetailComponent
+  ],
   imports: [
     CommonModule,
     ClarityModule,
-    RouterModule.forChild([{path: '', component: ResourceComponent}]),
+    RouterModule.forChild([{
+      path: '', component: ResourceComponent, children: [
+        {path: 'node-list', component: NodeListComponent},
+        {path: 'node-logs', component: NodeLogsComponent}
+      ]
+    }]),
     TranslateModule,
     BoardComponentsLibraryModule
   ],
-  entryComponents: [
-    NodeAddRemoveComponent
-  ],
+  entryComponents: [NodeDetailComponent],
   providers: [
     ResourceService,
     CustomHttpProvider

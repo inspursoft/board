@@ -1,3 +1,7 @@
+div.modal-header {
+  padding: 0;
+}
+
 div.modal-body {
   min-height: 450px;
 }
@@ -12,6 +16,6 @@ div.logs-container {
   padding: 3px;
 }
 
-div.modal-footer{
+div.modal-footer {
   align-items: center;
 }

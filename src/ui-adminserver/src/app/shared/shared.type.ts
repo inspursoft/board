@@ -44,6 +44,10 @@ export abstract class ResponseArrayBase<T extends ResponseBase> {
     return this.data.length;
   }
 
+  get originData(): Array<T> {
+    return this.data;
+  }
+
   [Symbol.iterator]() {
     let index = 0;
     const self = this;

@@ -18,7 +18,7 @@ const childrenPath: Routes = [
     //   configuration: DataResolverService
     // }
   },
-  { path: 'resource', component: ResourceComponent },
+  { path: 'resource', loadChildren: './resource/resource.module#ResourceModule' },
 ];
 
 const accountPath: Routes = [

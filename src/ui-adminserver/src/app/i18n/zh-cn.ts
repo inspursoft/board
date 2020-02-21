@@ -58,11 +58,22 @@ export const LANG_ZH_CN = {
   'DASHBOARD': {
   },
   Node: {
-    Node_Form_Add: '添加',
-    Node_Form_Remove: '移除',
-    Node_Form_Title_Add: '添加节点',
-    Node_Form_Title_Remove: '移除节点',
-    Node_Form_Node_Ip: '节点IP',
+    Node_List_Add: '添加节点',
+    Node_List_Empty: '节点列表为空',
+    Node_Logs_Ip: 'IP',
+    Node_Logs_Operation_Time: '操作时间',
+    Node_Logs_PID: 'PID',
+    Node_Logs_Type: '添加/删除',
+    Node_Logs_Success: '是否成功',
+    Node_Logs_Operation: '操作',
+    Node_Logs_Empty: '节点操作日志为空',
+    Node_Detail_Add: '添加',
+    Node_Detail_Remove: '移除',
+    Node_Detail_Refresh: '刷新日志',
+    Node_Detail_Title_Add: '添加节点',
+    Node_Detail_Title_Remove: '正在移除节点',
+    Node_Detail_Title_Log: '节点日志',
+    Node_Detail_Node_Ip: '节点IP',
   },
   'CONFIGURATIONS': {
     'API_SERVER': {

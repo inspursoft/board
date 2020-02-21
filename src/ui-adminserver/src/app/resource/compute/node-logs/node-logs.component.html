@@ -1,0 +1,35 @@
+<h3 *ngIf="nodeLogs.length === 0">{{"Node.Node_Logs_Empty" | translate}}</h3>
+<clr-datagrid *ngIf="nodeLogs.length >0 " (clrDgRefresh)="retrieve()">
+  <clr-dg-column>{{ 'Node.Node_Logs_Ip' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'Node.Node_Logs_Operation_Time' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'Node.Node_Logs_PID' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'Node.Node_Logs_Type' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'Node.Node_Logs_Success' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'Node.Node_Logs_Operation' | translate }}</clr-dg-column>
+  <clr-dg-row *ngFor="let nodeLog of nodeLogs">
+    <clr-dg-cell>{{nodeLog.ip}}</clr-dg-cell>
+    <clr-dg-cell>{{nodeLog.creationTime | date: "short"}}</clr-dg-cell>
+    <clr-dg-cell>{{nodeLog.pid}}</clr-dg-cell>
+    <clr-dg-cell>{{nodeLog.type===1?'Delete':'Add'}}</clr-dg-cell>
+    <clr-dg-cell [style.background-color]="nodeLog.success ? 'lightgreen' : 'transparent'">
+      {{nodeLog.success}}
+    </clr-dg-cell>
+    <clr-dg-cell>
+      <div style="display: flex;align-items: center">
+        <a href="javascript:void(0)">
+          <clr-icon shape="info" class="is-solid" (click)="showLogDetail(nodeLog)"></clr-icon>
+        </a>
+        <span *ngIf="!nodeLog.completed" class="spinner spinner-sm"></span>
+      </div>
+    </clr-dg-cell>
+  </clr-dg-row>
+  <clr-dg-footer>
+    {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
+    {{"DATAGRID.TOTAL" | translate}}{{pagination.totalItems}}{{"DATAGRID.ITEMS" | translate}}
+    <clr-dg-pagination #pagination
+                       [clrDgTotalItems]="nodeLogs.length"
+                       [(clrDgPage)]="curPageIndex"
+                       [clrDgPageSize]="curPageSize">
+    </clr-dg-pagination>
+  </clr-dg-footer>
+</clr-datagrid>

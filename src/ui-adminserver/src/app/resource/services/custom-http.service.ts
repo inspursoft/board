@@ -1,7 +1,7 @@
-import {HttpClient, HttpHandler} from '@angular/common/http';
-import {Observable} from 'rxjs';
-import {map} from 'rxjs/operators';
-import {ResponseArrayBase, ResponseBase} from '../../shared/shared.type';
+import { HttpClient, HttpHandler } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { ResponseArrayBase, ResponseBase } from '../../shared/shared.type';
 
 export class CustomHttpClient extends HttpClient {
   defaultHeaders = new Headers({
@@ -16,6 +16,11 @@ export class CustomHttpClient extends HttpClient {
                                   returnType: new(res: object) => T,
                                   param: { [param: string]: string }): Observable<T> {
     return super.get(url, {observe: 'body', responseType: 'json', params: param})
+      .pipe(map((res: object) => new returnType(res)));
+  }
+
+  postJson<T extends ResponseBase>(url: string, body: object, returnType: new(res: object) => T): Observable<T> {
+    return super.post(url, body, {observe: 'body', responseType: 'json'})
       .pipe(map((res: object) => new returnType(res)));
   }
 

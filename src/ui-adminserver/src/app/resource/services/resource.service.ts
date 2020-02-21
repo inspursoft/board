@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Observable, Subject } from 'rxjs';
-import { webSocket } from 'rxjs/webSocket';
-import { NodeActionsType, NodeLogResponse, ResponseArrayNode } from '../resource.types';
+import { Observable } from 'rxjs';
+import { NodeDetails, NodeList, NodeLog, NodeLogs } from '../resource.types';
 import { CustomHttpClient } from './custom-http.service';
+import { map } from "rxjs/operators";
 
 @Injectable()
 export class ResourceService {
@@ -10,14 +10,24 @@ export class ResourceService {
   constructor(private http: CustomHttpClient) {
   }
 
-  getNodeList(): Observable<ResponseArrayNode> {
-    return this.http.getArrayJson(`/v1/admin/node/list`, ResponseArrayNode);
+  getNodeList(): Observable<NodeList> {
+    return this.http.getArrayJson(`/v1/admin/node/list`, NodeList);
   }
 
-  addRemoveNode(type: NodeActionsType, nodeIp: string): Observable<NodeLogResponse> {
-    const url = type === NodeActionsType.Add ?
-      `ws://127.0.0.1:8080/v1/admin/node/add?node_ip=${nodeIp}` :
-      `ws://127.0.0.1:8080/v1/admin/node/delete?node_ip=${nodeIp}`;
-    return webSocket<NodeLogResponse>(url).asObservable();
+  addNode(nodeIp: string): Observable<NodeLog> {
+    return this.http.postJson('/v1/admin/node/add', {node_ip: nodeIp}, NodeLog);
+  }
+
+  removeNode(nodeIp: string): Observable<NodeLog> {
+    return this.http.delete(`/v1/admin/node/remove?node_ip=${nodeIp}`)
+      .pipe(map((res: object) => new NodeLog(res)));
+  }
+
+  getNodeLogs(): Observable<NodeLogs> {
+    return this.http.getArrayJson('/v1/admin/node/logs', NodeLogs);
+  }
+
+  getNodeLog(logFileName: string): Observable<NodeDetails> {
+    return this.http.getArrayJson(`/v1/admin/node/log?file_name=${logFileName}`, NodeDetails);
   }
 }

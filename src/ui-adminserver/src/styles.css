@@ -3,3 +3,7 @@ body {
   min-width: 850px;
   overflow-y: hidden;
 }
+
+button.btn {
+  text-transform: none;
+}

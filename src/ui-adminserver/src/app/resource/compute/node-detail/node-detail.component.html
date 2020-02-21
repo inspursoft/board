@@ -1,28 +1,28 @@
 <clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'md'" [clrModalClosable]="false">
   <h3 class="modal-title"><b>{{title | translate}}</b></h3>
-  <div class="modal-body" #msgViewContainer>
-    <lib-input-ex [inputLabel]="'Node.Node_Form_Node_Ip' | translate"
+  <div class="modal-body">
+    <lib-input-ex [inputLabel]="'Node.Node_Detail_Node_Ip' | translate"
                   [inputIsRequired]="true"
-                  [inputDisabled]="readyStatus === 1 || actionType == 1"
+                  [inputDisabled]="actionType !== 0 || executing || actionStatus !== 0"
                   [inputDefaultValue]="nodeIp"
                   [validatorMessage]="[{key:'required', message:'Please input the node ip.'}]"
                   (commitEvent)="nodeIp = $event">
     </lib-input-ex>
+    <div  #msgViewContainer></div>
     <div #divElement class="logs-container">
       <div #consoleLogs></div>
     </div>
   </div>
   <div class="modal-footer">
-    <button *ngIf="readyStatus == 0" class="btn btn-outline" (click)="cancel()">
-      {{"BUTTON.CANCEL" | translate}}
+    <button *ngIf="actionType ==0 || executing" class="btn btn-outline" (click)="cancel()">
+      {{cancelBtnCaption | translate}}
     </button>
     <button class="btn"
             (click)="execute()"
-            [ngClass]="btnClassName"
-            [disabled]="readyStatus === 1">
+            [ngClass]="btnClassName">
       {{executeBtnCaption | translate}}
     </button>
-    <span *ngIf="readyStatus == 1" class="spinner spinner-sm"></span>
+    <span *ngIf="refreshingLog" class="spinner spinner-sm"></span>
   </div>
 </clr-modal>
 
