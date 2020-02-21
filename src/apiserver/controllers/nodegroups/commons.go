@@ -72,27 +72,27 @@ func (n *CommonController) Add() {
 	// 	}
 
 	if !utils.ValidateWithLengthRange(reqNodeGroup.GroupName, 1, 63) {
-		n.customAbort(http.StatusBadRequest, "NodeGroup Name must be not empty and no more than 63 characters ")
+		n.CustomAbort(http.StatusBadRequest, "NodeGroup Name must be not empty and no more than 63 characters ")
 		return
 	}
 
 	nodeGroupExists, err := service.NodeGroupExists(reqNodeGroup.GroupName)
 	if err != nil {
-		n.internalError(err)
+		n.InternalError(err)
 		return
 	}
 	if nodeGroupExists {
-		n.customAbort(http.StatusConflict, "Node Group name already exists.")
+		n.CustomAbort(http.StatusConflict, "Node Group name already exists.")
 		return
 	}
 
 	moNodeGroup.GroupName = strings.TrimSpace(reqNodeGroup.GroupName)
-	moNodeGroup.OwnerID = int64(n.currentUser.ID)
+	moNodeGroup.OwnerID = int64(n.CurrentUser.ID)
 
 	group, err := service.CreateNodeGroup(moNodeGroup)
 	if err != nil {
 		logs.Debug("Failed to add node group %s", moNodeGroup.GroupName)
-		n.internalError(err)
+		n.InternalError(err)
 		return
 	}
 	logs.Info("Added node group %s %d", reqNodeGroup.GroupName, group.ID)
