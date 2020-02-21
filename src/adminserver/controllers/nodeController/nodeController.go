@@ -88,23 +88,25 @@ func (controller *Controller) GetNodeLogDetail() {
 // @Success 200
 // @Failure 400 bad request
 // @Failure 500 Internal Server Error
-// @router /add [get]
+// @router /add [post]
 func (controller *Controller) AddNodeAction() {
-	controller.AddRemoveNode(nodeModel.ActionTypeAddNode, nodeModel.AddNodeYamlFile)
+	var postData nodeModel.AddNodePostData
+	controller.resolveBody(&postData)
+	controller.AddRemoveNode(postData.NodeIp, nodeModel.ActionTypeAddNode, nodeModel.AddNodeYamlFile)
 }
 
-// @Title delete nodeModel
-// @Description Get delete nodeModel
+// @Title remove node
+// @Description remove node
 // @Success 200
 // @Failure 400 bad request
 // @Failure 500 Internal Server Error
-// @router /delete [get]
+// @router /remove [delete]
 func (controller *Controller) RemoveNodeAction() {
-	controller.AddRemoveNode(nodeModel.ActionTypeDeleteNode, nodeModel.RemoveNodeYamlFile)
+	nodeIp := controller.Ctx.Input.Query("node_ip")
+	controller.AddRemoveNode(nodeIp, nodeModel.ActionTypeDeleteNode, nodeModel.RemoveNodeYamlFile)
 }
 
-func (controller *Controller) AddRemoveNode(actionType nodeModel.ActionType, yamlFile string) {
-	nodeIp := controller.Ctx.Input.Query("node_ip")
+func (controller *Controller) AddRemoveNode(nodeIp string,actionType nodeModel.ActionType, yamlFile string) {
 	if _, err := os.Stat(yamlFile); os.IsNotExist(err) {
 		fileNotExists := fmt.Sprintf("File [%s] not exists", yamlFile)
 		controller.CustomAbort(http.StatusBadRequest, fileNotExists)
@@ -120,6 +122,7 @@ func (controller *Controller) AddRemoveNode(actionType nodeModel.ActionType, yam
 	}
 	masterIp := configuration.Apiserver.KubeMasterIP
 	registryIp := configuration.Apiserver.RegistryIP
+
 	nodeService.GenerateHostFile(masterIp, nodeIp, registryIp)
 	logFileJson := nodeModel.LogHistory{
 		Ip: nodeIp, Success: false, Pid: 0, CreationTime: time.Now().Unix(), Type: actionType}

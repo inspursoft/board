@@ -36,6 +36,10 @@ const (
 	ActionTypeDeleteNode ActionType = 1
 )
 
+type AddNodePostData struct {
+	NodeIp string `json:"node_ip"`
+}
+
 type NodeLogDetailArray = []NodeLogDetail;
 
 type LogHistory struct {

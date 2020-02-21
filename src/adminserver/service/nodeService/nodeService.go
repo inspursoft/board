@@ -11,7 +11,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-
 	"strings"
 	"time"
 )
@@ -19,7 +18,7 @@ import (
 func GetArrayJsonByFile(fileName string, v interface{}) error {
 	var filePtr *os.File
 	if _, err := os.Stat(fileName); os.IsNotExist(err) {
-		return fmt.Errorf("the file of %s is not exists", fileName)
+		return nil
 	}
 	filePtr, _ = os.Open(fileName)
 	defer filePtr.Close()
@@ -90,6 +89,20 @@ func GenerateHostFile(masterIp, nodeIp, registryIp string) error {
 	return nil
 }
 
+func CheckExecuting(nodeIp string) *nodeModel.LogHistory {
+	var logHistoryList []nodeModel.LogHistory
+	err := GetArrayJsonByFile(nodeModel.AddNodeHistoryJson, &logHistoryList)
+	if err != nil {
+		return nil
+	}
+	for _, logHistory := range logHistoryList {
+		if logHistory.Completed == false && logHistory.Ip == nodeIp {
+			return &logHistory
+		}
+	}
+	return nil
+}
+
 func updateList(cmd *exec.Cmd, fileName string, history *nodeModel.LogHistory) {
 	go func() {
 		cmd.Wait();
@@ -117,8 +130,6 @@ func updateList(cmd *exec.Cmd, fileName string, history *nodeModel.LogHistory) {
 
 	}()
 }
-
-
 
 func removeNodeInfo(nodeIp string) error {
 	var nodeListJson []nodeModel.NodeListType
@@ -151,7 +162,6 @@ func removeNodeInfo(nodeIp string) error {
 	return nil
 }
 
-
 func appendNodeInfo(nodeIp string) error {
 	var nodeListJson []nodeModel.NodeListType
 	var filePtr *os.File
@@ -174,7 +184,6 @@ func appendNodeInfo(nodeIp string) error {
 	}
 	return nil
 }
-
 
 func updateAddNodeHistory(history *nodeModel.LogHistory) error {
 	var nodeLogHistoryList []nodeModel.LogHistory
