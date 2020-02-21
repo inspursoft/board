@@ -1,25 +1,26 @@
 package nodegroups
 
 import (
-	"encoding/json"
+	//"encoding/json"
 
-	"fmt"
+	//"fmt"
 	"git/inspursoft/board/src/apiserver/models/nodegroups"
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"strings"
 
 	"github.com/astaxie/beego"
 
-	"io/ioutil"
+	//"io/ioutil"
 
 	"github.com/astaxie/beego/logs"
 )
 
 // Operations about node groups
 type CommonController struct {
-	beego.Controller
+	c.BaseController
 }
 
 // @Title List all node groups
@@ -46,10 +47,12 @@ func (c *CommonController) List() {
 // @Failure 409 Node group already exists.
 // @Failure 500 Internal errors.
 // @router / [post]
-func (c *CommonController) Add() {
+func (n *CommonController) Add() {
 	var reqNodeGroup nodegroups.NodeGroup
+	var moNodeGruop model.NodeGroup
 	var err error
-	err = c.ResolveBody(&reqNodeGroup)
+
+	err = n.ResolveBody(&reqNodeGroup)
 	if err != nil {
 		return
 	}
@@ -82,12 +85,12 @@ func (c *CommonController) Add() {
 		return
 	}
 
-	reqNodeGroup.GroupName = strings.TrimSpace(reqNodeGroup.GroupName)
-	reqNodeGroup.OwnerID = int64(n.currentUser.ID)
+	moNodeGroup.GroupName = strings.TrimSpace(reqNodeGroup.GroupName)
+	moNodeGroup.OwnerID = int64(n.currentUser.ID)
 
-	group, err := service.CreateNodeGroup(reqNodeGroup)
+	group, err := service.CreateNodeGroup(moNodeGroup)
 	if err != nil {
-		logs.Debug("Failed to add node group %s", reqNodeGroup.GroupName)
+		logs.Debug("Failed to add node group %s", moNodeGroup.GroupName)
 		n.internalError(err)
 		return
 	}
@@ -102,6 +105,6 @@ func (c *CommonController) Add() {
 // @Failure 401 Unauthorized.
 // @Failure 403 Forbidden.
 // @router /:nodegroup_id [delete]
-func (c *CommonController) Delete() {
+func (n *CommonController) Delete() {
 
 }
