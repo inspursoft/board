@@ -6,12 +6,13 @@ import (
 	//"fmt"
 	"git/inspursoft/board/src/apiserver/models/nodegroups"
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/common/controller"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"strings"
 
-	"github.com/astaxie/beego"
+	//"github.com/astaxie/beego"
 
 	//"io/ioutil"
 
@@ -20,7 +21,7 @@ import (
 
 // Operations about node groups
 type CommonController struct {
-	c.BaseController
+	controller.BaseController
 }
 
 // @Title List all node groups
@@ -32,7 +33,7 @@ type CommonController struct {
 // @Failure 401 Unauthorized.
 // @Failure 403 Forbidden.
 // @router /:nodegroup_id [get]
-func (c *CommonController) List() {
+func (n *CommonController) List() {
 
 }
 
