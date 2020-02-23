@@ -129,3 +129,55 @@ func (a *AccController) Shutdown() {
 	a.Ctx.ResponseWriter.WriteHeader(statusCode)
 	a.ServeJSON()
 }
+
+// @Title Install
+// @Description judge if it's the first time open admin server.
+// @Success 200 {object} string success
+// @Failure 400 bad request
+// @router /install [get]
+func (a *AccController) Install() {
+	install := service.Install()
+	if install == true {
+		a.Data["json"] = "yes"
+	} else {
+		a.Data["json"] = "no"
+	}
+	a.ServeJSON()
+}
+
+// @Title CreateUUID
+// @Description create UUID
+// @Success 200 success
+// @Failure 400 bad request
+// @router /createUUID [post]
+func (a *AccController) CreateUUID() {
+	var statusCode int = http.StatusOK
+	statusMessage := service.CreateUUID()
+	if statusMessage == "BadRequest" {
+		statusCode = http.StatusBadRequest
+	}
+	a.Ctx.ResponseWriter.WriteHeader(statusCode)
+	a.ServeJSON()
+}
+
+// @Title ValidateUUID
+// @Description validate the UUID
+// @Param	UUID	query 	string	true	"UUID"
+// @Success 200 {object} string success
+// @Failure 400 bad request
+// @router /ValidateUUID [post]
+func (a *AccController) ValidateUUID() {
+	var statusCode int = http.StatusOK
+	input := a.GetString("UUID")
+	result, statusMessage := service.ValidateUUID(input)
+	if result == true {
+		a.Data["json"] = "validate success"
+	} else {
+		a.Data["json"] = "validate failure"
+	}
+	if statusMessage == "BadRequest" {
+		statusCode = http.StatusBadRequest
+	}
+	a.Ctx.ResponseWriter.WriteHeader(statusCode)
+	a.ServeJSON()
+}

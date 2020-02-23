@@ -8,6 +8,9 @@ services:
     restart: always
     volumes:
       - ../:/go/cfgfile
+      - ../secrets:/go/secrets
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker
     networks:
       - adms
     ports:
