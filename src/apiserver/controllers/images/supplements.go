@@ -1,6 +1,7 @@
 package images
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -68,7 +69,7 @@ func (c *SupplementController) Exists() {
 	}
 
 	if existing {
-		c.CustomAbortAudit(http.StatusConflict, "This image:tag already existing.")
+		c.CustomAbortAudit(http.StatusConflict, fmt.Sprintf("This image %s:%s already existing.", image.Name, image.Tag))
 		return
 	}
 }
