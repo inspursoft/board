@@ -1,16 +1,12 @@
 package images
 
 import (
-	"fmt"
 	"net/http"
-	"path/filepath"
 	"strings"
 
 	"git/inspursoft/board/src/apiserver/models/images/vm"
 	"git/inspursoft/board/src/apiserver/service"
 	c "git/inspursoft/board/src/common/controller"
-
-	"github.com/astaxie/beego/logs"
 )
 
 // Operations about images supplements
@@ -54,7 +50,7 @@ func (c *SupplementController) CleanConfig() {
 // @Failure 401 Unauthorized.
 // @Failure 403 Forbidden.
 // @Failure 409 Image existing.
-// @router /:project_name/exists [post]
+// @router /:project_name/existing [post]
 func (c *SupplementController) Exists() {
 	projectName := strings.TrimSpace(c.Ctx.Input.Param(":project_name"))
 	c.ResolveUserPrivilege(projectName)
@@ -65,7 +61,7 @@ func (c *SupplementController) Exists() {
 	if err != nil {
 		return
 	}
-	existing, err := existRegistry(projectName, image.Name, image.Tag)
+	existing, err := service.ExistRegistry(projectName, image.Name, image.Tag)
 	if err != nil {
 		c.InternalError(err)
 		return
@@ -75,33 +71,4 @@ func (c *SupplementController) Exists() {
 		c.CustomAbortAudit(http.StatusConflict, "This image:tag already existing.")
 		return
 	}
-	logs.Debug("checking image:tag result %t", existing)
-}
-
-func existRegistry(projectName string, imageName string, imageTag string) (bool, error) {
-	currentName := filepath.Join(projectName, imageName)
-	fmt.Println(currentName)
-	//check image
-	repoList, err := service.GetRegistryCatalog()
-	if err != nil {
-		logs.Error("Failed to unmarshal repoList body %+v", err)
-		return false, err
-	}
-	for _, imageRegistry := range repoList.Names {
-		if imageRegistry == currentName {
-			//check tag
-			tagList, err := service.GetRegistryImageTags(currentName)
-			if err != nil {
-				logs.Error("Failed to unmarshal body %+v", err)
-				return false, err
-			}
-			for _, tagID := range tagList.Tags {
-				if imageTag == tagID {
-					logs.Info("Image tag existing %s:%s", currentName, tagID)
-					return true, nil
-				}
-			}
-		}
-	}
-	return false, err
 }
