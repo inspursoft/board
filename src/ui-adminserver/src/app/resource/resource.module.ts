@@ -21,12 +21,14 @@ import { NodeDetailComponent } from './compute/node-detail/node-detail.component
   imports: [
     CommonModule,
     ClarityModule,
-    RouterModule.forChild([{
-      path: '', component: ResourceComponent, children: [
-        {path: 'node-list', component: NodeListComponent},
-        {path: 'node-logs', component: NodeLogsComponent}
-      ]
-    }]),
+    RouterModule.forChild([
+      {path: '', redirectTo: 'node-list', pathMatch: 'full'},
+      {
+        path: '', component: ResourceComponent, children: [
+          {path: 'node-list', component: NodeListComponent},
+          {path: 'node-logs', component: NodeLogsComponent}
+        ]
+      }]),
     TranslateModule,
     BoardComponentsLibraryModule
   ],

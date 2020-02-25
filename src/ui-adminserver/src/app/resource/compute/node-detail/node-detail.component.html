@@ -4,9 +4,9 @@
     <lib-input-ex [inputLabel]="'Node.Node_Detail_Node_Ip' | translate"
                   [inputIsRequired]="true"
                   [inputDisabled]="actionType !== 0 || executing || actionStatus !== 0"
-                  [inputDefaultValue]="nodeIp"
+                  [inputDefaultValue]="logInfo.ip"
                   [validatorMessage]="[{key:'required', message:'Please input the node ip.'}]"
-                  (commitEvent)="nodeIp = $event">
+                  (commitEvent)="logInfo.ip = $event">
     </lib-input-ex>
     <div  #msgViewContainer></div>
     <div #divElement class="logs-container">

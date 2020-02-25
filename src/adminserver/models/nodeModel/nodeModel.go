@@ -3,16 +3,10 @@ package nodeModel
 const AddNodeYamlFile = "/root/ansible_k8s/addNode.yml"
 const RemoveNodeYamlFile = "/root/ansible_k8s/uninstallnode.yml"
 const AddRemoveNodeFile = "/root/ansible_k8s/addNode"
+const AddRemoveShellFile = "/root/ansible_k8s/addNode.sh"
 const AddNodeListJson = "/root/ansible_k8s/addNodeInfo/addNodeList.json"
 const AddNodeHistoryJson = "/root/ansible_k8s/addNodeInfo/addNodeHistory.json"
 const AddNodeLogPath = "/root/ansible_k8s/addNodeInfo/Logs/"
-
-//const AddNodeYamlFile = "/Users/liyanqing/ansible_k8s/addNode.yml"
-//const RemoveNodeYamlFile = "/Users/liyanqing/ansible_k8s/uninstallnode.yml"
-//const AddRemoveNodeFile = "/Users/liyanqing/ansible_k8s/addNode"
-//const AddNodeListJson = "/Users/liyanqing/ansible_k8s/addNodeInfo/addNodeList.json"
-//const AddNodeHistoryJson = "/Users/liyanqing/ansible_k8s/addNodeInfo/addNodeHistory.json"
-//const AddNodeLogPath = "/Users/liyanqing/ansible_k8s/addNodeInfo/Logs/"
 
 type NodeLogResponseStatus int
 type ActionType int

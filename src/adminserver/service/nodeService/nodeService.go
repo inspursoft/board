@@ -23,9 +23,8 @@ func GetArrayJsonByFile(fileName string, v interface{}) error {
 	filePtr, _ = os.Open(fileName)
 	defer filePtr.Close()
 	decoder := json.NewDecoder(filePtr)
-	readErr := decoder.Decode(v)
-	if readErr != nil {
-		errorMsg := fmt.Sprintf("Unexpected error occurred.%s", readErr.Error())
+	if err := decoder.Decode(v); err != nil {
+		errorMsg := fmt.Sprintf("Unexpected error occurred.%s", err.Error())
 		return fmt.Errorf(errorMsg)
 	}
 	return nil
@@ -51,24 +50,36 @@ func GetNodeLogDetail(fileName string, nodeLogDetail *[]nodeModel.NodeLogDetail)
 	return nil
 }
 
-func ExecuteCommand(logHistory *nodeModel.LogHistory, yamlFile string) error {
-	command := fmt.Sprintf("ansible-playbook -i " + nodeModel.AddRemoveNodeFile + " " + yamlFile)
-	logFileName := fmt.Sprintf("%s@%d.txt", logHistory.Ip, time.Now().Unix())
+func ExecuteCommand(nodeLog *nodeModel.LogHistory, yamlFile string) error {
+	if _, err := os.Stat(yamlFile); err != nil {
+		return err
+	}
+
+	if _, err := os.Stat(nodeModel.AddRemoveShellFile); err != nil {
+		return err
+	}
+
+	if _, err := os.Stat(nodeModel.AddNodeLogPath); os.IsNotExist(err) {
+		os.MkdirAll(nodeModel.AddNodeLogPath, os.ModePerm)
+	}
+
+	logFileName := fmt.Sprintf("%s@%d.txt", nodeLog.Ip, time.Now().Unix())
 	logFile, createErr := os.Create(filepath.Join(nodeModel.AddNodeLogPath, logFileName))
 	if createErr != nil {
 		return createErr
 	}
-	cmd := exec.Command("/bin/bash", "-c", command)
+	cmd := exec.Command("nohup", "sh", nodeModel.AddRemoveShellFile, yamlFile)
 	cmd.Stdout = logFile
 	cmd.Stderr = logFile
-	if cmdErr := cmd.Start(); cmdErr != nil {
-		return cmdErr
+
+	if err := cmd.Start(); err != nil {
+		return err
 	}
-	updateErr := updateAddNodeHistory(logHistory)
-	if updateErr != nil {
-		return updateErr
+
+	if err := updateHistoryLog(nodeLog); err != nil {
+		return err
 	}
-	updateList(cmd, logFileName, logHistory)
+	updateList(cmd, nodeLog)
 	return nil
 }
 
@@ -103,27 +114,26 @@ func CheckExecuting(nodeIp string) *nodeModel.LogHistory {
 	return nil
 }
 
-func updateList(cmd *exec.Cmd, fileName string, history *nodeModel.LogHistory) {
+func updateList(cmd *exec.Cmd, logHistory *nodeModel.LogHistory) {
 	go func() {
 		cmd.Wait();
-		history.Success = cmd.ProcessState.Success()
-		history.Pid = cmd.ProcessState.Pid()
-		history.Completed = true
-		updateErr := updateAddNodeHistory(history)
-		if updateErr != nil {
-			logs.Info(updateErr.Error())
+		logHistory.Success = cmd.ProcessState.Success()
+		logHistory.Pid = cmd.ProcessState.Pid()
+		logHistory.Completed = true
+
+		if err := updateHistoryLog(logHistory); err != nil {
+			logs.Info(err.Error())
 		}
-		if history.Success {
-			if history.Type == nodeModel.ActionTypeAddNode {
-				updateErr := appendNodeInfo(history.Ip, history.CreationTime)
-				if updateErr != nil {
-					logs.Info(updateErr.Error())
+
+		if logHistory.Success {
+			if logHistory.Type == nodeModel.ActionTypeAddNode {
+				if err := appendNodeInfo(logHistory.Ip, logHistory.CreationTime); err != nil {
+					logs.Info(err.Error())
 				}
 			}
-			if history.Type == nodeModel.ActionTypeDeleteNode {
-				updateErr := removeNodeInfo(history.Ip)
-				if updateErr != nil {
-					logs.Info(updateErr.Error())
+			if logHistory.Type == nodeModel.ActionTypeDeleteNode {
+				if err := removeNodeInfo(logHistory.Ip); err != nil {
+					logs.Info(err.Error())
 				}
 			}
 		}
@@ -185,7 +195,7 @@ func appendNodeInfo(nodeIp string, creationTime int64) error {
 	return nil
 }
 
-func updateAddNodeHistory(history *nodeModel.LogHistory) error {
+func updateHistoryLog(nodeLog *nodeModel.LogHistory) error {
 	var nodeLogHistoryList []nodeModel.LogHistory
 	var filePtr *os.File
 	if _, err := os.Stat(nodeModel.AddNodeHistoryJson); os.IsNotExist(err) {
@@ -200,14 +210,14 @@ func updateAddNodeHistory(history *nodeModel.LogHistory) error {
 	}
 	defer filePtr.Close();
 	if len(nodeLogHistoryList) > 0 {
-		for index, nodeLog := range nodeLogHistoryList {
-			if nodeLog.Ip == history.Ip && nodeLog.CreationTime == history.CreationTime {
+		for index, nodeLogHistory := range nodeLogHistoryList {
+			if nodeLogHistory.Ip == nodeLog.Ip && nodeLogHistory.CreationTime == nodeLog.CreationTime {
 				nodeLogHistoryList = append(nodeLogHistoryList[:index], nodeLogHistoryList[index+1:]...)
 				break
 			}
 		}
 	}
-	nodeLogHistoryList = append(nodeLogHistoryList, *history)
+	nodeLogHistoryList = append(nodeLogHistoryList, *nodeLog)
 	nodeListJsonBytes, _ := json.Marshal(nodeLogHistoryList)
 	writeErr := ioutil.WriteFile(nodeModel.AddNodeHistoryJson, nodeListJsonBytes, os.ModeType)
 	if writeErr != nil {

@@ -17,7 +17,6 @@ export class NodeDetailComponent extends ModalChildBase implements OnInit {
   @ViewChild('msgViewContainer', {read: ViewContainerRef}) view: ViewContainerRef;
   actionType: NodeActionsType = NodeActionsType.Add;
   title = 'Node.Node_Detail_Title_Add';
-  nodeIp = '';
   actionStatus = ActionStatus.Ready;
   logInfo: NodeLog;
   refreshingLog = false;
@@ -60,7 +59,7 @@ export class NodeDetailComponent extends ModalChildBase implements OnInit {
 
   get executing(): boolean {
     if (this.actionType === NodeActionsType.Log) {
-      return true;
+      return false;
     }
     return this.actionStatus === ActionStatus.Executing;
 
@@ -86,7 +85,7 @@ export class NodeDetailComponent extends ModalChildBase implements OnInit {
   }
 
   removeNode() {
-    this.resourceService.removeNode(this.nodeIp).subscribe(
+    this.resourceService.removeNode(this.logInfo.ip).subscribe(
       (res: NodeLog) => this.logInfo = res,
       (err: HttpErrorResponse) => {
         this.messageService.cleanNotification();
@@ -106,7 +105,7 @@ export class NodeDetailComponent extends ModalChildBase implements OnInit {
 
   execute() {
     if (this.actionStatus === ActionStatus.Ready && this.actionType === NodeActionsType.Add) {
-      this.resourceService.addNode(this.nodeIp).subscribe(
+      this.resourceService.addNode(this.logInfo.ip).subscribe(
         (res: NodeLog) => this.logInfo = res,
         (err: HttpErrorResponse) => {
           this.messageService.cleanNotification();

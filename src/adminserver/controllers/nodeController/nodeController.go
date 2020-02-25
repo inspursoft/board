@@ -106,15 +106,13 @@ func (controller *Controller) RemoveNodeAction() {
 	controller.AddRemoveNode(nodeIp, nodeModel.ActionTypeDeleteNode, nodeModel.RemoveNodeYamlFile)
 }
 
-func (controller *Controller) AddRemoveNode(nodeIp string,actionType nodeModel.ActionType, yamlFile string) {
-	if _, err := os.Stat(yamlFile); os.IsNotExist(err) {
-		fileNotExists := fmt.Sprintf("File [%s] not exists", yamlFile)
-		controller.CustomAbort(http.StatusBadRequest, fileNotExists)
+func (controller *Controller) AddRemoveNode(nodeIp string, actionType nodeModel.ActionType, yamlFile string) {
+	if logHistory := nodeService.CheckExecuting(nodeIp); logHistory != nil {
+		controller.Data["json"] = *logHistory
+		controller.ServeJSON()
 		return
 	}
-	if _, err := os.Stat(nodeModel.AddNodeLogPath); os.IsNotExist(err) {
-		os.MkdirAll(nodeModel.AddNodeLogPath, os.ModePerm)
-	}
+
 	configuration, statusMessage := service.GetAllCfg("")
 	if statusMessage == "BadRequest" {
 		controller.CustomAbort(http.StatusBadRequest, "Failed to get the configuration.")
@@ -123,10 +121,17 @@ func (controller *Controller) AddRemoveNode(nodeIp string,actionType nodeModel.A
 	masterIp := configuration.Apiserver.KubeMasterIP
 	registryIp := configuration.Apiserver.RegistryIP
 
-	nodeService.GenerateHostFile(masterIp, nodeIp, registryIp)
+	if err := nodeService.GenerateHostFile(masterIp, nodeIp, registryIp); err != nil {
+		controller.CustomAbort(http.StatusBadRequest, err.Error())
+		return
+	}
+
 	logFileJson := nodeModel.LogHistory{
 		Ip: nodeIp, Success: false, Pid: 0, CreationTime: time.Now().Unix(), Type: actionType}
-	nodeService.ExecuteCommand(&logFileJson, yamlFile)
+	if err := nodeService.ExecuteCommand(&logFileJson, yamlFile); err != nil {
+		controller.CustomAbort(http.StatusBadRequest, err.Error())
+		return
+	}
 	controller.Data["json"] = logFileJson
 	controller.ServeJSON()
 }

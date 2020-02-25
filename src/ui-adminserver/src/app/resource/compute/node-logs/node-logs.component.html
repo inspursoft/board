@@ -8,7 +8,7 @@
   <clr-dg-column>{{ 'Node.Node_Logs_Operation' | translate }}</clr-dg-column>
   <clr-dg-row *ngFor="let nodeLog of nodeLogs">
     <clr-dg-cell>{{nodeLog.ip}}</clr-dg-cell>
-    <clr-dg-cell>{{nodeLog.creationTime | date: "short"}}</clr-dg-cell>
+    <clr-dg-cell>{{nodeLog.creationTime * 1000 | date: "short"}}</clr-dg-cell>
     <clr-dg-cell>{{nodeLog.pid}}</clr-dg-cell>
     <clr-dg-cell>{{nodeLog.type===1?'Delete':'Add'}}</clr-dg-cell>
     <clr-dg-cell [style.background-color]="nodeLog.success ? 'lightgreen' : 'transparent'">

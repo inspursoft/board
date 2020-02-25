@@ -1,7 +1,7 @@
 import { Component, ComponentFactoryResolver, OnInit, ViewContainerRef } from '@angular/core';
-import { NodeActionsType, NodeLog, NodeLogs } from "../../resource.types";
-import { ResourceService } from "../../services/resource.service";
-import { NodeDetailComponent } from "../node-detail/node-detail.component";
+import { NodeActionsType, NodeLog, NodeLogs } from '../../resource.types';
+import { ResourceService } from '../../services/resource.service';
+import { NodeDetailComponent } from '../node-detail/node-detail.component';
 
 @Component({
   selector: 'app-node-logs',
@@ -40,7 +40,6 @@ export class NodeLogsComponent implements OnInit {
   showLogDetail(log: NodeLog) {
     const factory = this.resolver.resolveComponentFactory(NodeDetailComponent);
     const detailRef = this.view.createComponent(factory);
-    detailRef.instance.nodeIp = log.ip;
     detailRef.instance.actionType = NodeActionsType.Log;
     detailRef.instance.logInfo = log;
     detailRef.instance.openModal().subscribe(
