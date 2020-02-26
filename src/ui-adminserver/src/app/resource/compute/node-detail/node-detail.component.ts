@@ -129,7 +129,7 @@ export class NodeDetailComponent extends ModalChildBase implements OnInit {
       (res: NodeDetails) => {
         this.refreshingLog = false;
         this.consoleLogContainer.clear();
-        for (const nodeDetail of res.originData) {
+        for (const nodeDetail of res.data) {
           this.consoleLogContainer.createEmbeddedView(this.logTmp,
             {message: nodeDetail.message, status: nodeDetail.status}
           );

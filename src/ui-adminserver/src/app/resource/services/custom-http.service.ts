@@ -1,7 +1,7 @@
 import { HttpClient, HttpHandler } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { ResponseArrayBase, ResponseBase } from '../../shared/shared.type';
+import { ResponseArrayBase, ResponseBase, ResponsePaginationBase } from '../../shared/shared.type';
 
 export class CustomHttpClient extends HttpClient {
   defaultHeaders = new Headers({
@@ -29,6 +29,13 @@ export class CustomHttpClient extends HttpClient {
                                                           param?: { [param: string]: string }): Observable<T> {
     return super.get(url, {observe: 'body', responseType: 'json', params: param})
       .pipe(map((res: object) => new arrayType(res)));
+  }
+
+  getPagination<T extends ResponsePaginationBase<ResponseBase>>(url: string,
+                                                                paginationType: new(res: object) => T,
+                                                                param?: {[param: string]: string}): Observable<T> {
+    return super.get(url, {observe: 'body', responseType: 'json', params: param})
+      .pipe(map((res: object) => new paginationType(res)));
   }
 
 }

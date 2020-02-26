@@ -1,4 +1,4 @@
-import { HttpBind, ResponseArrayBase, ResponseBase } from '../shared/shared.type';
+import { HttpBind, ResponseArrayBase, ResponseBase, ResponsePaginationBase } from '../shared/shared.type';
 
 export enum NodeActionsType {Add, Remove, Log}
 
@@ -23,7 +23,11 @@ export class NodeLog extends ResponseBase {
   @HttpBind('completed') completed: boolean;
 }
 
-export class NodeLogs extends ResponseArrayBase<NodeLog> {
+export class NodeLogs extends ResponsePaginationBase<NodeLog> {
+  ListKeyName(): string {
+    return 'log_list';
+  }
+
   CreateOneItem(res: object): NodeLog {
     return new NodeLog(res);
   }
@@ -41,8 +45,8 @@ export class NodeDetails extends ResponseArrayBase<NodeDetail> {
 }
 
 export class NodeListType extends ResponseBase {
-  @HttpBind('ip') Ip: string;
-  @HttpBind('creation_time') CreationTime: number;
+  @HttpBind('ip') ip: string;
+  @HttpBind('creation_time') creationTime: number;
 }
 
 export class NodeList extends ResponseArrayBase<NodeListType> {

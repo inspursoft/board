@@ -6,7 +6,7 @@ const AddRemoveNodeFile = "/root/ansible_k8s/addNode"
 const AddRemoveShellFile = "/root/ansible_k8s/addNode.sh"
 const AddNodeListJson = "/root/ansible_k8s/addNodeInfo/addNodeList.json"
 const AddNodeHistoryJson = "/root/ansible_k8s/addNodeInfo/addNodeHistory.json"
-const AddNodeLogPath = "/root/ansible_k8s/addNodeInfo/Logs/"
+const AddNodeLogPath = "/root/ansible_k8s/addNodeInfo/logs/"
 
 type NodeLogResponseStatus int
 type ActionType int
@@ -26,19 +26,31 @@ const (
 	ActionTypeDeleteNode ActionType = 1
 )
 
+type Pagination struct {
+	PageIndex  int   `json:"page_index"`
+	PageSize   int   `json:"page_size"`
+	TotalCount int64 `json:"total_count"`
+	PageCount  int   `json:"page_count"`
+}
+
 type AddNodePostData struct {
 	NodeIp string `json:"node_ip"`
 }
 
 type NodeLogDetailArray = []NodeLogDetail;
 
-type LogHistory struct {
+type NodeLog struct {
 	Ip           string     `json:"ip"`
 	Type         ActionType `json:"type"`
 	Success      bool       `json:"success"`
 	Pid          int        `json:"pid"`
 	CreationTime int64      `json:"creation_time"`
 	Completed    bool       `json:"completed"`
+}
+
+type PaginatedNodeLogList struct {
+	Pagination *Pagination `json:"pagination"`
+	LogList    *[]NodeLog  `json:"log_list"`
 }
 
 type NodeLogDetail struct {

@@ -1,6 +1,7 @@
 <clr-vertical-nav [clrVerticalNavCollapsible]="false">
-  <clr-vertical-nav-group>
-    <clr-icon shape="cog" clrVerticalNavIcon></clr-icon>Compute
+  <clr-vertical-nav-group [clrVerticalNavGroupExpanded]="computeNavGroupExpanded">
+    <clr-icon shape="cog" clrVerticalNavIcon></clr-icon>
+    Compute
     <clr-vertical-nav-group-children>
       <a clrVerticalNavLink
          routerLink="node-list"
@@ -14,18 +15,18 @@
       </a>
     </clr-vertical-nav-group-children>
   </clr-vertical-nav-group>
-  <clr-vertical-nav-group
+  <clr-vertical-nav-group [clrVerticalNavGroupExpanded]="storageNavGroupExpanded"
     routerLinkActive="active">
     <clr-icon shape="flame" clrVerticalNavIcon></clr-icon>
     Storage Resource
     <clr-vertical-nav-group-children>
       <a clrVerticalNavLink
-         routerLink="./fire/charmander"
+         routerLink="storage-sub1"
          routerLinkActive="active">
         Sub-label
       </a>
       <a clrVerticalNavLink
-         routerLink="./fire/charizard"
+         routerLink="storage-sub2"
          routerLinkActive="active">
         Sub-label2
       </a>
@@ -37,7 +38,7 @@
     Network Resource
     <clr-vertical-nav-group-children>
       <a clrVerticalNavLink
-         routerLink="./electric/pikachu"
+         routerLink="pikachu"
          routerLinkActive="active">
         Sub-label 4
       </a>

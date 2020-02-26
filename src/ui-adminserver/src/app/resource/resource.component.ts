@@ -1,4 +1,5 @@
-import { Component, HostBinding, OnInit, ViewContainerRef } from '@angular/core';
+import { Component, HostBinding, OnInit, ViewChild } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-resource',
@@ -8,15 +9,21 @@ import { Component, HostBinding, OnInit, ViewContainerRef } from '@angular/core'
 export class ResourceComponent implements OnInit {
   @HostBinding('style.flex-basis') flexBasis = '100%';
   @HostBinding('style.display') display = 'flex';
+  @ViewChild(RouterOutlet) outLet: RouterOutlet;
+  computeNavGroupExpanded = false;
+  storageNavGroupExpanded = false;
 
-
-  constructor(private view: ViewContainerRef) {
+  constructor() {
   }
 
   ngOnInit() {
+    this.setNavGroupsExpandStatus();
+    this.outLet.activateEvents.subscribe(() => this.setNavGroupsExpandStatus());
   }
 
-  get viewContainer(): ViewContainerRef {
-    return this.view;
+  setNavGroupsExpandStatus() {
+    const data = this.outLet.activatedRouteData;
+    this.computeNavGroupExpanded = Reflect.get(data, 'group') === 1;
+    this.storageNavGroupExpanded = Reflect.get(data, 'group') === 2;
   }
 }

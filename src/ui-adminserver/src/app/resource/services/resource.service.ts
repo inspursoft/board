@@ -3,6 +3,7 @@ import { Observable } from 'rxjs';
 import { NodeDetails, NodeList, NodeLog, NodeLogs } from '../resource.types';
 import { CustomHttpClient } from './custom-http.service';
 import { map } from "rxjs/operators";
+import { ResponsePaginationBase } from "../../shared/shared.type";
 
 @Injectable()
 export class ResourceService {
@@ -23,8 +24,9 @@ export class ResourceService {
       .pipe(map((res: object) => new NodeLog(res)));
   }
 
-  getNodeLogs(): Observable<NodeLogs> {
-    return this.http.getArrayJson('/v1/admin/node/logs', NodeLogs);
+  getNodeLogs(pageIndex, pageSize: number): Observable<NodeLogs> {
+    return this.http.getPagination('/v1/admin/node/logs', NodeLogs,
+      {page_index: pageIndex.toString(), page_size: pageSize.toString()});
   }
 
   getNodeLog(logFileName: string): Observable<NodeDetails> {

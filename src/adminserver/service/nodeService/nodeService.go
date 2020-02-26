@@ -15,6 +15,34 @@ import (
 	"time"
 )
 
+func GetPaginatedNodeLogList(fileName string, v *nodeModel.PaginatedNodeLogList) error {
+	var filePtr *os.File
+	if _, err := os.Stat(fileName); os.IsNotExist(err) {
+		return nil
+	}
+	filePtr, _ = os.Open(fileName)
+	defer filePtr.Close()
+	decoder := json.NewDecoder(filePtr)
+	var nodeLogList []nodeModel.NodeLog
+	if err := decoder.Decode(&nodeLogList); err != nil {
+		errorMsg := fmt.Sprintf("Unexpected error occurred.%s", err.Error())
+		return fmt.Errorf(errorMsg)
+	}
+	v.Pagination.TotalCount = int64(len(nodeLogList))
+	v.Pagination.PageCount = int(v.Pagination.TotalCount)/v.Pagination.PageSize + 1
+
+	var nodeBuf []nodeModel.NodeLog
+	for index, nodeLog := range nodeLogList {
+		if (index >= (v.Pagination.PageIndex-1)*v.Pagination.PageSize) &&
+			(index <= v.Pagination.PageIndex*v.Pagination.PageSize) {
+			nodeBuf = append(nodeBuf, nodeLog)
+		}
+	}
+
+	v.LogList = &nodeBuf
+	return nil
+}
+
 func GetArrayJsonByFile(fileName string, v interface{}) error {
 	var filePtr *os.File
 	if _, err := os.Stat(fileName); os.IsNotExist(err) {
@@ -50,7 +78,7 @@ func GetNodeLogDetail(fileName string, nodeLogDetail *[]nodeModel.NodeLogDetail)
 	return nil
 }
 
-func ExecuteCommand(nodeLog *nodeModel.LogHistory, yamlFile string) error {
+func ExecuteCommand(nodeLog *nodeModel.NodeLog, yamlFile string) error {
 	if _, err := os.Stat(yamlFile); err != nil {
 		return err
 	}
@@ -100,8 +128,8 @@ func GenerateHostFile(masterIp, nodeIp, registryIp string) error {
 	return nil
 }
 
-func CheckExecuting(nodeIp string) *nodeModel.LogHistory {
-	var logHistoryList []nodeModel.LogHistory
+func CheckExecuting(nodeIp string) *nodeModel.NodeLog {
+	var logHistoryList []nodeModel.NodeLog
 	err := GetArrayJsonByFile(nodeModel.AddNodeHistoryJson, &logHistoryList)
 	if err != nil {
 		return nil
@@ -114,7 +142,7 @@ func CheckExecuting(nodeIp string) *nodeModel.LogHistory {
 	return nil
 }
 
-func updateList(cmd *exec.Cmd, logHistory *nodeModel.LogHistory) {
+func updateList(cmd *exec.Cmd, logHistory *nodeModel.NodeLog) {
 	go func() {
 		cmd.Wait();
 		logHistory.Success = cmd.ProcessState.Success()
@@ -195,8 +223,8 @@ func appendNodeInfo(nodeIp string, creationTime int64) error {
 	return nil
 }
 
-func updateHistoryLog(nodeLog *nodeModel.LogHistory) error {
-	var nodeLogHistoryList []nodeModel.LogHistory
+func updateHistoryLog(nodeLog *nodeModel.NodeLog) error {
+	var nodeLogHistoryList []nodeModel.NodeLog
 	var filePtr *os.File
 	if _, err := os.Stat(nodeModel.AddNodeHistoryJson); os.IsNotExist(err) {
 		filePtr, _ = os.Create(nodeModel.AddNodeHistoryJson)

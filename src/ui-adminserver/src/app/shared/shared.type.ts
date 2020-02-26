@@ -18,6 +18,13 @@ export abstract class ResponseBase {
   }
 }
 
+export class Pagination extends ResponseBase {
+  @HttpBind('page_index') pageIndex: number;
+  @HttpBind('page_size') pageSize: number;
+  @HttpBind('total_count') totalCount: number;
+  @HttpBind('page_count') pageCount: number;
+}
+
 export abstract class RequestBase {
   abstract PostBody(): object;
 }
@@ -28,8 +35,34 @@ export function HttpBind(name: string) {
   };
 }
 
+export abstract class ResponsePaginationBase<T extends ResponseBase> {
+  list: Array<T>;
+  pagination: Pagination;
+
+  abstract ListKeyName(): string;
+
+  abstract CreateOneItem(res: object): T;
+
+  public constructor(public res: object) {
+    this.list = Array<T>();
+    this.pagination = new Pagination(this.getObject('pagination'));
+    const resList = this.getObject(this.ListKeyName());
+    if (isArray(resList)) {
+      (resList as Array<object>).forEach(item => this.list.push(this.CreateOneItem(item)));
+    }
+  }
+
+  getObject(key: string): object {
+    if (Reflect.has(this.res, key)) {
+      return Reflect.get(this.res, key);
+    } else {
+      return {};
+    }
+  }
+}
+
 export abstract class ResponseArrayBase<T extends ResponseBase> {
-  protected data: Array<T>;
+  data: Array<T>;
 
   abstract CreateOneItem(res: object): T;
 
@@ -42,23 +75,5 @@ export abstract class ResponseArrayBase<T extends ResponseBase> {
 
   get length(): number {
     return this.data.length;
-  }
-
-  get originData(): Array<T> {
-    return this.data;
-  }
-
-  [Symbol.iterator]() {
-    let index = 0;
-    const self = this;
-    return {
-      next() {
-        if (index < self.data.length) {
-          return {value: self.data[index++], done: false};
-        } else {
-          return {value: undefined, done: true};
-        }
-      }
-    };
   }
 }

@@ -1,12 +1,12 @@
-<h3 *ngIf="nodeLogs.length === 0">{{"Node.Node_Logs_Empty" | translate}}</h3>
-<clr-datagrid *ngIf="nodeLogs.length >0 " (clrDgRefresh)="retrieve()">
+<h3 *ngIf="nodeLogs.pagination.totalCount === 0">{{"Node.Node_Logs_Empty" | translate}}</h3>
+<clr-datagrid (clrDgRefresh)="retrieve()">
   <clr-dg-column>{{ 'Node.Node_Logs_Ip' | translate }}</clr-dg-column>
   <clr-dg-column>{{ 'Node.Node_Logs_Operation_Time' | translate }}</clr-dg-column>
   <clr-dg-column>{{ 'Node.Node_Logs_PID' | translate }}</clr-dg-column>
   <clr-dg-column>{{ 'Node.Node_Logs_Type' | translate }}</clr-dg-column>
   <clr-dg-column>{{ 'Node.Node_Logs_Success' | translate }}</clr-dg-column>
   <clr-dg-column>{{ 'Node.Node_Logs_Operation' | translate }}</clr-dg-column>
-  <clr-dg-row *ngFor="let nodeLog of nodeLogs">
+  <clr-dg-row *ngFor="let nodeLog of nodeLogs.list">
     <clr-dg-cell>{{nodeLog.ip}}</clr-dg-cell>
     <clr-dg-cell>{{nodeLog.creationTime * 1000 | date: "short"}}</clr-dg-cell>
     <clr-dg-cell>{{nodeLog.pid}}</clr-dg-cell>
@@ -27,7 +27,7 @@
     {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
     {{"DATAGRID.TOTAL" | translate}}{{pagination.totalItems}}{{"DATAGRID.ITEMS" | translate}}
     <clr-dg-pagination #pagination
-                       [clrDgTotalItems]="nodeLogs.length"
+                       [clrDgTotalItems]="nodeLogs.pagination.totalCount"
                        [(clrDgPage)]="curPageIndex"
                        [clrDgPageSize]="curPageSize">
     </clr-dg-pagination>

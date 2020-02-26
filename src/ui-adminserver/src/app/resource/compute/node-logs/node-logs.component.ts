@@ -1,4 +1,5 @@
-import { Component, ComponentFactoryResolver, OnInit, ViewContainerRef } from '@angular/core';
+import { Component, ComponentFactoryResolver, OnDestroy, OnInit, ViewContainerRef } from '@angular/core';
+import { interval, Subscription } from 'rxjs';
 import { NodeActionsType, NodeLog, NodeLogs } from '../../resource.types';
 import { ResourceService } from '../../services/resource.service';
 import { NodeDetailComponent } from '../node-detail/node-detail.component';
@@ -8,11 +9,11 @@ import { NodeDetailComponent } from '../node-detail/node-detail.component';
   templateUrl: './node-logs.component.html',
   styleUrls: ['./node-logs.component.css']
 })
-export class NodeLogsComponent implements OnInit {
-  loadingWIP = false;
+export class NodeLogsComponent implements OnInit, OnDestroy {
   nodeLogs: NodeLogs;
   curPageIndex = 1;
-  curPageSize = 15;
+  curPageSize = 10;
+  subscriptionUpdate: Subscription;
 
   constructor(private resourceService: ResourceService,
               private resolver: ComponentFactoryResolver,
@@ -21,16 +22,17 @@ export class NodeLogsComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.retrieve();
+    this.subscriptionUpdate = interval(3000).subscribe(() => this.retrieve());
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptionUpdate.unsubscribe();
+    delete this.subscriptionUpdate;
   }
 
   retrieve() {
-    this.loadingWIP = true;
-    this.resourceService.getNodeLogs().subscribe(
-      (res: NodeLogs) => this.nodeLogs = res,
-      () => this.loadingWIP = false,
-      () => this.loadingWIP = false
-    );
+    this.resourceService.getNodeLogs(this.curPageIndex, this.curPageSize)
+      .subscribe((res: NodeLogs) => this.nodeLogs = res);
   }
 
   deleteLog(log: NodeLog) {

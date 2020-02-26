@@ -25,8 +25,9 @@ import { NodeDetailComponent } from './compute/node-detail/node-detail.component
       {path: '', redirectTo: 'node-list', pathMatch: 'full'},
       {
         path: '', component: ResourceComponent, children: [
-          {path: 'node-list', component: NodeListComponent},
-          {path: 'node-logs', component: NodeLogsComponent}
+          {path: 'node-list', component: NodeListComponent, data: {group: 1}},
+          {path: 'node-logs', component: NodeLogsComponent, data: {group: 1}},
+          {path: 'storage-sub1', component: NodeLogsComponent, data: {group: 2}}
         ]
       }]),
     TranslateModule,

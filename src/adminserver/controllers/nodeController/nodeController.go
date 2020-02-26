@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 )
 
@@ -40,21 +41,24 @@ func (controller *Controller) GetNodeListAction() {
 	controller.ServeJSON()
 }
 
-// @Title Get node log history
-// @Description Get node log history
-// @Success 200 {object} []nodeModel.NodeLogDetail  success
+// @Title Get node log list
+// @Description Get node log list
+// @Success 200 {object} nodeModel.PaginatedNodeLogList  success
 // @Failure 400 bad request
 // @Failure 500 Internal Server Error
 // @router /logs [get]
-func (controller *Controller) GetNodeLogHistory() {
-	var logHistoryList []nodeModel.LogHistory
-	err := nodeService.GetArrayJsonByFile(nodeModel.AddNodeHistoryJson, &logHistoryList)
+func (controller *Controller) GetNodeLogList() {
+	var paginatedNodeLogList = nodeModel.PaginatedNodeLogList{}
+	pageIndex, _ := strconv.Atoi(controller.Ctx.Input.Query("page_index"))
+	pageSize, _ := strconv.Atoi(controller.Ctx.Input.Query("page_size"))
+	paginatedNodeLogList.Pagination = &nodeModel.Pagination{PageIndex: pageIndex, PageSize: pageSize}
+	err := nodeService.GetPaginatedNodeLogList(nodeModel.AddNodeHistoryJson, &paginatedNodeLogList)
 	if err != nil {
 		errorMsg := fmt.Sprintf("Bad request.%s", err.Error())
 		controller.CustomAbort(http.StatusBadRequest, errorMsg)
 		return
 	}
-	controller.Data["json"] = logHistoryList
+	controller.Data["json"] = paginatedNodeLogList
 	controller.ServeJSON()
 }
 
@@ -126,7 +130,7 @@ func (controller *Controller) AddRemoveNode(nodeIp string, actionType nodeModel.
 		return
 	}
 
-	logFileJson := nodeModel.LogHistory{
+	logFileJson := nodeModel.NodeLog{
 		Ip: nodeIp, Success: false, Pid: 0, CreationTime: time.Now().Unix(), Type: actionType}
 	if err := nodeService.ExecuteCommand(&logFileJson, yamlFile); err != nil {
 		controller.CustomAbort(http.StatusBadRequest, err.Error())
