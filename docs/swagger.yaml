@@ -415,46 +415,7 @@ paths:
         404:
           description: User ID does not exist.
         500:
-          description: Unexpected internal errors.
-  /v1/users/{user_id}/projectadmin:
-    put:
-      summary: Update a registered user to change to be an project administrator of Board.
-      description: |
-        This endpoint let a registered user change to be an project administrator
-        of Board.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: user_id
-          in: path
-          type: integer
-          format: int32
-          required: true
-          description: Registered user ID
-        - name: user_project_admin
-          in: body
-          description:  Toggle a user to project admin or not.
-          required: true
-          schema:
-            $ref: '#/definitions/UserProjectAdminUpdate'
-      tags:
-        - Products
-      responses:
-        200:
-          description: Updated user's project admin role successfully.
-        400:
-          description: Invalid user ID.
-        401:
-          description: User need to log in first.
-        403:
-          description: User does not have permission of admin role.
-        404:
-          description: User ID does not exist.
-        500:
-          description: Unexpected internal errors.          
+          description: Unexpected internal errors.      
   /v1/users/{user_id}/password:
     put:
       summary: Change the password on a user that already exists.
@@ -973,42 +934,6 @@ paths:
           description: User need to log in first.
         500:
           description: Internal errors.
-    post:
-      summary: Return the results of rolling update service.
-      description: 
-        This endpoint returns the results of rolling update service.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: project_name 
-          in: query
-          description: Project name for filtering results.
-          required: false
-          type: string
-        - name: service_name 
-          in: query
-          description: Service name for filtering results.
-          required: false
-          type: string
-        - name: image_list 
-          in: body
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/ImageList'
-          description: Updates of imagelist data.
-      tags:
-        - Products
-      responses:
-        200:
-          description: Return all matched services.
-        401:
-          description: User need to log in first.
-        500:
-          description: Internal errors.
     patch:
       summary: Rolling update the images of the service.
       description: 
@@ -1207,33 +1132,6 @@ paths:
         500:
           description: Unexpected internal errors.
   /v1/services/{service_id}:
-    get:
-      summary: Return specific service_id detail infomation.
-      description: |
-        This endpoint returns specific service information by service_id ID.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: service_id
-          in: path
-          description: Service ID for filtering results.
-          required: true
-          type: integer
-          format: int32
-      tags:
-        - Products
-      responses:
-        200:
-          description: Return matched service information.
-          schema:
-            $ref: '#/definitions/ServiceDetail'
-        401:
-          description: User need to log in first.
-        500:
-          description: Internal errors.  
     delete:
       summary: Delete the specific service by service_id.
       description: |
@@ -1519,102 +1417,6 @@ paths:
           description: User need to log in first.
         500:
           description: Internal errors.       
-  /v1/services/{service_id}/serviceconfig:
-    get:  
-      summary: Get service configuration data.
-      description: |
-        This endpoint is aimed to get service configuration data.
-      parameters:
-        - name: token
-          in: query
-          type: string
-          required: true
-          description: Current available token.
-        - name: service_id
-          in: path
-          type: integer
-          format: int32
-          required: true
-          description: Selected service ID.
-      tags:
-        - Products
-      responses:
-        200:
-          description: Return service config data.
-          schema:
-            $ref: '#/definitions/ServiceConfig2'
-        401:
-          description: User need to log in first.
-        402:
-          description: Invalid configuration phase.
-        403:
-          description: Invalid service ID.
-        500:
-          description: Unexpected internal errors.
-    put:  
-      summary: Update service configuration data.
-      description: |
-        This endpoint is aimed to update service configuration data.
-      parameters:
-        - name: token
-          in: query
-          type: string
-          required: true
-          description: Current available token.
-        - name: service_id
-          in: path
-          type: integer
-          format: int32
-          required: true
-          description: Selected service ID.
-        - name: serviceconfig
-          in: body
-          required: true 
-          schema:
-            $ref: '#/definitions/ServiceConfig2'
-          description: Updates of ServiceConfig data.
-      tags:
-        - Products
-      responses:
-        200:
-          description: Updated service config successfully.
-        401:
-          description: User need to log in first.
-        402:
-          description: Invalid configuration phase.
-        403:
-          description: Invalid service ID.
-        500:
-          description: Unexpected internal errors.
-    delete:
-      summary: Delete service configuration data.
-      description: |
-        This endpoint is aimed to delete service configuration data.
-      parameters:
-        - name: token
-          in: query
-          type: string
-          required: true
-          description: Current available token.
-        - name: service_id
-          in: path
-          type: integer
-          format: int32
-          required: true
-          description: Selected service ID.  
-      tags:
-        - Products
-      responses:
-        200:
-          description: Delete service config successfully.
-        401:
-          description: User need to log in first.
-        402:
-          description: Invalid configuration phase.
-        403:
-          description: Invalid service ID.
-        500:
-          description: Unexpected internal errors.
   /v1/services/{service_id}/test:  
     post:
       summary: Setup a test by this service configuration.
@@ -1651,35 +1453,6 @@ paths:
           description: Invalid service ID.
         500:
           description: Unexpected internal errors.
-    delete: 
-      summary: Cleanup the test resource.
-      description: |
-        This endpoint is aimed to cleanup the test environment.
-      parameters:
-        - name: token
-          in: query
-          type: string
-          required: true
-          description: Current available token.
-        - name: service_id
-          in: path
-          type: integer
-          format: int32
-          required: true
-          description: Selected service ID.
-      tags:
-        - Products
-      responses:
-        200:
-          description: Cleanup the test resource successfully.
-        401:
-          description: User need to log in first.
-        402:
-          description: Invalid configuration phase.
-        403:
-          description: Invalid service ID.
-        500:
-          description: Unexpected internal errors.      
   /v1/services/config:
     post:
       summary: Deploy service by this service configuration.
@@ -1819,43 +1592,6 @@ paths:
         500:
           description: Unexpected internal errors.
   /v1/services/{service_id}/deployment:
-    post:
-      summary: Deploy service by this service configuration.
-      description: |
-        This endpoint is aimed to deploy service by this service configuration.
-      parameters:
-        - name: token
-          in: query
-          type: string
-          required: true
-          description: Current available token.
-        - name: service_id
-          in: path
-          type: integer
-          format: int32
-          required: true
-          description: Selected service ID.
-        - name: serviceconfig
-          in: body
-          required: true 
-          schema:
-            $ref: '#/definitions/ServiceConfig2'
-          description: Updates of ServiceConfig2 data.
-      tags:
-        - Products
-      responses:
-        200:
-          description: Deploy service successfully, return serive brief.
-          schema:
-            $ref: '#/definitions/ServiceBrief'
-        401:
-          description: User need to log in first.
-        402:
-          description: Invalid configuration phase.
-        403:
-          description: Invalid service ID.
-        500:
-          description: Unexpected internal errors.
     delete:
       summary: Delete service deployment configuration data.
       description: |
@@ -2200,105 +1936,7 @@ paths:
         401:
           description: User need to log in first.
         500:
-          description: Unexpected internal errors.          
-    get:
-      summary: Get this autoscale hpa current details.
-      description: |
-        This endpoint is aimed to get this autoscale hpa current details.
-      parameters:
-        - name: token
-          in: query
-          type: string
-          required: true
-          description: Current available token.
-        - name: service_id
-          in: path
-          type: integer
-          format: int32
-          required: true
-          description: Selected service ID.      
-        - name: hpa_id
-          in: path
-          type: integer
-          format: int32
-          required: true
-          description: Selected hpa ID.              
-      tags:
-        - Products
-      responses:
-        200:
-          description: Return the hpa current detailes successfully.
-          schema:
-            $ref: '#/definitions/HPADetail'          
-        401:
-          description: User need to log in first.
-        403:
-          description: Invalid service ID.
-        500:
-          description: Unexpected internal errors.                     
-  /v1/services/{service_id}/locate:
-    get:  
-      summary: Get service deployment locate info.
-      description: |
-        This endpoint is aimed to get service deployment locate info.
-      parameters:
-        - name: token
-          in: query
-          type: string
-          required: true
-          description: Current available token.
-        - name: service_id
-          in: path
-          type: integer
-          format: int32
-          required: true
-          description: Selected service ID.
-      tags:
-        - Products
-      responses:
-        200:
-          description: Return deployment locate status.
-          schema:
-            $ref: '#/definitions/ServiceLocate'
-        401:
-          description: User need to log in first.
-        403:
-          description: Invalid service ID.
-        500:
-          description: Unexpected internal errors.    
-    put:  
-      summary: Manually update the service locate.
-      description: |
-        This endpoint is aimed to update and locate the service manually.
-      parameters:
-        - name: token
-          in: query
-          type: string
-          required: true
-          description: Current available token.
-        - name: service_id
-          in: path
-          type: integer
-          format: int32
-          required: true
-          description: Selected service ID.
-        - name: service_locate
-          in: body
-          required: true 
-          schema:
-            $ref: '#/definitions/ServiceLocate'
-          description: New service node location to update manually.
-      tags:
-        - Products
-      responses:
-        200:
-          description: Manually locate this service successfully.
-        401:
-          description: User need to log in first.
-        403:
-          description: Invalid service ID.
-        500:
-          description: Unexpected internal errors. 
+          description: Unexpected internal errors.                              
   /v1/services/{service_id}/publicity:
     put:  
       summary: Update service publicity for a selected service.
@@ -2386,33 +2024,6 @@ paths:
           description: User need to log in first.
         500:
           description: Unexpected internal errors.                   
-  /v1/services/ingress:
-    get:  
-      summary: Get the ingress module status.
-      description: |
-        This endpoint is aimed to get the ingress module status.
-      parameters:
-        - name: token
-          in: query
-          type: string
-          required: true
-          description: Current available token.
-        - name: project_name 
-          in: query
-          description: project name for service.
-          required: true
-          type: string
-      tags:
-        - Products
-      responses:
-        200:
-          description: Import services successfully.
-        401:
-          description: User need to log in first.
-        403:
-          description: Invalid project name.
-        500:
-          description: Unexpected internal errors.
   /v1/pvolumes:
     get:
       summary: Return all Persistent Volumes in Board.
@@ -2550,40 +2161,7 @@ paths:
         404:
           description: Node does not exist.
         500:
-          description: Internal errors.         
-    put:
-      summary: Update Persistent Volume properties.
-      description: |
-       This endpoint is to update Persistent Volume.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: pv_id
-          in: path
-          type: integer
-          format: int32
-          required: true
-          description: The Persistent Volume ID for node info changing.
-        - name: pvolume
-          in: body
-          description: The Persistent Volume properties to be changed.
-          required: true
-          schema:
-            $ref: '#/definitions/PersistentVolume' 
-      tags:
-        - Products
-      responses:
-        200:
-          description: Updated PersistentVolume properties successfully.
-        400:
-          description: Invalid node ID.
-        403:
-          description: User need to log in as admin.
-        500:
-          description: Unexpected internal errors.     
+          description: Internal errors.              
   /v1/pvclaims:
     get:
       summary: Return all Persistent Volume Claims in Board.
@@ -2722,39 +2300,6 @@ paths:
           description: Node does not exist.
         500:
           description: Internal errors.         
-    put:
-      summary: Update Persistent Volume Claim properties.
-      description: |
-       This endpoint is to update Persistent Volume CLaim.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: pvc_id
-          in: path
-          type: integer
-          format: int32
-          required: true
-          description: The Persistent Volume Claim ID for node info changing.
-        - name: pvclaim
-          in: body
-          description: The Persistent Volume Claim properties to be changed.
-          required: true
-          schema:
-            $ref: '#/definitions/PersistentVolumeClaim' 
-      tags:
-        - Products
-      responses:
-        200:
-          description: Updated PersistentVolume Claim properties successfully.
-        400:
-          description: Invalid pvc ID.
-        403:
-          description: User need to log in as admin.
-        500:
-          description: Unexpected internal errors.  
   /v1/pvclaims/existing:   
     get:
       summary: Check the pvc name existing in this project.
@@ -3045,133 +2590,7 @@ paths:
         409:
           description: Node name already exists.
         500:
-          description: Internal errors.
-  /v1/node/{node_id}:
-    get:
-      summary: Return a specific node detail infomation.
-      description: |
-        This endpoint returns a specific node's information by node ID.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: node_id
-          in: path
-          description: Node ID for filtering results.
-          required: true
-          type: integer
-          format: int32
-      tags:
-        - Products
-      responses:
-        200:
-          description: Return matched node information.
-          schema:
-            $ref: '#/definitions/NodeDetail'
-        400:
-          description: Bad Request.
-        401:
-          description: User need to log in as admin.
-        500:
-          description: Internal errors.
-    delete:
-      summary: Delete a node by node ID
-      description: |
-        This endpoint is aimed to remove a node by node ID.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: node_id
-          in: path
-          description: Node will be removed by node_id.
-          required: true
-          type: integer
-          format: int32
-      tags:
-        - Products
-      responses:
-        200:
-          description: Node is deleted successfully.
-        400:
-          description: Invalid node id.
-        403:
-          description: User need to log in as admin.
-        404:
-          description: Node does not exist.
-        500:
-          description: Internal errors.
-    put:
-      summary: Update node properties.
-      description: |
-       This endpoint is to update node info.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: node_id
-          in: path
-          type: integer
-          format: int32
-          required: true
-          description: The node ID for node info changing.
-        - name: node_profile
-          in: body
-          description: The node properties to be changed.
-          required: true
-          schema:
-            $ref: '#/definitions/NodePropertyUpdate' 
-      tags:
-        - Products
-      responses:
-        200:
-          description: Updated node properties successfully.
-        400:
-          description: Invalid node ID.
-        403:
-          description: User need to log in as admin.
-        500:
-          description: Unexpected internal errors.
-  /v1/node/{node_id}/runningstatus:
-    put:
-      summary: Start or stop the node
-      description: |
-        This endpoint is aimed to toggle a node's running status stop/start.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: node_id
-          in: path
-          type: integer
-          format: int32
-          required: true
-          description: Node ID.
-        - name: node_runningstatus
-          in: body
-          required: true
-          schema:
-            $ref: '#/definitions/NodeRunningstatusUpdate'
-          description: The new running status of the node.         
-      tags:
-        - Products
-      responses:
-        200:
-          description: Updated running status successfully.
-        400:
-          description: Invalid running status request.
-        401:
-          description: User need to log in as admin.
-        500:
-          description: Unexpected internal errors.  
+          description: Internal errors. 
   /v1/node/{node_id}/group:
     get:
       summary: Return the gorups that this node belongs to.
@@ -3502,34 +2921,7 @@ paths:
         400:
           description: Bad Request
         500:
-          description: Internal errors.
-    post:
-      summary: Create a new image
-      description: |
-        This endpoint is to create a new image with image_tag.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: image_config
-          in: body
-          required: true
-          schema:
-            $ref: '#/definitions/ImageConfig'
-          description: The image configuration struct for the new image.       
-      tags:
-        - Products
-      responses:
-        200:
-          description: Create Image configuration info successfully.
-        400:
-          description: Bad Request.
-        401:
-          description: User need to log in as admin.
-        500:
-          description: Internal errors.   
+          description: Internal errors. 
     delete:
       summary: Delete an image
       description: |
@@ -3693,74 +3085,6 @@ paths:
           description: User need to log in as admin.
         500:
           description: Internal errors.  
-  /v1/images/{image_name}/push:   
-    post:
-      summary: Upload the new image to board registry
-      description: |
-        This endpoint is to upload the new image to board registry.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: image_name
-          in: path
-          description: image name to specify an image.
-          required: true
-          type: string
-        - name: image_config
-          in: body
-          required: true
-          schema:
-            $ref: '#/definitions/ImageConfig'
-          description: The image configuration struct for the new image.       
-      tags:
-        - Products
-      responses:
-        200:
-          description: Upload the image to board registry successfully.
-          schema:
-            $ref: '#/definitions/ImageDetail'
-        400:
-          description: Bad Request.
-        401:
-          description: User need to log in as admin.
-        500:
-          description: Internal errors. 
-  /v1/images/{image_name}/fileupload:   
-    post:
-      summary: Upload the external archive to image building server
-      description: |
-        This endpoint is to upload the external archive to image building server.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: image_name
-          in: path
-          description: image name to specify an image.
-          required: true
-          type: string
-        - name: image_externalfile
-          in: body
-          required: true
-          schema:
-            $ref: '#/definitions/ImageExternalfile'
-          description: The external archive to upload. 
-      tags:
-        - Products
-      responses:
-        200:
-          description: Upload the external archive to image building server successfully.
-        400:
-          description: Bad Request.
-        401:
-          description: User need to log in as admin.
-        500:
-          description: Internal errors. 
   /v1/images/dockerfile:
     get:
       summary: Return the dockerfile of this image.
@@ -3981,110 +3305,7 @@ paths:
         409:
           description: The image tag existing.          
         500:
-          description: Internal errors.
-  /v1/profile:
-    get:
-      summary: Return the Board system profile information
-      description: |
-        This endpoint returns the Board system profile information.
-      tags:
-        - Products
-      responses:
-        200:
-          description: Return profile information.
-          schema:
-            $ref: '#/definitions/ProfileDetail'
-        400:
-          description: Bad Request
-        500:
-          description: Internal errors.
-  /v1/system:
-    get:
-      summary: Return the admin and system management info
-      description: |
-        This endpoint returns admin and system management info.
-      tags:
-        - Products
-      responses:
-        200:
-          description: Return admin and system management info.
-          schema:
-            $ref: '#/definitions/System'
-        400:
-          description: Bad Request.
-        401:
-          description: User need to log in as admin.
-        500:
-          description: Internal errors.    
-  /v1/system/host_setting:
-    put:
-      summary: Update host info
-      description: |
-        This endpoint is to update host info.
-      parameters:
-        - name: host_setting
-          in: body
-          required: true
-          schema:
-            $ref: '#/definitions/HostInfo'
-          description: The host's information to be updated.         
-      tags:
-        - Products
-      responses:
-        200:
-          description: Updated host info successfully.
-        400:
-          description: Bad Request.
-        401:
-          description: User need to log in as admin.
-        500:
-          description: Unexpected internal errors.     
-  /v1/system/admin_setting:
-    put:
-      summary: Update admin account info
-      description: |
-        This endpoint is to update the admin account info.
-      parameters:
-        - name: admin_setting
-          in: body
-          required: true
-          schema:
-            $ref: '#/definitions/AdminAccount'
-          description: The new admin account info.         
-      tags:
-        - Products
-      responses:
-        200:
-          description: Updated admin account info successfully.
-        400:
-          description: Bad Request.
-        401:
-          description: User need to log in as admin.
-        500:
-          description: Unexpected internal errors.     
-  /v1/system/email_setting:
-    put:
-      summary: Update email server info
-      description: |
-        This endpoint is to update the email server info.
-      parameters:
-        - name: email_setting
-          in: body
-          required: true
-          schema:
-            $ref: '#/definitions/EmailServer'
-          description: The new email server info.         
-      tags:
-        - Products
-      responses:
-        200:
-          description: Updated email server info successfully.
-        400:
-          description: Bad Request.
-        401:
-          description: User need to log in as admin.
-        500:
-          description: Unexpected internal errors. 
+          description: Internal errors.     
   /v1/dashboard/service/:
     post:
       summary: Return the status logs of this service
@@ -4152,37 +3373,6 @@ paths:
           description: Bad Request.
         401:
           description: Invalid node name.
-        500:
-          description: Internal errors.
-  /v1/dashboard/storage/{storage_id}:
-    get:
-      summary: Return the status logs of this storage
-      description: |
-        This endpoint returns the status logs of this storage.
-      parameters:
-        - name: storage_id
-          in: path
-          description: The integer ID of this storage, 'null' is for the sum of all storages.
-          required: true
-          type: integer
-          format: int32
-        - name: storage_timestruct
-          in: body
-          required: true
-          schema:
-            $ref: '#/definitions/TimeStruct'
-          description: The time struct for status logs of this storage.    
-      tags:
-        - Products
-      responses:
-        200:
-          description: Return the status logs of this storage.
-          schema:
-            $ref: '#/definitions/DashboardStorage'
-        400:
-          description: Bad Request.
-        401:
-          description: Invalid storage name.
         500:
           description: Internal errors.
   /v1/files/upload:
@@ -4389,85 +3579,6 @@ paths:
           description: Need to login first.
         500:
           description: Internal errors.
-  /v1/yamlconfig:
-    post:
-      summary: Create an object by posting a yaml config.
-      description: |
-        This endpoint is used to create an object by posting a yaml config.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: yaml_path
-          in: query
-          type: string
-          required: true
-          description: Specify the yaml config file path.
-      tags:
-        - Products
-      responses:
-        200:
-          description: Successful create an object by posting a yaml config.
-        400:
-          description: Bad request.
-        401:
-          description: Need to admin login first.
-        500:
-          description: Internal errors.
-    put:
-      summary: Change an object by applying a yaml config.
-      description: |
-        This endpoint is change an object by applying a yaml config.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: yaml_path
-          in: query
-          type: string
-          required: true
-          description: Specify the yaml config file path.
-      tags:
-        - Products
-      responses:
-        200:
-          description: Successful changed an object by applying a yaml config.
-        400:
-          description: Bad request.
-        401:
-          description: Need to admin login first.
-        500:
-          description: Internal errors.
-    delete:
-      summary: Delete an object by a yaml config.
-      description: |
-        This endpoint is delete an object by a yaml config.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: yaml_path
-          in: query
-          type: string
-          required: true
-          description: Specify the yaml config file path.
-      tags:
-        - Products
-      responses:
-        200:
-          description: Successful delete an object by a yaml config.
-        400:
-          description: Bad request.
-        401:
-          description: Need to admin login first.
-        500:
-          description: Internal errors.
   /v1/email/ping:
     post:
       summary: Test connection and authentication with email server.
@@ -4607,102 +3718,6 @@ paths:
           description: Unsatisfied with constraints of the operation creation.
         401:
           description: User need to log in first.
-        500:
-          description: Unexpected internal errors.
-  /v1/operations/{operation_id}:
-    get:
-      summary: Return specific operation detail infomation.
-      description: |
-        This endpoint returns specific operation information by operation ID.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: operation_id
-          in: path
-          description: Operation ID for filtering results.
-          required: true
-          type: integer
-          format: int32
-      tags:
-        - Products
-      responses:
-        200:
-          description: Return matched operation information.
-          schema:
-            $ref: '#/definitions/Operation'
-        401:
-          description: User need to log in first.
-        500:
-          description: Internal errors.  
-    delete:
-      summary: Delete operation record by operation ID
-      description: |
-        This endpoint is aimed to delete operation by operation ID.
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: operation_id
-          in: path
-          description: Operation ID of operation which will be deleted.
-          required: true
-          type: integer
-          format: int32
-      tags:
-        - Products
-      responses:
-        200:
-          description: Operation is deleted successfully.
-        400:
-          description: Invalid operation id.
-        403:
-          description: User need to log in first.
-        404:
-          description: Operation does not exist.
-        412:
-          description: Operation contains policies, can not be deleted.
-        500:
-          description: Internal errors.
-    put:
-      summary: Update an operation record.
-      description: |
-        This endpoint is to update an operation record for audit. 
-      parameters:
-        - name: token
-          in: header
-          type: string
-          required: true
-          description: Current available token.
-        - name: operation_id
-          in: path
-          description: Operation ID of operation which will be deleted.
-          required: true
-          type: integer
-          format: int32
-        - name: operation
-          in: body
-          description: New operation content to be updated.
-          required: true
-          schema:
-            $ref: '#/definitions/Operation'
-      tags:
-        - Products
-      responses:
-        200:
-          description: Updated operation successfully.
-        400:
-          description: Illegal format of provided ID value.
-        401:
-          description: User need to log in first.
-        403:
-          description: User does not have permission to the operation.
-        404:
-          description: Operation ID does not exist.
         500:
           description: Unexpected internal errors.
   /v1/helm/repositories:
