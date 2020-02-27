@@ -1,24 +1,36 @@
 package repositories
 
 import (
-	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
+
+	"git/inspursoft/board/src/apiserver/service"
+	c "git/inspursoft/board/src/common/controller"
 )
 
 // Operations about Helm repositories
 type CommonController struct {
-	beego.Controller
+	c.BaseController
 }
 
 // @Title List all Helm repositories
 // @Description List all for Helm repositories
 // @Param	search	query	string	false	"Query item for Helm repository"
-// @Success 200 Successful listed.
+// @Success 200 {array} []vm.HelmRepository Successful listed.
 // @Failure 400 Bad requests.
 // @Failure 401 Unauthorized.
 // @Failure 403 Forbidden.
 // @router / [get]
-func (c *CommonController) List() {
+func (cc *CommonController) List() {
+	logs.Info("list all helm repos")
 
+	// list the repos from storage
+	repos, err := service.ListHelmRepositories()
+	if err != nil {
+		cc.InternalError(err)
+		return
+	}
+
+	cc.RenderJSON(repos)
 }
 
 // @Title Get Helm repository detail
