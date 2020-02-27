@@ -21,7 +21,6 @@ COPY make/dev/container/jenkins/init.sh /usr/share/jenkins/init.sh
 
 ENV JENKINS_UC_DOWNLOAD=https://mirrors.tuna.tsinghua.edu.cn/jenkins
 
-
 RUN  sed -i 's/^root\:x\:0\:/root\:x\:0\:root\,jenkins/' /etc/group \
       && echo "jenkins ALL=NOPASSWD: ALL" >> /etc/sudoers \
       && chmod u+x /usr/share/jenkins/pythonenv.sh \
