@@ -17,7 +17,7 @@
 #
 DEVFLAG=release
 
-# ARCH default is x86_64, also support mips
+# ARCH default is x86_64, also support mips, arm64v8
 ARCH=
 
 ifeq ($(DEVFLAG), release) 
@@ -34,6 +34,10 @@ endif
 
 ifeq ($(ARCH), mips)
 	GOBUILDIMAGE=inspursoft/golang-mips:1.12.9
+endif
+
+ifeq ($(ARCH), arm64v8)
+        GOBUILDIMAGE=arm64v8/golang:1.13.5-alpine
 endif
 
 # Base shell parameters
@@ -219,7 +223,8 @@ package: prepare_composefile
 
 	@rm -rf $(PACKAGEPATH)
 
-packageonestep: compile compile_ui build package
+#packageonestep: compile compile_ui build package
+packageonestep: compile build package
 
 .PHONY: cleanall
 cleanall: cleanbinary cleanimage

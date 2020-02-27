@@ -324,6 +324,9 @@ render(os.path.join(templates_dir, "db", "env"),
 if arch_type == "mips":
 	render(os.path.join(templates_dir, "proxy", "nginx.http.mips.conf"),
 		proxy_conf)
+elif arch_type == "arm64v8":
+	render(os.path.join(templates_dir, "proxy", "nginx.http.arm64v8.conf"),
+		proxy_conf)
 else:
 	render(os.path.join(templates_dir, "proxy", "nginx.http.conf"),
 		proxy_conf)
