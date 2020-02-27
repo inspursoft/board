@@ -1,52 +1,32 @@
 <clr-vertical-nav [clrVerticalNavCollapsible]="false">
   <clr-vertical-nav-group [clrVerticalNavGroupExpanded]="computeNavGroupExpanded">
     <clr-icon shape="cog" clrVerticalNavIcon></clr-icon>
-    Compute
+    {{"Resource.Nav_Compute" | translate}}
     <clr-vertical-nav-group-children>
       <a clrVerticalNavLink
          routerLink="node-list"
          routerLinkActive="active">
-        Node list
+        {{"Resource.Nav_Node_List" | translate}}
       </a>
       <a clrVerticalNavLink
          routerLink="node-logs"
          routerLinkActive="active">
-        Node operation logs
+        {{"Resource.Nav_Node_Log_List" | translate}}
       </a>
     </clr-vertical-nav-group-children>
   </clr-vertical-nav-group>
-  <clr-vertical-nav-group [clrVerticalNavGroupExpanded]="storageNavGroupExpanded"
-    routerLinkActive="active">
+  <clr-vertical-nav-group [clrVerticalNavGroupExpanded]="storageNavGroupExpanded">
     <clr-icon shape="flame" clrVerticalNavIcon></clr-icon>
-    Storage Resource
+    {{"Resource.Nav_Storage" | translate}}
     <clr-vertical-nav-group-children>
-      <a clrVerticalNavLink
-         routerLink="storage-sub1"
-         routerLinkActive="active">
-        Sub-label
-      </a>
-      <a clrVerticalNavLink
-         routerLink="storage-sub2"
-         routerLinkActive="active">
-        Sub-label2
-      </a>
+
     </clr-vertical-nav-group-children>
   </clr-vertical-nav-group>
-  <clr-vertical-nav-group
-    routerLinkActive="active">
+  <clr-vertical-nav-group>
     <clr-icon shape="bolt" clrVerticalNavIcon></clr-icon>
-    Network Resource
+    {{"Resource.Nav_Network" | translate}}
     <clr-vertical-nav-group-children>
-      <a clrVerticalNavLink
-         routerLink="pikachu"
-         routerLinkActive="active">
-        Sub-label 4
-      </a>
-      <a clrVerticalNavLink
-         routerLink="./electric/raichu"
-         routerLinkActive="active">
-        Sub-label 5
-      </a>
+
     </clr-vertical-nav-group-children>
   </clr-vertical-nav-group>
 </clr-vertical-nav>

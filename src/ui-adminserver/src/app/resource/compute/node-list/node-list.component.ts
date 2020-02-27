@@ -1,10 +1,11 @@
 import { Component, ComponentFactoryResolver, OnDestroy, OnInit, ViewContainerRef } from '@angular/core';
+import { interval, Subscription } from 'rxjs';
+import { TranslateService } from '@ngx-translate/core';
 import { NodeActionsType, NodeList, NodeListType, NodeLog } from '../../resource.types';
 import { ResourceService } from '../../services/resource.service';
 import { MessageService } from '../../../shared/message/message.service';
 import { Message, ReturnStatus } from '../../../shared/message/message.types';
 import { NodeDetailComponent } from '../node-detail/node-detail.component';
-import { interval, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-node-list',
@@ -18,6 +19,7 @@ export class NodeListComponent implements OnInit, OnDestroy {
   constructor(private resourceService: ResourceService,
               private messageService: MessageService,
               private view: ViewContainerRef,
+              private translateService: TranslateService,
               private resolver: ComponentFactoryResolver) {
     this.nodeLists = new NodeList({});
   }
@@ -42,15 +44,20 @@ export class NodeListComponent implements OnInit, OnDestroy {
   }
 
   deleteNode(nodeIp: string) {
-    this.messageService.showDeleteDialog('确定要删除该节点么？', '删除节点').subscribe(
-      (res: Message) => {
-        if (res.returnStatus === ReturnStatus.rsConfirm) {
-          const logInfo = new NodeLog({});
-          logInfo.ip = nodeIp;
-          this.createNodeDetail(logInfo, NodeActionsType.Remove);
-        }
-      }
-    );
+    this.translateService.get(['Node.Node_List_Remove_Ask', 'Node.Node_List_Remove_Node'])
+      .subscribe(translate => {
+        const ask = Reflect.get(translate, 'Node.Node_List_Remove_Ask');
+        const title = Reflect.get(translate, 'Node.Node_List_Remove_Node');
+        this.messageService.showDeleteDialog(ask, title).subscribe(
+          (res: Message) => {
+            if (res.returnStatus === ReturnStatus.rsConfirm) {
+              const logInfo = new NodeLog({});
+              logInfo.ip = nodeIp;
+              this.createNodeDetail(logInfo, NodeActionsType.Remove);
+            }
+          }
+        );
+      });
   }
 
   showLog(node: NodeListType) {

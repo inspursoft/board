@@ -57,9 +57,18 @@ export const LANG_ZH_CN = {
   },
   'DASHBOARD': {
   },
+  Resource: {
+    Nav_Compute: '计算资源',
+    Nav_Storage: '存储资源',
+    Nav_Network: '网络资源',
+    Nav_Node_List: '节点列表',
+    Nav_Node_Log_List: '节点操作日志列表',
+  },
   Node: {
     Node_List_Add: '添加节点',
     Node_List_Empty: '节点列表为空',
+    Node_List_Remove_Node: '移除节点',
+    Node_List_Remove_Ask: '确定要移除节点么？',
     Node_Logs_Ip: 'IP',
     Node_Logs_Operation_Time: '操作时间',
     Node_Logs_PID: 'PID',

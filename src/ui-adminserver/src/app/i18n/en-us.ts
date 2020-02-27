@@ -56,9 +56,18 @@ export const LANG_EN_US = {
     'LANG_ZH_CN': '中文',
   },
   'DASHBOARD': {},
+  Resource: {
+    Nav_Compute: 'Compute resource',
+    Nav_Storage: 'Storage resource',
+    Nav_Network: 'Network resource',
+    Nav_Node_List: 'Node list',
+    Nav_Node_Log_List: 'Node operating log list',
+  },
   Node: {
     Node_List_Add: 'Add node',
     Node_List_Empty: 'Node list is empty',
+    Node_List_Remove_Node: 'Remove node',
+    Node_List_Remove_Ask: 'Are you sure to remove the node?',
     Node_Logs_Ip: 'IP',
     Node_Logs_Operation_Time: 'Operation time',
     Node_Logs_PID: 'PID',
