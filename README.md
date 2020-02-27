@@ -18,6 +18,8 @@ The "Board" product is a container service platform based on docker + kubernetes
 * **Monitoring Dashboard**: Monitoring Dashboard collect logs from k8s master and nodes. It cover the machine indicators, such as cpu, memory usage, file system and k8s services runtime.
 * **Administrator Options**: Administrator options provide user management which can add, change or remove user by an admin user.
 
+<img alt="Board Overview" src="docs/img/Overview_20200101_en.png">
+
 ## Install
 
 **System requirements:**
@@ -215,10 +217,30 @@ For information on how to use BOARD, please take a look at [User Guide](docs/use
 ...(Coming soon.)
 
 ## License
-...(Coming soon.)
+Copyright (c) <2020> <inspur cloud service group>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Board"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 ## Partners
-...(Coming soon.)
+Shanxi Provincial Department of Land and Resources
+China Mobile Communications Group Co.,Ltd
+etc.
 
 ## Users
 ...(Coming soon.)
