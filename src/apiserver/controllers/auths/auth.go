@@ -2,10 +2,10 @@ package auths
 
 import (
 	"fmt"
-	"git/inspursoft/board/src/apiserver/models/auths/vm"
+	"git/inspursoft/board/src/apiserver/models/vm"
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/apiserver/service/adapting"
 	c "git/inspursoft/board/src/common/controller"
-	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"strings"
@@ -56,7 +56,7 @@ func (u *AuthController) SignUp() {
 		u.CustomAbortAudit(http.StatusMethodNotAllowed, "Current AUTH_MODE is external auth.")
 		return
 	}
-	var reqUser model.User
+	var reqUser vm.User
 	err := u.ResolveBody(&reqUser)
 	if err != nil {
 		return
@@ -121,7 +121,7 @@ func (u *AuthController) SignUp() {
 	reqUser.Realname = strings.TrimSpace(reqUser.Realname)
 	reqUser.Comment = strings.TrimSpace(reqUser.Comment)
 
-	isSuccess, err := service.SignUp(reqUser)
+	isSuccess, err := adapting.SignUp(reqUser)
 	if err != nil {
 		u.InternalError(err)
 		return

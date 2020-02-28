@@ -1,10 +1,10 @@
 package users
 
 import (
-	"git/inspursoft/board/src/apiserver/models/users/vm"
+	"git/inspursoft/board/src/apiserver/models/vm"
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/apiserver/service/adapting"
 	c "git/inspursoft/board/src/common/controller"
-	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
 
@@ -71,11 +71,11 @@ func (u *PasswordController) UpdatePassword() {
 		u.CustomAbortAudit(http.StatusBadRequest, "Password does not satisfy complexity requirement.")
 		return
 	}
-	updateUser := model.User{
+	updateUser := vm.User{
 		ID:       user.ID,
 		Password: utils.Encrypt(changePassword.NewPassword, u.CurrentUser.Salt),
 	}
-	isSuccess, err := service.UpdateUser(updateUser, "password")
+	isSuccess, err := adapting.UpdateUser(updateUser, "password")
 	if err != nil {
 		u.InternalError(err)
 		return

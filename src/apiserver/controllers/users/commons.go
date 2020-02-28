@@ -1,9 +1,10 @@
 package users
 
 import (
+	"git/inspursoft/board/src/apiserver/models/vm"
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/apiserver/service/adapting"
 	c "git/inspursoft/board/src/common/controller"
-	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"strings"
@@ -38,7 +39,7 @@ func (u *CommonController) Update() {
 		return
 	}
 
-	var reqUser model.User
+	var reqUser vm.User
 	var err error
 	err = u.ResolveBody(&reqUser)
 	if err != nil {
@@ -76,7 +77,7 @@ func (u *CommonController) Update() {
 	reqUser.Realname = strings.TrimSpace(reqUser.Realname)
 	reqUser.Comment = strings.TrimSpace(reqUser.Comment)
 
-	isSuccess, err := service.UpdateUser(reqUser, "email", "realname", "comment")
+	isSuccess, err := adapting.UpdateUser(reqUser, "email", "realname", "comment")
 	if err != nil {
 		u.InternalError(err)
 		return
