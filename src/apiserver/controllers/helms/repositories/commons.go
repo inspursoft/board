@@ -24,7 +24,7 @@ func (cc *CommonController) List() {
 	logs.Info("list all helm repos")
 
 	// list the repos from storage
-	repos, err := service.ListHelmRepositories()
+	repos, err := service.ListVMHelmRepositories()
 	if err != nil {
 		cc.InternalError(err)
 		return

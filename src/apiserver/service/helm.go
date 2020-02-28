@@ -49,7 +49,7 @@ func vmRepositoryModel(repo model.HelmRepository) vm.HelmRepository {
 	}
 }
 
-func ListHelmRepositories() ([]vm.HelmRepository, error) {
+func ListVMHelmRepositories() ([]vm.HelmRepository, error) {
 	// list the repos from storage
 	repos, err := dao.GetHelmRepositories()
 	if err != nil {
@@ -63,7 +63,7 @@ func ListHelmRepositories() ([]vm.HelmRepository, error) {
 	return vmRepos, nil
 }
 
-func ListHelmRepositoriesOld() ([]model.HelmRepository, error) {
+func ListHelmRepositories() ([]model.HelmRepository, error) {
 	return dao.GetHelmRepositories()
 }
 

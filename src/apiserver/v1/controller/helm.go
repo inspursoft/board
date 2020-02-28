@@ -24,7 +24,7 @@ func (hc *HelmController) ListHelmReposAction() {
 	logs.Info("list all helm repos")
 
 	// list the repos from storage
-	repo, err := service.ListHelmRepositoriesOld()
+	repo, err := service.ListHelmRepositories()
 	if err != nil {
 		hc.InternalError(err)
 		return
