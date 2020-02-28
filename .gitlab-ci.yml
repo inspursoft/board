@@ -26,7 +26,7 @@ pre-merge-requests:
   only:
     - triggers
   tags:
-    - board-runner-zhanghu01-vm
+    - board-runner-wangkun_lc-vm
 job_ui_test:
   before_script:
     - echo "before script"
@@ -39,7 +39,7 @@ job_ui_test:
     - code=$(docker inspect tests_uibuilder7.2_1 -f "{{.State.ExitCode}}"), exit $code
   stage: ui-test
   tags:
-    - board-runner-zhanghu01-vm
+    - board-runner-wangkun_lc-vm
 job_api_test:
   before_script:
     - source /etc/profile
@@ -72,7 +72,7 @@ job_api_test:
     - docker run --rm -v $CI_PROJECT_DIR:/data/workspace/board/src/git/inspursoft/board -v /tmp:/tmp -w /data/workspace/board/src/git/inspursoft/board/tests --network host  -e GOPATH=/data/workspace/board golang:$golang_version bash -c "source env.cfg && source run.sh"
   stage: api-test
   tags:
-    - board-runner-zhanghu01-vm
+    - board-runner-wangkun_lc-vm
 report-on-success:
   stage: report
   script:
@@ -80,7 +80,7 @@ report-on-success:
       curl -X POST $request_url -H "PRIVATE-TOKEN: $reporter_token" -H "Content-Type: application/json" -d '{ "note": "'"$passed"'" }'
   when: on_success
   tags:
-    - board-runner-zhanghu01-vm
+    - board-runner-wangkun_lc-vm
 report-on-failure:
   stage: report
   script:
@@ -88,4 +88,4 @@ report-on-failure:
       curl -X POST $request_url -H "PRIVATE-TOKEN: $reporter_token" -H "Content-Type: application/json" -d '{ "note": "'"$failed"'" }'
   when: on_failure
   tags:
-    - board-runner-zhanghu01-vm
+    - board-runner-wangkun_lc-vm
