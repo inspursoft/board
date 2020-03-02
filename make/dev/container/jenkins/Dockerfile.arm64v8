@@ -1,4 +1,4 @@
-FROM jenkins-arm64v8:8-jdk-stretch
+FROM inspursoft/jenkins-arm64v8:8-jdk-stretch
 
 ENV JAVA_OPTS "-Djenkins.install.runSetupWizard=false \
                -Dhudson.model.User.allowNonExistentUser=true"
