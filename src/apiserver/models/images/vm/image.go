@@ -1,6 +1,6 @@
-package models
+package vm
 
-type Image	struct {
-	Name	string
-	Tag	string
+type Image struct {
+	Name string `json:"image_name"`
+	Tag  string `json:"image_tag"`
 }
