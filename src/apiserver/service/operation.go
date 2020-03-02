@@ -1,6 +1,8 @@
 package service
 
 import (
+	"errors"
+	"fmt"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"net/http"
@@ -28,12 +30,34 @@ var methodType = map[string]string{
 	http.MethodGet:    "get",
 }
 
+var orderFields = map[string]string{
+	"operation_creation_time": "creation_time",
+	"operation_object_type":   "object_type",
+	"operation_user_name":     "user_name",
+	"operation_action":        "action",
+	"operation_status":        "status",
+	"job_name":                "name",
+	"job_project_name":        "project_name",
+	"job_creation_time":       "creation_time",
+	"job_owner_name":          "owner_name",
+	"job_status":              "status",
+}
+
 const (
 	Success = "Success"
 	Failed  = "Failed"
 	Error   = "Error"
 	NA      = "Unknown"
 )
+
+func ParseOrderField(target, orderField string) (string, error) {
+	orderFieldValue, ok := orderFields[fmt.Sprintf("%s_%s", target, strings.ToLower(orderField))]
+	if !ok {
+		logs.Error("The order field of the requested list is invalid, order field is: %s", orderField)
+		return "", errors.New("The order field of the requested list is invalid.")
+	}
+	return orderFieldValue, nil
+}
 
 func GetPaginatedOperationList(query model.OperationParam, pageIndex int, pageSize int, orderField string, orderAsc int) (*model.PaginatedOperations, error) {
 	paginatedOperations, err := dao.GetPaginatedOperations(query, pageIndex, pageSize, orderField, orderAsc)
