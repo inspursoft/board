@@ -2,9 +2,10 @@ package projects
 
 import (
 	"fmt"
+	"git/inspursoft/board/src/apiserver/models/vm"
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/apiserver/service/adapting"
 	c "git/inspursoft/board/src/common/controller"
-	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"strconv"
@@ -71,7 +72,7 @@ func (p *CommonController) List() {
 	orderField := p.GetString("order_field", "creation_time")
 	orderAsc, _ := p.GetInt("order_asc", 0)
 
-	query := model.Project{Name: projectName, OwnerName: p.CurrentUser.Username, Public: 0}
+	query := vm.Project{Name: projectName, OwnerName: p.CurrentUser.Username, Public: 0}
 
 	public, err := strconv.Atoi(strPublic)
 	if err == nil {
@@ -79,12 +80,12 @@ func (p *CommonController) List() {
 	}
 
 	if pageIndex == 0 && pageSize == 0 {
-		var projects []*model.Project
+		var projects []*vm.Project
 		var err error
 		if memberOnly == 1 {
-			projects, err = service.GetProjectsByMember(query, p.CurrentUser.ID)
+			projects, err = adapting.GetProjectsByMember(query, p.CurrentUser.ID)
 		} else {
-			projects, err = service.GetProjectsByUser(query, p.CurrentUser.ID)
+			projects, err = adapting.GetProjectsByUser(query, p.CurrentUser.ID)
 		}
 		if err != nil {
 			p.InternalError(err)
@@ -92,7 +93,7 @@ func (p *CommonController) List() {
 		}
 		p.RenderJSON(projects)
 	} else {
-		paginatedProjects, err := service.GetPaginatedProjectsByUser(query, p.CurrentUser.ID, pageIndex, pageSize, orderField, orderAsc)
+		paginatedProjects, err := adapting.GetPaginatedProjectsByUser(query, p.CurrentUser.ID, pageIndex, pageSize, orderField, orderAsc)
 		if err != nil {
 			p.InternalError(err)
 			return
@@ -111,7 +112,7 @@ func (p *CommonController) List() {
 // @Failure 403 Forbidden.
 // @router / [post]
 func (p *CommonController) Add() {
-	var reqProject model.Project
+	var reqProject vm.Project
 	var err error
 	err = p.ResolveBody(&reqProject)
 	if err != nil {
@@ -152,7 +153,7 @@ func (p *CommonController) Add() {
 	reqProject.OwnerID = int(p.CurrentUser.ID)
 	reqProject.OwnerName = p.CurrentUser.Username
 
-	isSuccess, err := service.CreateProject(reqProject)
+	isSuccess, err := adapting.CreateProject(reqProject)
 	if err != nil {
 		p.InternalError(err)
 		return
@@ -162,7 +163,7 @@ func (p *CommonController) Add() {
 		return
 	}
 
-	isSuccess, err = service.CreateNamespace(&reqProject)
+	isSuccess, err = adapting.CreateNamespace(&reqProject)
 	if err != nil {
 		p.InternalError(err)
 		return

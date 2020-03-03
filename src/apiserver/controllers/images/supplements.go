@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"git/inspursoft/board/src/apiserver/models/images/vm"
+	"git/inspursoft/board/src/apiserver/models/vm"
 	"git/inspursoft/board/src/apiserver/service"
 	c "git/inspursoft/board/src/common/controller"
 )

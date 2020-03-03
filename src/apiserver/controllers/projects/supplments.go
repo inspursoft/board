@@ -2,10 +2,10 @@ package projects
 
 import (
 	"fmt"
-	"git/inspursoft/board/src/apiserver/models/projects/vm"
+	"git/inspursoft/board/src/apiserver/models/vm"
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/apiserver/service/adapting"
 	c "git/inspursoft/board/src/common/controller"
-	"git/inspursoft/board/src/common/model"
 	"net/http"
 	"strconv"
 )
@@ -60,8 +60,8 @@ func (p *SupplementController) Toggle() {
 // @router /existing [head]
 func (p *SupplementController) Existing() {
 	projectName := p.GetString("project_name")
-	query := model.Project{Name: projectName}
-	project, err := service.GetProject(query, "name")
+	query := vm.Project{Name: projectName}
+	project, err := adapting.GetProject(query, "name")
 	if err != nil {
 		p.InternalError(err)
 		return
