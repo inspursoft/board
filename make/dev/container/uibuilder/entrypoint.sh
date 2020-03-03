@@ -9,7 +9,6 @@ function prod(){
     echo -e "Begin executing prod"
     rm -rf /board_src/dist
     rm -rf dist/
-    npm update board-components-library
     npm run prod
     cp -R dist /board_src
     echo -e "End executing prod"
@@ -19,7 +18,6 @@ function test(){
     echo -e "Begin executing test"
     rm -rf converage/
     rm -rf /board_src/coverage
-    npm update board-components-library
     npm run test > testresult.log
     cat testresult.log
     cp testresult.log /board_src
@@ -31,7 +29,6 @@ function build(){
     echo -e "Begin executing build"
     rm -rf dist/
     rm -rf /board_src/dist
-    npm update board-components-library
     ng build
     cp -R dist /board_src
     echo -e "End executing build"
