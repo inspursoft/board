@@ -2,6 +2,7 @@ package rollingupdates
 
 import (
 	"fmt"
+	"git/inspursoft/board/src/apiserver/models/images/vm"
 	"git/inspursoft/board/src/apiserver/service"
 	c "git/inspursoft/board/src/common/controller"
 	"git/inspursoft/board/src/common/model"
@@ -9,6 +10,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/astaxie/beego/logs"
 )
@@ -23,27 +25,45 @@ type ImageController struct {
 // @Param	project_id	path	int	false	"ID of projects"
 // @Param	service_id	path	int	false	"ID of services"
 // @Param	search	query	string	false	"Query item for services"
-// @Success 200 {body} Successful listed.
+// @Success 200 vm.Image Successful listed.
 // @Failure 400 Bad requests.
 // @Failure 401 Unauthorized.
 // @Failure 403 Forbidden.
 // @router /:project_id/:service_id/images [get]
 func (p *ImageController) List() {
+	serviceConfig, err := p.getServiceConfig()
+	if err != nil {
+		return
+	}
+	if len(serviceConfig.Spec.Template.Spec.Containers) < 1 {
+		p.CustomAbortAudit(http.StatusBadRequest, "Requested service's config is invalid.")
+		return
+	}
 
+	var imageList []vm.Image
+	for _, container := range serviceConfig.Spec.Template.Spec.Containers {
+		indexProject := strings.IndexByte(container.Image, '/')
+		indexImage := strings.LastIndexByte(container.Image, '/')
+		indexTag := strings.LastIndexByte(container.Image, ':')
+		imageList = append(imageList, vm.Image{ImageName: container.Image[indexProject+1 : indexTag],
+			ImageTag:    container.Image[indexTag+1:],
+			ProjectName: container.Image[indexProject+1 : indexImage]})
+	}
+	p.RenderJSON(imageList)
 }
 
 // @Title Patch rolling updates images for services
 // @Description Patch rolling updates for services.
 // @Param	project_id	path	int	false	"ID of projects"
 // @Param	service_id	path	int	false	"ID of services"
-// @Param	body	body	models.ImageIndex	"View model of rolling update image."
+// @Param	body	body	vm.Image	"View model of rolling update image."
 // @Success 200 {object} Successful listed.
 // @Failure 400 Bad requests.
 // @Failure 401 Unauthorized.
 // @Failure 403 Forbidden.
 // @router /:project_id/:service_id/images [patch]
 func (p *ImageController) PatchRollingUpdateServiceImageAction() {
-	var imageList []model.ImageIndex
+	var imageList []vm.Image
 	err := p.ResolveBody(&imageList)
 	if err != nil {
 		return

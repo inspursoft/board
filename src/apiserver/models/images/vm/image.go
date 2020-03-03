@@ -1,4 +1,4 @@
-package models
+package vm
 
 type Image	struct {
 	ImageName	string	`json:"image_name"`
