@@ -9,8 +9,6 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strconv"
 	"time"
 )
@@ -25,19 +23,19 @@ func (controller *Controller) Render() error {
 
 // @Title Get node list
 // @Description Get node list
-// @Success 200 {object} []node.NodeListType  success
+// @Success 200 {object} []nodeModel.NodeStatus  success
 // @Failure 400 bad request
 // @Failure 500 Internal Server Error
 // @router /list [get]
 func (controller *Controller) GetNodeListAction() {
-	var nodeListJson []nodeModel.NodeListType
-	err := nodeService.GetArrayJsonByFile(nodeModel.AddNodeListJson, &nodeListJson)
+	var nodeStatusList []nodeModel.NodeStatus
+	err := nodeService.GetNodeStatusList(&nodeStatusList)
 	if err != nil {
 		errorMsg := fmt.Sprintf("Bad request.%s", err.Error())
 		controller.CustomAbort(http.StatusBadRequest, errorMsg)
 		return
 	}
-	controller.Data["json"] = nodeListJson
+	controller.Data["json"] = nodeStatusList
 	controller.ServeJSON()
 }
 
@@ -49,10 +47,13 @@ func (controller *Controller) GetNodeListAction() {
 // @router /logs [get]
 func (controller *Controller) GetNodeLogList() {
 	var paginatedNodeLogList = nodeModel.PaginatedNodeLogList{}
+	var nodeList []nodeModel.NodeLog
 	pageIndex, _ := strconv.Atoi(controller.Ctx.Input.Query("page_index"))
 	pageSize, _ := strconv.Atoi(controller.Ctx.Input.Query("page_size"))
 	paginatedNodeLogList.Pagination = &nodeModel.Pagination{PageIndex: pageIndex, PageSize: pageSize}
-	err := nodeService.GetPaginatedNodeLogList(nodeModel.AddNodeHistoryJson, &paginatedNodeLogList)
+	paginatedNodeLogList.LogList = &nodeList
+
+	err := nodeService.GetPaginatedNodeLogList(&paginatedNodeLogList)
 	if err != nil {
 		errorMsg := fmt.Sprintf("Bad request.%s", err.Error())
 		controller.CustomAbort(http.StatusBadRequest, errorMsg)
@@ -70,13 +71,10 @@ func (controller *Controller) GetNodeLogList() {
 // @Param	file_name	query 	string	true	""
 // @router /log [get]
 func (controller *Controller) GetNodeLogDetail() {
-	logFileName := controller.Ctx.Input.Query("file_name")
-	if _, err := os.Stat(filepath.Join(nodeModel.AddNodeLogPath, logFileName)); os.IsNotExist(err) {
-		controller.CustomAbort(http.StatusBadRequest, "The file of "+logFileName+" is not exists")
-		return
-	}
+	nodeIp := controller.Ctx.Input.Query("node_ip")
+	creationTime, _ := strconv.ParseInt(controller.Ctx.Input.Query("creation_time"), 10, 64)
 	var nodeLogDetail []nodeModel.NodeLogDetail
-	err := nodeService.GetNodeLogDetail(filepath.Join(nodeModel.AddNodeLogPath, logFileName), &nodeLogDetail)
+	err := nodeService.GetNodeLogDetail(creationTime, nodeIp, &nodeLogDetail)
 	if err != nil {
 		controller.CustomAbort(http.StatusInternalServerError, err.Error())
 		return
@@ -111,8 +109,8 @@ func (controller *Controller) RemoveNodeAction() {
 }
 
 func (controller *Controller) AddRemoveNode(nodeIp string, actionType nodeModel.ActionType, yamlFile string) {
-	if logHistory := nodeService.CheckExecuting(nodeIp); logHistory != nil {
-		controller.Data["json"] = *logHistory
+	if nodeService.CheckExistsInCache(nodeIp) {
+		controller.Data["json"] = *nodeService.GetLogInfoInCache(nodeIp)
 		controller.ServeJSON()
 		return
 	}
@@ -130,14 +128,15 @@ func (controller *Controller) AddRemoveNode(nodeIp string, actionType nodeModel.
 		return
 	}
 
-	logFileJson := nodeModel.NodeLog{
-		Ip: nodeIp, Success: false, Pid: 0, CreationTime: time.Now().Unix(), Type: actionType}
-	if err := nodeService.ExecuteCommand(&logFileJson, yamlFile); err != nil {
+	nodeLog := nodeModel.NodeLog{
+		Ip: nodeIp, Success: false, Pid: 0, CreationTime: time.Now().Unix(), LogType: actionType}
+	if err := nodeService.ExecuteCommand(&nodeLog, yamlFile); err != nil {
 		controller.CustomAbort(http.StatusBadRequest, err.Error())
 		return
 	}
-	controller.Data["json"] = logFileJson
+	controller.Data["json"] = nodeLog
 	controller.ServeJSON()
+	return
 }
 
 func (controller *Controller) resolveBody(target interface{}) (err error) {

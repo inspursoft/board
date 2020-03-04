@@ -1,12 +1,11 @@
 package nodeModel
 
+import "bytes"
+
 const AddNodeYamlFile = "/root/ansible_k8s/addNode.yml"
 const RemoveNodeYamlFile = "/root/ansible_k8s/uninstallnode.yml"
 const AddRemoveNodeFile = "/root/ansible_k8s/addNode"
 const AddRemoveShellFile = "/root/ansible_k8s/addNode.sh"
-const AddNodeListJson = "/root/ansible_k8s/addNodeInfo/addNodeList.json"
-const AddNodeHistoryJson = "/root/ansible_k8s/addNodeInfo/addNodeHistory.json"
-const AddNodeLogPath = "/root/ansible_k8s/addNodeInfo/logs/"
 
 type NodeLogResponseStatus int
 type ActionType int
@@ -39,13 +38,33 @@ type AddNodePostData struct {
 
 type NodeLogDetailArray = []NodeLogDetail;
 
+// database table's name: node-status
+type NodeStatus struct {
+	Id           int    `json:"id"`
+	Ip           string `json:"ip"`
+	CreationTime int64  `json:"creation_time"`
+}
+
+// database table's name: node-log
 type NodeLog struct {
+	Id           int        `json:"id"`
 	Ip           string     `json:"ip"`
-	Type         ActionType `json:"type"`
+	LogType      ActionType `json:"log_type"`
 	Success      bool       `json:"success"`
 	Pid          int        `json:"pid"`
 	CreationTime int64      `json:"creation_time"`
-	Completed    bool       `json:"completed"`
+}
+
+// database table's name: node-log-detail-info
+type NodeLogDetailInfo struct {
+	Id           int    `json:"id"`
+	CreationTime int64  `json:"creation_time"`
+	Detail       string `json:"detail"`
+}
+
+type NodeLogCache struct {
+	DetailBuffer bytes.Buffer
+	NodeLogPtr *NodeLog
 }
 
 type PaginatedNodeLogList struct {

@@ -2,68 +2,52 @@ package nodeService
 
 import (
 	"bufio"
-	"encoding/json"
+	"bytes"
 	"fmt"
+	"git/inspursoft/board/src/adminserver/dao"
+	"git/inspursoft/board/src/adminserver/dao/nodeDao"
 	"git/inspursoft/board/src/adminserver/models/nodeModel"
 	"github.com/astaxie/beego/logs"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 	"time"
 )
 
-func GetPaginatedNodeLogList(fileName string, v *nodeModel.PaginatedNodeLogList) error {
-	var filePtr *os.File
-	if _, err := os.Stat(fileName); os.IsNotExist(err) {
-		return nil
+func GetNodeStatusList(nodeStatusList *[]nodeModel.NodeStatus) error {
+	return nodeDao.GetNodeStatusList(nodeStatusList)
+}
+
+func GetPaginatedNodeLogList(v *nodeModel.PaginatedNodeLogList) error {
+	offset := (v.Pagination.PageIndex - 1) * v.Pagination.PageSize
+	if err := nodeDao.GetNodeLogList(v.LogList, v.Pagination.PageSize, offset); err != nil {
+		return err
 	}
-	filePtr, _ = os.Open(fileName)
-	defer filePtr.Close()
-	decoder := json.NewDecoder(filePtr)
-	var nodeLogList []nodeModel.NodeLog
-	if err := decoder.Decode(&nodeLogList); err != nil {
-		errorMsg := fmt.Sprintf("Unexpected error occurred.%s", err.Error())
-		return fmt.Errorf(errorMsg)
+
+	totalCount, err := nodeDao.GetLogTotalRecordCount()
+	if err != nil {
+		return err
 	}
-	v.Pagination.TotalCount = int64(len(nodeLogList))
+	v.Pagination.TotalCount = totalCount
 	v.Pagination.PageCount = int(v.Pagination.TotalCount)/v.Pagination.PageSize + 1
+	return nil
+}
 
-	var nodeBuf []nodeModel.NodeLog
-	for index, nodeLog := range nodeLogList {
-		if (index >= (v.Pagination.PageIndex-1)*v.Pagination.PageSize) &&
-			(index <= v.Pagination.PageIndex*v.Pagination.PageSize) {
-			nodeBuf = append(nodeBuf, nodeLog)
+func GetNodeLogDetail(logTimestamp int64, nodeIp string, nodeLogDetail *[]nodeModel.NodeLogDetail) error {
+	var reader *bufio.Reader
+	if CheckExistsInCache(nodeIp) {
+		logCache := dao.GlobalCache.Get(nodeIp).(*nodeModel.NodeLogCache)
+		reader = bufio.NewReader(strings.NewReader(logCache.DetailBuffer.String()))
+	} else {
+		detailInfo, err := nodeDao.GetNodeLogDetail(logTimestamp)
+		if err != nil {
+			return err
 		}
+		reader = bufio.NewReader(bytes.NewBufferString(detailInfo.Detail))
 	}
-
-	v.LogList = &nodeBuf
-	return nil
-}
-
-func GetArrayJsonByFile(fileName string, v interface{}) error {
-	var filePtr *os.File
-	if _, err := os.Stat(fileName); os.IsNotExist(err) {
-		return nil
-	}
-	filePtr, _ = os.Open(fileName)
-	defer filePtr.Close()
-	decoder := json.NewDecoder(filePtr)
-	if err := decoder.Decode(v); err != nil {
-		errorMsg := fmt.Sprintf("Unexpected error occurred.%s", err.Error())
-		return fmt.Errorf(errorMsg)
-	}
-	return nil
-}
-
-func GetNodeLogDetail(fileName string, nodeLogDetail *[]nodeModel.NodeLogDetail) error {
-	filePtr, _ := os.Open(fileName)
-	defer filePtr.Close()
-	fileBuf := bufio.NewReader(filePtr)
 	for {
-		line, err := fileBuf.ReadString('\n')
+		line, err := reader.ReadString('\n')
 		if err != nil {
 			if err == io.EOF {
 				break
@@ -75,6 +59,7 @@ func GetNodeLogDetail(fileName string, nodeLogDetail *[]nodeModel.NodeLogDetail)
 		detail := setLogStatus(line)
 		*nodeLogDetail = append(*nodeLogDetail, detail)
 	}
+
 	return nil
 }
 
@@ -82,33 +67,81 @@ func ExecuteCommand(nodeLog *nodeModel.NodeLog, yamlFile string) error {
 	if _, err := os.Stat(yamlFile); err != nil {
 		return err
 	}
-
 	if _, err := os.Stat(nodeModel.AddRemoveShellFile); err != nil {
 		return err
 	}
 
-	if _, err := os.Stat(nodeModel.AddNodeLogPath); os.IsNotExist(err) {
-		os.MkdirAll(nodeModel.AddNodeLogPath, os.ModePerm)
+	cmd := exec.Command("nohup", "sh", nodeModel.AddRemoveShellFile, yamlFile)
+
+	var nodeLogCache = nodeModel.NodeLogCache{}
+	nodeLogCache.NodeLogPtr = nodeLog
+
+	if nodeLog.LogType == nodeModel.ActionTypeAddNode{
+		nodeLogCache.DetailBuffer.WriteString(fmt.Sprintf("---Begin add node:%s----", nodeLog.Ip))
+	} else {
+		nodeLogCache.DetailBuffer.WriteString(fmt.Sprintf("---Begin remove node:%s----", nodeLog.Ip))
 	}
 
-	logFileName := fmt.Sprintf("%s@%d.txt", nodeLog.Ip, time.Now().Unix())
-	logFile, createErr := os.Create(filepath.Join(nodeModel.AddNodeLogPath, logFileName))
-	if createErr != nil {
-		return createErr
+	cmd.Stdout = &nodeLogCache.DetailBuffer
+	cmd.Stderr = &nodeLogCache.DetailBuffer
+
+	if err := dao.GlobalCache.Put(nodeLog.Ip, &nodeLogCache, 3600*time.Second); err != nil {
+		return err
 	}
-	cmd := exec.Command("nohup", "sh", nodeModel.AddRemoveShellFile, yamlFile)
-	cmd.Stdout = logFile
-	cmd.Stderr = logFile
 
 	if err := cmd.Start(); err != nil {
 		return err
 	}
 
-	if err := updateHistoryLog(nodeLog); err != nil {
-		return err
-	}
-	updateList(cmd, nodeLog)
+	insertData(cmd, nodeLog)
 	return nil
+}
+
+func insertData(cmd *exec.Cmd, nodeLog *nodeModel.NodeLog) {
+	go func() {
+		cmd.Wait();
+		nodeLog.Success = cmd.ProcessState.Success()
+		nodeLog.Pid = cmd.ProcessState.Pid()
+
+		logCache := dao.GlobalCache.Get(nodeLog.Ip).(*nodeModel.NodeLogCache)
+
+		var endStr string
+		if nodeLog.LogType == nodeModel.ActionTypeAddNode{
+			endStr = fmt.Sprintf("---Add node completed:%s----\n", nodeLog.Ip)
+		} else {
+			endStr = fmt.Sprintf("---Remove node completed:%s----\n", nodeLog.Ip)
+		}
+
+		if _, err := logCache.DetailBuffer.WriteString(endStr); err != nil{
+			logs.Info(err)
+		}
+		detail := nodeModel.NodeLogDetailInfo{CreationTime: nodeLog.CreationTime,
+			Detail: logCache.DetailBuffer.String()}
+
+		if _, err := nodeDao.InsertNodeLogDetail(&detail); err != nil {
+			logs.Info(err.Error())
+		}
+
+		if err := nodeDao.InsertNodeLog(nodeLog); err != nil {
+			logs.Info(err.Error())
+		}
+
+		if nodeLog.Success {
+			if nodeLog.LogType == nodeModel.ActionTypeAddNode {
+				if err := nodeDao.InsertNodeStatus(&nodeModel.NodeStatus{
+					Ip:           nodeLog.Ip,
+					CreationTime: nodeLog.CreationTime}); err != nil {
+					logs.Info(err.Error())
+				}
+			}
+			if nodeLog.LogType == nodeModel.ActionTypeDeleteNode {
+				if err := nodeDao.DeleteNodeStatus(&nodeModel.NodeStatus{Ip: nodeLog.Ip}); err != nil {
+					logs.Info(err.Error())
+				}
+			}
+		}
+		dao.GlobalCache.Delete(nodeLog.Ip)
+	}()
 }
 
 func GenerateHostFile(masterIp, nodeIp, registryIp string) error {
@@ -128,130 +161,13 @@ func GenerateHostFile(masterIp, nodeIp, registryIp string) error {
 	return nil
 }
 
-func CheckExecuting(nodeIp string) *nodeModel.NodeLog {
-	var logHistoryList []nodeModel.NodeLog
-	err := GetArrayJsonByFile(nodeModel.AddNodeHistoryJson, &logHistoryList)
-	if err != nil {
-		return nil
-	}
-	for _, logHistory := range logHistoryList {
-		if logHistory.Completed == false && logHistory.Ip == nodeIp {
-			return &logHistory
-		}
-	}
-	return nil
+func CheckExistsInCache(nodeIp string) bool {
+	return dao.GlobalCache.IsExist(nodeIp)
 }
 
-func updateList(cmd *exec.Cmd, logHistory *nodeModel.NodeLog) {
-	go func() {
-		cmd.Wait();
-		logHistory.Success = cmd.ProcessState.Success()
-		logHistory.Pid = cmd.ProcessState.Pid()
-		logHistory.Completed = true
-
-		if err := updateHistoryLog(logHistory); err != nil {
-			logs.Info(err.Error())
-		}
-
-		if logHistory.Success {
-			if logHistory.Type == nodeModel.ActionTypeAddNode {
-				if err := appendNodeInfo(logHistory.Ip, logHistory.CreationTime); err != nil {
-					logs.Info(err.Error())
-				}
-			}
-			if logHistory.Type == nodeModel.ActionTypeDeleteNode {
-				if err := removeNodeInfo(logHistory.Ip); err != nil {
-					logs.Info(err.Error())
-				}
-			}
-		}
-
-	}()
-}
-
-func removeNodeInfo(nodeIp string) error {
-	var nodeListJson []nodeModel.NodeListType
-	var filePtr *os.File
-	_, err := os.Stat(nodeModel.AddNodeListJson);
-	if err != nil {
-		return err
-	} else {
-		filePtr, _ = os.Open(nodeModel.AddNodeListJson)
-		decoder := json.NewDecoder(filePtr)
-		readErr := decoder.Decode(&nodeListJson)
-		if readErr != nil {
-			return readErr
-		}
-	}
-	defer filePtr.Close();
-	if len(nodeListJson) > 0 {
-		for index, nodeList := range nodeListJson {
-			if nodeList.Ip == nodeIp {
-				nodeListJson = append(nodeListJson[:index], nodeListJson[index+1:]...)
-				break
-			}
-		}
-	}
-	nodeListJsonBytes, _ := json.Marshal(nodeListJson)
-	writeErr := ioutil.WriteFile(nodeModel.AddNodeListJson, nodeListJsonBytes, os.ModeType)
-	if writeErr != nil {
-		return writeErr
-	}
-	return nil
-}
-
-func appendNodeInfo(nodeIp string, creationTime int64) error {
-	var nodeListJson []nodeModel.NodeListType
-	var filePtr *os.File
-	if _, err := os.Stat(nodeModel.AddNodeListJson); os.IsNotExist(err) {
-		filePtr, _ = os.Create(nodeModel.AddNodeListJson)
-	} else {
-		filePtr, _ = os.Open(nodeModel.AddNodeListJson)
-		decoder := json.NewDecoder(filePtr)
-		readErr := decoder.Decode(&nodeListJson)
-		if readErr != nil {
-			return readErr
-		}
-	}
-	defer filePtr.Close();
-	nodeListJson = append(nodeListJson, nodeModel.NodeListType{Ip: nodeIp, CreationTime: creationTime})
-	nodeListJsonBytes, _ := json.Marshal(nodeListJson)
-	writeErr := ioutil.WriteFile(nodeModel.AddNodeListJson, nodeListJsonBytes, os.ModeType)
-	if writeErr != nil {
-		return writeErr
-	}
-	return nil
-}
-
-func updateHistoryLog(nodeLog *nodeModel.NodeLog) error {
-	var nodeLogHistoryList []nodeModel.NodeLog
-	var filePtr *os.File
-	if _, err := os.Stat(nodeModel.AddNodeHistoryJson); os.IsNotExist(err) {
-		filePtr, _ = os.Create(nodeModel.AddNodeHistoryJson)
-	} else {
-		filePtr, _ = os.Open(nodeModel.AddNodeHistoryJson)
-		decoder := json.NewDecoder(filePtr)
-		readErr := decoder.Decode(&nodeLogHistoryList)
-		if readErr != nil {
-			return readErr
-		}
-	}
-	defer filePtr.Close();
-	if len(nodeLogHistoryList) > 0 {
-		for index, nodeLogHistory := range nodeLogHistoryList {
-			if nodeLogHistory.Ip == nodeLog.Ip && nodeLogHistory.CreationTime == nodeLog.CreationTime {
-				nodeLogHistoryList = append(nodeLogHistoryList[:index], nodeLogHistoryList[index+1:]...)
-				break
-			}
-		}
-	}
-	nodeLogHistoryList = append(nodeLogHistoryList, *nodeLog)
-	nodeListJsonBytes, _ := json.Marshal(nodeLogHistoryList)
-	writeErr := ioutil.WriteFile(nodeModel.AddNodeHistoryJson, nodeListJsonBytes, os.ModeType)
-	if writeErr != nil {
-		return writeErr
-	}
-	return nil
+func GetLogInfoInCache(nodeIp string) *nodeModel.NodeLog {
+	logCache := dao.GlobalCache.Get(nodeIp).(*nodeModel.NodeLogCache)
+	return logCache.NodeLogPtr
 }
 
 func checkIsEndingLog(log string) bool {
@@ -275,6 +191,8 @@ func setLogStatus(log string) nodeModel.NodeLogDetail {
 		return nodeModel.NodeLogDetail{Message: log, Status: nodeModel.NodeLogResponseStart}
 	} else if strings.Index(log, "ok") == 0 || strings.Index(log, "changed") == 0 {
 		return nodeModel.NodeLogDetail{Message: log, Status: nodeModel.NodeLogResponseWarning}
+	} else if strings.Index(log, "---") == 0 {
+		return nodeModel.NodeLogDetail{Message: log, Status: nodeModel.NodeLogResponseStart}
 	} else if checkIsEndingLog(log) {
 		if checkIsSuccessExecuted(log) {
 			return nodeModel.NodeLogDetail{Message: log, Status: nodeModel.NodeLogResponseSuccess}

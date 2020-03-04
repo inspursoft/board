@@ -91,10 +91,7 @@ export class NodeDetailComponent extends ModalChildBase implements OnInit {
         this.messageService.cleanNotification();
         this.messageService.showGlobalMessage(err.message, {view: this.view});
       },
-      () => {
-        this.actionStatus = ActionStatus.Executing;
-        this.refreshLog();
-      }
+      () => this.actionStatus = ActionStatus.Executing
     );
   }
 
@@ -106,15 +103,12 @@ export class NodeDetailComponent extends ModalChildBase implements OnInit {
   execute() {
     if (this.actionStatus === ActionStatus.Ready && this.actionType === NodeActionsType.Add) {
       this.resourceService.addNode(this.logInfo.ip).subscribe(
-        (res: NodeLog) => this.logInfo = res,
+        (res) => this.logInfo = res,
         (err: HttpErrorResponse) => {
           this.messageService.cleanNotification();
-          this.messageService.showAlert(err.message, {alertType: 'danger', view: this.view});
+          this.messageService.showGlobalMessage(err.message, {view: this.view});
         },
-        () => {
-          this.actionStatus = ActionStatus.Executing;
-          this.refreshLog();
-        }
+        () => this.actionStatus = ActionStatus.Executing
       );
     } else {
       this.modalOpened = false;
@@ -122,10 +116,9 @@ export class NodeDetailComponent extends ModalChildBase implements OnInit {
   }
 
   refreshLog() {
-    const logFileName = `${this.logInfo.ip}@${this.logInfo.creationTime}.txt`;
     const el = this.divElement.nativeElement as HTMLDivElement;
     this.refreshingLog = true;
-    this.resourceService.getNodeLog(logFileName).subscribe(
+    this.resourceService.getNodeLogDetail(this.logInfo.ip, this.logInfo.creationTime).subscribe(
       (res: NodeDetails) => {
         this.refreshingLog = false;
         this.consoleLogContainer.clear();
@@ -143,7 +136,7 @@ export class NodeDetailComponent extends ModalChildBase implements OnInit {
       (err: HttpErrorResponse) => {
         this.refreshingLog = false;
         this.messageService.cleanNotification();
-        this.messageService.showAlert(err.message, {alertType: 'danger', view: this.view});
+        this.messageService.showGlobalMessage(err.message, {view: this.view});
       });
   }
 

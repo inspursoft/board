@@ -16,11 +16,10 @@ export enum NodeLogStatus {
 
 export class NodeLog extends ResponseBase {
   @HttpBind('ip') ip: string;
-  @HttpBind('type') type: NodeActionsType;
+  @HttpBind('log_type') type: NodeActionsType;
   @HttpBind('success') success: boolean;
   @HttpBind('pid') pid: number;
   @HttpBind('creation_time') creationTime: number;
-  @HttpBind('completed') completed: boolean;
 }
 
 export class NodeLogs extends ResponsePaginationBase<NodeLog> {

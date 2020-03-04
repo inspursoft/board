@@ -2,8 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { NodeDetails, NodeList, NodeLog, NodeLogs } from '../resource.types';
 import { CustomHttpClient } from './custom-http.service';
-import { map } from "rxjs/operators";
-import { ResponsePaginationBase } from "../../shared/shared.type";
+import { map } from 'rxjs/operators';
 
 @Injectable()
 export class ResourceService {
@@ -29,7 +28,10 @@ export class ResourceService {
       {page_index: pageIndex.toString(), page_size: pageSize.toString()});
   }
 
-  getNodeLog(logFileName: string): Observable<NodeDetails> {
-    return this.http.getArrayJson(`/v1/admin/node/log?file_name=${logFileName}`, NodeDetails);
+  getNodeLogDetail(ip: string, creationTime: number): Observable<NodeDetails> {
+    return this.http.getArrayJson(`/v1/admin/node/log?`, NodeDetails, {
+      node_ip: ip,
+      creation_time: creationTime.toString()
+    });
   }
 }
