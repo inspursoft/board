@@ -9,6 +9,7 @@ import (
 	"git/inspursoft/board/src/common/utils"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/astaxie/beego/logs"
 )
@@ -92,6 +93,8 @@ func CreateRepoAndJob(userID int64, projectName string) error {
 		logs.Error("Failed to create Jenkins' job with repo name: %s, error: %+v", repoName, err)
 		return err
 	}
+	logs.Debug("Waiting for services to be created...")
+	time.Sleep(time.Second * 12)
 	return nil
 }
 
