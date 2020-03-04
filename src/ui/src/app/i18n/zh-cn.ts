@@ -528,6 +528,8 @@ export const LANG_ZH_CN = {
     "VOLUME_CONTAINER_PATH":"容器路径",
     "VOLUME_SUB_PATH_FILE":"指定挂入子文件",
     "VOLUME_SELECT_PVC_TITLE":"选择PVC",
+    "VOLUME_SELECT_CONFIG_MAP_TITLE":"选择Config map",
+    "VOLUME_SELECT_CONFIG_MAP":"选择Config map...",
     "VOLUME_SELECT_PVC":"选择PVC...",
     "VOLUME_CREATE_PVC":"创建PVC...",
     "VOLUME_ADD_VOLUME":"添加卷",
