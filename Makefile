@@ -18,7 +18,7 @@
 DEVFLAG=release
 
 # ARCH default is x86_64, also support mips, arm64v8
-ARCH=
+ARCH=arm64v8
 
 ifeq ($(DEVFLAG), release) 
 	BASEIMAGE=alpine:3.7
@@ -223,8 +223,8 @@ package: prepare_composefile
 
 	@rm -rf $(PACKAGEPATH)
 
-#packageonestep: compile compile_ui build package
-packageonestep: compile build package
+packageonestep: compile compile_ui build package
+#packageonestep: compile build package
 
 .PHONY: cleanall
 cleanall: cleanbinary cleanimage
