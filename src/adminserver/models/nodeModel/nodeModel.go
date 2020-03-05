@@ -2,10 +2,10 @@ package nodeModel
 
 import "bytes"
 
-const AddNodeYamlFile = "/root/ansible_k8s/addNode.yml"
-const RemoveNodeYamlFile = "/root/ansible_k8s/uninstallnode.yml"
-const AddRemoveNodeFile = "/root/ansible_k8s/addNode"
-const AddRemoveShellFile = "/root/ansible_k8s/addNode.sh"
+const AddNodeYamlFile = "addNode.yml"
+const RemoveNodeYamlFile = "uninstallnode.yml"
+const AddRemoveNodeFile = "addNode"
+const AddRemoveShellFile = "addNode.sh"
 
 type NodeLogResponseStatus int
 type ActionType int

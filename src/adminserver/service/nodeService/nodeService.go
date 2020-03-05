@@ -63,20 +63,20 @@ func GetNodeLogDetail(logTimestamp int64, nodeIp string, nodeLogDetail *[]nodeMo
 	return nil
 }
 
-func ExecuteCommand(nodeLog *nodeModel.NodeLog, yamlFile string) error {
-	if _, err := os.Stat(yamlFile); err != nil {
+func ExecuteCommand(nodeLog *nodeModel.NodeLog, yamlPathFile string, shellPathFile string) error {
+	if _, err := os.Stat(yamlPathFile); err != nil {
 		return err
 	}
-	if _, err := os.Stat(nodeModel.AddRemoveShellFile); err != nil {
+	if _, err := os.Stat(shellPathFile); err != nil {
 		return err
 	}
 
-	cmd := exec.Command("nohup", "sh", nodeModel.AddRemoveShellFile, yamlFile)
+	cmd := exec.Command("nohup", "sh", shellPathFile, yamlPathFile)
 
 	var nodeLogCache = nodeModel.NodeLogCache{}
 	nodeLogCache.NodeLogPtr = nodeLog
 
-	if nodeLog.LogType == nodeModel.ActionTypeAddNode{
+	if nodeLog.LogType == nodeModel.ActionTypeAddNode {
 		nodeLogCache.DetailBuffer.WriteString(fmt.Sprintf("---Begin add node:%s----", nodeLog.Ip))
 	} else {
 		nodeLogCache.DetailBuffer.WriteString(fmt.Sprintf("---Begin remove node:%s----", nodeLog.Ip))
@@ -106,13 +106,13 @@ func insertData(cmd *exec.Cmd, nodeLog *nodeModel.NodeLog) {
 		logCache := dao.GlobalCache.Get(nodeLog.Ip).(*nodeModel.NodeLogCache)
 
 		var endStr string
-		if nodeLog.LogType == nodeModel.ActionTypeAddNode{
+		if nodeLog.LogType == nodeModel.ActionTypeAddNode {
 			endStr = fmt.Sprintf("---Add node completed:%s----\n", nodeLog.Ip)
 		} else {
 			endStr = fmt.Sprintf("---Remove node completed:%s----\n", nodeLog.Ip)
 		}
 
-		if _, err := logCache.DetailBuffer.WriteString(endStr); err != nil{
+		if _, err := logCache.DetailBuffer.WriteString(endStr); err != nil {
 			logs.Info(err)
 		}
 		detail := nodeModel.NodeLogDetailInfo{CreationTime: nodeLog.CreationTime,
@@ -144,8 +144,8 @@ func insertData(cmd *exec.Cmd, nodeLog *nodeModel.NodeLog) {
 	}()
 }
 
-func GenerateHostFile(masterIp, nodeIp, registryIp string) error {
-	addHosts, err := os.Create(nodeModel.AddRemoveNodeFile)
+func GenerateHostFile(masterIp, nodeIp, registryIp, nodePathFile string) error {
+	addHosts, err := os.Create(nodePathFile)
 	defer addHosts.Close()
 	if err != nil {
 		return err

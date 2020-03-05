@@ -6,6 +6,7 @@ WORKDIR /go/src/git/inspursoft/board/src/adminserver/
 
 RUN apk add git \
     && go get github.com/astaxie/beego \
+    && go get github.com/mattn/go-sqlite3 \
     && go get github.com/beego/bee
     
 VOLUME ["/go/cfgfile"]

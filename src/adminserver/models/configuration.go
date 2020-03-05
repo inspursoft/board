@@ -150,13 +150,14 @@ type Other struct {
 	RedirectionURL                  string `json:"redirection_url"`
 	AuditDebug                      string `json:"audit_debug"`
 	DNSSuffix                       string `json:"dns_suffix"`
+	InstallPackagePath              string `json:"install_package_path"`
 }
 
 //GetOther returns data extracted from the Other part of the cfg file.
 func GetOther(section *configparser.Section) Other {
 	array := [...]string{"arch_type", "db_password", "token_cache_expire_seconds", "token_expire_seconds",
 		"elaseticsearch_memory_in_megabytes", "tiller_port", "board_admin_password", "auth_mode",
-		"verification_url", "redirection_url", "audit_debug", "dns_suffix"}
+		"verification_url", "redirection_url", "audit_debug", "dns_suffix", "install_package_path"}
 	var other Other
 	value := reflect.ValueOf(&other).Elem()
 	for i := 0; i < value.NumField(); i++ {

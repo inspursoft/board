@@ -9,6 +9,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 	"net/http"
+	"path"
 	"strconv"
 	"time"
 )
@@ -123,14 +124,18 @@ func (controller *Controller) AddRemoveNode(nodeIp string, actionType nodeModel.
 	masterIp := configuration.Apiserver.KubeMasterIP
 	registryIp := configuration.Apiserver.RegistryIP
 
-	if err := nodeService.GenerateHostFile(masterIp, nodeIp, registryIp); err != nil {
+	nodePathFile := path.Join(configuration.Other.InstallPackagePath, nodeModel.AddRemoveNodeFile)
+	if err := nodeService.GenerateHostFile(masterIp, nodeIp, registryIp, nodePathFile); err != nil {
 		controller.CustomAbort(http.StatusBadRequest, err.Error())
 		return
 	}
 
 	nodeLog := nodeModel.NodeLog{
 		Ip: nodeIp, Success: false, Pid: 0, CreationTime: time.Now().Unix(), LogType: actionType}
-	if err := nodeService.ExecuteCommand(&nodeLog, yamlFile); err != nil {
+
+	yamlPathFile := path.Join(configuration.Other.InstallPackagePath, yamlFile)
+	shellPathFile := path.Join(configuration.Other.InstallPackagePath, nodeModel.AddRemoveShellFile)
+	if err := nodeService.ExecuteCommand(&nodeLog, yamlPathFile, shellPathFile); err != nil {
 		controller.CustomAbort(http.StatusBadRequest, err.Error())
 		return
 	}
