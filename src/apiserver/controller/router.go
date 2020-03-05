@@ -129,7 +129,7 @@ func InitRouter() {
 			beego.NSRouter("/node",
 				&NodeController{}, "get:GetNode"),
 			beego.NSRouter("/nodes",
-				&NodeController{}, "get:NodeList"),
+				&NodeController{}, "get:NodeList;post:AddNodeAction"),
 			beego.NSRouter("/nodes/availableresources",
 				&NodeController{}, "get:NodesAvailalbeResources"),
 			beego.NSRouter("/node/toggle",
