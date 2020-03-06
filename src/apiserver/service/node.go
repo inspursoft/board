@@ -439,14 +439,14 @@ func NodeExists(nodeName string) (bool, error) {
 }
 
 // Create a node in kubernetes cluster
-func CreateNode(node model.Node) (*model.Node, error) {
+func CreateNode(node model.NodeCli) (*model.Node, error) {
 
-	nExists, err := NodeExists(node.Name)
+	nExists, err := NodeExists(node.NodeName)
 	if err != nil {
 		return nil, err
 	}
 	if nExists {
-		logs.Info("Node name %s already exists in cluster.", node.Name)
+		logs.Info("Node name %s already exists in cluster.", node.NodeName)
 		return nil, nil
 	}
 
@@ -455,12 +455,16 @@ func CreateNode(node model.Node) (*model.Node, error) {
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 	n := k8sclient.AppV1().Node()
 
-	newnode, err := n.Create(&node)
+	var nodek8s model.Node
+	nodek8s.ObjectMeta.Name = node.NodeName
+	nodek8s.ObjectMeta.Labels = node.Labels
+
+	newnode, err := n.Create(&nodek8s)
 	if err != nil {
-		logs.Error("Failed to create node: %s, error: %+v", node.Name, err)
+		logs.Error("Failed to create node: %s, error: %+v", node.NodeName, err)
 		return nil, err
 	}
-	logs.Info(newnode)
+	logs.Info("New Node in K8s %+v", newnode)
 	return newnode, nil
 
 }
