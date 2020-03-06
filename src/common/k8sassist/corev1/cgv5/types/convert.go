@@ -297,8 +297,8 @@ func ToK8sVolumeSource(volumeSource *model.VolumeSource) *v1.VolumeSource {
 	}
 
 	return &v1.VolumeSource{
-		HostPath: hp,
-		NFS:      nfs,
+		HostPath:              hp,
+		NFS:                   nfs,
 		PersistentVolumeClaim: pvc,
 		ConfigMap:             configmap,
 	}
@@ -689,8 +689,8 @@ func FromK8sVolumeSource(volumeSource v1.VolumeSource) model.VolumeSource {
 	}
 
 	return model.VolumeSource{
-		HostPath: hp,
-		NFS:      nfs,
+		HostPath:              hp,
+		NFS:                   nfs,
 		PersistentVolumeClaim: pvc,
 		ConfigMap:             configmap,
 	}
@@ -1320,18 +1320,18 @@ func IsAlreadyExistError(err error) bool {
 	return errors.IsAlreadyExists(err)
 }
 
-func FromK8sRBD(rbd *v1.RBDVolumeSource) *model.RBDVolumeSource {
+func FromK8sRBD(rbd *v1.RBDPersistentVolumeSource) *model.RBDPersistentVolumeSource {
 	if rbd == nil {
 		return nil
 	}
-	return &model.RBDVolumeSource{
+	return &model.RBDPersistentVolumeSource{
 		CephMonitors: rbd.CephMonitors,
 		RBDImage:     rbd.RBDImage,
 		FSType:       rbd.FSType,
 		RBDPool:      rbd.RBDPool,
 		RadosUser:    rbd.RadosUser,
 		Keyring:      rbd.Keyring,
-		SecretRef:    (*model.LocalObjectReference)(rbd.SecretRef),
+		SecretRef:    (*model.SecretReference)(rbd.SecretRef),
 		ReadOnly:     rbd.ReadOnly,
 	}
 }
@@ -1408,18 +1408,18 @@ func FromK8sPVList(pvList *v1.PersistentVolumeList) *model.PersistentVolumeList 
 	}
 }
 
-func ToK8sRBD(rbd *model.RBDVolumeSource) *v1.RBDVolumeSource {
+func ToK8sRBD(rbd *model.RBDPersistentVolumeSource) *v1.RBDPersistentVolumeSource {
 	if rbd == nil {
 		return nil
 	}
-	return &v1.RBDVolumeSource{
+	return &v1.RBDPersistentVolumeSource{
 		CephMonitors: rbd.CephMonitors,
 		RBDImage:     rbd.RBDImage,
 		FSType:       rbd.FSType,
 		RBDPool:      rbd.RBDPool,
 		RadosUser:    rbd.RadosUser,
 		Keyring:      rbd.Keyring,
-		SecretRef:    (*v1.LocalObjectReference)(rbd.SecretRef),
+		SecretRef:    (*v1.SecretReference)(rbd.SecretRef),
 		ReadOnly:     rbd.ReadOnly,
 	}
 }
