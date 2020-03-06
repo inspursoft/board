@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service"
 	c "git/inspursoft/board/src/common/controller"
+	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
+
+	"strings"
 
 	"github.com/astaxie/beego/logs"
 )
@@ -129,4 +132,38 @@ func (n *NodeController) NodesAvailalbeResources() {
 	}
 
 	n.RenderJSON(resources)
+}
+
+func (n *NodeController) AddNodeAction() {
+	var reqNode model.NodeCli
+	var err error
+	err = n.ResolveBody(&reqNode)
+	if err != nil {
+		return
+	}
+
+	if !utils.ValidateWithLengthRange(reqNode.NodeName, 1, 63) {
+		n.CustomAbort(http.StatusBadRequest, "NodeName must be not empty and no more than 63 characters ")
+		return
+	}
+
+	nodeExists, err := service.NodeExists(reqNode.NodeName)
+	if err != nil {
+		n.InternalError(err)
+		return
+	}
+	if nodeExists {
+		n.CustomAbort(http.StatusConflict, "Nodename already exists.")
+		return
+	}
+
+	reqNode.NodeName = strings.TrimSpace(reqNode.NodeName)
+
+	node, err := service.CreateNode(reqNode)
+	if err != nil {
+		logs.Debug("Failed to add node %s", reqNode.NodeName)
+		n.InternalError(err)
+		return
+	}
+	logs.Info("Added node %s", node.ObjectMeta.Name)
 }

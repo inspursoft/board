@@ -528,6 +528,8 @@ export const LANG_EN_US = {
     "VOLUME_CONTAINER_PATH":"Container path",
     "VOLUME_SUB_PATH_FILE":"Sub file of mount path",
     "VOLUME_SELECT_PVC_TITLE":"Select PVC",
+    "VOLUME_SELECT_CONFIG_MAP_TITLE":"Select config map",
+    "VOLUME_SELECT_CONFIG_MAP":"Select config map...",
     "VOLUME_SELECT_PVC":"Select PVC...",
     "VOLUME_CREATE_PVC":"Create PVC...",
     "VOLUME_ADD_VOLUME":"Add volume",
