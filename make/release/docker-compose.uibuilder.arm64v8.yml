@@ -1,10 +1,10 @@
 version: '2'
 services:
-  uibuilder7.2:
+  uibuilder7.3:
     build:
       context: ../../
       dockerfile: make/dev/container/uibuilder/Dockerfile.arm64v8
-    image: inspursoft/uibuilder-arm64v8:7.2
+    image: inspursoft/uibuilder-arm64v8:7.3
     volumes:
       - ../../src/ui:/board_src
     environment:
