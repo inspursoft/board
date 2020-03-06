@@ -77,7 +77,7 @@ export const LANG_EN_US = {
     "USERNAME_IS_REQUIRED": "Username is required.",
     "USERNAME_ALREADY_EXISTS": "Username already exists.",
     "USERNAME_IS_KEY": "The username is key.",
-    "USERNAME_ARE_NOT_IDENTICAL": "The username consists of numeric, lowercase letter and underscore, and the length range is [4,40]",
+    "USERNAME_ARE_NOT_IDENTICAL": "The username consists of numeric, lowercase letter and underscore, and the length range is [4,35]",
     "EMAIL_IS_REQUIRED": "Email is required.",
     "EMAIL_IS_ILLEGAL": "Email is illegal.",
     "EMAIL_ALREADY_EXISTS": "Email already exists",
@@ -453,6 +453,8 @@ export const LANG_EN_US = {
     "CREATE_IMAGE_BASE_IMAGE_PATTERN":"A string consisting of the lowercase,numeric,'.',-',':'",
     "CREATE_IMAGE_WAITING_BUILD": "Building an image",
     "CREATE_IMAGE_WAITING_UPLOAD": "Uploading the image to repository",
+    "CREATE_IMAGE_UPLOAD_IMAGE_TIMEOUT":"Wait too long, there may be an error, whether to continue waiting?",
+    "CREATE_IMAGE_TIMEOUT":"Time out",
   },
   "RESOURCE":{
     "CONFIG_MAP_LIST_NAME":"Name",
