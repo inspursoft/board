@@ -10,6 +10,9 @@ import argparse
 import subprocess
 import shutil
 import urllib2
+import commands
+import tarfile
+import tempfile
 from io import open
 
 
@@ -68,15 +71,24 @@ def image_prefix():
 	return registry_ip + ":" + registry_port + "/"
 
 def push_image(image):
-	print("docker pull " + image)
-	rc = subprocess.call("docker pull " + image , shell=True)
+	index = image.find("/")
+	checkname = image
+	if index != -1 and image[0:index] == "docker.io":
+		checkname = image[index+1:len(image)]
+	print("docker images -q " + checkname)
+	rc, out = commands.getstatusoutput("docker images -q " + checkname)
 	if rc != 0:
 		return rc
-	index = image.find("/")
+	if out == "":
+		print("there is no image " + checkname)
+		return 0
+
 	target = image
 	if index != -1 and len(image) > index + 1:
 		target = image[index+1:len(image)]
-	
+	# process the special sha256 image tag
+	if "@sha256:" in target:
+		target = target.replace("@sha256", "")
 	target = image_prefix() + target
 	print("docker tag " + image + " " + target)
 	rc = subprocess.call("docker tag " + image +" "+ target, shell=True)
@@ -85,13 +97,43 @@ def push_image(image):
 	print("docker push " + target)
 	return subprocess.call("docker push " + target, shell=True)
 
+def process_helm_chart_tar(file, old, new):
+	filename = os.path.basename(file)
+	# extract the tar.gz file
+	path = tempfile.mkdtemp()
+	with tarfile.open(file, "r:gz") as tar:
+		tar.extractall(path)
+	# replace the template and compress the directory
+	with tarfile.open(os.path.join(path, filename), "w:gz") as target:
+		for item in os.listdir(path):
+			replace_file(os.path.join(path, item), old, new)
+			target.add(os.path.join(path, item), arcname=item)
+	shutil.copyfile(os.path.join(path, filename), os.path.join("/data/board/chartmuseum", filename))
+	shutil.rmtree(path)
+
+def replace_file(file, old, new):
+	if os.path.isdir(file):
+		for sub in os.listdir(file):
+			replace_file(os.path.join(file, sub), old, new)
+	else:
+		with open(file, 'r') as f:
+			alllines = f.readlines()
+		with open(file,'w') as f:
+			for line in alllines:
+				f.write(line.replace(old, new))
+
 def save_helm_charts():
-	url = 'https://github.com/inspursoft/charts/archive/v1.0.0.tar.gz'
-	f = urllib2.urlopen(url)
-	data = f.read()
-	with open("charts.tar.gz", "wb") as code:
-  		code.write(data)
-  	return subprocess.call("tar -zxf charts.tar.gz; cd charts-1.0.0; REGISTRY=" +  image_prefix() + " make package; cp -r packages/*.tgz /data/board/chartmuseum", shell=True)
+	chartdir = "charts"
+	if not os.path.exists(chartdir):
+		print("ignore helm charts configuration because charts directory does not exist")
+		return 0
+	if not os.path.isdir(chartdir):
+		print("charts is not a directory")
+		return 1
+	for file in os.listdir(chartdir):
+		if file.endswith(".tgz") and not os.path.isdir(os.path.join(chartdir, file)):
+			process_helm_chart_tar(os.path.join(chartdir, file), "__REGISTRY_PREFIX__", image_prefix())
+	return 0
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--conf', dest='cfgfile', default=base_dir+'/board.cfg',type=str,help="the path of Board configuration file")
@@ -400,10 +442,13 @@ shutil.copytree(os.path.join(templates_dir, "kibana"), kibana_config_dir)
 
 ### settings for helm charts ###
 ### download images and push to registry ###
-rc = push_image("docker.io/inspursoft/flink:1.9.1-scala_2.12")
-if rc != 0:
-	print("push the Board helm images failed, please read the documents for Board.")
-	exit(1)
+for image in ["docker.io/confluentinc/cp-kafka:4.1.2-2", "docker.io/lwolf/kubectl_deployer:0.4", "docker.io/solsson/kafka-prometheus-jmx-exporter@sha256:a23062396cd5af1acdf76512632c20ea6be76885dfc20cd9ff40fb23846557e8",
+			   "docker.io/danielqsj/kafka-exporter:v1.2.0", "docker.io/inspursoft/k8szk:v3", "docker.io/sscaling/jmx-prometheus-exporter:0.3.0", "docker.io/josdotso/zookeeper-exporter:v1.1.2", "docker.io/inspursoft/flink:1.9.1-scala_2.12",
+			   "docker.io/zookeeper:3.5.5"]:
+	rc = push_image(image)
+	if rc != 0:
+		print("push the Board helm images failed, please read the documents for Board.")
+		exit(1)
 ### download the helm charts and save it into chartmuseum data directory. ###
 rc = save_helm_charts()
 if rc != 0:
