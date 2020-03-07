@@ -36,7 +36,7 @@ func (o *OperationController) OperationList() {
 
 	orderFieldValue, err := service.ParseOrderField("operation", orderField)
 	if err != nil {
-		o.CustomAbort(http.StatusBadRequest, err.Error())
+		o.CustomAbortAudit(http.StatusBadRequest, err.Error())
 		return
 	}
 

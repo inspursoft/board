@@ -143,7 +143,7 @@ func (n *NodeController) AddNodeAction() {
 	}
 
 	if !utils.ValidateWithLengthRange(reqNode.NodeName, 1, 63) {
-		n.CustomAbort(http.StatusBadRequest, "NodeName must be not empty and no more than 63 characters ")
+		n.CustomAbortAudit(http.StatusBadRequest, "NodeName must be not empty and no more than 63 characters ")
 		return
 	}
 
@@ -153,7 +153,7 @@ func (n *NodeController) AddNodeAction() {
 		return
 	}
 	if nodeExists {
-		n.CustomAbort(http.StatusConflict, "Nodename already exists.")
+		n.CustomAbortAudit(http.StatusConflict, "Nodename already exists.")
 		return
 	}
 

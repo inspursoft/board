@@ -92,7 +92,7 @@ func (p *JobController) GetJobListAction() {
 
 	orderFieldValue, err := service.ParseOrderField("job", orderField)
 	if err != nil {
-		p.CustomAbort(http.StatusBadRequest, err.Error())
+		p.CustomAbortAudit(http.StatusBadRequest, err.Error())
 		return
 	}
 
