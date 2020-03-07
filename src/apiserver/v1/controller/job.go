@@ -89,6 +89,13 @@ func (p *JobController) GetJobListAction() {
 	pageSize, _ := p.GetInt("page_size", 0)
 	orderField := p.GetString("order_field", "creation_time")
 	orderAsc, _ := p.GetInt("order_asc", 0)
+
+	orderFieldValue, err := service.ParseOrderField("job", orderField)
+	if err != nil {
+		p.CustomAbortAudit(http.StatusBadRequest, err.Error())
+		return
+	}
+
 	if pageIndex == 0 && pageSize == 0 {
 		jobStatus, err := service.GetJobList(jobName, p.CurrentUser.ID)
 		if err != nil {
@@ -102,7 +109,7 @@ func (p *JobController) GetJobListAction() {
 		}
 		p.RenderJSON(jobStatus)
 	} else {
-		paginatedJobStatus, err := service.GetPaginatedJobList(jobName, p.CurrentUser.ID, pageIndex, pageSize, orderField, orderAsc)
+		paginatedJobStatus, err := service.GetPaginatedJobList(jobName, p.CurrentUser.ID, pageIndex, pageSize, orderFieldValue, orderAsc)
 		if err != nil {
 			p.InternalError(err)
 			return

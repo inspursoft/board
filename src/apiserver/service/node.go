@@ -162,7 +162,7 @@ func GetNodeList() (res []NodeListResult) {
 	for _, v := range Node.Items {
 		res = append(res, NodeListResult{
 			NodeName: v.Status.Addresses[1].Address,
-			NodeIP:   v.Status.Addresses[1].Address,
+			NodeIP:   v.Status.Addresses[0].Address,
 			Status: func() NodeStatus {
 				if v.Unschedulable {
 					return Unschedulable
@@ -414,4 +414,86 @@ func GetNodesAvailableResources() ([]model.NodeAvailableResources, error) {
 		resources = append(resources, noderesource)
 	}
 	return resources, nil
+}
+
+// Check the node name existing in cluster, existing return ture
+func NodeExists(nodeName string) (bool, error) {
+	var config k8sassist.K8sAssistConfig
+	config.KubeConfigPath = kubeConfigPath()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	n := k8sclient.AppV1().Node()
+
+	nodeList, err := n.List()
+	if err != nil {
+		logs.Error("Failed to check node list in cluster", nodeName)
+		return false, err
+	}
+
+	for _, nd := range (*nodeList).Items {
+		if nodeName == nd.Name {
+			logs.Info("Nodename existing %+v", nodeName)
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+// Create a node in kubernetes cluster
+func CreateNode(node model.NodeCli) (*model.Node, error) {
+
+	nExists, err := NodeExists(node.NodeName)
+	if err != nil {
+		return nil, err
+	}
+	if nExists {
+		logs.Info("Node name %s already exists in cluster.", node.NodeName)
+		return nil, nil
+	}
+
+	var config k8sassist.K8sAssistConfig
+	config.KubeConfigPath = kubeConfigPath()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	n := k8sclient.AppV1().Node()
+
+	var nodek8s model.Node
+	nodek8s.ObjectMeta.Name = node.NodeName
+	nodek8s.ObjectMeta.Labels = node.Labels
+
+	newnode, err := n.Create(&nodek8s)
+	if err != nil {
+		logs.Error("Failed to create node: %s, error: %+v", node.NodeName, err)
+		return nil, err
+	}
+	logs.Info("New Node in K8s %+v", newnode)
+	return newnode, nil
+
+}
+
+// Delete a node from kubernetes cluster, should do clean work first before this func
+func DeleteNode(nodeName string) (bool, error) {
+	nExists, err := NodeExists(nodeName)
+	if err != nil {
+		return false, err
+	}
+	if !nExists {
+		logs.Info("Name %s not exists in cluster.", nodeName)
+		return false, nil
+	}
+
+	var config k8sassist.K8sAssistConfig
+	config.KubeConfigPath = kubeConfigPath()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	n := k8sclient.AppV1().Node()
+
+	err = n.Delete(nodeName)
+	if err != nil {
+		logs.Error("Failed to delete node %s", nodeName)
+		return false, err
+	}
+	return true, nil
+}
+
+// TODO: Drain a node
+func DrainNode(nodeName string) error {
+	return nil
 }

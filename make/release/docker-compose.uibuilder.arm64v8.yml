@@ -1,13 +1,13 @@
 version: '2'
 services:
-  uibuilder7.3:
+  uibuilder7.2:
     build:
       context: ../../
-      dockerfile: make/dev/container/uibuilder/Dockerfile
-    image: 10.111.25.119/board/dev_uibuilder:7.3
+      dockerfile: make/dev/container/uibuilder/Dockerfile.arm64v8
+    image: inspursoft/uibuilder-arm64v8:7.2
     volumes:
       - ../../src/ui:/board_src
     environment:
-      MODE: build
+      MODE: prod
     entrypoint:
       - /entrypoint.sh

@@ -42,7 +42,6 @@ tools/swagger
 src/apiserver/*.py
 make/templates/apiserver/kvmregistry/kvmregistry
 
-src/apiserver/routers/commentsRouter_*.go
 src/apiserver/swagger
 *.exe~
 *.exe
