@@ -41,3 +41,9 @@ tools/swagger
 !tools/swagger/*.sh
 src/apiserver/*.py
 make/templates/apiserver/kvmregistry/kvmregistry
+
+src/apiserver/swagger
+*.exe~
+*.exe
+src/apiserver/*.tmp
+src/apiserver/*.zip
