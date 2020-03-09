@@ -18,16 +18,16 @@
 DEVFLAG=release
 
 # ARCH default is x86_64, also support mips, arm64v8
-ARCH=arm64v8
+ARCH=
 
 ifeq ($(DEVFLAG), release) 
 	BASEIMAGE=alpine:3.7
-	GOBUILDIMAGE=golang:1.9.6-alpine3.7
+	GOBUILDIMAGE=golang:1.14.0-alpine3.11
 	WORKPATH=release
 	IMAGEPREFIX=board
 else
 	BASEIMAGE=ubuntu:14.04
-	GOBUILDIMAGE=golang:1.9.6
+	GOBUILDIMAGE=golang:1.14.0
 	WORKPATH=dev
 	IMAGEPREFIX=dev
 endif 
