@@ -24,7 +24,7 @@ services:
     # build:
     #   context: ../../
     #   dockerfile: make/dev/container/tokenserver/Dockerfile
-    image: 10.111.25.119/board/dev_tokenserver:dev
+    image: 10.110.25.227:6000/board/dev_tokenserver:dev
     env_file:
       - ../config/tokenserver/env
     restart: always
