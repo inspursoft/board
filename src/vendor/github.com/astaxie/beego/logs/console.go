@@ -17,10 +17,8 @@ package logs
 import (
 	"encoding/json"
 	"os"
-	"strings"
+	"runtime"
 	"time"
-
-	"github.com/shiena/ansicolor"
 )
 
 // brush is a color join function
@@ -56,9 +54,9 @@ type consoleWriter struct {
 // NewConsole create ConsoleWriter returning as LoggerInterface.
 func NewConsole() Logger {
 	cw := &consoleWriter{
-		lg:       newLogWriter(ansicolor.NewAnsiColorWriter(os.Stdout)),
+		lg:       newLogWriter(os.Stdout),
 		Level:    LevelDebug,
-		Colorful: true,
+		Colorful: runtime.GOOS != "windows",
 	}
 	return cw
 }
@@ -69,7 +67,11 @@ func (c *consoleWriter) Init(jsonConfig string) error {
 	if len(jsonConfig) == 0 {
 		return nil
 	}
-	return json.Unmarshal([]byte(jsonConfig), c)
+	err := json.Unmarshal([]byte(jsonConfig), c)
+	if runtime.GOOS == "windows" {
+		c.Colorful = false
+	}
+	return err
 }
 
 // WriteMsg write message in console.
@@ -78,9 +80,9 @@ func (c *consoleWriter) WriteMsg(when time.Time, msg string, level int) error {
 		return nil
 	}
 	if c.Colorful {
-		msg = strings.Replace(msg, levelPrefix[level], colors[level](levelPrefix[level]), 1)
+		msg = colors[level](msg)
 	}
-	c.lg.writeln(when, msg)
+	c.lg.println(when, msg)
 	return nil
 }
 

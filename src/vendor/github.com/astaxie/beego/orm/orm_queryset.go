@@ -15,7 +15,6 @@
 package orm
 
 import (
-	"context"
 	"fmt"
 )
 
@@ -56,19 +55,16 @@ func ColValue(opt operator, value interface{}) interface{} {
 
 // real query struct
 type querySet struct {
-	mi         *modelInfo
-	cond       *Condition
-	related    []string
-	relDepth   int
-	limit      int64
-	offset     int64
-	groups     []string
-	orders     []string
-	distinct   bool
-	forupdate  bool
-	orm        *orm
-	ctx        context.Context
-	forContext bool
+	mi       *modelInfo
+	cond     *Condition
+	related  []string
+	relDepth int
+	limit    int64
+	offset   int64
+	groups   []string
+	orders   []string
+	distinct bool
+	orm      *orm
 }
 
 var _ QuerySeter = new(querySet)
@@ -79,15 +75,6 @@ func (o querySet) Filter(expr string, args ...interface{}) QuerySeter {
 		o.cond = NewCondition()
 	}
 	o.cond = o.cond.And(expr, args...)
-	return &o
-}
-
-// add raw sql to querySeter.
-func (o querySet) FilterRaw(expr string, sql string) QuerySeter {
-	if o.cond == nil {
-		o.cond = NewCondition()
-	}
-	o.cond = o.cond.Raw(expr, sql)
 	return &o
 }
 
@@ -137,12 +124,6 @@ func (o querySet) OrderBy(exprs ...string) QuerySeter {
 // add DISTINCT to SELECT
 func (o querySet) Distinct() QuerySeter {
 	o.distinct = true
-	return &o
-}
-
-// add FOR UPDATE to SELECT
-func (o querySet) ForUpdate() QuerySeter {
-	o.forupdate = true
 	return &o
 }
 
@@ -276,13 +257,6 @@ func (o *querySet) RowsToMap(result *Params, keyCol, valueCol string) (int64, er
 // }
 func (o *querySet) RowsToStruct(ptrStruct interface{}, keyCol, valueCol string) (int64, error) {
 	panic(ErrNotImplement)
-}
-
-// set context to QuerySeter.
-func (o querySet) WithContext(ctx context.Context) QuerySeter {
-	o.ctx = ctx
-	o.forContext = true
-	return &o
 }
 
 // create new QuerySeter.

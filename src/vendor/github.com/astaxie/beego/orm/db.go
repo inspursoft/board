@@ -536,8 +536,6 @@ func (d *dbBase) InsertOrUpdate(q dbQuerier, mi *modelInfo, ind reflect.Value, a
 	updates := make([]string, len(names))
 	var conflitValue interface{}
 	for i, v := range names {
-		// identifier in database may not be case-sensitive, so quote it
-		v = fmt.Sprintf("%s%s%s", Q, v, Q)
 		marks[i] = "?"
 		valueStr := argsMap[strings.ToLower(v)]
 		if v == args0 {
@@ -619,31 +617,6 @@ func (d *dbBase) Update(q dbQuerier, mi *modelInfo, ind reflect.Value, tz *time.
 	setValues, _, err := d.collectValues(mi, ind, cols, true, false, &setNames, tz)
 	if err != nil {
 		return 0, err
-	}
-
-	var findAutoNowAdd, findAutoNow bool
-	var index int
-	for i, col := range setNames {
-		if mi.fields.GetByColumn(col).autoNowAdd {
-			index = i
-			findAutoNowAdd = true
-		}
-		if mi.fields.GetByColumn(col).autoNow {
-			findAutoNow = true
-		}
-	}
-	if findAutoNowAdd {
-		setNames = append(setNames[0:index], setNames[index+1:]...)
-		setValues = append(setValues[0:index], setValues[index+1:]...)
-	}
-
-	if !findAutoNow {
-		for col, info := range mi.fields.columns {
-			if info.autoNow {
-				setNames = append(setNames, col)
-				setValues = append(setValues, time.Now())
-			}
-		}
 	}
 
 	setValues = append(setValues, pkValue)
@@ -787,13 +760,7 @@ func (d *dbBase) UpdateBatch(q dbQuerier, qs *querySet, mi *modelInfo, cond *Con
 	}
 
 	d.ins.ReplaceMarks(&query)
-	var err error
-	var res sql.Result
-	if qs != nil && qs.forContext {
-		res, err = q.ExecContext(qs.ctx, query, values...)
-	} else {
-		res, err = q.Exec(query, values...)
-	}
+	res, err := q.Exec(query, values...)
 	if err == nil {
 		return res.RowsAffected()
 	}
@@ -882,16 +849,11 @@ func (d *dbBase) DeleteBatch(q dbQuerier, qs *querySet, mi *modelInfo, cond *Con
 	for i := range marks {
 		marks[i] = "?"
 	}
-	sqlIn := fmt.Sprintf("IN (%s)", strings.Join(marks, ", "))
-	query = fmt.Sprintf("DELETE FROM %s%s%s WHERE %s%s%s %s", Q, mi.table, Q, Q, mi.fields.pk.column, Q, sqlIn)
+	sql := fmt.Sprintf("IN (%s)", strings.Join(marks, ", "))
+	query = fmt.Sprintf("DELETE FROM %s%s%s WHERE %s%s%s %s", Q, mi.table, Q, Q, mi.fields.pk.column, Q, sql)
 
 	d.ins.ReplaceMarks(&query)
-	var res sql.Result
-	if qs != nil && qs.forContext {
-		res, err = q.ExecContext(qs.ctx, query, args...)
-	} else {
-		res, err = q.Exec(query, args...)
-	}
+	res, err := q.Exec(query, args...)
 	if err == nil {
 		num, err := res.RowsAffected()
 		if err != nil {
@@ -964,7 +926,7 @@ func (d *dbBase) ReadBatch(q dbQuerier, qs *querySet, mi *modelInfo, cond *Condi
 					maps[fi.column] = true
 				}
 			} else {
-				return 0, fmt.Errorf("wrong field/column name `%s`", col)
+				panic(fmt.Errorf("wrong field/column name `%s`", col))
 			}
 		}
 		if hasRel {
@@ -1007,25 +969,14 @@ func (d *dbBase) ReadBatch(q dbQuerier, qs *querySet, mi *modelInfo, cond *Condi
 	}
 	query := fmt.Sprintf("%s %s FROM %s%s%s T0 %s%s%s%s%s", sqlSelect, sels, Q, mi.table, Q, join, where, groupBy, orderBy, limit)
 
-	if qs.forupdate {
-		query += " FOR UPDATE"
-	}
-
 	d.ins.ReplaceMarks(&query)
 
 	var rs *sql.Rows
-	var err error
-	if qs != nil && qs.forContext {
-		rs, err = q.QueryContext(qs.ctx, query, args...)
-		if err != nil {
-			return 0, err
-		}
-	} else {
-		rs, err = q.Query(query, args...)
-		if err != nil {
-			return 0, err
-		}
+	r, err := q.Query(query, args...)
+	if err != nil {
+		return 0, err
 	}
+	rs = r
 
 	refs := make([]interface{}, colsNum)
 	for i := range refs {
@@ -1154,12 +1105,8 @@ func (d *dbBase) Count(q dbQuerier, qs *querySet, mi *modelInfo, cond *Condition
 
 	d.ins.ReplaceMarks(&query)
 
-	var row *sql.Row
-	if qs != nil && qs.forContext {
-		row = q.QueryRowContext(qs.ctx, query, args...)
-	} else {
-		row = q.QueryRow(query, args...)
-	}
+	row := q.QueryRow(query, args...)
+
 	err = row.Scan(&cnt)
 	return
 }

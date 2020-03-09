@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// +build go1.8
-
 // Package orm provide ORM for MySQL/PostgreSQL/sqlite
 // Simple Usage
 //
@@ -54,13 +52,11 @@
 package orm
 
 import (
-	"context"
 	"database/sql"
 	"errors"
 	"fmt"
 	"os"
 	"reflect"
-	"sync"
 	"time"
 )
 
@@ -73,7 +69,7 @@ const (
 var (
 	Debug            = false
 	DebugLog         = NewLog(os.Stdout)
-	DefaultRowsLimit = -1
+	DefaultRowsLimit = 1000
 	DefaultRelsDepth = 2
 	DefaultTimeLoc   = time.Local
 	ErrTxHasBegan    = errors.New("<Ormer.Begin> transaction already begin")
@@ -426,7 +422,7 @@ func (o *orm) getRelQs(md interface{}, mi *modelInfo, fi *fieldInfo) *querySet {
 func (o *orm) QueryTable(ptrStructOrTableName interface{}) (qs QuerySeter) {
 	var name string
 	if table, ok := ptrStructOrTableName.(string); ok {
-		name = nameStrategyMap[defaultNameStrategy](table)
+		name = snakeString(table)
 		if mi, ok := modelCache.get(name); ok {
 			qs = newQuerySet(o, mi)
 		}
@@ -462,15 +458,11 @@ func (o *orm) Using(name string) error {
 
 // begin transaction
 func (o *orm) Begin() error {
-	return o.BeginTx(context.Background(), nil)
-}
-
-func (o *orm) BeginTx(ctx context.Context, opts *sql.TxOptions) error {
 	if o.isTx {
 		return ErrTxHasBegan
 	}
 	var tx *sql.Tx
-	tx, err := o.db.(txer).BeginTx(ctx, opts)
+	tx, err := o.db.(txer).Begin()
 	if err != nil {
 		return err
 	}
@@ -523,15 +515,6 @@ func (o *orm) Driver() Driver {
 	return driver(o.alias.Name)
 }
 
-// return sql.DBStats for current database
-func (o *orm) DBStats() *sql.DBStats {
-	if o.alias != nil && o.alias.DB != nil {
-		stats := o.alias.DB.DB.Stats()
-		return &stats
-	}
-	return nil
-}
-
 // NewOrm create new orm
 func NewOrm() Ormer {
 	BootStrap() // execute only once
@@ -558,13 +541,6 @@ func NewOrmWithDB(driverName, aliasName string, db *sql.DB) (Ormer, error) {
 
 	al.Name = aliasName
 	al.DriverName = driverName
-	al.DB = &DB{
-		RWMutex: new(sync.RWMutex),
-		DB:      db,
-		stmts:   make(map[string]*sql.Stmt),
-	}
-
-	detectTZ(al)
 
 	o := new(orm)
 	o.alias = al

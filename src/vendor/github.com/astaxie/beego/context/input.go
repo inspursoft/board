@@ -27,7 +27,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/astaxie/beego/session"
 )
@@ -38,7 +37,6 @@ var (
 	acceptsHTMLRegex = regexp.MustCompile(`(text/html|application/xhtml\+xml)(?:,|$)`)
 	acceptsXMLRegex  = regexp.MustCompile(`(application/xml|text/xml)(?:,|$)`)
 	acceptsJSONRegex = regexp.MustCompile(`(application/json)(?:,|$)`)
-	acceptsYAMLRegex = regexp.MustCompile(`(application/x-yaml)(?:,|$)`)
 	maxParam         = 50
 )
 
@@ -50,7 +48,6 @@ type BeegoInput struct {
 	pnames        []string
 	pvalues       []string
 	data          map[interface{}]interface{} // store some values in this context when calling context in filter or controller.
-	dataLock      sync.RWMutex
 	RequestBody   []byte
 	RunMethod     string
 	RunController reflect.Type
@@ -205,11 +202,6 @@ func (input *BeegoInput) AcceptsXML() bool {
 // AcceptsJSON Checks if request accepts json response
 func (input *BeegoInput) AcceptsJSON() bool {
 	return acceptsJSONRegex.MatchString(input.Header("Accept"))
-}
-
-// AcceptsYAML Checks if request accepts json response
-func (input *BeegoInput) AcceptsYAML() bool {
-	return acceptsYAMLRegex.MatchString(input.Header("Accept"))
 }
 
 // IP returns request client ip.
@@ -380,8 +372,6 @@ func (input *BeegoInput) CopyBody(MaxMemory int64) []byte {
 
 // Data return the implicit data in the input
 func (input *BeegoInput) Data() map[interface{}]interface{} {
-	input.dataLock.Lock()
-	defer input.dataLock.Unlock()
 	if input.data == nil {
 		input.data = make(map[interface{}]interface{})
 	}
@@ -390,8 +380,6 @@ func (input *BeegoInput) Data() map[interface{}]interface{} {
 
 // GetData returns the stored data in this context.
 func (input *BeegoInput) GetData(key interface{}) interface{} {
-	input.dataLock.Lock()
-	defer input.dataLock.Unlock()
 	if v, ok := input.data[key]; ok {
 		return v
 	}
@@ -401,8 +389,6 @@ func (input *BeegoInput) GetData(key interface{}) interface{} {
 // SetData stores data with given key in this context.
 // This data are only available in this context.
 func (input *BeegoInput) SetData(key, val interface{}) {
-	input.dataLock.Lock()
-	defer input.dataLock.Unlock()
 	if input.data == nil {
 		input.data = make(map[interface{}]interface{})
 	}
