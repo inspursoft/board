@@ -49,7 +49,7 @@ func generateProjectsByUserSQL(query model.Project, userID int64) (string, []int
 	and p.name like ?
 	and (p.public = 1
 	or p.id in (select p.id from project p left join project_member pm on p.id = pm.project_id  left join user u on u.id = pm.user_id where p.deleted = 0 and u.deleted = 0 and u.id=?)
-	or exists (select * from user u where u.deleted = 0 and u.system_admin = 1 and u.id=?))`
+	or exists (select u.id from user u where u.deleted = 0 and u.system_admin = 1 and u.id=?))`
 	params := make([]interface{}, 0)
 	params = append(params, "%"+query.Name+"%", userID, userID)
 
@@ -116,7 +116,7 @@ func GetProjectsByMember(query model.Project, userID int64) ([]*model.Project, e
 	where p.deleted = 0 
 	and p.name like ?
 	and (p.id in (select p.id from project p left join project_member pm on p.id = pm.project_id  left join user u on u.id = pm.user_id where p.deleted = 0 and u.deleted = 0 and u.id=?)
-	or exists (select * from user u where u.deleted = 0 and u.system_admin = 1 and u.id=?))`
+	or exists (select u.id from user u where u.deleted = 0 and u.system_admin = 1 and u.id=?))`
 	params := make([]interface{}, 0)
 	params = append(params, "%"+query.Name+"%", userID, userID)
 
