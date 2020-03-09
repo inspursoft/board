@@ -7,7 +7,6 @@ COPY src/common /go/src/git/inspursoft/board/src/common
 COPY src/vendor /go/src/git/inspursoft/board/vendor
 WORKDIR /go/src/git/inspursoft/board/src/collector/cmd
 
-ENV GO111MODULE=on
 
 RUN go build -v -a -o /go/bin/collector
 

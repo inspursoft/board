@@ -5,9 +5,8 @@ MAINTAINER huay@inspur.com
 COPY src/. /go/src/git/inspursoft/board/src/.
 
 WORKDIR /go/src/git/inspursoft/board/src/tokenserver
-ENV GO111MODULE=on
 
-RUN go build -v -a -o /go/bin/tokenserver
+RUN go build -v -a -mod=mod -o /go/bin/tokenserver
 
 RUN chmod u+x /go/bin/tokenserver
 
