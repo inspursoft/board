@@ -27,7 +27,7 @@ func (controller *Controller) Render() error {
 // @Success 200 {object} []nodeModel.NodeStatus  success
 // @Failure 400 bad request
 // @Failure 500 Internal Server Error
-// @router /list [get]
+// @router / [get]
 func (controller *Controller) GetNodeListAction() {
 	var nodeStatusList []nodeModel.NodeStatus
 	err := nodeService.GetNodeStatusList(&nodeStatusList)
@@ -91,7 +91,7 @@ func (controller *Controller) GetNodeLogDetail() {
 // @Success 200
 // @Failure 400 bad request
 // @Failure 500 Internal Server Error
-// @router /add [post]
+// @router / [post]
 func (controller *Controller) AddNodeAction() {
 	var postData nodeModel.AddNodePostData
 	controller.resolveBody(&postData)
@@ -103,7 +103,7 @@ func (controller *Controller) AddNodeAction() {
 // @Success 200
 // @Failure 400 bad request
 // @Failure 500 Internal Server Error
-// @router /remove [delete]
+// @router / [delete]
 func (controller *Controller) RemoveNodeAction() {
 	nodeIp := controller.Ctx.Input.Query("node_ip")
 	controller.AddRemoveNode(nodeIp, nodeModel.ActionTypeDeleteNode, nodeModel.RemoveNodeYamlFile)

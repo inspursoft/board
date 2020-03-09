@@ -11,15 +11,15 @@ export class ResourceService {
   }
 
   getNodeList(): Observable<NodeList> {
-    return this.http.getArrayJson(`/v1/admin/node/list`, NodeList);
+    return this.http.getArrayJson(`/v1/admin/node`, NodeList);
   }
 
   addNode(nodeIp: string): Observable<NodeLog> {
-    return this.http.postJson('/v1/admin/node/add', {node_ip: nodeIp}, NodeLog);
+    return this.http.postJson('/v1/admin/node', {node_ip: nodeIp}, NodeLog);
   }
 
   removeNode(nodeIp: string): Observable<NodeLog> {
-    return this.http.delete(`/v1/admin/node/remove?node_ip=${nodeIp}`)
+    return this.http.delete(`/v1/admin/node?node_ip=${nodeIp}`)
       .pipe(map((res: object) => new NodeLog(res)));
   }
 
