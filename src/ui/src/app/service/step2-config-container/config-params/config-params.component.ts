@@ -77,7 +77,7 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
     if (volume.length > index) {
       const storageServer = volume[index].targetStorageService === '' ? '' :
         volume[index].targetStorageService.concat(':');
-      const result = `${volume[index].containerPath}:${storageServer}${volume[index].containerPath}`;
+      const result = `${volume[index].containerPath}:${storageServer}${volume[index].targetPath}`;
       return result === ':' ? '' : result;
     } else {
       return '';
