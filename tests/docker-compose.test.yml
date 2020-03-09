@@ -21,10 +21,10 @@ services:
       - 389:389
       - 636:636
   tokenserver:
-    build:
-      context: ../../
-      dockerfile: make/dev/container/tokenserver/Dockerfile
-    image: dev_tokenserver:dev
+    # build:
+    #   context: ../../
+    #   dockerfile: make/dev/container/tokenserver/Dockerfile
+    image: 10.111.25.119/board/dev_tokenserver:dev
     env_file:
       - ../config/tokenserver/env
     restart: always
