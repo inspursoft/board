@@ -20,7 +20,10 @@ import (
 	"encoding/json"
 	"time"
 
-	fuzz "github.com/google/gofuzz"
+	openapi "k8s.io/kube-openapi/pkg/common"
+
+	"github.com/go-openapi/spec"
+	"github.com/google/gofuzz"
 )
 
 // Time is a wrapper around time.Time which supports correct
@@ -39,6 +42,11 @@ type Time struct {
 // copy-by-assign, despite the presence of (unexported) Pointer fields.
 func (t *Time) DeepCopyInto(out *Time) {
 	*out = *t
+}
+
+// String returns the representation of the time.
+func (t Time) String() string {
+	return t.Time.String()
 }
 
 // NewTime returns a wrapped instance of the provided time
@@ -67,21 +75,12 @@ func (t *Time) IsZero() bool {
 
 // Before reports whether the time instant t is before u.
 func (t *Time) Before(u *Time) bool {
-	if t != nil && u != nil {
-		return t.Time.Before(u.Time)
-	}
-	return false
+	return t.Time.Before(u.Time)
 }
 
 // Equal reports whether the time instant t is equal to u.
 func (t *Time) Equal(u *Time) bool {
-	if t == nil && u == nil {
-		return true
-	}
-	if t != nil && u != nil {
-		return t.Time.Equal(u.Time)
-	}
-	return false
+	return t.Time.Equal(u.Time)
 }
 
 // Unix returns the local time corresponding to the given Unix time
@@ -104,10 +103,7 @@ func (t *Time) UnmarshalJSON(b []byte) error {
 	}
 
 	var str string
-	err := json.Unmarshal(b, &str)
-	if err != nil {
-		return err
-	}
+	json.Unmarshal(b, &str)
 
 	pt, err := time.Parse(time.RFC3339, str)
 	if err != nil {
@@ -145,23 +141,20 @@ func (t Time) MarshalJSON() ([]byte, error) {
 		// Encode unset/nil objects as JSON's "null".
 		return []byte("null"), nil
 	}
-	buf := make([]byte, 0, len(time.RFC3339)+2)
-	buf = append(buf, '"')
-	// time cannot contain non escapable JSON characters
-	buf = t.UTC().AppendFormat(buf, time.RFC3339)
-	buf = append(buf, '"')
-	return buf, nil
+
+	return json.Marshal(t.UTC().Format(time.RFC3339))
 }
 
-// OpenAPISchemaType is used by the kube-openapi generator when constructing
-// the OpenAPI spec of this type.
-//
-// See: https://github.com/kubernetes/kube-openapi/tree/master/pkg/generators
-func (_ Time) OpenAPISchemaType() []string { return []string{"string"} }
-
-// OpenAPISchemaFormat is used by the kube-openapi generator when constructing
-// the OpenAPI spec of this type.
-func (_ Time) OpenAPISchemaFormat() string { return "date-time" }
+func (_ Time) OpenAPIDefinition() openapi.OpenAPIDefinition {
+	return openapi.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type:   []string{"string"},
+				Format: "date-time",
+			},
+		},
+	}
+}
 
 // MarshalQueryParameter converts to a URL query parameter value
 func (t Time) MarshalQueryParameter() (string, error) {

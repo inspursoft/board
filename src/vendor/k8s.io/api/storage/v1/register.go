@@ -41,17 +41,11 @@ var (
 	AddToScheme        = localSchemeBuilder.AddToScheme
 )
 
-// Adds the list of known types to the given scheme.
+// Adds the list of known types to api.Scheme.
 func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,
 		&StorageClass{},
 		&StorageClassList{},
-
-		&VolumeAttachment{},
-		&VolumeAttachmentList{},
-
-		&CSINode{},
-		&CSINodeList{},
 	)
 
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)

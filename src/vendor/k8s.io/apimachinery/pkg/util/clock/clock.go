@@ -21,23 +21,22 @@ import (
 	"time"
 )
 
-// PassiveClock allows for injecting fake or real clocks into code
-// that needs to read the current time but does not support scheduling
-// activity in the future.
-type PassiveClock interface {
-	Now() time.Time
-	Since(time.Time) time.Duration
-}
-
 // Clock allows for injecting fake or real clocks into code that
 // needs to do arbitrary things based on time.
 type Clock interface {
-	PassiveClock
-	After(time.Duration) <-chan time.Time
-	NewTimer(time.Duration) Timer
-	Sleep(time.Duration)
-	NewTicker(time.Duration) Ticker
+	Now() time.Time
+	Since(time.Time) time.Duration
+	After(d time.Duration) <-chan time.Time
+	NewTimer(d time.Duration) Timer
+	Sleep(d time.Duration)
+	Tick(d time.Duration) <-chan time.Time
 }
+
+var (
+	_ = Clock(RealClock{})
+	_ = Clock(&FakeClock{})
+	_ = Clock(&IntervalClock{})
+)
 
 // RealClock really calls time.Now()
 type RealClock struct{}
@@ -63,25 +62,18 @@ func (RealClock) NewTimer(d time.Duration) Timer {
 	}
 }
 
-func (RealClock) NewTicker(d time.Duration) Ticker {
-	return &realTicker{
-		ticker: time.NewTicker(d),
-	}
+func (RealClock) Tick(d time.Duration) <-chan time.Time {
+	return time.Tick(d)
 }
 
 func (RealClock) Sleep(d time.Duration) {
 	time.Sleep(d)
 }
 
-// FakePassiveClock implements PassiveClock, but returns an arbitrary time.
-type FakePassiveClock struct {
-	lock sync.RWMutex
-	time time.Time
-}
-
 // FakeClock implements Clock, but returns an arbitrary time.
 type FakeClock struct {
-	FakePassiveClock
+	lock sync.RWMutex
+	time time.Time
 
 	// waiters are waiting for the fake time to pass their specified time
 	waiters []fakeClockWaiter
@@ -92,39 +84,27 @@ type fakeClockWaiter struct {
 	stepInterval  time.Duration
 	skipIfBlocked bool
 	destChan      chan time.Time
-}
-
-func NewFakePassiveClock(t time.Time) *FakePassiveClock {
-	return &FakePassiveClock{
-		time: t,
-	}
+	fired         bool
 }
 
 func NewFakeClock(t time.Time) *FakeClock {
 	return &FakeClock{
-		FakePassiveClock: *NewFakePassiveClock(t),
+		time: t,
 	}
 }
 
 // Now returns f's time.
-func (f *FakePassiveClock) Now() time.Time {
+func (f *FakeClock) Now() time.Time {
 	f.lock.RLock()
 	defer f.lock.RUnlock()
 	return f.time
 }
 
 // Since returns time since the time in f.
-func (f *FakePassiveClock) Since(ts time.Time) time.Duration {
+func (f *FakeClock) Since(ts time.Time) time.Duration {
 	f.lock.RLock()
 	defer f.lock.RUnlock()
 	return f.time.Sub(ts)
-}
-
-// Sets the time.
-func (f *FakePassiveClock) SetTime(t time.Time) {
-	f.lock.Lock()
-	defer f.lock.Unlock()
-	f.time = t
 }
 
 // Fake version of time.After(d).
@@ -157,7 +137,7 @@ func (f *FakeClock) NewTimer(d time.Duration) Timer {
 	return timer
 }
 
-func (f *FakeClock) NewTicker(d time.Duration) Ticker {
+func (f *FakeClock) Tick(d time.Duration) <-chan time.Time {
 	f.lock.Lock()
 	defer f.lock.Unlock()
 	tickTime := f.time.Add(d)
@@ -169,9 +149,7 @@ func (f *FakeClock) NewTicker(d time.Duration) Ticker {
 		destChan:      ch,
 	})
 
-	return &fakeTicker{
-		c: ch,
-	}
+	return ch
 }
 
 // Move clock by Duration, notify anyone that's called After, Tick, or NewTimer
@@ -199,10 +177,12 @@ func (f *FakeClock) setTimeLocked(t time.Time) {
 			if w.skipIfBlocked {
 				select {
 				case w.destChan <- t:
+					w.fired = true
 				default:
 				}
 			} else {
 				w.destChan <- t
+				w.fired = true
 			}
 
 			if w.stepInterval > 0 {
@@ -262,8 +242,8 @@ func (*IntervalClock) NewTimer(d time.Duration) Timer {
 
 // Unimplemented, will panic.
 // TODO: make interval clock use FakeClock so this can be implemented.
-func (*IntervalClock) NewTicker(d time.Duration) Ticker {
-	panic("IntervalClock doesn't implement NewTicker")
+func (*IntervalClock) Tick(d time.Duration) <-chan time.Time {
+	panic("IntervalClock doesn't implement Tick")
 }
 
 func (*IntervalClock) Sleep(d time.Duration) {
@@ -277,6 +257,11 @@ type Timer interface {
 	Stop() bool
 	Reset(d time.Duration) bool
 }
+
+var (
+	_ = Timer(&realTimer{})
+	_ = Timer(&fakeTimer{})
+)
 
 // realTimer is backed by an actual time.Timer.
 type realTimer struct {
@@ -309,76 +294,34 @@ func (f *fakeTimer) C() <-chan time.Time {
 	return f.waiter.destChan
 }
 
-// Stop conditionally stops the timer.  If the timer has neither fired
-// nor been stopped then this call stops the timer and returns true,
-// otherwise this call returns false.  This is like time.Timer::Stop.
+// Stop stops the timer and returns true if the timer has not yet fired, or false otherwise.
 func (f *fakeTimer) Stop() bool {
 	f.fakeClock.lock.Lock()
 	defer f.fakeClock.lock.Unlock()
-	// The timer has already fired or been stopped, unless it is found
-	// among the clock's waiters.
-	stopped := false
-	oldWaiters := f.fakeClock.waiters
-	newWaiters := make([]fakeClockWaiter, 0, len(oldWaiters))
-	seekChan := f.waiter.destChan
-	for i := range oldWaiters {
-		// Identify the timer's fakeClockWaiter by the identity of the
-		// destination channel, nothing else is necessarily unique and
-		// constant since the timer's creation.
-		if oldWaiters[i].destChan == seekChan {
-			stopped = true
-		} else {
-			newWaiters = append(newWaiters, oldWaiters[i])
+
+	newWaiters := make([]fakeClockWaiter, 0, len(f.fakeClock.waiters))
+	for i := range f.fakeClock.waiters {
+		w := &f.fakeClock.waiters[i]
+		if w != &f.waiter {
+			newWaiters = append(newWaiters, *w)
 		}
 	}
 
 	f.fakeClock.waiters = newWaiters
 
-	return stopped
+	return !f.waiter.fired
 }
 
-// Reset conditionally updates the firing time of the timer.  If the
-// timer has neither fired nor been stopped then this call resets the
-// timer to the fake clock's "now" + d and returns true, otherwise
-// this call returns false.  This is like time.Timer::Reset.
+// Reset resets the timer to the fake clock's "now" + d. It returns true if the timer has not yet
+// fired, or false otherwise.
 func (f *fakeTimer) Reset(d time.Duration) bool {
 	f.fakeClock.lock.Lock()
 	defer f.fakeClock.lock.Unlock()
-	waiters := f.fakeClock.waiters
-	seekChan := f.waiter.destChan
-	for i := range waiters {
-		if waiters[i].destChan == seekChan {
-			waiters[i].targetTime = f.fakeClock.time.Add(d)
-			return true
-		}
-	}
-	return false
-}
 
-type Ticker interface {
-	C() <-chan time.Time
-	Stop()
-}
+	active := !f.waiter.fired
 
-type realTicker struct {
-	ticker *time.Ticker
-}
+	f.waiter.fired = false
+	f.waiter.targetTime = f.fakeClock.time.Add(d)
 
-func (t *realTicker) C() <-chan time.Time {
-	return t.ticker.C
-}
-
-func (t *realTicker) Stop() {
-	t.ticker.Stop()
-}
-
-type fakeTicker struct {
-	c <-chan time.Time
-}
-
-func (t *fakeTicker) C() <-chan time.Time {
-	return t.c
-}
-
-func (t *fakeTicker) Stop() {
+	return active
 }

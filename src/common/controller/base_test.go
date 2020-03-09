@@ -1,9 +1,9 @@
 package controller_test
 
 import (
-	"git/inspursoft/board/src/apiserver/controller"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/apiserver/service/devops/gogs"
+	"git/inspursoft/board/src/common/controller"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/model/dashboard"
