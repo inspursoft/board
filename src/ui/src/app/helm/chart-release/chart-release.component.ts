@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ValidationErrors } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
@@ -24,15 +24,14 @@ export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
   releaseName = '';
   chartValue = '';
   questions: Questions;
+  editor: any;
 
   constructor(private helmService: HelmService,
               private appInitService: AppInitService,
-              private messageService: MessageService,
-              private changeRef: ChangeDetectorRef) {
+              private messageService: MessageService) {
     super();
     this.projectsList = Array<Project>();
     this.questions = new Questions({});
-    this.changeRef.detach();
   }
 
   ngOnInit(): void {
@@ -43,7 +42,7 @@ export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
       (res: object) => {
         this.chartValue = Reflect.get(res, 'values');
         this.questions = new Questions(Reflect.get(res, 'questions'));
-        this.changeRef.reattach();
+        this.setYamlEditorValue();
         this.updateYamlContainer();
       },
       (error: HttpErrorResponse) => {
@@ -54,6 +53,25 @@ export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
         this.modalOpened = false;
       }
     );
+  }
+
+  setYamlEditorValue(): void {
+    const ace = Reflect.get(window, 'ace');
+    const yamlScriptMode = ace.require('ace/mode/yaml').Mode;
+    const editorName = this.questions.length === 0 ? 'compile-editor' : 'compile-editor-question';
+    this.editor = ace.edit(editorName);
+    ace.require('ace/ext/beautify');
+    this.editor.setFontSize(16);
+    this.editor.setReadOnly(false);
+    this.editor.session.setMode(new yamlScriptMode());
+    this.editor.setTheme('ace/theme/monokai');
+    this.editor.setValue(this.chartValue);
+    ace.require('ace/ext/language_tools');
+    this.editor.setOptions({
+      enableBasicAutocompletion: true,
+      enableSnippets: true,
+      enableLiveAutocompletion: true
+    });
   }
 
   updateYamlContainer() {
@@ -112,7 +130,8 @@ export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
         project_id: this.selectProject.project_id,
         owner_id: this.appInitService.currentUser.user_id,
         chart: this.chartVersion.name,
-        Answers: this.questions.postAnswers
+        Answers: this.questions.postAnswers,
+        values: this.editor.getValue()
       }).subscribe(
         () => this.messageService.showAlert('HELM.RELEASE_CHART_RELEASE_SUCCESS'),
         (error: HttpErrorResponse) => {
