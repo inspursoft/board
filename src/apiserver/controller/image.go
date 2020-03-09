@@ -185,8 +185,8 @@ func (p *ImageController) generateBuildingImageTravis(imageURI, dockerfileName s
 		"if [ -d 'upload' ]; then rm -rf upload; fi",
 		"if [ -e 'attachment.zip' ]; then rm -f attachment.zip; fi",
 		fmt.Sprintf("token=%s", p.token),
-		fmt.Sprintf("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | cut -d$' ' -f2`", boardAPIBaseURL()),
-		fmt.Sprintf("if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi", boardAPIBaseURL()),
+		fmt.Sprintf("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | awk '{print $2}'`", boardAPIBaseURL()),
+		fmt.Sprintf("bash -c \"if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi\"", boardAPIBaseURL()),
 	}
 	travisCommand.Deploy.Commands = []string{
 		"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
@@ -205,8 +205,8 @@ func (p *ImageController) generatePushImagePackageTravis(imageURI, imagePackageN
 		"if [ -d 'upload' ]; then rm -rf upload; fi",
 		"if [ -e 'attachment.zip' ]; then rm -f attachment.zip; fi",
 		fmt.Sprintf("token=%s", p.token),
-		fmt.Sprintf("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | cut -d$' ' -f2`", boardAPIBaseURL()),
-		fmt.Sprintf("if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi", boardAPIBaseURL()),
+		fmt.Sprintf("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | awk '{print $2}'`", boardAPIBaseURL()),
+		fmt.Sprintf("bash -c \"if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi\"", boardAPIBaseURL()),
 	}
 	travisCommand.Deploy.Commands = []string{
 		"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
