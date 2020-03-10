@@ -7,7 +7,7 @@ COPY src/common /go/src/git/inspursoft/board/src/common
 COPY src/vendor /go/src/git/inspursoft/board/vendor
 WORKDIR /go/src/git/inspursoft/board/src/collector/cmd
 
-RUN go build -v -a -o /go/bin/collector
+RUN go build -v -mod=vendor -a -o /go/bin/collector
 
 RUN chmod u+x /go/bin/collector
 
