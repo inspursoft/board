@@ -1,6 +1,6 @@
 version: '2'
 services:
-  uibuilder7.2:
+  uibuilder7.3:
     build:
       context: ../
       dockerfile: make/dev/container/uibuilder/Dockerfile
