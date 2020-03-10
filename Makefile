@@ -15,19 +15,19 @@
 # Common
 # Develop flag
 #
-DEVFLAG=release
+DEVFLAG=dev
 
 # ARCH default is x86_64, also support mips, arm64v8
-ARCH=arm64v8
+ARCH=
 
 ifeq ($(DEVFLAG), release) 
 	BASEIMAGE=alpine:3.7
-	GOBUILDIMAGE=golang:1.9.6-alpine3.7
+	GOBUILDIMAGE=golang:1.14.0-alpine3.11
 	WORKPATH=release
 	IMAGEPREFIX=board
 else
 	BASEIMAGE=ubuntu:14.04
-	GOBUILDIMAGE=golang:1.9.6
+	GOBUILDIMAGE=golang:1.14.0
 	WORKPATH=dev
 	IMAGEPREFIX=dev
 endif 
@@ -148,7 +148,7 @@ compile_ui:
 $(COMPILE_LIST): %_compile: # %_fmt  %_vet %_golint
 	$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOIMGBASEPATH) \
 					-w $(GOIMGBASEPATH)/$* $(GOBUILDIMAGE) $(GOBUILD) \
-					-v -o $(GOIMGBASEPATH)/make/$(WORKPATH)/container/$(subst /cmd,,$(subst src/,,$*))/$(subst /cmd,,$(subst src/,,$*)) 
+					-v -mod=vendor -o $(GOIMGBASEPATH)/make/$(WORKPATH)/container/$(subst /cmd,,$(subst src/,,$*))/$(subst /cmd,,$(subst src/,,$*)) 
 
 $(CLEAN_LIST): %_clean:
 #	$(GOCLEAN) $(TOPLEVEL_PKG)/$* 
