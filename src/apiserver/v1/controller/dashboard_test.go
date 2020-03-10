@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"git/inspursoft/board/src/apiserver/controller"
+	"git/inspursoft/board/src/apiserver/v1/controller"
 	"git/inspursoft/board/src/common/model/dashboard"
 
 	"github.com/astaxie/beego"
