@@ -1,15 +1,16 @@
 package nodeController
 
 import (
+	"encoding/json"
 	"fmt"
 	"git/inspursoft/board/src/adminserver/models/nodeModel"
 	"git/inspursoft/board/src/adminserver/service"
 	"git/inspursoft/board/src/adminserver/service/nodeService"
-	"git/inspursoft/board/src/common/utils"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
+	"io"
+	"io/ioutil"
 	"net/http"
-	"path"
 	"strconv"
 	"time"
 )
@@ -124,8 +125,7 @@ func (controller *Controller) AddRemoveNode(nodeIp string, actionType nodeModel.
 	masterIp := configuration.Apiserver.KubeMasterIP
 	registryIp := configuration.Apiserver.RegistryIP
 
-	nodePathFile := path.Join(configuration.Other.InstallPackagePath, nodeModel.AddRemoveNodeFile)
-	if err := nodeService.GenerateHostFile(masterIp, nodeIp, registryIp, nodePathFile); err != nil {
+	if err := nodeService.GenerateHostFile(masterIp, nodeIp, registryIp, nodeModel.AddRemoveNodeFile); err != nil {
 		controller.CustomAbort(http.StatusBadRequest, err.Error())
 		return
 	}
@@ -133,9 +133,8 @@ func (controller *Controller) AddRemoveNode(nodeIp string, actionType nodeModel.
 	nodeLog := nodeModel.NodeLog{
 		Ip: nodeIp, Success: false, Pid: 0, CreationTime: time.Now().Unix(), LogType: actionType}
 
-	yamlPathFile := path.Join(configuration.Other.InstallPackagePath, yamlFile)
-	shellPathFile := path.Join(configuration.Other.InstallPackagePath, nodeModel.AddRemoveShellFile)
-	if err := nodeService.ExecuteCommand(&nodeLog, yamlPathFile, shellPathFile); err != nil {
+
+	if err := nodeService.ExecuteCommand(&nodeLog, yamlFile, nodeModel.AddRemoveShellFile); err != nil {
 		controller.CustomAbort(http.StatusBadRequest, err.Error())
 		return
 	}
@@ -145,10 +144,18 @@ func (controller *Controller) AddRemoveNode(nodeIp string, actionType nodeModel.
 }
 
 func (controller *Controller) resolveBody(target interface{}) (err error) {
-	err = utils.UnmarshalToJSON(controller.Ctx.Request.Body, target)
+	err = UnmarshalToJSON(controller.Ctx.Request.Body, target)
 	if err != nil {
 		logs.Error("Failed to unmarshal data: %+v", err)
 		return
 	}
 	return
+}
+
+func UnmarshalToJSON(in io.ReadCloser, target interface{}) error {
+	data, err := ioutil.ReadAll(in)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(data, &target)
 }

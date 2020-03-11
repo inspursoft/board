@@ -8,7 +8,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-const AdminServerDbFile = "/root/adminServer.db"
+const AdminServerDbFile = "/data/board/database/adminServer.db"
 
 var (
 	GlobalCache cache.Cache

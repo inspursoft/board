@@ -8,6 +8,8 @@ services:
     restart: always
     volumes:
       - ../:/go/cfgfile
+      - /data/board/database:/data/board/database
+      - /data/board/ansible_k8s:/data/board/ansible_k8s
     networks:
       - adms
     ports:
