@@ -12,7 +12,7 @@ import (
 	"github.com/astaxie/beego/logs"
 	"github.com/ghodss/yaml"
 
-	"k8s.io/client-go/kubernetes/typed/core/v1"
+	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
 )
 
 type services struct {

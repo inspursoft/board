@@ -26,7 +26,7 @@ func (p *AppV1Client) Service(namespace string) ServiceClientInterface {
 }
 
 func (p *AppV1Client) Deployment(namespace string) DeploymentClientInterface {
-	return apps.NewDeployments(namespace, p.Clientset.AppsV1beta2().Deployments(namespace))
+	return apps.NewDeployments(namespace, p.Clientset.AppsV1().Deployments(namespace))
 }
 
 func (p *AppV1Client) Node() NodeClientInterface {
@@ -37,12 +37,13 @@ func (p *AppV1Client) Namespace() NamespaceClientInterface {
 	return apps.NewNamespaces(p.Clientset.CoreV1().Namespaces())
 }
 
-func (p *AppV1Client) Scale(namespace string) ScaleClientInterface {
-	return apps.NewScales(namespace, p.Clientset.ExtensionsV1beta1().Scales(namespace))
-}
+// TODO: api changes
+// func (p *AppV1Client) Scale(namespace string) ScaleClientInterface {
+// 	return apps.NewScales(namespace, p.Clientset.ExtensionsV1beta1().Scales(namespace))
+// }
 
 func (p *AppV1Client) ReplicaSet(namespace string) ReplicaSetClientInterface {
-	return apps.NewReplicaSets(namespace, p.Clientset.AppsV1beta2().ReplicaSets(namespace))
+	return apps.NewReplicaSets(namespace, p.Clientset.AppsV1().ReplicaSets(namespace))
 }
 
 func (p *AppV1Client) Pod(namespace string) PodClientInterface {
@@ -66,7 +67,7 @@ func (p *AppV1Client) ConfigMap(namespace string) ConfigMapInterface {
 }
 
 func (p *AppV1Client) StatefulSet(namespace string) StatefulSetClientInterface {
-	return apps.NewStatefulSets(namespace, p.Clientset.AppsV1beta1().StatefulSets(namespace))
+	return apps.NewStatefulSets(namespace, p.Clientset.AppsV1().StatefulSets(namespace))
 }
 func (p *AppV1Client) Job(namespace string) JobInterface {
 	return apps.NewJob(namespace, p.Clientset.BatchV1().Jobs(namespace))
@@ -79,7 +80,8 @@ type AppV1ClientInterface interface {
 	Deployment(namespace string) DeploymentClientInterface
 	Node() NodeClientInterface
 	Namespace() NamespaceClientInterface
-	Scale(namespace string) ScaleClientInterface
+	// TODO: api changes
+	// Scale(namespace string) ScaleClientInterface
 	ReplicaSet(namespace string) ReplicaSetClientInterface
 	Pod(namespace string) PodClientInterface
 	AutoScale(namespace string) AutoscaleInterface
@@ -135,11 +137,12 @@ type NamespaceClientInterface interface {
 	//Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *v1.Namespace, err error)
 }
 
+// TODO: api changes
 // ScaleClientInterface interface has methods on Scale resources in k8s-assist.
-type ScaleClientInterface interface {
-	Get(kind string, name string) (*model.Scale, error)
-	Update(kind string, scale *model.Scale) (*model.Scale, error)
-}
+// type ScaleClientInterface interface {
+// 	Get(kind string, name string) (*model.Scale, error)
+// 	Update(kind string, scale *model.Scale) (*model.Scale, error)
+// }
 
 // ReplicaSetInterface has methods to work with ReplicaSet resources.
 type ReplicaSetClientInterface interface {

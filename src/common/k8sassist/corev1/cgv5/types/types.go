@@ -1,7 +1,7 @@
 package types
 
 import (
-	appsv1beta2 "k8s.io/api/apps/v1beta2"
+	appsv1 "k8s.io/api/apps/v1"
 	betchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -12,12 +12,12 @@ import (
 )
 
 //define Deployment type
-type DeploymentList = appsv1beta2.DeploymentList
-type Deployment = appsv1beta2.Deployment
+type DeploymentList = appsv1.DeploymentList
+type Deployment = appsv1.Deployment
 type TypeMeta = metav1.TypeMeta
 type ObjectMeta = metav1.ObjectMeta
-type DeploymentSpec = appsv1beta2.DeploymentSpec
-type DeploymentStatus = appsv1beta2.DeploymentStatus
+type DeploymentSpec = appsv1.DeploymentSpec
+type DeploymentStatus = appsv1.DeploymentStatus
 type LabelSelector = metav1.LabelSelector
 type PodTemplateSpec = v1.PodTemplateSpec
 type PodSpec = v1.PodSpec
@@ -90,7 +90,7 @@ const (
 	serviceAPIVersion    = "v1"
 	serviceKind          = "Service"
 	nodePort             = "NodePort"
-	deploymentAPIVersion = "apps/v1beta2"
+	deploymentAPIVersion = "apps/v1"
 	deploymentKind       = "Deployment"
 	namespaceKind        = "Namespace"
 	namespaceAPIVersion  = "v1"

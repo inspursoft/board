@@ -314,27 +314,28 @@ func SyncAutoScaleWithK8s(pName string) error {
 	return nil
 }
 
-func ScaleReplica(serviceInfo *model.ServiceStatus, number int32) (bool, error) {
+// TODO: api changes
+// func ScaleReplica(serviceInfo *model.ServiceStatus, number int32) (bool, error) {
 
-	var config k8sassist.K8sAssistConfig
-	config.KubeConfigPath = kubeConfigPath()
-	k8sclient := k8sassist.NewK8sAssistClient(&config)
-	s := k8sclient.AppV1().Scale(serviceInfo.ProjectName)
+// 	var config k8sassist.K8sAssistConfig
+// 	config.KubeConfigPath = kubeConfigPath()
+// 	k8sclient := k8sassist.NewK8sAssistClient(&config)
+// 	s := k8sclient.AppV1().Scale(serviceInfo.ProjectName)
 
-	scale, err := s.Get(scaleKind, serviceInfo.Name)
+// 	scale, err := s.Get(scaleKind, serviceInfo.Name)
 
-	if scale.Spec.Replicas != number {
-		scale.Spec.Replicas = number
-		_, err = s.Update(scaleKind, scale)
-		if err != nil {
-			logs.Info("Failed to update service replicas", scale)
-			return false, err
-		}
-	} else {
-		logs.Info("Service replicas needn't change %d", scale.Spec.Replicas)
-	}
-	return true, err
-}
+// 	if scale.Spec.Replicas != number {
+// 		scale.Spec.Replicas = number
+// 		_, err = s.Update(scaleKind, scale)
+// 		if err != nil {
+// 			logs.Info("Failed to update service replicas", scale)
+// 			return false, err
+// 		}
+// 	} else {
+// 		logs.Info("Service replicas needn't change %d", scale.Spec.Replicas)
+// 	}
+// 	return true, err
+// }
 
 func GetServicesByProjectName(pname string) ([]model.ServiceStatus, error) {
 	serviceList, err := dao.GetServices("project_name", pname)

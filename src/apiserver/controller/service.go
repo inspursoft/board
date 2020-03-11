@@ -596,14 +596,18 @@ func (p *ServiceController) ScaleServiceAction() {
 	if err != nil {
 		return
 	}
+
+	// TODO: api changes
 	// change the replica number of service
-	res, err := service.ScaleReplica(s, reqServiceScale.Replica)
-	if res != true {
-		logs.Info("Failed to scale service replica", s, reqServiceScale.Replica)
-		p.internalError(err)
-		return
-	}
-	logs.Info("Scale service replica successfully")
+	// res, err := service.ScaleReplica(s, reqServiceScale.Replica)
+	// if res != true {
+	// 	logs.Info("Failed to scale service replica", s, reqServiceScale.Replica)
+	// 	p.internalError(err)
+	// 	return
+	// }
+	// logs.Info("Scale service replica successfully")
+	logs.Info("Failed to scale service replica", s, reqServiceScale.Replica)
+
 
 	_, deploymentFileInfo, err := service.GetDeployment(s.ProjectName, s.Name)
 	if err != nil {
