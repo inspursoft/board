@@ -31,7 +31,7 @@ const (
 	k8sService         = "kubernetes"
 )
 
-var scaleKind = model.GroupResource{Group: "apps/v1beta2", Resource: "deployment"}
+var scaleKind = model.GroupResource{Group: "apps", Resource: "deployments"}
 
 const (
 	board = iota
