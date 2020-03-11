@@ -9,9 +9,7 @@ import sys
 import argparse
 import subprocess
 import shutil
-import urllib2
 from io import open
-
 
 if sys.version_info[:3][0] == 2:
     import ConfigParser as ConfigParser
@@ -63,35 +61,6 @@ def create_cert(conf_path, key_path="/data/board/cert/board-key.pem", cert_path=
 	if rc != 0:
 		return rc
 	return subprocess.call(["openssl", "x509", "-req", "-in", csr_path, "-CA", ca_cert, "-CAkey", ca_key, "-CAcreateserial", "-out", cert_path, "-days", "10000", "-extensions", "v3_ext", "-extfile", conf_path], stdout=FNULL, stderr=subprocess.STDOUT)
-
-def image_prefix():
-	return registry_ip + ":" + registry_port + "/"
-
-def push_image(image):
-	print("docker pull " + image)
-	rc = subprocess.call("docker pull " + image , shell=True)
-	if rc != 0:
-		return rc
-	index = image.find("/")
-	target = image
-	if index != -1 and len(image) > index + 1:
-		target = image[index+1:len(image)]
-	
-	target = image_prefix() + target
-	print("docker tag " + image + " " + target)
-	rc = subprocess.call("docker tag " + image +" "+ target, shell=True)
-	if rc != 0:
-		return rc
-	print("docker push " + target)
-	return subprocess.call("docker push " + target, shell=True)
-
-def save_helm_charts():
-	url = 'https://github.com/inspursoft/charts/archive/v1.0.0.tar.gz'
-	f = urllib2.urlopen(url)
-	data = f.read()
-	with open("charts.tar.gz", "wb") as code:
-  		code.write(data)
-  	return subprocess.call("tar -zxf charts.tar.gz; cd charts-1.0.0; REGISTRY=" +  image_prefix() + " make package; cp -r packages/*.tgz /data/board/chartmuseum", shell=True)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--conf', dest='cfgfile', default=base_dir+'/board.cfg',type=str,help="the path of Board configuration file")
@@ -400,17 +369,5 @@ render(os.path.join(templates_dir, "elasticsearch", "env"),
 if os.path.exists(kibana_config_dir):
     shutil.rmtree(kibana_config_dir)
 shutil.copytree(os.path.join(templates_dir, "kibana"), kibana_config_dir)
-
-### settings for helm charts ###
-### download images and push to registry ###
-rc = push_image("docker.io/inspursoft/flink:1.9.1-scala_2.12")
-if rc != 0:
-	print("push the Board helm images failed, please read the documents for Board.")
-	exit(1)
-### download the helm charts and save it into chartmuseum data directory. ###
-rc = save_helm_charts()
-if rc != 0:
-	print("Save the helm charts failed, please read the documents for Board.")
-	exit(1)
 
 print("The configuration files are ready, please use docker-compose to start the service.")
