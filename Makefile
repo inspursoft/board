@@ -119,20 +119,12 @@ TEST_LIST = $(foreach int, $(COMPILEALL_LIST), $(int)_test)
 FMT_LIST = $(foreach int, $(COMPILEALL_LIST), $(int)_fmt)
 VET_LIST = $(foreach int, $(COMPILEALL_LIST), $(int)_vet)
 GOLINT_LIST = $(foreach int, $(COMPILEALL_LIST), $(int)_golint)
-ifndef $(ARCH)
-PKG_LIST = $(foreach int, $(IMG_LIST), $(IMAGEPREFIX)_$(int):$(VERSIONTAG)) $(CHART_IMAGES)
-else
 PKG_LIST = $(foreach int, $(IMG_LIST), $(IMAGEPREFIX)_$(int):$(VERSIONTAG))
-endif
 
 BUILDALL_LIST = $(foreach int, $(IMG_LIST), container/$(int))
 BUILD_LIST = $(foreach int, $(BUILDALL_LIST), $(int)_build)
 RMIMG_LIST = $(foreach int, $(BUILDALL_LIST), $(int)_rmi)
 
-CHARTS = https://github.com/inspursoft/charts/releases/download/v1.0.0/board-flink-0.1.4.tgz https://github.com/inspursoft/charts/releases/download/v1.0.0/board-kafka-0.9.6.tgz
-CHART_IMAGES = docker.io/confluentinc/cp-kafka:4.1.2-2 docker.io/lwolf/kubectl_deployer:0.4 docker.io/solsson/kafka-prometheus-jmx-exporter@sha256:a23062396cd5af1acdf76512632c20ea6be76885dfc20cd9ff40fb23846557e8 \
-			   docker.io/danielqsj/kafka-exporter:v1.2.0 docker.io/inspursoft/k8szk:v3 docker.io/sscaling/jmx-prometheus-exporter:0.3.0 docker.io/josdotso/zookeeper-exporter:v1.1.2 docker.io/inspursoft/flink:1.9.1-scala_2.12 \
-			   docker.io/zookeeper:3.5.5
 # All are .PHONY for now because dependencyness is hard
 .PHONY: $(CLEAN_LIST) $(TEST_LIST) $(FMT_LIST) $(INSTALL_LIST) $(COMPILE_LIST) $(VET_LIST) $(GOLINT_LIST) $(BUILD_LIST)
 
@@ -213,31 +205,7 @@ prepare_composefile:
 	@cp $(MAKEWORKPATH)/docker-compose${if ${ARCH},.${ARCH}}.tpl $(MAKEWORKPATH)/docker-compose${if ${ARCH},.${ARCH}}.yml
 	@sed -i "s/__version__/$(VERSIONTAG)/g" $(MAKEWORKPATH)/docker-compose${if ${ARCH},.${ARCH}}.yml
 
-prepare_helmcharts:
-	@mkdir -p $(PKGTEMPPATH)/charts; \
-	cd $(PKGTEMPPATH)/charts; \
-	for url in `echo $(CHARTS)`; \
-	do \
-		curl -sSLO "$$url"; \
-	done; \
-	for chart in `ls board-*.tgz`; \
-	do \
-		mv -f "$$chart" `echo $$chart | sed 's/^board-//'`; \
-	done;
-
-ifndef $(ARCH)
-download_helm_images:
-	@for img in `echo $(CHART_IMAGES)`; \
-	do \
-		$(DOCKERPULL) "$$img"; \
-	done
-else
-download_helm_images:
-	@echo "ignore helm images $(CHART_IMAGES) download for arch $(ARCH)"
-endif
-	
-
-package: prepare_composefile prepare_helmcharts download_helm_images
+package: prepare_composefile
 	@echo "packing offline package ..."
 	@if [ ! -d $(PKGTEMPPATH) ] ; then mkdir $(PKGTEMPPATH) ; fi
 	@cp $(TOOLSPATH)/install.sh $(PKGTEMPPATH)/install.sh
