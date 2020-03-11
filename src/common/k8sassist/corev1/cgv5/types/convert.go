@@ -10,11 +10,12 @@ import (
 	appsv1beta1 "k8s.io/api/apps/v1beta1"
 	appsv1beta2 "k8s.io/api/apps/v1beta2"
 	autoscalev1 "k8s.io/api/autoscaling/v1"
+	autoscalingapi "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/version"
 )
@@ -297,8 +298,8 @@ func ToK8sVolumeSource(volumeSource *model.VolumeSource) *v1.VolumeSource {
 	}
 
 	return &v1.VolumeSource{
-		HostPath: hp,
-		NFS:      nfs,
+		HostPath:              hp,
+		NFS:                   nfs,
 		PersistentVolumeClaim: pvc,
 		ConfigMap:             configmap,
 	}
@@ -394,6 +395,13 @@ func ToK8sVolumeMount(mount model.VolumeMount) v1.VolumeMount {
 		Name:      mount.Name,
 		MountPath: mount.MountPath,
 		SubPath:   mount.SubPath,
+	}
+}
+
+func ToK8sGroupResource(gr model.GroupResource) schema.GroupResource {
+	return schema.GroupResource{
+		Group:    gr.Group,
+		Resource: gr.Resource,
 	}
 }
 
@@ -689,8 +697,8 @@ func FromK8sVolumeSource(volumeSource v1.VolumeSource) model.VolumeSource {
 	}
 
 	return model.VolumeSource{
-		HostPath: hp,
-		NFS:      nfs,
+		HostPath:              hp,
+		NFS:                   nfs,
 		PersistentVolumeClaim: pvc,
 		ConfigMap:             configmap,
 	}
@@ -1129,7 +1137,7 @@ func FromK8sNodeList(nodeList *v1.NodeList) *model.NodeList {
 	}
 }
 
-func FromK8sScale(scale *v1beta1.Scale) *model.Scale {
+func FromK8sScale(scale *autoscalingapi.Scale) *model.Scale {
 	return &model.Scale{
 		ObjectMeta: FromK8sObjectMeta(scale.ObjectMeta),
 		Spec:       model.ScaleSpec(scale.Spec),
@@ -1137,15 +1145,15 @@ func FromK8sScale(scale *v1beta1.Scale) *model.Scale {
 	}
 }
 
-func ToK8sScale(scale *model.Scale) *v1beta1.Scale {
-	return &v1beta1.Scale{
+func ToK8sScale(scale *model.Scale) *autoscalingapi.Scale {
+	return &autoscalingapi.Scale{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Scale",
-			APIVersion: "v1beta1",
+			APIVersion: "v1",
 		},
 		ObjectMeta: ToK8sObjectMeta(scale.ObjectMeta),
-		Spec:       v1beta1.ScaleSpec(scale.Spec),
-		Status:     v1beta1.ScaleStatus(scale.Status),
+		Spec:       autoscalingapi.ScaleSpec(scale.Spec),
+		Status:     autoscalingapi.ScaleStatus(scale.Status),
 	}
 }
 

@@ -7,14 +7,16 @@ import (
 	"io"
 )
 
-func NewAppV1Client(clientset *types.Clientset) AppV1ClientInterface {
+func NewAppV1Client(clientset *types.Clientset, scaleGetter types.ScaleGetter) AppV1ClientInterface {
 	return &AppV1Client{
-		Clientset: clientset,
+		Clientset:   clientset,
+		ScaleGetter: scaleGetter,
 	}
 }
 
 type AppV1Client struct {
-	Clientset *types.Clientset
+	Clientset   *types.Clientset
+	ScaleGetter types.ScaleGetter
 }
 
 func (p *AppV1Client) Discovery() ServerVersionInterface {
@@ -38,7 +40,7 @@ func (p *AppV1Client) Namespace() NamespaceClientInterface {
 }
 
 func (p *AppV1Client) Scale(namespace string) ScaleClientInterface {
-	return apps.NewScales(namespace, p.Clientset.ExtensionsV1beta1().Scales(namespace))
+	return apps.NewScales(namespace, p.ScaleGetter.Scales(namespace))
 }
 
 func (p *AppV1Client) ReplicaSet(namespace string) ReplicaSetClientInterface {
@@ -137,8 +139,8 @@ type NamespaceClientInterface interface {
 
 // ScaleClientInterface interface has methods on Scale resources in k8s-assist.
 type ScaleClientInterface interface {
-	Get(kind string, name string) (*model.Scale, error)
-	Update(kind string, scale *model.Scale) (*model.Scale, error)
+	Get(resource model.GroupResource, name string) (*model.Scale, error)
+	Update(resource model.GroupResource, scale *model.Scale) (*model.Scale, error)
 }
 
 // ReplicaSetInterface has methods to work with ReplicaSet resources.
