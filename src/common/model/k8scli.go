@@ -764,7 +764,7 @@ type PersistentVolumeSource struct {
 	// RBD represents a Rados Block Device mount on the host that shares a pod's lifetime.
 	// More info: https://releases.k8s.io/HEAD/examples/volumes/rbd/README.md
 	// +optional
-	RBD *RBDVolumeSource `json:"rbd,omitempty" protobuf:"bytes,6,opt,name=rbd"`
+	RBD *RBDPersistentVolumeSource `json:"rbd,omitempty" protobuf:"bytes,6,opt,name=rbd"`
 	// ISCSI represents an ISCSI Disk resource that is attached to a
 	// kubelet's host machine and then exposed to the pod. Provisioned by an admin.
 	// +optional
@@ -957,7 +957,7 @@ type NFSVolumeSource struct {
 
 // Represents a Rados Block Device mount that lasts the lifetime of a pod.
 // RBD volumes support ownership management and SELinux relabeling.
-type RBDVolumeSource struct {
+type RBDPersistentVolumeSource struct {
 	// A collection of Ceph monitors.
 	// More info: https://releases.k8s.io/HEAD/examples/volumes/rbd/README.md#how-to-use-it
 	CephMonitors []string `json:"monitors" protobuf:"bytes,1,rep,name=monitors"`
@@ -991,12 +991,23 @@ type RBDVolumeSource struct {
 	// Default is nil.
 	// More info: https://releases.k8s.io/HEAD/examples/volumes/rbd/README.md#how-to-use-it
 	// +optional
-	SecretRef *LocalObjectReference `json:"secretRef,omitempty" protobuf:"bytes,7,opt,name=secretRef"`
+	SecretRef *SecretReference `json:"secretRef,omitempty" protobuf:"bytes,7,opt,name=secretRef"`
 	// ReadOnly here will force the ReadOnly setting in VolumeMounts.
 	// Defaults to false.
 	// More info: https://releases.k8s.io/HEAD/examples/volumes/rbd/README.md#how-to-use-it
 	// +optional
 	ReadOnly bool `json:"readOnly,omitempty" protobuf:"varint,8,opt,name=readOnly"`
+}
+
+// SecretReference represents a Secret Reference. It has enough information to retrieve secret
+// in any namespace
+type SecretReference struct {
+	// Name is unique within a namespace to reference a secret resource.
+	// +optional
+	Name string `json:"name,omitempty" protobuf:"bytes,1,opt,name=name"`
+	// Namespace defines the space within which the secret name must be unique.
+	// +optional
+	Namespace string `json:"namespace,omitempty" protobuf:"bytes,2,opt,name=namespace"`
 }
 
 // LocalObjectReference contains enough information to let you locate the

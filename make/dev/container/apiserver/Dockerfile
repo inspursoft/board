@@ -1,4 +1,4 @@
-FROM golang:1.9.6
+FROM golang:1.14.0
 
 MAINTAINER wangkun_lc@inspur.com
 
@@ -11,7 +11,7 @@ COPY helm-v2.11.0-linux-amd64.tar.gz /usr/bin/helm.tar.gz
 
 WORKDIR /go/src/git/inspursoft/board/src/apiserver
 
-RUN go build -v -a -o /go/bin/apiserver && \
+RUN go build -v -mod=vendor -a -o /go/bin/apiserver && \
     chmod u+x /go/bin/apiserver && \
     mkdir repos && \
     mkdir keys && \
