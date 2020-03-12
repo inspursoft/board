@@ -1,0 +1,30 @@
+.icon {
+  width: 2em;
+  height: 2em;
+  vertical-align: -0.6em;
+  fill: currentColor;
+  overflow: hidden;
+}
+.logo {
+  width: 50px;
+}
+
+.header-4 {
+  background: #1976d2;
+  padding-left: 60px;
+  padding-right: 60px;
+}
+
+header .branding .title {
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+
+.nav-text {
+  font-weight: 600 !important;
+}
+
+.header-nav .nav-link {
+  min-width: 90px;
+  text-align: center;
+}

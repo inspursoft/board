@@ -15,6 +15,8 @@ export type ServiceStepPhase =
   | "EXTERNAL_SERVICE"
   | "ENTIRE_SERVICE"
 
+export type VolumeType = 'nfs' | 'pvc' | 'configmap';
+
 export enum ContainerType {
   runContainer, initContainer
 }
@@ -80,40 +82,53 @@ export class EnvStruct implements UiServerExchangeData<EnvStruct> {
   }
 }
 
-export class VolumeStruct implements UiServerExchangeData<VolumeStruct> {
-  public volume_type: 'nfs' | 'pvc' = 'nfs';
-  public target_storage_service = '';
-  public target_path = '';
-  public volume_name = '';
-  public container_path = '';
-  public container_path_flag = 0;
-  public target_pvc = '';
-  public container_file = '';
-  public target_file = '';
+export class Volume implements UiServerExchangeData<Volume> {
+  volumeType: VolumeType = 'nfs';
+  targetStorageService = '';
+  targetPath = '';
+  volumeName = '';
+  containerPath = '';
+  containerPathFlagProp = 0;
+  targetPvc = '';
+  targetConfigMap = '';
+  containerFile = '';
+  targetFile = '';
 
-  serverToUi(serverResponse: Object): VolumeStruct {
-    this.target_storage_service = serverResponse['target_storage_service'];
-    this.target_path = serverResponse['target_path'];
-    this.volume_name = serverResponse['volume_name'];
-    this.container_path = serverResponse['container_path'];
-    this.volume_type = serverResponse['volume_type'];
-    this.container_path_flag = serverResponse['container_path_flag'];
-    this.target_pvc = serverResponse['target_pvc'];
-    this.container_file = serverResponse['container_file'];
-    this.target_file = serverResponse['target_file'];
+  serverToUi(response: object): Volume {
+    this.targetStorageService = Reflect.get(response, 'target_storage_service');
+    this.targetPath = Reflect.get(response, 'target_path');
+    this.volumeName = Reflect.get(response, 'volume_name');
+    this.containerPath = Reflect.get(response, 'container_path');
+    this.volumeType = Reflect.get(response, 'volume_type');
+    this.containerPathFlagProp = Reflect.get(response, 'container_path_flag');
+    this.targetPvc = Reflect.get(response, 'target_pvc');
+    this.targetConfigMap = Reflect.get(response, 'target_configmap');
+    this.containerFile = Reflect.get(response, 'container_file');
+    this.targetFile = Reflect.get(response, 'target_file');
     return this;
   }
 
   get containerPathFlag(): boolean {
-    return this.container_path_flag == 1;
+    return this.containerPathFlagProp === 1;
   }
 
   set containerPathFlag(value) {
-    this.container_path_flag = value ? 1 : 0;
+    this.containerPathFlagProp = value ? 1 : 0;
   }
 
-  uiToServer(): VolumeStruct {
-    return this;
+  uiToServer(): object {
+    return {
+      target_storage_service: this.targetStorageService,
+      target_path: this.targetPath,
+      volume_name: this.volumeName,
+      container_path: this.containerPath,
+      volume_type: this.volumeType,
+      container_path_flag: this.containerPathFlagProp,
+      target_pvc: this.targetPvc,
+      target_configmap: this.targetConfigMap,
+      container_file: this.containerFile,
+      target_file: this.targetFile
+    };
   }
 }
 
@@ -125,49 +140,65 @@ export class Container implements UiServerExchangeData<Container> {
   public mem_request = '';
   public cpu_limit = '';
   public mem_limit = '';
-  public volume_mounts: Array<VolumeStruct>;
+  public volume_mounts: Array<Volume>;
   public image: ImageIndex;
   public env: Array<EnvStruct>;
   public container_port: Array<number>;
 
   constructor() {
-    this.volume_mounts = Array<VolumeStruct>();
+    this.volume_mounts = Array<Volume>();
     this.image = new ImageIndex();
     this.env = Array<EnvStruct>();
     this.container_port = Array<number>();
   }
 
-  serverToUi(serverResponse: Object): Container {
-    this.name = serverResponse["name"];
-    this.working_dir = serverResponse["working_dir"];
-    this.cpu_request = serverResponse["cpu_request"];
-    this.cpu_limit = serverResponse["cpu_limit"];
-    this.mem_request = serverResponse["mem_request"];
-    this.mem_limit = serverResponse["mem_limit"];
-    this.command = serverResponse["command"];
-    if (serverResponse["volume_mounts"]) {
-      let tempVolumeDataList: Array<Object> = serverResponse["volume_mounts"];
-      tempVolumeDataList.forEach(tempVolumeData => {
-        let volume = new VolumeStruct();
-        this.volume_mounts.push(volume.serverToUi(tempVolumeData));
-      })
-    }
-    this.image.serverToUi(serverResponse["image"]);
-    if (serverResponse["env"]) {
-      let envArr: Array<EnvStruct> = serverResponse["env"];
-      envArr.forEach((env: EnvStruct) => {
-        let envStruct = new EnvStruct();
-        this.env.push(envStruct.serverToUi(env));
+  serverToUi(response: object): Container {
+    this.name = Reflect.get(response, 'name');
+    this.working_dir = Reflect.get(response, 'working_dir');
+    this.cpu_request = Reflect.get(response, 'cpu_request');
+    this.cpu_limit = Reflect.get(response, 'cpu_limit');
+    this.mem_request = Reflect.get(response, 'mem_request');
+    this.mem_limit = Reflect.get(response, 'mem_limit');
+    this.command = Reflect.get(response, 'command');
+    if (Reflect.get(response, 'volume_mounts')) {
+      const volumeList: Array<object> = Reflect.get(response, 'volume_mounts');
+      volumeList.forEach(data => {
+        const volume = new Volume();
+        this.volume_mounts.push(volume.serverToUi(data));
       });
     }
-    if (serverResponse["container_port"]) {
-      this.container_port = Array.from(serverResponse["container_port"]) as Array<number>;
+    this.image.serverToUi(Reflect.get(response, 'image'));
+    if (Reflect.get(response, 'env')) {
+      const envList: Array<object> = Reflect.get(response, 'env');
+      envList.forEach(data => {
+        const envStruct = new EnvStruct();
+        this.env.push(envStruct.serverToUi(data));
+      });
+    }
+    if (Reflect.get(response, 'container_port')) {
+      this.container_port = Array.from(Reflect.get(response, 'container_port')) as Array<number>;
     }
     return this;
   }
 
-  uiToServer(): Container {
-    return this;
+  uiToServer(): object {
+    const postVolumes = new Array<object>();
+    const postEnvs = new Array<object>();
+    this.volume_mounts.forEach(value => postVolumes.push(value.uiToServer()));
+    this.env.forEach(value => postEnvs.push(value.uiToServer()));
+    return {
+      name: this.name,
+      working_dir: this.working_dir,
+      command: this.command,
+      cpu_request: this.cpu_request,
+      mem_request: this.mem_request,
+      cpu_limit: this.cpu_limit,
+      mem_limit: this.mem_limit,
+      volume_mounts: postVolumes,
+      image: this.image.uiToServer(),
+      env: postEnvs,
+      container_port: this.container_port
+    };
   }
 }
 
@@ -231,7 +262,7 @@ export class AffinityCardData {
   status? = DragStatus.dsReady;
 
   get key(): string {
-    return `${this.serviceName}`
+    return `${this.serviceName}`;
   }
 }
 
@@ -240,15 +271,15 @@ export class UIServiceStep1 extends UIServiceStepBase {
   public projectName = '';
 
   uiToServer(): ServerServiceStep {
-    let result = new ServerServiceStep();
+    const result = new ServerServiceStep();
     result.phase = PHASE_SELECT_PROJECT;
     result.project_id = this.projectId;
     return result;
   }
 
-  serverToUi(serverResponse: Object): UIServiceStep1 {
-    this.projectId = serverResponse["project_id"];
-    this.projectName = serverResponse["project_name"];
+  serverToUi(res: object): UIServiceStep1 {
+    this.projectId = Reflect.get(res, 'project_id');
+    this.projectName = Reflect.get(res, 'project_name');
     return this;
   }
 }
@@ -265,8 +296,8 @@ export class UIServiceStep2 extends UIServiceStepBase {
   }
 
   uiToServer(): ServerServiceStep {
-    let result = new ServerServiceStep();
-    let postData: Array<Container> = Array<Container>();
+    const result = new ServerServiceStep();
+    const postData: Array<object> = Array<object>();
     result.phase = this.isInitContainers ? PHASE_CONFIG_INIT_CONTAINERS : PHASE_CONFIG_CONTAINERS;
     result.project_id = this.projectId;
     this.containerList.forEach((value: Container) => {
@@ -276,21 +307,21 @@ export class UIServiceStep2 extends UIServiceStepBase {
     return result;
   }
 
-  serverToUi(serverResponse: Object): UIServiceStep2 {
+  serverToUi(res: object): UIServiceStep2 {
     const containerListKey = this.isInitContainers ? 'initcontainer_list' : 'container_list';
-    if (serverResponse && serverResponse[containerListKey]) {
-      let list: Array<Container> = serverResponse[containerListKey];
-      list.forEach((value: Container) => {
-        let container = new Container();
+    if (res && Reflect.get(res, containerListKey)) {
+      const list: Array<object> = Reflect.get(res, containerListKey);
+      list.forEach((value: object) => {
+        const container = new Container();
         container.serverToUi(value);
         this.containerList.push(container);
       });
     }
-    if (serverResponse && serverResponse["project_id"]) {
-      this.projectId = serverResponse["project_id"];
+    if (res && Reflect.get(res, 'project_id')) {
+      this.projectId = Reflect.get(res, 'project_id');
     }
-    if (serverResponse && serverResponse["project_name"]) {
-      this.projectName = serverResponse["project_name"];
+    if (res && Reflect.get(res, 'project_name')) {
+      this.projectName = Reflect.get(res, 'project_name');
     }
     return this;
   }
@@ -308,7 +339,7 @@ export class UIServiceStep2InitContainer extends UIServiceStep2 {
 }
 
 export class UIServiceStep3 extends UIServiceStepBase {
-  public projectName = "";
+  public projectName = '';
   public serviceName = "";
   public nodeSelector = "";
   public serviceType = ServiceType.ServiceTypeNormalNodePort;
@@ -327,7 +358,8 @@ export class UIServiceStep3 extends UIServiceStepBase {
 
   uiToServer(): ServerServiceStep {
     let result = new ServerServiceStep();
-    let postAffinityData: Array<{ anti_flag: number, service_names: Array<string> }> = Array<{ anti_flag: number, service_names: Array<string> }>();
+    let postAffinityData: Array<{ anti_flag: number, service_names: Array<string> }> =
+      Array<{ anti_flag: number, service_names: Array<string> }>();
     result.phase = PHASE_EXTERNAL_SERVICE;
     result.service_name = this.serviceName;
     result.service_type = this.serviceType;

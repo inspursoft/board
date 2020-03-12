@@ -1,0 +1,16 @@
+FROM arm64v8/node:12.16.1
+
+RUN mkdir -p /board_resource
+
+COPY src/ui/package.json /board_resource
+COPY make/dev/container/uibuilder/entrypoint.sh /
+
+WORKDIR /board_resource
+
+RUN mkdir -p /board_src \
+        && npm config set registry https://registry.npm.taobao.org \
+    && npm install -g @angular/cli@latest \
+    && npm install \
+    && chmod u+x /entrypoint.sh
+VOLUME ["/board_src"]
+

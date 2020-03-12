@@ -1,0 +1,21 @@
+<clr-alert [clrAlertType]="curMessage.alertType"
+           [clrAlertAppLevel]="true"
+           [clrAlertClosed]="!isOpen"
+           (clrAlertClosedChange)="isOpen = false">
+  <clr-alert-item>
+    <span class="alert-text">{{curMessage.message | translate}}{{curMessage.endMessage}}</span>
+    <div class="alert-actions" *ngIf="curMessage.type == 1 || curMessage.type == 2">
+      <clr-icon *ngIf="curMessage.type == 1 " shape="ellipsis-vertical" (click)="detailModalOpen = true"></clr-icon>
+      <button *ngIf="curMessage.type == 2" class="btn alert-action" (click)="loginClick()">
+        {{"GLOBAL_ALERT.SIGN_IN" | translate}}
+      </button>
+    </div>
+  </clr-alert-item>
+</clr-alert>
+<clr-modal [(clrModalOpen)]="detailModalOpen" [clrModalSize]="'md'">
+  <h3 class="modal-title">{{ 'GLOBAL_ALERT.ERROR_DETAIL' | translate }}</h3>
+  <div class="modal-body"><p>{{errorDetailMsg}}{{curMessage.endMessage}}</p></div>
+  <div class="modal-footer">
+    <button class="btn" (click)="detailModalOpen = false">{{"BUTTON.OK" | translate}}</button>
+  </div>
+</clr-modal>

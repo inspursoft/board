@@ -17,8 +17,8 @@
 #
 DEVFLAG=release
 
-# ARCH default is x86_64, also support mips
-ARCH=
+# ARCH default is x86_64, also support mips, arm64v8
+ARCH=arm64v8
 
 ifeq ($(DEVFLAG), release) 
 	BASEIMAGE=alpine:3.7
@@ -34,6 +34,10 @@ endif
 
 ifeq ($(ARCH), mips)
 	GOBUILDIMAGE=inspursoft/golang-mips:1.12.9
+endif
+
+ifeq ($(ARCH), arm64v8)
+        GOBUILDIMAGE=arm64v8/golang:1.13.5-alpine
 endif
 
 # Base shell parameters
@@ -59,6 +63,7 @@ DOCKERTAG=$(DOCKERCMD) tag
 
 DOCKERCOMPOSEFILEPATH=$(MAKEWORKPATH)
 DOCKERCOMPOSEFILENAME=docker-compose${if ${ARCH},.${ARCH}}.yml
+DOCKERCOMPOSEFILENAMEADM=docker-compose-adminserver${if ${ARCH},.${ARCH}}.yml
 DOCKERCOMPOSEUIFILENAME=docker-compose.uibuilder${if ${ARCH},.${ARCH}}.yml
 
 # Go parameters
@@ -99,7 +104,7 @@ endif
 # TOPLEVEL_PKG := .
 INT_LIST := apiserver tokenserver collector/cmd
 ifndef ARCH
-	IMG_LIST := apiserver tokenserver log collector jenkins db proxy gogits grafana graphite elasticsearch kibana chartmuseum
+	IMG_LIST := adminserver apiserver tokenserver log collector jenkins db proxy proxy-adminserver gogits grafana graphite elasticsearch kibana chartmuseum
 else
 	IMG_LIST := apiserver tokenserver log collector jenkins db proxy gogits
 endif
@@ -185,11 +190,13 @@ prepare: version
 start:
 	@echo "loading Board images..."
 	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) up -d
+	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAMEADM) up -d
 	@echo "Start complete. You can visit Board now."
 
 down:
 	@echo "stoping Board instance..."
 	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) down -v
+	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAMEADM) down -v
 	@echo "Done."
 
 prepare_swagger:
@@ -199,7 +206,9 @@ prepare_swagger:
 
 prepare_composefile:
 	@cp $(MAKEWORKPATH)/docker-compose${if ${ARCH},.${ARCH}}.tpl $(MAKEWORKPATH)/docker-compose${if ${ARCH},.${ARCH}}.yml
+	@cp $(MAKEWORKPATH)/docker-compose-adminserver${if ${ARCH},.${ARCH}}.tpl $(MAKEWORKPATH)/docker-compose-adminserver${if ${ARCH},.${ARCH}}.yml
 	@sed -i "s/__version__/$(VERSIONTAG)/g" $(MAKEWORKPATH)/docker-compose${if ${ARCH},.${ARCH}}.yml
+	@sed -i "s/__version__/$(VERSIONTAG)/g" $(MAKEWORKPATH)/docker-compose-adminserver${if ${ARCH},.${ARCH}}.yml
 
 package: prepare_composefile
 	@echo "packing offline package ..."
@@ -210,6 +219,7 @@ package: prepare_composefile
 	@cp $(MAKEPATH)/prepare $(PKGTEMPPATH)/.
 	@cp -rf $(MAKEPATH)/templates $(PKGTEMPPATH)/.
 	@cp $(MAKEWORKPATH)/docker-compose${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/docker-compose.yml
+	@cp $(MAKEWORKPATH)/docker-compose-adminserver${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/docker-compose-adminserver.yml
 #	@cp LICENSE $(PKGTEMPPATH)/LICENSE
 #	@cp NOTICE $(PKGTEMPPATH)/NOTICE
 	@sed -i "s/..\/config/.\/config/" $(PKGTEMPPATH)/docker-compose.yml
@@ -220,6 +230,7 @@ package: prepare_composefile
 	@rm -rf $(PACKAGEPATH)
 
 packageonestep: compile compile_ui build package
+#packageonestep: compile build package
 
 .PHONY: cleanall
 cleanall: cleanbinary cleanimage

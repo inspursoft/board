@@ -1,0 +1,63 @@
+package repositories
+
+import (
+	"github.com/astaxie/beego"
+)
+
+// Operations about Helm repositories
+type CommonController struct {
+	beego.Controller
+}
+
+// @Title List all Helm repositories
+// @Description List all for Helm repositories
+// @Param	search	query	string	false	"Query item for Helm repository"
+// @Success 200 Successful listed.
+// @Failure 400 Bad requests.
+// @Failure 401 Unauthorized.
+// @Failure 403 Forbidden.
+// @router / [get]
+func (c *CommonController) List() {
+
+}
+
+// @Title Get Helm repository detail
+// @Description Get Helm repository detail
+// @Param	repository_id	path	int	true	"ID of Helm repository"
+// @Param	chart_name	path	string	true	"Name of Helm Chart"
+// @Param	chart_version	path	string	true	"Version of Helm Chart"
+// @Success 200 Successful listed.
+// @Failure 400 Bad requests.
+// @Failure 401 Unauthorized.
+// @Failure 403 Forbidden.
+// @router /:repository_id/charts/:chart_name/:chart_version [get]
+func (c *CommonController) Get() {
+
+}
+
+// @Title Upload chart to Helm repository
+// @Description Upload chart to Helm repositoryh
+// @Param	repository_id	path	int	true	"ID of Helm repository"
+// @Param	body	body	models.helms.vm.Chart	"View model of Helm Chart."
+// @Success 200 Successful uploaded.
+// @Failure 400 Bad requests.
+// @Failure 401 Unauthorized.
+// @Failure 403 Forbidden.
+// @router /:repository_id/charts/uploads [post]
+func (c *CommonController) Post() {
+
+}
+
+// @Title Delete Helm repository
+// @Description Delete Helm repository
+// @Param	repository_id	path	int	true	"ID of Helm repository"
+// @Param	chart_name	path	string	true	"Name of Helm Chart"
+// @Param	chart_version	path	string	true	"Version of Helm Chart"
+// @Success 200 Successful listed.
+// @Failure 400 Bad requests.
+// @Failure 401 Unauthorized.
+// @Failure 403 Forbidden.
+// @router /:repository_id/charts/:chart_name/:chart_version [delete]
+func (c *CommonController) Delete() {
+
+}

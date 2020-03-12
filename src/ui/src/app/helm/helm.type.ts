@@ -131,6 +131,7 @@ export interface IChartReleasePost {
   chartversion: string;
   owner_id: number;
   Answers: { [index: string]: string };
+  values: string;
 }
 
 export interface IChartRelease {

@@ -95,7 +95,7 @@ func generateJobStatusSQL(query model.JobStatusMO, userID int64) (string, []inte
 		left join user u on u.id = s.owner_id
 	where s.deleted = 0 and s.status >= 1
 	and u.deleted = 0 and ( u.id = ? 
-		or exists (select * from user u where u.deleted = 0 and u.system_admin = 1 and u.id = ?))`
+		or exists (select u.id from user u where u.deleted = 0 and u.system_admin = 1 and u.id = ?))`
 
 	params := make([]interface{}, 0)
 	params = append(params, userID, userID)

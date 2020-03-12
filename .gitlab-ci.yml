@@ -30,13 +30,13 @@ pre-merge-requests:
 job_ui_test:
   before_script:
     - echo "before script"
-    - docker pull $registry_ip/board/dev_uibuilder:7.2
-    - docker tag $registry_ip/board/dev_uibuilder:7.2 10.111.25.119/board/dev_uibuilder:7.2
+    - docker pull $registry_ip/board/dev_uibuilder:7.3
+    - docker tag $registry_ip/board/dev_uibuilder:7.3 10.111.25.119/board/dev_uibuilder:7.3
   script:
     - pwd
     - docker images
     - docker-compose -f tests/docker-compose.uibuilder.test.yml up
-    - code=$(docker inspect tests_uibuilder7.2_1 -f "{{.State.ExitCode}}"), exit $code
+    - code=$(docker inspect tests_uibuilder7.3_1 -f "{{.State.ExitCode}}"), exit $code
   stage: ui-test
   tags:
     - board-runner-zhanghu01-vm

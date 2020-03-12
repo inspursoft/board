@@ -1,16 +1,15 @@
 import { Component, ComponentFactoryResolver, OnInit, ViewContainerRef } from '@angular/core';
-import { Observable, Subject } from 'rxjs';
+import { Observable } from 'rxjs';
 import { AbstractControl, ValidationErrors } from '@angular/forms';
 import { map } from 'rxjs/operators';
 import { InputArrayExType } from 'board-components-library';
 import { CsModalChildMessage } from '../../../shared/cs-modal-base/cs-modal-child-base';
 import { MessageService } from '../../../shared.service/message.service';
-import { Container, ContainerType, EnvStruct, UIServiceStep2, VolumeStruct } from '../../service-step.component';
+import { Container, ContainerType, EnvStruct, UIServiceStep2, Volume } from '../../service-step.component';
 import { VolumeMountsComponent } from '../volume-mounts/volume-mounts.component';
 import { EnvType } from '../../../shared/environment-value/environment-value.component';
 import { NodeAvailableResources } from '../../../shared/shared.types';
 import { K8sService } from '../../service.k8s';
-import { JobVolumeMounts } from "../../../job/job.type";
 
 @Component({
   selector: 'app-config-params',
@@ -76,9 +75,9 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
   getVolumesDescription(index: number, container: Container): string {
     const volume = container.volume_mounts;
     if (volume.length > index) {
-      const storageServer = volume[index].target_storage_service === '' ? '' :
-        volume[index].target_storage_service.concat(':');
-      const result = `${volume[index].container_path}:${storageServer}${volume[index].target_path}`;
+      const storageServer = volume[index].targetStorageService === '' ? '' :
+        volume[index].targetStorageService.concat(':');
+      const result = `${volume[index].containerPath}:${storageServer}${volume[index].targetPath}`;
       return result === ':' ? '' : result;
     } else {
       return '';
@@ -89,7 +88,8 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
     const factory = this.resolver.resolveComponentFactory(VolumeMountsComponent);
     const componentRef = this.view.createComponent(factory);
     componentRef.instance.volumeDataList = this.container.volume_mounts;
-    componentRef.instance.onConfirmEvent.subscribe((res: Array<VolumeStruct>) => this.container.volume_mounts = res);
+    componentRef.instance.projectName = this.step2Data.projectName;
+    componentRef.instance.onConfirmEvent.subscribe((res: Array<Volume>) => this.container.volume_mounts = res);
     componentRef.instance.openModal().subscribe(() => this.view.remove(this.view.indexOf(componentRef.hostView)));
   }
 
@@ -222,7 +222,7 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
 
   validContainerMemLimit(control: AbstractControl): ValidationErrors | null {
     let isValid = true;
-    if (control.value !== '' && this.container.mem_request !== '' ){
+    if (control.value !== '' && this.container.mem_request !== '') {
       isValid = Number.parseFloat(control.value) >= Number.parseFloat(this.container.mem_request);
     }
     return isValid ? null : {resourceRequestInvalid: 'resourceRequestInvalid'};

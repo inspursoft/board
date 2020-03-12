@@ -1,0 +1,4 @@
+FROM nginx:1.15.7-alpine
+MAINTAINER huay@inspur.com 
+
+COPY src/ui-adminserver/dist /usr/share/nginx/html
