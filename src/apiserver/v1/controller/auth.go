@@ -113,6 +113,7 @@ func (u *AuthController) SignUpAction() {
 	reqUser.Email = strings.TrimSpace(reqUser.Email)
 	reqUser.Realname = strings.TrimSpace(reqUser.Realname)
 	reqUser.Comment = strings.TrimSpace(reqUser.Comment)
+	reqUser.SystemAdmin = 0
 
 	isSuccess, err := service.SignUp(reqUser)
 	if err != nil {
