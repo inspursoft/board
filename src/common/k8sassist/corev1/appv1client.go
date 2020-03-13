@@ -28,7 +28,7 @@ func (p *AppV1Client) Service(namespace string) ServiceClientInterface {
 }
 
 func (p *AppV1Client) Deployment(namespace string) DeploymentClientInterface {
-	return apps.NewDeployments(namespace, p.Clientset.AppsV1beta2().Deployments(namespace))
+	return apps.NewDeployments(namespace, p.Clientset.AppsV1().Deployments(namespace))
 }
 
 func (p *AppV1Client) Node() NodeClientInterface {
