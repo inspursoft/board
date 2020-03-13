@@ -7,12 +7,12 @@ import (
 
 	"github.com/astaxie/beego/logs"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes/typed/apps/v1beta2"
+	"k8s.io/client-go/kubernetes/typed/apps/v1"
 )
 
 type replicasets struct {
 	namespace  string
-	replicaset v1beta2.ReplicaSetInterface
+	replicaset v1.ReplicaSetInterface
 }
 
 func (r *replicasets) Create(rs *model.ReplicaSet) (*model.ReplicaSet, error) {
@@ -81,7 +81,7 @@ func (r *replicasets) List(opts model.ListOptions) (*model.ReplicaSetList, error
 	return modelRSList, nil
 }
 
-func NewReplicaSets(namespace string, replicaset v1beta2.ReplicaSetInterface) *replicasets {
+func NewReplicaSets(namespace string, replicaset v1.ReplicaSetInterface) *replicasets {
 	return &replicasets{
 		namespace:  namespace,
 		replicaset: replicaset,

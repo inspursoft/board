@@ -7,6 +7,7 @@ import (
 
 	"strconv"
 
+	appsv1 "k8s.io/api/apps/v1"
 	appsv1beta1 "k8s.io/api/apps/v1beta1"
 	appsv1beta2 "k8s.io/api/apps/v1beta2"
 	autoscalev1 "k8s.io/api/autoscaling/v1"
@@ -85,32 +86,32 @@ func ToK8sPodTemplateSpec(template *model.PodTemplateSpec) *v1.PodTemplateSpec {
 }
 
 // generate k8s replicaset from model replicaset
-func ToK8sReplicaSet(rs *model.ReplicaSet) *appsv1beta2.ReplicaSet {
+func ToK8sReplicaSet(rs *model.ReplicaSet) *appsv1.ReplicaSet {
 	if rs == nil {
 		return nil
 	}
-	var spec appsv1beta2.ReplicaSetSpec
+	var spec appsv1.ReplicaSetSpec
 	if s := ToK8sReplicaSetSpec(&rs.Spec); s != nil {
 		spec = *s
 	}
-	conds := make([]appsv1beta2.ReplicaSetCondition, len(rs.Status.Conditions))
+	conds := make([]appsv1.ReplicaSetCondition, len(rs.Status.Conditions))
 	for i := range rs.Status.Conditions {
-		conds[i] = appsv1beta2.ReplicaSetCondition{
-			Type:               appsv1beta2.ReplicaSetConditionType(string(rs.Status.Conditions[i].Type)),
+		conds[i] = appsv1.ReplicaSetCondition{
+			Type:               appsv1.ReplicaSetConditionType(string(rs.Status.Conditions[i].Type)),
 			Status:             v1.ConditionStatus(string(rs.Status.Conditions[i].Status)),
 			LastTransitionTime: metav1.NewTime(rs.Status.Conditions[i].LastTransitionTime),
 			Reason:             rs.Status.Conditions[i].Reason,
 			Message:            rs.Status.Conditions[i].Message,
 		}
 	}
-	return &appsv1beta2.ReplicaSet{
+	return &appsv1.ReplicaSet{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "ReplicaSet",
-			APIVersion: "apps/v1beta2",
+			APIVersion: "apps/v1",
 		},
 		ObjectMeta: ToK8sObjectMeta(rs.ObjectMeta),
 		Spec:       spec,
-		Status: appsv1beta2.ReplicaSetStatus{
+		Status: appsv1.ReplicaSetStatus{
 			Replicas:             rs.Status.Replicas,
 			FullyLabeledReplicas: rs.Status.FullyLabeledReplicas,
 			ReadyReplicas:        rs.Status.ReadyReplicas,
@@ -121,7 +122,7 @@ func ToK8sReplicaSet(rs *model.ReplicaSet) *appsv1beta2.ReplicaSet {
 	}
 }
 
-func ToK8sReplicaSetSpec(spec *model.ReplicaSetSpec) *appsv1beta2.ReplicaSetSpec {
+func ToK8sReplicaSetSpec(spec *model.ReplicaSetSpec) *appsv1.ReplicaSetSpec {
 	if spec == nil {
 		return nil
 	}
@@ -135,7 +136,7 @@ func ToK8sReplicaSetSpec(spec *model.ReplicaSetSpec) *appsv1beta2.ReplicaSetSpec
 	if t := ToK8sPodTemplateSpec(&spec.Template); t != nil {
 		template = *t
 	}
-	return &appsv1beta2.ReplicaSetSpec{
+	return &appsv1.ReplicaSetSpec{
 		Replicas:        spec.Replicas,
 		MinReadySeconds: spec.MinReadySeconds,
 		Selector:        selector,
@@ -511,7 +512,7 @@ func FromK8sPodTemplateSpec(template *v1.PodTemplateSpec) *model.PodTemplateSpec
 }
 
 // generate model replicaset list from k8s replicaset list
-func FromK8sReplicaSetList(list *appsv1beta2.ReplicaSetList) *model.ReplicaSetList {
+func FromK8sReplicaSetList(list *appsv1.ReplicaSetList) *model.ReplicaSetList {
 	if list == nil {
 		return nil
 	}
@@ -527,7 +528,7 @@ func FromK8sReplicaSetList(list *appsv1beta2.ReplicaSetList) *model.ReplicaSetLi
 }
 
 // generate model replicaset from k8s replicaset
-func FromK8sReplicaSet(rs *appsv1beta2.ReplicaSet) *model.ReplicaSet {
+func FromK8sReplicaSet(rs *appsv1.ReplicaSet) *model.ReplicaSet {
 	if rs == nil {
 		return nil
 	}
@@ -559,7 +560,7 @@ func FromK8sReplicaSet(rs *appsv1beta2.ReplicaSet) *model.ReplicaSet {
 	}
 }
 
-func FromK8sReplicSetSpec(spec *appsv1beta2.ReplicaSetSpec) *model.ReplicaSetSpec {
+func FromK8sReplicSetSpec(spec *appsv1.ReplicaSetSpec) *model.ReplicaSetSpec {
 	if spec == nil {
 		return nil
 	}
