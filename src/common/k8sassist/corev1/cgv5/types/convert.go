@@ -49,7 +49,7 @@ func ToK8sDeployment(deployment *model.Deployment) *appsv1.Deployment {
 	return &appsv1.Deployment{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Deployment",
-			APIVersion: "apps/v1beta2",
+			APIVersion: "apps/v1",
 		},
 		ObjectMeta: ToK8sObjectMeta(deployment.ObjectMeta),
 		Spec: appsv1.DeploymentSpec{
