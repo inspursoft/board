@@ -1,20 +1,32 @@
 package base
 
 import (
+	"k8s.io/client-go/discovery/cached/memory"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/restmapper"
+	"k8s.io/client-go/scale"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-func NewBaseClient(masterURL string, kubeConfigPath string) (*kubernetes.Clientset, error) {
-	
-	// config 获取支持 url 和 path 方式，通过 BuildConfigFromFlags() 函数获取 restclient.Config 对象，用来下边根据该 config 对象创建 client 集合
+func NewBaseClient(masterURL, kubeConfigPath string) (*kubernetes.Clientset, scale.ScalesGetter, error) {
 	//get config
 	config, err := clientcmd.BuildConfigFromFlags(masterURL, kubeConfigPath)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	// 根据获取的 config 来创建一个 clientset 对象。通过调用 NewForConfig 函数创建 clientset 对象。
-	// NewForConfig 函数具体实现就是初始化 clientset 中的每个 client，基本涵盖了 k8s 内各种类型
-	return kubernetes.NewForConfig(config)
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	discoveryClient := memory.NewMemCacheClient(clientset.Discovery())
+	expander := restmapper.NewShortcutExpander(restmapper.NewDeferredDiscoveryRESTMapper(discoveryClient), discoveryClient)
+	scaleGetter, err := scale.NewForConfig(config, expander, dynamic.LegacyAPIPathResolverFunc, scale.NewDiscoveryScaleKindResolver(discoveryClient))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return clientset, scaleGetter, nil
 }

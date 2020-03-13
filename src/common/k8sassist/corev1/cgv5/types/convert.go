@@ -9,11 +9,12 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalev1 "k8s.io/api/autoscaling/v1"
+	autoscalingapi "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/version"
 )
@@ -393,6 +394,13 @@ func ToK8sVolumeMount(mount model.VolumeMount) v1.VolumeMount {
 		Name:      mount.Name,
 		MountPath: mount.MountPath,
 		SubPath:   mount.SubPath,
+	}
+}
+
+func ToK8sGroupResource(gr model.GroupResource) schema.GroupResource {
+	return schema.GroupResource{
+		Group:    gr.Group,
+		Resource: gr.Resource,
 	}
 }
 
@@ -1128,7 +1136,7 @@ func FromK8sNodeList(nodeList *v1.NodeList) *model.NodeList {
 	}
 }
 
-func FromK8sScale(scale *v1beta1.Scale) *model.Scale {
+func FromK8sScale(scale *autoscalingapi.Scale) *model.Scale {
 	return &model.Scale{
 		ObjectMeta: FromK8sObjectMeta(scale.ObjectMeta),
 		Spec:       model.ScaleSpec(scale.Spec),
@@ -1136,15 +1144,15 @@ func FromK8sScale(scale *v1beta1.Scale) *model.Scale {
 	}
 }
 
-func ToK8sScale(scale *model.Scale) *v1beta1.Scale {
-	return &v1beta1.Scale{
+func ToK8sScale(scale *model.Scale) *autoscalingapi.Scale {
+	return &autoscalingapi.Scale{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Scale",
-			APIVersion: "v1beta1",
+			APIVersion: "v1",
 		},
 		ObjectMeta: ToK8sObjectMeta(scale.ObjectMeta),
-		Spec:       v1beta1.ScaleSpec(scale.Spec),
-		Status:     v1beta1.ScaleStatus(scale.Status),
+		Spec:       autoscalingapi.ScaleSpec(scale.Spec),
+		Status:     autoscalingapi.ScaleStatus(scale.Status),
 	}
 }
 
@@ -1319,21 +1327,18 @@ func IsAlreadyExistError(err error) bool {
 	return errors.IsAlreadyExists(err)
 }
 
-func FromK8sRBD(rbd *v1.RBDPersistentVolumeSource) *model.RBDVolumeSource {
+func FromK8sRBD(rbd *v1.RBDPersistentVolumeSource) *model.RBDPersistentVolumeSource {
 	if rbd == nil {
 		return nil
 	}
-	tmp := model.LocalObjectReference{
-		Name: rbd.SecretRef.Name,
-	}
-	return &model.RBDVolumeSource{
+	return &model.RBDPersistentVolumeSource{
 		CephMonitors: rbd.CephMonitors,
 		RBDImage:     rbd.RBDImage,
 		FSType:       rbd.FSType,
 		RBDPool:      rbd.RBDPool,
 		RadosUser:    rbd.RadosUser,
 		Keyring:      rbd.Keyring,
-		SecretRef:    &tmp,
+		SecretRef:    (*model.SecretReference)(rbd.SecretRef),
 		ReadOnly:     rbd.ReadOnly,
 	}
 }
@@ -1410,13 +1415,9 @@ func FromK8sPVList(pvList *v1.PersistentVolumeList) *model.PersistentVolumeList 
 	}
 }
 
-func ToK8sRBD(rbd *model.RBDVolumeSource) *v1.RBDPersistentVolumeSource {
+func ToK8sRBD(rbd *model.RBDPersistentVolumeSource) *v1.RBDPersistentVolumeSource {
 	if rbd == nil {
 		return nil
-	}
-	tmp := v1.SecretReference{
-		Name:      rbd.SecretRef.Name,
-		Namespace: "",
 	}
 	return &v1.RBDPersistentVolumeSource{
 		CephMonitors: rbd.CephMonitors,
@@ -1425,7 +1426,7 @@ func ToK8sRBD(rbd *model.RBDVolumeSource) *v1.RBDPersistentVolumeSource {
 		RBDPool:      rbd.RBDPool,
 		RadosUser:    rbd.RadosUser,
 		Keyring:      rbd.Keyring,
-		SecretRef:    &tmp,
+		SecretRef:    (*v1.SecretReference)(rbd.SecretRef),
 		ReadOnly:     rbd.ReadOnly,
 	}
 }

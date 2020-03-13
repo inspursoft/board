@@ -1,4 +1,4 @@
-FROM golang:1.9.6
+FROM golang:1.14.0
 
 MAINTAINER wangkun_lc@inspur.com
 

@@ -9,6 +9,7 @@ import (
 	kubernetes "k8s.io/client-go/kubernetes"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	config "k8s.io/client-go/rest"
+	"k8s.io/client-go/scale"
 )
 
 //define Deployment type
@@ -64,6 +65,7 @@ type DeleteOptions = metav1.DeleteOptions
 //define config
 type Config = config.Config
 type Clientset = kubernetes.Clientset
+type ScaleGetter = scale.ScalesGetter
 type NamespacePhase = v1.NamespacePhase
 
 //define api
