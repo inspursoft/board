@@ -28,7 +28,7 @@ func (p *AppV1Client) Service(namespace string) ServiceClientInterface {
 }
 
 func (p *AppV1Client) Deployment(namespace string) DeploymentClientInterface {
-	return apps.NewDeployments(namespace, p.Clientset.AppsV1beta2().Deployments(namespace))
+	return apps.NewDeployments(namespace, p.Clientset.AppsV1().Deployments(namespace))
 }
 
 func (p *AppV1Client) Node() NodeClientInterface {
@@ -44,7 +44,7 @@ func (p *AppV1Client) Scale(namespace string) ScaleClientInterface {
 }
 
 func (p *AppV1Client) ReplicaSet(namespace string) ReplicaSetClientInterface {
-	return apps.NewReplicaSets(namespace, p.Clientset.AppsV1beta2().ReplicaSets(namespace))
+	return apps.NewReplicaSets(namespace, p.Clientset.AppsV1().ReplicaSets(namespace))
 }
 
 func (p *AppV1Client) Pod(namespace string) PodClientInterface {

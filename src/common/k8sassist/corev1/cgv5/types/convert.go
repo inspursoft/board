@@ -7,8 +7,8 @@ import (
 
 	"strconv"
 
+	appsv1 "k8s.io/api/apps/v1"
 	appsv1beta1 "k8s.io/api/apps/v1beta1"
-	appsv1beta2 "k8s.io/api/apps/v1beta2"
 	autoscalev1 "k8s.io/api/autoscaling/v1"
 	autoscalingapi "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/api/core/v1"
@@ -37,7 +37,7 @@ func ToK8sObjectMeta(meta model.ObjectMeta) metav1.ObjectMeta {
 }
 
 // generate k8s deployment from model deployment
-func ToK8sDeployment(deployment *model.Deployment) *appsv1beta2.Deployment {
+func ToK8sDeployment(deployment *model.Deployment) *appsv1.Deployment {
 	if deployment == nil {
 		return nil
 	}
@@ -46,13 +46,13 @@ func ToK8sDeployment(deployment *model.Deployment) *appsv1beta2.Deployment {
 		templ = *t
 	}
 	rep := deployment.Spec.Replicas
-	return &appsv1beta2.Deployment{
+	return &appsv1.Deployment{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Deployment",
 			APIVersion: "apps/v1beta2",
 		},
 		ObjectMeta: ToK8sObjectMeta(deployment.ObjectMeta),
-		Spec: appsv1beta2.DeploymentSpec{
+		Spec: appsv1.DeploymentSpec{
 			Replicas: &rep,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: deployment.Spec.Selector,
@@ -60,7 +60,7 @@ func ToK8sDeployment(deployment *model.Deployment) *appsv1beta2.Deployment {
 			Template: templ,
 			Paused:   deployment.Spec.Paused,
 		},
-		Status: appsv1beta2.DeploymentStatus{
+		Status: appsv1.DeploymentStatus{
 			Replicas:            deployment.Status.Replicas,
 			UpdatedReplicas:     deployment.Status.UpdatedReplicas,
 			UnavailableReplicas: deployment.Status.UnavailableReplicas,
@@ -85,32 +85,32 @@ func ToK8sPodTemplateSpec(template *model.PodTemplateSpec) *v1.PodTemplateSpec {
 }
 
 // generate k8s replicaset from model replicaset
-func ToK8sReplicaSet(rs *model.ReplicaSet) *appsv1beta2.ReplicaSet {
+func ToK8sReplicaSet(rs *model.ReplicaSet) *appsv1.ReplicaSet {
 	if rs == nil {
 		return nil
 	}
-	var spec appsv1beta2.ReplicaSetSpec
+	var spec appsv1.ReplicaSetSpec
 	if s := ToK8sReplicaSetSpec(&rs.Spec); s != nil {
 		spec = *s
 	}
-	conds := make([]appsv1beta2.ReplicaSetCondition, len(rs.Status.Conditions))
+	conds := make([]appsv1.ReplicaSetCondition, len(rs.Status.Conditions))
 	for i := range rs.Status.Conditions {
-		conds[i] = appsv1beta2.ReplicaSetCondition{
-			Type:               appsv1beta2.ReplicaSetConditionType(string(rs.Status.Conditions[i].Type)),
+		conds[i] = appsv1.ReplicaSetCondition{
+			Type:               appsv1.ReplicaSetConditionType(string(rs.Status.Conditions[i].Type)),
 			Status:             v1.ConditionStatus(string(rs.Status.Conditions[i].Status)),
 			LastTransitionTime: metav1.NewTime(rs.Status.Conditions[i].LastTransitionTime),
 			Reason:             rs.Status.Conditions[i].Reason,
 			Message:            rs.Status.Conditions[i].Message,
 		}
 	}
-	return &appsv1beta2.ReplicaSet{
+	return &appsv1.ReplicaSet{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "ReplicaSet",
 			APIVersion: "apps/v1beta2",
 		},
 		ObjectMeta: ToK8sObjectMeta(rs.ObjectMeta),
 		Spec:       spec,
-		Status: appsv1beta2.ReplicaSetStatus{
+		Status: appsv1.ReplicaSetStatus{
 			Replicas:             rs.Status.Replicas,
 			FullyLabeledReplicas: rs.Status.FullyLabeledReplicas,
 			ReadyReplicas:        rs.Status.ReadyReplicas,
@@ -121,7 +121,7 @@ func ToK8sReplicaSet(rs *model.ReplicaSet) *appsv1beta2.ReplicaSet {
 	}
 }
 
-func ToK8sReplicaSetSpec(spec *model.ReplicaSetSpec) *appsv1beta2.ReplicaSetSpec {
+func ToK8sReplicaSetSpec(spec *model.ReplicaSetSpec) *appsv1.ReplicaSetSpec {
 	if spec == nil {
 		return nil
 	}
@@ -135,7 +135,7 @@ func ToK8sReplicaSetSpec(spec *model.ReplicaSetSpec) *appsv1beta2.ReplicaSetSpec
 	if t := ToK8sPodTemplateSpec(&spec.Template); t != nil {
 		template = *t
 	}
-	return &appsv1beta2.ReplicaSetSpec{
+	return &appsv1.ReplicaSetSpec{
 		Replicas:        spec.Replicas,
 		MinReadySeconds: spec.MinReadySeconds,
 		Selector:        selector,
@@ -298,8 +298,8 @@ func ToK8sVolumeSource(volumeSource *model.VolumeSource) *v1.VolumeSource {
 	}
 
 	return &v1.VolumeSource{
-		HostPath:              hp,
-		NFS:                   nfs,
+		HostPath: hp,
+		NFS:      nfs,
 		PersistentVolumeClaim: pvc,
 		ConfigMap:             configmap,
 	}
@@ -434,7 +434,7 @@ func FromK8sObjectMeta(meta metav1.ObjectMeta) model.ObjectMeta {
 }
 
 // generate model deployment list from k8s deployment list
-func FromK8sDeploymentList(deploymentList *appsv1beta2.DeploymentList) *model.DeploymentList {
+func FromK8sDeploymentList(deploymentList *appsv1.DeploymentList) *model.DeploymentList {
 	if deploymentList == nil {
 		return nil
 	}
@@ -449,7 +449,7 @@ func FromK8sDeploymentList(deploymentList *appsv1beta2.DeploymentList) *model.De
 }
 
 // generate model deployment from k8s deployment
-func FromK8sDeployment(deployment *appsv1beta2.Deployment) *model.Deployment {
+func FromK8sDeployment(deployment *appsv1.Deployment) *model.Deployment {
 	if deployment == nil {
 		return nil
 	}
@@ -469,7 +469,7 @@ func FromK8sDeployment(deployment *appsv1beta2.Deployment) *model.Deployment {
 	}
 }
 
-func FromK8sDeploymentSpec(spec *appsv1beta2.DeploymentSpec) *model.DeploymentSpec {
+func FromK8sDeploymentSpec(spec *appsv1.DeploymentSpec) *model.DeploymentSpec {
 	if spec == nil {
 		return nil
 	}
@@ -511,7 +511,7 @@ func FromK8sPodTemplateSpec(template *v1.PodTemplateSpec) *model.PodTemplateSpec
 }
 
 // generate model replicaset list from k8s replicaset list
-func FromK8sReplicaSetList(list *appsv1beta2.ReplicaSetList) *model.ReplicaSetList {
+func FromK8sReplicaSetList(list *appsv1.ReplicaSetList) *model.ReplicaSetList {
 	if list == nil {
 		return nil
 	}
@@ -527,7 +527,7 @@ func FromK8sReplicaSetList(list *appsv1beta2.ReplicaSetList) *model.ReplicaSetLi
 }
 
 // generate model replicaset from k8s replicaset
-func FromK8sReplicaSet(rs *appsv1beta2.ReplicaSet) *model.ReplicaSet {
+func FromK8sReplicaSet(rs *appsv1.ReplicaSet) *model.ReplicaSet {
 	if rs == nil {
 		return nil
 	}
@@ -559,7 +559,7 @@ func FromK8sReplicaSet(rs *appsv1beta2.ReplicaSet) *model.ReplicaSet {
 	}
 }
 
-func FromK8sReplicSetSpec(spec *appsv1beta2.ReplicaSetSpec) *model.ReplicaSetSpec {
+func FromK8sReplicSetSpec(spec *appsv1.ReplicaSetSpec) *model.ReplicaSetSpec {
 	if spec == nil {
 		return nil
 	}
@@ -697,8 +697,8 @@ func FromK8sVolumeSource(volumeSource v1.VolumeSource) model.VolumeSource {
 	}
 
 	return model.VolumeSource{
-		HostPath:              hp,
-		NFS:                   nfs,
+		HostPath: hp,
+		NFS:      nfs,
 		PersistentVolumeClaim: pvc,
 		ConfigMap:             configmap,
 	}
@@ -1157,7 +1157,7 @@ func ToK8sScale(scale *model.Scale) *autoscalingapi.Scale {
 	}
 }
 
-func GenerateDeploymentConfig(deployment *appsv1beta2.Deployment) *appsv1beta2.Deployment {
+func GenerateDeploymentConfig(deployment *appsv1.Deployment) *appsv1.Deployment {
 	containersConfig := []v1.Container{}
 	for _, container := range deployment.Spec.Template.Spec.Containers {
 		containersConfig = append(containersConfig, v1.Container{
@@ -1175,7 +1175,7 @@ func GenerateDeploymentConfig(deployment *appsv1beta2.Deployment) *appsv1beta2.D
 			ReadinessProbe: container.ReadinessProbe,
 		})
 	}
-	return &appsv1beta2.Deployment{
+	return &appsv1.Deployment{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       deploymentKind,
 			APIVersion: deploymentAPIVersion,
@@ -1185,7 +1185,7 @@ func GenerateDeploymentConfig(deployment *appsv1beta2.Deployment) *appsv1beta2.D
 			Name:      deployment.ObjectMeta.Name,
 			Namespace: deployment.ObjectMeta.Namespace,
 		},
-		Spec: appsv1beta2.DeploymentSpec{
+		Spec: appsv1.DeploymentSpec{
 			Replicas: deployment.Spec.Replicas,
 			Selector: deployment.Spec.Selector,
 			Template: v1.PodTemplateSpec{
