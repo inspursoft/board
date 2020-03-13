@@ -44,7 +44,7 @@ func (p *AppV1Client) Scale(namespace string) ScaleClientInterface {
 }
 
 func (p *AppV1Client) ReplicaSet(namespace string) ReplicaSetClientInterface {
-	return apps.NewReplicaSets(namespace, p.Clientset.AppsV1beta2().ReplicaSets(namespace))
+	return apps.NewReplicaSets(namespace, p.Clientset.AppsV1().ReplicaSets(namespace))
 }
 
 func (p *AppV1Client) Pod(namespace string) PodClientInterface {
