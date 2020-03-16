@@ -297,8 +297,8 @@ func ToK8sVolumeSource(volumeSource *model.VolumeSource) *v1.VolumeSource {
 	}
 
 	return &v1.VolumeSource{
-		HostPath:              hp,
-		NFS:                   nfs,
+		HostPath: hp,
+		NFS:      nfs,
 		PersistentVolumeClaim: pvc,
 		ConfigMap:             configmap,
 	}
@@ -696,8 +696,8 @@ func FromK8sVolumeSource(volumeSource v1.VolumeSource) model.VolumeSource {
 	}
 
 	return model.VolumeSource{
-		HostPath:              hp,
-		NFS:                   nfs,
+		HostPath: hp,
+		NFS:      nfs,
 		PersistentVolumeClaim: pvc,
 		ConfigMap:             configmap,
 	}

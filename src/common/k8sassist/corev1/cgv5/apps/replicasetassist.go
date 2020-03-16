@@ -7,7 +7,7 @@ import (
 
 	"github.com/astaxie/beego/logs"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1 "k8s.io/client-go/kubernetes/typed/apps/v1"
+	"k8s.io/client-go/kubernetes/typed/apps/v1"
 )
 
 type replicasets struct {
