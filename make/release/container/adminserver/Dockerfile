@@ -1,15 +1,30 @@
-FROM golang:1.13.5-alpine3.10
+FROM golang:alpine
 
 COPY src/adminserver /go/src/git/inspursoft/board/src/adminserver
- 
-WORKDIR /go/src/git/inspursoft/board/src/adminserver/
+COPY src/vendor /go/src/git/inspursoft/board/src/vendor
+COPY VERSION /go/bin/VERSION
 
-RUN apk add git \
-    && go get github.com/astaxie/beego \
-    && go get github.com/beego/bee
-    
+RUN apk update \
+    && apk add --no-cache build-base\
+    && rm -rf /var/cache/apk/*
+
+ENV GO111MODULE=on
+ENV GOPROXY=https://goproxy.io,direct
+
+WORKDIR /go/src/git/inspursoft/board/src/
+
+RUN go mod init && \
+    go mod vendor
+
+WORKDIR /go/src/git/inspursoft/board/src/adminserver
+
+RUN go build -mod=vendor -v -o /go/bin/adminserver && \
+    chmod u+x /go/bin/adminserver
+
 VOLUME ["/go/cfgfile"]
 
-CMD [ "bee", "run"]
+WORKDIR /go/bin/
+
+CMD ["adminserver"]
 
 EXPOSE 8080
