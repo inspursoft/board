@@ -50,6 +50,7 @@ func InitDatabase() error {
                         ip varchar(30) not null,
                         creation_time int not null,
                         log_type int,
+                        completed int,
                         success int,
                         pid int
 	                   );`

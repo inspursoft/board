@@ -5,9 +5,28 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
-func InsertNodeLog(nodeLog *nodeModel.NodeLog) error {
+func InsertNodeLog(nodeLog *nodeModel.NodeLog) (int64, error) {
 	o := orm.NewOrm()
-	if _, err := o.Insert(nodeLog); err != nil {
+	var id int64
+	var err error
+	if id, err = o.Insert(nodeLog); err != nil {
+		return 0, err
+	}
+	return id, nil
+}
+
+func GetNodeLog(id int) (*nodeModel.NodeLog, error) {
+	o := orm.NewOrm()
+	log := &nodeModel.NodeLog{Id: id}
+	if err := o.Read(log, "id"); err != nil {
+		return nil, err
+	}
+	return log, nil
+}
+
+func UpdateNodeLog(nodeLog *nodeModel.NodeLog) (error) {
+	o := orm.NewOrm()
+	if _, err := o.Update(nodeLog, "completed", "success"); err != nil {
 		return err
 	}
 	return nil

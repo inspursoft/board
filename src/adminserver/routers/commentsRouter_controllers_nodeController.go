@@ -36,6 +36,15 @@ func init() {
 
     beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers/nodeController:Controller"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers/nodeController:Controller"],
         beego.ControllerComments{
+            Method: "CallBackAction",
+            Router: `/callback`,
+            AllowHTTPMethods: []string{"put"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers/nodeController:Controller"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers/nodeController:Controller"],
+        beego.ControllerComments{
             Method: "GetNodeLogDetail",
             Router: `/log`,
             AllowHTTPMethods: []string{"get"},
@@ -47,6 +56,15 @@ func init() {
         beego.ControllerComments{
             Method: "GetNodeLogList",
             Router: `/logs`,
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers/nodeController:Controller"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers/nodeController:Controller"],
+        beego.ControllerComments{
+            Method: "PreparationAction",
+            Router: `/preparation`,
             AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(),
             Filters: nil,

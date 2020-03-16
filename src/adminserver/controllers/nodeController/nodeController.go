@@ -12,7 +12,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
-	"time"
 )
 
 type Controller struct {
@@ -87,8 +86,47 @@ func (controller *Controller) GetNodeLogDetail() {
 	return
 }
 
+// @Title get preparation data
+// @Description get preparation data
+// @Success 200 {object} nodeModel.PreparationData  success
+// @Failure 400 bad request
+// @Failure 500 Internal Server Error
+// @router /preparation [get]
+func (controller *Controller) PreparationAction() {
+	configuration, statusMessage := service.GetAllCfg("")
+	if statusMessage == "BadRequest" {
+		controller.CustomAbort(http.StatusBadRequest, "Failed to get the configuration.")
+		return
+	}
+	hostName := configuration.Apiserver.Hostname
+	masterIp := configuration.Apiserver.KubeMasterIP
+
+	var preparationData = nodeModel.PreparationData{HostIp: hostName, MasterIp: masterIp}
+	controller.Data["json"] = preparationData
+	controller.ServeJSON()
+	return
+}
+
+// @Title Update node log
+// @Description Update node log
+// @Param	body	body	nodeModel.UpdateNodeLog	true	""
+// @Success 200
+// @Failure 400 bad request
+// @Failure 500 Internal Server Error
+// @router /callback [put]
+func (controller *Controller) CallBackAction() {
+	var putData nodeModel.UpdateNodeLog
+	controller.resolveBody(&putData)
+	if err := nodeService.UpdateLog(&putData); err != nil {
+		controller.CustomAbort(http.StatusBadRequest, "Failed to update node log.")
+		return
+	}
+	return
+}
+
 // @Title add nodeModel
 // @Description Get add nodeModel
+// @Param	body	body	nodeModel.AddNodePostData	true	""
 // @Success 200
 // @Failure 400 bad request
 // @Failure 500 Internal Server Error
@@ -96,7 +134,7 @@ func (controller *Controller) GetNodeLogDetail() {
 func (controller *Controller) AddNodeAction() {
 	var postData nodeModel.AddNodePostData
 	controller.resolveBody(&postData)
-	controller.AddRemoveNode(postData.NodeIp, nodeModel.ActionTypeAddNode, nodeModel.AddNodeYamlFile)
+	controller.AddRemoveNode(&postData, nodeModel.ActionTypeAddNode, nodeModel.AddNodeYamlFile)
 }
 
 // @Title remove node
@@ -104,43 +142,43 @@ func (controller *Controller) AddNodeAction() {
 // @Success 200
 // @Failure 400 bad request
 // @Failure 500 Internal Server Error
+// @Param	node_ip	        query	string	true	""
+// @Param	node_password	query	string	true	""
+// @Param	host_password	query	string	true	""
+// @Param	host_username	query	string	true	"root"
+// @Param	master_password	query	string	true	""
 // @router / [delete]
 func (controller *Controller) RemoveNodeAction() {
 	nodeIp := controller.Ctx.Input.Query("node_ip")
-	controller.AddRemoveNode(nodeIp, nodeModel.ActionTypeDeleteNode, nodeModel.RemoveNodeYamlFile)
+	nodePassword := controller.Ctx.Input.Query("node_password")
+	hostPassword := controller.Ctx.Input.Query("host_password")
+	hostUsername := controller.Ctx.Input.Query("host_username")
+	masterPassword := controller.Ctx.Input.Query("master_password")
+	controller.AddRemoveNode(&nodeModel.AddNodePostData{
+		NodePassword:   nodePassword,
+		HostUsername:   hostUsername,
+		HostPassword:   hostPassword,
+		NodeIp:         nodeIp,
+		MasterPassword: masterPassword},
+		nodeModel.ActionTypeDeleteNode, nodeModel.RemoveNodeYamlFile)
 }
 
-func (controller *Controller) AddRemoveNode(nodeIp string, actionType nodeModel.ActionType, yamlFile string) {
-	if nodeService.CheckExistsInCache(nodeIp) {
-		controller.Data["json"] = *nodeService.GetLogInfoInCache(nodeIp)
+func (controller *Controller) AddRemoveNode(nodePostData *nodeModel.AddNodePostData,
+	actionType nodeModel.ActionType, yamlFile string) {
+	if nodeService.CheckExistsInCache(nodePostData.NodeIp) {
+		controller.Data["json"] = *nodeService.GetLogInfoInCache(nodePostData.NodeIp)
 		controller.ServeJSON()
 		return
 	}
 
-	configuration, statusMessage := service.GetAllCfg("")
-	if statusMessage == "BadRequest" {
-		controller.CustomAbort(http.StatusBadRequest, "Failed to get the configuration.")
-		return
-	}
-	masterIp := configuration.Apiserver.KubeMasterIP
-	registryIp := configuration.Apiserver.RegistryIP
-
-	if err := nodeService.GenerateHostFile(masterIp, nodeIp, registryIp, nodeModel.AddRemoveNodeFile); err != nil {
+	if nodeLog, err := nodeService.AddRemoveNodeByContainer(nodePostData, actionType, yamlFile); err != nil {
 		controller.CustomAbort(http.StatusBadRequest, err.Error())
 		return
-	}
-
-	nodeLog := nodeModel.NodeLog{
-		Ip: nodeIp, Success: false, Pid: 0, CreationTime: time.Now().Unix(), LogType: actionType}
-
-
-	if err := nodeService.ExecuteCommand(&nodeLog, yamlFile, nodeModel.AddRemoveShellFile); err != nil {
-		controller.CustomAbort(http.StatusBadRequest, err.Error())
+	} else {
+		controller.Data["json"] = *nodeLog
+		controller.ServeJSON()
 		return
 	}
-	controller.Data["json"] = nodeLog
-	controller.ServeJSON()
-	return
 }
 
 func (controller *Controller) resolveBody(target interface{}) (err error) {
