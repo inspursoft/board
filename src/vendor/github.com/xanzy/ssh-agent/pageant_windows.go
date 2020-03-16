@@ -30,7 +30,7 @@ import (
 	"fmt"
 	"sync"
 	. "syscall"
-	. "unsafe"
+	//. "unsafe"
 )
 
 // Maximum size of message can be sent to pageant
