@@ -32,7 +32,7 @@ func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
 		os.MkdirAll(nodeModel.BasePath, os.ModePerm)
 	}
 	hostFilePath := path.Join(nodeModel.BasePath, nodeModel.HostFileDir)
-	hostFileName := fmt.Sprintf("%s%s@%s", hostFilePath, nodeModel.NodeHostsFile, nodePostData.NodeIp)
+	hostFileName := fmt.Sprintf("%s/%s@%s", hostFilePath, nodeModel.NodeHostsFile, nodePostData.NodeIp)
 
 	if err := GenerateHostFile(masterIp, nodePostData.NodeIp, registryIp, hostFileName); err != nil {
 		return nil, err
@@ -131,7 +131,8 @@ func UpdateLog(putLogData *nodeModel.UpdateNodeLog) error {
 	if _, err := os.Stat(nodeModel.BasePath); os.IsNotExist(err) {
 		os.MkdirAll(nodeModel.BasePath, os.ModePerm)
 	}
-	logFileName := path.Join(nodeModel.BasePath, putLogData.LogFile)
+	logFilePath := path.Join(nodeModel.BasePath, nodeModel.LogFileDir)
+	logFileName := fmt.Sprintf("%s/%s", logFilePath, putLogData.LogFile)
 	if errInsert := InsertLogDetail(logData.Ip, logFileName, logData.CreationTime); errInsert != nil {
 		return errInsert
 	}
