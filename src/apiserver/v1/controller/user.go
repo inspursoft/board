@@ -25,6 +25,10 @@ func (u *UserController) Prepare() {
 }
 
 func (u *UserController) GetUsersAction() {
+	if !u.IsSysAdmin {
+		u.CustomAbortAudit(http.StatusForbidden, "Insufficient privileges to get users info.")
+		return
+	}
 	username := u.GetString("username")
 	email := u.GetString("email")
 	pageIndex, _ := u.GetInt("page_index", 0)
@@ -46,7 +50,8 @@ func (u *UserController) GetUsersAction() {
 		fieldValue = email
 	}
 	if isPaginated {
-		paginatedUsers, err = service.GetPaginatedUsers(fieldName, fieldValue, pageIndex, pageSize, orderField, orderAsc)
+		selectedFields := []string{"id", "username", "email", "deleted", "realname", "comment", "creation_time", "update_time", "reset_uuid", "system_admin"}
+		paginatedUsers, err = service.GetPaginatedUsers(fieldName, fieldValue, pageIndex, pageSize, orderField, orderAsc, selectedFields...)
 		u.Data["json"] = paginatedUsers
 	} else {
 		users, err = service.GetUsers(fieldName, fieldValue, "id", "username", "email", "realname")
