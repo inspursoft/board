@@ -82,6 +82,8 @@ export const LANG_EN_US = {
     Node_Detail_Title_Remove: 'Removing node',
     Node_Detail_Title_Log: 'Node log',
     Node_Detail_Node_Ip: 'Node ip',
+    Node_Detail_Node_Password: 'Node password',
+    Node_Detail_Host_Username: 'Host username',
   },
   'CONFIGURATIONS': {
     'API_SERVER': {

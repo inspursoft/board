@@ -83,6 +83,7 @@ export const LANG_ZH_CN = {
     Node_Detail_Title_Remove: '正在移除节点',
     Node_Detail_Title_Log: '节点日志',
     Node_Detail_Node_Ip: '节点IP',
+    Node_Detail_Node_Password: '节点密码',
   },
   'CONFIGURATIONS': {
     'API_SERVER': {

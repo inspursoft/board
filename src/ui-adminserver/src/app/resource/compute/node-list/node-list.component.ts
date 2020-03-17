@@ -25,7 +25,7 @@ export class NodeListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.subscriptionUpdate = interval(3000).subscribe(() => this.getNodeList());
+    this.subscriptionUpdate = interval(3000000).subscribe(() => this.getNodeList());
     this.getNodeList();
   }
 

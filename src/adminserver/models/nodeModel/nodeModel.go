@@ -3,10 +3,11 @@ package nodeModel
 import "bytes"
 
 const BasePath = "/data/board/ansible_k8s/"
-const AddNodeYamlFile = "addnode.yml"
-const RemoveNodeYamlFile = "uninstallnode.yml"
+const AddNodeYamlFile = "addnode"
+const RemoveNodeYamlFile = "uninstallnode"
 const NodeHostsFile = "addNode"
 const LogFileDir = "log"
+const HostFileDir = "hosts"
 const PreEnvDir = "pre-env"
 
 type NodeLogResponseStatus int
@@ -58,6 +59,7 @@ type ContainerEnv struct {
 	InstallFile    string `json:"install_file"`
 	HostFile       string `json:"host_file"`
 	LogId          int64  `json:"log_id"`
+	LogTimestamp   int64  `json:"log_timestamp"`
 }
 
 type UpdateNodeLog struct {

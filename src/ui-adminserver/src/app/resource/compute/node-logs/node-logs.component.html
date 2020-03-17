@@ -2,14 +2,12 @@
 <clr-datagrid (clrDgRefresh)="retrieve()">
   <clr-dg-column>{{ 'Node.Node_Logs_Ip' | translate }}</clr-dg-column>
   <clr-dg-column>{{ 'Node.Node_Logs_Operation_Time' | translate }}</clr-dg-column>
-  <clr-dg-column>{{ 'Node.Node_Logs_PID' | translate }}</clr-dg-column>
   <clr-dg-column>{{ 'Node.Node_Logs_Type' | translate }}</clr-dg-column>
   <clr-dg-column>{{ 'Node.Node_Logs_Success' | translate }}</clr-dg-column>
   <clr-dg-column>{{ 'Node.Node_Logs_Operation' | translate }}</clr-dg-column>
   <clr-dg-row *ngFor="let nodeLog of nodeLogs.list">
     <clr-dg-cell>{{nodeLog.ip}}</clr-dg-cell>
     <clr-dg-cell>{{nodeLog.creationTime * 1000 | date: "short"}}</clr-dg-cell>
-    <clr-dg-cell>{{nodeLog.pid}}</clr-dg-cell>
     <clr-dg-cell>{{nodeLog.type===1?'Delete':'Add'}}</clr-dg-cell>
     <clr-dg-cell [style.background-color]="nodeLog.success ? 'lightgreen' : 'transparent'">
       {{nodeLog.success}}
@@ -19,6 +17,7 @@
         <a href="javascript:void(0)">
           <clr-icon shape="info" class="is-solid" (click)="showLogDetail(nodeLog)"></clr-icon>
         </a>
+        <span *ngIf="!nodeLog.completed" class="spinner spinner-sm"></span>
       </div>
     </clr-dg-cell>
   </clr-dg-row>

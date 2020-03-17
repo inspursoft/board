@@ -3,15 +3,15 @@ package utils
 import (
 	"bytes"
 	"fmt"
+	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
+	"github.com/tmc/scp"
+	"golang.org/x/crypto/ssh"
 	"io"
 	"log"
 	"os"
 	"path/filepath"
 	"time"
-
-	"github.com/astaxie/beego"
-	"github.com/tmc/scp"
-	"golang.org/x/crypto/ssh"
 )
 
 const maxSSHRetries = 10
@@ -34,7 +34,9 @@ func NewSecureShell(output io.Writer, host, username, password string) (*SecureS
 		})
 		if err != nil {
 			time.Sleep(maxSSHDelay)
-			log.Printf("Failed to dial host: %+v\n", err)
+			errMessage := fmt.Sprintf("Failed to dial host: %+v\n", err)
+			output.Write([]byte(errMessage))
+			logs.Info(errMessage)
 			continue
 		}
 		s, err := client.NewSession()
@@ -52,8 +54,10 @@ func NewSecureShell(output io.Writer, host, username, password string) (*SecureS
 		if err := s.RequestPty("xterm", 40, 80, modes); err != nil {
 			return nil, fmt.Errorf("failed to get pseudo-terminal: %v", err)
 		}
+		output.Write([]byte(fmt.Sprintf("---Connected to %s successfully.---\n", host)))
 		return &SecureShell{client: client, output: output}, nil
 	}
+	output.Write([]byte(fmt.Sprintf("---Connected to %s. unsuccessfully---\n", host)))
 	return nil, fmt.Errorf("retry times was exceeded 10")
 }
 
@@ -66,12 +70,16 @@ func (s *SecureShell) ExecuteCommand(cmd string) error {
 	w := io.MultiWriter(s.output)
 	session.Stdout = w
 	session.Stderr = w
-	log.Printf("Execute command: %s\n", cmd)
-	err = session.Start(cmd)
-	if err != nil {
+	cmdStr := fmt.Sprintf("Execute command: %s\n", cmd)
+	s.output.Write([]byte(cmdStr))
+	logs.Info(cmdStr)
+	if err := session.Start(cmd); err != nil {
 		return err
 	}
-	return session.Wait()
+	if err := session.Wait(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *SecureShell) SecureCopyData(fileName string, data []byte, destinationPath string) error {

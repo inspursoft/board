@@ -6,9 +6,12 @@ import (
 	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/orm"
 	_ "github.com/mattn/go-sqlite3"
+	"os"
+	"path"
 )
 
-const AdminServerDbFile = "/data/board/database/adminServer.db"
+const AdminServerDbPath = "/data/board/database/"
+const AdminServerDbFile = "adminServer.db"
 
 var (
 	GlobalCache cache.Cache
@@ -19,18 +22,34 @@ func InitGlobalCache() (err error) {
 	return err;
 }
 
-func RegisterDatabase() error {
+func RegisterDatabase(dbFileName string) error {
 	if err := orm.RegisterDriver("sqlite3", orm.DRSqlite); err != nil {
 		return err
 	}
-	if err := orm.RegisterDataBase("default", "sqlite3", AdminServerDbFile); err != nil {
+	if err := orm.RegisterDataBase("default", "sqlite3", dbFileName); err != nil {
 		return err
 	}
 	return nil
 }
 
-func InitDatabase() error {
-	db, err := sql.Open("sqlite3", AdminServerDbFile)
+func InitDatabase() {
+	if _, err := os.Stat(AdminServerDbPath); os.IsNotExist(err) {
+		os.MkdirAll(AdminServerDbPath, os.ModePerm)
+	}
+
+	adminServerDbFileName := path.Join(AdminServerDbPath, AdminServerDbFile)
+	if _, err := os.Stat(adminServerDbFileName); os.IsNotExist(err) {
+		if errInitDb := InitDbTables(adminServerDbFileName); errInitDb != nil {
+			logs.Error(errInitDb)
+		}
+	}
+	if err := RegisterDatabase(adminServerDbFileName); err != nil {
+		logs.Error(err)
+	}
+}
+
+func InitDbTables(dbFileName string) error {
+	db, err := sql.Open("sqlite3", dbFileName)
 	if err != nil {
 		return err
 	}

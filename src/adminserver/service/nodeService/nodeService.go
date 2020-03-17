@@ -28,8 +28,12 @@ func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
 	masterIp := configuration.Apiserver.KubeMasterIP
 	registryIp := configuration.Apiserver.RegistryIP
 
-	hostFilePath := path.Join(nodeModel.BasePath, nodeModel.NodeHostsFile)
-	hostFileName := fmt.Sprintf("%s@%s", hostFilePath, nodePostData.NodeIp)
+	if _, err := os.Stat(nodeModel.BasePath); os.IsNotExist(err) {
+		os.MkdirAll(nodeModel.BasePath, os.ModePerm)
+	}
+	hostFilePath := path.Join(nodeModel.BasePath, nodeModel.HostFileDir)
+	hostFileName := fmt.Sprintf("%s%s@%s", hostFilePath, nodeModel.NodeHostsFile, nodePostData.NodeIp)
+
 	if err := GenerateHostFile(masterIp, nodePostData.NodeIp, registryIp, hostFileName); err != nil {
 		return nil, err
 	}
@@ -48,13 +52,14 @@ func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
 		HostIp:         hostName,
 		HostPassword:   nodePostData.HostPassword,
 		HostUserName:   nodePostData.HostUsername,
-		HostFile:       hostFileName,
+		HostFile:       fmt.Sprintf("%s@%s", nodeModel.NodeHostsFile, nodePostData.NodeIp),
 		MasterIp:       masterIp,
 		MasterPassword: nodePostData.MasterPassword,
 		InstallFile:    yamlFile,
-		LogId:          newLogId}
-
+		LogId:          newLogId,
+		LogTimestamp:   nodeLog.CreationTime}
 	if err := LaunchAnsibleContainer(&containerEnv); err != nil {
+		logs.Error(err)
 		return nil, err
 	}
 	return &nodeLog, nil
@@ -70,22 +75,42 @@ func LaunchAnsibleContainer(env *nodeModel.ContainerEnv) error {
 	}
 
 	envStr := fmt.Sprintf(""+
-		"--env MASTER_PASS=%s --env MASTER_IP=%s --env NODE_IP=%s --env NODE_PASS=%s --env LOG_ID=%d "+
-		"--env ADMIN_SERVER_IP=%s --env ADMIN_SERVER_PORT=%d --env INSTALL_FILE=%s --env HOSTS_FILE=%s ",
-		env.MasterPassword, env.MasterIp, env.NodeIp, env.NodePassword, env.LogId,
-		env.HostIp, 8081, env.InstallFile, env.HostFile)
+		"--env MASTER_PASS=\"%s\" \\\n"+
+		"--env MASTER_IP=\"%s\" \\\n"+
+		"--env NODE_IP=\"%s\" \\\n"+
+		"--env NODE_PASS=\"%s\" \\\n"+
+		"--env LOG_ID=\"%d\" \\\n"+
+		"--env ADMIN_SERVER_IP=\"%s\" \\\n"+
+		"--env ADMIN_SERVER_PORT=\"%d\" \\\n"+
+		"--env INSTALL_FILE=\"%s\" \\\n"+
+		"--env LOG_TIMESTAMP=\"%d\" \\\n"+
+		"--env HOSTS_FILE=\"%s\" ",
+		env.MasterPassword,
+		env.MasterIp,
+		env.NodeIp,
+		env.NodePassword,
+		env.LogId,
+		env.HostIp,
+		8080,
+		env.InstallFile,
+		env.LogTimestamp,
+		env.HostFile)
 
 	LogFilePath := path.Join(nodeModel.BasePath, nodeModel.LogFileDir)
+	HostDirPath := path.Join(nodeModel.BasePath, nodeModel.HostFileDir)
 	PreEnvPath := path.Join(nodeModel.BasePath, nodeModel.PreEnvDir)
-
-	cmdStr := fmt.Sprintf(`docker run -td -v %s:/tmp/log -v %s:/ansible_k8s/pre-env %s an:1`,
-		LogFilePath, PreEnvPath, envStr)
-	logs.Info(cmdStr)
-
+	cmdStr := fmt.Sprintf("docker run -td \\\n "+
+		"-v %s:/tmp/log \\\n "+
+		"-v %s:/tmp/hosts_dir \\\n"+
+		"-v %s:/ansible_k8s/pre-env \\\n "+
+		"%s \\\n k8s_install:1",
+		LogFilePath, HostDirPath, PreEnvPath, envStr)
 	err = secureShell.ExecuteCommand(cmdStr)
+
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -103,6 +128,9 @@ func UpdateLog(putLogData *nodeModel.UpdateNodeLog) error {
 		return errUpdate
 	}
 
+	if _, err := os.Stat(nodeModel.BasePath); os.IsNotExist(err) {
+		os.MkdirAll(nodeModel.BasePath, os.ModePerm)
+	}
 	logFileName := path.Join(nodeModel.BasePath, putLogData.LogFile)
 	if errInsert := InsertLogDetail(logData.Ip, logFileName, logData.CreationTime); errInsert != nil {
 		return errInsert
@@ -134,9 +162,9 @@ func InsertLog(nodeLog *nodeModel.NodeLog) (int64, error) {
 	}
 
 	if nodeLog.LogType == nodeModel.ActionTypeAddNode {
-		nodeLogCache.DetailBuffer.WriteString(fmt.Sprintf("---Begin add node:%s----", nodeLog.Ip))
+		nodeLogCache.DetailBuffer.WriteString(fmt.Sprintf("---Begin add node:%s----\n", nodeLog.Ip))
 	} else {
-		nodeLogCache.DetailBuffer.WriteString(fmt.Sprintf("---Begin remove node:%s----", nodeLog.Ip))
+		nodeLogCache.DetailBuffer.WriteString(fmt.Sprintf("---Begin remove node:%s----\n", nodeLog.Ip))
 	}
 
 	if newId, err := nodeDao.InsertNodeLog(nodeLog); err != nil {
@@ -147,7 +175,7 @@ func InsertLog(nodeLog *nodeModel.NodeLog) (int64, error) {
 }
 
 func InsertLogDetail(ip, logFileName string, creationTime int64) error {
-	if dao.GlobalCache.IsExist(ip) {
+	if dao.GlobalCache.IsExist(ip) == false {
 		logs.Info(fmt.Sprintf("No cache data for node:%s", ip))
 		return nil
 	}
