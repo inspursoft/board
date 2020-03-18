@@ -8,7 +8,6 @@ import (
 	"strconv"
 
 	appsv1 "k8s.io/api/apps/v1"
-	appsv1beta1 "k8s.io/api/apps/v1beta1"
 	autoscalev1 "k8s.io/api/autoscaling/v1"
 	autoscalingapi "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/api/core/v1"
@@ -1662,7 +1661,7 @@ func UpdateK8sConfigMap(k8sCM *v1.ConfigMap, cm *model.ConfigMap) {
 }
 
 // ToK8sStatefulSet is to generate k8s statefulset from model statefulset
-func ToK8sStatefulSet(statefulset *model.StatefulSet) *appsv1beta1.StatefulSet {
+func ToK8sStatefulSet(statefulset *model.StatefulSet) *appsv1.StatefulSet {
 	if statefulset == nil {
 		return nil
 	}
@@ -1672,13 +1671,13 @@ func ToK8sStatefulSet(statefulset *model.StatefulSet) *appsv1beta1.StatefulSet {
 	}
 	//rep := deployment.Spec.Replicas
 
-	return &appsv1beta1.StatefulSet{
+	return &appsv1.StatefulSet{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "StatefulSet",
-			APIVersion: "apps/v1beta1",
+			APIVersion: "apps/v1",
 		},
 		ObjectMeta: ToK8sObjectMeta(statefulset.ObjectMeta),
-		Spec: appsv1beta1.StatefulSetSpec{
+		Spec: appsv1.StatefulSetSpec{
 			Replicas: statefulset.Spec.Replicas,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: statefulset.Spec.Selector.MatchLabels,
@@ -1690,7 +1689,7 @@ func ToK8sStatefulSet(statefulset *model.StatefulSet) *appsv1beta1.StatefulSet {
 			//UpdateStrategy:  statefulset.Spec.UpdateStrategy,
 			//RevisionHistoryLimit:  statefulset.Spec.RevisionHistoryLimit,
 		},
-		Status: appsv1beta1.StatefulSetStatus{
+		Status: appsv1.StatefulSetStatus{
 			Replicas:        statefulset.Status.Replicas,
 			ReadyReplicas:   statefulset.Status.ReadyReplicas,
 			CurrentReplicas: statefulset.Status.CurrentReplicas,
@@ -1952,7 +1951,7 @@ func LabelSelectorToString(selector *model.LabelSelector) string {
 }
 
 // FromK8sStatefulSet is to generate model StatefulSet from k8s StatefulSet
-func FromK8sStatefulSet(statefulset *appsv1beta1.StatefulSet) *model.StatefulSet {
+func FromK8sStatefulSet(statefulset *appsv1.StatefulSet) *model.StatefulSet {
 	if statefulset == nil {
 		return nil
 	}
@@ -1989,7 +1988,7 @@ func FromK8sStatefulSet(statefulset *appsv1beta1.StatefulSet) *model.StatefulSet
 }
 
 // FromK8sStatefulSetList is to generate model StatefulSetList from k8s StatefulSetList
-func FromK8sStatefulSetList(statefulsetList *appsv1beta1.StatefulSetList) *model.StatefulSetList {
+func FromK8sStatefulSetList(statefulsetList *appsv1.StatefulSetList) *model.StatefulSetList {
 	if statefulsetList == nil {
 		return nil
 	}
@@ -2005,7 +2004,7 @@ func FromK8sStatefulSetList(statefulsetList *appsv1beta1.StatefulSetList) *model
 }
 
 // GenerateStatefulSetConfig is to generate stateful config
-func GenerateStatefulSetConfig(statefulset *appsv1beta1.StatefulSet) *appsv1beta1.StatefulSet {
+func GenerateStatefulSetConfig(statefulset *appsv1.StatefulSet) *appsv1.StatefulSet {
 	containersConfig := []v1.Container{}
 	for _, container := range statefulset.Spec.Template.Spec.Containers {
 		containersConfig = append(containersConfig, v1.Container{
@@ -2023,17 +2022,17 @@ func GenerateStatefulSetConfig(statefulset *appsv1beta1.StatefulSet) *appsv1beta
 			ReadinessProbe: container.ReadinessProbe,
 		})
 	}
-	return &appsv1beta1.StatefulSet{
+	return &appsv1.StatefulSet{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "StatefulSet",
-			APIVersion: "apps/v1beta1",
+			APIVersion: "apps/v1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Labels:    statefulset.ObjectMeta.Labels,
 			Name:      statefulset.ObjectMeta.Name,
 			Namespace: statefulset.ObjectMeta.Namespace,
 		},
-		Spec: appsv1beta1.StatefulSetSpec{
+		Spec: appsv1.StatefulSetSpec{
 			Replicas: statefulset.Spec.Replicas,
 			Selector: statefulset.Spec.Selector,
 			Template: v1.PodTemplateSpec{
