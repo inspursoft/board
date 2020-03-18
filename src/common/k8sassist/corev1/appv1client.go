@@ -68,7 +68,7 @@ func (p *AppV1Client) ConfigMap(namespace string) ConfigMapInterface {
 }
 
 func (p *AppV1Client) StatefulSet(namespace string) StatefulSetClientInterface {
-	return apps.NewStatefulSets(namespace, p.Clientset.AppsV1beta1().StatefulSets(namespace))
+	return apps.NewStatefulSets(namespace, p.Clientset.AppsV1().StatefulSets(namespace))
 }
 func (p *AppV1Client) Job(namespace string) JobInterface {
 	return apps.NewJob(namespace, p.Clientset.BatchV1().Jobs(namespace))

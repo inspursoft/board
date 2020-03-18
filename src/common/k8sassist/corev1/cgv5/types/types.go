@@ -92,7 +92,7 @@ const (
 	serviceAPIVersion    = "v1"
 	serviceKind          = "Service"
 	nodePort             = "NodePort"
-	deploymentAPIVersion = "apps/v1beta2"
+	deploymentAPIVersion = "apps/v1"
 	deploymentKind       = "Deployment"
 	namespaceKind        = "Namespace"
 	namespaceAPIVersion  = "v1"
