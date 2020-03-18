@@ -46,7 +46,7 @@
                   [inputIsRequired]="true"
                   [inputCategory]="3"
                   [inputDisabled]="executing || actionStatus !== 0"
-                  [validatorMessage]="[{key:'required', message:'Please input the password of the node.'}]"
+                  [validatorMessage]="[{key:'required', message:'Please input the password of the host.'}]"
                   (commitEvent)="postData.hostPassword = $event">
     </lib-input-ex>
     <div  #msgViewContainer></div>

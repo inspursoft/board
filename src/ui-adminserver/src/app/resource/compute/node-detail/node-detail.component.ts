@@ -41,6 +41,7 @@ export class NodeDetailComponent extends ModalChildBase implements OnInit {
   ngOnInit() {
     if (this.actionType === NodeActionsType.Remove) {
       this.title = 'Node.Node_Detail_Title_Remove';
+      this.postData.nodeIp = this.logInfo.ip;
     }
     if (this.actionType === NodeActionsType.Log) {
       this.title = 'Node.Node_Detail_Title_Log';
@@ -123,27 +124,31 @@ export class NodeDetailComponent extends ModalChildBase implements OnInit {
   }
 
   removeNode() {
-    this.actionStatus = ActionStatus.Preparing;
-    this.resourceService.removeNode(this.postData).subscribe(
-      (res: NodeLog) => this.logInfo = res,
-      (err: HttpErrorResponse) => {
-        this.messageService.cleanNotification();
-        this.messageService.showGlobalMessage(err.message, {view: this.view});
-      },
-      () => this.actionStatus = ActionStatus.Executing
-    );
+    if (this.verifyInputExValid()) {
+      this.actionStatus = ActionStatus.Preparing;
+      this.resourceService.removeNode(this.postData).subscribe(
+        (res: NodeLog) => this.logInfo = res,
+        (err: HttpErrorResponse) => {
+          this.messageService.cleanNotification();
+          this.messageService.showGlobalMessage(err.message, {view: this.view});
+        },
+        () => this.actionStatus = ActionStatus.Executing
+      );
+    }
   }
 
   addNode() {
-    this.actionStatus = ActionStatus.Preparing;
-    this.resourceService.addNode(this.postData).subscribe(
-      (res) => this.logInfo = res,
-      (err: HttpErrorResponse) => {
-        this.messageService.cleanNotification();
-        this.messageService.showGlobalMessage(err.message, {view: this.view});
-      },
-      () => this.actionStatus = ActionStatus.Executing
-    );
+    if (this.verifyInputExValid()) {
+      this.actionStatus = ActionStatus.Preparing;
+      this.resourceService.addNode(this.postData).subscribe(
+        (res) => this.logInfo = res,
+        (err: HttpErrorResponse) => {
+          this.messageService.cleanNotification();
+          this.messageService.showGlobalMessage(err.message, {view: this.view});
+        },
+        () => this.actionStatus = ActionStatus.Executing
+      );
+    }
   }
 
   cancel() {
