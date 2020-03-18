@@ -32,12 +32,30 @@ func UpdateNodeLog(nodeLog *nodeModel.NodeLog) (error) {
 	return nil
 }
 
+func DeleteNodeLog(creationTime int64) (error) {
+	o := orm.NewOrm()
+	log := &nodeModel.NodeLog{CreationTime: creationTime}
+	if _, err := o.Delete(log, "creation_time"); err != nil {
+		return err
+	}
+	return nil
+}
+
 func InsertNodeStatus(nodeStatus *nodeModel.NodeStatus) error {
 	o := orm.NewOrm()
 	if _, err := o.Insert(nodeStatus); err != nil {
 		return err
 	}
 	return nil
+}
+
+func CheckNodeStatusExists(creationTime int64) bool {
+	o := orm.NewOrm()
+	nodeStatus := nodeModel.NodeStatus{CreationTime: creationTime}
+	if err := o.Read(&nodeStatus, "creation_time"); err != nil {
+		return false
+	}
+	return true
 }
 
 func DeleteNodeStatus(nodeStatus *nodeModel.NodeStatus) error {
@@ -72,6 +90,15 @@ func InsertNodeLogDetail(detail *nodeModel.NodeLogDetailInfo) (int64, error) {
 		return 0, err
 	}
 	return id, nil
+}
+
+func DeleteNodeLogDetail(creationTime int64) error {
+	o := orm.NewOrm()
+	detail := nodeModel.NodeLogDetailInfo{CreationTime: creationTime}
+	if _, err := o.Delete(&detail, "creation_time"); err != nil {
+		return err
+	}
+	return nil
 }
 
 func GetNodeLogDetail(logTimestamp int64) (*nodeModel.NodeLogDetailInfo, error) {

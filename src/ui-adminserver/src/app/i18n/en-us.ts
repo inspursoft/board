@@ -75,6 +75,9 @@ export const LANG_EN_US = {
     Node_Logs_Success: 'Success',
     Node_Logs_Operation: 'Operation',
     Node_Logs_Empty: 'Node log list is empty',
+    Node_Logs_Delete_Ask: 'Are you sure to delete this log?',
+    Node_Logs_Delete_Log_Success: 'Deleted log successfully.',
+    Node_Logs_Delete_Log_In_Use: 'This log has been in use, can not be deleted!',
     Node_Detail_Add: 'Add',
     Node_Detail_Remove: 'Remove',
     Node_Detail_Refresh: 'Refresh log',
@@ -83,7 +86,6 @@ export const LANG_EN_US = {
     Node_Detail_Title_Log: 'Node log',
     Node_Detail_Node_Ip: 'Node ip',
     Node_Detail_Node_Password: 'Node password',
-    Node_Detail_Host_Username: 'Host username',
   },
   'CONFIGURATIONS': {
     'API_SERVER': {

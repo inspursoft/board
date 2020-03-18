@@ -33,6 +33,7 @@ func (controller *Controller) GetNodeListAction() {
 	err := nodeService.GetNodeStatusList(&nodeStatusList)
 	if err != nil {
 		errorMsg := fmt.Sprintf("Bad request.%s", err.Error())
+		logs.Error(errorMsg)
 		controller.CustomAbort(http.StatusBadRequest, errorMsg)
 		return
 	}
@@ -57,6 +58,7 @@ func (controller *Controller) GetNodeLogList() {
 	err := nodeService.GetPaginatedNodeLogList(&paginatedNodeLogList)
 	if err != nil {
 		errorMsg := fmt.Sprintf("Bad request.%s", err.Error())
+		logs.Error(errorMsg)
 		controller.CustomAbort(http.StatusBadRequest, errorMsg)
 		return
 	}
@@ -69,7 +71,8 @@ func (controller *Controller) GetNodeLogList() {
 // @Success 200 {object} []nodeModel.NodeLogDetail  success
 // @Failure 400 bad request
 // @Failure 500 Internal Server Error
-// @Param	file_name	query 	string	true	""
+// @Param	node_ip	query 	string	true	""
+// @Param	creation_time	query 	string	true	""
 // @router /log [get]
 func (controller *Controller) GetNodeLogDetail() {
 	nodeIp := controller.Ctx.Input.Query("node_ip")
@@ -77,12 +80,38 @@ func (controller *Controller) GetNodeLogDetail() {
 	var nodeLogDetail []nodeModel.NodeLogDetail
 	err := nodeService.GetNodeLogDetail(creationTime, nodeIp, &nodeLogDetail)
 	if err != nil {
-		controller.CustomAbort(http.StatusInternalServerError, err.Error())
+		logs.Error(err)
+		controller.CustomAbort(http.StatusNotFound, err.Error())
 		return
 	}
 
 	controller.Data["json"] = nodeLogDetail
 	controller.ServeJSON()
+	return
+}
+
+// @Title Delete node log
+// @Description Delete node log info from node_log table and node_log_detail_info table
+// @Success 200 success
+// @Failure 400 bad request
+// @Failure 500 Internal Server Error
+// @Param	creation_time	query 	string	true	""
+// @router /log [delete]
+func (controller *Controller) DeleteNodeLog() {
+	creationTime, _ := strconv.ParseInt(controller.Ctx.Input.Query("creation_time"), 10, 64)
+
+	if nodeService.CheckNodeLogInfoInUse(creationTime) {
+		controller.CustomAbort(http.StatusConflict, "Log info in used.")
+		return
+	}
+
+	err := nodeService.DeleteNodeLogInfo(creationTime)
+	if err != nil {
+		controller.CustomAbort(http.StatusBadRequest, err.Error())
+		logs.Error(err)
+		return
+	}
+
 	return
 }
 
@@ -119,6 +148,7 @@ func (controller *Controller) CallBackAction() {
 	controller.resolveBody(&putData)
 	if err := nodeService.UpdateLog(&putData); err != nil {
 		errMsg := fmt.Sprintf("Failed to update node log.%v", err)
+		logs.Error(errMsg)
 		controller.CustomAbort(http.StatusBadRequest, errMsg)
 		return
 	}
@@ -174,6 +204,7 @@ func (controller *Controller) AddRemoveNode(nodePostData *nodeModel.AddNodePostD
 
 	if nodeLog, err := nodeService.AddRemoveNodeByContainer(nodePostData, actionType, yamlFile); err != nil {
 		nodeService.RemoveCacheData(nodePostData.NodeIp)
+		logs.Error(err)
 		controller.CustomAbort(http.StatusBadRequest, err.Error())
 		return
 	} else {

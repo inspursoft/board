@@ -9,7 +9,8 @@ div.modal-body {
 div.logs-container {
   background-color: black;
   overflow-y: auto;
-  height: 300px;
+  min-height: 280px;
+  max-height: 400px;
   margin-top: 10px;
   border: 1px solid silver;
   border-radius: 5px;

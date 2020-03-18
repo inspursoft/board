@@ -1,7 +1,8 @@
 <clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'md'" [clrModalClosable]="false">
   <h3 class="modal-title"><b>{{title | translate}}</b></h3>
   <div class="modal-body">
-    <lib-input-ex [inputLabel]="masterTitle"
+    <lib-input-ex *ngIf="actionType !== 2"
+                  [inputLabel]="masterTitle"
                   [inputLabelWidth]="240"
                   [inputIsRequired]="true"
                   [inputCategory]="3"
@@ -19,7 +20,8 @@
                   (commitEvent)="logInfo.ip = $event; postData.nodeIp = $event">
     </lib-input-ex>
 
-    <lib-input-ex [inputLabelWidth]="240"
+    <lib-input-ex *ngIf="actionType !== 2"
+                  [inputLabelWidth]="240"
                   [inputLabel]="'Node.Node_Detail_Node_Password' | translate"
                   [inputIsRequired]="true"
                   [inputCategory]="3"
@@ -28,7 +30,8 @@
                   (commitEvent)="postData.nodePassword = $event">
     </lib-input-ex>
 
-    <lib-input-ex [inputLabel]="hostUsernameTitle"
+    <lib-input-ex *ngIf="actionType !== 2"
+                  [inputLabel]="hostUsernameTitle"
                   [inputIsRequired]="true"
                   [inputLabelWidth]="240"
                   [inputDisabled]="actionType !== 0 || executing || actionStatus !== 0"
@@ -37,7 +40,8 @@
                   (commitEvent)="postData.hostUsername = $event">
     </lib-input-ex>
 
-    <lib-input-ex [inputLabelWidth]="240"
+    <lib-input-ex *ngIf="actionType !== 2"
+                  [inputLabelWidth]="240"
                   [inputLabel]="hostPasswordTitle"
                   [inputIsRequired]="true"
                   [inputCategory]="3"

@@ -82,7 +82,7 @@ export class NodeDetailComponent extends ModalChildBase implements OnInit {
   }
 
   get masterTitle(): string {
-    return `Master ${this.preparationData.masterIp} root's password`;
+    return `Master ${this.preparationData.masterIp} password`;
   }
 
   get hostUsernameTitle(): string {

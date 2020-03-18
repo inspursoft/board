@@ -23,6 +23,10 @@ export class ResourceService {
       .pipe(map((res: object) => new NodeLog(res)));
   }
 
+  deleteNodeLog(creationTime: number): Observable<any> {
+    return this.http.delete(`/v1/admin/node/log`, {params: {creation_time: creationTime.toString()}});
+  }
+
   getNodeLogs(pageIndex, pageSize: number): Observable<NodeLogs> {
     return this.http.getPagination('/v1/admin/node/logs', NodeLogs,
       {page_index: pageIndex.toString(), page_size: pageSize.toString()});

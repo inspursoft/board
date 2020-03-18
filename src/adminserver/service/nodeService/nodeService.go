@@ -60,7 +60,6 @@ func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
 		LogId:          newLogId,
 		LogTimestamp:   nodeLog.CreationTime}
 	if err := LaunchAnsibleContainer(&containerEnv); err != nil {
-		logs.Error(err)
 		return nil, err
 	}
 	return &nodeLog, nil
@@ -222,23 +221,38 @@ func GetPaginatedNodeLogList(v *nodeModel.PaginatedNodeLogList) error {
 	return nil
 }
 
+func CheckNodeLogInfoInUse(logTimestamp int64) bool {
+	return nodeDao.CheckNodeStatusExists(logTimestamp)
+}
+
+func DeleteNodeLogInfo(logTimestamp int64) error {
+	if err := nodeDao.DeleteNodeLog(logTimestamp); err != nil {
+		return err
+	}
+	if err := nodeDao.DeleteNodeLogDetail(logTimestamp); err != nil {
+		return err
+	}
+	return nil
+}
+
 func GetNodeLogDetail(logTimestamp int64, nodeIp string, nodeLogDetail *[]nodeModel.NodeLogDetail) error {
 	var reader *bufio.Reader
 	if CheckExistsInCache(nodeIp) {
 		logCache := dao.GlobalCache.Get(nodeIp).(*nodeModel.NodeLogCache)
 		logFilePath := path.Join(nodeModel.BasePath, nodeModel.LogFileDir)
 		logFileName := fmt.Sprintf("%s/%d.log", logFilePath, logTimestamp)
-		filePtr, _ := os.Open(logFileName)
-		defer filePtr.Close()
+		if _, err := os.Stat(logFileName); err == nil {
+			filePtr, _ := os.Open(logFileName)
+			defer filePtr.Close()
 
-		if fileContent, err := ioutil.ReadFile(logFileName); err != nil {
-			return err
-		} else {
-			if _, writeErr := logCache.DetailBuffer.Write(fileContent); writeErr != nil {
-				return writeErr
+			if fileContent, err := ioutil.ReadFile(logFileName); err != nil {
+				return err
+			} else {
+				if _, writeErr := logCache.DetailBuffer.Write(fileContent); writeErr != nil {
+					return writeErr
+				}
 			}
 		}
-
 		reader = bufio.NewReader(strings.NewReader(logCache.DetailBuffer.String()))
 	} else {
 		detailInfo, err := nodeDao.GetNodeLogDetail(logTimestamp)
