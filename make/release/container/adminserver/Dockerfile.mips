@@ -1,4 +1,4 @@
-FROM alpine:3.7
+FROM inspursoft/baseimage-mips:1.0
 
 RUN echo http://mirrors.ustc.edu.cn/alpine/v3.7/main > /etc/apk/repositories; \
 echo http://mirrors.ustc.edu.cn/alpine/v3.7/community >> /etc/apk/repositories; \
