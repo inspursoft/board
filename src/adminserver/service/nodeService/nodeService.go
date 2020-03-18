@@ -28,10 +28,11 @@ func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
 	masterIp := configuration.Apiserver.KubeMasterIP
 	registryIp := configuration.Apiserver.RegistryIP
 
-	if _, err := os.Stat(nodeModel.BasePath); os.IsNotExist(err) {
-		os.MkdirAll(nodeModel.BasePath, os.ModePerm)
-	}
 	hostFilePath := path.Join(nodeModel.BasePath, nodeModel.HostFileDir)
+	if _, err := os.Stat(hostFilePath); os.IsNotExist(err) {
+		os.MkdirAll(hostFilePath, os.ModePerm)
+	}
+
 	hostFileName := fmt.Sprintf("%s/%s@%s", hostFilePath, nodeModel.NodeHostsFile, nodePostData.NodeIp)
 
 	if err := GenerateHostFile(masterIp, nodePostData.NodeIp, registryIp, hostFileName); err != nil {
@@ -128,10 +129,10 @@ func UpdateLog(putLogData *nodeModel.UpdateNodeLog) error {
 		return errUpdate
 	}
 
-	if _, err := os.Stat(nodeModel.BasePath); os.IsNotExist(err) {
-		os.MkdirAll(nodeModel.BasePath, os.ModePerm)
-	}
 	logFilePath := path.Join(nodeModel.BasePath, nodeModel.LogFileDir)
+	if _, err := os.Stat(logFilePath); os.IsNotExist(err) {
+		os.MkdirAll(logFilePath, os.ModePerm)
+	}
 	logFileName := fmt.Sprintf("%s/%s", logFilePath, putLogData.LogFile)
 	if errInsert := InsertLogDetail(logData.Ip, logFileName, logData.CreationTime); errInsert != nil {
 		return errInsert
