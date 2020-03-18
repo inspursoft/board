@@ -173,6 +173,7 @@ func (controller *Controller) AddRemoveNode(nodePostData *nodeModel.AddNodePostD
 	}
 
 	if nodeLog, err := nodeService.AddRemoveNodeByContainer(nodePostData, actionType, yamlFile); err != nil {
+		nodeService.RemoveCacheData(nodePostData.NodeIp)
 		controller.CustomAbort(http.StatusBadRequest, err.Error())
 		return
 	} else {

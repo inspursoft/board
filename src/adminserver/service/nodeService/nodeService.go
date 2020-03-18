@@ -152,8 +152,7 @@ func UpdateLog(putLogData *nodeModel.UpdateNodeLog) error {
 			}
 		}
 	}
-	dao.GlobalCache.Delete(putLogData.Ip)
-	return nil
+	return RemoveCacheData(putLogData.Ip)
 }
 
 func InsertLog(nodeLog *nodeModel.NodeLog) (int64, error) {
@@ -284,6 +283,10 @@ func GenerateHostFile(masterIp, nodeIp, registryIp, nodePathFile string) error {
 
 func CheckExistsInCache(nodeIp string) bool {
 	return dao.GlobalCache.IsExist(nodeIp)
+}
+
+func RemoveCacheData(nodeIp string) error {
+	return dao.GlobalCache.Delete(nodeIp)
 }
 
 func GetLogInfoInCache(nodeIp string) *nodeModel.NodeLog {
