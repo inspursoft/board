@@ -91,7 +91,7 @@ func LaunchAnsibleContainer(env *nodeModel.ContainerEnv) error {
 		env.NodePassword,
 		env.LogId,
 		env.HostIp,
-		8080,
+		8081,
 		env.InstallFile,
 		env.LogTimestamp,
 		env.HostFile)
@@ -189,7 +189,7 @@ func InsertLogDetail(ip, logFileName string, creationTime int64) error {
 		return err
 	} else {
 		if _, writeErr := logCache.DetailBuffer.Write(fileContent); writeErr != nil {
-			return nil
+			return writeErr
 		}
 		logCache.DetailBuffer.WriteString("---End---")
 	}
@@ -226,6 +226,19 @@ func GetNodeLogDetail(logTimestamp int64, nodeIp string, nodeLogDetail *[]nodeMo
 	var reader *bufio.Reader
 	if CheckExistsInCache(nodeIp) {
 		logCache := dao.GlobalCache.Get(nodeIp).(*nodeModel.NodeLogCache)
+		logFilePath := path.Join(nodeModel.BasePath, nodeModel.LogFileDir)
+		logFileName := fmt.Sprintf("%s/%d.log", logFilePath, logTimestamp)
+		filePtr, _ := os.Open(logFileName)
+		defer filePtr.Close()
+
+		if fileContent, err := ioutil.ReadFile(logFileName); err != nil {
+			return err
+		} else {
+			if _, writeErr := logCache.DetailBuffer.Write(fileContent); writeErr != nil {
+				return writeErr
+			}
+		}
+
 		reader = bufio.NewReader(strings.NewReader(logCache.DetailBuffer.String()))
 	} else {
 		detailInfo, err := nodeDao.GetNodeLogDetail(logTimestamp)
