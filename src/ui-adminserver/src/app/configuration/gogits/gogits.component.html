@@ -1,0 +1,57 @@
+<div class="card">
+  <div class="card-header" (click)="toggle()">
+    <clr-icon shape="caret down" [@rotateNega90]="card.cardStatus ? 'open' : 'closed'"></clr-icon>
+    Gogits
+  </div>
+  <div class="card-block" [@cardSlide]="card.cardStatus ? 'open' : 'closed'">
+
+    <div class="clr-form clr-form-compact" *ngIf="card.showContent">
+
+      <div class="config-line">
+        <div class="config-container">
+          <lib-input-ex [inputLabel]="'CONFIGURATIONS.GOGITS.GOGITS_HOST_IP.NAME' | translate" [inputIsRequired]="true"
+            [inputLabelWidth]='170' [inputDefaultValue]="gogits.gogitsHostIp" [inputPlaceholder]="'input your ip'"
+            [validatorMessage]="[{key:'QWER',message:'hello'}]" [inputWidth]="'100%'" (editEvent)="onEdit(0)"
+            (commitEvent)="gogits.gogitsHostIp = $event" class="lib-input-ex">
+          </lib-input-ex>
+        </div>
+        <clr-control-helper *ngIf="tipsList[0]">
+          {{ 'CONFIGURATIONS.GOGITS.GOGITS_HOST_IP.TIPS' | translate }}
+        </clr-control-helper>
+      </div>
+
+      <div class="config-line">
+        <div class="config-container">
+          <lib-input-ex [inputLabel]="'CONFIGURATIONS.GOGITS.GOGITS_HOST_PORT.NAME' | translate"
+            [inputIsRequired]="true" [inputCategory]="2" [inputLabelWidth]='170'
+            [inputDefaultValue]="gogits.gogitsHostPort" [inputMin]="1" [inputMax]="65535"
+            [inputPlaceholder]="'[1..65535]'" [validatorMessage]="[{key:'QWER',message:'hello'}]" [inputWidth]="'100%'"
+            (editEvent)="onEdit(1)" (commitEvent)="gogits.gogitsHostPort = $event" class="lib-input-ex">
+          </lib-input-ex>
+        </div>
+        <clr-control-helper *ngIf="tipsList[1]">
+          {{ 'CONFIGURATIONS.GOGITS.GOGITS_HOST_PORT.TIPS' | translate }}
+        </clr-control-helper>
+      </div>
+
+      <div class="config-line">
+        <div class="config-container">
+          <lib-input-ex [inputLabel]="'CONFIGURATIONS.GOGITS.GOGITS_SSH_PORT.NAME' | translate" [inputIsRequired]="true"
+            [inputCategory]="2" [inputLabelWidth]='170' [inputDefaultValue]="gogits.gogitsSshPort" [inputMin]="1"
+            [inputMax]="65535" [inputPlaceholder]="'[1..65535]'" [validatorMessage]="[{key:'QWER',message:'hello'}]"
+            [inputWidth]="'100%'" (editEvent)="onEdit(2)" (commitEvent)="gogits.gogitsSshPort = $event"
+            class="lib-input-ex">
+          </lib-input-ex>
+        </div>
+        <clr-control-helper *ngIf="tipsList[2]">
+          {{ 'CONFIGURATIONS.GOGITS.GOGITS_SSH_PORT.TIPS' | translate }}
+        </clr-control-helper>
+      </div>
+
+    </div>
+  </div>
+  <!-- <div class="card-footer">
+              <button class="btn btn-sm btn-link">Footer Action 1</button>
+              <button class="btn btn-sm btn-link">Footer Action 2</button>
+          </div> -->
+</div>

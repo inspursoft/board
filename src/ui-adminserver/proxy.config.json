@@ -1,0 +1,6 @@
+{
+    "/v1/admin/*": {
+        "target": "http://10.110.25.227:8080",
+        "secure": false
+    }
+}

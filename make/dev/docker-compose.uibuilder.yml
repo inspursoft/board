@@ -11,3 +11,14 @@ services:
       MODE: build
     entrypoint:
       - /entrypoint.sh
+  uibuilder-adminserver7.3:
+    build:
+      context: ../../
+      dockerfile: make/dev/container/uibuilder/Dockerfile
+    image: 10.111.25.119/board/dev_uibuilder:7.3
+    volumes:
+      - ../../src/ui-adminserver:/board_src
+    environment:
+      MODE: build
+    entrypoint:
+      - /entrypoint.sh
