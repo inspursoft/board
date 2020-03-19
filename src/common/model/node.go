@@ -23,3 +23,11 @@ type NodeAvailableResources struct {
 	MemAvail     string `json:"mem_available"`
 	StorageAvail string `json:"storage_available"`
 }
+
+type NodeCli struct {
+	NodeName string            `json:"node_name"`
+	NodeType string            `json:"node_type"`
+	NodeIP   string            `json:"node_ip"`
+	Password string            `json:"node_password"`
+	Labels   map[string]string `json:"labels,omitempty"`
+}

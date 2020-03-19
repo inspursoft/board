@@ -24,7 +24,7 @@ import (
 )
 
 var (
-	kubeMasterURL  = utils.GetConfig("KUBE_MASTER_URL")
+	KubeMasterURL  = utils.GetConfig("KUBE_MASTER_URL")
 	kubeConfigPath = utils.GetConfig("KUBE_CONFIG_PATH")
 	EntryMethod    EntryMethodEnum
 	CAPath         string
@@ -159,7 +159,7 @@ func SetNFSVol(name string, server, path string, cap int64) error {
 	storage[v1.ResourceStorage] = q
 
 	// get k8s client
-	cli, err := K8sCliFactory("", kubeMasterURL(), "v1")
+	cli, err := K8sCliFactory("", KubeMasterURL(), "v1")
 	apiSet, err := kubernetes.NewForConfig(cli)
 	if err != nil {
 		return err

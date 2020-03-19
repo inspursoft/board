@@ -14,12 +14,17 @@ services:
     restart: always
     volumes:
       - /data/board/database:/var/lib/mysql
+      - ../config/db/my.cnf:/etc/mysql/conf.d/my.cnf
     env_file:
       - ../config/db/env
     networks:
       - board
     depends_on:
       - log
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
     logging:
       driver: "syslog"
       options:  

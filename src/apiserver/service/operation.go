@@ -41,6 +41,16 @@ var orderFields = map[string]string{
 	"job_creation_time":       "creation_time",
 	"job_owner_name":          "owner_name",
 	"job_status":              "status",
+	"service_name":            "name",
+	"service_project_name":    "project_name",
+	"service_creation_time":   "creation_time",
+	"service_owner_name":      "owner_name",
+	"service_status":          "status",
+	"service_publicity":       "public",
+	"project_name":            "name",
+	"project_owner_name":      "owner_name",
+	"project_creation_time":   "creation_time",
+	"project_publicity":       "public",
 }
 
 const (
