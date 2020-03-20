@@ -18,6 +18,15 @@ func init() {
 
     beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers/nodeController:Controller"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers/nodeController:Controller"],
         beego.ControllerComments{
+            Method: "RemoveNodeAction",
+            Router: `/`,
+            AllowHTTPMethods: []string{"delete"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers/nodeController:Controller"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers/nodeController:Controller"],
+        beego.ControllerComments{
             Method: "AddNodeAction",
             Router: `/`,
             AllowHTTPMethods: []string{"post"},
@@ -27,9 +36,9 @@ func init() {
 
     beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers/nodeController:Controller"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers/nodeController:Controller"],
         beego.ControllerComments{
-            Method: "RemoveNodeAction",
-            Router: `/`,
-            AllowHTTPMethods: []string{"delete"},
+            Method: "CallBackAction",
+            Router: `/callback`,
+            AllowHTTPMethods: []string{"put"},
             MethodParams: param.Make(),
             Filters: nil,
             Params: nil})
@@ -45,8 +54,26 @@ func init() {
 
     beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers/nodeController:Controller"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers/nodeController:Controller"],
         beego.ControllerComments{
+            Method: "DeleteNodeLog",
+            Router: `/log`,
+            AllowHTTPMethods: []string{"delete"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers/nodeController:Controller"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers/nodeController:Controller"],
+        beego.ControllerComments{
             Method: "GetNodeLogList",
             Router: `/logs`,
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers/nodeController:Controller"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers/nodeController:Controller"],
+        beego.ControllerComments{
+            Method: "PreparationAction",
+            Router: `/preparation`,
             AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(),
             Filters: nil,
