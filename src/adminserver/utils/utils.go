@@ -70,9 +70,6 @@ func (s *SecureShell) ExecuteCommand(cmd string) error {
 	w := io.MultiWriter(s.output)
 	session.Stdout = w
 	session.Stderr = w
-	cmdStr := fmt.Sprintf("Execute command: %s\n", cmd)
-	s.output.Write([]byte(cmdStr))
-	logs.Info(cmdStr)
 	if err := session.Start(cmd); err != nil {
 		return err
 	}
