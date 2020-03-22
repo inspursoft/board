@@ -6,18 +6,10 @@ import { PreviewerComponent } from './dashboard/previewer/previewer.component';
 import { CfgCardsComponent } from './configuration/cfg-cards.component';
 import { SignInComponent } from './account/sign-in/sign-in.component';
 import { SignUpComponent } from './account/sign-up/sign-up.component';
-import { ResourceComponent } from './resource/resource.component';
-// import { DataResolverService } from './configuration/data-resolver.service';
 
 const childrenPath: Routes = [
   { path: 'dashboard', component: PreviewerComponent },
-  {
-    path: 'configuration',
-    component: CfgCardsComponent,
-    // resolve: { // 此处使用resolve
-    //   configuration: DataResolverService
-    // }
-  },
+  { path: 'configuration', component: CfgCardsComponent },
   { path: 'resource', loadChildren: './resource/resource.module#ResourceModule' },
 ];
 
