@@ -74,7 +74,8 @@ func GetNodes() (nodes []NodeInfo, err error) {
 		}
 		time := v.CreationTimestamp.Unix()
 		var ps []v2.ProcessInfo
-		getFromRequest("http://"+v.Status.Addresses[0].Address+":4194/api/v2.0/ps/", &ps)
+		nodeIP := getNodeAddress(v, "InternalIP")
+		getFromRequest("http://"+nodeIP+":4194/api/v2.0/ps/", &ps)
 		var c, m float32
 		for _, v := range ps {
 			c += v.PercentCpu
@@ -83,7 +84,7 @@ func GetNodes() (nodes []NodeInfo, err error) {
 		cpu := c
 		mem := m
 		var fs []v2.MachineFsStats
-		getFromRequest("http://"+v.Status.Addresses[0].Address+":4194/api/v2.0/storage", &fs)
+		getFromRequest("http://"+nodeIP+":4194/api/v2.0/storage", &fs)
 		var capacity uint64
 		var use uint64
 		for _, v := range fs {
@@ -91,8 +92,8 @@ func GetNodes() (nodes []NodeInfo, err error) {
 			use += *v.Usage
 		}
 		nodes = append(nodes, NodeInfo{
-			NodeName:      v.Status.Addresses[1].Address,
-			NodeIP:        v.Status.Addresses[0].Address,
+			NodeName:      getNodeAddress(v, "Hostname"),
+			NodeIP:        nodeIP,
 			CreateTime:    time,
 			CPUUsage:      cpu,
 			MemoryUsage:   mem,
@@ -161,8 +162,8 @@ func GetNodeList() (res []NodeListResult) {
 
 	for _, v := range Node.Items {
 		res = append(res, NodeListResult{
-			NodeName: v.Status.Addresses[1].Address,
-			NodeIP:   v.Status.Addresses[0].Address,
+			NodeName: getNodeAddress(v, "Hostname"),
+			NodeIP:   getNodeAddress(v, "InternalIP"),
 			Status: func() NodeStatus {
 				if v.Unschedulable {
 					return Unschedulable
@@ -496,4 +497,15 @@ func DeleteNode(nodeName string) (bool, error) {
 // TODO: Drain a node
 func DrainNode(nodeName string) error {
 	return nil
+}
+
+func getNodeAddress(v model.Node, t string) string {
+	for _, addr := range v.Status.Addresses {
+		if string(addr.Type) == t {
+			return addr.Address
+		}
+	}
+
+	logs.Warning("The value is null when get the field of %s in node", t)
+	return ""
 }
