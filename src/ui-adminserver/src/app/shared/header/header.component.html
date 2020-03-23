@@ -1,0 +1,50 @@
+<header class="header-4">
+  <div class="branding">
+    <a href="javascript:void(0)" class="nav-link">
+      <!-- <clr-icon shape="cog" class="is-solid" style="color: aliceblue"></clr-icon> -->
+      <img src="../../../assets/images/admin-server-logo.png" alt="logo" class="logo">
+      <span class="title">Admin Server</span>
+    </a>
+  </div>
+
+  <div class="header-nav" *ngIf="display">
+    <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">
+      <span class="nav-text">{{ 'HEAD_NAV.DASHBOARD' | translate }}</span>
+    </a>
+    <a routerLink="/configuration" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">
+      <span class="nav-text">{{ 'HEAD_NAV.CONFIGURATIONS' | translate }}</span>
+    </a>
+    <a routerLink="/resource" routerLinkActive="active" class="nav-link">
+      <span class="nav-text">{{ 'HEAD_NAV.RESOURCES' | translate }}</span>
+    </a>
+  </div>
+
+  <div class="header-actions">
+    <!-- 预留了国际化接口，通过配置可支持中英文切换 -->
+    <clr-dropdown>
+      <button class="nav-text" clrDropdownTrigger aria-label="open user profile">
+        <svg class="icon" aria-hidden="true">
+          <use xlink:href="#icon-translate"></use>
+        </svg>
+        {{ currentLang | translate }}
+        <clr-icon shape="caret down"></clr-icon>
+      </button>
+      <clr-dropdown-menu *clrIfOpen clrPosition="bottom-right">
+        <a href="javascript:void(0)" (click)="changLanguage('zh-cn')" clrDropdownItem>中文</a>
+        <a href="javascript:void(0)" (click)="changLanguage('en-us')" clrDropdownItem>English</a>
+      </clr-dropdown-menu>
+    </clr-dropdown>
+
+    <!-- 预留用户接口，后续开发添加用户权限功能 -->
+    <clr-dropdown *ngIf="display">
+      <button class="nav-text" clrDropdownTrigger aria-label="open user profile">
+        <clr-icon shape="user"></clr-icon>
+        username
+        <clr-icon shape="caret down"></clr-icon>
+      </button>
+      <clr-dropdown-menu *clrIfOpen clrPosition="bottom-right">
+        <a href="/account/login" (click)="logout()" clrDropdownItem>Log out</a>
+      </clr-dropdown-menu>
+    </clr-dropdown>
+  </div>
+</header>

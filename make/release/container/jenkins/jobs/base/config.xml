@@ -82,7 +82,7 @@ node(node_name) {
       git &quot;${repo_clone_url}&quot;
     }
     stage(&quot;Execute travis ...&quot;) {
-      sh returnStatus: false, script: &quot;travis_yml_script.rb . workspace=${WORKSPACE}&quot;
+      sh returnStatus: true, script: &quot;travis_yml_script.rb . workspace=${WORKSPACE}&quot;
     }
   } finally {
      sh returnStatus: false, script: &quot;curl &apos;${kvm_registry_url}/release-node?job_name=${JOB_NAME}&amp;build_id=${BUILD_NUMBER}&apos;&quot;
@@ -96,7 +96,7 @@ node(&apos;slave&apos;) {
     git &quot;${repo_clone_url}&quot;
   }
   stage(&quot;Execute travis ...&quot;) {
-    sh returnStatus: false, script: &quot;travis_yml_script.rb . workspace=${WORKSPACE}&quot;
+    sh returnStatus: true, script: &quot;travis_yml_script.rb . workspace=${WORKSPACE}&quot;
   }
 }
 &apos;&apos;&apos;

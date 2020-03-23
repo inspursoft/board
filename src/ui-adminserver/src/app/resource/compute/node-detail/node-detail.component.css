@@ -1,0 +1,22 @@
+div.modal-header {
+  padding: 0;
+}
+
+div.modal-body {
+  min-height: 400px;
+}
+
+div.logs-container {
+  background-color: black;
+  overflow-y: auto;
+  min-height: 280px;
+  max-height: 350px;
+  margin-top: 10px;
+  border: 1px solid silver;
+  border-radius: 5px;
+  padding: 3px;
+}
+
+div.modal-footer {
+  align-items: center;
+}

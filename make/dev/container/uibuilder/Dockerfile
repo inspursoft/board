@@ -1,4 +1,4 @@
-FROM node:11.13.0
+FROM node:12.16.1
 
 RUN mkdir -p /board_resource
 

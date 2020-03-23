@@ -1,0 +1,72 @@
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'md'" [clrModalClosable]="false">
+  <h3 class="modal-title"><b>{{title | translate}}</b></h3>
+  <div class="modal-body">
+    <lib-input-ex *ngIf="actionType !== 2"
+                  [inputLabel]="masterTitle"
+                  [inputLabelWidth]="240"
+                  [inputIsRequired]="true"
+                  [inputCategory]="3"
+                  [inputDisabled]="executing || actionStatus !== 0"
+                  [validatorMessage]="[{key:'required', message:'Please input the password of master.'}]"
+                  (commitEvent)="postData.masterPassword = $event">
+    </lib-input-ex>
+
+    <lib-input-ex [inputLabel]="'Node.Node_Detail_Node_Ip' | translate"
+                  [inputIsRequired]="true"
+                  [inputLabelWidth]="240"
+                  [inputDisabled]="actionType !== 0 || executing || actionStatus !== 0"
+                  [inputDefaultValue]="logInfo.ip"
+                  [validatorMessage]="[{key:'required', message:'Please input the node ip.'}]"
+                  (commitEvent)="logInfo.ip = $event; postData.nodeIp = $event">
+    </lib-input-ex>
+
+    <lib-input-ex *ngIf="actionType !== 2"
+                  [inputLabelWidth]="240"
+                  [inputLabel]="'Node.Node_Detail_Node_Password' | translate"
+                  [inputIsRequired]="true"
+                  [inputCategory]="3"
+                  [inputDisabled]="executing || actionStatus !== 0"
+                  [validatorMessage]="[{key:'required', message:'Please input the password of the node.'}]"
+                  (commitEvent)="postData.nodePassword = $event">
+    </lib-input-ex>
+
+    <lib-input-ex *ngIf="actionType !== 2"
+                  [inputLabel]="hostUsernameTitle"
+                  [inputIsRequired]="true"
+                  [inputLabelWidth]="240"
+                  [inputDisabled]="actionType !== 0 || executing || actionStatus !== 0"
+                  [inputDefaultValue]=" postData.hostUsername"
+                  [validatorMessage]="[{key:'required', message:'Please input the username of host.'}]"
+                  (commitEvent)="postData.hostUsername = $event">
+    </lib-input-ex>
+
+    <lib-input-ex *ngIf="actionType !== 2"
+                  [inputLabelWidth]="240"
+                  [inputLabel]="hostPasswordTitle"
+                  [inputIsRequired]="true"
+                  [inputCategory]="3"
+                  [inputDisabled]="executing || actionStatus !== 0"
+                  [validatorMessage]="[{key:'required', message:'Please input the password of the host.'}]"
+                  (commitEvent)="postData.hostPassword = $event">
+    </lib-input-ex>
+    <div  #msgViewContainer></div>
+    <div #divElement class="logs-container">
+      <div #consoleLogs></div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button *ngIf="actionType !==2 || executing" class="btn btn-outline" (click)="cancel()">
+      {{cancelBtnCaption | translate}}
+    </button>
+    <button class="btn"
+            (click)="execute()"
+            [ngClass]="btnClassName">
+      {{executeBtnCaption | translate}}
+    </button>
+    <span *ngIf="refreshingLog || executing" class="spinner spinner-sm"></span>
+  </div>
+</clr-modal>
+
+<ng-template #logTemplate let-message="message" let-status="status">
+  <span [ngStyle]="getLogStyle(status)">{{message}}<br></span>
+</ng-template>

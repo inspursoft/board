@@ -1,0 +1,6 @@
+<app-header></app-header>
+
+<div class="outlet-container" #divTarget>
+  <router-outlet></router-outlet>
+  <app-back-top [topTarget]="divTarget" [visibilityHeight]="450"></app-back-top>
+</div>

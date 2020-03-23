@@ -39,10 +39,8 @@
           <label class="base-text">{{"HELM.RELEASE_CHART_DESCRIPTION" | translate}}:</label>
           <label class="base-margin-left">{{chartVersion.description}}</label>
         </div>
-        <div class="code-container" *ngIf="questions.length > 0">
-          <div style="position: absolute;">
-            <cs-highlight [language]="'yaml'" [code]="chartValue"></cs-highlight>
-          </div>
+        <div class="code-container">
+          <div class="code-editor" id="compile-editor-question"></div>
         </div>
       </div>
       <div class="questions-container">
@@ -66,9 +64,7 @@
         </div>
         <div class="code-container" style="height: 100%; overflow-y: auto "
              *ngIf="questions.length === 0">
-          <div style="position: absolute;">
-            <cs-highlight [language]="'yaml'" [code]="chartValue"></cs-highlight>
-          </div>
+          <div class="code-editor" id="compile-editor"></div>
         </div>
       </div>
     </div>

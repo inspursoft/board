@@ -59,7 +59,8 @@
                     [inputLabelWidth]="200"
                     (commitEvent)="volumeData.targetPath = $event">
       </lib-input-ex>
-      <lib-input-ex *ngIf="volumeData.volumeType == 'nfs'  && volumeData.containerPathFlag"
+      <lib-input-ex *ngIf="(volumeData.volumeType == 'nfs'  && volumeData.containerPathFlag)||
+                            volumeData.volumeType == 'configmap'"
                     [inputLabel]="'SERVICE.VOLUME_FILE'| translate"
                     [inputDefaultValue]="volumeData.targetFile"
                     [inputPattern]="patternPath"

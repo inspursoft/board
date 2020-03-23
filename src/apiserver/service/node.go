@@ -74,7 +74,8 @@ func GetNodes() (nodes []NodeInfo, err error) {
 		}
 		time := v.CreationTimestamp.Unix()
 		var ps []v2.ProcessInfo
-		getFromRequest("http://"+v.Status.Addresses[0].Address+":4194/api/v2.0/ps/", &ps)
+		nodeIP := getNodeAddress(v, "InternalIP")
+		getFromRequest("http://"+nodeIP+":4194/api/v2.0/ps/", &ps)
 		var c, m float32
 		for _, v := range ps {
 			c += v.PercentCpu
@@ -83,7 +84,7 @@ func GetNodes() (nodes []NodeInfo, err error) {
 		cpu := c
 		mem := m
 		var fs []v2.MachineFsStats
-		getFromRequest("http://"+v.Status.Addresses[0].Address+":4194/api/v2.0/storage", &fs)
+		getFromRequest("http://"+nodeIP+":4194/api/v2.0/storage", &fs)
 		var capacity uint64
 		var use uint64
 		for _, v := range fs {
@@ -91,8 +92,8 @@ func GetNodes() (nodes []NodeInfo, err error) {
 			use += *v.Usage
 		}
 		nodes = append(nodes, NodeInfo{
-			NodeName:      v.Status.Addresses[1].Address,
-			NodeIP:        v.Status.Addresses[0].Address,
+			NodeName:      getNodeAddress(v, "Hostname"),
+			NodeIP:        nodeIP,
 			CreateTime:    time,
 			CPUUsage:      cpu,
 			MemoryUsage:   mem,
@@ -161,8 +162,8 @@ func GetNodeList() (res []NodeListResult) {
 
 	for _, v := range Node.Items {
 		res = append(res, NodeListResult{
-			NodeName: v.Status.Addresses[1].Address,
-			NodeIP:   v.Status.Addresses[1].Address,
+			NodeName: getNodeAddress(v, "Hostname"),
+			NodeIP:   getNodeAddress(v, "InternalIP"),
 			Status: func() NodeStatus {
 				if v.Unschedulable {
 					return Unschedulable
@@ -439,14 +440,14 @@ func NodeExists(nodeName string) (bool, error) {
 }
 
 // Create a node in kubernetes cluster
-func CreateNode(node model.Node) (*model.Node, error) {
+func CreateNode(node model.NodeCli) (*model.Node, error) {
 
-	nExists, err := NodeExists(node.Name)
+	nExists, err := NodeExists(node.NodeName)
 	if err != nil {
 		return nil, err
 	}
 	if nExists {
-		logs.Info("Node name %s already exists in cluster.", node.Name)
+		logs.Info("Node name %s already exists in cluster.", node.NodeName)
 		return nil, nil
 	}
 
@@ -455,12 +456,16 @@ func CreateNode(node model.Node) (*model.Node, error) {
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 	n := k8sclient.AppV1().Node()
 
-	newnode, err := n.Create(&node)
+	var nodek8s model.Node
+	nodek8s.ObjectMeta.Name = node.NodeName
+	nodek8s.ObjectMeta.Labels = node.Labels
+
+	newnode, err := n.Create(&nodek8s)
 	if err != nil {
-		logs.Error("Failed to create node: %s, error: %+v", node.Name, err)
+		logs.Error("Failed to create node: %s, error: %+v", node.NodeName, err)
 		return nil, err
 	}
-	logs.Info(newnode)
+	logs.Info("New Node in K8s %+v", newnode)
 	return newnode, nil
 
 }
@@ -492,4 +497,15 @@ func DeleteNode(nodeName string) (bool, error) {
 // TODO: Drain a node
 func DrainNode(nodeName string) error {
 	return nil
+}
+
+func getNodeAddress(v model.Node, t string) string {
+	for _, addr := range v.Status.Addresses {
+		if string(addr.Type) == t {
+			return addr.Address
+		}
+	}
+
+	logs.Warning("The value is null when get the field of %s in node", t)
+	return ""
 }

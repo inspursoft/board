@@ -1,0 +1,51 @@
+:host{
+  flex-basis: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.custom-top {
+  top: 80px;
+}
+
+.background {
+  height: 100%;
+  width: 100%;
+  background: url('../../../assets/images/sign-in-background.jpg') no-repeat;
+  background-size: 100% 100%;
+  background-size: cover
+}
+
+.sign-in-background {
+  background: whitesmoke;
+  height: 320px;
+  width: 300px;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 20px;
+}
+
+.custom-sign-in-top {
+  margin-top: 100px;
+}
+
+.custom-sign-in-title {
+  position: relative;
+  margin-left: auto;
+  margin-right: auto;
+  top: 30px;
+  color: #007CBB;
+  text-align: center;
+  font-size: x-large;
+}
+
+.custom-sign-in-input {
+  position: relative;
+  top: 80px;
+  left: 10px;
+}
+
+.custom-input-padding {
+  padding-left: 36px;
+}
