@@ -76,6 +76,9 @@ export const LANG_ZH_CN = {
     Node_Logs_Success: '是否成功',
     Node_Logs_Operation: '操作',
     Node_Logs_Empty: '节点操作日志为空',
+    Node_Logs_Delete_Ask: '确定要删除这个日志?',
+    Node_Logs_Delete_Log_Success: '删除日志成功',
+    Node_Logs_Delete_Log_In_Use: '有节点在使用该日志，不能被删除。',
     Node_Detail_Add: '添加',
     Node_Detail_Remove: '移除',
     Node_Detail_Refresh: '刷新日志',
@@ -83,6 +86,7 @@ export const LANG_ZH_CN = {
     Node_Detail_Title_Remove: '正在移除节点',
     Node_Detail_Title_Log: '节点日志',
     Node_Detail_Node_Ip: '节点IP',
+    Node_Detail_Node_Password: '节点密码',
   },
   'CONFIGURATIONS': {
     'API_SERVER': {

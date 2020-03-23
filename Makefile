@@ -102,7 +102,7 @@ endif
 
 # Package lists
 # TOPLEVEL_PKG := .
-INT_LIST := apiserver tokenserver collector/cmd
+INT_LIST := adminserver apiserver tokenserver collector/cmd
 ifndef ARCH
 	IMG_LIST := adminserver apiserver tokenserver log collector jenkins db proxy proxy-adminserver gogits grafana graphite elasticsearch kibana chartmuseum
 else

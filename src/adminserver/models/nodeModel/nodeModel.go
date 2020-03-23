@@ -2,10 +2,13 @@ package nodeModel
 
 import "bytes"
 
-const AddNodeYamlFile = "/data/board/ansible_k8s/addNode.yml"
-const RemoveNodeYamlFile = "/data/board/ansible_k8s/uninstallnode.yml"
-const AddRemoveNodeFile = "/data/board/ansible_k8s/addNode"
-const AddRemoveShellFile = "/data/board/ansible_k8s/addNode.sh"
+const BasePath = "/data/board/ansible_k8s/"
+const AddNodeYamlFile = "addnode"
+const RemoveNodeYamlFile = "uninstallnode"
+const NodeHostsFile = "addNode"
+const LogFileDir = "log"
+const HostFileDir = "hosts"
+const PreEnvDir = "pre-env"
 
 type NodeLogResponseStatus int
 type ActionType int
@@ -33,7 +36,38 @@ type Pagination struct {
 }
 
 type AddNodePostData struct {
-	NodeIp string `json:"node_ip"`
+	NodeIp         string `json:"node_ip"`
+	NodePassword   string `json:"node_password"`
+	HostUsername   string `json:"host_username"`
+	HostPassword   string `json:"host_password"`
+	MasterPassword string `json:"master_password"`
+}
+
+type PreparationData struct {
+	HostIp   string `json:"host_ip"`
+	MasterIp string `json:"master_ip"`
+}
+
+type ContainerEnv struct {
+	NodeIp         string `json:"node_ip"`
+	NodePassword   string `json:"node_password"`
+	HostIp         string `json:"host_ip"`
+	HostUserName   string `json:"host_user_name"`
+	HostPassword   string `json:"host_password"`
+	MasterIp       string `json:"master_ip"`
+	MasterPassword string `json:"master_password"`
+	InstallFile    string `json:"install_file"`
+	HostFile       string `json:"host_file"`
+	LogId          int64  `json:"log_id"`
+	LogTimestamp   int64  `json:"log_timestamp"`
+}
+
+type UpdateNodeLog struct {
+	LogId       int    `json:"log_id"`
+	Ip          string `json:"ip"`
+	InstallFile string `json:"install_file"`
+	LogFile     string `json:"log_file"`
+	Success     int    `json:"success"`
 }
 
 type NodeLogDetailArray = []NodeLogDetail;
@@ -51,7 +85,7 @@ type NodeLog struct {
 	Ip           string     `json:"ip"`
 	LogType      ActionType `json:"log_type"`
 	Success      bool       `json:"success"`
-	Pid          int        `json:"pid"`
+	Completed    bool       `json:"completed"`
 	CreationTime int64      `json:"creation_time"`
 }
 
@@ -64,7 +98,7 @@ type NodeLogDetailInfo struct {
 
 type NodeLogCache struct {
 	DetailBuffer bytes.Buffer
-	NodeLogPtr *NodeLog
+	NodeLogPtr   *NodeLog
 }
 
 type PaginatedNodeLogList struct {

@@ -14,7 +14,7 @@ export class CustomHttpClient extends HttpClient {
 
   getJson<T extends ResponseBase>(url: string,
                                   returnType: new(res: object) => T,
-                                  param: { [param: string]: string }): Observable<T> {
+                                  param?: { [param: string]: string }): Observable<T> {
     return super.get(url, {observe: 'body', responseType: 'json', params: param})
       .pipe(map((res: object) => new returnType(res)));
   }

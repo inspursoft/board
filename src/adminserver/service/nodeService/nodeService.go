@@ -7,13 +7,200 @@ import (
 	"git/inspursoft/board/src/adminserver/dao"
 	"git/inspursoft/board/src/adminserver/dao/nodeDao"
 	"git/inspursoft/board/src/adminserver/models/nodeModel"
+	"git/inspursoft/board/src/adminserver/service"
+	"git/inspursoft/board/src/adminserver/utils"
 	"github.com/astaxie/beego/logs"
 	"io"
+	"io/ioutil"
 	"os"
-	"os/exec"
+	"path"
 	"strings"
 	"time"
 )
+
+func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
+	actionType nodeModel.ActionType, yamlFile string) (*nodeModel.NodeLog, error) {
+	configuration, statusMessage := service.GetAllCfg("")
+	if statusMessage == "BadRequest" {
+		return nil, fmt.Errorf("failed to get the configuration")
+	}
+	hostName := configuration.Apiserver.Hostname
+	masterIp := configuration.Apiserver.KubeMasterIP
+	registryIp := configuration.Apiserver.RegistryIP
+
+	hostFilePath := path.Join(nodeModel.BasePath, nodeModel.HostFileDir)
+	if _, err := os.Stat(hostFilePath); os.IsNotExist(err) {
+		os.MkdirAll(hostFilePath, os.ModePerm)
+	}
+
+	hostFileName := fmt.Sprintf("%s/%s@%s", hostFilePath, nodeModel.NodeHostsFile, nodePostData.NodeIp)
+
+	if err := GenerateHostFile(masterIp, nodePostData.NodeIp, registryIp, hostFileName); err != nil {
+		return nil, err
+	}
+
+	var newLogId int64
+	nodeLog := nodeModel.NodeLog{
+		Ip: nodePostData.NodeIp, Completed: false, Success: false, CreationTime: time.Now().Unix(), LogType: actionType}
+	if id, err := InsertLog(&nodeLog); err != nil {
+		return nil, err
+	} else {
+		newLogId = id
+	}
+
+	var containerEnv = nodeModel.ContainerEnv{NodeIp: nodePostData.NodeIp,
+		NodePassword:   nodePostData.NodePassword,
+		HostIp:         hostName,
+		HostPassword:   nodePostData.HostPassword,
+		HostUserName:   nodePostData.HostUsername,
+		HostFile:       fmt.Sprintf("%s@%s", nodeModel.NodeHostsFile, nodePostData.NodeIp),
+		MasterIp:       masterIp,
+		MasterPassword: nodePostData.MasterPassword,
+		InstallFile:    yamlFile,
+		LogId:          newLogId,
+		LogTimestamp:   nodeLog.CreationTime}
+	if err := LaunchAnsibleContainer(&containerEnv); err != nil {
+		return nil, err
+	}
+	return &nodeLog, nil
+}
+
+func LaunchAnsibleContainer(env *nodeModel.ContainerEnv) error {
+	logCache := dao.GlobalCache.Get(env.NodeIp).(*nodeModel.NodeLogCache)
+	var secureShell *utils.SecureShell
+	var err error
+	secureShell, err = utils.NewSecureShell(&logCache.DetailBuffer, env.HostIp, env.HostUserName, env.HostPassword)
+	if err != nil {
+		return err
+	}
+
+	envStr := fmt.Sprintf(""+
+		"--env MASTER_PASS=\"%s\" \\\n"+
+		"--env MASTER_IP=\"%s\" \\\n"+
+		"--env NODE_IP=\"%s\" \\\n"+
+		"--env NODE_PASS=\"%s\" \\\n"+
+		"--env LOG_ID=\"%d\" \\\n"+
+		"--env ADMIN_SERVER_IP=\"%s\" \\\n"+
+		"--env ADMIN_SERVER_PORT=\"%d\" \\\n"+
+		"--env INSTALL_FILE=\"%s\" \\\n"+
+		"--env LOG_TIMESTAMP=\"%d\" \\\n"+
+		"--env HOSTS_FILE=\"%s\" ",
+		env.MasterPassword,
+		env.MasterIp,
+		env.NodeIp,
+		env.NodePassword,
+		env.LogId,
+		env.HostIp,
+		8081,
+		env.InstallFile,
+		env.LogTimestamp,
+		env.HostFile)
+
+	LogFilePath := path.Join(nodeModel.BasePath, nodeModel.LogFileDir)
+	HostDirPath := path.Join(nodeModel.BasePath, nodeModel.HostFileDir)
+	PreEnvPath := path.Join(nodeModel.BasePath, nodeModel.PreEnvDir)
+	cmdStr := fmt.Sprintf("docker run -td \\\n "+
+		"-v %s:/tmp/log \\\n "+
+		"-v %s:/tmp/hosts_dir \\\n"+
+		"-v %s:/ansible_k8s/pre-env \\\n "+
+		"%s \\\n k8s_install:1",
+		LogFilePath, HostDirPath, PreEnvPath, envStr)
+	err = secureShell.ExecuteCommand(cmdStr)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func UpdateLog(putLogData *nodeModel.UpdateNodeLog) error {
+	var logData *nodeModel.NodeLog
+	var err error
+	logData, err = nodeDao.GetNodeLog(putLogData.LogId);
+	if err != nil {
+		return err
+	}
+
+	logData.Success = putLogData.Success == 0
+	logData.Completed = true
+	if errUpdate := nodeDao.UpdateNodeLog(logData); errUpdate != nil {
+		return errUpdate
+	}
+
+	logFilePath := path.Join(nodeModel.BasePath, nodeModel.LogFileDir)
+	if _, err := os.Stat(logFilePath); os.IsNotExist(err) {
+		os.MkdirAll(logFilePath, os.ModePerm)
+	}
+	logFileName := fmt.Sprintf("%s/%s", logFilePath, putLogData.LogFile)
+	if errInsert := InsertLogDetail(logData.Ip, logFileName, logData.CreationTime); errInsert != nil {
+		return errInsert
+	}
+
+	if putLogData.Success == 0 {
+		if putLogData.InstallFile == nodeModel.AddNodeYamlFile {
+			if err := nodeDao.InsertNodeStatus(&nodeModel.NodeStatus{
+				Ip:           putLogData.Ip,
+				CreationTime: logData.CreationTime}); err != nil {
+				logs.Info(err.Error())
+			}
+		}
+		if putLogData.InstallFile == nodeModel.RemoveNodeYamlFile {
+			if err := nodeDao.DeleteNodeStatus(&nodeModel.NodeStatus{Ip: putLogData.Ip}); err != nil {
+				logs.Info(err.Error())
+			}
+		}
+	}
+	return RemoveCacheData(putLogData.Ip)
+}
+
+func InsertLog(nodeLog *nodeModel.NodeLog) (int64, error) {
+	var nodeLogCache = nodeModel.NodeLogCache{}
+	nodeLogCache.NodeLogPtr = nodeLog
+	if err := dao.GlobalCache.Put(nodeLog.Ip, &nodeLogCache, 3600*time.Second); err != nil {
+		return 0, err
+	}
+
+	if nodeLog.LogType == nodeModel.ActionTypeAddNode {
+		nodeLogCache.DetailBuffer.WriteString(fmt.Sprintf("---Begin add node:%s----\n", nodeLog.Ip))
+	} else {
+		nodeLogCache.DetailBuffer.WriteString(fmt.Sprintf("---Begin remove node:%s----\n", nodeLog.Ip))
+	}
+
+	if newId, err := nodeDao.InsertNodeLog(nodeLog); err != nil {
+		return 0, err
+	} else {
+		return newId, nil
+	}
+}
+
+func InsertLogDetail(ip, logFileName string, creationTime int64) error {
+	if dao.GlobalCache.IsExist(ip) == false {
+		logs.Info(fmt.Sprintf("No cache data for node:%s", ip))
+		return nil
+	}
+	logCache := dao.GlobalCache.Get(ip).(*nodeModel.NodeLogCache)
+
+	filePtr, _ := os.Open(logFileName)
+	defer filePtr.Close()
+
+	if fileContent, err := ioutil.ReadFile(logFileName); err != nil {
+		return err
+	} else {
+		if _, writeErr := logCache.DetailBuffer.Write(fileContent); writeErr != nil {
+			return writeErr
+		}
+		logCache.DetailBuffer.WriteString("---End---")
+	}
+
+	detail := nodeModel.NodeLogDetailInfo{
+		CreationTime: creationTime,
+		Detail:       logCache.DetailBuffer.String()}
+	if _, err := nodeDao.InsertNodeLogDetail(&detail); err != nil {
+		logs.Info(err.Error())
+	}
+	return nil
+}
 
 func GetNodeStatusList(nodeStatusList *[]nodeModel.NodeStatus) error {
 	return nodeDao.GetNodeStatusList(nodeStatusList)
@@ -34,10 +221,38 @@ func GetPaginatedNodeLogList(v *nodeModel.PaginatedNodeLogList) error {
 	return nil
 }
 
+func CheckNodeLogInfoInUse(logTimestamp int64) bool {
+	return nodeDao.CheckNodeStatusExists(logTimestamp)
+}
+
+func DeleteNodeLogInfo(logTimestamp int64) error {
+	if err := nodeDao.DeleteNodeLog(logTimestamp); err != nil {
+		return err
+	}
+	if err := nodeDao.DeleteNodeLogDetail(logTimestamp); err != nil {
+		return err
+	}
+	return nil
+}
+
 func GetNodeLogDetail(logTimestamp int64, nodeIp string, nodeLogDetail *[]nodeModel.NodeLogDetail) error {
 	var reader *bufio.Reader
 	if CheckExistsInCache(nodeIp) {
 		logCache := dao.GlobalCache.Get(nodeIp).(*nodeModel.NodeLogCache)
+		logFilePath := path.Join(nodeModel.BasePath, nodeModel.LogFileDir)
+		logFileName := fmt.Sprintf("%s/%d.log", logFilePath, logTimestamp)
+		if _, err := os.Stat(logFileName); err == nil {
+			filePtr, _ := os.Open(logFileName)
+			defer filePtr.Close()
+
+			if fileContent, err := ioutil.ReadFile(logFileName); err != nil {
+				return err
+			} else {
+				if _, writeErr := logCache.DetailBuffer.Write(fileContent); writeErr != nil {
+					return writeErr
+				}
+			}
+		}
 		reader = bufio.NewReader(strings.NewReader(logCache.DetailBuffer.String()))
 	} else {
 		detailInfo, err := nodeDao.GetNodeLogDetail(logTimestamp)
@@ -63,87 +278,6 @@ func GetNodeLogDetail(logTimestamp int64, nodeIp string, nodeLogDetail *[]nodeMo
 	return nil
 }
 
-func ExecuteCommand(nodeLog *nodeModel.NodeLog, yamlPathFile string, shellPathFile string) error {
-	if _, err := os.Stat(yamlPathFile); err != nil {
-		return err
-	}
-	if _, err := os.Stat(shellPathFile); err != nil {
-		return err
-	}
-
-	cmd := exec.Command("nohup", "sh", shellPathFile, yamlPathFile)
-
-	var nodeLogCache = nodeModel.NodeLogCache{}
-	nodeLogCache.NodeLogPtr = nodeLog
-
-	if nodeLog.LogType == nodeModel.ActionTypeAddNode {
-		nodeLogCache.DetailBuffer.WriteString(fmt.Sprintf("---Begin add node:%s----", nodeLog.Ip))
-	} else {
-		nodeLogCache.DetailBuffer.WriteString(fmt.Sprintf("---Begin remove node:%s----", nodeLog.Ip))
-	}
-
-	cmd.Stdout = &nodeLogCache.DetailBuffer
-	cmd.Stderr = &nodeLogCache.DetailBuffer
-
-	if err := dao.GlobalCache.Put(nodeLog.Ip, &nodeLogCache, 3600*time.Second); err != nil {
-		return err
-	}
-
-	if err := cmd.Start(); err != nil {
-		return err
-	}
-
-	insertData(cmd, nodeLog)
-	return nil
-}
-
-func insertData(cmd *exec.Cmd, nodeLog *nodeModel.NodeLog) {
-	go func() {
-		cmd.Wait();
-		nodeLog.Success = cmd.ProcessState.Success()
-		nodeLog.Pid = cmd.ProcessState.Pid()
-
-		logCache := dao.GlobalCache.Get(nodeLog.Ip).(*nodeModel.NodeLogCache)
-
-		var endStr string
-		if nodeLog.LogType == nodeModel.ActionTypeAddNode {
-			endStr = fmt.Sprintf("---Add node completed:%s----\n", nodeLog.Ip)
-		} else {
-			endStr = fmt.Sprintf("---Remove node completed:%s----\n", nodeLog.Ip)
-		}
-
-		if _, err := logCache.DetailBuffer.WriteString(endStr); err != nil {
-			logs.Info(err)
-		}
-		detail := nodeModel.NodeLogDetailInfo{CreationTime: nodeLog.CreationTime,
-			Detail: logCache.DetailBuffer.String()}
-
-		if _, err := nodeDao.InsertNodeLogDetail(&detail); err != nil {
-			logs.Info(err.Error())
-		}
-
-		if err := nodeDao.InsertNodeLog(nodeLog); err != nil {
-			logs.Info(err.Error())
-		}
-
-		if nodeLog.Success {
-			if nodeLog.LogType == nodeModel.ActionTypeAddNode {
-				if err := nodeDao.InsertNodeStatus(&nodeModel.NodeStatus{
-					Ip:           nodeLog.Ip,
-					CreationTime: nodeLog.CreationTime}); err != nil {
-					logs.Info(err.Error())
-				}
-			}
-			if nodeLog.LogType == nodeModel.ActionTypeDeleteNode {
-				if err := nodeDao.DeleteNodeStatus(&nodeModel.NodeStatus{Ip: nodeLog.Ip}); err != nil {
-					logs.Info(err.Error())
-				}
-			}
-		}
-		dao.GlobalCache.Delete(nodeLog.Ip)
-	}()
-}
-
 func GenerateHostFile(masterIp, nodeIp, registryIp, nodePathFile string) error {
 	addHosts, err := os.Create(nodePathFile)
 	defer addHosts.Close()
@@ -163,6 +297,10 @@ func GenerateHostFile(masterIp, nodeIp, registryIp, nodePathFile string) error {
 
 func CheckExistsInCache(nodeIp string) bool {
 	return dao.GlobalCache.IsExist(nodeIp)
+}
+
+func RemoveCacheData(nodeIp string) error {
+	return dao.GlobalCache.Delete(nodeIp)
 }
 
 func GetLogInfoInCache(nodeIp string) *nodeModel.NodeLog {

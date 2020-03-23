@@ -2,7 +2,7 @@ import { HttpBind, ResponseArrayBase, ResponseBase, ResponsePaginationBase } fro
 
 export enum NodeActionsType {Add, Remove, Log}
 
-export enum ActionStatus {Ready, Executing, Finished}
+export enum ActionStatus {Ready, Preparing, Executing, Finished}
 
 export enum NodeLogStatus {
   UnKnown = 0,
@@ -18,7 +18,7 @@ export class NodeLog extends ResponseBase {
   @HttpBind('ip') ip: string;
   @HttpBind('log_type') type: NodeActionsType;
   @HttpBind('success') success: boolean;
-  @HttpBind('pid') pid: number;
+  @HttpBind('completed') completed: boolean;
   @HttpBind('creation_time') creationTime: number;
 }
 
@@ -32,9 +32,42 @@ export class NodeLogs extends ResponsePaginationBase<NodeLog> {
   }
 }
 
+export class NodePostData {
+  nodeIp = '';
+  nodePassword = '';
+  masterPassword = '';
+  hostUsername = 'root';
+  hostPassword = '';
+
+  getPostData(): object {
+    return {
+      node_ip: this.nodeIp,
+      node_password: this.nodePassword,
+      master_password: this.masterPassword,
+      host_username: this.hostUsername,
+      host_password: this.hostPassword
+    };
+  }
+
+  getParamsData(): { [param: string]: string } {
+    return {
+      node_ip: this.nodeIp,
+      node_password: this.nodePassword,
+      master_password: this.masterPassword,
+      host_username: this.hostUsername,
+      host_password: this.hostPassword
+    };
+  }
+}
+
 export class NodeDetail extends ResponseBase {
   @HttpBind('status') status: NodeLogStatus;
   @HttpBind('message') message: string;
+}
+
+export class NodePreparationData extends ResponseBase {
+  @HttpBind('master_ip') masterIp: string;
+  @HttpBind('host_ip') hostIp: string;
 }
 
 export class NodeDetails extends ResponseArrayBase<NodeDetail> {
