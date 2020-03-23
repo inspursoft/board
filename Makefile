@@ -18,11 +18,11 @@
 DEVFLAG=release
 
 # ARCH default is x86_64, also support mips, arm64v8
-ARCH=arm64v8
+ARCH=
 
 ifeq ($(DEVFLAG), release) 
 	BASEIMAGE=alpine:3.7
-	GOBUILDIMAGE=golang:1.9.6-alpine3.7
+	GOBUILDIMAGE=inspursoft/go-builder:1.14.1-alpine
 	WORKPATH=release
 	IMAGEPREFIX=board
 else
