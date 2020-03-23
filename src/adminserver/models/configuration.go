@@ -296,3 +296,11 @@ type Password struct {
 	Which string `json:"which"`
 	Value string `json:"value"`
 }
+
+const LoadImagesFile = "/data/board/Deploy/load-images.sh"
+const DBconfigdir = "/data/board/Deploy/config/db"
+
+type DBconf struct {
+	Password   		string `json:"db_password"`
+	MaxConnections	string `json:"db_max_connections"`
+}

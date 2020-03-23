@@ -16,5 +16,8 @@ func main() {
 	dao.InitDatabase()
 	models.RegisterModels()
 	dao.InitGlobalCache()
+	if err := models.InitInstallationStatus(); err != nil {
+		logs.Error(err)
+	}
 	beego.Run()
 }

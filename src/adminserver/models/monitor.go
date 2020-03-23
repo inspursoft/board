@@ -2,6 +2,8 @@ package models
 
 import (
 	"reflect"
+	"time"
+	"github.com/astaxie/beego/orm"
 )
 
 //Boardinfo contains information output by docker ps and docker stats commands.
@@ -28,4 +30,37 @@ func GetBoardinfo(container []string) Boardinfo {
 		value.Field(i).SetString(container[i])
 	}
 	return boardinfo
+}
+
+type InitStatus int
+
+const (
+	InitStatusTrue		InitStatus = 0
+	InitStatusFirst		InitStatus = 1	
+	InitStatusSecond	InitStatus = 2
+	InitStatusThird		InitStatus = 3
+	InitStatusFalse		InitStatus = 4
+)
+
+//InitStatus saves the status indicating if the adminserver is first-time installed. 
+type InitStatusInfo struct {
+	Id          int        	`json:"id"`
+	InstallTime	int64		`json:"install_time"`
+	Status		InitStatus	`json:"status"`
+}
+
+
+
+func InitInstallationStatus() error {
+	o := orm.NewOrm()
+	status := &InitStatusInfo{Id: 1}
+	err := o.Read(status,"Id")
+	if err == orm.ErrNoRows {
+		initStatus := InitStatusInfo{InstallTime: time.Now().Unix(), Status: InitStatusTrue}
+		_, err := o.Insert(&initStatus)
+		if err != nil {
+			return err
+		}	
+	} 
+	return nil
 }

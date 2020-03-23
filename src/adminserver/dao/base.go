@@ -88,5 +88,15 @@ func InitDbTables(dbFileName string) error {
 	}
 	logs.Info("create node_log_detail table successfully")
 
+	initStatusTable := `create table if not exists init_status_info(
+						id integer primary key autoincrement,
+						install_time int not null,
+						status int
+						);`
+	if _, err := db.Exec(initStatusTable); err != nil {
+	return err
+	}
+	logs.Info("create init_status_info table successfully")
+
 	return nil
 }

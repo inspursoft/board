@@ -82,15 +82,36 @@ func (a *AccController) Login() {
 	a.ServeJSON()
 }
 
-// @Title Restart
-// @Description restart Board
-// @Param	token	query 	string	true		"token"
+
+// @Title Install
+// @Description judge if it's the first time open admin server.
+// @Success 200 {object} string success
+// @Failure 400 bad request
+// @router /install [get]
+func (a *AccController) Install() {
+	install := service.Install()
+	if install == models.InitStatusTrue {
+		a.Data["json"] = "yes"
+	} else if install == models.InitStatusFirst{
+		a.Data["json"] = "step1"
+	} else if install == models.InitStatusSecond{
+		a.Data["json"] = "step2"
+	} else if install == models.InitStatusThird{
+		a.Data["json"] = "step3"
+	} else {
+		a.Data["json"] = "no"
+	}
+	a.ServeJSON()
+}
+
+// @Title CreateUUID
+// @Description create UUID
 // @Success 200 success
 // @Failure 400 bad request
-// @router /restart [get]
-func (a *AccController) Restart() {
+// @router /createUUID [post]
+func (a *AccController) CreateUUID() {
 	var statusCode int = http.StatusOK
-	statusMessage := service.Restart("/root/BOARD/Deploy")
+	statusMessage := service.CreateUUID()
 	if statusMessage == "BadRequest" {
 		statusCode = http.StatusBadRequest
 	}
@@ -98,31 +119,21 @@ func (a *AccController) Restart() {
 	a.ServeJSON()
 }
 
-// @Title Applycfg
-// @Description apply cfg and restart Board
-// @Param	token	query 	string	true	"token"
-// @Success 200 success
+// @Title ValidateUUID
+// @Description validate the UUID
+// @Param	UUID	query 	string	true	"UUID"
+// @Success 200 {object} string success
 // @Failure 400 bad request
-// @router /applycfg [get]
-func (a *AccController) Applycfg() {
+// @router /ValidateUUID [post]
+func (a *AccController) ValidateUUID() {
 	var statusCode int = http.StatusOK
-	statusMessage := service.Applycfg("/root/BOARD/Deploy")
-	if statusMessage == "BadRequest" {
-		statusCode = http.StatusBadRequest
+	input := a.GetString("UUID")
+	result, statusMessage := service.ValidateUUID(input)
+	if result == true {
+		a.Data["json"] = "validate success"
+	} else {
+		a.Data["json"] = "validate failure"
 	}
-	a.Ctx.ResponseWriter.WriteHeader(statusCode)
-	a.ServeJSON()
-}
-
-// @Title Shutdown
-// @Description shutdown board
-// @Param	token	query 	string	true	"token"
-// @Success 200 success
-// @Failure 400 bad request
-// @router /shutdown [get]
-func (a *AccController) Shutdown() {
-	var statusCode int = http.StatusOK
-	statusMessage := service.Shutdown("/root/BOARD/Deploy")
 	if statusMessage == "BadRequest" {
 		statusCode = http.StatusBadRequest
 	}

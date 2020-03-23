@@ -10,4 +10,5 @@ func RegisterModels() {
 		new(nodeModel.NodeLog),
 		new(nodeModel.NodeLogDetailInfo),
 		new(nodeModel.NodeStatus))
+		new(InitStatusInfo))
 }
