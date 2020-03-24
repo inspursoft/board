@@ -9,6 +9,7 @@ import (
 	"git/inspursoft/board/src/common/utils"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/astaxie/beego/logs"
@@ -213,6 +214,7 @@ func ResolveRepoPath(repoName, username string) (repoPath string) {
 }
 
 func ResolveDockerfileName(imageName, tag string) string {
+	imageName = imageName[strings.LastIndex(imageName, "/")+1:]
 	return fmt.Sprintf("Dockerfile.%s_%s", imageName, tag)
 }
 
