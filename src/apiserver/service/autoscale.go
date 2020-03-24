@@ -24,7 +24,7 @@ func genAutoScaleObject(svc *model.ServiceStatus, autoscale *model.ServiceAutoSc
 			ScaleTargetRef: model.CrossVersionObjectReference{
 				Kind:       "Deployment",
 				Name:       svc.Name,
-				APIVersion: "apps/v1beta2",
+				APIVersion: "apps/v1",
 			},
 			MinReplicas:                    &minPod,
 			MaxReplicas:                    int32(autoscale.MaxPod),
