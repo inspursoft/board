@@ -11,7 +11,7 @@ services:
       - adms
     ports:
       - 8081:8080
-  proxy-adminserver:
+  adminserver_proxy:
     image: board_adminserver_proxy:__version__
     depends_on: 
       - adminserver
