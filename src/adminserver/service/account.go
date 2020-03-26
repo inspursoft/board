@@ -182,7 +182,7 @@ func CreateUUID() string {
 	}
 
 	uuidPath := path.Join("/go", "/secrets/initialAdminPassword")
-	if _, err = os.Stat(uuidPath); os.IsNotExist(err) {
+	if _, err := os.Stat(uuidPath); os.IsNotExist(err) {
 		f, err := os.Create(uuidPath)
 		if err != nil {
 			log.Print(err)

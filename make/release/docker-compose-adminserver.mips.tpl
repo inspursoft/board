@@ -5,14 +5,18 @@ services:
     restart: always
     volumes:
       - ./:/go/cfgfile
+      - /data/board/secrets:/go/secrets
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker
       - /data/board/database:/data/board/database
       - /data/board/ansible_k8s:/data/board/ansible_k8s
+      - /data/board/Deploy:/data/board/Deploy
     networks:
-      - adms
+      - board
     ports:
       - 8081:8080
-  adminserver_proxy:
-    image: board_adminserver_proxy:__version__
+  proxy-adminserver:
+    image: board_proxy_adminserver:__version__
     depends_on: 
       - adminserver
     restart: always
@@ -21,9 +25,10 @@ services:
     links:
       - adminserver
     volumes:
-      - ./templates/adminserver_proxy/nginx.conf:/etc/nginx/nginx.conf:z
+      - ./templates/proxy-adminserver/nginx.conf:/etc/nginx/nginx.conf:z
     networks:
-      - adms
+      - board
 networks:
-  adms:
+  board:
     external: false
+    driver: bridge

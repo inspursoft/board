@@ -15,8 +15,8 @@ services:
       - board
     ports:
       - 8081:8080
-  adminserver_proxy:
-    image: board_adminserver_proxy:__version__
+  proxy-adminserver:
+    image: board_proxy_adminserver:__version__
     depends_on: 
       - adminserver
     restart: always
@@ -25,7 +25,7 @@ services:
     links:
       - adminserver
     volumes:
-      - ./templates/adminserver_proxy/nginx.conf:/etc/nginx/nginx.conf:z
+      - ./templates/proxy-adminserver/nginx.conf:/etc/nginx/nginx.conf:z
     networks:
       - board
 networks:
