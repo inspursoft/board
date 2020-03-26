@@ -5,6 +5,7 @@ import (
 	"git/inspursoft/board/src/adminserver/models"
 	_ "git/inspursoft/board/src/adminserver/routers"
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
 )
 
 func main() {

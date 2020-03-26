@@ -182,13 +182,13 @@ func CreateUUID() string {
 		statusMessage = "BadRequest"
 	}
 
-	folderPath := path.Join(os.Getenv("GOPATH"), "/secrets")
+	folderPath := path.Join("/go", "/secrets")
     if _, err := os.Stat(folderPath); os.IsNotExist(err) {
         os.Mkdir(folderPath, os.ModePerm) 
         os.Chmod(folderPath, os.ModePerm)
 	}
 
-	uuidPath := path.Join(os.Getenv("GOPATH"), "/secrets/initialAdminPassword")
+	uuidPath := path.Join("/go", "/secrets/initialAdminPassword")
 	if _, err = os.Stat(uuidPath); os.IsNotExist(err) {
 		f, err := os.Create(uuidPath)
 		if err != nil {
@@ -206,7 +206,7 @@ func CreateUUID() string {
 func ValidateUUID(input string) (a bool, b string) {
 	var statusMessage string = "OK"
 
-	uuidPath := path.Join(os.Getenv("GOPATH"), "/secrets/initialAdminPassword")
+	uuidPath := path.Join("/go", "/secrets/initialAdminPassword")
 	f, err := ioutil.ReadFile(uuidPath)
 	if err != nil {
 		log.Print(err)

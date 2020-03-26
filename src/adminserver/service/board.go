@@ -46,7 +46,7 @@ func Restart(host *models.Account) error {
 //Applycfg restarts Board with applying of cfg.
 func Applycfg(host *models.Account) error {
 
-	cfgPath := path.Join(os.Getenv("GOPATH"), "/cfgfile/board.cfg")
+	cfgPath := path.Join("/go", "/cfgfile/board.cfg")
 	err := os.Rename(cfgPath, cfgPath+".bak1")
 	if err != nil {
 		if !os.IsNotExist(err) { // fine if the file does not exists
