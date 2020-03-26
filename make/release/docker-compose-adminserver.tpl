@@ -4,7 +4,7 @@ services:
     image: board_adminserver:__version__
     restart: always
     volumes:
-      - ../:/go/cfgfile
+      - ./:/go/cfgfile
       - /data/board/database:/data/board/database
       - /data/board/ansible_k8s:/data/board/ansible_k8s
     networks:
@@ -21,7 +21,7 @@ services:
     links:
       - adminserver
     volumes:
-      - ../templates/adminserver_proxy/nginx.conf:/etc/nginx/nginx.conf:z
+      - ./templates/adminserver_proxy/nginx.conf:/etc/nginx/nginx.conf:z
     networks:
       - adms
 networks:
