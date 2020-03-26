@@ -1,7 +1,7 @@
 version: '2'
 services:
   log:
-    image: board_log:6.2
+    image: board_log:__version__
     restart: always
     volumes:
       - /var/log/board/:/var/log/docker/
@@ -10,7 +10,7 @@ services:
     ports:
       - 1514:514
   gogits:
-    image: board_gogits:6.2
+    image: board_gogits:__version__
     restart: always
     volumes:
       - /data/board/gogits:/data:rw
@@ -28,7 +28,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "gogits"
   jenkins:
-    image: board_jenkins:6.2
+    image: board_jenkins:__version__
     restart: always
     networks:
       - dvserver_net
@@ -49,7 +49,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "jenkins"
   apiserver:
-    image: board_apiserver:6.2
+    image: board_apiserver:__version__
     restart: always
     volumes:
 #     - ../../tools/swagger/vendors/swagger-ui-2.1.4/dist:/usr/bin/swagger:z
@@ -72,7 +72,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "apiserver"
   tokenserver:
-    image: board_tokenserver:6.2
+    image: board_tokenserver:__version__
     env_file:
       - ../config/tokenserver/env
     restart: always
@@ -86,7 +86,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "tokenserver"
   collector:
-    image: board_collector:6.2
+    image: board_collector:__version__
     restart: always
     volumes:
       - /data/board/cert:/cert:rw
@@ -104,7 +104,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "collector" 
   proxy:
-    image: board_proxy:6.2
+    image: board_proxy:__version__
     networks:
       - dvserver_net
     restart: always
@@ -123,7 +123,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "proxy"
   grafana:
-    image: board_grafana:6.2
+    image: board_grafana:__version__
     restart: always
     volumes:
       - /data/board/grafana/lib:/var/lib/grafana
@@ -139,7 +139,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "grafana"
   graphite:
-    image: board_graphite:6.2
+    image: board_graphite:__version__
     restart: always
     networks:
       - dvserver_net
@@ -155,7 +155,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "graphite"
   elasticsearch:
-    image: board_elasticsearch:6.2
+    image: board_elasticsearch:__version__
     restart: always
     env_file:
       - ../config/elasticsearch/env
@@ -177,7 +177,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "elasticsearch"
   kibana:
-    image: board_kibana:6.2
+    image: board_kibana:__version__
     restart: always
     networks:
       - dvserver_net
@@ -191,7 +191,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "kibana"
   chartmuseum:
-    image: board_chartmuseum:6.2
+    image: board_chartmuseum:__version__
     restart: always
     networks:
       - dvserver_net

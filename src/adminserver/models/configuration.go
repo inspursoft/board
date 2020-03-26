@@ -298,7 +298,7 @@ type Password struct {
 	Value string `json:"value"`
 }
 
-const DBconfigdir = "/data/board/config/db"
+const DBconfigdir = "/data/board/Deploy/config/db"
 const DBcompose = "/data/board/Deploy/docker-compose-db.yml"
 const Boardcompose = "/data/board/Deploy/docker-compose-rest.yml"
 const PrepareFile = "/data/board/Deploy/prepare"

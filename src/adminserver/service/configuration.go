@@ -3,6 +3,10 @@ package service
 import (
 	"git/inspursoft/board/src/adminserver/encryption"
 	"git/inspursoft/board/src/adminserver/models"
+	"github.com/astaxie/beego/orm"
+	"github.com/astaxie/beego/logs"
+	"strings"
+	"encoding/hex"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -84,14 +88,45 @@ func UpdateCfg(cfg *models.Configuration) string {
 	}
 
 	//ENCRYPTION
-	existingPassword := section.ValueOf("board_admin_password")
+	//existingPassword := section.ValueOf("board_admin_password")
 	if cfg.Other.BoardAdminPassword != "" {
 		prvKey, _ := ioutil.ReadFile("./private.pem")
 		test, _ := base64.StdEncoding.DecodeString(cfg.Other.BoardAdminPassword)
 		cfg.Other.BoardAdminPassword = string(encryption.Decrypt("rsa", test, prvKey))
 	} else {
-		cfg.Other.BoardAdminPassword = existingPassword
+		o := orm.NewOrm()
+		o.Using("mysql-db2")
+		account := models.Account{Id: 1}
+		err := o.Read(&account)
+		if err == orm.ErrNoRows {
+			fmt.Println("not found")
+		} else if err == orm.ErrMissPK {
+			fmt.Println("pk missing")
+		} 
+		ciphertext := account.Password
+
+		prvKey, err2 := ioutil.ReadFile("./private_acc.pem")
+		if err2 != nil {
+			log.Print(err2)
+			statusMessage = "BadRequest"
+		}
+		test, err3 := hex.DecodeString(ciphertext)
+		if err3 != nil {
+			log.Print(err3)
+			statusMessage = "BadRequest"
+		}
+		password := string(encryption.Decrypt("rsa", test, prvKey))
+		cfg.Other.BoardAdminPassword = password
 	}
+
+	b, err := ioutil.ReadFile(path.Join(models.DBconfigdir, "/env"))
+	if err != nil {
+		logs.Error("error occurred on get DB env: %+v", err)
+		panic(err)
+	}
+	DBpassword := strings.TrimPrefix(string(b), "DB_PASSWORD=")
+	DBpassword = strings.Replace(DBpassword, "\n", "", 1)
+	cfg.Other.DBPassword = DBpassword
 
 	//setting value for each properties.
 	models.UpdateConfiguration(section, cfg)
@@ -103,7 +138,7 @@ func UpdateCfg(cfg *models.Configuration) string {
 		statusMessage = "BadRequest"
 	}
 
-	err := os.Rename(cfgPath, cfgPath+".tmp")
+	err = os.Rename(cfgPath, cfgPath+".tmp")
 	if err != nil {
 		if !os.IsNotExist(err) { // fine if the file does not exists
 			log.Print(err)
@@ -124,7 +159,7 @@ func UpdateCfg(cfg *models.Configuration) string {
 //GetKey generates 2 keys and return the public one.
 func GetKey() string {
 	_, pubKey := encryption.GenKey("rsa")
-	ciphertext := encryption.Encrypt("rsa", []byte("123456a?"), pubKey)
-	fmt.Println("###ciphertext:", base64.StdEncoding.EncodeToString(ciphertext))
+	//ciphertext := encryption.Encrypt("rsa", []byte("123456a?"), pubKey)
+	//fmt.Println("###ciphertext:", base64.StdEncoding.EncodeToString(ciphertext))
 	return string(pubKey)
 }

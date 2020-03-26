@@ -18,7 +18,7 @@
 DEVFLAG=release
 
 # ARCH default is x86_64, also support mips, arm64v8
-ARCH=arm64v8
+ARCH=
 
 ifeq ($(DEVFLAG), release) 
 	BASEIMAGE=alpine:3.7
@@ -189,13 +189,13 @@ prepare: version
 
 start:
 	@echo "loading Board images..."
-	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) up -d
+#	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) up -d
 	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAMEADM) up -d
 	@echo "Start complete. You can visit Board now."
 
 down:
 	@echo "stoping Board instance..."
-	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) down -v
+	#$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) down -v
 	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAMEADM) down -v
 	@echo "Done."
 
@@ -207,22 +207,32 @@ prepare_swagger:
 prepare_composefile:
 	@cp $(MAKEWORKPATH)/docker-compose${if ${ARCH},.${ARCH}}.tpl $(MAKEWORKPATH)/docker-compose${if ${ARCH},.${ARCH}}.yml
 	@cp $(MAKEWORKPATH)/docker-compose-adminserver${if ${ARCH},.${ARCH}}.tpl $(MAKEWORKPATH)/docker-compose-adminserver${if ${ARCH},.${ARCH}}.yml
+	@cp $(MAKEWORKPATH)/docker-compose-db${if ${ARCH},.${ARCH}}.tpl $(MAKEWORKPATH)/docker-compose-db${if ${ARCH},.${ARCH}}.yml
+	@cp $(MAKEWORKPATH)/docker-compose-rest${if ${ARCH},.${ARCH}}.tpl $(MAKEWORKPATH)/docker-compose-rest${if ${ARCH},.${ARCH}}.yml
 	@sed -i "s/__version__/$(VERSIONTAG)/g" $(MAKEWORKPATH)/docker-compose${if ${ARCH},.${ARCH}}.yml
 	@sed -i "s/__version__/$(VERSIONTAG)/g" $(MAKEWORKPATH)/docker-compose-adminserver${if ${ARCH},.${ARCH}}.yml
+	@sed -i "s/__version__/$(VERSIONTAG)/g" $(MAKEWORKPATH)/docker-compose-db${if ${ARCH},.${ARCH}}.yml
+	@sed -i "s/__version__/$(VERSIONTAG)/g" $(MAKEWORKPATH)/docker-compose-rest${if ${ARCH},.${ARCH}}.yml
 
 package: prepare_composefile
 	@echo "packing offline package ..."
 	@if [ ! -d $(PKGTEMPPATH) ] ; then mkdir $(PKGTEMPPATH) ; fi
 	@cp $(TOOLSPATH)/install.sh $(PKGTEMPPATH)/install.sh
+	@cp $(TOOLSPATH)/install-adminserver.sh $(PKGTEMPPATH)/install-adminserver.sh
 	@cp $(TOOLSPATH)/uninstall.sh $(PKGTEMPPATH)/uninstall.sh
 	@cp $(MAKEPATH)/board.cfg $(PKGTEMPPATH)/.
 	@cp $(MAKEPATH)/prepare $(PKGTEMPPATH)/.
 	@cp -rf $(MAKEPATH)/templates $(PKGTEMPPATH)/.
 	@cp $(MAKEWORKPATH)/docker-compose${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/docker-compose.yml
 	@cp $(MAKEWORKPATH)/docker-compose-adminserver${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/docker-compose-adminserver.yml
+	@cp $(MAKEWORKPATH)/docker-compose-db${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/docker-compose-db.yml
+	@cp $(MAKEWORKPATH)/docker-compose-rest${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/docker-compose-rest.yml
 #	@cp LICENSE $(PKGTEMPPATH)/LICENSE
 #	@cp NOTICE $(PKGTEMPPATH)/NOTICE
 	@sed -i "s/..\/config/.\/config/" $(PKGTEMPPATH)/docker-compose.yml
+	@sed -i "s/..\/config/.\/config/" $(PKGTEMPPATH)/docker-compose-adminserver.yml
+	@sed -i "s/..\/config/.\/config/" $(PKGTEMPPATH)/docker-compose-db.yml
+	@sed -i "s/..\/config/.\/config/" $(PKGTEMPPATH)/docker-compose-rest.yml
 	@echo "pcakage images ..."
 	@$(DOCKERSAVE) -o $(PKGTEMPPATH)/$(IMAGEPREFIX)_deployment.$(VERSIONTAG).tgz $(PKG_LIST)
 	@$(TARCMD) -zcvf $(PKGNAME)-offline-installer-$(VERSIONTAG)${if ${ARCH},.${ARCH}}.tgz $(PKGTEMPPATH)
