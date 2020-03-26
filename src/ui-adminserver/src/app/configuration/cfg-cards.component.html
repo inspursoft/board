@@ -115,27 +115,29 @@
     <p>&nbsp;&nbsp;&nbsp;&nbsp;The new configuration has been saved. Do you want the configuration to take effect in
       Board? If so, please enter the account and password of the host machine. Board will take a few minutes to restart
       to update the configuration.</p>
-    <clr-input-container>
-      <label>Account 账户</label>
-      <input clrInput
-             required
-             [(ngModel)]="user.username"
-             #getSSHUsername="ngModel" />
-      <clr-control-error>
-        This field is required!<br>必填项！
-      </clr-control-error>
-    </clr-input-container>
-    <clr-password-container>
-      <label>Password 密码</label>
-      <input clrPassword
-             required
-             [(ngModel)]="user.password"
-             name="sshPassword"
-             #getSSHPassword="ngModel" />
-      <clr-control-error *clrIfError="'required'">
-        This field is required!<br>必填项！
-      </clr-control-error>
-    </clr-password-container>
+    <form clrForm>
+      <clr-input-container>
+        <label>Account 账户</label>
+        <input clrInput
+               required
+               [(ngModel)]="user.username"
+               #getSSHUsername="ngModel" />
+        <clr-control-error>
+          This field is required!<br>必填项！
+        </clr-control-error>
+      </clr-input-container>
+      <clr-password-container>
+        <label>Password 密码</label>
+        <input clrPassword
+               required
+               [(ngModel)]="user.password"
+               name="sshPassword"
+               #getSSHPassword="ngModel" />
+        <clr-control-error *clrIfError="'required'">
+          This field is required!<br>必填项！
+        </clr-control-error>
+      </clr-password-container>
+    </form>
   </div>
   <div class="modal-footer">
     <button type="button"

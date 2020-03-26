@@ -4,6 +4,7 @@ import { PreviewerComponent } from './previewer/previewer.component';
 import { RouterModule } from '@angular/router';
 import { ClarityModule } from '@clr/angular';
 import { DashboardService } from './dashboard.service';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -14,6 +15,7 @@ import { DashboardService } from './dashboard.service';
   ],
   imports: [
     CommonModule,
+    FormsModule,
     ClarityModule,
     RouterModule.forChild([{ path: '', component: PreviewerComponent }])
   ],

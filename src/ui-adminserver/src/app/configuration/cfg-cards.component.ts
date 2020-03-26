@@ -23,7 +23,7 @@ export class CfgCardsComponent implements OnInit {
   user: User;
 
   constructor(private cfgCardsService: CfgCardsService,
-              private router: Router) {
+    private router: Router) {
     this.config = new Configuration();
     this.cardList = new CfgCardObjects();
     this.user = new User();
@@ -42,7 +42,7 @@ export class CfgCardsComponent implements OnInit {
   }
 
   getCfg(whichOne?: string) {
-    this.cfgCardsService.getConfig(whichOne).subscribe(
+    this.cfgCardsService.getConfig(whichOne ? whichOne : '').subscribe(
       (res: Configuration) => { this.config = new Configuration(res); },
       (err: HttpErrorResponse) => { this.commonError(err); }
     );

@@ -5,7 +5,6 @@ import { Error404Component } from './shared/error-pages/error404/error404.compon
 import { PreviewerComponent } from './dashboard/previewer/previewer.component';
 import { CfgCardsComponent } from './configuration/cfg-cards.component';
 import { SignInComponent } from './account/sign-in/sign-in.component';
-import { SignUpComponent } from './account/sign-up/sign-up.component';
 
 const childrenPath: Routes = [
   { path: 'dashboard', component: PreviewerComponent },

@@ -3,15 +3,15 @@ import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Configuration, VerifyPassword } from './cfg.models';
-import { UserVerify, User } from '../account/account.model';
+import { User } from '../account/account.model';
 
 const BASE_URL = '/v1/admin';
 
 @Injectable()
 export class CfgCardsService {
+  private token = '';
 
-  constructor(private http: HttpClient,
-              private token: string) {
+  constructor(private http: HttpClient) {
     this.token = window.sessionStorage.getItem('token');
   }
 
@@ -32,10 +32,10 @@ export class CfgCardsService {
     );
   }
 
-  getPubKey(): Observable<string> {
+  getPubKey(): Observable<any> {
     return this.http.get(`${BASE_URL}/configuration/pubkey?token=${this.token}`, {
       observe: 'response',
-    }).pipe(map((res: HttpResponse<string>) => {
+    }).pipe(map((res: HttpResponse<any>) => {
       return res.body;
     }));
   }

@@ -122,27 +122,29 @@
         <span>{{confirmType.comment}} {{confirmType.containerId}}</span>
       </div>
     </div>
-    <clr-input-container>
-      <label>Account 账户</label>
-      <input clrInput
-             required
-             [(ngModel)]="user.username"
-             #getSSHUsername="ngModel" />
-      <clr-control-error>
-        This field is required!<br>必填项！
-      </clr-control-error>
-    </clr-input-container>
-    <clr-password-container>
-      <label>Password 密码</label>
-      <input clrPassword
-             required
-             [(ngModel)]="user.password"
-             name="sshPassword"
-             #getSSHPassword="ngModel" />
-      <clr-control-error *clrIfError="'required'">
-        This field is required!<br>必填项！
-      </clr-control-error>
-    </clr-password-container>
+    <form clrForm>
+      <clr-input-container>
+        <label>Account 账户</label>
+        <input clrInput
+               required
+               [(ngModel)]="user.username"
+               #getSSHUsername="ngModel" />
+        <clr-control-error>
+          This field is required!<br>必填项！
+        </clr-control-error>
+      </clr-input-container>
+      <clr-password-container>
+        <label>Password 密码</label>
+        <input clrPassword
+               required
+               [(ngModel)]="user.password"
+               name="sshPassword"
+               #getSSHPassword="ngModel" />
+        <clr-control-error *clrIfError="'required'">
+          This field is required!<br>必填项！
+        </clr-control-error>
+      </clr-password-container>
+    </form>
   </div>
   <div class="modal-footer">
     <button class="btn btn-danger"

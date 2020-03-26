@@ -9,9 +9,9 @@ const BASE_URL = '/v1/admin';
 
 @Injectable()
 export class DashboardService {
+  private token = '';
 
-  constructor(private http: HttpClient,
-              private token: string) {
+  constructor(private http: HttpClient) {
     this.token = window.sessionStorage.getItem('token');
   }
 
