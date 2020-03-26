@@ -21,7 +21,7 @@ services:
     links:
       - adminserver
     volumes:
-      - ../templates/proxy-adminserver/nginx.conf:/etc/nginx/nginx.conf:z
+      - ../templates/adminserver_proxy/nginx.conf:/etc/nginx/nginx.conf:z
     networks:
       - adms
 networks:
