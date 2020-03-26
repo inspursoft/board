@@ -23,6 +23,7 @@ CREATE TABLE `user` (
   `repo_token` VARCHAR(127) NULL DEFAULT NULL,  
   `creation_time` datetime DEFAULT NULL,
   `update_time` datetime DEFAULT NULL,
+  `failed_times` INT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
