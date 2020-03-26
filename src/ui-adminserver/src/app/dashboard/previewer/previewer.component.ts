@@ -1,8 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ComponentStatus } from '../component-status.model';
 import { DashboardService } from '../dashboard.service';
-import { map } from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';
+import { User } from 'src/app/account/account.model';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-previewer',
@@ -16,25 +17,26 @@ export class PreviewerComponent implements OnInit, OnDestroy {
   modal: ComponentStatus;
   confirmModal = false;
   confirmType: ConfirmType;
-  token: string;
-  timer;
+  timer: any;
+  user: User;
 
-  constructor(private dashboardService: DashboardService) {
+  constructor(private dashboardService: DashboardService,
+              private router: Router) {
     this.modal = new ComponentStatus();
     this.confirmType = new ConfirmType('rb');
-    this.token = sessionStorage.getItem('token');
+    this.user = new User();
   }
 
   ngOnInit() {
     // 10s 刷新一次
     this.timer = setInterval(
       () => {
-        this.dashboardService.monitorContainer(this.token).subscribe(
+        this.dashboardService.monitorContainer().subscribe(
           (res: Array<ComponentStatus>) => {
             this.componentList = res;
           },
           (err: HttpErrorResponse) => {
-            alert("no resource");
+            this.commonError(err);
             clearInterval(this.timer); // 销毁定时器
           }
         );
@@ -63,29 +65,23 @@ export class PreviewerComponent implements OnInit, OnDestroy {
 
   boardControl(type: string, containerID?: string) {
     if (type === 'rb') {
-      this.dashboardService.restartBoard(encodeURIComponent(this.token)).subscribe(
+      this.dashboardService.restartBoard(this.user).subscribe(
         () => {
           this.confirmModal = false;
           alert('Waiting for restart.');
         },
-        () => {
-          this.confirmModal = false;
-          alert('Unknown Error');
-        }
+        (err: HttpErrorResponse) => { this.commonError(err); }
       );
     } else if (type === 'rc') {
       this.confirmModal = false;
       alert('Sorry, this feature is not yet supported. Restart container(' + containerID + ') fail.');
     } else if (type === 'sb') {
-      this.dashboardService.shutdownBoard(encodeURIComponent(this.token)).subscribe(
+      this.dashboardService.shutdownBoard(this.user).subscribe(
         () => {
           this.confirmModal = false;
           alert('Waiting for STOP.');
         },
-        () => {
-          this.confirmModal = false;
-          alert('Unknown Error');
-        }
+        (err: HttpErrorResponse) => { this.commonError(err); }
       );
     } else {
       this.confirmModal = false;
@@ -93,6 +89,14 @@ export class PreviewerComponent implements OnInit, OnDestroy {
     }
   }
 
+  commonError(err: HttpErrorResponse) {
+    if (err.status === 401) {
+      alert('User status error! Please login again!');
+      this.router.navigateByUrl('account/login');
+    } else {
+      alert('Unknown Error!');
+    }
+  }
 }
 
 class ConfirmType {
@@ -106,16 +110,16 @@ class ConfirmType {
     this.type = type;
     if (type === 'rb') {
       this.title = 'Restart Board?';
-      this.comment = 'Are you sure to RESTART the Board?';
+      this.comment = 'Are you sure to RESTART the Board? If so, please enter the account and password of the host machine.';
       this.button = 'restart';
     } else if (type === 'rc') {
       this.title = 'Restart Container?';
-      this.comment = 'Are you sure to Restart the Container:';
+      this.comment = 'Please enter the account and password of the host machine to Restart the Container:';
       this.button = 'restart';
       this.containerId = containerID;
     } else if (type === 'sb') {
       this.title = 'Stop Board?';
-      this.comment = 'Are you sure to STOP the Board?';
+      this.comment = 'Are you sure to STOP the Board? If so, please enter the account and password of the host machine';
       this.button = 'STOP';
     } else {
       this.title = title ? title : 'Title';

@@ -5,72 +5,93 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"git/inspursoft/board/src/adminserver/models"
+	"git/inspursoft/board/src/adminserver/utils"
+	"bytes"
+	"strings"
+	"fmt"
 
 )
 
 //Restart Board without loading cfg.
-func Restart(path string) string {
-	var statusMessage string = "OK"
+func Restart(host *models.Account) error {
+	var output bytes.Buffer
+	var secureShell *utils.SecureShell
+	var err error
 
-	statusMessage = Shutdown(path)
+	cmd := exec.Command("sh", "-c", "ip route | awk 'NR==1 {print $3}'")
+	bytes, _ := cmd.Output()
+	HostIp := strings.Replace(string(bytes), "\n", "", 1)
 
-	err := Execute("docker-compose -f " + path + "/docker-compose.yml up -d")
+	secureShell, err = utils.NewSecureShell(&output, HostIp, host.Username, host.Password)
 	if err != nil {
-		log.Println(err)
-		statusMessage = "BadRequest"
+		return err
 	}
 
-	return statusMessage
+	cmdComposeDown := fmt.Sprintf("docker-compose -f %s down", models.Boardcompose)
+	err = secureShell.ExecuteCommand(cmdComposeDown)
+	if err != nil {
+		return err
+	}
+
+	cmdComposeUp := fmt.Sprintf("docker-compose -f %s up -d", models.Boardcompose)
+	err = secureShell.ExecuteCommand(cmdComposeUp)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 //Applycfg restarts Board with applying of cfg.
-func Applycfg(cfgpath string) string {
-	var statusMessage string = "OK"
+func Applycfg(host *models.Account) error {
 
 	cfgPath := path.Join(os.Getenv("GOPATH"), "/cfgfile/board.cfg")
 	err := os.Rename(cfgPath, cfgPath+".bak1")
 	if err != nil {
 		if !os.IsNotExist(err) { // fine if the file does not exists
-			log.Print(err)
-			statusMessage = "BadRequest"
+			return err
 		}
 	}
 	err = os.Rename(cfgPath+".tmp", cfgPath)
 	if err != nil {
 		if !os.IsNotExist(err) { // fine if the file does not exists
-			log.Print(err)
-			statusMessage = "BadRequest"
+			return err
 		}
 	}
 
-	statusMessage = Shutdown(cfgpath)
-
-	err = Execute(cfgpath + "/prepare")
-	if err != nil {
-		log.Println(err)
-		statusMessage = "BadRequest"
+	if err = Shutdown(host); err != nil {
+		return err
+	}
+	if err = StartBoard(host); err != nil {
+		return err
 	}
 
-	err = Execute("docker-compose -f " + cfgpath + "/docker-compose.yml up -d")
-	if err != nil {
-		log.Println(err)
-		statusMessage = "BadRequest"
-	}
-
-	return statusMessage
+	return nil
 }
 
 //Shutdown Board.
-func Shutdown(path string) string {
-	var statusMessage string = "OK"
+func Shutdown(host *models.Account) error {
+	var output bytes.Buffer
+	var secureShell *utils.SecureShell
+	var err error
 
-	err := Execute("docker-compose -f " + path + "/docker-compose.yml down")
+	cmd := exec.Command("sh", "-c", "ip route | awk 'NR==1 {print $3}'")
+	bytes, _ := cmd.Output()
+	HostIp := strings.Replace(string(bytes), "\n", "", 1)
+
+	secureShell, err = utils.NewSecureShell(&output, HostIp, host.Username, host.Password)
 	if err != nil {
-		log.Println(err)
-		statusMessage = "BadRequest"
+		return err
 	}
 
-	return statusMessage
+	cmdCompose := fmt.Sprintf("docker-compose -f %s down", models.Boardcompose)
+	err = secureShell.ExecuteCommand(cmdCompose)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 //Execute command.

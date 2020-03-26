@@ -49,6 +49,11 @@ type InitStatusInfo struct {
 	Status		InitStatus	`json:"status"`
 }
 
+type Token struct {
+	Id		int		`json:"id"`
+	Token	string	`json:"token"`
+	Time	int64	`json:"time"`
+}
 
 
 func InitInstallationStatus() error {

@@ -2,9 +2,11 @@ package controllers
 
 import (
 	"git/inspursoft/board/src/adminserver/service"
+	"git/inspursoft/board/src/adminserver/models"
 	"net/http"
-
+	"encoding/json"
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
 )
 
 // BoardController controlls Board up and down.
@@ -15,47 +17,83 @@ type BoardController struct {
 // @Title Restart
 // @Description restart Board
 // @Param	token	query 	string	true		"token"
+// @Param	body	body 	models.Account	true	"body for host acc info"
 // @Success 200 success
 // @Failure 400 bad request
-// @router /restart [get]
+// @Failure 401 unauthorized
+// @router /restart [post]
 func (b *BoardController) Restart() {
-	var statusCode int = http.StatusOK
-	statusMessage := service.Restart("/root/BOARD/Deploy")
-	if statusMessage == "BadRequest" {
-		statusCode = http.StatusBadRequest
+	var host models.Account
+	token := b.GetString("token")
+	result := service.VerifyToken(token)
+	if result == false {
+		b.Ctx.ResponseWriter.WriteHeader(http.StatusUnauthorized)
+		b.ServeJSON()	
+		return
+	} else {
+		json.Unmarshal(b.Ctx.Input.RequestBody, &host)
+		if err := service.Restart(&host); err != nil {
+			b.CustomAbort(http.StatusBadRequest, err.Error())
+			logs.Error(err)
+			return
+		}
+		b.ServeJSON()	
+		return
 	}
-	b.Ctx.ResponseWriter.WriteHeader(statusCode)
-	b.ServeJSON()
 }
 
 // @Title Applycfg
 // @Description apply cfg and restart Board
 // @Param	token	query 	string	true	"token"
+// @Param	body	body 	models.Account	true	"body for host acc info"
 // @Success 200 success
 // @Failure 400 bad request
-// @router /applycfg [get]
+// @Failure 401 unauthorized
+// @router /applycfg [post]
 func (b *BoardController) Applycfg() {
-	var statusCode int = http.StatusOK
-	statusMessage := service.Applycfg("/root/BOARD/Deploy")
-	if statusMessage == "BadRequest" {
-		statusCode = http.StatusBadRequest
+	var host models.Account
+	token := b.GetString("token")
+	result := service.VerifyToken(token)
+	if result == false {
+		b.Ctx.ResponseWriter.WriteHeader(http.StatusUnauthorized)
+		b.ServeJSON()	
+		return
+	} else {
+		json.Unmarshal(b.Ctx.Input.RequestBody, &host)
+		if err := service.Applycfg(&host); err != nil {
+			b.CustomAbort(http.StatusBadRequest, err.Error())
+			logs.Error(err)
+			return
+		}
+		b.ServeJSON()	
+		return
 	}
-	b.Ctx.ResponseWriter.WriteHeader(statusCode)
-	b.ServeJSON()
 }
 
 // @Title Shutdown
 // @Description shutdown board
 // @Param	token	query 	string	true	"token"
+// @Param	body	body 	models.Account	true	"body for host acc info"
 // @Success 200 success
 // @Failure 400 bad request
-// @router /shutdown [get]
+// @Failure 401 unauthorized
+// @router /shutdown [post]
 func (b *BoardController) Shutdown() {
-	var statusCode int = http.StatusOK
-	statusMessage := service.Shutdown("/root/BOARD/Deploy")
-	if statusMessage == "BadRequest" {
-		statusCode = http.StatusBadRequest
+	var host models.Account
+	token := b.GetString("token")
+	result := service.VerifyToken(token)
+	if result == false {
+		b.Ctx.ResponseWriter.WriteHeader(http.StatusUnauthorized)
+		b.ServeJSON()	
+		return
+	} else {
+		json.Unmarshal(b.Ctx.Input.RequestBody, &host)
+		if err := service.Shutdown(&host); err != nil {
+			b.CustomAbort(http.StatusBadRequest, err.Error())
+			logs.Error(err)
+			return
+		}
+		b.ServeJSON()	
+		return
 	}
-	b.Ctx.ResponseWriter.WriteHeader(statusCode)
-	b.ServeJSON()
 }

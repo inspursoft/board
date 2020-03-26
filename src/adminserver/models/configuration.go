@@ -287,8 +287,9 @@ func UpdateConfiguration(section *configparser.Section, cfg *Configuration) {
 
 //Account refers to a username with its password.
 type Account struct {
+	Id       int    `json:"id"`
 	Username string `json:"username"`
-	Password string `json:"password"`
+	Password string `json:"password" orm:"type(text)"`
 }
 
 //Password refers to a certain type with its value.
@@ -297,8 +298,10 @@ type Password struct {
 	Value string `json:"value"`
 }
 
-const LoadImagesFile = "/data/board/Deploy/load-images.sh"
-const DBconfigdir = "/data/board/Deploy/config/db"
+const DBconfigdir = "/data/board/config/db"
+const DBcompose = "/data/board/Deploy/docker-compose-db.yml"
+const Boardcompose = "/data/board/Deploy/docker-compose-rest.yml"
+const PrepareFile = "/data/board/Deploy/prepare"
 
 type DBconf struct {
 	Password   		string `json:"db_password"`

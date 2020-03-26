@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
-import { User } from './account.model';
+import { User, DBInfo, UserVerify } from './account.model';
 import { Observable } from 'rxjs';
 
-const BASE_URL = '/v1/admin/account';
+const ACCOUNT_URL = '/v1/admin/account';
 const BOOT_URL = '/v1/admin/boot';
 
 @Injectable()
@@ -13,52 +13,53 @@ export class AccountService {
 
   postSignIn(user: User): Observable<any> {
     return this.http.post(
-      `${BASE_URL}/login/`,
+      `${ACCOUNT_URL}/login/`,
       user.PostBody()
     );
   }
 
-  postSignUp(user: User): Observable<any> {
+  postSignUp(user: UserVerify): Observable<any> {
     return this.http.post(
-      `${BASE_URL}/initialize/`,
+      `${ACCOUNT_URL}/initialize/`,
       user.PostBody()
     );
-  }
-
-  getVerify(alpha: string): Observable<any> {
-    return this.http.get(`${BASE_URL}/verify/?alpha=${alpha}`, {
-      observe: 'response',
-    });
   }
 
   checkInit(): Observable<any> {
-    return this.http.get(`${BASE_URL}/install`, {
+    return this.http.get(`${ACCOUNT_URL}/install`, {
       observe: 'response',
     });
   }
 
   createUUID(): Observable<any> {
-    return this.http.post(`${BASE_URL}/createUUID`, null);
+    return this.http.post(`${ACCOUNT_URL}/createUUID`, null);
   }
 
   validateUUID(uuid: string): Observable<any> {
     return this.http.post(
-      `${BASE_URL}/ValidateUUID`,
-      uuid
+      `${ACCOUNT_URL}/ValidateUUID`,
+      { UUID: uuid }
     );
   }
 
-  initDB(dbPwd: string): Observable<any> {
+  initDB(dbInfo: DBInfo): Observable<any> {
     return this.http.post(
       `${BOOT_URL}/initdb`,
-      dbPwd
+      dbInfo.PostBody()
     );
   }
 
-  initSSH(user: User): Observable<any> {
+  initSSH(user: UserVerify): Observable<any> {
     return this.http.post(
       `${BOOT_URL}/startdb`,
       user.PostBody()
+    );
+  }
+
+  checkDB(): Observable<any> {
+    return this.http.get(
+      `${BOOT_URL}/checkdb`,
+      { observe: 'response', }
     );
   }
 }

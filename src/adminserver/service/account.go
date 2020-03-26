@@ -10,7 +10,6 @@ import (
 	"os"
 	"path"
 	"github.com/astaxie/beego/orm"
-	"github.com/astaxie/beego/logs"
 	"github.com/alyu/configparser"
 	uuid "github.com/satori/go.uuid"
 	"fmt"
@@ -59,37 +58,58 @@ func Initialize(acc *models.Account) string {
 		statusMessage = "BadRequest"
 	}
 
-	accPath := path.Join(os.Getenv("GOPATH"), "/secrets/account-info")
-	f, err2 := os.Create(accPath)
-	if err2 != nil {
-		log.Print(err2)
-		statusMessage = "BadRequest"
+	o := orm.NewOrm()
+	o.Using("mysql-db2")
+	account := models.Account{Username: acc.Username, Password: hex.EncodeToString(ciphertext)}
+
+	if o.Read(&models.Account{Id: 1}) == orm.ErrNoRows {
+		if _, err := o.Insert(&account); err != nil {
+			log.Print(err)
+			statusMessage = "BadRequest"
+		}	
+	} else {
+		if _, err := o.Update(&account); err != nil {
+			log.Print(err)
+			statusMessage = "BadRequest"
+		}	
 	}
-	f.WriteString("username = " + acc.Username + "\n")
-	f.WriteString("password = " + hex.EncodeToString(ciphertext) + "\n")
-	defer f.Close()
+
+	if statusMessage == "OK" {
+		o2 := orm.NewOrm()
+		o2.Using("default")
+		status := models.InitStatusInfo{Id: 1}
+		err := o2.Read(&status)
+		if err == orm.ErrNoRows {
+			fmt.Println("not found")
+		} else if err == orm.ErrMissPK {
+			fmt.Println("pk missing")
+		} 
+		if status.Status == models.InitStatusThird {
+			status.InstallTime = time.Now().Unix()
+			status.Status = models.InitStatusFalse
+			o2.Update(&status, "InstallTime", "Status")
+		}
+	}
 
 	return statusMessage
 }
 
 //Login allow user to use account information to login adminserver.
-func Login(acc *models.Account) (a bool, b string) {
+func Login(acc *models.Account) (bool, string, string) {
 	var statusMessage string = "OK"
 	var permission bool
-	configparser.Delimiter = "="
-	accPath := path.Join(os.Getenv("GOPATH"), "/secrets/account-info")
-	config, err0 := configparser.Read(accPath)
-	if err0 != nil {
-		log.Print(err0)
-		statusMessage = "BadRequest"
-	}
-	section, err1 := config.Section("global")
-	if err1 != nil {
-		log.Print(err1)
-		statusMessage = "BadRequest"
-	}
-	username := section.ValueOf("username")
-	ciphertext := section.ValueOf("password")
+
+	o := orm.NewOrm()
+	o.Using("mysql-db2")
+	account := models.Account{Id: 1}
+	err := o.Read(&account)
+	if err == orm.ErrNoRows {
+		fmt.Println("not found")
+	} else if err == orm.ErrMissPK {
+		fmt.Println("pk missing")
+	} 
+	username := account.Username
+	ciphertext := account.Password
 
 	prvKey, err2 := ioutil.ReadFile("./private_acc.pem")
 	if err2 != nil {
@@ -108,7 +128,32 @@ func Login(acc *models.Account) (a bool, b string) {
 	} else {
 		permission = false
 	}
-	return permission, statusMessage
+
+	var token string = ""
+	if permission == true {
+		u, err := uuid.NewV4()
+		if err != nil {
+			log.Println(err)
+			statusMessage = "BadRequest"
+		}
+		token = u.String()
+
+		newtoken := models.Token{Id: 1, Token: token, Time: time.Now().Unix()}
+		o2 := orm.NewOrm()
+		o2.Using("default")
+		if o2.Read(&models.Token{Id: 1}) == orm.ErrNoRows {
+			if _, err := o2.Insert(&newtoken); err != nil {
+				log.Print(err)
+				statusMessage = "BadRequest"
+			}	
+		} else {
+			if _, err := o2.Update(&newtoken); err != nil {
+				log.Print(err)
+				statusMessage = "BadRequest"
+			}	
+		}
+	}
+	return permission, statusMessage, token
 }
 
 
@@ -123,9 +168,8 @@ func Install() models.InitStatus {
 	} else if err == orm.ErrMissPK {
     	fmt.Println("pk missing")
 	} 
-	result := status.Status
 
-	return result
+	return status.Status
 }
 
 //CreateUUID creates a file with an UUID in it.
@@ -172,12 +216,6 @@ func ValidateUUID(input string) (a bool, b string) {
 	result := (input == string(f))
 	if result == true {
 		os.Remove(uuidPath)
-		logs.Info("loading Board images...")
-		err := Execute(models.LoadImagesFile)
-		if err != nil {
-			log.Print(err)
-			statusMessage = "BadRequest"
-		}
 
 		o := orm.NewOrm()
 		status := models.InitStatusInfo{Id: 1}
@@ -195,4 +233,24 @@ func ValidateUUID(input string) (a bool, b string) {
 	}
 
 	return result, statusMessage
+}
+
+
+func VerifyToken(input string) bool {
+	o := orm.NewOrm()
+	token := models.Token{Id: 1}
+	err := o.Read(&token)
+	if err == orm.ErrNoRows {
+		fmt.Println("not found")
+		return false
+	} else if err == orm.ErrMissPK {
+		fmt.Println("pk missing")
+		return false
+	} 
+
+	if input == token.Token && (time.Now().Unix()-token.Time)<=1800 {
+		return true
+	} else {
+		return false
+	}
 }

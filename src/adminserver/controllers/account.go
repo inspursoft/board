@@ -69,11 +69,12 @@ func (a *AccController) Login() {
 	var statusCode int = http.StatusOK
 	//transferring JSON to struct.
 	json.Unmarshal(a.Ctx.Input.RequestBody, &acc)
-	permission, statusMessage := service.Login(&acc)
+	permission, statusMessage, token := service.Login(&acc)
 	if permission == true {
-		a.Data["json"] = "login success"
+		a.Data["json"] = token
 	} else {
-		a.Data["json"] = "login failure"
+		a.Data["json"] = ""
+		statusCode = http.StatusBadRequest
 	}
 	if statusMessage == "BadRequest" {
 		statusCode = http.StatusBadRequest

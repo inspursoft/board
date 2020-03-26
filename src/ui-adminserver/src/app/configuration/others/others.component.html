@@ -1,19 +1,30 @@
 <div class="card">
-  <div class="card-header" (click)="toggle()">
-    <clr-icon shape="caret down" [@rotateNega90]="card.cardStatus ? 'open' : 'closed'"></clr-icon>
+  <div class="card-header"
+       (click)="toggle()">
+    <clr-icon shape="caret down"
+              [@rotateNega90]="card.cardStatus ? 'open' : 'closed'"></clr-icon>
     Initialization
   </div>
 
-  <div class="card-block" [@cardSlide]="card.cardStatus ? 'open' : 'closed'">
+  <div class="card-block"
+       [@cardSlide]="card.cardStatus ? 'open' : 'closed'">
 
-    <div class="clr-form clr-form-compact" *ngIf="card.showContent">
+    <div class="clr-form clr-form-compact"
+         *ngIf="card.showContent">
 
       <div class="config-line">
         <div class="config-container">
-          <lib-input-ex [inputLabel]="'CONFIGURATIONS.OTHERS.ARCH_TYPE.NAME' | translate" [inputIsRequired]="true"
-            [inputLabelWidth]='170' [inputDefaultValue]="others.archType" [inputPlaceholder]="'arch type:x86_64/mips'"
-            [inputPattern]="patternArchType" [validatorMessage]="[{key:'pattern',message:'Require x86_64/mips ONLY'}]"
-            [inputWidth]="'100%'" (editEvent)="onEdit(0)" (commitEvent)="others.archType = $event" class="lib-input-ex">
+          <lib-input-ex [inputLabel]="'CONFIGURATIONS.OTHERS.ARCH_TYPE.NAME' | translate"
+                        [inputIsRequired]="true"
+                        [inputLabelWidth]='170'
+                        [inputDefaultValue]="others.archType"
+                        [inputPlaceholder]="'arch type:x86_64/mips'"
+                        [inputPattern]="patternArchType"
+                        [validatorMessage]="[{key:'pattern',message:'Require x86_64/mips ONLY'}]"
+                        [inputWidth]="'100%'"
+                        (editEvent)="onEdit(0)"
+                        (commitEvent)="others.archType = $event"
+                        class="lib-input-ex">
           </lib-input-ex>
         </div>
         <clr-control-helper *ngIf="tipsList[0]">
@@ -21,7 +32,7 @@
         </clr-control-helper>
       </div>
 
-      <div class="config-line">
+      <!-- <div class="config-line">
         <div class="config-container">
           <lib-input-ex [inputLabel]="'CONFIGURATIONS.OTHERS.DATABASE_PASSWORD.NAME' | translate"
             [inputIsRequired]="true" [inputCategory]="3" [inputLabelWidth]='170' [inputDefaultValue]="others.dbPassword"
@@ -32,15 +43,22 @@
         <clr-control-helper *ngIf="tipsList[1]">
           {{ 'CONFIGURATIONS.OTHERS.DATABASE_PASSWORD.TIPS' | translate }}
         </clr-control-helper>
-      </div>
+      </div> -->
 
       <div class="config-line">
         <div class="config-container">
           <lib-input-ex [inputLabel]="'CONFIGURATIONS.OTHERS.TOKEN_CACHE_EXPIRE.NAME' | translate"
-            [inputIsRequired]="true" [inputCategory]="2" [inputLabelWidth]='170'
-            [inputDefaultValue]="others.tokenCacheExpireSeconds" [inputMin]="1" [inputMax]="99999"
-            [inputPlaceholder]="'In seconds'" [inputWidth]="'100%'" (editEvent)="onEdit(2)"
-            (commitEvent)="others.tokenCacheExpireSeconds = $event" class="lib-input-ex">
+                        [inputIsRequired]="true"
+                        [inputCategory]="2"
+                        [inputLabelWidth]='170'
+                        [inputDefaultValue]="others.tokenCacheExpireSeconds"
+                        [inputMin]="1"
+                        [inputMax]="99999"
+                        [inputPlaceholder]="'In seconds'"
+                        [inputWidth]="'100%'"
+                        (editEvent)="onEdit(2)"
+                        (commitEvent)="others.tokenCacheExpireSeconds = $event"
+                        class="lib-input-ex">
           </lib-input-ex>
         </div>
         <clr-control-helper *ngIf="tipsList[2]">
@@ -50,10 +68,18 @@
 
       <div class="config-line">
         <div class="config-container">
-          <lib-input-ex [inputLabel]="'CONFIGURATIONS.OTHERS.TOKEN_EXPIRE.NAME' | translate" [inputIsRequired]="true"
-            [inputCategory]="2" [inputLabelWidth]='170' [inputDefaultValue]="others.tokenExpireSeconds" [inputMin]="1"
-            [inputMax]="99999" [inputPlaceholder]="'In seconds'" [inputWidth]="'100%'" (editEvent)="onEdit(3)"
-            (commitEvent)="others.tokenExpireSeconds = $event" class="lib-input-ex">
+          <lib-input-ex [inputLabel]="'CONFIGURATIONS.OTHERS.TOKEN_EXPIRE.NAME' | translate"
+                        [inputIsRequired]="true"
+                        [inputCategory]="2"
+                        [inputLabelWidth]='170'
+                        [inputDefaultValue]="others.tokenExpireSeconds"
+                        [inputMin]="1"
+                        [inputMax]="99999"
+                        [inputPlaceholder]="'In seconds'"
+                        [inputWidth]="'100%'"
+                        (editEvent)="onEdit(3)"
+                        (commitEvent)="others.tokenExpireSeconds = $event"
+                        class="lib-input-ex">
           </lib-input-ex>
         </div>
         <clr-control-helper *ngIf="tipsList[3]">
@@ -64,10 +90,17 @@
       <div class="config-line">
         <div class="config-container">
           <lib-input-ex [inputLabel]="'CONFIGURATIONS.OTHERS.ELASETICSEARCH_MEMORY.NAME' | translate"
-            [inputIsRequired]="true" [inputCategory]="2" [inputLabelWidth]='170'
-            [inputDefaultValue]="others.elaseticsearchMemoryInMegabytes" [inputMin]="1" [inputMax]="99999"
-            [inputPlaceholder]="'In MB'" [inputWidth]="'100%'" (editEvent)="onEdit(4)"
-            (commitEvent)="others.elaseticsearchMemoryInMegabytes = $event" class="lib-input-ex">
+                        [inputIsRequired]="true"
+                        [inputCategory]="2"
+                        [inputLabelWidth]='170'
+                        [inputDefaultValue]="others.elaseticsearchMemoryInMegabytes"
+                        [inputMin]="1"
+                        [inputMax]="99999"
+                        [inputPlaceholder]="'In MB'"
+                        [inputWidth]="'100%'"
+                        (editEvent)="onEdit(4)"
+                        (commitEvent)="others.elaseticsearchMemoryInMegabytes = $event"
+                        class="lib-input-ex">
           </lib-input-ex>
         </div>
         <clr-control-helper *ngIf="tipsList[4]">
@@ -77,10 +110,15 @@
 
       <div class="config-line">
         <div class="config-container">
-          <lib-input-ex [inputLabel]="'CONFIGURATIONS.OTHERS.TILLER_PORT.NAME' | translate" [inputIsRequired]="true"
-            [inputLabelWidth]='170' [inputDefaultValue]="others.tillerPort" [inputPlaceholder]="'enter password'"
-            [inputWidth]="'100%'" (editEvent)="onEdit(5)" (commitEvent)="others.tillerPort = $event"
-            class="lib-input-ex">
+          <lib-input-ex [inputLabel]="'CONFIGURATIONS.OTHERS.TILLER_PORT.NAME' | translate"
+                        [inputIsRequired]="true"
+                        [inputLabelWidth]='170'
+                        [inputDefaultValue]="others.tillerPort"
+                        [inputPlaceholder]="'enter password'"
+                        [inputWidth]="'100%'"
+                        (editEvent)="onEdit(5)"
+                        (commitEvent)="others.tillerPort = $event"
+                        class="lib-input-ex">
           </lib-input-ex>
         </div>
         <clr-control-helper *ngIf="tipsList[5]">
@@ -88,7 +126,7 @@
         </clr-control-helper>
       </div>
 
-      <div class="config-line" *ngIf="!isInit">
+      <!-- <div class="config-line" *ngIf="!isInit">
         <div class="config-container">
           <lib-input-ex [inputLabel]="('CONFIGURATIONS.OTHERS.BOARD_ADMIN_PASSWORD_OLD.NAME') | translate"
             [inputIsRequired]="true" [inputCategory]="3" [inputLabelWidth]='170' [inputDefaultValue]=""
@@ -131,14 +169,19 @@
         <clr-control-helper *ngIf="tipsList[6]">
           {{ 'CONFIGURATIONS.OTHERS.BOARD_ADMIN_PASSWORD_CONFIRM.TIPS' | translate }}
         </clr-control-helper>
-      </div>
+      </div> -->
 
       <div class="config-line">
         <div class="config-container">
-          <lib-input-ex [inputLabel]="'CONFIGURATIONS.OTHERS.AUTH_MODE.NAME' | translate" [inputIsRequired]="true"
-            [inputLabelWidth]='170' [inputDefaultValue]="others.authMode"
-            [inputPlaceholder]="'db_auth/ldap_auth/indata_auth'" [inputWidth]="'100%'" (editEvent)="onEdit(7)"
-            (commitEvent)="others.authMode = $event" class="lib-input-ex">
+          <lib-input-ex [inputLabel]="'CONFIGURATIONS.OTHERS.AUTH_MODE.NAME' | translate"
+                        [inputIsRequired]="true"
+                        [inputLabelWidth]='170'
+                        [inputDefaultValue]="others.authMode"
+                        [inputPlaceholder]="'db_auth/ldap_auth/indata_auth'"
+                        [inputWidth]="'100%'"
+                        (editEvent)="onEdit(7)"
+                        (commitEvent)="others.authMode = $event"
+                        class="lib-input-ex">
           </lib-input-ex>
         </div>
         <clr-control-helper *ngIf="tipsList[7]">
@@ -146,12 +189,18 @@
         </clr-control-helper>
       </div>
 
-      <div class="config-line" *ngIf="others.authMode == 'indata_auth'">
+      <div class="config-line"
+           *ngIf="others.authMode == 'indata_auth'">
         <div class="config-container">
           <lib-input-ex [inputLabel]="'CONFIGURATIONS.OTHERS.VERIFICATION_URL.NAME' | translate"
-            [inputIsRequired]="true" [inputLabelWidth]='170' [inputDefaultValue]="others.verificationUrl"
-            [inputPlaceholder]="" [inputWidth]="'100%'" (editEvent)="onEdit(8)"
-            (commitEvent)="others.verificationUrl = $event" class="lib-input-ex">
+                        [inputIsRequired]="true"
+                        [inputLabelWidth]='170'
+                        [inputDefaultValue]="others.verificationUrl"
+                        [inputPlaceholder]=""
+                        [inputWidth]="'100%'"
+                        (editEvent)="onEdit(8)"
+                        (commitEvent)="others.verificationUrl = $event"
+                        class="lib-input-ex">
           </lib-input-ex>
         </div>
         <clr-control-helper *ngIf="tipsList[8]">
@@ -159,12 +208,18 @@
         </clr-control-helper>
       </div>
 
-      <div class="config-line" *ngIf="others.authMode == 'indata_auth'">
+      <div class="config-line"
+           *ngIf="others.authMode == 'indata_auth'">
         <div class="config-container">
-          <lib-input-ex [inputLabel]="'CONFIGURATIONS.OTHERS.REDIRECTION_URL.NAME' | translate" [inputIsRequired]="true"
-            [inputLabelWidth]='170' [inputDefaultValue]="others.redirectionUrl" [inputPlaceholder]=""
-            [inputWidth]="'100%'" (editEvent)="onEdit(9)" (commitEvent)="others.redirectionUrl = $event"
-            class="lib-input-ex">
+          <lib-input-ex [inputLabel]="'CONFIGURATIONS.OTHERS.REDIRECTION_URL.NAME' | translate"
+                        [inputIsRequired]="true"
+                        [inputLabelWidth]='170'
+                        [inputDefaultValue]="others.redirectionUrl"
+                        [inputPlaceholder]=""
+                        [inputWidth]="'100%'"
+                        (editEvent)="onEdit(9)"
+                        (commitEvent)="others.redirectionUrl = $event"
+                        class="lib-input-ex">
           </lib-input-ex>
         </div>
         <clr-control-helper *ngIf="tipsList[9]">
@@ -174,11 +229,17 @@
 
       <div class="config-line">
         <div class="config-container">
-          <lib-input-ex [inputLabel]="'CONFIGURATIONS.OTHERS.AUDIT_DEBUG.NAME' | translate" [inputIsRequired]="true"
-            [inputLabelWidth]='170' [inputDefaultValue]="others.auditDebug" [inputPlaceholder]="'true/false'"
-            [inputPattern]="patternAuditDebug" [validatorMessage]="[{key:'pattern',message:'Require true/false ONLY'}]"
-            [inputWidth]="'100%'" (editEvent)="onEdit(10)" (commitEvent)="others.auditDebug = $event"
-            class="lib-input-ex">
+          <lib-input-ex [inputLabel]="'CONFIGURATIONS.OTHERS.AUDIT_DEBUG.NAME' | translate"
+                        [inputIsRequired]="true"
+                        [inputLabelWidth]='170'
+                        [inputDefaultValue]="others.auditDebug"
+                        [inputPlaceholder]="'true/false'"
+                        [inputPattern]="patternAuditDebug"
+                        [validatorMessage]="[{key:'pattern',message:'Require true/false ONLY'}]"
+                        [inputWidth]="'100%'"
+                        (editEvent)="onEdit(10)"
+                        (commitEvent)="others.auditDebug = $event"
+                        class="lib-input-ex">
           </lib-input-ex>
         </div>
         <clr-control-helper *ngIf="tipsList[10]">
@@ -188,9 +249,15 @@
 
       <div class="config-line">
         <div class="config-container">
-          <lib-input-ex [inputLabel]="'CONFIGURATIONS.OTHERS.DNS_SUFFIX.NAME' | translate" [inputIsRequired]="true"
-            [inputLabelWidth]='170' [inputDefaultValue]="others.dnsSuffix" [inputPlaceholder]="" [inputWidth]="'100%'"
-            (editEvent)="onEdit(11)" (commitEvent)="others.dnsSuffix = $event" class="lib-input-ex">
+          <lib-input-ex [inputLabel]="'CONFIGURATIONS.OTHERS.DNS_SUFFIX.NAME' | translate"
+                        [inputIsRequired]="true"
+                        [inputLabelWidth]='170'
+                        [inputDefaultValue]="others.dnsSuffix"
+                        [inputPlaceholder]=""
+                        [inputWidth]="'100%'"
+                        (editEvent)="onEdit(11)"
+                        (commitEvent)="others.dnsSuffix = $event"
+                        class="lib-input-ex">
           </lib-input-ex>
         </div>
         <clr-control-helper *ngIf="tipsList[11]">

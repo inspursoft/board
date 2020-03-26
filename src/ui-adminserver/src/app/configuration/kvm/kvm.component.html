@@ -1,19 +1,29 @@
 <div class="card">
-  <div class="card-header" (click)="toggle()">
-    <clr-icon shape="caret down" [@rotateNega90]="card.cardStatus ? 'open' : 'closed'"></clr-icon>
+  <div class="card-header"
+       (click)="toggle()">
+    <clr-icon shape="caret down"
+              [@rotateNega90]="card.cardStatus ? 'open' : 'closed'"></clr-icon>
     Kvm
   </div>
 
-  <div class="card-block" [@cardSlide]="card.cardStatus ? 'open' : 'closed'">
+  <div class="card-block"
+       [@cardSlide]="card.cardStatus ? 'open' : 'closed'">
 
-    <div class="clr-form clr-form-compact" *ngIf="card.showContent">
+    <div class="clr-form clr-form-compact"
+         *ngIf="card.showContent">
 
       <div class="config-line">
         <div class="config-container">
-          <lib-input-ex [inputLabel]="'CONFIGURATIONS.KVM.KVM_REGISTRY_SIZE.NAME' | translate" [inputIsRequired]="true"
-            [inputCategory]="2" [inputLabelWidth]='170' [inputDefaultValue]="kvm.kvmRegistrySize" [inputMin]="1"
-            [inputWidth]="'100%'" (editEvent)="onEdit(0)" (commitEvent)="kvm.kvmRegistrySize = $event"
-            class="lib-input-ex">
+          <lib-input-ex [inputLabel]="'CONFIGURATIONS.KVM.KVM_REGISTRY_SIZE.NAME' | translate"
+                        [inputIsRequired]="true"
+                        [inputCategory]="2"
+                        [inputLabelWidth]='170'
+                        [inputDefaultValue]="kvm.kvmRegistrySize"
+                        [inputMin]="1"
+                        [inputWidth]="'100%'"
+                        (editEvent)="onEdit(0)"
+                        (commitEvent)="kvm.kvmRegistrySize = $event"
+                        class="lib-input-ex">
           </lib-input-ex>
         </div>
         <clr-control-helper *ngIf="tipsList[0]">
@@ -23,10 +33,18 @@
 
       <div class="config-line">
         <div class="config-container">
-          <lib-input-ex [inputLabel]="'CONFIGURATIONS.KVM.KVM_REGISTRY_PORT.NAME' | translate" [inputIsRequired]="true"
-            [inputCategory]="2" [inputLabelWidth]='170' [inputDefaultValue]="kvm.kvmRegistryPort" [inputMin]="1"
-            [inputMax]="65535" [inputPlaceholder]="'[1..65535]'" [inputWidth]="'100%'" (editEvent)="onEdit(1)"
-            (commitEvent)="kvm.kvmRegistryPort = $event" class="lib-input-ex">
+          <lib-input-ex [inputLabel]="'CONFIGURATIONS.KVM.KVM_REGISTRY_PORT.NAME' | translate"
+                        [inputIsRequired]="true"
+                        [inputCategory]="2"
+                        [inputLabelWidth]='170'
+                        [inputDefaultValue]="kvm.kvmRegistryPort"
+                        [inputMin]="1"
+                        [inputMax]="65535"
+                        [inputPlaceholder]="'[1..65535]'"
+                        [inputWidth]="'100%'"
+                        (editEvent)="onEdit(1)"
+                        (commitEvent)="kvm.kvmRegistryPort = $event"
+                        class="lib-input-ex">
           </lib-input-ex>
         </div>
         <clr-control-helper *ngIf="tipsList[1]">
@@ -36,9 +54,14 @@
 
       <div class="config-line">
         <div class="config-container">
-          <lib-input-ex [inputLabel]="'CONFIGURATIONS.KVM.KVM_REGISTRY_PATH.NAME' | translate" [inputLabelWidth]='170'
-            [inputDefaultValue]="kvm.kvmToolkitsPath" [inputPlaceholder]="'eg:/root/kvm_toolkits'" [inputWidth]="'100%'"
-            (editEvent)="onEdit(2)" (commitEvent)="kvm.kvmToolkitsPath = $event" class="lib-input-ex">
+          <lib-input-ex [inputLabel]="'CONFIGURATIONS.KVM.KVM_REGISTRY_PATH.NAME' | translate"
+                        [inputLabelWidth]='170'
+                        [inputDefaultValue]="kvm.kvmToolkitsPath"
+                        [inputPlaceholder]="'eg:/root/kvm_toolkits'"
+                        [inputWidth]="'100%'"
+                        (editEvent)="onEdit(2)"
+                        (commitEvent)="kvm.kvmToolkitsPath = $event"
+                        class="lib-input-ex">
           </lib-input-ex>
         </div>
         <clr-control-helper *ngIf="tipsList[2]">

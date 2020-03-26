@@ -2,32 +2,41 @@
 <div class="clr-row clr-justify-content-center">
   <div class="resource-item center split-line">
     <div class="circle">
-      <clr-icon shape="cpu" size="40" class="is-highlight"></clr-icon>
+      <clr-icon shape="cpu"
+                size="40"
+                class="is-highlight"></clr-icon>
     </div>
     <label>CPU: 0%</label>
   </div>
   <div class="resource-item center split-line">
     <div class="circle">
-      <clr-icon shape="memory" size="40" class="is-error"></clr-icon>
+      <clr-icon shape="memory"
+                size="40"
+                class="is-error"></clr-icon>
     </div>
     <label>Memory used: 0%</label>
     <label>Memory left: 0GB</label>
   </div>
   <div class="resource-item center">
     <div class="circle">
-      <clr-icon shape="hard-drive" size="40" class="is-highlight"></clr-icon>
+      <clr-icon shape="hard-drive"
+                size="40"
+                class="is-highlight"></clr-icon>
     </div>
     <label>Storage used: 0GB</label>
     <label>Storage left: 0GB</label>
   </div>
 </div>
 
-<div class="btn-group btn-primary clr-row clr-justify-content-end" style="margin-right: 10px;">
-  <button class="btn btn-danger" (click)="confirm('rb')">
+<div class="btn-group btn-primary clr-row clr-justify-content-end"
+     style="margin-right: 10px;">
+  <button class="btn btn-danger"
+          (click)="confirm('rb')">
     <clr-icon shape="replay-all"></clr-icon>
     restart board
   </button>
-  <button class="btn btn-danger" (click)="confirm('sb')">
+  <button class="btn btn-danger"
+          (click)="confirm('sb')">
     <clr-icon shape="power"></clr-icon>
     stop board
   </button>
@@ -35,8 +44,10 @@
 
 <h3 style="margin-left: 20px;">Container Info: {{componentList ? componentList.length : 0}} Containers are Running</h3>
 <div class="card-columns">
-  <div class="card clickable" *ngFor="let item of componentList">
-    <div class="card-block" (click)="getDetail(item)">
+  <div class="card clickable"
+       *ngFor="let item of componentList">
+    <div class="card-block"
+         (click)="getDetail(item)">
       <h3 class="card-title">{{item.name}}</h3>
       <p class="card-text">
         container id: {{item.containerId}}
@@ -58,13 +69,16 @@
       </p>
     </div>
     <div class="card-footer">
-      <button class="btn btn-primary" (click)="getDetail(item)">detail</button>
-      <button class="btn btn-warning-outline" (click)="confirm('rc', item.containerId)">restart</button>
+      <button class="btn btn-primary"
+              (click)="getDetail(item)">detail</button>
+      <button class="btn btn-warning-outline"
+              (click)="confirm('rc', item.containerId)">restart</button>
     </div>
   </div>
 </div>
 
-<clr-modal [(clrModalOpen)]="showDetail" [clrModalStaticBackdrop]="false">
+<clr-modal [(clrModalOpen)]="showDetail"
+           [clrModalStaticBackdrop]="false">
   <h3 class="modal-title">{{modal.name}}</h3>
   <div class="modal-body">
     <div>container id: {{modal.containerId}}</div>
@@ -76,8 +90,9 @@
     <div>
       memory Usage: {{modal.memUsage}}
       <div class="progress-static labeled">
-        <clr-progress-bar [clrValue]="modal.memRate" [clrSuccess]="modal.memRate <= 75"
-          [clrDanger]="modal.memRate > 75"></clr-progress-bar>
+        <clr-progress-bar [clrValue]="modal.memRate"
+                          [clrSuccess]="modal.memRate <= 75"
+                          [clrDanger]="modal.memRate > 75"></clr-progress-bar>
         <!-- <div class="progress-meter" data-value="parseInt(modal.memRate)" data-displayval="modal.memRate"></div> -->
         <span>{{modal.memRate}}%</span>
       </div>
@@ -87,23 +102,50 @@
     <div>pid: {{modal.pid}}</div>
   </div>
   <div class="modal-footer">
-    <button class="btn btn-warning-outline" (click)="showDetail = false">restart</button>
-    <button class="btn btn-danger" (click)="showDetail = false">Stop</button>
+    <button class="btn btn-warning-outline"
+            (click)="showDetail = false">restart</button>
+    <button class="btn btn-danger"
+            (click)="showDetail = false">Stop</button>
   </div>
 </clr-modal>
 
-<clr-modal [(clrModalOpen)]="confirmModal" [clrModalStaticBackdrop]="false">
+<clr-modal [(clrModalOpen)]="confirmModal"
+           [clrModalStaticBackdrop]="false">
   <h3 class="modal-title">{{confirmType.title}}</h3>
   <div class="modal-body">
     <div class="clr-row">
-      <div class="clr-col clr-align-self-center" style="text-align: center;">
-        <clr-icon shape="warning-standard" class="is-solid is-warning" size="36"></clr-icon>
+      <div class="clr-col clr-align-self-center"
+           style="text-align: center;">
+        <clr-icon shape="warning-standard"
+                  class="is-solid is-warning"
+                  size="36"></clr-icon>
         <span>{{confirmType.comment}} {{confirmType.containerId}}</span>
       </div>
     </div>
+    <clr-input-container>
+      <label>Account 账户</label>
+      <input clrInput
+             required
+             [(ngModel)]="user.username"
+             #getSSHUsername="ngModel" />
+      <clr-control-error>
+        This field is required!<br>必填项！
+      </clr-control-error>
+    </clr-input-container>
+    <clr-password-container>
+      <label>Password 密码</label>
+      <input clrPassword
+             required
+             [(ngModel)]="user.password"
+             name="sshPassword"
+             #getSSHPassword="ngModel" />
+      <clr-control-error *clrIfError="'required'">
+        This field is required!<br>必填项！
+      </clr-control-error>
+    </clr-password-container>
   </div>
   <div class="modal-footer">
     <button class="btn btn-danger"
-      (click)="boardControl(confirmType.type, confirmType.containerId)">{{confirmType.button}}</button>
+            (click)="boardControl(confirmType.type, confirmType.containerId)">{{confirmType.button}}</button>
   </div>
 </clr-modal>

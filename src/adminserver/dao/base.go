@@ -98,5 +98,15 @@ func InitDbTables(dbFileName string) error {
 	}
 	logs.Info("create init_status_info table successfully")
 
+	tokenTable := `create table if not exists token(
+		id integer primary key autoincrement,
+		time int not null,
+		token varchar(30) not null
+		);`
+	if _, err := db.Exec(tokenTable); err != nil {
+	return err
+	}
+	logs.Info("create token table successfully")
+
 	return nil
 }
