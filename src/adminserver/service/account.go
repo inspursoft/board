@@ -131,11 +131,8 @@ func Login(acc *models.Account) (bool, string, string) {
 
 	var token string = ""
 	if permission == true {
-		u, err := uuid.NewV4()
-		if err != nil {
-			log.Println(err)
-			statusMessage = "BadRequest"
-		}
+		u := uuid.NewV4()
+
 		token = u.String()
 
 		newtoken := models.Token{Id: 1, Token: token, Time: time.Now().Unix()}
@@ -176,11 +173,7 @@ func Install() models.InitStatus {
 func CreateUUID() string {
 	var statusMessage string = "OK"
 
-	u, err := uuid.NewV4()
-	if err != nil {
-		log.Println(err)
-		statusMessage = "BadRequest"
-	}
+	u := uuid.NewV4()
 
 	folderPath := path.Join("/go", "/secrets")
     if _, err := os.Stat(folderPath); os.IsNotExist(err) {
