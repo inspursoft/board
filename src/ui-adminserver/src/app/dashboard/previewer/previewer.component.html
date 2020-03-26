@@ -89,13 +89,11 @@
     <div>cpu Rate: {{modal.cpuRate}}</div>
     <div>
       memory Usage: {{modal.memUsage}}
-      <div class="progress-static labeled">
-        <clr-progress-bar [clrValue]="modal.memRate"
-                          [clrSuccess]="modal.memRate <= 75"
-                          [clrDanger]="modal.memRate > 75"></clr-progress-bar>
-        <!-- <div class="progress-meter" data-value="parseInt(modal.memRate)" data-displayval="modal.memRate"></div> -->
+      <!-- <div class="progress-static labeled">
+        <clr-progress-bar [clrValue]="modal.memRate" [clrSuccess]="modal.memRate <= 75"
+          [clrDanger]="modal.memRate > 75"></clr-progress-bar>
         <span>{{modal.memRate}}%</span>
-      </div>
+      </div> -->
     </div>
     <div>network I/O: {{modal.netIO}}</div>
     <div>block I/O: {{modal.blockIO}}</div>

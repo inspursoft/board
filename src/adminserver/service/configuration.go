@@ -28,9 +28,9 @@ func GetAllCfg(which string) (a *models.Configuration, b string) {
 	configparser.Delimiter = "="
 
 	if which == "" {
-		cfgPath = path.Join(os.Getenv("GOPATH"), "/cfgfile/board.cfg")
+		cfgPath = path.Join("/go", "/cfgfile/board.cfg")
 	} else {
-		cfgPath = path.Join(os.Getenv("GOPATH"), "/cfgfile/board.cfg.tmp")
+		cfgPath = path.Join("/go", "/cfgfile/board.cfg.tmp")
 	}
 
 	//use configparser to read indicated cfg file.
@@ -51,10 +51,10 @@ func GetAllCfg(which string) (a *models.Configuration, b string) {
 
 	Cfgi.Other.BoardAdminPassword = ""
 
-	backupPath := path.Join(os.Getenv("GOPATH"), "/cfgfile/board.cfg.bak1")
+	backupPath := path.Join("/go", "/cfgfile/board.cfg.bak1")
 	Cfgi.FirstTimePost = !encryption.CheckFileIsExist(backupPath)
 
-	tmpPath := path.Join(os.Getenv("GOPATH"), "/cfgfile/board.cfg.tmp")
+	tmpPath := path.Join("/go", "/cfgfile/board.cfg.tmp")
 	Cfgi.TmpExist = encryption.CheckFileIsExist(tmpPath)
 
 	if which == "" {
@@ -73,7 +73,7 @@ func GetAllCfg(which string) (a *models.Configuration, b string) {
 func UpdateCfg(cfg *models.Configuration) string {
 	var statusMessage string = "OK"
 	configparser.Delimiter = "="
-	cfgPath := path.Join(os.Getenv("GOPATH"), "/cfgfile/board.cfg")
+	cfgPath := path.Join("/go", "/cfgfile/board.cfg")
 	//use configparser to read indicated cfg file.
 	config, err0 := configparser.Read(cfgPath)
 	if err0 != nil {

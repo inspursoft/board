@@ -263,7 +263,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
     if (this.cancelInfo.isForce) {
       this.modalOpened = false;
     } else {
-      this.imageService.cancelConsole(this.customerNewImage.image_name).subscribe(
+      this.imageService.cancelConsole(this.customerNewImage.project_name).subscribe(
         () => this.cleanImageConfig(),
         () => this.modalOpened = false,
         () => this.modalOpened = false);

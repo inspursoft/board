@@ -21,7 +21,7 @@ func VerifyPassword(passwd *models.Password) (a bool, err string) {
 	var statusMessage string = "OK"
 
 	configparser.Delimiter = "="
-	cfgPath := path.Join(os.Getenv("GOPATH"), "/cfgfile/board.cfg")
+	cfgPath := path.Join("/go", "/cfgfile/board.cfg")
 	//use configparser to read indicated cfg file.
 	config, _ := configparser.Read(cfgPath)
 	//section sensitive, global refers to all sections.
