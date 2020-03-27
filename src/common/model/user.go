@@ -18,6 +18,7 @@ type User struct {
 	RepoToken    string    `json:"user_token" orm:"column(repo_token)"`
 	CreationTime time.Time `json:"user_creation_time" orm:"column(creation_time)"`
 	UpdateTime   time.Time `json:"user_update_time" orm:"column(update_time)"`
+	FailedTimes  int       `json:"user_failed_times" orm:"column(failed_times)"`
 }
 
 type ChangePassword struct {

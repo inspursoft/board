@@ -91,6 +91,7 @@ function check_dockercompose {
 
 function delete_images {
 	docker-compose down --rmi all
+	docker-compose -f docker-compose-adminserver.yml down --rmi all
 }
 
 function remove_data {
@@ -106,6 +107,7 @@ if [ -n "$(docker-compose ps -q)"  ]
 then
 	echo "stopping existing Board instance ..."
 	docker-compose down
+	docker-compose -f docker-compose-adminserver.yml down
 fi
 echo ""
 

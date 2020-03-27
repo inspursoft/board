@@ -245,6 +245,7 @@ func ImageConfigClean(path string) error {
 
 func GetDockerfileInfo(dockerfilePath, imageName, tag string) (*model.Dockerfile, error) {
 	if _, err := os.Stat(dockerfilePath); os.IsNotExist(err) {
+		logs.Error("Failed to find Dockerfile path: %+v", err)
 		return nil, err
 	}
 
@@ -253,6 +254,7 @@ func GetDockerfileInfo(dockerfilePath, imageName, tag string) (*model.Dockerfile
 	dockerfileName := ResolveDockerfileName(imageName, tag)
 	dockerfile, err := os.Open(filepath.Join(dockerfilePath, dockerfileName))
 	if err != nil {
+		logs.Error("Failed to find Dockerfile : %+v with name: %s", err, dockerfileName)
 		return nil, err
 	}
 	defer dockerfile.Close()
