@@ -2985,6 +2985,45 @@ paths:
           description: User need to log in as admin.
         500:
           description: Internal errors.
+  /v1/images/checkused:
+    get:
+      summary: Check this image used by services.
+      description: |
+        This endpoint is to check whether this image is used by services.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: image_name
+          in: query
+          description: image name to specify an image.
+          required: true
+          type: string
+        - name: image_tag
+          in: query
+          type: string
+          required: false
+          description: The tag of this image.
+        - name: project_name
+          in: query
+          type: string
+          required: true
+          description: The project name that the image belongs to.     
+      tags:
+        - Products
+      responses:
+        200:
+          description: The image is not be used by Board services.
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        409:
+          description: This image is used by services now.          
+        500:
+          description: Internal errors.
   /v1/images/preview:
     post:
       summary: Preview a new image for the image configuration
