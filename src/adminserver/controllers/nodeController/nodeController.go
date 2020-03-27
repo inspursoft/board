@@ -144,7 +144,7 @@ func (controller *Controller) CallBackAction() {
 	var putData nodeModel.UpdateNodeLog
 	controller.resolveBody(&putData)
 	if err := nodeService.UpdateLog(&putData); err != nil {
-		errMsg := fmt.Sprintf("Failed to update node log.%v", err)
+		errMsg := fmt.Sprintf("Failed to update node log: %v", err)
 		logs.Error(errMsg)
 		controller.CustomAbort(http.StatusBadRequest, errMsg)
 		return
