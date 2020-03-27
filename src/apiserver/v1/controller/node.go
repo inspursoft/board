@@ -17,6 +17,14 @@ type NodeController struct {
 	c.BaseController
 }
 
+func (n *NodeController) Prepare() {
+	skip := n.GetString("skip", "")
+	if !(skip == "AMS" && n.Ctx.Input.Method() == http.MethodGet && strings.Index(n.Ctx.Input.URL(), "/nodes") > 0) {
+		n.ResolveSignedInUser()
+		n.RecordOperationAudit()
+	}
+}
+
 func (n *NodeController) GetNode() {
 	para := n.GetString("node_name")
 	res, err := service.GetNode(para)
