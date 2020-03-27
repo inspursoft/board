@@ -27,7 +27,7 @@ ifeq ($(DEVFLAG), release)
 	IMAGEPREFIX=board
 else
 	BASEIMAGE=ubuntu:14.04
-	GOBUILDIMAGE=golang:1.9.6
+	GOBUILDIMAGE=golang:1.14.0
 	WORKPATH=dev
 	IMAGEPREFIX=dev
 endif 
@@ -149,7 +149,7 @@ compile_ui:
 $(COMPILE_LIST): %_compile: # %_fmt  %_vet %_golint
 	$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOIMGBASEPATH) \
 					-w $(GOIMGBASEPATH)/$* $(GOBUILDIMAGE) $(GOBUILD) \
-					-v -o $(GOIMGBASEPATH)/make/$(WORKPATH)/container/$(subst /cmd,,$(subst src/,,$*))/$(subst /cmd,,$(subst src/,,$*)) 
+					-v -mod=vendor -o $(GOIMGBASEPATH)/make/$(WORKPATH)/container/$(subst /cmd,,$(subst src/,,$*))/$(subst /cmd,,$(subst src/,,$*)) 
 
 $(CLEAN_LIST): %_clean:
 #	$(GOCLEAN) $(TOPLEVEL_PKG)/$* 
