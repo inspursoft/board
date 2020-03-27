@@ -15,14 +15,14 @@
 # Common
 # Develop flag
 #
-DEVFLAG=dev
+DEVFLAG=release
 
 # ARCH default is x86_64, also support mips, arm64v8
 ARCH=
 
 ifeq ($(DEVFLAG), release) 
 	BASEIMAGE=alpine:3.7
-	GOBUILDIMAGE=golang:1.14.0-alpine3.11
+	GOBUILDIMAGE=inspursoft/go-builder:1.14.1-alpine
 	WORKPATH=release
 	IMAGEPREFIX=board
 else
@@ -104,7 +104,7 @@ endif
 # TOPLEVEL_PKG := .
 INT_LIST := adminserver apiserver tokenserver collector/cmd
 ifndef ARCH
-	IMG_LIST := adminserver apiserver tokenserver log collector jenkins db proxy proxy-adminserver gogits grafana graphite elasticsearch kibana chartmuseum
+	IMG_LIST := adminserver apiserver tokenserver log collector jenkins db proxy adminserver_proxy gogits grafana graphite elasticsearch kibana chartmuseum
 else
 	IMG_LIST := apiserver tokenserver log collector jenkins db proxy gogits
 endif

@@ -18,7 +18,7 @@ func VerifyPassword(passwd *models.Password) (a bool, err string) {
 	var statusMessage string = "OK"
 
 	configparser.Delimiter = "="
-	cfgPath := path.Join(os.Getenv("GOPATH"), "/cfgfile/board.cfg")
+	cfgPath := path.Join("/go", "/cfgfile/board.cfg")
 	//use configparser to read indicated cfg file.
 	config, _ := configparser.Read(cfgPath)
 	//section sensitive, global refers to all sections.
@@ -100,7 +100,7 @@ func Restart(path string) string {
 func Applycfg(cfgpath string) string {
 	var statusMessage string = "OK"
 
-	cfgPath := path.Join(os.Getenv("GOPATH"), "/cfgfile/board.cfg")
+	cfgPath := path.Join("/go", "/cfgfile/board.cfg")
 	err := os.Rename(cfgPath, cfgPath+".bak1")
 	if err != nil {
 		if !os.IsNotExist(err) { // fine if the file does not exists
