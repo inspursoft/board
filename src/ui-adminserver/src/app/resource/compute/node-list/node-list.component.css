@@ -33,3 +33,11 @@ div.card-action-container {
   justify-content: flex-end;
   margin-top: auto;
 }
+
+a.disabled {
+  color: silver;
+}
+
+a.disabled :hover {
+  cursor: not-allowed;
+}

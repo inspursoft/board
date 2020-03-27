@@ -1,15 +1,12 @@
 package nodeController
 
 import (
-	"encoding/json"
 	"fmt"
 	"git/inspursoft/board/src/adminserver/models/nodeModel"
 	"git/inspursoft/board/src/adminserver/service"
 	"git/inspursoft/board/src/adminserver/service/nodeService"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
-	"io"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 )
@@ -29,15 +26,15 @@ func (controller *Controller) Render() error {
 // @Failure 500 Internal Server Error
 // @router / [get]
 func (controller *Controller) GetNodeListAction() {
-	var nodeStatusList []nodeModel.NodeStatus
-	err := nodeService.GetNodeStatusList(&nodeStatusList)
+	var nodeResponseList []nodeModel.NodeListResponse
+	err := nodeService.GetNodeResponseList(&nodeResponseList)
 	if err != nil {
 		errorMsg := fmt.Sprintf("Bad request.%s", err.Error())
 		logs.Error(errorMsg)
 		controller.CustomAbort(http.StatusBadRequest, errorMsg)
 		return
 	}
-	controller.Data["json"] = nodeStatusList
+	controller.Data["json"] = nodeResponseList
 	controller.ServeJSON()
 }
 
@@ -215,7 +212,7 @@ func (controller *Controller) AddRemoveNode(nodePostData *nodeModel.AddNodePostD
 }
 
 func (controller *Controller) resolveBody(target interface{}) (err error) {
-	err = UnmarshalToJSON(controller.Ctx.Request.Body, target)
+	err = nodeService.UnmarshalToJSON(controller.Ctx.Request.Body, target)
 	if err != nil {
 		logs.Error("Failed to unmarshal data: %+v", err)
 		return
@@ -223,10 +220,4 @@ func (controller *Controller) resolveBody(target interface{}) (err error) {
 	return
 }
 
-func UnmarshalToJSON(in io.ReadCloser, target interface{}) error {
-	data, err := ioutil.ReadAll(in)
-	if err != nil {
-		return err
-	}
-	return json.Unmarshal(data, &target)
-}
+

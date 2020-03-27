@@ -3,6 +3,7 @@ package nodeService
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"git/inspursoft/board/src/adminserver/dao"
 	"git/inspursoft/board/src/adminserver/dao/nodeDao"
@@ -12,6 +13,7 @@ import (
 	"github.com/astaxie/beego/logs"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path"
 	"strings"
@@ -202,8 +204,40 @@ func InsertLogDetail(ip, logFileName string, creationTime int64) error {
 	return nil
 }
 
-func GetNodeStatusList(nodeStatusList *[]nodeModel.NodeStatus) error {
-	return nodeDao.GetNodeStatusList(nodeStatusList)
+func GetNodeResponseList(nodeListResponse *[]nodeModel.NodeListResponse) error {
+	var apiServerNodeList []nodeModel.ApiServerNodeListResult;
+	if err := getNodeListFromApiServer(&apiServerNodeList); err != nil {
+		logs.Info(err)
+	}
+
+	var nodeStatusList []nodeModel.NodeStatus
+	if err := nodeDao.GetNodeStatusList(&nodeStatusList); err != nil {
+		return err
+	}
+
+	for _, item := range nodeStatusList {
+		* nodeListResponse = append(*nodeListResponse, nodeModel.NodeListResponse{
+			Ip:           item.Ip,
+			CreationTime: item.CreationTime,
+			Origin:       0})
+	}
+
+	for _, apiItem := range apiServerNodeList {
+		var existsInDb = false
+		for _, item := range nodeStatusList {
+			if item.Ip == apiItem.NodeIP {
+				existsInDb = true
+			}
+		}
+		if existsInDb == false {
+			* nodeListResponse = append(*nodeListResponse, nodeModel.NodeListResponse{
+				Ip:           apiItem.NodeIP,
+				CreationTime: time.Now().Unix(),
+				Origin:       1})
+		}
+	}
+
+	return nil
 }
 
 func GetPaginatedNodeLogList(v *nodeModel.PaginatedNodeLogList) error {
@@ -308,6 +342,22 @@ func GetLogInfoInCache(nodeIp string) *nodeModel.NodeLog {
 	return logCache.NodeLogPtr
 }
 
+func getNodeListFromApiServer(nodeList *[]nodeModel.ApiServerNodeListResult) error {
+	allConfig, statusMessage := service.GetAllCfg("")
+	if statusMessage == "BadRequest" {
+		return fmt.Errorf("failed to get the configuration")
+	}
+	host := allConfig.Apiserver.Hostname
+	url := fmt.Sprintf("http://%s:%d/api/v1/nodes", host, 8088)
+	err := utils.RequestHandle(http.MethodGet, url, func(req *http.Request) error {
+		req.Header = http.Header{"Content-Type": []string{"application/json"}}
+		return nil
+	}, nil, func(req *http.Request, resp *http.Response) error {
+		return UnmarshalToJSON(resp.Body, nodeList)
+	})
+	return err
+}
+
 func checkIsEndingLog(log string) bool {
 	return len(log) > 0 &&
 		strings.Contains(log, "ok") &&
@@ -339,4 +389,12 @@ func setLogStatus(log string) nodeModel.NodeLogDetail {
 	} else {
 		return nodeModel.NodeLogDetail{Message: log, Status: nodeModel.NodeLogResponseNormal}
 	}
+}
+
+func UnmarshalToJSON(in io.ReadCloser, target interface{}) error {
+	data, err := ioutil.ReadAll(in)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(data, &target)
 }

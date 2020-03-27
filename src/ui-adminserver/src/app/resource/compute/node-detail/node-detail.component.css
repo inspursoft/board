@@ -1,9 +1,14 @@
-div.modal-header {
-  padding: 0;
-}
-
 div.modal-body {
   min-height: 400px;
+}
+
+div.alert {
+  height: 30px;
+  line-height: 30px;
+}
+
+div.alert-item{
+  margin-left: 5px;
 }
 
 div.logs-container {

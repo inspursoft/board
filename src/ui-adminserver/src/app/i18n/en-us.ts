@@ -86,6 +86,10 @@ export const LANG_EN_US = {
     Node_Detail_Title_Log: 'Node log',
     Node_Detail_Node_Ip: 'Node ip',
     Node_Detail_Node_Password: 'Node password',
+    Node_Detail_Remove_Success: 'Remove node successfully.',
+    Node_Detail_Add_Success: 'Add node successfully.',
+    Node_Detail_Remove_Failed: 'Remove node failed.',
+    Node_Detail_Add_failed: 'Add node failed.'
   },
   'CONFIGURATIONS': {
     'API_SERVER': {

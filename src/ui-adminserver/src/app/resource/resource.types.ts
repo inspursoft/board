@@ -79,6 +79,7 @@ export class NodeDetails extends ResponseArrayBase<NodeDetail> {
 export class NodeListType extends ResponseBase {
   @HttpBind('ip') ip: string;
   @HttpBind('creation_time') creationTime: number;
+  @HttpBind('origin') origin: number;
 }
 
 export class NodeList extends ResponseArrayBase<NodeListType> {

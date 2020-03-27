@@ -87,6 +87,10 @@ export const LANG_ZH_CN = {
     Node_Detail_Title_Log: '节点日志',
     Node_Detail_Node_Ip: '节点IP',
     Node_Detail_Node_Password: '节点密码',
+    Node_Detail_Remove_Success: '移除节点成功。',
+    Node_Detail_Add_Success: '添加节点成功。',
+    Node_Detail_Remove_Failed: '移除节点失败。',
+    Node_Detail_Add_failed: '添加节点失败。'
   },
   'CONFIGURATIONS': {
     'API_SERVER': {

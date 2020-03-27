@@ -43,21 +43,23 @@ export class NodeListComponent implements OnInit, OnDestroy {
     this.createNodeDetail(logInfo, NodeActionsType.Add);
   }
 
-  deleteNode(nodeIp: string) {
-    this.translateService.get(['Node.Node_List_Remove_Ask', 'Node.Node_List_Remove_Node'])
-      .subscribe(translate => {
-        const ask = Reflect.get(translate, 'Node.Node_List_Remove_Ask');
-        const title = Reflect.get(translate, 'Node.Node_List_Remove_Node');
-        this.messageService.showDeleteDialog(ask, title).subscribe(
-          (res: Message) => {
-            if (res.returnStatus === ReturnStatus.rsConfirm) {
-              const logInfo = new NodeLog({});
-              logInfo.ip = nodeIp;
-              this.createNodeDetail(logInfo, NodeActionsType.Remove);
+  deleteNode(node: NodeListType) {
+    if (node.origin === 0) {
+      this.translateService.get(['Node.Node_List_Remove_Ask', 'Node.Node_List_Remove_Node'])
+        .subscribe(translate => {
+          const ask = Reflect.get(translate, 'Node.Node_List_Remove_Ask');
+          const title = Reflect.get(translate, 'Node.Node_List_Remove_Node');
+          this.messageService.showDeleteDialog(ask, title).subscribe(
+            (res: Message) => {
+              if (res.returnStatus === ReturnStatus.rsConfirm) {
+                const logInfo = new NodeLog({});
+                logInfo.ip = node.ip;
+                this.createNodeDetail(logInfo, NodeActionsType.Remove);
+              }
             }
-          }
-        );
-      });
+          );
+        });
+    }
   }
 
   showLog(node: NodeListType) {
