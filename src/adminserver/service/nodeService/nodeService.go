@@ -356,7 +356,9 @@ func getNodeListFromApiServer(nodeList *[]nodeModel.ApiServerNodeListResult) err
 		if resp.StatusCode == 200 {
 			return UnmarshalToJSON(resp.Body, nodeList)
 		}
-		return fmt.Errorf("failed to get nodes from apiserver.status:%s;message:%s", resp.StatusCode, resp.Body)
+		data, _ := ioutil.ReadAll(resp.Body)
+		return fmt.Errorf("failed to get nodes from apiserver.status:%d;message:%s",
+			resp.StatusCode, string(data))
 	})
 	return err
 }
