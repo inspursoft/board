@@ -353,5 +353,26 @@ export const LANG_EN_US = {
     INVALID_RESET_UUID: 'The Link is Invalid.',
     REGISTER_INFO: 'The system has just been initialized and you need to set up an account & password before using it.',
   },
-
+  CONFIGURATIONPAGE: {
+    UPLOAD: 'Upload',
+    SEARCH: 'search configuration',
+    CURRENT: 'current config',
+    TEMPORARY: 'temporary config',
+    CURRENTTIP: 'Here shows the CURRENT Board config. You can click the button next to get the temporary configuration.',
+    TEMPORARYTIP: 'Here shows the temporary config. You can click the button next to get CURRENT Board configuration.',
+    SAVETOSERVER: 'Save to server',
+    SAVETOLOCAL: 'Save locally',
+    SAVECONFIGURATION: {
+      TITLE: 'Whether the configuration takes effect?',
+      SAVE: 'Save successfully',
+      COMMENT: 'The new configuration has been saved successfully. Is the configuration applied in the board?It takes some time to restart the system for the configuration to take effect. To confirm the effect, enter the administrator account of the host.',
+      ACCOUNT: {
+        NAME: 'Account',
+        PASSWORD: 'Password',
+        REQUIRED: 'This field is required'
+      },
+      CANCEL: 'Not now',
+      APPLY: 'Yes, Do it',
+    }
+  }
 };

@@ -5,6 +5,7 @@ import { RouterModule } from '@angular/router';
 import { ClarityModule } from '@clr/angular';
 import { DashboardService } from './dashboard.service';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 
 @NgModule({
   declarations: [
@@ -17,6 +18,7 @@ import { FormsModule } from '@angular/forms';
     CommonModule,
     FormsModule,
     ClarityModule,
+    TranslateModule,
     RouterModule.forChild([{ path: '', component: PreviewerComponent }])
   ],
 })

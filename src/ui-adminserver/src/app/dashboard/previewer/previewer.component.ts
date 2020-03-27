@@ -21,7 +21,7 @@ export class PreviewerComponent implements OnInit, OnDestroy {
   user: User;
 
   constructor(private dashboardService: DashboardService,
-              private router: Router) {
+    private router: Router) {
     this.modal = new ComponentStatus();
     this.confirmType = new ConfirmType('rb');
     this.user = new User();
@@ -108,23 +108,43 @@ class ConfirmType {
 
   constructor(type: string, containerID?: string, title?: string, comment?: string, button?: string, ) {
     this.type = type;
-    if (type === 'rb') {
-      this.title = 'Restart Board?';
-      this.comment = 'Are you sure to RESTART the Board? If so, please enter the account and password of the host machine.';
-      this.button = 'restart';
-    } else if (type === 'rc') {
-      this.title = 'Restart Container?';
-      this.comment = 'Please enter the account and password of the host machine to Restart the Container:';
-      this.button = 'restart';
-      this.containerId = containerID;
-    } else if (type === 'sb') {
-      this.title = 'Stop Board?';
-      this.comment = 'Are you sure to STOP the Board? If so, please enter the account and password of the host machine';
-      this.button = 'STOP';
+    const currentLang = window.localStorage.getItem('currentLang') === 'zh-cn';
+    if (currentLang) {
+      this.button = '重启';
+      if (type === 'rb') {
+        this.title = '重启Board';
+        this.comment = '您确定要重新启动Board吗？如果是这样，请输入主机的帐户和密码：';
+      } else if (type === 'rc') {
+        this.title = '重启容器';
+        this.comment = '请输入主机的帐户和密码以重新启动容器：';
+        this.containerId = containerID;
+      } else if (type === 'sb') {
+        this.title = '停止Board';
+        this.comment = '您确定要停止Board吗？如果是这样，请输入主机的帐户和密码：';
+        this.button = '停止';
+      } else {
+        this.title = title ? title : 'Title';
+        this.comment = comment ? comment : 'Comment';
+        this.button = button ? button : 'Button';
+      }
     } else {
-      this.title = title ? title : 'Title';
-      this.comment = comment ? comment : 'Comment';
-      this.button = button ? button : 'Button';
+      this.button = 'restart';
+      if (type === 'rb') {
+        this.title = 'Restart Board?';
+        this.comment = 'Are you sure to RESTART the Board? If so, please enter the account and password of the host machine.';
+      } else if (type === 'rc') {
+        this.title = 'Restart Container?';
+        this.comment = 'Please enter the account and password of the host machine to Restart the Container:';
+        this.containerId = containerID;
+      } else if (type === 'sb') {
+        this.title = 'Stop Board?';
+        this.comment = 'Are you sure to STOP the Board? If so, please enter the account and password of the host machine:';
+        this.button = 'STOP';
+      } else {
+        this.title = title ? title : 'Title';
+        this.comment = comment ? comment : 'Comment';
+        this.button = button ? button : 'Button';
+      }
     }
   }
 }

@@ -1,3 +1,5 @@
+import { COMMENT_MARKER } from '@angular/core/src/render3/interfaces/i18n';
+
 export const LANG_ZH_CN = {
   BUTTON: {
     OK: '确定',
@@ -354,5 +356,26 @@ export const LANG_ZH_CN = {
     INVALID_RESET_UUID:'链接失效。',
     REGISTER_INFO: '系统刚刚初始化，您需要先设置一个帐户和密码，然后才能使用它。',
   },
-  
+  CONFIGURATIONPAGE: {
+    UPLOAD: '上传',
+    SEARCH: '搜索配置',
+    CURRENT: '当前配置',
+    TEMPORARY: '未生效配置',
+    CURRENTTIP: '这里显示了当前Board的配置。您可以单击旁边的按钮以获取未生效的配置。',
+    TEMPORARYTIP: '这里显示了未生效的配置。您可以单击旁边的按钮以查看Board当前配置。',
+    SAVETOSERVER: '保存到服务',
+    SAVETOLOCAL: '下载到本地',
+    SAVECONFIGURATION: {
+      TITLE: '是否生效配置？',
+      SAVE: '保存成功',
+      COMMENT: '新配置已经成功保存，是否在Board中应用该配置？生效配置需要花费一些时间来重启系统，确认生效请输入该主机的管理员账户及密码。',
+      ACCOUNT: {
+        NAME: '账户',
+        PASSWORD: '密码',
+        REQUIRED: '必填项'
+      },
+      CANCEL: '不生效',
+      APPLY: '生效配置',
+    }
+  },
 };

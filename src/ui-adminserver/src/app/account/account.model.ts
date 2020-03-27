@@ -54,9 +54,6 @@ export class DBInfo implements RequestBase {
   passwordConfirm: string;
 
   PostBody(): object {
-    if (this.maxConnection < 1000 || this.maxConnection > 16384) {
-      this.maxConnection = 1000;
-    }
     return {
       db_max_connections: this.maxConnection,
       db_password: this.password

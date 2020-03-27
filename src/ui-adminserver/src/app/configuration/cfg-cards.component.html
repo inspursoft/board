@@ -9,12 +9,12 @@
            id="file-selector"
            accept=".cfg">
   </label>
-  <button class="btn btn-primary btn-sm">Upload</button>
+  <button class="btn btn-primary btn-sm">{{ 'CONFIGURATIONPAGE.UPLOAD' | translate }}</button>
 
   <div class="search d7 search-block">
     <form style="padding-top: 0;">
       <input type="text"
-             placeholder="search configuration">
+             [placeholder]="'CONFIGURATIONPAGE.SEARCH' | translate">
       <button type="button">
         <clr-icon shape="search"></clr-icon>
       </button>
@@ -31,7 +31,7 @@
              [checked]="config.current == 'cfg'"
              [disabled]="config.current == 'cfg'"
              (click)="getCfg()">
-      <label for="btn-demo-radio-1">current config</label>
+      <label for="btn-demo-radio-1">{{ 'CONFIGURATIONPAGE.CURRENT' | translate }}</label>
     </div>
     <div class="radio btn">
       <input type="radio"
@@ -40,7 +40,7 @@
              [checked]="config.current != 'cfg'"
              [disabled]="config.current != 'cfg'"
              (click)="getCfg('tmp')">
-      <label for="btn-demo-radio-2">temporary config</label>
+      <label for="btn-demo-radio-2">{{ 'CONFIGURATIONPAGE.TEMPORARY' | translate }}</label>
     </div>
     <clr-tooltip>
       <clr-icon clrTooltipTrigger
@@ -50,10 +50,8 @@
       <clr-tooltip-content clrPosition="bottom-right"
                            clrSize="lg"
                            *clrIfOpen>
-        <span *ngIf="config.current == 'cfg'">Here shows the CURRENT Board config. You can click the button next to get
-          the temporary configuration.</span>
-        <span *ngIf="config.current != 'cfg'">Here shows the temporary config. You can click the button next to get
-          CURRENT Board configuration.</span>
+        <span *ngIf="config.current == 'cfg'">{{ 'CONFIGURATIONPAGE.CURRENTTIP' | translate }}</span>
+        <span *ngIf="config.current != 'cfg'">{{ 'CONFIGURATIONPAGE.TEMPORARYTIP' | translate }}</span>
       </clr-tooltip-content>
     </clr-tooltip>
   </div>
@@ -85,7 +83,7 @@
             aria-label="apply"
             (click)="saveCfg()">
       <clr-icon shape="check"></clr-icon>
-      Save to server
+      {{ 'CONFIGURATIONPAGE.SAVETOSERVER' | translate }}
     </button>
 
     <button type="button"
@@ -93,7 +91,7 @@
             aria-label="file-settings"
             (click)="saveAsCfg()">
       <clr-icon shape="file-settings"></clr-icon>
-      Save locally
+      {{ 'CONFIGURATIONPAGE.SAVETOLOCAL' | translate }}
     </button>
   </div>
 
@@ -101,7 +99,7 @@
 
 <clr-modal [(clrModalOpen)]="applyCfgModal"
            [clrModalClosable]="false">
-  <h3 class="modal-title">Whether the configuration takes effect?</h3>
+  <h3 class="modal-title">{{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.TITLE' | translate }}</h3>
   <div class="modal-body">
     <div class="clr-row">
       <div class="clr-col clr-align-self-center"
@@ -109,33 +107,32 @@
         <clr-icon shape="success-standard"
                   class="is-solid is-success"
                   size="36"></clr-icon>
-        <span>Save successfully</span>
+        <span>{{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.SAVE' | translate }}</span>
       </div>
     </div>
-    <p>&nbsp;&nbsp;&nbsp;&nbsp;The new configuration has been saved. Do you want the configuration to take effect in
-      Board? If so, please enter the account and password of the host machine. Board will take a few minutes to restart
-      to update the configuration.</p>
-    <form clrForm>
+    <p>&nbsp;&nbsp;&nbsp;&nbsp;{{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.COMMENT' | translate }}</p>
+    <form clrForm
+          #sshForm="ngForm">
       <clr-input-container>
-        <label>Account 账户</label>
+        <label>{{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.NAME' | translate }}</label>
         <input clrInput
                required
                [(ngModel)]="user.username"
                name=sshUsername
                #getSSHUsername="ngModel" />
         <clr-control-error>
-          This field is required!<br>必填项！
+          {{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.REQUIRED' | translate }}
         </clr-control-error>
       </clr-input-container>
       <clr-password-container>
-        <label>Password 密码</label>
+        <label>{{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.PASSWORD' | translate }}</label>
         <input clrPassword
                required
                [(ngModel)]="user.password"
                name="sshPassword"
                #getSSHPassword="ngModel" />
         <clr-control-error *clrIfError="'required'">
-          This field is required!<br>必填项！
+          {{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.REQUIRED' | translate }}
         </clr-control-error>
       </clr-password-container>
     </form>
@@ -144,12 +141,13 @@
     <button type="button"
             class="btn btn-outline"
             (click)="cancelApply()">
-      Not now
+      {{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.CANCEL' | translate }}
     </button>
     <button type="button"
             class="btn btn-warning"
+            [disabled]='!sshForm.valid'
             (click)="applyCfg()">
-      Yes, Do it
+      {{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.APPLY' | translate }}
     </button>
   </div>
 </clr-modal>

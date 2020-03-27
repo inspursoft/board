@@ -16,27 +16,28 @@ export class SignInComponent implements OnInit {
   loadingFlag = false;
   errorFlag = false;
   errorVerifyFlag = false;
+  errorDBMaxFlag = false;
 
   showInitDB = true;
   showInitSSH = true;
 
+  disableDbPwdForm = true;
+  disableAccountFrom = true;
+
   uuid = '';
   dbInfo: DBInfo;
-  errorDBMax = false;
-  disableDbPwdForm = true;
   sshAccount: UserVerify;
-  disableAccountFrom = true;
-  user: User;
   account: UserVerify;
 
-  dbAlive = false;
   disableInput = false;
 
   current = 0;
   isCurrent = true;
 
+  user: User;
+
   constructor(private accountService: AccountService,
-              private router: Router) {
+    private router: Router) {
     this.account = new UserVerify();
     this.account.username = 'admin';
     this.sshAccount = new UserVerify();
@@ -47,7 +48,7 @@ export class SignInComponent implements OnInit {
   ngOnInit() {
     this.accountService.checkInit().subscribe(
       (res: string) => {
-        const step = res.toLowerCase();
+        const step = res.toString().toLowerCase();
         if (step === 'no') {
           this.openWizard = false;
           this.checkDBAlive();
@@ -61,10 +62,10 @@ export class SignInComponent implements OnInit {
     );
 
     // for test
-    // let step = 'no';
+    // let step = 'step3';
     // if (step === 'no') {
     //   this.openWizard = false;
-    //   this.checkDBAlive();
+    //   // this.checkDBAlive();
     // } else if (step === 'step2') {
     //   this.showInitDB = false;
     // } else if (step === 'step3') {
@@ -74,17 +75,21 @@ export class SignInComponent implements OnInit {
   }
 
   onWelcome(): void {
+    this.waitingFlag(true);
     this.accountService.createUUID().subscribe(
-      () => { this.successFlag(this.wizard.currentPage._id); },
+      () => {
+        this.wizard.forceNext();
+        this.successFlag(this.wizard.currentPage._id);
+        this.checkBtn();
+      },
       () => { this.waitingFlag(false); },
     );
 
     // for test
+    // this.waitingFlag(true);
     // setTimeout(() => {
     //   this.wizard.forceNext();
-    //   this.loadingFlag = false;
-    //   this.disableInput = false;
-    //   this.current = this.wizard.currentPage._id;
+    //   this.successFlag(this.wizard.currentPage._id);
     //   this.checkBtn();
     // }, 1000);
   }
@@ -92,21 +97,24 @@ export class SignInComponent implements OnInit {
   onVerify(): void {
     this.waitingFlag(true);
     this.accountService.validateUUID(this.uuid).subscribe(
-      () => { this.successFlag(this.wizard.currentPage._id); },
+      () => {
+        this.wizard.forceNext();
+        this.successFlag(this.wizard.currentPage._id);
+        this.checkBtn();
+      },
       () => { this.waitingFlag(false); },
     );
 
     // for test
+    // this.waitingFlag(true);
     // setTimeout(() => {
     //   if (this.uuid === '42') {
     //     this.wizard.forceNext();
-    //     this.current = this.wizard.currentPage._id;
+    //     this.successFlag(this.wizard.currentPage._id);
     //     this.checkBtn();
     //   } else {
-    //     this.errorFlag = true;
+    //     this.waitingFlag(false);
     //   }
-    //   this.loadingFlag = false;
-    //   this.disableInput = false;
     // }, 1000);
   }
 
@@ -123,24 +131,39 @@ export class SignInComponent implements OnInit {
   }
 
   onInitDB(): void {
+    this.errorDBMaxFlag = false;
     this.waitingFlag(true);
-    this.accountService.initDB(this.dbInfo).subscribe(
-      () => { this.successFlag(this.wizard.currentPage._id); },
-      () => { this.waitingFlag(false); },
-    );
+    if (this.dbInfo.maxConnection < 10 || this.dbInfo.maxConnection > 16384) {
+      this.disableInput = false;
+      this.loadingFlag = false;
+      this.errorDBMaxFlag = true;
+    } else {
+      this.accountService.initDB(this.dbInfo).subscribe(
+        () => {
+          this.wizard.forceNext();
+          this.successFlag(this.wizard.currentPage._id);
+          this.checkBtn();
+        },
+        () => { this.waitingFlag(false); },
+      );
+    }
 
     // for test
-    // setTimeout(() => {
-    //   if (this.dbInfo.verify()) {
-    //     this.wizard.forceNext();
-    //     this.current = this.wizard.currentPage._id;
-    //     this.checkBtn();
-    //   } else {
-    //     this.errorFlag = true;
-    //   }
-    //   this.loadingFlag = false;
+    // if (this.dbInfo.maxConnection < 10 || this.dbInfo.maxConnection > 16384) {
     //   this.disableInput = false;
-    // }, 1000);
+    //   this.loadingFlag = false;
+    //   this.errorDBMaxFlag = true;
+    // } else {
+    //   setTimeout(() => {
+    //     if (this.dbInfo.verify()) {
+    //       this.wizard.forceNext();
+    //       this.successFlag(this.wizard.currentPage._id);
+    //       this.checkBtn();
+    //     } else {
+    //       this.waitingFlag(false);
+    //     }
+    //   }, 1000);
+    // }
     // console.log(this.dbInfo);
   }
 
@@ -148,10 +171,11 @@ export class SignInComponent implements OnInit {
     this.waitingFlag(true);
     this.accountService.initSSH(this.sshAccount).subscribe(
       () => {
-        this.dbAlive = true;
+        this.wizard.forceNext();
         this.modal.closable = true;
         this.modal.close();
         this.successFlag(this.wizard.currentPage._id);
+        this.checkBtn();
       },
       () => { this.waitingFlag(false); },
     );
@@ -159,17 +183,14 @@ export class SignInComponent implements OnInit {
     // for test
     // setTimeout(() => {
     //   if (this.sshAccount.username === '1') {
-    //     this.dbAlive = true;
     //     this.wizard.forceNext();
     //     this.modal.closable = true;
     //     this.modal.close();
-    //     this.current = this.wizard.currentPage._id;
+    //     this.successFlag(this.wizard.currentPage._id);
     //     this.checkBtn();
     //   } else {
-    //     this.errorFlag = true;
+    //     this.waitingFlag(false);
     //   }
-    //   this.loadingFlag = false;
-    //   this.disableInput = false;
     // }, 1000);
   }
 
@@ -200,11 +221,11 @@ export class SignInComponent implements OnInit {
     // setTimeout(() => {
     //   if (this.account.password === '11111111') {
     //     this.wizard.forceFinish();
+    //     this.loadingFlag = false;
+    //     this.disableInput = false;
     //   } else {
-    //     this.errorFlag = true;
+    //     this.waitingFlag(false);
     //   }
-    //   this.loadingFlag = false;
-    //   this.disableInput = false;
     // }, 1000);
   }
 
@@ -266,10 +287,8 @@ export class SignInComponent implements OnInit {
   }
 
   successFlag(id: number) {
-    this.wizard.forceNext();
     this.loadingFlag = false;
     this.disableInput = false;
     this.current = id;
-    this.checkBtn();
   }
 }

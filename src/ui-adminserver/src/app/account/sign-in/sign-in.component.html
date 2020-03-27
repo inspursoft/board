@@ -158,24 +158,6 @@
       <clr-spinner *ngIf="loadingFlag">
         Loading
       </clr-spinner>
-      <clr-alert *ngIf="errorFlag"
-                 [clrAlertType]="'alert-danger'"
-                 [clrCloseButtonAriaLabel]="'Close Answer alert'">
-        <clr-alert-item>
-          Database initialization failed! Please check that the docker is working normally.
-          <br>
-          数据库初始化失败！请检查Docker是否正常运行。
-        </clr-alert-item>
-      </clr-alert>
-      <clr-alert *ngIf="errorVerifyFlag"
-                 [clrAlertType]="'alert-danger'"
-                 [clrCloseButtonAriaLabel]="'Close Answer alert'">
-        <clr-alert-item>
-          Passwords are not identical.
-          <br>
-          两次密码不一致！
-        </clr-alert-item>
-      </clr-alert>
       <form clrForm
             #dbPwdFrom="ngForm"
             [class.hide]="loadingFlag">
@@ -184,6 +166,33 @@
           <br>
           您需要配置数据库密码以初始化数据库。该步骤可能需要一些时间。
         </div>
+        <clr-alert *ngIf="errorFlag"
+                   [clrAlertType]="'alert-danger'"
+                   [clrCloseButtonAriaLabel]="'Close Answer alert'">
+          <clr-alert-item>
+            Database initialization failed! Please check that the docker is working normally.
+            <br>
+            数据库初始化失败！请检查Docker是否正常运行。
+          </clr-alert-item>
+        </clr-alert>
+        <clr-alert *ngIf="errorVerifyFlag"
+                   [clrAlertType]="'alert-danger'"
+                   [clrCloseButtonAriaLabel]="'Close Answer alert'">
+          <clr-alert-item>
+            Passwords are not identical.
+            <br>
+            两次密码不一致！
+          </clr-alert-item>
+        </clr-alert>
+        <clr-alert *ngIf="errorDBMaxFlag"
+                   [clrAlertType]="'alert-danger'"
+                   [clrCloseButtonAriaLabel]="'Close Answer alert'">
+          <clr-alert-item>
+            Database's max connection error!
+            <br>
+            数据库最大连接数错误！
+          </clr-alert-item>
+        </clr-alert>
         <clr-input-container>
           <label>Max Connection 最大连接</label>
           <input clrInput
@@ -191,14 +200,14 @@
                  [(ngModel)]="dbInfo.maxConnection"
                  name="dbMax"
                  type="number"
-                 min="1000"
+                 min="10"
                  max="16384"
                  [disabled]="disableInput" />
           <clr-control-error *clrIfError="'required'">
             This field is required!<br>必填项！
           </clr-control-error>
           <clr-control-helper>
-            Requires 1000 ~ 10000.<br>接受1000~10000。
+            Requires 10 ~ 16384.<br>接受10~16384。
           </clr-control-helper>
         </clr-input-container>
         <clr-password-container>
@@ -211,7 +220,6 @@
                  (ngModelChange)="verifyDBPwd()"
                  [ngModelOptions]="{updateOn: 'blur'}"
                  [disabled]="disableInput" />
-          <clr-control-helper>Must contain at least 8 characters.</clr-control-helper>
           <clr-control-error *clrIfError="'required'">
             This field is required!<br>必填项！
           </clr-control-error>
@@ -231,7 +239,6 @@
                  (ngModelChange)="verifyDBPwd()"
                  [ngModelOptions]="{updateOn: 'blur'}"
                  [disabled]="disableInput" />
-          <clr-control-helper>Must contain at least 8 characters.</clr-control-helper>
           <clr-control-error *clrIfError="'required'">
             This field is required!<br>必填项！
           </clr-control-error>
@@ -246,7 +253,7 @@
 
     <clr-wizard-page clrWizardPagePreventDefault="true"
                      (clrWizardPageOnCommit)="onInitSSH()"
-                     [clrWizardPageNextDisabled]="getSSHUsername.pristine || getSSHPassword.pristine || !sshForm.valid || disableInput"
+                     [clrWizardPageNextDisabled]="(getSSHUsername.pristine && getSSHPassword.pristine) || !sshForm.valid || disableInput"
                      *ngIf="showInitSSH">
       <ng-template clrPageTitle>Initialize SSH Account</ng-template>
       <clr-spinner *ngIf="loadingFlag">
@@ -303,24 +310,6 @@
       <clr-spinner *ngIf="loadingFlag">
         Loading
       </clr-spinner>
-      <clr-alert *ngIf="errorFlag"
-                 [clrAlertType]="'alert-danger'"
-                 [clrCloseButtonAriaLabel]="'Close Answer alert'">
-        <clr-alert-item>
-          Network error or docker error, please try again!
-          <br>
-          网络错误或者docker运行错误，请重试！
-        </clr-alert-item>
-      </clr-alert>
-      <clr-alert *ngIf="errorVerifyFlag"
-                 [clrAlertType]="'alert-danger'"
-                 [clrCloseButtonAriaLabel]="'Close Answer alert'">
-        <clr-alert-item>
-          Passwords are not identical.
-          <br>
-          两次密码不一致！
-        </clr-alert-item>
-      </clr-alert>
       <form clrForm
             #accountForm="ngForm"
             [class.hide]="loadingFlag">
@@ -329,6 +318,31 @@
           <br>
           初始化adminserver的管理员密码。该admin账户将与board共用。
         </div>
+        <clr-alert *ngIf="errorFlag"
+                   [clrAlertType]="'alert-danger'"
+                   [clrCloseButtonAriaLabel]="'Close Answer alert'">
+          <clr-alert-item>
+            Network error or docker error, please try again!
+            <br>
+            网络错误或者docker运行错误，请重试！
+          </clr-alert-item>
+        </clr-alert>
+        <clr-alert *ngIf="errorVerifyFlag"
+                   [clrAlertType]="'alert-danger'"
+                   [clrCloseButtonAriaLabel]="'Close Answer alert'">
+          <clr-alert-item>
+            Passwords are not identical.
+            <br>
+            两次密码不一致！
+          </clr-alert-item>
+        </clr-alert>
+        <clr-input-container>
+          <label>Account 账户名</label>
+          <input clrInput
+                 value="admin"
+                 disabled />
+          <clr-control-helper>Unable to edit!<br>不允许更改！</clr-control-helper>
+        </clr-input-container>
         <clr-password-container>
           <label>Password 密码</label>
           <input clrPassword
@@ -339,7 +353,6 @@
                  (ngModelChange)="verifyAccountPwd()"
                  [ngModelOptions]="{updateOn: 'blur'}"
                  [disabled]="disableInput" />
-          <clr-control-helper>Must contain at least 8 characters.</clr-control-helper>
           <clr-control-error *clrIfError="'required'">
             This field is required!<br>必填项！
           </clr-control-error>
@@ -359,7 +372,6 @@
                  (ngModelChange)="verifyAccountPwd()"
                  [ngModelOptions]="{updateOn: 'blur'}"
                  [disabled]="disableInput" />
-          <clr-control-helper>Must contain at least 8 characters.</clr-control-helper>
           <clr-control-error *clrIfError="'required'">
             This field is required!<br>必填项！
           </clr-control-error>
