@@ -334,7 +334,10 @@ func CheckExistsInCache(nodeIp string) bool {
 }
 
 func RemoveCacheData(nodeIp string) error {
-	return dao.GlobalCache.Delete(nodeIp)
+	if dao.GlobalCache.IsExist(nodeIp) {
+		return dao.GlobalCache.Delete(nodeIp)
+	}
+	return nil
 }
 
 func GetLogInfoInCache(nodeIp string) *nodeModel.NodeLog {

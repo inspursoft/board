@@ -15,6 +15,7 @@ export enum NodeLogStatus {
 }
 
 export class NodeLog extends ResponseBase {
+  @HttpBind('id') id: string;
   @HttpBind('ip') ip: string;
   @HttpBind('log_type') type: NodeActionsType;
   @HttpBind('success') success: boolean;
