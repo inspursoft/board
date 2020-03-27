@@ -222,6 +222,7 @@ func GetNodeGroupList() ([]model.NodeGroup, error) {
 	return dao.GetNodeGroups()
 }
 
+// Check Nodegroup in DB, existing true
 func NodeGroupExists(nodeGroupName string) (bool, error) {
 	query := model.NodeGroup{GroupName: nodeGroupName}
 	nodegroup, err := dao.GetNodeGroup(query, "name")
@@ -256,6 +257,7 @@ func AddNodeToGroup(nodeName string, groupName string) error {
 	return nil
 }
 
+// Get the groups that this node belong to
 func GetGroupOfNode(nodeName string) ([]string, error) {
 	var groups []string
 	//nInterface, err := k8sassist.NewNodes()
@@ -276,7 +278,14 @@ func GetGroupOfNode(nodeName string) ([]string, error) {
 	}
 	for key, _ := range nNode.ObjectMeta.Labels {
 		if !strings.Contains(key, K8sLabel) {
-			groups = append(groups, key)
+			exist, err := NodeGroupExists(key)
+			if err != nil {
+				logs.Error("Failed to get nodegroup")
+				return nil, err
+			}
+			if exist {
+				groups = append(groups, key)
+			}
 		}
 	}
 	return groups, nil
