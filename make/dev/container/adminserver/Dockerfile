@@ -6,6 +6,7 @@ RUN go version
 
 COPY src/adminserver /go/src/git/inspursoft/board/src/adminserver
 COPY src/vendor /go/src/git/inspursoft/board/src/vendor
+COPY src/common/utils /go/src/git/inspursoft/board/src/common/utils
 COPY VERSION /go/bin/VERSION
 
 ENV GO111MODULE=off

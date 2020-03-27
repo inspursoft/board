@@ -2,8 +2,9 @@ package models
 
 import (
 	"reflect"
-
+	"os"
 	"github.com/alyu/configparser"
+	"time"
 )
 
 //Apiserver refers to those properties controlling Apiserver parameters.
@@ -298,12 +299,44 @@ type Password struct {
 	Value string `json:"value"`
 }
 
-const DBconfigdir = "/data/board/Deploy/config/db"
-const DBcompose = "/data/board/Deploy/docker-compose-db.yml"
-const Boardcompose = "/data/board/Deploy/docker-compose-rest.yml"
-const PrepareFile = "/data/board/Deploy/prepare"
+//const DBconfigdir = "/data/board/Deploy/config/db"
+//const DBcompose = "/data/board/Deploy/docker-compose-db.yml"
+//const Boardcompose = "/data/board/Deploy/docker-compose-rest.yml"
+//const PrepareFile = "/data/board/Deploy/prepare"
+
+var DBconfigdir string = os.Getenv("DB_CONFIG_DIR")
+var DBcompose string = os.Getenv("DB_COMPOSE")
+var Boardcompose string = os.Getenv("BOARD_COMPOSE")
+var PrepareFile string = os.Getenv("PREPARE_FILE")
 
 type DBconf struct {
 	Password   		string `json:"db_password"`
 	MaxConnections	string `json:"db_max_connections"`
+}
+
+type User struct {
+	ID           int64     `json:"user_id" orm:"column(id)"`
+	Username     string    `json:"user_name" orm:"column(username)"`
+	Password     string    `json:"user_password" orm:"column(password)"`
+	Email        string    `json:"user_email" orm:"column(email)"`
+	Realname     string    `json:"user_realname" orm:"column(realname)"`
+	Comment      string    `json:"user_comment" orm:"column(comment)"`
+	Deleted      int       `json:"user_deleted" orm:"column(deleted)"`
+	SystemAdmin  int       `json:"user_system_admin" orm:"column(system_admin)"`
+	ResetUUID    string    `json:"user_reset_uuid" orm:"column(reset_uuid)"`
+	Salt         string    `json:"user_salt" orm:"column(salt)"`
+	RepoToken    string    `json:"user_token" orm:"column(repo_token)"`
+	CreationTime time.Time `json:"user_creation_time" orm:"column(creation_time)"`
+	UpdateTime   time.Time `json:"user_update_time" orm:"column(update_time)"`
+	FailedTimes  int       `json:"user_failed_times" orm:"column(failed_times)"`
+}
+
+type Config struct {
+	Name    string `json:"name" orm:"column(name);pk"`
+	Value   string `json:"value" orm:"column(value)"`
+	Comment string `json:"comment" orm:"column(comment)"`
+}
+
+type UUID struct {
+	UUID string `json:"UUID"`
 }

@@ -98,7 +98,6 @@ func StartDB(host *models.Account) error {
 		logs.Error("error occurred on registering DB: %+v", err)
 		panic(err)
 	}
-	orm.RunSyncdb("mysql-db2", false, true)
 
 	o := orm.NewOrm()
 	status := models.InitStatusInfo{Id: 1}
@@ -169,7 +168,6 @@ func CheckDB() bool {
 			logs.Error("error occurred on registering DB: %+v", err)
 			panic(err)
 		}
-		orm.RunSyncdb("mysql-db2", false, true)
 		return true
 	} else {
 		return false

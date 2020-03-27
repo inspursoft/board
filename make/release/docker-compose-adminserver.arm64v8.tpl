@@ -11,6 +11,8 @@ services:
       - /data/board/database:/data/board/database
       - /data/board/ansible_k8s:/data/board/ansible_k8s
       - /data/board/Deploy:/data/board/Deploy
+    env_file:
+    - ./env
     networks:
       - board
     ports:

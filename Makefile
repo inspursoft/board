@@ -227,6 +227,7 @@ package: prepare_composefile
 	@cp $(MAKEWORKPATH)/docker-compose-adminserver${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/docker-compose-adminserver.yml
 	@cp $(MAKEWORKPATH)/docker-compose-db${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/docker-compose-db.yml
 	@cp $(MAKEWORKPATH)/docker-compose-rest${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/docker-compose-rest.yml
+	@cp $(MAKEWORKPATH)/env $(PKGTEMPPATH)/env
 #	@cp LICENSE $(PKGTEMPPATH)/LICENSE
 #	@cp NOTICE $(PKGTEMPPATH)/NOTICE
 	@sed -i "s/..\/config/.\/config/" $(PKGTEMPPATH)/docker-compose.yml

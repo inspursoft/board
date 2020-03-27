@@ -2,9 +2,11 @@ package service
 
 import (
 	"encoding/base64"
-	"encoding/hex"
 	"git/inspursoft/board/src/adminserver/encryption"
 	"git/inspursoft/board/src/adminserver/models"
+	"git/inspursoft/board/src/adminserver/dao"
+	"git/inspursoft/board/src/common/utils"
+	"github.com/astaxie/beego/logs"
 	"io/ioutil"
 	"log"
 	"os"
@@ -14,6 +16,11 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"fmt"
 	"time"
+)
+
+const (
+	defaultInitialPassword = "123456a?"
+	adminUserID            = 1
 )
 
 //VerifyPassword compares the password in cfg with the input one.
@@ -48,7 +55,7 @@ func VerifyPassword(passwd *models.Password) (a bool, err string) {
 //Initialize save the account information into a file.
 func Initialize(acc *models.Account) string {
 	var statusMessage string = "OK"
-
+/*
 	_, pubKey := encryption.GenKey("rsa")
 	ciphertext := encryption.Encrypt("rsa", []byte(acc.Password), pubKey)
 
@@ -73,6 +80,47 @@ func Initialize(acc *models.Account) string {
 			statusMessage = "BadRequest"
 		}	
 	}
+*/
+
+	if acc.Password == "" {
+		acc.Password = defaultInitialPassword
+	}
+	salt := utils.GenerateRandomString()
+	encryptedPassword := utils.Encrypt(acc.Password, salt)
+	user := models.User{ID: adminUserID, Username: acc.Username, Password: encryptedPassword, Salt: salt}
+	//isSuccess, err := service.UpdateUser(user, "password", "salt")
+	o := orm.NewOrm()
+	o.Using("mysql-db2")
+	user.UpdateTime = time.Now()
+	_, err := o.Update(&user, "password", "salt")
+	if err != nil {
+		logs.Error("Failed to update user password: %+v", err)
+		statusMessage = "BadRequest"
+	}
+	if err == nil {
+		utils.SetConfig("SET_ADMIN_PASSWORD", "updated")
+
+		config, err := dao.GetConfig("SET_ADMIN_PASSWORD")
+		if err != nil {
+			logs.Error(err)
+			statusMessage = "BadRequest"
+		}
+
+		value := utils.GetStringValue("SET_ADMIN_PASSWORD")
+		if value == "" {
+			logs.Error(err)
+			statusMessage = "BadRequest"
+		}
+		_, err = dao.AddOrUpdateConfig(models.Config{Name: "SET_ADMIN_PASSWORD", Value: value, Comment: fmt.Sprintf("Set config %s.", "SET_ADMIN_PASSWORD")})
+		if err != nil {
+			logs.Error(err)
+			statusMessage = "BadRequest"
+		}
+		utils.SetConfig("SET_ADMIN_PASSWORD", config.Value)
+
+		logs.Info("Admin password has been updated successfully.")
+	} 
+
 
 	if statusMessage == "OK" {
 		o2 := orm.NewOrm()
@@ -101,32 +149,15 @@ func Login(acc *models.Account) (bool, string, string) {
 
 	o := orm.NewOrm()
 	o.Using("mysql-db2")
-	account := models.Account{Id: 1}
-	err := o.Read(&account)
-	if err == orm.ErrNoRows {
-		fmt.Println("not found")
-	} else if err == orm.ErrMissPK {
-		fmt.Println("pk missing")
-	} 
-	username := account.Username
-	ciphertext := account.Password
+	query := models.User{Username: acc.Username, Password: acc.Password}
+	query.Password = utils.Encrypt(query.Password, query.Salt)
+	err := o.Read(&query, "username", "password")
 
-	prvKey, err2 := ioutil.ReadFile("./private_acc.pem")
-	if err2 != nil {
-		log.Print(err2)
-		statusMessage = "BadRequest"
-	}
-	test, err3 := hex.DecodeString(ciphertext)
-	if err3 != nil {
-		log.Print(err3)
-		statusMessage = "BadRequest"
-	}
-	password := string(encryption.Decrypt("rsa", test, prvKey))
-
-	if acc.Username == username && acc.Password == password {
+	if err == nil {
 		permission = true
 	} else {
 		permission = false
+		logs.Error(err)
 	}
 
 	var token string = ""

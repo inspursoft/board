@@ -122,18 +122,20 @@ func (a *AccController) CreateUUID() {
 
 // @Title ValidateUUID
 // @Description validate the UUID
-// @Param	UUID	query 	string	true	"UUID"
+// @Param	body	body 	models.UUID	true	"UUID"
 // @Success 200 {object} string success
 // @Failure 400 bad request
 // @router /ValidateUUID [post]
 func (a *AccController) ValidateUUID() {
 	var statusCode int = http.StatusOK
-	input := a.GetString("UUID")
-	result, statusMessage := service.ValidateUUID(input)
+	var uuid models.UUID
+	json.Unmarshal(a.Ctx.Input.RequestBody, &uuid)
+	result, statusMessage := service.ValidateUUID(uuid.UUID)
 	if result == true {
 		a.Data["json"] = "validate success"
 	} else {
 		a.Data["json"] = "validate failure"
+		statusCode = http.StatusBadRequest
 	}
 	if statusMessage == "BadRequest" {
 		statusCode = http.StatusBadRequest

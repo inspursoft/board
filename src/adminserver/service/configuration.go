@@ -50,6 +50,10 @@ func GetAllCfg(which string) (a *models.Configuration, b string) {
 	Cfgi := models.GetConfiguration(section)
 
 	Cfgi.Other.BoardAdminPassword = ""
+	Cfgi.Other.DBPassword = ""
+	Cfgi.Jenkinsserver.NodePassword = ""
+	Cfgi.Email.Password = ""
+
 
 	backupPath := path.Join("/go", "/cfgfile/board.cfg.bak1")
 	Cfgi.FirstTimePost = !encryption.CheckFileIsExist(backupPath)

@@ -12,5 +12,7 @@ func RegisterModels() {
 		new(nodeModel.NodeStatus),
 		new(InitStatusInfo),
 		new(Account),
-		new(Token))
+		new(Token),
+		new(User),
+		new(Config))
 }
