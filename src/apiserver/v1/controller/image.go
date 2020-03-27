@@ -580,3 +580,16 @@ func (p *ImageController) GetImageRegistryAction() {
 	logs.Info("Docker registry is %s", registryAddr)
 	p.RenderJSON(registryAddr)
 }
+
+// Check an image used by services for deleting
+// TODO
+func (p *ImageController) GetImageUsedAction() {
+	if p.IsSysAdmin == false {
+		p.CustomAbortAudit(http.StatusForbidden, "Insufficient privileges to delete image tag.")
+		return
+	}
+	imageName := strings.TrimSpace(p.Ctx.Input.Param(":imagename"))
+	//imageTag := strings.TrimSpace(p.GetString("image_tag"))
+	logs.Info("Image name is %s", imageName)
+	return
+}

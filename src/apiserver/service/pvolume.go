@@ -51,7 +51,7 @@ func AddPVolumeCephRBD(pv model.PersistentVolume, pvo model.PersistentVolumeOpti
 
 	//TODO k8s PV process
 	var pvk8s model.PersistentVolumeK8scli
-	var pvoption model.RBDVolumeSource
+	var pvoption model.RBDPersistentVolumeSource
 
 	genPersistentVolumeK8scli(pv, &pvk8s)
 	pvoption.FSType = pvo.Fstype

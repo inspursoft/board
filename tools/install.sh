@@ -110,11 +110,13 @@ if [ -n "$(docker-compose ps -q)"  ]
 then
 	echo "stopping existing Board instance ..."
 	docker-compose down
+	docker-compose -f docker-compose-adminserver.yml down
 fi
 echo ""
 
 echo "[Step $item]: starting Board ..."
 docker-compose up -d
+docker-compose -f docker-compose-adminserver.yml up -d
 
 protocol=http
 hostname=reg.mydomain.com

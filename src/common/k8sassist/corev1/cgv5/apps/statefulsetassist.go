@@ -11,24 +11,22 @@ import (
 
 	"github.com/astaxie/beego/logs"
 	"github.com/ghodss/yaml"
-	appsv1beta1 "k8s.io/api/apps/v1beta1"
-	//	appsv1beta2 "k8s.io/api/apps/v1beta2"
+	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8stypes "k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/kubernetes/typed/apps/v1beta1"
-	//	"k8s.io/client-go/kubernetes/typed/apps/v1beta2"
+	v1 "k8s.io/client-go/kubernetes/typed/apps/v1"
 )
 
 type statefulsets struct {
 	namespace   string
-	statefulset v1beta1.StatefulSetInterface
+	statefulset v1.StatefulSetInterface
 }
 
 //var (
 //	namespacesErr = errors.New("Namespace value isn't consistent with project name")
 //)
 
-func (d *statefulsets) processStatefulSetHandler(statefuleset *model.StatefulSet, handler func(*appsv1beta1.StatefulSet) (*appsv1beta1.StatefulSet, error)) (customModel *model.StatefulSet, primitiveData []byte, err error) {
+func (d *statefulsets) processStatefulSetHandler(statefuleset *model.StatefulSet, handler func(*appsv1.StatefulSet) (*appsv1.StatefulSet, error)) (customModel *model.StatefulSet, primitiveData []byte, err error) {
 	k8sStatefulSet := types.ToK8sStatefulSet(statefuleset)
 	handledSta, err := handler(k8sStatefulSet)
 	if err != nil {
@@ -132,7 +130,7 @@ func (d *statefulsets) CreateByYaml(r io.Reader) (*model.StatefulSet, error) {
 		return nil, err
 	}
 
-	var statefulset appsv1beta1.StatefulSet
+	var statefulset appsv1.StatefulSet
 	err = yaml.Unmarshal(context, &statefulset)
 	if err != nil {
 		logs.Error("Unmarshal statefulset failed, error: %v", err)
@@ -160,7 +158,7 @@ func (d *statefulsets) CheckYaml(r io.Reader) (*model.StatefulSet, error) {
 		return nil, err
 	}
 
-	var statefulset appsv1beta1.StatefulSet
+	var statefulset appsv1.StatefulSet
 	err = yaml.Unmarshal(context, &statefulset)
 	if err != nil {
 		logs.Error("Unmarshal statefulset failed, error: %v", err)
@@ -176,7 +174,7 @@ func (d *statefulsets) CheckYaml(r io.Reader) (*model.StatefulSet, error) {
 }
 
 // NewStatefulSets is to create a statefulset adapter
-func NewStatefulSets(namespace string, statefulset v1beta1.StatefulSetInterface) *statefulsets {
+func NewStatefulSets(namespace string, statefulset v1.StatefulSetInterface) *statefulsets {
 	return &statefulsets{
 		namespace:   namespace,
 		statefulset: statefulset,
