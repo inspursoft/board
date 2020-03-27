@@ -353,7 +353,10 @@ func getNodeListFromApiServer(nodeList *[]nodeModel.ApiServerNodeListResult) err
 		req.Header = http.Header{"Content-Type": []string{"application/json"}}
 		return nil
 	}, nil, func(req *http.Request, resp *http.Response) error {
-		return UnmarshalToJSON(resp.Body, nodeList)
+		if resp.StatusCode == 200 {
+			return UnmarshalToJSON(resp.Body, nodeList)
+		}
+		return fmt.Errorf("failed to get nodes from apiserver.status:%s;message:%s", resp.StatusCode, resp.Body)
 	})
 	return err
 }
