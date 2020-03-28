@@ -91,7 +91,7 @@ export const LANG_EN_US = {
     API_SERVER: {
       HOSTNAME: {
         NAME: 'Hostname',
-        TIPS: 'The IP address or hostname to access admin UI and Kubernetes Cluster apiserver. *DO NOT* use localhost or 127.0.0.1, because Board needs to be accessed by external clients.'
+        TIPS: 'The IP address or hostname to access admin UI and Kubernetes Cluster apiserver. DO NOT use localhost or 127.0.0.1, because Board needs to be accessed by external clients.'
       },
       API_SERVER_PORT: {
         NAME: 'Api server port',
@@ -374,5 +374,61 @@ export const LANG_EN_US = {
       CANCEL: 'Not now',
       APPLY: 'Yes, Do it',
     }
-  }
+  },
+  INITIALIZATION: {
+    TITLE: 'Adminserver Initialization',
+    BUTTONS: {
+      NEXT: 'Next',
+      TRANSLATE: '切换为汉语',
+      APPLY: 'Apply',
+      RESTART_DB: 'Restart DB',
+    },
+    PAGE_TITLE: {
+      WELCOME: 'Welcome to Adminserver',
+      UUID: 'Verify UUID',
+      DATABASE: 'Config Database',
+      SSH: 'Start Database',
+      ACCOUNT: 'Initialize Account',
+    },
+    PAGE_NAV_TITLE: {
+      WELCOME: 'Welcome',
+      UUID: 'Verify UUID',
+      DATABASE: 'Config Database',
+      SSH: 'Start Database',
+      ACCOUNT: 'Initialize Account',
+    },
+    TOOLS: {
+      LOADING: 'Loading...',
+    },
+    ALERTS: {
+      INITIALIZATION: 'Initialization error! Please check that the docker is working normally.',
+      UUID: 'Incorrect UUID! Please re-enter UUID!',
+      DATABASE: 'Database initialization failed! Please check that the docker is working normally.',
+      PASSWORDS_IDENTICAL: 'Passwords are not identical.',
+      MAX_CONNECTION: 'Database\'s max connection error!',
+      SSH: 'Network error or account error, please try again!',
+      ACCOUNT: 'Network error or docker error, please try again!',
+    },
+    CONTENTS: {
+      WELCOME: 'Welcome to Adminserver! Because this is the first time for the initialization process, you need to complete the following configurations to start the system normally.',
+      UUID: 'In order to confirm your identity, you need to enter the UUID in the /data/board/secrets folder for the next configuration.',
+      DATABASE: 'Requires to configure the database password to initialize the database. This step may take some time.',
+      SSH: 'Please enter the account and password of the host machine. Note: The account needs certain permissions to install and run related components. It will take some time to run.The system will not store your account and password.',
+      ACCOUNT: 'Initialize the administrator password of adminserver. The admin account will be shared with the board.',
+    },
+    LABELS: {
+      UUID: 'UUID',
+      MAX_CONNECTION: 'Max Connection',
+      PASSWORD: 'Password',
+      PASSWORD_CONFIRM: 'Confirm Password',
+      ACCOUNT: 'Account',
+    },
+    HELPER: {
+      REQUIRED: 'This field is required!',
+      NUMS: 'Requires 10 ~ 16384.',
+      MIN_LENGTH_8: 'It must be at least 8 characters!',
+      NOT_EDITABLE: 'Unable to edit!',
+    },
+    MODAL_TITLE: 'Database Error!',
+  },
 };

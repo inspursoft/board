@@ -81,62 +81,75 @@
               clrWizardSize="lg"
               [clrWizardClosable]="false"
               (clrWizardCurrentPageChanged)="checkBtn()">
-    <clr-wizard-title>Adminserver Initialization</clr-wizard-title>
+    <clr-wizard-title>{{ 'INITIALIZATION.TITLE' | translate }}</clr-wizard-title>
     <clr-wizard-button [type]="'next'"
-                       *ngIf="isCurrent">Next/下一步</clr-wizard-button>
+                       *ngIf="isCurrent">
+      {{ 'INITIALIZATION.BUTTONS.NEXT' | translate }}
+    </clr-wizard-button>
 
     <clr-wizard-page clrWizardPagePreventDefault="true"
                      (clrWizardPageOnCommit)="onWelcome()"
+                     (clrWizardPageCustomButton)="doCustomClick($event)"
                      [clrWizardPageNextDisabled]="disableInput">
-      <ng-template clrPageTitle>Welcome to Adminserver</ng-template>
-      <ng-template clrPageNavTitle>Welcome</ng-template>
+      <ng-template clrPageTitle>{{ 'INITIALIZATION.PAGE_TITLE.WELCOME' | translate }}</ng-template>
+      <ng-template clrPageNavTitle>{{ 'INITIALIZATION.PAGE_NAV_TITLE.WELCOME' | translate }}</ng-template>
       <clr-spinner *ngIf="loadingFlag">
-        Loading
+        {{ 'INITIALIZATION.TOOLS.LOADING' | translate }}
       </clr-spinner>
       <clr-alert *ngIf="errorFlag"
                  [clrAlertType]="'alert-danger'"
                  [clrCloseButtonAriaLabel]="'Close Answer alert'">
         <clr-alert-item>
-          Initialization error! Please check that the docker is working normally.
-          <br>
-          初始化错误！请检查Docker是否正常运行。
+          {{ 'INITIALIZATION.ALERTS.INITIALIZATION' | translate }}
         </clr-alert-item>
       </clr-alert>
       <div>
-        EN: Welcome to Adminserver! Because this is the first time for the initialization process, you need to complete
-        the following configurations to start the system normally.
-        <br>
-        汉: 欢迎使用Adminserver！由于这是第一次进行初始化流程，因此需要完成以下几项配置后才能正常启动系统。
+        {{ 'INITIALIZATION.CONTENTS.WELCOME' | translate }}
       </div>
+      <ng-template clrPageButtons>
+        <button class="btn"
+                [type]="'translate'"
+                (click)="onTranslate()"
+                [disabled]="disableInput">
+          <svg class="icon"
+               aria-hidden="true"
+               style="width: 2em; height: 2em; vertical-align: -0.6em; fill:#0065AB;">
+            <use xlink:href="#icon-translate"></use>
+          </svg>
+          {{ 'INITIALIZATION.BUTTONS.TRANSLATE' | translate }}
+        </button>
+        <button class="btn btn-primary"
+                [type]="'custom-next'"
+                (click)="onWelcome()"
+                *ngIf="isCurrent"
+                [disabled]="disableInput">
+          {{ 'INITIALIZATION.BUTTONS.NEXT' | translate }}
+        </button>
+      </ng-template>
     </clr-wizard-page>
 
     <clr-wizard-page clrWizardPagePreventDefault="true"
                      (clrWizardPageOnCommit)="onVerify()"
                      [clrWizardPageNextDisabled]="getUUID.pristine || !uuidForm.valid || disableInput">
-      <ng-template clrPageTitle>Verify UUID</ng-template>
+      <ng-template clrPageTitle>{{ 'INITIALIZATION.PAGE_TITLE.UUID' | translate }}</ng-template>
       <clr-spinner *ngIf="loadingFlag">
-        Loading
+        {{ 'INITIALIZATION.TOOLS.LOADING' | translate }}
       </clr-spinner>
       <clr-alert *ngIf="errorFlag"
                  [clrAlertType]="'alert-danger'"
                  [clrCloseButtonAriaLabel]="'Close Answer alert'">
         <clr-alert-item>
-          Incorrect UUID! Please re-enter UUID!
-          <br>
-          UUID错误！请重新输入！
+          {{ 'INITIALIZATION.ALERTS.UUID' | translate }}
         </clr-alert-item>
       </clr-alert>
       <form clrForm
             #uuidForm="ngForm"
             [class.hide]="loadingFlag">
         <div>
-          In order to confirm your identity, you need to enter the UUID in the /data/board/secrets folder for the
-          next configuration.
-          <br>
-          为了确认您的身份，需要您输入/data/board/secrets 文件夹中的UUID以进行下一步的配置。
+          {{ 'INITIALIZATION.CONTENTS.UUID' | translate }}
         </div>
         <clr-input-container>
-          <label>UUID</label>
+          <label> {{ 'INITIALIZATION.LABELS.UUID' | translate }} </label>
           <input clrInput
                  required
                  [(ngModel)]="uuid"
@@ -144,7 +157,7 @@
                  #getUUID="ngModel"
                  [disabled]="disableInput" />
           <clr-control-error>
-            This field is required!<br>必填项！
+            {{ 'INITIALIZATION.HELPER.REQUIRED' | translate }}
           </clr-control-error>
         </clr-input-container>
       </form>
@@ -154,47 +167,39 @@
                      (clrWizardPageOnCommit)="onInitDB()"
                      [clrWizardPageNextDisabled]="disableDbPwdForm || !dbPwdFrom.valid || disableInput"
                      *ngIf="showInitDB">
-      <ng-template clrPageTitle>Initialize Database</ng-template>
+      <ng-template clrPageTitle>{{ 'INITIALIZATION.PAGE_TITLE.DATABASE' | translate }}</ng-template>
       <clr-spinner *ngIf="loadingFlag">
-        Loading
+        {{ 'INITIALIZATION.TOOLS.LOADING' | translate }}
       </clr-spinner>
       <form clrForm
             #dbPwdFrom="ngForm"
             [class.hide]="loadingFlag">
         <div>
-          Requires to configure the database password to initialize the database. This step may take some time.
-          <br>
-          您需要配置数据库密码以初始化数据库。该步骤可能需要一些时间。
+          {{ 'INITIALIZATION.CONTENTS.UUID' | translate }}
         </div>
         <clr-alert *ngIf="errorFlag"
                    [clrAlertType]="'alert-danger'"
                    [clrCloseButtonAriaLabel]="'Close Answer alert'">
           <clr-alert-item>
-            Database initialization failed! Please check that the docker is working normally.
-            <br>
-            数据库初始化失败！请检查Docker是否正常运行。
+            {{ 'INITIALIZATION.ALERTS.DATABASE' | translate }}
           </clr-alert-item>
         </clr-alert>
         <clr-alert *ngIf="errorVerifyFlag"
                    [clrAlertType]="'alert-danger'"
                    [clrCloseButtonAriaLabel]="'Close Answer alert'">
           <clr-alert-item>
-            Passwords are not identical.
-            <br>
-            两次密码不一致！
+            {{ 'INITIALIZATION.ALERTS.PASSWORDS_IDENTICAL' | translate }}
           </clr-alert-item>
         </clr-alert>
         <clr-alert *ngIf="errorDBMaxFlag"
                    [clrAlertType]="'alert-danger'"
                    [clrCloseButtonAriaLabel]="'Close Answer alert'">
           <clr-alert-item>
-            Database's max connection error!
-            <br>
-            数据库最大连接数错误！
+            {{ 'INITIALIZATION.ALERTS.MAX_CONNECTION' | translate }}
           </clr-alert-item>
         </clr-alert>
         <clr-input-container>
-          <label>Max Connection 最大连接</label>
+          <label>{{ 'INITIALIZATION.LABELS.MAX_CONNECTION' | translate }}</label>
           <input clrInput
                  required
                  [(ngModel)]="dbInfo.maxConnection"
@@ -204,14 +209,14 @@
                  max="16384"
                  [disabled]="disableInput" />
           <clr-control-error *clrIfError="'required'">
-            This field is required!<br>必填项！
+            {{ 'INITIALIZATION.HELPER.REQUIRED' | translate }}
           </clr-control-error>
           <clr-control-helper>
-            Requires 10 ~ 16384.<br>接受10~16384。
+            {{ 'INITIALIZATION.HELPER.NUMS' | translate }}
           </clr-control-helper>
         </clr-input-container>
         <clr-password-container>
-          <label>Password 密码</label>
+          <label>{{ 'INITIALIZATION.LABELS.PASSWORD' | translate }}</label>
           <input clrPassword
                  required
                  [(ngModel)]="dbInfo.password"
@@ -221,16 +226,14 @@
                  [ngModelOptions]="{updateOn: 'blur'}"
                  [disabled]="disableInput" />
           <clr-control-error *clrIfError="'required'">
-            This field is required!<br>必填项！
+            {{ 'INITIALIZATION.HELPER.REQUIRED' | translate }}
           </clr-control-error>
           <clr-control-error *clrIfError="'minlength'">
-            It must be at least 8 characters!
-            <br>
-            至少8个字符！
+            {{ 'INITIALIZATION.HELPER.MIN_LENGTH_8' | translate }}
           </clr-control-error>
         </clr-password-container>
         <clr-password-container>
-          <label>Confirm Password 确认密码</label>
+          <label>{{ 'INITIALIZATION.LABELS.PASSWORD_CONFIRM' | translate }}</label>
           <input clrPassword
                  required
                  [(ngModel)]="dbInfo.passwordConfirm"
@@ -240,12 +243,10 @@
                  [ngModelOptions]="{updateOn: 'blur'}"
                  [disabled]="disableInput" />
           <clr-control-error *clrIfError="'required'">
-            This field is required!<br>必填项！
+            {{ 'INITIALIZATION.HELPER.REQUIRED' | translate }}
           </clr-control-error>
           <clr-control-error *clrIfError="'minlength'">
-            It must be at least 8 characters!
-            <br>
-            至少8个字符！
+            {{ 'INITIALIZATION.HELPER.MIN_LENGTH_8' | translate }}
           </clr-control-error>
         </clr-password-container>
       </form>
@@ -255,31 +256,25 @@
                      (clrWizardPageOnCommit)="onInitSSH()"
                      [clrWizardPageNextDisabled]="(getSSHUsername.pristine && getSSHPassword.pristine) || !sshForm.valid || disableInput"
                      *ngIf="showInitSSH">
-      <ng-template clrPageTitle>Initialize SSH Account</ng-template>
+      <ng-template clrPageTitle>{{ 'INITIALIZATION.PAGE_TITLE.SSH' | translate }}</ng-template>
       <clr-spinner *ngIf="loadingFlag">
-        Loading
+        {{ 'INITIALIZATION.TOOLS.LOADING' | translate }}
       </clr-spinner>
       <clr-alert *ngIf="errorFlag"
                  [clrAlertType]="'alert-danger'"
                  [clrCloseButtonAriaLabel]="'Close Answer alert'">
         <clr-alert-item>
-          Network error or account error, please try again!
-          <br>
-          网络错误或者账户错误，请重试！
+          {{ 'INITIALIZATION.ALERTS.SSH' | translate }}
         </clr-alert-item>
       </clr-alert>
       <form clrForm
             #sshForm="ngForm"
             [class.hide]="loadingFlag">
         <div>
-          Please enter the account and password of the host machine. Note: The account needs certain permissions to
-          install and run related components. It will take some time to run.The system will not store your account and
-          password.
-          <br>
-          请输入当前主机的账户及密码。注意：账户需要一定的权限用于安装并运行相关的组件。运行需要一些时间。系统不会存储您的账户及密码。
+          {{ 'INITIALIZATION.CONTENTS.UUID' | translate }}
         </div>
         <clr-input-container>
-          <label>Account 账户</label>
+          <label>{{ 'INITIALIZATION.LABELS.ACCOUNT' | translate }}</label>
           <input clrInput
                  required
                  [(ngModel)]="sshAccount.username"
@@ -287,11 +282,11 @@
                  #getSSHUsername="ngModel"
                  [disabled]="disableInput" />
           <clr-control-error>
-            This field is required!<br>必填项！
+            {{ 'INITIALIZATION.HELPER.REQUIRED' | translate }}
           </clr-control-error>
         </clr-input-container>
         <clr-password-container>
-          <label>Password 密码</label>
+          <label>{{ 'INITIALIZATION.LABELS.PASSWORD' | translate }}</label>
           <input clrPassword
                  required
                  [(ngModel)]="sshAccount.password"
@@ -299,52 +294,48 @@
                  #getSSHPassword="ngModel"
                  [disabled]="disableInput" />
           <clr-control-error *clrIfError="'required'">
-            This field is required!<br>必填项！
+            {{ 'INITIALIZATION.HELPER.REQUIRED' | translate }}
           </clr-control-error>
         </clr-password-container>
       </form>
     </clr-wizard-page>
 
     <clr-wizard-page>
-      <ng-template clrPageTitle>Initialize Account</ng-template>
+      <ng-template clrPageTitle>{{ 'INITIALIZATION.PAGE_TITLE.ACCOUNT' | translate }}</ng-template>
       <clr-spinner *ngIf="loadingFlag">
-        Loading
+        {{ 'INITIALIZATION.TOOLS.LOADING' | translate }}
       </clr-spinner>
       <form clrForm
             #accountForm="ngForm"
             [class.hide]="loadingFlag">
         <div>
-          Initialize the administrator password of adminserver. The admin account will be shared with the board.
-          <br>
-          初始化adminserver的管理员密码。该admin账户将与board共用。
+          {{ 'INITIALIZATION.CONTENTS.UUID' | translate }}
         </div>
         <clr-alert *ngIf="errorFlag"
                    [clrAlertType]="'alert-danger'"
                    [clrCloseButtonAriaLabel]="'Close Answer alert'">
           <clr-alert-item>
-            Network error or docker error, please try again!
-            <br>
-            网络错误或者docker运行错误，请重试！
+            {{ 'INITIALIZATION.ALERTS.ACCOUNT' | translate }}
           </clr-alert-item>
         </clr-alert>
         <clr-alert *ngIf="errorVerifyFlag"
                    [clrAlertType]="'alert-danger'"
                    [clrCloseButtonAriaLabel]="'Close Answer alert'">
           <clr-alert-item>
-            Passwords are not identical.
-            <br>
-            两次密码不一致！
+            {{ 'INITIALIZATION.ALERTS.PASSWORDS_IDENTICAL' | translate }}
           </clr-alert-item>
         </clr-alert>
         <clr-input-container>
-          <label>Account 账户名</label>
+          <label>{{ 'INITIALIZATION.LABELS.ACCOUNT' | translate }}</label>
           <input clrInput
                  value="admin"
                  disabled />
-          <clr-control-helper>Unable to edit!<br>不允许更改！</clr-control-helper>
+          <clr-control-helper>
+            {{ 'INITIALIZATION.HELPER.NOT_EDITABLE' | translate }}
+          </clr-control-helper>
         </clr-input-container>
         <clr-password-container>
-          <label>Password 密码</label>
+          <label>{{ 'INITIALIZATION.LABELS.PASSWORD' | translate }}</label>
           <input clrPassword
                  required
                  [(ngModel)]="account.password"
@@ -354,16 +345,14 @@
                  [ngModelOptions]="{updateOn: 'blur'}"
                  [disabled]="disableInput" />
           <clr-control-error *clrIfError="'required'">
-            This field is required!<br>必填项！
+            {{ 'INITIALIZATION.HELPER.REQUIRED' | translate }}
           </clr-control-error>
           <clr-control-error *clrIfError="'minlength'">
-            It must be at least 8 characters!
-            <br>
-            至少8个字符！
+            {{ 'INITIALIZATION.HELPER.MIN_LENGTH_8' | translate }}
           </clr-control-error>
         </clr-password-container>
         <clr-password-container>
-          <label>Confirm Password 确认密码</label>
+          <label>{{ 'INITIALIZATION.LABELS.PASSWORD_CONFIRM' | translate }}</label>
           <input clrPassword
                  required
                  [(ngModel)]="account.passwordConfirm"
@@ -373,12 +362,10 @@
                  [ngModelOptions]="{updateOn: 'blur'}"
                  [disabled]="disableInput" />
           <clr-control-error *clrIfError="'required'">
-            This field is required!<br>必填项！
+            {{ 'INITIALIZATION.HELPER.REQUIRED' | translate }}
           </clr-control-error>
           <clr-control-error *clrIfError="'minlength'">
-            It must be at least 8 characters!
-            <br>
-            至少8个字符！
+            {{ 'INITIALIZATION.HELPER.MIN_LENGTH_8' | translate }}
           </clr-control-error>
         </clr-password-container>
       </form>
@@ -386,39 +373,36 @@
         <button class="btn btn-primary"
                 [type]="'custom-finish'"
                 (click)="onInitAccount()"
-                [disabled]="disableAccountFrom || !accountForm.valid || disableInput">Apply</button>
+                [disabled]="disableAccountFrom || !accountForm.valid || disableInput">
+          {{ 'INITIALIZATION.BUTTONS.APPLY' | translate }}
+        </button>
       </ng-template>
     </clr-wizard-page>
   </clr-wizard>
 
   <clr-modal #modal>
-    <h3 class="modal-title">Database Error!</h3>
+    <h3 class="modal-title">{{ 'INITIALIZATION.MODAL_TITLE' | translate }}</h3>
     <div class="modal-body">
       <clr-alert *ngIf="errorFlag"
                  [clrAlertType]="'alert-danger'"
                  [clrCloseButtonAriaLabel]="'Close Answer alert'">
         <clr-alert-item>
-          Network error or account error, please try again!
-          <br>
-          网络错误或者账户错误，请重试！
+          {{ 'INITIALIZATION.ALERTS.SSH' | translate }}
         </clr-alert-item>
       </clr-alert>
       <div>
-        Please enter the account and password of the current host to restart the database. Note: The system will not
-        store your account and password.
-        <br>
-        请输入当前主机的账户及密码以重启数据库。注：系统不会存储您的账户及密码。
+        {{ 'INITIALIZATION.CONTENTS.UUID' | translate }}
       </div>
       <div style="text-align: center">
         <clr-spinner *ngIf="loadingFlag">
-          Loading
+          {{ 'INITIALIZATION.TOOLS.LOADING' | translate }}
         </clr-spinner>
       </div>
       <form clrForm
             #checkDBForm="ngForm"
             [class.hide]="loadingFlag">
         <clr-input-container>
-          <label>Account 账户</label>
+          <label>{{ 'INITIALIZATION.LABELS.ACCOUNT' | translate }}</label>
           <input clrInput
                  required
                  [(ngModel)]="sshAccount.username"
@@ -426,11 +410,11 @@
                  #getSSHUsername="ngModel"
                  [disabled]="disableInput" />
           <clr-control-error>
-            This field is required!<br>必填项！
+            {{ 'INITIALIZATION.HELPER.REQUIRED' | translate }}
           </clr-control-error>
         </clr-input-container>
         <clr-password-container>
-          <label>Password 密码</label>
+          <label>{{ 'INITIALIZATION.LABELS.PASSWORD' | translate }}</label>
           <input clrPassword
                  required
                  [(ngModel)]="sshAccount.password"
@@ -438,7 +422,7 @@
                  #getSSHPassword="ngModel"
                  [disabled]="disableInput" />
           <clr-control-error *clrIfError="'required'">
-            This field is required!<br>必填项！
+            {{ 'INITIALIZATION.HELPER.REQUIRED' | translate }}
           </clr-control-error>
         </clr-password-container>
       </form>
@@ -448,7 +432,7 @@
               class="btn btn-primary"
               (click)="onInitSSH()"
               [disabled]="!checkDBForm.valid || disableInput">
-        Retart DB/重启数据库
+        {{ 'INITIALIZATION.BUTTONS.RESTART_DB' | translate }}
       </button>
     </div>
   </clr-modal>

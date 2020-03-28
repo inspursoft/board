@@ -3,6 +3,7 @@ import { User, UserVerify, DBInfo } from '../account.model';
 import { AccountService } from '../account.service';
 import { Router } from '@angular/router';
 import { ClrWizard, ClrModal } from '@clr/angular';
+import { HeaderComponent } from 'src/app/shared/header/header.component';
 
 @Component({
   selector: 'app-sign-in',
@@ -37,6 +38,7 @@ export class SignInComponent implements OnInit {
   user: User;
 
   constructor(private accountService: AccountService,
+    private header: HeaderComponent,
     private router: Router) {
     this.account = new UserVerify();
     this.account.username = 'admin';
@@ -72,6 +74,15 @@ export class SignInComponent implements OnInit {
     //   this.showInitDB = false;
     //   this.showInitSSH = false;
     // }
+  }
+
+  public onTranslate(): void {
+    this.disableInput = true;
+    this.loadingFlag = true;
+    const currentLang = window.localStorage.getItem('currentLang');
+    const trans = (currentLang === 'en' || currentLang === 'en-us') ? 'zh-cn' : 'en';
+    window.localStorage.setItem('currentLang', trans);
+    this.header.changLanguage(trans);
   }
 
   onWelcome(): void {

@@ -94,7 +94,7 @@ export const LANG_ZH_CN = {
     API_SERVER: {
       HOSTNAME: {
         NAME: 'Board IP地址',
-        TIPS: 'Board服务部署的主机地址，*不要*使用localhost或者127.0.0.1上，因为Board需要被其他节点访问'
+        TIPS: 'Board服务部署的主机地址，不要使用localhost或者127.0.0.1上，因为Board需要被其他节点访问'
       },
       API_SERVER_PORT: {
         NAME: 'API服务器端口号',
@@ -377,5 +377,61 @@ export const LANG_ZH_CN = {
       CANCEL: '不生效',
       APPLY: '生效配置',
     }
+  },
+  INITIALIZATION: {
+    TITLE: 'Adminserver初始化',
+    BUTTONS: {
+      NEXT: '下一步',
+      TRANSLATE: 'Translate to English',
+      APPLY: '应用',
+      RESTART_DB: '重启数据库',
+    },
+    PAGE_TITLE: {
+      WELCOME: '欢迎使用Adminserver',
+      UUID: '验证UUID',
+      DATABASE: '配置数据库',
+      SSH: '启动数据库',
+      ACCOUNT: '初始化账户',
+    },
+    PAGE_NAV_TITLE: {
+      WELCOME: '欢迎页',
+      UUID: '验证UUID',
+      DATABASE: '配置数据库',
+      SSH: '启动数据库',
+      ACCOUNT: '初始化账户',
+    },
+    TOOLS: {
+      LOADING: '等待中···',
+    },
+    ALERTS: {
+      INITIALIZATION: '初始化错误！请检查Docker是否正常运行。',
+      UUID: 'UUID错误！请重新输入！',
+      DATABASE: '数据库初始化失败！请检查Docker是否正常运行。',
+      PASSWORDS_IDENTICAL: '两次密码不一致！',
+      MAX_CONNECTION: '数据库最大连接数错误！',
+      SSH: '网络错误或者账户错误，请重试！',
+      ACCOUNT: '网络错误或者docker运行错误，请重试！',
+    },
+    CONTENTS: {
+      WELCOME: '欢迎使用Adminserver！由于这是第一次进行初始化流程，因此需要完成以下几项配置后才能正常启动系统。',
+      UUID: '为了确认您的身份，需要您输入/data/board/secrets 文件夹中的UUID以进行下一步的配置。',
+      DATABASE: '您需要配置数据库密码以初始化数据库。该步骤可能需要一些时间。',
+      SSH: '请输入当前主机的账户及密码。注意：账户需要一定的权限用于安装并运行相关的组件。运行需要一些时间。系统不会存储您的账户及密码。',
+      ACCOUNT: '初始化adminserver的管理员密码。该admin账户将与board共用。',
+    },
+    LABELS: {
+      UUID: 'UUID',
+      MAX_CONNECTION: '最大连接数',
+      PASSWORD: '密码',
+      PASSWORD_CONFIRM: '确认密码',
+      ACCOUNT: '账户',
+    },
+    HELPER: {
+      REQUIRED: '必填项！',
+      NUMS: '接受10~16384。',
+      MIN_LENGTH_8: '至少包含8个字符！',
+      NOT_EDITABLE: '不允许更改！',
+    },
+    MODAL_TITLE: '数据库错误！',
   },
 };
