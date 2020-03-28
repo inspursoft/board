@@ -19,4 +19,4 @@ services:
 networks:
   dvserver_net:
     external:
-      name: dev_board
+      name: deploy_board

@@ -1,7 +1,10 @@
 version: '2'
 services:
   db:
-    image: board_db:6.2
+    build: 
+      context: ../../
+      dockerfile: make/dev/container/db/Dockerfile
+    image: dev_db:dev
     restart: always
     volumes:
       - /data/board/database:/var/lib/mysql

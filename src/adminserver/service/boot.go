@@ -2,6 +2,7 @@ package service
 
 import (
 	"git/inspursoft/board/src/adminserver/models"
+	board_utils "git/inspursoft/board/src/common/utils"
 	"github.com/astaxie/beego/orm"
 	"github.com/astaxie/beego/logs"
 	"path"
@@ -44,7 +45,7 @@ func InitDB(db *models.DBconf) error {
 		return err
 	}
 	cnf.WriteString("[mysqld]\n")
-	cnf.WriteString(fmt.Sprintf("max_connections=%s\n", db.MaxConnections))
+	cnf.WriteString(fmt.Sprintf("max_connections=%d\n", db.MaxConnections))
 
 	o := orm.NewOrm()
 	status := models.InitStatusInfo{Id: 1}
@@ -83,7 +84,7 @@ func StartDB(host *models.Account) error {
 		return err
 	}
 
-	time.Sleep(time.Duration(5)*time.Second)
+	time.Sleep(time.Duration(10)*time.Second)
 
 	b, err := ioutil.ReadFile(path.Join(models.DBconfigdir, "/env"))
 	if err != nil {
@@ -91,6 +92,9 @@ func StartDB(host *models.Account) error {
 	}
 	DBpassword := strings.TrimPrefix(string(b), "DB_PASSWORD=")
 	DBpassword = strings.Replace(DBpassword, "\n", "", 1)
+
+
+	board_utils.InitializeDefaultConfig()
 
 	orm.RegisterDriver("mysql", orm.DRMySQL)
 	err = orm.RegisterDataBase("mysql-db2", "mysql", fmt.Sprintf("root:%s@tcp(%s:%d)/board?charset=utf8", DBpassword, "db", 3306))
@@ -148,28 +152,31 @@ func StartBoard(host *models.Account) error {
 }
 
 func CheckDB() bool {
-
 	cmd := exec.Command("sh", "-c", "ping -q -c1 db > /dev/null 2>&1 && echo $?")
 	bytes, _ := cmd.Output()
 	result := strings.Replace(string(bytes), "\n", "", 1)
+	return (result == "0")
+}
 
-	if result == "0"{
+
+func RegisterDBWhenBooting() error {
+	cmd := exec.Command("sh", "-c", "ping -q -c1 db > /dev/null 2>&1 && echo $?")
+	bytes, _ := cmd.Output()
+	result := strings.Replace(string(bytes), "\n", "", 1)
+	if result == "0" {
 		b, err := ioutil.ReadFile(path.Join(models.DBconfigdir, "/env"))
 		if err != nil {
-			logs.Error("error occurred on get DB env: %+v", err)
-			panic(err)
+			return err
 		}
 		DBpassword := strings.TrimPrefix(string(b), "DB_PASSWORD=")
 		DBpassword = strings.Replace(DBpassword, "\n", "", 1)
-
 		orm.RegisterDriver("mysql", orm.DRMySQL)
 		err = orm.RegisterDataBase("mysql-db2", "mysql", fmt.Sprintf("root:%s@tcp(%s:%d)/board?charset=utf8", DBpassword, "db", 3306))
 		if err != nil {
-			logs.Error("error occurred on registering DB: %+v", err)
-			panic(err)
+			return err
 		}
-		return true
+		return nil
 	} else {
-		return false
+		return nil
 	}
 }

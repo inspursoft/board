@@ -3,8 +3,8 @@ package controllers
 import (
 	"git/inspursoft/board/src/adminserver/service"
 	"git/inspursoft/board/src/adminserver/models"
+	"git/inspursoft/board/src/common/utils"
 	"net/http"
-	"encoding/json"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 )
@@ -31,7 +31,7 @@ func (b *BoardController) Restart() {
 		b.ServeJSON()	
 		return
 	} else {
-		json.Unmarshal(b.Ctx.Input.RequestBody, &host)
+		utils.UnmarshalToJSON(b.Ctx.Request.Body, &host)
 		if err := service.Restart(&host); err != nil {
 			b.CustomAbort(http.StatusBadRequest, err.Error())
 			logs.Error(err)
@@ -59,7 +59,7 @@ func (b *BoardController) Applycfg() {
 		b.ServeJSON()	
 		return
 	} else {
-		json.Unmarshal(b.Ctx.Input.RequestBody, &host)
+		utils.UnmarshalToJSON(b.Ctx.Request.Body, &host)
 		if err := service.Applycfg(&host); err != nil {
 			b.CustomAbort(http.StatusBadRequest, err.Error())
 			logs.Error(err)
@@ -87,7 +87,7 @@ func (b *BoardController) Shutdown() {
 		b.ServeJSON()	
 		return
 	} else {
-		json.Unmarshal(b.Ctx.Input.RequestBody, &host)
+		utils.UnmarshalToJSON(b.Ctx.Request.Body, &host)
 		if err := service.Shutdown(&host); err != nil {
 			b.CustomAbort(http.StatusBadRequest, err.Error())
 			logs.Error(err)

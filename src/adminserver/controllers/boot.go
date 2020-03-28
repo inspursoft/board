@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"encoding/json"
 	"git/inspursoft/board/src/adminserver/models"
 	"git/inspursoft/board/src/adminserver/service"
+	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego"
@@ -22,7 +22,7 @@ type BootController struct {
 // @router /initdb [post]
 func (b *BootController) Initdb() {
 	var db models.DBconf
-	json.Unmarshal(b.Ctx.Input.RequestBody, &db)
+	utils.UnmarshalToJSON(b.Ctx.Request.Body, &db)
 	if err := service.InitDB(&db); err != nil {
 		b.CustomAbort(http.StatusBadRequest, err.Error())
 		logs.Error(err)
@@ -40,7 +40,7 @@ func (b *BootController) Initdb() {
 // @router /startdb [post]
 func (b *BootController) Startdb() {
 	var host models.Account
-	json.Unmarshal(b.Ctx.Input.RequestBody, &host)
+	utils.UnmarshalToJSON(b.Ctx.Request.Body, &host)
 	if err := service.StartDB(&host); err != nil {
 		b.CustomAbort(http.StatusBadRequest, err.Error())
 		logs.Error(err)
@@ -67,7 +67,7 @@ func (b *BootController) Start() {
 		b.ServeJSON()	
 		return
 	} else {
-		json.Unmarshal(b.Ctx.Input.RequestBody, &host)
+		utils.UnmarshalToJSON(b.Ctx.Request.Body, &host)
 		if err := service.StartBoard(&host); err != nil {
 			b.CustomAbort(http.StatusBadRequest, err.Error())
 			logs.Error(err)

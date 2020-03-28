@@ -4,7 +4,7 @@ services:
     build:
       context: ../../
       dockerfile: make/dev/container/adminserver/Dockerfile
-    image: adminserver:dev
+    image: dev_adminserver:dev
     restart: always
     volumes:
       - ../:/go/cfgfile
@@ -13,7 +13,6 @@ services:
       - /usr/bin/docker:/usr/bin/docker
       - /data/board/database:/data/board/database
       - /data/board/ansible_k8s:/data/board/ansible_k8s
-      - /data/board/Deploy:/data/board/Deploy
       - /data/board/make:/data/board/make
     env_file:
     - ./env
@@ -25,7 +24,7 @@ services:
     build:
       context: ../../
       dockerfile: make/dev/container/proxy-adminserver/Dockerfile
-    image: proxy-adminserver:dev
+    image: dev_proxy-adminserver:dev
     depends_on: 
       - adminserver
     restart: always

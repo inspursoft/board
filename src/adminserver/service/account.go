@@ -23,6 +23,8 @@ const (
 	adminUserID            = 1
 )
 
+var configStorage map[string]interface{}
+
 //VerifyPassword compares the password in cfg with the input one.
 func VerifyPassword(passwd *models.Password) (a bool, err string) {
 	var statusMessage string = "OK"
@@ -55,32 +57,6 @@ func VerifyPassword(passwd *models.Password) (a bool, err string) {
 //Initialize save the account information into a file.
 func Initialize(acc *models.Account) string {
 	var statusMessage string = "OK"
-/*
-	_, pubKey := encryption.GenKey("rsa")
-	ciphertext := encryption.Encrypt("rsa", []byte(acc.Password), pubKey)
-
-	err1 := os.Rename("./private.pem", "./private_acc.pem")
-	if err1 != nil {
-		log.Print(err1)
-		statusMessage = "BadRequest"
-	}
-
-	o := orm.NewOrm()
-	o.Using("mysql-db2")
-	account := models.Account{Username: acc.Username, Password: hex.EncodeToString(ciphertext)}
-
-	if o.Read(&models.Account{Id: 1}) == orm.ErrNoRows {
-		if _, err := o.Insert(&account); err != nil {
-			log.Print(err)
-			statusMessage = "BadRequest"
-		}	
-	} else {
-		if _, err := o.Update(&account); err != nil {
-			log.Print(err)
-			statusMessage = "BadRequest"
-		}	
-	}
-*/
 
 	if acc.Password == "" {
 		acc.Password = defaultInitialPassword
@@ -96,8 +72,7 @@ func Initialize(acc *models.Account) string {
 	if err != nil {
 		logs.Error("Failed to update user password: %+v", err)
 		statusMessage = "BadRequest"
-	}
-	if err == nil {
+	} else {
 		utils.SetConfig("SET_ADMIN_PASSWORD", "updated")
 
 		config, err := dao.GetConfig("SET_ADMIN_PASSWORD")
@@ -125,6 +100,20 @@ func Initialize(acc *models.Account) string {
 	if statusMessage == "OK" {
 		o2 := orm.NewOrm()
 		o2.Using("default")
+
+		account := models.Account{Username: acc.Username, Password: acc.Password}
+		if o2.Read(&models.Account{Id: 1}) == orm.ErrNoRows {
+			if _, err := o2.Insert(&account); err != nil {
+				log.Print(err)
+				statusMessage = "BadRequest"
+			}	
+		} else {
+			if _, err := o2.Update(&account); err != nil {
+				log.Print(err)
+				statusMessage = "BadRequest"
+			}	
+		}
+
 		status := models.InitStatusInfo{Id: 1}
 		err := o2.Read(&status)
 		if err == orm.ErrNoRows {
@@ -149,9 +138,17 @@ func Login(acc *models.Account) (bool, string, string) {
 
 	o := orm.NewOrm()
 	o.Using("mysql-db2")
+
+	user := models.User{Username: acc.Username, Deleted: 0}
+	err := o.Read(&user, "username", "deleted")
+	if err != nil {
+		log.Print(err)
+		statusMessage = "BadRequest"
+	}
+
 	query := models.User{Username: acc.Username, Password: acc.Password}
-	query.Password = utils.Encrypt(query.Password, query.Salt)
-	err := o.Read(&query, "username", "password")
+	query.Password = utils.Encrypt(query.Password, user.Salt)
+	err = o.Read(&query, "username", "password")
 
 	if err == nil {
 		permission = true
@@ -265,10 +262,10 @@ func VerifyToken(input string) bool {
 	token := models.Token{Id: 1}
 	err := o.Read(&token)
 	if err == orm.ErrNoRows {
-		fmt.Println("not found")
+		logs.Info("token not found")
 		return false
 	} else if err == orm.ErrMissPK {
-		fmt.Println("pk missing")
+		logs.Info("token pk missing")
 		return false
 	} 
 

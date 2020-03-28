@@ -3,7 +3,7 @@ package controllers
 import (
 	"git/inspursoft/board/src/adminserver/models"
 	"git/inspursoft/board/src/adminserver/service"
-	"encoding/json"
+	"git/inspursoft/board/src/common/utils"
 	"net/http"
 
 	"github.com/astaxie/beego"
@@ -33,7 +33,7 @@ func (u *CfgController) Post() {
 		return
 	} else {
 		//transferring JSON to struct.
-		json.Unmarshal(u.Ctx.Input.RequestBody, &cfg)
+		utils.UnmarshalToJSON(u.Ctx.Request.Body, &cfg)
 		statusMessage := service.UpdateCfg(&cfg)
 		if statusMessage == "BadRequest" {
 			statusCode = http.StatusBadRequest

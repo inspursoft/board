@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"encoding/json"
+	"git/inspursoft/board/src/common/utils"
 	"git/inspursoft/board/src/adminserver/models"
 	"git/inspursoft/board/src/adminserver/service"
 	"net/http"
@@ -23,8 +23,7 @@ type AccController struct {
 func (a *AccController) Verify() {
 	var statusCode int = http.StatusOK
 	var passwd models.Password
-	json.Unmarshal(a.Ctx.Input.RequestBody, &passwd)
-
+	utils.UnmarshalToJSON(a.Ctx.Request.Body, &passwd)
 	v, statusMessage := service.VerifyPassword(&passwd)
 	if v == true {
 		a.Data["json"] = "success"
@@ -49,7 +48,7 @@ func (a *AccController) Initialize() {
 	var acc models.Account
 	var statusCode int = http.StatusOK
 	//transferring JSON to struct.
-	json.Unmarshal(a.Ctx.Input.RequestBody, &acc)
+	utils.UnmarshalToJSON(a.Ctx.Request.Body, &acc)
 	statusMessage := service.Initialize(&acc)
 	if statusMessage == "BadRequest" {
 		statusCode = http.StatusBadRequest
@@ -68,7 +67,7 @@ func (a *AccController) Login() {
 	var acc models.Account
 	var statusCode int = http.StatusOK
 	//transferring JSON to struct.
-	json.Unmarshal(a.Ctx.Input.RequestBody, &acc)
+	utils.UnmarshalToJSON(a.Ctx.Request.Body, &acc)
 	permission, statusMessage, token := service.Login(&acc)
 	if permission == true {
 		a.Data["json"] = token
@@ -129,7 +128,7 @@ func (a *AccController) CreateUUID() {
 func (a *AccController) ValidateUUID() {
 	var statusCode int = http.StatusOK
 	var uuid models.UUID
-	json.Unmarshal(a.Ctx.Input.RequestBody, &uuid)
+	utils.UnmarshalToJSON(a.Ctx.Request.Body, &uuid)
 	result, statusMessage := service.ValidateUUID(uuid.UUID)
 	if result == true {
 		a.Data["json"] = "validate success"

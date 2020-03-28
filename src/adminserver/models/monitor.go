@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"time"
 	"github.com/astaxie/beego/orm"
+	"os"
 )
 
 //Boardinfo contains information output by docker ps and docker stats commands.
@@ -69,3 +70,6 @@ func InitInstallationStatus() error {
 	} 
 	return nil
 }
+
+var ImagePrefix string = os.Getenv("IMAGE_PREFIX")
+var ContainerPrefix string = os.Getenv("CONTAINER_PREFIX")

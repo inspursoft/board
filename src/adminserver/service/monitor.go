@@ -12,7 +12,7 @@ import (
 func GetMonitor() (a []*models.Boardinfo, b string) {
 
 	var statusMessage string = "OK"
-	command := "docker ps -a --format \"table {{.ID}}\\t{{.Image}}\\t{{.CreatedAt}}\\t{{.Status}}\\t{{.Ports}}\" | grep board"
+	command := "docker ps -a --format \"table {{.ID}}\\t{{.Image}}\\t{{.CreatedAt}}\\t{{.Status}}\\t{{.Ports}}\" | grep " + models.ImagePrefix
 	cmd := exec.Command("/bin/bash", "-c", command)
 	bytes, err := cmd.Output()
 	if err != nil {
@@ -27,7 +27,7 @@ func GetMonitor() (a []*models.Boardinfo, b string) {
 	containersAdd := make([]*models.Boardinfo, row)
 	containersVal := make([]models.Boardinfo, row)
 
-	command2 := "docker stats -a --no-stream --format \"table {{.Name}}\\t{{.CPUPerc}}\\t{{.MemUsage}}\\t{{.NetIO}}\\t{{.BlockIO}}\\t{{.MemPerc}}\\t{{.PIDs}}\" | grep deploy"
+	command2 := "docker stats -a --no-stream --format \"table {{.Name}}\\t{{.CPUPerc}}\\t{{.MemUsage}}\\t{{.NetIO}}\\t{{.BlockIO}}\\t{{.MemPerc}}\\t{{.PIDs}}\" | grep " + models.ContainerPrefix
 	cmd2 := exec.Command("/bin/bash", "-c", command2)
 	bytes2, err := cmd2.Output()
 	if err != nil {

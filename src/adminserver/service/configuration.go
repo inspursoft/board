@@ -6,7 +6,6 @@ import (
 	"github.com/astaxie/beego/orm"
 	"github.com/astaxie/beego/logs"
 	"strings"
-	"encoding/hex"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -14,8 +13,6 @@ import (
 	"path"
 
 	"github.com/alyu/configparser"
-	
-	"encoding/base64"
 )
 
 //GetAllCfg returns the original data read from cfg file.
@@ -91,36 +88,18 @@ func UpdateCfg(cfg *models.Configuration) string {
 		statusMessage = "BadRequest"
 	}
 
-	//ENCRYPTION
-	//existingPassword := section.ValueOf("board_admin_password")
-	if cfg.Other.BoardAdminPassword != "" {
-		prvKey, _ := ioutil.ReadFile("./private.pem")
-		test, _ := base64.StdEncoding.DecodeString(cfg.Other.BoardAdminPassword)
-		cfg.Other.BoardAdminPassword = string(encryption.Decrypt("rsa", test, prvKey))
-	} else {
-		o := orm.NewOrm()
-		o.Using("mysql-db2")
-		account := models.Account{Id: 1}
-		err := o.Read(&account)
-		if err == orm.ErrNoRows {
-			fmt.Println("not found")
-		} else if err == orm.ErrMissPK {
-			fmt.Println("pk missing")
-		} 
-		ciphertext := account.Password
-
-		prvKey, err2 := ioutil.ReadFile("./private_acc.pem")
-		if err2 != nil {
-			log.Print(err2)
-			statusMessage = "BadRequest"
-		}
-		test, err3 := hex.DecodeString(ciphertext)
-		if err3 != nil {
-			log.Print(err3)
-			statusMessage = "BadRequest"
-		}
-		password := string(encryption.Decrypt("rsa", test, prvKey))
-		cfg.Other.BoardAdminPassword = password
+	o := orm.NewOrm()
+	o.Using("default")
+	account := models.Account{Id: 1}
+	err := o.Read(&account)
+	if err == orm.ErrNoRows {
+		fmt.Println("not found")
+	} else if err == orm.ErrMissPK {
+		fmt.Println("pk missing")
+	} 
+	cfg.Other.BoardAdminPassword = account.Password
+	if _, err = o.Delete(&account); err != nil {
+		logs.Error(err)
 	}
 
 	b, err := ioutil.ReadFile(path.Join(models.DBconfigdir, "/env"))

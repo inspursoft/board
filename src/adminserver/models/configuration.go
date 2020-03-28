@@ -310,8 +310,8 @@ var Boardcompose string = os.Getenv("BOARD_COMPOSE")
 var PrepareFile string = os.Getenv("PREPARE_FILE")
 
 type DBconf struct {
-	Password   		string `json:"db_password"`
-	MaxConnections	string `json:"db_max_connections"`
+	Password   		string	`json:"db_password"`
+	MaxConnections	int 	`json:"db_max_connections"`
 }
 
 type User struct {
