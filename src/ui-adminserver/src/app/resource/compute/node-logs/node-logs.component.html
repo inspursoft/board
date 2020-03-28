@@ -9,7 +9,8 @@
     <clr-dg-cell>{{nodeLog.ip}}</clr-dg-cell>
     <clr-dg-cell>{{nodeLog.creationTime * 1000 | date: "short"}}</clr-dg-cell>
     <clr-dg-cell>
-      {{nodeLog.type === 1 ? 'Node.Node_Detail_Remove' : 'Node.Node_Detail_Add' | translate}}
+      <span *ngIf="nodeLog.type === 0">{{'Node.Node_Detail_Add' | translate}}</span>
+      <span *ngIf="nodeLog.type === 1">{{'Node.Node_Detail_Remove' | translate}}</span>
     </clr-dg-cell>
     <clr-dg-cell [style.background-color]="nodeLog.success ? 'lightgreen' : 'transparent'">
       {{nodeLog.success}}
@@ -24,7 +25,8 @@
             <clr-icon shape="stop" class="is-solid" (click)="stopExecuting(nodeLog)"></clr-icon>
           </a>
           <span class="spinner spinner-sm"></span>
-          {{nodeLog.type === 1 ? 'Node.Node_Logs_Removing' : 'Node.Node_Logs_Adding' | translate}}
+          <span *ngIf="nodeLog.type === 0">{{'Node.Node_Logs_Adding' | translate}}</span>
+          <span *ngIf="nodeLog.type === 1">{{'Node.Node_Logs_Removing' | translate}}</span>
         </div>
       </div>
     </clr-dg-cell>

@@ -181,7 +181,9 @@ func InsertLogDetail(ip, logFileName string, creationTime int64) error {
 	if dao.GlobalCache.IsExist(ip) {
 		logCache = *dao.GlobalCache.Get(ip).(*nodeModel.NodeLogCache)
 	} else {
-		logs.Info(fmt.Sprintf("No cache data for node:%s", ip))
+		errStr := fmt.Sprintf("No cache data for node:%s", ip)
+		logs.Info(errStr)
+		logCache.DetailBuffer.WriteString(errStr)
 	}
 
 	if _, err := os.Stat(logFileName); os.IsExist(err) {
@@ -199,8 +201,14 @@ func InsertLogDetail(ip, logFileName string, creationTime int64) error {
 	detail := nodeModel.NodeLogDetailInfo{
 		CreationTime: creationTime,
 		Detail:       logCache.DetailBuffer.String()}
-	if _, err := nodeDao.InsertNodeLogDetail(&detail); err != nil {
-		logs.Info(err.Error())
+	if nodeDao.CheckNodeLogDetailExists(creationTime) {
+		if err := nodeDao.UpdateNodeLogDetail(&detail); err != nil {
+			return err
+		}
+	} else {
+		if _, err := nodeDao.InsertNodeLogDetail(&detail); err != nil {
+			return err
+		}
 	}
 	return nil
 }

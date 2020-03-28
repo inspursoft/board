@@ -71,7 +71,7 @@ export const LANG_EN_US = {
     Node_Logs_Ip: 'IP',
     Node_Logs_Operation_Time: 'Operation time',
     Node_Logs_PID: 'PID',
-    Node_Logs_Type: 'Add/Delete',
+    Node_Logs_Type: 'Add/Remove',
     Node_Logs_Success: 'Success',
     Node_Logs_Operation: 'Operation',
     Node_Logs_Empty: 'Node log list is empty',

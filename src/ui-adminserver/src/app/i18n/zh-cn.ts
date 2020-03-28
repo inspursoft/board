@@ -72,7 +72,7 @@ export const LANG_ZH_CN = {
     Node_Logs_Ip: 'IP',
     Node_Logs_Operation_Time: '操作时间',
     Node_Logs_PID: 'PID',
-    Node_Logs_Type: '添加/删除',
+    Node_Logs_Type: '添加/移除',
     Node_Logs_Success: '是否成功',
     Node_Logs_Operation: '操作',
     Node_Logs_Empty: '节点操作日志为空',
