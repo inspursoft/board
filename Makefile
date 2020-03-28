@@ -18,16 +18,16 @@
 DEVFLAG=release
 
 # ARCH default is x86_64, also support mips, arm64v8
-ARCH=arm64v8
+ARCH=
 
 ifeq ($(DEVFLAG), release) 
 	BASEIMAGE=alpine:3.7
-	GOBUILDIMAGE=golang:1.9.6-alpine3.7
+	GOBUILDIMAGE=inspursoft/go-builder:1.14.1-alpine
 	WORKPATH=release
 	IMAGEPREFIX=board
 else
 	BASEIMAGE=ubuntu:14.04
-	GOBUILDIMAGE=golang:1.9.6
+	GOBUILDIMAGE=golang:1.14.0
 	WORKPATH=dev
 	IMAGEPREFIX=dev
 endif 
@@ -102,9 +102,9 @@ endif
 
 # Package lists
 # TOPLEVEL_PKG := .
-INT_LIST := apiserver tokenserver collector/cmd
+INT_LIST := adminserver apiserver tokenserver collector/cmd
 ifndef ARCH
-	IMG_LIST := adminserver apiserver tokenserver log collector jenkins db proxy proxy-adminserver gogits grafana graphite elasticsearch kibana chartmuseum
+	IMG_LIST := adminserver apiserver tokenserver log collector jenkins db proxy adminserver_proxy gogits grafana graphite elasticsearch kibana chartmuseum
 else
 	IMG_LIST := apiserver tokenserver log collector jenkins db proxy gogits
 endif
@@ -224,7 +224,7 @@ package: prepare_composefile
 #	@cp NOTICE $(PKGTEMPPATH)/NOTICE
 	@sed -i "s/..\/config/.\/config/" $(PKGTEMPPATH)/docker-compose.yml
 	@echo "pcakage images ..."
-	@$(DOCKERSAVE) -o $(PKGTEMPPATH)/$(IMAGEPREFIX)_deployment.$(VERSIONTAG).tgz $(PKG_LIST)
+	@$(DOCKERSAVE) -o $(PKGTEMPPATH)/$(IMAGEPREFIX)_deployment.$(VERSIONTAG).tgz $(PKG_LIST) k8s_install:1
 	@$(TARCMD) -zcvf $(PKGNAME)-offline-installer-$(VERSIONTAG)${if ${ARCH},.${ARCH}}.tgz $(PKGTEMPPATH)
 
 	@rm -rf $(PACKAGEPATH)

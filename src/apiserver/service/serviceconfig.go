@@ -28,9 +28,10 @@ const (
 	defaultDeleted     = 0
 	defaultStatus      = 1
 	serviceNamespace   = "default" //TODO create namespace in project post
-	scaleKind          = "Deployment"
 	k8sService         = "kubernetes"
 )
+
+var scaleKind = model.GroupResource{Group: "apps", Resource: "deployments"}
 
 const (
 	board = iota
@@ -477,13 +478,14 @@ func MarshalService(serviceConfig *model.ConfigServiceStep) *model.Service {
 	var spectype = "ClusterIP"
 	ports := make([]model.ServicePort, 0)
 	for index, port := range serviceConfig.ExternalServiceList {
-		ports = append(ports, model.ServicePort{
-			Name:     "port" + strconv.Itoa(index),
-			Port:     int32(port.NodeConfig.TargetPort),
-			NodePort: int32(port.NodeConfig.NodePort),
-		})
-		if port.NodeConfig.NodePort != 0 {
+		// NodePort 0 is for auto nodeport
+		if port.NodeConfig != (model.NodeType{}) {
 			spectype = "NodePort"
+			ports = append(ports, model.ServicePort{
+				Name:     "port" + strconv.Itoa(index),
+				Port:     int32(port.NodeConfig.TargetPort),
+				NodePort: int32(port.NodeConfig.NodePort),
+			})
 		}
 	}
 

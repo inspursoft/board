@@ -3,6 +3,9 @@ import { interval, Subscription } from 'rxjs';
 import { NodeActionsType, NodeLog, NodeLogs } from '../../resource.types';
 import { ResourceService } from '../../services/resource.service';
 import { NodeDetailComponent } from '../node-detail/node-detail.component';
+import { MessageService } from '../../../shared/message/message.service';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Message, ReturnStatus } from '../../../shared/message/message.types';
 
 @Component({
   selector: 'app-node-logs',
@@ -17,6 +20,7 @@ export class NodeLogsComponent implements OnInit, OnDestroy {
 
   constructor(private resourceService: ResourceService,
               private resolver: ComponentFactoryResolver,
+              private messageService: MessageService,
               private view: ViewContainerRef) {
     this.nodeLogs = new NodeLogs({});
   }
@@ -35,8 +39,21 @@ export class NodeLogsComponent implements OnInit, OnDestroy {
       .subscribe((res: NodeLogs) => this.nodeLogs = res);
   }
 
-  deleteLog(log: NodeLog) {
-
+  deleteLogInfo(log: NodeLog) {
+    this.messageService.showDeleteDialog('Node.Node_Logs_Delete_Ask').subscribe((msg: Message) => {
+      if (msg.returnStatus === ReturnStatus.rsConfirm) {
+        this.resourceService.deleteNodeLog(log.creationTime).subscribe(
+          () => this.messageService.showAlert('Node.Node_Logs_Delete_Log_Success'),
+          (res: HttpErrorResponse) => {
+            if (res.status === 409) {
+              this.messageService.cleanNotification();
+              this.messageService.showAlert('Node.Node_Logs_Delete_Log_In_Use', {alertType: 'warning'});
+            }
+          },
+          () => this.retrieve()
+        );
+      }
+    });
   }
 
   showLogDetail(log: NodeLog) {

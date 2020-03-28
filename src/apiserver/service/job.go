@@ -313,7 +313,10 @@ func SyncJobK8sStatus(jobList []*model.JobStatusMO) error {
 			reason = "The job is not established in cluster system"
 			status = model.Uncompleted
 		} else if job.Status.CompletionTime == nil {
-			if job.Status.Active > 0 {
+			if job.Status.Failed >= *job.Spec.BackoffLimit {
+				logs.Info("The job has reached the specified backoff limit")
+				status = model.Failed
+			} else if job.Status.Active > 0 {
 				logs.Info("The job is running")
 				status = model.Running
 			} else {

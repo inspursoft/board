@@ -1,29 +1,13 @@
-FROM golang:alpine
+FROM alpine:3.7
 
-COPY src/adminserver /go/src/git/inspursoft/board/src/adminserver
-COPY src/vendor /go/src/git/inspursoft/board/src/vendor
-COPY VERSION /go/bin/VERSION
+RUN echo http://mirrors.ustc.edu.cn/alpine/v3.7/main > /etc/apk/repositories; \
+echo http://mirrors.ustc.edu.cn/alpine/v3.7/community >> /etc/apk/repositories; \
+apk add --no-cache openssh openssh-client openssl
 
-RUN apk update \
-    && apk add --no-cache build-base\
-    && rm -rf /var/cache/apk/*
+ADD make/release/container/adminserver/adminserver /usr/bin/adminserver
+COPY VERSION /usr/bin/VERSION
 
-ENV GO111MODULE=on
-ENV GOPROXY=https://goproxy.io,direct
-
-WORKDIR /go/src/git/inspursoft/board/src/
-
-RUN go mod init && \
-    go mod vendor
-
-WORKDIR /go/src/git/inspursoft/board/src/adminserver
-
-RUN go build -mod=vendor -v -o /go/bin/adminserver && \
-    chmod u+x /go/bin/adminserver
-
-VOLUME ["/go/cfgfile"]
-
-WORKDIR /go/bin/
+WORKDIR /usr/bin/
 
 CMD ["adminserver"]
 
