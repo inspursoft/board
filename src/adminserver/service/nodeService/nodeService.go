@@ -280,6 +280,7 @@ func DeleteNodeLogInfo(logTimestamp int64) error {
 
 func GetNodeLogDetail(logTimestamp int64, nodeIp string, nodeLogDetail *[]nodeModel.NodeLogDetail) error {
 	var reader *bufio.Reader
+	var cacheBuffer = bytes.NewBuffer([]byte{})
 	if CheckExistsInCache(nodeIp) {
 		logCache := dao.GlobalCache.Get(nodeIp).(*nodeModel.NodeLogCache)
 		logFilePath := path.Join(nodeModel.BasePath, nodeModel.LogFileDir)
@@ -291,12 +292,13 @@ func GetNodeLogDetail(logTimestamp int64, nodeIp string, nodeLogDetail *[]nodeMo
 			if fileContent, err := ioutil.ReadFile(logFileName); err != nil {
 				return err
 			} else {
-				if _, writeErr := logCache.DetailBuffer.Write(fileContent); writeErr != nil {
+				cacheBuffer.Write(logCache.DetailBuffer.Bytes())
+				if _, writeErr := cacheBuffer.Write(fileContent); writeErr != nil {
 					return writeErr
 				}
 			}
 		}
-		reader = bufio.NewReader(strings.NewReader(logCache.DetailBuffer.String()))
+		reader = bufio.NewReader(strings.NewReader(cacheBuffer.String()))
 	} else {
 		detailInfo, err := nodeDao.GetNodeLogDetail(logTimestamp)
 		if err != nil {
