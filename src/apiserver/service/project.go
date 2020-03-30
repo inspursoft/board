@@ -9,6 +9,7 @@ import (
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"os"
+	"strings"
 
 	"github.com/astaxie/beego/logs"
 
@@ -348,4 +349,23 @@ func DeleteNamespace(nameSpace string) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+func ModifyProjectPullRequestCount(projectID int64, operation string) (bool, error) {
+	project, err := GetProjectByID(projectID)
+	if err != nil {
+		logs.Error("Failed to get project by ID: %d with error: %+v", projectID, err)
+		return false, err
+	}
+	if project == nil {
+		logs.Error("Project does not exist by ID: %d", projectID)
+		return false, nil
+	}
+	if operation == "increase" {
+		project.PullRequestCount++
+	} else if operation == "reset" && project.PullRequestCount > 0 {
+		project.PullRequestCount = 0
+	}
+	logs.Debug("%s pull request count, current value: %d", strings.ToTitle(operation), project.PullRequestCount)
+	return UpdateProject(*project, "PullRequestCount")
 }

@@ -28,6 +28,7 @@ var kvmRegistryPath = utils.GetConfig("KVM_REGISTRY_PATH")
 var kvmRegistrySize = utils.GetConfig("KVM_REGISTRY_SIZE")
 var kvmRegistryPort = utils.GetConfig("KVM_REGISTRY_PORT")
 var kvmToolkitsPath = utils.GetConfig("KVM_TOOLKITS_PATH")
+var apiServerURL = utils.GetConfig("BOARD_API_BASE_URL")
 
 func CreateRepoAndJob(userID int64, projectName string) error {
 
@@ -69,7 +70,21 @@ func CreateRepoAndJob(userID int64, projectName string) error {
 		logs.Error("Failed to create repo: %s, error %+v", repoName, err)
 		return err
 	}
-	err = gogsHandler.CreateHook(username, repoName)
+	jenkinsHookURL := fmt.Sprintf("%s/generic-webhook-trigger/invoke", JenkinsBaseURL())
+	err = gogsHandler.CreateHook(username, repoName, jenkinsHookURL, "push")
+	if err != nil {
+		logs.Error("Failed to create hook to repo: %s, error: %+v", repoName, err)
+	}
+
+	project, err := GetProjectByName(projectName)
+	if err != nil {
+		return fmt.Errorf("failed to get project: %+v", err)
+	}
+	if project == nil {
+		logs.Error("Failed to get project by name: %s in DevOps procedure.", projectName)
+	}
+	pullRequestHookURL := fmt.Sprintf("%s/projects/%d/pull-requests/reset?skip=PRD", apiServerURL(), project.ID)
+	err = gogsHandler.CreateHook(username, repoName, pullRequestHookURL, "pull_request")
 	if err != nil {
 		logs.Error("Failed to create hook to repo: %s, error: %+v", repoName, err)
 	}
@@ -127,11 +142,18 @@ func ForkRepo(forkedUser *model.User, baseRepoName string) error {
 	if err != nil {
 		return err
 	}
-	gogsHandler.CreateHook(username, repoName)
+	jenkinsHookURL := fmt.Sprintf("%s/generic-webhook-trigger/invoke", JenkinsBaseURL())
+	gogsHandler.CreateHook(username, repoName, jenkinsHookURL, "push")
 	if err != nil {
 		logs.Error("Failed to create hook to repo: %s, error: %+v", repoName, err)
 		return err
 	}
+	pullRequestHookURL := fmt.Sprintf("%s/projects/%d/pull-requests/reset?skip=PRD", apiServerURL(), project.ID)
+	err = gogsHandler.CreateHook(username, repoName, pullRequestHookURL, "pull_request")
+	if err != nil {
+		logs.Error("Failed to create hook to repo: %s, error: %+v", repoName, err)
+	}
+
 	repoURL := fmt.Sprintf("%s/%s/%s.git", GogitsSSHURL(), username, repoName)
 	repoPath := ResolveRepoPath(repoName, username)
 	_, err = InitRepo(repoURL, username, email, repoPath)

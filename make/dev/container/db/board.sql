@@ -45,6 +45,7 @@ CREATE TABLE `board`.`project` (
   `current_user_role_id` INT NULL,
   `service_count` INT NULL,
   `istio_support` SMALLINT(1) NULL,
+  `pull_request_count` INT NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`));
 
 INSERT INTO `board`.`project`
