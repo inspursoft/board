@@ -60,12 +60,21 @@ func Applycfg(host *models.Account) error {
 		}
 	}
 
-	if err = Shutdown(host); err != nil {
+	err = Execute(fmt.Sprintf("cp %s %s.tmp", cfgPath, cfgPath))
+	if err != nil {
 		return err
 	}
+
+	//if err = Shutdown(host); err != nil {
+	//	return err
+	//}
 	if err = StartBoard(host); err != nil {
 		return err
 	}
+	
+	if err = os.Remove(cfgPath+".tmp"); err != nil {
+		return err
+	} 
 
 	return nil
 }

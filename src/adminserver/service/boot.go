@@ -130,14 +130,24 @@ func StartBoard(host *models.Account) error {
 		return err
 	}
 
+	cmdDown := fmt.Sprintf("docker-compose -f %s down", models.Boardcompose)
 	cmdPrepare := fmt.Sprintf("%s", models.PrepareFile)
 	cmdCompose := fmt.Sprintf("docker-compose -f %s up -d", models.Boardcompose)
+
+	err = secureShell.ExecuteCommand(cmdDown)
+	if err != nil {
+		return err
+	}
+
+	time.Sleep(time.Duration(5)*time.Second)
 
 	err = secureShell.ExecuteCommand(cmdPrepare)
 	if err != nil {
 		return err
 	}
 
+	/*
+	// TODO:
 	o := orm.NewOrm()
 	o.Using("default")
 	account := models.Account{Id: 1}
@@ -147,8 +157,10 @@ func StartBoard(host *models.Account) error {
 			return err
 		}
 	} 
+	*/
 	
 	time.Sleep(time.Duration(5)*time.Second)
+	
 	err = secureShell.ExecuteCommand(cmdCompose)
 	if err != nil {
 		return err

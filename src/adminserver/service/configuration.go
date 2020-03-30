@@ -104,7 +104,7 @@ func UpdateCfg(cfg *models.Configuration) error {
 	cfg.Other.DBPassword = DBpassword
 
 	if cfg.Email.Identity == ""{
-		cfg.Email.Identity = "\n"
+		cfg.Email.Identity = " "
 	}
 
 	//setting value for each properties.

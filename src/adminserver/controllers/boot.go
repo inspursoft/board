@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego"
+	"fmt"
 )
 
 // BootController includes operations about booting config.
@@ -88,7 +89,8 @@ func (b *BootController) CheckDB() {
 	if service.CheckDB() == true {
 		statusCode = http.StatusOK
 	} else {
-		statusCode = http.StatusBadRequest
+		b.CustomAbort(http.StatusBadRequest, fmt.Sprintf("DB is down."))
+		return
 	}
 	b.Ctx.ResponseWriter.WriteHeader(statusCode)
 	b.ServeJSON()	

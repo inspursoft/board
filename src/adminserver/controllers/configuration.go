@@ -8,6 +8,7 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
+	"fmt"
 )
 
 // CfgController includes operations about cfg
@@ -67,7 +68,8 @@ func (u *CfgController) GetAll() {
 		which := u.GetString("which")
 		cfg, statusMessage := service.GetAllCfg(which)
 		if statusMessage == "BadRequest" {
-			statusCode = http.StatusBadRequest
+			u.CustomAbort(http.StatusBadRequest, fmt.Sprintf("Get config failed."))
+			return
 		}
 		u.Ctx.ResponseWriter.WriteHeader(statusCode)
 		//apply struct to JSON value.
