@@ -77,8 +77,6 @@ services:
       - ../config/apiserver/env
     networks:
       - dvserver_net
-    links:
-      - db
     ports: 
       - 8088:8088
     depends_on:
@@ -120,8 +118,6 @@ services:
       - ../config/collector/env
     networks:
       - dvserver_net
-    links:
-      - db
     depends_on:
       - log
     logging:

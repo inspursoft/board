@@ -290,7 +290,7 @@ func UpdateConfiguration(section *configparser.Section, cfg *Configuration) {
 type Account struct {
 	Id       int    `json:"id"`
 	Username string `json:"username"`
-	Password string `json:"password" orm:"type(text)"`
+	Password string `json:"password"`
 }
 
 //Password refers to a certain type with its value.

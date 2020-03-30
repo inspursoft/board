@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
 )
 
 // MoniController includes operations about monitoring.
@@ -28,9 +29,11 @@ func (m *MoniController) Get() {
 		m.ServeJSON()	
 		return
 	} else {
-		containers, statusMessage := service.GetMonitor()
-		if statusMessage == "BadRequest" {
-			statusCode = http.StatusBadRequest
+		containers, err := service.GetMonitor()
+		if err != nil {
+			m.CustomAbort(http.StatusBadRequest, err.Error())
+			logs.Error(err)
+			return
 		}
 		m.Ctx.ResponseWriter.WriteHeader(statusCode)
 		//apply struct to JSON value.

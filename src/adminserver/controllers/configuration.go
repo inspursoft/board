@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
 )
 
 // CfgController includes operations about cfg
@@ -34,9 +35,11 @@ func (u *CfgController) Post() {
 	} else {
 		//transferring JSON to struct.
 		utils.UnmarshalToJSON(u.Ctx.Request.Body, &cfg)
-		statusMessage := service.UpdateCfg(&cfg)
-		if statusMessage == "BadRequest" {
-			statusCode = http.StatusBadRequest
+		err := service.UpdateCfg(&cfg)
+		if err != nil {
+			u.CustomAbort(http.StatusBadRequest, err.Error())
+			logs.Error(err)
+			return
 		}
 		u.Ctx.ResponseWriter.WriteHeader(statusCode)
 		u.ServeJSON()

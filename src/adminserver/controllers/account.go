@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
 )
 
 // AccController includes operations about account.
@@ -24,15 +25,16 @@ func (a *AccController) Verify() {
 	var statusCode int = http.StatusOK
 	var passwd models.Password
 	utils.UnmarshalToJSON(a.Ctx.Request.Body, &passwd)
-	v, statusMessage := service.VerifyPassword(&passwd)
+	v, err := service.VerifyPassword(&passwd)
+	if err != nil {
+		a.CustomAbort(http.StatusBadRequest, err.Error())
+		logs.Error(err)
+		return
+	}
 	if v == true {
 		a.Data["json"] = "success"
 	} else {
 		a.Data["json"] = "wrong"
-	}
-
-	if statusMessage == "BadRequest" {
-		statusCode = http.StatusBadRequest
 	}
 	a.Ctx.ResponseWriter.WriteHeader(statusCode)
 	a.ServeJSON()
@@ -49,9 +51,11 @@ func (a *AccController) Initialize() {
 	var statusCode int = http.StatusOK
 	//transferring JSON to struct.
 	utils.UnmarshalToJSON(a.Ctx.Request.Body, &acc)
-	statusMessage := service.Initialize(&acc)
-	if statusMessage == "BadRequest" {
-		statusCode = http.StatusBadRequest
+	err := service.Initialize(&acc)
+	if err != nil {
+		a.CustomAbort(http.StatusBadRequest, err.Error())
+		logs.Error(err)
+		return
 	}
 	a.Ctx.ResponseWriter.WriteHeader(statusCode)
 	a.ServeJSON()
@@ -68,14 +72,16 @@ func (a *AccController) Login() {
 	var statusCode int = http.StatusOK
 	//transferring JSON to struct.
 	utils.UnmarshalToJSON(a.Ctx.Request.Body, &acc)
-	permission, statusMessage, token := service.Login(&acc)
+	permission, err, token := service.Login(&acc)
+	if err != nil {
+		a.CustomAbort(http.StatusBadRequest, err.Error())
+		logs.Error(err)
+		return
+	}
 	if permission == true {
 		a.Data["json"] = token
 	} else {
 		a.Data["json"] = ""
-		statusCode = http.StatusBadRequest
-	}
-	if statusMessage == "BadRequest" {
 		statusCode = http.StatusBadRequest
 	}
 	a.Ctx.ResponseWriter.WriteHeader(statusCode)
@@ -111,9 +117,11 @@ func (a *AccController) Install() {
 // @router /createUUID [post]
 func (a *AccController) CreateUUID() {
 	var statusCode int = http.StatusOK
-	statusMessage := service.CreateUUID()
-	if statusMessage == "BadRequest" {
-		statusCode = http.StatusBadRequest
+	err := service.CreateUUID()
+	if err != nil {
+		a.CustomAbort(http.StatusBadRequest, err.Error())
+		logs.Error(err)
+		return
 	}
 	a.Ctx.ResponseWriter.WriteHeader(statusCode)
 	a.ServeJSON()
@@ -129,14 +137,16 @@ func (a *AccController) ValidateUUID() {
 	var statusCode int = http.StatusOK
 	var uuid models.UUID
 	utils.UnmarshalToJSON(a.Ctx.Request.Body, &uuid)
-	result, statusMessage := service.ValidateUUID(uuid.UUID)
+	result, err := service.ValidateUUID(uuid.UUID)
+	if err != nil {
+		a.CustomAbort(http.StatusBadRequest, err.Error())
+		logs.Error(err)
+		return
+	}
 	if result == true {
 		a.Data["json"] = "validate success"
 	} else {
 		a.Data["json"] = "validate failure"
-		statusCode = http.StatusBadRequest
-	}
-	if statusMessage == "BadRequest" {
 		statusCode = http.StatusBadRequest
 	}
 	a.Ctx.ResponseWriter.WriteHeader(statusCode)

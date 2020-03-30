@@ -50,11 +50,9 @@ func InitDB(db *models.DBconf) error {
 	o := orm.NewOrm()
 	status := models.InitStatusInfo{Id: 1}
 	err = o.Read(&status)
-	if err == orm.ErrNoRows {
-    	fmt.Println("not found")
-	} else if err == orm.ErrMissPK {
-		fmt.Println("pk missing")
-	} 
+	if err != nil {
+		return err
+	}
 	if status.Status == models.InitStatusFirst {
 		status.InstallTime = time.Now().Unix()
 		status.Status = models.InitStatusSecond
@@ -106,10 +104,8 @@ func StartDB(host *models.Account) error {
 	o := orm.NewOrm()
 	status := models.InitStatusInfo{Id: 1}
 	err = o.Read(&status)
-	if err == orm.ErrNoRows {
-    	fmt.Println("not found")
-	} else if err == orm.ErrMissPK {
-		fmt.Println("pk missing")
+	if err != nil {
+		return err
 	} 
 	if status.Status == models.InitStatusSecond {
 		status.InstallTime = time.Now().Unix()
@@ -118,7 +114,6 @@ func StartDB(host *models.Account) error {
 	}
 
 	return nil
-
 }
 
 func StartBoard(host *models.Account) error {
@@ -142,6 +137,17 @@ func StartBoard(host *models.Account) error {
 	if err != nil {
 		return err
 	}
+
+	o := orm.NewOrm()
+	o.Using("default")
+	account := models.Account{Id: 1}
+	err = o.Read(&account)
+	if err != orm.ErrNoRows {
+		if _, err = o.Delete(&account); err != nil {
+			return err
+		}
+	} 
+	
 	time.Sleep(time.Duration(5)*time.Second)
 	err = secureShell.ExecuteCommand(cmdCompose)
 	if err != nil {

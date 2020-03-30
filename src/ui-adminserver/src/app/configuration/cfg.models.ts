@@ -71,14 +71,14 @@ export class ApiServer extends ResponseBase implements RequestBase {
 
   PostBody(): object {
     return {
-      hostname: this.hostname,
-      api_server_port: this.apiServerPort,
-      kube_http_scheme: this.kubeHttpScheme,
-      kube_master_ip: this.kubeMasterIp,
-      kube_master_port: this.kubeMasterPort,
-      registry_ip: this.registryIp,
-      registry_port: this.registryPort,
-      image_baseline_time: this.imageBaselineTime,
+      hostname: this.hostname.toString(),
+      api_server_port: this.apiServerPort.toString(),
+      kube_http_scheme: this.kubeHttpScheme.toString(),
+      kube_master_ip: this.kubeMasterIp.toString(),
+      kube_master_port: this.kubeMasterPort.toString(),
+      registry_ip: this.registryIp.toString(),
+      registry_port: this.registryPort.toString(),
+      image_baseline_time: this.imageBaselineTime.toString(),
     };
   }
 }
@@ -100,9 +100,9 @@ export class Gogits extends ResponseBase implements RequestBase {
 
   PostBody(): object {
     return {
-      gogits_host_ip: this.gogitsHostIp,
-      gogits_host_port: this.gogitsHostPort,
-      gogits_ssh_port: this.gogitsSshPort,
+      gogits_host_ip: this.gogitsHostIp.toString(),
+      gogits_host_port: this.gogitsHostPort.toString(),
+      gogits_ssh_port: this.gogitsSshPort.toString(),
     };
   }
 }
@@ -134,14 +134,14 @@ export class Jenkins extends ResponseBase implements RequestBase {
 
   PostBody(): object {
     return {
-      jenkins_host_ip: this.jenkinsHostIp,
-      jenkins_host_port: this.jenkinsHostPort,
-      jenkins_node_ip: this.jenkinsNodeIp,
-      jenkins_node_ssh_port: this.jenkinsNodeSshPort,
-      jenkins_node_username: this.jenkinsNodeUsername,
-      jenkins_node_password: this.jenkinsNodePassword,
-      jenkins_node_volume: this.jenkinsNodeVolume,
-      jenkins_execution_mode: this.jenkinsExecutionMode,
+      jenkins_host_ip: this.jenkinsHostIp.toString(),
+      jenkins_host_port: this.jenkinsHostPort.toString(),
+      jenkins_node_ip: this.jenkinsNodeIp.toString(),
+      jenkins_node_ssh_port: this.jenkinsNodeSshPort.toString(),
+      jenkins_node_username: this.jenkinsNodeUsername.toString(),
+      jenkins_node_password: this.jenkinsNodePassword.toString(),
+      jenkins_node_volume: this.jenkinsNodeVolume.toString(),
+      jenkins_execution_mode: this.jenkinsExecutionMode.toString(),
     };
   }
 }
@@ -163,9 +163,9 @@ export class Kvm extends ResponseBase implements RequestBase {
 
   PostBody(): object {
     return {
-      kvm_registry_size: this.kvmRegistrySize,
-      kvm_registry_port: this.kvmRegistryPort,
-      kvm_toolkits_path: this.kvmToolkitsPath,
+      kvm_registry_size: this.kvmRegistrySize.toString(),
+      kvm_registry_port: this.kvmRegistryPort.toString(),
+      kvm_toolkits_path: this.kvmToolkitsPath.toString(),
     };
   }
 }
@@ -191,11 +191,11 @@ export class Ldap extends ResponseBase implements RequestBase {
 
   PostBody(): object {
     return {
-      ldap_url: this.ldapUrl,
-      ldap_basedn: this.ldapBasedn,
-      ldap_uid: this.ldapUid,
-      ldap_scope: this.ldapScope,
-      ldap_timeout: this.ldapTimeout,
+      ldap_url: this.ldapUrl.toString(),
+      ldap_basedn: this.ldapBasedn.toString(),
+      ldap_uid: this.ldapUid.toString(),
+      ldap_scope: this.ldapScope.toString(),
+      ldap_timeout: this.ldapTimeout.toString(),
     };
   }
 }
@@ -225,13 +225,13 @@ export class Email extends ResponseBase implements RequestBase {
 
   PostBody(): object {
     return {
-      email_identity: this.emailIdentity,
-      email_server: this.emailServer,
-      email_server_port: this.emailServerPort,
-      email_username: this.emailUsername,
-      email_password: this.emailPassword,
-      email_from: this.emailFrom,
-      email_ssl: this.emailSsl,
+      email_identity: this.emailIdentity.toString(),
+      email_server: this.emailServer.toString(),
+      email_server_port: this.emailServerPort.toString(),
+      email_username: this.emailUsername.toString(),
+      email_password: this.emailPassword.toString(),
+      email_from: this.emailFrom.toString(),
+      email_ssl: this.emailSsl.toString(),
     };
   }
 }
@@ -271,18 +271,18 @@ export class Others extends ResponseBase implements RequestBase {
 
   PostBody(): object {
     return {
-      arch_type: this.archType,
-      db_password: this.dbPassword,
-      token_cache_expire_seconds: this.tokenCacheExpireSeconds,
-      token_expire_seconds: this.tokenExpireSeconds,
-      elaseticsearch_memory_in_megabytes: this.elaseticsearchMemoryInMegabytes,
-      tiller_port: this.tillerPort,
-      board_admin_password: this.boardAdminPassword,
-      auth_mode: this.authMode,
-      verification_url: this.verificationUrl,
-      redirection_url: this.redirectionUrl,
-      audit_debug: this.auditDebug,
-      dns_suffix: this.dnsSuffix,
+      arch_type: this.archType.toString(),
+      db_password: this.dbPassword.toString(),
+      token_cache_expire_seconds: this.tokenCacheExpireSeconds.toString(),
+      token_expire_seconds: this.tokenExpireSeconds.toString(),
+      elaseticsearch_memory_in_megabytes: this.elaseticsearchMemoryInMegabytes.toString(),
+      tiller_port: this.tillerPort.toString(),
+      board_admin_password: this.boardAdminPassword.toString(),
+      auth_mode: this.authMode.toString(),
+      verification_url: this.verificationUrl.toString(),
+      redirection_url: this.redirectionUrl.toString(),
+      audit_debug: this.auditDebug.toString(),
+      dns_suffix: this.dnsSuffix.toString(),
     };
   }
 }
