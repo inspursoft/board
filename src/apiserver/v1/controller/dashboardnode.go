@@ -4,7 +4,7 @@ import (
 	"git/inspursoft/board/src/apiserver/service"
 	"net/http"
 
-	c "git/inspursoft/board/src/common/controller"
+	c "git/inspursoft/board/src/apiserver/controllers/commons"
 
 	"github.com/astaxie/beego"
 )
