@@ -23,6 +23,7 @@ export class OthersComponent extends CfgComponent implements OnInit {
   tipsList: Array<boolean>;
   @Input() others: Others;
   patternArchType: RegExp = /^((x86_64)|(mips))$/;
+  patternAuthMode: RegExp = /^((db_auth)|(ldap_auth)|(indata_auth))$/;
   patternAuditDebug: RegExp = /^((true)|(false))$/;
   private publicKey: string;
   @Input() isInit: boolean;

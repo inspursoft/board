@@ -175,7 +175,7 @@
             #dbPwdFrom="ngForm"
             [class.hide]="loadingFlag">
         <div>
-          {{ 'INITIALIZATION.CONTENTS.UUID' | translate }}
+          {{ 'INITIALIZATION.CONTENTS.DATABASE' | translate }}
         </div>
         <clr-alert *ngIf="errorFlag"
                    [clrAlertType]="'alert-danger'"
@@ -271,7 +271,7 @@
             #sshForm="ngForm"
             [class.hide]="loadingFlag">
         <div>
-          {{ 'INITIALIZATION.CONTENTS.UUID' | translate }}
+          {{ 'INITIALIZATION.CONTENTS.SSH' | translate }}
         </div>
         <clr-input-container>
           <label>{{ 'INITIALIZATION.LABELS.ACCOUNT' | translate }}</label>
@@ -309,7 +309,7 @@
             #accountForm="ngForm"
             [class.hide]="loadingFlag">
         <div>
-          {{ 'INITIALIZATION.CONTENTS.UUID' | translate }}
+          {{ 'INITIALIZATION.CONTENTS.ACCOUNT' | translate }}
         </div>
         <clr-alert *ngIf="errorFlag"
                    [clrAlertType]="'alert-danger'"
@@ -391,7 +391,7 @@
         </clr-alert-item>
       </clr-alert>
       <div>
-        {{ 'INITIALIZATION.CONTENTS.UUID' | translate }}
+        {{ 'INITIALIZATION.CONTENTS.SSH' | translate }}
       </div>
       <div style="text-align: center">
         <clr-spinner *ngIf="loadingFlag">

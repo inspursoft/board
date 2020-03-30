@@ -10,7 +10,6 @@ export class CsComponentBase {
   verifyInputExValid(): boolean {
     return this.inputExComponents.toArray().every((component: InputExComponent) => {
       if (!component.isValid && !component.inputDisabled) {
-        console.log(''+component.isValid + '8' + component.inputDisabled)
         component.checkSelf();
       }
       return component.isValid || component.inputDisabled;

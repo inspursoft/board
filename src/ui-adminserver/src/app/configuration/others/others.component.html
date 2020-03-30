@@ -178,6 +178,8 @@
                         [inputLabelWidth]='170'
                         [inputDefaultValue]="others.authMode"
                         [inputPlaceholder]="'db_auth/ldap_auth/indata_auth'"
+                        [inputPattern]="patternAuthMode"
+                        [validatorMessage]="[{key:'pattern',message:'Require db_auth/ldap_auth/indata_auth ONLY'}]"
                         [inputWidth]="'100%'"
                         (editEvent)="onEdit(7)"
                         (commitEvent)="others.authMode = $event"

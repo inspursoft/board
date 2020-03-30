@@ -38,8 +38,8 @@ export class SignInComponent implements OnInit {
   user: User;
 
   constructor(private accountService: AccountService,
-    private header: HeaderComponent,
-    private router: Router) {
+              private header: HeaderComponent,
+              private router: Router) {
     this.account = new UserVerify();
     this.account.username = 'admin';
     this.sshAccount = new UserVerify();
@@ -49,8 +49,8 @@ export class SignInComponent implements OnInit {
 
   ngOnInit() {
     this.accountService.checkInit().subscribe(
-      (res: string) => {
-        const step = res.toString().toLowerCase();
+      (res) => {
+        const step = res.body.toLowerCase();
         if (step === 'no') {
           this.openWizard = false;
           this.checkDBAlive();
@@ -256,7 +256,6 @@ export class SignInComponent implements OnInit {
 
 
   signIn() {
-    console.log(this.user.username + this.user.password);
     // test
     // window.sessionStorage.setItem('token', `username=${this.user.username}&password=${this.user.password}`);
     // this.router.navigateByUrl('dashboard');

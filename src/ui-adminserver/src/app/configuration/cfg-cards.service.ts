@@ -12,10 +12,10 @@ export class CfgCardsService {
   private token = '';
 
   constructor(private http: HttpClient) {
-    this.token = window.sessionStorage.getItem('token');
   }
 
   getConfig(whichOne?: string): Observable<Configuration> {
+    this.token = window.sessionStorage.getItem('token');
     let url = `${BASE_URL}/configuration?token=${this.token}`;
     url = whichOne ? `${url}&which=${whichOne}` : url;
     return this.http.get(url, {
@@ -26,6 +26,7 @@ export class CfgCardsService {
   }
 
   postConfig(config: Configuration): Observable<any> {
+    this.token = window.sessionStorage.getItem('token');
     return this.http.post(
       `${BASE_URL}/configuration?token=${this.token}`,
       config.PostBody()
@@ -33,6 +34,7 @@ export class CfgCardsService {
   }
 
   getPubKey(): Observable<any> {
+    this.token = window.sessionStorage.getItem('token');
     return this.http.get(`${BASE_URL}/configuration/pubkey?token=${this.token}`, {
       observe: 'response',
     }).pipe(map((res: HttpResponse<any>) => {
@@ -41,6 +43,7 @@ export class CfgCardsService {
   }
 
   applyCfg(user: User): Observable<any> {
+    this.token = window.sessionStorage.getItem('token');
     return this.http.post(
       `${BASE_URL}/board/applycfg?token=${this.token}`,
       user.PostBody()
@@ -48,6 +51,7 @@ export class CfgCardsService {
   }
 
   verifyPassword(oldPwd: VerifyPassword): Observable<any> {
+    this.token = window.sessionStorage.getItem('token');
     return this.http.post(
       `${BASE_URL}/account/verify?token=${this.token}`,
       oldPwd.PostBody()

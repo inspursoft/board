@@ -19,6 +19,8 @@ export class PreviewerComponent implements OnInit, OnDestroy {
   confirmType: ConfirmType;
   timer: any;
   user: User;
+  loadingFlag = true;
+  enableStop = false;
 
   constructor(private dashboardService: DashboardService,
     private router: Router) {
@@ -34,8 +36,12 @@ export class PreviewerComponent implements OnInit, OnDestroy {
         this.dashboardService.monitorContainer().subscribe(
           (res: Array<ComponentStatus>) => {
             this.componentList = res;
+            this.loadingFlag = false;
+            this.enableStop = this.componentList.length > 3;
+            this.reflashDetail();
           },
           (err: HttpErrorResponse) => {
+            this.loadingFlag = false;
             this.commonError(err);
             clearInterval(this.timer); // 销毁定时器
           }
@@ -52,6 +58,17 @@ export class PreviewerComponent implements OnInit, OnDestroy {
   getDetail(item: ComponentStatus) {
     this.modal = item;
     this.showDetail = true;
+  }
+
+  reflashDetail() {
+    if (this.modal.id) {
+      for (let item of this.componentList) {
+        if (this.modal.id === item.id) {
+          this.modal = item;
+          break;
+        }
+      }
+    }
   }
 
   confirm(type: string, containerID?: string) {
@@ -108,7 +125,7 @@ class ConfirmType {
 
   constructor(type: string, containerID?: string, title?: string, comment?: string, button?: string, ) {
     this.type = type;
-    const currentLang = window.localStorage.getItem('currentLang') === 'zh-cn';
+    const currentLang = (window.localStorage.getItem('currentLang') === 'zh-cn' || window.localStorage.getItem('currentLang') === 'zh');
     if (currentLang) {
       this.button = '重启';
       if (type === 'rb') {

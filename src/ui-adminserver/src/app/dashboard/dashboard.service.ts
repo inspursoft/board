@@ -12,10 +12,10 @@ export class DashboardService {
   private token = '';
 
   constructor(private http: HttpClient) {
-    this.token = window.sessionStorage.getItem('token');
   }
 
   restartBoard(user: User): Observable<any> {
+    this.token = window.sessionStorage.getItem('token');
     return this.http.post(
       `${BASE_URL}/board/restart?token=${this.token}`,
       user.PostBody()
@@ -23,6 +23,7 @@ export class DashboardService {
   }
 
   shutdownBoard(user: User): Observable<any> {
+    this.token = window.sessionStorage.getItem('token');
     return this.http.get(
       `${BASE_URL}/board/shutdown?token=${this.token}`,
       user.PostBody()
@@ -30,6 +31,7 @@ export class DashboardService {
   }
 
   monitorContainer(): Observable<any> {
+    this.token = window.sessionStorage.getItem('token');
     return this.http.get(
       `${BASE_URL}/monitor?token=${this.token}`,
       { observe: 'response', })

@@ -1,12 +1,19 @@
-import { Component, OnInit, ViewChildren, QueryList } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { json2String } from 'src/app/shared/tools';
 import { Configuration, CfgCardObjects } from './cfg.models';
 import { CfgCardsService } from './cfg-cards.service';
 import 'src/assets/js/FileSaver.js';
-import { InputExComponent } from 'board-components-library';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { User } from '../account/account.model';
+
+import { OthersComponent } from './others/others.component';
+import { ApiserverComponent } from './apiserver/apiserver.component';
+import { GogitsComponent } from './gogits/gogits.component';
+import { JenkinsComponent } from './jenkins/jenkins.component';
+import { KvmComponent } from './kvm/kvm.component';
+import { LdapComponent } from './ldap/ldap.component';
+import { EmailComponent } from './email/email.component';
 
 declare var saveAs: any;
 
@@ -18,9 +25,16 @@ declare var saveAs: any;
 export class CfgCardsComponent implements OnInit {
   config: Configuration;
   cardList: CfgCardObjects;
-  @ViewChildren(InputExComponent) inputExComponents: QueryList<InputExComponent>;
   applyCfgModal = false;
   user: User;
+
+  @ViewChild('others') others: OthersComponent;
+  @ViewChild('apiserver') apiserver: ApiserverComponent;
+  @ViewChild('gogits') gogits: GogitsComponent;
+  @ViewChild('jenkins') jenkins: JenkinsComponent;
+  @ViewChild('kvm') kvm: KvmComponent;
+  @ViewChild('ldap') ldap: LdapComponent;
+  @ViewChild('email') email: EmailComponent;
 
   constructor(private cfgCardsService: CfgCardsService,
     private router: Router) {
@@ -31,14 +45,6 @@ export class CfgCardsComponent implements OnInit {
 
   ngOnInit() {
     this.getCfg();
-    // this.cfgCardsService.getPubKey().subscribe((res: string) => {
-    //   sessionStorage.setItem('pubKey', res);
-    // });
-    // this.route.data
-    //   .subscribe((data: { configuration: Configuration }) => {
-    //     this.config = data.configuration;
-    //     console.log(data.configuration);
-    //   });
   }
 
   getCfg(whichOne?: string) {
@@ -48,36 +54,43 @@ export class CfgCardsComponent implements OnInit {
     );
   }
 
+  checkFrom(): string {
+    if (!this.others.verifyInputExValid()) {
+      return 'others';
+    } else if (!this.apiserver.verifyInputExValid()) {
+      return 'apiserver';
+    } else if (!this.gogits.verifyInputExValid()) {
+      return 'gogits';
+    } else if (!this.jenkins.verifyInputExValid()) {
+      return 'jenkins';
+    } else if (!this.kvm.verifyInputExValid()) {
+      return 'kvm';
+    } else if (this.config.others.authMode == 'ldap_auth' && !this.ldap.verifyInputExValid()) {
+      return 'ldap';
+    } else if (!this.email.verifyInputExValid()) {
+      return 'email';
+    } else {
+      return '';
+    }
+
+  }
+
   saveCfg() {
-    console.log('' + this.verifyInputExValid() + this.inputExComponents.toArray().length);
-    this.cfgCardsService.postConfig(this.config).subscribe(
-      // if response Status Code is 200: success
-      () => {
-        // alert('apply success!');
-        // location.reload();
-        // window.scrollTo({
-        //   top: 0
-        // });
-        this.applyCfgModal = true;
-      },
-      // if error
-      (err: HttpErrorResponse) => { this.commonError(err); }
-    );
+    const checkResult = this.checkFrom();
+    if (checkResult) {
+      document.getElementById(checkResult).scrollIntoView();
+    } else {
+      this.cfgCardsService.postConfig(this.config).subscribe(
+        () => { this.applyCfgModal = true; },
+        (err: HttpErrorResponse) => { this.commonError(err); }
+      );
+    }
   }
 
   saveAsCfg() {
     let result = [json2String(this.config.PostBody())];
     let file = new File(result, 'board.cfg', { type: 'text/plain;charset=utf-8' });
     saveAs(file);
-  }
-
-  verifyInputExValid(): boolean {
-    return this.inputExComponents.toArray().every((component: InputExComponent) => {
-      if (!component.isValid && !component.inputDisabled) {
-        component.checkSelf();
-      }
-      return component.isValid || component.inputDisabled;
-    });
   }
 
   applyCfg() {
@@ -96,7 +109,7 @@ export class CfgCardsComponent implements OnInit {
       top: 0,
       behavior: 'smooth'
     });
-    window.location.reload();
+    this.getCfg();
   }
 
   commonError(err: HttpErrorResponse) {
