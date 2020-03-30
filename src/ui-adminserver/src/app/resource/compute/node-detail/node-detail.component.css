@@ -1,16 +1,19 @@
-div.modal-header {
-  padding: 0;
+div.modal-body{
+  height: 440px;
 }
 
-div.modal-body {
-  min-height: 400px;
+div.alert {
+  height: 30px;
+  line-height: 30px;
+}
+
+div.alert-item{
+  margin-left: 5px;
 }
 
 div.logs-container {
   background-color: black;
   overflow-y: auto;
-  min-height: 280px;
-  max-height: 350px;
   margin-top: 10px;
   border: 1px solid silver;
   border-radius: 5px;

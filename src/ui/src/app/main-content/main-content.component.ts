@@ -1,7 +1,15 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppInitService } from '../shared.service/app-init.service';
-import { GUIDE_STEP, MAIN_MENU_DATA, RouteAudit, RouteHelm, RouteKibana, RouteNodes, RouteUserCenters } from '../shared/shared.const';
+import {
+  GUIDE_STEP,
+  MAIN_MENU_DATA,
+  RouteAudit,
+  RouteHelm,
+  RouteKibana,
+  RouteNodes,
+  RouteUserCenters
+} from '../shared/shared.const';
 import { ICsMenuItemData } from '../shared/shared.types';
 import { SharedService } from '../shared.service/shared.service';
 
@@ -28,8 +36,10 @@ export class MainContentComponent {
     this.getMenuItemByRoute(this.navSource, RouteNodes).visible = this.appInitService.isSystemAdmin;
     this.getMenuItemByRoute(this.navSource, RouteUserCenters).visible = this.appInitService.isSystemAdmin;
     this.getMenuItemByRoute(this.navSource, RouteAudit).visible = this.appInitService.isSystemAdmin;
-    this.getMenuItemByRoute(this.navSource, RouteKibana).visible = !this.appInitService.isMipsSystem;
-    this.getMenuItemByRoute(this.navSource, RouteHelm).visible = !this.appInitService.isMipsSystem;
+    this.getMenuItemByRoute(this.navSource, RouteKibana).visible = !this.appInitService.isMipsSystem &&
+      !this.appInitService.isArmSystem;
+    this.getMenuItemByRoute(this.navSource, RouteHelm).visible = !this.appInitService.isMipsSystem &&
+      !this.appInitService.isArmSystem;
     this.route.queryParamMap.subscribe(params => {
       this.searchContent = params.get('q');
     });
@@ -40,7 +50,7 @@ export class MainContentComponent {
     let result: ICsMenuItemData;
     source.forEach(value => {
       if (value.url.includes(route)) {
-        if (!result ){
+        if (!result) {
           result = value;
         }
       } else if (!result && value.children) {

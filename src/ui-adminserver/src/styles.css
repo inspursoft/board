@@ -7,3 +7,7 @@ body {
 button.btn {
   text-transform: none;
 }
+
+.modal-header{
+  padding: 0;
+}

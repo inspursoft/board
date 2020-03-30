@@ -15,6 +15,7 @@ export enum NodeLogStatus {
 }
 
 export class NodeLog extends ResponseBase {
+  @HttpBind('id') id: string;
   @HttpBind('ip') ip: string;
   @HttpBind('log_type') type: NodeActionsType;
   @HttpBind('success') success: boolean;
@@ -79,6 +80,7 @@ export class NodeDetails extends ResponseArrayBase<NodeDetail> {
 export class NodeListType extends ResponseBase {
   @HttpBind('ip') ip: string;
   @HttpBind('creation_time') creationTime: number;
+  @HttpBind('origin') origin: number;
 }
 
 export class NodeList extends ResponseArrayBase<NodeListType> {

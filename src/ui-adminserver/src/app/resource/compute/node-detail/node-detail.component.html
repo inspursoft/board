@@ -1,6 +1,23 @@
 <clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'md'" [clrModalClosable]="false">
   <h3 class="modal-title"><b>{{title | translate}}</b></h3>
   <div class="modal-body">
+    <div #msgViewContainer></div>
+    <div *ngIf="curNodeLogStatus == 5 && actionType !== 2 "
+         class="alert alert-success" role="alert">
+      <div class="alert-item">
+        <span class="alert-text">
+          {{ succeedAlertText | translate }}
+        </span>
+      </div>
+    </div>
+    <div *ngIf="curNodeLogStatus == 6 && actionType !== 2 "
+         class="alert alert-danger" role="alert">
+      <div class="alert-item">
+        <span class="alert-text">
+          {{ failedAlertText | translate }}
+        </span>
+      </div>
+    </div>
     <lib-input-ex *ngIf="actionType !== 2"
                   [inputLabel]="masterTitle"
                   [inputLabelWidth]="240"
@@ -49,8 +66,9 @@
                   [validatorMessage]="[{key:'required', message:'Please input the password of the host.'}]"
                   (commitEvent)="postData.hostPassword = $event">
     </lib-input-ex>
-    <div  #msgViewContainer></div>
-    <div #divElement class="logs-container">
+    <div [style.height.px]="actionType == 2 ? 400 : 280"
+         class="logs-container"
+         #divElement>
       <div #consoleLogs></div>
     </div>
   </div>

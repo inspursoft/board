@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { NodeDetails, NodeList, NodeLog, NodeLogs, NodePostData, NodePreparationData } from '../resource.types';
+import { NodeActionsType, NodeDetails, NodeList, NodeLog, NodeLogs, NodePostData, NodePreparationData } from '../resource.types';
 import { CustomHttpClient } from './custom-http.service';
 import { map } from 'rxjs/operators';
 
@@ -25,6 +25,19 @@ export class ResourceService {
 
   deleteNodeLog(creationTime: number): Observable<any> {
     return this.http.delete(`/v1/admin/node/log`, {params: {creation_time: creationTime.toString()}});
+  }
+
+  stopNodeAction(log: NodeLog): Observable<any> {
+    const installFile = log.type === NodeActionsType.Add ? 'addnode' : 'uninstallnode';
+    return this.http.put(`/v1/admin/node/callback`,
+      {
+        log_id: log.id,
+        ip: log.ip,
+        install_file: installFile,
+        log_file: `${log.creationTime}.log`,
+        success: 1 // 0: success, 1: failed
+      }
+    );
   }
 
   getNodeLogs(pageIndex, pageSize: number): Observable<NodeLogs> {

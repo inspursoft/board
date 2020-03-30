@@ -8,19 +8,26 @@
   <clr-dg-row *ngFor="let nodeLog of nodeLogs.list">
     <clr-dg-cell>{{nodeLog.ip}}</clr-dg-cell>
     <clr-dg-cell>{{nodeLog.creationTime * 1000 | date: "short"}}</clr-dg-cell>
-    <clr-dg-cell>{{nodeLog.type===1?'Delete':'Add'}}</clr-dg-cell>
+    <clr-dg-cell>
+      <span *ngIf="nodeLog.type === 0">{{'Node.Node_Detail_Add' | translate}}</span>
+      <span *ngIf="nodeLog.type === 1">{{'Node.Node_Detail_Remove' | translate}}</span>
+    </clr-dg-cell>
     <clr-dg-cell [style.background-color]="nodeLog.success ? 'lightgreen' : 'transparent'">
       {{nodeLog.success}}
     </clr-dg-cell>
     <clr-dg-cell>
-      <div style="display: flex;align-items: center">
+      <div class="normal-container">
         <a href="javascript:void(0)">
           <clr-icon shape="info" class="is-solid" (click)="showLogDetail(nodeLog)"></clr-icon>
         </a>
-        <a href="javascript:void(0)">
-          <clr-icon shape="trash" class="is-solid" (click)="deleteLogInfo(nodeLog)"></clr-icon>
-        </a>
-        <span *ngIf="!nodeLog.completed" class="spinner spinner-sm"></span>
+        <div *ngIf="!nodeLog.completed" class="normal-container">
+          <a href="javascript:void(0)">
+            <clr-icon shape="stop" class="is-solid" (click)="stopExecuting(nodeLog)"></clr-icon>
+          </a>
+          <span class="spinner spinner-sm"></span>
+          <span *ngIf="nodeLog.type === 0">{{'Node.Node_Logs_Adding' | translate}}</span>
+          <span *ngIf="nodeLog.type === 1">{{'Node.Node_Logs_Removing' | translate}}</span>
+        </div>
       </div>
     </clr-dg-cell>
   </clr-dg-row>
