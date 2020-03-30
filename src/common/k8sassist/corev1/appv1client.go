@@ -5,16 +5,19 @@ import (
 	"git/inspursoft/board/src/common/k8sassist/corev1/cgv5/types"
 	"git/inspursoft/board/src/common/model"
 	"io"
+	"net/http"
 )
 
-func NewAppV1Client(clientset *types.Clientset, scaleGetter types.ScaleGetter) AppV1ClientInterface {
+func NewAppV1Client(config *types.Config, clientset *types.Clientset, scaleGetter types.ScaleGetter) AppV1ClientInterface {
 	return &AppV1Client{
+		Config:      config,
 		Clientset:   clientset,
 		ScaleGetter: scaleGetter,
 	}
 }
 
 type AppV1Client struct {
+	Config      *types.Config
 	Clientset   *types.Clientset
 	ScaleGetter types.ScaleGetter
 }
@@ -74,6 +77,10 @@ func (p *AppV1Client) Job(namespace string) JobInterface {
 	return apps.NewJob(namespace, p.Clientset.BatchV1().Jobs(namespace))
 }
 
+func (p *AppV1Client) Proxy() ProxyInterface {
+	return apps.NewProxy(p.Config)
+}
+
 // AppV1ClientInterface level 1 interface to access others
 type AppV1ClientInterface interface {
 	Discovery() ServerVersionInterface
@@ -90,6 +97,7 @@ type AppV1ClientInterface interface {
 	ConfigMap(namespace string) ConfigMapInterface
 	StatefulSet(namespace string) StatefulSetClientInterface
 	Job(namespace string) JobInterface
+	Proxy() ProxyInterface
 }
 
 // ServerVersionInterface has a method for retrieving the server's version.
@@ -259,4 +267,8 @@ type JobInterface interface {
 	PatchToK8s(string, model.PatchType, *model.Job) (*model.Job, []byte, error)
 	CreateByYaml(io.Reader) (*model.Job, error)
 	CheckYaml(io.Reader) (*model.Job, error)
+}
+
+type ProxyInterface interface {
+	ProxyAPI(apiProxyPrefix string) (http.Handler, error)
 }

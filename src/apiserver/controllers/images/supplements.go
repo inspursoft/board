@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strings"
 
+	c "git/inspursoft/board/src/apiserver/controllers/commons"
 	"git/inspursoft/board/src/apiserver/models/vm"
 	"git/inspursoft/board/src/apiserver/service"
-	c "git/inspursoft/board/src/common/controller"
 )
 
 // Operations about images supplements

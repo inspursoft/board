@@ -715,6 +715,11 @@ paths:
           format: int32
           required: true
           description: Relevant project ID.
+        - name: type
+          in:  query
+          type: string
+          required: false
+          description: Filter the type of members, such as "current" and "available".
       tags:
         - Products
       responses:

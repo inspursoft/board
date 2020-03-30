@@ -37,7 +37,10 @@ import (
 	"git/inspursoft/board/src/apiserver/controllers/users"
 	"git/inspursoft/board/src/apiserver/controllers/users/admins"
 
+	"git/inspursoft/board/src/common/k8sassist"
+	"git/inspursoft/board/src/common/utils"
 	"github.com/astaxie/beego"
+	"net/http"
 )
 
 func InitRouterV2() {
@@ -251,4 +254,22 @@ func InitRouterV2() {
 		),
 	)
 	beego.AddNamespace(ns)
+}
+
+func InitK8sRouter() error {
+	k8sAPIProxyPrefix := "/kubernetes/"
+	h, err := k8sProxyHandler(k8sAPIProxyPrefix)
+	if err != nil {
+		return err
+	}
+	beego.Handler(k8sAPIProxyPrefix, h, true)
+	return nil
+
+}
+
+func k8sProxyHandler(apiProxyPrefix string) (http.Handler, error) {
+	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		KubeConfigPath: utils.GetConfig("KUBE_CONFIG_PATH")(),
+	})
+	return k8sclient.AppV1().Proxy().ProxyAPI(apiProxyPrefix)
 }

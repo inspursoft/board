@@ -26,20 +26,41 @@ export class SharedService {
     );
   }
 
-  search(content: string): Observable<any>{
+  search(content: string): Observable<any> {
     return this.http.get("/api/v1/search", {
-      observe:"response",
+      observe: "response",
       params: {
         q: content,
         token: this.appInitService.token
       }
-    }).pipe(map(res=> res.body));
+    }).pipe(map(res => res.body));
   }
 
-  getProjectMembers(projectId: number): Observable<Array<Member>> {
+  getAssignedMembers(projectId: number): Observable<Array<Member>> {
     return this.http
       .get<Array<Member>>(`/api/v1/projects/${projectId}/members`, {observe: 'response'})
       .pipe(map((res: HttpResponse<Array<Member>>) => res.body || []));
+  }
+
+  getAvailableMembers(projectId: number): Observable<Array<Member>> {
+    return this.http.get(`/api/v1/projects/${projectId}/members`, {
+      params: {
+        type: 'available'
+      }
+    }).pipe(map((res: Array<any>) => {
+        const members = Array<Member>();
+        res.forEach(u => {
+          if (u.user_deleted === 0) {
+            const m = new Member();
+            m.project_member_username = u.user_name;
+            m.project_member_user_id = u.user_id;
+            m.project_member_role_id = 1;
+            m.isMember = false;
+            members.push(m);
+          }
+        });
+        return members;
+      }));
   }
 
   getOneProject(projectName: string): Observable<Array<Project>> {
@@ -70,24 +91,6 @@ export class SharedService {
     return this.http.post(`/api/v1/pvclaims`, pvc.postObject(), {observe: 'response'});
   }
 
-  getAvailableMembers(): Observable<Array<Member>> {
-    return this.http.get('/api/v1/users', {observe: 'response'})
-      .pipe(map((res: HttpResponse<object>) => {
-        const members = Array<Member>();
-        const users = res.body as Array<any>;
-        users.forEach(u => {
-          if (u.user_deleted === 0) {
-            const m = new Member();
-            m.project_member_username = u.user_name;
-            m.project_member_user_id = u.user_id;
-            m.project_member_role_id = 1;
-            members.push(m);
-          }
-        });
-        return members;
-      }));
-  }
-
   addOrUpdateProjectMember(projectId: number, userId: number, roleId: number): Observable<any> {
     return this.http.post(`/api/v1/projects/${projectId}/members`, {
       project_member_role_id: roleId,
@@ -114,6 +117,9 @@ export class SharedService {
   }
 
   checkPvcNameExist(projectName: string, pvcName: string): Observable<any> {
-    return this.http.get(`/api/v1/pvclaims/existing`, {observe: 'response', params: {project_name: projectName, pvc_name: pvcName}});
+    return this.http.get(`/api/v1/pvclaims/existing`, {
+      observe: 'response',
+      params: {project_name: projectName, pvc_name: pvcName}
+    });
   }
 }

@@ -1,8 +1,8 @@
 package admins
 
 import (
+	c "git/inspursoft/board/src/apiserver/controllers/commons"
 	"git/inspursoft/board/src/apiserver/service"
-	c "git/inspursoft/board/src/common/controller"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"strconv"

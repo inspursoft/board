@@ -59,8 +59,20 @@
                     [inputLabelWidth]="200"
                     (commitEvent)="volumeData.targetPath = $event">
       </lib-input-ex>
-      <lib-input-ex *ngIf="(volumeData.volumeType == 'nfs'  && volumeData.containerPathFlag)||
-                            volumeData.volumeType == 'configmap'"
+      <div class="dynamic-line-container" *ngIf="volumeData.volumeType == 'configmap'">
+        <div class="clr-checkbox-container">
+          <input type="checkbox" clrCheckbox [(ngModel)]="volumeData.containerPathFlag">
+          <label>{{"SERVICE.VOLUME_FILE" | translate}}:</label>
+        </div>
+        <lib-input-ex [inputDefaultValue]="volumeData.targetFile"
+                      [inputPattern]="patternPath"
+                      [inputLabelWidth]="200"
+                      [inputDisabled]="!volumeData.containerPathFlag"
+                      [inputPlaceholder]="'file.txt'"
+                      (commitEvent)="volumeData.targetFile = $event">
+        </lib-input-ex>
+      </div>
+      <lib-input-ex *ngIf="(volumeData.volumeType == 'nfs'  && volumeData.containerPathFlag)"
                     [inputLabel]="'SERVICE.VOLUME_FILE'| translate"
                     [inputDefaultValue]="volumeData.targetFile"
                     [inputPattern]="patternPath"
