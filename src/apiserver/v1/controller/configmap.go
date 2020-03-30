@@ -10,7 +10,7 @@ import (
 	"net/http"
 	//"strconv"
 	//"strings"
-	c "git/inspursoft/board/src/common/controller"
+	c "git/inspursoft/board/src/apiserver/controllers/commons"
 	"git/inspursoft/board/src/common/utils"
 
 	"github.com/astaxie/beego/logs"
