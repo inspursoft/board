@@ -25,6 +25,10 @@ func GetProjectMembers(projectID int64) ([]*model.ProjectMember, error) {
 	return dao.GetProjectMembers(model.Project{ID: projectID})
 }
 
+func GetProjectAvailableMembers(projectID int64) ([]*model.User, error) {
+	return dao.GetProjectAvailableMembers(model.Project{ID: projectID})
+}
+
 func DeleteProjectMember(projectID int64, userID int64) (bool, error) {
 	user, err := GetUserByID(userID)
 	if err != nil {

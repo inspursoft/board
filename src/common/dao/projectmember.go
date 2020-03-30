@@ -55,6 +55,21 @@ func GetProjectMembers(project model.Project) ([]*model.ProjectMember, error) {
 	return members, nil
 }
 
+func GetProjectAvailableMembers(project model.Project) ([]*model.User, error) {
+	o := orm.NewOrm()
+	sql := `select u.id, u.username from user u where u.deleted=0 and not exists 
+	(select pm.id from project_member pm where u.id=pm.user_id and pm.project_id=?)`
+	var users []*model.User
+	_, err := o.Raw(sql, project.ID).QueryRows(&users)
+	if err != nil {
+		if err == orm.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return users, nil
+}
+
 func GetProjectMemberRole(project model.Project, user model.User) (*model.Role, error) {
 	o := orm.NewOrm()
 	sql := `select r.id, r.name, r.comment 
