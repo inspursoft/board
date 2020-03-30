@@ -5,6 +5,7 @@ import (
 	"git/inspursoft/board/src/adminserver/models/nodeModel"
 	"git/inspursoft/board/src/adminserver/service"
 	"git/inspursoft/board/src/adminserver/service/nodeService"
+	"git/inspursoft/board/src/common/utils"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 	"net/http"
@@ -212,7 +213,7 @@ func (controller *Controller) AddRemoveNode(nodePostData *nodeModel.AddNodePostD
 }
 
 func (controller *Controller) resolveBody(target interface{}) (err error) {
-	err = nodeService.UnmarshalToJSON(controller.Ctx.Request.Body, target)
+	err = utils.UnmarshalToJSON(controller.Ctx.Request.Body, target)
 	if err != nil {
 		logs.Error("Failed to unmarshal data: %+v", err)
 		return

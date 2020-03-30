@@ -3,13 +3,14 @@ package nodeService
 import (
 	"bufio"
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"git/inspursoft/board/src/adminserver/dao"
 	"git/inspursoft/board/src/adminserver/dao/nodeDao"
 	"git/inspursoft/board/src/adminserver/models/nodeModel"
 	"git/inspursoft/board/src/adminserver/service"
-	"git/inspursoft/board/src/adminserver/utils"
+	"git/inspursoft/board/src/adminserver/tools/secureShell"
+	"git/inspursoft/board/src/common/utils"
+
 	"github.com/astaxie/beego/logs"
 	"io"
 	"io/ioutil"
@@ -69,9 +70,9 @@ func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
 
 func LaunchAnsibleContainer(env *nodeModel.ContainerEnv) error {
 	logCache := dao.GlobalCache.Get(env.NodeIp).(*nodeModel.NodeLogCache)
-	var secureShell *utils.SecureShell
+	var secure *secureShell.SecureShell
 	var err error
-	secureShell, err = utils.NewSecureShell(&logCache.DetailBuffer, env.HostIp, env.HostUserName, env.HostPassword)
+	secure, err = secureShell.NewSecureShell(&logCache.DetailBuffer, env.HostIp, env.HostUserName, env.HostPassword)
 	if err != nil {
 		return err
 	}
@@ -107,7 +108,7 @@ func LaunchAnsibleContainer(env *nodeModel.ContainerEnv) error {
 		"-v %s:/ansible_k8s/pre-env \\\n "+
 		"%s \\\n k8s_install:1",
 		LogFilePath, HostDirPath, PreEnvPath, envStr)
-	err = secureShell.ExecuteCommand(cmdStr)
+	err = secure.ExecuteCommand(cmdStr)
 
 	if err != nil {
 		return err
@@ -368,7 +369,7 @@ func getNodeListFromApiServer(nodeList *[]nodeModel.ApiServerNodeListResult) err
 		return nil
 	}, nil, func(req *http.Request, resp *http.Response) error {
 		if resp.StatusCode == 200 {
-			return UnmarshalToJSON(resp.Body, nodeList)
+			return utils.UnmarshalToJSON(resp.Body, nodeList)
 		}
 		data, _ := ioutil.ReadAll(resp.Body)
 		return fmt.Errorf("failed to get nodes from apiserver.status:%d;message:%s",
@@ -408,12 +409,4 @@ func setLogStatus(log string) nodeModel.NodeLogDetail {
 	} else {
 		return nodeModel.NodeLogDetail{Message: log, Status: nodeModel.NodeLogResponseNormal}
 	}
-}
-
-func UnmarshalToJSON(in io.ReadCloser, target interface{}) error {
-	data, err := ioutil.ReadAll(in)
-	if err != nil {
-		return err
-	}
-	return json.Unmarshal(data, &target)
 }
