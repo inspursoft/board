@@ -133,6 +133,7 @@ services:
 #     - ../../src/ui/dist:/usr/share/nginx/html:z
     ports: 
       - 80:80
+      - 8080:8080
     links:
       - apiserver
     depends_on:

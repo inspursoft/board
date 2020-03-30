@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	c "git/inspursoft/board/src/common/controller"
+	c "git/inspursoft/board/src/apiserver/controllers/commons"
 )
 
 // Operations about project members

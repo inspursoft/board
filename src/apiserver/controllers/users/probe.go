@@ -1,7 +1,7 @@
 package users
 
 import (
-	c "git/inspursoft/board/src/common/controller"
+	c "git/inspursoft/board/src/apiserver/controllers/commons"
 	"net/http"
 )
 

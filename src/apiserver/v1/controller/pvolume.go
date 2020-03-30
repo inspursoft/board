@@ -3,8 +3,8 @@ package controller
 import (
 	"encoding/json"
 	"fmt"
+	c "git/inspursoft/board/src/apiserver/controllers/commons"
 	"git/inspursoft/board/src/apiserver/service"
-	c "git/inspursoft/board/src/common/controller"
 	"git/inspursoft/board/src/common/model"
 	"io/ioutil"
 	"net/http"

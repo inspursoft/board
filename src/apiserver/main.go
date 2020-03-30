@@ -3,11 +3,11 @@ package main
 import (
 	"bytes"
 
+	c "git/inspursoft/board/src/apiserver/controllers/commons"
 	v2routers "git/inspursoft/board/src/apiserver/routers"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/apiserver/service/devops/gogs"
 	"git/inspursoft/board/src/apiserver/v1/controller"
-	c "git/inspursoft/board/src/common/controller"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
@@ -170,6 +170,11 @@ func main() {
 	c.InitController()
 	controller.InitRouter()
 	v2routers.InitRouterV2()
+	err := v2routers.InitK8sRouter()
+	if err != nil {
+		logs.Error("Failed to init kubernetes api routes: %+v", err)
+		panic(err)
+	}
 	if swaggerDoc() == "enabled" {
 		beego.BConfig.WebConfig.DirectoryIndex = true
 		beego.BConfig.WebConfig.StaticDir["/swagger"] = "swagger"

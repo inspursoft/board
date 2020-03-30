@@ -1,4 +1,4 @@
-package controller
+package commons
 
 import (
 	"git/inspursoft/board/src/apiserver/service"

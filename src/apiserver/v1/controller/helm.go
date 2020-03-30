@@ -11,8 +11,8 @@ import (
 
 	"github.com/astaxie/beego/logs"
 
+	c "git/inspursoft/board/src/apiserver/controllers/commons"
 	"git/inspursoft/board/src/apiserver/service"
-	c "git/inspursoft/board/src/common/controller"
 	"git/inspursoft/board/src/common/model"
 )
 

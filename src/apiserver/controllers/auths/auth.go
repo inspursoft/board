@@ -2,10 +2,10 @@ package auths
 
 import (
 	"fmt"
+	c "git/inspursoft/board/src/apiserver/controllers/commons"
 	"git/inspursoft/board/src/apiserver/models/vm"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/apiserver/service/adapting"
-	c "git/inspursoft/board/src/common/controller"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"strings"
