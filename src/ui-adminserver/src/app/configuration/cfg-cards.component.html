@@ -125,6 +125,13 @@
       </div>
     </div>
     <p>&nbsp;&nbsp;&nbsp;&nbsp;{{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.COMMENT' | translate }}</p>
+    <div style="text-align: center"
+         *ngIf="loadingFlag">
+      <clr-spinner>
+        {{ 'INITIALIZATION.TOOLS.LOADING' | translate }}
+      </clr-spinner>
+      {{ 'INITIALIZATION.TOOLS.LOADING' | translate }}
+    </div>
     <form clrForm
           #sshForm="ngForm">
       <clr-input-container>
@@ -159,7 +166,7 @@
     </button>
     <button type="button"
             class="btn btn-warning"
-            [disabled]='!sshForm.valid'
+            [disabled]='!sshForm.valid || disableApply'
             (click)="applyCfg()">
       {{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.APPLY' | translate }}
     </button>

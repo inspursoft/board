@@ -27,6 +27,8 @@ export class CfgCardsComponent implements OnInit {
   cardList: CfgCardObjects;
   applyCfgModal = false;
   user: User;
+  loadingFlag = false;
+  disableApply = false;
 
   @ViewChild('others') others: OthersComponent;
   @ViewChild('apiserver') apiserver: ApiserverComponent;
@@ -49,7 +51,10 @@ export class CfgCardsComponent implements OnInit {
 
   getCfg(whichOne?: string) {
     this.cfgCardsService.getConfig(whichOne ? whichOne : '').subscribe(
-      (res: Configuration) => { this.config = new Configuration(res); },
+      (res: Configuration) => {
+        this.config = new Configuration(res);
+        document.getElementById('container').scrollIntoView();
+      },
       (err: HttpErrorResponse) => { this.commonError(err); }
     );
   }
@@ -94,22 +99,26 @@ export class CfgCardsComponent implements OnInit {
   }
 
   applyCfg() {
+    this.loadingFlag = true;
+    this.disableApply = true;
     this.cfgCardsService.applyCfg(this.user).subscribe(
       () => {
+        this.loadingFlag = false;
+        this.disableApply = false;
         this.applyCfgModal = false;
         this.router.navigateByUrl('/dashboard');
       },
-      (err: HttpErrorResponse) => { this.commonError(err); }
+      (err: HttpErrorResponse) => {
+        this.loadingFlag = false;
+        this.disableApply = false;
+        this.commonError(err);
+      }
     );
   }
 
   cancelApply() {
     this.applyCfgModal = false;
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-    this.getCfg();
+    this.getCfg('tmp');
   }
 
   commonError(err: HttpErrorResponse) {
