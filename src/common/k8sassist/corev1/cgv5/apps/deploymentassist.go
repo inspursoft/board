@@ -11,22 +11,22 @@ import (
 
 	"github.com/astaxie/beego/logs"
 	"github.com/ghodss/yaml"
-	appsv1beta2 "k8s.io/api/apps/v1beta2"
+	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8stypes "k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/kubernetes/typed/apps/v1beta2"
+	"k8s.io/client-go/kubernetes/typed/apps/v1"
 )
 
 type deployments struct {
 	namespace string
-	deploy    v1beta2.DeploymentInterface
+	deploy    v1.DeploymentInterface
 }
 
 var (
 	namespacesErr = errors.New("Namespace value isn't consistent with project name")
 )
 
-func (d *deployments) processDeploymentHandler(deployment *model.Deployment, handler func(*appsv1beta2.Deployment) (*appsv1beta2.Deployment, error)) (customModel *model.Deployment, primitiveData []byte, err error) {
+func (d *deployments) processDeploymentHandler(deployment *model.Deployment, handler func(*appsv1.Deployment) (*appsv1.Deployment, error)) (customModel *model.Deployment, primitiveData []byte, err error) {
 	k8sDeployment := types.ToK8sDeployment(deployment)
 	//logs.Debug("handler k8s deployment: ", k8sDeployment)
 	handledDep, err := handler(k8sDeployment)
@@ -174,7 +174,7 @@ func (d *deployments) CheckYaml(r io.Reader) (*model.Deployment, error) {
 	return types.FromK8sDeployment(&deployment), nil
 }
 
-func NewDeployments(namespace string, deploy v1beta2.DeploymentInterface) *deployments {
+func NewDeployments(namespace string, deploy v1.DeploymentInterface) *deployments {
 	return &deployments{
 		namespace: namespace,
 		deploy:    deploy,

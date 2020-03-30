@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"strings"
 
-	c "git/inspursoft/board/src/common/controller"
+	c "git/inspursoft/board/src/apiserver/controllers/commons"
 
 	"github.com/astaxie/beego/logs"
 )
