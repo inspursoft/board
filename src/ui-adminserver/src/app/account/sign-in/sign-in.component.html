@@ -89,7 +89,6 @@
 
     <clr-wizard-page clrWizardPagePreventDefault="true"
                      (clrWizardPageOnCommit)="onWelcome()"
-                     (clrWizardPageCustomButton)="doCustomClick($event)"
                      [clrWizardPageNextDisabled]="disableInput">
       <ng-template clrPageTitle>{{ 'INITIALIZATION.PAGE_TITLE.WELCOME' | translate }}</ng-template>
       <ng-template clrPageNavTitle>{{ 'INITIALIZATION.PAGE_NAV_TITLE.WELCOME' | translate }}</ng-template>
