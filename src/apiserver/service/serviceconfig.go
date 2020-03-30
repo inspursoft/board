@@ -28,9 +28,10 @@ const (
 	defaultDeleted     = 0
 	defaultStatus      = 1
 	serviceNamespace   = "default" //TODO create namespace in project post
-	scaleKind          = "Deployment"
 	k8sService         = "kubernetes"
 )
+
+var scaleKind = model.GroupResource{Group: "apps", Resource: "deployments"}
 
 const (
 	board = iota
