@@ -181,12 +181,12 @@ func InsertLogDetail(ip, logFileName string, creationTime int64) error {
 	if dao.GlobalCache.IsExist(ip) {
 		logCache = *dao.GlobalCache.Get(ip).(*nodeModel.NodeLogCache)
 	} else {
-		errStr := fmt.Sprintf("No cache data for node:%s", ip)
+		errStr := fmt.Sprintf("No cache data for node:%s \n", ip)
 		logs.Info(errStr)
 		logCache.DetailBuffer.WriteString(errStr)
 	}
 
-	if _, err := os.Stat(logFileName); os.IsExist(err) {
+	if _, err := os.Stat(logFileName); err == nil {
 		filePtr, _ := os.Open(logFileName)
 		defer filePtr.Close()
 		if fileContent, err := ioutil.ReadFile(logFileName); err != nil {

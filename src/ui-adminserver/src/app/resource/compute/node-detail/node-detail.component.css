@@ -14,8 +14,6 @@ div.alert-item{
 div.logs-container {
   background-color: black;
   overflow-y: auto;
-  min-height: 280px;
-  max-height: 400px;
   margin-top: 10px;
   border: 1px solid silver;
   border-radius: 5px;

@@ -85,7 +85,7 @@ func GetNodeStatusList(nodeStatusList *[]nodeModel.NodeStatus) error {
 func CheckNodeLogDetailExists(creationTime int64) bool {
 	o := orm.NewOrm()
 	detail := nodeModel.NodeLogDetailInfo{CreationTime: creationTime}
-	if err := o.Read(detail, "creation_time"); err != nil {
+	if err := o.Read(&detail, "creation_time"); err != nil {
 		return false
 	}
 	return true
