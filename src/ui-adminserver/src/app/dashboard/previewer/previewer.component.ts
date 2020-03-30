@@ -21,6 +21,7 @@ export class PreviewerComponent implements OnInit, OnDestroy {
   user: User;
   loadingFlag = true;
   enableStop = false;
+  disableApply = false;
 
   constructor(private dashboardService: DashboardService,
     private router: Router) {
@@ -81,26 +82,46 @@ export class PreviewerComponent implements OnInit, OnDestroy {
   }
 
   boardControl(type: string, containerID?: string) {
+    this.loadingFlag = true;
+    this.disableApply = true;
     if (type === 'rb') {
       this.dashboardService.restartBoard(this.user).subscribe(
         () => {
+          this.loadingFlag = false;
+          this.disableApply = false;
           this.confirmModal = false;
+          this.user = new User();
           alert('Waiting for restart.');
         },
-        (err: HttpErrorResponse) => { this.commonError(err); }
+        (err: HttpErrorResponse) => {
+          this.loadingFlag = false;
+          this.disableApply = false;
+          this.commonError(err);
+        }
       );
     } else if (type === 'rc') {
+      this.loadingFlag = false;
+      this.disableApply = false;
       this.confirmModal = false;
       alert('Sorry, this feature is not yet supported. Restart container(' + containerID + ') fail.');
     } else if (type === 'sb') {
       this.dashboardService.shutdownBoard(this.user).subscribe(
         () => {
+          this.loadingFlag = false;
+          this.disableApply = false;
           this.confirmModal = false;
+          this.user = new User();
           alert('Waiting for STOP.');
         },
-        (err: HttpErrorResponse) => { this.commonError(err); }
+        (err: HttpErrorResponse) => {
+          this.loadingFlag = false;
+          this.disableApply = false;
+          this.commonError(err);
+        }
       );
     } else {
+      this.loadingFlag = false;
+      this.disableApply = false;
       this.confirmModal = false;
       alert('Wrong parameter!');
     }

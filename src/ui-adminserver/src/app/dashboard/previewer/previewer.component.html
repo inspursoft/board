@@ -141,6 +141,13 @@
         <span>{{confirmType.comment}} {{confirmType.containerId}}</span>
       </div>
     </div>
+    <div style="text-align: center"
+         *ngIf="loadingFlag">
+      <clr-spinner>
+        {{ 'INITIALIZATION.TOOLS.LOADING' | translate }}
+      </clr-spinner>
+      {{ 'INITIALIZATION.TOOLS.LOADING' | translate }}
+    </div>
     <form clrForm
           #sshForm="ngForm">
       <clr-input-container>
@@ -169,7 +176,7 @@
   </div>
   <div class="modal-footer">
     <button class="btn btn-danger"
-            [disabled]='!sshForm.valid'
+            [disabled]='!sshForm.valid || disableApply'
             (click)="boardControl(confirmType.type, confirmType.containerId)">{{confirmType.button}}</button>
   </div>
 </clr-modal>

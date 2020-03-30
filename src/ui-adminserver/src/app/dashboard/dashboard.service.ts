@@ -24,7 +24,7 @@ export class DashboardService {
 
   shutdownBoard(user: User): Observable<any> {
     this.token = window.sessionStorage.getItem('token');
-    return this.http.get(
+    return this.http.post(
       `${BASE_URL}/board/shutdown?token=${this.token}`,
       user.PostBody()
     );
