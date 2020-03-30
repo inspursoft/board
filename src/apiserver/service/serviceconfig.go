@@ -1025,7 +1025,7 @@ func GetServiceContainers(projectName, serviceName string) ([]model.ServiceConta
 	config.KubeConfigPath = kubeConfigPath()
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 
-	svc, err := k8sclient.AppV1().Service(projectName).Get(serviceName)
+	svc, _, err := k8sclient.AppV1().Service(projectName).Get(serviceName)
 	if err != nil {
 		return nil, err
 	}
@@ -1043,14 +1043,14 @@ func GetServiceContainers(projectName, serviceName string) ([]model.ServiceConta
 	}
 
 	for i := range podList.Items {
-		for j := podList.Items[i].Spec.InitContainers {
+		for j := range podList.Items[i].Spec.InitContainers {
 			serviceContainer.ContainerName = podList.Items[i].Spec.InitContainers[j].Name
 			serviceContainer.PodName = podList.Items[i].Name
 			serviceContainer.ServiceName = serviceName
 			serviceContainer.NodeIP = podList.Items[i].Status.HostIP
 			sContainers = append(sContainers, serviceContainer)
 		}
-		for j := podList.Items[i].Spec.Containers {
+		for j := range podList.Items[i].Spec.Containers {
 			serviceContainer.ContainerName = podList.Items[i].Spec.Containers[j].Name
 			serviceContainer.PodName = podList.Items[i].Name
 			serviceContainer.ServiceName = serviceName

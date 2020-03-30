@@ -1500,5 +1500,5 @@ type ServiceContainer struct {
 	ContainerName string
 	PodName       string
 	ServiceName   string
-	NodeIp        string
+	NodeIP        string
 }
