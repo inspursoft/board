@@ -1495,3 +1495,10 @@ type JobCondition struct {
 	// Human readable message indicating details about last transition.
 	Message string `json:"message,omitempty" protobuf:"bytes,6,opt,name=message"`
 }
+
+type ServiceContainer struct {
+	ContainerName string
+	PodName       string
+	ServiceName   string
+	NodeIp        string
+}
