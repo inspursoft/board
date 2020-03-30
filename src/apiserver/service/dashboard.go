@@ -4,6 +4,7 @@ import (
 	"git/inspursoft/board/src/common/dao"
 
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
 )
 
 type Dashboard struct {
@@ -138,16 +139,20 @@ func (d *Dashboard) GetServiceDataToObj() (err error) {
 }
 func (d *Dashboard) GetNodeDataToObj() (err error) {
 	var tMin int
+	var tUnit int
 	switch d.NodeReqPara.TimeUnit {
 	case "second":
-		tMin = d.NodeReqPara.TimeStamp - d.ServiceReqPara.TimeCount*5
+		tMin = d.NodeReqPara.TimeStamp - d.NodeReqPara.TimeCount*5
+		tUnit = 5
 	case "minute":
-		tMin = d.NodeReqPara.TimeStamp - d.ServiceReqPara.TimeCount*60
+		tMin = d.NodeReqPara.TimeStamp - d.NodeReqPara.TimeCount*60
+		tUnit = 60
 	case "hour":
-		tMin = d.NodeReqPara.TimeStamp - d.ServiceReqPara.TimeCount*60*60
+		tMin = d.NodeReqPara.TimeStamp - d.NodeReqPara.TimeCount*60*60
+		tUnit = 60 * 60
 	case "day":
-		tMin = d.NodeReqPara.TimeStamp - d.ServiceReqPara.TimeCount*60*60*24
-
+		tMin = d.NodeReqPara.TimeStamp - d.NodeReqPara.TimeCount*60*60*24
+		tUnit = 60 * 60 * 24
 	}
 	s := dao.DashboardNodeDao{}
 	s.QueryPara = dao.QueryPara{
@@ -160,7 +165,7 @@ func (d *Dashboard) GetNodeDataToObj() (err error) {
 	if d.NodeReqPara.NodeName == "" {
 		d.NodeResp = NodeResp{
 			NodeName:      "average",
-			TimeUnit:      d.ServiceReqPara.TimeUnit,
+			TimeUnit:      d.NodeReqPara.TimeUnit,
 			NodeTimestamp: d.NodeReqPara.TimeStamp,
 		}
 		d.NodeResp.NodeCount, d.NodeLogsData, err = s.GetTotalNodeData()
@@ -184,6 +189,40 @@ func (d *Dashboard) GetNodeDataToObj() (err error) {
 	if d.NodeReqPara.TimeStamp < lt.MinTime {
 		d.NodeResp.IsOverMinLimit = true
 	}
+
+	var nodeDataLogs []dao.NodeDataLogs
+	if d.NodeLogsData == nil {
+		logs.Warning("The node logs data is nil.")
+		lastTime := tMin
+		for i := 0; i < d.NodeResp.NodeCount-1; i++ {
+			lastTime += tUnit
+			nodeDataLogs = append(nodeDataLogs, dao.NodeDataLogs{Record_time: lastTime})
+		}
+	} else if d.NodeResp.NodeCount < s.QueryPara.TimeCount {
+		logs.Warning("The node logs data lesser. Requset Count:", s.QueryPara.TimeCount,
+			"Query Count", d.NodeResp.NodeCount)
+		lastTime := tMin
+		var preTime int
+		for i := 0; i < len(d.NodeLogsData)-1; i++ {
+			preTime = d.NodeLogsData[i].Record_time
+			for preTime-lastTime > tUnit {
+				lastTime += tUnit
+				nodeDataLogs = append(nodeDataLogs, dao.NodeDataLogs{Record_time: lastTime})
+			}
+			if lastTime <= preTime {
+				lastTime = d.NodeLogsData[i].Record_time
+				nodeDataLogs = append(nodeDataLogs, d.NodeLogsData[i])
+			}
+		}
+		for d.NodeReqPara.TimeStamp > preTime {
+			preTime += tUnit
+			nodeDataLogs = append(nodeDataLogs, dao.NodeDataLogs{Record_time: preTime})
+		}
+	} else {
+		nodeDataLogs = d.NodeLogsData
+	}
+	d.NodeLogsData = nodeDataLogs
+
 	return nil
 }
 func (d *Dashboard) GetNodeListToObj() (count int, err error) {
