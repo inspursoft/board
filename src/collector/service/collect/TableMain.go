@@ -220,7 +220,7 @@ func getNodePs(ip string, cpuCores int) (cpu float32, mem float32, err error) {
 	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	util.Logger.SetFatal(ip)
 	var resp *http.Response
-	client := &http.Client{Timeout: 5 * time.Second}
+	client := &http.Client{Timeout: 10 * time.Second}
 	resp, err = client.Do(request)
 	if err != nil {
 		util.Logger.SetError("Request node ps info error: %+v", err)
