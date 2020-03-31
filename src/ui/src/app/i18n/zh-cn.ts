@@ -1,4 +1,7 @@
 export const LANG_ZH_CN = {
+  AdminServer: {
+    Name: '管理服务器'
+  },
   "BUTTON": {
     "OK": "确定",
     "YES": "是",

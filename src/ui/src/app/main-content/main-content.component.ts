@@ -36,7 +36,9 @@ export class MainContentComponent {
     this.getMenuItemByRoute(this.navSource, RouteNodes).visible = this.appInitService.isSystemAdmin;
     this.getMenuItemByRoute(this.navSource, RouteUserCenters).visible = this.appInitService.isSystemAdmin;
     this.getMenuItemByRoute(this.navSource, RouteAudit).visible = this.appInitService.isSystemAdmin;
-    this.getMenuItemByRoute(this.navSource, RouteKibana).visible = !this.appInitService.isMipsSystem &&
+    this.getMenuItemByRoute(this.navSource, RouteKibana).visible =
+      this.appInitService.isSystemAdmin &&
+      !this.appInitService.isMipsSystem &&
       !this.appInitService.isArmSystem;
     this.getMenuItemByRoute(this.navSource, RouteHelm).visible = !this.appInitService.isMipsSystem &&
       !this.appInitService.isArmSystem;
