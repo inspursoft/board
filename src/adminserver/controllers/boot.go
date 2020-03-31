@@ -25,12 +25,10 @@ func (b *BootController) Initdb() {
 	var db models.DBconf
 	utils.UnmarshalToJSON(b.Ctx.Request.Body, &db)
 	if err := service.InitDB(&db); err != nil {
-		b.CustomAbort(http.StatusBadRequest, err.Error())
 		logs.Error(err)
-		return
+		b.CustomAbort(http.StatusBadRequest, err.Error())
 	}
 	b.ServeJSON()	
-	return
 }
 
 // @Title Startdb
@@ -43,12 +41,10 @@ func (b *BootController) Startdb() {
 	var host models.Account
 	utils.UnmarshalToJSON(b.Ctx.Request.Body, &host)
 	if err := service.StartDB(&host); err != nil {
-		b.CustomAbort(http.StatusBadRequest, err.Error())
 		logs.Error(err)
-		return
+		b.CustomAbort(http.StatusBadRequest, err.Error())
 	}
 	b.ServeJSON()	
-	return
 }
 
 // @Title StartBoard
@@ -63,19 +59,16 @@ func (b *BootController) Start() {
 	var host models.Account
 	token := b.GetString("token")
 	result := service.VerifyToken(token)
-	if result == false {
+	if !result {
 		b.Ctx.ResponseWriter.WriteHeader(http.StatusUnauthorized)
 		b.ServeJSON()	
-		return
 	} else {
 		utils.UnmarshalToJSON(b.Ctx.Request.Body, &host)
 		if err := service.StartBoard(&host); err != nil {
-			b.CustomAbort(http.StatusBadRequest, err.Error())
 			logs.Error(err)
-			return
+			b.CustomAbort(http.StatusBadRequest, err.Error())
 		}
 		b.ServeJSON()	
-		return
 	}
 }
 
@@ -85,15 +78,10 @@ func (b *BootController) Start() {
 // @Failure 400 bad request
 // @router /checkdb [get]
 func (b *BootController) CheckDB() {
-	var statusCode int
-	if service.CheckDB() == true {
-		statusCode = http.StatusOK
-	} else {
+	if err := service.CheckDB(); err != nil {
+		logs.Error(err)
 		b.CustomAbort(http.StatusBadRequest, fmt.Sprintf("DB is down."))
-		return
 	}
-	b.Ctx.ResponseWriter.WriteHeader(statusCode)
 	b.ServeJSON()	
-	return
 }
 

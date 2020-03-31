@@ -26,23 +26,19 @@ type CfgController struct {
 // @router / [post]
 func (u *CfgController) Post() {
 	var cfg models.Configuration
-	var statusCode int = http.StatusOK
 	token := u.GetString("token")
 	result := service.VerifyToken(token)
-	if result == false {
+	if !result {
 		u.Ctx.ResponseWriter.WriteHeader(http.StatusUnauthorized)
 		u.ServeJSON()	
-		return
 	} else {
 		//transferring JSON to struct.
 		utils.UnmarshalToJSON(u.Ctx.Request.Body, &cfg)
 		err := service.UpdateCfg(&cfg)
 		if err != nil {
-			u.CustomAbort(http.StatusBadRequest, err.Error())
 			logs.Error(err)
-			return
+			u.CustomAbort(http.StatusBadRequest, err.Error())
 		}
-		u.Ctx.ResponseWriter.WriteHeader(statusCode)
 		u.ServeJSON()
 	}
 	
@@ -57,21 +53,17 @@ func (u *CfgController) Post() {
 // @Failure 401 unauthorized
 // @router / [get]
 func (u *CfgController) GetAll() {
-	var statusCode int = http.StatusOK
 	token := u.GetString("token")
 	result := service.VerifyToken(token)
-	if result == false {
+	if !result {
 		u.Ctx.ResponseWriter.WriteHeader(http.StatusUnauthorized)
 		u.ServeJSON()	
-		return
 	} else {
 		which := u.GetString("which")
 		cfg, statusMessage := service.GetAllCfg(which)
 		if statusMessage == "BadRequest" {
 			u.CustomAbort(http.StatusBadRequest, fmt.Sprintf("Get config failed."))
-			return
 		}
-		u.Ctx.ResponseWriter.WriteHeader(statusCode)
 		//apply struct to JSON value.
 		u.Data["json"] = cfg
 		u.ServeJSON()
@@ -88,10 +80,9 @@ func (u *CfgController) GetAll() {
 func (u *CfgController) GetKey() {
 	token := u.GetString("token")
 	result := service.VerifyToken(token)
-	if result == false {
+	if !result {
 		u.Ctx.ResponseWriter.WriteHeader(http.StatusUnauthorized)
 		u.ServeJSON()	
-		return
 	} else {
 		pubkey := service.GetKey()
 		u.Data["json"] = pubkey

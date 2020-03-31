@@ -117,7 +117,6 @@ func Initialize(acc *models.Account) error {
 
 //Login allow user to use account information to login adminserver.
 func Login(acc *models.Account) (bool, error, string) {
-	var permission bool = true
 	var token string = ""
 	o := orm.NewOrm()
 	o.Using("mysql-db2")
@@ -151,7 +150,7 @@ func Login(acc *models.Account) (bool, error, string) {
 		}	
 	}
 	
-	return permission, nil, token
+	return true, nil, token
 }
 
 
@@ -200,7 +199,7 @@ func ValidateUUID(input string) (bool, error) {
 	}
 
 	result := (input == string(f))
-	if result == true {
+	if result {
 		os.Remove(uuidPath)
 
 		o := orm.NewOrm()
@@ -232,9 +231,5 @@ func VerifyToken(input string) bool {
 		return false
 	} 
 
-	if input == token.Token && (time.Now().Unix()-token.Time)<=1800 {
-		return true
-	} else {
-		return false
-	}
+	return input == token.Token && (time.Now().Unix()-token.Time)<=1800 
 }

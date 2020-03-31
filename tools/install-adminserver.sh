@@ -24,13 +24,6 @@ done
 workdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $workdir
 
-# The hostname in board.cfg has not been modified
-if grep 'hostname = reg.mydomain.com' &> /dev/null board.cfg
-then
-	echo $usage
-	exit 1
-fi
-
 function check_docker {
 	if ! docker --version &> /dev/null
 	then

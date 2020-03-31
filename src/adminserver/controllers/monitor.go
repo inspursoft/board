@@ -21,21 +21,17 @@ type MoniController struct {
 // @Failure 401 unauthorized
 // @router / [get]
 func (m *MoniController) Get() {
-	var statusCode int = http.StatusOK
 	token := m.GetString("token")
 	result := service.VerifyToken(token)
-	if result == false {
+	if !result {
 		m.Ctx.ResponseWriter.WriteHeader(http.StatusUnauthorized)
 		m.ServeJSON()	
-		return
 	} else {
 		containers, err := service.GetMonitor()
 		if err != nil {
-			m.CustomAbort(http.StatusBadRequest, err.Error())
 			logs.Error(err)
-			return
+			m.CustomAbort(http.StatusBadRequest, err.Error())
 		}
-		m.Ctx.ResponseWriter.WriteHeader(statusCode)
 		//apply struct to JSON value.
 		m.Data["json"] = containers
 		m.ServeJSON()
