@@ -15,13 +15,16 @@ import { SafePipe } from './pipes/safe-pipe';
 import { CreateProjectComponent } from './create-project/create-project/create-project.component';
 import { MemberComponent } from './create-project/member/member.component';
 import { CsHighlightComponent } from './cs-components-library/cs-highlight/cs-highlight.component';
-import { CsMenuItemUrlDirective, CsVerticalNavComponent } from './cs-components-library/cs-vertical-nav/cs-vertical-nav.component';
+import {
+  AppMenuItemUrlDirective,
+  CsVerticalNavComponent
+} from './cs-components-library/cs-vertical-nav/cs-vertical-nav.component';
 import 'inspurprism';
 import { CsModalChildBaseSelector } from './cs-modal-base/cs-modal-child-base';
 import { CreatePvcComponent } from './create-pvc/create-pvc.component';
-import { CoreModule } from "../core/core.module";
-import { LibCheckPatternExDirective } from "./lib-directives/input-check-pattern.directive";
-import { LibCheckExistingExDirective } from "./lib-directives/input-check-existing.directive";
+import { CoreModule } from '../core/core.module';
+import { LibCheckPatternExDirective } from './lib-directives/input-check-pattern.directive';
+import { LibCheckExistingExDirective } from './lib-directives/input-check-existing.directive';
 
 @NgModule({
   imports: [CoreModule],
@@ -40,7 +43,7 @@ import { LibCheckExistingExDirective } from "./lib-directives/input-check-existi
     CsProgressComponent,
     CsHighlightComponent,
     CsVerticalNavComponent,
-    CsMenuItemUrlDirective,
+    AppMenuItemUrlDirective,
     SizePipe,
     SafePipe
   ],
@@ -60,7 +63,7 @@ import { LibCheckExistingExDirective } from "./lib-directives/input-check-existi
     CreateProjectComponent,
     CsHighlightComponent,
     CsVerticalNavComponent,
-    CsMenuItemUrlDirective,
+    AppMenuItemUrlDirective,
     AccountSettingComponent,
     EnvironmentValueComponent,
     MemberComponent,
