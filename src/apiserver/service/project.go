@@ -323,6 +323,13 @@ func SyncProjectsWithK8s() error {
 			logs.Error("Failed to sync autoscale rule with project name: %s, error: %+v", namespace.Name, err)
 			// Still can work
 		}
+
+		// Sync the services in this project namespace
+		err = SyncJobWithK8s(namespace.Name)
+		if err != nil {
+			logs.Error("Failed to sync job with project name: %s, error: %+v", namespace.Name, err)
+			// Still can work
+		}
 	}
 	return err
 }

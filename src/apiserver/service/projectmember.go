@@ -9,6 +9,7 @@ import (
 
 	"errors"
 
+	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/orm"
 )
 
@@ -48,7 +49,7 @@ func DeleteProjectMember(projectID int64, userID int64) (bool, error) {
 	}
 	err = gogs.NewGogsHandler(user.Username, user.RepoToken).DeleteRepo(user.Username, repoName)
 	if err != nil {
-		return false, fmt.Errorf("failed to delete repo with name: %s, error: %+v", repoName, err)
+		logs.Warning("failed to delete repo with name: %s, error: %+v", repoName, err)
 	}
 	err = jenkins.NewJenkinsHandler().DeleteJob(repoName)
 	if err != nil {
