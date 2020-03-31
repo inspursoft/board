@@ -68,6 +68,9 @@ export const LANG_EN_US = {
     Node_List_Empty: 'Node list is empty',
     Node_List_Remove_Node: 'Remove node',
     Node_List_Remove_Ask: 'Are you sure to remove the node?',
+    Node_List_Status_Unknown: 'Unknown',
+    Node_List_Status_Schedulable: 'Schedulable',
+    Node_List_Status_Unschedulable: 'Unschedulable',
     Node_Logs_Ip: 'IP',
     Node_Logs_Operation_Time: 'Operation time',
     Node_Logs_PID: 'PID',
@@ -94,7 +97,15 @@ export const LANG_EN_US = {
     Node_Detail_Remove_Success: 'Remove node successfully.',
     Node_Detail_Add_Success: 'Add node successfully.',
     Node_Detail_Remove_Failed: 'Remove node failed.',
-    Node_Detail_Add_failed: 'Add node failed.'
+    Node_Detail_Add_Failed: 'Add node failed.',
+    Node_Detail_Master_Title: 'Master {{0}} password',
+    Node_Detail_Master_Hint: 'Please input the password of master.',
+    Node_Detail_Host_Username: 'Host {{0}} username',
+    Node_Detail_Host_Password: 'Host {{0}} password',
+    Node_Detail_Host_Username_Hint: 'Please input the username of the host.',
+    Node_Detail_Host_Password_Hint: 'Please input the password of the host.',
+    Node_Detail_Node_Ip_Hint: 'Please input the node ip.',
+    Node_Detail_Node_Password_Hint: 'Please input the password of the node.'
   },
   'CONFIGURATIONS': {
     'API_SERVER': {

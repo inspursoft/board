@@ -8,13 +8,13 @@
   <div *ngFor="let node of nodeLists.data" class="card">
     <img [alt]="" src="../../../../assets/images/node.png">
     <span class="card-name"><b>{{node.ip}}</b></span>
-    <span *ngIf="node.origin == 0" class="card-title">{{node.creationTime * 1000 |date:'short'}}</span>
-    <span *ngIf="node.origin == 1" class="card-title">---</span>
+    <span class="card-title">{{node.creationTime * 1000 |date:'short'}}</span>
+    <span class="card-title">{{getStatus(node.status) | translate}}</span>
     <div class="card-action-container">
       <a href="javascript:void(0)" [class.disabled]="node.origin == 1">
         <clr-icon shape="info" class="is-solid" (click)="showLog(node)"></clr-icon>
       </a>
-      <a href="javascript:void(0)" [class.disabled]="node.origin == 1">
+      <a href="javascript:void(0)" [class.disabled]="node.isMaster">
         <clr-icon shape="trash" (click)="deleteNode(node)"></clr-icon>
       </a>
     </div>

@@ -69,6 +69,9 @@ export const LANG_ZH_CN = {
     Node_List_Empty: '节点列表为空',
     Node_List_Remove_Node: '移除节点',
     Node_List_Remove_Ask: '确定要移除节点么？',
+    Node_List_Status_Unknown: '未知',
+    Node_List_Status_Schedulable: '可调度',
+    Node_List_Status_Unschedulable: '不可调度',
     Node_Logs_Ip: 'IP',
     Node_Logs_Operation_Time: '操作时间',
     Node_Logs_PID: 'PID',
@@ -95,7 +98,15 @@ export const LANG_ZH_CN = {
     Node_Detail_Remove_Success: '移除节点成功。',
     Node_Detail_Add_Success: '添加节点成功。',
     Node_Detail_Remove_Failed: '移除节点失败。',
-    Node_Detail_Add_failed: '添加节点失败。'
+    Node_Detail_Add_Failed: '添加节点失败。',
+    Node_Detail_Master_Title: 'Master {{0}} 密码',
+    Node_Detail_Master_Hint: '请输入Master的密码',
+    Node_Detail_Host_Username: `主机 {{0}} 用户名`,
+    Node_Detail_Host_Password: `主机 {{0}} 密码`,
+    Node_Detail_Host_Username_Hint: '请输入主机的用户名',
+    Node_Detail_Host_Password_Hint: '请输入主机的密码',
+    Node_Detail_Node_Ip_Hint: '请输入节点IP',
+    Node_Detail_Node_Password_Hint: '请输入节点密码'
   },
   'CONFIGURATIONS': {
     'API_SERVER': {
