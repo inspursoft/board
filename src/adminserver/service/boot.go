@@ -14,7 +14,7 @@ import (
 	"strings"
 	"io/ioutil"
 
-	"git/inspursoft/board/src/adminserver/utils"
+	"git/inspursoft/board/src/adminserver/tools/secureShell"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -64,20 +64,20 @@ func InitDB(db *models.DBconf) error {
 
 func StartDB(host *models.Account) error {
 	var output bytes.Buffer
-	var secureShell *utils.SecureShell
+	var shell *secureShell.SecureShell
 	var err error
 
 	cmd := exec.Command("sh", "-c", "ip route | awk 'NR==1 {print $3}'")
 	bytes, _ := cmd.Output()
 	HostIp := strings.Replace(string(bytes), "\n", "", 1)
 
-	secureShell, err = utils.NewSecureShell(&output, HostIp, host.Username, host.Password)
+	shell, err = secureShell.NewSecureShell(&output, HostIp, host.Username, host.Password)
 	if err != nil {
 		return err
 	}
 
 	cmdDB := fmt.Sprintf("docker-compose -f %s up -d", models.DBcompose)
-	err = secureShell.ExecuteCommand(cmdDB)
+	err = shell.ExecuteCommand(cmdDB)
 	if err != nil {
 		return err
 	}
@@ -118,14 +118,14 @@ func StartDB(host *models.Account) error {
 
 func StartBoard(host *models.Account) error {
 	var output bytes.Buffer
-	var secureShell *utils.SecureShell
+	var shell *secureShell.SecureShell
 	var err error
 
 	cmd := exec.Command("sh", "-c", "ip route | awk 'NR==1 {print $3}'")
 	bytes, _ := cmd.Output()
 	HostIp := strings.Replace(string(bytes), "\n", "", 1)
 
-	secureShell, err = utils.NewSecureShell(&output, HostIp, host.Username, host.Password)
+	shell, err = secureShell.NewSecureShell(&output, HostIp, host.Username, host.Password)
 	if err != nil {
 		return err
 	}
@@ -133,7 +133,7 @@ func StartBoard(host *models.Account) error {
 	cmdPrepare := fmt.Sprintf("%s", models.PrepareFile)
 	cmdCompose := fmt.Sprintf("docker-compose -f %s up -d", models.Boardcompose)
 
-	err = secureShell.ExecuteCommand(cmdPrepare)
+	err = shell.ExecuteCommand(cmdPrepare)
 	if err != nil {
 		return err
 	}
@@ -153,7 +153,7 @@ func StartBoard(host *models.Account) error {
 	
 	time.Sleep(time.Duration(5)*time.Second)
 	
-	err = secureShell.ExecuteCommand(cmdCompose)
+	err = shell.ExecuteCommand(cmdCompose)
 	if err != nil {
 		return err
 	}

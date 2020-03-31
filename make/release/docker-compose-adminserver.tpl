@@ -7,7 +7,6 @@ services:
       - ./:/go/cfgfile
       - /data/board/secrets:/go/secrets
       - /var/run/docker.sock:/var/run/docker.sock
-      - /usr/bin/docker:/usr/bin/docker
       - /data/board/database:/data/board/database
       - /data/board/ansible_k8s:/data/board/ansible_k8s
       - /data/board/Deploy:/data/board/Deploy

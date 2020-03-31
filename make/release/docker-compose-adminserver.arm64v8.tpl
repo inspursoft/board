@@ -7,7 +7,6 @@ services:
       - ./:/go/cfgfile
       - /data/board/secrets:/go/secrets
       - /var/run/docker.sock:/var/run/docker.sock
-      - /usr/bin/docker:/usr/bin/docker
       - /data/board/database:/data/board/database
       - /data/board/ansible_k8s:/data/board/ansible_k8s
       - /data/board/Deploy:/data/board/Deploy
@@ -18,7 +17,7 @@ services:
     ports:
       - 8081:8080
   proxy-adminserver:
-    image: board_proxy_adminserver:__version__
+    image: board_adminserver_proxy:__version__
     depends_on: 
       - adminserver
     restart: always
