@@ -31,24 +31,27 @@ export class PreviewerComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.getMonitor();
+  }
+
+  getMonitor() {
     // 10s 刷新一次
+    clearInterval(this.timer);
     this.timer = setInterval(
       () => {
-        // this.dashboardService.monitorContainer().subscribe(
-        //   (res: Array<ComponentStatus>) => {
-        //     this.componentList = res;
-        //     this.loadingFlag = false;
-        //     this.enableStop = this.componentList.length > 3;
-        //     this.reflashDetail();
-        //   },
-        //   (err: HttpErrorResponse) => {
-        //     this.loadingFlag = false;
-        //     this.commonError(err);
-        //     clearInterval(this.timer); // 销毁定时器
-        //   }
-        // );
-        this.loadingFlag = false;
-        this.enableStop = true;
+        this.dashboardService.monitorContainer().subscribe(
+          (res: Array<ComponentStatus>) => {
+            this.componentList = res;
+            this.loadingFlag = false;
+            this.enableStop = this.componentList.length > 3;
+            this.reflashDetail();
+          },
+          (err: HttpErrorResponse) => {
+            this.loadingFlag = false;
+            this.commonError(err);
+            clearInterval(this.timer); // 销毁定时器
+          }
+        );
       }, 10000);
   }
 
@@ -89,10 +92,10 @@ export class PreviewerComponent implements OnInit, OnDestroy {
     if (type === 'rb') {
       this.dashboardService.restartBoard(this.user).subscribe(
         () => {
-          this.loadingFlag = false;
           this.disableApply = false;
           this.confirmModal = false;
           this.user = new User();
+          this.getMonitor();
           alert('Waiting for restart.');
         },
         (err: HttpErrorResponse) => {
@@ -109,10 +112,10 @@ export class PreviewerComponent implements OnInit, OnDestroy {
     } else if (type === 'sb') {
       this.dashboardService.shutdownBoard(this.user).subscribe(
         () => {
-          this.loadingFlag = false;
           this.disableApply = false;
           this.confirmModal = false;
           this.user = new User();
+          this.getMonitor();
           alert('Waiting for STOP.');
         },
         (err: HttpErrorResponse) => {

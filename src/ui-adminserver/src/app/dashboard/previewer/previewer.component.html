@@ -59,7 +59,7 @@
   </clr-spinner>
   {{ 'INITIALIZATION.TOOLS.LOADING' | translate }}
 </div>
-<!-- <div class="clr-row"
+<div class="clr-row"
      style="margin-left: 2em; margin-right: 2em;">
   <div class="clr-col-lg-4 clr-col-12"
        *ngFor="let item of componentList">
@@ -91,9 +91,8 @@
                 (click)="getDetail(item)">{{ 'DASHBOARD.BUTTONS.DETAIL' | translate }}</button>
       </div>
     </div>
-
   </div>
-</div> -->
+</div>
 
 <clr-modal [(clrModalOpen)]="showDetail"
            [clrModalStaticBackdrop]="false">
