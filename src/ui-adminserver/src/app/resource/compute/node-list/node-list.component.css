@@ -41,3 +41,7 @@ a.disabled {
 a.disabled :hover {
   cursor: not-allowed;
 }
+
+span.card-title{
+  color: darkgreen;
+}

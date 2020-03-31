@@ -82,7 +82,7 @@ export class NodeListType extends ResponseBase {
   @HttpBind('creation_time') creationTime: number;
   @HttpBind('origin') origin: number;
   @HttpBind('status') status: number;
-  @HttpBind('status') isMaster: boolean;
+  @HttpBind('is_master') isMaster: boolean;
 }
 
 export class NodeList extends ResponseArrayBase<NodeListType> {
