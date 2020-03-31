@@ -1,21 +1,31 @@
 package service
 
 import (
+	"encoding/base64"
 	"git/inspursoft/board/src/adminserver/encryption"
 	"git/inspursoft/board/src/adminserver/models"
-	"encoding/base64"
+	"git/inspursoft/board/src/adminserver/dao"
+	"git/inspursoft/board/src/common/utils"
+	"github.com/astaxie/beego/logs"
 	"io/ioutil"
-	"log"
 	"os"
-	"os/exec"
 	"path"
-
+	"github.com/astaxie/beego/orm"
 	"github.com/alyu/configparser"
+	uuid "github.com/satori/go.uuid"
+	"fmt"
+	"time"
 )
 
+const (
+	defaultInitialPassword = "123456a?"
+	adminUserID            = 1
+)
+
+var configStorage map[string]interface{}
+
 //VerifyPassword compares the password in cfg with the input one.
-func VerifyPassword(passwd *models.Password) (a bool, err string) {
-	var statusMessage string = "OK"
+func VerifyPassword(passwd *models.Password) (bool, error) {
 
 	configparser.Delimiter = "="
 	cfgPath := path.Join("/go", "/cfgfile/board.cfg")
@@ -26,135 +36,200 @@ func VerifyPassword(passwd *models.Password) (a bool, err string) {
 	password := section.ValueOf("board_admin_password")
 
 	//ENCRYPTION
-	prvKey, err0 := ioutil.ReadFile("./private.pem")
-	if err0 != nil {
-		log.Print(err0)
-		statusMessage = "BadRequest"
+	prvKey, err := ioutil.ReadFile("./private.pem")
+	if err != nil {
+		return false, err
 	}
-	test, err1 := base64.StdEncoding.DecodeString(passwd.Value)
-	if err1 != nil {
-		log.Print(err1)
-		statusMessage = "BadRequest"
+	test, err := base64.StdEncoding.DecodeString(passwd.Value)
+	if err != nil {
+		return false, err
 	}
 
 	input := string(encryption.Decrypt("rsa", test, prvKey))
 
-	return (input == password), statusMessage
+	return (input == password), nil
 }
 
 //Initialize save the account information into a file.
-func Initialize(acc *models.Account) string {
-	var statusMessage string = "OK"
-	f, err := os.Create("acc.txt")
-	if err != nil {
-		log.Print(err)
-		statusMessage = "BadRequest"
+func Initialize(acc *models.Account) error {
+
+	if acc.Password == "" {
+		acc.Password = defaultInitialPassword
 	}
-	f.WriteString("username = " + acc.Username + "\n")
-	f.WriteString("password = " + acc.Password + "\n")
-	f.Close()
-	return statusMessage
+	salt := utils.GenerateRandomString()
+	encryptedPassword := utils.Encrypt(acc.Password, salt)
+	user := models.User{ID: adminUserID, Username: acc.Username, Password: encryptedPassword, Salt: salt}
+	o := orm.NewOrm()
+	o.Using("mysql-db2")
+	user.UpdateTime = time.Now()
+	_, err := o.Update(&user, "password", "salt")
+	if err != nil {
+		return err
+	} else {
+		utils.SetConfig("SET_ADMIN_PASSWORD", "updated")
+
+		config, err := dao.GetConfig("SET_ADMIN_PASSWORD")
+		if err != nil {
+			return err
+		}
+
+		value := utils.GetStringValue("SET_ADMIN_PASSWORD")
+		if value == "" {
+			return fmt.Errorf("Has not set config %s yet", "SET_ADMIN_PASSWORD")
+		}
+		_, err = dao.AddOrUpdateConfig(models.Config{Name: "SET_ADMIN_PASSWORD", Value: value, Comment: fmt.Sprintf("Set config %s.", "SET_ADMIN_PASSWORD")})
+		if err != nil {
+			return err
+		}
+		utils.SetConfig("SET_ADMIN_PASSWORD", config.Value)
+
+		logs.Info("Admin password has been updated successfully.")
+	} 
+
+
+	o2 := orm.NewOrm()
+	o2.Using("default")
+	account := models.Account{Username: acc.Username, Password: acc.Password}
+	if o2.Read(&models.Account{Id: 1}) == orm.ErrNoRows {
+		if _, err := o2.Insert(&account); err != nil {
+			return err
+		}	
+	} else {
+		if _, err := o2.Update(&account); err != nil {
+			return err
+		}	
+	}
+
+	status := models.InitStatusInfo{Id: 1}
+	err = o2.Read(&status)
+	if err != nil {
+		return err
+	}
+	if status.Status == models.InitStatusThird {
+		status.InstallTime = time.Now().Unix()
+		status.Status = models.InitStatusFalse
+		o2.Update(&status, "InstallTime", "Status")
+	}
+	
+
+	return nil
 }
 
 //Login allow user to use account information to login adminserver.
-func Login(acc *models.Account) (a bool, b string) {
-	var statusMessage string = "OK"
-	var permission bool
-	configparser.Delimiter = "="
-	config, err0 := configparser.Read("./acc.txt")
-	if err0 != nil {
-		log.Print(err0)
-		statusMessage = "BadRequest"
+func Login(acc *models.Account) (bool, error, string) {
+	var token string = ""
+	o := orm.NewOrm()
+	o.Using("mysql-db2")
+
+	user := models.User{Username: acc.Username, Deleted: 0}
+	err := o.Read(&user, "username", "deleted")
+	if err != nil {
+		return false, err, token
 	}
-	section, err1 := config.Section("global")
-	if err1 != nil {
-		log.Print(err1)
-		statusMessage = "BadRequest"
+
+	query := models.User{Username: acc.Username, Password: acc.Password}
+	query.Password = utils.Encrypt(query.Password, user.Salt)
+	err = o.Read(&query, "username", "password")
+
+	if err != nil {
+		return false, err, token
 	}
-	username := section.ValueOf("username")
-	password := section.ValueOf("password")
-	if acc.Username == username && acc.Password == password {
-		permission = true
+
+	u := uuid.NewV4()
+	token = u.String()
+	newtoken := models.Token{Id: 1, Token: token, Time: time.Now().Unix()}
+	o2 := orm.NewOrm()
+	o2.Using("default")
+	if o2.Read(&models.Token{Id: 1}) == orm.ErrNoRows {
+		if _, err := o2.Insert(&newtoken); err != nil {
+			return false, err, token
+		}	
 	} else {
-		permission = false
+		if _, err := o2.Update(&newtoken); err != nil {
+			return false, err, token
+		}	
 	}
-	return permission, statusMessage
+	
+	return true, nil, token
 }
 
-//Restart Board without loading cfg.
-func Restart(path string) string {
-	var statusMessage string = "OK"
-
-	statusMessage = Shutdown(path)
-
-	err := Execute("docker-compose -f " + path + "/docker-compose.yml up -d")
-	if err != nil {
-		log.Println(err)
-		statusMessage = "BadRequest"
-	}
-
-	return statusMessage
-}
-
-//Applycfg restarts Board with applying of cfg.
-func Applycfg(cfgpath string) string {
-	var statusMessage string = "OK"
-
-	cfgPath := path.Join("/go", "/cfgfile/board.cfg")
-	err := os.Rename(cfgPath, cfgPath+".bak1")
-	if err != nil {
-		if !os.IsNotExist(err) { // fine if the file does not exists
-			log.Print(err)
-			statusMessage = "BadRequest"
-		}
-	}
-	err = os.Rename(cfgPath+".tmp", cfgPath)
-	if err != nil {
-		if !os.IsNotExist(err) { // fine if the file does not exists
-			log.Print(err)
-			statusMessage = "BadRequest"
-		}
-	}
-
-	statusMessage = Shutdown(cfgpath)
-
-	err = Execute(cfgpath + "/prepare")
-	if err != nil {
-		log.Println(err)
-		statusMessage = "BadRequest"
-	}
-
-	err = Execute("docker-compose -f " + cfgpath + "/docker-compose.yml up -d")
-	if err != nil {
-		log.Println(err)
-		statusMessage = "BadRequest"
-	}
-
-	return statusMessage
-}
-
-//Shutdown Board.
-func Shutdown(path string) string {
-	var statusMessage string = "OK"
-
-	err := Execute("docker-compose -f " + path + "/docker-compose.yml down")
-	if err != nil {
-		log.Println(err)
-		statusMessage = "BadRequest"
-	}
-
-	return statusMessage
-}
-
-//Execute command.
-func Execute(command string) error {
-	cmd := exec.Command("sh", "-c", command)
-	bytes, err := cmd.Output()
-	log.Println(string(bytes))
-	return err
-}
 
 //Install method is called when first open the admin server.
-func Install() bool {
-	return encryption.CheckFileIsExist("./install")
+func Install() models.InitStatus {
+	o := orm.NewOrm()
+	status := models.InitStatusInfo{Id: 1}
+	err := o.Read(&status)
+
+	if err != nil {
+		logs.Error(err)
+	} 
+
+	return status.Status
+}
+
+//CreateUUID creates a file with an UUID in it.
+func CreateUUID() error {
+	u := uuid.NewV4()
+
+	folderPath := path.Join("/go", "/secrets")
+    if _, err := os.Stat(folderPath); os.IsNotExist(err) {
+        os.Mkdir(folderPath, os.ModePerm) 
+        os.Chmod(folderPath, os.ModePerm)
+	}
+
+	uuidPath := path.Join("/go", "/secrets/initialAdminPassword")
+	if _, err := os.Stat(uuidPath); os.IsNotExist(err) {
+		f, err := os.Create(uuidPath)
+		if err != nil {
+			return err
+		}
+		f.WriteString(u.String())
+		defer f.Close()
+	}
+	
+	return nil
+}
+
+//ValidateUUID compares input with the UUID stored in the specified file.
+func ValidateUUID(input string) (bool, error) {
+	uuidPath := path.Join("/go", "/secrets/initialAdminPassword")
+	f, err := ioutil.ReadFile(uuidPath)
+	if err != nil {
+		return false, err
+	}
+
+	result := (input == string(f))
+	if result {
+		os.Remove(uuidPath)
+
+		o := orm.NewOrm()
+		status := models.InitStatusInfo{Id: 1}
+		err = o.Read(&status)
+		if err != nil {
+			return false, err
+		} 
+		if status.Status == models.InitStatusTrue {
+			status.InstallTime = time.Now().Unix()
+			status.Status = models.InitStatusFirst
+			o.Update(&status, "InstallTime", "Status")
+		}
+	}
+
+	return result, nil
+}
+
+
+func VerifyToken(input string) bool {
+	o := orm.NewOrm()
+	token := models.Token{Id: 1}
+	err := o.Read(&token)
+	if err == orm.ErrNoRows {
+		logs.Info("token not found")
+		return false
+	} else if err == orm.ErrMissPK {
+		logs.Info("token pk missing")
+		return false
+	} 
+
+	return input == token.Token && (time.Now().Unix()-token.Time)<=1800 
 }

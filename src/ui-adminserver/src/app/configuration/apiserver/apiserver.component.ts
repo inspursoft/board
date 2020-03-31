@@ -31,7 +31,7 @@ export class ApiserverComponent extends CfgComponent implements OnInit {
     this.tipsList = initTipsArray(this.cfgNum, false);
     this.tipsList[num] = true;
 
-    console.log(this.verifyInputExValid());
+    // console.log(this.verifyInputExValid());
     if (this.verifyInputExValid()) {
       alert('error');
     }

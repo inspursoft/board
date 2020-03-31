@@ -25,7 +25,7 @@ export class SignUpComponent extends CsComponentBase implements OnInit {
   signUp(): void {
     if (this.verifyInputExValid()) {
       this.isSignUpWIP = true;
-      this.accountService.postSignUp(this.user.toUser()).subscribe(
+      this.accountService.postSignUp(this.user).subscribe(
         () => alert('success registry!'),
         () => alert('error registry!'),
         () => this.router.navigateByUrl('/account/login')

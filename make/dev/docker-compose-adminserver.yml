@@ -4,21 +4,27 @@ services:
     build:
       context: ../../
       dockerfile: make/dev/container/adminserver/Dockerfile
-    image: adminserver:dev
+    image: dev_adminserver:dev
     restart: always
     volumes:
       - ../:/go/cfgfile
+      - /data/board/secrets:/go/secrets
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker
       - /data/board/database:/data/board/database
       - /data/board/ansible_k8s:/data/board/ansible_k8s
+      - /data/board/make:/data/board/make
+    env_file:
+      - ../config/adminserver/env
     networks:
-      - adms
+      - board
     ports:
       - 8081:8080
   proxy-adminserver:
     build:
       context: ../../
       dockerfile: make/dev/container/proxy-adminserver/Dockerfile
-    image: proxy-adminserver:dev
+    image: dev_adminserver_proxy:dev
     depends_on: 
       - adminserver
     restart: always
@@ -27,10 +33,10 @@ services:
     links:
       - adminserver
     volumes:
-      - ../templates/adminserver_proxy/nginx.conf:/etc/nginx/nginx.conf:z
+      - ../templates/proxy-adminserver/nginx.conf:/etc/nginx/nginx.conf:z
       - ../../src/ui-adminserver/dist:/usr/share/nginx/html:z
     networks:
-      - adms
+      - board
 networks:
-  adms:
+  board:
     external: false

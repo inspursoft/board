@@ -17,6 +17,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { SharedModule } from '../shared/shared.module';
 import { TranslateModule } from '@ngx-translate/core';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -37,6 +38,7 @@ import { TranslateModule } from '@ngx-translate/core';
     BrowserModule,
     BrowserAnimationsModule,
     CommonModule,
+    FormsModule,
     ClarityModule,
     BoardComponentsLibraryModule,
     SharedModule,

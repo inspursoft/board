@@ -21,7 +21,7 @@ export class HeaderComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.display = window.sessionStorage.getItem('token') ? true : false;
+    this.display = location.pathname !== '/account/login' ? true : false;
   }
 
   _assertLanguage(lang: string) {

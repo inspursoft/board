@@ -88,5 +88,35 @@ func InitDbTables(dbFileName string) error {
 	}
 	logs.Info("create node_log_detail table successfully")
 
+	initStatusTable := `create table if not exists init_status_info(
+						id integer primary key autoincrement,
+						install_time int not null,
+						status int
+						);`
+	if _, err := db.Exec(initStatusTable); err != nil {
+	return err
+	}
+	logs.Info("create init_status_info table successfully")
+
+	tokenTable := `create table if not exists token(
+		id integer primary key autoincrement,
+		time int not null,
+		token varchar(30) not null
+		);`
+	if _, err := db.Exec(tokenTable); err != nil {
+	return err
+	}
+	logs.Info("create token table successfully")
+
+	accountTable := `create table if not exists account(
+		id integer primary key autoincrement,
+		username varchar(255) not null,
+		password varchar(255) not null
+		);`
+	if _, err := db.Exec(accountTable); err != nil {
+	return err
+	}
+	logs.Info("create account table successfully")
+
 	return nil
 }

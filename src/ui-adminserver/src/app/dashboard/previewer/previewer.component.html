@@ -1,108 +1,179 @@
-<h3 style="margin-left: 20px;">System Info:</h3>
-<div class="clr-row clr-justify-content-center">
+<h3 style="margin-left: 20px;">
+  <!-- System Info: NULL -->
+</h3>
+<!-- <div class="clr-row clr-justify-content-center">
   <div class="resource-item center split-line">
     <div class="circle">
-      <clr-icon shape="cpu" size="40" class="is-highlight"></clr-icon>
+      <clr-icon shape="cpu"
+                size="40"
+                class="is-highlight"></clr-icon>
     </div>
     <label>CPU: 0%</label>
   </div>
   <div class="resource-item center split-line">
     <div class="circle">
-      <clr-icon shape="memory" size="40" class="is-error"></clr-icon>
+      <clr-icon shape="memory"
+                size="40"
+                class="is-error"></clr-icon>
     </div>
     <label>Memory used: 0%</label>
     <label>Memory left: 0GB</label>
   </div>
   <div class="resource-item center">
     <div class="circle">
-      <clr-icon shape="hard-drive" size="40" class="is-highlight"></clr-icon>
+      <clr-icon shape="hard-drive"
+                size="40"
+                class="is-highlight"></clr-icon>
     </div>
     <label>Storage used: 0GB</label>
     <label>Storage left: 0GB</label>
   </div>
-</div>
+</div> -->
 
-<div class="btn-group btn-primary clr-row clr-justify-content-end" style="margin-right: 10px;">
-  <button class="btn btn-danger" (click)="confirm('rb')">
+<div class="btn-group btn-primary clr-row clr-justify-content-end"
+     style="margin-right: 10px;">
+  <button class="btn btn-danger"
+          [disabled]="loadingFlag"
+          (click)="confirm('rb')">
     <clr-icon shape="replay-all"></clr-icon>
-    restart board
+    {{ 'DASHBOARD.BUTTONS.RESTART_BORAD' | translate }}
   </button>
-  <button class="btn btn-danger" (click)="confirm('sb')">
+  <button class="btn btn-danger"
+          [disabled]="loadingFlag"
+          *ngIf="enableStop"
+          (click)="confirm('sb')">
     <clr-icon shape="power"></clr-icon>
-    stop board
+    {{ 'DASHBOARD.BUTTONS.STOP_BORAD' | translate }}
   </button>
 </div>
 
-<h3 style="margin-left: 20px;">Container Info: {{componentList ? componentList.length : 0}} Containers are Running</h3>
-<div class="card-columns">
-  <div class="card clickable" *ngFor="let item of componentList">
-    <div class="card-block" (click)="getDetail(item)">
-      <h3 class="card-title">{{item.name}}</h3>
-      <p class="card-text">
-        container id: {{item.containerId}}
-      </p>
-      <p class="card-text">
-        created: {{item.created}}
-      </p>
-      <p class="card-text">
-        status: {{item.status}}
-      </p>
-      <p class="card-text">
-        ports: {{item.ports}}
-      </p>
-      <p class="card-text">
-        cpu Rate: {{item.cpuRate}}
-      </p>
-      <p class="card-text">
-        memory Rate: {{item.memRate}}%
-      </p>
-    </div>
-    <div class="card-footer">
-      <button class="btn btn-primary" (click)="getDetail(item)">detail</button>
-      <button class="btn btn-warning-outline" (click)="confirm('rc', item.containerId)">restart</button>
+<h3 style="margin-left: 20px;">
+  {{ 'DASHBOARD.TITLES.CONTAINER_INFO' | translate }}
+  {{componentList ? componentList.length : 0}}
+  {{ 'DASHBOARD.TITLES.CONTAINER_CONTENT' | translate }}
+</h3>
+<div style="text-align: center"
+     *ngIf="loadingFlag">
+  <clr-spinner>
+    {{ 'INITIALIZATION.TOOLS.LOADING' | translate }}
+  </clr-spinner>
+  {{ 'INITIALIZATION.TOOLS.LOADING' | translate }}
+</div>
+<div class="clr-row"
+     style="margin-left: 2em; margin-right: 2em;">
+  <div class="clr-col-lg-4 clr-col-12"
+       *ngFor="let item of componentList">
+    <div class="card clickable">
+      <div class="card-block"
+           (click)="getDetail(item)">
+        <h3 class="card-title"><b>{{ 'DASHBOARD.CONTAINER_INFO.NAME' | translate }}</b> {{item.name}}</h3>
+        <p class="card-text">
+          <b>{{ 'DASHBOARD.CONTAINER_INFO.ID' | translate }}</b>{{item.id}}
+        </p>
+        <p class="card-text">
+          <b>{{ 'DASHBOARD.CONTAINER_INFO.CREATED' | translate }}</b>{{item.created_at}}
+        </p>
+        <p class="card-text">
+          <b>{{ 'DASHBOARD.CONTAINER_INFO.STATUS' | translate }}</b>{{item.status}}
+        </p>
+        <p class="card-text">
+          <b>{{ 'DASHBOARD.CONTAINER_INFO.PORTS' | translate }}</b>{{item.ports}}
+        </p>
+        <p class="card-text">
+          <b>{{ 'DASHBOARD.CONTAINER_INFO.CPU_RATE' | translate }}</b>{{item.cpu_perc}}
+        </p>
+        <p class="card-text">
+          <b>{{ 'DASHBOARD.CONTAINER_INFO.MEMORY_RATE' | translate }}</b>{{item.mem_perc}}
+        </p>
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-primary"
+                (click)="getDetail(item)">{{ 'DASHBOARD.BUTTONS.DETAIL' | translate }}</button>
+      </div>
     </div>
   </div>
 </div>
 
-<clr-modal [(clrModalOpen)]="showDetail" [clrModalStaticBackdrop]="false">
-  <h3 class="modal-title">{{modal.name}}</h3>
+<clr-modal [(clrModalOpen)]="showDetail"
+           [clrModalStaticBackdrop]="false">
+  <h3 class="modal-title"><b>{{ 'DASHBOARD.CONTAINER_INFO.NAME' | translate }}</b>{{modal.name}}</h3>
   <div class="modal-body">
-    <div>container id: {{modal.containerId}}</div>
-    <div>image: {{modal.image}}</div>
-    <div>created: {{modal.created}}</div>
-    <div>status: {{modal.status}}</div>
-    <div>ports: {{modal.ports}}</div>
-    <div>cpu Rate: {{modal.cpuRate}}</div>
+    <div><b>{{ 'DASHBOARD.CONTAINER_INFO.ID' | translate }}</b>{{modal.id}}</div>
+    <div><b>{{ 'DASHBOARD.CONTAINER_INFO.IMAGE' | translate }}</b>{{modal.image}}</div>
+    <div><b>{{ 'DASHBOARD.CONTAINER_INFO.CREATED' | translate }}</b>{{modal.created_at}}</div>
+    <div><b>{{ 'DASHBOARD.CONTAINER_INFO.STATUS' | translate }}</b>{{modal.status}}</div>
+    <div><b>{{ 'DASHBOARD.CONTAINER_INFO.PORTS' | translate }}</b>{{modal.ports}}</div>
+    <div><b>{{ 'DASHBOARD.CONTAINER_INFO.CPU_RATE' | translate }}</b>{{modal.cpu_perc}}</div>
     <div>
-      memory Usage: {{modal.memUsage}}
+      <b>{{ 'DASHBOARD.CONTAINER_INFO.MEMORY_USAGE' | translate }}</b>{{modal.mem_usage}}
       <!-- <div class="progress-static labeled">
         <clr-progress-bar [clrValue]="modal.memRate" [clrSuccess]="modal.memRate <= 75"
           [clrDanger]="modal.memRate > 75"></clr-progress-bar>
         <span>{{modal.memRate}}%</span>
       </div> -->
     </div>
-    <div>network I/O: {{modal.netIO}}</div>
-    <div>block I/O: {{modal.blockIO}}</div>
-    <div>pid: {{modal.pid}}</div>
+    <div><b>{{ 'DASHBOARD.CONTAINER_INFO.MEMORY_RATE' | translate }}</b>{{modal.mem_perc}}</div>
+    <div><b>{{ 'DASHBOARD.CONTAINER_INFO.NETWORK_IO' | translate }}</b>{{modal.net_io}}</div>
+    <div><b>{{ 'DASHBOARD.CONTAINER_INFO.BLOCK_IO' | translate }}</b>{{modal.block_io}}</div>
+    <div><b>{{ 'DASHBOARD.CONTAINER_INFO.PID' | translate }}</b>{{modal.pids}}</div>
   </div>
   <div class="modal-footer">
-    <button class="btn btn-warning-outline" (click)="showDetail = false">restart</button>
-    <button class="btn btn-danger" (click)="showDetail = false">Stop</button>
+    <!-- <button class="btn btn-warning-outline"
+            (click)="showDetail = false">restart</button>
+    <button class="btn btn-danger"
+            (click)="showDetail = false">Stop</button> -->
   </div>
 </clr-modal>
 
-<clr-modal [(clrModalOpen)]="confirmModal" [clrModalStaticBackdrop]="false">
+<clr-modal [(clrModalOpen)]="confirmModal"
+           [clrModalStaticBackdrop]="false">
   <h3 class="modal-title">{{confirmType.title}}</h3>
   <div class="modal-body">
     <div class="clr-row">
-      <div class="clr-col clr-align-self-center" style="text-align: center;">
-        <clr-icon shape="warning-standard" class="is-solid is-warning" size="36"></clr-icon>
+      <div class="clr-col clr-align-self-center"
+           style="text-align: center;">
+        <clr-icon shape="warning-standard"
+                  class="is-solid is-warning"
+                  size="36"></clr-icon>
         <span>{{confirmType.comment}} {{confirmType.containerId}}</span>
       </div>
     </div>
+    <div style="text-align: center"
+         *ngIf="loadingFlag">
+      <clr-spinner>
+        {{ 'INITIALIZATION.TOOLS.LOADING' | translate }}
+      </clr-spinner>
+      {{ 'INITIALIZATION.TOOLS.LOADING' | translate }}
+    </div>
+    <form clrForm
+          #sshForm="ngForm">
+      <clr-input-container>
+        <label>{{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.NAME' | translate }}</label>
+        <input clrInput
+               required
+               [(ngModel)]="user.username"
+               name=sshUsername
+               #getSSHUsername="ngModel" />
+        <clr-control-error>
+          {{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.REQUIRED' | translate }}
+        </clr-control-error>
+      </clr-input-container>
+      <clr-password-container>
+        <label>{{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.PASSWORD' | translate }}</label>
+        <input clrPassword
+               required
+               [(ngModel)]="user.password"
+               name="sshPassword"
+               #getSSHPassword="ngModel" />
+        <clr-control-error *clrIfError="'required'">
+          {{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.REQUIRED' | translate }}
+        </clr-control-error>
+      </clr-password-container>
+    </form>
   </div>
   <div class="modal-footer">
     <button class="btn btn-danger"
-      (click)="boardControl(confirmType.type, confirmType.containerId)">{{confirmType.button}}</button>
+            [disabled]='!sshForm.valid || disableApply'
+            (click)="boardControl(confirmType.type, confirmType.containerId)">{{confirmType.button}}</button>
   </div>
 </clr-modal>
