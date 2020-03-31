@@ -15,14 +15,14 @@
       </a>
     </clr-vertical-nav-group-children>
   </clr-vertical-nav-group>
-  <clr-vertical-nav-group [clrVerticalNavGroupExpanded]="storageNavGroupExpanded">
+  <clr-vertical-nav-group *ngIf="false" [clrVerticalNavGroupExpanded]="storageNavGroupExpanded">
     <clr-icon shape="flame" clrVerticalNavIcon></clr-icon>
     {{"Resource.Nav_Storage" | translate}}
     <clr-vertical-nav-group-children>
 
     </clr-vertical-nav-group-children>
   </clr-vertical-nav-group>
-  <clr-vertical-nav-group>
+  <clr-vertical-nav-group *ngIf="false">
     <clr-icon shape="bolt" clrVerticalNavIcon></clr-icon>
     {{"Resource.Nav_Network" | translate}}
     <clr-vertical-nav-group-children>

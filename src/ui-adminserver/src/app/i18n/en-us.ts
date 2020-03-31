@@ -91,7 +91,7 @@ export const LANG_EN_US = {
     Node_Detail_Refresh: 'Refresh log',
     Node_Detail_Title_Add: 'Add node',
     Node_Detail_Title_Remove: 'Removing node',
-    Node_Detail_Title_Log: 'Node log',
+    Node_Detail_Title_Log: 'Add node log',
     Node_Detail_Node_Ip: 'Node ip',
     Node_Detail_Node_Password: 'Node password',
     Node_Detail_Remove_Success: 'Remove node successfully.',
