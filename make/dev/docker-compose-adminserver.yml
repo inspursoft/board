@@ -24,7 +24,7 @@ services:
     build:
       context: ../../
       dockerfile: make/dev/container/proxy-adminserver/Dockerfile
-    image: dev_proxy-adminserver:dev
+    image: dev_adminserver_proxy:dev
     depends_on: 
       - adminserver
     restart: always

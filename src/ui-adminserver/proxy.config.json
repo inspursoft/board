@@ -1,6 +1,6 @@
 {
     "/v1/admin/*": {
-        "target": "http://192.168.154.3:8081",
+        "target": "http://10.110.25.227:8081",
         "secure": false
     }
 }

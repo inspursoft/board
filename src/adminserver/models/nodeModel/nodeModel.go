@@ -79,6 +79,18 @@ type NodeStatus struct {
 	CreationTime int64  `json:"creation_time"`
 }
 
+type ApiServerNodeListResult struct {
+	NodeName string `json:"node_name"`
+	NodeIP   string `json:"node_ip"`
+	Status   int    `json:"status"`
+}
+
+type NodeListResponse struct {
+	Ip           string `json:"ip"`
+	CreationTime int64  `json:"creation_time"`
+	Origin       int    `json:"origin"`
+}
+
 // database table's name: node-log
 type NodeLog struct {
 	Id           int        `json:"id"`

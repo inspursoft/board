@@ -39,6 +39,20 @@ export class NodeLogsComponent implements OnInit, OnDestroy {
       .subscribe((res: NodeLogs) => this.nodeLogs = res);
   }
 
+  stopExecuting(log: NodeLog) {
+    this.messageService.showYesNoDialog('Node.Node_Logs_Stop_Ask', 'Node.Node_Logs_Stop')
+      .subscribe((msg: Message) => {
+        if (msg.returnStatus === ReturnStatus.rsConfirm) {
+          this.resourceService.stopNodeAction(log).subscribe(
+            () => {
+              this.messageService.showAlert('Node.Node_Logs_Stop_Success');
+              this.retrieve();
+            },
+          );
+        }
+      });
+  }
+
   deleteLogInfo(log: NodeLog) {
     this.messageService.showDeleteDialog('Node.Node_Logs_Delete_Ask').subscribe((msg: Message) => {
       if (msg.returnStatus === ReturnStatus.rsConfirm) {

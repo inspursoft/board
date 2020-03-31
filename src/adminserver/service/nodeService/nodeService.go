@@ -8,10 +8,13 @@ import (
 	"git/inspursoft/board/src/adminserver/dao/nodeDao"
 	"git/inspursoft/board/src/adminserver/models/nodeModel"
 	"git/inspursoft/board/src/adminserver/service"
-	"git/inspursoft/board/src/adminserver/utils"
+	"git/inspursoft/board/src/adminserver/tools/secureShell"
+	"git/inspursoft/board/src/common/utils"
+
 	"github.com/astaxie/beego/logs"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path"
 	"strings"
@@ -67,9 +70,9 @@ func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
 
 func LaunchAnsibleContainer(env *nodeModel.ContainerEnv) error {
 	logCache := dao.GlobalCache.Get(env.NodeIp).(*nodeModel.NodeLogCache)
-	var secureShell *utils.SecureShell
+	var secure *secureShell.SecureShell
 	var err error
-	secureShell, err = utils.NewSecureShell(&logCache.DetailBuffer, env.HostIp, env.HostUserName, env.HostPassword)
+	secure, err = secureShell.NewSecureShell(&logCache.DetailBuffer, env.HostIp, env.HostUserName, env.HostPassword)
 	if err != nil {
 		return err
 	}
@@ -105,7 +108,7 @@ func LaunchAnsibleContainer(env *nodeModel.ContainerEnv) error {
 		"-v %s:/ansible_k8s/pre-env \\\n "+
 		"%s \\\n k8s_install:1",
 		LogFilePath, HostDirPath, PreEnvPath, envStr)
-	err = secureShell.ExecuteCommand(cmdStr)
+	err = secure.ExecuteCommand(cmdStr)
 
 	if err != nil {
 		return err
@@ -175,35 +178,76 @@ func InsertLog(nodeLog *nodeModel.NodeLog) (int64, error) {
 }
 
 func InsertLogDetail(ip, logFileName string, creationTime int64) error {
-	if dao.GlobalCache.IsExist(ip) == false {
-		logs.Info(fmt.Sprintf("No cache data for node:%s", ip))
-		return nil
-	}
-	logCache := dao.GlobalCache.Get(ip).(*nodeModel.NodeLogCache)
-
-	filePtr, _ := os.Open(logFileName)
-	defer filePtr.Close()
-
-	if fileContent, err := ioutil.ReadFile(logFileName); err != nil {
-		return err
+	var logCache = nodeModel.NodeLogCache{}
+	if dao.GlobalCache.IsExist(ip) {
+		logCache = *dao.GlobalCache.Get(ip).(*nodeModel.NodeLogCache)
 	} else {
-		if _, writeErr := logCache.DetailBuffer.Write(fileContent); writeErr != nil {
-			return writeErr
-		}
-		logCache.DetailBuffer.WriteString("---End---")
+		errStr := fmt.Sprintf("No cache data for node:%s \n", ip)
+		logs.Info(errStr)
+		logCache.DetailBuffer.WriteString(errStr)
 	}
 
+	if _, err := os.Stat(logFileName); err == nil {
+		filePtr, _ := os.Open(logFileName)
+		defer filePtr.Close()
+		if fileContent, err := ioutil.ReadFile(logFileName); err != nil {
+			return err
+		} else {
+			if _, writeErr := logCache.DetailBuffer.Write(fileContent); writeErr != nil {
+				return writeErr
+			}
+		}
+	}
+	logCache.DetailBuffer.WriteString("---End log---\n")
 	detail := nodeModel.NodeLogDetailInfo{
 		CreationTime: creationTime,
 		Detail:       logCache.DetailBuffer.String()}
-	if _, err := nodeDao.InsertNodeLogDetail(&detail); err != nil {
-		logs.Info(err.Error())
+	if nodeDao.CheckNodeLogDetailExists(creationTime) {
+		if err := nodeDao.UpdateNodeLogDetail(&detail); err != nil {
+			return err
+		}
+	} else {
+		if _, err := nodeDao.InsertNodeLogDetail(&detail); err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
-func GetNodeStatusList(nodeStatusList *[]nodeModel.NodeStatus) error {
-	return nodeDao.GetNodeStatusList(nodeStatusList)
+func GetNodeResponseList(nodeListResponse *[]nodeModel.NodeListResponse) error {
+	var apiServerNodeList []nodeModel.ApiServerNodeListResult;
+	if err := getNodeListFromApiServer(&apiServerNodeList); err != nil {
+		logs.Info(err)
+	}
+
+	var nodeStatusList []nodeModel.NodeStatus
+	if err := nodeDao.GetNodeStatusList(&nodeStatusList); err != nil {
+		return err
+	}
+
+	for _, item := range nodeStatusList {
+		* nodeListResponse = append(*nodeListResponse, nodeModel.NodeListResponse{
+			Ip:           item.Ip,
+			CreationTime: item.CreationTime,
+			Origin:       0})
+	}
+
+	for _, apiItem := range apiServerNodeList {
+		var existsInDb = false
+		for _, item := range nodeStatusList {
+			if item.Ip == apiItem.NodeIP {
+				existsInDb = true
+			}
+		}
+		if existsInDb == false {
+			* nodeListResponse = append(*nodeListResponse, nodeModel.NodeListResponse{
+				Ip:           apiItem.NodeIP,
+				CreationTime: time.Now().Unix(),
+				Origin:       1})
+		}
+	}
+
+	return nil
 }
 
 func GetPaginatedNodeLogList(v *nodeModel.PaginatedNodeLogList) error {
@@ -237,6 +281,7 @@ func DeleteNodeLogInfo(logTimestamp int64) error {
 
 func GetNodeLogDetail(logTimestamp int64, nodeIp string, nodeLogDetail *[]nodeModel.NodeLogDetail) error {
 	var reader *bufio.Reader
+	var cacheBuffer = bytes.NewBuffer([]byte{})
 	if CheckExistsInCache(nodeIp) {
 		logCache := dao.GlobalCache.Get(nodeIp).(*nodeModel.NodeLogCache)
 		logFilePath := path.Join(nodeModel.BasePath, nodeModel.LogFileDir)
@@ -248,12 +293,13 @@ func GetNodeLogDetail(logTimestamp int64, nodeIp string, nodeLogDetail *[]nodeMo
 			if fileContent, err := ioutil.ReadFile(logFileName); err != nil {
 				return err
 			} else {
-				if _, writeErr := logCache.DetailBuffer.Write(fileContent); writeErr != nil {
+				cacheBuffer.Write(logCache.DetailBuffer.Bytes())
+				if _, writeErr := cacheBuffer.Write(fileContent); writeErr != nil {
 					return writeErr
 				}
 			}
 		}
-		reader = bufio.NewReader(strings.NewReader(logCache.DetailBuffer.String()))
+		reader = bufio.NewReader(strings.NewReader(cacheBuffer.String()))
 	} else {
 		detailInfo, err := nodeDao.GetNodeLogDetail(logTimestamp)
 		if err != nil {
@@ -300,12 +346,36 @@ func CheckExistsInCache(nodeIp string) bool {
 }
 
 func RemoveCacheData(nodeIp string) error {
-	return dao.GlobalCache.Delete(nodeIp)
+	if dao.GlobalCache.IsExist(nodeIp) {
+		return dao.GlobalCache.Delete(nodeIp)
+	}
+	return nil
 }
 
 func GetLogInfoInCache(nodeIp string) *nodeModel.NodeLog {
 	logCache := dao.GlobalCache.Get(nodeIp).(*nodeModel.NodeLogCache)
 	return logCache.NodeLogPtr
+}
+
+func getNodeListFromApiServer(nodeList *[]nodeModel.ApiServerNodeListResult) error {
+	allConfig, statusMessage := service.GetAllCfg("")
+	if statusMessage == "BadRequest" {
+		return fmt.Errorf("failed to get the configuration")
+	}
+	host := allConfig.Apiserver.Hostname
+	url := fmt.Sprintf("http://%s:%d/api/v1/nodes?skip=AMS", host, 8088)
+	err := utils.RequestHandle(http.MethodGet, url, func(req *http.Request) error {
+		req.Header = http.Header{"Content-Type": []string{"application/json"}}
+		return nil
+	}, nil, func(req *http.Request, resp *http.Response) error {
+		if resp.StatusCode == 200 {
+			return utils.UnmarshalToJSON(resp.Body, nodeList)
+		}
+		data, _ := ioutil.ReadAll(resp.Body)
+		return fmt.Errorf("failed to get nodes from apiserver.status:%d;message:%s",
+			resp.StatusCode, string(data))
+	})
+	return err
 }
 
 func checkIsEndingLog(log string) bool {
