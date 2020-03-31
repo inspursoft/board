@@ -39,6 +39,7 @@
     <div class="dynamic-line-container">
       <lib-dropdown-ex [dropdownTip]="'STORAGE.PV_CREATE_SELECT_ACCESS_MODE'|translate"
                        [dropdownMinWidth]="260"
+                       [dropdownIsRequired]="true"
                        [dropdownDisabled]="isCreateWip"
                        [dropdownItems]="accessModeList"
                        [dropdownLabel]="'STORAGE.PV_ACCESS_MODES'|translate"
@@ -54,6 +55,7 @@
     <div class="dynamic-line-container">
       <lib-dropdown-ex [dropdownTip]="'STORAGE.PV_CREATE_SELECT_RECLAIM'|translate"
                        [dropdownLabel]="'STORAGE.PV_RECLAIM' | translate"
+                       [dropdownIsRequired]="true"
                        [dropdownDisabled]="isCreateWip"
                        [dropdownMinWidth]="260"
                        [dropdownItems]="reclaimModeList"
