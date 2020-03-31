@@ -134,6 +134,11 @@ func (resource SourceMap) GainNodes() error {
 
 		nodes.TimeListId = (*serviceDashboardID)[*minuteCounterI]
 		nodes.InternalIp = nodeIP
+		// init default values
+		nodes.StorageTotal = 0
+		nodes.StorageUse = 0
+		nodes.CpuUsage = float32(0)
+		nodes.MemUsage = float32(0)
 		if func(nodeCondition []model.NodeCondition) bool {
 			for _, cond := range nodeCondition {
 				if strings.EqualFold(string(cond.Type), "Ready") {
@@ -146,22 +151,19 @@ func (resource SourceMap) GainNodes() error {
 		}(v.Status.Conditions) {
 			cpu, mem, err := getNodePs(nodeIP, cpuCores)
 			if err != nil {
-				return err
+				util.Logger.SetWarn("getting node", nodeIP, "ps info error: ", err.Error())
+			} else {
+				s := GetNodeMachine(nodeIP)
+				a, _ := s.(struct {
+					outCapacity int64
+					outUse      int64
+				})
+				nodes.StorageTotal = a.outCapacity
+				nodes.StorageUse = a.outUse
+				nodes.CpuUsage = float32(cpu)
+				nodes.MemUsage = float32(mem)
 			}
-			s := GetNodeMachine(nodeIP)
-			a, _ := s.(struct {
-				outCapacity int64
-				outUse      int64
-			})
-			nodes.StorageTotal = a.outCapacity
-			nodes.StorageUse = a.outUse
-			nodes.CpuUsage = float32(cpu)
-			nodes.MemUsage = float32(mem)
 		} else {
-			nodes.StorageTotal = 0
-			nodes.StorageUse = 0
-			nodes.CpuUsage = float32(0)
-			nodes.MemUsage = float32(0)
 			util.Logger.SetWarn("this node status is unkown", nodeIP)
 		}
 		nodeCollect = append(nodeCollect, nodes)
@@ -218,7 +220,8 @@ func getNodePs(ip string, cpuCores int) (cpu float32, mem float32, err error) {
 	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	util.Logger.SetFatal(ip)
 	var resp *http.Response
-	resp, err = http.DefaultClient.Do(request)
+	client := &http.Client{Timeout: 5 * time.Second}
+	resp, err = client.Do(request)
 	if err != nil {
 		util.Logger.SetError("Request node ps info error: %+v", err)
 		return
