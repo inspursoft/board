@@ -32,9 +32,11 @@ const (
 )
 
 type NodeListResult struct {
-	NodeName string     `json:"node_name"`
-	NodeIP   string     `json:"node_ip"`
-	Status   NodeStatus `json:"status"`
+	NodeName   string            `json:"node_name"`
+	NodeIP     string            `json:"node_ip"`
+	Status     NodeStatus        `json:"status"`
+	CreateTime int64             `json:"create_time"`
+	Labels     map[string]string `json:"labels"`
 }
 
 type NodeInfo struct {
@@ -162,8 +164,10 @@ func GetNodeList() (res []NodeListResult) {
 
 	for _, v := range Node.Items {
 		res = append(res, NodeListResult{
-			NodeName: getNodeAddress(v, "Hostname"),
-			NodeIP:   getNodeAddress(v, "InternalIP"),
+			NodeName:   getNodeAddress(v, "Hostname"),
+			NodeIP:     getNodeAddress(v, "InternalIP"),
+			CreateTime: v.CreationTimestamp.Unix(),
+			Labels:     v.ObjectMeta.Labels,
 			Status: func() NodeStatus {
 				if v.Unschedulable {
 					return Unschedulable
