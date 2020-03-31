@@ -44,7 +44,7 @@ export class NodeListComponent implements OnInit, OnDestroy {
   }
 
   deleteNode(node: NodeListType) {
-    if (node.origin === 0) {
+    if (!node.isMaster) {
       this.translateService.get(['Node.Node_List_Remove_Ask', 'Node.Node_Logs_Stop_Ask'])
         .subscribe(translate => {
           const ask = Reflect.get(translate, 'Node.Node_List_Remove_Ask');
@@ -68,6 +68,17 @@ export class NodeListComponent implements OnInit, OnDestroy {
       logInfo.ip = node.ip;
       logInfo.creationTime = node.creationTime;
       this.createNodeDetail(logInfo, NodeActionsType.Log);
+    }
+  }
+
+  getStatus(status: number): string {
+    switch (status) {
+      case 1:
+        return 'Node.Node_List_Status_Schedulable';
+      case 2:
+        return 'Node.Node_List_Status_Unschedulable';
+      case 3:
+        return 'Node.Node_List_Status_Unknown';
     }
   }
 
