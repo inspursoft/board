@@ -34,19 +34,21 @@ export class PreviewerComponent implements OnInit, OnDestroy {
     // 10s 刷新一次
     this.timer = setInterval(
       () => {
-        this.dashboardService.monitorContainer().subscribe(
-          (res: Array<ComponentStatus>) => {
-            this.componentList = res;
-            this.loadingFlag = false;
-            this.enableStop = this.componentList.length > 3;
-            this.reflashDetail();
-          },
-          (err: HttpErrorResponse) => {
-            this.loadingFlag = false;
-            this.commonError(err);
-            clearInterval(this.timer); // 销毁定时器
-          }
-        );
+        // this.dashboardService.monitorContainer().subscribe(
+        //   (res: Array<ComponentStatus>) => {
+        //     this.componentList = res;
+        //     this.loadingFlag = false;
+        //     this.enableStop = this.componentList.length > 3;
+        //     this.reflashDetail();
+        //   },
+        //   (err: HttpErrorResponse) => {
+        //     this.loadingFlag = false;
+        //     this.commonError(err);
+        //     clearInterval(this.timer); // 销毁定时器
+        //   }
+        // );
+        this.loadingFlag = false;
+        this.enableStop = true;
       }, 10000);
   }
 
