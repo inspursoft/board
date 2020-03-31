@@ -11,7 +11,7 @@ services:
       - /data/board/ansible_k8s:/data/board/ansible_k8s
       - /data/board/Deploy:/data/board/Deploy
     env_file:
-      - ./env
+      - ../config/adminserver/env
     networks:
       - board
     ports:
@@ -32,4 +32,3 @@ services:
 networks:
   board:
     external: false
-    driver: bridge

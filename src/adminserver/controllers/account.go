@@ -22,21 +22,18 @@ type AccController struct {
 // @Failure 400 bad request
 // @router /verify [post]
 func (a *AccController) Verify() {
-	var statusCode int = http.StatusOK
 	var passwd models.Password
 	utils.UnmarshalToJSON(a.Ctx.Request.Body, &passwd)
 	v, err := service.VerifyPassword(&passwd)
 	if err != nil {
-		a.CustomAbort(http.StatusBadRequest, err.Error())
 		logs.Error(err)
-		return
+		a.CustomAbort(http.StatusBadRequest, err.Error())
 	}
-	if v == true {
+	if v {
 		a.Data["json"] = "success"
 	} else {
 		a.Data["json"] = "wrong"
 	}
-	a.Ctx.ResponseWriter.WriteHeader(statusCode)
 	a.ServeJSON()
 }
 
@@ -48,16 +45,13 @@ func (a *AccController) Verify() {
 // @router /initialize [post]
 func (a *AccController) Initialize() {
 	var acc models.Account
-	var statusCode int = http.StatusOK
 	//transferring JSON to struct.
 	utils.UnmarshalToJSON(a.Ctx.Request.Body, &acc)
 	err := service.Initialize(&acc)
 	if err != nil {
-		a.CustomAbort(http.StatusBadRequest, err.Error())
 		logs.Error(err)
-		return
+		a.CustomAbort(http.StatusBadRequest, err.Error())
 	}
-	a.Ctx.ResponseWriter.WriteHeader(statusCode)
 	a.ServeJSON()
 }
 
@@ -69,22 +63,19 @@ func (a *AccController) Initialize() {
 // @router /login [post]
 func (a *AccController) Login() {
 	var acc models.Account
-	var statusCode int = http.StatusOK
 	//transferring JSON to struct.
 	utils.UnmarshalToJSON(a.Ctx.Request.Body, &acc)
 	permission, err, token := service.Login(&acc)
 	if err != nil {
-		a.CustomAbort(http.StatusBadRequest, err.Error())
 		logs.Error(err)
-		return
+		a.CustomAbort(http.StatusBadRequest, err.Error())
 	}
-	if permission == true {
+	if permission {
 		a.Data["json"] = token
 	} else {
 		a.Data["json"] = ""
-		statusCode = http.StatusBadRequest
+		a.CustomAbort(http.StatusBadRequest, "login failed")
 	}
-	a.Ctx.ResponseWriter.WriteHeader(statusCode)
 	a.ServeJSON()
 }
 
@@ -116,14 +107,11 @@ func (a *AccController) Install() {
 // @Failure 400 bad request
 // @router /createUUID [post]
 func (a *AccController) CreateUUID() {
-	var statusCode int = http.StatusOK
 	err := service.CreateUUID()
 	if err != nil {
-		a.CustomAbort(http.StatusBadRequest, err.Error())
 		logs.Error(err)
-		return
+		a.CustomAbort(http.StatusBadRequest, err.Error())
 	}
-	a.Ctx.ResponseWriter.WriteHeader(statusCode)
 	a.ServeJSON()
 }
 
@@ -134,21 +122,18 @@ func (a *AccController) CreateUUID() {
 // @Failure 400 bad request
 // @router /ValidateUUID [post]
 func (a *AccController) ValidateUUID() {
-	var statusCode int = http.StatusOK
 	var uuid models.UUID
 	utils.UnmarshalToJSON(a.Ctx.Request.Body, &uuid)
 	result, err := service.ValidateUUID(uuid.UUID)
 	if err != nil {
-		a.CustomAbort(http.StatusBadRequest, err.Error())
 		logs.Error(err)
-		return
+		a.CustomAbort(http.StatusBadRequest, err.Error())
 	}
-	if result == true {
+	if result {
 		a.Data["json"] = "validate success"
 	} else {
 		a.Data["json"] = "validate failure"
-		statusCode = http.StatusBadRequest
+		a.CustomAbort(http.StatusBadRequest, "validate failure")
 	}
-	a.Ctx.ResponseWriter.WriteHeader(statusCode)
 	a.ServeJSON()
 }

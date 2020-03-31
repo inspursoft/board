@@ -91,14 +91,17 @@ func StartDB(host *models.Account) error {
 	DBpassword := strings.TrimPrefix(string(b), "DB_PASSWORD=")
 	DBpassword = strings.Replace(DBpassword, "\n", "", 1)
 
-
 	board_utils.InitializeDefaultConfig()
 
-	orm.RegisterDriver("mysql", orm.DRMySQL)
-	err = orm.RegisterDataBase("mysql-db2", "mysql", fmt.Sprintf("root:%s@tcp(%s:%d)/board?charset=utf8", DBpassword, "db", 3306))
-	if err != nil {
-		logs.Error("error occurred on registering DB: %+v", err)
-		panic(err)
+	if err = CheckDB(); err != nil {
+		logs.Info(err)
+		orm.RegisterDriver("mysql", orm.DRMySQL)
+		err = orm.RegisterDataBase("mysql-db2", "mysql", fmt.Sprintf("root:%s@tcp(%s:%d)/board?charset=utf8", DBpassword, "db", 3306))
+		if err != nil {
+			logs.Error("error occurred on registering DB: %+v", err)
+			panic(err)
+		}
+		logs.Info("register DB success")
 	}
 
 	o := orm.NewOrm()
@@ -161,19 +164,33 @@ func StartBoard(host *models.Account) error {
 	return nil
 }
 
-func CheckDB() bool {
+func CheckDB() error {
+	/*
+	// checkDB
 	cmd := exec.Command("sh", "-c", "ping -q -c1 db > /dev/null 2>&1 && echo $?")
 	bytes, _ := cmd.Output()
 	result := strings.Replace(string(bytes), "\n", "", 1)
 	return (result == "0")
+	*/
+	o := orm.NewOrm()
+	err := o.Using("mysql-db2")
+	if err != nil {
+		return err
+	}
+	_, err = o.Raw("SELECT 1").Exec()
+	return err
 }
 
 
 func RegisterDBWhenBooting() error {
+	/*
+	// checkDB
 	cmd := exec.Command("sh", "-c", "ping -q -c1 db > /dev/null 2>&1 && echo $?")
 	bytes, _ := cmd.Output()
 	result := strings.Replace(string(bytes), "\n", "", 1)
-	if result == "0" {
+	*/
+	
+	if err := CheckDB(); err == nil {
 		b, err := ioutil.ReadFile(path.Join(models.DBconfigdir, "/env"))
 		if err != nil {
 			return err

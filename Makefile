@@ -191,19 +191,25 @@ prepare: version
 
 start:
 	@echo "loading Board images..."
-#	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) up -d
-	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAMEADM) up -d
+	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) up -d
 	@echo "Start complete. You can visit Board now."
+
+start_admin:
+	@echo "loading Adminserver images..."
+	@if [ ! -d $(MAKEPATH)/config/adminserver ] ; then mkdir -p $(MAKEPATH)/config/adminserver ; fi
+	@rm -f $(MAKEPATH)/config/adminserver/env
+	@cp $(MAKEPATH)/templates/adminserver/env-dev $(MAKEPATH)/config/adminserver/env
+	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAMEADM) up -d
+	@echo "Start complete. You can visit Adminserver now."
 
 down:
 	@echo "stoping Board instance..."
-	#$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) down -v
-	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAMEADM) down -v
+	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) down -v
 	@echo "Done."
 
-down_all:
-	@echo "stoping Board instance..."
-	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAMEREST) down -v
+down_admin:
+	@echo "stoping Adminserver instance..."
+	#$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAMEREST) down -v
 	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAMEDB) down -v
 	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAMEADM) down -v
 	@echo "Done."
@@ -236,7 +242,8 @@ package: prepare_composefile
 	@cp $(MAKEWORKPATH)/docker-compose-adminserver${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/docker-compose-adminserver.yml
 	@cp $(MAKEWORKPATH)/docker-compose-db${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/docker-compose-db.yml
 	@cp $(MAKEWORKPATH)/docker-compose-rest${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/docker-compose-rest.yml
-	@cp $(MAKEWORKPATH)/env $(PKGTEMPPATH)/env
+	@if [ ! -d $(PKGTEMPPATH)/config/adminserver ] ; then mkdir -p $(PKGTEMPPATH)/config/adminserver ; fi
+	@cp $(MAKEPATH)/templates/adminserver/env-release $(PKGTEMPPATH)/config/adminserver/env
 #	@cp LICENSE $(PKGTEMPPATH)/LICENSE
 #	@cp NOTICE $(PKGTEMPPATH)/NOTICE
 	@sed -i "s/..\/config/.\/config/" $(PKGTEMPPATH)/docker-compose.yml

@@ -26,19 +26,16 @@ func (b *BoardController) Restart() {
 	var host models.Account
 	token := b.GetString("token")
 	result := service.VerifyToken(token)
-	if result == false {
+	if !result {
 		b.Ctx.ResponseWriter.WriteHeader(http.StatusUnauthorized)
 		b.ServeJSON()	
-		return
 	} else {
 		utils.UnmarshalToJSON(b.Ctx.Request.Body, &host)
 		if err := service.Restart(&host); err != nil {
-			b.CustomAbort(http.StatusBadRequest, err.Error())
 			logs.Error(err)
-			return
+			b.CustomAbort(http.StatusBadRequest, err.Error())
 		}
 		b.ServeJSON()	
-		return
 	}
 }
 
@@ -54,19 +51,16 @@ func (b *BoardController) Applycfg() {
 	var host models.Account
 	token := b.GetString("token")
 	result := service.VerifyToken(token)
-	if result == false {
+	if !result {
 		b.Ctx.ResponseWriter.WriteHeader(http.StatusUnauthorized)
 		b.ServeJSON()	
-		return
 	} else {
 		utils.UnmarshalToJSON(b.Ctx.Request.Body, &host)
 		if err := service.Applycfg(&host); err != nil {
-			b.CustomAbort(http.StatusBadRequest, err.Error())
 			logs.Error(err)
-			return
+			b.CustomAbort(http.StatusBadRequest, err.Error())
 		}
 		b.ServeJSON()	
-		return
 	}
 }
 
@@ -82,18 +76,15 @@ func (b *BoardController) Shutdown() {
 	var host models.Account
 	token := b.GetString("token")
 	result := service.VerifyToken(token)
-	if result == false {
+	if !result {
 		b.Ctx.ResponseWriter.WriteHeader(http.StatusUnauthorized)
 		b.ServeJSON()	
-		return
 	} else {
 		utils.UnmarshalToJSON(b.Ctx.Request.Body, &host)
 		if err := service.Shutdown(&host); err != nil {
-			b.CustomAbort(http.StatusBadRequest, err.Error())
 			logs.Error(err)
-			return
+			b.CustomAbort(http.StatusBadRequest, err.Error())
 		}
 		b.ServeJSON()	
-		return
 	}
 }
