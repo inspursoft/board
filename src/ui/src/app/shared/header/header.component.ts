@@ -36,6 +36,10 @@ export class HeaderComponent implements OnInit {
     return this.appInitService.isMipsSystem;
   }
 
+  get isArmEnv(): boolean {
+    return this.appInitService.isArmSystem;
+  }
+
   constructor(private router: Router,
               private translateService: TranslateService,
               private cookieService: CookieService,

@@ -6,6 +6,7 @@ import (
 	"git/inspursoft/board/src/common/model"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type ProjectMemberController struct {
@@ -87,16 +88,29 @@ func (pm *ProjectMemberController) DeleteProjectMemberAction() {
 }
 
 func (pm *ProjectMemberController) GetProjectMembersAction() {
+	membersType := strings.ToLower(pm.GetString("type", "current"))
 	projectID, err := strconv.Atoi(pm.Ctx.Input.Param(":id"))
 	if err != nil {
 		pm.InternalError(err)
 		return
 	}
+
 	pm.ResolveProjectMemberByID(int64(projectID))
-	projectMembers, err := service.GetProjectMembers(int64(projectID))
-	if err != nil {
-		pm.InternalError(err)
-		return
+	if membersType == "current" {
+		projectMembers, err := service.GetProjectMembers(int64(projectID))
+		if err != nil {
+			pm.InternalError(err)
+			return
+		}
+		pm.RenderJSON(projectMembers)
+	} else if membersType == "available" {
+		availableMembers, err := service.GetProjectAvailableMembers(int64(projectID))
+		if err != nil {
+			pm.InternalError(err)
+			return
+		}
+		pm.RenderJSON(availableMembers)
+	} else {
+		pm.CustomAbortAudit(http.StatusBadRequest, "Invalid value of the query parameter of type.")
 	}
-	pm.RenderJSON(projectMembers)
 }
