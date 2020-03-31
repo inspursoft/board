@@ -92,7 +92,7 @@ export const LANG_ZH_CN = {
     Node_Detail_Refresh: '刷新日志',
     Node_Detail_Title_Add: '添加节点',
     Node_Detail_Title_Remove: '正在移除节点',
-    Node_Detail_Title_Log: '节点日志',
+    Node_Detail_Title_Log: '添加节点日志',
     Node_Detail_Node_Ip: '节点IP',
     Node_Detail_Node_Password: '节点密码',
     Node_Detail_Remove_Success: '移除节点成功。',

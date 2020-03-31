@@ -374,7 +374,8 @@ func getNodeListFromApiServer(nodeList *[]nodeModel.ApiServerNodeListResult) err
 		return fmt.Errorf("failed to get the configuration")
 	}
 	host := allConfig.Apiserver.Hostname
-	url := fmt.Sprintf("http://%s:%d/api/v1/nodes?skip=AMS", host, 8088)
+	port := allConfig.Apiserver.APIServerPort
+	url := fmt.Sprintf("http://%s:%s/api/v1/nodes?skip=AMS", host, port)
 	err := utils.RequestHandle(http.MethodGet, url, func(req *http.Request) error {
 		req.Header = http.Header{"Content-Type": []string{"application/json"}}
 		return nil
