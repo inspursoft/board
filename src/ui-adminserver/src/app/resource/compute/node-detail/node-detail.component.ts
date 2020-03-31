@@ -1,6 +1,6 @@
 import { Component, ElementRef, OnDestroy, OnInit, TemplateRef, ViewChild, ViewContainerRef } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { interval, Subscription } from 'rxjs';
+import { interval, Observable, Subscription } from 'rxjs';
 import {
   ActionStatus,
   NodeActionsType,
@@ -13,6 +13,7 @@ import {
 import { MessageService } from '../../../shared/message/message.service';
 import { ResourceService } from '../../services/resource.service';
 import { ModalChildBase } from '../../../shared/cs-components-library/modal-child-base';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-node-log-detail',
@@ -35,6 +36,7 @@ export class NodeDetailComponent extends ModalChildBase implements OnInit, OnDes
   curNodeLogStatus: NodeLogStatus;
 
   constructor(private messageService: MessageService,
+              private translateService: TranslateService,
               private resourceService: ResourceService) {
     super();
     this.preparationData = new NodePreparationData({});
@@ -99,16 +101,16 @@ export class NodeDetailComponent extends ModalChildBase implements OnInit, OnDes
       this.actionStatus === ActionStatus.Preparing;
   }
 
-  get masterTitle(): string {
-    return `Master ${this.preparationData.masterIp} password`;
+  get masterTitle(): Observable<string> {
+    return this.translateService.get('Node.Node_Detail_Master_Title', [this.preparationData.masterIp]);
   }
 
-  get hostUsernameTitle(): string {
-    return `Host ${this.preparationData.hostIp} username`;
+  get hostUsernameTitle(): Observable<string> {
+    return this.translateService.get('Node.Node_Detail_Host_Username', [this.preparationData.hostIp]);
   }
 
-  get hostPasswordTitle(): string {
-    return `Host ${this.preparationData.hostIp} password`;
+  get hostPasswordTitle(): Observable<string> {
+    return this.translateService.get('Node.Node_Detail_Host_Password', [this.preparationData.hostIp]);
   }
 
   get succeedAlertText(): string {

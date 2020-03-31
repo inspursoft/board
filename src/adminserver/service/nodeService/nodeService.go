@@ -225,25 +225,36 @@ func GetNodeResponseList(nodeListResponse *[]nodeModel.NodeListResponse) error {
 		return err
 	}
 
-	for _, item := range nodeStatusList {
-		* nodeListResponse = append(*nodeListResponse, nodeModel.NodeListResponse{
-			Ip:           item.Ip,
-			CreationTime: item.CreationTime,
-			Origin:       0})
-	}
-
-	for _, apiItem := range apiServerNodeList {
-		var existsInDb = false
-		for _, item := range nodeStatusList {
-			if item.Ip == apiItem.NodeIP {
-				existsInDb = true
+	for _, item := range apiServerNodeList {
+		_, isMaster := item.Labels["node-role.kubernetes.io/master"]
+		var origin = 0
+		for _, adminItem := range nodeStatusList {
+			if item.NodeIP == adminItem.Ip {
+				origin = 1
 			}
 		}
-		if existsInDb == false {
+		* nodeListResponse = append(*nodeListResponse, nodeModel.NodeListResponse{
+			Ip:           item.NodeIP,
+			CreationTime: item.CreateTime,
+			Status:       item.Status,
+			IsMaster:     isMaster,
+			Origin:       origin})
+	}
+
+	for _, item := range nodeStatusList {
+		var existInApiServer = false
+		for _, apiItem := range apiServerNodeList {
+			if item.Ip == apiItem.NodeIP {
+				existInApiServer = true
+			}
+		}
+		if existInApiServer == false {
 			* nodeListResponse = append(*nodeListResponse, nodeModel.NodeListResponse{
-				Ip:           apiItem.NodeIP,
-				CreationTime: time.Now().Unix(),
-				Origin:       1})
+				Ip:           item.Ip,
+				CreationTime: item.CreationTime,
+				IsMaster:     false,
+				Status:       3,
+				Origin:       0})
 		}
 	}
 
