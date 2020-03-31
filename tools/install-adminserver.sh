@@ -85,39 +85,26 @@ check_dockercompose
 
 if [ -f board*.tgz ]
 then
-	echo "[Step $item]: loading Board images ..."; let item+=1
+	echo "[Step $item]: loading Board & Adminserver images ..."; let item+=1
 	docker load -i ./board*.tgz
 fi
 echo ""
 
-echo "[Step $item]: checking existing instance of Board ..."; let item+=1
+echo "[Step $item]: checking existing instance of Adminserver ..."; let item+=1
 if [ -n "$(docker-compose ps -q)"  ]
 then
-	echo "stopping existing Board instance ..."
-	docker-compose -f ./docker-compose-adminserver.yml down
+	echo "stopping existing Adminserver instance ..."
 	docker-compose -f ./docker-compose-db.yml down
-	docker-compose -f ./docker-compose-rest.yml down
+	docker-compose -f ./docker-compose-adminserver.yml down
 fi
 echo ""
 
 echo "[Step $item]: starting Board-adminserver ..."
 docker-compose -f ./docker-compose-adminserver.yml up -d
 
-#protocol=http
-#hostname=reg.mydomain.com
-
-#if [[ $(cat ./board.cfg) =~ ui_url_protocol[[:blank:]]*=[[:blank:]]*(https?) ]]
-#then
-#protocol=${BASH_REMATCH[1]}
-#fi
-
-#if [[ $(grep 'hostname[[:blank:]]*=' ./board.cfg) =~ hostname[[:blank:]]*=[[:blank:]]*(.*) ]]
-#then
-#hostname=${BASH_REMATCH[1]}
-#fi
-#echo ""
-
 echo $"----Board-adminserver has been installed and started successfully.----
+
+You can visit it on http://your-IP:8082 .
 
 For more details, please visit http://open.inspur.com/TechnologyCenter/board .
 "
