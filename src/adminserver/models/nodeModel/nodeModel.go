@@ -80,14 +80,18 @@ type NodeStatus struct {
 }
 
 type ApiServerNodeListResult struct {
-	NodeName string `json:"node_name"`
-	NodeIP   string `json:"node_ip"`
-	Status   int    `json:"status"`
+	NodeName   string            `json:"node_name"`
+	NodeIP     string            `json:"node_ip"`
+	Status     int               `json:"status"`
+	CreateTime int64             `json:"create_time"`
+	Labels     map[string]string `json:"labels"`
 }
 
 type NodeListResponse struct {
 	Ip           string `json:"ip"`
 	CreationTime int64  `json:"creation_time"`
+	Status       int    `json:"status"`
+	IsMaster     bool   `json:"is_master"`
 	Origin       int    `json:"origin"`
 }
 
