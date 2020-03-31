@@ -37,7 +37,7 @@ ifeq ($(ARCH), mips)
 endif
 
 ifeq ($(ARCH), arm64v8)
-        GOBUILDIMAGE=arm64v8/golang:1.13.5-alpine
+        GOBUILDIMAGE=inspursoft/go-builder-arm64v8:1.13.5-alpine
 endif
 
 # Base shell parameters
