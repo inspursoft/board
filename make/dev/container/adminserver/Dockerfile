@@ -5,6 +5,7 @@ MAINTAINER liyanqing@inspur.com
 RUN go version
 
 COPY src/adminserver /go/src/git/inspursoft/board/src/adminserver
+COPY src/common /go/src/git/inspursoft/board/src/common
 COPY src/vendor /go/src/git/inspursoft/board/src/vendor
 COPY VERSION /go/bin/VERSION
 
