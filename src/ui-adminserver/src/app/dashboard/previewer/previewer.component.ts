@@ -92,11 +92,10 @@ export class PreviewerComponent implements OnInit, OnDestroy {
     if (type === 'rb') {
       this.dashboardService.restartBoard(this.user).subscribe(
         () => {
-          this.disableApply = false;
           this.confirmModal = false;
+          this.disableApply = false;
           this.user = new User();
           this.getMonitor();
-          alert('Waiting for restart.');
         },
         (err: HttpErrorResponse) => {
           this.loadingFlag = false;
@@ -112,11 +111,10 @@ export class PreviewerComponent implements OnInit, OnDestroy {
     } else if (type === 'sb') {
       this.dashboardService.shutdownBoard(this.user).subscribe(
         () => {
-          this.disableApply = false;
           this.confirmModal = false;
+          this.disableApply = false;
           this.user = new User();
           this.getMonitor();
-          alert('Waiting for STOP.');
         },
         (err: HttpErrorResponse) => {
           this.loadingFlag = false;
@@ -126,18 +124,21 @@ export class PreviewerComponent implements OnInit, OnDestroy {
       );
     } else {
       this.loadingFlag = false;
-      this.disableApply = false;
       this.confirmModal = false;
+      this.disableApply = false;
       alert('Wrong parameter!');
     }
   }
 
   commonError(err: HttpErrorResponse) {
+    const currentLang = (window.localStorage.getItem('currentLang') === 'zh-cn' || window.localStorage.getItem('currentLang') === 'zh');
+    const tokenError = currentLang ? '用户状态信息错误！请重新登录！' : 'User status error! Please login again!';
+    const unknown = currentLang ? '未知错误' : 'Unknown Error!';
     if (err.status === 401) {
-      alert('User status error! Please login again!');
+      alert(tokenError);
       this.router.navigateByUrl('account/login');
     } else {
-      alert('Unknown Error!');
+      alert(unknown);
     }
   }
 }
