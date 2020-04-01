@@ -1,17 +1,5 @@
 version: '2'
 services:
-  log:
-    build:
-      context: ../../
-      dockerfile: make/dev/container/log/Dockerfile
-    image: dev_log:dev
-    restart: always
-    volumes:
-      - /var/log/board/:/var/log/docker/
-    networks:
-      - dvserver_net
-    ports:
-      - 1514:514
   gogits:
     build:
       context: ../../
@@ -26,8 +14,6 @@ services:
       - "10080:3000"
     networks:
       - dvserver_net 
-    depends_on:
-      - log
     logging:
       driver: "syslog"
       options:
@@ -51,8 +37,6 @@ services:
     ports:
       - 8888:8080
       - 50000:50000
-    depends_on:
-      - log
     logging:
       driver: "syslog"
       options:
@@ -79,8 +63,6 @@ services:
       - dvserver_net
     ports: 
       - 8088:8088
-    depends_on:
-      - log
       - jenkins
     logging:
       driver: "syslog"
@@ -97,8 +79,6 @@ services:
     restart: always
     networks:
       - dvserver_net
-    depends_on:
-      - log
     logging:
       driver: "syslog"
       options:
@@ -118,8 +98,6 @@ services:
       - ../config/collector/env
     networks:
       - dvserver_net
-    depends_on:
-      - log
     logging:
       driver: "syslog"
       options:
@@ -140,8 +118,6 @@ services:
       - 80:80
     links:
       - apiserver
-    depends_on:
-      - log
     logging:
       driver: "syslog"
       options:
@@ -161,8 +137,6 @@ services:
       - dvserver_net
     ports:
       - 3000:3000
-    depends_on:
-      - log
     logging:
       driver: "syslog"
       options:
@@ -178,8 +152,6 @@ services:
       - dvserver_net
     ports:
       - "2003:2003"
-    depends_on:
-      - log
     volumes:
       - /data/board/graphite/storage/whisper:/opt/graphite/storage/whisper
     logging:
@@ -199,8 +171,6 @@ services:
       - dvserver_net
     ports:
       - 9200:9200
-    depends_on:
-      - log
     ulimits:
       memlock:
         soft: -1
@@ -220,8 +190,6 @@ services:
     restart: always
     networks:
       - dvserver_net
-    depends_on:
-      - log
     volumes:
       - ../config/kibana:/config
     logging:
@@ -239,8 +207,6 @@ services:
       - dvserver_net
     ports:
       - 8089:8080
-    depends_on:
-      - log
     volumes:
       - /data/board/chartmuseum:/storage
     logging:
