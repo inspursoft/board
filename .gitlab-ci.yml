@@ -95,7 +95,6 @@ makepackage:
   script:
     - |
       echo `pwd`
-      cd board
       make packageonestep 
   only:
     - ansible
