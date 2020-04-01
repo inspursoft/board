@@ -16,17 +16,24 @@ This guide describes the steps to install and configure Board by using the onlin
 
 ## Prerequisites for the target host
 Board is deployed as several Docker containers, and, therefore, can be deployed on any Linux distribution that supports Docker. The target host requires Python, Docker, and Docker Compose to be installed.  
-* Python should be version 2.7 or higher.  Note that you may have to install Python on Linux distributions (Gentoo, Arch) that do not come with a Python interpreter installed by default  
-* Docker engine should be version 1.11.2 or higher.  For installation instructions, please refer to: https://docs.docker.com/engine/installation/
-* Docker Compose needs to be version 1.7.1 or higher.  For installation instructions, please refer to: https://docs.docker.com/compose/install/
+* Python should be version `2.7 or higher`.  Note that you may have to install Python on Linux distributions (Gentoo, Arch) that do not come with a Python interpreter installed by default  
+* Docker engine should be version `17.0 or higher`.  For installation instructions, please refer to: https://docs.docker.com/engine/installation/
+* Docker Compose needs to be version `1.7.1 or higher`.  For installation instructions, please refer to: https://docs.docker.com/compose/install/
 
 ## Installation Steps
 
-The installation steps boil down to the following
+Board has provided two installation methods since `version 3.0`. It is recommended to use the first way to get some additional functions of Board.
 
-1. Download the installer;
-2. Configure **board.cfg**;
-3. Run **install.sh** to install and start Board;
+1. Install with Adminserver `(recommend)`
+  - Download the installer;
+  - Run **install-adminserver.sh** to install and start Adminserver;
+  - Access Adminserver on **http://your-IP:8082** in browser and follow the guidelines;
+  - Apply after completing the configuration.
+2. Normal installation
+  - Download the installer;
+  - Configure **board.cfg**;
+  - Run **install.sh** to install and start Board;
+
 Note: If you need prepare Kubernetes and Registry environment, please refer to the appendix part.
 
 #### Downloading the installer:

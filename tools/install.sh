@@ -116,7 +116,6 @@ echo ""
 
 echo "[Step $item]: starting Board ..."
 docker-compose up -d
-docker-compose -f docker-compose-adminserver.yml up -d
 
 protocol=http
 hostname=reg.mydomain.com
