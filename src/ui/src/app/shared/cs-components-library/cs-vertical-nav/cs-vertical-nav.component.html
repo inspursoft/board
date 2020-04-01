@@ -30,7 +30,8 @@
     <clr-vertical-nav-group routerLinkActive="active">
       <clr-icon [attr.shape]="icon" clrVerticalNavIcon></clr-icon>
       <span>{{caption | translate}}</span>
-      <clr-vertical-nav-group-children>
+      <a [routerLink]="url" hidden aria-hidden="true"></a>
+      <clr-vertical-nav-group-children *clrIfExpanded>
         <div *ngFor="let navItem of children">
           <ng-container [ngTemplateOutletContext]="navItem" [ngTemplateOutlet]="itemTemp"></ng-container>
         </div>
