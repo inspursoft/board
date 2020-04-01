@@ -153,7 +153,7 @@ export const LANG_ZH_CN = {
       },
       KUBE_MASTER_IP: {
         NAME: 'K8s主节点IP',
-        TIPS: 'Kubernetes(K8s)部署的主机地址，*不要*使用localhost或者127.0.0.1上，因为K8s需要被其他节点访问'
+        TIPS: 'Kubernetes(K8s)部署的主机地址，不要使用localhost或者127.0.0.1上，因为K8s需要被其他节点访问'
       },
       KUBE_MASTER_PORT: {
         NAME: 'K8s主节点端口号',
@@ -175,7 +175,7 @@ export const LANG_ZH_CN = {
     GOGITS: {
       GOGITS_HOST_IP: {
         NAME: '服务IP地址',
-        TIPS: '服务部署的主机地址，*不要*使用localhost或者127.0.0.1上，因为需要被其他节点访问'
+        TIPS: '服务部署的主机地址，不要使用localhost或者127.0.0.1上，因为需要被其他节点访问'
       },
       GOGITS_HOST_PORT: {
         NAME: '服务端口号',
@@ -333,11 +333,11 @@ export const LANG_ZH_CN = {
       },
       VERIFICATION_URL: {
         NAME: '验证地址',
-        TIPS: '外部令牌验证URL，用于与其他平台集成授权。*注：*仅当auth_mode设置为\'indata_auth\'时，此选项才可用',
+        TIPS: '外部令牌验证URL，用于与其他平台集成授权。注：仅当auth_mode设置为\'indata_auth\'时，此选项才可用',
       },
       REDIRECTION_URL: {
         NAME: '重定向地址',
-        TIPS: '当令牌无效或UI将重定向到的过期时，请指定重定向URL。*注：*仅当auth_mode设置为\'indata_auth\'时，此选项才可用',
+        TIPS: '当令牌无效或UI将重定向到的过期时，请指定重定向URL。注：仅当auth_mode设置为\'indata_auth\'时，此选项才可用',
       },
       AUDIT_DEBUG: {
         NAME: '审计',
