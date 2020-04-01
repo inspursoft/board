@@ -13,9 +13,6 @@ while [ $# -gt 0 ]; do
             --help)
             echo "$usage"
             exit 0;;
-            pre-env.tar.gz)
-            echo "$usage"
-            exit 1;;
             *)
             echo "$usage"
             exit 1;;
@@ -26,7 +23,7 @@ done
 if [ ! -f $1 ];then
 tar zxvf $1 -C /data/board/ansible_k8s
 else
-echo "the file is not exist"
+echo "Please add the file pre-env.tar.gz file for add node to the directory Deploy!"
 exit 0
 fi
 
