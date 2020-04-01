@@ -9,6 +9,7 @@ stages:
   - ui-test
   - api-test
   - report
+  - makepackage
 pre-merge-requests:
   stage: pre-merge-requests
   script:
@@ -87,5 +88,16 @@ report-on-failure:
     - |
       curl -X POST $request_url -H "PRIVATE-TOKEN: $reporter_token" -H "Content-Type: application/json" -d '{ "note": "'"$failed"'" }'
   when: on_failure
+  tags:
+    - board-runner-wangkun_lc-vm
+makepackage:
+  stage: makepackage
+  script:
+    - |
+      echo `pwd`
+      cd board
+      make packageonestep 
+  only:
+    - ansible
   tags:
     - board-runner-wangkun_lc-vm
