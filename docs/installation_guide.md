@@ -24,8 +24,8 @@ Board is deployed as several Docker containers, and, therefore, can be deployed 
 
 Board has provided two installation methods since `version 3.0`. It is recommended to use the first way to get some additional functions of Board.
 
-1. Install with Adminserver `(recommend)`
-  - Download the installer;
+1. Install with Adminserver `(recommend)` `(Only available in x86 now)`
+  - Download the installer and extract it to `/data/board`;
   - Run **install-adminserver.sh** to install and start Adminserver;
   - Access Adminserver on **http://your-IP:8082** in browser and follow the guidelines;
   - Apply after completing the configuration.
