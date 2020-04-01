@@ -56,6 +56,7 @@ export const LANG_ZH_CN = {
     RESOURCES: '资源',
     LANG_EN_US: 'English',
     LANG_ZH_CN: '中文',
+    LOGOUT: '登出',
   },
   DASHBOARD: {
     BUTTONS: {

@@ -54,6 +54,7 @@ export const LANG_EN_US = {
     RESOURCES: 'Resources',
     LANG_EN_US: 'English',
     LANG_ZH_CN: '中文',
+    LOGOUT: 'Logout',
   },
   DASHBOARD: {
     BUTTONS: {
