@@ -97,6 +97,6 @@ makepackage:
       echo `pwd`
       make packageonestep 
   only:
-    - ansible
+    - master
   tags:
     - board-runner-wangkun_lc-vm
