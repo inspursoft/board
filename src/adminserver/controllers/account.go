@@ -5,7 +5,7 @@ import (
 	"git/inspursoft/board/src/adminserver/models"
 	"git/inspursoft/board/src/adminserver/service"
 	"net/http"
-
+	"errors"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 )
@@ -60,6 +60,7 @@ func (a *AccController) Initialize() {
 // @Param	body	body 	models.Account	true	"body for user account"
 // @Success 200 {object} string success
 // @Failure 400 bad request
+// @Failure 403 forbidden
 // @router /login [post]
 func (a *AccController) Login() {
 	var acc models.Account
@@ -67,13 +68,15 @@ func (a *AccController) Login() {
 	utils.UnmarshalToJSON(a.Ctx.Request.Body, &acc)
 	permission, err, token := service.Login(&acc)
 	if err != nil {
+		if err == errors.New("Forbidden") {
+			a.CustomAbort(http.StatusForbidden, err.Error())
+		}
 		logs.Error(err)
 		a.CustomAbort(http.StatusBadRequest, err.Error())
 	}
 	if permission {
 		a.Data["json"] = token
 	} else {
-		a.Data["json"] = ""
 		a.CustomAbort(http.StatusBadRequest, "login failed")
 	}
 	a.ServeJSON()

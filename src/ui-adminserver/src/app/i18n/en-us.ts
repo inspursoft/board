@@ -420,6 +420,7 @@ export const LANG_EN_US = {
         PASSWORD: 'Password',
         REQUIRED: 'This field is required'
       },
+      HELPER: 'Please make sure you have been stop Board instance.',
       CANCEL: 'Not now',
       APPLY: 'Yes, Do it',
     }
