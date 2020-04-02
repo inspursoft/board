@@ -4,22 +4,16 @@
 #docker-compose version: 1.7.1 
 #Board version: 0.8.0
 
-set -e
 
 usage=$'Please set hostname and other necessary attributes in board.cfg first. DO NOT use localhost or 127.0.0.1 for hostname, because Board needs to be accessed by external clients.'
 item=0
 
-while [ $# -gt 0 ]; do
-        case $1 in
-            --help)
-            echo "$usage"
-            exit 0;;
-            *)
-            echo "$usage"
-            exit 1;;
-        esac
-        shift || true
-done
+if [ -f $1 ];then
+tar zxvf $1 -C /data/board/ansible_k8s
+else
+echo "Please add the file pre-env.tar.gz file for add node to the directory Deploy!"
+exit 0
+fi
 
 workdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $workdir

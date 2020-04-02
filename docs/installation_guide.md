@@ -26,13 +26,13 @@ Board has provided two installation methods since `version 3.0`. It is recommend
 
 1. Install with Adminserver `(recommend)` `(Only available in x86 now)`
   - Download the installer and extract it to `/data/board`;
-  - Run **install-adminserver.sh** to install and start Adminserver;
+  - Run **install.sh pre-env.tar.gz** to install and start Adminserver;
   - Access Adminserver on **http://your-IP:8082** in browser and follow the guidelines;
   - Apply after completing the configuration.
 2. Normal installation
   - Download the installer;
   - Configure **board.cfg**;
-  - Run **install.sh** to install and start Board;
+  - Run **install-arm.sh** to install and start Board;
 
 Note: If you need prepare Kubernetes and Registry environment, please refer to the appendix part.
 
