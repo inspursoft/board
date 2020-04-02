@@ -125,7 +125,7 @@ func Login(acc *models.Account) (bool, error, string) {
 	user := models.User{Username: acc.Username, SystemAdmin: 1}
 	err := o.Read(&user, "username", "system_admin")
 	if err != nil {
-		return false, errors.New("Unauthorized"), token
+		return false, errors.New("Forbidden"), token
 	}
 
 	query := models.User{Username: acc.Username, Password: acc.Password}
