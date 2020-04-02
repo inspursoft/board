@@ -274,10 +274,10 @@ export class SignInComponent implements OnInit {
       },
       (err: HttpErrorResponse) => {
         const currentLang = (window.localStorage.getItem('currentLang') === 'zh-cn' || window.localStorage.getItem('currentLang') === 'zh');
-        const unauthorized = currentLang ? '未授权用户！' : 'Unauthorized!';
+        const FORBIDDEN = currentLang ? '禁止访问！' : 'Forbidden!';
         const errorUser = currentLang ? '账号或密码错误！' : 'Account or password error!';
-        if (err.status === 401) {
-          alert(unauthorized);
+        if (err.status === 403) {
+          alert(FORBIDDEN);
         } else {
           alert(errorUser);
         }
