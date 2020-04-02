@@ -97,7 +97,7 @@ export const LANG_EN_US = {
     Node_List_Empty: 'Node list is empty',
     Node_List_Remove_Node: 'Remove node',
     Node_List_Remove_Ask: 'Are you sure to remove the node?',
-    Node_List_Status_Unknown: 'Unknown',
+    Node_List_Status_Unknown: 'Unknown node',
     Node_List_Status_Schedulable: 'Schedulable',
     Node_List_Status_Unschedulable: 'Unschedulable',
     Node_Logs_Ip: 'IP',
