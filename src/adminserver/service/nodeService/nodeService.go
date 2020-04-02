@@ -228,9 +228,11 @@ func GetNodeResponseList(nodeListResponse *[]nodeModel.NodeListResponse) error {
 	for _, item := range apiServerNodeList {
 		_, isMaster := item.Labels["node-role.kubernetes.io/master"]
 		var origin = 0
+		var logTime = item.CreateTime
 		for _, adminItem := range nodeStatusList {
 			if item.NodeIP == adminItem.Ip {
 				origin = 1
+				logTime = adminItem.CreationTime
 			}
 		}
 		* nodeListResponse = append(*nodeListResponse, nodeModel.NodeListResponse{
@@ -238,6 +240,7 @@ func GetNodeResponseList(nodeListResponse *[]nodeModel.NodeListResponse) error {
 			CreationTime: item.CreateTime,
 			Status:       item.Status,
 			IsMaster:     isMaster,
+			LogTime:      logTime,
 			Origin:       origin})
 	}
 
@@ -252,6 +255,7 @@ func GetNodeResponseList(nodeListResponse *[]nodeModel.NodeListResponse) error {
 			* nodeListResponse = append(*nodeListResponse, nodeModel.NodeListResponse{
 				Ip:           item.Ip,
 				CreationTime: item.CreationTime,
+				LogTime:      item.CreationTime,
 				IsMaster:     false,
 				Status:       3,
 				Origin:       0})
