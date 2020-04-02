@@ -60,7 +60,7 @@ func (a *AccController) Initialize() {
 // @Param	body	body 	models.Account	true	"body for user account"
 // @Success 200 {object} string success
 // @Failure 400 bad request
-// @Failure 401 unauthorized
+// @Failure 403 forbidden
 // @router /login [post]
 func (a *AccController) Login() {
 	var acc models.Account
