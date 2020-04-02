@@ -265,6 +265,7 @@ export class SignInComponent implements OnInit {
       (res: string) => {
         if (res) {
           window.sessionStorage.setItem('token', res);
+          window.sessionStorage.setItem('user', this.user.username);
           this.router.navigateByUrl('dashboard');
         } else {
           alert('Unknown Error!');

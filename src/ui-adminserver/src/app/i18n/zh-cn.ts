@@ -422,6 +422,7 @@ export const LANG_ZH_CN = {
         PASSWORD: '密码',
         REQUIRED: '必填项'
       },
+      HELPER: '请确保您已停止Board实例。',
       CANCEL: '不生效',
       APPLY: '生效配置',
     }
