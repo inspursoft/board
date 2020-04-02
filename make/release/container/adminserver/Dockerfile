@@ -7,6 +7,10 @@ apk add --no-cache openssh openssh-client openssl docker
 ADD make/release/container/adminserver/adminserver /usr/bin/adminserver
 COPY VERSION /usr/bin/VERSION
 
+RUN apk add tzdata && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+    && echo "Asia/Shanghai" > /etc/timezone \
+    && apk del tzdata
+
 WORKDIR /usr/bin/
 
 CMD ["adminserver"]
