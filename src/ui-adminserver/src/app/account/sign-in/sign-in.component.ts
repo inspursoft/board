@@ -4,6 +4,7 @@ import { AccountService } from '../account.service';
 import { Router } from '@angular/router';
 import { ClrWizard, ClrModal } from '@clr/angular';
 import { HeaderComponent } from 'src/app/shared/header/header.component';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-sign-in',
@@ -271,8 +272,15 @@ export class SignInComponent implements OnInit {
           alert('Unknown Error!');
         }
       },
-      () => {
-        alert('账号或密码错误！# Account or password error!');
+      (err: HttpErrorResponse) => {
+        const currentLang = (window.localStorage.getItem('currentLang') === 'zh-cn' || window.localStorage.getItem('currentLang') === 'zh');
+        const unauthorized = currentLang ? '未授权用户！' : 'Unauthorized!';
+        const errorUser = currentLang ? '账号或密码错误！' : 'Account or password error!';
+        if (err.status === 401) {
+          alert(unauthorized);
+        } else {
+          alert(errorUser);
+        }
       }
     );
   }
