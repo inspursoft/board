@@ -301,4 +301,10 @@ export class SignInComponent implements OnInit {
     this.disableInput = false;
     this.current = id;
   }
+
+  forgetPassword() {
+    const currentLang = (window.localStorage.getItem('currentLang') === 'zh-cn' || window.localStorage.getItem('currentLang') === 'zh');
+    const forgetPwd = currentLang ? '请在board中修改密码!' : 'Please change the password in Board!';
+    alert(forgetPwd);
+  }
 }

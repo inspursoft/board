@@ -43,7 +43,7 @@
         <clr-icon shape="caret down"></clr-icon>
       </button>
       <clr-dropdown-menu *clrIfOpen clrPosition="bottom-right">
-        <a href="/account/login" (click)="logout()" clrDropdownItem>Log out</a>
+        <a href="/account/login" (click)="logout()" clrDropdownItem>{{ 'HEAD_NAV.LOGOUT' | translate }}</a>
       </clr-dropdown-menu>
     </clr-dropdown>
   </div>

@@ -24,6 +24,13 @@ done
 workdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $workdir
 
+# The hostname in board.cfg has not been modified
+if grep 'hostname = reg.mydomain.com' &> /dev/null board.cfg
+then
+	echo $usage
+	exit 1
+fi
+
 function check_docker {
 	if ! docker --version &> /dev/null
 	then
@@ -85,26 +92,47 @@ check_dockercompose
 
 if [ -f board*.tgz ]
 then
-	echo "[Step $item]: loading Board & Adminserver images ..."; let item+=1
+	echo "[Step $item]: loading Board images ..."; let item+=1
 	docker load -i ./board*.tgz
 fi
 echo ""
 
-echo "[Step $item]: checking existing instance of Adminserver ..."; let item+=1
+echo "[Step $item]: preparing environment ...";  let item+=1
+#if [ -n "$host" ]
+#then
+#	sed "s/^hostname = .*/hostname = $host/g" -i ./board.cfg
+#fi
+./prepare
+echo ""
+
+echo "[Step $item]: checking existing instance of Board ..."; let item+=1
 if [ -n "$(docker-compose ps -q)"  ]
 then
-	echo "stopping existing Adminserver instance ..."
-	docker-compose -f ./docker-compose-db.yml down
-	docker-compose -f ./docker-compose-adminserver.yml down
+	echo "stopping existing Board instance ..."
+	docker-compose down
+	docker-compose -f docker-compose-adminserver.yml down
 fi
 echo ""
 
-echo "[Step $item]: starting Board-adminserver ..."
-docker-compose -f ./docker-compose-adminserver.yml up -d
+echo "[Step $item]: starting Board ..."
+docker-compose up -d
 
-echo $"----Board-adminserver has been installed and started successfully.----
+protocol=http
+hostname=reg.mydomain.com
 
-You can visit it on http://your-IP:8082 .
+if [[ $(cat ./board.cfg) =~ ui_url_protocol[[:blank:]]*=[[:blank:]]*(https?) ]]
+then
+protocol=${BASH_REMATCH[1]}
+fi
 
-For more details, please visit http://open.inspur.com/TechnologyCenter/board .
+if [[ $(grep 'hostname[[:blank:]]*=' ./board.cfg) =~ hostname[[:blank:]]*=[[:blank:]]*(.*) ]]
+then
+hostname=${BASH_REMATCH[1]}
+fi
+echo ""
+
+echo $"----Board has been installed and started successfully.----
+
+Now you should be able to visit the admin portal at ${protocol}://${hostname}. 
+For more details, please visit http://10.110.18.40:10080/inspursoft/board .
 "
