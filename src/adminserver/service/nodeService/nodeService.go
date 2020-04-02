@@ -101,13 +101,12 @@ func LaunchAnsibleContainer(env *nodeModel.ContainerEnv) error {
 
 	LogFilePath := path.Join(nodeModel.BasePath, nodeModel.LogFileDir)
 	HostDirPath := path.Join(nodeModel.BasePath, nodeModel.HostFileDir)
-	PreEnvPath := path.Join(nodeModel.BasePath, nodeModel.PreEnvDir)
 	cmdStr := fmt.Sprintf("docker run -td \\\n "+
 		"-v %s:/tmp/log \\\n "+
 		"-v %s:/tmp/hosts_dir \\\n"+
 		"-v %s:/ansible_k8s/pre-env \\\n "+
 		"%s \\\n k8s_install:1",
-		LogFilePath, HostDirPath, PreEnvPath, envStr)
+		LogFilePath, HostDirPath, nodeModel.PreEnvDir, envStr)
 	err = secure.ExecuteCommand(cmdStr)
 
 	if err != nil {
