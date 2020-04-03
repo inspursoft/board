@@ -2,7 +2,7 @@
 
 #docker version: 17.0+
 #docker-compose version: 1.7.1+
-#Board version: 7.0.0
+#Board version: 0.8.0+
 
 set -e
 
@@ -90,7 +90,8 @@ function check_dockercompose {
 }
 
 function delete_images {
-	docker rmi `docker images -qf reference=board_*`
+	docker-compose down --rmi all
+	docker-compose -f docker-compose-adminserver.yml down --rmi all
 }
 
 function remove_data {
@@ -102,23 +103,11 @@ check_docker
 check_dockercompose
 
 echo "[Step $item]: checking existing instance of Board ..."; let item+=1
-if [ -n "$(docker ps -aqf name=deploy_log_1)"  ]
+if [ -n "$(docker-compose ps -q)"  ]
 then
-	echo "you should stop existing Board instance in Adminserver ..."
-	exit 1
-fi
-echo ""
-if [ -n "$(docker ps -aqf name=deploy_db_1)"  ]
-then
-	echo "you should stop existing Database instance..."
-	echo "may be you can use 'docker-compose -f docker-compose-db.yml down' to stop it."
-	exit 1
-fi
-echo ""
-if [ -n "$(docker ps -aqf name=deploy_adminserver_1)"  ]
-then
-	echo "stopping existing Adminserver instance ..."
-	docker-compose -f ./docker-compose-adminserver.yml down
+	echo "stopping existing Board instance ..."
+	docker-compose down
+	docker-compose -f docker-compose-adminserver.yml down
 fi
 echo ""
 
