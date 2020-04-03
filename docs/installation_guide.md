@@ -217,33 +217,7 @@ hostname = 192.168.0.2:8888
 
 3.Re-deploy Board refering to previous section "Managing Board's lifecycle".
 
-## Unistallation Steps 
-
-**Warning: DO NOT use uninstall.sh to uninstall**
-
-### shutdwon Board
-
-You need to stop existing Board instance in Adminserver.
-
-### remove Board image
-
-Use `docker-compose -f docker-compose-rest.yml down --rmi all` to remove images of Board.
-
-### remove Database
-
-Use `docker-compose -f docker-compose-db.yml down --rmi all` to stop database and remove images of database.
-
-### remove Adminserver
-
-Check wheather the `env` file exists in `/data/board/Deploy/config/adminserver/`. If it does not exist, run `cp /data/board/Deploy/templates/adminserver/env-release /data/board/Deploy/config/adminserver/env` to restore it. And then you can use `docker-compose -f ./docker-compose-adminserver.yml down --rmi all` to stop Adminserver and remove images of Adminserver.
-
-### remove data [Optional]
-
-You can use `rm -rf /data/board` to remove all data of Board (includes Adminserver). Before you do it, you should back up your data.
-
 ## Troubleshooting
-0. When you encounter problems with `ERROR: Couldn't find env file: /data/board/Deploy/config/adminserver/env` when up or down Adminserver, you can use `cp /data/board/Deploy/templates/adminserver/env-release /data/board/Deploy/config/adminserver/env` to solve it, and then you can normally up and down Adminserver.
-
 1. When Board does not work properly, run the below commands to find out if all containers of Board are in **UP** status: 
 
 ```
