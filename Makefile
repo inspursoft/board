@@ -233,9 +233,8 @@ package: prepare_composefile
 	@echo "packing offline package ..."
 	@if [ ! -d $(PKGTEMPPATH) ] ; then mkdir $(PKGTEMPPATH) ; fi
 	@cp $(TOOLSPATH)/install.sh $(PKGTEMPPATH)/install.sh
-	@cp $(TOOLSPATH)/install-without-adminserver.sh $(PKGTEMPPATH)/install-without-adminserver.sh
+	@cp $(TOOLSPATH)/install-arm.sh $(PKGTEMPPATH)/install-arm.sh
 	@cp $(TOOLSPATH)/uninstall.sh $(PKGTEMPPATH)/uninstall.sh
-	@cp $(TOOLSPATH)/uninstall-without-adminserver.sh $(PKGTEMPPATH)/uninstall-without-adminserver.sh
 	@cp $(MAKEPATH)/board.cfg $(PKGTEMPPATH)/.
 	@cp $(MAKEPATH)/prepare $(PKGTEMPPATH)/.
 	@cp -rf $(MAKEPATH)/templates $(PKGTEMPPATH)/.
