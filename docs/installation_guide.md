@@ -243,11 +243,12 @@ Check wheather the `env` file exists in `/data/board/Deploy/config/adminserver/`
 
 You can use `rm -rf /data/board` to remove all data of Board (includes Adminserver). Before you do it, you should back up your data.
 
-### if using install-without-adminserver.sh to install
+### if using install-arm.sh to install
 
-Use `./uninstall-without-adminserver.sh` to uninstall.
+Use `./uninstall.sh` to uninstall.
 
 ## Troubleshooting
+
 0. When you encounter problems with `ERROR: Couldn't find env file: /data/board/Deploy/config/adminserver/env` when up or down Adminserver, you can use `cp /data/board/Deploy/templates/adminserver/env-release /data/board/Deploy/config/adminserver/env` to solve it, and then you can normally up and down Adminserver.
 
 1. When Board does not work properly, run the below commands to find out if all containers of Board are in **UP** status: 
