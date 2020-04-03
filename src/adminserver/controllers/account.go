@@ -68,10 +68,10 @@ func (a *AccController) Login() {
 	utils.UnmarshalToJSON(a.Ctx.Request.Body, &acc)
 	permission, err, token := service.Login(&acc)
 	if err != nil {
-		if err == errors.New("Forbidden") {
+		logs.Error(err)
+		if err.Error() == "Forbidden" {
 			a.CustomAbort(http.StatusForbidden, err.Error())
 		}
-		logs.Error(err)
 		a.CustomAbort(http.StatusBadRequest, err.Error())
 	}
 	if permission {

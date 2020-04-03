@@ -7,10 +7,10 @@
 
 item=0
 
-if [ -n "$1" && -f "$1" ];then
+if [[ -n $1 && -f $1 ]];then
 tar zxvf $1 -C /data
 else
-	if [ ! -e "/data/pre-env"]
+	if [[ ! -e "/data/pre-env" ]]
 	then
 		echo "Please add the file pre-env.tar.gz file for add node to the directory Deploy!"
 		exit 1
