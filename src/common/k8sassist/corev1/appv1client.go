@@ -51,7 +51,7 @@ func (p *AppV1Client) ReplicaSet(namespace string) ReplicaSetClientInterface {
 }
 
 func (p *AppV1Client) Pod(namespace string) PodClientInterface {
-	return apps.NewPods(namespace, p.Clientset.CoreV1().Pods(namespace))
+	return apps.NewPods(p.Clientset, p.Config, namespace, p.Clientset.CoreV1().Pods(namespace))
 }
 
 func (p *AppV1Client) AutoScale(namespace string) AutoscaleInterface {
@@ -178,6 +178,7 @@ type PodClientInterface interface {
 	List(opts model.ListOptions) (*model.PodList, error)
 	//Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *v1.Pod, err error)
 	GetLogs(name string, opts *model.PodLogOptions) (io.ReadCloser, error)
+	Exec(podName, containerName string, cmd []string, ptyHandler model.PtyHandler) error
 }
 
 // How to:  deploymentCli, err := k8sassist.NewDeployments(nameSpace)

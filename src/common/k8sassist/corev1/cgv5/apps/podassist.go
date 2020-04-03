@@ -8,11 +8,17 @@ import (
 	"git/inspursoft/board/src/common/model"
 
 	"github.com/astaxie/beego/logs"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/kubernetes/typed/core/v1"
+	"k8s.io/client-go/tools/remotecommand"
 )
 
 type pods struct {
+	k8sClient kubernetes.Interface
+	cfg       *types.Config
 	namespace string
 	pod       v1.PodInterface
 }
@@ -93,8 +99,45 @@ func (p *pods) GetLogs(name string, opts *model.PodLogOptions) (io.ReadCloser, e
 	return request.Stream()
 }
 
-func NewPods(namespace string, pod v1.PodInterface) *pods {
+func (p *pods) Exec(podName, containerName string, cmd []string, ptyHandler model.PtyHandler) error {
+	req := p.k8sClient.CoreV1().RESTClient().Post().
+		Resource("pods").
+		Name(podName).
+		Namespace(p.namespace).
+		SubResource("exec")
+
+	req.VersionedParams(&corev1.PodExecOptions{
+		Container: containerName,
+		Command:   cmd,
+		Stdin:     true,
+		Stdout:    true,
+		Stderr:    true,
+		TTY:       true,
+	}, scheme.ParameterCodec)
+
+	exec, err := remotecommand.NewSPDYExecutor(p.cfg, "POST", req.URL())
+	if err != nil {
+		return err
+	}
+
+	err = exec.Stream(remotecommand.StreamOptions{
+		Stdin:             ptyHandler,
+		Stdout:            ptyHandler,
+		Stderr:            ptyHandler,
+		TerminalSizeQueue: types.ToK8sTerminalSizeQueue(ptyHandler),
+		Tty:               true,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func NewPods(k8sClient kubernetes.Interface, cfg *types.Config, namespace string, pod v1.PodInterface) *pods {
 	return &pods{
+		k8sClient: k8sClient,
+		cfg:       cfg,
 		namespace: namespace,
 		pod:       pod,
 	}
