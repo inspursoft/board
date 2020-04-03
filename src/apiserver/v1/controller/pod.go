@@ -42,5 +42,4 @@ func (p *PodController) PodShellAction() {
 		p.CustomAbortAudit(http.StatusInternalServerError, fmt.Sprint(err))
 		return
 	}
-
 }

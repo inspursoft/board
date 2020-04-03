@@ -29,9 +29,6 @@ type WSStreamHandler struct {
 
 // Run start a loop to fetch from ws client and store the data in byte buffer
 func (h *WSStreamHandler) Run() error {
-	defer func() {
-		logs.Info("exitrun..............")
-	}()
 	for {
 		t, p, err := h.conn.ReadMessage()
 		if err != nil {
@@ -42,11 +39,10 @@ func (h *WSStreamHandler) Run() error {
 			logs.Info("recieve close type ws message")
 			return nil
 		}
-		logs.Info("recieve xtermmessage %s", string(p))
 		xmsg := xtermMessage{}
 		if err := json.Unmarshal(p, &xmsg); err != nil {
-			logs.Warn("json.Unmarshal err: ", err)
-			return err
+			logs.Warn("unmarshal message error: %+v", err)
+			continue
 		}
 
 		switch xmsg.MsgType {
@@ -54,7 +50,6 @@ func (h *WSStreamHandler) Run() error {
 			{
 				h.Lock()
 				h.rbuf = append(h.rbuf, xmsg.Input...)
-				logs.Info("recieve data event %s", string(xmsg.Input))
 				h.cond.Signal()
 				h.Unlock()
 			}
@@ -94,8 +89,10 @@ func (h *WSStreamHandler) Next() *model.TerminalSize {
 
 func PodShell(namespace, pod, container string, w http.ResponseWriter, r *http.Request) error {
 	// upgrade to websocket.
-	upgrader := websocket.Upgrader{}
-	conn, err := upgrader.Upgrade(w, r, nil)
+	conn, err := websocket.Upgrade(w, r, nil, 1024, 1024)
+	if err != nil {
+		return err
+	}
 	defer conn.Close()
 
 	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
@@ -108,11 +105,8 @@ func PodShell(namespace, pod, container string, w http.ResponseWriter, r *http.R
 		resizeEvent: make(chan model.TerminalSize),
 	}
 	ptyHandler.cond = sync.NewCond(ptyHandler)
-	logs.Info("invoke kubernetes %s/%s pod exec in container %s.", namespace, pod, container)
-	err = k8sclient.AppV1().Pod(namespace).Exec(pod, container, cmd, ptyHandler)
-	if err != nil {
-		return err
-	}
 	// run loop to fetch data from ws client
-	return ptyHandler.Run()
+	go ptyHandler.Run()
+	logs.Info("invoke kubernetes %s/%s pod exec in container %s.", namespace, pod, container)
+	return k8sclient.AppV1().Pod(namespace).Exec(pod, container, cmd, ptyHandler)
 }
