@@ -29,9 +29,9 @@ type WSStreamHandler struct {
 
 // Run start a loop to fetch from ws client and store the data in byte buffer
 func (h *WSStreamHandler) Run() error {
-	defer func(){
-		logs.Info("exitrun..............")	
-	}
+	defer func() {
+		logs.Info("exitrun..............")
+	}()
 	for {
 		t, p, err := h.conn.ReadMessage()
 		if err != nil {
