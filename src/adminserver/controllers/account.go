@@ -5,7 +5,6 @@ import (
 	"git/inspursoft/board/src/adminserver/models"
 	"git/inspursoft/board/src/adminserver/service"
 	"net/http"
-	"errors"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 )
