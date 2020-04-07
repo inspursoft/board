@@ -1,17 +1,5 @@
 version: '2'
 services:
-  log:
-    build:
-      context: ../../
-      dockerfile: make/dev/container/log/Dockerfile
-    image: dev_log:dev
-    restart: always
-    volumes:
-      - /var/log/board/:/var/log/docker/
-    networks:
-      - board
-    ports:
-      - 1514:514
   adminserver:
     build:
       context: ../../
@@ -26,20 +14,12 @@ services:
       - /data/board/database:/data/board/database
       - /data/board/ansible_k8s:/data/board/ansible_k8s
       - /data/board/make:/data/board/make
-      - /etc/localtime:/etc/localtime:ro
     env_file:
       - ../config/adminserver/env
     networks:
       - board
     ports:
       - 8081:8080
-    depends_on:
-      - log
-    logging:
-      driver: "syslog"
-      options:  
-        syslog-address: "tcp://127.0.0.1:1514"
-        tag: "adminserver"
   proxy-adminserver:
     build:
       context: ../../
@@ -57,13 +37,6 @@ services:
       - ../../src/ui-adminserver/dist:/usr/share/nginx/html:z
     networks:
       - board
-    depends_on:
-      - log
-    logging:
-      driver: "syslog"
-      options:  
-        syslog-address: "tcp://127.0.0.1:1514"
-        tag: "proxy-adminserver"
 networks:
   board:
     external: false

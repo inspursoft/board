@@ -19,11 +19,6 @@ services:
       nofile:
         soft: 65536
         hard: 65536
-    logging:
-      driver: "syslog"
-      options:  
-        syslog-address: "tcp://127.0.0.1:1514"
-        tag: "db"
 networks:
   dvserver_net:
     external:
