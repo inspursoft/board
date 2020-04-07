@@ -48,12 +48,8 @@
         <span class="stat-panel-title">{{ 'DASHBOARD.TOTAL' | translate }}:</span>
       </div>
       <div class="section-right-container-container">
-        <span class="stat-panel-value-font">
-          {{curRealTimeValue.get(2)?.curFirst}}{{curRealTimeValue.get(2)?.curFirstUnit}}
-        </span>
-        <span class="stat-panel-value-font">
-          {{curRealTimeValue.get(2)?.curSecond}}{{curRealTimeValue.get(2)?.curSecondUnit}}
-        </span>
+        <span class="stat-panel-value-font">{{curRealTimeValue.get(2)?.curFirst}}{{StorageUnit}}</span>
+        <span class="stat-panel-value-font">{{curRealTimeValue.get(2)?.curSecond}}{{StorageUnit}}</span>
       </div>
     </div>
   </div>
@@ -92,7 +88,7 @@
            [options]="lineOptions.get(0)"
            [loading]="lineStateInfo.get(0)?.inRefreshWIP"
            (mouseup)="chartMouseUp(0,$event)"
-           (chartDataZoom)="chartDataZoom(0, $event)"
+           (chartDataZoom)="chartDataZoom(0,$event)"
            style="height: 300px">
       </div>
     </div>
@@ -146,23 +142,20 @@
   <div class="card-header">{{'DASHBOARD.STORAGE' | translate }}</div>
   <div class="card-block line-area-block">
     <div class="card-block-top-container">
-      <lib-dropdown-ex [dropdownItems]="getLinesName(2)"
-                       [dropdownTip]="getCurLineName(2)"
-                       [dropdownDisabled]="lineStateInfo.get(2)?.inRefreshWIP || !lineStateInfo.get(2)"
-                       [dropdownMinWidth]="300"
-                       (dropdownChangeItem)="dropDownChange(2,$event)">
-      </lib-dropdown-ex>
+     <lib-dropdown-ex [dropdownItems]="getLinesName(2)"
+                      [dropdownTip]="getCurLineName(2)"
+                      [dropdownDisabled]="lineStateInfo.get(2)?.inRefreshWIP || !lineStateInfo.get(2)"
+                      [dropdownMinWidth]="300"
+                      (dropdownChangeItem)="dropDownChange(2,$event)">
+     </lib-dropdown-ex>
       <a href="javascript:void(0)" (click)="refreshLine()" class="refresh"
          [class.disabled]="lineStateInfo.get(2)?.inRefreshWIP || !lineStateInfo.get(2)">
         <clr-icon shape="refresh" class="refresh"></clr-icon>
       </a>
       <div class="caption_container">
-        <span class="first-line">
-          {{ 'DASHBOARD.USAGE' | translate }}:{{curValue.get(2)?.curFirst}}{{curValue.get(2)?.curFirstUnit}}
-        </span>
-        <span class="second-line">
-          {{'DASHBOARD.TOTAL' | translate }}:{{curValue.get(2)?.curSecond}}{{curValue.get(2)?.curSecondUnit}}
-        </span>
+        <span class="first-line">{{ 'DASHBOARD.USAGE' | translate }}:{{curValue.get(2)?.curFirst}}{{StorageUnit}}</span>
+        <span
+            class="second-line">{{'DASHBOARD.TOTAL' | translate }}:{{curValue.get(2)?.curSecond}}{{StorageUnit}}</span>
       </div>
       <div class="select-time-container">
         <time-range-scale [curScale]="query.get(2) ? query.get(2).scale:{}"

@@ -2,8 +2,8 @@ import { RequestBase } from '../shared/shared.type';
 
 export class User implements RequestBase {
   id = 0;
-  username = '';
-  password = '';
+  username: string;
+  password: string;
 
   PostBody(): object {
     return {

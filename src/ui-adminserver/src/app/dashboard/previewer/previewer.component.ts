@@ -1,11 +1,9 @@
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ComponentStatus } from '../component-status.model';
 import { DashboardService } from '../dashboard.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { User } from 'src/app/account/account.model';
 import { Router } from '@angular/router';
-import { ClrModal } from '@clr/angular';
-import { timeout } from 'rxjs/operators';
 
 @Component({
   selector: 'app-previewer',
@@ -17,14 +15,13 @@ export class PreviewerComponent implements OnInit, OnDestroy {
   componentList: ComponentStatus[];
   showDetail = false;
   modal: ComponentStatus;
+  confirmModal = false;
   confirmType: ConfirmType;
   timer: any;
   user: User;
   loadingFlag = true;
   enableStop = false;
   disableApply = false;
-
-  @ViewChild('confirmModal') confirmModal: ClrModal;
 
   constructor(private dashboardService: DashboardService,
     private router: Router) {
@@ -81,8 +78,7 @@ export class PreviewerComponent implements OnInit, OnDestroy {
   }
 
   confirm(type: string, containerID?: string) {
-    this.user = new User();
-    this.confirmModal.open();
+    this.confirmModal = true;
     if (containerID) {
       this.confirmType = new ConfirmType(type, containerID);
     } else {
@@ -94,29 +90,33 @@ export class PreviewerComponent implements OnInit, OnDestroy {
     this.loadingFlag = true;
     this.disableApply = true;
     if (type === 'rb') {
-      clearInterval(this.timer);
-      this.dashboardService.restartBoard(this.user)
-        .pipe(timeout(40000))
-        .subscribe(
-          () => {
-            this.commonSuccess();
-          },
-          (err: HttpErrorResponse) => {
-            this.loadingFlag = false;
-            this.disableApply = false;
-            this.commonError(err);
-          }
-        );
+      this.dashboardService.restartBoard(this.user).subscribe(
+        () => {
+          this.disableApply = false;
+          this.confirmModal = false;
+          this.user = new User();
+          this.getMonitor();
+          alert('Waiting for restart.');
+        },
+        (err: HttpErrorResponse) => {
+          this.loadingFlag = false;
+          this.disableApply = false;
+          this.commonError(err);
+        }
+      );
     } else if (type === 'rc') {
       this.loadingFlag = false;
       this.disableApply = false;
-      this.confirmModal.close();
+      this.confirmModal = false;
       alert('Sorry, this feature is not yet supported. Restart container(' + containerID + ') fail.');
     } else if (type === 'sb') {
-      clearInterval(this.timer);
       this.dashboardService.shutdownBoard(this.user).subscribe(
         () => {
-          this.commonSuccess();
+          this.disableApply = false;
+          this.confirmModal = false;
+          this.user = new User();
+          this.getMonitor();
+          alert('Waiting for STOP.');
         },
         (err: HttpErrorResponse) => {
           this.loadingFlag = false;
@@ -126,30 +126,19 @@ export class PreviewerComponent implements OnInit, OnDestroy {
       );
     } else {
       this.loadingFlag = false;
-      this.confirmModal.close();
       this.disableApply = false;
+      this.confirmModal = false;
       alert('Wrong parameter!');
     }
   }
 
   commonError(err: HttpErrorResponse) {
-    const currentLang = (window.localStorage.getItem('currentLang') === 'zh-cn' || window.localStorage.getItem('currentLang') === 'zh');
-    const tokenError = currentLang ? '用户状态信息错误！请重新登录！' : 'User status error! Please login again!';
-    const unknown = currentLang ? '连接超时，请检查网络或刷新页面。' : 'Connection timed out! Please check the network or refresh the page.';
     if (err.status === 401) {
-      alert(tokenError);
+      alert('User status error! Please login again!');
       this.router.navigateByUrl('account/login');
     } else {
-      alert(unknown);
+      alert('Unknown Error!');
     }
-  }
-
-  commonSuccess() {
-    this.loadingFlag = true;
-    this.user = new User();
-    this.disableApply = false;
-    this.confirmModal.close();
-    setTimeout(() => this.getMonitor(), 10000);
   }
 }
 

@@ -62,10 +62,6 @@ export class CsVerticalNavComponent implements AfterViewInit {
     return `http://${this.appInitService.systemInfo.board_host}:8082/account/login`;
   }
 
-  get isShowAdminSever(): boolean {
-    return !this.appInitService.isArmSystem && !this.appInitService.isMipsSystem;
-  }
-
   isHasChildren(item: ICsMenuItemData): boolean {
     return Reflect.has(item, 'children');
   }

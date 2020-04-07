@@ -91,8 +91,6 @@ paths:
             type: string
         "400":
           description: bad request
-        "403":
-          description: Forbidden
   /account/verify:
     post:
       tags:
@@ -516,7 +514,7 @@ paths:
         "500":
           description: Internal Server Error
 definitions:
-  3442.<nil>.NodeLog:
+  3229.<nil>.NodeLog:
     title: NodeLog
     type: object
   models.Account:
@@ -777,7 +775,7 @@ definitions:
     type: object
     properties:
       log_list:
-        $ref: '#/definitions/3442.<nil>.NodeLog'
+        $ref: '#/definitions/3229.<nil>.NodeLog'
       pagination:
         $ref: '#/definitions/nodeModel.Pagination'
   nodeModel.Pagination:

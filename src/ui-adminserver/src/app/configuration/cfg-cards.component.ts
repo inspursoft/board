@@ -122,14 +122,11 @@ export class CfgCardsComponent implements OnInit {
   }
 
   commonError(err: HttpErrorResponse) {
-    const currentLang = (window.localStorage.getItem('currentLang') === 'zh-cn' || window.localStorage.getItem('currentLang') === 'zh');
-    const tokenError = currentLang ? '用户状态信息错误！请重新登录！' : 'User status error! Please login again!';
-    const unknown = currentLang ? '未知错误' : 'Unknown Error!';
     if (err.status === 401) {
-      alert(tokenError);
+      alert('User status error! Please login again!');
       this.router.navigateByUrl('account/login');
     } else {
-      alert(unknown);
+      alert('Unknown Error!');
     }
   }
 }

@@ -54,7 +54,6 @@ export const LANG_EN_US = {
     RESOURCES: 'Resources',
     LANG_EN_US: 'English',
     LANG_ZH_CN: '中文',
-    LOGOUT: 'Logout',
   },
   DASHBOARD: {
     BUTTONS: {
@@ -97,7 +96,7 @@ export const LANG_EN_US = {
     Node_List_Empty: 'Node list is empty',
     Node_List_Remove_Node: 'Remove node',
     Node_List_Remove_Ask: 'Are you sure to remove the node?',
-    Node_List_Status_Unknown: 'Unknown node',
+    Node_List_Status_Unknown: 'Unknown',
     Node_List_Status_Schedulable: 'Schedulable',
     Node_List_Status_Unschedulable: 'Unschedulable',
     Node_Logs_Ip: 'IP',
@@ -152,7 +151,7 @@ export const LANG_EN_US = {
       },
       KUBE_MASTER_IP: {
         NAME: 'Kube master IP',
-        TIPS: 'Host address of Kubernetes (K8s) deployment, Do not use localhost or 127.0.0.1 because K8s need to be accessed by other nodes'
+        TIPS: 'Host address of Kubernetes (K8s) deployment, *Do not* use localhost or 127.0.0.1 because K8s need to be accessed by other nodes'
       },
       KUBE_MASTER_PORT: {
         NAME: 'Kube master port',
@@ -174,7 +173,7 @@ export const LANG_EN_US = {
     GOGITS: {
       GOGITS_HOST_IP: {
         NAME: 'Gogits host IP',
-        TIPS: 'The host address of the service deployment, DO NOT use localhost or 127.0.0.1 because it needs to be accessed by other nodes'
+        TIPS: 'The host address of the service deployment, *DO NOT* use localhost or 127.0.0.1 because it needs to be accessed by other nodes'
       },
       GOGITS_HOST_PORT: {
         NAME: 'Gogits host port',
@@ -332,11 +331,11 @@ export const LANG_EN_US = {
       },
       VERIFICATION_URL: {
         NAME: 'Verification url',
-        TIPS: 'External token verification URL as to integrate authorization with another platform. NOTE: This option is only available when auth_mode is set to \'indata_auth\'.'
+        TIPS: 'External token verification URL as to integrate authorization with another platform.*NOTE:*: This option is only available when auth_mode is set to \'indata_auth\'.'
       },
       REDIRECTION_URL: {
         NAME: 'Redirection url',
-        TIPS: 'Specify redirection URL when token is invalid or expired the UI will redirect to. NOTE: This option is only available when auth_mode is set to \'indata_auth\'.'
+        TIPS: 'Specify redirection URL when token is invalid or expired the UI will redirect to.< strong > NOTE:< /strong> This option is only available when auth_mode is set to \'indata_auth\'.'
       },
       AUDIT_DEBUG: {
         NAME: 'Audit debug',
@@ -420,7 +419,6 @@ export const LANG_EN_US = {
         PASSWORD: 'Password',
         REQUIRED: 'This field is required'
       },
-      HELPER: 'Please make sure you have been stop Board instance.',
       CANCEL: 'Not now',
       APPLY: 'Yes, Do it',
     }

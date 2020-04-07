@@ -15,7 +15,6 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"fmt"
 	"time"
-	"errors"
 )
 
 const (
@@ -122,12 +121,9 @@ func Login(acc *models.Account) (bool, error, string) {
 	o := orm.NewOrm()
 	o.Using("mysql-db2")
 
-	user := models.User{Username: acc.Username, SystemAdmin: 1, Deleted: 0}
-	err := o.Read(&user, "username", "system_admin", "deleted")
+	user := models.User{Username: acc.Username, Deleted: 0}
+	err := o.Read(&user, "username", "deleted")
 	if err != nil {
-		if err == orm.ErrNoRows {
-			return false, errors.New("Forbidden"), token
-		}
 		return false, err, token
 	}
 

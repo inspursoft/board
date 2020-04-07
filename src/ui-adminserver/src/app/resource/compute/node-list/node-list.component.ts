@@ -66,7 +66,7 @@ export class NodeListComponent implements OnInit, OnDestroy {
     if (node.origin === 1) {
       const logInfo = new NodeLog({});
       logInfo.ip = node.ip;
-      logInfo.creationTime = node.logTime;
+      logInfo.creationTime = node.creationTime;
       this.createNodeDetail(logInfo, NodeActionsType.Log);
     }
   }

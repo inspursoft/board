@@ -211,12 +211,10 @@ func (p *ImageController) generatePushImagePackageTravis(imageURI, imagePackageN
 	}
 	travisCommand.Deploy.Commands = []string{
 		"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
-		fmt.Sprintf("image_name_tag=$(docker load -i upload/%s |grep 'Loaded image'|awk '{print $NF}')", imagePackageName),
-		fmt.Sprintf("image_name_tag=${image_name_tag#sha256:}"),
+		fmt.Sprintf("image_name_tag=$(docker load -i upload/%s |grep 'Loaded image:'|awk '{print $3}')", imagePackageName),
 		fmt.Sprintf("docker tag $image_name_tag %s", imageURI),
 		fmt.Sprintf("docker push %s", imageURI),
-		fmt.Sprintf("docker rmi %s", imageURI),
-		fmt.Sprintf("if [[ $image_name_tag =~ ':' ]]; then docker rmi $image_name_tag; fi"),
+		fmt.Sprintf("docker rmi %s $image_name_tag", imageURI),
 	}
 	return travisCommand.GenerateCustomTravis(p.RepoPath)
 }
