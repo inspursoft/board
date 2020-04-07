@@ -4,6 +4,7 @@ import { AccountService } from '../account.service';
 import { Router } from '@angular/router';
 import { ClrWizard, ClrModal } from '@clr/angular';
 import { HeaderComponent } from 'src/app/shared/header/header.component';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-sign-in',
@@ -265,13 +266,21 @@ export class SignInComponent implements OnInit {
       (res: string) => {
         if (res) {
           window.sessionStorage.setItem('token', res);
+          window.sessionStorage.setItem('user', this.user.username);
           this.router.navigateByUrl('dashboard');
         } else {
           alert('Unknown Error!');
         }
       },
-      () => {
-        alert('账号或密码错误！# Account or password error!');
+      (err: HttpErrorResponse) => {
+        const currentLang = (window.localStorage.getItem('currentLang') === 'zh-cn' || window.localStorage.getItem('currentLang') === 'zh');
+        const FORBIDDEN = currentLang ? '禁止访问！' : 'Forbidden!';
+        const errorUser = currentLang ? '账号或密码错误！' : 'Account or password error!';
+        if (err.status === 403) {
+          alert(FORBIDDEN);
+        } else {
+          alert(errorUser);
+        }
       }
     );
   }

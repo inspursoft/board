@@ -8,7 +8,7 @@ const RemoveNodeYamlFile = "uninstallnode"
 const NodeHostsFile = "addNode"
 const LogFileDir = "log"
 const HostFileDir = "hosts"
-const PreEnvDir = "pre-env"
+const PreEnvDir = "/data/pre-env"
 
 type NodeLogResponseStatus int
 type ActionType int
@@ -90,6 +90,7 @@ type ApiServerNodeListResult struct {
 type NodeListResponse struct {
 	Ip           string `json:"ip"`
 	CreationTime int64  `json:"creation_time"`
+	LogTime      int64  `json:"log_time"`
 	Status       int    `json:"status"`
 	IsMaster     bool   `json:"is_master"`
 	Origin       int    `json:"origin"`
