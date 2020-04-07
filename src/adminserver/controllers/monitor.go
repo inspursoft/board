@@ -13,6 +13,21 @@ type MoniController struct {
 	beego.Controller
 }
 
+func (m *MoniController) Prepare() {
+	token := m.Ctx.Request.Header.Get("token")
+	if token == "" {
+		token = m.GetString("token")
+	}
+	result, err := service.VerifyToken(token)
+	if err != nil {
+		logs.Error(err)
+		m.CustomAbort(http.StatusBadRequest, err.Error())
+	}
+	if !result {
+		m.CustomAbort(http.StatusUnauthorized, "Unauthorized")	
+	} 
+}
+
 // @Title Get
 // @Description monitor Board module containers
 // @Param	token	query 	string	true	"token"
@@ -21,20 +36,12 @@ type MoniController struct {
 // @Failure 401 unauthorized
 // @router / [get]
 func (m *MoniController) Get() {
-	token := m.GetString("token")
-	result := service.VerifyToken(token)
-	if !result {
-		m.Ctx.ResponseWriter.WriteHeader(http.StatusUnauthorized)
-		m.ServeJSON()	
-	} else {
-		containers, err := service.GetMonitor()
-		if err != nil {
-			logs.Error(err)
-			m.CustomAbort(http.StatusBadRequest, err.Error())
-		}
-		//apply struct to JSON value.
-		m.Data["json"] = containers
-		m.ServeJSON()
+	containers, err := service.GetMonitor()
+	if err != nil {
+		logs.Error(err)
+		m.CustomAbort(http.StatusBadRequest, err.Error())
 	}
-	
+	//apply struct to JSON value.
+	m.Data["json"] = containers
+	m.ServeJSON()
 }

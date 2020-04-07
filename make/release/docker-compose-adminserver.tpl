@@ -9,7 +9,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /data/board/database:/data/board/database
       - /data/board/ansible_k8s:/data/board/ansible_k8s
-      - /data/board/Deploy:/data/board/Deploy
+      - ./config:/data/board/Deploy/config
     env_file:
       - ../config/adminserver/env
     networks:

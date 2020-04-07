@@ -1,29 +1,20 @@
 package service
 
 import (
-	"log"
+	"bytes"
+	"fmt"
+	"git/inspursoft/board/src/adminserver/models"
+	"git/inspursoft/board/src/adminserver/tools/secureShell"
 	"os"
 	"os/exec"
 	"path"
-	"git/inspursoft/board/src/adminserver/models"
-	"git/inspursoft/board/src/adminserver/tools/secureShell"
-	"bytes"
 	"strings"
-	"fmt"
-
+	"time"
 )
 
 //Restart Board without loading cfg.
 func Restart(host *models.Account) error {
-	var output bytes.Buffer
-	var shell *secureShell.SecureShell
-	var err error
-
-	cmd := exec.Command("sh", "-c", "ip route | awk 'NR==1 {print $3}'")
-	bytes, _ := cmd.Output()
-	HostIp := strings.Replace(string(bytes), "\n", "", 1)
-
-	shell, err = secureShell.NewSecureShell(&output, HostIp, host.Username, host.Password)
+	shell, err := SSHtoHost(host)
 	if err != nil {
 		return err
 	}
@@ -33,6 +24,7 @@ func Restart(host *models.Account) error {
 	if err != nil {
 		return err
 	}
+	time.Sleep(time.Duration(10) * time.Second)
 
 	cmdComposeUp := fmt.Sprintf("docker-compose -f %s up -d", models.Boardcompose)
 	err = shell.ExecuteCommand(cmdComposeUp)
@@ -59,37 +51,25 @@ func Applycfg(host *models.Account) error {
 			return err
 		}
 	}
-
-	err = Execute(fmt.Sprintf("cp %s %s.tmp", cfgPath, cfgPath))
+	_, err = Execute(fmt.Sprintf("cp %s %s.tmp", cfgPath, cfgPath))
 	if err != nil {
 		return err
 	}
 
-	//if err = Shutdown(host); err != nil {
-	//	return err
-	//}
 	if err = StartBoard(host); err != nil {
 		return err
 	}
-	
-	if err = os.Remove(cfgPath+".tmp"); err != nil {
+
+	if err = os.Remove(cfgPath + ".tmp"); err != nil {
 		return err
-	} 
+	}
 
 	return nil
 }
 
 //Shutdown Board.
 func Shutdown(host *models.Account) error {
-	var output bytes.Buffer
-	var shell *secureShell.SecureShell
-	var err error
-
-	cmd := exec.Command("sh", "-c", "ip route | awk 'NR==1 {print $3}'")
-	bytes, _ := cmd.Output()
-	HostIp := strings.Replace(string(bytes), "\n", "", 1)
-
-	shell, err = secureShell.NewSecureShell(&output, HostIp, host.Username, host.Password)
+	shell, err := SSHtoHost(host)
 	if err != nil {
 		return err
 	}
@@ -103,10 +83,29 @@ func Shutdown(host *models.Account) error {
 	return nil
 }
 
-//Execute command.
-func Execute(command string) error {
+func SSHtoHost(host *models.Account) (*secureShell.SecureShell, error) {
+	var output bytes.Buffer
+	var shell *secureShell.SecureShell
+
+	cmd := exec.Command("sh", "-c", "ip route | awk 'NR==1 {print $3}'")
+	bytes, err := cmd.Output()
+	if err != nil {
+		return nil, err
+	}
+	HostIP := strings.Replace(string(bytes), "\n", "", 1)
+	shell, err = secureShell.NewSecureShell(&output, HostIP, host.Username, host.Password)
+	if err != nil {
+		return nil, err
+	}
+	return shell, nil
+}
+
+//Execute command in container.
+func Execute(command string) (string, error) {
 	cmd := exec.Command("sh", "-c", command)
 	bytes, err := cmd.Output()
-	log.Println(string(bytes))
-	return err
+	if err != nil {
+		return "", err
+	}
+	return string(bytes), nil
 }

@@ -14,6 +14,21 @@ type BoardController struct {
 	beego.Controller
 }
 
+func (b *BoardController) Prepare() {
+	token := b.Ctx.Request.Header.Get("token")
+	if token == "" {
+		token = b.GetString("token")
+	}
+	result, err := service.VerifyToken(token)
+	if err != nil {
+		logs.Error(err)
+		b.CustomAbort(http.StatusBadRequest, err.Error())
+	}
+	if !result {
+		b.CustomAbort(http.StatusUnauthorized, "Unauthorized")	
+	} 
+}
+
 // @Title Restart
 // @Description restart Board
 // @Param	token	query 	string	true		"token"
@@ -24,19 +39,16 @@ type BoardController struct {
 // @router /restart [post]
 func (b *BoardController) Restart() {
 	var host models.Account
-	token := b.GetString("token")
-	result := service.VerifyToken(token)
-	if !result {
-		b.Ctx.ResponseWriter.WriteHeader(http.StatusUnauthorized)
-		b.ServeJSON()	
-	} else {
-		utils.UnmarshalToJSON(b.Ctx.Request.Body, &host)
-		if err := service.Restart(&host); err != nil {
-			logs.Error(err)
-			b.CustomAbort(http.StatusBadRequest, err.Error())
-		}
-		b.ServeJSON()	
+	err := utils.UnmarshalToJSON(b.Ctx.Request.Body, &host)
+	if err != nil {
+		logs.Error("Failed to unmarshal data: %+v", err)
+		b.CustomAbort(http.StatusBadRequest, err.Error())
 	}
+	if err = service.Restart(&host); err != nil {
+		logs.Error(err)
+		b.CustomAbort(http.StatusBadRequest, err.Error())
+	}
+	b.ServeJSON()	
 }
 
 // @Title Applycfg
@@ -49,19 +61,16 @@ func (b *BoardController) Restart() {
 // @router /applycfg [post]
 func (b *BoardController) Applycfg() {
 	var host models.Account
-	token := b.GetString("token")
-	result := service.VerifyToken(token)
-	if !result {
-		b.Ctx.ResponseWriter.WriteHeader(http.StatusUnauthorized)
-		b.ServeJSON()	
-	} else {
-		utils.UnmarshalToJSON(b.Ctx.Request.Body, &host)
-		if err := service.Applycfg(&host); err != nil {
-			logs.Error(err)
-			b.CustomAbort(http.StatusBadRequest, err.Error())
-		}
-		b.ServeJSON()	
+	err:= utils.UnmarshalToJSON(b.Ctx.Request.Body, &host)
+	if err != nil {
+		logs.Error("Failed to unmarshal data: %+v", err)
+		b.CustomAbort(http.StatusBadRequest, err.Error())
 	}
+	if err = service.Applycfg(&host); err != nil {
+		logs.Error(err)
+		b.CustomAbort(http.StatusBadRequest, err.Error())
+	}
+	b.ServeJSON()	
 }
 
 // @Title Shutdown
@@ -74,17 +83,14 @@ func (b *BoardController) Applycfg() {
 // @router /shutdown [post]
 func (b *BoardController) Shutdown() {
 	var host models.Account
-	token := b.GetString("token")
-	result := service.VerifyToken(token)
-	if !result {
-		b.Ctx.ResponseWriter.WriteHeader(http.StatusUnauthorized)
-		b.ServeJSON()	
-	} else {
-		utils.UnmarshalToJSON(b.Ctx.Request.Body, &host)
-		if err := service.Shutdown(&host); err != nil {
-			logs.Error(err)
-			b.CustomAbort(http.StatusBadRequest, err.Error())
-		}
-		b.ServeJSON()	
+	err := utils.UnmarshalToJSON(b.Ctx.Request.Body, &host)
+	if err != nil {
+		logs.Error("Failed to unmarshal data: %+v", err)
+		b.CustomAbort(http.StatusBadRequest, err.Error())
 	}
+	if err = service.Shutdown(&host); err != nil {
+		logs.Error(err)
+		b.CustomAbort(http.StatusBadRequest, err.Error())
+	}
+	b.ServeJSON()	
 }

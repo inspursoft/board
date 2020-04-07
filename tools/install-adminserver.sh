@@ -6,23 +6,11 @@
 
 set -e
 
-usage=$'Please set hostname and other necessary attributes in board.cfg first. DO NOT use localhost or 127.0.0.1 for hostname, because Board needs to be accessed by external clients.'
 item=0
-
-while [ $# -gt 0 ]; do
-        case $1 in
-            --help)
-            echo "$usage"
-            exit 0;;
-            *)
-            echo "$usage"
-            exit 1;;
-        esac
-        shift || true
-done
 
 workdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $workdir
+sed -i "s|__CURDIR__|$workdir|g"  $workdir/config/adminserver/env
 
 function check_docker {
 	if ! docker --version &> /dev/null

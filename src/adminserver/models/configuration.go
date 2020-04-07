@@ -340,3 +340,7 @@ type Config struct {
 type UUID struct {
 	UUID string `json:"UUID"`
 }
+
+type Key struct {
+	Key string `json:"Key"`
+}

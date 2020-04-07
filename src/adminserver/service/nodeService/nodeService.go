@@ -23,8 +23,8 @@ import (
 
 func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
 	actionType nodeModel.ActionType, yamlFile string) (*nodeModel.NodeLog, error) {
-	configuration, statusMessage := service.GetAllCfg("")
-	if statusMessage == "BadRequest" {
+	configuration, err := service.GetAllCfg("")
+	if err != nil {
 		return nil, fmt.Errorf("failed to get the configuration")
 	}
 	hostName := configuration.Apiserver.Hostname
@@ -369,14 +369,14 @@ func GetLogInfoInCache(nodeIp string) *nodeModel.NodeLog {
 }
 
 func getNodeListFromApiServer(nodeList *[]nodeModel.ApiServerNodeListResult) error {
-	allConfig, statusMessage := service.GetAllCfg("")
-	if statusMessage == "BadRequest" {
+	allConfig, err := service.GetAllCfg("")
+	if err != nil {
 		return fmt.Errorf("failed to get the configuration")
 	}
 	host := allConfig.Apiserver.Hostname
 	port := allConfig.Apiserver.APIServerPort
 	url := fmt.Sprintf("http://%s:%s/api/v1/nodes?skip=AMS", host, port)
-	err := utils.RequestHandle(http.MethodGet, url, func(req *http.Request) error {
+	err = utils.RequestHandle(http.MethodGet, url, func(req *http.Request) error {
 		req.Header = http.Header{"Content-Type": []string{"application/json"}}
 		return nil
 	}, nil, func(req *http.Request, resp *http.Response) error {

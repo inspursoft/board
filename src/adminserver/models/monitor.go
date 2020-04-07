@@ -36,11 +36,11 @@ func GetBoardinfo(container []string) Boardinfo {
 type InitStatus int
 
 const (
-	InitStatusTrue		InitStatus = 0
+	InitStatusStart		InitStatus = 0
 	InitStatusFirst		InitStatus = 1	
 	InitStatusSecond	InitStatus = 2
 	InitStatusThird		InitStatus = 3
-	InitStatusFalse		InitStatus = 4
+	InitStatusComplete	InitStatus = 4
 )
 
 //InitStatus saves the status indicating if the adminserver is first-time installed. 
@@ -62,7 +62,7 @@ func InitInstallationStatus() error {
 	status := &InitStatusInfo{Id: 1}
 	err := o.Read(status,"Id")
 	if err == orm.ErrNoRows {
-		initStatus := InitStatusInfo{InstallTime: time.Now().Unix(), Status: InitStatusTrue}
+		initStatus := InitStatusInfo{InstallTime: time.Now().Unix(), Status: InitStatusStart}
 		_, err := o.Insert(&initStatus)
 		if err != nil {
 			return err
@@ -73,3 +73,11 @@ func InitInstallationStatus() error {
 
 var ImagePrefix string = os.Getenv("IMAGE_PREFIX")
 var ContainerPrefix string = os.Getenv("CONTAINER_PREFIX")
+
+type TokenString struct {
+	TokenString string `json:"token_string"`
+}
+
+type InitStep struct {
+	Step InitStatus	`json:"step"`
+}
