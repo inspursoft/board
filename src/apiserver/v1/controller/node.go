@@ -175,3 +175,23 @@ func (n *NodeController) AddNodeAction() {
 	}
 	logs.Info("Added node %s", node.ObjectMeta.Name)
 }
+
+func (n *NodeController) GetNodeStatusAction() {
+	if n.IsSysAdmin == false {
+		n.CustomAbortAudit(http.StatusForbidden, "Insufficient privileges to control node.")
+		return
+	}
+	nodeName := strings.TrimSpace(n.Ctx.Input.Param(":nodename"))
+	logs.Debug("Get node status %s", nodeName)
+	n.RenderJSON(model.NodeControlStatus{})
+}
+
+func (n *NodeController) NodeDrainAction() {
+	if n.IsSysAdmin == false {
+		n.CustomAbortAudit(http.StatusForbidden, "Insufficient privileges to control node.")
+		return
+	}
+	nodeName := strings.TrimSpace(n.Ctx.Input.Param(":nodename"))
+	logs.Debug("Drain the node %s", nodeName)
+
+}
