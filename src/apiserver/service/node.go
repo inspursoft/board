@@ -522,3 +522,37 @@ func getNodeAddress(v model.Node, t string) string {
 	logs.Warning("The value is null when get the field of %s in node", t)
 	return ""
 }
+
+// Get a node control status
+func GetNodeControlStatus(nodeName string) (*model.NodeControlStatus, error) {
+	var nodecontrol model.NodeControlStatus
+	var config k8sassist.K8sAssistConfig
+	config.KubeConfigPath = kubeConfigPath()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	nInterface := k8sclient.AppV1().Node()
+
+	nNode, err := nInterface.Get(nodeName)
+	if err != nil {
+		logs.Error("Failed to get K8s node")
+		return nil, err
+	}
+	nodecontrol.NodeName = nNode.Name
+	nodecontrol.NodeIP = nNode.NodeIP
+	nodecontrol.NodePhase = string(nNode.Status.Phase)
+	nodecontrol.NodeUnschedule = nNode.Unschedulable
+
+	// Get service instances
+	pInterface := k8sclient.AppV1().Pod(model.NamespaceAll)
+	podList, err := pInterface.List(model.ListOptions{FieldSelector: fmt.Sprintf("spec.nodeName=%s", nodeName)})
+	if err != nil {
+		logs.Error("Failed to get K8s pods")
+		return nil, err
+	}
+	for _, podinstance := range podList.Items {
+		var instance model.ServiceInstance
+		instance.ProjectName = podinstance.Namespace
+		instance.ServiceInstanceName = podinstance.Name
+		nodecontrol.Service_Instances = append(nodecontrol.Service_Instances, instance)
+	}
+	return &nodecontrol, nil
+}
