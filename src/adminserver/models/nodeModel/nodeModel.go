@@ -8,7 +8,7 @@ const RemoveNodeYamlFile = "uninstallnode"
 const NodeHostsFile = "addNode"
 const LogFileDir = "log"
 const HostFileDir = "hosts"
-const PreEnvDir = "pre-env"
+const PreEnvDir = "/data/pre-env"
 
 type NodeLogResponseStatus int
 type ActionType int
@@ -77,6 +77,23 @@ type NodeStatus struct {
 	Id           int    `json:"id"`
 	Ip           string `json:"ip"`
 	CreationTime int64  `json:"creation_time"`
+}
+
+type ApiServerNodeListResult struct {
+	NodeName   string            `json:"node_name"`
+	NodeIP     string            `json:"node_ip"`
+	Status     int               `json:"status"`
+	CreateTime int64             `json:"create_time"`
+	Labels     map[string]string `json:"labels"`
+}
+
+type NodeListResponse struct {
+	Ip           string `json:"ip"`
+	CreationTime int64  `json:"creation_time"`
+	LogTime      int64  `json:"log_time"`
+	Status       int    `json:"status"`
+	IsMaster     bool   `json:"is_master"`
+	Origin       int    `json:"origin"`
 }
 
 // database table's name: node-log

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { AppInitService } from 'src/app/shared.service/app-init.service';
-import { Router} from '@angular/router';
+import { Router } from '@angular/router';
 
 import 'src/assets/js/icon-translate/iconfont.js';
 
@@ -13,15 +13,17 @@ import 'src/assets/js/icon-translate/iconfont.js';
 export class HeaderComponent implements OnInit {
   currentLang: string;
   display = true;
+  user = '';
 
   constructor(private translateService: TranslateService,
               private appInitService: AppInitService,
               private router: Router) {
     this._assertLanguage(this.appInitService.currentLang);
+    this.user = window.sessionStorage.getItem('user');
   }
 
   ngOnInit() {
-    this.display = window.sessionStorage.getItem('token') ? true : false;
+    this.display = location.pathname !== '/account/login' ? true : false;
   }
 
   _assertLanguage(lang: string) {

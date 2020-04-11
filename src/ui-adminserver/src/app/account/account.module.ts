@@ -7,6 +7,8 @@ import { SharedModule } from '../shared/shared.module';
 import { AccountService } from './account.service';
 import { BoardComponentsLibraryModule } from 'board-components-library';
 import { TranslateModule } from '@ngx-translate/core';
+import { ClarityModule } from '@clr/angular';
+import { HeaderComponent } from '../shared/header/header.component';
 
 @NgModule({
   declarations: [
@@ -17,11 +19,13 @@ import { TranslateModule } from '@ngx-translate/core';
     CommonModule,
     FormsModule,
     SharedModule,
+    ClarityModule,
     BoardComponentsLibraryModule,
     TranslateModule,
   ],
   providers: [
     AccountService,
+    HeaderComponent,
   ]
 })
 export class AccountModule { }

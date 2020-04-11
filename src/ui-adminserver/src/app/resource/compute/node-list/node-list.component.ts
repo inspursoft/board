@@ -43,28 +43,43 @@ export class NodeListComponent implements OnInit, OnDestroy {
     this.createNodeDetail(logInfo, NodeActionsType.Add);
   }
 
-  deleteNode(nodeIp: string) {
-    this.translateService.get(['Node.Node_List_Remove_Ask', 'Node.Node_List_Remove_Node'])
-      .subscribe(translate => {
-        const ask = Reflect.get(translate, 'Node.Node_List_Remove_Ask');
-        const title = Reflect.get(translate, 'Node.Node_List_Remove_Node');
-        this.messageService.showDeleteDialog(ask, title).subscribe(
-          (res: Message) => {
-            if (res.returnStatus === ReturnStatus.rsConfirm) {
-              const logInfo = new NodeLog({});
-              logInfo.ip = nodeIp;
-              this.createNodeDetail(logInfo, NodeActionsType.Remove);
+  deleteNode(node: NodeListType) {
+    if (!node.isMaster) {
+      this.translateService.get(['Node.Node_List_Remove_Ask', 'Node.Node_Logs_Stop_Ask'])
+        .subscribe(translate => {
+          const ask = Reflect.get(translate, 'Node.Node_List_Remove_Ask');
+          const title = Reflect.get(translate, 'Node.Node_List_Remove_Node');
+          this.messageService.showDeleteDialog(ask, title).subscribe(
+            (res: Message) => {
+              if (res.returnStatus === ReturnStatus.rsConfirm) {
+                const logInfo = new NodeLog({});
+                logInfo.ip = node.ip;
+                this.createNodeDetail(logInfo, NodeActionsType.Remove);
+              }
             }
-          }
-        );
-      });
+          );
+        });
+    }
   }
 
   showLog(node: NodeListType) {
-    const logInfo = new NodeLog({});
-    logInfo.ip = node.ip;
-    logInfo.creationTime = node.creationTime;
-    this.createNodeDetail(logInfo, NodeActionsType.Log);
+    if (node.origin === 1) {
+      const logInfo = new NodeLog({});
+      logInfo.ip = node.ip;
+      logInfo.creationTime = node.logTime;
+      this.createNodeDetail(logInfo, NodeActionsType.Log);
+    }
+  }
+
+  getStatus(status: number): string {
+    switch (status) {
+      case 1:
+        return 'Node.Node_List_Status_Schedulable';
+      case 2:
+        return 'Node.Node_List_Status_Unschedulable';
+      case 3:
+        return 'Node.Node_List_Status_Unknown';
+    }
   }
 
   createNodeDetail(logInfo: NodeLog, action: NodeActionsType) {

@@ -3,10 +3,12 @@ package controllers
 import (
 	"git/inspursoft/board/src/adminserver/models"
 	"git/inspursoft/board/src/adminserver/service"
-	"encoding/json"
+	"git/inspursoft/board/src/common/utils"
 	"net/http"
 
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
+	"fmt"
 )
 
 // CfgController includes operations about cfg
@@ -17,48 +19,74 @@ type CfgController struct {
 // @Title Post
 // @Description update cfg
 // @Param	body	body	models.Configuration	true	"parameters"
+// @Param	token	query 	string	true	"token"
 // @Success 200 success
 // @Failure 400 bad request
+// @Failure 401 unauthorized
 // @router / [post]
 func (u *CfgController) Post() {
 	var cfg models.Configuration
-	var statusCode int = http.StatusOK
-	//transferring JSON to struct.
-	json.Unmarshal(u.Ctx.Input.RequestBody, &cfg)
-	statusMessage := service.UpdateCfg(&cfg)
-	if statusMessage == "BadRequest" {
-		statusCode = http.StatusBadRequest
+	token := u.GetString("token")
+	result := service.VerifyToken(token)
+	if !result {
+		u.Ctx.ResponseWriter.WriteHeader(http.StatusUnauthorized)
+		u.ServeJSON()	
+	} else {
+		//transferring JSON to struct.
+		utils.UnmarshalToJSON(u.Ctx.Request.Body, &cfg)
+		err := service.UpdateCfg(&cfg)
+		if err != nil {
+			logs.Error(err)
+			u.CustomAbort(http.StatusBadRequest, err.Error())
+		}
+		u.ServeJSON()
 	}
-	u.Ctx.ResponseWriter.WriteHeader(statusCode)
-	u.ServeJSON()
+	
 }
 
 // @Title GetAll
 // @Description return all cfg parameters
 // @Param	which	query 	string	false	"which file to get"
+// @Param	token	query 	string	true	"token"
 // @Success 200 {object} models.Configuration	success
 // @Failure 400 bad request
+// @Failure 401 unauthorized
 // @router / [get]
 func (u *CfgController) GetAll() {
-	var statusCode int = http.StatusOK
-	which := u.GetString("which")
-	cfg, statusMessage := service.GetAllCfg(which)
-	if statusMessage == "BadRequest" {
-		statusCode = http.StatusBadRequest
+	token := u.GetString("token")
+	result := service.VerifyToken(token)
+	if !result {
+		u.Ctx.ResponseWriter.WriteHeader(http.StatusUnauthorized)
+		u.ServeJSON()	
+	} else {
+		which := u.GetString("which")
+		cfg, statusMessage := service.GetAllCfg(which)
+		if statusMessage == "BadRequest" {
+			u.CustomAbort(http.StatusBadRequest, fmt.Sprintf("Get config failed."))
+		}
+		//apply struct to JSON value.
+		u.Data["json"] = cfg
+		u.ServeJSON()
 	}
-	u.Ctx.ResponseWriter.WriteHeader(statusCode)
-	//apply struct to JSON value.
-	u.Data["json"] = cfg
-	u.ServeJSON()
 }
 
 // @Title GetKey
 // @Description return public key
+// @Param	token	query 	string	true	"token"
 // @Success 200 {object} string	success
 // @Failure 400 bad request
+// @Failure 401 unauthorized
 // @router /pubkey [get]
 func (u *CfgController) GetKey() {
-	pubkey := service.GetKey()
-	u.Data["json"] = pubkey
-	u.ServeJSON()
+	token := u.GetString("token")
+	result := service.VerifyToken(token)
+	if !result {
+		u.Ctx.ResponseWriter.WriteHeader(http.StatusUnauthorized)
+		u.ServeJSON()	
+	} else {
+		pubkey := service.GetKey()
+		u.Data["json"] = pubkey
+		u.ServeJSON()
+	}
+	
 }

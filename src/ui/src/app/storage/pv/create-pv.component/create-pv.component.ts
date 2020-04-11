@@ -58,7 +58,7 @@ export class CreatePvComponent extends CsModalChildBase implements OnInit {
   }
 
   createNewPv() {
-    if (this.verifyInputExValid()) {
+    if (this.verifyInputExValid() && this.verifyDropdownExValid()) {
       this.isCreateWip = true;
       this.storageService.createNewPv(this.newPersistentVolume).subscribe(
         () => this.onAfterCommit.emit(this.newPersistentVolume),

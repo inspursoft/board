@@ -1,4 +1,7 @@
 export const LANG_ZH_CN = {
+  AdminServer: {
+    Name: '管理服务器'
+  },
   "BUTTON": {
     "OK": "确定",
     "YES": "是",
@@ -165,7 +168,7 @@ export const LANG_ZH_CN = {
     "STATUS_WARNING":"警告",
     "STATUS_UNCOMPLETED":"未完成",
     "STATUS_COMPLETED":"完成",
-    "STATUS_FAILED":"错误",
+    "STATUS_FAILED":"失败",
     "STATUS_DEPLOYING":"部署中",
     "STATUS_RUNNING": "运行中",
     "JOB_LIST_NAME":"名称",

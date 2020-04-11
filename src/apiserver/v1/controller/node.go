@@ -175,3 +175,32 @@ func (n *NodeController) AddNodeAction() {
 	}
 	logs.Info("Added node %s", node.ObjectMeta.Name)
 }
+
+// Get the running status of a node
+func (n *NodeController) GetNodeStatusAction() {
+	if n.IsSysAdmin == false {
+		n.CustomAbortAudit(http.StatusForbidden, "Insufficient privileges to control node.")
+		return
+	}
+	nodeName := strings.TrimSpace(n.Ctx.Input.Param(":nodename"))
+	logs.Debug("Get node status %s", nodeName)
+	nodestatus, err := service.GetNodeControlStatus(nodeName)
+	if err != nil {
+		logs.Debug("Failed to get node status %s", nodeName)
+		n.InternalError(err)
+		return
+	}
+	n.RenderJSON(*nodestatus)
+}
+
+// Drain the service instances from the node
+func (n *NodeController) NodeDrainAction() {
+	if n.IsSysAdmin == false {
+		n.CustomAbortAudit(http.StatusForbidden, "Insufficient privileges to control node.")
+		return
+	}
+	nodeName := strings.TrimSpace(n.Ctx.Input.Param(":nodename"))
+	logs.Debug("Drain the node %s", nodeName)
+	//TODO drain services
+
+}

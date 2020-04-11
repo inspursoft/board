@@ -4,9 +4,8 @@
     <div class="list-container">
       <div class="left-list-container">
         <span>{{ 'PROJECT.AVAILABLE_MEMBERS' | translate }}:</span>
-        <select #select1 title="" id="selSelected" multiple class="member"
-                (click)='isLeftPane=true; isRightPane=false; pickUpMember(select1.value)'>
-          <option *ngFor="let m of isNotAvailableMembers" value="{{m.project_member_user_id}}">
+        <select  title="" id="selSelected" multiple class="member">
+          <option *ngFor="let m of availableMembers" (click)='pickUpAvailableMember(m)'>
             {{ m.project_member_username }}
           </option>
         </select>
@@ -21,9 +20,8 @@
       </div>
       <div class="right-list-container">
         <span>{{ 'PROJECT.ASSIGNED_MEMBERS' | translate }}:</span>
-        <select #select2 title="" id="selDeselected" multiple class="member"
-                (click)="isLeftPane=false; isRightPane=true; pickUpMember(select2.value)">
-          <option *ngFor="let m of isAvailableMembers" value="{{m.project_member_user_id}}">
+        <select title="" id="selDeselected" class="member" multiple>
+          <option *ngFor="let m of assignedMembers" (click)="pickUpAssignedMember(m)">
             {{ m.project_member_username }}
           </option>
         </select>

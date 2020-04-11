@@ -3,34 +3,40 @@ import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ComponentStatus } from './component-status.model';
+import { User } from '../account/account.model';
 
 const BASE_URL = '/v1/admin';
 
 @Injectable()
 export class DashboardService {
+  private token = '';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {
+  }
 
-  restartBoard(token: string): Observable<any> {
-    return this.http.get(
-      `${BASE_URL}/account/restart?token=${token}`,
-      { observe: 'response', }
+  restartBoard(user: User): Observable<any> {
+    this.token = window.sessionStorage.getItem('token');
+    return this.http.post(
+      `${BASE_URL}/board/restart?token=${this.token}`,
+      user.PostBody()
     );
   }
 
-  shutdownBoard(token: string): Observable<any> {
-    return this.http.get(
-      `${BASE_URL}/account/shutdown?token=${token}`,
-      { observe: 'response', }
+  shutdownBoard(user: User): Observable<any> {
+    this.token = window.sessionStorage.getItem('token');
+    return this.http.post(
+      `${BASE_URL}/board/shutdown?token=${this.token}`,
+      user.PostBody()
     );
   }
 
-  monitorContainer(token: string): Observable<any> {
+  monitorContainer(): Observable<any> {
+    this.token = window.sessionStorage.getItem('token');
     return this.http.get(
-      `${BASE_URL}/monitor?token=${token}`,
+      `${BASE_URL}/monitor?token=${this.token}`,
       { observe: 'response', })
       .pipe(map((res: HttpResponse<Array<ComponentStatus>>) => {
-      return res.body;
-    }));
+        return res.body;
+      }));
   }
 }

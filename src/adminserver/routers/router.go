@@ -26,9 +26,19 @@ func init() {
 				&controllers.AccController{},
 			),
 		),
+		beego.NSNamespace("/board",
+			beego.NSInclude(
+				&controllers.BoardController{},
+			),
+		),
 		beego.NSNamespace("/monitor",
 			beego.NSInclude(
 				&controllers.MoniController{},
+			),
+		),
+		beego.NSNamespace("/boot",
+			beego.NSInclude(
+				&controllers.BootController{},
 			),
 		),
 		beego.NSNamespace("/node",

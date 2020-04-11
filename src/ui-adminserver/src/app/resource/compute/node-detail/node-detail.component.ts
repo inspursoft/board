@@ -1,5 +1,6 @@
-import { Component, ElementRef, OnInit, TemplateRef, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, TemplateRef, ViewChild, ViewContainerRef } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
+import { interval, Observable, Subscription } from 'rxjs';
 import {
   ActionStatus,
   NodeActionsType,
@@ -12,13 +13,14 @@ import {
 import { MessageService } from '../../../shared/message/message.service';
 import { ResourceService } from '../../services/resource.service';
 import { ModalChildBase } from '../../../shared/cs-components-library/modal-child-base';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-node-log-detail',
   templateUrl: './node-detail.component.html',
   styleUrls: ['./node-detail.component.css']
 })
-export class NodeDetailComponent extends ModalChildBase implements OnInit {
+export class NodeDetailComponent extends ModalChildBase implements OnInit, OnDestroy {
   @ViewChild('consoleLogs', {read: ViewContainerRef}) consoleLogContainer: ViewContainerRef;
   @ViewChild('logTemplate') logTmp: TemplateRef<any>;
   @ViewChild('divElement') divElement: ElementRef;
@@ -30,8 +32,11 @@ export class NodeDetailComponent extends ModalChildBase implements OnInit {
   actionStatus = ActionStatus.Ready;
   logInfo: NodeLog;
   refreshingLog = false;
+  autoRefreshLogSubscription: Subscription;
+  curNodeLogStatus: NodeLogStatus;
 
   constructor(private messageService: MessageService,
+              private translateService: TranslateService,
               private resourceService: ResourceService) {
     super();
     this.preparationData = new NodePreparationData({});
@@ -39,6 +44,13 @@ export class NodeDetailComponent extends ModalChildBase implements OnInit {
   }
 
   ngOnInit() {
+    this.autoRefreshLogSubscription = interval(3000).subscribe(() => {
+      if ((this.actionType === NodeActionsType.Remove ||
+        this.actionType === NodeActionsType.Add) &&
+        this.actionStatus === ActionStatus.Executing) {
+        this.refreshLog();
+      }
+    });
     if (this.actionType === NodeActionsType.Remove) {
       this.title = 'Node.Node_Detail_Title_Remove';
       this.postData.nodeIp = this.logInfo.ip;
@@ -51,8 +63,15 @@ export class NodeDetailComponent extends ModalChildBase implements OnInit {
     }
   }
 
+  ngOnDestroy() {
+    this.autoRefreshLogSubscription.unsubscribe();
+    delete this.autoRefreshLogSubscription;
+    super.ngOnDestroy();
+  }
+
   get executeBtnCaption(): string {
-    if (this.actionType === NodeActionsType.Add && this.actionStatus === ActionStatus.Ready) {
+    if (this.actionType === NodeActionsType.Add &&
+      this.actionStatus === ActionStatus.Ready) {
       return 'Node.Node_Detail_Add';
     } else {
       return 'BUTTON.OK';
@@ -78,20 +97,32 @@ export class NodeDetailComponent extends ModalChildBase implements OnInit {
     if (this.actionType === NodeActionsType.Log) {
       return false;
     }
-    return this.actionStatus === ActionStatus.Executing || this.actionStatus === ActionStatus.Preparing;
-
+    return this.actionStatus === ActionStatus.Executing ||
+      this.actionStatus === ActionStatus.Preparing;
   }
 
-  get masterTitle(): string {
-    return `Master ${this.preparationData.masterIp} password`;
+  get masterTitle(): Observable<string> {
+    return this.translateService.get('Node.Node_Detail_Master_Title', [this.preparationData.masterIp]);
   }
 
-  get hostUsernameTitle(): string {
-    return `Host ${this.preparationData.hostIp} username`;
+  get hostUsernameTitle(): Observable<string> {
+    return this.translateService.get('Node.Node_Detail_Host_Username', [this.preparationData.hostIp]);
   }
 
-  get hostPasswordTitle(): string {
-    return `Host ${this.preparationData.hostIp} password`;
+  get hostPasswordTitle(): Observable<string> {
+    return this.translateService.get('Node.Node_Detail_Host_Password', [this.preparationData.hostIp]);
+  }
+
+  get succeedAlertText(): string {
+    return this.actionType === NodeActionsType.Add ?
+      'Node.Node_Detail_Add_Success' :
+      'Node.Node_Detail_Remove_Success';
+  }
+
+  get failedAlertText(): string {
+    return this.actionType === NodeActionsType.Add ?
+      'Node.Node_Detail_Add_Failed' :
+      'Node.Node_Detail_Remove_Failed';
   }
 
   getLogStyle(status: NodeLogStatus): { [key: string]: string } {
@@ -184,6 +215,7 @@ export class NodeDetailComponent extends ModalChildBase implements OnInit {
             if (nodeDetail.status === NodeLogStatus.Failed ||
               nodeDetail.status === NodeLogStatus.Success) {
               this.actionStatus = ActionStatus.Finished;
+              this.curNodeLogStatus = nodeDetail.status;
             }
           }
           el.scrollTop = el.scrollHeight;

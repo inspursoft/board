@@ -9,5 +9,10 @@ func RegisterModels() {
 	orm.RegisterModel(
 		new(nodeModel.NodeLog),
 		new(nodeModel.NodeLogDetailInfo),
-		new(nodeModel.NodeStatus))
+		new(nodeModel.NodeStatus),
+		new(InitStatusInfo),
+		new(Account),
+		new(Token),
+		new(User),
+		new(Config))
 }

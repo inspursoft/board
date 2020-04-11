@@ -1,4 +1,7 @@
 export const LANG_EN_US = {
+  AdminServer: {
+    Name: 'Admin server'
+  },
   "BUTTON": {
     "OK": "OK",
     "YES": "Yes",

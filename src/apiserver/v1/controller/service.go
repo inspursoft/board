@@ -480,6 +480,11 @@ func (p *ServiceController) GetServiceInfoAction() {
 	for _, items := range nodesStatus.Items {
 		serviceInfo.NodeName = append(serviceInfo.NodeName, items.Status.Addresses...)
 	}
+	serviceInfo.ServiceContainers, err = service.GetServiceContainers(s.ProjectName, s.Name)
+	if err != nil {
+		p.ParseError(err, c.ParseGetK8sError)
+		return
+	}
 	p.RenderJSON(serviceInfo)
 }
 

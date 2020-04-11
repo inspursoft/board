@@ -54,6 +54,7 @@ export class HttpClientInterceptor implements HttpInterceptor {
               this.translateService.get('ERROR.INVALID_TOKEN').subscribe(value => {
                 const msg = `${value}:${res.url}`;
                 this.messageService.showGlobalMessage(msg, {
+                  alertType: 'warning',
                   globalAlertType: GlobalAlertType.gatLogin
                 });
               });

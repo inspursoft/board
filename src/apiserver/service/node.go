@@ -32,9 +32,11 @@ const (
 )
 
 type NodeListResult struct {
-	NodeName string     `json:"node_name"`
-	NodeIP   string     `json:"node_ip"`
-	Status   NodeStatus `json:"status"`
+	NodeName   string            `json:"node_name"`
+	NodeIP     string            `json:"node_ip"`
+	Status     NodeStatus        `json:"status"`
+	CreateTime int64             `json:"create_time"`
+	Labels     map[string]string `json:"labels"`
 }
 
 type NodeInfo struct {
@@ -162,8 +164,10 @@ func GetNodeList() (res []NodeListResult) {
 
 	for _, v := range Node.Items {
 		res = append(res, NodeListResult{
-			NodeName: getNodeAddress(v, "Hostname"),
-			NodeIP:   getNodeAddress(v, "InternalIP"),
+			NodeName:   getNodeAddress(v, "Hostname"),
+			NodeIP:     getNodeAddress(v, "InternalIP"),
+			CreateTime: v.CreationTimestamp.Unix(),
+			Labels:     v.ObjectMeta.Labels,
 			Status: func() NodeStatus {
 				if v.Unschedulable {
 					return Unschedulable
@@ -517,4 +521,38 @@ func getNodeAddress(v model.Node, t string) string {
 
 	logs.Warning("The value is null when get the field of %s in node", t)
 	return ""
+}
+
+// Get a node control status
+func GetNodeControlStatus(nodeName string) (*model.NodeControlStatus, error) {
+	var nodecontrol model.NodeControlStatus
+	var config k8sassist.K8sAssistConfig
+	config.KubeConfigPath = kubeConfigPath()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	nInterface := k8sclient.AppV1().Node()
+
+	nNode, err := nInterface.Get(nodeName)
+	if err != nil {
+		logs.Error("Failed to get K8s node")
+		return nil, err
+	}
+	nodecontrol.NodeName = nNode.Name
+	nodecontrol.NodeIP = nNode.NodeIP
+	nodecontrol.NodePhase = string(nNode.Status.Phase)
+	nodecontrol.NodeUnschedule = nNode.Unschedulable
+
+	// Get service instances
+	pInterface := k8sclient.AppV1().Pod(model.NamespaceAll)
+	podList, err := pInterface.List(model.ListOptions{FieldSelector: fmt.Sprintf("spec.nodeName=%s", nodeName)})
+	if err != nil {
+		logs.Error("Failed to get K8s pods")
+		return nil, err
+	}
+	for _, podinstance := range podList.Items {
+		var instance model.ServiceInstance
+		instance.ProjectName = podinstance.Namespace
+		instance.ServiceInstanceName = podinstance.Name
+		nodecontrol.Service_Instances = append(nodecontrol.Service_Instances, instance)
+	}
+	return &nodecontrol, nil
 }

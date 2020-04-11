@@ -1,12 +1,12 @@
 package controllers
 
 import (
-	"encoding/json"
+	"git/inspursoft/board/src/common/utils"
 	"git/inspursoft/board/src/adminserver/models"
 	"git/inspursoft/board/src/adminserver/service"
 	"net/http"
-
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
 )
 
 // AccController includes operations about account.
@@ -21,21 +21,18 @@ type AccController struct {
 // @Failure 400 bad request
 // @router /verify [post]
 func (a *AccController) Verify() {
-	var statusCode int = http.StatusOK
 	var passwd models.Password
-	json.Unmarshal(a.Ctx.Input.RequestBody, &passwd)
-
-	v, statusMessage := service.VerifyPassword(&passwd)
-	if v == true {
+	utils.UnmarshalToJSON(a.Ctx.Request.Body, &passwd)
+	v, err := service.VerifyPassword(&passwd)
+	if err != nil {
+		logs.Error(err)
+		a.CustomAbort(http.StatusBadRequest, err.Error())
+	}
+	if v {
 		a.Data["json"] = "success"
 	} else {
 		a.Data["json"] = "wrong"
 	}
-
-	if statusMessage == "BadRequest" {
-		statusCode = http.StatusBadRequest
-	}
-	a.Ctx.ResponseWriter.WriteHeader(statusCode)
 	a.ServeJSON()
 }
 
@@ -47,14 +44,13 @@ func (a *AccController) Verify() {
 // @router /initialize [post]
 func (a *AccController) Initialize() {
 	var acc models.Account
-	var statusCode int = http.StatusOK
 	//transferring JSON to struct.
-	json.Unmarshal(a.Ctx.Input.RequestBody, &acc)
-	statusMessage := service.Initialize(&acc)
-	if statusMessage == "BadRequest" {
-		statusCode = http.StatusBadRequest
+	utils.UnmarshalToJSON(a.Ctx.Request.Body, &acc)
+	err := service.Initialize(&acc)
+	if err != nil {
+		logs.Error(err)
+		a.CustomAbort(http.StatusBadRequest, err.Error())
 	}
-	a.Ctx.ResponseWriter.WriteHeader(statusCode)
 	a.ServeJSON()
 }
 
@@ -63,69 +59,83 @@ func (a *AccController) Initialize() {
 // @Param	body	body 	models.Account	true	"body for user account"
 // @Success 200 {object} string success
 // @Failure 400 bad request
+// @Failure 403 forbidden
 // @router /login [post]
 func (a *AccController) Login() {
 	var acc models.Account
-	var statusCode int = http.StatusOK
 	//transferring JSON to struct.
-	json.Unmarshal(a.Ctx.Input.RequestBody, &acc)
-	permission, statusMessage := service.Login(&acc)
-	if permission == true {
-		a.Data["json"] = "login success"
+	utils.UnmarshalToJSON(a.Ctx.Request.Body, &acc)
+	permission, err, token := service.Login(&acc)
+	if err != nil {
+		logs.Error(err)
+		if err.Error() == "Forbidden" {
+			a.CustomAbort(http.StatusForbidden, err.Error())
+		}
+		a.CustomAbort(http.StatusBadRequest, err.Error())
+	}
+	if permission {
+		a.Data["json"] = token
 	} else {
-		a.Data["json"] = "login failure"
+		a.CustomAbort(http.StatusBadRequest, "login failed")
 	}
-	if statusMessage == "BadRequest" {
-		statusCode = http.StatusBadRequest
-	}
-	a.Ctx.ResponseWriter.WriteHeader(statusCode)
 	a.ServeJSON()
 }
 
-// @Title Restart
-// @Description restart Board
-// @Param	token	query 	string	true		"token"
-// @Success 200 success
+
+// @Title Install
+// @Description judge if it's the first time open admin server.
+// @Success 200 {object} string success
 // @Failure 400 bad request
-// @router /restart [get]
-func (a *AccController) Restart() {
-	var statusCode int = http.StatusOK
-	statusMessage := service.Restart("/root/BOARD/Deploy")
-	if statusMessage == "BadRequest" {
-		statusCode = http.StatusBadRequest
+// @router /install [get]
+func (a *AccController) Install() {
+	install := service.Install()
+	if install == models.InitStatusTrue {
+		a.Data["json"] = "yes"
+	} else if install == models.InitStatusFirst{
+		a.Data["json"] = "step1"
+	} else if install == models.InitStatusSecond{
+		a.Data["json"] = "step2"
+	} else if install == models.InitStatusThird{
+		a.Data["json"] = "step3"
+	} else {
+		a.Data["json"] = "no"
 	}
-	a.Ctx.ResponseWriter.WriteHeader(statusCode)
 	a.ServeJSON()
 }
 
-// @Title Applycfg
-// @Description apply cfg and restart Board
-// @Param	token	query 	string	true	"token"
+// @Title CreateUUID
+// @Description create UUID
 // @Success 200 success
 // @Failure 400 bad request
-// @router /applycfg [get]
-func (a *AccController) Applycfg() {
-	var statusCode int = http.StatusOK
-	statusMessage := service.Applycfg("/root/BOARD/Deploy")
-	if statusMessage == "BadRequest" {
-		statusCode = http.StatusBadRequest
+// @router /createUUID [post]
+func (a *AccController) CreateUUID() {
+	err := service.CreateUUID()
+	if err != nil {
+		logs.Error(err)
+		a.CustomAbort(http.StatusBadRequest, err.Error())
 	}
-	a.Ctx.ResponseWriter.WriteHeader(statusCode)
 	a.ServeJSON()
 }
 
-// @Title Shutdown
-// @Description shutdown board
-// @Param	token	query 	string	true	"token"
-// @Success 200 success
+// @Title ValidateUUID
+// @Description validate the UUID
+// @Param	body	body 	models.UUID	true	"UUID"
+// @Success 200 {object} string success
 // @Failure 400 bad request
-// @router /shutdown [get]
-func (a *AccController) Shutdown() {
-	var statusCode int = http.StatusOK
-	statusMessage := service.Shutdown("/root/BOARD/Deploy")
-	if statusMessage == "BadRequest" {
-		statusCode = http.StatusBadRequest
+// @router /ValidateUUID [post]
+func (a *AccController) ValidateUUID() {
+	var uuid models.UUID
+	utils.UnmarshalToJSON(a.Ctx.Request.Body, &uuid)
+	result, err := service.ValidateUUID(uuid.UUID)
+	if err != nil {
+		logs.Error(err)
+		a.CustomAbort(http.StatusBadRequest, err.Error())
 	}
-	a.Ctx.ResponseWriter.WriteHeader(statusCode)
+	if result {
+		a.Data["json"] = "validate success"
+	} else {
+		a.Data["json"] = "validate failure"
+		a.CustomAbort(http.StatusBadRequest, "validate failure")
+	}
 	a.ServeJSON()
 }
