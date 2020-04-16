@@ -99,7 +99,7 @@ export const LANG_ZH_CN = {
     Node_List_Empty: '节点列表为空',
     Node_List_Remove_Node: '移除节点',
     Node_List_Remove_Ask: '确定要移除节点么？',
-    Node_List_Status_Unknown: '未知',
+    Node_List_Status_Unknown: '未知节点',
     Node_List_Status_Schedulable: '可调度',
     Node_List_Status_Unschedulable: '不可调度',
     Node_Logs_Ip: 'IP',
@@ -422,6 +422,7 @@ export const LANG_ZH_CN = {
         PASSWORD: '密码',
         REQUIRED: '必填项'
       },
+      HELPER: '请确保您已停止Board实例。',
       CANCEL: '不生效',
       APPLY: '生效配置',
     }

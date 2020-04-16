@@ -2733,7 +2733,65 @@ paths:
         401:
           description: User need to log in first.
         500:
+          description: Internal errors.   
+  /v1/nodes/{node_name}:
+    get:
+      summary: Return the node status.
+      description: |
+        This endpoint returns the node status.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: node_name
+          in: path
+          description: node name to specify an node.
+          required: true
+          type: string          
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the system available resources of nodes.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/NodeControlStatus'              
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        500:
           description: Internal errors.          
+  /v1/nodes/{node_name}/drain:
+    put:  
+      summary: Drain the services from the node.
+      description: |
+        This endpoint is aimed to drain the services from the node.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: node_name
+          in: path
+          description: node name to specify an node.
+          required: true
+          type: string   
+      tags:
+        - Products
+      responses:
+        200:
+          description: Drain this node successfully.
+        401:
+          description: User need to log in first.
+        403:
+          description: Invalid node name.
+        500:
+          description: Unexpected internal errors.                  
   /v1/nodegroup:
     get:
       summary: Return all node groups in Board.
@@ -5508,6 +5566,37 @@ definitions:
       node_description:
         type: string
         description: A simple descrition for this node.
+  NodeControlStatus:
+    type: object
+    description: The detail information of this node to control. 
+    properties:    
+      node_name:
+        type: string
+        description: The name of this node.
+      node_ip:
+        type: string
+        description: The IP address of this node.
+      node_phase:        
+        type: string
+        description: The running phase of this node, pending, running, terminated.  
+      node_unschedulable:
+        type: boolean    
+        description: The default is unschedulable false, node is schedulable.     
+      service_instances:
+        type: array
+        description: The service instances running on this node
+        items:
+            $ref: '#/definitions/ServiceInstance' 
+  ServiceInstance:
+    type: object
+    description: The detail information of this service instance. 
+    properties:    
+      project_name:
+        type: string
+        description: The project name of this service instance.
+      service_instance_name:
+        type: string
+        description: The service instance name.                       
   NodePropertyUpdate:
     type: object
     properties:

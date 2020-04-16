@@ -32,12 +32,12 @@
 
 <div class="btn-group btn-primary clr-row clr-justify-content-end"
      style="margin-right: 10px;">
-  <button class="btn btn-danger"
+  <!-- <button class="btn btn-danger"
           [disabled]="loadingFlag"
           (click)="confirm('rb')">
     <clr-icon shape="replay-all"></clr-icon>
     {{ 'DASHBOARD.BUTTONS.RESTART_BORAD' | translate }}
-  </button>
+  </button> -->
   <button class="btn btn-danger"
           [disabled]="loadingFlag"
           *ngIf="enableStop"
@@ -125,7 +125,7 @@
   </div>
 </clr-modal>
 
-<clr-modal [(clrModalOpen)]="confirmModal"
+<clr-modal #confirmModal
            [clrModalStaticBackdrop]="false">
   <h3 class="modal-title">{{confirmType.title}}</h3>
   <div class="modal-body">

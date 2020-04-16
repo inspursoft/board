@@ -124,7 +124,7 @@
         <span>{{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.SAVE' | translate }}</span>
       </div>
     </div>
-    <p>&nbsp;&nbsp;&nbsp;&nbsp;{{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.COMMENT' | translate }}</p>
+    <p>{{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.COMMENT' | translate }}</p>
     <div style="text-align: center"
          *ngIf="loadingFlag">
       <clr-spinner>
@@ -156,6 +156,9 @@
           {{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.REQUIRED' | translate }}
         </clr-control-error>
       </clr-password-container>
+      <clr-control-helper>
+        {{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.HELPER' | translate }}
+      </clr-control-helper>
     </form>
   </div>
   <div class="modal-footer">

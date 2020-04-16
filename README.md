@@ -5,6 +5,10 @@
 **Note**: The `master` branch may be in an *unstable or even broken state* during development.
 Please use [releases] instead of the `master` branch in order to get stable binaries.
 
+|<img alt="notification" width="24" src="docs/img/bell.png">Community Meeting|
+|------------------|
+|The Board Project holds monthly community calls on Webex . To join the communit calls or to watch previous meeting notes and recordings, please visit the [meeting schedule](http://10.10.5.9/TechnologyCenter/board/wikis/community-meeting-schedule).|
+
 <img alt="Board" src="docs/img/board_logo.png">
 
 The "Board" product is a container service platform based on docker + kubernetes, provide cloud solutions for Inspur software group, including lightweight container virtualization, micro service, DevOps, continuous delivery, help enterprises and development teams achieve fast business application delivery and continuous innovation.
