@@ -243,7 +243,11 @@ SOFTWARE.
 
 ## Partners
 Shanxi Provincial Department of Land and Resources
+
 China Mobile Communications Group Co.,Ltd
+
+Ministry of Veterans Affairs of the People's Republic of China
+
 etc.
 
 ## Users
