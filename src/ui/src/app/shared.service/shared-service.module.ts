@@ -11,7 +11,6 @@ import { CoreModule } from '../core/core.module';
 import { AppInitService } from './app-init.service';
 import { AppGuardService } from './app-guard.service';
 import { HttpInterceptorService } from './http-client-interceptor';
-import { CsHttpProvider } from './cs-http-client';
 
 @NgModule({
   imports: [
@@ -30,7 +29,6 @@ import { CsHttpProvider } from './cs-http-client';
     WebsocketService,
     SharedService,
     SharedActionService,
-    CsHttpProvider,
     HttpInterceptorService,
   ],
   entryComponents: [

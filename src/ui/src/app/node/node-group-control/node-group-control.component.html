@@ -1,0 +1,52 @@
+<div class="control-body">
+  <div class="node-group-list-container">
+    <span class="comment">{{'NODE.NODE_CONTROL_COMMENT1' | translate}}</span>
+    <span *ngIf="nodeGroupList.length == 0" class="no-items">{{"NODE.NODE_GROUP_NO_ITEMS" | translate}}</span>
+    <ol *ngIf="nodeGroupList.length > 0" class="list node-group-list">
+      <li class="group-list-item"
+          *ngFor="let nodeGroup of nodeGroupList"
+          (click)="setNodeGroupSelectedToAdd(nodeGroup)"
+          [class.disabled]="isActionWip"
+          [class.active]="nodeGroup.name == selectedAddNodeGroup"
+          [class.hidden]="nodeGroupListSelect.indexOf(nodeGroup.name) > -1">
+        <a href="javascript:void(0)">
+          <clr-icon shape="check" style="color: blue;"></clr-icon>
+          {{nodeGroup.name}}
+        </a>
+      </li>
+    </ol>
+  </div>
+  <div class="action-container">
+    <a href="javascript:void(0)"
+       class="node-control-action"
+       [class.disabled]="selectedAddNodeGroup == ''"
+       (click)="addNodeToNodeGroup()">
+      <clr-icon shape="caret" class="action-add"></clr-icon>
+    </a>
+    <a href="javascript:void(0)"
+       class="node-control-action"
+       [class.disabled]="selectedDelNodeGroup == ''"
+       (click)="deleteNodeToNodeGroup()">
+      <clr-icon shape="caret" class="action-delete"></clr-icon>
+    </a>
+  </div>
+  <div class="node-group-list-container">
+      <span class="comment">
+        {{'NODE.NODE_CONTROL_COMMENT2' | translate}}
+        :{{nodeCurrent.nodeName}}
+      </span>
+    <span *ngIf="nodeGroupListSelect.length == 0" class="no-items">{{"NODE.NODE_GROUP_NO_ITEMS" | translate}}</span>
+    <ol class="list node-group-list"
+        *ngIf="nodeGroupListSelect.length > 0">
+      <li *ngFor="let nodeGroupSelect of nodeGroupListSelect"
+          class="group-list-item"
+          [class.disabled]="isActionWip"
+          (click)="setNodeGroupSelectedToDel(nodeGroupSelect)"
+          [class.active]="nodeGroupSelect == selectedDelNodeGroup">
+        <a href="javascript:void(0)">
+          {{nodeGroupSelect}}
+        </a>
+      </li>
+    </ol>
+  </div>
+</div>
