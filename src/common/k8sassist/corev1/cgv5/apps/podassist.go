@@ -21,6 +21,7 @@ import (
 	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/remotecommand"
 	"k8s.io/kubectl/pkg/cmd/exec"
+	cmdutil "k8s.io/kubectl/pkg/cmd/util"
 )
 
 type pods struct {
@@ -28,6 +29,8 @@ type pods struct {
 	cfg       *types.Config
 	namespace string
 	pod       v1.PodInterface
+
+	genericclioptions.IOStreams
 }
 
 func (p *pods) Create(pod *model.Pod) (*model.Pod, error) {
@@ -170,7 +173,7 @@ func (p *pods) Cp(podName, container, src, dest string, cmd []string) error {
 	// remove extraneous path shortcuts - these could occur if a path contained extra "../"
 	// and attempted to navigate beyond "/" in a remote filesystem
 	prefix = stripPathShortcuts(prefix)
-	return p.untarAll(src, reader, dest, prefix)
+	return p.untarAll(reader, dest, prefix)
 }
 
 func (p *pods) execute(options *exec.ExecOptions, container string) error {
@@ -222,7 +225,7 @@ func stripPathShortcuts(s string) string {
 	return newPath
 }
 
-func (p *pods) untarAll(src string, reader io.Reader, destDir, prefix string) error {
+func (p *pods) untarAll(reader io.Reader, destDir, prefix string) error {
 	symlinkWarningPrinted := false
 	// TODO: use compression here?
 	tarReader := tar.NewReader(reader)
@@ -247,11 +250,6 @@ func (p *pods) untarAll(src string, reader io.Reader, destDir, prefix string) er
 		// basic file information
 		mode := header.FileInfo().Mode()
 		destFileName := filepath.Join(destDir, header.Name[len(prefix):])
-
-		if !isDestRelative(destDir, destFileName) {
-			fmt.Fprintf(p.IOStreams.ErrOut, "warning: file %q is outside target destination, skipping\n", destFileName)
-			continue
-		}
 
 		baseName := filepath.Dir(destFileName)
 		if err := os.MkdirAll(baseName, 0755); err != nil {
