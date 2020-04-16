@@ -1,8 +1,13 @@
 package apps
 
 import (
+	"archive/tar"
 	"fmt"
 	"io"
+	"os"
+	"path"
+	"path/filepath"
+	"strings"
 
 	"git/inspursoft/board/src/common/k8sassist/corev1/cgv5/types"
 	"git/inspursoft/board/src/common/model"
@@ -10,10 +15,12 @@ import (
 	"github.com/astaxie/beego/logs"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/kubernetes/typed/core/v1"
+	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/remotecommand"
+	"k8s.io/kubectl/pkg/cmd/exec"
 )
 
 type pods struct {
@@ -129,6 +136,145 @@ func (p *pods) Exec(podName, containerName string, cmd []string, ptyHandler mode
 	})
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (p *pods) Cp(podName, container, src, dest string, cmd []string) error {
+	reader, outStream := io.Pipe()
+	options := &exec.ExecOptions{
+		StreamOptions: exec.StreamOptions{
+			IOStreams: genericclioptions.IOStreams{
+				In:     nil,
+				Out:    outStream,
+				ErrOut: p.Out,
+			},
+
+			Namespace: p.namespace,
+			PodName:   podName,
+		},
+
+		// TODO: Improve error messages by first testing if 'tar' is present in the container?
+		Command:  cmd,
+		Executor: &exec.DefaultRemoteExecutor{},
+	}
+
+	go func() {
+		defer outStream.Close()
+		err := p.execute(options, container)
+		cmdutil.CheckErr(err)
+	}()
+	prefix := getPrefix(src)
+	prefix = path.Clean(prefix)
+	// remove extraneous path shortcuts - these could occur if a path contained extra "../"
+	// and attempted to navigate beyond "/" in a remote filesystem
+	prefix = stripPathShortcuts(prefix)
+	return p.untarAll(src, reader, dest, prefix)
+}
+
+func (p *pods) execute(options *exec.ExecOptions, container string) error {
+	if len(options.Namespace) == 0 {
+		options.Namespace = p.namespace
+	}
+
+	if len(container) > 0 {
+		options.ContainerName = container
+	}
+
+	options.Config = p.cfg
+	options.PodClient = p.k8sClient.CoreV1()
+
+	// if err := options.Validate(); err != nil {
+	// 	return err
+	// }
+
+	if err := options.Run(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func getPrefix(file string) string {
+	// tar strips the leading '/' if it's there, so we will too
+	return strings.TrimLeft(file, "/")
+}
+
+// stripPathShortcuts removes any leading or trailing "../" from a given path
+func stripPathShortcuts(s string) string {
+	newPath := path.Clean(s)
+	trimmed := strings.TrimPrefix(newPath, "../")
+
+	for trimmed != newPath {
+		newPath = trimmed
+		trimmed = strings.TrimPrefix(newPath, "../")
+	}
+
+	// trim leftover {".", ".."}
+	if newPath == "." || newPath == ".." {
+		newPath = ""
+	}
+
+	if len(newPath) > 0 && string(newPath[0]) == "/" {
+		return newPath[1:]
+	}
+
+	return newPath
+}
+
+func (p *pods) untarAll(src string, reader io.Reader, destDir, prefix string) error {
+	symlinkWarningPrinted := false
+	// TODO: use compression here?
+	tarReader := tar.NewReader(reader)
+	for {
+		header, err := tarReader.Next()
+		if err != nil {
+			if err != io.EOF {
+				return err
+			}
+			break
+		}
+
+		// All the files will start with the prefix, which is the directory where
+		// they were located on the pod, we need to strip down that prefix, but
+		// if the prefix is missing it means the tar was tempered with.
+		// For the case where prefix is empty we need to ensure that the path
+		// is not absolute, which also indicates the tar file was tempered with.
+		if !strings.HasPrefix(header.Name, prefix) {
+			return fmt.Errorf("tar contents corrupted")
+		}
+
+		// basic file information
+		mode := header.FileInfo().Mode()
+		destFileName := filepath.Join(destDir, header.Name[len(prefix):])
+
+		if !isDestRelative(destDir, destFileName) {
+			fmt.Fprintf(p.IOStreams.ErrOut, "warning: file %q is outside target destination, skipping\n", destFileName)
+			continue
+		}
+
+		baseName := filepath.Dir(destFileName)
+		if err := os.MkdirAll(baseName, 0755); err != nil {
+			return err
+		}
+		if header.FileInfo().IsDir() {
+			if err := os.MkdirAll(destFileName, 0755); err != nil {
+				return err
+			}
+			continue
+		}
+
+		outFile, err := os.Create(destFileName)
+		if err != nil {
+			return err
+		}
+		defer outFile.Close()
+		if _, err := io.Copy(outFile, tarReader); err != nil {
+			return err
+		}
+		if err := outFile.Close(); err != nil {
+			return err
+		}
 	}
 
 	return nil

@@ -4,10 +4,11 @@ import (
 	"fmt"
 	c "git/inspursoft/board/src/apiserver/controllers/commons"
 	"git/inspursoft/board/src/apiserver/service"
-	"github.com/astaxie/beego/logs"
-	"github.com/gorilla/websocket"
 	"net/http"
 	"strconv"
+
+	"github.com/astaxie/beego/logs"
+	"github.com/gorilla/websocket"
 )
 
 type PodController struct {
@@ -43,3 +44,30 @@ func (p *PodController) PodShellAction() {
 		return
 	}
 }
+
+func (p *PodController) CopyFromPodAction() error {
+	projectID, err := strconv.Atoi(p.Ctx.Input.Param(":projectid"))
+	if err != nil {
+		p.InternalError(err)
+		return
+	}
+	project, err := service.GetProjectByID(int64(projectID))
+	if err != nil {
+		p.InternalError(err)
+		return
+	}
+	if project == nil {
+		p.CustomAbortAudit(http.StatusNotFound, fmt.Sprintf("No project was found with provided ID: %d", projectID))
+		return
+	}
+	podName := p.Ctx.Input.Param(":podname")
+	container := p.GetString("container")
+	src := p.GetString("src")
+	dest := p.GetString("dest")
+	err = service.CopyFromPod(project.Name, podName, container, src, dest)
+}
+
+/*func (p *PodController) CopyToPodAction() error {
+
+}
+*/

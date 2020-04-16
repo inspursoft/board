@@ -2,12 +2,14 @@ package service
 
 import (
 	"encoding/json"
+	"errors"
 	"git/inspursoft/board/src/common/k8sassist"
 	"git/inspursoft/board/src/common/model"
-	"github.com/astaxie/beego/logs"
-	"github.com/gorilla/websocket"
 	"net/http"
 	"sync"
+
+	"github.com/astaxie/beego/logs"
+	"github.com/gorilla/websocket"
 )
 
 // message from web socket client
@@ -109,4 +111,16 @@ func PodShell(namespace, pod, container string, w http.ResponseWriter, r *http.R
 	go ptyHandler.Run()
 	logs.Info("invoke kubernetes %s/%s pod exec in container %s.", namespace, pod, container)
 	return k8sclient.AppV1().Pod(namespace).Exec(pod, container, cmd, ptyHandler)
+}
+
+func CopyFromPod(namespace, podName, container, src, dest string) error {
+	if len(src) == 0 || len(dest) == 0 {
+		return errors.New("filepath can not be empty")
+	}
+
+	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		KubeConfigPath: kubeConfigPath(),
+	})
+	cmd := []string{"tar", "cf", "-", src}
+	return k8sclient.AppV1().Pod(namespace).Cp(podName, container, src, dest, cmd)
 }
