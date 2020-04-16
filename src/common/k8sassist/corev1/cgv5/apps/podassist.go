@@ -226,7 +226,6 @@ func stripPathShortcuts(s string) string {
 }
 
 func (p *pods) untarAll(reader io.Reader, destDir, prefix string) error {
-	symlinkWarningPrinted := false
 	// TODO: use compression here?
 	tarReader := tar.NewReader(reader)
 	for {
@@ -248,7 +247,6 @@ func (p *pods) untarAll(reader io.Reader, destDir, prefix string) error {
 		}
 
 		// basic file information
-		mode := header.FileInfo().Mode()
 		destFileName := filepath.Join(destDir, header.Name[len(prefix):])
 
 		baseName := filepath.Dir(destFileName)

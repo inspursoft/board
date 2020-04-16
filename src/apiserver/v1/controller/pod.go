@@ -45,7 +45,7 @@ func (p *PodController) PodShellAction() {
 	}
 }
 
-func (p *PodController) CopyFromPodAction() error {
+func (p *PodController) CopyFromPodAction() {
 	projectID, err := strconv.Atoi(p.Ctx.Input.Param(":projectid"))
 	if err != nil {
 		p.InternalError(err)
