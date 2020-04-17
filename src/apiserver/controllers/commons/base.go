@@ -351,7 +351,7 @@ func (b *BaseController) ResolveUserPrivilege(projectName string) {
 			logs.Error("Failed to add project: %s with member %s:", projectName, b.CurrentUser.Username)
 			return
 		}
-		service.ForkRepo(b.CurrentUser, projectName)
+		service.CurrentDevOps().ForkRepo(b.CurrentUser, projectName)
 	}
 	return
 }
@@ -410,7 +410,7 @@ func (b *BaseController) CollaborateWithPullRequest(headBranch, baseBranch strin
 	logs.Debug("Pull request info, title: %s, content: %s, compare info: %s", title, content, compareInfo)
 
 	repoToken := b.CurrentUser.RepoToken
-	err := service.CreatePullRequestAndComment(username, ownerName, repoName, repoToken, compareInfo, title, content)
+	err := service.CurrentDevOps().CreatePullRequestAndComment(username, ownerName, repoName, repoToken, compareInfo, title, content)
 	if err != nil {
 		logs.Error("Failed to create pull request and comment: %+v", err)
 		b.InternalError(err)

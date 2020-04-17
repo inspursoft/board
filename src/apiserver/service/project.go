@@ -299,7 +299,7 @@ func SyncProjectsWithK8s() error {
 				// Still can work
 				continue
 			}
-			err = CreateRepoAndJob(adminUserID, reqProject.Name)
+			err = CurrentDevOps().CreateRepoAndJob(adminUserID, reqProject.Name)
 			if err != nil {
 				logs.Error("Failed create repo and job with project name: %s, error: %+v", reqProject.Name, err)
 			}

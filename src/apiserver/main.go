@@ -100,7 +100,7 @@ func initProjectRepo() {
 	logs.Info("Initialize serve repo ...")
 	logs.Info("Init git repo for default project %s", defaultProject)
 
-	err = service.CreateRepoAndJob(adminUserID, defaultProject)
+	err = service.CurrentDevOps().CreateRepoAndJob(adminUserID, defaultProject)
 	if err != nil {
 		logs.Error("Failed to create default repo %s: %+v", defaultProject, err)
 	}
