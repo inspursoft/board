@@ -40,7 +40,6 @@ export abstract class ResponseBase {
           resArray.forEach(resItem => {
             const item = new metadataValue.arrayItemType(resItem);
             const propertyArray = property as Array<ResponseBase>;
-            console.log(propertyArray);
             propertyArray.push(item);
           });
         }
