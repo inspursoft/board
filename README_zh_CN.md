@@ -219,7 +219,9 @@ $ docker push reg.yourdomain.com/myproject/myrepo:mytag
 有关如何使用BOARD，请参阅[用户指南](docs/user_guide.md).
 
 ## 社区
-（即将推出）
+[在线沟通会议](http://open.inspur.com/TechnologyCenter/board/wikis/Community%20meeting%20schedule)
+
+[在线沟通会议 (内部链接)](http://10.10.5.9/TechnologyCenter/board/wikis/Community%20meeting%20schedule)
 
 ## 贡献
 （即将推出）
@@ -227,8 +229,13 @@ $ docker push reg.yourdomain.com/myproject/myrepo:mytag
 ## 许可
 （即将推出）
 
-## 伙伴
-（即将推出）
+## 重点客户
+山西国土资源部
+
+中国移动
+
+中国退役军人事业部
+
 
 ## 用户
 （即将推出）
