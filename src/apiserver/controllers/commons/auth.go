@@ -13,6 +13,15 @@ var ReservedUsernames = [...]string{"explore", "create", "assets", "css", "img",
 func (ca *BaseController) ProcessAuth(principal, password string) (string, bool) {
 	var currentAuth *auth.Auth
 	var err error
+
+	//Check signin failed times
+	failedtimes, deny, _ := auth.CheckAuthFailedTimes(principal)
+	if deny {
+		ca.Ctx.SetCookie("failedtimes", string(failedtimes))
+		ca.ServeStatus(http.StatusNotAcceptable, "NotAcceptable.")
+		return "", false
+	}
+
 	if principal == "admin" {
 		currentAuth, err = auth.GetAuth("db_auth")
 	} else {
@@ -29,6 +38,13 @@ func (ca *BaseController) ProcessAuth(principal, password string) (string, bool)
 	}
 
 	if user == nil {
+		// Signin failed, update the user access info
+		failedtimes, err = auth.UpdateAuthFailedTimes(principal, ca.Ctx.Request.RemoteAddr)
+		if err != nil {
+			ca.InternalError(err)
+			return "", false
+		}
+		ca.Ctx.SetCookie("failedtimes", string(failedtimes))
 		ca.ServeStatus(http.StatusBadRequest, "Incorrect username or password.")
 		return "", false
 	}
@@ -46,5 +62,13 @@ func (ca *BaseController) ProcessAuth(principal, password string) (string, bool)
 	MemoryCache.Put(user.Username, token.TokenString, time.Second*time.Duration(TokenCacheExpireSeconds))
 	MemoryCache.Put(token.TokenString, payload, time.Second*time.Duration(TokenCacheExpireSeconds))
 	ca.AuditUser, _ = service.GetUserByName(user.Username)
+
+	//Reset the user failed times
+	err = auth.ResetAuthFailedTimes(principal, ca.Ctx.Request.RemoteAddr)
+	if err != nil {
+		ca.InternalError(err)
+		return "", false
+	}
+
 	return token.TokenString, true
 }

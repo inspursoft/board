@@ -217,6 +217,7 @@ func (b *BaseController) GetCurrentUser() *model.User {
 			MemoryCache.Put(user.Username, token, time.Second*time.Duration(TokenCacheExpireSeconds))
 			b.Ctx.ResponseWriter.Header().Set("token", token)
 		}
+		user.Password = ""
 		return user
 	}
 	return nil
