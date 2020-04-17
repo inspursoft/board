@@ -149,16 +149,15 @@ func (p *pods) CopyFromPod(podName, containerName, src, dest string, cmd []strin
 		Resource("pods").
 		Name(podName).
 		Namespace(p.namespace).
-		SubResource("exec")
-
-	req.VersionedParams(&corev1.PodExecOptions{
-		Container: containerName,
-		Command:   cmd,
-		Stdin:     true,
-		Stdout:    true,
-		Stderr:    true,
-		TTY:       true,
-	}, scheme.ParameterCodec)
+		SubResource("exec").
+		VersionedParams(&corev1.PodExecOptions{
+			Container: containerName,
+			Command:   cmd,
+			Stdin:     true,
+			Stdout:    true,
+			Stderr:    true,
+			TTY:       false,
+		}, scheme.ParameterCodec)
 
 	exec, err := remotecommand.NewSPDYExecutor(p.cfg, "GET", req.URL())
 	if err != nil {
@@ -171,16 +170,17 @@ func (p *pods) CopyFromPod(podName, containerName, src, dest string, cmd []strin
 			Stdin:  os.Stdin,
 			Stdout: outStream,
 			Stderr: os.Stderr,
-			Tty:    true,
+			Tty:    false,
 		})
 		cmdutil.CheckErr(err)
 	}()
 	prefix := getPrefix(src)
 	prefix = path.Clean(prefix)
+	logs.Info("prefix 1 : %s", prefix)
 	// remove extraneous path shortcuts - these could occur if a path contained extra "../"
 	// and attempted to navigate beyond "/" in a remote filesystem
 	prefix = stripPathShortcuts(prefix)
-	dest = path.Join(dest, path.Base(prefix))
+//	dest = path.Join(dest, path.Base(prefix))
 	return p.untarAll(reader, dest, prefix)
 }
 
@@ -211,8 +211,17 @@ func stripPathShortcuts(s string) string {
 	return newPath
 }
 
+// isDestRelative returns true if dest is pointing outside the base directory,
+// false otherwise.
+func isDestRelative(base, dest string) bool {
+	relative, err := filepath.Rel(base, dest)
+	if err != nil {
+		return false
+	}
+	return relative == "." || relative == stripPathShortcuts(relative)
+}
+
 func (p *pods) untarAll(reader io.Reader, destDir, prefix string) error {
-	// TODO: use compression here?
 	tarReader := tar.NewReader(reader)
 	for {
 		header, err := tarReader.Next()
@@ -228,6 +237,8 @@ func (p *pods) untarAll(reader io.Reader, destDir, prefix string) error {
 		// if the prefix is missing it means the tar was tempered with.
 		// For the case where prefix is empty we need to ensure that the path
 		// is not absolute, which also indicates the tar file was tempered with.
+		logs.Info("header.Name: %s", header.Name)
+		logs.Info("prefix 2 : %s", prefix)
 		if !strings.HasPrefix(header.Name, prefix) {
 			return fmt.Errorf("tar contents corrupted")
 		}
@@ -235,6 +246,12 @@ func (p *pods) untarAll(reader io.Reader, destDir, prefix string) error {
 		// basic file information
 		mode := header.FileInfo().Mode()
 		destFileName := filepath.Join(destDir, header.Name[len(prefix):])
+		logs.Info("destFileName: %s", destFileName)
+
+		if !isDestRelative(destDir, destFileName) {
+			logs.Info("warning: file %s is outside target destination, skipping\n", destFileName)
+			continue
+		}
 
 		baseName := filepath.Dir(destFileName)
 		if err := os.MkdirAll(baseName, 0755); err != nil {
@@ -247,33 +264,20 @@ func (p *pods) untarAll(reader io.Reader, destDir, prefix string) error {
 			continue
 		}
 
-		evaledPath, err := filepath.EvalSymlinks(baseName)
+		if mode&os.ModeSymlink != 0 {
+			logs.Info("warning: skipping symlink: %s -> %s\n", destFileName, header.Linkname)
+			continue
+		}
+		outFile, err := os.Create(destFileName)
 		if err != nil {
 			return err
 		}
-
-		if mode&os.ModeSymlink != 0 {
-			linkname := header.Linkname
-
-			if !filepath.IsAbs(linkname) {
-				_ = filepath.Join(evaledPath, linkname)
-			}
-
-			if err := os.Symlink(linkname, destFileName); err != nil {
-				return err
-			}
-		} else {
-			outFile, err := os.Create(destFileName)
-			if err != nil {
-				return err
-			}
-			defer outFile.Close()
-			if _, err := io.Copy(outFile, tarReader); err != nil {
-				return err
-			}
-			if err := outFile.Close(); err != nil {
-				return err
-			}
+		defer outFile.Close()
+		if _, err := io.Copy(outFile, tarReader); err != nil {
+			return err
+		}
+		if err := outFile.Close(); err != nil {
+			return err
 		}
 	}
 

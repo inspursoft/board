@@ -179,7 +179,7 @@ type PodClientInterface interface {
 	//Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *v1.Pod, err error)
 	GetLogs(name string, opts *model.PodLogOptions) (io.ReadCloser, error)
 	Exec(podName, containerName string, cmd []string, ptyHandler model.PtyHandler) error
-	Cp(podName, container, src, dest string, cmd []string) error
+	CopyFromPod(podName, container, src, dest string, cmd []string) error
 }
 
 // How to:  deploymentCli, err := k8sassist.NewDeployments(nameSpace)

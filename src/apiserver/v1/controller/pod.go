@@ -69,6 +69,7 @@ func (p *PodController) CopyFromPodAction() {
 		p.CustomAbortAudit(http.StatusBadRequest, fmt.Sprint(err))
 		return
 	}
+	p.Ctx.Output.Download(dest)
 }
 
 /*func (p *PodController) CopyToPodAction() error {
