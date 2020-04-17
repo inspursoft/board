@@ -38,10 +38,12 @@ type NodeControlStatus struct {
 	NodeIP            string            `json:"node_ip"`
 	NodePhase         string            `json:"node_phase"`
 	NodeUnschedule    bool              `json:"node_unschedulable"`
-	Service_Instances []ServiceInstance `json:"Sevice_instances"`
+	NodeDeletable     bool              `json:"node_deletable"`
+	Service_Instances []ServiceInstance `json:"service_instances"`
 }
 
 type ServiceInstance struct {
-	ProjectName         string `json:"project_name"`
-	ServiceInstanceName string `json:"service_instance_name"`
+	ProjectName         string   `json:"project_name"`
+	ServiceInstanceName string   `json:"service_instance_name"`
+	OwnerReferenceKind  []string `json:"owner_reference_kind"`
 }
