@@ -28,7 +28,9 @@ func (u *AuthController) SignInAction() {
 		return
 	}
 	token, _ := u.ProcessAuth(reqUser.Username, reqUser.Password)
-	u.RenderJSON(model.Token{TokenString: token})
+	if token != "" {
+		u.RenderJSON(model.Token{TokenString: token})
+	}
 }
 
 func (u *AuthController) ExternalAuthAction() {
