@@ -13,6 +13,13 @@ var ReservedUsernames = [...]string{"explore", "create", "assets", "css", "img",
 func (ca *BaseController) ProcessAuth(principal, password string) (string, bool) {
 	var currentAuth *auth.Auth
 	var err error
+	//Check in MemoryCache
+	failedtimes, quickdeny := auth.CacheCheckAuthFailedTimes(principal)
+	if quickdeny {
+		ca.Ctx.SetCookie("failedtimes", string(failedtimes))
+		ca.ServeStatus(http.StatusNotAcceptable, "NotAcceptable")
+		return "", false
+	}
 
 	//Check signin failed times
 	failedtimes, deny, _ := auth.CheckAuthFailedTimes(principal)

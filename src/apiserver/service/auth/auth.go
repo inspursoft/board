@@ -8,6 +8,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/astaxie/beego/cache"
 	"github.com/astaxie/beego/logs"
 )
 
@@ -21,6 +22,8 @@ type Auth interface {
 }
 
 var registry map[string]Auth
+
+var SignInCache cache.Cache
 
 func GetAuth(AuthMode string) (*Auth, error) {
 	if auth, ok := registry[AuthMode]; ok {
@@ -54,6 +57,10 @@ func CheckAuthFailedTimes(principal string) (int, bool, error) {
 		//Failed times more than the limit, check access deny duration
 		if time.Since(user.UpdateTime).Seconds() < defaultDenyDuration {
 			logs.Debug("Failed times %n, Last Updated %v", user.FailedTimes, user.UpdateTime)
+			// Add a record in SignInCache for quick check
+			SignInCache.Put(principal,
+				model.UserSignInCache{FailedTimes: user.FailedTimes, UpdateTime: user.UpdateTime},
+				time.Second*time.Duration(defaultFailedTimes))
 			return user.FailedTimes, true, nil
 		}
 	}
@@ -98,7 +105,22 @@ func ResetAuthFailedTimes(principal string, requestaddr string) error {
 		logs.Error("Failed to udpated user in DB: %+v\n", err)
 		return err
 	}
+	//Remove the failed user record from SignInCache
+	SignInCache.Delete(principal)
+
 	//TODO reset the request IP memory
 	logs.Debug("Resetted the times user %s IP %s", principal, requestaddr)
 	return nil
+}
+
+// Check the failed times in Cache
+func CacheCheckAuthFailedTimes(principal string) (int, bool) {
+	if record, ok := SignInCache.Get(principal).(model.UserSignInCache); ok {
+		//Check access deny duration
+		if time.Since(record.UpdateTime).Seconds() < defaultDenyDuration {
+			logs.Debug("Failed times %n, Last Updated %v", record.FailedTimes, record.UpdateTime)
+			return record.FailedTimes, true
+		}
+	}
+	return 0, false
 }
