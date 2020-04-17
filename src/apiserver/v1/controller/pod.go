@@ -65,6 +65,10 @@ func (p *PodController) CopyFromPodAction() {
 	src := p.GetString("src")
 	dest := p.GetString("dest")
 	err = service.CopyFromPod(project.Name, podName, container, src, dest)
+	if err != nil {
+		p.CustomAbortAudit(http.StatusBadRequest, fmt.Sprint(err))
+		return
+	}
 }
 
 /*func (p *PodController) CopyToPodAction() error {

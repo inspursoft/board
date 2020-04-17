@@ -122,5 +122,6 @@ func CopyFromPod(namespace, podName, container, src, dest string) error {
 		KubeConfigPath: kubeConfigPath(),
 	})
 	cmd := []string{"tar", "cf", "-", src}
-	return k8sclient.AppV1().Pod(namespace).Cp(podName, container, src, dest, cmd)
+	logs.Info("copy kubernetes pod %s/%s:%s in container %s to %s on host.", namespace, podName, src, container, dest)
+	return k8sclient.AppV1().Pod(namespace).CopyFromPod(podName, container, src, dest, cmd)
 }

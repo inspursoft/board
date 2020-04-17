@@ -20,7 +20,6 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/remotecommand"
-	"k8s.io/kubectl/pkg/cmd/exec"
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"
 )
 
@@ -144,28 +143,36 @@ func (p *pods) Exec(podName, containerName string, cmd []string, ptyHandler mode
 	return nil
 }
 
-func (p *pods) Cp(podName, container, src, dest string, cmd []string) error {
+func (p *pods) CopyFromPod(podName, containerName, src, dest string, cmd []string) error {
 	reader, outStream := io.Pipe()
-	options := &exec.ExecOptions{
-		StreamOptions: exec.StreamOptions{
-			IOStreams: genericclioptions.IOStreams{
-				In:     nil,
-				Out:    outStream,
-				ErrOut: p.Out,
-			},
+	req := p.k8sClient.CoreV1().RESTClient().Get().
+		Resource("pods").
+		Name(podName).
+		Namespace(p.namespace).
+		SubResource("exec")
 
-			Namespace: p.namespace,
-			PodName:   podName,
-		},
+	req.VersionedParams(&corev1.PodExecOptions{
+		Container: containerName,
+		Command:   cmd,
+		Stdin:     true,
+		Stdout:    true,
+		Stderr:    true,
+		TTY:       true,
+	}, scheme.ParameterCodec)
 
-		// TODO: Improve error messages by first testing if 'tar' is present in the container?
-		Command:  cmd,
-		Executor: &exec.DefaultRemoteExecutor{},
+	exec, err := remotecommand.NewSPDYExecutor(p.cfg, "GET", req.URL())
+	if err != nil {
+		return err
 	}
 
 	go func() {
 		defer outStream.Close()
-		err := p.execute(options, container)
+		err = exec.Stream(remotecommand.StreamOptions{
+			Stdin:  os.Stdin,
+			Stdout: outStream,
+			Stderr: os.Stderr,
+			Tty:    true,
+		})
 		cmdutil.CheckErr(err)
 	}()
 	prefix := getPrefix(src)
@@ -173,29 +180,8 @@ func (p *pods) Cp(podName, container, src, dest string, cmd []string) error {
 	// remove extraneous path shortcuts - these could occur if a path contained extra "../"
 	// and attempted to navigate beyond "/" in a remote filesystem
 	prefix = stripPathShortcuts(prefix)
+	dest = path.Join(dest, path.Base(prefix))
 	return p.untarAll(reader, dest, prefix)
-}
-
-func (p *pods) execute(options *exec.ExecOptions, container string) error {
-	if len(options.Namespace) == 0 {
-		options.Namespace = p.namespace
-	}
-
-	if len(container) > 0 {
-		options.ContainerName = container
-	}
-
-	options.Config = p.cfg
-	options.PodClient = p.k8sClient.CoreV1()
-
-	// if err := options.Validate(); err != nil {
-	// 	return err
-	// }
-
-	if err := options.Run(); err != nil {
-		return err
-	}
-	return nil
 }
 
 func getPrefix(file string) string {
@@ -247,6 +233,7 @@ func (p *pods) untarAll(reader io.Reader, destDir, prefix string) error {
 		}
 
 		// basic file information
+		mode := header.FileInfo().Mode()
 		destFileName := filepath.Join(destDir, header.Name[len(prefix):])
 
 		baseName := filepath.Dir(destFileName)
@@ -260,16 +247,33 @@ func (p *pods) untarAll(reader io.Reader, destDir, prefix string) error {
 			continue
 		}
 
-		outFile, err := os.Create(destFileName)
+		evaledPath, err := filepath.EvalSymlinks(baseName)
 		if err != nil {
 			return err
 		}
-		defer outFile.Close()
-		if _, err := io.Copy(outFile, tarReader); err != nil {
-			return err
-		}
-		if err := outFile.Close(); err != nil {
-			return err
+
+		if mode&os.ModeSymlink != 0 {
+			linkname := header.Linkname
+
+			if !filepath.IsAbs(linkname) {
+				_ = filepath.Join(evaledPath, linkname)
+			}
+
+			if err := os.Symlink(linkname, destFileName); err != nil {
+				return err
+			}
+		} else {
+			outFile, err := os.Create(destFileName)
+			if err != nil {
+				return err
+			}
+			defer outFile.Close()
+			if _, err := io.Copy(outFile, tarReader); err != nil {
+				return err
+			}
+			if err := outFile.Close(); err != nil {
+				return err
+			}
 		}
 	}
 
