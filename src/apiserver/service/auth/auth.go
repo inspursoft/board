@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	defaultFailedTimes  = 5
-	defaultDenyDuration = 600 //Seconds
+	defaultFailedTimes  = 10
+	defaultDenyDuration = 120 //Seconds
 )
 
 type Auth interface {

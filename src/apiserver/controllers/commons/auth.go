@@ -10,14 +10,23 @@ import (
 
 var ReservedUsernames = [...]string{"explore", "create", "assets", "css", "img", "js", "less", "plugins", "debug", "raw", "install", "api", "avatar", "user", "org", "help", "stars", "issues", "pulls", "commits", "repo", "template", "new", ".", ".."}
 
+var defaultFailedTimesForCaptcha = 3
+
 func (ca *BaseController) ProcessAuth(principal, password string) (string, bool) {
 	var currentAuth *auth.Auth
 	var err error
-
 	//Check signin failed times
 	failedtimes, deny, _ := auth.CheckAuthFailedTimes(principal)
+	ca.Ctx.SetCookie("failedtimes", string(failedtimes))
+	if failedtimes >= defaultFailedTimesForCaptcha {
+		captchaID := ca.GetString("captcha_id")
+		challenge := ca.GetString("captcha")
+		if !Cpt.Verify(captchaID, challenge) {
+			ca.ServeStatus(http.StatusNotAcceptable, "Invalid Captcha.")
+			return "", false
+		}
+	}
 	if deny {
-		ca.Ctx.SetCookie("failedtimes", string(failedtimes))
 		ca.ServeStatus(http.StatusNotAcceptable, "NotAcceptable.")
 		return "", false
 	}
@@ -31,6 +40,7 @@ func (ca *BaseController) ProcessAuth(principal, password string) (string, bool)
 		ca.InternalError(err)
 		return "", false
 	}
+
 	user, err := (*currentAuth).DoAuth(principal, password)
 	if err != nil {
 		ca.InternalError(err)
