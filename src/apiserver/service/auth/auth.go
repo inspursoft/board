@@ -58,9 +58,12 @@ func CheckAuthFailedTimes(principal string) (int, bool, error) {
 		if time.Since(user.UpdateTime).Seconds() < defaultDenyDuration {
 			logs.Debug("Failed times %n, Last Updated %v", user.FailedTimes, user.UpdateTime)
 			// Add a record in SignInCache for quick check
-			SignInCache.Put(principal,
+			err = SignInCache.Put(principal,
 				model.UserSignInCache{FailedTimes: user.FailedTimes, UpdateTime: user.UpdateTime},
 				time.Second*time.Duration(defaultFailedTimes))
+			if err != nil {
+				logs.Error("Failed SignIn cached %s %v", principal, err)
+			}
 			return user.FailedTimes, true, nil
 		}
 	}
@@ -80,7 +83,7 @@ func UpdateAuthFailedTimes(principal string, requestaddr string) (int, error) {
 		return 0, nil
 	}
 	user.FailedTimes = user.FailedTimes + 1
-	_, err = service.UpdateUser(*user, "failed_times")
+	_, err = service.UpdateUser(*user, "failed_times", "update_time")
 	if err != nil {
 		logs.Error("Failed to udpated user in DB: %+v\n", err)
 		return user.FailedTimes, err
@@ -100,7 +103,7 @@ func ResetAuthFailedTimes(principal string, requestaddr string) error {
 		return errors.New("Failed to get user in DB")
 	}
 	user.FailedTimes = 0
-	_, err = service.UpdateUser(*user, "failed_times")
+	_, err = service.UpdateUser(*user, "failed_times", "update_time")
 	if err != nil {
 		logs.Error("Failed to udpated user in DB: %+v\n", err)
 		return err
@@ -115,12 +118,23 @@ func ResetAuthFailedTimes(principal string, requestaddr string) error {
 
 // Check the failed times in Cache
 func CacheCheckAuthFailedTimes(principal string) (int, bool) {
+	//TODO remove this Debug
+	logs.Debug("SignInCache: %v user: %s Exist:%v", SignInCache, principal, SignInCache.IsExist(principal))
 	if record, ok := SignInCache.Get(principal).(model.UserSignInCache); ok {
 		//Check access deny duration
 		if time.Since(record.UpdateTime).Seconds() < defaultDenyDuration {
-			logs.Debug("Failed times %n, Last Updated %v", record.FailedTimes, record.UpdateTime)
+			logs.Debug("Cache check Failed times %n, Last Updated %v", record.FailedTimes, record.UpdateTime)
 			return record.FailedTimes, true
 		}
 	}
 	return 0, false
+}
+
+func init() {
+	var err error
+	logs.Debug("Init SignInCache")
+	SignInCache, err = cache.NewCache("memory", `{"interval": 3600}`)
+	if err != nil {
+		logs.Error("Failed to initialize SignIn cache: %+v", err)
+	}
 }
