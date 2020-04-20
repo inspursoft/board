@@ -1,0 +1,205 @@
+<div [formGroup]="inputFormGroup">
+
+  <div class="clr-form-control clr-row"
+       [ngClass]="{'first-item': firstItem}"
+       *ngIf="type === 'text' || type === 'number'">
+    <label class="clr-control-label">
+      {{label}}
+      <span *ngIf="required"
+            style="color: red;">*</span>
+    </label>
+    <div class="clr-control-container clr-col-md-10 clr-col-12"
+         [ngClass]="{'clr-error': (inputControl.value && inputControl.errors) || showError}">
+      <div class="clr-input-wrapper">
+        <input [placeholder]="placeholder"
+               [title]="placeholder"
+               [type]="type === 'number'? 'number':'text'"
+               class="clr-input"
+               (blur)="onInputBlur()"
+               (focus)="onInputFocus()"
+               formControlName="inputControl">
+        <a role="tooltip"
+           aria-haspopup="true"
+           class="tooltip tooltip-lg tooltip-right">
+          <clr-icon class="clr-validate-icon"
+                    shape="exclamation-circle"></clr-icon>
+          <span class="tooltip-content">{{getValidatorMessage(inputControl.errors)}}</span>
+        </a>
+      </div>
+      <span class="clr-subtext"
+            *ngIf="enableHelper">{{helper}}</span>
+    </div>
+  </div>
+
+
+  <clr-toggle-container *ngIf="type === 'boolean'"
+                        [ngClass]="{'first-item': firstItem}">
+    <label>{{label}}
+      <span *ngIf="required"
+            style="color: red;">*</span>
+    </label>
+    <clr-toggle-wrapper>
+      <input type="checkbox"
+             [required]="required"
+             formControlName="inputControl"
+             (blur)="onInputBlur()"
+             (focus)="onInputFocus()"
+             clrToggle />
+    </clr-toggle-wrapper>
+    <clr-control-helper *ngIf="enableHelper">{{helper}}</clr-control-helper>
+    <clr-control-error>{{getValidatorMessage(inputControl.errors)}}</clr-control-error>
+  </clr-toggle-container>
+
+
+
+
+  <clr-radio-container [clrInline]="enumInline"
+                       [ngClass]="{'first-item': firstItem}"
+                       *ngIf="type === 'enum'">
+    <label>{{label}}
+      <span *ngIf="required"
+            style="color: red;">*</span>
+    </label>
+    <clr-radio-wrapper *ngFor="let item of enumItem">
+      <input type="radio"
+             clrRadio
+             formControlName="inputControl"
+             (blur)="onInputBlur()"
+             (focus)="onInputFocus()"
+             [value]="item" />
+      <label>{{item}}</label>
+    </clr-radio-wrapper>
+    <clr-radio-wrapper>
+      <input type="radio"
+             clrRadio
+             formControlName="inputControl"
+             (blur)="onInputBlur()"
+             (focus)="onInputFocus()"
+             [value]="customItem" />
+      <label>
+        <input [type]="enumType"
+               [disabled]="disabled"
+               [ngStyle]="{width: customItemWidth}"
+               [placeholder]="customItemPlaceholder"
+               [(ngModel)]="customItem"
+               #cItem="ngModel"
+               [ngModelOptions]="{standalone: true}"
+               (blur)="onCustomBlur(cItem.value)"
+               (focus)="onCustomFocus(cItem.value)" />
+      </label>
+    </clr-radio-wrapper>
+    <clr-control-helper *ngIf="enableHelper">{{helper}}</clr-control-helper>
+    <clr-control-error>{{getValidatorMessage(inputControl.errors)}}</clr-control-error>
+  </clr-radio-container>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <div class="clr-form-control clr-row"
+       [ngClass]="{'first-item': firstItem}"
+       *ngIf="type === 'password'">
+    <label class="clr-control-label">
+      {{label}}
+      <span *ngIf="required"
+            style="color: red;">*</span>
+    </label>
+    <div class="clr-control-container clr-col-md-10 clr-col-12"
+         [ngClass]="{'clr-error': (inputControl.value && inputControl.errors) || showError}">
+      <div class="clr-input-wrapper">
+        <input [placeholder]="placeholder"
+               [title]="placeholder"
+               [type]="showPassword ? 'text' : 'password'"
+               class="clr-input"
+               (blur)="onInputBlur()"
+               (focus)="onInputFocus()"
+               formControlName="inputControl">
+        <button class="password-eye"
+                (click)="togglePassword()">
+          <clr-icon [attr.shape]="showPassword ? 'eye-hide' : 'eye'"
+                    [attr.title]="showPassword ? 'hide' : 'show'"></clr-icon>
+        </button>
+        <a role="tooltip"
+           aria-haspopup="true"
+           class="tooltip tooltip-lg tooltip-right">
+          <clr-icon class="clr-validate-icon"
+                    shape="exclamation-circle"></clr-icon>
+          <span class="tooltip-content">{{getValidatorMessage(inputControl.errors)}}</span>
+        </a>
+      </div>
+      <span class="clr-subtext"
+            *ngIf="enableHelper">{{helper}}</span>
+    </div>
+  </div>
+
+  <div class="clr-form-control clr-row"
+       *ngIf="type === 'password' && confirmPassword">
+    <label class="clr-control-label">
+      {{confirmLabel}}
+      <span *ngIf="required"
+            style="color: red;">*</span>
+    </label>
+    <div class="clr-control-container clr-col-md-10 clr-col-12"
+         [ngClass]="{'clr-error': (confirmControl.value && confirmControl.errors) || showError}">
+      <div class="clr-input-wrapper">
+        <input [placeholder]="placeholder"
+               [title]="placeholder"
+               [type]="showPasswordconfirm ? 'text' : 'password'"
+               class="clr-input"
+               (blur)="onInputBlur()"
+               (focus)="onInputFocus()"
+               formControlName="confirmControl">
+        <button class="password-eye"
+                (click)="togglePasswordconfirm()">
+          <clr-icon [attr.shape]="showPasswordconfirm ? 'eye-hide' : 'eye'"
+                    [attr.title]="showPasswordconfirm ? 'hide' : 'show'"></clr-icon>
+        </button>
+        <a role="tooltip"
+           aria-haspopup="true"
+           class="tooltip tooltip-lg tooltip-right">
+          <clr-icon class="clr-validate-icon"
+                    shape="exclamation-circle"></clr-icon>
+          <span class="tooltip-content">{{getValidatorMessage(confirmControl.errors)}}</span>
+        </a>
+      </div>
+      <span class="clr-subtext"
+            *ngIf="enableHelper">{{helper}}</span>
+    </div>
+  </div>
+
+
+
+
+  <!-- <clr-password-container *ngIf="type === 'password'">
+    <label>{{label}}
+      <span *ngIf="required"
+            style="color: red;">*</span>
+    </label>
+    <input [placeholder]="placeholder"
+           clrPassword
+           formControlName="inputControl" />
+    <clr-control-helper *ngIf="enableHelper">{{helper}}</clr-control-helper>
+    <clr-control-error>{{getValidatorMessage(inputControl.errors)}}</clr-control-error>
+  </clr-password-container> -->
+  <!--
+  <clr-password-container *ngIf="type === 'password' && confirmPassword">
+    <label>{{confirmLabel}}
+      <span *ngIf="required"
+            style="color: red;">*</span>
+    </label>
+    <input [placeholder]="placeholder"
+           clrPassword
+           formControlName="confirmControl" />
+    <clr-control-helper *ngIf="enableHelper">{{helper}}</clr-control-helper>
+    <clr-control-error>{{getValidatorMessage(confirmControl.errors)}}</clr-control-error>
+  </clr-password-container> -->
+</div>
