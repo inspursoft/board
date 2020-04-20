@@ -8,6 +8,7 @@ import { ForgotPasswordComponent } from './forgot-password/forgot-password.compo
 import { CoreModule } from "../core/core.module";
 import { RouterModule, Routes } from "@angular/router";
 import { SystemInfoResolve } from "../app-routing.module";
+import { VerifyCodeComponent } from './verify-code/verify-code.component';
 
 const routes: Routes = [
   {
@@ -52,7 +53,8 @@ const routes: Routes = [
     SignInComponent,
     SignUpComponent,
     ResetPasswordComponent,
-    ForgotPasswordComponent
+    ForgotPasswordComponent,
+    VerifyCodeComponent
   ]
 })
 export class AccountModule {

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostBinding, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { SignIn } from './sign-in';
 import { MessageService } from '../../shared.service/message.service';
@@ -13,6 +13,7 @@ import { AppTokenService } from "../../shared.service/app-token.service";
   styleUrls: [ './sign-in.component.css' ]
 })
 export class SignInComponent implements OnInit {
+  @HostBinding('style.overflow-y') overflowY = 'hidden';
   isSignWIP = false;
   signInUser: SignIn = new SignIn();
   authMode = '';
