@@ -176,11 +176,9 @@ func (p *pods) CopyFromPod(podName, containerName, src, dest string, cmd []strin
 	}()
 	prefix := getPrefix(src)
 	prefix = path.Clean(prefix)
-	logs.Info("prefix 1 : %s", prefix)
 	// remove extraneous path shortcuts - these could occur if a path contained extra "../"
 	// and attempted to navigate beyond "/" in a remote filesystem
 	prefix = stripPathShortcuts(prefix)
-//	dest = path.Join(dest, path.Base(prefix))
 	return p.untarAll(reader, dest, prefix)
 }
 
@@ -237,8 +235,6 @@ func (p *pods) untarAll(reader io.Reader, destDir, prefix string) error {
 		// if the prefix is missing it means the tar was tempered with.
 		// For the case where prefix is empty we need to ensure that the path
 		// is not absolute, which also indicates the tar file was tempered with.
-		logs.Info("header.Name: %s", header.Name)
-		logs.Info("prefix 2 : %s", prefix)
 		if !strings.HasPrefix(header.Name, prefix) {
 			return fmt.Errorf("tar contents corrupted")
 		}
@@ -246,7 +242,6 @@ func (p *pods) untarAll(reader io.Reader, destDir, prefix string) error {
 		// basic file information
 		mode := header.FileInfo().Mode()
 		destFileName := filepath.Join(destDir, header.Name[len(prefix):])
-		logs.Info("destFileName: %s", destFileName)
 
 		if !isDestRelative(destDir, destFileName) {
 			logs.Info("warning: file %s is outside target destination, skipping\n", destFileName)

@@ -74,7 +74,7 @@ func (p *PodController) CopyFromPodAction() {
 	p.Ctx.Output.Download(dest, filepath.Base(src))
 	err = os.Remove(dest)
 	if err != nil {
-		p.InternalError(err)
+		p.CustomAbortAudit(http.StatusNotFound, fmt.Sprintf("No file was found in %s", podName))
 		return
 	}
 }
