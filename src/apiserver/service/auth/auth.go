@@ -56,7 +56,7 @@ func CheckAuthFailedTimes(principal string) (int, bool, error) {
 	if user.FailedTimes >= defaultFailedTimes {
 		//Failed times more than the limit, check access deny duration
 		if time.Since(user.UpdateTime).Seconds() < defaultDenyDuration {
-			logs.Debug("Failed times %n, Last Updated %v", user.FailedTimes, user.UpdateTime)
+			logs.Debug("Failed times %d, Last Updated %v", user.FailedTimes, user.UpdateTime)
 			// Add a record in SignInCache for quick check
 			err = SignInCache.Put(principal,
 				model.UserSignInCache{FailedTimes: user.FailedTimes, UpdateTime: user.UpdateTime},
@@ -123,7 +123,7 @@ func CacheCheckAuthFailedTimes(principal string) (int, bool) {
 	if record, ok := SignInCache.Get(principal).(model.UserSignInCache); ok {
 		//Check access deny duration
 		if time.Since(record.UpdateTime).Seconds() < defaultDenyDuration {
-			logs.Debug("Cache check Failed times %n, Last Updated %v", record.FailedTimes, record.UpdateTime)
+			logs.Debug("Cache check Failed times %d, Last Updated %v", record.FailedTimes, record.UpdateTime)
 			return record.FailedTimes, true
 		}
 	}
