@@ -29,7 +29,7 @@ const (
 
 const (
 	K8sLabel      = "kubernetes.io"
-	K8sNamespaces = "kube-sytem cadvisor"
+	K8sNamespaces = "kube-system cadvisor"
 )
 
 type NodeListResult struct {
