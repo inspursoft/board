@@ -5,6 +5,8 @@ import (
 	c "git/inspursoft/board/src/apiserver/controllers/commons"
 	"git/inspursoft/board/src/apiserver/service"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/astaxie/beego/logs"
@@ -63,13 +65,18 @@ func (p *PodController) CopyFromPodAction() {
 	podName := p.Ctx.Input.Param(":podname")
 	container := p.GetString("container")
 	src := p.GetString("src")
-	dest := p.GetString("dest")
+	dest := filepath.Join("/download/", filepath.Base(src))
 	err = service.CopyFromPod(project.Name, podName, container, src, dest)
 	if err != nil {
 		p.CustomAbortAudit(http.StatusBadRequest, fmt.Sprint(err))
 		return
 	}
-	p.Ctx.Output.Download(dest)
+	p.Ctx.Output.Download(dest, filepath.Base(src))
+	err = os.Remove(dest)
+	if err != nil {
+		p.InternalError(err)
+		return
+	}
 }
 
 /*func (p *PodController) CopyToPodAction() error {
