@@ -6,11 +6,11 @@ import { AppInitService } from '../../shared.service/app-init.service';
 import { AccountService } from '../account.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { RouteDashboard, RouteForgotPassword, RouteSignUp } from '../../shared/shared.const';
-import { AppTokenService } from "../../shared.service/app-token.service";
+import { AppTokenService } from '../../shared.service/app-token.service';
 
 @Component({
   templateUrl: './sign-in.component.html',
-  styleUrls: [ './sign-in.component.css' ]
+  styleUrls: ['./sign-in.component.css']
 })
 export class SignInComponent implements OnInit {
   @HostBinding('style.overflow-y') overflowY = 'hidden';
@@ -18,6 +18,7 @@ export class SignInComponent implements OnInit {
   signInUser: SignIn = new SignIn();
   authMode = '';
   redirectionURL = '';
+  curCaptchaId = '';
 
   constructor(private appInitService: AppInitService,
               private messageService: MessageService,
@@ -32,6 +33,15 @@ export class SignInComponent implements OnInit {
     if (this.authMode === 'indata_auth') {
       window.location.href = this.redirectionURL;
     }
+    this.refreshVerifyPicture();
+  }
+
+  get verifyPictureUrl() {
+    return `http://${this.appInitService.systemInfo.board_host}/captcha/${this.curCaptchaId}.png`;
+  }
+
+  refreshVerifyPicture() {
+    this.accountService.getCaptcha().subscribe((res: { captcha_id: string }) => this.curCaptchaId = res.captcha_id);
   }
 
   signIn(): void {
@@ -40,7 +50,7 @@ export class SignInComponent implements OnInit {
       this.isSignWIP = false;
       this.messageService.showAlert('ACCOUNT.SUCCESS_TO_SIGN_IN');
       this.appTokenService.token = res.token;
-      this.router.navigate([RouteDashboard], { queryParams: { token: this.appInitService.token }}).then();
+      this.router.navigate([RouteDashboard], {queryParams: {token: this.appInitService.token}}).then();
     }, (err: HttpErrorResponse) => {
       this.isSignWIP = false;
       if (err.status === 400) {

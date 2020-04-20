@@ -54,9 +54,11 @@
         <lib-input-ex [inputIsRequired]="true"
                       [inputPlaceholder]="'verify code'">
         </lib-input-ex>
-        <img alt="" src="../../../images/login-verify.png">
+        <a href="javascript: void(0)" (click)="refreshVerifyPicture()">
+          <img alt="" style="height: 50px" [src]="verifyPictureUrl">
+        </a>
       </div>
-      <button class="btn btn-primary-outline login-class">
+      <button class="btn btn-primary-outline login-class" (click)="signIn()">
         {{ 'ACCOUNT.SIGN_IN' | translate }}
       </button>
       <div class="clr-row clr-justify-content-end">
