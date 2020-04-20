@@ -452,6 +452,23 @@ func NodeExists(nodeName string) (bool, error) {
 	return false, nil
 }
 
+// Get a node in kubernetes cluster
+func GetNodebyName(nodeName string) (*model.Node, error) {
+	var config k8sassist.K8sAssistConfig
+	config.KubeConfigPath = kubeConfigPath()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	n := k8sclient.AppV1().Node()
+
+	node, err := n.Get(nodeName)
+	if err != nil {
+		logs.Error("Failed to get node: %s, error: %+v", nodeName, err)
+		return nil, err
+	}
+	logs.Info("Node in K8s %+v", node)
+	return node, nil
+
+}
+
 // Create a node in kubernetes cluster
 func CreateNode(node model.NodeCli) (*model.Node, error) {
 
@@ -507,11 +524,6 @@ func DeleteNode(nodeName string) (bool, error) {
 	return true, nil
 }
 
-// TODO: Drain a node
-func DrainNode(nodeName string) error {
-	return nil
-}
-
 func getNodeAddress(v model.Node, t string) string {
 	for _, addr := range v.Status.Addresses {
 		if string(addr.Type) == t {
@@ -542,6 +554,15 @@ func GetNodeControlStatus(nodeName string) (*model.NodeControlStatus, error) {
 	nodecontrol.NodeUnschedule = nNode.Unschedulable
 
 	// Get service instances
+	// si, err := GetNodeServiceInstances(nodeName)
+	// if err != nil {
+	// 	logs.Error("Failed to get K8s node service instances")
+	// 	return nil, err
+	// }
+	// if si != nil {
+	// 	nodecontrol.Service_Instances = *si
+	// 	logs.Debug("Node service instances: %v", nodecontrol.Service_Instances)
+	// }
 	pInterface := k8sclient.AppV1().Pod(model.NamespaceAll)
 	podList, err := pInterface.List(model.ListOptions{FieldSelector: fmt.Sprintf("spec.nodeName=%s", nodeName)})
 	if err != nil {
@@ -554,5 +575,62 @@ func GetNodeControlStatus(nodeName string) (*model.NodeControlStatus, error) {
 		instance.ServiceInstanceName = podinstance.Name
 		nodecontrol.Service_Instances = append(nodecontrol.Service_Instances, instance)
 	}
+	//TODO Need check the deletable by pod list information
+	nodecontrol.NodeDeletable = true
 	return &nodecontrol, nil
+}
+
+// Get a node service instances
+func GetNodeServiceInstances(nodeName string) (*[]model.ServiceInstance, error) {
+	var instances []model.ServiceInstance
+	var config k8sassist.K8sAssistConfig
+	config.KubeConfigPath = kubeConfigPath()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	pInterface := k8sclient.AppV1().Pod(model.NamespaceAll)
+	podList, err := pInterface.List(model.ListOptions{FieldSelector: fmt.Sprintf("spec.nodeName=%s", nodeName)})
+	if err != nil {
+		logs.Error("Failed to get K8s pods")
+		return nil, err
+	}
+	for _, podinstance := range podList.Items {
+		var instance model.ServiceInstance
+		instance.ProjectName = podinstance.Namespace
+		instance.ServiceInstanceName = podinstance.Name
+		instances = append(instances, instance)
+	}
+	return &instances, err
+}
+
+//Drain node serivce instances by adminserver
+func DrainNodeServiceInstanceByAdminServer(nodeName string) error {
+	//TODO call adminserver do kubectl drain
+	return nil
+}
+
+//Drain node serivce instances
+func DrainNodeServiceInstance(nodeName string) error {
+	var config k8sassist.K8sAssistConfig
+	config.KubeConfigPath = kubeConfigPath()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	pInterface := k8sclient.AppV1().Pod(model.NamespaceAll)
+	podList, err := pInterface.List(model.ListOptions{FieldSelector: fmt.Sprintf("spec.nodeName=%s", nodeName)})
+	if err != nil {
+		logs.Error("Failed to get K8s pods")
+		return err
+	}
+	for _, podinstance := range podList.Items {
+
+		//TODO Need to delete the pod based on its owner reference
+		logs.Debug("pod %s, kind %v", podinstance.Name, podinstance.ObjectMeta.Labels)
+		//TODO Need to support pod evict
+
+		//If not support evict, use pod delete simply
+		err = pInterface.Delete(podinstance.Name)
+		if err != nil {
+			logs.Error("Failed to delete pod %s", podinstance.Name)
+			//TODO fix me, whether continue to delete the rest
+			return err
+		}
+	}
+	return nil
 }
