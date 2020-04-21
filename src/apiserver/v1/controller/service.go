@@ -371,23 +371,10 @@ func (p *ServiceController) DeleteServiceAction() {
 // API to deploy service
 func (p *ServiceController) ToggleServiceAction() {
 	var err error
-
 	s, err := p.resolveServiceInfo()
 	if err != nil {
 		return
 	}
-
-	//checking project opened pull request status with count.
-	project, err := service.GetProjectByName(s.ProjectName)
-	if err != nil {
-		p.InternalError(err)
-	}
-
-	if project.PullRequestCount > 0 {
-		p.ServeStatus(http.StatusPreconditionFailed, "Please merge your repo's openning Pull Requests before toggling status.")
-		return
-	}
-
 	var reqServiceToggle model.ServiceToggle
 	err = p.ResolveBody(&reqServiceToggle)
 	if err != nil {

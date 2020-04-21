@@ -106,8 +106,7 @@ func TestGogitsCreateRepo(t *testing.T) {
 func TestGogitsCreateHook(t *testing.T) {
 	var err error
 	assert := assert.New(t)
-
-	err = gogs.NewGogsHandler(user1.Username, token1.Sha1).CreateHook(user1.Username, repoName, "test-hook-url", "push")
+	err = gogs.NewGogsHandler(user1.Username, token1.Sha1).CreateHook(user1.Username, repoName)
 	assert.Nilf(err, "Error occurred while creating hook to repo: %+s, error: %+v", repoName, err)
 }
 

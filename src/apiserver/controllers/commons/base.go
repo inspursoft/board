@@ -417,16 +417,6 @@ func (b *BaseController) CollaborateWithPullRequest(headBranch, baseBranch strin
 		logs.Error("Failed to create pull request and comment: %+v", err)
 		b.InternalError(err)
 	}
-	logs.Debug("Increase pull request count to project: %d, name: %s", b.Project.ID, b.Project.Name)
-	isSuccess, err := service.ModifyProjectPullRequestCount(b.Project.ID, "increase")
-	if err != nil {
-		b.InternalError(err)
-	}
-	if !isSuccess {
-		message := fmt.Sprintf("Failed to increase pull request count: %+v", err)
-		logs.Error(message)
-		b.CustomAbort(http.StatusBadRequest, message)
-	}
 }
 
 func (b *BaseController) RemoveItemsToRepo(items ...string) {
