@@ -81,7 +81,7 @@ func CheckAuthFailedTimes(principal string) (result AuthCheckResult) {
 		}
 	} else {
 		result.FailedTimes = 0
-		logs.Debug("Store auth check with principal: %s, record time at: %+v", principal, result.TimeNow)
+		logs.Debug("Store auth check with principal: %s.", principal)
 		temporaryStore.Put(principal, result, 300*time.Second)
 	}
 	return

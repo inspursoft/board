@@ -8,6 +8,10 @@ type CaptchaController struct {
 	BaseController
 }
 
+func (c *CaptchaController) Prepare() {
+
+}
+
 func (c *CaptchaController) Get() {
 	captchaID, err := Cpt.CreateCaptcha()
 	if err != nil {
