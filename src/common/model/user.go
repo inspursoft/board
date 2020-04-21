@@ -30,8 +30,3 @@ type PaginatedUsers struct {
 	Pagination *Pagination `json:"pagination"`
 	UserList   []*User     `json:"user_list"`
 }
-
-type UserSignInCache struct {
-	FailedTimes int
-	UpdateTime  time.Time
-}
