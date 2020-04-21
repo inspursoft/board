@@ -14,7 +14,7 @@ import (
 	"git/inspursoft/board/src/common/model"
 
 	"github.com/astaxie/beego/logs"
-	"github.com/google/cadvisor/info/v2"
+	v2 "github.com/google/cadvisor/info/v2"
 	//modelK8s "k8s.io/client-go/pkg/api/v1"
 )
 
