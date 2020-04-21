@@ -2,12 +2,11 @@ package auth
 
 import (
 	"fmt"
-	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
 
-	"errors"
 	"time"
 
+	"github.com/astaxie/beego/cache"
 	"github.com/astaxie/beego/logs"
 )
 
@@ -39,66 +38,60 @@ func registerAuth(AuthMode string, auth Auth) {
 	}
 }
 
-// Check the failed times by user name, TODO check by request IP
-func CheckAuthFailedTimes(principal string) (int, bool, error) {
-	user, err := service.GetUserByName(principal)
-	if err != nil {
-		logs.Error("Failed to get user in SignIn: %+v\n", err)
-		return 0, false, err
-	}
-	if user == nil {
-		// a new user name, pass, TODO check request IP failed times
-		return 0, false, nil
-	}
-	if user.FailedTimes >= defaultFailedTimes {
-		//Failed times more than the limit, check access deny duration
-		if time.Since(user.UpdateTime).Seconds() < defaultDenyDuration {
-			logs.Debug("Failed times %n, Last Updated %v", user.FailedTimes, user.UpdateTime)
-			return user.FailedTimes, true, nil
-		}
-	}
-	return user.FailedTimes, false, nil
+var temporaryStore cache.Cache
+
+type AuthCheckResult struct {
+	TimeNow              time.Time
+	FailedTimes          int
+	IsTemporarilyBlocked bool
+	TimeElapsed          int
+	TimeRemain           int
 }
 
-// Update the failed times by user name
-func UpdateAuthFailedTimes(principal string, requestaddr string) (int, error) {
-	user, err := service.GetUserByName(principal)
-	if err != nil {
-		logs.Error("Failed to get user in SignIn: %+v\n", err)
-		return 0, err
+// Check the failed times by user name, TODO check by request IP
+func CheckAuthFailedTimes(principal string) (result AuthCheckResult) {
+	// a new user name, pass, TODO check request IP failed times
+	if temporaryStore.IsExist(principal) {
+		if r, ok := temporaryStore.Get(principal).(AuthCheckResult); ok {
+			r.FailedTimes++
+			logs.Debug("Increase auth check failed times with principal: %s, with times: %d", principal, r.FailedTimes)
+			if r.FailedTimes >= defaultFailedTimes {
+				if !r.IsTemporarilyBlocked {
+					r.TimeNow = time.Now()
+				}
+				if r.TimeElapsed < defaultDenyDuration {
+					r.IsTemporarilyBlocked = true
+					r.TimeElapsed = int(time.Since(r.TimeNow).Seconds())
+					logs.Debug("Blocking auth principal: %s as it has not reached the deny duration: %d", principal, r.TimeRemain)
+				}
+				timeRemain := defaultDenyDuration - r.TimeElapsed
+				if timeRemain >= 0 {
+					r.TimeRemain = timeRemain
+				} else {
+					r.FailedTimes = 0
+					r.TimeNow = time.Now()
+					r.TimeElapsed = 0
+					r.TimeRemain = 0
+					r.IsTemporarilyBlocked = false
+					logs.Debug("Unlocking auth principal: %s as it has reached deny duration", principal)
+				}
+			}
+			temporaryStore.Put(principal, r, 300*time.Second)
+			result = r
+		}
+	} else {
+		result.FailedTimes = 0
+		logs.Debug("Store auth check with principal: %s, record time at: %+v", principal, result.TimeNow)
+		temporaryStore.Put(principal, result, 300*time.Second)
 	}
-	if user == nil {
-		// TODO not a user name, update the request IP failed times in memorycache
-		logs.Info("Deny no user %s request IP %s", principal, requestaddr)
-		return 0, nil
-	}
-	user.FailedTimes = user.FailedTimes + 1
-	_, err = service.UpdateUser(*user, "failed_times")
-	if err != nil {
-		logs.Error("Failed to udpated user in DB: %+v\n", err)
-		return user.FailedTimes, err
-	}
-	return user.FailedTimes, nil
+	return
 }
 
 //Reset the access check times
 func ResetAuthFailedTimes(principal string, requestaddr string) error {
-	user, err := service.GetUserByName(principal)
-	if err != nil {
-		logs.Error("Failed to get user in SignIn: %+v\n", err)
-		return err
-	}
-	if user == nil {
-		logs.Error("Failed to get user in DB %s", principal)
-		return errors.New("Failed to get user in DB")
-	}
-	user.FailedTimes = 0
-	_, err = service.UpdateUser(*user, "failed_times")
-	if err != nil {
-		logs.Error("Failed to udpated user in DB: %+v\n", err)
-		return err
-	}
-	//TODO reset the request IP memory
-	logs.Debug("Resetted the times user %s IP %s", principal, requestaddr)
-	return nil
+	return temporaryStore.Delete(principal)
+}
+
+func init() {
+	temporaryStore = cache.NewMemoryCache()
 }

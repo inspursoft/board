@@ -474,7 +474,7 @@ func InitController() {
 	}
 	logs.Info("Set token server URL as %s and will expiration time after %d second(s) in cache.", TokenServerURL(), TokenCacheExpireSeconds)
 	beego.BConfig.MaxMemory = 1 << 22
-	MemoryCache, err := cache.NewCache("memory", `{"interval":3600}`)
+	MemoryCache, err = cache.NewCache("memory", `{"interval":3600}`)
 	if err != nil {
 		logs.Error("Failed to initialize cache: %+v", err)
 	}

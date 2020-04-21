@@ -19,7 +19,6 @@ type AuthController struct {
 func (u *AuthController) Prepare() {
 	u.IsExternalAuth = utils.GetBoolValue("IS_EXTERNAL_AUTH")
 	u.RecordOperationAudit()
-	u.EnableXSRF = false
 }
 
 func (u *AuthController) SignInAction() {
