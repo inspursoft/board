@@ -13,7 +13,9 @@
         <button clrTabLink>{{"NodeControl.NodeServiceControl" | translate}}</button>
         <ng-template [(clrIfActive)]="tabServiceControlActive">
           <clr-tab-content>
-            <app-node-service-control [nodeCurrent]="curNode">
+            <app-node-service-control
+              [nodeCurrent]="curNode"
+              [(instanceCount)]="serviceInstanceCount">
             </app-node-service-control>
           </clr-tab-content>
         </ng-template>

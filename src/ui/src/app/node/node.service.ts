@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { delay, map } from 'rxjs/operators';
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { NodeDetail, NodeControlStatus, NodeGroupStatus, NodeStatus } from './node.types';
 import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from '../shared/shared.const';
@@ -85,7 +85,8 @@ export class NodeService {
     return this.http.getJson(`/api/v1/nodes/${nodeName}`, NodeControlStatus);
   }
 
-  drainNodeService(nodeName: string): Observable<any> {
-    return this.http.put(`/api/v1/nodes/${nodeName}/drain`, null);
+  drainNodeService(nodeName: string, serviceInstanceCount: number): Observable<any> {
+    return this.http.put(`/api/v1/nodes/${nodeName}/drain`, null)
+      .pipe(delay(1000 * serviceInstanceCount));
   }
 }

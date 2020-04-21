@@ -12,6 +12,7 @@ import { NodeStatus, NodeStatusType } from '../node.types';
 export class NodeControlComponent extends CsModalChildBase implements OnInit {
   @ViewChild(NodeServiceControlComponent) serviceControl: NodeServiceControlComponent;
   curNode: NodeStatus;
+  serviceInstanceCount = 0;
   tabServiceControlActive = false;
   isActionWip = false;
 
@@ -24,13 +25,14 @@ export class NodeControlComponent extends CsModalChildBase implements OnInit {
   }
 
   get btnDrainDisable(): boolean {
-    return this.curNode.status !== NodeStatusType.Schedulable ||
+    return this.curNode.status !== NodeStatusType.Unschedulable ||
       this.tabServiceControlActive === false;
   }
 
   drainService() {
     this.isActionWip = true;
-    this.nodeService.drainNodeService(this.curNode.nodeName).subscribe(
+    console.log(this.serviceInstanceCount);
+    this.nodeService.drainNodeService(this.curNode.nodeName, this.serviceInstanceCount).subscribe(
       () => this.serviceControl.retrieve({page: {from: 0, to: 5}}),
       () => this.isActionWip = false,
       () => this.isActionWip = false
