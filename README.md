@@ -215,7 +215,9 @@ For more details, please refer to [Upgrade And Database Migration Guide](docs/mi
 For information on how to use BOARD, please take a look at [User Guide](docs/user_guide.md).
 
 ## Community
-...(Coming soon.)
+[Online Community Meeting](http://open.inspur.com/TechnologyCenter/board/wikis/Community%20meeting%20schedule)
+
+[Online Community Meeting (inspur internal link)](http://10.10.5.9/TechnologyCenter/board/wikis/Community%20meeting%20schedule)
 
 ## Contribution
 ...(Coming soon.)
@@ -243,7 +245,11 @@ SOFTWARE.
 
 ## Partners
 Shanxi Provincial Department of Land and Resources
+
 China Mobile Communications Group Co.,Ltd
+
+Ministry of Veterans Affairs of the People's Republic of China
+
 etc.
 
 ## Users
