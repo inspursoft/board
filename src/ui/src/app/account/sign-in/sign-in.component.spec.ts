@@ -84,8 +84,8 @@ describe('SignInComponent', () => {
 
   // Todo:Test HttpClient Service:https://angular.cn/guide/testing#component-with-async-service
   function testErrorHandle(status: number): void {
-    const btnSubmitDebug: DebugElement = fixture.debugElement.query(By.css('btn-primary-outline'));
-    const btnSubmit: HTMLInputElement = btnSubmitDebug.nativeElement as HTMLInputElement;
+    const btnSubmitDebug: DebugElement = fixture.debugElement.query(By.css('.btn-primary-outline'));
+    const btnSubmit: HTMLButtonElement = btnSubmitDebug.nativeElement as HTMLButtonElement;
     const appInitService = fixture.debugElement.injector.get(AppInitService);
     component.signInUser.username = 'hello';
     component.signInUser.password = 'world';
@@ -109,20 +109,20 @@ describe('SignInComponent', () => {
   });
 
   it('should submit button is disabled', () => {
-    const btnSubmitDebug: DebugElement = fixture.debugElement.query(By.css('btn-primary-outline'));
-    const btnSubmit: HTMLInputElement = btnSubmitDebug.nativeElement as HTMLInputElement;
+    const btnSubmitDebug: DebugElement = fixture.debugElement.query(By.css('.btn-primary-outline'));
+    const btnSubmit: HTMLButtonElement = btnSubmitDebug.nativeElement as HTMLButtonElement;
     fixture.detectChanges();
     expect<boolean>(btnSubmit.disabled).toBeTruthy('submit button is disabled');
   });
 
-  it('should submit button is enable', fakeAsync(() => {
-    const btnSubmitDebug: DebugElement = fixture.debugElement.query(By.css('btn-primary-outline'));
-    const btnSubmit: HTMLInputElement = btnSubmitDebug.nativeElement as HTMLInputElement;
+  it('should submit button is enable', () => {
+    const btnSubmitDebug: DebugElement = fixture.debugElement.query(By.css('.btn-primary-outline'));
+    const btnSubmit: HTMLButtonElement = btnSubmitDebug.nativeElement as HTMLButtonElement;
     component.signInUser.username = 'hello';
     component.signInUser.password = 'world';
-    tick();
+    fixture.detectChanges();
     expect<boolean>(btnSubmit.disabled).toBeFalsy('submit button is enabled');
-  }));
+  });
 
   // it("test sign-in click and catch 400 error code", async(() => {
   //   testErrorHandle(400);

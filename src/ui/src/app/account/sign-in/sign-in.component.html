@@ -64,7 +64,7 @@
           <img alt="" style="height: 50px" [src]="verifyPictureUrl">
         </a>
       </div>
-      <button [disabled]="signInUser.password === '' || signInUser.password ===''"
+      <button [disabled]="signInUser.username === '' || signInUser.password ===''"
               class="btn btn-primary-outline login-class"
               (click)="signIn()">
         {{ 'ACCOUNT.SIGN_IN' | translate }}
