@@ -59,6 +59,7 @@ type BaseController struct {
 }
 
 func (b *BaseController) Prepare() {
+	b.EnableXSRF = false
 	b.ResolveSignedInUser()
 	b.RecordOperationAudit()
 }
