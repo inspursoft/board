@@ -1,6 +1,6 @@
 import { Component, HostBinding, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { ResSignIn, ResSignInType, ReqSignIn } from './sign-in.types';
+import { ResSignIn, ResSignInType, ReqSignIn } from '../account.types';
 import { MessageService } from '../../shared.service/message.service';
 import { AppInitService } from '../../shared.service/app-init.service';
 import { AccountService } from '../account.service';

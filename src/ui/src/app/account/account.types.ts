@@ -1,3 +1,11 @@
+export class AccountTypes {
+  username: string;
+  password: string;
+  email: string;
+  realname: string;
+  comment: string;
+}
+
 export class ReqSignIn {
   username = '';
   password = '';
@@ -30,3 +38,4 @@ export interface IResSignIn {
   resolve_sign_in_description: string;
   resolve_sign_in_value: number;
 }
+

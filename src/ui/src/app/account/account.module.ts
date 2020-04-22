@@ -1,14 +1,13 @@
 import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
 import { SharedModule } from '../shared/shared.module';
 import { SignInComponent } from './sign-in/sign-in.component';
 import { SignUpComponent } from './sign-up/sign-up.component';
 import { AccountService } from './account.service';
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
 import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
-import { CoreModule } from "../core/core.module";
-import { RouterModule, Routes } from "@angular/router";
-import { SystemInfoResolve } from "../app-routing.module";
-import { VerifyCodeComponent } from './verify-code/verify-code.component';
+import { CoreModule } from '../core/core.module';
+import { SystemInfoResolve } from '../app-routing.module';
 
 const routes: Routes = [
   {
@@ -53,8 +52,7 @@ const routes: Routes = [
     SignInComponent,
     SignUpComponent,
     ResetPasswordComponent,
-    ForgotPasswordComponent,
-    VerifyCodeComponent
+    ForgotPasswordComponent
   ]
 })
 export class AccountModule {

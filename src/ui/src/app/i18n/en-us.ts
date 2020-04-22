@@ -97,7 +97,7 @@ export const LANG_EN_US = {
     "FAILED_TO_SIGN_UP": "Failed to sign up:",
     "SUCCESS_TO_SIGN_UP": "User sign up successfully.",
     "FAILED_TO_SIGN_OUT": "Failed to sign out.",
-    "ACCOUNT_SETTING_SUCCESS":"Account setting success.",
+    "ACCOUNT_SETTING_SUCCESS":"AccountTypes setting success.",
     "ALREADY_SIGNED_IN": "The user has already signed in other place.",
     "SEND_REQUEST":"Send Request",
     "SEND_REQUEST_SUCCESS":"Send Request Success",
@@ -115,7 +115,7 @@ export const LANG_EN_US = {
   "HEAD_NAV": {
     "INPUT_FOR_SEARCHING": "Input for searching.",
     "CHANGE_PASSWORD": "Change Password",
-    "ACCOUNT_SETTINGS": "Account Settings",
+    "ACCOUNT_SETTINGS": "AccountTypes Settings",
     "LANG_EN_US": "English",
     "LANG_ZH_CN": "中文",
     "LOG_OUT": "Log Out",

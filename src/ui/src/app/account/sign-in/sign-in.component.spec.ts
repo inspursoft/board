@@ -7,14 +7,14 @@
 import { By } from '@angular/platform-browser';
 import { DebugElement, Injectable } from '@angular/core';
 import { ActivatedRoute, NavigationExtras, Router } from '@angular/router';
-import { async, ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpErrorResponse } from '@angular/common/http';
 import { defer } from 'rxjs';
 import { SignInComponent } from './sign-in.component';
 import { AccountService } from '../account.service';
 import { AppModule } from '../../app.module';
 import { AppComponent } from '../../app.component';
 import { AppInitService } from '../../shared.service/app-init.service';
-import { HttpErrorResponse } from '@angular/common/http';
 import { HeaderComponent } from '../../shared/header/header.component';
 import { AccountModule } from '../account.module';
 import Spy = jasmine.Spy;

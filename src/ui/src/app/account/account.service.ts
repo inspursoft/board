@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Account } from './account';
+import { AccountTypes, ReqSignIn } from './account.types';
 import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from '../shared/shared.const';
-import { ReqSignIn } from './sign-in/sign-in.types';
 export const BASE_URL = '/api/v1';
 
 @Injectable()
@@ -22,7 +21,7 @@ export class AccountService {
     );
   }
 
-  signUp(account: Account): Observable<any> {
+  signUp(account: AccountTypes): Observable<any> {
     return this.http.post(
       BASE_URL + '/sign-up',
       {
