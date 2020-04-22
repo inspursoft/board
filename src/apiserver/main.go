@@ -216,5 +216,9 @@ func main() {
 		}
 	}
 
+	beego.BConfig.WebConfig.EnableXSRF = true
+	beego.BConfig.WebConfig.XSRFKey = "ILGOWezZZLeeDozS9Zg6xB2Ogyv1a2Ji"
+	beego.BConfig.WebConfig.XSRFExpire = 1800
+
 	beego.Run(":" + apiServerPort())
 }
