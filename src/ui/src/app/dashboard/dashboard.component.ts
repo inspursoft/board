@@ -607,7 +607,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
   }
 
   getLinesName(lineType: LineType): Array<string> {
-    return this.lineResponses.get(lineType) ? this.lineResponses.get(lineType).list : null;
+    return this.lineResponses.get(lineType) ? this.lineResponses.get(lineType).list : [];
   }
 
   get grafanaViewUrl(): string {

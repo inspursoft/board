@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { Account } from './account';
 import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from '../shared/shared.const';
-
+import { ReqSignIn } from './sign-in/sign-in.types';
 export const BASE_URL = '/api/v1';
 
 @Injectable()
@@ -13,11 +12,14 @@ export class AccountService {
   constructor(private http: HttpClient) {
   }
 
-  signIn(principal: string, password: string): Observable<any> {
-    return this.http.post(BASE_URL + '/sign-in',
-      {user_name: principal, user_password: password},
-      {headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE), observe: 'response'})
-      .pipe(map(res => res.body));
+  signIn(signInUser: ReqSignIn): Observable<{ token: string }> {
+    return this.http.post<{ token: string }>(BASE_URL + '/sign-in',
+      {user_name: signInUser.username, user_password: signInUser.password},
+      {
+        headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
+        params: {captcha_id: signInUser.captchaId, captcha: signInUser.captcha}
+      }
+    );
   }
 
   signUp(account: Account): Observable<any> {
