@@ -555,6 +555,17 @@ func GetNodeControlStatus(nodeName string) (*model.NodeControlStatus, error) {
 	nodecontrol.NodeUnschedule = nNode.Unschedulable
 	nodecontrol.NodeDeletable = true
 
+	// Phase is deprecated, if null, use Status, fix me
+	if nodecontrol.NodePhase == "" {
+		nodecontrol.NodePhase = func() string {
+			for _, cond := range nNode.Status.Conditions {
+				if strings.EqualFold(string(cond.Type), "Ready") && cond.Status == model.ConditionTrue {
+					return "Running"
+				}
+			}
+			return "Unknown"
+		}()
+	}
 	// Get service instances
 	// si, err := GetNodeServiceInstances(nodeName)
 	// if err != nil {
