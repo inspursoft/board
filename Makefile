@@ -15,7 +15,7 @@
 # Common
 # Develop flag
 #
-DEVFLAG=release
+DEVFLAG=dev
 
 # ARCH default is x86_64, also support mips, arm64v8
 ARCH=
@@ -195,9 +195,10 @@ start:
 
 start_admin:
 	@echo "loading Adminserver images..."
-	#@if [ ! -d $(MAKEPATH)/config/adminserver ] ; then mkdir -p $(MAKEPATH)/config/adminserver ; fi
-	#@rm -f $(MAKEPATH)/config/adminserver/env
-	#@cp $(MAKEPATH)/templates/adminserver/env-dev $(MAKEPATH)/config/adminserver/env
+	@if [ ! -d $(MAKEPATH)/adminserver ] ; then mkdir -p $(MAKEPATH)/adminserver ; fi
+	@rm -f $(MAKEPATH)/adminserver/env
+	@cp $(MAKEPATH)/templates/adminserver/env-dev $(MAKEPATH)/adminserver/env
+	@sed -i "s|__CURDIR__|$(MAKEPATH)|g"  $(MAKEPATH)/adminserver/env
 	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAMEADM) up -d
 	@echo "Start complete. You can visit Adminserver now."
 
@@ -208,7 +209,7 @@ down:
 
 down_admin:
 	@echo "stoping Adminserver instance..."
-	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAMENEW) down -v
+	#$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAMENEW) down -v
 	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAMEADM) down -v
 	@echo "Done."
 

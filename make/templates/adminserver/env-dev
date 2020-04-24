@@ -1,5 +1,5 @@
-BOARD_COMPOSE=/data/board/make/dev/docker-compose-new.yml
-PREPARE_FILE=/data/board/make/prepare
-MAKE_PATH=/data/board/make
+BOARD_COMPOSE=__CURDIR__/dev/docker-compose-new.yml
+PREPARE_FILE=__CURDIR__/prepare
+MAKE_PATH=__CURDIR__
 IMAGE_PREFIX=dev
 CONTAINER_PREFIX=dev
