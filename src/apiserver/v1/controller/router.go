@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"git/inspursoft/board/src/apiserver/controllers/commons"
+
 	"github.com/astaxie/beego"
 )
 
@@ -10,6 +12,8 @@ func InitRouter() {
 			beego.NSRouter("/sign-in",
 				&AuthController{},
 				"post:SignInAction"),
+			beego.NSRouter("/captcha",
+				&commons.CaptchaController{}),
 			beego.NSRouter("/ext-auth",
 				&AuthController{},
 				"get:ExternalAuthAction"),
@@ -133,6 +137,10 @@ func InitRouter() {
 				&NodeController{}, "get:GetNode"),
 			beego.NSRouter("/nodes",
 				&NodeController{}, "get:NodeList;post:AddNodeAction"),
+			beego.NSRouter("/nodes/:nodename(.*)",
+				&NodeController{}, "get:GetNodeStatusAction"),
+			beego.NSRouter("/nodes/:nodename(.*)/drain",
+				&NodeController{}, "put:NodeDrainAction"),
 			beego.NSRouter("/nodes/availableresources",
 				&NodeController{}, "get:NodesAvailalbeResources"),
 			beego.NSRouter("/node/toggle",

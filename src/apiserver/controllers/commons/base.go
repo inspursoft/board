@@ -2,12 +2,11 @@ package commons
 
 import (
 	"errors"
+	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"path/filepath"
 	"time"
-
-	"git/inspursoft/board/src/common/model"
-	"git/inspursoft/board/src/common/utils"
 
 	"git/inspursoft/board/src/apiserver/service"
 
@@ -19,12 +18,14 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/cache"
 	"github.com/astaxie/beego/logs"
+	"github.com/astaxie/beego/utils/captcha"
 )
 
+var MemoryCache cache.Cache
+var Cpt *captcha.Captcha
 var TokenServerURL = utils.GetConfig("TOKEN_SERVER_URL")
 var TokenExpireTime = utils.GetConfig("TOKEN_EXPIRE_TIME")
 var TokenCacheExpireSeconds int
-var MemoryCache cache.Cache
 
 var ErrInvalidToken = errors.New("error for invalid token")
 
@@ -58,6 +59,7 @@ type BaseController struct {
 }
 
 func (b *BaseController) Prepare() {
+	b.EnableXSRF = false
 	b.ResolveSignedInUser()
 	b.RecordOperationAudit()
 }
@@ -217,6 +219,7 @@ func (b *BaseController) GetCurrentUser() *model.User {
 			MemoryCache.Put(user.Username, token, time.Second*time.Duration(TokenCacheExpireSeconds))
 			b.Ctx.ResponseWriter.Header().Set("token", token)
 		}
+		user.Password = ""
 		return user
 	}
 	return nil
@@ -461,11 +464,11 @@ func InitController() {
 		logs.Error("Failed to get token expire seconds: %+v", err)
 	}
 	logs.Info("Set token server URL as %s and will expiration time after %d second(s) in cache.", TokenServerURL(), TokenCacheExpireSeconds)
-
-	MemoryCache, err = cache.NewCache("memory", `{"interval": 3600}`)
+	beego.BConfig.MaxMemory = 1 << 22
+	MemoryCache, err = cache.NewCache("memory", `{"interval":3600}`)
 	if err != nil {
 		logs.Error("Failed to initialize cache: %+v", err)
 	}
-	beego.BConfig.MaxMemory = 1 << 22
+	Cpt = captcha.NewWithFilter("/captcha/", MemoryCache)
 	logs.Debug("Current auth mode is: %s", AuthMode())
 }
