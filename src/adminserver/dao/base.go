@@ -11,7 +11,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-const AdminServerDbPath = "/data/board/database/"
+const AdminServerDbPath = "/data/adminserver/database/"
 const AdminServerDbFile = "adminServer.db"
 
 var (

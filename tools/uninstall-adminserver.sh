@@ -9,6 +9,7 @@ set -e
 usage=$'This shell script will uninstall Board images and data volume. Only run it under the installation directory. \nUsage:    uninstalil [OPTINOS]  \nOptions:\n  -s      Silent uninstall.\n  --help  Show this help info.'
 item=0
 defaultDataVolume="/data/board"
+adminserverDataVolume="/data/adminserver"
 silentFlag=flase
 
 workdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -99,7 +100,7 @@ function delete_images {
 }
 
 function remove_data {
-	rm -rf $defaultDataVolume
+	rm -rf $defaultDataVolume $adminserverDataVolume
 }
 
 echo "[Step $item]: checking uninstallation environment ..."; let item+=1
