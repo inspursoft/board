@@ -87,6 +87,6 @@ export class NodeService {
 
   drainNodeService(nodeName: string, serviceInstanceCount: number): Observable<any> {
     return this.http.put(`/api/v1/nodes/${nodeName}/drain`, null)
-      .pipe(delay(1000 * serviceInstanceCount));
+      .pipe(delay(500 * serviceInstanceCount));
   }
 }

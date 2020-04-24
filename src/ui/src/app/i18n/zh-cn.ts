@@ -881,7 +881,8 @@ export const LANG_ZH_CN = {
     NodeSchedulable: '可调度',
     ProjectName: '项目名称',
     ServiceInstanceName: '服务实例名称',
-    DrainService: '排除服务'
+    DrainService: '排除服务',
+    DeleteNode: '删除服务'
   },
 
   "GUIDE":{

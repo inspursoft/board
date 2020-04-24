@@ -15,6 +15,7 @@
           <clr-tab-content>
             <app-node-service-control
               [nodeCurrent]="curNode"
+              [(deletable)]="nodeDeletable"
               [(instanceCount)]="serviceInstanceCount">
             </app-node-service-control>
           </clr-tab-content>
@@ -23,6 +24,14 @@
     </clr-tabs>
   </div>
   <div class="modal-footer">
+    <a target="_blank" [href]="adminServerDeleteNodeUrl">
+      <button type="button"
+              class="btn btn-warning-outline"
+              *ngIf="tabServiceControlActive"
+              [disabled]="btnDeleteDisable">
+        {{ 'NodeControl.DeleteNode' | translate }}
+      </button>
+    </a>
     <button type="button"
             class="btn btn-warning-outline"
             *ngIf="tabServiceControlActive"
@@ -30,7 +39,10 @@
             [disabled]="btnDrainDisable">
       {{ 'NodeControl.DrainService' | translate }}
     </button>
-    <button type="button" class="btn btn-outline" (click)="modalOpened = false">
+    <button type="button"
+            [disabled]="isActionWip"
+            class="btn btn-outline"
+            (click)="modalOpened = false">
       {{ 'BUTTON.OK' | translate }}
     </button>
     <span class="spinner spinner-sm" *ngIf="isActionWip"></span>

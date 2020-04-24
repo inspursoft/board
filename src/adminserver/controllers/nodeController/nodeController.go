@@ -5,11 +5,13 @@ import (
 	"git/inspursoft/board/src/adminserver/models/nodeModel"
 	"git/inspursoft/board/src/adminserver/service"
 	"git/inspursoft/board/src/adminserver/service/nodeService"
+	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type Controller struct {
@@ -190,6 +192,28 @@ func (controller *Controller) RemoveNodeAction() {
 		NodeIp:         nodeIp,
 		MasterPassword: masterPassword},
 		nodeModel.ActionTypeDeleteNode, nodeModel.RemoveNodeYamlFile)
+}
+
+
+// @Title Get node control status
+// @Description Get node control status
+// @Param	node_name	        path	string	true	""
+// @Success 200 {object} model.NodeControlStatus  success
+// @Failure 400 bad request
+// @Failure 500 Internal Server Error
+// @router /:node_name [get]
+func (controller *Controller) ControlStatusAction() {
+	nodeName := strings.TrimSpace(controller.Ctx.Input.Param(":node_name"))
+	var nodeControlStatus = model.NodeControlStatus{NodeName: nodeName}
+	if err := nodeService.GetNodeControlStatusFromApiServer(&nodeControlStatus); err!=nil{
+		errMsg := fmt.Sprintf("Failed to get node control status: %v", err)
+		logs.Error(errMsg)
+		controller.CustomAbort(http.StatusBadRequest, errMsg)
+		return
+	}
+	controller.Data["json"] = nodeControlStatus
+	controller.ServeJSON()
+	return
 }
 
 func (controller *Controller) AddRemoveNode(nodePostData *nodeModel.AddNodePostData,

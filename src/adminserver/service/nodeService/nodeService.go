@@ -9,6 +9,7 @@ import (
 	"git/inspursoft/board/src/adminserver/models/nodeModel"
 	"git/inspursoft/board/src/adminserver/service"
 	"git/inspursoft/board/src/adminserver/tools/secureShell"
+	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 
 	"github.com/astaxie/beego/logs"
@@ -371,23 +372,35 @@ func GetLogInfoInCache(nodeIp string) *nodeModel.NodeLog {
 	return logCache.NodeLogPtr
 }
 
+func GetNodeControlStatusFromApiServer(nodeControlStatus *model.NodeControlStatus) error {
+	url := fmt.Sprintf("api/v1/nodes/%s", nodeControlStatus.NodeName)
+	return getResponseJsonFromApiServer(url, nodeControlStatus);
+}
+
 func getNodeListFromApiServer(nodeList *[]nodeModel.ApiServerNodeListResult) error {
+	return getResponseJsonFromApiServer("api/v1/nodes", nodeList);
+}
+
+func getResponseJsonFromApiServer(urlPath string, res interface{}) error  {
 	allConfig, statusMessage := service.GetAllCfg("")
 	if statusMessage == "BadRequest" {
 		return fmt.Errorf("failed to get the configuration")
 	}
 	host := allConfig.Apiserver.Hostname
 	port := allConfig.Apiserver.APIServerPort
-	url := fmt.Sprintf("http://%s:%s/api/v1/nodes?skip=AMS", host, port)
+	url := fmt.Sprintf("http://%s:%s/%s", host, port, urlPath)
 	err := utils.RequestHandle(http.MethodGet, url, func(req *http.Request) error {
-		req.Header = http.Header{"Content-Type": []string{"application/json"}}
+		req.Header = http.Header{
+			"Content-Type": []string{"application/json"},
+			"token":        []string{""},// Todo: add token value for request
+		}
 		return nil
 	}, nil, func(req *http.Request, resp *http.Response) error {
 		if resp.StatusCode == 200 {
-			return utils.UnmarshalToJSON(resp.Body, nodeList)
+			return utils.UnmarshalToJSON(resp.Body, res)
 		}
 		data, _ := ioutil.ReadAll(resp.Body)
-		return fmt.Errorf("failed to get nodes from apiserver.status:%d;message:%s",
+		return fmt.Errorf("failed to request apiserver.status:%d;message:%s",
 			resp.StatusCode, string(data))
 	})
 	return err

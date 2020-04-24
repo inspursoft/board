@@ -12,7 +12,9 @@ import { NodeControlStatus, NodeStatus, ServiceInstance } from '../node.types';
 export class NodeServiceControlComponent extends CsModalChildBase implements OnInit {
   @Input() nodeCurrent: NodeStatus;
   @Input() instanceCount: number;
+  @Input() deletable: boolean;
   @Output() instanceCountChange: EventEmitter<number>;
+  @Output() deletableChange: EventEmitter<boolean>;
   nodeControlStatus: NodeControlStatus;
   serviceInstanceList: Array<ServiceInstance>;
   curPageIndex = 1;
@@ -24,16 +26,11 @@ export class NodeServiceControlComponent extends CsModalChildBase implements OnI
     this.nodeControlStatus = new NodeControlStatus({});
     this.serviceInstanceList = Array<ServiceInstance>();
     this.instanceCountChange = new EventEmitter<number>();
+    this.deletableChange = new EventEmitter<boolean>();
   }
 
   ngOnInit() {
-    this.nodeService.getNodeControlStatus(this.nodeCurrent.nodeName).subscribe(
-      (res: NodeControlStatus) => {
-        this.nodeControlStatus = res;
-        this.instanceCountChange.emit(this.nodeControlStatus.serviceInstances.length);
-        this.retrieve({page: {from: 0, to: 5}});
-      }
-    );
+    this.refreshData();
   }
 
   get phaseStyle(): { [p: string]: string } {
@@ -49,15 +46,25 @@ export class NodeServiceControlComponent extends CsModalChildBase implements OnI
     }
   }
 
+  refreshData() {
+    this.nodeService.getNodeControlStatus(this.nodeCurrent.nodeName).subscribe(
+      (res: NodeControlStatus) => {
+        this.nodeControlStatus = res;
+        this.instanceCountChange.emit(this.nodeControlStatus.serviceInstances.length);
+        this.deletableChange.emit(this.nodeControlStatus.deletable);
+        this.curPageIndex = 1;
+        this.retrieve({page: {from: 0, to: 5}});
+      }
+    );
+  }
+
   retrieve(page: ClrDatagridStateInterface) {
     if (Reflect.has(page, 'page')) {
       const from = page.page.from;
-      const to = page.page.to;
+      const to = page.page.to + 1;
       this.serviceInstanceList = this.nodeControlStatus.serviceInstances.slice(from, to);
     }
   }
 
-  cancel() {
-    this.modalOpened = false;
-  }
+
 }

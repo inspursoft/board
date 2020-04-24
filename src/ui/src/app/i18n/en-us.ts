@@ -881,7 +881,8 @@ export const LANG_EN_US = {
     NodeSchedulable: 'Node schedulable',
     ProjectName: 'Project name',
     ServiceInstanceName: 'Service instance name',
-    DrainService: 'Drain service'
+    DrainService: 'Drain service',
+    DeleteNode: 'Delete node'
   },
 
   "GUIDE":{

@@ -46,8 +46,9 @@ export class NodeControlStatus extends ResponseBase {
   @HttpBind('node_name') nodeName: string;
   @HttpBind('node_ip') nodeIp: string;
   @HttpBind('node_phase') nodePhase: string;
+  @HttpBind('node_deletable') deletable: boolean;
   @HttpBind('node_unschedulable') nodeUnschedulable: boolean;
-  @HttpBindArray('Sevice_instances', ServiceInstance) serviceInstances: Array<ServiceInstance>;
+  @HttpBindArray('service_instances', ServiceInstance) serviceInstances: Array<ServiceInstance>;
 
   protected prepareInit() {
     super.prepareInit();

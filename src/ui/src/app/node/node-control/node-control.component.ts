@@ -3,6 +3,7 @@ import { CsModalChildBase } from '../../shared/cs-modal-base/cs-modal-child-base
 import { NodeServiceControlComponent } from '../node-service-control/node-service-control.component';
 import { NodeService } from '../node.service';
 import { NodeStatus, NodeStatusType } from '../node.types';
+import { AppInitService } from '../../shared.service/app-init.service';
 
 @Component({
   selector: 'app-node-control',
@@ -13,10 +14,12 @@ export class NodeControlComponent extends CsModalChildBase implements OnInit {
   @ViewChild(NodeServiceControlComponent) serviceControl: NodeServiceControlComponent;
   curNode: NodeStatus;
   serviceInstanceCount = 0;
+  nodeDeletable = false;
   tabServiceControlActive = false;
   isActionWip = false;
 
-  constructor(private nodeService: NodeService) {
+  constructor(private nodeService: NodeService,
+              private appInitService: AppInitService) {
     super();
   }
 
@@ -24,16 +27,26 @@ export class NodeControlComponent extends CsModalChildBase implements OnInit {
 
   }
 
+  get btnDeleteDisable(): boolean {
+    return !this.nodeDeletable ||
+      this.isActionWip ||
+      this.tabServiceControlActive === false;
+  }
+
   get btnDrainDisable(): boolean {
     return this.curNode.status !== NodeStatusType.Unschedulable ||
+      this.isActionWip ||
       this.tabServiceControlActive === false;
+  }
+
+  get adminServerDeleteNodeUrl(): string {
+    return `http://${this.appInitService.systemInfo.board_host}:8082/resource/node-list`;
   }
 
   drainService() {
     this.isActionWip = true;
-    console.log(this.serviceInstanceCount);
     this.nodeService.drainNodeService(this.curNode.nodeName, this.serviceInstanceCount).subscribe(
-      () => this.serviceControl.retrieve({page: {from: 0, to: 5}}),
+      () => this.serviceControl.refreshData(),
       () => this.isActionWip = false,
       () => this.isActionWip = false
     );
