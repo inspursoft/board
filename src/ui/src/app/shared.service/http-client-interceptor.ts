@@ -9,8 +9,6 @@ import { AppTokenService } from './app-token.service';
 import { MessageService } from './message.service';
 import { GlobalAlertType } from '../shared/shared.types';
 import { CookieService } from 'ngx-cookie';
-import { toBase64String } from '@angular/compiler/src/output/source_map';
-import { defineBase } from '@angular/core/src/render3';
 
 @Injectable()
 export class HttpClientInterceptor implements HttpInterceptor {
