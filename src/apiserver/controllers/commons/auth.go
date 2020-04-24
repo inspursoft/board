@@ -3,7 +3,7 @@ package commons
 import (
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/apiserver/service/auth"
-	common "git/inspursoft/board/src/common/token"
+	t "git/inspursoft/board/src/common/token"
 	"net/http"
 	"strconv"
 	"time"
@@ -94,13 +94,13 @@ func (ca *BaseController) ProcessAuth(principal, password string) (string, bool)
 	payload["email"] = user.Email
 	payload["realname"] = user.Realname
 	payload["is_system_admin"] = user.SystemAdmin
-	t, err := common.SignToken(TokenServerURL(), payload)
+	token, err := t.SignToken(TokenServerURL(), payload)
 	if err != nil {
 		ca.InternalError(err)
 		return "", false
 	}
-	MemoryCache.Put(user.Username, t.TokenString, time.Second*time.Duration(TokenCacheExpireSeconds))
-	MemoryCache.Put(t.TokenString, payload, time.Second*time.Duration(TokenCacheExpireSeconds))
+	MemoryCache.Put(user.Username, token.TokenString, time.Second*time.Duration(TokenCacheExpireSeconds))
+	MemoryCache.Put(token.TokenString, payload, time.Second*time.Duration(TokenCacheExpireSeconds))
 	ca.AuditUser, _ = service.GetUserByName(user.Username)
 
 	//Reset the user failed times
@@ -110,5 +110,5 @@ func (ca *BaseController) ProcessAuth(principal, password string) (string, bool)
 		return "", false
 	}
 
-	return t.TokenString, true
+	return token.TokenString, true
 }
