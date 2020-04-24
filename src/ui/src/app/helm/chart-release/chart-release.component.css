@@ -1,71 +1,77 @@
 div.modal-body {
-  display: flex;
-  min-height: 400px;
+    display: flex;
+    min-height: 400px;
 }
 
 div.release-container {
-  display: flex;
-  flex-basis: 100%;
+    display: flex;
+    flex-basis: 100%;
 }
 
 div.info-container {
-  display: flex;
-  width: 400px;
-  flex-direction: column;
-  margin-right: 10px;
+    display: flex;
+    width: 400px;
+    flex-direction: column;
+    margin-right: 10px;
 }
 
 div.info-container p {
-  margin: 0;
+    margin: 0;
 }
 
 div.questions-container {
-  flex-basis: 100%;
+    flex-basis: 100%;
 }
 
 div.questions-container p {
-  margin: 0;
+    margin: 0;
 }
 
 div.question {
-  border: 1px solid silver;
-  border-radius: 3px;
-  padding: 5px;
-  margin-top: 5px;
+    border: 1px solid silver;
+    border-radius: 3px;
+    padding: 5px;
+    margin-top: 5px;
 }
 
 div.question:first-of-type {
-  margin-top: 0;
+    margin-top: 0;
 }
 
 div.code-container {
-  position: relative;
-  flex-basis: 100%;
-  overflow: auto;
+    position: relative;
+    flex-basis: 100%;
+    overflow: auto;
+}
+
+div.code-editor {
+    position: absolute;
+    min-height: 100%;
+    min-width: 100%;
 }
 
 div.boolean-template-container {
-  display: flex;
+    display: flex;
 }
 
 div.boolean-template-container label {
-  margin-right: 10px;
+    margin-right: 10px;
 }
 
 label.base-text {
-  min-width: 150px;
-  text-align: right;
+    min-width: 150px;
+    text-align: right;
 }
 
 div.line-container {
-  margin-top: 10px;
-  display: flex;
+    margin-top: 10px;
+    display: flex;
 }
 
 div.base-margin-top {
-  margin-top: 5px;
+    margin-top: 5px;
 }
 
 .base-margin-left {
-  margin-left: 10px;
+    margin-left: 10px;
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/k8sassist"
+	"git/inspursoft/board/src/common/k8sassist/corev1/cgv5/types"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/model/yaml"
 	"path/filepath"
@@ -28,9 +29,10 @@ const (
 	defaultDeleted     = 0
 	defaultStatus      = 1
 	serviceNamespace   = "default" //TODO create namespace in project post
-	scaleKind          = "Deployment"
 	k8sService         = "kubernetes"
 )
+
+var scaleKind = model.GroupResource{Group: "apps", Resource: "deployments"}
 
 const (
 	board = iota
@@ -477,13 +479,14 @@ func MarshalService(serviceConfig *model.ConfigServiceStep) *model.Service {
 	var spectype = "ClusterIP"
 	ports := make([]model.ServicePort, 0)
 	for index, port := range serviceConfig.ExternalServiceList {
-		ports = append(ports, model.ServicePort{
-			Name:     "port" + strconv.Itoa(index),
-			Port:     int32(port.NodeConfig.TargetPort),
-			NodePort: int32(port.NodeConfig.NodePort),
-		})
-		if port.NodeConfig.NodePort != 0 {
+		// NodePort 0 is for auto nodeport
+		if port.NodeConfig != (model.NodeType{}) {
 			spectype = "NodePort"
+			ports = append(ports, model.ServicePort{
+				Name:     "port" + strconv.Itoa(index),
+				Port:     int32(port.NodeConfig.TargetPort),
+				NodePort: int32(port.NodeConfig.NodePort),
+			})
 		}
 	}
 
@@ -1015,4 +1018,45 @@ func GetServiceType(svcType string) int {
 	} else {
 		return model.ServiceTypeUnknown
 	}
+}
+
+func GetServiceContainers(projectName, serviceName string) ([]model.ServiceContainer, error) {
+	var config k8sassist.K8sAssistConfig
+	config.KubeConfigPath = kubeConfigPath()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+
+	svc, _, err := k8sclient.AppV1().Service(projectName).Get(serviceName)
+	if err != nil {
+		return nil, err
+	}
+	if svc.Selector == nil {
+		return nil, nil
+	}
+
+	var opts model.ListOptions
+	var serviceContainer model.ServiceContainer
+	var sContainers []model.ServiceContainer
+	opts.LabelSelector = types.LabelSelectorToString(&model.LabelSelector{MatchLabels: svc.Selector})
+	podList, err := k8sclient.AppV1().Pod(projectName).List(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range podList.Items {
+		for j := range podList.Items[i].Spec.InitContainers {
+			serviceContainer.ContainerName = podList.Items[i].Spec.InitContainers[j].Name
+			serviceContainer.PodName = podList.Items[i].Name
+			serviceContainer.ServiceName = serviceName
+			serviceContainer.NodeIP = podList.Items[i].Status.HostIP
+			sContainers = append(sContainers, serviceContainer)
+		}
+		for j := range podList.Items[i].Spec.Containers {
+			serviceContainer.ContainerName = podList.Items[i].Spec.Containers[j].Name
+			serviceContainer.PodName = podList.Items[i].Name
+			serviceContainer.ServiceName = serviceName
+			serviceContainer.NodeIP = podList.Items[i].Status.HostIP
+			sContainers = append(sContainers, serviceContainer)
+		}
+	}
+	return sContainers, nil
 }

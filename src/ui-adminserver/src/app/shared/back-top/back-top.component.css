@@ -1,0 +1,10 @@
+.back-top {
+  position: fixed;
+  bottom: 100px; 
+  right: 50px;
+  background: #fff;
+}
+
+.back-top .btn{
+  margin: 0;
+}

@@ -1,0 +1,11 @@
+clr-main-container {
+  display: flex;
+  flex-direction: column;
+}
+  
+div.route-container {
+  flex-basis: 100%;
+  display: flex;
+  flex-direction: column;
+}
+  

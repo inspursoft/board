@@ -23,3 +23,27 @@ type NodeAvailableResources struct {
 	MemAvail     string `json:"mem_available"`
 	StorageAvail string `json:"storage_available"`
 }
+
+type NodeCli struct {
+	NodeName string            `json:"node_name"`
+	NodeType string            `json:"node_type"`
+	NodeIP   string            `json:"node_ip"`
+	Password string            `json:"node_password"`
+	Labels   map[string]string `json:"labels,omitempty"`
+}
+
+type NodeControlStatus struct {
+	NodeName          string            `json:"node_name"`
+	NodeType          string            `json:"node_type"`
+	NodeIP            string            `json:"node_ip"`
+	NodePhase         string            `json:"node_phase"`
+	NodeUnschedule    bool              `json:"node_unschedulable"`
+	NodeDeletable     bool              `json:"node_deletable"`
+	Service_Instances []ServiceInstance `json:"service_instances"`
+}
+
+type ServiceInstance struct {
+	ProjectName         string   `json:"project_name"`
+	ServiceInstanceName string   `json:"service_instance_name"`
+	OwnerReferenceKind  []string `json:"owner_reference_kind"`
+}

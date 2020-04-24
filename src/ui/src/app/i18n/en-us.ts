@@ -1,4 +1,7 @@
 export const LANG_EN_US = {
+  AdminServer: {
+    Name: 'Admin server'
+  },
   "BUTTON": {
     "OK": "OK",
     "YES": "Yes",
@@ -57,6 +60,7 @@ export const LANG_EN_US = {
     "SIGN_IN": "Sign In",
     "USERNAME_PLACEHOLDER": "Username",
     "PASSWORD_PLACEHOLDER": "Password",
+    "VERIFY_CODE_PLACEHOLDER": "Verify code",
     "SIGN_UP": "Sign Up",
     "FORGOT_PASSWORD": "Forgot Password",
     "FORGOT_PASSWORD_HINT_MSG":"Please input username/email",
@@ -86,12 +90,14 @@ export const LANG_EN_US = {
     "PASSWORDS_ARE_NOT_IDENTICAL": "Passwords are not identical.",
     "ERROR": "Error",
     "INCORRECT_USERNAME_OR_PASSWORD": "Incorrect username or password.",
+    "INCORRECT_VERIFY_CODE": "Incorrect verify code.",
+    "USERNAME_TEMPORARY_BLOCKED" : "The username {{0}} was blocked, please retry login after {{1}} seconds.",
     "SUCCESS_TO_SIGN_IN":"Successful sign in",
     "FAILED_TO_SIGN_IN": "Failed to sign in:",
     "FAILED_TO_SIGN_UP": "Failed to sign up:",
     "SUCCESS_TO_SIGN_UP": "User sign up successfully.",
     "FAILED_TO_SIGN_OUT": "Failed to sign out.",
-    "ACCOUNT_SETTING_SUCCESS":"Account setting success.",
+    "ACCOUNT_SETTING_SUCCESS":"AccountTypes setting success.",
     "ALREADY_SIGNED_IN": "The user has already signed in other place.",
     "SEND_REQUEST":"Send Request",
     "SEND_REQUEST_SUCCESS":"Send Request Success",
@@ -109,7 +115,7 @@ export const LANG_EN_US = {
   "HEAD_NAV": {
     "INPUT_FOR_SEARCHING": "Input for searching.",
     "CHANGE_PASSWORD": "Change Password",
-    "ACCOUNT_SETTINGS": "Account Settings",
+    "ACCOUNT_SETTINGS": "AccountTypes Settings",
     "LANG_EN_US": "English",
     "LANG_ZH_CN": "中文",
     "LOG_OUT": "Log Out",
@@ -528,6 +534,8 @@ export const LANG_EN_US = {
     "VOLUME_CONTAINER_PATH":"Container path",
     "VOLUME_SUB_PATH_FILE":"Sub file of mount path",
     "VOLUME_SELECT_PVC_TITLE":"Select PVC",
+    "VOLUME_SELECT_CONFIG_MAP_TITLE":"Select config map",
+    "VOLUME_SELECT_CONFIG_MAP":"Select config map...",
     "VOLUME_SELECT_PVC":"Select PVC...",
     "VOLUME_CREATE_PVC":"Create PVC...",
     "VOLUME_ADD_VOLUME":"Add volume",

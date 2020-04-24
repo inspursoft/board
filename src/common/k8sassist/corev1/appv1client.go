@@ -5,16 +5,21 @@ import (
 	"git/inspursoft/board/src/common/k8sassist/corev1/cgv5/types"
 	"git/inspursoft/board/src/common/model"
 	"io"
+	"net/http"
 )
 
-func NewAppV1Client(clientset *types.Clientset) AppV1ClientInterface {
+func NewAppV1Client(config *types.Config, clientset *types.Clientset, scaleGetter types.ScaleGetter) AppV1ClientInterface {
 	return &AppV1Client{
-		Clientset: clientset,
+		Config:      config,
+		Clientset:   clientset,
+		ScaleGetter: scaleGetter,
 	}
 }
 
 type AppV1Client struct {
-	Clientset *types.Clientset
+	Config      *types.Config
+	Clientset   *types.Clientset
+	ScaleGetter types.ScaleGetter
 }
 
 func (p *AppV1Client) Discovery() ServerVersionInterface {
@@ -26,7 +31,7 @@ func (p *AppV1Client) Service(namespace string) ServiceClientInterface {
 }
 
 func (p *AppV1Client) Deployment(namespace string) DeploymentClientInterface {
-	return apps.NewDeployments(namespace, p.Clientset.AppsV1beta2().Deployments(namespace))
+	return apps.NewDeployments(namespace, p.Clientset.AppsV1().Deployments(namespace))
 }
 
 func (p *AppV1Client) Node() NodeClientInterface {
@@ -38,11 +43,11 @@ func (p *AppV1Client) Namespace() NamespaceClientInterface {
 }
 
 func (p *AppV1Client) Scale(namespace string) ScaleClientInterface {
-	return apps.NewScales(namespace, p.Clientset.ExtensionsV1beta1().Scales(namespace))
+	return apps.NewScales(namespace, p.ScaleGetter.Scales(namespace))
 }
 
 func (p *AppV1Client) ReplicaSet(namespace string) ReplicaSetClientInterface {
-	return apps.NewReplicaSets(namespace, p.Clientset.AppsV1beta2().ReplicaSets(namespace))
+	return apps.NewReplicaSets(namespace, p.Clientset.AppsV1().ReplicaSets(namespace))
 }
 
 func (p *AppV1Client) Pod(namespace string) PodClientInterface {
@@ -66,10 +71,14 @@ func (p *AppV1Client) ConfigMap(namespace string) ConfigMapInterface {
 }
 
 func (p *AppV1Client) StatefulSet(namespace string) StatefulSetClientInterface {
-	return apps.NewStatefulSets(namespace, p.Clientset.AppsV1beta1().StatefulSets(namespace))
+	return apps.NewStatefulSets(namespace, p.Clientset.AppsV1().StatefulSets(namespace))
 }
 func (p *AppV1Client) Job(namespace string) JobInterface {
 	return apps.NewJob(namespace, p.Clientset.BatchV1().Jobs(namespace))
+}
+
+func (p *AppV1Client) Proxy() ProxyInterface {
+	return apps.NewProxy(p.Config)
 }
 
 // AppV1ClientInterface level 1 interface to access others
@@ -88,6 +97,7 @@ type AppV1ClientInterface interface {
 	ConfigMap(namespace string) ConfigMapInterface
 	StatefulSet(namespace string) StatefulSetClientInterface
 	Job(namespace string) JobInterface
+	Proxy() ProxyInterface
 }
 
 // ServerVersionInterface has a method for retrieving the server's version.
@@ -137,8 +147,8 @@ type NamespaceClientInterface interface {
 
 // ScaleClientInterface interface has methods on Scale resources in k8s-assist.
 type ScaleClientInterface interface {
-	Get(kind string, name string) (*model.Scale, error)
-	Update(kind string, scale *model.Scale) (*model.Scale, error)
+	Get(resource model.GroupResource, name string) (*model.Scale, error)
+	Update(resource model.GroupResource, scale *model.Scale) (*model.Scale, error)
 }
 
 // ReplicaSetInterface has methods to work with ReplicaSet resources.
@@ -257,4 +267,8 @@ type JobInterface interface {
 	PatchToK8s(string, model.PatchType, *model.Job) (*model.Job, []byte, error)
 	CreateByYaml(io.Reader) (*model.Job, error)
 	CheckYaml(io.Reader) (*model.Job, error)
+}
+
+type ProxyInterface interface {
+	ProxyAPI(apiProxyPrefix string) (http.Handler, error)
 }

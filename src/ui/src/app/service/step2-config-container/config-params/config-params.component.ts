@@ -1,23 +1,24 @@
-import { Component, ComponentFactoryResolver, OnInit, ViewContainerRef } from '@angular/core';
-import { Observable, Subject } from 'rxjs';
+import { AfterViewInit, Component, ComponentFactoryResolver, OnInit, ViewContainerRef } from '@angular/core';
+import { Observable } from 'rxjs';
+import { of } from 'rxjs/internal/observable/of';
 import { AbstractControl, ValidationErrors } from '@angular/forms';
 import { map } from 'rxjs/operators';
 import { InputArrayExType } from 'board-components-library';
 import { CsModalChildMessage } from '../../../shared/cs-modal-base/cs-modal-child-base';
 import { MessageService } from '../../../shared.service/message.service';
-import { Container, ContainerType, EnvStruct, UIServiceStep2, VolumeStruct } from '../../service-step.component';
+import { Container, ContainerType, EnvStruct, UIServiceStep2, Volume } from '../../service-step.component';
 import { VolumeMountsComponent } from '../volume-mounts/volume-mounts.component';
 import { EnvType } from '../../../shared/environment-value/environment-value.component';
 import { NodeAvailableResources } from '../../../shared/shared.types';
 import { K8sService } from '../../service.k8s';
-import { JobVolumeMounts } from "../../../job/job.type";
+
 
 @Component({
   selector: 'app-config-params',
   templateUrl: './config-params.component.html',
   styleUrls: ['./config-params.component.css']
 })
-export class ConfigParamsComponent extends CsModalChildMessage implements OnInit {
+export class ConfigParamsComponent extends CsModalChildMessage implements OnInit, AfterViewInit {
   patternContainerName: RegExp = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/;
   patternWorkDir: RegExp = /^~?[\w\d-\/.{}$\/:]+[\s]*$/;
   patternCpuRequest: RegExp = /^[0-9]*m$/;
@@ -30,6 +31,7 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
   fixedContainerPort: Map<Container, Array<number>>;
   step2Data: UIServiceStep2;
   curContainerType: ContainerType = ContainerType.runContainer;
+  isAfterViewInit = false;
 
   constructor(protected messageService: MessageService,
               private view: ViewContainerRef,
@@ -39,6 +41,11 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
   }
 
   ngOnInit() {
+  }
+
+  ngAfterViewInit(): void {
+    super.ngAfterViewInit();
+    this.isAfterViewInit = true;
   }
 
   get checkSetCpuRequestFun() {
@@ -76,9 +83,9 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
   getVolumesDescription(index: number, container: Container): string {
     const volume = container.volume_mounts;
     if (volume.length > index) {
-      const storageServer = volume[index].target_storage_service === '' ? '' :
-        volume[index].target_storage_service.concat(':');
-      const result = `${volume[index].container_path}:${storageServer}${volume[index].target_path}`;
+      const storageServer = volume[index].targetStorageService === '' ? '' :
+        volume[index].targetStorageService.concat(':');
+      const result = `${volume[index].containerPath}:${storageServer}${volume[index].targetPath}`;
       return result === ':' ? '' : result;
     } else {
       return '';
@@ -89,7 +96,8 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
     const factory = this.resolver.resolveComponentFactory(VolumeMountsComponent);
     const componentRef = this.view.createComponent(factory);
     componentRef.instance.volumeDataList = this.container.volume_mounts;
-    componentRef.instance.onConfirmEvent.subscribe((res: Array<VolumeStruct>) => this.container.volume_mounts = res);
+    componentRef.instance.projectName = this.step2Data.projectName;
+    componentRef.instance.onConfirmEvent.subscribe((res: Array<Volume>) => this.container.volume_mounts = res);
     componentRef.instance.openModal().subscribe(() => this.view.remove(this.view.indexOf(componentRef.hostView)));
   }
 
@@ -147,7 +155,7 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
   }
 
   checkSetCpuRequest(control: HTMLInputElement): Observable<ValidationErrors | null> {
-    return this.k8sService.getNodesAvailableSources().pipe(
+    return this.isAfterViewInit ? this.k8sService.getNodesAvailableSources().pipe(
       map((res: Array<NodeAvailableResources>) => {
         const isInValid = res.every(value =>
           Number.parseInt(control.value, 0) > Number.parseInt(value.cpu_available, 0) * 1000);
@@ -157,11 +165,11 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
           return null;
         }
       })
-    );
+    ) : of(null);
   }
 
   checkSetMemRequest(control: HTMLInputElement): Observable<ValidationErrors | null> {
-    return this.k8sService.getNodesAvailableSources().pipe(
+    return this.isAfterViewInit ? this.k8sService.getNodesAvailableSources().pipe(
       map((res: Array<NodeAvailableResources>) => {
         const isInValid = res.every(value =>
           Number.parseInt(control.value, 0) > Number.parseInt(value.mem_available, 0) / (1024 * 1024));
@@ -171,7 +179,7 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
           return null;
         }
       })
-    );
+    ) : of(null);
   }
 
   validContainerName(control: AbstractControl): ValidationErrors | null {
@@ -222,7 +230,7 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
 
   validContainerMemLimit(control: AbstractControl): ValidationErrors | null {
     let isValid = true;
-    if (control.value !== '' && this.container.mem_request !== '' ){
+    if (control.value !== '' && this.container.mem_request !== '') {
       isValid = Number.parseFloat(control.value) >= Number.parseFloat(this.container.mem_request);
     }
     return isValid ? null : {resourceRequestInvalid: 'resourceRequestInvalid'};

@@ -2,8 +2,8 @@ package controller
 
 import (
 	"fmt"
+	c "git/inspursoft/board/src/apiserver/controllers/commons"
 	"git/inspursoft/board/src/apiserver/service"
-	c "git/inspursoft/board/src/common/controller"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
@@ -17,6 +17,7 @@ type AuthController struct {
 }
 
 func (u *AuthController) Prepare() {
+	u.EnableXSRF = false
 	u.IsExternalAuth = utils.GetBoolValue("IS_EXTERNAL_AUTH")
 	u.RecordOperationAudit()
 }
@@ -27,8 +28,15 @@ func (u *AuthController) SignInAction() {
 	if err != nil {
 		return
 	}
+	reqUser.Password, err = service.DecodeUserPassword(reqUser.Password)
+	if err != nil {
+		return
+	}
+	logs.Debug("Decode password %s", reqUser.Password) //Remove this debug in release
 	token, _ := u.ProcessAuth(reqUser.Username, reqUser.Password)
-	u.RenderJSON(model.Token{TokenString: token})
+	if token != "" {
+		u.RenderJSON(model.Token{TokenString: token})
+	}
 }
 
 func (u *AuthController) ExternalAuthAction() {
@@ -79,6 +87,12 @@ func (u *AuthController) SignUpAction() {
 		return
 	}
 
+	reqUser.Password, err = service.DecodeUserPassword(reqUser.Password)
+	if err != nil {
+		u.InternalError(err)
+		return
+	}
+
 	if !utils.ValidateWithLengthRange(reqUser.Password, 8, 20) {
 		u.CustomAbortAudit(http.StatusBadRequest, "Password length should be between 8 and 20 characters.")
 		return
@@ -113,6 +127,7 @@ func (u *AuthController) SignUpAction() {
 	reqUser.Email = strings.TrimSpace(reqUser.Email)
 	reqUser.Realname = strings.TrimSpace(reqUser.Realname)
 	reqUser.Comment = strings.TrimSpace(reqUser.Comment)
+	reqUser.SystemAdmin = 0
 
 	isSuccess, err := service.SignUp(reqUser)
 	if err != nil {

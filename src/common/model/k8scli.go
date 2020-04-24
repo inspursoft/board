@@ -103,6 +103,11 @@ type ObjectMeta struct {
 	Labels            map[string]string
 }
 
+type GroupResource struct {
+	Group    string
+	Resource string
+}
+
 type Node struct {
 	ObjectMeta
 	NodeIP        string
@@ -592,18 +597,12 @@ type ScaleStatusK8s struct {
 	// actual number of observed instances of the scaled object.
 	Replicas int32 `json:"replicas" protobuf:"varint,1,opt,name=replicas"`
 
-	// label query over pods that should match the replicas count. More info: http://kubernetes.io/docs/user-guide/labels#label-selectors
+	// label query over pods that should match the replicas count. This is same
+	// as the label selector but in the string format to avoid introspection
+	// by clients. The string will be in the same format as the query-param syntax.
+	// More info about label selectors: http://kubernetes.io/docs/user-guide/labels#label-selectors
 	// +optional
-	Selector map[string]string `json:"selector,omitempty" protobuf:"bytes,2,rep,name=selector"`
-
-	// label selector for pods that should match the replicas count. This is a serializated
-	// version of both map-based and more expressive set-based selectors. This is done to
-	// avoid introspection in the clients. The string will be in the same format as the
-	// query-param syntax. If the target type only supports map-based selectors, both this
-	// field and map-based selector field are populated.
-	// More info: http://kubernetes.io/docs/user-guide/labels#label-selectors
-	// +optional
-	TargetSelector string `json:"targetSelector,omitempty" protobuf:"bytes,3,opt,name=targetSelector"`
+	Selector string `json:"selector,omitempty" protobuf:"bytes,2,opt,name=selector"`
 }
 
 // +genclient=true
@@ -765,7 +764,7 @@ type PersistentVolumeSource struct {
 	// RBD represents a Rados Block Device mount on the host that shares a pod's lifetime.
 	// More info: https://releases.k8s.io/HEAD/examples/volumes/rbd/README.md
 	// +optional
-	RBD *RBDVolumeSource `json:"rbd,omitempty" protobuf:"bytes,6,opt,name=rbd"`
+	RBD *RBDPersistentVolumeSource `json:"rbd,omitempty" protobuf:"bytes,6,opt,name=rbd"`
 	// ISCSI represents an ISCSI Disk resource that is attached to a
 	// kubelet's host machine and then exposed to the pod. Provisioned by an admin.
 	// +optional
@@ -958,7 +957,7 @@ type NFSVolumeSource struct {
 
 // Represents a Rados Block Device mount that lasts the lifetime of a pod.
 // RBD volumes support ownership management and SELinux relabeling.
-type RBDVolumeSource struct {
+type RBDPersistentVolumeSource struct {
 	// A collection of Ceph monitors.
 	// More info: https://releases.k8s.io/HEAD/examples/volumes/rbd/README.md#how-to-use-it
 	CephMonitors []string `json:"monitors" protobuf:"bytes,1,rep,name=monitors"`
@@ -992,12 +991,23 @@ type RBDVolumeSource struct {
 	// Default is nil.
 	// More info: https://releases.k8s.io/HEAD/examples/volumes/rbd/README.md#how-to-use-it
 	// +optional
-	SecretRef *LocalObjectReference `json:"secretRef,omitempty" protobuf:"bytes,7,opt,name=secretRef"`
+	SecretRef *SecretReference `json:"secretRef,omitempty" protobuf:"bytes,7,opt,name=secretRef"`
 	// ReadOnly here will force the ReadOnly setting in VolumeMounts.
 	// Defaults to false.
 	// More info: https://releases.k8s.io/HEAD/examples/volumes/rbd/README.md#how-to-use-it
 	// +optional
 	ReadOnly bool `json:"readOnly,omitempty" protobuf:"varint,8,opt,name=readOnly"`
+}
+
+// SecretReference represents a Secret Reference. It has enough information to retrieve secret
+// in any namespace
+type SecretReference struct {
+	// Name is unique within a namespace to reference a secret resource.
+	// +optional
+	Name string `json:"name,omitempty" protobuf:"bytes,1,opt,name=name"`
+	// Namespace defines the space within which the secret name must be unique.
+	// +optional
+	Namespace string `json:"namespace,omitempty" protobuf:"bytes,2,opt,name=namespace"`
 }
 
 // LocalObjectReference contains enough information to let you locate the
@@ -1298,7 +1308,7 @@ type StatefulSetStatus struct {
 	// observedGeneration is the most recent generation observed for this StatefulSet. It corresponds to the
 	// StatefulSet's generation, which is updated on mutation by the API Server.
 	// +optional
-	ObservedGeneration *int64 `json:"observedGeneration,omitempty" protobuf:"varint,1,opt,name=observedGeneration"`
+	ObservedGeneration int64 `json:"observedGeneration,omitempty" protobuf:"varint,1,opt,name=observedGeneration"`
 
 	// replicas is the number of Pods created by the StatefulSet controller.
 	Replicas int32 `json:"replicas" protobuf:"varint,2,opt,name=replicas"`
@@ -1485,3 +1495,23 @@ type JobCondition struct {
 	// Human readable message indicating details about last transition.
 	Message string `json:"message,omitempty" protobuf:"bytes,6,opt,name=message"`
 }
+
+type ServiceContainer struct {
+	ContainerName string
+	PodName       string
+	ServiceName   string
+	NodeIP        string
+}
+
+const (
+	// NamespaceDefault means the object is in the default namespace which is applied when not specified by clients
+	NamespaceDefault string = "default"
+	// NamespaceAll is the default argument to specify on a context when you want to list or filter resources across all namespaces
+	NamespaceAll string = ""
+	// NamespaceNone is the argument for a context when there is no namespace.
+	NamespaceNone string = ""
+	// NamespaceSystem is the system namespace where we place system components.
+	NamespaceSystem string = "kube-system"
+	// NamespacePublic is the namespace where we place public info (ConfigMaps)
+	NamespacePublic string = "kube-public"
+)

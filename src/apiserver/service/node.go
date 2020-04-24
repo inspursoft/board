@@ -14,7 +14,7 @@ import (
 	"git/inspursoft/board/src/common/model"
 
 	"github.com/astaxie/beego/logs"
-	"github.com/google/cadvisor/info/v2"
+	v2 "github.com/google/cadvisor/info/v2"
 	//modelK8s "k8s.io/client-go/pkg/api/v1"
 )
 
@@ -28,13 +28,16 @@ const (
 )
 
 const (
-	K8sLabel = "kubernetes.io"
+	K8sLabel      = "kubernetes.io"
+	K8sNamespaces = "kube-system cadvisor"
 )
 
 type NodeListResult struct {
-	NodeName string     `json:"node_name"`
-	NodeIP   string     `json:"node_ip"`
-	Status   NodeStatus `json:"status"`
+	NodeName   string            `json:"node_name"`
+	NodeIP     string            `json:"node_ip"`
+	Status     NodeStatus        `json:"status"`
+	CreateTime int64             `json:"create_time"`
+	Labels     map[string]string `json:"labels"`
 }
 
 type NodeInfo struct {
@@ -74,7 +77,8 @@ func GetNodes() (nodes []NodeInfo, err error) {
 		}
 		time := v.CreationTimestamp.Unix()
 		var ps []v2.ProcessInfo
-		getFromRequest("http://"+v.Status.Addresses[0].Address+":4194/api/v2.0/ps/", &ps)
+		nodeIP := getNodeAddress(v, "InternalIP")
+		getFromRequest("http://"+nodeIP+":4194/api/v2.0/ps/", &ps)
 		var c, m float32
 		for _, v := range ps {
 			c += v.PercentCpu
@@ -83,7 +87,7 @@ func GetNodes() (nodes []NodeInfo, err error) {
 		cpu := c
 		mem := m
 		var fs []v2.MachineFsStats
-		getFromRequest("http://"+v.Status.Addresses[0].Address+":4194/api/v2.0/storage", &fs)
+		getFromRequest("http://"+nodeIP+":4194/api/v2.0/storage", &fs)
 		var capacity uint64
 		var use uint64
 		for _, v := range fs {
@@ -91,8 +95,8 @@ func GetNodes() (nodes []NodeInfo, err error) {
 			use += *v.Usage
 		}
 		nodes = append(nodes, NodeInfo{
-			NodeName:      v.Status.Addresses[1].Address,
-			NodeIP:        v.Status.Addresses[0].Address,
+			NodeName:      getNodeAddress(v, "Hostname"),
+			NodeIP:        nodeIP,
 			CreateTime:    time,
 			CPUUsage:      cpu,
 			MemoryUsage:   mem,
@@ -161,8 +165,10 @@ func GetNodeList() (res []NodeListResult) {
 
 	for _, v := range Node.Items {
 		res = append(res, NodeListResult{
-			NodeName: v.Status.Addresses[1].Address,
-			NodeIP:   v.Status.Addresses[1].Address,
+			NodeName:   getNodeAddress(v, "Hostname"),
+			NodeIP:     getNodeAddress(v, "InternalIP"),
+			CreateTime: v.CreationTimestamp.Unix(),
+			Labels:     v.ObjectMeta.Labels,
 			Status: func() NodeStatus {
 				if v.Unschedulable {
 					return Unschedulable
@@ -221,6 +227,7 @@ func GetNodeGroupList() ([]model.NodeGroup, error) {
 	return dao.GetNodeGroups()
 }
 
+// Check Nodegroup in DB, existing true
 func NodeGroupExists(nodeGroupName string) (bool, error) {
 	query := model.NodeGroup{GroupName: nodeGroupName}
 	nodegroup, err := dao.GetNodeGroup(query, "name")
@@ -255,6 +262,7 @@ func AddNodeToGroup(nodeName string, groupName string) error {
 	return nil
 }
 
+// Get the groups that this node belong to
 func GetGroupOfNode(nodeName string) ([]string, error) {
 	var groups []string
 	//nInterface, err := k8sassist.NewNodes()
@@ -275,7 +283,14 @@ func GetGroupOfNode(nodeName string) ([]string, error) {
 	}
 	for key, _ := range nNode.ObjectMeta.Labels {
 		if !strings.Contains(key, K8sLabel) {
-			groups = append(groups, key)
+			exist, err := NodeGroupExists(key)
+			if err != nil {
+				logs.Error("Failed to get nodegroup")
+				return nil, err
+			}
+			if exist {
+				groups = append(groups, key)
+			}
 		}
 	}
 	return groups, nil
@@ -414,4 +429,232 @@ func GetNodesAvailableResources() ([]model.NodeAvailableResources, error) {
 		resources = append(resources, noderesource)
 	}
 	return resources, nil
+}
+
+// Check the node name existing in cluster, existing return ture
+func NodeExists(nodeName string) (bool, error) {
+	var config k8sassist.K8sAssistConfig
+	config.KubeConfigPath = kubeConfigPath()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	n := k8sclient.AppV1().Node()
+
+	nodeList, err := n.List()
+	if err != nil {
+		logs.Error("Failed to check node list in cluster", nodeName)
+		return false, err
+	}
+
+	for _, nd := range (*nodeList).Items {
+		if nodeName == nd.Name {
+			logs.Info("Nodename existing %+v", nodeName)
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+// Get a node in kubernetes cluster
+func GetNodebyName(nodeName string) (*model.Node, error) {
+	var config k8sassist.K8sAssistConfig
+	config.KubeConfigPath = kubeConfigPath()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	n := k8sclient.AppV1().Node()
+
+	node, err := n.Get(nodeName)
+	if err != nil {
+		logs.Error("Failed to get node: %s, error: %+v", nodeName, err)
+		return nil, err
+	}
+	logs.Info("Node in K8s %+v", node)
+	return node, nil
+
+}
+
+// Create a node in kubernetes cluster
+func CreateNode(node model.NodeCli) (*model.Node, error) {
+
+	nExists, err := NodeExists(node.NodeName)
+	if err != nil {
+		return nil, err
+	}
+	if nExists {
+		logs.Info("Node name %s already exists in cluster.", node.NodeName)
+		return nil, nil
+	}
+
+	var config k8sassist.K8sAssistConfig
+	config.KubeConfigPath = kubeConfigPath()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	n := k8sclient.AppV1().Node()
+
+	var nodek8s model.Node
+	nodek8s.ObjectMeta.Name = node.NodeName
+	nodek8s.ObjectMeta.Labels = node.Labels
+
+	newnode, err := n.Create(&nodek8s)
+	if err != nil {
+		logs.Error("Failed to create node: %s, error: %+v", node.NodeName, err)
+		return nil, err
+	}
+	logs.Info("New Node in K8s %+v", newnode)
+	return newnode, nil
+
+}
+
+// Delete a node from kubernetes cluster, should do clean work first before this func
+func DeleteNode(nodeName string) (bool, error) {
+	nExists, err := NodeExists(nodeName)
+	if err != nil {
+		return false, err
+	}
+	if !nExists {
+		logs.Info("Name %s not exists in cluster.", nodeName)
+		return false, nil
+	}
+
+	var config k8sassist.K8sAssistConfig
+	config.KubeConfigPath = kubeConfigPath()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	n := k8sclient.AppV1().Node()
+
+	err = n.Delete(nodeName)
+	if err != nil {
+		logs.Error("Failed to delete node %s", nodeName)
+		return false, err
+	}
+	return true, nil
+}
+
+func getNodeAddress(v model.Node, t string) string {
+	for _, addr := range v.Status.Addresses {
+		if string(addr.Type) == t {
+			return addr.Address
+		}
+	}
+
+	logs.Warning("The value is null when get the field of %s in node", t)
+	return ""
+}
+
+// Get a node control status
+func GetNodeControlStatus(nodeName string) (*model.NodeControlStatus, error) {
+	var nodecontrol model.NodeControlStatus
+	var config k8sassist.K8sAssistConfig
+	config.KubeConfigPath = kubeConfigPath()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	nInterface := k8sclient.AppV1().Node()
+
+	nNode, err := nInterface.Get(nodeName)
+	if err != nil {
+		logs.Error("Failed to get K8s node")
+		return nil, err
+	}
+	nodecontrol.NodeName = nNode.Name
+	nodecontrol.NodeIP = nNode.NodeIP
+	nodecontrol.NodePhase = string(nNode.Status.Phase)
+	nodecontrol.NodeUnschedule = nNode.Unschedulable
+	nodecontrol.NodeDeletable = true
+
+	// Phase is deprecated, if null, use Status, fix me
+	if nodecontrol.NodePhase == "" {
+		nodecontrol.NodePhase = func() string {
+			for _, cond := range nNode.Status.Conditions {
+				if strings.EqualFold(string(cond.Type), "Ready") && cond.Status == model.ConditionTrue {
+					return "Running"
+				}
+			}
+			return "Unknown"
+		}()
+	}
+	// Get service instances
+	// si, err := GetNodeServiceInstances(nodeName)
+	// if err != nil {
+	// 	logs.Error("Failed to get K8s node service instances")
+	// 	return nil, err
+	// }
+	// if si != nil {
+	// 	nodecontrol.Service_Instances = *si
+	// 	logs.Debug("Node service instances: %v", nodecontrol.Service_Instances)
+	// }
+	pInterface := k8sclient.AppV1().Pod(model.NamespaceAll)
+	podList, err := pInterface.List(model.ListOptions{FieldSelector: fmt.Sprintf("spec.nodeName=%s", nodeName)})
+	if err != nil {
+		logs.Error("Failed to get K8s pods")
+		return nil, err
+	}
+	for _, podinstance := range podList.Items {
+		var instance model.ServiceInstance
+		instance.ProjectName = podinstance.Namespace
+		instance.ServiceInstanceName = podinstance.Name
+		nodecontrol.Service_Instances = append(nodecontrol.Service_Instances, instance)
+
+		//TODO Need check the deletable by pod list information, owner reference
+		if !strings.Contains(K8sNamespaces, podinstance.Namespace) {
+			nodecontrol.NodeDeletable = false
+		}
+	}
+	return &nodecontrol, nil
+}
+
+// Get a node service instances
+func GetNodeServiceInstances(nodeName string) (*[]model.ServiceInstance, error) {
+	var instances []model.ServiceInstance
+	var config k8sassist.K8sAssistConfig
+	config.KubeConfigPath = kubeConfigPath()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	pInterface := k8sclient.AppV1().Pod(model.NamespaceAll)
+	podList, err := pInterface.List(model.ListOptions{FieldSelector: fmt.Sprintf("spec.nodeName=%s", nodeName)})
+	if err != nil {
+		logs.Error("Failed to get K8s pods")
+		return nil, err
+	}
+	for _, podinstance := range podList.Items {
+		var instance model.ServiceInstance
+		instance.ProjectName = podinstance.Namespace
+		instance.ServiceInstanceName = podinstance.Name
+		instances = append(instances, instance)
+	}
+	return &instances, err
+}
+
+//Drain node serivce instances by adminserver
+func DrainNodeServiceInstanceByAdminServer(nodeName string) error {
+	//TODO call adminserver do kubectl drain
+	return nil
+}
+
+//Drain node serivce instances
+func DrainNodeServiceInstance(nodeName string) error {
+	var config k8sassist.K8sAssistConfig
+	config.KubeConfigPath = kubeConfigPath()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	pInterface := k8sclient.AppV1().Pod(model.NamespaceAll)
+	podList, err := pInterface.List(model.ListOptions{FieldSelector: fmt.Sprintf("spec.nodeName=%s", nodeName)})
+	if err != nil {
+		logs.Error("Failed to get K8s pods")
+		return err
+	}
+	for _, podinstance := range podList.Items {
+
+		//TODO Need to delete the pod based on its owner reference
+		logs.Debug("pod %s, kind %v", podinstance.Name, podinstance.ObjectMeta.Labels)
+
+		//TODO Need to support pod evict
+
+		//If not support evict, use pod delete simply
+		if strings.Contains(K8sNamespaces, podinstance.Namespace) {
+			//Skip the pods of k8s self
+			continue
+		}
+		podcli := k8sclient.AppV1().Pod(podinstance.Namespace)
+		err = podcli.Delete(podinstance.Name)
+		if err != nil {
+			logs.Error("Failed to delete pod %s %v", podinstance.Name, err)
+			//TODO fix me, whether continue to delete the rest
+			//return err
+		} else {
+			logs.Debug("pod %s deleted", podinstance.Name)
+		}
+	}
+	return nil
 }

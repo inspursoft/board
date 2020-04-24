@@ -1,0 +1,112 @@
+<div class="card">
+  <div class="card-header"
+       (click)="toggle()">
+    <clr-icon shape="caret down"
+              [@rotateNega90]="card.cardStatus ? 'open' : 'closed'"></clr-icon>
+    LDAP
+  </div>
+
+  <div class="card-block"
+       [@cardSlide]="card.cardStatus ? 'open' : 'closed'">
+
+    <div class="clr-form clr-form-compact"
+         *ngIf="card.showContent">
+
+      <div class="config-line">
+        <div class="config-container">
+          <lib-input-ex [inputLabel]="'CONFIGURATIONS.LDAP.LDAP_URL.NAME' | translate"
+                        [inputIsRequired]="true"
+                        [inputLabelWidth]='170'
+                        [inputDefaultValue]="ldap.ldapUrl"
+                        [inputPlaceholder]="'eg: ldaps://ldap.mydomain.com'"
+                        [inputWidth]="'100%'"
+                        (editEvent)="onEdit(0)"
+                        (commitEvent)="ldap.ldapUrl = $event"
+                        class="lib-input-ex">
+          </lib-input-ex>
+        </div>
+        <clr-control-helper *ngIf="tipsList[0]">
+          {{ 'CONFIGURATIONS.LDAP.LDAP_URL.TIPS' | translate }}
+        </clr-control-helper>
+      </div>
+
+      <div class="config-line">
+        <div class="config-container">
+          <lib-input-ex [inputLabel]="'CONFIGURATIONS.LDAP.LDAP_BASEDN.NAME' | translate"
+                        [inputIsRequired]="true"
+                        [inputLabelWidth]='170'
+                        [inputDefaultValue]="ldap.ldapBasedn"
+                        [inputPlaceholder]="'eg: ou=people,dc=mydomain,dc=com'"
+                        [inputWidth]="'100%'"
+                        (editEvent)="onEdit(1)"
+                        (commitEvent)="ldap.ldapBasedn = $event"
+                        class="lib-input-ex">
+          </lib-input-ex>
+        </div>
+        <clr-control-helper *ngIf="tipsList[1]">
+          {{ 'CONFIGURATIONS.LDAP.LDAP_BASEDN.TIPS' | translate }}
+        </clr-control-helper>
+      </div>
+
+      <div class="config-line">
+        <div class="config-container">
+          <lib-input-ex [inputLabel]="'CONFIGURATIONS.LDAP.LDAP_UID.NAME' | translate"
+                        [inputIsRequired]="true"
+                        [inputLabelWidth]='170'
+                        [inputDefaultValue]="ldap.ldapUid"
+                        [inputPlaceholder]="'eg: uid'"
+                        [inputWidth]="'100%'"
+                        (editEvent)="onEdit(2)"
+                        (commitEvent)="ldap.ldapUid = $event"
+                        class="lib-input-ex">
+          </lib-input-ex>
+        </div>
+        <clr-control-helper *ngIf="tipsList[2]">
+          {{ 'CONFIGURATIONS.LDAP.LDAP_UID.TIPS' | translate }}
+        </clr-control-helper>
+      </div>
+
+      <div class="config-line">
+        <div class="config-container">
+          <lib-input-ex [inputLabel]="'CONFIGURATIONS.LDAP.LDAP_SCOPE.NAME' | translate"
+                        [inputIsRequired]="true"
+                        [inputLabelWidth]='170'
+                        [inputDefaultValue]="ldap.ldapScope"
+                        [inputPlaceholder]="'LDAP_SCOPE_SUBTREE'"
+                        [inputPattern]="patternLdapScope"
+                        [validatorMessage]="[{key:'pattern',message:'Error scope'}]"
+                        [inputWidth]="'100%'"
+                        (editEvent)="onEdit(3)"
+                        (commitEvent)="ldap.ldapScope = $event"
+                        class="lib-input-ex">
+          </lib-input-ex>
+        </div>
+        <clr-control-helper *ngIf="tipsList[3]">
+          {{ 'CONFIGURATIONS.LDAP.LDAP_SCOPE.TIPS' | translate }}
+        </clr-control-helper>
+      </div>
+
+      <div class="config-line">
+        <div class="config-container">
+          <lib-input-ex [inputLabel]="'CONFIGURATIONS.LDAP.LDAP_TIMEOUT.NAME' | translate"
+                        [inputIsRequired]="true"
+                        [inputCategory]="2"
+                        [inputLabelWidth]='170'
+                        [inputDefaultValue]="ldap.ldapTimeout"
+                        [inputMin]="1"
+                        [inputMax]="99999"
+                        [inputPlaceholder]="'[1..99999]'"
+                        [inputWidth]="'100%'"
+                        (editEvent)="onEdit(4)"
+                        (commitEvent)="ldap.ldapTimeout = $event"
+                        class="lib-input-ex">
+          </lib-input-ex>
+        </div>
+        <clr-control-helper *ngIf="tipsList[4]">
+          {{ 'CONFIGURATIONS.LDAP.LDAP_TIMEOUT.TIPS' | translate }}
+        </clr-control-helper>
+      </div>
+
+    </div>
+  </div>
+</div>

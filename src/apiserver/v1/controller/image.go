@@ -3,9 +3,9 @@ package controller
 import (
 	"encoding/json"
 	"fmt"
+	c "git/inspursoft/board/src/apiserver/controllers/commons"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/apiserver/service/devops/travis"
-	c "git/inspursoft/board/src/common/controller"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
@@ -186,8 +186,8 @@ func (p *ImageController) generateBuildingImageTravis(imageURI, dockerfileName s
 		"if [ -d 'upload' ]; then rm -rf upload; fi",
 		"if [ -e 'attachment.zip' ]; then rm -f attachment.zip; fi",
 		fmt.Sprintf("token=%s", p.Token),
-		fmt.Sprintf("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | cut -d$' ' -f2`", c.BoardAPIBaseURL()),
-		fmt.Sprintf("if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi", c.BoardAPIBaseURL()),
+		fmt.Sprintf("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | awk '{print $2}'`", c.BoardAPIBaseURL()),
+		fmt.Sprintf("bash -c \"if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi\"", c.BoardAPIBaseURL()),
 	}
 	travisCommand.Deploy.Commands = []string{
 		"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
@@ -206,15 +206,17 @@ func (p *ImageController) generatePushImagePackageTravis(imageURI, imagePackageN
 		"if [ -d 'upload' ]; then rm -rf upload; fi",
 		"if [ -e 'attachment.zip' ]; then rm -f attachment.zip; fi",
 		fmt.Sprintf("token=%s", p.Token),
-		fmt.Sprintf("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | cut -d$' ' -f2`", c.BoardAPIBaseURL()),
-		fmt.Sprintf("if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi", c.BoardAPIBaseURL()),
+		fmt.Sprintf("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | awk '{print $2}'`", c.BoardAPIBaseURL()),
+		fmt.Sprintf("bash -c \"if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi\"", c.BoardAPIBaseURL()),
 	}
 	travisCommand.Deploy.Commands = []string{
 		"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
-		fmt.Sprintf("image_name_tag=$(docker load -i upload/%s |grep 'Loaded image:'|awk '{print $3}')", imagePackageName),
+		fmt.Sprintf("image_name_tag=$(docker load -i upload/%s |grep 'Loaded image'|awk '{print $NF}')", imagePackageName),
+		fmt.Sprintf("image_name_tag=${image_name_tag#sha256:}"),
 		fmt.Sprintf("docker tag $image_name_tag %s", imageURI),
 		fmt.Sprintf("docker push %s", imageURI),
-		fmt.Sprintf("docker rmi %s $image_name_tag", imageURI),
+		fmt.Sprintf("docker rmi %s", imageURI),
+		fmt.Sprintf("if [[ $image_name_tag =~ ':' ]]; then docker rmi $image_name_tag; fi"),
 	}
 	return travisCommand.GenerateCustomTravis(p.RepoPath)
 }
@@ -579,4 +581,17 @@ func (p *ImageController) GetImageRegistryAction() {
 	registryAddr := c.RegistryBaseURI()
 	logs.Info("Docker registry is %s", registryAddr)
 	p.RenderJSON(registryAddr)
+}
+
+// Check an image used by services for deleting
+// TODO
+func (p *ImageController) GetImageUsedAction() {
+	if p.IsSysAdmin == false {
+		p.CustomAbortAudit(http.StatusForbidden, "Insufficient privileges to delete image tag.")
+		return
+	}
+	imageName := strings.TrimSpace(p.Ctx.Input.Param(":imagename"))
+	//imageTag := strings.TrimSpace(p.GetString("image_tag"))
+	logs.Info("Image name is %s", imageName)
+	return
 }

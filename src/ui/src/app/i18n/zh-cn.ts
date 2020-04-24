@@ -1,4 +1,7 @@
 export const LANG_ZH_CN = {
+  AdminServer: {
+    Name: '管理服务器'
+  },
   "BUTTON": {
     "OK": "确定",
     "YES": "是",
@@ -57,6 +60,7 @@ export const LANG_ZH_CN = {
     "SIGN_IN": "登录",
     "USERNAME_PLACEHOLDER": "用户名",
     "PASSWORD_PLACEHOLDER": "密码",
+    "VERIFY_CODE_PLACEHOLDER": "验证码",
     "SIGN_UP": "立即注册",
     "FORGOT_PASSWORD": "忘记密码",
     "FORGOT_PASSWORD_HINT_MSG":"请输入用户名/邮箱",
@@ -86,6 +90,8 @@ export const LANG_ZH_CN = {
     "PASSWORD_FORMAT": "密码长度至少为8且需包含至少一个大写字符，一个小写字符和一个数字。",
     "ERROR": "错误",
     "INCORRECT_USERNAME_OR_PASSWORD": "用户名或密码错误。",
+    "INCORRECT_VERIFY_CODE": "无效的验证码。",
+    "USERNAME_TEMPORARY_BLOCKED" : "用户 {{0}} 被锁定, 请 {{1}} 秒后重试。",
     "SUCCESS_TO_SIGN_IN":"用户登录成功",
     "FAILED_TO_SIGN_IN": "登录失败:",
     "FAILED_TO_SIGN_UP": "注册失败:",
@@ -165,7 +171,7 @@ export const LANG_ZH_CN = {
     "STATUS_WARNING":"警告",
     "STATUS_UNCOMPLETED":"未完成",
     "STATUS_COMPLETED":"完成",
-    "STATUS_FAILED":"错误",
+    "STATUS_FAILED":"失败",
     "STATUS_DEPLOYING":"部署中",
     "STATUS_RUNNING": "运行中",
     "JOB_LIST_NAME":"名称",
@@ -528,6 +534,8 @@ export const LANG_ZH_CN = {
     "VOLUME_CONTAINER_PATH":"容器路径",
     "VOLUME_SUB_PATH_FILE":"指定挂入子文件",
     "VOLUME_SELECT_PVC_TITLE":"选择PVC",
+    "VOLUME_SELECT_CONFIG_MAP_TITLE":"选择Config map",
+    "VOLUME_SELECT_CONFIG_MAP":"选择Config map...",
     "VOLUME_SELECT_PVC":"选择PVC...",
     "VOLUME_CREATE_PVC":"创建PVC...",
     "VOLUME_ADD_VOLUME":"添加卷",

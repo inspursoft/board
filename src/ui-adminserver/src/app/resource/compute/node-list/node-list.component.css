@@ -1,0 +1,47 @@
+div.card-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+div.card {
+  margin: 10px;
+  border: 1px solid silver;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  width: 200px;
+}
+
+div.card img {
+  align-self: center;
+  width: 80%;
+}
+
+span.card-name {
+  font-size: 20px;
+  align-self: center;
+}
+
+span.card-title {
+  color: silver;
+  font-size: 14px;
+  margin-left: auto;
+}
+
+div.card-action-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: auto;
+}
+
+a.disabled {
+  color: silver;
+}
+
+a.disabled :hover {
+  cursor: not-allowed;
+}
+
+span.card-title{
+  color: darkgreen;
+}

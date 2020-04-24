@@ -2,34 +2,24 @@
 
 #docker version: 17.0 
 #docker-compose version: 1.7.1 
-#Board version: 0.8.0
+#Board version: 7.0.0
 
-set -e
 
-usage=$'Please set hostname and other necessary attributes in board.cfg first. DO NOT use localhost or 127.0.0.1 for hostname, because Board needs to be accessed by external clients.'
 item=0
 
-while [ $# -gt 0 ]; do
-        case $1 in
-            --help)
-            echo "$usage"
-            exit 0;;
-            *)
-            echo "$usage"
-            exit 1;;
-        esac
-        shift || true
-done
+if [[ -n $1 && -f $1 ]];then
+tar zxvf $1 -C /data
+else
+	if [[ ! -e "/data/pre-env" ]]
+	then
+		echo "Please add the file pre-env.tar.gz file for add node to the directory Deploy!"
+		exit 1
+	fi
+	echo "Welcome to Adminserver!"
+fi
 
 workdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $workdir
-
-# The hostname in board.cfg has not been modified
-if grep 'hostname = reg.mydomain.com' &> /dev/null board.cfg
-then
-	echo $usage
-	exit 1
-fi
 
 function check_docker {
 	if ! docker --version &> /dev/null
@@ -92,46 +82,38 @@ check_dockercompose
 
 if [ -f board*.tgz ]
 then
-	echo "[Step $item]: loading Board images ..."; let item+=1
+	echo "[Step $item]: loading Board & Adminserver images ..."; let item+=1
 	docker load -i ./board*.tgz
 fi
 echo ""
 
-echo "[Step $item]: preparing environment ...";  let item+=1
-#if [ -n "$host" ]
-#then
-#	sed "s/^hostname = .*/hostname = $host/g" -i ./board.cfg
-#fi
-./prepare
-echo ""
-
-echo "[Step $item]: checking existing instance of Board ..."; let item+=1
-if [ -n "$(docker-compose ps -q)"  ]
+echo "[Step $item]: checking existing instance of Adminserver ..."; let item+=1
+if [ -n "$(docker ps -aqf name=deploy_log_1)"  ]
 then
 	echo "stopping existing Board instance ..."
-	docker-compose down
+	docker-compose -f ./docker-compose-rest.yml down
+fi
+echo ""
+if [ -n "$(docker ps -aqf name=deploy_db_1)"  ]
+then
+	echo "stopping existing Database instance ..."
+	docker-compose -f ./docker-compose-db.yml down
+fi
+echo ""
+if [ -n "$(docker ps -aqf name=deploy_adminserver_1)"  ]
+then
+	echo "stopping existing Adminserver instance ..."
+	docker-compose -f ./docker-compose-adminserver.yml down
 fi
 echo ""
 
-echo "[Step $item]: starting Board ..."
-docker-compose up -d
+echo "[Step $item]: starting Board-adminserver ..."
+docker-compose -f ./docker-compose-adminserver.yml up -d
 
-protocol=http
-hostname=reg.mydomain.com
+echo $"----Board-adminserver has been installed and started successfully.----
 
-if [[ $(cat ./board.cfg) =~ ui_url_protocol[[:blank:]]*=[[:blank:]]*(https?) ]]
-then
-protocol=${BASH_REMATCH[1]}
-fi
+You can visit it on http://your-IP:8082 .
 
-if [[ $(grep 'hostname[[:blank:]]*=' ./board.cfg) =~ hostname[[:blank:]]*=[[:blank:]]*(.*) ]]
-then
-hostname=${BASH_REMATCH[1]}
-fi
-echo ""
-
-echo $"----Board has been installed and started successfully.----
-
-Now you should be able to visit the admin portal at ${protocol}://${hostname}. 
-For more details, please visit http://10.110.18.40:10080/inspursoft/board .
+For more details, please visit http://open.inspur.com/TechnologyCenter/board .
 "
+

@@ -2,7 +2,7 @@ package controller
 
 import (
 	"fmt"
-	c "git/inspursoft/board/src/common/controller"
+	c "git/inspursoft/board/src/apiserver/controllers/commons"
 
 	//"git/inspursoft/board/src/apiserver/service"
 	"net/http"

@@ -1,0 +1,148 @@
+<div class="card">
+  <div class="card-header"
+       (click)="toggle()">
+    <clr-icon shape="caret down"
+              [@rotateNega90]="card.cardStatus ? 'open' : 'closed'"></clr-icon>
+    Email
+  </div>
+
+  <div class="card-block"
+       [@cardSlide]="card.cardStatus ? 'open' : 'closed'">
+
+    <div class="clr-form clr-form-compact"
+         *ngIf="card.showContent">
+
+      <div class="config-line">
+        <div class="config-container">
+          <lib-input-ex [inputLabel]="'CONFIGURATIONS.EMAIL.EMAIL_IDENTITY.NAME' | translate"
+                        [inputLabelWidth]='170'
+                        [inputDefaultValue]="email.emailIdentity"
+                        [inputPlaceholder]=""
+                        [inputWidth]="'100%'"
+                        (editEvent)="onEdit(0)"
+                        (commitEvent)="email.emailIdentity = $event"
+                        class="lib-input-ex">
+          </lib-input-ex>
+        </div>
+        <clr-control-helper *ngIf="tipsList[0]">
+          {{ 'CONFIGURATIONS.EMAIL.EMAIL_IDENTITY.TIPS' | translate }}
+        </clr-control-helper>
+      </div>
+
+      <div class="config-line">
+        <div class="config-container">
+          <lib-input-ex [inputLabel]="'CONFIGURATIONS.EMAIL.EMAIL_SERVER.NAME' | translate"
+                        [inputIsRequired]="true"
+                        [inputLabelWidth]='170'
+                        [inputDefaultValue]="email.emailServer"
+                        [inputPlaceholder]="'eg: smtp.mydomain.com'"
+                        [inputWidth]="'100%'"
+                        (editEvent)="onEdit(1)"
+                        (commitEvent)="email.emailServer = $event"
+                        class="lib-input-ex">
+          </lib-input-ex>
+        </div>
+        <clr-control-helper *ngIf="tipsList[1]">
+          {{ 'CONFIGURATIONS.EMAIL.EMAIL_SERVER.TIPS' | translate }}
+        </clr-control-helper>
+      </div>
+
+      <div class="config-line">
+        <div class="config-container">
+          <lib-input-ex [inputLabel]="'CONFIGURATIONS.EMAIL.EMAIL_SERVER_PORT.NAME' | translate"
+                        [inputIsRequired]="true"
+                        [inputCategory]="2"
+                        [inputLabelWidth]='170'
+                        [inputDefaultValue]="email.emailServerPort"
+                        [inputMin]="1"
+                        [inputMax]="65535"
+                        [inputPlaceholder]="'[1..65535]'"
+                        [inputWidth]="'100%'"
+                        (editEvent)="onEdit(2)"
+                        (commitEvent)="email.emailServerPort = $event"
+                        class="lib-input-ex">
+          </lib-input-ex>
+        </div>
+        <clr-control-helper *ngIf="tipsList[2]">
+          {{ 'CONFIGURATIONS.EMAIL.EMAIL_SERVER_PORT.TIPS' | translate }}
+        </clr-control-helper>
+      </div>
+
+      <div class="config-line">
+        <div class="config-container">
+          <lib-input-ex [inputLabel]="'CONFIGURATIONS.EMAIL.EMAIL_USERNAME.NAME' | translate"
+                        [inputIsRequired]="true"
+                        [inputLabelWidth]='170'
+                        [inputDefaultValue]="email.emailUsername"
+                        [inputPlaceholder]="'eg: admin@mydomain.com'"
+                        [inputWidth]="'100%'"
+                        (editEvent)="onEdit(3)"
+                        (commitEvent)="email.emailUsername = $event"
+                        class="lib-input-ex">
+          </lib-input-ex>
+        </div>
+        <clr-control-helper *ngIf="tipsList[3]">
+          {{ 'CONFIGURATIONS.EMAIL.EMAIL_USERNAME.TIPS' | translate }}
+        </clr-control-helper>
+      </div>
+
+      <div class="config-line">
+        <div class="config-container">
+          <lib-input-ex [inputLabel]="'CONFIGURATIONS.EMAIL.EMAIL_PASSWORD.NAME' | translate"
+                        [inputIsRequired]="true"
+                        [inputCategory]="3"
+                        [inputLabelWidth]='170'
+                        [inputDefaultValue]=""
+                        [inputPlaceholder]="'enter password'"
+                        [inputWidth]="'100%'"
+                        (editEvent)="onEdit(4)"
+                        (commitEvent)="email.emailPassword = $event"
+                        class="lib-input-ex">
+          </lib-input-ex>
+        </div>
+        <clr-control-helper *ngIf="tipsList[4]">
+          {{ 'CONFIGURATIONS.EMAIL.EMAIL_PASSWORD.TIPS' | translate }}
+        </clr-control-helper>
+      </div>
+
+      <div class="config-line">
+        <div class="config-container">
+          <lib-input-ex [inputLabel]="'CONFIGURATIONS.EMAIL.EMAIL_FROM.NAME' | translate"
+                        [inputIsRequired]="true"
+                        [inputLabelWidth]='170'
+                        [inputDefaultValue]="email.emailFrom"
+                        [inputPlaceholder]="'eg: admin <admin@mydomain.com>'"
+                        [inputWidth]="'100%'"
+                        (editEvent)="onEdit(5)"
+                        (commitEvent)="email.emailFrom = $event"
+                        class="lib-input-ex">
+          </lib-input-ex>
+        </div>
+        <clr-control-helper *ngIf="tipsList[5]">
+          {{ 'CONFIGURATIONS.EMAIL.EMAIL_FROM.TIPS' | translate }}
+        </clr-control-helper>
+      </div>
+
+      <div class="config-line">
+        <div class="config-container">
+          <lib-input-ex [inputLabel]="'CONFIGURATIONS.EMAIL.EMAIL_SSL.NAME' | translate"
+                        [inputIsRequired]="true"
+                        [inputLabelWidth]='170'
+                        [inputDefaultValue]="email.emailSsl"
+                        [inputPlaceholder]="'true/false'"
+                        [inputPattern]="patternEmailSsl"
+                        [validatorMessage]="[{key:'pattern',message:'receive true/false ONLY'}]"
+                        [inputWidth]="'100%'"
+                        (editEvent)="onEdit(6)"
+                        (commitEvent)="email.emailSsl = $event"
+                        class="lib-input-ex">
+          </lib-input-ex>
+        </div>
+        <clr-control-helper *ngIf="tipsList[6]">
+          {{ 'CONFIGURATIONS.EMAIL.EMAIL_SSL.TIPS' | translate }}
+        </clr-control-helper>
+      </div>
+
+    </div>
+  </div>
+</div>

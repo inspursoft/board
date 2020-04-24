@@ -1,0 +1,438 @@
+<app-header></app-header>
+<div class="background">
+  <div class="clr-row">
+    <div class="clr-col-lg-6 hidden-md-down clr-align-content-around clr-align-self-center">
+    </div>
+    <div class="clr-col-lg-6 clr-col-md-12 custom-sign-in-top">
+      <div class="sign-in-background">
+        <p class="custom-sign-in-title">{{ 'ACCOUNT.SIGN_IN' | translate }}</p>
+        <div class="clr-row">
+          <div class="clr-col-xs custom-sign-in-input">
+            <form #signInForm="ngForm"
+                  (ngSubmit)="signIn()">
+
+              <section class="form-block"
+                       style="margin-bottom: 0.5rem;">
+
+                <div class="form-group custom-input-padding">
+                  <label></label>
+                  <label aria-haspopup="true"
+                         role="tooltip"
+                         [class.invalid]="username.invalid && username.touched"
+                         class="tooltip tooltip-validation invalid tooltip-sm">
+                    <input type="text"
+                           name="username"
+                           #username="ngModel"
+                           style="width: 225px"
+                           required
+                           [(ngModel)]="user.username"
+                           placeholder="{{ 'ACCOUNT.USERNAME_PLACEHOLDER' | translate }}" />
+                    <span class="tooltip-content"
+                          *ngIf="username.errors && username.errors.required">
+                      {{ 'ACCOUNT.USERNAME_IS_REQUIRED' | translate }}
+                    </span>
+                  </label>
+                </div>
+
+                <div class="form-group custom-input-padding">
+                  <label></label>
+                  <label aria-haspopup="true"
+                         role="tooltip"
+                         [class.invalid]="password.invalid && password.touched"
+                         class="tooltip tooltip-validation invalid tooltip-sm">
+                    <input type="password"
+                           name="password"
+                           #password="ngModel"
+                           style="width: 225px"
+                           required
+                           [(ngModel)]="user.password"
+                           placeholder="{{ 'ACCOUNT.PASSWORD_PLACEHOLDER' | translate }}" />
+                    <span class="tooltip-content"
+                          *ngIf="password.errors && password.errors.required">
+                      {{ 'ACCOUNT.PASSWORD_IS_REQUIRED' | translate }}
+                    </span>
+                  </label>
+                </div>
+
+                <div class="form-group custom-input-padding">
+                  <input type="submit"
+                         [disabled]="signInForm.invalid"
+                         class="btn btn-primary"
+                         style="width: 225px"
+                         value="{{ 'ACCOUNT.SIGN_IN' | translate }}" />
+                </div>
+
+              </section>
+
+            </form>
+
+            <div style="text-align: right; margin-right: 0.5rem;">
+              <a (click)="forgetPassword()">{{ 'ACCOUNT.FORGOT_PASSWORD' | translate }}</a>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <clr-wizard #wizard
+              [(clrWizardOpen)]="openWizard"
+              clrWizardSize="lg"
+              [clrWizardClosable]="false"
+              (clrWizardCurrentPageChanged)="checkBtn()">
+    <clr-wizard-title>{{ 'INITIALIZATION.TITLE' | translate }}</clr-wizard-title>
+    <clr-wizard-button [type]="'next'"
+                       *ngIf="isCurrent">
+      {{ 'INITIALIZATION.BUTTONS.NEXT' | translate }}
+    </clr-wizard-button>
+
+    <clr-wizard-page clrWizardPagePreventDefault="true"
+                     (clrWizardPageOnCommit)="onWelcome()"
+                     [clrWizardPageNextDisabled]="disableInput">
+      <ng-template clrPageTitle>{{ 'INITIALIZATION.PAGE_TITLE.WELCOME' | translate }}</ng-template>
+      <ng-template clrPageNavTitle>{{ 'INITIALIZATION.PAGE_NAV_TITLE.WELCOME' | translate }}</ng-template>
+      <clr-spinner *ngIf="loadingFlag">
+        {{ 'INITIALIZATION.TOOLS.LOADING' | translate }}
+      </clr-spinner>
+      <clr-alert *ngIf="errorFlag"
+                 [clrAlertType]="'alert-danger'"
+                 [clrCloseButtonAriaLabel]="'Close Answer alert'">
+        <clr-alert-item>
+          {{ 'INITIALIZATION.ALERTS.INITIALIZATION' | translate }}
+        </clr-alert-item>
+      </clr-alert>
+      <div>
+        {{ 'INITIALIZATION.CONTENTS.WELCOME' | translate }}
+      </div>
+      <ng-template clrPageButtons>
+        <button class="btn"
+                [type]="'translate'"
+                (click)="onTranslate()"
+                [disabled]="disableInput">
+          <svg class="icon"
+               aria-hidden="true"
+               style="width: 2em; height: 2em; vertical-align: -0.6em; fill:#0065AB;">
+            <use xlink:href="#icon-translate"></use>
+          </svg>
+          {{ 'INITIALIZATION.BUTTONS.TRANSLATE' | translate }}
+        </button>
+        <button class="btn btn-primary"
+                [type]="'custom-next'"
+                (click)="onWelcome()"
+                *ngIf="isCurrent"
+                [disabled]="disableInput">
+          {{ 'INITIALIZATION.BUTTONS.NEXT' | translate }}
+        </button>
+      </ng-template>
+    </clr-wizard-page>
+
+    <clr-wizard-page clrWizardPagePreventDefault="true"
+                     (clrWizardPageOnCommit)="onVerify()"
+                     [clrWizardPageNextDisabled]="getUUID.pristine || !uuidForm.valid || disableInput">
+      <ng-template clrPageTitle>{{ 'INITIALIZATION.PAGE_TITLE.UUID' | translate }}</ng-template>
+      <clr-spinner *ngIf="loadingFlag">
+        {{ 'INITIALIZATION.TOOLS.LOADING' | translate }}
+      </clr-spinner>
+      <clr-alert *ngIf="errorFlag"
+                 [clrAlertType]="'alert-danger'"
+                 [clrCloseButtonAriaLabel]="'Close Answer alert'">
+        <clr-alert-item>
+          {{ 'INITIALIZATION.ALERTS.UUID' | translate }}
+        </clr-alert-item>
+      </clr-alert>
+      <form clrForm
+            #uuidForm="ngForm"
+            [class.hide]="loadingFlag">
+        <div>
+          {{ 'INITIALIZATION.CONTENTS.UUID' | translate }}
+        </div>
+        <clr-input-container>
+          <label> {{ 'INITIALIZATION.LABELS.UUID' | translate }} </label>
+          <input clrInput
+                 required
+                 [(ngModel)]="uuid"
+                 name="uuid"
+                 #getUUID="ngModel"
+                 [disabled]="disableInput" />
+          <clr-control-error>
+            {{ 'INITIALIZATION.HELPER.REQUIRED' | translate }}
+          </clr-control-error>
+        </clr-input-container>
+      </form>
+    </clr-wizard-page>
+
+    <clr-wizard-page clrWizardPagePreventDefault="true"
+                     (clrWizardPageOnCommit)="onInitDB()"
+                     [clrWizardPageNextDisabled]="disableDbPwdForm || !dbPwdFrom.valid || disableInput"
+                     *ngIf="showInitDB">
+      <ng-template clrPageTitle>{{ 'INITIALIZATION.PAGE_TITLE.DATABASE' | translate }}</ng-template>
+      <clr-spinner *ngIf="loadingFlag">
+        {{ 'INITIALIZATION.TOOLS.LOADING' | translate }}
+      </clr-spinner>
+      <form clrForm
+            #dbPwdFrom="ngForm"
+            [class.hide]="loadingFlag">
+        <div>
+          {{ 'INITIALIZATION.CONTENTS.DATABASE' | translate }}
+        </div>
+        <clr-alert *ngIf="errorFlag"
+                   [clrAlertType]="'alert-danger'"
+                   [clrCloseButtonAriaLabel]="'Close Answer alert'">
+          <clr-alert-item>
+            {{ 'INITIALIZATION.ALERTS.DATABASE' | translate }}
+          </clr-alert-item>
+        </clr-alert>
+        <clr-alert *ngIf="errorVerifyFlag"
+                   [clrAlertType]="'alert-danger'"
+                   [clrCloseButtonAriaLabel]="'Close Answer alert'">
+          <clr-alert-item>
+            {{ 'INITIALIZATION.ALERTS.PASSWORDS_IDENTICAL' | translate }}
+          </clr-alert-item>
+        </clr-alert>
+        <clr-alert *ngIf="errorDBMaxFlag"
+                   [clrAlertType]="'alert-danger'"
+                   [clrCloseButtonAriaLabel]="'Close Answer alert'">
+          <clr-alert-item>
+            {{ 'INITIALIZATION.ALERTS.MAX_CONNECTION' | translate }}
+          </clr-alert-item>
+        </clr-alert>
+        <clr-input-container>
+          <label>{{ 'INITIALIZATION.LABELS.MAX_CONNECTION' | translate }}</label>
+          <input clrInput
+                 required
+                 [(ngModel)]="dbInfo.maxConnection"
+                 name="dbMax"
+                 type="number"
+                 min="10"
+                 max="16384"
+                 [disabled]="disableInput" />
+          <clr-control-error *clrIfError="'required'">
+            {{ 'INITIALIZATION.HELPER.REQUIRED' | translate }}
+          </clr-control-error>
+          <clr-control-helper>
+            {{ 'INITIALIZATION.HELPER.NUMS' | translate }}
+          </clr-control-helper>
+        </clr-input-container>
+        <clr-password-container>
+          <label>{{ 'INITIALIZATION.LABELS.PASSWORD' | translate }}</label>
+          <input clrPassword
+                 required
+                 [(ngModel)]="dbInfo.password"
+                 name="dbPwd"
+                 minlength="8"
+                 (ngModelChange)="verifyDBPwd()"
+                 [ngModelOptions]="{updateOn: 'blur'}"
+                 [disabled]="disableInput" />
+          <clr-control-error *clrIfError="'required'">
+            {{ 'INITIALIZATION.HELPER.REQUIRED' | translate }}
+          </clr-control-error>
+          <clr-control-error *clrIfError="'minlength'">
+            {{ 'INITIALIZATION.HELPER.MIN_LENGTH_8' | translate }}
+          </clr-control-error>
+        </clr-password-container>
+        <clr-password-container>
+          <label>{{ 'INITIALIZATION.LABELS.PASSWORD_CONFIRM' | translate }}</label>
+          <input clrPassword
+                 required
+                 [(ngModel)]="dbInfo.passwordConfirm"
+                 name="dbPwdConfirm"
+                 minlength="8"
+                 (ngModelChange)="verifyDBPwd()"
+                 [ngModelOptions]="{updateOn: 'blur'}"
+                 [disabled]="disableInput" />
+          <clr-control-error *clrIfError="'required'">
+            {{ 'INITIALIZATION.HELPER.REQUIRED' | translate }}
+          </clr-control-error>
+          <clr-control-error *clrIfError="'minlength'">
+            {{ 'INITIALIZATION.HELPER.MIN_LENGTH_8' | translate }}
+          </clr-control-error>
+        </clr-password-container>
+      </form>
+    </clr-wizard-page>
+
+    <clr-wizard-page clrWizardPagePreventDefault="true"
+                     (clrWizardPageOnCommit)="onInitSSH()"
+                     [clrWizardPageNextDisabled]="(getSSHUsername.pristine && getSSHPassword.pristine) || !sshForm.valid || disableInput"
+                     *ngIf="showInitSSH">
+      <ng-template clrPageTitle>{{ 'INITIALIZATION.PAGE_TITLE.SSH' | translate }}</ng-template>
+      <clr-spinner *ngIf="loadingFlag">
+        {{ 'INITIALIZATION.TOOLS.LOADING' | translate }}
+      </clr-spinner>
+      <clr-alert *ngIf="errorFlag"
+                 [clrAlertType]="'alert-danger'"
+                 [clrCloseButtonAriaLabel]="'Close Answer alert'">
+        <clr-alert-item>
+          {{ 'INITIALIZATION.ALERTS.SSH' | translate }}
+        </clr-alert-item>
+      </clr-alert>
+      <form clrForm
+            #sshForm="ngForm"
+            [class.hide]="loadingFlag">
+        <div>
+          {{ 'INITIALIZATION.CONTENTS.SSH' | translate }}
+        </div>
+        <clr-input-container>
+          <label>{{ 'INITIALIZATION.LABELS.ACCOUNT' | translate }}</label>
+          <input clrInput
+                 required
+                 [(ngModel)]="sshAccount.username"
+                 name="sshUsername"
+                 #getSSHUsername="ngModel"
+                 [disabled]="disableInput" />
+          <clr-control-error>
+            {{ 'INITIALIZATION.HELPER.REQUIRED' | translate }}
+          </clr-control-error>
+        </clr-input-container>
+        <clr-password-container>
+          <label>{{ 'INITIALIZATION.LABELS.PASSWORD' | translate }}</label>
+          <input clrPassword
+                 required
+                 [(ngModel)]="sshAccount.password"
+                 name="sshPassword"
+                 #getSSHPassword="ngModel"
+                 [disabled]="disableInput" />
+          <clr-control-error *clrIfError="'required'">
+            {{ 'INITIALIZATION.HELPER.REQUIRED' | translate }}
+          </clr-control-error>
+        </clr-password-container>
+      </form>
+    </clr-wizard-page>
+
+    <clr-wizard-page>
+      <ng-template clrPageTitle>{{ 'INITIALIZATION.PAGE_TITLE.ACCOUNT' | translate }}</ng-template>
+      <clr-spinner *ngIf="loadingFlag">
+        {{ 'INITIALIZATION.TOOLS.LOADING' | translate }}
+      </clr-spinner>
+      <form clrForm
+            #accountForm="ngForm"
+            [class.hide]="loadingFlag">
+        <div>
+          {{ 'INITIALIZATION.CONTENTS.ACCOUNT' | translate }}
+        </div>
+        <clr-alert *ngIf="errorFlag"
+                   [clrAlertType]="'alert-danger'"
+                   [clrCloseButtonAriaLabel]="'Close Answer alert'">
+          <clr-alert-item>
+            {{ 'INITIALIZATION.ALERTS.ACCOUNT' | translate }}
+          </clr-alert-item>
+        </clr-alert>
+        <clr-alert *ngIf="errorVerifyFlag"
+                   [clrAlertType]="'alert-danger'"
+                   [clrCloseButtonAriaLabel]="'Close Answer alert'">
+          <clr-alert-item>
+            {{ 'INITIALIZATION.ALERTS.PASSWORDS_IDENTICAL' | translate }}
+          </clr-alert-item>
+        </clr-alert>
+        <clr-input-container>
+          <label>{{ 'INITIALIZATION.LABELS.ACCOUNT' | translate }}</label>
+          <input clrInput
+                 value="admin"
+                 disabled />
+          <clr-control-helper>
+            {{ 'INITIALIZATION.HELPER.NOT_EDITABLE' | translate }}
+          </clr-control-helper>
+        </clr-input-container>
+        <clr-password-container>
+          <label>{{ 'INITIALIZATION.LABELS.PASSWORD' | translate }}</label>
+          <input clrPassword
+                 required
+                 [(ngModel)]="account.password"
+                 name="accountPassword"
+                 minlength="8"
+                 (ngModelChange)="verifyAccountPwd()"
+                 [ngModelOptions]="{updateOn: 'blur'}"
+                 [disabled]="disableInput" />
+          <clr-control-error *clrIfError="'required'">
+            {{ 'INITIALIZATION.HELPER.REQUIRED' | translate }}
+          </clr-control-error>
+          <clr-control-error *clrIfError="'minlength'">
+            {{ 'INITIALIZATION.HELPER.MIN_LENGTH_8' | translate }}
+          </clr-control-error>
+        </clr-password-container>
+        <clr-password-container>
+          <label>{{ 'INITIALIZATION.LABELS.PASSWORD_CONFIRM' | translate }}</label>
+          <input clrPassword
+                 required
+                 [(ngModel)]="account.passwordConfirm"
+                 name="accountPasswordConfirm"
+                 minlength="8"
+                 (ngModelChange)="verifyAccountPwd()"
+                 [ngModelOptions]="{updateOn: 'blur'}"
+                 [disabled]="disableInput" />
+          <clr-control-error *clrIfError="'required'">
+            {{ 'INITIALIZATION.HELPER.REQUIRED' | translate }}
+          </clr-control-error>
+          <clr-control-error *clrIfError="'minlength'">
+            {{ 'INITIALIZATION.HELPER.MIN_LENGTH_8' | translate }}
+          </clr-control-error>
+        </clr-password-container>
+      </form>
+      <ng-template clrPageButtons>
+        <button class="btn btn-primary"
+                [type]="'custom-finish'"
+                (click)="onInitAccount()"
+                [disabled]="disableAccountFrom || !accountForm.valid || disableInput">
+          {{ 'INITIALIZATION.BUTTONS.APPLY' | translate }}
+        </button>
+      </ng-template>
+    </clr-wizard-page>
+  </clr-wizard>
+
+  <clr-modal #modal>
+    <h3 class="modal-title">{{ 'INITIALIZATION.MODAL_TITLE' | translate }}</h3>
+    <div class="modal-body">
+      <clr-alert *ngIf="errorFlag"
+                 [clrAlertType]="'alert-danger'"
+                 [clrCloseButtonAriaLabel]="'Close Answer alert'">
+        <clr-alert-item>
+          {{ 'INITIALIZATION.ALERTS.SSH' | translate }}
+        </clr-alert-item>
+      </clr-alert>
+      <div>
+        {{ 'INITIALIZATION.CONTENTS.SSH' | translate }}
+      </div>
+      <div style="text-align: center">
+        <clr-spinner *ngIf="loadingFlag">
+          {{ 'INITIALIZATION.TOOLS.LOADING' | translate }}
+        </clr-spinner>
+      </div>
+      <form clrForm
+            #checkDBForm="ngForm"
+            [class.hide]="loadingFlag">
+        <clr-input-container>
+          <label>{{ 'INITIALIZATION.LABELS.ACCOUNT' | translate }}</label>
+          <input clrInput
+                 required
+                 [(ngModel)]="sshAccount.username"
+                 name="sshUsername"
+                 #getSSHUsername="ngModel"
+                 [disabled]="disableInput" />
+          <clr-control-error>
+            {{ 'INITIALIZATION.HELPER.REQUIRED' | translate }}
+          </clr-control-error>
+        </clr-input-container>
+        <clr-password-container>
+          <label>{{ 'INITIALIZATION.LABELS.PASSWORD' | translate }}</label>
+          <input clrPassword
+                 required
+                 [(ngModel)]="sshAccount.password"
+                 name="sshPassword"
+                 #getSSHPassword="ngModel"
+                 [disabled]="disableInput" />
+          <clr-control-error *clrIfError="'required'">
+            {{ 'INITIALIZATION.HELPER.REQUIRED' | translate }}
+          </clr-control-error>
+        </clr-password-container>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button type="button"
+              class="btn btn-primary"
+              (click)="onInitSSH()"
+              [disabled]="!checkDBForm.valid || disableInput">
+        {{ 'INITIALIZATION.BUTTONS.RESTART_DB' | translate }}
+      </button>
+    </div>
+  </clr-modal>
+</div>

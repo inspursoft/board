@@ -2,9 +2,9 @@ package controller
 
 import (
 	"fmt"
+	c "git/inspursoft/board/src/apiserver/controllers/commons"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/apiserver/service/devops/travis"
-	c "git/inspursoft/board/src/common/controller"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"io"
@@ -253,6 +253,13 @@ func (p *ServiceController) GetServiceListAction() {
 	pageSize, _ := p.GetInt("page_size", 0)
 	orderField := p.GetString("order_field", "creation_time")
 	orderAsc, _ := p.GetInt("order_asc", 0)
+
+	orderFieldValue, err := service.ParseOrderField("service", orderField)
+	if err != nil {
+		p.CustomAbortAudit(http.StatusBadRequest, err.Error())
+		return
+	}
+
 	if pageIndex == 0 && pageSize == 0 {
 		serviceStatus, err := service.GetServiceList(serviceName, p.CurrentUser.ID)
 		if err != nil {
@@ -266,7 +273,7 @@ func (p *ServiceController) GetServiceListAction() {
 		}
 		p.RenderJSON(serviceStatus)
 	} else {
-		paginatedServiceStatus, err := service.GetPaginatedServiceList(serviceName, p.CurrentUser.ID, pageIndex, pageSize, orderField, orderAsc)
+		paginatedServiceStatus, err := service.GetPaginatedServiceList(serviceName, p.CurrentUser.ID, pageIndex, pageSize, orderFieldValue, orderAsc)
 		if err != nil {
 			p.InternalError(err)
 			return
@@ -459,6 +466,11 @@ func (p *ServiceController) GetServiceInfoAction() {
 	}
 	for _, items := range nodesStatus.Items {
 		serviceInfo.NodeName = append(serviceInfo.NodeName, items.Status.Addresses...)
+	}
+	serviceInfo.ServiceContainers, err = service.GetServiceContainers(s.ProjectName, s.Name)
+	if err != nil {
+		p.ParseError(err, c.ParseGetK8sError)
+		return
 	}
 	p.RenderJSON(serviceInfo)
 }

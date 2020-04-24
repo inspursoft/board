@@ -49,7 +49,7 @@ func GetSystemInfo() (*model.SystemInfo, error) {
 	}
 
 	//Get the hareware processor arch
-	cmd := exec.Command("uname", "-p")
+	cmd := exec.Command("uname", "-m")
 	out, err := cmd.Output()
 	if err != nil {
 		fmt.Errorf("Uname failed to get info %v", err)

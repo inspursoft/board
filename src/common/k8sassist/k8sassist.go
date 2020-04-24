@@ -22,9 +22,9 @@ func NewK8sAssistClient(c *K8sAssistConfig) *K8sAssistClient {
 }
 
 func (c *K8sAssistClient) AppV1() v1.AppV1ClientInterface {
-	clientset, err := base.NewBaseClient(c.config.K8sMasterURL, c.config.KubeConfigPath)
+	config, clientset, scaleGetter, err := base.NewBaseClient(c.config.K8sMasterURL, c.config.KubeConfigPath)
 	if err != nil {
 		panic(err)
 	}
-	return v1.NewAppV1Client(clientset)
+	return v1.NewAppV1Client(config, clientset, scaleGetter)
 }

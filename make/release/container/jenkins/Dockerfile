@@ -20,7 +20,7 @@ COPY make/release/container/jenkins/addNode.py /usr/share/jenkins/addNode.py
 COPY make/release/container/jenkins/jenkins.sh /usr/local/bin/jenkins.sh
 COPY make/release/container/jenkins/init.sh /usr/share/jenkins/init.sh
 
-
+ENV JENKINS_UC_DOWNLOAD=https://mirrors.tuna.tsinghua.edu.cn/jenkins
 
 RUN  sed -i 's/^root\:x\:0\:/root\:x\:0\:root\,jenkins/' /etc/group \
       && cat /tmp/sources.list > /etc/apt/sources.list \

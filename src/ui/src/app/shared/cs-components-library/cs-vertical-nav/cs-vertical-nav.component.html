@@ -6,6 +6,10 @@
     <ng-container *ngIf="navItem.children && navItem.visible" [ngTemplateOutletContext]="navItem"
                   [ngTemplateOutlet]="itemGroupTemp"></ng-container>
   </div>
+  <a *ngIf="isShowAdminSever" clrVerticalNavLink [href]="adminServerUrl" target="_blank">
+    <clr-icon clrVerticalNavIcon [attr.shape]="'home'" class="is-solid"></clr-icon>
+    <span>{{"AdminServer.Name" | translate}}</span>
+  </a>
   <ng-template let-visible='visible' let-url='url' let-icon='icon' let-caption='caption' #itemTemp>
     <a *ngIf="visible"
        clrVerticalNavLink
@@ -14,7 +18,7 @@
        [queryParams]="queryParams">
       <clr-icon clrVerticalNavIcon [attr.shape]="icon" class="is-solid"></clr-icon>
       <span>{{caption | translate}}</span>
-      <ng-template [csVerticalNavGuide]="url"></ng-template>
+      <ng-template [appVerticalNavGuide]="url"></ng-template>
     </a>
   </ng-template>
   <ng-template let-visible='visible'
@@ -26,7 +30,8 @@
     <clr-vertical-nav-group routerLinkActive="active">
       <clr-icon [attr.shape]="icon" clrVerticalNavIcon></clr-icon>
       <span>{{caption | translate}}</span>
-      <clr-vertical-nav-group-children>
+      <a [routerLink]="url" hidden aria-hidden="true"></a>
+      <clr-vertical-nav-group-children *clrIfExpanded>
         <div *ngFor="let navItem of children">
           <ng-container [ngTemplateOutletContext]="navItem" [ngTemplateOutlet]="itemTemp"></ng-container>
         </div>

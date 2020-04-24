@@ -1,8 +1,8 @@
 package controller
 
 import (
+	c "git/inspursoft/board/src/apiserver/controllers/commons"
 	"git/inspursoft/board/src/apiserver/service"
-	c "git/inspursoft/board/src/common/controller"
 	"git/inspursoft/board/src/common/model"
 	"net/http"
 
@@ -34,7 +34,13 @@ func (o *OperationController) OperationList() {
 	orderField := o.GetString("order_field", "creation_time")
 	orderAsc, _ := o.GetInt("order_asc", 0)
 
-	paginatedoperations, err := service.GetPaginatedOperationList(optparam, pageIndex, pageSize, orderField, orderAsc)
+	orderFieldValue, err := service.ParseOrderField("operation", orderField)
+	if err != nil {
+		o.CustomAbortAudit(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	paginatedoperations, err := service.GetPaginatedOperationList(optparam, pageIndex, pageSize, orderFieldValue, orderAsc)
 	if err != nil {
 		o.InternalError(err)
 		return

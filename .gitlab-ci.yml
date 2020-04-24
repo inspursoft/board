@@ -4,6 +4,13 @@ before_script:
     request_url="http://open.inspur.com/api/v4/projects/$CI_PROJECT_ID/repository/commits/$CI_COMMIT_SHA/comments" && \
     passed=':heavy_check_mark: <a href=\"'"$CI_PROJECT_URL"'/commit/'"$CI_COMMIT_SHA"'\">Test Passed</a>'
     failed=':x: <a href=\"'"$CI_PROJECT_URL"'/commit/'"$CI_COMMIT_SHA"'\">Test Failed</a>'
+variables:
+  golang_version: "1.14.0"
+  jenkins_version: "2.127"
+  last_version: "latest"
+  mysql_version: "5.6.35"
+  openldap_version: "1.1.11"
+  registry_ip: "10.110.27.103:6000"
 stages:
   - pre-merge-requests
   - ui-test
@@ -30,13 +37,13 @@ pre-merge-requests:
 job_ui_test:
   before_script:
     - echo "before script"
-    - docker pull $registry_ip/board/dev_uibuilder:7.2
-    - docker tag $registry_ip/board/dev_uibuilder:7.2 10.111.25.119/board/dev_uibuilder:7.2
+    - docker pull $registry_ip/board/dev_uibuilder:7.3
+    - docker tag $registry_ip/board/dev_uibuilder:7.3 10.111.25.119/board/dev_uibuilder:7.3
   script:
     - pwd
     - docker images
     - docker-compose -f tests/docker-compose.uibuilder.test.yml up
-    - code=$(docker inspect tests_uibuilder7.2_1 -f "{{.State.ExitCode}}"), exit $code
+    - code=$(docker inspect tests_uibuilder7.3_1 -f "{{.State.ExitCode}}"), exit $code
   stage: ui-test
   tags:
     - board-runner-wangkun_lc-vm

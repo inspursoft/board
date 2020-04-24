@@ -2,16 +2,27 @@ package controller
 
 import (
 	"fmt"
+	c "git/inspursoft/board/src/apiserver/controllers/commons"
 	"git/inspursoft/board/src/apiserver/service"
-	c "git/inspursoft/board/src/common/controller"
+	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
+
+	"strings"
 
 	"github.com/astaxie/beego/logs"
 )
 
 type NodeController struct {
 	c.BaseController
+}
+
+func (n *NodeController) Prepare() {
+	skip := n.GetString("skip", "")
+	if !(skip == "AMS" && n.Ctx.Input.Method() == http.MethodGet && strings.Index(n.Ctx.Input.URL(), "/nodes") > 0) {
+		n.ResolveSignedInUser()
+		n.RecordOperationAudit()
+	}
 }
 
 func (n *NodeController) GetNode() {
@@ -129,4 +140,89 @@ func (n *NodeController) NodesAvailalbeResources() {
 	}
 
 	n.RenderJSON(resources)
+}
+
+func (n *NodeController) AddNodeAction() {
+	var reqNode model.NodeCli
+	var err error
+	err = n.ResolveBody(&reqNode)
+	if err != nil {
+		return
+	}
+
+	if !utils.ValidateWithLengthRange(reqNode.NodeName, 1, 63) {
+		n.CustomAbortAudit(http.StatusBadRequest, "NodeName must be not empty and no more than 63 characters ")
+		return
+	}
+
+	nodeExists, err := service.NodeExists(reqNode.NodeName)
+	if err != nil {
+		n.InternalError(err)
+		return
+	}
+	if nodeExists {
+		n.CustomAbortAudit(http.StatusConflict, "Nodename already exists.")
+		return
+	}
+
+	reqNode.NodeName = strings.TrimSpace(reqNode.NodeName)
+
+	node, err := service.CreateNode(reqNode)
+	if err != nil {
+		logs.Debug("Failed to add node %s", reqNode.NodeName)
+		n.InternalError(err)
+		return
+	}
+	logs.Info("Added node %s", node.ObjectMeta.Name)
+}
+
+// Get the running status of a node
+func (n *NodeController) GetNodeStatusAction() {
+	if n.IsSysAdmin == false {
+		n.CustomAbortAudit(http.StatusForbidden, "Insufficient privileges to control node.")
+		return
+	}
+	nodeName := strings.TrimSpace(n.Ctx.Input.Param(":nodename"))
+	logs.Debug("Get node status %s", nodeName)
+	nodestatus, err := service.GetNodeControlStatus(nodeName)
+	if err != nil {
+		logs.Debug("Failed to get node status %s", nodeName)
+		n.InternalError(err)
+		return
+	}
+	n.RenderJSON(*nodestatus)
+}
+
+// Drain the service instances from the node
+func (n *NodeController) NodeDrainAction() {
+	if n.IsSysAdmin == false {
+		n.CustomAbortAudit(http.StatusForbidden, "Insufficient privileges to control node.")
+		return
+	}
+	nodeName := strings.TrimSpace(n.Ctx.Input.Param(":nodename"))
+	logs.Debug("Drain the node %s", nodeName)
+
+	nodeDel, err := service.GetNodebyName(nodeName)
+	if err != nil {
+		logs.Debug("Failed to get node %s", nodeName)
+		n.InternalError(err)
+		return
+	}
+
+	if !nodeDel.Unschedulable {
+		logs.Debug("Cannot drain a schedulable node %s", nodeName)
+		n.CustomAbortAudit(http.StatusPreconditionRequired, "Cannot drain a schedulable node.")
+		return
+	}
+
+	//TODO drain services by adminserver
+
+	//Drain services by k8s api server
+	err = service.DrainNodeServiceInstance(nodeName)
+	if err != nil {
+		logs.Debug("Failed to drain node %s", nodeName)
+		n.InternalError(err)
+		return
+	}
+	logs.Debug("Drained node %s", nodeName)
 }
