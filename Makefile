@@ -15,7 +15,7 @@
 # Common
 # Develop flag
 #
-DEVFLAG=dev
+DEVFLAG=release
 
 # ARCH default is x86_64, also support mips, arm64v8
 ARCH=

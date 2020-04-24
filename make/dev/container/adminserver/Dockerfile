@@ -18,7 +18,7 @@ RUN go build -v -o /go/bin/adminserver && \
 
 WORKDIR /go/bin/
 
-VOLUME ["/data/board/"]
+VOLUME ["/data/adminserver/"]
 
 CMD ["adminserver"]
 
