@@ -4,9 +4,9 @@ import (
 	//"encoding/json"
 
 	//"fmt"
+	c "git/inspursoft/board/src/apiserver/controllers/commons"
 	"git/inspursoft/board/src/apiserver/models/nodegroups"
 	"git/inspursoft/board/src/apiserver/service"
-	"git/inspursoft/board/src/common/controller"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
@@ -21,7 +21,7 @@ import (
 
 // Operations about node groups
 type CommonController struct {
-	controller.BaseController
+	c.BaseController
 }
 
 // @Title List all node groups
