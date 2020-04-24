@@ -1,6 +1,8 @@
 package vm
 
-type Image struct {
-	Name string `json:"image_name"`
-	Tag  string `json:"image_tag"`
+type Image	struct {
+	ImageName	string	`json:"image_name"`
+	ImageTag	string	`json:"image_tag"`
+	ProjectName	string	`json:"project_name"`
 }
+

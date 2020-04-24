@@ -62,14 +62,14 @@ func (c *SupplementController) Exists() {
 	if err != nil {
 		return
 	}
-	existing, err := service.ExistRegistry(projectName, image.Name, image.Tag)
+	existing, err := service.ExistRegistry(projectName, image.ImageName, image.ImageTag)
 	if err != nil {
 		c.InternalError(err)
 		return
 	}
 
 	if existing {
-		c.CustomAbortAudit(http.StatusConflict, fmt.Sprintf("This image %s:%s already existing.", image.Name, image.Tag))
+		c.CustomAbortAudit(http.StatusConflict, fmt.Sprintf("This image %s:%s already existing.", image.ImageName, image.ImageTag))
 		return
 	}
 }

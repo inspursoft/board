@@ -184,6 +184,7 @@ type SystemAdminController struct {
 }
 
 func (u *SystemAdminController) Prepare() {
+	u.EnableXSRF = true
 	u.ResolveSignedInUser()
 	u.RecordOperationAudit()
 	if !u.IsSysAdmin {
