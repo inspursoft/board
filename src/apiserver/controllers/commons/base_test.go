@@ -1,6 +1,7 @@
 package commons_test
 
 import (
+	"git/inspursoft/board/src/apiserver/controllers/commons"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/apiserver/service/devops/gogs"
 	"git/inspursoft/board/src/apiserver/v1/controller"
@@ -111,6 +112,6 @@ func TestMain(m *testing.M) {
 		initProjectRepo()
 	}
 
-	controller.InitController()
+	commons.InitController()
 	os.Exit(m.Run())
 }
