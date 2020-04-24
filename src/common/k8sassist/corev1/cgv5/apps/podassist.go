@@ -18,12 +18,10 @@ import (
 	"github.com/astaxie/beego/logs"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/remotecommand"
-	cmdutil "k8s.io/kubectl/pkg/cmd/util"
 )
 
 type pods struct {
@@ -31,8 +29,6 @@ type pods struct {
 	cfg       *types.Config
 	namespace string
 	pod       v1.PodInterface
-
-	genericclioptions.IOStreams
 }
 
 func (p *pods) Create(pod *model.Pod) (*model.Pod, error) {
@@ -175,7 +171,6 @@ func (p *pods) CopyFromPod(podName, containerName, src, dest string, cmd []strin
 			Stderr: os.Stderr,
 			Tty:    false,
 		})
-		cmdutil.CheckErr(err)
 	}()
 	prefix := getPrefix(src)
 	prefix = path.Clean(prefix)
@@ -200,8 +195,7 @@ func (p *pods) CopyToPod(podName, containerName, src, dest string) error {
 
 	go func() {
 		defer writer.Close()
-		err := makeTar(src, dest, writer)
-		cmdutil.CheckErr(err)
+		err = makeTar(src, dest, writer)
 	}()
 
 	cmd := []string{"tar", "-xmf", "-"}
