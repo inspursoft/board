@@ -24,7 +24,6 @@ export class AccountService {
 
   signUp(account: AccountTypes): Observable<any> {
     const passwordBase64 = window.btoa(account.password);
-    console.log(passwordBase64);
     return this.http.post(
       BASE_URL + '/sign-up',
       {
