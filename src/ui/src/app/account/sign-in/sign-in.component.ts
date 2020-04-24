@@ -51,7 +51,6 @@ export class SignInComponent extends CsComponentBase implements OnInit {
   }
 
   signIn(): void {
-    console.log(this.signInUser);
     if (this.verifyInputExValid()) {
       this.isSignWIP = true;
       this.accountService.signIn(this.signInUser).subscribe(res => {
@@ -80,12 +79,11 @@ export class SignInComponent extends CsComponentBase implements OnInit {
               break;
             }
             case ResSignInType.temporarilyBlocked: {
-              console.log(this.signInUser.username);
+              this.refreshVerifyPicture();
               this.translateService.get('ACCOUNT.USERNAME_TEMPORARY_BLOCKED',
-                [this.signInUser.username, this.curErrorSignIn.value])
-                .subscribe(msg => {
-                  this.messageService.showOnlyOkDialog(msg, 'ACCOUNT.ERROR');
-                });
+                [this.signInUser.username, this.curErrorSignIn.value]).subscribe(msg =>
+                this.messageService.showOnlyOkDialog(msg, 'ACCOUNT.ERROR')
+              );
               break;
             }
           }

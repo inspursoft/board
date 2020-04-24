@@ -8,6 +8,7 @@ import { catchError, tap, timeout } from 'rxjs/operators';
 import { AppTokenService } from './app-token.service';
 import { MessageService } from './message.service';
 import { GlobalAlertType } from '../shared/shared.types';
+import { CookieService } from 'ngx-cookie';
 
 @Injectable()
 export class HttpClientInterceptor implements HttpInterceptor {
@@ -15,7 +16,8 @@ export class HttpClientInterceptor implements HttpInterceptor {
 
   constructor(private appTokenService: AppTokenService,
               private messageService: MessageService,
-              private translateService: TranslateService) {
+              private translateService: TranslateService,
+              private cookieService: CookieService) {
     this.exceptUrls = new Array<string>();
     this.initExceptUrls();
   }
@@ -35,12 +37,20 @@ export class HttpClientInterceptor implements HttpInterceptor {
   }
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    const xsrf = this.cookieService.get('_xsrf');
+    let xsrfToken = '';
+    if (xsrf) {
+      const originValue = xsrf.split('|')[0];
+      xsrfToken = window.atob(originValue);
+    }
     let authReq: HttpRequest<any> = req.clone({
       headers: req.headers
     });
     if (this.appTokenService.token !== '') {
       authReq = authReq.clone({
-        headers: authReq.headers.set('token', this.appTokenService.token),
+        headers: authReq.headers
+          .set('token', this.appTokenService.token)
+          .set('X-Xsrftoken', xsrfToken),
         params: authReq.params.set('Timestamp', Date.now().toString())
       });
     }
@@ -130,6 +140,6 @@ export class HttpClientInterceptor implements HttpInterceptor {
 export const HttpInterceptorService = {
   provide: HTTP_INTERCEPTORS,
   useClass: HttpClientInterceptor,
-  deps: [AppTokenService, MessageService, TranslateService],
+  deps: [AppTokenService, MessageService, TranslateService, CookieService],
   multi: true
 };
