@@ -9,6 +9,7 @@ import sys
 import argparse
 import subprocess
 import shutil
+import json
 from io import open
 
 if sys.version_info[:3][0] == 2:
@@ -62,6 +63,10 @@ def create_cert(conf_path, key_path="/data/board/cert/board-key.pem", cert_path=
 		return rc
 	return subprocess.call(["openssl", "x509", "-req", "-in", csr_path, "-CA", ca_cert, "-CAkey", ca_key, "-CAcreateserial", "-out", cert_path, "-days", "10000", "-extensions", "v3_ext", "-extfile", conf_path], stdout=FNULL, stderr=subprocess.STDOUT)
 
+def json_encode(file="/etc/board/cert/ca.pem"):
+    with open(file, 'r') as f:
+        return json.JSONEncoder().encode(f.read())
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--conf', dest='cfgfile', default=base_dir+'/board.cfg',type=str,help="the path of Board configuration file")
 args = parser.parse_args()
@@ -102,6 +107,8 @@ elaseticsearch_memory_in_megabytes = rcp.get("configuration", "elaseticsearch_me
 gogits_host_ip = rcp.get("configuration", "gogits_host_ip")
 gogits_host_port = rcp.get("configuration", "gogits_host_port")
 gogits_ssh_port = rcp.get("configuration", "gogits_ssh_port")
+
+prometheus_url = rcp.get("configuration", "prometheus_url")
 
 jenkins_host_ip = rcp.get("configuration", "jenkins_host_ip")
 jenkins_host_port = rcp.get("configuration", "jenkins_host_port")
@@ -202,7 +209,7 @@ grafana_config_dir = os.path.join(config_dir, "grafana")
 if not os.path.exists(grafana_config_dir):
     os.makedirs(os.path.join(config_dir, "grafana"))
 grafana_k8s_ds = os.path.join(grafana_config_dir, "kubernetes-datasource.json")
-grafana_graphite_ds = os.path.join(grafana_config_dir, "graphite-datasource.json")
+grafana_prometheus_ds = os.path.join(grafana_config_dir, "prometheus-datasource.json")
 grafana_dashboard = os.path.join(grafana_config_dir, "kubernetes-dashboard.json")
 grafana_k8s = os.path.join(grafana_config_dir, "kubernetes.json")
 grafana_notifications = os.path.join(grafana_config_dir, "notifications.json")
@@ -272,19 +279,19 @@ if kube_http_scheme == "http":
 				kube_master_ip=kube_master_ip,
 				kube_master_port=kube_master_port,
 				name=name)
+	render(os.path.join(templates_dir, "grafana", "kubernetes-datasource-http.json"),
+		grafana_k8s_ds,
+		kube_http_scheme=kube_http_scheme,
+		kube_master_ip=kube_master_ip,
+		kube_master_port=kube_master_port)
+
 elif kube_http_scheme == "https":
 	if not os.path.exists("/data/board/cert"):
 		os.makedirs("/data/board/cert")
-	for name in ["apiserver", "collector"]:
+	for name in ["apiserver", "collector", "grafana"]:
 		openssl_path=os.path.join(config_dir, name, "openssl.conf")
 		key_path=os.path.join("/data/board/cert", name+'-key.pem')
 		cert_path=os.path.join("/data/board/cert", name+'.pem')
-		render(os.path.join(templates_dir, "kube", "kubeconfig_https"),
-				os.path.join(config_dir, name, "kubeconfig"),
-				kube_http_scheme=kube_http_scheme,
-				kube_master_ip=kube_master_ip,
-				kube_master_port=kube_master_port,
-				name=name)
 		render(os.path.join(templates_dir, "kube", "openssl.conf"),
 				openssl_path,
 				kube_master_ip=kube_master_ip,
@@ -293,6 +300,26 @@ elif kube_http_scheme == "https":
 		if rc != 0:
 			print("Create the Board cert failed, please read the documents for Board.")
 			exit(1)
+		if name == "grafana":
+			render(os.path.join(templates_dir, name, "kubernetes-datasource-https.json"),
+					grafana_k8s_ds,
+					kube_http_scheme=kube_http_scheme,
+					kube_master_ip=kube_master_ip,
+					kube_master_port=kube_master_port,
+					grafana_cert=json_encode(cert_path),
+					grafana_key=json_encode(key_path),
+					ca_cert=json_encode())
+			os.remove(cert_path)
+			os.remove(key_path)
+			os.remove(openssl_path)
+		else:
+			render(os.path.join(templates_dir, "kube", "kubeconfig_https"),
+					os.path.join(config_dir, name, "kubeconfig"),
+					kube_http_scheme=kube_http_scheme,
+					kube_master_ip=kube_master_ip,
+					kube_master_port=kube_master_port,
+					name=name)
+
 
 if os.path.exists(os.path.join(apiserver_config_dir, "kvm")):
     shutil.rmtree(os.path.join(apiserver_config_dir, "kvm"))
@@ -353,13 +380,10 @@ render(os.path.join(templates_dir, "gogits", "app.ini"),
         gogits_host_port=gogits_host_port,
         gogits_ssh_port=gogits_ssh_port)
 
-render(os.path.join(templates_dir, "grafana", "kubernetes-datasource.json"),
-        grafana_k8s_ds,
-        kube_master_ip=kube_master_ip,
-        kube_master_port=kube_master_port)
 
-render(os.path.join(templates_dir, "grafana", "graphite-datasource.json"),
-        grafana_graphite_ds)
+render(os.path.join(templates_dir, "grafana", "prometheus-datasource.json"),
+        grafana_prometheus_ds,
+        prometheus_url=prometheus_url)
 
 shutil.copy(os.path.join(templates_dir, "grafana", "kubernetes-dashboard.json"), grafana_dashboard)
 
