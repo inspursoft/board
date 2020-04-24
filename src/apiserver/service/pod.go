@@ -122,6 +122,18 @@ func CopyFromPod(namespace, podName, container, src, dest string) error {
 		KubeConfigPath: kubeConfigPath(),
 	})
 	cmd := []string{"tar", "cf", "-", src}
-	logs.Info("copy kubernetes pod %s/%s:%s in container %s to %s on host.", namespace, podName, src, container, dest)
+	logs.Info("Copy kubernetes pod %s/%s:%s in container %s to %s on host.", namespace, podName, src, container, dest)
 	return k8sclient.AppV1().Pod(namespace).CopyFromPod(podName, container, src, dest, cmd)
+}
+
+func CopyToPod(namespace, podName, container, src, dest string) error {
+	if len(src) == 0 || len(dest) == 0 {
+		return errors.New("filepath can not be empty")
+	}
+
+	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		KubeConfigPath: kubeConfigPath(),
+	})
+	logs.Info("Copying the content of '%s' to '%s/%s/%s:%s'", src, namespace, podName, container, dest)
+	return k8sclient.AppV1().Pod(namespace).CopyToPod(podName, container, src, dest)
 }
