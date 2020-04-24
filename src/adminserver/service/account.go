@@ -7,13 +7,12 @@ import (
 	"git/inspursoft/board/src/adminserver/dao"
 	"git/inspursoft/board/src/adminserver/encryption"
 	"git/inspursoft/board/src/adminserver/models"
+	t "git/inspursoft/board/src/common/token"
 	"git/inspursoft/board/src/common/utils"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"path"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/alyu/configparser"
@@ -119,7 +118,7 @@ func Login(acc *models.Account) (bool, error, string) {
 	payload["email"] = query.Email
 	payload["realname"] = query.Realname
 	payload["is_system_admin"] = query.SystemAdmin
-	token, err := SignToken(payload)
+	token, err := t.SignToken(TokenServerURL, payload)
 	if err != nil {
 		return false, err, ""
 	}
@@ -132,40 +131,12 @@ func Login(acc *models.Account) (bool, error, string) {
 	return true, nil, token.TokenString
 }
 
-func SignToken(payload map[string]interface{}) (*models.TokenString, error) {
-	var token models.TokenString
-	err := utils.RequestHandle(http.MethodPost, TokenServerURL, func(req *http.Request) error {
-		req.Header = http.Header{
-			"Content-Type": []string{"application/json"},
-		}
-		return nil
-	}, payload, func(req *http.Request, resp *http.Response) error {
-		return utils.UnmarshalToJSON(resp.Body, &token)
-	})
-	return &token, err
-}
-
-func VerifyToken(tokenString string) (map[string]interface{}, error) {
-	if strings.TrimSpace(tokenString) == "" {
-		return nil, fmt.Errorf("no token provided")
-	}
-	var payload map[string]interface{}
-	err := utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s?token=%s", TokenServerURL, tokenString), nil, nil, func(req *http.Request, resp *http.Response) error {
-		if resp.StatusCode == http.StatusUnauthorized {
-			logs.Error("Invalid token due to session timeout.")
-			return ErrInvalidToken
-		}
-		return utils.UnmarshalToJSON(resp.Body, &payload)
-	})
-	return payload, err
-}
-
 func GetCurrentUser(token string) *models.User {
 	if isTokenExists := dao.GlobalCache.IsExist(token); !isTokenExists {
 		logs.Info("Token stored in cache has expired.")
 		return nil
 	}
-	payload, err := VerifyToken(token)
+	payload, err := t.VerifyToken(TokenServerURL, token)
 	if err != nil {
 		logs.Error("failed to verify token: %+v\n", err)
 		return nil

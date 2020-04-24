@@ -2,11 +2,22 @@
 
 #docker version: 17.0 
 #docker-compose version: 1.7.1 
-#Board version: 0.8.0
+#Board version: 7.0.0
 
 set -e
 
 item=0
+
+if [[ -n $1 && -f $1 ]];then
+tar zxvf $1 -C /data
+else
+	if [[ ! -e "/data/pre-env" ]]
+	then
+		echo "Please add the file pre-env.tar.gz file for add node to the directory Deploy!"
+		exit 1
+	fi
+	echo "Welcome to Adminserver!"
+fi
 
 workdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $workdir
@@ -82,7 +93,6 @@ echo "[Step $item]: checking existing instance of Adminserver ..."; let item+=1
 if [ -n "$(docker-compose ps -q)"  ]
 then
 	echo "stopping existing Adminserver instance ..."
-	#docker-compose -f ./docker-compose-db.yml down
 	docker-compose -f ./docker-compose-adminserver.yml down
 fi
 echo ""
