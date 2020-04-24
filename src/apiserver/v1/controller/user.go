@@ -19,6 +19,7 @@ type UserController struct {
 }
 
 func (u *UserController) Prepare() {
+	u.EnableXSRF = false
 	u.ResolveSignedInUser()
 	u.RecordOperationAudit()
 	u.IsExternalAuth = utils.GetBoolValue("IS_EXTERNAL_AUTH")

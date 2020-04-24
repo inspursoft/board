@@ -10,7 +10,9 @@ type SupplementController struct {
 	c.BaseController
 }
 
-func (i *SupplementController) Prepare() {}
+func (i *SupplementController) Prepare() {
+	i.EnableXSRF = false
+}
 
 // @Title Get system information.
 // @Description Get system information.

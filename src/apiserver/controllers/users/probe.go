@@ -10,7 +10,9 @@ type ProbeController struct {
 	c.BaseController
 }
 
-func (p *ProbeController) Prepare() {}
+func (p *ProbeController) Prepare() {
+	p.EnableXSRF = false
+}
 
 // @Title Probe for getting current user.
 // @Description Get current user information from session.

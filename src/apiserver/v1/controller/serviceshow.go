@@ -12,7 +12,9 @@ type ServiceShowController struct {
 	c.BaseController
 }
 
-func (s *ServiceShowController) Prepare() {}
+func (s *ServiceShowController) Prepare() {
+	s.EnableXSRF = false
+}
 
 func (s *ServiceShowController) Get() {
 	ownerName := s.Ctx.Input.Param(":owner_name")
