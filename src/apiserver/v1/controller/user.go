@@ -155,12 +155,27 @@ func (u *UserController) ChangePasswordAction() {
 		return
 	}
 
+	changePassword.OldPassword, err = service.DecodeUserPassword(changePassword.OldPassword)
+	if err != nil {
+		logs.Error("Password encode error %v", err)
+		u.CustomAbortAudit(http.StatusBadRequest, "Password encode error.")
+		return
+	}
+
 	changePassword.OldPassword = utils.Encrypt(changePassword.OldPassword, u.CurrentUser.Salt)
 
 	if changePassword.OldPassword != user.Password {
 		u.CustomAbortAudit(http.StatusForbidden, "Old password input is incorrect.")
 		return
 	}
+
+	changePassword.NewPassword, err = service.DecodeUserPassword(changePassword.NewPassword)
+	if err != nil {
+		logs.Error("Password encode error %v", err)
+		u.CustomAbortAudit(http.StatusBadRequest, "Password encode error.")
+		return
+	}
+
 	if !utils.ValidateWithLengthRange(changePassword.NewPassword, 8, 20) {
 		u.CustomAbortAudit(http.StatusBadRequest, "Password does not satisfy complexity requirement.")
 		return
@@ -233,6 +248,13 @@ func (u *SystemAdminController) AddUserAction() {
 	}
 	if emailExists {
 		u.CustomAbortAudit(http.StatusConflict, "Email already exists.")
+		return
+	}
+
+	reqUser.Password, err = service.DecodeUserPassword(reqUser.Password)
+	if err != nil {
+		logs.Error("Password encode error %v", err)
+		u.CustomAbortAudit(http.StatusBadRequest, "Password encode error.")
 		return
 	}
 
