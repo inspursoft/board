@@ -3,6 +3,7 @@ package commons
 import (
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/apiserver/service/auth"
+	t "git/inspursoft/board/src/common/token"
 	"net/http"
 	"strconv"
 	"time"
@@ -93,7 +94,7 @@ func (ca *BaseController) ProcessAuth(principal, password string) (string, bool)
 	payload["email"] = user.Email
 	payload["realname"] = user.Realname
 	payload["is_system_admin"] = user.SystemAdmin
-	token, err := ca.SignToken(payload)
+	token, err := t.SignToken(TokenServerURL(), payload)
 	if err != nil {
 		ca.InternalError(err)
 		return "", false
