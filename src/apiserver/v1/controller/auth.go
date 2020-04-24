@@ -30,6 +30,7 @@ func (u *AuthController) SignInAction() {
 	}
 	reqUser.Password, err = service.DecodeUserPassword(reqUser.Password)
 	if err != nil {
+		u.CustomAbortAudit(http.StatusBadRequest, "Incorrect username or password.")
 		return
 	}
 	logs.Debug("Decode password %s", reqUser.Password) //Remove this debug in release
@@ -89,7 +90,8 @@ func (u *AuthController) SignUpAction() {
 
 	reqUser.Password, err = service.DecodeUserPassword(reqUser.Password)
 	if err != nil {
-		u.InternalError(err)
+		logs.Error("Password encode error %v", err)
+		u.CustomAbortAudit(http.StatusBadRequest, "Password encode error.")
 		return
 	}
 
@@ -215,6 +217,14 @@ func (u *AuthController) ResetPassword() {
 		return
 	}
 	newPassword := u.GetString("password")
+
+	newPassword, err = service.DecodeUserPassword(newPassword)
+	if err != nil {
+		logs.Error("Decode error %s %v", newPassword, err)
+		u.CustomAbortAudit(http.StatusBadRequest, "No password encoded.")
+		return
+	}
+
 	if strings.TrimSpace(newPassword) == "" {
 		logs.Error("No password provided.")
 		u.CustomAbortAudit(http.StatusBadRequest, "No password provided.")
