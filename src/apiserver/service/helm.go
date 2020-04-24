@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"git/inspursoft/board/src/apiserver/models/helms/repositories/vm"
 	helmpkg "git/inspursoft/board/src/apiserver/service/helm"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/k8sassist"
@@ -37,6 +38,29 @@ type matchedServiceAndWorkload struct {
 	ServiceType int
 	Type        WORKLOAD_TYPE
 	Workload    *model.K8sInfo
+}
+
+func vmRepositoryModel(repo model.HelmRepository) vm.HelmRepository {
+	return vm.HelmRepository{
+		ID:   repo.ID,
+		Name: repo.Name,
+		URL:  repo.URL,
+		Type: repo.Type,
+	}
+}
+
+func ListVMHelmRepositories() ([]vm.HelmRepository, error) {
+	// list the repos from storage
+	repos, err := dao.GetHelmRepositories()
+	if err != nil {
+		return nil, err
+	}
+
+	vmRepos := []vm.HelmRepository{}
+	for _, r := range repos {
+		vmRepos = append(vmRepos, vmRepositoryModel(r))
+	}
+	return vmRepos, nil
 }
 
 func ListHelmRepositories() ([]model.HelmRepository, error) {
