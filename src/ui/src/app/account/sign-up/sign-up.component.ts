@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { MessageService } from '../../shared.service/message.service';
-import { Account } from '../account';
+import { AccountTypes } from '../account.types';
 import { AccountService } from '../account.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AppInitService } from '../../shared.service/app-init.service';
@@ -33,7 +33,7 @@ export class SignUpComponent extends CsComponentBase implements OnInit {
   signUp(): void {
     if (this.verifyInputExValid()) {
       this.isSignUpWIP = true;
-      const account: Account = {
+      const account: AccountTypes = {
         username: this.signUpModel.username,
         email: this.signUpModel.email,
         password: this.signUpModel.password,
